@@ -71,18 +71,18 @@ of *things*), not a target about light.
 **Five passes for a THING.** A thing is finished only with all five; three or fewer and it reads
 as a placeholder:
 
-## Next — after M300 (0.297.0, 2026-09-02)
+## Next — after M321 (0.318.0, 2026-09-03)
 
-M299/M300 built the screens pass (`docs/DESIGN-screens.md`): peek map, you-in-frame, two names,
-cantina hotspots, headings (cap 24, `secTidy` on station tabs and the ship screen), lanes, HUD /
-toast / console strip under screens, the hauler as a shuttle. Suite `tests/91zzy-screens`.
-Left:
+M299/M300 built the screens pass (`docs/DESIGN-screens.md`); M301 (0.298.0) the person cards;
+M321 the §9 walkthrough as `tests/91zzy-walk` (both windows, 200-character block cap after every
+step) and the course as a state with «К ЦЕЛИ» in flight. The screens pass is closed. Left here,
+in this order (author, 2026-09-03: «сначала по плану, потом это»):
 
-1. **§9 walkthrough as a phone acceptance run** after each interface milestone — six steps, the
-   test being "no step needs a paragraph on screen".
-2. Person cards (M301): HQ manager and crew rows are words first, figures in a `.fig` block. The
-   home desk has no section headings, nothing to tidy there. Need/appetite notes are split by
-   `secTidy` into head + note; rows there fit one line.
+1. The settlement's houses and the wintering hut on `homePlan` (tail of M307/M319).
+2. The plants as bodies (M173 #2).
+3. Drones choosing where they sell — decided by the assistant, then built.
+4. Effects, all of them: heat haze over the nozzles, chromatic aberration on hits, water with
+   reflections on the surface (a design addition), the station's flare flame live over the bake.
 
 3. ~~System proportions~~ — M315 (0.312.0): bodies and orbits scaled (`SYS_K_*` in `06-galaxy`), the
    ghost click on screens opened by a pad swallowed, §18.8 complete but for the заявка (rung 21).
@@ -95,11 +95,10 @@ the day they are found; this is work that was deliberately not done, or that nee
 
 ### Needs a decision from the author
 
-- **The cave, and the man's height.** M217 says one height means the same in every mode, and a
-  test guards it; that is why the cave camera was not moved closer (M248). If the author decides
-  the cave may be an exception, both the rule and the test come off.
-- **Drones: choosing where they sell.** Left at "the nearest station" in M237. A route editor is
-  micromanagement; the sensible owner of that choice is a manager holding the domain.
+- ~~The cave, and the man's height~~ — author, 2026-09-03: «нормас, оставляем». One height in
+  every mode stays law; the cave is not an exception.
+- ~~Drones: choosing where they sell~~ — author, 2026-09-03: «придумай сам, делаем». In the
+  queue above.
 - **Drone attrition.** Deliberately absent: a drone breaks and mends but is never lost. The author
   said leave the drones alone; this stays written down rather than done.
 - ~~`pair` as a target for natural light~~ — decided 2026-09-03, M308: daylight scenes
@@ -194,6 +193,7 @@ Grep `docs/PLAN-archive.md` for the milestone number (header "Moved out of PLAN.
 - **M289–M297** (0.286–0.294) — the holding in nine steps (see "The holding — built" below).
 - **M298** (0.295.0) — three interface fixes: the table answers in the row, rumours with distance,
   jumps and НА КАРТУ, the map card as a footer line.
+- **M321** (0.318.0) — the §9 walkthrough as a suite in both windows; the course as a state, «К ЦЕЛИ» in flight, the search circle that survives НАЗАД.
 - **M320** (0.317.0) — smoke along `dirAt` streamlines (curl noise) for chimneys, hearth and the smelter; the smoke made visible at all; the sky-seam hunt closed as not reproduced.
 - **M319** (0.316.0) — the ship's zoom floor .35; the home interior measured by `?g11` (60 fps, no bake needed) and `prof()` caught measuring the software raster.
 - **M318** (0.315.0) — the fleet's small parts cast shadows on the body, the рефрижератор's ribs as corrugation, трассы on the map as a chain; almanac III closed.

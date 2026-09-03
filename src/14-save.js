@@ -57,7 +57,7 @@ function snapshot(){
     opts:G.opts,zoom:G.zoom,market:G.market,uniqueShips:G.uniqueShips,
     drones:G.drones,droneInventory:G.droneInventory,droneIds:G.droneIds,crew:G.crew,bases:G.bases,
     mgrs:G.mgrs,blueprints:G.blueprints,aiRift:G.aiRift,rogues:G.rogues,exiles:G.exiles,
-    relics:G.relics,relicHint:G.relicHint,bio:G.bio,home:G.home,
+    relics:G.relics,relicHint:G.relicHint,bio:G.bio,home:G.home,course:G.course||null,
     occ:G.occ,freed:G.freed,occCalm:G.occCalm,trade:G.trade,wear:G.wear,seams:G.seams,
     instrKit:G.instrKit,instrShelf:G.instrShelf,
     speech:G.speech,visits:G.visits,strips:G.strips,
@@ -547,6 +547,8 @@ function applySave(s){
   G.relics={};
   if(s.relics&&typeof s.relics==="object")
     for(const k in s.relics)if(ARTIFACTS[k]&&s.relics[k])G.relics[k]=1;
+  /* курс (M321): адрес, к которому идёте, переживает сохранение — иначе «К ЦЕЛИ» гаснет на перезагрузке */
+  G.course=(s.course&&typeof s.course==="object")?{sx:s.course.sx|0,sy:s.course.sy|0,rad:s.course.rad||null,what:String(s.course.what||"")}:null;
   G.relicHint=(s.relicHint&&typeof s.relicHint==="object")
     ?{sx:s.relicHint.sx|0,sy:s.relicHint.sy|0}:null;
   G.bio=+s.bio||0;

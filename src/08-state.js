@@ -128,7 +128,7 @@ const G={
   rogues:[],exiles:[],
   /* артефакты: найденные лежат здесь, надетый — в поле relic у управляющего.
      relicHint — сектор, на который указал исследователь с «происхождением». */
-  relics:{},relicHint:null,bio:0,home:null,
+  relics:{},relicHint:null,bio:0,home:null,course:null,
   /* счётчики для поручений: живут в сессии, при загрузке отсчёт начинается заново */
   orderStamp:0,kills:0,soldTotal:0,
   /* базы: разреженный оверлей «sx,sy:planetIdx» → решения игрока.

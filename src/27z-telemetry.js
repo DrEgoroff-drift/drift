@@ -203,6 +203,16 @@ function hud(){
   if(typeof celLine==="function"){const cl=celLine();if(cl)b+=" · "+cl;}
   const sbtn=document.getElementById("starbtn");
   setSt(sbtn,"display",(G.mode==="system"&&Math.hypot(G.ship.x,G.ship.y)>1400)?"":"none");
+  /* «К ЦЕЛИ» (M321, §9 шаг 6): курс поставлен с доски или из тетради — в полёте
+     он назван, и одним тапом карта открывается на нём. Только в системе и только
+     пока адрес не достигнут; на самой карте выбранный сектор и так виден */
+  const gbtn=document.getElementById("goalbtn");
+  if(gbtn){
+    const on=G.mode==="system"&&!!G.course&&!(G.course.sx===G.sx&&G.course.sy===G.sy);
+    setSt(gbtn,"display",on?"":"none");
+    if(on){const hops=Math.max(1,Math.ceil(Math.hypot(G.course.sx-G.sx,G.course.sy-G.sy)/Math.max(.5,stat().jump)));
+      setTx(gbtn,"К ЦЕЛИ · "+hops+" "+pl3(hops,"ПРЫЖОК","ПРЫЖКА","ПРЫЖКОВ"));}
+  }
   /* кнопка плеча: только на карте и только у выбранной системы со станцией —
      иначе она обещает действие, которого нет */
   const rbtn=document.getElementById("routebtn");

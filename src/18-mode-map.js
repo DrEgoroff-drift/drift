@@ -212,8 +212,9 @@ function drawMap(){
   ctx.strokeStyle="rgba(127,230,216,.22)";ctx.lineWidth=1;
   ctx.beginPath();ctx.arc(px,py,jr,0,TAU);ctx.stroke();
   /* круг поиска по слуху: где смотреть, а не что нашли */
-  if(G.mapSearch){
-    const S=G.mapSearch,sxp=W/2+(S.sx-vx)*cell,syp=H/2+(S.sy-vy)*cell;
+  const srch=G.mapSearch||(G.course&&G.course.rad?G.course:null);
+  if(srch){
+    const S=srch,sxp=W/2+(S.sx-vx)*cell,syp=H/2+(S.sy-vy)*cell;
     ctx.strokeStyle="rgba(207,227,234,.45)";ctx.lineWidth=1;ctx.setLineDash([4,5]);
     ctx.beginPath();ctx.arc(sxp,syp,Math.max(6,S.rad*cell),0,TAU);ctx.stroke();ctx.setLineDash([]);
     ctx.fillStyle="rgba(207,227,234,.7)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
@@ -569,6 +570,7 @@ function jump(cost){
   if(typeof settleLeftBehind==="function")settleLeftBehind();
   if(typeof quietLeave==="function")quietLeave();   /* тихий уезд (11n): прошло больше, чем прожито */
   G.fuel-=cost;G.sx=G.sel.x;G.sy=G.sel.y;G.sys=getSystem(G.sx,G.sy);G.ap=null;
+  if(G.course&&G.course.sx===G.sx&&G.course.sy===G.sy)G.course=null;   /* прибыли — курса больше нет (M321) */
   if(typeof odoAdd==="function")odoAdd("jumps");   // путь, по которому зреет память (11d)
   if(typeof vegaJump==="function")vegaJump();        // укачивает (M153)
   if(typeof ringJump==="function")ringJump();        // Кольцо считает прыжки (M154)

@@ -295,6 +295,13 @@ document.getElementById("handbtn").addEventListener("click",()=>{
 });
 /* плечо маршрута ставится там же, где выбирается цель прыжка: маршрут — это
    карта, а не пункт меню */
+document.getElementById("goalbtn").addEventListener("click",()=>{
+  if(G.mode!=="system"||!G.course)return;
+  G.mode="map";if(typeof mapReset==="function")mapReset();
+  G.sel={x:G.course.sx,y:G.course.sy};
+  if(typeof mapFit==="function")mapFit(G.course.sx,G.course.sy);
+  sfx("ui");
+});
 document.getElementById("mebtn").addEventListener("click",()=>{
   if(G.mode!=="map")return;
   G.mapView=null;G.mapZoom=1;sfx("ui");

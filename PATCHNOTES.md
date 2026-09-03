@@ -7,6 +7,24 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.318.0 - M321: the §9 walkthrough as a suite — and the course that lived only a moment
+
+`DESIGN-screens` §9 is now `tests/91zzy-walk`: the six steps of the newcomer's path (dock → rumour
+to the map → the room → the counter → the regular → undock) run in both windows, and after every
+step no visible text block may exceed 200 characters — the "no step needs a paragraph" rule made
+measurable. Steps 1–5 passed as built. Step 6 did not exist: after НА КАРТУ and НАЗАД the game
+kept only `G.sel`, so the flight had nothing to call the course by, and `mapReset` dropped the
+search circle with the peek.
+
+- **The course is a state.** `gotoSector` sets `G.course` {sx, sy, what, rad}; it survives НАЗАД
+  and the save (`14-save`), and clears on arrival in `jump`.
+- **«К ЦЕЛИ · N ПРЫЖКОВ»** in the rail's context column while in the system and the course is
+  not here; one tap opens the map fitted to you and the sector (`goalbtn`, `15-input`,
+  `27z-telemetry`).
+- **The search circle** is drawn from the course when the peek's own `mapSearch` is gone.
+- PLAN: M301 was already built in 0.298.0 and its line was stale; the cave and the man's height
+  stay as they are by the author's word (2026-09-03).
+
 ## 0.317.0 - M320: smoke along the field's streamlines — and smoke that can be seen at all
 
 First item off the author's effects list (curl-noise smoke). `dirAt` (01-core) already *is* curl

@@ -70,6 +70,9 @@ function gotoSector(sx,sy,what){
     say("У этой записи нет адреса");return false;
   }
   G.sel={x:sx,y:sy};
+  /* курс — состояние, а не мгновение (M321, §9 шаг 6): в полёте его называет
+     кнопка «К ЦЕЛИ», карта помнит круг поиска и после НАЗАД; гаснет по прибытии */
+  G.course=(sx===G.sx&&sy===G.sy)?null:{sx:sx,sy:sy,what:what||"",rad:(G.mapSearch&&G.mapSearch.sx===sx&&G.mapSearch.sy===sy)?G.mapSearch.rad:null};
   /* далёкий сектор — окно так, чтобы в кадре были и вы, и он (M299): раньше
      окно уезжало к сектору, а игрок оставался за краем и не видел, откуда лететь */
   if(typeof mapFit==="function")mapFit(sx,sy);

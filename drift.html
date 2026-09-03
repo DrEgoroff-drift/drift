@@ -1258,6 +1258,8 @@ body.mapclean .hud,body.mapclean .pads,body.mapclean #console,body.mapclean #pro
 <div class="rail">
   <div class="ctx">
     <button id="starbtn" style="display:none">К ЗВЕЗДЕ</button>
+    <!-- курс (M321): пока адрес не достигнут, полёт его помнит; тап — карта с этим сектором -->
+    <button id="goalbtn" style="display:none">К ЦЕЛИ</button>
     <button id="dronebtn" style="display:none">ДРОН</button>
     <button id="beaconbtn" style="display:none">МАЯК</button>
     <!-- посёлок под руку (M198): необратимо, и кнопка говорит только действие -->
@@ -1479,7 +1481,7 @@ body.mapclean .hud,body.mapclean .pads,body.mapclean #console,body.mapclean #pro
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.317.0";
+const VER="0.318.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -6576,7 +6578,7 @@ const G={
   rogues:[],exiles:[],
   /* артефакты: найденные лежат здесь, надетый — в поле relic у управляющего.
      relicHint — сектор, на который указал исследователь с «происхождением». */
-  relics:{},relicHint:null,bio:0,home:null,
+  relics:{},relicHint:null,bio:0,home:null,course:null,
   /* счётчики для поручений: живут в сессии, при загрузке отсчёт начинается заново */
   orderStamp:0,kills:0,soldTotal:0,
   /* базы: разреженный оверлей «sx,sy:planetIdx» → решения игрока.
@@ -10541,6 +10543,9 @@ function gotoSector(sx,sy,what){
     say("У этой записи нет адреса");return false;
   }
   G.sel={x:sx,y:sy};
+  /* курс — состояние, а не мгновение (M321, §9 шаг 6): в полёте его называет
+     кнопка «К ЦЕЛИ», карта помнит круг поиска и после НАЗАД; гаснет по прибытии */
+  G.course=(sx===G.sx&&sy===G.sy)?null:{sx:sx,sy:sy,what:what||"",rad:(G.mapSearch&&G.mapSearch.sx===sx&&G.mapSearch.sy===sy)?G.mapSearch.rad:null};
   /* далёкий сектор — окно так, чтобы в кадре были и вы, и он (M299): раньше
      окно уезжало к сектору, а игрок оставался за краем и не видел, откуда лететь */
   if(typeof mapFit==="function")mapFit(sx,sy);
@@ -29805,7 +29810,7 @@ function snapshot(){
     opts:G.opts,zoom:G.zoom,market:G.market,uniqueShips:G.uniqueShips,
     drones:G.drones,droneInventory:G.droneInventory,droneIds:G.droneIds,crew:G.crew,bases:G.bases,
     mgrs:G.mgrs,blueprints:G.blueprints,aiRift:G.aiRift,rogues:G.rogues,exiles:G.exiles,
-    relics:G.relics,relicHint:G.relicHint,bio:G.bio,home:G.home,
+    relics:G.relics,relicHint:G.relicHint,bio:G.bio,home:G.home,course:G.course||null,
     occ:G.occ,freed:G.freed,occCalm:G.occCalm,trade:G.trade,wear:G.wear,seams:G.seams,
     instrKit:G.instrKit,instrShelf:G.instrShelf,
     speech:G.speech,visits:G.visits,strips:G.strips,
@@ -30295,6 +30300,8 @@ function applySave(s){
   G.relics={};
   if(s.relics&&typeof s.relics==="object")
     for(const k in s.relics)if(ARTIFACTS[k]&&s.relics[k])G.relics[k]=1;
+  /* курс (M321): адрес, к которому идёте, переживает сохранение — иначе «К ЦЕЛИ» гаснет на перезагрузке */
+  G.course=(s.course&&typeof s.course==="object")?{sx:s.course.sx|0,sy:s.course.sy|0,rad:s.course.rad||null,what:String(s.course.what||"")}:null;
   G.relicHint=(s.relicHint&&typeof s.relicHint==="object")
     ?{sx:s.relicHint.sx|0,sy:s.relicHint.sy|0}:null;
   G.bio=+s.bio||0;
@@ -30862,6 +30869,13 @@ document.getElementById("handbtn").addEventListener("click",()=>{
 });
 /* плечо маршрута ставится там же, где выбирается цель прыжка: маршрут — это
    карта, а не пункт меню */
+document.getElementById("goalbtn").addEventListener("click",()=>{
+  if(G.mode!=="system"||!G.course)return;
+  G.mode="map";if(typeof mapReset==="function")mapReset();
+  G.sel={x:G.course.sx,y:G.course.sy};
+  if(typeof mapFit==="function")mapFit(G.course.sx,G.course.sy);
+  sfx("ui");
+});
 document.getElementById("mebtn").addEventListener("click",()=>{
   if(G.mode!=="map")return;
   G.mapView=null;G.mapZoom=1;sfx("ui");
@@ -35031,8 +35045,9 @@ function drawMap(){
   ctx.strokeStyle="rgba(127,230,216,.22)";ctx.lineWidth=1;
   ctx.beginPath();ctx.arc(px,py,jr,0,TAU);ctx.stroke();
   /* круг поиска по слуху: где смотреть, а не что нашли */
-  if(G.mapSearch){
-    const S=G.mapSearch,sxp=W/2+(S.sx-vx)*cell,syp=H/2+(S.sy-vy)*cell;
+  const srch=G.mapSearch||(G.course&&G.course.rad?G.course:null);
+  if(srch){
+    const S=srch,sxp=W/2+(S.sx-vx)*cell,syp=H/2+(S.sy-vy)*cell;
     ctx.strokeStyle="rgba(207,227,234,.45)";ctx.lineWidth=1;ctx.setLineDash([4,5]);
     ctx.beginPath();ctx.arc(sxp,syp,Math.max(6,S.rad*cell),0,TAU);ctx.stroke();ctx.setLineDash([]);
     ctx.fillStyle="rgba(207,227,234,.7)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
@@ -35388,6 +35403,7 @@ function jump(cost){
   if(typeof settleLeftBehind==="function")settleLeftBehind();
   if(typeof quietLeave==="function")quietLeave();   /* тихий уезд (11n): прошло больше, чем прожито */
   G.fuel-=cost;G.sx=G.sel.x;G.sy=G.sel.y;G.sys=getSystem(G.sx,G.sy);G.ap=null;
+  if(G.course&&G.course.sx===G.sx&&G.course.sy===G.sy)G.course=null;   /* прибыли — курса больше нет (M321) */
   if(typeof odoAdd==="function")odoAdd("jumps");   // путь, по которому зреет память (11d)
   if(typeof vegaJump==="function")vegaJump();        // укачивает (M153)
   if(typeof ringJump==="function")ringJump();        // Кольцо считает прыжки (M154)
@@ -66298,6 +66314,16 @@ function hud(){
   if(typeof celLine==="function"){const cl=celLine();if(cl)b+=" · "+cl;}
   const sbtn=document.getElementById("starbtn");
   setSt(sbtn,"display",(G.mode==="system"&&Math.hypot(G.ship.x,G.ship.y)>1400)?"":"none");
+  /* «К ЦЕЛИ» (M321, §9 шаг 6): курс поставлен с доски или из тетради — в полёте
+     он назван, и одним тапом карта открывается на нём. Только в системе и только
+     пока адрес не достигнут; на самой карте выбранный сектор и так виден */
+  const gbtn=document.getElementById("goalbtn");
+  if(gbtn){
+    const on=G.mode==="system"&&!!G.course&&!(G.course.sx===G.sx&&G.course.sy===G.sy);
+    setSt(gbtn,"display",on?"":"none");
+    if(on){const hops=Math.max(1,Math.ceil(Math.hypot(G.course.sx-G.sx,G.course.sy-G.sy)/Math.max(.5,stat().jump)));
+      setTx(gbtn,"К ЦЕЛИ · "+hops+" "+pl3(hops,"ПРЫЖОК","ПРЫЖКА","ПРЫЖКОВ"));}
+  }
   /* кнопка плеча: только на карте и только у выбранной системы со станцией —
      иначе она обещает действие, которого нет */
   const rbtn=document.getElementById("routebtn");

@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 360 · символов верхнего уровня: 3340
+Файлов: 361 · символов верхнего уровня: 3342
 
 ## СИМВОЛЫ
 
@@ -809,7 +809,7 @@ earn                         src/12j-home.js:38
 ecoBestLeg                   tests/91zzw-economy.js:18
 ecoStations                  tests/91zzw-economy.js:8
 el                           src/26-ui-station.js:157
-endPtr                       src/15-input.js:374
+endPtr                       src/15-input.js:381
 engineLoop                   src/09-audio.js:245
 enterBase                    src/21a-mode-base.js:68
 enterBelt                    src/24-mode-belt.js:89
@@ -1425,7 +1425,7 @@ jobOffer                     src/12e-mgr-jobs.js:228
 jobPick                      src/12e-mgr-jobs.js:259
 jobRefuse                    src/12e-mgr-jobs.js:57
 jobTick                      src/12e-mgr-jobs.js:287
-jump                         src/18-mode-map.js:566
+jump                         src/18-mode-map.js:567
 jumpToBase                   src/21a-mode-base.js:315
 KEEP_DARK_AFTER              src/11k-keepers.js:48
 KEEP_HABIT                   src/11k-keepers.js:35
@@ -1758,7 +1758,7 @@ modCost                      src/11-log.js:139
 MODE_RU                      src/27i-ui-table.js:29
 modeRu                       src/27i-ui-table.js:32
 MODS                         src/04-mods.js:2
-mouseWalkAt                  src/15-input.js:384
+mouseWalkAt                  src/15-input.js:391
 MSL_ARM                      src/16b-missile.js:20
 MSL_COOL                     src/16b-missile.js:16
 MSL_DMG                      src/16b-missile.js:14
@@ -2036,7 +2036,7 @@ pickKindByBias               src/20-life.js:179
 pickShare                    src/20e-species.js:125
 pickStType                   src/06-galaxy.js:30
 PICKUPS                      src/24a-mode-raid.js:24
-pinch0                       src/15-input.js:342
+pinch0                       src/15-input.js:349
 PIR_ART                      src/12i-pirate-hull.js:18
 PIR_CLASS                    src/12i-pirate-hull.js:20
 PIR_SS                       src/12i-pirate-hull.js:17
@@ -2203,7 +2203,7 @@ profW                        src/03-ships.js:152
 prunePartsBought             src/14-save.js:33
 psPlanet                     tests/91zzzu-post-scenes.js:6
 psSnap                       tests/91zzzu-post-scenes.js:17
-ptr                          src/15-input.js:341
+ptr                          src/15-input.js:348
 putOnTable                   src/11b-speech.js:220
 QSL_BY                       src/11an-qsl.js:46
 QSL_OPS                      src/11an-qsl.js:24
@@ -2227,11 +2227,11 @@ questClose                   src/11a-quests.js:36
 questDone                    src/11a-quests.js:44
 questFail                    src/11a-quests.js:48
 questFind                    src/11a-quests.js:35
-questGoto                    src/11a-quests.js:86
+questGoto                    src/11a-quests.js:89
 questInit                    src/11a-quests.js:16
-questLeft                    src/11a-quests.js:91
+questLeft                    src/11a-quests.js:94
 questOpen                    src/11a-quests.js:18
-questSync                    src/11a-quests.js:100
+questSync                    src/11a-quests.js:103
 QUIET_LINES                  src/11ar-doors.js:34
 quietAfterLeave              src/11n-quiet.js:54
 quietAll                     src/11n-quiet.js:21
@@ -2731,7 +2731,7 @@ settleWallX                  src/12t-settle.js:119
 settleWatch                  src/12t-settle.js:390
 settleWords                  src/12t-settle.js:258
 setTx                        src/27z-telemetry.js:78
-setZoom                      src/15-input.js:311
+setZoom                      src/15-input.js:318
 sfx                          src/09-audio.js:237
 SFX                          src/09-audio.js:97
 SH_DX                        src/03b-hull-paint.js:164
@@ -2863,7 +2863,7 @@ STAR_COLS                    src/16-flight.js:2
 STAR_LX                      src/16-flight.js:27
 starAt                       src/06-galaxy.js:2
 starRGB                      src/19c-light.js:49
-start                        src/15-input.js:549
+start                        src/15-input.js:556
 startLanding                 src/19-mode-landing.js:2
 startScoop                   src/19a-mode-scoop.js:9
 stat                         src/08-state.js:142
@@ -3010,7 +3010,7 @@ tabLive                      src/14a-cloud.js:36
 tabsSync                     src/15-input.js:218
 TALE_DRINK                   src/12b-crew-events.js:13
 TALE_JOB                     src/12b-crew-events.js:15
-tap                          src/15-input.js:415
+tap                          src/15-input.js:422
 TAPE_ADAPT                   src/25b-tape.js:26
 TAPE_DT                      src/25b-tape.js:24
 TAPE_GAIN                    src/25b-tape.js:25
@@ -3230,6 +3230,8 @@ vRope                        src/18d-verlet.js:27
 vRopeAt                      src/18d-verlet.js:125
 vStep                        src/18d-verlet.js:53
 W                            src/08-state.js:5
+WALK_PARA                    tests/91zzy-walk.js:8
+walkParas                    tests/91zzy-walk.js:9
 WALL_CACHE                   src/11ah-wall.js:44
 WALL_COLS                    src/11ah-wall.js:131
 WALL_KIND_RU                 src/11ah-wall.js:42
@@ -4107,7 +4109,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/27-ui-ship.js · 28 КБ
   · экран корабля:1
 
-## src/27z-telemetry.js · 28 КБ
+## src/27z-telemetry.js · 29 КБ
   · телеметрия: приборы пишут в DOM:1
 
 ## src/28-loop.js · 30 КБ
@@ -4414,6 +4416,9 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzy-screens.js · 13 КБ
   · автотесты: экраны M299 — заголовки, подгляд карты, зал как ввод:1
+
+## tests/91zzy-walk.js · 7 КБ
+  · автотесты: прогон §9 DESIGN-screens — шесть шагов на телефоне:1
 
 ## tests/91zzza-cave-props.js · 30 КБ
   · пещера M305: гладкий обвод и содержимое:1
