@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 361 · символов верхнего уровня: 3342
+Файлов: 361 · символов верхнего уровня: 3343
 
 ## СИМВОЛЫ
 
@@ -1247,7 +1247,7 @@ homeBeaconCost               src/12j-home.js:170
 homeCanRebuild               src/12j-home.js:226
 homeCanRevive                src/12j-home.js:146
 homeCrewFigure               src/27e-ui-home.js:680
-homeDoorX                    src/21f-home-out.js:312
+homeDoorX                    src/21f-home-out.js:314
 homeFigure                   src/27e-ui-home.js:613
 homeHas                      src/12j-home.js:24
 homeHereP                    src/21f-home-out.js:26
@@ -1260,7 +1260,7 @@ homeMoraleMul                src/12j-home.js:213
 homeNext                     src/12j-home.js:29
 homeOrderBonus               src/12j-home.js:210
 homeOutPal                   src/21f-home-out.js:57
-homePlan                     src/21f-home-out.js:325
+homePlan                     src/21f-home-out.js:327
 homePlanet                   src/21f-home-out.js:18
 homeProgress                 src/12j-home.js:132
 homeRebuild                  src/12j-home.js:227
@@ -1271,7 +1271,7 @@ homeSceneClick               src/27e-ui-home.js:628
 homeShade                    src/27e-ui-home.js:696
 homeShow                     src/12j-home.js:196
 homeShowBonus                src/12j-home.js:217
-homeSigns                    src/21f-home-out.js:332
+homeSigns                    src/21f-home-out.js:335
 homeSpotX                    src/21f-home-out.js:34
 homeStore                    src/12j-home.js:189
 homeTurn                     src/12j-home.js:45
@@ -1295,6 +1295,7 @@ HOUSE_BY_ID                  src/12u-scrip.js:27
 houseMark                    src/17d-house-shapes.js:18
 houseOf                      src/12u-scrip.js:35
 housePennant                 src/17d-house-shapes.js:49
+housePlan                    src/12tb-settle-draw.js:61
 houseRGB                     src/17d-house-shapes.js:16
 HOUSES                       src/12u-scrip.js:21
 houseWallMark                src/17d-house-shapes.js:38
@@ -2652,32 +2653,32 @@ scrollCue                    src/27m-scroll-cue.js:27
 scrollCueAll                 src/27m-scroll-cue.js:32
 SD_KIND                      src/12tb-settle-draw.js:33
 SD_MAN                       src/12tb-settle-draw.js:31
-sdBody                       src/12tb-settle-draw.js:206
-sdCast                       src/12tb-settle-draw2.js:291
+sdBody                       src/12tb-settle-draw.js:224
+sdCast                       src/12tb-settle-draw2.js:297
 sdCut                        src/12tc-settle-crafts.js:144
-sdDoor                       src/12tb-settle-draw.js:372
+sdDoor                       src/12tb-settle-draw.js:390
 sdDwell                      src/12tb-settle-draw2.js:11
-sdFarPal                     src/12tb-settle-draw.js:72
-sdFence                      src/12tb-settle-draw2.js:165
+sdFarPal                     src/12tb-settle-draw.js:90
+sdFence                      src/12tb-settle-draw2.js:171
 sdField                      src/12tc-settle-crafts.js:10
 sdForge                      src/12tc-settle-crafts.js:171
 sdKiln                       src/12tc-settle-crafts.js:107
 sdMat                        src/12tb-settle-draw.js:40
-sdMix                        src/12tb-settle-draw.js:50
-sdPal                        src/12tb-settle-draw.js:53
-sdPerson                     src/12tb-settle-draw2.js:198
-sdProps                      src/12tb-settle-draw2.js:107
-sdRGB                        src/12tb-settle-draw.js:49
-sdRoof                       src/12tb-settle-draw.js:269
-sdShadow                     src/12tb-settle-draw.js:221
-sdSmoke                      src/12tb-settle-draw2.js:257
+sdMix                        src/12tb-settle-draw.js:51
+sdPal                        src/12tb-settle-draw.js:71
+sdPerson                     src/12tb-settle-draw2.js:204
+sdProps                      src/12tb-settle-draw2.js:113
+sdRGB                        src/12tb-settle-draw.js:50
+sdRoof                       src/12tb-settle-draw.js:287
+sdShadow                     src/12tb-settle-draw.js:239
+sdSmoke                      src/12tb-settle-draw2.js:263
 sdStill                      src/12tc-settle-crafts.js:226
-sdTerrace                    src/12tb-settle-draw.js:134
-sdWallTex                    src/12tb-settle-draw.js:233
+sdTerrace                    src/12tb-settle-draw.js:152
+sdWallTex                    src/12tb-settle-draw.js:251
 sdWeir                       src/12tc-settle-crafts.js:49
-sdWindow                     src/12tb-settle-draw.js:334
-sdWoodpile                   src/12tb-settle-draw.js:391
-sdYard                       src/12tb-settle-draw2.js:444
+sdWindow                     src/12tb-settle-draw.js:352
+sdWoodpile                   src/12tb-settle-draw.js:409
+sdYard                       src/12tb-settle-draw2.js:450
 seamAdd                      src/12s-wear.js:181
 seamsAll                     src/12s-wear.js:180
 seamsOf                      src/12s-wear.js:182
@@ -2704,7 +2705,7 @@ settleAt                     src/12t-settle.js:106
 settleCanHand                src/12td-settle-hand.js:36
 settleCanLive                src/12t-settle.js:110
 settleDraw                   src/12t-settle.js:327
-settleDrawBody               src/12tb-settle-draw2.js:302
+settleDrawBody               src/12tb-settle-draw2.js:308
 settleGive                   src/12t-settle.js:220
 settleHandLine               src/12td-settle-hand.js:65
 settleHandMast               src/12td-settle-hand.js:97
@@ -2718,7 +2719,7 @@ settleMake                   src/12t-settle.js:137
 settleMakes                  src/12t-settle.js:243
 settleMap                    src/12t-settle.js:105
 settleMine                   src/12td-settle-hand.js:35
-settlePlan                   src/12tb-settle-draw.js:83
+settlePlan                   src/12tb-settle-draw.js:101
 settleRaid                   src/12t-settle.js:401
 settleRaise                  src/12t-settle.js:179
 settleSpotX                  src/12t-settle.js:131
@@ -2812,8 +2813,8 @@ slowRead                     src/11o-slow.js:90
 slowReady                    src/11o-slow.js:71
 slowReply                    src/11o-slow.js:76
 slowSpotX                    src/11o-slow.js:44
-SMOKE_PATHS                  src/12tb-settle-draw2.js:240
-smokePath                    src/12tb-settle-draw2.js:241
+SMOKE_PATHS                  src/12tb-settle-draw2.js:246
+smokePath                    src/12tb-settle-draw2.js:247
 snapshot                     src/14-save.js:42
 SND                          src/09-audio.js:4
 sndWalk                      src/28-loop.js:29
@@ -3711,7 +3712,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12tb-grok.js · 22 КБ
   · Грохотун: единственный, кто работает не за деньги:1
 
-## src/12tb-settle-draw.js · 23 КБ
+## src/12tb-settle-draw.js · 24 КБ
   · посёлок с земли:1
 
 ## src/12tb-settle-draw2.js · 28 КБ
@@ -4424,17 +4425,17 @@ zooTick                      src/11ad-zoo.js:41
   · пещера M305: гладкий обвод и содержимое:1
   · станция и планета M306: знаки на дневной стороне:32
   · дом M307: мебель из материала, план сеян:58
-  · M308: дневной свет без приговора, карта и заход рисуются:77
-  · M309: трафик системы и туманность с кромкой:92
-  · M310: флот ГЛАВТРАССЫ:114
-  · M311: второй проход флота — три класса, буксир, плавбаза, конвой:150
-  · M312: все тринадцать нарисованы; почта, госпиталь, учёба:183
-  · M313: узловая «УЗ-1», чёрный дерелик, караван:214
-  · M314: трассы на карте, спасатель зовёт на сигнал:246
-  · M315: пропорции системы, призрачный клик, оклик на рунге 30:267
-  · M316: планеты и луны идут в одну сторону:311
-  · M317: флот на расстоянии встречи — шесть пунктов альманаха III:320
-  · M318: навесное отделяется тенью, рёбра гофром, трасса на карте — цепочка:352
+  · M308: дневной свет без приговора, карта и заход рисуются:78
+  · M309: трафик системы и туманность с кромкой:93
+  · M310: флот ГЛАВТРАССЫ:115
+  · M311: второй проход флота — три класса, буксир, плавбаза, конвой:151
+  · M312: все тринадцать нарисованы; почта, госпиталь, учёба:184
+  · M313: узловая «УЗ-1», чёрный дерелик, караван:215
+  · M314: трассы на карте, спасатель зовёт на сигнал:247
+  · M315: пропорции системы, призрачный клик, оклик на рунге 30:268
+  · M316: планеты и луны идут в одну сторону:312
+  · M317: флот на расстоянии встречи — шесть пунктов альманаха III:321
+  · M318: навесное отделяется тенью, рёбра гофром, трасса на карте — цепочка:353
 
 ## tests/91zzza-trace.js · 5 КБ
 

@@ -69,7 +69,8 @@ TEST_SUITES.push(()=>suite("M307: обёртка мебели возвращае
   const a=homePlan(p),b=homePlan(p);
   ok(a.w>=3.1&&a.w<=3.9&&a.roofH>=.8&&a.roofH<=1.2,"план в допусках");
   eq(JSON.stringify(a),JSON.stringify(b),"один и тот же дом при каждом приходе");
-  ok(["plank","tile","thatch"].indexOf(a.roofKind)>=0,"кровля из тех, что умеет sdRoof");
+  ok(["plank","tile","thatch","plate"].indexOf(a.roofKind)>=0,"кровля из тех, что умеет sdRoof");
+  eq(a.roofKind,sdMat(p).roof,"кровля дома — из той же таблицы, что у посёлка (M322)");
   for(const t of [0,1,2,3,4])homeSigns(300,300,60,{wood:[96,72,50],metal:[104,112,120],stone:[90,90,100]},t,a);
   ok(true,"признаки жизни рисуются на всех ступенях");
 }));

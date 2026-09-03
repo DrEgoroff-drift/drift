@@ -7,6 +7,27 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.319.0 - M322: one house plan for the home and the settlement
+
+`housePlan(seed, p, opt)` in `12tb-settle-draw` is now the only place a dwelling is planned:
+width, wall height, pitch, wall and roof material by world (`sdMat`), plan variant (plain,
+porch, annex, second and attic window), mirror, window offset, woodpile side, log age, tints.
+`homePlan` (21f) takes it and only rescales the wall to the home's two-and-a-half heights;
+`sdDwell` (12tb-…draw2) reads its variant, mirror, wall fraction and tints from it.
+
+- **One material table.** The home said tile on rock and plank elsewhere; the settlement on the
+  same rock said thatch. `sdMat` now has a rock/volcanic row (stone walls, tile roof) and both
+  read it; the home's wall texture follows the material too (was always «log»).
+- **The settlement's chimney sits on the slope** — the M242 fix the home had, the izba did not:
+  from the ridge, the chimney at .22 of the width floated a cube above the roof.
+- **The home takes plan variant 3** — an attic window in the gable.
+- The wintering: there is no hut exterior to unify — the wintering is an interior (`29g`); the
+  PLAN line was a guess.
+- Stand: `docs/shot.py homeout` and `wallset` hang at load in headless Chrome (the same setup
+  through `--js` on the `noon` scene draws fine); zombie headless Chromes from a hung shot keep
+  the machine busy and poison every later measurement — kill them by `drift-shot` in the
+  command line before trusting a number.
+
 ## 0.318.0 - M321: the §9 walkthrough as a suite — and the course that lived only a moment
 
 `DESIGN-screens` §9 is now `tests/91zzy-walk`: the six steps of the newcomer's path (dock → rumour

@@ -78,7 +78,8 @@ M321 the §9 walkthrough as `tests/91zzy-walk` (both windows, 200-character bloc
 step) and the course as a state with «К ЦЕЛИ» in flight. The screens pass is closed. Left here,
 in this order (author, 2026-09-03: «сначала по плану, потом это»):
 
-1. The settlement's houses and the wintering hut on `homePlan` (tail of M307/M319).
+1. ~~The settlement's houses and the wintering hut on `homePlan`~~ — M322 (0.319.0): one
+   `housePlan` for both; the wintering has no exterior, nothing to unify there.
 2. The plants as bodies (M173 #2).
 3. Drones choosing where they sell — decided by the assistant, then built.
 4. Effects, all of them: heat haze over the nozzles, chromatic aberration on hits, water with
@@ -134,8 +135,8 @@ Left from the queue: nothing — the band's second step is M308, the station's c
 - ~~The home's furniture is flat boxes~~ / ~~the house is a formula~~ — M307 (0.304.0). ~~The
   interior is drawn per frame — measure before baking~~ — measured in M319 (0.316.0): `?g11` says
   60 fps at dpr 2 with and without a bake, so nothing is baked; `prof()`'s 27 ms was the
-  software-raster artifact (see CLAUDE.md). Left: the settlement's houses and the wintering hut
-  still draw their own and could take `homePlan`.
+  software-raster artifact (see CLAUDE.md). ~~Left: the settlement's houses and the wintering hut
+  still draw their own and could take `homePlan`~~ — M322 (0.319.0), `housePlan` in 12tb.
 - ~~The system view is 66% empty~~ — M309 (0.306.0): nebula with a core and a soft edge,
   shuttles by rung. Still ~80% empty by the meter, and that is space; the next step is the fleet.
 - ~~The approach frame is 80% empty and has two tones~~ — M304 gave it two masses and a light
@@ -193,6 +194,7 @@ Grep `docs/PLAN-archive.md` for the milestone number (header "Moved out of PLAN.
 - **M289–M297** (0.286–0.294) — the holding in nine steps (see "The holding — built" below).
 - **M298** (0.295.0) — three interface fixes: the table answers in the row, rumours with distance,
   jumps and НА КАРТУ, the map card as a footer line.
+- **M322** (0.319.0) — one `housePlan` for the home and the settlement's izbas; one material table; the settlement's chimney on the slope. Stand defect noted: `shot.py homeout/wallset` hang at load.
 - **M321** (0.318.0) — the §9 walkthrough as a suite in both windows; the course as a state, «К ЦЕЛИ» in flight, the search circle that survives НАЗАД.
 - **M320** (0.317.0) — smoke along `dirAt` streamlines (curl noise) for chimneys, hearth and the smelter; the smoke made visible at all; the sky-seam hunt closed as not reproduced.
 - **M319** (0.316.0) — the ship's zoom floor .35; the home interior measured by `?g11` (60 fps, no bake needed) and `prof()` caught measuring the software raster.

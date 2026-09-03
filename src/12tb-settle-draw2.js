@@ -8,25 +8,27 @@
 /* ── постройки ──
    Каждая рисуется от земли (y — линия улицы), шириной w и высотой h. Все
    вызовы уже освещены одинаково: свет справа сверху. */
-function sdDwell(x,y,w,h,pal,M,nite,seed,barn){
+function sdDwell(x,y,w,h,pal,M,nite,seed,barn,hp){
   /* Четыре плана избы вместо одной коробки: четыре одинаковых дома в ряд
      читались как склад ящиков (самокритика M169). План решает, где дверь, есть
-     ли крыльцо, пристройка и чердачное окно; зеркало добавляет ещё вдвое. */
-  const r=rng(hashi(seed,17,0xD0E1));
-  const plan=Math.floor(r()*4), flip=r()>.5, fx=flip?-1:1;
+     ли крыльцо, пристройка и чердачное окно; зеркало добавляет ещё вдвое.
+     С M322 план приходит из housePlan — того же, что строит дом игрока. */
+  hp=hp||housePlan(seed,null,{barn});
+  const r=rng(hashi(seed,23,0xD0E2));                  /* только сено у ворот */
+  const plan=hp.variant, flip=hp.flip, fx=flip?-1:1;
   /* высота стены решает КРУТИЗНУ ската: при одинаковой доле все крыши выходили
      под одним углом и ряд читался копией одного дома (самокритика M169) */
-  const wallH=h*(barn?.68+r()*.08:.54+r()*.16);
-  const wood=sdMix(pal.wood,[0,0,0],r()*.18);          /* каждый сруб своего возраста */
+  const wallH=h*hp.wallH;
+  const wood=sdMix(pal.wood,[0,0,0],hp.age);           /* каждый сруб своего возраста */
   /* свой оттенок и кровли, и стены: ряд одинаково-оливковых домов читался
      копиями одного (самокритика M169). Разброс мал — посёлок остаётся одним
      посёлком, но два соседних двора уже не близнецы */
   pal=Object.assign({},pal);
-  const rt=(r()-.5)*.26;
+  const rt=hp.roofTint;
   pal.roof=sdMix(pal.roof,rt>0?[150,132,96]:[46,54,58],Math.abs(rt));
   pal.roofLit=sdMix(pal.roof,[236,214,170],.34);
   pal.roofDark=sdMix(pal.roof,[12,16,24],.40);
-  const wt=(r()-.5)*.20;
+  const wt=hp.wallTint;
   pal.wall=sdMix(pal.wall,wt>0?[206,184,146]:[74,72,66],Math.abs(wt));
   pal.wallLit=sdMix(pal.wall,[255,236,196],.30);
   pal.wallDark=sdMix(pal.wall,[16,20,28],.42);
@@ -95,14 +97,18 @@ function sdDwell(x,y,w,h,pal,M,nite,seed,barn){
     /* поленница у стены: быт, по которому дом читается жилым */
     sdWoodpile(flip?x-w*.62:x+w*.42,y,w*.2,wallH*.34,wood,seed);
   }
-  /* труба — у жилья всегда: дом без печи в этих мирах не зимует */
-  const cx2=x+fx*w*.22;
+  /* труба — у жилья всегда: дом без печи в этих мирах не зимует.
+     Сидит на СКАТЕ, а не на коньке (тот же промах, что у дома игрока в M242):
+     на её x скат ниже конька, и от конька труба висела кубиком в воздухе */
+  const cx2=x+fx*w*.22,chW=w*.10,chH=h*.24;
+  const roofY=y-wallH-(h-wallH)*(1-Math.min(1,Math.abs(cx2+chW*.5-x)/(w*.5)));
+  const chTop=roofY-chH+2;
   ctx.fillStyle=sdRGB(pal.stone);
-  ctx.fillRect(cx2,y-h-h*.12,w*.10,h*.24);
-  ctx.fillStyle="rgba(255,246,220,.18)";ctx.fillRect(cx2,y-h-h*.12,w*.05,h*.24);
+  ctx.fillRect(cx2,chTop,chW,chH);
+  ctx.fillStyle="rgba(255,246,220,.18)";ctx.fillRect(cx2,chTop,chW*.5,chH);
   ctx.fillStyle=sdRGB(sdMix(pal.stone,[0,0,0],.4));
-  ctx.fillRect(cx2-.8,y-h-h*.14,w*.12,h*.03);
-  return {chim:{x:cx2+w*.05,y:y-h-h*.14}};
+  ctx.fillRect(cx2-.8,chTop-2,w*.12,h*.03);
+  return {chim:{x:cx2+w*.05,y:chTop-2}};
 }
 function sdProps(P,camx,camy,pal,wind,r){
   const y=P.baseY-camy;

@@ -146,7 +146,7 @@ function drawHomeOut(tr,camx,camy,p){
   lg.addColorStop(0,"rgba(0,0,0,.34)");lg.addColorStop(.55,"rgba(0,0,0,0)");
   lg.addColorStop(1,"rgba(255,240,214,.16)");
   ctx.fillStyle=lg;ctx.fillRect(sx-w/2,gy-wallH,w,wallH);
-  sdWallTex(sx-w/2,gy-wallH,w,wallH,"log",0x40E9,pal.wall);
+  sdWallTex(sx-w/2,gy-wallH,w,wallH,plan.wallKind,0x40E9,pal.wall);
   sdRoof(sx-w/2,gy-wallH,w,roofH,plan.roofKind,{roof:pal.roof,
     roofLit:sdMix(pal.roof,[236,214,170],.34),roofDark:sdMix(pal.roof,[12,16,24],.4)},0x40EA);
   /* ── труба и дым: дом живой, пока в нём кто-то есть ──
@@ -169,6 +169,8 @@ function drawHomeOut(tr,camx,camy,p){
   const ww=w*.26,wh=wallH*.30,wx=sx+w*plan.win,wy=gy-wallH*.70;
   sdWindow(wx,wy,ww,wh,{wall:pal.wall,wallDark:sdMix(pal.wall,[16,20,28],.42)},
     Math.max(nite,.25),7);
+  if(plan.variant===3)                                /* чердачное окно — по плану (M322) */
+    sdWindow(sx-w*.07,gy-wallH-roofH*.42,w*.14,roofH*.22,{wall:pal.wall,wallDark:sdMix(pal.wall,[16,20,28],.42)},Math.max(nite,.2),9);
   if(homeHas("living")){                              /* жилая часть — второе окно */
     sdWindow(sx-w*.34,wy,ww*.8,wh*.9,{wall:pal.wall,wallDark:sdMix(pal.wall,[16,20,28],.42)},
       Math.max(nite,.2),11);
@@ -323,11 +325,12 @@ function homeDoorX(tr,p){
    ступенью — поленница, бочки, столбики ограды, антенна. Один и тот же дом
    у одного игрока стоит одинаково при каждом приходе. */
 function homePlan(p){
-  const h=hashi(G.sx|0,G.sy|0,0x40E0),r=rng(h);
-  const t=p&&p.type;
-  const roofKind=(t==="jungle")?"thatch":((t==="rocky"||t==="volcanic"||t==="desert"||t==="sand")?"tile":"plank");
-  return {w:3.1+r()*.8,wallH:1.8+r()*.25,roofH:.8+r()*.4,roofKind,
-    win:.04+r()*.14,doorSide:r()<.5?-1:1,pile:r()<.5?-1:1,seed:h};
+  /* M322: тот же housePlan, что сеет избы посёлка (12tb); материал по миру —
+     из одной таблицы sdMat, а не из второй здесь. Стена дома выше избы:
+     жильё в два с половиной роста (M307) — доля переводится в рост тут */
+  const hp=housePlan(hashi(G.sx|0,G.sy|0,0x40E0),p,{});
+  hp.wallH=1.8+(hp.wallH-.54)/.16*.25;
+  return hp;
 }
 function homeSigns(sx,gy,w,pal,tier,plan){
   const M=HOME_MAN,r=rng(plan.seed^0x51);

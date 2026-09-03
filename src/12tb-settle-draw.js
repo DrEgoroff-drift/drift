@@ -40,6 +40,7 @@ const SD_KIND={
 function sdMat(p){
   const t=p&&p.type;
   if(t==="ice")     return {wall:"stone",roof:"plank",warm:.86};
+  if(t==="rocky"||t==="volcanic")return {wall:"stone",roof:"tile",warm:.95};   /* камень кроют черепицей (было: солома на скале) */
   if(t==="desert")  return {wall:"adobe",roof:"tile", warm:1.08};
   if(t==="toxic")   return {wall:"plate",roof:"plate",warm:.9};
   if(t==="jungle")  return {wall:"log",  roof:"thatch",warm:1};
@@ -50,6 +51,23 @@ function sdRGB(c){return "rgb("+(c[0]|0)+","+(c[1]|0)+","+(c[2]|0)+")";}
 function sdMix(a,b,t){return [a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t];}
 /* цвета посёлка: от палитры мира, но сдвинуты в тёплое — жильё обязано
    отличаться от грунта, иначе двор тонет в склоне */
+/* ── план дома: один на всё жильё (M322) ──
+   Дом игрока (21f, M307) и избы посёлка (sdDwell) сеяли план каждый по-своему,
+   с разными правилами кровли: у дома скала крылась черепицей, у посёлка на той
+   же скале — соломой. Теперь план один: ширина и высота стен, скат, материал
+   стен и кровли по миру (sdMat), вариант плана (0 изба, 1 крыльцо, 2 сенцы,
+   3 второе и чердачное окно), зеркало, сдвиг окна, сторона поленницы, возраст
+   сруба и оттенки. Один seed — один дом, при каждом приходе тот же. */
+function housePlan(seed,p,opt){
+  opt=opt||{};
+  const r=rng(hashi(seed,17,0xD0E1)),M=sdMat(p),barn=!!opt.barn;
+  const variant=Math.floor(r()*4),flip=r()>.5;
+  return {seed,variant,flip,barn,
+    w:3.1+r()*.8,wallH:barn?.68+r()*.08:.54+r()*.16,roofH:.8+r()*.4,
+    roofKind:M.roof,wallKind:M.wall,
+    win:.04+r()*.14,doorSide:flip?1:-1,pile:r()<.5?-1:1,
+    age:r()*.18,roofTint:(r()-.5)*.26,wallTint:(r()-.5)*.20};
+}
 function sdPal(p){
   const pal=p.T.pal, M=sdMat(p);
   const base=pal[Math.min(pal.length-1,2)];
