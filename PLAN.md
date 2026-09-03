@@ -187,6 +187,7 @@ Grep `docs/PLAN-archive.md` for the milestone number (header "Moved out of PLAN.
 - **M289–M297** (0.286–0.294) — the holding in nine steps (see "The holding — built" below).
 - **M298** (0.295.0) — three interface fixes: the table answers in the row, rumours with distance,
   jumps and НА КАРТУ, the map card as a footer line.
+- **M317** (0.314.0) — the fleet at meeting distance: the six items of almanac III paid (label, zoom ceiling, учебное spine, паром wing, greys a step down, emblem grammar).
 - **M314** (0.311.0) — fleet tails: трассы on the map (§14), the rescuer's call to a barge in distress, wing tiles, the hospital's cross, larger names.
 - **M313** (0.310.0) — the node station «УЗ-1» from rung 25, the black derelict in dangerous empty sectors, the caravan (pirates keep off, fleet pace).
 - **M312** (0.309.0) — the whole fleet drawn (thirteen classes), почта, ransom through the hospital at half, the school.
@@ -259,24 +260,12 @@ never touches arithmetic; station modules don't unlock services.
   the craft codex law by law. **Palette settled by the author 2026-09-03** («цвет да пусть будут
   светло серые с красными полосами эмблемами, норм»): light grey hulls, red bands and emblems,
   nothing else — so a class is never told apart by tinting it, and §11/§16 are paid inside the
-  greys. The work the issue orders, cheapest first:
-  1. **§3** the label is placed by a constant (y+30/+40 from the centre) whatever the sprite's
-     radius (72 px half-height for the почтовик, 210 for «УЗ-1»): it lands on the hull of the tall
-     classes and, in a wide frame, across the planet chips and the prompt band. Offset by the
-     radius, yield to the chips.
-  2. **§8** `drawFleet` clamps the sprite to `clamp(Z,.5,1.5)*.85` while `setZoom` goes to ×2.4 —
-     the last third of the zoom grows the world and not the fleet; at ×2.4 the почтовик is smaller
-     than the barge beside it. The sprite is baked at ×3, so lift the clamp to the ceiling.
-  3. **§13** the учебное's truss is ~1 px at meeting distance and the six spheres read as six
-     objects: thicken the spine or bind the row with a handrail and one shared shadow.
-  4. **§2** the паром's wing is one flat white plane (open since the 0.308.0 addendum): panel lines
-     following the form, a value fall across the span.
-  5. **§11/§16** hull p95 .84–.90 against a frame at .21 — keep the lit side in VII, drop the body
-     median a step (рудовоз .64 and сторожевик .64 are the lit-through ones), shadow side to III–IV.
-  6. **§9** the class marks are a scatter, not a grammar: `FLEET_CLASSES[k].mark` exists for all
-     thirteen but is drawn small, and only the госпитальное's cross survives 8 px. Thirteen emblems
-     in one construction, red, at body height — a pass of its own, and the one that decides whether
-     the classes read at all.
+  greys. The work the issue ordered, cheapest first — **all six paid by M317 (0.314.0)**: the
+  label from the body's radius and off the chips, the scale to the zoom ceiling, the учебное's
+  spine, the паром's wing, the greys a step down with the light reaching the body, and the emblem
+  grammar (`fleetGlyph`, thirteen roundels in one construction). Numbers in the 0.314.0 addendum
+  of almanac III. Left there: §5 (small parts merge into one tube at 8 px — not ordered), §14
+  (трассы need a lived-in save).
   §14 (трассы on the map) is not judged yet: `drawFleetMap` needs a station at rung ≥ 5 and a fresh
   save has none — it wants a lived-in save and its own look.
 

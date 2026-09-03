@@ -316,3 +316,35 @@ TEST_SUITES.push(()=>suite("M316: в системе все тела крутят
     for(const p of s.planets){n++;if(p.spd<=0)bad++;for(const m of p.moons){n++;if(m.spd<=0)bad++;}}}
   ok(n>30&&bad===0,"ни одной обратной орбиты из "+n);
 }));
+
+/* ══════════════ M317: флот на расстоянии встречи — шесть пунктов альманаха III ══════════════ */
+TEST_SUITES.push(()=>suite("M317: подпись от габарита и мимо фишек, спрайт растёт до потолка зума, эмблемы одной конструкции, учебное целиком в спрайте",()=>{
+  resetWorld();
+  /* §8: масштаб спрайта идёт до потолка setZoom, а не упирается в 1.5 */
+  ok(fleetScale(2.4)>fleetScale(1.5)*1.4,"на зуме 2.4 флот крупнее, чем на 1.5: "+fleetScale(2.4).toFixed(2)+" против "+fleetScale(1.5).toFixed(2));
+  setZoom(9);eq(fleetScale(G.zoom),fleetScale(2.4),"потолок зума и потолок спрайта — одно число");setZoom(1);
+  /* §3: подпись считается от габарита тела; у каждого класса габарит внутри запечённого круга */
+  for(const k in FLEET_CLASSES){const a=fleetArtOf({k,seed:k.length*5+2,name:"X",num:"Л-1",line:1});
+    ok(a.bx>0&&a.by>0&&a.bx<=a.rad&&a.by<=a.rad,k+": габарит "+a.bx.toFixed(0)+"×"+a.by.toFixed(0)+" внутри радиуса "+a.rad.toFixed(0));}
+  /* учебное: все шесть капсул в спрайте (раньше две висели за носом и за краем холста) */
+  {const a=fleetArtOf({k:"school",seed:7,name:"X",num:"Л-1",line:1});ok(a.bx<a.rad*.9,"учебное: капсулы не за краем ("+a.bx.toFixed(0)+" < "+(a.rad*.9).toFixed(0)+")");}
+  /* §3: подпись ложится под корпус на его полувысоту, а при фишке снизу уходит наверх */
+  const y0=fleetLabelY(400,300,72,120,2);ok(y0>=300+72+12-1,"подпись под корпусом: "+y0);
+  SYS_CHIPS.length=0;SYS_CHIPS.push({x:340,y:300+72,w:120,h:44,t:null});
+  const y1=fleetLabelY(400,300,72,120,2);ok(y1<300-72,"под фишкой планеты подпись ушла наверх: "+y1);
+  SYS_CHIPS.length=0;
+  const y2=fleetLabelY(400,H-60,10,120,2);ok(y2<H-60-10,"у нижней кромки подпись наверху: "+y2);
+  /* §9: у каждого из тринадцати есть место эмблемы и в нём красное на светлом диске */
+  for(const k in FLEET_CLASSES){const a=fleetArtOf({k,seed:k.length*5+2,name:"X",num:"Л-1",line:1});
+    ok(a.emb&&a.emb[2]>=a.hw*.45,k+": эмблема в рост тела (R "+(a.emb?a.emb[2]:0).toFixed(1)+" при hw "+a.hw+")");
+    const [mx,my,R]=a.emb,S=FLEET_SS,g=a.cn.getContext("2d");
+    const px=g.getImageData(Math.round((a.rad+mx-R)*S),Math.round((a.rad+my-R)*S),Math.max(1,Math.round(R*2*S)),Math.max(1,Math.round(R*2*S))).data;
+    let red=0,light=0,tot=0;for(let i=0;i<px.length;i+=4){if(px[i+3]<40)continue;tot++;if(px[i]>90&&px[i]>px[i+1]*1.6)red++;else if(px[i]>170&&px[i+1]>170)light++;}
+    ok(red>tot*.12&&light>tot*.15,k+": красная фигура и обод на светлом диске ("+Math.round(red/tot*100)+"% / "+Math.round(light/tot*100)+"%)");}
+  /* §11/§16: медиана тела ниже .60 у всех, освещённый борт остаётся в VII (p95 ≥ .68) */
+  for(const k in FLEET_CLASSES){const a=fleetArtOf({k,seed:k.length*5+2,name:"X",num:"Л-1",line:1});
+    const px=a.cn.getContext("2d").getImageData(0,0,a.cn.width,a.cn.height).data,v=[];
+    for(let i=0;i<px.length;i+=16){if(px[i+3]<40)continue;v.push((px[i]*.299+px[i+1]*.587+px[i+2]*.114)/255);}
+    v.sort((a,b)=>a-b);const p50=v[Math.floor(v.length*.5)],p95=v[Math.floor(v.length*.95)];
+    ok(p50<.62,k+": медиана тела "+p50.toFixed(2)+" ниже .62");ok(p95>=.64&&p95<=.88,k+": освещённый борт в VII: p95 "+p95.toFixed(2));}
+}));

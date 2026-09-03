@@ -1479,7 +1479,7 @@ body.mapclean .hud,body.mapclean .pads,body.mapclean #console,body.mapclean #pro
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.313.0";
+const VER="0.314.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -16572,7 +16572,7 @@ const FLEET_CLASSES={
   tug:   {ru:"буксир",       donor:"ядерный буксир", mark:"якорь", rung:19, art:1,
           say:["…буксир. Реактор в носу, к нам ближе ста метров не ходят. Тянем на верфь — если тянуть есть что.",
                "…буксир слышит. Корпус ваш цел, значит, не по нашей части. Конец."]},
-  fridge:{ru:"рефрижератор", donor:"Прогресс", mark:"кольцо", rung:27, art:1, say:["…рефрижератор. Груз холодный, разговор короткий."]},
+  fridge:{ru:"рефрижератор", donor:"Прогресс", mark:"капля", rung:27, art:1, say:["…рефрижератор. Груз холодный, разговор короткий."]},
   ore:   {ru:"рудовоз",      donor:"Энергия",  mark:"кайло",  rung:27, art:1, say:["…рудовоз. Четыре пакета на борту, идём тяжело."]},
   lighter:{ru:"лихтеровоз",  donor:"семёрка",  mark:"кольцо", rung:27, art:1, say:["…лихтеровоз. Чужие баржи на крестовине, своей нет."]},
   ferry: {ru:"паром",        donor:"Буран",    mark:"ладонь", rung:21, art:1, say:["…паром. Людей вниз, людей вверх. Груз не берём."]},
@@ -16652,8 +16652,13 @@ function fleetArtOf(f){
   const add=(pts,c,e)=>polys.push({p:pts,c,e:e||0});
   const rect=(x0,y0,x1,y1,c,e)=>add([[x0,y0],[x1,y0],[x1,y1],[x0,y1]],c,e);
   const ell=(cx,cy,rx,ry,c,e,n)=>{const p=[];n=n||18;for(let i=0;i<n;i++){const t=i/n*TAU;p.push([cx+Math.cos(t)*rx,cy+Math.sin(t)*ry]);}add(p,c,e);};
-  /* палитра: санкирь (тёмная подложка) → серо-белый корпус → красная полоса → медь */
-  const C=[[222,224,228],[176,180,186],[104,108,116],[168,52,44],[128,84,56],[40,44,52]];
+  /* палитра: санкирь (тёмная подложка) → серо-белый корпус → красная полоса → медь.
+     §11/§16 (альманах III, 0.313.0): на белом листе корпуса в VII были правы, в
+     кадре с туманностью зон I–III читались фарфором на саже (p95 .84–.90 при
+     p95 кадра .21). Тона опущены на ступень ВНУТРИ серых — освещённый борт
+     остаётся в VII, медиана тела ниже, теневая сторона уходит в III–IV; класс
+     никогда не отличается подкраской (автор, 03.09: светло-серые с красным). */
+  const C=[[204,206,211],[162,166,173],[96,100,108],[168,52,44],[128,84,56],[40,44,52]];
   let L,hw,nose,tail,band=[];
   /* стыки (§8, альманах III): всё навесное встречает корпус нарисованным
      узлом — тёмный хомут и светлая пластина, одна грамматика от панели до
@@ -16732,7 +16737,7 @@ function fleetArtOf(f){
       add([[cx,cy],[cx+Math.cos(a-.5)*L*.18,cy+Math.sin(a-.5)*hw*1.4],[cx+Math.cos(a)*L*.24,cy+Math.sin(a)*hw*1.8],[cx+Math.cos(a+.5)*L*.18,cy+Math.sin(a+.5)*hw*1.4]],c,1);
       joint(cx,cy,L*.05,hw*.18);}
     ell(tail*.94,0,L*.045,hw*.42,5,1,12);lights.push({x:tail*.97,y:0,c:"eng",r:hw*.36});
-    lights.push({x:L*.2,y:0,c:"win"});
+    lights.push({x:L*.11,y:-hw*.45,c:"win"});
     band=[[tail*.88,-hw*.48],[-L*.06,-hw*.48],[-L*.06,-hw*.24],[tail*.88,-hw*.24]];
   }else if(f.k==="ore"){
     /* «Энергия»: бочка и четыре контейнера по бокам — пакет, гружёный */
@@ -16752,18 +16757,24 @@ function fleetArtOf(f){
     joint(nose*.3,-hw*.7,L*.03,hw*1.4);
     for(let i=1;i<5;i++){const x=tail*.9+(L*.6)*i/5;lines.push([x,-hw*.85,x,hw*.85,.45]);}
     for(const s of [-1,1]){rect(-L*.2,s*hw*.85,L*.05,s*hw*2.4,5,1);joint(-L*.07,s*hw*.82,L*.1,hw*.2);}
-    /* красный крест на белом — знак госпиталя во всю высоту */
-    rect(-L*.02,-hw*.85,L*.06,hw*.85,3);rect(-L*.12,-hw*.2,L*.16,hw*.2,3);
     ell(tail*.94,0,L*.045,hw*.5,5,1,12);lights.push({x:tail*.97,y:0,c:"eng",r:hw*.4});
     lights.push({x:-L*.3,y:-hw*.3,c:"win"});lights.push({x:-L*.3,y:hw*.3,c:"win"});
     band=[[tail*.88,-hw*.62],[-L*.16,-hw*.62],[-L*.16,-hw*.35],[tail*.88,-hw*.35]];
   }else if(f.k==="school"){
-    /* «Восток»×6: гроздь сферических капсул на общей ферме, у каждой свой люк */
+    /* «Восток»×6: гроздь сферических капсул на общей ферме, у каждой свой люк.
+       Хребет (§13, альманах III): тонкая тёмная рейка терялась на расстоянии
+       встречи, и шесть шаров читались шестью предметами. Ферма толще и светлее,
+       по каждому борту поручень, связывающий свои три капсулы, под всем рядом
+       одна общая тень; шесть капсул умещаются в спрайт (две висели за носом). */
     L=112;hw=8;nose=L*.5;tail=-L*.5;
-    rect(tail*.9,-hw*.3,nose*.7,hw*.3,2,1);
-    for(let i=0;i<6;i++){const x=tail*.7+i*L*.26,s=(i%2?1:-1),cy=s*hw*1.3;
-      rect(x-L*.015,0,x+L*.015,cy,5,1);ell(x,cy,L*.075,hw*1.05,0,1,16);
-      add([[x+L*.04,cy-hw*.3],[x+L*.075,cy-hw*.25],[x+L*.075,cy+hw*.25],[x+L*.04,cy+hw*.3]],5);joint(x,s*hw*.3,L*.04,hw*.18);}
+    rect(tail*.9,-hw*.45,nose*.9,hw*.45,1,1);
+    lines.push([tail*.9,-hw*.45,nose*.9,-hw*.45,.6]);lines.push([tail*.9,hw*.45,nose*.9,hw*.45,.6]);
+    for(let x=tail*.85;x<nose*.85;x+=L*.08)lines.push([x,-hw*.45,x+L*.08,hw*.45,.35]);
+    for(const s of [-1,1])rect(tail*.75,s*hw*2.05,nose*.85,s*hw*2.25,2,1);          /* поручни */
+    rect(tail*.85,hw*.45,nose*.85,hw*.75,5);                                          /* общая тень */
+    for(let i=0;i<6;i++){const x=tail*.8+i*L*.16,s=(i%2?1:-1),cy=s*hw*1.3;
+      rect(x-L*.015,0,x+L*.015,cy,2,1);ell(x,cy,L*.075,hw*1.05,0,1,16);
+      add([[x+L*.04,cy-hw*.3],[x+L*.075,cy-hw*.25],[x+L*.075,cy+hw*.25],[x+L*.04,cy+hw*.3]],5);joint(x,s*hw*.45,L*.04,hw*.18);}
     ell(tail*.94,0,L*.04,hw*.5,5,1,12);lights.push({x:tail*.97,y:0,c:"eng",r:hw*.4});
     band=[[tail*.88,-hw*.28],[nose*.6,-hw*.28],[nose*.6,-hw*.05],[tail*.88,-hw*.05]];
   }else if(f.k==="exped"){
@@ -16816,8 +16827,17 @@ function fleetArtOf(f){
     L=104;hw=9;nose=L*.5;tail=-L*.5;
     add([[tail*.95,-hw*.55],[nose*.92,-hw*.2],[nose,hw*.15],[nose*.92,hw*.5],[tail*.95,hw*.6]],0,1);   /* фюзеляж */
     add([[tail*.95,hw*.15],[nose*.9,hw*.42],[nose,hw*.15],[nose*.92,hw*.5],[tail*.95,hw*.6]],5,1);      /* чёрное брюхо: зона II–III */
-    add([[-L*.12,-hw*.5],[nose*.55,-hw*.25],[-L*.05,-hw*3.2],[tail*.85,-hw*3.2]],0,1);                 /* крыло верхнее */
-    for(let i=1;i<5;i++){const y=-hw*.5-(hw*2.7)*i/5;lines.push([tail*.85+(L*.08)*i,y,nose*.55-(L*.14)*i,y,.35]);}   /* плитка крыла: ряды поперёк */
+    /* крыло верхнее (§2, альманах III): не одна белая плоскость — три полосы
+       по размаху с падением тона от корня к концу, ряды плитки поперёк и
+       хордовые линии, сходящиеся к концу; направление кладки и есть светотень */
+    {const wr=[[-L*.12,-hw*.5],[nose*.55,-hw*.25]],wt=[[tail*.85,-hw*3.2],[-L*.05,-hw*3.2]];
+     const lp=(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t];
+     const cols=[null,[190,193,199],[174,178,185]];
+     for(let i=0;i<3;i++){const t0=i/3,t1=(i+1)/3;
+       add([lp(wr[0],wt[0],t0),lp(wr[1],wt[1],t0),lp(wr[1],wt[1],t1),lp(wr[0],wt[0],t1)],0,1);
+       if(cols[i])polys[polys.length-1].col=cols[i];}
+     for(let i=1;i<7;i++){const a=lp(wr[0],wt[0],i/7),b=lp(wr[1],wt[1],i/7);lines.push([a[0],a[1],b[0],b[1],.35]);}   /* плитка: ряды поперёк */
+     for(const u of [.3,.55,.8]){const a=lp(wr[0],wr[1],u),b=lp(wt[0],wt[1],u);lines.push([a[0],a[1],b[0],b[1],.45]);}} /* хорды: к концу крыла */
     add([[-L*.12,hw*.55],[nose*.55,hw*.4],[-L*.05,hw*3.2],[tail*.85,hw*3.2]],5,1);                     /* крыло нижнее, чёрное */
     joint(-L*.02,-hw*.5,L*.2,hw*.2);joint(-L*.02,hw*.5,L*.2,hw*.2);
     add([[tail*.98,-hw*.55],[tail*.75,-hw*.55],[tail*.7,-hw*1.9],[tail*.92,-hw*1.9]],1,1);            /* киль */
@@ -16839,7 +16859,7 @@ function fleetArtOf(f){
       joint(x,s*hw*.66,w*1.6,hw*.2);}
     rect(-L*.17,-hw*1.5,-L*.03,-hw,2,1);joint(-L*.1,-hw*.98,L*.1,hw*.2);   /* стыковочный узел вверх */
     ell(tail*.95,0,L*.03,hw*.4,5,1,12);lights.push({x:tail*.98,y:0,c:"eng",r:hw*.3});
-    lights.push({x:-L*.07,y:0,c:"win"});lights.push({x:L*.2,y:-hw*.2,c:"win"});
+    lights.push({x:-L*.07,y:0,c:"win"});lights.push({x:L*.34,y:-hw*.2,c:"win"});
     band=[[tail*.88,-hw*.55],[-L*.2,-hw*.55],[-L*.2,-hw*.28],[tail*.88,-hw*.28]];
   }else{
     /* ядерный буксир: хребет, реактор на штанге впереди, два плоских радиатора-крыла, колокол сзади */
@@ -16859,6 +16879,14 @@ function fleetArtOf(f){
     band=[[tail*.75,-hw*.7],[-L*.36,-hw*.7],[-L*.36,-hw*.3],[tail*.75,-hw*.3]];
   }
   lights.push({x:nose*.3,y:-hw,c:"nav",g:0});lights.push({x:nose*.3,y:hw,c:"nav",g:1});
+  /* знак класса (§9, §18.2): где на корпусе стоит диск в рост тела — по классу,
+     чтобы не лечь на номер, навесной бак или люк. [x, y, радиус] */
+  const EMB={post:[L*.31,0,hw*.85],tanker:[nose*.8,0,hw*.6],tug:[-L*.2,0,hw*.9],fridge:[0,0,hw*.58],
+    ore:[L*.135,0,hw*.65],lighter:[L*.15,0,hw*.55],ferry:[-L*.06,-hw*1.6,hw*.75],patrol:[L*.28,-hw*.15,hw*.6],
+    rescue:[L*.2,0,hw*.55],hosp:[0,0,hw*.85],school:[L*.22,-hw*1.3,hw*.8],exped:[-L*.12,0,hw*.7],base:[L*.18,0,hw*.55]};
+  const emb=EMB[f.k]||null;
+  /* габарит тела в своих осях — подпись под кораблём считается от него (§3) */
+  let bx=0,by=0;for(const q of polys)for(const pt of q.p){bx=Math.max(bx,Math.abs(pt[0]));by=Math.max(by,Math.abs(pt[1]));}
   const rad=L*.75;
   const cn=document.createElement("canvas");
   cn.width=cn.height=Math.ceil(rad*2*FLEET_SS);
@@ -16882,13 +16910,17 @@ function fleetArtOf(f){
   ctx.font="bold "+(hw*.62).toFixed(1)+"px ui-monospace,monospace";ctx.fillStyle="rgba(30,30,34,.85)";
   ctx.fillText(f.name,(band[0][0]+band[1][0])/2,band[0][1]-hw*.34);
   }
-  /* знак класса: круг, одна залитая фигура (§18.2) */
-  if(band.length){const mx=(band[0][0]+band[1][0])/2+L*.18,my=0;
-    ctx.strokeStyle="rgba(30,30,34,.85)";ctx.lineWidth=.7;ctx.beginPath();ctx.arc(mx,my,hw*.42,0,TAU);ctx.stroke();
-    ctx.fillStyle="rgba(168,52,44,.95)";
-    if(f.k==="post"){ctx.beginPath();ctx.moveTo(mx-hw*.22,my+hw*.12);ctx.lineTo(mx+hw*.22,my-hw*.16);ctx.lineTo(mx+hw*.22,my+hw*.16);ctx.closePath();ctx.fill();}
-    else if(f.k==="tanker"){ctx.beginPath();ctx.moveTo(mx,my-hw*.26);ctx.quadraticCurveTo(mx+hw*.3,my+hw*.18,mx,my+hw*.24);ctx.quadraticCurveTo(mx-hw*.3,my+hw*.18,mx,my-hw*.26);ctx.fill();}
-    else{ctx.fillRect(mx-hw*.05,my-hw*.26,hw*.1,hw*.4);ctx.beginPath();ctx.arc(mx,my+hw*.1,hw*.2,0,Math.PI);ctx.fill();}}
+  /* знак класса (§9, §18.2; альманах III, 0.313.0): одна конструкция на все
+     тринадцать — светлый диск в рост тела, красный обод одной толщины, внутри
+     одна залитая фигура закрытого алфавита на .62 диска; операции — поворот и
+     отражение, больше ничего. Знак, а не силуэт, несёт класс сквозь 8 px;
+     раньше тринадцать разных рисунков в hw*.42 доживали до встречи одним крестом. */
+  if(emb){const [mx,my,R]=emb;
+    ctx.save();ctx.translate(mx,my);
+    ctx.fillStyle="rgb(226,228,232)";ctx.beginPath();ctx.arc(0,0,R,0,TAU);ctx.fill();
+    ctx.strokeStyle="rgb("+C[3].join(",")+")";ctx.lineWidth=Math.max(.8,R*.16);ctx.beginPath();ctx.arc(0,0,R-ctx.lineWidth/2,0,TAU);ctx.stroke();
+    ctx.fillStyle="rgb("+C[3].join(",")+")";fleetGlyph(f.k,R*.62);
+    ctx.restore();}
   /* износ — ПОД бликами: заплаты не в тон, копоть от движков веером, полоса выгорела */
   for(let i=0;i<3+Math.floor(r()*4);i++){
     const q=polys[Math.floor(r()*polys.length)];if(!q||q.c>2)continue;
@@ -16901,15 +16933,53 @@ function fleetArtOf(f){
     ctx.fillStyle=sg;ctx.fillRect(li.x,li.y-li.r*1.6,L*.22,li.r*3.2);
     ctx.fillStyle="rgba(128,84,56,.7)";ctx.fillRect(li.x-L*.02,li.y-li.r*1.05,L*.03,li.r*2.1);}
   if(band.length){ctx.fillStyle="rgba(255,190,170,.28)";ctx.beginPath();ctx.moveTo(band[0][0],band[0][1]);ctx.lineTo(band[1][0],band[1][1]);ctx.lineTo(band[1][0],band[1][1]+hw*.1);ctx.lineTo(band[0][0],band[0][1]+hw*.1);ctx.fill();}
-  /* один свет на всю сборку последним слоем; кромка ловит свет */
+  /* один свет на всю сборку последним слоем; кромка ловит свет. Растяжка
+     шла от −3hw до 2hw с нулём на −hw — до самого тела свет не доходил, его
+     получали одни панели, а борт оставался плоским тоном (§16, 0.313.0).
+     Теперь ноль на −.2hw: верхняя кромка тела в VII, нижняя в III–IV. */
   ctx.globalCompositeOperation="source-atop";
-  const lg=ctx.createLinearGradient(0,-hw*3,0,hw*2);
-  lg.addColorStop(0,f.k==="derelict"?"rgba(120,130,150,.18)":"rgba(255,240,216,.30)");lg.addColorStop(.45,"rgba(255,224,196,0)");lg.addColorStop(1,"rgba(0,0,0,.5)");
+  const lg=ctx.createLinearGradient(0,-hw*1.8,0,hw*1.6);
+  lg.addColorStop(0,f.k==="derelict"?"rgba(120,130,150,.18)":"rgba(255,240,216,.28)");lg.addColorStop(.5,"rgba(255,224,196,0)");lg.addColorStop(1,"rgba(0,0,0,.62)");
   ctx.fillStyle=lg;ctx.fillRect(-rad,-rad,rad*2,rad*2);
   ctx.globalCompositeOperation="source-over";
   ctx=prev;
-  const art={cn,rad,L,hw,lights};
+  const art={cn,rad,L,hw,lights,bx,by,emb};
   FLEET_ART[key]=art;return art;
+}
+/* ── алфавит знаков (§18.2): десять фигур, у каждой одна заливка; повороты
+   0/45/90 и отражение — единственные операции; h — полуразмер фигуры ── */
+function fleetGlyph(k,h){
+  const P=()=>ctx.beginPath();
+  const horn=()=>{P();ctx.moveTo(-h,h*.5);ctx.lineTo(h,-h*.95);ctx.lineTo(h,h*.95);ctx.closePath();ctx.fill();};
+  const drop=()=>{P();ctx.moveTo(0,-h);ctx.bezierCurveTo(h*.95,h*.1,h*.75,h,0,h);ctx.bezierCurveTo(-h*.75,h,-h*.95,h*.1,0,-h);ctx.fill();};
+  const anchor=()=>{ctx.fillRect(-h*.15,-h,h*.3,h*1.8);ctx.fillRect(-h*.7,-h*.55,h*1.4,h*.28);
+    P();ctx.arc(0,h*.1,h,Math.PI*.12,Math.PI*.88);ctx.arc(0,h*.1,h*.62,Math.PI*.88,Math.PI*.12,true);ctx.closePath();ctx.fill();};
+  const pick=()=>{ctx.fillRect(-h*.15,-h*.45,h*.3,h*1.45);P();ctx.moveTo(-h,-h*.25);ctx.quadraticCurveTo(0,-h*1.15,h,-h*.25);ctx.quadraticCurveTo(0,-h*.55,-h,-h*.25);ctx.closePath();ctx.fill();};
+  const ring=()=>{P();ctx.arc(0,0,h,0,TAU);ctx.arc(0,0,h*.58,0,TAU,true);ctx.fill();
+    for(let i=0;i<4;i++){ctx.save();ctx.rotate(i*Math.PI/2);ctx.fillRect(-h*.14,-h*.62,h*.28,h*.62);ctx.restore();}};
+  const palm=()=>{P();ctx.arc(0,h*.15,h,Math.PI,0);ctx.lineTo(h,h);ctx.lineTo(-h,h);ctx.closePath();
+    ctx.rect(-h*.55,-h*.6,h*.14,h*.85);ctx.rect(-h*.07,-h*.78,h*.14,h*1.03);ctx.rect(h*.41,-h*.6,h*.14,h*.85);ctx.fill("evenodd");};
+  const shield=()=>{P();ctx.moveTo(-h,-h);ctx.lineTo(h,-h);ctx.lineTo(h,h*.1);ctx.quadraticCurveTo(h,h*.8,0,h);ctx.quadraticCurveTo(-h,h*.8,-h,h*.1);ctx.closePath();ctx.fill();};
+  const cross=()=>{ctx.fillRect(-h*.3,-h,h*.6,h*2);ctx.fillRect(-h,-h*.3,h*2,h*.6);};
+  const book=()=>{P();ctx.moveTo(-h,-h*.6);ctx.lineTo(0,-h*.25);ctx.lineTo(h,-h*.6);ctx.lineTo(h,h*.55);ctx.lineTo(0,h*.9);ctx.lineTo(-h,h*.55);ctx.closePath();ctx.fill();};
+  const compass=()=>{P();ctx.moveTo(0,-h);ctx.lineTo(h*.85,h);ctx.lineTo(h*.45,h);ctx.lineTo(0,-h*.15);ctx.lineTo(-h*.45,h);ctx.lineTo(-h*.85,h);ctx.closePath();ctx.fill();
+    P();ctx.arc(0,-h*.7,h*.3,0,TAU);ctx.fill();};
+  const op=(rot,fy,fn)=>{ctx.save();ctx.rotate(rot);ctx.scale(1,fy);fn();ctx.restore();};
+  switch(k){
+    case "post":horn();break;
+    case "tanker":drop();break;
+    case "fridge":op(0,-1,drop);break;            /* капля отражена: холод */
+    case "tug":anchor();break;
+    case "ore":pick();break;
+    case "base":ring();break;
+    case "lighter":op(Math.PI/4,1,ring);break;    /* кольцо на 45°: крестовина */
+    case "rescue":palm();break;
+    case "ferry":op(0,-1,palm);break;             /* ладонь вниз: людей вниз */
+    case "patrol":shield();break;
+    case "hosp":cross();break;
+    case "school":book();break;
+    case "exped":compass();break;
+  }
 }
 function drawFleetShip(f){
   const art=fleetArtOf(f);
@@ -16929,22 +16999,49 @@ function drawFleetShip(f){
     }
   }
 }
+/* масштаб спрайта в системе (§8, альманах III): упирался в 1.5, пока setZoom
+   идёт до 2.4 — последняя треть зума растила мир, а флот нет, и на сближении
+   почтовик оказывался меньше баржи. Спрайт печётся в ×3: до потолка зума
+   разрешение уже оплачено. */
+function fleetScale(Z){return clamp(Z,.5,2.4)*.85;}
+/* строка подсказки — живой DOM, меряем его (27z); null, когда её нет */
+function fleetPromptRect(){
+  const pe=document.getElementById("prompt");if(!pe||!pe.textContent)return null;
+  const r=pe.getBoundingClientRect();return r.height>0?r:null;
+}
+/* подпись под кораблём (§3): не по константе (+30/+40 ложились на корпус
+   высоких классов и на фишки планет), а от видимой полувысоты тела под текущим
+   углом; если снизу фишка или строка подсказки — уходит наверх. Фишки — SYS_CHIPS
+   предыдущего кадра, в тех же пикселях холста. Возвращает базовую линию первой
+   строки; вторая идёт на +10. */
+function fleetLabelY(x,y,hh,tw,rows){
+  const bh=8+rows*10,pr=fleetPromptRect();
+  const hit=ly=>{
+    const x0=x-tw/2,x1=x+tw/2,y0=ly-8,y1=ly-8+bh;
+    if(y1>H-40)return true;
+    if(pr&&!(x1<pr.left||pr.right<x0||y1<pr.top-4||pr.bottom+4<y0))return true;
+    if(typeof SYS_CHIPS!=="undefined")for(const c of SYS_CHIPS)if(!(x1<c.x||c.x+c.w<x0||y1<c.y||c.y+c.h<y0))return true;
+    return false;};
+  const below=y+hh+12,above=y-hh-4-bh+8;
+  return (hit(below)&&!hit(above))?above:below;
+}
 function drawFleet(zx,zy,Z){
   const F=fleetHere(G.sys);if(!F.length)return;
   for(const f of F){
     const p=fleetPos(f),x=zx(p.x),y=zy(p.y);
-    if(x<-120||x>W+120||y<-120||y>H+120)continue;
-    ctx.save();ctx.translate(x,y);ctx.rotate(p.a);
-    const s=clamp(Z,.5,1.5)*.85;ctx.scale(s,s);
+    if(x<-260||x>W+260||y<-260||y>H+260)continue;
+    const s=fleetScale(Z),art=fleetArtOf(f);
+    ctx.save();ctx.translate(x,y);ctx.rotate(p.a);ctx.scale(s,s);
     drawFleetShip(f);
     ctx.restore();
+    if(f.k==="derelict")continue;
     const C=FLEET_CLASSES[f.k];
+    const hh=(Math.abs(art.bx*Math.sin(p.a))+Math.abs(art.by*Math.cos(p.a)))*s;
     ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
-    if(f.k==="node"){ctx.fillStyle="rgba(226,214,200,.8)";ctx.fillText("«"+f.name+"» · УЗЕЛ ТРАСС · ГЛАВТРАССА",x,y+46);}
-    else if(f.k!=="derelict"){
-      ctx.fillStyle="rgba(226,214,200,.8)";ctx.fillText("«"+f.name+"» · ГЛАВТРАССА · "+f.num+" · ТРАССА "+f.line,x,y+30);
-      ctx.fillStyle="rgba(226,214,200,.5)";ctx.fillText(C.ru.toUpperCase(),x,y+40);
-    }
+    const l1=f.k==="node"?"«"+f.name+"» · УЗЕЛ ТРАСС · ГЛАВТРАССА":"«"+f.name+"» · ГЛАВТРАССА · "+f.num+" · ТРАССА "+f.line;
+    const rows=f.k==="node"?1:2,ly=fleetLabelY(x,y,hh,ctx.measureText(l1).width,rows);
+    ctx.fillStyle="rgba(226,214,200,.8)";ctx.fillText(l1,x,ly);
+    if(rows>1){ctx.fillStyle="rgba(226,214,200,.5)";ctx.fillText(C.ru.toUpperCase(),x,ly+10);}
     ctx.textAlign="left";
   }
 }

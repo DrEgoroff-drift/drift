@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 360 · символов верхнего уровня: 3334
+Файлов: 360 · символов верхнего уровня: 3338
 
 ## СИМВОЛЫ
 
@@ -689,9 +689,9 @@ drawFactory                  src/20aa-poi-shapes.js:378
 drawFactRoute                src/13b-occupy.js:241
 drawFindsSystem              src/17b-finds.js:180
 drawFlame                    src/03b-hull-paint.js:10
-drawFleet                    src/12ai-fleet.js:387
-drawFleetMap                 src/12ai-fleet.js:546
-drawFleetShip                src/12ai-fleet.js:369
+drawFleet                    src/12ai-fleet.js:483
+drawFleetMap                 src/12ai-fleet.js:643
+drawFleetShip                src/12ai-fleet.js:439
 drawFoeBody                  src/24ab-raid-foe.js:10
 drawForeground               src/21b-surface-deco.js:249
 drawGlassHUD                 src/24-mode-belt.js:716
@@ -952,15 +952,19 @@ FLEET_TIER_CLS               src/04b-fleet.js:46
 FLEET_TIER_KEYS              src/04b-fleet.js:30
 FLEET_TIERS                  src/04b-fleet.js:16
 fleetArtOf                   src/12ai-fleet.js:102
-fleetCaravanActive           src/12ai-fleet.js:533
+fleetCaravanActive           src/12ai-fleet.js:630
 fleetColor                   src/04b-fleet.js:95
-fleetEscortActive            src/12ai-fleet.js:531
-fleetHailFirst               src/12ai-fleet.js:412
+fleetEscortActive            src/12ai-fleet.js:628
+fleetGlyph                   src/12ai-fleet.js:406
+fleetHailFirst               src/12ai-fleet.js:509
 fleetHere                    src/12ai-fleet.js:50
-fleetInteract                src/12ai-fleet.js:426
-fleetLogKey                  src/12ai-fleet.js:407
+fleetInteract                src/12ai-fleet.js:523
+fleetLabelY                  src/12ai-fleet.js:472
+fleetLogKey                  src/12ai-fleet.js:504
 fleetPos                     src/12ai-fleet.js:89
+fleetPromptRect              src/12ai-fleet.js:463
 fleetRung                    src/12ai-fleet.js:48
+fleetScale                   src/12ai-fleet.js:461
 fleetUniqueName              src/04b-fleet.js:100
 flightCam                    src/16a-space.js:316
 floraOf                      src/20e-species.js:91
@@ -3603,7 +3607,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12ah-holdnews.js · 6 КБ
   · холдинг · слухи, новости и чужие на проданной дороге:1
 
-## src/12ai-fleet.js · 43 КБ
+## src/12ai-fleet.js · 52 КБ
   · ГЛАВТРАССА: флот, который нельзя купить (M310, DESIGN-holding §18):1
 
 ## src/12b-crew-events.js · 17 КБ
@@ -4408,7 +4412,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzy-screens.js · 13 КБ
   · автотесты: экраны M299 — заголовки, подгляд карты, зал как ввод:1
 
-## tests/91zzza-cave-props.js · 23 КБ
+## tests/91zzza-cave-props.js · 27 КБ
   · пещера M305: гладкий обвод и содержимое:1
   · станция и планета M306: знаки на дневной стороне:32
   · дом M307: мебель из материала, план сеян:58
@@ -4421,6 +4425,7 @@ zooTick                      src/11ad-zoo.js:41
   · M314: трассы на карте, спасатель зовёт на сигнал:246
   · M315: пропорции системы, призрачный клик, оклик на рунге 30:267
   · M316: планеты и луны идут в одну сторону:311
+  · M317: флот на расстоянии встречи — шесть пунктов альманаха III:320
 
 ## tests/91zzza-trace.js · 5 КБ
 

@@ -406,6 +406,49 @@ Cheapest first: **§3** the label offset by the sprite's radius and yielding to 
 greys · **§9** the grammar of red emblems at body height, thirteen marks in one construction — a
 pass of its own, and the one that decides whether the classes read at all.
 
+**Addendum, 0.314.0 (M317) — the six items paid, and what the meter says now.** Same method,
+same seeds; numbers off the baked sprite, alpha ≥ 40.
+
+| | p5 | p50 | p95 | was p50 / p95 |
+|---|---|---|---|---|
+| почтовик | .07 | .37 | .81 | .34 / .87 |
+| танкер | .18 | .43 | .82 | .47 / .88 |
+| буксир | .07 | .31 | .66 | .25 / .70 |
+| рудовоз | .19 | .49 | .83 | .64 / .89 |
+| паром | .07 | .36 | .81 | .41 / .90 |
+| сторожевик | .19 | .50 | .82 | .64 / .89 |
+| учебное | .07 | .39 | .85 | .51 / .89 |
+| плавбаза | .07 | .39 | .81 | .33 / .84 |
+| «УЗ-1» | .07 | .31 | .81 | .26 / .85 |
+| дерелик | .11 | .21 | .26 | .24 / .25 |
+
+- **§3** ✓ — the label sits at the body's visible half-height under its heading and moves above
+  the hull when a chip or the prompt band is below it (`fleetLabelY`). In the sheet frame the
+  bottom row's labels went over their hulls because the prompt stood under them; that is the law
+  working, not a defect.
+- **§8** ✓ — `fleetScale` runs to the zoom ceiling; at ×2.4 the почтовик is the largest thing
+  beside the barge, as coming alongside should be.
+- **§13** ✓ — the учебное reads as one ship: the truss is a body with two edges, a handrail binds
+  each side's three capsules, one shadow lies under the row. Six capsules are inside the sprite;
+  the old spacing put two past the nose and one off the canvas — the «six spheres» of the 0.309.0
+  addendum were five.
+- **§2** ✓ — the паром's wing carries its laying: three strips falling in value toward the tip,
+  tile rows across, chords converging. The largest single-value mass of 0.313.0 is gone; the
+  wing's p95 is the root strip only.
+- **§11/§16** ✓ by the numbers — medians .31–.50 (were .25–.64), lit side .66–.85 (were .70–.90),
+  the underside in III–IV for every class. The one light now touches the body: its zero was at
+  −hw, so only the panels were ever lit and the hull was one flat tone. Two classes sit under VII
+  at p95 (буксир .66, лихтеровоз .66): both are colour-1 hulls with no white part — their design,
+  not a shortfall.
+- **§9** ✓ by construction, to be judged in play — thirteen roundels in one grammar, red on a
+  light disc at body height, one figure each; the ten primitives of §18.2 and three operations.
+  On the sheet all thirteen read at Z 1.5; the two smallest (лихтеровоз and плавбаза, body
+  hw·.55) are the ones to watch at Z 0.75, where they are a red dot — a dot in the right colour,
+  which is more than the old marks managed.
+
+Open from this issue: §5 (ribs, containers and strap-on tanks merging into one tube at 8 px) was
+not ordered and is not paid; §14 still waits for a lived-in save.
+
 ---
 
 ## ~~Reserved — issue III (continued)~~ — struck 2026-09-03

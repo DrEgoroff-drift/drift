@@ -7,6 +7,40 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.314.0 - M317: the fleet at meeting distance — the six items of almanac III
+
+The 0.313.0 addendum judged the fleet where the player meets it and ordered six things, cheapest
+first. All six, in `12ai-fleet`:
+
+- **§3 the label** is placed from the body's visible half-height under its current heading
+  (`bx`/`by` measured off the polygons at bake time), not by a constant; when a planet chip or
+  the prompt band sits below, it moves above the hull (`fleetLabelY`). Chips are read from
+  `SYS_CHIPS`, the prompt from its own DOM rect (rule 27z).
+- **§8 the scale** follows `setZoom` to its ceiling (`fleetScale`: 2.4 instead of 1.5); the
+  sprite is baked at ×3, so the resolution was already paid for. At ×2.4 the почтовик is now
+  larger than the barge beside it.
+- **§13 the учебное**: a thicker, lighter truss with two edge lines, a handrail on each side
+  binding its three capsules, one shared shadow under the row — and all six capsules inside the
+  sprite (two used to hang past the nose, one off the canvas).
+- **§2 the паром's wing**: three spanwise strips with a value fall from root to tip, six tile
+  rows across, three chord lines converging on the tip.
+- **§11/§16 the greys**: hull tones dropped one step inside the greys (`C[0]` 222→204, `C[1]`
+  176→162), and the one light now reaches the body — its zero moved from −hw to −.2hw, so the
+  top edge sits in VII and the underside falls to III–IV. Measured on the baked sprites: medians
+  .31–.50 across the thirteen (were .25–.64), lit side p95 .66–.85 (was .70–.90), shadow side
+  p5 .07–.19. The derelict is untouched (.11 / .21 / .26).
+- **§9 the emblems** — one construction for all thirteen (`fleetGlyph`, §18.2): a light disc at
+  body height, a red rim of one weight, inside one filled figure from a closed alphabet at .62 of
+  the disc; rotation and reflection the only operations (the рефрижератор is the танкер's drop
+  reflected, the паром the спасатель's palm turned down, the лихтеровоз the плавбаза's ring at
+  45°). The госпитальное's full-height cross is now the same roundel as everyone else's. Placement
+  is per class, so the disc never lands on the number, a strap-on tank or a hatch.
+
+Suite `91zzza` (M317 block): the scale ceiling, label geometry against chips and the floor, six
+capsules inside the sprite, every class with a red figure on a light disc, medians and p95 inside
+the band. Almanac III carries the 0.314.0 addendum with the per-class numbers.
+
+---
 ## 0.313.0 - M316: the surface pass — rocks in three families, cracks by hand, the strata debt struck
 
 The three "Graphics still open" items that did not need the author:
