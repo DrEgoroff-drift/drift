@@ -7,6 +7,25 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.310.0 - M313: the node station «УЗ-1», the black derelict, the caravan
+
+`12ai-fleet`, the places of §18.4 and interaction 6 of §18.7:
+
+- **«УЗ-1», the node station of the lines.** From rung 25 (Узел трасс) it stands opposite the
+  system's station: a long truss with the five modules that got our own names — Погреб (the
+  sphere store), Кубрик (quarters, five lit windows), Тамбур (the lock between), Воротник (the
+  node with two ports), Короб (the dark cargo box) — and two panel arrays at the end. Its band
+  carries the call-sign. Hail: «стоянка есть, торга нет». Drawn by the same pipeline as a still
+  body (`still`).
+- **The black derelict.** In a quarter of the dangerous sectors without a station (danger ≥ .6):
+  a black hull with a hole, no band, no lights, no name, lit only by cold grey. Hailing it gets
+  silence into the ether and one line in the record book, once. Its voice is the hull.
+- **Караван** (§18.7 п.6). Any passing fleet ship offers ИДТИ КАРАВАНОМ: for twenty minutes,
+  while a fleet ship is within 520, pirates do not see you and your top speed is 60% — the
+  fleet's pace. Fall behind and the caravan is gone (`fleetCaravanActive`, `G.caravan` persists).
+- Suite `91zzza` (M313 block).
+
+---
 ## 0.309.0 - M312: the whole fleet drawn; mail, the hospital's ransom, the school
 
 `12ai-fleet`, the last seven of §18.3 and three more of §18.7:

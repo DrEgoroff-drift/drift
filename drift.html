@@ -1479,7 +1479,7 @@ body.mapclean .hud,body.mapclean .pads,body.mapclean #console,body.mapclean #pro
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.309.0";
+const VER="0.310.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -16576,10 +16576,27 @@ const FLEET_NORM_SHIFTS=1;               /* норма топлива: раз в
 function fleetRung(sys){return (typeof rungOf==="function")?rungOf(sys.sx,sys.sy):0;}
 /* кто идёт через систему в этом окне: чисто от семени и часов, ничего не хранится */
 function fleetHere(sys){
-  sys=sys||G.sys;if(!sys||!sys.station)return [];
+  sys=sys||G.sys;if(!sys)return [];
   const bucket=Math.floor(Date.now()/FLEET_PERIOD);
   if(sys.fleetCache&&sys.fleetCache.b===bucket)return sys.fleetCache.list;
   const rung=fleetRung(sys), out=[];
+  /* ── чёрный дерелик (§18.4, M313): в дальних секторах без станции ──
+     Без имени, без огней, без ответа. Один на четыре опасные системы, стоит
+     где встал; его голос — чёрный корпус. */
+  if(!sys.station){
+    const dz=(typeof sysDanger==="function")?sysDanger(sys.sx,sys.sy):0;
+    const hd=hashi(sys.sx|0,sys.sy|0,0xDE4E);
+    if(dz>=.6&&(hd&3)===0){
+      const rr=rng(hd);const a=rr()*TAU,rad=1400+rr()*1400;
+      out.push({k:"derelict",seed:hd,name:"",num:"",line:0,x0:Math.cos(a)*rad,y0:Math.sin(a)*rad,x1:Math.cos(a)*rad,y1:Math.sin(a)*rad,bow:0,ph:0,still:1});
+    }
+    sys.fleetCache={b:bucket,list:out};return out;
+  }
+  /* ── узловая станция трасс «УЗ-1» (§18.4, M313): с рунга 25, напротив станции ── */
+  if(rung>=25){
+    const st=sys.station,nx=-(st.x||0)*.85,ny=-(st.y||0)*.85;
+    out.push({k:"node",seed:hashi(sys.seed,25,0x0E1),name:FLEET_PLACES.node,num:"",line:0,x0:nx,y0:ny,x1:nx,y1:ny,bow:0,ph:0,still:1});
+  }
   const r=rng(hashi(sys.sx*31+sys.sy*17,bucket*613+0xF1E7,0x7A55));
   for(const k in FLEET_CLASSES){
     const C=FLEET_CLASSES[k];
@@ -16598,6 +16615,7 @@ function fleetHere(sys){
 }
 /* положение на линии сейчас: доля окна, дуга с прогибом */
 function fleetPos(f){
+  if(f.still)return {x:f.x0,y:f.y0,a:0,u:0};
   const u=((Date.now()/FLEET_PERIOD)+f.ph)%1;
   const dx=f.x1-f.x0,dy=f.y1-f.y0,L=Math.hypot(dx,dy)||1;
   const nx=-dy/L,ny=dx/L,bw=Math.sin(u*Math.PI)*f.bow;
@@ -16660,6 +16678,33 @@ function fleetArtOf(f){
     for(let i=1;i<6;i++){const x=tail*.85+(nose*.7-tail*.85)*i/6;lines.push([x,-hw,x,hw,.45]);}
     for(let i=0;i<2;i++){const y=(i-.5)*hw*.9;ell(tail*.95,y,L*.04,hw*.32,5,1,12);lights.push({x:tail*.98,y,c:"eng",r:hw*.3});}
     band=[[tail*.85,-hw*.55],[nose*.65,-hw*.55],[nose*.65,-hw*.25],[tail*.85,-hw*.25]];
+  }else if(f.k==="node"){
+    /* «УЗ-1»: ферма трасс — длинная решётка, на ней Короб, Кубрик, Воротник, Тамбур, Погреб */
+    L=220;hw=10;nose=L*.5;tail=-L*.5;
+    rect(tail*.95,-hw*.25,nose*.95,hw*.25,2,1);
+    for(let x=tail*.9;x<nose*.9;x+=L*.05){lines.push([x,-hw*.25,x+L*.05,hw*.25,.5]);lines.push([x,hw*.25,x+L*.05,-hw*.25,.5]);}
+    rect(-L*.06,-hw*1.4,L*.06,hw*1.4,0,1);                                   /* Воротник: узел, четыре порта */
+    for(const s of [-1,1]){rect(-L*.03,s*hw*1.4,L*.03,s*hw*1.9,2);joint(0,s*hw*1.38,L*.06,hw*.2);}
+    rect(tail*.7,-hw*1.1,-L*.12,hw*1.1,1,1);                                 /* Кубрик: жильё, окна */
+    for(let i=0;i<5;i++)lights.push({x:tail*.7+L*.08+i*L*.1,y:-hw*.5,c:"win"});
+    joint(-L*.09,0,L*.04,hw*1.2);
+    rect(L*.12,-hw*1.3,nose*.75,hw*1.3,5,1);                                 /* Короб: груз, тёмный ящик */
+    for(let i=1;i<4;i++){const x=L*.12+(nose*.63)*i/4;lines.push([x,-hw*1.3,x,hw*1.3,.5]);}
+    joint(L*.09,0,L*.04,hw*1.2);
+    rect(-L*.12,-hw*.6,-L*.06,hw*.6,1,1);                                    /* Тамбур: шлюз между */
+    ell(tail*.85,0,L*.06,hw*1.25,1,1,18);joint(tail*.75,0,L*.03,hw*.8);       /* Погреб: шар-хранилище */
+    for(const s of [-1,1]){add([[nose*.82,s*hw*.25],[nose*.98,s*hw*.25],[nose*.98,s*hw*3.4],[nose*.82,s*hw*3.4]],5,1);joint(nose*.9,s*hw*.24,L*.05,hw*.2);}
+    lights.push({x:tail*.95,y:-hw*.3,c:"nav",g:0});lights.push({x:nose*.95,y:hw*.3,c:"nav",g:1});
+    band=[[tail*.68,-hw*1.05],[-L*.14,-hw*1.05],[-L*.14,-hw*.7],[tail*.68,-hw*.7]];
+  }else if(f.k==="derelict"){
+    /* дерелик: чёрный корпус, ни огней, ни полосы, ни имени */
+    L=120;hw=11;nose=L*.5;tail=-L*.5;
+    add([[tail*.9,-hw*.6],[nose*.6,-hw*.8],[nose*.95,-hw*.2],[nose*.95,hw*.3],[nose*.5,hw*.9],[tail*.85,hw*.7]],5,1);
+    rect(-L*.1,-hw*1.6,L*.15,-hw*.6,5,1);rect(-L*.3,hw*.7,-L*.05,hw*1.5,5,1);
+    for(let i=1;i<6;i++){const x=tail*.85+(L*.7)*i/6;lines.push([x,-hw*.6,x,hw*.7,.6]);}
+    /* пробоина: тёмное пятно ещё чернее */
+    ell(L*.1,hw*.1,L*.06,hw*.4,5,1,10);polys[polys.length-1].col=[8,9,12];
+    band=[];
   }else if(f.k==="rescue"){
     /* «Луна-9»: шар, раскрытый на четыре лепестка — шлюз-цветок */
     L=70;hw=10;nose=L*.5;tail=-L*.5;
@@ -16813,12 +16858,14 @@ function fleetArtOf(f){
     ctx.fillStyle="rgba(0,0,0,.5)";ctx.fillRect(j[0]-j[2]*.35,j[1]-j[3]/2,.7,j[3]);ctx.fillRect(j[0]+j[2]*.35,j[1]-j[3]/2,.7,j[3]);}
   /* лессировка: красная полоса во всю длину, номер, имя, знак класса */
   if(band.length){ctx.fillStyle="rgb("+C[3].join(",")+")";ctx.beginPath();ctx.moveTo(band[0][0],band[0][1]);for(let i=1;i<4;i++)ctx.lineTo(band[i][0],band[i][1]);ctx.closePath();ctx.fill();}
+  if(band.length){
   ctx.fillStyle="rgba(30,30,34,.9)";ctx.font="bold "+(hw*.9).toFixed(1)+"px ui-monospace,monospace";ctx.textAlign="center";ctx.textBaseline="middle";
-  ctx.fillText(f.num.slice(2),(band[0][0]+band[1][0])/2,(band[1][1]+band[2][1])/2+hw*.62);
+  ctx.fillText(f.num?f.num.slice(2):f.name,(band[0][0]+band[1][0])/2,(band[1][1]+band[2][1])/2+hw*.62);
   ctx.font=(hw*.5).toFixed(1)+"px ui-monospace,monospace";ctx.fillStyle="rgba(30,30,34,.75)";
   ctx.fillText(f.name,(band[0][0]+band[1][0])/2,band[0][1]-hw*.28);
+  }
   /* знак класса: круг, одна залитая фигура (§18.2) */
-  {const mx=(band[0][0]+band[1][0])/2+L*.18,my=0;
+  if(band.length){const mx=(band[0][0]+band[1][0])/2+L*.18,my=0;
     ctx.strokeStyle="rgba(30,30,34,.85)";ctx.lineWidth=.7;ctx.beginPath();ctx.arc(mx,my,hw*.42,0,TAU);ctx.stroke();
     ctx.fillStyle="rgba(168,52,44,.95)";
     if(f.k==="post"){ctx.beginPath();ctx.moveTo(mx-hw*.22,my+hw*.12);ctx.lineTo(mx+hw*.22,my-hw*.16);ctx.lineTo(mx+hw*.22,my+hw*.16);ctx.closePath();ctx.fill();}
@@ -16835,11 +16882,11 @@ function fleetArtOf(f){
     const sg=ctx.createLinearGradient(li.x,0,li.x+L*.22,0);sg.addColorStop(0,"rgba(20,16,12,.55)");sg.addColorStop(1,"rgba(20,16,12,0)");
     ctx.fillStyle=sg;ctx.fillRect(li.x,li.y-li.r*1.6,L*.22,li.r*3.2);
     ctx.fillStyle="rgba(128,84,56,.7)";ctx.fillRect(li.x-L*.02,li.y-li.r*1.05,L*.03,li.r*2.1);}
-  ctx.fillStyle="rgba(255,190,170,.28)";ctx.beginPath();ctx.moveTo(band[0][0],band[0][1]);ctx.lineTo(band[1][0],band[1][1]);ctx.lineTo(band[1][0],band[1][1]+hw*.1);ctx.lineTo(band[0][0],band[0][1]+hw*.1);ctx.fill();
+  if(band.length){ctx.fillStyle="rgba(255,190,170,.28)";ctx.beginPath();ctx.moveTo(band[0][0],band[0][1]);ctx.lineTo(band[1][0],band[1][1]);ctx.lineTo(band[1][0],band[1][1]+hw*.1);ctx.lineTo(band[0][0],band[0][1]+hw*.1);ctx.fill();}
   /* один свет на всю сборку последним слоем; кромка ловит свет */
   ctx.globalCompositeOperation="source-atop";
   const lg=ctx.createLinearGradient(0,-hw*3,0,hw*2);
-  lg.addColorStop(0,"rgba(255,240,216,.30)");lg.addColorStop(.45,"rgba(255,224,196,0)");lg.addColorStop(1,"rgba(0,0,0,.5)");
+  lg.addColorStop(0,f.k==="derelict"?"rgba(120,130,150,.18)":"rgba(255,240,216,.30)");lg.addColorStop(.45,"rgba(255,224,196,0)");lg.addColorStop(1,"rgba(0,0,0,.5)");
   ctx.fillStyle=lg;ctx.fillRect(-rad,-rad,rad*2,rad*2);
   ctx.globalCompositeOperation="source-over";
   ctx=prev;
@@ -16874,9 +16921,12 @@ function drawFleet(zx,zy,Z){
     drawFleetShip(f);
     ctx.restore();
     const C=FLEET_CLASSES[f.k];
-    ctx.fillStyle="rgba(226,214,200,.8)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
-    ctx.fillText("«"+f.name+"» · ГЛАВТРАССА · "+f.num+" · ТРАССА "+f.line,x,y+30);
-    ctx.fillStyle="rgba(226,214,200,.5)";ctx.fillText(C.ru.toUpperCase(),x,y+40);
+    ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+    if(f.k==="node"){ctx.fillStyle="rgba(226,214,200,.8)";ctx.fillText("«"+f.name+"» · УЗЕЛ ТРАСС · ГЛАВТРАССА",x,y+46);}
+    else if(f.k!=="derelict"){
+      ctx.fillStyle="rgba(226,214,200,.8)";ctx.fillText("«"+f.name+"» · ГЛАВТРАССА · "+f.num+" · ТРАССА "+f.line,x,y+30);
+      ctx.fillStyle="rgba(226,214,200,.5)";ctx.fillText(C.ru.toUpperCase(),x,y+40);
+    }
     ctx.textAlign="left";
   }
 }
@@ -16887,7 +16937,24 @@ function fleetInteract(sh){
   let near=null,nd=1e9,np=null;
   for(const f of F){const p=fleetPos(f),d=Math.hypot(sh.x-p.x,sh.y-p.y);if(d<nd){nd=d;near=f;np=p;}}
   if(!near||nd>260)return false;
+  if(near.k==="derelict"){
+    G.prompt="ЧЁРНЫЙ КОРПУС · БЕЗ ИМЕНИ\nДЕЙСТВИЕ — ПОЗЫВНОЙ";
+    if(actEdge){
+      etherLine("…тишина. Ни позывного, ни огня. Только корпус, и он чёрный.","эфир");
+      G.fleetLog=G.fleetLog||{};
+      if(!G.fleetLog["derelict|"+fleetLogKey()]){G.fleetLog["derelict|"+fleetLogKey()]=1;
+        if(typeof recordAdd==="function")recordAdd("эфир","чёрный корпус в секторе "+G.sx+":"+G.sy+" · не ответил");}
+    }
+    return true;
+  }
+  if(near.k==="node"){
+    G.prompt="УЗЛОВАЯ «"+near.name+"» · УЗЕЛ ТРАСС\nДЕЙСТВИЕ — ПОЗЫВНОЙ";
+    if(actEdge)etherLine("«"+near.name+"»: …узел трасс. Стоянка есть, торга нет: Короб полон, Кубрик спит, Воротник открыт. Держитесь линии.","узловая");
+    return true;
+  }
   const C=FLEET_CLASSES[near.k];
+  /* караван (§18.7 п.6): идти рядом — пираты не подходят, ход медленнее */
+  const canCaravan=!(G.caravan&&G.caravan.until>G.t);
   const st=stat(), low=G.fuel<st.fuelMax*.6;
   const shift=Math.floor(Date.now()/((typeof HOLD_SHIFT==="number")?HOLD_SHIFT:1800000));
   G.fleetLog=G.fleetLog||{};
@@ -16912,11 +16979,14 @@ function fleetInteract(sh){
   const schoolKey=fleetLogKey()+"|school";
   const canSchool=near.k==="school"&&!!pupil&&(G.fleetLog[schoolKey]||0)<shift;
   const verb=canFuel?"ЗАПРАВКА ПО НОРМЕ":canTow?"БУКСИР НА ВЕРФЬ":canFix?"РЕМОНТ ПО НОРМЕ":canEscort?"ПРОСИТЬ КОНВОЙ":
-    canMail?"СДАТЬ ПОЧТУ":canRansom?"ВЫКУП ЧЕРЕЗ ГОСПИТАЛЬ · "+Math.round(hostage.ransom*.5).toLocaleString("ru")+" КР":canSchool?"ОТДАТЬ В УЧЁБУ · "+pupil.name.toUpperCase():"ПОЗЫВНОЙ";
+    canMail?"СДАТЬ ПОЧТУ":canRansom?"ВЫКУП ЧЕРЕЗ ГОСПИТАЛЬ · "+Math.round(hostage.ransom*.5).toLocaleString("ru")+" КР":canSchool?"ОТДАТЬ В УЧЁБУ · "+pupil.name.toUpperCase():canCaravan?"ИДТИ КАРАВАНОМ":"ПОЗЫВНОЙ";
   G.prompt=C.ru.toUpperCase()+" ГЛАВТРАССЫ «"+near.name+"»"+
     "\nДЕЙСТВИЕ — "+verb;
   if(actEdge){
-    if(canMail){
+    if(!canFuel&&!canTow&&!canFix&&!canEscort&&!canMail&&!canRansom&&!canSchool&&canCaravan){
+      G.caravan={until:G.t+1200,name:near.name};
+      etherLine("«"+near.name+"»: …идите рядом, борт. Ход наш, пираты к каравану не суются. Отстанете — сами по себе.",C.ru);
+    }else if(canMail){
       mailDock();
       etherLine("«"+near.name+"»: …почтовик. Стопку приняли, ваши — на борту, смотрите стол.","почтовик");
     }else if(canRansom){
@@ -16959,7 +17029,15 @@ function fleetInteract(sh){
 }
 
 /* конвой сторожевика: пока действует, пираты вас не видят (§18.7 п.6/п.10) */
-function fleetEscortActive(){return G.mode==="system"&&(G.fleetEscort||0)>G.t;}
+function fleetEscortActive(){return G.mode==="system"&&((G.fleetEscort||0)>G.t||fleetCaravanActive());}
+/* караван действует, пока срок не вышел и рядом (до 520) идёт корабль флота */
+function fleetCaravanActive(){
+  if(G.mode!=="system"||!G.caravan||G.caravan.until<=G.t)return false;
+  const sh=G.ship;let ok=false;
+  for(const f of fleetHere(G.sys)){if(f.still)continue;const p=fleetPos(f);if(Math.hypot(sh.x-p.x,sh.y-p.y)<520){ok=true;break;}}
+  if(!ok)G.caravan=null;
+  return ok;
+}
 
 /* ══════════════ наёмники: рейс как раздача карт ══════════════ */
 /* Наёмник — не альтернатива дрону, а ставка. Дрон даёт маленький надёжный плюс,
@@ -29529,7 +29607,7 @@ function snapshot(){
     fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,rep:G.rep,poiSeen:G.poiSeen,findsSeen:G.findsSeen,
     nodes:G.nodes,crowns:G.crowns,nodeShow:G.nodeShow,rareFound:G.rareFound,pnode:G.pnode,hunted:G.hunted,
     news:G.news,newsMarks:G.newsMarks,newsT:G.newsT,rivals:G.rivals,
-    wrecks:G.wrecks,bargePax:G.bargePax,fleetLog:G.fleetLog||{},fleetEscort:G.fleetEscort||0,
+    wrecks:G.wrecks,bargePax:G.bargePax,fleetLog:G.fleetLog||{},fleetEscort:G.fleetEscort||0,caravan:G.caravan||null,
     loreFound:G.loreFound,loreMarks:G.loreMarks,settle:G.settle,tin:G.tin,
     scrip:G.scrip,scripRate:G.scripRate,scripLog:G.scripLog,
     doom:G.doom,doomDead:G.doomDead,parrot:G.parrot,heard:G.heard,grok:G.grok,flea:G.flea,
@@ -29893,6 +29971,7 @@ function applySave(s){
      Новое поле с безопасным дефолтом (сквозное правило). */
   G.fleetLog=(s.fleetLog&&typeof s.fleetLog==="object")?s.fleetLog:{};
   G.fleetEscort=+s.fleetEscort||0;
+  G.caravan=(s.caravan&&typeof s.caravan==="object")?s.caravan:null;
   G.wrecks={};
   if(s.wrecks&&typeof s.wrecks==="object")
     for(const k in s.wrecks){
@@ -33222,7 +33301,7 @@ function updateSystem(dt){
       }else if(!keys.thrust){sh.vx=0;sh.vy=0;}
     }
   }
-  const maxSp=6.4+st.thr*1.6;
+  const maxSp=(6.4+st.thr*1.6)*((typeof fleetCaravanActive==="function"&&fleetCaravanActive())?.6:1);   /* караван идёт ходом флота (M313) */
   sp=Math.hypot(sh.vx,sh.vy);
   if(sp>maxSp){sh.vx*=maxSp/sp;sh.vy*=maxSp/sp;sp=maxSp;}
   /* вектор скорости мягко доворачивается к носу — за счёт этого разворот

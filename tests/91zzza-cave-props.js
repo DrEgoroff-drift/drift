@@ -125,7 +125,7 @@ TEST_SUITES.push(()=>suite("M310: флот идёт по лестнице, тр�
   let seen={};
   for(let i=0;i<12;i++){const s2={seed:100+i,sx:1,sy:i,station:{x:100,y:0},planets:[]};for(const f of fleetHere(s2))seen[f.k]=1;}
   window.rungOf=saveRung;
-  ok(Object.keys(seen).every(k=>FLEET_CLASSES[k].art),"спавнятся только нарисованные классы");
+  ok(Object.keys(seen).every(k=>k==="node"||FLEET_CLASSES[k].art),"спавнятся только нарисованные классы");
   ok(Object.keys(seen).length>=1,"на рунге 30 кто-то из флота ходит ("+Object.keys(seen).join(",")+")");
   /* положение — функция времени в пределах линии */
   const f={k:"post",seed:3,name:"ЗАРНИЦА",num:"Л-1425",line:4,x0:-3000,y0:0,x1:3000,y1:0,bow:400,ph:.3};
@@ -142,7 +142,7 @@ TEST_SUITES.push(()=>suite("M310: флот идёт по лестнице, тр�
   actEdge=true;fleetInteract(G.ship);actEdge=false;
   eq(G.fuel,stat().fuelMax,"залили до полного");
   G.fuel=1;fleetInteract(G.ship);
-  ok(G.prompt.indexOf("ПОЗЫВНОЙ")>=0,"второй раз в ту же смену — только позывной, без книги долга");
+  ok(/ПОЗЫВНОЙ|КАРАВАНОМ/.test(G.prompt),"второй раз в ту же смену — только позывной, без книги долга");
   const snap=snapshot();ok(snap.fleetLog&&Object.keys(snap.fleetLog).length===1,"норма записана в сейв");
   delete sys.fleetCache;
 }));
@@ -162,7 +162,7 @@ TEST_SUITES.push(()=>suite("M311: шесть классов нарисованы
   ok(G.prompt.indexOf("БУКСИР НА ВЕРФЬ")>=0,"битому корпусу — буксир");
   actEdge=true;fleetInteract(G.ship);actEdge=false;
   eq(G.hull,Math.round(st.hullMax*.4),"подлатан до 40 %");
-  fleetInteract(G.ship);ok(G.prompt.indexOf("ПОЗЫВНОЙ")>=0,"второй раз в смену — только позывной");
+  fleetInteract(G.ship);ok(/ПОЗЫВНОЙ|КАРАВАНОМ/.test(G.prompt),"второй раз в смену — только позывной");
   /* плавбаза: ремонт по норме до полного */
   put("base");G.hull=Math.round(st.hullMax*.5);fleetInteract(G.ship);
   ok(G.prompt.indexOf("РЕМОНТ ПО НОРМЕ")>=0,"плавбаза чинит");
@@ -191,7 +191,7 @@ TEST_SUITES.push(()=>suite("M312: тринадцать классов запеч
   G.fleetLog={};
   /* почтовик без сети — только позывной */
   put("post");actEdge=false;fleetInteract(G.ship);
-  ok(G.prompt.indexOf("ПОЗЫВНОЙ")>=0&&G.prompt.indexOf("ПОЧТУ")<0,"без сети почту не сдать — позывной");
+  ok(/ПОЗЫВНОЙ|КАРАВАНОМ/.test(G.prompt)&&G.prompt.indexOf("ПОЧТУ")<0,"без сети почту не сдать — позывной");
   /* госпитальное: заложник за полцены */
   const h={id:"cH",seed:5,name:"Тест Заложник",spec:"pilot",traits:[],xp:10,state:"hostage",ransom:1000,ransomBase:1000,ransomAt:Date.now(),order:{kind:"home",sx:G.sx,sy:G.sy},shipId:null,trips:1};
   G.crew=[h];G.credits=5000;
@@ -207,6 +207,38 @@ TEST_SUITES.push(()=>suite("M312: тринадцать классов запеч
   ok(G.prompt.indexOf("ОТДАТЬ В УЧЁБУ")>=0,"учебное берёт свободного");
   actEdge=true;fleetInteract(G.ship);actEdge=false;
   eq(p.xp,45,"опыт +35");
-  fleetInteract(G.ship);ok(G.prompt.indexOf("ПОЗЫВНОЙ")>=0,"в ту же смену второй раз не берут");
+  fleetInteract(G.ship);ok(/ПОЗЫВНОЙ|КАРАВАНОМ/.test(G.prompt),"в ту же смену второй раз не берут");
   G.crew=[];delete sys.fleetCache;
+}));
+
+/* ══════════════ M313: узловая «УЗ-1», чёрный дерелик, караван ══════════════ */
+TEST_SUITES.push(()=>suite("M313: узловая с рунга 25, дерелик в опасной глуши, караван прячет и замедляет",()=>{
+  resetWorld();
+  /* узловая */
+  const saveRung=window.rungOf;window.rungOf=()=>25;
+  const s25={seed:501,sx:3,sy:4,station:{x:300,y:0},planets:[]};
+  const L25=fleetHere(s25);
+  ok(L25.some(f=>f.k==="node"&&f.name==="УЗ-1"&&f.still),"на рунге 25 стоит узловая «УЗ-1»");
+  window.rungOf=()=>24;const s24={seed:502,sx:3,sy:5,station:{x:300,y:0},planets:[]};
+  ok(!fleetHere(s24).some(f=>f.k==="node"),"на рунге 24 узловой нет");
+  window.rungOf=saveRung;
+  /* дерелик: только без станции и только в опасных секторах, и не в каждом */
+  let n=0,tot=0;
+  for(let i=0;i<40;i++){const sx=200+i,sy=200+i*3;if(sysDanger(sx,sy)<.6)continue;tot++;const sd={seed:600+i,sx,sy,station:null,planets:[]};if(fleetHere(sd).some(f=>f.k==="derelict"))n++;}
+  ok(tot===0||(n>0&&n<tot),"дерелик есть в части опасных систем ("+n+" из "+tot+")");
+  ok(!fleetHere({seed:9,sx:0,sy:0,station:null,planets:[]}).length,"у дома дерелика нет");
+  for(const k of ["node","derelict"]){const a=fleetArtOf({k,seed:2,name:"УЗ-1",num:"",line:0});ok(a.cn.width>0,k+": спрайт запечён");}
+  /* караван */
+  G.mode="system";const sys=G.sys;
+  const b=Math.floor(Date.now()/FLEET_PERIOD),X=G.ship.x,Y=G.ship.y;
+  sys.fleetCache={b,list:[{k:"ore",seed:3,name:"КОСОГОР",num:"Л-1",line:1,x0:X+60,y0:Y,x1:X+60,y1:Y,bow:0,ph:0}]};
+  G.caravan=null;G.fleetLog={};G.fuel=stat().fuelMax;G.hull=stat().hullMax;
+  actEdge=false;fleetInteract(G.ship);
+  ok(G.prompt.indexOf("ИДТИ КАРАВАНОМ")>=0,"рудовоз зовёт в караван");
+  actEdge=true;fleetInteract(G.ship);actEdge=false;
+  ok(fleetCaravanActive()&&fleetEscortActive(),"караван действует и прячет от пиратов");
+  const snap=snapshot();ok(snap.caravan&&snap.caravan.name==="КОСОГОР","караван в сейве");
+  sys.fleetCache={b,list:[]};
+  ok(!fleetCaravanActive(),"флот ушёл — караван распался");
+  G.caravan=null;delete sys.fleetCache;
 }));

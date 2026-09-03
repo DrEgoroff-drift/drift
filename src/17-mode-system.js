@@ -103,7 +103,7 @@ function updateSystem(dt){
       }else if(!keys.thrust){sh.vx=0;sh.vy=0;}
     }
   }
-  const maxSp=6.4+st.thr*1.6;
+  const maxSp=(6.4+st.thr*1.6)*((typeof fleetCaravanActive==="function"&&fleetCaravanActive())?.6:1);   /* караван идёт ходом флота (M313) */
   sp=Math.hypot(sh.vx,sh.vy);
   if(sp>maxSp){sh.vx*=maxSp/sp;sh.vy*=maxSp/sp;sp=maxSp;}
   /* вектор скорости мягко доворачивается к носу — за счёт этого разворот

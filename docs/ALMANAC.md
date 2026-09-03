@@ -297,6 +297,13 @@ not «the thing that names it» at this scale — make it the full height of the
 the учебное's truss is a bare rod. Issue III is complete for the drawings; what remains for
 the fleet is content (караван, заявка, the node station, the derelict), not law.
 
+**Addendum, 0.310.0 (M313).** The places (`x_fleet3.png`): **«УЗ-1»** reads as a station, not a
+ship — the truss is the body, the modules hang off it in one joint grammar, the sphere and the
+dark box give it two value ends, the windows the only light it makes; the band with the
+call-sign is the one colour. **The derelict**: black on black — §16 zone I–II by design, the
+hole a step darker; it is the one thing on the sheet with no light of its own, and that is
+its voice. Holds.
+
 ---
 
 ## Reserved — issue III (continued): the remaining ten classes

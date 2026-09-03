@@ -847,8 +847,10 @@ without its printout.
 
 > **Status (2026-09-03, M310):** opened. `12ai-fleet` carries the thirteen classes with their
 > voices, the paint pipeline, the first three drawings (почтовик, танкер, буксир), passage by the
-> ladder (§18.8), and two of the twelve interactions (позывной, заправка по норме). The rest of
-> §18 is the queue; the 2026-09-02 status below is kept as history.
+> ladder (§18.8), and two of the twelve interactions (позывной, заправка по норме). M311–M313
+> (0.308–0.310): all thirteen classes drawn, ten of the twelve interactions in some form (left: 11
+> спасатель's «come along», 12 заявка), the node station «УЗ-1» and the derelict. The
+> 2026-09-02 status below is kept as history.
 > **Status (2026-09-02):** the author said «давай потом», and the same evening «флот запиши в
 > беклог» — it was in `PLAN.md` under «Open by design». What follows is the record of the
 > evening of 08-31, kept whole because it will be wanted; **nothing in it is queued** (§19). The
