@@ -64,6 +64,22 @@ with their measured size and stay silent until they **grow**. A new module cross
 the line is flagged immediately. When splitting: cut along an existing seam (a section header,
 a family of functions), keep the concatenation order, and never split a `const` table.
 
+That guard is about text; binaries are the real risk. `docs/shots/` collecting one full-res PNG
+per `mk*.ps1` design-review stand once grew `.git` to 650 MB before a cleanup — untraceable
+afterwards, since old blobs stay in history even once a file is untracked. `.githooks/pre-commit`
+warns at 500 KB and refuses the commit at 10 MB for any staged file (`git commit --no-verify`
+overrides it once, for the rare legitimate case). It is not wired in by git itself — a hooks
+directory isn't part of the tree it guards — so every clone runs this once:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+New binaries `.gitignore` should generally not admit at all: `docs/shots/*.png` is ignored by
+default and whitelists only the handful `README.md`/`ALMANAC.md`/`PLAN-archive.md` actually cite
+(same pattern as the older `docs/shots/x_*.png` rule) — a design-review shot from a `mk*.ps1`
+stand stays local unless it earns a line there.
+
 ## Where things live
 
 One phrase per module; the module's own header says the rest. Grep `docs/INDEX.md` for a symbol.
@@ -113,7 +129,8 @@ One phrase per module; the module's own header says the rest. Grep `docs/INDEX.m
   (`CREW_YIELD`); the profit lives in the tails of the event table — parts, rare stock, the odd
   captured hull. Edits that put him in steady profit break the design: he is a bet, not an
   income stream. Hidden luck (`crewLuck`) is never surfaced anywhere.
-- Git: no `--force`, no `--no-verify`, no `amend`, don't touch git config.
+- Git: no `--force`, no `--no-verify`, no `amend`, don't touch git config — except
+  `core.hooksPath .githooks` (below), the one deliberate exception.
 - **A manager holds one domain, and there are always four seats.** No second manager on a taken
   domain; the AI core (once it exists) takes such a seat rather than a fifth. Edits that grow the
   number of seats break the design: the system is about choosing who covers the routine, not

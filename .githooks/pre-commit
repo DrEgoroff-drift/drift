@@ -1,0 +1,40 @@
+#!/bin/sh
+# Guards against the thing that grew .git to 650 MB: a design-review PNG or a
+# stray binary committed by hand instead of through the docs/shots whitelist
+# in .gitignore. Install once per clone:
+#
+#   git config core.hooksPath .githooks
+#
+# WARN_KB: printed, commit proceeds. BLOCK_KB: commit refused; either the
+# file does not belong in git (untrack it, let .gitignore catch it next
+# time), or it genuinely does and you re-run with --no-verify once.
+WARN_KB=500
+BLOCK_KB=10000
+
+files=$(git diff --cached --name-only --diff-filter=ACM)
+[ -z "$files" ] && exit 0
+
+status=0
+old_ifs=$IFS
+IFS='
+'
+for f in $files; do
+  IFS=$old_ifs
+  [ -f "$f" ] || continue
+  size=$(git cat-file -s ":$f" 2>/dev/null) || continue
+  kb=$((size / 1024))
+  if [ "$kb" -ge "$BLOCK_KB" ]; then
+    mb=$((kb / 1024))
+    echo "pre-commit: BLOCKED - $f is ${mb} MB (limit ${BLOCK_KB}KB)." >&2
+    echo "  If it belongs in git, commit with --no-verify once." >&2
+    echo "  If it does not, git restore --staged $f and add it to .gitignore." >&2
+    status=1
+  elif [ "$kb" -ge "$WARN_KB" ]; then
+    echo "pre-commit: warning - $f is ${kb} KB, over ${WARN_KB}KB. Double-check it belongs in git." >&2
+  fi
+  IFS='
+'
+done
+IFS=$old_ifs
+
+exit $status
