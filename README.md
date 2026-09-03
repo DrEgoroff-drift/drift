@@ -227,6 +227,26 @@ silhouette from the type, details from the system seed: warehouse pods and cargo
 furnaces with a flare stack, an open slipway with a crawling crane, dish antennas and radiator
 grids, gun turrets, or a bare tank.
 
+### The holding
+
+A station can offer you a build of your own on its ground — not a shop purchase but a **route
+bought as an order**: you commit a barge to hauling it, and the station's own appetite for what
+it needs sets the pace, not a price you negotiate.
+
+- **The site grows by building** — eighty-two buildings across nine families, forty-eight
+  materials feeding them, each one unlocking against the station's real need for it rather than
+  a tech-tree gate.
+- **A ladder of rank** opens further reach as turnover accrues — further routes, the fleet on
+  the trunk lines starting to hail you first, eventually a node station of its own.
+- **Your own barge** works the route the way a drone works a deposit: on the same lazy clock,
+  visible in the log, never simulated in real time while you are elsewhere.
+- **The station's body changes.** What you feed it shows — a dump, a dome, a strip on the day
+  side — so the place looks different for having you in it.
+- **News travels.** What the holding does becomes rumour told in someone else's words at other
+  stations, and rival barges compete for the same road once it is worth having.
+- **What is built is never for sale.** Knowledge of a road can change hands; your mark on the
+  world cannot.
+
 ### Crew and fleet
 
 Old hulls in your hangar stop being dead weight: **a hire needs one of your ships**, which is
@@ -404,6 +424,27 @@ touching down too fast, too sideways, tilted or on a slope costs hull.
   of your own, and a galaxy without occupied systems. All three are counted from real state,
   with no quest flags.
 
+### The fleet you can't buy
+
+The long lines between systems carry traffic that has nothing to do with you: **ГЛАВТРАССА**, a
+transport service running its own schedule under one grey-and-red livery, thirteen ship classes
+each drawn from a distinct working silhouette — mail sphere, tanker, tug, rescue ship, hospital
+ship, school ship, floating base and more.
+
+- **Nothing is simulated.** A ship's position is a function of its line, its seed and the clock,
+  the same trick as trade barges — nothing tracked while you are elsewhere, nothing recomputed
+  that would move it.
+- **Hail one** and it answers in its class's own voice; fuel comes free "по норме" once a shift,
+  with no ledger of debt.
+- **A tow** takes a hull that will not make it home to a yard instead of leaving it stranded.
+- **Convoy with one** and pirates stop seeing you, at the fleet's own, slower pace.
+- **A rescuer calls you to a barge in distress** it has already found, gives you the course, and
+  leaves the choice of whether to follow entirely yours.
+- **The ladder of rank changes what you meet** — a node station of the trunk lines past a
+  threshold, a black, nameless derelict in the far dangerous sectors, the fleet hailing you
+  first once you are known on the line.
+- Routes worth travelling show as red-and-white dashed lines on the galaxy map.
+
 ### Work that pays
 
 The cantina seats people with their own business, and none of it is "bring me ten ore". You
@@ -533,7 +574,7 @@ powershell -ExecutionPolicy Bypass -File build.ps1
 ```
 
 The same build produces `tests.html` — open it in a browser and it runs the suites against the
-real game state (currently ~11 800 assertions across 379 suites, nothing mocked) and prints the
+real game state (currently ~13 000 assertions across 441 suites, nothing mocked) and prints the
 report on the page; `test.ps1` runs the same thing headless.
 
 Module order matters: the whole game shares one scope, so constants and tables must be declared
@@ -547,7 +588,7 @@ portable save codes.
 
 ## Status
 
-Version 0.224.0. Everything described above is built and playable, online at
+Version 0.313.0. Everything described above is built and playable, online at
 [drift-game.ru](https://drift-game.ru) with accounts and cloud saves, or offline from this file.
 
 Four development passes are behind it. The first finished the planned queue: celestial
@@ -576,6 +617,14 @@ faces and windows that close quietly, and an ending that is never explained — 
 a full cosmetic audit under eight laws (every light has a source, everything standing casts a
 shadow, work is visible, motion never blinks). Noon finally looks like noon: the sky, the
 shadows and the light all know the hour. The frame holds 60 fps in all nine modes.
+
+A fifth push (M289–M316) gave the galaxy its own economy and its own traffic: **the holding**
+(landing a build of your own on someone else's station, bought as a route rather than priced,
+growing against what the station actually needs) and **the fleet you can't buy** (thirteen
+classes of state ships working the long lines on their own schedule, hailed rather than hired).
+Alongside it, another pass over the picture itself — the cave, the station's own body, the home
+as a generator instead of a fixed plan, a day sky that knows the hour, the system's true
+proportions, and a surface where rocks and rock faces stopped repeating.
 
 Nothing is queued. The game lives as a sandbox; new work starts from the author's eye.
 Balance is tuned against measurements, so the numbers move between versions.
