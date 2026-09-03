@@ -531,7 +531,7 @@ function drawFleetMap(vis,cell){
   ctx.save();ctx.setLineDash([3,4]);ctx.lineWidth=1.2;
   const seen=new Set();
   for(const a of L)for(const b of L){
-    if(a===b||Math.hypot(a.x-b.x,a.y-b.y)>cell*2.3)continue;
+    if(a===b||Math.hypot(a.x-b.x,a.y-b.y)>cell*1.6)continue;
     const key=a.gx<b.gx||(a.gx===b.gx&&a.gy<b.gy)?a.gx+","+a.gy+">"+b.gx+","+b.gy:b.gx+","+b.gy+">"+a.gx+","+a.gy;
     if(seen.has(key))continue;seen.add(key);
     ctx.strokeStyle="rgba(226,120,100,.45)";ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
