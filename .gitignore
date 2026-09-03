@@ -19,3 +19,7 @@ docs/ref/
 
 # перегонщик снимков в webp — тоже ручной, не сборка стенда
 !docs/towebp.html
+
+# headless frame shots (docs/shot.py) are scratch, except the ones the almanac cites
+docs/shots/x_*.png
+!docs/shots/x_fleet.png

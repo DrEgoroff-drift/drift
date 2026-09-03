@@ -4,7 +4,7 @@
     python docs/shot.py cave                    # docs/shots/x_cave.png (1280x800)
     python docs/shot.py cave system --look      # + lookFrame() numbers per scene
     python docs/shot.py cave --js "G.cave.x=900;G.cave.cy=null" --out C:/tmp/c.png
-    python docs/shot.py cave --w 390 --h 844    # phone
+    python docs/shot.py cave --w 390 --h 844    # phone — NOT honest below 500 px: headless Chrome clamps the window (canvas reads W=500); use test.ps1 -Mobile for phone layout
 
 How: drift.html is cut before </body>, the scene script of docs/mkview.ps1 is
 appended (same scenes: ?s=cave|system|night|homeout|hold|...), then an extra
