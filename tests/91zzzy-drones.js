@@ -118,3 +118,46 @@ TEST_SUITES.push(()=>suite("дроны: без станции в системе 
   const T=droneTripMs(d,ns);
   ok(T>=25000&&T<=240000,"круг всё равно конечен: "+Math.round(T/1000)+" с");
 }));
+
+/* ── где сдавать (M324): без смотрителя — ближайшая; со смотрителем — по ценам со стола ── */
+TEST_SUITES.push(()=>suite("дроны M324: смотритель уводит сбыт туда, где дороже, и не дальше трёх секторов",()=>{
+  resetWorld();G.mgrs=[];G.seenPrices={};
+  const now=Date.now();
+  const mk=(sx,sy)=>({id:41,sx,sy,pi:-1,res:"iron",rate:1,pool:50,soldAtMs:now,t0:now,lastMs:now,
+                      bornMs:now,trips:0,down:0,sold:0,earned:0,carry:0});
+  /* пара: станция s2 и сектор в двух шагах от неё, чей ближайший рынок — не s2 */
+  let s2=null,d=null;
+  for(const s of routeTestStations(10)){
+    if(!s.station)continue;
+    for(const [ox,oy] of [[-2,0],[2,0],[0,-2],[0,2],[-3,1],[3,-1]]){
+      const near=nearestStation(s.sx+ox,s.sy+oy);
+      if(near&&near.key!==s.key){s2=s;d=mk(s.sx+ox,s.sy+oy);break;}
+    }
+    if(s2)break;
+  }
+  ok(!!s2,"нашлась станция с чужим ближайшим рынком в трёх секторах");
+  if(!s2)return;
+  const near=nearestStation(d.sx,d.sy);
+  /* без смотрителя — ближайшая, и решения не остаётся */
+  eq(droneMarket(d).key,near.key,"без смотрителя сдаёт на ближайшую");
+  ok(!d.mkt,"и рынка не помнит");
+  /* смотритель с перком и правилом; на столе — цена s2 втрое выше ближайшей */
+  G.credits=200000;ok(hireMgr(genMgr(4242,["keep"])),"смотритель нанят");
+  const m=mgrOf("keep");m.perks=(m.perks||[]).concat(["sell"]);if(m.rules.indexOf("sell")<0)m.rules.push("sell");
+  const p0=marketFor(near).iron||1;
+  G.seenPrices[s2.key]={name:s2.station.name,sx:s2.sx,sy:s2.sy,day:celDay(),p:{iron:p0*3},need:null};
+  const M1=droneMarket(d);
+  eq(M1.key,s2.key,"со смотрителем — туда, где дороже");
+  ok(!!d.mkt&&d.mkt.key===s2.key&&d.mkt.day===celDay(),"решение записано на сутки");
+  ok(!!droneFar(d),"рынок в другом секторе — круг длиннее");
+  ok(droneTripMs(d)>=DRONE_TRIP_BASE+2*15000-1,"на два сектора не меньше +30 с: "+Math.round(droneTripMs(d)/1000)+" с");
+  ok(/→/.test(droneName(d)+(droneFar(d)?" → "+d.mkt.name.toUpperCase():"")),"подпись дрона называет рынок");
+  /* дальше трёх секторов стол не считается */
+  G.seenPrices={};d.mkt=null;
+  G.seenPrices["far"]={name:"Далёкая",sx:d.sx+5,sy:d.sy,day:celDay(),p:{iron:p0*9},need:null};
+  eq(droneMarket(d).key,near.key,"цена за пять секторов не считается");
+  /* стол пуст — ближайшая, без реплик */
+  G.seenPrices={};d.mkt=null;
+  eq(droneMarket(d).key,near.key,"пустой стол — ближайшая");
+  G.mgrs=[];G.seenPrices={};
+}));

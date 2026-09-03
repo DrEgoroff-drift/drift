@@ -81,7 +81,7 @@ in this order (author, 2026-09-03: «сначала по плану, потом 
 1. ~~The settlement's houses and the wintering hut on `homePlan`~~ — M322 (0.319.0): one
    `housePlan` for both; the wintering has no exterior, nothing to unify there.
 2. ~~The plants as bodies (M173 #2)~~ — M323 (0.320.0): the dark mass under every form.
-3. Drones choosing where they sell — decided by the assistant, then built.
+3. ~~Drones choosing where they sell~~ — M324 (0.321.0): the keeper, from the desk's prices.
 4. Effects, all of them: heat haze over the nozzles, chromatic aberration on hits, water with
    reflections on the surface (a design addition), the station's flare flame live over the bake.
 
@@ -98,8 +98,8 @@ the day they are found; this is work that was deliberately not done, or that nee
 
 - ~~The cave, and the man's height~~ — author, 2026-09-03: «нормас, оставляем». One height in
   every mode stays law; the cave is not an exception.
-- ~~Drones: choosing where they sell~~ — author, 2026-09-03: «придумай сам, делаем». In the
-  queue above.
+- ~~Drones: choosing where they sell~~ — M324 (0.321.0): the keeper's «авто-сбыт» reads the
+  desk's prices within three sectors; nearest otherwise.
 - **Drone attrition.** Deliberately absent: a drone breaks and mends but is never lost. The author
   said leave the drones alone; this stays written down rather than done.
 - ~~`pair` as a target for natural light~~ — decided 2026-09-03, M308: daylight scenes
@@ -193,6 +193,7 @@ Grep `docs/PLAN-archive.md` for the milestone number (header "Moved out of PLAN.
 - **M289–M297** (0.286–0.294) — the holding in nine steps (see "The holding — built" below).
 - **M298** (0.295.0) — three interface fixes: the table answers in the row, rumours with distance,
   jumps and НА КАРТУ, the map card as a footer line.
+- **M324** (0.321.0) — where a drone sells: the keeper decides from `seenPrices` within three sectors; caption, circle length, one line from him.
 - **M323** (0.320.0) — the plant as a body: a dark mass under every form, the lit form over it; stem a step darker than crown.
 - **M322** (0.319.0) — one `housePlan` for the home and the settlement's izbas; one material table; the settlement's chimney on the slope. Stand defect noted: `shot.py homeout/wallset` hang at load.
 - **M321** (0.318.0) — the §9 walkthrough as a suite in both windows; the course as a state, «К ЦЕЛИ» in flight, the search circle that survives НАЗАД.

@@ -70,10 +70,12 @@ function dronePoint(d,sys){
   const a=((d.id||1)*2.399)%TAU, r=(sys.belt&&sys.belt.orbit)||900;
   return {x:Math.cos(a)*r,y:Math.sin(a)*r};
 }
+function droneFar(d){return (d.mkt&&(d.mkt.sx!==d.sx||d.mkt.sy!==d.sy))?d.mkt:null;}   /* рынок в другом секторе (M324) */
 function droneHome(d,sys){
   sys=sys||droneSys(d);
-  if(sys.station)return {x:sys.station.x,y:sys.station.y,name:sys.station.name};
-  const h=nearestStation(d.sx,d.sy);
+  const far=droneFar(d);
+  if(sys.station&&!far)return {x:sys.station.x,y:sys.station.y,name:sys.station.name};
+  const h=far||nearestStation(d.sx,d.sy);
   /* ── станции в этой системе нет ──
      Возвращать (0,0) было нельзя: в нуле стоит ЗВЕЗДА, и дрон возил руду прямо
      в неё (второй проход, поймано глазами). Он уходит за край системы в ту
@@ -89,7 +91,9 @@ function droneTripMs(d,sys){
   const a=dronePoint(d,sys),b=droneHome(d,sys);
   const dist=Math.hypot(b.x-a.x,b.y-a.y);
   const mul=(typeof stat==="function"&&stat().droneRate)?1/clamp(stat().droneRate,.5,3):1;
-  return clamp(DRONE_TRIP_BASE+dist*DRONE_TRIP_PER_KM*mul,25000,240000);
+  /* рынок в соседнем секторе — дольше круг: 15 с на сектор (M324) */
+  const far=droneFar(d),hops=far?Math.max(Math.abs(far.sx-d.sx),Math.abs(far.sy-d.sy)):0;
+  return clamp(DRONE_TRIP_BASE+dist*DRONE_TRIP_PER_KM*mul+hops*15000,25000,240000);
 }
 /* ── фаза круга ──
    0…1 по кругу: 0—.08 грузится на точке, .08—.46 идёт гружёным, .46—.54 стоит
@@ -245,7 +249,7 @@ function drawDronesSystem(zx,zy,Z){
       /* подпись тонет в свете звезды: над короной цвет груза читался пятном.
          Тень под буквой стоит копейки и держит текст на любом фоне (закон 3
          про кромку — та же мысль, только для шрифта) */
-      const t=droneName(d)+" · "+RES[d.res].ru.toUpperCase();
+      const t=droneName(d)+" · "+RES[d.res].ru.toUpperCase()+(droneFar(d)?" → "+d.mkt.name.toUpperCase():"");
       const ly=y-9-5*(k-1);
       ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
       ctx.fillStyle="rgba(4,6,10,.8)";ctx.fillText(t,x+1,ly+1);

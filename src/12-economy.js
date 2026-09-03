@@ -91,6 +91,36 @@ function sellDroneYield(sys,k,qty){
 }
 
 /* ══════════════ дроны ══════════════ */
+/* ── где сдавать (M324) ──
+   Дрон сдавал на ближайшую станцию, и это оставалось «на потом» с M237: редактор
+   маршрутов был бы микроменеджментом. Владелец выбора — смотритель: с перком
+   «авто-сбыт» и правилом «сдать там, где дороже» он смотрит на цены с вашего
+   стола (G.seenPrices — то, что вы видели или слышали сами, мир за вас он не
+   открывает), не дальше трёх секторов от точки, со скидкой 8% за сектор пути,
+   и уводит дрона туда, если выходит хотя бы на десятую дороже. Решение держится
+   сутки на дрона (d.mkt) и переживает сохранение вместе с ним; смена рынка —
+   одна его реплика. Без смотрителя всё как было: ближайшая. */
+function droneMarket(d){
+  const near=nearestStation(d.sx,d.sy);
+  if(!near)return null;
+  const m=(typeof mgrOf==="function")?mgrOf("keep"):null;
+  if(!(m&&!m.stalled&&mgrPerk(m,"sell")&&mgrRule(m,"sell"))){d.mkt=null;return near;}
+  const day=(typeof celDay==="function")?celDay():0;
+  if(d.mkt&&d.mkt.day===day){const s=getSystem(d.mkt.sx,d.mkt.sy);if(s&&s.station)return s;}
+  const seen=G.seenPrices||{};
+  let best=near,bv=marketFor(near)[d.res]||1;
+  for(const key in seen){
+    const S=seen[key];if(!S||!S.p||S.p[d.res]==null)continue;
+    const dist=Math.max(Math.abs(S.sx-d.sx),Math.abs(S.sy-d.sy));
+    if(dist>3)continue;
+    const v=S.p[d.res]*(1-.08*dist);
+    if(v>bv*1.1){const s=getSystem(S.sx,S.sy);if(s&&s.station){bv=v;best=s;}}
+  }
+  const was=d.mkt&&d.mkt.key;
+  d.mkt={key:best.key,sx:best.sx,sy:best.sy,name:best.station.name,day};
+  if(best!==near&&was!==best.key)mgrSay(m,droneName(d)+" сдаёт на «"+best.station.name+"»: там дороже");
+  return best;
+}
 function nearestStation(sx,sy){
   for(let rad=0;rad<=24;rad++){
     let best=null,bd=1e9;
@@ -187,7 +217,7 @@ function tickDrones(){
       d.carry=(d.carry||0)+rate*T/60000;
       const n=Math.floor(Math.min(d.pool,d.carry));
       if(n>0){
-        const home=nearestStation(d.sx,d.sy);
+        const home=droneMarket(d)||nearestStation(d.sx,d.sy);   /* смотритель выбирает рынок (M324) */
         const rev=sellDroneYield(home,d.res,n);
         earn(rev,"drone");
         d.pool-=n;d.carry-=n;d.sold=(d.sold|0)+n;d.earned=(d.earned|0)+rev;

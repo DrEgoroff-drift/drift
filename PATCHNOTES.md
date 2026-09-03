@@ -7,6 +7,23 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.321.0 - M324: where a drone sells — the keeper decides, from the prices on your desk
+
+Open since M237 («the nearest station»; a route editor would be micromanagement). The author
+said decide and build (2026-09-03). The owner of the choice is the Смотритель: with the perk
+«авто-сбыт» and the rule «трюм дрона полон → сдать там, где дороже» he reads `G.seenPrices` -
+the prices you saw or heard yourself; he does not open the world for you - within three sectors
+of the drone's point, discounts 8% per sector of the way, and sends the drone there if it comes
+out at least a tenth dearer. Otherwise, and without him, the nearest station as before.
+
+- `droneMarket` (12-economy): the decision, kept a day per drone in `d.mkt`, saved with it; a
+  change of market is one line from him («Д-3 сдаёт на «X»: там дороже»).
+- The drone's circle grows by 15 s per sector (`droneTripMs`), it leaves toward that sector
+  (`droneHome`), and its caption says where: «Д-3 · ЖЕЛЕЗО → X».
+- The perk's note and the rule's text say what they now do. The 1.35 rate of the perk stays.
+- Suite `91zzzy-drones` (M324 block): nearest without him; the dearer one with him; nothing
+  beyond three sectors; an empty desk means nearest.
+
 ## 0.320.0 - M323: the plant as a body, not a skin
 
 The tail of M173 #2. 0.140.0 gave every form a gradient, and a gradient is a skin: a leaf stayed
