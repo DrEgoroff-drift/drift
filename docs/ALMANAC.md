@@ -288,6 +288,15 @@ tile lines next pass); **плавбаза** reads as its donor at once — the f
 are the signature. Open: the name lettering is still too small to read at Z 1.5 on every
 class (the label under the hull carries it); the ferry's wing wants panel lines.
 
+**Addendum, 0.309.0 (M312).** The last seven (`x_fleet2.png`). Each reads as its donor at a
+glance: the спасатель's four petals, the рудовоз's containers, the госпитальное's capsule and
+cross, the учебное's six spheres, the экспедиционное's dishes on masts, the рефрижератор's
+ribs, the лихтеровоз's four foreign barges in their own colours. §1/§12/§13 hold by the same
+pipeline; §8 joints on every appendage. Weakest: the госпитальное's cross is a small red mark,
+not «the thing that names it» at this scale — make it the full height of the body next pass;
+the учебное's truss is a bare rod. Issue III is complete for the drawings; what remains for
+the fleet is content (караван, заявка, the node station, the derelict), not law.
+
 ---
 
 ## Reserved — issue III (continued): the remaining ten classes

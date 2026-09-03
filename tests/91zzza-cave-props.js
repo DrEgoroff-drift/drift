@@ -150,7 +150,7 @@ TEST_SUITES.push(()=>suite("M310: флот идёт по лестнице, тр�
 /* ══════════════ M311: второй проход флота — три класса, буксир, плавбаза, конвой ══════════════ */
 TEST_SUITES.push(()=>suite("M311: шесть классов нарисованы, буксир латает, плавбаза чинит, конвой прячет от пиратов",()=>{
   resetWorld();
-  eq(Object.values(FLEET_CLASSES).filter(c=>c.art).length,6,"нарисованы шесть классов");
+  ok(Object.values(FLEET_CLASSES).filter(c=>c.art).length>=6,"нарисованы не меньше шести классов");
   for(const k of ["patrol","ferry","base"]){const a=fleetArtOf({k,seed:k.length+7,name:"X",num:"Л-1",line:1});ok(a.cn.width>0,k+": спрайт запечён");}
   const sys=G.sys;G.mode="system";
   const b=Math.floor(Date.now()/FLEET_PERIOD),X=G.ship.x,Y=G.ship.y;
@@ -178,4 +178,35 @@ TEST_SUITES.push(()=>suite("M311: шесть классов нарисованы
   G.fleetEscort=0;G.pirates=[];
   const snap=snapshot();ok("fleetEscort" in snap,"конвой в сейве");
   delete sys.fleetCache;
+}));
+
+/* ══════════════ M312: все тринадцать нарисованы; почта, госпиталь, учёба ══════════════ */
+TEST_SUITES.push(()=>suite("M312: тринадцать классов запечены, выкуп через госпиталь вдвое, учёба раз в смену, почта только в сети",()=>{
+  resetWorld();
+  eq(Object.values(FLEET_CLASSES).filter(c=>c.art).length,13,"нарисованы все тринадцать");
+  for(const k in FLEET_CLASSES){const a=fleetArtOf({k,seed:k.length*3+1,name:"X",num:"Л-1",line:1});ok(a.cn.width>0&&a.lights.some(l=>l.c==="eng"),k+": спрайт и сопло");}
+  const sys=G.sys;G.mode="system";
+  const b=Math.floor(Date.now()/FLEET_PERIOD),X=G.ship.x,Y=G.ship.y;
+  const put=k=>{sys.fleetCache={b,list:[{k,seed:3,name:"ТЕСТ",num:"Л-1",line:1,x0:X+50,y0:Y,x1:X+50,y1:Y,bow:0,ph:0}]};};
+  G.fleetLog={};
+  /* почтовик без сети — только позывной */
+  put("post");actEdge=false;fleetInteract(G.ship);
+  ok(G.prompt.indexOf("ПОЗЫВНОЙ")>=0&&G.prompt.indexOf("ПОЧТУ")<0,"без сети почту не сдать — позывной");
+  /* госпитальное: заложник за полцены */
+  const h={id:"cH",seed:5,name:"Тест Заложник",spec:"pilot",traits:[],xp:10,state:"hostage",ransom:1000,ransomBase:1000,ransomAt:Date.now(),order:{kind:"home",sx:G.sx,sy:G.sy},shipId:null,trips:1};
+  G.crew=[h];G.credits=5000;
+  put("hosp");fleetInteract(G.ship);
+  ok(G.prompt.indexOf("ВЫКУП ЧЕРЕЗ ГОСПИТАЛЬ")>=0&&G.prompt.indexOf("500")>=0,"госпиталь просит половину");
+  actEdge=true;fleetInteract(G.ship);actEdge=false;
+  eq(G.credits,4500,"списано 500, не 1000");
+  ok(h.state!=="hostage","заложник свободен");
+  /* учебное: свободный наёмник растёт, второй раз в смену — нет */
+  const p={id:"cP",seed:6,name:"Тест Ученик",spec:"pilot",traits:[],xp:10,state:null,order:null,shipId:null,trips:0};
+  G.crew=[p];
+  put("school");fleetInteract(G.ship);
+  ok(G.prompt.indexOf("ОТДАТЬ В УЧЁБУ")>=0,"учебное берёт свободного");
+  actEdge=true;fleetInteract(G.ship);actEdge=false;
+  eq(p.xp,45,"опыт +35");
+  fleetInteract(G.ship);ok(G.prompt.indexOf("ПОЗЫВНОЙ")>=0,"в ту же смену второй раз не берут");
+  G.crew=[];delete sys.fleetCache;
 }));

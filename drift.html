@@ -1479,7 +1479,7 @@ body.mapclean .hud,body.mapclean .pads,body.mapclean #console,body.mapclean #pro
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.308.0";
+const VER="0.309.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -16555,15 +16555,15 @@ const FLEET_CLASSES={
   tug:   {ru:"буксир",       donor:"ядерный буксир", mark:"якорь", rung:19, art:1,
           say:["…буксир. Реактор в носу, к нам ближе ста метров не ходят. Тянем на верфь — если тянуть есть что.",
                "…буксир слышит. Корпус ваш цел, значит, не по нашей части. Конец."]},
-  fridge:{ru:"рефрижератор", donor:"Прогресс", mark:"кольцо", rung:27, art:0, say:["…рефрижератор. Груз холодный, разговор короткий."]},
-  ore:   {ru:"рудовоз",      donor:"Энергия",  mark:"кайло",  rung:27, art:0, say:["…рудовоз. Четыре пакета на борту, идём тяжело."]},
-  lighter:{ru:"лихтеровоз",  donor:"семёрка",  mark:"кольцо", rung:27, art:0, say:["…лихтеровоз. Чужие баржи на крестовине, своей нет."]},
+  fridge:{ru:"рефрижератор", donor:"Прогресс", mark:"кольцо", rung:27, art:1, say:["…рефрижератор. Груз холодный, разговор короткий."]},
+  ore:   {ru:"рудовоз",      donor:"Энергия",  mark:"кайло",  rung:27, art:1, say:["…рудовоз. Четыре пакета на борту, идём тяжело."]},
+  lighter:{ru:"лихтеровоз",  donor:"семёрка",  mark:"кольцо", rung:27, art:1, say:["…лихтеровоз. Чужие баржи на крестовине, своей нет."]},
   ferry: {ru:"паром",        donor:"Буран",    mark:"ладонь", rung:21, art:1, say:["…паром. Людей вниз, людей вверх. Груз не берём."]},
   patrol:{ru:"сторожевик",   donor:"Спираль",  mark:"щит",    rung:21, art:1, say:["…сторожевик. Ваш борт в списках чист. Пока."]},
-  rescue:{ru:"спасатель",    donor:"Луна-9",   mark:"ладонь", rung:21, art:0, say:["…спасатель. Лепестки закрыты, идём на чужой сигнал."]},
-  hosp:  {ru:"госпитальное", donor:"ТКС",      mark:"крест",  rung:21, art:0, say:["…госпитальное. Раненых нет? Тогда не отвлекайте."]},
-  school:{ru:"учебное",      donor:"Восток",   mark:"книга",  rung:21, art:0, say:["…учебное. Шесть капсул, шесть голосов, все ваши вопросы уже задавали."]},
-  exped: {ru:"экспедиционное",donor:"Салют",   mark:"циркуль",rung:25, art:0, say:["…экспедиционное. Тарелки на вас не смотрим, не тот сектор."]},
+  rescue:{ru:"спасатель",    donor:"Луна-9",   mark:"ладонь", rung:21, art:1, say:["…спасатель. Лепестки закрыты, идём на чужой сигнал."]},
+  hosp:  {ru:"госпитальное", donor:"ТКС",      mark:"крест",  rung:21, art:1, say:["…госпитальное. Раненых нет? Тогда не отвлекайте."]},
+  school:{ru:"учебное",      donor:"Восток",   mark:"книга",  rung:21, art:1, say:["…учебное. Шесть капсул, шесть голосов, все ваши вопросы уже задавали."]},
+  exped: {ru:"экспедиционное",donor:"Салют",   mark:"циркуль",rung:25, art:1, say:["…экспедиционное. Тарелки на вас не смотрим, не тот сектор."]},
   base:  {ru:"плавбаза",     donor:"Мир",      mark:"кольцо", rung:19, art:1, say:["…плавбаза. Пока стоим здесь — мы вам станция."]}
 };
 const FLEET_NAMES=["ЗАРНИЦА","ОКОЁМ","СТРЕМЯ","ЛАДЬЯ","КРЕМЕНЬ","ПОЛЫНЬ","ЗАСТАВА","КОСОГОР",
@@ -16660,6 +16660,82 @@ function fleetArtOf(f){
     for(let i=1;i<6;i++){const x=tail*.85+(nose*.7-tail*.85)*i/6;lines.push([x,-hw,x,hw,.45]);}
     for(let i=0;i<2;i++){const y=(i-.5)*hw*.9;ell(tail*.95,y,L*.04,hw*.32,5,1,12);lights.push({x:tail*.98,y,c:"eng",r:hw*.3});}
     band=[[tail*.85,-hw*.55],[nose*.65,-hw*.55],[nose*.65,-hw*.25],[tail*.85,-hw*.25]];
+  }else if(f.k==="rescue"){
+    /* «Луна-9»: шар, раскрытый на четыре лепестка — шлюз-цветок */
+    L=70;hw=10;nose=L*.5;tail=-L*.5;
+    rect(tail*.9,-hw*.5,-L*.05,hw*.5,1,1);
+    for(let i=1;i<4;i++){const x=tail*.9+(L*.4)*i/4;lines.push([x,-hw*.5,x,hw*.5,.4]);}
+    ell(L*.2,0,L*.16,hw*1.15,0,1,20);
+    for(const [a,c] of [[-2.2,5],[-.9,1],[.9,1],[2.2,5]]){const cx=L*.2+Math.cos(a)*L*.14,cy=Math.sin(a)*hw*1.05;
+      add([[cx,cy],[cx+Math.cos(a-.5)*L*.18,cy+Math.sin(a-.5)*hw*1.4],[cx+Math.cos(a)*L*.24,cy+Math.sin(a)*hw*1.8],[cx+Math.cos(a+.5)*L*.18,cy+Math.sin(a+.5)*hw*1.4]],c,1);
+      joint(cx,cy,L*.05,hw*.18);}
+    ell(tail*.94,0,L*.045,hw*.42,5,1,12);lights.push({x:tail*.97,y:0,c:"eng",r:hw*.36});
+    lights.push({x:L*.2,y:0,c:"win"});
+    band=[[tail*.88,-hw*.48],[-L*.06,-hw*.48],[-L*.06,-hw*.24],[tail*.88,-hw*.24]];
+  }else if(f.k==="ore"){
+    /* «Энергия»: бочка и четыре контейнера по бокам — пакет, гружёный */
+    L=124;hw=12;nose=L*.5;tail=-L*.5;
+    rect(tail*.9,-hw*.7,nose*.75,hw*.7,1,1);add([[nose*.75,-hw*.7],[nose*.95,-hw*.25],[nose*.95,hw*.25],[nose*.75,hw*.7]],0,1);
+    for(const s of [-1,1])for(let j=0;j<2;j++){const x0=tail*.7+j*L*.36,x1=x0+L*.3,y=s*hw*1.05;
+      rect(x0,y-hw*.35,x1,y+hw*.35,j?0:2,1);lines.push([x0+L*.1,y-hw*.35,x0+L*.1,y+hw*.35,.4]);lines.push([x0+L*.2,y-hw*.35,x0+L*.2,y+hw*.35,.4]);
+      joint(x0+L*.06,y-s*hw*.35,L*.05,hw*.16);joint(x1-L*.06,y-s*hw*.35,L*.05,hw*.16);}
+    for(let i=1;i<6;i++){const x=tail*.9+(L*.65)*i/6;lines.push([x,-hw*.7,x,hw*.7,.4]);}
+    for(let i=0;i<4;i++){const y=(i-1.5)*hw*.36;ell(tail*.96,y,L*.03,hw*.17,5,1,10);lights.push({x:tail*.99,y,c:"eng",r:hw*.16});}
+    band=[[tail*.88,-hw*.45],[nose*.7,-hw*.45],[nose*.7,-hw*.2],[tail*.88,-hw*.2]];
+  }else if(f.k==="hosp"){
+    /* ТКС: большой корпус и возвращаемая капсула на носу */
+    L=110;hw=11;nose=L*.5;tail=-L*.5;
+    rect(tail*.9,-hw*.85,nose*.3,hw*.85,1,1);
+    add([[nose*.3,-hw*.55],[nose*.6,-hw*.75],[nose*.95,-hw*.2],[nose*.95,hw*.2],[nose*.6,hw*.75],[nose*.3,hw*.55]],0,1);   /* капсула */
+    joint(nose*.3,-hw*.7,L*.03,hw*1.4);
+    for(let i=1;i<5;i++){const x=tail*.9+(L*.6)*i/5;lines.push([x,-hw*.85,x,hw*.85,.45]);}
+    for(const s of [-1,1]){rect(-L*.2,s*hw*.85,L*.05,s*hw*2.4,5,1);joint(-L*.07,s*hw*.82,L*.1,hw*.2);}
+    /* красный крест на белом — знак госпиталя во всю высоту */
+    rect(-L*.02,-hw*.5,L*.06,hw*.5,3);rect(-L*.1,-hw*.15,L*.14,hw*.15,3);
+    ell(tail*.94,0,L*.045,hw*.5,5,1,12);lights.push({x:tail*.97,y:0,c:"eng",r:hw*.4});
+    lights.push({x:-L*.3,y:-hw*.3,c:"win"});lights.push({x:-L*.3,y:hw*.3,c:"win"});
+    band=[[tail*.88,-hw*.62],[-L*.16,-hw*.62],[-L*.16,-hw*.35],[tail*.88,-hw*.35]];
+  }else if(f.k==="school"){
+    /* «Восток»×6: гроздь сферических капсул на общей ферме, у каждой свой люк */
+    L=112;hw=8;nose=L*.5;tail=-L*.5;
+    rect(tail*.9,-hw*.3,nose*.7,hw*.3,2,1);
+    for(let i=0;i<6;i++){const x=tail*.7+i*L*.26,s=(i%2?1:-1),cy=s*hw*1.3;
+      rect(x-L*.015,0,x+L*.015,cy,5,1);ell(x,cy,L*.075,hw*1.05,0,1,16);
+      add([[x+L*.04,cy-hw*.3],[x+L*.075,cy-hw*.25],[x+L*.075,cy+hw*.25],[x+L*.04,cy+hw*.3]],5);joint(x,s*hw*.3,L*.04,hw*.18);}
+    ell(tail*.94,0,L*.04,hw*.5,5,1,12);lights.push({x:tail*.97,y:0,c:"eng",r:hw*.4});
+    band=[[tail*.88,-hw*.28],[nose*.6,-hw*.28],[nose*.6,-hw*.05],[tail*.88,-hw*.05]];
+  }else if(f.k==="exped"){
+    /* «Салют»: цилиндр, ферма тарелок, зонды на выносах */
+    L=126;hw=10;nose=L*.5;tail=-L*.5;
+    rect(tail*.9,-hw*.75,-L*.05,hw*.75,1,1);rect(-L*.05,-hw*.5,nose*.6,hw*.5,0,1);rect(nose*.6,-hw*.3,nose*.9,hw*.3,2,1);
+    for(let i=1;i<5;i++){const x=tail*.9+(L*.4)*i/5;lines.push([x,-hw*.75,x,hw*.75,.45]);}
+    for(const s of [-1,1]){rect(-L*.3,s*hw*.75,-L*.2,s*hw*2.6,5,1);joint(-L*.25,s*hw*.72,L*.08,hw*.2);
+      rect(L*.15,s*hw*.5,L*.17,s*hw*2.2,2);ell(L*.16,s*hw*2.3,L*.06,hw*.55,0,1,12);joint(L*.16,s*hw*.48,L*.05,hw*.18);   /* тарелки */
+      rect(nose*.7,s*hw*.3,nose*.72,s*hw*1.6,2);ell(nose*.71,s*hw*1.7,L*.02,hw*.25,5,1,8);}                                /* зонды */
+    ell(tail*.94,0,L*.04,hw*.45,5,1,12);lights.push({x:tail*.97,y:0,c:"eng",r:hw*.36});lights.push({x:-L*.5,y:0,c:"win"});
+    band=[[tail*.88,-hw*.55],[-L*.08,-hw*.55],[-L*.08,-hw*.28],[tail*.88,-hw*.28]];
+  }else if(f.k==="fridge"){
+    /* «Прогресс»: тот же нос, что у почтовика, и длинный ребристый рефрижераторный отсек */
+    L=108;hw=9;nose=L*.5;tail=-L*.5;
+    rect(tail*.92,-hw*.62,L*.12,hw*.62,0,1);
+    for(let i=1;i<10;i++){const x=tail*.9+(L*.56)*i/10;lines.push([x,-hw*.62,x,hw*.62,.7]);}
+    add([[L*.12,-hw*.8],[L*.34,-hw*.55],[L*.34,hw*.55],[L*.12,hw*.8]],1,1);ell(L*.42,0,L*.1,hw*.95,0,1,18);rect(L*.5,-1,nose,1,2);
+    for(const s of [-1,1]){rect(-L*.2,s*hw*.7,L*.02,s*hw*2.7,5,1);joint(-L*.09,s*hw*.66,L*.08,hw*.22);}
+    ell(tail*.96,0,L*.04,hw*.42,5,1,12);lights.push({x:tail*.98,y:0,c:"eng",r:hw*.36});
+    band=[[tail*.9,-hw*.6],[L*.1,-hw*.6],[L*.1,-hw*.34],[tail*.9,-hw*.34]];
+  }else if(f.k==="lighter"){
+    /* «семёрка»: королёвский крест — четыре чужие баржи на общей связке */
+    L=130;hw=9;nose=L*.5;tail=-L*.5;
+    rect(tail*.9,-hw*.6,nose*.8,hw*.6,1,1);add([[nose*.8,-hw*.6],[nose,-hw*.2],[nose,hw*.2],[nose*.8,hw*.6]],0,1);
+    const bc=[[92,84,70],[70,86,96],[96,72,66],[74,92,74]];
+    for(let i=0;i<4;i++){const s=i<2?-1:1,x0=tail*.85+(i%2)*L*.42,x1=x0+L*.38,y=s*hw*1.45;
+      add([[x0,y-hw*.5],[x1,y-hw*.5],[x1,y+hw*.5],[x0,y+hw*.5]],5,1);
+      polys[polys.length-1].col=bc[i];
+      lines.push([x0+L*.12,y-hw*.5,x0+L*.12,y+hw*.5,.4]);lines.push([x0+L*.26,y-hw*.5,x0+L*.26,y+hw*.5,.4]);
+      joint(x0+L*.08,y-s*hw*.5,L*.05,hw*.2);joint(x1-L*.08,y-s*hw*.5,L*.05,hw*.2);}
+    for(let i=1;i<7;i++){const x=tail*.9+(L*.7)*i/7;lines.push([x,-hw*.6,x,hw*.6,.4]);}
+    for(let i=0;i<2;i++){const y=(i-.5)*hw*.6;ell(tail*.96,y,L*.035,hw*.25,5,1,10);lights.push({x:tail*.99,y,c:"eng",r:hw*.22});}
+    band=[[tail*.88,-hw*.4],[nose*.75,-hw*.4],[nose*.75,-hw*.16],[tail*.88,-hw*.16]];
   }else if(f.k==="patrol"){
     /* «Спираль»+«Алмаз»: несущий корпус с задранным носом, короткие крылья, пушка под скулой */
     L=88;hw=8;nose=L*.5;tail=-L*.5;
@@ -16729,7 +16805,7 @@ function fleetArtOf(f){
   /* санкирь: тёмная подложка под всем — обвод первым (§13) */
   for(const q of polys){poly(q);ctx.fillStyle="rgb(40,44,52)";ctx.lineWidth=1.6;ctx.strokeStyle="rgb(40,44,52)";ctx.stroke();}
   /* серые: тело */
-  for(const q of polys){poly(q);const c=C[q.c];ctx.fillStyle="rgb("+c.join(",")+")";ctx.fill();
+  for(const q of polys){poly(q);const c=q.col||C[q.c];ctx.fillStyle="rgb("+c.join(",")+")";ctx.fill();
     ctx.strokeStyle="rgba(0,0,0,"+(q.e?.5:.25)+")";ctx.lineWidth=q.e?.6:.35;ctx.stroke();}
   for(const l of lines){ctx.strokeStyle="rgba(0,0,0,"+(l[4]*.7).toFixed(2)+")";ctx.lineWidth=l[4];ctx.beginPath();ctx.moveTo(l[0],l[1]);ctx.lineTo(l[2],l[3]);ctx.stroke();}
   for(const j of joints){ctx.fillStyle="rgb(40,44,52)";ctx.fillRect(j[0]-j[2]/2,j[1]-j[3]/2,j[2],j[3]);
@@ -16826,11 +16902,34 @@ function fleetInteract(sh){
   /* сторожевик: с доброй репутацией проводит, с худой досматривает (п.10) */
   const rep=(typeof repAt==="function")?repAt():0;
   const canEscort=near.k==="patrol"&&rep>=2&&!(G.fleetEscort>G.t);
-  const verb=canFuel?"ЗАПРАВКА ПО НОРМЕ":canTow?"БУКСИР НА ВЕРФЬ":canFix?"РЕМОНТ ПО НОРМЕ":canEscort?"ПРОСИТЬ КОНВОЙ":"ПОЗЫВНОЙ";
+  /* почтовик: карточки в руки — он привозит ваши (п.5); только в сети */
+  const canMail=near.k==="post"&&typeof mailOn==="function"&&mailOn()&&typeof mailDock==="function";
+  /* госпитальное: выкуп заложника вдвое дешевле (п.8) */
+  const hostage=(G.crew||[]).find(c=>c.state==="hostage"&&c.ransom>0);
+  const canRansom=near.k==="hosp"&&!!hostage;
+  /* учебное: берёт свободного наёмника на рейс и возвращает грамотнее (п.9), раз в смену */
+  const pupil=(G.crew||[]).find(c=>!c.state&&(!c.order||c.order.kind==="home"));
+  const schoolKey=fleetLogKey()+"|school";
+  const canSchool=near.k==="school"&&!!pupil&&(G.fleetLog[schoolKey]||0)<shift;
+  const verb=canFuel?"ЗАПРАВКА ПО НОРМЕ":canTow?"БУКСИР НА ВЕРФЬ":canFix?"РЕМОНТ ПО НОРМЕ":canEscort?"ПРОСИТЬ КОНВОЙ":
+    canMail?"СДАТЬ ПОЧТУ":canRansom?"ВЫКУП ЧЕРЕЗ ГОСПИТАЛЬ · "+Math.round(hostage.ransom*.5).toLocaleString("ru")+" КР":canSchool?"ОТДАТЬ В УЧЁБУ · "+pupil.name.toUpperCase():"ПОЗЫВНОЙ";
   G.prompt=C.ru.toUpperCase()+" ГЛАВТРАССЫ «"+near.name+"»"+
     "\nДЕЙСТВИЕ — "+verb;
   if(actEdge){
-    if(canTow){
+    if(canMail){
+      mailDock();
+      etherLine("«"+near.name+"»: …почтовик. Стопку приняли, ваши — на борту, смотрите стол.","почтовик");
+    }else if(canRansom){
+      hostage.ransom=Math.round(hostage.ransom*.5);
+      if(typeof ransomPay==="function"&&ransomPay(hostage))
+        etherLine("«"+near.name+"»: …госпитальное. Человека забрали с той стороны, по нашей таксе. Живой.","госпитальное");
+      else hostage.ransom*=2;
+    }else if(canSchool){
+      pupil.xp=(pupil.xp||0)+35;G.fleetLog[schoolKey]=shift;
+      if(typeof crewHistory==="function")crewHistory(pupil,{cat:"good",id:"school"},"учился на «"+near.name+"»");
+      etherLine("«"+near.name+"»: …учебное. "+pupil.name+" на борту, рейс — и вернём грамотнее.","учебное");
+      if(typeof recordAdd==="function")recordAdd("ГЛАВТРАССА","учёба · "+pupil.name+" · «"+near.name+"»");
+    }else if(canTow){
       G.hull=Math.max(G.hull,Math.round(st.hullMax*.4));G.fleetLog[tugKey]=shift;
       etherLine("«"+near.name+"»: …взяли на буксир. До верфи дотянете сами, дальше — их работа.","буксир");
       if(typeof recordAdd==="function")recordAdd("ГЛАВТРАССА","буксир «"+near.name+"» · "+near.num);

@@ -7,6 +7,26 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.309.0 - M312: the whole fleet drawn; mail, the hospital's ransom, the school
+
+`12ai-fleet`, the last seven of §18.3 and three more of §18.7:
+
+- **Seven drawings**: спасатель («Луна-9»: a sphere opening on four petals, the flower airlock),
+  рудовоз («Энергия»: a barrel with four containers strapped along it), госпитальное (ТКС: a large
+  body with the returnable capsule on the nose, a red cross the full height), учебное («Восток»
+  ×6: six spherical capsules on a common truss, each with its own hatch), экспедиционное
+  («Салют»: cylinder, a truss of dishes, probes on outriggers), рефрижератор («Прогресс»: the
+  почтовик's nose and a long ribbed bay), лихтеровоз («семёрка»: the Korolev cross of four other
+  people's barges in their own colours). All thirteen classes now spawn by rung.
+- **Three services**: **почта** — hand the mail ship your stack and it brings yours
+  (`mailDock`; online only, offline the почтовик just answers); **госпитальное** — a hostage is
+  ransomed through the hospital at half the price (ВЫКУП ЧЕРЕЗ ГОСПИТАЛЬ · N КР); **учебное** —
+  takes an idle hire for a run and returns him grown (+35 xp), once a shift per system.
+- Eleven of the twelve interactions exist in some form; left: 6 караван (formation flight), 11
+  спасатель's «come along», 12 заявка (the fleet lends a hull for one run).
+- Suite `91zzza` (M312 block).
+
+---
 ## 0.308.0 - M311: the fleet's second pass — joints, whiter hulls, three more classes, four services
 
 Issue III's two findings and the next three of §18.9, in `12ai-fleet`:

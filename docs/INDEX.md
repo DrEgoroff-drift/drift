@@ -688,8 +688,8 @@ drawFactory                  src/20aa-poi-shapes.js:378
 drawFactRoute                src/13b-occupy.js:241
 drawFindsSystem              src/17b-finds.js:180
 drawFlame                    src/03b-hull-paint.js:10
-drawFleet                    src/12ai-fleet.js:263
-drawFleetShip                src/12ai-fleet.js:245
+drawFleet                    src/12ai-fleet.js:339
+drawFleetShip                src/12ai-fleet.js:321
 drawFoeBody                  src/24ab-raid-foe.js:10
 drawForeground               src/21b-surface-deco.js:249
 drawGlassHUD                 src/24-mode-belt.js:716
@@ -951,10 +951,10 @@ FLEET_TIER_KEYS              src/04b-fleet.js:30
 FLEET_TIERS                  src/04b-fleet.js:16
 fleetArtOf                   src/12ai-fleet.js:84
 fleetColor                   src/04b-fleet.js:95
-fleetEscortActive            src/12ai-fleet.js:335
+fleetEscortActive            src/12ai-fleet.js:434
 fleetHere                    src/12ai-fleet.js:50
-fleetInteract                src/12ai-fleet.js:281
-fleetLogKey                  src/12ai-fleet.js:280
+fleetInteract                src/12ai-fleet.js:357
+fleetLogKey                  src/12ai-fleet.js:356
 fleetPos                     src/12ai-fleet.js:72
 fleetRung                    src/12ai-fleet.js:48
 fleetUniqueName              src/04b-fleet.js:100
@@ -3598,7 +3598,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12ah-holdnews.js · 6 КБ
   · холдинг · слухи, новости и чужие на проданной дороге:1
 
-## src/12ai-fleet.js · 26 КБ
+## src/12ai-fleet.js · 34 КБ
   · ГЛАВТРАССА: флот, который нельзя купить (M310, DESIGN-holding §18):1
 
 ## src/12b-crew-events.js · 17 КБ
@@ -4403,7 +4403,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzy-screens.js · 13 КБ
   · автотесты: экраны M299 — заголовки, подгляд карты, зал как ввод:1
 
-## tests/91zzza-cave-props.js · 13 КБ
+## tests/91zzza-cave-props.js · 15 КБ
   · пещера M305: гладкий обвод и содержимое:1
   · станция и планета M306: знаки на дневной стороне:32
   · дом M307: мебель из материала, план сеян:58
@@ -4411,6 +4411,7 @@ zooTick                      src/11ad-zoo.js:41
   · M309: трафик системы и туманность с кромкой:92
   · M310: флот ГЛАВТРАССЫ:114
   · M311: второй проход флота — три класса, буксир, плавбаза, конвой:150
+  · M312: все тринадцать нарисованы; почта, госпиталь, учёба:183
 
 ## tests/91zzza-trace.js · 5 КБ
 
