@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 367 · символов верхнего уровня: 3377
+Файлов: 370 · символов верхнего уровня: 3386
 
 ## СИМВОЛЫ
 
@@ -433,7 +433,7 @@ CHUNK_W                      src/18c-chunks.js:19
 chunkAt                      src/18c-chunks.js:72
 chunkStore                   src/18c-chunks.js:66
 chWhite                      src/25n-chess.js:36
-cirrusSprite                 src/19e-clouds.js:126
+cirrusSprite                 src/19e-clouds.js:134
 CKPT                         src/25-cockpit.js:91
 CKPT_STYLE                   src/25-cockpit.js:19
 clamp                        src/01-core.js:7
@@ -445,7 +445,7 @@ CLOUD_KEYS                   src/02a-worldmix.js:80
 CLOUD_KIND                   src/19e-clouds.js:35
 CLOUD_SPR                    src/19e-clouds.js:52
 CLOUD_ST                     src/14a-cloud.js:91
-CLOUD_TIER                   src/19e-clouds.js:172
+CLOUD_TIER                   src/19e-clouds.js:180
 cloudBoot                    src/14a-cloud.js:172
 cloudBusy                    src/14a-cloud.js:79
 cloudCall                    src/14a-cloud.js:72
@@ -458,7 +458,7 @@ cloudOn                      src/14a-cloud.js:71
 cloudPull                    src/14a-cloud.js:154
 cloudPush                    src/14a-cloud.js:132
 cloudRetry                   src/14a-cloud.js:120
-cloudsOf                     src/19e-clouds.js:147
+cloudsOf                     src/19e-clouds.js:155
 cloudSprite                  src/19e-clouds.js:60
 cloudTok                     src/14a-cloud.js:68
 cockpitPlan                  src/25-cockpit.js:92
@@ -669,7 +669,7 @@ drawCaveWater                src/22a-cave-deco.js:300
 drawCaveWorld                src/22-mode-cave.js:647
 drawCelest                   src/06a-celest.js:167
 drawChunks                   src/18c-chunks.js:83
-drawClouds                   src/19e-clouds.js:180
+drawClouds                   src/19e-clouds.js:188
 drawCockpit                  src/25-cockpit.js:400
 drawCombat                   src/13-pirates.js:215
 drawCrowns                   src/05a-nodes.js:379
@@ -1113,7 +1113,7 @@ grokTeach                    src/12tb-grok.js:144
 grokTick                     src/12tb-grok.js:75
 grokWant                     src/12tb-grok.js:41
 GROUND_BAKING                src/19-mode-landing.js:292
-groundAt                     src/07-planet.js:548
+groundAt                     src/07-planet.js:557
 groundShadow                 src/19-mode-landing.js:436
 GROVE_ETHER                  src/11j-grove.js:23
 groveAll                     src/11j-grove.js:29
@@ -1565,6 +1565,9 @@ lettersAll                   src/12k-letters.js:41
 lettersBlock                 src/12k-letters.js:99
 letterState                  src/12k-letters.js:42
 letterTake                   src/12k-letters.js:70
+lgBox                        tests/91zzzzy-light.js:22
+lgBrightest                  tests/91zzzzy-light.js:40
+lgHour                       tests/91zzzzy-light.js:51
 LIGHTS_SOON                  src/11g-lights.js:23
 lightsAll                    src/11g-lights.js:24
 lightsArrive                 src/11g-lights.js:53
@@ -2051,6 +2054,9 @@ pennScore                    src/21h-pennant.js:26
 pennTestBase                 tests/91zzzr-penn.js:2
 pennTick                     src/21h-pennant.js:65
 peopleLine                   src/11-log.js:40
+PHYS_DT                      tests/91zzzzy-phys.js:14
+physRun                      tests/91zzzzy-phys.js:29
+physShip                     tests/91zzzzy-phys.js:19
 pick                         src/01-core.js:17
 pickKindByBias               src/20-life.js:179
 pickShare                    src/20e-species.js:125
@@ -2070,6 +2076,7 @@ pirateClass                  src/12i-pirate-hull.js:26
 pirateShipId                 src/13-pirates.js:17
 pl3                          src/01-core.js:22
 PLACE_KINDS                  src/11d-place.js:22
+PLACE_LIFT                   tests/91zzzzy-place.js:93
 placeAge                     src/11d-place.js:53
 placeAll                     src/11d-place.js:27
 placeAt                      src/11v-places.js:32
@@ -2146,6 +2153,8 @@ plantSpeciesName             src/20e-species.js:86
 plantStemForm                src/20e-species.js:27
 plantTraitWord               src/20e-species.js:29
 plate                        src/25-cockpit.js:160
+plLand                       tests/91zzzzy-place.js:28
+plWorlds                     tests/91zzzzy-place.js:15
 POI_FIND                     src/20b-poi-find.js:18
 POI_KINDS                    src/20a-poi.js:11
 POI_SEED                     src/20a-poi.js:90
@@ -3450,7 +3459,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/06-galaxy.js · 10 КБ
   · галактика:1
 
-## src/07-planet.js · 37 КБ
+## src/07-planet.js · 38 КБ
   · текстуры планет:1
   · вращение:8
   · рельеф:368
@@ -3880,7 +3889,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/19d-weather.js · 14 КБ
   · погода:1
 
-## src/19e-clouds.js · 16 КБ
+## src/19e-clouds.js · 17 КБ
   · облака:1
 
 ## src/19f-lander.js · 22 КБ
@@ -4582,6 +4591,15 @@ zooTick                      src/11ad-zoo.js:41
   · все вкладки рисуются:125
   · тычок в каждую кнопку:158
   · прибор кадра работает:200
+
+## tests/91zzzzy-light.js · 16 КБ
+  · свет и свечения (M330):1
+
+## tests/91zzzzy-phys.js · 17 КБ
+  · физика мира (M330):1
+
+## tests/91zzzzy-place.js · 15 КБ
+  · вещи на своих местах (M330):1
 
 ## tests/91zzzzz-e2e-life.js · 36 КБ
   · сквозной прогон II: сейв, числа, текст, долгий полёт (M329):1

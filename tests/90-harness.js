@@ -88,7 +88,7 @@ function resetWorld(){
      набор: пойманные капитаны, отметки новостей, обломки, тетрадь блошиного
      рынка, счёт добрых дел, сказанное людьми (M329, сторож в 91zzzzz) */
   G.nodeShow=null;G.pnode=null;G.hunted={};G.grok=null;G.flea={got:[]};
-  G.newsMarks={};G.newsT=0;G.wrecks={};G.tableSeen=0;
+  G.newsMarks={};G.newsT=0;G.wrecks={};G.tableSeen=0;G.rivals={};
   G.offers=[];G.folk={};G.folkSay={};G.ledger={n:0,w:0};G.told=[];
   G.relay={};   /* приёмники (M218): новый мир — ничего не поймано */
   G.late=null;  /* поздний час (M225): в новой игре ещё не сидели */

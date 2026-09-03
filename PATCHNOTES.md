@@ -7,6 +7,51 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.327.0 - M330: places, physics, light — three suites that measure the picture, and two defects out of them
+
+The author asked for three more families of cross-cutting tests: things standing in the wrong
+place, the world's physics, and glows. All three are about what the frame LOOKS like, and none of
+them could be answered from `G` — so they are answered from the canvas and from the world's own
+geometry, the way `28y-look` answers about a frame.
+
+**Places** (`tests/91zzzzy-place`). Every deposit, plant and beast stands on the ground on ten
+worlds; the herd stays on the ground while it walks; the man never sinks through the surface;
+in the cave he is never inside stone (the rock field and the 8x21 body box give an exact answer
+every frame); the landing pad is level and unoccupied; the cave mouth is reachable and clear;
+and the drawn silhouette agrees with the collision box — boots land on the support point, not
+eleven pixels under it.
+
+**Physics** (`tests/91zzzzy-phys`), with the frame step as its own axis: the frame computes
+`dt=clamp(...,0,3)`, so on a stuttering frame the world is integrated at triple the step, and
+physics that is right at dt=1 and wrong at dt=3 reads to the player as «I fall through the
+ground when it lags». Thrust pushes along the nose and burns exactly the stated fuel; coasting
+costs nothing; the brake never accelerates; the speed ceiling holds at every step; an empty tank
+gives neither thrust nor braking; planets stay on their ellipses and moons on their planets; the
+same planet gives the same world twice over (nothing ephemeral is stored, so a second landing
+must rebuild the same place); a fall ends on the ground and not under it even at speed 90; stone
+stays solid in the cave at every step; and drilling neither loses a unit nor overfills the hold.
+
+**Light** (`tests/91zzzzy-light`): night is measurably darker than day; nothing in the sky
+out-shines the star; brightness falls off with distance from the star and from the cave lamp;
+glows breathe rather than click between frames; the flare's flame lives and does not strobe (the
+author's complaint about 0.325.0, now nailed to numbers); no scene is burnt to white.
+
+Two defects, both invisible to every earlier test:
+
+- **A boulder on the landing pad.** The pad is levelled by height, but the scree was scattered
+  across the whole strip with no check at all: a rock of one and a half hull radii lying on the
+  landing mark reads exactly as «the ship is standing inside a stone», and it happened on about
+  every fourth planet. Rocks over r=4 are now cleared within 54 px of the pad — the cull runs
+  after generation, so the `r()` stream does not shift and every other world stays identical.
+- **A cloud brighter than the sun.** The lit side of a cloud was mixed toward pure white
+  (`lerp(255,…)`), and on a dense-atmosphere world it came out brighter than the solar disc —
+  measured 0.85 against 0.79. The eye reads the brightest mass as the source, so the frame had
+  two suns while the shadows still came from one: §13 broke exactly where there is most light.
+  The cloud top now sits a step below the disc and is still a white cloud.
+
+Suite isolation caught one more field on the way (`rivals`): the guard added in M329 works.
+
+---
 ## 0.326.0 - M329: eight cross-cutting suites, and the isolation they broke
 
 The author asked for more end-to-end tests. The first cross-cutting suite (91zzza) judges the

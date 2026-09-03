@@ -191,6 +191,16 @@ Grep `docs/PLAN-archive.md` for the milestone number (header "Moved out of PLAN.
 - **M298** (0.295.0) — three interface fixes: the table answers in the row, rumours with distance,
   jumps and НА КАРТУ, the map card as a footer line.
 - **M325** (0.322.0) — the four effects: the lake with reflections and reeds, heat haze, chromatic aberration on hits, the live flare; `18d-postfx`.
+- **M330** (0.327.0) — three suites that measure the picture: places (`91zzzzy-place` — everything
+  stands on the ground, the man is never inside stone, the pad is level and clear, the silhouette
+  agrees with the collision box), physics (`91zzzzy-phys` — thrust/brake/fuel, the speed ceiling,
+  Kepler, determinism of a re-entered world, no falling through the ground, drilling conserves —
+  each checked at frame steps 1, 2 and 3, because the frame integrates at up to dt=3), and light
+  (`91zzzzy-light` — night darker than day, nothing out-shines the star, halos fall off, glows
+  breathe instead of clicking, nothing burnt to white). Two defects fixed: a boulder could lie on
+  the landing pad (cleared within 54 px, cull after generation so no world shifts), and a lit
+  cloud was brighter than the sun (0.85 against 0.79 — mixed toward pure white; now a step below
+  the disc).
 - **M329** (0.326.0) — eight cross-cutting suites (`tests/91zzzzz-e2e-life`): NaN in the state, the
   save's full circle from every scene, loss of a field on load, a save without any one field, dirt
   in the player's text, three thousand frames in one flight, everything clickable clicked, a late
