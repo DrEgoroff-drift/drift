@@ -388,8 +388,8 @@ layout in the game's own language (procedural canvas + desk DOM), not the render
   the jungle crowns sparser and rounder plus lone boulders; jungle — the reference itself. Same
   grammar everywhere, biome only changes the family.
 
-- **M353 — «Лоция», the one book the world writes into** (author 2026-09-04: «книгу по кускам
-  собирал — послушал слух, страница 100, строчка…»). A printed pilot-book every hull carries; the
+- **M353 — «Смена», the one book the world writes into** (name by the author, 2026-09-04: a bound year of the magazine «Смена» — twelve *issues*, not chapters; «Лоция» would collide with the shelf's «Лоция Ближнего края») (author 2026-09-04: «книгу по кускам
+  собирал — послушал слух, страница 100, строчка…»). A bound year of «Смена» every hull carries; the
   player's copy is a torn flea-market one, and lines are *restored* by events, never read for free.
   Rules: (1) hand-written text, twelve chapters × 15–20 lines ≈ 240, like `BOOKS` — no generated
   line; (2) every event that carries lore has a book address `{ch,line}` — a rumour image, a
@@ -399,12 +399,12 @@ layout in the game's own language (procedural canvas + desk DOM), not the render
   sails; «Биомы» → scan faster; «Устав и огонь» → a shelf matchbox yields one extra match); (5)
   ОТЧЁТ stays its own thing, the book holds one pointer chapter «см. отчёт, собран N из 100»; (6) an
   empty chapter shows only its title and where its lines are heard («слышно в кантинах», «говорят
-  клерки домов»). Chapters: Устав и огонь · Дома и боны · Главтрасса и маяк · Кооперация · Слухи и
+  клерки домов»). Issues: Устав и огонь · Дома и боны · Главтрасса и маяк · Кооперация · Слухи и
   как им верить · Пираты и бароны · «Сорока» · Биомы и что на них стоит · Почта и карточки ·
-  Праздники · Птица · Долгий Ход (pointer). Desk item ЛОЦИЯ with pages, ink for restored lines,
-  dotted gaps, «строк 37 из 240». Module `12ud-pilotbook.js` (table + `bookLine(ch,line)` hook),
+  Праздники · Птица · Долгий Ход (pointer). Desk item СМЕНА with pages, ink for restored lines,
+  dotted gaps, «строк 37 из 240». Module `12ud-smena.js` (table + `bookLine(ch,line)` hook),
   hooks placed in `11t`, `11b`, `12uc`, `20-life` scanner, `12pa-beacon`, `12v-wander`; persisted
-  `G.pilot=[ids]`. Test: every table line is reachable from at least one hook (the names audit
+  `G.smena=[ids]`. Test: every table line is reachable from at least one hook (the names audit
   pattern), and no hook points at a line that does not exist.
 
 ## Loose ends (as of 2026-08-28, after the graphics run 0.237.0–0.244.0)
