@@ -346,6 +346,22 @@ layout in the game's own language (procedural canvas + desk DOM), not the render
   `12r`, `12-economy`, `26-ui-station`, `11-log`, `14-save`; suite `91zzzzb-coop`. Re-measure
   trade with `91zzw-eco-probe` after; the caps are the brake for open buying.
 
+- **M352 — more trees like these** (author 2026-09-04, on a surface frame of a jungle world: two
+  low-poly canopies with hanging lianas, a monolith with tally marks, the astronaut for scale —
+  «оч нравится и размер и стиль отрисовки»). The reference is fixed: flat faceted crowns in two or
+  three lobes, a dark trunk with roots spread on the ground, lianas as straight hanging rods, crown
+  size five to eight astronaut heights, the whole thing a silhouette against the sky haze, no
+  outlines. Do: (1) this tree becomes a *family* in `20-life` — three to five crown shapes and two
+  trunk builds on the same grammar, seeded per plant, so a grove reads as one species with
+  variation; (2) plant them more — a jungle/terran surface carries two to four such trees per screen
+  where today it carries one, and other biomes get their own family in the same language (desert:
+  fewer, thinner, one crown; ocean shore: leaning; toxic: bare with hanging pods); (3) a touch more
+  detail, not more objects: a second facet tone on the crown's lit side, one or two leaf clusters
+  hanging below the canopy, the root shadow on the ground (law: everything standing casts a shadow);
+  proportions stay exactly as in the frame. Judge by the frame (`drift-shots-as-audit`): shoot the
+  same scene before and after, the astronaut in it. No new biome, no new mechanic — density and
+  family only.
+
 ## Loose ends (as of 2026-08-28, after the graphics run 0.237.0–0.244.0)
 
 Everything left open, with the reason it is open. Nothing here is a bug report — bugs are fixed
