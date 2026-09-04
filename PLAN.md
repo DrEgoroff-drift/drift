@@ -388,6 +388,25 @@ layout in the game's own language (procedural canvas + desk DOM), not the render
   the jungle crowns sparser and rounder plus lone boulders; jungle — the reference itself. Same
   grammar everywhere, biome only changes the family.
 
+- **M353 — «Лоция», the one book the world writes into** (author 2026-09-04: «книгу по кускам
+  собирал — послушал слух, страница 100, строчка…»). A printed pilot-book every hull carries; the
+  player's copy is a torn flea-market one, and lines are *restored* by events, never read for free.
+  Rules: (1) hand-written text, twelve chapters × 15–20 lines ≈ 240, like `BOOKS` — no generated
+  line; (2) every event that carries lore has a book address `{ch,line}` — a rumour image, a
+  speech-queue line, the clerk's stamp, a find, an organism scan, a dismantle that yields a match,
+  a «Сорока» stop, a holiday on the beacon; (3) a line restores once, repeats give nothing; (4) a
+  chapter completed pays one small named use («Сорока» → the sky watch gives the direction to the
+  sails; «Биомы» → scan faster; «Устав и огонь» → a shelf matchbox yields one extra match); (5)
+  ОТЧЁТ stays its own thing, the book holds one pointer chapter «см. отчёт, собран N из 100»; (6) an
+  empty chapter shows only its title and where its lines are heard («слышно в кантинах», «говорят
+  клерки домов»). Chapters: Устав и огонь · Дома и боны · Главтрасса и маяк · Кооперация · Слухи и
+  как им верить · Пираты и бароны · «Сорока» · Биомы и что на них стоит · Почта и карточки ·
+  Праздники · Птица · Долгий Ход (pointer). Desk item ЛОЦИЯ with pages, ink for restored lines,
+  dotted gaps, «строк 37 из 240». Module `12ud-pilotbook.js` (table + `bookLine(ch,line)` hook),
+  hooks placed in `11t`, `11b`, `12uc`, `20-life` scanner, `12pa-beacon`, `12v-wander`; persisted
+  `G.pilot=[ids]`. Test: every table line is reachable from at least one hook (the names audit
+  pattern), and no hook points at a line that does not exist.
+
 ## Loose ends (as of 2026-08-28, after the graphics run 0.237.0–0.244.0)
 
 Everything left open, with the reason it is open. Nothing here is a bug report — bugs are fixed
@@ -608,29 +627,7 @@ Left from the queue: nothing — the band's second step is M308, the station's c
 
 ---
 
-## «Зачем лететь» — the one open item of the outside playtest (2026-08-26)
-
-Items 1–4 of that queue are closed (M213, M214, M217, M223) and sit in the archive.
-
-5. **«Зачем лететь» lives inside the station** — **first move made (0.200.0).** The desk already
-   remembered every station's prices and shortages and let you do nothing with them: the address sat
-   there as two numbers to be memorised by eye. Tapping a price row now lays a course and opens the
-   navigator — the same gesture the journal has always had for a job, and the only button it has ever
-   had. Nothing appears over the world: no arrow, no marker, the game never asks you to go. The move
-   is `gotoSector(sx,sy,what)`, lifted out of `questGoto`, so the next addressed thing on the desk
-   gets it free. **And the rest of it done (0.201.0):** the ЦЕНЫ band names a real station live, in flight, and
-   hearing it now writes a row on the paper — where yesterday's gesture plots the course. It stays
-   hearsay and is guarded as such: only the good actually named plus fuel, marked «со слуха», no
-   shortage (that is not broadcast), never overwriting a docked row, and never counted as the best
-   price in bold. Once per station per day, and only at a legible signal.
-
-   Original wording: The board (needs, tips, prices) is the game's
-   motor and it only runs after landing, docking and switching a tab. **The fix must stay in the
-   game's language:** the tester's own strongest praise was «ничто из этого не обращено к
-   игроку — и поэтому работает». Quest markers and objective banners would buy the metric and
-   sell the game. The receiver already broadcasts prices and rumours — make what it says
-   actionable, and let the navigator act on what was overheard. This is also where the author's
-   own idea belongs (below).
+## «Зачем лететь» — moved to `docs/PLAN-archive.md` (2026-09-04); its answer is Act I
 
 ## First three — built; body moved to `docs/PLAN-archive.md` (2026-09-04)
 

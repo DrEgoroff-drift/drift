@@ -7516,3 +7516,27 @@ Grep `docs/PLAN-archive.md` for the milestone number (header "Moved out of PLAN.
 - **M304** (0.301.0) — the picture queue as one release: cave to zone I–II with cold glazes baked into the tile, sky brush and `hueToward`, landing horizon and altitude zenith, home panels/boards/study window, station sprite with one light, base halo, rain on the ground.
 - **M303** (0.300.0) — playtest tails of 02.09: the cantina's ВЫСЛУШАТЬ works, station rumours persist as logged, the desk opens over a station (СТОЛ in the header), the home beacon undocks first, the desk lamp ignores grey and ether lines, the parrot's feather layer is sized by the bird box and the perch is off the screens.
 
+## «Зачем лететь» — the one open item of the outside playtest (2026-08-26)
+
+Items 1–4 of that queue are closed (M213, M214, M217, M223) and sit in the archive.
+
+5. **«Зачем лететь» lives inside the station** — **first move made (0.200.0).** The desk already
+   remembered every station's prices and shortages and let you do nothing with them: the address sat
+   there as two numbers to be memorised by eye. Tapping a price row now lays a course and opens the
+   navigator — the same gesture the journal has always had for a job, and the only button it has ever
+   had. Nothing appears over the world: no arrow, no marker, the game never asks you to go. The move
+   is `gotoSector(sx,sy,what)`, lifted out of `questGoto`, so the next addressed thing on the desk
+   gets it free. **And the rest of it done (0.201.0):** the ЦЕНЫ band names a real station live, in flight, and
+   hearing it now writes a row on the paper — where yesterday's gesture plots the course. It stays
+   hearsay and is guarded as such: only the good actually named plus fuel, marked «со слуха», no
+   shortage (that is not broadcast), never overwriting a docked row, and never counted as the best
+   price in bold. Once per station per day, and only at a legible signal.
+
+   Original wording: The board (needs, tips, prices) is the game's
+   motor and it only runs after landing, docking and switching a tab. **The fix must stay in the
+   game's language:** the tester's own strongest praise was «ничто из этого не обращено к
+   игроку — и поэтому работает». Quest markers and objective banners would buy the metric and
+   sell the game. The receiver already broadcasts prices and rumours — make what it says
+   actionable, and let the navigator act on what was overheard. This is also where the author's
+   own idea belongs (below).
+
