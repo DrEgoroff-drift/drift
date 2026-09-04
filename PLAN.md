@@ -388,24 +388,31 @@ layout in the game's own language (procedural canvas + desk DOM), not the render
   the jungle crowns sparser and rounder plus lone boulders; jungle — the reference itself. Same
   grammar everywhere, biome only changes the family.
 
-- **M353 — «Смена», the one book the world writes into** (name by the author, 2026-09-04: a bound year of the magazine «Смена» — twelve *issues*, not chapters; «Лоция» would collide with the shelf's «Лоция Ближнего края») (author 2026-09-04: «книгу по кускам
-  собирал — послушал слух, страница 100, строчка…»). A bound year of «Смена» every hull carries; the
-  player's copy is a torn flea-market one, and lines are *restored* by events, never read for free.
-  Rules: (1) hand-written text, twelve chapters × 15–20 lines ≈ 240, like `BOOKS` — no generated
-  line; (2) every event that carries lore has a book address `{ch,line}` — a rumour image, a
-  speech-queue line, the clerk's stamp, a find, an organism scan, a dismantle that yields a match,
-  a «Сорока» stop, a holiday on the beacon; (3) a line restores once, repeats give nothing; (4) a
-  chapter completed pays one small named use («Сорока» → the sky watch gives the direction to the
-  sails; «Биомы» → scan faster; «Устав и огонь» → a shelf matchbox yields one extra match); (5)
-  ОТЧЁТ stays its own thing, the book holds one pointer chapter «см. отчёт, собран N из 100»; (6) an
-  empty chapter shows only its title and where its lines are heard («слышно в кантинах», «говорят
-  клерки домов»). Issues: Устав и огонь · Дома и боны · Главтрасса и маяк · Кооперация · Слухи и
-  как им верить · Пираты и бароны · «Сорока» · Биомы и что на них стоит · Почта и карточки ·
-  Праздники · Птица · Долгий Ход (pointer). Desk item СМЕНА with pages, ink for restored lines,
-  dotted gaps, «строк 37 из 240». Module `12ud-smena.js` (table + `bookLine(ch,line)` hook),
-  hooks placed in `11t`, `11b`, `12uc`, `20-life` scanner, `12pa-beacon`, `12v-wander`; persisted
-  `G.smena=[ids]`. Test: every table line is reachable from at least one hook (the names audit
-  pattern), and no hook points at a line that does not exist.
+- **M353 — «Смена», the novel, read as it is lived** (author 2026-09-04: «книгу по кускам собирал —
+  послушал слух, страница, строчка»; then «какие главы у нас есть — книга «Смена»»). The book is
+  the one already written: the novel «Смена», 72 chapters in eight parts (Подряд · Плечо · Соседи ·
+  Счёт · Прибой · Раскол · Тишина · Тихоня), whose prose now sits in `docs/SMENA.md` (446 KB,
+  extracted from the artifact; never read whole — grep a chapter) and whose per-chapter play hook
+  («Играется:» lines) is `docs/SAGA-BOOK.md`. The bible's rule holds: the eight parts are the
+  eight parts of the player's own life, in the same order; the game never says so.
+  Mechanic: a desk item СМЕНА, a bound volume, 72 chapters listed by title; a chapter opens
+  (ink) when the player *has lived it* — the trigger is exactly the module the book names for it
+  («Играется»): ch. 2 after the first honest sale and the home appearing, ch. 10 at the first
+  drone, ch. 11 at the first hire, ch. 23 at the grove, ch. 36 when a manager's cut is first
+  shown, ch. 47 when the renegade takes the flagship, ch. 59 at the last-run letters, ch. 70 at
+  the commission. Unopened chapters show title, part and one line of where it is heard — never
+  a marker. Order of reading is the player's, order of the book is the order of meaning
+  (`SAGA-BOOK.md` §Порядок). The ОТЧЁТ's eight chapters and the novel's eight parts share names;
+  the book's page for a part shows «отчёт: собрано N из 12» beside it — the second reading the
+  bible asks for (SAGA-BOOK «Порядок постройки» №5). Trepло's irony table (№3) reads the same
+  hook table. Persisted `G.smena=[chapter ids]`; text as a const table `12ud-smena-text.js`
+  (a known bulk in `$BULK_OLD`, ~240 K chars — a text table is never split) or, if the author
+  prefers the game file lean, loaded from `docs/SMENA.md` on the site with the first paragraph of
+  each chapter embedded as the offline fallback — **author's pick, ask before building**. The
+  new lore of this queue («Сорока», matches, the cooperative, the beacon) does **not** go into
+  «Смена» — the bible forbids new explanation text; it rides the channels of the rule above.
+  Test: every chapter has exactly one hook and every hook names a function that exists (the
+  names-audit pattern); opening is monotone and survives the save.
 
 ## Loose ends (as of 2026-08-28, after the graphics run 0.237.0–0.244.0)
 
