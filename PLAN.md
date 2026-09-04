@@ -257,9 +257,12 @@ layout in the game's own language (procedural canvas + desk DOM), not the render
   lit jump area. (7) Address search: a small «сектор __:__» field (numeric keypad on phone) that slides
   the window and outlines the cell; every address in game text (rumours, notebook, flea provenance,
   «Сорока» papers) becomes tappable → map centres on it (extend the rumour hook of M298). (8) A small
-  rose in a corner: +X, +Y and «к ядру». (9) **Needs the author:** pencil notes — the player writes a
-  few words on a cell, ≤10, persisted (`G.mapNotes`). The «no markers» rule is about things the player
-  has not found; a note is the player's own decision like a name (`11u`). Recommended yes.
+  rose in a corner: +X, +Y and «к ядру». (9) **Decided (author 2026-09-04): no text notes — a wordless mark, and it is a match.** The player
+  lays a match from the wallet on a cell (`G.mapMarks=[{sx,sy}]`, ≤10, persisted); it stays until
+  taken back. Not spent: the same match, out of the wallet while it lies on the map, so a mark costs
+  something without a rule — one you cannot pay with aboard «Сорока». Drawn as a small match lying on
+  the cell, warm head, no glow; tap the cell again to pick it up. Zero matches — no mark, and the game
+  says so in one line.
   Tests: grid/rulers agree with `mapViewC`; selection of an empty cell yields the right address; the
   rumour square matches `11t` spread; `91f-ui` on phone — rulers do not overlap the deck or rail.
 
