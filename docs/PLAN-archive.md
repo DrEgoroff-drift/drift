@@ -7344,3 +7344,19 @@ steps are built; the codex pass over the body (step 8) waits for the author's ey
 says why; rumours carry distance and jumps and «НА КАРТУ» with a search circle (`G.mapView`,
 `G.mapSearch`); the map card is a footer line, the description on a second tap, a double tap on
 empty sky clears it (`body.mapclean`). The playtest queue of 30–31.08 is closed.
+
+## First three — built; they turned the present sandbox into Act I
+
+All three organs exist and are guarded (found stale in this list on 27.08.2026 and checked
+against `src/` — the queue below is what actually remains):
+
+- ~~**M189 — возможность.**~~ Built: `11ah-offer` — the offer as an entity with a face and a
+  silent window, named offers three times richer than cold ones, folk memory as two booleans and
+  never a number. Arrives through the counter and the ether, never marked, expires without
+  comment. Guarded in `91zzzf-offer`.
+- ~~**M190 — игрок как источник слухов.**~~ Built as «ляпнул лишнего» (M194, 0.169.0): what he
+  says at a counter travels and comes back days later wearing someone else's face.
+- ~~**M191 — тетрадь доброты.**~~ Built: `11ai-ledger` — write-only, never shown anywhere,
+  `deedAdd` refuses a deed without a cost, and helping while broke weighs more. Writers already
+  live in `11ag-trace` (cargo left at a mark) and `12l-barge` (souls off a dying hull).
+

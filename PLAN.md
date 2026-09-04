@@ -640,20 +640,7 @@ Items 1–4 of that queue are closed (M213, M214, M217, M223) and sit in the arc
    actionable, and let the navigator act on what was overheard. This is also where the author's
    own idea belongs (below).
 
-## First three — built; they turned the present sandbox into Act I
-
-All three organs exist and are guarded (found stale in this list on 27.08.2026 and checked
-against `src/` — the queue below is what actually remains):
-
-- ~~**M189 — возможность.**~~ Built: `11ah-offer` — the offer as an entity with a face and a
-  silent window, named offers three times richer than cold ones, folk memory as two booleans and
-  never a number. Arrives through the counter and the ether, never marked, expires without
-  comment. Guarded in `91zzzf-offer`.
-- ~~**M190 — игрок как источник слухов.**~~ Built as «ляпнул лишнего» (M194, 0.169.0): what he
-  says at a counter travels and comes back days later wearing someone else's face.
-- ~~**M191 — тетрадь доброты.**~~ Built: `11ai-ledger` — write-only, never shown anywhere,
-  `deedAdd` refuses a deed without a cost, and helping while broke weighs more. Writers already
-  live in `11ag-trace` (cargo left at a mark) and `12l-barge` (souls off a dying hull).
+## First three — built; body moved to `docs/PLAN-archive.md` (2026-09-04)
 
 ## After those, in order
 
