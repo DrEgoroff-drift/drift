@@ -12,7 +12,7 @@
 # -Mobile runs the same suites in a phone window instead: the layout guards are
 # written to skip themselves when the window is not a phone, so without this
 # switch the phone half of the interface is never actually measured.
-param([switch]$NoBuild, [string]$Only = "", [switch]$Mobile, [int]$Fuzz = 0)
+param([switch]$NoBuild, [string]$Only = "", [switch]$Mobile, [int]$Fuzz = 0, [int]$Seed = 0)
 
 $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -32,6 +32,13 @@ if ($Only) { $url += "?only=" + [uri]::EscapeDataString($Only) }
 if ($Fuzz -gt 0) {
   $sep = if ($url -match "\?") { "&" } else { "?" }
   $url += "$sep" + "fuzz=$Fuzz"
+}
+# Зерно рук (M339): по умолчанию прежнее, -Seed N даёт другую тропу целиком.
+# Длинный прогон с одним зерном проверяет ту же последовательность, только
+# дольше; охота идёт по нескольким зёрнам.
+if ($Seed -gt 0) {
+  $sep = if ($url -match "\?") { "&" } else { "?" }
+  $url += "$sep" + "fseed=$Seed"
 }
 $dom = Join-Path $env:TEMP "drift-tests-dom.html"
 $err = Join-Path $env:TEMP "drift-tests-err.txt"

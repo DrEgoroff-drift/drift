@@ -18,6 +18,16 @@ function fuzzN(){
   const m=/[?&]fuzz=(\d+)/.exec(location.search);
   return m?Math.min(20000,Math.max(20,+m[1])):260;
 }
+/* ── тропа у фуззера одна, и это её предел (M339) ──
+   Зерно было постоянным: сколько кадров ни гоняй, руки нажимают ОДНУ И ТУ ЖЕ
+   последовательность, просто дольше. Длинный прогон от этого проверяет ту же
+   тропу, а не новые. Ручка `?fseed=N` (в PowerShell `test.ps1 -Fuzz N -Seed M`)
+   даёт другую тропу целиком; по умолчанию зерно прежнее, чтобы обычный прогон
+   на сборке оставался тем же самым и повторялся точь-в-точь. */
+function fuzzSeed(){
+  const m=/[?&]fseed=(\d+)/.exec(location.search);
+  return m?(+m[1]>>>0):0;
+}
 /* ── сцены берём у прибора кадра (28y-look) ──
    Список сцен один на всех: им пользуется и `lookAll`, и фуззер. Свой список
    здесь уже был и уже разошёлся бы — правило то же, что у развилки режимов:
@@ -33,7 +43,7 @@ TEST_SUITES.push(()=>suite("фуззер: режимы под случайным
     let ok0=true;
     try{ok0=sc.set()!==false;}catch(e){bad.push(sc.id+" · постановка сцены: "+e.message);continue;}
     if(!ok0||G.mode==="none"){skipped.push(sc.id);continue;}
-    const r=rng(hashi(0xF0DE,sc.id.length,7));
+    const r=rng(hashi(0xF0DE+fuzzSeed(),sc.id.length,7));
     for(let i=0;i<N;i++){
       /* руки: каждые несколько кадров половина клавиш переставляется */
       if(i%5===0){
@@ -103,7 +113,7 @@ TEST_SUITES.push(()=>suite("фуззер: прожитый мир",()=>{
     }catch(e){bad.push(sc.id+" · постановка: "+e.message);continue;}
     if(!ok0)continue;
     fuzzRich();                             /* resetWorld внутри сцены стёр — ставим снова */
-    const r=rng(hashi(0xB17E,sc.id.length,3));
+    const r=rng(hashi(0xB17E+fuzzSeed(),sc.id.length,3));
     for(let i=0;i<N;i++){
       if(i%5===0){for(const k of FUZZ_KEYS)keys[k]=r()<.3;actEdge=keys.act&&r()<.5;}
       else actEdge=false;

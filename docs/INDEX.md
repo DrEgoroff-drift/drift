@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 375 · символов верхнего уровня: 3405
+Файлов: 375 · символов верхнего уровня: 3406
 
 ## СИМВОЛЫ
 
@@ -1013,8 +1013,9 @@ fuseSel                      src/26-ui-station.js:4
 fuseShips                    src/03-ships.js:42
 FUZZ_KEYS                    tests/91zzzz-fuzz.js:16
 fuzzN                        tests/91zzzz-fuzz.js:17
-fuzzRich                     tests/91zzzz-fuzz.js:66
-fuzzScenes                   tests/91zzzz-fuzz.js:26
+fuzzRich                     tests/91zzzz-fuzz.js:76
+fuzzScenes                   tests/91zzzz-fuzz.js:36
+fuzzSeed                     tests/91zzzz-fuzz.js:27
 fxCanvas                     src/18d-postfx.js:12
 G                            src/08-state.js:61
 G_BOOT_KEYS                  tests/90-harness.js:53
@@ -4605,12 +4606,12 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzzzd-desk.js · 5 КБ
   · стол как стол:1
 
-## tests/91zzzz-fuzz.js · 14 КБ
+## tests/91zzzz-fuzz.js · 15 КБ
   · фуззер: режим под случайными руками (M238):1
-  · прожитый мир:61
-  · все вкладки рисуются:125
-  · тычок в каждую кнопку:158
-  · прибор кадра работает:200
+  · прожитый мир:71
+  · все вкладки рисуются:135
+  · тычок в каждую кнопку:168
+  · прибор кадра работает:210
 
 ## tests/91zzzzy-light.js · 20 КБ
   · свет и свечения (M330):1
