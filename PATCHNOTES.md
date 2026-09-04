@@ -7,6 +7,18 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.339.1 - «Смена», the prose pass
+
+The author's verdict on the book was «интересная, как игра, а не заметки». Read as a critic, the
+novel turned out to be mostly scenes already — the parts about the neighbours, the deadline, the
+schism and the silence hold. What read as notes were chapters 10, 11 and 16 and the scenes added
+yesterday for the new mechanics. Those are now scenes: the drone stuck in quicksand under two
+moons and the match found under the cowl; Sivy hired across the counter and found drinking on a
+gangway; the base's first night and the battery that gave out at four in the morning; the
+cooperative registered in a queue and the counter that gets dearer with the second hundred;
+the station that «БЕРЁТ» and the day the premium was lost by a minute. `docs/SMENA-sample-10.md`
+holds the sample the author approved.
+
 ## 0.339.0 - M353: «Смена» — the novel on the desk, read as it is lived
 
 The book the author wrote on 28.08 (72 chapters in eight parts, the story bible in its appendix)
