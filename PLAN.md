@@ -310,10 +310,17 @@ layout in the game's own language (procedural canvas + desk DOM), not the render
   stays silent without an error; nothing is spoken while `G.mode` is a desk/station screen.
   **Heard by the author (2026-09-04, the scratchpad proba `mayak-demo.html`): «как рипово, давай только
   тихо, пусть болтает».** So: the voice is a background murmur, not an announcement — `volume≈.35`,
-  `rate≈.88`, `pitch≈.9`, crackle framing quieter still; it talks on its own whenever a bulletin is
+  `rate 1.0` (the demo's .88 was already «slow» to the author), `pitch≈.9`, crackle framing quieter still; it talks on its own whenever a bulletin is
   due in flight, never interrupts game sound, never demands attention; ducked (not cut) under the
   frame guard's «СБОЙ» and combat. The demo's structure is the reference: crackle 1.4 s → lines one
   utterance each → longer pause on лесенка steps → two-tone sign-off → crackle tail.
+  **Voices are the system's, not the game's** (author 2026-09-04): settings list the device's
+  voices, one picker per role (beacon, keeper, dispatcher) plus rate and volume; a device with one
+  Russian voice shows a list of one. Players add voices by installing them in the OS (Windows
+  Павел/Ирина/Дмитрий and the Edge neural voices, Android TTS engines, iOS) — the game sees them by
+  itself, so «voice plugins» need no code. No voice files inside the game (zero-assets rule); a
+  branded voice, if ever, would be pre-rendered files on the site — a separate decision, not now.
+  Persist the choice by voice *name* with a fallback to the first `ru` voice when it is gone.
 
 ## Loose ends (as of 2026-08-28, after the graphics run 0.237.0–0.244.0)
 
