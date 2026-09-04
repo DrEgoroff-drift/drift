@@ -34,6 +34,7 @@ const FLEA_WHY=["распродажа наследства","залог, за к
 function fleaRec(){
   if(!G.flea||typeof G.flea!=="object")G.flea={got:[]};
   if(!Array.isArray(G.flea.got))G.flea.got=[];
+  if(!Array.isArray(G.flea.pawn))G.flea.pawn=[];   /* залог из ящика конторы (12ak, M345) */
   return G.flea;
 }
 function fleaHere(sys){
@@ -62,6 +63,14 @@ function fleaLots(sys){
   if(!fleaHere(sys))return [];
   const R=fleaRec(),ep=fleaEpoch(),out=[];
   const danger=typeof sysDanger==="function"?sysDanger(sys.sx,sys.sy):.4;
+  /* залог, за которым не пришли (12ak-locker, M345): контора сдала ящик — его части
+     лежат первыми на любом блошинце, пока их не купят; провенанс честный */
+  for(const pw of R.pawn){
+    const part=(typeof unpackPart==="function")?unpackPart(pw.p):null;if(!part)continue;
+    out.push({id:"pawn:"+pw.k,kind:"part",seed:pw.k,who:"конторы перевозок",why:"залог, за которым не пришли",
+      at:{sx:sys.sx,sy:sys.sy},tier:part.tier,part,ru:"«"+part.name+"»",
+      note:"из ящика, за которым не пришли тридцать суток",price:Math.round(28+part.tier*34),pawn:pw.k});
+  }
   for(let i=0;i<FLEA_ROWS;i++){
     const seed=hashi(hashi(sys.sx,sys.sy,0xF1EA),ep*31+i*7717,0xF1EB);
     const r=rng(seed);
@@ -128,6 +137,7 @@ function fleaBuy(id,pay,sys){
   }
   R.got.push(lot.id);
   while(R.got.length>FLEA_GOT)R.got.shift();
+  if(lot.pawn!=null)R.pawn=R.pawn.filter(pw=>pw.k!==lot.pawn);   /* залог ушёл к новому хозяину */
   /* что именно куплено — по виду лота. Вещь всегда идёт вместе с адресом:
      в этом и смысл ряда. */
   if(lot.kind==="part"&&typeof addPart==="function"){

@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 393 · символов верхнего уровня: 3581
+Файлов: 395 · символов верхнего уровня: 3596
 
 ## СИМВОЛЫ
 
@@ -975,17 +975,17 @@ FLEA_MARKUP                  src/12ua-flea.js:24
 FLEA_ROWS                    src/12ua-flea.js:25
 FLEA_WHO                     src/12ua-flea.js:28
 FLEA_WHY                     src/12ua-flea.js:31
-fleaBuy                      src/12ua-flea.js:112
-fleaCredits                  src/12ua-flea.js:107
-fleaEpoch                    src/12ua-flea.js:43
-fleaHere                     src/12ua-flea.js:39
-fleaLeave                    src/12ua-flea.js:155
-fleaLot                      src/12ua-flea.js:106
-fleaLots                     src/12ua-flea.js:60
-fleaPlace                    src/12ua-flea.js:47
+fleaBuy                      src/12ua-flea.js:121
+fleaCredits                  src/12ua-flea.js:116
+fleaEpoch                    src/12ua-flea.js:44
+fleaHere                     src/12ua-flea.js:40
+fleaLeave                    src/12ua-flea.js:165
+fleaLot                      src/12ua-flea.js:115
+fleaLots                     src/12ua-flea.js:61
+fleaPlace                    src/12ua-flea.js:48
 fleaRec                      src/12ua-flea.js:34
-fleaRender                   src/12ua-flea.js:168
-fleaScrip                    src/12ua-flea.js:108
+fleaRender                   src/12ua-flea.js:178
+fleaScrip                    src/12ua-flea.js:117
 FLEET                        src/04b-fleet.js:107
 FLEET_ART                    src/12ai-fleet.js:101
 FLEET_CLASSES                src/12ai-fleet.js:20
@@ -1291,7 +1291,7 @@ holdSkyMul                   src/12ag-holdfx.js:117
 holdTechMul                  src/12ag-holdfx.js:119
 holdTestStation              tests/91x-hold.js:2
 holdUklad                    src/12ah-holdnews.js:19
-holdWorth                    src/27j-ui-opis.js:484
+holdWorth                    src/27j-ui-opis.js:492
 holEtherLine                 src/11am-holiday.js:77
 HOLIDAYS                     src/11am-holiday.js:22
 holIs                        src/11am-holiday.js:74
@@ -1636,6 +1636,21 @@ lightsSuns                   src/11g-lights.js:102
 litRGB                       src/19c-light.js:125
 loadGame                     src/14a-cloud.js:56
 LOCAL                        src/11b-speech.js:103
+LOCKER_SLOTS                 src/12ak-locker.js:23
+lockerFree                   src/12ak-locker.js:39
+lockerHandOver               src/12ak-locker.js:64
+lockerHere                   src/12ak-locker.js:33
+lockerLine                   src/12ak-locker.js:125
+lockerPutPart                src/12ak-locker.js:80
+lockerPutRes                 src/12ak-locker.js:95
+lockerPutTool                src/12ak-locker.js:87
+lockerRec                    src/12ak-locker.js:24
+lockerSlots                  src/12ak-locker.js:31
+lockerTake                   src/12ak-locker.js:102
+lockerTakeRes                src/12ak-locker.js:115
+lockerTick                   src/12ak-locker.js:51
+lockerUsed                   src/12ak-locker.js:38
+lockerValue                  src/12ak-locker.js:41
 LOG_MAX                      src/11-log.js:11
 LOG_PAGE                     src/11-log.js:12
 logAdd                       src/11-log.js:15
@@ -1994,42 +2009,42 @@ OPIS                         src/27j-ui-opis.js:32
 OPIS_HW                      src/27j-ui-opis.js:56
 OPIS_KIT                     src/27j-ui-opis.js:48
 OPIS_SHIP                    src/27j-ui-opis.js:35
-opisActs                     src/27j-ui-opis.js:437
+opisActs                     src/27j-ui-opis.js:444
 opisArmed                    src/27j-ui-opis.js:144
 opisAsk                      src/27j-ui-opis.js:172
-opisAskForm                  src/27j-ui-opis.js:527
-opisBar                      src/27j-ui-opis.js:547
+opisAskForm                  src/27j-ui-opis.js:538
+opisBar                      src/27j-ui-opis.js:558
 opisCanDump                  src/27j-ui-opis.js:171
-opisCard                     src/27j-ui-opis.js:423
+opisCard                     src/27j-ui-opis.js:430
 opisConfirm                  src/27j-ui-opis.js:145
 opisDragWire                 src/27j-ui-opis.js:195
-opisDrawBox                  src/27j-ui-opis.js:369
-opisDrawHatch                src/27j-ui-opis.js:398
-opisDrawMatchbox             src/27j-ui-opis.js:347
-opisDrop                     src/27j-ui-opis.js:283
-opisDropAt                   src/27j-ui-opis.js:268
-opisDropEnd                  src/27j-ui-opis.js:274
+opisDrawBox                  src/27j-ui-opis.js:376
+opisDrawHatch                src/27j-ui-opis.js:405
+opisDrawMatchbox             src/27j-ui-opis.js:354
+opisDrop                     src/27j-ui-opis.js:284
+opisDropAt                   src/27j-ui-opis.js:269
+opisDropEnd                  src/27j-ui-opis.js:275
 opisDump                     src/27j-ui-opis.js:176
 opisFit                      src/27j-ui-opis.js:150
 opisFocus                    src/27j-ui-opis.js:60
 opisGhostMove                src/27j-ui-opis.js:243
-opisHead                     src/27j-ui-opis.js:521
-opisHullRedraw               src/27j-ui-opis.js:317
-opisHullSlotAt               src/27j-ui-opis.js:334
-opisKitCard                  src/27j-ui-opis.js:512
+opisHead                     src/27j-ui-opis.js:532
+opisHullRedraw               src/27j-ui-opis.js:324
+opisHullSlotAt               src/27j-ui-opis.js:341
+opisKitCard                  src/27j-ui-opis.js:523
 opisKitFuture                src/27j-ui-opis.js:94
-opisLeave                    src/27j-ui-opis.js:742
+opisLeave                    src/27j-ui-opis.js:791
 opisLift                     src/27j-ui-opis.js:217
 opisMarkCan                  src/27j-ui-opis.js:248
-opisMarkOver                 src/27j-ui-opis.js:263
+opisMarkOver                 src/27j-ui-opis.js:264
 opisPanel                    src/27j-ui-opis.js:102
 opisPanels                   src/27j-ui-opis.js:123
-opisPartCard                 src/27j-ui-opis.js:453
-opisPartHtml                 src/27j-ui-opis.js:448
+opisPartCard                 src/27j-ui-opis.js:460
+opisPartHtml                 src/27j-ui-opis.js:455
 opisPhone                    src/27j-ui-opis.js:57
-opisPileCard                 src/27j-ui-opis.js:493
-opisPriceCue                 src/27j-ui-opis.js:474
-opisRender                   src/27j-ui-opis.js:564
+opisPileCard                 src/27j-ui-opis.js:501
+opisPriceCue                 src/27j-ui-opis.js:482
+opisRender                   src/27j-ui-opis.js:575
 opisRerender                 src/27j-ui-opis.js:58
 opisSame                     src/27j-ui-opis.js:59
 opisScrap                    src/27j-ui-opis.js:159
@@ -3437,9 +3452,9 @@ wanAll                       src/24c-mode-wanderer.js:21
 wanCaseAt                    src/24c-mode-wanderer-draw.js:30
 wanCol                       src/24c-mode-wanderer-draw.js:21
 wanCur                       src/24c-mode-wanderer.js:50
-WANDER_BY_ID                 src/12v-wander-shop.js:66
+WANDER_BY_ID                 src/12v-wander-shop.js:68
 WANDER_CAT                   src/12v-wander-shop.js:27
-WANDER_LINES                 src/12v-wander-shop.js:247
+WANDER_LINES                 src/12v-wander-shop.js:249
 WANDER_LOOP                  src/12v-wander.js:30
 WANDER_N                     src/12v-wander.js:29
 WANDER_RAW                   src/12v-wander-shop.js:26
@@ -3448,39 +3463,39 @@ WANDER_SHELF                 src/12v-wander-shop.js:24
 WANDER_STOP                  src/12v-wander.js:28
 WANDER_T0                    src/12v-wander.js:27
 wanderAngle                  src/12v-wander.js:107
-wanderAreaChart              src/12v-wander-shop.js:176
-wanderAskPart                src/12v-wander-shop.js:147
+wanderAreaChart              src/12v-wander-shop.js:178
+wanderAskPart                src/12v-wander-shop.js:149
 wanderAt                     src/12v-wander.js:68
-wanderBuy                    src/12v-wander-shop.js:149
-wanderCant                   src/12v-wander-shop.js:139
+wanderBuy                    src/12v-wander-shop.js:151
+wanderCant                   src/12v-wander-shop.js:141
 wanderDock                   src/12v-wander.js:123
-wanderHas                    src/12v-wander-shop.js:75
+wanderHas                    src/12v-wander-shop.js:77
 wanderHeading                src/12v-wander.js:105
 wanderHere                   src/12v-wander.js:90
-wanderLeftRu                 src/12v-wander-shop.js:255
+wanderLeftRu                 src/12v-wander-shop.js:257
 wanderLen                    src/12v-wander.js:95
 wanderLoop                   src/12v-wander.js:44
-wanderLots                   src/12v-wander-shop.js:108
+wanderLots                   src/12v-wander-shop.js:110
 wanderNear                   src/12v-wander.js:116
-wanderNeedleAcc              src/12v-wander-shop.js:98
+wanderNeedleAcc              src/12v-wander-shop.js:100
 wanderOk                     src/12v-wander.js:37
-wanderOwns                   src/12v-wander-shop.js:76
+wanderOwns                   src/12v-wander-shop.js:78
 wanderPlanetIx               src/12v-wander.js:82
-wanderPriceRu                src/12v-wander-shop.js:133
-wanderRawLeft                src/12v-wander-shop.js:208
-wanderRawQuote               src/12v-wander-shop.js:214
+wanderPriceRu                src/12v-wander-shop.js:135
+wanderRawLeft                src/12v-wander-shop.js:210
+wanderRawQuote               src/12v-wander-shop.js:216
 wanderRec                    src/12v-wander.js:31
 wanderRumour                 src/12v-wander.js:130
-wanderSellRaw                src/12v-wander-shop.js:218
-wanderShowables              src/12v-wander-shop.js:232
-wanderShowRare               src/12v-wander-shop.js:236
+wanderSellRaw                src/12v-wander-shop.js:220
+wanderShowables              src/12v-wander-shop.js:234
+wanderShowRare               src/12v-wander-shop.js:238
 wanderSkyLine                src/12v-wander.js:147
-wanderStat                   src/12v-wander-shop.js:88
-wanderStore                  src/12v-wander-shop.js:67
-wanderTick                   src/12v-wander-shop.js:99
-wanderToHold                 src/12v-wander-shop.js:83
-wanderToShelf                src/12v-wander-shop.js:77
-wanderWildGrant              src/12v-wander-shop.js:191
+wanderStat                   src/12v-wander-shop.js:90
+wanderStore                  src/12v-wander-shop.js:69
+wanderTick                   src/12v-wander-shop.js:101
+wanderToHold                 src/12v-wander-shop.js:85
+wanderToShelf                src/12v-wander-shop.js:79
+wanderWildGrant              src/12v-wander-shop.js:193
 wanderWorldPos               src/12v-wander.js:97
 wanGeom                      src/24c-mode-wanderer-draw.js:24
 wanItemIcon                  src/24c-mode-wanderer-draw.js:37
@@ -3854,6 +3869,9 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12ai-fleet.js · 53 КБ
   · ГЛАВТРАССА: флот, который нельзя купить (M310, DESIGN-holding §18):1
 
+## src/12ak-locker.js · 7 КБ
+  · ящик: камера хранения транспортной конторы домов (M345):1
+
 ## src/12b-crew-events.js · 17 КБ
   · наёмники: рейс как раздача карт:1
 
@@ -3966,7 +3984,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12t-settle.js · 28 КБ
   · посёлок: вы даёте, решают они:1
 
-## src/12ua-flea.js · 12 КБ
+## src/12ua-flea.js · 13 КБ
   · Блошинец: станция, где всё чьё-то:1
 
 ## src/12ub-books.js · 21 КБ
@@ -4358,7 +4376,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/27j-ui-kitlay.js · 9 КБ
   · комплект, разложенный на столе:1
 
-## src/27j-ui-opis.js · 40 КБ
+## src/27j-ui-opis.js · 44 КБ
   · ОПИСЬ: один стол для всего, что на тебе и в трюме (M341):1
 
 ## src/27k-road.js · 47 КБ
@@ -4839,6 +4857,9 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzzzh-cosm.js · 6 КБ
   · автотесты: косметика «Сороки» (M344):1
+
+## tests/91zzzzi-locker.js · 7 КБ
+  · автотесты: ящик конторы (M345):1
 
 ## tests/91zzzzy-hold.js · 9 КБ
   · холдинг: круг стройки числами (M339):1

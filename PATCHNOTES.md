@@ -7,6 +7,17 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.344.0 - M345: the locker — the houses' transport office keeps your things
+
+Dock at a station of the sixth rung or higher and a fifth zone slides onto ОПИСЬ: ЯЩИК, twenty-four
+places (forty-eight with the «Второй ящик» tool from «Сорока»), one locker for the whole galaxy, instant.
+Spare parts, piles of cargo and «Сорока» tools go in by dragging or by «В ЯЩИК» on the card; «ЗАБРАТЬ»
+brings them back. Storage costs one percent of the contents' value per real day, taken when you next
+come by, in whole days, and if the till is short the office takes what there is and asks no more — there
+is no book of debt. Leave the locker a month untouched and the office hands it over: your parts surface
+on the flea markets as lots «залог, за которым не пришли», priced and sold like any other; the raw and
+the tools are gone. The hard choice the design wanted — what to take on this run — now has a place.
+
 ## 0.343.0 - M344: cosmetics — things that are seen, not counted
 
 The second row of «Сорока»'s shelf: twenty-seven things in seven slots, every one for matches (6–20) and

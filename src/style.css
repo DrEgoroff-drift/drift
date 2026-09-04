@@ -1394,3 +1394,10 @@ body.aboard #console{display:none!important}
 .opis .op-cosm{display:flex;flex-direction:column;gap:6px;margin-top:8px;text-align:left}
 .opis .op-card.cosm{padding:6px 8px}
 .opis .op-card.cosm.worn{box-shadow:0 0 0 1px rgba(201,162,74,.8),0 5px 12px rgba(0,0,0,.4)}
+/* ящик конторы на ОПИСИ (M345): пятая зона в правой колонке, между шкатулкой и люком */
+.opis .op-locker{grid-area:side;align-self:start}
+.opis .op-lockgrid{display:flex;flex-direction:column;gap:6px;margin-top:6px}
+.opis .op-lockgrid .empty{display:block;height:24px;border:1px dashed rgba(232,220,190,.25);border-radius:4px}
+.opis .op-card.lock{padding:6px 8px}
+.opis .op-card.lock.on{transform:none;box-shadow:0 5px 12px rgba(0,0,0,.4)}
+@media (max-width:760px){.opis .op-locker{order:4}.opis .op-foot{order:5}}

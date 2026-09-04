@@ -7748,3 +7748,23 @@ hull (exhaust, trail, mark, lights, chime) or on the kit (suit, visor). `91zzzzh
 painter to an offscreen canvas with and without the thing and fails if fewer pixels change than a
 threshold — the same law as «a perk without code is a lie». Left out: parrot accessories (the parrot
 face is a 42 KB table module, its own pass) and the house crest (needs a chosen house).
+
+## M345 — the locker (0.344.0, 2026-09-05)
+
+- **M345 — the locker** (`G.locker={items:[],res:{},t}` persisted). Fifth zone of ОПИСЬ that slides
+  in while `G.mode==="dock"` at a station with `rungOf>=6`: 24 slots, parts + piles + tools. Fee
+  1 %/day of contents' value taken lazily from `Date.now()-t` (the `tickDrones` model); 30 days
+  unvisited → contents go to the flea as lots «залог, за которым не пришли» (`12ua` provenance).
+  Ease «Второй ящик» doubles slots. Tests: put/take round-trip, fee arithmetic under the shifted
+  clock, the 30-day hand-over.
+
+**Decided while building:** `G.locker={items:[{p:packPart}|{tool:id}],res:{k:n},t}`; a pile takes one place
+per resource, a part or a tool one place each. The fee is 1 % of the contents' value per real day
+(`lockerValue`: parts 60+140·tier, tools 25 matches-worth, raw at market), taken lazily on the next
+visit in whole days; when the till is short the fee takes what there is and stops — no debt book, the
+same decision as the fleet's «под расписку». Thirty days without a visit hand the contents over: parts go
+to `G.flea.pawn` and surface first on every bazaar as lots «залог, за которым не пришли» (kind `part`,
+who «конторы перевозок», price 28+34·tier, bought like any lot and removed from the pawn list); tools
+and raw are lost to the office. The zone sits in the cloth's `side` area (between the casket and the
+hatch), drag a spare part or a pile onto it, or press «В ЯЩИК» on the card; tools on the shelf and in
+the hold get «В ЯЩИК» too. People are never stored. «Второй ящик» is a «Сорока» tool (24 matches).

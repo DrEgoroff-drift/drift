@@ -254,6 +254,7 @@ function opisMarkCan(pl){
     else if(k==="slot")can=!!p&&slotsOf(G.shipId)[+e.dataset.slot]===p.kind;
     else if(k==="hull")can=!!p||(pl.t==="cosm"&&cosmSlotOf(pl.id)!=="suit"&&cosmSlotOf(pl.id)!=="visor");
     else if(k==="spare")can=pl.t==="slot";
+    else if(k==="locker")can=pl.t==="part"||(pl.t==="pile"&&opisCanDump(pl.k));
     else if(k==="kit")can=pl.t==="kit"||(pl.t==="cosm"&&(cosmSlotOf(pl.id)==="suit"||cosmSlotOf(pl.id)==="visor"));
     e.classList.toggle("can",can);
   });
@@ -285,6 +286,12 @@ function opisDrop(tgt,pl){
     if(pl.t==="part"||pl.t==="slot"){const p=partById(pl.id);if(p)opisScrap(p);}
     else if(pl.t==="pile")opisAsk(pl.k);
     return;
+  }
+  if(tgt.kind==="locker"){
+    if(pl.t==="part")lockerPutPart(pl.id);
+    else if(pl.t==="pile")lockerPutRes(pl.k,G.cargo[pl.k]|0);
+    else{say("В ящик — только снятые части и кучи");return;}
+    OPIS.sel=null;opisRerender();return;
   }
   if(pl.t==="part"){
     const p=partById(pl.id);if(!p)return;
@@ -467,6 +474,7 @@ function opisPartCard(p,where){
     acts.push({ru:t<0?"НЕТ СЛОТА":(fm[t]!=null?"ЗАМЕНИТЬ":"СТАВИТЬ"),gold:fits,off:t<0||!fits,go:()=>opisFit(p)});
   }
   acts.push({ru:opisArmed(scrapKey)?"ТОЧНО?":"РАЗОБРАТЬ",gold:opisArmed(scrapKey),go:()=>opisScrap(p)});
+  if(!fitted&&typeof lockerHere==="function"&&lockerHere())acts.push({ru:"В ЯЩИК",go:()=>{lockerPutPart(p.id);OPIS.sel=null;opisRerender();}});
   opisActs(card,acts);
   return card;
 }
@@ -506,7 +514,10 @@ function opisPileCard(k,n){
     b.onclick=e=>{e.stopPropagation();if(typeof gotoSector==="function")gotoSector(cue.s.sx,cue.s.sy,R0.ru.toLowerCase()+" по "+cue.val);};
     card.appendChild(b);
   }
-  if(opisCanDump(k))opisActs(card,[{ru:"ЗА БОРТ",go:()=>opisAsk(k)}]);
+  const pacts=[];
+  if(opisCanDump(k))pacts.push({ru:"ЗА БОРТ",go:()=>opisAsk(k)});
+  if(opisCanDump(k)&&typeof lockerHere==="function"&&lockerHere())pacts.push({ru:"В ЯЩИК",go:()=>{lockerPutRes(k,G.cargo[k]|0);OPIS.sel=null;opisRerender();}});
+  if(pacts.length)opisActs(card,pacts);
   return card;
 }
 function opisKitCard(x,i){
@@ -580,7 +591,10 @@ function opisRender(box){
     e.innerHTML="<b>"+cat.ru+"</b><s>"+cat.fx+"</s>";
     const b=document.createElement("button");b.className="act sm";b.textContent="В ТРЮМ";
     b.onclick=ev=>{ev.stopPropagation();wanderToHold(id);opisRerender();};
-    e.appendChild(b);sl.appendChild(e);
+    e.appendChild(b);
+    if(typeof lockerHere==="function"&&lockerHere()){const b2=document.createElement("button");b2.className="act sm";b2.textContent="В ЯЩИК";
+      b2.onclick=ev=>{ev.stopPropagation();lockerPutTool(id);opisRerender();};e.appendChild(b2);}
+    sl.appendChild(e);
   }
   shelf.appendChild(sl);
   if(WS.hold.length){
@@ -593,7 +607,10 @@ function opisRender(box){
       const b=document.createElement("button");b.className="act sm"+(WS.shelf.length<WANDER_SHELF?" gold":"");b.textContent="НА ПОЛКУ";
       b.disabled=WS.shelf.length>=WANDER_SHELF;
       b.onclick=ev=>{ev.stopPropagation();wanderToShelf(id);opisRerender();};
-      e.appendChild(b);hl.appendChild(e);
+      e.appendChild(b);
+      if(typeof lockerHere==="function"&&lockerHere()){const b2=document.createElement("button");b2.className="act sm";b2.textContent="В ЯЩИК";
+        b2.onclick=ev=>{ev.stopPropagation();lockerPutTool(id);opisRerender();};e.appendChild(b2);}
+      hl.appendChild(e);
     }
     shelf.appendChild(hl);
   }
@@ -728,8 +745,40 @@ function opisRender(box){
   z4.appendChild(hcv4);
   z4.insertAdjacentHTML("beforeend","<h4><i>4</i>ЛЮК ЗА БОРТ</h4><s>перетащи, чтобы выбросить</s>");
   if(!phone){const ask=opisAskForm();if(ask)z4.appendChild(ask);}
+  /* ── зона 5: ящик конторы — только у станции шестой ступени (12ak, M345) ── */
+  let z5=null;
+  if(typeof lockerHere==="function"&&lockerHere()){
+    lockerTick();
+    const L=lockerRec();
+    z5=document.createElement("section");z5.className="op-z op-locker";z5.dataset.drop="locker";
+    z5.appendChild(opisHead(5,"ЯЩИК",lockerLine()));
+    const note=document.createElement("s");note.className="chalk";
+    note.textContent="контора домов · один ящик на всех станциях · процент в сутки · месяц без визита — на блошинец";
+    z5.appendChild(note);
+    const grid=document.createElement("div");grid.className="op-lockgrid";
+    L.items.forEach((it,i)=>{
+      const card=document.createElement("div");card.className="op-card lock";
+      if(it.p){const p=unpackPart(it.p);card.innerHTML=opisPartHtml(p);card.style.borderTop="3px solid "+PART_KINDS[p.kind].col;}
+      else card.innerHTML="<b>"+((typeof WANDER_BY_ID!=="undefined"&&WANDER_BY_ID[it.tool])?WANDER_BY_ID[it.tool].ru:it.tool)+"</b><s>инструмент «Сороки» · в ящике не работает</s>";
+      card.classList.add("on");
+      opisActs(card,[{ru:"ЗАБРАТЬ",gold:true,go:()=>{lockerTake(i);opisRerender();}}]);
+      grid.appendChild(card);
+    });
+    for(const k in L.res){
+      const n=L.res[k]|0;if(!n)continue;
+      const card=document.createElement("div");card.className="op-card lock pile";
+      card.innerHTML="<b>"+RES[k].ru+" × "+n+"</b><s>лежит в ящике</s>";
+      card.classList.add("on");
+      opisActs(card,[{ru:"ЗАБРАТЬ",gold:true,go:()=>{lockerTakeRes(k);opisRerender();}}]);
+      grid.appendChild(card);
+    }
+    const free=lockerFree();
+    for(let i=0;i<Math.min(free,6);i++){const e=document.createElement("i");e.className="empty";grid.appendChild(e);}
+    if(free>6){const e=document.createElement("s");e.className="chalk";e.textContent="… и ещё "+(free-6)+" "+pl3(free-6,"место","места","мест");grid.appendChild(e);}
+    z5.appendChild(grid);
+  }
   /* порядок в разметке — порядок ленты на телефоне; на широком экране расставит сетка */
-  box.appendChild(z3);box.appendChild(z2);box.appendChild(z1);box.appendChild(z4);
+  box.appendChild(z3);box.appendChild(z2);box.appendChild(z1);if(z5)box.appendChild(z5);box.appendChild(z4);
   const foot=document.createElement("div");foot.className="op-foot";
   foot.textContent=phone?"тап — выбрать · долгое нажатие — поднять · кнопки под вещью":
     "перетащи предмет на нужное место · перетащи на люк, чтобы выбросить · части выше добротной требуют подтверждения";
