@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 380 · символов верхнего уровня: 3426
+Файлов: 383 · символов верхнего уровня: 3442
 
 ## СИМВОЛЫ
 
@@ -589,9 +589,9 @@ DEPTH_TIERS                  src/04-mods.js:51
 DESC_MOOD                    src/01-core.js:109
 DESC_TAIL                    src/01-core.js:115
 DESK_DRAW                    src/27ia-desk-top.js:58
-DESK_ITEMS                   src/27ia-desk-top.js:308
-deskItemNew                  src/27ia-desk-top.js:347
-deskItemOf                   src/27ia-desk-top.js:341
+DESK_ITEMS                   src/27ia-desk-top.js:319
+deskItemNew                  src/27ia-desk-top.js:360
+deskItemOf                   src/27ia-desk-top.js:354
 dgy                          src/21b-surface-deco.js:131
 DIG_CELL                     src/23-mode-dig.js:3
 DIG_GEO_K                    src/23-mode-dig.js:9
@@ -772,7 +772,7 @@ drawSysNebula                src/16a-space.js:208
 drawSystem                   src/17-mode-system.js:317
 drawSysTraffic               src/17f-sys-traffic.js:29
 drawTemple                   src/20aa-poi-shapes.js:50
-drawThingIcon                src/27i-ui-table.js:321
+drawThingIcon                src/27i-ui-table.js:323
 drawTierTrim                 src/03b-hull-paint.js:62
 drawTiles                    src/18c-chunks.js:125
 drawTrail                    src/16-flight.js:362
@@ -1175,7 +1175,7 @@ heardUse                     src/12x-parrot.js:116
 heardWordsRu                 src/12x-parrot.js:79
 heardYours                   src/12x-parrot.js:71
 heatHaze                     src/18d-postfx.js:23
-held                         src/08-state.js:184
+held                         src/08-state.js:185
 hex2rgb                      src/03-ships.js:145
 hexA                         src/12e-drone-flight.js:289
 hexa                         src/12w-survey.js:91
@@ -2437,7 +2437,7 @@ renderCantina                src/27c-ui-hq.js:68
 renderCardBack               src/25i-post-back.js:88
 renderChess                  src/25n-chess.js:285
 renderDeeds                  src/11-log.js:102
-renderDeskTop                src/27ia-desk-top.js:353
+renderDeskTop                src/27ia-desk-top.js:366
 renderDiary                  src/29f-winter.js:221
 renderHold                   src/27j-ui-hold.js:176
 renderLog                    src/11-log.js:79
@@ -2450,10 +2450,11 @@ renderRecord                 src/11aa-record.js:80
 renderRelays                 src/11ap-relay.js:243
 renderRoute                  src/12r-route.js:349
 renderSiteTab                src/26c-ui-station-site.js:7
-renderStrips                 src/27i-ui-table.js:261
+renderSmena                  src/12ud-smena.js:121
+renderStrips                 src/27i-ui-table.js:263
 renderTab                    src/26-ui-station.js:364
 renderTabBody                src/26-ui-station.js:375
-renderThings                 src/27i-ui-table.js:292
+renderThings                 src/27i-ui-table.js:294
 REP_MIN                      src/12k-rep.js:16
 REP_WORDS                    src/12k-rep.js:17
 repAdd                       src/12k-rep.js:36
@@ -2680,7 +2681,7 @@ saveGame                     src/14a-cloud.js:38
 saveText                     src/14-save.js:127
 saveTop                      src/14-save.js:121
 saveWeigh                    src/14-save.js:108
-say                          src/08-state.js:185
+say                          src/08-state.js:186
 SCALE_KEYS                   src/10-music.js:25
 SCALES                       src/10-music.js:5
 SCK                          src/18c-chunks.js:39
@@ -2880,9 +2881,24 @@ slowRead                     src/11o-slow.js:90
 slowReady                    src/11o-slow.js:71
 slowReply                    src/11o-slow.js:76
 slowSpotX                    src/11o-slow.js:44
+smArr                        src/12ud-smena.js:27
+SMENA_CH                     src/12ud-smena.js:31
+SMENA_PARTS                  src/12ud-smena.js:18
+SMENA_TEXT                   src/12ud-smena-text.js:2
+SMENA_TITLE                  src/12ud-smena-text.js:3
+smenaCount                   src/12ud-smena.js:118
+smenaIsOpen                  src/12ud-smena.js:106
+smenaOpenCh                  src/12ud-smena.js:120
+smenaPartOf                  src/12ud-smena.js:24
+smenaRec                     src/12ud-smena.js:105
+smenaSync                    src/12ud-smena.js:108
+smenaWhere                   src/12ud-smena.js:119
+smK                          src/12ud-smena.js:25
+smL                          src/12ud-smena.js:26
 SMOKE_N                      src/17c-system-draw.js:387
 SMOKE_PATHS                  src/12tb-settle-draw2.js:246
 smokePath                    src/12tb-settle-draw2.js:247
+smP                          src/12ud-smena.js:29
 snapshot                     src/14-save.js:42
 SND                          src/09-audio.js:4
 sndWalk                      src/28-loop.js:29
@@ -2936,7 +2952,7 @@ starRGB                      src/19c-light.js:49
 start                        src/15-input.js:556
 startLanding                 src/19-mode-landing.js:2
 startScoop                   src/19a-mode-scoop.js:51
-stat                         src/08-state.js:143
+stat                         src/08-state.js:144
 STAT_SHOW                    src/05-parts.js:280
 stationArt                   src/17c-system-draw.js:408
 stationDeals                 src/27g-deals.js:141
@@ -3077,7 +3093,7 @@ tableNewBy                   src/27i-ui-table.js:76
 tableNewThings               src/27i-ui-table.js:73
 tableNoticeAll               src/27i-ui-table.js:68
 tableRender                  src/27i-ui-table.js:145
-tableRow                     src/27i-ui-table.js:253
+tableRow                     src/27i-ui-table.js:255
 tableSetTab                  src/27i-ui-table.js:105
 tableTab                     src/27i-ui-table.js:22
 tableToggle                  src/27i-ui-table.js:84
@@ -3820,6 +3836,12 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12uc-matches.js · 3 КБ
   · спички: единственный огонь, который можно взять в руку:1
 
+## src/12ud-smena.js · 12 КБ
+  · «Смена»: роман, который читается, когда прожит (M353):1
+
+## src/12ud-smena-text.js · 445 КБ
+  · «Смена»: текст романа — СГЕНЕРИРОВАНО docs/mksmena.py из docs/SMENA.md, руками не править:1
+
 ## src/12u-folk.js · 9 КБ
   · четверо:1
 
@@ -4164,10 +4186,10 @@ zooTick                      src/11ad-zoo.js:41
 ## src/27h-ui-lore.js · 6 КБ
   · доска отчёта: место, где собранное можно прочесть:1
 
-## src/27ia-desk-top.js · 21 КБ
+## src/27ia-desk-top.js · 22 КБ
   · стол как стол: предметы, а не тринадцать закладок:1
 
-## src/27i-ui-table.js · 26 КБ
+## src/27i-ui-table.js · 27 КБ
   · стол: одно место для всего, что читают:1
 
 ## src/27j-console.js · 8 КБ
@@ -4631,6 +4653,9 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzzzc-deal.js · 5 КБ
   · ДЕЛО: один ответ на «что на меня работает»:1
+
+## tests/91zzzzc-smena.js · 3 КБ
+  · автотесты: «Смена» — роман, который читается, когда прожит (M353):1
 
 ## tests/91zzzzd-desk.js · 5 КБ
   · стол как стол:1

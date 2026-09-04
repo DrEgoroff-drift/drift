@@ -218,6 +218,7 @@ function tableRender(){
              mail:"почта · стопки карточек, скреплённые скрепкой",
              diary:"дневник зимовки · бланками, потому что писать некому",
              books:"полка · что нашлось в обломках и уцелело",
+             smena:"«Смена» · роман, который читается, когда прожит",
              qsl:"карточки · кого слышал и кто ответил",
              relay:"приёмники · мачты, пойманные в шуме между диапазонами",
              chess:"партия · ход в сутки, доска считается из ходов",
@@ -245,6 +246,7 @@ function tableRender(){
   else if(tableTab==="mail"&&typeof renderMail==="function")renderMail(box);
   else if(tableTab==="diary"&&typeof renderDiary==="function")renderDiary(box);
   else if(tableTab==="books"&&typeof renderBooks==="function")renderBooks(box);
+  else if(tableTab==="smena"&&typeof renderSmena==="function")renderSmena(box);
   else if(tableTab==="qsl"&&typeof renderQsl==="function")renderQsl(box);
   else if(tableTab==="relay"&&typeof renderRelays==="function")renderRelays(box);
   else if(tableTab==="chess"&&typeof renderChess==="function")renderChess(box);

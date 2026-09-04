@@ -76,7 +76,7 @@ function snapshot(){
     wrecks:G.wrecks,bargePax:G.bargePax,fleetLog:G.fleetLog||{},fleetEscort:G.fleetEscort||0,caravan:G.caravan||null,
     loreFound:G.loreFound,loreMarks:G.loreMarks,settle:G.settle,tin:G.tin,
     scrip:G.scrip,scripRate:G.scripRate,scripLog:G.scripLog,
-    doom:G.doom,doomDead:G.doomDead,parrot:G.parrot,heard:G.heard,grok:G.grok,flea:G.flea,matches:G.matches|0,
+    doom:G.doom,doomDead:G.doomDead,parrot:G.parrot,heard:G.heard,grok:G.grok,flea:G.flea,matches:G.matches|0,smena:G.smena||[],
     dealsDone:G.dealsDone,dealsWait:G.dealsWait,log:G.log,
     rumLogged:G.rumLogged||"",   /* слухи станции уже записаны в тетрадь (11t): без этого после каждой загрузки они ложились снова */
     tableSeen:G.tableSeen|0,
@@ -700,6 +700,7 @@ function applySave(s){
   G.hol=(s.hol&&typeof s.hol==="object")?s.hol:null;
   /* полка (M202): только номера найденных книг — тексты лежат в таблице и в
      сохранение не попадают никогда */
+  G.smena=Array.isArray(s.smena)?s.smena.map(x=>x|0).filter(x=>x>=1&&x<=72):[];   /* «Смена» (M353) */
   G.books=Array.isArray(s.books)?s.books.filter(x=>!!BOOKS_BY[x|0]).map(x=>x|0):[];
   /* карточки (M203): кого слышал, кому послал, от кого пришло. Позывные
      сверяются с таблицей — чужой id в сейве не заведёт корреспондента */

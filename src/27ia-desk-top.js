@@ -242,6 +242,17 @@ const DESK_DRAW={
       c.fillStyle="rgba(226,196,138,.6)";c.fillRect(x+bw*.12,y+bh*.4,bw*.3,1.5);
     }
   },
+  /* СМЕНА — переплетённый том: тёмная обложка, корешок, ляссе (M353) */
+  smena:(c,w,h)=>{
+    const x=w*.22,y=h*.16,bw=w*.56,bh=h*.66;
+    dkShadow(c,x,y,bw,bh);
+    c.fillStyle="#3a2c22";c.fillRect(x,y,bw,bh);
+    c.fillStyle="#241a14";c.fillRect(x,y,bw*.12,bh);            /* корешок */
+    c.fillStyle="rgba(255,240,214,.16)";c.fillRect(x+bw*.12,y,1.5,bh);
+    c.strokeStyle="rgba(0,0,0,.5)";c.lineWidth=1;c.strokeRect(x+.5,y+.5,bw-1,bh-1);
+    c.fillStyle="rgba(226,196,138,.55)";c.fillRect(x+bw*.3,y+bh*.3,bw*.5,1.5);c.fillRect(x+bw*.3,y+bh*.36,bw*.34,1.5);
+    c.fillStyle="#8a4128";c.fillRect(x+bw*.7,y+bh*.6,2,bh*.5);   /* ляссе */
+  },
   /* ПРИЁМНИКИ — шкала с иглой: мачты, пойманные в шуме */
   relay:(c,w,h)=>{
     const x=w*.14,y=h*.22,bw=w*.72,bh=h*.5;
@@ -327,6 +338,8 @@ const DESK_ITEMS=[
              (typeof qslAll==="function"&&Object.keys(qslAll().heard).length))},
   {id:"books", ru:"ПОЛКА",   note:"что нашлось в обломках и уцелело",
    tabs:["books"], live:()=>(typeof bookCount==="function"&&bookCount()>0)},
+  {id:"smena", ru:"СМЕНА",   note:"роман · открывается, когда прожит",
+   tabs:["smena"], live:()=>true},
   {id:"diary", ru:"ДНЕВНИК", note:"бланками, потому что писать некому",
    tabs:["diary"],
    live:()=>((typeof winOn==="function"&&winOn())||

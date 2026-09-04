@@ -7,6 +7,21 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.339.0 - M353: «Смена» — the novel on the desk, read as it is lived
+
+The book the author wrote on 28.08 (72 chapters in eight parts, the story bible in its appendix)
+is now inside the game. It lies on the desk as a bound volume; a chapter opens in ink when the
+player has lived it — the trigger is the very module the book says «plays» that chapter: the first
+honest sale and the home, the first machine on a point, the first hire, the grove, the renegade on
+your flagship, the last-run letters, the commission. Unopened chapters show their title and where
+that is heard, never where to fly. Beside each part stands «отчёт: собрано N из M» — the eight parts
+of the novel are the eight chapters of the Long Walk's report, and the game still does not say so.
+Nine scenes were added for what the game learned after the book was written — the fire box at the
+dock and the match under the cowl, the beacon among the ether lines, the drone-miner bought at the
+yard, the cooperative's stamp, «Сорока» at the planet's limb, the station that «БЕРЁТ», the
+tanker of ГЛАВТРАССА and the black derelict, the flea lot about your own route, the beacon praising
+you by name. The prose lives in `docs/SMENA.md`; `docs/mksmena.py` puts it into the build.
+
 ## 0.338.0 - M350: the drone-miner — a bottomless point, priced by payback
 
 The economy audit (`docs/ECONOMY-AUDIT.md`) measured drones as the one faucet without a brake:
