@@ -7,6 +7,19 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.343.0 - M344: cosmetics — things that are seen, not counted
+
+The second row of «Сорока»'s shelf: twenty-seven things in seven slots, every one for matches (6–20) and
+none of them a number. Eight exhausts with their own flame — blue, needle, fan, twin, copper, green, ring,
+white heat; four jump trails (emerald, copper, violet, ice); four suit finishes — gilded, blued, mirror,
+porcelain with painting — that recolour the doll on ОПИСЬ and the walker on the ground alike; three visor
+tints; three hull marks (a real maker's plate, a red postal stripe, one star at midships) painted after the
+stencils; three patterns for the nav lights (steady, double flash, alternating); two docking chimes, a
+two-note sign and a bell, synthesised like everything else. The casket on ОПИСЬ opens with the first
+purchase: wear by button or drag the thing onto the hull or the kit, take it off the same way. A cosmetic
+that changed nothing would be a lie, so a test renders each painter with and without the thing and counts
+the pixels.
+
 ## 0.342.0 - M343: aboard «Сорока» — the room and the shop
 
 Dock at the porch and you are inside the spine: a long low corridor in one-point perspective, ring

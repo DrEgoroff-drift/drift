@@ -180,7 +180,8 @@ function mixHex(a,b,k){
 function kitPalette(){
   const K=kitAll(),out={};
   for(const p of KIT_PLACES)out[p]=kitColOf(K[p]);
-  return out;
+  /* отделка с «Сороки» (12v-wander-shop-cosm): красит все места разом, фонарь — свой */
+  return (typeof cosmSuit==="function")?cosmSuit(out):out;
 }
 /* ── кукла: RPG-манекен, собранный из надетых вещей ──
    Правило процедурных сборок: слои (ранец → ботинки → корпус → перчатки →
@@ -237,8 +238,9 @@ function drawKitFigure(c,W,H,hit,t){
   d.fillStyle="#0a1a26";
   d.beginPath();d.ellipse(2,hy,11+cls("helmet")*2,11,-.08,0,TAU);d.fill();
   const dull=K.helmet.wear===1?.3:1;
+  const VC=(typeof cosmVisor==="function")?cosmVisor():null;   /* тон забрала — косметика «Сороки» */
   const vg=d.createLinearGradient(-8,hy-12,10,hy+4);
-  vg.addColorStop(0,"rgba(160,235,255,"+(.6*dull).toFixed(2)+")");vg.addColorStop(1,"rgba(120,200,230,0)");
+  vg.addColorStop(0,"rgba("+(VC?VC.join(","):"160,235,255")+","+(.6*dull).toFixed(2)+")");vg.addColorStop(1,"rgba("+(VC?VC.join(","):"120,200,230")+",0)");
   d.fillStyle=vg;
   d.beginPath();d.ellipse(2,hy,11+cls("helmet")*2,11,-.08,0,TAU);d.fill();
   /* слой 6: фонарь на шлеме, качается */

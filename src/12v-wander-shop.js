@@ -111,17 +111,20 @@ function wanderLots(w){
   const n=w.dark?4:8;
   const tools=WANDER_CAT.filter(c=>c.fam==="tool");
   for(let i=tools.length-1;i>0;i--){const j=Math.floor(r()*(i+1));const t=tools[i];tools[i]=tools[j];tools[j]=t;}
-  const plan=w.dark?["tool","tool","paper","wild"]:["tool","tool","tool","tool","tool","paper","paper","wild"];
-  const out=[];let ti=0,pi=0;
+  const plan=w.dark?["tool","cosm","paper","wild"]:["tool","tool","tool","tool","cosm","cosm","paper","wild"];
+  const out=[];let ti=0,pi=0,ci=0;
   const papers=WANDER_CAT.filter(c=>c.fam==="paper");
   if(r()<.5)papers.reverse();
+  const cosm=WANDER_CAT.filter(c=>c.fam==="cosm");
+  for(let i=cosm.length-1;i>0;i--){const j=Math.floor(r()*(i+1));const t=cosm[i];cosm[i]=cosm[j];cosm[j]=t;}
   for(let i=0;i<n;i++){
     const fam=plan[i];let cat=null,id=null;
     if(fam==="tool"){cat=tools[ti++]||null;id=cat?cat.id:null;}
+    else if(fam==="cosm"){cat=cosm[ci++]||null;id=cat?cat.id:null;}
     else if(fam==="paper"){cat=papers[pi++%papers.length];id=cat.id+"@"+w.epoch;}
     else{cat=WANDER_BY_ID.wild;id="wild@"+w.epoch;}
     if(!cat){out.push({i,empty:true,ru:"пусто",chalk:"здесь ничего не лежало"});continue;}
-    const gone=R.got.indexOf(id)>=0||(fam==="tool"&&wanderOwns(id));
+    const gone=R.got.indexOf(id)>=0||(fam==="tool"&&wanderOwns(id))||(fam==="cosm"&&typeof cosmOwns==="function"&&cosmOwns(id));
     out.push({i,id,cat,fam,ru:cat.ru,note:cat.note,fx:cat.fx,pay:cat.pay,gone,
       chalk:gone?"продано · «"+cat.ru+"»":null});
   }
@@ -156,6 +159,10 @@ function wanderBuy(lot){
     if(R.shelf.length<WANDER_SHELF)R.shelf.push(cat.id);else R.hold.push(cat.id);
     tell("tech","С «Сороки»: "+cat.ru+" · "+cat.fx,cat.ru.toUpperCase()+"\n"+cat.note+"\n"+cat.fx+
       (R.shelf.indexOf(cat.id)>=0?"\n\nлежит на полке кабины — работает":"\n\nполка полна: лежит в трюме, работать будет с полки"));
+  }else if(cat.fam==="cosm"){
+    cosmGive(cat.id);
+    tell("tech","С «Сороки»: "+cat.ru,cat.ru.toUpperCase()+"\n"+cat.note+"\n"+cat.fx+
+      (cosmOn(cat.slot)===cat.id?"\n\nнадето":"\n\nв шкатулке на ОПИСИ: надеть — там"));
   }else if(cat.id==="area")wanderAreaChart(lot);
   else if(cat.id==="book"){
     const b=(typeof bookFind==="function")?bookFind(hashi(lot.id.length,R.got.length,0xB00C),"куплена на «Сороке»"):null;

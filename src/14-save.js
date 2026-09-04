@@ -74,7 +74,7 @@ function snapshot(){
     nodes:G.nodes,crowns:G.crowns,nodeShow:G.nodeShow,rareFound:G.rareFound,pnode:G.pnode,hunted:G.hunted,
     news:G.news,newsMarks:G.newsMarks,newsT:G.newsT,rivals:G.rivals,
     wrecks:G.wrecks,bargePax:G.bargePax,fleetLog:G.fleetLog||{},fleetEscort:G.fleetEscort||0,caravan:G.caravan||null,
-    wander:G.wander||{got:[],gave:[],chit:0,shelf:[],hold:[]},
+    wander:G.wander||{got:[],gave:[],chit:0,shelf:[],hold:[]},cosm:G.cosm||null,
     loreFound:G.loreFound,loreMarks:G.loreMarks,settle:G.settle,tin:G.tin,
     scrip:G.scrip,scripRate:G.scripRate,scripLog:G.scripLog,
     doom:G.doom,doomDead:G.doomDead,parrot:G.parrot,heard:G.heard,grok:G.grok,flea:G.flea,matches:G.matches|0,smena:G.smena||[],
@@ -444,6 +444,9 @@ function applySave(s){
   {const w=(s.wander&&typeof s.wander==="object")?s.wander:{};const arr=v=>Array.isArray(v)?v.slice():[];
    G.wander={got:arr(w.got),gave:arr(w.gave),chit:w.chit|0,shelf:arr(w.shelf).slice(0,6),hold:arr(w.hold),
              soldE:w.soldE|0,soldN:w.soldN|0,been:w.been?1:0};}
+  /* косметика «Сороки» (M344): своё и что надето; чужой id снимается молча */
+  {const c=(s.cosm&&typeof s.cosm==="object")?s.cosm:{};const owned=Array.isArray(c.owned)?c.owned.slice():[];
+   G.cosm={owned};for(const k of ["exhaust","trail","suit","visor","mark","lights","chime"])G.cosm[k]=(typeof c[k]==="string"&&owned.indexOf(c[k])>=0)?c[k]:null;}
   G.wrecks={};
   if(s.wrecks&&typeof s.wrecks==="object")
     for(const k in s.wrecks){

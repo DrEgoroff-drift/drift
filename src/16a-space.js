@@ -367,28 +367,41 @@ function drawExhaust(zx,zy,Z,thr){
      координаты: корпус при отдалении рисуется крупнее мира, и факел, считанный
      по настоящему Z, отрывался от него и уползал внутрь силуэта */
   const SZ=shipZ(Z),cx0=zx(sh.x),cy0=zy(sh.y);
+  /* косметика «Сороки» (12v-wander-shop-cosm): свои цвета, длина, ширина и форма пламени */
+  const CX=(typeof cosmExhaust==="function")?cosmExhaust():null;
+  const C0=CX?CX.col[0]:"255,246,222",C1=CX?CX.col[1]:"255,178,96",C2=CX?CX.col[2]:"255,96,48";
+  const kL=CX?CX.len:1,kW=CX?CX.wide:1,shape=CX?CX.shape:"plain";
   for(const e of h.eng){
     const px=cx0+(e.x*ca-e.y*sa)*SZ, py=cy0+(e.x*sa+e.y*ca)*SZ;
     const R=Math.max(2.5,e.r*SZ*2.2);
     const puls=.82+.18*Math.sin(G.t*.55+e.x);
     /* факел вытянут против носа и живёт своей длиной на каждом кадре */
-    const L=R*(3.4+2.6*puls)*thr;
+    const L=R*(3.4+2.6*puls)*thr*kL;
     const fx=px-ca*L, fy=py-sa*L;
-    const g=ctx.createLinearGradient(px,py,fx,fy);
-    g.addColorStop(0,"rgba(255,246,222,"+(.55*thr).toFixed(3)+")");
-    g.addColorStop(.35,"rgba(255,178,96,"+(.32*thr).toFixed(3)+")");
-    g.addColorStop(1,"rgba(255,96,48,0)");
-    ctx.fillStyle=g;
-    ctx.beginPath();
-    ctx.moveTo(px-sa*R*.7,py+ca*R*.7);
-    ctx.lineTo(fx,fy);
-    ctx.lineTo(px+sa*R*.7,py-ca*R*.7);
-    ctx.closePath();ctx.fill();
+    const flame=(ox,oy,wk)=>{
+      const g=ctx.createLinearGradient(px+ox,py+oy,fx+ox,fy+oy);
+      g.addColorStop(0,"rgba("+C0+","+(.55*thr).toFixed(3)+")");
+      g.addColorStop(.35,"rgba("+C1+","+(.32*thr).toFixed(3)+")");
+      g.addColorStop(1,"rgba("+C2+",0)");
+      ctx.fillStyle=g;
+      ctx.beginPath();
+      ctx.moveTo(px+ox-sa*R*.7*wk,py+oy+ca*R*.7*wk);
+      ctx.lineTo(fx+ox,fy+oy);
+      ctx.lineTo(px+ox+sa*R*.7*wk,py+oy-ca*R*.7*wk);
+      ctx.closePath();ctx.fill();
+    };
+    if(shape==="twin"){flame(-sa*R*.55,ca*R*.55,kW);flame(sa*R*.55,-ca*R*.55,kW);}
+    else flame(0,0,kW);
+    if(shape==="ring"){
+      /* кольцо на середине факела — ровное, движется вместе с пульсом, не мигает */
+      ctx.strokeStyle="rgba("+C1+","+(.35*thr).toFixed(3)+")";ctx.lineWidth=Math.max(1,R*.22);
+      ctx.beginPath();ctx.ellipse(px-ca*L*.45,py-sa*L*.45,R*.55,R*1.1,sh.a,0,TAU);ctx.stroke();
+    }
     /* ядро сопла */
     const cg=ctx.createRadialGradient(px,py,0,px,py,R*1.7);
     cg.addColorStop(0,"rgba(255,255,250,"+(.8*thr).toFixed(3)+")");
-    cg.addColorStop(.4,"rgba(255,206,150,"+(.4*thr).toFixed(3)+")");
-    cg.addColorStop(1,"rgba(255,140,80,0)");
+    cg.addColorStop(.4,"rgba("+(CX?C1:"255,206,150")+","+(.4*thr).toFixed(3)+")");
+    cg.addColorStop(1,"rgba("+(CX?C2:"255,140,80")+",0)");
     ctx.fillStyle=cg;ctx.beginPath();ctx.arc(px,py,R*1.7,0,TAU);ctx.fill();
     /* дрожь воздуха */
     /* дуги дрожи держим почти на пороге видимости: заметные читаются как

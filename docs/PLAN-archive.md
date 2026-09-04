@@ -7723,3 +7723,28 @@ counter at depth .74 and the keeper ≈55 px; the skylight is drawn on the ceili
 because the first frame had it under the vitals. `openWanderer({force:true,epoch:0})` is the stand's door,
 so the frame meter's «сорока» does not drift with real days. Departure while inside puts you back at the
 porch with one line; the keeper's match flash fires once in the last hour.
+
+## M344 — cosmetics (0.343.0, 2026-09-05)
+
+- **M344 — cosmetics** (`G.cosm={exhaust,trail,suit,visor,mark,lights,chime}` persisted; applied
+  by dragging from the шкатулка onto the hull or the kit in ОПИСЬ). Hooks: exhaust colour/shape in
+  `16-flight`/`16a-space` flame (8 named exhausts, each its own flame shape), jump trail in `16`,
+  suit finish + visor tint in `20-life` astronaut painter and the kit doll (`12x-suit`), rare hull
+  marks via `03d-hull-marks`, nav-light pattern in `03e-hull-draw`, docking chime in `09-audio`.
+  Parrot accessories through `12x-parrot`. Test: each cosmetic id changes at least one pixel of its
+  target painter (render to an offscreen canvas, compare).
+
+**Decided while building:** the state is `G.cosm={owned:[…],exhaust,trail,suit,visor,mark,lights,chime}`
+(a slot holds one worn id; an id from a save that is not owned is dropped on load). Painters read their
+own cosmetic where they paint: `drawExhaust` (colours, length, width, `twin`/`ring` shapes), `drawTrail`
+(`cosmTrail` recolours edge and middle, the core stays white), `kitPalette` (`cosmSuit` paints all five
+places, the lamp keeps its own), the doll's and the walker's visor (`cosmVisor`), `03e` nav lights
+(`cosmLightOn`: steady, double flash, alternating), `drawStencils`' neighbour `drawCosmMark` (plate,
+stripe, star), `openStation` (`cosmChimePlay` → two new SFX, `chime` and `bell`; default docking stays
+silent as before). The shelf plan gained two cosmetics per inhabited stop (one at a dark stop), prices
+6–20 matches. Buying wears the thing if its slot is empty, else it waits in the casket; ОПИСЬ's casket
+opens with the first purchase and lists owned things with НАДЕТЬ/СНЯТЬ, and a dragged thing lands on the
+hull (exhaust, trail, mark, lights, chime) or on the kit (suit, visor). `91zzzzh-cosm` renders each
+painter to an offscreen canvas with and without the thing and fails if fewer pixels change than a
+threshold — the same law as «a perk without code is a lie». Left out: parrot accessories (the parrot
+face is a 42 KB table module, its own pass) and the house crest (needs a chosen house).

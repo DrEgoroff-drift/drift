@@ -1390,3 +1390,7 @@ body.op-ask #opisBar>s{display:none}
    трогаем: их высоту меряет 15-input по событию, и спрятанная кнопка оставила бы
    `--padsh` враньём до следующего resize (телефонный набор это поймал) */
 body.aboard #console{display:none!important}
+/* шкатулка косметики на ОПИСИ (M344) */
+.opis .op-cosm{display:flex;flex-direction:column;gap:6px;margin-top:8px;text-align:left}
+.opis .op-card.cosm{padding:6px 8px}
+.opis .op-card.cosm.worn{box-shadow:0 0 0 1px rgba(201,162,74,.8),0 5px 12px rgba(0,0,0,.4)}

@@ -1404,6 +1404,10 @@ body.op-ask #opisBar>s{display:none}
    трогаем: их высоту меряет 15-input по событию, и спрятанная кнопка оставила бы
    `--padsh` враньём до следующего resize (телефонный набор это поймал) */
 body.aboard #console{display:none!important}
+/* шкатулка косметики на ОПИСИ (M344) */
+.opis .op-cosm{display:flex;flex-direction:column;gap:6px;margin-top:8px;text-align:left}
+.opis .op-card.cosm{padding:6px 8px}
+.opis .op-card.cosm.worn{box-shadow:0 0 0 1px rgba(201,162,74,.8),0 5px 12px rgba(0,0,0,.4)}
 
 </style>
 </head>
@@ -1683,7 +1687,7 @@ body.aboard #console{display:none!important}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.342.0";
+const VER="0.343.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -3933,6 +3937,7 @@ function drawHull(id,thrusting,braking,lvl,bank){
     ctx.arc(cx,0,R*.9,-.5,-.1);ctx.closePath();ctx.fill();
   }
   if(!h.yac)drawStencils(h);
+  if(typeof drawCosmMark==="function")drawCosmMark(h);   /* метка с «Сороки» (M344) */
   /* навеска */
   for(const g of h.greeb){
     ctx.fillStyle=g[4]?"rgba(255,255,255,.13)":"rgba(0,0,0,.4)";
@@ -4049,7 +4054,9 @@ function drawHull(id,thrusting,braking,lvl,bank){
     else{const lx=h.nose*.18;wy=[lx,-profW(h.prof,lx)*1.02];}
     /* у яхты огонь мельче: на узком борту точка в полтора радиуса читалась
        пуговицей, пришитой к обшивке */
-    ctx.fillStyle="rgba("+c+","+(on?.95:.25)+")";
+    /* рисунок огней — косметика «Сороки»: ровные, двойной проблеск, попеременные */
+    const onS=(typeof cosmLightOn==="function")?cosmLightOn(s,blink,G.t):on;
+    ctx.fillStyle="rgba("+c+","+(onS?.95:.25)+")";
     ctx.beginPath();ctx.arc(wy[0],wy[1]*s,h.yac?.7:1.25,0,TAU);ctx.fill();
   }
   if(h.fin){
@@ -7191,6 +7198,29 @@ const SFX={
     n.start(t);n.stop(t+.05);freeVoice(n);
   },
   /* интерфейс: чистые тоны, короткие, без хвоста */
+  /* ── сигналы стыковки с «Сороки» (M344): две ноты вниз и колокол ── */
+  chime(o){
+    const c=SND.ctx,t=c.currentTime,v=(o&&o.v||.3);
+    for(const [k,dt] of [[1,0],[.75,.16]]){
+      const osc=c.createOscillator(),g=c.createGain();
+      osc.type="sine";osc.frequency.setValueAtTime(880*k,t+dt);
+      env(g,t+dt,.01,.22,v*1.8);
+      osc.connect(g);g.connect(SND.sfx);
+      osc.start(t+dt);osc.stop(t+dt+.3);
+      if(dt)freeVoice(osc);
+    }
+  },
+  bell(o){
+    const c=SND.ctx,t=c.currentTime,v=(o&&o.v||.3);
+    for(const [k,mul] of [[1,1],[2.7,.35],[5.4,.15]]){
+      const osc=c.createOscillator(),g=c.createGain();
+      osc.type="sine";osc.frequency.setValueAtTime(440*k,t);
+      env(g,t,.004,1.1/(k*.6+.4),v*1.6*mul);
+      osc.connect(g);g.connect(SND.sfx);
+      osc.start(t);osc.stop(t+1.3);
+      if(k>1)freeVoice(osc);
+    }
+  },
   ui(o){
     const c=SND.ctx,t=c.currentTime;
     const osc=c.createOscillator(),g=c.createGain();
@@ -28522,17 +28552,20 @@ function wanderLots(w){
   const n=w.dark?4:8;
   const tools=WANDER_CAT.filter(c=>c.fam==="tool");
   for(let i=tools.length-1;i>0;i--){const j=Math.floor(r()*(i+1));const t=tools[i];tools[i]=tools[j];tools[j]=t;}
-  const plan=w.dark?["tool","tool","paper","wild"]:["tool","tool","tool","tool","tool","paper","paper","wild"];
-  const out=[];let ti=0,pi=0;
+  const plan=w.dark?["tool","cosm","paper","wild"]:["tool","tool","tool","tool","cosm","cosm","paper","wild"];
+  const out=[];let ti=0,pi=0,ci=0;
   const papers=WANDER_CAT.filter(c=>c.fam==="paper");
   if(r()<.5)papers.reverse();
+  const cosm=WANDER_CAT.filter(c=>c.fam==="cosm");
+  for(let i=cosm.length-1;i>0;i--){const j=Math.floor(r()*(i+1));const t=cosm[i];cosm[i]=cosm[j];cosm[j]=t;}
   for(let i=0;i<n;i++){
     const fam=plan[i];let cat=null,id=null;
     if(fam==="tool"){cat=tools[ti++]||null;id=cat?cat.id:null;}
+    else if(fam==="cosm"){cat=cosm[ci++]||null;id=cat?cat.id:null;}
     else if(fam==="paper"){cat=papers[pi++%papers.length];id=cat.id+"@"+w.epoch;}
     else{cat=WANDER_BY_ID.wild;id="wild@"+w.epoch;}
     if(!cat){out.push({i,empty:true,ru:"пусто",chalk:"здесь ничего не лежало"});continue;}
-    const gone=R.got.indexOf(id)>=0||(fam==="tool"&&wanderOwns(id));
+    const gone=R.got.indexOf(id)>=0||(fam==="tool"&&wanderOwns(id))||(fam==="cosm"&&typeof cosmOwns==="function"&&cosmOwns(id));
     out.push({i,id,cat,fam,ru:cat.ru,note:cat.note,fx:cat.fx,pay:cat.pay,gone,
       chalk:gone?"продано · «"+cat.ru+"»":null});
   }
@@ -28567,6 +28600,10 @@ function wanderBuy(lot){
     if(R.shelf.length<WANDER_SHELF)R.shelf.push(cat.id);else R.hold.push(cat.id);
     tell("tech","С «Сороки»: "+cat.ru+" · "+cat.fx,cat.ru.toUpperCase()+"\n"+cat.note+"\n"+cat.fx+
       (R.shelf.indexOf(cat.id)>=0?"\n\nлежит на полке кабины — работает":"\n\nполка полна: лежит в трюме, работать будет с полки"));
+  }else if(cat.fam==="cosm"){
+    cosmGive(cat.id);
+    tell("tech","С «Сороки»: "+cat.ru,cat.ru.toUpperCase()+"\n"+cat.note+"\n"+cat.fx+
+      (cosmOn(cat.slot)===cat.id?"\n\nнадето":"\n\nв шкатулке на ОПИСИ: надеть — там"));
   }else if(cat.id==="area")wanderAreaChart(lot);
   else if(cat.id==="book"){
     const b=(typeof bookFind==="function")?bookFind(hashi(lot.id.length,R.got.length,0xB00C),"куплена на «Сороке»"):null;
@@ -28663,6 +28700,153 @@ function wanderLeftRu(w){
   if(h>=24){const d=Math.floor(h/24);return "уходит через "+d+" "+pl3(d,"день","дня","дней")+" "+(h%24)+" ч";}
   return "уходит через "+(h?h+" ч ":"")+m+" мин";
 }
+
+/* ══════════════ косметика «Сороки»: вещи без чисел (M344) ══════════════
+   Второй ряд полки парусника — то, что ничего не меняет в счёте и меняет вид:
+   восемь выхлопов со своей формой пламени, следы прыжка, отделка скафандра и
+   тон забрала, редкие метки на корпусе, рисунок бортовых огней, свой сигнал
+   стыковки. Платят спичками (§12), 6–20; шкатулка на ОПИСИ хранит купленное,
+   и оттуда вещь надевают на корпус или на комплект — тычком или перетаскиванием.
+
+   ОДНО ПРАВИЛО НА ВСЕ ХУКИ: художник сам читает свою косметику там, где рисует
+   (drawExhaust, drawTrail, kitPalette, забрала куклы и ходока, бортовые огни,
+   трафареты, стыковка) — здесь только таблица, состояние и переводчики цвета.
+   Набор 91zzzzh сторожит, что каждая вещь меняет хоть один пиксель своего
+   художника: косметика, которой не видно, — та же ложь, что перк без кода.
+
+   ПРАВИЛА ФАЙЛА:
+   1. Хранится G.cosm={owned:[id…],exhaust,trail,suit,visor,mark,lights,chime}.
+   2. Ни одного числа игры: ни тяги, ни брони, ни цены за след.
+   3. Цвета — в правилах кодекса: одно тело, один свет; пламя остаётся пламенем. */
+const COSM_SLOTS=["exhaust","trail","suit","visor","mark","lights","chime"];
+const COSM_SLOT_RU={exhaust:"выхлоп",trail:"след прыжка",suit:"отделка скафандра",visor:"забрало",
+  mark:"метка на корпусе",lights:"бортовые огни",chime:"сигнал стыковки"};
+/* выхлопы: цвета ядра/середины/края, длина, ширина, форма */
+const COSM_EXH={
+  ex_blue:   {ru:"Синее пламя",       col:["255,250,240","120,190,255","60,110,255"],len:1.1,wide:.9,shape:"plain"},
+  ex_needle: {ru:"Игольчатый факел",  col:["255,246,222","255,178,96","255,96,48"],len:1.8,wide:.42,shape:"plain"},
+  ex_fan:    {ru:"Веерное сопло",     col:["255,246,222","255,178,96","255,96,48"],len:.7,wide:1.7,shape:"plain"},
+  ex_twin:   {ru:"Двойной выхлоп",    col:["255,246,222","255,178,96","255,96,48"],len:1.1,wide:.5,shape:"twin"},
+  ex_copper: {ru:"Медное пламя",      col:["255,240,210","232,150,80","170,70,30"],len:1.0,wide:1.0,shape:"plain"},
+  ex_green:  {ru:"Зелёный факел",     col:["240,255,240","140,230,150","40,160,80"],len:1.15,wide:.85,shape:"plain"},
+  ex_ring:   {ru:"Кольцевой выхлоп",  col:["255,246,222","255,178,96","255,96,48"],len:1.0,wide:.8,shape:"ring"},
+  ex_white:  {ru:"Белый жар",         col:["255,255,255","240,240,255","180,190,220"],len:1.3,wide:.7,shape:"plain"}
+};
+const COSM_TRAIL={
+  tr_emerald:{ru:"Изумрудный след",edge:[60,200,120]},
+  tr_copper: {ru:"Медный след",    edge:[220,140,70]},
+  tr_violet: {ru:"Лиловый след",   edge:[170,110,230]},
+  tr_ice:    {ru:"Ледяной след",   edge:[170,220,255]}
+};
+const COSM_SUIT={
+  su_gold:     {ru:"Золочёный скафандр",       main:"#c9a24a",dark:"#7a5a1c",acc:"#f2e6c8"},
+  su_black:    {ru:"Воронёный скафандр",       main:"#2a2d31",dark:"#15171a",acc:"#8a9299"},
+  su_mirror:   {ru:"Зеркальный скафандр",      main:"#e6edf3",dark:"#9aa7b3",acc:"#7fe6d8"},
+  su_porcelain:{ru:"Фарфоровый с росписью",    main:"#f2efe6",dark:"#b9b3a4",acc:"#a52a2a"}
+};
+const COSM_VISOR={
+  vi_amber: {ru:"Янтарное забрало",  col:[255,200,90]},
+  vi_green: {ru:"Зелёное забрало",   col:[120,230,150]},
+  vi_mirror:{ru:"Зеркальное забрало",col:[235,240,250]}
+};
+const COSM_MARK={
+  mk_plate: {ru:"Заводская табличка", note:"настоящая, с номером партии"},
+  mk_stripe:{ru:"Красная полоса",     note:"по борту, как у почтовых"},
+  mk_star:  {ru:"Звезда на борту",    note:"одна, у миделя"}
+};
+const COSM_LIGHTS={
+  li_double:{ru:"Двойной проблеск"},
+  li_steady:{ru:"Ровные огни"},
+  li_alt:   {ru:"Попеременные огни"}
+};
+const COSM_CHIME={
+  ch_two: {ru:"Свой сигнал стыковки",sfx:"chime"},
+  ch_bell:{ru:"Колокол у причала",   sfx:"bell"}
+};
+const COSM_TABLES={exhaust:COSM_EXH,trail:COSM_TRAIL,suit:COSM_SUIT,visor:COSM_VISOR,mark:COSM_MARK,lights:COSM_LIGHTS,chime:COSM_CHIME};
+function cosmSlotOf(id){for(const s of COSM_SLOTS)if(COSM_TABLES[s][id])return s;return null;}
+function cosmRu(id){const s=cosmSlotOf(id);return s?COSM_TABLES[s][id].ru:id;}
+function cosmRec(){
+  let c=G.cosm;
+  if(!c||typeof c!=="object"||!Array.isArray(c.owned)){c=G.cosm={owned:[]};for(const s of COSM_SLOTS)c[s]=null;}
+  return c;
+}
+function cosmOwns(id){return !!(G.cosm&&Array.isArray(G.cosm.owned)&&G.cosm.owned.indexOf(id)>=0);}
+function cosmOn(slot){const c=G.cosm;return c?c[slot]||null:null;}
+/* надеть: только своё и только в свой слот; снять — слот пуст */
+function cosmWear(id){
+  const s=cosmSlotOf(id);if(!s||!cosmOwns(id))return false;
+  cosmRec()[s]=id;
+  if(s==="trail"&&typeof TRAIL_TINT!=="undefined")for(const k in TRAIL_TINT)delete TRAIL_TINT[k];
+  return true;
+}
+function cosmTakeOff(slot){const c=cosmRec();if(!c[slot])return false;c[slot]=null;return true;}
+function cosmGive(id){
+  const s=cosmSlotOf(id);if(!s)return false;
+  const c=cosmRec();
+  if(c.owned.indexOf(id)<0)c.owned.push(id);
+  if(!c[s])cosmWear(id);                       /* пустой слот — надеваем сразу */
+  return true;
+}
+/* ── переводчики для художников ── */
+function cosmExhaust(){const id=cosmOn("exhaust");return id?COSM_EXH[id]||null:null;}
+/* след прыжка: край — цвет вещи, середина — смесь, ядро — как было */
+function cosmTrail(T){
+  const id=cosmOn("trail"),C=id?COSM_TRAIL[id]:null;if(!C)return T;
+  return {core:T.core,mid:mixc(C.edge,[255,255,255],.35),edge:C.edge};
+}
+function cosmSuit(out){
+  const id=cosmOn("suit"),S=id?COSM_SUIT[id]:null;if(!S)return out;
+  for(const p of ["helmet","torso","gloves","boots","pack"])out[p]={main:S.main,dark:S.dark,acc:S.acc};
+  return out;
+}
+function cosmVisor(){const id=cosmOn("visor");return id?COSM_VISOR[id].col:null;}
+/* бортовые огни: рисунок вместо «мигает/не мигает» */
+function cosmLightOn(side,blink,t){
+  const id=cosmOn("lights");
+  if(id==="li_steady")return true;
+  if(id==="li_double"){const u=(t||0)%70;return u<7||(u>13&&u<20);}
+  if(id==="li_alt")return side<0?blink>0:blink<=0;
+  return blink>0;
+}
+function cosmChimeName(){const id=cosmOn("chime");return id?COSM_CHIME[id].sfx:null;}
+function cosmChimePlay(){const n=cosmChimeName();if(n&&typeof sfx==="function")sfx(n);return n;}
+/* метка на корпусе: в координатах корпуса, после трафаретов (03e) */
+function drawCosmMark(h){
+  const id=cosmOn("mark");if(!id)return;
+  const P=h.prof;
+  if(id==="mk_stripe"){
+    const x0=lerp(h.nose,h.tail,.30),x1=lerp(h.nose,h.tail,.40);
+    ctx.fillStyle="rgba(190,40,40,.85)";
+    ctx.beginPath();ctx.moveTo(x0,-profW(P,x0)*.9);ctx.lineTo(x1,-profW(P,x1)*.9);ctx.lineTo(x1,profW(P,x1)*.9);ctx.lineTo(x0,profW(P,x0)*.9);ctx.closePath();ctx.fill();
+    ctx.fillStyle="rgba(255,255,255,.22)";ctx.fillRect(x0,-profW(P,x0)*.9,(x1-x0)*.25,profW(P,x0)*1.8);
+  }else if(id==="mk_star"){
+    const x=lerp(h.nose,h.tail,.42),r=Math.max(1.4,profW(P,x)*.5);
+    ctx.fillStyle="rgba(214,150,44,.95)";ctx.beginPath();
+    for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,rr=(i&1)?r*.45:r;ctx.lineTo(x+Math.cos(a)*rr,Math.sin(a)*rr);}
+    ctx.closePath();ctx.fill();
+    ctx.strokeStyle="rgba(190,40,40,.9)";ctx.lineWidth=.4;ctx.stroke();
+  }else{
+    const x=lerp(h.nose,h.tail,.58),w=profW(P,x);if(w<1.2)return;
+    ctx.fillStyle="#c9a24a";ctx.fillRect(x-2.2,-w*.55-1,4.4,2);
+    ctx.fillStyle="rgba(0,0,0,.5)";ctx.fillRect(x-1.9,-w*.55-.7,.4,.4);ctx.fillRect(x+1.5,-w*.55+.3,.4,.4);
+    ctx.fillStyle="rgba(0,0,0,.55)";for(let i=0;i<4;i++)ctx.fillRect(x-1.2+i*.7,-w*.55-.2,.4,.7);
+  }
+}
+/* ── в каталог «Сороки»: 27 вещей, семейство cosm, спички 6–20 ── */
+(function cosmCatalogue(){
+  const price={exhaust:12,trail:10,suit:20,visor:8,mark:14,lights:6,chime:9};
+  const note={exhaust:"из нашего ремонта: горит тем, что в него положили",trail:"так уходили те, кто до вас",
+    suit:"шили на заказ; заказчик не пришёл",visor:"стекло с старого шлема, тон не смывается",
+    mark:"краска с наших же парусов",lights:"схему переписали с чужого борта",chime:"записан на станции, которой нет"};
+  for(const s of COSM_SLOTS){
+    for(const id in COSM_TABLES[s]){
+      const T=COSM_TABLES[s][id];
+      WANDER_CAT.push({id,fam:"cosm",slot:s,ru:T.ru,note:note[s],fx:COSM_SLOT_RU[s]+" · видно, а не считается",pay:{m:price[s]},hook:"12v-wander-shop-cosm"});
+      WANDER_BY_ID[id]=WANDER_CAT[WANDER_CAT.length-1];
+    }
+  }
+})();
 
 /* ══════════════ собранный отчёт: их съёмка поверх вашей карты ══════════════
    Последняя веха прохода и нарочно дешёвая: всё, что ей нужно, уже построено.
@@ -29127,7 +29311,8 @@ function mixHex(a,b,k){
 function kitPalette(){
   const K=kitAll(),out={};
   for(const p of KIT_PLACES)out[p]=kitColOf(K[p]);
-  return out;
+  /* отделка с «Сороки» (12v-wander-shop-cosm): красит все места разом, фонарь — свой */
+  return (typeof cosmSuit==="function")?cosmSuit(out):out;
 }
 /* ── кукла: RPG-манекен, собранный из надетых вещей ──
    Правило процедурных сборок: слои (ранец → ботинки → корпус → перчатки →
@@ -29184,8 +29369,9 @@ function drawKitFigure(c,W,H,hit,t){
   d.fillStyle="#0a1a26";
   d.beginPath();d.ellipse(2,hy,11+cls("helmet")*2,11,-.08,0,TAU);d.fill();
   const dull=K.helmet.wear===1?.3:1;
+  const VC=(typeof cosmVisor==="function")?cosmVisor():null;   /* тон забрала — косметика «Сороки» */
   const vg=d.createLinearGradient(-8,hy-12,10,hy+4);
-  vg.addColorStop(0,"rgba(160,235,255,"+(.6*dull).toFixed(2)+")");vg.addColorStop(1,"rgba(120,200,230,0)");
+  vg.addColorStop(0,"rgba("+(VC?VC.join(","):"160,235,255")+","+(.6*dull).toFixed(2)+")");vg.addColorStop(1,"rgba("+(VC?VC.join(","):"120,200,230")+",0)");
   d.fillStyle=vg;
   d.beginPath();d.ellipse(2,hy,11+cls("helmet")*2,11,-.08,0,TAU);d.fill();
   /* слой 6: фонарь на шлеме, качается */
@@ -31104,7 +31290,7 @@ function snapshot(){
     nodes:G.nodes,crowns:G.crowns,nodeShow:G.nodeShow,rareFound:G.rareFound,pnode:G.pnode,hunted:G.hunted,
     news:G.news,newsMarks:G.newsMarks,newsT:G.newsT,rivals:G.rivals,
     wrecks:G.wrecks,bargePax:G.bargePax,fleetLog:G.fleetLog||{},fleetEscort:G.fleetEscort||0,caravan:G.caravan||null,
-    wander:G.wander||{got:[],gave:[],chit:0,shelf:[],hold:[]},
+    wander:G.wander||{got:[],gave:[],chit:0,shelf:[],hold:[]},cosm:G.cosm||null,
     loreFound:G.loreFound,loreMarks:G.loreMarks,settle:G.settle,tin:G.tin,
     scrip:G.scrip,scripRate:G.scripRate,scripLog:G.scripLog,
     doom:G.doom,doomDead:G.doomDead,parrot:G.parrot,heard:G.heard,grok:G.grok,flea:G.flea,matches:G.matches|0,smena:G.smena||[],
@@ -31474,6 +31660,9 @@ function applySave(s){
   {const w=(s.wander&&typeof s.wander==="object")?s.wander:{};const arr=v=>Array.isArray(v)?v.slice():[];
    G.wander={got:arr(w.got),gave:arr(w.gave),chit:w.chit|0,shelf:arr(w.shelf).slice(0,6),hold:arr(w.hold),
              soldE:w.soldE|0,soldN:w.soldN|0,been:w.been?1:0};}
+  /* косметика «Сороки» (M344): своё и что надето; чужой id снимается молча */
+  {const c=(s.cosm&&typeof s.cosm==="object")?s.cosm:{};const owned=Array.isArray(c.owned)?c.owned.slice():[];
+   G.cosm={owned};for(const k of ["exhaust","trail","suit","visor","mark","lights","chime"])G.cosm[k]=(typeof c[k]==="string"&&owned.indexOf(c[k])>=0)?c[k]:null;}
   G.wrecks={};
   if(s.wrecks&&typeof s.wrecks==="object")
     for(const k in s.wrecks){
@@ -32802,28 +32991,41 @@ function drawExhaust(zx,zy,Z,thr){
      координаты: корпус при отдалении рисуется крупнее мира, и факел, считанный
      по настоящему Z, отрывался от него и уползал внутрь силуэта */
   const SZ=shipZ(Z),cx0=zx(sh.x),cy0=zy(sh.y);
+  /* косметика «Сороки» (12v-wander-shop-cosm): свои цвета, длина, ширина и форма пламени */
+  const CX=(typeof cosmExhaust==="function")?cosmExhaust():null;
+  const C0=CX?CX.col[0]:"255,246,222",C1=CX?CX.col[1]:"255,178,96",C2=CX?CX.col[2]:"255,96,48";
+  const kL=CX?CX.len:1,kW=CX?CX.wide:1,shape=CX?CX.shape:"plain";
   for(const e of h.eng){
     const px=cx0+(e.x*ca-e.y*sa)*SZ, py=cy0+(e.x*sa+e.y*ca)*SZ;
     const R=Math.max(2.5,e.r*SZ*2.2);
     const puls=.82+.18*Math.sin(G.t*.55+e.x);
     /* факел вытянут против носа и живёт своей длиной на каждом кадре */
-    const L=R*(3.4+2.6*puls)*thr;
+    const L=R*(3.4+2.6*puls)*thr*kL;
     const fx=px-ca*L, fy=py-sa*L;
-    const g=ctx.createLinearGradient(px,py,fx,fy);
-    g.addColorStop(0,"rgba(255,246,222,"+(.55*thr).toFixed(3)+")");
-    g.addColorStop(.35,"rgba(255,178,96,"+(.32*thr).toFixed(3)+")");
-    g.addColorStop(1,"rgba(255,96,48,0)");
-    ctx.fillStyle=g;
-    ctx.beginPath();
-    ctx.moveTo(px-sa*R*.7,py+ca*R*.7);
-    ctx.lineTo(fx,fy);
-    ctx.lineTo(px+sa*R*.7,py-ca*R*.7);
-    ctx.closePath();ctx.fill();
+    const flame=(ox,oy,wk)=>{
+      const g=ctx.createLinearGradient(px+ox,py+oy,fx+ox,fy+oy);
+      g.addColorStop(0,"rgba("+C0+","+(.55*thr).toFixed(3)+")");
+      g.addColorStop(.35,"rgba("+C1+","+(.32*thr).toFixed(3)+")");
+      g.addColorStop(1,"rgba("+C2+",0)");
+      ctx.fillStyle=g;
+      ctx.beginPath();
+      ctx.moveTo(px+ox-sa*R*.7*wk,py+oy+ca*R*.7*wk);
+      ctx.lineTo(fx+ox,fy+oy);
+      ctx.lineTo(px+ox+sa*R*.7*wk,py+oy-ca*R*.7*wk);
+      ctx.closePath();ctx.fill();
+    };
+    if(shape==="twin"){flame(-sa*R*.55,ca*R*.55,kW);flame(sa*R*.55,-ca*R*.55,kW);}
+    else flame(0,0,kW);
+    if(shape==="ring"){
+      /* кольцо на середине факела — ровное, движется вместе с пульсом, не мигает */
+      ctx.strokeStyle="rgba("+C1+","+(.35*thr).toFixed(3)+")";ctx.lineWidth=Math.max(1,R*.22);
+      ctx.beginPath();ctx.ellipse(px-ca*L*.45,py-sa*L*.45,R*.55,R*1.1,sh.a,0,TAU);ctx.stroke();
+    }
     /* ядро сопла */
     const cg=ctx.createRadialGradient(px,py,0,px,py,R*1.7);
     cg.addColorStop(0,"rgba(255,255,250,"+(.8*thr).toFixed(3)+")");
-    cg.addColorStop(.4,"rgba(255,206,150,"+(.4*thr).toFixed(3)+")");
-    cg.addColorStop(1,"rgba(255,140,80,0)");
+    cg.addColorStop(.4,"rgba("+(CX?C1:"255,206,150")+","+(.4*thr).toFixed(3)+")");
+    cg.addColorStop(1,"rgba("+(CX?C2:"255,140,80")+",0)");
     ctx.fillStyle=cg;ctx.beginPath();ctx.arc(px,py,R*1.7,0,TAU);ctx.fill();
     /* дрожь воздуха */
     /* дуги дрожи держим почти на пороге видимости: заметные читаются как
@@ -33539,7 +33741,7 @@ function trailStep(dt,thrusting,turning,braking){
   }
 }
 function drawTrail(zx,zy,Z){
-  const T=trailTint(G.shipId,G.mods.engine|0),SZ=shipZ(Z),CW=trailChar(G.shipId).w;
+  const T0=trailTint(G.shipId,G.mods.engine|0),T=(typeof cosmTrail==="function")?cosmTrail(T0):T0,SZ=shipZ(Z),CW=trailChar(G.shipId).w;   /* след — косметика «Сороки» */
   /* ленты по соплам: массив хронологичен, поэтому в каждой корзине точки
      идут от самой старой к свежей — ровно порядок отрисовки полосы */
   const lanes={};
@@ -42067,8 +42269,9 @@ function drawAstronaut(o){
   ctx.strokeStyle="rgba(20,30,40,.5)";ctx.lineWidth=.9;ctx.stroke();
   ctx.fillStyle="#0a1a26";
   ctx.beginPath();ctx.ellipse(.9,-6.7,3,2.5,-.12,0,TAU);ctx.fill();            // забрало
+  const VC=(typeof cosmVisor==="function")?cosmVisor():null;   /* тон забрала — косметика «Сороки» */
   const vg=ctx.createLinearGradient(-1.6,-8.6,2.8,-5);
-  vg.addColorStop(0,"rgba(160,235,255,.75)");vg.addColorStop(1,"rgba(120,200,230,0)");
+  vg.addColorStop(0,"rgba("+(VC?VC.join(","):"160,235,255")+",.75)");vg.addColorStop(1,"rgba("+(VC?VC.join(","):"120,200,230")+",0)");
   ctx.fillStyle=vg;
   ctx.beginPath();ctx.ellipse(.9,-6.7,3,2.5,-.12,0,TAU);ctx.fill();
   /* блик-козырёк: одна жёсткая дуга по верхней кромке забрала (M232) —
@@ -60389,6 +60592,7 @@ let tab="market";
 let fuseSel=[];   // два корпуса, выбранных под сплав в лаборатории
 function openStation(){
   G.st=G.sys.station;G.mode="dock";G.ap=null;toggleLog(false);
+  if(typeof cosmChimePlay==="function")cosmChimePlay();   /* свой сигнал стыковки (M344) */
   mgrTick();mgrRouteVisit(G.sys);routeVisit(G.sys);
   if(typeof holdDock==="function")holdDock(G.sys);   /* груз, с которым пристыковались, и бункеры (M291) */
   scripVisitReset();          // потолок обмена бонами — на заход (12u-scrip)
@@ -66472,9 +66676,9 @@ function opisMarkCan(pl){
     const k=e.dataset.drop;let can=false;
     if(k==="hatch")can=pl.t!=="kit"&&(pl.t!=="pile"||opisCanDump(pl.k));
     else if(k==="slot")can=!!p&&slotsOf(G.shipId)[+e.dataset.slot]===p.kind;
-    else if(k==="hull")can=!!p;
+    else if(k==="hull")can=!!p||(pl.t==="cosm"&&cosmSlotOf(pl.id)!=="suit"&&cosmSlotOf(pl.id)!=="visor");
     else if(k==="spare")can=pl.t==="slot";
-    else if(k==="kit")can=pl.t==="kit";
+    else if(k==="kit")can=pl.t==="kit"||(pl.t==="cosm"&&(cosmSlotOf(pl.id)==="suit"||cosmSlotOf(pl.id)==="visor"));
     e.classList.toggle("can",can);
   });
   const bar=document.getElementById("opisBar");
@@ -66526,6 +66730,12 @@ function opisDrop(tgt,pl){
     return;
   }
   if(pl.t==="kit"&&tgt.kind==="kit")opisWear(pl.i);
+  if(pl.t==="cosm"){
+    const slot=cosmSlotOf(pl.id);
+    const hullish=slot&&slot!=="suit"&&slot!=="visor";
+    if((hullish&&(tgt.kind==="hull"||tgt.kind==="slot"))||(!hullish&&tgt.kind==="kit")){cosmWear(pl.id);OPIS.sel=null;opisRerender();}
+    else say(hullish?"Это на корпус":"Это на скафандр");
+  }
 }
 /* ── силуэт корпуса: якоря слотов — мишени и для тапа, и для переноса ── */
 function opisHullRedraw(){
@@ -66580,9 +66790,20 @@ function opisDrawMatchbox(c,w,h,n){
   }
   c.restore();
 }
-function opisDrawBox(c,w,h){
+function opisDrawBox(c,w,h,open){
   c.clearRect(0,0,w,h);
   c.save();c.translate(w*.5,h*.56);
+  if(open){
+    /* крышка откинута: видна изнанка с шёлком и то, что внутри блестит */
+    c.fillStyle="rgba(0,0,0,.3)";c.beginPath();c.ellipse(0,h*.24,w*.4,h*.1,0,0,TAU);c.fill();
+    c.fillStyle="#2a1a1c";c.fillRect(-w*.33,-h*.1,w*.66,h*.34);
+    c.fillStyle="#6b2a3a";c.fillRect(-w*.31,-h*.08,w*.62,h*.14);
+    c.fillStyle="#3b2427";c.beginPath();c.moveTo(-w*.36,-h*.1);c.lineTo(-w*.30,-h*.5);c.lineTo(w*.30,-h*.5);c.lineTo(w*.36,-h*.1);c.closePath();c.fill();
+    c.fillStyle="#7a3242";c.beginPath();c.moveTo(-w*.32,-h*.12);c.lineTo(-w*.27,-h*.46);c.lineTo(w*.27,-h*.46);c.lineTo(w*.32,-h*.12);c.closePath();c.fill();
+    for(let i=0;i<5;i++){c.fillStyle=["#c9a24a","#7fe6d8","#e0885a","#d6c6a0","#a52a2a"][i];c.beginPath();c.arc(-w*.22+i*w*.11,-h*.02,3,0,TAU);c.fill();}
+    c.fillStyle="rgba(255,235,200,.35)";c.fillRect(-w*.2,-h*.06,w*.16,1.5);
+    c.restore();return;
+  }
   c.fillStyle="rgba(0,0,0,.3)";c.beginPath();c.ellipse(0,h*.24,w*.4,h*.1,0,0,TAU);c.fill();
   /* лакированная шкатулка: тёмный корпус, крышка чуть шире, латунная защёлка */
   c.fillStyle="#2a1a1c";c.fillRect(-w*.33,-h*.1,w*.66,h*.34);
@@ -66806,10 +67027,24 @@ function opisRender(box){
     shelf.appendChild(chalk);
   }
   const bx=document.createElement("div");bx.className="op-box";
+  const CO=(typeof cosmRec==="function")?cosmRec():{owned:[]};
   const bcv=document.createElement("canvas");bcv.width=160;bcv.height=96;
-  opisDrawBox(bcv.getContext("2d"),160,96);
+  opisDrawBox(bcv.getContext("2d"),160,96,CO.owned.length>0);
   bx.appendChild(bcv);
-  bx.insertAdjacentHTML("beforeend","<h4>КОСМЕТИКА · шкатулка</h4><s>заперта: откроется с первой покупкой</s>");
+  if(!CO.owned.length)bx.insertAdjacentHTML("beforeend","<h4>КОСМЕТИКА · шкатулка</h4><s>заперта: откроется с первой покупкой</s>");
+  else{
+    bx.insertAdjacentHTML("beforeend","<h4>КОСМЕТИКА · шкатулка</h4><s>надетое — на корпус или на комплект: тычком или перетащить</s>");
+    const list=document.createElement("div");list.className="op-cosm";
+    for(const id of CO.owned){
+      const slot=cosmSlotOf(id);if(!slot)continue;
+      const on=cosmOn(slot)===id;
+      const card=opisCard("cosm"+(on?" worn":""),{t:"cosm",id},"<b>"+cosmRu(id)+"</b><s>"+COSM_SLOT_RU[slot]+(on?" · надето":"")+"</s>");
+      card.dataset.id=id;
+      opisActs(card,[on?{ru:"СНЯТЬ",go:()=>{cosmTakeOff(slot);opisRerender();}}:{ru:"НАДЕТЬ",gold:true,go:()=>{cosmWear(id);opisRerender();}}]);
+      list.appendChild(card);
+    }
+    bx.appendChild(list);
+  }
   top.appendChild(shelf);top.appendChild(bx);
   box.appendChild(top);
   /* ── зона 1: трюм кучами, память о ценах, коробок ── */

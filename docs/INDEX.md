@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 391 · символов верхнего уровня: 3553
+Файлов: 393 · символов верхнего уровня: 3581
 
 ## СИМВОЛЫ
 
@@ -26,7 +26,7 @@ $menu                        src/15-input.js:239
 $msg                         src/27z-telemetry.js:38
 $msl                         src/27z-telemetry.js:41
 $nav                         src/27z-telemetry.js:40
-$opts                        src/26-ui-station.js:882
+$opts                        src/26-ui-station.js:883
 $padsEl                      src/15-input.js:4
 $place                       src/27z-telemetry.js:37
 $sh                          src/27z-telemetry.js:8
@@ -266,7 +266,7 @@ BLUE_TAB                     src/01-core.js:48
 blueNoise                    src/01-core.js:49
 BLUEPRINTS                   src/12c-mgr-core.js:662
 BM_WARM                      src/21aa-base-rooms.js:20
-boardLanes                   src/26-ui-station.js:273
+boardLanes                   src/26-ui-station.js:274
 bodyInSystem                 src/16-flight.js:109
 bookAll                      src/12ub-books.js:106
 bookCount                    src/12ub-books.js:108
@@ -439,7 +439,7 @@ CKPT_STYLE                   src/25-cockpit.js:19
 clamp                        src/01-core.js:7
 closeBarge                   src/12l-barge.js:607
 closeDeal                    src/27n-ui-deal.js:169
-closeStation                 src/26-ui-station.js:122
+closeStation                 src/26-ui-station.js:123
 CLOUD                        src/14-save.js:5
 CLOUD_KEYS                   src/02a-worldmix.js:80
 CLOUD_KIND                   src/19e-clouds.js:35
@@ -470,6 +470,33 @@ concertSend                  src/11ae-concert.js:87
 consoleHeard                 src/27j-console.js:20
 consoleTick                  src/27j-console.js:29
 conT                         src/27j-console.js:19
+COSM_CHIME                   src/12v-wander-shop-cosm.js:59
+COSM_EXH                     src/12v-wander-shop-cosm.js:22
+COSM_LIGHTS                  src/12v-wander-shop-cosm.js:54
+COSM_MARK                    src/12v-wander-shop-cosm.js:49
+COSM_SLOT_RU                 src/12v-wander-shop-cosm.js:19
+COSM_SLOTS                   src/12v-wander-shop-cosm.js:18
+COSM_SUIT                    src/12v-wander-shop-cosm.js:38
+COSM_TABLES                  src/12v-wander-shop-cosm.js:63
+COSM_TRAIL                   src/12v-wander-shop-cosm.js:32
+COSM_VISOR                   src/12v-wander-shop-cosm.js:44
+cosmChimeName                src/12v-wander-shop-cosm.js:109
+cosmChimePlay                src/12v-wander-shop-cosm.js:110
+cosmDiff                     tests/91zzzzh-cosm.js:12
+cosmExhaust                  src/12v-wander-shop-cosm.js:89
+cosmGive                     src/12v-wander-shop-cosm.js:81
+cosmLightOn                  src/12v-wander-shop-cosm.js:102
+cosmOn                       src/12v-wander-shop-cosm.js:72
+cosmOwns                     src/12v-wander-shop-cosm.js:71
+cosmPix                      tests/91zzzzh-cosm.js:5
+cosmRec                      src/12v-wander-shop-cosm.js:66
+cosmRu                       src/12v-wander-shop-cosm.js:65
+cosmSlotOf                   src/12v-wander-shop-cosm.js:64
+cosmSuit                     src/12v-wander-shop-cosm.js:95
+cosmTakeOff                  src/12v-wander-shop-cosm.js:80
+cosmTrail                    src/12v-wander-shop-cosm.js:91
+cosmVisor                    src/12v-wander-shop-cosm.js:100
+cosmWear                     src/12v-wander-shop-cosm.js:74
 COUNTY_LVL                   src/11l-county.js:20
 countyAll                    src/11l-county.js:21
 countyAnswerLine             src/11l-county.js:89
@@ -673,6 +700,7 @@ drawChunks                   src/18c-chunks.js:83
 drawClouds                   src/19e-clouds.js:197
 drawCockpit                  src/25-cockpit.js:400
 drawCombat                   src/13-pirates.js:215
+drawCosmMark                 src/12v-wander-shop-cosm.js:112
 drawCrowns                   src/05a-nodes.js:379
 drawCrystalForest            src/20aa-poi-shapes.js:115
 drawDeadBattery              src/20aa-poi-shapes.js:221
@@ -708,7 +736,7 @@ drawHomeRoom                 src/27e-ui-home.js:42
 drawHqRoom                   src/27f-hq-room.js:22
 drawHull                     src/03e-hull-draw.js:1
 drawHullMarks                src/03b-hull-paint.js:173
-drawKitFigure                src/12x-suit.js:190
+drawKitFigure                src/12x-suit.js:191
 drawLander                   src/19f-lander.js:52
 drawLandGear                 src/19f-lander.js:26
 drawLanding                  src/19-mode-landing.js:566
@@ -729,8 +757,8 @@ drawPirateBase               src/24a-mode-raid.js:103
 drawPirateSkin               src/03d-hull-marks.js:99
 drawPlanetLights             src/17e-station-body.js:45
 drawPlanetWorks              src/17e-station-body.js:74
-drawPlant                    src/20-life.js:393
-drawPlantAlien               src/20-life.js:197
+drawPlant                    src/20-life.js:394
+drawPlantAlien               src/20-life.js:198
 drawPOI                      src/20a-poi.js:173
 drawPortal                   src/20aa-poi-shapes.js:464
 drawPostcard                 src/25g-postcard.js:170
@@ -749,11 +777,11 @@ drawSkyBodies                src/19b-sky.js:96
 drawSkyLayer                 src/19-mode-landing.js:452
 drawSpa                      src/29i-spa-draw.js:41
 drawSpaceDust                src/16a-space.js:275
-drawStarBody                 src/16a-space.js:446
-drawStarHole                 src/16a-space.js:549
-drawStarNeutron              src/16a-space.js:522
+drawStarBody                 src/16a-space.js:459
+drawStarHole                 src/16a-space.js:562
+drawStarNeutron              src/16a-space.js:535
 drawStars                    src/16-flight.js:28
-drawStarSingle               src/16a-space.js:463
+drawStarSingle               src/16a-space.js:476
 drawStation                  src/17c-system-draw.js:438
 drawStationBody              src/17c-system-draw.js:178
 drawStationMods              src/17a-station-mod.js:199
@@ -830,9 +858,9 @@ e2eScan                      tests/91zzzzz-e2e-life.js:76
 earn                         src/12j-home.js:38
 ecoBestLeg                   tests/91zzw-economy.js:18
 ecoStations                  tests/91zzw-economy.js:8
-el                           src/26-ui-station.js:172
+el                           src/26-ui-station.js:173
 endPtr                       src/15-input.js:381
-engineLoop                   src/09-audio.js:266
+engineLoop                   src/09-audio.js:289
 enterBase                    src/21a-mode-base.js:68
 enterBelt                    src/24-mode-belt.js:89
 enterCave                    src/22-mode-cave.js:175
@@ -995,7 +1023,7 @@ fleetUniqueName              src/04b-fleet.js:100
 flightCam                    src/16a-space.js:316
 floraOf                      src/20e-species.js:91
 FOE_KINDS                    src/24a-mode-raid.js:17
-foldBlock                    src/26-ui-station.js:219
+foldBlock                    src/26-ui-station.js:220
 FOLK                         src/12u-folk.js:31
 FOLK_IDS                     src/12u-folk.js:81
 folkAll                      src/11ah-offer.js:76
@@ -1037,7 +1065,7 @@ genMerc                      src/12a-crew.js:59
 genMgr                       src/12c-mgr-core.js:236
 genName                      src/01-core.js:99
 genPart                      src/05-parts.js:70
-genPlant                     src/20-life.js:188
+genPlant                     src/20-life.js:189
 genPOI                       src/20a-poi.js:32
 genRaid                      src/24a-mode-raid.js:30
 genTerrain                   src/07-planet.js:431
@@ -1066,10 +1094,10 @@ globusAim                    src/25f-globus.js:49
 globusDraw                   src/25f-globus.js:81
 globusSys                    tests/91zzzg-globus.js:7
 globusTick                   src/25f-globus.js:70
-GLOW_CACHE                   src/16a-space.js:427
-GLOW_SP                      src/16a-space.js:426
+GLOW_CACHE                   src/16a-space.js:440
+GLOW_SP                      src/16a-space.js:439
 GLOW_TIERS                   src/11i-glow.js:121
-glowBlit                     src/16a-space.js:442
+glowBlit                     src/16a-space.js:455
 glowCaveX                    src/11i-glow.js:139
 glowCorePlanet               src/11i-glow.js:33
 glowDepthAt                  src/11i-glow.js:24
@@ -1082,7 +1110,7 @@ glowGroundLine               src/11i-glow.js:110
 glowIsCore                   src/11i-glow.js:38
 glowPatches                  src/11i-glow.js:73
 glowScan                     src/11i-glow.js:64
-glowSprite                   src/16a-space.js:428
+glowSprite                   src/16a-space.js:441
 glowTier                     src/11i-glow.js:122
 glyphEl                      src/12t-settle.js:79
 glyphHasRunes                src/12t-settle.js:52
@@ -1263,7 +1291,7 @@ holdSkyMul                   src/12ag-holdfx.js:117
 holdTechMul                  src/12ag-holdfx.js:119
 holdTestStation              tests/91x-hold.js:2
 holdUklad                    src/12ah-holdnews.js:19
-holdWorth                    src/27j-ui-opis.js:467
+holdWorth                    src/27j-ui-opis.js:484
 holEtherLine                 src/11am-holiday.js:77
 HOLIDAYS                     src/11am-holiday.js:22
 holIs                        src/11am-holiday.js:74
@@ -1511,14 +1539,14 @@ kitAddMod                    src/12x-suit.js:150
 kitAll                       src/12x-suit.js:47
 kitCanMod                    src/12x-suit.js:143
 kitColOf                     src/12x-suit.js:169
-kitDepotBlock                src/12x-suit.js:321
+kitDepotBlock                src/12x-suit.js:323
 kitDepotOf                   src/12x-suit.js:99
 kitDepotTake                 src/12x-suit.js:113
-kitDollHit                   src/12x-suit.js:295
+kitDollHit                   src/12x-suit.js:297
 kitFromHulk                  src/12x-suit.js:120
 kitGive                      src/12x-suit.js:89
 kitHasMod                    src/12x-suit.js:60
-kitHeatMul                   src/12x-suit.js:288
+kitHeatMul                   src/12x-suit.js:290
 KITLAY                       src/27j-ui-kitlay.js:31
 kitLayDraw                   src/27j-ui-kitlay.js:136
 kitLayPiece                  src/27j-ui-kitlay.js:74
@@ -1533,7 +1561,7 @@ kitRepairCost                src/12x-suit.js:135
 kitRoman                     src/12x-suit.js:57
 kitShelf                     src/12x-suit.js:53
 kitShelfMax                  src/12x-suit.js:55
-kitShopBlock                 src/12x-suit.js:297
+kitShopBlock                 src/12x-suit.js:299
 kitStat                      src/12x-suit.js:61
 kitWearMul                   src/12x-suit.js:59
 kitWearPiece                 src/12x-suit.js:128
@@ -1550,8 +1578,8 @@ landerLen                    src/19f-lander.js:11
 landingDust                  src/19f-lander.js:344
 landOnTestPlanet             tests/90-harness.js:105
 landStartY                   src/19-mode-landing.js:38
-LANE_RU                      src/26-ui-station.js:272
-LANE_RX                      src/26-ui-station.js:268
+LANE_RU                      src/26-ui-station.js:273
+LANE_RX                      src/26-ui-station.js:269
 last                         src/28-loop.js:85
 LAST_RUN_DAY                 src/12k-letters.js:40
 lastDroneTick                src/28-loop.js:86
@@ -1966,18 +1994,18 @@ OPIS                         src/27j-ui-opis.js:32
 OPIS_HW                      src/27j-ui-opis.js:56
 OPIS_KIT                     src/27j-ui-opis.js:48
 OPIS_SHIP                    src/27j-ui-opis.js:35
-opisActs                     src/27j-ui-opis.js:420
+opisActs                     src/27j-ui-opis.js:437
 opisArmed                    src/27j-ui-opis.js:144
 opisAsk                      src/27j-ui-opis.js:172
-opisAskForm                  src/27j-ui-opis.js:510
-opisBar                      src/27j-ui-opis.js:530
+opisAskForm                  src/27j-ui-opis.js:527
+opisBar                      src/27j-ui-opis.js:547
 opisCanDump                  src/27j-ui-opis.js:171
-opisCard                     src/27j-ui-opis.js:406
+opisCard                     src/27j-ui-opis.js:423
 opisConfirm                  src/27j-ui-opis.js:145
 opisDragWire                 src/27j-ui-opis.js:195
-opisDrawBox                  src/27j-ui-opis.js:363
-opisDrawHatch                src/27j-ui-opis.js:381
-opisDrawMatchbox             src/27j-ui-opis.js:341
+opisDrawBox                  src/27j-ui-opis.js:369
+opisDrawHatch                src/27j-ui-opis.js:398
+opisDrawMatchbox             src/27j-ui-opis.js:347
 opisDrop                     src/27j-ui-opis.js:283
 opisDropAt                   src/27j-ui-opis.js:268
 opisDropEnd                  src/27j-ui-opis.js:274
@@ -1985,23 +2013,23 @@ opisDump                     src/27j-ui-opis.js:176
 opisFit                      src/27j-ui-opis.js:150
 opisFocus                    src/27j-ui-opis.js:60
 opisGhostMove                src/27j-ui-opis.js:243
-opisHead                     src/27j-ui-opis.js:504
-opisHullRedraw               src/27j-ui-opis.js:311
-opisHullSlotAt               src/27j-ui-opis.js:328
-opisKitCard                  src/27j-ui-opis.js:495
+opisHead                     src/27j-ui-opis.js:521
+opisHullRedraw               src/27j-ui-opis.js:317
+opisHullSlotAt               src/27j-ui-opis.js:334
+opisKitCard                  src/27j-ui-opis.js:512
 opisKitFuture                src/27j-ui-opis.js:94
-opisLeave                    src/27j-ui-opis.js:711
+opisLeave                    src/27j-ui-opis.js:742
 opisLift                     src/27j-ui-opis.js:217
 opisMarkCan                  src/27j-ui-opis.js:248
 opisMarkOver                 src/27j-ui-opis.js:263
 opisPanel                    src/27j-ui-opis.js:102
 opisPanels                   src/27j-ui-opis.js:123
-opisPartCard                 src/27j-ui-opis.js:436
-opisPartHtml                 src/27j-ui-opis.js:431
+opisPartCard                 src/27j-ui-opis.js:453
+opisPartHtml                 src/27j-ui-opis.js:448
 opisPhone                    src/27j-ui-opis.js:57
-opisPileCard                 src/27j-ui-opis.js:476
-opisPriceCue                 src/27j-ui-opis.js:457
-opisRender                   src/27j-ui-opis.js:547
+opisPileCard                 src/27j-ui-opis.js:493
+opisPriceCue                 src/27j-ui-opis.js:474
+opisRender                   src/27j-ui-opis.js:564
 opisRerender                 src/27j-ui-opis.js:58
 opisSame                     src/27j-ui-opis.js:59
 opisScrap                    src/27j-ui-opis.js:159
@@ -2140,7 +2168,7 @@ PHYS_DT                      tests/91zzzzy-phys.js:14
 physRun                      tests/91zzzzy-phys.js:29
 physShip                     tests/91zzzzy-phys.js:19
 pick                         src/01-core.js:17
-pickKindByBias               src/20-life.js:179
+pickKindByBias               src/20-life.js:180
 pickShare                    src/20e-species.js:125
 pickStType                   src/06-galaxy.js:76
 PICKUPS                      src/24a-mode-raid.js:24
@@ -2189,7 +2217,7 @@ PLANET_RES                   src/07-planet.js:71
 PLANET_SPIN                  src/07-planet.js:32
 planetBargeLoad              src/12n-planet.js:108
 planetBargeRow               src/12n-planet.js:145
-planetBiome                  src/20-life.js:160
+planetBiome                  src/20-life.js:161
 planetCols                   src/07-planet.js:229
 planetDraw                   src/07-planet.js:324
 planetGrant                  src/12n-planet.js:25
@@ -2226,11 +2254,11 @@ planIsCore                   src/11r-plan.js:41
 planIsCoreT                  src/11r-plan.js:42
 PLANT_FORM_K                 src/20e-species.js:20
 PLANT_H_K                    src/20e-species.js:24
-PLANT_KINDS                  src/20-life.js:159
-plantGrad                    src/20-life.js:376
+PLANT_KINDS                  src/20-life.js:160
+plantGrad                    src/20-life.js:377
 plantLitter                  src/20e-species.js:196
 planTook                     src/11r-plan.js:59
-plantPaint                   src/20-life.js:403
+plantPaint                   src/20-life.js:404
 plantSpeciesName             src/20e-species.js:86
 plantStemForm                src/20e-species.js:27
 plantTraitWord               src/20e-species.js:29
@@ -2507,13 +2535,13 @@ renderRoute                  src/12r-route.js:349
 renderSiteTab                src/26c-ui-station-site.js:7
 renderSmena                  src/12ud-smena.js:121
 renderStrips                 src/27i-ui-table.js:269
-renderTab                    src/26-ui-station.js:364
-renderTabBody                src/26-ui-station.js:375
+renderTab                    src/26-ui-station.js:365
+renderTabBody                src/26-ui-station.js:376
 renderThings                 src/27i-ui-table.js:300
 REP_MIN                      src/12k-rep.js:16
 REP_WORDS                    src/12k-rep.js:17
 repAdd                       src/12k-rep.js:36
-repairCost                   src/26-ui-station.js:112
+repairCost                   src/26-ui-station.js:113
 repAt                        src/12k-rep.js:27
 repFuelMul                   src/12k-rep.js:52
 repHireMul                   src/12k-rep.js:54
@@ -2528,7 +2556,7 @@ RES_AUTO                     src/08-state.js:54
 RES_KEYS                     src/02-world.js:87
 resAuto                      src/28-loop.js:114
 resEma                       src/28-loop.js:113
-resetArm                     src/26-ui-station.js:881
+resetArm                     src/26-ui-station.js:882
 resetWorld                   tests/90-harness.js:55
 resize                       src/08-state.js:22
 RET_BOARD                    src/11s-returners.js:29
@@ -2805,9 +2833,9 @@ sdYard                       src/12tb-settle-draw2.js:450
 seamAdd                      src/12s-wear.js:182
 seamsAll                     src/12s-wear.js:181
 seamsOf                      src/12s-wear.js:183
-SEC_CAP                      src/26-ui-station.js:242
-secHead                      src/26-ui-station.js:191
-secTidy                      src/26-ui-station.js:243
+SEC_CAP                      src/26-ui-station.js:243
+secHead                      src/26-ui-station.js:192
+secTidy                      src/26-ui-station.js:244
 sellCargo                    src/12-economy.js:68
 sellDroneYield               src/12-economy.js:89
 sellQuote                    src/12ab-hold.js:101
@@ -2856,7 +2884,7 @@ settleWatch                  src/12t-settle.js:397
 settleWords                  src/12t-settle.js:258
 setTx                        src/27z-telemetry.js:78
 setZoom                      src/15-input.js:318
-sfx                          src/09-audio.js:258
+sfx                          src/09-audio.js:281
 SFX                          src/09-audio.js:97
 SH_DX                        src/03b-hull-paint.js:164
 shatter                      src/24-mode-belt.js:136
@@ -2864,9 +2892,9 @@ SHIFT_TALK                   src/03f-hull-role.js:63
 shiftTalkTick                src/03f-hull-role.js:73
 SHIP_KEYS                    src/03-ships.js:12
 shipData                     src/03-ships.js:13
-shipRow                      src/26-ui-station.js:313
+shipRow                      src/26-ui-station.js:314
 SHIPS                        src/03-ships.js:2
-shipThumb                    src/26-ui-station.js:300
+shipThumb                    src/26-ui-station.js:301
 shipTier                     src/04b-fleet.js:156
 shipZ                        src/16-flight.js:235
 shipZoneR                    src/19f-lander.js:14
@@ -2994,7 +3022,7 @@ SRC_DISCOUNT                 src/12ad-site.js:22
 srcPrice                     src/12ad-site.js:291
 ST_ART                       src/17c-system-draw.js:407
 ST_GOLD                      src/17c-system-draw.js:120
-ST_GROUPS                    src/26-ui-station.js:69
+ST_GROUPS                    src/26-ui-station.js:70
 ST_MOD_FILL                  src/17a-station-mod.js:66
 ST_MODULES                   src/17a-station-mod.js:14
 ST_TYPES                     src/06-galaxy.js:54
@@ -3025,9 +3053,9 @@ stDel                        src/14-save.js:26
 steps                        tests/90-harness.js:113
 stepWorld                    src/28-loop.js:144
 stGet                        src/14-save.js:8
-stGroup                      src/26-ui-station.js:78
-stGroupOf                    src/26-ui-station.js:77
-stopEngine                   src/09-audio.js:290
+stGroup                      src/26-ui-station.js:79
+stGroupOf                    src/26-ui-station.js:78
+stopEngine                   src/09-audio.js:313
 STORAGE_OK                   src/14-save.js:7
 STORAGE_TOLD                 src/14-save.js:13
 STORIES                      src/12k-stories-a.js:45
@@ -3089,7 +3117,7 @@ stTabFuse                    src/26b-ui-station-work.js:200
 stTabInstr                   src/26b-ui-station-work.js:107
 stTabLab                     src/26b-ui-station-work.js:174
 stTabMods                    src/26b-ui-station-work.js:12
-stTabsHere                   src/26-ui-station.js:79
+stTabsHere                   src/26-ui-station.js:80
 stTypeOf                     src/06-galaxy.js:73
 subdivide                    src/24-mode-belt.js:34
 suite                        tests/90-harness.js:15
@@ -3113,7 +3141,7 @@ surveyLegs                   src/12w-survey.js:48
 surveyList                   src/12w-survey.js:37
 surveyPoint                  src/12w-survey.js:20
 swimTestLand                 tests/91zzzc-swim.js:8
-syncTabs                     src/26-ui-station.js:80
+syncTabs                     src/26-ui-station.js:81
 SYS_BAKE_KEEP                src/06-galaxy.js:20
 SYS_CACHE                    src/06-galaxy.js:3
 SYS_CHIPS                    src/17-mode-system.js:6
@@ -3411,7 +3439,7 @@ wanCol                       src/24c-mode-wanderer-draw.js:21
 wanCur                       src/24c-mode-wanderer.js:50
 WANDER_BY_ID                 src/12v-wander-shop.js:66
 WANDER_CAT                   src/12v-wander-shop.js:27
-WANDER_LINES                 src/12v-wander-shop.js:240
+WANDER_LINES                 src/12v-wander-shop.js:247
 WANDER_LOOP                  src/12v-wander.js:30
 WANDER_N                     src/12v-wander.js:29
 WANDER_RAW                   src/12v-wander-shop.js:26
@@ -3420,16 +3448,16 @@ WANDER_SHELF                 src/12v-wander-shop.js:24
 WANDER_STOP                  src/12v-wander.js:28
 WANDER_T0                    src/12v-wander.js:27
 wanderAngle                  src/12v-wander.js:107
-wanderAreaChart              src/12v-wander-shop.js:169
-wanderAskPart                src/12v-wander-shop.js:144
+wanderAreaChart              src/12v-wander-shop.js:176
+wanderAskPart                src/12v-wander-shop.js:147
 wanderAt                     src/12v-wander.js:68
-wanderBuy                    src/12v-wander-shop.js:146
-wanderCant                   src/12v-wander-shop.js:136
+wanderBuy                    src/12v-wander-shop.js:149
+wanderCant                   src/12v-wander-shop.js:139
 wanderDock                   src/12v-wander.js:123
 wanderHas                    src/12v-wander-shop.js:75
 wanderHeading                src/12v-wander.js:105
 wanderHere                   src/12v-wander.js:90
-wanderLeftRu                 src/12v-wander-shop.js:248
+wanderLeftRu                 src/12v-wander-shop.js:255
 wanderLen                    src/12v-wander.js:95
 wanderLoop                   src/12v-wander.js:44
 wanderLots                   src/12v-wander-shop.js:108
@@ -3438,21 +3466,21 @@ wanderNeedleAcc              src/12v-wander-shop.js:98
 wanderOk                     src/12v-wander.js:37
 wanderOwns                   src/12v-wander-shop.js:76
 wanderPlanetIx               src/12v-wander.js:82
-wanderPriceRu                src/12v-wander-shop.js:130
-wanderRawLeft                src/12v-wander-shop.js:201
-wanderRawQuote               src/12v-wander-shop.js:207
+wanderPriceRu                src/12v-wander-shop.js:133
+wanderRawLeft                src/12v-wander-shop.js:208
+wanderRawQuote               src/12v-wander-shop.js:214
 wanderRec                    src/12v-wander.js:31
 wanderRumour                 src/12v-wander.js:130
-wanderSellRaw                src/12v-wander-shop.js:211
-wanderShowables              src/12v-wander-shop.js:225
-wanderShowRare               src/12v-wander-shop.js:229
+wanderSellRaw                src/12v-wander-shop.js:218
+wanderShowables              src/12v-wander-shop.js:232
+wanderShowRare               src/12v-wander-shop.js:236
 wanderSkyLine                src/12v-wander.js:147
 wanderStat                   src/12v-wander-shop.js:88
 wanderStore                  src/12v-wander-shop.js:67
 wanderTick                   src/12v-wander-shop.js:99
 wanderToHold                 src/12v-wander-shop.js:83
 wanderToShelf                src/12v-wander-shop.js:77
-wanderWildGrant              src/12v-wander-shop.js:184
+wanderWildGrant              src/12v-wander-shop.js:191
 wanderWorldPos               src/12v-wander.js:97
 wanGeom                      src/24c-mode-wanderer-draw.js:24
 wanItemIcon                  src/24c-mode-wanderer-draw.js:37
@@ -3640,7 +3668,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/09a-roomtone.js · 6 КБ
   · мир слышен: тон места (M178-10):1
 
-## src/09-audio.js · 14 КБ
+## src/09-audio.js · 15 КБ
   · звук: чистый синтез, ни одного файла:1
 
 ## src/10-music.js · 30 КБ
@@ -3965,8 +3993,11 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12v-wander.js · 18 КБ
   · «Сорока»: странствующий парусник (M342):1
 
-## src/12v-wander-shop.js · 18 КБ
+## src/12v-wander-shop.js · 19 КБ
   · лавка «Сороки»: три прилавка и полка инструментов (M343):1
+
+## src/12v-wander-shop-cosm.js · 10 КБ
+  · косметика «Сороки»: вещи без чисел (M344):1
 
 ## src/12w-survey.js · 6 КБ
   · собранный отчёт: их съёмка поверх вашей карты:1
@@ -3995,7 +4026,7 @@ zooTick                      src/11ad-zoo.js:41
   · облако:65
   · видимое состояние обмена:80
 
-## src/14-save.js · 60 КБ
+## src/14-save.js · 61 КБ
   · сохранение:1
   · запись не имеет права убить полёт:90
   · пустая карта возвращается из облака СПИСКОМ:169
@@ -4005,7 +4036,7 @@ zooTick                      src/11ad-zoo.js:41
   · ввод:87
   · полоса вкладок шире экрана:212
 
-## src/16a-space.js · 36 КБ
+## src/16a-space.js · 37 КБ
   · облик системы:1
 
 ## src/16b-missile.js · 9 КБ
@@ -4107,7 +4138,7 @@ zooTick                      src/11ad-zoo.js:41
 
 ## src/20-life.js · 35 КБ
   · астронавт:1
-  · флора:142
+  · флора:143
 
 ## src/21aa-base-rooms.js · 36 КБ
   · база: внутренности отсеков:1
@@ -4280,10 +4311,10 @@ zooTick                      src/11ad-zoo.js:41
 ## src/26d-ui-wanderer.js · 5 КБ
   · пульт «Сороки»: карточка витрины перед вами (M343):1
 
-## src/26-ui-station.js · 62 КБ
+## src/26-ui-station.js · 61 КБ
   · станция:1
-  · заголовки и полосы (M299, docs/DESIGN-screens.md §1a):186
-  · настройки:880
+  · заголовки и полосы (M299, docs/DESIGN-screens.md §1a):187
+  · настройки:881
 
 ## src/27b-ui-crew.js · 15 КБ
   · экран экипажа:1
@@ -4327,7 +4358,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/27j-ui-kitlay.js · 9 КБ
   · комплект, разложенный на столе:1
 
-## src/27j-ui-opis.js · 38 КБ
+## src/27j-ui-opis.js · 40 КБ
   · ОПИСЬ: один стол для всего, что на тебе и в трюме (M341):1
 
 ## src/27k-road.js · 47 КБ
@@ -4805,6 +4836,9 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzzzg-wander-shop.js · 10 КБ
   · автотесты: борт «Сороки» — комната и лавка (M343):1
+
+## tests/91zzzzh-cosm.js · 6 КБ
+  · автотесты: косметика «Сороки» (M344):1
 
 ## tests/91zzzzy-hold.js · 9 КБ
   · холдинг: круг стройки числами (M339):1

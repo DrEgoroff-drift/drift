@@ -84,8 +84,9 @@ function drawAstronaut(o){
   ctx.strokeStyle="rgba(20,30,40,.5)";ctx.lineWidth=.9;ctx.stroke();
   ctx.fillStyle="#0a1a26";
   ctx.beginPath();ctx.ellipse(.9,-6.7,3,2.5,-.12,0,TAU);ctx.fill();            // забрало
+  const VC=(typeof cosmVisor==="function")?cosmVisor():null;   /* тон забрала — косметика «Сороки» */
   const vg=ctx.createLinearGradient(-1.6,-8.6,2.8,-5);
-  vg.addColorStop(0,"rgba(160,235,255,.75)");vg.addColorStop(1,"rgba(120,200,230,0)");
+  vg.addColorStop(0,"rgba("+(VC?VC.join(","):"160,235,255")+",.75)");vg.addColorStop(1,"rgba("+(VC?VC.join(","):"120,200,230")+",0)");
   ctx.fillStyle=vg;
   ctx.beginPath();ctx.ellipse(.9,-6.7,3,2.5,-.12,0,TAU);ctx.fill();
   /* блик-козырёк: одна жёсткая дуга по верхней кромке забрала (M232) —

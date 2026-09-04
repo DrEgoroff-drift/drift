@@ -102,7 +102,7 @@ in this order (author, 2026-09-03: «сначала по плану, потом 
    ghost click on screens opened by a pad swallowed, §18.8 complete but for the заявка (rung 21).
    ~~Left: the ship keeps its `.55` floor at deep zoom-out~~ — `.35` since M319 (0.316.0).
 
-## «Сорока» — the wanderer queue (M340–M343 done, M344–M346 open; author 2026-09-04: «делай всё в соло»)
+## «Сорока» — the wanderer queue (M340–M344 done, M345–M346 open; author 2026-09-04: «делай всё в соло»)
 
 Design is settled in `docs/DESIGN-wanderer.md` (§1–§13; §6 and §12–§13 are the revised, binding
 parts — §11's prices are indicative). Read that file first, then this queue. Every milestone below is
@@ -131,13 +131,11 @@ cosmetics exist; the desk gets one table «ОПИСЬ»; a locker exists at stat
   in `lookScenes`. Left out on purpose (no hook yet): cosmetics (M344), unique hull parts, Медный шар,
   Слепок печати, Вторая рука, Страница журнала, Список отказов. Body in `docs/PLAN-archive.md`.
 
-- **M344 — cosmetics** (`G.cosm={exhaust,trail,suit,visor,mark,lights,chime}` persisted; applied
-  by dragging from the шкатулка onto the hull or the kit in ОПИСЬ). Hooks: exhaust colour/shape in
-  `16-flight`/`16a-space` flame (8 named exhausts, each its own flame shape), jump trail in `16`,
-  suit finish + visor tint in `20-life` astronaut painter and the kit doll (`12x-suit`), rare hull
-  marks via `03d-hull-marks`, nav-light pattern in `03e-hull-draw`, docking chime in `09-audio`.
-  Parrot accessories through `12x-parrot`. Test: each cosmetic id changes at least one pixel of its
-  target painter (render to an offscreen canvas, compare).
+- **M344** (0.343.0) — done: cosmetics — `12v-wander-shop-cosm`: 27 things in seven slots (8 exhausts with
+  their own flames, 4 jump trails, 4 suit finishes, 3 visor tints, 3 hull marks, 3 light patterns, 2 docking
+  chimes), each read by its painter and guarded by a pixel test; the casket on ОПИСЬ opens with the first
+  purchase, wear by button or by dragging onto the hull/kit. Parrot accessories and the house crest wait for
+  their systems. Body in `docs/PLAN-archive.md`.
 
 - **M345 — the locker** (`G.locker={items:[],res:{},t}` persisted). Fifth zone of ОПИСЬ that slides
   in while `G.mode==="dock"` at a station with `rungOf>=6`: 24 slots, parts + piles + tools. Fee

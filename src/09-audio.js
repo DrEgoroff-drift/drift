@@ -178,6 +178,29 @@ const SFX={
     n.start(t);n.stop(t+.05);freeVoice(n);
   },
   /* интерфейс: чистые тоны, короткие, без хвоста */
+  /* ── сигналы стыковки с «Сороки» (M344): две ноты вниз и колокол ── */
+  chime(o){
+    const c=SND.ctx,t=c.currentTime,v=(o&&o.v||.3);
+    for(const [k,dt] of [[1,0],[.75,.16]]){
+      const osc=c.createOscillator(),g=c.createGain();
+      osc.type="sine";osc.frequency.setValueAtTime(880*k,t+dt);
+      env(g,t+dt,.01,.22,v*1.8);
+      osc.connect(g);g.connect(SND.sfx);
+      osc.start(t+dt);osc.stop(t+dt+.3);
+      if(dt)freeVoice(osc);
+    }
+  },
+  bell(o){
+    const c=SND.ctx,t=c.currentTime,v=(o&&o.v||.3);
+    for(const [k,mul] of [[1,1],[2.7,.35],[5.4,.15]]){
+      const osc=c.createOscillator(),g=c.createGain();
+      osc.type="sine";osc.frequency.setValueAtTime(440*k,t);
+      env(g,t,.004,1.1/(k*.6+.4),v*1.6*mul);
+      osc.connect(g);g.connect(SND.sfx);
+      osc.start(t);osc.stop(t+1.3);
+      if(k>1)freeVoice(osc);
+    }
+  },
   ui(o){
     const c=SND.ctx,t=c.currentTime;
     const osc=c.createOscillator(),g=c.createGain();

@@ -252,9 +252,9 @@ function opisMarkCan(pl){
     const k=e.dataset.drop;let can=false;
     if(k==="hatch")can=pl.t!=="kit"&&(pl.t!=="pile"||opisCanDump(pl.k));
     else if(k==="slot")can=!!p&&slotsOf(G.shipId)[+e.dataset.slot]===p.kind;
-    else if(k==="hull")can=!!p;
+    else if(k==="hull")can=!!p||(pl.t==="cosm"&&cosmSlotOf(pl.id)!=="suit"&&cosmSlotOf(pl.id)!=="visor");
     else if(k==="spare")can=pl.t==="slot";
-    else if(k==="kit")can=pl.t==="kit";
+    else if(k==="kit")can=pl.t==="kit"||(pl.t==="cosm"&&(cosmSlotOf(pl.id)==="suit"||cosmSlotOf(pl.id)==="visor"));
     e.classList.toggle("can",can);
   });
   const bar=document.getElementById("opisBar");
@@ -306,6 +306,12 @@ function opisDrop(tgt,pl){
     return;
   }
   if(pl.t==="kit"&&tgt.kind==="kit")opisWear(pl.i);
+  if(pl.t==="cosm"){
+    const slot=cosmSlotOf(pl.id);
+    const hullish=slot&&slot!=="suit"&&slot!=="visor";
+    if((hullish&&(tgt.kind==="hull"||tgt.kind==="slot"))||(!hullish&&tgt.kind==="kit")){cosmWear(pl.id);OPIS.sel=null;opisRerender();}
+    else say(hullish?"Это на корпус":"Это на скафандр");
+  }
 }
 /* ── силуэт корпуса: якоря слотов — мишени и для тапа, и для переноса ── */
 function opisHullRedraw(){
@@ -360,9 +366,20 @@ function opisDrawMatchbox(c,w,h,n){
   }
   c.restore();
 }
-function opisDrawBox(c,w,h){
+function opisDrawBox(c,w,h,open){
   c.clearRect(0,0,w,h);
   c.save();c.translate(w*.5,h*.56);
+  if(open){
+    /* крышка откинута: видна изнанка с шёлком и то, что внутри блестит */
+    c.fillStyle="rgba(0,0,0,.3)";c.beginPath();c.ellipse(0,h*.24,w*.4,h*.1,0,0,TAU);c.fill();
+    c.fillStyle="#2a1a1c";c.fillRect(-w*.33,-h*.1,w*.66,h*.34);
+    c.fillStyle="#6b2a3a";c.fillRect(-w*.31,-h*.08,w*.62,h*.14);
+    c.fillStyle="#3b2427";c.beginPath();c.moveTo(-w*.36,-h*.1);c.lineTo(-w*.30,-h*.5);c.lineTo(w*.30,-h*.5);c.lineTo(w*.36,-h*.1);c.closePath();c.fill();
+    c.fillStyle="#7a3242";c.beginPath();c.moveTo(-w*.32,-h*.12);c.lineTo(-w*.27,-h*.46);c.lineTo(w*.27,-h*.46);c.lineTo(w*.32,-h*.12);c.closePath();c.fill();
+    for(let i=0;i<5;i++){c.fillStyle=["#c9a24a","#7fe6d8","#e0885a","#d6c6a0","#a52a2a"][i];c.beginPath();c.arc(-w*.22+i*w*.11,-h*.02,3,0,TAU);c.fill();}
+    c.fillStyle="rgba(255,235,200,.35)";c.fillRect(-w*.2,-h*.06,w*.16,1.5);
+    c.restore();return;
+  }
   c.fillStyle="rgba(0,0,0,.3)";c.beginPath();c.ellipse(0,h*.24,w*.4,h*.1,0,0,TAU);c.fill();
   /* лакированная шкатулка: тёмный корпус, крышка чуть шире, латунная защёлка */
   c.fillStyle="#2a1a1c";c.fillRect(-w*.33,-h*.1,w*.66,h*.34);
@@ -586,10 +603,24 @@ function opisRender(box){
     shelf.appendChild(chalk);
   }
   const bx=document.createElement("div");bx.className="op-box";
+  const CO=(typeof cosmRec==="function")?cosmRec():{owned:[]};
   const bcv=document.createElement("canvas");bcv.width=160;bcv.height=96;
-  opisDrawBox(bcv.getContext("2d"),160,96);
+  opisDrawBox(bcv.getContext("2d"),160,96,CO.owned.length>0);
   bx.appendChild(bcv);
-  bx.insertAdjacentHTML("beforeend","<h4>КОСМЕТИКА · шкатулка</h4><s>заперта: откроется с первой покупкой</s>");
+  if(!CO.owned.length)bx.insertAdjacentHTML("beforeend","<h4>КОСМЕТИКА · шкатулка</h4><s>заперта: откроется с первой покупкой</s>");
+  else{
+    bx.insertAdjacentHTML("beforeend","<h4>КОСМЕТИКА · шкатулка</h4><s>надетое — на корпус или на комплект: тычком или перетащить</s>");
+    const list=document.createElement("div");list.className="op-cosm";
+    for(const id of CO.owned){
+      const slot=cosmSlotOf(id);if(!slot)continue;
+      const on=cosmOn(slot)===id;
+      const card=opisCard("cosm"+(on?" worn":""),{t:"cosm",id},"<b>"+cosmRu(id)+"</b><s>"+COSM_SLOT_RU[slot]+(on?" · надето":"")+"</s>");
+      card.dataset.id=id;
+      opisActs(card,[on?{ru:"СНЯТЬ",go:()=>{cosmTakeOff(slot);opisRerender();}}:{ru:"НАДЕТЬ",gold:true,go:()=>{cosmWear(id);opisRerender();}}]);
+      list.appendChild(card);
+    }
+    bx.appendChild(list);
+  }
   top.appendChild(shelf);top.appendChild(bx);
   box.appendChild(top);
   /* ── зона 1: трюм кучами, память о ценах, коробок ── */

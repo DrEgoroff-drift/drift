@@ -450,6 +450,7 @@ function drawHull(id,thrusting,braking,lvl,bank){
     ctx.arc(cx,0,R*.9,-.5,-.1);ctx.closePath();ctx.fill();
   }
   if(!h.yac)drawStencils(h);
+  if(typeof drawCosmMark==="function")drawCosmMark(h);   /* метка с «Сороки» (M344) */
   /* навеска */
   for(const g of h.greeb){
     ctx.fillStyle=g[4]?"rgba(255,255,255,.13)":"rgba(0,0,0,.4)";
@@ -566,7 +567,9 @@ function drawHull(id,thrusting,braking,lvl,bank){
     else{const lx=h.nose*.18;wy=[lx,-profW(h.prof,lx)*1.02];}
     /* у яхты огонь мельче: на узком борту точка в полтора радиуса читалась
        пуговицей, пришитой к обшивке */
-    ctx.fillStyle="rgba("+c+","+(on?.95:.25)+")";
+    /* рисунок огней — косметика «Сороки»: ровные, двойной проблеск, попеременные */
+    const onS=(typeof cosmLightOn==="function")?cosmLightOn(s,blink,G.t):on;
+    ctx.fillStyle="rgba("+c+","+(onS?.95:.25)+")";
     ctx.beginPath();ctx.arc(wy[0],wy[1]*s,h.yac?.7:1.25,0,TAU);ctx.fill();
   }
   if(h.fin){

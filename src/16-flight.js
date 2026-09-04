@@ -360,7 +360,7 @@ function trailStep(dt,thrusting,turning,braking){
   }
 }
 function drawTrail(zx,zy,Z){
-  const T=trailTint(G.shipId,G.mods.engine|0),SZ=shipZ(Z),CW=trailChar(G.shipId).w;
+  const T0=trailTint(G.shipId,G.mods.engine|0),T=(typeof cosmTrail==="function")?cosmTrail(T0):T0,SZ=shipZ(Z),CW=trailChar(G.shipId).w;   /* след — косметика «Сороки» */
   /* ленты по соплам: массив хронологичен, поэтому в каждой корзине точки
      идут от самой старой к свежей — ровно порядок отрисовки полосы */
   const lanes={};
