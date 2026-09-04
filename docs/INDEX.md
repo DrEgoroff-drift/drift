@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 379 · символов верхнего уровня: 3420
+Файлов: 380 · символов верхнего уровня: 3426
 
 ## СИМВОЛЫ
 
@@ -26,7 +26,7 @@ $menu                        src/15-input.js:239
 $msg                         src/27z-telemetry.js:38
 $msl                         src/27z-telemetry.js:41
 $nav                         src/27z-telemetry.js:40
-$opts                        src/26-ui-station.js:871
+$opts                        src/26-ui-station.js:882
 $padsEl                      src/15-input.js:4
 $place                       src/27z-telemetry.js:37
 $sh                          src/27z-telemetry.js:8
@@ -154,7 +154,7 @@ bargeSysAt                   src/12l-barge.js:25
 bargeTick                    src/12af-barge.js:49
 bargeUnload                  src/12af-barge.js:99
 bargeWants                   src/12af-barge.js:27
-BARTER                       src/04-mods.js:60
+BARTER                       src/04-mods.js:64
 BASE_COLS                    src/21a-mode-base.js:6
 BASE_OX                      src/21a-mode-base.js:9
 BASE_ROLES                   src/12a-crew.js:154
@@ -584,7 +584,7 @@ deedAdd                      src/11ai-ledger.js:53
 DEEDS                        src/11ai-ledger.js:25
 deltaHtml                    src/05-parts.js:293
 depKind                      src/21b-surface-deco.js:367
-deployDrone                  src/12-economy.js:155
+deployDrone                  src/12-economy.js:182
 DEPTH_TIERS                  src/04-mods.js:51
 DESC_MOOD                    src/01-core.js:109
 DESC_TAIL                    src/01-core.js:115
@@ -615,6 +615,7 @@ dispatchEtherLine            src/12ag-holdfx.js:57
 dkPaper                      src/27ia-desk-top.js:37
 dkRule                       src/27ia-desk-top.js:46
 dkShadow                     src/27ia-desk-top.js:30
+dmStation                    tests/91zzzza-drone-miner.js:2
 DOM_GAME                     src/11af-domino.js:12
 dominoBlock                  src/11af-domino.js:58
 dominoEnd                    src/11af-domino.js:23
@@ -682,8 +683,8 @@ drawDeposit                  src/21b-surface-deco.js:377
 drawDig                      src/23a-dig-draw.js:655
 drawDigFauna                 src/23-mode-dig.js:313
 drawDigWorld                 src/23a-dig-draw.js:45
-drawDronesMap                src/12e-drone-flight.js:272
-drawDronesSystem             src/12e-drone-flight.js:195
+drawDronesMap                src/12e-drone-flight.js:299
+drawDronesSystem             src/12e-drone-flight.js:213
 drawDustMotes                src/19-mode-landing.js:552
 drawElevator                 src/20aa-poi-shapes.js:91
 drawExhaust                  src/16a-space.js:360
@@ -790,22 +791,27 @@ DRONE_TAIL                   src/12e-drone-flight.js:194
 DRONE_TRIP_BASE              src/12e-drone-flight.js:18
 droneBreakP                  src/12e-drone-flight.js:134
 droneBreaks                  src/12e-drone-flight.js:139
-droneCapacity                src/12-economy.js:150
+droneCapacity                src/12-economy.js:177
 droneFar                     src/12e-drone-flight.js:73
 droneFixMs                   src/12e-drone-flight.js:140
+droneGuestPos                src/12e-drone-flight.js:200
 droneHome                    src/12e-drone-flight.js:74
-droneMarket                  src/12-economy.js:106
+droneMarket                  src/12-economy.js:131
 droneName                    src/12e-drone-flight.js:38
 droneNextId                  src/12e-drone-flight.js:32
 droneNormalize               src/12e-drone-flight.js:44
+dronePaybackH                src/12-economy.js:108
 dronePhase                   src/12e-drone-flight.js:101
 dronePoint                   src/12e-drone-flight.js:65
 dronePos                     src/12e-drone-flight.js:113
+droneRecall                  src/12-economy.js:98
 droneRoutes                  src/12e-drone-flight.js:166
 DRONES                       src/04-mods.js:57
+droneShopHas                 src/12-economy.js:110
+droneShopTake                src/12-economy.js:117
 droneStateRu                 src/12e-drone-flight.js:151
 droneSys                     src/12e-drone-flight.js:62
-droneTarget                  src/12-economy.js:154
+droneTarget                  src/12-economy.js:181
 droneTripMs                  src/12e-drone-flight.js:89
 DUST_COL                     src/16a-space.js:252
 DUST_LAYERS                  src/16a-space.js:274
@@ -1171,7 +1177,7 @@ heardYours                   src/12x-parrot.js:71
 heatHaze                     src/18d-postfx.js:23
 held                         src/08-state.js:184
 hex2rgb                      src/03-ships.js:145
-hexA                         src/12e-drone-flight.js:262
+hexA                         src/12e-drone-flight.js:289
 hexa                         src/12w-survey.js:91
 hexRGB                       src/24-mode-belt.js:81
 HIN_DOORW                    src/29c-home-in.js:24
@@ -1843,7 +1849,7 @@ nameTell                     src/11u-names.js:32
 navAction                    src/15-input.js:274
 near                         tests/90-harness.js:39
 nearestPOI                   src/20a-poi.js:236
-nearestStation               src/12-economy.js:127
+nearestStation               src/12-economy.js:154
 NEB_COMP                     src/16a-space.js:119
 NEB_JOB                      src/16a-space.js:52
 NEB_MS                       src/16a-space.js:51
@@ -2466,7 +2472,7 @@ RES_AUTO                     src/08-state.js:54
 RES_KEYS                     src/02-world.js:87
 resAuto                      src/28-loop.js:114
 resEma                       src/28-loop.js:113
-resetArm                     src/26-ui-station.js:870
+resetArm                     src/26-ui-station.js:881
 resetWorld                   tests/90-harness.js:55
 resize                       src/08-state.js:22
 RET_BOARD                    src/11s-returners.js:29
@@ -3109,7 +3115,7 @@ TEST_SUITES                  tests/90-harness.js:151
 tfbm                         src/18a-material.js:23
 thingAdd                     src/27i-ui-table.js:37
 thingsAll                    src/27i-ui-table.js:36
-tickDrones                   src/12-economy.js:180
+tickDrones                   src/12-economy.js:208
 tickLaunchHold               src/21-mode-surface.js:641
 TIER_RU                      src/05-parts.js:51
 tierAt                       src/04-mods.js:56
@@ -3501,7 +3507,7 @@ zooTick                      src/11ad-zoo.js:41
   · рельеф:369
   · где сел — то и видел:393
 
-## src/08-state.js · 14 КБ
+## src/08-state.js · 15 КБ
   · состояние:1
 
 ## src/09a-roomtone.js · 6 КБ
@@ -3704,14 +3710,14 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12d-mgr-face.js · 13 КБ
   · портреты управляющих:1
 
-## src/12-economy.js · 17 КБ
+## src/12-economy.js · 19 КБ
   · живой рынок:1
   · дроны:96
 
-## src/12e-drone-flight.js · 18 КБ
+## src/12e-drone-flight.js · 20 КБ
   · дроны летают:1
   · дрон в кадре:188
-  · куда делась вкладка РЕЙСЫ:292
+  · куда делась вкладка РЕЙСЫ:319
 
 ## src/12e-mgr-jobs.js · 19 КБ
   · поручения управляющих:1
@@ -3850,7 +3856,7 @@ zooTick                      src/11ad-zoo.js:41
   · облако:65
   · видимое состояние обмена:80
 
-## src/14-save.js · 60 КБ
+## src/14-save.js · 61 КБ
   · сохранение:1
   · запись не имеет права убить полёт:89
   · пустая карта возвращается из облака СПИСКОМ:168
@@ -4126,10 +4132,10 @@ zooTick                      src/11ad-zoo.js:41
 ## src/26c-ui-station-site.js · 9 КБ
   · станция · вкладка СТРОЙКА (ВЛАДЕНИЯ):1
 
-## src/26-ui-station.js · 60 КБ
+## src/26-ui-station.js · 62 КБ
   · станция:1
   · заголовки и полосы (M299, docs/DESIGN-screens.md §1a):186
-  · настройки:869
+  · настройки:880
 
 ## src/27b-ui-crew.js · 15 КБ
   · экран экипажа:1
@@ -4488,7 +4494,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzw-economy.js · 10 КБ
   · автотесты: экономика без долга (M152e):1
 
-## tests/91zzw-eco-probe.js · 6 КБ
+## tests/91zzw-eco-probe.js · 7 КБ
   · проба экономики (отчёт, не проверка; аудит 2026-09-04, docs/ECONOMY-AUDIT.md):1
 
 ## tests/91zzw-holding.js · 6 КБ
@@ -4615,6 +4621,9 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzzy-drones.js · 10 КБ
   · автотесты: рейсы дронов (M237):1
+
+## tests/91zzzza-drone-miner.js · 3 КБ
+  · автотесты: дрон-добытчик (M350) — точка бездонная, купить трудно:1
 
 ## tests/91zzzzb-save.js · 5 КБ
   · запись, которая не убивает полёт:1

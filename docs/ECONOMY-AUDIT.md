@@ -95,3 +95,14 @@ its target. Need and orders become the events the design wanted.
   opening price (A2), and N drones on one point never exceed one pool (B1).
 - `91zzw-eco-probe` prints the new rates; targets to write down after the author picks:
   «Стриж» 150–250 cr/min, «Вьюк» 500–900 cr/min sustained, 20 drones on one point = one cycle.
+
+## 5. Postscript (same day) — what the author corrected
+- **Trade is not open.** Goods are bought only on a route leg (`12r`, M289): both stations must have
+  been visited, prices seen. Re-measured with a 3-pair route: 5 975 / 6 313 / 5 236 cr/min on the first
+  three laps, then pressure erases the spread (−365…−683) and it takes three play-hours to recover.
+  That is ~17 000 cr per route per three hours ≈ the designed 200 cr/min. H1 withdrawn; A1–A4 not
+  applied. Open question: whether ordinary buying should exist at all.
+- **Drones (M350, 0.338.0):** the author chose a different machine over a cap — bottomless point,
+  9 000 cr by payback, sold only at yard/indust one per two days, recall by hand, sells within two
+  sectors, visible as a guest in the market system. Payback: crystals 4.5 h, titanium 10 h, iron 25 h.
+- **Matches from raw (H3):** 40 units → 1 match, ≤200 units per stop (design §6 updated).

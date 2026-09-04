@@ -322,17 +322,14 @@ layout in the game's own language (procedural canvas + desk DOM), not the render
   branded voice, if ever, would be pre-rendered files on the site — a separate decision, not now.
   Persist the choice by voice *name* with a fallback to the first `ru` voice when it is gone.
 
-- **M350 — the economy's two faucets (audit `docs/ECONOMY-AUDIT.md`, 2026-09-04; needs the author's
-  pick).** Measured: hand trade sustains 717 cr/min on «Стриж» and 3 009 cr/min on «Вьюк» (180 000
-  cr/h) because station noise is ±36 % and a sale prices the whole hold before pressure moves;
-  twenty drones on one crystal point earn 581 cr/min passively because each drone gets its own
-  pool. Variants are in the audit §3. Recommended set: **A2** (price sales and buys in slices,
-  pressure inside the transaction) + **A1** (noise ±22 %) + **A4** (pressure half-life 6 h real time)
-  for trade; **B1** (one shared pool per point) + **B3** (offline cap 8 h) for drones; **C1** (40 raw
-  → 1 match, ≤200 units per stop) + re-priced papers for «Сорока» before M343. After the pick:
-  `91zzw-eco-probe` targets «Стриж» 150–250, «Вьюк» 500–900 cr/min; `91zzzzy-play` gains two
-  guards (a 150-unit sale earns less than 150 × opening price; N drones on a point ≤ one pool).
-  The holding's §16 ratios are expected to land by themselves — re-measure, do not retune.
+- **M350** (0.338.0) — done: the drone-miner (bottomless point, 9 000 cr by payback, one per yard/indust
+  station per two days, ВЕРНУТЬ, sells within two sectors, guest drawn in the market system). The
+  audit's trade «hole» was an artefact of open buying: in the game one buys only on a route leg
+  (`12r`, M289), and a 3-pair route pays ~17 000 cr in three laps then waits for pressure to decay —
+  the designed ~200 cr/min. Trade untouched. **Open (author):** should ordinary buying at the counter
+  exist at all («ни разу не видел, купить титан»)? If yes, it needs A2 (sliced pricing) first;
+  recommended: keep route-only buying and *say so* on the station («взять можно по плечу маршрута»).
+  «Сорока» raw→matches re-priced to 40:1 with a 200-unit cap per stop before M343 (audit §3 H3).
 
 ## Loose ends (as of 2026-08-28, after the graphics run 0.237.0–0.244.0)
 

@@ -7,6 +7,20 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.338.0 - M350: the drone-miner — a bottomless point, priced by payback
+
+The economy audit (`docs/ECONOMY-AUDIT.md`) measured drones as the one faucet without a brake:
+every machine on the same deposit got its own full pool, so twenty of them earned 581 cr/min for
+44 000 cr. The author's answer (2026-09-04) was not a cap but a different machine. «Дрон-добытчик»
+works the deposit round the clock and never returns on its own — it is recalled with ВЕРНУТЬ where
+it stands. It is priced by payback: 9 000 cr, ~4.5 h on crystals, ~10 h on titanium, a day on
+iron, and the station shows those hours from its own prices. Buying is the brake: only a yard or
+an industrial station sells one, one machine per station per two days. Every drone now chooses
+where to sell within two sectors by the prices on your desk (the keeper's perk still widens it to
+three and speeds the turnover), and a drone from a neighbouring sector is drawn arriving at the
+station it delivers to. Old drones with a finite pool finish it and come home as before. Hand
+trade was re-measured honestly — buying exists only on a route leg (M289) — and stays as it is.
+
 ## 0.337.0 - M340: matches — the second currency, found under the cowl
 
 First step of the «Сорока» queue (`PLAN.md`, `docs/DESIGN-wanderer.md`). Open fire is forbidden

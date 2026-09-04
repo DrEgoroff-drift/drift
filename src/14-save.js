@@ -55,7 +55,7 @@ function snapshot(){
     tech:[...G.tech],techLvl:G.techLvl,barter:[...G.barter],found:[...G.found],
     species:[...G.species],bioV:2,
     opts:G.opts,zoom:G.zoom,market:G.market,uniqueShips:G.uniqueShips,
-    drones:G.drones,droneInventory:G.droneInventory,droneIds:G.droneIds,crew:G.crew,bases:G.bases,
+    drones:G.drones,droneInventory:G.droneInventory,droneIds:G.droneIds,droneSold:G.droneSold||{},crew:G.crew,bases:G.bases,
     mgrs:G.mgrs,blueprints:G.blueprints,aiRift:G.aiRift,rogues:G.rogues,exiles:G.exiles,
     relics:G.relics,relicHint:G.relicHint,bio:G.bio,home:G.home,course:G.course||null,
     occ:G.occ,freed:G.freed,occCalm:G.occCalm,trade:G.trade,wear:G.wear,seams:G.seams,
@@ -455,6 +455,7 @@ function applySave(s){
     xp:Math.max(0,p.xp|0),fee:Math.max(0,p.fee|0),story:String(p.story||"")}));
   G.drones=Array.isArray(s.drones)?s.drones:[];
   G.droneInventory=Math.max(0,s.droneInventory|0);
+  G.droneSold={};if(s.droneSold&&typeof s.droneSold==='object')for(const k in s.droneSold)if(/^-?\d+,-?\d+$/.test(k))G.droneSold[k]=s.droneSold[k]|0;   /* M350 */
   /* номера бортов живут отдельно от самих машин: дрон в трюме своего номера
      не теряет (M237). Старая запись их не знает — список пуст, номера выдаст
      первая же покупка. */

@@ -192,12 +192,39 @@ function droneRoutes(){
    нужно сейчас, а на общем плане нужен поток, а не имена.
    Стоимость кадра: на дрон — восемь точек полилинии и один кружок. */
 const DRONE_TAIL=8, DRONE_TAIL_MS=2600;
+/* ── гость (M350): дрон из соседнего сектора, который сдаёт на ЭТУ станцию ──
+   В своей системе он уходит за край в сторону рынка; здесь он появляется с того
+   же края и идёт к станции на второй половине гружёного плеча, стоит под
+   разгрузкой и уходит в первой половине порожнего. Положение — та же функция
+   времени, ничего не хранится. */
+function droneGuestPos(d,now){
+  const st=G.sys.station;if(!st)return null;
+  const P=dronePhase(d,now);
+  const ang=Math.atan2(d.sy-G.sy,d.sx-G.sx);
+  const r=(((G.sys.belt&&G.sys.belt.orbit)||1400)*1.35);
+  const ex=Math.cos(ang)*r,ey=Math.sin(ang)*r;
+  let t=-1;
+  if(P.leg==="out"&&P.t>.5)t=(P.t-.5)*2;
+  else if(P.leg==="drop")t=1;
+  else if(P.leg==="back"&&P.t<.5)t=1-P.t*2;
+  if(t<0)return null;
+  return {x:ex+(st.x-ex)*t,y:ey+(st.y-ey)*t,loaded:P.leg!=="back"};
+}
 function drawDronesSystem(zx,zy,Z){
   const list=G.drones||[];
   if(!list.length)return;
   const now=Date.now();
   ctx.lineCap="round";
   for(const d of list){
+    if((d.sx!==G.sx||d.sy!==G.sy)&&d.mkt&&d.mkt.sx===G.sx&&d.mkt.sy===G.sy&&!d.down){
+      droneNormalize(d,now);
+      const g=droneGuestPos(d,now);if(!g)continue;
+      const gx=zx(g.x),gy=zy(g.y),col=(RES[d.res]&&RES[d.res].col)||"#cfe3ea",k=clamp(Z,.7,1.8);
+      ctx.fillStyle=g.loaded?hexA(col,.85):"rgba(170,186,196,.7)";
+      ctx.beginPath();ctx.arc(gx,gy,(g.loaded?2.4:1.8)*k,0,TAU);ctx.fill();
+      if(Z>1.15){ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";ctx.fillStyle=hexA(col,.85);ctx.fillText(droneName(d)+" · ИЗ "+d.sx+":"+d.sy,gx,gy-9);}
+      continue;
+    }
     if(d.sx!==G.sx||d.sy!==G.sy)continue;
     droneNormalize(d,now);
     const col=(RES[d.res]&&RES[d.res].col)||"#cfe3ea";

@@ -94,6 +94,31 @@ function sellDroneYield(sys,k,qty){
 }
 
 /* ══════════════ дроны ══════════════ */
+/* ── отозвать машину (M350): точка бездонная, домой дрон уходит только по приказу ── */
+function droneRecall(d){
+  const i=G.drones.indexOf(d);
+  if(i<0)return false;
+  G.drones.splice(i,1);G.droneInventory++;
+  if(!G.droneIds)G.droneIds=[];
+  if(G.droneIds.indexOf(d.id)<0)G.droneIds.push(d.id);
+  logAdd("","Дрон "+droneName(d)+" отозван в трюм · "+(d.sold|0)+" "+RES[d.res].ru.toLowerCase()+" · "+(d.earned|0).toLocaleString("ru")+" кр за службу");
+  return true;
+}
+/* окупаемость на этой руде, часов: цена машины против выработки в минуту по цене станции */
+function dronePaybackH(price,rate){return rate>0?Math.round(DRONES.miner.price/(rate*price*60)*10)/10:0;}
+/* прилавок (M350): дроны продают верфь и завод, по одной машине в двое суток на станцию */
+function droneShopHas(sys){
+  if(!sys||!sys.station)return false;
+  const t=sys.station.stype;
+  if(t!=="yard"&&t!=="indust")return false;
+  if(!G.droneSold||typeof G.droneSold!=="object")G.droneSold={};
+  return (G.droneSold[sys.key]|0)!==timeBucket();
+}
+function droneShopTake(sys){
+  if(!droneShopHas(sys))return false;
+  G.droneSold[sys.key]=timeBucket();
+  return true;
+}
 /* ── где сдавать (M324) ──
    Дрон сдавал на ближайшую станцию, и это оставалось «на потом» с M237: редактор
    маршрутов был бы микроменеджментом. Владелец выбора — смотритель: с перком
@@ -107,7 +132,9 @@ function droneMarket(d){
   const near=nearestStation(d.sx,d.sy);
   if(!near)return null;
   const m=(typeof mgrOf==="function")?mgrOf("keep"):null;
-  if(!(m&&!m.stalled&&mgrPerk(m,"sell")&&mgrRule(m,"sell"))){d.mkt=null;return near;}
+  /* M350: дрон сам ищет, где дороже, в двух секторах; смотритель с «авто-сбытом» смотрит на три */
+  const perk=!!(m&&!m.stalled&&mgrPerk(m,"sell")&&mgrRule(m,"sell"));
+  const R=perk?3:2;
   const day=(typeof celDay==="function")?celDay():0;
   if(d.mkt&&d.mkt.day===day){const s=getSystem(d.mkt.sx,d.mkt.sy);if(s&&s.station)return s;}
   const seen=G.seenPrices||{};
@@ -115,13 +142,13 @@ function droneMarket(d){
   for(const key in seen){
     const S=seen[key];if(!S||!S.p||S.p[d.res]==null)continue;
     const dist=Math.max(Math.abs(S.sx-d.sx),Math.abs(S.sy-d.sy));
-    if(dist>3)continue;
+    if(dist>R)continue;
     const v=S.p[d.res]*(1-.08*dist);
     if(v>bv*1.1){const s=getSystem(S.sx,S.sy);if(s&&s.station){bv=v;best=s;}}
   }
   const was=d.mkt&&d.mkt.key;
   d.mkt={key:best.key,sx:best.sx,sy:best.sy,name:best.station.name,day};
-  if(best!==near&&was!==best.key)mgrSay(m,droneName(d)+" сдаёт на «"+best.station.name+"»: там дороже");
+  if(perk&&best!==near&&was!==best.key)mgrSay(m,droneName(d)+" сдаёт на «"+best.station.name+"»: там дороже");
   return best;
 }
 function nearestStation(sx,sy){
@@ -162,7 +189,8 @@ function deployDrone(){
   const now=Date.now();
   const d={id:droneNextId(),sx:G.sx,sy:G.sy,pi,res:droneTarget,
     rate:DRONES.miner.ratePerMin*stat().droneRate,
-    pool:droneCapacity(droneTarget),soldAtMs:now,t0:now,lastMs:now,bornMs:now,
+    pool:-1,   /* бездонная точка (M350): старые записи с конечным пулом дорабатывают своё и возвращаются */
+    soldAtMs:now,t0:now,lastMs:now,bornMs:now,
     trips:0,down:0,sold:0,earned:0};
   G.drones.push(d);
   say("Дрон "+droneName(d)+" размещён\nработает на "+RES[droneTarget].ru);
@@ -218,15 +246,16 @@ function tickDrones(){
          наберётся на единицу. Так час работы стоит ровно столько же, сколько
          стоил при ручейке, и ни кредитом меньше. */
       d.carry=(d.carry||0)+rate*T/60000;
-      const n=Math.floor(Math.min(d.pool,d.carry));
+      const n=Math.floor(d.pool<0?d.carry:Math.min(d.pool,d.carry));
       if(n>0){
         const home=droneMarket(d)||nearestStation(d.sx,d.sy);   /* смотритель выбирает рынок (M324) */
         const rev=sellDroneYield(home,d.res,n);
         earn(rev,"drone");
-        d.pool-=n;d.carry-=n;d.sold=(d.sold|0)+n;d.earned=(d.earned|0)+rev;
+        if(d.pool>=0)d.pool-=n;
+        d.carry-=n;d.sold=(d.sold|0)+n;d.earned=(d.earned|0)+rev;
       }
       d.trips=(d.trips|0)+1;d.soldAtMs=done;
-      if(d.pool<=0){d.t0=done;break;}
+      if(d.pool===0){d.t0=done;break;}
       /* ломается дрон на разгрузке — у станции, где его и чинить */
       if(droneBreaks(d)){
         d.down=done+droneFixMs(d);
@@ -235,7 +264,7 @@ function tickDrones(){
       }else d.t0=done;
     }
     if(fixed&&!d.down&&d.pool>0)logAdd("dim","Дрон "+droneName(d)+" починился и вернулся на маршрут");
-    if(d.pool<=0){
+    if(d.pool===0){
       const hrs=Math.max(1,Math.round((now-(d.bornMs||now))/3600000));
       G.drones.splice(i,1);G.droneInventory++;
       if(typeof holdDeed==="function")holdDeed(d.sx,d.sy,"drone");   /* дело системы (M291) */

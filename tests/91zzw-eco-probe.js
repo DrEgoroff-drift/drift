@@ -42,10 +42,29 @@ TEST_SUITES.push(()=>suite("проба · плечи: распределение
       const q=buyCargo(L.A,L.k,L.h);if(!q)break;
       sellCargo(L.B,L.k,q);
       G.credits-=(L.d*6+4)*8;
-      G.t+=L.min*60;t+=L.min;laps++;
+      G.t+=L.min*3600;t+=L.min;laps++;
       if(i<3||i%10===9)log.push(Math.round(L.rate));
     }
     ok(true,cfg.id+" · "+laps+" кругов за "+Math.round(t)+" мин → касса "+Math.round(G.credits)+" · ставка "+Math.round((G.credits-cfg.cr)/t)+" кр/мин · ставки плеч по ходу: "+log.join(","));
+  }
+  /* честно: покупка есть только ПО ПЛЕЧУ маршрута (12r, M289) — станций 2–6, цены видены своими глазами.
+     Берём три лучшие пары на шести станциях и ходим по ним кругом с настоящим давлением. */
+  for(const cfg of [{id:"strizh",hold:40,cr:600},{id:"vyuk",hold:150,cr:20000}]){
+    resetWorld();G.shipId=cfg.id;G.owned[cfg.id]=true;G.credits=cfg.cr;
+    const legs0=prbLeg(list,cfg.hold,0),route=[],used={};
+    for(const L of legs0){const a=L.A.key,b=L.B.key;const nu=Object.keys(used).length+(used[a]?0:1)+(used[b]?0:1);if(nu>6)continue;if(route.some(x=>x.A===L.A&&x.B===L.B))continue;route.push(L);used[a]=1;used[b]=1;if(route.length>=3)break;}
+    let t=0,laps=0,log=[];
+    for(let i=0;i<40;i++){
+      const L=route[i%route.length];
+      const ask=buyPriceFor(L.A,L.k),h=Math.min(stat().cargoMax,Math.floor(G.credits/Math.max(1,ask)));
+      if(h<=0)break;
+      const q=buyCargo(L.A,L.k,h);const rev=sellCargo(L.B,L.k,q);
+      const fuel=(L.d*6+4)*8;G.credits-=fuel;
+      const net=rev-q*ask-fuel,min=2.5+L.d*.6;
+      G.t+=min*3600;t+=min;laps++;
+      if(i<3||i%10===9)log.push(Math.round(net/min));
+    }
+    ok(true,cfg.id+" · МАРШРУТ "+route.length+" плеча на "+Object.keys(used).length+" станциях · "+laps+" кругов за "+Math.round(t)+" мин → касса "+Math.round(G.credits)+" · ставка "+Math.round((G.credits-cfg.cr)/t)+" кр/мин · по ходу: "+log.join(","));
   }
 }));
 TEST_SUITES.push(()=>suite("проба · дроны: выработка точки и масштаб по числу машин",()=>{
@@ -56,7 +75,7 @@ TEST_SUITES.push(()=>suite("проба · дроны: выработка точ�
     const pool=droneCapacity(k),p0=marketFor(S)[k];
     let rev=0,left=pool;
     while(left>0){const n=Math.min(left,Math.max(1,Math.round(.6*droneTripMs({sx:S.sx,sy:S.sy,pi:0,res:k,t0:0})/60000)));rev+=sellDroneYield(S,k,n);left-=n;}
-    ok(true,RES[k].ru+" · точка "+pool+" ед · "+Math.round(pool/.6)+" мин · "+p0+" кр/ед → "+Math.round(rev)+" кр за цикл = "+Math.round(rev/(pool/.6))+" кр/мин на дрона");
+    ok(true,RES[k].ru+" · "+p0+" кр/ед → "+Math.round(rev/(pool/.6))+" кр/мин на дрона · окупаемость "+dronePaybackH(p0,.6)+" ч (M350: точка бездонная)");
     resetWorld();
   }
   /* десять дронов на одной точке кристаллов, одна станция: давление общее */
@@ -68,7 +87,7 @@ TEST_SUITES.push(()=>suite("проба · дроны: выработка точ�
     for(let i=0;i<N;i++){let left=pool;while(left>0){const n=Math.min(left,12);rev+=sellDroneYield(S,k,n);left-=n;}}
     ok(true,N+" дронов на кристаллах · цикл "+Math.round(pool/.6)+" мин · "+Math.round(rev)+" кр = "+Math.round(rev/(pool/.6))+" кр/мин · вложено "+N*2200);
   }
-  ok(true,"давление: пол −35 % · полураспад 3 ч ИГРОВОГО времени (G.t) — офлайн не спадает · дронов на точку: предела нет");
+  ok(true,"давление: пол −35 % · полураспад 3 ч ИГРОВОГО времени (G.t) — офлайн не спадает · дронов на точку: предела нет, тормоз — цена 9 000 и одна машина в двое суток на верфь/завод");
 }));
 TEST_SUITES.push(()=>suite("проба · части, спички, награды, сбор газа",()=>{
   resetWorld();

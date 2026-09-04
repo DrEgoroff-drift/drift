@@ -100,8 +100,8 @@ the one thing nobody else buys: rare raw material. So:
 | you give | matches |
 |---|---|
 | dismantle a part, tier 3 / 4 / 5 | 1 / 3 / 8 |
-| 10 units of volatiles, ice crystals or alloy | 1 |
-| 5 units of tech components | 1 |
+| 40 units of volatiles, ice crystals or alloy (≤200 units per stop — «кладу из своего коробка») | 1 |
+| 20 units of tech components (same cap) | 1 |
 | one rarity from the hundred (`12m`) handed over | 4 (and it stays in `rareFound` — the ship copies, it does not take) |
 
 Matches are spent only aboard «Сорока». They are not a wallet (no negative, no market, no rate),

@@ -672,11 +672,15 @@ function renderTabBody(){
     const dr=DRONES.miner;
     $body.appendChild(el("div","sec","ДРОНЫ · РАЗМЕЩАЮТСЯ НА ЗАЛЕЖИ ИЛИ АСТЕРОИДЕ · САМИ ВОЗЯТ И ПРОДАЮТ РУДУ"));
     const rd=el("div","row");
+    /* окупаемость — по ценам ЭТОЙ станции (M350): игрок видит, на какой руде машина себя отобьёт */
+    const PM=marketFor(G.sys),pb=["crystal","titan","iron"].filter(k=>PM[k]).map(k=>RES[k].ru.toLowerCase()+" ~"+dronePaybackH(PM[k],dr.ratePerMin*stat().droneRate)+" ч").join(" · ");
+    const shop=droneShopHas(G.sys),sells=G.st.stype==="yard"||G.st.stype==="indust";
     rd.appendChild(el("div","nm","<b>"+dr.ru+"</b><s>"+dr.note+
-      "<br>в запасе: "+G.droneInventory+" · развёрнуто: "+G.drones.length+"</s>"));
-    const bd=el("button","act gold",dr.price.toLocaleString("ru")+" кр");
-    bd.disabled=G.credits<dr.price;
-    bd.onclick=()=>{G.credits-=dr.price;G.droneInventory++;
+      "<br>окупится: "+(pb||"—")+"<br>в запасе: "+G.droneInventory+" · развёрнуто: "+G.drones.length+
+      (sells?(shop?"":"<br>здесь уже брали — следующая машина через двое суток"):"<br>продают только верфь и завод")+"</s>"));
+    const bd=el("button","act"+(shop?" gold":""),dr.price.toLocaleString("ru")+" кр");
+    bd.disabled=G.credits<dr.price||!shop;
+    bd.onclick=()=>{if(!droneShopTake(G.sys))return;G.credits-=dr.price;G.droneInventory++;
       tell("money","Куплен "+dr.ru.toLowerCase()+" за "+dr.price.toLocaleString("ru")+" кр",
            "Дрон куплен\nв запасе: "+G.droneInventory);
       renderTab();};
@@ -686,9 +690,16 @@ function renderTabBody(){
     for(const d of G.drones){
       const home=nearestStation(d.sx,d.sy);
       const r=el("div","row");
+      const mk=(typeof droneFar==="function")?droneFar(d):null;
       r.appendChild(el("div","nm","<b style='color:"+RES[d.res].col+"'>"+droneName(d)+" · "+RES[d.res].ru+
-        "</b><s>сектор "+d.sx+":"+d.sy+" · возит на «"+home.name+"» · "+droneStateRu(d)+
-        " · осталось "+d.pool+"</s>"));
+        "</b><s>сектор "+d.sx+":"+d.sy+" · возит на «"+(mk?mk.name:home.name)+"» · "+droneStateRu(d)+
+        " · кругов "+(d.trips|0)+" · "+(d.earned|0).toLocaleString("ru")+" кр"+(d.pool>=0?" · осталось "+d.pool:"")+"</s>"));
+      /* отозвать можно только там, где машина работает: за ней надо прилететь (M350) */
+      if(d.sx===G.sx&&d.sy===G.sy){
+        const rb=el("button","act sm","ВЕРНУТЬ");
+        rb.onclick=()=>{droneRecall(d);renderTab();};
+        r.appendChild(rb);
+      }
       $body.appendChild(r);
     }
   }
