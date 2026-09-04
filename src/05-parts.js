@@ -317,7 +317,10 @@ function scrapPart(id){
   const y=scrapYield(p),got={};
   for(const k in y){const n=addRes(k,y[k]);if(n)got[k]=n;}
   G.inv.splice(G.inv.indexOf(p),1);
-  return {part:p,got};
+  /* под кожухом — спички (12uc): по тиру и зерну части, не бросок */
+  const matches=(typeof matchesInPart==="function")?matchesInPart(p):0;
+  if(matches&&typeof matchesAdd==="function")matchesAdd(matches);
+  return {part:p,got,matches};
 }
 function packPart(p){return {s:p.seed,t:p.tier,k:p.kind,g:p.gen,i:p.id};}
 function unpackPart(o){

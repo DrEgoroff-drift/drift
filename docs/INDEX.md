@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 376 · символов верхнего уровня: 3409
+Файлов: 378 · символов верхнего уровня: 3418
 
 ## СИМВОЛЫ
 
@@ -1169,7 +1169,7 @@ heardUse                     src/12x-parrot.js:116
 heardWordsRu                 src/12x-parrot.js:79
 heardYours                   src/12x-parrot.js:71
 heatHaze                     src/18d-postfx.js:23
-held                         src/08-state.js:183
+held                         src/08-state.js:184
 hex2rgb                      src/03-ships.js:145
 hexA                         src/12e-drone-flight.js:262
 hexa                         src/12w-survey.js:91
@@ -1474,7 +1474,7 @@ keepersSign                  src/11k-keepers.js:114
 keplerPos                    src/06-galaxy.js:85
 keyLabel                     src/15-input.js:144
 keyMap                       src/15-input.js:133
-keyRow                       src/27-ui-ship.js:189
+keyRow                       src/27-ui-ship.js:190
 keys                         src/08-state.js:57
 killPirate                   src/13-pirates.js:182
 killRock                     src/24-mode-belt.js:151
@@ -1498,9 +1498,9 @@ KIT_RU                       src/12x-suit.js:22
 KIT_WEAR                     src/12x-suit.js:32
 kitAddMod                    src/12x-suit.js:148
 kitAll                       src/12x-suit.js:47
-kitAnimRAF                   src/27-ui-ship.js:466
-kitAnimStart                 src/27-ui-ship.js:467
-kitAnimStop                  src/27-ui-ship.js:478
+kitAnimRAF                   src/27-ui-ship.js:467
+kitAnimStart                 src/27-ui-ship.js:468
+kitAnimStop                  src/27-ui-ship.js:479
 kitBlock                     src/12x-suit.js:296
 kitCanMod                    src/12x-suit.js:141
 kitColOf                     src/12x-suit.js:167
@@ -1696,6 +1696,15 @@ marketPriceCtx               src/12-economy.js:33
 MAT_CHAR                     src/18a-material.js:49
 MAT_S                        src/18a-material.js:34
 matCell                      src/18a-material.js:53
+MATCH_BOX                    src/12uc-matches.js:21
+MATCH_BY_TIER                src/12uc-matches.js:20
+matchesAdd                   src/12uc-matches.js:26
+matchesInPart                src/12uc-matches.js:29
+matchesLine                  src/12uc-matches.js:43
+matchesRec                   src/12uc-matches.js:22
+matchesRu                    src/12uc-matches.js:36
+matchesScrapNote             src/12uc-matches.js:45
+matchesSpend                 src/12uc-matches.js:27
 memPixels                    tests/91zzzzy-mem.js:15
 memTour                      tests/91zzzzy-mem.js:36
 mercFee                      src/12a-crew.js:203
@@ -1942,11 +1951,11 @@ openBarge                    src/12l-barge.js:597
 openCrewView                 src/27b-ui-crew.js:230
 openDeal                     src/27n-ui-deal.js:163
 openHq                       src/27c-ui-hq.js:611
-openShipView                 src/27-ui-ship.js:161
+openShipView                 src/27-ui-ship.js:162
 openStation                  src/26-ui-station.js:5
-OPT_TABS                     src/27-ui-ship.js:444
-optGroups                    src/27-ui-ship.js:447
-optTab                       src/27-ui-ship.js:446
+OPT_TABS                     src/27-ui-ship.js:445
+optGroups                    src/27-ui-ship.js:448
+optTab                       src/27-ui-ship.js:447
 orbPathOf                    src/17-mode-system.js:306
 ORDER_WIN                    src/12aa-need.js:74
 orderDeliver                 src/12aa-need.js:114
@@ -1959,7 +1968,7 @@ orderWin                     src/12aa-need.js:75
 ORE_KEYS                     src/02-world.js:102
 ORE_NODE_W                   src/23-mode-dig.js:12
 oreNode                      src/23-mode-dig.js:13
-packPart                     src/05-parts.js:322
+packPart                     src/05-parts.js:325
 PAD_KEY                      src/15-input.js:19
 PAD_SAFE                     src/18-mode-map.js:2
 padsAuto                     src/15-input.js:69
@@ -2426,7 +2435,7 @@ renderHold                   src/27j-ui-hold.js:176
 renderLog                    src/11-log.js:79
 renderLoreBoard              src/27h-ui-lore.js:26
 renderMail                   src/25k-post-mail.js:36
-renderOpts                   src/27-ui-ship.js:199
+renderOpts                   src/27-ui-ship.js:200
 renderPrices                 src/12aa-need.js:236
 renderQsl                    src/11an-qsl.js:160
 renderRecord                 src/11aa-record.js:80
@@ -2663,7 +2672,7 @@ saveGame                     src/14a-cloud.js:38
 saveText                     src/14-save.js:127
 saveTop                      src/14-save.js:121
 saveWeigh                    src/14-save.js:108
-say                          src/08-state.js:184
+say                          src/08-state.js:185
 SCALE_KEYS                   src/10-music.js:25
 SCALES                       src/10-music.js:5
 SCK                          src/18c-chunks.js:39
@@ -2919,7 +2928,7 @@ starRGB                      src/19c-light.js:49
 start                        src/15-input.js:556
 startLanding                 src/19-mode-landing.js:2
 startScoop                   src/19a-mode-scoop.js:51
-stat                         src/08-state.js:142
+stat                         src/08-state.js:143
 STAT_SHOW                    src/05-parts.js:280
 stationArt                   src/17c-system-draw.js:408
 stationDeals                 src/27g-deals.js:141
@@ -3211,7 +3220,7 @@ unfitPart                    src/05-parts.js:247
 UNIQUE_COLS                  src/03-ships.js:14
 UNIQUE_TAG                   src/03-ships.js:15
 unlockAudio                  src/09-audio.js:48
-unpackPart                   src/05-parts.js:323
+unpackPart                   src/05-parts.js:326
 updateAllies                 src/12a-crew.js:604
 updateBarges                 src/12l-barge.js:165
 updateBase                   src/21a-mode-base.js:334
@@ -3800,6 +3809,9 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12ub-books.js · 21 КБ
   · книжная полка:1
 
+## src/12uc-matches.js · 3 КБ
+  · спички: единственный огонь, который можно взять в руку:1
+
 ## src/12u-folk.js · 9 КБ
   · четверо:1
 
@@ -3836,7 +3848,7 @@ zooTick                      src/11ad-zoo.js:41
   · облако:65
   · видимое состояние обмена:80
 
-## src/14-save.js · 59 КБ
+## src/14-save.js · 60 КБ
   · сохранение:1
   · запись не имеет права убить полёт:89
   · пустая карта возвращается из облака СПИСКОМ:168
@@ -4153,7 +4165,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/27j-console.js · 8 КБ
   · пульт: приёмник, подсказка, кресло:1
 
-## src/27j-ui-hold.js · 10 КБ
+## src/27j-ui-hold.js · 11 КБ
   · трюм как раскладка (M179):1
 
 ## src/27j-ui-kitlay.js · 9 КБ
@@ -4608,6 +4620,9 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzzzd-desk.js · 5 КБ
   · стол как стол:1
+
+## tests/91zzzze-matches.js · 2 КБ
+  · автотесты: спички — валюта из разборки (M340):1
 
 ## tests/91zzzz-fuzz.js · 15 КБ
   · фуззер: режим под случайными руками (M238):1

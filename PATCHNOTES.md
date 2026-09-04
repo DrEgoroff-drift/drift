@@ -7,6 +7,16 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.337.0 - M340: matches — the second currency, found under the cowl
+
+First step of the «Сорока» queue (`PLAN.md`, `docs/DESIGN-wanderer.md`). Open fire is forbidden
+everywhere and nobody makes matches any more, so a whole match is the one thing money cannot buy.
+The mechanics of the old worlds left one under the cowl of every good part «чтоб стояла»: dismantling
+a part above «добротная» now yields matches (1 / 3 / 5, a legendary one sometimes hides a box of 8,
+decided by the part's seed, not a roll). New wallet `G.matches`, saved and defaulted; the hold header
+reads «спичек: N»; the dismantle message says what was found. Nothing buys or sells them yet — the
+ship that does comes with M342–M343.
+
 ## 0.336.0 - M339: the holding's arithmetic, and a knob for the fuzzer's hands
 
 The holding (M289–M297) is the youngest and most complicated machine in the game, and every suite

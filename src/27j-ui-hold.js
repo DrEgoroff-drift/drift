@@ -199,7 +199,7 @@ function renderHold(box){
     box.appendChild(row);
   }
   tableRow(box,"head","","ТРЮМ · "+held()+"/"+st.cargoMax+
-    (keys2.length?"":" · ПУСТО"));
+    (keys2.length?"":" · ПУСТО")+(typeof matchesLine==="function"?" · "+matchesLine():""));
   if(!keys2.length){
     tableRow(box,"dim","","всё, что добудете и купите, ляжет сюда кучами");
     return;

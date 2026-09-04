@@ -89,6 +89,127 @@ in this order (author, 2026-09-03: «сначала по плану, потом 
    ghost click on screens opened by a pad swallowed, §18.8 complete but for the заявка (rung 21).
    ~~Left: the ship keeps its `.55` floor at deep zoom-out~~ — `.35` since M319 (0.316.0).
 
+## «Сорока» — the wanderer queue (M340 done, M341–M346 open; author 2026-09-04: «делай всё в соло»)
+
+Design is settled in `docs/DESIGN-wanderer.md` (§1–§13; §6 and §12–§13 are the revised, binding
+parts — §11's prices are indicative). Read that file first, then this queue. Every milestone below is
+one commit: bump `VER`, one PATCHNOTES entry, tests green (`test.ps1`), then push. Work order is
+fixed; each step is playable on its own. Decisions the author already took (do not re-ask): the ship
+is one wandering sail-ship named «Сорока»; the currency is **spички** (matches), never credits for
+rare raw; barter exists only as one wild-card lot per stop with a categorical ask, never a recipe;
+cosmetics exist; the desk gets one table «ОПИСЬ»; a locker exists at stations.
+
+- **M340** (0.337.0) — done: `12uc-matches` — `G.matches`, `matchesInPart` by tier (3→1, 4→3,
+  5→5 or a box of 8 by part seed), `scrapPart` returns `matches`, hold header shows «спичек: N»,
+  save round-trip, suite `91zzzze-matches`.
+
+- **M341 — the table «ОПИСЬ»** (desk tab; replaces the ТРЮМ tab). The author drew it: one green cloth
+  with four numbered zones, a tool shelf above, a cosmetics box at the right, a hatch in the corner.
+  - Rename tab `hold` → label ОПИСЬ in `src/index.html` (`data-tab="hold"` stays — it is an address)
+    and `DESK_ITEMS` `bill` note in `27ia-desk-top`. Do not touch the 20 copies under `docs/*.html`
+    (stands; regenerated).
+  - Rewrite `renderHold` (`27j-ui-hold`) into four zones laid out as a CSS grid inside `box`
+    (class `desk`): **1 ТРЮМ** — the existing piles (`holdDrawPile`) in a 3-column grid, каждая куча
+    с подписью и числом; **2 КОМПЛЕКТ СКАФАНДРА** — `kitLayDraw` canvas + the six places as slots
+    around it (use `KIT_PLACES`, `kitAll`, `kitName`); under it a strip «Отделка скафандра» (empty
+    until M344); **3 ЧАСТИ И ВЕЩИ** — the hull silhouette drawn like `svDraw` (extract the hull+anchors
+    painter from `27-ui-ship` into a shared `hullSilhouette(c,w,h,id,sel)`; do not duplicate it),
+    slot chips to the left of it (kind label + fitted part card), a column «СНЯТЫЕ ЧАСТИ» to the right
+    (`G.inv` not fitted, sorted by tier); **4 ЛЮК ЗА БОРТ** — a round hatch canvas in the corner.
+  - Drag and drop with pointer events (mouse+touch; `15-input` knows nothing of this DOM): a part card
+    dragged onto a matching slot → `fitPart`; slot card dragged to «снятые» → `unfitPart`; anything
+    dragged onto the hatch → for parts `scrapPart` (this is what «выкинуть» means for a part — the
+    matches come out), for piles a prompt «сколько» then `G.cargo[k]-=n`. Confirm only for parts
+    with `tier>=3` (a one-line inline «точно?» button, not `confirm()`). Keep the buttons СТАВИТЬ /
+    СНЯТЬ / РАЗОБРАТЬ as fallbacks on the cards (44 px rule) so the fuzzer and phones work without
+    drag.
+  - Shelf «ИНСТРУМЕНТЫ «СОРОКИ»» above the cloth: 6 slots, empty with a chalk hint until M343; the
+    cosmetics box «КОСМЕТИКА · шкатулка» at the right, closed lid until M344. Matches: a matchbox in
+    the lower-left corner of the cloth with the count as a pile caption (draw it in `holdPiece` style).
+  - Top HUD of the table shows credits and matches (the author's picture has four counters; we have
+    two real ones — draw two, do not invent the others).
+  - The old `#shipview` stays for the station's ОСНАСТКА caller (`26b-ui-station-work`) — M167 «two
+    instruments» — but `#shipbtn` opens the desk on the ОПИСЬ tab (`tableToggle(true,"hold")`).
+  - Tests: extend `91zzzzd-desk` — the tab renders all four zone headers; fitting via the fallback
+    button changes `G.fit`; hatch on a tier-4 part yields matches; `91f-ui` overlap stays green at
+    1280×800 and `-Mobile`.
+
+- **M342 — «Сорока» in the world** (new `12v-wander.js`, before `17c`; name the mode `wanderer`).
+  - `WANDER_STOP=3d`, `WANDER_HOP=1d`, epoch `floor((now-WORLD_T0)/4d)`; `wanderLoop()` — ~24 stops
+    seeded from the world seed: pick systems with a station of `rungOf>=6` within 4 jumps, each hop
+    3–5 sectors from the previous; every 4th stop is a dark system (`sysDanger>.5`, no station).
+    Cache in a module-level const; nothing persisted except `G.wander={got:[],gave:[],chit:0}`.
+  - `wanderAt(now)` → `{sx,sy,planetIx,phase:"stop"|"hop",tLeft}`; planet = first non-gas body by
+    seed. `wanderHere(sys)` true when the player is in that system during a stop.
+  - Drawing in `17c-system-draw` (a new `drawWanderer(zx,zy,Z)` in `17f`-style, called where
+    `drawSysTraffic` is): spine of ring frames with lashed crates, a cross yard with four gold foil
+    gores that turn to face the star over minutes (`Date.now()`-based angle, movement not blinking),
+    a warm gondola lamp at the bow, a porch under the keel with steady ring lights. Parked at the lit
+    limb of the planet. Sizes: 8–10 player-hull lengths. Codex rules: dark ground, hard counted
+    highlights, one warm light. Last hour of the stop: sails swing to the departure heading.
+  - Docking: the same approach test as a station (`nearestStation` pattern) → `G.mode="wanderer"`.
+  - Finding: add `RUMOUR_IMG.wander` «паруса у планеты, которые не гаснут ночью» and a rumour source
+    in `11t` pointing at the current stop with a 2–3 sector spread, only for cantinas within 6 jumps
+    while the phase is `stop`; `11ak-skywatch` lists «яркая точка без номера в каталоге» with a
+    direction from adjacent systems; **wire `relicOn("chart")`**: line one draws a sail glyph at the
+    current stop on the galaxy map (`mode-map` draw), line two (with «чтение», `relicTwo`) also the
+    next stop. Remove `"артефакты/chart"` from `KNOWN` in `91zzzzy-names` in the same commit and
+    close the «Needs a decision» item below.
+  - `17f-sys-traffic`: one extra shuttle arc ship↔station while it stands.
+  - Tests (`91zzzzf-wander`): every loop stop is a live star with the reachability rule; two epochs
+    give two stops; the shifted clock (`91zzzzy-time`) keeps the loop valid; `relicOn("chart")`
+    is now read by someone.
+
+- **M343 — the room and the shop** (`24c-mode-wanderer.js` + `24ca-wanderer-draw.js`, then
+  `26d-ui-wanderer.js`). Room rules of M74–M76: human ≈55 px, back wall, paint order wall → slit
+  window (planet limb turning, cold bars on the floor) → gold leak on the upper cabinets → ring frames
+  → cabinets (glass, brass corners, one item each, its own steady lamp) → hanging things on lines
+  (slow drift, long periods) → counter → keeper (body, not sticks; helmet off) → green-shaded lamp
+  (the one warm accent) → dust in the bars → vignette. Empty cabinet = chalk tag (a bought lot).
+  - UI = the flea row model (`12ua`): ←/→ walks the corridor, the case in front shows a card:
+    provenance line, price (кр / спичек / «хочет: …»), one line from the log. Buttons КУПИТЬ /
+    ОТДАТЬ / СДАТЬ СЫРЬЁ. Counter B: sell rare raw for matches (10 volatiles|icecrys|alloy → 1,
+    5 techcomp → 1); show a rarity from `G.rareFound` → 4 matches once per id (`G.wander.gave`).
+  - Shelf per stop: 8 lots from the catalogue seeded by `(worldSeed,epoch)`: 2 cosmetics, 2 eases,
+    1 unique part (50 %), 2 papers, 1 wild card. `G.wander.got` holds bought ids (gone for this save).
+  - Catalogue `WANDER_CAT` as a flat const with `ru`, `note`, `pay:{cr|m|ask}`, `fam`, `hook` — one
+    entry per §11/§12 item; **wire every hook in the same commit or leave the item out** («a perk
+    without code is a lie», `91zzzzy-names` reads every table). Start with what has an obvious
+    hook: Ключ причала (autopilot to dock), Слуховая трубка (rumours on the receiver in flight),
+    Мастерская рука (`12s-wear` ×.67), Штурманский карандаш (`11t` spread −1), Колокол вахты
+    (`11ak` +1), Медный шар (`25j` −1 hop), Тетрадь ветра (HUD countdown), Табличка «НЕ КУПЛЕНО»
+    (`12ua` rule 4 off), Список цен, Вторая рука, Полка шире; papers: Страница журнала (exact
+    `12m` address), Список отказов, Карта области, missing book (`12ub`, credits). Tools work only
+    from the 6-slot cabin shelf (`G.wander.shelf`), the rest lie in the locker (M345) or hold.
+  - Keeper lines and the departure flash are in DESIGN §13 — use them verbatim.
+  - Tests: shelf determinism per epoch; a bought lot never returns; matches never negative; every
+    catalogue hook read somewhere; `lookScenes` gets `wanderer` (frame meter + fuzzer).
+
+- **M344 — cosmetics** (`G.cosm={exhaust,trail,suit,visor,mark,lights,chime}` persisted; applied
+  by dragging from the шкатулка onto the hull or the kit in ОПИСЬ). Hooks: exhaust colour/shape in
+  `16-flight`/`16a-space` flame (8 named exhausts, each its own flame shape), jump trail in `16`,
+  suit finish + visor tint in `20-life` astronaut painter and the kit doll (`12x-suit`), rare hull
+  marks via `03d-hull-marks`, nav-light pattern in `03e-hull-draw`, docking chime in `09-audio`.
+  Parrot accessories through `12x-parrot`. Test: each cosmetic id changes at least one pixel of its
+  target painter (render to an offscreen canvas, compare).
+
+- **M345 — the locker** (`G.locker={items:[],res:{},t}` persisted). Fifth zone of ОПИСЬ that slides
+  in while `G.mode==="dock"` at a station with `rungOf>=6`: 24 slots, parts + piles + tools. Fee
+  1 %/day of contents' value taken lazily from `Date.now()-t` (the `tickDrones` model); 30 days
+  unvisited → contents go to the flea as lots «залог, за которым не пришли» (`12ua` provenance).
+  Ease «Второй ящик» doubles slots. Tests: put/take round-trip, fee arithmetic under the shifted
+  clock, the 30-day hand-over.
+
+- **M346 — matchboxes** (`G.boxes=[ids]`): ~20 hand-written labels (one line each, like `BOOKS` —
+  a table, not a generator), found in wrecks/flea/aboard; shelf at home next to the books,
+  «коробков: N из 20». No effect. A full box of 50 is a keeper's legend, possible wild card once.
+
+Reference picture of the table: the author's mock (chat, 2026-09-04) — dark wood desk, green cloth,
+zones numbered 1–4, «ИНСТРУМЕНТЫ «СОРОКИ»» shelf top-centre, «КОСМЕТИКА · шкатулка» top-right, round
+hatch bottom-right with the hint «перетащи, чтобы выбросить», footer hints «Перетащи предмет на нужное
+место · Перетащи на люк, чтобы выбросить · Части выше добротной требуют подтверждения». Reproduce the
+layout in the game's own language (procedural canvas + desk DOM), not the render's textures.
+
 ## Loose ends (as of 2026-08-28, after the graphics run 0.237.0–0.244.0)
 
 Everything left open, with the reason it is open. Nothing here is a bug report — bugs are fixed
@@ -222,6 +343,9 @@ Grep `docs/PLAN-archive.md` for the milestone number (header "Moved out of PLAN.
   trade rare» must mean something else — a dock holding a rare hull, a bench with rare parts, the
   rows of the flea market, or the rarities of `12m-rare`. Whichever it is, it is a design decision.
   The audit carries one named exception until it is answered.
+  **Decided (author, 2026-09-04): `docs/DESIGN-wanderer.md`** — the wanderer «Сорока»; the artifact
+  shows its stop (line one) and its next stop (line two). Wired in M342 of the queue above; the
+  `KNOWN` exception in `91zzzzy-names` leaves with it.
 
 - **M334** (0.331.0) — someone else's clock (`91zzzzy-time`): every epoch stamp in the save shifted
   three days forward and thirty back, then the world lived on — no NaN, no negative or ballooning

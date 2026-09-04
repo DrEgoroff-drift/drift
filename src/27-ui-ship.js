@@ -148,8 +148,9 @@ function svRender(){
       const res=scrapPart(p.id);
       if(!res)return;
       const list=Object.keys(res.got).map(k=>RES[k].ru.toLowerCase()+" ×"+res.got[k]).join(", ");
-      tell("money","Разобрано: "+res.part.name+(list?" → "+list:" → трюм полон"),
-           res.part.name+"\nразобрано"+(list?"\n"+list:"\nтрюм полон"));
+      const mn=(typeof matchesScrapNote==="function")?matchesScrapNote(res.matches):"";
+      tell("money","Разобрано: "+res.part.name+(list?" → "+list:" → трюм полон")+(res.matches?" · "+mn:""),
+           res.part.name+"\nразобрано"+(list?"\n"+list:"\nтрюм полон")+"\n"+mn);
       svRender();};
     box.appendChild(sb);
     r.appendChild(box);

@@ -76,7 +76,7 @@ function snapshot(){
     wrecks:G.wrecks,bargePax:G.bargePax,fleetLog:G.fleetLog||{},fleetEscort:G.fleetEscort||0,caravan:G.caravan||null,
     loreFound:G.loreFound,loreMarks:G.loreMarks,settle:G.settle,tin:G.tin,
     scrip:G.scrip,scripRate:G.scripRate,scripLog:G.scripLog,
-    doom:G.doom,doomDead:G.doomDead,parrot:G.parrot,heard:G.heard,grok:G.grok,flea:G.flea,
+    doom:G.doom,doomDead:G.doomDead,parrot:G.parrot,heard:G.heard,grok:G.grok,flea:G.flea,matches:G.matches|0,
     dealsDone:G.dealsDone,dealsWait:G.dealsWait,log:G.log,
     rumLogged:G.rumLogged||"",   /* слухи станции уже записаны в тетрадь (11t): без этого после каждой загрузки они ложились снова */
     tableSeen:G.tableSeen|0,
@@ -372,6 +372,7 @@ function applySave(s){
   /* блошинец (12ua-flea): ряды считаются от seed станции и часов, поэтому в
      сохранении живёт только список купленного — иначе купленный лот вернулся бы
      на прилавок. Чинится по месту: чужие ключи отбрасываются, длина зажимается. */
+  G.matches=Math.max(0,(typeof s.matches==='number'?s.matches:0)|0);   /* спички (12uc) */
   G.flea={got:[]};
   if(s.flea&&Array.isArray(s.flea.got))
     for(const id of s.flea.got)
