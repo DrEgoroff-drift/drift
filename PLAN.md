@@ -103,7 +103,15 @@ cosmetics exist; the desk gets one table «ОПИСЬ»; a locker exists at stat
   5→5 or a box of 8 by part seed), `scrapPart` returns `matches`, hold header shows «спичек: N»,
   save round-trip, suite `91zzzze-matches`.
 
-- **M341 — the table «ОПИСЬ»** (desk tab; replaces the ТРЮМ tab). The author drew it: one green cloth
+- **M341 — the table «ОПИСЬ»** — **one screen for «what I have»; the desk keeps «what I read».**
+  Entry points after M341 (author, 2026-09-04): the menu button КОРАБЛЬ becomes ОПИСЬ and opens the
+  table full-screen (rework `#shipview`; its КОРАБЛЬ/СКАФАНДР tabs go away — parts are zone 3, the
+  kit zone 2, spare kit pieces a «запас» row beside the doll); the desk item НАКЛАДНАЯ loses its ТРЮМ
+  tab and becomes ЦЕНЫ (paper about prices only); the station's ОСНАСТКА opens ОПИСЬ with return to
+  the terminal (as today); while docked a fifth zone ЯЩИК slides in (M345). One rule: anything worn,
+  fitted or spent lives on the cloth; anything read lives on the desk. «Сорока»'s purchases land here
+  (tools → shelf, cosmetics → box, papers → desk ВЕЩИ). Header shows the two real counters, credits
+  and matches — not four. The author drew it: one green cloth
   with four numbered zones, a tool shelf above, a cosmetics box at the right, a hatch in the corner.
   - Rename tab `hold` → label ОПИСЬ in `src/index.html` (`data-tab="hold"` stays — it is an address)
     and `DESK_ITEMS` `bill` note in `27ia-desk-top`. Do not touch the 20 copies under `docs/*.html`
