@@ -7360,3 +7360,37 @@ against `src/` — the queue below is what actually remains):
   `deedAdd` refuses a deed without a cost, and helping while broke weighs more. Writers already
   live in `11ag-trace` (cargo left at a mark) and `12l-barge` (souls off a dying hull).
 
+## Done
+
+M1–M32 — the base game (see git history). M33 parts and total rig capacity · M34 ship screen with
+hull slots Â· M41 WebAudio sound engine Â· M42 generative music with beacons and reverb. Plus the
+split into modules and the `build.ps1` build.
+
+**The whole queue below is finished** (July 2026, one milestone per commit):
+M43 celestial mechanics and autopilot lead Â· M44 six station types with type-driven tabs Â·
+M39 rare resources, gas scooping, smelting Â· M45 hiring, fleet, orders, lazy simulation Â·
+M46 wages, debt, morale, repair Â· M37 base in cross-section with power balance Â· M38 base network
+and transfer Â· M47 base staff, roles, raids Â· M40 the lab: hull fusion and part crafting Â·
+M35 boarding a pirate base on polygons Â· M36 enemy types, consumables, mezzanines.
+
+Descriptions of finished milestones live in [`docs/PLAN-archive.md`](docs/PLAN-archive.md): they
+remain documentation of the decisions taken, but sit apart so this file can be read in one go.
+Here is only what is still live — cross-cutting rules, the visual queue and the milestone queue.
+
+---
+
+### What not to do
+
+Depth of field, chromatic aberration, motion blur, lens dirt. In canvas 2D these either don't
+read, or read as a defect, and blur requires an offscreen redraw with a filter — expensive.
+Vignette and colour shift already give almost the same thing.
+
+### Rules that are easy to break
+
+Same as in M54: expensive things are computed once and cached on the object; structure before
+material; the loudness budget; the frame camera is the single source of truth for both drawing
+and input (`G.viewX/viewY`, `G.viewCX/viewCY`); fake it instead of computing it; star exoticism
+never touches arithmetic; station modules don't unlock services.
+
+---
+

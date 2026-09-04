@@ -244,6 +244,25 @@ hatch bottom-right with the hint «перетащи, чтобы выбросит
 место · Перетащи на люк, чтобы выбросить · Части выше добротной требуют подтверждения». Reproduce the
 layout in the game's own language (procedural canvas + desk DOM), not the render's textures.
 
+- **M347 — the map speaks in addresses** (author 2026-09-04: «на карте не понятно, что за сектора и
+  адреса»). `18-mode-map`. (1) A sector grid, one cell per sector, under the same darkness law as the
+  stars — bright by the player, fading to nothing at the jump edge; every fifth line a touch brighter.
+  (2) Rulers along the top (X) and left (Y) edges that scroll with the window, chart-style; the
+  player's and the selected sector's coordinates underlined in colour on the rulers — coordinates are
+  read from the rulers, never printed on every cell. (3) Header line «ВЫ · сектор 4:−7 · «Имя»», under
+  it the selection «сектор 6:−9 · 3 сектора · 2 прыжка · 3,1 пк»; «секторов» is the same measure the
+  rumours use for «в N секторах вокруг». (4) An empty cell is selectable (address + distance; no course
+  into emptiness). (5) Rumour areas drawn as pale hatched squares «в N секторах вокруг X:Y» with source;
+  two rumours overlapping is visible by itself. (6) Faint range rings «2 прыжка», «3 прыжка» outside the
+  lit jump area. (7) Address search: a small «сектор __:__» field (numeric keypad on phone) that slides
+  the window and outlines the cell; every address in game text (rumours, notebook, flea provenance,
+  «Сорока» papers) becomes tappable → map centres on it (extend the rumour hook of M298). (8) A small
+  rose in a corner: +X, +Y and «к ядру». (9) **Needs the author:** pencil notes — the player writes a
+  few words on a cell, ≤10, persisted (`G.mapNotes`). The «no markers» rule is about things the player
+  has not found; a note is the player's own decision like a name (`11u`). Recommended yes.
+  Tests: grid/rulers agree with `mapViewC`; selection of an empty cell yields the right address; the
+  rumour square matches `11t` spread; `91f-ui` on phone — rulers do not overlap the deck or rail.
+
 ## Loose ends (as of 2026-08-28, after the graphics run 0.237.0–0.244.0)
 
 Everything left open, with the reason it is open. Nothing here is a bug report — bugs are fixed
@@ -448,39 +467,7 @@ Grep `docs/PLAN-archive.md` for the milestone number (header "Moved out of PLAN.
 - **M304** (0.301.0) — the picture queue as one release: cave to zone I–II with cold glazes baked into the tile, sky brush and `hueToward`, landing horizon and altitude zenith, home panels/boards/study window, station sprite with one light, base halo, rain on the ground.
 - **M303** (0.300.0) — playtest tails of 02.09: the cantina's ВЫСЛУШАТЬ works, station rumours persist as logged, the desk opens over a station (СТОЛ in the header), the home beacon undocks first, the desk lamp ignores grey and ether lines, the parrot's feather layer is sized by the bird box and the perch is off the screens.
 
-## Done
-
-M1–M32 — the base game (see git history). M33 parts and total rig capacity · M34 ship screen with
-hull slots Â· M41 WebAudio sound engine Â· M42 generative music with beacons and reverb. Plus the
-split into modules and the `build.ps1` build.
-
-**The whole queue below is finished** (July 2026, one milestone per commit):
-M43 celestial mechanics and autopilot lead Â· M44 six station types with type-driven tabs Â·
-M39 rare resources, gas scooping, smelting Â· M45 hiring, fleet, orders, lazy simulation Â·
-M46 wages, debt, morale, repair Â· M37 base in cross-section with power balance Â· M38 base network
-and transfer Â· M47 base staff, roles, raids Â· M40 the lab: hull fusion and part crafting Â·
-M35 boarding a pirate base on polygons Â· M36 enemy types, consumables, mezzanines.
-
-Descriptions of finished milestones live in [`docs/PLAN-archive.md`](docs/PLAN-archive.md): they
-remain documentation of the decisions taken, but sit apart so this file can be read in one go.
-Here is only what is still live — cross-cutting rules, the visual queue and the milestone queue.
-
----
-
-### What not to do
-
-Depth of field, chromatic aberration, motion blur, lens dirt. In canvas 2D these either don't
-read, or read as a defect, and blur requires an offscreen redraw with a filter — expensive.
-Vignette and colour shift already give almost the same thing.
-
-### Rules that are easy to break
-
-Same as in M54: expensive things are computed once and cached on the object; structure before
-material; the loudness budget; the frame camera is the single source of truth for both drawing
-and input (`G.viewX/viewY`, `G.viewCX/viewCY`); fake it instead of computing it; star exoticism
-never touches arithmetic; station modules don't unlock services.
-
----
+## Done — struck items moved to `docs/PLAN-archive.md` (2026-09-04)
 
 ## Open by design (not defects; each needs the author or a pass of its own)
 
