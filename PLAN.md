@@ -326,10 +326,25 @@ layout in the game's own language (procedural canvas + desk DOM), not the render
   station per two days, ВЕРНУТЬ, sells within two sectors, guest drawn in the market system). The
   audit's trade «hole» was an artefact of open buying: in the game one buys only on a route leg
   (`12r`, M289), and a 3-pair route pays ~17 000 cr in three laps then waits for pressure to decay —
-  the designed ~200 cr/min. Trade untouched. **Open (author):** should ordinary buying at the counter
-  exist at all («ни разу не видел, купить титан»)? If yes, it needs A2 (sliced pricing) first;
-  recommended: keep route-only buying and *say so* on the station («взять можно по плечу маршрута»).
+  the designed ~200 cr/min. Trade untouched. **Answered by M351:** counter buying opens with the cooperative, capped by rank, priced in slices.
   «Сорока» raw→matches re-priced to 40:1 with a 200-unit cap per stop before M343 (audit §3 H3).
+
+- **M351 — the cooperative** (`docs/DESIGN-coop.md`; author 2026-09-04: «на дядю → лицензия кооператив
+  → свой маршрут, найм»). Stage 1 kept as is: the house's order and assigned leg on the house's
+  account, counter closed, station prints «взять товар могут только кооперативы · оборот N из
+  12 000». Registration at a house station: name typed by the player, 1 500 cr, `G.soldTotal ≥
+  12 000`, stamp in КНИЖКА, `G.coop` persisted. After it: counter buying of any tradeable good with
+  sliced pricing (A2) and a per-visit cap by rank (I 60 / II 150 / III none); the route on the map
+  becomes the player's own calculator (R3 gate dropped, reminder row kept); hiring opens and
+  `crewCap` reads the rank (1/3/5) instead of the «license» tech. Ranks: I Кооператив, II Артель
+  (100 000 since registration + 2 asks granted, drone shops sell 2 per two days), III Товарищество
+  (500 000 + 4 asks, `BUY_SPREAD` 1.03). ДЕЛА gets the cooperative block first: members from the
+  lists that exist, a per-shift ledger from `earn(why)` and payroll, three open asks generated from
+  composition and pointing at family-G buildings (столовая, ангар, отдел кадров, красный уголок,
+  медпункт, учебный пункт) plus two non-building asks (holiday off, name plate), spirit 0…5 as
+  words with ±1 % per point on drone output and hired gross. Modules: new `12aj-coop.js`, edits in
+  `12r`, `12-economy`, `26-ui-station`, `11-log`, `14-save`; suite `91zzzzb-coop`. Re-measure
+  trade with `91zzw-eco-probe` after; the caps are the brake for open buying.
 
 ## Loose ends (as of 2026-08-28, after the graphics run 0.237.0–0.244.0)
 
