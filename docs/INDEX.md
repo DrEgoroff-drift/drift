@@ -3839,7 +3839,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12ud-smena.js · 12 КБ
   · «Смена»: роман, который читается, когда прожит (M353):1
 
-## src/12ud-smena-text.js · 445 КБ
+## src/12ud-smena-text.js · 456 КБ
   · «Смена»: текст романа — СГЕНЕРИРОВАНО docs/mksmena.py из docs/SMENA.md, руками не править:1
 
 ## src/12u-folk.js · 9 КБ
