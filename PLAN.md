@@ -48,6 +48,19 @@ half the tokens. The game itself, its UI and its code comments stay Russian.
   pass finds nothing. Optimisation is part of every pass, not an afterthought — check the
   raster/JS budget (`prof()`, the "painted once" rule) before calling a pass clean.
 
+- **New lore rides existing channels (author 2026-09-04).** There is no encyclopedia and there will
+  be none: «куска лора не существует, у каждого есть полезная выдача» (`12q`). A milestone that
+  brings lore names its channel in this table before it is built — desk (ТЕТРАДЬ, КНИЖКА, ПОЛКА,
+  ОТЧЁТ, ВЕЩИ, ДНЕВНИК, ПОЧТА/QSL/АЛЬБОМ), world (rumours `11t`, speech queues `11b`, retelling
+  `12p`, the wall, the ledger, the trace, the first hour, the flea's provenance, the hundred
+  stories). Mapping for the open queue: «Сорока» → a rumour image, the keeper's speech queue, one
+  book on ПОЛКА («Судовой журнал без порта»), one ОТЧЁТ piece; matches → the hold's dismantle line,
+  a new paragraph in the station charter book, matchbox labels beside the books; the cooperative →
+  the house clerk's speech, the stamp in КНИЖКА, one line from the first-hour relief, the beacon
+  saying the name; the beacon → its own channel (ЭФИР, voice in flight, a sheet on the cantina
+  wall); holdings → retelling already writes them, the map shows them in place; biome landmarks →
+  the organism scanner, a КНИЖКА entry via the institute, a pilot-book of biomes on ПОЛКА.
+
 ## How a frame is judged (M241) — the meter, and the rules under it
 
 "I don't like the look of it" is not something anyone can act on. Since M241 the frame is
