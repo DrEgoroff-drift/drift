@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 383 · символов верхнего уровня: 3442
+Файлов: 384 · символов верхнего уровня: 3485
 
 ## СИМВОЛЫ
 
@@ -32,8 +32,6 @@ $place                       src/27z-telemetry.js:37
 $sh                          src/27z-telemetry.js:8
 $sn                          src/27z-telemetry.js:12
 $st                          src/26-ui-station.js:2
-$sv                          src/27-ui-ship.js:2
-$svCan                       src/27-ui-ship.js:3
 $un                          src/27z-telemetry.js:34
 $vc                          src/27z-telemetry.js:32
 $vf                          src/27z-telemetry.js:31
@@ -589,9 +587,9 @@ DEPTH_TIERS                  src/04-mods.js:51
 DESC_MOOD                    src/01-core.js:109
 DESC_TAIL                    src/01-core.js:115
 DESK_DRAW                    src/27ia-desk-top.js:58
-DESK_ITEMS                   src/27ia-desk-top.js:319
-deskItemNew                  src/27ia-desk-top.js:360
-deskItemOf                   src/27ia-desk-top.js:354
+DESK_ITEMS                   src/27ia-desk-top.js:298
+deskItemNew                  src/27ia-desk-top.js:337
+deskItemOf                   src/27ia-desk-top.js:331
 dgy                          src/21b-surface-deco.js:131
 DIG_CELL                     src/23-mode-dig.js:3
 DIG_GEO_K                    src/23-mode-dig.js:9
@@ -772,7 +770,7 @@ drawSysNebula                src/16a-space.js:208
 drawSystem                   src/17-mode-system.js:317
 drawSysTraffic               src/17f-sys-traffic.js:29
 drawTemple                   src/20aa-poi-shapes.js:50
-drawThingIcon                src/27i-ui-table.js:323
+drawThingIcon                src/27i-ui-table.js:329
 drawTierTrim                 src/03b-hull-paint.js:62
 drawTiles                    src/18c-chunks.js:125
 drawTrail                    src/16-flight.js:362
@@ -1260,6 +1258,7 @@ holdSkyMul                   src/12ag-holdfx.js:117
 holdTechMul                  src/12ag-holdfx.js:119
 holdTestStation              tests/91x-hold.js:2
 holdUklad                    src/12ah-holdnews.js:19
+holdWorth                    src/27j-ui-opis.js:467
 holEtherLine                 src/11am-holiday.js:77
 HOLIDAYS                     src/11am-holiday.js:22
 holIs                        src/11am-holiday.js:74
@@ -1363,6 +1362,7 @@ hullClassOf                  src/03-ships.js:200
 hullOf                       src/03a-hull-gen.js:1
 hullRole                     src/03f-hull-role.js:51
 hullShade                    src/03b-hull-paint.js:165
+hullSilhouette               src/27-ui-ship.js:9
 HUNT_NAMES                   src/12o-hunter.js:18
 HUNT_RADIUS                  src/12o-hunter.js:24
 HUNT_TIERS                   src/12o-hunter.js:19
@@ -1458,7 +1458,7 @@ jobOffer                     src/12e-mgr-jobs.js:228
 jobPick                      src/12e-mgr-jobs.js:259
 jobRefuse                    src/12e-mgr-jobs.js:57
 jobTick                      src/12e-mgr-jobs.js:287
-jump                         src/18-mode-map.js:567
+jump                         src/18-mode-map.js:572
 jumpToBase                   src/21a-mode-base.js:315
 KEEP_DARK_AFTER              src/11k-keepers.js:48
 KEEP_HABIT                   src/11k-keepers.js:35
@@ -1480,7 +1480,7 @@ keepersSign                  src/11k-keepers.js:114
 keplerPos                    src/06-galaxy.js:85
 keyLabel                     src/15-input.js:144
 keyMap                       src/15-input.js:133
-keyRow                       src/27-ui-ship.js:190
+keyRow                       src/27-ui-ship.js:42
 keys                         src/08-state.js:57
 killPirate                   src/13-pirates.js:182
 killRock                     src/24-mode-belt.js:151
@@ -1504,16 +1504,12 @@ KIT_RU                       src/12x-suit.js:22
 KIT_WEAR                     src/12x-suit.js:32
 kitAddMod                    src/12x-suit.js:148
 kitAll                       src/12x-suit.js:47
-kitAnimRAF                   src/27-ui-ship.js:467
-kitAnimStart                 src/27-ui-ship.js:468
-kitAnimStop                  src/27-ui-ship.js:479
-kitBlock                     src/12x-suit.js:296
 kitCanMod                    src/12x-suit.js:141
 kitColOf                     src/12x-suit.js:167
-kitDepotBlock                src/12x-suit.js:361
+kitDepotBlock                src/12x-suit.js:319
 kitDepotOf                   src/12x-suit.js:97
 kitDepotTake                 src/12x-suit.js:111
-kitDollHit                   src/12x-suit.js:295
+kitDollHit                   src/12x-suit.js:293
 kitFromHulk                  src/12x-suit.js:118
 kitGive                      src/12x-suit.js:87
 kitHasMod                    src/12x-suit.js:58
@@ -1530,9 +1526,8 @@ kitPiece                     src/12x-suit.js:43
 kitRepair                    src/12x-suit.js:134
 kitRepairCost                src/12x-suit.js:133
 kitRoman                     src/12x-suit.js:55
-kitSel                       src/12x-suit.js:294
 kitShelf                     src/12x-suit.js:53
-kitShopBlock                 src/12x-suit.js:337
+kitShopBlock                 src/12x-suit.js:295
 kitStat                      src/12x-suit.js:59
 kitWearMul                   src/12x-suit.js:57
 kitWearPiece                 src/12x-suit.js:126
@@ -1689,6 +1684,8 @@ mapDeck                      src/18-mode-map.js:13
 mapFit                       src/18-mode-map.js:93
 mapNebula                    src/18-mode-map.js:62
 mapPeek                      src/18-mode-map.js:104
+mapPriceDraw                 src/12aa-need.js:322
+mapPriceRows                 src/12aa-need.js:302
 mapRail                      src/18-mode-map.js:17
 mapRange                     src/18-mode-map.js:89
 mapReset                     src/18-mode-map.js:123
@@ -1957,11 +1954,58 @@ openBarge                    src/12l-barge.js:597
 openCrewView                 src/27b-ui-crew.js:230
 openDeal                     src/27n-ui-deal.js:163
 openHq                       src/27c-ui-hq.js:611
-openShipView                 src/27-ui-ship.js:162
 openStation                  src/26-ui-station.js:5
-OPT_TABS                     src/27-ui-ship.js:445
-optGroups                    src/27-ui-ship.js:448
-optTab                       src/27-ui-ship.js:447
+OPIS                         src/27j-ui-opis.js:32
+OPIS_HW                      src/27j-ui-opis.js:56
+OPIS_KIT                     src/27j-ui-opis.js:48
+OPIS_SHIP                    src/27j-ui-opis.js:35
+opisActs                     src/27j-ui-opis.js:420
+opisArmed                    src/27j-ui-opis.js:144
+opisAsk                      src/27j-ui-opis.js:172
+opisAskForm                  src/27j-ui-opis.js:510
+opisBar                      src/27j-ui-opis.js:530
+opisCanDump                  src/27j-ui-opis.js:171
+opisCard                     src/27j-ui-opis.js:406
+opisConfirm                  src/27j-ui-opis.js:145
+opisDragWire                 src/27j-ui-opis.js:195
+opisDrawBox                  src/27j-ui-opis.js:363
+opisDrawHatch                src/27j-ui-opis.js:381
+opisDrawMatchbox             src/27j-ui-opis.js:341
+opisDrop                     src/27j-ui-opis.js:283
+opisDropAt                   src/27j-ui-opis.js:268
+opisDropEnd                  src/27j-ui-opis.js:274
+opisDump                     src/27j-ui-opis.js:176
+opisFit                      src/27j-ui-opis.js:150
+opisFocus                    src/27j-ui-opis.js:60
+opisGhostMove                src/27j-ui-opis.js:243
+opisHead                     src/27j-ui-opis.js:504
+opisHullRedraw               src/27j-ui-opis.js:311
+opisHullSlotAt               src/27j-ui-opis.js:328
+opisKitCard                  src/27j-ui-opis.js:495
+opisKitFuture                src/27j-ui-opis.js:94
+opisLeave                    src/27j-ui-opis.js:686
+opisLift                     src/27j-ui-opis.js:217
+opisMarkCan                  src/27j-ui-opis.js:248
+opisMarkOver                 src/27j-ui-opis.js:263
+opisPanel                    src/27j-ui-opis.js:102
+opisPanels                   src/27j-ui-opis.js:123
+opisPartCard                 src/27j-ui-opis.js:436
+opisPartHtml                 src/27j-ui-opis.js:431
+opisPhone                    src/27j-ui-opis.js:57
+opisPileCard                 src/27j-ui-opis.js:476
+opisPriceCue                 src/27j-ui-opis.js:457
+opisRender                   src/27j-ui-opis.js:547
+opisRerender                 src/27j-ui-opis.js:58
+opisSame                     src/27j-ui-opis.js:59
+opisScrap                    src/27j-ui-opis.js:159
+opisShipFuture               src/27j-ui-opis.js:76
+opisSlotOf                   src/27j-ui-opis.js:70
+opisTarget                   src/27j-ui-opis.js:63
+opisUnfit                    src/27j-ui-opis.js:158
+opisWear                     src/27j-ui-opis.js:186
+OPT_TABS                     src/27-ui-ship.js:297
+optGroups                    src/27-ui-ship.js:300
+optTab                       src/27-ui-ship.js:299
 orbPathOf                    src/17-mode-system.js:306
 ORDER_WIN                    src/12aa-need.js:74
 orderDeliver                 src/12aa-need.js:114
@@ -1974,7 +2018,7 @@ orderWin                     src/12aa-need.js:75
 ORE_KEYS                     src/02-world.js:102
 ORE_NODE_W                   src/23-mode-dig.js:12
 oreNode                      src/23-mode-dig.js:13
-packPart                     src/05-parts.js:325
+packPart                     src/05-parts.js:327
 PAD_KEY                      src/15-input.js:19
 PAD_SAFE                     src/18-mode-map.js:2
 padsAuto                     src/15-input.js:69
@@ -2242,7 +2286,11 @@ postWorld                    src/25g-postcard.js:49
 prbLeg                       tests/91zzw-eco-probe.js:5
 prbStations                  tests/91zzw-eco-probe.js:4
 prevAct                      src/08-state.js:59
+priceBestOf                  src/12aa-need.js:240
+pricesClose                  src/12aa-need.js:292
+pricesCount                  src/12aa-need.js:250
 pricesHeard                  src/12aa-need.js:223
+pricesOpen                   src/12aa-need.js:284
 pricesSeen                   src/12aa-need.js:194
 pricesTrim                   src/12aa-need.js:203
 prism                        src/21b-surface-deco.js:201
@@ -2437,24 +2485,24 @@ renderCantina                src/27c-ui-hq.js:68
 renderCardBack               src/25i-post-back.js:88
 renderChess                  src/25n-chess.js:285
 renderDeeds                  src/11-log.js:102
-renderDeskTop                src/27ia-desk-top.js:366
+renderDeskTop                src/27ia-desk-top.js:343
 renderDiary                  src/29f-winter.js:221
-renderHold                   src/27j-ui-hold.js:176
+renderHold                   src/27j-ui-hold.js:177
 renderLog                    src/11-log.js:79
 renderLoreBoard              src/27h-ui-lore.js:26
 renderMail                   src/25k-post-mail.js:36
-renderOpts                   src/27-ui-ship.js:200
-renderPrices                 src/12aa-need.js:236
+renderOpts                   src/27-ui-ship.js:52
+renderPrices                 src/12aa-need.js:256
 renderQsl                    src/11an-qsl.js:160
 renderRecord                 src/11aa-record.js:80
 renderRelays                 src/11ap-relay.js:243
 renderRoute                  src/12r-route.js:349
 renderSiteTab                src/26c-ui-station-site.js:7
 renderSmena                  src/12ud-smena.js:121
-renderStrips                 src/27i-ui-table.js:263
+renderStrips                 src/27i-ui-table.js:269
 renderTab                    src/26-ui-station.js:364
 renderTabBody                src/26-ui-station.js:375
-renderThings                 src/27i-ui-table.js:294
+renderThings                 src/27i-ui-table.js:300
 REP_MIN                      src/12k-rep.js:16
 REP_WORDS                    src/12k-rep.js:17
 repAdd                       src/12k-rep.js:36
@@ -2692,7 +2740,7 @@ scoopBandAt                  src/19a-mode-scoop.js:25
 scoopCenter                  src/19a-mode-scoop.js:17
 scoopScrX                    src/19a-mode-scoop.js:265
 scoopSpawn                   src/19a-mode-scoop.js:33
-scrapPart                    src/05-parts.js:314
+scrapPart                    src/05-parts.js:316
 scrapYield                   src/05-parts.js:306
 SCREEN_LAYERS                src/18c-chunks.js:92
 screenLayer                  src/18c-chunks.js:93
@@ -3030,9 +3078,9 @@ stripsAll                    src/11b-speech.js:192
 stripSell                    src/11b-speech.js:231
 stripValue                   src/11b-speech.js:193
 stSet                        src/14-save.js:14
-stTabFuse                    src/26b-ui-station-work.js:201
-stTabInstr                   src/26b-ui-station-work.js:108
-stTabLab                     src/26b-ui-station-work.js:175
+stTabFuse                    src/26b-ui-station-work.js:200
+stTabInstr                   src/26b-ui-station-work.js:107
+stTabLab                     src/26b-ui-station-work.js:174
 stTabMods                    src/26b-ui-station-work.js:12
 stTabsHere                   src/26-ui-station.js:79
 stTypeOf                     src/06-galaxy.js:73
@@ -3057,11 +3105,6 @@ surveyColor                  src/12w-survey.js:58
 surveyLegs                   src/12w-survey.js:48
 surveyList                   src/12w-survey.js:37
 surveyPoint                  src/12w-survey.js:20
-svDraw                       src/27-ui-ship.js:7
-svMode                       src/27-ui-ship.js:45
-svRender                     src/27-ui-ship.js:46
-svReturn                     src/27-ui-ship.js:6
-svSlot                       src/27-ui-ship.js:4
 swimTestLand                 tests/91zzzc-swim.js:8
 syncTabs                     src/26-ui-station.js:80
 SYS_BAKE_KEEP                src/06-galaxy.js:20
@@ -3086,14 +3129,14 @@ TAB_CH                       src/14a-cloud.js:21
 TAB_ID                       src/14a-cloud.js:20
 TAB_LIVE                     src/14a-cloud.js:19
 TABLE_REPLY                  src/11b-speech.js:158
-tableBake                    src/27i-ui-table.js:107
+tableBake                    src/27i-ui-table.js:109
 tableBlock                   src/27c-ui-hq.js:631
 tableIsOpen                  src/27i-ui-table.js:23
 tableNewBy                   src/27i-ui-table.js:76
 tableNewThings               src/27i-ui-table.js:73
 tableNoticeAll               src/27i-ui-table.js:68
-tableRender                  src/27i-ui-table.js:145
-tableRow                     src/27i-ui-table.js:255
+tableRender                  src/27i-ui-table.js:147
+tableRow                     src/27i-ui-table.js:261
 tableSetTab                  src/27i-ui-table.js:105
 tableTab                     src/27i-ui-table.js:22
 tableToggle                  src/27i-ui-table.js:84
@@ -3244,7 +3287,7 @@ unfitPart                    src/05-parts.js:247
 UNIQUE_COLS                  src/03-ships.js:14
 UNIQUE_TAG                   src/03-ships.js:15
 unlockAudio                  src/09-audio.js:48
-unpackPart                   src/05-parts.js:326
+unpackPart                   src/05-parts.js:328
 updateAllies                 src/12a-crew.js:604
 updateBarges                 src/12l-barge.js:165
 updateBase                   src/21a-mode-base.js:334
@@ -3680,7 +3723,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/11z-misclosure.js · 6 КБ
   · невязка: уезд, где счёт неба и счёт людей расходятся:1
 
-## src/12aa-need.js · 17 КБ
+## src/12aa-need.js · 20 КБ
   · нужда станции и наряд:1
 
 ## src/12ab-hold.js · 9 КБ
@@ -3857,7 +3900,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12x-parrot.js · 10 КБ
   · трепло: свидетель, который не понимает:1
 
-## src/12x-suit.js · 22 КБ
+## src/12x-suit.js · 19 КБ
   · скафандр как комплект:1
 
 ## src/12y-parrot-face.js · 43 КБ
@@ -4186,7 +4229,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/27h-ui-lore.js · 6 КБ
   · доска отчёта: место, где собранное можно прочесть:1
 
-## src/27ia-desk-top.js · 22 КБ
+## src/27ia-desk-top.js · 21 КБ
   · стол как стол: предметы, а не тринадцать закладок:1
 
 ## src/27i-ui-table.js · 27 КБ
@@ -4195,11 +4238,14 @@ zooTick                      src/11ad-zoo.js:41
 ## src/27j-console.js · 8 КБ
   · пульт: приёмник, подсказка, кресло:1
 
-## src/27j-ui-hold.js · 11 КБ
+## src/27j-ui-hold.js · 8 КБ
   · трюм как раскладка (M179):1
 
 ## src/27j-ui-kitlay.js · 9 КБ
   · комплект, разложенный на столе:1
+
+## src/27j-ui-opis.js · 37 КБ
+  · ОПИСЬ: один стол для всего, что на тебе и в трюме (M341):1
 
 ## src/27k-road.js · 47 КБ
   · дорожный спутник:1
@@ -4219,10 +4265,10 @@ zooTick                      src/11ad-zoo.js:41
 ## src/27n-ui-deal.js · 11 КБ
   · ДЕЛО — одно место для всего, что на вас работает:1
 
-## src/27-ui-ship.js · 28 КБ
-  · экран корабля:1
+## src/27-ui-ship.js · 20 КБ
+  · силуэт корпуса и вход в ОПИСЬ:1
 
-## src/27z-telemetry.js · 29 КБ
+## src/27z-telemetry.js · 30 КБ
   · телеметрия: приборы пишут в DOM:1
 
 ## src/28-loop.js · 31 КБ
@@ -4268,10 +4314,10 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91a-flight.js · 20 КБ
   · автотесты: наборы:1
-  · первая минута: цель, которую нельзя потерять:243
-  · M234: ранец — запас, а не декорация:289
-  · M234: сбой кадра не убивает игру:320
-  · M234: ВЗЛЁТ гаснет вместе с поверхностью:338
+  · первая минута: цель, которую нельзя потерять:244
+  · M234: ранец — запас, а не декорация:290
+  · M234: сбой кадра не убивает игру:321
+  · M234: ВЗЛЁТ гаснет вместе с поверхностью:339
 
 ## tests/91b-crew.js · 18 КБ
   · автотесты: наёмники: убыток по кредитам, удача, плен, рейсы, сохранение:1
@@ -4511,7 +4557,7 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzv-table.js · 22 КБ
   · автотесты: пульт и стол (M151a):1
-  · огонёк: «пришло» ≠ «не прочитано»:197
+  · огонёк: «пришло» ≠ «не прочитано»:191
 
 ## tests/91zzw-economy.js · 10 КБ
   · автотесты: экономика без долга (M152e):1
@@ -4524,7 +4570,7 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzx-mobile.js · 16 КБ
   · автотесты: телефонный вид (M167):1
-  · телефон: КАЖДЫЙ режим, а не только поверхность (M239):190
+  · телефон: КАЖДЫЙ режим, а не только поверхность (M239):193
 
 ## tests/91zzy-fx.js · 5 КБ
   · автотесты: эффекты M325 — вода, марево, хроматика, факел:1
@@ -4657,8 +4703,9 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzzzc-smena.js · 3 КБ
   · автотесты: «Смена» — роман, который читается, когда прожит (M353):1
 
-## tests/91zzzzd-desk.js · 5 КБ
+## tests/91zzzzd-desk.js · 13 КБ
   · стол как стол:1
+  · ОПИСЬ (M341): один стол для того, что на тебе и в трюме:75
 
 ## tests/91zzzze-matches.js · 2 КБ
   · автотесты: спички — валюта из разборки (M340):1

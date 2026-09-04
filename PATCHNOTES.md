@@ -7,6 +7,32 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.340.0 - M341: «ОПИСЬ» — one cloth for what you wear, fit and carry
+
+The menu button КОРАБЛЬ is now ОПИСЬ, and it opens a table instead of a screen: dark wood, green
+cloth, four numbered zones the way the author drew them. **1 ТРЮМ** — the piles of M179, each with the
+best price you have actually seen under it («виденное: 22 кр · 3:-2 · 2 прыжка», tap sets the course;
+heard prices say so) and one line «трюм стоит около N, если развезти»; the matchbox lies in the corner
+with the count. **2 КОМПЛЕКТ СКАФАНДРА** — the doll and the laid-out kit, the six places, the spare
+pieces from the shelf (НАДЕТЬ, or drag them onto the kit). **3 ЧАСТИ И ВЕЩИ** — the hull silhouette
+with its slot anchors, slot tags to the left, «СНЯТЫЕ ЧАСТИ» to the right, drag a part onto a slot or
+onto the hull. **4 ЛЮК ЗА БОРТ** — a round hatch: a part dropped on it is dismantled (the matches come
+out), a pile asks «сколько». Above the cloth the shelf «ИНСТРУМЕНТЫ «СОРОКИ»» (six empty places, chalk)
+and the closed «КОСМЕТИКА · шкатулка» wait for M343–M344.
+
+Two panels of ПРИБОРЫ, real `stat()` and `kitStat()` numbers, show the **future**: hover or select a
+fitted part and every touched line prints «→ N» for «если снять»; a spare part prints the delta
+against the part it would replace and names the slot; a spare kit piece does the same with weight.
+Cards carry only name, tier and affixes — comparison lives in the panel. Buttons appear under the
+selected card (tap) or under the mouse; a part above «добротная» is dismantled through «ТОЧНО?», a
+button that changes its word for three seconds. People are never thrown overboard.
+
+Phone (≤760): one feed — shelf and box as a strip, parts, kit, hold — the hatch is a bar at the bottom
+while something is lifted; tap selects, long-press lifts. The old ship screen and the desk paper
+НАКЛАДНАЯ are gone; the station's ОСНАСТКА opens ОПИСЬ over the terminal; the map card shows the
+station's seen prices with your cargo highlighted, and a ЦЕНЫ button on the map lists every price you
+saw, a КУРС per row. Fixed on the way: dismantling a launcher threw (no scrap pool for `missile`).
+
 ## 0.339.1 - «Смена», the prose pass
 
 The author's verdict on the book was «интересная, как игра, а не заметки». Read as a critic, the

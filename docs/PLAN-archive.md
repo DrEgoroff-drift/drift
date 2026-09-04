@@ -7540,3 +7540,100 @@ Items 1–4 of that queue are closed (M213, M214, M217, M223) and sit in the arc
    actionable, and let the navigator act on what was overheard. This is also where the author's
    own idea belongs (below).
 
+## M341 — the table «ОПИСЬ» (0.340.0, 2026-09-05) — body as planned, then what was decided while building
+
+- **M341 — the table «ОПИСЬ»** — **one screen for «what I have»; the desk keeps «what I read».**
+  Entry points after M341 (author, 2026-09-04): the menu button КОРАБЛЬ becomes ОПИСЬ and opens the
+  table full-screen (rework `#shipview`; its КОРАБЛЬ/СКАФАНДР tabs go away — parts are zone 3, the
+  kit zone 2, spare kit pieces a «запас» row beside the doll); the desk item НАКЛАДНАЯ loses its ТРЮМ
+  tab and becomes ЦЕНЫ (paper about prices only); the station's ОСНАСТКА opens ОПИСЬ with return to
+  the terminal (as today); while docked a fifth zone ЯЩИК slides in (M345). One rule: anything worn,
+  fitted or spent lives on the cloth; anything read lives on the desk. «Сорока»'s purchases land here
+  (tools → shelf, cosmetics → box, papers → desk ВЕЩИ). Header shows the two real counters, credits
+  and matches — not four.
+  **Readouts (author 2026-09-04): a permanent panel ПРИБОРЫ under the hull silhouette** (thrust,
+  turn, tank, cargo, shield, radar, jump, cooling — real `stat()` numbers) and one under the kit doll
+  (weight, pace, armour, lamp, scan, oxygen — `kitStat`). One rule for the whole cloth: hover/select a
+  thing and the panel shows the future — a fitted part shows «→ N» in red per touched line («если
+  снять», via `statPreview(slot,null)`), a spare part shows the delta against the part it would
+  replace and highlights the slot (red «оснастка» line when cap is short), kit pieces likewise
+  including weight; cosmetics and tools move nothing and get one line of words under the item.
+  Cards keep only name, tier, affixes — comparison lives in the panel, not on cards.
+  **Two layouts.** Desktop (>760): three columns as the mock, shelf top-centre, box top-right, hatch
+  bottom-right, locker slides in between box and hatch when docked; drag is primary, card buttons
+  remain. Phone (≤760): one vertical feed in fixed order — header counters; shelf+box as one
+  horizontal scroll strip; zone 3 (silhouette, ПРИБОРЫ, spare parts); zone 2; zone 1; locker if
+  docked. The hatch is not in the feed: it is a sticky bottom bar that appears while something is
+  lifted. Primary gesture on phone is tap: select → panel shows the future → three 44 px buttons
+  slide out under the item (СТАВИТЬ/СНЯТЬ, ЗА БОРТ, РАЗОБРАТЬ for parts); long-press lifts for drag.
+  Confirmation for tier≥3 is the button turning into «ТОЧНО?» for three seconds, both layouts. Only
+  the feed scrolls; one selected thing per table; guarded by `91f-ui` and `test.ps1 -Mobile`.
+  **Prices (author 2026-09-04: rethink, not remove).** The desk paper НАКЛАДНАЯ/ЦЕНЫ goes away;
+  `G.seenPrices` stays the one memory and is shown where the decision is made: a small caption on
+  each pile in zone 1 («лучшее из виденного: 38 · сектор 4:−7 · 2 прыжка», tap = set course, the
+  same action `renderPrices` had), one line under zone 1 «трюм стоит около N, если развезти» (best
+  seen per key, seen beats heard as in `12aa-need`); on the galaxy map a station's seen price list on
+  hover/tap with the player's cargo keys highlighted, plus a «все виденные цены» list button in map
+  mode for those who compared in the table. The receiver keeps broadcasting heard prices; the route
+  tool (`12r`) is untouched. Remove `bill` from `DESK_ITEMS` and the `prices` tab wiring in `27i`.
+  The author drew it: one green cloth
+  with four numbered zones, a tool shelf above, a cosmetics box at the right, a hatch in the corner.
+  - Rename tab `hold` → label ОПИСЬ in `src/index.html` (`data-tab="hold"` stays — it is an address)
+    and `DESK_ITEMS` `bill` note in `27ia-desk-top`. Do not touch the 20 copies under `docs/*.html`
+    (stands; regenerated).
+  - Rewrite `renderHold` (`27j-ui-hold`) into four zones laid out as a CSS grid inside `box`
+    (class `desk`): **1 ТРЮМ** — the existing piles (`holdDrawPile`) in a 3-column grid, каждая куча
+    с подписью и числом; **2 КОМПЛЕКТ СКАФАНДРА** — `kitLayDraw` canvas + the six places as slots
+    around it (use `KIT_PLACES`, `kitAll`, `kitName`); under it a strip «Отделка скафандра» (empty
+    until M344); **3 ЧАСТИ И ВЕЩИ** — the hull silhouette drawn like `svDraw` (extract the hull+anchors
+    painter from `27-ui-ship` into a shared `hullSilhouette(c,w,h,id,sel)`; do not duplicate it),
+    slot chips to the left of it (kind label + fitted part card), a column «СНЯТЫЕ ЧАСТИ» to the right
+    (`G.inv` not fitted, sorted by tier); **4 ЛЮК ЗА БОРТ** — a round hatch canvas in the corner.
+  - Drag and drop with pointer events (mouse+touch; `15-input` knows nothing of this DOM): a part card
+    dragged onto a matching slot → `fitPart`; slot card dragged to «снятые» → `unfitPart`; anything
+    dragged onto the hatch → for parts `scrapPart` (this is what «выкинуть» means for a part — the
+    matches come out), for piles a prompt «сколько» then `G.cargo[k]-=n`. Confirm only for parts
+    with `tier>=3` (a one-line inline «точно?» button, not `confirm()`). Keep the buttons СТАВИТЬ /
+    СНЯТЬ / РАЗОБРАТЬ as fallbacks on the cards (44 px rule) so the fuzzer and phones work without
+    drag.
+  - Shelf «ИНСТРУМЕНТЫ «СОРОКИ»» above the cloth: 6 slots, empty with a chalk hint until M343; the
+    cosmetics box «КОСМЕТИКА · шкатулка» at the right, closed lid until M344. Matches: a matchbox in
+    the lower-left corner of the cloth with the count as a pile caption (draw it in `holdPiece` style).
+  - Top HUD of the table shows credits and matches (the author's picture has four counters; we have
+    two real ones — draw two, do not invent the others).
+  - The old `#shipview` stays for the station's ОСНАСТКА caller (`26b-ui-station-work`) — M167 «two
+    instruments» — but `#shipbtn` opens the desk on the ОПИСЬ tab (`tableToggle(true,"hold")`).
+  - Tests: extend `91zzzzd-desk` — the tab renders all four zone headers; fitting via the fallback
+    button changes `G.fit`; hatch on a tier-4 part yields matches; `91f-ui` overlap stays green at
+    1280×800 and `-Mobile`.
+
+Reference picture of the table: the author's mock (chat, 2026-09-04) — dark wood desk, green cloth,
+zones numbered 1–4, «ИНСТРУМЕНТЫ «СОРОКИ»» shelf top-centre, «КОСМЕТИКА · шкатулка» top-right, round
+hatch bottom-right with the hint «перетащи, чтобы выбросить», footer hints «Перетащи предмет на нужное
+место · Перетащи на люк, чтобы выбросить · Части выше добротной требуют подтверждения». Reproduce the
+layout in the game's own language (procedural canvas + desk DOM), not the render's textures.
+
+**Built as written, with these decisions taken solo (author asleep, «делай всё в соло»):**
+
+- The station's ОСНАСТКА «ОТКРЫТЬ» opens ОПИСЬ *over* the terminal (the author's entry-points
+  paragraph), so `#shipview` and its КОРАБЛЬ/СКАФАНДР tabs are removed entirely rather than kept as a
+  second instrument; `27-ui-ship` keeps only `hullSilhouette` (the painter ОПИСЬ uses) and the options
+  screen. `kitBlock` died with the suit tab; the doll (`drawKitFigure`) stands in zone 2 beside the
+  laid-out kit — the cosmetics of M344 will need it.
+- ПРИБОРЫ shows eleven lines, not the author's eight: корпус, бур and урон were added because a part
+  whose only affix touches the hull would otherwise move nothing on the panel, and a «future» that
+  can stay silent is a lie.
+- Card buttons are hidden until the card is selected (tap) or hovered (desktop with a mouse): the
+  cloth stays a cloth, the phone gets its three buttons under the item, the fuzzer still finds them.
+- Prices: `priceBestOf(k)` (seen beats heard) feeds the pile cue («виденное: 22 кр · 3:-2 · 2 прыжка»,
+  tap = course), the «трюм стоит около N» line, the map card rows (own cargo amber, best bold, «со
+  слуха»/«нужда» marked) and the map's ЦЕНЫ rail button → `#pricewin`, a list with КУРС per row.
+- People are never thrown overboard: the ЛЮДИ pile has no hatch and no button (`opisCanDump`).
+- Found and fixed on the way: `scrapYield` had no pool for `missile`, so dismantling a launcher threw
+  («pool is not iterable») — the fuzzer's button sweep hit it the moment the button became reachable;
+  `resetWorld` did not reset `G.matches` (M340 left it out), so matches leaked between suites.
+- The cloth's grid areas must be rectangular: the first layout gave `parts` an L-shape, Chrome dropped
+  the whole `grid-template-areas`, and every zone landed in one implicit cell. `side` (the future
+  locker of M345) is an empty named area on purpose.
+- The hull canvas draws at the aspect of its grid cell (`clientWidth/Height`), not a constant: a
+  420×190 drawing stretched into a tall cell read as a rotated ship on the first frame.

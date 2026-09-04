@@ -54,7 +54,7 @@ function stTabMods(){
       r.appendChild(box);$body.appendChild(r);
     }
 
-    /* сборка живёт на экране корабля — здесь только вход в неё */
+    /* сборка живёт на столе ОПИСЬ — здесь только вход в неё */
     {
       const slots=slotsOf(G.shipId),fm=G.fit[G.shipId]||{};
       const r=el("div","row");
@@ -62,10 +62,9 @@ function stTabMods(){
         Object.keys(fm).length+" из "+slots.length+" слотов занято · в инвентаре "+
         G.inv.length+" частей</s>"));
       const b=el("button","act sm gold","ОТКРЫТЬ");
-      /* уходим на экран корабля, не отстыковываясь: раньше здесь просто снимали
-         .open со станции, режим оставался "dock", и после ЗАКРЫТЬ игрок висел
-         в космосе без управления. Теперь помним, что вернуться надо на станцию. */
-      b.onclick=()=>{svReturn="station";$st.classList.remove("open");openShipView();};
+      /* ОПИСЬ (M341) ложится ПОВЕРХ терминала, как стол: закрыл — снова на
+         станции, а не в открытом космосе без управления */
+      b.onclick=()=>{tableToggle(true,"hold");};
       r.appendChild(b);$body.appendChild(r);
     }
 

@@ -89,7 +89,7 @@ function kitGive(x,why){
   while(kitShelf().length>12)kitShelf().shift();
   const ru=KIT_RU[x.p]+" «"+kitName(x)+"» "+kitRoman(x.cls)+" класса · "+KIT_WEAR[x.wear];
   logAdd("tech","Снаряжение: "+ru+(why?" · "+why:""));
-  if(typeof thingAdd==="function")thingAdd("kit",ru[0].toUpperCase()+ru.slice(1),(why||"")+" · лежит на полке · надеть — экран КОРАБЛЬ → СКАФАНДР");
+  if(typeof thingAdd==="function")thingAdd("kit",ru[0].toUpperCase()+ru.slice(1),(why||"")+" · лежит на полке · надеть — ОПИСЬ, запас комплекта");
   return x;
 }
 /* склад института: раз в окно (четыре дня) научная или промышленная станция
@@ -288,51 +288,9 @@ function kitHeatMul(){
   if(!p||p.type!=="ice")return 1;
   return kitStat().heat;
 }
-/* ── экран: фигура с шестью местами, строка паспорта, полка ──
-   Живёт в экране КОРАБЛЬ (снять/надеть — где угодно); чинить и латать —
-   дома, в мастерской (kitShopBlock). */
-let kitSel=null;
+/* ── кукла живёт на столе ОПИСЬ (M341): места нажатия отдаёт drawKitFigure;
+   надеть — там же (27j-ui-opis), чинить и латать — дома (kitShopBlock) ── */
 let kitDollHit=[];
-function kitBlock(body){
-  const K=kitAll();
-  body.appendChild(el("div","sec","СКАФАНДР · "+kitLine()));
-  const r=el("div","row");r.style.alignItems="flex-start";
-  const cv=document.createElement("canvas");cv.id="kitDoll";cv.width=180;cv.height=280;cv.style.cssText="width:180px;height:280px;flex:0 0 auto;cursor:pointer";
-  kitDollHit=[];drawKitFigure(cv.getContext("2d"),180,280,kitDollHit);
-  cv.addEventListener("click",e=>{
-    const rc=cv.getBoundingClientRect(),mx=(e.clientX-rc.left)*(cv.width/rc.width),my=(e.clientY-rc.top)*(cv.height/rc.height);
-    const h=kitDollHit.find(h=>mx>=h.x&&mx<=h.x+h.w&&my>=h.y&&my<=h.y+h.h);
-    kitSel=h?h.p:null;
-    if(typeof svRender==="function"&&document.getElementById("shipview").classList.contains("open"))svRender();
-    else if(typeof renderTab==="function")renderTab();
-  });
-  r.appendChild(cv);
-  /* места: имя · класс фишкой · слой — в одну строку, «I класса» не переносится */
-  const list=el("div","nm");list.style.minWidth="0";
-  let html="";
-  for(const p of KIT_PLACES){
-    const x=K[p];
-    html+="<b"+(kitSel===p?" style='color:var(--phos)'":"")+" style='white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block'>"+
-      KIT_RU[p]+" · «"+kitName(x)+"» <i class='kitchip'>"+kitRoman(x.cls)+"</i></b><s>"+
-      KIT_WEAR[x.wear]+(x.mods.length?" · "+x.mods.map(id=>KIT_MODS[id].ru).join(", "):"")+"</s>";
-  }
-  list.innerHTML=html;
-  r.appendChild(list);body.appendChild(r);
-  /* полка: надеть — сразу, это не магазин; новое — точкой */
-  const shelf=kitShelf();
-  if(shelf.length){
-    body.appendChild(el("div","sec","ПОЛКА · НАДЕТЬ — ПРЕЖНЯЯ ВЕЩЬ ЛЯЖЕТ НА ПОЛКУ"));
-    shelf.forEach((x,i)=>{
-      const isNew=!x.seen;x.seen=1;
-      const rr=el("div","row","<div class='nm'><b style='white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block'>"+
-        KIT_RU[x.p]+" · «"+kitName(x)+"» <i class='kitchip'>"+kitRoman(x.cls)+"</i>"+(isNew?" <i class='kitnew'></i>":"")+"</b><s>"+KIT_WEAR[x.wear]+
-        (x.mods.length?" · "+x.mods.map(id=>KIT_MODS[id].ru).join(", "):"")+(x.wear===3?" · заплат не берёт":"")+"</s></div>");
-      const b=el("button","act sm","НАДЕТЬ");
-      b.onclick=()=>{kitWearPiece(i);if(typeof svRender==="function"&&document.getElementById("shipview").classList.contains("open"))svRender();else if(typeof renderTab==="function")renderTab();};
-      rr.appendChild(b);body.appendChild(rr);
-    });
-  }else body.appendChild(el("div","row","<div class='nm'><s>полка пуста: вещи выдаёт склад института (ДОСКА научной или промышленной станции), отдаёт хулк, чинит и латает мастерская дома</s></div>"));
-}
 /* мастерская дома: починка ношеного и заплаты — по два гнезда на вещь */
 function kitShopBlock(){
   const K=kitAll();

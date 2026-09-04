@@ -102,7 +102,7 @@ in this order (author, 2026-09-03: «сначала по плану, потом 
    ghost click on screens opened by a pad swallowed, §18.8 complete but for the заявка (rung 21).
    ~~Left: the ship keeps its `.55` floor at deep zoom-out~~ — `.35` since M319 (0.316.0).
 
-## «Сорока» — the wanderer queue (M340 done, M341–M346 open; author 2026-09-04: «делай всё в соло»)
+## «Сорока» — the wanderer queue (M340–M341 done, M342–M346 open; author 2026-09-04: «делай всё в соло»)
 
 Design is settled in `docs/DESIGN-wanderer.md` (§1–§13; §6 and §12–§13 are the revised, binding
 parts — §11's prices are indicative). Read that file first, then this queue. Every milestone below is
@@ -116,70 +116,10 @@ cosmetics exist; the desk gets one table «ОПИСЬ»; a locker exists at stat
   5→5 or a box of 8 by part seed), `scrapPart` returns `matches`, hold header shows «спичек: N»,
   save round-trip, suite `91zzzze-matches`.
 
-- **M341 — the table «ОПИСЬ»** — **one screen for «what I have»; the desk keeps «what I read».**
-  Entry points after M341 (author, 2026-09-04): the menu button КОРАБЛЬ becomes ОПИСЬ and opens the
-  table full-screen (rework `#shipview`; its КОРАБЛЬ/СКАФАНДР tabs go away — parts are zone 3, the
-  kit zone 2, spare kit pieces a «запас» row beside the doll); the desk item НАКЛАДНАЯ loses its ТРЮМ
-  tab and becomes ЦЕНЫ (paper about prices only); the station's ОСНАСТКА opens ОПИСЬ with return to
-  the terminal (as today); while docked a fifth zone ЯЩИК slides in (M345). One rule: anything worn,
-  fitted or spent lives on the cloth; anything read lives on the desk. «Сорока»'s purchases land here
-  (tools → shelf, cosmetics → box, papers → desk ВЕЩИ). Header shows the two real counters, credits
-  and matches — not four.
-  **Readouts (author 2026-09-04): a permanent panel ПРИБОРЫ under the hull silhouette** (thrust,
-  turn, tank, cargo, shield, radar, jump, cooling — real `stat()` numbers) and one under the kit doll
-  (weight, pace, armour, lamp, scan, oxygen — `kitStat`). One rule for the whole cloth: hover/select a
-  thing and the panel shows the future — a fitted part shows «→ N» in red per touched line («если
-  снять», via `statPreview(slot,null)`), a spare part shows the delta against the part it would
-  replace and highlights the slot (red «оснастка» line when cap is short), kit pieces likewise
-  including weight; cosmetics and tools move nothing and get one line of words under the item.
-  Cards keep only name, tier, affixes — comparison lives in the panel, not on cards.
-  **Two layouts.** Desktop (>760): three columns as the mock, shelf top-centre, box top-right, hatch
-  bottom-right, locker slides in between box and hatch when docked; drag is primary, card buttons
-  remain. Phone (≤760): one vertical feed in fixed order — header counters; shelf+box as one
-  horizontal scroll strip; zone 3 (silhouette, ПРИБОРЫ, spare parts); zone 2; zone 1; locker if
-  docked. The hatch is not in the feed: it is a sticky bottom bar that appears while something is
-  lifted. Primary gesture on phone is tap: select → panel shows the future → three 44 px buttons
-  slide out under the item (СТАВИТЬ/СНЯТЬ, ЗА БОРТ, РАЗОБРАТЬ for parts); long-press lifts for drag.
-  Confirmation for tier≥3 is the button turning into «ТОЧНО?» for three seconds, both layouts. Only
-  the feed scrolls; one selected thing per table; guarded by `91f-ui` and `test.ps1 -Mobile`.
-  **Prices (author 2026-09-04: rethink, not remove).** The desk paper НАКЛАДНАЯ/ЦЕНЫ goes away;
-  `G.seenPrices` stays the one memory and is shown where the decision is made: a small caption on
-  each pile in zone 1 («лучшее из виденного: 38 · сектор 4:−7 · 2 прыжка», tap = set course, the
-  same action `renderPrices` had), one line under zone 1 «трюм стоит около N, если развезти» (best
-  seen per key, seen beats heard as in `12aa-need`); on the galaxy map a station's seen price list on
-  hover/tap with the player's cargo keys highlighted, plus a «все виденные цены» list button in map
-  mode for those who compared in the table. The receiver keeps broadcasting heard prices; the route
-  tool (`12r`) is untouched. Remove `bill` from `DESK_ITEMS` and the `prices` tab wiring in `27i`.
-  The author drew it: one green cloth
-  with four numbered zones, a tool shelf above, a cosmetics box at the right, a hatch in the corner.
-  - Rename tab `hold` → label ОПИСЬ in `src/index.html` (`data-tab="hold"` stays — it is an address)
-    and `DESK_ITEMS` `bill` note in `27ia-desk-top`. Do not touch the 20 copies under `docs/*.html`
-    (stands; regenerated).
-  - Rewrite `renderHold` (`27j-ui-hold`) into four zones laid out as a CSS grid inside `box`
-    (class `desk`): **1 ТРЮМ** — the existing piles (`holdDrawPile`) in a 3-column grid, каждая куча
-    с подписью и числом; **2 КОМПЛЕКТ СКАФАНДРА** — `kitLayDraw` canvas + the six places as slots
-    around it (use `KIT_PLACES`, `kitAll`, `kitName`); under it a strip «Отделка скафандра» (empty
-    until M344); **3 ЧАСТИ И ВЕЩИ** — the hull silhouette drawn like `svDraw` (extract the hull+anchors
-    painter from `27-ui-ship` into a shared `hullSilhouette(c,w,h,id,sel)`; do not duplicate it),
-    slot chips to the left of it (kind label + fitted part card), a column «СНЯТЫЕ ЧАСТИ» to the right
-    (`G.inv` not fitted, sorted by tier); **4 ЛЮК ЗА БОРТ** — a round hatch canvas in the corner.
-  - Drag and drop with pointer events (mouse+touch; `15-input` knows nothing of this DOM): a part card
-    dragged onto a matching slot → `fitPart`; slot card dragged to «снятые» → `unfitPart`; anything
-    dragged onto the hatch → for parts `scrapPart` (this is what «выкинуть» means for a part — the
-    matches come out), for piles a prompt «сколько» then `G.cargo[k]-=n`. Confirm only for parts
-    with `tier>=3` (a one-line inline «точно?» button, not `confirm()`). Keep the buttons СТАВИТЬ /
-    СНЯТЬ / РАЗОБРАТЬ as fallbacks on the cards (44 px rule) so the fuzzer and phones work without
-    drag.
-  - Shelf «ИНСТРУМЕНТЫ «СОРОКИ»» above the cloth: 6 slots, empty with a chalk hint until M343; the
-    cosmetics box «КОСМЕТИКА · шкатулка» at the right, closed lid until M344. Matches: a matchbox in
-    the lower-left corner of the cloth with the count as a pile caption (draw it in `holdPiece` style).
-  - Top HUD of the table shows credits and matches (the author's picture has four counters; we have
-    two real ones — draw two, do not invent the others).
-  - The old `#shipview` stays for the station's ОСНАСТКА caller (`26b-ui-station-work`) — M167 «two
-    instruments» — but `#shipbtn` opens the desk on the ОПИСЬ tab (`tableToggle(true,"hold")`).
-  - Tests: extend `91zzzzd-desk` — the tab renders all four zone headers; fitting via the fallback
-    button changes `G.fit`; hatch on a tier-4 part yields matches; `91f-ui` overlap stays green at
-    1280×800 and `-Mobile`.
+- **M341** (0.340.0) — done: the table «ОПИСЬ» (`27j-ui-opis`) — one cloth, four zones, drag or tap,
+  ПРИБОРЫ panels that show the future, the hatch, matches in the corner; the ship screen and the desk paper
+  НАКЛАДНАЯ are gone; prices live under the piles, on the map card and in the map's ЦЕНЫ list.
+  Body in `docs/PLAN-archive.md`.
 
 - **M342 — «Сорока» in the world** (new `12v-wander.js`, before `17c`; name the mode `wanderer`).
   - `WANDER_STOP=3d`, `WANDER_HOP=1d`, epoch `floor((now-WORLD_T0)/4d)`; `wanderLoop()` — ~24 stops
@@ -250,12 +190,6 @@ cosmetics exist; the desk gets one table «ОПИСЬ»; a locker exists at stat
 - **M346 — matchboxes** (`G.boxes=[ids]`): ~20 hand-written labels (one line each, like `BOOKS` —
   a table, not a generator), found in wrecks/flea/aboard; shelf at home next to the books,
   «коробков: N из 20». No effect. A full box of 50 is a keeper's legend, possible wild card once.
-
-Reference picture of the table: the author's mock (chat, 2026-09-04) — dark wood desk, green cloth,
-zones numbered 1–4, «ИНСТРУМЕНТЫ «СОРОКИ»» shelf top-centre, «КОСМЕТИКА · шкатулка» top-right, round
-hatch bottom-right with the hint «перетащи, чтобы выбросить», footer hints «Перетащи предмет на нужное
-место · Перетащи на люк, чтобы выбросить · Части выше добротной требуют подтверждения». Reproduce the
-layout in the game's own language (procedural canvas + desk DOM), not the render's textures.
 
 - **M347 — the map speaks in addresses** (author 2026-09-04: «на карте не понятно, что за сектора и
   адреса»). `18-mode-map`. (1) A sector grid, one cell per sector, under the same darkness law as the

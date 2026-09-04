@@ -99,10 +99,12 @@ function tableToggle(open,tab){
                  things:tableNewBy("things"),strips:tableNewBy("strips")};
     G.logNew=0;G.logNewBy={};tableNoticeAll();
     tableBake();tableRender();
-  }else tableWasNew=null;
+  }else{tableWasNew=null;if(typeof opisLeave==="function")opisLeave();}
   logBtnLabel();
 }
-function tableSetTab(t){tableTab=t;tableRender();}
+function tableSetTab(t){
+  if(tableTab==="hold"&&t!=="hold"&&typeof opisLeave==="function")opisLeave();
+  tableTab=t;tableRender();}
 /* столешница: дерево, лампа сверху, лист бумаги под списком. Статика — печём. */
 function tableBake(){
   const cv=document.getElementById("tablecv");if(!cv)return;
@@ -154,10 +156,12 @@ function tableRender(){
   const strip=document.getElementById("tableTabs");
   const back=document.getElementById("tableBack");
   const item=top?null:((typeof deskItemOf==="function")?deskItemOf(tableTab):null);
-  if(back)back.style.display=top?"none":"";
+  /* у ОПИСИ дороги «← СТОЛ» нет: это другое место, ЗАКРЫТЬ ведёт в мир (M341) */
+  if(back)back.style.display=(top||tableTab==="hold")?"none":"";
   if(strip)strip.style.display=(top||!item||item.tabs.length<2)?"none":"";
   if(top){
     document.getElementById("tableSub").textContent="что лежит на столе";
+    {const t0=document.getElementById("tableTtl");if(t0)t0.textContent="СТОЛ";}
     const cr0=document.getElementById("tableCr"),wh0=document.getElementById("tableWhere");
     if(cr0)cr0.textContent=Math.round(G.credits).toLocaleString("ru")+" кр";
     if(wh0){const mr=modeRu();
@@ -212,8 +216,7 @@ function tableRender(){
   const sub=document.getElementById("tableSub"),cr=document.getElementById("tableCr"),wh=document.getElementById("tableWhere");
   const SUB={ether:"эфир · что было услышано",bort:"борт · техника и деньги",folk:"люди · что вам сказали",
              deeds:"дела · что вы должны",strips:"ленты · оторванные полосы самописца",things:"вещи · письма, находки, бумаги",
-             hold:"трюм · груз, разложенный по кучам",
-             prices:"цены · как их видели, по станциям",record:"трудовая книжка · записи чужими руками",
+             hold:"опись · что на вас, что в трюме, что снято",record:"трудовая книжка · записи чужими руками",
              album:"альбом · снимки мест, где вы стояли",
              mail:"почта · стопки карточек, скреплённые скрепкой",
              diary:"дневник зимовки · бланками, потому что писать некому",
@@ -224,23 +227,26 @@ function tableRender(){
              chess:"партия · ход в сутки, доска считается из ходов",
              lore:"отчёт «Долгого хода»"};
   if(sub)sub.textContent=SUB[tableTab]||"";
+  {const ttl=document.getElementById("tableTtl");if(ttl)ttl.textContent=tableTab==="hold"?"ОПИСЬ":"СТОЛ";}
   if(cr)cr.textContent=Math.round(G.credits).toLocaleString("ru")+" кр";
+  /* у описи два настоящих счётчика — кредиты и спички; больше не выдумываем */
   if(wh){const mr=modeRu();
-    wh.textContent=(G.sys&&G.sys.name?G.sys.name:"—")+(mr?" · "+mr:"");}
+    wh.textContent=(tableTab==="hold"&&typeof matchesLine==="function")?matchesLine():
+      (G.sys&&G.sys.name?G.sys.name:"—")+(mr?" · "+mr:"");}
   box.style.display=tableTab==="lore"?"none":"";
   if(lore)lore.style.display=tableTab==="lore"?"":"none";
   /* Что читают — лежит на ЛИСТЕ; что держат в руках — лежит на СТОЛЕ (A3).
      Тетрадь, дела, цены и книжка — это записи, им место на бумаге. Ленты и
      вещи — предметы: письмо, накладная, вырезка, полоса самописца, — и лист
      под ними был бы ошибкой: бумага на бумаге не читается. */
-  box.classList.toggle("desk",tableTab==="things"||tableTab==="strips"||tableTab==="hold"||
+  box.classList.toggle("opis",tableTab==="hold");
+  box.classList.toggle("desk",tableTab==="things"||tableTab==="strips"||
     tableTab==="album"||tableTab==="mail"||tableTab==="diary");
   if(tableTab==="ether"||tableTab==="bort"||tableTab==="folk")renderLog(tableTab);
   else if(tableTab==="deeds")renderDeeds();
   else if(tableTab==="strips")renderStrips(box);
   else if(tableTab==="things")renderThings(box);
   else if(tableTab==="hold"&&typeof renderHold==="function")renderHold(box);
-  else if(tableTab==="prices"&&typeof renderPrices==="function")renderPrices(box);
   else if(tableTab==="record"&&typeof renderRecord==="function")renderRecord(box);
   else if(tableTab==="album"&&typeof renderAlbum==="function")renderAlbum(box);
   else if(tableTab==="mail"&&typeof renderMail==="function")renderMail(box);
@@ -368,7 +374,7 @@ function drawThingIcon(c,k,W,H){
   addEventListener("keydown",e=>{
     /* Escape поднимает на ступень: из вещи — на стол, со стола — из стола */
     if(e.code==="Escape"&&tableOpenNow){
-      if(tableTab!=="top")tableSetTab("top");else tableToggle(false);
+      if(tableTab!=="top"&&tableTab!=="hold")tableSetTab("top");else tableToggle(false);
       e.preventDefault();
     }
   });

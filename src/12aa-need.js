@@ -233,41 +233,101 @@ function pricesHeard(sys,res,val,fuel){
   pricesTrim();
   return G.seenPrices[sys.key];
 }
+/* ── лучшее по товару: виденное сильнее слышанного ──
+   Одна услышанная цифра не перебивает прейскурант, снятый на месте: сперва
+   ищем среди виденных, и только если товара не видели нигде — среди слухов.
+   Возвращает {val, s:запись, heard} или null. Читают кучи ОПИСИ и карта. */
+function priceBestOf(k){
+  const S=G.seenPrices||{};let b=null,h=null;
+  for(const key in S){
+    const s=S[key];if(!s||!s.p||!s.p[k])continue;
+    if(s.heard){if(!h||s.p[k]>h.p[k])h=s;}
+    else if(!b||s.p[k]>b.p[k])b=s;
+  }
+  const s=b||h;if(!s)return null;
+  return {val:s.p[k],s,heard:!b};
+}
+function pricesCount(){return Object.keys(G.seenPrices||{}).length;}
+/* ── список виденных цен (M341) ──
+   Бумага НАКЛАДНАЯ ушла со стола: цена показывается там, где принимают
+   решение, — подписью под кучей в ОПИСИ и на карточке станции на карте. Этот
+   список — для тех, кто сравнивал в таблице: кнопка ЦЕНЫ на правом борту карты.
+   Строка — курс туда, тот же жест, что у дел. */
 function renderPrices(box){
   box.textContent="";
   const S=G.seenPrices||{};
   const L=Object.keys(S).map(k=>S[k]).sort((a,b)=>b.day-a.day);
-  if(!L.length){tableRow(box,"dim","","цен ещё не видели: они записываются при каждой стыковке");return;}
-  tableRow(box,"head","","ЦЕНЫ, КАК ИХ ВИДЕЛИ · ДЕНЬ "+celDay()+
-    " · ЖИРНЫМ — ЛУЧШАЯ ПО ТОВАРУ · ТЫЧОК — КУРС ТУДА");
-  /* «лучшая по товару» считается только по ВИДЕННОМУ: одна услышанная цифра
-     не должна перебивать полный прейскурант, снятый на месте */
+  if(!L.length){box.appendChild(el("div","row","<div class='nm'><s>цен ещё не видели: они записываются при каждой стыковке и со слуха с приёмника</s></div>"));return;}
+  box.appendChild(el("div","sec","ДЕНЬ "+celDay()+" · ЖИРНЫМ — ЛУЧШАЯ ПО ТОВАРУ · СВЕТЛЫМ — ТО, ЧТО В ТРЮМЕ"));
   const best={};
-  for(const k of TRADE_KEYS){let b=null;for(const s of L){if(s.heard)continue;if(s.p[k]&&(!b||s.p[k]>b.p[k]))b=s;}if(b)best[k]=b;}
+  for(const k of TRADE_KEYS){const b=priceBestOf(k);if(b&&!b.heard)best[k]=b.s;}
   for(const s of L){
-    const row=document.createElement("div");row.className="li";
-    const em=document.createElement("em");em.textContent=s.sx+":"+s.sy;
-    const sp=document.createElement("span");
-    const cells=TRADE_KEYS.filter(k=>s.p[k]).map(k=>(best[k]===s?"<b>":"")+RES[k].ru.toLowerCase()+" "+s.p[k]+(best[k]===s?"</b>":""));
-    /* «со слуха» помечено, и это не украшение: подслушанная строка знает один
-       товар из эфира и не знает ни остального прейскуранта, ни нужды. Игрок
-       должен видеть разницу между «я там был» и «мне сказали» */
-    sp.innerHTML="<b>"+s.name+"</b> · день "+s.day+
+    const cells=TRADE_KEYS.filter(k=>s.p[k]).map(k=>{
+      const hot=(G.cargo[k]|0)>0,top=best[k]===s;
+      return (top?"<b>":"")+"<span"+(hot?" class='hot'":"")+">"+RES[k].ru.toLowerCase()+" "+s.p[k]+"</span>"+(top?"</b>":"");
+    });
+    const r=el("div","row");
+    r.appendChild(el("div","nm","<b>"+s.name+" · "+s.sx+":"+s.sy+"</b><s>день "+s.day+
       (s.heard?" · <i style='color:#9fb3c2'>со слуха</i>":"")+
       (s.need?" · <b style='color:#f2b25c'>нужда: "+RES[s.need].ru.toLowerCase()+"</b>":"")+
-      "<br>"+cells.join(" · ")+
-      (s.heard&&s.fuel?" · топливо "+s.fuel:"");
-    row.appendChild(em);row.appendChild(sp);
-    /* ── и по ней можно проложить курс (плейтест, пункт 5) ──
-       Бумага помнила цены и нужды всех станций, где вы были, и не давала с
-       ними сделать ничего: адрес приходилось запоминать глазами и набирать на
-       карте руками. Тот же жест, что у дел, — тычок по строке ставит курс.
-       Над миром при этом не появляется ничего: ни стрелки, ни маркера. */
+      "<br>"+cells.join(" · ")+(s.heard&&s.fuel?" · топливо "+s.fuel:"")+"</s>"));
     if(typeof gotoSector==="function"&&s.sx!==undefined){
-      row.style.cursor="pointer";
-      row.onclick=()=>{gotoSector(s.sx,s.sy,
-        s.need?("нужда: "+RES[s.need].ru.toLowerCase()):null);};
+      const b=el("button","act sm","КУРС");
+      const go=()=>{pricesClose();gotoSector(s.sx,s.sy,s.need?("нужда: "+RES[s.need].ru.toLowerCase()):null);};
+      b.onclick=e=>{e.stopPropagation();go();};
+      r.appendChild(b);
+      r.style.cursor="pointer";r.onclick=go;
     }
-    box.appendChild(row);
+    box.appendChild(r);
   }
+}
+function pricesOpen(){
+  const w=document.getElementById("pricewin");if(!w)return;
+  const cr=document.getElementById("prCr"),dy=document.getElementById("prDay");
+  if(cr)cr.textContent=Math.round(G.credits).toLocaleString("ru")+" кр";
+  if(dy)dy.textContent="станций: "+pricesCount();
+  renderPrices(document.getElementById("prBody"));
+  w.classList.add("open");
+}
+function pricesClose(){const w=document.getElementById("pricewin");if(w)w.classList.remove("open");}
+(function pricesWire(){
+  const b=document.getElementById("pricesbtn"),x=document.getElementById("prClose");
+  if(b)b.addEventListener("click",()=>{if(typeof sfx==="function")sfx("ui");pricesOpen();});
+  if(x)x.addEventListener("click",pricesClose);
+})();
+/* ── цены на карточке карты (M341) ──
+   Строки цен для карточки: ячейки «титан 41» по ширине карточки;
+   hot — этот товар в трюме, best — лучшая из виденных по товару, mark —
+   пометка (со слуха, нужда). Считается только для выбранной станции. */
+function mapPriceRows(s,maxW){
+  const pr=(G.seenPrices||{})[s.key];if(!pr||!pr.p)return [];
+  const cells=[];
+  if(pr.heard)cells.push({t:"со слуха",mark:1});
+  if(pr.need&&RES[pr.need])cells.push({t:"нужда: "+RES[pr.need].ru.toLowerCase(),mark:1});
+  for(const k of TRADE_KEYS){
+    if(!pr.p[k])continue;
+    const b=(typeof priceBestOf==="function")?priceBestOf(k):null;
+    cells.push({t:RES[k].ru.toLowerCase()+" "+pr.p[k],hot:(G.cargo[k]|0)>0,best:!!b&&!b.heard&&b.s===pr});
+  }
+  ctx.font="9px ui-monospace,monospace";
+  const sep=ctx.measureText(" · ").width,rows=[];let row=[],w=0;
+  for(const c of cells){
+    const cw=ctx.measureText(c.t).width;
+    if(row.length&&w+sep+cw>maxW){rows.push(row);row=[];w=0;}
+    row.push(c);w+=(row.length>1?sep:0)+cw;
+  }
+  if(row.length)rows.push(row);
+  return rows;
+}
+function mapPriceDraw(PR,x0,y0){
+  const sep=ctx.measureText(" · ").width;
+  PR.forEach((row,ri)=>{
+    let x=x0;const y=y0+ri*11;
+    row.forEach(cell=>{
+      ctx.font=(cell.best?"bold ":"")+"9px ui-monospace,monospace";
+      ctx.fillStyle=cell.hot?"#f2b25c":(cell.mark?"rgba(255,150,135,.85)":"rgba(160,182,192,.62)");
+      ctx.fillText(cell.t,x,y);x+=ctx.measureText(cell.t).width+sep;
+    });
+  });
+  ctx.font="9px ui-monospace,monospace";
 }

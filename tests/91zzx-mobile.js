@@ -1,21 +1,24 @@
 /* ══════════════ автотесты: телефонный вид (M167) ══════════════ */
-TEST_SUITES.push(()=>suite("телефон: разрез КОРАБЛЬ|СКАФАНДР, кукла из вещей, тормоза на поверхности нет",()=>{
+TEST_SUITES.push(()=>suite("телефон: опись одной лентой, кукла из вещей, тормоза на поверхности нет",()=>{
   resetWorld();
   document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
-  /* вкладки корабельного экрана */
-  ok(!!document.getElementById("svTabs"),"вкладки есть");
-  openShipView();
-  eq(svMode,"ship","открывается на корабле");
-  document.querySelector('#svTabs button[data-tab="suit"]').click();
-  eq(svMode,"suit","переключились на скафандр");
-  ok(!!document.getElementById("kitDoll"),"кукла на месте");
+  /* ОПИСЬ (M341) вместо экрана КОРАБЛЬ|СКАФАНДР: одна лента, люк — полосой снизу */
+  ok(!document.getElementById("shipview"),"экрана корабля в разметке больше нет");
+  tableToggle(true,"hold");
+  const box=document.getElementById("loglist");
+  ok(box.classList.contains("opis"),"опись открыта на сукне");
+  ok(!!box.querySelector("canvas.doll"),"кукла на месте");
   ok(kitDollHit.length===6,"шесть зон нажатия");
   ok(kitDollHit.every(h=>h.w>=44&&h.h>=44),"каждая зона не меньше 44 px");
-  eq(document.getElementById("svstage").style.display,"none","сцена корабля спрятана");
-  document.querySelector('#svTabs button[data-tab="ship"]').click();
-  eq(svMode,"ship","и обратно");
-  kitAnimStop();
-  document.getElementById("shipview").classList.remove("open");
+  if(innerWidth<=760){
+    const order=[...box.children].filter(e=>e.classList.contains("op-z")).map(e=>getComputedStyle(e).order).join(",");
+    eq(order,"1,2,3","лента: части, комплект, трюм");
+    eq(getComputedStyle(box.querySelector(".op-hatch")).display,"none","люк не в ленте");
+    ok(box.scrollWidth<=box.clientWidth+1,"лента не шире экрана ("+box.scrollWidth+"/"+box.clientWidth+")");
+    const bar=document.getElementById("opisBar");
+    ok(!!bar&&getComputedStyle(bar).display==="none","полоса люка спрятана, пока ничего не поднято");
+  }else ok(true,"широкий экран — порядок ленты не меряем");
+  tableToggle(false);
   /* палитра комплекта читается и семейства различимы */
   G.kit=null;
   const p1=kitPalette().torso.main;

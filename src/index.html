@@ -82,6 +82,8 @@
     <!-- карта (M299): «к себе», когда окно уехало; «назвать» — на раскрытой карточке -->
     <button id="mebtn" style="display:none">К СЕБЕ</button>
     <button id="namebtn" style="display:none">НАЗВАТЬ</button>
+    <!-- все виденные цены (M341): на карте, когда есть что сравнивать -->
+    <button id="pricesbtn" style="display:none">ЦЕНЫ</button>
   </div>
   <!-- Иконки тонкой линией и все из одного набора: круг-орбита, три полосы
        систем, плюс и минус одной толщины. Значок опознают быстрее слова,
@@ -96,7 +98,7 @@
 
 <div id="menu">
   <b>БОРТОВЫЕ СИСТЕМЫ<span id="menuclose">×</span></b>
-  <button id="shipbtn"><svg viewBox="0 0 16 16"><path d="M8 1.5 11 8l-3 6.5L5 8z"/><path d="M5 9.5 2.5 12M11 9.5 13.5 12"/></svg><span class="tx"><em>КОРАБЛЬ</em><s>корпус, слоты, части</s></span></button>
+  <button id="shipbtn"><svg viewBox="0 0 16 16"><path d="M8 1.5 11 8l-3 6.5L5 8z"/><path d="M5 9.5 2.5 12M11 9.5 13.5 12"/></svg><span class="tx"><em>ОПИСЬ</em><s>трюм, комплект, части, вещи</s></span></button>
   <button id="dealbtn" style="display:none"><svg viewBox="0 0 16 16"><circle cx="5.4" cy="5" r="2.1"/><path d="M1.6 13c0-2.2 1.7-3.6 3.8-3.6S9.2 10.8 9.2 13"/><circle cx="11.6" cy="4.2" r="1.5"/><path d="M11.6 7.2v5.6M9.4 9.4h4.4"/></svg><span class="tx"><em>ДЕЛО</em><s>кто и что на вас работает</s></span></button>
   <button id="tablebtn"><svg viewBox="0 0 16 16"><path d="M2 6h12M3 6v7M13 6v7"/><path d="M5 3.5h6l1 2.5H4z"/></svg><span class="tx"><em>СТОЛ</em><s>тетрадь, ленты, письма, вещи</s></span></button>
   <button id="roadbtn"><svg viewBox="0 0 16 16"><path d="M2 12c3-1 5-6 12-7"/><circle cx="13" cy="5" r="1.6"/><path d="M2.5 14h11"/></svg><span class="tx"><em>В ДОРОГУ</em><s>едете? корабль полетит с вами</s></span></button>
@@ -119,7 +121,7 @@
 <div class="scr" id="tablewin">
   <canvas id="tablecv"></canvas>
   <header>
-    <div class="ttl"><b>СТОЛ</b><s id="tableSub">тетрадь · что слышали, что было, что сказали</s></div>
+    <div class="ttl"><b id="tableTtl">СТОЛ</b><s id="tableSub">тетрадь · что слышали, что было, что сказали</s></div>
     <div class="wallet"><em id="tableCr">0 кр</em><i id="tableWhere">—</i></div>
   </header>
   <nav class="tabs" id="tableTabs">
@@ -129,8 +131,7 @@
     <button data-tab="deeds">ДЕЛА</button>
     <button data-tab="strips">ЛЕНТЫ</button>
     <button data-tab="things">ВЕЩИ</button>
-    <button data-tab="hold">ТРЮМ</button>
-    <button data-tab="prices">ЦЕНЫ</button>
+    <button data-tab="hold">ОПИСЬ</button>
     <button data-tab="record">КНИЖКА</button>
     <button data-tab="album" style="display:none">АЛЬБОМ</button>
     <button data-tab="mail" style="display:none">ПОЧТА</button>
@@ -201,19 +202,14 @@
   </footer>
 </div>
 
-<div class="scr" id="shipview">
+<!-- ══ цены, как их видели (M341) ══ список для карты: строка — курс туда -->
+<div class="scr" id="pricewin">
   <header>
-    <div class="ttl"><b id="svName">—</b><s id="svSub">—</s></div>
-    <div class="wallet"><em id="svCap">—</em><i id="svSlots">—</i></div>
+    <div class="ttl"><b>ЦЕНЫ</b><s>как их видели, по станциям · тычок — курс туда</s></div>
+    <div class="wallet"><em id="prCr">0 кр</em><i id="prDay">—</i></div>
   </header>
-  <nav class="tabs" id="svTabs">
-    <button data-tab="ship" class="on">КОРАБЛЬ</button>
-    <button data-tab="suit">СКАФАНДР</button>
-  </nav>
-  <div id="svstage"><canvas id="svcan"></canvas><div id="svhint">выберите слот на корпусе</div></div>
-  <nav class="tabs" id="svfilter"></nav>
-  <div class="body" id="svBody"></div>
-  <footer><button class="act gold" id="svClose">ЗАКРЫТЬ</button></footer>
+  <div class="body" id="prBody"></div>
+  <footer><button class="act gold" id="prClose">ЗАКРЫТЬ</button></footer>
 </div>
 
 <!-- ══ ДЕЛО (M286) ══ один ответ на вопрос «что на меня сейчас работает»:

@@ -10,11 +10,12 @@ TEST_SUITES.push(()=>suite("станция ↔ экран корабля",()=>{
   G.ship.x=G.sys.station.x;G.ship.y=G.sys.station.y;
   openStation();
   eq(G.mode,"dock","после стыковки режим dock");
-  /* путь «МОДУЛИ → ОСНАСТКА КОРПУСА → ОТКРЫТЬ» */
-  svReturn="station";$st.classList.remove("open");openShipView();
-  ok($sv.classList.contains("open"),"экран корабля открыт");
-  document.getElementById("svClose").click();
-  ok(!$sv.classList.contains("open"),"экран корабля закрыт");
+  /* путь «МОДУЛИ → ОСНАСТКА КОРПУСА → ОТКРЫТЬ»: опись ложится ПОВЕРХ терминала (M341) */
+  tableToggle(true,"hold");
+  ok(tableIsOpen()&&tableTab==="hold","опись открыта");
+  ok($st.classList.contains("open"),"терминал под ней остался открытым");
+  document.getElementById("tableClose").click();
+  ok(!tableIsOpen(),"опись закрыта");
   ok($st.classList.contains("open"),"вернулись в терминал станции, а не в космос");
   eq(G.mode,"dock","режим по-прежнему dock");
   closeStation();

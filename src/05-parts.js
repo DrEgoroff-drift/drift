@@ -306,7 +306,9 @@ function deltaHtml(a,b){
 function scrapYield(p){
   const r=rng(hashi(p.seed,2024,p.tier));
   const pool={gun:["iron","titan"],shield:["silicon","crystal"],engine:["iron","isotopes"],
-    hull:["iron","titan"],core:["isotopes","iridium"],util:["silicon","organics"]}[p.kind];
+    hull:["iron","titan"],core:["isotopes","iridium"],util:["silicon","organics"],
+    /* пусковая тоже разбирается (M341 нашёл: у неё не было пула, и разбор падал) */
+    missile:["iron","techcomp"]}[p.kind];
   const out={};
   for(const k of pool)out[k]=Math.max(1,Math.round((2+p.tier*2.2)*(.6+r()*.8)));
   return out;

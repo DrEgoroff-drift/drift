@@ -160,9 +160,9 @@ TEST_SUITES.push(()=>suite("стол: бумага, а не окно списк�
   ok(!document.body.classList.contains("table"),"и стол закрывается");
 }));
 
-/* Трюм как раскладка (M179): кучи вместо строк. Проверяем устройство:
-   куча растёт с числом единиц, пустые ресурсы не рисуются, вкладка лежит
-   на дереве (desk), и у каждой карточки есть канва с кучей и подпись. */
+/* Трюм как раскладка (M179): кучи вместо строк. С M341 кучи — зона 1 описи:
+   куча растёт с числом единиц, пустые ресурсы не рисуются, у каждой карточки
+   канва с кучей и подпись; комплект — своя зона, он не груз. */
 TEST_SUITES.push(()=>suite("стол: трюм разложен кучами",()=>{
   resetWorld();
   document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
@@ -172,25 +172,19 @@ TEST_SUITES.push(()=>suite("стол: трюм разложен кучами",()
   G.cargo.ice=9;G.cargo.crystal=2;G.cargo.missile=3;
   tableToggle(true,"hold");
   const box=document.getElementById("loglist");
-  ok(box.classList.contains("desk"),"трюм лежит на дереве");
-  /* раскладка комплекта (M216) — своя, широкая карточка, и она НЕ ресурс:
-     считаем груз отдельно от того, что на себе */
-  const wide=box.querySelectorAll(".thing.wide");
-  eq(wide.length,1,"комплект лежит одной раскладкой, а не шестью карточками");
-  const cards=box.querySelectorAll(".thing:not(.wide)");
+  ok(box.classList.contains("opis"),"трюм лежит на сукне описи");
+  const cards=box.querySelectorAll(".op-card.pile");
   eq(cards.length,3,"карточка на каждый ненулевой ресурс");
   let okAll=true;
-  cards.forEach(cd=>{
-    if(!cd.querySelector("canvas")||!cd.querySelector(".nm b"))okAll=false;
-  });
+  cards.forEach(cd=>{if(!cd.querySelector("canvas")||!cd.querySelector("b"))okAll=false;});
   ok(okAll,"в каждой карточке куча и подпись");
   ok([...cards].some(cd=>/Лёд × 9/.test(cd.textContent)),"число единиц в подписи");
+  /* комплект — своя зона, одна раскладка и кукла, а не шесть карточек */
+  eq(box.querySelectorAll(".op-kit canvas.lay").length,1,"комплект лежит одной раскладкой");
   G.cargo.ice=0;G.cargo.crystal=0;G.cargo.missile=0;
   tableRender();
-  /* пустой трюм — пустых карточек груза нет. А комплект остаётся: скафандр на
-     тебе и тогда, когда везти нечего, и «на себе» это не про груз (M216) */
-  eq(box.querySelectorAll(".thing:not(.wide)").length,0,"пустой трюм — ни одной карточки груза");
-  eq(box.querySelectorAll(".thing.wide").length,1,"а комплект на месте: он не груз");
+  eq(box.querySelectorAll(".op-card.pile").length,0,"пустой трюм — ни одной карточки груза");
+  eq(box.querySelectorAll(".op-kit canvas.lay").length,1,"а комплект на месте: он не груз");
   tableToggle(false);
 }));
 
@@ -278,12 +272,14 @@ TEST_SUITES.push(()=>suite("стол: по бумаге с адресом шту
   G.seenPrices={};
   G.seenPrices["3,-2"]={sx:3,sy:-2,name:"Проверочная",day:celDay(),
                         p:{ice:22,iron:15},need:"ice"};
-  tableToggle(true,"prices");
-  const box=document.getElementById("loglist");
-  const rows=[...box.querySelectorAll(".li")].filter(r=>r.onclick);
+  /* бумага ушла со стола (M341): список виденных цен живёт на карте, кнопка ЦЕНЫ */
+  pricesOpen();
+  const box=document.getElementById("prBody");
+  const rows=[...box.querySelectorAll(".row")].filter(r=>r.onclick);
   ok(rows.length>=1,"у строки с адресом есть ход");
   G.mode="system";G.sel={x:0,y:0};
   rows[0].onclick();
+  ok(!document.getElementById("pricewin").classList.contains("open"),"список закрылся сам");
   eq(G.sel.x,3,"курс лёг на тот сектор");
   eq(G.sel.y,-2,"и по второй оси");
   eq(G.mode,"map","и штурман открыт");
@@ -295,7 +291,7 @@ TEST_SUITES.push(()=>suite("стол: по бумаге с адресом шту
   /* запись без адреса не роняет и не врёт */
   ok(gotoSector(null,null,"без адреса")===false,"без адреса курс не кладётся");
   G.mode="system";
-  tableToggle(false);
+  pricesClose();
 }));
 TEST_SUITES.push(()=>suite("цены: услышанное ложится на бумагу, но не притворяется виденным",()=>{
   resetWorld();
@@ -326,9 +322,14 @@ TEST_SUITES.push(()=>suite("цены: услышанное ложится на �
   G.seenPrices={};
   G.seenPrices["a"]={sx:1,sy:1,name:"Виденная",day:celDay(),p:{ice:20},need:null};
   G.seenPrices["b"]={sx:2,sy:2,name:"Слышанная",day:celDay(),p:{ice:900},need:null,heard:1};
-  tableToggle(true,"prices");
-  const box=document.getElementById("loglist");
-  const bold=[...box.querySelectorAll(".li b")].map(b=>b.textContent);
+  eq(priceBestOf("ice").val,20,"лучшая по товару — виденная, а не услышанная");
+  const box=document.createElement("div");renderPrices(box);
+  const bold=[...box.querySelectorAll(".row .nm s b")].map(b=>b.textContent);
   ok(!bold.some(t=>/900/.test(t)),"услышанная цифра не объявлена лучшей");
-  tableToggle(false);
+  /* и на карточке карты: строки цен, свой груз светлым (M341) */
+  G.cargo.ice=5;
+  const rowsM=mapPriceRows({key:"a"},400);
+  ok(rowsM.length>=1&&rowsM[0].some(c=>/лёд/.test(c.t)&&c.hot),"карта видит цену и знает, что лёд в трюме");
+  eq(mapPriceRows({key:"нет такой"},400).length,0,"без записи — без строк");
+  G.cargo.ice=0;
 }));

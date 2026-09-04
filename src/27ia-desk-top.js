@@ -160,27 +160,6 @@ const DESK_DRAW={
     c.fillStyle="rgba(210,232,240,.5)";c.beginPath();
     c.moveTo(w*.2,h*.72);c.lineTo(w*.29,h*.62);c.lineTo(w*.3,h*.71);c.closePath();c.fill();
   },
-  /* НАКЛАДНАЯ — планшет: доска, зажим, лист под ним */
-  bill:(c,w,h)=>{
-    const bx=w*.22,by=h*.1,bwd=w*.56,bhd=h*.78;
-    dkShadow(c,bx,by,bwd,bhd);
-    /* доска шире листа со всех сторон — тогда она читается доской */
-    c.fillStyle="#33261a";c.fillRect(bx,by,bwd,bhd);
-    const gd=c.createLinearGradient(bx,by,bx+bwd*.4,by+bhd);
-    gd.addColorStop(0,"rgba(255,224,180,.16)");gd.addColorStop(1,"rgba(0,0,0,.3)");
-    c.fillStyle=gd;c.fillRect(bx,by,bwd,bhd);
-    c.strokeStyle="#1c130c";c.lineWidth=1;c.strokeRect(bx+.5,by+.5,bwd-1,bhd-1);
-    /* лист */
-    dkPaper(c,bx+4,by+h*.14,bwd-8,bhd-h*.2,["#ded2b0","#c6b78e","#8a7c58"]);
-    dkRule(c,bx+9,by+h*.3,bwd-20,5,h*.1);
-    /* колонка чисел справа — это счёт, а не письмо */
-    c.fillStyle="rgba(90,74,48,.45)";
-    for(let i=0;i<5;i++)c.fillRect(bx+bwd-22,Math.round(by+h*.3+i*h*.1)-3,12,1.5);
-    /* зажим */
-    c.fillStyle="#7d858b";c.fillRect(bx+bwd*.24,by+h*.04,bwd*.52,h*.1);
-    c.fillStyle="rgba(255,255,255,.4)";c.fillRect(bx+bwd*.24,by+h*.04,bwd*.52,2.5);
-    c.fillStyle="rgba(0,0,0,.35)";c.fillRect(bx+bwd*.24,by+h*.13,bwd*.52,1.5);
-  },
   /* КНИЖКА — трудовая: чужой рукой про тебя */
   record:(c,w,h)=>{
     const x=w*.24,y=h*.16,bw=w*.52,bh=h*.62;
@@ -321,8 +300,6 @@ const DESK_ITEMS=[
    tabs:["ether","bort","folk"], live:()=>true, wide:true},
   {id:"deeds", ru:"ДЕЛА",    note:"что вы должны и кому",
    tabs:["deeds"], live:()=>true},
-  {id:"bill",  ru:"НАКЛАДНАЯ",note:"трюм и цены, как их видели",
-   tabs:["hold","prices"], live:()=>true},
   {id:"strips",ru:"ЛЕНТЫ",   note:"оторванные полосы самописца",
    tabs:["strips"], live:()=>((G.strips||[]).length>0)},
   {id:"things",ru:"ВЕЩИ",    note:"письма, находки, бумаги",

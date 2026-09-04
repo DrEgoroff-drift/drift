@@ -176,10 +176,10 @@ TEST_SUITES.push(()=>suite("экраны M302: 44 px на каждом экра�
   /* штаб с управляющим */
   if(free.length)hireMgr(free[0]);
   G.mode="system";$hq.classList.add("open");hqRender();sweep("штаб",$hq);$hq.classList.remove("open");
-  /* корабль */
-  openShipView();sweep("корабль",document.getElementById("shipview"));
-  document.querySelector('#svTabs button[data-tab="suit"]').click();sweep("скафандр",document.getElementById("shipview"));
-  kitAnimStop();document.getElementById("shipview").classList.remove("open");
+  /* опись (M341): один стол вместо корабля и скафандра; с частью и запасом на нём */
+  addPart(genPart(3021,3,slotsOf(G.shipId)[0]));
+  kitShelf().push(kitPiece("helmet",2,1,7));
+  tableToggle(true,"hold");sweep("опись",document.getElementById("tablewin"));tableToggle(false);
   /* стол */
   tableToggle(true);sweep("стол",document.getElementById("tablewin"));tableToggle(false);
   ok(seen>40,"кнопок обойдено: "+seen);

@@ -227,6 +227,9 @@ function hud(){
   const mb=document.getElementById("mebtn"),nb=document.getElementById("namebtn");
   if(mb)setSt(mb,"display",(G.mode==="map"&&(G.mapView||(G.mapZoom&&G.mapZoom!==1)))?"":"none");
   if(nb)setSt(nb,"display",(G.mode==="map"&&G.mapMore)?"":"none");
+  /* «ЦЕНЫ» — список виденных цен на карте (M341), когда есть что сравнивать */
+  const pb=document.getElementById("pricesbtn");
+  if(pb)setSt(pb,"display",(G.mode==="map"&&typeof pricesCount==="function"&&pricesCount())?"":"none");
   /* приборная колодка (25c): рисуется каждым кадром, гаснет вместе со строкой */
   if(typeof instrPodTick==="function")instrPodTick();
   setTx($place,a);setTx($sub,b);

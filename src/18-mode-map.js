@@ -532,7 +532,11 @@ function drawMap(){
     ctx.font="9px ui-monospace,monospace";
     /* высота — по числу строк описания, а не константой 104: у длинного
        описания четвёртая строка вылезала за плашку */
-    const dn=wrapCount(s.desc,cw-24), ch=54+dn*11+8;
+    const dn=wrapCount(s.desc,cw-24);
+    /* виденные цены этой станции — на карточке, где выбирают, куда лететь (M341):
+       свой груз светлым, лучшая по товару жирным, услышанное помечено */
+    const PR=mapPriceRows(s,cw-24);
+    const ch=54+dn*11+8+(PR.length?PR.length*11+6:0);
     const cy=Math.round(mapDeck()-16*(foot.rows.length-1)-12-ch);
     ctx.fillStyle="rgba(6,10,16,.62)";ctx.fillRect(cx,cy,cw,ch);
     ctx.strokeStyle="rgba(127,230,216,.18)";ctx.strokeRect(cx+.5,cy+.5,cw,ch);
@@ -544,6 +548,7 @@ function drawMap(){
     ctx.fillText(s.cls.ru+" · "+s.planets.length+" планет"+(s.station?" · СТАНЦИЯ":"")+(s.belt?" · ПОЯС":""),cx+12,cy+38);
     ctx.fillStyle="rgba(160,182,192,.62)";
     wrapLeft(s.desc,cx+12,cy+54,cw-24,11);
+    if(PR.length)mapPriceDraw(PR,cx+12,cy+54+dn*11+8);
     }
   }
   /* ── подвал: одним циклом, снизу вверх ── */

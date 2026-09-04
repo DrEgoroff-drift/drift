@@ -1,20 +1,14 @@
-/* ══════════════ экран корабля ══════════════ */
-const $sv=document.getElementById("shipview"),$svBody=document.getElementById("svBody");
-const $svCan=document.getElementById("svcan"),$svFil=document.getElementById("svfilter");
-let svSlot=-1, svFilter="all", svHit=[];
-/* куда вернуться по ЗАКРЫТЬ: "station" — обратно в терминал станции, иначе в полёт */
-let svReturn=null;
-function svDraw(){
-  const id=G.shipId,h=hullOf(id),anchors=slotAnchors(id),fm=G.fit[id]||{};
-  const cw=$sv.clientWidth||W, ch=Math.max(150,Math.min(260,Math.round((window.innerHeight||600)*.32)));
-  const dpr=Math.min(2,window.devicePixelRatio||1);
-  $svCan.width=cw*dpr;$svCan.height=ch*dpr;
-  $svCan.style.height=ch+"px";
-  const c=$svCan.getContext("2d");
-  c.setTransform(dpr,0,0,dpr,0,0);
+/* ══════════════ силуэт корпуса и вход в ОПИСЬ ══════════════
+   До M341 здесь жил экран КОРАБЛЬ|СКАФАНДР: корпус со слотами, список частей,
+   кукла с полкой. Всё это переехало на один стол — ОПИСЬ (27j-ui-opis): что
+   на тебе, что в трюме, что снято. От экрана остался силуэт с якорями слотов —
+   его рисует ОПИСЬ — и кнопка меню, которая открывает стол. Ниже — настройки. */
+/* корпус лежит горизонтально, как в полёте; якоря слотов — кружки цвета рода
+   части: занятый залит, пустой обведён с плюсом, выбранный крупнее и с кольцом.
+   Возвращает список якорей в координатах канвы — для тапа и переноса. */
+function hullSilhouette(c,cw,ch,id,sel,fm){
+  const h=hullOf(id),anchors=slotAnchors(id);fm=fm||{};
   c.clearRect(0,0,cw,ch);
-  /* корпус лежит горизонтально, как в полёте: сцена широкая и низкая,
-     так он занимает её целиком. Запас по краям — под кружки слотов. */
   const cx=(h.nose+h.tail)*.5;
   const sc=Math.min(cw/(h.len+26),(ch-24)/(h.halfW*2+22));
   const px=x=>cw/2+(x-cx)*sc, py=y=>ch/2+y*sc;
@@ -24,168 +18,26 @@ function svDraw(){
   drawHull(id,false,false,G.mods.engine);
   c.restore();
   ctx=old;
-  svHit=[];
+  const hit=[];
   anchors.forEach(a=>{
     const sx=px(a.x), sy=py(a.y);
-    const K=PART_KINDS[a.kind],on=fm[a.i]!=null,sel=svSlot===a.i;
-    svHit.push({x:sx,y:sy,i:a.i});
-    c.beginPath();c.arc(sx,sy,sel?9:7,0,TAU);
+    const K=PART_KINDS[a.kind],on=fm[a.i]!=null,isSel=sel===a.i;
+    hit.push({x:sx,y:sy,i:a.i,kind:a.kind});
+    c.beginPath();c.arc(sx,sy,isSel?9:7,0,TAU);
     c.fillStyle=on?K.col:"rgba(10,14,20,.85)";
     c.globalAlpha=on?.9:1;c.fill();c.globalAlpha=1;
-    c.lineWidth=sel?2.2:1.3;
-    c.strokeStyle=sel?"#fff":K.col;c.stroke();
+    c.lineWidth=isSel?2.2:1.3;
+    c.strokeStyle=isSel?"#fff":K.col;c.stroke();
     if(!on){c.fillStyle=K.col;c.font="9px ui-monospace,monospace";c.textAlign="center";
-      c.textBaseline="middle";c.fillText("+",sx,sy+.5);}
-    if(sel){
+      c.textBaseline="middle";c.fillText("+",sx,sy+.5);c.textBaseline="alphabetic";}
+    if(isSel){
       c.beginPath();c.arc(sx,sy,13,0,TAU);
       c.strokeStyle="rgba(255,255,255,.35)";c.lineWidth=1;c.stroke();
     }
   });
+  return hit;
 }
-let svMode="ship";
-function svRender(){
-  document.querySelectorAll("#svTabs button").forEach(b=>b.classList.toggle("on",b.dataset.tab===svMode));
-  /* разрез экрана (M167): КОРАБЛЬ и СКАФАНДР — два инструмента, не один */
-  const stage=document.getElementById("svstage"),filt=document.getElementById("svfilter");
-  if(svMode==="suit"){
-    stage.style.display="none";filt.style.display="none";
-    document.getElementById("svhint").textContent="";
-    $svBody.textContent="";
-    if(typeof kitBlock==="function")kitBlock($svBody);
-    kitAnimStart();
-    return;
-  }
-  stage.style.display="";filt.style.display="";
-  kitAnimStop();
-  const id=G.shipId,S=shipData(id),slots=slotsOf(id),fm=G.fit[id]||{};
-  const cap=capOf(id),used=capUsed();
-  document.getElementById("svName").textContent="«"+S.ru+"»";
-  document.getElementById("svSub").textContent=S.cls;
-  const capEl=document.getElementById("svCap");
-  capEl.textContent="оснастка "+used+"/"+cap;
-  capEl.style.color=used>=cap?"#ff9d7a":"";
-  document.getElementById("svSlots").textContent=
-    Object.keys(fm).length+" из "+slots.length+" слотов занято";
-  document.getElementById("svhint").textContent=
-    svSlot<0?"выберите слот на корпусе":
-      (PART_KINDS[slots[svSlot]].ru+" · слот "+(svSlot+1)+
-       (fm[svSlot]!=null?" · занят":" · свободен"));
-  svDraw();
-
-  /* фильтр по категориям — показываем только те, что есть на этом корпусе */
-  $svFil.textContent="";
-  const kinds=["all"].concat(PART_KEYS.filter(k=>slots.indexOf(k)>=0));
-  for(const k of kinds){
-    const b=el("button",svFilter===k?"on":"",k==="all"?"ВСЕ":PART_KINDS[k].sh);
-    b.onclick=()=>{svFilter=k;svSlot=-1;svRender();};
-    $svFil.appendChild(b);
-  }
-
-  $svBody.textContent="";
-  const cur=stat();
-
-  /* ── занятые слоты ── */
-  const filled=slots.map((k,i)=>i).filter(i=>fm[i]!=null&&(svFilter==="all"||slots[i]===svFilter));
-  /* налёт часов — первой строкой: это состояние машины, а не одна из её частей */
-  $svBody.appendChild(el("div","sec",wearLine()));
-  if(filled.length){
-    $svBody.appendChild(el("div","sec","УСТАНОВЛЕНО"));
-    for(const i of filled){
-      const p=partById(fm[i]),K=PART_KINDS[slots[i]];
-      const r=el("div","row"+(svSlot===i?" on":""));
-      r.appendChild(el("div","nm","<b style='color:"+K.col+"'>"+p.name+"</b><s>"+
-        "<span class='pill'>слот "+(i+1)+" · "+K.ru.toLowerCase()+"</span>"+
-        "<span class='pill'>"+TIER_RU[p.tier]+" · место "+p.cap+"</span><br>"+
-        p.aff.map(a=>"<span class='"+(a.v>0?"up":"dn")+"'>"+affLabel(a)+"</span>").join(" · ")+
-        deltaHtml(cur,statPreview(i,null))+"</s>"));
-      const b=el("button","act sm","СНЯТЬ");
-      b.onclick=()=>{unfitPart(i);svRender();};
-      r.appendChild(b);
-      r.onclick=e=>{if(e.target!==b){svSlot=svSlot===i?-1:i;svRender();}};
-      $svBody.appendChild(r);
-    }
-  }
-
-  /* ── инвентарь ── */
-  const free=G.inv.filter(p=>!isFitted(p.id))
-    .filter(p=>svFilter==="all"||p.kind===svFilter)
-    .filter(p=>svSlot<0||slots[svSlot]===p.kind)
-    .sort((a,b)=>b.tier-a.tier);
-  $svBody.appendChild(el("div","sec",
-    (svSlot>=0?"ПОДХОДИТ В СЛОТ "+(svSlot+1):"В ИНВЕНТАРЕ")+" · "+free.length+
-    " · ВСЕГО "+G.inv.length+"/"+PART_MAX));
-  if(!free.length)
-    $svBody.appendChild(el("div","row","<div class='nm'><s>"+
-      (svSlot>=0?"нет частей этой категории — их роняют пираты и продают станции"
-                :"пусто")+"</s></div>"));
-  for(const p of free){
-    const K=PART_KINDS[p.kind];
-    /* куда встанет: выбранный слот, иначе первый свободный подходящий */
-    let target=svSlot;
-    if(target<0||slots[target]!==p.kind){
-      target=-1;
-      for(let i=0;i<slots.length;i++)if(slots[i]===p.kind&&fm[i]==null){target=i;break;}
-      if(target<0)for(let i=0;i<slots.length;i++)if(slots[i]===p.kind){target=i;break;}
-    }
-    const fits=target>=0&&capUsed()-(fm[target]!=null?partById(fm[target]).cap:0)+p.cap<=cap;
-    const r=el("div","row");
-    r.appendChild(el("div","nm","<b style='color:"+K.col+"'>"+p.name+"</b><s>"+
-      "<span class='pill'>"+K.ru.toLowerCase()+"</span>"+
-      "<span class='pill'>"+TIER_RU[p.tier]+" · место "+p.cap+"</span><br>"+
-      p.aff.map(a=>"<span class='"+(a.v>0?"up":"dn")+"'>"+affLabel(a)+"</span>").join(" · ")+
-      (target>=0?deltaHtml(cur,statPreview(target,p.id)):"")+
-      (target>=0&&!fits?"<span class='delta dn'>не хватает места в оснастке</span>":"")+"</s>"));
-    const box=el("div","modbtns");
-    const b=el("button","act sm"+(fits?" gold":""),
-      target<0?"НЕТ СЛОТА":(fm[target]!=null?"ЗАМЕНИТЬ":"СТАВИТЬ"));
-    b.disabled=target<0||!fits;
-    b.onclick=()=>{
-      if(!fitPart(target,p.id)){say("Не встаёт: нет места в оснастке");return;}
-      svSlot=-1;svRender();};
-    box.appendChild(b);
-    const sb=el("button","act sm","РАЗОБРАТЬ");
-    sb.onclick=()=>{
-      const res=scrapPart(p.id);
-      if(!res)return;
-      const list=Object.keys(res.got).map(k=>RES[k].ru.toLowerCase()+" ×"+res.got[k]).join(", ");
-      const mn=(typeof matchesScrapNote==="function")?matchesScrapNote(res.matches):"";
-      tell("money","Разобрано: "+res.part.name+(list?" → "+list:" → трюм полон")+(res.matches?" · "+mn:""),
-           res.part.name+"\nразобрано"+(list?"\n"+list:"\nтрюм полон")+"\n"+mn);
-      svRender();};
-    box.appendChild(sb);
-    r.appendChild(box);
-    $svBody.appendChild(r);
-  }
-  if(typeof secTidy==="function")secTidy($svBody);   /* заголовки по §1a (M300) */
-  /* скафандр — своя вкладка СКАФАНДР (M167) */
-}
-function openShipView(){
-  for(const k in keys)keys[k]=false;
-  document.querySelectorAll(".pads button").forEach(b=>b.classList.remove("on"));
-  toggleLog(false);
-  svSlot=-1;svFilter="all";
-  $sv.classList.add("open");
-  svRender();
-}
-document.getElementById("shipbtn").addEventListener("click",()=>{svReturn=null;openShipView();});
-document.getElementById("svClose").addEventListener("click",()=>{
-  $sv.classList.remove("open");saveGame(true);
-  /* если сюда пришли со станции — возвращаемся в терминал, а не в открытый космос */
-  if(svReturn==="station"){svReturn=null;
-    if(G.mode==="dock"&&G.st){$st.classList.add("open");syncTabs();renderTab();}
-  }
-  svReturn=null;});
-$svCan.addEventListener("click",e=>{
-  const rc=$svCan.getBoundingClientRect();
-  const mx=e.clientX-rc.left,my=e.clientY-rc.top;
-  let best=-1,bd=22;
-  for(const p of svHit){
-    const d=Math.hypot(p.x-mx,p.y-my);
-    if(d<bd){bd=d;best=p.i;}
-  }
-  if(best>=0){svSlot=svSlot===best?-1:best;svRender();}
-});
-window.addEventListener("resize",()=>{if($sv.classList.contains("open"))svRender();});
+document.getElementById("shipbtn").addEventListener("click",()=>{tableToggle(true,"hold");});
 
 function keyRow(section,action){
   const r=el("div","row");
@@ -463,18 +315,3 @@ function optGroups(){
     n.style.display=(cur===optTab)?"":"none";
   }
 }
-/* ── СКАФАНДР: вкладка и дыхание куклы (M167) ── */
-let kitAnimRAF=0,kitAnimT=0;
-function kitAnimStart(){
-  if(kitAnimRAF)return;
-  const step=ts=>{
-    if(!$sv.classList.contains("open")||svMode!=="suit"){kitAnimRAF=0;return;}
-    kitAnimT=ts/500;
-    const cv=document.getElementById("kitDoll");
-    if(cv){const hit=kitDollHit;drawKitFigure(cv.getContext("2d"),cv.width,cv.height,hit,kitAnimT);}
-    kitAnimRAF=requestAnimationFrame(step);
-  };
-  kitAnimRAF=requestAnimationFrame(step);
-}
-function kitAnimStop(){if(kitAnimRAF){cancelAnimationFrame(kitAnimRAF);kitAnimRAF=0;}}
-document.querySelectorAll("#svTabs button").forEach(b=>b.addEventListener("click",()=>{svMode=b.dataset.tab;svRender();}));

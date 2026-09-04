@@ -172,49 +172,6 @@ function holdDrawPile(c,k,n,w,h){
   }
 }
 
-/* вкладка ТРЮМ на столе: .desk-ряд карточек, в каждой куча и мелкая подпись */
-function renderHold(box){
-  box.textContent="";
-  const st=stat();
-  const keys2=RES_KEYS.filter(k=>(G.cargo[k]|0)>0);
-  /* ── комплект лежит на том же столе (M216, хвост M179) ──
-     Груз лёг сюда кучами, а комплект оставался куклой на экране корабля: на
-     манекене половина вещей не видна ровно потому, что она надета. Раскладка
-     идёт ПЕРВОЙ — это то, что на тебе, а трюм это то, что везёшь. */
-  if(typeof kitLayDraw==="function"){
-    tableRow(box,"head","","НА СЕБЕ · "+(typeof kitLine==="function"?kitLine():""));
-    const row=document.createElement("div");row.className="thing wide";
-    const cv=document.createElement("canvas");cv.width=420;cv.height=300;
-    cv.style.cssText="width:100%;height:auto";
-    kitLayDraw(cv.getContext("2d"),420,300);
-    const nm=document.createElement("div");nm.className="nm";
-    const K=kitAll();
-    nm.innerHTML=KIT_PLACES.map(p=>{
-      const x=K[p];
-      return "<b>"+KIT_RU[p]+"</b> <span style='color:var(--dim)'>"+kitName(x)+
-        " "+kitRoman(x.cls)+(x.wear?" · "+KIT_WEAR[x.wear]:"")+
-        (x.mods&&x.mods.length?" · "+x.mods.length+" дор.":"")+"</span>";
-    }).join("<br>");
-    row.appendChild(cv);row.appendChild(nm);
-    box.appendChild(row);
-  }
-  tableRow(box,"head","","ТРЮМ · "+held()+"/"+st.cargoMax+
-    (keys2.length?"":" · ПУСТО")+(typeof matchesLine==="function"?" · "+matchesLine():""));
-  if(!keys2.length){
-    tableRow(box,"dim","","всё, что добудете и купите, ляжет сюда кучами");
-    return;
-  }
-  for(const k of keys2){
-    const n=G.cargo[k]|0;
-    const row=document.createElement("div");row.className="thing";
-    const cv=document.createElement("canvas");cv.width=250;cv.height=120;
-    cv.style.cssText="width:100%;height:auto";
-    holdDrawPile(cv.getContext("2d"),k,n,250,120);
-    const nm=document.createElement("div");nm.className="nm";
-    const R0=RES[k];
-    nm.innerHTML="<b>"+R0.ru+" × "+n+"</b><s>"+
-      (R0.price?("рынок ~"+R0.price+" кр за единицу"):(R0.rare||R0.ammo||R0.pax||""))+"</s>";
-    row.appendChild(cv);row.appendChild(nm);
-    box.appendChild(row);
-  }
-}
+/* вкладка ОПИСЬ (M341): кучи — одна из четырёх зон стола, который собирает
+   27j-ui-opis; здесь остались только кисти куч и предметов */
+function renderHold(box){opisRender(box);}

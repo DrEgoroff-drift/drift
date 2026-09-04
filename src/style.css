@@ -514,11 +514,6 @@ input.vol::-moz-range-thumb{width:20px;height:20px;background:var(--phos);
   line-height:1.5;word-break:break-all;border-radius:var(--rad)}
 
 /* ── экран корабля ── */
-#svstage{position:relative;flex:0 0 auto;border-bottom:1px solid var(--edge);
-  background:radial-gradient(ellipse at 50% 45%,rgba(127,230,216,.08),transparent 66%)}
-#svcan{display:block;width:100%;touch-action:manipulation}
-#svhint{position:absolute;left:0;right:0;bottom:8px;text-align:center;color:var(--dim);
-  font-size:10px;letter-spacing:.1em;pointer-events:none}
 
 /* ══════════════ заставка ══════════════
    Титул, три двери и всё. Таблица клавиш была первым, что видел игрок,
@@ -1207,3 +1202,156 @@ body.mapclean .hud,body.mapclean .pads,body.mapclean #console,body.mapclean #pro
 .smena .journal{font-family:ui-monospace,monospace;font-size:13px;color:#c9a05b;border-left:2px solid #6a5a3a;padding:4px 10px;margin:8px 0 12px;background:rgba(20,15,9,.3)}
 .smena .cap{font-size:12px;color:var(--dim);font-style:italic}
 #loglist .li.dim span{color:var(--dim)}
+
+/* ══════════════ ОПИСЬ (M341): сукно с четырьмя зонами ══════════════
+   Не лист и не карточки на досках: зелёное сукно на столе, на нём — вещи.
+   Широкий экран — сетка (полка и шкатулка сверху, трюм и комплект слева, части
+   в середине, люк в правом нижнем углу); телефон (≤760) — одна лента, люк —
+   полосой снизу, пока что-то поднято или спрошено. */
+body.table #loglist.opis{max-width:1400px;padding:14px;min-height:0;
+  display:grid;grid-template-columns:1fr 1.45fr .62fr;gap:14px;align-items:start;
+  grid-template-areas:"top top top" "hold parts side" "kit parts hatch";   /* side — место ящика (M345); область без вещи законна, L-образная — нет */
+  background:radial-gradient(ellipse at 50% 22%,#356744 0%,#254a33 46%,#1b3826 100%);
+  border:7px solid #3a2718;border-radius:4px;
+  box-shadow:0 14px 34px rgba(0,0,0,.55),inset 0 0 0 1px rgba(255,235,200,.08),inset 0 0 60px rgba(0,0,0,.35)}
+body.table #loglist.opis::before{display:none}
+.opis .op-top{display:contents}
+.opis .op-shelf{grid-column:1/3;grid-row:1}
+.opis .op-box{grid-column:3;grid-row:1}
+.opis .op-hold{grid-area:hold}
+.opis .op-parts{grid-area:parts}
+.opis .op-kit{grid-area:kit}
+.opis .op-hatch{grid-area:hatch;align-self:end;justify-self:end}
+.opis .op-foot{grid-column:1/-1;color:rgba(232,220,190,.55);font-size:9px;letter-spacing:.08em;text-align:center;padding:4px 0 2px}
+/* зона: рамка мелом, номер в кружке */
+.opis .op-z{position:relative;padding:10px 10px 12px;border:1px dashed rgba(232,220,190,.22);border-radius:6px;min-width:0}
+.opis h3{margin:0 0 10px;font-weight:400;font-size:10px;letter-spacing:.18em;color:#efe4c8;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.opis h3 i,.opis .op-hatch h4 i{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;
+  background:#e8dcc0;color:#1e3a29;font-style:normal;font-size:11px;font-weight:700;flex:0 0 auto}
+.opis h3 s{text-decoration:none;color:rgba(232,220,190,.6);font-size:9px;letter-spacing:.06em;margin-left:auto}
+.opis h4{margin:0 0 8px;font-weight:400;font-size:9px;letter-spacing:.18em;color:#d8ccad;display:flex;gap:8px;align-items:baseline}
+.opis h4 s{text-decoration:none;color:rgba(232,220,190,.55);letter-spacing:.06em;margin-left:auto}
+.opis .chalk{display:block;text-decoration:none;color:rgba(232,220,190,.62);font-size:10px;line-height:1.55;font-style:italic}
+/* полка и шкатулка */
+.opis .op-shelf{padding:10px 12px;background:linear-gradient(180deg,#4a3320,#3a2718);border-radius:4px;
+  box-shadow:0 6px 14px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,235,200,.12)}
+.opis .op-shelf .slots{display:flex;gap:8px;margin:2px 0 6px}
+.opis .op-shelf .slots i{flex:1 1 0;height:44px;border:1px dashed rgba(232,220,190,.3);border-radius:4px;background:rgba(0,0,0,.18)}
+.opis .op-box{padding:8px 10px 10px;text-align:center;background:rgba(0,0,0,.14);border-radius:4px}
+.opis .op-box canvas{width:100%;max-width:160px;height:auto;display:block;margin:0 auto 4px}
+.opis .op-box h4{justify-content:center}
+.opis .op-box>s{display:block;text-decoration:none;color:rgba(232,220,190,.55);font-size:9px;line-height:1.5}
+/* карточки — бумажные бирки на сукне */
+.opis .op-card{position:relative;padding:8px 10px 8px;border-radius:2px;background:linear-gradient(178deg,#dccca6,#cbb98f);
+  box-shadow:0 5px 12px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.35);color:#2c2418;cursor:pointer;
+  user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:pan-y;
+  transition:transform .12s var(--ease),box-shadow .12s}
+.opis .op-card b{display:block;font-weight:400;font-size:12px;line-height:1.35}
+.opis .op-card s{display:block;text-decoration:none;color:#6a5a3e;font-size:10px;line-height:1.5}
+.opis .op-card i{display:block;font-style:normal;font-size:10px;line-height:1.5;color:#3d3222}
+.opis .op-card .up{color:#2f6b3a}.opis .op-card .dn{color:#9a3a2a}
+.opis .op-card.on{box-shadow:0 0 0 2px #f2b25c,0 8px 18px rgba(0,0,0,.5);transform:translateY(-2px);touch-action:none}
+.opis .op-card.fit{box-shadow:0 0 0 1px rgba(127,230,216,.7),0 5px 12px rgba(0,0,0,.4)}
+.opis .op-card.lifted{opacity:.35}
+/* кнопки — вторая дорога: показываются у выбранной бирки (тап) и под мышью;
+   так сукно не заставлено кнопками, а телефон и фаззер ими пользуются */
+.opis .op-card .acts{display:none;gap:6px;margin-top:8px;flex-wrap:wrap}
+.opis .op-card.on .acts{display:flex}
+@media (hover:hover){.opis .op-card:hover .acts{display:flex}}
+.opis .op-card .acts .act{flex:1 1 auto}
+/* кнопка на бумаге — чернилами, а не фосфором: стекло на бирке не читалось */
+.opis .op-card .act{color:#2c2418;border-color:rgba(60,48,30,.5);background:rgba(255,255,255,.25);box-shadow:none;text-shadow:none}
+.opis .op-card .act.gold{color:#6b3f0a;border-color:rgba(150,100,30,.7);background:rgba(242,178,92,.22)}
+.opis .op-card .act:disabled{opacity:.35}
+.opis .op-card .cue{display:block;width:100%;margin-top:8px;white-space:normal;line-height:1.3;text-align:left;
+  color:#3d3222;border-color:rgba(60,48,30,.35);background:rgba(255,255,255,.18);font-size:9px}
+.opis .op-card canvas{display:block;width:100%;height:auto;margin:0 0 6px}
+/* призрак переноса */
+.op-ghost{position:fixed;left:0;top:0;z-index:60;pointer-events:none;opacity:.92;
+  box-shadow:0 18px 30px rgba(0,0,0,.6);background:linear-gradient(178deg,#dccca6,#cbb98f);
+  padding:8px 10px;border-radius:2px;color:#2c2418;font-size:11px}
+.op-ghost .acts,.op-ghost .cue{display:none!important}
+.op-ghost canvas{display:block;width:100%;height:auto}
+.op-ghost b,.op-ghost s,.op-ghost i{display:block;text-decoration:none;font-style:normal}
+/* мишени переноса */
+.opis [data-drop].can{outline:1px dashed rgba(242,178,92,.55);outline-offset:2px}
+.opis [data-drop].over,#opisBar.over{outline:2px solid #f2b25c;outline-offset:2px;background-color:rgba(242,178,92,.10)}
+/* зона 1: кучи */
+.opis .op-piles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.opis .op-worth{margin-top:10px;font-size:10px;color:#efe4c8;letter-spacing:.04em}
+.opis .op-matchbox{display:flex;align-items:center;gap:10px;margin-top:10px}
+.opis .op-matchbox canvas{width:110px;height:auto;flex:0 0 auto}
+.opis .op-matchbox b{display:block;font-weight:400;color:#efe4c8;font-size:11px}
+.opis .op-matchbox s{display:block;text-decoration:none;color:rgba(232,220,190,.55);font-size:9px}
+/* зона 3: слоты · силуэт+приборы · снятые */
+.opis .op-parts-grid{display:grid;grid-template-columns:1.35fr 1fr;grid-template-areas:"hull panel" "slots spare";gap:10px;align-items:start}
+.opis .op-parts-grid canvas.op-hull{grid-area:hull;align-self:stretch;height:100%;min-height:190px}
+.opis .op-parts-grid .op-panel{grid-area:panel;margin-top:0}
+.opis .op-slots{grid-area:slots;display:flex;flex-direction:column;gap:8px;min-width:0}
+.opis .op-spare{grid-area:spare}
+.opis .op-slot{padding:6px;border:1px dashed rgba(232,220,190,.28);border-radius:4px;min-height:44px}
+.opis .op-slot em{display:block;font-style:normal;font-size:8px;letter-spacing:.16em;margin-bottom:5px}
+.opis .op-slot.on{border-color:#f2b25c;border-style:solid}
+.opis .op-slot.aim{border-color:rgba(127,230,216,.85);border-style:solid;background:rgba(127,230,216,.06)}
+.opis canvas.op-hull{display:block;width:100%;height:auto;border-radius:4px;background:rgba(0,0,0,.22);cursor:pointer;touch-action:manipulation}
+.opis .op-spare{min-width:0;display:flex;flex-direction:column;gap:8px;padding:6px;border:1px dashed rgba(232,220,190,.22);border-radius:4px;min-height:80px}
+/* панель приборов: чёрная шкала на сукне, будущее — стрелкой */
+.opis .op-panel{margin-top:10px;padding:8px 10px 6px;background:rgba(0,0,0,.28);border-radius:4px;border:1px solid rgba(232,220,190,.12)}
+.opis .op-panel h4{margin-bottom:6px;color:#efe4c8}
+.opis .op-panel .ln{display:flex;align-items:baseline;gap:8px;font-size:11px;line-height:1.8;font-variant-numeric:tabular-nums}
+.opis .op-panel .ln em{flex:1 1 auto;font-style:normal;color:rgba(232,220,190,.7);letter-spacing:.04em}
+.opis .op-panel .ln b{font-weight:400;color:#f4ecd6;min-width:44px;text-align:right}
+.opis .op-panel .ln u{text-decoration:none;min-width:58px;text-align:right}
+.opis .op-panel .up{color:var(--good)}.opis .op-panel .dn{color:#ff9d7a}
+.opis .op-panel .why{margin-top:4px;font-size:9px;color:rgba(232,220,190,.6);letter-spacing:.04em}
+.opis .op-panel .why.dn{color:#ff9d7a}
+/* зона 2: кукла, раскладка, места, запас */
+.opis .op-kit-grid{display:grid;grid-template-columns:1fr;gap:10px}
+.opis .op-kitlay{display:flex;gap:10px;align-items:flex-end}
+.opis .op-kitlay .doll{width:78px;height:auto;flex:0 0 auto}
+.opis .op-kitlay .lay{flex:1 1 0;min-width:0;width:100%;height:auto}
+.opis .op-kitslots{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.opis .op-kslot{padding:5px 7px;border:1px dashed rgba(232,220,190,.25);border-radius:4px;min-width:0}
+.opis .op-kslot em{display:block;font-style:normal;font-size:8px;letter-spacing:.16em;color:rgba(232,220,190,.65)}
+.opis .op-kslot b{display:block;font-weight:400;font-size:10px;color:#efe4c8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.opis .op-kslot s{display:block;text-decoration:none;font-size:9px;color:rgba(232,220,190,.55)}
+.opis .op-trim{margin-top:10px;padding:6px 8px;border:1px dashed rgba(232,220,190,.22);border-radius:4px}
+.opis .op-trim em{display:block;font-style:normal;font-size:8px;letter-spacing:.16em;color:rgba(232,220,190,.65)}
+.opis .op-spare-kit{margin-top:10px;display:flex;flex-direction:column;gap:8px}
+/* зона 4: люк */
+.opis .op-hatch{text-align:center;padding:6px;width:100%}
+.opis .op-hatch canvas{width:110px;height:auto;display:block;margin:0 auto}
+.opis .op-hatch h4{justify-content:center;margin:4px 0 2px}
+.opis .op-hatch h4 i{width:18px;height:18px;font-size:10px;margin-right:6px}
+.opis .op-hatch>s{display:block;text-decoration:none;color:rgba(232,220,190,.55);font-size:9px}
+/* «сколько за борт» */
+.op-ask{margin-top:8px;padding:8px;background:rgba(0,0,0,.28);border-radius:4px;text-align:left}
+.op-ask b{display:block;font-weight:400;font-size:10px;color:#efe4c8;margin-bottom:6px}
+.op-ask .ln{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.op-ask input{width:80px;min-height:44px;padding:0 10px;font:inherit;font-size:14px;color:#f4ecd6;background:rgba(0,0,0,.3);
+  border:1px solid rgba(232,220,190,.3);border-radius:4px}
+.op-ask s{text-decoration:none;color:rgba(232,220,190,.6);font-size:10px}
+.op-ask .acts{display:flex;gap:6px}
+.op-ask .acts .act{flex:1 1 auto}
+/* полоса люка на телефоне */
+.op-hatchbar{position:absolute;left:0;right:0;bottom:0;z-index:3;display:none;align-items:center;gap:12px;padding:10px 14px;
+  background:linear-gradient(0deg,#1b3826,#254a33);border-top:2px solid #3a2718;box-shadow:0 -10px 24px rgba(0,0,0,.5)}
+.op-hatchbar canvas{width:56px;height:56px;flex:0 0 auto}
+.op-hatchbar>s{text-decoration:none;color:#efe4c8;font-size:11px;letter-spacing:.06em;flex:1}
+.op-hatchbar .op-ask{flex:1;margin:0}
+body.op-lift #opisBar,body.op-ask #opisBar{display:flex}
+body.op-ask #opisBar>s{display:none}
+@media (min-width:761px){#opisBar{display:none!important}}
+@media (max-width:760px){
+  body.table #loglist.opis{display:flex;flex-direction:column;gap:12px;padding:10px;border-width:4px;margin:10px auto 84px}
+  .opis .op-top{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+  .opis .op-shelf{flex:0 0 78%;min-width:240px}
+  .opis .op-box{flex:0 0 40%;min-width:150px}
+  .opis .op-parts{order:1}.opis .op-kit{order:2}.opis .op-hold{order:3}.opis .op-foot{order:4}
+  .opis .op-hatch{display:none}
+  .opis .op-parts-grid{grid-template-columns:1fr;grid-template-areas:"hull" "panel" "slots" "spare"}
+  .opis .op-parts-grid canvas.op-hull{height:auto}
+  .opis .op-piles{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+/* виденные цены на карте: то, что в трюме, — светлым */
+#pricewin .row .nm s .hot{color:var(--amber)}
