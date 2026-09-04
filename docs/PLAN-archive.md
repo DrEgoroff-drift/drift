@@ -7394,3 +7394,125 @@ never touches arithmetic; station modules don't unlock services.
 
 ---
 
+## Closed 2026-08-28 → 2026-09-02 — one line each; bodies in the archive
+
+Grep `docs/PLAN-archive.md` for the milestone number (header "Moved out of PLAN.md on 2026-09-02").
+
+- **M247–M248** (0.243–0.244) — the home from inside; the cave narrower, with a light of its own.
+- **M249–M263** (0.245–0.260) — the craft plan P0–P9: the meter judges masses; the postcard atelier
+  over eight places; blue noise under every scene; the direction field `dirAt` (rock grain, flowing
+  dust, nebula fibres); the patch stays a seam; drops catch the light; the stranger's lamp casts
+  shadows; a turn reads the player's hand; Крапива; signs not letters; lichen grown; the wheel owns
+  the world and the CUN table in the cave.
+- **M264–M270** (0.261–0.267) — the critique marathon: the dead ДЕЙСТВИЕ button, the sun as a body,
+  one orbit one line, strata horizontal, stars stretch on the move, corridor light, CUN in the
+  mine, nine deed turns.
+- **M282** (0.279.0) — nine wounds from the playtest of 30.08.
+- **M285–M288** (0.282–0.285) — a save never kills the flight; the ДЕЛО screen; the cloud `{}`→`[]`
+  bug and `asMap`; the desk is a desk; almanac issue II.
+- **M289–M297** (0.286–0.294) — the holding in nine steps (see "The holding — built" below).
+- **M298** (0.295.0) — three interface fixes: the table answers in the row, rumours with distance,
+  jumps and НА КАРТУ, the map card as a footer line.
+- **M325** (0.322.0) — the four effects: the lake with reflections and reeds, heat haze, chromatic aberration on hits, the live flare; `18d-postfx`.
+- **M339** (0.336.0) — the holding judged by arithmetic instead of screens (`91zzzzy-hold`): nothing
+  is made from an empty bunker, a shift's quota is eaten once and yields no more than a shift's
+  output, the three-shift ceiling holds over a hundred shifts, and collecting conserves both ways
+  (including a full hold, where nothing evaporates). Plus a seed knob for the fuzzer (`-Seed N`):
+  its hands were seeded by a constant, so a long run only walked the same path further.
+- **M338** (0.335.0) — the wintering and the sanatorium joined the scene list as well (fourteen
+  scenes): both are whole modes that no instrument had ever driven. Staged through the game's own
+  gates, which immediately surfaced a null dereference in `winTake` (`G.st.name` with no station).
+- **M337** (0.334.0) — the boarding raid joined the shared scene list: `stepWorld` knows thirteen
+  modes and the list knew eleven, so the one mode with a real projection was driven by nobody —
+  not the fuzzer, not the frame meter, not one cross-cutting suite. Staging taken from the fps
+  probe. Also de-flaked «репутация: у своих садятся стоящие», which asserted a statistical property
+  from a single draw seeded by a two-day time bucket and went red at 03:00 with no code change.
+- **M336** (0.333.0) — a baseline for the frame ledger (`91zzzzy-look`), and the instrument defect it
+  exposed: the staged scenes were not reproducible. Planets orbit inside `SYS_CACHE` all session, and
+  the «система» scene places the ship relative to a planet — so the same build measured contrast 0.88
+  or 0.15 depending on how long the session had run, and the fuzzer's «one seed, same failure» was
+  false for the same reason. A staged scene now rebuilds its system from the seed. Baseline measured
+  on a settled frame (40 frames per scene, since M332 releases a left system's raster).
+- **M335** (0.332.0) — «a perk without code is a lie», applied to every table the audit can read
+  (`91zzzzy-names`): technologies, artifacts and buildings all have code behind them except one.
+
+### Needs a decision from the author (new, 2026-09-04)
+
+- **The artifact «Карта чужой руки» has no code.** Its lines promise «на карте видно, где торгуют
+  редким» and «и то, чего там ещё нет»; `relicOn("chart")` is called nowhere, and it is the only
+  one of the seven artifacts that is not wired. It was left unwired deliberately: rare raw material
+  is not traded anywhere by design (`02-world`, M39 — «рынок их не берёт вовсе»), so «where they
+  trade rare» must mean something else — a dock holding a rare hull, a bench with rare parts, the
+  rows of the flea market, or the rarities of `12m-rare`. Whichever it is, it is a design decision.
+  The audit carries one named exception until it is answered.
+  **Decided (author, 2026-09-04): `docs/DESIGN-wanderer.md`** — the wanderer «Сорока»; the artifact
+  shows its stop (line one) and its next stop (line two). Wired in M342 of the queue above; the
+  `KNOWN` exception in `91zzzzy-names` leaves with it.
+
+- **M334** (0.331.0) — someone else's clock (`91zzzzy-time`): every epoch stamp in the save shifted
+  three days forward and thirty back, then the world lived on — no NaN, no negative or ballooning
+  wallet, and the station's shift cannot be rolled back for a second appetite premium. Plus the
+  autopilot suite: six approaches (every planet, the station, the star) all arrive, none dries the
+  tank — which matters because an empty tank was a softlock until M331.
+- **M333** (0.330.0) — the game reads its own source (`tests/91zzzzy-names`): every name called by
+  string is checked against the table that owns it. `sfx("ok")` was called eight times from five
+  modules and no `ok` existed — the confirmation sound had never played; written now. The station
+  strip carried a dead `ПЕРЕПЛАВКА` button whose `smelt` appears nowhere else in the game;
+  removed. The suite also guards resource keys, journal kinds and station tabs.
+- **M332** (0.329.0) — the raster that piled up: `SYS_CACHE` kept every visited system's baked
+  globe unwraps, light overlays and cloud sprites for ever — 28.9 MB per forty systems, growing
+  linearly with no ceiling, which is the most likely explanation of the author's «hard freeze»
+  (no exception, no console line, the tab simply stops). Systems still live for ever; their raster
+  now lives only for the last six the player was in (`sysRasterTick`, called from `stepWorld`), and
+  every bakery is lazy so a return costs one re-bake. Measured by `tests/91zzzzy-mem`: 4.8 MB per
+  24 systems after the fix, and the document does not grow across twelve full rounds of every tab.
+- **M331** (0.328.0) — the four questions of game QA as a suite (`91zzzzy-play`): can the player
+  get stuck, does the game print money, are there dead ends, what happens after death. Four
+  defects: being stranded in space with an empty tank was a real softlock (a tow now exists there
+  too, sharing `evacCost`/`evacFrom` with the ground); the station's appetite (+35%) could be fed
+  from that same station's counter (+6%), printing about a quarter of the price per round — the
+  shift's quota now shrinks by what was bought there; `closeStation` and `repairCost` died when the
+  docking was released under an open screen, turning the station into a trap; and the cloud/star
+  law moved off the frame onto the paint (a lit cloud may not be brighter than its own star,
+  checked across ten stars).
+- **M330** (0.327.0) — three suites that measure the picture: places (`91zzzzy-place` — everything
+  stands on the ground, the man is never inside stone, the pad is level and clear, the silhouette
+  agrees with the collision box), physics (`91zzzzy-phys` — thrust/brake/fuel, the speed ceiling,
+  Kepler, determinism of a re-entered world, no falling through the ground, drilling conserves —
+  each checked at frame steps 1, 2 and 3, because the frame integrates at up to dt=3), and light
+  (`91zzzzy-light` — night darker than day, nothing out-shines the star, halos fall off, glows
+  breathe instead of clicking, nothing burnt to white). Two defects fixed: a boulder could lie on
+  the landing pad (cleared within 54 px, cull after generation so no world shifts), and a lit
+  cloud was brighter than the sun (0.85 against 0.79 — mixed toward pure white; now a step below
+  the disc).
+- **M329** (0.326.0) — eight cross-cutting suites (`tests/91zzzzz-e2e-life`): NaN in the state, the
+  save's full circle from every scene, loss of a field on load, a save without any one field, dirt
+  in the player's text, three thousand frames in one flight, everything clickable clicked, a late
+  world, an evening across three systems. Three defects fixed: Вега's record normalised on load
+  (a NaN comes back as `null` from JSON and killed the БАЗЫ tab), `exitDig` guarded against a
+  mine that is already gone, and suite isolation — `resetWorld` now deletes every field the page
+  did not boot with, with a suite guarding it. The frame guard's counter is read at the end of the
+  whole run: a click handler's exception never reached any `try/catch` around `b.click()`.
+- **M326** (0.323.0) — house marks as things: the station mark off the flare axis (video 03.09), the settlement sigil as a plaque by the door instead of a 1-px line on the wall; the mark itself redrawn as a shoulder dish; the flare smokes (`stackSmoke`); e2e suite `91zzza` (scenes not blank, buttons click, flare column by pixels, smoke monotonic); test report grouped in four.
+- **M328** (0.325.0) — flame as one smooth body, no haze; autoland start above the ridge and look-ahead descent; cave prompt wins over the mine; cave mouth as rock outcrop; swimming with a ring, algae → organics; e2e suites 91zzzb/91zzzc (autoland every world, panel overlap, button text, swim, cave prompt).
+- **M324** (0.321.0) — where a drone sells: the keeper decides from `seenPrices` within three sectors; caption, circle length, one line from him.
+- **M323** (0.320.0) — the plant as a body: a dark mass under every form, the lit form over it; stem a step darker than crown.
+- **M322** (0.319.0) — one `housePlan` for the home and the settlement's izbas; one material table; the settlement's chimney on the slope. Stand defect noted: `shot.py homeout/wallset` hang at load.
+- **M321** (0.318.0) — the §9 walkthrough as a suite in both windows; the course as a state, «К ЦЕЛИ» in flight, the search circle that survives НАЗАД.
+- **M320** (0.317.0) — smoke along `dirAt` streamlines (curl noise) for chimneys, hearth and the smelter; the smoke made visible at all; the sky-seam hunt closed as not reproduced.
+- **M319** (0.316.0) — the ship's zoom floor .35; the home interior measured by `?g11` (60 fps, no bake needed) and `prof()` caught measuring the software raster.
+- **M318** (0.315.0) — the fleet's small parts cast shadows on the body, the рефрижератор's ribs as corrugation, трассы on the map as a chain; almanac III closed.
+- **M317** (0.314.0) — the fleet at meeting distance: the six items of almanac III paid (label, zoom ceiling, учебное spine, паром wing, greys a step down, emblem grammar).
+- **M314** (0.311.0) — fleet tails: трассы on the map (§14), the rescuer's call to a barge in distress, wing tiles, the hospital's cross, larger names.
+- **M313** (0.310.0) — the node station «УЗ-1» from rung 25, the black derelict in dangerous empty sectors, the caravan (pirates keep off, fleet pace).
+- **M312** (0.309.0) — the whole fleet drawn (thirteen classes), почта, ransom through the hospital at half, the school.
+- **M311** (0.308.0) — the fleet's second pass: joints (§8), whiter hulls, сторожевик/паром/плавбаза drawn, буксир/плавбаза/сторожевик services, convoy hides you from pirates.
+- **M310** (0.307.0) — ГЛАВТРАССА opens: `12ai-fleet` with thirteen classes and voices, the paint pipeline, почтовик/танкер/буксир drawn, passage by the ladder, позывной and заправка по норме; almanac issue III.
+- **M309** (0.306.0) — the system: nebula blots fan out with filaments and a dust lane; shuttles station ↔ planets by rung (`17f-sys-traffic`).
+- **M308** (0.305.0) — the approach by day (warm horizon glow on the sun's side), the map band in two value steps, `pair` without a verdict for daylight scenes.
+- **M307** (0.304.0) — the home: furniture out of material by a `fillRect` wrapper, the house out of a seeded plan with signs of habitation by tier.
+- **M306** (0.303.0) — the station body held against §13 (verdict: holds, ALMANAC addendum II); the planet changes too — dump, dome, strip on the day side (`drawPlanetWorks`).
+- **M305** (0.302.0) — the cave as a place: round rock by smoothed marching squares, a back wall with a body, bones/ropes/tally/camp/branch-end finds; `docs/shot.py` for headless frames and meter numbers.
+- **M304** (0.301.0) — the picture queue as one release: cave to zone I–II with cold glazes baked into the tile, sky brush and `hueToward`, landing horizon and altitude zenith, home panels/boards/study window, station sprite with one light, base halo, rain on the ground.
+- **M303** (0.300.0) — playtest tails of 02.09: the cantina's ВЫСЛУШАТЬ works, station rumours persist as logged, the desk opens over a station (СТОЛ in the header), the home beacon undocks first, the desk lamp ignores grey and ether lines, the parrot's feather layer is sized by the bird box and the perch is off the screens.
+
