@@ -7,6 +7,24 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.335.0 - M338: the quiet modes join the list too
+
+After the raid (M337), the two remaining modes nobody drove: the wintering and the sanatorium.
+Both are whole `G.mode`s with their own update and their own frame, and neither the fuzzer nor the
+frame meter had ever seen them. They are staged through the game's own gates (`winTake`,
+`enterSpa`) rather than by hand — a half-built record has already once travelled into a stranger's
+suite and died there on `toFixed` (M329).
+
+Staging the wintering found a null dereference straight away: `winTake` writes
+`recordAdd("станция "+G.st.name, …)`, and the station is only there because the job is taken at a
+counter — one reader, no check. Guarded, and the scene now docks first, so it tests the path the
+player actually walks.
+
+Fourteen scenes now, each of them covered at once by the fuzzer, the NaN sweep, the save round-trip
+from every scene, the blank-frame check, the button sweep and the frame baseline
+(wintering 4 tones / mass 34 / contrast .40 / 36% empty; sanatorium 3 / 33 / .56 / 28%).
+
+---
 ## 0.334.0 - M337: two modes nobody drove, and a test that depended on the clock
 
 `stepWorld` knows thirteen modes; the shared scene list knew eleven. The list belongs to both the

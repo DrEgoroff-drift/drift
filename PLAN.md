@@ -191,6 +191,9 @@ Grep `docs/PLAN-archive.md` for the milestone number (header "Moved out of PLAN.
 - **M298** (0.295.0) — three interface fixes: the table answers in the row, rumours with distance,
   jumps and НА КАРТУ, the map card as a footer line.
 - **M325** (0.322.0) — the four effects: the lake with reflections and reeds, heat haze, chromatic aberration on hits, the live flare; `18d-postfx`.
+- **M338** (0.335.0) — the wintering and the sanatorium joined the scene list as well (fourteen
+  scenes): both are whole modes that no instrument had ever driven. Staged through the game's own
+  gates, which immediately surfaced a null dereference in `winTake` (`G.st.name` with no station).
 - **M337** (0.334.0) — the boarding raid joined the shared scene list: `stepWorld` knows thirteen
   modes and the list knew eleven, so the one mode with a real projection was driven by nobody —
   not the fuzzer, not the frame meter, not one cross-cutting suite. Staging taken from the fps

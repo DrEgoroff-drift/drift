@@ -198,6 +198,29 @@ function lookScenes(){
       if(!jump(find(q=>!!pirateBaseOf(q))))return false;
       const PB=pirateBaseOf(G.sys);if(!PB)return false;
       enterRaid(PB);return G.mode==="raid";}},
+    /* ── тихие режимы тоже кто-то должен гонять (M337) ──
+       Зимовка и санаторий — отдельные `G.mode` со своим апдейтом и своим
+       кадром, и до сих пор их не трогал ни фуззер, ни прибор. Ставятся
+       собственными воротами игры (`winTake`/`enterSpa`), а не руками: запись,
+       собранная наполовину, уже однажды доехала до чужого набора и умерла там
+       на `toFixed` (M329). */
+    {id:"зимовка",set:()=>{
+      if(typeof winTake!=="function"||typeof enterWinter!=="function")return false;
+      /* нанимают зимовщика у стойки: сцена и ставится оттуда, иначе она
+         проверяла бы путь, которым игрок не ходит */
+      const st=find(q=>!!q.station);if(!jump(st))return false;
+      G.st=G.sys.station;
+      const s=find(q=>(q.planets||[]).some(day));if(!s)return false;
+      const p=s.planets.find(day);if(!p)return false;
+      if(!winTake({sx:s.sx,sy:s.sy,pname:p.name,sysName:s.name,pi:p.idx}))return false;
+      G.st=null;
+      enterWinter();return G.mode==="winter";}},
+    {id:"санаторий",set:()=>{
+      if(typeof enterSpa!=="function"||typeof instAll!=="function")return false;
+      if(!land(q=>q.type==="ocean"))return false;
+      const I=instAll();if(!I)return false;
+      I.vouch=Math.max(1,I.vouch|0);
+      enterSpa();return G.mode==="spa";}},
     {id:"черпак",set:()=>{if(!jump(find(q=>(q.planets||[]).some(p=>p.type==="gas"))))return false;
       startScoop(G.sys.planets.find(p=>p.type==="gas"));return true;}},
     {id:"база",set:()=>{if(!land(day))return false;

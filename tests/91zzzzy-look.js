@@ -28,6 +28,8 @@ const LOOK_BASE = {
   "пещера": { tones: 3, mass: 11, contrast: .35, empty: 78 },
   "пояс": { tones: 4, mass: 4, contrast: .33, empty: 61 },
   "рейд": { tones: 2, mass: 12, contrast: .33, empty: 56 },
+  "зимовка": { tones: 4, mass: 34, contrast: .40, empty: 36 },
+  "санаторий": { tones: 3, mass: 33, contrast: .56, empty: 28 },
   "черпак": { tones: 10, mass: 44, contrast: .62, empty: 22 },
   "база": { tones: 5, mass: 7, contrast: .34, empty: 74 },
   "дом": { tones: 3, mass: 16, contrast: .44, empty: 46 }

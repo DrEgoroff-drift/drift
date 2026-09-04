@@ -833,7 +833,7 @@ enterHomeIn                  src/29c-home-in.js:65
 enterRaid                    src/24a-mode-raid.js:134
 enterSpa                     src/29h-spa.js:51
 enterSurface                 src/21-mode-surface.js:7
-enterWinter                  src/29f-winter.js:110
+enterWinter                  src/29f-winter.js:112
 env                          src/09-audio.js:59
 eq                           tests/90-harness.js:38
 ETH_CATCH                    src/25l-post-ether.js:28
@@ -861,7 +861,7 @@ exitDig                      src/23-mode-dig.js:70
 exitHomeIn                   src/29c-home-in.js:74
 exitScoop                    src/19a-mode-scoop.js:62
 exitSpa                      src/29h-spa.js:119
-exitWinter                   src/29f-winter.js:208
+exitWinter                   src/29f-winter.js:210
 EXP_DAYS                     src/11x-expedition.js:19
 EXP_GOODS                    src/11x-expedition.js:20
 EXP_PAX_LINES                src/11x-expedition.js:112
@@ -1604,11 +1604,11 @@ logBtnLabel                  src/11-log.js:60
 logOpen                      src/11-log.js:14
 logPageOf                    src/11-log.js:13
 logTime                      src/11-log.js:54
-look                         src/28y-look.js:242
+look                         src/28y-look.js:265
 LOOK_BASE                    tests/91zzzzy-look.js:21
 LOOK_DAYLIGHT                src/28y-look.js:113
 LOOK_TARGET                  src/28y-look.js:41
-lookAll                      src/28y-look.js:221
+lookAll                      src/28y-look.js:244
 lookFrame                    src/28y-look.js:46
 lookoutSees                  src/12ag-holdfx.js:104
 lookScenes                   src/28y-look.js:129
@@ -2417,7 +2417,7 @@ renderCardBack               src/25i-post-back.js:88
 renderChess                  src/25n-chess.js:285
 renderDeeds                  src/11-log.js:102
 renderDeskTop                src/27ia-desk-top.js:353
-renderDiary                  src/29f-winter.js:219
+renderDiary                  src/29f-winter.js:221
 renderHold                   src/27j-ui-hold.js:176
 renderLog                    src/11-log.js:79
 renderLoreBoard              src/27h-ui-lore.js:26
@@ -3359,15 +3359,15 @@ WIN_WALL_EARLY               src/29f-winter.js:46
 WIN_WALL_LATE                src/29f-winter.js:54
 winAll                       src/29f-winter.js:62
 winBad                       src/29f-winter.js:72
-winBlock                     src/29f-winter.js:251
+winBlock                     src/29f-winter.js:253
 winBody                      src/29g-winter-draw.js:97
 winCap                       src/29f-winter.js:65
 WIND                         src/19c-light.js:41
-winDiaryToday                src/29f-winter.js:174
+winDiaryToday                src/29f-winter.js:176
 windOf                       src/19c-light.js:42
 winDraw_                     src/29f-winter.js:69
-winEnd                       src/29f-winter.js:191
-winFix                       src/29f-winter.js:147
+winEnd                       src/29f-winter.js:193
+winFix                       src/29f-winter.js:149
 winGeom                      src/29g-winter-draw.js:34
 winHit                       src/29g-winter-draw.js:768
 winLevers                    src/29g-winter-draw.js:54
@@ -3376,12 +3376,12 @@ winOfferHere                 src/29f-winter.js:76
 winOn                        src/29f-winter.js:63
 winOver                      src/29f-winter.js:70
 winRoomLayer                 src/29g-winter-draw.js:127
-winShift                     src/29f-winter.js:121
+winShift                     src/29f-winter.js:123
 winTake                      src/29f-winter.js:95
 winTap                       src/29g-winter-draw.js:787
 winTestStart                 tests/91zzzj-winter.js:2
 winTone                      src/29g-winter-draw.js:89
-winWall                      src/29f-winter.js:160
+winWall                      src/29f-winter.js:162
 withCtx                      src/18c-chunks.js:51
 withScale                    src/18c-chunks.js:41
 WORLD_MOOD                   src/10-music.js:39
@@ -4189,7 +4189,7 @@ zooTick                      src/11ad-zoo.js:41
   · prof() — на что уходит кадр:319
   · dbg() — что держит корабль:360
 
-## src/28y-look.js · 18 КБ
+## src/28y-look.js · 20 КБ
   · look() — прибор кадра:1
 
 ## src/28z-fps-probe.js · 9 КБ
