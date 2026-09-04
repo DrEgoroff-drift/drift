@@ -290,6 +290,26 @@ starts with `resetWorld()`).
 If you do open it in the pane: it caches `file://` — after a rebuild open `tests.html?v=N` with
 a fresh `N`, or you'll be reading the previous run. Headless has no such cache.
 
+**Six cross-cutting nets sit above the topic suites** (M329–M338). They do not test a mechanic;
+they test properties of the whole game, and between them they found the raster leak behind the
+freeze, a softlock in space, a money printer at the counter and a screen that could become a trap:
+
+| net | file | what it holds |
+|---|---|---|
+| the world's life | `91zzzzz-e2e-life` | no NaN in the state; the save's full circle from every scene and no field lost; a save without any one field still loads and opens a screen; no «undefined»/«NaN» in the player's text; three thousand frames grow no list; everything clickable is clicked; **and the frame guard's counter is read at the end of the whole run** — an exception inside a click handler reaches no `try/catch`, only `window.onerror` |
+| isolation | `90-harness` + the last suite of `91zzzzz` | `resetWorld` deletes every field the page did not boot with, and a suite compares the world after it against the snapshot taken before the first suite. A suite that is green alone and red in the run is the worst kind of lie |
+| places, physics, light | `91zzzzy-place` / `-phys` / `-light` | everything stands on the ground, the man is never inside stone, the pad is clear; thrust/brake/fuel, Kepler, no falling through the ground — **each at frame steps 1, 2 and 3**, because the frame integrates at up to dt=3; night darker than day, halos fall off, nothing brighter than its own light source |
+| game QA | `91zzzzy-play` | can the player get stuck, does the game print money, is any screen a dead end, what happens after death, does the autopilot arrive |
+| someone else's clock | `91zzzzy-time` | the save travels between devices: every epoch stamp shifted three days forward and thirty back, and the world lives on |
+| names and the picture | `91zzzzy-names` / `-look` / `-mem` | the game reads its own source and checks every name called by string against its table («a perk without code is a lie», applied to every table); the frame ledger pinned per scene as a baseline; the raster held by `SYS_CACHE` stays on a shelf instead of growing with the evening |
+
+Two rules come out of them and are worth keeping. **A mode that is not in `lookScenes` is driven
+by nobody** — that list is shared by the frame meter and the fuzzer, and until M337–M338 the raid,
+the wintering and the sanatorium were in neither. **A staged scene must be reproducible**: planets
+orbit inside `SYS_CACHE` all session, so a scene now rebuilds its system from the seed — without
+that both the meter's numbers and the fuzzer's «one seed, same failure» drift with how long the
+tab has been open.
+
 **The phone layout is only measured if you ask for it.** The layout guards (`91f-ui`,
 `91zzx-mobile`) skip themselves when the window is not a phone, because in a desktop window the
 phone rules are not applied at all:
