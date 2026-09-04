@@ -298,6 +298,16 @@ layout in the game's own language (procedural canvas + desk DOM), not the render
   (`27k`), and as a paper sheet on the cantina wall; every address in it is tappable (M347). Module
   `12pa-beacon.js` after `12p`; table of phrase moulds is hand-written, not generated. Tests: no line
   without a cause; the beacon never names `wander*`; holiday doubles the norm exactly one day.
+  **M349a — the beacon speaks** (author 2026-09-04: «если ты мне ещё и голосом — ваще кайф»). Browser
+  `speechSynthesis`, `lang:"ru-RU"`, no asset — the zero-assets rule holds. Voice only in flight and on
+  the road (`27k`), never on the desk or in the cantina; framed by the receiver's own crackle before
+  and a short tone after (`09-audio`) — the synth output cannot be routed through WebAudio, so the
+  «radio» is framing and pace (slow, pauses on the лесенка line breaks), not a filter. Three roles pick
+  distinct voices when the device offers several (beacon: male, even; «Сорока»'s keeper: quiet;
+  station dispatcher: female), else one voice for all. Setting «голос приёмника» in options, default
+  on; the first bulletin says where to turn it off. Queue one utterance at a time, cancel on mode
+  change. Tests: text reaches the queue (mock `speechSynthesis.speak`), and with no voices the game
+  stays silent without an error; nothing is spoken while `G.mode` is a desk/station screen.
 
 ## Loose ends (as of 2026-08-28, after the graphics run 0.237.0–0.244.0)
 
