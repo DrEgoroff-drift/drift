@@ -111,7 +111,33 @@ cosmetics exist; the desk gets one table «ОПИСЬ»; a locker exists at stat
   the terminal (as today); while docked a fifth zone ЯЩИК slides in (M345). One rule: anything worn,
   fitted or spent lives on the cloth; anything read lives on the desk. «Сорока»'s purchases land here
   (tools → shelf, cosmetics → box, papers → desk ВЕЩИ). Header shows the two real counters, credits
-  and matches — not four. The author drew it: one green cloth
+  and matches — not four.
+  **Readouts (author 2026-09-04): a permanent panel ПРИБОРЫ under the hull silhouette** (thrust,
+  turn, tank, cargo, shield, radar, jump, cooling — real `stat()` numbers) and one under the kit doll
+  (weight, pace, armour, lamp, scan, oxygen — `kitStat`). One rule for the whole cloth: hover/select a
+  thing and the panel shows the future — a fitted part shows «→ N» in red per touched line («если
+  снять», via `statPreview(slot,null)`), a spare part shows the delta against the part it would
+  replace and highlights the slot (red «оснастка» line when cap is short), kit pieces likewise
+  including weight; cosmetics and tools move nothing and get one line of words under the item.
+  Cards keep only name, tier, affixes — comparison lives in the panel, not on cards.
+  **Two layouts.** Desktop (>760): three columns as the mock, shelf top-centre, box top-right, hatch
+  bottom-right, locker slides in between box and hatch when docked; drag is primary, card buttons
+  remain. Phone (≤760): one vertical feed in fixed order — header counters; shelf+box as one
+  horizontal scroll strip; zone 3 (silhouette, ПРИБОРЫ, spare parts); zone 2; zone 1; locker if
+  docked. The hatch is not in the feed: it is a sticky bottom bar that appears while something is
+  lifted. Primary gesture on phone is tap: select → panel shows the future → three 44 px buttons
+  slide out under the item (СТАВИТЬ/СНЯТЬ, ЗА БОРТ, РАЗОБРАТЬ for parts); long-press lifts for drag.
+  Confirmation for tier≥3 is the button turning into «ТОЧНО?» for three seconds, both layouts. Only
+  the feed scrolls; one selected thing per table; guarded by `91f-ui` and `test.ps1 -Mobile`.
+  **Prices (author 2026-09-04: rethink, not remove).** The desk paper НАКЛАДНАЯ/ЦЕНЫ goes away;
+  `G.seenPrices` stays the one memory and is shown where the decision is made: a small caption on
+  each pile in zone 1 («лучшее из виденного: 38 · сектор 4:−7 · 2 прыжка», tap = set course, the
+  same action `renderPrices` had), one line under zone 1 «трюм стоит около N, если развезти» (best
+  seen per key, seen beats heard as in `12aa-need`); on the galaxy map a station's seen price list on
+  hover/tap with the player's cargo keys highlighted, plus a «все виденные цены» list button in map
+  mode for those who compared in the table. The receiver keeps broadcasting heard prices; the route
+  tool (`12r`) is untouched. Remove `bill` from `DESK_ITEMS` and the `prices` tab wiring in `27i`.
+  The author drew it: one green cloth
   with four numbered zones, a tool shelf above, a cosmetics box at the right, a hatch in the corner.
   - Rename tab `hold` → label ОПИСЬ in `src/index.html` (`data-tab="hold"` stays — it is an address)
     and `DESK_ITEMS` `bill` note in `27ia-desk-top`. Do not touch the 20 copies under `docs/*.html`
