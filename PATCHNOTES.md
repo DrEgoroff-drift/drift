@@ -7,6 +7,32 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.336.0 - M339: the holding's arithmetic, and a knob for the fuzzer's hands
+
+The holding (M289–M297) is the youngest and most complicated machine in the game, and every suite
+that touched it so far judged it by SCREENS — does the СТРОЙКА tab draw, do its buttons click.
+Production has two questions, and neither is about the interface: is anything made out of nothing,
+and does anything made get lost on the way to the hold. `tests/91zzzzy-hold` asks them in numbers,
+with shifts moved by shifting the record's own stamps — exactly how a player returning an hour
+later sees them.
+
+The answers hold: a site opens by the rung and a workshop is paid for in credits AND material (the
+suite pays the way a player does); an empty bunker makes nothing over twenty shifts; one shift's
+quota yields no more than one shift's output and is eaten exactly once; a hundred shifts stay under
+the three-shift ceiling; collecting moves exactly as much into the hold as leaves the workshop; and
+with a full hold nothing is taken and nothing evaporates.
+
+Writing it caught a false green in the check itself, worth writing down: `bldTick` takes
+`t0=max(B.t0,B.ready)`, so moving one stamp back is not enough — the end of construction lands
+after the start of counting and NOT ONE shift passes. «An empty bunker made nothing» was true only
+because no shift had run.
+
+Also, a knob the fuzzer never had: its hands were seeded by a constant, so a long run pressed the
+same sequence for longer — 4000 frames checked the same path as 260. `test.ps1 -Seed N` gives a
+different path entirely; the default is unchanged, so the build's run still repeats exactly. Hunted
+across seeds 7, 23 and 91 at 1500 frames over all fourteen scenes: green.
+
+---
 ## 0.335.0 - M338: the quiet modes join the list too
 
 After the raid (M337), the two remaining modes nobody drove: the wintering and the sanatorium.

@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 375 · символов верхнего уровня: 3406
+Файлов: 376 · символов верхнего уровня: 3409
 
 ## СИМВОЛЫ
 
@@ -1153,6 +1153,9 @@ hasSave                      src/14a-cloud.js:60
 hazardBand                   src/25-cockpit.js:166
 hazeBand                     src/19c-light.js:191
 hazeFar                      src/19c-light.js:167
+hdAgeShifts                  tests/91zzzzy-hold.js:48
+hdLay                        tests/91zzzzy-hold.js:41
+hdSite                       tests/91zzzzy-hold.js:15
 HEARD_MAX                    src/12x-parrot.js:23
 heardAdd                     src/12x-parrot.js:42
 heardAll                     src/12x-parrot.js:26
@@ -4612,6 +4615,9 @@ zooTick                      src/11ad-zoo.js:41
   · все вкладки рисуются:135
   · тычок в каждую кнопку:168
   · прибор кадра работает:210
+
+## tests/91zzzzy-hold.js · 9 КБ
+  · холдинг: круг стройки числами (M339):1
 
 ## tests/91zzzzy-light.js · 20 КБ
   · свет и свечения (M330):1

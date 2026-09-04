@@ -191,6 +191,11 @@ Grep `docs/PLAN-archive.md` for the milestone number (header "Moved out of PLAN.
 - **M298** (0.295.0) — three interface fixes: the table answers in the row, rumours with distance,
   jumps and НА КАРТУ, the map card as a footer line.
 - **M325** (0.322.0) — the four effects: the lake with reflections and reeds, heat haze, chromatic aberration on hits, the live flare; `18d-postfx`.
+- **M339** (0.336.0) — the holding judged by arithmetic instead of screens (`91zzzzy-hold`): nothing
+  is made from an empty bunker, a shift's quota is eaten once and yields no more than a shift's
+  output, the three-shift ceiling holds over a hundred shifts, and collecting conserves both ways
+  (including a full hold, where nothing evaporates). Plus a seed knob for the fuzzer (`-Seed N`):
+  its hands were seeded by a constant, so a long run only walked the same path further.
 - **M338** (0.335.0) — the wintering and the sanatorium joined the scene list as well (fourteen
   scenes): both are whole modes that no instrument had ever driven. Staged through the game's own
   gates, which immediately surfaced a null dereference in `winTake` (`G.st.name` with no station).
