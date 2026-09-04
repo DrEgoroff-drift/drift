@@ -187,6 +187,17 @@ function lookScenes(){
     {id:"шахта",set:()=>{if(!land(day))return false;enterDig();return true;}},
     {id:"пещера",set:()=>{if(!land(day))return false;enterCave();return !!G.cave;}},
     {id:"пояс",set:()=>{if(!jump(find(q=>!!q.belt)))return false;enterBelt();return true;}},
+    /* ── абордаж в общем списке (M337) ──
+       Режимов в `stepWorld` тринадцать, а в этом списке их было одиннадцать:
+       рейд не гонял никто. Список один на прибор и на фуззер — значит целый
+       режим с настоящей проекцией (десятки четырёхугольников с сортировкой по
+       глубине) не видел ни случайных рук, ни числа кадра, ни сквозных наборов.
+       Постановка взята у пробника кадров (28z-fps-probe), где она уже была. */
+    {id:"рейд",set:()=>{
+      if(typeof pirateBaseOf!=="function"||typeof enterRaid!=="function")return false;
+      if(!jump(find(q=>!!pirateBaseOf(q))))return false;
+      const PB=pirateBaseOf(G.sys);if(!PB)return false;
+      enterRaid(PB);return G.mode==="raid";}},
     {id:"черпак",set:()=>{if(!jump(find(q=>(q.planets||[]).some(p=>p.type==="gas"))))return false;
       startScoop(G.sys.planets.find(p=>p.type==="gas"));return true;}},
     {id:"база",set:()=>{if(!land(day))return false;

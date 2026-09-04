@@ -1604,11 +1604,11 @@ logBtnLabel                  src/11-log.js:60
 logOpen                      src/11-log.js:14
 logPageOf                    src/11-log.js:13
 logTime                      src/11-log.js:54
-look                         src/28y-look.js:231
+look                         src/28y-look.js:242
 LOOK_BASE                    tests/91zzzzy-look.js:21
 LOOK_DAYLIGHT                src/28y-look.js:113
 LOOK_TARGET                  src/28y-look.js:41
-lookAll                      src/28y-look.js:210
+lookAll                      src/28y-look.js:221
 lookFrame                    src/28y-look.js:46
 lookoutSees                  src/12ag-holdfx.js:104
 lookScenes                   src/28y-look.js:129
@@ -4189,7 +4189,7 @@ zooTick                      src/11ad-zoo.js:41
   · prof() — на что уходит кадр:319
   · dbg() — что держит корабль:360
 
-## src/28y-look.js · 17 КБ
+## src/28y-look.js · 18 КБ
   · look() — прибор кадра:1
 
 ## src/28z-fps-probe.js · 9 КБ
@@ -4230,7 +4230,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91b-crew.js · 18 КБ
   · автотесты: наёмники: убыток по кредитам, удача, плен, рейсы, сохранение:1
 
-## tests/91c-mgr.js · 14 КБ
+## tests/91c-mgr.js · 15 КБ
   · автотесты: управляющие: домен и доля, перки, поручения, ИИ-ядро:1
 
 ## tests/91d-nav.js · 8 КБ

@@ -191,6 +191,11 @@ Grep `docs/PLAN-archive.md` for the milestone number (header "Moved out of PLAN.
 - **M298** (0.295.0) — three interface fixes: the table answers in the row, rumours with distance,
   jumps and НА КАРТУ, the map card as a footer line.
 - **M325** (0.322.0) — the four effects: the lake with reflections and reeds, heat haze, chromatic aberration on hits, the live flare; `18d-postfx`.
+- **M337** (0.334.0) — the boarding raid joined the shared scene list: `stepWorld` knows thirteen
+  modes and the list knew eleven, so the one mode with a real projection was driven by nobody —
+  not the fuzzer, not the frame meter, not one cross-cutting suite. Staging taken from the fps
+  probe. Also de-flaked «репутация: у своих садятся стоящие», which asserted a statistical property
+  from a single draw seeded by a two-day time bucket and went red at 03:00 with no code change.
 - **M336** (0.333.0) — a baseline for the frame ledger (`91zzzzy-look`), and the instrument defect it
   exposed: the staged scenes were not reproducible. Planets orbit inside `SYS_CACHE` all session, and
   the «система» scene places the ship relative to a planet — so the same build measured contrast 0.88

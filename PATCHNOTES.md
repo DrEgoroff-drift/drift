@@ -7,6 +7,24 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.334.0 - M337: two modes nobody drove, and a test that depended on the clock
+
+`stepWorld` knows thirteen modes; the shared scene list knew eleven. The list belongs to both the
+frame meter and the fuzzer, so a whole mode — the boarding raid, the one place with a real
+projection, dozens of quadrilaterals depth-sorted every frame — was driven by nobody: no random
+hands, no frame numbers, no cross-cutting suite. The staging already existed in the fps probe
+(`28z-fps-probe`); it now lives in `lookScenes`, and the raid is instantly covered by the fuzzer,
+the NaN sweep, the save round-trip from every scene, the button sweep and the frame baseline
+(2 tones / mass 12 / contrast .33 / 56% empty). Twelve scenes now.
+
+And a test that failed at three in the morning without a line of game code changing. «репутация: у
+своих садятся стоящие» asserted that with reputation the best mercenary at the counter is better —
+from ONE draw. The hall is seeded by a two-day time bucket (`timeBucket`), and in some buckets the
+best mercenary is the same with and without reputation. The clock rolled over between the desktop
+run and the phone run, and the suite went red. The property being checked is statistical, so it is
+now measured that way: ten stations, sums compared, and the count of halls that improved.
+
+---
 ## 0.333.0 - M336: the frame meter was measuring a different scene every time
 
 A net against silent damage to the picture: the frame ledger's numbers, pinned per scene as a
