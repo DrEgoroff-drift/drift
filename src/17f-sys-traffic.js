@@ -29,8 +29,13 @@ function sysTraffic(sys){
 function drawSysTraffic(zx,zy,Z){
   const sys=G.sys;if(!sys)return;
   const T=sysTraffic(sys);if(!T.length)return;
+  for(const t of T)drawShuttleArc(t,zx,zy,Z);
+}
+/* один челнок по своей дуге; вынесено из цикла, потому что «Сорока» (12v, M342)
+   добавляет свою дугу станция↔парусник, пока стоит */
+function drawShuttleArc(t,zx,zy,Z){
   const s=clamp(Z,.5,1.5);
-  for(const t of T){
+  {
     /* туда-обратно по дуге; у концов притормаживает — стыковка, а не пролёт */
     let u=(G.t*t.spd+t.ph/TAU)%1;u=u<.5?u*2:2-u*2;
     const e=u*u*(3-2*u);
@@ -42,7 +47,7 @@ function drawSysTraffic(zx,zy,Z){
     const ee=m0+e*(1-m0-m1);
     const wx=t.ax+dx*ee+nx*bow, wy=t.ay+dy*ee+ny*bow;
     const x=zx(wx),y=zy(wy);
-    if(x<-30||x>W+30||y<-30||y>H+30)continue;
+    if(x<-30||x>W+30||y<-30||y>H+30)return;
     /* курс — по касательной к дуге */
     const de=.002, e2=Math.min(1,e+de);
     const bow2=Math.sin(e2*Math.PI)*t.bow*L;

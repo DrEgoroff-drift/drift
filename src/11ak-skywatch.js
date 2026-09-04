@@ -234,8 +234,12 @@ function skyReport(){
 function skyBlock(){
   if(!(G.st&&G.st.stype==="sci"))return;
   const S=skyAll(),o=S.o,O=o?null:skyOfferHere();
-  if(!o&&!O)return;
+  /* «Сорока» из соседней системы (12v, M342): институтский телескоп видит яркую
+     точку, которой нет в каталоге, и называет сторону — второй независимый источник */
+  const wl=(typeof wanderSkyLine==="function")?wanderSkyLine():null;
+  if(!o&&!O&&!wl)return;
   $body.appendChild(el("div","sec","НЕБЕСНАЯ ВАХТА · ОТЧЁТ ДО БЮЛЛЕТЕНЯ"));
+  if(wl)$body.appendChild(el("div","row","<div class='nm'><b>"+wl.ru+"</b><s>"+wl.note+"</s></div>"));
   if(O){
     const K=SKY_KINDS[O.kind], left=O.day-celDay();
     const r=el("div","row","<div class='nm'><b>"+K.ru+" · "+skyWhere(O)+"</b><s>сутки "+O.day+

@@ -1648,7 +1648,7 @@ body.op-ask #opisBar>s{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.340.0";
+const VER="0.341.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -9642,8 +9642,12 @@ function skyReport(){
 function skyBlock(){
   if(!(G.st&&G.st.stype==="sci"))return;
   const S=skyAll(),o=S.o,O=o?null:skyOfferHere();
-  if(!o&&!O)return;
+  /* «Сорока» из соседней системы (12v, M342): институтский телескоп видит яркую
+     точку, которой нет в каталоге, и называет сторону — второй независимый источник */
+  const wl=(typeof wanderSkyLine==="function")?wanderSkyLine():null;
+  if(!o&&!O&&!wl)return;
   $body.appendChild(el("div","sec","НЕБЕСНАЯ ВАХТА · ОТЧЁТ ДО БЮЛЛЕТЕНЯ"));
+  if(wl)$body.appendChild(el("div","row","<div class='nm'><b>"+wl.ru+"</b><s>"+wl.note+"</s></div>"));
   if(O){
     const K=SKY_KINDS[O.kind], left=O.day-celDay();
     const r=el("div","row","<div class='nm'><b>"+K.ru+" · "+skyWhere(O)+"</b><s>сутки "+O.day+
@@ -13595,7 +13599,8 @@ const RUMOUR_IMG={
   charts:"планета, которой нет ни на одной карте",quiet:"край, где не ломаются машины",
   slow:"долина, где что-то выкладывают в ответ",pass:"корабль, к которому ходят на поклон",
   grown:"посёлки одного народа, только разные",plan:"комбинат, который работает двести лет",
-  tin:"станция, где деды моложе внуков"
+  tin:"станция, где деды моложе внуков",
+  wander:"паруса у планеты, которые не гаснут ночью"   /* «Сорока» (12v, M342) */
 };
 /* деталь — то, ПОЧЕМУ рассказчику верят или не верят. Разложена по полу: пол
    в детали и пол рассказчика тянулись из разных бросков, и выходила
@@ -13656,6 +13661,9 @@ function rumoursHere(){
     q.short=q.img+" — где-то у сектора "+cx+":"+cy;
     out.push(q);
   }
+  /* «Сорока» (12v, M342): третий слух, пока борт стоит в шести прыжках — паруса
+     трудно перепутать, поэтому разброс уже обычного, но 15 % всё так же врут */
+  if(typeof wanderRumour==="function"){const wq=wanderRumour(r);if(wq)out.push(wq);}
   return out;
 }
 /* приёмник: изредка слух приходит строкой эфира */
@@ -28072,6 +28080,286 @@ function doomLine(){
     (doomHelp()?" · борта наёмников готовы взять "+doomHelp():"");
 }
 
+/* ══════════════ «Сорока»: странствующий парусник (M342) ══════════════
+   Один корабль на всю галактику, который нельзя купить и нельзя вызвать: парусник
+   с золотыми горами на крестовом рее, стоит три реальных дня у освещённого края
+   планеты, сутки идёт дальше. Пока стоит — торгует за спички (12uc; лавка —
+   M343). Найти его можно тремя каналами, и ни один не маркер
+   (docs/DESIGN-wanderer.md §3): слух в кантине («паруса у планеты, которые не
+   гаснут ночью»), небесная вахта из соседней системы («яркая точка без номера в
+   каталоге») и артефакт «Карта чужой руки» (12h): первая строка — стоянка на
+   карте, вторая, с «чтением», — и следующая.
+
+   ВРЕМЯ — функция часов, ничего не считается вне кадра (модель tickDrones):
+   эпоха = floor((now − WANDER_T0) / 4 сут), стоянка = первые трое суток эпохи,
+   переход — четвёртые. Петля из 24 стоянок считается один раз из мирового
+   устройства (звёзды у всех одни): обходит ядро эллипсом, радиус 6…20 секторов —
+   дважды за круг проходит через родные места, каждая четвёртая стоянка — тёмная
+   система без станции («идёт на промысел», §5). Шаг 3–5 секторов.
+
+   ПРАВИЛА ФАЙЛА:
+   1. Хранится только G.wander={got,gave,chit} — что купили, что отдали, письмо.
+      Положение, петля, товар — из часов и семени, никогда из сейва.
+   2. Рисунок по кодексу: тёмное тело киля с рёбрами и тюками, обвод, ОДИН тёплый
+      свет — лампа в гондоле; паруса — золотая фольга с жёсткими считанными
+      бликами, поворачиваются за минуты, не мигают. Крыльцо под килем — кольцо
+      ровных огней.
+   3. Подход — как к станции (17-mode-system): подсказка, сброс скорости,
+      ДЕЙСТВИЕ. Сам трап — режим wanderer (24c, M343). */
+const WANDER_T0=Date.UTC(2026,8,1);                 /* нуль петли: 1 сентября 2026 */
+const WANDER_STOP=3*86400e3, WANDER_HOP=86400e3, WANDER_PERIOD=WANDER_STOP+WANDER_HOP;
+const WANDER_N=24;
+let WANDER_LOOP=null;
+function wanderRec(){
+  const w=G.wander;
+  if(!w||typeof w!=="object"||!Array.isArray(w.got)||!Array.isArray(w.gave))G.wander={got:[],gave:[],chit:0};
+  return G.wander;
+}
+/* стоянка годится: обитаемая — со станцией, тёмная — без неё */
+function wanderOk(sx,sy,dark){
+  if(!starAt(sx,sy))return false;
+  const s=getSystem(sx,sy);
+  return dark?!s.station:!!s.station;
+}
+/* петля: эллипс вокруг ядра, радиус 13−7·cos2θ (6 у дома, 20 вдали), точки
+   прижимаются к ближайшей подходящей звезде в квадрате ±3 */
+function wanderLoop(){
+  if(WANDER_LOOP)return WANDER_LOOP;
+  const out=[];
+  const r=rng(0x50A0CA);
+  const tilt=r()*TAU;
+  for(let k=0;k<WANDER_N;k++){
+    const th=k/WANDER_N*TAU, rad=13-7*Math.cos(2*th);
+    const wx=Math.cos(th+tilt)*rad, wy=Math.sin(th+tilt)*rad*.85;
+    const cx=Math.round(wx),cy=Math.round(wy),dark=(k%4===3);
+    let best=null,bd=1e9,any=null,ad=1e9;
+    for(let dx=-3;dx<=3;dx++)for(let dy=-3;dy<=3;dy++){
+      const sx=cx+dx,sy=cy+dy,d=Math.hypot(sx-wx,sy-wy);
+      if(!starAt(sx,sy))continue;
+      if(d<ad){ad=d;any=[sx,sy];}
+      if(d<bd&&wanderOk(sx,sy,dark)){bd=d;best=[sx,sy];}
+    }
+    const p=best||any||[cx,cy];
+    /* одна звезда дважды подряд — не стоянка, а простой */
+    if(out.length&&out[out.length-1].sx===p[0]&&out[out.length-1].sy===p[1]&&any&&(any[0]!==p[0]||any[1]!==p[1])){p[0]=any[0];p[1]=any[1];}
+    out.push({sx:p[0],sy:p[1],dark});
+  }
+  return WANDER_LOOP=out;
+}
+/* где «Сорока» в момент now: стоянка k, планета, фаза и остаток фазы */
+function wanderAt(now){
+  now=now===undefined?Date.now():now;
+  const L=wanderLoop();
+  const e=Math.floor((now-WANDER_T0)/WANDER_PERIOD);
+  const t=now-WANDER_T0-e*WANDER_PERIOD;
+  const k=((e%WANDER_N)+WANDER_N)%WANDER_N, kn=(k+1)%WANDER_N, kp=(k+WANDER_N-1)%WANDER_N;
+  const st=L[k],nx=L[kn],pv=L[kp];
+  const stop=t<WANDER_STOP;
+  return {epoch:e,k,sx:st.sx,sy:st.sy,dark:st.dark,phase:stop?"stop":"hop",
+          tLeft:stop?WANDER_STOP-t:WANDER_PERIOD-t,tIn:t,
+          next:{sx:nx.sx,sy:nx.sy},prev:{sx:pv.sx,sy:pv.sy},
+          planetIx:wanderPlanetIx(st.sx,st.sy,e)};
+}
+/* планета стоянки: первое негазовое тело по семени эпохи; без планет — −1 */
+function wanderPlanetIx(sx,sy,e){
+  if(!starAt(sx,sy))return -1;
+  const P=getSystem(sx,sy).planets||[];
+  const ok=[];P.forEach((p,i)=>{if(p.type!=="gas")ok.push(i);});
+  if(!ok.length)return P.length?0:-1;
+  const r=rng(hashi(e|0,sx*31+sy,0x5A11));
+  return ok[Math.floor(r()*ok.length)];
+}
+function wanderHere(sys,now){
+  const w=wanderAt(now);
+  return !!sys&&w.phase==="stop"&&sys.sx===w.sx&&sys.sy===w.sy;
+}
+/* длина киля: 8–10 длин корпуса игрока */
+function wanderLen(){return hullOf(G.shipId).len*9;}
+/* место в системе: у освещённого края планеты, носом к звезде */
+function wanderWorldPos(sys,ix){
+  const L=wanderLen();
+  const p=(ix>=0&&sys.planets)?sys.planets[ix]:null;
+  if(!p||(!p.x&&!p.y)){const R=(sys.radius||200)*2.4;return {x:R,y:0,dx:-1,dy:0,L};}
+  const d=Math.hypot(p.x,p.y)||1,dx=-p.x/d,dy=-p.y/d;
+  return {x:p.x+dx*(p.radius+L*.62),y:p.y+dy*(p.radius+L*.62),dx,dy,L};
+}
+/* курс ухода: к следующей стоянке, в секторных осях */
+function wanderHeading(w){return Math.atan2(w.next.sy-w.sy,w.next.sx-w.sx);}
+/* угол корпуса сейчас: носом к звезде, в последний час стоянки — на курс ухода */
+function wanderAngle(pos,w){
+  const a0=Math.atan2(pos.dy,pos.dx);
+  const k=clamp(1-w.tLeft/3600e3,0,1);
+  if(k<=0)return a0;
+  let a1=wanderHeading(w),d=a1-a0;
+  while(d>Math.PI)d-=TAU;while(d<-Math.PI)d+=TAU;
+  return a0+d*k*k*(3-2*k);
+}
+/* ── подход (17-mode-system): близко ли крыльцо ── */
+function wanderNear(sh){
+  const sys=G.sys;if(!sys||!wanderHere(sys))return null;
+  const w=wanderAt(),pos=wanderWorldPos(sys,w.planetIx);
+  const ds=Math.hypot(sh.x-pos.x,sh.y-pos.y);
+  if(ds>pos.L*.5+320)return null;
+  return {ds:Math.max(0,ds-pos.L*.28),close:ds<pos.L*.28+110};
+}
+function wanderDock(){
+  if(typeof openWanderer==="function")return openWanderer();
+  say("«Сорока»: трап ещё не спущен\nкричат сверху — подождите");
+  return false;
+}
+/* ── три канала ── */
+/* слух: пока борт стоит и стоянка в ~6 прыжках (18 секторов); разброс 2–3, 15 % вранья */
+function wanderRumour(r){
+  const w=wanderAt();
+  if(w.phase!=="stop"||!G.sys)return null;
+  if(Math.max(Math.abs(w.sx-G.sx),Math.abs(w.sy-G.sy))>18)return null;
+  const wrong=r()<.15,rad=2+Math.floor(r()*2);
+  let cx=w.sx+Math.round((r()-.5)*2),cy=w.sy+Math.round((r()-.5)*2);
+  if(wrong){cx=Math.round((r()-.5)*60);cy=Math.round((r()-.5)*60);}
+  const S=pick(RUMOUR_SRC,r);
+  const det=pick(RUMOUR_DETAIL.any.concat(S.f?RUMOUR_DETAIL.f:RUMOUR_DETAIL.m),r);
+  const q={id:"wander",sx:cx,sy:cy,rad,wrong,img:RUMOUR_IMG.wander,src:S.ru,det};
+  q.where=rumourWhere(q);
+  q.text=capRu(S.ru)+" рассказывал про место: "+q.img+". "+capRu(q.where)+". "+capRu(det)+".";
+  q.lines=[capRu(q.img),capRu(q.where),"со слов: "+S.ru+" — "+det];
+  q.short=q.img+" — где-то у сектора "+cx+":"+cy;
+  return q;
+}
+/* небесная вахта: из соседней системы — яркая точка без номера, с направлением */
+function wanderSkyLine(){
+  const w=wanderAt();
+  if(w.phase!=="stop"||!G.sys)return null;
+  const dx=w.sx-G.sys.sx,dy=w.sy-G.sys.sy;
+  if((!dx&&!dy)||Math.max(Math.abs(dx),Math.abs(dy))>1)return null;
+  const side=(dy<0?"к северу":dy>0?"к югу":"")+(dx&&dy?"-":"")+(dx>0?"востоку":dx<0?"западу":"");
+  const dir=side.replace("к северу-востоку","к северо-востоку").replace("к северу-западу","к северо-западу")
+    .replace("к югу-востоку","к юго-востоку").replace("к югу-западу","к юго-западу")
+    .replace(/^востоку$/,"к востоку").replace(/^западу$/,"к западу");
+  return {ru:"яркая точка без номера в каталоге",note:"в соседнем секторе, "+dir+" · не звезда: ночью не гаснет и не мерцает"};
+}
+/* карта чужой руки (12h): стоянка — при первой строке, следующая — при «чтении» */
+function drawWanderMap(vis,cell){
+  if(typeof relicOn!=="function"||!relicOn("chart"))return;
+  const w=wanderAt();
+  const glyph=(sx,sy,a)=>{
+    const v=vis.find(q=>q.gx===sx&&q.gy===sy);if(!v)return;
+    ctx.save();ctx.globalAlpha=a;ctx.translate(v.x+9,v.y-10);
+    ctx.fillStyle="#c9922e";ctx.strokeStyle="rgba(255,230,168,.9)";ctx.lineWidth=.8;
+    ctx.beginPath();ctx.moveTo(-4,4);ctx.lineTo(-1,-5);ctx.lineTo(-1,4);ctx.closePath();ctx.fill();ctx.stroke();
+    ctx.beginPath();ctx.moveTo(1,4);ctx.lineTo(4,-3);ctx.lineTo(1,4);ctx.lineTo(1,-2);ctx.closePath();ctx.fill();ctx.stroke();
+    ctx.fillStyle="rgba(236,232,220,.8)";ctx.fillRect(-5,4,10,1);
+    ctx.restore();
+  };
+  if(w.phase==="stop")glyph(w.sx,w.sy,1);
+  if(typeof relicDeep==="function"&&relicDeep("chart"))glyph(w.next.sx,w.next.sy,.55);
+}
+/* ── рисунок в системе ── */
+function drawWanderer(zx,zy,Z){
+  const sys=G.sys;if(!sys)return;
+  const w=wanderAt(),now=Date.now();
+  /* уходит: первые шесть часов перехода из покинутой системы виден блик, который уменьшается по прямой */
+  if(w.phase==="hop"&&sys.sx===w.prev.sx&&sys.sy===w.prev.sy){
+    const th=w.tIn-WANDER_STOP;if(th>6*3600e3)return;
+    const ix=wanderPlanetIx(sys.sx,sys.sy,w.epoch-1),pos=wanderWorldPos(sys,ix);
+    const pw={sx:w.prev.sx,sy:w.prev.sy,next:{sx:w.sx,sy:w.sy}};
+    const a=wanderHeading(pw),u=th/(6*3600e3);
+    const x=zx(pos.x+Math.cos(a)*u*9000),y=zy(pos.y+Math.sin(a)*u*9000);
+    if(x<-20||x>W+20||y<-20||y>H+20)return;
+    const rr=Math.max(1.2,(1-u)*4*clamp(Z,.4,1.5));
+    const g=ctx.createRadialGradient(x,y,0,x,y,rr*3);
+    g.addColorStop(0,"rgba(255,226,160,"+(.9*(1-u*.6)).toFixed(2)+")");g.addColorStop(1,"rgba(255,180,90,0)");
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,rr*3,0,TAU);ctx.fill();
+    return;
+  }
+  if(!wanderHere(sys))return;
+  const pos=wanderWorldPos(sys,w.planetIx);
+  const x=zx(pos.x),y=zy(pos.y),L=pos.L*Z;
+  if(x<-L||x>W+L||y<-L||y>H+L)return;
+  const ang=wanderAngle(pos,w);
+  ctx.save();ctx.translate(x,y);ctx.rotate(ang);
+  if(L<9){
+    /* издали — только паруса: тёплая точка, которая не мерцает */
+    const g=ctx.createRadialGradient(0,0,0,0,0,5);
+    g.addColorStop(0,"rgba(255,226,160,.95)");g.addColorStop(1,"rgba(255,180,90,0)");
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(0,0,5,0,TAU);ctx.fill();
+    ctx.restore();return;
+  }
+  const s=L/100;                                     /* киль = 100 единиц */
+  ctx.scale(s,s);
+  const r=rng((sys.seed^0x5A1A)>>>0);
+  /* 1. тень парусов на киле и тюках — тёмное основание, потом тело */
+  ctx.lineCap="round";
+  /* киль: тёмная балка с фаской */
+  ctx.strokeStyle="#0f1114";ctx.lineWidth=4.2;ctx.beginPath();ctx.moveTo(-50,0);ctx.lineTo(50,0);ctx.stroke();
+  ctx.strokeStyle="#242830";ctx.lineWidth=2.6;ctx.beginPath();ctx.moveTo(-50,0);ctx.lineTo(50,0);ctx.stroke();
+  /* рёбра-кольца каждые семь единиц, между ними тюки и ящики, через один сверху/снизу */
+  for(let i=-6;i<=6;i++){
+    const fx=i*7;
+    ctx.strokeStyle="#33383f";ctx.lineWidth=1.1;ctx.beginPath();ctx.moveTo(fx,-4.6);ctx.lineTo(fx,4.6);ctx.stroke();
+    if(i<6&&i!==0&&i!==-1){
+      const side=(i&1)?-1:1,wdt=4+r()*2.4,hgt=2.6+r()*2.2,bx=fx+3.5-wdt/2,by=side<0?-1.4-hgt:1.4;
+      ctx.fillStyle=r()<.5?"#2a2622":"#25282e";ctx.fillRect(bx,by,wdt,hgt);
+      ctx.fillStyle="rgba(255,235,200,.14)";ctx.fillRect(bx,side<0?by:by+hgt-.7,wdt,.7);   /* свет сверху: одна кромка */
+      ctx.strokeStyle="rgba(0,0,0,.55)";ctx.lineWidth=.5;ctx.strokeRect(bx,by,wdt,hgt);
+      /* верёвка крест-накрест */
+      ctx.strokeStyle="rgba(200,190,160,.28)";ctx.lineWidth=.4;
+      ctx.beginPath();ctx.moveTo(bx,by);ctx.lineTo(bx+wdt,by+hgt);ctx.moveTo(bx+wdt,by);ctx.lineTo(bx,by+hgt);ctx.stroke();
+    }
+  }
+  /* ряды заклёпок вдоль киля */
+  ctx.fillStyle="rgba(255,255,255,.13)";
+  for(let q=-48;q<=48;q+=3)ctx.fillRect(q,-1.6,.6,.6);
+  /* корма: два тёмных сопла, холодные, без огня — стоит */
+  ctx.fillStyle="#1a1d22";ctx.fillRect(-53,-3.2,4,2.2);ctx.fillRect(-53,1,4,2.2);
+  /* крыльцо под килем позади рея: кольцо ровных огней и трап */
+  ctx.strokeStyle="#2b2f36";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(-15,2);ctx.lineTo(-15,7.5);ctx.stroke();
+  for(let i=0;i<6;i++){const a=i/6*TAU;ctx.fillStyle="rgba(200,236,255,.85)";
+    ctx.beginPath();ctx.arc(-15+Math.cos(a)*3.2,8.5+Math.sin(a)*1.6,.55,0,TAU);ctx.fill();}
+  ctx.strokeStyle="rgba(180,190,200,.5)";ctx.lineWidth=.5;
+  for(let i=0;i<4;i++){ctx.beginPath();ctx.moveTo(-16.2,3+i*1.2);ctx.lineTo(-13.8,3+i*1.2);ctx.stroke();}
+  /* 2. рей — крест посреди, тёмный, с фаской света */
+  ctx.strokeStyle="#0f1114";ctx.lineWidth=2.4;ctx.beginPath();ctx.moveTo(0,-30);ctx.lineTo(0,30);ctx.stroke();
+  ctx.strokeStyle="#3a3630";ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(0,-30);ctx.lineTo(0,30);ctx.stroke();
+  /* 3. четыре горы фольги: основание на рее, вершина к носу; поворот за минуты */
+  const segs=[[-30,-15],[-15,0],[0,15],[15,30]];
+  segs.forEach((sg,i)=>{
+    const sway=Math.sin(now/53000+i*1.7)*.10+Math.sin(now/171000+i)*.05;
+    const mid=(sg[0]+sg[1])/2,ax=28+Math.sin(now/97000+i)*2,ay=mid*(.35+sway);
+    /* тень гора — тёмная половина к килю, свет — к внешней кромке */
+    const g=ctx.createLinearGradient(0,sg[0],0,sg[1]);
+    if(sg[0]<0){g.addColorStop(0,"#d39d34");g.addColorStop(1,"#7a4f10");}
+    else{g.addColorStop(0,"#7a4f10");g.addColorStop(1,"#d39d34");}
+    ctx.fillStyle=g;
+    ctx.beginPath();ctx.moveTo(0,sg[0]);ctx.lineTo(0,sg[1]);ctx.lineTo(ax,ay);ctx.closePath();ctx.fill();
+    ctx.strokeStyle="rgba(40,24,4,.7)";ctx.lineWidth=.5;ctx.stroke();
+    /* фактура: ориентированные линии вдоль гора (правило 6) */
+    ctx.save();ctx.beginPath();ctx.moveTo(0,sg[0]);ctx.lineTo(0,sg[1]);ctx.lineTo(ax,ay);ctx.closePath();ctx.clip();
+    ctx.strokeStyle="rgba(60,36,6,.22)";ctx.lineWidth=.35;
+    for(let k=1;k<7;k++){const t=k/7,yy=sg[0]+(sg[1]-sg[0])*t;ctx.beginPath();ctx.moveTo(0,yy);ctx.lineTo(ax,ay+(yy-mid)*.15);ctx.stroke();}
+    /* блики — считанные жёсткие штрихи, не градиент (правило 2) */
+    ctx.strokeStyle="rgba(255,236,190,.85)";ctx.lineWidth=.7;
+    for(let k=0;k<3;k++){const t=.25+k*.22,yy=sg[0]+(sg[1]-sg[0])*(sg[0]<0?t:1-t);
+      ctx.beginPath();ctx.moveTo(2+k*3,yy);ctx.lineTo(9+k*4,yy+(ay-yy)*.28);ctx.stroke();}
+    ctx.restore();
+  });
+  /* 4. гондола на носу: стекло, и внутри — единственный тёплый свет */
+  ctx.fillStyle="#1c2026";ctx.beginPath();ctx.ellipse(50,0,4.6,3.2,0,0,TAU);ctx.fill();
+  ctx.strokeStyle="rgba(150,180,200,.55)";ctx.lineWidth=.6;ctx.stroke();
+  const lg=ctx.createRadialGradient(51,0,0,51,0,9);
+  lg.addColorStop(0,"rgba(255,214,150,.95)");lg.addColorStop(.3,"rgba(255,190,110,.55)");lg.addColorStop(1,"rgba(255,160,80,0)");
+  ctx.fillStyle=lg;ctx.beginPath();ctx.arc(51,0,9,0,TAU);ctx.fill();
+  ctx.fillStyle="#fff1d0";ctx.beginPath();ctx.arc(51.4,-.4,1,0,TAU);ctx.fill();
+  /* 5. один обвод всему телу — тонкий, холодный сверху */
+  ctx.strokeStyle="rgba(190,205,220,.22)";ctx.lineWidth=.5;
+  ctx.beginPath();ctx.moveTo(-50,-2.2);ctx.lineTo(50,-2.2);ctx.stroke();
+  ctx.restore();
+  /* челнок станции к «Сороке» — местные тоже торгуют (17f) */
+  if(sys.station&&typeof drawShuttleArc==="function"){
+    const st=sys.station;
+    drawShuttleArc({ax:st.x,ay:st.y,bx:pos.x,by:pos.y,br:pos.L*.3,bow:.22,spd:.00011,ph:.37,k:1,blink:1.1},zx,zy,Z);
+  }
+}
+
 /* ══════════════ собранный отчёт: их съёмка поверх вашей карты ══════════════
    Последняя веха прохода и нарочно дешёвая: всё, что ей нужно, уже построено.
 
@@ -30510,6 +30798,7 @@ function snapshot(){
     nodes:G.nodes,crowns:G.crowns,nodeShow:G.nodeShow,rareFound:G.rareFound,pnode:G.pnode,hunted:G.hunted,
     news:G.news,newsMarks:G.newsMarks,newsT:G.newsT,rivals:G.rivals,
     wrecks:G.wrecks,bargePax:G.bargePax,fleetLog:G.fleetLog||{},fleetEscort:G.fleetEscort||0,caravan:G.caravan||null,
+    wander:G.wander||{got:[],gave:[],chit:0},
     loreFound:G.loreFound,loreMarks:G.loreMarks,settle:G.settle,tin:G.tin,
     scrip:G.scrip,scripRate:G.scripRate,scripLog:G.scripLog,
     doom:G.doom,doomDead:G.doomDead,parrot:G.parrot,heard:G.heard,grok:G.grok,flea:G.flea,matches:G.matches|0,smena:G.smena||[],
@@ -30875,6 +31164,10 @@ function applySave(s){
   G.fleetLog=(s.fleetLog&&typeof s.fleetLog==="object")?s.fleetLog:{};
   G.fleetEscort=+s.fleetEscort||0;
   G.caravan=(s.caravan&&typeof s.caravan==="object")?s.caravan:null;
+  /* «Сорока» (12v, M342): что купили, что отдали, письмо вдогонку — положение из часов */
+  G.wander=(s.wander&&typeof s.wander==="object")
+    ?{got:Array.isArray(s.wander.got)?s.wander.got:[],gave:Array.isArray(s.wander.gave)?s.wander.gave:[],chit:s.wander.chit|0}
+    :{got:[],gave:[],chit:0};
   G.wrecks={};
   if(s.wrecks&&typeof s.wrecks==="object")
     for(const k in s.wrecks){
@@ -34217,8 +34510,13 @@ function sysTraffic(sys){
 function drawSysTraffic(zx,zy,Z){
   const sys=G.sys;if(!sys)return;
   const T=sysTraffic(sys);if(!T.length)return;
+  for(const t of T)drawShuttleArc(t,zx,zy,Z);
+}
+/* один челнок по своей дуге; вынесено из цикла, потому что «Сорока» (12v, M342)
+   добавляет свою дугу станция↔парусник, пока стоит */
+function drawShuttleArc(t,zx,zy,Z){
   const s=clamp(Z,.5,1.5);
-  for(const t of T){
+  {
     /* туда-обратно по дуге; у концов притормаживает — стыковка, а не пролёт */
     let u=(G.t*t.spd+t.ph/TAU)%1;u=u<.5?u*2:2-u*2;
     const e=u*u*(3-2*u);
@@ -34230,7 +34528,7 @@ function drawSysTraffic(zx,zy,Z){
     const ee=m0+e*(1-m0-m1);
     const wx=t.ax+dx*ee+nx*bow, wy=t.ay+dy*ee+ny*bow;
     const x=zx(wx),y=zy(wy);
-    if(x<-30||x>W+30||y<-30||y>H+30)continue;
+    if(x<-30||x>W+30||y<-30||y>H+30)return;
     /* курс — по касательной к дуге */
     const de=.002, e2=Math.min(1,e+de);
     const bow2=Math.sin(e2*Math.PI)*t.bow*L;
@@ -34461,6 +34759,18 @@ function updateSystem(dt){
         return;
       }
       G.prompt=S.name.toUpperCase()+" · "+Math.round(ds)+" ед.";
+    }
+  }
+  /* «Сорока» у освещённого края планеты (12v, M342): подход как к станции */
+  if(typeof wanderNear==="function"){
+    const wn=wanderNear(sh);
+    if(wn){
+      if(wn.close){
+        if(sp>2.6)G.prompt="СБРОСЬТЕ СКОРОСТЬ · "+sp.toFixed(1)+"\nТОРМОЗ — ГАШЕНИЕ";
+        else{G.prompt="ДЕЙСТВИЕ — К ТРАПУ «СОРОКИ»";if(actEdge)wanderDock();}
+        return;
+      }
+      G.prompt="«СОРОКА» · "+Math.round(wn.ds)+" ед.";
     }
   }
   const B=sys.belt;
@@ -34748,6 +35058,7 @@ function drawSystem(){
   if(typeof relayDrawSystem==="function")relayDrawSystem(zx,zy,Z);
   if(typeof drawBarges==="function")drawBarges(zx,zy,Z);
   if(typeof drawSysTraffic==="function")drawSysTraffic(zx,zy,Z);   /* челноки станции (M309) */
+  if(typeof drawWanderer==="function")drawWanderer(zx,zy,Z);        /* «Сорока» у планеты (M342) */
   if(typeof drawFleet==="function")drawFleet(zx,zy,Z);               /* флот ГЛАВТРАССЫ (M310) */
   if(typeof drawMooredBarge==="function")drawMooredBarge(zx,zy,Z);   /* своя баржа у Причала (M296) */
   /* дроны идут своими кругами между точкой и станцией (12e-drone-flight) */
@@ -35983,6 +36294,8 @@ function drawMap(){
   if(typeof drawSurvey==="function")drawSurvey(cell);
   /* трассы ГЛАВТРАССЫ (12ai, M314): пунктир между системами, где ходит флот */
   if(typeof drawFleetMap==="function")drawFleetMap(vis,cell);
+  /* «Карта чужой руки» (12h → 12v, M342): парус на стоянке «Сороки», с «чтением» — и на следующей */
+  if(typeof drawWanderMap==="function")drawWanderMap(vis,cell);
   let sel=null,cur=null;
   for(const v of vis){
     const{gx,gy,s,x,y}=v;

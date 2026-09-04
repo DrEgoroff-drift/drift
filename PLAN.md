@@ -102,7 +102,7 @@ in this order (author, 2026-09-03: «сначала по плану, потом 
    ghost click on screens opened by a pad swallowed, §18.8 complete but for the заявка (rung 21).
    ~~Left: the ship keeps its `.55` floor at deep zoom-out~~ — `.35` since M319 (0.316.0).
 
-## «Сорока» — the wanderer queue (M340–M341 done, M342–M346 open; author 2026-09-04: «делай всё в соло»)
+## «Сорока» — the wanderer queue (M340–M342 done, M343–M346 open; author 2026-09-04: «делай всё в соло»)
 
 Design is settled in `docs/DESIGN-wanderer.md` (§1–§13; §6 and §12–§13 are the revised, binding
 parts — §11's prices are indicative). Read that file first, then this queue. Every milestone below is
@@ -121,31 +121,9 @@ cosmetics exist; the desk gets one table «ОПИСЬ»; a locker exists at stat
   НАКЛАДНАЯ are gone; prices live under the piles, on the map card and in the map's ЦЕНЫ list.
   Body in `docs/PLAN-archive.md`.
 
-- **M342 — «Сорока» in the world** (new `12v-wander.js`, before `17c`; name the mode `wanderer`).
-  - `WANDER_STOP=3d`, `WANDER_HOP=1d`, epoch `floor((now-WORLD_T0)/4d)`; `wanderLoop()` — ~24 stops
-    seeded from the world seed: pick systems with a station of `rungOf>=6` within 4 jumps, each hop
-    3–5 sectors from the previous; every 4th stop is a dark system (`sysDanger>.5`, no station).
-    Cache in a module-level const; nothing persisted except `G.wander={got:[],gave:[],chit:0}`.
-  - `wanderAt(now)` → `{sx,sy,planetIx,phase:"stop"|"hop",tLeft}`; planet = first non-gas body by
-    seed. `wanderHere(sys)` true when the player is in that system during a stop.
-  - Drawing in `17c-system-draw` (a new `drawWanderer(zx,zy,Z)` in `17f`-style, called where
-    `drawSysTraffic` is): spine of ring frames with lashed crates, a cross yard with four gold foil
-    gores that turn to face the star over minutes (`Date.now()`-based angle, movement not blinking),
-    a warm gondola lamp at the bow, a porch under the keel with steady ring lights. Parked at the lit
-    limb of the planet. Sizes: 8–10 player-hull lengths. Codex rules: dark ground, hard counted
-    highlights, one warm light. Last hour of the stop: sails swing to the departure heading.
-  - Docking: the same approach test as a station (`nearestStation` pattern) → `G.mode="wanderer"`.
-  - Finding: add `RUMOUR_IMG.wander` «паруса у планеты, которые не гаснут ночью» and a rumour source
-    in `11t` pointing at the current stop with a 2–3 sector spread, only for cantinas within 6 jumps
-    while the phase is `stop`; `11ak-skywatch` lists «яркая точка без номера в каталоге» with a
-    direction from adjacent systems; **wire `relicOn("chart")`**: line one draws a sail glyph at the
-    current stop on the galaxy map (`mode-map` draw), line two (with «чтение», `relicTwo`) also the
-    next stop. Remove `"артефакты/chart"` from `KNOWN` in `91zzzzy-names` in the same commit and
-    close the «Needs a decision» item below.
-  - `17f-sys-traffic`: one extra shuttle arc ship↔station while it stands.
-  - Tests (`91zzzzf-wander`): every loop stop is a live star with the reachability rule; two epochs
-    give two stops; the shifted clock (`91zzzzy-time`) keeps the loop valid; `relicOn("chart")`
-    is now read by someone.
+- **M342** (0.341.0) — done: «Сорока» in the world (`12v-wander`) — a 24-stop loop from the clock, the
+  sail-ship parked at the lit limb, the approach, the rumour, the sky-watch line, the chart's sail glyph
+  (`relicOn("chart")` finally read); the room is M343. Body in `docs/PLAN-archive.md`.
 
 - **M343 — the room and the shop** (`24c-mode-wanderer.js` + `24ca-wanderer-draw.js`, then
   `26d-ui-wanderer.js`). Room rules of M74–M76: human ≈55 px, back wall, paint order wall → slit

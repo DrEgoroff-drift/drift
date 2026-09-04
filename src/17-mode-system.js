@@ -210,6 +210,18 @@ function updateSystem(dt){
       G.prompt=S.name.toUpperCase()+" · "+Math.round(ds)+" ед.";
     }
   }
+  /* «Сорока» у освещённого края планеты (12v, M342): подход как к станции */
+  if(typeof wanderNear==="function"){
+    const wn=wanderNear(sh);
+    if(wn){
+      if(wn.close){
+        if(sp>2.6)G.prompt="СБРОСЬТЕ СКОРОСТЬ · "+sp.toFixed(1)+"\nТОРМОЗ — ГАШЕНИЕ";
+        else{G.prompt="ДЕЙСТВИЕ — К ТРАПУ «СОРОКИ»";if(actEdge)wanderDock();}
+        return;
+      }
+      G.prompt="«СОРОКА» · "+Math.round(wn.ds)+" ед.";
+    }
+  }
   const B=sys.belt;
   if(B){
     const rr=Math.hypot(sh.x,sh.y);
@@ -495,6 +507,7 @@ function drawSystem(){
   if(typeof relayDrawSystem==="function")relayDrawSystem(zx,zy,Z);
   if(typeof drawBarges==="function")drawBarges(zx,zy,Z);
   if(typeof drawSysTraffic==="function")drawSysTraffic(zx,zy,Z);   /* челноки станции (M309) */
+  if(typeof drawWanderer==="function")drawWanderer(zx,zy,Z);        /* «Сорока» у планеты (M342) */
   if(typeof drawFleet==="function")drawFleet(zx,zy,Z);               /* флот ГЛАВТРАССЫ (M310) */
   if(typeof drawMooredBarge==="function")drawMooredBarge(zx,zy,Z);   /* своя баржа у Причала (M296) */
   /* дроны идут своими кругами между точкой и станцией (12e-drone-flight) */

@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 384 · символов верхнего уровня: 3485
+Файлов: 386 · символов верхнего уровня: 3506
 
 ## СИМВОЛЫ
 
@@ -95,13 +95,13 @@ appetitePrice                src/12ab-hold.js:84
 applyCrewEvent               src/12b-crew-events.js:215
 applyPadMode                 src/15-input.js:72
 applyPadSize                 src/15-input.js:8
-applySave                    src/14-save.js:197
+applySave                    src/14-save.js:198
 applyVolumes                 src/09-audio.js:40
 apVel                        src/16-flight.js:132
 arrive                       src/16-flight.js:178
 ARTIFACTS                    src/12h-relic.js:48
 askText                      src/11u-names.js:59
-asMap                        src/14-save.js:190
+asMap                        src/14-save.js:191
 assignToBase                 src/12a-crew.js:172
 AST_N                        src/24-mode-belt.js:86
 audioHush                    src/09-audio.js:12
@@ -320,7 +320,7 @@ cantTables                   src/27d-ui-cantina-props.js:241
 cantView                     src/27d-ui-cantina-props.js:82
 capIv                        src/28-loop.js:125
 capOf                        src/05-parts.js:108
-capRu                        src/11t-rumours.js:57
+capRu                        src/11t-rumours.js:58
 capUsed                      src/05-parts.js:219
 CAST                         src/12k-stories-a.js:22
 CAST_B                       src/12k-stories-b.js:7
@@ -743,6 +743,7 @@ drawRouteMap                 src/12r-route.js:267
 drawRungRing                 src/12ae-ladder.js:73
 drawScoop                    src/19a-mode-scoop.js:266
 drawSeams                    src/12s-wear.js:183
+drawShuttleArc               src/17f-sys-traffic.js:36
 drawSkyBase                  src/19c-light.js:296
 drawSkyBodies                src/19b-sky.js:96
 drawSkyLayer                 src/19-mode-landing.js:452
@@ -765,9 +766,9 @@ drawSurface                  src/21e-surface-draw.js:852
 drawSurfaceHud               src/21e-surface-draw.js:21
 drawSurfaceWorld             src/21e-surface-draw.js:103
 drawSurvey                   src/12w-survey.js:63
-drawSysHud                   src/17-mode-system.js:549
+drawSysHud                   src/17-mode-system.js:562
 drawSysNebula                src/16a-space.js:208
-drawSystem                   src/17-mode-system.js:317
+drawSystem                   src/17-mode-system.js:329
 drawSysTraffic               src/17f-sys-traffic.js:29
 drawTemple                   src/20aa-poi-shapes.js:50
 drawThingIcon                src/27i-ui-table.js:329
@@ -775,6 +776,8 @@ drawTierTrim                 src/03b-hull-paint.js:62
 drawTiles                    src/18c-chunks.js:125
 drawTrail                    src/16-flight.js:362
 drawWallPaper                src/11ae-concert.js:39
+drawWanderer                 src/12v-wander.js:175
+drawWanderMap                src/12v-wander.js:159
 drawWater                    src/21e-surface-draw.js:769
 drawWear                     src/12s-wear.js:101
 drawWeather                  src/19d-weather.js:96
@@ -1458,7 +1461,7 @@ jobOffer                     src/12e-mgr-jobs.js:228
 jobPick                      src/12e-mgr-jobs.js:259
 jobRefuse                    src/12e-mgr-jobs.js:57
 jobTick                      src/12e-mgr-jobs.js:287
-jump                         src/18-mode-map.js:572
+jump                         src/18-mode-map.js:574
 jumpToBase                   src/21a-mode-base.js:315
 KEEP_DARK_AFTER              src/11k-keepers.js:48
 KEEP_HABIT                   src/11k-keepers.js:35
@@ -2006,7 +2009,7 @@ opisWear                     src/27j-ui-opis.js:186
 OPT_TABS                     src/27-ui-ship.js:297
 optGroups                    src/27-ui-ship.js:300
 optTab                       src/27-ui-ship.js:299
-orbPathOf                    src/17-mode-system.js:306
+orbPathOf                    src/17-mode-system.js:318
 ORDER_WIN                    src/12aa-need.js:74
 orderDeliver                 src/12aa-need.js:114
 orderHere                    src/12aa-need.js:110
@@ -2690,15 +2693,15 @@ routeWhyNoPrice              src/12r-route.js:216
 rtInit                       src/09a-roomtone.js:23
 RTONE                        src/09a-roomtone.js:22
 rtWant                       src/09a-roomtone.js:42
-RUMOUR_DETAIL                src/11t-rumours.js:45
+RUMOUR_DETAIL                src/11t-rumours.js:46
 RUMOUR_IMG                   src/11t-rumours.js:32
-RUMOUR_SRC                   src/11t-rumours.js:52
-rumourBlock                  src/11t-rumours.js:114
-rumourEtherLine              src/11t-rumours.js:104
-rumourSeedHere               src/11t-rumours.js:54
-rumoursHere                  src/11t-rumours.js:72
-rumourToMap                  src/11t-rumours.js:67
-rumourWhere                  src/11t-rumours.js:60
+RUMOUR_SRC                   src/11t-rumours.js:53
+rumourBlock                  src/11t-rumours.js:118
+rumourEtherLine              src/11t-rumours.js:108
+rumourSeedHere               src/11t-rumours.js:55
+rumoursHere                  src/11t-rumours.js:73
+rumourToMap                  src/11t-rumours.js:68
+rumourWhere                  src/11t-rumours.js:61
 runAutopilot                 src/16-flight.js:133
 RUNG_PLAN                    src/12ae-ladder.js:12
 RUNG_STARS                   src/12ae-ladder.js:45
@@ -2722,13 +2725,13 @@ runTests                     tests/90-harness.js:115
 rxRecord                     src/11x-ring.js:64
 S1                           src/01-core.js:96
 S2                           src/01-core.js:97
-SAVE_BUDGET                  src/14-save.js:105
+SAVE_BUDGET                  src/14-save.js:106
 SAVE_KEY                     src/14-save.js:6
-saveFatSaid                  src/14-save.js:106
+saveFatSaid                  src/14-save.js:107
 saveGame                     src/14a-cloud.js:38
-saveText                     src/14-save.js:127
-saveTop                      src/14-save.js:121
-saveWeigh                    src/14-save.js:108
+saveText                     src/14-save.js:128
+saveTop                      src/14-save.js:122
+saveWeigh                    src/14-save.js:109
 say                          src/08-state.js:186
 SCALE_KEYS                   src/10-music.js:25
 SCALES                       src/10-music.js:5
@@ -3396,6 +3399,24 @@ wallSpot                     src/11ah-wall.js:132
 wallStone                    src/11ah-wall.js:189
 wallStore                    src/11ah-wall.js:81
 wallWrap                     src/11ae-concert.js:72
+WANDER_LOOP                  src/12v-wander.js:30
+WANDER_N                     src/12v-wander.js:29
+WANDER_STOP                  src/12v-wander.js:28
+WANDER_T0                    src/12v-wander.js:27
+wanderAngle                  src/12v-wander.js:107
+wanderAt                     src/12v-wander.js:68
+wanderDock                   src/12v-wander.js:123
+wanderHeading                src/12v-wander.js:105
+wanderHere                   src/12v-wander.js:90
+wanderLen                    src/12v-wander.js:95
+wanderLoop                   src/12v-wander.js:44
+wanderNear                   src/12v-wander.js:116
+wanderOk                     src/12v-wander.js:37
+wanderPlanetIx               src/12v-wander.js:82
+wanderRec                    src/12v-wander.js:31
+wanderRumour                 src/12v-wander.js:130
+wanderSkyLine                src/12v-wander.js:147
+wanderWorldPos               src/12v-wander.js:97
 wasBlurred                   src/15-input.js:203
 watchCrew                    src/27b-ui-crew.js:34
 WATER_MIN_SPAN               src/21e-surface-draw.js:725
@@ -3612,7 +3633,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/11aj-told.js · 5 КБ
   · ляпнул лишнего:1
 
-## src/11ak-skywatch.js · 16 КБ
+## src/11ak-skywatch.js · 17 КБ
   · небесная вахта:1
 
 ## src/11am-holiday.js · 11 КБ
@@ -3894,6 +3915,9 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12v-doom.js · 11 КБ
   · срок: мир, который кончается по расписанию:1
 
+## src/12v-wander.js · 18 КБ
+  · «Сорока»: странствующий парусник (M342):1
+
 ## src/12w-survey.js · 6 КБ
   · собранный отчёт: их съёмка поверх вашей карты:1
 
@@ -3921,10 +3945,10 @@ zooTick                      src/11ad-zoo.js:41
   · облако:65
   · видимое состояние обмена:80
 
-## src/14-save.js · 61 КБ
+## src/14-save.js · 60 КБ
   · сохранение:1
-  · запись не имеет права убить полёт:89
-  · пустая карта возвращается из облака СПИСКОМ:168
+  · запись не имеет права убить полёт:90
+  · пустая карта возвращается из облака СПИСКОМ:169
 
 ## src/15-input.js · 34 КБ
   · экранные кнопки: авто-скрытие и размер:1
@@ -4716,6 +4740,9 @@ zooTick                      src/11ad-zoo.js:41
   · все вкладки рисуются:135
   · тычок в каждую кнопку:168
   · прибор кадра работает:210
+
+## tests/91zzzzf-wander.js · 7 КБ
+  · автотесты: «Сорока» в мире (M342):1
 
 ## tests/91zzzzy-hold.js · 9 КБ
   · холдинг: круг стройки числами (M339):1

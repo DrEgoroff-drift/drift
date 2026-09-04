@@ -254,6 +254,8 @@ function drawMap(){
   if(typeof drawSurvey==="function")drawSurvey(cell);
   /* трассы ГЛАВТРАССЫ (12ai, M314): пунктир между системами, где ходит флот */
   if(typeof drawFleetMap==="function")drawFleetMap(vis,cell);
+  /* «Карта чужой руки» (12h → 12v, M342): парус на стоянке «Сороки», с «чтением» — и на следующей */
+  if(typeof drawWanderMap==="function")drawWanderMap(vis,cell);
   let sel=null,cur=null;
   for(const v of vis){
     const{gx,gy,s,x,y}=v;

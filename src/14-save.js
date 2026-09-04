@@ -74,6 +74,7 @@ function snapshot(){
     nodes:G.nodes,crowns:G.crowns,nodeShow:G.nodeShow,rareFound:G.rareFound,pnode:G.pnode,hunted:G.hunted,
     news:G.news,newsMarks:G.newsMarks,newsT:G.newsT,rivals:G.rivals,
     wrecks:G.wrecks,bargePax:G.bargePax,fleetLog:G.fleetLog||{},fleetEscort:G.fleetEscort||0,caravan:G.caravan||null,
+    wander:G.wander||{got:[],gave:[],chit:0},
     loreFound:G.loreFound,loreMarks:G.loreMarks,settle:G.settle,tin:G.tin,
     scrip:G.scrip,scripRate:G.scripRate,scripLog:G.scripLog,
     doom:G.doom,doomDead:G.doomDead,parrot:G.parrot,heard:G.heard,grok:G.grok,flea:G.flea,matches:G.matches|0,smena:G.smena||[],
@@ -439,6 +440,10 @@ function applySave(s){
   G.fleetLog=(s.fleetLog&&typeof s.fleetLog==="object")?s.fleetLog:{};
   G.fleetEscort=+s.fleetEscort||0;
   G.caravan=(s.caravan&&typeof s.caravan==="object")?s.caravan:null;
+  /* «Сорока» (12v, M342): что купили, что отдали, письмо вдогонку — положение из часов */
+  G.wander=(s.wander&&typeof s.wander==="object")
+    ?{got:Array.isArray(s.wander.got)?s.wander.got:[],gave:Array.isArray(s.wander.gave)?s.wander.gave:[],chit:s.wander.chit|0}
+    :{got:[],gave:[],chit:0};
   G.wrecks={};
   if(s.wrecks&&typeof s.wrecks==="object")
     for(const k in s.wrecks){

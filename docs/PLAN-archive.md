@@ -7637,3 +7637,44 @@ layout in the game's own language (procedural canvas + desk DOM), not the render
   locker of M345) is an empty named area on purpose.
 - The hull canvas draws at the aspect of its grid cell (`clientWidth/Height`), not a constant: a
   420×190 drawing stretched into a tall cell read as a rotated ship on the first frame.
+
+## M342 — «Сорока» in the world (0.341.0, 2026-09-05)
+
+- **M342 — «Сорока» in the world** (new `12v-wander.js`, before `17c`; name the mode `wanderer`).
+  - `WANDER_STOP=3d`, `WANDER_HOP=1d`, epoch `floor((now-WORLD_T0)/4d)`; `wanderLoop()` — ~24 stops
+    seeded from the world seed: pick systems with a station of `rungOf>=6` within 4 jumps, each hop
+    3–5 sectors from the previous; every 4th stop is a dark system (`sysDanger>.5`, no station).
+    Cache in a module-level const; nothing persisted except `G.wander={got:[],gave:[],chit:0}`.
+  - `wanderAt(now)` → `{sx,sy,planetIx,phase:"stop"|"hop",tLeft}`; planet = first non-gas body by
+    seed. `wanderHere(sys)` true when the player is in that system during a stop.
+  - Drawing in `17c-system-draw` (a new `drawWanderer(zx,zy,Z)` in `17f`-style, called where
+    `drawSysTraffic` is): spine of ring frames with lashed crates, a cross yard with four gold foil
+    gores that turn to face the star over minutes (`Date.now()`-based angle, movement not blinking),
+    a warm gondola lamp at the bow, a porch under the keel with steady ring lights. Parked at the lit
+    limb of the planet. Sizes: 8–10 player-hull lengths. Codex rules: dark ground, hard counted
+    highlights, one warm light. Last hour of the stop: sails swing to the departure heading.
+  - Docking: the same approach test as a station (`nearestStation` pattern) → `G.mode="wanderer"`.
+  - Finding: add `RUMOUR_IMG.wander` «паруса у планеты, которые не гаснут ночью» and a rumour source
+    in `11t` pointing at the current stop with a 2–3 sector spread, only for cantinas within 6 jumps
+    while the phase is `stop`; `11ak-skywatch` lists «яркая точка без номера в каталоге» with a
+    direction from adjacent systems; **wire `relicOn("chart")`**: line one draws a sail glyph at the
+    current stop on the galaxy map (`mode-map` draw), line two (with «чтение», `relicTwo`) also the
+    next stop. Remove `"артефакты/chart"` from `KNOWN` in `91zzzzy-names` in the same commit and
+    close the «Needs a decision» item below.
+  - `17f-sys-traffic`: one extra shuttle arc ship↔station while it stands.
+  - Tests (`91zzzzf-wander`): every loop stop is a live star with the reachability rule; two epochs
+    give two stops; the shifted clock (`91zzzzy-time`) keeps the loop valid; `relicOn("chart")`
+    is now read by someone.
+
+**Decided while building:** there is no `WORLD_T0` and no per-save world seed (stars are the same for
+everyone), so the loop is seeded by a constant and its zero is `WANDER_T0 = 1 Sep 2026 UTC`. The
+reachability rule «station of `rungOf>=6` within 4 jumps» could not be used as written — `rungOf` is
+the *player's* ladder, not a world property, and scanning neighbours would grow `SYS_CACHE` by
+thousands of systems — so an inhabited stop is a system *with* a station and a dark stop one without;
+the loop is an ellipse around the core (radius 6…20 sectors, tilted by the seed) snapped to the nearest
+fitting star within ±3, which gives 3–5-sector hops and two home passes per round. The ship parks nose
+to the star at the lit limb; the four gores hang from the cross yard toward the bow and sway on
+minute-scale sines; the last hour of a stop turns the whole hull toward the departure heading; the first
+six hours of a hop show a receding glint from the departed system. The shuttle arc is shared with
+`17f` through `drawShuttleArc`. The dock action calls `openWanderer()` when M343 defines it and until
+then says «трап ещё не спущен».

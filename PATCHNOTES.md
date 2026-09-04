@@ -7,6 +7,27 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.341.0 - M342: «Сорока» in the world
+
+The wandering sail-ship exists (`12v-wander`, `docs/DESIGN-wanderer.md` §3–§5, §7). Its position is a
+function of the clock and nothing else: a loop of twenty-four stops seeded once from the stars, three
+real days at each, one day in transit, every fourth stop a dark system without a station — the loop
+circles the core between six and twenty sectors out and passes the home region twice a round. At a stop
+it stands at the lit limb of a planet, nose to the star: a long dark keel of ring frames with lashed
+crates and rivet rows, four gold-foil gores on a cross yard that sway over minutes and never blink, a
+glass gondola at the bow with the one warm lamp, a porch under the keel with a ring of steady lights; the
+station's shuttle runs an extra arc to it while it stands. In the last hour the hull turns toward the
+next stop; for six hours after departure the departed system shows a receding glint. Approach it like a
+station: «СОРОКА · N ед.», drop speed, «ДЕЙСТВИЕ — К ТРАПУ» (the room comes with M343).
+
+Three ways to find it, none a marker: a cantina rumour «паруса у планеты, которые не гаснут ночью»
+within six jumps of a stop (spread 2–3 sectors, fifteen percent wrong as always); the institute's sky
+watch from an adjacent system lists «яркая точка без номера в каталоге» with the direction; and the
+artifact «Карта чужой руки» finally does what it says — its first line draws a sail glyph on the
+galaxy map at the current stop, the second, with the researcher's «чтение», also at the next. The last
+«perk without code» exception in the names test is gone with it. Save carries only `G.wander`
+({got, gave, chit}).
+
 ## 0.340.0 - M341: «ОПИСЬ» — one cloth for what you wear, fit and carry
 
 The menu button КОРАБЛЬ is now ОПИСЬ, and it opens a table instead of a screen: dark wood, green
