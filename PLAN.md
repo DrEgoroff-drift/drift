@@ -361,6 +361,19 @@ layout in the game's own language (procedural canvas + desk DOM), not the render
   proportions stay exactly as in the frame. Judge by the frame (`drift-shots-as-audit`): shoot the
   same scene before and after, the astronaut in it. No new biome, no new mechanic — density and
   family only.
+  **One big thing per biome (author 2026-09-04: «кристаллы большие, каменюги»).** The jungle crown's
+  role — five to eight astronaut heights, silhouette against the haze, a shadow on the ground, no
+  outline — is given to each of the ten land biomes with its own family of 3–5 shapes, 2–4 per
+  screen: crystal — druses of 3–5 facets from one root, a second lit facet, scree between; rocky —
+  boulders stacked in 2–3 tiers with a crack and a dark underside, lichen as a flat patch on top;
+  desert — table buttes on a thin neck with strata bands, one dry one-crown tree bent by the wind;
+  ice — hummocks and spires with a translucent edge, blue shadow inside, a snow cornice on one side;
+  volcanic — black cinder cones with a warm-lit crack, a straight smoke column, a «lava tree» of
+  frozen runs; toxic — bare trunks with hanging pods, blister growths, a glowing pool at the roots;
+  ocean — shore trees leaning to the water on stilt roots, coral towers on the shoal; ruin — wall
+  fragments, the tally-marked stela of the frame, beams, an antenna, a stair to nowhere; terran —
+  the jungle crowns sparser and rounder plus lone boulders; jungle — the reference itself. Same
+  grammar everywhere, biome only changes the family.
 
 ## Loose ends (as of 2026-08-28, after the graphics run 0.237.0–0.244.0)
 
