@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 378 · символов верхнего уровня: 3418
+Файлов: 379 · символов верхнего уровня: 3420
 
 ## СИМВОЛЫ
 
@@ -2233,6 +2233,8 @@ postSnap                     src/25g-postcard.js:65
 postTake                     src/25g-postcard.js:650
 postTerrain                  src/25g-postcard.js:41
 postWorld                    src/25g-postcard.js:49
+prbLeg                       tests/91zzw-eco-probe.js:5
+prbStations                  tests/91zzw-eco-probe.js:4
 prevAct                      src/08-state.js:59
 pricesHeard                  src/12aa-need.js:223
 pricesSeen                   src/12aa-need.js:194
@@ -4485,6 +4487,9 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzw-economy.js · 10 КБ
   · автотесты: экономика без долга (M152e):1
+
+## tests/91zzw-eco-probe.js · 6 КБ
+  · проба экономики (отчёт, не проверка; аудит 2026-09-04, docs/ECONOMY-AUDIT.md):1
 
 ## tests/91zzw-holding.js · 6 КБ
   · замер: холдинг против целей §16 (M293, шаг 5):1

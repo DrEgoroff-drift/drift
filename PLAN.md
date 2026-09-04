@@ -322,6 +322,18 @@ layout in the game's own language (procedural canvas + desk DOM), not the render
   branded voice, if ever, would be pre-rendered files on the site — a separate decision, not now.
   Persist the choice by voice *name* with a fallback to the first `ru` voice when it is gone.
 
+- **M350 — the economy's two faucets (audit `docs/ECONOMY-AUDIT.md`, 2026-09-04; needs the author's
+  pick).** Measured: hand trade sustains 717 cr/min on «Стриж» and 3 009 cr/min on «Вьюк» (180 000
+  cr/h) because station noise is ±36 % and a sale prices the whole hold before pressure moves;
+  twenty drones on one crystal point earn 581 cr/min passively because each drone gets its own
+  pool. Variants are in the audit §3. Recommended set: **A2** (price sales and buys in slices,
+  pressure inside the transaction) + **A1** (noise ±22 %) + **A4** (pressure half-life 6 h real time)
+  for trade; **B1** (one shared pool per point) + **B3** (offline cap 8 h) for drones; **C1** (40 raw
+  → 1 match, ≤200 units per stop) + re-priced papers for «Сорока» before M343. After the pick:
+  `91zzw-eco-probe` targets «Стриж» 150–250, «Вьюк» 500–900 cr/min; `91zzzzy-play` gains two
+  guards (a 150-unit sale earns less than 150 × opening price; N drones on a point ≤ one pool).
+  The holding's §16 ratios are expected to land by themselves — re-measure, do not retune.
+
 ## Loose ends (as of 2026-08-28, after the graphics run 0.237.0–0.244.0)
 
 Everything left open, with the reason it is open. Nothing here is a bug report — bugs are fixed
