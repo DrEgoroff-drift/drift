@@ -80,7 +80,8 @@ function rumoursHere(){
     let cx=R.core.sx+Math.round((r()-.5)*4),cy=R.core.sy+Math.round((r()-.5)*4);
     const wrong=r()<.15;
     if(wrong){cx=Math.round((r()-.5)*60);cy=Math.round((r()-.5)*60);}   /* просто неверен */
-    const rad=3+Math.floor(r()*3);
+    /* штурманский карандаш («Сорока»): разброс на сектор уже, но не меньше двух */
+    const rad=Math.max(2,3+Math.floor(r()*3)-((typeof wanderHas==="function"&&wanderHas("pencil"))?1:0));
     const img=RUMOUR_IMG[T.id]||T.ru.toLowerCase();
     const S=pick(RUMOUR_SRC,r);
     const det=pick(RUMOUR_DETAIL.any.concat(S.f?RUMOUR_DETAIL.f:RUMOUR_DETAIL.m),r);
@@ -106,7 +107,8 @@ function rumoursHere(){
 }
 /* приёмник: изредка слух приходит строкой эфира */
 function rumourEtherLine(r){
-  if(!G.sys||r()>.12)return null;
+  /* слуховая трубка («Сорока»): приёмник ловит слухи почти вчетверо чаще */
+  if(!G.sys||r()>((typeof wanderHas==="function"&&wanderHas("trumpet"))?.45:.12))return null;
   const L=rumoursHere();
   return L.length?"…говорят, есть "+L[Math.floor(r()*L.length)].short:null;
 }

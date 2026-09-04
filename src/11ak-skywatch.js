@@ -82,9 +82,11 @@ function skyPick(r){
   if(!G.sys)return null;
   /* фора не круглая: «через пять суток» три наряда подряд читается как таймер */
   const d0=celDay()+4+Math.floor(r()*6), cand=[];
-  for(let dx=-3;dx<=3;dx++)for(let dy=-3;dy<=3;dy++){
+  /* колокол вахты («Сорока»): телескоп видит на сектор дальше */
+  const bell=(typeof wanderHas==="function"&&wanderHas("bell"))?1:0;
+  for(let dx=-3-bell;dx<=3+bell;dx++)for(let dy=-3-bell;dy<=3+bell;dy++){
     const q=Math.abs(dx)+Math.abs(dy);
-    if(q<1||q>4)continue;
+    if(q<1||q>4+bell)continue;
     const sx=G.sys.sx+dx,sy=G.sys.sy+dy;
     if(starAt(sx,sy))cand.push([sx,sy]);
   }

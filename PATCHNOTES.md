@@ -7,6 +7,30 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.342.0 - M343: aboard «Сорока» — the room and the shop
+
+Dock at the porch and you are inside the spine: a long low corridor in one-point perspective, ring
+frames marking the depth, glass cases with brass corners along both walls — one thing on green cloth in
+each, its own steady lamp above — a skylight in the ceiling where the planet's limb turns and throws cold
+bars across the floor, gold leaking from the sails onto the upper walls, bundles and an empty cage
+drifting on lines, and at the far end the keeper behind a low counter under a green-shaded lamp, helmet
+hanging on its hook. You walk the corridor with ◀ ▶ (or the pads); the case in front of you shows its
+card: the keeper's provenance line, what it does, what it costs. Buying leaves an empty case with a chalk
+tag — the hole is the memory. Leaving is a button; if the stop ends while you are inside, you are put
+back where the ship stood.
+
+What is sold: fourteen tools for matches — Секстант Долгого Хода, Штурманский карандаш, Гирокомпас без
+номера, Термоодеяло разведчика, Клапан старой заправки, Парусная игла, Колокол вахты, Тетрадь ветра,
+Табличка «НЕ КУПЛЕНО», Мастерская рука, Слуховая трубка, Ключ причала, Список цен, Полка шире — every one
+read by the module it names; two papers for credits (Карта области, a book you do not have); and one
+wild card per stop asking «любая часть не ниже отменной» for an artifact you lack, or a rarity when you
+already hold three. The second counter buys what nobody buys: 40 units of volatiles, ice crystals or
+alloy per match, 20 technical components, no more than 200 units per stop, whole matches only; a rarity
+shown pays four, once, and stays yours. Tools work only from the six-place shelf on ОПИСЬ («ИНСТРУМЕНТЫ
+«СОРОКИ»»); the rest lie in the hold with «НА ПОЛКУ». The keeper speaks the lines of the design: «Спички
+считаем целыми…», «Кладу из своего коробка, помните это», and in the last hour strikes a match — «Сейчас
+узнаем, куда ветер.» — «Туда.» The scene «сорока» joined the frame meter and the fuzzer.
+
 ## 0.341.0 - M342: «Сорока» in the world
 
 The wandering sail-ship exists (`12v-wander`, `docs/DESIGN-wanderer.md` §3–§5, §7). Its position is a

@@ -300,8 +300,13 @@ function pricesClose(){const w=document.getElementById("pricewin");if(w)w.classL
    hot — этот товар в трюме, best — лучшая из виденных по товару, mark —
    пометка (со слуха, нужда). Считается только для выбранной станции. */
 function mapPriceRows(s,maxW){
-  const pr=(G.seenPrices||{})[s.key];if(!pr||!pr.p)return [];
+  let pr=(G.seenPrices||{})[s.key];
+  /* список цен («Сорока»): станции в трёх прыжках показывают прейскурант, даже не виденные */
+  if((!pr||!pr.p)&&s.station&&s.station.prices&&typeof wanderHas==="function"&&wanderHas("pricelist")&&
+     Math.hypot(s.sx-G.sx,s.sy-G.sy)<=3*Math.max(.5,stat().jump))pr={p:s.station.prices,list:1};
+  if(!pr||!pr.p)return [];
   const cells=[];
+  if(pr.list)cells.push({t:"по списку",mark:1});
   if(pr.heard)cells.push({t:"со слуха",mark:1});
   if(pr.need&&RES[pr.need])cells.push({t:"нужда: "+RES[pr.need].ru.toLowerCase(),mark:1});
   for(const k of TRADE_KEYS){

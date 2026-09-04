@@ -91,7 +91,9 @@ TEST_SUITES.push(()=>suite("сорока: слух, вахта, карта и п
     G.mode="map";
     try{drawWanderMap([{gx:w.sx,gy:w.sy,x:100,y:100}],40);}catch(e){err=e.message;}
     eq(err,"","карта без артефакта молчит и не падает");
-    ok(!wanderDock(),"трап без комнаты честно отказывает");
+    Date.now=()=>WANDER_T0+1000;G.mode="system";
+    ok(wanderDock()&&G.mode==="wanderer","трап спущен — комната открылась (M343)");
+    exitWanderer();
   }finally{Date.now=now0;}
   G.mode="system";
 }));

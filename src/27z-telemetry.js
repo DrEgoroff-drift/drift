@@ -158,7 +158,10 @@ function hud(){
   document.body.classList.toggle("screen",!!document.querySelector(".scr.open"));
   let a="—",b="—";
   /* кошелёк вынесен отдельной строкой ниже — здесь он был бы вторым разом */
-  if(G.mode==="system"){a=((typeof nameOf==="function")?nameOf(G.sys):G.sys.name).toUpperCase();b="«"+st.S.ru+"» · сектор "+G.sx+":"+G.sy;}
+  if(G.mode==="system"){a=((typeof nameOf==="function")?nameOf(G.sys):G.sys.name).toUpperCase();b="«"+st.S.ru+"» · сектор "+G.sx+":"+G.sy;
+    /* тетрадь ветра («Сорока»): в строке места — когда парусник уйдёт */
+    if(typeof wanderHas==="function"&&wanderHas("notebook"))b+=" · «Сорока» "+wanderLeftRu();}
+  else if(G.mode==="wanderer"){a="НА БОРТУ «СОРОКИ»";b=(typeof wanderLeftRu==="function")?wanderLeftRu():"";}
   else if(G.mode==="map"){a="НАВИГАЦИЯ";b="радиус "+st.jump.toFixed(1)+" пк";}
   else if(G.mode==="landing"){a=G.land.p.name.toUpperCase();
     b=(G.land.auto?"авто-посадка":"ручная посадка")+" · "+G.land.p.T.ru;}
@@ -228,6 +231,8 @@ function hud(){
   if(mb)setSt(mb,"display",(G.mode==="map"&&(G.mapView||(G.mapZoom&&G.mapZoom!==1)))?"":"none");
   if(nb)setSt(nb,"display",(G.mode==="map"&&G.mapMore)?"":"none");
   /* «ЦЕНЫ» — список виденных цен на карте (M341), когда есть что сравнивать */
+  const wp=document.getElementById("wanwin");
+  if(wp)setSt(wp,"display",G.mode==="wanderer"?"":"none");
   const pb=document.getElementById("pricesbtn");
   if(pb)setSt(pb,"display",(G.mode==="map"&&typeof pricesCount==="function"&&pricesCount())?"":"none");
   /* приборная колодка (25c): рисуется каждым кадром, гаснет вместе со строкой */
@@ -343,6 +348,7 @@ function hud(){
     $msl.classList.toggle("empty",on&&(G.cargo.missile|0)<=0);
   }
   document.body.classList.toggle("inbelt",G.mode==="belt");
+  document.body.classList.toggle("aboard",G.mode==="wanderer");   /* на борту «Сороки» (M343): приёмник и тяга ни к чему */
   /* состав ряда меняется редко (поставили пушку, вошли в пояс) — пересчитываем
      ширину кнопок только тогда, а не каждый кадр */
   {

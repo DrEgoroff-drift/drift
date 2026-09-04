@@ -1355,3 +1355,38 @@ body.op-ask #opisBar>s{display:none}
 }
 /* виденные цены на карте: то, что в трюме, — светлым */
 #pricewin .row .nm s .hot{color:var(--amber)}
+
+/* ══════════════ пульт «Сороки» (M343): карточка витрины над пультом ══════════════ */
+.wanwin{position:fixed;left:50%;transform:translateX(-50%);z-index:6;display:none;flex-direction:column;gap:8px;
+  bottom:calc(env(safe-area-inset-bottom) + var(--padsh,86px) + 12px);width:min(620px,calc(100vw - 200px));
+  padding:10px 12px 12px;background:rgba(6,10,16,.80);border:1px solid rgba(201,162,74,.38);border-radius:8px;
+  box-shadow:0 12px 30px rgba(0,0,0,.5);backdrop-filter:blur(6px)}
+.wanwin.open{display:flex}
+.wanwin header{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.wanwin header b{font-weight:400;color:var(--amber);font-size:12px;letter-spacing:.18em}
+.wanwin header s{text-decoration:none;color:var(--dim);font-size:10px;letter-spacing:.04em}
+.wanwin .card b{display:block;font-weight:400;color:var(--text);font-size:13px;line-height:1.35}
+.wanwin .card s{display:block;text-decoration:none;color:#cfe3ea;font-size:11px;line-height:1.55;margin-top:3px;font-style:italic}
+.wanwin .card i{display:block;font-style:normal;color:var(--dim);font-size:10px;line-height:1.5;margin-top:4px}
+.wanwin .card u{display:block;text-decoration:none;color:var(--amber);font-size:11px;margin-top:5px;font-variant-numeric:tabular-nums}
+.wanwin .card .dn{color:#ff9d7a}
+.wanwin .rows{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.wanwin .rows .ln{display:flex;align-items:center;gap:10px}
+.wanwin .rows .ln em{flex:1;font-style:normal;color:var(--text);font-size:11px}
+.wanwin .acts{display:flex;gap:6px;flex-wrap:wrap}
+.wanwin .acts .act{flex:1 1 auto}
+@media (max-width:760px){
+  .wanwin{width:calc(100vw - 16px);bottom:calc(env(safe-area-inset-bottom) + var(--padsh,86px) + 8px);padding:8px 10px 10px}
+}
+/* инструменты «Сороки» на полке ОПИСИ (M343): карточка в гнезде, трюмные — ниже */
+.opis .op-shelf .slots .op-tool{flex:1 1 0;min-width:0;min-height:44px;padding:5px 7px;border:1px solid rgba(201,162,74,.45);border-radius:4px;background:rgba(0,0,0,.22)}
+.opis .op-tool b{display:block;font-weight:400;font-size:10px;color:#efe4c8;line-height:1.3}
+.opis .op-tool s{display:block;text-decoration:none;font-size:9px;color:rgba(232,220,190,.6);line-height:1.4;margin:2px 0 4px}
+.opis .op-tool .act{width:100%}
+.opis .op-toolhold{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.opis .op-toolhold em{flex:0 0 100%;font-style:normal;font-size:8px;letter-spacing:.16em;color:rgba(232,220,190,.6)}
+.opis .op-toolhold .op-tool{flex:1 1 140px;padding:5px 7px;border:1px dashed rgba(201,162,74,.35);border-radius:4px}
+/* на борту «Сороки» (M343): приёмника нет — есть коридор и пульт витрины. Пэды не
+   трогаем: их высоту меряет 15-input по событию, и спрятанная кнопка оставила бы
+   `--padsh` враньём до следующего resize (телефонный набор это поймал) */
+body.aboard #console{display:none!important}

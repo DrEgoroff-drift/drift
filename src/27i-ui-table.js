@@ -28,7 +28,7 @@ function tableIsOpen(){return tableOpenNow;}
    промолчит, а не выдаст ключ. */
 const MODE_RU={system:"в системе",map:"навигация",landing:"посадка",surface:"на поверхности",
   cave:"в пещере",dig:"в шахте",belt:"в поясе",scoop:"в атмосфере",base:"на базе",
-  homein:"дома",raid:"абордаж",dock:"на станции",road:"в дороге"};
+  homein:"дома",raid:"абордаж",dock:"на станции",road:"в дороге",wanderer:"на «Сороке»"};
 function modeRu(){return MODE_RU[G.mode]||"";}
 /* ── вещи: общая полка ──
    {k:вид, ru:имя, note:строка, t:время, seen:0/1, sx,sy:откуда}. Кладут

@@ -51,6 +51,8 @@ function kitAll(){
   return G.kit;
 }
 function kitShelf(){return (G.kitShelf||(G.kitShelf=[]));}
+/* «Полка шире» с «Сороки» (12v-wander-shop): восемнадцать вещей вместо двенадцати */
+function kitShelfMax(){return (typeof wanderHas==="function"&&wanderHas("shelfwide"))?18:12;}
 function kitName(x){return KIT_MODELS[x.p][x.model]||KIT_MODELS[x.p][0];}
 function kitRoman(c){return ["","I","II","III"][c]||"I";}
 /* множитель слоя износа: ношеный −10%, латаный −5% (починен), чужой — без заплат */
@@ -86,7 +88,7 @@ function kitLine(){
 /* ── выдача и находки ── */
 function kitGive(x,why){
   kitShelf().push(x);
-  while(kitShelf().length>12)kitShelf().shift();
+  while(kitShelf().length>kitShelfMax())kitShelf().shift();
   const ru=KIT_RU[x.p]+" «"+kitName(x)+"» "+kitRoman(x.cls)+" класса · "+KIT_WEAR[x.wear];
   logAdd("tech","Снаряжение: "+ru+(why?" · "+why:""));
   if(typeof thingAdd==="function")thingAdd("kit",ru[0].toUpperCase()+ru.slice(1),(why||"")+" · лежит на полке · надеть — ОПИСЬ, запас комплекта");

@@ -336,7 +336,7 @@ function drawSkyBase(p){
    гаснет, яркое остаётся), размывается и кладётся обратно сложением.
    Три drawImage на кадр, без единого чтения пикселей. */
 let BLOOM_CV=null;
-const BLOOM_K={system:.34,map:0,landing:.16,surface:.16,dig:.20,cave:.24,
+const BLOOM_K={wanderer:.18,system:.34,map:0,landing:.16,surface:.16,dig:.20,cave:.24,
                belt:.24,scoop:.20,base:.18,raid:.18,homein:.22,winter:.20,spa:.18};
 function bloomPass(k){
   if(!(k>0)||W<8||H<8)return;

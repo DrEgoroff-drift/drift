@@ -16,7 +16,7 @@
 const WEAR_FULL=180*60*60;      /* кадров полёта до полного износа: три часа за рулём */
 /* Где корабль пачкается быстрее: не «сложность режима», а грязь вокруг него */
 const WEAR_RATE={system:1,map:0,dock:0,belt:1.7,dig:1.5,cave:1.2,scoop:2.1,
-                 landing:1.3,surface:.4,base:0,raid:0,barge:.6};
+                 landing:1.3,surface:.4,base:0,raid:0,barge:.6,wanderer:0};
 function wearAll(){if(!G.wear||typeof G.wear!=="object")G.wear={};return G.wear;}
 /* Налёт живёт на КОРПУСЕ, а не на игроке: пересесть на второй корабль — это
    способ дать первому постоять, а не обнулить его историю */
@@ -29,7 +29,8 @@ function wearTick(dt){
   if(!r)return;
   if(typeof quietNoWear==="function"&&quietNoWear())return;   /* тихий уезд (11n): машины не ломаются */
   const W=wearAll(),id=G.shipId;
-  W[id]=(W[id]||0)+dt*r;
+  /* мастерская рука («Сорока», 12v-wander-shop): налёт ложится на треть медленнее */
+  W[id]=(W[id]||0)+dt*r*((typeof wanderHas==="function"&&wanderHas("hand"))?.67:1);
 }
 /* Цена износа: рулёжка и тяга. Не корпус и не топливо — облезлая машина
    слушается хуже, а не разваливается; потолок в 12% заметен рукой и никогда

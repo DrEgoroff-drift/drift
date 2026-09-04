@@ -157,6 +157,7 @@ function stepWorld(dt){
   else if(G.mode==="homein"&&G.hin)updateHomeIn(dt);   /* дом изнутри (M170) */
   else if(G.mode==="winter"&&G.win)updateWinter(dt);   /* зимовка (M197) */
   else if(G.mode==="spa"&&G.spa)updateSpa(dt);         /* санаторий (M199) */
+  else if(G.mode==="wanderer"&&G.wan)updateWanderRoom(dt);   /* на борту «Сороки» (M343) */
 }
 function drawWorld(){
   /* у сцен без своего неба свет постоянный (M243): SUN_DIR не должен нести
@@ -176,6 +177,7 @@ function drawWorld(){
   else if(G.mode==="homein"&&G.hin)drawHomeIn();
   else if(G.mode==="winter"&&G.win)drawWinter();
   else if(G.mode==="spa"&&G.spa)drawSpa();
+  else if(G.mode==="wanderer"&&G.wan)drawWanderRoom();
   /* ореол вокруг яркого — последним по миру и до приборов (M243) */
   if(typeof bloomPass==="function")bloomPass(BLOOM_K[G.mode]||0);
   /* зерно на все сцены, виньетка — где своей нет (M244) */
@@ -244,7 +246,7 @@ function frameBody(now){
     if(typeof shiftTalkTick==="function")shiftTalkTick(dt);
     if(typeof instrAgeTick==="function")instrAgeTick(dt);
     if(typeof etherTick==="function")etherTick(dt);
-    beaconTick(dt);crewBtnTick();if(typeof dealBtnTick==="function")dealBtnTick();if(typeof handBtnTick==="function")handBtnTick();if(typeof firstTick==="function")firstTick();hqBtnTick();loreBtnTick();parrotBtnTick();consoleTick(dt);orderTick();if(typeof vegaTick==="function")vegaTick(dt);if(typeof ringTick==="function")ringTick();if(typeof expDayTick==="function")expDayTick();if(typeof expDepartTick==="function")expDepartTick();if(typeof lastRunTick==="function")lastRunTick();if(typeof recordTick==="function")recordTick();if(typeof instTick==="function")instTick();if(typeof skyTick==="function")skyTick();if(typeof traineeTick==="function")traineeTick();if(typeof zooTick==="function")zooTick();wearTick(dt);
+    beaconTick(dt);crewBtnTick();if(typeof dealBtnTick==="function")dealBtnTick();if(typeof handBtnTick==="function")handBtnTick();if(typeof firstTick==="function")firstTick();hqBtnTick();loreBtnTick();parrotBtnTick();consoleTick(dt);orderTick();if(typeof vegaTick==="function")vegaTick(dt);if(typeof ringTick==="function")ringTick();if(typeof expDayTick==="function")expDayTick();if(typeof expDepartTick==="function")expDepartTick();if(typeof lastRunTick==="function")lastRunTick();if(typeof recordTick==="function")recordTick();if(typeof instTick==="function")instTick();if(typeof skyTick==="function")skyTick();if(typeof traineeTick==="function")traineeTick();if(typeof zooTick==="function")zooTick();wearTick(dt);if(typeof wanderTick==="function")wanderTick(dt);
     /* страховка от «зависания на стыковке»: режим dock без единой открытой панели
        означал бы, что игрок смотрит на космос и не может двигаться */
     if(G.mode==="dock"&&!document.querySelector(".scr.open")){

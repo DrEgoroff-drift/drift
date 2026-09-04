@@ -102,7 +102,7 @@ in this order (author, 2026-09-03: «сначала по плану, потом 
    ghost click on screens opened by a pad swallowed, §18.8 complete but for the заявка (rung 21).
    ~~Left: the ship keeps its `.55` floor at deep zoom-out~~ — `.35` since M319 (0.316.0).
 
-## «Сорока» — the wanderer queue (M340–M342 done, M343–M346 open; author 2026-09-04: «делай всё в соло»)
+## «Сорока» — the wanderer queue (M340–M343 done, M344–M346 open; author 2026-09-04: «делай всё в соло»)
 
 Design is settled in `docs/DESIGN-wanderer.md` (§1–§13; §6 and §12–§13 are the revised, binding
 parts — §11's prices are indicative). Read that file first, then this queue. Every milestone below is
@@ -125,30 +125,11 @@ cosmetics exist; the desk gets one table «ОПИСЬ»; a locker exists at stat
   sail-ship parked at the lit limb, the approach, the rumour, the sky-watch line, the chart's sail glyph
   (`relicOn("chart")` finally read); the room is M343. Body in `docs/PLAN-archive.md`.
 
-- **M343 — the room and the shop** (`24c-mode-wanderer.js` + `24ca-wanderer-draw.js`, then
-  `26d-ui-wanderer.js`). Room rules of M74–M76: human ≈55 px, back wall, paint order wall → slit
-  window (planet limb turning, cold bars on the floor) → gold leak on the upper cabinets → ring frames
-  → cabinets (glass, brass corners, one item each, its own steady lamp) → hanging things on lines
-  (slow drift, long periods) → counter → keeper (body, not sticks; helmet off) → green-shaded lamp
-  (the one warm accent) → dust in the bars → vignette. Empty cabinet = chalk tag (a bought lot).
-  - UI = the flea row model (`12ua`): ←/→ walks the corridor, the case in front shows a card:
-    provenance line, price (кр / спичек / «хочет: …»), one line from the log. Buttons КУПИТЬ /
-    ОТДАТЬ / СДАТЬ СЫРЬЁ. Counter B: sell rare raw for matches (10 volatiles|icecrys|alloy → 1,
-    5 techcomp → 1); show a rarity from `G.rareFound` → 4 matches once per id (`G.wander.gave`).
-  - Shelf per stop: 8 lots from the catalogue seeded by `(worldSeed,epoch)`: 2 cosmetics, 2 eases,
-    1 unique part (50 %), 2 papers, 1 wild card. `G.wander.got` holds bought ids (gone for this save).
-  - Catalogue `WANDER_CAT` as a flat const with `ru`, `note`, `pay:{cr|m|ask}`, `fam`, `hook` — one
-    entry per §11/§12 item; **wire every hook in the same commit or leave the item out** («a perk
-    without code is a lie», `91zzzzy-names` reads every table). Start with what has an obvious
-    hook: Ключ причала (autopilot to dock), Слуховая трубка (rumours on the receiver in flight),
-    Мастерская рука (`12s-wear` ×.67), Штурманский карандаш (`11t` spread −1), Колокол вахты
-    (`11ak` +1), Медный шар (`25j` −1 hop), Тетрадь ветра (HUD countdown), Табличка «НЕ КУПЛЕНО»
-    (`12ua` rule 4 off), Список цен, Вторая рука, Полка шире; papers: Страница журнала (exact
-    `12m` address), Список отказов, Карта области, missing book (`12ub`, credits). Tools work only
-    from the 6-slot cabin shelf (`G.wander.shelf`), the rest lie in the locker (M345) or hold.
-  - Keeper lines and the departure flash are in DESIGN §13 — use them verbatim.
-  - Tests: shelf determinism per epoch; a bought lot never returns; matches never negative; every
-    catalogue hook read somewhere; `lookScenes` gets `wanderer` (frame meter + fuzzer).
+- **M343** (0.342.0) — done: the room and the shop — mode `wanderer` (`24c-mode-wanderer`, `-draw`,
+  `26d-ui-wanderer`), the catalogue `WANDER_CAT` (`12v-wander-shop`: 14 tools with hooks, two papers,
+  the wild card), counter B for raw and rarities, the cabin shelf on ОПИСЬ, the keeper's lines, «сорока»
+  in `lookScenes`. Left out on purpose (no hook yet): cosmetics (M344), unique hull parts, Медный шар,
+  Слепок печати, Вторая рука, Страница журнала, Список отказов. Body in `docs/PLAN-archive.md`.
 
 - **M344 — cosmetics** (`G.cosm={exhaust,trail,suit,visor,mark,lights,chime}` persisted; applied
   by dragging from the шкатулка onto the hull or the kit in ОПИСЬ). Hooks: exhaust colour/shape in

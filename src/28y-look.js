@@ -193,6 +193,11 @@ function lookScenes(){
        режим с настоящей проекцией (десятки четырёхугольников с сортировкой по
        глубине) не видел ни случайных рук, ни числа кадра, ни сквозных наборов.
        Постановка взята у пробника кадров (28z-fps-probe), где она уже была. */
+    /* борт «Сороки» (M343): полка эпохи 0, чтобы кадр не плыл с реальными сутками */
+    {id:"сорока",set:()=>{
+      if(typeof openWanderer!=="function")return false;
+      const s0=wanderLoop()[0];if(!jump(getSystem(s0.sx,s0.sy)))return false;
+      G.mode="system";return openWanderer({force:true,epoch:0});}},
     {id:"рейд",set:()=>{
       if(typeof pirateBaseOf!=="function"||typeof enterRaid!=="function")return false;
       if(!jump(find(q=>!!pirateBaseOf(q))))return false;

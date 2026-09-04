@@ -7678,3 +7678,48 @@ minute-scale sines; the last hour of a stop turns the whole hull toward the depa
 six hours of a hop show a receding glint from the departed system. The shuttle arc is shared with
 `17f` through `drawShuttleArc`. The dock action calls `openWanderer()` when M343 defines it and until
 then says «трап ещё не спущен».
+
+## M343 — the room and the shop (0.342.0, 2026-09-05)
+
+- **M343 — the room and the shop** (`24c-mode-wanderer.js` + `24ca-wanderer-draw.js`, then
+  `26d-ui-wanderer.js`). Room rules of M74–M76: human ≈55 px, back wall, paint order wall → slit
+  window (planet limb turning, cold bars on the floor) → gold leak on the upper cabinets → ring frames
+  → cabinets (glass, brass corners, one item each, its own steady lamp) → hanging things on lines
+  (slow drift, long periods) → counter → keeper (body, not sticks; helmet off) → green-shaded lamp
+  (the one warm accent) → dust in the bars → vignette. Empty cabinet = chalk tag (a bought lot).
+  - UI = the flea row model (`12ua`): ←/→ walks the corridor, the case in front shows a card:
+    provenance line, price (кр / спичек / «хочет: …»), one line from the log. Buttons КУПИТЬ /
+    ОТДАТЬ / СДАТЬ СЫРЬЁ. Counter B: sell rare raw for matches (10 volatiles|icecrys|alloy → 1,
+    5 techcomp → 1); show a rarity from `G.rareFound` → 4 matches once per id (`G.wander.gave`).
+  - Shelf per stop: 8 lots from the catalogue seeded by `(worldSeed,epoch)`: 2 cosmetics, 2 eases,
+    1 unique part (50 %), 2 papers, 1 wild card. `G.wander.got` holds bought ids (gone for this save).
+  - Catalogue `WANDER_CAT` as a flat const with `ru`, `note`, `pay:{cr|m|ask}`, `fam`, `hook` — one
+    entry per §11/§12 item; **wire every hook in the same commit or leave the item out** («a perk
+    without code is a lie», `91zzzzy-names` reads every table). Start with what has an obvious
+    hook: Ключ причала (autopilot to dock), Слуховая трубка (rumours on the receiver in flight),
+    Мастерская рука (`12s-wear` ×.67), Штурманский карандаш (`11t` spread −1), Колокол вахты
+    (`11ak` +1), Медный шар (`25j` −1 hop), Тетрадь ветра (HUD countdown), Табличка «НЕ КУПЛЕНО»
+    (`12ua` rule 4 off), Список цен, Вторая рука, Полка шире; papers: Страница журнала (exact
+    `12m` address), Список отказов, Карта области, missing book (`12ub`, credits). Tools work only
+    from the 6-slot cabin shelf (`G.wander.shelf`), the rest lie in the locker (M345) or hold.
+  - Keeper lines and the departure flash are in DESIGN §13 — use them verbatim.
+  - Tests: shelf determinism per epoch; a bought lot never returns; matches never negative; every
+    catalogue hook read somewhere; `lookScenes` gets `wanderer` (frame meter + fuzzer).
+
+**Decided while building:** the catalogue holds only what has a reader today — fourteen tools
+(`wanderHas(id)` read in `08-state`, `11t`, `11ak`, `12s`, `12ua`, `12x`, `17-mode-system`, `12aa`, `27z`
+and the shop itself for the needle), two papers (Карта области → nine `loreMarks` around a far station;
+a missing book through `bookFind`) and one wild card (ask: a spare part of tier ≥ 4; gives an artifact
+you lack while you hold fewer than three, else a rarity you lack — granted directly, the ship «was where
+you were not»). Cosmetics wait for M344's painters, unique hull parts for a part-painter mark, Медный шар
+for a mail-hop model, Слепок печати and Вторая рука for their systems, Страница журнала and Список отказов
+for an inverse of `rareAtPlace` (places → rarity exists, rarity → place does not). `rungOf>=6` as a
+world property did not exist (see M342). Tools work only from the six-place cabin shelf (`G.wander.shelf`),
+the rest lie in `G.wander.hold` with «НА ПОЛКУ» on ОПИСЬ — the locker of M345 is the next home. The
+shelf per stop is eight positions (four at a dark stop) seeded by the epoch; a bought position stays as a
+chalk tag. Counter B: 40 volatiles/icecrys/alloy → 1 match, 20 techcomp → 1, 200 units per stop, whole
+matches only; a rarity shown pays 4 once and stays yours. The room is one-point perspective with the
+counter at depth .74 and the keeper ≈55 px; the skylight is drawn on the ceiling plane in perspective
+because the first frame had it under the vitals. `openWanderer({force:true,epoch:0})` is the stand's door,
+so the frame meter's «сорока» does not drift with real days. Departure while inside puts you back at the
+porch with one line; the keeper's match flash fires once in the last hour.

@@ -1370,6 +1370,41 @@ body.op-ask #opisBar>s{display:none}
 /* виденные цены на карте: то, что в трюме, — светлым */
 #pricewin .row .nm s .hot{color:var(--amber)}
 
+/* ══════════════ пульт «Сороки» (M343): карточка витрины над пультом ══════════════ */
+.wanwin{position:fixed;left:50%;transform:translateX(-50%);z-index:6;display:none;flex-direction:column;gap:8px;
+  bottom:calc(env(safe-area-inset-bottom) + var(--padsh,86px) + 12px);width:min(620px,calc(100vw - 200px));
+  padding:10px 12px 12px;background:rgba(6,10,16,.80);border:1px solid rgba(201,162,74,.38);border-radius:8px;
+  box-shadow:0 12px 30px rgba(0,0,0,.5);backdrop-filter:blur(6px)}
+.wanwin.open{display:flex}
+.wanwin header{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.wanwin header b{font-weight:400;color:var(--amber);font-size:12px;letter-spacing:.18em}
+.wanwin header s{text-decoration:none;color:var(--dim);font-size:10px;letter-spacing:.04em}
+.wanwin .card b{display:block;font-weight:400;color:var(--text);font-size:13px;line-height:1.35}
+.wanwin .card s{display:block;text-decoration:none;color:#cfe3ea;font-size:11px;line-height:1.55;margin-top:3px;font-style:italic}
+.wanwin .card i{display:block;font-style:normal;color:var(--dim);font-size:10px;line-height:1.5;margin-top:4px}
+.wanwin .card u{display:block;text-decoration:none;color:var(--amber);font-size:11px;margin-top:5px;font-variant-numeric:tabular-nums}
+.wanwin .card .dn{color:#ff9d7a}
+.wanwin .rows{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.wanwin .rows .ln{display:flex;align-items:center;gap:10px}
+.wanwin .rows .ln em{flex:1;font-style:normal;color:var(--text);font-size:11px}
+.wanwin .acts{display:flex;gap:6px;flex-wrap:wrap}
+.wanwin .acts .act{flex:1 1 auto}
+@media (max-width:760px){
+  .wanwin{width:calc(100vw - 16px);bottom:calc(env(safe-area-inset-bottom) + var(--padsh,86px) + 8px);padding:8px 10px 10px}
+}
+/* инструменты «Сороки» на полке ОПИСИ (M343): карточка в гнезде, трюмные — ниже */
+.opis .op-shelf .slots .op-tool{flex:1 1 0;min-width:0;min-height:44px;padding:5px 7px;border:1px solid rgba(201,162,74,.45);border-radius:4px;background:rgba(0,0,0,.22)}
+.opis .op-tool b{display:block;font-weight:400;font-size:10px;color:#efe4c8;line-height:1.3}
+.opis .op-tool s{display:block;text-decoration:none;font-size:9px;color:rgba(232,220,190,.6);line-height:1.4;margin:2px 0 4px}
+.opis .op-tool .act{width:100%}
+.opis .op-toolhold{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.opis .op-toolhold em{flex:0 0 100%;font-style:normal;font-size:8px;letter-spacing:.16em;color:rgba(232,220,190,.6)}
+.opis .op-toolhold .op-tool{flex:1 1 140px;padding:5px 7px;border:1px dashed rgba(201,162,74,.35);border-radius:4px}
+/* на борту «Сороки» (M343): приёмника нет — есть коридор и пульт витрины. Пэды не
+   трогаем: их высоту меряет 15-input по событию, и спрятанная кнопка оставила бы
+   `--padsh` враньём до следующего resize (телефонный набор это поймал) */
+body.aboard #console{display:none!important}
+
 </style>
 </head>
 <body>
@@ -1648,7 +1683,7 @@ body.op-ask #opisBar>s{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.341.0";
+const VER="0.342.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -6840,21 +6875,23 @@ function stat(){
   /* редкости: малые прибавки от собранных редких вещей, читаются тут же, где
      модули и венцы, а не отдельной системой множителей (12m-rare) */
   const rs=t=>(typeof rareSum==="function"?rareSum(t):0);
+  /* инструменты с полки «Сороки» (12v-wander-shop): малые прибавки, читаются тут же */
+  const WT=(typeof wanderStat==="function")?wanderStat():{turn:1,fuel:0,jump:0,cool:1};
   return {
     S,
     /* налёт часов: облезлая машина слушается хуже — единственное, чем износ
        вмешивается в арифметику (12s-wear) */
     thr:S.thr*(1+m.engine*.19)*mul("thrMul")*bpMul("cleanjet",1.1,.93)*(cr("moth")?1.25:1)*(1+rs("thr"))*wearMul(),
-    turn:S.turn*(1+m.engine*.07)*mul("turnMul")*(cr("moth")?1.25:1)*(1+rs("turn"))*wearMul(),
-    fuelMax:Math.max(20,Math.round(S.fuel*(1+m.tank*.3)+(B.has("icecore")?50:0)+(P.fuelAdd||0)+(cr("well")?60:0)+rs("fuel"))),
+    turn:S.turn*(1+m.engine*.07)*mul("turnMul")*(cr("moth")?1.25:1)*(1+rs("turn"))*wearMul()*WT.turn,
+    fuelMax:Math.max(20,Math.round(S.fuel*(1+m.tank*.3)+(B.has("icecore")?50:0)+(P.fuelAdd||0)+(cr("well")?60:0)+rs("fuel")+WT.fuel)),
     cargoMax:Math.max(8,-(typeof vegaAboard==="function"&&vegaAboard()?1:0)-(typeof zooCargoSlots==="function"?zooCargoSlots():0)+Math.round(S.cargo*(1+m.hold*.32)*(T.has("pack")?1.4:1)*(B.has("bioseal")?1.2:1)*mul("cargoMul")*bpMul("wide",1.12,.92)*(cr("ark")?1.2:1)*(1+rs("cargo")))),
     hullMax:Math.max(20,Math.round(S.hull*(1+m.armor*.2)+(T.has("cera")?30:0)+(B.has("crystplate")?40:0)+(P.hullAdd||0)+(bpState("hardweld")>0?25:(bpState("hardweld")<0?-15:0))+(cr("ark")?40:0))),
     drill:(cr("cair")?1.3:1)*(1+m.drill*.55)*(T.has("drone")?2:1)*drillBonus*(B.has("iridrill")?1.25:1)*mul("drillMul")*bpMul("coldbore",1.18,.88)*(1+rs("drill")),
     synthRatio:B.has("isosynth")?8:4,
-    jump:Math.max(1,3+m.hyper*.5+(T.has("coil")?2:0)+(P.jumpAdd||0)+rs("jump")),
+    jump:Math.max(1,3+m.hyper*.5+(T.has("coil")?2:0)+(P.jumpAdd||0)+rs("jump")+WT.jump),
     armed:m.weapon>0||!!P.gun,
     dmg:(5+m.weapon*4.5)*(T.has("gunai")?1.35:1)*mul("dmgMul")*(cr("pyre")?1.35:1)*(1+rs("dmg")),
-    cool:Math.max(6,Math.round((34-m.weapon*4)/mul("rateMul")/(cr("pyre")?2:1)/(1+rs("cool")))),
+    cool:Math.max(6,Math.round((34-m.weapon*4)/mul("rateMul")/(cr("pyre")?2:1)/(1+rs("cool"))*WT.cool)),
     /* пусковая (M112): она не усиливает бортовой огонь, а даёт отдельное оружие,
        и без ракет в трюме её числа ничего не значат */
     launcher:!!P.msl,
@@ -9490,9 +9527,11 @@ function skyPick(r){
   if(!G.sys)return null;
   /* фора не круглая: «через пять суток» три наряда подряд читается как таймер */
   const d0=celDay()+4+Math.floor(r()*6), cand=[];
-  for(let dx=-3;dx<=3;dx++)for(let dy=-3;dy<=3;dy++){
+  /* колокол вахты («Сорока»): телескоп видит на сектор дальше */
+  const bell=(typeof wanderHas==="function"&&wanderHas("bell"))?1:0;
+  for(let dx=-3-bell;dx<=3+bell;dx++)for(let dy=-3-bell;dy<=3+bell;dy++){
     const q=Math.abs(dx)+Math.abs(dy);
-    if(q<1||q>4)continue;
+    if(q<1||q>4+bell)continue;
     const sx=G.sys.sx+dx,sy=G.sys.sy+dy;
     if(starAt(sx,sy))cand.push([sx,sy]);
   }
@@ -13642,7 +13681,8 @@ function rumoursHere(){
     let cx=R.core.sx+Math.round((r()-.5)*4),cy=R.core.sy+Math.round((r()-.5)*4);
     const wrong=r()<.15;
     if(wrong){cx=Math.round((r()-.5)*60);cy=Math.round((r()-.5)*60);}   /* просто неверен */
-    const rad=3+Math.floor(r()*3);
+    /* штурманский карандаш («Сорока»): разброс на сектор уже, но не меньше двух */
+    const rad=Math.max(2,3+Math.floor(r()*3)-((typeof wanderHas==="function"&&wanderHas("pencil"))?1:0));
     const img=RUMOUR_IMG[T.id]||T.ru.toLowerCase();
     const S=pick(RUMOUR_SRC,r);
     const det=pick(RUMOUR_DETAIL.any.concat(S.f?RUMOUR_DETAIL.f:RUMOUR_DETAIL.m),r);
@@ -13668,7 +13708,8 @@ function rumoursHere(){
 }
 /* приёмник: изредка слух приходит строкой эфира */
 function rumourEtherLine(r){
-  if(!G.sys||r()>.12)return null;
+  /* слуховая трубка («Сорока»): приёмник ловит слухи почти вчетверо чаще */
+  if(!G.sys||r()>((typeof wanderHas==="function"&&wanderHas("trumpet"))?.45:.12))return null;
   const L=rumoursHere();
   return L.length?"…говорят, есть "+L[Math.floor(r()*L.length)].short:null;
 }
@@ -14995,8 +15036,13 @@ function pricesClose(){const w=document.getElementById("pricewin");if(w)w.classL
    hot — этот товар в трюме, best — лучшая из виденных по товару, mark —
    пометка (со слуха, нужда). Считается только для выбранной станции. */
 function mapPriceRows(s,maxW){
-  const pr=(G.seenPrices||{})[s.key];if(!pr||!pr.p)return [];
+  let pr=(G.seenPrices||{})[s.key];
+  /* список цен («Сорока»): станции в трёх прыжках показывают прейскурант, даже не виденные */
+  if((!pr||!pr.p)&&s.station&&s.station.prices&&typeof wanderHas==="function"&&wanderHas("pricelist")&&
+     Math.hypot(s.sx-G.sx,s.sy-G.sy)<=3*Math.max(.5,stat().jump))pr={p:s.station.prices,list:1};
+  if(!pr||!pr.p)return [];
   const cells=[];
+  if(pr.list)cells.push({t:"по списку",mark:1});
   if(pr.heard)cells.push({t:"со слуха",mark:1});
   if(pr.need&&RES[pr.need])cells.push({t:"нужда: "+RES[pr.need].ru.toLowerCase(),mark:1});
   for(const k of TRADE_KEYS){
@@ -24357,7 +24403,7 @@ function renderRoute(){
 const WEAR_FULL=180*60*60;      /* кадров полёта до полного износа: три часа за рулём */
 /* Где корабль пачкается быстрее: не «сложность режима», а грязь вокруг него */
 const WEAR_RATE={system:1,map:0,dock:0,belt:1.7,dig:1.5,cave:1.2,scoop:2.1,
-                 landing:1.3,surface:.4,base:0,raid:0,barge:.6};
+                 landing:1.3,surface:.4,base:0,raid:0,barge:.6,wanderer:0};
 function wearAll(){if(!G.wear||typeof G.wear!=="object")G.wear={};return G.wear;}
 /* Налёт живёт на КОРПУСЕ, а не на игроке: пересесть на второй корабль — это
    способ дать первому постоять, а не обнулить его историю */
@@ -24370,7 +24416,8 @@ function wearTick(dt){
   if(!r)return;
   if(typeof quietNoWear==="function"&&quietNoWear())return;   /* тихий уезд (11n): машины не ломаются */
   const W=wearAll(),id=G.shipId;
-  W[id]=(W[id]||0)+dt*r;
+  /* мастерская рука («Сорока», 12v-wander-shop): налёт ложится на треть медленнее */
+  W[id]=(W[id]||0)+dt*r*((typeof wanderHas==="function"&&wanderHas("hand"))?.67:1);
 }
 /* Цена износа: рулёжка и тяга. Не корпус и не топливо — облезлая машина
    слушается хуже, а не разваливается; потолок в 12% заметен рукой и никогда
@@ -27171,6 +27218,8 @@ function fleaBuy(id,pay,sys){
 function fleaLeave(sys){
   sys=sys||G.sys;
   if(!fleaHere(sys))return false;
+  /* табличка «НЕ КУПЛЕНО» («Сорока»): сведения о вас с прилавка никому не продают */
+  if(typeof wanderHas==="function"&&wanderHas("sign")){logAdd("dim","Табличка «НЕ КУПЛЕНО» на трюме: сведения о вас никто не спросил");return false;}
   const left=fleaLots(sys).find(l=>l.kind==="you");
   if(!left)return false;
   if(typeof huntMark==="function")huntMark({sx:left.at.sx,sy:left.at.sy},"лот с блошинца");
@@ -28360,6 +28409,261 @@ function drawWanderer(zx,zy,Z){
   }
 }
 
+/* ══════════════ лавка «Сороки»: три прилавка и полка инструментов (M343) ══════════════
+   Что продаёт борт, где платят спичками (docs/DESIGN-wanderer.md §6, §11–§13):
+   А — бумаги за кредиты (корабль продаёт адреса, металл прилагается);
+   Б — спички: инструменты с малыми эффектами, и сам борт ПОКУПАЕТ за спички
+       редкое сырьё, которое больше никто не берёт (40 единиц → 1, техкомпоненты
+       20 → 1, не больше 200 единиц за стоянку), и платит четыре за показанную
+       редкость — один раз за каждую, редкость остаётся у вас;
+   В — обмен: один дикий лот на стоянку с простой просьбой словами, не рецептом.
+
+   Полка на стоянку — восемь мест, товар сеян от эпохи (12v): у всех, кто пришёл
+   на эту стоянку, одна и та же полка; купленное уходит из этого сейва навсегда,
+   а пустая витрина остаётся с меловой биркой — дыра и есть память.
+
+   ИНСТРУМЕНТЫ РАБОТАЮТ ТОЛЬКО С ПОЛКИ КАБИНЫ — шести мест на ОПИСИ (27j-ui-opis);
+   остальное лежит в трюме и ждёт своей очереди. Каждый эффект мал, ни один не в
+   кредитах, и у каждого есть кто-то, кто его читает (`wanderHas(id)` в модуле из
+   `hook`): вещь без кода — ложь, и набор сторожит это по тексту исходников.
+
+   ПРАВИЛА ФАЙЛА:
+   1. Каталог — плоская таблица с ru/note/pay/fam/hook; цены в §11 указательные.
+   2. Хранится в G.wander: got (купленные id), gave (показанные редкости), shelf и
+      hold (id инструментов), soldE/soldN (сырьё за стоянку), chit. Ничего сеяного.
+   3. Спички не уходят в минус (12uc); кредиты — как везде. */
+const WANDER_SHELF=6;                     /* мест на полке кабины */
+const WANDER_RAW_CAP=200;                 /* единиц сырья за стоянку */
+const WANDER_RAW={volatiles:40,icecrys:40,alloy:40,techcomp:20};
+const WANDER_CAT=[
+  /* — инструменты (спички): работают с полки, читаются через wanderHas(id) — */
+  {id:"sextant", fam:"tool",ru:"Секстант Долгого Хода",   note:"с борта, который дошёл; второго такого не было",
+   fx:"прыжок +1 пк в опасных системах", pay:{m:30}, hook:"08-state"},
+  {id:"pencil",  fam:"tool",ru:"Штурманский карандаш",    note:"стёрт до половины; хозяйка мерила им слухи",
+   fx:"разброс слухов на сектор уже", pay:{m:14}, hook:"11t-rumours"},
+  {id:"gyro",    fam:"tool",ru:"Гирокомпас без номера",   note:"снят с гондолы при ремонте; номер стёрли мы",
+   fx:"поворот +5 %", pay:{m:16}, hook:"08-state"},
+  {id:"blanket", fam:"tool",ru:"Термоодеяло разведчика",  note:"ткань наших парусов, лоскут",
+   fx:"орудие остывает на 6 % быстрее", pay:{m:12}, hook:"08-state"},
+  {id:"valve",   fam:"tool",ru:"Клапан старой заправки",  note:"с последней станции, где ещё лили топливо",
+   fx:"бак +7", pay:{m:18}, hook:"08-state"},
+  {id:"needle",  fam:"tool",ru:"Парусная игла",           note:"ей шили гроты; шьёт и корпус",
+   fx:"корпус срастается в полёте, 1 в минуту, не в бою", pay:{m:24}, hook:"12v-wander-shop"},
+  {id:"bell",    fam:"tool",ru:"Колокол вахты",           note:"звонил при каждой новой точке в каталоге",
+   fx:"небесная вахта видит на сектор дальше", pay:{m:20}, hook:"11ak-skywatch"},
+  {id:"notebook",fam:"tool",ru:"Тетрадь ветра",           note:"здесь записано, когда мы уходим",
+   fx:"в строке места — когда «Сорока» уйдёт", pay:{m:10}, hook:"27z-telemetry"},
+  {id:"sign",    fam:"tool",ru:"Табличка «НЕ КУПЛЕНО»",   note:"вешали на трюм, чтоб не спрашивали",
+   fx:"сведения о вас с блошинца никому не продают", pay:{m:28}, hook:"12ua-flea"},
+  {id:"hand",    fam:"tool",ru:"Мастерская рука",         note:"перчатка механика, который всё делал сам",
+   fx:"налёт на корпус ложится на треть медленнее", pay:{m:22}, hook:"12s-wear"},
+  {id:"trumpet", fam:"tool",ru:"Слуховая трубка",         note:"через неё слушали стойку, не подходя",
+   fx:"приёмник в полёте чаще ловит слухи", pay:{m:18}, hook:"11t-rumours"},
+  {id:"key",     fam:"tool",ru:"Ключ причала",            note:"диспетчер отдал, когда закрывали причал",
+   fx:"стыковка с любой точки системы", pay:{m:34}, hook:"17-mode-system"},
+  {id:"pricelist",fam:"tool",ru:"Список цен",             note:"переписан с трёх бирж за одну ночь",
+   fx:"на карте — цены станций в трёх прыжках, даже не виденных", pay:{m:26}, hook:"12aa-need"},
+  {id:"shelfwide",fam:"tool",ru:"Полка шире",             note:"снята с нашей же стенки; нам она узка не была",
+   fx:"полка комплекта держит 18 вещей вместо 12", pay:{m:15}, hook:"12x-suit"},
+  /* — бумаги (кредиты): адрес и вещь при нём — */
+  {id:"area",    fam:"paper",ru:"Карта области",          note:"снята с чужой руки; названия наши",
+   fx:"засечки на девять секторов вокруг далёкой станции", pay:{cr:900}, hook:"12v-wander-shop"},
+  {id:"book",    fam:"paper",ru:"Книга, которой у вас нет",note:"из ящика, где книги лежат корешками внутрь",
+   fx:"на полку дома ложится том, которого там не было", pay:{cr:700}, hook:"12v-wander-shop"},
+  /* — обмен (один на стоянку): просьба словами — */
+  {id:"wild",    fam:"wild",ru:"Свёрток под сукном",      note:"«мы были там, где вы не были»",
+   fx:"артефакт, которого у вас нет, а если их уже три — редкость из сотни", pay:{ask:"любая часть не ниже отменной"}, hook:"12v-wander-shop"}
+];
+const WANDER_BY_ID={};WANDER_CAT.forEach(c=>WANDER_BY_ID[c.id]=c);
+function wanderStore(){
+  const w=wanderRec();
+  if(!Array.isArray(w.shelf))w.shelf=[];
+  if(!Array.isArray(w.hold))w.hold=[];
+  w.soldE=w.soldE|0;w.soldN=w.soldN|0;
+  return w;
+}
+/* инструмент работает, только если лежит на полке кабины */
+function wanderHas(id){const w=G.wander;return !!(w&&Array.isArray(w.shelf)&&w.shelf.indexOf(id)>=0);}
+function wanderOwns(id){const w=wanderStore();return w.shelf.indexOf(id)>=0||w.hold.indexOf(id)>=0;}
+function wanderToShelf(id){
+  const w=wanderStore();if(w.shelf.indexOf(id)>=0)return true;
+  if(w.shelf.length>=WANDER_SHELF)return false;
+  const i=w.hold.indexOf(id);if(i<0)return false;
+  w.hold.splice(i,1);w.shelf.push(id);return true;
+}
+function wanderToHold(id){
+  const w=wanderStore();const i=w.shelf.indexOf(id);if(i<0)return false;
+  w.shelf.splice(i,1);w.hold.push(id);return true;
+}
+/* что читает stat(): один объект, дёшево */
+function wanderStat(){
+  const o={turn:1,fuel:0,jump:0,cool:1};
+  if(!G.wander||!G.wander.shelf||!G.wander.shelf.length)return o;
+  if(wanderHas("gyro"))o.turn=1.05;
+  if(wanderHas("valve"))o.fuel=7;
+  if(wanderHas("blanket"))o.cool=.94;
+  if(wanderHas("sextant")&&sysDanger(G.sx,G.sy)>.5)o.jump=1;
+  return o;
+}
+/* парусная игла: корпус срастается в полёте, не в бою */
+let wanderNeedleAcc=0;
+function wanderTick(dt){
+  if(!wanderHas("needle")||G.mode!=="system")return;
+  if((G.pirates||[]).some(p=>p.aware))return;
+  wanderNeedleAcc+=dt;
+  if(wanderNeedleAcc<3600)return;          /* кадров в минуте */
+  wanderNeedleAcc=0;
+  const st=stat();if(G.hull<st.hullMax)G.hull=Math.min(st.hullMax,G.hull+1);
+}
+/* ── полка стоянки: восемь мест, сеяно от эпохи; купленное — меловая бирка ── */
+function wanderLots(w){
+  w=w||wanderAt();
+  const R=wanderStore(),r=rng(hashi(w.epoch|0,0x50A0,0x1075));
+  const n=w.dark?4:8;
+  const tools=WANDER_CAT.filter(c=>c.fam==="tool");
+  for(let i=tools.length-1;i>0;i--){const j=Math.floor(r()*(i+1));const t=tools[i];tools[i]=tools[j];tools[j]=t;}
+  const plan=w.dark?["tool","tool","paper","wild"]:["tool","tool","tool","tool","tool","paper","paper","wild"];
+  const out=[];let ti=0,pi=0;
+  const papers=WANDER_CAT.filter(c=>c.fam==="paper");
+  if(r()<.5)papers.reverse();
+  for(let i=0;i<n;i++){
+    const fam=plan[i];let cat=null,id=null;
+    if(fam==="tool"){cat=tools[ti++]||null;id=cat?cat.id:null;}
+    else if(fam==="paper"){cat=papers[pi++%papers.length];id=cat.id+"@"+w.epoch;}
+    else{cat=WANDER_BY_ID.wild;id="wild@"+w.epoch;}
+    if(!cat){out.push({i,empty:true,ru:"пусто",chalk:"здесь ничего не лежало"});continue;}
+    const gone=R.got.indexOf(id)>=0||(fam==="tool"&&wanderOwns(id));
+    out.push({i,id,cat,fam,ru:cat.ru,note:cat.note,fx:cat.fx,pay:cat.pay,gone,
+      chalk:gone?"продано · «"+cat.ru+"»":null});
+  }
+  return out;
+}
+function wanderPriceRu(cat){
+  if(cat.pay.m)return matchesRu(cat.pay.m);
+  if(cat.pay.cr)return cat.pay.cr.toLocaleString("ru")+" кр";
+  return "хочет: "+cat.pay.ask;
+}
+/* что скажет хранитель, если купить сейчас: null — можно, строка — почему нет */
+function wanderCant(lot){
+  if(!lot||lot.empty||lot.gone)return "этого тут больше нет";
+  if(lot.pay.m&&matchesRec()<lot.pay.m)return "не хватает спичек: "+matchesRu(lot.pay.m)+", у вас "+matchesRec();
+  if(lot.pay.cr&&G.credits<lot.pay.cr)return "не хватает кредитов";
+  if(lot.pay.ask&&!wanderAskPart())return "нет части не ниже отменной среди снятых";
+  if(lot.id==="book"&&typeof bookCount==="function"&&bookCount()>=BOOKS.length)return "все сорок у вас уже есть";
+  return null;
+}
+function wanderAskPart(){return (G.inv||[]).find(p=>!isFitted(p.id)&&(p.tier|0)>=4)||null;}
+/* купить: спички, кредиты или обмен; вещь ложится куда ей положено */
+function wanderBuy(lot){
+  const why=wanderCant(lot);if(why){say(why);return false;}
+  const R=wanderStore(),cat=lot.cat;
+  if(cat.pay.m){if(!matchesSpend(cat.pay.m))return false;}
+  else if(cat.pay.cr){G.credits-=cat.pay.cr;}
+  else{const p=wanderAskPart();G.inv.splice(G.inv.indexOf(p),1);
+    logAdd("money","«Сорока»: отдана часть «"+p.name+"» — свёрток под сукном ваш");}
+  R.got.push(lot.id);
+  while(R.got.length>120)R.got.shift();
+  if(cat.fam==="tool"){
+    if(R.shelf.length<WANDER_SHELF)R.shelf.push(cat.id);else R.hold.push(cat.id);
+    tell("tech","С «Сороки»: "+cat.ru+" · "+cat.fx,cat.ru.toUpperCase()+"\n"+cat.note+"\n"+cat.fx+
+      (R.shelf.indexOf(cat.id)>=0?"\n\nлежит на полке кабины — работает":"\n\nполка полна: лежит в трюме, работать будет с полки"));
+  }else if(cat.id==="area")wanderAreaChart(lot);
+  else if(cat.id==="book"){
+    const b=(typeof bookFind==="function")?bookFind(hashi(lot.id.length,R.got.length,0xB00C),"куплена на «Сороке»"):null;
+    tell("good","С «Сороки»: книга"+(b?" «"+b.ru+"»":""),"КНИГА\n"+(b?b.ru+"\n":"")+"на полку дома");
+  }else wanderWildGrant(lot);
+  if(typeof sfx==="function")sfx("ok");
+  if(typeof saveGame==="function")saveGame(true);
+  return true;
+}
+/* карта области: девять засечек вокруг далёкой станции — адреса, не маркеры */
+function wanderAreaChart(lot){
+  const r=rng(hashi(lot.id.length*7,G.wander.got.length,0xA2EA));
+  let best=null;
+  for(let t=0;t<60&&!best;t++){
+    const a=r()*TAU,d=6+r()*8,sx=Math.round(G.sx+Math.cos(a)*d),sy=Math.round(G.sy+Math.sin(a)*d);
+    if(starAt(sx,sy)&&getSystem(sx,sy).station)best={sx,sy};
+  }
+  if(!best)best={sx:G.sx+7,sy:G.sy};
+  if(typeof loreMarks==="function")for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++)
+    if(starAt(best.sx+dx,best.sy+dy))loreMarks().push({sx:best.sx+dx,sy:best.sy+dy,id:"wander:"+lot.id+":"+dx+":"+dy});
+  const nm=getSystem(best.sx,best.sy).name;
+  tell("tech","С «Сороки»: карта области у «"+nm+"» · сектор "+best.sx+":"+best.sy,
+    "КАРТА ОБЛАСТИ\nдевять секторов вокруг «"+nm+"»\nсектор "+best.sx+":"+best.sy+"\n\nзасечки легли на карту");
+}
+/* свёрток под сукном: артефакт, которого нет, пока их меньше трёх; иначе редкость из сотни */
+function wanderWildGrant(lot){
+  const owned=(typeof relicOwned==="function")?relicOwned():[];
+  if(owned.length<3&&typeof RELIC_KEYS!=="undefined"){
+    const lack=RELIC_KEYS.filter(k=>!relicHave(k));
+    if(lack.length){const id=lack[hashi(lot.id.length,lack.length,0x2E1C)%lack.length];
+      if(relicFind(id,"обмен на «Сороке»"))return true;}
+  }
+  const lack=RARE.filter(R=>!rareHas(R.id));
+  if(!lack.length){tell("dim","Свёрток пуст: у вас уже всё","СВЁРТОК\nпусто: сотня собрана");return false;}
+  const R=lack[hashi(lot.id.length,lack.length,0x2E1D)%lack.length];
+  rareList().push(R.id);
+  tell("tech","Редкость с «Сороки»: «"+R.ru+"» · "+rareCount()+"/100",
+    "«"+R.ru+"»\n"+R.grade+", "+R.note+"\nиз свёртка «Сороки»: они были там, где вы не были\nэффект: "+R.fx.ru);
+  logAdd("tech","Редкость «"+R.ru+"» — обмен на «Сороке» · "+rareCount()+"/100");
+  return true;
+}
+/* ── прилавок Б: сырьё за спички, редкость показать ── */
+function wanderRawLeft(w){
+  w=w||wanderAt();const R=wanderStore();
+  if(R.soldE!==w.epoch)return WANDER_RAW_CAP;
+  return Math.max(0,WANDER_RAW_CAP-R.soldN);
+}
+/* сколько спичек дадут за всё это сырьё сейчас */
+function wanderRawQuote(k,n){
+  const per=WANDER_RAW[k];if(!per)return 0;
+  return Math.floor(n/per);
+}
+function wanderSellRaw(k){
+  const per=WANDER_RAW[k];if(!per)return 0;
+  const w=wanderAt(),R=wanderStore();
+  if(R.soldE!==w.epoch){R.soldE=w.epoch;R.soldN=0;}
+  const have=G.cargo[k]|0,cap=wanderRawLeft(w);
+  const units=Math.min(have,cap)-(Math.min(have,cap)%per);
+  const m=units/per;
+  if(m<=0){say(have<per?"Меньше "+per+" — не берём: спичка целая, доли нет":"Хватит на эту стоянку: мы тоже считаем коробок");return 0;}
+  G.cargo[k]-=units;R.soldN+=units;matchesAdd(m);
+  tell("money","«Сорока»: "+RES[k].ru.toLowerCase()+" ×"+units+" → "+matchesRu(m),
+    RES[k].ru.toUpperCase()+" ×"+units+"\n→ "+matchesRu(m)+"\n«Кладу из своего коробка, помните это.»");
+  if(typeof sfx==="function")sfx("ok");
+  return m;
+}
+function wanderShowables(){
+  const R=wanderStore();
+  return rareList().filter(id=>R.gave.indexOf(id)<0).map(id=>RARE_BY_ID[id]).filter(Boolean);
+}
+function wanderShowRare(id){
+  const R=wanderStore();
+  if(!rareHas(id)||R.gave.indexOf(id)>=0)return false;
+  R.gave.push(id);matchesAdd(4);
+  const Rr=RARE_BY_ID[id];
+  tell("money","«Сорока»: показана «"+(Rr?Rr.ru:id)+"» → 4 спички",
+    "«"+(Rr?Rr.ru:id)+"»\nсписали в свой журнал · 4 спички\nвещь остаётся у вас");
+  if(typeof sfx==="function")sfx("ok");
+  return true;
+}
+/* ── строки хранителя (§13, дословно) ── */
+const WANDER_LINES={
+  hello:"Спички считаем целыми. Чиркнутая уже не спичка, а история.",
+  idle:["Огня в космосе нет уже сто лет. Есть только то, что положили внутрь до нас.",
+        "За гондолу шестьдесят. Не торгуюсь, у меня их тоже не делают.",
+        "Летучих на двадцать спичек. Кладу из своего коробка, помните это."],
+  leave1:"Сейчас узнаем, куда ветер.",leave2:"Туда."
+};
+/* «уходит через …» — для тетради ветра и шапки комнаты */
+function wanderLeftRu(w){
+  w=w||wanderAt();
+  const ms=w.tLeft,h=Math.floor(ms/3600e3),m=Math.floor(ms%3600e3/60000);
+  if(w.phase!=="stop")return "в пути · придёт через "+(h?h+" ч ":"")+m+" мин";
+  if(h>=24){const d=Math.floor(h/24);return "уходит через "+d+" "+pl3(d,"день","дня","дней")+" "+(h%24)+" ч";}
+  return "уходит через "+(h?h+" ч ":"")+m+" мин";
+}
+
 /* ══════════════ собранный отчёт: их съёмка поверх вашей карты ══════════════
    Последняя веха прохода и нарочно дешёвая: всё, что ей нужно, уже построено.
 
@@ -28694,6 +28998,8 @@ function kitAll(){
   return G.kit;
 }
 function kitShelf(){return (G.kitShelf||(G.kitShelf=[]));}
+/* «Полка шире» с «Сороки» (12v-wander-shop): восемнадцать вещей вместо двенадцати */
+function kitShelfMax(){return (typeof wanderHas==="function"&&wanderHas("shelfwide"))?18:12;}
 function kitName(x){return KIT_MODELS[x.p][x.model]||KIT_MODELS[x.p][0];}
 function kitRoman(c){return ["","I","II","III"][c]||"I";}
 /* множитель слоя износа: ношеный −10%, латаный −5% (починен), чужой — без заплат */
@@ -28729,7 +29035,7 @@ function kitLine(){
 /* ── выдача и находки ── */
 function kitGive(x,why){
   kitShelf().push(x);
-  while(kitShelf().length>12)kitShelf().shift();
+  while(kitShelf().length>kitShelfMax())kitShelf().shift();
   const ru=KIT_RU[x.p]+" «"+kitName(x)+"» "+kitRoman(x.cls)+" класса · "+KIT_WEAR[x.wear];
   logAdd("tech","Снаряжение: "+ru+(why?" · "+why:""));
   if(typeof thingAdd==="function")thingAdd("kit",ru[0].toUpperCase()+ru.slice(1),(why||"")+" · лежит на полке · надеть — ОПИСЬ, запас комплекта");
@@ -30798,7 +31104,7 @@ function snapshot(){
     nodes:G.nodes,crowns:G.crowns,nodeShow:G.nodeShow,rareFound:G.rareFound,pnode:G.pnode,hunted:G.hunted,
     news:G.news,newsMarks:G.newsMarks,newsT:G.newsT,rivals:G.rivals,
     wrecks:G.wrecks,bargePax:G.bargePax,fleetLog:G.fleetLog||{},fleetEscort:G.fleetEscort||0,caravan:G.caravan||null,
-    wander:G.wander||{got:[],gave:[],chit:0},
+    wander:G.wander||{got:[],gave:[],chit:0,shelf:[],hold:[]},
     loreFound:G.loreFound,loreMarks:G.loreMarks,settle:G.settle,tin:G.tin,
     scrip:G.scrip,scripRate:G.scripRate,scripLog:G.scripLog,
     doom:G.doom,doomDead:G.doomDead,parrot:G.parrot,heard:G.heard,grok:G.grok,flea:G.flea,matches:G.matches|0,smena:G.smena||[],
@@ -31165,9 +31471,9 @@ function applySave(s){
   G.fleetEscort=+s.fleetEscort||0;
   G.caravan=(s.caravan&&typeof s.caravan==="object")?s.caravan:null;
   /* «Сорока» (12v, M342): что купили, что отдали, письмо вдогонку — положение из часов */
-  G.wander=(s.wander&&typeof s.wander==="object")
-    ?{got:Array.isArray(s.wander.got)?s.wander.got:[],gave:Array.isArray(s.wander.gave)?s.wander.gave:[],chit:s.wander.chit|0}
-    :{got:[],gave:[],chit:0};
+  {const w=(s.wander&&typeof s.wander==="object")?s.wander:{};const arr=v=>Array.isArray(v)?v.slice():[];
+   G.wander={got:arr(w.got),gave:arr(w.gave),chit:w.chit|0,shelf:arr(w.shelf).slice(0,6),hold:arr(w.hold),
+             soldE:w.soldE|0,soldN:w.soldN|0,been:w.been?1:0};}
   G.wrecks={};
   if(s.wrecks&&typeof s.wrecks==="object")
     for(const k in s.wrecks){
@@ -34749,8 +35055,10 @@ function updateSystem(dt){
 
   if(sys.station){
     const S=sys.station,ds=Math.hypot(sh.x-S.x,sh.y-S.y);
-    if(ds<300){
-      if(ds<95){
+    /* ключ причала («Сорока», 12v-wander-shop): стыковка с любой точки системы */
+    const keyOn=(typeof wanderHas==="function")&&wanderHas("key")&&ds<2600;
+    if(ds<300||keyOn){
+      if(ds<95||keyOn){
         if(sp>2.6)G.prompt="СБРОСЬТЕ СКОРОСТЬ · "+sp.toFixed(1)+"\nТОРМОЗ — ГАШЕНИЕ";
         else{
           G.prompt="ДЕЙСТВИЕ — СТЫКОВКА · "+S.kind.toUpperCase();
@@ -38119,7 +38427,7 @@ function drawSkyBase(p){
    гаснет, яркое остаётся), размывается и кладётся обратно сложением.
    Три drawImage на кадр, без единого чтения пикселей. */
 let BLOOM_CV=null;
-const BLOOM_K={system:.34,map:0,landing:.16,surface:.16,dig:.20,cave:.24,
+const BLOOM_K={wanderer:.18,system:.34,map:0,landing:.16,surface:.16,dig:.20,cave:.24,
                belt:.24,scoop:.20,base:.18,raid:.18,homein:.22,winter:.20,spa:.18};
 function bloomPass(k){
   if(!(k>0)||W<8||H<8)return;
@@ -53023,6 +53331,317 @@ function drawBeltPOISprite(q,px,py,sc,fog){
   ctx.restore();
 }
 
+/* ══════════════ режим: на борту «Сороки» (M343) ══════════════
+   Большая новая сцена — новый режим (сквозное правило): свой update и свой
+   draw (24c-mode-wanderer-draw), свой пульт (26d-ui-wanderer). Внутри хребта —
+   длинный низкий коридор в разрезе, уходящий к стойке хранителя; по стенам
+   витрины, в каждой одна вещь на сукне и своя ровная лампочка. Игрок идёт по
+   коридору ←/→ (или ◀ ▶ на пульте): витрина перед ним показывает карточку —
+   происхождение, что просят, строка из журнала. Ни сетки магазина, ни списка.
+
+   Состояние — G.wan, эфемерно: ушёл — забылось. Товар, время и место — из
+   часов (12v) и семени эпохи (12v-wander-shop); сохранение несёт только
+   G.wander (что куплено, что отдано, полка).
+
+   ПРАВИЛА ФАЙЛА:
+   1. Комната открывается только у трапа во время стоянки; стенд может форсировать
+      (openWanderer({force:true,epoch:0})) — тогда полка эпохи 0, чтобы кадр
+      прибора не плыл с реальными сутками.
+   2. Стоянка кончилась, пока вы внутри, — вас честно выводят: борт ушёл, вы
+      висите там, где он стоял.
+   3. Ничего не происходит без нажатия: прогулка, покупка, сдача — всё руками. */
+let wanPrevL=false,wanPrevR=false,wanPrevA=false;
+function wanAll(){return G.wan||null;}
+function openWanderer(opts){
+  opts=opts||{};
+  const w=wanderAt();
+  const here=!!G.sys&&w.phase==="stop"&&G.sys.sx===w.sx&&G.sys.sy===w.sy;
+  if(!here&&!opts.force){say("«Сорока» здесь не стоит");return false;}
+  for(const k in keys)keys[k]=false;
+  G.ship.vx=0;G.ship.vy=0;
+  const epoch=(opts.epoch!==undefined)?opts.epoch:w.epoch;
+  const W2=(opts.epoch!==undefined)?Object.assign({},w,{epoch,dark:wanderLoop()[((epoch%WANDER_N)+WANDER_N)%WANDER_N].dark}):Object.assign({},w);
+  if(opts.force)W2.forced=true;
+  G.wan={sx:G.sys.sx,sy:G.sys.sy,epoch,dark:!!W2.dark,cursor:0,t0:Date.now(),
+         from:G.mode==="wanderer"?"system":G.mode,seed:hashi(epoch|0,0x50A0,0xCA),
+         said:0,flash:0,counter:false,w:W2};
+  G.mode="wanderer";
+  say(WANDER_LINES.hello,320);
+  if(typeof peopleLine==="function")peopleLine(WANDER_LINES.hello,"хранитель «Сороки»",true);
+  if(typeof sfx==="function")sfx("creak");
+  if(typeof recordAdd==="function"&&!(G.wander&&G.wander.been)){wanderRec().been=1;recordAdd("«Сорока»","поднялись на борт парусника");}
+  return true;
+}
+function exitWanderer(why){
+  if(G.mode==="wanderer")G.mode="system";
+  for(const k in keys)keys[k]=false;
+  if(why)say(why,260);
+  G.wan=null;
+  if(typeof saveGame==="function")saveGame(true);
+}
+function wanLots(){const S=wanAll();return S?wanderLots(S.w):[];}
+function wanCur(){const S=wanAll();if(!S)return null;const L=wanLots();return L[clamp(S.cursor,0,Math.max(0,L.length-1))]||null;}
+function wanStep(d){
+  const S=wanAll();if(!S)return;
+  const L=wanLots();if(!L.length)return;
+  S.cursor=clamp(S.cursor+d,0,L.length-1);
+  S.counter=false;
+  if(typeof sfx==="function")sfx("step");
+}
+function updateWanderRoom(dt){
+  const S=wanAll();if(!S)return;
+  /* стоянка кончилась — борт ушёл, а вы остались там, где он стоял */
+  if(!S.w.forced){
+    const w=wanderAt();
+    if(!(w.phase==="stop"&&w.sx===S.sx&&w.sy===S.sy)){
+      exitWanderer("«Сорока» ушла. Вы висите там, где она стояла.");
+      logAdd("warn","«Сорока» отчалила, пока вы были на борту: вас высадили у трапа");
+      return;
+    }
+    S.w=w;
+    /* последний час: хранитель чиркает спичку — один раз, вспышка, «Туда.» */
+    if(w.tLeft<3600e3&&!S.flash){
+      S.flash=1;S.flashT=Date.now();
+      say(WANDER_LINES.leave1+"\n… "+WANDER_LINES.leave2,300);
+      if(typeof peopleLine==="function")peopleLine(WANDER_LINES.leave1+" — "+WANDER_LINES.leave2,"хранитель «Сороки»",true);
+    }
+  }
+  /* прогулка: фронт клавиши, не удержание — шаг за нажатие */
+  if(keys.left&&!wanPrevL)wanStep(-1);
+  if(keys.right&&!wanPrevR)wanStep(1);
+  if(keys.act&&!wanPrevA){const lot=wanCur();if(lot&&!lot.empty&&!lot.gone)wanderBuy(lot);}
+  wanPrevL=keys.left;wanPrevR=keys.right;wanPrevA=keys.act;
+  /* редкая реплика хранителя, сама по себе, не чаще раза в полминуты */
+  S.said=(S.said|0)+dt;
+  if(S.said>2400){S.said=0;S.saidN=(S.saidN|0)+1;
+    const r=rng(hashi(S.seed,S.saidN,7));
+    say(WANDER_LINES.idle[Math.floor(r()*WANDER_LINES.idle.length)],260);}
+  G.prompt=(wanCur()&&!wanCur().empty&&!wanCur().gone)?"◀ ▶ — ПО КОРИДОРУ · ДЕЙСТВИЕ — ВЗЯТЬ":"◀ ▶ — ПО КОРИДОРУ";
+  if(typeof wanPanelSync==="function")wanPanelSync();
+}
+
+/* ══════════════ «Сорока» изнутри: коридор к стойке (M343) ══════════════
+   Комната по правилам M74–M76: мерило — человек (хранитель ≈55 px у стойки),
+   задняя стена обязательна, порядок слоёв и есть сцена, свет откуда-то.
+
+   ПОРЯДОК СЛОЁВ: задняя стена → щель окна (край планеты поворачивается, холодные
+   полосы ложатся на пол) → золотая протечка парусов на верхних витринах →
+   рёбра-кольца → витрины (стекло, латунные уголки, одна вещь на сукне, своя
+   ровная лампочка) → висящее на леерах (медленный дрейф, длинные периоды) →
+   стойка → хранитель (тело, не палочки; шлем снят) → лампа под зелёным абажуром
+   (единственный тёплый акцент) → пыль в полосах → виньетка.
+
+   Две температуры, по одному источнику: холод — планета в щели, тепло — паруса
+   сверху и лампа хранителя. Витринные лампочки — «много огней», и они ровные:
+   движение — не мигание. Купленная вещь оставляет пустую витрину с меловой
+   биркой: дыра и есть память. */
+const WAN_C={
+  wall:[34,39,46], wall2:[64,72,82], floor:[30,34,40], ceil:[24,27,33],
+  brass:[201,162,74], glass:[150,196,214], cloth:[36,74,52], chalk:[232,220,190],
+  gold:[211,157,52], cold:[150,196,224], lamp:[255,214,150], green:[86,140,86]
+};
+function wanCol(a,k){k=k==null?1:k;return "rgb("+Math.round(a[0]*k)+","+Math.round(a[1]*k)+","+Math.round(a[2]*k)+")";}
+function wanRgba(a,al){return "rgba("+(a[0]|0)+","+(a[1]|0)+","+(a[2]|0)+","+(+al).toFixed(3)+")";}
+/* перспектива с одной точкой схода: x,y точки на стене/полу глубины z (0 — у зрителя) */
+function wanGeom(){
+  const vp={x:W*.5,y:H*.46};
+  const P=(x0,y0,z)=>({x:x0+(vp.x-x0)*z,y:y0+(vp.y-y0)*z});
+  return {vp,P,floorY:H*.88,ceilY:H*.06,zc:.74};
+}
+/* витрина i: стена (чёт — левая), глубина от курсора */
+function wanCaseAt(i,cursor){
+  const left=(i%2===0), k=i-cursor;
+  if(k<0)return null;                                   /* за спиной */
+  const z=.16+k*.115;
+  if(z>.68)return null;
+  return {left,z,z2:z+.085};
+}
+function wanItemIcon(lot,cx,cy,s){
+  /* вещь на сукне: инструмент — латунная штука с бликом; бумага — сложенная
+     карта; свёрток — ком под сукном с биркой. Одно тело, один свет сверху-слева */
+  ctx.save();ctx.translate(cx,cy);
+  ctx.fillStyle="rgba(0,0,0,.35)";ctx.beginPath();ctx.ellipse(0,s*.42,s*.55,s*.12,0,0,TAU);ctx.fill();
+  if(lot.fam==="paper"){
+    ctx.fillStyle="#d9cfae";ctx.beginPath();ctx.moveTo(-s*.5,-s*.3);ctx.lineTo(s*.5,-s*.38);ctx.lineTo(s*.5,s*.34);ctx.lineTo(-s*.5,s*.4);ctx.closePath();ctx.fill();
+    ctx.strokeStyle="rgba(90,70,40,.6)";ctx.lineWidth=1;
+    for(let i=-1;i<=1;i++){ctx.beginPath();ctx.moveTo(i*s*.25,-s*.34);ctx.lineTo(i*s*.25,s*.37);ctx.stroke();}
+    ctx.strokeStyle="rgba(120,40,30,.55)";ctx.beginPath();ctx.moveTo(-s*.4,s*.1);ctx.lineTo(-s*.1,-s*.1);ctx.lineTo(s*.2,s*.05);ctx.lineTo(s*.42,-s*.2);ctx.stroke();
+  }else if(lot.fam==="wild"){
+    ctx.fillStyle="#3a3128";ctx.beginPath();ctx.ellipse(0,s*.05,s*.48,s*.36,0,0,TAU);ctx.fill();
+    ctx.fillStyle="rgba(255,235,200,.12)";ctx.beginPath();ctx.ellipse(-s*.12,-s*.1,s*.22,s*.12,-.4,0,TAU);ctx.fill();
+    ctx.fillStyle="#d9cfae";ctx.fillRect(s*.28,-s*.02,s*.22,s*.14);
+    ctx.strokeStyle="rgba(120,100,70,.7)";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(s*.28,s*.05);ctx.lineTo(s*.12,s*.02);ctx.stroke();
+  }else{
+    const r=rng(hashi(lot.ru.length,lot.id.length,0x7001));
+    const wdt=s*(.5+r()*.4),hgt=s*(.25+r()*.35);
+    ctx.fillStyle="#6a5221";ctx.beginPath();ctx.roundRect(-wdt/2,-hgt/2,wdt,hgt,s*.08);ctx.fill();
+    ctx.fillStyle="#c9a24a";ctx.beginPath();ctx.roundRect(-wdt/2+2,-hgt/2+2,wdt-4,hgt*.45,s*.06);ctx.fill();
+    ctx.fillStyle="rgba(255,240,200,.75)";ctx.fillRect(-wdt/2+4,-hgt/2+4,wdt*.3,2);
+    if(r()<.5){ctx.fillStyle="#2b2f36";ctx.beginPath();ctx.arc(wdt*.25,0,hgt*.28,0,TAU);ctx.fill();}
+  }
+  ctx.restore();
+}
+function wanKeeper(x,y,h){
+  /* тело, не палочки: скафандр трапецией, ранец, шлем снят и висит на крюке */
+  ctx.save();ctx.translate(x,y);
+  ctx.fillStyle="rgba(0,0,0,.4)";ctx.beginPath();ctx.ellipse(0,0,h*.32,h*.06,0,0,TAU);ctx.fill();
+  ctx.fillStyle="#3b4148";ctx.beginPath();ctx.roundRect(-h*.30,-h*.62,h*.16,h*.42,h*.04);ctx.fill();   /* ранец за спиной */
+  ctx.fillStyle="#8a9299";ctx.beginPath();
+  ctx.moveTo(-h*.20,-h*.66);ctx.lineTo(h*.20,-h*.66);ctx.lineTo(h*.26,-h*.06);ctx.lineTo(-h*.26,-h*.06);ctx.closePath();ctx.fill();
+  ctx.fillStyle="#5d666e";ctx.fillRect(-h*.26,-h*.2,h*.52,h*.05);
+  ctx.fillStyle="rgba(255,235,200,.16)";ctx.fillRect(-h*.16,-h*.62,h*.06,h*.5);
+  ctx.fillStyle="#d8b58f";ctx.beginPath();ctx.arc(0,-h*.80,h*.13,0,TAU);ctx.fill();       /* голова: шлем снят */
+  ctx.fillStyle="#3a2e26";ctx.beginPath();ctx.arc(0,-h*.84,h*.13,Math.PI,TAU);ctx.fill();
+  ctx.fillStyle="#8a9299";ctx.beginPath();ctx.arc(h*.42,-h*.7,h*.12,0,TAU);ctx.fill();      /* шлем на крюке */
+  ctx.fillStyle="rgba(150,196,214,.6)";ctx.beginPath();ctx.ellipse(h*.42,-h*.7,h*.08,h*.06,0,0,TAU);ctx.fill();
+  ctx.strokeStyle="#5d666e";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(h*.42,-h*.82);ctx.lineTo(h*.42,-h*.9);ctx.stroke();
+  ctx.restore();
+}
+function drawWanderRoom(){
+  const S=wanAll();if(!S)return;
+  const g=wanGeom(),P=g.P,vp=g.vp,now=Date.now();
+  const lots=wanLots();
+  const sys=G.sys,pl=(sys&&sys.planets&&S.w.planetIx>=0)?sys.planets[S.w.planetIx]:null;
+  const pal=(pl&&TYPES[pl.type])?TYPES[pl.type].pal:[[40,60,90],[60,90,120],[90,120,150],[120,150,180]];
+  /* 1. стены, пол, потолок: тёмное основание, свет придёт слоями */
+  ctx.fillStyle=wanCol(WAN_C.ceil);ctx.fillRect(0,0,W,H);
+  const fl=ctx.createLinearGradient(0,vp.y,0,g.floorY);
+  fl.addColorStop(0,wanCol(WAN_C.floor,.6));fl.addColorStop(1,wanCol(WAN_C.floor,1.6));
+  ctx.fillStyle=fl;ctx.beginPath();ctx.moveTo(0,g.floorY);ctx.lineTo(W,g.floorY);ctx.lineTo(vp.x,vp.y);ctx.closePath();ctx.fill();
+  for(const side of [0,W]){
+    const wg=ctx.createLinearGradient(side,0,vp.x,0);
+    wg.addColorStop(0,wanCol(WAN_C.wall2));wg.addColorStop(1,wanCol(WAN_C.wall,.75));
+    ctx.fillStyle=wg;ctx.beginPath();ctx.moveTo(side,g.ceilY);ctx.lineTo(side,g.floorY);ctx.lineTo(vp.x,vp.y);ctx.closePath();ctx.fill();
+  }
+  /* задняя стена — стойка на глубине zc, стена за ней */
+  const zc=g.zc,bl=P(0,g.ceilY,zc),br=P(W,g.ceilY,zc),fl2=P(0,g.floorY,zc),fr=P(W,g.floorY,zc);
+  ctx.fillStyle=wanCol(WAN_C.wall,.8);ctx.fillRect(bl.x,bl.y,br.x-bl.x,fl2.y-bl.y);
+  /* 2. щель окна в потолке, в перспективе (под приборами её было не видно): край
+     планеты поворачивается — холодный ключ; от просветов — холодные полосы на пол */
+  {
+    const zA=.10,zB=.46,xa=W*.32,xb=W*.68;
+    const A=P(xa,g.ceilY,zA),B=P(xb,g.ceilY,zA),C=P(xb,g.ceilY,zB),D=P(xa,g.ceilY,zB);
+    ctx.save();ctx.beginPath();ctx.moveTo(A.x,A.y);ctx.lineTo(B.x,B.y);ctx.lineTo(C.x,C.y);ctx.lineTo(D.x,D.y);ctx.closePath();ctx.clip();
+    ctx.fillStyle="#04060a";ctx.fillRect(0,0,W,H);
+    const ph=now/240000;                                    /* оборот за четыре минуты */
+    const pr=H*.55,px=W*.5+Math.sin(ph)*W*.06,py=A.y-pr*.55;
+    const pg=ctx.createRadialGradient(px-pr*.3,py+pr*.4,pr*.2,px,py,pr);
+    pg.addColorStop(0,wanCol(pal[Math.min(3,pal.length-1)],1.1));pg.addColorStop(.6,wanCol(pal[1]));pg.addColorStop(1,wanCol(pal[0],.6));
+    ctx.fillStyle=pg;ctx.beginPath();ctx.arc(px,py,pr,0,TAU);ctx.fill();
+    const tg=ctx.createLinearGradient(xa,0,xb,0);tg.addColorStop(0,"rgba(0,0,0,0)");tg.addColorStop(1,"rgba(0,0,0,.7)");
+    ctx.fillStyle=tg;ctx.fillRect(0,0,W,H);
+    for(let i=0;i<14;i++){const sx=A.x+((i*173+now/900)%(B.x-A.x)),sy=D.y+((i*97)%Math.max(1,(A.y-D.y)))*.7;ctx.fillStyle="rgba(220,230,240,.5)";ctx.fillRect(sx,sy,1,1);}
+    ctx.restore();
+    /* переплёт: рёбра вдоль и поперёк */
+    ctx.strokeStyle="#0f1114";ctx.lineWidth=2.5;
+    ctx.beginPath();ctx.moveTo(A.x,A.y);ctx.lineTo(B.x,B.y);ctx.lineTo(C.x,C.y);ctx.lineTo(D.x,D.y);ctx.closePath();ctx.stroke();
+    for(let i=1;i<6;i++){const z=zA+(zB-zA)*i/6,l=P(xa,g.ceilY,z),r2=P(xb,g.ceilY,z);ctx.beginPath();ctx.moveTo(l.x,l.y);ctx.lineTo(r2.x,r2.y);ctx.stroke();}
+    /* холодные полосы на пол: от каждого просвета — трапеция, светлее у зрителя */
+    for(let i=0;i<6;i++){
+      const z0=zA+(zB-zA)*(i+.15)/6,z1=zA+(zB-zA)*(i+.85)/6;
+      const a0=P(W*.18,g.floorY,z0),b0=P(W*.18,g.floorY,z1),c0=P(W*.82,g.floorY,z1),d0=P(W*.82,g.floorY,z0);
+      ctx.fillStyle=wanRgba(WAN_C.cold,.10+.14*(1-z0));
+      ctx.beginPath();ctx.moveTo(a0.x,a0.y);ctx.lineTo(b0.x,b0.y);ctx.lineTo(c0.x,c0.y);ctx.lineTo(d0.x,d0.y);ctx.closePath();ctx.fill();
+    }
+  }
+  /* 3. золотая протечка парусов: верх стен тёплый, к полу гаснет */
+  for(const side of [0,W]){
+    const gg=ctx.createLinearGradient(0,g.ceilY,0,H*.5);
+    gg.addColorStop(0,wanRgba(WAN_C.gold,.38));gg.addColorStop(1,wanRgba(WAN_C.gold,0));
+    ctx.fillStyle=gg;ctx.beginPath();ctx.moveTo(side,g.ceilY);ctx.lineTo(side,H*.5);ctx.lineTo(P(side,H*.5,zc).x,P(side,H*.5,zc).y);ctx.lineTo(P(side,g.ceilY,zc).x,P(side,g.ceilY,zc).y);ctx.closePath();ctx.fill();
+  }
+  /* 4. рёбра-кольца: отметки глубины */
+  ctx.strokeStyle="rgba(120,128,140,.35)";ctx.lineWidth=1.2;
+  for(let z=.08;z<zc;z+=.11){
+    const a=P(0,g.ceilY,z),b=P(W,g.ceilY,z),c=P(W,g.floorY,z),d=P(0,g.floorY,z);
+    ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.lineTo(c.x,c.y);ctx.lineTo(d.x,d.y);ctx.closePath();ctx.stroke();
+  }
+  /* 5. витрины: по стенам, ближняя — текущая */
+  const cur=clamp(S.cursor,0,Math.max(0,lots.length-1));
+  for(let i=lots.length-1;i>=0;i--){
+    const cs=wanCaseAt(i,cur);if(!cs)continue;
+    const lot=lots[i],side=cs.left?0:W;
+    const yTop=H*.24,yBot=H*.70;
+    const a=P(side,yTop,cs.z),b=P(side,yTop,cs.z2),c=P(side,yBot,cs.z2),d=P(side,yBot,cs.z);
+    /* глубина — тоном: ближняя ярче */
+    const lit=1-cs.z*.9;
+    /* корпус витрины: тёмное дерево шире стекла, потом сукно, потом стекло */
+    const ex=(d.y-a.y)*.05;
+    ctx.fillStyle="#1a1612";
+    ctx.beginPath();ctx.moveTo(a.x-ex,a.y-ex);ctx.lineTo(b.x+ex,b.y-ex);ctx.lineTo(c.x+ex,c.y+ex);ctx.lineTo(d.x-ex,d.y+ex);ctx.closePath();ctx.fill();
+    ctx.fillStyle=wanCol(WAN_C.cloth,.75+lit*.7);
+    ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.lineTo(c.x,c.y);ctx.lineTo(d.x,d.y);ctx.closePath();ctx.fill();
+    /* полка под вещью */
+    const sy=a.y+(d.y-a.y)*.72,sy2=b.y+(c.y-b.y)*.72;
+    ctx.strokeStyle="rgba(201,162,74,"+(.35+lit*.4).toFixed(2)+")";ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.moveTo(a.x,sy);ctx.lineTo(b.x,sy2);ctx.stroke();
+    /* стекло: холодный отсвет сверху */
+    const gl=ctx.createLinearGradient(0,a.y,0,d.y);gl.addColorStop(0,wanRgba(WAN_C.glass,.22*lit));gl.addColorStop(.5,wanRgba(WAN_C.glass,.04));gl.addColorStop(1,wanRgba(WAN_C.glass,.10*lit));
+    ctx.fillStyle=gl;ctx.fill();
+    ctx.strokeStyle=wanRgba(WAN_C.brass,.5+lit*.5);ctx.lineWidth=i===cur?2.5:1.2;ctx.stroke();
+    /* латунные уголки */
+    ctx.fillStyle=wanCol(WAN_C.brass,.6+lit*.5);
+    for(const q of [a,b,c,d]){ctx.fillRect(q.x-2,q.y-2,4,4);}
+    /* своя лампочка — ровная, у верхней кромки */
+    const lx=(a.x+b.x)/2,ly=a.y+6;
+    if(!lot.empty){
+      const lg=ctx.createRadialGradient(lx,ly,0,lx,ly,28*lit+6);
+      lg.addColorStop(0,wanRgba(WAN_C.lamp,.55));lg.addColorStop(1,wanRgba(WAN_C.lamp,0));
+      ctx.fillStyle=lg;ctx.beginPath();ctx.arc(lx,ly,28*lit+6,0,TAU);ctx.fill();
+      ctx.fillStyle="#fff2d6";ctx.beginPath();ctx.arc(lx,ly,1.4,0,TAU);ctx.fill();
+    }
+    const cx=(a.x+b.x+c.x+d.x)/4,cy=a.y+(d.y-a.y)*.52,sz=(d.y-a.y)*.42;
+    if(lot.empty||lot.gone){
+      /* меловая бирка вместо вещи */
+      ctx.save();ctx.translate(cx,cy);ctx.rotate(cs.left?.06:-.06);
+      ctx.fillStyle="rgba(232,220,190,.10)";ctx.fillRect(-sz*.5,-sz*.18,sz,sz*.36);
+      ctx.strokeStyle="rgba(232,220,190,.45)";ctx.lineWidth=1;ctx.strokeRect(-sz*.5,-sz*.18,sz,sz*.36);
+      ctx.fillStyle=wanRgba(WAN_C.chalk,.75);ctx.font=Math.max(7,sz*.16)+"px ui-monospace,monospace";ctx.textAlign="center";
+      ctx.fillText(lot.gone?"продано":"пусто",0,sz*.05);
+      ctx.restore();
+    }else wanItemIcon(lot,cx,cy,sz*.9);
+  }
+  /* 6. висящее на леерах: дрейф с длинными периодами, никогда не мигает */
+  const rr=rng(hashi(S.seed,3,0x4A9));
+  for(let i=0;i<5;i++){
+    const z=.12+rr()*.5,x0=W*(.3+rr()*.4),len=H*(.05+rr()*.07);
+    const dx=Math.sin(now/(23000+i*4000)+i)*3,pt=P(x0,g.ceilY,z);
+    ctx.strokeStyle="rgba(180,170,150,.35)";ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(pt.x,pt.y);ctx.lineTo(pt.x+dx,pt.y+len*(1-z));ctx.stroke();
+    const k=rr();ctx.fillStyle=k<.4?"#3a3128":(k<.7?"#4a4a4a":"#6a5221");
+    const s2=(6+rr()*8)*(1-z);
+    if(k<.7){ctx.beginPath();ctx.ellipse(pt.x+dx,pt.y+len*(1-z)+s2*.5,s2*.7,s2,0,0,TAU);ctx.fill();}
+    else{ctx.strokeStyle="#6a5221";ctx.lineWidth=1;ctx.strokeRect(pt.x+dx-s2*.5,pt.y+len*(1-z),s2,s2*1.3);}   /* клетка */
+  }
+  /* 7. стойка и хранитель у точки схода */
+  {
+    const cl=P(W*.30,g.floorY,zc-.06),cr=P(W*.70,g.floorY,zc-.06),ctop=cl.y-H*.075;
+    ctx.fillStyle="#2a2622";ctx.fillRect(cl.x,ctop,cr.x-cl.x,cl.y-ctop);
+    ctx.fillStyle="rgba(255,235,200,.10)";ctx.fillRect(cl.x,ctop,cr.x-cl.x,3);
+    ctx.strokeStyle="rgba(0,0,0,.6)";ctx.lineWidth=1;ctx.strokeRect(cl.x,ctop,cr.x-cl.x,cl.y-ctop);
+    const kh=Math.round(H*.07)+55*0;                      /* человек ≈55 px на этой глубине */
+    wanKeeper((cl.x+cr.x)/2+kh*.3,ctop+kh*.02,Math.max(48,kh));
+    /* гроссбух под лампой */
+    ctx.fillStyle="#d9cfae";ctx.fillRect((cl.x+cr.x)/2-kh*.5,ctop-3,kh*.5,kh*.12);
+    /* 8. лампа под зелёным абажуром — единственный тёплый акцент кадра */
+    const lx=(cl.x+cr.x)/2-kh*.2,ly=ctop-kh*.55;
+    ctx.strokeStyle="#1a1d22";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(lx,ly);ctx.lineTo(lx,ly-H*.2);ctx.stroke();
+    ctx.fillStyle=wanCol(WAN_C.green,.9);ctx.beginPath();ctx.moveTo(lx-kh*.36,ly+kh*.08);ctx.lineTo(lx+kh*.36,ly+kh*.08);ctx.lineTo(lx+kh*.16,ly-kh*.14);ctx.lineTo(lx-kh*.16,ly-kh*.14);ctx.closePath();ctx.fill();
+    const wg=ctx.createRadialGradient(lx,ly+kh*.1,0,lx,ly+kh*.1,kh*1.6);
+    wg.addColorStop(0,"rgba(255,214,150,.55)");wg.addColorStop(.5,"rgba(255,200,130,.16)");wg.addColorStop(1,"rgba(255,180,100,0)");
+    ctx.fillStyle=wg;ctx.beginPath();ctx.arc(lx,ly+kh*.1,kh*1.6,0,TAU);ctx.fill();
+    ctx.fillStyle="#fff3d8";ctx.beginPath();ctx.ellipse(lx,ly+kh*.1,kh*.12,kh*.04,0,0,TAU);ctx.fill();
+  }
+  /* 9. пыль в холодных полосах */
+  ctx.fillStyle="rgba(200,220,235,.35)";
+  for(let i=0;i<40;i++){const h=hashi(i,S.seed,0xD057);const x=W*.2+((h&1023)/1023)*W*.6,y=H*.5+(((h>>10)&1023)/1023)*H*.36+Math.sin(now/7000+i)*3;ctx.fillRect(x,y,1,1);}
+  /* 10. вспышка спички хранителя — последний час, один раз */
+  if(S.flashT){const u=(now-S.flashT)/1500;if(u<1){ctx.fillStyle="rgba(255,226,170,"+(.5*(1-u)).toFixed(3)+")";ctx.fillRect(0,0,W,H);}}
+  /* 11. виньетка */
+  const vg=ctx.createRadialGradient(W*.5,H*.5,H*.25,W*.5,H*.5,H*.85);
+  vg.addColorStop(0,"rgba(0,0,0,0)");vg.addColorStop(1,"rgba(0,0,0,.62)");
+  ctx.fillStyle=vg;ctx.fillRect(0,0,W,H);
+}
+
 /* ══════════════ ПОЯС АСТЕРОИДОВ · ВИД ИЗ КАБИНЫ ══════════════ */
 function hashi3(x,y,z,s){
   let h=Math.imul(x|0,374761393)^Math.imul(y|0,668265263)^Math.imul(z|0,1274126177)^Math.imul(s|0,1442695041);
@@ -59686,6 +60305,84 @@ function renderSiteTab(){
   }
 }
 
+/* ══════════════ пульт «Сороки»: карточка витрины перед вами (M343) ══════════════
+   Модель ряда блошинца (12ua): не сетка, а ОДНА карточка — витрина, перед
+   которой вы стоите: имя, происхождение словами хранителя, что даёт, что просят,
+   и кнопки. ◀ ▶ — шаг по коридору, ВЗЯТЬ — купить или обменять, СЫРЬЁ —
+   второй прилавок (летучие, кристаллы, сплав, техкомпоненты за спички; показать
+   редкость), УЙТИ — обратно к трапу.
+
+   Панель висит над пультом, как приёмник в полёте, и перестраивается только
+   когда изменилось то, что на ней написано (сигнатура), — иначе каждый кадр
+   пересобирал бы DOM. */
+let wanSig="";
+function wanPanel(){
+  let w=document.getElementById("wanwin");
+  if(w)return w;
+  w=document.createElement("div");w.id="wanwin";w.className="wanwin";
+  w.innerHTML="<header><b id='wanTitle'>«СОРОКА»</b><s id='wanSub'></s></header>"+
+    "<div class='card' id='wanCard'></div><div class='acts' id='wanActs'></div>";
+  document.body.appendChild(w);
+  return w;
+}
+function wanPanelSync(){
+  const S=wanAll();const w=wanPanel();
+  if(!S){w.classList.remove("open");wanSig="";return;}
+  w.classList.add("open");
+  const lots=wanLots(),cur=clamp(S.cursor,0,Math.max(0,lots.length-1)),lot=lots[cur]||null;
+  const raw=Object.keys(WANDER_RAW).map(k=>k+":"+(G.cargo[k]|0)).join(",");
+  const sig=[cur,lots.length,lot?(lot.id+"|"+(lot.gone?1:0)):"-",matchesRec(),Math.round(G.credits),
+    S.counter?1:0,raw,wanderRawLeft(S.w),wanderShowables().length,wanderAskPart()?1:0,S.w.tLeft/60000|0].join("/");
+  if(sig===wanSig)return;
+  wanSig=sig;
+  document.getElementById("wanSub").textContent=(S.dark?"тёмная стоянка · ":"")+wanderLeftRu(S.w)+
+    " · спичек: "+matchesRec()+" · витрина "+(cur+1)+" из "+lots.length;
+  const card=document.getElementById("wanCard"),acts=document.getElementById("wanActs");
+  card.textContent="";acts.textContent="";
+  const mk=(ru,cls,go,off)=>{const b=document.createElement("button");b.className="act sm"+(cls?" "+cls:"");
+    b.textContent=ru;b.disabled=!!off;b.onclick=()=>{go();wanSig="";wanPanelSync();};acts.appendChild(b);return b;};
+  if(S.counter){
+    /* прилавок Б: сырьё за спички, редкость показать */
+    let h="<b>Прилавок: сырьё за спички</b><s>40 летучих, кристаллов льда или сплава — спичка; 20 техкомпонентов — спичка · "+
+      "на эту стоянку ещё "+wanderRawLeft(S.w)+" единиц · редкость показать — четыре спички, один раз, вещь остаётся у вас</s>";
+    card.innerHTML=h;
+    const rows=document.createElement("div");rows.className="rows";
+    for(const k in WANDER_RAW){
+      const n=G.cargo[k]|0,q=wanderRawQuote(k,Math.min(n,wanderRawLeft(S.w)));
+      const r=document.createElement("div");r.className="ln";
+      r.innerHTML="<em>"+RES[k].ru+" × "+n+"</em>";
+      const b=document.createElement("button");b.className="act sm"+(q?" gold":"");b.textContent=q?"СДАТЬ → "+matchesRu(q):"МАЛО";
+      b.disabled=!q;b.onclick=()=>{wanderSellRaw(k);wanSig="";wanPanelSync();};
+      r.appendChild(b);rows.appendChild(r);
+    }
+    const sh=wanderShowables().slice(0,4);
+    for(const R of sh){
+      const r=document.createElement("div");r.className="ln";
+      r.innerHTML="<em>«"+R.ru+"»</em>";
+      const b=document.createElement("button");b.className="act sm";b.textContent="ПОКАЗАТЬ → 4";
+      b.onclick=()=>{wanderShowRare(R.id);wanSig="";wanPanelSync();};
+      r.appendChild(b);rows.appendChild(r);
+    }
+    card.appendChild(rows);
+    mk("← К ВИТРИНАМ","",()=>{S.counter=false;});
+    mk("УЙТИ","",()=>exitWanderer());
+    return;
+  }
+  if(!lot){card.innerHTML="<b>Витрины пусты</b><s>хранитель разводит руками</s>";}
+  else if(lot.empty){card.innerHTML="<b>Пустая витрина</b><s>мелом: «"+lot.chalk+"»</s>";}
+  else if(lot.gone){card.innerHTML="<b>Пустая витрина</b><s>мелом: «"+lot.chalk+"» · дыра и есть память</s>";}
+  else{
+    const why=wanderCant(lot);
+    card.innerHTML="<b>"+lot.ru+"</b><s>«"+lot.note+"»</s><i>"+lot.fx+"</i>"+
+      "<u>"+wanderPriceRu(lot.cat)+(why?" · <span class='dn'>"+why+"</span>":"")+"</u>";
+  }
+  mk("◀","",()=>wanStep(-1),cur<=0);
+  mk("▶","",()=>wanStep(1),cur>=lots.length-1);
+  if(lot&&!lot.empty&&!lot.gone)mk(lot.pay.ask?"ОБМЕНЯТЬ":"ВЗЯТЬ","gold",()=>wanderBuy(lot),!!wanderCant(lot));
+  mk("СЫРЬЁ","",()=>{S.counter=true;});
+  mk("УЙТИ","",()=>exitWanderer());
+}
+
 /* ══════════════ станция ══════════════ */
 const $st=document.getElementById("station"),$body=document.getElementById("stBody");
 let tab="market";
@@ -64706,7 +65403,7 @@ function tableIsOpen(){return tableOpenNow;}
    промолчит, а не выдаст ключ. */
 const MODE_RU={system:"в системе",map:"навигация",landing:"посадка",surface:"на поверхности",
   cave:"в пещере",dig:"в шахте",belt:"в поясе",scoop:"в атмосфере",base:"на базе",
-  homein:"дома",raid:"абордаж",dock:"на станции",road:"в дороге"};
+  homein:"дома",raid:"абордаж",dock:"на станции",road:"в дороге",wanderer:"на «Сороке»"};
 function modeRu(){return MODE_RU[G.mode]||"";}
 /* ── вещи: общая полка ──
    {k:вид, ru:имя, note:строка, t:время, seen:0/1, sx,sy:откуда}. Кладут
@@ -66078,11 +66775,36 @@ function opisRender(box){
   const shelf=document.createElement("div");shelf.className="op-shelf";
   shelf.innerHTML="<h4>ИНСТРУМЕНТЫ «СОРОКИ»<s>шесть мест · работают только отсюда</s></h4>";
   const sl=document.createElement("div");sl.className="slots";
-  for(let i=0;i<6;i++){const e=document.createElement("i");e.className="empty";sl.appendChild(e);}
+  const WS=(typeof wanderStore==="function")?wanderStore():{shelf:[],hold:[]};
+  for(let i=0;i<6;i++){
+    const id=WS.shelf[i],cat=id&&typeof WANDER_BY_ID!=="undefined"?WANDER_BY_ID[id]:null;
+    if(!cat){const e=document.createElement("i");e.className="empty";sl.appendChild(e);continue;}
+    const e=document.createElement("div");e.className="op-tool";
+    e.innerHTML="<b>"+cat.ru+"</b><s>"+cat.fx+"</s>";
+    const b=document.createElement("button");b.className="act sm";b.textContent="В ТРЮМ";
+    b.onclick=ev=>{ev.stopPropagation();wanderToHold(id);opisRerender();};
+    e.appendChild(b);sl.appendChild(e);
+  }
   shelf.appendChild(sl);
-  const chalk=document.createElement("s");chalk.className="chalk";
-  chalk.textContent="пока пусто. Говорят, есть борт, где платят спичками — у него и спрашивать";
-  shelf.appendChild(chalk);
+  if(WS.hold.length){
+    const hl=document.createElement("div");hl.className="op-toolhold";
+    hl.innerHTML="<em>В ТРЮМЕ · не работают</em>";
+    for(const id of WS.hold){
+      const cat=WANDER_BY_ID[id];if(!cat)continue;
+      const e=document.createElement("div");e.className="op-tool";
+      e.innerHTML="<b>"+cat.ru+"</b><s>"+cat.fx+"</s>";
+      const b=document.createElement("button");b.className="act sm"+(WS.shelf.length<WANDER_SHELF?" gold":"");b.textContent="НА ПОЛКУ";
+      b.disabled=WS.shelf.length>=WANDER_SHELF;
+      b.onclick=ev=>{ev.stopPropagation();wanderToShelf(id);opisRerender();};
+      e.appendChild(b);hl.appendChild(e);
+    }
+    shelf.appendChild(hl);
+  }
+  if(!WS.shelf.length&&!WS.hold.length){
+    const chalk=document.createElement("s");chalk.className="chalk";
+    chalk.textContent="пока пусто. Говорят, есть борт, где платят спичками — у него и спрашивать";
+    shelf.appendChild(chalk);
+  }
   const bx=document.createElement("div");bx.className="op-box";
   const bcv=document.createElement("canvas");bcv.width=160;bcv.height=96;
   opisDrawBox(bcv.getContext("2d"),160,96);
@@ -68512,7 +69234,10 @@ function hud(){
   document.body.classList.toggle("screen",!!document.querySelector(".scr.open"));
   let a="—",b="—";
   /* кошелёк вынесен отдельной строкой ниже — здесь он был бы вторым разом */
-  if(G.mode==="system"){a=((typeof nameOf==="function")?nameOf(G.sys):G.sys.name).toUpperCase();b="«"+st.S.ru+"» · сектор "+G.sx+":"+G.sy;}
+  if(G.mode==="system"){a=((typeof nameOf==="function")?nameOf(G.sys):G.sys.name).toUpperCase();b="«"+st.S.ru+"» · сектор "+G.sx+":"+G.sy;
+    /* тетрадь ветра («Сорока»): в строке места — когда парусник уйдёт */
+    if(typeof wanderHas==="function"&&wanderHas("notebook"))b+=" · «Сорока» "+wanderLeftRu();}
+  else if(G.mode==="wanderer"){a="НА БОРТУ «СОРОКИ»";b=(typeof wanderLeftRu==="function")?wanderLeftRu():"";}
   else if(G.mode==="map"){a="НАВИГАЦИЯ";b="радиус "+st.jump.toFixed(1)+" пк";}
   else if(G.mode==="landing"){a=G.land.p.name.toUpperCase();
     b=(G.land.auto?"авто-посадка":"ручная посадка")+" · "+G.land.p.T.ru;}
@@ -68582,6 +69307,8 @@ function hud(){
   if(mb)setSt(mb,"display",(G.mode==="map"&&(G.mapView||(G.mapZoom&&G.mapZoom!==1)))?"":"none");
   if(nb)setSt(nb,"display",(G.mode==="map"&&G.mapMore)?"":"none");
   /* «ЦЕНЫ» — список виденных цен на карте (M341), когда есть что сравнивать */
+  const wp=document.getElementById("wanwin");
+  if(wp)setSt(wp,"display",G.mode==="wanderer"?"":"none");
   const pb=document.getElementById("pricesbtn");
   if(pb)setSt(pb,"display",(G.mode==="map"&&typeof pricesCount==="function"&&pricesCount())?"":"none");
   /* приборная колодка (25c): рисуется каждым кадром, гаснет вместе со строкой */
@@ -68697,6 +69424,7 @@ function hud(){
     $msl.classList.toggle("empty",on&&(G.cargo.missile|0)<=0);
   }
   document.body.classList.toggle("inbelt",G.mode==="belt");
+  document.body.classList.toggle("aboard",G.mode==="wanderer");   /* на борту «Сороки» (M343): приёмник и тяга ни к чему */
   /* состав ряда меняется редко (поставили пушку, вошли в пояс) — пересчитываем
      ширину кнопок только тогда, а не каждый кадр */
   {
@@ -68885,6 +69613,7 @@ function stepWorld(dt){
   else if(G.mode==="homein"&&G.hin)updateHomeIn(dt);   /* дом изнутри (M170) */
   else if(G.mode==="winter"&&G.win)updateWinter(dt);   /* зимовка (M197) */
   else if(G.mode==="spa"&&G.spa)updateSpa(dt);         /* санаторий (M199) */
+  else if(G.mode==="wanderer"&&G.wan)updateWanderRoom(dt);   /* на борту «Сороки» (M343) */
 }
 function drawWorld(){
   /* у сцен без своего неба свет постоянный (M243): SUN_DIR не должен нести
@@ -68904,6 +69633,7 @@ function drawWorld(){
   else if(G.mode==="homein"&&G.hin)drawHomeIn();
   else if(G.mode==="winter"&&G.win)drawWinter();
   else if(G.mode==="spa"&&G.spa)drawSpa();
+  else if(G.mode==="wanderer"&&G.wan)drawWanderRoom();
   /* ореол вокруг яркого — последним по миру и до приборов (M243) */
   if(typeof bloomPass==="function")bloomPass(BLOOM_K[G.mode]||0);
   /* зерно на все сцены, виньетка — где своей нет (M244) */
@@ -68972,7 +69702,7 @@ function frameBody(now){
     if(typeof shiftTalkTick==="function")shiftTalkTick(dt);
     if(typeof instrAgeTick==="function")instrAgeTick(dt);
     if(typeof etherTick==="function")etherTick(dt);
-    beaconTick(dt);crewBtnTick();if(typeof dealBtnTick==="function")dealBtnTick();if(typeof handBtnTick==="function")handBtnTick();if(typeof firstTick==="function")firstTick();hqBtnTick();loreBtnTick();parrotBtnTick();consoleTick(dt);orderTick();if(typeof vegaTick==="function")vegaTick(dt);if(typeof ringTick==="function")ringTick();if(typeof expDayTick==="function")expDayTick();if(typeof expDepartTick==="function")expDepartTick();if(typeof lastRunTick==="function")lastRunTick();if(typeof recordTick==="function")recordTick();if(typeof instTick==="function")instTick();if(typeof skyTick==="function")skyTick();if(typeof traineeTick==="function")traineeTick();if(typeof zooTick==="function")zooTick();wearTick(dt);
+    beaconTick(dt);crewBtnTick();if(typeof dealBtnTick==="function")dealBtnTick();if(typeof handBtnTick==="function")handBtnTick();if(typeof firstTick==="function")firstTick();hqBtnTick();loreBtnTick();parrotBtnTick();consoleTick(dt);orderTick();if(typeof vegaTick==="function")vegaTick(dt);if(typeof ringTick==="function")ringTick();if(typeof expDayTick==="function")expDayTick();if(typeof expDepartTick==="function")expDepartTick();if(typeof lastRunTick==="function")lastRunTick();if(typeof recordTick==="function")recordTick();if(typeof instTick==="function")instTick();if(typeof skyTick==="function")skyTick();if(typeof traineeTick==="function")traineeTick();if(typeof zooTick==="function")zooTick();wearTick(dt);if(typeof wanderTick==="function")wanderTick(dt);
     /* страховка от «зависания на стыковке»: режим dock без единой открытой панели
        означал бы, что игрок смотрит на космос и не может двигаться */
     if(G.mode==="dock"&&!document.querySelector(".scr.open")){
@@ -69362,6 +70092,11 @@ function lookScenes(){
        режим с настоящей проекцией (десятки четырёхугольников с сортировкой по
        глубине) не видел ни случайных рук, ни числа кадра, ни сквозных наборов.
        Постановка взята у пробника кадров (28z-fps-probe), где она уже была. */
+    /* борт «Сороки» (M343): полка эпохи 0, чтобы кадр не плыл с реальными сутками */
+    {id:"сорока",set:()=>{
+      if(typeof openWanderer!=="function")return false;
+      const s0=wanderLoop()[0];if(!jump(getSystem(s0.sx,s0.sy)))return false;
+      G.mode="system";return openWanderer({force:true,epoch:0});}},
     {id:"рейд",set:()=>{
       if(typeof pirateBaseOf!=="function"||typeof enterRaid!=="function")return false;
       if(!jump(find(q=>!!pirateBaseOf(q))))return false;

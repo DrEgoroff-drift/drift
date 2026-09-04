@@ -155,6 +155,8 @@ function fleaBuy(id,pay,sys){
 function fleaLeave(sys){
   sys=sys||G.sys;
   if(!fleaHere(sys))return false;
+  /* табличка «НЕ КУПЛЕНО» («Сорока»): сведения о вас с прилавка никому не продают */
+  if(typeof wanderHas==="function"&&wanderHas("sign")){logAdd("dim","Табличка «НЕ КУПЛЕНО» на трюме: сведения о вас никто не спросил");return false;}
   const left=fleaLots(sys).find(l=>l.kind==="you");
   if(!left)return false;
   if(typeof huntMark==="function")huntMark({sx:left.at.sx,sy:left.at.sy},"лот с блошинца");

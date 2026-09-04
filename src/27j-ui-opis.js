@@ -555,11 +555,36 @@ function opisRender(box){
   const shelf=document.createElement("div");shelf.className="op-shelf";
   shelf.innerHTML="<h4>ИНСТРУМЕНТЫ «СОРОКИ»<s>шесть мест · работают только отсюда</s></h4>";
   const sl=document.createElement("div");sl.className="slots";
-  for(let i=0;i<6;i++){const e=document.createElement("i");e.className="empty";sl.appendChild(e);}
+  const WS=(typeof wanderStore==="function")?wanderStore():{shelf:[],hold:[]};
+  for(let i=0;i<6;i++){
+    const id=WS.shelf[i],cat=id&&typeof WANDER_BY_ID!=="undefined"?WANDER_BY_ID[id]:null;
+    if(!cat){const e=document.createElement("i");e.className="empty";sl.appendChild(e);continue;}
+    const e=document.createElement("div");e.className="op-tool";
+    e.innerHTML="<b>"+cat.ru+"</b><s>"+cat.fx+"</s>";
+    const b=document.createElement("button");b.className="act sm";b.textContent="В ТРЮМ";
+    b.onclick=ev=>{ev.stopPropagation();wanderToHold(id);opisRerender();};
+    e.appendChild(b);sl.appendChild(e);
+  }
   shelf.appendChild(sl);
-  const chalk=document.createElement("s");chalk.className="chalk";
-  chalk.textContent="пока пусто. Говорят, есть борт, где платят спичками — у него и спрашивать";
-  shelf.appendChild(chalk);
+  if(WS.hold.length){
+    const hl=document.createElement("div");hl.className="op-toolhold";
+    hl.innerHTML="<em>В ТРЮМЕ · не работают</em>";
+    for(const id of WS.hold){
+      const cat=WANDER_BY_ID[id];if(!cat)continue;
+      const e=document.createElement("div");e.className="op-tool";
+      e.innerHTML="<b>"+cat.ru+"</b><s>"+cat.fx+"</s>";
+      const b=document.createElement("button");b.className="act sm"+(WS.shelf.length<WANDER_SHELF?" gold":"");b.textContent="НА ПОЛКУ";
+      b.disabled=WS.shelf.length>=WANDER_SHELF;
+      b.onclick=ev=>{ev.stopPropagation();wanderToShelf(id);opisRerender();};
+      e.appendChild(b);hl.appendChild(e);
+    }
+    shelf.appendChild(hl);
+  }
+  if(!WS.shelf.length&&!WS.hold.length){
+    const chalk=document.createElement("s");chalk.className="chalk";
+    chalk.textContent="пока пусто. Говорят, есть борт, где платят спичками — у него и спрашивать";
+    shelf.appendChild(chalk);
+  }
   const bx=document.createElement("div");bx.className="op-box";
   const bcv=document.createElement("canvas");bcv.width=160;bcv.height=96;
   opisDrawBox(bcv.getContext("2d"),160,96);

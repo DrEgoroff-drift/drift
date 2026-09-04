@@ -198,8 +198,10 @@ function updateSystem(dt){
 
   if(sys.station){
     const S=sys.station,ds=Math.hypot(sh.x-S.x,sh.y-S.y);
-    if(ds<300){
-      if(ds<95){
+    /* ключ причала («Сорока», 12v-wander-shop): стыковка с любой точки системы */
+    const keyOn=(typeof wanderHas==="function")&&wanderHas("key")&&ds<2600;
+    if(ds<300||keyOn){
+      if(ds<95||keyOn){
         if(sp>2.6)G.prompt="СБРОСЬТЕ СКОРОСТЬ · "+sp.toFixed(1)+"\nТОРМОЗ — ГАШЕНИЕ";
         else{
           G.prompt="ДЕЙСТВИЕ — СТЫКОВКА · "+S.kind.toUpperCase();

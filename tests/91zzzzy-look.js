@@ -32,7 +32,8 @@ const LOOK_BASE = {
   "санаторий": { tones: 3, mass: 33, contrast: .56, empty: 28 },
   "черпак": { tones: 10, mass: 44, contrast: .62, empty: 22 },
   "база": { tones: 5, mass: 7, contrast: .34, empty: 74 },
-  "дом": { tones: 3, mass: 16, contrast: .44, empty: 46 }
+  "дом": { tones: 3, mass: 16, contrast: .44, empty: 46 },
+  "сорока": { tones: 6, mass: 5, contrast: .26, empty: 63 }
 };
 TEST_SUITES.push(() => suite("картина: ни одна сцена не уехала от эталона кадра", () => {
   /* прибор мерит настоящий кадр, а в телефонном окне кадр другой: там свой
