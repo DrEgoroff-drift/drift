@@ -55,6 +55,12 @@ paint conveyor, callsigns, norms, escort and a rescuer (`12ai-fleet`), pirates a
    included; it is the USSR and gets the USSR's jokes.
 6. **Phone first.** Every scheme is designed for two thumbs and then given to the mouse — not the
    other way round. Frame budget: at most eight armed ships in a system at once.
+7. **At first glance** (author, 2026-09-06: «дизайн должен отличаться явно, чтобы с первого
+   взгляда отличить фракцию»). A hull, a station, a barge, a dome names its maker before any
+   text and before the eye has time to look for a detail: the test is 8 px and half a second.
+   Two checks, both required: `makerRead()` ≥ 90 % over a hundred seeds per class (D24), and
+   the author naming the maker of every row of the six sheets on /dev without reading a
+   label. A grammar that needs a caption is not a grammar; the pass is not closed.
 
 ---
 
@@ -859,10 +865,10 @@ root, written by the lazy close when a month ends (D03).
 
 ### 16.5 Tests that come with it
 
-`91o-combat` (roles, hit location, energy, families' numbers, IFF), `91p-helm` (channels from
-each input, the override rule D07, release rule), `91q-chron` (replay twice = same hash; the
+`91zzzw-combat` (roles, hit location, energy, families' numbers, IFF), `91zzzw-helm` (channels from
+each input, the override rule D07, release rule), `91zzzw-chron` (replay twice = same hash; the
 §15 table's conditions; limiters hold over 2000 steps; a month with no ведомости shows ≥1 event
-per 4 сводки; a bad циркуляр changes nothing; Ялта never changes hands), `91r-war-net` (pull/put
+per 4 сводки; a bad циркуляр changes nothing; Ялта never changes hands), `91zzzw-net` (pull/put
 shapes, caps, saturation by accounts, the fuse), the constitution test, a fuzzer scene «front
 battle», the phone sweep for the new pads, `prof()` with eight armed ships on the phone layout.
 
@@ -981,7 +987,7 @@ One system inside ГЛАВТРАССА's centre (r ≈ 6, fixed by seed, never t
   gated by an episode, the tow-and-restore path for derelict hulls, the gift, the fuse of two
   makers' hulls; the hail about a foreign hull.
 - **M370** chronicle core: state, `step`, replay, cache, hash, clock offset, geometry (D12),
-  integer RNG; agents; `91q-chron` with the Node hash check.
+  integer RNG; agents; `91zzzw-chron` with the Node hash check.
 - **M371** the Director: tension, the §15 table, arcs with default endings, rites announced,
   limiters, «автопилот» season; lines ×6 voices; map chips and the front; news and rumours.
 - **M372** the war seen: battle at jump-in, power occupation (D10, D11), station bodies and
@@ -1145,4 +1151,310 @@ dark ground, body in greys, glazes, wear under highlights; one body, one outline
 
 **Flag, not hull.** You may fly any of them; the transponder stays ГЛАВТРАССА's (D09). The
 picket reads the hull first and the flag second, and says so.
+---
+
+## 20. Наряды — one brief per pass, for a session that starts cold (2026-09-06)
+
+The author: «в плане всё с подробными инструкциями есть? могу в новом диалоге отдавать всё на
+реализацию?». Each brief below is what a fresh session needs and nothing more: **read** (the
+sections and the symbols — grep `docs/INDEX.md` for a symbol, then `Read` with an offset; never
+the whole of §1–§15), **build**, **settled** (do not re-decide), **tests**, **measure**, **done
+when**. Version numbers and the «done» line go into `PLAN.md` when a pass closes, as always.
+Stage C briefs are shorter on purpose: they are refined when stage B closes, by the session
+that closes it.
+
+### Handoff protocol
+
+1. Take the first open pass in §18. Read its brief here, then only what the brief names.
+2. Build. Run the named suites and `test.ps1`; for anything drawn, the codex pass and the
+   almanac line; for anything on the phone, `test.ps1 -Mobile` and the 44 px sweep.
+3. Measure what the brief says (`prof()`, `?g11` via `docs/g11.ps1`, `look()`, `makerRead()`).
+4. `dev.ps1`, look at /dev on a phone, then one commit per pass with `VER` bumped, push, and
+   `docs/live.ps1` to confirm the site took it.
+5. Strike the pass in §18 and in `PLAN.md` with its version; if something was learned that
+   changes a later brief, edit that brief in the same commit.
+6. Never reopen §17; the forks of §10 keep their defaults unless the author says otherwise.
+
+### Stage A — the fight
+
+**M360 · helm and lock**
+- *Read:* §1 whole, §16.1 (helm row), D07, D08, D16, §10 forks. Symbols: `keys`, `KMAP`,
+  `KMAP_BELT`, `mergeKeyMap`, `padsFit`, `applyPadSize`, the `ptr` map, `tap`, `endPtr`
+  (`15-input`); the helm block of `updateSystem` in `17-mode-system` (`sh.av`, `acc`/`lim`,
+  thrust/brake, `maxSp`, the velocity-to-nose drift); the fire block of `updateCombat` and
+  `fireCool` (`13-pirates`); `runAutopilot` (`16-flight`); the `.pads` rows in `src/index.html`
+  and their CSS in `docs/base.html`; `docs/DESIGN-ui.md` (the three rules); `lookScenes`.
+- *Build:* `G.ctl = {head, tx, ty, lock, fire, msl, headIdle}` written by three inputs and read
+  only by the system mode. Heading follows `G.ctl.head` at `st.turn` with no ramp and no coast;
+  `sh.bank` is drawn from the actual turn rate. Thrust vector in screen axes: full along the
+  nose, `.4` through thrusters, the nose drift off while thrusters are used; release under
+  `.55·maxSp` = brake as ТОРМОЗ does, above = coast. Marks: `G.marks` (≤3, ephemeral), tap/click
+  within 40 px screen, Tab nearest aware hostile / cycle, Esc clear, auto-lock on the shooter
+  when nothing is locked. Autofire on today's `st.dmg`/`st.cool` when the primary mark is
+  within a provisional ±20° cone and 760 px (both replaced in M362); the nose tracks the mark
+  only while `headIdle` (stick released, cursor still .5 s, no ← →). Phone: two floating sticks
+  (left half heading, right half thrust; origin under the thumb; dead zone 12 px; fade on
+  release); the system-mode pad row keeps ДЕЙСТВИЕ, ВЗЛЁТ, РАКЕТА and gains ЦЕЛЬ; ◀ ▶ ▲ ТОРМОЗ
+  ОГОНЬ leave it; other modes untouched. Keyboard: mouse scheme (nose to cursor, WASD screen
+  axes, click lock, LMB forced fire, RMB missile, Shift thrusters) and arrows scheme (← → turn,
+  ↑ thrust, ↓ reverse, Q/E strafe, Space forced fire, G missile); last used wins. Autopilot and
+  orbit drop on any heading/thrust input. `placeNote("hurt")` once per engagement.
+- *Settled:* screen axes for the right stick; `.55` threshold; both keyboard schemes live; no
+  inertia anywhere in the helm.
+- *Tests:* new `tests/91zzzw-helm.js` — each input writes the same channels; the override rule;
+  the release rule at frame steps 1, 2, 3 (as `91zzzzy-phys` does); no coast after release of
+  ← →; marks cap and auto-lock; belt/landing/scoop still read `keys`. `91a-flight`, `91f-ui`,
+  `91zzx-mobile` (sticks never overlap the rail or the pads; 44 px), `91zzy-screens`, the fuzzer.
+- *Measure:* `test.ps1 -Mobile`; /dev on a phone; `prof()` unchanged.
+- *Done when:* a pirate is locked by a tap and shot without touching fire; the ship stops on
+  release; an old save loads; the phone sweep is green.
+
+**M361 · ships shoot each other, roles**
+- *Read:* §5, §0 law 6, D09 (the hook only), §16.1 (sky row). Symbols: `spawnPirates`,
+  `updateCombat` (the pirate loop and the shots loop), `killPirate`, `drawCombat`,
+  `PIRATE_RANKS` (`13-pirates`); `drawPirate`, `pirateArtOf` (`12i-pirate-hull`);
+  `bargeMineHit` (`12l-barge`); `battTick` (`21d-battery`); `mslTick` (`16b-missile`);
+  `rogueSpawn`/`huntSpawn`/`rivalSpawn` callers; `fleetEscortActive`.
+- *Build:* split `13-pirates` into `13-combat` (shots with `owner` ∈ player | pirate | fleet |
+  power:k; every pair resolved in one loop; hit location ×1.6 behind / ×.7 ahead by the angle
+  to the target's nose), `13c-roles` (behaviour per rank: шакал dashes, salvos, breaks off,
+  flees under 30 %; ветеран holds 400–600 and circles broadside; капитан never under 700;
+  барон stands, bursts, calls two шакалы at 50 %), the rest stays in `13-pirates`. Hull bar and
+  name over the primary mark and over any aware pirate. A pirate under 25 % with no ally jumps
+  out in 3–4 s: bounty lost, one log line. An `iff` flag on every ship record; the fleet's ships
+  are `iff:true`; lock, autofire and forced fire skip `iff:true`. Cap: eight armed ships.
+- *Settled:* roles as §5; no boarding; the rogue, hunter and rival keep their own exits.
+- *Tests:* new `tests/91zzzw-combat.js` — owner resolution (pirate hits pirate, fleet hits
+  pirate); each role's distance band over 600 frames; the rear multiplier; flee; `iff` skip;
+  the cap. `91e-rogue`, `91r-hunter`, `91z-missile`, `91n-barge` stay green.
+- *Measure:* `prof()` with eight armed ships on the phone layout — the first number of the
+  whole layer; write it in `PLAN.md`.
+- *Done when:* a шакал dashes and flees, a барон calls two, a fleet ship cannot be locked.
+
+**M362 · energy and the seven numbers, three shields**
+- *Read:* §2 (the table), §4 (energy, shields, hit location), D17. Symbols: `stat()` in
+  `08-state` (`armed`, `dmg`, `cool`, `see`, `shieldMax`, `shieldRegen`, the `weapon` mod);
+  `MODS.weapon` (`04-mods`); `PART_KINDS.core`, `AFFIX` (`05-parts`); `fireShot` and the shield
+  regen in `updateCombat`; the «урон · откат» line in `26b-ui-station-work`; `27-ui-ship`.
+- *Build:* the gun as seven numbers in `stat()` from today's inputs (damage+type, rate, range
+  760, shot speed 9, cone 20°, lead rate .2 rad/frame, spread from tier); a barrel angle state
+  per mount that leads the mark inside the cone at the lead rate; honest lead for projectiles;
+  the miss as an angular error added to the shot (visible), not a hidden roll. `G.energy` with
+  capacity and regen from the reactor level (`weapon` mod renamed in text to «реактор»; `core`
+  affixes add); costs: a shot, shield regen, thrusters; empty → rate ½, shield stops, thrusters
+  ½; a bar under hull/shield in the HUD. Shield type on the shield part from its seed —
+  сплошной / лобовой (×2 front, 0 behind) / импульсный (no regen, whole every 20 s) — with a
+  delay after a hit; pirates by rank (§5). Kinetic full/half, energy the reverse, blast even.
+- *Settled:* one bar, nothing to vent; the damage-type matrix; numbers as §2.
+- *Tests:* `91zzzw-combat` — drain and regen, the empty rule, the three shield behaviours,
+  hit location × damage type; `91zj-instr`, `91zn-instr-kit` (`instrKnock` still fires);
+  `91zzzzz-e2e-life` save round trip with the new fields.
+- *Done when:* the card shows seven numbers, the bar moves, a лобовой pirate dies twice as
+  fast from behind.
+
+**M363 · ОСНАСТКА, clearance, groups**
+- *Read:* §3, §11.4, D14, D15, §19.2 (the `b` field). Symbols: `genPart`, `PART_KINDS`,
+  `AFFIX`, the gun candidates on wings/nose, `fittedParts`, `addPart`, `scrapYield`
+  (`05-parts`); `stationParts`, `craftPart` (`03-ships`); the ОСНАСТКА tab
+  (`26b-ui-station-work`); `27-ui-ship`; the опись (`27j-ui-opis`); the exam (`12aj-coop`).
+- *Build:* slot size L/M/H and type жёсткая/турель on each hull point (warship: hardpoints on
+  the nose; others turrets; size by hull mass); the dock screen — the silhouette with points,
+  tap → the list from the hold that fits; barrels drawn over the hull (`03e`) and turning with
+  the lead; card against card with deltas and three totals (урон/с по корпусу, по щиту, на
+  энергию); стрельбище — a target barge at every dock, «проверить» flies out for 60 s and
+  returns; groups 1–3 («всё», «дальнее», «ближнее»; autofire picks the group in range/cone);
+  `G.clearance` I–IV with the §11.4 gates (II: the cooperative's exam + ten kills; III: hours
+  only until episodes exist — M374; IV waits for M374/M380); опечатано in the опись with what
+  it waits for; parts read an optional `b` (absent = ГЛАВТРАССА).
+- *Settled:* sizes and types as §3.1; `PART_GEN` stays 1 (2 comes with M364).
+- *Tests:* `91zzzw-combat` — fit rules, clearance gates, group choice; `91f-ui`,
+  `91x-ui-fixes` (the new screen, 44 px); the fuzzer's tab sweep.
+- *Done when:* a gun moves between two points at the dock, a sealed gun says what it waits for,
+  the range works.
+
+**M364–M366 · twenty families, seven a pass**
+- *Read:* §2.1 (the families of the pass), §2.2, §19.2, D14; almanac §8 joints for the
+  barrels. Symbols: `genPart` (branch `g===2`), `AFFIX`/`AFFIX_BAD`, `affVal` (`05-parts`);
+  `fireShot`; `sfx` (`09-audio`); the barrel overlay of M363.
+- *Build:* `05b-guns` — `GUN_FAMILY` (base seven numbers, size, mount, energy, effect key),
+  `GUN_FACTORY` per maker, `GUN_SERIES` years, names («АП-23 «Оса»»), the именные list (20,
+  fixed effect, a story line); `13a-guns` — per-family fire and effect code: projectile, beam,
+  needles, pierce, arc-jump, splash, tether, shove, mine, jam, heat/burn, homing bullets,
+  flak, ram; `13-combat` — effect state on ships (burn, heat, knock, shield-drop, tether).
+  New affixes range/cone/lead/energy/burn/knock, downsides spread/energy. A timbre per family.
+  **M364:** автопушка, тяжёлое, рельса, дробовик, лазер, тепловик, наводящиеся. **M365:**
+  игольник, сифон, импульсник, буровой, толкатель, миномёт, помеховая. **M366:** гарпун,
+  кассетник, дуговик, плазмомёт, зенитка, таран; the именные; factories and series.
+- *Settled:* the §2.1 lines are the spec; energy so that four rails cannot fire together;
+  parts with `g:1` regenerate unchanged (a fixture of twenty seeds).
+- *Tests:* one behaviour test per family (the rail pierces; the laser's burn threshold; needles
+  pass the shield with p; the arc jumps ≤2; the mine's minute; the jam's awareness; flak hits
+  missiles; ram damage by speed); `91zzzzy-names` reads every family/factory id from code («a
+  perk without code is a lie»); the g:1 fixture.
+- *Measure:* `prof()` with beams on screen.
+- *Done when:* each family changes how you fly — the §2.1 line is true in play.
+
+**M367 · missiles ×5, зенитка in the loop**
+- *Read:* §4 (missiles), §2.1 #17. Symbols: `mslFire`, `mslTick`, `MSL_LIFE` (`16b-missile`);
+  the `missile` kind (`05-parts`); the hold (`12ab-hold`, `27j-ui-hold`).
+- *Build:* ammo type on the launcher (обычная, роевая over `G.marks`, ЭМИ shield→0 + stun 2 s,
+  торпеда slow/dumb/huge, ловушка decoys); pirates from капитан up fire missiles; зенитка
+  auto-targets missiles and plasma.
+- *Tests:* `91z-missile` extended. *Done when:* a captain's missile is decoyed and a torpedo
+  shot down.
+
+**M368 · pirate loadouts by rank**
+- *Read:* §5 (the table). Symbols: `spawnPirates`, `PIRATE_RANKS`, `13c-roles`,
+  `12i-pirate-hull` (mount points, barrels).
+- *Build:* loadouts and shield types per rank from `05b-guns`; the captain's помеховая on the
+  player's lock; the baron's mines astern; a `deserter` flag prepared (art in M369a).
+- *Tests:* `91zzzw-combat` loadouts. *Done when:* the rank reads by barrels before the first shot.
+
+### Stage B — the powers, by seed
+
+**M369 · the maker grammar on hulls, «Ялта» as a place**
+- *Read:* §7.1–7.3, §16.6, §19.1, §19.4, D12, D22, D24; `docs/DESIGN-craft.md` §1, §13;
+  `docs/ALMANAC.md` (how an issue is written). Symbols: `HULL_CLASS`, `hullClassOf`
+  (`03-ships`); `hullOf` — the profile build and `FORM_BY_CLASS` (`03a-hull-gen`);
+  `03b-hull-paint`, `03d-hull-marks`, `drawHull` (`03e`); `fleetGlyph` (`12ai-fleet`, the
+  emblem construction); the engine flare in `17-mode-system` and the trail in `16-flight`;
+  `sfx` engine hum; `lookScenes`/`look()` (`28y-look`); `docs/shot.py`.
+- *Build:* `03a-hull-maker` — `HULL_MAKER` with the eight dimensions of §19.4; `by` on ship
+  records (`SHIPS` = 0 ГЛАВТРАССА; `G.uniqueShips`, `NPC_SHIPS` carry it; the hull cache key
+  includes it); profile law, scheme filter and protrusions in `hullOf`; joints, surface, marks,
+  lights in paint/marks/draw; engine signature and bank/sound. `12al-powers` — the table of §7.1
+  (ru, from, wants, doctrine families, emblem, hail line, wave voice params). IFF full: an
+  allegiance flag on every ship, the player's = ГЛАВТРАССА. «Ялта»: its coordinates by seed at
+  r ≈ 6 in `01-core`/`06-galaxy`, flags no-pirates / sealed weapons / never a front (its
+  content comes in M372). `makerRead()` in `28y-look` and a stand `docs/shot.py maker` for six
+  hundred-hull sheets.
+- *Settled:* the §19.4 rows; the §7.1 names; six makers, no seventh; the yacht is a class.
+- *Tests:* `91j-art` — `makerRead()` ≥ 90 % over a hundred seeds per class; `91l-fleet` green;
+  a hull's geometry is identical for the same seed and maker across two calls.
+- *Measure:* the six sheets and `look()` on a mixed-maker system frame go to the almanac as
+  a new issue before the pass closes.
+- *Done when:* at 8 px a stranger's hull says its maker at first glance and its class a
+  moment later (§0 law 7): `makerRead()` ≥ 90 %, and the author names every row of the six
+  sheets on /dev without a label. The almanac records both.
+
+**M369a · the grammar in the other generators**
+- *Read:* §19.4 («the same eight on the other generators»), holding §13. Symbols: `fleetArtOf`
+  and its `joints` (`12ai-fleet`); `drawBarge` and the barge build (`12l-barge`, `12af-barge`);
+  `pirateArtOf`, `drawPirate` (`12i`); `drawStationBody` (`17c-system-draw`) and the family
+  forms (`17e-station-body`); the planet dome/strip draw; `BOOKS` (`12ub-books`); the wall
+  (`11ah-wall`); the station header (`26-ui-station`); the cantina (`27d-ui-cantina`); suits
+  (`12x-suit`).
+- *Build:* dimensions 3–8 in the fleet; profile law/protrusions/surface/lights on barges;
+  stripped marks and wear ×2 on pirate hulls (`deserter`); the assembly law per maker on
+  station bodies; domes; six books and six posters; one accent and one header line per maker
+  on station screens; one cantina line; suit kits by maker.
+- *Tests:* `91l-fleet`, `91n-barge`, `91x-hold-*`, `91zzzn-books`, `91j-art` for the station
+  bodies. *Done when:* a Рассвет barge reads as three welded barges and a Хай-Фронт station as
+  a spine with masts.
+
+**M369b · the having of things**
+- *Read:* §19.3, D14, D09. Symbols: `stationParts`, `stationUniqueOffer`, `fuseShips`
+  (`03-ships`); the workshop tab (`26b`); the derelict (`12ai-fleet`); `fleetHailFirst`.
+- *Build:* workshops sell by the station's power; hulls at a maker's shipyard behind an episode
+  (a stub `hasEpisode(maker)` = false until M374, so hulls are had only by tow and in «Ялта»
+  at ×2); tow-and-restore: a derelict towed to a dock → «восстановление» at a price →
+  `G.uniqueShips` with `by`; the fuse mixes both makers' biases; the hail line about a foreign
+  hull; the gift hook (fires from M374).
+- *Tests:* `91zzzw-combat` (restore path), `91l-fleet`. *Done when:* a towed Орднунг wreck is
+  your ship at a dock and the picket comments.
+
+**M370 · the chronicle core**
+- *Read:* §7.4–7.5, §16.2–16.4, D01–D06, D12. Symbols: `hashi`, `rng` (`01-core`);
+  `snapshot`/`applySave` (`14-save` — the chronicle is never in the save); the ВЛАДЕНИЯ strip
+  (`18b-map-hold`); `test-node.js` and `NODE_BROWSER` (`90-harness`).
+- *Build:* `12am-chron` — `CHRON`, `step(N)` with parts 4–6 (agents, fronts, limiters; the
+  Director stubbed), replay from 0, the cache after the last closed сводка, a hash (FNV over the
+  serialised integer state), the clock offset (local until M376), geometry D12 with «Ялта»,
+  `drift_war_v1`, lines emitted in ГЛАВТРАССА's voice only; `12am-chron-agents` — needs,
+  relations, strength, the moves; owner chips on the map.
+- *Settled:* integers in permille; the saturation table; no transcendental `Math.*` in the
+  module (a test greps the source).
+- *Tests:* new `tests/91zzzw-chron.js` — replay twice = same hash; a Node-vs-browser fixture
+  hash; limiters hold over 2000 steps; «Ялта» never changes hands; the source has no
+  `Math.exp/sin/cos/pow`. *Done when:* the map shows six owners and the fronts move by the
+  hour, identically in two tabs.
+
+**M371 · the Director, six voices**
+- *Read:* §15 (table, limiters, season), §7.3 (voices), §14 (announce only). Symbols:
+  `12p-news`, `11t-rumours`, the receiver and `speechSynthesis` settings (`12pa-beacon`),
+  `drawFleetMap`.
+- *Build:* `12am-chron-director` — tension, the roll table, incidents, arcs with default
+  endings, rites announced, limiters, the season object with «автопилот»; `12am-chron-lines` —
+  templates ×6 voices; six waves in the receiver (a selector; voice as rate/pitch); news and
+  rumours read lines; the front as a dotted line on the map.
+- *Tests:* `91zzzw-chron` — a month without ведомости shows ≥1 event per 4 сводки; peaks ≤3
+  days; arcs end ≤20; a bad season is ignored; `91s-news`, `91zzh-receiver`. *Done when:*
+  turning the wave gives six versions of one сводка.
+
+**M372 · the war seen**
+- *Read:* §7.4 (the four states), §16.6 (content), D10, D11, §19.3 (tow). Symbols:
+  `13b-occupy` (`occLvl`, `occKill`), `drawStationBody`, the planet draw, `12l-barge` lanes,
+  `fleetInteract` (embassies), the hold's output (`12ab-hold`, `12ag-holdfx`).
+- *Build:* `13d-npc` — pickets, wings and battles at jump-in from chronicle facts (≤8, both
+  sides fire using M361); the power branch of occupation (flag, prices, staff lines, picket;
+  the player's buildings keep working with 30 % requisitioned); station bodies grow and domes
+  appear from build lines; «Ялта» at its maximum — six embassies, six workshops, six waves at
+  once, barges of six, the fair; wrecks after battles → the tow path.
+- *Tests:* `91zzzw-combat` (a jump-in battle ends by itself; ≤8), `91x-hold*` (requisition),
+  the «Ялта» flags. *Measure:* `prof()` with eight ships and a full station body. *Done when:*
+  you jump into a front and watch a fight you were not part of; «Ялта» flies six flags.
+
+**M373 · the four rules and the hail** — *Read* §6.1, D09. *Build* `12ar-hail`: the hail with
+three answers, generalised from `fleetHailFirst`; a maker stamp on munitions in the hold;
+blockade from chronicle facts; the warning on silence. *Tests* in `91zzzw-combat`. *Done when:*
+silence twice gets a warning and a stamped cassette through a picket draws fire.
+
+**M374 · episodes and the notebook** — *Read* §6.2–6.3, D15, D17. Symbols: `heardYours`,
+`parrotHas` (`12x-parrot`), the трасса lanes (`18b-map-hold`), the desk pages (`27e-ui-home`).
+*Build* `12ap-notebook`: episode kinds and weights bound to named people; the travel along the
+lanes on the rumour clock; witnesses (a surviving hull in see range, or the parrot);
+resolution = the heaviest episode that reached this place; the notebook page (12, asks once per
+сводка); «не простил»; clearance III/IV gates real; the hull-purchase gate real; the gift.
+*Tests* new `tests/91zzzw-notebook.js`. *Done when:* a picket you never met greets you by a deed.
+
+**M375 · the rescuer** — *Read* §6.4. *Build:* signals after front battles for six makers
+(`fleetInteract` «идти на сигнал» generalised); tow / refuel / crew off a derelict earn
+episodes with both sides. *Done when:* two towed hulls after one battle give two episodes from
+two powers.
+
+### Stage C — everyone (refine these briefs when stage B closes)
+
+**M376 · `war.php` and ведомости** — *Read* §13, §16.3–16.4, D01–D06; `docs/DEPLOY.md`;
+`site/api.php` (the token, the atomic write, the postcard ops as the pattern). *Build* the
+server: the file layout of §13, `pull`/`put`, monthly bundles in the web root, caps per account
+per kind per сводка, saturation by accounts (the table), the fuse at close, the hash log, the
+digest CLI; the client `14b-war-net`: pull at load and at jump-in, ведомости applied in step 1,
+`put` for deeds (defence kill, delivery into a need, tow, escort), the offset from the `Date`
+header, `drift_war_v1`. *Tests* new `tests/91zzzw-net.js` with a mocked fetch (shapes, caps,
+saturation); on the server `php -l` and a curl round trip over ssh. Deploy with
+`deploy.ps1 -SiteOnly`, confirm with `docs/live.ps1`. *Done when:* two browsers on /dev see the
+same front move after one of them fought.
+
+**M377 · leftovers and ghosts** — §11.3, D14, D19; ops `left`/`take`; the container draw of
+`killPirate` reused; благодарность in the трудовая книжка; ghosts from the postcard snapshot
+(`25g-postcard`) drawn in `17c`; the entry in `docs/DESIGN-online-risks.md`.
+
+**M378 · votes, elections, сигнал сбора** — §12 (elections), §11.2 (the signal); op `vote`;
+the Director reads votes at close; «СБОР» as a map mark (`18a-map-addr`); all six waves read it.
+
+**M379 · the nine rites** — §14; counter kinds; effects in `step`; six colourings in lines;
+the regatta from «Ялта».
+
+**M380 · «Ревизия»** — §11.1–11.2, D13; op `boss`; the dreadnought (a fleet class in ГЛАВТРАССА's
+grammar with wear ×3 and no marks); the rolling 60 s window; the deadline; «закреплено»; loot
+for participants; the clearance IV shortcut.
+
+**M381 · циркуляры and the constitution** — §12, D18; the shared validator
+(`12am-chron-circ`); `docs/WAR-CONSTITUTION.md` and its test; the digest → the season; the
+regulator's monthly session as a documented procedure (`tools/war-season.ps1`: digest over
+ssh, a circ file back); the server fuse.
+
+**M382–M388 · the Director's mechanics** — §15.1, one family a pass in this order: economy,
+society, nature, power, diplomacy, security, culture. Each: chronicle kinds, the visible effect
+in the sky or at the station, lines ×6, tests in `91zzzw-chron`.
 

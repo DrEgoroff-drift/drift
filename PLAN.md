@@ -661,6 +661,13 @@ critique pass's decisions §17 (D01–D24), the staged queue §18, everything ha
 dimensions in §19.4)**.
 Read §16–§19 first; the rest is the record of the author's brief of 2026-09-06 and the reasoning.
 
+**Handoff (author, 2026-09-06: «могу в новом диалоге отдавать всё на реализацию?» — yes):** a
+fresh session takes the first open pass below, reads its brief in `DESIGN-war.md` §20 and only
+the sections and symbols the brief names (grep `docs/INDEX.md`, then `Read` with an offset),
+builds, runs the named suites and `test.ps1`, measures what the brief says, publishes to /dev,
+commits one version, strikes the pass here and in §18, and edits a later brief if it learned
+something. §17 is not reopened; §10 forks keep their defaults unless the author says otherwise.
+
 Three stages, each playable on /dev before the next starts:
 
 - **A — the fight** (client only): M360 helm and lock · M361 ships shoot each other and rank
@@ -675,7 +682,7 @@ Three stages, each playable on /dev before the next starts:
   the constitution · M382–M388 the Director's mechanics, one family a pass.
 
 Measured from M360 on: `prof()` with eight armed ships on the phone layout; the pad row on the
-44 px sweep (`91zzy-screens`); `91q-chron` replay hashes browser vs Node.
+44 px sweep (`91zzy-screens`); `91zzzw-chron` replay hashes browser vs Node.
 
 ## Small tails from almanac issue II
 
