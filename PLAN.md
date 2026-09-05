@@ -161,45 +161,12 @@ cosmetics exist; the desk gets one table «ОПИСЬ»; a locker exists at stat
   button (ВСЕ/ВЛАДЕНИЯ/ЦЕНЫ/СЛУХИ) in the map strip; pirates no longer hold or take sectors under the трасса.
   Body in `docs/PLAN-archive.md`.
 
-- **M349 — «Маяк ГЛАВТРАССЫ»** (author 2026-09-04): the official voice in the ether, one bulletin per
-  shift (`HOLD_SHIFT`, 20 real minutes) plus holidays (`11am`). Poster tone: a Mayakovsky «лесенка»
-  headline, then a dry summary — see the sample in the chat of 2026-09-04 (МАЯК ГЛАВТРАССЫ. СМЕНА 412.
-  Сектор 4:−7, станция «Ласковый-2»: принято / тысяча тонн / титана. План смены — сто двенадцать
-  процентов. Слава сдавшим!). Rules: (1) every line has a real state delta behind it, stored as a
-  `cause` like `G.scripLog` — tonnage from the holding's appetite and what drones/the player handed
-  in, «очищен» from `13b`, scrip moves from the rate log, holidays from the calendar; a line without a
-  delta is forbidden (the `12p` rule). (2) Exact but lying by omission: a lost sector is «переведён на
-  особый режим», «Сорока» is never mentioned, a ruined артель never named — cantina rumours tell what
-  the beacon will not, so the two channels never duplicate. (3) The player appears: over-norm delivery
-  in a shift names the hull («экипаж борта «Стриж» перевыполнил план по титану»); player-given names
-  (`11u`) are used («сектор «Тихая»»). (4) Holidays have an effect: double fleet norm that day, and the
-  beacon announces it. (5) Heard in ЭФИР on the desk, by the receiver voice in flight and on the road
-  (`27k`), and as a paper sheet on the cantina wall; every address in it is tappable (M347). Module
-  `12pa-beacon.js` after `12p`; table of phrase moulds is hand-written, not generated. Tests: no line
-  without a cause; the beacon never names `wander*`; holiday doubles the norm exactly one day.
-  **M349a — the beacon speaks** (author 2026-09-04: «если ты мне ещё и голосом — ваще кайф»). Browser
-  `speechSynthesis`, `lang:"ru-RU"`, no asset — the zero-assets rule holds. Voice only in flight and on
-  the road (`27k`), never on the desk or in the cantina; framed by the receiver's own crackle before
-  and a short tone after (`09-audio`) — the synth output cannot be routed through WebAudio, so the
-  «radio» is framing and pace (slow, pauses on the лесенка line breaks), not a filter. Three roles pick
-  distinct voices when the device offers several (beacon: male, even; «Сорока»'s keeper: quiet;
-  station dispatcher: female), else one voice for all. Setting «голос приёмника» in options, default
-  on; the first bulletin says where to turn it off. Queue one utterance at a time, cancel on mode
-  change. Tests: text reaches the queue (mock `speechSynthesis.speak`), and with no voices the game
-  stays silent without an error; nothing is spoken while `G.mode` is a desk/station screen.
-  **Heard by the author (2026-09-04, the scratchpad proba `mayak-demo.html`): «как рипово, давай только
-  тихо, пусть болтает».** So: the voice is a background murmur, not an announcement — `volume≈.35`,
-  `rate 1.0` (the demo's .88 was already «slow» to the author), `pitch≈.9`, crackle framing quieter still; it talks on its own whenever a bulletin is
-  due in flight, never interrupts game sound, never demands attention; ducked (not cut) under the
-  frame guard's «СБОЙ» and combat. The demo's structure is the reference: crackle 1.4 s → lines one
-  utterance each → longer pause on лесенка steps → two-tone sign-off → crackle tail.
-  **Voices are the system's, not the game's** (author 2026-09-04): settings list the device's
-  voices, one picker per role (beacon, keeper, dispatcher) plus rate and volume; a device with one
-  Russian voice shows a list of one. Players add voices by installing them in the OS (Windows
-  Павел/Ирина/Дмитрий and the Edge neural voices, Android TTS engines, iOS) — the game sees them by
-  itself, so «voice plugins» need no code. No voice files inside the game (zero-assets rule); a
-  branded voice, if ever, would be pre-rendered files on the site — a separate decision, not now.
-  Persist the choice by voice *name* with a fallback to the first `ru` voice when it is gone.
+- **M349 + M349a** (0.348.0) — done: «Маяк ГЛАВТРАССЫ» (`12pa-beacon`) — one bulletin per shift built only
+  from causes (appetite tonnage, the player's over-norm sales, freed and «особый режим» sectors, scrip moves,
+  holidays with a double fleet norm), poster head + dry lines, in ЭФИР, on the cantina wall and by the
+  receiver's voice: browser `speechSynthesis`, ru-RU, quiet (.35), system voices per role chosen by name,
+  crackle before and a two-tone after, ducked under combat, silent on desks and stations, settings in ЗВУК.
+  Body in `docs/PLAN-archive.md`.
 
 - **M350** (0.338.0) — done: the drone-miner (bottomless point, 9 000 cr by payback, one per yard/indust
   station per two days, ВЕРНУТЬ, sells within two sectors, guest drawn in the market system). The

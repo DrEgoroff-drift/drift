@@ -133,6 +133,7 @@ function occKill(sx,sy){
     return;
   }
   G.freed=(G.freed|0)+1;
+  if(typeof mayakFreed==="function")mayakFreed(sx,sy,sys);   /* маяк назовёт сектор очищенным (M349) */
   /* курс бон дома-хозяина (12u): это настоящее происшествие, и устроил его игрок */
   if(typeof scripOnFreed==="function")scripOnFreed(sx,sy);
   /* тех, кто снял блокаду, на станции помнят долго */

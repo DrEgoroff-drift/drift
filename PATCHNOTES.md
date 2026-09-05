@@ -7,6 +7,24 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.348.0 - M349: «Маяк ГЛАВТРАССЫ» — the official voice in the ether, and it speaks
+
+Once a shift (twenty real minutes) the beacon reads its bulletin: «МАЯК ГЛАВТРАССЫ. СМЕНА 412.» and then
+the poster's лесенка — «Сектор 4:-7, станция «Ласковый-2»: принято / сто тонн / титана. План смены — сто
+двенадцать процентов. Слава сдавшим!» Every line has a real change of the world behind it and carries
+it as a cause: the tonnage the stations took into their appetite (from drones and from you), your own
+sales when they beat the norm — «экипаж борта «Стриж» перевыполнил план по титану», sectors you cleared,
+sectors the pirates took — «переведён на особый режим», never «lost» — the scrip rates that moved, and the
+holiday, which doubles the fleet's fuel norm for the day. No changes — no bulletin. «Сорока» is never
+mentioned; what the beacon will not say, the cantina tells. It is heard in ЭФИР on the desk, as a sheet
+on the cantina wall (its addresses tappable), and — by the author's wish, «если ты мне ещё и голосом» —
+aloud: the browser's own speech synthesis, Russian, no sound file in the game. Quiet, as he asked after
+the proba («давай только тихо, пусть болтает»): volume 35 %, unhurried, a crackle of the receiver before
+and a short two-tone after, half-voice under combat, never on the desk or at a station. The voices are
+the system's: the settings list what your device has, one picker per role — the beacon, «Сорока»'s
+keeper, the station dispatcher — and a ПРОБА button; install a voice in the OS and the game sees it.
+The first bulletin says where to turn it off.
+
 ## 0.347.0 - M348: holdings on the map — houses as patches, the трасса as a line, pirates as foci
 
 Who owns what, in three languages, because they are three different things. Houses wash their station's

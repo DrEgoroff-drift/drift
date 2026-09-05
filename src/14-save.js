@@ -76,6 +76,7 @@ function snapshot(){
     wrecks:G.wrecks,bargePax:G.bargePax,fleetLog:G.fleetLog||{},fleetEscort:G.fleetEscort||0,caravan:G.caravan||null,
     wander:G.wander||{got:[],gave:[],chit:0,shelf:[],hold:[]},cosm:G.cosm||null,locker:G.locker||null,boxes:G.boxes||[],
     mapMarks:G.mapMarks||[],rumours:G.rumours||[],
+    beacon:G.beacon||null,shiftLog:G.shiftLog||null,freedLog:G.freedLog||[],
     loreFound:G.loreFound,loreMarks:G.loreMarks,settle:G.settle,tin:G.tin,
     scrip:G.scrip,scripRate:G.scripRate,scripLog:G.scripLog,
     doom:G.doom,doomDead:G.doomDead,parrot:G.parrot,heard:G.heard,grok:G.grok,flea:G.flea,matches:G.matches|0,smena:G.smena||[],
@@ -452,6 +453,10 @@ function applySave(s){
   /* карта адресами (M347): спички на клетках и области слухов */
   G.mapMarks=Array.isArray(s.mapMarks)?s.mapMarks.filter(m=>m&&typeof m.sx==="number"&&typeof m.sy==="number").slice(0,10):[];
   G.rumours=Array.isArray(s.rumours)?s.rumours.filter(r=>r&&typeof r.sx==="number").slice(-12):[];
+  /* маяк (M349): сводки, сдача за смену, очищенные сектора */
+  G.beacon=(s.beacon&&typeof s.beacon==="object"&&Array.isArray(s.beacon.log))?{shift:(typeof s.beacon.shift==="number")?s.beacon.shift:null,log:s.beacon.log.slice(-6),saidOff:s.beacon.saidOff?1:0}:null;
+  G.shiftLog=(s.shiftLog&&typeof s.shiftLog==="object"&&s.shiftLog.sold)?s.shiftLog:null;
+  G.freedLog=Array.isArray(s.freedLog)?s.freedLog.slice(-12):[];
   /* ящик конторы (12ak, M345): части упакованы, кучи числом, час последнего визита */
   {const l=(s.locker&&typeof s.locker==="object")?s.locker:null;
    G.locker=l?{items:Array.isArray(l.items)?l.items.filter(it=>it&&(it.p||it.tool)):[],

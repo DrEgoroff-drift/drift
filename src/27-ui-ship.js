@@ -121,6 +121,37 @@ function renderOpts(){
   volRow("Эффекты","выстрелы, бур, шаги, интерфейс","sfx",()=>sfx("ui",{f:900}));
   volRow("Двигатель","гул тяги — звучит только когда двигатель работает","engine",()=>{
     engineLoop(1,.5);setTimeout(stopEngine,700);});
+  /* ── голос приёмника (M349a): системные голоса, по имени; только в полёте и в дороге ── */
+  if(typeof voiceOpts==="function"){
+    const VO=voiceOpts(),VL=voiceList();
+    mk("Голос приёмника","маяк ГЛАВТРАССЫ и прочие читаются вслух — тихо, в полёте и в дороге; голоса — те, что стоят в системе",
+      !!VO.on,()=>{VO.on=!VO.on;if(!VO.on)voiceCancel();});
+    if(VO.on){
+      const rv=el("div","row");
+      rv.appendChild(el("div","nm","<b>Громкость голоса</b><s>фон, не объявление: по умолчанию 35 %</s>"));
+      const val=el("div","qt",Math.round(VO.vol*100)+"%");
+      const sl=document.createElement("input");sl.type="range";sl.min=0;sl.max=100;sl.step=5;sl.value=Math.round(VO.vol*100);sl.className="vol";
+      sl.oninput=()=>{VO.vol=(+sl.value)/100;val.textContent=sl.value+"%";};
+      rv.appendChild(sl);rv.appendChild(val);$optBody.appendChild(rv);
+      const RT=[[.85,"НЕ СПЕША"],[1,"ОБЫЧНЫЙ"],[1.15,"ЖИВЕЕ"]];
+      const rr=el("div","row");rr.appendChild(el("div","nm","<b>Темп</b><s>пробу читал .88 — автору было «медленно»</s>"));
+      const ir=Math.max(0,RT.findIndex(x=>Math.abs(x[0]-VO.rate)<.01));
+      const br=el("button","act gold",RT[ir][1]);br.onclick=()=>{VO.rate=RT[(ir+1)%RT.length][0];renderOpts();};
+      rr.appendChild(br);$optBody.appendChild(rr);
+      const roles=[["beacon","Маяк ГЛАВТРАССЫ","ровный, мужской, если есть"],["keeper","Хранитель «Сороки»","тихий"],["disp","Диспетчер станции","женский, если есть"]];
+      for(const [id,ru,note] of roles){
+        const r2=el("div","row");
+        const cur=voicePick(id);
+        r2.appendChild(el("div","nm","<b>"+ru+"</b><s>"+note+(VL.length?" · голосов в системе: "+VL.length:" · русских голосов в системе нет — поставьте в ОС, игра увидит сама")+"</s>"));
+        const b2=el("button","act",cur?cur.name:"НЕТ ГОЛОСА");b2.disabled=VL.length<2;
+        b2.onclick=()=>{const i=VL.findIndex(v=>cur&&v.name===cur.name);VO[id]=VL[(i+1)%VL.length].name;renderOpts();};
+        r2.appendChild(b2);
+        const bt=el("button","act sm","ПРОБА");bt.disabled=!VL.length;
+        bt.onclick=()=>{voiceCancel();voiceSay(id==="beacon"?"Маяк ГЛАВТРАССЫ. Смена. Принято / сто тонн / титана.":(id==="keeper"?"Спички считаем целыми.":"Диспетчер. Причал свободен."),id);};
+        r2.appendChild(bt);$optBody.appendChild(r2);
+      }
+    }
+  }
   $optBody.appendChild(el("div","sec","ГРАФИКА"));
   const GLV=[[.6,"НИЗКАЯ"],[1,"СРЕДНЯЯ"],[1.5,"ВЫСОКАЯ"],[2,"МАКСИМУМ"]];
   const gfxRow=(title,note,key)=>{

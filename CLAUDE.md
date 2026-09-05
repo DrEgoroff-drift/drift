@@ -99,6 +99,7 @@ One phrase per module; the module's own header says the rest. Grep `docs/INDEX.m
 | `08-state` `14-save` `14a-cloud` | the `G` object, `snapshot()`/`applySave()`, account and push/pull (risks: `docs/DESIGN-online-risks.md`) |
 | `09-audio` `10-music` `09a-roomtone` | sound synthesis, generative music, room tone |
 | `11-log` `12-economy` `13-pirates` | journal, live market and drones, pirates |
+| `12p-news` `12pa-beacon` | the retelling and news deltas; «Маяк ГЛАВТРАССЫ» — one bulletin per shift from causes, and the receiver's voice (`speechSynthesis`, settings in ЗВУК) |
 | `11c-stories` `12k-stories-*` | the hundred stories: traces by channel, lazy turns, anchoring; data in `12k-*` |
 | `11g`–`11v` | the thirteenth pass, one module per region (lights, hours, glow, grove, keepers, county, charts, quiet, slow, pass, grown, plan, returners); rules in `docs/PASSPORTS.md` |
 | `11ah-wall` `11ah-offer` `11ai-ledger` `11ak-skywatch` `11am-holiday` `11an-qsl` `11ao-firsthour` | the stone that remembers; the offer; the kindness ledger; the sky watch; real-calendar holidays; QSL cards; the first hour's four ether lines |

@@ -178,6 +178,26 @@ const SFX={
     n.start(t);n.stop(t+.05);freeVoice(n);
   },
   /* интерфейс: чистые тоны, короткие, без хвоста */
+  /* ── рамка голоса приёмника (M349a): треск эфира до и короткий двутон после ── */
+  crackle(o){
+    const c=SND.ctx,t=c.currentTime,v=(o&&o.v||.12);
+    const n=noise(c),g=c.createGain(),bp=c.createBiquadFilter();
+    bp.type="bandpass";bp.frequency.value=1700;bp.Q.value=.7;
+    n.connect(bp);bp.connect(g);g.connect(SND.sfx);
+    env(g,t,.03,1.3,v);
+    n.start(t);n.stop(t+1.45);freeVoice(n);
+  },
+  signoff(o){
+    const c=SND.ctx,t=c.currentTime,v=(o&&o.v||.1);
+    for(const [k,dt] of [[1,0],[.8,.12]]){
+      const osc=c.createOscillator(),g=c.createGain();
+      osc.type="sine";osc.frequency.setValueAtTime(720*k,t+dt);
+      env(g,t+dt,.006,.14,v*1.6);
+      osc.connect(g);g.connect(SND.sfx);
+      osc.start(t+dt);osc.stop(t+dt+.2);
+      if(dt)freeVoice(osc);
+    }
+  },
   /* ── сигналы стыковки с «Сороки» (M344): две ноты вниз и колокол ── */
   chime(o){
     const c=SND.ctx,t=c.currentTime,v=(o&&o.v||.3);

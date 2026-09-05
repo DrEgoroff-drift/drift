@@ -515,6 +515,9 @@ function drawFleet(zx,zy,Z){
 }
 /* ── позывной и заправка по норме (§18.7 п.1, п.3) ── */
 function fleetLogKey(){return G.sx+","+G.sy;}
+/* праздник по календарю (11am): норма флота двойная в этот день (M349) */
+function fleetNormTwice(){return !!(typeof holNow==="function"&&holNow());}
+function fleetNormKey(){return Math.floor(Date.now()/((typeof HOLD_SHIFT==="number")?HOLD_SHIFT:1800000))+(fleetNormTwice()?"h":"");}
 /* ── Кольцо (рунг 30): окликают первыми (§18.8, M315) ──
    До сих пор эфир отвечал только на ваш позывной. На последней ступени лестницы
    флот узнаёт борт сам: первый корабль линии, подошедший на семьсот, называет вас
@@ -562,7 +565,9 @@ function fleetInteract(sh){
   const st=stat(), low=G.fuel<st.fuelMax*.6;
   const shift=Math.floor(Date.now()/((typeof HOLD_SHIFT==="number")?HOLD_SHIFT:1800000));
   G.fleetLog=G.fleetLog||{};
-  const gave=(G.fleetLog[fleetLogKey()]||0)>=shift-(FLEET_NORM_SHIFTS-1);
+  /* норма — одна на смену; в праздник (11am, маяк объявляет) — две (M349) */
+  const fe=G.fleetLog[fleetLogKey()],feS=(fe&&typeof fe==="object")?fe.s:(fe|0),feN=(fe&&typeof fe==="object")?fe.n|0:(fe?1:0);
+  const gave=feS>=shift-(FLEET_NORM_SHIFTS-1)&&feN>=(fleetNormTwice()?2:1);
   const canFuel=near.k==="tanker"&&low&&!gave;
   /* буксир: корпус, который не дотянет, тянут на верфь — подлатан до 40 %, чтобы дошёл (§18.7 п.4) */
   const hurt=G.hull<st.hullMax*.3;
@@ -622,7 +627,7 @@ function fleetInteract(sh){
     }else if(near.k==="patrol"&&rep<=-2){
       etherLine("«"+near.name+"»: …сторожевик. Ваш борт в списках. Досмотр: трюм открыть. Чисто. На этот раз.","сторожевик");
     }else if(canFuel){
-      G.fuel=st.fuelMax;G.fleetLog[fleetLogKey()]=shift;
+      G.fuel=st.fuelMax;G.fleetLog[fleetLogKey()]=(feS===shift)?{s:shift,n:feN+1}:{s:shift,n:1};
       etherLine("«"+near.name+"»: …по норме, до полного. Расписок не пишем — трасса помнит сама.","танкер");
       if(typeof recordAdd==="function")recordAdd("ГЛАВТРАССА","заправка по норме · «"+near.name+"» · "+near.num);
       if(typeof sfx==="function")sfx("ui",{f:520,to:880,d:.3,v:.12});
