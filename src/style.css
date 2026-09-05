@@ -1052,9 +1052,14 @@ body.road .scr footer .act.gold{background:linear-gradient(180deg,rgba(242,178,9
      подсказка кончается на 128 px от правого края, там ему и место. */
   #launchbtn{right:auto;left:14px;bottom:calc(env(safe-area-inset-bottom) + var(--padsh,86px) + 164px);
     width:96px;height:46px}
-  /* подсказка не заходит под правый борт: та же зона, что у строки состояния */
+  /* Подсказка не заходит под правый борт: та же зона, что у строки состояния.
+     Ширину борта СЧИТАЕТ кадр (--railw, hud() в 27z), потому что борт разной
+     ширины в разных режимах: на карте у него свой ряд (СЛОИ, поле адреса) и он
+     на 129 px, а не на 128 — и жёсткое «right:128px» заводило подсказку под
+     него ровно на пиксель (найдено телефонным набором 05.09.2026). 128 остаётся
+     запасным значением на первый кадр, до первой мерки. */
   #prompt{bottom:calc(env(safe-area-inset-bottom) + var(--padsh,86px) + 118px);white-space:nowrap;overflow:hidden;
-    left:10px;right:128px;transform:none;
+    left:10px;right:calc(var(--railw,128px) + 4px);transform:none;
     text-overflow:ellipsis;max-width:none;line-height:1.4}
 }
 /* ── кнопка не исчезает — кнопка гаснет (M181, прямое указание автора) ──
@@ -1383,7 +1388,12 @@ body.op-ask #opisBar>s{display:none}
 .wanwin .acts{display:flex;gap:6px;flex-wrap:wrap}
 .wanwin .acts .act{flex:1 1 auto}
 @media (max-width:760px){
-  .wanwin{width:calc(100vw - 16px);bottom:calc(env(safe-area-inset-bottom) + var(--padsh,86px) + 8px);padding:8px 10px 10px}
+  /* На телефоне окно «Сороки» шло во всю ширину — а оно поверх правого борта
+     (z-index 6 против 5), и накрывало КАРТУ с МЕНЮ: в комнате «Сороки» их
+     нельзя было нажать вовсе (найдено проверкой попадания, 05.09.2026).
+     Место борта считает кадр — тот же --railw, что у подсказки. */
+  .wanwin{left:8px;right:calc(var(--railw,128px) + 4px);transform:none;width:auto;
+    bottom:calc(env(safe-area-inset-bottom) + var(--padsh,86px) + 8px);padding:8px 10px 10px}
 }
 /* инструменты «Сороки» на полке ОПИСИ (M343): карточка в гнезде, трюмные — ниже */
 .opis .op-shelf .slots .op-tool{flex:1 1 0;min-width:0;min-height:44px;padding:5px 7px;border:1px solid rgba(201,162,74,.45);border-radius:4px;background:rgba(0,0,0,.22)}

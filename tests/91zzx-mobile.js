@@ -209,7 +209,10 @@ TEST_SUITES.push(()=>suite("телефон: этажи не налезают н�
              ".pads>div:first-child",".pads>div:last-child"];
   const bad=[],seen=[];
   for(const sc of fuzzScenes()){
-    if(sc.id==="map")continue;                 /* карта — свой экран без пультов */
+    /* карту тоже меряем. Здесь стоял пропуск `sc.id==="map"` — сцены зовутся
+       по-русски («карта»), так что он не срабатывал НИ РАЗУ и был ровно тем
+       сторожем-невидимкой, про который написано в CLAUDE.md. Убран вместе с
+       причиной: подсказка на карте заходила под правый борт на пиксель. */
     let ok0=true;
     try{ok0=sc.set()!==false;}catch(e){bad.push(sc.id+" · сцена: "+e.message);continue;}
     if(!ok0)continue;

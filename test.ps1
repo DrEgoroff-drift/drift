@@ -4,6 +4,7 @@
 #   powershell -ExecutionPolicy Bypass -File test.ps1 -NoBuild   # run the existing tests.html
 #   powershell -ExecutionPolicy Bypass -File test.ps1 -Only роща # suites whose name contains the text
 #   powershell -ExecutionPolicy Bypass -File test.ps1 -Mobile    # same, in a 390x844 window
+#   powershell -ExecutionPolicy Bypass -File test.ps1 -Size 1440,1440  # tall window: UI zoom at its ceiling
 #   powershell -ExecutionPolicy Bypass -File test.ps1 -Fuzz 4000 # long fuzz over every mode
 #
 # Prints only the head line and the FAILURES block; exit code 1 on any failure.
@@ -12,7 +13,7 @@
 # -Mobile runs the same suites in a phone window instead: the layout guards are
 # written to skip themselves when the window is not a phone, so without this
 # switch the phone half of the interface is never actually measured.
-param([switch]$NoBuild, [string]$Only = "", [switch]$Mobile, [int]$Fuzz = 0, [int]$Seed = 0)
+param([switch]$NoBuild, [string]$Only = "", [switch]$Mobile, [int]$Fuzz = 0, [int]$Seed = 0, [string]$Size = "")
 
 $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -42,7 +43,10 @@ if ($Seed -gt 0) {
 }
 $dom = Join-Path $env:TEMP "drift-tests-dom.html"
 $err = Join-Path $env:TEMP "drift-tests-err.txt"
-$win = if ($Mobile) { "390,844" } else { "1280,800" }
+# -Size "W,H" — третий размер окна. Мерка интерфейса (--ui = clamp(H/760,1,1.75))
+# на 1280x800 почти единица, то есть режим увеличенного интерфейса — высокий
+# экран, 4K, планшет — не мерился ничем. -Size "1440,1440" даёт --ui 1.75.
+$win = if ($Size) { $Size } elseif ($Mobile) { "390,844" } else { "1280,800" }
 $argv = @("--headless=new", "--disable-gpu", "--no-sandbox", "--window-size=$win",
           "--user-data-dir=$($env:TEMP)\drift-tests-profile",
           "--no-first-run", "--no-default-browser-check",

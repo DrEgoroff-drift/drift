@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 407 · символов верхнего уровня: 3718
+Файлов: 415 · символов верхнего уровня: 3737
 
 ## СИМВОЛЫ
 
@@ -290,8 +290,10 @@ bPipe                        src/21aa-base-rooms.js:244
 bpMul                        src/12c-mgr-core.js:673
 bpRecheck                    src/12c-mgr-core.js:740
 bpState                      src/12c-mgr-core.js:670
+brLaws                       tests/91zzzzzc-broke.js:21
 brownBuf                     src/10-music.js:125
 brownNoise                   src/10-music.js:126
+brSweep                      tests/91zzzzzc-broke.js:41
 bScreen                      src/21aa-base-rooms.js:256
 BUILD                        src/21a-mode-base.js:22
 BUILD_KEYS                   src/21a-mode-base.js:41
@@ -446,6 +448,12 @@ cirrusSprite                 src/19e-clouds.js:141
 CKPT                         src/25-cockpit.js:91
 CKPT_STYLE                   src/25-cockpit.js:19
 clamp                        src/01-core.js:7
+CLK_TICKS                    tests/91zzzzzb-clock.js:21
+clkMissing                   tests/91zzzzzb-clock.js:28
+clkNaN                       tests/91zzzzzb-clock.js:63
+clkRun                       tests/91zzzzzb-clock.js:32
+clkShift                     tests/91zzzzzb-clock.js:58
+clkWorld                     tests/91zzzzzb-clock.js:42
 closeBarge                   src/12l-barge.js:607
 closeDeal                    src/27n-ui-deal.js:169
 closeStation                 src/26-ui-station.js:124
@@ -511,7 +519,7 @@ coopSpirit                   src/12aj-coop.js:117
 coopSpiritAdd                src/12aj-coop.js:120
 coopSpiritRu                 src/12aj-coop.js:118
 coopSpread                   src/12aj-coop.js:70
-coopStamp                    tests/90-harness.js:154
+coopStamp                    tests/90-harness.js:172
 coopVisitReset               src/12aj-coop.js:62
 COSM_CHIME                   src/12v-wander-shop-cosm.js:59
 COSM_EXH                     src/12v-wander-shop-cosm.js:22
@@ -1312,6 +1320,8 @@ hinWidth                     src/29c-home-in.js:50
 hireMerc                     src/12a-crew.js:210
 hireMgr                      src/12c-mgr-core.js:301
 HIT_FX                       src/18d-postfx.js:10
+hitCandidates                tests/91zzzzzg-hit.js:19
+hitCovered                   tests/91zzzzzg-hit.js:41
 hitFx                        src/18d-postfx.js:11
 HOL_BY                       src/11am-holiday.js:26
 HOL_D                        tests/91zzzm-holiday.js:2
@@ -1448,6 +1458,8 @@ hqStations                   src/27f-hq-room.js:219
 hqTable                      src/27f-hq-room.js:377
 hqWallProps                  src/27f-hq-room.js:170
 hqWindowView                 src/27f-hq-room.js:616
+hsAlive                      tests/91zzzzza-save-hostile.js:29
+hsMut                        tests/91zzzzza-save-hostile.js:20
 hud                          src/27z-telemetry.js:89
 HUD_BAND                     src/27z-telemetry.js:19
 HUD_FLOOR                    src/27z-telemetry.js:29
@@ -1578,10 +1590,13 @@ keepersJumpK                 src/11k-keepers.js:75
 keepersRhymeHere             src/11k-keepers.js:58
 keepersSign                  src/11k-keepers.js:114
 keplerPos                    src/06-galaxy.js:85
+KEY_ALL                      tests/91zzzzze-keys.js:30
+KEY_MODES                    tests/91zzzzze-keys.js:20
 keyLabel                     src/15-input.js:144
 keyMap                       src/15-input.js:133
 keyRow                       src/27-ui-ship.js:44
 keys                         src/08-state.js:57
+keyStateOK                   tests/91zzzzze-keys.js:23
 killPirate                   src/13-pirates.js:182
 killRock                     src/24-mode-belt.js:151
 KINO_EVERY                   src/27da-kino.js:20
@@ -1643,7 +1658,7 @@ landerGearTick               src/19f-lander.js:15
 landerInk                    tests/91j-art.js:156
 landerLen                    src/19f-lander.js:11
 landingDust                  src/19f-lander.js:344
-landOnTestPlanet             tests/90-harness.js:105
+landOnTestPlanet             tests/90-harness.js:123
 landStartY                   src/19-mode-landing.js:38
 LANE_RU                      src/26-ui-station.js:274
 LANE_RX                      src/26-ui-station.js:270
@@ -1701,6 +1716,7 @@ lightsShut                   src/11g-lights.js:73
 lightsShutters               src/11g-lights.js:122
 lightsSuns                   src/11g-lights.js:102
 litRGB                       src/19c-light.js:125
+lkNodes                      tests/91zzzzzh-leak.js:14
 loadGame                     src/14a-cloud.js:56
 LOCAL                        src/11b-speech.js:103
 LOCKER_SLOTS                 src/12ak-locker.js:23
@@ -1958,6 +1974,7 @@ mixNum                       src/02a-worldmix.js:43
 mixPal                       src/02a-worldmix.js:34
 mkCanvas                     src/18c-chunks.js:59
 mkMerc                       tests/91b-crew.js:3
+mkSystems                    tests/91zzzzzf-market.js:18
 modCost                      src/11-log.js:140
 MODE_RU                      src/27i-ui-table.js:29
 modeRu                       src/27i-ui-table.js:32
@@ -2472,6 +2489,8 @@ prunePartsBought             src/14-save.js:33
 psPlanet                     tests/91zzzu-post-scenes.js:6
 psSnap                       tests/91zzzu-post-scenes.js:17
 ptr                          src/15-input.js:348
+PU_CELLS                     tests/91zzzzzd-pure.js:28
+puFinger                     tests/91zzzzzd-pure.js:19
 putOnTable                   src/11b-speech.js:220
 QSL_BY                       src/11an-qsl.js:46
 QSL_OPS                      src/11an-qsl.js:24
@@ -2679,7 +2698,7 @@ RES_KEYS                     src/02-world.js:87
 resAuto                      src/28-loop.js:114
 resEma                       src/28-loop.js:113
 resetArm                     src/26-ui-station.js:888
-resetWorld                   tests/90-harness.js:55
+resetWorld                   tests/90-harness.js:56
 resize                       src/08-state.js:22
 RET_BOARD                    src/11s-returners.js:29
 RET_ETHER                    src/11s-returners.js:19
@@ -2877,7 +2896,7 @@ rungPoints                   src/12ad-site.js:45
 rungRingSegs                 src/12ae-ladder.js:57
 rungRoman                    src/12ae-ladder.js:48
 RUNGS                        src/12ae-ladder.js:13
-runTests                     tests/90-harness.js:115
+runTests                     tests/90-harness.js:133
 rxRecord                     src/11x-ring.js:64
 S1                           src/01-core.js:96
 S2                           src/01-core.js:97
@@ -3175,7 +3194,7 @@ stationViz                   src/17c-system-draw.js:111
 statPreview                  src/05-parts.js:271
 stCore                       src/17c-system-draw.js:131
 stDel                        src/14-save.js:26
-steps                        tests/90-harness.js:113
+steps                        tests/90-harness.js:131
 stepWorld                    src/28-loop.js:144
 stGet                        src/14-save.js:8
 stGroup                      src/26-ui-station.js:80
@@ -3330,7 +3349,7 @@ tell                         src/11-log.js:49
 TELL_SFX                     src/11-log.js:47
 TEST                         tests/90-harness.js:10
 TEST_ONLY                    tests/90-harness.js:14
-TEST_SUITES                  tests/90-harness.js:151
+TEST_SUITES                  tests/90-harness.js:169
 tfbm                         src/18a-material.js:23
 thingAdd                     src/27i-ui-table.js:37
 thingsAll                    src/27i-ui-table.js:36
@@ -4175,7 +4194,7 @@ zooTick                      src/11ad-zoo.js:41
   · облако:65
   · видимое состояние обмена:80
 
-## src/14-save.js · 63 КБ
+## src/14-save.js · 64 КБ
   · сохранение:1
   · запись не имеет права убить полёт:92
   · пустая карта возвращается из облака СПИСКОМ:171
@@ -4581,7 +4600,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/29i-spa-draw.js · 24 КБ
   · санаторий: веранда:1
 
-## tests/90-harness.js · 12 КБ
+## tests/90-harness.js · 14 КБ
   · автотесты: каркас:1
 
 ## tests/91a-flight.js · 20 КБ
@@ -4840,7 +4859,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzw-holding.js · 6 КБ
   · замер: холдинг против целей §16 (M293, шаг 5):1
 
-## tests/91zzx-mobile.js · 16 КБ
+## tests/91zzx-mobile.js · 17 КБ
   · автотесты: телефонный вид (M167):1
   · телефон: КАЖДЫЙ режим, а не только поверхность (M239):193
 
@@ -5025,7 +5044,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzzzy-light.js · 20 КБ
   · свет и свечения (M330):1
 
-## tests/91zzzzy-look.js · 6 КБ
+## tests/91zzzzy-look.js · 7 КБ
   · картина не портится молча (M336):1
 
 ## tests/91zzzzy-mem.js · 8 КБ
@@ -5046,10 +5065,34 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzzzy-time.js · 7 КБ
   · чужие часы (M334):1
 
+## tests/91zzzzza-save-hostile.js · 8 КБ
+  · порченый сейв (M354):1
+
+## tests/91zzzzzb-clock.js · 8 КБ
+  · часы поехали (M354):1
+
+## tests/91zzzzzc-broke.js · 14 КБ
+  · нищий и двойной тычок (M354):1
+
+## tests/91zzzzzd-pure.js · 6 КБ
+  · мир из семени, а не из порядка (M354):1
+
 ## tests/91zzzzz-e2e-life.js · 36 КБ
   · сквозной прогон II: сейв, числа, текст, долгий полёт (M329):1
   · поздний вечер:392
   · вечер за игрой:463
   · resetWorld обязана возвращать мир, а не почти мир:518
+
+## tests/91zzzzze-keys.js · 8 КБ
+  · одна клавиша, зажатая надолго (M354):1
+
+## tests/91zzzzzf-market.js · 6 КБ
+  · прилавок по всей галактике (M354):1
+
+## tests/91zzzzzg-hit.js · 9 КБ
+  · кнопка, до которой не доходит палец (M354):1
+
+## tests/91zzzzzh-leak.js · 6 КБ
+  · что растёт за вечер (M354):1
 
 ## tests/99-run.js · 0 КБ

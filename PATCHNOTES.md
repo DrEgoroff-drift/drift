@@ -7,6 +7,63 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.352.0 - Deep tests: a corrupted save, a clock that moved, a button under a panel
+
+Author: «пиши глубокие тесты, все кликай, по интерфейсам, по логике, ищи баги». Twenty-six new
+suites in eight files, each one a class of defect nothing was asking about, and four real bugs
+out of them — three of which no assertion could ever have caught, because the page they were
+measuring was invisible.
+
+**The corrupted save** (`91zzzzza`). The cross-cutting net already loads a save with a field
+missing — that is last version's save. This one puts the field back with the WRONG TYPE, one
+field at a time, three shapes each: over four hundred loads. Two of them died: `found` and
+`species` as an object instead of a list threw «object is not iterable» straight out of
+`applySave`, i.e. a white screen for anyone whose local record aged badly; `zoom` as an object
+walked into `G.zoom` and stayed there. Both now load. Two more suites in the same file: every
+number arriving as a string (PHP can, and `site/api.php` is PHP), and the save→load→save circle
+standing still from the second lap — a field that grows on every load is a save that swells.
+
+**The clock that moved** (`91zzzzzb`). Half the world is computed lazily from `Date.now()`:
+drones, hired hands, the locker, building, the station's shift. The old net shifted the stamps
+INSIDE a save by three days; this one shifts the CLOCK — back three days (a phone's timezone
+fixed), forward five years (a laptop woken up), and a save stamped a year ahead. Twenty-four
+tickers, run differentially, nothing pays, nothing prints, nothing turns into NaN. Green from the
+first run: the offline caps hold.
+
+**The button under the panel** (`91zzzzzg`). Everything that clicks in the tests calls
+`el.click()` — and that is not a tap: it hits the node directly, past hit-testing, so a control
+buried under a panel answers it happily while the player's finger gets nothing. This suite asks
+the browser instead: `elementFromPoint` at each control's centre, in every scene and on every
+screen, scrolling the row into view first. It found the «Сорока» panel on a phone: `width:
+calc(100vw - 16px)` at z-index 6 over a rail at 5 — aboard the sail-ship, КАРТА and МЕНЮ could
+not be pressed at all. The panel now ends where the rail begins, off the same `--railw` the frame
+measures. The map's prompt had the same disease in a milder form: a hardcoded `right:128px`
+against a rail that is 129 wide on the map, one pixel under it.
+
+**And the reason three suites were lying green.** «В ДОРОГУ» is an ordinary button, so every
+sweep that clicks everything eventually enters the road companion — and `body.road` hides the
+whole page but its own window. `resetWorld` did not leave it, so from that click on, every later
+suite measured an invisible page: layout guards passed because there was nothing to measure, and
+one of the new suites reported «0 controls measured» instead of failing. `resetWorld` now leaves
+the road, closes the menu and the desk. With the page visible again, two old assertions had to be
+taken seriously: the pads/console overlap (a false positive — `.pads` is a full-width strip with
+an empty middle; measured by groups now, as the phone suite always did) and the invisible ledger
+(someone else's open menu, now closed).
+
+Five more nets, all green: every button pressed twice while broke and with a full hold, and a
+stale button that left the screen may not pay a second time (`91zzzzzc`); the world out of its
+seed — same system twice, in reverse order, with other generators in between, and nothing
+ephemeral inside the save (`91zzzzzd`); every key held alone for seventy frames in every scene,
+with the mode and its state object required to agree — a mode without its state is not a crash,
+it is a freeze (`91zzzzze`); the counter across the whole galaxy — prices positive everywhere,
+taking always dearer than handing in, and no key of any resource able to turn the till into NaN
+(`91zzzzzf`); thirty redraws of every board and fifty openings of every screen growing not one
+node (`91zzzzzh`).
+
+Two more instruments: `test.ps1 -Size 1440,1440` runs the whole suite in a tall window, where the
+interface zoom sits at its ceiling of 1.75 — a regime nothing had ever measured, and it is
+healthy; and the frame ledger now judges only in the window its baseline was shot in.
+
 ## 0.351.3 - «Сорока»: four gold triangles, and gold that is metal
 
 The author's third sketch: four separate long triangles from one point near the bow, a cross at

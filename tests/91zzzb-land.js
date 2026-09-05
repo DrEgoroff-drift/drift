@@ -53,7 +53,13 @@ TEST_SUITES.push(()=>suite("сквозной: автопосадка садит�
    пэды, взлёт, рейка, меню, консоль, попугай) не пересекаются прямоугольниками;
    у каждой видимой кнопки текст помещается (scrollWidth ≤ clientWidth). */
 TEST_SUITES.push(()=>suite("сквозной: панели не наслаиваются, текст в кнопках помещается",()=>{
-  const SEL=[".hud","#prompt",".pads","#launchbtn",".rail","#menu","#console","#parrotwin","#dronebtn"];
+  /* пэды меряются ГРУППАМИ, а не одним ящиком: `.pads` — полоса во всю
+     ширину, кнопки в ней стоят по краям, а середина пуста по замыслу — там и
+     висит консоль. По ящику выходило пересечение 426×68, при котором ни одна
+     кнопка ничем не накрыта (проверено `elementFromPoint`, 91zzzzzg). Телефонный
+     набор меряет так же — по `.pads>div`. */
+  const SEL=[".hud","#prompt",".pads>div:first-child",".pads>div:last-child","#launchbtn",
+             ".rail","#menu","#console","#parrotwin","#dronebtn"];
   const overlaps=[],spill=[];let scenes=0,checked=0;
   const vis=el=>{if(!el)return null;const cs=getComputedStyle(el);
     if(cs.display==="none"||cs.visibility==="hidden"||+cs.opacity<.05)return null;

@@ -51,6 +51,7 @@ function near(a,b,tol,msg){const h=Math.abs(a-b)<=tol;ok(h,h?msg:msg+" (полу
    в `91zzzzz-e2e-life`: он сверяет мир после resetWorld со снимком, снятым
    до первого набора. */
 const G_BOOT_KEYS=new Set(Object.keys(G));
+
 /* полный сброс мира: то же, что «начать заново», но без перезагрузки страницы */
 function resetWorld(){
   for(const k of Object.keys(G))if(!G_BOOT_KEYS.has(k))delete G[k];
@@ -100,6 +101,23 @@ function resetWorld(){
   G.t=0;G.running=true;
   for(const k in keys)keys[k]=false;
   actEdge=false;prevAct=false;
+  /* ── и выйти из дорожного спутника (M354) ──
+     «В ДОРОГУ» — обычная кнопка на экранах, и всякий набор, который жмёт всё
+     подряд, рано или поздно по ней попадает. Дорога же не экран, а РЕЖИМ:
+     `body.road` прячет всю страницу (`body.road > *:not(#roadwin)`), и снятие
+     класса «open» с панелей его не убирает. После такого тычка каждый
+     следующий набор мерил страницу, на которой ничего не видно, — и мерки
+     молча возвращали ноль вместо провала. Выход из режима — часть сброса
+     мира, как и клавиши. */
+  if(typeof RD!=="undefined"&&RD&&typeof roadClose==="function"){try{roadClose();}catch(e){}}
+  document.body.classList.remove("road");
+  /* и то же про ящик дверей и стол: их открывает обычная кнопка, значит любой
+     набор с тычками может их открыть, а закрывает их только своя функция —
+     снятие класса «open» с `.scr` меню не касается вовсе. Открытое меню
+     оставляло на экране подпись «СТОЛ · тетрадь, ленты, письма, вещи» — и
+     набор про невидимую тетрадь (91zzzf) краснел от ЧУЖОГО меню. */
+  if(typeof toggleMenu==="function"){try{toggleMenu(false);}catch(e){}}
+  if(typeof tableToggle==="function"&&typeof tableOpenNow!=="undefined"&&tableOpenNow){try{tableToggle(false);}catch(e){}}
 }
 /* сажаем игрока на первую твёрдую планету стартовой системы — общая заготовка */
 function landOnTestPlanet(){

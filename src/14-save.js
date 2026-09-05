@@ -231,15 +231,15 @@ function applySave(s){
   if(s.techLvl&&typeof s.techLvl==="object")
     for(const k in TECH)if(TECH[k].max)G.techLvl[k]=Math.max(0,s.techLvl[k]|0);
   G.barter=new Set(Array.isArray(s.barter)?s.barter.filter(k=>BARTER[k]):[]);
-  G.found=new Set(s.found||[]);
+  G.found=new Set(Array.isArray(s.found)?s.found:[]);
   /* Реестр видов до M174 хранил имена видов, которых не существует: слово
      формы и слово признака выбирались независимо от того, что нарисовано, и
      каждый экземпляр записывался как отдельный вид. Такой реестр не переносится
      — со старого сохранения он обнуляется один раз, и дальше заполняется
      настоящими видами планет. Всё остальное в сохранении цело, формат прежний. */
-  G.species=new Set((s.bioV|0)>=2?(s.species||[]):[]);
+  G.species=new Set(((s.bioV|0)>=2&&Array.isArray(s.species))?s.species:[]);
   Object.assign(G.opts,s.opts||{});
-  G.zoom=clamp(s.zoom||1,.16,2.4);
+  G.zoom=clamp(+s.zoom||1,.16,2.4);
   G.market=asMap(s.market);
   /* фронт пиратов: разреженный объект по ключу "sx,sy", как всё привязанное
      к системе. Старые записи грузятся с пустым фронтом — он нарастёт сам */

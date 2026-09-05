@@ -200,6 +200,33 @@ cosmetics exist; the desk gets one table «ОПИСЬ»; a locker exists at stat
   not a crutch), starting with a sample chapter for the author to judge before the rest.
   The text stays in markdown; every rewrite runs `mksmena.py` and the suite.
 
+## M354 — deep tests (0.352.0, 2026-09-05) — done
+
+Author: «пиши глубокие тесты, все кликай, по интерфейсам, по логике, ищи баги». Twenty-six suites in
+eight files, each a class of defect nothing asked about: a save whose fields are the wrong TYPE
+(`91zzzzza`), the wall clock moved back three days / forward five years / a save stamped a year ahead
+(`91zzzzzb`), every button pressed twice while broke and with a full hold plus «a button that left the
+screen may not pay again» (`91zzzzzc`), the world out of its seed and nothing ephemeral in the save
+(`91zzzzzd`), every key held alone in every scene with mode and state required to agree (`91zzzzze`),
+the counter across the whole galaxy (`91zzzzzf`), the tap that reaches the control — `elementFromPoint`
+instead of `el.click()` (`91zzzzzg`), and what grows over an evening in the page itself (`91zzzzzh`).
+
+Four bugs fixed: `found`/`species` as an object threw out of `applySave` (white screen on an aged
+record) and `zoom` as an object survived into `G.zoom`; on a phone the «Сорока» panel spanned the full
+width over the rail, so КАРТА and МЕНЮ could not be pressed aboard the sail-ship, and the map's prompt
+ran one pixel under the rail — both now off the measured `--railw`.
+
+**The lesson worth keeping:** «В ДОРОГУ» is an ordinary button, so any sweep that clicks everything
+enters the road companion, and `body.road` hides the whole page. `resetWorld` did not leave it — so
+from that click on, every later suite measured an invisible page and passed. Two old assertions were
+green only because of it. `resetWorld` now leaves the road and closes the menu and the desk, and a
+guard suite in `91zzzzzh` holds it. A measurement that finds nothing to measure is a failure, not a
+pass — new layout suites say so out loud.
+
+Also: `test.ps1 -Size W,H` (a tall window puts the interface zoom at its 1.75 ceiling — a regime
+nothing had measured; it is healthy), and the frame ledger judges only in the window its baseline
+was shot in.
+
 ## Loose ends (as of 2026-08-28, after the graphics run 0.237.0–0.244.0)
 
 Everything left open, with the reason it is open. Nothing here is a bug report — bugs are fixed
@@ -278,9 +305,10 @@ Left from the queue: nothing — the band's second step is M308, the station's c
 - **PLAN.md stays under 60 KB** (`build.ps1` warns). A closed milestone leaves one line here and its
   body goes to `docs/PLAN-archive.md` in the same commit — done 2026-08-28 (M232–M246) and
   2026-09-02 (M247–M298 and the old queues, 97 → ~40 KB).
-- **One order-dependent phone assertion** (2026-09-05): `test.ps1 -Mobile -Only телефон` fails the floors
-  check in the home mode («дом · #prompt?.rail») while the full phone run is green — the subset enters
-  the home without whatever the earlier suites leave behind. Not chased yet; reproduce with the subset.
+- ~~One order-dependent phone assertion~~ — chased and closed by M354 (0.352.0). It was two things
+  at once: the prompt's hardcoded `right:128px` against a rail that is 129 wide on the map (now off
+  the measured `--railw`), and `resetWorld` not leaving the road companion — after any click sweep
+  the whole page was invisible and every later layout guard measured nothing.
 - **Push only after a green run.** One push in this session (0.238.0) went out while the base suite
   was flaking once in three runs; caught and fixed immediately after, but the lesson is to keep the
   test run and the push in separate commands.
