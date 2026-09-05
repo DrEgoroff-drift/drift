@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 415 · символов верхнего уровня: 3737
+Файлов: 418 · символов верхнего уровня: 3755
 
 ## СИМВОЛЫ
 
@@ -330,6 +330,7 @@ cantStyle                    src/27d-ui-cantina.js:27
 cantTables                   src/27d-ui-cantina-props.js:241
 cantView                     src/27d-ui-cantina-props.js:82
 capIv                        src/28-loop.js:125
+capLum                       src/19e-clouds.js:55
 capOf                        src/05-parts.js:108
 capRu                        src/11t-rumours.js:58
 capUsed                      src/05-parts.js:219
@@ -444,7 +445,7 @@ CHUNK_W                      src/18c-chunks.js:19
 chunkAt                      src/18c-chunks.js:72
 chunkStore                   src/18c-chunks.js:66
 chWhite                      src/25n-chess.js:36
-cirrusSprite                 src/19e-clouds.js:141
+cirrusSprite                 src/19e-clouds.js:226
 CKPT                         src/25-cockpit.js:91
 CKPT_STYLE                   src/25-cockpit.js:19
 clamp                        src/01-core.js:7
@@ -458,11 +459,12 @@ closeBarge                   src/12l-barge.js:607
 closeDeal                    src/27n-ui-deal.js:169
 closeStation                 src/26-ui-station.js:124
 CLOUD                        src/14-save.js:5
+CLOUD_BASE                   src/19e-clouds.js:381
 CLOUD_KEYS                   src/02a-worldmix.js:80
 CLOUD_KIND                   src/19e-clouds.js:35
-CLOUD_SPR                    src/19e-clouds.js:52
+CLOUD_SPR                    src/19e-clouds.js:61
 CLOUD_ST                     src/14a-cloud.js:91
-CLOUD_TIER                   src/19e-clouds.js:189
+CLOUD_TIER                   src/19e-clouds.js:366
 cloudBoot                    src/14a-cloud.js:172
 cloudBusy                    src/14a-cloud.js:79
 cloudCall                    src/14a-cloud.js:72
@@ -475,8 +477,8 @@ cloudOn                      src/14a-cloud.js:71
 cloudPull                    src/14a-cloud.js:154
 cloudPush                    src/14a-cloud.js:132
 cloudRetry                   src/14a-cloud.js:120
-cloudsOf                     src/19e-clouds.js:164
-cloudSprite                  src/19e-clouds.js:60
+cloudsOf                     src/19e-clouds.js:331
+cloudSprite                  src/19e-clouds.js:75
 cloudTok                     src/14a-cloud.js:68
 cockpitPlan                  src/25-cockpit.js:92
 cockpitStyleKey              src/25-cockpit.js:46
@@ -512,7 +514,7 @@ coopLedger                   src/12aj-coop.js:101
 coopMul                      src/12aj-coop.js:119
 coopRank                     src/12aj-coop.js:37
 coopRec                      src/12aj-coop.js:36
-coopRegBlock                 src/12aj-coop.js:236
+coopRegBlock                 src/12aj-coop.js:239
 coopRegister                 src/12aj-coop.js:47
 coopSellSlice                src/12aj-coop.js:79
 coopSpirit                   src/12aj-coop.js:117
@@ -623,7 +625,7 @@ crownForge                   src/05a-nodes.js:160
 crownHas                     src/05a-nodes.js:171
 crownOwned                   src/05a-nodes.js:159
 crownReady                   src/05a-nodes.js:158
-CSW                          src/19e-clouds.js:53
+CSW                          src/19e-clouds.js:68
 ctlHint                      src/15-input.js:168
 ctx                          src/08-state.js:3
 CUE_EPS                      src/27m-scroll-cue.js:26
@@ -646,6 +648,7 @@ dealRow                      src/27n-ui-deal.js:45
 dealRun                      src/27n-ui-deal.js:20
 dealsTick                    src/27g-deals.js:201
 dealTaken                    src/27g-deals.js:159
+deckSprite                   src/19e-clouds.js:270
 DECO_FN                      src/21b-surface-deco-biomes.js:34
 DECO_KINDS                   src/21b-surface-deco.js:24
 decoAntenna                  src/21b-surface-deco-biomes.js:283
@@ -769,7 +772,7 @@ drawCaveWater                src/22a-cave-deco.js:300
 drawCaveWorld                src/22-mode-cave.js:647
 drawCelest                   src/06a-celest.js:167
 drawChunks                   src/18c-chunks.js:83
-drawClouds                   src/19e-clouds.js:197
+drawClouds                   src/19e-clouds.js:382
 drawCockpit                  src/25-cockpit.js:400
 drawCombat                   src/13-pirates.js:215
 drawCosmMark                 src/12v-wander-shop-cosm.js:112
@@ -919,6 +922,7 @@ DUST_COL                     src/16a-space.js:252
 DUST_LAYERS                  src/16a-space.js:274
 DUST_TAB                     src/16a-space.js:253
 dustTable                    src/16a-space.js:254
+DW                           src/19e-clouds.js:269
 E2E_CRASHES                  tests/91zzzzz-e2e-life.js:37
 E2E_FRESH                    tests/91zzzzz-e2e-life.js:30
 e2eClickables                tests/91zzzzz-e2e-life.js:61
@@ -1143,7 +1147,7 @@ genPart                      src/05-parts.js:70
 genPlant                     src/20-life.js:189
 genPOI                       src/20a-poi.js:32
 genRaid                      src/24a-mode-raid.js:30
-genTerrain                   src/07-planet.js:431
+genTerrain                   src/07-planet.js:437
 genUniqueShip                src/03-ships.js:16
 GEO_FAULT                    src/18b-geology.js:91
 GEO_KIND                     src/18b-geology.js:13
@@ -1230,7 +1234,7 @@ grokTeach                    src/12tb-grok.js:144
 grokTick                     src/12tb-grok.js:75
 grokWant                     src/12tb-grok.js:41
 GROUND_BAKING                src/19-mode-landing.js:292
-groundAt                     src/07-planet.js:557
+groundAt                     src/07-planet.js:563
 groundShadow                 src/19-mode-landing.js:436
 GROVE_ETHER                  src/11j-grove.js:23
 groveAll                     src/11j-grove.js:29
@@ -1652,7 +1656,7 @@ KMAP_BELT                    src/15-input.js:113
 labCount                     src/12h-relic.js:16
 labStaffed                   src/12h-relic.js:27
 labWorking                   src/12h-relic.js:32
-LAND_ARC                     src/07-planet.js:407
+LAND_ARC                     src/07-planet.js:413
 LAND_GY                      src/19f-lander.js:10
 landerGearTick               src/19f-lander.js:15
 landerInk                    tests/91j-art.js:156
@@ -2347,47 +2351,47 @@ planDeliver                  src/11r-plan.js:67
 planDepthAt                  src/11r-plan.js:28
 planDepthHere                src/11r-plan.js:34
 planEndless                  src/11r-plan.js:54
-PLANET_BAKE_ANG              src/07-planet.js:297
+PLANET_BAKE_ANG              src/07-planet.js:303
 PLANET_BARGE                 src/12n-planet.js:17
 PLANET_CAP                   src/12n-planet.js:16
 PLANET_FULL                  src/12n-planet.js:14
 PLANET_RATE                  src/12n-planet.js:15
-PLANET_RES                   src/07-planet.js:71
+PLANET_RES                   src/07-planet.js:77
 PLANET_SPIN                  src/07-planet.js:32
 planetBargeLoad              src/12n-planet.js:108
 planetBargeRow               src/12n-planet.js:145
 planetBiome                  src/20-life.js:161
-planetCols                   src/07-planet.js:229
-planetDraw                   src/07-planet.js:324
+planetCols                   src/07-planet.js:235
+planetDraw                   src/07-planet.js:330
 planetGrant                  src/12n-planet.js:25
-planetHasLife                src/07-planet.js:419
+planetHasLife                src/07-planet.js:425
 planetHaul                   src/12n-planet.js:67
-planetHeightAt               src/07-planet.js:423
+planetHeightAt               src/07-planet.js:429
 planetHere                   src/12n-planet.js:61
 planEtherLine                src/11r-plan.js:43
-planetLight                  src/07-planet.js:193
+planetLight                  src/07-planet.js:199
 planetLightsN                src/17e-station-body.js:39
 planetLoadSum                src/12n-planet.js:122
 planetMat                    src/18a-material.js:63
-planetPaint                  src/07-planet.js:246
+planetPaint                  src/07-planet.js:252
 planetPeriod                 src/07-planet.js:37
 planetReady                  src/12n-planet.js:19
 planetRender                 src/12n-planet.js:155
 planetScene                  src/10-music.js:74
 planetSpin                   src/07-planet.js:43
-planetSpinFrame              src/07-planet.js:50
+planetSpinFrame              src/07-planet.js:56
 planetStockOf                src/12n-planet.js:55
 planetStockSum               src/12n-planet.js:56
 planetStop                   src/12n-planet.js:92
-planetStrip                  src/07-planet.js:180
-planetStripChunk             src/07-planet.js:99
-planetStripSeekRow           src/07-planet.js:92
-planetStripStart             src/07-planet.js:79
-planetStripTick              src/07-planet.js:154
-planetSunRot                 src/07-planet.js:301
+planetStrip                  src/07-planet.js:186
+planetStripChunk             src/07-planet.js:105
+planetStripSeekRow           src/07-planet.js:98
+planetStripStart             src/07-planet.js:85
+planetStripTick              src/07-planet.js:160
+planetSunRot                 src/07-planet.js:307
 planetTakeLoad               src/12n-planet.js:126
 planetTick                   src/12n-planet.js:44
-planetWetAt                  src/07-planet.js:414
+planetWetAt                  src/07-planet.js:420
 planGroundLine               src/11r-plan.js:47
 planIsCore                   src/11r-plan.js:41
 planIsCoreT                  src/11r-plan.js:42
@@ -2457,8 +2461,12 @@ postSnap                     src/25g-postcard.js:65
 postTake                     src/25g-postcard.js:650
 postTerrain                  src/25g-postcard.js:41
 postWorld                    src/25g-postcard.js:49
+PR_SAID                      tests/91zzzzzi-promise.js:58
+PR_VERBS                     tests/91zzzzzi-promise.js:42
 prbLeg                       tests/91zzw-eco-probe.js:5
 prbStations                  tests/91zzw-eco-probe.js:4
+prButtons                    tests/91zzzzzi-promise.js:69
+prDelta                      tests/91zzzzzi-promise.js:34
 prevAct                      src/08-state.js:59
 priceBestOf                  src/12aa-need.js:240
 pricesClose                  src/12aa-need.js:292
@@ -2485,7 +2493,12 @@ probeVoice                   src/25m-probe.js:75
 prof                         src/28-loop.js:333
 PROFILE                      src/02-world.js:103
 profW                        src/03-ships.js:152
+prRestore                    tests/91zzzzzi-promise.js:89
+prSpoke                      tests/91zzzzzi-promise.js:66
+prState                      tests/91zzzzzi-promise.js:24
+prSweep                      tests/91zzzzzi-promise.js:123
 prunePartsBought             src/14-save.js:33
+prWalk                       tests/91zzzzzi-promise.js:112
 psPlanet                     tests/91zzzu-post-scenes.js:6
 psSnap                       tests/91zzzu-post-scenes.js:17
 ptr                          src/15-input.js:348
@@ -2652,7 +2665,7 @@ relicSlotOpen                src/12h-relic.js:71
 relicSynth                   src/12h-relic.js:113
 relicUnequip                 src/12h-relic.js:87
 RELIEF_KEYS                  src/02a-worldmix.js:79
-RELIEF_MIX                   src/07-planet.js:374
+RELIEF_MIX                   src/07-planet.js:380
 renderAlbum                  src/25g-postcard.js:678
 renderBarge                  src/12l-barge.js:632
 renderBasesTab               src/26a-ui-station-home.js:4
@@ -3248,10 +3261,10 @@ storyWhen                    src/11c-stories.js:205
 stPanels                     src/17c-system-draw.js:121
 stPlatePath                  src/17c-system-draw.js:170
 stRing                       src/17c-system-draw.js:147
-STRIP_CHUNK                  src/07-planet.js:73
-STRIP_JOB                    src/07-planet.js:76
-STRIP_MS                     src/07-planet.js:72
-STRIP_PEND                   src/07-planet.js:78
+STRIP_CHUNK                  src/07-planet.js:79
+STRIP_JOB                    src/07-planet.js:82
+STRIP_MS                     src/07-planet.js:78
+STRIP_PEND                   src/07-planet.js:84
 STRIPS_MAX                   src/11b-speech.js:191
 stripsAll                    src/11b-speech.js:192
 stripSell                    src/11b-speech.js:231
@@ -3678,6 +3691,11 @@ WEATHER_CAP                  src/19d-weather.js:52
 weatherName                  src/19d-weather.js:76
 weatherOf                    src/19d-weather.js:53
 weatherPower                 src/19d-weather.js:69
+WHY_TIGHT                    tests/91zzzzzj-why.js:21
+whyBar                       tests/91zzzzzj-why.js:37
+whyDial                      tests/91zzzzzj-why.js:36
+whyScene                     tests/91zzzzzj-why.js:29
+whyTight                     tests/91zzzzzj-why.js:22
 WIN_BAD                      src/29f-winter.js:32
 WIN_C                        src/29g-winter-draw.js:19
 WIN_DAYS                     src/29f-winter.js:27
@@ -3811,12 +3829,12 @@ zooTick                      src/11ad-zoo.js:41
   · галактика:1
   · испечённое живёт не дольше, чем нужно (M332):4
 
-## src/07-planet.js · 38 КБ
+## src/07-planet.js · 39 КБ
   · текстуры планет:1
   · вращение:8
-  · рельеф:368
-  · рельеф:369
-  · где сел — то и видел:393
+  · рельеф:374
+  · рельеф:375
+  · где сел — то и видел:399
 
 ## src/08-state.js · 15 КБ
   · состояние:1
@@ -4010,7 +4028,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12ai-fleet.js · 55 КБ
   · ГЛАВТРАССА: флот, который нельзя купить (M310, DESIGN-holding §18):1
 
-## src/12aj-coop.js · 18 КБ
+## src/12aj-coop.js · 19 КБ
   · кооператив: покупать для себя, и люди, которые делают это с вами (M351):1
 
 ## src/12ak-locker.js · 7 КБ
@@ -4277,7 +4295,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/19d-weather.js · 14 КБ
   · погода:1
 
-## src/19e-clouds.js · 17 КБ
+## src/19e-clouds.js · 40 КБ
   · облака:1
 
 ## src/19f-lander.js · 22 КБ
@@ -5041,7 +5059,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzzzy-hold.js · 9 КБ
   · холдинг: круг стройки числами (M339):1
 
-## tests/91zzzzy-light.js · 20 КБ
+## tests/91zzzzy-light.js · 21 КБ
   · свет и свечения (M330):1
 
 ## tests/91zzzzy-look.js · 7 КБ
@@ -5094,5 +5112,14 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzzzzh-leak.js · 6 КБ
   · что растёт за вечер (M354):1
+
+## tests/91zzzzzi-promise.js · 15 КБ
+  · обещание кнопки (M355):1
+
+## tests/91zzzzzj-why.js · 14 КБ
+  · зачем оно всё (M355):1
+
+## tests/91zzzzzk-fair.js · 11 КБ
+  · честность сделки (M355):1
 
 ## tests/99-run.js · 0 КБ

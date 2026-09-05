@@ -7,6 +7,54 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.353.0 - M356: the sky in storeys
+
+Author, 2026-09-05, with a photograph of a Petersburg sky: «вот тебе облака, для планет, делай».
+The picture holds three cloud populations at once — a dark overcast **deck** across the top third,
+a wide blue gap, and a chain of small bright cumulus strung along the roofline. The game had two of
+those and neither of them read: the sky was one storey with stickers on it.
+
+**The deck** (`19e-clouds`, `deckSprite`). A third form, and it is not drawn as a body: a layer
+straight overhead is seen edge-on, it has no silhouette at all — it has a torn lower edge and a
+mass that runs off the top of the frame. So the noise is stretched along the horizon, the threshold
+rises downward (solid above, rags below), and a slow wave along the width makes the edge hang low in
+places and pull right up in others. Its underside is painted by the air, not by the star: dark and
+cold, which is what makes it the counter-mass the bright cumulus were missing (§12). Sheets are laid
+overlapping with their ends faded out, so they break into pieces without a seam. How often a world
+is lidded is a property of the world (`cover` in `CLOUD_KIND`, mixed through `CLOUD_KEYS`) — over a
+third of them it never gathers, and the sky stays roomy (§3) — and bad weather raises one over
+anybody: rain used to fall out of clear blue. Baked lazily, on the first frame that has one.
+
+**One condensation line per tier.** The flat base is baked into every cumulus and was then thrown
+away on the sky: height scattered over an eighth of the dome, and ten flat bottoms at ten levels
+read as ten stickers. A sprite now sits with its base **on** the tier's line, with a jitter small
+enough to be air rather than a staircase.
+
+**The cumulus body, rebuilt.** Bodies sat on one string and narrowed at the ends, so the base curved
+up and the thing read as a croissant; the metaballs were spaced further apart than they merge, so a
+sharper edge turned them into beads. Now: a wide base row whose step is computed **from** the radii
+(bodies must merge, not touch), turrets growing over the middle of that row, a sprite baked at
+288×168 so the near tier is no longer a magnified blur, and an edge that is cut rather than blurred.
+
+**Volume comes from the body, not from the outline.** Light by density gradient lives only at the
+rim; the middle of a cloud had no gradient and came out one flat colour. Four samples along the
+direction of the star say how much cloud lies between a point and the light — that is the volume,
+and it costs four lookups of a field that is already there.
+
+**Three ways the sky was outshining its own star**, all found by `91zzzzy-light`'s frame guard and
+all the same law (§13, §16): the silver rim added *on top of* the M330 ceiling; the shadow side was
+mixed from the air and, under a dim star with a bright sky, came out **lighter than the lit side** —
+the cloud inside out; and the body reached full light over large areas, so the eye read the cloud as
+the source and the small disc as a reflection. Now the rim rises **to** full light and no further,
+the shadow is capped at .45 of it (which is also what gives a cumulus its volume), and the body
+stops at .80 — a cloud surface scatters light, it does not return all of it.
+
+Also: the horizon chain (sixteen small ones, clumped rather than scattered), the near tier down from
+1.95× to 1.55×, and `test.ps1` waits for Chrome to let go of its output file — on a full run a
+child process held it for seconds after `-Wait` returned, and the harness reported «the page crashed
+before runTests» for a run that was green.
+
+---
 ## 0.352.0 - Deep tests: a corrupted save, a clock that moved, a button under a panel
 
 Author: «пиши глубокие тесты, все кликай, по интерфейсам, по логике, ищи баги». Twenty-six new

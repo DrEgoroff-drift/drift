@@ -77,7 +77,7 @@ function rollWorld(tk,r){
 /* таблицы, разложенные по планете один раз при генерации: дальше их читают
    рельеф, геология, погода, облака и музыка, не зная про смесь ничего */
 const RELIEF_KEYS=["hill","ridge","mesa","dune","crater","canyon"];
-const CLOUD_KEYS=["n","soft","hi","cir"];
+const CLOUD_KEYS=["n","soft","hi","cir","cover"];
 const VOICE_KEYS=["perc","motif","air","beacon","bass"];
 /* Таблицы раскладываются ЛЕНИВО, при первом обращении, а не в getSystem:
    стартовая система строится ещё во время загрузки скрипта, когда таблицы

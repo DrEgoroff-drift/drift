@@ -42,6 +42,11 @@ if ($Seed -gt 0) {
   $url += "$sep" + "fseed=$Seed"
 }
 $dom = Join-Path $env:TEMP "drift-tests-dom.html"
+# Дамп сносим ДО прогона: иначе, если Chrome не встал (занятый профиль или
+# параллельный прогон из другого сеанса), здесь прочитается отчёт ПРОШЛОГО
+# прогона — и он бодро скажет «ВСЁ ЗЕЛЁНОЕ» про сборку, которой уже нет.
+# Именно так и вышло 05.09.2026, и стоило это получаса.
+Remove-Item $dom -Force -ErrorAction SilentlyContinue
 $err = Join-Path $env:TEMP "drift-tests-err.txt"
 # -Size "W,H" — третий размер окна. Мерка интерфейса (--ui = clamp(H/760,1,1.75))
 # на 1280x800 почти единица, то есть режим увеличенного интерфейса — высокий
@@ -57,9 +62,25 @@ $sw = [Diagnostics.Stopwatch]::StartNew()
 Start-Process -FilePath $chrome -ArgumentList $argv -NoNewWindow -Wait `
   -RedirectStandardOutput $dom -RedirectStandardError $err | Out-Null
 $sw.Stop()
-$html = [System.IO.File]::ReadAllText($dom, [System.Text.Encoding]::UTF8)
+# Chrome выходит НЕ мгновенно: дочерний процесс (crashpad, utility) держит
+# унаследованный дескриптор перенаправленного вывода ещё секунду-другую после
+# того, как -Wait вернул управление. Чтение сразу падало с IOException, а иногда
+# успевало прочитать пустой файл и соврать «страница упала до runTests». На
+# коротком прогоне (-Only) не воспроизводилось никогда, на полном — стабильно.
+$html = ""
+for ($i = 0; $i -lt 60; $i++) {
+  try { $html = if (Test-Path $dom) { [System.IO.File]::ReadAllText($dom, [System.Text.Encoding]::UTF8) } else { "" } } catch { $html = "" }
+  # ждём не появления тега, а ЗАКРЫТОГО блока: файл дописывается порциями, и
+  # по одному открывающему тегу можно прочитать обрезанный отчёт
+  if ($html -match '(?s)id="testout"[^>]*>.*?</pre>') { break }
+  Start-Sleep -Milliseconds 250
+}
 
 $m = [regex]::Match($html, '<pre id="testout"[^>]*>([\s\S]*?)</pre>')
+if ($html.Length -eq 0) {
+  Write-Host "chrome wrote no DOM at all: the headless run did not start (stale profile?) — retry"
+  exit 2
+}
 if (-not $m.Success) {
   Write-Host "no test report in DOM: the page crashed before runTests (open tests.html in a browser)"
   exit 2
