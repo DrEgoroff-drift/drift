@@ -651,6 +651,55 @@ planet's dump/dome/strip drawn. Deeds with no counter yet (pirate bases boarded,
 monuments, nodes) join the rung score when their hooks are written.
 
 
+# The war — queued (M360–M375, designed 2026-09-06)
+
+Design in `docs/DESIGN-war.md` (laws §0, helm §1, guns §2, mounts §3, energy/shields/missiles
+§4, pirate roles §5, episodes instead of reputation §6, six powers and the сводка war §7, the book
+§8, forks §10). The author's brief of 2026-09-06 in chat: the pirate fight is bad, the helm is
+bad for fighting, «тап по кораблю, оно в прицеле, стреляет само», two sticks on the phone, mouse
+or arrows on the keyboard, «навали полный фарш» of guns, procedural and comparable, energy and
+shields «не стар сектор», five more powers with their own fleets and looks that fight each other
+by the clock, no reputation number — «тут помог, познакомился, ровный пацан все уважают» — six
+radio waves of propaganda, ГЛАВТРАССА is the USSR and the satire reads evenly on all six, and
+all of it into the book (`SAGA.md` §17, `SAGA-BOOK.md` «нить держав»).
+
+Each pass is closed on its own; none needs the next. Order:
+
+- **M360 — ships shoot each other.** `owner` on shots; `PIRATE_RANKS` get roles (шакал dashes
+  and flees, ветеран circles at 400–600, капитан never under 700, барон stands and calls two);
+  rear hit ×1.6 / front ×0.7; hull bar over the mark; a pirate under 25 % jumps out.
+- **M361 — helm and lock.** Four channels (heading, thrust vector, lock, fire) written by three
+  inputs; angular inertia becomes drawing only; thrusters at 40 % sideways/back with the nose
+  drift off; release = brake under `.55·maxSp`, coast above; lock by tap/click/Tab, three marks,
+  auto-lock on the shooter; autofire on today's gun; mouse scheme and arrows scheme (Q/E strafe);
+  two floating sticks on the phone, ◀ ▶ ▲ ТОРМОЗ ОГОНЬ leave the system row.
+- **M362 — energy and the seven numbers** on today's gun (`08-state`): damage+type, rate, range,
+  shot speed, cone, lead rate, spread; one energy bar (`weapon` mod → reactor, `core` affixes);
+  empty bar halves rate.
+- **M363 — «Оснастка».** Sizes L/M/H and types (жёсткая/турель) on the hull points; dock screen;
+  card-against-card with three totals; стрельбище barge; groups 1–3.
+- **M364–M366 — twenty families**, seven a pass: автопушка, тяжёлое, рельса, дробовик, лазер,
+  тепловик, наводящиеся · игольник, сифон, импульсник, буровой, толкатель, миномёт, помеховая ·
+  гарпун, кассетник, дуговик, плазмомёт, зенитка, таран. `PART_GEN` 2, factories and series in
+  the name, new affixes, twenty именные.
+- **M367 — shields and missiles.** сплошной/лобовой/импульсный; обычная/роевая/ЭМИ/торпеда/
+  ловушка; зенитка in the loop.
+- **M368 — pirates on all of it.** Loadouts by rank; deserters on power hulls.
+- **M369–M370 — six powers.** The table (§7.1), six paint conveyors and form biases on the one
+  fleet generator, six emblems, six hails, six waves beside «Маяк» (§7.3).
+- **M371–M372 — the war.** Сводка (6 h), homes, contested bands, campaigns with names, truces;
+  map emblem chips and the front line; news; battle at jump-in on a front (≤8 ships); occupation
+  by a power through `13b-occupy`; the player's quarter-roll per system per сводка.
+- **M373 — the four rules.** Hail with three answers, blockade, warning on silence.
+- **M374 — episodes.** The notebook (12), episodes bound to named people, the word along the
+  трасса lines on the rumour clock, witnesses (a surviving ship in see range, or the parrot),
+  resolution = heaviest episode that reached this place, «не простил».
+- **M375 — the rescuer.** Signals after a front battle; tow/refuel/crew off a derelict earns
+  episodes with both sides.
+
+Measured from M360 on: frame cost with eight armed ships on the phone layout (`prof()`), and
+the pad row after M361 on the 44 px sweep (`91zzy-screens`).
+
 ## Small tails from almanac issue II
 
 - ~~Target chips against the ether bar~~ — measured since M302 (`91zzy-screens`).
