@@ -718,6 +718,10 @@ Each pass is closed on its own; none needs the next. Order:
 - **M381 — the regulator's schedule.** Daily and weekly sessions over `ssh drift`: read the
   digest, write the циркуляр (events, elections with one-button votes, the six waves' texts,
   dials within the constitution), publish; «show me first» mode for the author.
+- **M382 — the rites (§14).** Стройка века, заём, субботник, талоны, карантин, пропажа,
+  перепись, амнистия, реформа — each a counter kind in `war.php`, a chronicle effect, six
+  colourings; the regulator schedules two or three a week. `war.php` itself (§13: files per
+  сводка, lazy close, six ops, caps and clamps, the fuse, the digest CLI) lands with M371.
 
 Measured from M360 on: frame cost with eight armed ships on the phone layout (`prof()`), and
 the pad row after M361 on the 44 px sweep (`91zzy-screens`).

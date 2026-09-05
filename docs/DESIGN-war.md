@@ -635,4 +635,74 @@ the server keeps a **fuse** — an emergency truce if more than 40 % of anyone's
 a day without «Ревизия». Each session costs tokens (daily small, weekly more). The six voices
 are Claude's, so the evenness of the satire is Claude's too — the constitution checks at least
 «six waves a day, none without a jab».
+---
+
+## 13. The server (author, 2026-09-06: «придумай как оно на сервере»)
+
+What exists: PHP 7.4 on Nichost shared hosting, no database, `~/drift-data` outside the web
+root (0700), atomic writes through tmp + rename, a session token, postcard ops put/ask/take in
+`site/api.php` (`docs/DEPLOY.md`).
+
+**Files, not a database.** `~/drift-data/war/`: `svodka/NNNN.json` — one per сводка, counters
+by system and kind, votes, build contributions; `circ/NNNN.json` — циркуляры; `left/sx,sy.json`
+— leftovers per system; `boss/NNNN-MM.json` — per-minute damage on «Ревизия»; `acct/<id>.json`
+— the account's caps for the current сводка; `digest/`. Kilobytes each; megabytes a year.
+
+**No cron.** A сводка closes lazily: the first request after its end sees the number grew and,
+under `flock`, moves the open file to the closed ones. The host offers cron; not using it means
+there is no second mechanism to disagree with the first.
+
+**The server computes nothing about the world.** It sums counters and serves them; the client
+replays the chronicle, so the server need not know where the front is and cannot be wrong about
+it. It computes only what cannot be trusted to a client: saturation and caps.
+
+**One `site/war.php`, six ops.** `pull?since=N` — closed сводки after N, the open one, циркуляры;
+response capped, the tail on the next jump. `put` — a deed: token, account cap, the system
+exists, the сводка is current or the previous within a five-minute tail. `left` / `take` —
+leftovers with §11.3's caps. `boss` — a minute's damage; the server sums and returns shield and
+hull. `vote` — one button, one vote per account per question. `digest` — CLI only, over ssh.
+
+**Abuse.** Caps per account per kind per сводка. Saturation over the number of *accounts*, not
+rows: a hundred rows from one is one hull. Values clamped to the plausible (a minute's damage
+≤ the best build's maximum ×1.5); above that is logged and dropped. The §12 fuse lives here: on
+closing a сводка the server checks the −40 %/day ceiling and raises the truce flag. The folder is
+backed up with `drift-backups`.
+
+**For the regulator over ssh.** `php war.php digest 7` prints twenty lines over seven days;
+`php war.php circ file.json` files a циркуляр. Nothing else is needed on the server.
+
+## 14. Rites beyond elections — nine, all one button
+
+All in postcard form: counters without names, effect through the chronicle, each power's own
+colouring. The regulator picks two or three a week so it is never everything at once.
+
+1. **Стройка века.** A power names an object (relay, dome, shipyard); it needs N tons; players
+   carry; a counter. Done — it stands for everyone for good, with a plaque «построено бортами:
+   213». Death Stranding's bridge with the holding's own build. ГЛАВТРАССА's is an «ударная
+   стройка» with an endlessly moved deadline; Компания's carries an advertisement on the front.
+2. **Заём.** War bonds: bought with credits, paid after the campaign if it won, lost if not. A
+   bet on the chronicle; the crowd that bought starts carrying and fighting for its money.
+   ГЛАВТРАССА's «трёхпроцентный заём» with a number lottery, paid once a year «по многочисленным
+   просьбам».
+3. **Субботник.** Debris in a belt after a battle; a counter; cleared together, the system gets a
+   building. Mandatory at ГЛАВТРАССА; a «волонтёрская программа» with paid docking at Компания.
+4. **Талоны.** An unmet need → fuel by coupon at that power's stations: one tank per account per
+   сводка. Smuggling appears: fuel through the picket under rule two of four. A shortage as an
+   event, not a figure.
+5. **Карантин.** A system closed, the picket turns everyone back; medicine needed inside, a
+   counter; the waves say nothing is happening. Broke through, delivered — an episode at the
+   station and a line «карантин снят».
+6. **Пропажа.** A power's flagship is missing. Every scan of an unknown system is a row; on the
+   N-th it is found; the finder gets an episode, everyone a line. The crowd searches without
+   agreeing to.
+7. **Перепись.** Monthly, six questions, three answers each, one button. On the waves «99,7 %
+   довольны»; the real percentages on the map — and the regulator's only view of what players
+   think of the world, without a word.
+8. **Амнистия.** Deserters towed home are pardoned: a tow instead of a shot, an episode, and
+   fewer pirates in the area for a сводка.
+9. **Реформа.** Quarterly, something changes on paper: a деноминация at ГЛАВТРАССА, a rebrand at
+   Компания, a new устав at Орднунг with every paragraph renumbered. One line of code, a day of
+   talk on the waves.
+
+With elections (§12) that is ten rites.
 
