@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 419 · символов верхнего уровня: 3756
+Файлов: 424 · символов верхнего уровня: 3764
 
 ## СИМВОЛЫ
 
@@ -112,6 +112,7 @@ autoLandInputs               src/19-mode-landing.js:44
 autosave                     src/14a-cloud.js:52
 b64dec                       src/14-save.js:29
 b64enc                       src/14-save.js:27
+bakeCount                    tests/91zzzzy-bake.js:32
 bankTransform                src/03b-hull-paint.js:48
 BARGE_ART                    src/12l-barge.js:397
 BARGE_CAP                    src/12l-barge.js:13
@@ -889,6 +890,7 @@ drawWinter                   src/29g-winter-draw.js:334
 drawWorld                    src/28-loop.js:162
 drawWreck                    src/20aa-poi-shapes.js:8
 drawWrecksSystem             src/12l-barge.js:362
+drDoors                      tests/91zzzzzn-doors.js:26
 DRONE_BREAK_P                src/12e-drone-flight.js:21
 DRONE_FIX_MS                 src/12e-drone-flight.js:24
 DRONE_MAX_CATCHUP            src/12e-drone-flight.js:27
@@ -918,6 +920,8 @@ droneStateRu                 src/12e-drone-flight.js:151
 droneSys                     src/12e-drone-flight.js:62
 droneTarget                  src/12-economy.js:182
 droneTripMs                  src/12e-drone-flight.js:89
+drOut                        tests/91zzzzzn-doors.js:45
+drPair                       tests/91zzzzzn-doors.js:19
 DUST_COL                     src/16a-space.js:252
 DUST_LAYERS                  src/16a-space.js:274
 DUST_TAB                     src/16a-space.js:253
@@ -1721,6 +1725,7 @@ lightsShut                   src/11g-lights.js:73
 lightsShutters               src/11g-lights.js:122
 lightsSuns                   src/11g-lights.js:102
 litRGB                       src/19c-light.js:125
+liveScreens                  tests/91zzzzy-bake.js:43
 lkNodes                      tests/91zzzzzh-leak.js:14
 loadGame                     src/14a-cloud.js:56
 LOCAL                        src/11b-speech.js:103
@@ -2328,6 +2333,7 @@ pirateBaseOf                 src/24a-mode-raid.js:87
 pirateBuild                  src/12i-pirate-hull.js:33
 pirateClass                  src/12i-pirate-hull.js:26
 pirateShipId                 src/13-pirates.js:17
+PL_SKIP                      tests/91zzzzzo-plural.js:31
 pl3                          src/01-core.js:22
 PLACE_KINDS                  src/11d-place.js:22
 PLACE_LIFT                   tests/91zzzzy-place.js:93
@@ -2407,6 +2413,7 @@ plantSpeciesName             src/20e-species.js:86
 plantStemForm                src/20e-species.js:27
 plantTraitWord               src/20e-species.js:29
 plate                        src/25-cockpit.js:160
+plClass                      tests/91zzzzzo-plural.js:23
 plLand                       tests/91zzzzy-place.js:28
 plWorlds                     tests/91zzzzy-place.js:15
 POI_FIND                     src/20b-poi-find.js:18
@@ -3749,6 +3756,7 @@ wreckInteract                src/12l-barge.js:334
 wrecksHere                   src/12l-barge.js:331
 wrgba                        src/29g-winter-draw.js:27
 wtab                         src/02a-worldmix.js:85
+xpWorth                      tests/91zzzzzm-exploit.js:26
 yachtMoraleMul               src/12j-home.js:261
 yachtOwned                   src/12j-home.js:254
 YARD_CHANCE                  src/04b-fleet.js:162
@@ -5057,6 +5065,9 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzzzn-deco-biomes.js · 4 КБ
   · автотесты: большая вещь на каждый биом (M352):1
 
+## tests/91zzzzy-bake.js · 7 КБ
+  · печь: сколько растра игра держит и сколько печёт заново (M358):1
+
 ## tests/91zzzzy-hold.js · 9 КБ
   · холдинг: круг стройки числами (M339):1
 
@@ -5125,5 +5136,17 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzzzzl-gates.js · 11 КБ
   · закрытая дверь называет себя (M355):1
+
+## tests/91zzzzzm-exploit.js · 11 КБ
+  · охота на дырки в кошельке (M357):1
+
+## tests/91zzzzzn-doors.js · 8 КБ
+  · матрица дверей (M357):1
+
+## tests/91zzzzzo-plural.js · 8 КБ
+  · русское число (M357):1
+
+## tests/91zzzzzp-balance.js · 8 КБ
+  · числа, записанные в договоре (M357):1
 
 ## tests/99-run.js · 0 КБ

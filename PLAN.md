@@ -263,6 +263,26 @@ used whenever there is a world; and **a word boundary does not work next to Cyri
 (Russian letters are not word characters), so `/кр/` never matches «−17 кр» — a suite now holds
 that nowhere in the game.
 
+## M357 — hunting by search (0.355.0, 2026-09-05) — done
+
+Author: «ищи ещё баги, как хочешь ищи». Four nets built on properties instead of case lists.
+
+- `91zzzzzm-exploit` — splitting a deal never beats doing it whole; a buy-and-sell round loses on
+  every station; and six hundred random sequences of ordinary actions with the clock STOPPED never
+  make the player richer (worth priced at that counter's own prices). No holes.
+- `91zzzzzn-doors` — the door matrix: every scene × every door, over a hundred cells, each checked
+  for the mode/state pair, a living frame and a whole world on the way back, plus a save taken on
+  the threshold. **The freeze is not here** — that is now measured, not assumed.
+- `91zzzzzo-plural` — `pl3` over the whole hundred (11–14, 111–114), and the game's own text read
+  for «number + word» disagreement without a dictionary.
+- `91zzzzzp-balance` — the designed numbers are pinned to the documents that state them
+  (CREW_YIELD, the locker, the cooperative, the spread, the drone-miner, the rank caps); a
+  deliberate rebalance turns this red once and asks for the PLAN line to be updated too.
+
+Still open for the freeze, and the cheapest next step: measure not time but WORK over a long
+evening — `SYS_CACHE` size, the chunk store, the `screenLayer` cache over tens of thousands of
+frames with system changes. If any of them grows linearly, that is the cause.
+
 ## Loose ends (as of 2026-08-28, after the graphics run 0.237.0–0.244.0)
 
 Everything left open, with the reason it is open. Nothing here is a bug report — bugs are fixed

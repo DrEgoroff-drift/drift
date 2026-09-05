@@ -7,6 +7,42 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.355.0 - M357: hunting by search, not by list
+
+Author: «ищи ещё баги, как хочешь ищи». Four nets, and this time the method is different: not a
+list of cases someone thought of, but properties that must hold for ANY sequence of legal play.
+
+**The wallet has no holes** (`91zzzzzm`). Splitting a deal must not beat doing it whole — selling
+twenty one at a time against twenty at once, and buying the same both ways, across six goods; a
+buy-and-sell round at one counter must lose money on every station in the settled galaxy (forty
+stations × every good); and — the real hunt — six hundred RANDOM sequences of ordinary actions
+(buy, sell, scrap, fit, unfit, refuel, repair, locker in and out) with the CLOCK STOPPED, so no
+income exists anywhere, while the player's worth is priced at that station's own prices. It may
+not grow. It didn't.
+
+**The door matrix** (`91zzzzzn`). PLAN has carried «the author's freeze has no cause yet» for
+weeks. `stepWorld` dispatches modes in PAIRS («dig AND G.dig»), so a mode whose state object is
+missing does not crash — it stops doing anything at all: no update, no draw, no response, and
+nothing in the console. That is exactly what a freeze looks like. So: every scene × every door
+(landing, surface, mine, cave, belt, scoop, base, home, wintering, sanatorium, take-off, map,
+station) — over a hundred cells, each checked three ways: mode and state agree, the frame lives
+for a dozen ticks, and the way back leaves the world whole. Plus a save taken ON the threshold of
+every door, read back and stepped. No half-open state anywhere; the freeze is not here.
+
+**Russian numbers** (`91zzzzzo`). `pl3` is checked across the whole hundred including 11–14 and
+111–114, and then the game's own text is read: the journal from a run through every scene plus
+every board of the desk and the station, and each «number + word» pair is sorted by numeral class.
+One word form may not stand after both «1» and «5» — that is disagreement, found without a
+dictionary. Oblique cases, stat deltas («+21 бак») and mass nouns are excluded, with reasons.
+
+**The contract** (`91zzzzzp`). The numbers the design rests on are now guarded against silent
+drift: `CREW_YIELD` 0.85 («a hired hand is a bet, not an income stream»), the locker's 1 %/day and
+thirty-day lapse, the cooperative's 12 000 exam and 1 500 stamp, the counter's 1.06 spread, the
+drone-miner's 9 000, the rank caps 60/150/none. Each line names the document it comes from, so a
+deliberate rebalance turns red once and asks for PLAN.md to be updated with it.
+
+Nothing found: the economy is tight, the doors are clean, the numbers agree. That is the report.
+
 ## 0.354.0 - M355: does the button do what it says
 
 Author: «тесты на логику, каких никогда не делали: действие и ожидаемое поведение — верное
