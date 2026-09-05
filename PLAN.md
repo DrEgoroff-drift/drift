@@ -294,6 +294,27 @@ Still open for the freeze, and the cheapest next step: measure not time but WORK
 evening — `SYS_CACHE` size, the chunk store, the `screenLayer` cache over tens of thousands of
 frames with system changes. If any of them grows linearly, that is the cause.
 
+## M359 — the evidence, the hands, the things (0.357.0, 2026-09-05) — done
+
+The state-and-rules half of a two-session hunt (the picture half is M358).
+
+- **the frame guard stopped talking** — the same crash was announced once ever, so a crash that
+  repeats every frame (which is what a freeze IS) left no trace after two seconds. It now reminds
+  every fifteen seconds with the count; `91zzzzzn-doors` pins the contract. This may be why the
+  author's freeze has never carried a «СБОЙ · …» line.
+- `91zzzzzq-input` — the input layer had no suite at all: focus and tab-hide release the keys, a
+  finger leaving a pad releases it, and the action edge lives one frame across a whole hold.
+- `91zzzzzr-cloud` — boot never lets an older cloud record replace a fresher local one, takes a
+  newer one, and survives ten malformed answers. (Both suites use a synchronous stand-in: a
+  promise's `.then` lands after the report is built.)
+- `91zzzzzs-quests` — every kind of deed has code that closes it; deeds do not double; the journal
+  keeps its cap; an open deed has an address or an honest «адреса нет».
+- `91zzzzzt-opis` — parts do not double or vanish across ten fit/unfit rounds; scrapping pays once;
+  «за борт» throws exactly what was named and never people.
+- `91zzzzzu-monotone` — what may never run backwards: the rung never falls for doing more, danger
+  grows with distance (and is the same all round the ring), and a price flooded down stops at its
+  floor and returns with time (measured on the market's own clock, not «a day»).
+
 ## Loose ends (as of 2026-08-28, after the graphics run 0.237.0–0.244.0)
 
 Everything left open, with the reason it is open. Nothing here is a bug report — bugs are fixed

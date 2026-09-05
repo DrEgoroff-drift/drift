@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 427 · символов верхнего уровня: 3768
+Файлов: 429 · символов верхнего уровня: 3769
 
 ## СИМВОЛЫ
 
@@ -880,7 +880,7 @@ drawSysTraffic               src/17f-sys-traffic.js:29
 drawTemple                   src/20aa-poi-shapes.js:50
 drawThingIcon                src/27i-ui-table.js:330
 drawTierTrim                 src/03b-hull-paint.js:62
-drawTiles                    src/18c-chunks.js:125
+drawTiles                    src/18c-chunks.js:137
 drawTrail                    src/16-flight.js:362
 drawWallPaper                src/11ae-concert.js:39
 drawWanderer                 src/12v-wander.js:175
@@ -2136,6 +2136,7 @@ offerTake                    src/11ah-offer.js:209
 offerTick                    src/11ah-offer.js:166
 offerVisit                   src/11ah-offer.js:124
 ok                           tests/90-harness.js:33
+opCensus                     tests/91zzzzzt-opis.js:15
 openBarge                    src/12l-barge.js:597
 openCrewView                 src/27b-ui-crew.js:230
 openDeal                     src/27n-ui-deal.js:163
@@ -2945,8 +2946,8 @@ scoopScrX                    src/19a-mode-scoop.js:265
 scoopSpawn                   src/19a-mode-scoop.js:33
 scrapPart                    src/05-parts.js:316
 scrapYield                   src/05-parts.js:306
-SCREEN_LAYERS                src/18c-chunks.js:92
-screenLayer                  src/18c-chunks.js:93
+SCREEN_LAYERS                src/18c-chunks.js:104
+screenLayer                  src/18c-chunks.js:105
 SCRIP_BASE                   src/12u-scrip.js:28
 SCRIP_LOG                    src/12u-scrip.js:32
 SCRIP_MIN                    src/12u-scrip.js:29
@@ -3384,9 +3385,9 @@ TIER_RU                      src/05-parts.js:51
 tierAt                       src/04-mods.js:56
 tierFromDanger               src/05-parts.js:66
 tierOf                       src/04b-fleet.js:157
-TILE                         src/18c-chunks.js:109
-tileAt                       src/18c-chunks.js:115
-tileStore                    src/18c-chunks.js:110
+TILE                         src/18c-chunks.js:121
+tileAt                       src/18c-chunks.js:127
+tileStore                    src/18c-chunks.js:122
 timeBucket                   src/03-ships.js:103
 TIN_BIN                      src/12ta-tin.js:31
 TIN_CAP                      src/12ta-tin.js:28
@@ -4279,7 +4280,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/18b-map-hold.js · 10 КБ
   · владения на карте (M348):1
 
-## src/18c-chunks.js · 7 КБ
+## src/18c-chunks.js · 9 КБ
   · кэш статичного: чанки и слои:1
 
 ## src/18d-postfx.js · 4 КБ
@@ -5069,7 +5070,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzzzn-deco-biomes.js · 4 КБ
   · автотесты: большая вещь на каждый биом (M352):1
 
-## tests/91zzzzy-bake.js · 7 КБ
+## tests/91zzzzy-bake.js · 11 КБ
   · печь: сколько растра игра держит и сколько печёт заново (M358):1
 
 ## tests/91zzzzy-hold.js · 9 КБ
@@ -5153,7 +5154,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzzzzp-balance.js · 8 КБ
   · числа, записанные в договоре (M357):1
 
-## tests/91zzzzzq-input.js · 7 КБ
+## tests/91zzzzzq-input.js · 8 КБ
   · руки отпускают (M357):1
 
 ## tests/91zzzzzr-cloud.js · 6 КБ
@@ -5161,5 +5162,11 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzzzzs-quests.js · 8 КБ
   · у обещания есть тот, кто его закроет (M357):1
+
+## tests/91zzzzzt-opis.js · 7 КБ
+  · опись: вещь не двоится и не пропадает (M357):1
+
+## tests/91zzzzzu-monotone.js · 8 КБ
+  · что не имеет права идти вспять (M359):1
 
 ## tests/99-run.js · 0 КБ

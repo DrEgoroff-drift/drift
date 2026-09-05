@@ -7,6 +7,48 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.357.0 - M359: the evidence, the hands and the things that must not double
+
+Hunting alongside the parallel session (which took the picture and the frame's bakes), this is the
+state-and-rules half: five nets, and one change to the frame guard that may be the reason the
+author's freeze has never left a trace.
+
+**The guard stopped talking** (`28-loop`). By design the same crash is announced ONCE — a repeat
+only counts, so the message does not become a wall. But a freeze is exactly a crash that repeats
+every frame: the on-screen line fades in two seconds, the journal keeps a single row, and a minute
+later the game that is standing still has nothing to say about it. That is the missing evidence
+PLAN has been asking for. Now a repeat still stays quiet, but every fifteen seconds it reminds and
+names the count («СБОЙ · … · повторяется · 240 раз»), in the journal too. The contract is pinned by
+a suite: a hundred repeats in the same second say nothing, sixteen seconds later one reminder with
+a number.
+
+**The hands let go** (`91zzzzzq-input`). Input had no suite at all — and it is the layer where a
+bug looks like the game going mad rather than breaking: a stuck key burns fuel while you read mail
+in another window. Focus lost and tab hidden release every key; a finger that leaves a pad
+(pointercancel/pointerleave) releases it; and the action EDGE lives exactly one frame across a
+whole hold — measured on the real frame, because that is where the law lives (with `hasFocus`
+stubbed: in headless the frame releases the keys itself, and without the stub the test measures
+the guard instead of the edge).
+
+**The cloud does not eat the evening** (`91zzzzzr-cloud`). `14a-cloud` promises in a comment that
+boot only stores the record that is NEWER. Nobody checked. Now: an older cloud record never
+replaces a fresher local one, a newer one is taken, and ten malformed answers (null, {}, save
+null/0/"строка"/[], a string ts, «нужен вход») leave the local record exactly as it was. Both
+suites drive a synchronous stand-in for the cloud, because a promise's `.then` runs after the
+report is built — the first version of this file passed without checking anything.
+
+**Every promise has a closer** (`91zzzzzs-quests`). The journal of deeds rests on «a deed is closed
+by the code that performs it, not by a timer» — so every kind of deed must HAVE that code, or it
+is a line in the journal for ever with an eternal «срок вышел». The source is read for every key
+that opens a deed against every key that closes one (including keys held in a variable). Plus:
+deeds do not double, the journal keeps its cap, every open deed has an address or an honest
+«адреса нет», and an expired deadline is words, not a negative number.
+
+**Things do not double** (`91zzzzzt-opis`). Ten rounds of every part into its slot and back: the
+census of the hold must be identical, a part is never both listed and fitted, scrapping takes it
+out once and pays once, and «за борт» throws exactly what was named — while a tap on people says
+why it will not.
+
 ## 0.356.0 - M358: what the frame bakes, and how much raster it holds
 
 Hunting the author's freeze together with the parallel session, which took state and rules and left
