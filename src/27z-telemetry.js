@@ -235,7 +235,9 @@ function hud(){
   const ab=(typeof mapAddrBox==="function")?mapAddrBox():null;
   if(ab){const onMap=G.mode==="map"&&!G.mapClean;setSt(ab,"display",onMap?"flex":"none");
     const mk=document.getElementById("mapMarkGo");
-    if(mk&&onMap&&typeof mapMarkAt==="function")setTx(mk,mapMarkAt(G.sel.x,G.sel.y)>=0?"СНЯТЬ МЕТКУ":"ОТМЕТИТЬ");}
+    if(mk&&onMap&&typeof mapMarkAt==="function")setTx(mk,mapMarkAt(G.sel.x,G.sel.y)>=0?"СНЯТЬ МЕТКУ":"ОТМЕТИТЬ");
+    const ly=document.getElementById("mapLayerGo");
+    if(ly&&onMap&&typeof mapLayerRu==="function")setTx(ly,mapLayerRu());}
   const wp=document.getElementById("wanwin");
   if(wp)setSt(wp,"display",G.mode==="wanderer"?"":"none");
   const pb=document.getElementById("pricesbtn");

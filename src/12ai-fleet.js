@@ -653,11 +653,13 @@ function fleetCaravanActive(){
    красно-белого цвета флота — по нему можно идти, это и есть трасса. Узловая
    (рунг ≥ 25) — квадратная засечка у звезды. Рисуется поверх связей, под
    звёздами; ничего не хранится. */
+let FLEET_MAP_LEGS=0;   /* сколько плеч нарисовано за кадр — читает набор M318 */
 function drawFleetMap(vis,cell){
   const on=v=>!!(v.s&&v.s.station&&fleetRung(v.s)>=5);
   const L=vis.filter(on);
+  FLEET_MAP_LEGS=0;
   if(!L.length)return;
-  ctx.save();ctx.setLineDash([3,4]);ctx.lineWidth=1.2;
+  ctx.save();ctx.lineWidth=1;
   const seen=new Set();
   /* линия — цепочка, не сетка (§14, альманах III 0.314.0): у каждой станции
      плечо только к двум ближайшим соседям с флотом; иначе кучка из пяти
@@ -667,11 +669,15 @@ function drawFleetMap(vis,cell){
       .sort((p,q)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(a.x-q.x,a.y-q.y)).slice(0,2);
     for(const b of nb){
     const key=a.gx<b.gx||(a.gx===b.gx&&a.gy<b.gy)?a.gx+","+a.gy+">"+b.gx+","+b.gy:b.gx+","+b.gy+">"+a.gx+","+a.gy;
-    if(seen.has(key))continue;seen.add(key);
-    ctx.strokeStyle="rgba(226,120,100,.45)";ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
-    ctx.strokeStyle="rgba(236,232,220,.35)";ctx.lineDashOffset=3.5;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();ctx.lineDashOffset=0;
+    if(seen.has(key))continue;seen.add(key);FLEET_MAP_LEGS++;
+    /* тонкая двойная линия с засечками-верстами (M348): трасса — дорога на карте, не пунктир */
+    const dx=b.x-a.x,dy=b.y-a.y,L=Math.hypot(dx,dy)||1,nx=-dy/L*1.3,ny=dx/L*1.3;
+    ctx.strokeStyle="rgba(236,232,220,.42)";
+    ctx.beginPath();ctx.moveTo(a.x+nx,a.y+ny);ctx.lineTo(b.x+nx,b.y+ny);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(a.x-nx,a.y-ny);ctx.lineTo(b.x-nx,b.y-ny);ctx.stroke();
+    ctx.strokeStyle="rgba(226,120,100,.6)";
+    for(let t=.25;t<.99;t+=.25){const tx=a.x+dx*t,ty=a.y+dy*t;ctx.beginPath();ctx.moveTo(tx+nx*2.6,ty+ny*2.6);ctx.lineTo(tx-nx*2.6,ty-ny*2.6);ctx.stroke();}
   }}
-  ctx.setLineDash([]);
   for(const v of L){
     if(fleetRung(v.s)<25)continue;
     ctx.strokeStyle="rgba(236,232,220,.7)";ctx.lineWidth=1;

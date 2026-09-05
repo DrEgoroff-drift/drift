@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 399 · символов верхнего уровня: 3622
+Файлов: 401 · символов верхнего уровня: 3635
 
 ## СИМВОЛЫ
 
@@ -48,7 +48,7 @@ addPart                      src/05-parts.js:227
 addPath                      src/25-cockpit.js:154
 addRes                       src/11-log.js:140
 addrForm                     src/11b-speech.js:96
-addrify                      src/18a-map-addr.js:243
+addrify                      src/18a-map-addr.js:245
 adjTo                        src/05-parts.js:23
 AFFIX                        src/05-parts.js:29
 AFFIX_BAD                    src/05-parts.js:46
@@ -724,11 +724,11 @@ drawDustMotes                src/19-mode-landing.js:552
 drawElevator                 src/20aa-poi-shapes.js:91
 drawExhaust                  src/16a-space.js:360
 drawFactory                  src/20aa-poi-shapes.js:378
-drawFactRoute                src/13b-occupy.js:241
+drawFactRoute                src/13b-occupy.js:249
 drawFindsSystem              src/17b-finds.js:182
 drawFlame                    src/03b-hull-paint.js:10
 drawFleet                    src/12ai-fleet.js:496
-drawFleetMap                 src/12ai-fleet.js:656
+drawFleetMap                 src/12ai-fleet.js:657
 drawFleetShip                src/12ai-fleet.js:452
 drawFoeBody                  src/24ab-raid-foe.js:10
 drawForeground               src/21b-surface-deco.js:249
@@ -1001,6 +1001,7 @@ FLEET_CLASSES                src/12ai-fleet.js:20
 FLEET_EPITH                  src/04b-fleet.js:57
 FLEET_KEYS                   src/04b-fleet.js:148
 FLEET_LUXE                   src/04b-fleet.js:59
+FLEET_MAP_LEGS               src/12ai-fleet.js:656
 FLEET_MARK                   src/04b-fleet.js:56
 FLEET_N                      src/04b-fleet.js:106
 FLEET_NAMES                  src/12ai-fleet.js:41
@@ -1124,8 +1125,8 @@ glowTier                     src/11i-glow.js:122
 glyphEl                      src/12t-settle.js:79
 glyphHasRunes                src/12t-settle.js:52
 glyphNodes                   src/12t-settle.js:92
-goalCard                     src/13b-occupy.js:171
-goalOwnYacht                 src/13b-occupy.js:164
+goalCard                     src/13b-occupy.js:179
+goalOwnYacht                 src/13b-occupy.js:172
 gotoSector                   src/11a-quests.js:68
 gradePass                    src/19c-light.js:258
 GRAIN_PAT                    src/19c-light.js:378
@@ -1500,7 +1501,7 @@ jobOffer                     src/12e-mgr-jobs.js:228
 jobPick                      src/12e-mgr-jobs.js:259
 jobRefuse                    src/12e-mgr-jobs.js:57
 jobTick                      src/12e-mgr-jobs.js:287
-jump                         src/18-mode-map.js:582
+jump                         src/18-mode-map.js:586
 jumpToBase                   src/21a-mode-base.js:315
 KEEP_DARK_AFTER              src/11k-keepers.js:48
 KEEP_HABIT                   src/11k-keepers.js:35
@@ -1733,6 +1734,7 @@ makePhrase                   src/10-music.js:344
 makeRock                     src/24-mode-belt.js:54
 makeWorld                    src/02a-worldmix.js:47
 MAP_BOX                      src/18-mode-map.js:27
+MAP_LAYERS                   src/18b-map-hold.js:25
 MAP_MARKS_MAX                src/18a-map-addr.js:29
 mapAddrBox                   src/18a-map-addr.js:227
 mapBack                      src/18-mode-map.js:111
@@ -1745,11 +1747,19 @@ mapDeck                      src/18-mode-map.js:13
 mapFit                       src/18-mode-map.js:93
 mapGoAddr                    src/18a-map-addr.js:215
 mapGridDraw                  src/18a-map-addr.js:55
+mapHoldingsDraw              src/18b-map-hold.js:80
+mapHoldingsTop               src/18b-map-hold.js:129
+mapHousePatch                src/18b-map-hold.js:31
+mapLayer                     src/18b-map-hold.js:26
+mapLayerNext                 src/18b-map-hold.js:28
+mapLayerOn                   src/18b-map-hold.js:27
+mapLayerRu                   src/18b-map-hold.js:29
 mapMarkAt                    src/18a-map-addr.js:31
 mapMarks                     src/18a-map-addr.js:30
 mapMarksDraw                 src/18a-map-addr.js:105
 mapMarkToggle                src/18a-map-addr.js:33
 mapNebula                    src/18-mode-map.js:62
+mapOwnHere                   src/18b-map-hold.js:64
 mapParseAddr                 src/18a-map-addr.js:223
 mapPeek                      src/18-mode-map.js:104
 mapPriceDraw                 src/12aa-need.js:327
@@ -1762,6 +1772,9 @@ mapRoseDraw                  src/18a-map-addr.js:196
 mapRulersDraw                src/18a-map-addr.js:122
 mapRulerTop                  src/18a-map-addr.js:53
 mapRumoursDraw               src/18a-map-addr.js:86
+mapTagAt                     src/18b-map-hold.js:71
+mapTrassaPairs               src/18b-map-hold.js:47
+mapUnderTrassa               src/18b-map-hold.js:60
 mapViewC                     src/18-mode-map.js:82
 mapZoomK                     src/18-mode-map.js:87
 mapZoomSet                   src/18-mode-map.js:90
@@ -1977,27 +1990,27 @@ noise3                       src/24-mode-belt.js:7
 noiseBuf                     src/09-audio.js:65
 normsOf                      src/12ab-hold.js:89
 NPC_SHIPS                    src/03-ships.js:144
-OCC_CALM_MS                  src/13b-occupy.js:206
+OCC_CALM_MS                  src/13b-occupy.js:214
 OCC_LVL                      src/13b-occupy.js:20
 OCC_MAX                      src/13b-occupy.js:19
 OCC_PERIOD                   src/13b-occupy.js:28
 occAt                        src/13b-occupy.js:31
-occCalmNear                  src/13b-occupy.js:216
-occExtraPirates              src/13b-occupy.js:148
+occCalmNear                  src/13b-occupy.js:224
+occExtraPirates              src/13b-occupy.js:156
 occHere                      src/13b-occupy.js:36
 occInfo                      src/13b-occupy.js:37
 occInit                      src/13b-occupy.js:29
 occKey                       src/13b-occupy.js:30
-occKill                      src/13b-occupy.js:111
-occLairLevel                 src/13b-occupy.js:230
-occLairName                  src/13b-occupy.js:231
+occKill                      src/13b-occupy.js:119
+occLairLevel                 src/13b-occupy.js:238
+occLairName                  src/13b-occupy.js:239
 occLvl                       src/13b-occupy.js:35
 occNest                      src/13b-occupy.js:43
-occPriceMul                  src/13b-occupy.js:139
-occService                   src/13b-occupy.js:141
+occPriceMul                  src/13b-occupy.js:147
+occService                   src/13b-occupy.js:149
 occSet                       src/13b-occupy.js:49
-occSummary                   src/13b-occupy.js:155
-occSuppress                  src/13b-occupy.js:207
+occSummary                   src/13b-occupy.js:163
+occSuppress                  src/13b-occupy.js:215
 occTick                      src/13b-occupy.js:60
 odo                          src/11d-place.js:24
 odoAdd                       src/11d-place.js:26
@@ -3892,7 +3905,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12ah-holdnews.js · 6 КБ
   · холдинг · слухи, новости и чужие на проданной дороге:1
 
-## src/12ai-fleet.js · 53 КБ
+## src/12ai-fleet.js · 54 КБ
   · ГЛАВТРАССА: флот, который нельзя купить (M310, DESIGN-holding §18):1
 
 ## src/12ak-locker.js · 7 КБ
@@ -4115,7 +4128,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/17-mode-system.js · 43 КБ
   · режим: система:1
 
-## src/18a-map-addr.js · 16 КБ
+## src/18a-map-addr.js · 17 КБ
   · карта говорит адресами (M347):1
 
 ## src/18a-material.js · 21 КБ
@@ -4123,6 +4136,9 @@ zooTick                      src/11ad-zoo.js:41
 
 ## src/18b-geology.js · 14 КБ
   · геология:1
+
+## src/18b-map-hold.js · 10 КБ
+  · владения на карте (M348):1
 
 ## src/18c-chunks.js · 7 КБ
   · кэш статичного: чанки и слои:1
@@ -4133,7 +4149,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/18d-verlet.js · 7 КБ
   · верле: верёвки и ткань:1
 
-## src/18-mode-map.js · 41 КБ
+## src/18-mode-map.js · 42 КБ
   · карта:1
   · где у карты пол и где правый борт:3
   · карта: ночное небо, а не схема молекулы:51
@@ -4898,6 +4914,9 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzzzk-mapaddr.js · 5 КБ
   · автотесты: карта говорит адресами (M347):1
+
+## tests/91zzzzl-maphold.js · 5 КБ
+  · автотесты: владения на карте (M348):1
 
 ## tests/91zzzzy-hold.js · 9 КБ
   · холдинг: круг стройки числами (M339):1

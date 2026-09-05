@@ -154,21 +154,12 @@ cosmetics exist; the desk gets one table «ОПИСЬ»; a locker exists at stat
   the match button, every «сектор x:y» in game text tappable (`addrify`), the rose, and the wordless mark —
   a match from the wallet (`G.mapMarks`, ≤10). Body in `docs/PLAN-archive.md`.
 
-- **M348 — holdings on the map** (author 2026-09-04). Three languages, because the state is a line,
-  houses are patches and pirates are foci — never one fill. **Houses:** a sector with a house station
-  and its 1-jump neighbours washed in the house colour (`HOUSES.col`), two-colour hatching where two
-  houses overlap (both scrips accepted there), house form glyphs stay (`17d`); under the darkness law
-  — bright by the player, gone beyond the jump edge except where seen/heard. **ГЛАВТРАССА:** трассы as
-  a thin double line between nodes with milestone ticks, name written once along the line like a
-  river; sectors along it are «под трассой» (fleet, norm, pirates do not hold) — a band, not a fill
-  (`12ai`). **Pirates:** rusty diagonal hatch over occupied sectors (labels ПОД ПИРАТАМИ/БЛОКАДА
-  already exist, `13b`); where hatch meets a house patch the front line is a touch brighter.
-  **Own:** sectors with own bases/holding stations get a thin frame in the player's colour, visible
-  even in the dark. **Changed hands:** a sector whose owner changed since the last visit carries a
-  small tag «с 12-го дня: «Ковш» → пираты», fading over three days (the same delta `12p-news`
-  records). **Layers:** a СЛОИ button on the map — ВЛАДЕНИЯ / ЦЕНЫ / СЛУХИ, each toggled; one at a time
-  on the phone. Regions (`06b`) stay unlabelled — by rule. Tests: house patch = station ∪ 1-jump;
-  a sector under a трасса is never marked occupied for long; the tag appears only on a real change.
+- **M348** (0.347.0) — done: holdings on the map (`18b-map-hold`) — house patches (station ∪ 1-jump, two-colour
+  hatch where houses overlap, darkness law, seen/heard beyond the edge), ГЛАВТРАССА as a double line with
+  milestone ticks, a band under it and the name once along the longest leg, rusty hatch over occupied sectors
+  with a brighter front at house patches, own frames, «сменился хозяин» tags fading over three days, a СЛОИ
+  button (ВСЕ/ВЛАДЕНИЯ/ЦЕНЫ/СЛУХИ) in the map strip; pirates no longer hold or take sectors under the трасса.
+  Body in `docs/PLAN-archive.md`.
 
 - **M349 — «Маяк ГЛАВТРАССЫ»** (author 2026-09-04): the official voice in the ether, one bulletin per
   shift (`HOLD_SHIFT`, 20 real minutes) plus holidays (`11am`). Poster tone: a Mayakovsky «лесенка»

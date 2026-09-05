@@ -7,6 +7,22 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.347.0 - M348: holdings on the map — houses as patches, the трасса as a line, pirates as foci
+
+Who owns what, in three languages, because they are three different things. Houses wash their station's
+sector and its neighbours a jump around in the house colour; where two houses overlap the second one
+hatches over the first — both scrips are taken there. The wash obeys the darkness law: bright by you,
+gone beyond your reach except where you have seen the prices or heard a rumour. ГЛАВТРАССА is a thin
+double line between the stations the fleet serves, with milestone ticks and its name written once along
+the longest leg like a river's; the sectors along it lie under a faint band, and pirates no longer hold
+them — an occupied sector on the line loses a level every tick, and the front never steps onto it.
+Occupied sectors carry a rusty diagonal hatch; where the hatch meets a house patch the cell's edge is a
+touch brighter — the front line. Your own bases and holding stations wear a thin frame in your colour,
+visible even in the dark. Where the news said a station «перешла другим людям», the sector carries a
+small tag «сменился хозяин · 2 дня назад» that fades over three days. A СЛОИ button in the map's strip
+cycles ВСЕ → ВЛАДЕНИЯ → ЦЕНЫ → СЛУХИ; the ЦЕНЫ layer prints each seen station's best price under its
+star, amber when that good is in your hold.
+
 ## 0.346.0 - M347: the map speaks in addresses
 
 The author's words: «на карте не понятно, что за сектора и адреса». Now the chart has what an address is

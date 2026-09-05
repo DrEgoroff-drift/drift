@@ -258,8 +258,10 @@ function drawMap(){
   if(typeof drawFleetMap==="function")drawFleetMap(vis,cell);
   /* «Карта чужой руки» (12h → 12v, M342): парус на стоянке «Сороки», с «чтением» — и на следующей */
   if(typeof drawWanderMap==="function")drawWanderMap(vis,cell);
-  /* области слухов и спички на клетках (M347) — над сеткой, под звёздами */
-  if(typeof mapRumoursDraw==="function"&&!G.mapClean){mapRumoursDraw(V,cell);mapMarksDraw(V,cell);}
+  /* владения (M348) — пятна домов, полоса трассы, штрих пиратов, своё — под звёздами */
+  if(typeof mapHoldingsDraw==="function"&&!G.mapClean)mapHoldingsDraw(vis,cell,V,st);
+  /* области слухов и спички на клетках (M347) — над сеткой, под звёздами; слухи — своим слоем */
+  if(typeof mapRumoursDraw==="function"&&!G.mapClean){if(typeof mapLayerOn!=="function"||mapLayerOn("rumours"))mapRumoursDraw(V,cell);mapMarksDraw(V,cell);}
   let sel=null,cur=null;
   for(const v of vis){
     const{gx,gy,s,x,y}=v;
@@ -406,6 +408,8 @@ function drawMap(){
     ctx.fillStyle="#7fe6d8";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
     ctx.fillText("ВЫ",ex-Math.cos(an)*16,ey-Math.sin(an)*16+3);
   }
+  /* имя трассы, бирки перемен и ценники (M348) — над звёздами */
+  if(typeof mapHoldingsTop==="function"&&!G.mapClean)mapHoldingsTop(vis,cell,V,st);
   /* маршрут домена — под курсом игрока: мир под намерением, а не наоборот */
   drawFactRoute(vis);
   /* свой маршрут — поверх маршрута домена: это намерение игрока, и оно главнее */

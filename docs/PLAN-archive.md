@@ -7820,3 +7820,35 @@ field became a small map-tools strip under the rulers at the right — «сек�
 joined the canvas-vs-DOM guard in `91f-ui`. A jump into an empty selected cell is refused by the same
 `bad` flag that refuses an empty tank. Tappable addresses: `addrify(root)` wraps «сектор x:y» in text
 nodes of the desk and the station body into `u.addr`, one delegated click handler each → `gotoSector`.
+
+## M348 — holdings on the map (0.347.0, 2026-09-05)
+
+- **M348 — holdings on the map** (author 2026-09-04). Three languages, because the state is a line,
+  houses are patches and pirates are foci — never one fill. **Houses:** a sector with a house station
+  and its 1-jump neighbours washed in the house colour (`HOUSES.col`), two-colour hatching where two
+  houses overlap (both scrips accepted there), house form glyphs stay (`17d`); under the darkness law
+  — bright by the player, gone beyond the jump edge except where seen/heard. **ГЛАВТРАССА:** трассы as
+  a thin double line between nodes with milestone ticks, name written once along the line like a
+  river; sectors along it are «под трассой» (fleet, norm, pirates do not hold) — a band, not a fill
+  (`12ai`). **Pirates:** rusty diagonal hatch over occupied sectors (labels ПОД ПИРАТАМИ/БЛОКАДА
+  already exist, `13b`); where hatch meets a house patch the front line is a touch brighter.
+  **Own:** sectors with own bases/holding stations get a thin frame in the player's colour, visible
+  even in the dark. **Changed hands:** a sector whose owner changed since the last visit carries a
+  small tag «с 12-го дня: «Ковш» → пираты», fading over three days (the same delta `12p-news`
+  records). **Layers:** a СЛОИ button on the map — ВЛАДЕНИЯ / ЦЕНЫ / СЛУХИ, each toggled; one at a time
+  on the phone. Regions (`06b`) stay unlabelled — by rule. Tests: house patch = station ∪ 1-jump;
+  a sector under a трасса is never marked occupied for long; the tag appears only on a real change.
+
+**Decided while building:** the three languages are kept apart in code as in the picture — patches
+(`mapHousePatch`: a house station and its eight neighbours, a second house as hatching of its colour),
+the line (`drawFleetMap` in `12ai` now draws a thin double line with quarter-ticks; `18b` adds the band
+under it and writes «ГЛАВТРАССА» once along the longest visible leg), and foci (rusty hatch over
+`occLvl>0`, the cell outlined brighter where it lies inside a house patch). Own sectors are read from
+`G.bases` and `G.hold[key].bld`. The «changed hands» tag reuses the mark `12p-news` already writes
+(«сменился хозяин», with its real-time stamp) and fades over three days; no new state. «Under the
+трасса» became a rule in `13b`: an occupied system with a fleet station (rung ≥ 5) loses a level per
+tick instead of strengthening, and expansion never steps onto one. Layers: one cycling button in the
+map strip (ВСЕ → ВЛАДЕНИЯ → ЦЕНЫ → СЛУХИ) on both layouts rather than three toggles — the phone strip
+had no room for three, and one control that behaves the same everywhere is easier to learn; the
+ЦЕНЫ layer prints each seen station's best price under its star (own cargo amber), the СЛУХИ layer
+gates M347's hatched squares. Regions stay unlabelled by rule.

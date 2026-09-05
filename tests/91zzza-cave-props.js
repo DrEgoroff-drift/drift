@@ -370,7 +370,7 @@ TEST_SUITES.push(()=>suite("M318: под баком тень на теле, рё
   /* §14: четыре станции кучкой — цепочка, не сетка (было бы 6 плеч = 12 штрихов) */
   {const saveRung=window.rungOf;window.rungOf=()=>12;
     const st={x:1,y:0};const vis=[[0,0,100,100],[1,0,160,100],[0,1,100,160],[1,1,160,160]].map(q=>({gx:q[0],gy:q[1],s:{sx:q[0],sy:q[1],station:st},x:q[2],y:q[3]}));
-    let strokes=0;const o=ctx.stroke;ctx.stroke=function(){strokes++;return o.apply(ctx,arguments);};
-    drawFleetMap(vis,60);ctx.stroke=o;window.rungOf=saveRung;
-    ok(strokes>=6&&strokes<=8,"четыре станции дали 3–4 плеча, не шесть ("+strokes/2+")");}
+    /* плечи считает сама карта (FLEET_MAP_LEGS): с M348 у плеча две линии и засечки, штрихи не мера */
+    drawFleetMap(vis,60);window.rungOf=saveRung;
+    ok(FLEET_MAP_LEGS>=3&&FLEET_MAP_LEGS<=4,"четыре станции дали 3–4 плеча, не шесть ("+FLEET_MAP_LEGS+")");}
 }));

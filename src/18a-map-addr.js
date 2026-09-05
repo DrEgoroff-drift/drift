@@ -229,12 +229,14 @@ function mapAddrBox(){
   if(e)return e;
   e=document.createElement("div");e.id="mapaddr";
   e.innerHTML="<span>сектор</span><input id='mapAddrIn' inputmode='text' autocomplete='off' placeholder='4:-7' aria-label='адрес сектора'><button class='act sm' id='mapAddrGo'>→</button>"+
-    "<button class='act sm' id='mapMarkGo' title='спичка на клетку: из кошелька, пока лежит'>ОТМЕТИТЬ</button>";
+    "<button class='act sm' id='mapMarkGo' title='спичка на клетку: из кошелька, пока лежит'>ОТМЕТИТЬ</button>"+
+    "<button class='act sm' id='mapLayerGo' title='владения · цены · слухи — по одному или все'>СЛОИ · ВСЕ</button>";
   document.body.appendChild(e);
   const inp=e.querySelector("input"),go=e.querySelector("button");
   const run=()=>{const a=mapParseAddr(inp.value);if(!a){say("Адрес пишут так: 4:-7");return;}mapGoAddr(a.sx,a.sy);inp.blur();};
   go.addEventListener("click",run);
   e.querySelector("#mapMarkGo").addEventListener("click",()=>{if(G.mode==="map")mapMarkToggle(G.sel.x,G.sel.y);});
+  e.querySelector("#mapLayerGo").addEventListener("click",()=>{if(typeof mapLayerNext==="function"){mapLayerNext();if(typeof sfx==="function")sfx("ui");}});
   inp.addEventListener("keydown",ev=>{if(ev.key==="Enter"){run();ev.preventDefault();}ev.stopPropagation();});
   inp.addEventListener("keyup",ev=>ev.stopPropagation());
   return e;

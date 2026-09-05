@@ -82,6 +82,13 @@ function occTick(){
   if(typeof holdGunsTick==="function"&&holdGunsTick(from[0],from[1]))return;   /* Орудийная батарея (H1) */
   if(occCalmNear(from[0],from[1]))return;
   const o=G.occ[occKey(from[0],from[1])];
+  /* под трассой пираты не держатся (M348): у станции с флотом ГЛАВТРАССЫ занятость
+     тает вместо того, чтобы крепнуть — сторожевики ходят по расписанию */
+  if(typeof mapUnderTrassa==="function"&&mapUnderTrassa(from[0],from[1])){
+    occSet(from[0],from[1],o.lvl-1);
+    if(!occLvl(from[0],from[1]))logAdd("good","Трасса: пираты ушли из сектора "+from[0]+":"+from[1]);
+    return;
+  }
   /* сперва укрепляются там, где уже стоят, и только потом ползут дальше:
      иначе фронт расплывался пятном в один уровень на всю галактику */
   if(o.lvl<OCC_MAX&&r()<.45){
@@ -99,6 +106,7 @@ function occTick(){
     /* обжитое сопротивляется: рядом со станцией захват идёт вдвое реже */
     const sys=getSystem(nx,ny);
     if(sys.station&&r()<.5)continue;
+    if(typeof mapUnderTrassa==="function"&&mapUnderTrassa(nx,ny))continue;   /* под трассой не занимают (M348) */
     occSet(nx,ny,1);
     logAdd("warn","Пираты пришли в «"+(sys.name||(nx+":"+ny))+"»");
     return;
