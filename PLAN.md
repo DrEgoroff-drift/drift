@@ -322,6 +322,13 @@ The state-and-rules half of a two-session hunt (the picture half is M358).
   names), so it grows with travel and not with frames — an axis no suite had touched. The save stays
   readable, no map grows faster than the road itself, and `SYS_CACHE` stays proportional to the
   jumps (the state-side half of M358's raster question).
+- `91zzzzzx-sound` — звук был единственной подсистемой без единой проверки: в headless нет
+  колонок и автозапуска, настоящий `AudioContext` спит, и `sfx` выходит первой строкой. Стенд
+  строит НАСТОЯЩИЙ `OfflineAudioContext` и приписывает ему «running» своим свойством — синтез
+  идёт живой. Держит четыре закона: каждый звук из таблицы запускается и ГАСНЕТ (23 источника,
+  23 стопа — иначе узел звучит вечно), выключенный звук и глушение «Дороги» молчат и не тратят
+  голосов, полифония не переливается через VOICE_MAX, гул двигателя — один узел на весь полёт,
+  и голос маяка не читает поверх экранов (только полёт и дорога).
 
 ## Loose ends (as of 2026-08-28, after the graphics run 0.237.0–0.244.0)
 
