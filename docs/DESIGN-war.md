@@ -45,10 +45,10 @@ paint conveyor, callsigns, norms, escort and a rescuer (`12ai-fleet`), pirates a
    встретил пирата разъебал».)
 2. **No numbers as feelings.** No reputation scale, no faction meter. What a power thinks of you
    is a list of *episodes* with people's names, and what has *travelled* to the place you are.
-3. **Deterministic from seed and clock**, like everything else (`PLAN.md` cross-cutting rules):
-   the war is a function of the galaxy seed and the current сводка number. Two players at the same
-   hour see the same war with no byte exchanged — this is what lets the online postcard stay a
-   postcard. The player's own effect is a sparse local delta, stored like `occKill`.
+3. **Deterministic from what everyone shares** (restated 2026-09-06, §17 D20): the war is a
+   function of the seed, the сводка number, the ведомости and the циркуляры — all of them the
+   same for every client. Two players at the same hour with the same ведомости see the same war
+   byte for byte. The player's effect goes through the ведомость (§7.5), never through the save.
 4. **Not Starsector.** One energy bar, no venting, no overload, no fleet of your own, no capture,
    no tactical map. A ship, a sky, an encounter.
 5. **The satire is even.** Every power is mocked by the same three questions (§7.3), ГЛАВТРАССА
@@ -795,4 +795,196 @@ olympiad**: a race along the трасса; players enter by elapsed time, one bu
 finish. **Radio play**: a wave tells a serial for a week — six versions of one plot.
 
 Forty-odd, all of different weight.
+---
+
+## 16. Architecture — the whole thing in one picture (critique pass, 2026-09-06)
+
+The author: «ещё раз продумай архитектуру… критикуй и решай логику». What follows is the shape
+the fifteen sections settle into; where it overturns an earlier section, §17 names the decision.
+
+### 16.1 Layers, and which side of the wire each lives on
+
+| layer | side | modules (new ones in bold) | persists in |
+|---|---|---|---|
+| the sky — helm, guns, shots, ships, shields, energy | client, per frame | `13-pirates` → **`13-combat`** (shots with `owner`, damage, hit location), **`13a-guns`** (families, seven numbers, lead, beams), **`13c-roles`** (rank behaviours), **`13d-npc`** (pickets, wings, deserters from chronicle facts); `17-mode-system` reads `G.ctl` | nothing |
+| the helm | client | `15-input` writes **`G.ctl = {head, tx, ty, lock, fire, msl}`** from sticks / mouse / arrows; only the system mode reads it (D08) | nothing |
+| things — guns, mounts, clearance | client | `05-parts` (+ **`05b-guns`** tables, `PART_GEN` 2), `27-ui-ship` / `26b-ui-station-work` (ОСНАСТКА), **`12aq-clearance`** | save: parts as today, `clearance`, `groups` |
+| powers — look, doctrine, voice | client, tables | `12ai-fleet` conveyors ×6 → **`12al-powers`** (table, conveyors, emblems, hails, wave voices) | nothing |
+| the chronicle — agents, Director, lines | client, deterministic | **`12am-chron`** (state, `step(N)`, replay, cache, hash, clock, geometry, integer RNG), **`12am-chron-agents`**, **`12am-chron-director`**, **`12am-chron-lines`** (line templates ×6 voices) | `drift_war_v1` (ведомости + cache; never in the save) |
+| people — episodes, notebook, hail | client | **`12ap-notebook`**, **`12ar-hail`** (four rules, three answers) | save: `notebook` |
+| the wire | client | **`14b-war-net`**: pull/put/left/take/boss/vote, clock offset, bundle cache | `drift_war_v1` |
+| the server | server | **`site/war.php`**: counters, caps, saturation, fuse, bundles, boss window, digest CLI | `~/drift-data/war/` |
+| the regulator | Claude, monthly | **`docs/WAR-CONSTITUTION.md`**, the validator shared by client and CLI, the season | `circ/` on the server |
+
+### 16.2 The chronicle's data model and step order
+
+```
+CHRON = {
+  N,                                   // last replayed сводка
+  powers[6]: { hold:[sysKey…], need:{ore,goods,hulls,link} (‰), rel[6] (−1000…1000),
+               str (0…1000), arc:{kind,stage,t0}|null, tension (0…1000) },
+  systems: { "sx,sy": { owner, since, front, occ:{by,since}|null, builds:[…], flags } },   // sparse
+  wars: [{a,b,name,t0}], rites:[{kind,p,sys,t0,need,got}], boss:{area,t0,form,deadline}|null,
+  lines: [{N,kind,p,sys,key,args}]     // last 500 kept for news; the rest is the map
+}
+step(N):  1 apply ведомость N (players' counters → hold pressure, needs, votes, build tallies)
+          2 apply циркуляр N if it validates (D18)
+          3 Director: tension; incidents / arcs / rites by the §15 table
+          4 agents in seeded order: сделка / ссора / война / перемирие / альянс / стройка
+          5 fronts: per war, move by roll + hold pressure (saturated)
+          6 limiters (§15); the boss trigger and deadline (D13)
+          7 emit lines
+```
+Replay: from 0 at load (~1500 steps a year, integer math, well under 100 ms), then one `step`
+per new closed сводка; the open сводка is stepped on top at every jump-in and discarded (D01,
+D02). The state after the last closed сводка is a few KB and is cached.
+
+### 16.3 Time and math
+
+- `N = floor((Date.now() + offset) / 6h)`; `offset` from the server's `Date` header at every
+  pull; offline the last offset; `N` never exceeds the last server N plus elapsed (D05).
+- Integers in permille; `hashi`/`rng` for rolls; **no `Math.exp/sin/cos/pow` in the chronicle**
+  — the saturation `1−exp(−n/12)` is a 51-entry table, angles are not needed (D04).
+- Every `put` carries the client's chronicle hash for N−1; the server counts disagreements per N;
+  the digest shows them (D06). The Node tier replays fixed fixtures and compares hashes with
+  the browser tier.
+
+### 16.4 What persists where
+
+Save (`v:5`, defaults in `applySave`): `notebook`, `clearance`, `groups`; mounted guns are
+parts as today. Never in the save: `marks`, the chronicle, the ведомости, ghosts, leftovers.
+`drift_war_v1` (localStorage, own key): monthly bundles, the open tail, the cached state, the
+clock offset. Server: `~/drift-data/war/` as in §13, plus `bundles/YYYY-MM.json` in the web
+root, written by the lazy close when a month ends (D03).
+
+### 16.5 Tests that come with it
+
+`91o-combat` (roles, hit location, energy, families' numbers, IFF), `91p-helm` (channels from
+each input, the override rule D07, release rule), `91q-chron` (replay twice = same hash; the
+§15 table's conditions; limiters hold over 2000 steps; a month with no ведомости shows ≥1 event
+per 4 сводки; a bad циркуляр changes nothing; Ялта never changes hands), `91r-war-net` (pull/put
+shapes, caps, saturation by accounts, the fuse), the constitution test, a fuzzer scene «front
+battle», the phone sweep for the new pads, `prof()` with eight armed ships on the phone layout.
+
+### 16.6 «Ялта» — the system that never fights (author, 2026-09-06)
+
+> «нужна как Швейцария система, где все фракции пересекаются, куда все летают, там всё лучшее,
+> крутые планеты, самый топ по постройкам, много барж… где-то в центре… она никогда не воюет,
+> типа мажоры там, яхты, всё такое»
+
+One system inside ГЛАВТРАССА's centre (r ≈ 6, fixed by seed, never the player's home), named
+**«Ялта»** — the conference town. Rules, all of them chronicle facts and tested (§16.5):
+- **Never changes hands, never a front, never occupied, «Ревизия» never enters, pirates never
+  spawn.** The limiters treat it as no one's and everyone's.
+- **Weapons are sealed at the jump-in** («оружие опечатано»): no lock, no fire, no missiles for
+  anyone; the IFF flag of the place. The only violence there is paper.
+- **All six are present:** six embassies (envoys' ships at anchor — the embassy mechanic of
+  §15.1 starts and ends here), six workshops selling their base families at ×2 (ГЛАВТРАССА's still
+  «по разнарядке»), all six waves audible at once, barges of all six on the lanes, the fair
+  permanent, the census headquarters, the regatta's start (fleet olympiad).
+- **The best of everything:** the station body at its maximum with every `BLD` family; the
+  planets settled with domes and strips at the top level; the top-tier market. Treaties are signed
+  here — every truce line reads «в Ялте подписано».
+- **Мажоры:** yachts of the six elites at anchor and on the lanes — named hulls on the fleet
+  generator with the sixth conveyor «яхта» (white, brass, one long window), non-combat, escorted
+  by their own power's picket *outside* Ялта only. They race (the regatta rite), they gossip
+  (rumours of all six powers in one cantina), they lose things (leftovers of a higher tier appear
+  here more often — §11.3 caps apply). The player's own yacht (гл. 64, «Тихоня») belongs to this
+  register, which is why it comes with no explanation.
+- **Satire, even:** the ГЛАВТРАССА wave calls it «здравница», Компания «зона свободного
+  партнёрства», Орднунг «нейтральная территория согласно §1», Коммуна «единственное место, где
+  никто не работает и это законно», Рассвет «где чинят даже тех, кто не платит», Хай-Фронт «зона
+  с рейтингом доверия 100».
+- **For the player:** episodes with all six without leaving one system; the only place to buy
+  any power's guns; the safe pier; the place where the whole war can be *seen* from the balcony —
+  six flags, six voices, one map.
+
+---
+
+## 17. Decisions of the critique pass (override earlier sections where they differ)
+
+- **D01** The chronicle is re-evaluated only at load and at jump-in; between jumps the system is
+  frozen. A fresh ведомость never changes the sky you are in.
+- **D02** Closed сводки are immutable; the state after the last closed one is cached; the open
+  сводка is stepped on top at each jump and discarded.
+- **D03** Monthly static bundles of closed сводки; `pull` = bundles since + the open tail. No
+  server-side world state. If replay ever exceeds 100 ms on a phone, the fallback is
+  client-consensus checkpoints (a state accepted when three clients post the same hash) —
+  designed, not built.
+- **D04** Integer math only in the chronicle; tables instead of `Math.exp/sin/cos/pow`.
+- **D05** N from server time through a stored offset; offline uses the last offset.
+- **D06** Hash with every `put`; mismatch counts in the digest; Node-vs-browser fixture hashes.
+- **D07** The nose tracks the mark only while heading input is idle (stick released, cursor
+  still 0.5 s, no ← →). Any heading input overrides. Resolves §1.1 vs §1.2.
+- **D08** `G.ctl` is read by the system mode only; other modes keep `keys` and their pads.
+- **D09** IFF by allegiance flag, not hull; deserters have it stripped. ГЛАВТРАССА never fires on
+  the player; its answers are paper (norms cut, docking refused, the hunter for debt as today).
+- **D10** The chronicle never destroys the player's holdings; under occupation they work with
+  30 % requisitioned; the home can be occupied and freed.
+- **D11** A power's occupation supersedes pirate occupation while it lasts; `13b-occupy` keeps
+  the pirate branch local and gets a power branch fed by chronicle facts.
+- **D12** Geometry: ГЛАВТРАССА r < 10 with «Ялта» at r ≈ 6; five sectors of 72° at r 14–34,
+  clockwise from 0°: Компания, Орднунг, Коммуна, Рассвет, Хай-Фронт; bands r 10–14 (each vs
+  ГЛАВТРАССА) and ±8° at sector seams; r > 34 nobody's. Matches `sysDanger` (calm centre).
+- **D13** «Ревизия»: hull never regenerates; damage counted in a rolling 60 s window; shield down
+  20 s per 10 min; undefeated after 14 days it leaves with «план восстановлен» and the area's
+  changes are reverted. Solo in seventeen hours inside two weeks stays possible.
+- **D14** A leftover's copy = same seed, tier −1 (min 1); tier-1 things cannot be left;
+  `{s,t,k,g}` unchanged.
+- **D15** Clearance IV = a ГЛАВТРАССА episode in person + 30 days at III + 25 captains/barons;
+  the «Ревизия» salvo is the shortcut, not the gate.
+- **D16** Autofire notes the place once per engagement (`placeNote`), not per shot.
+- **D17** Save fields and the `drift_war_v1` key as in §16.4.
+- **D18** A циркуляр that fails the shared validator is ignored by every client identically.
+- **D19** Leftovers and ghosts go into `DESIGN-online-risks.md`: anonymous, ≥1 min delayed,
+  never the position of a named anyone.
+- **D20** §0 law 3 restated (above).
+- **D21** Order of work: the helm first, the chronicle by seed before the server (§18).
+- **D22** «Ялта» (§16.6): one neutral system in the centre, sealed weapons, all six present,
+  never a front; built with M369–M372 as the first thing the powers layer shows.
+
+---
+
+## 18. The queue — three stages, playable on /dev after each (replaces the M360–M383 list)
+
+**Stage A — the fight** (client only)
+- **M360** helm and lock: `G.ctl`, inertia to drawing, thrust vector, release rule, marks,
+  auto-lock, autofire on today's gun, mouse + arrows, two floating sticks, pads row for the
+  system mode; D07, D08, D16.
+- **M361** ships shoot each other: `owner`, rank roles, rear hit, hull bar, flee; IFF hook (D09).
+- **M362** energy bar and the seven numbers on today's gun; three shield types.
+- **M363** ОСНАСТКА: sizes/types on the points, the dock screen, comparison, стрельбище, groups;
+  clearance I–IV (D15).
+- **M364–M366** twenty families, seven a pass; `PART_GEN` 2; factories, series, affixes; именные.
+- **M367** missiles ×5; зенитка in the loop.
+- **M368** pirate loadouts by rank (deserter art waits for M369).
+
+**Stage B — the powers, by seed** (client only; the galaxy lives with no server)
+- **M369** six powers: table, six conveyors and biases, the seventh «яхта», emblems, hails, IFF
+  full; deserters' art; «Ялта» as a place (D22).
+- **M370** chronicle core: state, `step`, replay, cache, hash, clock offset, geometry (D12),
+  integer RNG; agents; `91q-chron` with the Node hash check.
+- **M371** the Director: tension, the §15 table, arcs with default endings, rites announced,
+  limiters, «автопилот» season; lines ×6 voices; map chips and the front; news and rumours.
+- **M372** the war seen: battle at jump-in, power occupation (D10, D11), station bodies and
+  domes from build lines; «Ялта» at its maximum, embassies, all six waves at once.
+- **M373** the four rules and the hail.
+- **M374** episodes, notebook, the word along the lines, witnesses, «не простил».
+- **M375** the rescuer.
+
+**Stage C — everyone** (server)
+- **M376** `war.php` pull/put, bundles, caps, saturation by accounts, the fuse, hash log, digest
+  CLI; the client applies ведомости at jump-in (D01–D06).
+- **M377** leftovers, благодарность, ghosts; `DESIGN-online-risks.md` (D19).
+- **M378** votes, elections, сигнал сбора.
+- **M379** the nine rites' counters and effects (§14), the regatta from «Ялта».
+- **M380** «Ревизия» (D13).
+- **M381** циркуляры, the constitution and validator (D18), the season dials, the regulator's
+  monthly session.
+- **M382–M388** the Director's mechanics, one family a pass: economy, society, nature, power,
+  diplomacy, security, culture (§15.1).
+
+Every pass ends with the usual: parse, empty console, a manual scenario, an old save,
+`build.ps1`, tests, the craft-codex check for anything drawn, and — from M360 on — `prof()` with
+eight armed ships on the phone layout.
 

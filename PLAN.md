@@ -651,85 +651,29 @@ planet's dump/dome/strip drawn. Deeds with no counter yet (pirate bases boarded,
 monuments, nodes) join the rung score when their hooks are written.
 
 
-# The war — queued (M360–M375, designed 2026-09-06)
+# The war — queued (M360–M388, designed 2026-09-06)
 
-Design in `docs/DESIGN-war.md` (laws §0, helm §1, guns §2, mounts §3, energy/shields/missiles
-§4, pirate roles §5, episodes instead of reputation §6, six powers and the сводка war §7, the book
-§8, forks §10). The author's brief of 2026-09-06 in chat: the pirate fight is bad, the helm is
-bad for fighting, «тап по кораблю, оно в прицеле, стреляет само», two sticks on the phone, mouse
-or arrows on the keyboard, «навали полный фарш» of guns, procedural and comparable, energy and
-shields «не стар сектор», five more powers with their own fleets and looks that fight each other
-by the clock, no reputation number — «тут помог, познакомился, ровный пацан все уважают» — six
-radio waves of propaganda, ГЛАВТРАССА is the USSR and the satire reads evenly on all six, and
-all of it into the book (`SAGA.md` §17, `SAGA-BOOK.md` «нить держав»).
+Design in `docs/DESIGN-war.md`: laws §0, helm §1, guns §2, mounts §3, energy/shields/missiles
+§4, pirate roles §5, episodes instead of reputation §6, six powers and the chronicle §7, the
+book §8, the crowd's ceiling / «Ревизия» / leftovers / clearance §11, the regulator §12, the
+server §13, the rites §14, the Director §15, **the architecture §16 (with «Ялта» in §16.6), the
+critique pass's decisions §17 (D01–D22), the staged queue §18**. Read §16–§18 first; the rest is
+the record of the author's brief of 2026-09-06 and the reasoning.
 
-Each pass is closed on its own; none needs the next. Order:
+Three stages, each playable on /dev before the next starts:
 
-- **M360 — ships shoot each other.** `owner` on shots; `PIRATE_RANKS` get roles (шакал dashes
-  and flees, ветеран circles at 400–600, капитан never under 700, барон stands and calls two);
-  rear hit ×1.6 / front ×0.7; hull bar over the mark; a pirate under 25 % jumps out.
-- **M361 — helm and lock.** Four channels (heading, thrust vector, lock, fire) written by three
-  inputs; angular inertia becomes drawing only; thrusters at 40 % sideways/back with the nose
-  drift off; release = brake under `.55·maxSp`, coast above; lock by tap/click/Tab, three marks,
-  auto-lock on the shooter; autofire on today's gun; mouse scheme and arrows scheme (Q/E strafe);
-  two floating sticks on the phone, ◀ ▶ ▲ ТОРМОЗ ОГОНЬ leave the system row.
-- **M362 — energy and the seven numbers** on today's gun (`08-state`): damage+type, rate, range,
-  shot speed, cone, lead rate, spread; one energy bar (`weapon` mod → reactor, `core` affixes);
-  empty bar halves rate.
-- **M363 — «Оснастка».** Sizes L/M/H and types (жёсткая/турель) on the hull points; dock screen;
-  card-against-card with three totals; стрельбище barge; groups 1–3.
-- **M364–M366 — twenty families**, seven a pass: автопушка, тяжёлое, рельса, дробовик, лазер,
-  тепловик, наводящиеся · игольник, сифон, импульсник, буровой, толкатель, миномёт, помеховая ·
-  гарпун, кассетник, дуговик, плазмомёт, зенитка, таран. `PART_GEN` 2, factories and series in
-  the name, new affixes, twenty именные.
-- **M367 — shields and missiles.** сплошной/лобовой/импульсный; обычная/роевая/ЭМИ/торпеда/
-  ловушка; зенитка in the loop.
-- **M368 — pirates on all of it.** Loadouts by rank; deserters on power hulls.
-- **M369–M370 — six powers.** The table (§7.1), six paint conveyors and form biases on the one
-  fleet generator, six emblems, six hails, six waves beside «Маяк» (§7.3).
-- **M371 — the chronicle (§7.5).** One constant seed, сводка from the cloud's clock, integer
-  math; `site/war.php` with per-сводка ведомости (counters only, saturating, capped per
-  account), fetched at load and at every jump; six agents with holdings, needs, relations, strength; a move per сводка (сделка / ссора / война /
-  перемирие / альянс / стройка) by replay 0…N, cached; chronicle lines with names and dates;
-  the player's entries stored sparse and replayed in order; map emblem chips and the front line;
-  news and rumours retell the lines.
-- **M372 — the war seen.** Battle at jump-in on a front (≤8 ships); occupation by a power
-  through `13b-occupy`; станция grows a body and planets get domes from стройка lines; IFF —
-  «изделие не срабатывает по своим» (lock, autofire and forced fire all refuse ГЛАВТРАССА hulls).
-- **M373 — the four rules.** Hail with three answers, blockade, warning on silence.
-- **M374 — episodes.** The notebook (12), episodes bound to named people, the word along the
-  трасса lines on the rumour clock, witnesses (a surviving ship in see range, or the parrot),
-  resolution = heaviest episode that reached this place, «не простил».
-- **M375 — the rescuer.** Signals after a front battle; tow/refuel/crew off a derelict earns
-  episodes with both sides.
-- **M376 — clearance (§11.4).** Four допуск classes on gun families; mount only within
-  clearance, the rest опечатано in the опись; earned by exam, kills, hours, episodes. (Lands
-  with M363 if that is built first.)
-- **M377 — what is left behind (§11.3).** `war.php` rows for guns/cassettes/cans/signs/tow
-  lines; copies come worn; caps; благодарность counter; ghosts from the postcard snapshot.
-- **M378 — сигнал сбора (§11.2).** «СБОР · система · сводка» on the map, read by all six waves,
-  one button to answer, a counter.
-- **M379 — «РЕВИЗИЯ» (§11.1–11.2).** The ceiling and the trigger in the chronicle; the boss in
-  the sky; per-minute damage tallies on the server, shield regen vs the sum, hull that does not
-  regenerate, the 20 s window; «закреплено» in the chronicle; loot for participants.
-- **M380 — циркуляры (§12).** The entry kind in the replay; paper on air and in the news per
-  power; `docs/WAR-CONSTITUTION.md` and the test that refuses a циркуляр outside it; the
-  server fuse (emergency truce at −40 %/day); the digest script on drift.
-- **M381 — the regulator's schedule.** Daily and weekly sessions over `ssh drift`: read the
-  digest, write the циркуляр (events, elections with one-button votes, the six waves' texts,
-  dials within the constitution), publish; «show me first» mode for the author.
-- **M382 — the rites (§14).** Стройка века, заём, субботник, талоны, карантин, пропажа,
-  перепись, амнистия, реформа — each a counter kind in `war.php`, a chronicle effect, six
-  colourings; the regulator schedules two or three a week. `war.php` itself (§13: files per
-  сводка, lazy close, six ops, caps and clamps, the fuse, the digest CLI) lands with M371.
-- **M383 — the Director (§15).** Tension per power and galaxy; the roll table with its
-  conditions; incidents, arcs with default endings, rites scheduling; the limiters (revert,
-  30 % floor, 8 % regen, one war per power, two per galaxy, four-сводки life guarantee); the
-  season as eight dials with «автопилот» when none is set; the forty-odd mechanics of §15.1
-  landed family by family after M372, each as chronicle lines that are seen, not only heard.
+- **A — the fight** (client only): M360 helm and lock · M361 ships shoot each other and rank
+  roles · M362 energy, seven numbers, three shields · M363 ОСНАСТКА and clearance · M364–M366
+  twenty gun families · M367 missiles · M368 pirate loadouts.
+- **B — the powers, by seed** (client only; the galaxy lives with no server): M369 six powers
+  and «Ялта» · M370 chronicle core (integer replay, hash, clock, geometry) · M371 the Director ·
+  M372 the war seen · M373 the four rules · M374 episodes and the notebook · M375 the rescuer.
+- **C — everyone** (server): M376 `war.php` and ведомости · M377 leftovers and ghosts · M378
+  votes, elections, сигнал сбора · M379 the nine rites · M380 «Ревизия» · M381 циркуляры and
+  the constitution · M382–M388 the Director's mechanics, one family a pass.
 
-Measured from M360 on: frame cost with eight armed ships on the phone layout (`prof()`), and
-the pad row after M361 on the 44 px sweep (`91zzy-screens`).
+Measured from M360 on: `prof()` with eight armed ships on the phone layout; the pad row on the
+44 px sweep (`91zzy-screens`); `91q-chron` replay hashes browser vs Node.
 
 ## Small tails from almanac issue II
 
