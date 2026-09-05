@@ -41,19 +41,29 @@ if ($Seed -gt 0) {
   $sep = if ($url -match "\?") { "&" } else { "?" }
   $url += "$sep" + "fseed=$Seed"
 }
-$dom = Join-Path $env:TEMP "drift-tests-dom.html"
-# Дамп сносим ДО прогона: иначе, если Chrome не встал (занятый профиль или
-# параллельный прогон из другого сеанса), здесь прочитается отчёт ПРОШЛОГО
-# прогона — и он бодро скажет «ВСЁ ЗЕЛЁНОЕ» про сборку, которой уже нет.
-# Именно так и вышло 05.09.2026, и стоило это получаса.
+# ── у каждого прогона свои файлы и свой профиль ──
+# Дамп, поток ошибок и профиль Chrome были ОБЩИЕ на всю машину, и два сеанса
+# в одном дереве мешали друг другу молча: занятый профиль — Chrome не встаёт и
+# не пишет ничего, а харнесс читает дамп ЧУЖОГО прогона и бодро печатает «ВСЁ
+# ЗЕЛЁНОЕ» про сборку, которой в этот момент нет. Так и вышло 05.09.2026 у обоих
+# сеансов сразу, и стоило это часа на двоих. Суффикс из PID разводит прогоны;
+# дамп всё равно сносится до старта, чтобы пустой запуск нельзя было прочитать
+# как удачный.
+$tag = $PID
+$dom = Join-Path $env:TEMP "drift-tests-dom-$tag.html"
 Remove-Item $dom -Force -ErrorAction SilentlyContinue
-$err = Join-Path $env:TEMP "drift-tests-err.txt"
+$err = Join-Path $env:TEMP "drift-tests-err-$tag.txt"
+# Профили копятся в TEMP: чистим свой и чужие брошенные старше суток, чтобы
+# папка не росла прогонами, которых давно нет.
+Get-ChildItem (Join-Path $env:TEMP "drift-tests-profile-*") -Directory -ErrorAction SilentlyContinue |
+  Where-Object { $_.LastWriteTime -lt (Get-Date).AddDays(-1) } |
+  ForEach-Object { Remove-Item $_.FullName -Recurse -Force -ErrorAction SilentlyContinue }
 # -Size "W,H" — третий размер окна. Мерка интерфейса (--ui = clamp(H/760,1,1.75))
 # на 1280x800 почти единица, то есть режим увеличенного интерфейса — высокий
 # экран, 4K, планшет — не мерился ничем. -Size "1440,1440" даёт --ui 1.75.
 $win = if ($Size) { $Size } elseif ($Mobile) { "390,844" } else { "1280,800" }
 $argv = @("--headless=new", "--disable-gpu", "--no-sandbox", "--window-size=$win",
-          "--user-data-dir=$($env:TEMP)\drift-tests-profile",
+          "--user-data-dir=$($env:TEMP)\drift-tests-profile-$tag",
           "--no-first-run", "--no-default-browser-check",
           "--virtual-time-budget=20000", "--timeout=60000", "--dump-dom", $url)
 # Секунды считаем ЗДЕСЬ: внутри страницы часы стоят (--virtual-time-budget), и
