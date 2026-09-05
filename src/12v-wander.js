@@ -192,7 +192,7 @@ function drawWanderer(zx,zy,Z){
   if(!wanderHere(sys))return;
   const pos=wanderWorldPos(sys,w.planetIx);
   const x=zx(pos.x),y=zy(pos.y),L=pos.L*Z;
-  if(x<-L*1.7||x>W+L*1.7||y<-L*1.7||y>H+L*1.7)return;   /* паруса втрое длиннее киля */
+  if(x<-L*1.1||x>W+L*1.1||y<-L*1.1||y>H+L*1.1)return;   /* змей парусов — два киля по диагонали */
   const ang=wanderAngle(pos,w);
   ctx.save();ctx.translate(x,y);ctx.rotate(ang);
   if(L<9){
@@ -205,49 +205,55 @@ function drawWanderer(zx,zy,Z){
   const s=L/100;                                     /* киль = 100 единиц */
   ctx.scale(s,s);
   const r=rng((sys.seed^0x5A1A)>>>0);
-  /* 0. паруса — ПОЗАДИ киля и втрое длиннее его (автор, набросок 2026-09-05: четыре
-     огромных гнутых лепестка вокруг мачты, как крыльчатка). Гелиоротор: четыре
-     лопасти-мембраны из ступицы на рее, каждая полтора киля, изогнута к концу,
-     вся крыльчатка поворачивается за четверть часа. Тёмная половина к оси,
-     свет к внешней кромке; блики — считанные жёсткие штрихи; по передней кромке
-     тёмный лонжерон, от кончика к концу рея — ванта. */
+  /* 0. паруса — ПОЗАДИ киля (автор, 2026-09-05, после второго кадра: «бананы убрать,
+     паруса треугольные, не гнутые, как в космосе, золотые»). Как у IKAROS и в кино:
+     квадратный змей из четырёх плоских треугольных полотнищ на двух крест-накрест
+     штангах — рей и продолжение киля; корпус лежит на диагонали змея. Полотнище
+     плоское: тон один на всю грань, темнее к ступице и светлее к кромке; грани со
+     стороны звезды светлее теневых; складки укладки — прямыми линиями параллельно
+     внешней кромке; блики — считанные жёсткие штрихи; на углах грузики с огоньком. */
   {
-    const base=now/900000*TAU+(sys.seed%628)/100, R=155, KAPPA=.34;
+    const R=96, la=Math.atan2(-pos.y,-pos.x)-ang;          /* куда звезда, в координатах борта */
+    const tips=[[R,0],[0,R],[-R,0],[0,-R]];
     for(let i=0;i<4;i++){
-      const th=base+i*TAU/4, sway=Math.sin(now/61000+i*1.9)*.02;
-      const pt=(u,side)=>{                       // точка лопасти: доля длины u, сторона ±1
-        const a=th+KAPPA*u*u+sway*u, cx=Math.cos(a)*R*u, cy=Math.sin(a)*R*u;
-        const w=2.5+15*Math.pow(Math.sin(Math.PI*Math.min(1,u*1.06)),.8)*(u<.9?1:(1-u)/.1*.6+.4);
-        const nx=-Math.sin(a),ny=Math.cos(a);
-        return [cx+nx*w*side,cy+ny*w*side];
-      };
-      const N=18,P=[];
-      for(let k=0;k<=N;k++)P.push(pt(k/N,1));
-      for(let k=N;k>=1;k--)P.push(pt(k/N,-1));
-      const path=()=>{ctx.beginPath();P.forEach((q,k)=>k?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]));ctx.closePath();};
-      /* тело: градиент поперёк лопасти, темнее к оси вращения */
-      const m=pt(.55,0),n1=pt(.55,1),n2=pt(.55,-1);
-      const g=ctx.createLinearGradient(n2[0],n2[1],n1[0],n1[1]);
-      g.addColorStop(0,"#6a4210");g.addColorStop(.45,"#b8822a");g.addColorStop(1,"#e3b04a");
+      const A=tips[i],B=tips[(i+1)%4];
+      const pa=Math.atan2((A[1]+B[1])/2,(A[0]+B[0])/2);
+      const lit=.62+.5*Math.max(0,Math.cos(pa-la));      /* теневые грани заметно темнее: четыре полотнища, не один лист */
+      const fl=1+Math.sin(now/41000+i*1.3)*.008;             /* дыхание мембраны, неощутимое */
+      const ax=A[0]*fl,ay=A[1]*fl,bx=B[0]*fl,by=B[1]*fl;
+      const gap=2.2;                                           /* зазор у штанг: полотнища не сходятся в ноль */
+      const ux=(ax+bx)/2,uy=(ay+by)/2,ul=Math.hypot(ux,uy);
+      const path=()=>{ctx.beginPath();ctx.moveTo(ux/ul*gap*1.4,uy/ul*gap*1.4);ctx.lineTo(ax-(ax-ux)*.02,ay-(ay-uy)*.02);ctx.lineTo(bx-(bx-ux)*.02,by-(by-uy)*.02);ctx.closePath();};
+      const g=ctx.createLinearGradient(0,0,ux,uy);
+      const c0=[138,92,22].map(v=>Math.round(v*lit)),c1=[232,182,74].map(v=>Math.round(Math.min(255,v*lit)));
+      g.addColorStop(0,"rgb("+c0.join(",")+")");g.addColorStop(.35,"rgb("+[196,142,46].map(v=>Math.round(Math.min(255,v*lit))).join(",")+")");g.addColorStop(1,"rgb("+c1.join(",")+")");
       ctx.fillStyle=g;path();ctx.fill();
       ctx.save();path();ctx.clip();
-      /* фольга ложится складками вдоль длины: тёмные штрихи-рёбра */
-      ctx.strokeStyle="rgba(50,30,6,.28)";ctx.lineWidth=.45;
-      for(let k=1;k<6;k++){const sd=-1+k/3;ctx.beginPath();for(let j=0;j<=N;j++){const q=pt(j/N,sd*.9);j?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]);}ctx.stroke();}
-      /* блики — три жёстких штриха по светлой половине */
-      ctx.strokeStyle="rgba(255,240,200,.85)";ctx.lineWidth=.8;
-      for(let k=0;k<3;k++){const u0=.2+k*.22,q0=pt(u0,.35+k*.2),q1=pt(u0+.14,.45+k*.2);ctx.beginPath();ctx.moveTo(q0[0],q0[1]);ctx.lineTo(q1[0],q1[1]);ctx.stroke();}
-      /* тень киля на лопасти, если она проходит под ним */
-      ctx.fillStyle="rgba(0,0,0,.35)";ctx.fillRect(-52,-3.4,104,6.8);
+      /* складки укладки — параллельно внешней кромке, реже к ступице */
+      ctx.strokeStyle="rgba(60,36,6,.20)";ctx.lineWidth=.45;
+      for(let k=1;k<6;k++){const u=Math.pow(k/6,1.25);ctx.beginPath();ctx.moveTo(ax*u,ay*u);ctx.lineTo(bx*u,by*u);ctx.stroke();}
+      /* и одна радиальная — от ступицы к середине кромки (первый кадр с сеткой читался миллиметровкой) */
+      ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(ux,uy);ctx.stroke();
+      /* отблеск звезды: одна широкая мягкая полоса поперёк направления на звезду,
+         только на гранях к звезде — фольга блестит листом, а не штрихами */
+      if(lit>.9){const sx=Math.cos(la),sy=Math.sin(la);
+        const sg=ctx.createLinearGradient(sx*R*.15,sy*R*.15,sx*R*.75,sy*R*.75);
+        sg.addColorStop(0,"rgba(255,246,220,0)");sg.addColorStop(.5,"rgba(255,246,220,"+(.22*(lit-.9)/.22).toFixed(3)+")");sg.addColorStop(1,"rgba(255,246,220,0)");
+        ctx.fillStyle=sg;ctx.fillRect(-R,-R,2*R,2*R);}
+      /* тень киля и рея на полотне */
+      ctx.fillStyle="rgba(0,0,0,.30)";ctx.fillRect(-52,-3.2,104,6.4);ctx.fillRect(-2.4,-32,4.8,64);
       ctx.restore();
-      /* лонжерон по передней кромке и ванта к концу рея */
-      ctx.strokeStyle="#2a2218";ctx.lineWidth=.9;ctx.beginPath();for(let j=0;j<=N;j++){const q=pt(j/N,1);j?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]);}ctx.stroke();
-      const tip=pt(1,0),ry=Math.sin(th)>0?30:-30;
-      ctx.strokeStyle="rgba(200,190,160,.35)";ctx.lineWidth=.4;ctx.beginPath();ctx.moveTo(tip[0],tip[1]);ctx.lineTo(0,ry);ctx.stroke();
-      /* светлая кромка по задней (внешней) стороне — фольга ловит звезду ребром */
-      ctx.strokeStyle="rgba(255,236,190,.55)";ctx.lineWidth=.6;ctx.beginPath();for(let j=2;j<=N;j++){const q=pt(j/N,-1);j>2?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]);}ctx.stroke();
-      /* один тонкий обвод телу лопасти */
-      ctx.strokeStyle="rgba(40,24,4,.55)";ctx.lineWidth=.5;path();ctx.stroke();
+      /* кромка: тонкая тёмная по внешнему краю, светлая нить по освещённой */
+      ctx.strokeStyle="rgba(40,24,4,.6)";ctx.lineWidth=.5;path();ctx.stroke();
+      if(lit>.95){ctx.strokeStyle="rgba(255,240,200,.7)";ctx.lineWidth=.6;ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(bx,by);ctx.stroke();}
+    }
+    /* штанги: рей (рисуется ниже своим телом) и продолжение киля за корму и за нос */
+    ctx.strokeStyle="#0f1114";ctx.lineWidth=1.8;ctx.beginPath();ctx.moveTo(-R,0);ctx.lineTo(-50,0);ctx.moveTo(50,0);ctx.lineTo(R,0);ctx.moveTo(0,-R);ctx.lineTo(0,R);ctx.stroke();
+    ctx.strokeStyle="#3a3630";ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(-R,0);ctx.lineTo(-50,0);ctx.moveTo(50,0);ctx.lineTo(R,0);ctx.moveTo(0,-R);ctx.lineTo(0,R);ctx.stroke();
+    /* грузики на углах с ровным огоньком — так змей читается змеем и ночью */
+    for(const q of tips){
+      ctx.fillStyle="#1c2026";ctx.fillRect(q[0]-2.2,q[1]-2.2,4.4,4.4);
+      ctx.fillStyle="rgba(255,226,160,.9)";ctx.beginPath();ctx.arc(q[0],q[1],.8,0,TAU);ctx.fill();
     }
     /* ступица на рее */
     ctx.fillStyle="#15181d";ctx.beginPath();ctx.arc(0,0,4.2,0,TAU);ctx.fill();

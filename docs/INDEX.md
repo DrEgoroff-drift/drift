@@ -1580,7 +1580,7 @@ keepersSign                  src/11k-keepers.js:114
 keplerPos                    src/06-galaxy.js:85
 keyLabel                     src/15-input.js:144
 keyMap                       src/15-input.js:133
-keyRow                       src/27-ui-ship.js:42
+keyRow                       src/27-ui-ship.js:44
 keys                         src/08-state.js:57
 killPirate                   src/13-pirates.js:182
 killRock                     src/24-mode-belt.js:151
@@ -2160,9 +2160,9 @@ opisSlotOf                   src/27j-ui-opis.js:70
 opisTarget                   src/27j-ui-opis.js:63
 opisUnfit                    src/27j-ui-opis.js:158
 opisWear                     src/27j-ui-opis.js:186
-OPT_TABS                     src/27-ui-ship.js:328
-optGroups                    src/27-ui-ship.js:331
-optTab                       src/27-ui-ship.js:330
+OPT_TABS                     src/27-ui-ship.js:330
+optGroups                    src/27-ui-ship.js:333
+optTab                       src/27-ui-ship.js:332
 orbPathOf                    src/17-mode-system.js:320
 ORDER_WIN                    src/12aa-need.js:74
 orderDeliver                 src/12aa-need.js:114
@@ -2648,7 +2648,7 @@ renderHold                   src/27j-ui-hold.js:177
 renderLog                    src/11-log.js:79
 renderLoreBoard              src/27h-ui-lore.js:26
 renderMail                   src/25k-post-mail.js:36
-renderOpts                   src/27-ui-ship.js:52
+renderOpts                   src/27-ui-ship.js:54
 renderPrices                 src/12aa-need.js:256
 renderQsl                    src/11an-qsl.js:160
 renderRecord                 src/11aa-record.js:80
@@ -4139,7 +4139,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12v-doom.js · 11 КБ
   · срок: мир, который кончается по расписанию:1
 
-## src/12v-wander.js · 20 КБ
+## src/12v-wander.js · 21 КБ
   · «Сорока»: странствующий парусник (M342):1
 
 ## src/12v-wander-shop.js · 20 КБ

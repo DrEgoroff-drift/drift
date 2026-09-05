@@ -8046,3 +8046,13 @@ repeating gradients as weave, a dashed hem inset 13 px, the hull panel with a ra
 min-height 240, and the matchbox moved out of the hold into its own zone 5 «СПИЧКИ» that takes the
 `side` area whenever the office locker is absent (at a locker station it stays in the hold). Judged
 on frames: `soroka-ext.png`, `soroka-room.png`, `opis-desk.png` in the session scratchpad.
+
+**Third look (0.351.1–0.351.2).** The author rejected the heliogyro on sight («бананы убрать») and
+asked for flat triangular gold sails as in space films. Reference taken: IKAROS (a square kite of
+four panels on crossed booms), Dooku's sloop and the Treasure Planet surfer (gold foil, straight
+edges). `drawWanderer` now draws a square of half-diagonal 96 keel-units on the yard and the keel's
+extension; per-panel lit factor from the star's direction in hull coordinates (`.62+.5·cos`), a
+gradient toward the hub, five fold lines and one radial, a single soft sheen band across the lit
+panels, the booms' shadow, tip masses. Cull margin 1.1 L. Frame staging that finally worked for the
+exterior: `G.watch=1` with `allyOf` stubbed to «Сорока»'s position — setting the player's ship
+position is undone by the loop. Every catalogue tool got a silhouette (`WAN_ICON`).

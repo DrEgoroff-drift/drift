@@ -7,6 +7,18 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.351.2 - «Сорока»: flat gold sails, as in space
+
+Author, on the second frame: «бананы убрать, паруса треугольные, не гнутые, как в космосе,
+золотые». The curved blades are gone. The sail is a square kite of four flat gold triangles on two
+crossed booms — the yard and the keel's extension — the hull lying along the kite's diagonal, the
+way IKAROS flies and the way the films draw it. Each panel is one tone, darker toward the hub;
+the two panels facing the star are brighter than the two in shade, one soft sheen crosses them,
+fold lines run parallel to the outer edge, the keel and yard throw their shadow on the foil, and
+the four corners carry tip masses with a steady light. Also: the ОПИСЬ hull fills its panel with a
+shadow beneath it; the room's walls went from steel to wood and brass, and the goods in the near
+cases are the size of goods.
+
 ## 0.351.1 - «Сорока», second look
 
 The blades are slimmer at the root and bend harder toward the tip, with a lit outer rim — sabres,

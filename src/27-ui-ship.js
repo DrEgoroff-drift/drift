@@ -10,8 +10,10 @@ function hullSilhouette(c,cw,ch,id,sel,fm){
   const h=hullOf(id),anchors=slotAnchors(id);fm=fm||{};
   c.clearRect(0,0,cw,ch);
   const cx=(h.nose+h.tail)*.5;
-  const sc=Math.min(cw/(h.len+26),(ch-24)/(h.halfW*2+22));
+  const sc=Math.min(cw/(h.len+14),(ch-16)/(h.halfW*2+14));   /* корпус во всю панель (второй проход ОПИСИ) */
   const px=x=>cw/2+(x-cx)*sc, py=y=>ch/2+y*sc;
+  /* тень под корпусом на сукне: вещь лежит, а не парит */
+  c.fillStyle="rgba(0,0,0,.35)";c.beginPath();c.ellipse(cw/2,ch/2+h.halfW*sc*.9+6,h.len*sc*.42,Math.max(4,h.halfW*sc*.22),0,0,TAU);c.fill();
   const old=ctx;ctx=c;
   c.save();
   c.translate(px(0),py(0));c.scale(sc,sc);
