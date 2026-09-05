@@ -146,10 +146,20 @@ Kinship is asymmetric — a volcanic ocean exists, an oceanic desert does not.
   rubble for ruin.
 - **Weather cannot overrule the world.** Each type caps its own weather strength, so a crystal
   planet is never washed flat white by fog.
-- **Three scales of object.** Boulders underfoot, a middle scale belonging to the type (druses,
-  hull plates, broken trusses, walls, columns, canopy trees), and two to four landmarks per nine
-  thousand units of terrain — a wreck, a temple, a space elevator, an accelerator ring, an
+- **Three scales of object.** Boulders underfoot, a middle scale, and two to four landmarks per
+  nine thousand units of terrain — a wreck, a temple, a space elevator, an accelerator ring, an
   anomaly. The empty space between them is deliberate.
+- **Every land biome has its own big thing** (0.350.0). The middle scale used to belong to four
+  worlds only; now each of the eleven carries a family of two or three large forms, five to twelve
+  astronaut heights, two to four per screen, a silhouette against the haze with a shadow on the
+  ground and no outline: table buttes and wind-bent trees in the desert, stacked boulders with a
+  crack on rock, hummocks and spires with a translucent edge on ice, cinder cones with a warm
+  crack and «lava trees» on volcanic worlds, pod trees over a glowing pool on toxic ones, shore
+  trees on stilt roots and branching coral by the ocean, tally-marked stelae, antennas and stairs
+  to nowhere in the ruins, round crowns on terran worlds, twin-lobed canopies in the jungle. One
+  grammar everywhere; the biome only changes the family.
+
+<img src="site/shots/deco-desert.webp" alt="A table butte on a desert world, the astronaut at its foot for scale" width="100%">
 
 ### Flying
 
@@ -208,6 +218,21 @@ Each has its own source:
 They are spent on the laboratory, base construction and hull fusion. Drones only work materials
 they can sell, and pirate wrecks never drop rare stock.
 
+### The second currency: matches and «Сорока»
+
+Under the cowl of every salvaged part sits a handful of **matches** (0.337.0) — one for a tier-3
+part, three for a tier-4, five or a box of eight for a tier-5. Credits never buy them and the
+market never takes them; there is exactly one place to spend them. **«Сорока»** (0.341.0) is a
+sail-ship wandering a twenty-four-stop loop derived from the clock, parked at the lit limb of a
+planet: you find her by a rumour at the counter, by the sky-watch line, or by the sail glyph on a
+chart you were sold. Aboard (0.342.0) is a room with a keeper and a catalogue — fourteen tools
+with real hooks in the game, two papers, one wild-card barter lot per stop, and a raw counter that
+turns forty units into one match, two hundred a stop at most. **Cosmetics** (0.343.0) are the
+things that are seen and never counted: eight exhausts with their own flames, jump trails, suit
+finishes, visor tints, hull marks, light patterns, docking chimes and a name plate — twenty-seven
+in seven slots, worn from the ОПИСЬ table. Beside them lie **twenty empty matchboxes** (0.345.0)
+of factories that are gone, found the way the forty books are.
+
 ### Stations
 
 Seven station types, chosen by system seed and sector danger. The type decides which tabs exist:
@@ -226,6 +251,19 @@ Each type draws itself procedurally like hulls do — a shared skeleton of core,
 silhouette from the type, details from the system seed: warehouse pods and cargo booms, blast
 furnaces with a flare stack, an open slipway with a crawling crane, dish antennas and radiator
 grids, gun turrets, or a bare tank.
+
+- **The counter is for cooperatives** (0.349.0). Goods are not for sale to a private pilot; you
+  buy for yourself only once you have registered a cooperative — an exam by turnover, a fee, a
+  name and a patron house. Three ranks (кооператив → артель → товарищество) set how many units a
+  visit may take, how many hands you may hire and how tight the spread is; the price runs in
+  slices of ten, each dearer than the last. The cooperative has a page in ДЕЛА with its people,
+  a per-shift ledger of the same money the game paid you, asks from its own composition (a canteen
+  for three hands, a hangar for five drones, a day off on a holiday) and a spirit of 0–5 that
+  nudges drone output and hired gross by a percent a point.
+- **The locker** (0.344.0). The houses' transport office keeps what you cannot carry — cargo,
+  parts and matches — at one percent a day, handed over at any station of that house.
+
+<img src="site/shots/coop-market.webp" alt="The station counter open to a cooperative: slices of ten, a cap per visit" width="100%">
 
 ### The holding
 
@@ -313,6 +351,16 @@ Nothing is ever deducted: money already spent still counts toward it.
 - **It cannot be farmed.** No free fuel, repairs or weapons; the beacon home is paid for and
   costs more the further out you are; anything on the showcase can never be sold.
 
+### The desk: ОПИСЬ and «Смена»
+
+- **ОПИСЬ** (0.340.0) replaced the ship screen and the invoice paper: one cloth with four zones —
+  what you wear, what is fitted, what you carry, the hatch — plus the matchbox shelf and the
+  casket of cosmetics. Drag or tap; the ПРИБОРЫ panels show what a fitting *would* do before you
+  do it; prices live under the piles and on the map card. People are never dumped.
+- **«Смена»** (0.339.0) is the author's novel — seventy-two chapters in eight parts — bound on the
+  desk. A chapter opens in ink only once you have lived it: the trigger is the very mechanic the
+  chapter is about. Unopened chapters show their title and where that is heard, never where to fly.
+
 ### Bases
 
 The planet stays 2D; the volume comes from a cut through the ground — sky and surface on top,
@@ -388,7 +436,10 @@ polygons through the same projection and painter sort the asteroid belt uses.
   time, so where you sell matters and routes are worth planning. Station type shifts prices on
   top of that.
 - **Mining drones** — buy one, drop it on a deposit or asteroid, fly away. It works in real
-  time, hauls to the nearest station and sells at live prices.
+  time, hauls to the nearest station and sells at live prices. The **drone-miner** (0.338.0) is
+  the other machine: it works a deposit round the clock, never returns on its own, and is priced
+  by payback — 9 000 cr, four and a half hours on crystals, a day on iron — sold one per two days
+  at a yard or an industrial station.
 - **Barter shop** — a tab where unique gear costs specific raw resources instead of credits.
 - **Ship's log** — a collapsible panel recording kills, drone deliveries, sales, research,
   discoveries, crew reports, base raids and wrecks. It persists with the save.
@@ -443,7 +494,24 @@ ship, school ship, floating base and more.
 - **The ladder of rank changes what you meet** — a node station of the trunk lines past a
   threshold, a black, nameless derelict in the far dangerous sectors, the fleet hailing you
   first once you are known on the line.
-- Routes worth travelling show as red-and-white dashed lines on the galaxy map.
+- **Трассы on the map** are a thin double line with milestone ticks between fleet stations, the
+  name written once along the longest leg like a river, a faint band for the sectors «под трассой»
+  where pirates never hold for long; beyond the jump edge they dim to a third by the darkness law.
+- **«Маяк ГЛАВТРАССЫ»** (0.348.0) speaks once a shift in the ether — a bulletin composed from
+  causes only (tonnage a station took, a pilot who over-fulfilled, a sector freed, the scrip rate)
+  and never a line without one. On a device with Russian voices the receiver reads it aloud,
+  quietly, only in flight and on the road; a setting in ЗВУК.
+
+### The map speaks in addresses
+
+The galaxy map (0.346.0–0.347.0) got a grid with rulers and a sector header, an address field
+that takes `4:-7` and a mark button, rumour areas as rings with their source, a compass rose, and
+matches as marks you leave for yourself. Above it a **holdings layer**: house patches in the
+house colour with two-colour hatching where scrips overlap, the трасса band, a rusty hatch over
+pirate-held sectors, your own frames visible even in the dark, and a fading tag where a sector
+changed hands since your last visit.
+
+<img src="site/shots/map-trassa.webp" alt="The galaxy map with addresses, rings and трассы" width="100%">
 
 ### Work that pays
 
@@ -553,7 +621,7 @@ carried home persist.
 |---|---|
 | [`drift.html`](drift.html) | The entire game in one self-contained file — open it directly to play. **Built from `src/`; do not edit by hand.** |
 | [`src/`](src) | Sources: `index.html` shell, `style.css`, and ~220 JavaScript modules (core maths and RNG, galaxy, planets, ships, parts, audio, music, economy, crew, save, one per game mode, UI). Concatenated in filename order, since it all shares one scope. |
-| [`tests/`](tests) | A hundred-odd test suites by topic (`90-harness`, then `91a-flight` onward). They drive the real game state through `resetWorld()` and mock nothing. |
+| [`tests/`](tests) | Five hundred-odd suites by topic (`90-harness`, then `91a-flight` onward), plus the cross-cutting nets (`91zzzz*`): a fuzzer, game QA, physics at every frame step, names against the source, the frame meter. They drive the real game state through `resetWorld()` and mock nothing. |
 | [`build.ps1`](build.ps1) | Rebuilds `drift.html` from `src/`. No dependencies — PowerShell, because Node is not assumed. `-Watch` rebuilds on save. |
 | [`site/`](site) | The [drift-game.ru](https://drift-game.ru) pages: front page, accounts and cloud saves (one small PHP endpoint, `api.php`), and the standalone 3D bird. Published automatically on push. |
 | [`bird/`](bird) | Sources of the 3D bird (WebGL2, `bird.ps1` builds them into one self-contained file). Not part of the game. |
@@ -588,7 +656,7 @@ portable save codes.
 
 ## Status
 
-Version 0.313.0. Everything described above is built and playable, online at
+Version 0.350.2. Everything described above is built and playable, online at
 [drift-game.ru](https://drift-game.ru) with accounts and cloud saves, or offline from this file.
 
 Four development passes are behind it. The first finished the planned queue: celestial
@@ -626,5 +694,19 @@ Alongside it, another pass over the picture itself — the cave, the station's o
 as a generator instead of a fixed plan, a day sky that knows the hour, the system's true
 proportions, and a surface where rocks and rock faces stopped repeating.
 
-Nothing is queued. The game lives as a sandbox; new work starts from the author's eye.
-Balance is tuned against measurements, so the numbers move between versions.
+A sixth push (M317–M352, 0.314.0–0.350.2) went two ways at once. Under the game it laid **eight
+cross-cutting test nets** that test properties rather than mechanics — the world's life over
+three thousand frames, isolation between suites, places and physics at every frame step, four
+game-QA questions (can you get stuck, does it print money, is any screen a dead end, what happens
+after death), someone else's clock, names checked against the source, the frame meter pinned per
+scene — and they found the raster leak behind a freeze, a softlock in space and a money printer
+at the counter. On top of it came the things the author asked for by eye: smoke along the field's
+streamlines, water, heat haze, the live flare, the scoop as a winding road; and then a second
+economy — **matches** under every cowl and the wandering **«Сорока»** to spend them on, the
+**ОПИСЬ** table instead of a ship screen, the houses' **locker**, a map that speaks in
+**addresses** and shows **holdings**, the **beacon** that reads the shift's bulletin aloud, the
+**cooperative** as the only way to buy for yourself, the author's novel **«Смена»** on the desk,
+and a **big thing on every biome** so a world reads by its silhouette from three steps back.
+
+The planned queue is empty again. The game lives as a sandbox; new work starts from the author's
+eye. Balance is tuned against measurements, so the numbers move between versions.
