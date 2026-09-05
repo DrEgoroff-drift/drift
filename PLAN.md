@@ -702,6 +702,16 @@ Each pass is closed on its own; none needs the next. Order:
   resolution = heaviest episode that reached this place, «не простил».
 - **M375 — the rescuer.** Signals after a front battle; tow/refuel/crew off a derelict earns
   episodes with both sides.
+- **M376 — clearance (§11.4).** Four допуск classes on gun families; mount only within
+  clearance, the rest опечатано in the опись; earned by exam, kills, hours, episodes. (Lands
+  with M363 if that is built first.)
+- **M377 — what is left behind (§11.3).** `war.php` rows for guns/cassettes/cans/signs/tow
+  lines; copies come worn; caps; благодарность counter; ghosts from the postcard snapshot.
+- **M378 — сигнал сбора (§11.2).** «СБОР · система · сводка» on the map, read by all six waves,
+  one button to answer, a counter.
+- **M379 — «РЕВИЗИЯ» (§11.1–11.2).** The ceiling and the trigger in the chronicle; the boss in
+  the sky; per-minute damage tallies on the server, shield regen vs the sum, hull that does not
+  regenerate, the 20 s window; «закреплено» in the chronicle; loot for participants.
 
 Measured from M360 on: frame cost with eight armed ships on the phone layout (`prof()`), and
 the pad row after M361 on the 44 px sweep (`91zzy-screens`).

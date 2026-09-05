@@ -507,3 +507,80 @@ tests, and the craft-codex check for anything drawn (barrels, sticks, chips, emb
 - Guns of ГЛАВТРАССА never sold (default) or sold at the capital node at ×3.
 - Notebook size 12 (default).
 - Whether the player's kills may tilt a front at all (default: a quarter of one roll).
+---
+
+## 11. The crowd's ceiling, the boss, what is left behind, clearance (author, 2026-09-06)
+
+> «толпа не может прям весь мир захватить, может много, но потом появляется босс… его очень
+> сложно победить, ну если ты один, а ты один, надо прям собрать флот (подговорить всех, всем
+> сказать в игре)… как в стрендет дииип оставлять на карте оружие… от других игроков. Но ещё и
+> уровни: не надеть супероружие со старта»
+
+### 11.1 The ceiling
+
+A сводка's contribution saturates, `1 − exp(−n/12)` over hulls; a power's strength regenerates
+every сводка. Net: the crowd can take up to **40 % of a power's holdings in a week**, then the
+curve hits the wall. Half the map is never taken; the map can be redrawn, and everyone sees it.
+
+### 11.2 The boss — «РЕВИЗИЯ»
+
+Not a power. A flagship from the «Долгий Ход» years, automatic, executing an order nobody
+cancelled — «восстановить план» — the saga's antagonist (§8) finally with a hull. **Trigger:** an
+area (a home cluster and its band) changed by more than 25 % of its systems in three days. It
+comes to the most-changed area, takes systems from everyone alike; while it is there the crowd's
+contributions in the area are divided by four. Beaten: the area's changes are **закреплено** in
+the chronicle — the one line no wave can twist. It returns later in another form.
+
+**Why one cannot and a crowd can, with no live multiplayer.** Its shield regenerates at
+**2.5× the DPS of the best solo pilot at clearance IV**. Damage is POSTed per minute and summed
+on the server; when the sum beats the regen the shield is down and damage reaches the hull, and
+**the hull does not regenerate on the server**. So three top or eight average pilots **in the
+same minute in the same system** break the shield — they do not see each other; each sees the
+ведомость («в бою бортов: 7») and **ghosts**: other players' hulls as translucent traces from the
+postcard's ~200-byte snapshot. The hull holds thirty minutes of such fire. **Solo is possible:**
+the shield is импульсный, down for 20 s every 10 min by itself; a clearance-IV pilot with a named
+rail takes ~1 % of hull per window — a hundred windows, seventeen hours of fighting plus repair
+and fuel. Possible. Very hard. As asked.
+
+**«Всем сказать в игре» without a chat: сигнал сбора.** Anyone raises «СБОР · система ·
+сводка» on the map — three fields, no words. Visible to all; «Маяк» and the five waves read it,
+each in its voice (Компания sells tickets, Орднунг wants a form). A counter «ответили: 23»; the
+answer is one button. One signal per account per day.
+
+### 11.3 What is left behind (Death Stranding, on the postcard's terms)
+
+One rule so the postcard stays a postcard: **no names, no text, one way, no reply**. You do not
+give; you leave. Whoever finds, finds.
+
+- **What:** a gun, an ammunition cassette, a fuel can, a sign from a fixed set («здесь пираты»,
+  «здесь безопасно», «здесь дерелик»), a tow line on a derelict. Leaving removes it from your hold.
+- **Server:** a row `{system, kind, seed, сводка}`; everyone arriving sees a container and may take
+  a **copy**. Not trade: no addressee, no return, no account. It dissolves after ten сводки.
+- **Against abuse:** ≤5 left per system, 3 per account per day, 2 finds per account per сводка. A
+  taken copy comes **worn**: one tier down, one affix erased. Giving good is a real loss, finding
+  good a real gift, duplication impossible.
+- **Благодарность:** the finder has one button; the leaver a counter «объявлена благодарность:
+  14» in the трудовая книжка. The only return channel, and it is a number, not a word.
+- **Ghosts** live in the same rows: traces of others' flights (the trace system already does half).
+
+### 11.4 Clearance (допуск) instead of levels
+
+Four classes. Find, carry, sell, leave — any. **Mount** only within your clearance; the rest lies
+in the hold **опечатано**, and the опись shows what it waits for. No number grows by itself; a
+clearance is earned by deed.
+
+| допуск | opens | earned by |
+|---|---|---|
+| I | автопушка, игольник, миномёт, помеховая | start |
+| II | лазер, дробовик, тяжёлое, импульсник, буровой | the cooperative's exam (exists) + ten kills |
+| III | рельса, плазма, дуговик, сифон, гарпун, зенитка | 100 flight hours, or five episodes across three powers |
+| IV | кассетник, таран, тепловик, именные | an episode from ГЛАВТРАССА in person («допуск по форме») + one salvo in a fight with «Ревизия» |
+
+A named gun left by someone is a goal for a newcomer, not a cheat.
+
+### 11.5 Numbers in one place
+
+saturation `1−exp(−n/12)` · ceiling 40 %/week · boss trigger 25 % of an area in 3 days · shield
+regen 2.5× top solo DPS · shield window 20 s per 10 min · hull 30 min of crowd fire · leftovers
+5/system, 3/account/day, 2 finds/сводка, 10 сводки life · signal 1/account/day.
+
