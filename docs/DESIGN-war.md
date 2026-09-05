@@ -705,4 +705,94 @@ colouring. The regulator picks two or three a week so it is never everything at 
    talk on the waves.
 
 With elections (§12) that is ten rites.
+---
+
+## 15. The Director — a month with nobody (author, 2026-09-06)
+
+> «не раз в день, продумай чтобы оно месяц без тебя автономно могло жить. Продумай
+> вероятности… чтобы жизнь там продолжалась, а ты был рулящим верхнеуровнево… механики кроме
+> правителей, их дохрена должно быть»
+
+**The Director** is a deterministic layer of the chronicle (seed + сводка, replayed on the
+client like the agents) that schedules events, keeps the pace and keeps the world from stalling
+or running away. The regulator (§12) sets a **season** once a month or not at all.
+
+**Three kinds.** *Incidents* — one сводка, one line. *Arcs* — 4–20 сводки with stages and a
+guaranteed resolution. *Rites* — where players take part (§14). Rolls are conditioned on
+**tension** (0–1, per power and galaxy-wide): rises with incidents and wars, falls in quiet — a
+Left 4 Dead director: build-up, peak, relief. A peak holds at most three days, quiet at most two.
+
+**Probabilities per сводка:**
+
+| what | p | condition |
+|---|---|---|
+| incident at a power | .35 | not the same kind as in the last 10 сводки |
+| arc start | .08 | no arc at the power; tension < .7 |
+| war | .5 | relation < −.5, strength > .6, neither at war, < 2 wars galaxy-wide |
+| truce | .1 + .05/day of war + losses | at war |
+| alliance | .15 | common enemy, relation > .3 |
+| deal | .4 | surplus here, need there |
+| build | .25 | surplus, no buyer |
+| rite announced | .2 | < 3 active galaxy-wide |
+| «Ревизия» | §11 threshold | + .02 at tension > .9 |
+
+A month (120 сводки) yields about: 40 incidents per power, 6–8 arcs, 2–4 wars, 1–2 alliances,
+a dozen builds, ten rites, «Ревизия» with roughly a one-in-three chance. Enough for the map to
+differ in a month; not enough to make it unrecognisable.
+
+**Limiters so a month without anyone does not run away.** Relations revert to zero at 5 % per
+сводка. Holdings never fall below 30 % of the home (below that a power «survives»). Strength
+regenerates 8 % per сводка. An arc is ≤ 20 сводки with a default ending. One war per power, two
+per galaxy. The server fuse (§12) stays. **Guarantee of life:** never more than four сводки
+without a visible event galaxy-wide, never more than a day without a line touching the player's
+area — local small incidents are rolled from the system's seed.
+
+**The season — eight dials, monthly.** Tension target; theme of the month («месяц дефицита»,
+«весна строек»); allowed arcs; active rites; «Ревизия» threshold; a tilt on one pair's relation;
+wave texts for the month as templates with inserts; one prohibition. No season → «автопилот»:
+moderate tension, a theme from the month's seed. «чё там» → the month's digest and the next
+season.
+
+### 15.1 Mechanics beyond rulers — seven families
+
+Every one is a chronicle line, and every one is *seen* in the sky, at a station or on the map,
+not only heard in the news.
+
+**Economy.** Price cycle per power (a wave every 30 сводки). Shortage and coupons (§14).
+**Gold rush**: a vein found in a belt; everyone flies there, pirates included; part tier +1 there
+for three days. **Fair**: monthly, one station with discounts and rare stock. **Station
+bankruptcy**: it closes, someone buys it, the power changes. **Embargo** between two.
+
+**Society.** **Refugees**: after an occupation people move to neighbouring systems; guest houses
+grow, labour gets cheap. **Strike** at a station. **Revolt** in an occupied system: the picket
+changes if the crowd of players backed it. **Power holiday**: a parade in formation, discounts,
+the wave sings. **Census** (§14). **Cult**: a sect of keepers takes a station into a «тихий
+уезд» for a week each quarter.
+
+**Nature.** **Storm**: a flare; instruments lie, pickets leave, three сводки without battles or
+map. **Swarm**: asteroids cross a system; damage to whoever stands still. **Epidemic** and
+quarantine (§14). **Depletion**: a belt gives no ore for a year; the power loses a need and leans
+on a neighbour. **Find**: a planet with a dome becomes habitable.
+
+**Power.** **Coup**: a ruler changes outside elections; the course flips in a сводка.
+**Secession**: a cluster declares itself a seventh force for a month, with a flag and a wave.
+**Purge**: part of the fleet vanishes; strength −30 %, deserters ×2. **Successor**: the old one
+leaves, the new one is green, relations reset. **Scandal**: the anchor disappears from the wave.
+
+**Diplomacy.** Note; ultimatum with a deadline in сводки; treaty; alliance; **embassy**: an
+envoy's ship crosses foreign systems and can be escorted or shot; prisoner exchange after a
+truce; the letter a player carries (гл. 49).
+
+**Security.** **Pirate king**: barons unite, an area is theirs for a week. Desertion wave after
+a purge. **Spy** at a station: prices lie for a month. **Relay sabotage**: a power's wave is
+silent until repaired — a rite counter. **Blockade** of a chokepoint. Smuggling as the answer to
+coupons.
+
+**Science and culture.** **Expedition**: a power searches unknown systems; the crowd helps with
+scans. **A «Долгий Ход» find**: a piece of the report surfaces at a power — a channel for the
+saga. **A factory's new series**: a gun family with a new name and numbers for a month. **Fleet
+olympiad**: a race along the трасса; players enter by elapsed time, one button at start and
+finish. **Radio play**: a wave tells a serial for a week — six versions of one plot.
+
+Forty-odd, all of different weight.
 

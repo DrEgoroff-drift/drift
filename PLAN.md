@@ -722,6 +722,11 @@ Each pass is closed on its own; none needs the next. Order:
   перепись, амнистия, реформа — each a counter kind in `war.php`, a chronicle effect, six
   colourings; the regulator schedules two or three a week. `war.php` itself (§13: files per
   сводка, lazy close, six ops, caps and clamps, the fuse, the digest CLI) lands with M371.
+- **M383 — the Director (§15).** Tension per power and galaxy; the roll table with its
+  conditions; incidents, arcs with default endings, rites scheduling; the limiters (revert,
+  30 % floor, 8 % regen, one war per power, two per galaxy, four-сводки life guarantee); the
+  season as eight dials with «автопилот» when none is set; the forty-odd mechanics of §15.1
+  landed family by family after M372, each as chronicle lines that are seen, not only heard.
 
 Measured from M360 on: frame cost with eight armed ships on the phone layout (`prof()`), and
 the pad row after M361 on the 44 px sweep (`91zzy-screens`).
