@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 424 · символов верхнего уровня: 3764
+Файлов: 427 · символов верхнего уровня: 3768
 
 ## СИМВОЛЫ
 
@@ -456,6 +456,7 @@ clkNaN                       tests/91zzzzzb-clock.js:63
 clkRun                       tests/91zzzzzb-clock.js:32
 clkShift                     tests/91zzzzzb-clock.js:58
 clkWorld                     tests/91zzzzzb-clock.js:42
+clNow                        tests/91zzzzzr-cloud.js:25
 closeBarge                   src/12l-barge.js:607
 closeDeal                    src/27n-ui-deal.js:169
 closeStation                 src/26-ui-station.js:124
@@ -481,6 +482,8 @@ cloudRetry                   src/14a-cloud.js:120
 cloudsOf                     src/19e-clouds.js:331
 cloudSprite                  src/19e-clouds.js:75
 cloudTok                     src/14a-cloud.js:68
+clSave                       tests/91zzzzzr-cloud.js:14
+clWith                       tests/91zzzzzr-cloud.js:30
 cockpitPlan                  src/25-cockpit.js:92
 cockpitStyleKey              src/25-cockpit.js:46
 cockpitTex                   src/25-cockpit.js:187
@@ -637,7 +640,7 @@ CUT_RANGE                    src/24-mode-belt.js:184
 cvs                          src/08-state.js:2
 dayK                         src/19c-light.js:68
 dayKq                        src/19c-light.js:74
-dbg                          src/28-loop.js:371
+dbg                          src/28-loop.js:385
 dcol                         src/21b-surface-deco.js:149
 DEAL_KINDS                   src/27g-deals.js:17
 dealAnswer                   src/27g-deals.js:163
@@ -1120,7 +1123,7 @@ folkShut                     src/11ah-offer.js:90
 folkState                    src/12u-folk.js:83
 folkVisit                    src/12u-folk.js:104
 foundBase                    src/21a-mode-base.js:53
-frame                        src/28-loop.js:309
+frame                        src/28-loop.js:323
 frameBody                    src/28-loop.js:187
 freeVoice                    src/09-audio.js:91
 fuelPriceHere                src/12k-rep.js:63
@@ -2498,7 +2501,7 @@ probeShot                    src/25m-probe.js:85
 probeSpeak                   src/25m-probe.js:100
 probeTarget                  src/25m-probe.js:38
 probeVoice                   src/25m-probe.js:75
-prof                         src/28-loop.js:333
+prof                         src/28-loop.js:347
 PROFILE                      src/02-world.js:103
 profW                        src/03-ships.js:152
 prRestore                    tests/91zzzzzi-promise.js:89
@@ -2513,6 +2516,7 @@ ptr                          src/15-input.js:348
 PU_CELLS                     tests/91zzzzzd-pure.js:28
 puFinger                     tests/91zzzzzd-pure.js:19
 putOnTable                   src/11b-speech.js:220
+qsKeys                       tests/91zzzzzs-quests.js:15
 QSL_BY                       src/11an-qsl.js:46
 QSL_OPS                      src/11an-qsl.js:24
 QSL_SPREAD                   src/11an-qsl.js:23
@@ -4589,15 +4593,15 @@ zooTick                      src/11ad-zoo.js:41
 ## src/27z-telemetry.js · 31 КБ
   · телеметрия: приборы пишут в DOM:1
 
-## src/28-loop.js · 31 КБ
+## src/28-loop.js · 32 КБ
   · авария:1
   · звук по кадрам:26
   · цикл:84
   · авторазрешение:107
   · развилка режимов — одна на всех (M238):137
   · кадр, который не убивает игру (M234):268
-  · prof() — на что уходит кадр:321
-  · dbg() — что держит корабль:362
+  · prof() — на что уходит кадр:335
+  · dbg() — что держит корабль:376
 
 ## src/28y-look.js · 20 КБ
   · look() — прибор кадра:1
@@ -5140,7 +5144,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzzzzm-exploit.js · 11 КБ
   · охота на дырки в кошельке (M357):1
 
-## tests/91zzzzzn-doors.js · 8 КБ
+## tests/91zzzzzn-doors.js · 11 КБ
   · матрица дверей (M357):1
 
 ## tests/91zzzzzo-plural.js · 8 КБ
@@ -5148,5 +5152,14 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzzzzp-balance.js · 8 КБ
   · числа, записанные в договоре (M357):1
+
+## tests/91zzzzzq-input.js · 7 КБ
+  · руки отпускают (M357):1
+
+## tests/91zzzzzr-cloud.js · 6 КБ
+  · облако не съедает вечер (M357):1
+
+## tests/91zzzzzs-quests.js · 8 КБ
+  · у обещания есть тот, кто его закроет (M357):1
 
 ## tests/99-run.js · 0 КБ

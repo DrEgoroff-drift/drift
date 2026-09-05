@@ -7,6 +7,37 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.356.0 - M358: what the frame bakes, and how much raster it holds
+
+Hunting the author's freeze together with the parallel session, which took state and rules and left
+the picture to this lane. Three suspects were already closed: state lists do not grow (M329), the
+document does not grow (M332), the raster in `SYS_CACHE` sits on a shelf (M332). The fourth had
+never been measured at all — **the raster of the live frame**: ground chunks, far-ridge tiles, cave
+tiles, screen layers. None of it lives in `SYS_CACHE`; all of it hangs on `G`, so the evening-of-jumps
+suite walked straight past it.
+
+`tests/91zzzzy-bake` measures work instead of time (inside the page the clock is stopped by
+`--virtual-time-budget`, so time cannot be measured there at all) and holds two different failures:
+
+**The oven running every frame.** A layer or chunk key that catches a continuously changing value —
+the hour, weather power, an unrounded camera — misses on every frame: the game bakes a full-screen
+canvas sixty times a second and throws it away. Neither memory nor the console says a word; only a
+count of what was baked does. Standing still the game is allowed a handful over 150 frames (it bakes
+7 — the hour moving the air mix, which is right); walking is allowed to bake by **distance**, since
+new ground is new ground.
+
+**The level, not the leak.** Measured in a 1248x641 window at DPR 1, the surface after a walk holds
+**26.7 screenfuls** of raster — about 85 MB — and each store holds roughly twice what the frame
+draws (farA 10 tiles against 6 drawn, farB 16 against 8, the terrain 6 against 3). That margin is
+what keeps the camera from re-baking, so it is not a bug to be quietly cut; but it is also not a
+number anybody was watching, and it grows as the square of `DPR*SCK`. The guard is set in screenfuls
+rather than megabytes, because megabytes mean nothing across screens: it is the same picture on a
+retina, and four times the memory.
+
+Nothing is growing without bound, so the freeze is not here — that is the finding, and now it stays
+true by assertion rather than by hope.
+
+---
 ## 0.355.0 - M357: hunting by search, not by list
 
 Author: «ищи ещё баги, как хочешь ищи». Four nets, and this time the method is different: not a

@@ -192,6 +192,17 @@ cosmetics exist; the desk gets one table «ОПИСЬ»; a locker exists at stat
   by decision: the jungle crown stays one painter (twin variant added), no second trunk build in
   `20-life`. Body in `docs/PLAN-archive.md`.
 
+- **M358 — what the frame bakes** (0.356.0, 2026-09-05) — done: `tests/91zzzzy-bake`, the fourth
+  suspect in the freeze hunt and the first one nobody had measured — the raster of the **live frame**
+  (chunks, tiles, screen layers), which hangs on `G` and so was never seen by the `SYS_CACHE` suite.
+  Two guards: the oven must not run every frame (a key catching the hour or the camera would bake a
+  full-screen canvas per frame, invisible to memory and console alike — standing still the game bakes
+  7 in 150 frames), and the level is pinned in **screenfuls** rather than megabytes (measured 26.7,
+  ~85 MB at DPR 1; each store holds about twice what the frame draws, which is the camera's margin
+  and is meant to be there). Nothing grows without bound: **the freeze is not in the raster.** What
+  is left for someone: that margin costs as the square of `DPR*SCK`, so trading it against re-baking
+  is a real decision, and an author's one.
+
 - **M356 — the sky in storeys** (0.353.0, 2026-09-05) — done: from the author's photograph of a
   real sky («вот тебе облака, для планет, делай»). The frame there holds three cloud populations at
   once and the game had one: `19e-clouds` gains the **deck** (`deckSprite` — the layer overhead, drawn
