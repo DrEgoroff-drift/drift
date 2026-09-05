@@ -206,13 +206,16 @@ through, waited out until night, or opened on a phone.
   looks right in an editor. `build.ps1` now flags such files. To fix one:
   `$t=[IO.File]::ReadAllText($p,[Text.Encoding]::UTF8); [IO.File]::WriteAllText($p,$t,(New-Object Text.UTF8Encoding $true))`.
   Files under `src/` are safe — `build.ps1` reads them as UTF-8 explicitly.
-- **`Sort-Object Name` ignores the hyphen, so `25ha-` sorts BEFORE `25h-`.** The build orders
-  `src/` with PowerShell's culture-aware compare, which treats `-` as a minor difference: it
-  compares `25hapostforms2` against `25hpostforms`, and `a` < `p`. A module named `25ha-…` that
-  reads a `const` table declared in `25h-…` therefore dies at load with "Cannot access X before
-  initialization" — the table has not been declared yet. To land *after* an existing module, extend
-  its stem rather than its letter: `25h-post-forms2.js`, not `25ha-post-forms2.js`. (Alphabetical
-  intuition is wrong here, and the build gives no warning: the page simply throws.)
+- **The build orders `src/` by bytes (`Sort-Ordinal`, 0.359.1), not by `Sort-Object Name`.** The
+  culture-aware sort treated `-` as a minor difference and, worse, sorted differently on Windows
+  PowerShell and on the ubuntu runner's pwsh: 0.359.0 was green here and dead on the site
+  («Cannot access WANDER_CAT before initialization» — the runner glued `12v-wander-shop-cosm`
+  before `12v-wander-shop`). Byte order is what `ls` shows in Git Bash: `-` (0x2d) < `.` (0x2e)
+  < digits < letters, so `12v-x.js` < `12v.js` < `12va-x.js`. To land *after* an existing module,
+  step its letter (`21ba-`, `21bb-`), and check the top-level `const` tables it reads are declared
+  earlier in that order. The deploy workflow now opens `tests.html` in headless Chrome and refuses
+  to publish on an `Uncaught` — a top-level TDZ stops the whole script and the game shows a title
+  screen over a dead loop, which is what «всё упало» looked like.
 - **`typeof foo==="function"` around a call you know must exist turns your own typo into silence.**
   It is the right guard for a genuinely optional cross-module call — the pattern the game is full of,
   and it earns its keep there. It is the wrong guard in a stand or a caller that *requires* the

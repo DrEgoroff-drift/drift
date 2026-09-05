@@ -89,9 +89,23 @@ function consoleTick(dt){
     perch.style.display=has?"":"none";
     if(has&&typeof parrotDraw==="function"){
       const cv=document.getElementById("perchcv");
-      if(cv){const c=cv.getContext("2d");c.clearRect(0,0,cv.width,cv.height);
+      if(cv){
+        /* иконка — птица целиком, по центру, с полем; не угол окна трепла.
+           parrotDraw кладёт сцену 230×304 от своего центра, и на 44 px это
+           голова за верхним краем и +4 px вправо (телефон автора, 05.09:
+           «попугай криво»). Здесь сцена ставится коробкой птицы
+           [19..208]×[43..303] в иконку с полем 8%; вис (hang) в иконке не
+           показываем — он уводит птицу за край. Канва в плотности экрана,
+           иначе мыло. Сторож: 91f-ui «жёрдочка: птица в иконке целиком». */
+        const k=Math.min(2,window.devicePixelRatio||1),px=Math.round(44*k);
+        if(cv.width!==px||cv.height!==px){cv.width=px;cv.height=px;}
+        const c=cv.getContext("2d");c.setTransform(1,0,0,1,0,0);c.clearRect(0,0,px,px);
         if(typeof parStep==="function")parStep(1.1);
-        parrotDraw(c,cv.width,cv.height);}
+        const m=px*.08,sc=(px-2*m)/260,P=typeof PAR==="object"?PAR:null,hang=P?P.hang:0;
+        if(P)P.hang=0;
+        c.setTransform(sc,0,0,sc,px/2-sc*113.5,m-sc*43);
+        try{parrotDraw(c,230,304);}finally{if(P)P.hang=hang;c.setTransform(1,0,0,1,0,0);}
+      }
     }
   }
 }

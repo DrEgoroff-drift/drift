@@ -7,6 +7,35 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.359.2 - the parrot on the perch, where rockets come from, and the doors matrix folded in half
+
+Two things the author saw on the phone within a minute of 0.359.1 coming back up, and one
+thing the timing pass saw. **The perch icon drew the parrot crooked** — `27j-console` handed
+the 44 px `#perchcv` to `parrotDraw`, which lays out the whole 230×304 window scene from its
+own centre: at icon size the head went past the top edge and the body sat 4 px right, in a
+1× canvas on a 2× screen. Now the icon places the bird's box [19..208]×[43..303] into the
+canvas with an 8% margin, at device density, and does not show the hang act (it takes the
+bird out of frame). Measured on the dev stand: box 19..71 × 5..81 in 88 px, centred. Guard:
+`91f-ui` «жёрдочка: птица в иконке целиком» — nothing touches an edge, height at least half.
+
+**«РАКЕТА 0» and nowhere to read where rockets come from.** They are not bought: the ЛАБОРАТОРИЯ
+tab at a station assembles a batch (`16b-missile`, `ammoRow`). The refusal on the button said
+only «РАКЕТ В ТРЮМЕ НЕТ»; it now says «РАКЕТ НЕТ · ПАРТИЯ — В ЛАБОРАТОРИИ СТАНЦИИ», and
+`91z-missile` checks the refusal names the place.
+
+**The suite timed** (harness: per-suite `performance.now`, printed as «САМЫЕ ДОЛГИЕ» when the
+clock runs — in the pane, not under `--virtual-time-budget`). 254 s in the pane: one suite, the
+doors matrix, took 77 s, its twin (the save round trip over the same cells) 14 s more, and the
+next ten together another 100 s; the remaining 600 suites are noise. The twin is folded into
+the first loop — every cell now does frame check, save round trip and the way back in one
+scene set-up — and the cell draws twice instead of three times. No assertion was dropped.
+
+**The pane run also showed 18 red that headless does not** — every one an environment
+artefact: cloud/wall suites need a network, the receivers read the wall clock (night band),
+«руки» needs rAF, which a hidden pane never runs. That is not the suite's fault, but it is a
+reason to keep reading results from `test.ps1` only.
+
+---
 ## 0.359.1 - the site was down for 25 minutes: module order differed between the two builders
 
 `0.359.0` reached drift-game.ru through GitHub Actions and died on load with «Cannot access

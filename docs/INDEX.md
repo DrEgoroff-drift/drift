@@ -526,7 +526,7 @@ coopSpirit                   src/12aj-coop.js:117
 coopSpiritAdd                src/12aj-coop.js:120
 coopSpiritRu                 src/12aj-coop.js:118
 coopSpread                   src/12aj-coop.js:70
-coopStamp                    tests/90-harness.js:172
+coopStamp                    tests/90-harness.js:178
 coopVisitReset               src/12aj-coop.js:62
 COSM_CHIME                   src/12va-wander-cosm.js:59
 COSM_EXH                     src/12va-wander-cosm.js:22
@@ -958,7 +958,7 @@ enterSpa                     src/29h-spa.js:51
 enterSurface                 src/21-mode-surface.js:7
 enterWinter                  src/29f-winter.js:112
 env                          src/09-audio.js:59
-eq                           tests/90-harness.js:38
+eq                           tests/90-harness.js:40
 ETH_CATCH                    src/25l-post-ether.js:28
 ETH_H0                       src/25l-post-ether.js:27
 ETH_HOLD                     src/25l-post-ether.js:29
@@ -1146,7 +1146,7 @@ fuzzScenes                   tests/91zzzz-fuzz.js:36
 fuzzSeed                     tests/91zzzz-fuzz.js:27
 fxCanvas                     src/18d-postfx.js:12
 G                            src/08-state.js:61
-G_BOOT_KEYS                  tests/90-harness.js:53
+G_BOOT_KEYS                  tests/90-harness.js:55
 g11Fps                       src/28z-fps-probe.js:7
 GATE_WHY                     tests/91zzzzzl-gates.js:19
 genBeast                     src/20f-fauna.js:58
@@ -1675,7 +1675,7 @@ landerGearTick               src/19f-lander.js:15
 landerInk                    tests/91j-art.js:156
 landerLen                    src/19f-lander.js:11
 landingDust                  src/19f-lander.js:344
-landOnTestPlanet             tests/90-harness.js:123
+landOnTestPlanet             tests/90-harness.js:125
 landStartY                   src/19-mode-landing.js:38
 LANE_RU                      src/26-ui-station.js:274
 LANE_RX                      src/26-ui-station.js:270
@@ -2035,7 +2035,7 @@ namesMangle                  src/11u-names.js:39
 namesToldAll                 src/11u-names.js:16
 nameTell                     src/11u-names.js:32
 navAction                    src/15-input.js:274
-near                         tests/90-harness.js:39
+near                         tests/90-harness.js:41
 nearestPOI                   src/20a-poi.js:236
 nearestStation               src/12-economy.js:155
 NEB_COMP                     src/16a-space.js:119
@@ -2140,7 +2140,7 @@ offerShutLine                src/11ah-offer.js:278
 offerTake                    src/11ah-offer.js:209
 offerTick                    src/11ah-offer.js:166
 offerVisit                   src/11ah-offer.js:124
-ok                           tests/90-harness.js:33
+ok                           tests/90-harness.js:35
 opCensus                     tests/91zzzzzt-opis.js:15
 openBarge                    src/12l-barge.js:597
 openCrewView                 src/27b-ui-crew.js:230
@@ -2729,7 +2729,7 @@ RES_KEYS                     src/02-world.js:87
 resAuto                      src/28-loop.js:114
 resEma                       src/28-loop.js:113
 resetArm                     src/26-ui-station.js:888
-resetWorld                   tests/90-harness.js:56
+resetWorld                   tests/90-harness.js:58
 resize                       src/08-state.js:22
 RET_BOARD                    src/11s-returners.js:29
 RET_ETHER                    src/11s-returners.js:19
@@ -2927,7 +2927,7 @@ rungPoints                   src/12ad-site.js:45
 rungRingSegs                 src/12ae-ladder.js:57
 rungRoman                    src/12ae-ladder.js:48
 RUNGS                        src/12ae-ladder.js:13
-runTests                     tests/90-harness.js:133
+runTests                     tests/90-harness.js:135
 rxRecord                     src/11x-ring.js:64
 S1                           src/01-core.js:96
 S2                           src/01-core.js:97
@@ -3226,7 +3226,7 @@ stationViz                   src/17c-system-draw.js:111
 statPreview                  src/05-parts.js:271
 stCore                       src/17c-system-draw.js:131
 stDel                        src/14-save.js:26
-steps                        tests/90-harness.js:131
+steps                        tests/90-harness.js:133
 stepWorld                    src/28-loop.js:144
 stGet                        src/14-save.js:8
 stGroup                      src/26-ui-station.js:80
@@ -3381,7 +3381,7 @@ tell                         src/11-log.js:49
 TELL_SFX                     src/11-log.js:47
 TEST                         tests/90-harness.js:10
 TEST_ONLY                    tests/90-harness.js:14
-TEST_SUITES                  tests/90-harness.js:169
+TEST_SUITES                  tests/90-harness.js:175
 tfbm                         src/18a-material.js:23
 thingAdd                     src/27i-ui-table.js:37
 thingsAll                    src/27i-ui-table.js:36
@@ -4572,7 +4572,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/27ia-desk-top.js · 21 КБ
   · стол как стол: предметы, а не тринадцать закладок:1
 
-## src/27j-console.js · 8 КБ
+## src/27j-console.js · 10 КБ
   · пульт: приёмник, подсказка, кресло:1
 
 ## src/27j-ui-hold.js · 8 КБ
@@ -4643,7 +4643,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/29i-spa-draw.js · 24 КБ
   · санаторий: веранда:1
 
-## tests/90-harness.js · 14 КБ
+## tests/90-harness.js · 15 КБ
   · автотесты: каркас:1
 
 ## tests/91a-flight.js · 20 КБ
@@ -4665,7 +4665,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91e-rogue.js · 6 КБ
   · автотесты: ушедший управляющий: ультиматум, ренегат, изгнанник:1
 
-## tests/91f-ui.js · 26 КБ
+## tests/91f-ui.js · 27 КБ
   · автотесты: интерфейс: 44 px, непересечение, кнопка называет действие, разделы:1
   · ключи из кода не показываются игроку:204
   · на чистом старте в кадре нет лишнего:249
@@ -5156,7 +5156,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzzzzm-exploit.js · 11 КБ
   · охота на дырки в кошельке (M357):1
 
-## tests/91zzzzzn-doors.js · 12 КБ
+## tests/91zzzzzn-doors.js · 8 КБ
   · матрица дверей (M357):1
 
 ## tests/91zzzzzo-plural.js · 8 КБ

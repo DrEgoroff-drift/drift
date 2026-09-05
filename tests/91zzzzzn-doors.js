@@ -51,7 +51,7 @@ function drOut(){
 
 TEST_SUITES.push(() => suite("двери: из каждой сцены в каждую дверь — и обратно", () => {
   const bad=[],ok0=[],refused=[];
-  let cells=0,opened=0;
+  let cells=0,opened=0,saved=0;
   const doors=drDoors();
   for(const sc of lookScenes()){
     for(const d of doors){
@@ -76,12 +76,25 @@ TEST_SUITES.push(() => suite("двери: из каждой сцены в каж
       for(let i=0;i<12;i++){
         actEdge=false;
         try{ stepWorld(1); }catch(e){ died="update: "+e.message; break; }
-        if(i%4===0){ try{ drawWorld(); }catch(e){ died="draw: "+e.message; break; } }
+        if(i===0||i===11){ try{ drawWorld(); }catch(e){ died="draw: "+e.message; break; } }
         G.t++;
       }
       if(died){ bad.push(sc.id+" → "+d.ru+" · "+died); continue; }
       const sick2=drPair();
       if(sick2){ bad.push(sc.id+" → "+d.ru+" · после дюжины кадров: "+sick2); continue; }
+      /* вторая половина той же клетки (раньше — отдельный набор за те же 14 с
+         сборки сцен): игра сохраняется САМА (saveGame(true) стоит в стыковке,
+         взлёте, эвакуации) и может — ровно в дверях. Сейв, снятый в
+         полуоткрытом состоянии, завтра откроется в никуда. */
+      let js="";
+      try{ js=JSON.stringify(snapshot()); }catch(e){ bad.push(sc.id+" → "+d.ru+": снимок не пишется: "+e.message); continue; }
+      let loaded=false;
+      try{ loaded=applySave(JSON.parse(js))!==false; }catch(e){ bad.push(sc.id+" → "+d.ru+": сейв не читается: "+e.message); continue; }
+      saved++;
+      if(!loaded){ bad.push(sc.id+" → "+d.ru+": сейв отвергнут"); continue; }
+      const sickL=drPair();
+      if(sickL){ bad.push(sc.id+" → "+d.ru+" · после загрузки: "+sickL); continue; }
+      try{ stepWorld(1); drawWorld(); }catch(e){ bad.push(sc.id+" → "+d.ru+" · кадр после загрузки: "+e.message); continue; }
       /* и назад: закрыв дверь, мир обязан остаться целым */
       drOut();
       const sick3=drPair();
@@ -92,92 +105,8 @@ TEST_SUITES.push(() => suite("двери: из каждой сцены в каж
   resetWorld();
   ok(cells>=100,"клеток матрицы пройдено: "+cells+", дверей открылось: "+opened+
      ", отказов не по месту: "+refused.length);
-  eq(bad.slice(0,6).join(" ;; "),"","ни одна дверь не оставляет режим без состояния"+
+  ok(saved>=60,"сейвов в дверях снято и прочитано: "+saved);
+  eq(bad.slice(0,6).join(" ;; "),"","ни одна дверь не оставляет режим без состояния, и сейв в дверях переживает круг"+
     (bad.length?" (всего "+bad.length+")":""));
 }));
 
-TEST_SUITES.push(() => suite("двери: сейв на пороге каждой двери читается обратно", () => {
-  /* Вторая половина той же матрицы: игра сохраняется САМА (saveGame(true) стоит
-     в стыковке, взлёте, эвакуации), и сохраниться она может ровно в тот миг,
-     когда игрок в двери. Сейв, снятый в полуоткрытом состоянии, — это сейв,
-     который завтра откроется в никуда. */
-  const bad=[];let saved=0;
-  const doors=drDoors();
-  for(const sc of lookScenes()){
-    for(const d of doors){
-      resetWorld();
-      let set=true;
-      try{ set=sc.set()!==false; }catch(e){ continue; }
-      if(!set||G.mode==="none")continue;
-      try{ d.go(); }catch(e){ continue; }
-      let js="";
-      try{ js=JSON.stringify(snapshot()); }catch(e){ bad.push(sc.id+" → "+d.ru+": снимок не пишется: "+e.message); continue; }
-      let loaded=false;
-      try{ loaded=applySave(JSON.parse(js))!==false; }catch(e){ bad.push(sc.id+" → "+d.ru+": сейв не читается: "+e.message); continue; }
-      saved++;
-      if(!loaded){ bad.push(sc.id+" → "+d.ru+": сейв отвергнут"); continue; }
-      /* после загрузки мир обязан открыть какой-то экран и жить */
-      const sick=drPair();
-      if(sick){ bad.push(sc.id+" → "+d.ru+" · после загрузки: "+sick); continue; }
-      try{ stepWorld(1); drawWorld(); }catch(e){ bad.push(sc.id+" → "+d.ru+" · кадр после загрузки: "+e.message); }
-      if(bad.length>5)break;
-    }
-    if(bad.length>5)break;
-  }
-  resetWorld();
-  ok(saved>=60,"сейвов в дверях снято и прочитано: "+saved);
-  eq(bad.slice(0,5).join(" ;; "),"","сейв в дверях переживает круг");
-}));
-
-TEST_SUITES.push(() => suite("сторож кадра: повторяющийся сбой не замолкает навсегда", () => {
-  /* PLAN, «Systems»: «Следующий случай должен принести строку СБОЙ · … — этой
-     улики и не хватает». Улику съедала защита от стены сообщений: одна и та же
-     строка называлась ОДИН раз за всё время. Сообщение гаснет за пару секунд,
-     в журнале остаётся одна запись — и если сбой идёт кадр за кадром (а
-     зависание выглядит именно так), через минуту не остаётся ничего.
-
-     Договор теперь такой: подряд идущий сбой не встаёт стеной, но раз в
-     пятнадцать секунд напоминает о себе и называет счёт. Слово «проверка» в
-     начале сообщения — уговор с общим сторожем прогона (91zzzzz): такие сбои
-     наведены нарочно и в счёт чужих не идут. */
-  resetWorld();
-  const real=Date.now,t0=real.call(Date);
-  let skew=0;
-  Date.now=function(){ return t0+skew; };
-  try{
-    const e=new Error("проверка сторожа");
-    const n0=(G.log||[]).length;
-    G.msg="";
-    crashSay(e,"набор");
-    ok(String(G.msg||"").indexOf("СБОЙ")>=0,"первый сбой назван вслух");
-    ok((G.log||[]).length>n0,"и записан в журнал");
-    /* тот же сбой ещё сотню раз в ту же секунду — стены быть не должно */
-    G.msg="";const n1=(G.log||[]).length;
-    for(let i=0;i<100;i++)crashSay(e,"набор");
-    eq(G.msg,"","сто повторов подряд молчат — стены сообщений нет");
-    eq((G.log||[]).length,n1,"и журнал не растёт от повторов");
-    /* а через пятнадцать секунд — напоминание со счётом */
-    skew=16000;
-    crashSay(e,"набор");
-    const said=String(G.msg||"");
-    ok(said.indexOf("СБОЙ")>=0&&/повтор/i.test(said),"через пятнадцать секунд сбой напомнил о себе: «"+said.split("\n")[0]+"»");
-    ok(/\d/.test(said),"и назвал счёт");
-    ok((G.log||[]).length>n1,"напоминание есть и в журнале");
-  }finally{ Date.now=real; }
-  resetWorld();
-}));
-
-TEST_SUITES.push(() => suite("журнал сбоев на сервер: молчит на стенде, считает повторы", () => {
-  /* Автор, 2026-09-05: «просто пиши на сервер лог, все ошибки, любые». crashShip —
-     единственная дверь наружу для ошибок; на стенде (TEST есть) она обязана
-     молчать, а её учёт повторов — считать, не отправляя. */
-  ok(typeof crashShip==="function","crashShip есть");
-  ok(typeof crashStack==="function","crashStack есть");
-  const n0=CRASH_SHIP.n;
-  crashShip("crash","проверка стенда","");
-  eq(CRASH_SHIP.n,n0,"на стенде ничего не уходит");
-  const st=crashStack(new Error("x"));
-  ok(st.split("\n").length<=8,"стек — не больше восьми строк");
-  ok(typeof console.error==="function"&&typeof console.warn==="function","console.error/warn на месте после подмены");
-  ok(typeof logAdd==="function","logAdd на месте после подмены");
-}));

@@ -17,6 +17,7 @@ function suite(name,fn){
   _suite=name;
   TEST.lines.push("── "+name);
   const p0=TEST.pass,f0=TEST.fail;
+  const ts=performance.now();
   try{fn();}
   catch(e){TEST.fail++;TEST.failed.push(name+" · ИСКЛЮЧЕНИЕ: "+(e&&e.message||e));
     TEST.lines.push("  ✗ ИСКЛЮЧЕНИЕ: "+(e&&e.stack||e));}
@@ -29,6 +30,7 @@ function suite(name,fn){
           /экран|кнопк|вкладк|стол|панел|подсказ|надпис|бланк|карточ|меню|пэд/i.test(name)?"3 интерфейс":"4 формулы и данные";
   const G0=(TEST.groups||(TEST.groups={}))[g]||(TEST.groups[g]={suites:0,pass:0,fail:0});
   G0.suites++;G0.pass+=TEST.pass-p0;G0.fail+=TEST.fail-f0;
+  (TEST.times||(TEST.times=[])).push([name,Math.round(performance.now()-ts)]);
 }
 function ok(cond,msg){
   if(cond){TEST.pass++;TEST.lines.push("  ✓ "+msg);}
@@ -155,6 +157,10 @@ function runTests(){
   const groups=Object.keys(TEST.groups||{}).sort((a,b)=>TEST.groups[b].fail-TEST.groups[a].fail||a.localeCompare(b))
     .map(g=>{const r=TEST.groups[g];return "  "+(r.fail?"✗":"·")+" "+g+": наборов "+r.suites+", пройдено "+r.pass+(r.fail?", ПРОВАЛОВ "+r.fail:"");});
   TEST.lines.unshift("ПО ГРУППАМ:\n"+groups.join("\n")+"\n");
+  /* самые долгие наборы — только там, где часы идут (test.ps1 -Times гоняет без
+     --virtual-time-budget); под виртуальным временем всё по нулям и блок не печатается */
+  const slow=(TEST.times||[]).filter(t=>t[1]>0).sort((a,b)=>b[1]-a[1]).slice(0,45);
+  if(slow.length)TEST.lines.unshift("САМЫЕ ДОЛГИЕ (мс):\n"+slow.map(t=>"  "+t[1]+"  "+t[0]).join("\n")+"\n");
   const box=document.createElement("pre");
   box.id="testout";
   box.style.cssText="position:fixed;inset:0;z-index:9999;overflow:auto;margin:0;padding:14px;"+

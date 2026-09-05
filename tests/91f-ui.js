@@ -365,3 +365,24 @@ TEST_SUITES.push(()=>suite("интерфейс: выбранная заклад�
   tableToggle(false);
   G.drones=[];
 }));
+
+/* жёрдочка на пульте (05.09.2026, телефон автора: «попугай криво») — птица
+   рисовалась углом окна трепла: голова за верхним краем, тело вправо. Иконка
+   обязана вмещать птицу целиком, по центру, и ростом не меньше половины поля. */
+TEST_SUITES.push(() => suite("жёрдочка: птица в иконке целиком", () => {
+  resetWorld();
+  G.parrot=null;parrotFind(7,"чужого борта");
+  conT=0;consoleTick(1);
+  const cv=document.getElementById("perchcv");
+  ok(cv&&cv.width>=44&&cv.height>=44,"канва жёрдочки есть: "+(cv&&cv.width)+"×"+(cv&&cv.height));
+  const d=cv.getContext("2d").getImageData(0,0,cv.width,cv.height).data;
+  let x0=1e9,y0=1e9,x1=-1,y1=-1;
+  for(let y=0;y<cv.height;y++)for(let x=0;x<cv.width;x++)if(d[(y*cv.width+x)*4+3]>40){
+    if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y;}
+  ok(x1>=0,"птица нарисована");
+  ok(x0>=1&&y0>=1&&x1<=cv.width-2&&y1<=cv.height-2,"ничего не обрезано краем: "+[x0,y0,x1,y1].join(",")+" в "+cv.width);
+  ok(y1-y0>=cv.height*.5,"ростом не меньше половины иконки: "+(y1-y0)+" из "+cv.height);
+  const cx=(x0+x1)/2;
+  ok(Math.abs(cx-cv.width/2)<=cv.width*.15,"стоит по центру: "+cx.toFixed(0)+" при ширине "+cv.width);
+  resetWorld();
+}));

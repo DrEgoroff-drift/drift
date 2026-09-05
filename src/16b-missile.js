@@ -72,7 +72,7 @@ function mslPick(sh,range){
 function mslCheck(){
   const st=stat();
   if(!st.launcher)return {ok:false,why:"пусковая не установлена"};
-  if((G.cargo.missile|0)<=0)return {ok:false,why:"ракет в трюме нет"};
+  if((G.cargo.missile|0)<=0)return {ok:false,why:"ракет нет · партия — в лаборатории станции"};
   if((G.mslCool||0)>0)return {ok:false,why:"перезарядка"};
   return {ok:true};
 }
