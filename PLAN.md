@@ -239,6 +239,30 @@ Also: `test.ps1 -Size W,H` (a tall window puts the interface zoom at its 1.75 ce
 nothing had measured; it is healthy), and the frame ledger judges only in the window its baseline
 was shot in.
 
+## M355 — does the button do what it says (0.354.0, 2026-09-05) — done
+
+Author: «тесты на логику, каких никогда не делали: действие и ожидаемое поведение — верное или
+нет; не «экран открылся», а зачем этот экран, что на нём можно и ради чего». Fourteen suites in
+four files, all asking one question: not whether a control works, but whether it tells the truth.
+
+- `91zzzzzi-promise` — the verb is kept, the price on the button is the price charged, and every
+  tap leaves a trace (world, screen or word). **Found and fixed:** «ВЗЯТЬ ВСЁ» at the counter with
+  an empty till did nothing and said nothing, while «ВЗЯТЬ ×N» beside it refused out loud.
+- `91zzzzzj-why` — instruments show the world; every module level pays what its line promises; no
+  technology is a signature without code; the prompt's promise is executed in every scene; the
+  scoop fills the hold, which is what it is for.
+- `91zzzzzk-fair` — the yard hands over the hull you tapped; no hull is dearer and worse in every
+  number; module levels never cheapen; the game takes no money without a line in the journal.
+- `91zzzzzl-gates` — a closed door names the cause (hiring, the counter, take-off without fuel →
+  the evacuation and its price); every disabled button is explained by its row; refuel and repair
+  charge exactly the advertised rate, and a pauper is told why.
+
+Two laws out of the run: `planetSpin` fell back to the **wall clock** at `G.t===0`, so staged
+scenes were irreproducible and the light/ledger suites flickered on «заход» — the world's clock is
+used whenever there is a world; and **a word boundary does not work next to Cyrillic** in JS
+(Russian letters are not word characters), so `/кр/` never matches «−17 кр» — a suite now holds
+that nowhere in the game.
+
 ## Loose ends (as of 2026-08-28, after the graphics run 0.237.0–0.244.0)
 
 Everything left open, with the reason it is open. Nothing here is a bug report — bugs are fixed

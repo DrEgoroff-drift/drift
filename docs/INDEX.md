@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 418 · символов верхнего уровня: 3755
+Файлов: 419 · символов верхнего уровня: 3756
 
 ## СИМВОЛЫ
 
@@ -1136,6 +1136,7 @@ fxCanvas                     src/18d-postfx.js:12
 G                            src/08-state.js:61
 G_BOOT_KEYS                  tests/90-harness.js:53
 g11Fps                       src/28z-fps-probe.js:7
+GATE_WHY                     tests/91zzzzzl-gates.js:19
 genBeast                     src/20f-fauna.js:58
 genBeltPOI                   src/24b-belt-poi.js:20
 genDeco                      src/21b-surface-deco.js:37
@@ -3829,7 +3830,7 @@ zooTick                      src/11ad-zoo.js:41
   · галактика:1
   · испечённое живёт не дольше, чем нужно (M332):4
 
-## src/07-planet.js · 39 КБ
+## src/07-planet.js · 38 КБ
   · текстуры планет:1
   · вращение:8
   · рельеф:374
@@ -5059,7 +5060,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzzzy-hold.js · 9 КБ
   · холдинг: круг стройки числами (M339):1
 
-## tests/91zzzzy-light.js · 21 КБ
+## tests/91zzzzy-light.js · 20 КБ
   · свет и свечения (M330):1
 
 ## tests/91zzzzy-look.js · 7 КБ
@@ -5121,5 +5122,8 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzzzzk-fair.js · 11 КБ
   · честность сделки (M355):1
+
+## tests/91zzzzzl-gates.js · 11 КБ
+  · закрытая дверь называет себя (M355):1
 
 ## tests/99-run.js · 0 КБ

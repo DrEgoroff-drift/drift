@@ -7,6 +7,51 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.354.0 - M355: does the button do what it says
+
+Author: «тесты на логику, каких никогда не делали: действие и ожидаемое поведение — верное
+или нет; не «экран открылся», а зачем этот экран, что на нём можно и ради чего». Fourteen
+suites in four files, and every one of them asks a question no assertion in this project has
+ever asked: not whether a control WORKS, but whether it TELLS THE TRUTH.
+
+**The button does what is written on it** (`91zzzzzi`). Three contracts across every screen at
+once: the verb is kept (a sale puts money in the till or takes cargo out of the hold; refuelling
+raises the tank; hiring adds a person), the price on the button is the price charged («6 016 кр»,
+«30 дан», «НАНЯТЬ · 2 534 кр» — parsed off the label and compared with the actual delta), and
+every tap leaves a trace: the world moved, the screen redrew, or the game said something. A tap
+that does nothing at all is the rudest answer an interface can give, and nothing was watching for
+it. It found one: at the counter «ВЗЯТЬ ВСЁ» with an empty till did exactly nothing and said
+nothing, while its own neighbour «ВЗЯТЬ ×N» two lines above refused out loud. Fixed.
+
+**Zachem** (`91zzzzzj`). The instruments show the world and not something of their own (dial and
+bar against `stat()`, in flight, at zero, on the ground; the suit gauge only where the suit leaks);
+every module level pays what its line promises (engine → thrust, tank → fuel, hold → cargo…, one
+hand-written table of what pays what); no technology is a signature without code — half of them
+change a number in `stat()`, the rest are read by name in the source, and `lab` is read through a
+data field (`needTech`), which counts; the prompt's promise is executed — in every scene where the
+prompt says «ДЕЙСТВИЕ — …», pressing it moves the world or explains the refusal (holding, where the
+prompt asks to hold); and the scoop fills the hold, because that is what it is for.
+
+**Fairness of the deal** (`91zzzzzk`). The yard hands over the hull you tapped (six purchases, each
+verified by name); no hull is dearer than another and worse in every number, which would be a trap
+for a newcomer who reads price as quality; every module level costs more than the one below it; and
+the game takes no money silently — four days of the clock jumped forward over every lazy ticker,
+and each charge must leave a line in the journal.
+
+**A closed door names itself** (`91zzzzzl`). Hiring without a cooperative, the counter without a
+stamp, take-off without fuel: the refusal must name the CAUSE, not the fact — and take-off without
+fuel is the evacuation (M19), which must name its price. Every disabled button is explained by the
+row it sits in (a price, a threshold, «ИЗУЧЕНО», «В РЕЙСЕ»). And the rate is honest: refuelling and
+repair charge exactly the advertised price per unit, a full tank takes no money, and a pauper is
+told why.
+
+Two more things came out of the run. `planetSpin` fell back to **the wall clock** when `G.t` was 0,
+so a staged scene came out different every time and the light and frame-ledger suites flickered on
+«заход»; the world's clock is now used whenever there is a world. And one law was written down
+after it bit the test itself: in JavaScript a word boundary does not work next to Cyrillic — the
+engine does not count Russian letters as word characters — so `/кр/` never matches «−17 кр». A
+suite now reads the whole source and holds that nowhere in the game.
+
 ## 0.353.0 - M356: the sky in storeys
 
 Author, 2026-09-05, with a photograph of a Petersburg sky: «вот тебе облака, для планет, делай».

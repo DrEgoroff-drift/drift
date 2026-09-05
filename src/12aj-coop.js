@@ -228,7 +228,10 @@ function coopCounterBlock(){
       box.appendChild(b);
     }
     const bm=el("button","act sm gold","ВЗЯТЬ ВСЁ");bm.disabled=maxN<=0;
-    bm.onclick=()=>{const got=coopBuy(G.sys,k,maxN);if(got)tell("money","Взято на «"+G.st.name+"»: "+RES[k].ru.toLowerCase()+" ×"+got,"Взято: "+RES[k].ru+" ×"+got);renderTab();};
+    /* отказ вслух — как у «ВЗЯТЬ ×N» строкой выше. Без этой ветки кнопка при
+       пустой кассе не делала РОВНО НИЧЕГО и молчала: экран тот же, мир тот же,
+       ни слова (найдено набором «у отказа есть голос», M355). */
+    bm.onclick=()=>{const got=coopBuy(G.sys,k,maxN);if(got)tell("money","Взято на «"+G.st.name+"»: "+RES[k].ru.toLowerCase()+" ×"+got,"Взято: "+RES[k].ru+" ×"+got);else say("Не взять: потолок, трюм или деньги");renderTab();};
     box.appendChild(bm);
     r.appendChild(box);$body.appendChild(r);
   }
