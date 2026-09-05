@@ -942,6 +942,10 @@ One system inside ГЛАВТРАССА's centre (r ≈ 6, fixed by seed, never t
 - **D21** Order of work: the helm first, the chronicle by seed before the server (§18).
 - **D22** «Ялта» (§16.6): one neutral system in the centre, sealed weapons, all six present,
   never a front; built with M369–M372 as the first thing the powers layer shows.
+- **D23** Everything has a maker (§19): §7.2's «one generator, six conveyors» was too small —
+  a power is a *grammar of form* on a second axis of every generator (hulls, parts, stations,
+  barges, domes, papers, suits), stored as `by` on ship records and `b` on parts, and
+  everything a maker makes can be had by the §19.3 matrix.
 
 ---
 
@@ -954,14 +958,19 @@ One system inside ГЛАВТРАССА's centre (r ≈ 6, fixed by seed, never t
 - **M361** ships shoot each other: `owner`, rank roles, rear hit, hull bar, flee; IFF hook (D09).
 - **M362** energy bar and the seven numbers on today's gun; three shield types.
 - **M363** ОСНАСТКА: sizes/types on the points, the dock screen, comparison, стрельбище, groups;
-  clearance I–IV (D15).
+  clearance I–IV (D15); parts carry a maker (`b`, §19.2) with names, affix biases and scrap
+  pools per maker — ГЛАВТРАССА's are the ones that exist today.
 - **M364–M366** twenty families, seven a pass; `PART_GEN` 2; factories, series, affixes; именные.
 - **M367** missiles ×5; зенитка in the loop.
 - **M368** pirate loadouts by rank (deserter art waits for M369).
 
 **Stage B — the powers, by seed** (client only; the galaxy lives with no server)
-- **M369** six powers: table, six conveyors and biases, the seventh «яхта», emblems, hails, IFF
-  full; deserters' art; «Ялта» as a place (D22).
+- **M369** six powers: the table, `HULL_MAKER` as the second axis of `hullOf` (§19.1) with six
+  hundred-hull sheets judged in the almanac, the paint conveyors, emblems, hails, IFF full;
+  deserters' art; stations, barges, domes and papers by maker; «Ялта» as a place (D22).
+- **M369a** the having of things (§19.3): shipyards and workshops per maker, the hull purchase
+  gated by an episode, the tow-and-restore path for derelict hulls, the gift, the fuse of two
+  makers' hulls; the hail about a foreign hull.
 - **M370** chronicle core: state, `step`, replay, cache, hash, clock offset, geometry (D12),
   integer RNG; agents; `91q-chron` with the Node hash check.
 - **M371** the Director: tension, the §15 table, arcs with default endings, rites announced,
@@ -987,4 +996,78 @@ One system inside ГЛАВТРАССА's centre (r ≈ 6, fixed by seed, never t
 Every pass ends with the usual: parse, empty console, a manual scenario, an old save,
 `build.ps1`, tests, the craft-codex check for anything drawn, and — from M360 on — `prof()` with
 eight armed ships on the phone layout.
+---
+
+## 19. Everything has a maker (author, 2026-09-06)
+
+> «ты же понял, да, что корабли фракций выглядят по-другому, дизайн всего в разных фракциях
+> отличается, и всё можно добыть и купить от разных фракций»
+
+§7.2 said «one silhouette generator, six conveyors» about the fleet. That was too small. The
+rule: **every generated thing carries a maker (`by`, one of six), and a maker is a grammar of
+form, not a coat of paint — and everything a maker makes can be had.**
+
+### 19.1 The grammar — the second axis of the hull generator
+
+`HULL_CLASS` (`03-ships`) is already «an inclination of the generator»: proportions plus one or
+two details that stick out of the outline, so a class reads by silhouette at any scale. A maker
+is the same kind of thing on a **second axis, orthogonal to class**: a courier of Орднунг and a
+courier of Коммуна share the class bias and differ by the maker bias. Table `HULL_MAKER` in a
+new module `03a-hull-maker`, read by `hullOf` and by the paint conveyor:
+
+| maker | proportion bias | detail vocabulary (sticks out of the outline) | surface | marks and names |
+|---|---|---|---|---|
+| ГЛАВТРАССА | the catalogue as it is («по ГОСТу») | boxy nacelles, exposed ribs, a towing hook | санкирь + greys, stripe, wear ×1.3 | number + «изделие», the crew's nickname in quotes |
+| Компания | −10 % width, rounded | smooth fairings, a fin with the logo, a running-line panel | white, blue stripe, gloss, wear ×.5 | the logo across the hull, a model name™ |
+| Орднунг | +15 % length, flat sides | ribs every 8 px, hard chines, one turret plinth | grey steel, black ribs, no gradient | stencil numbers in three places, no name |
+| Коммуна | −15 % width, +20 % length | extra curves, a long window band, a bowsprit | blue and white, soft gloss | a name, never a number; a pennant |
+| Рассвет | +20 % width | patchwork plates of different hulls, welded braces, exposed tanks | ochre and black, hand-painted sides, wear ×1.6 | a painted sun; the name painted by hand |
+| Хай-Фронт | −20 % width, +10 % length | antennas longer than the hull, light from under the plating, no wing | white with a red dot, underlight | one glyph; a version «v3.2» |
+
+«Яхта» is a class (`yacht` exists), not a maker: a Коммуна yacht and a Компания yacht differ by
+maker — so the «seventh conveyor» of §16.6 is the yacht class under six makers.
+
+The same axis on everything else that is generated: **stations** (`17e-station-body`: the
+family forms biased — Орднунг stacks, Коммуна arcs, Рассвет patchwork, Хай-Фронт masts,
+Компания a logo block, ГЛАВТРАССА the rack and the drum as today); **barges** (`12l-barge`,
+`12af-barge`: the maker's grammar on the barge class); **domes and strips** on planets (holding
+§13: the maker's palette and one detail); **papers** (the wall and the shelf: each power's book —
+устав, каталог, эссе, устная хроника, changelog — and its poster); **the station's greeting and
+accent** (one header line and one colour accent per maker — not a reskin of the interface);
+**suits** (`12x-suit` kits by maker); **food in the cantina** (one line per maker).
+
+Craft rule: a grammar is a bias, not a style. Every maker's hull still obeys the codex — dark
+ground, body in greys, glazes, wear under the highlights; one body, one outline, one light.
+Verified the way classes were: **a hundred-hull sheet per maker**, six sheets, judged in the
+almanac before M369 is called done; the test is «by silhouette at 8 px: class first, maker
+second».
+
+### 19.2 Parts by maker
+
+Every part (`gun`, `shield`, `engine`, `hull`, `core`, `util`, `missile`) gets an optional `b`
+in the compact format — `{s,t,k,g,b}`; absent = ГЛАВТРАССА, so every part already issued reads
+unchanged; `PART_GEN` 2. The maker gives:
+- **the name**: ГЛАВТРАССА «Двигательный блок ДБ-4», Компания «PowerCore™ 400», Орднунг
+  «Triebwerk Typ 4/B», Коммуна «Moteur «Éloise»», Рассвет «мотор, собранный из трёх», Хай-Фронт
+  «ENG-4 v2»;
+- **an affix bias**: Компания — rate and thrust up, fuel and wear as the downside; Орднунг —
+  damage and armour, a narrow cone; Коммуна — turn, see, energy; Рассвет — hull and cargo, cheap
+  to scrap, spread as the downside; Хай-Фронт — see, lead rate, range, thin hull; ГЛАВТРАССА —
+  hull and fuel, no downside and no upside;
+- **a scrap pool** and the card's frame. A gun's seven numbers (§2) take the same bias on top of
+  the family.
+
+### 19.3 How it is had — one matrix for everything
+
+| way | what | where | gate |
+|---|---|---|---|
+| **buy** | parts, base gun families, suits, a hull | the maker's shipyard / workshop at home; ×2 in «Ялта» | a hull needs one episode with the maker («разрешение на покупку»); ГЛАВТРАССА's guns never — «по разнарядке», through an acquaintance only |
+| **loot** | the maker's parts and guns | its deserters, its pirates on its hulls, its wrecks after a front battle | none; the container rule (kill → chase → pick) |
+| **tow** | a hull | a derelict after a front battle, towed to any dock: «восстановление» at a price, then it is yours (`G.uniqueShips` with `by`) | the tow line (§11.3) and a dock with a shipyard |
+| **gift** | a hull «со списания», a named gun | an episode heavy enough (§6.2) | rare; once per maker per game |
+| **find** | anything left behind | leftovers (§11.3), more often in «Ялта» | the §11.3 caps; clearance to mount |
+| **fuse** | a hybrid hull | the lab's «сплав» (`03-ships` already fuses two hulls) | two hulls; the hybrid's grammar mixes both makers' biases — the one place two makers meet on one hull |
+
+Flying a foreign hull changes nothing mechanical — the IFF is the transponder (D09). It changes
+the hail: «На компанейском корпусе, а флаг наш? Записываю».
 
