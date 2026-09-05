@@ -180,7 +180,9 @@ cosmetics exist; the desk gets one table «ОПИСЬ»; a locker exists at stat
   registration and granted asks, the counter open to cooperatives only (sliced pricing per 10 units, caps
   60/150/none per visit), hiring only for cooperatives with `crewCap` by rank, the ДЕЛА page (members,
   per-shift ledger from `earn`, asks from composition pointing at family-G buildings, spirit 0…5 as words,
-  ±1 % per point). Body in `docs/PLAN-archive.md`.
+  ±1 % per point). Re-measured 2026-09-05 (`docs/ECONOMY-AUDIT.md` §6): the cap binds only when the hold
+  exceeds it (Вьюк at rank I: 1 900 vs 2 400 cr/min on the opening laps); pressure, not the cap, is the brake
+  from lap four on every rank. Body in `docs/PLAN-archive.md`.
 
 - **M352 — one big thing per biome** (0.350.0, 2026-09-05) — done: `21b-surface-deco-biomes`, eighteen
   new large-form painters registered through `DECO_FN`/`DECO_KINDS`, every land biome owns a family of

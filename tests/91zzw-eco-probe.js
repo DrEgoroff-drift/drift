@@ -103,3 +103,36 @@ TEST_SUITES.push(()=>suite("проба · части, спички, наград
   ok(true,"сбор газа: .008+.004·drill ед/кадр в коридоре = "+Math.round((.008+.004)*60*60)+" ед/МИН при drill 1 и 100 % в коридоре (кадр = 1/60 с) · рынок не берёт");
   ok(true,"ремонт корпуса: 14 кр/ед · прыжок 9+13·d топлива · топливо 5–12 кр · мод L1 900–1600 · корпус 3 400–24 000 · управляющий доля 4–9 %");
 }));
+/* ── после кооператива (M351): прилавок с потолком за заход и ломтями по разрядам ──
+   Замер, обещанный в архиве M351: три разряда × два корпуса, тот же маршрут из трёх
+   лучших пар на шести станциях, каждый приход — новый заход (потолок обнуляется),
+   покупка ломтями через coopBuy, продажа с давлением, топливо как выше. */
+TEST_SUITES.push(()=>suite("проба · кооператив: прилавок по разрядам, потолок и ломти",()=>{
+  resetWorld();
+  const list=prbStations(7);
+  for(const cfg of [{id:"strizh",cr:600},{id:"vyuk",cr:20000}])for(const rank of [1,2,3]){
+    resetWorld();G.shipId=cfg.id;G.owned[cfg.id]=true;G.credits=cfg.cr;G.soldTotal=12000;
+    const C=coopStamp("Проба");
+    if(rank>=2){G.soldTotal=C.sold0+100000;C.done=["a","b"];}
+    if(rank>=3){G.soldTotal=C.sold0+500000;C.done=["a","b","c","d"];}
+    const R=COOP_RANKS[rank-1];
+    const legs0=prbLeg(list,stat().cargoMax,0),route=[],used={};
+    for(const L of legs0){const a=L.A.key,b=L.B.key;const nu=Object.keys(used).length+(used[a]?0:1)+(used[b]?0:1);if(nu>6)continue;if(route.some(x=>x.A===L.A&&x.B===L.B))continue;route.push(L);used[a]=1;used[b]=1;if(route.length>=3)break;}
+    let t=0,laps=0,log=[],units=0;
+    for(let i=0;i<40&&route.length;i++){
+      const L=route[i%route.length];
+      G.sys=L.A;coopVisitReset();
+      const cr0=G.credits;
+      const q=coopBuy(L.A,L.k,stat().cargoMax);
+      if(q<=0)break;
+      const cost=cr0-G.credits;
+      G.sys=L.B;const rev=sellCargo(L.B,L.k,q);
+      const fuel=(L.d*6+4)*8;G.credits-=fuel;
+      const net=rev-cost-fuel,min=2.5+L.d*.6;
+      G.t+=min*3600;t+=min;laps++;units+=q;
+      if(i<3||i%10===9)log.push(Math.round(net/min));
+    }
+    ok(true,cfg.id+" · разряд "+rank+" ("+R.ru+", потолок "+(R.cap||"нет")+") · "+laps+" кругов за "+Math.round(t)+" мин, "+units+" ед → касса "+Math.round(G.credits)+" · ставка "+Math.round((G.credits-cfg.cr)/Math.max(1,t))+" кр/мин · по ходу: "+log.join(","));
+  }
+  G.coop=null;G.soldTotal=0;G.sys=null;G.cargo={};
+}));

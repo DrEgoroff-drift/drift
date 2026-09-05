@@ -4833,7 +4833,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzw-economy.js · 10 КБ
   · автотесты: экономика без долга (M152e):1
 
-## tests/91zzw-eco-probe.js · 7 КБ
+## tests/91zzw-eco-probe.js · 10 КБ
   · проба экономики (отчёт, не проверка; аудит 2026-09-04, docs/ECONOMY-AUDIT.md):1
 
 ## tests/91zzw-holding.js · 6 КБ

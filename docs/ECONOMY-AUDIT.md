@@ -106,3 +106,31 @@ its target. Need and orders become the events the design wanted.
   9 000 cr by payback, sold only at yard/indust one per two days, recall by hand, sells within two
   sectors, visible as a guest in the market system. Payback: crystals 4.5 h, titanium 10 h, iron 25 h.
 - **Matches from raw (H3):** 40 units → 1 match, ≤200 units per stop (design §6 updated).
+
+## 6. After the cooperative (0.350.0, 2026-09-05) — the counter re-measured
+
+The measurement promised in M351's archive entry. New probe suite in `91zzw-eco-probe`
+(«проба · кооператив»): three ranks × two hulls, the same 3-pair route on six stations, every
+arrival a fresh visit (the per-visit cap resets), buying through `coopBuy` (slices of ten at +3 %),
+selling with pressure, fuel as in §1. 40 laps, ~132 minutes of game time.
+
+| hull | rank (cap) | laps 1–3, cr/min | lap 10 onward | 40 laps sustained |
+|---|---|---|---|---|
+| Стриж (hold 40) | I (60) / II (150) / III (none) | 143 / 270 / 380 | −215 … −28 | −3 |
+| Вьюк (hold 150) | I (60) | 1 913 / 1 913 / 1 543 | −694 … −30 | −149 |
+| Вьюк (hold 150) | II (150) / III (none) | 2 446 / 2 399 / 1 753 | −316 … −48 | −177 |
+
+For comparison, the stage-1 route buying of §5 on the same route: Стриж 143 / 270 / 382 then
+negative, Вьюк 3 693 / 3 822 / 3 056 then negative.
+
+**Reading.** The cap is a brake only where the hold is larger than the cap — Вьюк at rank I buys 60
+of its 150 and opens at 1 900 instead of 2 400 cr/min; for Стриж the cap never binds (hold 40 < 60)
+and ranks I–III print the same line. Slices take ~13 % off Вьюк's opening lap against stage-1
+buying (2 446 vs 3 823 — slices plus the 1.06 spread) and nothing off Стриж's. The real brake is
+still **pressure**: from the fourth lap the spread is gone on every rank, and the probe — which
+keeps hammering the same three pairs — sits at zero for two hours. A player rotates routes and lets
+them recover; the sustained figure here is the floor of a dumb strategy, not the design's number.
+The opening laps land inside the §4 targets for Стриж (150–250 → 143–380) and above them for Вьюк
+(500–900 → 1 900–2 400), so the open item is the same as §5's: how many *routes* a player can
+rotate before the world's recovery time catches up. That needs a probe that moves on when a leg
+goes negative — not written; the numbers above are what exists.
