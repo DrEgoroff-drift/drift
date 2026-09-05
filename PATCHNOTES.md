@@ -7,6 +7,14 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.350.1 - M352, second pass over the frames
+
+The six kinds the first pass had not seen in a frame were shot and two of them redrawn: the ocean's
+coral towers were pointed and read as crystal in the blue — they now branch and end in knobs, a
+lit rim on the star's side; the desert's dry tree carried one flat disc and read as a parasol on a
+stick — three small tufts on short wind-bent branches instead. Lava trees, blisters, boulder stacks
+and crystal scree held up as they were.
+
 ## 0.350.0 - M352: one big thing per biome
 
 Until now four worlds out of eleven had a large form of their own (crystal druses, metal slabs,

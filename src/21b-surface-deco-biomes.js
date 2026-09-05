@@ -71,15 +71,21 @@ function decoDryTree(A){
   ctx.beginPath();ctx.moveTo(0,4);ctx.quadraticCurveTo(bend*hgt*.25,-hgt*.5,bend*hgt*.6,-hgt*.92);ctx.stroke();
   ctx.strokeStyle=dcol(pal,3,1.1,.6);ctx.lineWidth=tw*.5;
   ctx.beginPath();ctx.moveTo(-tw*.6,0);ctx.quadraticCurveTo(bend*hgt*.25-tw*.6,-hgt*.5,bend*hgt*.6-tw*.4,-hgt*.9);ctx.stroke();
-  /* одна крона, сдвинутая по ветру, плоская снизу */
-  const cx=bend*hgt*.75,cy=-hgt*.98,cr=w*.9;
-  ctx.fillStyle=dcol(pal,1,.75);
-  ctx.beginPath();
-  for(let s=0;s<=14;s++){const a=s/14*TAU;const rr=cr*(.8+h01(s,7,POI_SEED)*.3)*(Math.sin(a)>0?.55:1);
-    const px=cx+Math.cos(a)*rr*1.5,py=cy+Math.sin(a)*rr*.6;s?ctx.lineTo(px,py):ctx.moveTo(px,py);}
-  ctx.closePath();ctx.fill();
-  ctx.fillStyle=dcol(pal,3,1.2,.35);
-  ctx.beginPath();ctx.ellipse(cx-cr*.3*decoLitSide()*-1,cy-cr*.28,cr*.7,cr*.16,0,0,TAU);ctx.fill();
+  /* крона редкая: три пучка на коротких ветках, все снесены ветром — один плоский
+     диск на первом кадре читался зонтом на палке */
+  const cx=bend*hgt*.6,cy=-hgt*.92,cr=w*.55;
+  for(let m=0;m<3;m++){
+    const ang=-.3+m*.55+bend*.4, L=hgt*(.12+h01(m,7,POI_SEED)*.1);
+    const mx=cx+Math.sin(ang)*L+bend*hgt*.12, my=cy-Math.cos(ang)*L*.7;
+    ctx.strokeStyle=dcol(pal,0,.8);ctx.lineWidth=Math.max(1.2,tw*.6);
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(mx,my);ctx.stroke();
+    ctx.fillStyle=dcol(pal,1,.7,.95);
+    ctx.beginPath();
+    for(let s=0;s<=10;s++){const a=s/10*TAU;const rr=cr*(.7+h01(s,m+7,POI_SEED)*.5)*(Math.sin(a)>0?.5:1);
+      const px=mx+Math.cos(a)*rr*1.4,py=my+Math.sin(a)*rr*.5;s?ctx.lineTo(px,py):ctx.moveTo(px,py);}
+    ctx.closePath();ctx.fill();
+    ctx.fillStyle=dcol(pal,3,1.15,.3);ctx.beginPath();ctx.ellipse(mx+decoLitSide()*cr*.2,my-cr*.2,cr*.5,cr*.1,0,0,TAU);ctx.fill();
+  }
   ctx.restore();
 }
 /* ── камень ── */
@@ -237,13 +243,24 @@ function decoShoreTree(A){
   }
 }
 function decoCoral(A){
+  /* коралл ветвится и кончается шишками, а не остриями: остроконечные башни
+     первого кадра читались кристаллом — чужим языком в синей воде */
   const {pal,w,hgt}=A,ls=decoLitSide();
-  const n=3+Math.floor(h01(1,3,POI_SEED)*3);
+  const n=2+Math.floor(h01(1,3,POI_SEED)*2);
   for(let i=0;i<n;i++){
-    const bx=(i-(n-1)/2)*w*.5,hh=hgt*(.4+h01(i,5,POI_SEED)*.6),bw=w*(.18+h01(i,7,POI_SEED)*.16);
-    ctx.fillStyle=dcol(pal,2,.9);
-    decoPoly([[bx-bw,4],[bx-bw*.7,-hh*.6],[bx-bw*1.3,-hh*.85],[bx,-hh],[bx+bw*1.2,-hh*.8],[bx+bw*.7,-hh*.55],[bx+bw,4]]);ctx.fill();
-    ctx.fillStyle=dcol(pal,4,1.2,.6);decoPoly([[bx+ls*bw*.7,-hh*.55],[bx+ls*bw*1.2,-hh*.8],[bx,-hh],[bx+ls*bw*.3,-hh*.9]]);ctx.fill();
+    const bx=(i-(n-1)/2)*w*.9,hh=hgt*(.55+h01(i,5,POI_SEED)*.45),bw=Math.max(2,w*(.14+h01(i,7,POI_SEED)*.1));
+    ctx.strokeStyle=dcol(pal,2,.9);ctx.lineCap="round";ctx.lineWidth=bw*2;
+    ctx.beginPath();ctx.moveTo(bx,4);ctx.lineTo(bx+(h01(i,9,POI_SEED)-.5)*w*.3,-hh*.55);ctx.stroke();
+    const top=bx+(h01(i,9,POI_SEED)-.5)*w*.3, nb=3+Math.floor(h01(i,11,POI_SEED)*3);
+    for(let b=0;b<nb;b++){
+      const a=(b/(nb-1)-.5)*2.2+(h01(i,b+13,POI_SEED)-.5)*.4, L=hh*(.3+h01(i,b+17,POI_SEED)*.25);
+      const ex=top+Math.sin(a)*L, ey=-hh*.55-Math.cos(a)*L*.9;
+      ctx.lineWidth=bw*1.2;ctx.strokeStyle=dcol(pal,2,.9);
+      ctx.beginPath();ctx.moveTo(top,-hh*.55);ctx.quadraticCurveTo(top+Math.sin(a)*L*.4,-hh*.55-L*.6,ex,ey);ctx.stroke();
+      /* шишка на конце: тёмная масса, светлая кромка к звезде */
+      ctx.fillStyle=dcol(pal,2,1);ctx.beginPath();ctx.ellipse(ex,ey,bw*1.9,bw*1.5,0,0,TAU);ctx.fill();
+      ctx.fillStyle=dcol(pal,4,1,.55);ctx.beginPath();ctx.ellipse(ex+ls*bw*.7,ey-bw*.5,bw*.8,bw*.45,0,0,TAU);ctx.fill();
+    }
   }
 }
 /* ── руины ── */

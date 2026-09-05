@@ -640,34 +640,34 @@ dealsTick                    src/27g-deals.js:201
 dealTaken                    src/27g-deals.js:159
 DECO_FN                      src/21b-surface-deco-biomes.js:34
 DECO_KINDS                   src/21b-surface-deco.js:24
-decoAntenna                  src/21b-surface-deco-biomes.js:266
-decoBlister                  src/21b-surface-deco-biomes.js:203
-decoBoulderLone              src/21b-surface-deco-biomes.js:115
+decoAntenna                  src/21b-surface-deco-biomes.js:283
+decoBlister                  src/21b-surface-deco-biomes.js:209
+decoBoulderLone              src/21b-surface-deco-biomes.js:121
 decoButte                    src/21b-surface-deco-biomes.js:39
 decoCanopy                   src/21ba-deco-shapes.js:231
 decoColumn                   src/21ba-deco-shapes.js:190
-decoCone                     src/21b-surface-deco-biomes.js:152
-decoCoral                    src/21b-surface-deco-biomes.js:239
-decoCrownRound               src/21b-surface-deco-biomes.js:305
+decoCone                     src/21b-surface-deco-biomes.js:158
+decoCoral                    src/21b-surface-deco-biomes.js:245
+decoCrownRound               src/21b-surface-deco-biomes.js:322
 decoDruse                    src/21ba-deco-shapes.js:12
 decoDryTree                  src/21b-surface-deco-biomes.js:63
 decoFrond                    src/21ba-deco-shapes.js:317
-decoHummock                  src/21b-surface-deco-biomes.js:127
-decoLavaTree                 src/21b-surface-deco-biomes.js:167
+decoHummock                  src/21b-surface-deco-biomes.js:133
+decoLavaTree                 src/21b-surface-deco-biomes.js:173
 decoLitSide                  src/21b-surface-deco-biomes.js:37
 decoMat                      src/21b-surface-deco.js:157
-decoPodTree                  src/21b-surface-deco-biomes.js:183
+decoPodTree                  src/21b-surface-deco-biomes.js:189
 decoPoly                     src/21b-surface-deco-biomes.js:36
-decoScree                    src/21b-surface-deco-biomes.js:295
+decoScree                    src/21b-surface-deco-biomes.js:312
 decoShard                    src/21ba-deco-shapes.js:38
-decoShoreTree                src/21b-surface-deco-biomes.js:215
+decoShoreTree                src/21b-surface-deco-biomes.js:221
 decoSlab                     src/21ba-deco-shapes.js:53
-decoSpire                    src/21b-surface-deco-biomes.js:142
-decoStack                    src/21b-surface-deco-biomes.js:86
-decoStair                    src/21b-surface-deco-biomes.js:280
-decoStela                    src/21b-surface-deco-biomes.js:250
+decoSpire                    src/21b-surface-deco-biomes.js:148
+decoStack                    src/21b-surface-deco-biomes.js:92
+decoStair                    src/21b-surface-deco-biomes.js:297
+decoStela                    src/21b-surface-deco-biomes.js:267
 decoTruss                    src/21ba-deco-shapes.js:101
-decoTwinCanopy               src/21b-surface-deco-biomes.js:311
+decoTwinCanopy               src/21b-surface-deco-biomes.js:328
 decoWall                     src/21ba-deco-shapes.js:147
 deedAdd                      src/11ai-ledger.js:53
 DEEDS                        src/11ai-ledger.js:25
@@ -4323,7 +4323,7 @@ zooTick                      src/11ad-zoo.js:41
   · крупная форма на поверхности:1
   · залежь как выход породы (M169):371
 
-## src/21b-surface-deco-biomes.js · 22 КБ
+## src/21b-surface-deco-biomes.js · 24 КБ
   · большая вещь на каждый биом (M352):1
 
 ## src/21c-built.js · 9 КБ

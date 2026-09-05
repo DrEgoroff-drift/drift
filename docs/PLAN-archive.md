@@ -8021,3 +8021,10 @@ family untouched.
 palette; per biome the average per 1280-px screen is 1.2–5 away from the pad and every kind met is
 drawn through `drawSurface`. `91j-art` updated: rocky is no longer «no forms», ice+ruin mix keeps
 ice as the host. Suite 13 910 desktop / 14 007 phone, green.
+
+**Second pass (0.350.1).** The six kinds not yet seen in a frame — coral, lava tree, blister, dry
+tree, boulder stack, crystal scree — were shot one by one (`m352shot.py biome:kind`). Coral had
+pointed towers and read as crystal in the ocean's blue: now a trunk with three to five branches
+ending in knobs, lit rim to the star. The dry tree's one flat disc read as a parasol: now three small
+tufts on short branches, all blown the same way. The other four passed. The eco probe was also
+re-measured after the cooperative in the same session (`docs/ECONOMY-AUDIT.md` §6).
