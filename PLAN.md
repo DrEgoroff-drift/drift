@@ -687,9 +687,15 @@ Each pass is closed on its own; none needs the next. Order:
 - **M368 — pirates on all of it.** Loadouts by rank; deserters on power hulls.
 - **M369–M370 — six powers.** The table (§7.1), six paint conveyors and form biases on the one
   fleet generator, six emblems, six hails, six waves beside «Маяк» (§7.3).
-- **M371–M372 — the war.** Сводка (6 h), homes, contested bands, campaigns with names, truces;
-  map emblem chips and the front line; news; battle at jump-in on a front (≤8 ships); occupation
-  by a power through `13b-occupy`; the player's quarter-roll per system per сводка.
+- **M371 — the chronicle (§7.5).** One constant seed, сводка from the cloud's clock, integer
+  math; `site/war.php` with per-сводка ведомости (counters only, saturating, capped per
+  account), fetched at load and at every jump; six agents with holdings, needs, relations, strength; a move per сводка (сделка / ссора / война /
+  перемирие / альянс / стройка) by replay 0…N, cached; chronicle lines with names and dates;
+  the player's entries stored sparse and replayed in order; map emblem chips and the front line;
+  news and rumours retell the lines.
+- **M372 — the war seen.** Battle at jump-in on a front (≤8 ships); occupation by a power
+  through `13b-occupy`; станция grows a body and planets get domes from стройка lines; IFF —
+  «изделие не срабатывает по своим» (lock, autofire and forced fire all refuse ГЛАВТРАССА hulls).
 - **M373 — the four rules.** Hail with three answers, blockade, warning on silence.
 - **M374 — episodes.** The notebook (12), episodes bound to named people, the word along the
   трасса lines on the rumour clock, witnesses (a surviving ship in see range, or the parrot),

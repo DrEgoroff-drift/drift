@@ -383,6 +383,88 @@ Determinism from the clock means a hidden tab or a moved clock shows the war jum
 is normal, for a battle in the system it is caught at jump-in (a battle is spawned on entry, not
 resumed).
 
+### 7.5 A living galaxy — six agents and a chronicle (author, 2026-09-06)
+
+> «чужие не стреляют всегда друг в друга, они торгуют, они ссорятся, мирятся… галактика живая…
+> каждая вселенная уникальна… они строят станции, захватывают планеты… без игрока… ощущение,
+> что чё за пиздец тут происходит, и возможность поменять весь мир… можно одним помогать, но
+> нельзя присоединиться к другой фракции, ты по рождению уже тут… воевать за других, но не
+> против своих»
+
+This replaces the seeded-roll campaigns of §7.4 with agents; §7.4's states, map, waves and the
+battle at jump-in stay as the *surface* of what follows.
+
+**One seed, one galaxy, everyone (author, 2026-09-06: «давай одна галактика, пущай сама
+развивается, это с упором на онлайн»).** The galaxy is a function of coordinates (`01-core`) and
+so is the chronicle: one constant seed, the сводка number from world time (the cloud's `Date`
+header, never the local clock). Every client replays the same history byte for byte — **integer
+arithmetic only**, so browsers cannot drift on fractions. No simulation runs on the server.
+
+**The chronicle, not the clock.** The state at сводка N is the result of *replaying* сводки
+0…N: six agents, a few hundred systems, ~1500 steps a year — a fraction of a second at load,
+cached per сводка, recomputed only when N grows. Nothing ticks (cross-cutting rule: lazy from
+`Date.now()`).
+
+**The players' hand goes through the server as a postcard.** A client POSTs an entry to a new
+`site/war.php`: сводка, system, power, kind of deed, amount — no names, no text, like every
+online thing here (`DESIGN-online-risks.md`). The server folds entries into the **ведомость**
+of the сводка: per system and kind, counters only («гражданских бортов на обороне 12 ·
+буксировок 5 · руды в дефицит 340»). A сводка closes at its end; late entries fall into the next,
+so history is never rewritten. The client fetches the ведомости since the last it holds — a few
+KB — at load and at every jump, keeps them locally, and replays the chronicle with them; offline
+it replays without the fresh ones and the news says «по данным на сводку N».
+
+**One hand does not move the world; a crowd does.** A сводка's contribution saturates (the first
+ten hulls give almost all of it, the hundredth almost nothing) and an account has a cap of entries
+per сводка. A grinder alone cannot move a front; forty strangers who converged on «Горловина-7»
+within six hours can. That is the online hook: coordination without a chat, through the map and
+the waves — you arrive and a dozen civil hulls are already on the defence, and you understand
+without a word.
+
+**What stays personal.** Episodes, the notebook, who knows you — local and in the cloud save,
+like everything that is yours. Uniqueness moves from the map into the notebook.
+
+**A power's state.** Holdings (systems, stations, planets); **needs**, one profile each (руда,
+товар, корпуса, связь…); **relations** with the five others, one scale per pair from alliance to
+war; **strength**, the fleet it can field. All of it is what the map and the sky show.
+
+**A move per сводка, driven by need:**
+- surplus here + deficit there → **сделка**: a trade treaty, barges between the two along the
+  трасса, relation up;
+- a contested border system → **ссора**: a note, an embargo, relation down;
+- relation under threshold and strength allows → **война**: a named campaign, the front moves;
+- losses > gains, or a third neighbour stirs → **перемирие**, often an **альянс** of two against
+  one;
+- surplus with no buyer → **стройка**: a held system's station grows a body (`17e-station-body`
+  already draws it from `BLD` rows) or a planet is settled (dome and strip already drawn, holding
+  §13).
+Every move is a chronicle line with a name and a date; the six waves retell those lines, each in
+its own voice (§7.3); the map shows what actually happened.
+
+**What the player feels.** Come back after a month: a known system carries another emblem, the
+station doubled, on air Компания thanks Орднунг for its partnership though they were at war, a
+dome of the Коммуна on a planet that had a bare strip. None of it scripted; six needs, folded
+differently every time.
+
+**Changing the whole world.** A deed is not a patch on the picture; it is an **entry in the
+chronicle at the сводка it happened**, and the replay runs with it from there. Ore delivered into
+«Рассвет»'s deficit → no deficit next сводка → no quarrel with ГЛАВРУДА over the belt → no war →
+a different map in half a year. A front system held for one сводка → the campaign stalls → the
+alliance never forms. A treaty letter carried from one envoy to the other → the truce a сводка
+earlier (гл. 49 «Письмо вместо оружия»). A flagship's crew saved → an episode heavy enough that
+the two powers do not fight while it lives in the notebook. The levers are small and early in the
+chain, so the consequences are large and honest, and nobody wrote them. The holding and the
+routes are levers too: what you carry moves someone's surplus. Entries are stored sparse
+(`"сводка:power:kind"`), and the replay applies them in order.
+
+**Born ГЛАВТРАССА.** Home in its cluster, callsign in its register. One rule, physical, not a
+penalty: **изделие не срабатывает по своим** — every weapon carries a state identifier; the lock
+refuses own hulls, autofire does not see them, a forced shot at one goes to nothing. Helping
+others: yes, episodes with all six. Fighting for others against a third: yes. Against your own:
+impossible, not fined. When ГЛАВТРАССА fights Компания the only role left is the rescuer — which
+is the role the saga wants (§8). Joining another power: no; becoming «тот самый» there: yes, and
+the difference between the two is exactly the difference the game is about.
+
 ---
 
 ## 8. The book
