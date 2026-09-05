@@ -321,7 +321,7 @@ TEST_SUITES.push(()=>suite("интерфейс: нарисованное на к
   ok(typeof MAP_BOX!=="undefined"&&MAP_BOX.length>0,"карта сообщила свои прямоугольники ("+
     (typeof MAP_BOX!=="undefined"?MAP_BOX.length:0)+")");
   const dom=[];
-  for(const sel of ["#prompt","#console",".pads",".rail",".vitals",".locus"]){
+  for(const sel of ["#prompt","#console",".pads",".rail",".vitals",".locus","#mapaddr"]){   /* поле адреса — тоже вёрстка (M347) */
     const e=document.querySelector(sel);if(!e)continue;
     if(sel==="#prompt"&&!(e.textContent||"").trim())continue;
     const r=e.getBoundingClientRect();

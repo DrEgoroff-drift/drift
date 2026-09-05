@@ -451,7 +451,12 @@ function tap(sxp,syp){
     }else{
       /* двойной тап по пустому — чистое небо: интерфейс уходит до следующего касания (M298) */
       if(now-(G.mapTapT||0)<380&&typeof mapCleanSet==="function")mapCleanSet(!G.mapClean);
-      else if(G.mapClean&&typeof mapCleanSet==="function")mapCleanSet(false);
+      else{
+        if(G.mapClean&&typeof mapCleanSet==="function")mapCleanSet(false);
+        /* пустая клетка выбирается (M347): адрес и расстояние, курса в пустоту нет */
+        const gx=Math.round(V.x+(sxp-W/2)/cell),gy=Math.round(V.y+(syp-H/2)/cell);
+        if(G.sel.x!==gx||G.sel.y!==gy){G.sel.x=gx;G.sel.y=gy;G.mapMore=false;}
+      }
     }
     G.mapTapT=now;
     return;

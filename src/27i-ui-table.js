@@ -257,6 +257,7 @@ function tableRender(){
   else if(tableTab==="relay"&&typeof renderRelays==="function")renderRelays(box);
   else if(tableTab==="chess"&&typeof renderChess==="function")renderChess(box);
   else if(tableTab==="lore"&&typeof renderLoreBoard==="function")renderLoreBoard();
+  if(typeof addrify==="function")addrify(box);   /* всякий адрес — на карту (M347) */
 }
 function tableRow(box,cls,em,text){
   const row=document.createElement("div");row.className="li "+(cls||"");

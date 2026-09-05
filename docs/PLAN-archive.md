@@ -7784,3 +7784,39 @@ third paper, and the papers now shuffle per epoch instead of alternating. The de
 with boxes alone; the shelf prints the count and the labels as small tilted boxes with a red striking
 edge. The full box of fifty is one more idle line of the keeper; the «possible wild card once» was
 not built — the wild card already has two honest gifts and a third would be a lottery.
+
+## M347 — the map speaks in addresses (0.346.0, 2026-09-05)
+
+- **M347 — the map speaks in addresses** (author 2026-09-04: «на карте не понятно, что за сектора и
+  адреса»). `18-mode-map`. (1) A sector grid, one cell per sector, under the same darkness law as the
+  stars — bright by the player, fading to nothing at the jump edge; every fifth line a touch brighter.
+  (2) Rulers along the top (X) and left (Y) edges that scroll with the window, chart-style; the
+  player's and the selected sector's coordinates underlined in colour on the rulers — coordinates are
+  read from the rulers, never printed on every cell. (3) Header line «ВЫ · сектор 4:−7 · «Имя»», under
+  it the selection «сектор 6:−9 · 3 сектора · 2 прыжка · 3,1 пк»; «секторов» is the same measure the
+  rumours use for «в N секторах вокруг». (4) An empty cell is selectable (address + distance; no course
+  into emptiness). (5) Rumour areas drawn as pale hatched squares «в N секторах вокруг X:Y» with source;
+  two rumours overlapping is visible by itself. (6) Faint range rings «2 прыжка», «3 прыжка» outside the
+  lit jump area. (7) Address search: a small «сектор __:__» field (numeric keypad on phone) that slides
+  the window and outlines the cell; every address in game text (rumours, notebook, flea provenance,
+  «Сорока» papers) becomes tappable → map centres on it (extend the rumour hook of M298). (8) A small
+  rose in a corner: +X, +Y and «к ядру». (9) **Decided (author 2026-09-04): no text notes — a wordless mark, and it is a match.** The player
+  lays a match from the wallet on a cell (`G.mapMarks=[{sx,sy}]`, ≤10, persisted); it stays until
+  taken back. Not spent: the same match, out of the wallet while it lies on the map, so a mark costs
+  something without a rule — one you cannot pay with aboard «Сорока». Drawn as a small match lying on
+  the cell, warm head, no glow; tap the cell again to pick it up. Zero matches — no mark, and the game
+  says so in one line.
+  Tests: grid/rulers agree with `mapViewC`; selection of an empty cell yields the right address; the
+  rumour square matches `11t` spread; `91f-ui` on phone — rulers do not overlap the deck or rail.
+
+**Decided while building:** one formula (`mapCellXY`) serves the grid, the rulers, the tap and the search,
+so they cannot drift apart. The grid fades to nothing at 1.6 jumps (the star law uses the view range;
+the grid is about *your* reach). Rumour areas need a memory the game did not have — `G.rumours`
+(≤12, {sx,sy,rad,img,src,day}) is written by `rumourBlock` when a rumour is logged; the player never
+learns which are the fifteen percent that lie, so `wrong` is not stored. The mark button first went to
+the rail and pushed the phone's rail into the prompt (the floors suite caught it), so the address
+field became a small map-tools strip under the rulers at the right — «сектор __:__ →» plus
+«ОТМЕТИТЬ»/«СНЯТЬ МЕТКУ» — and the canvas header trims its tail by « · » to leave it room; the strip
+joined the canvas-vs-DOM guard in `91f-ui`. A jump into an empty selected cell is refused by the same
+`bad` flag that refuses an empty tank. Tappable addresses: `addrify(root)` wraps «сектор x:y» in text
+nodes of the desk and the station body into `u.addr`, one delegated click handler each → `gotoSector`.

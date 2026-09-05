@@ -147,27 +147,12 @@ cosmetics exist; the desk gets one table «ОПИСЬ»; a locker exists at stat
   beside the books; no effect; the keeper mentions the full box of fifty and never sells it.
   **The «Сорока» queue M340–M346 is closed.** Body in `docs/PLAN-archive.md`.
 
-- **M347 — the map speaks in addresses** (author 2026-09-04: «на карте не понятно, что за сектора и
-  адреса»). `18-mode-map`. (1) A sector grid, one cell per sector, under the same darkness law as the
-  stars — bright by the player, fading to nothing at the jump edge; every fifth line a touch brighter.
-  (2) Rulers along the top (X) and left (Y) edges that scroll with the window, chart-style; the
-  player's and the selected sector's coordinates underlined in colour on the rulers — coordinates are
-  read from the rulers, never printed on every cell. (3) Header line «ВЫ · сектор 4:−7 · «Имя»», under
-  it the selection «сектор 6:−9 · 3 сектора · 2 прыжка · 3,1 пк»; «секторов» is the same measure the
-  rumours use for «в N секторах вокруг». (4) An empty cell is selectable (address + distance; no course
-  into emptiness). (5) Rumour areas drawn as pale hatched squares «в N секторах вокруг X:Y» with source;
-  two rumours overlapping is visible by itself. (6) Faint range rings «2 прыжка», «3 прыжка» outside the
-  lit jump area. (7) Address search: a small «сектор __:__» field (numeric keypad on phone) that slides
-  the window and outlines the cell; every address in game text (rumours, notebook, flea provenance,
-  «Сорока» papers) becomes tappable → map centres on it (extend the rumour hook of M298). (8) A small
-  rose in a corner: +X, +Y and «к ядру». (9) **Decided (author 2026-09-04): no text notes — a wordless mark, and it is a match.** The player
-  lays a match from the wallet on a cell (`G.mapMarks=[{sx,sy}]`, ≤10, persisted); it stays until
-  taken back. Not spent: the same match, out of the wallet while it lies on the map, so a mark costs
-  something without a rule — one you cannot pay with aboard «Сорока». Drawn as a small match lying on
-  the cell, warm head, no glow; tap the cell again to pick it up. Zero matches — no mark, and the game
-  says so in one line.
-  Tests: grid/rulers agree with `mapViewC`; selection of an empty cell yields the right address; the
-  rumour square matches `11t` spread; `91f-ui` on phone — rulers do not overlap the deck or rail.
+- **M347** (0.346.0) — done: the map speaks in addresses (`18a-map-addr`) — the sector grid under the
+  darkness law, rulers on top and left with your and the selected coordinates underlined, the header «ВЫ ·
+  сектор x:y · «Имя»» / «сектор x:y · N секторов · J прыжков · d пк», empty cells selectable (no course into
+  emptiness), rumour areas as hatched squares from `G.rumours`, rings «2/3 прыжка», the address field with
+  the match button, every «сектор x:y» in game text tappable (`addrify`), the rose, and the wordless mark —
+  a match from the wallet (`G.mapMarks`, ≤10). Body in `docs/PLAN-archive.md`.
 
 - **M348 — holdings on the map** (author 2026-09-04). Three languages, because the state is a line,
   houses are patches and pirates are foci — never one fill. **Houses:** a sector with a house station

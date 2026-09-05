@@ -75,6 +75,7 @@ function snapshot(){
     news:G.news,newsMarks:G.newsMarks,newsT:G.newsT,rivals:G.rivals,
     wrecks:G.wrecks,bargePax:G.bargePax,fleetLog:G.fleetLog||{},fleetEscort:G.fleetEscort||0,caravan:G.caravan||null,
     wander:G.wander||{got:[],gave:[],chit:0,shelf:[],hold:[]},cosm:G.cosm||null,locker:G.locker||null,boxes:G.boxes||[],
+    mapMarks:G.mapMarks||[],rumours:G.rumours||[],
     loreFound:G.loreFound,loreMarks:G.loreMarks,settle:G.settle,tin:G.tin,
     scrip:G.scrip,scripRate:G.scripRate,scripLog:G.scripLog,
     doom:G.doom,doomDead:G.doomDead,parrot:G.parrot,heard:G.heard,grok:G.grok,flea:G.flea,matches:G.matches|0,smena:G.smena||[],
@@ -448,6 +449,9 @@ function applySave(s){
   {const c=(s.cosm&&typeof s.cosm==="object")?s.cosm:{};const owned=Array.isArray(c.owned)?c.owned.slice():[];
    G.cosm={owned};for(const k of ["exhaust","trail","suit","visor","mark","lights","chime"])G.cosm[k]=(typeof c[k]==="string"&&owned.indexOf(c[k])>=0)?c[k]:null;}
   G.boxes=Array.isArray(s.boxes)?s.boxes.filter(id=>typeof id==="number"):[];   /* коробки (M346) */
+  /* карта адресами (M347): спички на клетках и области слухов */
+  G.mapMarks=Array.isArray(s.mapMarks)?s.mapMarks.filter(m=>m&&typeof m.sx==="number"&&typeof m.sy==="number").slice(0,10):[];
+  G.rumours=Array.isArray(s.rumours)?s.rumours.filter(r=>r&&typeof r.sx==="number").slice(-12):[];
   /* ящик конторы (12ak, M345): части упакованы, кучи числом, час последнего визита */
   {const l=(s.locker&&typeof s.locker==="object")?s.locker:null;
    G.locker=l?{items:Array.isArray(l.items)?l.items.filter(it=>it&&(it.p||it.tool)):[],

@@ -1409,3 +1409,14 @@ body.table #loglist .matchbox{flex:0 0 auto;width:118px;padding:6px 8px 7px;bord
 body.table #loglist .matchbox:nth-child(even){transform:rotate(1.2deg)}
 body.table #loglist .matchbox b{display:block;font-weight:400;color:#2c2418;font-size:11px;line-height:1.3}
 body.table #loglist .matchbox s{display:block;text-decoration:none;color:#6a5a3e;font-size:9px;line-height:1.45;margin-top:2px}
+/* адрес в тексте — нажимается (M347) */
+u.addr{text-decoration:none;border-bottom:1px dotted currentColor;cursor:pointer;color:var(--amber)}
+body.table u.addr{color:#7a4a20}
+/* поле адреса над картой (M347): под полосой приборов, по центру */
+#mapaddr{position:fixed;right:calc(var(--railw,72px) + 8px);top:calc(var(--hudband,72px) + 22px);z-index:5;display:none;
+  align-items:center;gap:6px;padding:4px 6px 4px 10px;background:rgba(6,10,16,.72);border:1px solid rgba(150,182,212,.35);border-radius:6px;zoom:var(--ui,1)}
+#mapaddr span{color:var(--dim);font-size:9px;letter-spacing:.14em}
+#mapaddr input{width:64px;min-height:36px;padding:0 8px;font:inherit;font-size:12px;color:var(--text);background:rgba(0,0,0,.35);
+  border:1px solid rgba(150,182,212,.3);border-radius:4px;text-align:center}
+#mapaddr .act.sm{min-width:44px;padding:0 10px}
+@media (max-width:760px){#mapaddr{top:calc(var(--hudband,72px) + 20px);padding:3px 4px 3px 8px}#mapaddr input{width:52px}#mapaddr span{display:none}}

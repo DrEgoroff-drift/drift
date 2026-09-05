@@ -231,6 +231,11 @@ function hud(){
   if(mb)setSt(mb,"display",(G.mode==="map"&&(G.mapView||(G.mapZoom&&G.mapZoom!==1)))?"":"none");
   if(nb)setSt(nb,"display",(G.mode==="map"&&G.mapMore)?"":"none");
   /* «ЦЕНЫ» — список виденных цен на карте (M341), когда есть что сравнивать */
+  /* поле адреса и кнопка спички — только на карте (M347) */
+  const ab=(typeof mapAddrBox==="function")?mapAddrBox():null;
+  if(ab){const onMap=G.mode==="map"&&!G.mapClean;setSt(ab,"display",onMap?"flex":"none");
+    const mk=document.getElementById("mapMarkGo");
+    if(mk&&onMap&&typeof mapMarkAt==="function")setTx(mk,mapMarkAt(G.sel.x,G.sel.y)>=0?"СНЯТЬ МЕТКУ":"ОТМЕТИТЬ");}
   const wp=document.getElementById("wanwin");
   if(wp)setSt(wp,"display",G.mode==="wanderer"?"":"none");
   const pb=document.getElementById("pricesbtn");
@@ -247,7 +252,7 @@ function hud(){
   if($vitals&&$locusEl){
     const vb=$vitals.getBoundingClientRect().bottom,lb=$locusEl.getBoundingClientRect().bottom;
     const band=Math.max(vb,lb);
-    if(band>0)HUD_BAND=Math.round(band);
+    if(band>0){if(HUD_BAND!==Math.round(band))document.documentElement.style.setProperty("--hudband",Math.round(band)+"px");HUD_BAND=Math.round(band);}
   }
   /* пол и правый борт — тем же одним чтением на кадр. Пустая подсказка в счёт
      не идёт: у неё нет текста, а место она занимать не должна. */
@@ -268,6 +273,7 @@ function hud(){
      const r=rail.getBoundingClientRect();
      if(r.width>0&&r.height>0)rl=Math.min(rl,r.left);
    }
+   if(HUD_RAIL!==Math.round(rl))document.documentElement.style.setProperty("--railw",Math.max(0,innerWidth-Math.round(rl))+"px");   /* ширина борта — для поля адреса (M347) */
    HUD_FLOOR=Math.round(fl);HUD_RAIL=Math.round(rl);}
   setTx($msg,G.msgT>0?G.msg:"");
   setSt($msg,"opacity",G.msgT>0?clamp(G.msgT/40,0,1):0);

@@ -368,6 +368,7 @@ function renderTab(){
   renderTab._tab=tab;
   renderTabBody();
   secTidy($body);   /* заголовки по закону §1a (M299) */
+  if(typeof addrify==="function")addrify($body);   /* всякий адрес — на карту (M347) */
   if(keep>0){
     const put=()=>{$body.scrollTop=Math.min(keep,Math.max(0,$body.scrollHeight-$body.clientHeight));};
     put();requestAnimationFrame(put);

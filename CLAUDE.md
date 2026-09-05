@@ -111,6 +111,7 @@ One phrase per module; the module's own header says the rest. Grep `docs/INDEX.m
 | `12uc-matches` `12v-wander` `12v-wander-shop` `12v-wander-shop-cosm` `12ak-locker` `24c-mode-wanderer` `26d-ui-wanderer` | «Сорока» (`docs/DESIGN-wanderer.md`): matches, the sail-ship's clock loop and the three ways to find it, the catalogue and counters, the office locker, the room mode and its panel |
 | `15-input` `16-flight` | keys/pads/mouse, starfield, autopilot, trail |
 | `17`–`25` `mode-*` | modes: system, map, landing, surface, cave, mine, belt, cockpit, scoop; draw halves in `*-draw`; `20-life` astronaut and flora, `20f-fauna` beasts, `17b-finds` finds in the void, `17d-house-shapes` faction marks |
+| `18a-map-addr` | the map's addresses (M347): grid, rulers, header, rumour areas, rings, the address field, `addrify`, matches as marks |
 | `18c-chunks` `18d-verlet` | raster cache (world-x chunks, `screenLayer`); ropes and cloth |
 | `21a-mode-base` `21aa-base-rooms` `21ab-base-interiors` `21ac-base-draw` | the base in cross-section: grid and power, brushes and `drawModule`, the eight rooms, the frame |
 | `21g-greenhouse` `21h-pennant` `27da-kino` `29f/29g-winter` `29h/29i-spa` `25m-probe` `25n-chess` | the quiet features: greenhouse, travelling pennant, cinema, wintering, sanatorium, the probe, chess by post |

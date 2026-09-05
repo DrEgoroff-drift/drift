@@ -135,6 +135,7 @@ function rumourBlock(){
   const tag=G.sys.key+"#"+rumourSeedHere();
   if(G.rumLogged!==tag){
     G.rumLogged=tag;
-    for(const q of L)peopleLine(q.text,"слух на «"+G.st.name+"»");
+    for(const q of L){peopleLine(q.text,"слух на «"+G.st.name+"»");
+      if(typeof rumourRemember==="function")rumourRemember(q);}   /* на карту — областью (M347) */
   }
 }

@@ -7,6 +7,24 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.346.0 - M347: the map speaks in addresses
+
+The author's words: «на карте не понятно, что за сектора и адреса». Now the chart has what an address is
+read with. A sector grid under the same darkness law as the stars — bright by you, gone at the edge of
+your reach, every fifth line a touch louder. Rulers along the top and the left edge that scroll with the
+window; your coordinates are underlined in teal on them, the selected sector's in amber — you read an
+address off the rulers, never off the cells. A header: «ВЫ · сектор 4:-7 · «Имя»», and under it the
+selection «сектор 6:-9 · 3 сектора · 2 прыжка · 3,1 пк» — «секторов» counted the way rumours count
+them. An empty cell can be selected: it has an address and a distance, and no course. Rumours you have
+heard lie on the map as pale hatched squares «в N секторах вокруг X:Y · буфетчица»; two that overlap show
+it by themselves. Faint rings mark «2 прыжка» and «3 прыжка». A small field «сектор __:__» slides the
+window to any address and outlines the cell, and every «сектор x:y» in the game's own text — rumours,
+the notebook, flea provenance, «Сорока»'s papers — is now tappable and opens the map there. A rose in the
+corner says +X, +Y and «к ядру». And a wordless mark, by the author's decision: a match. You lay one
+from the wallet on a cell and it lies there until you take it back — not spent, but not in the wallet
+while it lies, so a mark costs something without a rule. Ten at most. No matches — no mark, and the game
+says so in one line.
+
 ## 0.345.0 - M346: matchboxes — twenty empty boxes of factories that are gone
 
 The last step of the «Сорока» queue and the smallest: a side collection with no use at all. Twenty

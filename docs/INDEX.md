@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 397 · символов верхнего уровня: 3604
+Файлов: 399 · символов верхнего уровня: 3622
 
 ## СИМВОЛЫ
 
@@ -26,7 +26,7 @@ $menu                        src/15-input.js:239
 $msg                         src/27z-telemetry.js:38
 $msl                         src/27z-telemetry.js:41
 $nav                         src/27z-telemetry.js:40
-$opts                        src/26-ui-station.js:883
+$opts                        src/26-ui-station.js:884
 $padsEl                      src/15-input.js:4
 $place                       src/27z-telemetry.js:37
 $sh                          src/27z-telemetry.js:8
@@ -48,6 +48,7 @@ addPart                      src/05-parts.js:227
 addPath                      src/25-cockpit.js:154
 addRes                       src/11-log.js:140
 addrForm                     src/11b-speech.js:96
+addrify                      src/18a-map-addr.js:243
 adjTo                        src/05-parts.js:23
 AFFIX                        src/05-parts.js:29
 AFFIX_BAD                    src/05-parts.js:46
@@ -95,13 +96,13 @@ appetitePrice                src/12ab-hold.js:84
 applyCrewEvent               src/12b-crew-events.js:215
 applyPadMode                 src/15-input.js:72
 applyPadSize                 src/15-input.js:8
-applySave                    src/14-save.js:198
+applySave                    src/14-save.js:199
 applyVolumes                 src/09-audio.js:40
 apVel                        src/16-flight.js:132
 arrive                       src/16-flight.js:178
 ARTIFACTS                    src/12h-relic.js:48
 askText                      src/11u-names.js:59
-asMap                        src/14-save.js:191
+asMap                        src/14-save.js:192
 assignToBase                 src/12a-crew.js:172
 AST_N                        src/24-mode-belt.js:86
 audioHush                    src/09-audio.js:12
@@ -807,7 +808,7 @@ drawSysNebula                src/16a-space.js:208
 drawSystem                   src/17-mode-system.js:331
 drawSysTraffic               src/17f-sys-traffic.js:29
 drawTemple                   src/20aa-poi-shapes.js:50
-drawThingIcon                src/27i-ui-table.js:329
+drawThingIcon                src/27i-ui-table.js:330
 drawTierTrim                 src/03b-hull-paint.js:62
 drawTiles                    src/18c-chunks.js:125
 drawTrail                    src/16-flight.js:362
@@ -1499,7 +1500,7 @@ jobOffer                     src/12e-mgr-jobs.js:228
 jobPick                      src/12e-mgr-jobs.js:259
 jobRefuse                    src/12e-mgr-jobs.js:57
 jobTick                      src/12e-mgr-jobs.js:287
-jump                         src/18-mode-map.js:574
+jump                         src/18-mode-map.js:582
 jumpToBase                   src/21a-mode-base.js:315
 KEEP_DARK_AFTER              src/11k-keepers.js:48
 KEEP_HABIT                   src/11k-keepers.js:35
@@ -1732,20 +1733,35 @@ makePhrase                   src/10-music.js:344
 makeRock                     src/24-mode-belt.js:54
 makeWorld                    src/02a-worldmix.js:47
 MAP_BOX                      src/18-mode-map.js:27
+MAP_MARKS_MAX                src/18a-map-addr.js:29
+mapAddrBox                   src/18a-map-addr.js:227
 mapBack                      src/18-mode-map.js:111
 MAPBG                        src/18-mode-map.js:61
 mapBox                       src/18-mode-map.js:28
 mapCell                      src/18-mode-map.js:88
+mapCellXY                    src/18a-map-addr.js:52
 mapCleanSet                  src/18-mode-map.js:125
 mapDeck                      src/18-mode-map.js:13
 mapFit                       src/18-mode-map.js:93
+mapGoAddr                    src/18a-map-addr.js:215
+mapGridDraw                  src/18a-map-addr.js:55
+mapMarkAt                    src/18a-map-addr.js:31
+mapMarks                     src/18a-map-addr.js:30
+mapMarksDraw                 src/18a-map-addr.js:105
+mapMarkToggle                src/18a-map-addr.js:33
 mapNebula                    src/18-mode-map.js:62
+mapParseAddr                 src/18a-map-addr.js:223
 mapPeek                      src/18-mode-map.js:104
 mapPriceDraw                 src/12aa-need.js:327
 mapPriceRows                 src/12aa-need.js:302
 mapRail                      src/18-mode-map.js:17
 mapRange                     src/18-mode-map.js:89
 mapReset                     src/18-mode-map.js:123
+mapRingsDraw                 src/18a-map-addr.js:72
+mapRoseDraw                  src/18a-map-addr.js:196
+mapRulersDraw                src/18a-map-addr.js:122
+mapRulerTop                  src/18a-map-addr.js:53
+mapRumoursDraw               src/18a-map-addr.js:86
 mapViewC                     src/18-mode-map.js:82
 mapZoomK                     src/18-mode-map.js:87
 mapZoomSet                   src/18-mode-map.js:90
@@ -2557,10 +2573,10 @@ renderRelays                 src/11ap-relay.js:243
 renderRoute                  src/12r-route.js:349
 renderSiteTab                src/26c-ui-station-site.js:7
 renderSmena                  src/12ud-smena.js:121
-renderStrips                 src/27i-ui-table.js:269
+renderStrips                 src/27i-ui-table.js:270
 renderTab                    src/26-ui-station.js:365
-renderTabBody                src/26-ui-station.js:376
-renderThings                 src/27i-ui-table.js:300
+renderTabBody                src/26-ui-station.js:377
+renderThings                 src/27i-ui-table.js:301
 REP_MIN                      src/12k-rep.js:16
 REP_WORDS                    src/12k-rep.js:17
 repAdd                       src/12k-rep.js:36
@@ -2579,7 +2595,7 @@ RES_AUTO                     src/08-state.js:54
 RES_KEYS                     src/02-world.js:87
 resAuto                      src/28-loop.js:114
 resEma                       src/28-loop.js:113
-resetArm                     src/26-ui-station.js:882
+resetArm                     src/26-ui-station.js:883
 resetWorld                   tests/90-harness.js:55
 resize                       src/08-state.js:22
 RET_BOARD                    src/11s-returners.js:29
@@ -2753,8 +2769,10 @@ RUMOUR_IMG                   src/11t-rumours.js:32
 RUMOUR_SRC                   src/11t-rumours.js:53
 rumourBlock                  src/11t-rumours.js:120
 rumourEtherLine              src/11t-rumours.js:109
+rumourRemember               src/18a-map-addr.js:44
 rumourSeedHere               src/11t-rumours.js:55
 rumoursHere                  src/11t-rumours.js:73
+rumoursKnown                 src/18a-map-addr.js:43
 rumourToMap                  src/11t-rumours.js:68
 rumourWhere                  src/11t-rumours.js:61
 runAutopilot                 src/16-flight.js:133
@@ -2780,13 +2798,13 @@ runTests                     tests/90-harness.js:115
 rxRecord                     src/11x-ring.js:64
 S1                           src/01-core.js:96
 S2                           src/01-core.js:97
-SAVE_BUDGET                  src/14-save.js:106
+SAVE_BUDGET                  src/14-save.js:107
 SAVE_KEY                     src/14-save.js:6
-saveFatSaid                  src/14-save.js:107
+saveFatSaid                  src/14-save.js:108
 saveGame                     src/14a-cloud.js:38
-saveText                     src/14-save.js:128
-saveTop                      src/14-save.js:122
-saveWeigh                    src/14-save.js:109
+saveText                     src/14-save.js:129
+saveTop                      src/14-save.js:123
+saveWeigh                    src/14-save.js:110
 say                          src/08-state.js:188
 SCALE_KEYS                   src/10-music.js:25
 SCALES                       src/10-music.js:5
@@ -3055,7 +3073,7 @@ STAR_COLS                    src/16-flight.js:2
 STAR_LX                      src/16-flight.js:27
 starAt                       src/06-galaxy.js:2
 starRGB                      src/19c-light.js:49
-start                        src/15-input.js:556
+start                        src/15-input.js:561
 startLanding                 src/19-mode-landing.js:2
 startScoop                   src/19a-mode-scoop.js:51
 stat                         src/08-state.js:144
@@ -3194,7 +3212,7 @@ tableNewBy                   src/27i-ui-table.js:76
 tableNewThings               src/27i-ui-table.js:73
 tableNoticeAll               src/27i-ui-table.js:68
 tableRender                  src/27i-ui-table.js:147
-tableRow                     src/27i-ui-table.js:261
+tableRow                     src/27i-ui-table.js:262
 tableSetTab                  src/27i-ui-table.js:105
 tableTab                     src/27i-ui-table.js:22
 tableToggle                  src/27i-ui-table.js:84
@@ -3817,7 +3835,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/11s-returners.js · 5 КБ
   · возвращение: люди моложе своих внуков:1
 
-## src/11t-rumours.js · 11 КБ
+## src/11t-rumours.js · 12 КБ
   · слухи: как вообще узнают, что место есть:1
 
 ## src/11u-names.js · 6 КБ
@@ -4055,12 +4073,12 @@ zooTick                      src/11ad-zoo.js:41
   · облако:65
   · видимое состояние обмена:80
 
-## src/14-save.js · 61 КБ
+## src/14-save.js · 62 КБ
   · сохранение:1
-  · запись не имеет права убить полёт:90
-  · пустая карта возвращается из облака СПИСКОМ:169
+  · запись не имеет права убить полёт:91
+  · пустая карта возвращается из облака СПИСКОМ:170
 
-## src/15-input.js · 34 КБ
+## src/15-input.js · 35 КБ
   · экранные кнопки: авто-скрытие и размер:1
   · ввод:87
   · полоса вкладок шире экрана:212
@@ -4097,6 +4115,9 @@ zooTick                      src/11ad-zoo.js:41
 ## src/17-mode-system.js · 43 КБ
   · режим: система:1
 
+## src/18a-map-addr.js · 16 КБ
+  · карта говорит адресами (M347):1
+
 ## src/18a-material.js · 21 КБ
   · материал грунта:1
 
@@ -4112,7 +4133,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/18d-verlet.js · 7 КБ
   · верле: верёвки и ткань:1
 
-## src/18-mode-map.js · 40 КБ
+## src/18-mode-map.js · 41 КБ
   · карта:1
   · где у карты пол и где правый борт:3
   · карта: ночное небо, а не схема молекулы:51
@@ -4343,7 +4364,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/26-ui-station.js · 61 КБ
   · станция:1
   · заголовки и полосы (M299, docs/DESIGN-screens.md §1a):187
-  · настройки:881
+  · настройки:882
 
 ## src/27b-ui-crew.js · 15 КБ
   · экран экипажа:1
@@ -4411,7 +4432,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/27-ui-ship.js · 20 КБ
   · силуэт корпуса и вход в ОПИСЬ:1
 
-## src/27z-telemetry.js · 30 КБ
+## src/27z-telemetry.js · 31 КБ
   · телеметрия: приборы пишут в DOM:1
 
 ## src/28-loop.js · 31 КБ
@@ -4874,6 +4895,9 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzzzj-boxes.js · 5 КБ
   · автотесты: коробки (M346):1
+
+## tests/91zzzzk-mapaddr.js · 5 КБ
+  · автотесты: карта говорит адресами (M347):1
 
 ## tests/91zzzzy-hold.js · 9 КБ
   · холдинг: круг стройки числами (M339):1

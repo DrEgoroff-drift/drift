@@ -221,6 +221,8 @@ function drawMap(){
     ctx.fillText("ИСКАТЬ ЗДЕСЬ · "+S.rad+" "+pl3(S.rad,"СЕКТОР","СЕКТОРА","СЕКТОРОВ").toUpperCase(),sxp,syp-S.rad*cell-6);
   }
   const dsel=Math.hypot(G.sel.x-G.sx,G.sel.y-G.sy);
+  /* адреса (M347): сетка клеток под законом тьмы и кольца прыжков — под звёздами */
+  if(typeof mapGridDraw==="function"&&!G.mapClean){mapGridDraw(V,cell,R,st);mapRingsDraw(px,py,cell,st);}
   const vis=[];
   const vx0=Math.round(vx),vy0=Math.round(vy);   /* окно дробное после протяжки, сектора целые */
   for(let gy=vy0-R;gy<=vy0+R;gy++)for(let gx=vx0-R;gx<=vx0+R;gx++){
@@ -256,6 +258,8 @@ function drawMap(){
   if(typeof drawFleetMap==="function")drawFleetMap(vis,cell);
   /* «Карта чужой руки» (12h → 12v, M342): парус на стоянке «Сороки», с «чтением» — и на следующей */
   if(typeof drawWanderMap==="function")drawWanderMap(vis,cell);
+  /* области слухов и спички на клетках (M347) — над сеткой, под звёздами */
+  if(typeof mapRumoursDraw==="function"&&!G.mapClean){mapRumoursDraw(V,cell);mapMarksDraw(V,cell);}
   let sel=null,cur=null;
   for(const v of vis){
     const{gx,gy,s,x,y}=v;
@@ -411,7 +415,8 @@ function drawMap(){
   if(typeof drawDronesMap==="function")drawDronesMap(vis);
   /* погасший рукав смотрителей (11k): прокладка стоит больше топлива */
   const cost=Math.round((9+dsel*13)*((typeof keepersJumpK==="function")?keepersJumpK():1));
-  const bad=dsel>st.jump+.02||cost>G.fuel||dsel===0;
+  /* в пустую клетку курса нет (M347): выбрать можно, прыгнуть — некуда */
+  const bad=dsel>st.jump+.02||cost>G.fuel||dsel===0||!starAt(G.sel.x,G.sel.y);
   /* ── подвал карты: сначала расклад, потом рисование ──
      Слева — про прыжок (цена, расстояние, маршрут), справа — итоги (тела,
      виды, деньги, фронт). На широком экране это две колонки в одну строку;
@@ -563,7 +568,10 @@ function drawMap(){
      if(row[1]){ctx.textAlign="right";ctx.fillStyle=row[1][0];ctx.fillText(row[1][1],foot.RX,y);
        const w=ctx.measureText(row[1][1]).width;mapBox("подвал справа",foot.RX-w,y-9,w,12);}
    });
-   ctx.textAlign="right";}
+   ctx.textAlign="right";
+   /* линейки, шапка и роза (M347): интерфейс поверх листа, сообщает свои прямоугольники */
+   if(typeof mapRulersDraw==="function"){mapRulersDraw(V,cell,foot);mapRoseDraw(foot);}
+  }
   G.prompt=G.mapClean?"":(G.mapPeek?"ТАП — ВЫБОР · НАЗАД — НА СТАНЦИЮ":"ТАП — ВЫБОР · ЕЩЁ РАЗ — ПОДРОБНЕЕ · ДЕЙСТВИЕ — ПРЫЖОК");
   if(actEdge){
     if(G.mapPeek)say("Сначала отстыкуйтесь");
