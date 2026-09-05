@@ -442,8 +442,9 @@ Left from the queue: nothing — the band's second step is M308, the station's c
   settled, three classes drawn, the line, позывной and the norm. **M311 (0.308.0)**: joints, whiter
   hulls, сторожевик/паром/плавбаза, services 4/7/10. **M312 (0.309.0)**: the last seven classes,
   почта, госпитальное, учебное. **M313 (0.310.0)**: «УЗ-1», the derelict, the caravan. **M314
-  (0.311.0)**: трассы on the map, the rescuer's call, the drawing tails. Left: 12 заявка (lend a
-  hull for one run — needs the crew order model, its own pass).
+  (0.311.0)**: трассы on the map, the rescuer's call, the drawing tails. ~~Left: 12 заявка (lend a
+  hull for one run)~~ — struck by the author 2026-09-05: in play it is two buttons and a
+  journal line; §18 closes on eleven interactions.
   **The in-play look is done** — almanac issue III, addendum 0.313.0: fourteen frames
   (`docs/shots/f_*.png`, hold scene), measured off the baked sprite and the canvas, held against
   the craft codex law by law. **Palette settled by the author 2026-09-03** («цвет да пусть будут
@@ -455,7 +456,7 @@ Left from the queue: nothing — the band's second step is M308, the station's c
   grammar (`fleetGlyph`, thirteen roundels in one construction). Numbers in the 0.314.0 addendum
   of almanac III. **M318 (0.315.0)** paid the last two: §5 (shadow strips under strap-on parts,
   the рефрижератор's corrugation) and §14 (the трасса as a chain to two nearest neighbours,
-  judged on a staged chart). Issue III has no open law; the fleet's remainder is the заявка.
+  judged on a staged chart). Issue III has no open law; the fleet has no remainder (the заявка struck 2026-09-05).
   §14 (трассы on the map) judged 2026-09-05 (0.350.2) on a staged chart with every station at rung 6:
   chain, ticks and band hold; beyond the jump edge they now dim to a third (the darkness law).
 
