@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 407 · символов верхнего уровня: 3717
+Файлов: 407 · символов верхнего уровня: 3718
 
 ## СИМВОЛЫ
 
@@ -870,7 +870,7 @@ drawTrail                    src/16-flight.js:362
 drawWallPaper                src/11ae-concert.js:39
 drawWanderer                 src/12v-wander.js:175
 drawWanderMap                src/12v-wander.js:159
-drawWanderRoom               src/24c-mode-wanderer-draw.js:78
+drawWanderRoom               src/24c-mode-wanderer-draw.js:117
 drawWater                    src/21e-surface-draw.js:776
 drawWear                     src/12s-wear.js:102
 drawWeather                  src/19d-weather.js:96
@@ -3569,6 +3569,7 @@ wallStone                    src/11ah-wall.js:189
 wallStore                    src/11ah-wall.js:81
 wallWrap                     src/11ae-concert.js:72
 WAN_C                        src/24c-mode-wanderer-draw.js:16
+WAN_ICON                     src/24c-mode-wanderer-draw.js:37
 wanAll                       src/24c-mode-wanderer.js:21
 wanCaseAt                    src/24c-mode-wanderer-draw.js:30
 wanCol                       src/24c-mode-wanderer-draw.js:21
@@ -3619,8 +3620,8 @@ wanderToShelf                src/12v-wander-shop.js:81
 wanderWildGrant              src/12v-wander-shop.js:199
 wanderWorldPos               src/12v-wander.js:97
 wanGeom                      src/24c-mode-wanderer-draw.js:24
-wanItemIcon                  src/24c-mode-wanderer-draw.js:37
-wanKeeper                    src/24c-mode-wanderer-draw.js:62
+wanItemIcon                  src/24c-mode-wanderer-draw.js:72
+wanKeeper                    src/24c-mode-wanderer-draw.js:101
 wanLots                      src/24c-mode-wanderer.js:49
 wanPanel                     src/26d-ui-wanderer.js:12
 wanPanelSync                 src/26d-ui-wanderer.js:21
@@ -4387,7 +4388,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/24c-mode-wanderer.js · 5 КБ
   · режим: на борту «Сороки» (M343):1
 
-## src/24c-mode-wanderer-draw.js · 23 КБ
+## src/24c-mode-wanderer-draw.js · 29 КБ
   · «Сорока» изнутри: коридор к стойке (M343):1
 
 ## src/24-mode-belt.js · 40 КБ

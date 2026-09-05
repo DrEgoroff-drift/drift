@@ -1726,7 +1726,7 @@ body.table u.addr{color:#7a4a20}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.351.0";
+const VER="0.351.1";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -29159,12 +29159,12 @@ function drawWanderer(zx,zy,Z){
      свет к внешней кромке; блики — считанные жёсткие штрихи; по передней кромке
      тёмный лонжерон, от кончика к концу рея — ванта. */
   {
-    const base=now/900000*TAU+(sys.seed%628)/100, R=150, KAPPA=.22;
+    const base=now/900000*TAU+(sys.seed%628)/100, R=155, KAPPA=.34;
     for(let i=0;i<4;i++){
       const th=base+i*TAU/4, sway=Math.sin(now/61000+i*1.9)*.02;
       const pt=(u,side)=>{                       // точка лопасти: доля длины u, сторона ±1
         const a=th+KAPPA*u*u+sway*u, cx=Math.cos(a)*R*u, cy=Math.sin(a)*R*u;
-        const w=3+19*Math.sin(Math.PI*Math.min(1,u*1.08))*(u<.92?1:(1-u)/.08*.6+.4);
+        const w=2.5+15*Math.pow(Math.sin(Math.PI*Math.min(1,u*1.06)),.8)*(u<.9?1:(1-u)/.1*.6+.4);
         const nx=-Math.sin(a),ny=Math.cos(a);
         return [cx+nx*w*side,cy+ny*w*side];
       };
@@ -29191,6 +29191,8 @@ function drawWanderer(zx,zy,Z){
       ctx.strokeStyle="#2a2218";ctx.lineWidth=.9;ctx.beginPath();for(let j=0;j<=N;j++){const q=pt(j/N,1);j?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]);}ctx.stroke();
       const tip=pt(1,0),ry=Math.sin(th)>0?30:-30;
       ctx.strokeStyle="rgba(200,190,160,.35)";ctx.lineWidth=.4;ctx.beginPath();ctx.moveTo(tip[0],tip[1]);ctx.lineTo(0,ry);ctx.stroke();
+      /* светлая кромка по задней (внешней) стороне — фольга ловит звезду ребром */
+      ctx.strokeStyle="rgba(255,236,190,.55)";ctx.lineWidth=.6;ctx.beginPath();for(let j=2;j<=N;j++){const q=pt(j/N,-1);j>2?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]);}ctx.stroke();
       /* один тонкий обвод телу лопасти */
       ctx.strokeStyle="rgba(40,24,4,.55)";ctx.lineWidth=.5;path();ctx.stroke();
     }
@@ -29217,6 +29219,8 @@ function drawWanderer(zx,zy,Z){
       ctx.beginPath();ctx.moveTo(bx,by);ctx.lineTo(bx+wdt,by+hgt);ctx.moveTo(bx+wdt,by);ctx.lineTo(bx,by+hgt);ctx.stroke();
     }
   }
+  /* киль ловит золото парусов: тёплая кромка сверху */
+  ctx.strokeStyle="rgba(227,176,74,.35)";ctx.lineWidth=.7;ctx.beginPath();ctx.moveTo(-50,-2.1);ctx.lineTo(50,-2.1);ctx.stroke();
   /* ряды заклёпок вдоль киля */
   ctx.fillStyle="rgba(255,255,255,.13)";
   for(let q=-48;q<=48;q+=3)ctx.fillRect(q,-1.6,.6,.6);
@@ -55357,6 +55361,41 @@ function wanCaseAt(i,cursor){
   if(z>.68)return null;
   return {left,z,z2:z+.085};
 }
+const WAN_ICON={
+  sextant(s){ctx.beginPath();ctx.arc(0,s*.1,s*.42,Math.PI*1.1,Math.PI*1.9);ctx.lineWidth=s*.09;ctx.strokeStyle="#c9a24a";ctx.stroke();
+    ctx.lineWidth=s*.06;ctx.strokeStyle="#6a5221";ctx.beginPath();ctx.moveTo(0,s*.1);ctx.lineTo(-s*.3,-s*.28);ctx.moveTo(0,s*.1);ctx.lineTo(s*.34,-s*.2);ctx.stroke();
+    ctx.fillStyle="#2b2f36";ctx.beginPath();ctx.arc(0,s*.1,s*.06,0,TAU);ctx.fill();ctx.fillStyle="rgba(255,240,200,.8)";ctx.fillRect(-s*.2,-s*.28,s*.12,s*.03);},
+  pencil(s){ctx.save();ctx.rotate(-.5);ctx.fillStyle="#d9a43a";ctx.fillRect(-s*.45,-s*.06,s*.75,s*.12);ctx.fillStyle="#2b2f36";ctx.beginPath();ctx.moveTo(s*.3,-s*.06);ctx.lineTo(s*.48,0);ctx.lineTo(s*.3,s*.06);ctx.closePath();ctx.fill();
+    ctx.fillStyle="rgba(255,240,200,.6)";ctx.fillRect(-s*.45,-s*.05,s*.75,s*.025);ctx.restore();},
+  gyro(s){ctx.lineWidth=s*.07;ctx.strokeStyle="#c9a24a";ctx.beginPath();ctx.arc(0,0,s*.4,0,TAU);ctx.stroke();ctx.beginPath();ctx.ellipse(0,0,s*.4,s*.16,.6,0,TAU);ctx.stroke();
+    ctx.fillStyle="#2b2f36";ctx.beginPath();ctx.arc(0,0,s*.08,0,TAU);ctx.fill();ctx.strokeStyle="#e8e0d0";ctx.lineWidth=s*.04;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(s*.22,-s*.22);ctx.stroke();
+    ctx.fillStyle="rgba(255,240,200,.7)";ctx.beginPath();ctx.arc(-s*.22,-s*.28,s*.05,0,TAU);ctx.fill();},
+  blanket(s){ctx.fillStyle="#b8bcc2";ctx.beginPath();ctx.roundRect(-s*.45,-s*.25,s*.9,s*.5,s*.05);ctx.fill();ctx.fillStyle="#d8dce2";ctx.fillRect(-s*.45,-s*.25,s*.9,s*.22);
+    ctx.strokeStyle="rgba(0,0,0,.35)";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(-s*.45,-s*.03);ctx.lineTo(s*.45,-s*.03);ctx.stroke();ctx.fillStyle="rgba(255,255,255,.7)";ctx.fillRect(-s*.4,-s*.22,s*.25,s*.03);},
+  valve(s){ctx.fillStyle="#6a5221";ctx.fillRect(-s*.08,-s*.05,s*.16,s*.45);ctx.lineWidth=s*.08;ctx.strokeStyle="#c9a24a";ctx.beginPath();ctx.arc(0,-s*.12,s*.3,0,TAU);ctx.stroke();
+    ctx.lineWidth=s*.05;for(let i=0;i<3;i++){const a=i/3*TAU;ctx.beginPath();ctx.moveTo(0,-s*.12);ctx.lineTo(Math.cos(a)*s*.3,-s*.12+Math.sin(a)*s*.3);ctx.stroke();}
+    ctx.fillStyle="rgba(255,240,200,.7)";ctx.beginPath();ctx.arc(-s*.2,-s*.3,s*.045,0,TAU);ctx.fill();},
+  needle(s){ctx.save();ctx.rotate(-.7);ctx.strokeStyle="#d8dce2";ctx.lineWidth=s*.05;ctx.beginPath();ctx.moveTo(-s*.45,0);ctx.lineTo(s*.45,0);ctx.stroke();
+    ctx.lineWidth=s*.03;ctx.beginPath();ctx.ellipse(-s*.38,0,s*.06,s*.03,0,0,TAU);ctx.stroke();ctx.strokeStyle="rgba(200,60,50,.8)";ctx.beginPath();ctx.moveTo(-s*.44,0);ctx.quadraticCurveTo(-s*.6,s*.3,-s*.2,s*.36);ctx.stroke();ctx.restore();},
+  bell(s){ctx.fillStyle="#c9a24a";ctx.beginPath();ctx.moveTo(-s*.32,s*.28);ctx.quadraticCurveTo(-s*.3,-s*.3,0,-s*.36);ctx.quadraticCurveTo(s*.3,-s*.3,s*.32,s*.28);ctx.closePath();ctx.fill();
+    ctx.fillStyle="#6a5221";ctx.fillRect(-s*.36,s*.26,s*.72,s*.06);ctx.beginPath();ctx.arc(0,s*.36,s*.06,0,TAU);ctx.fill();ctx.fillStyle="rgba(255,240,200,.8)";ctx.fillRect(-s*.14,-s*.22,s*.05,s*.35);},
+  notebook(s){ctx.fillStyle="#3a3128";ctx.beginPath();ctx.roundRect(-s*.32,-s*.4,s*.64,s*.8,s*.04);ctx.fill();ctx.fillStyle="#6a5221";ctx.fillRect(-s*.32,-s*.1,s*.64,s*.1);
+    ctx.fillStyle="#d9cfae";ctx.fillRect(s*.26,-s*.36,s*.05,s*.72);ctx.fillStyle="rgba(255,240,200,.35)";ctx.fillRect(-s*.28,-s*.36,s*.04,s*.72);},
+  sign(s){ctx.fillStyle="#3a3128";ctx.fillRect(-s*.5,-s*.22,s,s*.44);ctx.strokeStyle="#6a5221";ctx.lineWidth=1;ctx.strokeRect(-s*.5,-s*.22,s,s*.44);
+    ctx.fillStyle="rgba(232,220,190,.85)";ctx.font=Math.max(6,s*.16)+"px ui-monospace,monospace";ctx.textAlign="center";ctx.fillText("НЕ КУПЛЕНО",0,s*.06);},
+  hand(s){ctx.fillStyle="#8a9299";ctx.fillRect(-s*.12,s*.05,s*.24,s*.38);ctx.fillStyle="#b8bcc2";ctx.beginPath();ctx.roundRect(-s*.3,-s*.2,s*.6,s*.3,s*.06);ctx.fill();
+    ctx.lineWidth=s*.07;ctx.strokeStyle="#b8bcc2";for(let i=-1;i<=1;i++){ctx.beginPath();ctx.moveTo(i*s*.18,-s*.18);ctx.lineTo(i*s*.22,-s*.44);ctx.stroke();}
+    ctx.fillStyle="rgba(255,255,255,.6)";ctx.fillRect(-s*.26,-s*.17,s*.2,s*.03);},
+  trumpet(s){ctx.save();ctx.rotate(.4);ctx.fillStyle="#c9a24a";ctx.beginPath();ctx.moveTo(-s*.45,-s*.05);ctx.lineTo(s*.2,-s*.3);ctx.lineTo(s*.42,-s*.34);ctx.lineTo(s*.42,s*.34);ctx.lineTo(s*.2,s*.3);ctx.lineTo(-s*.45,s*.05);ctx.closePath();ctx.fill();
+    ctx.fillStyle="#2b2f36";ctx.beginPath();ctx.ellipse(s*.42,0,s*.05,s*.34,0,0,TAU);ctx.fill();ctx.fillStyle="rgba(255,240,200,.7)";ctx.fillRect(-s*.4,-s*.06,s*.5,s*.03);ctx.restore();},
+  key(s){ctx.save();ctx.rotate(-.35);ctx.lineWidth=s*.07;ctx.strokeStyle="#c9a24a";ctx.beginPath();ctx.arc(-s*.28,0,s*.14,0,TAU);ctx.stroke();
+    ctx.fillStyle="#c9a24a";ctx.fillRect(-s*.14,-s*.04,s*.6,s*.08);ctx.fillRect(s*.3,0,s*.06,s*.16);ctx.fillRect(s*.42,0,s*.05,s*.12);ctx.fillStyle="rgba(255,240,200,.7)";ctx.fillRect(-s*.1,-s*.035,s*.4,s*.02);ctx.restore();},
+  pricelist(s){ctx.fillStyle="#d9cfae";ctx.fillRect(-s*.3,-s*.42,s*.6,s*.84);ctx.strokeStyle="rgba(90,70,40,.7)";ctx.lineWidth=1;
+    for(let i=0;i<6;i++){ctx.beginPath();ctx.moveTo(-s*.22,-s*.3+i*s*.12);ctx.lineTo(s*.05+(i%2)*s*.1,-s*.3+i*s*.12);ctx.stroke();}
+    ctx.fillStyle="rgba(120,40,30,.6)";ctx.fillRect(s*.12,-s*.3,s*.1,s*.03);ctx.fillRect(s*.12,-s*.06,s*.1,s*.03);},
+  shelfwide(s){ctx.fillStyle="#6a5221";ctx.fillRect(-s*.48,-s*.06,s*.96,s*.1);ctx.fillStyle="#3a3128";ctx.beginPath();ctx.moveTo(-s*.4,s*.04);ctx.lineTo(-s*.4,s*.3);ctx.lineTo(-s*.14,s*.04);ctx.closePath();ctx.fill();
+    ctx.beginPath();ctx.moveTo(s*.4,s*.04);ctx.lineTo(s*.4,s*.3);ctx.lineTo(s*.14,s*.04);ctx.closePath();ctx.fill();ctx.fillStyle="rgba(255,240,200,.5)";ctx.fillRect(-s*.48,-s*.06,s*.96,s*.02);}
+};
 function wanItemIcon(lot,cx,cy,s){
   /* вещь на сукне: инструмент — латунная штука с бликом; бумага — сложенная
      карта; свёрток — ком под сукном с биркой. Одно тело, один свет сверху-слева */
@@ -55372,6 +55411,10 @@ function wanItemIcon(lot,cx,cy,s){
     ctx.fillStyle="rgba(255,235,200,.12)";ctx.beginPath();ctx.ellipse(-s*.12,-s*.1,s*.22,s*.12,-.4,0,TAU);ctx.fill();
     ctx.fillStyle="#d9cfae";ctx.fillRect(s*.28,-s*.02,s*.22,s*.14);
     ctx.strokeStyle="rgba(120,100,70,.7)";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(s*.28,s*.05);ctx.lineTo(s*.12,s*.02);ctx.stroke();
+  }else if(WAN_ICON[lot.id]){
+    /* у каждого инструмента своё лицо (второй проход): латунь — тело, один блик сверху-слева */
+    ctx.fillStyle="#c9a24a";ctx.strokeStyle="#6a5221";ctx.lineWidth=Math.max(1,s*.05);ctx.lineCap="round";ctx.lineJoin="round";
+    WAN_ICON[lot.id](s);
   }else{
     const r=rng(hashi(lot.ru.length,lot.id.length,0x7001));
     const wdt=s*(.5+r()*.4),hgt=s*(.25+r()*.35);

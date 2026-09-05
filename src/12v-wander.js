@@ -212,12 +212,12 @@ function drawWanderer(zx,zy,Z){
      свет к внешней кромке; блики — считанные жёсткие штрихи; по передней кромке
      тёмный лонжерон, от кончика к концу рея — ванта. */
   {
-    const base=now/900000*TAU+(sys.seed%628)/100, R=150, KAPPA=.22;
+    const base=now/900000*TAU+(sys.seed%628)/100, R=155, KAPPA=.34;
     for(let i=0;i<4;i++){
       const th=base+i*TAU/4, sway=Math.sin(now/61000+i*1.9)*.02;
       const pt=(u,side)=>{                       // точка лопасти: доля длины u, сторона ±1
         const a=th+KAPPA*u*u+sway*u, cx=Math.cos(a)*R*u, cy=Math.sin(a)*R*u;
-        const w=3+19*Math.sin(Math.PI*Math.min(1,u*1.08))*(u<.92?1:(1-u)/.08*.6+.4);
+        const w=2.5+15*Math.pow(Math.sin(Math.PI*Math.min(1,u*1.06)),.8)*(u<.9?1:(1-u)/.1*.6+.4);
         const nx=-Math.sin(a),ny=Math.cos(a);
         return [cx+nx*w*side,cy+ny*w*side];
       };
@@ -244,6 +244,8 @@ function drawWanderer(zx,zy,Z){
       ctx.strokeStyle="#2a2218";ctx.lineWidth=.9;ctx.beginPath();for(let j=0;j<=N;j++){const q=pt(j/N,1);j?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]);}ctx.stroke();
       const tip=pt(1,0),ry=Math.sin(th)>0?30:-30;
       ctx.strokeStyle="rgba(200,190,160,.35)";ctx.lineWidth=.4;ctx.beginPath();ctx.moveTo(tip[0],tip[1]);ctx.lineTo(0,ry);ctx.stroke();
+      /* светлая кромка по задней (внешней) стороне — фольга ловит звезду ребром */
+      ctx.strokeStyle="rgba(255,236,190,.55)";ctx.lineWidth=.6;ctx.beginPath();for(let j=2;j<=N;j++){const q=pt(j/N,-1);j>2?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]);}ctx.stroke();
       /* один тонкий обвод телу лопасти */
       ctx.strokeStyle="rgba(40,24,4,.55)";ctx.lineWidth=.5;path();ctx.stroke();
     }
@@ -270,6 +272,8 @@ function drawWanderer(zx,zy,Z){
       ctx.beginPath();ctx.moveTo(bx,by);ctx.lineTo(bx+wdt,by+hgt);ctx.moveTo(bx+wdt,by);ctx.lineTo(bx,by+hgt);ctx.stroke();
     }
   }
+  /* киль ловит золото парусов: тёплая кромка сверху */
+  ctx.strokeStyle="rgba(227,176,74,.35)";ctx.lineWidth=.7;ctx.beginPath();ctx.moveTo(-50,-2.1);ctx.lineTo(50,-2.1);ctx.stroke();
   /* ряды заклёпок вдоль киля */
   ctx.fillStyle="rgba(255,255,255,.13)";
   for(let q=-48;q<=48;q+=3)ctx.fillRect(q,-1.6,.6,.6);

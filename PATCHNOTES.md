@@ -7,6 +7,14 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.351.1 - «Сорока», second look
+
+The blades are slimmer at the root and bend harder toward the tip, with a lit outer rim — sabres,
+not petals; the keel catches the sails' gold along its top edge. In the room every tool in the
+catalogue has its own silhouette on the cloth — sextant, pencil, gyrocompass, blanket, valve,
+needle, bell, notebook, sign, mechanical hand, ear trumpet, key, price list, shelf — instead of
+one brass box with a dot.
+
 ## 0.351.0 - «Сорока» and the desk: the author's sketch, and a second look
 
 The author drew over a frame of «Сорока» (2026-09-05): four huge curved sails fanned around the
