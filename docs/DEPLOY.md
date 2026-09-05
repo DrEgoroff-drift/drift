@@ -12,6 +12,7 @@ the game changes on every push, the pages around it almost never, and the backen
 | `/reset.html` | `site/reset.html` | where a password-recovery link lands |
 | `/play.html` | `drift.html` (built from `src/`) | the game itself, one self-contained file |
 | `/api.php` | `site/api.php` | accounts, cloud saves, password recovery |
+| `/log.php` | `site/log.php` | error log receiver (0.359.0): every client error → `~/drift-data/crash.log`, JSON lines, rotated at 5 MB; read with `ssh drift 'tail -n 50 ~/drift-data/crash.log'` |
 | `/drift.webmanifest`, `/drift-sw.js` | `site/` | the game as an installable app: manifest and a network-first cache of `play.html` |
 
 Everything under `site/` is copied to the web root as it stands, so a new page or picture needs no

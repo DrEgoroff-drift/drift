@@ -72,7 +72,7 @@ function cloudOn(){return cloudHere()&&!!cloudTok();}
 function cloudCall(a,body){
   return fetch(CLOUD.api+"?a="+a,{method:"POST",
     headers:{"Content-Type":"application/json","X-Drift-Token":cloudTok()},
-    body:JSON.stringify(body||{})}).then(r=>r.json());
+    body:JSON.stringify(body||{})}).then(r=>r.json()).catch(e=>{try{crashShip("net","облако "+a+": "+(e&&e.message||e),"");}catch(_){}throw e;});
 }
 function cloudForget(){stDel(CLOUD.tkey);stDel(CLOUD.lkey);}
 

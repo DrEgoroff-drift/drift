@@ -7,6 +7,19 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.359.0 - every error goes to the server (author, 2026-09-05: «пиши на сервер лог, все ошибки, любые»)
+
+The author's freeze never got a cause because its only evidence, the «СБОЙ · …» line, lives on a
+screen somebody closes. Now everything that looks like an error leaves the page: frame crashes and
+out-of-frame errors, unhandled rejections, a frame stall over two seconds (tab visible), console.error
+and console.warn, «warn» journal lines, a failed cloud call, a resource that did not load, and a dead
+localStorage. Each row carries the version, mode, uptime, window, browser, up to eight stack lines of our
+own code and the last six journal lines; never a character the player typed. Receiver is the new
+`site/log.php` (api.php untouched), appending JSON lines to `~/drift-data/crash.log`, 5 MB then rotated,
+300 rows per address per day. Client side: the same line goes at most once a minute with a repeat count,
+eighty rows per page load, nothing from `file:` or the test stand. Read with
+`ssh drift 'tail -n 50 ~/drift-data/crash.log'`. Suite in `91zzzzzn-doors`.
+
 ## 0.358.0 - bug hunt 2026-09-05: what 115 scanners found and a hand check kept
 
 A fan of Haiku scans over the whole repo (167 raw findings), Sonnet verification for a third of them,

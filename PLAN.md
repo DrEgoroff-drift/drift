@@ -355,6 +355,29 @@ the day they are found; this is work that was deliberately not done, or that nee
   the first Act II ending, earlier it is a perk without code. С5 fatigue — the author's fork: hired
   hands have no figure, so either portraits (the `mgr-face` brushes) or an axis on managers. P9b
   settlement recursion (Eglash) — by eye over many settlements.
+  **P4 grisaille, spelled out (author asked 2026-09-05; the only craft item still queued):**
+  today every chunk (`18c-chunks`: ground, rocks, strata, cave rock in `23a/23aa`) is baked in
+  final colour — each drawer picks its own hue from `pal`, so a palette change means touching
+  every drawer, and light and colour are entangled in one pass. Grisaille splits it in two:
+  1. **Form bake in grey.** The chunk painters draw value only (0–255 luminance: mass, relief,
+     shadow strips, edge light) into the chunk canvas. Every `fillStyle` in `drawGround`,
+     `drawRocks`, `drawStrata`, the dig rock and the cave wall becomes a grey from the material's
+     value ramp; `pal` is not read there at all. `GROUND_BAKING` already marks the pass.
+  2. **Glaze pass in colour.** One function, `glaze(canvas, pal)`, maps luminance to the
+     palette: a 256-entry LUT per material (shadow hue → midtone → light hue, not one hue
+     scaled), applied once per chunk on bake through `getImageData`/`putImageData`, or via
+     `multiply`/`color` composite when the LUT is a plain gradient. The LUT is keyed into the
+     chunk store so a palette change re-glazes, not re-draws.
+  3. **What comes free.** A world's palette becomes data (three ramps per material), day/dusk
+     is a LUT swap instead of a re-bake, and the meter's `pair`/`tones` can be tuned per world
+     without touching the drawers. Cast shadows (P5) drop into the grey pass naturally.
+  4. **Measure.** `?g11` before/after on landing, dig, cave (the bake must not cost more than
+     one `getImageData` per chunk); a parity sheet of three palettes on `/dev` from one grey
+     bake; `lookAll` tones/pair per scene not worse than the 0.301.0 table above.
+  5. **Cost and risk.** Two sessions: one for the grey pass and the glaze on `18c` + `07-planet`
+     (ground, rocks, strata), one for `23a/23aa` (dig, cave) and the parity sheet. Risk: fine
+     colour detail that today lives inside a drawer (lichen tint, ore glints) has to move to the
+     glaze or stay as a small colour pass after it — list those before starting.
 
 ### Picture queue — built as M304 (0.301.0, 2026-09-03)
 
@@ -374,9 +397,9 @@ Left from the queue: nothing — the band's second step is M308, the station's c
 ### Graphics still open
 
 - ~~The cave is 83% empty~~ / ~~the cave's outline is a cell grid~~ — M305 (0.302.0): round rock,
-  a back wall, bones, ropes, tallies, a camp, branch-end finds. Left: the lower lake hall is still
-  79% empty by the meter — a vault of 78 over a flat floor; if it needs more, it needs a second
-  floor level or a lake that fills the frame, not more props.
+  a back wall, bones, ropes, tallies, a camp, branch-end finds. ~~Left: the lower lake hall is still
+  79% empty by the meter~~ — struck by the author 2026-09-05 («пещеру тоже нафиг»): the vault is
+  the vault; no second floor, no lake.
 - ~~The home's furniture is flat boxes~~ / ~~the house is a formula~~ — M307 (0.304.0). ~~The
   interior is drawn per frame — measure before baking~~ — measured in M319 (0.316.0): `?g11` says
   60 fps at dpr 2 with and without a bake, so nothing is baked; `prof()`'s 27 ms was the
@@ -404,8 +427,10 @@ Left from the queue: nothing — the band's second step is M308, the station's c
 ### Systems
 
 - **The author's freeze has no cause yet.** The frame guard (M234) survives it and names it on
-  screen; the fuzzer (M238) drives eleven modes with random input and finds nothing. The next
-  occurrence should carry a `СБОЙ · …` line — that line is the missing evidence.
+  screen; the fuzzer (M238) drives eleven modes with random input and finds nothing. **Since
+  0.359.0 the evidence ships itself:** every error of any kind, and every frame stall over two
+  seconds, lands in `~/drift-data/crash.log` (`site/log.php`, PATCHNOTES 0.359.0). Next step is
+  to read it after the next freeze: `ssh drift 'tail -n 50 ~/drift-data/crash.log'`.
 
 ### Housekeeping
 
@@ -553,7 +578,7 @@ Left from the queue: nothing — the band's second step is M308, the station's c
   window, dpr 2): **60 fps in all nine modes** with every change of the day in — the world scale,
   the UI zoom, the soil profile, the relays, the splits. Earlier same-day dips were the busy
   machine, proven by measuring the committed build. Re-run once more at the actual release as the
-  release check.
+  release check. Author, 2026-09-05: «60 — хрен с ним, потом»; not before the release itself.
 
 **Standing rule:** the Ring (M154) is never explained. An answer to it would kill it.
 

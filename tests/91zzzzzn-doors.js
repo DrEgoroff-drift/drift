@@ -166,3 +166,18 @@ TEST_SUITES.push(() => suite("сторож кадра: повторяющийс�
   }finally{ Date.now=real; }
   resetWorld();
 }));
+
+TEST_SUITES.push(() => suite("журнал сбоев на сервер: молчит на стенде, считает повторы", () => {
+  /* Автор, 2026-09-05: «просто пиши на сервер лог, все ошибки, любые». crashShip —
+     единственная дверь наружу для ошибок; на стенде (TEST есть) она обязана
+     молчать, а её учёт повторов — считать, не отправляя. */
+  ok(typeof crashShip==="function","crashShip есть");
+  ok(typeof crashStack==="function","crashStack есть");
+  const n0=CRASH_SHIP.n;
+  crashShip("crash","проверка стенда","");
+  eq(CRASH_SHIP.n,n0,"на стенде ничего не уходит");
+  const st=crashStack(new Error("x"));
+  ok(st.split("\n").length<=8,"стек — не больше восьми строк");
+  ok(typeof console.error==="function"&&typeof console.warn==="function","console.error/warn на месте после подмены");
+  ok(typeof logAdd==="function","logAdd на месте после подмены");
+}));
