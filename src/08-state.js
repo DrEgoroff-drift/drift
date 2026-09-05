@@ -180,7 +180,7 @@ function stat(){
     digTier:T.has("deepcore")?2:((T.has("deepdrill")||m.drill>=2)?1:0),
     suitWear:1/(1+techLv("suit")*.55)*(typeof kitStat==="function"?kitStat().wear:1),   /* комплект (M152) */
     refine:1+techLv("refine")*.18,
-    droneRate:(1+techLv("hauler")*.22)*mgrDroneRate()*(cr("loom")?1.33:1)*(1+rs("drone")),
+    droneRate:(1+techLv("hauler")*.22)*mgrDroneRate()*(cr("loom")?1.33:1)*(1+rs("drone"))*((typeof coopMul==="function")?coopMul():1),
     bountyMul:(1+techLv("bounty")*.3)*(1+rs("bounty"))
   };
 }

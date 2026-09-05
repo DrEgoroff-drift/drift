@@ -179,7 +179,13 @@ function assignToBase(c,B,role){
   logAdd("",c.name+" → "+BASE_ROLES[role].ru+" на базе «"+B.name+"»");
   return true;
 }
-function crewCap(){return 1+techLv("license")+mgrCrewCap();}
+/* места в звене — по разряду кооператива (M351): без кооператива найм закрыт законом;
+   лицензия и управляющий добавляют места поверх разряда */
+function crewCap(){
+  const R=(typeof coopRank==="function")?coopRank():null;
+  if(!R)return 0;
+  return R.crew+techLv("license")+mgrCrewCap();
+}
 /* ── человек, пришедший даром (25.08.2026) ──
    Сделка «Он отработал и пришёл к вам в звено — даром» (27g-deals) вызывала
    `crewGift()`, которой в игре не было НИ РАЗУ: вызов стоял под
@@ -202,7 +208,8 @@ function crewGift(seed){
 }
 function mercFee(c){return Math.round(c.fee*mgrHireMul());}
 function hireMerc(c){
-  if(G.crew.length>=crewCap()){say("Больше нанимать некому\nнужна лицензия на флот");return false;}
+  if(typeof coopHas==="function"&&!coopHas()){say("Нанимать могут только кооперативы\nоборот "+(G.soldTotal|0).toLocaleString("ru")+" из "+COOP_EXAM.toLocaleString("ru"));return false;}
+  if(G.crew.length>=crewCap()){say("Больше мест нет\nразряд кооператива, лицензия или управляющий дают места");return false;}
   const fee=mercFee(c);
   if(G.credits<fee){say("Не хватает кредитов");return false;}
   G.credits-=fee;
@@ -340,7 +347,9 @@ function crewTripMinutes(c){
 function crewEff(c){
   /* командир звена — множитель поверх, но он же берёт долю с выручки (crewCredit):
      потолок домена растёт, чистые деньги — нет. Это подъём потолка, а не кран. */
-  return crewMul(c,"yield")*(c.morale<.5?.5:1)*(1+crewModLv(c,"drill")*.2)*mgrCrewYield();
+  /* выходной в праздник (M351): в этот день не работают; дух кооператива — ±1 % за пункт */
+  if(typeof coopDayOff==="function"&&coopDayOff())return 0;
+  return crewMul(c,"yield")*(c.morale<.5?.5:1)*(1+crewModLv(c,"drill")*.2)*mgrCrewYield()*((typeof coopMul==="function")?coopMul():1);
 }
 function crewBusy(c){
   /* пока он в плену или в загуле, рейсы не идут и жалованье не капает */
@@ -441,6 +450,7 @@ function crewPayroll(c,min){
   if(due<=0)return;
   const pay=Math.min(G.credits,due);
   G.credits-=pay;c.spent=(c.spent||0)+pay;
+  if(typeof coopCost==="function"&&pay>0)coopCost(pay,"wages");   /* гроссбух (M351) */
   const short=due-pay;
   if(short>0){
     c.debt+=short;
@@ -480,6 +490,7 @@ function crewRepair(c){
   if(cost<=0){say("Корпус цел");return false;}
   if(G.credits<cost){say("Не хватает кредитов\nнужно "+cost+" кр");return false;}
   G.credits-=cost;c.hull=c.hullMax;
+  if(typeof coopCost==="function")coopCost(cost,"repair");
   logAdd("money","Ремонт корабля "+c.name+" · −"+cost.toLocaleString("ru")+" кр");
   return true;
 }

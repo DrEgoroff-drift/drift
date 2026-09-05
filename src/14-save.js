@@ -76,7 +76,7 @@ function snapshot(){
     wrecks:G.wrecks,bargePax:G.bargePax,fleetLog:G.fleetLog||{},fleetEscort:G.fleetEscort||0,caravan:G.caravan||null,
     wander:G.wander||{got:[],gave:[],chit:0,shelf:[],hold:[]},cosm:G.cosm||null,locker:G.locker||null,boxes:G.boxes||[],
     mapMarks:G.mapMarks||[],rumours:G.rumours||[],
-    beacon:G.beacon||null,shiftLog:G.shiftLog||null,freedLog:G.freedLog||[],
+    beacon:G.beacon||null,shiftLog:G.shiftLog||null,freedLog:G.freedLog||[],coop:G.coop||null,
     loreFound:G.loreFound,loreMarks:G.loreMarks,settle:G.settle,tin:G.tin,
     scrip:G.scrip,scripRate:G.scripRate,scripLog:G.scripLog,
     doom:G.doom,doomDead:G.doomDead,parrot:G.parrot,heard:G.heard,grok:G.grok,flea:G.flea,matches:G.matches|0,smena:G.smena||[],
@@ -457,6 +457,11 @@ function applySave(s){
   G.beacon=(s.beacon&&typeof s.beacon==="object"&&Array.isArray(s.beacon.log))?{shift:(typeof s.beacon.shift==="number")?s.beacon.shift:null,log:s.beacon.log.slice(-6),saidOff:s.beacon.saidOff?1:0}:null;
   G.shiftLog=(s.shiftLog&&typeof s.shiftLog==="object"&&s.shiftLog.sold)?s.shiftLog:null;
   G.freedLog=Array.isArray(s.freedLog)?s.freedLog.slice(-12):[];
+  /* кооператив (12aj, M351): имя, патрон, оборот на записи, дух, просьбы */
+  {const c=(s.coop&&typeof s.coop==="object"&&typeof s.coop.name==="string"&&s.coop.name)?s.coop:null;
+   G.coop=c?{name:c.name.slice(0,24),house:c.house||"lask",since:c.since|0,sold0:c.sold0|0,spirit:clamp(c.spirit|0,0,5),
+             wants:Array.isArray(c.wants)?c.wants:[],done:Array.isArray(c.done)?c.done:[],ledger:(c.ledger&&typeof c.ledger==="object")?c.ledger:{},
+             shift:c.shift|0,visit:{key:"",bought:{}},dayoff:c.dayoff||null,captured:c.captured|0}:null;}
   /* ящик конторы (12ak, M345): части упакованы, кучи числом, час последнего визита */
   {const l=(s.locker&&typeof s.locker==="object")?s.locker:null;
    G.locker=l?{items:Array.isArray(l.items)?l.items.filter(it=>it&&(it.p||it.tool)):[],

@@ -8,6 +8,7 @@ function openStation(){
   mgrTick();mgrRouteVisit(G.sys);routeVisit(G.sys);
   if(typeof holdDock==="function")holdDock(G.sys);   /* груз, с которым пристыковались, и бункеры (M291) */
   scripVisitReset();          // потолок обмена бонами — на заход (12u-scrip)
+  if(typeof coopVisitReset==="function")coopVisitReset();   /* потолок прилавка — на заход (12aj, M351) */
   /* трепло (12x): у прилавка оно слышит цены, а иногда выдаёт то, что слышало
      у вас. Обе стороны одной птицы, и обе — на стыковке */
   if(typeof parrotDock==="function")parrotDock(G.sys);
@@ -566,6 +567,9 @@ function renderTabBody(){
         renderTab();};
       r.appendChild(b);$body.appendChild(r);
     }else $body.appendChild(el("div","sec","ТРЮМ ПУСТ — САДИТЕСЬ НА ПЛАНЕТУ ИЛИ ИДИТЕ В ПОЯС"));
+    /* прилавок ВЗЯТЬ — кооперативу, запись — на станции дома (12aj, M351) */
+    if(typeof coopCounterBlock==="function")coopCounterBlock();
+    if(typeof coopRegBlock==="function")coopRegBlock();
     /* редкое лежит в том же трюме, но купить его никто не возьмётся:
        оно тратится, а не продаётся — поэтому отдельной секцией и без кнопки */
     if(RARE_RES.some(k=>G.cargo[k]>0)){
@@ -736,8 +740,9 @@ function renderTabBody(){
        кроме того, на котором летите сами и который уже кому-то выдан */
     const spare=Object.keys(G.owned||{})
       .filter(id=>id!==G.shipId&&!G.crew.some(o=>o.shipId===id)).length;
+    if(typeof coopHas==="function"&&!coopHas())$body.appendChild(el("div","sec","НАНИМАТЬ МОГУТ ТОЛЬКО КООПЕРАТИВЫ · ОБОРОТ "+(G.soldTotal|0).toLocaleString("ru")+" ИЗ "+COOP_EXAM.toLocaleString("ru")+" · ЗАПИСЬ — НА РЫНКЕ СТАНЦИИ ДОМА"));
     $body.appendChild(el("div","sec","ВАШ ЭКИПАЖ "+G.crew.length+" / "+crewCap()+
-      " · ЛИЦЕНЗИЯ РАСШИРЯЕТ ФЛОТ · ЗАРПЛАТА ИДЁТ ПОКА ОНИ РАБОТАЮТ"+
+      " · РАЗРЯД КООПЕРАТИВА, ЛИЦЕНЗИЯ И УПРАВЛЯЮЩИЙ ДАЮТ МЕСТА · ЗАРПЛАТА ИДЁТ ПОКА ОНИ РАБОТАЮТ"+
       (spare>0?"":" · СВОБОДНЫХ КОРПУСОВ НЕТ: НАЁМНИКУ НУЖЕН СВОЙ КОРАБЛЬ")));
     if(!G.crew.length)$body.appendChild(el("div","sec","ПОКА НИКОГО — НАЙМИТЕ НИЖЕ"));
     G.crew.forEach((c,i)=>{

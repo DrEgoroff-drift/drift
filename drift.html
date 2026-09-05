@@ -1434,6 +1434,9 @@ body.table u.addr{color:#7a4a20}
   border:1px solid rgba(150,182,212,.3);border-radius:4px;text-align:center}
 #mapaddr .act.sm{min-width:44px;padding:0 10px}
 @media (max-width:760px){#mapaddr{top:calc(var(--hudband,72px) + 20px);padding:3px 4px 3px 8px}#mapaddr input{width:52px}#mapaddr span{display:none}}
+/* запись кооператива (M351): поле имени в ряду станции */
+.row .nm input.coopname{display:block;margin-top:6px;width:min(260px,100%);min-height:44px;padding:0 10px;font:inherit;font-size:13px;color:var(--text);
+  background:rgba(0,0,0,.3);border:1px solid var(--edge);border-radius:4px}
 
 </style>
 </head>
@@ -1713,7 +1716,7 @@ body.table u.addr{color:#7a4a20}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.348.0";
+const VER="0.349.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -6937,7 +6940,7 @@ function stat(){
     digTier:T.has("deepcore")?2:((T.has("deepdrill")||m.drill>=2)?1:0),
     suitWear:1/(1+techLv("suit")*.55)*(typeof kitStat==="function"?kitStat().wear:1),   /* комплект (M152) */
     refine:1+techLv("refine")*.18,
-    droneRate:(1+techLv("hauler")*.22)*mgrDroneRate()*(cr("loom")?1.33:1)*(1+rs("drone")),
+    droneRate:(1+techLv("hauler")*.22)*mgrDroneRate()*(cr("loom")?1.33:1)*(1+rs("drone"))*((typeof coopMul==="function")?coopMul():1),
     bountyMul:(1+techLv("bounty")*.3)*(1+rs("bounty"))
   };
 }
@@ -13042,6 +13045,7 @@ function renderLog(page){
 function renderDeeds(){
   const box=document.getElementById("loglist");if(!box)return;
   box.textContent="";
+  if(typeof coopBlock==="function")coopBlock(box);   /* кооператив — первым блоком (12aj, M351) */
   if(typeof questSync!=="function"){return;}
   questSync();
   const open=questOpen();
@@ -15256,7 +15260,9 @@ function sellQuote(sys,k,qty){
   const nA=Math.min(qty,appetiteLeft(sys,k));
   const pA=nA?appetitePrice(sys,k):base;
   const nB=(typeof bldWant==="function")?Math.min(qty-nA,bldWant(sys,k)):0;   /* в бункер цеха — по обычной, с паем (M291) */
-  return{revenue:nA*pA+(qty-nA)*base,nA,nB,priceA:pA,base};
+  /* остаток без надбавки — ломтями (аудит A2, M351): каждые десять единиц на три процента дешевле, не ниже .7 */
+  const rest=(typeof coopSellSlice==="function")?coopSellSlice(base,qty-nA):(qty-nA)*base;
+  return{revenue:Math.round(nA*pA+rest),nA,nB,priceA:pA,base};
 }
 /* ── строка «БЕРЁТ» для доски, эфира и ряда трюма ── */
 function appetiteLine(sys,k){
@@ -15660,7 +15666,13 @@ function assignToBase(c,B,role){
   logAdd("",c.name+" → "+BASE_ROLES[role].ru+" на базе «"+B.name+"»");
   return true;
 }
-function crewCap(){return 1+techLv("license")+mgrCrewCap();}
+/* места в звене — по разряду кооператива (M351): без кооператива найм закрыт законом;
+   лицензия и управляющий добавляют места поверх разряда */
+function crewCap(){
+  const R=(typeof coopRank==="function")?coopRank():null;
+  if(!R)return 0;
+  return R.crew+techLv("license")+mgrCrewCap();
+}
 /* ── человек, пришедший даром (25.08.2026) ──
    Сделка «Он отработал и пришёл к вам в звено — даром» (27g-deals) вызывала
    `crewGift()`, которой в игре не было НИ РАЗУ: вызов стоял под
@@ -15683,7 +15695,8 @@ function crewGift(seed){
 }
 function mercFee(c){return Math.round(c.fee*mgrHireMul());}
 function hireMerc(c){
-  if(G.crew.length>=crewCap()){say("Больше нанимать некому\nнужна лицензия на флот");return false;}
+  if(typeof coopHas==="function"&&!coopHas()){say("Нанимать могут только кооперативы\nоборот "+(G.soldTotal|0).toLocaleString("ru")+" из "+COOP_EXAM.toLocaleString("ru"));return false;}
+  if(G.crew.length>=crewCap()){say("Больше мест нет\nразряд кооператива, лицензия или управляющий дают места");return false;}
   const fee=mercFee(c);
   if(G.credits<fee){say("Не хватает кредитов");return false;}
   G.credits-=fee;
@@ -15821,7 +15834,9 @@ function crewTripMinutes(c){
 function crewEff(c){
   /* командир звена — множитель поверх, но он же берёт долю с выручки (crewCredit):
      потолок домена растёт, чистые деньги — нет. Это подъём потолка, а не кран. */
-  return crewMul(c,"yield")*(c.morale<.5?.5:1)*(1+crewModLv(c,"drill")*.2)*mgrCrewYield();
+  /* выходной в праздник (M351): в этот день не работают; дух кооператива — ±1 % за пункт */
+  if(typeof coopDayOff==="function"&&coopDayOff())return 0;
+  return crewMul(c,"yield")*(c.morale<.5?.5:1)*(1+crewModLv(c,"drill")*.2)*mgrCrewYield()*((typeof coopMul==="function")?coopMul():1);
 }
 function crewBusy(c){
   /* пока он в плену или в загуле, рейсы не идут и жалованье не капает */
@@ -15922,6 +15937,7 @@ function crewPayroll(c,min){
   if(due<=0)return;
   const pay=Math.min(G.credits,due);
   G.credits-=pay;c.spent=(c.spent||0)+pay;
+  if(typeof coopCost==="function"&&pay>0)coopCost(pay,"wages");   /* гроссбух (M351) */
   const short=due-pay;
   if(short>0){
     c.debt+=short;
@@ -15961,6 +15977,7 @@ function crewRepair(c){
   if(cost<=0){say("Корпус цел");return false;}
   if(G.credits<cost){say("Не хватает кредитов\nнужно "+cost+" кр");return false;}
   G.credits-=cost;c.hull=c.hullMax;
+  if(typeof coopCost==="function")coopCost(cost,"repair");
   logAdd("money","Ремонт корабля "+c.name+" · −"+cost.toLocaleString("ru")+" кр");
   return true;
 }
@@ -17721,6 +17738,256 @@ function drawFleetMap(vis,cell){
     ctx.fillStyle="rgba(226,120,100,.9)";ctx.fillRect(v.x+8,v.y-10,4,1.5);
   }
   ctx.restore();
+}
+
+/* ══════════════ кооператив: покупать для себя, и люди, которые делают это с вами (M351) ══════════════
+   Лестница автора (2026-09-04): на дядю → лицензия-кооператив → своё
+   (docs/DESIGN-coop.md). Ступень первая остаётся как есть: наряд дома и плечо
+   «ПО МАРШРУТУ» на счёт дома, прилавок закрыт. «Закон о кооперации Главтрассы»:
+   экипаж покупает и продаёт для себя только как кооператив, записанный под одним
+   из четырёх домов — тот становится патроном. Экзамен — оборот: G.soldTotal ≥ 12 000
+   (тот же счётчик, что выдаёт «Вьюк» на 3 000). Взнос 1 500. Имя вписывает игрок,
+   игра его не предлагает (как у имён систем, 11u); штамп — в КНИЖКУ.
+
+   После штампа: прилавок открыт на любой товар, цена ломтями (аудит A2: за
+   каждые десять единиц просимая растёт на три процента, продажная так же падает),
+   потолок за заход по разряду (I 60 / II 150 / III без); найм открывается —
+   crewCap читает разряд (1/3/5) плюс лицензия плюс управляющий; страница в ДЕЛАХ:
+   кто на жалованье, что заработали за смену, что стоили, чего просят. Просьбы —
+   существующие постройки семьи G на станции холдинга (12ac) и две не-постройки
+   (выходной в праздник, табличка на борту — косметика «Сороки» M344). Дух 0…5
+   словами, ±1 % на выработку дронов и валовый наёмников за пункт.
+
+   Разряды: I Кооператив (экзамен) · II Артель (100 000 оборота с записи и две
+   просьбы) · III Товарищество (500 000 и четыре; BUY_SPREAD 1.06 → 1.03).
+
+   ПРАВИЛА ФАЙЛА:
+   1. Хранится G.coop={name,house,since,sold0,spirit,wants,done,ledger,shift,visit}.
+      Члены — то, что уже есть на жалованье: G.drones, G.crew, G.mgrs. Ничего нового.
+   2. Гроссбух — те же деньги, что двигает earn(): по «why» за текущую и прошлую смену.
+   3. Просьбы порождаются составом, не броском; исполненная — в done, спасибо в ЛЮДИ. */
+const COOP_FEE=1500, COOP_EXAM=12000;
+const COOP_RANKS=[
+  {n:1,ru:"Кооператив",   cap:60,  crew:1, need:0,      asks:0, spread:1.06},
+  {n:2,ru:"Артель",       cap:150, crew:3, need:100000, asks:2, spread:1.06},
+  {n:3,ru:"Товарищество", cap:0,   crew:5, need:500000, asks:4, spread:1.03}
+];
+const COOP_SLICE=10, COOP_STEP=.03, COOP_ASK_MAX=3;
+const COOP_WHY={trade:"торговля",drone:"дроны",crew:"наёмники",share:"пай",free:"призовые",route:"маршрут",deal:"сделки",other:"прочее"};
+function coopHas(){return !!(G.coop&&G.coop.name);}
+function coopRec(){return coopHas()?G.coop:null;}
+function coopRank(){
+  const C=coopRec();if(!C)return null;
+  const turn=Math.max(0,(G.soldTotal|0)-(C.sold0|0)),granted=(C.done||[]).length;
+  let R=COOP_RANKS[0];
+  for(const r of COOP_RANKS)if(turn>=r.need&&granted>=r.asks)R=r;
+  return R;
+}
+function coopCanRegister(){return (G.soldTotal|0)>=COOP_EXAM;}
+function coopHouseHere(){return (G.sys&&G.sys.station&&typeof houseOf==="function")?houseOf(G.sys):null;}
+/* штамп: имя от игрока, взнос, оборот; патрон — дом этой станции */
+function coopRegister(name){
+  if(coopHas())return false;
+  const H=coopHouseHere();if(!H){say("Записывают только на станции дома");return false;}
+  name=String(name||"").trim().slice(0,24);
+  if(name.length<2){say("Кооперативу нужно имя");return false;}
+  if(!coopCanRegister()){say("Оборот "+(G.soldTotal|0).toLocaleString("ru")+" из "+COOP_EXAM.toLocaleString("ru")+" — рано");return false;}
+  if(G.credits<COOP_FEE){say("Взнос "+COOP_FEE+" кр — не хватает");return false;}
+  G.credits-=COOP_FEE;
+  G.coop={name,house:H.id,since:celDay(),sold0:G.soldTotal|0,spirit:2,wants:[],done:[],ledger:{},shift:holdShift(),visit:{key:"",bought:{}}};
+  if(typeof recordAdd==="function")recordAdd("кооператив","штамп дома "+H.ru+" · «"+name+"» · взнос "+COOP_FEE+" кр · оборот "+(G.soldTotal|0).toLocaleString("ru"));
+  tell("good","Кооператив «"+name+"» записан под домом "+H.ru,"КООПЕРАТИВ «"+name.toUpperCase()+"»\nпатрон — дом "+H.ru+"\nприлавок открыт · найм открыт\nстраница — ДЕЛА на столе");
+  if(typeof peopleLine==="function")peopleLine("Штамп поставлен. Не спрашиваю, чем торговать будете, — спрашивал бы, если бы оборота не было.","клерк дома "+H.ru,true);
+  return true;
+}
+/* ── прилавок: ломти и потолок за заход ── */
+function coopVisitReset(){const C=coopRec();if(C){C.visit={key:G.sys?G.sys.key:"",bought:{}};}}
+function coopCapLeft(k){
+  const C=coopRec(),R=coopRank();if(!C||!R)return 0;
+  if(!R.cap)return 1e9;
+  const V=C.visit&&C.visit.key===(G.sys?G.sys.key:"")?C.visit:(C.visit={key:G.sys?G.sys.key:"",bought:{}});
+  return Math.max(0,R.cap-(V.bought[k]|0));
+}
+function coopBought(k,n){const C=coopRec();if(!C)return;const V=C.visit||(C.visit={key:G.sys?G.sys.key:"",bought:{}});V.bought[k]=(V.bought[k]|0)+(n|0);}
+function coopSpread(){const R=coopRank();return R?R.spread:BUY_SPREAD;}
+/* сколько стоит взять qty: ломтями по десять, каждый следующий на три процента дороже */
+function coopBuyQuote(sys,k,qty){
+  qty=Math.max(0,qty|0);
+  const ask0=buyPriceFor(sys,k);let total=0;
+  for(let i=0;i<qty;i++)total+=ask0*(1+COOP_STEP*Math.floor(i/COOP_SLICE));
+  return {total:Math.round(total),ask0,askLast:Math.round(ask0*(1+COOP_STEP*Math.floor(Math.max(0,qty-1)/COOP_SLICE)))};
+}
+/* продажа ломтями: доля без надбавки дешевеет на три процента за каждые десять, не ниже .7 */
+function coopSellSlice(base,qty){
+  let total=0;for(let i=0;i<qty;i++)total+=base*Math.max(.7,1-COOP_STEP*Math.floor(i/COOP_SLICE));
+  return total;
+}
+/* взять с прилавка: только кооперативу, в потолок, ломтями */
+function coopBuy(sys,k,qty){
+  const C=coopRec();if(!C){say("Взять товар могут только кооперативы");return 0;}
+  if(!RES[k]||TRADE_KEYS.indexOf(k)<0)return 0;
+  const free=Math.max(0,stat().cargoMax-held());
+  qty=Math.max(0,Math.min(qty|0,free,coopCapLeft(k)));
+  if(qty<=0)return 0;
+  let Q=coopBuyQuote(sys,k,qty);
+  while(qty>0&&Q.total>G.credits){qty--;Q=coopBuyQuote(sys,k,qty);}
+  if(qty<=0)return 0;
+  G.credits-=Q.total;G.cargo[k]=(G.cargo[k]||0)+qty;
+  const m=G.market[sys.key];if(m){m.ask=m.ask||{};m.ask[k]=Math.min(.35,(m.ask[k]||0)+qty*.005);}
+  if(typeof appetiteBought==="function")appetiteBought(sys,k,qty);
+  coopBought(k,qty);
+  coopCost(Q.total,"trade");
+  return qty;
+}
+/* ── гроссбух: те же деньги, что двигает earn() ── */
+function coopLedger(){
+  const C=coopRec();if(!C)return null;
+  const s=holdShift();
+  if(!C.ledger||C.shift!==s||!C.ledger.in){C.prev=(C.ledger&&C.ledger.in&&C.shift===s-1)?C.ledger:null;C.ledger={in:{},out:{}};C.shift=s;}
+  return C.ledger;
+}
+function coopEarn(sum,why){
+  const L=coopLedger();if(!L)return;
+  const w=COOP_WHY[why]?why:"other";
+  L.in[w]=(L.in[w]|0)+Math.round(sum);
+}
+function coopCost(sum,why){
+  const L=coopLedger();if(!L)return;
+  L.out[why||"other"]=(L.out[why||"other"]|0)+Math.round(sum);
+}
+/* ── дух: 0…5, словами ── */
+function coopSpirit(){const C=coopRec();return C?clamp(C.spirit|0,0,5):0;}
+function coopSpiritRu(){const s=coopSpirit();return s>=4?"бодрое":(s>=2?"ровное":"кислое");}
+function coopMul(){return coopHas()?1+coopSpirit()*.01:1;}
+function coopSpiritAdd(d,why){
+  const C=coopRec();if(!C)return;
+  const was=coopSpirit();C.spirit=clamp(was+d,0,5);
+  if(C.spirit!==was&&why)logAdd(d>0?"good":"warn","Кооператив «"+C.name+"»: настроение "+coopSpiritRu()+" — "+why);
+}
+/* ── просьбы: из состава, не броском ── */
+const COOP_ASKS=[
+  {id:"canteen", bld:"canteen",  ru:"столовая",        say:"люди едят всухомятку",                    when:()=>(G.crew||[]).length>=3, up:1},
+  {id:"hangar",  bld:"hangar",   ru:"ангар",           say:"десять машин, а чинят под открытым небом", when:()=>(G.drones||[]).length>=5, up:2},
+  {id:"redcorner",bld:"redcorner",ru:"красный уголок", say:"управляющему негде собрать людей",         when:()=>(G.mgrs||[]).length>=1, up:1},
+  {id:"medpoint",bld:"medpoint", ru:"медпункт",        say:"из плена возвращаются без зубов",          when:()=>(G.crew||[]).some(c=>(c.captured|0)>=2)||(G.coop&&(G.coop.captured|0)>=2), up:1},
+  {id:"school",  bld:"school",   ru:"учебный пункт",   say:"машин десять, а учить некому",             when:()=>(G.drones||[]).length>=10, up:1},
+  {id:"dayoff",  bld:null,       ru:"выходной в праздник",say:"один день в году",                      when:()=>(G.crew||[]).length>=1, up:1},
+  {id:"plate",   bld:null,       ru:"табличка на борту",say:"чтобы знали, чей борт",                   when:()=>(G.crew||[]).length+(G.mgrs||[]).length>=2, up:1}
+];
+const COOP_ASK_BY={};COOP_ASKS.forEach(a=>COOP_ASK_BY[a.id]=a);
+function coopAskGranted(a){
+  if(a.bld){
+    if(typeof bldHas!=="function")return false;
+    for(const key in (G.hold||{})){const [sx,sy]=key.split(",").map(Number);if(bldHas(sx,sy,a.bld))return true;}
+    return false;
+  }
+  if(a.id==="dayoff")return !!(G.coop&&G.coop.dayoff);
+  if(a.id==="plate")return typeof cosmOn==="function"&&cosmOn("mark")==="mk_plate";
+  return false;
+}
+/* открытые просьбы — до трёх; исполненные уезжают в done, спасибо в ЛЮДИ */
+function coopAsks(){
+  const C=coopRec();if(!C)return [];
+  C.wants=C.wants||[];C.done=C.done||[];
+  for(const a of COOP_ASKS){
+    if(C.done.indexOf(a.id)>=0)continue;
+    const open=C.wants.indexOf(a.id)>=0;
+    if(!open&&C.wants.length<COOP_ASK_MAX&&a.when())C.wants.push(a.id);
+  }
+  for(const id of C.wants.slice()){
+    const a=COOP_ASK_BY[id];
+    if(a&&coopAskGranted(a)){
+      C.wants.splice(C.wants.indexOf(id),1);C.done.push(id);
+      coopSpiritAdd(a.up,"просьба исполнена — "+a.ru);
+      if(typeof peopleLine==="function")peopleLine("Спасибо за "+a.ru+". Люди заметили.","кооператив «"+C.name+"»",true);
+    }
+  }
+  return C.wants.map(id=>COOP_ASK_BY[id]).filter(Boolean);
+}
+/* выходной в праздник: одна кнопка, рейсы в этот день не шлём (12a читает coopDayOff) */
+function coopGiveDayOff(){
+  const C=coopRec();if(!C)return false;
+  const hol=(typeof holNow==="function")?holNow():null;
+  if(!hol){say("Выходной дают в праздник — по календарю");return false;}
+  C.dayoff=hol.id+":"+new Date().getFullYear();
+  return true;
+}
+function coopDayOff(){const C=coopRec();const hol=(typeof holNow==="function")?holNow():null;return !!(C&&hol&&C.dayoff===hol.id+":"+new Date().getFullYear());}
+/* ── страница в ДЕЛАХ ── */
+function coopBlock(box){
+  const C=coopRec();
+  const row=(cls,em,html)=>{const r=document.createElement("div");r.className="li "+(cls||"");const e=document.createElement("em");e.textContent=em||"";
+    const s=document.createElement("span");s.innerHTML=html;r.appendChild(e);r.appendChild(s);box.appendChild(r);return r;};
+  if(!C){
+    row("dim","","<b>КООПЕРАТИВА НЕТ</b> · взять товар и нанимать могут только кооперативы · оборот "+(G.soldTotal|0).toLocaleString("ru")+" из "+COOP_EXAM.toLocaleString("ru")+" · записывают на станции любого дома, взнос "+COOP_FEE+" кр");
+    return;
+  }
+  const R=coopRank(),H=HOUSE_BY_ID[C.house];
+  row("head","","КООПЕРАТИВ «"+C.name.toUpperCase()+"» · "+R.ru.toUpperCase()+" ("+["I","II","III"][R.n-1]+") · под домом "+(H?H.ru:"")+" · с "+C.since+"-го дня");
+  row("","","машин "+(G.drones||[]).length+" · людей "+(G.crew||[]).length+" · управляющих "+(G.mgrs||[]).length+" · настроение "+coopSpiritRu()+" (+"+coopSpirit()+" %)"+
+    " · оборот с записи "+Math.max(0,(G.soldTotal|0)-(C.sold0|0)).toLocaleString("ru")+(R.n<3?" · до следующего разряда "+Math.max(0,COOP_RANKS[R.n].need-Math.max(0,(G.soldTotal|0)-(C.sold0|0))).toLocaleString("ru")+" и просьб "+Math.max(0,COOP_RANKS[R.n].asks-(C.done||[]).length):""));
+  const L=coopLedger();
+  const sumIn=Object.values(L.in).reduce((a,b)=>a+b,0),sumOut=Object.values(L.out).reduce((a,b)=>a+b,0);
+  const ins=Object.keys(L.in).map(w=>COOP_WHY[w]+" "+L.in[w].toLocaleString("ru")).join(" · ")||"пока ничего";
+  const outs=Object.keys(L.out).map(w=>({wages:"оклады",repair:"ремонт",trade:"закупка",other:"прочее"}[w]||w)+" "+L.out[w].toLocaleString("ru")).join(" · ")||"—";
+  row("","","ЗА СМЕНУ · "+ins+" · = "+sumIn.toLocaleString("ru")+"<br>"+outs+" · чистыми "+(sumIn-sumOut).toLocaleString("ru"));
+  const asks=coopAsks();
+  if(asks.length){
+    row("head","","ПРОСЬБЫ · "+asks.length);
+    for(const a of asks){
+      const r=row("","·",a.ru+" — «"+a.say+"» → "+(a.bld?"постройка «"+BLD[a.bld].ru+"» на станции холдинга":(a.id==="dayoff"?"выходной в праздник, без стройки":"табличка с «Сороки» на борту"))+" · дух +"+a.up);
+      if(a.id==="dayoff"&&typeof holNow==="function"&&holNow()){
+        const b=document.createElement("button");b.className="act sm gold";b.textContent="ДАТЬ ВЫХОДНОЙ";
+        b.onclick=()=>{coopGiveDayOff();coopAsks();if(typeof tableRender==="function")tableRender();};
+        r.appendChild(b);
+      }
+    }
+  }else row("dim","","просьб нет: люди довольны или их ещё мало");
+  if((C.done||[]).length)row("dim","","исполнено: "+C.done.map(id=>COOP_ASK_BY[id]?COOP_ASK_BY[id].ru:id).join(", "));
+}
+/* ── станция: прилавок ВЗЯТЬ и запись ── */
+function coopCounterBlock(){
+  if(!G.sys||!G.sys.station||!G.sys.station.prices)return;
+  const C=coopRec(),prices=marketFor(G.sys);
+  if(!C){
+    $body.appendChild(el("div","sec","ВЗЯТЬ ТОВАР МОГУТ ТОЛЬКО КООПЕРАТИВЫ · ОБОРОТ "+(G.soldTotal|0).toLocaleString("ru")+" ИЗ "+COOP_EXAM.toLocaleString("ru")));
+    return;
+  }
+  const R=coopRank();
+  $body.appendChild(el("div","sec","ПРИЛАВОК · КООПЕРАТИВ «"+C.name.toUpperCase()+"» · "+R.ru.toUpperCase()+(R.cap?" · ДО "+R.cap+" ЕДИНИЦ ТОВАРА ЗА ЗАХОД":" · БЕЗ ПОТОЛКА")+" · ЦЕНА ЛОМТЯМИ ПО ДЕСЯТЬ"));
+  for(const k of TRADE_KEYS){
+    if(!prices[k])continue;
+    const left=coopCapLeft(k),free=Math.max(0,stat().cargoMax-held());
+    const maxN=Math.min(left,free);
+    const q0=coopBuyQuote(G.sys,k,10);
+    const r=el("div","row");
+    r.appendChild(el("div","nm","<b style='color:"+RES[k].col+"'>"+RES[k].ru+"</b><s>"+q0.ask0+" кр за первый десяток, дальше дороже"+(left<1e8?" · за заход ещё "+left:"")+(free?"":" · трюм полон")+"</s>"));
+    const box=el("div","modbtns");
+    for(const n of [10,50]){
+      const nn=Math.min(n,maxN);
+      const b=el("button","act sm"+(nn>0?"":""),"ВЗЯТЬ ×"+n);b.disabled=nn<=0;
+      b.onclick=()=>{const got=coopBuy(G.sys,k,n);if(got)tell("money","Взято на «"+G.st.name+"»: "+RES[k].ru.toLowerCase()+" ×"+got,"Взято: "+RES[k].ru+" ×"+got);else say("Не взять: потолок, трюм или деньги");renderTab();};
+      box.appendChild(b);
+    }
+    const bm=el("button","act sm gold","ВЗЯТЬ ВСЁ");bm.disabled=maxN<=0;
+    bm.onclick=()=>{const got=coopBuy(G.sys,k,maxN);if(got)tell("money","Взято на «"+G.st.name+"»: "+RES[k].ru.toLowerCase()+" ×"+got,"Взято: "+RES[k].ru+" ×"+got);renderTab();};
+    box.appendChild(bm);
+    r.appendChild(box);$body.appendChild(r);
+  }
+}
+function coopRegBlock(){
+  if(coopHas())return;
+  const H=coopHouseHere();if(!H)return;
+  $body.appendChild(el("div","sec","ЗАПИСЬ КООПЕРАТИВА · ДОМ "+H.ru.toUpperCase()+" · ВЗНОС "+COOP_FEE+" КР · ОБОРОТ "+(G.soldTotal|0).toLocaleString("ru")+" ИЗ "+COOP_EXAM.toLocaleString("ru")));
+  const r=el("div","row");
+  const nm=el("div","nm","<b>Имя кооператива</b><s>вписывает капитан; клерк смотрит книжку и ставит штамп, если оборот есть</s>");
+  const inp=document.createElement("input");inp.type="text";inp.maxLength=24;inp.placeholder="«Тихий ход»";inp.className="coopname";
+  inp.addEventListener("keydown",ev=>ev.stopPropagation());inp.addEventListener("keyup",ev=>ev.stopPropagation());
+  nm.appendChild(inp);r.appendChild(nm);
+  const b=el("button","act"+(coopCanRegister()&&G.credits>=COOP_FEE?" gold":""),"ЗАПИСАТЬ");
+  b.disabled=!coopCanRegister()||G.credits<COOP_FEE;
+  b.onclick=()=>{if(coopRegister(inp.value))renderTab();};
+  r.appendChild(b);$body.appendChild(r);
 }
 
 /* ══════════════ ящик: камера хранения транспортной конторы домов (M345) ══════════════
@@ -20841,6 +21108,7 @@ function earn(sum,why){
   if(!isFinite(sum)||sum<=0)return 0;
   G.credits+=sum;
   homeTurn(sum,why);
+  if(typeof coopEarn==="function")coopEarn(sum,why);   /* гроссбух кооператива (M351) */
   return sum;
 }
 function homeTurn(sum,why){
@@ -23776,7 +24044,7 @@ function mayakCompose(s){
   const SL=G.shiftLog;
   if(SL&&SL.s===s){
     let bk=null;for(const k in SL.sold)if(SL.sold[k]>=MAYAK_OVER&&(!bk||SL.sold[k]>SL.sold[bk]))bk=k;
-    if(bk)lines.push({t:"Экипаж борта «"+stat().S.ru+"»"+((G.name&&G.name.trim())?" ("+G.name.trim()+")":"")+" перевыполнил план по "+RES[bk].ru.toLowerCase()+": "+SL.sold[bk]+" "+pl3(SL.sold[bk],"единица","единицы","единиц")+".",
+    if(bk)lines.push({t:((typeof coopHas==="function"&&coopHas())?"Кооператив «"+G.coop.name+"»":"Экипаж борта «"+stat().S.ru+"»"+((G.name&&G.name.trim())?" ("+G.name.trim()+")":""))+" перевыполнил план по "+RES[bk].ru.toLowerCase()+": "+SL.sold[bk]+" "+pl3(SL.sold[bk],"единица","единицы","единиц")+".",
       cause:{k:"over",res:bk,n:SL.sold[bk]}});
   }
   /* 3. очищено (игроком) и переведено на особый режим (занято) */
@@ -31814,7 +32082,7 @@ function snapshot(){
     wrecks:G.wrecks,bargePax:G.bargePax,fleetLog:G.fleetLog||{},fleetEscort:G.fleetEscort||0,caravan:G.caravan||null,
     wander:G.wander||{got:[],gave:[],chit:0,shelf:[],hold:[]},cosm:G.cosm||null,locker:G.locker||null,boxes:G.boxes||[],
     mapMarks:G.mapMarks||[],rumours:G.rumours||[],
-    beacon:G.beacon||null,shiftLog:G.shiftLog||null,freedLog:G.freedLog||[],
+    beacon:G.beacon||null,shiftLog:G.shiftLog||null,freedLog:G.freedLog||[],coop:G.coop||null,
     loreFound:G.loreFound,loreMarks:G.loreMarks,settle:G.settle,tin:G.tin,
     scrip:G.scrip,scripRate:G.scripRate,scripLog:G.scripLog,
     doom:G.doom,doomDead:G.doomDead,parrot:G.parrot,heard:G.heard,grok:G.grok,flea:G.flea,matches:G.matches|0,smena:G.smena||[],
@@ -32195,6 +32463,11 @@ function applySave(s){
   G.beacon=(s.beacon&&typeof s.beacon==="object"&&Array.isArray(s.beacon.log))?{shift:(typeof s.beacon.shift==="number")?s.beacon.shift:null,log:s.beacon.log.slice(-6),saidOff:s.beacon.saidOff?1:0}:null;
   G.shiftLog=(s.shiftLog&&typeof s.shiftLog==="object"&&s.shiftLog.sold)?s.shiftLog:null;
   G.freedLog=Array.isArray(s.freedLog)?s.freedLog.slice(-12):[];
+  /* кооператив (12aj, M351): имя, патрон, оборот на записи, дух, просьбы */
+  {const c=(s.coop&&typeof s.coop==="object"&&typeof s.coop.name==="string"&&s.coop.name)?s.coop:null;
+   G.coop=c?{name:c.name.slice(0,24),house:c.house||"lask",since:c.since|0,sold0:c.sold0|0,spirit:clamp(c.spirit|0,0,5),
+             wants:Array.isArray(c.wants)?c.wants:[],done:Array.isArray(c.done)?c.done:[],ledger:(c.ledger&&typeof c.ledger==="object")?c.ledger:{},
+             shift:c.shift|0,visit:{key:"",bought:{}},dayoff:c.dayoff||null,captured:c.captured|0}:null;}
   /* ящик конторы (12ak, M345): части упакованы, кучи числом, час последнего визита */
   {const l=(s.locker&&typeof s.locker==="object")?s.locker:null;
    G.locker=l?{items:Array.isArray(l.items)?l.items.filter(it=>it&&(it.p||it.tool)):[],
@@ -61597,6 +61870,7 @@ function openStation(){
   mgrTick();mgrRouteVisit(G.sys);routeVisit(G.sys);
   if(typeof holdDock==="function")holdDock(G.sys);   /* груз, с которым пристыковались, и бункеры (M291) */
   scripVisitReset();          // потолок обмена бонами — на заход (12u-scrip)
+  if(typeof coopVisitReset==="function")coopVisitReset();   /* потолок прилавка — на заход (12aj, M351) */
   /* трепло (12x): у прилавка оно слышит цены, а иногда выдаёт то, что слышало
      у вас. Обе стороны одной птицы, и обе — на стыковке */
   if(typeof parrotDock==="function")parrotDock(G.sys);
@@ -62155,6 +62429,9 @@ function renderTabBody(){
         renderTab();};
       r.appendChild(b);$body.appendChild(r);
     }else $body.appendChild(el("div","sec","ТРЮМ ПУСТ — САДИТЕСЬ НА ПЛАНЕТУ ИЛИ ИДИТЕ В ПОЯС"));
+    /* прилавок ВЗЯТЬ — кооперативу, запись — на станции дома (12aj, M351) */
+    if(typeof coopCounterBlock==="function")coopCounterBlock();
+    if(typeof coopRegBlock==="function")coopRegBlock();
     /* редкое лежит в том же трюме, но купить его никто не возьмётся:
        оно тратится, а не продаётся — поэтому отдельной секцией и без кнопки */
     if(RARE_RES.some(k=>G.cargo[k]>0)){
@@ -62325,8 +62602,9 @@ function renderTabBody(){
        кроме того, на котором летите сами и который уже кому-то выдан */
     const spare=Object.keys(G.owned||{})
       .filter(id=>id!==G.shipId&&!G.crew.some(o=>o.shipId===id)).length;
+    if(typeof coopHas==="function"&&!coopHas())$body.appendChild(el("div","sec","НАНИМАТЬ МОГУТ ТОЛЬКО КООПЕРАТИВЫ · ОБОРОТ "+(G.soldTotal|0).toLocaleString("ru")+" ИЗ "+COOP_EXAM.toLocaleString("ru")+" · ЗАПИСЬ — НА РЫНКЕ СТАНЦИИ ДОМА"));
     $body.appendChild(el("div","sec","ВАШ ЭКИПАЖ "+G.crew.length+" / "+crewCap()+
-      " · ЛИЦЕНЗИЯ РАСШИРЯЕТ ФЛОТ · ЗАРПЛАТА ИДЁТ ПОКА ОНИ РАБОТАЮТ"+
+      " · РАЗРЯД КООПЕРАТИВА, ЛИЦЕНЗИЯ И УПРАВЛЯЮЩИЙ ДАЮТ МЕСТА · ЗАРПЛАТА ИДЁТ ПОКА ОНИ РАБОТАЮТ"+
       (spare>0?"":" · СВОБОДНЫХ КОРПУСОВ НЕТ: НАЁМНИКУ НУЖЕН СВОЙ КОРАБЛЬ")));
     if(!G.crew.length)$body.appendChild(el("div","sec","ПОКА НИКОГО — НАЙМИТЕ НИЖЕ"));
     G.crew.forEach((c,i)=>{

@@ -94,7 +94,7 @@ function mayakCompose(s){
   const SL=G.shiftLog;
   if(SL&&SL.s===s){
     let bk=null;for(const k in SL.sold)if(SL.sold[k]>=MAYAK_OVER&&(!bk||SL.sold[k]>SL.sold[bk]))bk=k;
-    if(bk)lines.push({t:"Экипаж борта «"+stat().S.ru+"»"+((G.name&&G.name.trim())?" ("+G.name.trim()+")":"")+" перевыполнил план по "+RES[bk].ru.toLowerCase()+": "+SL.sold[bk]+" "+pl3(SL.sold[bk],"единица","единицы","единиц")+".",
+    if(bk)lines.push({t:((typeof coopHas==="function"&&coopHas())?"Кооператив «"+G.coop.name+"»":"Экипаж борта «"+stat().S.ru+"»"+((G.name&&G.name.trim())?" ("+G.name.trim()+")":""))+" перевыполнил план по "+RES[bk].ru.toLowerCase()+": "+SL.sold[bk]+" "+pl3(SL.sold[bk],"единица","единицы","единиц")+".",
       cause:{k:"over",res:bk,n:SL.sold[bk]}});
   }
   /* 3. очищено (игроком) и переведено на особый режим (занято) */

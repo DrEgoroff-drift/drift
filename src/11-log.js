@@ -102,6 +102,7 @@ function renderLog(page){
 function renderDeeds(){
   const box=document.getElementById("loglist");if(!box)return;
   box.textContent="";
+  if(typeof coopBlock==="function")coopBlock(box);   /* кооператив — первым блоком (12aj, M351) */
   if(typeof questSync!=="function"){return;}
   questSync();
   const open=questOpen();

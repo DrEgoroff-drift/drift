@@ -57,7 +57,7 @@ function resetWorld(){
   G.mode="system";G.sx=0;G.sy=0;G.sys=getSystem(0,0);G.zoom=1;
   G.shipId="strizh";G.owned={strizh:true};
   G.ship={x:0,y:-760,vx:0,vy:0,a:0,av:0,bank:0};
-  G.fuel=100;G.hull=100;G.credits=600;G.data=0;G.matches=0;
+  G.fuel=100;G.hull=100;G.credits=600;G.data=0;G.matches=0;G.coop=null;
   for(const k of RES_KEYS)G.cargo[k]=0;
   G.mods={engine:0,tank:0,hold:0,armor:0,drill:0,hyper:0,weapon:0};
   G.modsOwned={engine:0,tank:0,hold:0,armor:0,drill:0,hyper:0,weapon:0};
@@ -149,3 +149,9 @@ function runTests(){
   return head;
 }
 const TEST_SUITES=[];
+/* кооператив по штампу (M351): наём и прилавок закрыты законом, пока его нет —
+   наборы, которым нужен экипаж, ставят штамп сами */
+function coopStamp(name,house){
+  G.coop={name:name||"Тест",house:house||"kova",since:0,sold0:G.soldTotal|0,spirit:2,wants:[],done:[],ledger:{},shift:0,visit:{key:"",bought:{}}};
+  return G.coop;
+}

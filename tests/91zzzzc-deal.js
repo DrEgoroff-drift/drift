@@ -7,7 +7,7 @@ TEST_SUITES.push(()=>suite("дело: наёмник, управляющий, д
   resetWorld();
   /* наёмник без корпуса: он и есть тот, из-за кого всё началось */
   const m=genMerc(4242,["haul"]);
-  G.credits=99999;
+  G.credits=99999;coopStamp();
   ok(hireMerc(m),"наёмник нанят");
   const c=G.crew[0];
   eq(c.shipId,null,"корпуса ему не выдали");

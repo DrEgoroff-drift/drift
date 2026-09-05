@@ -175,22 +175,12 @@ cosmetics exist; the desk gets one table «ОПИСЬ»; a locker exists at stat
   the designed ~200 cr/min. Trade untouched. **Answered by M351:** counter buying opens with the cooperative, capped by rank, priced in slices.
   «Сорока» raw→matches re-priced to 40:1 with a 200-unit cap per stop before M343 (audit §3 H3).
 
-- **M351 — the cooperative** (`docs/DESIGN-coop.md`; author 2026-09-04: «на дядю → лицензия кооператив
-  → свой маршрут, найм»). Stage 1 kept as is: the house's order and assigned leg on the house's
-  account, counter closed, station prints «взять товар могут только кооперативы · оборот N из
-  12 000». Registration at a house station: name typed by the player, 1 500 cr, `G.soldTotal ≥
-  12 000`, stamp in КНИЖКА, `G.coop` persisted. After it: counter buying of any tradeable good with
-  sliced pricing (A2) and a per-visit cap by rank (I 60 / II 150 / III none); the route on the map
-  becomes the player's own calculator (R3 gate dropped, reminder row kept); hiring opens and
-  `crewCap` reads the rank (1/3/5) instead of the «license» tech. Ranks: I Кооператив, II Артель
-  (100 000 since registration + 2 asks granted, drone shops sell 2 per two days), III Товарищество
-  (500 000 + 4 asks, `BUY_SPREAD` 1.03). ДЕЛА gets the cooperative block first: members from the
-  lists that exist, a per-shift ledger from `earn(why)` and payroll, three open asks generated from
-  composition and pointing at family-G buildings (столовая, ангар, отдел кадров, красный уголок,
-  медпункт, учебный пункт) plus two non-building asks (holiday off, name plate), spirit 0…5 as
-  words with ±1 % per point on drone output and hired gross. Modules: new `12aj-coop.js`, edits in
-  `12r`, `12-economy`, `26-ui-station`, `11-log`, `14-save`; suite `91zzzzb-coop`. Re-measure
-  trade with `91zzw-eco-probe` after; the caps are the brake for open buying.
+- **M351** (0.349.0) — done: the cooperative (`12aj-coop`, `docs/DESIGN-coop.md`) — the exam by turnover
+  (12 000), the stamp at a house station for 1 500 with a player-typed name, ranks I/II/III by turnover since
+  registration and granted asks, the counter open to cooperatives only (sliced pricing per 10 units, caps
+  60/150/none per visit), hiring only for cooperatives with `crewCap` by rank, the ДЕЛА page (members,
+  per-shift ledger from `earn`, asks from composition pointing at family-G buildings, spirit 0…5 as words,
+  ±1 % per point). Body in `docs/PLAN-archive.md`.
 
 - **M352 — more trees like these** (author 2026-09-04, on a surface frame of a jungle world: two
   low-poly canopies with hanging lianas, a monolith with tally marks, the astronaut for scale —

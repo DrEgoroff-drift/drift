@@ -104,7 +104,9 @@ function sellQuote(sys,k,qty){
   const nA=Math.min(qty,appetiteLeft(sys,k));
   const pA=nA?appetitePrice(sys,k):base;
   const nB=(typeof bldWant==="function")?Math.min(qty-nA,bldWant(sys,k)):0;   /* в бункер цеха — по обычной, с паем (M291) */
-  return{revenue:nA*pA+(qty-nA)*base,nA,nB,priceA:pA,base};
+  /* остаток без надбавки — ломтями (аудит A2, M351): каждые десять единиц на три процента дешевле, не ниже .7 */
+  const rest=(typeof coopSellSlice==="function")?coopSellSlice(base,qty-nA):(qty-nA)*base;
+  return{revenue:Math.round(nA*pA+rest),nA,nB,priceA:pA,base};
 }
 /* ── строка «БЕРЁТ» для доски, эфира и ряда трюма ── */
 function appetiteLine(sys,k){

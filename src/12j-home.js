@@ -40,6 +40,7 @@ function earn(sum,why){
   if(!isFinite(sum)||sum<=0)return 0;
   G.credits+=sum;
   homeTurn(sum,why);
+  if(typeof coopEarn==="function")coopEarn(sum,why);   /* гроссбух кооператива (M351) */
   return sum;
 }
 function homeTurn(sum,why){

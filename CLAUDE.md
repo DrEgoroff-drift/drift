@@ -103,7 +103,7 @@ One phrase per module; the module's own header says the rest. Grep `docs/INDEX.m
 | `11c-stories` `12k-stories-*` | the hundred stories: traces by channel, lazy turns, anchoring; data in `12k-*` |
 | `11g`–`11v` | the thirteenth pass, one module per region (lights, hours, glow, grove, keepers, county, charts, quiet, slow, pass, grown, plan, returners); rules in `docs/PASSPORTS.md` |
 | `11ah-wall` `11ah-offer` `11ai-ledger` `11ak-skywatch` `11am-holiday` `11an-qsl` `11ao-firsthour` | the stone that remembers; the offer; the kindness ledger; the sky watch; real-calendar holidays; QSL cards; the first hour's four ether lines |
-| `12a-crew` `12b-crew-events` | hired hands: traits, orders, runs, wages; the run event table, capture and ransom |
+| `12a-crew` `12b-crew-events` `12aj-coop` | hired hands: traits, orders, runs, wages; the run event table, capture and ransom; the cooperative (M351): exam, ranks, the open counter with slices and caps, the ДЕЛА page, asks and spirit |
 | `12c-mgr-core` `12d-mgr-face` `12g-mgr-rogue` | managers (four domains, cut, perks, loyalty), their portraits, the one who left |
 | `12e-drone-flight` `12l-barge` `12m-rare` `12h-relic` | drones derived from the clock; trade barges and wrecks; the hundred rarities; the lab and seven artifacts |
 | `12r-route` `12ab-hold` `12ac-bld` `12ad-site` `12ae-ladder` `12af-barge` `12ag-holdfx` `12ah-holdnews` `17e-station-body` `26c-ui-station-site` | the holding (`docs/DESIGN-holding.md`): the route as an order; the station's appetite; `BLD` families A–D; the site, hopper and share; the ladder (`rungHas`); the own barge; families E–I (`bldHas`); the station body; news and rival barges; the СТРОЙКА tab |

@@ -407,6 +407,7 @@ function e2eLate() {
   let n = 0;
   for (const id in BLD) { H.bld[id] = { lvl: 3, t0: now - 2e6, ready: now - 1e6, my: {}, got: {} }; if (++n >= 6) break; }
   /* руки — настоящие, из генератора станции, а не выдуманные объекты */
+  if (typeof coopStamp === "function") coopStamp("Сквозной");   /* найм — кооперативу (M351) */
   if (typeof stationMercs === "function" && typeof hireMerc === "function")
     for (const c of stationMercs(G.sys).slice(0, 3)) { try { hireMerc(c); } catch (e) { } }
   if (typeof bldTick === "function") { try { bldTick(); } catch (e) { } }

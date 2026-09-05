@@ -7,6 +7,26 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.349.0 - M351: the cooperative — buying for yourself, and the people who do it with you
+
+The author's ladder: на дядю → кооператив → своё. The first rung stays as it was: the house's order and
+the assigned leg on the house's account. The «Закон о кооперации Главтрассы» says a crew trades and hires
+for itself only as a cooperative registered under one of the four houses, and the exam is turnover — the
+station says the number before you are ready: «взять товар могут только кооперативы · оборот 3 400 из
+12 000». At any house station: 1 500 credits, a name you type yourself, a stamp in КНИЖКА, and the house
+becomes your patron. Then the counter opens to any tradeable good, priced in slices — every ten units the
+ask rises three percent, and every sale's plain part falls the same way — with a cap per visit by rank:
+Кооператив 60, Артель 150 (a hundred thousand of turnover since the stamp and two asks granted),
+Товарищество without a cap (five hundred thousand, four asks, and a narrower spread). Hiring opens with
+the stamp: the places in your звено come from the rank (1 / 3 / 5) plus the licence and the manager. ДЕЛА
+gets the cooperative's page first: who is on the payroll — machines, hands, managers — what they brought
+this shift and what they cost, from the same `earn()` that moves the money, and up to three asks that
+grow out of the composition and point at the buildings the game already has: столовая when there are three
+hands, ангар at five machines, красный уголок for the manager, медпункт after two captures, учебный пункт
+at ten machines, a day off in a holiday, a name plate on the hull. Granted, an ask says thanks in ЛЮДИ and
+lifts the spirit — 0…5, «кислое / ровное / бодрое», a percent per point on the drones' output and the
+hands' gross. The beacon now names the cooperative when it overdelivers.
+
 ## 0.348.0 - M349: «Маяк ГЛАВТРАССЫ» — the official voice in the ether, and it speaks
 
 Once a shift (twenty real minutes) the beacon reads its bulletin: «МАЯК ГЛАВТРАССЫ. СМЕНА 412.» and then

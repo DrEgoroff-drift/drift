@@ -7911,3 +7911,36 @@ the frame guard has failed, only while `G.mode` is `system` or `road`; a mode ch
 Role voices are picked by saved name, else by a name heuristic (Pavel/Dmitry… for the beacon,
 Irina/Svetlana… for the dispatcher), else the first Russian voice; no Russian voice — silence, no error.
 Settings live in ЗВУК: on/off, volume, rate (.85/1/1.15), one picker per role with ПРОБА.
+
+## M351 — the cooperative (0.349.0, 2026-09-05)
+
+- **M351 — the cooperative** (`docs/DESIGN-coop.md`; author 2026-09-04: «на дядю → лицензия кооператив
+  → свой маршрут, найм»). Stage 1 kept as is: the house's order and assigned leg on the house's
+  account, counter closed, station prints «взять товар могут только кооперативы · оборот N из
+  12 000». Registration at a house station: name typed by the player, 1 500 cr, `G.soldTotal ≥
+  12 000`, stamp in КНИЖКА, `G.coop` persisted. After it: counter buying of any tradeable good with
+  sliced pricing (A2) and a per-visit cap by rank (I 60 / II 150 / III none); the route on the map
+  becomes the player's own calculator (R3 gate dropped, reminder row kept); hiring opens and
+  `crewCap` reads the rank (1/3/5) instead of the «license» tech. Ranks: I Кооператив, II Артель
+  (100 000 since registration + 2 asks granted, drone shops sell 2 per two days), III Товарищество
+  (500 000 + 4 asks, `BUY_SPREAD` 1.03). ДЕЛА gets the cooperative block first: members from the
+  lists that exist, a per-shift ledger from `earn(why)` and payroll, three open asks generated from
+  composition and pointing at family-G buildings (столовая, ангар, отдел кадров, красный уголок,
+  медпункт, учебный пункт) plus two non-building asks (holiday off, name plate), spirit 0…5 as
+  words with ±1 % per point on drone output and hired gross. Modules: new `12aj-coop.js`, edits in
+  `12r`, `12-economy`, `26-ui-station`, `11-log`, `14-save`; suite `91zzzzb-coop`. Re-measure
+  trade with `91zzw-eco-probe` after; the caps are the brake for open buying.
+
+**Decided while building:** «отдел кадров» does not exist among the buildings, so the manager's ask points at
+the красный уголок; the asks are столовая (≥3 hands), ангар (≥5 drones), красный уголок (a manager),
+медпункт (hands captured twice), учебный пункт (≥10 drones), a holiday off and the name plate (the
+«Сорока» cosmetic `mk_plate` worn). A building ask is granted the moment the building stands on any of
+the player's holding stations (`bldHas`), checked when the page is read — no separate button; the holiday
+off is a button on the page during a holiday and makes the hands' yield zero that day (they rest; wages
+run). Sliced pricing (A2) applies to the cooperative's buying and to *every* sale's non-appetite part
+(3 % per ten units, floor .7, revenue rounded to whole credits); the appetite's premium units keep their
+price. `crewCap` is 0 without a cooperative and rank + licence + manager with one, so the old formula
+holds exactly at rank I; suites that hire stamp a cooperative through `coopStamp()` in the harness. The
+old route row «ПО МАРШРУТУ · взять» stays as the house's assigned leg on the house's account (stage 1);
+R3 was never a gate in code, so nothing was dropped there. `12r`'s calculator is untouched. The eco
+probe (`91zzw`) was not re-measured in this pass — the caps are the brake and remain to be measured.

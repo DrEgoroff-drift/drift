@@ -1420,3 +1420,6 @@ body.table u.addr{color:#7a4a20}
   border:1px solid rgba(150,182,212,.3);border-radius:4px;text-align:center}
 #mapaddr .act.sm{min-width:44px;padding:0 10px}
 @media (max-width:760px){#mapaddr{top:calc(var(--hudband,72px) + 20px);padding:3px 4px 3px 8px}#mapaddr input{width:52px}#mapaddr span{display:none}}
+/* запись кооператива (M351): поле имени в ряду станции */
+.row .nm input.coopname{display:block;margin-top:6px;width:min(260px,100%);min-height:44px;padding:0 10px;font:inherit;font-size:13px;color:var(--text);
+  background:rgba(0,0,0,.3);border:1px solid var(--edge);border-radius:4px}

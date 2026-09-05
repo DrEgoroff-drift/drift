@@ -290,7 +290,7 @@ TEST_SUITES.push(()=>suite("все режимы рисуются",()=>{
 TEST_SUITES.push(()=>suite("даровой наёмник приходит на самом деле",()=>{
   resetWorld();
   ok(typeof crewGift==="function","crewGift существует");
-  G.crew=[];G.techLvl.license=2;
+  G.crew=[];G.techLvl.license=2;coopStamp();
   const before=G.crew.length, money=G.credits;
   const ok1=crewGift(12345);
   ok(ok1===true,"пришёл");
