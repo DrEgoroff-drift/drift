@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 432 · символов верхнего уровня: 3773
+Файлов: 433 · символов верхнего уровня: 3774
 
 ## СИМВОЛЫ
 
@@ -69,6 +69,7 @@ aiUpkeep                     src/12f-mgr-ai.js:126
 ALBUM_MAX                    src/25g-postcard.js:627
 albumAll                     src/25g-postcard.js:628
 albumOpen                    src/25g-postcard.js:677
+alCount                      tests/91zzzzzy-alive.js:15
 allyOf                       src/27b-ui-crew.js:8
 allyWork                     src/12a-crew.js:585
 ambK                         src/19c-light.js:115
@@ -5181,5 +5182,8 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzzzzx-sound.js · 11 КБ
   · звук: договор, который никем не сторожился (M359):1
+
+## tests/91zzzzzy-alive.js · 9 КБ
+  · живые сущности за вечер (M359):1
 
 ## tests/99-run.js · 0 КБ
