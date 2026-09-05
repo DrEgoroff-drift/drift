@@ -83,9 +83,9 @@ if (!is_file($dg) || time() - filemtime($dg) > 3600) {
     $fresh[] = $line;
   }
   uasort($agg, function ($a, $b) { return $b['n'] - $a['n']; });
-  $out = ['made' => gmdate('Y-m-d H:i:s'), 'days' => 14, 'lines' => count($keep), 'top' => [], 'fps' => [], 'fresh' => array_slice($fresh, -10)];
+  $out = ['made' => gmdate('Y-m-d H:i:s'), 'days' => 14, 'lines' => count($keep), 'top' => [], 'fps' => new stdClass(), 'fresh' => array_slice($fresh, -10)];
   foreach (array_slice($agg, 0, 40, true) as $k => $v) $out['top'][] = ['what' => $k, 'n' => $v['n'], 'ips' => count($v['ips']), 'last' => $v['last'], 'mode' => $v['mode'], 'dev' => $v['dev']];
-  foreach ($fps as $k => $v) $out['fps'][$k] = ['n' => $v['n'], 'avg' => round($v['sum'] / max(1, $v['n'])), 'min' => $v['min']];
+  foreach ($fps as $k => $v) $out['fps']->$k = ['n' => $v['n'], 'avg' => round($v['sum'] / max(1, $v['n'])), 'min' => $v['min']];
   @file_put_contents($dg, json_encode($out, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT), LOCK_EX);
   if (count($keep) < $total) @file_put_contents($f, implode(PHP_EOL, $keep) . PHP_EOL, LOCK_EX);
 }

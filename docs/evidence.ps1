@@ -9,6 +9,8 @@ if (-not $j.Trim()) { "дайджеста ещё нет: никто не пис�
 $d = $j | ConvertFrom-Json
 "дайджест $($d.made) · строк за $($d.days) дн: $($d.lines)"
 "— fps с пульса (версия режим устройство: замеров, средний, худший) —"
-foreach ($p in $d.fps.PSObject.Properties) { "  {0,-34} n={1,-4} avg={2,-4} min={3}" -f $p.Name, $p.Value.n, $p.Value.avg, $p.Value.min }
+$fpsProps = if ($d.fps -is [array]) { @() } else { $d.fps.PSObject.Properties }
+if (-not $fpsProps.Count) { "  пульса ещё не было" }
+foreach ($p in $fpsProps) { "  {0,-34} n={1,-4} avg={2,-4} min={3}" -f $p.Name, $p.Value.n, $p.Value.avg, $p.Value.min }
 "— чаще всего (раз, адресов, когда, режим, устройство: версия | вид | текст) —"
 foreach ($t in $d.top) { "  {0,4}x {1,2}ip {2} [{3} {4}] {5}" -f $t.n, $t.ips, $t.last.Substring(5,11), $t.mode, $t.dev, $t.what }
