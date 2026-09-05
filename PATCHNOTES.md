@@ -7,6 +7,19 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.351.0 - «Сорока» and the desk: the author's sketch, and a second look
+
+The author drew over a frame of «Сорока» (2026-09-05): four huge curved sails fanned around the
+mast like a pinwheel, each longer than the hull. The four small foil triangles on the bow side are
+gone; the ship is a heliogyro now — four membrane blades from a hub on the yard, each a keel and a
+half long, bent toward the tip, the whole wheel turning once a quarter hour, drawn *behind* the
+keel with the keel's shadow across them, a dark spar on the leading edge and a stay to the yard's
+end. The room got a face: riveted wall panels, deck planks running to the vanishing point, a worn
+runner to the counter, a dark-red curtain with the magpie behind the keeper, shelves of jars,
+bales and crates along the walls, the goods drawn larger with their price in chalk. The ОПИСЬ
+cloth got its weave and a stitched hem, the hull panel a lamp and more room, and away from a
+station the matchbox stands in its own zone on the right instead of an empty column.
+
 ## 0.350.2 - the трассы on the map, judged on a staged chart
 
 The last unjudged look of the fleet (PLAN: «§14 wants a lived-in save»): the map was staged with

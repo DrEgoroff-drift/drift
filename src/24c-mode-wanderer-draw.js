@@ -91,6 +91,34 @@ function drawWanderRoom(){
     wg.addColorStop(0,wanCol(WAN_C.wall2));wg.addColorStop(1,wanCol(WAN_C.wall,.75));
     ctx.fillStyle=wg;ctx.beginPath();ctx.moveTo(side,g.ceilY);ctx.lineTo(side,g.floorY);ctx.lineTo(vp.x,vp.y);ctx.closePath();ctx.fill();
   }
+  /* 1a. материал (второй проход, 2026-09-05): стены — клёпаные панели со швами по
+     кольцам, пол — палубные доски к точке схода с тёплым отсветом витрин, у пола
+     латунная полоса. Без этого коридор читался серой коробкой. */
+  for(const side of [0,W]){
+    const dir=side?-1:1;
+    for(let k=0;k<7;k++){                      /* вертикальные швы панелей */
+      const z=.05+k*.1,a=P(side,g.ceilY,z),b=P(side,g.floorY,z);
+      ctx.strokeStyle="rgba(0,0,0,.35)";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+      ctx.strokeStyle="rgba(255,235,200,.05)";ctx.beginPath();ctx.moveTo(a.x+dir,a.y);ctx.lineTo(b.x+dir,b.y);ctx.stroke();
+      ctx.fillStyle="rgba(255,235,200,.10)";
+      for(let q=0;q<5;q++){const u=.1+q*.2;ctx.fillRect(a.x+dir*3+(b.x-a.x)*u-.5,a.y+(b.y-a.y)*u-.5,1.2,1.2);}
+    }
+    const f0=P(side,g.floorY,0),f1=P(side,g.floorY,g.zc);   /* латунная полоса у пола */
+    ctx.strokeStyle=wanRgba(WAN_C.brass,.45);ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(f0.x,f0.y-1);ctx.lineTo(f1.x,f1.y-1);ctx.stroke();
+  }
+  ctx.save();ctx.beginPath();ctx.moveTo(0,g.floorY);ctx.lineTo(W,g.floorY);ctx.lineTo(vp.x,vp.y);ctx.closePath();ctx.clip();
+  for(let k=-6;k<=6;k++){                        /* доски палубы сходятся к точке схода */
+    const x0=W*.5+k*W*.085,a=P(x0,g.floorY,0),b=P(x0,g.floorY,g.zc);
+    ctx.strokeStyle="rgba(0,0,0,.42)";ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+    ctx.strokeStyle="rgba(255,235,200,.05)";ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(a.x+1.5,a.y);ctx.lineTo(b.x+.5,b.y);ctx.stroke();
+  }
+  for(let z=.04;z<g.zc;z+=.09){const a=P(0,g.floorY,z),b=P(W,g.floorY,z);ctx.strokeStyle="rgba(0,0,0,.22)";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();}
+  /* дорожка к стойке: вытертая, чуть теплее */
+  {const a=P(W*.36,g.floorY,0),b=P(W*.64,g.floorY,0),c=P(W*.64,g.floorY,g.zc),d=P(W*.36,g.floorY,g.zc);
+   const rg=ctx.createLinearGradient(0,a.y,0,c.y);rg.addColorStop(0,"rgba(120,60,40,.30)");rg.addColorStop(1,"rgba(120,60,40,.10)");
+   ctx.fillStyle=rg;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.lineTo(c.x,c.y);ctx.lineTo(d.x,d.y);ctx.closePath();ctx.fill();
+   ctx.strokeStyle="rgba(201,162,74,.28)";ctx.lineWidth=1;ctx.stroke();}
+  ctx.restore();
   /* задняя стена — стойка на глубине zc, стена за ней */
   const zc=g.zc,bl=P(0,g.ceilY,zc),br=P(W,g.ceilY,zc),fl2=P(0,g.floorY,zc),fr=P(W,g.floorY,zc);
   ctx.fillStyle=wanCol(WAN_C.wall,.8);ctx.fillRect(bl.x,bl.y,br.x-bl.x,fl2.y-bl.y);
@@ -177,7 +205,15 @@ function drawWanderRoom(){
       ctx.fillStyle=wanRgba(WAN_C.chalk,.75);ctx.font=Math.max(7,sz*.16)+"px ui-monospace,monospace";ctx.textAlign="center";
       ctx.fillText(lot.gone?"продано":"пусто",0,sz*.05);
       ctx.restore();
-    }else wanItemIcon(lot,cx,cy,sz*.9);
+    }else{
+      wanItemIcon(lot,cx,cy,sz*1.15);
+      /* меловая цена под полкой: спички — та валюта, ради которой сюда пришли */
+      if(lot.pay&&lot.pay.m){
+        const ty=(sy+sy2)/2+(d.y-a.y)*.12,tx=(a.x+b.x)/2;
+        ctx.fillStyle=wanRgba(WAN_C.chalk,.55+lit*.35);ctx.font=Math.max(7,Math.min(13,sz*.12))+"px ui-monospace,monospace";ctx.textAlign="center";
+        ctx.fillText(lot.pay.m+" сп.",tx,ty);
+      }
+    }
   }
   /* 6. висящее на леерах: дрейф с длинными периодами, никогда не мигает */
   const rr=rng(hashi(S.seed,3,0x4A9));
@@ -189,6 +225,32 @@ function drawWanderRoom(){
     const s2=(6+rr()*8)*(1-z);
     if(k<.7){ctx.beginPath();ctx.ellipse(pt.x+dx,pt.y+len*(1-z)+s2*.5,s2*.7,s2,0,0,TAU);ctx.fill();}
     else{ctx.strokeStyle="#6a5221";ctx.lineWidth=1;ctx.strokeRect(pt.x+dx-s2*.5,pt.y+len*(1-z),s2,s2*1.3);}   /* клетка */
+  }
+  /* 6a. за стойкой — тёмно-красный занавес с сорокой и полки с банками: задней
+     стене нужно лицо, иначе точка схода — серая дыра */
+  {
+    const a=P(W*.22,g.ceilY,zc),b=P(W*.78,g.ceilY,zc),c=P(W*.78,g.floorY,zc),d=P(W*.22,g.floorY,zc);
+    const cg=ctx.createLinearGradient(0,a.y,0,c.y);cg.addColorStop(0,"#3a1a1a");cg.addColorStop(.5,"#552323");cg.addColorStop(1,"#2a1212");
+    ctx.fillStyle=cg;ctx.fillRect(a.x,a.y,b.x-a.x,c.y-a.y);
+    ctx.strokeStyle="rgba(0,0,0,.35)";ctx.lineWidth=1;
+    for(let i=1;i<9;i++){const x=a.x+(b.x-a.x)*i/9;ctx.beginPath();ctx.moveTo(x,a.y);ctx.quadraticCurveTo(x+3,(a.y+c.y)/2,x,c.y);ctx.stroke();}
+    /* сорока: чёрно-белая птица одним силуэтом, хвост длинный */
+    const mx=(a.x+b.x)/2,my=a.y+(c.y-a.y)*.30,ms=(c.y-a.y)*.16;
+    ctx.fillStyle="#efe7d6";ctx.beginPath();ctx.ellipse(mx,my,ms*.55,ms*.32,-.2,0,TAU);ctx.fill();
+    ctx.fillStyle="#141416";ctx.beginPath();ctx.ellipse(mx-ms*.1,my-ms*.12,ms*.5,ms*.2,-.25,0,TAU);ctx.fill();
+    ctx.beginPath();ctx.arc(mx+ms*.55,my-ms*.2,ms*.16,0,TAU);ctx.fill();
+    ctx.beginPath();ctx.moveTo(mx-ms*.5,my);ctx.lineTo(mx-ms*1.35,my+ms*.55);ctx.lineTo(mx-ms*.45,my+ms*.18);ctx.closePath();ctx.fill();
+    ctx.fillStyle="#d9a43a";ctx.beginPath();ctx.moveTo(mx+ms*.68,my-ms*.2);ctx.lineTo(mx+ms*.9,my-ms*.14);ctx.lineTo(mx+ms*.68,my-ms*.1);ctx.closePath();ctx.fill();
+    /* полки с банками по бокам занавеса */
+    for(const sx of [W*.16,W*.84]){
+      for(let r2=0;r2<3;r2++){
+        const y=a.y+(c.y-a.y)*(.30+r2*.18),p0=P(sx-W*.05,y,zc),p1=P(sx+W*.05,y,zc);
+        ctx.fillStyle="#3a2a1c";ctx.fillRect(p0.x,p0.y,p1.x-p0.x,3);
+        for(let j=0;j<4;j++){const jx=p0.x+(p1.x-p0.x)*(j+.5)/4,jh=6+((j*7+r2*3)%5);
+          ctx.fillStyle=j%2?"rgba(150,196,214,.35)":"rgba(201,162,74,.45)";ctx.fillRect(jx-3,p0.y-jh,6,jh);
+          ctx.fillStyle="rgba(255,235,200,.35)";ctx.fillRect(jx-2,p0.y-jh,1,jh*.7);}
+      }
+    }
   }
   /* 7. стойка и хранитель у точки схода */
   {
@@ -209,6 +271,22 @@ function drawWanderRoom(){
     ctx.fillStyle=wg;ctx.beginPath();ctx.arc(lx,ly+kh*.1,kh*1.6,0,TAU);ctx.fill();
     ctx.fillStyle="#fff3d8";ctx.beginPath();ctx.ellipse(lx,ly+kh*.1,kh*.12,kh*.04,0,0,TAU);ctx.fill();
   }
+  /* 8a. у стен на полу — тюки и ящики, чтобы пол не был пустым до самой стойки */
+  {
+    const rr2=rng(hashi(S.seed,7,0xC4A7));
+    for(let i=0;i<6;i++){
+      const left=i%2===0,z=.12+rr2()*.5,sx=left?W*(.04+rr2()*.03):W*(.93+rr2()*.03);
+      const p0=P(sx,g.floorY,z),sc=(1-z)*H*.09,wd=sc*(1+rr2()*.6),ht=sc*(.6+rr2()*.5);
+      const crate=rr2()<.5;
+      ctx.fillStyle="rgba(0,0,0,.4)";ctx.beginPath();ctx.ellipse(p0.x,p0.y,wd*.7,ht*.14,0,0,TAU);ctx.fill();
+      if(crate){ctx.fillStyle="#2a2622";ctx.fillRect(p0.x-wd/2,p0.y-ht,wd,ht);ctx.fillStyle="rgba(255,235,200,.12)";ctx.fillRect(p0.x-wd/2,p0.y-ht,wd,2);
+        ctx.strokeStyle="rgba(0,0,0,.5)";ctx.lineWidth=1;ctx.strokeRect(p0.x-wd/2,p0.y-ht,wd,ht);
+        ctx.strokeStyle="rgba(201,162,74,.3)";ctx.beginPath();ctx.moveTo(p0.x-wd/2,p0.y-ht);ctx.lineTo(p0.x+wd/2,p0.y);ctx.stroke();}
+      else{ctx.fillStyle="#3a3128";ctx.beginPath();ctx.ellipse(p0.x,p0.y-ht*.5,wd*.55,ht*.5,0,0,TAU);ctx.fill();
+        ctx.fillStyle="rgba(255,235,200,.10)";ctx.beginPath();ctx.ellipse(p0.x-wd*.12,p0.y-ht*.7,wd*.25,ht*.15,-.3,0,TAU);ctx.fill();
+        ctx.strokeStyle="rgba(200,190,160,.3)";ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(p0.x-wd*.5,p0.y-ht*.5);ctx.lineTo(p0.x+wd*.5,p0.y-ht*.5);ctx.stroke();}
+    }
+  }
   /* 9. пыль в холодных полосах */
   ctx.fillStyle="rgba(200,220,235,.35)";
   for(let i=0;i<40;i++){const h=hashi(i,S.seed,0xD057);const x=W*.2+((h&1023)/1023)*W*.6,y=H*.5+(((h>>10)&1023)/1023)*H*.36+Math.sin(now/7000+i)*3;ctx.fillRect(x,y,1,1);}
@@ -216,6 +294,6 @@ function drawWanderRoom(){
   if(S.flashT){const u=(now-S.flashT)/1500;if(u<1){ctx.fillStyle="rgba(255,226,170,"+(.5*(1-u)).toFixed(3)+")";ctx.fillRect(0,0,W,H);}}
   /* 11. виньетка */
   const vg=ctx.createRadialGradient(W*.5,H*.5,H*.25,W*.5,H*.5,H*.85);
-  vg.addColorStop(0,"rgba(0,0,0,0)");vg.addColorStop(1,"rgba(0,0,0,.62)");
+  vg.addColorStop(0,"rgba(0,0,0,0)");vg.addColorStop(1,"rgba(0,0,0,.5)");
   ctx.fillStyle=vg;ctx.fillRect(0,0,W,H);
 }

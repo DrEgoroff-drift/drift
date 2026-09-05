@@ -1225,9 +1225,14 @@ body.mapclean .hud,body.mapclean .pads,body.mapclean #console,body.mapclean #pro
 body.table #loglist.opis{max-width:1400px;padding:14px;min-height:0;
   display:grid;grid-template-columns:1fr 1.45fr .62fr;gap:14px;align-items:start;
   grid-template-areas:"top top top" "hold parts side" "kit parts hatch";   /* side — место ящика (M345); область без вещи законна, L-образная — нет */
-  background:radial-gradient(ellipse at 50% 22%,#356744 0%,#254a33 46%,#1b3826 100%);
-  border:7px solid #3a2718;border-radius:4px;
-  box-shadow:0 14px 34px rgba(0,0,0,.55),inset 0 0 0 1px rgba(255,235,200,.08),inset 0 0 60px rgba(0,0,0,.35)}
+  /* сукно (второй проход, 2026-09-05): переплетение нитей двумя тонкими решётками,
+     потёртость к краям, строчка по периметру — иначе зелёный прямоугольник */
+  background:
+    repeating-linear-gradient(0deg,rgba(0,0,0,.09) 0 1px,transparent 1px 3px),
+    repeating-linear-gradient(90deg,rgba(255,255,255,.035) 0 1px,transparent 1px 3px),
+    radial-gradient(ellipse at 50% 22%,#356744 0%,#254a33 46%,#1b3826 100%);
+  border:7px solid #3a2718;border-radius:4px;outline:1px dashed rgba(232,220,190,.22);outline-offset:-13px;
+  box-shadow:0 14px 34px rgba(0,0,0,.55),inset 0 0 0 1px rgba(255,235,200,.08),inset 0 0 90px rgba(0,0,0,.45),inset 0 2px 0 rgba(255,255,255,.05)}
 body.table #loglist.opis::before{display:none}
 .opis .op-top{display:contents}
 .opis .op-shelf{grid-column:1/3;grid-row:1}
@@ -1299,7 +1304,7 @@ body.table #loglist.opis::before{display:none}
 .opis .op-matchbox s{display:block;text-decoration:none;color:rgba(232,220,190,.55);font-size:9px}
 /* зона 3: слоты · силуэт+приборы · снятые */
 .opis .op-parts-grid{display:grid;grid-template-columns:1.35fr 1fr;grid-template-areas:"hull panel" "slots spare";gap:10px;align-items:start}
-.opis .op-parts-grid canvas.op-hull{grid-area:hull;align-self:stretch;height:100%;min-height:190px}
+.opis .op-parts-grid canvas.op-hull{grid-area:hull;align-self:stretch;height:100%;min-height:240px}
 .opis .op-parts-grid .op-panel{grid-area:panel;margin-top:0}
 .opis .op-slots{grid-area:slots;display:flex;flex-direction:column;gap:8px;min-width:0}
 .opis .op-spare{grid-area:spare}
@@ -1307,7 +1312,9 @@ body.table #loglist.opis::before{display:none}
 .opis .op-slot em{display:block;font-style:normal;font-size:8px;letter-spacing:.16em;margin-bottom:5px}
 .opis .op-slot.on{border-color:#f2b25c;border-style:solid}
 .opis .op-slot.aim{border-color:rgba(127,230,216,.85);border-style:solid;background:rgba(127,230,216,.06)}
-.opis canvas.op-hull{display:block;width:100%;height:auto;border-radius:4px;background:rgba(0,0,0,.22);cursor:pointer;touch-action:manipulation}
+.opis canvas.op-hull{display:block;width:100%;height:auto;border-radius:4px;cursor:pointer;touch-action:manipulation;
+  background:radial-gradient(ellipse at 50% 40%,rgba(255,224,170,.10) 0%,rgba(0,0,0,.18) 55%,rgba(0,0,0,.42) 100%);
+  box-shadow:inset 0 0 0 1px rgba(232,220,190,.14),inset 0 10px 24px rgba(0,0,0,.35)}
 .opis .op-spare{min-width:0;display:flex;flex-direction:column;gap:8px;padding:6px;border:1px dashed rgba(232,220,190,.22);border-radius:4px;min-height:80px}
 /* панель приборов: чёрная шкала на сукне, будущее — стрелкой */
 .opis .op-panel{margin-top:10px;padding:8px 10px 6px;background:rgba(0,0,0,.28);border-radius:4px;border:1px solid rgba(232,220,190,.12)}
@@ -1410,11 +1417,14 @@ body.aboard #console{display:none!important}
 .opis .op-card.cosm.worn{box-shadow:0 0 0 1px rgba(201,162,74,.8),0 5px 12px rgba(0,0,0,.4)}
 /* ящик конторы на ОПИСИ (M345): пятая зона в правой колонке, между шкатулкой и люком */
 .opis .op-locker{grid-area:side;align-self:start}
+.opis .op-side{grid-area:side;align-self:start}
+.opis .op-side .op-matchbox.big{flex-direction:column;align-items:stretch;gap:6px}
+.opis .op-side .op-matchbox.big canvas{width:100%;max-width:220px;margin:0 auto}
 .opis .op-lockgrid{display:flex;flex-direction:column;gap:6px;margin-top:6px}
 .opis .op-lockgrid .empty{display:block;height:24px;border:1px dashed rgba(232,220,190,.25);border-radius:4px}
 .opis .op-card.lock{padding:6px 8px}
 .opis .op-card.lock.on{transform:none;box-shadow:0 5px 12px rgba(0,0,0,.4)}
-@media (max-width:760px){.opis .op-locker{order:4}.opis .op-foot{order:5}}
+@media (max-width:760px){.opis .op-locker,.opis .op-side{order:4}.opis .op-foot{order:5}}
 /* коробки на полке дома (M346): ряд этикеток рядом с книгами */
 body.table #loglist .boxes{display:flex;flex-wrap:wrap;gap:8px;padding:6px 18px 12px 60px}
 body.table #loglist .matchbox{flex:0 0 auto;width:118px;padding:6px 8px 7px;border-radius:2px;
@@ -1716,7 +1726,7 @@ body.table u.addr{color:#7a4a20}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.350.2";
+const VER="0.351.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -29129,7 +29139,7 @@ function drawWanderer(zx,zy,Z){
   if(!wanderHere(sys))return;
   const pos=wanderWorldPos(sys,w.planetIx);
   const x=zx(pos.x),y=zy(pos.y),L=pos.L*Z;
-  if(x<-L||x>W+L||y<-L||y>H+L)return;
+  if(x<-L*1.7||x>W+L*1.7||y<-L*1.7||y>H+L*1.7)return;   /* паруса втрое длиннее киля */
   const ang=wanderAngle(pos,w);
   ctx.save();ctx.translate(x,y);ctx.rotate(ang);
   if(L<9){
@@ -29142,6 +29152,52 @@ function drawWanderer(zx,zy,Z){
   const s=L/100;                                     /* киль = 100 единиц */
   ctx.scale(s,s);
   const r=rng((sys.seed^0x5A1A)>>>0);
+  /* 0. паруса — ПОЗАДИ киля и втрое длиннее его (автор, набросок 2026-09-05: четыре
+     огромных гнутых лепестка вокруг мачты, как крыльчатка). Гелиоротор: четыре
+     лопасти-мембраны из ступицы на рее, каждая полтора киля, изогнута к концу,
+     вся крыльчатка поворачивается за четверть часа. Тёмная половина к оси,
+     свет к внешней кромке; блики — считанные жёсткие штрихи; по передней кромке
+     тёмный лонжерон, от кончика к концу рея — ванта. */
+  {
+    const base=now/900000*TAU+(sys.seed%628)/100, R=150, KAPPA=.22;
+    for(let i=0;i<4;i++){
+      const th=base+i*TAU/4, sway=Math.sin(now/61000+i*1.9)*.02;
+      const pt=(u,side)=>{                       // точка лопасти: доля длины u, сторона ±1
+        const a=th+KAPPA*u*u+sway*u, cx=Math.cos(a)*R*u, cy=Math.sin(a)*R*u;
+        const w=3+19*Math.sin(Math.PI*Math.min(1,u*1.08))*(u<.92?1:(1-u)/.08*.6+.4);
+        const nx=-Math.sin(a),ny=Math.cos(a);
+        return [cx+nx*w*side,cy+ny*w*side];
+      };
+      const N=18,P=[];
+      for(let k=0;k<=N;k++)P.push(pt(k/N,1));
+      for(let k=N;k>=1;k--)P.push(pt(k/N,-1));
+      const path=()=>{ctx.beginPath();P.forEach((q,k)=>k?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]));ctx.closePath();};
+      /* тело: градиент поперёк лопасти, темнее к оси вращения */
+      const m=pt(.55,0),n1=pt(.55,1),n2=pt(.55,-1);
+      const g=ctx.createLinearGradient(n2[0],n2[1],n1[0],n1[1]);
+      g.addColorStop(0,"#6a4210");g.addColorStop(.45,"#b8822a");g.addColorStop(1,"#e3b04a");
+      ctx.fillStyle=g;path();ctx.fill();
+      ctx.save();path();ctx.clip();
+      /* фольга ложится складками вдоль длины: тёмные штрихи-рёбра */
+      ctx.strokeStyle="rgba(50,30,6,.28)";ctx.lineWidth=.45;
+      for(let k=1;k<6;k++){const sd=-1+k/3;ctx.beginPath();for(let j=0;j<=N;j++){const q=pt(j/N,sd*.9);j?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]);}ctx.stroke();}
+      /* блики — три жёстких штриха по светлой половине */
+      ctx.strokeStyle="rgba(255,240,200,.85)";ctx.lineWidth=.8;
+      for(let k=0;k<3;k++){const u0=.2+k*.22,q0=pt(u0,.35+k*.2),q1=pt(u0+.14,.45+k*.2);ctx.beginPath();ctx.moveTo(q0[0],q0[1]);ctx.lineTo(q1[0],q1[1]);ctx.stroke();}
+      /* тень киля на лопасти, если она проходит под ним */
+      ctx.fillStyle="rgba(0,0,0,.35)";ctx.fillRect(-52,-3.4,104,6.8);
+      ctx.restore();
+      /* лонжерон по передней кромке и ванта к концу рея */
+      ctx.strokeStyle="#2a2218";ctx.lineWidth=.9;ctx.beginPath();for(let j=0;j<=N;j++){const q=pt(j/N,1);j?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]);}ctx.stroke();
+      const tip=pt(1,0),ry=Math.sin(th)>0?30:-30;
+      ctx.strokeStyle="rgba(200,190,160,.35)";ctx.lineWidth=.4;ctx.beginPath();ctx.moveTo(tip[0],tip[1]);ctx.lineTo(0,ry);ctx.stroke();
+      /* один тонкий обвод телу лопасти */
+      ctx.strokeStyle="rgba(40,24,4,.55)";ctx.lineWidth=.5;path();ctx.stroke();
+    }
+    /* ступица на рее */
+    ctx.fillStyle="#15181d";ctx.beginPath();ctx.arc(0,0,4.2,0,TAU);ctx.fill();
+    ctx.strokeStyle="rgba(200,210,220,.35)";ctx.lineWidth=.6;ctx.beginPath();ctx.arc(0,0,4.2,0,TAU);ctx.stroke();
+  }
   /* 1. тень парусов на киле и тюках — тёмное основание, потом тело */
   ctx.lineCap="round";
   /* киль: тёмная балка с фаской */
@@ -29175,28 +29231,6 @@ function drawWanderer(zx,zy,Z){
   /* 2. рей — крест посреди, тёмный, с фаской света */
   ctx.strokeStyle="#0f1114";ctx.lineWidth=2.4;ctx.beginPath();ctx.moveTo(0,-30);ctx.lineTo(0,30);ctx.stroke();
   ctx.strokeStyle="#3a3630";ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(0,-30);ctx.lineTo(0,30);ctx.stroke();
-  /* 3. четыре горы фольги: основание на рее, вершина к носу; поворот за минуты */
-  const segs=[[-30,-15],[-15,0],[0,15],[15,30]];
-  segs.forEach((sg,i)=>{
-    const sway=Math.sin(now/53000+i*1.7)*.10+Math.sin(now/171000+i)*.05;
-    const mid=(sg[0]+sg[1])/2,ax=28+Math.sin(now/97000+i)*2,ay=mid*(.35+sway);
-    /* тень гора — тёмная половина к килю, свет — к внешней кромке */
-    const g=ctx.createLinearGradient(0,sg[0],0,sg[1]);
-    if(sg[0]<0){g.addColorStop(0,"#d39d34");g.addColorStop(1,"#7a4f10");}
-    else{g.addColorStop(0,"#7a4f10");g.addColorStop(1,"#d39d34");}
-    ctx.fillStyle=g;
-    ctx.beginPath();ctx.moveTo(0,sg[0]);ctx.lineTo(0,sg[1]);ctx.lineTo(ax,ay);ctx.closePath();ctx.fill();
-    ctx.strokeStyle="rgba(40,24,4,.7)";ctx.lineWidth=.5;ctx.stroke();
-    /* фактура: ориентированные линии вдоль гора (правило 6) */
-    ctx.save();ctx.beginPath();ctx.moveTo(0,sg[0]);ctx.lineTo(0,sg[1]);ctx.lineTo(ax,ay);ctx.closePath();ctx.clip();
-    ctx.strokeStyle="rgba(60,36,6,.22)";ctx.lineWidth=.35;
-    for(let k=1;k<7;k++){const t=k/7,yy=sg[0]+(sg[1]-sg[0])*t;ctx.beginPath();ctx.moveTo(0,yy);ctx.lineTo(ax,ay+(yy-mid)*.15);ctx.stroke();}
-    /* блики — считанные жёсткие штрихи, не градиент (правило 2) */
-    ctx.strokeStyle="rgba(255,236,190,.85)";ctx.lineWidth=.7;
-    for(let k=0;k<3;k++){const t=.25+k*.22,yy=sg[0]+(sg[1]-sg[0])*(sg[0]<0?t:1-t);
-      ctx.beginPath();ctx.moveTo(2+k*3,yy);ctx.lineTo(9+k*4,yy+(ay-yy)*.28);ctx.stroke();}
-    ctx.restore();
-  });
   /* 4. гондола на носу: стекло, и внутри — единственный тёплый свет */
   ctx.fillStyle="#1c2026";ctx.beginPath();ctx.ellipse(50,0,4.6,3.2,0,0,TAU);ctx.fill();
   ctx.strokeStyle="rgba(150,180,200,.55)";ctx.lineWidth=.6;ctx.stroke();
@@ -55380,6 +55414,34 @@ function drawWanderRoom(){
     wg.addColorStop(0,wanCol(WAN_C.wall2));wg.addColorStop(1,wanCol(WAN_C.wall,.75));
     ctx.fillStyle=wg;ctx.beginPath();ctx.moveTo(side,g.ceilY);ctx.lineTo(side,g.floorY);ctx.lineTo(vp.x,vp.y);ctx.closePath();ctx.fill();
   }
+  /* 1a. материал (второй проход, 2026-09-05): стены — клёпаные панели со швами по
+     кольцам, пол — палубные доски к точке схода с тёплым отсветом витрин, у пола
+     латунная полоса. Без этого коридор читался серой коробкой. */
+  for(const side of [0,W]){
+    const dir=side?-1:1;
+    for(let k=0;k<7;k++){                      /* вертикальные швы панелей */
+      const z=.05+k*.1,a=P(side,g.ceilY,z),b=P(side,g.floorY,z);
+      ctx.strokeStyle="rgba(0,0,0,.35)";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+      ctx.strokeStyle="rgba(255,235,200,.05)";ctx.beginPath();ctx.moveTo(a.x+dir,a.y);ctx.lineTo(b.x+dir,b.y);ctx.stroke();
+      ctx.fillStyle="rgba(255,235,200,.10)";
+      for(let q=0;q<5;q++){const u=.1+q*.2;ctx.fillRect(a.x+dir*3+(b.x-a.x)*u-.5,a.y+(b.y-a.y)*u-.5,1.2,1.2);}
+    }
+    const f0=P(side,g.floorY,0),f1=P(side,g.floorY,g.zc);   /* латунная полоса у пола */
+    ctx.strokeStyle=wanRgba(WAN_C.brass,.45);ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(f0.x,f0.y-1);ctx.lineTo(f1.x,f1.y-1);ctx.stroke();
+  }
+  ctx.save();ctx.beginPath();ctx.moveTo(0,g.floorY);ctx.lineTo(W,g.floorY);ctx.lineTo(vp.x,vp.y);ctx.closePath();ctx.clip();
+  for(let k=-6;k<=6;k++){                        /* доски палубы сходятся к точке схода */
+    const x0=W*.5+k*W*.085,a=P(x0,g.floorY,0),b=P(x0,g.floorY,g.zc);
+    ctx.strokeStyle="rgba(0,0,0,.42)";ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+    ctx.strokeStyle="rgba(255,235,200,.05)";ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(a.x+1.5,a.y);ctx.lineTo(b.x+.5,b.y);ctx.stroke();
+  }
+  for(let z=.04;z<g.zc;z+=.09){const a=P(0,g.floorY,z),b=P(W,g.floorY,z);ctx.strokeStyle="rgba(0,0,0,.22)";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();}
+  /* дорожка к стойке: вытертая, чуть теплее */
+  {const a=P(W*.36,g.floorY,0),b=P(W*.64,g.floorY,0),c=P(W*.64,g.floorY,g.zc),d=P(W*.36,g.floorY,g.zc);
+   const rg=ctx.createLinearGradient(0,a.y,0,c.y);rg.addColorStop(0,"rgba(120,60,40,.30)");rg.addColorStop(1,"rgba(120,60,40,.10)");
+   ctx.fillStyle=rg;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.lineTo(c.x,c.y);ctx.lineTo(d.x,d.y);ctx.closePath();ctx.fill();
+   ctx.strokeStyle="rgba(201,162,74,.28)";ctx.lineWidth=1;ctx.stroke();}
+  ctx.restore();
   /* задняя стена — стойка на глубине zc, стена за ней */
   const zc=g.zc,bl=P(0,g.ceilY,zc),br=P(W,g.ceilY,zc),fl2=P(0,g.floorY,zc),fr=P(W,g.floorY,zc);
   ctx.fillStyle=wanCol(WAN_C.wall,.8);ctx.fillRect(bl.x,bl.y,br.x-bl.x,fl2.y-bl.y);
@@ -55466,7 +55528,15 @@ function drawWanderRoom(){
       ctx.fillStyle=wanRgba(WAN_C.chalk,.75);ctx.font=Math.max(7,sz*.16)+"px ui-monospace,monospace";ctx.textAlign="center";
       ctx.fillText(lot.gone?"продано":"пусто",0,sz*.05);
       ctx.restore();
-    }else wanItemIcon(lot,cx,cy,sz*.9);
+    }else{
+      wanItemIcon(lot,cx,cy,sz*1.15);
+      /* меловая цена под полкой: спички — та валюта, ради которой сюда пришли */
+      if(lot.pay&&lot.pay.m){
+        const ty=(sy+sy2)/2+(d.y-a.y)*.12,tx=(a.x+b.x)/2;
+        ctx.fillStyle=wanRgba(WAN_C.chalk,.55+lit*.35);ctx.font=Math.max(7,Math.min(13,sz*.12))+"px ui-monospace,monospace";ctx.textAlign="center";
+        ctx.fillText(lot.pay.m+" сп.",tx,ty);
+      }
+    }
   }
   /* 6. висящее на леерах: дрейф с длинными периодами, никогда не мигает */
   const rr=rng(hashi(S.seed,3,0x4A9));
@@ -55478,6 +55548,32 @@ function drawWanderRoom(){
     const s2=(6+rr()*8)*(1-z);
     if(k<.7){ctx.beginPath();ctx.ellipse(pt.x+dx,pt.y+len*(1-z)+s2*.5,s2*.7,s2,0,0,TAU);ctx.fill();}
     else{ctx.strokeStyle="#6a5221";ctx.lineWidth=1;ctx.strokeRect(pt.x+dx-s2*.5,pt.y+len*(1-z),s2,s2*1.3);}   /* клетка */
+  }
+  /* 6a. за стойкой — тёмно-красный занавес с сорокой и полки с банками: задней
+     стене нужно лицо, иначе точка схода — серая дыра */
+  {
+    const a=P(W*.22,g.ceilY,zc),b=P(W*.78,g.ceilY,zc),c=P(W*.78,g.floorY,zc),d=P(W*.22,g.floorY,zc);
+    const cg=ctx.createLinearGradient(0,a.y,0,c.y);cg.addColorStop(0,"#3a1a1a");cg.addColorStop(.5,"#552323");cg.addColorStop(1,"#2a1212");
+    ctx.fillStyle=cg;ctx.fillRect(a.x,a.y,b.x-a.x,c.y-a.y);
+    ctx.strokeStyle="rgba(0,0,0,.35)";ctx.lineWidth=1;
+    for(let i=1;i<9;i++){const x=a.x+(b.x-a.x)*i/9;ctx.beginPath();ctx.moveTo(x,a.y);ctx.quadraticCurveTo(x+3,(a.y+c.y)/2,x,c.y);ctx.stroke();}
+    /* сорока: чёрно-белая птица одним силуэтом, хвост длинный */
+    const mx=(a.x+b.x)/2,my=a.y+(c.y-a.y)*.30,ms=(c.y-a.y)*.16;
+    ctx.fillStyle="#efe7d6";ctx.beginPath();ctx.ellipse(mx,my,ms*.55,ms*.32,-.2,0,TAU);ctx.fill();
+    ctx.fillStyle="#141416";ctx.beginPath();ctx.ellipse(mx-ms*.1,my-ms*.12,ms*.5,ms*.2,-.25,0,TAU);ctx.fill();
+    ctx.beginPath();ctx.arc(mx+ms*.55,my-ms*.2,ms*.16,0,TAU);ctx.fill();
+    ctx.beginPath();ctx.moveTo(mx-ms*.5,my);ctx.lineTo(mx-ms*1.35,my+ms*.55);ctx.lineTo(mx-ms*.45,my+ms*.18);ctx.closePath();ctx.fill();
+    ctx.fillStyle="#d9a43a";ctx.beginPath();ctx.moveTo(mx+ms*.68,my-ms*.2);ctx.lineTo(mx+ms*.9,my-ms*.14);ctx.lineTo(mx+ms*.68,my-ms*.1);ctx.closePath();ctx.fill();
+    /* полки с банками по бокам занавеса */
+    for(const sx of [W*.16,W*.84]){
+      for(let r2=0;r2<3;r2++){
+        const y=a.y+(c.y-a.y)*(.30+r2*.18),p0=P(sx-W*.05,y,zc),p1=P(sx+W*.05,y,zc);
+        ctx.fillStyle="#3a2a1c";ctx.fillRect(p0.x,p0.y,p1.x-p0.x,3);
+        for(let j=0;j<4;j++){const jx=p0.x+(p1.x-p0.x)*(j+.5)/4,jh=6+((j*7+r2*3)%5);
+          ctx.fillStyle=j%2?"rgba(150,196,214,.35)":"rgba(201,162,74,.45)";ctx.fillRect(jx-3,p0.y-jh,6,jh);
+          ctx.fillStyle="rgba(255,235,200,.35)";ctx.fillRect(jx-2,p0.y-jh,1,jh*.7);}
+      }
+    }
   }
   /* 7. стойка и хранитель у точки схода */
   {
@@ -55498,6 +55594,22 @@ function drawWanderRoom(){
     ctx.fillStyle=wg;ctx.beginPath();ctx.arc(lx,ly+kh*.1,kh*1.6,0,TAU);ctx.fill();
     ctx.fillStyle="#fff3d8";ctx.beginPath();ctx.ellipse(lx,ly+kh*.1,kh*.12,kh*.04,0,0,TAU);ctx.fill();
   }
+  /* 8a. у стен на полу — тюки и ящики, чтобы пол не был пустым до самой стойки */
+  {
+    const rr2=rng(hashi(S.seed,7,0xC4A7));
+    for(let i=0;i<6;i++){
+      const left=i%2===0,z=.12+rr2()*.5,sx=left?W*(.04+rr2()*.03):W*(.93+rr2()*.03);
+      const p0=P(sx,g.floorY,z),sc=(1-z)*H*.09,wd=sc*(1+rr2()*.6),ht=sc*(.6+rr2()*.5);
+      const crate=rr2()<.5;
+      ctx.fillStyle="rgba(0,0,0,.4)";ctx.beginPath();ctx.ellipse(p0.x,p0.y,wd*.7,ht*.14,0,0,TAU);ctx.fill();
+      if(crate){ctx.fillStyle="#2a2622";ctx.fillRect(p0.x-wd/2,p0.y-ht,wd,ht);ctx.fillStyle="rgba(255,235,200,.12)";ctx.fillRect(p0.x-wd/2,p0.y-ht,wd,2);
+        ctx.strokeStyle="rgba(0,0,0,.5)";ctx.lineWidth=1;ctx.strokeRect(p0.x-wd/2,p0.y-ht,wd,ht);
+        ctx.strokeStyle="rgba(201,162,74,.3)";ctx.beginPath();ctx.moveTo(p0.x-wd/2,p0.y-ht);ctx.lineTo(p0.x+wd/2,p0.y);ctx.stroke();}
+      else{ctx.fillStyle="#3a3128";ctx.beginPath();ctx.ellipse(p0.x,p0.y-ht*.5,wd*.55,ht*.5,0,0,TAU);ctx.fill();
+        ctx.fillStyle="rgba(255,235,200,.10)";ctx.beginPath();ctx.ellipse(p0.x-wd*.12,p0.y-ht*.7,wd*.25,ht*.15,-.3,0,TAU);ctx.fill();
+        ctx.strokeStyle="rgba(200,190,160,.3)";ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(p0.x-wd*.5,p0.y-ht*.5);ctx.lineTo(p0.x+wd*.5,p0.y-ht*.5);ctx.stroke();}
+    }
+  }
   /* 9. пыль в холодных полосах */
   ctx.fillStyle="rgba(200,220,235,.35)";
   for(let i=0;i<40;i++){const h=hashi(i,S.seed,0xD057);const x=W*.2+((h&1023)/1023)*W*.6,y=H*.5+(((h>>10)&1023)/1023)*H*.36+Math.sin(now/7000+i)*3;ctx.fillRect(x,y,1,1);}
@@ -55505,7 +55617,7 @@ function drawWanderRoom(){
   if(S.flashT){const u=(now-S.flashT)/1500;if(u<1){ctx.fillStyle="rgba(255,226,170,"+(.5*(1-u)).toFixed(3)+")";ctx.fillRect(0,0,W,H);}}
   /* 11. виньетка */
   const vg=ctx.createRadialGradient(W*.5,H*.5,H*.25,W*.5,H*.5,H*.85);
-  vg.addColorStop(0,"rgba(0,0,0,0)");vg.addColorStop(1,"rgba(0,0,0,.62)");
+  vg.addColorStop(0,"rgba(0,0,0,0)");vg.addColorStop(1,"rgba(0,0,0,.5)");
   ctx.fillStyle=vg;ctx.fillRect(0,0,W,H);
 }
 
@@ -68754,13 +68866,26 @@ function opisRender(box){
       (w.seen?" по лучшим виденным ценам":" · цен ещё не видели, счёт по рынку");
     z1.appendChild(line);
   }
+  /* коробок: в трюме, когда справа стоит ящик конторы; вне станции — своей зоной
+     на месте ящика, чтобы правый столбец сукна не пустовал (второй проход, 2026-09-05) */
   const mb=document.createElement("div");mb.className="op-matchbox";
-  const mcv=document.createElement("canvas");mcv.width=140;mcv.height=70;
+  const atLocker=(typeof lockerHere==="function"&&lockerHere());
+  const mW=atLocker?140:220,mH=atLocker?70:110;
+  const mcv=document.createElement("canvas");mcv.width=mW;mcv.height=mH;
   const mN=(typeof matchesRec==="function")?matchesRec():0;
-  opisDrawMatchbox(mcv.getContext("2d"),140,70,mN);
+  opisDrawMatchbox(mcv.getContext("2d"),mW,mH,mN);
   mb.appendChild(mcv);
   mb.insertAdjacentHTML("beforeend","<b>спичек: "+mN+"</b><s>из-под кожухов разобранных частей</s>");
-  z1.appendChild(mb);
+  if(atLocker)z1.appendChild(mb);
+  else{
+    const zs=document.createElement("section");zs.className="op-z op-side";
+    zs.appendChild(opisHead(5,"СПИЧКИ",mN?"валюта «Сороки»":"пока ни одной"));
+    mb.classList.add("big");zs.appendChild(mb);
+    const note=document.createElement("s");note.className="chalk";
+    note.textContent=mN?"за спички берёт только «Сорока»; рынок их не видит":"снимите кожух с найденной части — под ним лежат спички";
+    zs.appendChild(note);
+    box.appendChild(zs);
+  }
   /* ── зона 3: силуэт, приборы, слоты, снятые ── */
   const z3=document.createElement("section");z3.className="op-z op-parts";
   const inv=G.inv.filter(p=>!isFitted(p.id)).sort((a,b)=>b.tier-a.tier);

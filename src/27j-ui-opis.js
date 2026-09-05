@@ -658,13 +658,26 @@ function opisRender(box){
       (w.seen?" по лучшим виденным ценам":" · цен ещё не видели, счёт по рынку");
     z1.appendChild(line);
   }
+  /* коробок: в трюме, когда справа стоит ящик конторы; вне станции — своей зоной
+     на месте ящика, чтобы правый столбец сукна не пустовал (второй проход, 2026-09-05) */
   const mb=document.createElement("div");mb.className="op-matchbox";
-  const mcv=document.createElement("canvas");mcv.width=140;mcv.height=70;
+  const atLocker=(typeof lockerHere==="function"&&lockerHere());
+  const mW=atLocker?140:220,mH=atLocker?70:110;
+  const mcv=document.createElement("canvas");mcv.width=mW;mcv.height=mH;
   const mN=(typeof matchesRec==="function")?matchesRec():0;
-  opisDrawMatchbox(mcv.getContext("2d"),140,70,mN);
+  opisDrawMatchbox(mcv.getContext("2d"),mW,mH,mN);
   mb.appendChild(mcv);
   mb.insertAdjacentHTML("beforeend","<b>спичек: "+mN+"</b><s>из-под кожухов разобранных частей</s>");
-  z1.appendChild(mb);
+  if(atLocker)z1.appendChild(mb);
+  else{
+    const zs=document.createElement("section");zs.className="op-z op-side";
+    zs.appendChild(opisHead(5,"СПИЧКИ",mN?"валюта «Сороки»":"пока ни одной"));
+    mb.classList.add("big");zs.appendChild(mb);
+    const note=document.createElement("s");note.className="chalk";
+    note.textContent=mN?"за спички берёт только «Сорока»; рынок их не видит":"снимите кожух с найденной части — под ним лежат спички";
+    zs.appendChild(note);
+    box.appendChild(zs);
+  }
   /* ── зона 3: силуэт, приборы, слоты, снятые ── */
   const z3=document.createElement("section");z3.className="op-z op-parts";
   const inv=G.inv.filter(p=>!isFitted(p.id)).sort((a,b)=>b.tier-a.tier);

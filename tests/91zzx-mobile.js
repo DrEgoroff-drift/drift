@@ -11,8 +11,8 @@ TEST_SUITES.push(()=>suite("телефон: опись одной лентой, 
   ok(kitDollHit.length===6,"шесть зон нажатия");
   ok(kitDollHit.every(h=>h.w>=44&&h.h>=44),"каждая зона не меньше 44 px");
   if(innerWidth<=760){
-    const order=[...box.children].filter(e=>e.classList.contains("op-z")).map(e=>getComputedStyle(e).order).join(",");
-    eq(order,"1,2,3","лента: части, комплект, трюм");
+    const order=[...box.children].filter(e=>e.classList.contains("op-z")).map(e=>+getComputedStyle(e).order).sort((a,b)=>a-b).join(",");
+    eq(order,"1,2,3,4","лента: части, комплект, трюм, спички (или ящик у станции)");
     eq(getComputedStyle(box.querySelector(".op-hatch")).display,"none","люк не в ленте");
     ok(box.scrollWidth<=box.clientWidth+1,"лента не шире экрана ("+box.scrollWidth+"/"+box.clientWidth+")");
     const bar=document.getElementById("opisBar");

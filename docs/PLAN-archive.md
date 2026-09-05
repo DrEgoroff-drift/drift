@@ -8028,3 +8028,21 @@ pointed towers and read as crystal in the ocean's blue: now a trunk with three t
 ending in knobs, lit rim to the star. The dry tree's one flat disc read as a parasol: now three small
 tufts on short branches, all blown the same way. The other four passed. The eco probe was also
 re-measured after the cooperative in the same session (`docs/ECONOMY-AUDIT.md` §6).
+
+## Pass 2026-09-05 — «Сорока» and the desk (0.351.0)
+
+Author, on a frame of «Сорока» at the lit limb: a sketch of four huge curved lobes around the mast,
+«давай ещё проходу по столу, сороке, графику надо подтянуть на уровень … чтобы оч красиво было».
+**Exterior** (`drawWanderer`, 12v-wander): the sails are a four-blade heliogyro from a hub on the
+yard, R = 1.5 keel, blade width by a sine of the length, a quadratic bend toward the tip, a slow
+turn (`now/900000`), gradient dark-to-light across the blade, ribs as dark strokes, three hard
+highlights, the keel's shadow clipped onto the blade, spar and stay; drawn before the keel; the
+cull margin widened to 1.7 L. **Room** (`drawWanderRoom`, 24c-mode-wanderer-draw): panel seams
+with rivets, brass floor strip, deck planks and cross seams, a warm runner, a curtain with the
+magpie mark and jar shelves behind the counter, six bales/crates along the walls, icons ×1.15 with
+a chalk price per case, vignette .62 → .5. A TDZ on `zc` (declared later in the function) killed
+the first frame — the new block reads `g.zc`. **Desk** (`27j-ui-opis`, style.css): two thin
+repeating gradients as weave, a dashed hem inset 13 px, the hull panel with a radial lamp and
+min-height 240, and the matchbox moved out of the hold into its own zone 5 «СПИЧКИ» that takes the
+`side` area whenever the office locker is absent (at a locker station it stays in the hold). Judged
+on frames: `soroka-ext.png`, `soroka-room.png`, `opis-desk.png` in the session scratchpad.

@@ -192,7 +192,7 @@ function drawWanderer(zx,zy,Z){
   if(!wanderHere(sys))return;
   const pos=wanderWorldPos(sys,w.planetIx);
   const x=zx(pos.x),y=zy(pos.y),L=pos.L*Z;
-  if(x<-L||x>W+L||y<-L||y>H+L)return;
+  if(x<-L*1.7||x>W+L*1.7||y<-L*1.7||y>H+L*1.7)return;   /* паруса втрое длиннее киля */
   const ang=wanderAngle(pos,w);
   ctx.save();ctx.translate(x,y);ctx.rotate(ang);
   if(L<9){
@@ -205,6 +205,52 @@ function drawWanderer(zx,zy,Z){
   const s=L/100;                                     /* киль = 100 единиц */
   ctx.scale(s,s);
   const r=rng((sys.seed^0x5A1A)>>>0);
+  /* 0. паруса — ПОЗАДИ киля и втрое длиннее его (автор, набросок 2026-09-05: четыре
+     огромных гнутых лепестка вокруг мачты, как крыльчатка). Гелиоротор: четыре
+     лопасти-мембраны из ступицы на рее, каждая полтора киля, изогнута к концу,
+     вся крыльчатка поворачивается за четверть часа. Тёмная половина к оси,
+     свет к внешней кромке; блики — считанные жёсткие штрихи; по передней кромке
+     тёмный лонжерон, от кончика к концу рея — ванта. */
+  {
+    const base=now/900000*TAU+(sys.seed%628)/100, R=150, KAPPA=.22;
+    for(let i=0;i<4;i++){
+      const th=base+i*TAU/4, sway=Math.sin(now/61000+i*1.9)*.02;
+      const pt=(u,side)=>{                       // точка лопасти: доля длины u, сторона ±1
+        const a=th+KAPPA*u*u+sway*u, cx=Math.cos(a)*R*u, cy=Math.sin(a)*R*u;
+        const w=3+19*Math.sin(Math.PI*Math.min(1,u*1.08))*(u<.92?1:(1-u)/.08*.6+.4);
+        const nx=-Math.sin(a),ny=Math.cos(a);
+        return [cx+nx*w*side,cy+ny*w*side];
+      };
+      const N=18,P=[];
+      for(let k=0;k<=N;k++)P.push(pt(k/N,1));
+      for(let k=N;k>=1;k--)P.push(pt(k/N,-1));
+      const path=()=>{ctx.beginPath();P.forEach((q,k)=>k?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]));ctx.closePath();};
+      /* тело: градиент поперёк лопасти, темнее к оси вращения */
+      const m=pt(.55,0),n1=pt(.55,1),n2=pt(.55,-1);
+      const g=ctx.createLinearGradient(n2[0],n2[1],n1[0],n1[1]);
+      g.addColorStop(0,"#6a4210");g.addColorStop(.45,"#b8822a");g.addColorStop(1,"#e3b04a");
+      ctx.fillStyle=g;path();ctx.fill();
+      ctx.save();path();ctx.clip();
+      /* фольга ложится складками вдоль длины: тёмные штрихи-рёбра */
+      ctx.strokeStyle="rgba(50,30,6,.28)";ctx.lineWidth=.45;
+      for(let k=1;k<6;k++){const sd=-1+k/3;ctx.beginPath();for(let j=0;j<=N;j++){const q=pt(j/N,sd*.9);j?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]);}ctx.stroke();}
+      /* блики — три жёстких штриха по светлой половине */
+      ctx.strokeStyle="rgba(255,240,200,.85)";ctx.lineWidth=.8;
+      for(let k=0;k<3;k++){const u0=.2+k*.22,q0=pt(u0,.35+k*.2),q1=pt(u0+.14,.45+k*.2);ctx.beginPath();ctx.moveTo(q0[0],q0[1]);ctx.lineTo(q1[0],q1[1]);ctx.stroke();}
+      /* тень киля на лопасти, если она проходит под ним */
+      ctx.fillStyle="rgba(0,0,0,.35)";ctx.fillRect(-52,-3.4,104,6.8);
+      ctx.restore();
+      /* лонжерон по передней кромке и ванта к концу рея */
+      ctx.strokeStyle="#2a2218";ctx.lineWidth=.9;ctx.beginPath();for(let j=0;j<=N;j++){const q=pt(j/N,1);j?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]);}ctx.stroke();
+      const tip=pt(1,0),ry=Math.sin(th)>0?30:-30;
+      ctx.strokeStyle="rgba(200,190,160,.35)";ctx.lineWidth=.4;ctx.beginPath();ctx.moveTo(tip[0],tip[1]);ctx.lineTo(0,ry);ctx.stroke();
+      /* один тонкий обвод телу лопасти */
+      ctx.strokeStyle="rgba(40,24,4,.55)";ctx.lineWidth=.5;path();ctx.stroke();
+    }
+    /* ступица на рее */
+    ctx.fillStyle="#15181d";ctx.beginPath();ctx.arc(0,0,4.2,0,TAU);ctx.fill();
+    ctx.strokeStyle="rgba(200,210,220,.35)";ctx.lineWidth=.6;ctx.beginPath();ctx.arc(0,0,4.2,0,TAU);ctx.stroke();
+  }
   /* 1. тень парусов на киле и тюках — тёмное основание, потом тело */
   ctx.lineCap="round";
   /* киль: тёмная балка с фаской */
@@ -238,28 +284,6 @@ function drawWanderer(zx,zy,Z){
   /* 2. рей — крест посреди, тёмный, с фаской света */
   ctx.strokeStyle="#0f1114";ctx.lineWidth=2.4;ctx.beginPath();ctx.moveTo(0,-30);ctx.lineTo(0,30);ctx.stroke();
   ctx.strokeStyle="#3a3630";ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(0,-30);ctx.lineTo(0,30);ctx.stroke();
-  /* 3. четыре горы фольги: основание на рее, вершина к носу; поворот за минуты */
-  const segs=[[-30,-15],[-15,0],[0,15],[15,30]];
-  segs.forEach((sg,i)=>{
-    const sway=Math.sin(now/53000+i*1.7)*.10+Math.sin(now/171000+i)*.05;
-    const mid=(sg[0]+sg[1])/2,ax=28+Math.sin(now/97000+i)*2,ay=mid*(.35+sway);
-    /* тень гора — тёмная половина к килю, свет — к внешней кромке */
-    const g=ctx.createLinearGradient(0,sg[0],0,sg[1]);
-    if(sg[0]<0){g.addColorStop(0,"#d39d34");g.addColorStop(1,"#7a4f10");}
-    else{g.addColorStop(0,"#7a4f10");g.addColorStop(1,"#d39d34");}
-    ctx.fillStyle=g;
-    ctx.beginPath();ctx.moveTo(0,sg[0]);ctx.lineTo(0,sg[1]);ctx.lineTo(ax,ay);ctx.closePath();ctx.fill();
-    ctx.strokeStyle="rgba(40,24,4,.7)";ctx.lineWidth=.5;ctx.stroke();
-    /* фактура: ориентированные линии вдоль гора (правило 6) */
-    ctx.save();ctx.beginPath();ctx.moveTo(0,sg[0]);ctx.lineTo(0,sg[1]);ctx.lineTo(ax,ay);ctx.closePath();ctx.clip();
-    ctx.strokeStyle="rgba(60,36,6,.22)";ctx.lineWidth=.35;
-    for(let k=1;k<7;k++){const t=k/7,yy=sg[0]+(sg[1]-sg[0])*t;ctx.beginPath();ctx.moveTo(0,yy);ctx.lineTo(ax,ay+(yy-mid)*.15);ctx.stroke();}
-    /* блики — считанные жёсткие штрихи, не градиент (правило 2) */
-    ctx.strokeStyle="rgba(255,236,190,.85)";ctx.lineWidth=.7;
-    for(let k=0;k<3;k++){const t=.25+k*.22,yy=sg[0]+(sg[1]-sg[0])*(sg[0]<0?t:1-t);
-      ctx.beginPath();ctx.moveTo(2+k*3,yy);ctx.lineTo(9+k*4,yy+(ay-yy)*.28);ctx.stroke();}
-    ctx.restore();
-  });
   /* 4. гондола на носу: стекло, и внутри — единственный тёплый свет */
   ctx.fillStyle="#1c2026";ctx.beginPath();ctx.ellipse(50,0,4.6,3.2,0,0,TAU);ctx.fill();
   ctx.strokeStyle="rgba(150,180,200,.55)";ctx.lineWidth=.6;ctx.stroke();

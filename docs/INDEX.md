@@ -2140,7 +2140,7 @@ opisHullRedraw               src/27j-ui-opis.js:324
 opisHullSlotAt               src/27j-ui-opis.js:341
 opisKitCard                  src/27j-ui-opis.js:523
 opisKitFuture                src/27j-ui-opis.js:94
-opisLeave                    src/27j-ui-opis.js:791
+opisLeave                    src/27j-ui-opis.js:804
 opisLift                     src/27j-ui-opis.js:217
 opisMarkCan                  src/27j-ui-opis.js:248
 opisMarkOver                 src/27j-ui-opis.js:264
@@ -4138,7 +4138,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12v-doom.js · 11 КБ
   · срок: мир, который кончается по расписанию:1
 
-## src/12v-wander.js · 18 КБ
+## src/12v-wander.js · 20 КБ
   · «Сорока»: странствующий парусник (M342):1
 
 ## src/12v-wander-shop.js · 20 КБ
@@ -4387,7 +4387,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/24c-mode-wanderer.js · 5 КБ
   · режим: на борту «Сороки» (M343):1
 
-## src/24c-mode-wanderer-draw.js · 16 КБ
+## src/24c-mode-wanderer-draw.js · 23 КБ
   · «Сорока» изнутри: коридор к стойке (M343):1
 
 ## src/24-mode-belt.js · 40 КБ
@@ -4515,7 +4515,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/27j-ui-kitlay.js · 9 КБ
   · комплект, разложенный на столе:1
 
-## src/27j-ui-opis.js · 44 КБ
+## src/27j-ui-opis.js · 45 КБ
   · ОПИСЬ: один стол для всего, что на тебе и в трюме (M341):1
 
 ## src/27k-road.js · 47 КБ

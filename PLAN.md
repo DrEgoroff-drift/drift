@@ -278,6 +278,9 @@ Left from the queue: nothing — the band's second step is M308, the station's c
 - **PLAN.md stays under 60 KB** (`build.ps1` warns). A closed milestone leaves one line here and its
   body goes to `docs/PLAN-archive.md` in the same commit — done 2026-08-28 (M232–M246) and
   2026-09-02 (M247–M298 and the old queues, 97 → ~40 KB).
+- **One order-dependent phone assertion** (2026-09-05): `test.ps1 -Mobile -Only телефон` fails the floors
+  check in the home mode («дом · #prompt?.rail») while the full phone run is green — the subset enters
+  the home without whatever the earlier suites leave behind. Not chased yet; reproduce with the subset.
 - **Push only after a green run.** One push in this session (0.238.0) went out while the base suite
   was flaking once in three runs; caught and fixed immediately after, but the lesson is to keep the
   test run and the push in separate commands.
