@@ -100,8 +100,12 @@ function mapHoldingsDraw(vis,cell,V,st){
   /* полоса трассы под линией: сектора «под трассой» */
   const pairs=mapTrassaPairs(vis,cell);
   if(pairs.length){
-    ctx.lineCap="round";ctx.strokeStyle="rgba(236,232,220,.07)";ctx.lineWidth=cell*.55;
-    for(const [a,b] of pairs){ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();}
+    ctx.lineCap="round";ctx.lineWidth=cell*.55;
+    for(const [a,b] of pairs){
+      const k=(a.near||b.near)?1:.4;                       // закон темноты: за кромкой полоса тише
+      ctx.strokeStyle="rgba(236,232,220,"+(.07*k).toFixed(3)+")";
+      ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+    }
   }
   /* пираты: ржавый косой штрих; у пятна дома — фронт ярче */
   if(typeof occLvl==="function"){

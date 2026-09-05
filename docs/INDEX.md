@@ -1805,7 +1805,7 @@ mapFit                       src/18-mode-map.js:93
 mapGoAddr                    src/18a-map-addr.js:215
 mapGridDraw                  src/18a-map-addr.js:55
 mapHoldingsDraw              src/18b-map-hold.js:80
-mapHoldingsTop               src/18b-map-hold.js:129
+mapHoldingsTop               src/18b-map-hold.js:133
 mapHousePatch                src/18b-map-hold.js:31
 mapLayer                     src/18b-map-hold.js:26
 mapLayerNext                 src/18b-map-hold.js:28

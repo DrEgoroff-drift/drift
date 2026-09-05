@@ -677,10 +677,14 @@ function drawFleetMap(vis,cell){
     if(seen.has(key))continue;seen.add(key);FLEET_MAP_LEGS++;
     /* тонкая двойная линия с засечками-верстами (M348): трасса — дорога на карте, не пунктир */
     const dx=b.x-a.x,dy=b.y-a.y,L=Math.hypot(dx,dy)||1,nx=-dy/L*1.3,ny=dx/L*1.3;
-    ctx.strokeStyle="rgba(236,232,220,.42)";
+    /* закон темноты (M348): за кромкой прыжка трасса не горит в полную силу —
+       на постановочном кадре со всеми станциями пятой ступени дальние плечи
+       читались ярче ближних дорог; здесь они уходят в треть */
+    const k=(a.near||b.near)?1:.35;
+    ctx.strokeStyle="rgba(236,232,220,"+(.42*k).toFixed(3)+")";
     ctx.beginPath();ctx.moveTo(a.x+nx,a.y+ny);ctx.lineTo(b.x+nx,b.y+ny);ctx.stroke();
     ctx.beginPath();ctx.moveTo(a.x-nx,a.y-ny);ctx.lineTo(b.x-nx,b.y-ny);ctx.stroke();
-    ctx.strokeStyle="rgba(226,120,100,.6)";
+    ctx.strokeStyle="rgba(226,120,100,"+(.6*k).toFixed(3)+")";
     for(let t=.25;t<.99;t+=.25){const tx=a.x+dx*t,ty=a.y+dy*t;ctx.beginPath();ctx.moveTo(tx+nx*2.6,ty+ny*2.6);ctx.lineTo(tx-nx*2.6,ty-ny*2.6);ctx.stroke();}
   }}
   for(const v of L){

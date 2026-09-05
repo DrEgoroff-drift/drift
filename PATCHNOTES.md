@@ -7,6 +7,13 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.350.2 - the трассы on the map, judged on a staged chart
+
+The last unjudged look of the fleet (PLAN: «§14 wants a lived-in save»): the map was staged with
+every station at rung 6 and shot. The chain, the milestone ticks and the band held up; what did not
+was the darkness law — a трасса beyond the jump edge burned as bright as the road under your keel.
+Lines, ticks and the band now drop to a third past the edge (`12ai-fleet`, `18b-map-hold`).
+
 ## 0.350.1 - M352, second pass over the frames
 
 The six kinds the first pass had not seen in a frame were shot and two of them redrawn: the ocean's

@@ -318,8 +318,8 @@ Left from the queue: nothing — the band's second step is M308, the station's c
   of almanac III. **M318 (0.315.0)** paid the last two: §5 (shadow strips under strap-on parts,
   the рефрижератор's corrugation) and §14 (the трасса as a chain to two nearest neighbours,
   judged on a staged chart). Issue III has no open law; the fleet's remainder is the заявка.
-  §14 (трассы on the map) is not judged yet: `drawFleetMap` needs a station at rung ≥ 5 and a fresh
-  save has none — it wants a lived-in save and its own look.
+  §14 (трассы on the map) judged 2026-09-05 (0.350.2) on a staged chart with every station at rung 6:
+  chain, ticks and band hold; beyond the jump edge they now dim to a third (the darkness law).
 
 - **The road companion** (author, 2026-08-23): phone mode where a real car trip flies your ship —
   GPS speed extrapolated to cosmic, accelerometer banks the hull, mic-driven equalizer, real
