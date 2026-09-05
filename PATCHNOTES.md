@@ -7,6 +7,17 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.351.3 - «Сорока»: four gold triangles, and gold that is metal
+
+The author's third sketch: four separate long triangles from one point near the bow, a cross at
+45° to the keel, nothing between them — and «а чё золотой не можешь… мультик какой-то». The kite
+is gone; the sails are four blades, each 1.7 keels long and a keel wide at the tip, and the colour
+is no longer a fill: across each blade the foil runs bronze → gold → near-white → gold → bronze,
+seven strips of slightly different tone run its length, twenty-six crinkles of the folding lie as
+a light stroke beside a dark one, the two blades facing the star carry one soft mirror highlight
+and a lit thread along their star-side edge, the keel throws its shadow across, a spar runs down
+each axis to a tip mass with a steady light, stays run from the tips to the keel's ends.
+
 ## 0.351.2 - «Сорока»: flat gold sails, as in space
 
 Author, on the second frame: «бананы убрать, паруса треугольные, не гнутые, как в космосе,

@@ -8056,3 +8056,11 @@ gradient toward the hub, five fold lines and one radial, a single soft sheen ban
 panels, the booms' shadow, tip masses. Cull margin 1.1 L. Frame staging that finally worked for the
 exterior: `G.watch=1` with `allyOf` stubbed to «Сорока»'s position — setting the player's ship
 position is undone by the loop. Every catalogue tool got a silhouette (`WAN_ICON`).
+
+**Fourth look (0.351.3).** The square kite was wrong too: the author drew four separate triangles
+from a hub near the bow, at 45° to the keel, and asked for gold that does not look like a cartoon
+fill. `drawWanderer`: hub at x = 26, four blades LB 168 × HW 46 at π/4 + i·π/2; the metal is a
+six-stop gradient across the blade (bronze–gold–pale–gold–bronze) times a per-blade lit factor from
+the star direction, seven lengthwise strips at ±.08 alpha, 26 seeded crinkle pairs (light beside
+dark), one radial specular on blades facing the star, the keel's shadow clipped in, a dark rim with
+a lit thread on the star side, a spar per blade, tip masses, stays to the keel ends. Cull 2.2 L.

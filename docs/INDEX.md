@@ -4139,7 +4139,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12v-doom.js · 11 КБ
   · срок: мир, который кончается по расписанию:1
 
-## src/12v-wander.js · 21 КБ
+## src/12v-wander.js · 22 КБ
   · «Сорока»: странствующий парусник (M342):1
 
 ## src/12v-wander-shop.js · 20 КБ
