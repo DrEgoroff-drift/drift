@@ -180,7 +180,7 @@ function mixHex(a,b,k){
 function kitPalette(){
   const K=kitAll(),out={};
   for(const p of KIT_PLACES)out[p]=kitColOf(K[p]);
-  /* отделка с «Сороки» (12v-wander-shop-cosm): красит все места разом, фонарь — свой */
+  /* отделка с «Сороки» (12va-wander-cosm): красит все места разом, фонарь — свой */
   return (typeof cosmSuit==="function")?cosmSuit(out):out;
 }
 /* ── кукла: RPG-манекен, собранный из надетых вещей ──

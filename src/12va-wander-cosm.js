@@ -139,7 +139,7 @@ function drawCosmMark(h){
   for(const s of COSM_SLOTS){
     for(const id in COSM_TABLES[s]){
       const T=COSM_TABLES[s][id];
-      WANDER_CAT.push({id,fam:"cosm",slot:s,ru:T.ru,note:note[s],fx:COSM_SLOT_RU[s]+" · видно, а не считается",pay:{m:price[s]},hook:"12v-wander-shop-cosm"});
+      WANDER_CAT.push({id,fam:"cosm",slot:s,ru:T.ru,note:note[s],fx:COSM_SLOT_RU[s]+" · видно, а не считается",pay:{m:price[s]},hook:"12va-wander-cosm"});
       WANDER_BY_ID[id]=WANDER_CAT[WANDER_CAT.length-1];
     }
   }

@@ -7,6 +7,29 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.359.1 - the site was down for 25 minutes: module order differed between the two builders
+
+`0.359.0` reached drift-game.ru through GitHub Actions and died on load with «Cannot access
+WANDER_CAT before initialization» (play.html:29112). The cause was not the code but the glue:
+`build.ps1` sorted `src/*.js` with `Sort-Object Name`, which is culture-aware — on Windows it put
+`12v-wander-shop.js` before `12v-wander-shop-cosm.js`, on the ubuntu runner the other way round,
+so the cosmetics catalogue pushed into a `const` that did not exist yet, the one big script
+stopped there, and the game showed the title screen over a dead loop. Worse, the new error
+logger lived at the end of the glue and never got born: the site was down and `crash.log`
+stayed empty. Author, 23:10: «мне кажется все упало».
+
+Three fixes. The build sorts by bytes (`Sort-Ordinal`, `CompareOrdinal`), identical on both
+machines; two modules are renamed so the byte order is the dependency order —
+`12v-wander-shop-cosm` → `12va-wander-cosm`, `21b-surface-deco-biomes` → `21bb-deco-biomes`
+(`DECO_KINDS` had the same trap, caught by the ordinal build before it shipped). The logger moved
+to `01a-crashlog.js`, right after `VER`, with no dependencies: `error` and `unhandledrejection`
+are hooked before any module can throw, so a build that dies on load now reports itself as
+`outside` with file:line. And the deploy workflow opens `tests.html` in headless Chrome and
+refuses to publish if the console shows an `Uncaught` — the exact check that would have stopped
+0.359.0. Verified end to end: an error thrown on the live page landed in `~/drift-data/crash.log`
+with version, mode and stack.
+
+---
 ## 0.359.0 - every error goes to the server (author, 2026-09-05: «пиши на сервер лог, все ошибки, любые»)
 
 The author's freeze never got a cause because its only evidence, the «СБОЙ · …» line, lives on a

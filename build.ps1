@@ -19,11 +19,19 @@ $src  = Join-Path $root "src"
 $out  = Join-Path $root "drift.html"
 $enc  = New-Object System.Text.UTF8Encoding($false)   # без BOM: посреди склейки он бы сломал JS
 
+# Порядок склейки — по байтам (ordinal), а не по культуре: Sort-Object Name на
+# Windows ставит «12v-wander-shop» раньше «12v-wander-shop-cosm», а pwsh на
+# ubuntu-раннере — наоборот, и 0.359.0 уехал на сайт с TDZ на WANDER_CAT.
+# Один порядок на обеих машинах, и тесты гоняют ровно тот файл, что уедет.
+function Sort-Ordinal($items) {
+  $a = @($items); [Array]::Sort($a, [System.Comparison[object]]{ param($x, $y) [string]::CompareOrdinal($x.Name, $y.Name) }); return $a
+}
+
 function Build {
   $shell = [System.IO.File]::ReadAllText((Join-Path $src "index.html"), $enc)
   $css   = [System.IO.File]::ReadAllText((Join-Path $src "style.css"),  $enc)
 
-  $files = Get-ChildItem (Join-Path $src "*.js") | Sort-Object Name
+  $files = Sort-Ordinal (Get-ChildItem (Join-Path $src "*.js"))
   if ($files.Count -eq 0) { throw "в src/ нет ни одного .js — собирать нечего" }
 
   $parts = foreach ($f in $files) { [System.IO.File]::ReadAllText($f.FullName, $enc) }
@@ -42,7 +50,7 @@ function Build {
   # drift.html оставался чистым, и при этом тесты гоняли ровно тот же код.
   $tsrc = Join-Path $root "tests"
   if (Test-Path $tsrc) {
-    $tfiles = Get-ChildItem (Join-Path $tsrc "*.js") | Sort-Object Name
+    $tfiles = Sort-Ordinal (Get-ChildItem (Join-Path $tsrc "*.js"))
     if ($tfiles.Count -gt 0) {
       $tparts = foreach ($f in $tfiles) { [System.IO.File]::ReadAllText($f.FullName, $enc) }
       $tjs = $js + "`n" + ($tparts -join "`n")

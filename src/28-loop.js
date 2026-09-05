@@ -293,52 +293,10 @@ function crashAt(e){
   }
   return out.join("←");
 }
-/* ── всё на сервер (автор, 2026-09-05: «просто пиши на сервер лог, все ошибки,
-   любые — потом разбирать будем») ──
-   Строка «СБОЙ · …» на экране — улика, которую закрывают. Теперь на сервер
-   уходит всё, что похоже на ошибку: сбой кадра и вне кадра, отвергнутое
-   обещание, стоп кадра дольше двух секунд, console.error/warn, «warn» судового
-   журнала, отказ сети к облаку, ресурс, который не загрузился, отказ
-   localStorage. Каждое — со стеком наших кадров, режимом, версией и хвостом
-   журнала, в site/log.php → ~/drift-data/crash.log. Учётной записи не нужно;
-   ни одного знака, набранного игроком, наружу не идёт. Одна и та же строка
-   шлётся не чаще раза в минуту и несёт счётчик; всего с одной страницы — не
-   больше восьмидесяти писем. С диска (file:) и со стенда тестов — молчит. */
-const CRASH_SHIP={n:0,last:{},t0:Date.now()};
-function crashShip(kind,msg,at,extra){
-  try{
-    if(!cloudHere()||typeof TEST!=="undefined")return;
-    if(CRASH_SHIP.n>=80)return;
-    msg=String(msg||"").slice(0,600);
-    const key=kind+"|"+msg,now=Date.now();
-    CRASH_SHIP.last[key]=CRASH_SHIP.last[key]||{t:0,n:0};
-    const L=CRASH_SHIP.last[key];L.n++;
-    if(now-L.t<60000)return;
-    L.t=now;CRASH_SHIP.n++;
-    let tail="";
-    try{tail=(G&&G.log||[]).slice(-6).map(it=>it.k+":"+it.s).join(" | ");}catch(_){}
-    const b=Object.assign({ver:VER,kind,msg,at:String(at||"").slice(0,800),n:L.n,
-      mode:(G&&G.mode)||"",up:((now-CRASH_SHIP.t0)/1000)|0,win:innerWidth+"x"+innerHeight+"@"+(window.devicePixelRatio||1),
-      ua:navigator.userAgent.slice(0,200),log:tail.slice(0,800)},extra||{});
-    fetch("/log.php",{method:"POST",keepalive:true,body:JSON.stringify(b)}).catch(()=>{});
-  }catch(_){}
-}
-/* стек — только наши кадры, до восьми строк */
-function crashStack(e){
-  try{return String((e&&e.stack)||"").split(/[\r\n]+/).filter(L=>/^\s*at\s|@/.test(L)).slice(0,8).join("\n");}catch(_){return "";}
-}
-/* всё, что игра или браузер печатает как ошибку — тоже улика */
-(function(){
-  try{
-    const ce=console.error.bind(console),cw=console.warn.bind(console);
-    console.error=function(){try{const a=[...arguments];const e=a.find(x=>x&&x.stack);const m=a.map(x=>x&&x.message||String(x)).join(" ").slice(0,600);if(m.indexOf("DRIFT:")!==0)crashShip("console",m,crashStack(e));}catch(_){}return ce.apply(console,arguments);};
-    console.warn=function(){try{crashShip("warn",[...arguments].map(String).join(" ").slice(0,600),"");}catch(_){}return cw.apply(console,arguments);};
-  }catch(_){}
-  /* ресурс не загрузился: картинка, звук, скрипт — событие идёт только в захвате */
-  try{addEventListener("error",e=>{const t=e&&e.target;if(t&&t!==window&&(t.src||t.href))crashShip("resource",String(t.src||t.href).slice(0,300),"");},true);}catch(_){}
-  /* journal «warn»: игра сама называет беду — пусть называет и серверу */
-  try{if(typeof logAdd==="function"){const la=logAdd;logAdd=function(kind,text){if(kind==="warn"&&String(text).indexOf("Сбой кадра")!==0)crashShip("journal",text,"");return la(kind,text);};}}catch(_){}
-})();
+/* логгер и ловушки живут в 01a-crashlog — с самого начала склейки; здесь
+   только то, чего там ещё нет: «warn» судового журнала — игра сама называет
+   беду, пусть называет и серверу */
+try{if(typeof logAdd==="function"){const la=logAdd;logAdd=function(kind,text){if(kind==="warn"&&String(text).indexOf("Сбой кадра")!==0)crashShip("journal",text,"");return la(kind,text);};}}catch(_){}
 function crashSay(e,where){
   crashN++;
   crashShip(where==="обещание"?"rejection":where==="вне кадра"?"outside":"crash",

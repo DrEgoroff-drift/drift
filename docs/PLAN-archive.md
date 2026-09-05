@@ -7978,7 +7978,7 @@ Closed the last item of the 2026-09-04 queue. The PLAN body as it stood when the
   the jungle crowns sparser and rounder plus lone boulders; jungle — the reference itself. Same
   grammar everywhere, biome only changes the family.
 
-**What was built.** `src/21b-surface-deco-biomes.js` (the name extends the `21b-surface-deco` stem
+**What was built.** `src/21bb-deco-biomes.js` (the name extends the `21b-surface-deco` stem
 on purpose: `21bb-` would sort *before* it under the culture-aware compare and die on
 `DECO_KINDS.push` — the hyphen trap from CLAUDE.md, met again). Eighteen painters on the codex
 grammar — dark mass first, body in the world palette through `dcol`, one lit edge on the star's

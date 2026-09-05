@@ -54,6 +54,18 @@ jobs:
           # порог грубый, но ловит главное — склейку, потерявшую половину модулей
           [ "$size" -gt 1000000 ] || { echo "сборка подозрительно мала"; exit 1; }
 
+      # 0.359.1: сборка 0.359.0 уехала на сайт мёртвой — TDZ на верхнем уровне,
+      # игра остановилась на 29-й тысяче строк. Открываем tests.html в headless
+      # Chrome (на раннере он есть) и не выкладываем, если в консоли Uncaught.
+      - name: Проверить, что сборка загружается без Uncaught
+        run: |
+          google-chrome --headless=new --disable-gpu --no-sandbox --user-data-dir=/tmp/drift-chk --enable-logging=stderr --v=0 --virtual-time-budget=8000 --dump-dom "file://$PWD/tests.html" 2>/tmp/chrome.log >/dev/null || true
+          if grep -i "CONSOLE" /tmp/chrome.log | grep -v "DRIFT:" | grep -q "Uncaught"; then
+            grep -i "Uncaught" /tmp/chrome.log | head -5
+            echo "сборка падает при загрузке — выкладки не будет"; exit 1
+          fi
+          echo "загрузка чистая"
+
       - name: Проверить синтаксис api.php
         run: |
           # На машине разработчика PHP нет вовсе (CLAUDE.md: ни node, ни python),

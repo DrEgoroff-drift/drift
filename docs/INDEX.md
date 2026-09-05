@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 433 · символов верхнего уровня: 3778
+Файлов: 434 · символов верхнего уровня: 3778
 
 ## СИМВОЛЫ
 
@@ -528,33 +528,33 @@ coopSpiritRu                 src/12aj-coop.js:118
 coopSpread                   src/12aj-coop.js:70
 coopStamp                    tests/90-harness.js:172
 coopVisitReset               src/12aj-coop.js:62
-COSM_CHIME                   src/12v-wander-shop-cosm.js:59
-COSM_EXH                     src/12v-wander-shop-cosm.js:22
-COSM_LIGHTS                  src/12v-wander-shop-cosm.js:54
-COSM_MARK                    src/12v-wander-shop-cosm.js:49
-COSM_SLOT_RU                 src/12v-wander-shop-cosm.js:19
-COSM_SLOTS                   src/12v-wander-shop-cosm.js:18
-COSM_SUIT                    src/12v-wander-shop-cosm.js:38
-COSM_TABLES                  src/12v-wander-shop-cosm.js:63
-COSM_TRAIL                   src/12v-wander-shop-cosm.js:32
-COSM_VISOR                   src/12v-wander-shop-cosm.js:44
-cosmChimeName                src/12v-wander-shop-cosm.js:109
-cosmChimePlay                src/12v-wander-shop-cosm.js:110
+COSM_CHIME                   src/12va-wander-cosm.js:59
+COSM_EXH                     src/12va-wander-cosm.js:22
+COSM_LIGHTS                  src/12va-wander-cosm.js:54
+COSM_MARK                    src/12va-wander-cosm.js:49
+COSM_SLOT_RU                 src/12va-wander-cosm.js:19
+COSM_SLOTS                   src/12va-wander-cosm.js:18
+COSM_SUIT                    src/12va-wander-cosm.js:38
+COSM_TABLES                  src/12va-wander-cosm.js:63
+COSM_TRAIL                   src/12va-wander-cosm.js:32
+COSM_VISOR                   src/12va-wander-cosm.js:44
+cosmChimeName                src/12va-wander-cosm.js:109
+cosmChimePlay                src/12va-wander-cosm.js:110
 cosmDiff                     tests/91zzzzh-cosm.js:12
-cosmExhaust                  src/12v-wander-shop-cosm.js:89
-cosmGive                     src/12v-wander-shop-cosm.js:81
-cosmLightOn                  src/12v-wander-shop-cosm.js:102
-cosmOn                       src/12v-wander-shop-cosm.js:72
-cosmOwns                     src/12v-wander-shop-cosm.js:71
+cosmExhaust                  src/12va-wander-cosm.js:89
+cosmGive                     src/12va-wander-cosm.js:81
+cosmLightOn                  src/12va-wander-cosm.js:102
+cosmOn                       src/12va-wander-cosm.js:72
+cosmOwns                     src/12va-wander-cosm.js:71
 cosmPix                      tests/91zzzzh-cosm.js:5
-cosmRec                      src/12v-wander-shop-cosm.js:66
-cosmRu                       src/12v-wander-shop-cosm.js:65
-cosmSlotOf                   src/12v-wander-shop-cosm.js:64
-cosmSuit                     src/12v-wander-shop-cosm.js:95
-cosmTakeOff                  src/12v-wander-shop-cosm.js:80
-cosmTrail                    src/12v-wander-shop-cosm.js:91
-cosmVisor                    src/12v-wander-shop-cosm.js:100
-cosmWear                     src/12v-wander-shop-cosm.js:74
+cosmRec                      src/12va-wander-cosm.js:66
+cosmRu                       src/12va-wander-cosm.js:65
+cosmSlotOf                   src/12va-wander-cosm.js:64
+cosmSuit                     src/12va-wander-cosm.js:95
+cosmTakeOff                  src/12va-wander-cosm.js:80
+cosmTrail                    src/12va-wander-cosm.js:91
+cosmVisor                    src/12va-wander-cosm.js:100
+cosmWear                     src/12va-wander-cosm.js:74
 COUNTY_LVL                   src/11l-county.js:20
 countyAll                    src/11l-county.js:21
 countyAnswerLine             src/11l-county.js:89
@@ -572,12 +572,12 @@ CRAFT_TIERS                  src/03-ships.js:80
 craftAffordable              src/03-ships.js:85
 craftAmmo                    src/16b-missile.js:28
 craftPart                    src/03-ships.js:90
-CRASH_SHIP                   src/28-loop.js:307
+CRASH_SHIP                   src/01a-crashlog.js:19
 crashAt                      src/28-loop.js:281
 crashN                       src/28-loop.js:276
-crashSay                     src/28-loop.js:342
-crashShip                    src/28-loop.js:308
-crashStack                   src/28-loop.js:327
+crashSay                     src/28-loop.js:300
+crashShip                    src/01a-crashlog.js:20
+crashStack                   src/01a-crashlog.js:39
 CREW_EV_BASE                 src/12b-crew-events.js:69
 CREW_EVENTS                  src/12b-crew-events.js:98
 CREW_MODS                    src/12a-crew.js:280
@@ -644,7 +644,7 @@ CUT_RANGE                    src/24-mode-belt.js:184
 cvs                          src/08-state.js:2
 dayK                         src/19c-light.js:68
 dayKq                        src/19c-light.js:74
-dbg                          src/28-loop.js:439
+dbg                          src/28-loop.js:397
 dcol                         src/21b-surface-deco.js:149
 DEAL_KINDS                   src/27g-deals.js:17
 dealAnswer                   src/27g-deals.js:163
@@ -657,36 +657,36 @@ dealRun                      src/27n-ui-deal.js:20
 dealsTick                    src/27g-deals.js:201
 dealTaken                    src/27g-deals.js:159
 deckSprite                   src/19e-clouds.js:270
-DECO_FN                      src/21b-surface-deco-biomes.js:34
+DECO_FN                      src/21bb-deco-biomes.js:34
 DECO_KINDS                   src/21b-surface-deco.js:24
-decoAntenna                  src/21b-surface-deco-biomes.js:283
-decoBlister                  src/21b-surface-deco-biomes.js:209
-decoBoulderLone              src/21b-surface-deco-biomes.js:121
-decoButte                    src/21b-surface-deco-biomes.js:39
+decoAntenna                  src/21bb-deco-biomes.js:283
+decoBlister                  src/21bb-deco-biomes.js:209
+decoBoulderLone              src/21bb-deco-biomes.js:121
+decoButte                    src/21bb-deco-biomes.js:39
 decoCanopy                   src/21ba-deco-shapes.js:231
 decoColumn                   src/21ba-deco-shapes.js:190
-decoCone                     src/21b-surface-deco-biomes.js:158
-decoCoral                    src/21b-surface-deco-biomes.js:245
-decoCrownRound               src/21b-surface-deco-biomes.js:322
+decoCone                     src/21bb-deco-biomes.js:158
+decoCoral                    src/21bb-deco-biomes.js:245
+decoCrownRound               src/21bb-deco-biomes.js:322
 decoDruse                    src/21ba-deco-shapes.js:12
-decoDryTree                  src/21b-surface-deco-biomes.js:63
+decoDryTree                  src/21bb-deco-biomes.js:63
 decoFrond                    src/21ba-deco-shapes.js:317
-decoHummock                  src/21b-surface-deco-biomes.js:133
-decoLavaTree                 src/21b-surface-deco-biomes.js:173
-decoLitSide                  src/21b-surface-deco-biomes.js:37
+decoHummock                  src/21bb-deco-biomes.js:133
+decoLavaTree                 src/21bb-deco-biomes.js:173
+decoLitSide                  src/21bb-deco-biomes.js:37
 decoMat                      src/21b-surface-deco.js:157
-decoPodTree                  src/21b-surface-deco-biomes.js:189
-decoPoly                     src/21b-surface-deco-biomes.js:36
-decoScree                    src/21b-surface-deco-biomes.js:312
+decoPodTree                  src/21bb-deco-biomes.js:189
+decoPoly                     src/21bb-deco-biomes.js:36
+decoScree                    src/21bb-deco-biomes.js:312
 decoShard                    src/21ba-deco-shapes.js:38
-decoShoreTree                src/21b-surface-deco-biomes.js:221
+decoShoreTree                src/21bb-deco-biomes.js:221
 decoSlab                     src/21ba-deco-shapes.js:53
-decoSpire                    src/21b-surface-deco-biomes.js:148
-decoStack                    src/21b-surface-deco-biomes.js:92
-decoStair                    src/21b-surface-deco-biomes.js:297
-decoStela                    src/21b-surface-deco-biomes.js:267
+decoSpire                    src/21bb-deco-biomes.js:148
+decoStack                    src/21bb-deco-biomes.js:92
+decoStair                    src/21bb-deco-biomes.js:297
+decoStela                    src/21bb-deco-biomes.js:267
 decoTruss                    src/21ba-deco-shapes.js:101
-decoTwinCanopy               src/21b-surface-deco-biomes.js:328
+decoTwinCanopy               src/21bb-deco-biomes.js:328
 decoWall                     src/21ba-deco-shapes.js:147
 deedAdd                      src/11ai-ledger.js:53
 DEEDS                        src/11ai-ledger.js:25
@@ -783,7 +783,7 @@ drawChunks                   src/18c-chunks.js:83
 drawClouds                   src/19e-clouds.js:382
 drawCockpit                  src/25-cockpit.js:400
 drawCombat                   src/13-pirates.js:215
-drawCosmMark                 src/12v-wander-shop-cosm.js:112
+drawCosmMark                 src/12va-wander-cosm.js:112
 drawCrowns                   src/05a-nodes.js:379
 drawCrystalForest            src/20aa-poi-shapes.js:115
 drawDeadBattery              src/20aa-poi-shapes.js:221
@@ -1127,9 +1127,9 @@ folkShut                     src/11ah-offer.js:90
 folkState                    src/12u-folk.js:83
 folkVisit                    src/12u-folk.js:104
 foundBase                    src/21a-mode-base.js:53
-frame                        src/28-loop.js:374
+frame                        src/28-loop.js:332
 frameBody                    src/28-loop.js:187
-frameLastAt                  src/28-loop.js:373
+frameLastAt                  src/28-loop.js:331
 freeVoice                    src/09-audio.js:91
 fuelPriceHere                src/12k-rep.js:63
 FUR_TONES                    src/20f-fauna.js:20
@@ -2507,7 +2507,7 @@ probeShot                    src/25m-probe.js:85
 probeSpeak                   src/25m-probe.js:100
 probeTarget                  src/25m-probe.js:38
 probeVoice                   src/25m-probe.js:75
-prof                         src/28-loop.js:401
+prof                         src/28-loop.js:359
 PROFILE                      src/02-world.js:103
 profW                        src/03-ships.js:152
 prRestore                    tests/91zzzzzi-promise.js:89
@@ -3796,12 +3796,19 @@ zooTick                      src/11ad-zoo.js:41
   · имена:95
   · удалённость и настрой сектора:102
 
-## src/02a-worldmix.js · 8 КБ
-  · смешанные миры:1
+## src/01a-crashlog.js · 5 КБ
 
 ## src/02-world.js · 14 КБ
   · ресурсы:1
   · миры:119
+
+## src/02a-worldmix.js · 8 КБ
+  · смешанные миры:1
+
+## src/03-ships.js · 15 КБ
+  · корабли: процедурные корпуса:1
+  · лаборатория: сплав двух корпусов:28
+  · класс корпуса:162
 
 ## src/03a-hull-gen.js · 34 КБ
   · схема планера:48
@@ -3818,16 +3825,14 @@ zooTick                      src/11ad-zoo.js:41
 ## src/03f-hull-role.js · 6 КБ
   · корпус — это профессия, а не ступенька:1
 
-## src/03-ships.js · 15 КБ
-  · корабли: процедурные корпуса:1
-  · лаборатория: сплав двух корпусов:28
-  · класс корпуса:162
+## src/04-mods.js · 7 КБ
+  · модули и наука:1
 
 ## src/04b-fleet.js · 14 КБ
   · флот: сто корпусов и их редкость:1
 
-## src/04-mods.js · 7 КБ
-  · модули и наука:1
+## src/05-parts.js · 17 КБ
+  · части корабля:1
 
 ## src/05a-nodes.js · 26 КБ
   · узлы: тысяча вещей, из которых собирают невозможное:1
@@ -3836,8 +3841,9 @@ zooTick                      src/11ad-zoo.js:41
 ## src/05b-instr-kit.js · 10 КБ
   · приборы — это товар:1
 
-## src/05-parts.js · 17 КБ
-  · части корабля:1
+## src/06-galaxy.js · 14 КБ
+  · галактика:1
+  · испечённое живёт не дольше, чем нужно (M332):4
 
 ## src/06a-celest.js · 14 КБ
   · небо ведёт календарь:1
@@ -3847,10 +3853,6 @@ zooTick                      src/11ad-zoo.js:41
 
 ## src/06c-regions.js · 6 КБ
   · таблица областей: пятнадцать тем на одной решётке:1
-
-## src/06-galaxy.js · 14 КБ
-  · галактика:1
-  · испечённое живёт не дольше, чем нужно (M332):4
 
 ## src/07-planet.js · 38 КБ
   · текстуры планет:1
@@ -3862,14 +3864,20 @@ zooTick                      src/11ad-zoo.js:41
 ## src/08-state.js · 15 КБ
   · состояние:1
 
-## src/09a-roomtone.js · 6 КБ
-  · мир слышен: тон места (M178-10):1
-
 ## src/09-audio.js · 16 КБ
   · звук: чистый синтез, ни одного файла:1
 
+## src/09a-roomtone.js · 6 КБ
+  · мир слышен: тон места (M178-10):1
+
 ## src/10-music.js · 30 КБ
   · музыка: слои, а не треки:1
+
+## src/11-log.js · 8 КБ
+  · бортовой журнал:1
+
+## src/11a-quests.js · 9 КБ
+  · журнал дел:1
 
 ## src/11aa-record.js · 6 КБ
   · трудовая книжка: биография, написанная другими:1
@@ -3924,9 +3932,6 @@ zooTick                      src/11ad-zoo.js:41
 ## src/11aq-late.js · 9 КБ
   · поздний час у стойки:1
 
-## src/11a-quests.js · 9 КБ
-  · журнал дел:1
-
 ## src/11ar-doors.js · 5 КБ
   · тишина: двери закрыты, мир предлагает:1
 
@@ -3966,9 +3971,6 @@ zooTick                      src/11ad-zoo.js:41
 
 ## src/11l-county.js · 6 КБ
   · большой уезд: город без кнопок:1
-
-## src/11-log.js · 8 КБ
-  · бортовой журнал:1
 
 ## src/11m-charts.js · 5 КБ
   · несогласие карт: планета, которой нет ни в одной записи:1
@@ -4016,14 +4018,9 @@ zooTick                      src/11ad-zoo.js:41
 ## src/11z-misclosure.js · 6 КБ
   · невязка: уезд, где счёт неба и счёт людей расходятся:1
 
-## src/12aa-need.js · 20 КБ
-  · нужда станции и наряд:1
-
-## src/12ab-hold.js · 10 КБ
-  · холдинг · часы слоя и «БЕРЁТ»:1
-
-## src/12ac-bld.js · 18 КБ
-  · холдинг · постройки (BLD):1
+## src/12-economy.js · 19 КБ
+  · живой рынок:1
+  · дроны:97
 
 ## src/12a-crew.js · 43 КБ
   · наёмники: флот, которым не управляешь напрямую:1
@@ -4032,6 +4029,15 @@ zooTick                      src/11ad-zoo.js:41
   · ленивая симуляция: рейсами, а не минутами:325
   · жалованье, долг и мораль:437
   · встреча в космосе:568
+
+## src/12aa-need.js · 20 КБ
+  · нужда станции и наряд:1
+
+## src/12ab-hold.js · 10 КБ
+  · холдинг · часы слоя и «БЕРЁТ»:1
+
+## src/12ac-bld.js · 18 КБ
+  · холдинг · постройки (BLD):1
 
 ## src/12ad-site.js · 19 КБ
   · холдинг · площадка, бункер и пай:1
@@ -4067,10 +4073,6 @@ zooTick                      src/11ad-zoo.js:41
 
 ## src/12d-mgr-face.js · 13 КБ
   · портреты управляющих:1
-
-## src/12-economy.js · 19 КБ
-  · живой рынок:1
-  · дроны:97
 
 ## src/12e-drone-flight.js · 20 КБ
   · дроны летают:1
@@ -4136,11 +4138,11 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12o-hunter.js · 7 КБ
   · охотник: тень репутации:1
 
-## src/12pa-beacon.js · 14 КБ
-  · «Маяк ГЛАВТРАССЫ»: официальный голос в эфире (M349, M349a):1
-
 ## src/12p-news.js · 12 КБ
   · пересказ: мир двигался, пока вас не было:1
+
+## src/12pa-beacon.js · 14 КБ
+  · «Маяк ГЛАВТРАССЫ»: официальный голос в эфире (M349, M349a):1
 
 ## src/12q-lore.js · 18 КБ
   · отчёт «Долгого Хода»: сто кусков:1
@@ -4150,6 +4152,9 @@ zooTick                      src/11ad-zoo.js:41
 
 ## src/12s-wear.js · 14 КБ
   · корабль стареет:1
+
+## src/12t-settle.js · 28 КБ
+  · посёлок: вы даёте, решают они:1
 
 ## src/12ta-tin.js · 23 КБ
   · Жестянка: смена, которую некому снять:1
@@ -4169,8 +4174,11 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12td-settle-hand.js · 8 КБ
   · посёлок под рукой:1
 
-## src/12t-settle.js · 28 КБ
-  · посёлок: вы даёте, решают они:1
+## src/12u-folk.js · 9 КБ
+  · четверо:1
+
+## src/12u-scrip.js · 10 КБ
+  · боны домов: ставка на чужую судьбу:1
 
 ## src/12ua-flea.js · 14 КБ
   · Блошинец: станция, где всё чьё-то:1
@@ -4181,31 +4189,25 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12uc-matches.js · 3 КБ
   · спички: единственный огонь, который можно взять в руку:1
 
-## src/12ud-smena.js · 12 КБ
-  · «Смена»: роман, который читается, когда прожит (M353):1
-
 ## src/12ud-smena-text.js · 458 КБ
   · «Смена»: текст романа — СГЕНЕРИРОВАНО docs/mksmena.py из docs/SMENA.md, руками не править:1
+
+## src/12ud-smena.js · 12 КБ
+  · «Смена»: роман, который читается, когда прожит (M353):1
 
 ## src/12ue-boxes.js · 6 КБ
   · коробки: пустые спичечные коробки старых фабрик (M346):1
 
-## src/12u-folk.js · 9 КБ
-  · четверо:1
-
-## src/12u-scrip.js · 10 КБ
-  · боны домов: ставка на чужую судьбу:1
-
 ## src/12v-doom.js · 11 КБ
   · срок: мир, который кончается по расписанию:1
-
-## src/12v-wander.js · 22 КБ
-  · «Сорока»: странствующий парусник (M342):1
 
 ## src/12v-wander-shop.js · 20 КБ
   · лавка «Сороки»: три прилавка и полка инструментов (M343):1
 
-## src/12v-wander-shop-cosm.js · 10 КБ
+## src/12v-wander.js · 22 КБ
+  · «Сорока»: странствующий парусник (M342):1
+
+## src/12va-wander-cosm.js · 10 КБ
   · косметика «Сороки»: вещи без чисел (M344):1
 
 ## src/12w-survey.js · 6 КБ
@@ -4223,11 +4225,16 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12z-parrot-acts.js · 17 КБ
   · трепло: репертуар:1
 
+## src/13-pirates.js · 16 КБ
+  · пираты:1
+
 ## src/13b-occupy.js · 18 КБ
   · пираты берут системы:1
 
-## src/13-pirates.js · 16 КБ
-  · пираты:1
+## src/14-save.js · 64 КБ
+  · сохранение:1
+  · запись не имеет права убить полёт:92
+  · пустая карта возвращается из облака СПИСКОМ:171
 
 ## src/14a-cloud.js · 12 КБ
   · облако, вкладки и обмен:1
@@ -4235,15 +4242,15 @@ zooTick                      src/11ad-zoo.js:41
   · облако:65
   · видимое состояние обмена:80
 
-## src/14-save.js · 64 КБ
-  · сохранение:1
-  · запись не имеет права убить полёт:92
-  · пустая карта возвращается из облака СПИСКОМ:171
-
 ## src/15-input.js · 35 КБ
   · экранные кнопки: авто-скрытие и размер:1
   · ввод:87
   · полоса вкладок шире экрана:212
+
+## src/16-flight.js · 28 КБ
+  · фон:1
+  · автопилот:120
+  · шлейф двигателей и струи ориентации:218
 
 ## src/16a-space.js · 37 КБ
   · облик системы:1
@@ -4251,10 +4258,8 @@ zooTick                      src/11ad-zoo.js:41
 ## src/16b-missile.js · 9 КБ
   · ракеты: боеприпас — это груз:1
 
-## src/16-flight.js · 28 КБ
-  · фон:1
-  · автопилот:120
-  · шлейф двигателей и струи ориентации:218
+## src/17-mode-system.js · 43 КБ
+  · режим: система:1
 
 ## src/17a-station-mod.js · 12 КБ
   · модули станции:1
@@ -4274,8 +4279,10 @@ zooTick                      src/11ad-zoo.js:41
 ## src/17f-sys-traffic.js · 4 КБ
   · трафик системы: чужие машины, которым тут есть дело (M309):1
 
-## src/17-mode-system.js · 43 КБ
-  · режим: система:1
+## src/18-mode-map.js · 42 КБ
+  · карта:1
+  · где у карты пол и где правый борт:3
+  · карта: ночное небо, а не схема молекулы:51
 
 ## src/18a-map-addr.js · 17 КБ
   · карта говорит адресами (M347):1
@@ -4298,10 +4305,8 @@ zooTick                      src/11ad-zoo.js:41
 ## src/18d-verlet.js · 7 КБ
   · верле: верёвки и ткань:1
 
-## src/18-mode-map.js · 42 КБ
-  · карта:1
-  · где у карты пол и где правый борт:3
-  · карта: ночное небо, а не схема молекулы:51
+## src/19-mode-landing.js · 43 КБ
+  · посадка:1
 
 ## src/19a-mode-scoop.js · 37 КБ
   · сбор летучих газов: заход в атмосферу гиганта:1
@@ -4324,14 +4329,15 @@ zooTick                      src/11ad-zoo.js:41
 ## src/19f-lander.js · 22 КБ
   · посадочный корабль:1
 
-## src/19-mode-landing.js · 43 КБ
-  · посадка:1
-
-## src/20aa-poi-shapes.js · 30 КБ
-  · фигуры находок: одна функция на вид:1
+## src/20-life.js · 35 КБ
+  · астронавт:1
+  · флора:143
 
 ## src/20a-poi.js · 16 КБ
   · точки интереса:1
+
+## src/20aa-poi-shapes.js · 30 КБ
+  · фигуры находок: одна функция на вид:1
 
 ## src/20b-poi-find.js · 11 КБ
   · осмотр достопримечательности:1
@@ -4351,9 +4357,18 @@ zooTick                      src/11ad-zoo.js:41
 ## src/20f-fauna.js · 17 КБ
   · фауна:1
 
-## src/20-life.js · 35 КБ
-  · астронавт:1
-  · флора:143
+## src/21-mode-surface.js · 48 КБ
+  · поверхность:1
+  · навигатор и подсказки сверху:716
+
+## src/21a-mode-base.js · 25 КБ
+  · база на планете: вид в разрезе:1
+  · энергия и соседство:90
+  · ленивое время базы:146
+  · налёты пиратов на базу:215
+  · буря:251
+  · сеть баз:302
+  · обновление сцены:333
 
 ## src/21aa-base-rooms.js · 36 КБ
   · база: внутренности отсеков:1
@@ -4368,23 +4383,14 @@ zooTick                      src/11ad-zoo.js:41
 ## src/21ac-base-draw.js · 54 КБ
   · база: рисование разреза:1
 
-## src/21a-mode-base.js · 25 КБ
-  · база на планете: вид в разрезе:1
-  · энергия и соседство:90
-  · ленивое время базы:146
-  · налёты пиратов на базу:215
-  · буря:251
-  · сеть баз:302
-  · обновление сцены:333
-
-## src/21ba-deco-shapes.js · 19 КБ
-  · приметы места: формы:1
-
 ## src/21b-surface-deco.js · 33 КБ
   · крупная форма на поверхности:1
   · залежь как выход породы (M169):371
 
-## src/21b-surface-deco-biomes.js · 24 КБ
+## src/21ba-deco-shapes.js · 19 КБ
+  · приметы места: формы:1
+
+## src/21bb-deco-biomes.js · 24 КБ
   · большая вещь на каждый биом (M352):1
 
 ## src/21c-built.js · 9 КБ
@@ -4405,9 +4411,8 @@ zooTick                      src/11ad-zoo.js:41
 ## src/21h-pennant.js · 7 КБ
   · переходящий вымпел:1
 
-## src/21-mode-surface.js · 48 КБ
-  · поверхность:1
-  · навигатор и подсказки сверху:716
+## src/22-mode-cave.js · 45 КБ
+  · пещера: поле породы в двух измерениях:1
 
 ## src/22a-cave-deco.js · 34 КБ
   · убранство пещеры: залы, натёки, жилы, вода, кристаллы:1
@@ -4416,18 +4421,24 @@ zooTick                      src/11ad-zoo.js:41
 ## src/22b-cave-props.js · 13 КБ
   · пещера: гладкий обвод и то, что в ней лежит (M305):1
 
-## src/22-mode-cave.js · 45 КБ
-  · пещера: поле породы в двух измерениях:1
+## src/23-mode-dig.js · 17 КБ
+  · шахта: спуск вглубь планеты:1
+
+## src/23a-dig-draw.js · 41 КБ
+  · шахта: отрисовка:1
 
 ## src/23aa-dig-rock.js · 39 КБ
   · шахта: порода:1
   · почвенный профиль: небо кончается не линейкой:449
 
-## src/23a-dig-draw.js · 41 КБ
-  · шахта: отрисовка:1
+## src/24-mode-belt.js · 40 КБ
+  · ПОЯС АСТЕРОИДОВ · ВИД ИЗ КАБИНЫ:1
 
-## src/23-mode-dig.js · 17 КБ
-  · шахта: спуск вглубь планеты:1
+## src/24a-mode-raid.js · 20 КБ
+  · рейд на пиратскую базу: полигональный интерьер:1
+  · генерация: комнаты и коридоры со связностью:29
+  · вход, выход, наполнение:84
+  · обновление:214
 
 ## src/24aa-raid-draw.js · 50 КБ
   · рейд: отрисовка:1
@@ -4436,23 +4447,17 @@ zooTick                      src/11ad-zoo.js:41
 ## src/24ab-raid-foe.js · 9 КБ
   · рейд: тело противника:1
 
-## src/24a-mode-raid.js · 20 КБ
-  · рейд на пиратскую базу: полигональный интерьер:1
-  · генерация: комнаты и коридоры со связностью:29
-  · вход, выход, наполнение:84
-  · обновление:214
-
 ## src/24b-belt-poi.js · 9 КБ
   · ориентиры в поясе:1
-
-## src/24c-mode-wanderer.js · 5 КБ
-  · режим: на борту «Сороки» (M343):1
 
 ## src/24c-mode-wanderer-draw.js · 29 КБ
   · «Сорока» изнутри: коридор к стойке (M343):1
 
-## src/24-mode-belt.js · 40 КБ
-  · ПОЯС АСТЕРОИДОВ · ВИД ИЗ КАБИНЫ:1
+## src/24c-mode-wanderer.js · 5 КБ
+  · режим: на борту «Сороки» (M343):1
+
+## src/25-cockpit.js · 35 КБ
+  · кабина: процедурная, статика в offscreen:1
 
 ## src/25a-instr.js · 13 КБ
   · приборы: пять стрелок и невязка:1
@@ -4463,9 +4468,6 @@ zooTick                      src/11ad-zoo.js:41
 ## src/25c-instr-hud.js · 6 КБ
   · приборная колодка: те же приборы, но всегда под рукой:1
 
-## src/25-cockpit.js · 35 КБ
-  · кабина: процедурная, статика в offscreen:1
-
 ## src/25d-instr-rack.js · 28 КБ
   · приборная стойка: настоящие стрелочные приборы и самописец:1
 
@@ -4474,10 +4476,6 @@ zooTick                      src/11ad-zoo.js:41
 
 ## src/25f-globus.js · 8 КБ
   · «Глобус» — указатель места полёта:1
-
-## src/25g-postcard.js · 45 КБ
-  · открытка: снимок сцены, а не пиксели:1
-  · камера и альбом:613
 
 ## src/25g-post-craft.js · 4 КБ
   · ателье открытки: ремесленные кисти (M250):1
@@ -4492,6 +4490,10 @@ zooTick                      src/11ad-zoo.js:41
   · пояс:49
   · орбита:223
   · атмосфера газового гиганта:391
+
+## src/25g-postcard.js · 45 КБ
+  · открытка: снимок сцены, а не пиксели:1
+  · камера и альбом:613
 
 ## src/25h-post-forms.js · 20 КБ
   · бланки открытки:1
@@ -4517,6 +4519,11 @@ zooTick                      src/11ad-zoo.js:41
 ## src/25n-chess.js · 15 КБ
   · шахматы по почте:1
 
+## src/26-ui-station.js · 62 КБ
+  · станция:1
+  · заголовки и полосы (M299, docs/DESIGN-screens.md §1a):188
+  · настройки:887
+
 ## src/26a-ui-station-home.js · 13 КБ
   · станция: вкладка «дом и базы»:1
 
@@ -4529,10 +4536,8 @@ zooTick                      src/11ad-zoo.js:41
 ## src/26d-ui-wanderer.js · 5 КБ
   · пульт «Сороки»: карточка витрины перед вами (M343):1
 
-## src/26-ui-station.js · 62 КБ
-  · станция:1
-  · заголовки и полосы (M299, docs/DESIGN-screens.md §1a):188
-  · настройки:887
+## src/27-ui-ship.js · 23 КБ
+  · силуэт корпуса и вход в ОПИСЬ:1
 
 ## src/27b-ui-crew.js · 15 КБ
   · экран экипажа:1
@@ -4540,14 +4545,14 @@ zooTick                      src/11ad-zoo.js:41
 ## src/27c-ui-hq.js · 46 КБ
   · ШТАБ и кантина:1
 
-## src/27da-kino.js · 12 КБ
-  · кинопередвижка:1
+## src/27d-ui-cantina-props.js · 22 КБ
+  · кантина: бармен, виды, реквизит, столики, стойка:1
 
 ## src/27d-ui-cantina.js · 28 КБ
   · кантина: помещение, а не список:1
 
-## src/27d-ui-cantina-props.js · 22 КБ
-  · кантина: бармен, виды, реквизит, столики, стойка:1
+## src/27da-kino.js · 12 КБ
+  · кинопередвижка:1
 
 ## src/27e-ui-home.js · 44 КБ
   · дом: помещение, а не список:1
@@ -4561,11 +4566,11 @@ zooTick                      src/11ad-zoo.js:41
 ## src/27h-ui-lore.js · 6 КБ
   · доска отчёта: место, где собранное можно прочесть:1
 
-## src/27ia-desk-top.js · 21 КБ
-  · стол как стол: предметы, а не тринадцать закладок:1
-
 ## src/27i-ui-table.js · 27 КБ
   · стол: одно место для всего, что читают:1
+
+## src/27ia-desk-top.js · 21 КБ
+  · стол как стол: предметы, а не тринадцать закладок:1
 
 ## src/27j-console.js · 8 КБ
   · пульт: приёмник, подсказка, кресло:1
@@ -4582,14 +4587,14 @@ zooTick                      src/11ad-zoo.js:41
 ## src/27k-road.js · 47 КБ
   · дорожный спутник:1
 
+## src/27l-road-draw.js · 44 КБ
+  · дорожный спутник: экран:1
+
 ## src/27la-road-sky.js · 9 КБ
   · дорожный спутник: небо:1
 
 ## src/27lb-road-bloom.js · 10 КБ
   · дорожный спутник: поле света:1
-
-## src/27l-road-draw.js · 44 КБ
-  · дорожный спутник: экран:1
 
 ## src/27m-scroll-cue.js · 4 КБ
   · «внизу ещё есть»:1
@@ -4597,21 +4602,18 @@ zooTick                      src/11ad-zoo.js:41
 ## src/27n-ui-deal.js · 11 КБ
   · ДЕЛО — одно место для всего, что на вас работает:1
 
-## src/27-ui-ship.js · 23 КБ
-  · силуэт корпуса и вход в ОПИСЬ:1
-
 ## src/27z-telemetry.js · 31 КБ
   · телеметрия: приборы пишут в DOM:1
 
-## src/28-loop.js · 37 КБ
+## src/28-loop.js · 34 КБ
   · авария:1
   · звук по кадрам:26
   · цикл:84
   · авторазрешение:107
   · развилка режимов — одна на всех (M238):137
   · кадр, который не убивает игру (M234):268
-  · prof() — на что уходит кадр:389
-  · dbg() — что держит корабль:430
+  · prof() — на что уходит кадр:347
+  · dbg() — что держит корабль:388
 
 ## src/28y-look.js · 20 КБ
   · look() — прибор кадра:1
@@ -4726,9 +4728,6 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91x-finds.js · 6 КБ
   · автотесты: находки в пустоте:1
 
-## tests/91x-hold.js · 5 КБ
-  · автотесты: холдинг · часы слоя и аппетит станции (M290):1
-
 ## tests/91x-hold-barge.js · 5 КБ
   · автотесты: холдинг · своя баржа (M294):1
 
@@ -4744,12 +4743,17 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91x-hold-site.js · 12 КБ
   · автотесты: холдинг · постройки, площадка, бункер (M291):1
 
+## tests/91x-hold.js · 5 КБ
+  · автотесты: холдинг · часы слоя и аппетит станции (M290):1
+
 ## tests/91x-ui-fixes.js · 3 КБ
   · автотесты: три правки интерфейса с плейтеста 30.08 (M298):1
 
 ## tests/91y-settle.js · 11 КБ
   · посёлок: дар, а не приказ:1
   · M320: дым по линии тока поля:169
+
+## tests/91z-missile.js · 5 КБ
 
 ## tests/91zb-scrip.js · 5 КБ
 
@@ -4774,8 +4778,6 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zk-tape.js · 7 КБ
 
 ## tests/91zl-rack.js · 3 КБ
-
-## tests/91z-missile.js · 5 КБ
 
 ## tests/91zm-role.js · 4 КБ
 
@@ -4815,14 +4817,14 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zy-county.js · 2 КБ
   · большой уезд: кладка крупнее, город отвечает на шум, ответ издалека:1
 
+## tests/91zz-charts.js · 2 КБ
+  · несогласие карт: дрожь на окраине, пропавшая система, карта, прячущая дом:1
+
 ## tests/91zza-quiet.js · 3 КБ
   · тихий уезд: никто не грабит, журнал молчит, лента ровная, суток прошло больше:1
 
 ## tests/91zzb-slow.js · 3 КБ
   · медленный: выкладка, созревание, копия → продолжение → ошибка; горб на ленте:1
-
-## tests/91zz-charts.js · 2 КБ
-  · несогласие карт: дрожь на окраине, пропавшая система, карта, прячущая дом:1
 
 ## tests/91zzc-pass.js · 2 КБ
   · перевал: корабль на поклон, свет, развилка без правильного ответа:1
@@ -4891,11 +4893,11 @@ zooTick                      src/11ad-zoo.js:41
   · автотесты: пульт и стол (M151a):1
   · огонёк: «пришло» ≠ «не прочитано»:191
 
-## tests/91zzw-economy.js · 10 КБ
-  · автотесты: экономика без долга (M152e):1
-
 ## tests/91zzw-eco-probe.js · 10 КБ
   · проба экономики (отчёт, не проверка; аудит 2026-09-04, docs/ECONOMY-AUDIT.md):1
+
+## tests/91zzw-economy.js · 10 КБ
+  · автотесты: экономика без долга (M152e):1
 
 ## tests/91zzw-holding.js · 6 КБ
   · замер: холдинг против целей §16 (M293, шаг 5):1
@@ -4916,6 +4918,8 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzy-walk.js · 7 КБ
   · автотесты: прогон §9 DESIGN-screens — шесть шагов на телефоне:1
+
+## tests/91zzz-home-in.js · 5 КБ
 
 ## tests/91zzza-cave-props.js · 30 КБ
   · пещера M305: гладкий обвод и содержимое:1
@@ -4961,8 +4965,6 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzzg-globus.js · 4 КБ
   · автотесты: «Глобус»:1
-
-## tests/91zzz-home-in.js · 5 КБ
 
 ## tests/91zzzh-told.js · 3 КБ
   · автотесты: ляпнул лишнего:1
@@ -5022,6 +5024,13 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzzy-drones.js · 10 КБ
   · автотесты: рейсы дронов (M237):1
 
+## tests/91zzzz-fuzz.js · 15 КБ
+  · фуззер: режим под случайными руками (M238):1
+  · прожитый мир:71
+  · все вкладки рисуются:135
+  · тычок в каждую кнопку:168
+  · прибор кадра работает:210
+
 ## tests/91zzzza-drone-miner.js · 3 КБ
   · автотесты: дрон-добытчик (M350) — точка бездонная, купить трудно:1
 
@@ -5044,13 +5053,6 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzzze-matches.js · 2 КБ
   · автотесты: спички — валюта из разборки (M340):1
-
-## tests/91zzzz-fuzz.js · 15 КБ
-  · фуззер: режим под случайными руками (M238):1
-  · прожитый мир:71
-  · все вкладки рисуются:135
-  · тычок в каждую кнопку:168
-  · прибор кадра работает:210
 
 ## tests/91zzzzf-wander.js · 7 КБ
   · автотесты: «Сорока» в мире (M342):1
@@ -5109,6 +5111,12 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzzzy-time.js · 7 КБ
   · чужие часы (M334):1
 
+## tests/91zzzzz-e2e-life.js · 36 КБ
+  · сквозной прогон II: сейв, числа, текст, долгий полёт (M329):1
+  · поздний вечер:392
+  · вечер за игрой:463
+  · resetWorld обязана возвращать мир, а не почти мир:518
+
 ## tests/91zzzzza-save-hostile.js · 8 КБ
   · порченый сейв (M354):1
 
@@ -5120,12 +5128,6 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzzzzd-pure.js · 6 КБ
   · мир из семени, а не из порядка (M354):1
-
-## tests/91zzzzz-e2e-life.js · 36 КБ
-  · сквозной прогон II: сейв, числа, текст, долгий полёт (M329):1
-  · поздний вечер:392
-  · вечер за игрой:463
-  · resetWorld обязана возвращать мир, а не почти мир:518
 
 ## tests/91zzzzze-keys.js · 8 КБ
   · одна клавиша, зажатая надолго (M354):1

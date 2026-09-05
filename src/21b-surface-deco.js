@@ -195,7 +195,7 @@ function drawDeco(tr,camx,camy,p){
     ctx.save();ctx.translate(x,y);
     if(d.flip)ctx.scale(-1,1);
     const A={d,pal,p,tr,w,hgt,ox:camx-x,oy:camy-y};
-    const fn=DECO_FN[d.k];            // семьи биомов (21b-surface-deco-biomes, M352) — по таблице
+    const fn=DECO_FN[d.k];            // семьи биомов (21bb-deco-biomes, M352) — по таблице
     if(fn)fn(A);
     else if(d.k==="druse")decoDruse(A);
     else if(d.k==="shard")decoShard(A);

@@ -367,7 +367,7 @@ function drawExhaust(zx,zy,Z,thr){
      координаты: корпус при отдалении рисуется крупнее мира, и факел, считанный
      по настоящему Z, отрывался от него и уползал внутрь силуэта */
   const SZ=shipZ(Z),cx0=zx(sh.x),cy0=zy(sh.y);
-  /* косметика «Сороки» (12v-wander-shop-cosm): свои цвета, длина, ширина и форма пламени */
+  /* косметика «Сороки» (12va-wander-cosm): свои цвета, длина, ширина и форма пламени */
   const CX=(typeof cosmExhaust==="function")?cosmExhaust():null;
   const C0=CX?CX.col[0]:"255,246,222",C1=CX?CX.col[1]:"255,178,96",C2=CX?CX.col[2]:"255,96,48";
   const kL=CX?CX.len:1,kW=CX?CX.wide:1,shape=CX?CX.shape:"plain";

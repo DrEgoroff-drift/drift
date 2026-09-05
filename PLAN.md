@@ -427,7 +427,7 @@ Left from the queue: nothing — the band's second step is M308, the station's c
 ### Systems
 
 - **The author's freeze has no cause yet.** The frame guard (M234) survives it and names it on
-  screen; the fuzzer (M238) drives eleven modes with random input and finds nothing. **Since
+  screen; the fuzzer (M238) drives eleven modes with random input and finds nothing. **0.359.1: the logger is born first** (`01a-crashlog`, right after `VER`), so a build that dies on load reports itself — 0.359.0 did not, and the site lay for 25 minutes with an empty log. **Since
   0.359.0 the evidence ships itself:** every error of any kind, and every frame stall over two
   seconds, lands in `~/drift-data/crash.log` (`site/log.php`, PATCHNOTES 0.359.0). Next step is
   to read it after the next freeze: `ssh drift 'tail -n 50 ~/drift-data/crash.log'`.
