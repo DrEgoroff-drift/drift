@@ -7,6 +7,20 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.350.0 - M352: one big thing per biome
+
+Until now four worlds out of eleven had a large form of their own (crystal druses, metal slabs,
+ruin walls, jungle canopies); the other seven differed by ground and small flora and read as one
+silhouette from three steps back. Every land biome now carries its own family, five to twelve
+astronaut heights, silhouette against the haze, shadow on the ground, no outlines: desert table
+buttes and wind-bent one-crown trees; rocky boulder stacks, lone boulders and scree; ice hummocks
+and spires with a translucent edge; volcanic cinder cones with a warm crack and frozen «lava trees»;
+toxic pod trees and blisters over a glowing pool; ocean shore trees on stilt roots and coral towers;
+ruin stelae with tally marks, antennas and stairs to nowhere; terran round crowns; a twin-lobed
+canopy for the jungle. Two to four per screen instead of fewer than one; neighbours no longer stand
+inside each other. Also: the distance chips at the screen's edge no longer overlap the labels of
+nearby marks. Module `21b-surface-deco-biomes`, suite `91zzzzn-deco-biomes`.
+
 ## 0.349.0 - M351: the cooperative — buying for yourself, and the people who do it with you
 
 The author's ladder: на дядю → кооператив → своё. The first rung stays as it was: the house's order and

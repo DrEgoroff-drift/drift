@@ -7944,3 +7944,80 @@ holds exactly at rank I; suites that hire stamp a cooperative through `coopStamp
 old route row «ПО МАРШРУТУ · взять» stays as the house's assigned leg on the house's account (stage 1);
 R3 was never a gate in code, so nothing was dropped there. `12r`'s calculator is untouched. The eco
 probe (`91zzw`) was not re-measured in this pass — the caps are the brake and remain to be measured.
+
+## M352 — one big thing per biome (0.350.0, 2026-09-05)
+
+Closed the last item of the 2026-09-04 queue. The PLAN body as it stood when the work started:
+
+- **M352 — more trees like these** (author 2026-09-04, on a surface frame of a jungle world: two
+  low-poly canopies with hanging lianas, a monolith with tally marks, the astronaut for scale —
+  «оч нравится и размер и стиль отрисовки»). The reference is fixed: flat faceted crowns in two or
+  three lobes, a dark trunk with roots spread on the ground, lianas as straight hanging rods, crown
+  size five to eight astronaut heights, the whole thing a silhouette against the sky haze, no
+  outlines. Do: (1) this tree becomes a *family* in `20-life` — three to five crown shapes and two
+  trunk builds on the same grammar, seeded per plant, so a grove reads as one species with
+  variation; (2) plant them more — a jungle/terran surface carries two to four such trees per screen
+  where today it carries one, and other biomes get their own family in the same language (desert:
+  fewer, thinner, one crown; ocean shore: leaning; toxic: bare with hanging pods); (3) a touch more
+  detail, not more objects: a second facet tone on the crown's lit side, one or two leaf clusters
+  hanging below the canopy, the root shadow on the ground (law: everything standing casts a shadow);
+  proportions stay exactly as in the frame. Judge by the frame (`drift-shots-as-audit`): shoot the
+  same scene before and after, the astronaut in it. No new biome, no new mechanic — density and
+  family only.
+  **One big thing per biome (author 2026-09-04: «кристаллы большие, каменюги»).** The jungle crown's
+  role — five to eight astronaut heights, silhouette against the haze, a shadow on the ground, no
+  outline — is given to each of the ten land biomes with its own family of 3–5 shapes, 2–4 per
+  screen: crystal — druses of 3–5 facets from one root, a second lit facet, scree between; rocky —
+  boulders stacked in 2–3 tiers with a crack and a dark underside, lichen as a flat patch on top;
+  desert — table buttes on a thin neck with strata bands, one dry one-crown tree bent by the wind;
+  ice — hummocks and spires with a translucent edge, blue shadow inside, a snow cornice on one side;
+  volcanic — black cinder cones with a warm-lit crack, a straight smoke column, a «lava tree» of
+  frozen runs; toxic — bare trunks with hanging pods, blister growths, a glowing pool at the roots;
+  ocean — shore trees leaning to the water on stilt roots, coral towers on the shoal; ruin — wall
+  fragments, the tally-marked stela of the frame, beams, an antenna, a stair to nowhere; terran —
+  the jungle crowns sparser and rounder plus lone boulders; jungle — the reference itself. Same
+  grammar everywhere, biome only changes the family.
+
+**What was built.** `src/21b-surface-deco-biomes.js` (the name extends the `21b-surface-deco` stem
+on purpose: `21bb-` would sort *before* it under the culture-aware compare and die on
+`DECO_KINDS.push` — the hyphen trap from CLAUDE.md, met again). Eighteen painters on the codex
+grammar — dark mass first, body in the world palette through `dcol`, one lit edge on the star's
+side, detail by count, no outline — registered in `DECO_FN` and appended to `DECO_KINDS`:
+desert butte + dry tree; rocky stack + lone boulder + scree; ice hummock + spire; volcanic cone +
+lava tree; toxic pod tree + blister; ocean shore tree + coral; ruin stela (the tally-marked one of
+the author's frame) + antenna + stair; crystal scree; terran round crown + lone boulder; jungle
+twin canopy. `drawDeco` looks the painter up in `DECO_FN` before the old if/else chain.
+`decoCanopy` gained `round` (fewer, rounder masses, no lianas) and `twin` (two lobes, six lianas).
+
+**Placement.** Clusters per ~1000 world units instead of 1600; the old «insurance» of three forms
+became a top-up to `W/1280·2.4·share`, because rough worlds (rocky, volcanic, metal) found a flat
+spot one time in five and lived on 0.2 forms per screen. Neighbours in a cluster now keep
+`max(h)·.7+30` apart — the first desert frame had a dry tree 19 px inside a butte, and at the
+world's edge `clamp` had put two hummocks on the same x. The pad rule is checked per candidate,
+not per cluster centre (a jungle test caught a form 400 px from the pad).
+
+**Frames and fixes from them** (`scratchpad/m352shot.py`, one biome per shot, camera at the
+tallest form, astronaut in frame): butte strata went from five bright bands («a plank table») to
+three at .28; boulders were a grey rectangle clipped by the polygon over a dark half — «floating
+slabs» — and became a whole body with a base gradient; the ocean crown was one disc with a clean
+white ellipse («an umbrella, a UFO») and became three ragged masses with short streaks in the shoal
+tone; the stela was a light block lost in the sky and became a dark silhouette with a broken
+shoulder and light etched marks; stairs were dark bodies with light edges («an equaliser») and
+became light blocks with dark risers; the terran crown took the palette's two water blues and came
+out blue — it gets its own earth-and-green palette. Seen in passing and fixed at once
+(`drift-fix-what-you-saw`): a near-mark's label was drawn across the second edge chip of the same
+column («ОСТОВ КОРАБЛЯ» over «ПЕЩЕРА 5592 м») — the chips are now drawn in two passes, near-marks
+start below the chip columns and right-align at the right edge.
+
+**Decisions.** The family lives in DECO (the middle scale, 21b), not in `20-life` plants: plants are
+the small scale and their painter is per-frame per-plant; a second trunk build and «two or three
+leaf clusters hanging below» were not added — the canopy already has drop masses and every deco form
+casts `groundShadow`. Heights are 5–12 astronaut heights rather than 5–8: the world multiplies
+`K.h` by .6–1.2, and the author's reference canopy is 180 itself. `TYPES.metal` keeps its slab/truss
+family untouched.
+
+**Tests.** `91zzzzn-deco-biomes`: every land biome has ≥2 kinds with one at 5–12 heights; every
+`DECO_KINDS` name has a painter and every painter a table row; each painter runs directly on every
+palette; per biome the average per 1280-px screen is 1.2–5 away from the pad and every kind met is
+drawn through `drawSurface`. `91j-art` updated: rocky is no longer «no forms», ice+ruin mix keeps
+ice as the host. Suite 13 910 desktop / 14 007 phone, green.

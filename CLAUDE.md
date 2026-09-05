@@ -111,6 +111,7 @@ One phrase per module; the module's own header says the rest. Grep `docs/INDEX.m
 | `12ub-books` `12ue-boxes` | forty books out of wreckage; twenty empty matchboxes beside them |
 | `12uc-matches` `12v-wander` `12v-wander-shop` `12v-wander-shop-cosm` `12ak-locker` `24c-mode-wanderer` `26d-ui-wanderer` | «Сорока» (`docs/DESIGN-wanderer.md`): matches, the sail-ship's clock loop and the three ways to find it, the catalogue and counters, the office locker, the room mode and its panel |
 | `15-input` `16-flight` | keys/pads/mouse, starfield, autopilot, trail |
+| `21b-surface-deco` `21ba-deco-shapes` `21b-surface-deco-biomes` | the surface's middle scale: `genDeco` placement (clusters, flat spots, pad and POI clearance, top-up on rough worlds), `drawDeco` with shadow and ground clip; the eight original painters; M352 — a family of large forms per land biome, dispatched through `DECO_FN` |
 | `17`–`25` `mode-*` | modes: system, map, landing, surface, cave, mine, belt, cockpit, scoop; draw halves in `*-draw`; `20-life` astronaut and flora, `20f-fauna` beasts, `17b-finds` finds in the void, `17d-house-shapes` faction marks |
 | `18a-map-addr` `18b-map-hold` | the map's addresses (M347): grid, rulers, header, rumour areas, rings, the address field, `addrify`, matches as marks; holdings (M348): house patches, the трасса band and name, pirate hatch, own frames, changed-hands tags, layers |
 | `18c-chunks` `18d-verlet` | raster cache (world-x chunks, `screenLayer`); ropes and cloth |

@@ -230,6 +230,9 @@ function decoColumn(A){
    верхнюю кромку, а не помещается в неё. */
 function decoCanopy(A){
   const {pal,w,hgt}=A;
+  /* M352: та же крона в двух вариантах — землеподобная (round: масс меньше,
+     они круглее, лиан нет) и джунгли-двойник (twin: две лопасти по сторонам). */
+  const RND=A.round?1:0, TWIN=A.twin?1:0;
   const sway=WIND*.02*(.7+.3*Math.sin(G.t*.02+POI_SEED%97));
   ctx.save();ctx.rotate(sway);
   const tw=Math.max(2,w*.16), lean=(h01(1,3,POI_SEED)-.5)*w*.7;
@@ -261,15 +264,15 @@ function decoCanopy(A){
      джунглей (тот же, что у MAT_CHAR.moss). Поэтому: массы тёмные, их низ
      рваный, свет — редкими пятнами по верхним кромкам, и часть листвы висит
      НИЖЕ верха, на стволе, иначе шляпка снова читается шляпкой. */
-  const nb=5+Math.floor(h01(2,5,POI_SEED)*3);
+  const nb=(RND?3:5)+Math.floor(h01(2,5,POI_SEED)*3);
   const mass=(bx,by,br,dark)=>{
     ctx.fillStyle=dcol(pal,dark?0:1,dark?1.25:1.05,.94);
     ctx.beginPath();
     for(let s=0;s<=16;s++){
       const a=s/16*TAU;
       /* низ кроны рвётся сильнее верха: там свисают листья, а не кромка шара */
-      const rr=br*(.82+h01(s,Math.round(bx),POI_SEED)*.36)*(Math.sin(a)>0?1.25:1);
-      const px=bx+Math.cos(a)*rr*1.2, py=by+Math.sin(a)*rr*.78;
+      const rr=br*(.82+h01(s,Math.round(bx),POI_SEED)*(RND?.16:.36))*(Math.sin(a)>0?(RND?1.05:1.25):1);
+      const px=bx+Math.cos(a)*rr*(RND?1.05:1.2), py=by+Math.sin(a)*rr*(RND?.92:.78);
       if(s===0)ctx.moveTo(px,py);else ctx.lineTo(px,py);
     }
     ctx.closePath();ctx.fill();
@@ -277,7 +280,7 @@ function decoCanopy(A){
   for(let i=0;i<nb;i++){
     /* часть масс спускается по стволу: полог не плоский, у него есть ярусы */
     const drop=h01(i,23,POI_SEED)<.35?hgt*(.18+h01(i,29,POI_SEED)*.3):0;
-    const bx=lean*(1-i/nb)+(h01(i,7,POI_SEED)-.5)*hgt*(drop?.42:.8);
+    const bx=lean*(1-i/nb)+(h01(i,7,POI_SEED)-.5)*hgt*(drop?.42:.8)+(TWIN?(i%2?1:-1)*hgt*.26:0);
     const by=-hgt+drop-h01(i,11,POI_SEED)*hgt*.16;
     const br=hgt*(.17+h01(i,13,POI_SEED)*.15)*(drop?.7:1);
     /* ветка от ствола к массе. Без неё нижние ярусы висели отдельными
@@ -300,8 +303,8 @@ function decoCanopy(A){
   }
   /* лианы: они и связывают крону с землёй, и качаются заметнее ствола */
   ctx.lineWidth=Math.max(1,w*.03);
-  for(let i=0;i<4;i++){
-    const vx=lean+(h01(i,17,POI_SEED)-.5)*hgt*.6;
+  for(let i=0;i<(RND?0:TWIN?6:4);i++){
+    const vx=lean+(h01(i,17,POI_SEED)-.5)*hgt*(TWIN?1:.6);
     const vl=hgt*(.3+h01(i,19,POI_SEED)*.5);
     const sw2=WIND*(4+i)*(.6+.4*Math.sin(G.t*.03+i*1.7));
     ctx.strokeStyle=dcol(pal,1,.9,.75);

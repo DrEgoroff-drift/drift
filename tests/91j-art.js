@@ -130,20 +130,22 @@ TEST_SUITES.push(()=>suite("крупная форма: поздний мир в�
     drawSurface();
     ok(true,t+": кадр с крупной формой рисуется");
   }
-  /* чистый ранний мир не обрастает ничем: язык форм принадлежит типу */
+  /* M352: язык форм принадлежит типу — у камня своя семья, чужих нет */
   const R=makeWorld("rocky",null,0);
   const PR={type:"rocky",mix:null,mw:0,T:R.T,rough:R.T.rough,seed:5};
   worldTables(PR);
   const tr2=genTerrain(PR);genDeco(tr2,PR);
-  eq(tr2.deco.length,0,"каменистый мир остаётся камнем без чужих форм");
+  ok(tr2.deco.length>2,"каменистый мир тоже обрёл крупную форму ("+tr2.deco.length+")");
+  ok(tr2.deco.every(d=>DECO_KINDS.some(k=>k.k===d.k&&k.on==="rocky")),"и это камень, а не чужие формы");
   /* смесь принимает форму соседа, но реже, чем собственную */
   const M0=makeWorld("ice","ruin",.4);
   const PM={type:"ice",mix:"ruin",mw:.4,T:M0.T,rough:M0.T.rough,seed:31};
   worldTables(PM);
   const tr3=genTerrain(PM);genDeco(tr3,PM);
-  ok(tr3.deco.length>0,"на ледяной с руинами стены есть ("+tr3.deco.length+")");
-  ok(tr3.deco.length<tr2.deco.length+18,"но их меньше, чем на своём мире");
-  ok(tr3.deco.every(d=>d.k==="wall"||d.k==="column"),"и это именно руины соседа");
+  const guest=tr3.deco.filter(d=>d.k==="wall"||d.k==="column");
+  ok(guest.length>0,"на ледяной с руинами стены есть ("+guest.length+")");
+  ok(guest.length<tr3.deco.length,"но лёд остаётся хозяином: своих форм больше, чем гостей");
+  ok(tr3.deco.every(d=>DECO_KINDS.some(k=>k.k===d.k&&(k.on==="ice"||k.on==="ruin"))),"и ничего третьего");
   G.surf=null;G.land=null;G.mode="system";
 }));
 

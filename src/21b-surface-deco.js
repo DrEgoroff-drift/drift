@@ -45,7 +45,10 @@ function genDeco(tr,p){
   if(!pool.length)return tr.deco;
   const share=lead?1:clamp((p.mw||.3)*1.8,.35,.9);
   const r=rng(p.seed^0x0DEC0);
-  const nCl=Math.max(3,Math.round(clamp(tr.W/1600,4,12)*share));
+  /* M352: автор просил две-четыре крупных формы на экран. Куртина на 1600
+     единиц давала меньше одной; теперь куртина на ~1000, в ней 1–4 формы,
+     а часть теряется на ровном месте и у площадки — выходит 2–4 в кадре. */
+  const nCl=Math.max(3,Math.round(clamp(tr.W/1000,4,20)*share));
   for(let c=0;c<nCl;c++){
     /* куртина ставится внутри своей полосы: иначе половина планеты пустая,
        а вторая — свалка */
@@ -71,6 +74,7 @@ function genDeco(tr,p){
       let x=-1;
       for(let a=0;a<7&&x<0;a++){
         const cand=clamp(cx+(r()-.5)*(160+320*r()),60,tr.W-60);
+        if(Math.abs(cand-tr.padX)<520)continue;         // разброс куртины — тоже не в зону взлёта
         const gy=groundAt(tr,cand);
         let mn=gy,mx=gy;
         for(let s=-3;s<=3;s++){
@@ -81,6 +85,10 @@ function genDeco(tr,p){
         let wide=gy;
         for(let s=-4;s<=4;s++)wide=Math.min(wide,groundAt(tr,clamp(cand+s*60,10,tr.W-10)));
         if(gy-wide>55)continue;                   // дно каньона: форму съест порода
+        /* M352: соседи куртины не лезут друг в друга. Столовая гора в ±120 px
+           накрывала сухое дерево в 19 px от себя, а у края мира clamp сажал
+           две формы в одну точку. Зазор — от большей из двух высот. */
+        if(tr.deco.some(d=>Math.abs(d.x-cand)<Math.max(hh,d.h)*.7+30))continue;
         x=cand;
       }
       if(x<0)continue;
@@ -95,7 +103,12 @@ function genDeco(tr,p){
      места, и планета оставалась совсем без крупной формы — то есть ровно тем,
      против чего эта веха. Тогда ровные места ищутся по всему профилю, и берутся
      самые ровные из них. Пусто быть не может: тип должен читаться силуэтом. */
-  if(tr.deco.length<3){
+  /* M352: страховка стала добором. На изрезанных мирах (камень, вулкан,
+     металл) куртины находили ровное место в одном случае из пяти, и планета
+     жила тремя формами на всю длину — 0,2 на экран вместо просимых двух-четырёх.
+     Теперь добираем до нормы по самым ровным местам профиля. */
+  const want=Math.max(3,Math.round(tr.W/1280*2.4*share));
+  if(tr.deco.length<want){
     const cand=[];
     for(let x=320;x<tr.W-320;x+=110){
       if(Math.abs(x-tr.padX)<520)continue;
@@ -112,8 +125,8 @@ function genDeco(tr,p){
     cand.sort((a,b)=>a.sp-b.sp);
     const put=[];
     for(const q of cand){
-      if(tr.deco.length>=3)break;
-      if(put.some(v=>Math.abs(v-q.x)<700))continue;
+      if(tr.deco.length>=want)break;
+      if(put.some(v=>Math.abs(v-q.x)<380))continue;
       put.push(q.x);
       const K=pool[Math.floor(r()*pool.length)];
       tr.deco.push({k:K.k,x:q.x,h:K.h*(.6+r()*.5),sc:.85+r()*.4,
@@ -182,7 +195,9 @@ function drawDeco(tr,camx,camy,p){
     ctx.save();ctx.translate(x,y);
     if(d.flip)ctx.scale(-1,1);
     const A={d,pal,p,tr,w,hgt,ox:camx-x,oy:camy-y};
-    if(d.k==="druse")decoDruse(A);
+    const fn=DECO_FN[d.k];            // семьи биомов (21b-surface-deco-biomes, M352) — по таблице
+    if(fn)fn(A);
+    else if(d.k==="druse")decoDruse(A);
     else if(d.k==="shard")decoShard(A);
     else if(d.k==="slab")decoSlab(A);
     else if(d.k==="truss")decoTruss(A);

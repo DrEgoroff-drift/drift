@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 405 · символов верхнего уровня: 3696
+Файлов: 407 · символов верхнего уровня: 3717
 
 ## СИМВОЛЫ
 
@@ -627,7 +627,7 @@ cvs                          src/08-state.js:2
 dayK                         src/19c-light.js:68
 dayKq                        src/19c-light.js:74
 dbg                          src/28-loop.js:371
-dcol                         src/21b-surface-deco.js:136
+dcol                         src/21b-surface-deco.js:149
 DEAL_KINDS                   src/27g-deals.js:17
 dealAnswer                   src/27g-deals.js:163
 dealBtnTick                  src/27n-ui-deal.js:37
@@ -638,20 +638,41 @@ dealRow                      src/27n-ui-deal.js:45
 dealRun                      src/27n-ui-deal.js:20
 dealsTick                    src/27g-deals.js:201
 dealTaken                    src/27g-deals.js:159
+DECO_FN                      src/21b-surface-deco-biomes.js:34
 DECO_KINDS                   src/21b-surface-deco.js:24
+decoAntenna                  src/21b-surface-deco-biomes.js:266
+decoBlister                  src/21b-surface-deco-biomes.js:203
+decoBoulderLone              src/21b-surface-deco-biomes.js:115
+decoButte                    src/21b-surface-deco-biomes.js:39
 decoCanopy                   src/21ba-deco-shapes.js:231
 decoColumn                   src/21ba-deco-shapes.js:190
+decoCone                     src/21b-surface-deco-biomes.js:152
+decoCoral                    src/21b-surface-deco-biomes.js:239
+decoCrownRound               src/21b-surface-deco-biomes.js:305
 decoDruse                    src/21ba-deco-shapes.js:12
-decoFrond                    src/21ba-deco-shapes.js:314
-decoMat                      src/21b-surface-deco.js:144
+decoDryTree                  src/21b-surface-deco-biomes.js:63
+decoFrond                    src/21ba-deco-shapes.js:317
+decoHummock                  src/21b-surface-deco-biomes.js:127
+decoLavaTree                 src/21b-surface-deco-biomes.js:167
+decoLitSide                  src/21b-surface-deco-biomes.js:37
+decoMat                      src/21b-surface-deco.js:157
+decoPodTree                  src/21b-surface-deco-biomes.js:183
+decoPoly                     src/21b-surface-deco-biomes.js:36
+decoScree                    src/21b-surface-deco-biomes.js:295
 decoShard                    src/21ba-deco-shapes.js:38
+decoShoreTree                src/21b-surface-deco-biomes.js:215
 decoSlab                     src/21ba-deco-shapes.js:53
+decoSpire                    src/21b-surface-deco-biomes.js:142
+decoStack                    src/21b-surface-deco-biomes.js:86
+decoStair                    src/21b-surface-deco-biomes.js:280
+decoStela                    src/21b-surface-deco-biomes.js:250
 decoTruss                    src/21ba-deco-shapes.js:101
+decoTwinCanopy               src/21b-surface-deco-biomes.js:311
 decoWall                     src/21ba-deco-shapes.js:147
 deedAdd                      src/11ai-ledger.js:53
 DEEDS                        src/11ai-ledger.js:25
 deltaHtml                    src/05-parts.js:293
-depKind                      src/21b-surface-deco.js:367
+depKind                      src/21b-surface-deco.js:382
 deployDrone                  src/12-economy.js:183
 DEPTH_TIERS                  src/04-mods.js:51
 DESC_MOOD                    src/01-core.js:109
@@ -660,7 +681,7 @@ DESK_DRAW                    src/27ia-desk-top.js:58
 DESK_ITEMS                   src/27ia-desk-top.js:298
 deskItemNew                  src/27ia-desk-top.js:337
 deskItemOf                   src/27ia-desk-top.js:331
-dgy                          src/21b-surface-deco.js:131
+dgy                          src/21b-surface-deco.js:144
 DIG_CELL                     src/23-mode-dig.js:3
 DIG_GEO_K                    src/23-mode-dig.js:9
 DIG_TURF                     src/23aa-dig-rock.js:463
@@ -747,8 +768,8 @@ drawCosmMark                 src/12v-wander-shop-cosm.js:112
 drawCrowns                   src/05a-nodes.js:379
 drawCrystalForest            src/20aa-poi-shapes.js:115
 drawDeadBattery              src/20aa-poi-shapes.js:221
-drawDeco                     src/21b-surface-deco.js:147
-drawDeposit                  src/21b-surface-deco.js:377
+drawDeco                     src/21b-surface-deco.js:160
+drawDeposit                  src/21b-surface-deco.js:392
 drawDig                      src/23a-dig-draw.js:655
 drawDigFauna                 src/23-mode-dig.js:313
 drawDigWorld                 src/23a-dig-draw.js:45
@@ -765,7 +786,7 @@ drawFleet                    src/12ai-fleet.js:496
 drawFleetMap                 src/12ai-fleet.js:662
 drawFleetShip                src/12ai-fleet.js:452
 drawFoeBody                  src/24ab-raid-foe.js:10
-drawForeground               src/21b-surface-deco.js:249
+drawForeground               src/21b-surface-deco.js:264
 drawGlassHUD                 src/24-mode-belt.js:717
 drawGlyph                    src/12t-settle.js:59
 drawGround                   src/19-mode-landing.js:134
@@ -833,9 +854,9 @@ drawStModule                 src/17a-station-mod.js:80
 drawStrata                   src/18b-geology.js:103
 drawStRod                    src/17a-station-mod.js:72
 drawStRods                   src/17a-station-mod.js:198
-drawSurface                  src/21e-surface-draw.js:852
+drawSurface                  src/21e-surface-draw.js:859
 drawSurfaceHud               src/21e-surface-draw.js:21
-drawSurfaceWorld             src/21e-surface-draw.js:103
+drawSurfaceWorld             src/21e-surface-draw.js:110
 drawSurvey                   src/12w-survey.js:63
 drawSysHud                   src/17-mode-system.js:564
 drawSysNebula                src/16a-space.js:208
@@ -850,7 +871,7 @@ drawWallPaper                src/11ae-concert.js:39
 drawWanderer                 src/12v-wander.js:175
 drawWanderMap                src/12v-wander.js:159
 drawWanderRoom               src/24c-mode-wanderer-draw.js:78
-drawWater                    src/21e-surface-draw.js:769
+drawWater                    src/21e-surface-draw.js:776
 drawWear                     src/12s-wear.js:102
 drawWeather                  src/19d-weather.js:96
 drawWinter                   src/29g-winter-draw.js:334
@@ -984,7 +1005,7 @@ faunaOf                      src/20e-species.js:268
 fbm1                         src/01-core.js:30
 fbm2                         src/01-core.js:37
 fbm3                         src/24-mode-belt.js:16
-FG_MAN                       src/21b-surface-deco.js:248
+FG_MAN                       src/21b-surface-deco.js:263
 fillMaterial                 src/18a-material.js:257
 FIN_DEF                      src/21aa-base-rooms.js:184
 FIND_BUCKET                  src/17b-finds.js:17
@@ -1619,7 +1640,7 @@ labWorking                   src/12h-relic.js:32
 LAND_ARC                     src/07-planet.js:407
 LAND_GY                      src/19f-lander.js:10
 landerGearTick               src/19f-lander.js:15
-landerInk                    tests/91j-art.js:154
+landerInk                    tests/91j-art.js:156
 landerLen                    src/19f-lander.js:11
 landingDust                  src/19f-lander.js:344
 landOnTestPlanet             tests/90-harness.js:105
@@ -2429,7 +2450,7 @@ pricesHeard                  src/12aa-need.js:223
 pricesOpen                   src/12aa-need.js:284
 pricesSeen                   src/12aa-need.js:194
 pricesTrim                   src/12aa-need.js:203
-prism                        src/21b-surface-deco.js:201
+prism                        src/21b-surface-deco.js:216
 PROBE_COST_CR                src/25m-probe.js:27
 PROBE_COST_DATA              src/25m-probe.js:26
 PROBE_MAX                    src/25m-probe.js:30
@@ -3233,11 +3254,11 @@ SUN_DIR_FLAT                 src/19c-light.js:23
 sunAzQ                       src/19c-light.js:26
 sunDirSet                    src/19c-light.js:30
 sunSpot                      src/19c-light.js:213
-SURF_BASE                    src/21e-surface-draw.js:707
+SURF_BASE                    src/21e-surface-draw.js:714
 SURF_HOR                     src/19c-light.js:212
 surfaceHint                  src/21e-surface-draw.js:4
 surfNight                    src/06a-celest.js:43
-surfScale                    src/21e-surface-draw.js:851
+surfScale                    src/21e-surface-draw.js:858
 SURV_COL                     src/12w-survey.js:57
 SURV_R                       src/12w-survey.js:19
 surveyColor                  src/12w-survey.js:58
@@ -3609,11 +3630,11 @@ wanSig                       src/26d-ui-wanderer.js:11
 wanStep                      src/24c-mode-wanderer.js:51
 wasBlurred                   src/15-input.js:203
 watchCrew                    src/27b-ui-crew.js:34
-WATER_MIN_SPAN               src/21e-surface-draw.js:725
-waterAlga                    src/21e-surface-draw.js:758
-waterAlgae                   src/21e-surface-draw.js:751
-waterDeepAt                  src/21e-surface-draw.js:764
-waterOf                      src/21e-surface-draw.js:726
+WATER_MIN_SPAN               src/21e-surface-draw.js:732
+waterAlga                    src/21e-surface-draw.js:765
+waterAlgae                   src/21e-surface-draw.js:758
+waterDeepAt                  src/21e-surface-draw.js:771
+waterOf                      src/21e-surface-draw.js:733
 wcBlots                      src/16a-space.js:141
 wcDeform                     src/16a-space.js:128
 wcGauss                      src/16a-space.js:127
@@ -4295,12 +4316,15 @@ zooTick                      src/11ad-zoo.js:41
   · сеть баз:302
   · обновление сцены:333
 
-## src/21ba-deco-shapes.js · 18 КБ
+## src/21ba-deco-shapes.js · 19 КБ
   · приметы места: формы:1
 
-## src/21b-surface-deco.js · 32 КБ
+## src/21b-surface-deco.js · 33 КБ
   · крупная форма на поверхности:1
-  · залежь как выход породы (M169):356
+  · залежь как выход породы (M169):371
+
+## src/21b-surface-deco-biomes.js · 22 КБ
+  · большая вещь на каждый биом (M352):1
 
 ## src/21c-built.js · 9 КБ
   · ваша база видна с земли:1
@@ -4308,7 +4332,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/21d-battery.js · 4 КБ
   · батарея: оборона, которую строят:1
 
-## src/21e-surface-draw.js · 59 КБ
+## src/21e-surface-draw.js · 60 КБ
   · поверхность: подсказка, HUD и кадр:1
 
 ## src/21f-home-out.js · 21 КБ
@@ -4990,6 +5014,9 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzzzm-beacon.js · 8 КБ
   · автотесты: «Маяк ГЛАВТРАССЫ» и голос приёмника (M349, M349a):1
+
+## tests/91zzzzn-deco-biomes.js · 4 КБ
+  · автотесты: большая вещь на каждый биом (M352):1
 
 ## tests/91zzzzy-hold.js · 9 КБ
   · холдинг: круг стройки числами (M339):1

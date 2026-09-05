@@ -71,8 +71,12 @@ function drawSurfaceHud(camx,camy,K){
      ни друг на друга, ни на солнце в небе. Ближняя цель — засечка на месте. */
   ctx.font="9px ui-monospace,monospace";
   let leftY=(hint?TOP+34:TOP+6),rightY=leftY,rowY=leftY;
-  for(let mi=0;mi<marks.length;mi++){
-    const m=marks[mi];
+  /* два прохода (M352): сперва фишки у кромок, потом засечки на месте — засечка
+     у самого края ложилась текстом поперёк второй фишки того же столбика
+     («ОСТОВ КОРАБЛЯ» поверх «ПЕЩЕРА 5592 м»), потому что считала ряды сама */
+  const far=[],near=[];
+  for(const m of marks){const ad=Math.abs(m.x-S.x);(ad*K>W*.45?far:near).push(m);}
+  for(const m of far.concat(near)){
     const d=m.x-S.x, ad=Math.abs(d);
     ctx.fillStyle=m.col;
     if(ad*K>W*.45){                       // цель за краем — фишка у своей кромки
@@ -94,9 +98,12 @@ function drawSurfaceHud(camx,camy,K){
       ctx.textAlign=old;
     }else{
       const sx=clamp((m.x-camx)*K,64,W-RIGHT_PAD-14);
+      if(rowY<Math.max(leftY,rightY)-6)rowY=Math.max(leftY,rightY)-6;   // ниже столбиков фишек
       rowY+=13;
       ctx.fillRect(sx-1,rowY-5,2,10);
-      ctx.fillText(m.ru,sx,rowY+16);
+      /* у правой кромки подпись уходит влево от засечки, иначе обрезается */
+      const old=ctx.textAlign;ctx.textAlign=sx>W-RIGHT_PAD-120?"right":"left";
+      ctx.fillText(m.ru,sx,rowY+16);ctx.textAlign=old;
     }
   }
 }
