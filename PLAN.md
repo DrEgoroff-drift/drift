@@ -657,7 +657,8 @@ Design in `docs/DESIGN-war.md`: laws §0, helm §1, guns §2, mounts §3, energy
 §4, pirate roles §5, episodes instead of reputation §6, six powers and the chronicle §7, the
 book §8, the crowd's ceiling / «Ревизия» / leftovers / clearance §11, the regulator §12, the
 server §13, the rites §14, the Director §15, **the architecture §16 (with «Ялта» in §16.6), the
-critique pass's decisions §17 (D01–D23), the staged queue §18, everything has a maker §19**.
+critique pass's decisions §17 (D01–D24), the staged queue §18, everything has a maker §19 (the grammar's eight
+dimensions in §19.4)**.
 Read §16–§19 first; the rest is the record of the author's brief of 2026-09-06 and the reasoning.
 
 Three stages, each playable on /dev before the next starts:
@@ -665,8 +666,9 @@ Three stages, each playable on /dev before the next starts:
 - **A — the fight** (client only): M360 helm and lock · M361 ships shoot each other and rank
   roles · M362 energy, seven numbers, three shields · M363 ОСНАСТКА and clearance · M364–M366
   twenty gun families · M367 missiles · M368 pirate loadouts.
-- **B — the powers, by seed** (client only; the galaxy lives with no server): M369 six powers,
-  makers on everything, «Ялта» · M369a the having of things · M370 chronicle core (integer replay, hash, clock, geometry) · M371 the Director ·
+- **B — the powers, by seed** (client only; the galaxy lives with no server): M369 the maker
+  grammar layer on `hullOf`, measured by `makerRead()`, «Ялта» · M369a the grammar in the fleet,
+  barges, pirate hulls, stations, domes, papers · M369b the having of things · M370 chronicle core (integer replay, hash, clock, geometry) · M371 the Director ·
   M372 the war seen · M373 the four rules · M374 episodes and the notebook · M375 the rescuer.
 - **C — everyone** (server): M376 `war.php` and ведомости · M377 leftovers and ghosts · M378
   votes, elections, сигнал сбора · M379 the nine rites · M380 «Ревизия» · M381 циркуляры and

@@ -946,6 +946,10 @@ One system inside ГЛАВТРАССА's centre (r ≈ 6, fixed by seed, never t
   a power is a *grammar of form* on a second axis of every generator (hulls, parts, stations,
   barges, domes, papers, suits), stored as `by` on ship records and `b` on parts, and
   everything a maker makes can be had by the §19.3 matrix.
+- **D24** The grammar is one layer read by every generator (§19.4): hulls (`03a`–`03e`), the
+  fleet (`12ai`), barges (`12l`), pirate hulls (`12i`), station bodies (`17e`), domes, papers.
+  Recognisability is measured, not argued: `makerRead()` separates six makers at 8 px with
+  ≥ 90 % accuracy over a hundred seeds per class before M369 closes.
 
 ---
 
@@ -965,10 +969,15 @@ One system inside ГЛАВТРАССА's centre (r ≈ 6, fixed by seed, never t
 - **M368** pirate loadouts by rank (deserter art waits for M369).
 
 **Stage B — the powers, by seed** (client only; the galaxy lives with no server)
-- **M369** six powers: the table, `HULL_MAKER` as the second axis of `hullOf` (§19.1) with six
-  hundred-hull sheets judged in the almanac, the paint conveyors, emblems, hails, IFF full;
-  deserters' art; stations, barges, domes and papers by maker; «Ялта» as a place (D22).
-- **M369a** the having of things (§19.3): shipyards and workshops per maker, the hull purchase
+- **M369** the grammar layer (§19.4): `03a-hull-maker` with the six makers over the eight
+  dimensions; `hullOf` reads profile law, scheme set and protrusions; `03b` paint, `03d`
+  marks and `03e` draw read surface, joints and lights; engine signature in flight; the
+  `makerRead()` measure and six hundred-hull sheets in the almanac (D24). The powers' table,
+  emblems, hails, IFF full; «Ялта» as a place (D22).
+- **M369a** the same grammar in the other generators: the fleet (`12ai`), barges (`12l`),
+  pirate hulls and deserters (`12i`), station bodies (`17e`: assembly law, forms, lights),
+  domes and strips, papers, suits, the station's accent and greeting, engine sound.
+- **M369b** the having of things (§19.3): shipyards and workshops per maker, the hull purchase
   gated by an episode, the tow-and-restore path for derelict hulls, the gift, the fuse of two
   makers' hulls; the hail about a foreign hull.
 - **M370** chronicle core: state, `step`, replay, cache, hash, clock offset, geometry (D12),
@@ -1070,4 +1079,70 @@ unchanged; `PART_GEN` 2. The maker gives:
 
 Flying a foreign hull changes nothing mechanical — the IFF is the transponder (D09). It changes
 the hail: «На компанейском корпусе, а флаг наш? Записываю».
+### 19.4 The grammar, deeper — what the generators must learn (author, 2026-09-06)
+
+> «можешь на любом летать, но флаг наш… дизайны прям должны узнаваемо отличаться. Генератор
+> расширить надо. У нас появляется дохерище кораблей, и станции, и всё меняется, абсолютно
+> всё, у всех свой стиль»
+
+**What exists, honestly.** Not one generator but five: the hull (`03a-hull-gen` — a
+longitudinal profile of stations, a *scheme* of the airframe from `FORM_BY_CLASS` — swept, delta,
+xwing, trident, twin, slab, boxed, disc — then class details; `03b` paint, `03c` luxe, `03d`
+marks, `03e` draw, `03f` role), the fleet (`12ai-fleet`: thirteen classes from rects and
+ellipses with the joints grammar of almanac III §8), barges (`12l-barge`), pirate hulls
+(`12i-pirate-hull`), station bodies (`17e-station-body`: rack, drum, pods, hangar, tank, dish,
+mast in three sizes). A «second axis» on `hullOf` alone would give six kinds of frigate and one
+kind of everything else. So the maker is **one grammar layer that all five read** (D24).
+
+**Eight dimensions of a maker.** Each is a *law*, not a number; a maker is recognisable when
+at least the first three differ by silhouette and the rest agree with them.
+
+| dimension | ГЛАВТРАССА | Компания | Орднунг | Коммуна | Рассвет | Хай-Фронт |
+|---|---|---|---|---|---|---|
+| **1 profile law** — how the half-width curve is built | stepped: ledges, a box amidships | one smooth bulge, capsule | straight segments, chamfers, flat sides | double curve, swan: narrow waist, long sweep | segmented: 3–5 modules of different widths butted with seams | spindle: thin symmetric ellipse, no notch |
+| **2 scheme set** — which airframes the class may take | as today | twin, swept | slab, boxed, twin | swept, delta | boxed, twin, frame | trident, xwing, or none |
+| **3 signature protrusions** — always present, outside the outline | towing hook, boxy nacelles, radiators | fin with the logo, running-line panel | turret plinth, rib comb along the spine | bowsprit, window band, pennant | exposed tanks, welded braces, plates of other hulls | antenna array longer than the hull, underlight strips |
+| **4 joint grammar** — how anything meets the hull | хомут + пластина (almanac III §8) | flush fairing, no visible joint | bolted flange with four bolts | sculpted fillet | weld bead | a dark gap — the part floats a pixel off |
+| **5 surface** — ground, greys, glaze, gloss, wear | санкирь, greys, stripe, wear ×1.3 | white, blue stripe, gloss, wear ×.5 | grey steel, black ribs, matte, no gradient | blue and white, soft gloss | ochre and black, hand-painted, wear ×1.6 | white, red dot, satin |
+| **6 marks and lights** | number, «изделие», nickname; two amber lamps | logo across the hull, model™; running line | stencil numbers ×3, no name; no lights | a name, a pennant; the window band lit | a painted sun, the name by hand; one lantern | one glyph, «v3.2»; underlight |
+| **7 engine signature** — flare and trail in flight | wide orange flare, sooty trail | twin blue-white, clean | short hard white, no trail | long soft violet | smoky yellow with sparks | thin cyan, pulsed, no flare |
+| **8 sound and motion** | low hum, banks moderately | smooth mid hum, banks wide | hard drone, no bank, crisp turns | soft chord, banks wide and slow | rattling saw, sparks on turn | near-silent whine, instant turns |
+
+Dimension 8 is small on purpose: motion stays within the class's `turn` — a maker changes the
+*bank* and the *sound*, never the numbers a player paid for.
+
+**Count.** Seven classes × five or six schemes × six makers ≈ 250 silhouettes before the seed
+moves a single station of the profile; with seeds, thousands, and every one says its class first
+and its maker second. That is «дохерище кораблей» without a second art department.
+
+**The same eight on the other generators:**
+- **fleet (`12ai`)** — its thirteen classes take dimensions 3–8 from the maker (the fleet's own
+  joints grammar becomes ГЛАВТРАССА's row of dimension 4); the profile law bends its rects and
+  ellipses (steps / capsule / chamfers / swan / modules / spindle).
+- **barges (`12l`)** — profile law, protrusions, surface, lights; a Рассвет barge is visibly
+  three barges welded together, a Компания barge is a white capsule with the logo.
+- **pirate hulls and deserters (`12i`)** — the maker's grammar with marks *stripped* (the number
+  painted over, the logo scratched) and wear ×2: whose hull, that grammar, and it reads as stolen.
+- **station bodies (`17e`)** — an **assembly law** per maker (ГЛАВТРАССА: rack and drum
+  stacked; Компания: a logo block with pods around; Орднунг: a stack, every module the same
+  width; Коммуна: arcs and a ring; Рассвет: patchwork of unequal modules on a truss; Хай-Фронт:
+  one spine, masts and dishes), the forms subset, surface, lights, joints.
+- **domes and strips** (holding §13) — surface and one protrusion (Компания's dome carries the
+  logo; Орднунг's is a grid; Коммуна's a glass arc; Рассвет's a cluster of small domes; Хай-Фронт's
+  a dark dome lit from below).
+- **papers** — the book on the shelf and the poster on the wall in the maker's typographic
+  habit (ГЛАВТРАССА's stencil, Компания's trademark, Орднунг's paragraph numbers, Коммуна's
+  italics, Рассвет's hand lettering, Хай-Фронт's version strings); one accent colour and one
+  header line on the maker's station screens; one line of food in the cantina; suits by maker.
+
+**Measured, not argued (D24).** `makerRead(seed, cls, maker)` renders the hull at 8 px and
+takes silhouette descriptors — aspect, convexity defect, protrusion count and spread, symmetry,
+step count along the outline — and a small fixed decision tree must name the maker with ≥ 90 %
+accuracy over a hundred seeds per class, class held constant. Below that the grammar is not
+recognisable and the pass is not done, whatever the sheet looks like. The six hundred-hull
+sheets go to the almanac for the craft verdict on top of the number (the codex still rules:
+dark ground, body in greys, glazes, wear under highlights; one body, one outline, one light).
+
+**Flag, not hull.** You may fly any of them; the transponder stays ГЛАВТРАССА's (D09). The
+picket reads the hull first and the flag second, and says so.
 
