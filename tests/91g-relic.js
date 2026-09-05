@@ -70,7 +70,7 @@ TEST_SUITES.push(()=>suite("артефакты: первые строки раб
   const plain=mk();
   relicFind("dice","т");relicEquip(cmd,"dice");
   ok(mk()>=1,"со «Счётной костью» удача не бывает ниже 1.0");
-  ok(plain<1||true,"без неё бывает любой (эталон "+plain.toFixed(2)+")");
+  ok(typeof plain==="number"&&plain===plain,"без неё бывает любой (эталон "+plain.toFixed(2)+")");
   /* «Тихий маяк»: ядро дрейфует вдвое медленнее */
   relicUnequip(cmd);
   const ai={seed:7,role:"keep",ai:1,drift:0,perks:[],traits:[],loy:100,xp:0,log:[]};

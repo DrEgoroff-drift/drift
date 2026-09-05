@@ -167,7 +167,7 @@ TEST_SUITES.push(()=>suite("репутация станции и последн�
   ok(mine.length>3,"в семье есть шахтные узлы");
   /* закрываем всё, кроме трёх последних */
   for(const n of NODES)if(n.fam===fam)nodesHave()[n.id]=1;
-  const tail=NODES.filter(n=>n.fam===fam&&n.where==="в шахте").slice(0,3);
+  const tail=NODES.filter(n=>n.fam===fam&&n.where==="в шахте").slice(-3);
   for(const n of tail)delete nodesHave()[n.id];
   /* правило узкое: вне логова не выпадают ИМЕННО хвостовые узлы почти
      закрытой семьи; чужие семьи продолжают падать где падали */

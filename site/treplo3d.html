@@ -2717,6 +2717,9 @@ function renderInit(){
 function renderSize(w,h){
   if(R.W===w&&R.H===h)return;
   R.W=w;R.H=h;
+  /* старые цели — удалить, иначе каждый resize копит буферы в GPU */
+  const drop=(t)=>{if(!t)return;if(t.fb)gl.deleteFramebuffer(t.fb);if(t.tex)gl.deleteTexture(t.tex);if(t.rb)gl.deleteRenderbuffer(t.rb);};
+  drop(R.hdr);for(const pr of (R.bloom||[]))for(const t of pr)drop(t);
   const fmt=GLX.float?"rgba16f":"rgba8";
   R.hdr=glTarget(w,h,fmt);
   /* лестница свечения: каждая ступень вдвое меньше предыдущей. Пять ступеней

@@ -842,11 +842,13 @@ if ($a === 'post') {
     $in = (array)($me['in'] ?? []);
     if ($in) { $me['in'] = []; writeJson($uf, $me); }
     $outL = [];
-    foreach ($in as $r)
-      if (is_array($r) && isset($r['card']))
+    foreach ($in as $r) {
+      if (is_array($r) && isset($r['card'])) {
         $row = ['ch' => (string)($r['ch'] ?? ''), 'card' => $r['card']];
         if (!empty($r['mv'])) $row['mv'] = $r['mv'];  /* партия по переписке (M192) */
         $outL[] = $row;
+      }
+    }
     out(['ok' => true, 'in' => $outL]);
   }
 

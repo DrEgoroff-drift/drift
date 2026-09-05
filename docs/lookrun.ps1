@@ -29,7 +29,7 @@ $argv = @("--headless=new", "--no-sandbox", "--window-size=1280,800",
           "--disable-backgrounding-occluded-windows", $url)
 
 function Stop-Probe {
-  Get-CimInstance Win32_Process -Filter "Name='chrome.exe'" |
+  Get-CimInstance Win32_Process -Filter "Name='chrome.exe' OR Name='msedge.exe'" |
     Where-Object { $_.CommandLine -like "*drift-look-profile*" } |
     ForEach-Object { try { Stop-Process -Id $_.ProcessId -Force -ErrorAction Stop } catch {} }
 }

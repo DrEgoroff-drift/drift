@@ -1736,7 +1736,7 @@ body.table u.addr{color:#7a4a20}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.357.0";
+const VER="0.358.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -5199,6 +5199,8 @@ function instrAgeTick(dt){
   }
 }
 function instrWearRu(w){
+  return w<.12?"новый":w<.35?"обношенный":w<.6?"с люфтом":w<.85?"разбитый":"мёртвая шкала";
+}
 /* прибор можно потерять (хвост M127): попадание по корпусу изредка выбивает
    гнездо — экземпляр разбит до мёртвой шкалы, и панель это покажет сама */
 function instrKnock(){
@@ -5210,8 +5212,6 @@ function instrKnock(){
   const I=(typeof INSTR_BY_ID!=="undefined"&&INSTR_BY_ID[id])?INSTR_BY_ID[id].ru:id;
   tell("warn","Попадание: выбито гнездо — "+I,"Прибор разбит\n"+I+"\nпанель слепа по этому каналу");
   return id;
-}
-  return w<.12?"новый":w<.35?"обношенный":w<.6?"с люфтом":w<.85?"разбитый":"мёртвая шкала";
 }
 /* ── цена ──
    Считается от завода и износа, чтобы «починить» всегда было заметно дешевле,
@@ -14829,7 +14829,7 @@ function drawMisFigure(c,W,H){
     for(let k=0;k<=60;k++){
       const t=-1+k/30;
       const a=ang+t*1.1;
-      const rad=R*(.55+i*.12)+Math.sin(k/4+r()*3)*3*(s.mis*8+.4);
+      const rad=R*(.55+i*.12)+Math.sin(k/4+r()*3)*3*((s.mis||0)*8+.4);
       const x=cx+Math.cos(a)*rad,y=cy+Math.sin(a)*rad;
       k?c.lineTo(x,y):c.moveTo(x,y);
     }
@@ -31036,7 +31036,7 @@ function toggleParrotWin(open){
     const R=cv.getBoundingClientRect();
     /* экранное → в координаты птицы: тот же перенос и масштаб, что в отрисовке */
     const W=R.width,H=R.height,s=Math.min(W/230,H/304);
-    parrotPoke((e.clientX-R.left-W/2-4)/s,(e.clientY-R.top-(H-16))/s);
+    parrotPoke((e.clientX-R.left-W/2-4)/s,(e.clientY-R.top-(H-16-PAR.hang*150))/s);
   });
 })();
 
@@ -32128,7 +32128,7 @@ function snapshot(){
      существуют: облако — site/api.php, и он проверяет только наличие v. */
   return {v:5,sx:G.sx,sy:G.sy,shipId:G.shipId,owned:G.owned,
     x:G.ship.x,y:G.ship.y,a:G.ship.a,fuel:G.fuel,hull:G.hull,
-    cargo:G.cargo,credits:G.credits,data:G.data,mods:G.mods,modsOwned:G.modsOwned,
+    cargo:G.cargo,credits:G.credits,data:G.data,soldTotal:G.soldTotal|0,mods:G.mods,modsOwned:G.modsOwned,
     inv:G.inv.map(packPart),fit:G.fit,partsBought:prunePartsBought(),
     tech:[...G.tech],techLvl:G.techLvl,barter:[...G.barter],found:[...G.found],
     species:[...G.species],bioV:2,
@@ -32753,6 +32753,7 @@ function applySave(s){
   /* почтовый круг (11e): три числа */
   G.post={stage:clamp((s.post&&s.post.stage)|0,0,POST_LINKS.length-1),opened:(s.post&&s.post.opened)?1:0,done:(s.post&&s.post.done)?1:0};
   G.strips=Array.isArray(s.strips)?s.strips.slice(0,8):[];
+  for(const st of G.strips)if(st&&typeof st==='object'&&typeof st.mis!=='number')st.mis=0;   /* ленты до невязки (11z): без поля фигура считала NaN */
   G.need=asMap(s.need);
   G.hold=asMap(s.hold);
   G.order=(s.order&&typeof s.order==="object"&&s.order.to)?s.order:null;
@@ -32913,6 +32914,7 @@ function applySave(s){
   G.told=Array.isArray(s.told)?s.told.slice(-24):[];
   G.lastDig=(s.lastDig&&typeof s.lastDig==="object")?s.lastDig:null;
   G.credits=Math.max(0,s.credits|0);G.data=Math.max(0,s.data|0);
+  G.soldTotal=Math.max(0,s.soldTotal|0);   /* оборот для экзамена кооператива (12aj) — раньше терялся при каждой загрузке */
   for(const k of RES_KEYS)G.cargo[k]=Math.max(0,(s.cargo&&s.cargo[k])|0);
   const st=stat();
   G.fuel=clamp(+s.fuel||0,0,st.fuelMax);
@@ -35497,7 +35499,7 @@ function drawStationBody(V,S,ty){
        системного вида их просто нет */
     for(let i=0;i<6;i++){
       const sx=i%2?1:-1,t=(i*.31+.12)%1;
-      const bx=sx*(9+t*10)*V.a,by=-4+t*12,w=3.6+((i*3)%3)*2.1;
+      const bx=sx*(9+t*10)*V.a,by=-4+t*12,w=3.6+(i%3)*2.1;
       ctx.strokeStyle="rgba(176,192,212,.55)";ctx.lineWidth=1;
       ctx.beginPath();ctx.moveTo(bx,by-6);ctx.lineTo(bx,by);ctx.stroke();
       ctx.fillStyle=i%3?"#3b4f68":"#5a4c36";
@@ -48421,11 +48423,10 @@ function builtKey(sx,sy){return sx+","+sy;}
 function builtHere(){
   const S=G.surf;if(!S)return [];
   const out=[];
-  const key=builtKey(G.sx,G.sy);
-  const B=G.bases&&G.bases[key];
-  /* база привязана к системе, а не к планете: ставим её на ту планету, куда
-     игрок садился первой, — иначе она «телепортируется» вслед за игроком */
-  if(B&&(B.pIdx===undefined||B.pIdx===S.p.idx))
+  /* база привязана к планете (21a: ключ sx,sy:idx) — на чужой планете той же
+     системы её нет, иначе она «телепортируется» вслед за игроком */
+  const B=(typeof baseAt==="function")?baseAt(G.sx,G.sy,S.p.idx):null;
+  if(B)
     out.push({kind:"base",ru:"ВАША БАЗА",lvl:(B.cells?Object.keys(B.cells).length:1)});
   /* ── дома здесь больше нет, и это не потеря ──
      Плейтест 30.08.2026: «дом как говно нарисован… и тут получается в дом не
@@ -55786,7 +55787,7 @@ function drawWanderRoom(){
     ctx.fillStyle=pg;ctx.beginPath();ctx.arc(px,py,pr,0,TAU);ctx.fill();
     const tg=ctx.createLinearGradient(xa,0,xb,0);tg.addColorStop(0,"rgba(0,0,0,0)");tg.addColorStop(1,"rgba(0,0,0,.7)");
     ctx.fillStyle=tg;ctx.fillRect(0,0,W,H);
-    for(let i=0;i<14;i++){const sx=A.x+((i*173+now/900)%(B.x-A.x)),sy=D.y+((i*97)%Math.max(1,(A.y-D.y)))*.7;ctx.fillStyle="rgba(220,230,240,.5)";ctx.fillRect(sx,sy,1,1);}
+    for(let i=0;i<14;i++){const sx=A.x+((i*173+now/900)%(B.x-A.x)),sy=D.y+((i*97)%Math.max(1,(D.y-A.y)))*.7;ctx.fillStyle="rgba(220,230,240,.5)";ctx.fillRect(sx,sy,1,1);}
     ctx.restore();
     /* переплёт: рёбра вдоль и поперёк */
     ctx.strokeStyle="#0f1114";ctx.lineWidth=2.5;
@@ -72255,7 +72256,7 @@ function prof(N,mute){
     map:[()=>{},drawMap],landing:[updateLanding,drawLanding],surface:[updateSurface,drawSurface],
     dig:[updateDig,drawDig],cave:[updateCave,drawCave],belt:[updateBelt,drawBelt],
     scoop:[updateScoop,drawScoop],base:[updateBase,drawBase],raid:[updateRaid,drawRaid],
-    homein:[updateHomeIn,drawHomeIn]}[G.mode];
+    homein:[updateHomeIn,drawHomeIn],winter:[updateWinter,drawWinter],spa:[updateSpa,drawSpa]}[G.mode];
   if(!M)return {ошибка:"режим "+G.mode+" не профилируется"};
   const names=Object.keys(window).filter(k=>typeof window[k]==="function"&&/^(draw[A-Z]|fill[A-Z]|b[A-Z][a-z]|hud$)/.test(k)&&k!=="drawChunks");
   const T={},orig={};
@@ -75342,7 +75343,7 @@ function winHit(mx,my){
      списке проверок, потому что лежат вплотную к краю панели */
   const F=(W0.faults||[]);
   for(let i=0;i<F.length;i++){
-    const x=g.panel.x+g.panel.w+H*0.018+i*H*0.030, y=g.panel.y+g.panel.h*0.10;
+    const x=g.panel.x+g.panel.w+H*0.026+i*H*0.038, y=g.panel.y+g.panel.h*0.14;   /* те же числа, что в отрисовке (строка лампочек выше) */
     if(Math.hypot(mx-x,my-y)<Math.max(14,H*0.024))return {k:"fix",id:F[i].k};
   }
   for(const lv of winLevers(g))if(inR(lv))return {k:"lever",id:lv.k};

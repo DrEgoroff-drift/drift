@@ -56,7 +56,7 @@ TEST_SUITES.push(()=>suite("ракеты: боеприпас — это груз
   ok(!mslFire(),"цели по носу нет — пуска нет");
   eq(G.cargo.missile,1,"и ракета осталась в трюме");
   G.mslCool=0;G.pirates=[];
-  ok(mslFire()===false||G.cargo.missile===1,"без целей вовсе пуск тоже не тратит ракету");
+  ok(mslFire()===false&&G.cargo.missile===1,"без целей вовсе пуск тоже не тратит ракету");
 
   /* сборка партии: цена в редком сырье и место в трюме */
   resetWorld();

@@ -176,7 +176,7 @@ TEST_SUITES.push(()=>suite("тычок в каждую кнопку стола �
   const bad=[];let clicks=0;
   const press=(sel,label,limit)=>{
     for(let i=0;i<limit;i++){
-      const list=[...document.querySelectorAll(sel)].filter(b=>b.offsetParent!==null||true);
+      const list=[...document.querySelectorAll(sel)].filter(b=>!b.disabled);   /* в закрытых экранах offsetParent пуст — жмём всё, что не отключено */
       if(i>=list.length)break;
       const b=list[i];
       try{b.click();clicks++;}

@@ -22,6 +22,7 @@ $web  = "drift:drift-game.ru/docs"
 
 if (-not $SkipBuild -and -not $Shots) {
   & powershell -ExecutionPolicy Bypass -File (Join-Path $root "build.ps1")
+  if ($LASTEXITCODE -ne 0) { throw "build.ps1 вернул $LASTEXITCODE — заливка отменена" }
 }
 
 $ver = (Select-String -Path (Join-Path $root "src\01-core.js") -Pattern 'VER="([0-9.]+)"').Matches[0].Groups[1].Value
@@ -103,6 +104,7 @@ if (-not $Shots) {
   $bird = Join-Path $root "site\treplo3d.html"
   if (Test-Path $bird) {
     & powershell -ExecutionPolicy Bypass -File (Join-Path $root "bird.ps1") | Out-Null
+    if ($LASTEXITCODE -ne 0) { throw "bird.ps1 вернул $LASTEXITCODE" }
     scp $bird "$web/dev/treplo3d.html"
     if ($LASTEXITCODE -ne 0) { throw "scp птицы вернул $LASTEXITCODE" }
   }

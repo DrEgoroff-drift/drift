@@ -720,6 +720,6 @@ function toggleParrotWin(open){
     const R=cv.getBoundingClientRect();
     /* экранное → в координаты птицы: тот же перенос и масштаб, что в отрисовке */
     const W=R.width,H=R.height,s=Math.min(W/230,H/304);
-    parrotPoke((e.clientX-R.left-W/2-4)/s,(e.clientY-R.top-(H-16))/s);
+    parrotPoke((e.clientX-R.left-W/2-4)/s,(e.clientY-R.top-(H-16-PAR.hang*150))/s);
   });
 })();

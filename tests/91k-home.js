@@ -143,7 +143,7 @@ TEST_SUITES.push(()=>suite("маршрут фактора живёт с рынк
   }
   ok(sys.length>=2,"нашлись две станции для плеч");
   sys.forEach(s=>mgrRouteVisit(s));
-  eq(mgrBestLeg(m)&&sys.length>=2?true:true,true,"плечи собраны");
+  ok(!!mgrBestLeg(m),"плечи собраны");
   mgrToggleRule(m,"run");
   const c0=G.credits;
   mgrWorkFact(m,1);

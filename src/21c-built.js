@@ -19,11 +19,10 @@ function builtKey(sx,sy){return sx+","+sy;}
 function builtHere(){
   const S=G.surf;if(!S)return [];
   const out=[];
-  const key=builtKey(G.sx,G.sy);
-  const B=G.bases&&G.bases[key];
-  /* база привязана к системе, а не к планете: ставим её на ту планету, куда
-     игрок садился первой, — иначе она «телепортируется» вслед за игроком */
-  if(B&&(B.pIdx===undefined||B.pIdx===S.p.idx))
+  /* база привязана к планете (21a: ключ sx,sy:idx) — на чужой планете той же
+     системы её нет, иначе она «телепортируется» вслед за игроком */
+  const B=(typeof baseAt==="function")?baseAt(G.sx,G.sy,S.p.idx):null;
+  if(B)
     out.push({kind:"base",ru:"ВАША БАЗА",lvl:(B.cells?Object.keys(B.cells).length:1)});
   /* ── дома здесь больше нет, и это не потеря ──
      Плейтест 30.08.2026: «дом как говно нарисован… и тут получается в дом не

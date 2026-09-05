@@ -75,3 +75,13 @@ TEST_SUITES.push(()=>suite("запись: пустая карта из обла�
   const t2=saveText();
   ok(typeof t2==="string"&&t2.length<400000,"и запись после осмотра цела");
 }));
+
+TEST_SUITES.push(()=>suite("сейв: оборот кооператива и выбитое гнездо не теряются (охота 05.09)",()=>{
+  resetWorld();
+  G.soldTotal=15432;
+  const s=JSON.parse(JSON.stringify(snapshot()));G.soldTotal=0;applySave(s);
+  eq(G.soldTotal,15432,"оборот пережил сохранение — иначе экзамен кооператива обнулялся каждой загрузкой");
+  ok(typeof instrKnock==="function","instrKnock — глобальная: попадание по корпусу может выбить гнездо (M127)");
+  G.strips=[{k:"strip",sx:0,sy:0}];const s2=JSON.parse(JSON.stringify(snapshot()));applySave(s2);
+  ok(G.strips.length===1&&G.strips[0].mis===0,"лента без невязки получает mis=0 при загрузке, а не NaN");
+}));

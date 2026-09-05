@@ -302,7 +302,7 @@ BUILD_KEYS                   src/21a-mode-base.js:41
 buildAi                      src/12f-mgr-ai.js:29
 builtHere                    src/21c-built.js:19
 builtKey                     src/21c-built.js:17
-builtSpot                    src/21c-built.js:44
+builtSpot                    src/21c-built.js:43
 buoyEtherLine                src/12ae-ladder.js:125
 BUY_SPREAD                   src/12-economy.js:48
 buyCargo                     src/12-economy.js:54
@@ -755,7 +755,7 @@ drawBarge                    src/12l-barge.js:515
 drawBarges                   src/12l-barge.js:546
 drawBargesMap                src/12l-barge.js:571
 drawBase                     src/21ac-base-draw.js:43
-drawBaseBuilding             src/21c-built.js:107
+drawBaseBuilding             src/21c-built.js:106
 drawBeast                    src/20f-fauna.js:231
 drawBeastAlien               src/20f-fauna.js:65
 drawBelt                     src/24-mode-belt.js:375
@@ -763,7 +763,7 @@ drawBeltPOISprite            src/24b-belt-poi.js:50
 drawBeltRing                 src/17c-system-draw.js:94
 drawBeltRocks                src/17c-system-draw.js:41
 drawBuildMenu                src/21aa-base-rooms.js:504
-drawBuilt                    src/21c-built.js:66
+drawBuilt                    src/21c-built.js:65
 drawCantinaRoom              src/27d-ui-cantina.js:32
 drawCave                     src/22-mode-cave.js:755
 drawCaveDark                 src/22a-cave-deco.js:327
@@ -1532,7 +1532,7 @@ instrInstall                 src/05b-instr-kit.js:147
 instrJitter                  src/05b-instr-kit.js:73
 instrKit                     src/05b-instr-kit.js:39
 instrKitInit                 src/05b-instr-kit.js:34
-instrKnock                   src/05b-instr-kit.js:99
+instrKnock                   src/05b-instr-kit.js:101
 instrMisclose                src/25a-instr.js:92
 instrOffers                  src/05b-instr-kit.js:126
 instrPanel                   src/25a-instr.js:100
@@ -4665,7 +4665,7 @@ zooTick                      src/11ad-zoo.js:41
   · на чистом старте в кадре нет лишнего:249
   · M236: колесо крутит мир только над миром:280
 
-## tests/91g-relic.js · 8 КБ
+## tests/91g-relic.js · 9 КБ
   · автотесты: лаборатория и артефакты: слот, эффекты, дерево перков без пустот:1
 
 ## tests/91h-base.js · 13 КБ
@@ -5024,7 +5024,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzzzb-coop.js · 7 КБ
   · автотесты: кооператив (M351):1
 
-## tests/91zzzzb-save.js · 5 КБ
+## tests/91zzzzb-save.js · 6 КБ
   · запись, которая не убивает полёт:1
   · пустая карта, вернувшаяся из облака списком:40
 

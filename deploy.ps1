@@ -25,6 +25,7 @@ $web  = "drift:drift-game.ru/docs"
 
 if (-not $SkipBuild -and -not $SiteOnly) {
   & powershell -ExecutionPolicy Bypass -File (Join-Path $root "build.ps1")
+  if ($LASTEXITCODE -ne 0) { throw "build.ps1 вернул $LASTEXITCODE — заливка отменена" }
 }
 
 function Put($local, $remote) {

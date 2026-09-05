@@ -773,7 +773,7 @@ function winHit(mx,my){
      списке проверок, потому что лежат вплотную к краю панели */
   const F=(W0.faults||[]);
   for(let i=0;i<F.length;i++){
-    const x=g.panel.x+g.panel.w+H*0.018+i*H*0.030, y=g.panel.y+g.panel.h*0.10;
+    const x=g.panel.x+g.panel.w+H*0.026+i*H*0.038, y=g.panel.y+g.panel.h*0.14;   /* те же числа, что в отрисовке (строка лампочек выше) */
     if(Math.hypot(mx-x,my-y)<Math.max(14,H*0.024))return {k:"fix",id:F[i].k};
   }
   for(const lv of winLevers(g))if(inR(lv))return {k:"lever",id:lv.k};

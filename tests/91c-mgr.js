@@ -81,7 +81,7 @@ TEST_SUITES.push(()=>suite("исследователь: образцы, наук
   G.blueprints.coldbore=1;
   ok(stat().drill>bad,"верный чертёж работает лучше ошибочного");
   G.data=100;
-  ok(bpRecheck("coldbore")===false||true,"пересборка доступна только для ошибочного");
+  ok(bpRecheck("coldbore")&&G.data===40&&Math.abs(G.blueprints.coldbore)===1,"пересборка берёт 60 данных и оставляет вердикт ±1");
 }));
 
 TEST_SUITES.push(()=>suite("управляющие переживают сохранение",()=>{

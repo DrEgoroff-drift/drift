@@ -72,10 +72,10 @@ TEST_SUITES.push(()=>suite("истории: якорь при первой вс�
   /* кантина: сцены рисуются без ошибок */
   const cn=document.createElement("canvas");cn.width=400;cn.height=200;
   const cc=cn.getContext("2d");
-  storyCantFigures(cc,400,180,128);storyCantProps(cc,400,180,128);
-  ok(true,"сцены кантины нарисовались");
+  let drewOk=true;try{storyCantFigures(cc,400,180,128);storyCantProps(cc,400,180,128);}catch(e){drewOk=false;}
+  ok(drewOk,"сцены кантины нарисовались без исключений");
   for(const p of ["glass","glass_empty","cup","cap","bread","tally","candle","key","jar","paper","stool_empty"])storyProp(cc,p,10,10);
-  ok(true,"все вещи стойки нарисовались");
+  ok(cc.getImageData(0,0,40,40).data.some(v=>v),"все вещи стойки нарисовались");
   /* сохранение */
   const snap=snapshot();
   ok(!!snap.seen&&!!snap.storyPin,"следы и якоря в снимке");

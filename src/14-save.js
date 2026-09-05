@@ -50,7 +50,7 @@ function snapshot(){
      существуют: облако — site/api.php, и он проверяет только наличие v. */
   return {v:5,sx:G.sx,sy:G.sy,shipId:G.shipId,owned:G.owned,
     x:G.ship.x,y:G.ship.y,a:G.ship.a,fuel:G.fuel,hull:G.hull,
-    cargo:G.cargo,credits:G.credits,data:G.data,mods:G.mods,modsOwned:G.modsOwned,
+    cargo:G.cargo,credits:G.credits,data:G.data,soldTotal:G.soldTotal|0,mods:G.mods,modsOwned:G.modsOwned,
     inv:G.inv.map(packPart),fit:G.fit,partsBought:prunePartsBought(),
     tech:[...G.tech],techLvl:G.techLvl,barter:[...G.barter],found:[...G.found],
     species:[...G.species],bioV:2,
@@ -675,6 +675,7 @@ function applySave(s){
   /* почтовый круг (11e): три числа */
   G.post={stage:clamp((s.post&&s.post.stage)|0,0,POST_LINKS.length-1),opened:(s.post&&s.post.opened)?1:0,done:(s.post&&s.post.done)?1:0};
   G.strips=Array.isArray(s.strips)?s.strips.slice(0,8):[];
+  for(const st of G.strips)if(st&&typeof st==='object'&&typeof st.mis!=='number')st.mis=0;   /* ленты до невязки (11z): без поля фигура считала NaN */
   G.need=asMap(s.need);
   G.hold=asMap(s.hold);
   G.order=(s.order&&typeof s.order==="object"&&s.order.to)?s.order:null;
@@ -835,6 +836,7 @@ function applySave(s){
   G.told=Array.isArray(s.told)?s.told.slice(-24):[];
   G.lastDig=(s.lastDig&&typeof s.lastDig==="object")?s.lastDig:null;
   G.credits=Math.max(0,s.credits|0);G.data=Math.max(0,s.data|0);
+  G.soldTotal=Math.max(0,s.soldTotal|0);   /* оборот для экзамена кооператива (12aj) — раньше терялся при каждой загрузке */
   for(const k of RES_KEYS)G.cargo[k]=Math.max(0,(s.cargo&&s.cargo[k])|0);
   const st=stat();
   G.fuel=clamp(+s.fuel||0,0,st.fuelMax);

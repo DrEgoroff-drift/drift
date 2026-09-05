@@ -342,7 +342,7 @@ function drawStationBody(V,S,ty){
        системного вида их просто нет */
     for(let i=0;i<6;i++){
       const sx=i%2?1:-1,t=(i*.31+.12)%1;
-      const bx=sx*(9+t*10)*V.a,by=-4+t*12,w=3.6+((i*3)%3)*2.1;
+      const bx=sx*(9+t*10)*V.a,by=-4+t*12,w=3.6+(i%3)*2.1;
       ctx.strokeStyle="rgba(176,192,212,.55)";ctx.lineWidth=1;
       ctx.beginPath();ctx.moveTo(bx,by-6);ctx.lineTo(bx,by);ctx.stroke();
       ctx.fillStyle=i%3?"#3b4f68":"#5a4c36";

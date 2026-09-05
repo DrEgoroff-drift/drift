@@ -157,7 +157,7 @@ TEST_SUITES.push(()=>suite("шахта помнит выработку",()=>{
 TEST_SUITES.push(()=>suite("постройки видны с земли",()=>{
   resetWorld();landOnTestPlanet();
   eq(builtHere().length,0,"пока ничего не построено");
-  G.bases[G.sx+","+G.sy]={cells:{a:1,b:1}};
+  G.bases[baseKey(G.sx,G.sy,G.surf.p.idx)]={sx:G.sx,sy:G.sy,idx:G.surf.p.idx,name:"Т",cells:{a:1,b:1}};
   const b=builtHere();
   eq(b.length,1,"база видна на планете");
   eq(b[0].kind,"base","это база");

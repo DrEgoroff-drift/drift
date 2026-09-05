@@ -34,13 +34,13 @@ TEST_SUITES.push(()=>suite("шахматы: короля под боем не о
   const P=chPosition(pin);
   /* белая пешка f2 связана? нет — проверим, что король не может встать под бой */
   const kmv=chMoves(P.B,P.st,chSq("e1")).map(chName);
-  ok(kmv.indexOf("e2")<0||true,"король не встаёт на битое поле");
+  ok(kmv.indexOf("e2")<0,"король не встаёт на битое поле");
   /* прямая проверка: нельзя открыть своего короля */
   const B=".......k........................................Q......K........".split("");
   /* белый ферзь на a2? соберём проще: чёрный король h8, белый ферзь h1 — чёрному нельзя на h-линию */
   const B2="......k...................................................R...K.".split("");
   const st={ep:-1,wk:false,wq:false,bk:false,bq:false};
-  ok(chAttacked(B2,chKing(B2,false),true)===chAttacked(B2,chKing(B2,false),true),"счёт боя не падает");
+  ok(typeof chAttacked(B2,chKing(B2,false),true)==="boolean","счёт боя не падает и отвечает да/нет");
 }));
 TEST_SUITES.push(()=>suite("шахматы: рокировка, взятие на проходе и превращение",()=>{
   resetWorld();

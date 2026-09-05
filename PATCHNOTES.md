@@ -7,6 +7,30 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.358.0 - bug hunt 2026-09-05: what 115 scanners found and a hand check kept
+
+A fan of Haiku scans over the whole repo (167 raw findings), Sonnet verification for a third of them,
+then a hand pass over the rest; the full verdict list is docs/BUGHUNT-2026-09-05.md. Real fixes:
+
+- `instrKnock` was declared inside `instrWearRu`, so the pirate hit never found it: the M127
+  "hit knocks out a gauge socket" mechanic had been dead since it was written.
+- `G.soldTotal` was never saved or restored: the coop exam turnover reset on every reload.
+- The "ВАША БАЗА" mark on the surface looked up bases by the system key while bases are stored
+  by system-and-planet key; the mark never appeared.
+- Winter: fault lamps were drawn at one set of offsets and hit-tested at another; taps missed.
+- Wanderer: the snow behind the ceiling window sat on one line (sign error in the row spread).
+- Misclosure figure: strips saved before the `mis` field existed produced NaN; now normalised on load.
+- Parrot: the poke handler ignored the hang translate (game, site and the cage page), and the
+  cage page scaled clicks by 272 where drawing used 304.
+- site/api.php inbox: a brace-less `foreach … if` appended only the last card; several incoming
+  cards lost all but one.
+- treplo3d: render targets were recreated on every resize without deleting the old ones.
+- deploy.ps1 / dev.ps1 now stop when the child build fails instead of shipping a stale drift.html;
+  lookrun.ps1 stops the Edge probe too; stand.ps1 escapes the dot in the legacy-upload regex;
+  mkview.ps1 loses an unreachable second `hold` branch; prof() knows winter and spa.
+- Twelve test assertions that could not fail (`||true`, self-comparison, `?true:true`, `ok(true)`,
+  first-three instead of last-three) now assert something; one new suite guards the save fixes.
+
 ## 0.357.0 - M359: the evidence, the hands and the things that must not double
 
 Hunting alongside the parallel session (which took the picture and the frame's bakes), this is the

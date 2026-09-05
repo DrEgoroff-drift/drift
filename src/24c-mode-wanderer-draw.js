@@ -175,7 +175,7 @@ function drawWanderRoom(){
     ctx.fillStyle=pg;ctx.beginPath();ctx.arc(px,py,pr,0,TAU);ctx.fill();
     const tg=ctx.createLinearGradient(xa,0,xb,0);tg.addColorStop(0,"rgba(0,0,0,0)");tg.addColorStop(1,"rgba(0,0,0,.7)");
     ctx.fillStyle=tg;ctx.fillRect(0,0,W,H);
-    for(let i=0;i<14;i++){const sx=A.x+((i*173+now/900)%(B.x-A.x)),sy=D.y+((i*97)%Math.max(1,(A.y-D.y)))*.7;ctx.fillStyle="rgba(220,230,240,.5)";ctx.fillRect(sx,sy,1,1);}
+    for(let i=0;i<14;i++){const sx=A.x+((i*173+now/900)%(B.x-A.x)),sy=D.y+((i*97)%Math.max(1,(D.y-A.y)))*.7;ctx.fillStyle="rgba(220,230,240,.5)";ctx.fillRect(sx,sy,1,1);}
     ctx.restore();
     /* переплёт: рёбра вдоль и поперёк */
     ctx.strokeStyle="#0f1114";ctx.lineWidth=2.5;

@@ -26,6 +26,6 @@ TEST_SUITES.push(()=>suite("другое взросление: дворы по �
       ok(/Взошло лучше/.test(grownGroundLine()),"строка к посадке изменилась");
     }
   }
-  const s=snapshot();applySave(s);eq(G.grown.recip,G.grown.recip,"счёт переживает сейв");
+  const recip0=G.grown.recip,s=snapshot();applySave(s);eq(G.grown.recip,recip0,"счёт переживает сейв");
   G.sx=0;G.sy=0;G.sys=getSystem(0,0);eq(grownExtra({}),0,"дома ничего");
 }));

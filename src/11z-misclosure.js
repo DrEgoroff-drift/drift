@@ -74,7 +74,7 @@ function drawMisFigure(c,W,H){
     for(let k=0;k<=60;k++){
       const t=-1+k/30;
       const a=ang+t*1.1;
-      const rad=R*(.55+i*.12)+Math.sin(k/4+r()*3)*3*(s.mis*8+.4);
+      const rad=R*(.55+i*.12)+Math.sin(k/4+r()*3)*3*((s.mis||0)*8+.4);
       const x=cx+Math.cos(a)*rad,y=cy+Math.sin(a)*rad;
       k?c.lineTo(x,y):c.moveTo(x,y);
     }
