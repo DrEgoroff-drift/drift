@@ -50,12 +50,17 @@ scp -r (Join-Path $root "site\*") "$web/"
 if ($LASTEXITCODE -ne 0) { throw "scp site вернул $LASTEXITCODE — выкладка не состоялась" }
 Put $vj "version.json"
 Put (Join-Path $root "site\.htaccess") ".htaccess"   # glob scp точечные файлы не берёт
+if (-not $SiteOnly) { ssh drift "cd drift-game.ru/docs && { cp -f play.html play.prev.html; cp -f play.html.gz play.prev.html.gz; } 2>/dev/null; true" }   # прежняя игра — на откат
 if (-not $SiteOnly) { Put $file "play.html" }
 if (-not $SiteOnly) { ssh drift "cd drift-game.ru/docs && gzip -kf9 play.html" }   # mod_deflate нет, см. DEPLOY.md
 
 # Проверка, а не надежда: спрашиваем у сервера, что там теперь лежит.
 $kb  = [math]::Round((Get-Item $file).Length / 1KB)
 $onServer = ssh drift "grep -o 'VER=\`"[0-9.]*\`"' drift-game.ru/docs/play.html | head -1"
+# и байт в байт: 0.359.0 «совпадал по версии» и был другой склейкой
+$md5Here = (Get-FileHash $file -Algorithm MD5).Hash.ToLower()
+$md5There = (ssh drift "md5sum drift-game.ru/docs/play.html" | ForEach-Object { $_.Split(" ")[0] })
+if (-not $SiteOnly -and $md5Here -ne $md5There) { throw "на сервере другой файл: $md5There, здесь $md5Here" }
 "{0}  выложено {1} КБ · на сервере {2} · https://drift-game.ru" -f (Get-Date -Format "HH:mm:ss"), $kb, $onServer
 if (-not $SiteOnly -and $onServer -notmatch [regex]::Escape($ver)) {
   Write-Warning "на сайте не та версия, что в src/01-core.js ($ver) — проверьте вручную"

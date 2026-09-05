@@ -24,7 +24,7 @@ function qsKeys(src,fn){
 TEST_SUITES.push(() => suite("дела: у каждого вида дела есть тот, кто его закрывает", () => {
   const src=(typeof nmSource==="function")?nmSource():"";
   ok(src.length>100000,"исходник игры доступен набору");
-  if(!src)return;
+  if(!ok(src,"нашлось: src"))return;
   const adds=qsKeys(src,"questAdd");
   const closes=[].concat(qsKeys(src,"questDone"),qsKeys(src,"questFail"),qsKeys(src,"questClose"));
   ok(adds.length>=3,"видов дел в игре: "+adds.length+" ("+adds.join(", ")+")");
@@ -55,7 +55,7 @@ TEST_SUITES.push(() => suite("дела: у каждого вида дела ес
 
 TEST_SUITES.push(() => suite("дела: не двоятся, не переполняют журнал и не теряют адрес", () => {
   resetWorld();
-  if(typeof questAdd!=="function"){ok(true,"журнала дел в этой сборке нет — пропуск");return;}
+  if(typeof questAdd!=="function"){ok(false,"журнала дел в этой сборке нет — пропуск");return;}
   /* одно и то же поручение дважды — одна строка (правило 1) */
   const a=questAdd("тест:один",{ru:"Привезти лёд",sx:1,sy:2,reward:"200 кр"});
   const b=questAdd("тест:один",{ru:"Привезти лёд",sx:1,sy:2,reward:"200 кр"});
@@ -91,7 +91,7 @@ TEST_SUITES.push(() => suite("дела: не двоятся, не перепол
 TEST_SUITES.push(() => suite("дела: срок, который вышел, назван словами, а не числом со знаком", () => {
   /* «срок вышел» — это ответ. «-7 мин» — это протечка формулы в текст. */
   resetWorld();
-  if(typeof questLeft!=="function"){ok(true,"сроков в этой сборке нет — пропуск");return;}
+  if(typeof questLeft!=="function"){ok(false,"сроков в этой сборке нет — пропуск");return;}
   const now=Date.now();
   eq(questLeft({until:0}),"","без срока строка пустая");
   eq(questLeft({until:now-60000}),"срок вышел","истёкший срок назван словами");

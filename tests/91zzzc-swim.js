@@ -28,7 +28,7 @@ function swimTestLand(needWater){
 TEST_SUITES.push(()=>suite("сквозной: в озере плывём с кругом и снимаем водоросли",()=>{
   const S=swimTestLand(true);
   ok(!!S,"нашлась землеподобная с озером");
-  if(!S)return;
+  if(!ok(S,"нашлось: S"))return;
   const Wt=waterOf(S.tr,S.p);
   /* ходьба по берегу — обычная */
   S.x=Wt.x0-60;S.y=groundAt(S.tr,S.x)-10;S.on=true;

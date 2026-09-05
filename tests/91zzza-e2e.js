@@ -48,7 +48,7 @@ TEST_SUITES.push(()=>suite("станция: знак дома не стоит в
   resetWorld();
   const st=G.sys&&G.sys.station;
   ok(!!st,"у стартовой системы есть станция");
-  if(!st)return;
+  if(!ok(st,"нашлось: st"))return;
   const keepType=st.stype,keepHouse=houseOf,keepCtx=ctx,keepT=G.t;
   const off=document.createElement("canvas");off.width=160;off.height=200;
   const cold=[];

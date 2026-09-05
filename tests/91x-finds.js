@@ -78,7 +78,7 @@ TEST_SUITES.push(()=>suite("находка не держит ДЕЙСТВИЕ, �
     if(hit){sys=q;f=hit;}
   }
   ok(!!f,"нашлась хоть одна находка в округе");
-  if(!f)return;
+  if(!ok(f,"нашлось: f"))return;
   G.sx=sys.sx;G.sy=sys.sy;G.sys=sys;
   const sh={x:f.x,y:f.y};
   G.prompt="";

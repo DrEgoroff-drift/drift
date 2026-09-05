@@ -6,7 +6,7 @@ TEST_SUITES.push(()=>suite("перевал: свет в корабле, объя
   eq(R.needle,"course","прибор — курсограф");
   G.sx=R.core.sx;G.sy=R.core.sy;G.sys=getSystem(G.sx,G.sy);G.mode="system";G.running=true;
   const pc=passCorePlanet(G.sys);ok(!!pc,"у ядра есть планета");
-  if(!pc)return;
+  if(!ok(pc,"нашлось: pc"))return;
   const tr=genTerrain(pc);G.land={p:pc,tr,x:tr.padX,y:groundAt(tr,tr.padX)};enterSurface();
   const S=G.surf;
   ok(/Корабль/.test(passGroundLine()),"строка к посадке — про корабль");

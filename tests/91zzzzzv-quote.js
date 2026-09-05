@@ -64,7 +64,7 @@ TEST_SUITES.push(() => suite("котировка: надбавка станци�
     }
     if(sys)break;
   }
-  if(!sys){ok(true,"аппетита ни на одной станции сейчас нет — пропуск");return;}
+  if(!sys){ok(false,"аппетита ни на одной станции сейчас нет — пропуск");return;}
   G.sx=sys.sx;G.sy=sys.sy;G.sys=sys;G.st=sys.station;
   ok(want>2,"станция «"+sys.name+"» берёт "+RES[k].ru.toLowerCase()+" с надбавкой: "+want);
   const bad=[];
@@ -89,9 +89,9 @@ TEST_SUITES.push(() => suite("котировка: надбавка станци�
 
 TEST_SUITES.push(() => suite("котировка: прилавок кооператива дорожает ломтями и берёт объявленное", () => {
   resetWorld();
-  if(typeof coopBuyQuote!=="function"){ok(true,"прилавка в этой сборке нет — пропуск");return;}
+  if(typeof coopBuyQuote!=="function"){ok(false,"прилавка в этой сборке нет — пропуск");return;}
   const sys=(typeof mkSystems==="function")?mkSystems(8)[0]:null;
-  if(!sys){ok(true,"станции нет — пропуск");return;}
+  if(!sys){ok(false,"станции нет — пропуск");return;}
   G.sx=sys.sx;G.sy=sys.sy;G.sys=sys;G.st=sys.station;
   if(typeof coopStamp==="function")coopStamp("Проверка");
   const k=TRADE_KEYS[0];

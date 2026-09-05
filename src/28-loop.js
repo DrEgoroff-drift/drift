@@ -299,6 +299,7 @@ function crashAt(e){
 try{if(typeof logAdd==="function"){const la=logAdd;logAdd=function(kind,text){if(kind==="warn"&&String(text).indexOf("Сбой кадра")!==0)crashShip("journal",text,"");return la(kind,text);};}}catch(_){}
 function crashSay(e,where){
   crashN++;
+  try{document.documentElement.removeAttribute("data-alive");}catch(_){}   /* метка живости снимается: сайт со сбоем — не живой */
   crashShip(where==="обещание"?"rejection":where==="вне кадра"?"outside":"crash",
     (e&&e.message)||String(e),crashStack(e));
   let m="";
@@ -328,11 +329,26 @@ function crashSay(e,where){
 }
 /* стоп кадра: больше двух секунд между кадрами — свёрнутая вкладка или то
    самое зависание; вкладку отличает document.hidden, остальное уходит как stall */
-let frameLastAt=0;
+let frameLastAt=0,frameN=0;const BEAT={n:0,ms:0,t:0,sent:0};
 function frame(now){
   if(LOOP_OFF)return;
+  /* метка «игра живёт»: первый настоящий кадр без сбоя (сбой её снимает, см. crashSay) — и на
+     корне документа встаёт data-alive=VER. Её читают трое: первый набор тестов
+     (99-run ждёт её, а не 60 мс), проверка живого сайта в deploy.yml после
+     выкладки, и человек в консоли. 0.359.0 уехал мёртвым при зелёных тестах —
+     потому что никто не спрашивал сам файл, что уехал, живёт ли он */
+  if(++frameN===1&&!crashN){try{document.documentElement.setAttribute("data-alive",VER);}catch(_){}}
   if(frameLastAt&&now-frameLastAt>2000&&!document.hidden)crashShip("stall","кадр стоял "+((now-frameLastAt)|0)+" мс","",{gap:(now-frameLastAt)|0});
   frameLastAt=now;
+  /* пульс: раз в три минуты, потом раз в десять — версия, режим, средний fps,
+     окно. Не ошибка, а мерка с настоящих телефонов: «60 fps в девяти режимах»
+     мерились дома; здесь — то, что видят игроки. Ничего личного: ни текста,
+     ни имён (правило открытки). Считается сервером в digest.json */
+  if(frameLastAt){BEAT.n++;BEAT.ms+=Math.min(200,now-frameLastAt);
+    if(BEAT.n>=60){const dt=now-BEAT.t;if(dt>(BEAT.sent?600000:180000)){
+      const fps=Math.round(1000/(BEAT.ms/BEAT.n));
+      crashShip("beat","fps "+fps,"",{fps});
+      BEAT.sent++;BEAT.t=now;BEAT.n=0;BEAT.ms=0;}}}
   if(!STORAGE_OK&&!CRASH_SHIP.st){CRASH_SHIP.st=1;crashShip("storage","localStorage недоступен","");}
   try{frameBody(now);}catch(e){crashSay(e,G&&G.mode);}
   requestAnimationFrame(frame);

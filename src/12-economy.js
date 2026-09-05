@@ -233,7 +233,7 @@ function tickDrones(){
     const from=now-capMs;                 /* дальше суток не догоняем */
     if(d.t0<from)d.t0=from;
     if(d.down&&d.down<from)d.down=0;
-    let guard=DRONE_MAX_CATCHUP,fixed=false;
+    let guard=DRONE_MAX_CATCHUP,fixed=false,oldBreaks=0;
     while(guard-->0){
       if(d.down){
         if(d.down>now)break;              /* ещё стоит в доке */
@@ -260,11 +260,18 @@ function tickDrones(){
       /* ломается дрон на разгрузке — у станции, где его и чинить */
       if(droneBreaks(d)){
         d.down=done+droneFixMs(d);
-        logAdd("warn","Дрон "+droneName(d)+" встал на «"+nearestStation(d.sx,d.sy).name+
+        /* поломка в догоне — не новость: при загрузке сейва после ночи цикл
+           переигрывает десятки кругов, и каждая давняя поломка ложилась в
+           журнал «warn» как свежая — тринадцать строк на второй секунде
+           (телефон автора, crash.log 05.09). Живой строкой остаётся только
+           та, что стоит сейчас; прочие считаются и называются одной */
+        if(d.down>now)logAdd("warn","Дрон "+droneName(d)+" встал на «"+nearestStation(d.sx,d.sy).name+
           "» · чинится сам, "+Math.round(droneFixMs(d)/60000)+" мин");
+        else oldBreaks++;
       }else d.t0=done;
     }
-    if(fixed&&!d.down&&d.pool>0)logAdd("dim","Дрон "+droneName(d)+" починился и вернулся на маршрут");
+    if(oldBreaks>0)logAdd("dim","Дрон "+droneName(d)+" за простой вставал "+oldBreaks+" раз и чинился сам");
+    else if(fixed&&!d.down&&d.pool>0)logAdd("dim","Дрон "+droneName(d)+" починился и вернулся на маршрут");
     if(d.pool===0){
       const hrs=Math.max(1,Math.round((now-(d.bornMs||now))/3600000));
       G.drones.splice(i,1);G.droneInventory++;

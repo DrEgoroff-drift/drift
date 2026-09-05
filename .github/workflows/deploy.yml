@@ -16,7 +16,7 @@ name: deploy
 
 on:
   push:
-    branches: [main]
+    branches: ['**']   # 0.359.3: ветка едет на dev.html, main — на play.html
     paths:
       - 'src/**'
       - 'site/**'
@@ -66,6 +66,30 @@ jobs:
           fi
           echo "загрузка чистая"
 
+      # 0.359.3: тесты гоняются ЗДЕСЬ, на том файле, что уедет, а не только дома.
+      # Быстрый ярус (~40 с; автор 06.09: «не нужны тесты на 4 минуты»), полный — руками test.ps1 -Full. Красный —
+      # выкладки нет. Первый набор — «игра запустилась сама», data-alive на корне.
+      # 0.359.3: тесты — на том файле, что уедет. Ярус Node (формулы и данные, ~5 с)
+      # плюс дым в Хроме: страница открылась, кадр прожил, сторож молчит (~3 с).
+      # Картинка и интерфейс — руками, test.ps1 -Browser / -Full.
+      - name: Автотесты: Node и дым в Хроме
+        run: |
+          node --version
+          node test-node.js
+          google-chrome --headless=new --disable-gpu --no-sandbox --window-size=1280,800 --user-data-dir=/tmp/drift-smoke --virtual-time-budget=20000 --timeout=600000 --dump-dom "file://$PWD/tests.html?only=%D0%B8%D0%B3%D1%80%D0%B0%20%D0%B7%D0%B0%D0%BF%D1%83%D1%81%D1%82%D0%B8%D0%BB%D0%B0%D1%81%D1%8C" > /tmp/smoke.dom 2>/tmp/smoke.err || true
+          python3 - <<'PY'
+          import re,html,sys
+          d=open('/tmp/smoke.dom',encoding='utf-8',errors='replace').read()
+          m=re.search(r'<pre id="testout"[^>]*>([\s\S]*?)</pre>',d)
+          if not m: print("дым: отчёта нет — страница упала до runTests"); sys.exit(1)
+          t=html.unescape(m.group(1)).split(chr(10)); print("дым: "+t[0])
+          if re.match(r'^\S+ \d+ ',t[0]):
+              for l in t[2:12]:
+                  if not l.strip(): break
+                  print(l)
+              sys.exit(1)
+          PY
+
       - name: Проверить синтаксис api.php
         run: |
           # На машине разработчика PHP нет вовсе (CLAUDE.md: ни node, ни python),
@@ -99,6 +123,7 @@ jobs:
           chmod 600 ~/.ssh/config
 
       - name: Выложить
+        if: github.ref == 'refs/heads/main'
         run: |
           # version.json пишет тот, кто выкладывает: заглавная показывает не то,
           # что лежит в исходниках, а то, что действительно уехало на сайт.
@@ -111,11 +136,14 @@ jobs:
           # glob не берёт точечные файлы, а .htaccess — сжатие и кэш (см. DEPLOY.md)
           scp site/.htaccess    drift:drift-game.ru/docs/.htaccess
           scp version.json      drift:drift-game.ru/docs/version.json
+          # прежняя игра остаётся рядом как play.prev.html — на откат, если сайт не оживёт
+          ssh drift "cd drift-game.ru/docs && { cp -f play.html play.prev.html; cp -f play.html.gz play.prev.html.gz; } 2>/dev/null || true"
           scp drift.html        drift:drift-game.ru/docs/play.html
           # mod_deflate на хосте нет: рядом кладётся play.html.gz, .htaccess отдаёт его
           ssh drift "cd drift-game.ru/docs && gzip -kf9 play.html"
 
       - name: Убедиться, что на сайте то, что собрали
+        if: github.ref == 'refs/heads/main'
         run: |
           # Хост временами рвёт TLS-рукопожатие с раннеров (curl: 35), а шаг идёт
           # под pipefail — одна сорвавшаяся попытка не должна валить проверку.
@@ -149,3 +177,29 @@ jobs:
             c=$(hc "https://drift-game.ru/$u")
             [ "$c" = "200" ] || { echo "/$u отвечает $c"; exit 1; }
           done
+
+      # 0.359.3: после выкладки спросить САЙТ, а не себя: тот ли файл лежит
+      # (md5) и живёт ли он — тридцать кадров без сбоя ставят data-alive=VER.
+      - name: Живой сайт после выкладки
+        if: github.ref == 'refs/heads/main'
+        run: |
+          ver=$(grep -o 'VER="[0-9.]*"' src/01-core.js | head -1 | tr -d 'VER="')
+          curl -s -m 120 https://drift-game.ru/play.html -o /tmp/live.html
+          if ! cmp -s /tmp/live.html drift.html; then echo "на сайте лежит не эта сборка"; exit 1; fi
+          rm -rf /tmp/drift-live
+          google-chrome --headless=new --disable-gpu --no-sandbox --window-size=1280,800 --user-data-dir=/tmp/drift-live --virtual-time-budget=6000 --dump-dom "https://drift-game.ru/play.html" > /tmp/live.dom 2>/tmp/live.err || true
+          if grep -q "data-alive=\"$ver\"" /tmp/live.dom; then echo "сайт живёт: $ver"; else echo "сайт не ожил: нет data-alive=$ver"; grep -i "uncaught" /tmp/live.err | head -3;
+            ssh drift "cd drift-game.ru/docs && test -s play.prev.html && cp -f play.prev.html play.html && gzip -kf9 play.html" && echo "::error::откатил на прежний play.html" || echo "::error::отката нет: play.prev.html отсутствует"
+            exit 1; fi
+
+      # Ветка, не main: та же сборка и те же тесты, но уезжает только в dev.html —
+      # посмотреть на телефоне до слияния. play.html, заглавная и api.php не трогаются.
+      - name: Ветка — на dev.html
+        if: github.ref != 'refs/heads/main'
+        run: |
+          scp drift.html drift:drift-game.ru/docs/dev.html
+          ssh drift "cd drift-game.ru/docs && gzip -kf9 dev.html"
+          ver=$(grep -o 'VER="[0-9.]*"' src/01-core.js | head -1 | tr -d 'VER="')
+          rm -rf /tmp/drift-dev
+          google-chrome --headless=new --disable-gpu --no-sandbox --window-size=1280,800 --user-data-dir=/tmp/drift-dev --virtual-time-budget=6000 --dump-dom "https://drift-game.ru/dev.html" > /tmp/dev.dom 2>/tmp/dev.err || true
+          grep -q "data-alive=\"$ver\"" /tmp/dev.dom && echo "https://drift-game.ru/dev.html живёт: $ver ($GITHUB_REF_NAME)" || { echo "dev.html не ожил"; grep -i uncaught /tmp/dev.err | head -3; exit 1; }

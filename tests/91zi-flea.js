@@ -17,8 +17,7 @@ TEST_SUITES.push(()=>suite("Блошинец: каждый лот откуда-�
     if(s.station&&s.station.stype==="bazaar")bz=s;
   }
   ok(!!bz,"блошинец встречается в галактике"+(bz?(" ("+bz.sx+":"+bz.sy+")"):""));
-  if(!bz)return;
-
+  if(!ok(bz,"нашлось: bz"))return;
   /* ── ряды: провенанс у каждого лота, и он называет живое место ── */
   G.sys=bz;G.sx=bz.sx;G.sy=bz.sy;G.st=bz.station;
   const lots=fleaLots(bz);
@@ -71,11 +70,11 @@ TEST_SUITES.push(()=>suite("Блошинец: сведения о вас ухо�
     if(s.station&&s.station.stype==="bazaar")bz=s;
   }
   ok(!!bz,"блошинец найден");
-  if(!bz)return;
+  if(!ok(bz,"нашлось: bz"))return;
   G.sys=bz;G.sx=bz.sx;G.sy=bz.sy;G.st=bz.station;
   const mine=fleaLots(bz).find(l=>l.kind==="you");
   ok(!!mine,"лот про ваш сектор лежит на виду");
-  if(!mine)return;
+  if(!ok(mine,"нашлось: mine"))return;
   eq(mine.at.sx,G.sx,"и в нём записан именно ваш сектор");
 
   /* ушли, не забрав — адрес купил кто-то другой */

@@ -204,3 +204,18 @@ opaque string (both `push` and `pull`, since `pull` re-encodes on the way out to
 twice — once assoc for the logic, once as objects for storage. `api.php` holds live accounts and
 there is no staging for it, so this is written down rather than done. If it is ever touched, an
 old client must keep working: it sends an object and expects an object back.
+
+## Gates on the way to the site (0.359.3)
+
+Every push to any branch builds and runs the full suite on the runner (`tests.html?full=1`,
+headless Chrome); red means nothing is uploaded. On `main` the build then goes to `play.html`,
+the previous game is kept as `play.prev.html`, the file is fetched back and compared byte for
+byte, and the live URL must show `data-alive="<VER>"` on the document root (set by `28-loop` on
+the first clean frame, removed on any frame crash). If it does not, the runner copies
+`play.prev.html` back over `play.html` and fails loudly. Any other branch goes to `dev.html`
+only, with the same liveness check — that is the preview: push a branch, open it on the phone,
+merge when it looks right. Manual rollback:
+
+```bash
+ssh drift "cd drift-game.ru/docs && cp -f play.prev.html play.html && gzip -kf9 play.html"
+```

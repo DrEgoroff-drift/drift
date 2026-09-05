@@ -48,7 +48,7 @@ TEST_SUITES.push(() => suite("прилавок: сдача любого ключ
   resetWorld();
   const s=mkSystems(6)[0];
   ok(!!s,"станция для опыта найдена");
-  if(!s)return;
+  if(!ok(s,"нашлось: s"))return;
   G.sx=s.sx;G.sy=s.sy;G.sys=s;G.st=s.station;
   const bad=[];
   for(const k of RES_KEYS){

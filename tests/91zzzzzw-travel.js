@@ -104,7 +104,7 @@ TEST_SUITES.push(() => suite("дорога: растр покинутых сис
      после долгой дороги. Он не сохраняется и обязан отпускать покинутое —
      иначе за вечер прыжков вырастет ровно то, что ищут как зависание. */
   resetWorld();
-  if(typeof SYS_CACHE==="undefined"){ok(true,"кэша систем в этой сборке нет — пропуск");return;}
+  if(typeof SYS_CACHE==="undefined"){ok(false,"кэша систем в этой сборке нет — пропуск");return;}
   SYS_CACHE.clear();
   const r=rng(hashi(0xCAC,5,9));
   let hops=0;

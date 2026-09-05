@@ -20,7 +20,7 @@ TEST_SUITES.push(() => suite("верфь: в рейс уходит тот кор
   if(typeof e2eLate==="function")e2eLate();else fuzzRich();
   G.credits=3000000;
   const bad=[];let bought=0;
-  if(!G.sys.station){ok(true,"станции нет — пропуск");return;}
+  if(!G.sys.station){ok(false,"станции нет — пропуск");return;}
   G.st=G.sys.station;G.mode="dock";
   const open=()=>{try{openStation();}catch(e){}try{tab="yard";renderTab();}catch(e){}};
   open();
@@ -145,7 +145,7 @@ TEST_SUITES.push(() => suite("правило: граница слова посл
      буквой — он строится из кода символа, иначе его съедает уже сам патч. */
   const src=(typeof nmSource==="function")?nmSource():"";
   ok(src.length>100000,"исходник игры доступен набору");
-  if(!src)return;
+  if(!ok(src,"нашлось: src"))return;
   const BS=String.fromCharCode(92);
   const CYR=/[а-яёА-ЯЁ]/;
   const SPACES=new RegExp(BS+"s+","g");

@@ -31,7 +31,7 @@ TEST_SUITES.push(() => suite("живые: пять тысяч кадров бо�
     if(sysDanger(x,y)>.35)far=[x,y];
   }
   ok(!!far,"опасная система найдена: "+(far?far.join(","):"нет"));
-  if(!far)return;
+  if(!ok(far,"нашлось: far"))return;
   G.sx=far[0];G.sy=far[1];G.sys=getSystem(far[0],far[1]);G.mode="system";
   G.fuel=100;G.hull=Math.max(G.hull,100);
   G.mods.weapon=2;G.modsOwned.weapon=2;
@@ -89,7 +89,7 @@ TEST_SUITES.push(() => suite("живые: что принадлежало сис
     if(Math.max(Math.abs(x),Math.abs(y))!==r)continue;
     if(starAt(x,y)&&sysDanger(x,y)>.35)far=[x,y];
   }
-  if(!far){ok(true,"опасной системы рядом нет — пропуск");return;}
+  if(!far){ok(false,"опасной системы рядом нет — пропуск");return;}
   G.sx=far[0];G.sy=far[1];G.sys=getSystem(far[0],far[1]);G.mode="system";G.fuel=100;
   /* заводим бой честным входом в систему; если в этой не родились — пробуем
      соседние опасные, а не выдумываем пиратов руками */
@@ -125,7 +125,7 @@ TEST_SUITES.push(() => suite("живые: что принадлежало сис
     if(!dx&&!dy)continue;
     if(starAt(G.sx+dx,G.sy+dy))to=[G.sx+dx,G.sy+dy];
   }
-  if(!to){ok(true,"лететь некуда — пропуск");resetWorld();return;}
+  if(!to){ok(false,"лететь некуда — пропуск");resetWorld();return;}
   G.sel={x:to[0],y:to[1]};G.fuel=60;
   try{ jump(2); }catch(e){ ok(false,"прыжок бросил: "+e.message); resetWorld(); return; }
   const left=(G.pirates||[]).filter(p=>mine.has(p)||p.__mark);

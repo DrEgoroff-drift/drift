@@ -5,7 +5,7 @@ TEST_SUITES.push(()=>suite("роща: язык — тяга, урона нет, 
   const R=regionAt(at.rx*REGION_SPAN,at.ry*REGION_SPAN);
   eq(R.needle,"mass","прибор — масс-детектор");
   const gs=groveSys(R);ok(!!gs,"в области есть система с поясом");
-  if(!gs)return;
+  if(!ok(gs,"нашлось: gs"))return;
   G.sx=gs.sx;G.sy=gs.sy;G.sys=getSystem(G.sx,G.sy);G.mode="system";G.running=true;
   eq(groveDepthHere(),2,"мы у рощи");
   enterBelt();

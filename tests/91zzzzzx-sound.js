@@ -148,7 +148,7 @@ TEST_SUITES.push(() => suite("звук: голос маяка молчит та�
   /* M349: приёмник говорит в полёте и в дороге, но НЕ на столах и станциях —
      «голос не читает поверх экрана». Это правило прямо записано в voiceCan. */
   resetWorld();
-  if(typeof voiceCan!=="function"){ok(true,"маяка в этой сборке нет — пропуск");return;}
+  if(typeof voiceCan!=="function"){ok(false,"маяка в этой сборке нет — пропуск");return;}
   const opts=(typeof voiceOpts==="function")?voiceOpts():null;
   if(opts)opts.on=true;
   const bad=[];

@@ -75,7 +75,7 @@ TEST_SUITES.push(()=>suite("телефон: опись одной лентой, 
    но никогда меньше 44 px — правило пальца сильнее желания показать всё. */
 TEST_SUITES.push(()=>suite("телефон: ряд пэдов помещается в экран",()=>{
   resetWorld();
-  if(innerWidth>760){ok(true,"не телефон — пропуск");return;}
+  if(innerWidth>760){TEST.lines.push("  · не телефон — набор только для test.ps1 -Mobile");return;}
   const check=nm=>{
     padsFit();
     const bs=[...document.querySelectorAll(".pads button")]
@@ -179,7 +179,7 @@ TEST_SUITES.push(()=>suite("телефон: этажи внизу не нале�
    ширину. Проверка живёт в телефонном наборе, потому что только там это и
    видно (`test.ps1 -Mobile`). */
 TEST_SUITES.push(()=>suite("телефон: мир не зажимают в щель",()=>{
-  if(innerWidth>760){ok(true,"не телефон — пропуск");return;}
+  if(innerWidth>760){TEST.lines.push("  · не телефон — набор только для test.ps1 -Mobile");return;}
   resetWorld();
   const k=surfScale();
   ok(k>=1,"мерка не ужимает мир никогда");

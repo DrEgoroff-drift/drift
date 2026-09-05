@@ -100,7 +100,7 @@ TEST_SUITES.push(()=>suite("экраны M299: зал — ввод; стол б�
   /* станция с кантиной */
   const cand=routeTestStations(8).find(s=>s.station&&stTypeOf(s.station.stype).tabs.indexOf("cantina")>=0)||null;
   ok(!!cand,"нашлась станция с кантиной");
-  if(!cand)return;
+  if(!ok(cand,"нашлось: cand"))return;
   G.sx=cand.sx;G.sy=cand.sy;G.sys=cand;G.st=cand.station;
   G.ship.x=cand.station.x+40;G.ship.y=cand.station.y;
   openStation();

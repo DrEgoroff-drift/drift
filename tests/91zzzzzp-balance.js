@@ -51,14 +51,14 @@ TEST_SUITES.push(() => suite("договор: наёмник остаётся с
   resetWorld();
   if(typeof coopStamp==="function")coopStamp("Проверка");
   G.credits=200000;
-  if(typeof stationMercs!=="function"||typeof hireMerc!=="function"){ok(true,"наёма в этой сборке нет — пропуск");return;}
+  if(typeof stationMercs!=="function"||typeof hireMerc!=="function"){ok(false,"наёма в этой сборке нет — пропуск");return;}
   const pool=stationMercs(G.sys)||[];
   ok(pool.length>0,"на станции есть кого нанять: "+pool.length);
-  if(!pool.length)return;
+  if(!ok(pool.length,"нашлось: pool.length"))return;
   let hired=false;
   try{ hired=hireMerc(pool[0])!==false; }catch(e){ ok(false,"наём бросил: "+e.message); return; }
   ok(hired&&G.crew.length===1,"человек нанят");
-  if(!G.crew.length)return;
+  if(!ok(G.crew.length,"нашлось: G.crew.length"))return;
   const c=G.crew[0];
   /* оклад в минуту считает crewPay, а не поле на человеке */
   const wage=(typeof crewPay==="function")?crewPay(c):0;
@@ -83,7 +83,7 @@ TEST_SUITES.push(() => suite("договор: ящик конторы берёт
   /* 1 % в сутки от стоимости содержимого, тридцать суток — сдача на блошинец.
      Считаем руками и сверяем с тем, что списала игра. */
   resetWorld();
-  if(typeof lockerRec!=="function"){ok(true,"ящика в этой сборке нет — пропуск");return;}
+  if(typeof lockerRec!=="function"){ok(false,"ящика в этой сборке нет — пропуск");return;}
   const L=lockerRec();
   L.items=[];L.res={};
   L.res[RES_KEYS[0]]=100;

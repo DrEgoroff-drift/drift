@@ -22,7 +22,7 @@ TEST_SUITES.push(()=>suite("прогон §9: стыковка → слух на
   resetWorld();
   const cand=routeTestStations(8).find(s=>s.station&&stTypeOf(s.station.stype).tabs.indexOf("cantina")>=0)||null;
   ok(!!cand,"нашлась станция с кантиной");
-  if(!cand)return;
+  if(!ok(cand,"нашлось: cand"))return;
   G.sx=cand.sx;G.sy=cand.sy;G.sys=cand;G.st=cand.station;
   G.ship.x=cand.station.x+40;G.ship.y=cand.station.y;
   for(const k of RES_KEYS)G.cargo[k]=0;G.strips=[];G.news=[];
@@ -90,7 +90,7 @@ TEST_SUITES.push(()=>suite("прогон §9: стыковка → слух на
     ok(!G.course,"6. по прибытии курс снят");
     hud();
     ok(gb.style.display==="none","6. и «К ЦЕЛИ» погасла");
-  }else ok(true,"6. курса не было (слухов на станции нет) — пропуск");
+  }else ok(false,"6. курса не было (слухов на станции нет) — пропуск");
   eq(paras.join(" | "),"","ни один шаг не требует абзаца: блоки ≤ "+WALK_PARA+" знаков");
   G.course=null;G.mode="system";document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
 }));

@@ -50,7 +50,7 @@ TEST_SUITES.push(()=>suite("подглядка: платит за досмотр
     }
   }
   ok(!!host,"мир с лугом нашёлся");
-  if(!host)return;
+  if(!ok(host,"нашлось: host"))return;
   const tr=genTerrain(host);
   G.land={p:host,tr,x:tr.padX,y:groundAt(tr,tr.padX)};
   enterSurface();

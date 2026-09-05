@@ -6,7 +6,7 @@ TEST_SUITES.push(()=>suite("медленный: переписка с долин
   eq(R.needle,"chrono","прибор — хронометр");
   G.sx=R.core.sx;G.sy=R.core.sy;G.sys=getSystem(G.sx,G.sy);G.mode="system";G.running=true;
   const pc=slowCorePlanet(G.sys);ok(!!pc,"у ядра есть твёрдая планета");
-  if(!pc)return;
+  if(!ok(pc,"нашлось: pc"))return;
   const tr=genTerrain(pc);G.land={p:pc,tr,x:tr.padX,y:groundAt(tr,tr.padX)};enterSurface();
   const S=G.surf;S.x=slowSpotX(tr,pc);
   ok(slowHere(S),"стоим у колышка");

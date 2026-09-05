@@ -198,12 +198,12 @@ TEST_SUITES.push(() => suite("черпак: в него идут за газом
   const sys=(typeof e2eFind==="function")
     ? e2eFind(q=>(q.planets||[]).some(p=>p.type==="gas"))
     : null;
-  if(!sys){ok(true,"газового гиганта поблизости нет — пропуск");return;}
+  if(!sys){ok(false,"газового гиганта поблизости нет — пропуск");return;}
   G.sx=sys.sx;G.sy=sys.sy;G.sys=sys;
   const p=sys.planets.find(q=>q.type==="gas");
   startScoop(p);
   ok(!!G.scoop,"черпак начался");
-  if(!G.scoop)return;
+  if(!ok(G.scoop,"нашлось: G.scoop"))return;
   for(const k of RES_KEYS)G.cargo[k]=0;
   const before=held();
   /* держимся в коридоре сбора: игрок делает это рулём, набор — прямо */

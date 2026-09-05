@@ -230,7 +230,7 @@ TEST_SUITES.push(() => suite("сценарий: автопилот доводи�
   let runs = 0;
   const targets = [];
   resetWorld();
-  for (const p of G.sys.planets) targets.push({ ru: p.name, ap: { kind: "planet", p, phase: "fly" } });
+  for (const p of G.sys.planets) targets.push({ ru: p.name, idx: p.idx, ap: { kind: "planet", p, phase: "fly" } });
   if (G.sys.station) targets.push({ ru: "станция", ap: { kind: "station", phase: "fly" } });
   targets.push({ ru: "звезда", ap: { kind: "star", phase: "fly" } });
   for (const T of targets.slice(0, 6)) {
@@ -239,9 +239,9 @@ TEST_SUITES.push(() => suite("сценарий: автопилот доводи�
     G.mode = "system";
     G.ship.x = (p0 ? p0.orbit : 900) * .6; G.ship.y = -400;
     G.ship.vx = 0; G.ship.vy = 0; G.fuel = 100;
-    /* цель остаётся той же и после resetWorld: система стартового сектора
-       живёт в SYS_CACHE одним объектом, и её планеты — те же самые */
-    if (T.ap.kind === "planet" && G.sys.planets.indexOf(T.ap.p) < 0) continue;
+    /* resetWorld чистит кэш систем (0.359.3): планета-цель берётся заново
+       по своему номеру, а не по старой ссылке */
+    if (T.ap.kind === "planet") { T.ap.p = G.sys.planets[T.idx]; if (!T.ap.p) continue; }
     G.ap = T.ap;
     let f = 0;
     for (f = 0; f < 4000 && G.ap; f++) { stepWorld(1); G.t += 1; }

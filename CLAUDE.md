@@ -275,6 +275,17 @@ are seeded, so more frames means more of the same sequence; `-Seed N` gives a di
 altogether, and a hunt goes across several seeds (M339). Its scene list is also the cheapest way to ask whether the
 whole game still starts after a cross-cutting change.
 
+**Three tiers (0.359.3).** `test.ps1` with no flags is the per-edit run: the Node tier
+(`test-node.js` — the page's scripts under DOM/canvas stubs, only the «формулы и данные»
+suites, ~5 s) plus one Chrome smoke (the page boots, a frame runs, the guard is silent, ~2 s).
+`-Browser` runs picture and interface suites in Chrome (~30 s); `-Full` runs everything
+including the heavy nets (~4 min) — on request, before a release. Node lives outside the repo at
+`C:\Claude	ools
+ode` (portable, no installer); `test.ps1` finds it there or on PATH. Under the
+stubs any pixel or layout measure is zero, so a suite that belongs in the browser goes red in
+Node, not green: name it in `NODE_BROWSER` (90-harness) and it moves. `SLOW_SUITES` there is the
+heavy-net list `-Full` adds back.
+
 **Autotests first, headless.** `build.ps1` also builds `tests.html` — the same game plus
 `tests/*.js` at the end. Run it without the browser pane:
 

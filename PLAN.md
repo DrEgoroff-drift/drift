@@ -441,6 +441,13 @@ Left from the queue: nothing — the band's second step is M308, the station's c
   at once: the prompt's hardcoded `right:128px` against a rail that is 129 wide on the map (now off
   the measured `--railw`), and `resetWorld` not leaving the road companion — after any click sweep
   the whole page was invisible and every later layout guard measured nothing.
+- **Tests: three tiers since 0.359.3** — `test.ps1` = Node logic (325 suites, ~5 s) + one Chrome smoke;
+  `-Browser` picture/interface (~30 s); `-Full` everything (~4 min, on request). Runner: Node + smoke, then the
+  live-site check. Loose end: a pixel-fidelity net for the browser tier (reference scenes, three sizes) is the
+  one thing that would have caught the perch and «РАКЕТА 0» — not built.
+- **Tests: two tiers since 0.359.3** — `test.ps1` fast (~25 s), `-Full` everything; the runner runs full
+  and then asks the live site (`data-alive`). Loose end: in the pane at 1280×800 «свет: звезда самое светлое»
+  went red on Нейэль I (0.694 vs 0.536) while headless is green — window-dependent, worth one look.
 - **The suite costs ~3.5 min, and twelve suites are the cost.** Timed 2026-09-05 (harness prints
   «САМЫЕ ДОЛГИЕ» when run with a real clock, i.e. in the pane, not under `--virtual-time-budget`):
   doors matrix 77 s (now folded with its save twin, 0.359.2), leaks/large-forms/fuzz/e2e 9–12 s

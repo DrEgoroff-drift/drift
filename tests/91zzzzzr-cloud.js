@@ -44,7 +44,7 @@ function clWith(answer,fn){
 
 TEST_SUITES.push(() => suite("облако: старая запись не ложится поверх свежей", () => {
   resetWorld();
-  if(typeof cloudBoot!=="function"||typeof CLOUD==="undefined"){ok(true,"облака в этой сборке нет — пропуск");return;}
+  if(typeof cloudBoot!=="function"||typeof CLOUD==="undefined"){ok(false,"облака в этой сборке нет — пропуск");return;}
   const bad=[];
   /* свежая местная запись: вечер игры */
   G.credits=555555;
@@ -76,7 +76,7 @@ TEST_SUITES.push(() => suite("облако: старая запись не ло�
 
 TEST_SUITES.push(() => suite("облако: испорченный ответ не портит того, что лежит", () => {
   resetWorld();
-  if(typeof cloudBoot!=="function"||typeof CLOUD==="undefined"){ok(true,"облака в этой сборке нет — пропуск");return;}
+  if(typeof cloudBoot!=="function"||typeof CLOUD==="undefined"){ok(false,"облака в этой сборке нет — пропуск");return;}
   const mine=clSave(20000,424242);
   stSet(SAVE_KEY,JSON.stringify(mine));
   const answers=[

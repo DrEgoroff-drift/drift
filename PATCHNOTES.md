@@ -7,6 +7,48 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.359.3 - the tests, revised: they now test what ships, and they say when they are not looking
+
+Author, after 0.359.0: «у нас игра не запускалась, а у тебя тесты все зелёные — полная ревизия».
+The suite was green on a file that never shipped; the file that shipped was never opened by
+anything. Five changes, and two things the new order found at once: the lake suite left
+`type="terran"` on a cached planet and the seed suite read it forty suites later (resetWorld
+now clears `SYS_CACHE`), and `bargePax` survived every reset.
+
+1. **The shipped file is tested, and the site is asked afterwards.** `deploy.yml` runs the full
+   suite on the runner's own build (headless Chrome, `tests.html?full=1`) and refuses to publish
+   on red; after the upload it fetches `play.html` back, compares it byte for byte with the build,
+   loads the live URL and requires `data-alive="<VER>"` on the root. `deploy.ps1` does the byte
+   comparison too. 0.359.0 «matched by version» — and was a different glue.
+2. **The first suite is «игра запустилась сама».** `28-loop` stamps `data-alive=VER` on the
+   document after thirty real `requestAnimationFrame` frames with the frame guard at zero;
+   `99-run` waits for that stamp (up to eight seconds) instead of 60 ms, and the first suite
+   asserts it: frames ran by themselves, no crash, nothing shipped to the server. A build that
+   dies on load or whose loop is dead is red with a report, not «no report in DOM».
+3. **Nothing passes silently any more.** 23 suites said `ok(true,"…в этой сборке нет — пропуск")`
+   when a function was missing — the exact «perk without code» lie, green forever after a rename;
+   they now fail. 30 suites left with a bare `if(!x)return;` when a fixture was not found; `ok()`
+   now returns its verdict and those read `if(!ok(x,"нашлось: x"))return;` — a missing fixture is
+   a red line.
+4. **Rollback and preview.** The previous `play.html` stays on the site as `play.prev.html`;
+   if the live check after an upload fails, the runner puts it back. Pushes to any branch other
+   than `main` go through the same build and full suite and land on `dev.html` only — the
+   preview to look at on a phone before merging (`docs/DEPLOY.md`).
+5. **Three tiers, and no Chrome for the everyday run.** Author, 06.09: «в разработке никто хром
+   не запускает», «быстрый — 20 с». Node 22 is now on the machine (portable zip in
+   `C:\Claude	ools
+ode`, outside the repo); `test-node.js` runs the page's own scripts under
+   DOM and canvas stubs and executes the 325 «формулы и данные» suites in ~5 s, then `test.ps1`
+   adds one Chrome smoke (page boots, frame runs, guard silent): under ten seconds per edit.
+   `-Browser` is picture and interface in Chrome (~30 s), `-Full` everything (~4 min) on request.
+   The runner does Node plus the smoke. The DOM report in Chrome is now head and failures only —
+   fourteen thousand ✓ lines weighed 8 MB and cost more to serialise than the suites did to run.
+6. **Two tiers, measured.** Measured: thirty suites take 235 of 254 s, the other six hundred fifteen
+   seconds together. Deleting the small ones would save nothing; the big ones are the nets that
+   found the freeze, the leaks and the money printer. So `test.ps1` runs the fast tier by default
+   (~25 s) and `-Full` (and the runner) runs everything; the head line says which.
+
+---
 ## 0.359.2 - the parrot on the perch, where rockets come from, and the doors matrix folded in half
 
 Two things the author saw on the phone within a minute of 0.359.1 coming back up, and one

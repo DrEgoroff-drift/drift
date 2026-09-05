@@ -134,7 +134,7 @@ TEST_SUITES.push(() => suite("ставка: заправка и ремонт б�
      сколько единиц пришло, и сверить со списанным. Ошибка на единицу здесь
      не видна глазом никогда, а стоит игроку денег в каждом рейсе. */
   resetWorld();
-  if(!G.sys.station){ok(true,"станции нет — пропуск");return;}
+  if(!G.sys.station){ok(false,"станции нет — пропуск");return;}
   G.st=G.sys.station;G.mode="dock";
   const bad=[];
   const st=stat();

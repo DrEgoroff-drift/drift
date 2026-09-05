@@ -35,7 +35,7 @@ TEST_SUITES.push(()=>suite("M306: отвал, купол и полоса на п
   G.mode="system";G.running=true;
   const sys=G.sys,p=(sys.planets||[]).find(q=>q.type!=="gas");
   ok(!!p,"в системе есть твёрдая планета");
-  if(!p)return;
+  if(!ok(p,"нашлось: p"))return;
   const save=G.hold;
   G.hold={};
   let n0=0;const f0=ctx.fill;ctx.fill=function(){n0++;return f0.apply(ctx,arguments);};

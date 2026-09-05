@@ -13,7 +13,26 @@
 # -Mobile runs the same suites in a phone window instead: the layout guards are
 # written to skip themselves when the window is not a phone, so without this
 # switch the phone half of the interface is never actually measured.
-param([switch]$NoBuild, [string]$Only = "", [switch]$Mobile, [int]$Fuzz = 0, [int]$Seed = 0, [string]$Size = "")
+param([switch]$NoBuild, [string]$Only = "", [switch]$Mobile, [int]$Fuzz = 0, [int]$Seed = 0, [string]$Size = "", [switch]$Full, [switch]$Browser)
+# ── три яруса (0.359.3; автор 06.09: «в разработке никто хром не запускает», «быстрый — 20 с») ──
+#   test.ps1            Node: формулы и данные (325 наборов, ~5 с) + дым в Хроме: игра сама
+#                       прожила кадр (~2 с). Итого под десять секунд. Это прогон на каждую правку.
+#   test.ps1 -Browser   Хром, картинка и интерфейс без тяжёлых сетей (~30 с) — после правок в рисовании и вёрстке.
+#   test.ps1 -Full      Хром, всё, включая тяжёлые сети (~4 мин) — по просьбе, перед релизом.
+#   -Only/-Mobile/-Fuzz/-Size идут в Хром, как раньше.
+$root0 = Split-Path -Parent $MyInvocation.MyCommand.Path
+$nodeExe = (Get-Command node -ErrorAction SilentlyContinue).Source
+if (-not $nodeExe -and (Test-Path "C:\Claude\tools\node\node.exe")) { $nodeExe = "C:\Claude\tools\node\node.exe" }
+$nodeTier = -not ($Full -or $Browser -or $Only -or $Mobile -or $Fuzz -or $Size)
+if ($nodeTier -and -not $nodeExe) { "node не найден (C:\Claude\tools\node или PATH) — идём через Хром"; $nodeTier = $false; $Browser = $true }
+if ($nodeTier) {
+  [Console]::OutputEncoding = [Text.Encoding]::UTF8   # node пишет UTF-8; консоль 5.1 по умолчанию cp866
+  if (-not $NoBuild) { & powershell -ExecutionPolicy Bypass -File (Join-Path $root0 "build.ps1") | Out-Null }
+  & $nodeExe (Join-Path $root0 "test-node.js")
+  $nodeRc = $LASTEXITCODE
+  # и дым: страница в Хроме открылась, цикл прожил кадр, сторож молчит — то, чего Node не видит
+  $NoBuild = $true; $Only = "игра запустилась сама"
+}
 
 $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -30,6 +49,8 @@ if ($Only) { $url += "?only=" + [uri]::EscapeDataString($Only) }
 # дороже всех остальных наборов. -Fuzz 4000 включает длинный: его запускают
 # руками, когда ищут падение, и seed у него постоянный, так что провал
 # повторяется точь-в-точь.
+# -Full — все наборы, включая тридцать тяжёлых (SLOW_SUITES в 90-harness); по умолчанию быстрый ярус
+if ($Full) { $sep = if ($url -match "\?") { "&" } else { "?" }; $url += "$sep" + "full=1" }
 if ($Fuzz -gt 0) {
   $sep = if ($url -match "\?") { "&" } else { "?" }
   $url += "$sep" + "fuzz=$Fuzz"
@@ -105,4 +126,5 @@ if ($lines[0] -match '^\S+ \d+ ') {
   while ($j -lt $lines.Count -and $lines[$j] -notmatch '^\s*$') { $lines[$j].TrimEnd(); $j++ }
   exit 1
 }
+if ($nodeTier -and $nodeRc -ne 0) { exit 1 }
 exit 0
