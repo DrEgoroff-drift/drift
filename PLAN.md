@@ -314,6 +314,14 @@ The state-and-rules half of a two-session hunt (the picture half is M358).
 - `91zzzzzu-monotone` — what may never run backwards: the rung never falls for doing more, danger
   grows with distance (and is the same all round the ring), and a price flooded down stops at its
   floor and returns with time (measured on the market's own clock, not «a day»).
+- `91zzzzzv-quote` — the quote does not lie: the row's breakdown («берут первые 6 по 41 кр») adds
+  up to its own total, the total equals the money that actually arrives, the station's premium ends
+  exactly where it was promised, and the cooperative's counter charges the slices it showed.
+- `91zzzzzw-travel` — the evening measured along the ROAD instead of the clock: a hundred real jumps
+  with docking and trade. Half the state is sparse by system (market, seen prices, places, holding,
+  names), so it grows with travel and not with frames — an axis no suite had touched. The save stays
+  readable, no map grows faster than the road itself, and `SYS_CACHE` stays proportional to the
+  jumps (the state-side half of M358's raster question).
 
 ## Loose ends (as of 2026-08-28, after the graphics run 0.237.0–0.244.0)
 
