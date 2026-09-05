@@ -195,7 +195,7 @@ function tableRender(){
     if(b.dataset.tab==="qsl")b.style.display=
       (typeof qslAll==="function"&&Object.keys(qslAll().heard).length)?"":"none";
     if(b.dataset.tab==="books")b.style.display=
-      (typeof bookCount==="function"&&bookCount())?"":"none";
+      ((typeof bookCount==="function"&&bookCount())||(typeof boxCount==="function"&&boxCount()))?"":"none";   /* и коробки (M346) */
     if(b.dataset.tab==="diary")b.style.display=
       ((typeof winOn==="function"&&winOn())||thingsAll().some(t=>t.diary))?"":"none";
     if(b.dataset.tab==="mail")b.style.display=

@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 395 · символов верхнего уровня: 3596
+Файлов: 397 · символов верхнего уровня: 3604
 
 ## СИМВОЛЫ
 
@@ -276,6 +276,14 @@ bookOpen                     src/12ub-books.js:140
 bookRoll                     src/12ub-books.js:133
 BOOKS                        src/12ub-books.js:23
 BOOKS_BY                     src/12ub-books.js:105
+boxAll                       src/12ue-boxes.js:39
+boxCount                     src/12ue-boxes.js:41
+BOXES                        src/12ue-boxes.js:16
+BOXES_BY                     src/12ue-boxes.js:38
+boxesBlock                   src/12ue-boxes.js:66
+boxFind                      src/12ue-boxes.js:43
+boxHas                       src/12ue-boxes.js:40
+boxRoll                      src/12ue-boxes.js:60
 BP_KEYS                      src/12c-mgr-core.js:669
 bPipe                        src/21aa-base-rooms.js:244
 bpMul                        src/12c-mgr-core.js:673
@@ -716,7 +724,7 @@ drawElevator                 src/20aa-poi-shapes.js:91
 drawExhaust                  src/16a-space.js:360
 drawFactory                  src/20aa-poi-shapes.js:378
 drawFactRoute                src/13b-occupy.js:241
-drawFindsSystem              src/17b-finds.js:180
+drawFindsSystem              src/17b-finds.js:182
 drawFlame                    src/03b-hull-paint.js:10
 drawFleet                    src/12ai-fleet.js:496
 drawFleetMap                 src/12ai-fleet.js:656
@@ -948,8 +956,8 @@ FIND_BUCKET                  src/17b-finds.js:17
 FIND_CACHE                   src/17b-finds.js:26
 FIND_KINDS                   src/17b-finds.js:19
 findBucket                   src/17b-finds.js:18
-findInteract                 src/17b-finds.js:137
-findLandingNear              src/17b-finds.js:129
+findInteract                 src/17b-finds.js:139
+findLandingNear              src/17b-finds.js:131
 findsBlock                   src/12aa-need.js:165
 findSeen                     src/17b-finds.js:54
 findsHere                    src/17b-finds.js:53
@@ -975,17 +983,17 @@ FLEA_MARKUP                  src/12ua-flea.js:24
 FLEA_ROWS                    src/12ua-flea.js:25
 FLEA_WHO                     src/12ua-flea.js:28
 FLEA_WHY                     src/12ua-flea.js:31
-fleaBuy                      src/12ua-flea.js:121
-fleaCredits                  src/12ua-flea.js:116
+fleaBuy                      src/12ua-flea.js:126
+fleaCredits                  src/12ua-flea.js:121
 fleaEpoch                    src/12ua-flea.js:44
 fleaHere                     src/12ua-flea.js:40
-fleaLeave                    src/12ua-flea.js:165
-fleaLot                      src/12ua-flea.js:115
+fleaLeave                    src/12ua-flea.js:173
+fleaLot                      src/12ua-flea.js:120
 fleaLots                     src/12ua-flea.js:61
 fleaPlace                    src/12ua-flea.js:48
 fleaRec                      src/12ua-flea.js:34
-fleaRender                   src/12ua-flea.js:178
-fleaScrip                    src/12ua-flea.js:117
+fleaRender                   src/12ua-flea.js:186
+fleaScrip                    src/12ua-flea.js:122
 FLEET                        src/04b-fleet.js:107
 FLEET_ART                    src/12ai-fleet.js:101
 FLEET_CLASSES                src/12ai-fleet.js:20
@@ -3452,9 +3460,9 @@ wanAll                       src/24c-mode-wanderer.js:21
 wanCaseAt                    src/24c-mode-wanderer-draw.js:30
 wanCol                       src/24c-mode-wanderer-draw.js:21
 wanCur                       src/24c-mode-wanderer.js:50
-WANDER_BY_ID                 src/12v-wander-shop.js:68
+WANDER_BY_ID                 src/12v-wander-shop.js:70
 WANDER_CAT                   src/12v-wander-shop.js:27
-WANDER_LINES                 src/12v-wander-shop.js:249
+WANDER_LINES                 src/12v-wander-shop.js:255
 WANDER_LOOP                  src/12v-wander.js:30
 WANDER_N                     src/12v-wander.js:29
 WANDER_RAW                   src/12v-wander-shop.js:26
@@ -3463,39 +3471,39 @@ WANDER_SHELF                 src/12v-wander-shop.js:24
 WANDER_STOP                  src/12v-wander.js:28
 WANDER_T0                    src/12v-wander.js:27
 wanderAngle                  src/12v-wander.js:107
-wanderAreaChart              src/12v-wander-shop.js:178
-wanderAskPart                src/12v-wander-shop.js:149
+wanderAreaChart              src/12v-wander-shop.js:184
+wanderAskPart                src/12v-wander-shop.js:152
 wanderAt                     src/12v-wander.js:68
-wanderBuy                    src/12v-wander-shop.js:151
-wanderCant                   src/12v-wander-shop.js:141
+wanderBuy                    src/12v-wander-shop.js:154
+wanderCant                   src/12v-wander-shop.js:143
 wanderDock                   src/12v-wander.js:123
-wanderHas                    src/12v-wander-shop.js:77
+wanderHas                    src/12v-wander-shop.js:79
 wanderHeading                src/12v-wander.js:105
 wanderHere                   src/12v-wander.js:90
-wanderLeftRu                 src/12v-wander-shop.js:257
+wanderLeftRu                 src/12v-wander-shop.js:264
 wanderLen                    src/12v-wander.js:95
 wanderLoop                   src/12v-wander.js:44
-wanderLots                   src/12v-wander-shop.js:110
+wanderLots                   src/12v-wander-shop.js:112
 wanderNear                   src/12v-wander.js:116
-wanderNeedleAcc              src/12v-wander-shop.js:100
+wanderNeedleAcc              src/12v-wander-shop.js:102
 wanderOk                     src/12v-wander.js:37
-wanderOwns                   src/12v-wander-shop.js:78
+wanderOwns                   src/12v-wander-shop.js:80
 wanderPlanetIx               src/12v-wander.js:82
-wanderPriceRu                src/12v-wander-shop.js:135
-wanderRawLeft                src/12v-wander-shop.js:210
-wanderRawQuote               src/12v-wander-shop.js:216
+wanderPriceRu                src/12v-wander-shop.js:137
+wanderRawLeft                src/12v-wander-shop.js:216
+wanderRawQuote               src/12v-wander-shop.js:222
 wanderRec                    src/12v-wander.js:31
 wanderRumour                 src/12v-wander.js:130
-wanderSellRaw                src/12v-wander-shop.js:220
-wanderShowables              src/12v-wander-shop.js:234
-wanderShowRare               src/12v-wander-shop.js:238
+wanderSellRaw                src/12v-wander-shop.js:226
+wanderShowables              src/12v-wander-shop.js:240
+wanderShowRare               src/12v-wander-shop.js:244
 wanderSkyLine                src/12v-wander.js:147
-wanderStat                   src/12v-wander-shop.js:90
-wanderStore                  src/12v-wander-shop.js:69
-wanderTick                   src/12v-wander-shop.js:101
-wanderToHold                 src/12v-wander-shop.js:85
-wanderToShelf                src/12v-wander-shop.js:79
-wanderWildGrant              src/12v-wander-shop.js:193
+wanderStat                   src/12v-wander-shop.js:92
+wanderStore                  src/12v-wander-shop.js:71
+wanderTick                   src/12v-wander-shop.js:103
+wanderToHold                 src/12v-wander-shop.js:87
+wanderToShelf                src/12v-wander-shop.js:81
+wanderWildGrant              src/12v-wander-shop.js:199
 wanderWorldPos               src/12v-wander.js:97
 wanGeom                      src/24c-mode-wanderer-draw.js:24
 wanItemIcon                  src/24c-mode-wanderer-draw.js:37
@@ -3984,7 +3992,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12t-settle.js · 28 КБ
   · посёлок: вы даёте, решают они:1
 
-## src/12ua-flea.js · 13 КБ
+## src/12ua-flea.js · 14 КБ
   · Блошинец: станция, где всё чьё-то:1
 
 ## src/12ub-books.js · 21 КБ
@@ -3999,6 +4007,9 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12ud-smena-text.js · 458 КБ
   · «Смена»: текст романа — СГЕНЕРИРОВАНО docs/mksmena.py из docs/SMENA.md, руками не править:1
 
+## src/12ue-boxes.js · 6 КБ
+  · коробки: пустые спичечные коробки старых фабрик (M346):1
+
 ## src/12u-folk.js · 9 КБ
   · четверо:1
 
@@ -4011,7 +4022,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12v-wander.js · 18 КБ
   · «Сорока»: странствующий парусник (M342):1
 
-## src/12v-wander-shop.js · 19 КБ
+## src/12v-wander-shop.js · 20 КБ
   · лавка «Сороки»: три прилавка и полка инструментов (M343):1
 
 ## src/12v-wander-shop-cosm.js · 10 КБ
@@ -4633,7 +4644,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zze-plan.js · 2 КБ
   · план: комбинат без наряда, изделие, которое принимает только база:1
 
-## tests/91zzf-last.js · 7 КБ
+## tests/91zzf-last.js · 8 КБ
   · возвращение, слухи, имена, единичные места:1
 
 ## tests/91zzg-houses.js · 1 КБ
@@ -4860,6 +4871,9 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzzzi-locker.js · 7 КБ
   · автотесты: ящик конторы (M345):1
+
+## tests/91zzzzj-boxes.js · 5 КБ
+  · автотесты: коробки (M346):1
 
 ## tests/91zzzzy-hold.js · 9 КБ
   · холдинг: круг стройки числами (M339):1

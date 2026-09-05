@@ -7,6 +7,16 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.345.0 - M346: matchboxes — twenty empty boxes of factories that are gone
+
+The last step of the «Сорока» queue and the smallest: a side collection with no use at all. Twenty
+labels, each one line — «Красный маяк», «Полярная», «Гагара», «Долгий ход», «Смена», «Стриж»,
+«Тишина», «Кедр», «Верфь № 3», «Ласточка», «Первое сентября», «Ковш», «Ясная», «Прибой», «Кочегар»,
+«Утро», «Дружина», «Экспедиция», «Последняя партия» — empty boxes turn up in hulks and containers, on
+the flea market as a cheap lot, and aboard «Сорока» for a single match. They lie on the shelf at home
+beside the books: «коробков: N из 20», the labels tilted, the striking edge red. Nothing counts them.
+The keeper has one more line, about a full box of fifty he saw once and will not sell.
+
 ## 0.344.0 - M345: the locker — the houses' transport office keeps your things
 
 Dock at a station of the sixth rung or higher and a fifth zone slides onto ОПИСЬ: ЯЩИК, twenty-four

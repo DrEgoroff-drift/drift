@@ -314,7 +314,7 @@ const DESK_ITEMS=[
              (mailAll().st.length||(typeof albumAll==="function"&&albumAll().length)))||
              (typeof qslAll==="function"&&Object.keys(qslAll().heard).length))},
   {id:"books", ru:"ПОЛКА",   note:"что нашлось в обломках и уцелело",
-   tabs:["books"], live:()=>(typeof bookCount==="function"&&bookCount()>0)},
+   tabs:["books"], live:()=>((typeof bookCount==="function"&&bookCount()>0)||(typeof boxCount==="function"&&boxCount()>0))},
   {id:"smena", ru:"СМЕНА",   note:"роман · открывается, когда прожит",
    tabs:["smena"], live:()=>true},
   {id:"diary", ru:"ДНЕВНИК", note:"бланками, потому что писать некому",

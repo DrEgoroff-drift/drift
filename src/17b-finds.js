@@ -65,6 +65,7 @@ function findTake(f){
      продать с рук на блошинце за всю цену — две дороги с одной находки */
   /* книга попадается и в контейнере: там она лежит между накладными (M202) */
   if(f.k==="cont"&&typeof bookRoll==="function")bookRoll(f.seed,"из контейнера",0.24);
+  if(f.k==="cont"&&typeof boxRoll==="function")boxRoll(f.seed,"из контейнера",0.16);   /* коробок (M346) */
   if((f.k==="sat"||f.k==="cont"||f.k==="hulk")&&typeof thingAdd==="function"){
     const val=Math.round((f.k==="hulk"?900:f.k==="sat"?700:420)*(1+d*.8)/10)*10;
     const ru=f.k==="hulk"?"Хулк":f.k==="sat"?"Спутник":"Контейнер";
@@ -114,6 +115,7 @@ function findTake(f){
     if(typeof rareTake==="function")rareTake("hulk",hashi(f.seed,0x2A2E,9));
     if(typeof kitFromHulk==="function")kitFromHulk(f.seed);   /* чужая вещь комплекта (M152) */
     if(typeof bookRoll==="function")bookRoll(f.seed,"из остова",0.40);   /* книга (M202) */
+    if(typeof boxRoll==="function")boxRoll(f.seed,"из остова",0.26);      /* коробок (M346) */
     return got;
   }
   /* сигнал бедствия: живой человек, а не склад. Платит тем, что у него есть, —

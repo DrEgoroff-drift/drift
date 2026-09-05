@@ -82,6 +82,7 @@ function fleaLots(sys){
     const u=r();
     if(i===0&&(G.sx!==0||G.sy!==0))kind="you";           // сведения о вас лежат первыми
     else if(u<.20&&typeof parrotHas==="function"&&!parrotHas())kind="bird";
+    else if(u<.30&&typeof boxCount==="function"&&boxCount()<BOXES.length)kind="box";   /* коробок (M346) */
     else if(u<.55)kind="word";
     const tier=clamp(1+Math.floor(r()*(1+danger*3.4)),1,5);
     const lot={id,kind,seed,who,why,at,tier};
@@ -94,6 +95,10 @@ function fleaLots(sys){
       lot.ru="живое: трепло в клетке";
       lot.note="из вещей "+who+", борт стоял в секторе "+at.sx+":"+at.sy;
       lot.price=Math.round(120+r()*60);
+    }else if(kind==="box"){
+      lot.ru="пустой спичечный коробок";
+      lot.note="из вещей "+who+" · этикетка старой фабрики";
+      lot.price=Math.round(9+r()*8);
     }else if(kind==="word"){
       lot.ru="адрес, записанный от руки";
       lot.note="куда ходил тот борт: сектор "+at.sx+":"+at.sy;
@@ -147,6 +152,9 @@ function fleaBuy(id,pay,sys){
       "\n\nу вещи есть прошлое, и оно записано");
   }else if(lot.kind==="bird"&&typeof parrotFind==="function"){
     parrotFind(lot.seed,lot.who);
+  }else if(lot.kind==="box"&&typeof boxFind==="function"){
+    const b=boxFind(lot.seed,"с блошинца, из вещей "+lot.who);
+    tell("good","С блошинца: коробок"+(b?" "+b.ru:""),"КОРОБОК\n"+(b?b.ru+"\n"+b.by:"пустой")+"\n\nна полку дома, к книгам");
   }else if(lot.kind==="you"){
     tell("good","Сведения о вас сняты с прилавка",
       "СВЕДЕНИЯ О ВАС\n"+lot.note+"\n\nбольше их тут никто не купит");

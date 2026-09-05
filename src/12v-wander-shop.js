@@ -61,6 +61,8 @@ const WANDER_CAT=[
    fx:"засечки на девять секторов вокруг далёкой станции", pay:{cr:900}, hook:"12v-wander-shop"},
   {id:"book",    fam:"paper",ru:"Книга, которой у вас нет",note:"из ящика, где книги лежат корешками внутрь",
    fx:"на полку дома ложится том, которого там не было", pay:{cr:700}, hook:"12v-wander-shop"},
+  {id:"matchbox",fam:"paper",ru:"Пустой коробок",         note:"этикетку не выбросили: фабрики уже нет",
+   fx:"коробок старой фабрики — на полку дома, к книгам", pay:{m:1}, hook:"12v-wander-shop"},
   /* — обмен (один на стоянку): просьба словами — */
   {id:"wild",    fam:"wild",ru:"Свёрток под сукном",      note:"«мы были там, где вы не были»",
    fx:"артефакт, которого у вас нет, а если их уже три — редкость из сотни", pay:{ask:"любая часть не ниже отменной"}, hook:"12v-wander-shop"}
@@ -116,7 +118,7 @@ function wanderLots(w){
   const plan=w.dark?["tool","cosm","paper","wild"]:["tool","tool","tool","tool","cosm","cosm","paper","wild"];
   const out=[];let ti=0,pi=0,ci=0;
   const papers=WANDER_CAT.filter(c=>c.fam==="paper");
-  if(r()<.5)papers.reverse();
+  for(let i=papers.length-1;i>0;i--){const j=Math.floor(r()*(i+1));const t=papers[i];papers[i]=papers[j];papers[j]=t;}
   const cosm=WANDER_CAT.filter(c=>c.fam==="cosm");
   for(let i=cosm.length-1;i>0;i--){const j=Math.floor(r()*(i+1));const t=cosm[i];cosm[i]=cosm[j];cosm[j]=t;}
   for(let i=0;i<n;i++){
@@ -144,6 +146,7 @@ function wanderCant(lot){
   if(lot.pay.cr&&G.credits<lot.pay.cr)return "не хватает кредитов";
   if(lot.pay.ask&&!wanderAskPart())return "нет части не ниже отменной среди снятых";
   if(lot.id==="book"&&typeof bookCount==="function"&&bookCount()>=BOOKS.length)return "все сорок у вас уже есть";
+  if(lot.cat&&lot.cat.id==="matchbox"&&typeof boxCount==="function"&&boxCount()>=BOXES.length)return "все двадцать у вас уже есть";
   return null;
 }
 function wanderAskPart(){return (G.inv||[]).find(p=>!isFitted(p.id)&&(p.tier|0)>=4)||null;}
@@ -165,6 +168,9 @@ function wanderBuy(lot){
     cosmGive(cat.id);
     tell("tech","С «Сороки»: "+cat.ru,cat.ru.toUpperCase()+"\n"+cat.note+"\n"+cat.fx+
       (cosmOn(cat.slot)===cat.id?"\n\nнадето":"\n\nв шкатулке на ОПИСИ: надеть — там"));
+  }else if(cat.id==="matchbox"){
+    const b=(typeof boxFind==="function")?boxFind(hashi(lot.id.length,R.got.length,0xB0CE),"с борта «Сороки»"):null;
+    tell("good","С «Сороки»: коробок"+(b?" "+b.ru:""),"КОРОБОК\n"+(b?b.ru+"\n"+b.by:"пустой")+"\n\nна полку дома, к книгам");
   }else if(cat.id==="area")wanderAreaChart(lot);
   else if(cat.id==="book"){
     const b=(typeof bookFind==="function")?bookFind(hashi(lot.id.length,R.got.length,0xB00C),"куплена на «Сороке»"):null;
@@ -249,6 +255,7 @@ function wanderShowRare(id){
 const WANDER_LINES={
   hello:"Спички считаем целыми. Чиркнутая уже не спичка, а история.",
   idle:["Огня в космосе нет уже сто лет. Есть только то, что положили внутрь до нас.",
+        "Полный коробок — пятьдесят целых — я видел один раз. Не продам, и не просите.",
         "За гондолу шестьдесят. Не торгуюсь, у меня их тоже не делают.",
         "Летучих на двадцать спичек. Кладу из своего коробка, помните это."],
   leave1:"Сейчас узнаем, куда ветер.",leave2:"Туда."

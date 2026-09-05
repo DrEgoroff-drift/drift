@@ -107,7 +107,7 @@ One phrase per module; the module's own header says the rest. Grep `docs/INDEX.m
 | `12e-drone-flight` `12l-barge` `12m-rare` `12h-relic` | drones derived from the clock; trade barges and wrecks; the hundred rarities; the lab and seven artifacts |
 | `12r-route` `12ab-hold` `12ac-bld` `12ad-site` `12ae-ladder` `12af-barge` `12ag-holdfx` `12ah-holdnews` `17e-station-body` `26c-ui-station-site` | the holding (`docs/DESIGN-holding.md`): the route as an order; the station's appetite; `BLD` families A–D; the site, hopper and share; the ladder (`rungHas`); the own barge; families E–I (`bldHas`); the station body; news and rival barges; the СТРОЙКА tab |
 | `12s-wear` `12t-settle` `12tb`–`12td` | hull wear; the settlement (glyphs, crafts, the hand-over button) |
-| `12ub-books` | forty books out of wreckage |
+| `12ub-books` `12ue-boxes` | forty books out of wreckage; twenty empty matchboxes beside them |
 | `12uc-matches` `12v-wander` `12v-wander-shop` `12v-wander-shop-cosm` `12ak-locker` `24c-mode-wanderer` `26d-ui-wanderer` | «Сорока» (`docs/DESIGN-wanderer.md`): matches, the sail-ship's clock loop and the three ways to find it, the catalogue and counters, the office locker, the room mode and its panel |
 | `15-input` `16-flight` | keys/pads/mouse, starfield, autopilot, trail |
 | `17`–`25` `mode-*` | modes: system, map, landing, surface, cave, mine, belt, cockpit, scoop; draw halves in `*-draw`; `20-life` astronaut and flora, `20f-fauna` beasts, `17b-finds` finds in the void, `17d-house-shapes` faction marks |

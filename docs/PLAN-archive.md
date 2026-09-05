@@ -7768,3 +7768,19 @@ who «конторы перевозок», price 28+34·tier, bought like any lo
 and raw are lost to the office. The zone sits in the cloth's `side` area (between the casket and the
 hatch), drag a spare part or a pile onto it, or press «В ЯЩИК» on the card; tools on the shelf and in
 the hold get «В ЯЩИК» too. People are never stored. «Второй ящик» is a «Сорока» tool (24 matches).
+
+## M346 — matchboxes (0.345.0, 2026-09-05)
+
+- **M346 — matchboxes** (`G.boxes=[ids]`): ~20 hand-written labels (one line each, like `BOOKS` —
+  a table, not a generator), found in wrecks/flea/aboard; shelf at home next to the books,
+  «коробков: N из 20». No effect. A full box of 50 is a keeper's legend, possible wild card once.
+
+**Built as planned:** `BOXES` is a table of twenty labels (name in guillemets plus one line about the
+factory), `G.boxes=[id…]`, `boxFind(seed,where)` walks the table from the seed's start and takes the
+first unowned — the same law as the books, so a place always gives the same box; `boxRoll` at 26 % in
+hulks and 16 % in containers (below the books' 40/24, or the shelf fills in an evening). The flea rows
+grew a kind `box` (9–17 scrip) while boxes remain; «Сорока» sells «Пустой коробок» for one match as a
+third paper, and the papers now shuffle per epoch instead of alternating. The desk item ПОЛКА is live
+with boxes alone; the shelf prints the count and the labels as small tilted boxes with a red striking
+edge. The full box of fifty is one more idle line of the keeper; the «possible wild card once» was
+not built — the wild card already has two honest gifts and a third would be a lottery.

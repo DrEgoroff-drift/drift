@@ -143,9 +143,11 @@ function renderBooks(box){
   const have=bookAll();
   if(!have.length){
     tableRow(box,"dim","","полка пуста: книги попадаются в обломках — в остовах, контейнерах и на разбитых баржах");
+    if(typeof boxesBlock==="function")boxesBlock(box);   /* коробки рядом с книгами (M346) */
     return;
   }
   tableRow(box,"dim","","собрано "+have.length+" из "+BOOKS.length);
+  if(typeof boxesBlock==="function")boxesBlock(box);
   const wrap=document.createElement("div");wrap.className="album mail";
   have.slice().sort((a,b)=>a-b).forEach(id=>{
     const b=BOOKS_BY[id];if(!b)return;

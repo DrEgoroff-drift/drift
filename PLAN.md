@@ -102,7 +102,7 @@ in this order (author, 2026-09-03: «сначала по плану, потом 
    ghost click on screens opened by a pad swallowed, §18.8 complete but for the заявка (rung 21).
    ~~Left: the ship keeps its `.55` floor at deep zoom-out~~ — `.35` since M319 (0.316.0).
 
-## «Сорока» — the wanderer queue (M340–M345 done, M346 open; author 2026-09-04: «делай всё в соло»)
+## «Сорока» — the wanderer queue (M340–M346 done — closed 2026-09-05; author 2026-09-04: «делай всё в соло»)
 
 Design is settled in `docs/DESIGN-wanderer.md` (§1–§13; §6 and §12–§13 are the revised, binding
 parts — §11's prices are indicative). Read that file first, then this queue. Every milestone below is
@@ -142,9 +142,10 @@ cosmetics exist; the desk gets one table «ОПИСЬ»; a locker exists at stat
   real clock, no debt; 30 days unvisited → parts resurface on any flea as «залог, за которым не пришли».
   Body in `docs/PLAN-archive.md`.
 
-- **M346 — matchboxes** (`G.boxes=[ids]`): ~20 hand-written labels (one line each, like `BOOKS` —
-  a table, not a generator), found in wrecks/flea/aboard; shelf at home next to the books,
-  «коробков: N из 20». No effect. A full box of 50 is a keeper's legend, possible wild card once.
+- **M346** (0.345.0) — done: matchboxes (`12ue-boxes`) — twenty hand-written labels, found in wrecks and
+  containers, on the flea (a lot) and aboard «Сорока» (one match); the shelf at home says «коробков: N из 20»
+  beside the books; no effect; the keeper mentions the full box of fifty and never sells it.
+  **The «Сорока» queue M340–M346 is closed.** Body in `docs/PLAN-archive.md`.
 
 - **M347 — the map speaks in addresses** (author 2026-09-04: «на карте не понятно, что за сектора и
   адреса»). `18-mode-map`. (1) A sector grid, one cell per sector, under the same darkness law as the
