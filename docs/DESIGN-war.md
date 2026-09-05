@@ -583,4 +583,56 @@ A named gun left by someone is a goal for a newcomer, not a cheat.
 saturation `1−exp(−n/12)` · ceiling 40 %/week · boss trigger 25 % of an area in 3 days · shield
 regen 2.5× top solo DPS · shield window 20 s per 10 min · hull 30 min of crowd fire · leftovers
 5/system, 3/account/day, 2 finds/сводка, 10 сводки life · signal 1/account/day.
+---
+
+## 12. The regulator — циркуляры (author, 2026-09-06)
+
+> «т.к. тебя прям в мир не вписать, надо сводки, ты будешь читать раз в день раз в неделю, сам
+> давать приказы и балансировать… Много событий, выборы, политика, войны. Ты будешь как
+> регулятор всего. а без тебя там всё происходит на сервере, считается рандомно, и жизнь сама
+> идёт»
+
+**Two layers, both deterministic.** Below: the six agents by seed plus the players' ведомости
+(§7.5) — runs always, with nobody. Above: **циркуляры** — entries in the same chronicle, stamped
+with a сводка, authored by Claude on a schedule instead of by the seed. Clients fetch them with
+the ведомости and replay with them, so everyone sees the same world and the regulator need not
+be online. No циркуляр — the seed's history runs.
+
+**What is read.** A daily scheduled session (`ssh drift`) takes a **digest**, not raw logs:
+сводки of the day, who took what, where the crowd hit the ceiling, where «Ревизия» triggered,
+hulls in battle, where leftovers pile up, where players die most, signals raised and answered —
+twenty lines. Weekly the same over the week plus curves.
+
+**What may be ordered — the constitution (`docs/WAR-CONSTITUTION.md`, guarded by a test).**
+May: need weights of the powers within ±30 %; named events (elections, strike, embargo,
+ultimatum, a truce with a date, a great build, «Ревизия» earlier or later within its trigger);
+the six waves' texts for the day; the §11.5 dials within ±20 %. May never: touch players'
+things or money, erase episodes, kill people from notebooks, undo «закреплено». Every циркуляр
+is logged and **seen in the game as paper**: ГЛАВТРАССА's is literally «Циркуляр» (гл. 54),
+Компания's a press release, Орднунг's a numbered order — the regulator is, in the lore, the
+paper from above, and the satire closes on it.
+
+**Elections and politics.** Each power has a rite: Коммуна — elections every two weeks, three
+candidates, the result moves the power's need; Компания — the shareholders' meeting;
+Хай-Фронт — a firmware update with a new «курс»; Орднунг — re-election with one candidate and
+99.7 % turnout; ГЛАВТРАССА — the съезд and the пятилетка; «Рассвет» — the council of elders.
+**Players vote with one button** — a postcard: counters in the ведомость, no words, weighed like
+a crowd with the same saturation. Candidates and platforms are Claude's text in the циркуляр,
+new every time.
+
+**For the author.** «чё там» → ten lines: where the war is, who was elected, where the crowd is,
+what was turned and why. «разожги на востоке» / «хватит войны на месяц» → the next циркуляр.
+Silence → balancing within the constitution. A mode «show me before publishing» exists; the
+default is publish.
+
+**To build.** Server: a digest script folding ведомости into twenty lines, and the same script
+writing a циркуляр into the chronicle. Client: циркуляр as an entry kind in the replay and as
+paper on air and in the news. Schedule: daily, weekly on Sundays. The constitution as a file
+and a test that refuses a циркуляр outside it — so that Claude cannot either.
+
+**Honest limits.** Nothing lives between sessions: a break at 3 a.m. is seen in the morning, so
+the server keeps a **fuse** — an emergency truce if more than 40 % of anyone's holdings went in
+a day without «Ревизия». Each session costs tokens (daily small, weekly more). The six voices
+are Claude's, so the evenness of the satire is Claude's too — the constitution checks at least
+«six waves a day, none without a jab».
 

@@ -712,6 +712,12 @@ Each pass is closed on its own; none needs the next. Order:
 - **M379 — «РЕВИЗИЯ» (§11.1–11.2).** The ceiling and the trigger in the chronicle; the boss in
   the sky; per-minute damage tallies on the server, shield regen vs the sum, hull that does not
   regenerate, the 20 s window; «закреплено» in the chronicle; loot for participants.
+- **M380 — циркуляры (§12).** The entry kind in the replay; paper on air and in the news per
+  power; `docs/WAR-CONSTITUTION.md` and the test that refuses a циркуляр outside it; the
+  server fuse (emergency truce at −40 %/day); the digest script on drift.
+- **M381 — the regulator's schedule.** Daily and weekly sessions over `ssh drift`: read the
+  digest, write the циркуляр (events, elections with one-button votes, the six waves' texts,
+  dials within the constitution), publish; «show me first» mode for the author.
 
 Measured from M360 on: frame cost with eight armed ships on the phone layout (`prof()`), and
 the pad row after M361 on the 44 px sweep (`91zzy-screens`).
