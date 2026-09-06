@@ -1505,10 +1505,14 @@ that closes it.
   the «Ялта» flags. *Measure:* `prof()` with eight ships and a full station body. *Done when:*
   you jump into a front and watch a fight you were not part of; «Ялта» flies six flags.
 
-**M373 · the four rules and the hail** — *Read* §6.1, D09. *Build* `12ar-hail`: the hail with
-three answers, generalised from `fleetHailFirst`; a maker stamp on munitions in the hold;
-blockade from chronicle facts; the warning on silence. *Tests* in `91zzzw-combat`. *Done when:*
-silence twice gets a warning and a stamped cassette through a picket draws fire.
+~~**M373 · the four rules and the hail**~~ — 0.373.0 (2026-09-06): `12ar-hail` — the hail once
+per system per half-hour, two answers on the two buttons already under the thumb (ДЕЙСТВИЕ
+«проходом», ЦЕЛЬ «по делу») and silence as the third; silence once warns, twice draws fire; the
+four rules enforced where they happen — a shot at a picket in `hitShip`, a cassette stamped by
+their enemy checked at the answer (ammo is stamped by the station that assembled it, and the
+stamp is on the lab's line), a blockade that answers «стоять» to «проходом» and counts leaving as
+running. Anger is local: those who saw it shoot, and the chronicle knows nothing — that memory
+travels with M374.
 
 **M374 · episodes and the notebook** — *Read* §6.2–6.3, D15, D17. Symbols: `heardYours`,
 `parrotHas` (`12x-parrot`), the трасса lanes (`18b-map-hold`), the desk pages (`27e-ui-home`).

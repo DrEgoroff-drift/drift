@@ -1756,7 +1756,7 @@ body.table u.addr{color:#7a4a20}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.372.0";
+const VER="0.373.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -20882,6 +20882,158 @@ function chronWarBetween(a,b){
   return false;
 }
 
+/* ══════════════ четыре правила и позывной (M373, §6.1) ══════════════
+   Репутации в игре нет и не будет. Вместо неё — четыре правила, которые знает
+   каждый пикет любой державы, и которые целиком помещаются в одну строку на
+   экране:
+
+     гражданский борт не трогают, пока он не сделал одно из четырёх —
+     1) выстрелил по ним;
+     2) провёз через их пикет боеприпас с клеймом их врага;
+     3) пристыковался к военному узлу их врага там, где идёт бой;
+     4) пошёл сквозь блокаду после того, как его окликнули и велели стоять.
+
+   Позывной — это обобщённый `fleetHailFirst` (12ai): оклик, вопрос «кто такой»
+   и ТРИ готовых ответа. Свободного текста нет нигде и не будет (правило
+   открытки): «проходом», «по делу», молчание. Молчание — тоже ответ, и второе
+   молчание подряд приносит предупреждение.
+
+   Ответы кладутся на те же две кнопки, что уже есть под рукой: ДЕЙСТВИЕ —
+   «проходом», ЦЕЛЬ — «по делу». Третьего пальца на телефоне не бывает, и
+   третья кнопка тут не появится: молчание нажимать не надо. */
+const HAIL_HOLD=420;        /* сколько кадров ждут ответа — семь секунд */
+const HAIL_RANGE=900;       /* с какого расстояния окликают */
+function hailPicket(sh){
+  /* ближайший чужой борт державы, который может окликнуть */
+  let best=null,bd=HAIL_RANGE;
+  for(const p of (G.pirates||[])){
+    if(p.hull<=0||!p.pw||p.envoy)continue;
+    if(p.pw===playerFlag())continue;                 /* свои не окликают своих */
+    const d=Math.hypot(sh.x-p.x,sh.y-p.y);
+    if(d<bd){bd=d;best=p;}
+  }
+  return best;
+}
+/* ── клеймо на боеприпасе (§6.1 правило 2) ──
+   Партия ракет собрана где-то, и это где-то на ней написано. Своё клеймо —
+   ГЛАВТРАССЫ; купленное на чужой станции носит её клеймо, и через пикет её
+   врага такую кассету лучше не везти. */
+function ammoStamp(){return G.mslBy||"gt";}
+function ammoStampSet(by){G.mslBy=(typeof HULL_MAKER!=="undefined"&&HULL_MAKER[by])?by:"gt";}
+function hailContraband(by){
+  if((G.cargo.missile|0)<=0)return false;
+  const st=ammoStamp();
+  if(st===by)return false;
+  if(typeof chronWarBetween!=="function")return false;
+  const a=MAKER_KEYS.indexOf(by),b=MAKER_KEYS.indexOf(st);
+  return chronWarBetween(a,b);
+}
+/* ── блокада (§6.1 правило 4) ──
+   Фронт — это и есть блокада: пикет велит стоять. «Стоять» проверяется не
+   словами, а расстоянием: если после оклика борт продолжает уходить, значит
+   он пошёл сквозь. */
+function hailBlockade(){
+  return !!(typeof chronFront==="function"&&chronFront(G.sx,G.sy));
+}
+/* ── злость: одна на державу и на систему, не на галактику ──
+   Нарушил — стреляют здесь и сейчас те, кто это видел. Летопись про это не
+   знает: эпизоды и та память, которая ездит по трассам, приходят с M374. */
+function hailAnger(by,why){
+  if(!by)return;
+  let n=0;
+  for(const p of (G.pirates||[])){
+    if(p.hull<=0||p.pw!==by)continue;
+    p.iff=0;p.aware=true;n++;
+  }
+  if(!n)return;
+  G.hail=null;
+  const P=(typeof powerOf==="function")?powerOf(by):null;
+  say((P?P.ru.toUpperCase():"ПИКЕТ")+" ОТКРЫВАЕТ ОГОНЬ",120);
+  if(typeof etherLine==="function")
+    etherLine("…"+(P?P.ru:"пикет")+": борт нарушил "+(why||"правило")+". Работаем.",
+      P?P.ru:"пикет");
+  logAdd("warn","Пикет "+(P?P.ru:"")+" открыл огонь: "+(why||"нарушение"));
+}
+/* игрок выстрелил по державе — первое правило, и оно самое короткое */
+function hailShotAt(p){
+  if(!p||!p.pw||!p.iff)return;
+  hailAnger(p.pw,"первое правило: открыл огонь");
+}
+/* ── такт оклика ── */
+function hailTick(sh,dt,actEdge){
+  if(G.mode!=="system")return false;
+  const H=G.hail;
+  if(H){
+    H.t-=dt;
+    const P=(typeof powerOf==="function")?powerOf(H.by):null;
+    const who=P?P.ru.toUpperCase():"ПИКЕТ";
+    G.prompt=who+" · «"+(P?P.hail:"Кто такой")+"»\n"+
+      "ДЕЙСТВИЕ — «ПРОХОДОМ» · ЦЕЛЬ — «ПО ДЕЛУ»"+(H.warn?" · ВАС УЖЕ ПРЕДУПРЕДИЛИ":"");
+    if(actEdge){hailAnswer("pass");return true;}
+    if(H.t<=0){
+      /* молчание. Первое — предупреждение, второе — они правы */
+      if(!H.warn){
+        H.warn=1;H.t=HAIL_HOLD;
+        say("МОЛЧИТЕ · ЭТО ЗАПИСЫВАЮТ",100);
+        if(typeof etherLine==="function")etherLine("…борт не отвечает. Повторяю запрос.",who);
+      }else{
+        hailAnger(H.by,"четвёртое правило: не ответил и пошёл дальше");
+      }
+    }
+    return true;
+  }
+  /* оклик: раз на систему и на смену волны, и только если рядом чужой пикет */
+  const p=hailPicket(sh);
+  if(!p)return false;
+  G.hailLog=G.hailLog||{};
+  const key=G.sx+","+G.sy+"|"+p.pw;
+  const bucket=Math.floor(Date.now()/1800000);
+  if(G.hailLog[key]===bucket)return false;
+  G.hailLog[key]=bucket;
+  G.hail={by:p.pw,t:HAIL_HOLD,warn:0,x:sh.x,y:sh.y,blk:hailBlockade()?1:0};
+  const P=(typeof powerOf==="function")?powerOf(p.pw):null;
+  if(typeof etherLine==="function")etherLine("…"+(P?P.hail:"кто такой"),P?P.ru:"пикет");
+  sfx("ui",{f:520,to:380,d:.2,v:.25});
+  return true;
+}
+/* ── ответ ──
+   Три ответа и ни одного слова сверх: «проходом», «по делу», молчание. Что
+   будет дальше, решают не слова, а трюм и то, идёт ли здесь бой. */
+function hailAnswer(kind){
+  const H=G.hail;
+  if(!H)return false;
+  const by=H.by,P=(typeof powerOf==="function")?powerOf(by):null;
+  /* второе правило: клеймо чужого врага на боеприпасе */
+  if(hailContraband(by)){
+    hailAnger(by,"второе правило: кассеты с клеймом их врага");
+    return true;
+  }
+  if(H.blk&&kind==="pass"){
+    /* блокада: «проходом» здесь не ответ — велено стоять */
+    H.warn=1;H.t=HAIL_HOLD;H.hold=1;
+    say("ВЕЛЕНО СТОЯТЬ · ЗДЕСЬ БЛОКАДА",120);
+    if(typeof etherLine==="function")
+      etherLine("…борт, стоять. Здесь закрыто. Повторяю: стоять.",P?P.ru:"пикет");
+    return true;
+  }
+  G.hail=null;
+  if(kind==="pass"){
+    say("ОТВЕЧЕНО: ПРОХОДОМ",90);
+    if(typeof etherLine==="function")etherLine("…принято. Идите своей линией.",P?P.ru:"пикет");
+  }else{
+    say("ОТВЕЧЕНО: ПО ДЕЛУ",90);
+    if(typeof etherLine==="function")
+      etherLine("…записано. По делу так по делу.",P?P.ru:"пикет");
+  }
+  return true;
+}
+/* пошёл сквозь блокаду: расстояние от точки оклика растёт — значит идёт */
+function hailRunCheck(sh){
+  const H=G.hail;
+  if(!H||!H.hold)return;
+  if(Math.hypot(sh.x-H.x,sh.y-H.y)>1400)hailAnger(H.by,"четвёртое правило: пошёл сквозь блокаду");
+}
+
 /* ══════════════ наёмники: рейс как раздача карт ══════════════ */
 /* Наёмник — не альтернатива дрону, а ставка. Дрон даёт маленький надёжный плюс,
    наёмник по кредитам в среднем в минусе и живёт ради хвостов: трофейных частей,
@@ -34027,6 +34179,9 @@ function pirateFellTo(p,owner){
    всякого полёта, поэтому вынесен отдельно. Возвращает true, если корпус
    развалился — рельсе это нужно, чтобы решить, пробивать ли дальше. */
 function hitShip(p,s,rawDmg){
+  /* первое из четырёх правил (M373): выстрел по борту державы — и пикет
+     перестаёт быть мимо проходящим */
+  if(s&&s.owner==="player"&&p&&p.pw&&p.iff&&typeof hailShotAt==="function")hailShotAt(p);
   let d=(rawDmg!==undefined?rawDmg:s.dmg)*hitLocMul(s,p);
   /* у пирата от ранга бывает своё поле, и его повадка та же (M362):
      лобового бьют в корму, импульсного — быстрее, чем он собирается */
@@ -34377,6 +34532,7 @@ function updateCombat(dt){
   /* ракеты (16b): свой пуск, своя перезарядка и свой расход из трюма — но живут
      они в том же цикле боя, а не отдельным таймером */
   if(typeof mslTick==="function")mslTick(dt);
+  if(typeof hailRunCheck==="function")hailRunCheck(sh);   /* четвёртое правило (M373) */
   if((keys.msl||(G.ctl&&G.ctl.msl))&&typeof mslFire==="function"&&(G.mslCool||0)<=0){
     if(sealed){if(typeof yaltaSealed==="function")yaltaSealed();}
     else mslFire();
@@ -37538,6 +37694,9 @@ function helmLock(p){
 }
 /* Tab / ЦЕЛЬ: ближайший знающий о вас враг; повтор — следующий по кругу */
 function helmLockNext(){
+  /* пока висит оклик, ЦЕЛЬ — это второй ответ, а не захват (M373): брать
+     пикет в прицел в этот момент означало бы совсем другой разговор */
+  if(G.hail&&typeof hailAnswer==="function"){hailAnswer("busy");return false;}
   if(G.jamT>0){say("ПОМЕХА · ЗАХВАТА НЕТ",70);return false;}
   helmMarksClean();
   const sh=G.ship;
@@ -38877,10 +39036,19 @@ function ammoRow($body,after){
     Object.keys(AMMO_COST).map(k=>k==="credits"?AMMO_COST[k]+" кр":
       RES[k].ru.toLowerCase()+" "+AMMO_COST[k]).join(" · ")+
     " · в трюме "+(G.cargo.missile|0)+
+    ((typeof ammoStamp==="function"&&ammoStamp()!=="gt"&&typeof powerOf==="function")
+      ?" · клеймо: "+powerOf(ammoStamp()).ru:"")+
     (labWorking()?" · своя лаборатория добавляет к партии":"")+"</s>"));
   const b=el("button","act gold","СОБРАТЬ");
   b.disabled=!craftAffordable(AMMO_COST);
-  b.onclick=()=>{craftAmmo();if(after)after();};
+  b.onclick=()=>{
+    craftAmmo();
+    /* партия получает клеймо той станции, где собрана (M373, §6.1 правило 2):
+       через пикет её врага такую кассету везти не стоит */
+    if(typeof ammoStampSet==="function")
+      ammoStampSet((G.sys&&G.sys.station&&G.sys.station.by)||"gt");
+    if(after)after();
+  };
   r.appendChild(b);$body.appendChild(r);
 }
 /* цель выбирается один раз, в момент пуска: ракета глупая, она держится за то,
@@ -39314,6 +39482,8 @@ function updateSystem(dt){
       }
     }
   }
+  /* оклик пикета (M373, §6.1): пока на него не ответили, остальное ждёт */
+  if(typeof hailTick==="function"&&hailTick(sh,dt,actEdge))return;
   /* корпус, оставшийся после чужого боя (M372): его можно взять на трос */
   if(typeof npcWreckNear==="function"){
     const wk=npcWreckNear(sh);

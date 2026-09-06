@@ -616,3 +616,74 @@ TEST_SUITES.push(()=>suite("снаряжение M368: ранг читается
   ok(pirateArtOf(id,false,false,0)!==pirateArtOf(id,false,false,3),
      "две выпечки, а не одна на всех");
 }));
+
+/* ══════════════ четыре правила и позывной (M373, §6.1) ══════════════
+   Правил ровно четыре, и каждое проверяется отдельно: пока борт не сделал ни
+   одного, его не трогают, а как только сделал — стреляют те, кто это видел.
+   Свободного текста в ответах нет: «проходом», «по делу», молчание. */
+function hlFoe(by,x){
+  const p=cbFoe(x===undefined?400:x,0,1);
+  p.pw=by;p.owner=by;p.iff=1;p.aware=false;
+  return p;
+}
+TEST_SUITES.push(()=>suite("правила M373: оклик, три ответа и молчание",()=>{
+  cbWorld();
+  G.hail=null;G.hailLog={};G.mslBy="gt";G.cargo.missile=0;
+  const p=hlFoe("or");
+  ok(hailTick(G.ship,1,false),"пикет окликнул");
+  ok(!!G.hail&&G.hail.by==="or","оклик чей надо");
+  /* «проходом» — и разговор закончен */
+  ok(hailAnswer("pass"),"ответ принят");
+  eq(G.hail,null,"оклик снят");
+  ok(p.iff===1,"и никто не стреляет");
+  /* второй раз в той же системе не окликают: это не будильник */
+  eq(hailTick(G.ship,1,false),false,"повторного оклика нет");
+  /* молчание: первое — предупреждение, второе — огонь */
+  cbWorld();
+  G.hail=null;G.hailLog={};G.cargo.missile=0;
+  const q=hlFoe("km");
+  hailTick(G.ship,1,false);
+  ok(!!G.hail,"окликнули");
+  hailTick(G.ship,HAIL_HOLD+1,false);
+  ok(G.hail&&G.hail.warn===1,"первое молчание — предупреждение");
+  ok(q.iff===1,"но ещё не стреляют");
+  hailTick(G.ship,HAIL_HOLD+1,false);
+  eq(q.iff,0,"второе молчание — и пикет больше не мимо проходящий");
+  ok(q.aware,"он вас видит");
+}));
+
+TEST_SUITES.push(()=>suite("правила M373: выстрел, клеймо и блокада",()=>{
+  /* первое правило: выстрелил — и пикет отвечает */
+  cbWorld();
+  G.hail=null;G.hailLog={};
+  const a=hlFoe("co",300);
+  hitShip(a,{vx:1,vy:0,dmg:5,type:"kin",owner:"player",mine:true},5);
+  eq(a.iff,0,"выстрел по борту державы — первое правило");
+  /* второе правило: кассета с клеймом их врага */
+  cbWorld();
+  G.hail=null;G.hailLog={};
+  const st=chronState?chronState():null;
+  const b=hlFoe("or");
+  G.cargo.missile=4;
+  ammoStampSet("or");
+  eq(hailContraband("or"),false,"своё клеймо пикету не мешает");
+  ammoStampSet("gt");
+  const at=chronWarBetween(MAKER_KEYS.indexOf("or"),MAKER_KEYS.indexOf("gt"));
+  eq(hailContraband("or"),at,"чужое клеймо мешает ровно тогда, когда они воюют");
+  /* и если воюют — ответ не помогает */
+  if(at){
+    hailTick(G.ship,1,false);
+    hailAnswer("pass");
+    eq(b.iff,0,"кассета врага через их пикет — и разговор окончен");
+  }
+  /* четвёртое правило: блокада — «проходом» не ответ, уход считается уходом */
+  cbWorld();
+  G.hail=null;G.hailLog={};G.cargo.missile=0;
+  const c=hlFoe("ra");
+  G.hail={by:"ra",t:HAIL_HOLD,warn:0,x:0,y:0,blk:1};
+  hailAnswer("pass");
+  ok(!!G.hail&&G.hail.hold===1,"на блокаде велено стоять");
+  G.ship.x=2000;G.ship.y=0;
+  hailRunCheck(G.ship);
+  eq(c.iff,0,"пошёл сквозь — четвёртое правило");
+}));

@@ -726,7 +726,10 @@ Three stages, each playable on /dev before the next starts:
   ~~M372 the war seen~~ (0.372.0, 2026-09-06: `13d-npc` — пикет в тылу, чужой бой на фронте на
   входе в систему, потолок восьми, корпус после боя на буксир; свежая оккупация державой — цены,
   строка в шапке и треть выработки в реквизицию; «Ялта» с шестью посольствами и шестью
-  мастерскими вдвое дороже) · M373 the four rules · M374 episodes and the notebook · M375 the rescuer.
+  мастерскими вдвое дороже) ·
+  ~~M373 the four rules~~ (0.373.0, 2026-09-06: `12ar-hail` — оклик раз на систему, два ответа на
+  тех же кнопках плюс молчание, предупреждение и огонь на второе молчание; четыре правила там,
+  где они случаются: выстрел, клеймо кассеты, блокада; злость местная) · M374 episodes and the notebook · M375 the rescuer.
 - **C — everyone** (server): M376 `war.php` and ведомости · M377 leftovers and ghosts · M378
   votes, elections, сигнал сбора · M379 the nine rites · M380 «Ревизия» · M381 циркуляры and
   the constitution · M382–M388 the Director's mechanics, one family a pass.

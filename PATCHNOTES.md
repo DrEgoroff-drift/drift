@@ -7,6 +7,32 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.373.0 - M373: four rules instead of a reputation bar
+
+There is no reputation number in this game and there will not be one. Instead there are four
+rules, and they fit on one line: **a civil hull is not touched unless it fires on them, carries
+munitions stamped by their enemy through their picket, docks at their enemy's military node where
+a battle is on, or runs a blockade after being told to hold.**
+
+**The hail** is the fleet's callsign generalised to all six powers: once per system per half-hour,
+a picket asks who you are in its own words — Орднунг «Идентификация. Формуляр. Ожидайте»,
+Рассвет «Заходи, брат, чинить есть что?» — and there are exactly three answers, none of them
+typed: ДЕЙСТВИЕ says «проходом», ЦЕЛЬ says «по делу», and saying nothing is the third. Silence
+once gets a warning on the air; silence twice and they are within their rights.
+
+**The stamp.** A batch of missiles is stamped by the station that assembled it, and the lab's line
+says so. Carrying a batch stamped by a power's enemy through that power's picket ends the
+conversation immediately — that is the second rule, and it is the reason to look at the stamp
+before flying through a front.
+
+**The blockade.** On a front the answer «проходом» is not an answer: they tell you to hold. Keep
+flying and the fourth rule applies. Anger is local — the ships that saw it shoot, and nothing is
+written down anywhere yet; the memory that travels along the lanes arrives with M374.
+
+Tests: `91zzzw-combat` — the hail firing once and not repeating, both answers, the warning and
+then the fire on silence, a shot at a picket turning it hostile, the stamp mattering exactly when
+the two powers are at war, and the blockade counting a departure as running it.
+
 ## 0.372.0 - M372: you jump in and the war is already happening
 
 The chronicle knew whose system this is and where the front stands; now you can see it.

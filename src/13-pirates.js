@@ -239,6 +239,7 @@ function updateCombat(dt){
   /* ракеты (16b): свой пуск, своя перезарядка и свой расход из трюма — но живут
      они в том же цикле боя, а не отдельным таймером */
   if(typeof mslTick==="function")mslTick(dt);
+  if(typeof hailRunCheck==="function")hailRunCheck(sh);   /* четвёртое правило (M373) */
   if((keys.msl||(G.ctl&&G.ctl.msl))&&typeof mslFire==="function"&&(G.mslCool||0)<=0){
     if(sealed){if(typeof yaltaSealed==="function")yaltaSealed();}
     else mslFire();

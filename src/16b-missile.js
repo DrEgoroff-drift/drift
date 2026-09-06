@@ -78,10 +78,19 @@ function ammoRow($body,after){
     Object.keys(AMMO_COST).map(k=>k==="credits"?AMMO_COST[k]+" кр":
       RES[k].ru.toLowerCase()+" "+AMMO_COST[k]).join(" · ")+
     " · в трюме "+(G.cargo.missile|0)+
+    ((typeof ammoStamp==="function"&&ammoStamp()!=="gt"&&typeof powerOf==="function")
+      ?" · клеймо: "+powerOf(ammoStamp()).ru:"")+
     (labWorking()?" · своя лаборатория добавляет к партии":"")+"</s>"));
   const b=el("button","act gold","СОБРАТЬ");
   b.disabled=!craftAffordable(AMMO_COST);
-  b.onclick=()=>{craftAmmo();if(after)after();};
+  b.onclick=()=>{
+    craftAmmo();
+    /* партия получает клеймо той станции, где собрана (M373, §6.1 правило 2):
+       через пикет её врага такую кассету везти не стоит */
+    if(typeof ammoStampSet==="function")
+      ammoStampSet((G.sys&&G.sys.station&&G.sys.station.by)||"gt");
+    if(after)after();
+  };
   r.appendChild(b);$body.appendChild(r);
 }
 /* цель выбирается один раз, в момент пуска: ракета глупая, она держится за то,

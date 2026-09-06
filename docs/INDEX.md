@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 460 · символов верхнего уровня: 4123
+Файлов: 461 · символов верхнего уровня: 4136
 
 ## СИМВОЛЫ
 
@@ -85,6 +85,8 @@ AMMO_COST                    src/16b-missile.js:58
 AMMO_KEYS                    src/02-world.js:90
 ammoBatch                    src/16b-missile.js:60
 ammoRow                      src/16b-missile.js:74
+ammoStamp                    src/12ar-hail.js:37
+ammoStampSet                 src/12ar-hail.js:38
 ANCHOR_CACHE                 src/05-parts.js:249
 angDiff                      src/01-core.js:93
 angWrap                      src/01-core.js:92
@@ -109,7 +111,7 @@ apVel                        src/16-flight.js:132
 ARC_JUMP                     src/13a-guns.js:39
 arcHit                       src/13a-guns.js:368
 ARMED_CAP                    src/13-combat.js:12
-armedCount                   src/13-combat.js:189
+armedCount                   src/13-combat.js:192
 arrive                       src/16-flight.js:178
 ARTIFACTS                    src/12h-relic.js:48
 askText                      src/11u-names.js:59
@@ -573,7 +575,7 @@ clWith                       tests/91zzzzzr-cloud.js:30
 cockpitPlan                  src/25-cockpit.js:92
 cockpitStyleKey              src/25-cockpit.js:46
 cockpitTex                   src/25-cockpit.js:187
-combatShots                  src/13-combat.js:113
+combatShots                  src/13-combat.js:116
 concertAll                   src/11ae-concert.js:22
 concertNotes                 src/11ae-concert.js:82
 concertSend                  src/11ae-concert.js:87
@@ -880,7 +882,7 @@ drawCelest                   src/06a-celest.js:167
 drawChunks                   src/18c-chunks.js:83
 drawClouds                   src/19e-clouds.js:382
 drawCockpit                  src/25-cockpit.js:400
-drawCombat                   src/13-pirates.js:294
+drawCombat                   src/13-pirates.js:295
 drawCosmMark                 src/12va-wander-cosm.js:112
 drawCrowns                   src/05a-nodes.js:379
 drawCrystalForest            src/20aa-poi-shapes.js:115
@@ -975,9 +977,9 @@ drawSurface                  src/21e-surface-draw.js:859
 drawSurfaceHud               src/21e-surface-draw.js:21
 drawSurfaceWorld             src/21e-surface-draw.js:110
 drawSurvey                   src/12w-survey.js:63
-drawSysHud                   src/17-mode-system.js:580
+drawSysHud                   src/17-mode-system.js:582
 drawSysNebula                src/16a-space.js:208
-drawSystem                   src/17-mode-system.js:342
+drawSystem                   src/17-mode-system.js:344
 drawSysTraffic               src/17f-sys-traffic.js:29
 drawTemple                   src/20aa-poi-shapes.js:50
 drawThingIcon                src/27i-ui-table.js:330
@@ -1185,7 +1187,7 @@ fleaScrip                    src/12ua-flea.js:122
 FLEET                        src/04b-fleet.js:107
 FLEET_ART                    src/12ai-fleet.js:101
 FLEET_CLASSES                src/12ai-fleet.js:20
-FLEET_COOL                   src/13-combat.js:171
+FLEET_COOL                   src/13-combat.js:174
 FLEET_EPITH                  src/04b-fleet.js:57
 FLEET_KEYS                   src/04b-fleet.js:148
 FLEET_LUXE                   src/04b-fleet.js:59
@@ -1207,7 +1209,7 @@ fleetArtOf                   src/12ai-fleet.js:102
 fleetCaravanActive           src/12ai-fleet.js:693
 fleetColor                   src/04b-fleet.js:95
 fleetEscortActive            src/12ai-fleet.js:691
-fleetFire                    src/13-combat.js:172
+fleetFire                    src/13-combat.js:175
 fleetGlyph                   src/12ai-fleet.js:431
 fleetHailFirst               src/12ai-fleet.js:545
 fleetHere                    src/12ai-fleet.js:50
@@ -1424,6 +1426,16 @@ gunSpecs                     src/05c-arms.js:207
 gunTitleOf                   src/05b-guns.js:178
 gunTotals                    src/05c-arms.js:288
 h01                          src/01-core.js:14
+HAIL_HOLD                    src/12ar-hail.js:20
+HAIL_RANGE                   src/12ar-hail.js:21
+hailAnger                    src/12ar-hail.js:57
+hailAnswer                   src/12ar-hail.js:118
+hailBlockade                 src/12ar-hail.js:51
+hailContraband               src/12ar-hail.js:39
+hailPicket                   src/12ar-hail.js:22
+hailRunCheck                 src/12ar-hail.js:147
+hailShotAt                   src/12ar-hail.js:74
+hailTick                     src/12ar-hail.js:79
 HAND_LINE                    src/12td-settle-hand.js:31
 HAND_STEP                    src/12td-settle-hand.js:27
 HAND_STOCK                   src/12td-settle-hand.js:28
@@ -1473,27 +1485,27 @@ HELM_RANGE                   src/15a-helm.js:27
 HELM_REACH                   src/15a-helm.js:16
 HELM_RELEASE                 src/15a-helm.js:13
 HELM_THR                     src/15a-helm.js:14
-helmApply                    src/15a-helm.js:208
+helmApply                    src/15a-helm.js:211
 helmCanvasXY                 src/15a-helm.js:55
-helmDrawMarks                src/15a-helm.js:258
-helmDrawSticks               src/15a-helm.js:331
-helmLift                     src/15a-helm.js:295
+helmDrawMarks                src/15a-helm.js:261
+helmDrawSticks               src/15a-helm.js:334
+helmLift                     src/15a-helm.js:298
 helmLock                     src/15a-helm.js:107
 helmLockNext                 src/15a-helm.js:117
 helmMarksClean               src/15a-helm.js:98
-helmMarkTop                  src/15a-helm.js:325
+helmMarkTop                  src/15a-helm.js:328
 helmPinchBlocked             src/15a-helm.js:94
 helmPirate                   tests/91zzzw-helm.js:17
 helmPtrEnd                   src/15a-helm.js:81
 helmRun                      tests/91zzzw-helm.js:16
 helmScreenOpen               src/15a-helm.js:93
 helmShip                     tests/91zzzw-helm.js:6
-helmShotAt                   src/15a-helm.js:142
-helmStickFoot                src/15a-helm.js:287
-helmStickShape               src/15a-helm.js:279
-helmTap                      src/15a-helm.js:128
+helmShotAt                   src/15a-helm.js:145
+helmStickFoot                src/15a-helm.js:290
+helmStickShape               src/15a-helm.js:282
+helmTap                      src/15a-helm.js:131
 helmTargets                  src/15a-helm.js:97
-helmTick                     src/15a-helm.js:148
+helmTick                     src/15a-helm.js:151
 hex2rgb                      src/03-ships.js:186
 hexA                         src/12e-drone-flight.js:289
 hexa                         src/12w-survey.js:91
@@ -1538,6 +1550,7 @@ hitCovered                   tests/91zzzzzg-hit.js:41
 hitFx                        src/18d-postfx.js:11
 hitLocMul                    src/13-combat.js:32
 hitShip                      src/13-combat.js:81
+hlFoe                        tests/91zzzw-combat.js:624
 HOL_BY                       src/11am-holiday.js:26
 HOL_D                        tests/91zzzm-holiday.js:2
 HOL_ETHER                    src/11am-holiday.js:28
@@ -1818,7 +1831,7 @@ keyMap                       src/15-input.js:133
 keyRow                       src/27-ui-ship.js:44
 keys                         src/08-state.js:57
 keyStateOK                   tests/91zzzzze-keys.js:23
-killPirate                   src/13-pirates.js:253
+killPirate                   src/13-pirates.js:254
 killRock                     src/24-mode-belt.js:151
 KINO_EVERY                   src/27da-kino.js:20
 KINO_REEL                    src/27da-kino.js:23
@@ -2254,20 +2267,20 @@ MSL_DMG                      src/16b-missile.js:14
 MSL_KEYS                     src/16b-missile.js:45
 MSL_KINDS                    src/16b-missile.js:33
 MSL_LIFE                     src/16b-missile.js:19
-MSL_PAINT                    src/16b-missile.js:236
-MSL_PAINT_FOE                src/16b-missile.js:243
+MSL_PAINT                    src/16b-missile.js:245
+MSL_PAINT_FOE                src/16b-missile.js:252
 MSL_SPEED                    src/16b-missile.js:17
 MSL_TURN                     src/16b-missile.js:15
 MSL_VMAX                     src/16b-missile.js:18
-mslBoom                      src/16b-missile.js:145
-mslCheck                     src/16b-missile.js:105
-mslDraw                      src/16b-missile.js:244
-mslFire                      src/16b-missile.js:112
-mslFoeFire                   src/16b-missile.js:163
+mslBoom                      src/16b-missile.js:154
+mslCheck                     src/16b-missile.js:114
+mslDraw                      src/16b-missile.js:253
+mslFire                      src/16b-missile.js:121
+mslFoeFire                   src/16b-missile.js:172
 mslKindKeyOf                 src/16b-missile.js:50
 mslKindOf                    src/16b-missile.js:46
-mslPick                      src/16b-missile.js:90
-mslTick                      src/16b-missile.js:173
+mslPick                      src/16b-missile.js:99
+mslTick                      src/16b-missile.js:182
 MUS                          src/10-music.js:100
 MUS_LAYERS                   src/10-music.js:102
 MUS_WET                      src/10-music.js:105
@@ -2472,7 +2485,7 @@ opisWear                     src/27j-ui-opis.js:209
 OPT_TABS                     src/27-ui-ship.js:330
 optGroups                    src/27-ui-ship.js:333
 optTab                       src/27-ui-ship.js:332
-orbPathOf                    src/17-mode-system.js:331
+orbPathOf                    src/17-mode-system.js:333
 ORDER_WIN                    src/12aa-need.js:74
 orderDeliver                 src/12aa-need.js:114
 orderHere                    src/12aa-need.js:110
@@ -2518,7 +2531,7 @@ parrotDraw                   src/12y-parrot-face.js:264
 parrotFind                   src/12x-parrot.js:30
 parrotFrame                  src/12y-parrot-face.js:684
 parrotHas                    src/12x-parrot.js:25
-parrotHeardKill              src/13-pirates.js:249
+parrotHeardKill              src/13-pirates.js:250
 parrotLine                   src/12y-parrot-face.js:641
 parrotPoke                   src/12y-parrot-face.js:657
 parRow                       src/12y-parrot-face.js:141
@@ -4441,6 +4454,9 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12am-chron.js · 15 КБ
   · летопись (M370, §7.5, §16.2–16.4):1
 
+## src/12ar-hail.js · 8 КБ
+  · четыре правила и позывной (M373, §6.1):1
+
 ## src/12b-crew-events.js · 17 КБ
   · наёмники: рейс как раздача карт:1
 
@@ -4603,7 +4619,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12z-parrot-acts.js · 17 КБ
   · трепло: репертуар:1
 
-## src/13-combat.js · 10 КБ
+## src/13-combat.js · 11 КБ
   · бой: выстрелы с владельцем (M361):1
 
 ## src/13-pirates.js · 25 КБ
@@ -4640,7 +4656,7 @@ zooTick                      src/11ad-zoo.js:41
   · ввод:87
   · полоса вкладок шире экрана:212
 
-## src/15a-helm.js · 19 КБ
+## src/15a-helm.js · 20 КБ
   · штурвал (M360):1
 
 ## src/16-flight.js · 29 КБ
@@ -5423,11 +5439,12 @@ zooTick                      src/11ad-zoo.js:41
   · Директор и шесть волн (M371, §15, §7.3):135
   · война, которую видно (M372, §7.4):206
 
-## tests/91zzzw-combat.js · 36 КБ
+## tests/91zzzw-combat.js · 40 КБ
   · бой между кораблями (M361, §5):1
   · энергия, семь чисел, три щита (M362, §2 §4):182
   · подвесы, допуск, группы (M363, §3 §11.4):310
   · снаряжение по рангу (M368, §5):467
+  · четыре правила и позывной (M373, §6.1):620
 
 ## tests/91zzzw-guns.js · 4 КБ
   · поколение генератора частей (M364, §2.2):1

@@ -115,6 +115,9 @@ function helmLock(p){
 }
 /* Tab / ЦЕЛЬ: ближайший знающий о вас враг; повтор — следующий по кругу */
 function helmLockNext(){
+  /* пока висит оклик, ЦЕЛЬ — это второй ответ, а не захват (M373): брать
+     пикет в прицел в этот момент означало бы совсем другой разговор */
+  if(G.hail&&typeof hailAnswer==="function"){hailAnswer("busy");return false;}
   if(G.jamT>0){say("ПОМЕХА · ЗАХВАТА НЕТ",70);return false;}
   helmMarksClean();
   const sh=G.ship;

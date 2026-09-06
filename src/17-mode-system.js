@@ -242,6 +242,8 @@ function updateSystem(dt){
       }
     }
   }
+  /* оклик пикета (M373, §6.1): пока на него не ответили, остальное ждёт */
+  if(typeof hailTick==="function"&&hailTick(sh,dt,actEdge))return;
   /* корпус, оставшийся после чужого боя (M372): его можно взять на трос */
   if(typeof npcWreckNear==="function"){
     const wk=npcWreckNear(sh);
