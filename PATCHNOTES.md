@@ -7,6 +7,38 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.387.0 - M387: the Director's sixth family — security, and the places with no law in them
+
+**Пиратский король.** For a week out of every twenty-four days the barons hold one area of the
+circle — 73 systems of 317, measured — and the power that owns it simply leaves: no pickets at
+all, twice the pirates, every one of them a rank higher. He is not a boss and has no hull; he is
+a condition, and the only thing that ends him early is the crowd. The `clear` deeds filed inside
+his area since the week began are counted against a goal of 150, and the station header carries
+the running total, so the counter is visible to everyone flying there for the same reason.
+
+**Шпион на станции.** A leak costs a power three days of a silent wave (M385) — and ten days of
+prices that lie. They lie per good and in **both** directions, up to twelve hundredths, which
+makes a spied-on station worth visiting rather than avoiding: something there is underpriced. The
+lie sits in the one shared price multiplier, so both sides of the counter move together and
+«взять дороже, чем сдать» still holds — the suite checks every good.
+
+**Ретранслятор.** M385's silent wave had no cure and simply waited itself out. Now it has one:
+120 `scan` deeds in that power's systems repair the relay, the board shows the counter with a
+button, and the wave speaks again before its three days are up.
+
+**Досмотр.** While a power is inspecting, its pickets hail from twice the distance. Nothing else
+changes — the four rules of M373 are the same four rules.
+
+**Контрабанда как ответ на талоны.** A coupon buys one cheap tank per сводка. The second one is
+sold only off the books, at half the counter's price and twice the coupon's — and it is stolen
+fuel. The stamp lives a day, and the досмотр of the very power whose coupons those were
+recognises its own fuel in your tanks: contraband, and the second of the four rules applies.
+
+Two more members of this family were already written and are only named here: the desertion wave
+after a purge is M385, and the blockade is the front — a picket has been turning everyone back
+since M373.
+
+---
 ## 0.386.0 - M386: the Director's fifth family — diplomacy, and war that announces itself
 
 **War no longer starts out of nowhere.** Until today a power decided to fight and fought in the

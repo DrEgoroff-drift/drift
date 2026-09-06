@@ -1194,7 +1194,19 @@ One system inside ГЛАВТРАССА's centre (r ≈ 6, fixed by seed, never t
   calm the galaxy, it gives it a warning. Of 179 notes, 175 ran out into war, 3 were answered, 34
   wars skipped the paper because three notes were already pending. **Deferred:** the note as
   something the player can influence — the crowd's vote nudges the course, not a deadline.
-  · security · culture — still open.
+  · ~~**M387 security**~~ — 0.387.0 (2026-09-06): `12b2-fx-sec` — a **pirate king** holding one
+  area of the circle for a week out of every twenty-four days (73 systems of 317, measured): no
+  pickets, twice the pirates, each a rank higher, and a crowd counter of `clear` deeds inside the
+  area as the only way to end him early; a **spy** whose leak makes that power's prices lie per
+  good in both directions for ten days, inside the one shared multiplier so both sides of the
+  counter move together; the **relay** repair that finally gives M385's silent wave a cure — 120
+  `scan` deeds and it speaks; the **досмотр** that doubles hail range; and **smuggling** as the
+  answer to coupons — the second tank at half the counter's price, stolen, stamped for a day, and
+  recognised as contraband by the very power whose coupons those were. The desertion wave (M385)
+  and the blockade (M373) are this family's other two members and were already written.
+  **Deferred:** the king as a ship — he is a condition, not a boss, and «Ревизия» already occupies
+  that seat.
+  · culture — still open.
 
 Every pass ends with the usual: parse, empty console, a manual scenario, an old save,
 `build.ps1`, tests, the craft-codex check for anything drawn, and — from M360 on — `prof()` with

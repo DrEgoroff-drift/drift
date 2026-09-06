@@ -33,6 +33,9 @@ function marketCtx(sys,m){
 function marketPriceCtx(sys,C,k,add){
   const base=sys.station.prices;
   return Math.max(1,Math.round(base[k]*C.mul*C.boost*(C.N&&C.N.k===k?NEED_MUL:1)*(typeof expPriceMul==="function"?expPriceMul(k):1)*C.occ*
+                               /* шпион (M387): цены на этой станции врут по каждому
+                                  товару в свою сторону — и врут обеим сторонам прилавка */
+                               (typeof secSpyMul==="function"?secSpyMul(k,sys.sx,sys.sy):1)*
                                clamp(1+(C.m.pressure[k]||0)+(add||0),.4,1.8)));
 }
 function marketPrice(sys,k,add){

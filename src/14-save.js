@@ -59,7 +59,7 @@ function snapshot(){
     opts:G.opts,zoom:G.zoom,market:G.market,uniqueShips:G.uniqueShips,tow:G.tow,
     episodes:G.episodes,notebook:G.notebook,gifts:G.gifts,mslBy:G.mslBy,
     bonds:G.bonds,coupN:G.coupN,
-    letter:G.letter||null,dipSwapN:G.dipSwapN,
+    letter:G.letter||null,dipSwapN:G.dipSwapN,smugN:G.smugN,smugBy:G.smugBy,
     drones:G.drones,droneInventory:G.droneInventory,droneIds:G.droneIds,droneSold:G.droneSold||{},crew:G.crew,bases:G.bases,
     mgrs:G.mgrs,blueprints:G.blueprints,aiRift:G.aiRift,rogues:G.rogues,exiles:G.exiles,
     relics:G.relics,relicHint:G.relicHint,bio:G.bio,home:G.home,course:G.course||null,
@@ -218,6 +218,9 @@ function applySave(s){
      оно живёт в сохранении, а всё остальное про дипломатию считается из летописи */
   G.letter=(s.letter&&typeof s.letter==="object")?s.letter:null;
   G.dipSwapN=(typeof s.dipSwapN==="number")?s.dipSwapN:undefined;
+  /* чужой талон в баках (M387): клеймо живёт сутки и переживает выход из игры */
+  G.smugN=(typeof s.smugN==="number")?s.smugN:undefined;
+  G.smugBy=(typeof s.smugBy==="string")?s.smugBy:undefined;
   G.shipId=shipData(s.shipId)?s.shipId:"strizh";
   G.owned=Object.assign({strizh:true},s.owned||{});
   /* старое сохранение знает только s.mods — считаем, что всё купленное и установлено.

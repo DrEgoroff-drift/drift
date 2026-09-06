@@ -41,6 +41,8 @@ function spawnPirates(){
   if(typeof ritePirateMul==="function")n=Math.floor(n*ritePirateMul());
   /* тихий уезд секты (M383): в этой системе неделю не грабят вовсе */
   if(typeof socPirateMul==="function")n=Math.floor(n*socPirateMul(G.sx,G.sy));
+  /* пиратский король (M387): бароны сговорились, и в его области их вдвое */
+  if(typeof secPirateMul==="function")n=Math.floor(n*secPirateMul(G.sx,G.sy));
   n=Math.min(n,ARMED_CAP);   /* потолок вооружённых (§5, M361) */
   for(let i=0;i<n;i++){
     const a=r()*TAU,rad=2200+r()*1600;
@@ -56,6 +58,8 @@ function spawnPirates(){
     if(r()<danger*.5+occ*.16)rank=1;
     if(occ>=2&&r()<.4+danger*.3)rank=2;
     if(occ>=OCC_MAX&&i===0)rank=3;
+    /* и на ранг выше: под королём мелочь не летает */
+    if(typeof secPirateRank==="function")rank=Math.min(3,rank+secPirateRank(G.sx,G.sy));
     const R=PIRATE_RANKS[rank];
     const hp=(26+danger*70)*R.hull;
     G.pirates.push({x:Math.cos(a)*rad,y:Math.sin(a)*rad,vx:0,vy:0,a:a+Math.PI,

@@ -1756,7 +1756,7 @@ body.table u.addr{color:#7a4a20}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.386.0";
+const VER="0.387.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -16375,6 +16375,9 @@ function marketCtx(sys,m){
 function marketPriceCtx(sys,C,k,add){
   const base=sys.station.prices;
   return Math.max(1,Math.round(base[k]*C.mul*C.boost*(C.N&&C.N.k===k?NEED_MUL:1)*(typeof expPriceMul==="function"?expPriceMul(k):1)*C.occ*
+                               /* шпион (M387): цены на этой станции врут по каждому
+                                  товару в свою сторону — и врут обеим сторонам прилавка */
+                               (typeof secSpyMul==="function"?secSpyMul(k,sys.sx,sys.sy):1)*
                                clamp(1+(C.m.pressure[k]||0)+(add||0),.4,1.8)));
 }
 function marketPrice(sys,k,add){
@@ -21329,7 +21332,8 @@ const HAIL_HOLD=420;        /* сколько кадров ждут ответа
 const HAIL_RANGE=900;       /* с какого расстояния окликают */
 function hailPicket(sh){
   /* ближайший чужой борт державы, который может окликнуть */
-  let best=null,bd=HAIL_RANGE;
+  /* досмотр (M387): держава смотрит всех подряд — окликают вдвое дальше */
+  let best=null,bd=HAIL_RANGE*((typeof secHailRangeMul==="function")?secHailRangeMul():1);
   for(const p of (G.pirates||[])){
     if(p.hull<=0||!p.pw||p.envoy)continue;
     if(p.pw===playerFlag())continue;                 /* свои не окликают своих */
@@ -21345,6 +21349,8 @@ function hailPicket(sh){
 function ammoStamp(){return G.mslBy||"gt";}
 function ammoStampSet(by){G.mslBy=(typeof HULL_MAKER!=="undefined"&&HULL_MAKER[by])?by:"gt";}
 function hailContraband(by){
+  /* чужой талон в баках (M387): досмотр той самой державы узнаёт своё топливо */
+  if(typeof secSmugHot==="function"&&secSmugHot(by))return true;
   if((G.cargo.missile|0)<=0)return false;
   const st=ammoStamp();
   if(st===by)return false;
@@ -22868,7 +22874,13 @@ function powScandalOn(by){
   const inc=powInc("spy",POW_SCANDAL);
   return !!(inc&&MAKER_KEYS[inc.p]===by);
 }
-function powWaveSilent(by){return powScandalOn(by||((typeof chronWave==="function")?chronWave():"gt"));}
+function powWaveSilent(by){
+  by=by||((typeof chronWave==="function")?chronWave():"gt");
+  /* ретранслятор починили (M387): молчание кончается раньше срока — у него
+     появилась управа, и это единственный способ вернуть волну */
+  if(typeof secRelayFixed==="function"&&secRelayFixed(by))return false;
+  return powScandalOn(by);
+}
 /* ── откол ──
    Кластер объявляет себя седьмой силой на месяц: у него свой флаг на карте и
    своя строка в эфире. Механики седьмой державы нет и не будет — «шесть, и
@@ -22885,7 +22897,7 @@ function powLine(){
   if(own>=0&&powCoupOn(own))out.push("ПЕРЕВОРОТ · КУРС ПЕРЕВЁРНУТ");
   if(own>=0&&powPurgeOn(own))out.push("ЧИСТКА · ДЕЗЕРТИРОВ ВДВОЕ");
   if(powSecedeOn())out.push("ОТКОЛ · ЗДЕСЬ ПОДНЯЛИ СВОЙ ФЛАГ");
-  if(own>=0&&powScandalOn(MAKER_KEYS[own]))out.push("ВОЛНА МОЛЧИТ");
+  if(own>=0&&powWaveSilent(MAKER_KEYS[own]))out.push("ВОЛНА МОЛЧИТ · ЧИНИТСЯ СКАНИРОВАНИЕМ");
   return out.join(" · ");
 }
 
@@ -23103,6 +23115,224 @@ function dipLine(){
   if(D&&typeof powerOf==="function")
     out.push("ПОСОЛЬСТВО "+powerOf(D.by).ru.toUpperCase()+" ИДЁТ ЧЕРЕЗ ЭТУ СИСТЕМУ");
   if(dipTruceFresh())out.push("ПЕРЕМИРИЕ · МЕНЯЮТСЯ ПЛЕННЫМИ");
+  return out.join(" · ");
+}
+
+/* ══════════════ семья механик: БЕЗОПАСНОСТЬ (M387, §15.1) ══════════════
+   Пятая семья — про то, что бывает, когда держава смотрит в другую сторону.
+   Две её части уже написаны раньше и здесь только называются: волна дезертиров
+   после чистки живёт в `12b0-fx-pow` (M385), а блокада — это фронт, и пикет на
+   нём разворачивает всех с M373. Новое здесь — четыре вещи:
+
+   · **пиратский король** — бароны сговорились, и область неделю их. Держава
+     оттуда ушла: пикетов нет, пиратов вдвое, и они на ранг выше. Убрать его
+     может только толпа — счётчиком расчистки, как обряд;
+   · **шпион на станции** — цены там врут. Не «выше» и не «ниже»: врут по
+     каждому товару в свою сторону, и на этом можно заработать, если не лениться
+     сверить с соседней станцией. Обе стороны прилавка двигаются вместе, иначе
+     получилась бы машинка для печати денег;
+   · **ретранслятор** — молчащую волну (M385) чинят: счётчик сканирований от
+     толпы, и волна заговорила. До сегодняшнего дня она молчала просто «пока не
+     пройдёт»; теперь у молчания есть управа;
+   · **контрабанда как ответ на талоны** — талон даёт дешёвый бак раз в сводку.
+     Второй бак по той же цене есть только у контрабандиста, вдвое дороже
+     талона и вдвое дешевле прилавка, — и он ворованный. Провезёте его через
+     досмотр той самой державы — это её топливо в ваших баках. */
+const SEC_KING_EVERY=96;     /* раз в двадцать четыре дня */
+const SEC_KING_LIVE=28;      /* и неделю он там хозяин */
+const SEC_KING_GOAL=150;     /* столько расчистки — и его нет */
+const SEC_KING_R2=36;        /* та же область, что у «Ревизии»: дом и полоса */
+const SEC_SPY=40;            /* десять суток врущих цен */
+const SEC_SPY_MAX=12;        /* и врут они не больше чем на двенадцать сотых */
+const SEC_RELAY_GOAL=120;    /* столько сканирований чинит ретранслятор */
+const SEC_PATROL=12;         /* трое суток досмотра */
+/* ── пиратский король ──
+   Область берётся не из состояния, а из календаря: «кто именно» тут не важно —
+   важно, что в этой части круга неделю нет закона. Считать это из летописи
+   было бы честнее по замыслу, но любой такой счёт пришлось бы делать по
+   ПРОШЛОЙ сводке, то есть повтором внутри повтора (0.385.0 научил). Календарь
+   же одинаков у всех по построению и не стоит ни одного шага. */
+function secKingWindow(N){
+  if(N===undefined)N=(typeof chronNow==="function")?chronNow():0;
+  const n0=N-(N%SEC_KING_EVERY);
+  return (N-n0<SEC_KING_LIVE)?n0:-1;      /* −1, а не 0: нулевая сводка тоже окно */
+}
+function secKingArea(N){
+  const n0=secKingWindow(N);
+  if(n0<0)return null;
+  const i=hashi(n0,0x4B14,CHRON_SEED)%6;
+  return {i,n0,x:CHRON_HOME[i][0],y:CHRON_HOME[i][1]};
+}
+/* сколько толпа уже расчистила в его области с той сводки, как он сел */
+function secKingCount(A){
+  A=A||secKingArea();
+  if(!A||typeof warLed!=="function")return 0;
+  const L=warLed(),N=(typeof chronNow==="function")?chronNow():0;
+  let q=0;
+  for(const n in L){
+    if((n|0)<A.n0||(n|0)>N)continue;
+    const body=L[n];
+    for(const sys in body){
+      if(sys==="__votes")continue;
+      const p=sys.split(","),dx=(p[0]|0)-A.x,dy=(p[1]|0)-A.y;
+      if(dx*dx+dy*dy>SEC_KING_R2)continue;
+      const cell=body[sys].clear;
+      if(cell)q+=cell.q|0;
+    }
+  }
+  return q;
+}
+function secKingHere(sx,sy){
+  const A=secKingArea();
+  if(!A)return false;
+  const dx=(sx===undefined?G.sx:sx)-A.x,dy=(sy===undefined?G.sy:sy)-A.y;
+  if(dx*dx+dy*dy>SEC_KING_R2)return false;
+  return secKingCount(A)<SEC_KING_GOAL;          /* толпа его уже сняла */
+}
+/* держава оттуда ушла: своих пикетов там нет */
+function secNoPickets(sx,sy){return secKingHere(sx,sy);}
+/* а пиратов вдвое, и они на ранг выше */
+function secPirateMul(sx,sy){return secKingHere(sx,sy)?2:1;}
+function secPirateRank(sx,sy){return secKingHere(sx,sy)?1:0;}
+/* ── шпион на станции ──
+   Утечка (M385) стоит державе трёх суток молчащей волны; шпион сидит дольше и
+   тише — десять суток её станции считают цены по чужой подсказке. Врут они по
+   каждому товару в свою сторону, а не «дороже» или «дешевле»: односторонняя
+   ошибка была бы просто ещё одним множителем. */
+function secSpyOn(by){
+  const inc=(typeof chronIncOf==="function")?chronIncOf("spy",SEC_SPY):null;
+  return !!(inc&&MAKER_KEYS[inc.p]===by);
+}
+/* спрашивают его на КАЖДЫЙ товар прилавка, а он лезет в строки летописи:
+   считаем раз на сводку и систему, дальше — из кармана */
+let SEC_SPY_CACHE={k:"",v:false};
+function secSpyHere(sx,sy){
+  sx=(sx===undefined)?G.sx:sx;sy=(sy===undefined)?G.sy:sy;
+  const N=(typeof chronNow==="function")?chronNow():0;
+  const key=N+"|"+(sx|0)+","+(sy|0);
+  if(SEC_SPY_CACHE.k===key)return SEC_SPY_CACHE.v;
+  const by=(typeof chronOwnerKey==="function")?chronOwnerKey(sx,sy):null;
+  const v=!!(by&&secSpyOn(by));
+  SEC_SPY_CACHE={k:key,v};
+  return v;
+}
+function secSpyMul(k,sx,sy){
+  if(!secSpyHere(sx,sy))return 1;
+  /* целая арифметика: сотые, а не дроби — цену считают все клиенты одинаково */
+  const h=hashi((sx===undefined?G.sx:sx)|0,(sy===undefined?G.sy:sy)|0,
+    0x5B10^(k?k.charCodeAt(0)*131+k.length:0));
+  const d=(h%(SEC_SPY_MAX*2+1))-SEC_SPY_MAX;
+  return (100+d)/100;
+}
+/* ── ретранслятор ──
+   Молчащую волну чинят сканированием: то же дело, что ищет пропавший флагман
+   (§14), только цель другая. Пока не починили — волна молчит, и это слышно. */
+function secRelayLeak(by){
+  const inc=(typeof chronIncOf==="function")?chronIncOf("spy",SEC_SPY):null;
+  return (inc&&MAKER_KEYS[inc.p]===by)?inc:null;
+}
+function secRelayCount(by){
+  const inc=secRelayLeak(by);
+  if(!inc||typeof warLed!=="function"||typeof chronOwner!=="function")return 0;
+  const L=warLed(),N=(typeof chronNow==="function")?chronNow():0;
+  let q=0;
+  for(const n in L){
+    if((n|0)<inc.N||(n|0)>N)continue;
+    const body=L[n];
+    for(const sys in body){
+      if(sys==="__votes")continue;
+      const p=sys.split(",");
+      if(chronOwner(p[0]|0,p[1]|0)!==inc.p)continue;
+      const cell=body[sys].scan;
+      if(cell)q+=cell.q|0;
+    }
+  }
+  return q;
+}
+function secRelayFixed(by){return secRelayCount(by)>=SEC_RELAY_GOAL;}
+/* ── досмотр ──
+   Держава смотрит всех подряд: пикет окликает вдвое дальше обычного. Ничего,
+   кроме дальности, не меняется — четыре правила те же самые (M373). */
+function secPatrolOn(sx,sy){
+  const inc=(typeof chronIncOf==="function")?chronIncOf("patrol",SEC_PATROL):null;
+  if(!inc||typeof chronOwner!=="function")return false;
+  return chronOwner(sx===undefined?G.sx:sx,sy===undefined?G.sy:sy)===inc.p;
+}
+function secHailRangeMul(){return secPatrolOn()?2:1;}
+/* ── контрабанда как ответ на талоны ──
+   Талон даёт дешёвый бак раз в сводку. Второй такой бак есть только у
+   контрабандиста: вдвое дороже талона, вдвое дешевле прилавка — и ворованный.
+   Клеймо держится сутки: провезли через её же досмотр — это её топливо. */
+function secCouponRite(){
+  if(typeof riteLive!=="function")return null;
+  for(const r of riteLive())if(r.key==="coupon")return r;
+  return null;
+}
+function secSmugDue(){
+  const R=secCouponRite();
+  if(!R||typeof riteDone!=="function"||!riteDone("coupon"))return null;
+  if(!G.sys||!G.sys.station)return null;
+  const N=(typeof chronNow==="function")?chronNow():0;
+  if((G.coupN|0)!==N)return null;                /* талон ещё не отоварен */
+  const st=(typeof stat==="function")?stat():{fuelMax:100};
+  const need=Math.ceil((st.fuelMax||100)-G.fuel);
+  if(need<=0)return null;
+  /* талон на эту сводку уже отоварен, значит прилавок считает по обычной цене:
+     контрабандист берёт её половину — вдвое дороже талона и вдвое дешевле
+     стойки. Ровно та щель, ради которой контрабанда и заводится */
+  const base=(typeof fuelPriceHere==="function")?fuelPriceHere():10;
+  return {p:R.p,per:Math.max(1,Math.round(base*.5)),need};
+}
+function secSmugBuy(){
+  const D=secSmugDue();
+  if(!D)return false;
+  const can=Math.min(D.need,Math.floor(G.credits/D.per));
+  if(can<=0){say("Не хватает кредитов");return false;}
+  G.credits-=can*D.per;G.fuel+=can;
+  G.smugN=(typeof chronNow==="function")?chronNow():0;
+  G.smugBy=MAKER_KEYS[D.p];
+  tell("warn","Бак мимо талона","КОНТРАБАНДА\nэто топливо по чужому талону\nдосмотр той же державы его узнает");
+  return true;
+}
+/* клеймо живо четыре сводки — сутки */
+function secSmugHot(by){
+  const N=(typeof chronNow==="function")?chronNow():0;
+  return !!(G.smugBy&&(!by||G.smugBy===by)&&(N-(G.smugN|0))<4);
+}
+/* ── доска: счётчик ретранслятора и контрабандист ── */
+function secBlock(){
+  if(typeof $body==="undefined")return;
+  const by=(typeof chronOwnerKey==="function")?chronOwnerKey(G.sx,G.sy):null;
+  if(by&&typeof powScandalOn==="function"&&powScandalOn(by)&&!secRelayFixed(by)){
+    const P=(typeof powerOf==="function")?powerOf(by):null;
+    $body.appendChild(el("div","sec","РЕТРАНСЛЯТОР МОЛЧИТ"));
+    const r=el("div","row");
+    r.appendChild(el("div","nm","<b>"+(P?P.ru:by)+"</b><s>волну чинят сканированием · собрано "+
+      secRelayCount(by)+" из "+SEC_RELAY_GOAL+"</s>"));
+    const b=el("button","act","ПРОСКАНИРОВАТЬ");
+    b.onclick=()=>{if(typeof warPut==="function")warPut("scan",1);say("СКАНИРОВАНИЕ ОТПРАВЛЕНО",120);renderTab();};
+    r.appendChild(b);
+    $body.appendChild(r);
+  }
+  const D=secSmugDue();
+  if(D){
+    $body.appendChild(el("div","sec","МИМО ТАЛОНА"));
+    const r=el("div","row");
+    r.appendChild(el("div","nm","<b>Бак без талона</b><s>"+D.per+" кр за единицу · вдвое дешевле прилавка"+
+      " · и это чужой талон</s>"));
+    const b=el("button","act","ВЗЯТЬ");
+    b.onclick=()=>{secSmugBuy();renderTab();};
+    r.appendChild(b);
+    $body.appendChild(r);
+  }
+}
+function secLine(){
+  const out=[];
+  if(secKingHere())out.push("ПИРАТСКИЙ КОРОЛЬ · ПИКЕТОВ НЕТ · РАСЧИЩЕНО "+
+    secKingCount()+" ИЗ "+SEC_KING_GOAL);
+  if(secSpyHere())out.push("ШПИОН · ЦЕНЫ ЗДЕСЬ ВРУТ");
+  if(secPatrolOn())out.push("ДОСМОТР · ОКЛИКАЮТ ВДВОЕ ДАЛЬШЕ");
+  if(secSmugHot())out.push("В БАКАХ ЧУЖОЙ ТАЛОН");
   return out.join(" · ");
 }
 
@@ -36180,6 +36410,8 @@ function spawnPirates(){
   if(typeof ritePirateMul==="function")n=Math.floor(n*ritePirateMul());
   /* тихий уезд секты (M383): в этой системе неделю не грабят вовсе */
   if(typeof socPirateMul==="function")n=Math.floor(n*socPirateMul(G.sx,G.sy));
+  /* пиратский король (M387): бароны сговорились, и в его области их вдвое */
+  if(typeof secPirateMul==="function")n=Math.floor(n*secPirateMul(G.sx,G.sy));
   n=Math.min(n,ARMED_CAP);   /* потолок вооружённых (§5, M361) */
   for(let i=0;i<n;i++){
     const a=r()*TAU,rad=2200+r()*1600;
@@ -36195,6 +36427,8 @@ function spawnPirates(){
     if(r()<danger*.5+occ*.16)rank=1;
     if(occ>=2&&r()<.4+danger*.3)rank=2;
     if(occ>=OCC_MAX&&i===0)rank=3;
+    /* и на ранг выше: под королём мелочь не летает */
+    if(typeof secPirateRank==="function")rank=Math.min(3,rank+secPirateRank(G.sx,G.sy));
     const R=PIRATE_RANKS[rank];
     const hp=(26+danger*70)*R.hull;
     G.pirates.push({x:Math.cos(a)*rad,y:Math.sin(a)*rad,vx:0,vy:0,a:a+Math.PI,
@@ -37738,6 +37972,8 @@ function npcSpawn(){
   if(typeof chronOwner!=="function")return;
   /* буря (M384): пикеты уходят, чужой бой не начинается — трое суток тихо */
   if(typeof natNoPickets==="function"&&natNoPickets())return;
+  /* пиратский король (M387): держава ушла из этой области, пикетов нет */
+  if(typeof secNoPickets==="function"&&secNoPickets())return;
   /* «Ревизия» (M380): если она в этой области, она здесь и она главная */
   if(typeof bossHere==="function"&&bossHere()&&typeof bossShip==="function"){
     const B=bossShip();
@@ -37990,7 +38226,7 @@ function snapshot(){
     opts:G.opts,zoom:G.zoom,market:G.market,uniqueShips:G.uniqueShips,tow:G.tow,
     episodes:G.episodes,notebook:G.notebook,gifts:G.gifts,mslBy:G.mslBy,
     bonds:G.bonds,coupN:G.coupN,
-    letter:G.letter||null,dipSwapN:G.dipSwapN,
+    letter:G.letter||null,dipSwapN:G.dipSwapN,smugN:G.smugN,smugBy:G.smugBy,
     drones:G.drones,droneInventory:G.droneInventory,droneIds:G.droneIds,droneSold:G.droneSold||{},crew:G.crew,bases:G.bases,
     mgrs:G.mgrs,blueprints:G.blueprints,aiRift:G.aiRift,rogues:G.rogues,exiles:G.exiles,
     relics:G.relics,relicHint:G.relicHint,bio:G.bio,home:G.home,course:G.course||null,
@@ -38149,6 +38385,9 @@ function applySave(s){
      оно живёт в сохранении, а всё остальное про дипломатию считается из летописи */
   G.letter=(s.letter&&typeof s.letter==="object")?s.letter:null;
   G.dipSwapN=(typeof s.dipSwapN==="number")?s.dipSwapN:undefined;
+  /* чужой талон в баках (M387): клеймо живёт сутки и переживает выход из игры */
+  G.smugN=(typeof s.smugN==="number")?s.smugN:undefined;
+  G.smugBy=(typeof s.smugBy==="string")?s.smugBy:undefined;
   G.shipId=shipData(s.shipId)?s.shipId:"strizh";
   G.owned=Object.assign({strizh:true},s.owned||{});
   /* старое сохранение знает только s.mods — считаем, что всё купленное и установлено.
@@ -68999,6 +69238,7 @@ function openStation(){
     ((typeof natLine==="function"&&natLine())?"\n"+natLine():"")+
     ((typeof powLine==="function"&&powLine())?"\n"+powLine():"")+
     ((typeof dipLine==="function"&&dipLine())?"\n"+dipLine():"")+
+    ((typeof secLine==="function"&&secLine())?"\n"+secLine():"")+
     ((typeof occPowerHere==="function"&&occPowerHere())
       ?"\nФЛАГ СМЕНИЛСЯ · "+powerOf(occPowerHere().by).ru.toUpperCase()+
         " · треть выработки в реквизицию":"");
@@ -71299,6 +71539,7 @@ function renderCantina(){
     if(typeof riteBlock==="function")riteBlock();     /* обряды (M379) */
     if(typeof circBlock==="function")circBlock();     /* бумага сверху (M381) */
     if(typeof dipBlock==="function")dipBlock();       /* письмо и обмен (M386) */
+    if(typeof secBlock==="function")secBlock();       /* ретранслятор и талон (M387) */
   }else if(cantSel==="counter"){
     secHead("У СТОЙКИ",{back});
     if(typeof putOnTable==="function")tableBlock();

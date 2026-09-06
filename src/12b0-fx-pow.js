@@ -55,7 +55,13 @@ function powScandalOn(by){
   const inc=powInc("spy",POW_SCANDAL);
   return !!(inc&&MAKER_KEYS[inc.p]===by);
 }
-function powWaveSilent(by){return powScandalOn(by||((typeof chronWave==="function")?chronWave():"gt"));}
+function powWaveSilent(by){
+  by=by||((typeof chronWave==="function")?chronWave():"gt");
+  /* ретранслятор починили (M387): молчание кончается раньше срока — у него
+     появилась управа, и это единственный способ вернуть волну */
+  if(typeof secRelayFixed==="function"&&secRelayFixed(by))return false;
+  return powScandalOn(by);
+}
 /* ── откол ──
    Кластер объявляет себя седьмой силой на месяц: у него свой флаг на карте и
    своя строка в эфире. Механики седьмой державы нет и не будет — «шесть, и
@@ -72,6 +78,6 @@ function powLine(){
   if(own>=0&&powCoupOn(own))out.push("ПЕРЕВОРОТ · КУРС ПЕРЕВЁРНУТ");
   if(own>=0&&powPurgeOn(own))out.push("ЧИСТКА · ДЕЗЕРТИРОВ ВДВОЕ");
   if(powSecedeOn())out.push("ОТКОЛ · ЗДЕСЬ ПОДНЯЛИ СВОЙ ФЛАГ");
-  if(own>=0&&powScandalOn(MAKER_KEYS[own]))out.push("ВОЛНА МОЛЧИТ");
+  if(own>=0&&powWaveSilent(MAKER_KEYS[own]))out.push("ВОЛНА МОЛЧИТ · ЧИНИТСЯ СКАНИРОВАНИЕМ");
   return out.join(" · ");
 }

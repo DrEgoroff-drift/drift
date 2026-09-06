@@ -44,6 +44,8 @@ function npcSpawn(){
   if(typeof chronOwner!=="function")return;
   /* буря (M384): пикеты уходят, чужой бой не начинается — трое суток тихо */
   if(typeof natNoPickets==="function"&&natNoPickets())return;
+  /* пиратский король (M387): держава ушла из этой области, пикетов нет */
+  if(typeof secNoPickets==="function"&&secNoPickets())return;
   /* «Ревизия» (M380): если она в этой области, она здесь и она главная */
   if(typeof bossHere==="function"&&bossHere()&&typeof bossShip==="function"){
     const B=bossShip();

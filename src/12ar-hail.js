@@ -21,7 +21,8 @@ const HAIL_HOLD=420;        /* сколько кадров ждут ответа
 const HAIL_RANGE=900;       /* с какого расстояния окликают */
 function hailPicket(sh){
   /* ближайший чужой борт державы, который может окликнуть */
-  let best=null,bd=HAIL_RANGE;
+  /* досмотр (M387): держава смотрит всех подряд — окликают вдвое дальше */
+  let best=null,bd=HAIL_RANGE*((typeof secHailRangeMul==="function")?secHailRangeMul():1);
   for(const p of (G.pirates||[])){
     if(p.hull<=0||!p.pw||p.envoy)continue;
     if(p.pw===playerFlag())continue;                 /* свои не окликают своих */
@@ -37,6 +38,8 @@ function hailPicket(sh){
 function ammoStamp(){return G.mslBy||"gt";}
 function ammoStampSet(by){G.mslBy=(typeof HULL_MAKER!=="undefined"&&HULL_MAKER[by])?by:"gt";}
 function hailContraband(by){
+  /* чужой талон в баках (M387): досмотр той самой державы узнаёт своё топливо */
+  if(typeof secSmugHot==="function"&&secSmugHot(by))return true;
   if((G.cargo.missile|0)<=0)return false;
   const st=ammoStamp();
   if(st===by)return false;

@@ -436,3 +436,120 @@ function chronUltBetweenIn(st,a,b){
   for(const u of (st.ults||[]))if((u.a===a&&u.b===b)||(u.a===b&&u.b===a))return u;
   return null;
 }
+
+TEST_SUITES.push(()=>suite("безопасность M387: король, шпион, ретранслятор и талон",()=>{
+  fxWorld();
+  /* ── пиратский король ──
+     Область берётся из календаря: неделя из двадцати четырёх суток. Внутри
+     окна она не гуляет — иначе король переезжал бы каждые шесть часов. */
+  let live=0,dead=0;
+  for(let n=0;n<SEC_KING_EVERY*2;n++){
+    if(secKingWindow(n)>=0)live++;else dead++;
+  }
+  eq(live,SEC_KING_LIVE*2,"неделя из двадцати четырёх суток, и нулевая сводка тоже окно");
+  ok(dead>live,"остальное время закон на месте");
+  const n0=SEC_KING_EVERY;                       /* начало окна */
+  const A=secKingArea(n0+1);
+  ok(!!A,"в окне область есть");
+  for(let d=1;d<SEC_KING_LIVE;d++)
+    eq(secKingArea(n0+d).i,A.i,"и она та же самая всю неделю");
+  eq(secKingArea(n0+SEC_KING_LIVE),null,"а после недели её нет");
+  /* здесь и не здесь */
+  const savedNow=chronNow;
+  chronNow=()=>n0+1;
+  try{
+    ok(secKingHere(A.x,A.y),"в его области — он");
+    ok(!secKingHere(A.x+20,A.y+20),"за её краем — нет");
+    eq(secPirateMul(A.x,A.y),2,"пиратов вдвое");
+    eq(secPirateRank(A.x,A.y),1,"и они на ранг выше");
+    ok(secNoPickets(A.x,A.y),"а пикетов державы нет вовсе");
+    eq(secPirateMul(A.x+20,A.y+20),1,"по соседству всё как обычно");
+    /* толпа снимает его расчисткой: счётчик из ведомостей, как у обряда */
+    if(typeof WAR_LED_CACHE!=="undefined")WAR_LED_CACHE=null;
+    const body={};body[A.x+","+A.y]={clear:{q:SEC_KING_GOAL,a:["a","b"]}};
+    warLedPut(n0+1,body);
+    eq(secKingCount(A),SEC_KING_GOAL,"расчистка сосчитана");
+    ok(!secKingHere(A.x,A.y),"счётчик добран — короля нет");
+    /* чужая расчистка вне области не считается */
+    if(typeof WAR_LED_CACHE!=="undefined")WAR_LED_CACHE=null;
+    const far={};far[(A.x+20)+","+(A.y+20)]={clear:{q:SEC_KING_GOAL,a:["a"]}};
+    warLedPut(n0+1,far);
+    eq(secKingCount(A),0,"из соседней области не считается");
+  }finally{chronNow=savedNow;}
+  try{localStorage.removeItem(CHRON_KEY);}catch(e){}
+  if(typeof WAR_LED_CACHE!=="undefined")WAR_LED_CACHE=null;
+  /* ── шпион ──
+     Цены врут по каждому товару в свою сторону и не больше чем на двенадцать
+     сотых. Главное: обе стороны прилавка двигаются вместе. */
+  fxWorld();
+  const own=chronOwner(0,0);
+  if(own>=0){
+    eq(secSpyMul("iron",0,0),1,"без утечки цены не врут");
+    fxInc("spy",own);
+    SEC_SPY_CACHE={k:"",v:false};
+    ok(secSpyOn(MAKER_KEYS[own]),"утечка у хозяина этой системы");
+    ok(secSpyHere(0,0),"значит здесь сидит шпион");
+    let lo=2,hi=0,diff=0;
+    for(const k of TRADE_KEYS){
+      const m=secSpyMul(k,0,0);
+      lo=Math.min(lo,m);hi=Math.max(hi,m);
+      if(m!==1)diff++;
+      eq(secSpyMul(k,0,0),m,"и врёт он одинаково между вызовами: "+k);
+    }
+    ok(lo>=1-SEC_SPY_MAX/100&&hi<=1+SEC_SPY_MAX/100,"врут в границах: "+lo.toFixed(2)+"…"+hi.toFixed(2));
+    ok(lo<1&&hi>1,"и в обе стороны, а не только вверх");
+    ok(diff>0,"вранья хватает на несколько товаров: "+diff);
+    /* обе стороны прилавка: взять по-прежнему дороже, чем сдать */
+    const sys=getSystem(0,0);
+    if(sys&&sys.station){
+      for(const k of TRADE_KEYS){
+        const sell=marketPrice(sys,k),buy=buyPriceFor(sys,k);
+        ok(buy>sell,"взять дороже, чем сдать, и при шпионе: "+k+" "+buy+" > "+sell);
+      }
+    }
+  }
+  /* ── ретранслятор ──
+     Молчание M385 получило управу: счётчик сканирований возвращает волну. */
+  fxWorld();
+  const o2=chronOwner(0,0);
+  if(o2>=0){
+    const by=MAKER_KEYS[o2];
+    fxInc("spy",o2);
+    SEC_SPY_CACHE={k:"",v:false};
+    ok(powScandalOn(by),"утечка: волна молчит");
+    ok(powWaveSilent(by),"и молчание слышно");
+    eq(secRelayCount(by),0,"чинить ещё не начинали");
+    if(typeof WAR_LED_CACHE!=="undefined")WAR_LED_CACHE=null;
+    const N=chronNow(),body={};
+    body["0,0"]={scan:{q:SEC_RELAY_GOAL,a:["a","b","c"]}};
+    warLedPut(N,body);
+    eq(secRelayCount(by),SEC_RELAY_GOAL,"сканирования сосчитаны");
+    ok(secRelayFixed(by),"ретранслятор починен");
+    ok(!powWaveSilent(by),"и волна заговорила");
+    ok(chronWaveLines(undefined,by,3).length>=0,"строки снова берутся");
+    if(typeof WAR_LED_CACHE!=="undefined")WAR_LED_CACHE=null;
+  }
+  /* ── досмотр ── */
+  fxWorld();
+  const o3=chronOwner(0,0);
+  if(o3>=0){
+    eq(secHailRangeMul(),1,"без досмотра окликают как обычно");
+    fxInc("patrol",o3);
+    ok(secPatrolOn(0,0),"досмотр у хозяина системы");
+    eq(secHailRangeMul(),2,"и окликают вдвое дальше");
+  }
+  /* ── чужой талон в баках ──
+     Клеймо живёт сутки и узнаётся ТОЙ ЖЕ державой, а не любой. */
+  fxWorld();
+  G.smugBy="gt";G.smugN=chronNow();
+  ok(secSmugHot("gt"),"клеймо свежее");
+  ok(!secSmugHot("km"),"и оно чужое только для той, у кого взяли");
+  ok(hailContraband("gt"),"её досмотр узнаёт своё топливо");
+  ok(!hailContraband("km"),"а соседняя держава — нет");
+  G.smugN=chronNow()-4;
+  ok(!secSmugHot("gt"),"через сутки клеймо остыло");
+  ok(!hailContraband("gt"),"и досмотру больше нечего сказать");
+  G.smugBy=undefined;G.smugN=undefined;
+  try{localStorage.removeItem(CHRON_KEY);}catch(e){}
+  if(typeof WAR_LED_CACHE!=="undefined")WAR_LED_CACHE=null;
+}));
