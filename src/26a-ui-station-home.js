@@ -277,7 +277,9 @@ function renderBasesTab(st){
        Кандидаты стоят у прилавка этой станции и говорят. Единственная зацепка
        — в словах: настоящий спрашивает о МЕСТЕ раньше, чем отвечает о себе. */
     if(typeof bmgrAt==="function"&&G.sys&&G.sys.station&&list.length){
-      const cand=bmgrAt(G.sys);
+      /* охота (M406, §24.3): если он сегодня здесь — он просто стоит среди
+         прочих, ничем не отмеченный. Ни маркера, ни подсказки */
+      const cand=(typeof mgrCandidatesHere==="function")?mgrCandidatesHere(G.sys):bmgrAt(G.sys);
       $body.appendChild(el("div","sec","УПРАВЛЯЮЩИЕ · ГОВОРЯТ ВСЕ, УМЕЮТ РАЗНОЕ"));
       for(const M of cand){
         const row=el("div","row");

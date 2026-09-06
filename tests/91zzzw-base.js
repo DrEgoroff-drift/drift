@@ -1402,3 +1402,98 @@ TEST_SUITES.push(()=>suite("база M405: наём, доля, изъян и р�
   eq(B.mgr,null,"договора нет");
   eq(G.credits,50,"и пособие ушло");
 }));
+
+/* ── охота (M406) ──
+   §24.2: он функция времени, а не запись. §24.4: улика описывает, где он БЫЛ.
+   §35.1: у прилавка его не встретить — только там, где он сейчас. */
+TEST_SUITES.push(()=>suite("база M406: он один, и он переезжает",()=>{
+  resetWorld();
+  /* он один на галактику, он лучший и он без изъяна */
+  const one=theOne();
+  ok(one.q>=.85,"настоящий стоит на самом верху кривой: "+one.q.toFixed(2));
+  eq(one.flaw,null,"и он без изъяна");
+  eq(theOne().id,one.id,"он один и тот же при каждом вопросе");
+  ok(one.sense>=.5,"и чутьё у него есть — значит на собеседовании он спросит о месте");
+  ok(bmgrLine(one).indexOf("?")>0,"так и есть: "+bmgrLine(one));
+  /* он функция времени: за смену не двигается, за работу — переезжает */
+  const n=1000;
+  const w1=mgrWhere(n),w2=mgrWhere(n+1);
+  eq(w1.sx+","+w1.sy,w2.sx+","+w2.sy,"в соседней смене он там же");
+  let moved=false;
+  for(let k=1;k<=4&&!moved;k++){
+    const w3=mgrWhere(n+k*ONE_JOB);
+    if(w3.sx!==w1.sx||w3.sy!==w1.sy)moved=true;
+  }
+  ok(moved,"а за несколько работ — переезжает");
+  /* и он всегда там, где есть станция: он работает, а не сидит в пустоте */
+  for(let k=0;k<6;k++){
+    const W=mgrWhere(n+k*ONE_JOB);
+    const sys=getSystem(W.sx,W.sy);
+    ok(sys&&sys.station,"работа "+k+" — на станции: "+W.sx+":"+W.sy);
+  }
+}));
+
+TEST_SUITES.push(()=>suite("база M406: пеленг без дальности и слух про прошлое",()=>{
+  resetWorld();
+  const n=1000;
+  const W=mgrWhere(n);
+  /* пеленг: направление есть, дальности нет */
+  const b=mgrBearing(W.sx+20,W.sy,n);
+  ok(typeof b.deg==="number","пеленг — это градусы");
+  eq(b.here,0,"издалека он не «здесь»");
+  const line=mgrBearLine(W.sx+20,W.sy,n);
+  ok(line.indexOf("румб")>0,"и строка про румб: "+line);
+  ok(!/\d+\s*сект/.test(line),"а расстояния в ней нет");
+  /* врёт он не больше чем на пятнадцать градусов */
+  let worst=0;
+  for(let i=0;i<200;i++){
+    const sx=W.sx+30+i,sy=W.sy+7;
+    const truth=Math.atan2(W.sy-sy,W.sx-sx)*180/Math.PI;
+    const got=mgrBearing(sx,sy,n).deg;
+    let d=Math.abs(((got-truth)%360+540)%360-180);
+    worst=Math.max(worst,d);
+  }
+  ok(worst<=ONE_BEAR_ERR+1,"врёт не больше пятнадцати градусов: "+worst.toFixed(1));
+  /* два пеленга из далёких точек сходятся на нём: это и есть умение */
+  const p1=mgrBearing(W.sx-25,W.sy,n),p2=mgrBearing(W.sx,W.sy-25,n);
+  ok(Math.abs(p1.deg-p2.deg)>20,"из двух далёких мест румбы разные — есть чему пересекаться");
+  /* стоя на нём — «он здесь» */
+  eq(mgrBearing(W.sx,W.sy,n).here,1,"на месте пеленг говорит прямо");
+  ok(mgrHereNow(W.sx,W.sy,n),"и он тут");
+  /* слух: половина — о ложной цели, и он всегда про прошлое */
+  let fake=0,wrong=0;
+  for(let i=0;i<400;i++){
+    const q=mgrRumour(rng(hashi(i,7,3)));
+    if(q.fake)fake++;
+    if(q.wrong)wrong++;
+    ok(q.text.indexOf("управляющий")>=0||q.text.indexOf("Управляющий")>=0,"слух про управляющего");
+  }
+  ok(fake>120&&fake<280,"половина слухов — о ложной цели: "+fake+" из 400");
+  near(wrong/400,.15,.07,"и пятнадцать процентов просто неверны: "+(wrong/400).toFixed(2));
+}));
+
+TEST_SUITES.push(()=>suite("база M406: у прилавка его нет, а в его системе — есть",()=>{
+  resetWorld();
+  const n=(typeof baseShift==="function")?baseShift():0;
+  const W=mgrWhere(n);
+  const sysHere=getSystem(W.sx,W.sy);
+  const here=mgrCandidatesHere(sysHere);
+  ok(here.some(M=>M.id===theOne().id),"в его системе он стоит среди кандидатов");
+  ok(here.length>=3,"и не один: рядом обычные");
+  /* и ничем не отмечен: та же строка, тот же вид, что у остальных */
+  const M=here.find(x=>x.id===theOne().id);
+  ok(!!bmgrLine(M),"у него такая же строка, как у всех");
+  /* а в чужой системе его нет */
+  let other=null;
+  for(let x=-9;x<=9&&!other;x++)for(let y=-9;y<=9&&!other;y++){
+    if(x===W.sx&&y===W.sy)continue;
+    if(!starAt(x,y))continue;
+    const s=getSystem(x,y);
+    if(s&&s.station)other=s;
+  }
+  ok(!!other,"нашлась другая станция");
+  if(other){
+    const L=mgrCandidatesHere(other);
+    ok(!L.some(x=>x.id===theOne().id),"там его нет — он не рекламирует себя (§35.1)");
+  }
+}));

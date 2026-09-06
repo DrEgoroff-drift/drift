@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 490 · символов верхнего уровня: 4665
+Файлов: 491 · символов верхнего уровня: 4680
 
 ## СИМВОЛЫ
 
@@ -1448,6 +1448,9 @@ faceEl                       src/27c-ui-hq.js:6
 facePath                     src/12d-mgr-face.js:19
 faceRnd                      src/12d-mgr-face.js:16
 factPrices                   src/27c-ui-hq.js:580
+FAME_N                       src/21b3-base-hunt.js:27
+fameOf                       src/21b3-base-hunt.js:94
+fameWhere                    src/21b3-base-hunt.js:99
 FAUNA_RES                    src/02-world.js:96
 faunaOf                      src/20e-species.js:268
 fbm1                         src/01-core.js:30
@@ -2530,8 +2533,11 @@ MGR_ROLES                    src/12c-mgr-core.js:9
 MGR_RULES                    src/12c-mgr-core.js:377
 MGR_TRAITS                   src/12c-mgr-core.js:23
 MGR_XP                       src/12c-mgr-core.js:138
+mgrBearing                   src/21b3-base-hunt.js:71
+mgrBearLine                  src/21b3-base-hunt.js:85
 mgrBestLeg                   src/12c-mgr-core.js:584
 mgrBuildDiscount             src/12c-mgr-core.js:223
+mgrCandidatesHere            src/21b3-base-hunt.js:133
 mgrCmdCut                    src/12c-mgr-core.js:210
 mgrCrewCap                   src/12c-mgr-core.js:218
 mgrCrewXp                    src/12c-mgr-core.js:217
@@ -2545,7 +2551,9 @@ mgrFace                      src/12d-mgr-face.js:29
 mgrFee                       src/12c-mgr-core.js:299
 mgrHas                       src/12c-mgr-core.js:48
 mgrHead                      src/27c-ui-hq.js:24
+mgrHereNow                   src/21b3-base-hunt.js:64
 mgrHireMul                   src/12c-mgr-core.js:224
+mgrJobAt                     src/21b3-base-hunt.js:46
 mgrLeak                      src/12c-mgr-core.js:186
 mgrLearn                     src/12c-mgr-core.js:145
 mgrLevel                     src/12c-mgr-core.js:139
@@ -2560,6 +2568,7 @@ mgrPoints                    src/12c-mgr-core.js:144
 mgrRouteMax                  src/12c-mgr-core.js:578
 mgrRouteVisit                src/12c-mgr-core.js:566
 mgrRule                      src/12c-mgr-core.js:414
+mgrRumour                    src/21b3-base-hunt.js:115
 mgrSamples                   src/12c-mgr-core.js:679
 mgrSay                       src/12c-mgr-core.js:368
 mgrSeverance                 src/12c-mgr-core.js:320
@@ -2573,6 +2582,7 @@ mgrTraitAdd                  src/12c-mgr-core.js:53
 mgrTraitMul                  src/12c-mgr-core.js:49
 mgrUltCost                   src/12e-mgr-jobs.js:285
 mgrUltimatum                 src/12c-mgr-core.js:326
+mgrWhere                     src/21b3-base-hunt.js:49
 mgrWorkCmd                   src/12c-mgr-core.js:528
 mgrWorkFact                  src/12c-mgr-core.js:606
 mgrWorkKeep                  src/12c-mgr-core.js:552
@@ -2829,6 +2839,8 @@ offerTake                    src/11ah-offer.js:209
 offerTick                    src/11ah-offer.js:166
 offerVisit                   src/11ah-offer.js:124
 ok                           tests/90-harness.js:120
+ONE_BEAR_ERR                 src/21b3-base-hunt.js:26
+ONE_JOB                      src/21b3-base-hunt.js:25
 opCensus                     tests/91zzzzzt-opis.js:15
 openBarge                    src/12l-barge.js:635
 openCrewView                 src/27b-ui-crew.js:230
@@ -3406,18 +3418,18 @@ relayAll                     src/11ap-relay.js:149
 relayArrive                  src/11ap-relay.js:179
 relayAtFreq                  src/11ap-relay.js:134
 relayDial                    src/11ap-relay.js:207
-relayDrawSystem              src/11ap-relay.js:351
+relayDrawSystem              src/11ap-relay.js:358
 relayEar                     src/11ap-relay.js:126
 relayFind                    tests/91zzzw-relay.js:6
 relayFreq                    src/11ap-relay.js:99
-relayInteract                src/11ap-relay.js:333
+relayInteract                src/11ap-relay.js:340
 relayKnown                   src/11ap-relay.js:153
 relayList                    src/11ap-relay.js:189
 relayOf                      src/11ap-relay.js:81
-relayServe                   src/11ap-relay.js:309
+relayServe                   src/11ap-relay.js:316
 relaysNear                   src/11ap-relay.js:108
 relaySpeak                   src/11ap-relay.js:167
-relaySpot                    src/11ap-relay.js:292
+relaySpot                    src/11ap-relay.js:299
 relayWrite                   src/11ap-relay.js:156
 releaseAllKeys               src/15-input.js:204
 RELIC_KEYS                   src/12h-relic.js:64
@@ -3676,11 +3688,12 @@ RUIN_FIX                     src/21b0-base-ruin.js:22
 RUIN_PIRATE                  src/21b0-base-ruin.js:21
 RUIN_SQUAT                   src/21b0-base-ruin.js:20
 RUIN_TENANT                  src/21b0-base-ruin.js:19
+RUMB                         src/21b3-base-hunt.js:84
 RUMOUR_DETAIL                src/11t-rumours.js:46
 RUMOUR_IMG                   src/11t-rumours.js:32
 RUMOUR_SRC                   src/11t-rumours.js:53
-rumourBlock                  src/11t-rumours.js:129
-rumourEtherLine              src/11t-rumours.js:109
+rumourBlock                  src/11t-rumours.js:139
+rumourEtherLine              src/11t-rumours.js:119
 rumourRemember               src/18a-map-addr.js:44
 rumourSeedHere               src/11t-rumours.js:55
 rumoursHere                  src/11t-rumours.js:73
@@ -4234,6 +4247,8 @@ TETHER_LIFE                  src/13a-guns.js:40
 TETHER_PULL                  src/13a-guns.js:41
 tetherTick                   src/13a-guns.js:389
 tfbm                         src/18a-material.js:23
+theOne                       src/21b3-base-hunt.js:42
+theOneId                     src/21b3-base-hunt.js:31
 thingAdd                     src/27i-ui-table.js:37
 thingsAll                    src/27i-ui-table.js:36
 tickDrones                   src/12-economy.js:212
@@ -4831,7 +4846,7 @@ zooTick                      src/11ad-zoo.js:41
 
 ## src/11ap-relay.js · 29 КБ
   · приёмники как места:1
-  · у мачты есть тело:278
+  · у мачты есть тело:285
 
 ## src/11aq-late.js · 9 КБ
   · поздний час у стойки:1
@@ -4897,7 +4912,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/11s-returners.js · 5 КБ
   · возвращение: люди моложе своих внуков:1
 
-## src/11t-rumours.js · 12 КБ
+## src/11t-rumours.js · 13 КБ
   · слухи: как вообще узнают, что место есть:1
 
 ## src/11u-names.js · 6 КБ
@@ -5410,6 +5425,9 @@ zooTick                      src/11ad-zoo.js:41
 ## src/21b2-base-mgr.js · 10 КБ
   · сто управляющих и один (M405, DESIGN-base §34, §35, §48):1
 
+## src/21b3-base-hunt.js · 9 КБ
+  · охота на управляющего (M406, DESIGN-base §24.2–§24.5, §35.1):1
+
 ## src/21ba-deco-shapes.js · 19 КБ
   · приметы места: формы:1
 
@@ -5550,7 +5568,7 @@ zooTick                      src/11ad-zoo.js:41
   · заголовки и полосы (M299, docs/DESIGN-screens.md §1a):212
   · настройки:948
 
-## src/26a-ui-station-home.js · 19 КБ
+## src/26a-ui-station-home.js · 20 КБ
   · станция: вкладка «дом и базы»:1
 
 ## src/26b-ui-station-work.js · 19 КБ
@@ -6044,7 +6062,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzzv-wall.js · 7 КБ
   · автотесты: стена, которая помнит (M210):1
 
-## tests/91zzzw-base.js · 81 КБ
+## tests/91zzzw-base.js · 86 КБ
   · база: смена, повтор и журнал (M390, DESIGN-base §3, §12):1
 
 ## tests/91zzzw-chron.js · 33 КБ

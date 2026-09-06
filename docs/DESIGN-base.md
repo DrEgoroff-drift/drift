@@ -1615,7 +1615,15 @@ per shift, and three of the six flaws wired — тащит, пишет крас�
 place does not), молчит. **Measured** over 4 000 rolls: 56 % below .35, 3 % above .85, flaw on 62 %.
 **Deferred:** the other three flaws (строит не то · паникует · боится глубины) — they all need him
 to *build*, which is M407; and the real one himself, who by §35.1 never stands at a counter — that
-is M406's hunt. · M406 охота (§24.4, §35.1) ·
+is M406's hunt. · ~~M406 охота~~ — 0.406.0 (2026-09-07): `21b3-base-hunt` — `theOne()` is the tail of M405's own
+curve rather than an exception to it; `mgrWhere(n)` is a chain of `ONE_JOB`-long jobs at real
+stations, computed and never stored; the bearing gives direction ±15° and no distance, with the
+error keyed to system **and** shift so two readings from one spot refine nothing; the rumour carries
+a region and a time, half of them about one of twelve famous смотрители and 15 % simply wrong; and
+the ungated accident — he stands among the candidates of whatever station he is working at, marked
+by nothing. Suites in `91zzzw-base`. **Deferred:** the flea-market provenance and the wall/retelling
+channels of §24.4 (two channels are enough for triangulation to be a real skill), and §24.5's rivals
+taking him on an NPC contract. ·
 M407 он строит и развивает (§24.6, §37).
 
 **E · дело и мир** — M408 ПАЛАТА и станция платит, тон на максимум (§28–§32, §40) ·

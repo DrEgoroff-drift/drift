@@ -7,6 +7,34 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.406.0 - M406: the hunt — he does not advertise, and he moves
+
+The hundred stand at counters selling themselves. **The real one does not.** He is working
+somewhere, and a player who only ever interviews at counters will meet the best of the fakes and
+nobody else — which is the trap the whole layer is built around.
+
+He is a **function of time**, not a record: where he is at any shift is computed from the seed and
+the shift number. His route is a chain of jobs a few hundred shifts long each, always at a real
+station, and he works whether you are looking or not. That is the whole difficulty of the hunt:
+every piece of evidence describes where he **was**.
+
+Two channels carry it, and both were already in the game:
+
+- **Пеленг** on the receiver: a direction and **not one word about distance**, wrong by up to
+  fifteen degrees, and the error is its own in every system and every shift — two bearings from the
+  same spot refine nothing. Two bearings from two distant systems, taken within a few shifts of each
+  other, cross where he is now. That is a real plan: fly wide, listen, fly wider, listen again, draw
+  the cross, go.
+- **Слух** in the ordinary rumour feed: a region of three to five systems and a **time** — «с месяц
+  назад», «прошлой зимой». Half of them are about one of the dozen ordinary-but-famous смотрители
+  the galaxy also holds, fifteen percent are simply wrong, and a true one points at a job he has
+  already left.
+
+And the accident stands, ungated: **if you walk into the station where he happens to be, he is
+standing among the candidates** with the same kind of line as everybody else. Nothing marks him.
+The only tell is the one M405 built: he asks about the place before he answers about himself.
+
+---
 ## 0.405.0 - M405: a hundred управляющих, and one
 
 The whole layer demands the player's attention, and there is exactly one way to buy it back: a
