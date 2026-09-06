@@ -25,6 +25,16 @@ function bLife(){
   return B;
 }
 function bPool(B){let s=0;for(const k in B.pool)s+=B.pool[k]|0;return s;}
+/* ── замер без погоды ──
+   С M397 у базы есть директор, и он может в ту же смену прислать баржу с
+   грузом или жилу под бур. Набор, который меряет ДОБЫЧУ или консервацию,
+   обязан мерить их, а не удачу: на время замера погода выключается, и это
+   сказано вслух. Сам директор проверяется своим набором. */
+function bNoDir(fn){
+  const keep=baseEventAt;
+  baseEventAt=()=>null;
+  try{return fn();}finally{baseEventAt=keep;}
+}
 
 TEST_SUITES.push(()=>suite("база M390: смена одна на всех, повтор повторяется",()=>{
   const B=bLife();
@@ -59,6 +69,7 @@ TEST_SUITES.push(()=>suite("база M390: смена одна на всех, п
   A.t0=n0;C.t0=n0;
   baseResolve(A,now);                                  /* одним заходом */
   for(let i=1;i<=10;i++)C.t0=n0+i-1,baseResolve(C,now-(10-i)*HOLD_SHIFT);
+  /* погоду здесь не выключаем нарочно: она тоже обязана повторяться */
   eq(bPool(C),bPool(A),"добыто одинаково: "+bPool(A));
   eq(C.log.length,A.log.length,"и в журнале одинаковое число строк");
   for(let i=0;i<A.log.length;i++)eq(C.log[i].t,A.log[i].t,"строка "+i+" совпала");
@@ -98,7 +109,8 @@ TEST_SUITES.push(()=>suite("база M390: журнал пишет о том, ч
   const seen={};
   for(const k of kinds){
     baseLog(B,k,7,{who:"Гриша",lost:3,broke:"Склад",what:"Солнечная панель",out:1,
-      cr:400,q:5,from:1,to:9,guard:1,shield:0,say:"«Ухожу»",by:"empty"});
+      cr:400,q:5,from:1,to:9,guard:1,shield:0,say:"«Ухожу»",by:"empty",
+      warn:"барограф падает"});
     const L=B.log[B.log.length-1];
     ok(L&&L.t&&L.t.length>4,"вид «"+k+"» пишет строку: "+(L&&L.t));
     ok(!seen[L.t],"и она не повторяет чужую: "+k);
@@ -199,7 +211,7 @@ TEST_SUITES.push(()=>suite("база M391: встала, но не умерла"
   baseLife(B).air=2;baseLife(B).water=LIFE_START;
   const ore0=bPool(B);
   B.t0=baseShift()-1;
-  baseResolve(B,Date.now());
+  bNoDir(()=>baseResolve(B,Date.now()));
   /* ── §13: перестаёт работать раньше, чем начнёт голодать ── */
   ok(baseParked(B),"запас кончился — база встала");
   eq(baseLife(B).air,0,"воздух в нуле, а не в минусе: долг не копится");
@@ -220,10 +232,10 @@ TEST_SUITES.push(()=>suite("база M391: встала, но не умерла"
   /* смена на раскочегарку: первая смена после подъёма ничего не даёт */
   const ore1=bPool(B);
   B.t0=baseShift()-1;
-  baseResolve(B,Date.now());
+  bNoDir(()=>baseResolve(B,Date.now()));
   eq(bPool(B),ore1,"смена на раскочегарку не добывает");
   B.t0=baseShift()-1;
-  baseResolve(B,Date.now());
+  bNoDir(()=>baseResolve(B,Date.now()));
   ok(bPool(B)>ore1,"а следующая — уже да");
   /* лёд идёт и в запас, и на склад: он и вода, и сырьё */
   G.cargo.ice=(G.cargo.ice|0)+5;
@@ -724,4 +736,122 @@ TEST_SUITES.push(()=>suite("база M396: зал из трёх — и беда 
   eq(n,2,"удар по средней достался двум соседям");
   ok(B.cells[0].hp<1&&B.cells[2].hp<1,"и они и правда побиты");
   eq(baseHallHit(B,4,0,.5),0,"а вне зала бить некого");
+}));
+
+/* ── директор (M397) ──
+   Три правила §10: он предупреждает, он принадлежит планете, и беда у него
+   ходит. Всё это — чистые функции от номера смены, иначе прогноза не бывает. */
+TEST_SUITES.push(()=>suite("база M397: погода вместо костей",()=>{
+  const B=bLife();
+  /* таблица честная: у каждого события есть слово предупреждения и свои миры */
+  for(const e of DIR_EV){
+    ok(e.warn&&e.warn.length>6,"у события «"+e.ru+"» есть предупреждение: "+e.warn);
+    ok(e.w>0&&Array.isArray(e.worlds)&&e.worlds.length,"и вес с мирами: "+e.ru);
+  }
+  /* доброе — четверть по весу, и на КАЖДОМ мире: у миров разное число бед,
+     и постоянные веса доброго дали бы на земной две пятых, а на каменистой треть */
+  for(const w of ["terran","rocky","ice","desert","volcanic","toxic","ocean","gas"]){
+    B.type=w;
+    near(dirGoodShare(B),.25,.02,"на мире «"+w+"» доброго четверть: "+dirGoodShare(B).toFixed(2));
+  }
+  /* он принадлежит планете */
+  B.type="volcanic";
+  ok(dirPool(B).some(e=>e.k==="quake"),"на вулкане бывает толчок");
+  ok(!dirPool(B).some(e=>e.k==="cold"),"а холодного удара нет");
+  B.type="ice";
+  ok(dirPool(B).some(e=>e.k==="cold"),"на льду — наоборот");
+  ok(dirPool(B).some(e=>e.k==="raid"),"а налёт бывает везде");
+  /* беда растёт с тем, что нажито */
+  B.type="rocky";
+  const bare=baseThreat(B);
+  B.pool.iron=900;
+  ok(baseWorth(B)>0&&baseThreat(B)>bare,"с нажитым беда чаще: "+bare.toFixed(3)+" → "+baseThreat(B).toFixed(3));
+  ok(baseThreat(B)<=.35,"но не выше потолка");
+  /* он предупреждает: прогноз на смену вперёд — это то же событие */
+  const n=baseShift();
+  const f=baseForecast(B,n);
+  const e=baseEventAt(B,n+1);
+  eq(f&&f.k,e&&e.k,"прогноз — это событие следующей смены, а не гадание");
+  eq(baseEventAt(B,n+1)&&baseEventAt(B,n+1).k,e&&e.k,"и он повторяется");
+  /* на консервации погоды нет */
+  basePark(B,"hand",n);
+  eq(baseEventAt(B,n+1),null,"вставшая база погоды не видит");
+  baseWake(B,n,"hand");
+}));
+
+TEST_SUITES.push(()=>suite("база M397: беда ходит, а гермозатвор её держит",()=>{
+  const B=bLife();
+  G.crew=[];
+  for(let i=0;i<B.cells.length;i++)B.cells[i]=null;
+  B.cells[0]={k:"storage",hp:1};B.cells[1]={k:"storage",hp:1};B.cells[2]={k:"storage",hp:1};
+  const n=baseShift();
+  ok(baseFireStart(B,0,0,n),"пожар начался");
+  ok(!!B.fire,"и он записан на базе");
+  ok(B.log.some(x=>x.k==="fire"),"и в журнале");
+  eq(baseFireStart(B,2,0,n),0,"второй пожар разом не начинается");
+  /* без людей и без мастерской он идёт дальше и портит отсеки */
+  const hp0=B.cells[0].hp;
+  baseFireStep(B,n+1);
+  ok(B.cells[0].hp<hp0,"горящий отсек портится");
+  ok(B.fire.c!==0||B.fire.r!==0,"и огонь перешёл дальше: "+B.fire.c+":"+B.fire.r);
+  ok(B.log.some(x=>x.k==="firego"),"о переходе сказано");
+  /* гермозатвор держит: между ним и огнём беда не проходит */
+  const B2=bLife();
+  G.crew=[];
+  for(let i=0;i<B2.cells.length;i++)B2.cells[i]=null;
+  B2.cells[0]={k:"storage",hp:1};B2.cells[1]={k:"seal",hp:1};B2.cells[2]={k:"storage",hp:1};
+  baseFireStart(B2,0,0,n);
+  for(let i=0;i<3;i++)baseFireStep(B2,n+i+1);
+  ok(!B2.fire||(B2.fire.c===0&&B2.fire.r===0),"через гермозатвор огонь не пошёл");
+  ok(B2.cells[2].hp===1,"дальний отсек цел");
+  /* инженер тушит */
+  const B3=bLife();
+  for(let i=0;i<B3.cells.length;i++)B3.cells[i]=null;
+  B3.cells[0]={k:"storage",hp:1};B3.cells[5]={k:"habitat",hp:1};
+  bCrew(B3,2);
+  G.crew[0].role="engineer";G.crew[1].role="engineer";
+  baseFireStart(B3,0,0,n);
+  let outN=0;
+  for(let i=0;i<8&&B3.fire;i++){baseFireStep(B3,n+i+1);outN++;}
+  ok(!B3.fire,"двое инженеров потушили за "+outN+" смен");
+  ok(B3.log.some(x=>x.k==="fireout"),"и это записано");
+}));
+
+TEST_SUITES.push(()=>suite("база M397: у каждой погоды своё последствие",()=>{
+  const B=bLife();
+  const n=baseShift();
+  /* занос: бур стоит, и это видно */
+  baseEventApply(B,{k:"dust"},n);
+  ok(baseDusty(B,n),"занос идёт");
+  const ore0=bPool(B);
+  B.t0=n-1;
+  bNoDir(()=>baseResolve(B,Date.now()));
+  eq(bPool(B),ore0,"в занос бур не добывает");
+  B.dust=0;
+  /* холодный удар: тепло вниз на своё */
+  const h0=baseHeat(B,n);
+  baseEventApply(B,{k:"cold"},n);
+  eq(baseHeat(B,n),h0-20,"холодный удар снял два шага тепла");
+  B.cold=0;
+  /* жила: бур идёт легче */
+  eq(baseVein(B,n),1,"без жилы обычно");
+  baseEventApply(B,{k:"vein"},n);
+  ok(baseVein(B,n)>1,"с жилой веселее: ×"+baseVein(B,n));
+  B.vein=0;
+  /* выброс: половина воздуха */
+  baseLife(B).air=100;
+  baseEventApply(B,{k:"vent"},n);
+  eq(baseLife(B).air,50,"выброс забрал половину воздуха");
+  /* баржа: доброе событие и правда даёт */
+  const p0=bPool(B);
+  baseEventApply(B,{k:"barge"},n);
+  ok(bPool(B)>p0,"баржа оставила груз: +"+(bPool(B)-p0));
+  /* толчок бьёт по отсеку */
+  const hp0=B.cells.filter(c=>c).reduce((s,c)=>s+c.hp,0);
+  baseEventApply(B,{k:"quake"},n);
+  ok(B.cells.filter(c=>c).reduce((s,c)=>s+c.hp,0)<hp0,"толчок разбил отсек");
+  /* новичок приходит и ждёт */
+  B.guest=null;
+  baseEventApply(B,{k:"newman"},n);
+  ok(!!B.guest,"человек со стороны пришёл: "+(B.guest&&B.guest.name));
 }));

@@ -161,6 +161,8 @@ function renderBasesTab(st){
       /* жизнеобеспечение (M391): встала база или дышит — первое, что надо
          знать о ней со стола, потому что это единственное, что нельзя
          отложить до следующего прилёта */
+      if(B.fire)warn.push("ГОРИТ — тушат тем, что есть");
+      if(typeof baseDusty==="function"&&baseDusty(B))warn.push("занос: бур стоит");
       if(typeof baseParked==="function"&&baseParked(B))
         warn.push(B.park<0?"законсервирована — добычи нет"
                           :"встала: кончился запас — добычи нет");

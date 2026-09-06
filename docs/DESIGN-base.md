@@ -1548,7 +1548,14 @@ fold into the previous row and the scene drew a «РАДИАТОР» frame over 
 `91zzzw-base`. **Deferred:** the hall's «one worker covers three» (assignment is per role, not per
 cell, so it already holds) and the pipes drawn between adjacent cells — the rules are in the prompt
 line for now, and the drawing belongs with the craft pass M404. ·
-M397 директор (§10) · M398 аврал (§11) · M399 устав (§9).
+~~M397 директор~~ — 0.397.0 (2026-09-06): `21a5-base-dir` — one roll built from `worth` (built
+cost + pool + crew skill), sector danger and a floor, capped at 0.35 a shift; the forecast is simply
+the same pure function asked about `n+1`, so it costs nothing to store and cannot lie; the event
+table is per world with the good share **computed** as a third of the bad weight so every world gets
+its quarter; and the walking fire with `гермозатвор` as the only thing that stops it. **Measured:**
+a modest rocky base at threat 0.065 sees an event every ~16 shifts, about a third of them good.
+**Deferred:** the аврал (M398) — the fire the player fights with his own hands — and the war layer's
+pirate roles in a raid, which arrive with §20's seam. · M398 аврал (§11) · M399 устав (§9).
 
 **C · тяжёлая игра** — M400 формуляр планеты (§21) · M401 девять законов (§22) · M402 развалина и
 возврат (§22.1, §39) · M403 плата и блокада (§23, §42, §43) · M404 ремесленный проход по всей

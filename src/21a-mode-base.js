@@ -63,6 +63,10 @@ const BUILD={
      ложь, и правилами проекта запрещено прямо */
   med:    {ru:"Лазарет",     cost:{credits:1700,alloy:4},power:-4,
            note:"+4 духа жилому отсеку по соседству"},
+  /* гермозатвор (M397, §6, §10.3): единственное, что останавливает ходячую
+     беду. Ничего не производит и стоит копейки — он про план, а не про цифры */
+  seal:   {ru:"Гермозатвор",  cost:{credits:600,alloy:2}, power:-1,
+           note:"беда через него не переходит: пожар останавливается тут"},
   shop:   {ru:"Мастерская",  cost:{credits:1500,alloy:4},power:-5,
            note:"чинит сама, без инженера; соседний отсек — вдвое быстрее"},
   garden: {ru:"Оранжерея",   cost:{credits:1600,alloy:4},power:-4,
@@ -435,8 +439,9 @@ function updateBase(dt){
       (A?"\nСОСЕДСТВО: "+A:"");
     return;
   }
+  const dir=(typeof baseDirLine==="function")?baseDirLine(B):"";
   const head="ЭНЕРГИЯ "+P.prod+" / "+P.cons+" · ОТДАЧА "+Math.round(P.eff*100)+"%"+
-    "\nНА СКЛАДЕ "+basePoolHeld(B)+" / "+P.store;
+    "\nНА СКЛАДЕ "+basePoolHeld(B)+" / "+P.store+(dir?"\n"+dir:"");
   if(cell){
     const M=BUILD[cell.k];
     /* стоя на площадке, ДЕЙСТВ отправляет на следующую базу сети, а не собирает груз */

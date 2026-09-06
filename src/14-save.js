@@ -667,6 +667,10 @@ function applySave(s){
         /* гость у затвора (M395): он ждёт и между сеансами — уходить ему некуда */
         guest:(b.guest&&typeof b.guest==="object")?{name:String(b.guest.name||"").slice(0,24),
           role:String(b.guest.role||"driller"),seed:b.guest.seed|0,n:b.guest.n|0}:null,
+        /* погода директора (M397): у неё есть сроки, и они переживают выход */
+        dust:b.dust|0,cold:b.cold|0,vein:b.vein|0,
+        fire:(b.fire&&typeof b.fire==="object")?{c:b.fire.c|0,r:b.fire.r|0,
+          k:String(b.fire.k||"fire"),n:b.fire.n|0}:null,
         park:b.park|0,
         /* срок криогена (M392): это не запас, а до какой смены держит холод */
         cryo:(b.cryo&&typeof b.cryo==="object")?{until:b.cryo.until|0,q:b.cryo.q|0}:null,

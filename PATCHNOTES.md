@@ -7,6 +7,37 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.397.0 - M397: the director — weather instead of dice
+
+The base had two rolls, a raid and a storm. Both were dice, neither looked at anything, and both
+arrived without warning. They are now one **director**, and the difference is three rules.
+
+**It forecasts.** Every event is decided a shift ahead and goes into the journal before it happens
+— «барограф падает», «на орбите чужой транспондер», «порода гудит». The forecast is not mercy; it
+is what turns dice into weather, because weather has a sky you can read. A player who is there can
+prepare; a player who is away reads how the crew prepared without him.
+
+**It belongs to the planet.** Каменистая gets dust storms that stop the drill, ледяная and
+океаническая get a cold snap that takes two steps of heat for six shifts, вулканическая gets a
+tremor that damages a cell and can set it alight, ядовитая gets a vent that takes half the air —
+and everywhere there is the raid and the storm that were always there. **A quarter of every world's
+events are good**: a passing barge leaving cargo, a vein under the base for two days, somebody
+walking up to the gate. That share is computed from the world's own table rather than fixed, so a
+terran base with two kinds of trouble gets the same quarter as a rocky one with three — a base that
+only ever brings bad news stops being a place and becomes a chore.
+
+**Trouble walks.** A fire starts in one cell, eats at it, and moves to a neighbour next shift unless
+somebody puts it out or a **гермозатвор** stands in the way — a 600-credit module that produces
+nothing and is the only thing that stops it. That is precisely why the layout is a plan and not a
+shopping list. Engineers, a мастерская and simply having people about put fires out; two engineers
+manage it in a few shifts.
+
+Measured on a modest rocky base (worth 6000, quiet sector): threat 0.065 a shift — about one event
+every sixteen shifts, four days — of which roughly a third were good. A rich base in a dangerous
+sector runs up to the ceiling of 0.35, one event every three shifts, because trouble scales to what
+there is to lose.
+
+---
 ## 0.396.0 - M396: nine rules of adjacency, halls of three, and a shaft to ride
 
 A base had two adjacency rules, and they lived in the code as two exceptions. Now there are

@@ -64,6 +64,16 @@ const BLOG={
   melt:    (B,a)=>"плавильня дала "+a.q+" сплав"+pl3(a.q,"","а","ов"),
   deep:    ()=>"смотритель вскрыл нижний ярус",
   wear:    (B,a)=>"жара доконала: "+a.what,
+  warn:    (B,a)=>a.warn,
+  fire:    (B,a)=>"горит "+a.what+". Тушат чем есть",
+  firego:  (B,a)=>"огонь перешёл в "+a.what,
+  fireout: (B,a)=>a.who?"«Потушили. Обошлось» — "+a.who:"пожар потушен",
+  dust:    ()=>"пылевой занос. Бур стоит, пока не разгребут",
+  cold:    ()=>"холодный удар. Всё выстыло разом",
+  vent:    ()=>"выброс. Половина воздуха ушла в никуда",
+  quake:   (B,a)=>"толчок. Досталось: "+a.what,
+  barge:   (B,a)=>"мимо шла баржа, оставили "+a.q+" ед · "+a.what,
+  vein:    ()=>"бур пошёл легче: под базой жила",
   guest:   (B,a)=>"пришёл человек со стороны, просится остаться. Ждёт у затвора — "+a.who,
   guestno: (B,a)=>a.who+" постоял у затвора и ушёл своей дорогой",
   leave:   (B,a)=>a.say+" — "+a.who+", и ушёл",
@@ -105,9 +115,7 @@ function baseShiftRun(B,n){
     else if(!quiet&&B.quiet){B.quiet=false;baseLog(B,"gun_on",n);said=1;
       logAdd("tech","База «"+B.name+"»: батарея снова под напряжением");}
   }
-  said|=baseRaid(B,BASE_MIN,n)?1:0;
   said|=baseFixTick(B,BASE_MIN,n)?1:0;
-  said|=baseStorm(B,BASE_MIN,n)?1:0;
   /* жизнеобеспечение (M391) считается ПЕРВЫМ: оно решает, работает ли база в
      эту смену вообще */
   said|=baseLifeStep(B,P,n)?1:0;
@@ -116,6 +124,12 @@ function baseShiftRun(B,n){
   said|=baseCryoMake(B,P,n)?1:0;
   if(B.wake){B.wake=0;return;}      /* смена на раскочегарку: ни добычи, ни сдачи */
   if(!baseParked(B)){
+    /* директор (M397) — ПОСЛЕ жизнеобеспечения и только для живой базы: один
+       бросок на всё, с прогнозом на смену вперёд. Два отдельных броска,
+       которые ни на что не смотрели, кончились здесь. К базе, которая в эту же
+       смену встала, погода не приходит: ей уже хватило */
+    said|=(typeof baseDirStep==="function")?(baseDirStep(B,n)?1:0)
+         :((baseRaid(B,BASE_MIN,n)?1:0)|(baseStorm(B,BASE_MIN,n)?1:0));
     said|=baseEarn(B,P,BASE_MIN,n)?1:0;
     said|=baseMine(B,P,BASE_MIN,n)?1:0;
   }
@@ -154,7 +168,10 @@ function baseMine(B,P,min,n){
   const heat=(typeof baseHeatMul==="function")?baseHeatMul(B,n):1;
   /* склад под боком (M396): успевает лечь больше */
   const adj=(typeof baseAdjMine==="function")?baseAdjMine(B):1;
-  const want=min*P.drillEff*eff*crewBoost*heat*adj*1.1;
+  /* погода (M397): занос останавливает бур, жила гонит его вдвое веселее */
+  if(typeof baseDusty==="function"&&baseDusty(B,n))return 0;
+  const vein=(typeof baseVein==="function")?baseVein(B,n):1;
+  const want=min*P.drillEff*eff*crewBoost*heat*adj*vein*1.1;
   let left=Math.min(want,Math.max(0,cap-held));
   const full=want>0&&left<want*.5;      /* склад забит: добыча стоит, и это строка */
   const r=rng(hashi(B.sx*7919+B.sy,B.idx,hashi(n,0x9111,0x2D)));
@@ -430,6 +447,8 @@ function baseHeat(B,n){
   /* вытяжка (M396): радиатор над реактором в одной колонке снимает ещё */
   if(typeof baseAdjHeat==="function")h+=baseAdjHeat(B);
   h-=baseCryoOn(B,n);
+  /* холодный удар (M397): шесть смен всё выстыло */
+  if(typeof baseColdHit==="function")h+=baseColdHit(B,n);
   return h;
 }
 /* полосы: 0 покой · ±1 неприятно · ±2 плохо · ±3 бур встал.
