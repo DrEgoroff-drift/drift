@@ -17,6 +17,28 @@
    камня откажется (§24.7): разведка и расширение остаются игроку. */
 const DEV_EVERY=6;           /* раз в столько смен он делает один ход */
 const DEV_KEEP=1500;         /* меньше этого на счету он не тратит */
+/* ── и потолок на сутки (разбор 0.409.1) ──
+   «Не спрашивая» — это замысел автора, и он остаётся. Но без потолка сносный
+   управляющий за сутки снимал четыре реактора подряд, и первая мысль игрока
+   была «у меня украли двадцать тысяч». Столько он может потратить за сутки, и
+   в первый раз он говорит об этом вслух. */
+const DEV_DAY=72;            /* смен в сутках */
+const DEV_CAP=9000;          /* и столько кредитов за них */
+function devSpent(B,n,add){
+  if(!B.spend||n-(B.spend.n|0)>=DEV_DAY)B.spend={n,q:0};
+  if(add)B.spend.q=(B.spend.q|0)+add;
+  return B.spend.q|0;
+}
+function devAfford(B,n,cost){
+  return (G.credits-cost>=DEV_KEEP)&&(devSpent(B,n)+cost<=DEV_CAP);
+}
+function devSaid(B,M,what,cost){
+  if(B.devSaid)return;
+  B.devSaid=1;
+  tell("tech",M.name+" строит сам: "+what,
+    "УПРАВЛЯЮЩИЙ СТРОИТ\n"+M.name+" поставил "+what+" за "+cost+" кр\n"+
+    "он не спрашивает — за это его и берут. Потолок "+DEV_CAP+" кр в сутки");
+}
 /* ── что он поставит следующим ──
    Чтение формуляра: сперва то, чего не хватает жизни, потом то, что мешает
    планета, и только потом добыча. Плохой берёт тот же список задом наперёд. */
@@ -81,9 +103,11 @@ function devStep(B,n){
     const cell=baseCell(B,c,r);
     if(!cell||cell.hp>0)continue;
     const fc=(typeof baseFixCost==="function")?baseFixCost(B,cell.k):{credits:400,alloy:1};
-    if(G.credits-fc.credits<DEV_KEEP)return 0;
+    if(!devAfford(B,n,fc.credits))return 0;
     if((G.cargo.alloy|0)<(fc.alloy|0))return 0;
     G.credits-=fc.credits;G.cargo.alloy-=(fc.alloy|0);
+    devSpent(B,n,fc.credits);
+    devSaid(B,M,BUILD[cell.k].ru,fc.credits);
     cell.hp=1;
     baseLog(B,"devfix",n,{what:BUILD[cell.k].ru,who:M.name});
     return 1;
@@ -94,9 +118,11 @@ function devStep(B,n){
     const spot=devSpot(B,k,M);
     if(!spot)continue;
     const cost=baseCost(k,B);
-    if(G.credits-cost.credits<DEV_KEEP)return 0;
+    if(!devAfford(B,n,cost.credits))return 0;
     if(cost.alloy&&(G.cargo.alloy|0)<cost.alloy)continue;
     G.credits-=cost.credits;if(cost.alloy)G.cargo.alloy-=cost.alloy;
+    devSpent(B,n,cost.credits);
+    devSaid(B,M,BUILD[k].ru,cost.credits);
     baseSet(B,spot.c,spot.r,{k,hp:1});
     baseLog(B,"dev",n,{what:BUILD[k].ru,who:M.name});
     return 1;

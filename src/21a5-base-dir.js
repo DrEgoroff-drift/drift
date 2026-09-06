@@ -117,18 +117,31 @@ function baseFireStart(B,c,r,n,kind){
   baseLog(B,"fire",n,{what:(BUILD[(baseCell(B,c,r)||{}).k]||{ru:"отсек"}).ru});
   return 1;
 }
+const FIRE_ALONE=3;          /* столько смен горит на базе, где никого нет */
 function baseFireStep(B,n){
   const F=B.fire;
   if(!F)return 0;
   const cell=baseCell(B,F.c,F.r);
   if(!cell||cell.hp<=0){B.fire=null;return 0;}
+  /* ── у огня на пустой базе есть срок (разбор 0.409.1) ──
+     Тушат только руки, а на базе без людей рук нет: пожар ходил по отсекам
+     вечно и выбивал всё до последнего. Ходить он не перестаёт — §10.3 про то и
+     написан, — но в запертых отсеках без людей ему кончается воздух: три
+     смены, и он сам себя доедает. */
+  const alone=((typeof baseCrewN==="function")?baseCrewN(B):0)<=0;
+  if(alone&&n-(F.n|0)>=FIRE_ALONE){
+    cell.hp=Math.max(0,cell.hp-.12);
+    B.fire=null;
+    baseLog(B,"fireout",n,{});
+    return 1;
+  }
   /* тушат: инженер, мастерская — и просто люди, если их много */
   let hands=(typeof baseRoleForce==="function")?baseRoleForce(B,"engineer"):0;
   for(const q of (B.cells||[]))if(q&&q.hp>0&&q.k==="shop")hands+=.6;
   hands+=((typeof baseCrewN==="function")?baseCrewN(B):0)*.15;
   const r=rng(hashi(B.sx*97+B.sy,(B.idx|0)*13+5,hashi(n,0x1F13,0x6)));
   cell.hp=Math.max(0,cell.hp-.18);
-  if(r()<clamp(hands*.45,0,.85)){
+  if(!alone&&r()<clamp(hands*.45,0,.85)){
     B.fire=null;
     baseLog(B,"fireout",n,{who:baseWho(B,"engineer")});
     return 1;
@@ -149,8 +162,9 @@ function baseFireStep(B,n){
 /* ── применить событие ── */
 function baseEventApply(B,e,n){
   if(!e)return 0;
-  if(e.k==="storm")return baseStorm(B,BASE_MIN,n)?1:0;
-  if(e.k==="raid")return baseRaid(B,BASE_MIN,n)?1:0;
+  /* директор уже бросил — исполняем без второго броска (разбор 0.409.1) */
+  if(e.k==="storm")return baseStorm(B,BASE_MIN,n,1)?1:0;
+  if(e.k==="raid")return baseRaid(B,BASE_MIN,n,1)?1:0;
   if(e.k==="dust"){B.dust=n+DIR_DUST;baseLog(B,"dust",n);return 1;}
   if(e.k==="cold"){B.cold=n+DIR_COLD;baseLog(B,"cold",n);return 1;}
   if(e.k==="vein"){B.vein=n+DIR_VEIN;baseLog(B,"vein",n);return 1;}
@@ -188,6 +202,8 @@ function baseEventApply(B,e,n){
     const roles=(typeof ROLE_KEYS!=="undefined")?ROLE_KEYS:["driller"];
     B.guest={name:(typeof genName==="function")?genName(rr):"Человек",
       role:pick(roles,rr),seed,n};
+    /* открытая дверь (M399) считается и здесь: вор приходил только через маяк */
+    if(typeof charterBadGuest==="function"&&charterBadGuest(B,seed))B.guest.bad=1;
     baseLog(B,"guest",n,{who:B.guest.name});
     return 1;
   }

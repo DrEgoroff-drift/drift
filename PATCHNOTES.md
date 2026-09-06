@@ -7,6 +7,70 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.409.1 - the base queue read back, by another pair of eyes
+
+A parallel session read M390-M409 and the war queue against the design docs and sent three
+letters. Fifteen of its findings were real; this version is all of them, plus the ones my own
+new pinning suites turned up while fixing them. No new mechanics - every change here makes an
+existing rule true that was only written down.
+
+**The base layer.**
+
+- The director rolled twice: `baseEventAt` decided an event, and `baseEventApply` rolled the
+  same probability again, so a forecast could name a raid that never came. `force` now removes
+  the probability roll and nothing else - the *place* checks (a raid needs danger, a storm needs
+  weather) survive, because forcing them let storms onto gas worlds.
+- A deep catch-up (over 72 shifts) only mined: nobody ate, nobody paid, nobody burned. It now
+  runs `baseLifeBulk`, `palStep` and `baseRuinCheck` too, so a base you left for a fortnight can
+  be found dead, in debt, or a ruin - the states it could always reach one shift at a time.
+- **Numbers on a base are bought, and the stock receiver never buys them.** `baseSharp` keyed on
+  `instrQuality("radio")>1.05`, but a per-instance spread (`.85+r()*.3`) and the hull's
+  profession push the stock `kazenny` past any such threshold: everyone had digits from the first
+  minute, and "most of them fly on adjectives" stayed a line in a header. It keys on the *works*
+  now - a receiver better than the one the yard fits, and not worn out - or on a radist. The
+  СВЯЗЬ report obeys the same lever instead of printing figures of its own.
+- Fire on an emptied base spread for ever with nobody to fight it. It still walks, and it dies
+  after three shifts alone (`FIRE_ALONE`): nothing left to burn.
+- Ice was counted twice - once into the store, once as water. It goes to the store, and water
+  comes through the melter.
+- Turnover never accumulated: `baseCollect` moved goods and told nobody what they were worth, so
+  the manager's cut and ПАЛАТА's share were always taken from zero. It now sums by `RES.price`
+  into `_turn`/`_earned`, and those fields (with `spend` and `devSaid`) are in the `14-save`
+  whitelist - without that a reload zeroed both the share and the day's building cap.
+- **Deregistration was a dominant strategy**: 800 credits once and the joke was over for good,
+  with the base working exactly as before. A plot outside the register is a plot the counter
+  will not take goods from: output at `PAL_OFF` (.55), no foreign hulls on the pad, never a
+  forward post. Silence costs tempo.
+- A ПАЛАТА inspection arrived with a fine and no warning, though the comment claimed it was
+  announced. Four shifts before, the journal writes a line the player can read over СВЯЗЬ.
+- A seized plot came back for free: `21b0` knew squatters and pirates but not the registrar.
+  Buying it back costs the debt plus the closing fee.
+- The manager left on the first unpaid shift - come back from a week's run with an empty account
+  and he is gone, learned about afterwards. Unpaid wages accrue like a hired hand's; he leaves
+  after four shifts without money (`BMGR_DUE`).
+- «Не спрашивая» is the point of a manager who builds, but with no ceiling a decent one bought
+  four reactors in a day and the player's first thought was theft. 9000 credits a day
+  (`DEV_CAP`), and the first time he does it he says so out loud.
+- `theOneId` ran four thousand rolls with a name generator on every `resetWorld`, because its
+  cache lived in `G`. He is a property of the galaxy, not of a world: the cache is on the module.
+- **The base refuelled below any counter, for ever.** One ice gave two fuel; ice costs 7 on the
+  counter and fuel 5-12, and ice can be hauled *to* the base. That is not "at cost", that is a
+  pump. One to one - the blockade is what makes the base's counter matter (§43), not the price.
+- Minor: a raw newcomer could steal on his first shift; `dialLeak` applied twice; a person could
+  not be moved between posts inside one base; `avrRoll` was seeded off wall-clock seconds.
+
+**The war layer.** A power's warship attacked the player instead of its enemy (`npcFoeFor` now
+picks a target among other NPCs when `p.iff` is set); `fleetFire` shot at dummies, envoys, powers
+and friendly hulls; `riteLoanSettle` paid out for silence rather than for the deed, and now
+compares the issuer's holdings against `G.bondHold`; `natSwarmTick` read `st.maxSp`, which does
+not exist, so the swarm's speed was `NaN`.
+
+**Three regressions my own new suites caught while fixing the above** are worth naming, because
+they are the same shape as the bugs they were fixing: forcing the director bypassed the place
+checks; the ice test still asserted the old double count; and the empty-base fire branch stopped
+the fire spreading at all instead of letting it burn out.
+
+---
 ## 0.409.0 - M409: the expedition names your base, and the base queue closes
 
 The expedition of `11x-expedition` states its own honest cruelty in its header: «Игрок не герой

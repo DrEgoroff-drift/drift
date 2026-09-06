@@ -58,7 +58,7 @@ function snapshot(){
     species:[...G.species],bioV:2,
     opts:G.opts,zoom:G.zoom,market:G.market,uniqueShips:G.uniqueShips,tow:G.tow,
     episodes:G.episodes,notebook:G.notebook,gifts:G.gifts,mslBy:G.mslBy,
-    bonds:G.bonds,coupN:G.coupN,
+    bonds:G.bonds,bondHold:G.bondHold,coupN:G.coupN,
     letter:G.letter||null,dipSwapN:G.dipSwapN,smugN:G.smugN,smugBy:G.smugBy,
     probed:G.probed,
     longHod:G.longHod,race:G.race||null,raceBest:G.raceBest,
@@ -215,7 +215,7 @@ function applySave(s){
   G.notebook=Array.isArray(s.notebook)?s.notebook:[];
   G.gifts=(s.gifts&&typeof s.gifts==="object")?s.gifts:{};
   G.mslBy=(typeof s.mslBy==="string")?s.mslBy:"gt";
-  G.bonds=s.bonds|0;G.coupN=(typeof s.coupN==="number")?s.coupN:-1;   /* заём и талон (M379) */
+  G.bonds=s.bonds|0;G.bondHold=s.bondHold|0;G.coupN=(typeof s.coupN==="number")?s.coupN:-1;   /* заём и талон (M379) */
   /* письмо в трюме и последний обмен пленными (M386): это выбор игрока, значит
      оно живёт в сохранении, а всё остальное про дипломатию считается из летописи */
   G.letter=(s.letter&&typeof s.letter==="object")?s.letter:null;
@@ -680,7 +680,12 @@ function applySave(s){
         charter:Array.isArray(b.charter)?b.charter.filter(x=>typeof CHARTER_BY!=="undefined"&&CHARTER_BY[x]):[],
         /* договор с управляющим (M405): в записи только НОМЕР — сам он
            выводится броском, как и всё остальное в этой игре */
-        mgr:(b.mgr&&typeof b.mgr==="object")?{id:b.mgr.id|0,since:b.mgr.since|0}:null,
+        mgr:(b.mgr&&typeof b.mgr==="object")?{id:b.mgr.id|0,since:b.mgr.since|0,
+          due:b.mgr.due|0}:null,
+        /* оборот и суточный расход управляющего: без них доли обнулялись
+           перезагрузкой, а потолок стройки начинался заново (разбор 0.409.1) */
+        _turn:b._turn|0,_earned:b._earned|0,devSaid:b.devSaid?1:0,
+        spend:(b.spend&&typeof b.spend==="object")?{n:b.spend.n|0,q:b.spend.q|0}:null,
         /* участок в реестре ПАЛАТЫ (M408): режим, сроки и долг. Из записи это
            не исчезает — в том и вся мысль §30 */
         pal:(b.pal&&typeof b.pal==="object")?{mode:String(b.pal.mode||"common"),

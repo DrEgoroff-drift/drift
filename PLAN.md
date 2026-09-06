@@ -727,3 +727,8 @@ Twenty passes, all closed: хозяйство (M390–M393), место и лю�
 measured and what it deferred, and «Deferred» there is the only remaining base work. The layer's
 own craft audit is Almanac **issue V**; `docs/DESIGN-winter.md` is still a separate sketch and still
 not part of this queue.
+
+**Read back by another session** (0.409.1): fifteen real faults across M390–M409 and the war
+queue, all fixed, pinned by the «разбор …» suites in `tests/91zzzw-base4.js`. The list, the two
+rules that outlive it and **six still-open scene notes — the next base work** are in §51.2 of
+`docs/DESIGN-base.md`.

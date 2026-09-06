@@ -53,6 +53,15 @@ function baseWalkOut(B,n){
   const c=staff[Math.floor(r()*staff.length)];
   const i=G.crew.indexOf(c);
   if(i>=0)G.crew.splice(i,1);
+  /* ── и его снова можно нанять (разбор 0.409.1) ──
+     §8 обещает «уходит на станцию и снова нанимается из обычного списка», а
+     код просто вычёркивал человека: тот же не возвращался никогда. Кладём его
+     туда же, куда кладут спасённых с барж, — они и есть тот механизм, по
+     которому человек САМ ищет вас в любой кантине (12l-barge). */
+  if(!Array.isArray(G.bargePax))G.bargePax=[];
+  if(c.id&&!G.bargePax.some(p=>p.id===c.id)&&G.bargePax.length<8)
+    G.bargePax.push(Object.assign({},c,{order:null,shipId:null,role:null,
+      fee:Math.round((c.fee|0)*.7)||220,left:1}));
   baseLog(B,"leave",n,{who:c.name,say:pick(SPIRIT_BYE,r)});
   logAdd("warn",c.name+" ушёл с базы «"+B.name+"» — здесь стало нечем жить");
   B.low=0;
@@ -101,4 +110,46 @@ function baseSpiritStep(B,n){
   B.low=(B.low|0)+1;
   if(B.low<SPIRIT_HOLD)return 0;
   return baseWalkOut(B,n);
+}
+/* ── много смен разом (разбор 0.409.1) ──
+   Догон глубже суток считает не по одной смене, а арифметикой: столько-то
+   съели, столько-то машины успели сделать, и если запас на этом кончился —
+   база встала той сменой, на которой он кончился. Подробностей нет, счёт есть. */
+function baseLifeBulk(B,P,shifts,n){
+  if(shifts<=0)return 0;
+  const L=baseLife(B),M=baseLifeMakers(B),eff=clamp(P.eff,0,1);
+  const k=((eff<.5)?.5:eff)*((typeof baseLifeBoost==="function")?baseLifeBoost(B):1);
+  /* производство: сколько машины успели, пока хватало льда */
+  const feed=((typeof baseAdjIce==="function")?baseAdjIce(B):0)+
+             (((typeof dialIceFree==="function")&&dialIceFree(B))?3:0);
+  const iceNeed=Math.max(1,LIFE_LYSE.ice-feed);
+  const canLyse=Math.min(shifts*M.lyse,Math.floor((B.pool.ice|0)/Math.max(1,iceNeed)));
+  if(canLyse>0){
+    B.pool.ice=Math.max(0,(B.pool.ice|0)-canLyse*iceNeed);
+    L.air=Math.min(LIFE_CAP,L.air+Math.round(canLyse*LIFE_LYSE.air*k));
+  }
+  const frozen=(typeof baseFrozen==="function")&&baseFrozen(B,n);
+  if(!frozen&&M.melter){
+    const canMelt=Math.min(shifts*M.melter,Math.floor((B.pool.ice|0)/LIFE_MELT.ice));
+    if(canMelt>0){
+      B.pool.ice=Math.max(0,(B.pool.ice|0)-canMelt*LIFE_MELT.ice);
+      L.water=Math.min(LIFE_CAP,L.water+Math.round(canMelt*LIFE_MELT.water*k));
+    }
+  }
+  /* расход людьми — за все смены сразу */
+  const need=baseLifeNeed(B);
+  if(need.air||need.water||need.food){
+    const outAir=L.air-need.air*shifts,outWater=L.water-need.water*shifts;
+    L.air=Math.max(0,outAir);L.water=Math.max(0,outWater);
+    L.food=Math.max(0,(L.food|0)-need.food*shifts);
+    if((outAir<0||outWater<0)&&!B.park){
+      /* встала на той смене, на которой запас и кончился */
+      const per=Math.max(1,need.air||need.water);
+      const when=n-shifts+Math.max(0,Math.floor(Math.min(L.air,L.water)/per));
+      basePark(B,"empty",when,outAir<0?"воздух":"вода");
+    }
+  }
+  /* и износ за эти смены — по той же мерке, что в подробной части */
+  if(typeof baseWearStep==="function")for(let i=0;i<Math.min(shifts,24);i++)baseWearStep(B,n-i);
+  return 1;
 }

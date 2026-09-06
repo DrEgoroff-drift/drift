@@ -212,7 +212,13 @@ function fleetFire(dt){
     const key=G.sx+","+G.sy+":"+i;
     if((FLEET_COOL[key]||0)>G.t)continue;
     let best=null,bd=900;
-    for(const p of G.pirates){if(p.hull<=0)continue;const d=Math.hypot(p.x-pos.x,p.y-pos.y);if(d<bd){bd=d;best=p;}}
+    /* конвой берёт ЦЕЛЬ, а не ближайшее тело (разбор 0.409.1): свои пикеты,
+       посольства и мишень стрельбища целями не бывают — а хозяин выстрела у
+       конвоя «fleet», и попадал он по ним честно */
+    for(const p of G.pirates){
+      if(p.hull<=0||p.dummy||p.dip||p.pw||p.iff)continue;
+      const d=Math.hypot(p.x-pos.x,p.y-pos.y);if(d<bd){bd=d;best=p;}
+    }
     if(!best)continue;
     const ang=Math.atan2(best.y-pos.y,best.x-pos.x);
     fireShot(pos.x,pos.y,ang,8,6,"fleet");

@@ -41,7 +41,9 @@ function natSwarmTick(dt){
   if(G.mode!=="system"||!natSwarmHere())return false;
   const sh=G.ship,st=stat();
   const sp=Math.hypot(sh.vx,sh.vy);
-  if(sp>=(st.maxSp||6)*NAT_SWARM_SP)return false;
+  /* `st.maxSp` в игре нет вовсе (разбор 0.409.1): работал запасной шестёрка, и
+     работал случайно. Крейсерская считается везде одинаково */
+  if(sp>=(6.4+st.thr*1.6)*NAT_SWARM_SP)return false;
   G.hull=Math.max(0,G.hull-NAT_SWARM_DMG*dt);
   if((G.t|0)%90===0)say("РОЙ · НЕ СТОЙТЕ НА МЕСТЕ",90);
   if(G.hull<=0&&typeof wreck==="function")wreck();

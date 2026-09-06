@@ -1759,7 +1759,7 @@ body.table u.addr{color:#7a4a20}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.409.0";
+const VER="0.409.1";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -22131,6 +22131,12 @@ function riteGive(key,qty){
     if(G.credits<qty){say("НЕ ХВАТАЕТ КРЕДИТОВ",120);return Promise.resolve(false);}
     G.credits-=qty;
     G.bonds=(G.bonds|0)+qty;
+    /* запоминаем, СКОЛЬКО держава держала, когда у неё занимали: по этому и
+       считается «кампания выиграна» при расчёте (разбор 0.409.1) */
+    if(!G.bondHold){
+      const st=(typeof chronState==="function")?chronState():null;
+      G.bondHold=(st&&st.powers[R.p])?st.powers[R.p].hold:0;
+    }
   }
   return warPut(R.kind,qty).then(ok=>{
     if(ok){
@@ -22172,9 +22178,21 @@ function riteLoanSettle(){
   const b=G.bonds|0;
   if(!b)return 0;
   if(!riteDone("loan"))return 0;
-  const wars=(typeof chronWars==="function")?chronWars().length:0;
-  const win=wars===0;                       /* войн нет — значит кампания закрыта */
-  G.bonds=0;
+  /* ── что значит «выиграна» (разбор 0.409.1) ──
+     Было: `chronWars().length===0` в МОМЕНТ предъявления. То есть «сейчас в
+     галактике тихо», а не «кампания удалась»: игрок клал пять тысяч за сводку,
+     ждал затишья и получал полтора конца. Это печатало деньги, и ни одна сеть
+     не ловила — в тестах ведомости пусты.
+
+     Теперь считаем то, за что и брали заём: держава-эмитент должна ДЕРЖАТЬ
+     больше, чем держала, когда обряд объявили. Не тишина, а результат. */
+  const L=(typeof riteLive==="function")?riteLive().filter(x=>x.key==="loan"):[];
+  const R=L[0]||null;
+  const st=(typeof chronState==="function")?chronState():null;
+  const hold=(st&&R&&st.powers[R.p])?st.powers[R.p].hold:0;
+  const was=(G.bondHold|0);
+  const win=!!(R&&was&&hold>was);
+  G.bonds=0;G.bondHold=0;
   const pay=win?Math.round(b*1.5):0;
   /* деньги входят одной воронкой (`earn`), иначе их не видят ни дом, ни
      кооператив, и сеть «доход идёт одной воронкой» краснеет по делу */
@@ -22758,7 +22776,9 @@ function natSwarmTick(dt){
   if(G.mode!=="system"||!natSwarmHere())return false;
   const sh=G.ship,st=stat();
   const sp=Math.hypot(sh.vx,sh.vy);
-  if(sp>=(st.maxSp||6)*NAT_SWARM_SP)return false;
+  /* `st.maxSp` в игре нет вовсе (разбор 0.409.1): работал запасной шестёрка, и
+     работал случайно. Крейсерская считается везде одинаково */
+  if(sp>=(6.4+st.thr*1.6)*NAT_SWARM_SP)return false;
   G.hull=Math.max(0,G.hull-NAT_SWARM_DMG*dt);
   if((G.t|0)%90===0)say("РОЙ · НЕ СТОЙТЕ НА МЕСТЕ",90);
   if(G.hull<=0&&typeof wreck==="function")wreck();
@@ -36888,7 +36908,13 @@ function fleetFire(dt){
     const key=G.sx+","+G.sy+":"+i;
     if((FLEET_COOL[key]||0)>G.t)continue;
     let best=null,bd=900;
-    for(const p of G.pirates){if(p.hull<=0)continue;const d=Math.hypot(p.x-pos.x,p.y-pos.y);if(d<bd){bd=d;best=p;}}
+    /* конвой берёт ЦЕЛЬ, а не ближайшее тело (разбор 0.409.1): свои пикеты,
+       посольства и мишень стрельбища целями не бывают — а хозяин выстрела у
+       конвоя «fleet», и попадал он по ним честно */
+    for(const p of G.pirates){
+      if(p.hull<=0||p.dummy||p.dip||p.pw||p.iff)continue;
+      const d=Math.hypot(p.x-pos.x,p.y-pos.y);if(d<bd){bd=d;best=p;}
+    }
     if(!best)continue;
     const ang=Math.atan2(best.y-pos.y,best.x-pos.x);
     fireShot(pos.x,pos.y,ang,8,6,"fleet");
@@ -36996,6 +37022,19 @@ function spawnPirates(){
   /* базы догоняются на каждом прыжке (M394): иначе они «зовут» ровно тогда,
      когда игрок и так на них смотрит, а весь смысл СВЯЗИ — услышать в дороге */
   if(typeof baseResolveAll==="function")baseResolveAll();
+}
+/* ближайший чужой борт для борта державы: чужая держава или пират. Посольство
+   (M386), мишень стрельбища и свои — не цель ни при каких обстоятельствах */
+function npcFoeFor(p){
+  let best=null,bd=3200;
+  for(const q of (G.pirates||[])){
+    if(q===p||q.hull<=0||q.dummy||q.dip)continue;
+    if(q.pw&&p.pw&&q.pw===p.pw)continue;      /* свои */
+    if(!q.pw&&!p.pw)continue;                 /* два пирата — не наше дело */
+    const d=Math.hypot(q.x-p.x,q.y-p.y);
+    if(d<bd){bd=d;best=q;}
+  }
+  return best;
 }
 /* fireShot — в 13-combat (M361): у выстрела есть хозяин */
 let fireCool=0;
@@ -37133,9 +37172,26 @@ function updateCombat(dt){
     }
     const pa0=p.a;
     if(p.aware){
-      const want=Math.atan2(dy,dx);
+      /* ── чужая война — не ваша (M372/M373, разбор 0.409.1) ──
+         Роль брала курс НА ИГРОКА для любого борта, и `roleFire` стрелял без
+         оглядки на `iff`. Выходило, что «ЗДЕСЬ БОЙ · ВЫ НЕ ЗВАНЫ» — и оба крыла
+         разворачиваются на гражданского, а тыловой пикет открывает огонь, стоит
+         подлететь. Это отменяло и четыре правила разом: их незачем нарушать,
+         если по вам и так бьют.
+
+         Пока `iff` цел, борт державы ищет ЧУЖОЙ борт и работает по нему; нет
+         такого — стоит и смотрит. `hailAnger` снимает `iff` (M373), и вот тогда
+         курс снова на вас — потому что вы это заслужили. */
+      let want=Math.atan2(dy,dx),td=d,go=true;
+      if(p.iff){
+        const foe=npcFoeFor(p);
+        if(foe){
+          const fx=foe.x-p.x,fy=foe.y-p.y;
+          td=Math.hypot(fx,fy)||1;want=Math.atan2(fy,fx);
+        }else go=false;
+      }
       /* поведение — по рангу (13c-roles): бросок, борт, дистанция, очереди; бегство */
-      if(pirateRoleTick(p,dt,d,want))continue;
+      if(go&&pirateRoleTick(p,dt,td,want))continue;
     }
     const sp=Math.hypot(p.vx,p.vy),lim=ROLE_LIM[p.rank|0]||4.4;
     if(sp>lim){p.vx*=lim/sp;p.vy*=lim/sp;}
@@ -38759,7 +38815,7 @@ function snapshot(){
     species:[...G.species],bioV:2,
     opts:G.opts,zoom:G.zoom,market:G.market,uniqueShips:G.uniqueShips,tow:G.tow,
     episodes:G.episodes,notebook:G.notebook,gifts:G.gifts,mslBy:G.mslBy,
-    bonds:G.bonds,coupN:G.coupN,
+    bonds:G.bonds,bondHold:G.bondHold,coupN:G.coupN,
     letter:G.letter||null,dipSwapN:G.dipSwapN,smugN:G.smugN,smugBy:G.smugBy,
     probed:G.probed,
     longHod:G.longHod,race:G.race||null,raceBest:G.raceBest,
@@ -38916,7 +38972,7 @@ function applySave(s){
   G.notebook=Array.isArray(s.notebook)?s.notebook:[];
   G.gifts=(s.gifts&&typeof s.gifts==="object")?s.gifts:{};
   G.mslBy=(typeof s.mslBy==="string")?s.mslBy:"gt";
-  G.bonds=s.bonds|0;G.coupN=(typeof s.coupN==="number")?s.coupN:-1;   /* заём и талон (M379) */
+  G.bonds=s.bonds|0;G.bondHold=s.bondHold|0;G.coupN=(typeof s.coupN==="number")?s.coupN:-1;   /* заём и талон (M379) */
   /* письмо в трюме и последний обмен пленными (M386): это выбор игрока, значит
      оно живёт в сохранении, а всё остальное про дипломатию считается из летописи */
   G.letter=(s.letter&&typeof s.letter==="object")?s.letter:null;
@@ -39381,7 +39437,12 @@ function applySave(s){
         charter:Array.isArray(b.charter)?b.charter.filter(x=>typeof CHARTER_BY!=="undefined"&&CHARTER_BY[x]):[],
         /* договор с управляющим (M405): в записи только НОМЕР — сам он
            выводится броском, как и всё остальное в этой игре */
-        mgr:(b.mgr&&typeof b.mgr==="object")?{id:b.mgr.id|0,since:b.mgr.since|0}:null,
+        mgr:(b.mgr&&typeof b.mgr==="object")?{id:b.mgr.id|0,since:b.mgr.since|0,
+          due:b.mgr.due|0}:null,
+        /* оборот и суточный расход управляющего: без них доли обнулялись
+           перезагрузкой, а потолок стройки начинался заново (разбор 0.409.1) */
+        _turn:b._turn|0,_earned:b._earned|0,devSaid:b.devSaid?1:0,
+        spend:(b.spend&&typeof b.spend==="object")?{n:b.spend.n|0,q:b.spend.q|0}:null,
         /* участок в реестре ПАЛАТЫ (M408): режим, сроки и долг. Из записи это
            не исчезает — в том и вся мысль §30 */
         pal:(b.pal&&typeof b.pal==="object")?{mode:String(b.pal.mode||"common"),
@@ -40745,7 +40806,10 @@ function helmTick(dt){
   helmMarksClean();
   /* ЦЕЛЬ на пэде и Tab — по фронту нажатия */
   const lockPad=!!keys.lock;
-  if((lockPad&&!HELM.lockWas)||HELM.lockEdge)helmLockNext();
+  /* зонд у планеты (M400) забирает это нажатие себе — иначе на телефоне один
+     тычок звал и зонд, и цели разом, а Tab не звал зонд никогда */
+  const lockHit=(lockPad&&!HELM.lockWas)||HELM.lockEdge;
+  if(lockHit&&!(typeof probeClaim==="function"&&probeClaim()))helmLockNext();
   HELM.lockWas=lockPad;HELM.lockEdge=false;
   /* 1. стик (M410): один, под левым пальцем. Его вектор — КУДА лететь и
      НАСКОЛЬКО быстро, в осях экрана; тягу до этой скорости подбирает
@@ -42608,10 +42672,9 @@ function updateSystem(dt){
             ln+="\nЦЕЛЬ — ЗОНД ЗА "+PROBE_COST+" КР";
         }
         G.prompt=ln;
-        if(keys.lock&&!G.probeHeld&&typeof probeBuy==="function"&&near.type!=="gas"){
-          G.probeHeld=1;probeBuy(G.sx,G.sy,near.idx);
-        }
-        if(!keys.lock)G.probeHeld=0;
+        /* адрес для зонда: само нажатие ловит штурвал одним фронтом на клавишу
+           и пэд, а `probeClaim` (21a8) его забирает (разбор 0.409.1) */
+        G._probeAt=(near.type!=="gas")?{sx:G.sx|0,sy:G.sy|0,idx:near.idx|0}:null;
         if(actEdge){startLanding(near);return;}
       }
     }else if(!G.prompt)G.prompt=near.name+" · "+Math.round(nd)+" ед.";
@@ -53067,8 +53130,15 @@ function basePoolHeld(B){let s=0;for(const k in B.pool)s+=B.pool[k]|0;return s;}
 /* Разрешаются ленивым счётчиком, без отдельной сцены: последствия видно в
    разрезе (разбитый отсек) и в журнале. Охранник — единственная защита, и
    поэтому осмысленный. */
-function baseRaid(B,min,sh){
+/* `force` (разбор 0.409.1): когда налёт назначил директор (M397), своего
+   броска здесь быть не должно — иначе журнал обещает «на орбите чужой
+   транспондер», а на следующую смену не происходит ничего в семи случаях из
+   десяти. Бросок делает КТО-ТО ОДИН: без директора — эта функция, как и было. */
+function baseRaid(B,min,sh,force){
   const danger=sysDanger(B.sx,B.sy);
+  /* место решает всегда: в тихом секторе налёта не бывает и по слову директора.
+     `force` снимает ВЕРОЯТНОСТЬ, а не саму возможность (набор M391 поймал: с
+     первой правкой пираты стали ходить в сектор 0:0) */
   if(danger<=.05)return 0;
   const chance=min*danger*.012;
   /* бросок берётся от НОМЕРА СМЕНЫ (M390): одна и та же смена одной и той же
@@ -53078,7 +53148,7 @@ function baseRaid(B,min,sh){
   const r=(typeof sh==="number")
     ?rng(hashi(B.sx*131+B.sy,B.idx*7+3,hashi(sh,0x2A1D,0x7)))
     :rng(hashi(B.sx*131+B.sy,B.idx*7+3,hashi(B.tMs|0,(B.raidSeq=(B.raidSeq|0)+1),0x2A1D)));
-  if(r()>chance)return 0;
+  if(!force&&r()>chance)return 0;
   const guard=baseRoleForce(B,"guard");
   if(guard>0&&r()<guard*.7){
     logAdd("kill","Налёт на базу «"+B.name+"» отбит охраной");
@@ -53112,13 +53182,13 @@ function baseRaid(B,min,sh){
    и её отменяет «буревой щит» смотрителя. Мир у планеты уже есть: тип задаёт,
    насколько тут вообще дует. */
 const STORM_WORLDS={terran:.5,ocean:.9,desert:1.4,rocky:.7,ice:1.3,volcanic:1.4,toxic:1.5,gas:0};
-function baseStorm(B,min,sh){
+function baseStorm(B,min,sh,must){
   const force=STORM_WORLDS[B.type]!==undefined?STORM_WORLDS[B.type]:.8;
-  if(force<=0)return 0;
+  if(force<=0)return 0;                     /* где не дует, там не дует */
   const r=(typeof sh==="number")
     ?rng(hashi(B.sx*313+B.sy,B.idx*11+5,hashi(sh,0x51D,0xB)))
     :rng(hashi(B.sx*313+B.sy,B.idx*11+5,hashi(B.tMs|0,(B.stormSeq=(B.stormSeq|0)+1),0x51D)));
-  if(r()>min*force*.010)return 0;
+  if(!must&&r()>min*force*.010)return 0;
   if(mgrPerkOf("keep","storm")){
     logAdd("dim","Буря на «"+B.name+"» прошла без потерь — щит держит");
     baseLog(B,"storm",sh,{shield:1});
@@ -53168,11 +53238,18 @@ function baseFixTick(B,min,sh){
 }
 /* забрать накопленное в трюм — за этим и прилетаешь */
 function baseCollect(B){
-  const st=stat();let n=0;
+  const st=stat();let n=0,worth=0;
   for(const k in B.pool){
     const q=B.pool[k]|0;if(q<=0)continue;
     const got=addRes(k,q);B.pool[k]=q-got;n+=got;
+    worth+=got*((RES[k]&&RES[k].price)||6);
   }
+  /* ── оборот базы (разбор 0.409.1) ──
+     Доля управляющего (M405) и доля ПАЛАТЫ (M408) считались от `_earned`, а его
+     наполнял ОДИН перк — продажа излишков энергии. У обычной базы оборот — это
+     руда, которую с неё увозят, и она никуда не писалась: обе доли были нулём,
+     то есть обещанием без кода. Считаем здесь, по цене увезённого. */
+  if(worth>0){B._earned=(B._earned|0)+worth;B._turn=(B._turn|0)+worth;}
   if(n>0)tell("","С базы забрано "+n+" ед · трюм "+held()+"/"+st.cargoMax,"Забрано "+n+" ед");
   else say("Забирать нечего\nили трюм полон");
   return n;
@@ -53436,6 +53513,7 @@ const BLOG={
   palshare:(B,a)=>"доля с оборота — "+a.q+" кр. Успехи не остаются незамеченными",
   palsvod: ()=>"сводка подана. ПАЛАТА подтвердила получение подтверждения",
   palpeny: (B,a)=>"сводка не подана: пеня "+a.q+" кр. Никто не приходил и не спрашивал",
+  palsoon: (B,a)=>a.rank+" "+a.who+" в пути: плановая проверка через четыре смены",
   palcheck:(B,a)=>a.rank+" "+a.who+" был вежлив и нашёл: «"+a.form+"». Штраф "+a.q+" кр",
   palseize:(B,a)=>"участок изъят ПАЛАТОЙ за долг "+a.q+" кр. Опись прилагается",
   fwd:     ()=>"нас назвали опорным пунктом экспедиции. Всем бортам — сюда",
@@ -53790,9 +53868,13 @@ function baseSupply(B,k,q){
   if(q<=0)return 0;
   const L=baseLife(B);
   G.cargo[k]-=q;
-  /* лёд ложится и на склад базы: он и вода, и сырьё для обеих машин */
+  /* ── один лёд — одна вода (разбор 0.409.1) ──
+     Было и в шкалу, и на склад: единица давала две воды разом (вторую — через
+     ледоплавку 8→8). §16 говорит «лёд 1 → вода 1». Лёд идёт НА СКЛАД и
+     становится водой через машину — так у ледоплавки остаётся смысл, а у
+     единицы льда одна цена. */
   if(k==="ice")B.pool.ice=(B.pool.ice|0)+q;
-  L[S.k]=Math.min(LIFE_CAP,L[S.k]+S.q*q);
+  else L[S.k]=Math.min(LIFE_CAP,L[S.k]+S.q*q);
   const n=(typeof baseShift==="function")?baseShift():0;
   if(B.park>0)baseWake(B,n);
   tell("good","На базу «"+B.name+"» сдано "+q+" "+RES[k].ru.toLowerCase(),
@@ -53849,8 +53931,23 @@ function baseResolve(B,now){
   const deep=Math.max(0,n-BASE_DETAIL);
   if(deep>0){
     const P=basePower(B);
+    /* ── арифметика позавчерашнего (разбор 0.409.1) ──
+       Считалась только ДОБЫЧА: за визит база съедала не больше двадцати
+       четырёх смен воздуха, а руды клала до семидесяти двух. Реже прилетать
+       было строго выгоднее — то есть закон 2 («отклик отложен, базу надо
+       предсказывать») дырявый насквозь.
+
+       Подробностей за позавчера никто не помнит — но расход, производство,
+       ПАЛАТА и запустение считаются ровно за столько смен, сколько прошло. */
     baseEarn(B,P,BASE_MIN*deep,t0+deep);
     baseMine(B,P,BASE_MIN*deep,t0+deep);
+    if(typeof baseLifeBulk==="function")baseLifeBulk(B,P,deep,t0+deep);
+    for(let i=0;i<deep;i++){
+      const nn=t0+1+i;
+      if(typeof palStep==="function")palStep(B,nn);
+      if(typeof baseRuinCheck==="function")baseRuinCheck(B,nn);
+      if(B.ruin)break;
+    }
     baseLog(B,"away",t0+deep,{from:t0+1,to:t0+deep});
   }
   for(let i=deep;i<n;i++)baseShiftRun(B,t0+i+1);
@@ -54062,6 +54159,15 @@ function baseWalkOut(B,n){
   const c=staff[Math.floor(r()*staff.length)];
   const i=G.crew.indexOf(c);
   if(i>=0)G.crew.splice(i,1);
+  /* ── и его снова можно нанять (разбор 0.409.1) ──
+     §8 обещает «уходит на станцию и снова нанимается из обычного списка», а
+     код просто вычёркивал человека: тот же не возвращался никогда. Кладём его
+     туда же, куда кладут спасённых с барж, — они и есть тот механизм, по
+     которому человек САМ ищет вас в любой кантине (12l-barge). */
+  if(!Array.isArray(G.bargePax))G.bargePax=[];
+  if(c.id&&!G.bargePax.some(p=>p.id===c.id)&&G.bargePax.length<8)
+    G.bargePax.push(Object.assign({},c,{order:null,shipId:null,role:null,
+      fee:Math.round((c.fee|0)*.7)||220,left:1}));
   baseLog(B,"leave",n,{who:c.name,say:pick(SPIRIT_BYE,r)});
   logAdd("warn",c.name+" ушёл с базы «"+B.name+"» — здесь стало нечем жить");
   B.low=0;
@@ -54110,6 +54216,48 @@ function baseSpiritStep(B,n){
   B.low=(B.low|0)+1;
   if(B.low<SPIRIT_HOLD)return 0;
   return baseWalkOut(B,n);
+}
+/* ── много смен разом (разбор 0.409.1) ──
+   Догон глубже суток считает не по одной смене, а арифметикой: столько-то
+   съели, столько-то машины успели сделать, и если запас на этом кончился —
+   база встала той сменой, на которой он кончился. Подробностей нет, счёт есть. */
+function baseLifeBulk(B,P,shifts,n){
+  if(shifts<=0)return 0;
+  const L=baseLife(B),M=baseLifeMakers(B),eff=clamp(P.eff,0,1);
+  const k=((eff<.5)?.5:eff)*((typeof baseLifeBoost==="function")?baseLifeBoost(B):1);
+  /* производство: сколько машины успели, пока хватало льда */
+  const feed=((typeof baseAdjIce==="function")?baseAdjIce(B):0)+
+             (((typeof dialIceFree==="function")&&dialIceFree(B))?3:0);
+  const iceNeed=Math.max(1,LIFE_LYSE.ice-feed);
+  const canLyse=Math.min(shifts*M.lyse,Math.floor((B.pool.ice|0)/Math.max(1,iceNeed)));
+  if(canLyse>0){
+    B.pool.ice=Math.max(0,(B.pool.ice|0)-canLyse*iceNeed);
+    L.air=Math.min(LIFE_CAP,L.air+Math.round(canLyse*LIFE_LYSE.air*k));
+  }
+  const frozen=(typeof baseFrozen==="function")&&baseFrozen(B,n);
+  if(!frozen&&M.melter){
+    const canMelt=Math.min(shifts*M.melter,Math.floor((B.pool.ice|0)/LIFE_MELT.ice));
+    if(canMelt>0){
+      B.pool.ice=Math.max(0,(B.pool.ice|0)-canMelt*LIFE_MELT.ice);
+      L.water=Math.min(LIFE_CAP,L.water+Math.round(canMelt*LIFE_MELT.water*k));
+    }
+  }
+  /* расход людьми — за все смены сразу */
+  const need=baseLifeNeed(B);
+  if(need.air||need.water||need.food){
+    const outAir=L.air-need.air*shifts,outWater=L.water-need.water*shifts;
+    L.air=Math.max(0,outAir);L.water=Math.max(0,outWater);
+    L.food=Math.max(0,(L.food|0)-need.food*shifts);
+    if((outAir<0||outWater<0)&&!B.park){
+      /* встала на той смене, на которой запас и кончился */
+      const per=Math.max(1,need.air||need.water);
+      const when=n-shifts+Math.max(0,Math.floor(Math.min(L.air,L.water)/per));
+      basePark(B,"empty",when,outAir<0?"воздух":"вода");
+    }
+  }
+  /* и износ за эти смены — по той же мерке, что в подробной части */
+  if(typeof baseWearStep==="function")for(let i=0;i<Math.min(shifts,24);i++)baseWearStep(B,n-i);
+  return 1;
 }
 
 /* ══════════════ СВЯЗЬ и мачта (M394, DESIGN-base §38, §45) ══════════════
@@ -54211,6 +54359,11 @@ function baseReport(B,sx,sy){
     !((B.sx|0)===(G.sx|0)&&(B.sy|0)===(G.sy|0));
   const L=lie?{air:Math.max(L0.air,LIFE_CAP*.8|0),water:Math.max(L0.water,LIFE_CAP*.8|0),
     food:Math.max(L0.food|0,LIFE_CAP*.6|0),q:"good"}:L0;
+  /* ── и здесь тоже цифры покупаются (разбор 0.409.1) ──
+     В своём секторе сигнал всегда полный, и сводка печатала числа мимо закона
+     3: «рядом» — это не прибор. Язык берём тот же, что на столе. */
+  if(typeof baseSharp==="function"&&!baseSharp(B))
+    return {lvl,head:call+" · "+baseWordLine(B),lines:baseLogList(B,2).map(x=>x.t)};
   return {lvl,head:call+" · воздух "+L.air+" · вода "+L.water+" · харч "+(L.food|0)+
     " · тепло "+(h>0?"+":"")+(h/10).toFixed(1)+
     (baseCrewN(B)?" · дух "+baseSpirit(B)+"%":" · людей нет")+
@@ -54395,10 +54548,14 @@ function baseGuestDrop(B){
 /* ── меню людей в сцене ──
    Строится не списком на экране, а той же лентой, что и меню постройки: ◀ ▶
    выбирают, ДЕЙСТВИЕ ставит, НАЗАД закрывает. */
+/* Список — это все, кого можно поставить на эту работу: кто уже здесь, кто
+   свободен и КТО УЖЕ НА БАЗЕ, но на другой работе (разбор 0.409.1: переставить
+   человека внутри базы было нельзя — только через станцию). */
 function basePeopleList(B,cell){
   const here=baseCellStaff(B,cell);
-  const free=baseFreeCrew().filter(c=>here.indexOf(c)<0);
-  return here.concat(free);
+  const mine=((typeof baseStaff==="function")?baseStaff(B):[]).filter(c=>here.indexOf(c)<0);
+  const free=baseFreeCrew().filter(c=>here.indexOf(c)<0&&mine.indexOf(c)<0);
+  return here.concat(mine,free);
 }
 function basePeopleLine(B,cell,i){
   const L=basePeopleList(B,cell),role=baseCellRole(cell);
@@ -54652,18 +54809,31 @@ function baseFireStart(B,c,r,n,kind){
   baseLog(B,"fire",n,{what:(BUILD[(baseCell(B,c,r)||{}).k]||{ru:"отсек"}).ru});
   return 1;
 }
+const FIRE_ALONE=3;          /* столько смен горит на базе, где никого нет */
 function baseFireStep(B,n){
   const F=B.fire;
   if(!F)return 0;
   const cell=baseCell(B,F.c,F.r);
   if(!cell||cell.hp<=0){B.fire=null;return 0;}
+  /* ── у огня на пустой базе есть срок (разбор 0.409.1) ──
+     Тушат только руки, а на базе без людей рук нет: пожар ходил по отсекам
+     вечно и выбивал всё до последнего. Ходить он не перестаёт — §10.3 про то и
+     написан, — но в запертых отсеках без людей ему кончается воздух: три
+     смены, и он сам себя доедает. */
+  const alone=((typeof baseCrewN==="function")?baseCrewN(B):0)<=0;
+  if(alone&&n-(F.n|0)>=FIRE_ALONE){
+    cell.hp=Math.max(0,cell.hp-.12);
+    B.fire=null;
+    baseLog(B,"fireout",n,{});
+    return 1;
+  }
   /* тушат: инженер, мастерская — и просто люди, если их много */
   let hands=(typeof baseRoleForce==="function")?baseRoleForce(B,"engineer"):0;
   for(const q of (B.cells||[]))if(q&&q.hp>0&&q.k==="shop")hands+=.6;
   hands+=((typeof baseCrewN==="function")?baseCrewN(B):0)*.15;
   const r=rng(hashi(B.sx*97+B.sy,(B.idx|0)*13+5,hashi(n,0x1F13,0x6)));
   cell.hp=Math.max(0,cell.hp-.18);
-  if(r()<clamp(hands*.45,0,.85)){
+  if(!alone&&r()<clamp(hands*.45,0,.85)){
     B.fire=null;
     baseLog(B,"fireout",n,{who:baseWho(B,"engineer")});
     return 1;
@@ -54684,8 +54854,9 @@ function baseFireStep(B,n){
 /* ── применить событие ── */
 function baseEventApply(B,e,n){
   if(!e)return 0;
-  if(e.k==="storm")return baseStorm(B,BASE_MIN,n)?1:0;
-  if(e.k==="raid")return baseRaid(B,BASE_MIN,n)?1:0;
+  /* директор уже бросил — исполняем без второго броска (разбор 0.409.1) */
+  if(e.k==="storm")return baseStorm(B,BASE_MIN,n,1)?1:0;
+  if(e.k==="raid")return baseRaid(B,BASE_MIN,n,1)?1:0;
   if(e.k==="dust"){B.dust=n+DIR_DUST;baseLog(B,"dust",n);return 1;}
   if(e.k==="cold"){B.cold=n+DIR_COLD;baseLog(B,"cold",n);return 1;}
   if(e.k==="vein"){B.vein=n+DIR_VEIN;baseLog(B,"vein",n);return 1;}
@@ -54723,6 +54894,8 @@ function baseEventApply(B,e,n){
     const roles=(typeof ROLE_KEYS!=="undefined")?ROLE_KEYS:["driller"];
     B.guest={name:(typeof genName==="function")?genName(rr):"Человек",
       role:pick(roles,rr),seed,n};
+    /* открытая дверь (M399) считается и здесь: вор приходил только через маяк */
+    if(typeof charterBadGuest==="function"&&charterBadGuest(B,seed))B.guest.bad=1;
     baseLog(B,"guest",n,{who:B.guest.name});
     return 1;
   }
@@ -54787,6 +54960,7 @@ const AVR_CHANCE=.25;        /* примерно раз в четыре захо
 const AVR_TIME=40*60;        /* сорок секунд в кадрах */
 const AVR_HOLD=120;          /* две секунды удержания */
 const AVR_NEAR=1;            /* «рядом» — соседняя клетка */
+const AVR_BURN=.35;          /* столько отсек теряет за весь аврал, и не больше */
 const AVR_KINDS=[
   {k:"fire", ru:"ПОЖАР",  what:"горит",   note:"дым идёт в коридор"},
   {k:"vent", ru:"РАЗГЕРМЕТИЗАЦИЯ",what:"свистит",note:"воздух уходит в породу"},
@@ -54805,7 +54979,9 @@ function avrRoll(S,B){
     if(cell&&cell.hp>0)live.push({c,r,k:cell.k});
   }
   if(live.length<2)return null;                /* на пустой базе гореть нечему */
-  const r=rng(hashi(B.sx*53+B.sy,(B.idx|0)*31+7,(Date.now()/1000)|0));
+  /* заход, а не секунда: два входа в одну секунду давали один и тот же бросок */
+  G.baseVisit=(G.baseVisit|0)+1;
+  const r=rng(hashi(B.sx*53+B.sy,(B.idx|0)*31+7,G.baseVisit));
   if(r()>AVR_CHANCE)return null;
   const spot=live[Math.floor(r()*live.length)];
   const kind=AVR_KINDS[Math.floor(r()*AVR_KINDS.length)];
@@ -54845,8 +55021,16 @@ function avrTick(S,B,dt,act){
     A.hold+=dt*avrHands(B,A);
     if(A.hold>=AVR_HOLD)return avrWin(S,B);
   }else if(!act)A.hold=Math.max(0,A.hold-dt*.5);
+  /* ── цена аврала в цифрах (разбор 0.409.1) ──
+     Было `(G.t|0)%12===0` и −.004 за удар: сорок секунд горения давали ~.8 hp,
+     а провал добавлял ещё .4 — упущенный аврал ВСЕГДА убивал отсек, хотя
+     замысел говорит «отсек побит». Считаем по времени, а не по кадрам, и
+     держим потолок: после провала отсеку остаётся треть-половина. */
   const cell=baseCell(B,A.c,A.r);
-  if(cell&&cell.hp>0&&(G.t|0)%12===0)cell.hp=Math.max(0,cell.hp-.004);
+  if(cell&&cell.hp>0){
+    const step=Math.min(.0006*dt,Math.max(0,AVR_BURN-(A.burn||0)));
+    if(step>0){A.burn=(A.burn||0)+step;cell.hp=Math.max(.05,cell.hp-step);}
+  }
   G.prompt="АВРАЛ · "+kind.ru+" В ОТСЕКЕ "+(A.c+1)+":"+(A.r+1)+
     "\n"+(here?"ДЕРЖИТЕ ДЕЙСТВИЕ · "+Math.round(A.hold/AVR_HOLD*100)+"%"
               :"ДОЙТИ ТУДА: ◀ ▶ — ПЕРЕХОД, ▲ ▼ — УРОВНИ")+
@@ -54866,7 +55050,9 @@ function avrLose(S,B){
   const A=S.avr;S.avr=null;
   const n=(typeof baseShift==="function")?baseShift():0;
   const cell=baseCell(B,A.c,A.r);
-  if(cell)cell.hp=Math.max(0,cell.hp-.4);
+  /* побит, но не уничтожен: чинить его игрок будет сам, и это дешевле, чем
+     ставить заново */
+  if(cell)cell.hp=Math.max(.3,cell.hp-.25);
   /* не успел — беда становится ходячей (§10.3) и живёт дальше без вас */
   if(typeof baseFireStart==="function")baseFireStart(B,A.c,A.r,n,A.k);
   if(typeof baseLog==="function")baseLog(B,"avrno",n,{});
@@ -55087,6 +55273,20 @@ function probeBuy(sx,sy,idx){
   tell("tech","Зонд ушёл к планете","ЗОНД\n"+PROBE_COST+" кр\nпять ручек из восьми — на месте будут все");
   return true;
 }
+/* ── одно нажатие ЦЕЛИ на всех (разбор 0.409.1) ──
+   Зонд читал `keys.lock` сам: Tab идёт через `HELM.lockEdge` и `keys.lock` не
+   ставит — на клавиатуре зонд не покупался вовсе, а на телефоне то же нажатие
+   в том же кадре успевало позвать и зонд, и `helmLockNext` («ЦЕЛЕЙ НЕТ» поверх
+   сообщения о зонде). Теперь фронт один — штурвала, — а зонд его ЗАБИРАЕТ, если
+   борт стоит у планеты без формуляра. Не забрал — нажатие идёт целям, как и
+   было. */
+function probeClaim(){
+  const A=G._probeAt;
+  if(!A||G.mode!=="system")return false;
+  if((G.sx|0)!==(A.sx|0)||(G.sy|0)!==(A.sy|0))return false;
+  if(probeHas(A.sx,A.sy,A.idx))return false;
+  return probeBuy(A.sx,A.sy,A.idx);
+}
 /* высадка: игрок стоит на этой поверхности — значит мерил своими руками */
 function dialOnFoot(sx,sy,idx){
   return !!(G.mode==="surface"&&G.surf&&G.surf.p&&(G.surf.p.idx|0)===(idx|0)&&
@@ -55124,7 +55324,7 @@ function dialHeat(B){const D=baseDialOf(B);return D?Math.round(D.heat*10):0;}
 function dialLight(B){const D=baseDialOf(B);return D?D.light:1;}
 function dialLeak(B){                       /* сколько воздуха уходит за смену */
   const D=baseDialOf(B);
-  return D?Math.round(D.press*2*Math.max(1,(typeof baseCrewN==="function")?baseCrewN(B):1)/2):0;
+  return D?Math.round(D.press*Math.max(1,(typeof baseCrewN==="function")?baseCrewN(B):1)):0;
 }
 function dialGrav(B){const D=baseDialOf(B);return D?D.grav:1;}
 function dialWind(B){const D=baseDialOf(B);return D?D.wind:1;}
@@ -55162,8 +55362,16 @@ function baseSharp(B){
   let s=0;
   /* радист на базе — тот, кто снимает показания и передаёт их словами цифр */
   if(typeof baseRoleForce==="function"&&baseRoleForce(B,"radist")>0)s++;
-  /* приборы на борту: приёмник и есть та вещь, которой слушают базу */
-  if(typeof instrQuality==="function"&&instrQuality("radio")>=1)s++;
+  /* ── приборы на борту (разбор 0.409.1) ──
+     Порог стоял на ЧИСЛЕ, а число у казённого приёмника гуляет: разброс
+     экземпляра (05b) и профессия корпуса поднимают его выше любого порога, и
+     цифры получались у всех с первой минуты — «большинство летает на
+     прилагательных» оставалось фразой в шапке. Считается не число, а ЗАВОД:
+     нужен приёмник лучше того, что ставят на верфи, и не разбитый. */
+  if(typeof instrUnit==="function"&&typeof instrWorks==="function"){
+    const u=instrUnit("radio");
+    if(instrWorks(u).res>1&&clamp(u.wear||0,0,1)<.6)s++;
+  }
   return s;
 }
 const SHARP_WORD=["нет","мало","впритык","хватает"];
@@ -58413,6 +58621,7 @@ function baseRuinCheck(B,n){
    Считается от номера смены, как всё остальное: поселенец или застава. */
 function baseTenant(B,n){
   if(!B.ruin)return null;
+  if(B.ruin.who==="pal")return "pal";        /* въехала ПАЛАТА — это не жильцы */
   if(n===undefined)n=(typeof baseShift==="function")?baseShift():0;
   if(n-(B.ruin.n|0)<RUIN_TENANT)return null;
   if(B.ruin.who)return B.ruin.who;
@@ -58424,6 +58633,11 @@ function baseTenant(B,n){
 }
 function baseRuinPrice(B){
   const who=baseTenant(B);
+  /* участок, изъятый за долг (M408), выкупается у ПАЛАТЫ — и стоит он ровно
+     того долга плюс сбор за само изъятие. Разбор 0.409.1: он возвращался даром,
+     потому что `21b0` знал только поселенцев и заставу */
+  if(who==="pal"||(B.ruin&&B.ruin.who==="pal"))
+    return ((typeof palOf==="function")?(palOf(B).debt|0):0)+PAL_CLOSE;
   return who==="pirate"?RUIN_PIRATE:(who==="squat"?RUIN_SQUAT:0);
 }
 /* заставу можно и вычистить: прилететь и снять всех, кто в системе. Это не
@@ -58438,7 +58652,15 @@ function baseRuinTake(B){
   if(!B.ruin)return false;
   const who=baseTenant(B);
   const n=(typeof baseShift==="function")?baseShift():0;
-  if(who==="pirate"&&!baseRuinClearable(B)){
+  if(who==="pal"){
+    const d=baseRuinPrice(B);
+    if(G.credits<d){
+      say("Выкуп участка у ПАЛАТЫ: "+d.toLocaleString("ru")+" кр\n(долг и сбор за изъятие)");
+      return false;
+    }
+    G.credits-=d;
+    if(typeof palOf==="function")palOf(B).debt=0;
+  }else if(who==="pirate"&&!baseRuinClearable(B)){
     if(G.credits<RUIN_PIRATE){
       say("Застава уйдёт за "+RUIN_PIRATE.toLocaleString("ru")+" кр\nили за то, что вы её снимете");
       return false;
@@ -58485,7 +58707,8 @@ function baseFixCell(B,c,r){
 function baseRuinLine(B){
   if(!B.ruin)return "";
   const who=baseTenant(B);
-  return "РАЗВАЛИНА"+(who==="pirate"?" · пиратская застава":(who==="squat"?" · въехали поселенцы":" · пока пусто"))+
+  return "РАЗВАЛИНА"+(who==="pirate"?" · пиратская застава":
+    (who==="squat"?" · въехали поселенцы":(who==="pal"?" · участок у ПАЛАТЫ":" · пока пусто")))+
     (baseRuinClearable(B)?" · снять её можно прямо сейчас":
       (baseRuinPrice(B)?" · выкуп "+baseRuinPrice(B).toLocaleString("ru")+" кр":""));
 }
@@ -58579,8 +58802,17 @@ function baseBlocked(B){
   if(!B)return false;
   return !!(typeof chronFront==="function"&&chronFront(B.sx,B.sy));
 }
-/* лёд в баки: своё топливо из своего льда, по себестоимости */
-const FUEL_PER_ICE=2;
+/* ── лёд в баки: своё топливо из своего льда ──
+   Было два топлива за лёд, и это оказалось не «по себестоимости», а вдвое
+   дешевле любого прилавка НАВСЕГДА (разбор 0.409.1): лёд на прилавке стоит
+   семь, топливо — пять-двенадцать за единицу, а лёд на базу можно и привезти
+   (`baseSupply` кладёт его в тот же склад). Получался насос: купил лёд, слил
+   в баки, вышел вдвое дешевле — и блокада тут была ни при чём.
+
+   Один к одному — это и есть себестоимость: свой лёд стоит своих семи, бак
+   выходит по цене сырья и без наценки прилавка. Ценность базы в блокаду от
+   этого не меняется — там прилавка просто нет, и в этом вся мысль §43. */
+const FUEL_PER_ICE=1;
 function baseRefuel(B){
   const st=(typeof stat==="function")?stat():{fuelMax:100};
   const need=Math.ceil((st.fuelMax||100)-G.fuel);
@@ -58654,6 +58886,7 @@ const BMGR_FLAWS=[
 ];
 const BMGR_BY={};for(const F of BMGR_FLAWS)BMGR_BY[F.id]=F;
 const BMGR_SEV=6;            /* смен жалованья в выходное пособие */
+const BMGR_DUE=4;            /* столько смен без жалованья он терпит */
 /* ── бросок (§48.1) ──
    Чистая функция от номера кандидата: ничего не хранится, и один и тот же
    прилавок показывает одного и того же человека каждый раз. */
@@ -58764,15 +58997,24 @@ function bmgrStep(B,n){
   /* жалованье и доля — прямой расход, а не «−процент к эффективности» */
   const cost=M.pay+Math.round((B._earned|0)*M.greed);
   B._earned=0;
+  /* ── долг, а не мгновенный расчёт (разбор 0.409.1) ──
+     Списывалось каждую смену догона, и на первой же неоплаченной он уходил:
+     вернулся из недельного рейса с пустым счётом — управляющего нет, и узнаёшь
+     об этом постфактум. Как у наёмников: неоплаченное копится, и уходит он
+     после четырёх смен без денег. */
   if(cost>0){
     if(G.credits>=cost)G.credits-=cost;
     else{
-      /* не заплатили — он уходит сам, и это тоже честно */
-      B.mgr=null;
-      baseLog(B,"mgrgo",n,{who:M.name});
-      logAdd("warn",M.name+" ушёл с базы «"+B.name+"»: жалованье не заплачено");
-      return 1;
+      B.mgr.due=(B.mgr.due|0)+1;
+      if((B.mgr.due|0)>=BMGR_DUE){
+        B.mgr=null;
+        baseLog(B,"mgrgo",n,{who:M.name});
+        logAdd("warn",M.name+" ушёл с базы «"+B.name+"»: жалованье не платили четыре смены");
+        return 1;
+      }
+      return 0;
     }
+    if(B.mgr)B.mgr.due=0;
   }
   const F=bmgrFlawOn(B,n);
   if(F&&F.id==="steal"&&(n%4)===0){
@@ -58835,8 +59077,12 @@ const FAME_N=12;             /* столько известных смотрит
 /* ── он сам ──
    Один на галактику, и он всегда на самом верху кривой M405: без изъяна и с
    чутьём, которого нет ни у кого из сотни. */
+/* Кэш на МОДУЛЕ, а не в `G` (разбор 0.409.1): `resetWorld` чистит мир, а он —
+   свойство галактики, и четыре тысячи бросков с генератором имён при каждом
+   старте были заметны. */
+let ONE_ID=null;
 function theOneId(){
-  if(G._oneId!==undefined)return G._oneId;
+  if(ONE_ID!==null)return ONE_ID;
   /* ищем по той же кривой, что и всех: он не исключение из неё, он её хвост */
   let best=null,bq=0;
   for(let i=0;i<4000;i++){
@@ -58844,7 +59090,7 @@ function theOneId(){
     if(M.flaw)continue;
     if(M.q>bq){bq=M.q;best=M.id;}
   }
-  return G._oneId=(best===null?hashi(1,0x0DEAD,0x0BA5E):best);
+  return ONE_ID=(best===null?hashi(1,0x0DEAD,0x0BA5E):best);
 }
 function theOne(){const M=bmgrOf(theOneId());M.real=1;return M;}
 /* ── где он сейчас (§24.2) ──
@@ -58963,6 +59209,28 @@ function mgrCandidatesHere(sys){
    камня откажется (§24.7): разведка и расширение остаются игроку. */
 const DEV_EVERY=6;           /* раз в столько смен он делает один ход */
 const DEV_KEEP=1500;         /* меньше этого на счету он не тратит */
+/* ── и потолок на сутки (разбор 0.409.1) ──
+   «Не спрашивая» — это замысел автора, и он остаётся. Но без потолка сносный
+   управляющий за сутки снимал четыре реактора подряд, и первая мысль игрока
+   была «у меня украли двадцать тысяч». Столько он может потратить за сутки, и
+   в первый раз он говорит об этом вслух. */
+const DEV_DAY=72;            /* смен в сутках */
+const DEV_CAP=9000;          /* и столько кредитов за них */
+function devSpent(B,n,add){
+  if(!B.spend||n-(B.spend.n|0)>=DEV_DAY)B.spend={n,q:0};
+  if(add)B.spend.q=(B.spend.q|0)+add;
+  return B.spend.q|0;
+}
+function devAfford(B,n,cost){
+  return (G.credits-cost>=DEV_KEEP)&&(devSpent(B,n)+cost<=DEV_CAP);
+}
+function devSaid(B,M,what,cost){
+  if(B.devSaid)return;
+  B.devSaid=1;
+  tell("tech",M.name+" строит сам: "+what,
+    "УПРАВЛЯЮЩИЙ СТРОИТ\n"+M.name+" поставил "+what+" за "+cost+" кр\n"+
+    "он не спрашивает — за это его и берут. Потолок "+DEV_CAP+" кр в сутки");
+}
 /* ── что он поставит следующим ──
    Чтение формуляра: сперва то, чего не хватает жизни, потом то, что мешает
    планета, и только потом добыча. Плохой берёт тот же список задом наперёд. */
@@ -59027,9 +59295,11 @@ function devStep(B,n){
     const cell=baseCell(B,c,r);
     if(!cell||cell.hp>0)continue;
     const fc=(typeof baseFixCost==="function")?baseFixCost(B,cell.k):{credits:400,alloy:1};
-    if(G.credits-fc.credits<DEV_KEEP)return 0;
+    if(!devAfford(B,n,fc.credits))return 0;
     if((G.cargo.alloy|0)<(fc.alloy|0))return 0;
     G.credits-=fc.credits;G.cargo.alloy-=(fc.alloy|0);
+    devSpent(B,n,fc.credits);
+    devSaid(B,M,BUILD[cell.k].ru,fc.credits);
     cell.hp=1;
     baseLog(B,"devfix",n,{what:BUILD[cell.k].ru,who:M.name});
     return 1;
@@ -59040,9 +59310,11 @@ function devStep(B,n){
     const spot=devSpot(B,k,M);
     if(!spot)continue;
     const cost=baseCost(k,B);
-    if(G.credits-cost.credits<DEV_KEEP)return 0;
+    if(!devAfford(B,n,cost.credits))return 0;
     if(cost.alloy&&(G.cargo.alloy|0)<cost.alloy)continue;
     G.credits-=cost.credits;if(cost.alloy)G.cargo.alloy-=cost.alloy;
+    devSpent(B,n,cost.credits);
+    devSaid(B,M,BUILD[k].ru,cost.credits);
     baseSet(B,spot.c,spot.r,{k,hp:1});
     baseLog(B,"dev",n,{what:BUILD[k].ru,who:M.name});
     return 1;
@@ -59145,10 +59417,21 @@ function palOf(B){
 }
 function palMode(B){return PAL_MODES[palOf(B).mode]||PAL_MODES.common;}
 function palRegistered(B){return !palOf(B).closed;}
+/* ── снятая с учёта база (разбор 0.409.1) ──
+   Было: 800 кр один раз — и никаких бумаг навсегда, при этом база работает как
+   прежде. Доминирующая стратегия и конец всей шутке на первом же игроке,
+   который это нажмёт.
+
+   На деле участок вне реестра — это участок, с которого прилавок не берёт
+   товар: возить с него можно, продать нельзя. Добыча идёт вполсилы (в дело
+   годится только то, что нужно самой базе), площадка не принимает чужие борта,
+   и опорным пунктом такая база не бывает. Тишина стоит темпа. */
+const PAL_OFF=.55;           /* столько остаётся от выработки вне реестра */
 /* «простой» и правда ограничивает: один бур и никаких наёмных */
 function palCapWork(B){
   const M=palMode(B);
-  if(!M.cap||!palRegistered(B))return 1;
+  if(!palRegistered(B))return PAL_OFF;
+  if(!M.cap)return 1;
   const drills=(typeof basePower==="function")?basePower(B).drills:1;
   let m=drills>1?1/drills:1;                       /* больше одного бура не в счёт */
   if(typeof baseCrewN==="function"&&baseCrewN(B)>0)m*=.75;
@@ -59183,7 +59466,15 @@ function palStep(B,n){
     else{P.debt=(P.debt|0)+PAL_PENY;baseLog(B,"palpeny",n,{q:PAL_PENY});}
     said=1;
   }
-  /* проверка: плановая приходит с прогнозом, внеплановая — по сигналу */
+  /* ── проверка приходит С ПРОГНОЗОМ (разбор 0.409.1) ──
+     «Плановая объявляется за смену» было написано в комментарии и нигде в
+     коде: штраф прилетал молча. За четыре смены до неё журнал пишет строку —
+     ту самую, которую игрок может успеть прочесть по СВЯЗИ. */
+  if((n%PAL_PERIOD)===Math.floor(PAL_PERIOD/2)-4){
+    const I=palInspector();
+    baseLog(B,"palsoon",n,{who:I.name,rank:I.rank});
+    said=1;
+  }
   if((n%PAL_PERIOD)===Math.floor(PAL_PERIOD/2)){
     const I=palInspector();
     const fine=120+((hashi(B.sx,B.sy,n)%9)*40);

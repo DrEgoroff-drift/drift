@@ -310,10 +310,9 @@ function updateSystem(dt){
             ln+="\nЦЕЛЬ — ЗОНД ЗА "+PROBE_COST+" КР";
         }
         G.prompt=ln;
-        if(keys.lock&&!G.probeHeld&&typeof probeBuy==="function"&&near.type!=="gas"){
-          G.probeHeld=1;probeBuy(G.sx,G.sy,near.idx);
-        }
-        if(!keys.lock)G.probeHeld=0;
+        /* адрес для зонда: само нажатие ловит штурвал одним фронтом на клавишу
+           и пэд, а `probeClaim` (21a8) его забирает (разбор 0.409.1) */
+        G._probeAt=(near.type!=="gas")?{sx:G.sx|0,sy:G.sy|0,idx:near.idx|0}:null;
         if(actEdge){startLanding(near);return;}
       }
     }else if(!G.prompt)G.prompt=near.name+" · "+Math.round(nd)+" ед.";

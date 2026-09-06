@@ -1652,3 +1652,31 @@ assertions over 756 suites.
 
 §46 and §50 are not passes: they are the register every line of the layer is written in, and a law
 every pass is checked against.
+
+### 51.2 The review, 0.409.1 — what another reader found
+
+A parallel session read M390–M409 and the war queue against these documents and sent three
+letters. Fifteen findings were real; all fifteen are fixed and each is pinned by a suite named
+«разбор …» in `tests/91zzzw-base4.js`. The list is in `PATCHNOTES.md` under 0.409.1. Two rules
+come out of it and are worth more than the fixes:
+
+**A lever keys on a decision, not on a number that drifts.** «Numbers are bought» (§22, law 3)
+was implemented as `instrQuality("radio")>1.05`. But an instrument's quality carries a
+per-instance spread (`.85+r()*.3` in `05b`) and the hull's profession on top, so the *stock*
+receiver every ship leaves the yard with cleared that threshold for most players. The law read
+true in the header and was false in the game from the first minute. It keys on the works now —
+a receiver better than the one the yard fits, unworn — which is a thing the player decided to
+buy. Any lever phrased as «good enough gear» has this failure mode; phrase it as «which gear».
+
+**A shortcut that skips a branch skips its guards too.** The deep catch-up (over 72 shifts) was
+written as «mine the whole stretch at once», and so nobody ate, nobody paid ПАЛАТА, nothing
+burned, nothing fell to ruin: a fortnight away was strictly better than a fortnight watched. The
+same shape appeared in the fix for it — `force` on the director skipped the probability roll
+*and* the place checks, and storms started landing on gas worlds. A bulk path must run every
+consequence the slow path runs, or it is not the same world.
+
+**Still open — the frame, not the rules.** Six notes from the same review, all about the base
+scene and none about its laws: the entry message overlays the top row; the five-line prompt
+overlays the bottom row; the ГЛАВТРАССА flag is the loudest patch in the frame; the shaft reads
+as an empty grey square; gauge labels are three-letter codes where words would fit; adjacency
+pipes are too faint to read as connections. They are the next base work.

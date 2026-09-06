@@ -97,6 +97,19 @@ function spawnPirates(){
      когда игрок и так на них смотрит, а весь смысл СВЯЗИ — услышать в дороге */
   if(typeof baseResolveAll==="function")baseResolveAll();
 }
+/* ближайший чужой борт для борта державы: чужая держава или пират. Посольство
+   (M386), мишень стрельбища и свои — не цель ни при каких обстоятельствах */
+function npcFoeFor(p){
+  let best=null,bd=3200;
+  for(const q of (G.pirates||[])){
+    if(q===p||q.hull<=0||q.dummy||q.dip)continue;
+    if(q.pw&&p.pw&&q.pw===p.pw)continue;      /* свои */
+    if(!q.pw&&!p.pw)continue;                 /* два пирата — не наше дело */
+    const d=Math.hypot(q.x-p.x,q.y-p.y);
+    if(d<bd){bd=d;best=q;}
+  }
+  return best;
+}
 /* fireShot — в 13-combat (M361): у выстрела есть хозяин */
 let fireCool=0;
 function updateCombat(dt){
@@ -233,9 +246,26 @@ function updateCombat(dt){
     }
     const pa0=p.a;
     if(p.aware){
-      const want=Math.atan2(dy,dx);
+      /* ── чужая война — не ваша (M372/M373, разбор 0.409.1) ──
+         Роль брала курс НА ИГРОКА для любого борта, и `roleFire` стрелял без
+         оглядки на `iff`. Выходило, что «ЗДЕСЬ БОЙ · ВЫ НЕ ЗВАНЫ» — и оба крыла
+         разворачиваются на гражданского, а тыловой пикет открывает огонь, стоит
+         подлететь. Это отменяло и четыре правила разом: их незачем нарушать,
+         если по вам и так бьют.
+
+         Пока `iff` цел, борт державы ищет ЧУЖОЙ борт и работает по нему; нет
+         такого — стоит и смотрит. `hailAnger` снимает `iff` (M373), и вот тогда
+         курс снова на вас — потому что вы это заслужили. */
+      let want=Math.atan2(dy,dx),td=d,go=true;
+      if(p.iff){
+        const foe=npcFoeFor(p);
+        if(foe){
+          const fx=foe.x-p.x,fy=foe.y-p.y;
+          td=Math.hypot(fx,fy)||1;want=Math.atan2(fy,fx);
+        }else go=false;
+      }
       /* поведение — по рангу (13c-roles): бросок, борт, дистанция, очереди; бегство */
-      if(pirateRoleTick(p,dt,d,want))continue;
+      if(go&&pirateRoleTick(p,dt,td,want))continue;
     }
     const sp=Math.hypot(p.vx,p.vy),lim=ROLE_LIM[p.rank|0]||4.4;
     if(sp>lim){p.vx*=lim/sp;p.vy*=lim/sp;}

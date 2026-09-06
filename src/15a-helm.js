@@ -181,7 +181,10 @@ function helmTick(dt){
   helmMarksClean();
   /* ЦЕЛЬ на пэде и Tab — по фронту нажатия */
   const lockPad=!!keys.lock;
-  if((lockPad&&!HELM.lockWas)||HELM.lockEdge)helmLockNext();
+  /* зонд у планеты (M400) забирает это нажатие себе — иначе на телефоне один
+     тычок звал и зонд, и цели разом, а Tab не звал зонд никогда */
+  const lockHit=(lockPad&&!HELM.lockWas)||HELM.lockEdge;
+  if(lockHit&&!(typeof probeClaim==="function"&&probeClaim()))helmLockNext();
   HELM.lockWas=lockPad;HELM.lockEdge=false;
   /* 1. стик (M410): один, под левым пальцем. Его вектор — КУДА лететь и
      НАСКОЛЬКО быстро, в осях экрана; тягу до этой скорости подбирает

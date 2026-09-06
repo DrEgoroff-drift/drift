@@ -28,8 +28,12 @@ const FAME_N=12;             /* столько известных смотрит
 /* ── он сам ──
    Один на галактику, и он всегда на самом верху кривой M405: без изъяна и с
    чутьём, которого нет ни у кого из сотни. */
+/* Кэш на МОДУЛЕ, а не в `G` (разбор 0.409.1): `resetWorld` чистит мир, а он —
+   свойство галактики, и четыре тысячи бросков с генератором имён при каждом
+   старте были заметны. */
+let ONE_ID=null;
 function theOneId(){
-  if(G._oneId!==undefined)return G._oneId;
+  if(ONE_ID!==null)return ONE_ID;
   /* ищем по той же кривой, что и всех: он не исключение из неё, он её хвост */
   let best=null,bq=0;
   for(let i=0;i<4000;i++){
@@ -37,7 +41,7 @@ function theOneId(){
     if(M.flaw)continue;
     if(M.q>bq){bq=M.q;best=M.id;}
   }
-  return G._oneId=(best===null?hashi(1,0x0DEAD,0x0BA5E):best);
+  return ONE_ID=(best===null?hashi(1,0x0DEAD,0x0BA5E):best);
 }
 function theOne(){const M=bmgrOf(theOneId());M.real=1;return M;}
 /* ── где он сейчас (§24.2) ──

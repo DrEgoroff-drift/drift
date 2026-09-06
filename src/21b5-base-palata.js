@@ -72,10 +72,21 @@ function palOf(B){
 }
 function palMode(B){return PAL_MODES[palOf(B).mode]||PAL_MODES.common;}
 function palRegistered(B){return !palOf(B).closed;}
+/* ── снятая с учёта база (разбор 0.409.1) ──
+   Было: 800 кр один раз — и никаких бумаг навсегда, при этом база работает как
+   прежде. Доминирующая стратегия и конец всей шутке на первом же игроке,
+   который это нажмёт.
+
+   На деле участок вне реестра — это участок, с которого прилавок не берёт
+   товар: возить с него можно, продать нельзя. Добыча идёт вполсилы (в дело
+   годится только то, что нужно самой базе), площадка не принимает чужие борта,
+   и опорным пунктом такая база не бывает. Тишина стоит темпа. */
+const PAL_OFF=.55;           /* столько остаётся от выработки вне реестра */
 /* «простой» и правда ограничивает: один бур и никаких наёмных */
 function palCapWork(B){
   const M=palMode(B);
-  if(!M.cap||!palRegistered(B))return 1;
+  if(!palRegistered(B))return PAL_OFF;
+  if(!M.cap)return 1;
   const drills=(typeof basePower==="function")?basePower(B).drills:1;
   let m=drills>1?1/drills:1;                       /* больше одного бура не в счёт */
   if(typeof baseCrewN==="function"&&baseCrewN(B)>0)m*=.75;
@@ -110,7 +121,15 @@ function palStep(B,n){
     else{P.debt=(P.debt|0)+PAL_PENY;baseLog(B,"palpeny",n,{q:PAL_PENY});}
     said=1;
   }
-  /* проверка: плановая приходит с прогнозом, внеплановая — по сигналу */
+  /* ── проверка приходит С ПРОГНОЗОМ (разбор 0.409.1) ──
+     «Плановая объявляется за смену» было написано в комментарии и нигде в
+     коде: штраф прилетал молча. За четыре смены до неё журнал пишет строку —
+     ту самую, которую игрок может успеть прочесть по СВЯЗИ. */
+  if((n%PAL_PERIOD)===Math.floor(PAL_PERIOD/2)-4){
+    const I=palInspector();
+    baseLog(B,"palsoon",n,{who:I.name,rank:I.rank});
+    said=1;
+  }
   if((n%PAL_PERIOD)===Math.floor(PAL_PERIOD/2)){
     const I=palInspector();
     const fine=120+((hashi(B.sx,B.sy,n)%9)*40);

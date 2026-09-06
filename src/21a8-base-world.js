@@ -74,6 +74,20 @@ function probeBuy(sx,sy,idx){
   tell("tech","Зонд ушёл к планете","ЗОНД\n"+PROBE_COST+" кр\nпять ручек из восьми — на месте будут все");
   return true;
 }
+/* ── одно нажатие ЦЕЛИ на всех (разбор 0.409.1) ──
+   Зонд читал `keys.lock` сам: Tab идёт через `HELM.lockEdge` и `keys.lock` не
+   ставит — на клавиатуре зонд не покупался вовсе, а на телефоне то же нажатие
+   в том же кадре успевало позвать и зонд, и `helmLockNext` («ЦЕЛЕЙ НЕТ» поверх
+   сообщения о зонде). Теперь фронт один — штурвала, — а зонд его ЗАБИРАЕТ, если
+   борт стоит у планеты без формуляра. Не забрал — нажатие идёт целям, как и
+   было. */
+function probeClaim(){
+  const A=G._probeAt;
+  if(!A||G.mode!=="system")return false;
+  if((G.sx|0)!==(A.sx|0)||(G.sy|0)!==(A.sy|0))return false;
+  if(probeHas(A.sx,A.sy,A.idx))return false;
+  return probeBuy(A.sx,A.sy,A.idx);
+}
 /* высадка: игрок стоит на этой поверхности — значит мерил своими руками */
 function dialOnFoot(sx,sy,idx){
   return !!(G.mode==="surface"&&G.surf&&G.surf.p&&(G.surf.p.idx|0)===(idx|0)&&
@@ -111,7 +125,7 @@ function dialHeat(B){const D=baseDialOf(B);return D?Math.round(D.heat*10):0;}
 function dialLight(B){const D=baseDialOf(B);return D?D.light:1;}
 function dialLeak(B){                       /* сколько воздуха уходит за смену */
   const D=baseDialOf(B);
-  return D?Math.round(D.press*2*Math.max(1,(typeof baseCrewN==="function")?baseCrewN(B):1)/2):0;
+  return D?Math.round(D.press*Math.max(1,(typeof baseCrewN==="function")?baseCrewN(B):1)):0;
 }
 function dialGrav(B){const D=baseDialOf(B);return D?D.grav:1;}
 function dialWind(B){const D=baseDialOf(B);return D?D.wind:1;}

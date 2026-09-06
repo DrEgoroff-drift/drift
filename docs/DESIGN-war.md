@@ -1695,3 +1695,21 @@ ssh, a circ file back); the server fuse.
 society, nature, power, diplomacy, security, culture. Each: chronicle kinds, the visible effect
 in the sky or at the station, lines ×6, tests in `91zzzw-chron`.
 
+### The review of 0.409.1 — four ways the layer shot at the wrong target
+
+A parallel session read the war modules against this document. Four findings were mine and all
+four had the same shape: **a hull that belongs to somebody else was still treated as the
+player's business.**
+
+- A power's warship (`p.iff`) hunted the player, because the aware branch of `13-pirates` knew
+  only one target. `npcFoeFor(p)` picks an enemy among the other NPCs first; the player is a
+  target only when nobody else is.
+- `fleetFire` shot at dummies, envoys, powers and friendly hulls — every marker the layer had
+  invented to say «not a combatant» was invisible to the guns. It skips `dummy|dip|pw|iff`.
+- `riteLoanSettle` paid out for silence: no war, no campaign, money anyway. Settlement now
+  compares the issuer's holdings against `G.bondHold` — what they held when the loan was made.
+- `natSwarmTick` read `st.maxSp`, which does not exist, so the swarm's speed was `NaN` and the
+  swarm never arrived. `(6.4+st.thr*1.6)` is the speed the rest of the layer uses.
+
+The chronicle's own four (cache, `circApply`, strength regeneration, dead incident kinds) belong
+to the session that found them and are not touched here.

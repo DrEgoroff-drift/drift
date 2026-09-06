@@ -97,6 +97,11 @@ function baseReport(B,sx,sy){
     !((B.sx|0)===(G.sx|0)&&(B.sy|0)===(G.sy|0));
   const L=lie?{air:Math.max(L0.air,LIFE_CAP*.8|0),water:Math.max(L0.water,LIFE_CAP*.8|0),
     food:Math.max(L0.food|0,LIFE_CAP*.6|0),q:"good"}:L0;
+  /* ── и здесь тоже цифры покупаются (разбор 0.409.1) ──
+     В своём секторе сигнал всегда полный, и сводка печатала числа мимо закона
+     3: «рядом» — это не прибор. Язык берём тот же, что на столе. */
+  if(typeof baseSharp==="function"&&!baseSharp(B))
+    return {lvl,head:call+" · "+baseWordLine(B),lines:baseLogList(B,2).map(x=>x.t)};
   return {lvl,head:call+" · воздух "+L.air+" · вода "+L.water+" · харч "+(L.food|0)+
     " · тепло "+(h>0?"+":"")+(h/10).toFixed(1)+
     (baseCrewN(B)?" · дух "+baseSpirit(B)+"%":" · людей нет")+

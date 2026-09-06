@@ -44,6 +44,7 @@ function baseRuinCheck(B,n){
    Считается от номера смены, как всё остальное: поселенец или застава. */
 function baseTenant(B,n){
   if(!B.ruin)return null;
+  if(B.ruin.who==="pal")return "pal";        /* въехала ПАЛАТА — это не жильцы */
   if(n===undefined)n=(typeof baseShift==="function")?baseShift():0;
   if(n-(B.ruin.n|0)<RUIN_TENANT)return null;
   if(B.ruin.who)return B.ruin.who;
@@ -55,6 +56,11 @@ function baseTenant(B,n){
 }
 function baseRuinPrice(B){
   const who=baseTenant(B);
+  /* участок, изъятый за долг (M408), выкупается у ПАЛАТЫ — и стоит он ровно
+     того долга плюс сбор за само изъятие. Разбор 0.409.1: он возвращался даром,
+     потому что `21b0` знал только поселенцев и заставу */
+  if(who==="pal"||(B.ruin&&B.ruin.who==="pal"))
+    return ((typeof palOf==="function")?(palOf(B).debt|0):0)+PAL_CLOSE;
   return who==="pirate"?RUIN_PIRATE:(who==="squat"?RUIN_SQUAT:0);
 }
 /* заставу можно и вычистить: прилететь и снять всех, кто в системе. Это не
@@ -69,7 +75,15 @@ function baseRuinTake(B){
   if(!B.ruin)return false;
   const who=baseTenant(B);
   const n=(typeof baseShift==="function")?baseShift():0;
-  if(who==="pirate"&&!baseRuinClearable(B)){
+  if(who==="pal"){
+    const d=baseRuinPrice(B);
+    if(G.credits<d){
+      say("Выкуп участка у ПАЛАТЫ: "+d.toLocaleString("ru")+" кр\n(долг и сбор за изъятие)");
+      return false;
+    }
+    G.credits-=d;
+    if(typeof palOf==="function")palOf(B).debt=0;
+  }else if(who==="pirate"&&!baseRuinClearable(B)){
     if(G.credits<RUIN_PIRATE){
       say("Застава уйдёт за "+RUIN_PIRATE.toLocaleString("ru")+" кр\nили за то, что вы её снимете");
       return false;
@@ -116,7 +130,8 @@ function baseFixCell(B,c,r){
 function baseRuinLine(B){
   if(!B.ruin)return "";
   const who=baseTenant(B);
-  return "РАЗВАЛИНА"+(who==="pirate"?" · пиратская застава":(who==="squat"?" · въехали поселенцы":" · пока пусто"))+
+  return "РАЗВАЛИНА"+(who==="pirate"?" · пиратская застава":
+    (who==="squat"?" · въехали поселенцы":(who==="pal"?" · участок у ПАЛАТЫ":" · пока пусто")))+
     (baseRuinClearable(B)?" · снять её можно прямо сейчас":
       (baseRuinPrice(B)?" · выкуп "+baseRuinPrice(B).toLocaleString("ru")+" кр":""));
 }

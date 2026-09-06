@@ -124,10 +124,14 @@ function baseGuestDrop(B){
 /* ── меню людей в сцене ──
    Строится не списком на экране, а той же лентой, что и меню постройки: ◀ ▶
    выбирают, ДЕЙСТВИЕ ставит, НАЗАД закрывает. */
+/* Список — это все, кого можно поставить на эту работу: кто уже здесь, кто
+   свободен и КТО УЖЕ НА БАЗЕ, но на другой работе (разбор 0.409.1: переставить
+   человека внутри базы было нельзя — только через станцию). */
 function basePeopleList(B,cell){
   const here=baseCellStaff(B,cell);
-  const free=baseFreeCrew().filter(c=>here.indexOf(c)<0);
-  return here.concat(free);
+  const mine=((typeof baseStaff==="function")?baseStaff(B):[]).filter(c=>here.indexOf(c)<0);
+  const free=baseFreeCrew().filter(c=>here.indexOf(c)<0&&mine.indexOf(c)<0);
+  return here.concat(mine,free);
 }
 function basePeopleLine(B,cell,i){
   const L=basePeopleList(B,cell),role=baseCellRole(cell);

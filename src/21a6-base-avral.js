@@ -20,6 +20,7 @@ const AVR_CHANCE=.25;        /* примерно раз в четыре захо
 const AVR_TIME=40*60;        /* сорок секунд в кадрах */
 const AVR_HOLD=120;          /* две секунды удержания */
 const AVR_NEAR=1;            /* «рядом» — соседняя клетка */
+const AVR_BURN=.35;          /* столько отсек теряет за весь аврал, и не больше */
 const AVR_KINDS=[
   {k:"fire", ru:"ПОЖАР",  what:"горит",   note:"дым идёт в коридор"},
   {k:"vent", ru:"РАЗГЕРМЕТИЗАЦИЯ",what:"свистит",note:"воздух уходит в породу"},
@@ -38,7 +39,9 @@ function avrRoll(S,B){
     if(cell&&cell.hp>0)live.push({c,r,k:cell.k});
   }
   if(live.length<2)return null;                /* на пустой базе гореть нечему */
-  const r=rng(hashi(B.sx*53+B.sy,(B.idx|0)*31+7,(Date.now()/1000)|0));
+  /* заход, а не секунда: два входа в одну секунду давали один и тот же бросок */
+  G.baseVisit=(G.baseVisit|0)+1;
+  const r=rng(hashi(B.sx*53+B.sy,(B.idx|0)*31+7,G.baseVisit));
   if(r()>AVR_CHANCE)return null;
   const spot=live[Math.floor(r()*live.length)];
   const kind=AVR_KINDS[Math.floor(r()*AVR_KINDS.length)];
@@ -78,8 +81,16 @@ function avrTick(S,B,dt,act){
     A.hold+=dt*avrHands(B,A);
     if(A.hold>=AVR_HOLD)return avrWin(S,B);
   }else if(!act)A.hold=Math.max(0,A.hold-dt*.5);
+  /* ── цена аврала в цифрах (разбор 0.409.1) ──
+     Было `(G.t|0)%12===0` и −.004 за удар: сорок секунд горения давали ~.8 hp,
+     а провал добавлял ещё .4 — упущенный аврал ВСЕГДА убивал отсек, хотя
+     замысел говорит «отсек побит». Считаем по времени, а не по кадрам, и
+     держим потолок: после провала отсеку остаётся треть-половина. */
   const cell=baseCell(B,A.c,A.r);
-  if(cell&&cell.hp>0&&(G.t|0)%12===0)cell.hp=Math.max(0,cell.hp-.004);
+  if(cell&&cell.hp>0){
+    const step=Math.min(.0006*dt,Math.max(0,AVR_BURN-(A.burn||0)));
+    if(step>0){A.burn=(A.burn||0)+step;cell.hp=Math.max(.05,cell.hp-step);}
+  }
   G.prompt="АВРАЛ · "+kind.ru+" В ОТСЕКЕ "+(A.c+1)+":"+(A.r+1)+
     "\n"+(here?"ДЕРЖИТЕ ДЕЙСТВИЕ · "+Math.round(A.hold/AVR_HOLD*100)+"%"
               :"ДОЙТИ ТУДА: ◀ ▶ — ПЕРЕХОД, ▲ ▼ — УРОВНИ")+
@@ -99,7 +110,9 @@ function avrLose(S,B){
   const A=S.avr;S.avr=null;
   const n=(typeof baseShift==="function")?baseShift():0;
   const cell=baseCell(B,A.c,A.r);
-  if(cell)cell.hp=Math.max(0,cell.hp-.4);
+  /* побит, но не уничтожен: чинить его игрок будет сам, и это дешевле, чем
+     ставить заново */
+  if(cell)cell.hp=Math.max(.3,cell.hp-.25);
   /* не успел — беда становится ходячей (§10.3) и живёт дальше без вас */
   if(typeof baseFireStart==="function")baseFireStart(B,A.c,A.r,n,A.k);
   if(typeof baseLog==="function")baseLog(B,"avrno",n,{});

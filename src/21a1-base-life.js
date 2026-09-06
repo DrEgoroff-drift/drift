@@ -79,6 +79,7 @@ const BLOG={
   palshare:(B,a)=>"доля с оборота — "+a.q+" кр. Успехи не остаются незамеченными",
   palsvod: ()=>"сводка подана. ПАЛАТА подтвердила получение подтверждения",
   palpeny: (B,a)=>"сводка не подана: пеня "+a.q+" кр. Никто не приходил и не спрашивал",
+  palsoon: (B,a)=>a.rank+" "+a.who+" в пути: плановая проверка через четыре смены",
   palcheck:(B,a)=>a.rank+" "+a.who+" был вежлив и нашёл: «"+a.form+"». Штраф "+a.q+" кр",
   palseize:(B,a)=>"участок изъят ПАЛАТОЙ за долг "+a.q+" кр. Опись прилагается",
   fwd:     ()=>"нас назвали опорным пунктом экспедиции. Всем бортам — сюда",
@@ -433,9 +434,13 @@ function baseSupply(B,k,q){
   if(q<=0)return 0;
   const L=baseLife(B);
   G.cargo[k]-=q;
-  /* лёд ложится и на склад базы: он и вода, и сырьё для обеих машин */
+  /* ── один лёд — одна вода (разбор 0.409.1) ──
+     Было и в шкалу, и на склад: единица давала две воды разом (вторую — через
+     ледоплавку 8→8). §16 говорит «лёд 1 → вода 1». Лёд идёт НА СКЛАД и
+     становится водой через машину — так у ледоплавки остаётся смысл, а у
+     единицы льда одна цена. */
   if(k==="ice")B.pool.ice=(B.pool.ice|0)+q;
-  L[S.k]=Math.min(LIFE_CAP,L[S.k]+S.q*q);
+  else L[S.k]=Math.min(LIFE_CAP,L[S.k]+S.q*q);
   const n=(typeof baseShift==="function")?baseShift():0;
   if(B.park>0)baseWake(B,n);
   tell("good","На базу «"+B.name+"» сдано "+q+" "+RES[k].ru.toLowerCase(),
@@ -492,8 +497,23 @@ function baseResolve(B,now){
   const deep=Math.max(0,n-BASE_DETAIL);
   if(deep>0){
     const P=basePower(B);
+    /* ── арифметика позавчерашнего (разбор 0.409.1) ──
+       Считалась только ДОБЫЧА: за визит база съедала не больше двадцати
+       четырёх смен воздуха, а руды клала до семидесяти двух. Реже прилетать
+       было строго выгоднее — то есть закон 2 («отклик отложен, базу надо
+       предсказывать») дырявый насквозь.
+
+       Подробностей за позавчера никто не помнит — но расход, производство,
+       ПАЛАТА и запустение считаются ровно за столько смен, сколько прошло. */
     baseEarn(B,P,BASE_MIN*deep,t0+deep);
     baseMine(B,P,BASE_MIN*deep,t0+deep);
+    if(typeof baseLifeBulk==="function")baseLifeBulk(B,P,deep,t0+deep);
+    for(let i=0;i<deep;i++){
+      const nn=t0+1+i;
+      if(typeof palStep==="function")palStep(B,nn);
+      if(typeof baseRuinCheck==="function")baseRuinCheck(B,nn);
+      if(B.ruin)break;
+    }
     baseLog(B,"away",t0+deep,{from:t0+1,to:t0+deep});
   }
   for(let i=deep;i<n;i++)baseShiftRun(B,t0+i+1);

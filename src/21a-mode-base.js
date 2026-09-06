@@ -227,8 +227,15 @@ function basePoolHeld(B){let s=0;for(const k in B.pool)s+=B.pool[k]|0;return s;}
 /* Разрешаются ленивым счётчиком, без отдельной сцены: последствия видно в
    разрезе (разбитый отсек) и в журнале. Охранник — единственная защита, и
    поэтому осмысленный. */
-function baseRaid(B,min,sh){
+/* `force` (разбор 0.409.1): когда налёт назначил директор (M397), своего
+   броска здесь быть не должно — иначе журнал обещает «на орбите чужой
+   транспондер», а на следующую смену не происходит ничего в семи случаях из
+   десяти. Бросок делает КТО-ТО ОДИН: без директора — эта функция, как и было. */
+function baseRaid(B,min,sh,force){
   const danger=sysDanger(B.sx,B.sy);
+  /* место решает всегда: в тихом секторе налёта не бывает и по слову директора.
+     `force` снимает ВЕРОЯТНОСТЬ, а не саму возможность (набор M391 поймал: с
+     первой правкой пираты стали ходить в сектор 0:0) */
   if(danger<=.05)return 0;
   const chance=min*danger*.012;
   /* бросок берётся от НОМЕРА СМЕНЫ (M390): одна и та же смена одной и той же
@@ -238,7 +245,7 @@ function baseRaid(B,min,sh){
   const r=(typeof sh==="number")
     ?rng(hashi(B.sx*131+B.sy,B.idx*7+3,hashi(sh,0x2A1D,0x7)))
     :rng(hashi(B.sx*131+B.sy,B.idx*7+3,hashi(B.tMs|0,(B.raidSeq=(B.raidSeq|0)+1),0x2A1D)));
-  if(r()>chance)return 0;
+  if(!force&&r()>chance)return 0;
   const guard=baseRoleForce(B,"guard");
   if(guard>0&&r()<guard*.7){
     logAdd("kill","Налёт на базу «"+B.name+"» отбит охраной");
@@ -272,13 +279,13 @@ function baseRaid(B,min,sh){
    и её отменяет «буревой щит» смотрителя. Мир у планеты уже есть: тип задаёт,
    насколько тут вообще дует. */
 const STORM_WORLDS={terran:.5,ocean:.9,desert:1.4,rocky:.7,ice:1.3,volcanic:1.4,toxic:1.5,gas:0};
-function baseStorm(B,min,sh){
+function baseStorm(B,min,sh,must){
   const force=STORM_WORLDS[B.type]!==undefined?STORM_WORLDS[B.type]:.8;
-  if(force<=0)return 0;
+  if(force<=0)return 0;                     /* где не дует, там не дует */
   const r=(typeof sh==="number")
     ?rng(hashi(B.sx*313+B.sy,B.idx*11+5,hashi(sh,0x51D,0xB)))
     :rng(hashi(B.sx*313+B.sy,B.idx*11+5,hashi(B.tMs|0,(B.stormSeq=(B.stormSeq|0)+1),0x51D)));
-  if(r()>min*force*.010)return 0;
+  if(!must&&r()>min*force*.010)return 0;
   if(mgrPerkOf("keep","storm")){
     logAdd("dim","Буря на «"+B.name+"» прошла без потерь — щит держит");
     baseLog(B,"storm",sh,{shield:1});
@@ -328,11 +335,18 @@ function baseFixTick(B,min,sh){
 }
 /* забрать накопленное в трюм — за этим и прилетаешь */
 function baseCollect(B){
-  const st=stat();let n=0;
+  const st=stat();let n=0,worth=0;
   for(const k in B.pool){
     const q=B.pool[k]|0;if(q<=0)continue;
     const got=addRes(k,q);B.pool[k]=q-got;n+=got;
+    worth+=got*((RES[k]&&RES[k].price)||6);
   }
+  /* ── оборот базы (разбор 0.409.1) ──
+     Доля управляющего (M405) и доля ПАЛАТЫ (M408) считались от `_earned`, а его
+     наполнял ОДИН перк — продажа излишков энергии. У обычной базы оборот — это
+     руда, которую с неё увозят, и она никуда не писалась: обе доли были нулём,
+     то есть обещанием без кода. Считаем здесь, по цене увезённого. */
+  if(worth>0){B._earned=(B._earned|0)+worth;B._turn=(B._turn|0)+worth;}
   if(n>0)tell("","С базы забрано "+n+" ед · трюм "+held()+"/"+st.cargoMax,"Забрано "+n+" ед");
   else say("Забирать нечего\nили трюм полон");
   return n;

@@ -411,7 +411,8 @@ TEST_SUITES.push(()=>suite("база M401: сведения покупаются
   B.cells[5]={k:"habitat",hp:1};B.cells[6]={k:"habitat",hp:1};
   bCrew(B,2);
   baseLife(B).air=100;baseLife(B).water=100;baseLife(B).food=40;
-  /* без радиста и с казённым прибором — слова, а не цифры */
+  /* без радиста и с казённым приёмником — слова, а не цифры: рычаг стоит на
+     заводе прибора, а не на числе разрешения (разбор 0.409.1) */
   G.instrKit=null;
   for(const id of INSTR_KEYS)instrUnit(id).wear=1;      /* приборы стёрты вконец */
   eq(baseSharp(B),0,"ни радиста, ни приборов");
@@ -428,6 +429,7 @@ TEST_SUITES.push(()=>suite("база M401: сведения покупаются
   const w1=baseWarnLine(B,n);
   G.crew[1].role="radist";
   for(const id of INSTR_KEYS)instrUnit(id).wear=0;
+  instrUnit("radio").w="vekha";        /* купленный приёмник, а не казённый */
   ok(baseSharp(B)>=2,"и радист, и приборы");
   const w2=baseWarnLine(B,n);
   if(w1&&w2)ok(w2.indexOf("СМЕН")>0||w2!==w1,"со сведениями прогноз точнее: «"+w1+"» → «"+w2+"»");
