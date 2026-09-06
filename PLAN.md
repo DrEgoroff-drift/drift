@@ -727,3 +727,50 @@ Measured from M360 on: `prof()` with eight armed ships on the phone layout; the 
 - **Naming register Б+А** (2026-08-31). Two earthly words stay on purpose — «Красный уголок» and
   «Столовая», with «Дружина» beside them: in a module at the edge of the galaxy they read as home,
   and that seam is what Soviet science fiction was made of.
+
+
+# The base — queued (M390–M409, designed 2026-09-06)
+
+Design in [`docs/DESIGN-base.md`](docs/DESIGN-base.md), 1512 lines, six parts: the diagnosis and the
+nine source games §0–§1, the register and the clock §2–§3, the six gauges and the loop §4–§5,
+modules §6, adjacency/merging/depth §7, people §8, the charter §9, the director §10, аврал §11, the
+journal §12, консервация §13, the boundary with the holding §14, save shape §15, numbers §16,
+**the planet as the difficulty §21**, **the nine laws of hardness §22**, the payoff §23,
+**the one управляющий among a hundred §24, §34–§37**, **СВЯЗЬ — the base from anywhere §38**,
+loss and recovery §39, **ПАЛАТА §27–§32, §40** (the layer's satire of registering as a sole trader
+in Russia — the author's brief), **why a base is necessary, Part V §42–§46**, the self-critique §49,
+**the two honest playstyles §50**, and **§51 — the settled forks and the queue in build order**.
+
+Read §51 first: it holds every decision the author took on 2026-09-06 and the twenty passes in the
+order they are built. `docs/DESIGN-winter.md` is a separate sketch — «зимовка» is its own survival
+mini-game, not part of this queue, and is designed after M396.
+
+**Author's decisions, 2026-09-06 (do not reopen):** scope **(a) — nothing is cut, all of it is
+combined**; **one** управляющий per galaxy, hidden in a continuous distribution of about a hundred
+candidates (§48), meetable on the very first interview; **no notebook** — the player judges by
+whether the base works, heard over the receiver; a base can be lost and is **always recoverable**;
+the joke is played **at maximum**, and §27's deadpan law is withdrawn; the real one **builds and
+develops** the base himself; **playing by hand is a complete game with the higher ceiling** and
+nothing is gated behind a manager.
+
+**Handoff:** a fresh session takes the first open pass below, reads `DESIGN-base.md` §51 and only
+the sections that pass names (grep `docs/INDEX.md`, then `Read` with an offset), builds, runs the
+named suites and `test.ps1`, measures what the pass says, publishes to /dev, commits one version,
+strikes the pass here and in §51. Unanswered forks keep the defaults listed in §51.
+
+Five stages, each playable on /dev before the next starts:
+
+- **A · хозяйство** — M390 смена and `baseResolve` · M391 воздух и вода · M392 тепло, глубина,
+  криоцех (pays the «криогенный цех на базе» promise `02-world`/`19a` has been making) ·
+  M393 харч и дух. Playable after M391 (a base can be starved), a game after M393.
+- **B · место и люди** — M394 СВЯЗЬ и мачта · M395 люди в комнате · M396 соседство, залы, ствол,
+  сетка 6×4 · M397 директор · M398 аврал · M399 устав.
+- **C · тяжёлая игра** — M400 формуляр планеты · M401 девять законов · M402 развалина и возврат ·
+  M403 плата и блокада · M404 the craft pass over the whole scene, with its own almanac issue.
+- **D · человек** — M405 сотня и распределение · M406 охота · M407 он строит и развивает.
+- **E · дело и мир** — M408 ПАЛАТА и станция платит · M409 опорный пункт экспедиции.
+
+**Seams with the war (M360–M388):** no file is shared. `baseRaid` takes its attackers from
+`13c-roles` when those land (M397 reads whatever shipped); a blockade closes a system's counters and
+M403 answers it; a base overrun, defended or provisioned is an episode for the chronicle
+(`DESIGN-war` §6). Neither queue blocks the other.

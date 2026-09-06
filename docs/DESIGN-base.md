@@ -606,6 +606,8 @@ without one. That is exactly what licences the savagery.
 
 ### 22.1 Real loss, without deletion
 
+> **Revised by §39:** a lost base is always recoverable, from every state.
+
 The soft consequence of Part I §13 (консервация) holds for neglect. For a base that is genuinely
 lost — starved out and abandoned — the harder ending: the crew leave, and the base becomes a
 **развалина** on the map, holding what you built. Given time, someone else moves in: a squatter, a
@@ -657,6 +659,9 @@ of the layer is not «I have solved it», it is «I have solved it and now I mus
 ---
 
 ## 24. Управляющий — the one way out, and why finding him is hell
+
+> **Revised by Part IV (§33).** There is **one** управляющий, not three; there is no notebook; he
+> builds and develops. Read §34–§38 with this section.
 
 Everything above describes a layer that demands the player's whole attention. There is exactly one
 way to buy that attention back, and it is a **person**, not an upgrade.
@@ -815,6 +820,7 @@ Everything after that is the **ПАЛАТА** — the chamber that keeps the reg
 участки. It is unfailingly courteous, it never threatens, every one of its papers is beautiful, and
 it is going to bill you for the rest of the game.
 
+> **[WITHDRAWN by the author 2026-09-06 — see §40, the tone is loud. Kept for the record.]**
 > **The tone law: НИКОГДА НЕ ПОДМИГИВАТЬ.** Not one line of this layer is written as a joke. The
 > forms are real forms in the game's own paper language (`DESIGN-passports`, the ТЕТРАДЬ/ОТЧЁТ/
 > ПОЧТА desk), the inspector is genuinely polite and often right, the fee notice is a small,
@@ -898,3 +904,609 @@ that nobody clicks.
     frozen on a «сигнал» that turns out to be a rival's, and the player must fly there and explain
     themselves to a courteous person who apologises beautifully and unfreezes nothing for six
     shifts. *Recommended: yes, exactly once per playthrough, and never explained afterwards.*
+
+## 32. Станция платит как бизнес — the other half of the relation
+
+(Author, 2026-09-06: «не ну станция платит как бизнес, норм, можно».)
+
+Part III gave the ПАЛАТА the taking half. The station has the paying half, and it behaves exactly
+like a real customer: it is glad to buy, it is slow to pay, and its terms improve precisely as they
+become less convenient.
+
+Today `baseCollect` puts ore in the hold and the market pays cash on the spot. That stays for
+small change. Everything above a lot of 40 units becomes a **поставка**, and a поставка has terms.
+
+| term | in game | the bite |
+|---|---|---|
+| **Приёмка** | the station checks the lot: клеймо, чистота, срок | a lot without a stamp goes at 0.6; a lot from an overheated base grades down a step |
+| **Акт и отсрочка** | a big buyer signs and pays in **20–40 смен**. A small buyer pays now, at 0.75 | the better the customer, the longer the wait |
+| **Кассовый разрыв** | the сбор, the wages and the supplies are due **now**; the money for the last three lots arrives in thirty shifts | on paper the base is profitable. In the account there is nothing. This is the single most accurate thing in the whole design |
+| **Аванс** | the station prepays against a future lot — at a discount, and it binds you to a volume and a date | miss the date and the advance becomes a пеня. The cure for the разрыв is a new way to lose |
+| **Договор на объём** | N lots at a fixed price | protection from a price fall, and a noose if the drill stops |
+| **Уступка долга** | sell the receivable to a passing barge (`12af`/`12l`) at 0.8, today | the honest, expensive exit from a разрыв, and it is always available |
+| **Разряд поставщика** | reliability raises your grade: better prices, bigger lots — **and longer отсрочка** | the reward for being dependable is being paid later. Nobody will believe it is not a joke, and it is not |
+
+### Why this belongs here
+
+- **It makes time a resource in a second way.** §22.2 made *consequence* slow; this makes *money*
+  slow. The player must now plan a calendar, not a balance sheet, and «когда придут деньги» becomes
+  a real question with a real answer.
+- **It gives the ladder and the holding a handle.** A raised system (`12ae-ladder`) pays faster and
+  grades kinder; a system you have neglected pays like a stranger.
+- **It sharpens the управляющий once more.** Beyond §30, what he really sells is cash flow: he
+  takes the advance when it is cheap, sells the receivable before the сбор falls due, and never
+  once lets a разрыв happen. A player who has found one stops thinking about the calendar entirely
+  — which is the whole promise of the layer, stated in the only currency that matters here.
+- **And it keeps the tone law.** Not one line of the table above is written as a joke. It is simply
+  how it works.
+
+Ships with **M407** as one pass with the ПАЛАТА: the taking and the paying halves are the same
+mechanism, and shipping either alone would read as either cruelty or generosity instead of business.
+
+---
+
+# Part IV — the author's second round (2026-09-06, same evening)
+
+> «один управляющий, его надо найти среди сотни пиздецовых.»
+> «увольнять, понять что не такой — сразу нельзя. процедурно. вдруг кто-то сразу наткнётся.»
+> «тетрадь — ну хз, давай просто пусть игрок понимает сам: база работает или нет.»
+> «кстати управляйка строит и развивает, можно посмотреть — подумай как из любого места, давай в дело.»
+> «потерять можно, но всегда можно восстановить.»
+> «шутки прям пиздец до конца, не сухо, а прям максимум.»
+
+## 33. What this supersedes
+
+| where | was | is now |
+|---|---|---|
+| §24.1 | three управляющих per galaxy | **one**, hidden in a crowd of about a hundred who claim the same |
+| §24.4, fork 7 | a ТЕТРАДЬ page collecting evidence | **no page.** The player judges by the base itself (§38) |
+| §26 fork 6 | «three, one of them in a ruin» | **one** — see §34 |
+| §22.1, fork 8 | a lost base may stay lost | **always recoverable** (§39) |
+| §27, fork 10 | deadpan, never wink | **loud, to the end** (§40) |
+| §24.7 | he holds, he does not expand | **he builds and develops** (§37) |
+
+Everything else in Parts I–III stands.
+
+---
+
+## 34. Сто управляющих и один
+
+> **Buckets withdrawn by §48** — the hundred are a continuous distribution, not three groups.
+> The flaw table below stands; the counts and the срок do not.
+
+The galaxy generates about **a hundred** candidates from the seed. All of them call themselves
+управляющий, all of them are hireable, all of them have a позывной, a service record and
+references. **Exactly one is real.**
+
+    ~70   плохих   — each ruinous in his own way, and his way is generated
+    ~29   сносных  — no disaster, no miracle: the base runs at about six tenths
+      1   настоящий
+
+The middle 29 matter. Without them the hundred would be a cruel lottery; with them, hiring a decent
+man is a real, viable, permanently mediocre strategy — and the difference between «сносно» and
+«по-настоящему» is what the whole hunt is for.
+
+### 34.1 The flaw model — why you cannot tell at once
+
+Each bad candidate carries three generated numbers, and it is the second one that makes the design:
+
+    изъян        — what he does wrong (from the table)
+    срок         — 15…120 смен before it becomes visible at all
+    маскировка   — 0…1: how well his own reports hide it
+
+| изъян | how it eventually shows |
+|---|---|
+| **тащит** | the pool never matches the drill's numbers, by a few percent, forever |
+| **строит не то** | the third склад where the радиатор had to be — and it is built, and paid for |
+| **паникует** | perfect until the first аврал, then consumes half the stores fixing a scratch |
+| **пишет красиво** | the сводки are excellent. The base is not |
+| **молчит** | does not file at all; the пеня compounds where nobody is looking |
+| **боится глубины** | never opens the lower row: the base's best ore is simply never touched |
+| **жжёт людей** | output is superb and the crew leave one by one, and each departure is explained away |
+| **осторожный** | moves the site to общий режим «так надёжнее», and that costs the доля с оборота forever |
+| **медленный** | he is right about everything, twenty shifts late |
+| **берёт авансы** | the account looks healthy. The obligations behind it do not |
+| **любит лёгкое** | flawless on a rocky world, helpless on a volcanic one |
+| **свой человек** | hires his relatives into the жилой отсек at full wage |
+
+Nothing about a candidate can be read off a screen. There is no hidden stat to reveal, no
+«истинный уровень» behind a check. The flaw *is* his behaviour on a base over time, and time is
+the only instrument. That is the point of the author's rule: understanding you hired wrong is not
+an event, it is a slow suspicion.
+
+---
+
+## 35. Собеседование — where luck is possible on the first day
+
+Every candidate talks well. Procedurally, they talk *too* well: promises, warmth, agreement.
+One class of behaviour cannot be faked cheaply, and it is the only tell in the game:
+
+> **The real one asks about the place before he answers about himself.**
+
+He wants the формуляр (§21): what is the тепло, what is the порода, is there лёд, what does the
+устав say. He will **refuse a hopeless rock** — the only candidate in the galaxy who ever refuses
+work. He names one condition and does not move off it. He quotes a real number back at you.
+
+The fakes flatter, agree to everything, and take any planet at any price. Some of them — the ones
+with high маскировка — have learned to imitate a question or two, so the tell is a strong signal
+and never a proof.
+
+This is what makes the author's «вдруг кто-то сразу наткнётся» literally true: a player who reads
+the interview text on their very first hire can meet him on day one and notice. No gate, no
+prerequisite, no quest state. Most players will not notice, and will hire the man who promised
+more.
+
+### 35.1 Where the hundred are, and where he is not
+
+The hundred stand at station counters, advertising. **He does not advertise.** He is working
+somewhere, or drinking somewhere, or sitting in a ruin he did not leave. So a player who only
+interviews candidates at counters will, with certainty, never meet him — they will only ever find
+the best of the fakes, which is the trap the layer is built around.
+
+To meet him you must be in the world: the rumour (`11t`), the bearing on the receiver (`11ap`), the
+provenance of a thing at a flea market, the wall, the retelling — all of Part II §24.4 stands,
+minus the notebook. And the cantina accident stands too, unchanged and ungated.
+
+---
+
+## 36. Испытание — the only test is a base under load
+
+There is no interview that settles it and no document that proves it. The test is the job:
+
+1. **Give him a base and fly away.** An easy planet proves nothing: most of the hundred hold a
+   rocky world. **Only a hostile world separates them**, which means the test costs a real base on
+   a real hostile rock.
+2. **Watch it from wherever you are** (§38). Not his reports — the base.
+3. **The cost of being wrong runs while you are being wrong.** He is not idle during his срок: he
+   is building (§37), with your money, in the wrong places, and a built thing is not unbuilt cheaply.
+4. **Firing costs.** Расторжение: выходное пособие, and the ПАЛАТА wants a notice about it too
+   (§40 — it has a form). A player who tests candidates by rotation will go broke doing it, which
+   is precisely why the rumour trail is worth flying.
+
+The honest strategy that emerges — and it is a good one — is: hire сносного, run at six tenths,
+and hunt the real one in the world at the same time. That is the layer's whole shape in one line.
+
+---
+
+## 37. Он строит и развивает
+
+The hire keeps a base from idling. **The real one develops it.** Per shift, out of your account,
+without asking:
+
+- picks and builds the next module by the planet's формуляр, not by a template — a радиатор on
+  volcanic before a second drill, a регенератор on toxic before anything;
+- digs the lower row when the ore and the heat justify it, and not before;
+- merges halls when three of a kind line up;
+- moves the site to патент the shift it pays, and files everything (§30);
+- provisions himself: orders ice, консервы, парты from your holdings or buys them, and takes the
+  advance or sells the receivable so the сбор never catches the account empty (§32);
+- rebuilds after a storm, meets the inspector, deregisters your ruins;
+- and refuses to grow past what the planet can hold, which no bad candidate ever does.
+
+The bad ones build too. That is the trap: **everybody builds, only one builds right**, and the
+difference reads as a base that is quietly wrong for forty shifts.
+
+He still does not choose the planet, does not found bases, and will hand back one he judges
+hopeless. Survey and expansion stay yours.
+
+---
+
+## 38. СВЯЗЬ — the base from anywhere, and why it is the instrument
+
+The author's «можно посмотреть, из любого места, давай в дело». It is not a screen — it is a
+**channel on the receiver**, and it earns its keep three ways.
+
+Tune the receiver (`11ap`, the знакомая ручка) to the base's позывной from anywhere in the galaxy.
+What you get depends on the signal, and the signal is a designed resource:
+
+| condition | what you hear |
+|---|---|
+| same system | the six gauges as numbers, the last journal lines, the shift's plan |
+| a few sectors, радист on the base | three words per gauge («воздух — впритык»), the last two lines |
+| far, or no радист, or a storm | one word about the base as a whole, and static |
+| very far, or the мачта not built | nothing. And nothing is information too |
+
+**One: it is how you judge a manager.** No notebook, no manager stats — exactly as the author asked.
+You listen to your base from two systems away and you know whether it is alright. A liar's сводка
+says one thing; the gauge says another; the difference is audible and it is the whole game of §34.
+
+**Two: the base calls you.** A raid, an аврал, a кассовый разрыв, a departure — the receiver
+crackles mid-flight and the crew say it themselves. Then it is a decision: turn back — fuel, time, a
+missed trade — or let them handle it at whatever level their roles allow. Information that creates
+a choice, not a panel that reports one.
+
+**Three: one order per contact.** Switch the shift's priority, park the base, sell the receivable,
+call a barge. Limited by signal quality, so a distant base is genuinely harder to steer — and the
+real управляющий makes the whole mechanism unnecessary, which is the reward stated in the currency
+that matters.
+
+It gives the радист, the маяк and the мачта real jobs, it makes distance mean something outside
+combat, and it costs one panel and a table.
+
+---
+
+## 39. Потерять можно, вернуть можно всегда
+
+Loss stays real and stops being permanent:
+
+- The crew leave, the base becomes a развалина, and what you built stands there broken (`hp:0`).
+- Someone may move in: a squatter, a pirate outpost (the war layer's target with your own walls).
+- **And you can always come back.** Clear it or buy the tenants out, pay the ПАЛАТА what it is owed
+  or settle the seizure at auction, repair from `hp:0` at a fraction of the build cost. The
+  формуляр, the site, the ore and the shaft are all still there.
+- Nothing is ever deleted from the account, and no state exists from which a base cannot be
+  restarted. What a loss costs is time, money, the people who left and the story of having lost it.
+
+The auction of a seized site is one of the funniest scenes available (§40) and it is also the
+mechanism that guarantees this rule.
+
+---
+
+## 40. Тон: максимум
+
+**The deadpan law of §27 is withdrawn on the author's instruction.** The ПАЛАТА is played loud, to
+the end, without restraint. What replaces the old law is a craft rule, because loud comedy fails
+faster than quiet comedy and this joke has to run for a whole game:
+
+> **The absurdity is always bureaucratic logic taken seriously to its conclusion — never a joke
+> from outside the world.** No memes, no anachronism, no character who knows they are funny. The
+> ПАЛАТА is hilarious because it is *consistent*, and the player laughs at a thing that is
+> genuinely trying its best.
+
+What that licenses, and it licenses a lot:
+
+- **Forms with real numbers and unreal names.** «Форма 4-БУР-2, приложение Ж: сведения о
+  намерении сведений не подавать.» Filed in triplicate, one copy to the station, one to the site,
+  one to the applicant, who is you, from you.
+- **Fees that describe themselves.** «Сбор за право пользования правом на участок.» «Пеня за
+  своевременность» (levied when a filing arrives early: it disrupts the queue).
+- **An inspector with a name and a recurring life.** He is polite, thorough, and always finds
+  something; over a playthrough he is promoted twice, and each promotion makes him worse. He
+  remembers your bases. He asks after your попугай.
+- **Hold music on the эфир.** The ПАЛАТА's channel plays one bar, forever, between announcements
+  that do not concern you. The music module is already there (`10-music`).
+- **The seizure notice congratulates you** on the successful conclusion of your participation in
+  the register, and encloses a form for the return of the notice.
+- **The auction of your own seized base**, where the ПАЛАТА is the seller, the auctioneer and the
+  only other bidder, and everybody is very glad to see you again.
+- **A hundred terrible CVs** (§34) — this is where the volume of the comedy lives: «вёл три базы,
+  все три стоят», «мой метод — доверие», «сводку не подписываю принципиально», «работаю только с
+  живыми людьми, приборы искажают». Generated, endless, and every one of them is applying to run
+  the thing that keeps your crew breathing.
+
+Two guards that stay, and they are not about volume:
+
+1. **The game never breaks its own world to be funny.** Everything above exists inside the fiction.
+2. **The joke never eats the clarity (§22).** A player must still be able to say what killed the
+   base. The ПАЛАТА may be ridiculous; it may never be *unclear* about what it charged and why.
+
+## 41. Queue changes
+
+- **M404** becomes «один и сотня»: the candidate generator, the flaw model, the interview tells,
+  the real one's placement and route. The tell must be readable on the very first interview.
+- **M405** drops the notebook and keeps the channels: rumour, bearing, provenance, the wall.
+- **M406** gains §37 (he builds) — the largest single piece of the pass.
+- **M407** carries §32, the ПАЛАТА and the loud tone together.
+- **New M408 · СВЯЗЬ** (§38): the receiver channel, the signal table, the base calling, the one
+  remote order. It can ship early — right after M393 — because it is what makes every later pass
+  observable, and because it is good on its own.
+- **§39** rides M402 (развалина), which now must guarantee recoverability from every state.
+
+---
+
+# Part V — why a base is necessary (author, 2026-09-06: «придумай причину»)
+
+> «и база должна в своём финале или не в финале прям давать ценное, чтобы она прям пиздец была
+> необходима. Придумай причину.»
+
+The reason cannot be money. `DESIGN-arc` settles that in one line — **«The game never hands out
+credits. It hands out access»** — and the whole arc turns on one value: **назван / не назван**,
+will anyone say your call sign out loud.
+
+So here is the reason, and it is one sentence:
+
+> **A ship passes through. A base is the only thing the player owns that has a place on the map, a
+> name, a call sign and people in it — and therefore the only thing of yours the world can come
+> *to*, and name out loud.**
+
+Four layers hang off that, near to far. Each is a real mechanism, none of them is a wall.
+
+## 42. Near — the things nobody sells
+
+Part I §23 and III §29: a solved base on a hostile world makes иридий, ксенобиом, криоген,
+породу 5 — the materials with `price:0` that the shipyard, the lab, the holding's third tier and
+the war layer's оснастка all need and no counter anywhere stocks. Wanting is not needing, but it is
+where the necessity starts: after the mid-game there is a shopping list you cannot buy your way off.
+
+## 43. Middle — the blockade
+
+The war layer (M369–M378) gives powers the ability to close a system's counters. A blockade is the
+moment the game stops being about profit: no fuel, no parts, no repairs, no air, and the nearest
+open station is four jumps the wrong way.
+
+**A base is the only supply the player controls.** Ice becomes water and air; the мастерская
+repairs; the ледоплавка and the химия make гидразин for fuel; the pad takes a barge. A player with
+a working base flies through a war. A player without one is grounded and watches, which in this
+game is the worse fate.
+
+One line of mechanism, no new systems: during a blockade, the base's own stores and мастерская
+become a station's counters for their owner, at cost.
+
+## 44. Far — the expedition names it
+
+`11x-expedition` is already built: in Act II, once the Ring has been heard and a tape handed in, a
+circular goes out on the эфир and **the whole world works for sixty days** on an expedition. Its own
+header states the design's honest cruelty: «Игрок не герой экспедиции. Он — один из тысячи рук.»
+
+The base is what changes that, and it is the finale the author asked for:
+
+**An expedition into the far dark cannot be mounted from stations alone. It needs a forward base on
+the way out** — a pad, a mast, people, closed life support, standing in the right corridor. The
+world has a few candidates of its own, all mediocre. If the player has one that qualifies, the
+circular names it:
+
+> «…опорный пункт экспедиции — участок «Тишина», система −7:14. Всем бортам: приём и заправка
+> там.»
+
+And that is the arc's positive charge, paid in the only currency it accepts:
+
+- **The world's traffic reroutes through your pad.** Barges land, crews eat, the ledger fills. Not a
+  reward you collect — a place that is suddenly busy, and busy in your name.
+- **Your call sign is said by everybody, for sixty days**, on a channel you did not pay for.
+- **Access, not credits:** the expedition's own stores, a person who stays afterwards, a drawing
+  nobody sells, the right to be on the list.
+- **And afterwards, when it is over**, the base is still there and people still come. That is
+  `DESIGN-after`'s material.
+
+If the base does not qualify, nothing is taken away. The expedition simply goes the poor way, and
+the player hears about it, from outside, one of a thousand hands. Absence is this game's punishment
+and it has always been the sharpest one it has.
+
+**Requirements, so a player can aim at it long before it happens:** площадка, мачта, жилой отсек
+with people, life support closed for the last 200 shifts, and the site inside the corridor the
+circular walks. All five are visible from the first day of building. None can be bought late.
+
+## 45. The mast — the base is an instrument
+
+One module makes the base necessary in a way that has nothing to do with cargo. The **мачта** can
+only stand on a planet, on a base, on the surface row — and it is what turns the receiver from a
+thing that hears into a thing that *locates*:
+
+- the bearing on a signal becomes direction **and distance** — which is how the hunt of §35 stops
+  being a lifetime (and yes: to find the man who will run your base, you need a base);
+- the СВЯЗЬ channel (§38) reaches the whole galaxy instead of a few sectors;
+- the Ring, the QSL correspondents and the far ether come in clean.
+
+Nothing is gated behind it — everything above is audible without a mast, badly. The base is not a
+key; it is the difference between hearing and knowing, which is the same difference the whole game
+is about.
+
+## 46. The quiet one — a place where somebody waits
+
+The ship's crew rotate through orders. A base is the only address in «Дрейф» where a person can
+simply **live**: the returners (`11s`), the wanderer, a musician who stayed, the man who did not
+leave the ruin. And a place with people in it does one thing no station ever does — it hears you
+coming and says your call sign first:
+
+> «Борт, это база. Слышим тебя.»
+
+That is the arc's value, spoken by a thing the player built, and it is the real answer to «зачем
+база нужна». Everything in Parts I–IV is the price of that sentence.
+
+## 47. Where this lands in the queue
+
+- §42 ships with **M403** (the payoff).
+- §43 needs the war's blockade; it is one function on the base side and belongs in **M403** too,
+  dormant until the war layer lands.
+- §45 (мачта) moves **earlier** — into **M408** with СВЯЗЬ, because the bearing depends on it.
+- §44 is its own pass, **M409 · опорный пункт**: the qualification check, the circular naming the
+  site, the rerouted traffic, the sixty days, and what stays afterwards. It ships last of the whole
+  base queue, because it is the payoff of every pass before it.
+- §46 is not a pass. It is the register every line of text in the layer is written in.
+
+---
+
+# Part VI — the distribution, and a critique of this document
+
+## 48. Кандидаты — распределение, не список
+
+**§34's three buckets are withdrawn.** Nothing about the hundred is hard-written: every candidate is
+a roll, the outcome is continuous, and «плохой / сносный / настоящий» are places on a curve rather
+than categories. The player can meet the best man in the galaxy on the first interview of the game,
+and the game does not know or care that it happened.
+
+### 48.1 The roll
+
+Each candidate is a pure function of `hashi(galaxySeed, id)` — nothing stored, generated when a
+counter is looked at, identical every time it is looked at again:
+
+    q     = .12 + .78·pow(r(), 2.6)     // качество: какую долю потенциала базы он вытягивает
+    жад   = .10 + .22·r()               // его доля с базы
+    плата = 40 + 90·r()                 // жалованье в смену
+    изъян = r() < .62 ? pick(ИЗЪЯНЫ,r) : null
+    срок  = 15 + floor(105·r())         // смен ПОД НАГРУЗКОЙ до первых признаков
+    маск  = pow(r(), 1.6)               // насколько его сводки это прячут
+    чутьё = q·(1 − .5·маск)             // насколько он читает планету, а не шаблон
+
+`pow(r(), 2.6)` is the whole design in one expression: the mass sits near the bottom, the tail is
+thin, and there is no ceiling anyone can see.
+
+### 48.2 What that actually produces
+
+Net for the player = `q × потенциал базы − жад − плата − ущерб(изъян)`. Rolled out:
+
+| what he turns out to be | доля кандидатов | what it feels like |
+|---|---|---|
+| **в минус** — доля, жалованье и ошибки съедают больше, чем он вытягивает | ≈ 44% | the base is fine and the account is emptier every month |
+| **в ноль** — работает, платит за себя, и всё | ≈ 34% | «а что изменилось-то» |
+| **в плюс**, .45–.65 потенциала | ≈ 19% | a real, good, permanent hire. Most players will end their game here |
+| **почти**, .70–.85 | ≈ 3% | he is very good and something is still wrong |
+| **настоящий**, .95+, без изъяна, **и он единственный, кто строит и развивает (§37)** | **один на галактику** | the layer stops being work |
+
+The important line is the second one. The dominant experience of hiring is not disaster — it is
+**nullity**: he manages, the base runs, the sводки arrive, and at the end of the period there is
+nothing. That is truer than a table of villains, it is funnier, and it is exactly the author's
+«другие тож управляют и тож могут просто не приносить нихрена».
+
+### 48.3 The one, and the odds of meeting him
+
+He is one specific `id`, chosen from the galaxy seed. He is a rolled person like everyone else —
+he simply rolled the tail, and his `изъян` came up null.
+
+- **At a counter: p = 0.** He does not advertise (§35.1). A player who only interviews at counters
+  meets the 19% and calls it a day. This is the single most important number in the design.
+- **In the world: p ≈ .003 per cantina/place visited**, since he is one man moving through a few
+  hundred inhabited places. Blind wandering finds him about half the time in ~230 visits — a real
+  possibility across a long game, and **it can be the very first one**.
+- **With the hunt** (rumour → region, two bearings → a cross, provenance → recency): the space
+  collapses to a handful of flights per attempt. The hunt does not raise a hidden chance; it tells
+  you where to walk so the .003 becomes a certainty.
+- **The tell is available at every interview, including the first** (§35). Luck is not a substitute
+  for noticing; it is only ever an invitation to notice.
+
+### 48.4 The срок was wrong — corrected
+
+§34.1 said 15–120 смен to first signs. At 20 minutes a shift that is 5 to 40 hours of real time per
+candidate, which is not difficulty, it is a bill. Two corrections:
+
+1. **Срок counts shifts under load, not shifts elapsed.** A parked or idling base proves nothing.
+2. **The planet is the accelerator.** The hostility of the world divides the срок: on a hostile
+   rock a flaw shows in a quarter of the time, because the flaw is exactly an inability to answer
+   what the planet is asking. On a rocky world it may never show — and on a rocky world it also
+   costs almost nothing, which is why nobody needs to care.
+
+So the test is: put him on the worst planet you own and listen for a few days of play. That is
+expensive, honest, and finite.
+
+---
+
+## 49. Critique of this document (self, 2026-09-06)
+
+The author asked whether these concepts still lead or have slid into pop gaming. The honest answer
+belongs in the file, not only in the chat.
+
+**What genuinely leads — three things, and only three:**
+
+1. **A manager with no revealable statistic.** There is no hidden number to expose, no check to
+   pass, no reveal. His quality *is* his behaviour over time, judged by the state of a thing he
+   runs. Almost nothing does this; games hand you a stat because a stat is easy to render.
+   Blade Runner's randomised culprit is the nearest relative and it is thirty years old.
+2. **Judging by a degraded signal.** The СВЯЗЬ channel (§38) gives worse information the further
+   away you are, and the base calls *you*. Every colony game in the genre gives a perfect remote
+   panel. This one makes the panel lie with distance, and turns that into the instrument for §48.
+3. **The reward being «назван», not credits** (§44). The expedition naming your site on a channel
+   you did not pay for is not a mechanic any comparable game has, because it only works inside this
+   game's own arc.
+
+**What is stock, and should be admitted as stock:** the six gauges, adjacency, room merging, rush,
+walking incidents, the wealth-scaled director, the world-type table, the tiered chains and the
+charter laws are the genre's grammar — Fallout Shelter, ONI, RimWorld, Frostpunk, Surviving Mars,
+each recognisable at a glance. That is fine and it is deliberate: a player must be able to sit down
+and play. But none of it is where this design's value is, and none of it should be defended as if
+it were.
+
+**The real danger is not pop — it is the pile.** Twenty-one modules, nine laws, eight instruments of
+the ПАЛАТА, eight dials, seven contract terms, a hundred candidates, five layers of necessity. Every
+piece argues for itself; together they are at risk of being a list rather than a game. The holding
+was designed this way (all 82 buildings at once) and its own critique found 37 things.
+
+**The cut, if a cut is needed** — in this order, and the design survives all of it:
+
+    contract terms (§32) → 3 of 7          keep отсрочка, аванс, уступка долга
+    ПАЛАТА instruments  → 4 of 8           сбор, сводка, проверка, снятие с учёта
+    modules             → 16 of 21         drop регенератор, белковый бак, лазарет, гермозатвор, маяк
+    difficulty laws     → 5 of 9           keep 1, 2, 4, 6, 8 (coupling, delay, wear, space, planet)
+    charter             → cut whole until the gauges have been played
+
+What must never be cut, because it is the whole reason the layer exists: the six gauges, the
+delayed feedback, the planet as the difficulty, the one manager, the degraded signal, and the
+expedition naming the base.
+
+**Verdict.** The substrate is pop and the spine is not. The design leads exactly as long as fork 3
+is answered (b) — gauges first, played for an evening, everything else judged after. Built (a)-style
+as one heroic pass, it becomes a very large list, and the three things that lead will be buried
+under the eighteen that do not.
+
+---
+
+## 50. Две честные игры — руками и не глядя
+
+(Author, 2026-09-06: «не ну можно вручную, и норм будет — построил, молодец, без управляйки. Просто
+это ты упарываешься в базу и не летаешь, следишь. Как игроку тож норм».)
+
+**The управляющий is not a fix for a layer that does not work without him. He is a trade.** What he
+buys is attention, and attention is the only thing in this game that cannot be earned, mined,
+bought or inherited.
+
+| | **руками** | **через управляющего** |
+|---|---|---|
+| потолок базы | **100% — выше, чем у любого нанятого** | .12….85 by the roll (§48), 1.0 for the one |
+| доля | никакой | 10–32% плюс жалованье |
+| аврал | ты добегаешь сам, и делаешь это лучше всех (§11) | он справляется на своём уровне |
+| сводка, клеймо, инспектор | сам, лично, на станции | его забота |
+| цена | **ты живёшь у базы и не летаешь** | ты летаешь |
+
+Both are complete games. The manual player is not playing a degraded version waiting for a hire —
+he is playing the harder and better-paying one, and «построил сам» is the correct ending of that
+story. This has three consequences that the rest of the design must honour:
+
+1. **Nothing is gated behind a manager.** Not the expedition's опорный пункт (§44), not патент, not
+   the deep row, not any material. Every requirement in this document is reachable by hand.
+2. **Presence is strictly better at the base and strictly worse at everything else.** Sitting on a
+   base means not trading, not hunting, not answering the эфир, not being where the war is. The
+   opportunity cost is the whole rest of the game, and it is never spelled out as a penalty.
+3. **The hunt of §§34–48 is optional content, not a fix.** That also de-risks §49's pile: a player
+   who never hears of the hundred candidates loses nothing they were promised.
+
+The СВЯЗЬ channel (§38) belongs to the flying player; the man sitting on his own base does not need
+a receiver to know his air is short. And that asymmetry is the layer in one image — **one player
+reads the gauges, the other listens to them from four sectors away and hopes.**
+
+---
+
+## 51. Settled — the author's decisions, so they are not re-litigated
+
+Answered by the author on 2026-09-06, in this conversation. A fresh session does not reopen these.
+
+| # | fork | settled |
+|---|---|---|
+| 3 | scope of the first pass | **(a) everything. Nothing is cut, all of it is combined and built in order.** §49's cut list is withdrawn as a plan and kept only as the record of a risk that was weighed and declined |
+| 6 | how many управляющих | **one** per galaxy |
+| — | the hundred | **a continuous distribution, not buckets** (§48). Meeting him on the first interview is possible and is not special-cased |
+| 7 | a notebook for the hunt | **no notebook.** The player judges by whether the base works (§38) |
+| 8 | can a base be lost | **yes, and it is always recoverable from every state** (§39) |
+| 10 | how loud is the joke | **maximum, to the end** (§40); the deadpan law of §27 is withdrawn |
+| — | he builds | **yes** — the real one develops the base himself (§37) |
+| — | watching from anywhere | **the receiver channel** (§38), not a screen |
+| — | why a base is necessary | **Part V** — the things nobody sells, the blockade, the expedition naming it, the place where somebody waits |
+| — | playing by hand | **a complete game with the higher ceiling** (§50). Nothing is gated behind a manager |
+
+Unanswered forks keep their recommended defaults and may be raised again when their pass is built:
+**1** reactor fuel — (b) at half strength · **2** starving — (a) soft · **4** old bases — (b) with a
+journal line · **5** which bases — only those with a жилой отсек · **9** the first base — (a) no
+grace · **11** the ПАЛАТА is wrong exactly once — yes.
+
+### 51.1 The queue in build order
+
+The staged order below supersedes §17, §25, §41 and §47 wherever they disagree. Twenty passes, one
+version each, each playable on /dev before the next starts.
+
+**A · хозяйство** — M390 смена и `baseResolve` (§3, §12, §15) · M391 воздух и вода (§4–6, §13) ·
+M392 тепло, глубина, криоцех (§4–7) · M393 харч и дух (§6, §8).
+
+**B · место и люди** — M394 СВЯЗЬ и мачта (§38, §45 — pulled forward: it is what makes every later
+pass observable) · M395 люди в комнате (§8) · M396 соседство, залы, ствол, сетка 6×4 (§7) ·
+M397 директор (§10) · M398 аврал (§11) · M399 устав (§9).
+
+**C · тяжёлая игра** — M400 формуляр планеты (§21) · M401 девять законов (§22) · M402 развалина и
+возврат (§22.1, §39) · M403 плата и блокада (§23, §42, §43) · M404 ремесленный проход по всей
+сцене (`DESIGN-craft`, `look()`, its own almanac issue).
+
+**D · человек** — M405 сотня и распределение (§34, §35, §48) · M406 охота (§24.4, §35.1) ·
+M407 он строит и развивает (§24.6, §37).
+
+**E · дело и мир** — M408 ПАЛАТА и станция платит, тон на максимум (§28–§32, §40) ·
+M409 опорный пункт экспедиции (§44).
+
+§46 and §50 are not passes: they are the register every line of the layer is written in, and a law
+every pass is checked against.
