@@ -64,6 +64,7 @@ const BLOG={
   melt:    (B,a)=>"плавильня дала "+a.q+" сплав"+pl3(a.q,"","а","ов"),
   deep:    ()=>"смотритель вскрыл нижний ярус",
   wear:    (B,a)=>"жара доконала: "+a.what,
+  worn:    (B,a)=>a.what+" отработал своё. Ничто не доделано навсегда",
   warn:    (B,a)=>a.warn,
   law:     (B,a)=>"устав: принят закон «"+a.ru+"». Навсегда",
   thief:   (B,a)=>"со склада пропало "+a.q+" ед. Дверь была открыта",
@@ -126,6 +127,9 @@ function baseShiftRun(B,n){
   said|=baseLifeStep(B,P,n)?1:0;
   /* тепло (M392): жара точит технику, криоцех гонит газы в криоген */
   said|=baseHeatWear(B,n)?1:0;
+  /* закон 4 (M401, §22): изнашивается всё и всегда — база в равновесии
+     выходит из него сама */
+  if(typeof baseWearStep==="function")said|=baseWearStep(B,n)?1:0;
   said|=baseCryoMake(B,P,n)?1:0;
   if(B.wake){B.wake=0;return;}      /* смена на раскочегарку: ни добычи, ни сдачи */
   if(!baseParked(B)){
@@ -180,7 +184,9 @@ function baseMine(B,P,min,n){
   const law=(typeof charterWorkMul==="function")?charterWorkMul(B):1;
   /* порода и тяжесть (M400): богатая порода и тяжёлый мир бурятся лучше */
   const world=(typeof dialOreMul==="function")?dialOreMul(B)*clamp(dialGrav(B),.8,1.4):1;
-  const want=min*P.drillEff*eff*crewBoost*heat*adj*vein*law*world*1.1;
+  /* закон 5 (M401): пьющий работает вполсилы смену через смену */
+  const folk=(typeof baseDrinkMul==="function")?baseDrinkMul(B,n):1;
+  const want=min*P.drillEff*eff*crewBoost*heat*adj*vein*law*world*folk*1.1;
   let left=Math.min(want,Math.max(0,cap-held));
   const full=want>0&&left<want*.5;      /* склад забит: добыча стоит, и это строка */
   const r=rng(hashi(B.sx*7919+B.sy,B.idx,hashi(n,0x9111,0x2D)));
@@ -391,8 +397,11 @@ function baseSupply(B,k,q){
 /* строка для стола: чем база дышит и сколько ей осталось */
 function baseLifeLine(B){
   const L=baseLife(B),left=baseLifeLeft(B),M=baseLifeMakers(B);
-  const head="воздух "+L.air+"/"+LIFE_CAP+" · вода "+L.water+"/"+LIFE_CAP+
-    " · харч "+(L.food|0)+(L.q==="poor"?" (скверный)":"")+
+  /* закон 3 (M401, §22): цифры — это радист и приборы. Без них шкалы говорят
+     словами, и это не скупость интерфейса, а цена сведений */
+  const head=((typeof baseGaugeLine==="function")?baseGaugeLine(B)
+             :("воздух "+L.air+" · вода "+L.water+" · харч "+(L.food|0)))+
+    (L.q==="poor"?" (скверный)":"")+
     (baseCrewN(B)?" · дух "+baseSpirit(B)+"%":"")+
     ((typeof baseHeatLine==="function")?" · "+baseHeatLine(B):"");
   if(!baseCrewN(B))return head+" · людей нет, расхода нет";
@@ -579,6 +588,8 @@ function baseSpirit(B,n){
   if(typeof baseAdjSpirit==="function")s+=baseAdjSpirit(B);
   /* устав (M399): у каждого закона своя цена, и платят её духом */
   if(typeof charterSpirit==="function")s+=charterSpirit(B);
+  /* закон 5 (M401): люди — не множители, и у каждой черты своя причина */
+  if(typeof baseTraitSpirit==="function")s+=baseTraitSpirit(B);
   if(P.eff<.7)s-=8;                                        /* и свет мигает */
   if(L.q==="good"&&(L.food|0)>0&&!baseParked(B)&&!b)s+=10; /* а бывает и хорошо */
   return clamp(s|0,0,100);

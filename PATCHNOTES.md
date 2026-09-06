@@ -7,6 +7,36 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.401.0 - M401: three laws that were missing, and the guard over all nine
+
+Hard is not big numbers; big numbers are tedium. Six of §22's nine laws were already standing —
+everything touches three gauges, the feedback is delayed by shifts, space is the dearest currency,
+failure cascades, the planet is the difficulty, and the second base is a trap nobody warns you
+about. Three were missing, and all three are about what the player does **not** have.
+
+**Сведения покупаются.** Without a радист on the base and a working приёмник on the ship, the
+gauges read «воздух — впритык · вода — хватает · харч — мало» and not one digit. With one of them
+you get numbers; with both, the forecast names the event and its shift instead of muttering about
+the barograph. Precision is a person and a thing, and most of the game will be flown on adjectives.
+
+**Изнашивается всё.** One compartment a shift loses a little hp, chosen by the shift number and
+never by the frame, and the further heat is from the calm band the faster it goes. A base in
+perfect balance leaves perfect balance by itself; an engineer and a мастерская cover the drift, and
+an abandoned base reaches the floor in about a week rather than in an evening. The first
+measurement made it a fault rather than a law — 0.3 hp a shift on a hot base wiped compartments in
+a dozen shifts — and it was retuned against exactly that.
+
+**Люди — не множители.** A вахтовик carries traits derived from his own seed and stored nowhere:
+боится тесноты, пьёт, не спит у реактора, нелюдим. Each has its own reason and its own condition —
+the crowded base, the reactor next to housing, the full compartment — so the best crew list is no
+longer the list with the highest skills.
+
+And the guard over all nine: **hard, never obscure.** The desk now carries a «почему» line for every
+base, always, in whatever vocabulary you have paid for: «нечего есть · воздуха на исходе · жарко ·
+людям тут не по себе», or «всё в порядке: дух 84%». If a player cannot say what killed a base, the
+pass is not finished.
+
+---
 ## 0.400.0 - M400: the planet is the difficulty setting
 
 «Дрейф» will never have a difficulty slider. It has a galaxy in which some rocks will kill you, and

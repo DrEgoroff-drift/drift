@@ -185,6 +185,10 @@ function renderBasesTab(st){
             (roleForce(c)<1?" (не по профилю)":"")).join(", "):"")+"</s>";
       if(typeof baseLifeLine==="function")
         r.firstChild.innerHTML+="<s>"+baseLifeLine(B)+"</s>";
+      /* сторож девяти законов (M401, §22): игрок обязан всегда мочь сказать,
+         что с базой не так. Строка пишется даже когда всё хорошо */
+      if(typeof baseWhy==="function")
+        r.firstChild.innerHTML+="<s>почему: "+baseWhy(B)+"</s>";
       /* гость у затвора (M395): его берут или ему отказывают, и то и другое —
          решение игрока, а не строка в журнале */
       if(B.guest)r.firstChild.innerHTML+="<s><b style='color:#e8c46a'>у затвора ждёт "+

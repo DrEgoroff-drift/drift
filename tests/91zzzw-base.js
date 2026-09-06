@@ -359,13 +359,24 @@ TEST_SUITES.push(()=>suite("база M392: тепло с обеих сторон
   ok(baseHeat(B3)<=HEAT_HARD,"но не печка");
   eq(baseHeatBand(B3),1,"первая ступень");
   eq(baseHeatMul(B3),.85,"минус пятнадцать процентов выработки, и только");
-  const hp2=B3.cells.filter(c=>c).reduce((s,c)=>s+c.hp,0);
-  B3.t0=baseShift()-20;
-  baseResolve(B3,Date.now());
-  eq(B3.cells.filter(c=>c).reduce((s,c)=>s+c.hp,0),hp2,"и её не точит ничто");
+  /* с M401 (закон 4) износ есть ВСЕГДА — база в равновесии выходит из него
+     сама. Мерить надо не «точит или нет», а насколько быстрее точит жара */
   B3.cells[3]={k:"radiator",hp:1};
   eq(baseHeatBand(B3),0,"один радиатор приводит её в норму");
   eq(baseHeatMul(B3),1,"и выработка возвращается целиком");
+  const hp2=B3.cells.filter(c=>c).reduce((s,c)=>s+c.hp,0);
+  B3.t0=baseShift()-20;
+  bNoDir(()=>baseResolve(B3,Date.now()));
+  const calm=hp2-B3.cells.filter(c=>c).reduce((s,c)=>s+c.hp,0);
+  ok(calm>0&&calm<.3,"в норме износ есть, но он ровный: "+calm.toFixed(3));
+  const B4=bLife();
+  B4.type="volcanic";
+  for(let i=0;i<4;i++)B4.cells[5+i]={k:"reactor",hp:1};
+  const hp3=B4.cells.filter(c=>c).reduce((s,c)=>s+c.hp,0);
+  B4.t0=baseShift()-20;
+  bNoDir(()=>baseResolve(B4,Date.now()));
+  const hot2=hp3-B4.cells.filter(c=>c).reduce((s,c)=>s+c.hp,0);
+  ok(hot2>calm,"а в печке точит заметно быстрее: "+hot2.toFixed(2)+" против "+calm.toFixed(3));
 }));
 
 TEST_SUITES.push(()=>suite("база M392: криоген везут, криоцех делает",()=>{
@@ -1062,4 +1073,88 @@ TEST_SUITES.push(()=>suite("база M400: ручки и правда крутя
   set({light:.2});
   ok(basePower(B).prod<bright,"на тусклом мире панель даёт меньше: "+
     basePower(B).prod+" против "+bright);
+}));
+
+/* ── девять законов (M401) ──
+   Проверяются три достроенных: сведения покупаются, изнашивается всё, люди —
+   не множители. И сторож над всеми: игрок обязан мочь сказать, что не так. */
+TEST_SUITES.push(()=>suite("база M401: сведения покупаются",()=>{
+  const B=bLife();
+  B.cells[5]={k:"habitat",hp:1};B.cells[6]={k:"habitat",hp:1};
+  bCrew(B,2);
+  baseLife(B).air=100;baseLife(B).water=100;baseLife(B).food=40;
+  /* без радиста и с казённым прибором — слова, а не цифры */
+  G.instrKit=null;
+  for(const id of INSTR_KEYS)instrUnit(id).wear=1;      /* приборы стёрты вконец */
+  eq(baseSharp(B),0,"ни радиста, ни приборов");
+  const words=baseGaugeLine(B);
+  ok(words.indexOf("—")>0,"шкалы говорят словами: "+words);
+  ok(!/\d/.test(words),"и ни одной цифры");
+  /* радист возвращает цифры */
+  G.crew[0].role="radist";
+  ok(baseSharp(B)>=1,"радист есть");
+  const nums=baseGaugeLine(B);
+  ok(/\d/.test(nums),"с ним шкалы в цифрах: "+nums);
+  /* прогноз: без сведений примета, с ними — событие и срок */
+  const n=baseShift();
+  const w1=baseWarnLine(B,n);
+  G.crew[1].role="radist";
+  for(const id of INSTR_KEYS)instrUnit(id).wear=0;
+  ok(baseSharp(B)>=2,"и радист, и приборы");
+  const w2=baseWarnLine(B,n);
+  if(w1&&w2)ok(w2.indexOf("СМЕН")>0||w2!==w1,"со сведениями прогноз точнее: «"+w1+"» → «"+w2+"»");
+  else ok(true,"в эту смену прогноза нет вовсе");
+}));
+
+TEST_SUITES.push(()=>suite("база M401: изнашивается всё, и люди не множители",()=>{
+  const B=bLife();
+  /* закон 4: ровный износ есть всегда */
+  const hp0=B.cells.filter(c=>c).reduce((s,c)=>s+c.hp,0);
+  const n=baseShift();
+  for(let i=0;i<10;i++)baseWearStep(B,n+i);
+  const worn=hp0-B.cells.filter(c=>c).reduce((s,c)=>s+c.hp,0);
+  ok(worn>0,"за десять смен что-то стёрлось: "+worn.toFixed(3));
+  ok(worn<10*WEAR_BASE*2+.5,"но не больше, чем обещано");
+  /* закон 5: черты выводятся из семени и не хранятся */
+  const c={seed:12345};
+  const t1=crewBaseTraits(c),t2=crewBaseTraits(c);
+  eq(t1.length,t2.length,"черты у человека не гуляют");
+  if(t1.length)eq(t1[0].id,t2[0].id,"и это те же самые");
+  let with_=0;
+  for(let s=0;s<400;s++)if(crewBaseTraits({seed:s}).length)with_++;
+  ok(with_>60&&with_<300,"черта есть не у всех и не у одного: "+with_+" из 400");
+  for(const T of CREW_BASE_TRAITS)ok(T.ru&&T.note,"у черты «"+T.ru+"» сказано, что она значит");
+  /* и они и правда роняют дух — каждая по своей причине */
+  const B2=bLife();
+  for(let i=0;i<8;i++)B2.cells[i]={k:"habitat",hp:1};
+  G.crew=[];
+  let found=null;
+  for(let s=1;s<200&&!found;s++)if(crewBaseHas({seed:s},"tight"))found=s;
+  ok(found!==null,"нашёлся боящийся тесноты");
+  if(found!==null){
+    G.crew=[{name:"Тесный",role:"driller",spec:"mine",lvl:1,morale:1,seed:found,
+      trips:0,state:null,traits:[],xp:10,cargo:{},
+      order:{kind:"base",sx:B2.sx,sy:B2.sy,idx:B2.idx}}];
+    ok(baseTraitSpirit(B2)<0,"на большой базе ему тяжело: "+baseTraitSpirit(B2));
+  }
+}));
+
+TEST_SUITES.push(()=>suite("база M401: игрок всегда может сказать, что не так",()=>{
+  const B=bLife();
+  G.crew=[];
+  eq(baseWhy(B),"людей нет — база просто стоит","пустая база объясняет себя");
+  B.cells[5]={k:"habitat",hp:1};
+  bCrew(B,1);
+  const L=baseLife(B);
+  L.air=200;L.water=200;L.food=200;L.q="good";
+  B.cells[3]={k:"radiator",hp:1};
+  ok(baseWhy(B).indexOf("в порядке")>=0,"на здоровой базе так и сказано: "+baseWhy(B));
+  /* и каждая беда называется своим словом */
+  L.food=0;
+  ok(baseWhy(B).indexOf("нечего есть")>=0,"голод назван: "+baseWhy(B));
+  L.air=1;L.water=1;
+  ok(baseWhy(B).indexOf("воздух")>=0,"и воздух тоже");
+  basePark(B,"hand",baseShift());
+  ok(baseWhy(B).indexOf("приказу")>=0,"и консервация — тоже причина: "+baseWhy(B));
+  ok(baseWhy(B).indexOf("undefined")<0,"и нигде не мусор");
 }));

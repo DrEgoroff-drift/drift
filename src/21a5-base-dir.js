@@ -220,7 +220,9 @@ function baseDirStep(B,n){
 function baseDirLine(B){
   const f=baseForecast(B);
   const out=[];
-  if(f)out.push("ПРОГНОЗ: "+f.warn.toUpperCase());
+  /* закон 3 (M401): со сведениями прогноз называет событие и срок, без них —
+     только примету */
+  if(f)out.push("ПРОГНОЗ: "+((typeof baseWarnLine==="function")?baseWarnLine(B):f.warn.toUpperCase()));
   if(B.fire)out.push("ГОРИТ · ОТСЕК "+((B.fire.c|0)+1)+":"+((B.fire.r|0)+1));
   if(baseDusty(B))out.push("ЗАНОС · БУР СТОИТ");
   if(baseColdHit(B))out.push("ХОЛОДНЫЙ УДАР");

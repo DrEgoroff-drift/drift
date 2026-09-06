@@ -1577,7 +1577,14 @@ site inside the planet shifts them; and §21.3's three levels of scouting — th
 ground. Suites in `91zzzw-base`, and the base suites now pin a flat formulary so they measure people
 and machines rather than the world. **Deferred:** the gas giant as a floating station with its own
 build list (§21.2 says «later»), and «затопление» as the ocean's own walking incident — the fire of
-M397 is the only kind so far. · M401 девять законов (§22) · M402 развалина и
+M397 is the only kind so far. · ~~M401 девять законов~~ — 0.401.0 (2026-09-06): `21a9-base-laws` — the three laws that were not yet
+standing. Law 3: `baseSharp` counts a радист and a working приёмник, and the gauges and the forecast
+speak in words until they are paid for. Law 4: a per-shift drift on one compartment, scaled by
+distance from the calm band and retuned after the first cut turned it from a law into a fault. Law
+5: crew traits derived from the seed with a condition each. Plus the guard — `baseWhy` on the desk
+row, always, naming the cause in the vocabulary the player has. **Deferred:** «не ладит с конкретным
+человеком» (it needs a pair, and pairs need a list the player can read) and instrument wear feeding
+back into the reading — today one working приёмник is enough. · M402 развалина и
 возврат (§22.1, §39) · M403 плата и блокада (§23, §42, §43) · M404 ремесленный проход по всей
 сцене (`DESIGN-craft`, `look()`, its own almanac issue).
 

@@ -1756,7 +1756,7 @@ body.table u.addr{color:#7a4a20}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.400.0";
+const VER="0.401.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -53079,6 +53079,7 @@ const BLOG={
   melt:    (B,a)=>"плавильня дала "+a.q+" сплав"+pl3(a.q,"","а","ов"),
   deep:    ()=>"смотритель вскрыл нижний ярус",
   wear:    (B,a)=>"жара доконала: "+a.what,
+  worn:    (B,a)=>a.what+" отработал своё. Ничто не доделано навсегда",
   warn:    (B,a)=>a.warn,
   law:     (B,a)=>"устав: принят закон «"+a.ru+"». Навсегда",
   thief:   (B,a)=>"со склада пропало "+a.q+" ед. Дверь была открыта",
@@ -53141,6 +53142,9 @@ function baseShiftRun(B,n){
   said|=baseLifeStep(B,P,n)?1:0;
   /* тепло (M392): жара точит технику, криоцех гонит газы в криоген */
   said|=baseHeatWear(B,n)?1:0;
+  /* закон 4 (M401, §22): изнашивается всё и всегда — база в равновесии
+     выходит из него сама */
+  if(typeof baseWearStep==="function")said|=baseWearStep(B,n)?1:0;
   said|=baseCryoMake(B,P,n)?1:0;
   if(B.wake){B.wake=0;return;}      /* смена на раскочегарку: ни добычи, ни сдачи */
   if(!baseParked(B)){
@@ -53195,7 +53199,9 @@ function baseMine(B,P,min,n){
   const law=(typeof charterWorkMul==="function")?charterWorkMul(B):1;
   /* порода и тяжесть (M400): богатая порода и тяжёлый мир бурятся лучше */
   const world=(typeof dialOreMul==="function")?dialOreMul(B)*clamp(dialGrav(B),.8,1.4):1;
-  const want=min*P.drillEff*eff*crewBoost*heat*adj*vein*law*world*1.1;
+  /* закон 5 (M401): пьющий работает вполсилы смену через смену */
+  const folk=(typeof baseDrinkMul==="function")?baseDrinkMul(B,n):1;
+  const want=min*P.drillEff*eff*crewBoost*heat*adj*vein*law*world*folk*1.1;
   let left=Math.min(want,Math.max(0,cap-held));
   const full=want>0&&left<want*.5;      /* склад забит: добыча стоит, и это строка */
   const r=rng(hashi(B.sx*7919+B.sy,B.idx,hashi(n,0x9111,0x2D)));
@@ -53406,8 +53412,11 @@ function baseSupply(B,k,q){
 /* строка для стола: чем база дышит и сколько ей осталось */
 function baseLifeLine(B){
   const L=baseLife(B),left=baseLifeLeft(B),M=baseLifeMakers(B);
-  const head="воздух "+L.air+"/"+LIFE_CAP+" · вода "+L.water+"/"+LIFE_CAP+
-    " · харч "+(L.food|0)+(L.q==="poor"?" (скверный)":"")+
+  /* закон 3 (M401, §22): цифры — это радист и приборы. Без них шкалы говорят
+     словами, и это не скупость интерфейса, а цена сведений */
+  const head=((typeof baseGaugeLine==="function")?baseGaugeLine(B)
+             :("воздух "+L.air+" · вода "+L.water+" · харч "+(L.food|0)))+
+    (L.q==="poor"?" (скверный)":"")+
     (baseCrewN(B)?" · дух "+baseSpirit(B)+"%":"")+
     ((typeof baseHeatLine==="function")?" · "+baseHeatLine(B):"");
   if(!baseCrewN(B))return head+" · людей нет, расхода нет";
@@ -53594,6 +53603,8 @@ function baseSpirit(B,n){
   if(typeof baseAdjSpirit==="function")s+=baseAdjSpirit(B);
   /* устав (M399): у каждого закона своя цена, и платят её духом */
   if(typeof charterSpirit==="function")s+=charterSpirit(B);
+  /* закон 5 (M401): люди — не множители, и у каждой черты своя причина */
+  if(typeof baseTraitSpirit==="function")s+=baseTraitSpirit(B);
   if(P.eff<.7)s-=8;                                        /* и свет мигает */
   if(L.q==="good"&&(L.food|0)>0&&!baseParked(B)&&!b)s+=10; /* а бывает и хорошо */
   return clamp(s|0,0,100);
@@ -54328,7 +54339,9 @@ function baseDirStep(B,n){
 function baseDirLine(B){
   const f=baseForecast(B);
   const out=[];
-  if(f)out.push("ПРОГНОЗ: "+f.warn.toUpperCase());
+  /* закон 3 (M401): со сведениями прогноз называет событие и срок, без них —
+     только примету */
+  if(f)out.push("ПРОГНОЗ: "+((typeof baseWarnLine==="function")?baseWarnLine(B):f.warn.toUpperCase()));
   if(B.fire)out.push("ГОРИТ · ОТСЕК "+((B.fire.c|0)+1)+":"+((B.fire.r|0)+1));
   if(baseDusty(B))out.push("ЗАНОС · БУР СТОИТ");
   if(baseColdHit(B))out.push("ХОЛОДНЫЙ УДАР");
@@ -54704,6 +54717,155 @@ function dialIceFree(B){const D=baseDialOf(B);return !!(D&&D.ice>=1.5);}
 function dialOreMul(B){const D=baseDialOf(B);return D?(.7+D.ore*.15):1;}
 /* тяжесть: тяжёлый мир дороже строить и лучше бурить (§21.1) */
 function dialBuildMul(B){const g=dialGrav(B);return clamp(.8+ (g-1)*.5,.7,1.5);}
+
+/* ══════════════ девять законов трудности (M401, DESIGN-base §22) ══════════════
+   Трудно — это не большие числа. Большие числа — это скука. Из девяти законов
+   §22 шесть уже стоят в игре и работают: всё трогает три шкалы (M391–M393),
+   отклик отложен на смены (M390), место — самая дорогая валюта (M396), беда
+   спускается лавиной (M392→M397), планета и есть сложность (M400), а вторая
+   база — ловушка, которую никто не сторожит.
+
+   Здесь достраиваются три оставшихся, и все три — про то, чего у игрока НЕТ.
+
+   ЗАКОН ТРЕТИЙ: сведения покупаются. Без радиста и без приборов шкалы читаются
+   словами — «мало · впритык · хватает», — а прогноз звучит «барограф падает», а
+   не «буря через три смены». Точность — это человек и вещь, а не подарок.
+
+   ЗАКОН ЧЕТВЁРТЫЙ: изнашивается всё. База в идеальном равновесии выходит из
+   него сама, и чем дальше тепло от полосы покоя, тем быстрее. Ничто никогда не
+   доделано.
+
+   ЗАКОН ПЯТЫЙ: люди — не множители. У вахтовика есть черты, и лучший список —
+   не список самых умелых: один боится тесноты, другой не спит у реактора,
+   третий пьёт, а четвёртый не ладит с конкретным человеком.
+
+   И сторож надо всеми девятью: ТРУДНО, НО НЕ НЕПОНЯТНО. Игрок обязан всегда
+   мочь сказать, что убило базу, — на это отвечает `baseWhy`. */
+/* ── закон 3: сведения покупаются ── */
+function baseSharp(B){
+  let s=0;
+  /* радист на базе — тот, кто снимает показания и передаёт их словами цифр */
+  if(typeof baseRoleForce==="function"&&baseRoleForce(B,"radist")>0)s++;
+  /* приборы на борту: приёмник и есть та вещь, которой слушают базу */
+  if(typeof instrQuality==="function"&&instrQuality("radio")>=1)s++;
+  return s;
+}
+const SHARP_WORD=["нет","мало","впритык","хватает"];
+function sharpWord(v,need){
+  if(!need)return v>0?"хватает":"нет";
+  const k=v/need;
+  return k<=0?"нет":(k<3?"мало":(k<8?"впритык":"хватает"));
+}
+/* строка запасов на том языке, который игрок себе позволил */
+function baseGaugeLine(B){
+  const L=baseLife(B),n=Math.max(1,baseCrewN(B));
+  if(baseSharp(B)>0)
+    return "воздух "+L.air+" · вода "+L.water+" · харч "+(L.food|0);
+  return "воздух — "+sharpWord(L.air,n*LIFE_AIR)+
+       " · вода — "+sharpWord(L.water,n*LIFE_WATER)+
+       " · харч — "+sharpWord(L.food|0,n*LIFE_FOOD);
+}
+/* прогноз: слово или срок */
+function baseWarnLine(B,n){
+  if(typeof baseForecast!=="function")return "";
+  const f=baseForecast(B,n);
+  if(!f)return "";
+  if(baseSharp(B)>=2)return f.ru.toUpperCase()+" ЧЕРЕЗ СМЕНУ";
+  return f.warn.toUpperCase();
+}
+/* ── закон 4: изнашивается всё ──
+   По одной ячейке за смену, и всегда одной и той же для одной и той же смены.
+   В полосе покоя износ едва заметен; за её краем он тот, что уже написан в
+   M392, — этот только добавляет ровное «ничто не доделано». */
+/* Ровный износ — это «ничто не доделано», а не «база съедает себя». Первая
+   мерка (0.006 плюс полшага за жару) стирала отсек за десяток смен и была не
+   законом, а поломкой: одна ячейка за смену, и та вразнобой, — значит цифра
+   должна быть такой, чтобы инженер и мастерская её перекрывали, а брошенная
+   база к этому приходила за неделю, а не за вечер. */
+const WEAR_BASE=.004;
+function baseWearStep(B,n){
+  const live=[];
+  for(let i=0;i<B.cells.length;i++)if(B.cells[i]&&B.cells[i].hp>0)live.push(i);
+  if(!live.length)return 0;
+  const r=rng(hashi(B.sx*401+B.sy,(B.idx|0)*19+13,hashi(n,0x0EA7,0x1)));
+  const i=live[Math.floor(r()*live.length)];
+  const h=(typeof baseHeat==="function")?Math.abs(baseHeat(B,n)):0;
+  const far=clamp((h-HEAT_OK)/2500,0,.04);
+  const was=B.cells[i].hp;
+  B.cells[i].hp=Math.max(0,was-(WEAR_BASE+far));
+  if(was>0&&B.cells[i].hp<=0){
+    baseLog(B,"worn",n,{what:BUILD[B.cells[i].k].ru});
+    return 1;
+  }
+  return 0;
+}
+/* ── закон 5: люди — не множители ──
+   Черты вахтовика выводятся из его же семени: ничего нового не хранится, а
+   список людей перестаёт быть списком чисел. */
+const CREW_BASE_TRAITS=[
+  {id:"tight", ru:"боится тесноты",  note:"на большой базе ему тяжело"},
+  {id:"drink", ru:"пьёт",            note:"смену через смену работает вполсилы"},
+  {id:"noreac",ru:"не спит у реактора",note:"жильё рядом с реактором его добивает"},
+  {id:"lone",  ru:"нелюдим",         note:"в полном отсеке от него мало толку"}
+];
+function crewBaseTraits(c){
+  if(!c)return [];
+  const r=rng(hashi((c.seed|0)*7+3,0x0B7A,0x5));
+  const out=[];
+  if(r()<.45)out.push(CREW_BASE_TRAITS[Math.floor(r()*CREW_BASE_TRAITS.length)]);
+  return out;
+}
+function crewBaseHas(c,id){
+  for(const t of crewBaseTraits(c))if(t.id===id)return true;
+  return false;
+}
+/* что черты делают с духом базы: каждая — своя причина, и все они называются */
+function baseTraitSpirit(B){
+  if(typeof baseStaff!=="function")return 0;
+  const staff=baseStaff(B);
+  let s=0;
+  const built=(typeof charterBuilt==="function")?charterBuilt(B):0;
+  const P=(typeof basePower==="function")?basePower(B):{habPenalty:0};
+  for(const c of staff){
+    if(crewBaseHas(c,"tight")&&built>=8)s-=6;
+    if(crewBaseHas(c,"noreac")&&(P.habPenalty|0)>0)s-=6;
+    if(crewBaseHas(c,"lone")&&staff.length>=4)s-=5;
+    if(crewBaseHas(c,"drink"))s-=3;
+  }
+  return s;
+}
+/* пьющий: смену через смену работает вполсилы — по номеру смены, не по кадру */
+function baseDrinkMul(B,n){
+  if(typeof baseStaff!=="function")return 1;
+  let m=1;
+  for(const c of baseStaff(B))
+    if(crewBaseHas(c,"drink")&&((n+(c.seed|0))%2===0))m*=.92;
+  return m;
+}
+/* ── сторож: игрок обязан мочь сказать, что убило базу ──
+   Не «низкий дух», а имя причины и её вес. Строка эта пишется всегда — и
+   словами, если сведения не куплены. */
+function baseWhy(B){
+  const L=baseLife(B),out=[];
+  const n=baseCrewN(B);
+  if(!n)return "людей нет — база просто стоит";
+  const left=baseLifeLeft(B);
+  if(baseParked(B))out.push(B.park<0?"стоит по вашему приказу":"встала: запас кончился");
+  if((L.food|0)<=0)out.push("нечего есть");
+  else if(L.q==="poor")out.push("харч скверный");
+  if(left.air<3)out.push("воздуха на исходе");
+  if(left.water<3)out.push("воды на исходе");
+  const b=(typeof baseHeatBand==="function")?baseHeatBand(B):0;
+  if(b>0)out.push("жарко");else if(b<0)out.push("холодно");
+  const P=basePower(B);
+  if(P.eff<.7)out.push("энергии не хватает");
+  if((P.habPenalty|0)>0)out.push("жильё прижато к реактору");
+  if(B.fire)out.push("горит");
+  const tr=baseTraitSpirit(B);
+  if(tr<0)out.push("людям тут не по себе");
+  if(!out.length)return "всё в порядке: дух "+baseSpirit(B)+"%";
+  return out.join(" · ");
+}
 
 /* ══════════════ база: внутренности отсеков ══════════════ */
 /* Продолжение 21a-mode-base: сама сцена, энергия и разрез — там, здесь только
@@ -72521,6 +72683,10 @@ function renderBasesTab(st){
             (roleForce(c)<1?" (не по профилю)":"")).join(", "):"")+"</s>";
       if(typeof baseLifeLine==="function")
         r.firstChild.innerHTML+="<s>"+baseLifeLine(B)+"</s>";
+      /* сторож девяти законов (M401, §22): игрок обязан всегда мочь сказать,
+         что с базой не так. Строка пишется даже когда всё хорошо */
+      if(typeof baseWhy==="function")
+        r.firstChild.innerHTML+="<s>почему: "+baseWhy(B)+"</s>";
       /* гость у затвора (M395): его берут или ему отказывают, и то и другое —
          решение игрока, а не строка в журнале */
       if(B.guest)r.firstChild.innerHTML+="<s><b style='color:#e8c46a'>у затвора ждёт "+
