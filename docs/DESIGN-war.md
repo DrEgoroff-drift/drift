@@ -1181,7 +1181,20 @@ One system inside ГЛАВТРАССА's centre (r ≈ 6, fixed by seed, never t
   that and hung the suite; state is now passed down, and a re-entry guard stands where the next
   one would land. **Deferred:** the seventh force as mechanics — six, and there will be no
   seventh (§20 settled).
-  · diplomacy · security · culture — still open.
+  · ~~**M386 diplomacy**~~ — 0.386.0 (2026-09-06): war now starts with paper. A power that decides
+  to fight files an **ultimatum** instead — six сводки on the clock, shown at the station as a
+  number; the deadline expiring declares the war itself, a deal or an alliance with that power
+  withdraws it, and a recovered need lets it lapse. `12b1-fx-dip` holds what the player does with
+  the rest: an **embassy** crossing a foreign system that never hails, never shoots and never
+  answers fire — escort it and both sides remember it, shoot it and neither ever forgets; a
+  **prisoner exchange** while a truce is fresh; and the **letter** of гл. 49, which has three
+  fields and no room for a word from anyone. **Measured** over 1000 сводки, with the note against
+  without: 209 wars instead of 286, 1851 systems changing hands instead of 2601, someone at war in
+  914 сводки out of 1001 instead of 987, five wars at once at most either way — the note does not
+  calm the galaxy, it gives it a warning. Of 179 notes, 175 ran out into war, 3 were answered, 34
+  wars skipped the paper because three notes were already pending. **Deferred:** the note as
+  something the player can influence — the crowd's vote nudges the course, not a deadline.
+  · security · culture — still open.
 
 Every pass ends with the usual: parse, empty console, a manual scenario, an old save,
 `build.ps1`, tests, the craft-codex check for anything drawn, and — from M360 on — `prof()` with

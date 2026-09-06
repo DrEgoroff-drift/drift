@@ -72,6 +72,7 @@ function openStation(){
     ((typeof socLine==="function"&&socLine())?"\n"+socLine():"")+
     ((typeof natLine==="function"&&natLine())?"\n"+natLine():"")+
     ((typeof powLine==="function"&&powLine())?"\n"+powLine():"")+
+    ((typeof dipLine==="function"&&dipLine())?"\n"+dipLine():"")+
     ((typeof occPowerHere==="function"&&occPowerHere())
       ?"\nФЛАГ СМЕНИЛСЯ · "+powerOf(occPowerHere().by).ru.toUpperCase()+
         " · треть выработки в реквизицию":"");

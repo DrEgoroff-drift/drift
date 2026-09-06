@@ -226,3 +226,213 @@ TEST_SUITES.push(()=>suite("летопись M385: повтор не зовёт 
   try{localStorage.removeItem(CHRON_KEY);}catch(e){}
   if(typeof WAR_LED_CACHE!=="undefined")WAR_LED_CACHE=null;
 }));
+
+TEST_SUITES.push(()=>suite("дипломатия M386: ультиматум, посольство и письмо",()=>{
+  fxWorld();
+  /* ── нота со сроком ──
+     Считаем ходом самой ноты, а не полным повтором: у полного шага есть ещё
+     пять агентов, и они за это время помирят кого угодно. Здесь проверяется
+     ровно правило ноты. */
+  const st=chronFresh();
+  st.powers[0].need.ore=100;                       /* голодной державе есть о чём воевать */
+  /* холод между ними — то состояние, в котором ноту и пишут: потеплело до
+     срока, и нота снимается сама (это отдельная проверка ниже) */
+  st.powers[0].rel[1]=-400;st.powers[1].rel[0]=-400;
+  ok(chronUltFile(st,0,0,1),"нота подана");
+  const u=chronUltBetweenIn(st,0,1);
+  ok(!!u,"и она лежит в состоянии");
+  eq(u.t0,0,"у неё есть сводка, от которой считается срок");
+  eq(st.lines.filter(L=>L.kind==="ult").length,1,"о ноте сказано в эфире");
+  ok(chronUltFile(st,1,1,0),"вторая бумага по той же паре — та же нота");
+  eq(st.lines.filter(L=>L.kind==="ult").length,1,"и второй строки в эфире нет");
+  for(let n=1;n<DIP_ULT_DUE;n++)chronUltStep(st,n);
+  eq(st.wars.length,0,"до срока войны нет");
+  ok(!!chronUltBetweenIn(st,0,1),"а нота всё лежит");
+  chronUltStep(st,DIP_ULT_DUE);
+  ok(st.wars.some(w=>(w.a===0&&w.b===1)||(w.a===1&&w.b===0)),"срок вышел — война");
+  ok(!chronUltBetweenIn(st,0,1),"и нота снята: своё она сделала");
+  /* нужда выправилась — воевать незачем, и нота гаснет сама */
+  const st2=chronFresh();
+  st2.powers[0].rel[1]=-400;st2.powers[1].rel[0]=-400;
+  chronUltFile(st2,0,0,1);
+  for(let n=1;n<=DIP_ULT_DUE;n++)chronUltStep(st2,n);
+  eq(st2.wars.length,0,"сытая держава до войны не доходит");
+  ok(st2.lines.some(L=>L.kind==="note"),"о погасшей ноте тоже сказано");
+  /* договорились до срока — нота отозвана ходом, а не временем */
+  const st3=chronFresh();
+  st3.powers[0].need.ore=100;
+  st3.powers[0].rel[1]=-400;st3.powers[1].rel[0]=-400;
+  chronUltFile(st3,0,0,1);
+  ok(chronUltDrop(st3,1,1,0),"сделка снимает ноту с любой стороны");
+  eq(chronUltBetweenIn(st3,0,1),null,"ноты нет");
+  chronUltStep(st3,DIP_ULT_DUE+1);
+  eq(st3.wars.length,0,"и войны не будет");
+  /* потеплело до срока — нота снимается, и войны не будет */
+  const stw=chronFresh();
+  stw.powers[0].need.ore=100;
+  stw.powers[0].rel[1]=-400;stw.powers[1].rel[0]=-400;
+  chronUltFile(stw,0,0,1);
+  stw.powers[0].rel[1]=0;stw.powers[1].rel[0]=0;
+  chronUltStep(stw,1);
+  eq(chronUltBetweenIn(stw,0,1),null,"потеплело — нота снята");
+  eq(stw.wars.length,0,"и войны не будет");
+  /* больше трёх нот разом круг не выдерживает: четвёртая пара воюет сразу */
+  const st4=chronFresh();
+  ok(chronUltFile(st4,0,0,1)&&chronUltFile(st4,0,2,3)&&chronUltFile(st4,0,4,5),"три ноты легли");
+  eq(chronUltFile(st4,0,0,2),false,"четвёртой очереди нет");
+  eq(st4.ults.length,DIP_ULT_MAX,"нот ровно три");
+  /* нота входит в состояние целиком: и в клон, и в хэш */
+  const st5=chronFresh();
+  const h0=chronHash(st5);
+  chronUltFile(st5,0,0,1);
+  ok(chronHash(st5)!==h0,"хэш чувствует ноту");
+  eq(chronClone(st5).ults.length,1,"и клон её несёт");
+  /* ── война начинается с бумаги ──
+     Главное следствие вехи: держава больше не открывает огонь в ту же сводку,
+     в которую решила. Меряем повтором: у большинства войн есть нота, которая
+     ей предшествовала, а без ноты идут только те, кому не хватило места. */
+  const st6=chronFresh();
+  const kk=(a,b)=>Math.min(a,b)+"|"+Math.max(a,b);
+  let withNote=0,without=0,filed=0;
+  for(let n=0;n<=300;n++){
+    const had=new Set((st6.ults||[]).map(x=>kk(x.a,x.b)));
+    chronStep(st6,n);
+    for(let i=st6.lines.length-1;i>=0&&st6.lines[i].N===n;i--){
+      const L=st6.lines[i];
+      if(L.kind==="ult")filed++;
+      else if(L.kind==="war"){if(had.has(kk(L.p,L.args.b)))withNote++;else without++;}
+    }
+  }
+  ok(filed>0,"за триста сводок ноты пишутся: "+filed);
+  ok(withNote>without,"война приходит по сроку, а не вдруг: "+withNote+" против "+without);
+  /* ── шесть волн ──
+     У ноты две стороны, и обе названы: строка, где вторая сторона потерялась,
+     врёт умолчанием. */
+  const L={N:0,kind:"ult",p:0,sys:null,args:{b:1}};
+  for(const w of MAKER_KEYS){
+    const s=chronSay(L,w);
+    ok(s&&s.length>10,"волна "+w+" о ноте говорит");
+    ok(s.indexOf("%")<0,"и без незаполненных вставок: "+w);
+  }
+  ok(chronSay(L,"gt").indexOf(POWERS[MAKER_KEYS[1]].ru)>=0,"вторая сторона названа");
+  ok(chronSay({N:0,kind:"note",p:0,sys:null,args:{b:1}},"km").length>10,"об отзыве — тоже шесть");
+  /* ── строка на станции ──
+     Число со сроком склоняется: «4 сводки», а не «4 сводок». Своих склонений в
+     игре не пишут — на это есть pl3. */
+  fxWorld();
+  const ownL=chronOwner(0,0);
+  if(ownL>=0){
+    const stl=chronState(),nowL=chronNow();
+    stl.ults=[{a:ownL,b:(ownL+1)%6,t0:nowL-DIP_ULT_DUE+1}];
+    ok(dipLine().indexOf("СРОК 1 СВОДКА")>0,"один — сводка: "+dipLine());
+    stl.ults=[{a:ownL,b:(ownL+1)%6,t0:nowL-DIP_ULT_DUE+3}];
+    ok(dipLine().indexOf("СРОК 3 СВОДКИ")>0,"три — сводки: "+dipLine());
+    stl.ults=[];
+  }
+  /* ── посольство ──
+     Оно идёт по ЧУЖОЙ земле: у себя дома посольства не бывает. */
+  fxWorld();
+  const own=chronOwner(0,0);
+  if(own>=0){
+    fxInc("envoy",own);
+    eq(dipEnvoyDue(0,0),null,"у себя дома посольства нет");
+    fxWorld();
+    fxInc("envoy",(own+1)%6);
+    const D=dipEnvoyDue(0,0);
+    ok(!!D,"чужое посольство идёт через эту систему");
+    if(D){
+      eq(D.by,MAKER_KEYS[(own+1)%6],"чьё оно — видно");
+      eq(D.to,MAKER_KEYS[own],"и по чьей земле — тоже");
+    }
+    /* борт посольства не воюет: метка `dip` гасит внимание в общей петле */
+    G.pirates=[];
+    npcEnvoy();
+    const p=dipEnvoyShip();
+    ok(!!p,"борт посольства в небе");
+    if(p){
+      ok(!!p.dip&&!p.aware,"он не воюет");
+      ok(Math.hypot(p.vx,p.vy)>1,"и он идёт, а не стоит");
+      /* сопровождение: рядом — считается, далеко — нет */
+      const sh={x:p.x,y:p.y};
+      G.escortT=0;G.escortDone=0;
+      ok(dipEscortTick(sh,10),"рядом — ведём");
+      ok((G.escortT|0)>0,"и время идёт");
+      dipEscortTick({x:p.x+5000,y:p.y},10);
+      eq(G.escortT|0,0,"отстал — счёт сброшен");
+      /* провели: два человека знают вас, и ни одного кредита */
+      const c0=G.credits;
+      G.escortT=DIP_ESCORT;G.escortDone=0;
+      dipEscortTick({x:p.x,y:p.y},10);
+      ok(!!G.escortDone,"провели");
+      eq(G.credits,c0,"и никто ничего не заплатил");
+      ok((G.episodes||[]).length>0,"зато это помнят");
+      /* сбитое посольство не прощают */
+      const n0=(G.episodes||[]).filter(e=>e.k==="never").length;
+      dipEnvoyShot(p);
+      ok((G.episodes||[]).filter(e=>e.k==="never").length>n0,"сбитое посольство не прощают");
+    }
+  }
+  /* ── письмо ──
+     Правило открытки: ни имён, ни свободного текста. У письма ровно три поля —
+     от кого, кому и когда, — и ни одного, куда игрок мог бы что-то вписать. */
+  fxWorld();
+  G.sys={station:{by:"gt"}};
+  let taken=null;
+  for(let x=-6;x<=6&&!taken;x++)for(let y=-6;y<=6&&!taken;y++){
+    if(!chronOwnerKey(x,y))continue;
+    G.sx=x;G.sy=y;
+    const o=dipLetterOffer();
+    if(o)taken={x,y,o};
+  }
+  ok(!!taken,"письмо где-нибудь да просят довезти");
+  if(taken){
+    G.sx=taken.x;G.sy=taken.y;
+    const a=dipLetterOffer(),b=dipLetterOffer();
+    eq(a.to,b.to,"предложение не мигает между заходами");
+    ok(a.to!==a.from,"письмо всегда чужой державе");
+    const c0=G.credits;
+    ok(dipLetterTake(),"взяли");
+    eq(Object.keys(G.letter).sort().join(","),"N,from,to","у письма ровно три поля и ни одного текстового");
+    eq(G.credits,c0,"за перевозку не платят вперёд");
+    eq(dipLetterDue(),false,"здесь его не отдать: это станция отправителя");
+    /* доехали: станция адресата */
+    let dst=null;
+    for(let x=-6;x<=6&&!dst;x++)for(let y=-6;y<=6&&!dst;y++)
+      if(chronOwnerKey(x,y)===G.letter.to)dst={x,y};
+    ok(!!dst,"у адресата есть где стоять");
+    if(dst){
+      G.sx=dst.x;G.sy=dst.y;
+      ok(dipLetterDue(),"здесь его ждут");
+      const cr=G.credits;
+      ok(dipLetterGive(),"отдали");
+      eq(G.letter,null,"и трюм пуст");
+      eq(G.credits,cr,"денег за письмо не дают: платят делом");
+      ok((G.episodes||[]).some(e=>e.k==="mail"),"зато это записано");
+    }
+  }
+  /* ── обмен пленными ──
+     После перемирия и только один раз на одно перемирие. */
+  fxWorld();
+  const stx=chronState();
+  const a0=chronOwner(0,0);
+  if(a0>=0){
+    stx.lines.push({N:stx.N,kind:"truce",p:a0,sys:null,args:{b:(a0+1)%6}});
+    G.sys={station:{by:MAKER_KEYS[a0]}};
+    G.crew=[{name:"Пленный",seed:7,trips:0,state:"hostage",ransom:900,
+      order:{kind:"home",sx:0,sy:0},shipId:null,hist:[]}];
+    const c0=G.credits;
+    const D=dipSwapDue();
+    ok(!!D,"после перемирия пленного отдают");
+    ok(dipSwapTake(),"забрали");
+    eq(G.crew[0].state,null,"человек свободен");
+    eq(G.credits,c0,"и выкупа не платили");
+    eq(dipSwapDue(),null,"один обмен на одно перемирие");
+  }
+  try{localStorage.removeItem(CHRON_KEY);}catch(e){}
+  if(typeof WAR_LED_CACHE!=="undefined")WAR_LED_CACHE=null;
+}));
+/* нота в ДАННОМ состоянии, без пересчёта: тесты шагают своим состоянием */
+function chronUltBetweenIn(st,a,b){
+  for(const u of (st.ults||[]))if((u.a===a&&u.b===b)||(u.a===b&&u.b===a))return u;
+  return null;
+}

@@ -1756,7 +1756,7 @@ body.table u.addr{color:#7a4a20}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.385.0";
+const VER="0.386.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -20267,12 +20267,18 @@ function chronAgentMove(st,N,i,rr){
     const Q=st.powers[j];
     Q.need[chronNeedLow(Q)]=clampi(Q.need[chronNeedLow(Q)]+35,0,1000);
     P.rel[j]=clampi(P.rel[j]+40,-1000,1000);Q.rel[i]=clampi(Q.rel[i]+40,-1000,1000);
+    /* договорились — нота отозвана (M386): это единственный способ отменить
+       уже предъявленный срок, и он требует хода, а не времени */
+    if(typeof chronUltDrop==="function")chronUltDrop(st,N,i,j);
     if((rr(i,0x0D)%1000)<120)chronLine(st,N,"deal",i,null,{b:j});
   }else if(move==="quarrel"&&j>=0){
     const Q=st.powers[j];
     P.rel[j]=clampi(P.rel[j]-130,-1000,1000);Q.rel[i]=clampi(Q.rel[i]-90,-1000,1000);
     P.tension=clampi(P.tension+120,0,1000);
   }else if(move==="war"&&j>=0&&!chronAtWar(st,i,j)){
+    /* сперва бумага (M386): нота со сроком вместо выстрела. Если нот уже три,
+       круг больше не ждёт — война начинается сразу */
+    if(typeof chronUltFile==="function"&&chronUltFile(st,N,i,j))return move;
     st.wars.push({a:i,b:j,t0:N});
     P.rel[j]=clampi(P.rel[j]-300,-1000,1000);
     st.powers[j].rel[i]=clampi(st.powers[j].rel[i]-300,-1000,1000);
@@ -20287,6 +20293,7 @@ function chronAgentMove(st,N,i,rr){
       chronLine(st,N,"truce",i,null,{b:worst});
     }
   }else if(move==="ally"&&j>=0){
+    if(typeof chronUltDrop==="function")chronUltDrop(st,N,i,j);
     P.rel[j]=clampi(P.rel[j]+120,-1000,1000);
     st.powers[j].rel[i]=clampi(st.powers[j].rel[i]+120,-1000,1000);
     P.str=clampi(P.str+12,100,1000);
@@ -20297,6 +20304,66 @@ function chronAgentMove(st,N,i,rr){
     P.need.goods=clampi(P.need.goods-8,0,1000);
   }
   return move;
+}
+/* ── ультиматум со сроком (M386, §15.1) ──
+   До сегодняшнего дня война возникала из ничего: держава решала воевать, и в
+   ту же сводку начинала. Игрок узнавал об этом по чужому бою в небе.
+
+   Теперь между решением и выстрелом лежит бумага. Держава предъявляет ноту со
+   сроком; срок виден на станции числом; истёк — война начинается САМА и уже
+   ничем не отменяется. Отменить её можно только одним способом: настоящим
+   потеплением до срока — сделкой или союзом, а не тем, что обида остыла сама.
+
+   Ход агента при этом не изменился ни на бросок — сдвинулся момент. Зато у
+   игрока появилось окно, в котором ещё можно что-то успеть: увезти груз,
+   довезти письмо, увести наёмника с той стороны. */
+const DIP_ULT_OFF=-120;      /* теплее этого — нота отозвана */
+const DIP_ULT_DUE=6;        /* столько сводок сроку: полтора суток */
+const DIP_ULT_MAX=3;        /* больше трёх нот разом круг не выдерживает */
+/* нота вместо выстрела: `true` — бумага подана, войну откладываем */
+function chronUltFile(st,N,i,j){
+  if(!st.ults)st.ults=[];
+  for(const u of st.ults)if((u.a===i&&u.b===j)||(u.a===j&&u.b===i))return true;
+  if(st.ults.length>=DIP_ULT_MAX)return false;   /* очереди у ноты нет */
+  st.ults.push({a:i,b:j,t0:N});
+  chronLine(st,N,"ult",i,null,{b:j});
+  return true;
+}
+/* отозвать ноту: только настоящим ходом навстречу — сделкой или союзом */
+function chronUltDrop(st,N,i,j){
+  if(!st.ults)return false;
+  for(let q=0;q<st.ults.length;q++){
+    const u=st.ults[q];
+    if((u.a===i&&u.b===j)||(u.a===j&&u.b===i)){
+      st.ults.splice(q,1);
+      chronLine(st,N,"note",i,null,{b:j});
+      return true;
+    }
+  }
+  return false;
+}
+function chronUltStep(st,N,rr){
+  if(!st.ults)st.ults=[];
+  for(let q=st.ults.length-1;q>=0;q--){
+    const u=st.ults[q],A=st.powers[u.a],B=st.powers[u.b];
+    if(chronAtWar(st,u.a,u.b)){st.ults.splice(q,1);continue;}
+    if(A.rel[u.b]>DIP_ULT_OFF&&B.rel[u.a]>DIP_ULT_OFF){
+      st.ults.splice(q,1);
+      chronLine(st,N,"note",u.a,null,{b:u.b});      /* нота отозвана */
+      continue;
+    }
+    if(N-u.t0<DIP_ULT_DUE)continue;
+    st.ults.splice(q,1);
+    /* срок вышел — но воюют не от обиды, а от нужды: если у предъявившей
+       ноту нужда за это время выправилась, воевать ей больше незачем, и нота
+       гаснет сама. Это и есть «нота, на которую ответили» */
+    if(A.need[chronNeedLow(A)]>=250){chronLine(st,N,"note",u.a,null,{b:u.b});continue;}
+    st.wars.push({a:u.a,b:u.b,t0:N});
+    A.rel[u.b]=clampi(A.rel[u.b]-300,-1000,1000);
+    B.rel[u.a]=clampi(B.rel[u.a]-300,-1000,1000);
+    A.tension=clampi(A.tension+300,0,1000);
+    chronLine(st,N,"war",u.a,null,{b:u.b});
+  }
 }
 
 /* ══════════════ Директор (M371, §15) ══════════════
@@ -20587,6 +20654,24 @@ const CHRON_SAY={
     ra:"Отпустило.",
     hf:"Инцидент закрыт. Благодарим за понимание."
   },
+  /* нота со сроком (M386): о ней говорят все шестеро, и каждый — про своё.
+     Сатира на канцелярию, не на людей: бумага смешна, срок — нет */
+  ult:{
+    gt:"На трассе спокойно. %p направила %b документ со сроком. Срок обычный.",
+    co:"%p выставила %b срок. Рынок закладывается на худшее — а значит, на этом можно заработать.",
+    or:"Пункт 2.7: нота вручена. Срок исчисляется со следующей сводки.",
+    km:"Нота. Сначала пишут бумагу, потом стреляют, и всегда именно в этом порядке.",
+    ra:"Опять бумагами машут. Ну, значит, ещё немного повозим спокойно.",
+    hf:"%p направила ноту %b. Ваш рейтинг доверия не изменился. Срок отображается корректно."
+  },
+  note:{
+    gt:"На трассе спокойно. Документ отозван, срок снят.",
+    co:"Нота отозвана — кто держал позицию, тот заработал.",
+    or:"Пункт 2.9: нота отозвана, срок аннулирован, формуляр подшит.",
+    km:"Отозвали. Значит, кто-то всё-таки перечитал, что написал.",
+    ra:"Помирились до срока. Хорошо: чинить меньше.",
+    hf:"Нота отозвана. Обновление доставлено обеим сторонам."
+  },
   rite:{
     gt:"На трассе спокойно. Объявлен %k. Явка добровольная.",
     co:"%k — участие платное, места ограничены.",
@@ -20616,9 +20701,14 @@ function chronSay(L,wave){
   if(!T)return "";
   let s=T[wave]||T.gt;
   const who=(typeof POWERS!=="undefined"&&POWERS[MAKER_KEYS[L.p]])?POWERS[MAKER_KEYS[L.p]].ru:"держава";
+  /* `%b` — вторая сторона: у ноты и у войны их всегда две, и называть надо
+     обеих, иначе строка врёт умолчанием */
+  const bi=(L.args&&typeof L.args.b==="number")?L.args.b:-1;
+  const bru=(bi>=0&&typeof POWERS!=="undefined"&&POWERS[MAKER_KEYS[bi]])?POWERS[MAKER_KEYS[bi]].ru:"соседа";
   const k=L.args&&L.args.k;
   const kru=k?(CHRON_INC_RU[k]||CHRON_ARC_RU[k]||CHRON_RITE_RU[k]||k):"";
-  s=s.split("%p").join(who).split("%s").join(L.sys||"—").split("%k").join(kru)
+  s=s.split("%p").join(who).split("%b").join(bru)
+     .split("%s").join(L.sys||"—").split("%k").join(kru)
      .split("%n").join(String(L.N));
   return s;
 }
@@ -20725,7 +20815,7 @@ function chronFresh(){
     S[k]={owner:o,since:0,front:0,yalta:yalta?1:0};
     if(o>=0){P[o].hold++;P[o].home=(P[o].home|0)+1;}
   }
-  return {N:-1,powers:P,systems:S,wars:[],lines:[],dir:null,_keys:CHRON._keys,off:CHRON.off|0};
+  return {N:-1,powers:P,systems:S,wars:[],ults:[],lines:[],dir:null,_keys:CHRON._keys,off:CHRON.off|0};
 }
 /* ── ход одной сводки (§16.2) ── */
 function chronStep(st,N){
@@ -20739,6 +20829,9 @@ function chronStep(st,N){
   for(const i of order){
     if(typeof chronAgentMove==="function")chronAgentMove(st,N,i,rr);
   }
+  /* 4a ноты со сроком (M386): пишутся после ходов и разрешаются до фронтов —
+     война по просроченной ноте должна двигать фронт в ту же сводку */
+  if(typeof chronUltStep==="function")chronUltStep(st,N,rr);
   /* 5 фронты: у каждой войны фронт ходит на систему за сводку. Куда — решает
      бросок с поправкой на силу сторон, насыщенную таблицей */
   for(const w of st.wars){
@@ -20852,6 +20945,9 @@ function chronHash(st){
     mix((S.owner+2)*8+S.front);
   }
   for(const w of st.wars){mix(w.a*8+w.b);mix(w.t0+1);}
+  /* ноты со сроком (M386) входят в хэш: расхождение по сроку — это расхождение
+     по тому, будет ли завтра война */
+  for(const u of (st.ults||[])){mix(u.a*8+u.b+1);mix(u.t0+2);}
   /* Директор входит в хэш: расхождение по напряжению — такое же расхождение,
      как по владениям, и молчать о нём нельзя (D06) */
   if(st.dir){
@@ -20878,6 +20974,7 @@ function chronClone(st){
     arcs:st.dir.arcs.map(a=>({p:a.p,kind:a.kind,t0:a.t0,stage:a.stage})),
     rites:st.dir.rites.map(r=>({kind:r.kind,p:r.p,t0:r.t0}))}:null;
   return {N:st.N,powers:P,systems:S,wars:st.wars.map(w=>({a:w.a,b:w.b,t0:w.t0})),
+    ults:(st.ults||[]).map(u=>({a:u.a,b:u.b,t0:u.t0})),
     lines:st.lines.slice(),dir:D,off:st.off|0};
 }
 /* ── состояние на сейчас: кэш, потом повтор ── */
@@ -20919,6 +21016,7 @@ function chronSave(st){
         [p.need.ore,p.need.goods,p.need.hulls,p.need.link]]),
       s:chronKeys().map(k=>st.systems[k].owner+","+st.systems[k].since+","+st.systems[k].front).join("|"),
       w:st.wars.map(w=>[w.a,w.b,w.t0]),
+      u:(st.ults||[]).map(u=>[u.a,u.b,u.t0]),
       d:st.dir?{q:st.dir.quiet|0,pk:st.dir.peak|0,cm:st.dir.calm|0,t:st.dir.tens|0,l:st.dir.last,
         a:st.dir.arcs.map(a=>[a.p,a.kind,a.t0,a.stage]),
         r:st.dir.rites.map(r=>[r.kind,r.p,r.t0])}:null};
@@ -20943,6 +21041,7 @@ function chronLoad(){
       st.systems[k].owner=v[0]|0;st.systems[k].since=v[1]|0;st.systems[k].front=v[2]|0;
     });
     st.wars=(o.w||[]).map(w=>({a:w[0]|0,b:w[1]|0,t0:w[2]|0}));
+    st.ults=(o.u||[]).map(u=>({a:u[0]|0,b:u[1]|0,t0:u[2]|0}));
     st.dir=o.d?{quiet:o.d.q|0,peak:o.d.pk|0,calm:o.d.cm|0,tens:o.d.t|0,last:o.d.l||{},
       arcs:(o.d.a||[]).map(a=>({p:a[0]|0,kind:a[1],t0:a[2]|0,stage:a[3]|0})),
       rites:(o.d.r||[]).map(r=>({kind:r[0],p:r[1]|0,t0:r[2]|0}))}:null;
@@ -20965,6 +21064,12 @@ function chronFront(sx,sy){
   return !!(S&&S.front);
 }
 function chronWars(){return chronState().wars;}
+/* ноты со сроком (M386): их спрашивает станция, чтобы показать число */
+function chronUlts(){return chronState().ults||[];}
+function chronUltBetween(a,b){
+  for(const u of chronUlts())if((u.a===a&&u.b===b)||(u.a===b&&u.b===a))return u;
+  return null;
+}
 /* воюют ли эти двое прямо сейчас — спрашивает карта, чтобы нарисовать фронт */
 function chronWarBetween(a,b){
   if(a<0||b<0||a===b)return false;
@@ -22781,6 +22886,223 @@ function powLine(){
   if(own>=0&&powPurgeOn(own))out.push("ЧИСТКА · ДЕЗЕРТИРОВ ВДВОЕ");
   if(powSecedeOn())out.push("ОТКОЛ · ЗДЕСЬ ПОДНЯЛИ СВОЙ ФЛАГ");
   if(own>=0&&powScandalOn(MAKER_KEYS[own]))out.push("ВОЛНА МОЛЧИТ");
+  return out.join(" · ");
+}
+
+/* ══════════════ семья механик: ДИПЛОМАТИЯ (M386, §15.1) ══════════════
+   Война состоит не только из выстрелов: между державами лежат ноты со сроком,
+   ездят посольства и меняются пленными. Игроку здесь достаётся роль, ради
+   которой всё и затевалось, — не солдата, а человека с кораблём, мимо которого
+   идёт чужая политика и которого иногда просят довезти.
+
+   Четыре вещи, и ни одна не про урон:
+
+   · **ультиматум** — срок в сводках, и он виден числом. Игрок его не отменяет,
+     но знает, сколько осталось, и это меняет то, куда он летит сегодня. Сама
+     нота живёт внутри повтора (12am-chron-agents): срок вышел — война, и она
+     уже ничем не отменяется;
+   · **посольство** — чужой борт идёт через эту систему. Его можно проводить —
+     эпизод у обеих сторон, потому что провести чужого через чужое одинаково
+     ценно для обоих, — а можно сбить, и это не прощается никогда;
+   · **обмен пленными** — после перемирия на станции любой из двух сторон
+     пленного отдают без выкупа. Один обмен на одно перемирие;
+   · **письмо** (гл. 49) — берётся на станции одной державы, отдаётся на
+     станции другой. Ни строчки текста ни от кого: у письма есть отправитель,
+     адресат и печать, и больше ничего (правило открытки).
+
+   Ничего из этого не отнимает вещей и не печатает денег: платят здесь делами. */
+const DIP_ENVOY=12;          /* трое суток идёт посольство */
+const DIP_ESCORT=600;        /* столько кадров рядом — и это уже сопровождение */
+const DIP_NEAR=700;          /* «рядом» для сопровождения */
+const DIP_TRUCE=8;           /* двое суток на обмен пленными после перемирия */
+const DIP_LETTER=24;         /* шесть суток письмо считается свежим */
+function dipInc(kind,span,st,N){
+  return (typeof chronIncOf==="function")?chronIncOf(kind,span,st,N):null;
+}
+/* ── ультиматум ──
+   Нота лежит в состоянии летописи, поэтому у всех она одна и та же. Здесь её
+   только показывают — и показывают ту, что касается неба над головой. */
+function dipUltHere(sx,sy){
+  if(typeof chronUlts!=="function"||typeof chronOwner!=="function")return null;
+  const own=chronOwner(sx===undefined?G.sx:sx,sy===undefined?G.sy:sy);
+  if(own<0)return null;
+  const N=(typeof chronNow==="function")?chronNow():0;
+  for(const u of chronUlts()){
+    if(u.a!==own&&u.b!==own)continue;
+    const left=DIP_ULT_DUE-(N-u.t0);
+    return {a:u.a,b:u.b,left:left>0?left:0};
+  }
+  return null;
+}
+/* ── посольство в пути ──
+   Борт державы идёт через ЧУЖУЮ систему. Он не пикет: не окликает и не
+   стреляет, но за него отвечают — и тот, кто его провёл, и тот, кто нет. */
+function dipEnvoyDue(sx,sy){
+  const inc=dipInc("envoy",DIP_ENVOY);
+  if(!inc||typeof chronOwner!=="function")return null;
+  const here=chronOwner(sx===undefined?G.sx:sx,sy===undefined?G.sy:sy);
+  if(here<0||here===inc.p)return null;
+  return {by:MAKER_KEYS[inc.p],to:MAKER_KEYS[here],p:inc.p,N:inc.N};
+}
+/* борт посольства в небе: ищется по метке, а не по имени */
+function dipEnvoyShip(){
+  for(const p of (G.pirates||[]))if(p.dip&&p.hull>0)return p;
+  return null;
+}
+/* сопровождение: держаться рядом, пока он идёт. Награда — не деньги, а два
+   человека, которые вас теперь знают: тот, кого вели, и тот, по чьей земле */
+function dipEscortTick(sh,dt){
+  const p=dipEnvoyShip();
+  if(!p){G.escortT=0;return false;}
+  if(Math.hypot(sh.x-p.x,sh.y-p.y)>DIP_NEAR){G.escortT=0;return false;}
+  G.escortT=(G.escortT||0)+dt;
+  if(G.escortT<DIP_ESCORT||G.escortDone)return true;
+  G.escortDone=1;
+  say("ПОСОЛЬСТВО ПРОВЕДЕНО",140);
+  if(typeof epiAdd==="function"){
+    epiAdd("distress",p.pw,{force:1});
+    const to=(typeof chronOwnerKey==="function")?chronOwnerKey(G.sx,G.sy):null;
+    if(to&&to!==p.pw)epiAdd("mail",to,{force:1});
+  }
+  return true;
+}
+/* сбитое посольство не прощает никто: ни та держава, чей это был борт, ни та,
+   по чьей земле он шёл. Это единственное последствие семьи, которое бьёт — и
+   бьёт оно ровно по тому, кто выстрелил первым */
+function dipEnvoyShot(p){
+  if(!p||!p.dip||typeof epiAdd!=="function")return false;
+  epiAdd("never",p.pw,{force:1,who:p.name});
+  const to=(typeof chronOwnerKey==="function")?chronOwnerKey(G.sx,G.sy):null;
+  if(to&&to!==p.pw)epiAdd("shot",to,{force:1});
+  say("СБИТО ПОСОЛЬСТВО · ЭТО НЕ ЗАБУДУТ",180);
+  return true;
+}
+/* ── обмен пленными ──
+   «После перемирия.» Перемирие видно в летописи строкой; пока оно свежее, на
+   станции любой из двух сторон пленного отдают без выкупа. */
+function dipTruceFresh(N){
+  if(typeof chronState!=="function")return null;
+  const st=chronState();
+  if(N===undefined)N=st.N;
+  let best=null;
+  for(const L of st.lines){
+    if(L.kind!=="truce"||N-L.N>DIP_TRUCE)continue;
+    if(!best||L.N>=best.N)best=L;
+  }
+  return best?{a:best.p,b:(best.args&&best.args.b)|0,N:best.N}:null;
+}
+/* кого можно вернуть здесь и сейчас */
+function dipSwapDue(){
+  if(!G.sys||!G.sys.station)return null;
+  const T=dipTruceFresh();
+  if(!T)return null;
+  if(G.dipSwapN===T.N)return null;             /* один обмен на одно перемирие */
+  const own=(typeof chronOwner==="function")?chronOwner(G.sx,G.sy):-1;
+  if(own<0||(own!==T.a&&own!==T.b))return null;
+  const c=(G.crew||[]).find(x=>(typeof crewBusy==="function")&&crewBusy(x)==="hostage");
+  return c?{c,T}:null;
+}
+function dipSwapTake(){
+  const D=dipSwapDue();
+  if(!D)return false;
+  G.dipSwapN=D.T.N;
+  if(typeof crewFreeHostage==="function")crewFreeHostage(D.c,"вернулся по обмену пленными");
+  say("ОБМЕН ПЛЕННЫМИ · БЕЗ ВЫКУПА",160);
+  return true;
+}
+/* ── письмо (гл. 49) ── */
+function dipLetterOffer(){
+  if(G.letter)return null;
+  if(!G.sys||!G.sys.station)return null;
+  const from=(typeof chronOwnerKey==="function")?chronOwnerKey(G.sx,G.sy):null;
+  if(!from)return null;
+  const N=(typeof chronNow==="function")?chronNow():0;
+  /* просят не всякий раз: письмо — не работа, а случай. Одно и то же на одной
+     станции в одной сводке, чтобы кнопка не мигала между заходами */
+  const h=hashi(G.sx|0,G.sy|0,(N<<3)^0x1E77E7)>>>0;
+  if((h&7)!==0)return null;
+  const to=MAKER_KEYS[(MAKER_KEYS.indexOf(from)+1+(h>>>3)%5)%6];
+  return {from,to,N};
+}
+function dipLetterTake(){
+  const o=dipLetterOffer();
+  if(!o)return false;
+  G.letter={from:o.from,to:o.to,N:o.N};
+  const P=(typeof powerOf==="function")?powerOf(o.to):null;
+  tell("tech","Письмо принято к перевозке",
+    "ПИСЬМО\nкому: "+(P?P.ru:o.to)+"\nтекста нет и не будет: только печать");
+  return true;
+}
+function dipLetterDue(){
+  const L=G.letter;
+  if(!L||!G.sys||!G.sys.station)return false;
+  return ((typeof chronOwnerKey==="function")?chronOwnerKey(G.sx,G.sy):null)===L.to;
+}
+function dipLetterGive(){
+  if(!dipLetterDue())return false;
+  const L=G.letter;
+  G.letter=null;
+  const N=(typeof chronNow==="function")?chronNow():0;
+  const late=(N-L.N)>DIP_LETTER;
+  say(late?"ПИСЬМО ДОСТАВЛЕНО · С ОПОЗДАНИЕМ":"ПИСЬМО ДОСТАВЛЕНО",140);
+  if(typeof epiAdd==="function"){
+    epiAdd("mail",L.to,{force:1});
+    if(!late)epiAdd("mail",L.from,{force:1});    /* вовремя — помнят и там */
+  }
+  if(typeof warPut==="function")warPut("mail",1);
+  return true;
+}
+/* ── доска в зале: письмо и обмен ── */
+function dipBlock(){
+  if(typeof $body==="undefined")return;
+  const S=dipSwapDue();
+  if(S){
+    $body.appendChild(el("div","sec","ОБМЕН ПЛЕННЫМИ · ПОСЛЕ ПЕРЕМИРИЯ"));
+    const r=el("div","row");
+    r.appendChild(el("div","nm","<b>"+S.c.name+"</b><s>подписано перемирие · отдают без выкупа</s>"));
+    const b=el("button","act gold","ЗАБРАТЬ");
+    b.onclick=()=>{dipSwapTake();renderTab();};
+    r.appendChild(b);
+    $body.appendChild(r);
+  }
+  const L=G.letter;
+  if(L){
+    const P=(typeof powerOf==="function")?powerOf(L.to):null;
+    $body.appendChild(el("div","sec","ПОЧТА"));
+    const r=el("div","row");
+    r.appendChild(el("div","nm","<b>Письмо в трюме</b><s>кому: "+(P?P.ru:L.to)+
+      " · текста нет: только печать</s>"));
+    if(dipLetterDue()){
+      const b=el("button","act gold","ОТДАТЬ");
+      b.onclick=()=>{dipLetterGive();renderTab();};
+      r.appendChild(b);
+    }else r.appendChild(el("div","qt","НЕ ЗДЕСЬ"));
+    $body.appendChild(r);
+    return;
+  }
+  const o=dipLetterOffer();
+  if(!o)return;
+  const P=(typeof powerOf==="function")?powerOf(o.to):null;
+  $body.appendChild(el("div","sec","ПОЧТА · ПРОСЯТ ДОВЕЗТИ"));
+  const r=el("div","row");
+  r.appendChild(el("div","nm","<b>Письмо</b><s>кому: "+(P?P.ru:o.to)+
+    " · платы нет, есть дело</s>"));
+  const b=el("button","act","ВЗЯТЬ");
+  b.onclick=()=>{dipLetterTake();renderTab();};
+  r.appendChild(b);
+  $body.appendChild(r);
+}
+function dipLine(){
+  const out=[];
+  const U=dipUltHere();
+  if(U&&typeof powerOf==="function")
+    out.push("УЛЬТИМАТУМ · "+powerOf(MAKER_KEYS[U.a]).ru.toUpperCase()+" И "+
+      powerOf(MAKER_KEYS[U.b]).ru.toUpperCase()+" · СРОК "+U.left+" "+
+      pl3(U.left,"СВОДКА","СВОДКИ","СВОДОК"));
+  const D=dipEnvoyDue();
+  if(D&&typeof powerOf==="function")
+    out.push("ПОСОЛЬСТВО "+powerOf(D.by).ru.toUpperCase()+" ИДЁТ ЧЕРЕЗ ЭТУ СИСТЕМУ");
+  if(dipTruceFresh())out.push("ПЕРЕМИРИЕ · МЕНЯЮТСЯ ПЛЕННЫМИ");
   return out.join(" · ");
 }
 
@@ -35725,6 +36047,9 @@ function hitShip(p,s,rawDmg){
          строка в ведомости сводки, и она потянет следующий бросок */
       if(!p.pw&&typeof warPut==="function"&&typeof chronFront==="function"&&chronFront(G.sx,G.sy))
         warPut("def",1);
+      /* посольство (M386): сбить его — не «выстрел по чужому борту», а то,
+         чего не прощают ни те, чей это был борт, ни те, по чьей земле он шёл */
+      if(p.dip&&typeof dipEnvoyShot==="function")dipEnvoyShot(p);
       if(p.pw&&typeof epiNeverForgave==="function"&&
          (G.notebook||[]).some(x=>x.by===p.pw&&x.who===p.name))epiNeverForgave(p);
       killPirate(p);
@@ -36013,6 +36338,9 @@ function updateCombat(dt){
     else if(d<seeRange)p.aware=true;
     else if(d>seeRange*2.4)p.aware=false;
     if(typeof fleetEscortActive==="function"&&fleetEscortActive())p.aware=false;   /* конвой ГЛАВТРАССЫ (M311) */
+    /* посольство (M386) не воюет ни при каких обстоятельствах: идёт своим
+       курсом и не отвечает даже на выстрел — за него отвечают другие */
+    if(p.dip)p.aware=false;
     p.thrust=false;
     /* жар, горение и молчание перегретого (M364, 13a-guns) */
     if(typeof heatTick==="function")heatTick(p,dt,d0=>{p.hull-=d0;});
@@ -36065,6 +36393,8 @@ function updateCombat(dt){
   /* природа (M384): буря глушит приборы, рой бьёт того, кто стоит */
   if(typeof natStormTick==="function")natStormTick(dt);
   if(typeof natSwarmTick==="function")natSwarmTick(dt);
+  /* дипломатия (M386): пока держитесь рядом с посольством — вы его ведёте */
+  if(typeof dipEscortTick==="function")dipEscortTick(sh,dt);
   if((keys.msl||(G.ctl&&G.ctl.msl))&&typeof mslFire==="function"&&(G.mslCool||0)<=0){
     if(sealed){if(typeof yaltaSealed==="function")yaltaSealed();}
     else mslFire();
@@ -37423,6 +37753,7 @@ function npcSpawn(){
     }
   }
   if(typeof yaltaHere==="function"&&yaltaHere()){npcYalta();return;}
+  npcEnvoy();
   const own=chronOwner(G.sx,G.sy);
   if(own<0)return;
   const by=MAKER_KEYS[own];
@@ -37465,6 +37796,26 @@ function npcSpawn(){
     if(typeof etherLine==="function"&&typeof powerOf==="function")
       etherLine("…"+powerOf(by).ru+" и "+powerOf(fby).ru+" в этом секторе. Гражданским уйти с линии.","эфир");
   }
+}
+/* ── посольство в пути (M386, §15.1) ──
+   Борт державы идёт через ЧУЖУЮ систему своим курсом: не окликает, не стреляет
+   и не отвечает даже на выстрел. Его можно провести, а можно сбить — и это два
+   разных человека в книжке (12b1-fx-dip). */
+function npcEnvoy(){
+  if(typeof dipEnvoyDue!=="function")return;
+  const D=dipEnvoyDue();
+  if(!D)return;
+  G.escortT=0;G.escortDone=0;                     /* заход новый — и счёт новый */
+  const r=rng(hashi(G.sx,G.sy,0x0E17));
+  const a=r()*TAU,rad=2300;
+  const p=npcShip(D.by,30,0,Math.cos(a)*rad,Math.sin(a)*rad,1);
+  p.aware=false;p.envoy=1;p.dip=1;
+  p.name="посольство "+((typeof powerOf==="function")?powerOf(D.by).ru:D.by);
+  /* курс — через систему насквозь, мимо звезды: он здесь не по вашу душу */
+  const c=Math.atan2(-p.y,-p.x)+(r()-.5)*.6;
+  p.a=c;p.vx=Math.cos(c)*2.2;p.vy=Math.sin(c)*2.2;
+  G.pirates.push(p);
+  say("ПОСОЛЬСТВО В СИСТЕМЕ · ЕГО МОЖНО ПРОВЕСТИ",140);
 }
 /* ── «Ялта» (M372, §16.6) ──
    Шесть посольств на рейде, шесть волн разом, ярмарка. Никто не стреляет:
@@ -37639,6 +37990,7 @@ function snapshot(){
     opts:G.opts,zoom:G.zoom,market:G.market,uniqueShips:G.uniqueShips,tow:G.tow,
     episodes:G.episodes,notebook:G.notebook,gifts:G.gifts,mslBy:G.mslBy,
     bonds:G.bonds,coupN:G.coupN,
+    letter:G.letter||null,dipSwapN:G.dipSwapN,
     drones:G.drones,droneInventory:G.droneInventory,droneIds:G.droneIds,droneSold:G.droneSold||{},crew:G.crew,bases:G.bases,
     mgrs:G.mgrs,blueprints:G.blueprints,aiRift:G.aiRift,rogues:G.rogues,exiles:G.exiles,
     relics:G.relics,relicHint:G.relicHint,bio:G.bio,home:G.home,course:G.course||null,
@@ -37793,6 +38145,10 @@ function applySave(s){
   G.gifts=(s.gifts&&typeof s.gifts==="object")?s.gifts:{};
   G.mslBy=(typeof s.mslBy==="string")?s.mslBy:"gt";
   G.bonds=s.bonds|0;G.coupN=(typeof s.coupN==="number")?s.coupN:-1;   /* заём и талон (M379) */
+  /* письмо в трюме и последний обмен пленными (M386): это выбор игрока, значит
+     оно живёт в сохранении, а всё остальное про дипломатию считается из летописи */
+  G.letter=(s.letter&&typeof s.letter==="object")?s.letter:null;
+  G.dipSwapN=(typeof s.dipSwapN==="number")?s.dipSwapN:undefined;
   G.shipId=shipData(s.shipId)?s.shipId:"strizh";
   G.owned=Object.assign({strizh:true},s.owned||{});
   /* старое сохранение знает только s.mods — считаем, что всё купленное и установлено.
@@ -68642,6 +68998,7 @@ function openStation(){
     ((typeof socLine==="function"&&socLine())?"\n"+socLine():"")+
     ((typeof natLine==="function"&&natLine())?"\n"+natLine():"")+
     ((typeof powLine==="function"&&powLine())?"\n"+powLine():"")+
+    ((typeof dipLine==="function"&&dipLine())?"\n"+dipLine():"")+
     ((typeof occPowerHere==="function"&&occPowerHere())
       ?"\nФЛАГ СМЕНИЛСЯ · "+powerOf(occPowerHere().by).ru.toUpperCase()+
         " · треть выработки в реквизицию":"");
@@ -70941,6 +71298,7 @@ function renderCantina(){
     if(typeof voteBlock==="function")voteBlock();     /* выборы и сбор (M378) */
     if(typeof riteBlock==="function")riteBlock();     /* обряды (M379) */
     if(typeof circBlock==="function")circBlock();     /* бумага сверху (M381) */
+    if(typeof dipBlock==="function")dipBlock();       /* письмо и обмен (M386) */
   }else if(cantSel==="counter"){
     secHead("У СТОЙКИ",{back});
     if(typeof putOnTable==="function")tableBlock();

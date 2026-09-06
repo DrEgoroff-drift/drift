@@ -199,6 +199,9 @@ function updateCombat(dt){
     else if(d<seeRange)p.aware=true;
     else if(d>seeRange*2.4)p.aware=false;
     if(typeof fleetEscortActive==="function"&&fleetEscortActive())p.aware=false;   /* конвой ГЛАВТРАССЫ (M311) */
+    /* посольство (M386) не воюет ни при каких обстоятельствах: идёт своим
+       курсом и не отвечает даже на выстрел — за него отвечают другие */
+    if(p.dip)p.aware=false;
     p.thrust=false;
     /* жар, горение и молчание перегретого (M364, 13a-guns) */
     if(typeof heatTick==="function")heatTick(p,dt,d0=>{p.hull-=d0;});
@@ -251,6 +254,8 @@ function updateCombat(dt){
   /* природа (M384): буря глушит приборы, рой бьёт того, кто стоит */
   if(typeof natStormTick==="function")natStormTick(dt);
   if(typeof natSwarmTick==="function")natSwarmTick(dt);
+  /* дипломатия (M386): пока держитесь рядом с посольством — вы его ведёте */
+  if(typeof dipEscortTick==="function")dipEscortTick(sh,dt);
   if((keys.msl||(G.ctl&&G.ctl.msl))&&typeof mslFire==="function"&&(G.mslCool||0)<=0){
     if(sealed){if(typeof yaltaSealed==="function")yaltaSealed();}
     else mslFire();

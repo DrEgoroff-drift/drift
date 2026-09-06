@@ -132,6 +132,9 @@ function hitShip(p,s,rawDmg){
          строка в ведомости сводки, и она потянет следующий бросок */
       if(!p.pw&&typeof warPut==="function"&&typeof chronFront==="function"&&chronFront(G.sx,G.sy))
         warPut("def",1);
+      /* посольство (M386): сбить его — не «выстрел по чужому борту», а то,
+         чего не прощают ни те, чей это был борт, ни те, по чьей земле он шёл */
+      if(p.dip&&typeof dipEnvoyShot==="function")dipEnvoyShot(p);
       if(p.pw&&typeof epiNeverForgave==="function"&&
          (G.notebook||[]).some(x=>x.by===p.pw&&x.who===p.name))epiNeverForgave(p);
       killPirate(p);

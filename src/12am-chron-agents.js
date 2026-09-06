@@ -82,12 +82,18 @@ function chronAgentMove(st,N,i,rr){
     const Q=st.powers[j];
     Q.need[chronNeedLow(Q)]=clampi(Q.need[chronNeedLow(Q)]+35,0,1000);
     P.rel[j]=clampi(P.rel[j]+40,-1000,1000);Q.rel[i]=clampi(Q.rel[i]+40,-1000,1000);
+    /* договорились — нота отозвана (M386): это единственный способ отменить
+       уже предъявленный срок, и он требует хода, а не времени */
+    if(typeof chronUltDrop==="function")chronUltDrop(st,N,i,j);
     if((rr(i,0x0D)%1000)<120)chronLine(st,N,"deal",i,null,{b:j});
   }else if(move==="quarrel"&&j>=0){
     const Q=st.powers[j];
     P.rel[j]=clampi(P.rel[j]-130,-1000,1000);Q.rel[i]=clampi(Q.rel[i]-90,-1000,1000);
     P.tension=clampi(P.tension+120,0,1000);
   }else if(move==="war"&&j>=0&&!chronAtWar(st,i,j)){
+    /* сперва бумага (M386): нота со сроком вместо выстрела. Если нот уже три,
+       круг больше не ждёт — война начинается сразу */
+    if(typeof chronUltFile==="function"&&chronUltFile(st,N,i,j))return move;
     st.wars.push({a:i,b:j,t0:N});
     P.rel[j]=clampi(P.rel[j]-300,-1000,1000);
     st.powers[j].rel[i]=clampi(st.powers[j].rel[i]-300,-1000,1000);
@@ -102,6 +108,7 @@ function chronAgentMove(st,N,i,rr){
       chronLine(st,N,"truce",i,null,{b:worst});
     }
   }else if(move==="ally"&&j>=0){
+    if(typeof chronUltDrop==="function")chronUltDrop(st,N,i,j);
     P.rel[j]=clampi(P.rel[j]+120,-1000,1000);
     st.powers[j].rel[i]=clampi(st.powers[j].rel[i]+120,-1000,1000);
     P.str=clampi(P.str+12,100,1000);
@@ -112,4 +119,64 @@ function chronAgentMove(st,N,i,rr){
     P.need.goods=clampi(P.need.goods-8,0,1000);
   }
   return move;
+}
+/* ── ультиматум со сроком (M386, §15.1) ──
+   До сегодняшнего дня война возникала из ничего: держава решала воевать, и в
+   ту же сводку начинала. Игрок узнавал об этом по чужому бою в небе.
+
+   Теперь между решением и выстрелом лежит бумага. Держава предъявляет ноту со
+   сроком; срок виден на станции числом; истёк — война начинается САМА и уже
+   ничем не отменяется. Отменить её можно только одним способом: настоящим
+   потеплением до срока — сделкой или союзом, а не тем, что обида остыла сама.
+
+   Ход агента при этом не изменился ни на бросок — сдвинулся момент. Зато у
+   игрока появилось окно, в котором ещё можно что-то успеть: увезти груз,
+   довезти письмо, увести наёмника с той стороны. */
+const DIP_ULT_OFF=-120;      /* теплее этого — нота отозвана */
+const DIP_ULT_DUE=6;        /* столько сводок сроку: полтора суток */
+const DIP_ULT_MAX=3;        /* больше трёх нот разом круг не выдерживает */
+/* нота вместо выстрела: `true` — бумага подана, войну откладываем */
+function chronUltFile(st,N,i,j){
+  if(!st.ults)st.ults=[];
+  for(const u of st.ults)if((u.a===i&&u.b===j)||(u.a===j&&u.b===i))return true;
+  if(st.ults.length>=DIP_ULT_MAX)return false;   /* очереди у ноты нет */
+  st.ults.push({a:i,b:j,t0:N});
+  chronLine(st,N,"ult",i,null,{b:j});
+  return true;
+}
+/* отозвать ноту: только настоящим ходом навстречу — сделкой или союзом */
+function chronUltDrop(st,N,i,j){
+  if(!st.ults)return false;
+  for(let q=0;q<st.ults.length;q++){
+    const u=st.ults[q];
+    if((u.a===i&&u.b===j)||(u.a===j&&u.b===i)){
+      st.ults.splice(q,1);
+      chronLine(st,N,"note",i,null,{b:j});
+      return true;
+    }
+  }
+  return false;
+}
+function chronUltStep(st,N,rr){
+  if(!st.ults)st.ults=[];
+  for(let q=st.ults.length-1;q>=0;q--){
+    const u=st.ults[q],A=st.powers[u.a],B=st.powers[u.b];
+    if(chronAtWar(st,u.a,u.b)){st.ults.splice(q,1);continue;}
+    if(A.rel[u.b]>DIP_ULT_OFF&&B.rel[u.a]>DIP_ULT_OFF){
+      st.ults.splice(q,1);
+      chronLine(st,N,"note",u.a,null,{b:u.b});      /* нота отозвана */
+      continue;
+    }
+    if(N-u.t0<DIP_ULT_DUE)continue;
+    st.ults.splice(q,1);
+    /* срок вышел — но воюют не от обиды, а от нужды: если у предъявившей
+       ноту нужда за это время выправилась, воевать ей больше незачем, и нота
+       гаснет сама. Это и есть «нота, на которую ответили» */
+    if(A.need[chronNeedLow(A)]>=250){chronLine(st,N,"note",u.a,null,{b:u.b});continue;}
+    st.wars.push({a:u.a,b:u.b,t0:N});
+    A.rel[u.b]=clampi(A.rel[u.b]-300,-1000,1000);
+    B.rel[u.a]=clampi(B.rel[u.a]-300,-1000,1000);
+    A.tension=clampi(A.tension+300,0,1000);
+    chronLine(st,N,"war",u.a,null,{b:u.b});
+  }
 }

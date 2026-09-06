@@ -76,7 +76,7 @@ function chronFresh(){
     S[k]={owner:o,since:0,front:0,yalta:yalta?1:0};
     if(o>=0){P[o].hold++;P[o].home=(P[o].home|0)+1;}
   }
-  return {N:-1,powers:P,systems:S,wars:[],lines:[],dir:null,_keys:CHRON._keys,off:CHRON.off|0};
+  return {N:-1,powers:P,systems:S,wars:[],ults:[],lines:[],dir:null,_keys:CHRON._keys,off:CHRON.off|0};
 }
 /* ── ход одной сводки (§16.2) ── */
 function chronStep(st,N){
@@ -90,6 +90,9 @@ function chronStep(st,N){
   for(const i of order){
     if(typeof chronAgentMove==="function")chronAgentMove(st,N,i,rr);
   }
+  /* 4a ноты со сроком (M386): пишутся после ходов и разрешаются до фронтов —
+     война по просроченной ноте должна двигать фронт в ту же сводку */
+  if(typeof chronUltStep==="function")chronUltStep(st,N,rr);
   /* 5 фронты: у каждой войны фронт ходит на систему за сводку. Куда — решает
      бросок с поправкой на силу сторон, насыщенную таблицей */
   for(const w of st.wars){
@@ -203,6 +206,9 @@ function chronHash(st){
     mix((S.owner+2)*8+S.front);
   }
   for(const w of st.wars){mix(w.a*8+w.b);mix(w.t0+1);}
+  /* ноты со сроком (M386) входят в хэш: расхождение по сроку — это расхождение
+     по тому, будет ли завтра война */
+  for(const u of (st.ults||[])){mix(u.a*8+u.b+1);mix(u.t0+2);}
   /* Директор входит в хэш: расхождение по напряжению — такое же расхождение,
      как по владениям, и молчать о нём нельзя (D06) */
   if(st.dir){
@@ -229,6 +235,7 @@ function chronClone(st){
     arcs:st.dir.arcs.map(a=>({p:a.p,kind:a.kind,t0:a.t0,stage:a.stage})),
     rites:st.dir.rites.map(r=>({kind:r.kind,p:r.p,t0:r.t0}))}:null;
   return {N:st.N,powers:P,systems:S,wars:st.wars.map(w=>({a:w.a,b:w.b,t0:w.t0})),
+    ults:(st.ults||[]).map(u=>({a:u.a,b:u.b,t0:u.t0})),
     lines:st.lines.slice(),dir:D,off:st.off|0};
 }
 /* ── состояние на сейчас: кэш, потом повтор ── */
@@ -270,6 +277,7 @@ function chronSave(st){
         [p.need.ore,p.need.goods,p.need.hulls,p.need.link]]),
       s:chronKeys().map(k=>st.systems[k].owner+","+st.systems[k].since+","+st.systems[k].front).join("|"),
       w:st.wars.map(w=>[w.a,w.b,w.t0]),
+      u:(st.ults||[]).map(u=>[u.a,u.b,u.t0]),
       d:st.dir?{q:st.dir.quiet|0,pk:st.dir.peak|0,cm:st.dir.calm|0,t:st.dir.tens|0,l:st.dir.last,
         a:st.dir.arcs.map(a=>[a.p,a.kind,a.t0,a.stage]),
         r:st.dir.rites.map(r=>[r.kind,r.p,r.t0])}:null};
@@ -294,6 +302,7 @@ function chronLoad(){
       st.systems[k].owner=v[0]|0;st.systems[k].since=v[1]|0;st.systems[k].front=v[2]|0;
     });
     st.wars=(o.w||[]).map(w=>({a:w[0]|0,b:w[1]|0,t0:w[2]|0}));
+    st.ults=(o.u||[]).map(u=>({a:u[0]|0,b:u[1]|0,t0:u[2]|0}));
     st.dir=o.d?{quiet:o.d.q|0,peak:o.d.pk|0,calm:o.d.cm|0,tens:o.d.t|0,last:o.d.l||{},
       arcs:(o.d.a||[]).map(a=>({p:a[0]|0,kind:a[1],t0:a[2]|0,stage:a[3]|0})),
       rites:(o.d.r||[]).map(r=>({kind:r[0],p:r[1]|0,t0:r[2]|0}))}:null;
@@ -316,6 +325,12 @@ function chronFront(sx,sy){
   return !!(S&&S.front);
 }
 function chronWars(){return chronState().wars;}
+/* ноты со сроком (M386): их спрашивает станция, чтобы показать число */
+function chronUlts(){return chronState().ults||[];}
+function chronUltBetween(a,b){
+  for(const u of chronUlts())if((u.a===a&&u.b===b)||(u.a===b&&u.b===a))return u;
+  return null;
+}
 /* воюют ли эти двое прямо сейчас — спрашивает карта, чтобы нарисовать фронт */
 function chronWarBetween(a,b){
   if(a<0||b<0||a===b)return false;

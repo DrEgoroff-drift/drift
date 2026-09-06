@@ -59,6 +59,7 @@ function npcSpawn(){
     }
   }
   if(typeof yaltaHere==="function"&&yaltaHere()){npcYalta();return;}
+  npcEnvoy();
   const own=chronOwner(G.sx,G.sy);
   if(own<0)return;
   const by=MAKER_KEYS[own];
@@ -101,6 +102,26 @@ function npcSpawn(){
     if(typeof etherLine==="function"&&typeof powerOf==="function")
       etherLine("…"+powerOf(by).ru+" и "+powerOf(fby).ru+" в этом секторе. Гражданским уйти с линии.","эфир");
   }
+}
+/* ── посольство в пути (M386, §15.1) ──
+   Борт державы идёт через ЧУЖУЮ систему своим курсом: не окликает, не стреляет
+   и не отвечает даже на выстрел. Его можно провести, а можно сбить — и это два
+   разных человека в книжке (12b1-fx-dip). */
+function npcEnvoy(){
+  if(typeof dipEnvoyDue!=="function")return;
+  const D=dipEnvoyDue();
+  if(!D)return;
+  G.escortT=0;G.escortDone=0;                     /* заход новый — и счёт новый */
+  const r=rng(hashi(G.sx,G.sy,0x0E17));
+  const a=r()*TAU,rad=2300;
+  const p=npcShip(D.by,30,0,Math.cos(a)*rad,Math.sin(a)*rad,1);
+  p.aware=false;p.envoy=1;p.dip=1;
+  p.name="посольство "+((typeof powerOf==="function")?powerOf(D.by).ru:D.by);
+  /* курс — через систему насквозь, мимо звезды: он здесь не по вашу душу */
+  const c=Math.atan2(-p.y,-p.x)+(r()-.5)*.6;
+  p.a=c;p.vx=Math.cos(c)*2.2;p.vy=Math.sin(c)*2.2;
+  G.pirates.push(p);
+  say("ПОСОЛЬСТВО В СИСТЕМЕ · ЕГО МОЖНО ПРОВЕСТИ",140);
 }
 /* ── «Ялта» (M372, §16.6) ──
    Шесть посольств на рейде, шесть волн разом, ярмарка. Никто не стреляет:

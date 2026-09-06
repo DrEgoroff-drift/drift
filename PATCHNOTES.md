@@ -7,6 +7,46 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.386.0 - M386: the Director's fifth family — diplomacy, and war that announces itself
+
+**War no longer starts out of nowhere.** Until today a power decided to fight and fought in the
+same сводка; the player learned about it from someone else's battle in the sky. Now a decision
+first becomes paper: an **ultimatum with a deadline**, six сводки, visible at the station as a
+number. When the deadline expires the war begins by itself and nothing stops it. Two things stop
+it before that: a deal or an alliance struck with that very power, or the hunger that started it
+going away. The agent's move did not change by a single roll — only the moment did, and the
+window it opens is the whole point: a day and a half to move cargo, finish a run, pull a hired
+hand out of the wrong system.
+
+Measured over 1000 сводки, with the note against without: **209 wars instead of 286**, systems
+changing hands 1851 instead of 2601, a war running somewhere in 914 сводки out of 1001 instead of
+987 — the galaxy stays as warlike as it was, it just stops being surprised by it. 179 notes were
+filed, 175 ran their срок out into war, 3 were answered, and 34 wars started with no note at all
+because three were already pending — the cap does not queue, it steps aside.
+
+**Посольство** crosses a foreign system: a ship that does not hail, does not shoot and does not
+answer fire. Stay near it for ten seconds and you have escorted it — an episode with **both**
+sides, the one whose ship it was and the one whose space it crossed, because taking a stranger
+through a stranger's sky is worth the same to both. Shoot it and it is «не простил» for its own
+power and a shot episode for the host: the one consequence in this family that hits, and it hits
+only whoever fired first.
+
+**Обмен пленными** — while a truce is fresh, a station of either side gives back a hostage of
+yours without a ransom. One exchange per truce.
+
+**Письмо** (гл. 49) — taken at one power's station, handed over at another's. The postcard rule
+holds all the way down: the letter has exactly three fields — from, to, and the сводка it was
+written in — and no field the player could write into. No payment either way; late still counts,
+but only the addressee remembers it.
+
+Six voices for both new lines (the note filed and the note answered), and the ether now names
+**both** sides of a quarrel — a line that mentioned one of two was lying by omission.
+
+The chronicle hashes are re-pinned deliberately: the note lives inside the replay (step 4a), in
+the state, in the clone, in the cache and in the hash — a divergence about a deadline is a
+divergence about whether there is a war tomorrow.
+
+---
 ## 0.385.0 - M385: the Director's fourth family — who is in charge
 
 **Чистка** takes a third of a power's strength, and **наследник** halves its relations with

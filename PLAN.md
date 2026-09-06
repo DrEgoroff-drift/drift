@@ -762,8 +762,10 @@ Three stages, each playable on /dev before the next starts:
   оставляет пояс без руды, находка делает поверхность богаче) ·
   ~~M385 power~~ (0.385.0: чистка и преемник меняют состояние в повторе, переворот переворачивает
   выбранный толпой курс, дезертиров вдвое, волна молчит; попутно пойман повтор внутри повтора) ·
-  diplomacy · security ·
-  culture.
+  ~~M386 diplomacy~~ (0.386.0: война начинается с ноты со сроком — шесть сводок, число на станции,
+  истёк — война сама; посольство, которое можно провести или сбить; обмен пленными по свежему
+  перемирию; письмо из гл. 49 с тремя полями и без единой свободной строки) ·
+  security · culture.
 
 Measured from M360 on: `prof()` with eight armed ships on the phone layout; the pad row on the
 44 px sweep (`91zzy-screens`); `91zzzw-chron` replay hashes browser vs Node.
