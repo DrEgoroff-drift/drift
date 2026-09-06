@@ -289,3 +289,166 @@ if(/[?&]look\b/.test(location.search)){
     document.title="LOOKDONE";
   },900));
 }
+
+/* ══════════════ читается ли изготовитель (M369, §19.4) ══════════════
+   Свод требует, чтобы чужой корпус называл своего изготовителя ВЗГЛЯДОМ, а не
+   подписью. «Мне кажется, читается» — не довод: прибор смотрит на ту же
+   картинку, что игрок, и считает долю угаданных.
+
+   Как считает. Корпус рисуется в маленькую канву носом вправо; из пикселей
+   берётся вектор примет: восемь замеров полувысоты силуэта (это и есть закон
+   профиля), скачки между соседними колонками (ступени и модули против гладкой
+   капсулы и веретена), доля чернил ЗА телом (приметы, торчащие из обвода),
+   вытянутость и средний тон обшивки. Шесть образцов считаются по обучающим
+   семенам, проверка идёт по ДРУГИМ — иначе прибор хвалил бы сам себя.
+
+   makerRead()        — доля угаданных по ста семенам на класс;
+   makerRead(20)      — быстрее и грубее, для правки на ходу. */
+const MAKER_PX=52;
+let MAKER_CV=null;
+function makerFeat(id){
+  if(!MAKER_CV){
+    MAKER_CV=document.createElement("canvas");
+    MAKER_CV.width=MAKER_CV.height=MAKER_PX;
+  }
+  const c=MAKER_CV.getContext("2d");
+  c.setTransform(1,0,0,1,0,0);
+  c.clearRect(0,0,MAKER_PX,MAKER_PX);
+  const h=hullOf(id);
+  const k=MAKER_PX*.86/Math.max(8,h.len+h.halfW*.9);
+  const old=ctx;ctx=c;
+  c.save();c.translate(MAKER_PX*.5-((h.nose+h.tail)*.5)*k,MAKER_PX*.5);c.scale(k,k);
+  try{drawHull(id,false,false,0,0);}catch(e){}
+  c.restore();ctx=old;
+  const d=c.getImageData(0,0,MAKER_PX,MAKER_PX).data;
+  /* полувысота силуэта по колонкам и средний тон того, что нарисовано */
+  const col=new Array(MAKER_PX).fill(0);
+  /* лучи: наибольший радиус чернил в двенадцати секторах. Крюк за кормой,
+     бушприт перед носом, антенны и баки по борту — все они торчат в СВОЮ
+     сторону, и в столбцах этого не видно, а в лучах видно */
+  const RAY=12,ray=new Array(RAY).fill(0);
+  let ink=0,rs=0,gs=0,bs=0,dark=0;
+  for(let x=0;x<MAKER_PX;x++){
+    for(let y=0;y<MAKER_PX;y++){
+      const i=(y*MAKER_PX+x)*4;
+      if(d[i+3]<40)continue;
+      col[x]=Math.max(col[x],Math.abs(y-MAKER_PX*.5)+.5);
+      const dx=x-MAKER_PX*.5,dy=y-MAKER_PX*.5;
+      const a=(Math.atan2(dy,dx)+Math.PI*2)%(Math.PI*2);
+      const sct=Math.floor(a/(Math.PI*2)*RAY)%RAY;
+      const rr=Math.hypot(dx,dy);
+      if(rr>ray[sct])ray[sct]=rr;
+      ink++;rs+=d[i];gs+=d[i+1];bs+=d[i+2];
+      if(d[i]+d[i+1]+d[i+2]<230)dark++;
+    }
+  }
+  if(!ink)return null;
+  const on=[];for(let x=0;x<MAKER_PX;x++)if(col[x]>0)on.push(x);
+  const x0=on[0],x1=on[on.length-1],L=Math.max(1,x1-x0);
+  let wmax=0;for(let x=x0;x<=x1;x++)wmax=Math.max(wmax,col[x]);
+  const f=[];
+  for(let s=0;s<8;s++){
+    const x=Math.round(x0+L*(s+.5)/8);
+    f.push(col[x]/Math.max(1,wmax));
+  }
+  /* скачки: ступенчатый профиль рвётся, капсула и веретено — нет */
+  let jump=0,steps=0,xw=x0;
+  for(let x=x0+1;x<=x1;x++){
+    if(col[x]>=wmax)xw=x;
+    if(!col[x]||!col[x-1])continue;
+    const dd=Math.abs(col[x]-col[x-1])/Math.max(1,wmax);
+    jump+=dd;if(dd>.12)steps++;
+  }
+  f.push(jump/Math.max(1,L)*8);
+  f.push(steps/Math.max(1,L)*4);
+  /* чернила за телом: приметы, которые торчат за обвод */
+  let out=0;
+  for(let x=x0;x<=x1;x++)if(col[x]>wmax*1.02)out++;
+  f.push(out/Math.max(1,L)*2);
+  f.push(L/Math.max(1,wmax*2)/6);                 /* вытянутость */
+  /* нос и корма: бушприт Коммуны, крюк ГЛАВТРАССЫ и антенны Хай-Фронта живут
+     именно здесь — далеко от миделя и за обводом */
+  f.push((x1-xw)/Math.max(1,L));
+  f.push((xw-x0)/Math.max(1,L));
+  f.push(col[Math.min(x1,x0+Math.round(L*.06))]/Math.max(1,wmax));
+  f.push(col[Math.max(x0,x1-Math.round(L*.06))]/Math.max(1,wmax));
+  /* краска: грунт изготовителя и то, сколько на борту чёрного */
+  f.push((rs-bs)/ink/255+.5);                     /* тепло обшивки */
+  f.push((rs+gs+bs)/(3*ink)/255);                 /* светлота обшивки */
+  f.push(dark/ink);                               /* доля тёмного: рёбра, охра, сварка */
+  let rmean=0;for(let k2=0;k2<RAY;k2++)rmean+=ray[k2]/RAY;
+  for(let k2=0;k2<RAY;k2++)f.push(ray[k2]/Math.max(1,rmean));
+  return f;
+}
+function makerStand(by,i,cls){
+  const id="mk_"+by+"_"+(cls||"scout")+"_"+i;
+  NPC_SHIPS[id]={name:id,seed:(i*7919+by.charCodeAt(0)*104729+(cls||"s").charCodeAt(0)*31)>>>0,
+    hcls:cls||"scout",col:"#9fd8ff",hull:100,cargo:60,fuel:100,thr:1,cls:cls||"scout",by};
+  delete HULL_CACHE[id+"!"+by];
+  return id;
+}
+function makerRead(n){
+  n=n||100;
+  const cls=Object.keys(HULL_CLASS),keys=MAKER_KEYS;
+  const per=Math.max(4,Math.ceil(n/cls.length));
+  /* ── как прибор спрашивает ──
+     Класс читается первым, изготовитель вторым (§0 закон 7) — значит и вопрос
+     ставится так же: класс известен, чей корпус? Образцы считаются на КАЖДЫЙ
+     класс отдельно по обучающим семенам, проверка идёт по другим, а все приметы
+     приводятся к одному разбросу: иначе одна крупная величина (скажем, длина
+     в пикселях) перевешивает семь остальных просто потому, что она больше. */
+  const rows=[],hit={},tot={},miss={};
+  for(const by of keys){hit[by]=0;tot[by]=0;miss[by]={};}
+  let ok=0,all=0;
+  for(const k of cls){
+    const mid={},cnt={},test=[];
+    for(const by of keys){
+      for(let i=0;i<10;i++){
+        const f=makerFeat(makerStand(by,900+i,k));
+        if(!f)continue;
+        if(!mid[by]){mid[by]=f.slice();cnt[by]=1;}
+        else{for(let j=0;j<f.length;j++)mid[by][j]+=f[j];cnt[by]++;}
+      }
+      if(mid[by])for(let j=0;j<mid[by].length;j++)mid[by][j]/=cnt[by];
+      for(let i=0;i<per;i++){
+        const f=makerFeat(makerStand(by,i,k));
+        if(f)test.push({by,f});
+      }
+    }
+    if(!test.length)continue;
+    /* разброс каждой приметы по этому классу — им и делим */
+    const D=test[0].f.length,mu=new Array(D).fill(0),sd=new Array(D).fill(0);
+    for(const t of test)for(let j=0;j<D;j++)mu[j]+=t.f[j]/test.length;
+    for(const t of test)for(let j=0;j<D;j++)sd[j]+=Math.pow(t.f[j]-mu[j],2)/test.length;
+    for(let j=0;j<D;j++)sd[j]=Math.sqrt(sd[j])||1;
+    /* вес приметы: форма весит больше краски — краску перекрасят, форму нет */
+    /* веса подобраны замером (M369): форма профиля и приметы держат основную
+       часть, краска — треть, лучи силуэта почти ничего: у них своя беда, в них
+       громче всего слышен КЛАСС (крыло, контейнеры), а не порода */
+    const W=[1,1,1,1,1,1,1,1, 1.3,1.3, 1.6, 1.1, 1.2,1.2,1,1, 2.2,2.2,2,
+      .4,.4,.4,.4,.4,.4,.4,.4,.4,.4,.4,.4];
+    for(const t of test){
+      let best=null,bd=1e9;
+      for(const q of keys){
+        if(!mid[q])continue;
+        let s2=0;
+        for(let j=0;j<D;j++){const dd=(t.f[j]-mid[q][j])/sd[j]*(W[j]||1);s2+=dd*dd;}
+        if(s2<bd){bd=s2;best=q;}
+      }
+      tot[t.by]++;all++;
+      if(best===t.by){hit[t.by]++;ok++;}
+      else if(best)miss[t.by][best]=(miss[t.by][best]||0)+1;
+    }
+  }
+  for(const by of keys)rows.push({by,ru:makerRu(by),
+    acc:tot[by]?+(hit[by]/tot[by]*100).toFixed(1):0,
+    /* с кем путают: прибор обязан не только ставить оценку, но и говорить,
+       какие две породы похожи — иначе править нечего */
+    with:(function(){let b=null,n=0;for(const q of keys)if(q!==by&&(miss[by][q]||0)>n){n=miss[by][q];b=q;}
+      return b?makerRu(b)+" "+n:"";})()});
+  const out={acc:all?+(ok/all*100).toFixed(1):0,n:all,rows};
+  if(typeof console!=="undefined")
+    console.log("изготовитель читается на "+out.acc+" % ("+all+" корпусов): "+
+      rows.map(r=>r.ru+" "+r.acc).join(" · "));
+  return out;
+}

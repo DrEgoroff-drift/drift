@@ -1036,11 +1036,15 @@ One system inside ГЛАВТРАССА's centre (r ≈ 6, fixed by seed, never t
   опись of a killed pirate — drops still come from the tier, not from what he actually carried.
 
 **Stage B — the powers, by seed** (client only; the galaxy lives with no server)
-- **M369** the grammar layer (§19.4): `03a-hull-maker` with the six makers over the eight
-  dimensions; `hullOf` reads profile law, scheme set and protrusions; `03b` paint, `03d`
-  marks and `03e` draw read surface, joints and lights; engine signature in flight; the
-  `makerRead()` measure and six hundred-hull sheets in the almanac (D24). The powers' table,
-  emblems, hails, IFF full; «Ялта» as a place (D22).
+- ~~**M369** the grammar layer (§19.4)~~ — 0.369.0 (2026-09-06): `03a-hull-maker` (the eight
+  dimensions, six makers), `by` on every ship record and in the hull cache key, profile law +
+  scheme filter + protrusions in `hullOf`, joints/surface/marks/lights in paint and draw, flame
+  and trail signature, bank and engine hum; `12al-powers` (the §7.1 table, hail, emblem, flag —
+  the player's is ГЛАВТРАССА whatever hull he flies); «Ялта» by seed at r≈6 with its three
+  prohibitions; `makerRead()` in `28y-look` — **92.4 % over 630 hulls** — and the stand
+  `docs/shot.py maker` (`?by=<key>` for one maker's hundred). Almanac issue IV.
+  **Deferred:** the other four generators (M369a), the author's own naming of the six sheets on
+  /dev, and the class's own appendages still meeting the hull in the old joint grammar.
 - **M369a** the same grammar in the other generators: the fleet (`12ai`), barges (`12l`),
   pirate hulls and deserters (`12i`), station bodies (`17e`: assembly law, forms, lights),
   domes and strips, papers, suits, the station's accent and greeting, engine sound.

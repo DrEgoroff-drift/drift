@@ -33,6 +33,9 @@ function spawnPirates(){
   /* под пиратами система держит патруль сверх обычного случайного налёта */
   let n=(r()<danger*.85?1+Math.floor(r()*(1+danger*2)):0)+occExtraPirates(G.sx,G.sy);
   if(typeof quietNoPirates==="function"&&quietNoPirates())n=0;   /* тихий уезд (11n): никто не грабит */
+  /* «Ялта» (M369, D12): туда не приходят ни пираты, ни фронт — это её первое
+     и главное свойство, и оно работает раньше всего остального */
+  if(typeof yaltaIs==="function"&&yaltaIs(G.sx,G.sy))n=0;
   if(typeof holdAmbushMul==="function")n=Math.floor(n*holdAmbushMul());   /* Заграждение (H4) */
   n=Math.min(n,ARMED_CAP);   /* потолок вооружённых (§5, M361) */
   for(let i=0;i<n;i++){
@@ -139,13 +142,16 @@ function updateCombat(dt){
      стволом; зажатый ОГОНЬ/F/ЛКМ — принудительно, по носу. Место помнит бой
      один раз за стычку, а не каждый выстрел (D16). */
   const ctl=G.ctl||{};
+  /* в «Ялте» оружие опечатано (M369): отказ с причиной, а не молчащая кнопка */
+  const sealed=(typeof yaltaHere==="function")&&yaltaHere();
+  if(sealed&&(ctl.fire||keys.fire)&&typeof yaltaSealed==="function")yaltaSealed();
   const mk=(G.marks&&G.marks[0])||null;
   const live=(mk&&mk.hull>0&&!mk.iff)?mk:null;
   const all=(st.guns&&st.guns.length)?st.guns:[{slot:0,g:st.gun,m:null}];
   const grp=(typeof gunGroupPick==="function")?gunGroupPick(all,sh,live):0;
   const act=(typeof gunsInGroup==="function")?gunsInGroup(all,grp):all;
   if(!G.gunCool)G.gunCool={};
-  for(let gi=0;gi<act.length;gi++){
+  for(let gi=0;gi<act.length&&!sealed;gi++){
     const A=act[gi],g=A.g,first=gi===0;
     let cd=first?fireCool:((G.gunCool[A.slot]||0)-dt);
     let auto=false;
@@ -229,7 +235,10 @@ function updateCombat(dt){
   /* ракеты (16b): свой пуск, своя перезарядка и свой расход из трюма — но живут
      они в том же цикле боя, а не отдельным таймером */
   if(typeof mslTick==="function")mslTick(dt);
-  if((keys.msl||(G.ctl&&G.ctl.msl))&&typeof mslFire==="function"&&(G.mslCool||0)<=0)mslFire();
+  if((keys.msl||(G.ctl&&G.ctl.msl))&&typeof mslFire==="function"&&(G.mslCool||0)<=0){
+    if(sealed){if(typeof yaltaSealed==="function")yaltaSealed();}
+    else mslFire();
+  }
 }
 /* трепло (12x, M116) слышит бой: имя сбитого — это то, что потом прозвучит
    на чужой станции, и уже не как ваша заслуга */

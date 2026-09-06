@@ -1756,7 +1756,7 @@ body.table u.addr{color:#7a4a20}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.368.0";
+const VER="0.369.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -2441,14 +2441,24 @@ function hullClassOf(id,S){
 }
 
 function hullOf(id){
-  if(HULL_CACHE[id])return HULL_CACHE[id];
-  const S=shipData(id),r=rng(S.seed);
+  /* ── изготовитель входит в ключ (M369) ──
+     Один и тот же корпус, собранный ГЛАВТРАССОЙ и Коммуной, — два разных
+     корабля: у них разный закон профиля и разные приметы. Кэш обязан их
+     различать, иначе первый нарисованный станет и вторым. */
+  const S0=shipData(id);
+  const by=(typeof makerOf==="function")?makerOf(id,S0):"gt";
+  const ck=id+"!"+by;
+  if(HULL_CACHE[ck])return HULL_CACHE[ck];
+  const S=S0,r=rng(S.seed);
+  const MB=(typeof makerRow==="function")?makerRow(by):null;
   const K=HULL_CLASS[hullClassOf(id,S)]||HULL_CLASS.scout;
 
   /* ── продольный профиль: станции от носа к корме ── */
   /* не `const`: люксовая яхта переопределяет габариты под свой обвод */
-  let nose=(16+r()*14)*K.len, tail=-(13+r()*13)*K.len, len=nose-tail;
-  let bw=(3.8+r()*4.4)*K.bw;
+  /* пропорции: класс задаёт их, изготовитель смещает (§19.4, измерение 1).
+     Смещение мало нарочно — класс обязан читаться первым */
+  let nose=(16+r()*14)*K.len*(MB?MB.len:1), tail=-(13+r()*13)*K.len*(MB?MB.len:1), len=nose-tail;
+  let bw=(3.8+r()*4.4)*K.bw*(MB?MB.bw:1);
   const segs=9+Math.floor(r()*5);
   /* у рудовоза корма почти равна миделю — корпус-ящик; у курьера сходит
      на конус. Это и есть первое, что читается силуэтом */
@@ -2505,7 +2515,11 @@ function hullOf(id){
     yacht:  ["swept"],
     survey: ["disc","twin","boxed","xwing","swept"]
   };
-  const forms=FORM_BY_CLASS[S.hcls]||["swept"];
+  /* набор схем сужает изготовитель (измерение 2): плита у Орднунга, веретено
+     с трезубцем у Хай-Фронта. Класс сильнее: пустое пересечение отменяет
+     сужение, а не корабль */
+  const forms0=FORM_BY_CLASS[S.hcls]||["swept"];
+  const forms=(typeof makerForms==="function")?makerForms(by,forms0):forms0;
   const form=YAC?"swept":forms[Math.floor(r()*forms.length)];
   /* диск и плита — не веретено: у них свой обвод, иначе схема остаётся
      припиской к прежнему корпусу. Диск почти круглый в плане, плита —
@@ -2557,6 +2571,15 @@ function hullOf(id){
       prof.push([x,Math.max(.5,w)]);
     }
     tip[0]=nose+len*.10;                       // нос вытянут в тонкое остриё
+    poly.length=0;poly.push(tip);
+    for(const p of prof)poly.push([p[0],-p[1]]);
+    for(let i=prof.length-1;i>=0;i--)poly.push([prof[i][0],prof[i][1]]);
+  }
+  /* ── закон профиля изготовителя (измерение 1) ──
+     Идёт последним по обводу: класс уже сказал пропорции, схема — свои
+     переделки, и только теперь кривая полуширины получает характер. */
+  if(typeof makerProfile==="function"&&!YAC){
+    makerProfile(by,prof,r);
     poly.length=0;poly.push(tip);
     for(const p of prof)poly.push([p[0],-p[1]]);
     for(let i=prof.length-1;i>=0;i--)poly.push([prof[i][0],prof[i][1]]);
@@ -2909,8 +2932,16 @@ function hullOf(id){
      настоящей технике, — АКЦЕНТОМ: несколько панелей, кант, полоса на киле.
      Яхты живут по своим правилам (лак и латунь), их это не касается. */
   const own=hex2rgb(S.col);
-  const col=YAC?own:mixc([214,211,200],own,.10);
+  /* грунт — от изготовителя (измерение 5): белёсая кость ГЛАВТРАССЫ, белое
+     Компании, серая сталь Орднунга, охра Рассвета. Цвет владельца остаётся
+     акцентом, а не заливкой */
+  const grd=MB?MB.ground:[214,211,200];
+  const col=YAC?own:mixc(grd,own,MB?MB.tint:.10);
   const h={poly,prof,wings,pods,nacs,eng,greeb,ants,ribs,canopy,stripe,fin,mark,
+    by,
+    /* приметы, которые торчат за обвод (измерение 3): без них изготовитель
+       читается краской, а краски на восьми пикселях нет */
+    outs:(typeof makerOuts==="function")?makerOuts(by,nose,tail,bw,len,S.seed):[],
     hcls:S.hcls,clsRu:K.ru,tier:S.tier,seed:S.seed,lux:LUX,yac:YAC,form,pirate:!!(id&&id[0]==="p"),
     nose,bw,tail,len,tailW,halfW:hw,
     /* акцент — кирпичный сурик, а не подмешанный цвет владельца: подмес к
@@ -2938,8 +2969,416 @@ function hullOf(id){
        отличаться от всего флота: глубокий лак с металликом вместо крашеных
        листов, тик на открытой палубе, латунь в канте и жемчуг надстройки. */
     lac:mixc(col,[4,7,14],.62), gold:[212,176,98], teak:[166,122,72], pearl:[236,238,240]};
-  HULL_CACHE[id]=h;return h;
+  HULL_CACHE[ck]=h;return h;
 }
+
+/* ══════════════ у всего есть изготовитель (M369, §19.1, §19.4) ══════════════
+   Класс отвечает «кто это»: курьер, рудовоз, фрегат. Изготовитель отвечает на
+   другой вопрос — «чей»: курьер Орднунга и курьер Коммуны одного класса и
+   разной породы. Это ВТОРАЯ ось генератора, поперечная классу, и она не
+   покраска: у изготовителя своя грамматика формы.
+
+   Восемь измерений §19.4, и первые три обязаны читаться силуэтом:
+     1 закон профиля — как строится кривая полуширины;
+     2 набор схем    — какие планеры класс вправе взять у этого изготовителя;
+     3 приметы       — то, что ВСЕГДА торчит за обвод;
+     4 стык          — чем навеска встречается с обшивкой;
+     5 поверхность   — грунт, полоса, лак, износ;
+     6 метки и огни  — номер, логотип, имя, вымпел, солнце, глиф;
+     7 подпись тяги  — факел и след (нулевого следа нет: обрубок в четверть
+                       длины на ходу читается как «следа не оставляет»);
+     8 звук и крен   — тембр и то, как корабль ложится в поворот.
+
+   Восьмое нарочно мало: повадка остаётся классовой, изготовитель меняет КРЕН
+   и ЗВУК, но никогда числа, за которые игрок заплатил.
+
+   Шести хватает, седьмого не будет (§20, settled). «Яхта» — класс, а не
+   изготовитель: яхта Коммуны и яхта Компании различаются этой же таблицей. */
+const HULL_MAKER={
+  gt:{ru:"ГЛАВТРАССА",ab:"ГТ",short:"ГТ",
+    bw:1.06, len:.97,  prof:"step",    forms:null,
+    out:["hook","rad"],            joint:"clamp",
+    ground:[220,213,194],tint:.10,stripe:1,gloss:0,  wear:1.3,
+    mark:"num",  lights:"amber",
+    eng:{col:[255,168,86], w:1.25,trail:1,   soot:1},
+    snd:{f:70, bank:1},
+    note:"по ГОСТу: ступени, хомут, номер и «изделие»"},
+  co:{ru:"Компания",ab:"КП",short:"КП",
+    bw:.90,  len:1.04, prof:"capsule", forms:["twin","swept"],
+    out:["logofin","runline"],     joint:"flush",
+    ground:[246,247,249],tint:.06,stripe:2,gloss:1,  wear:.5,
+    mark:"logo", lights:"run",
+    eng:{col:[150,205,255],w:.85, trail:.5, twin:1},
+    snd:{f:150,bank:1.35},
+    note:"белое и гладкое, логотип во весь борт, бегущая строка"},
+  or:{ru:"Орднунг",ab:"ОР",short:"ОР",
+    bw:1.02, len:1.12, prof:"chamfer", forms:["slab","boxed","twin"],
+    out:["plinth","comb"],         joint:"flange",
+    ground:[138,144,152],tint:.02,stripe:0,gloss:0,  wear:.8, ribs:1,
+    mark:"stencil",lights:"none",
+    eng:{col:[240,248,255],w:.6,  trail:.25},
+    snd:{f:96, bank:0},
+    note:"прямые грани, гребень рёбер, номера по трафарету и ни одной лишней линии"},
+  km:{ru:"Коммуна",ab:"КМ",short:"КМ",
+    bw:.84,  len:1.18, prof:"swan",    forms:["swept","delta"],
+    out:["bowsprit","band","pennant"],joint:"fillet",
+    ground:[176,204,234],tint:.18,stripe:1,gloss:.6, wear:.9,
+    mark:"name", lights:"band",
+    eng:{col:[190,150,255],w:1.1, trail:1.5},
+    snd:{f:120,bank:1.5},
+    note:"лебединый обвод, бушприт, лента окон и вымпел; имя, а не номер"},
+  ra:{ru:"Рассвет",ab:"РС",short:"РС",
+    bw:1.28, len:.94,  prof:"modules", forms:["boxed","twin","slab"],
+    out:["tanks","braces"],        joint:"weld",
+    ground:[198,150,74], tint:.20,stripe:0,gloss:0,  wear:1.6,
+    mark:"sun",  lights:"lantern",
+    eng:{col:[255,214,120],w:1.15,trail:1.2,spark:1},
+    snd:{f:58, bank:1.1},
+    note:"сваренный из модулей, баки наружу, охра и чёрное, имя от руки"},
+  hf:{ru:"Хай-Фронт",ab:"ХФ",short:"ХФ",
+    bw:.72,  len:1.16, prof:"spindle", forms:["trident","xwing"],
+    out:["array","under"],         joint:"gap",
+    ground:[206,216,224],tint:.05,stripe:0,gloss:.35,wear:.6,
+    mark:"glyph",lights:"under",
+    eng:{col:[130,255,236],w:.5,  trail:.3, pulse:1},
+    snd:{f:210,bank:1.8},
+    note:"веретено, антенны длиннее корпуса, свет из-под обшивки, один глиф"}
+};
+const MAKER_KEYS=Object.keys(HULL_MAKER);
+/* ── чей это корпус ──
+   Каталог ГЛАВТРАССЫ (`SHIPS`) и её же флот — нулевой изготовитель: игрок
+   рождается здесь, и его корабль по умолчанию отсюда (§7.5: «ты по рождению
+   уже тут»). Всё остальное — уникальные корпуса, пиратские, чужие — берёт
+   изготовителя из своего же seed, один раз и навсегда: `by` остаётся в записи
+   корабля, а значит переживает и кэш, и сохранение. */
+function makerOf(id,S){
+  S=S||(id&&shipData(id));
+  if(!S)return "gt";
+  if(S.by&&HULL_MAKER[S.by])return S.by;
+  if(id&&(SHIPS[id]||(typeof FLEET!=="undefined"&&FLEET&&FLEET[id])))return S.by="gt";
+  return S.by=MAKER_KEYS[hashi(S.seed||1,0x4B17,0x11)%MAKER_KEYS.length];
+}
+function makerRow(by){return HULL_MAKER[by]||HULL_MAKER.gt;}
+function makerRu(by){return makerRow(by).ru;}
+/* схемы планера: изготовитель сужает выбор класса, но не отменяет его —
+   если пересечение пусто, класс сильнее (рудовоз Хай-Фронта существует) */
+function makerForms(by,forms){
+  const M=makerRow(by);
+  if(!M.forms)return forms;
+  const keep=forms.filter(f=>M.forms.indexOf(f)>=0);
+  /* пустое пересечение — не повод отменить грамматику: рудовоз Хай-Фронта
+     существует и собран по-хайфронтовски. Класс остаётся в пропорциях, схема
+     принадлежит изготовителю (§19.4, измерение 2) */
+  return keep.length?keep:M.forms;
+}
+/* ── закон профиля ──
+   Работает поверх уже построенной кривой полуширины: класс задал пропорции,
+   изготовитель задаёт ХАРАКТЕР этой кривой. Меняются только полуширины —
+   длина и габарит остаются классовыми, иначе изготовитель начал бы менять
+   числа корабля. */
+function makerProfile(by,prof,r){
+  const M=makerRow(by),N=prof.length-1;
+  if(N<2)return prof;
+  const w0=prof.map(p=>p[1]);
+  const wmax=Math.max.apply(null,w0);
+  const q=r||Math.random;
+  if(M.prof==="step"){
+    /* ступени: не кривая вовсе, а полки. Нос — две узкие, мидель — короб во
+       всю ширину, корма — две пониже. Плавных переходов нет ни одного: борт
+       «по ГОСТу» набирается из готовых секций, и это видно */
+    const b0=.30+q()*.06, b1=.60+q()*.06;
+    for(let i=0;i<=N;i++){
+      const t=i/N;
+      let w;
+      if(t<b0)      w=wmax*(t<b0*.5?.40:.66);
+      else if(t<b1) w=wmax*1.12;      /* короб амидшип шире всего корпуса */
+      else          w=wmax*(t<b1+.18?.72:.50);
+      prof[i][1]=Math.max(.7,w);
+    }
+  }else if(M.prof==="capsule"){
+    /* капсула: ровная середина и скруглённые концы — таблетка, а не веретено.
+       Ровный участок и отличает её от лебедя Коммуны: у капсулы мидель длинный
+       и лежит посередине, у лебедя он один и сдвинут к корме */
+    for(let i=0;i<=N;i++){
+      const t=i/N;
+      const w=t<.20?lerp(.34,1,Math.pow(t/.20,.7)):
+              (t>.80?lerp(1,.44,Math.pow((t-.80)/.20,1.3)):1);
+      prof[i][1]=Math.max(.7,wmax*w);
+    }
+  }else if(M.prof==="chamfer"){
+    /* прямые участки и фаски: три узла, между ними — отрезок, без кривой */
+    const kn=[0,.30+q()*.08,.62+q()*.08,1];
+    const kw=[w0[0],wmax*(.92+q()*.08),wmax*(.86+q()*.1),w0[N]];
+    for(let i=0;i<=N;i++){
+      const t=i/N;
+      let s=0;while(s<kn.length-2&&t>kn[s+1])s++;
+      const u=(t-kn[s])/Math.max(1e-6,kn[s+1]-kn[s]);
+      prof[i][1]=Math.max(.7,lerp(kw[s],kw[s+1],u));
+    }
+  }else if(M.prof==="swan"){
+    /* лебедь: узкая талия у носа, единственный мидель ЗА серединой и долгий
+       тонкий сход к корме. Ровного участка нет нигде — этим он и не капсула */
+    const waist=.26+q()*.06, belly=.62+q()*.06;
+    for(let i=0;i<=N;i++){
+      const t=i/N;
+      const dip=1-.55*Math.exp(-Math.pow((t-waist)/.10,2));
+      const bell=Math.exp(-Math.pow((t-belly)/.30,2));
+      prof[i][1]=Math.max(.55,wmax*(.18+.82*bell)*dip);
+    }
+  }else if(M.prof==="modules"){
+    /* модули: три-пять блоков разной ширины, встык, со швом между ними */
+    const n=3+Math.floor(q()*3),cut=[];
+    for(let k=0;k<n;k++)cut.push(wmax*(.55+q()*.45));
+    for(let i=0;i<=N;i++){
+      const t=i/N,k=Math.min(n-1,Math.floor(t*n));
+      prof[i][1]=Math.max(.7,cut[k]);
+    }
+  }else if(M.prof==="spindle"){
+    /* веретено: симметричный эллипс без выемок вовсе */
+    for(let i=0;i<=N;i++){
+      const t=i/N;
+      prof[i][1]=Math.max(.6,wmax*Math.sqrt(Math.max(.03,1-Math.pow(t*2-1,2)))*.98);
+    }
+  }
+  return prof;
+}
+/* ── приметы: то, что торчит за обвод ──
+   Считаются от габаритов корпуса, а не рисуются на глаз: примета обязана
+   выходить ЗА силуэт, иначе на восьми пикселях её нет (§0 закон 7). */
+function makerOuts(by,nose,tail,bw,len,seed){
+  const M=makerRow(by),out=[],r=rng(hashi(seed||1,0x0DE,7));
+  for(const k of (M.out||[])){
+    if(k==="hook")      out.push({k,x:tail-len*.16,y:0,l:len*.16,w:bw*.7});
+    else if(k==="rad")  out.push({k,x:lerp(nose*.1,tail*.6,.5),y:bw*1.32,l:len*.26,w:bw*.30});
+    else if(k==="logofin")out.push({k,x:lerp(nose*.42,tail*.3,r()),y:bw*1.9,l:len*.24,w:bw*.7});
+    else if(k==="runline")out.push({k,x:nose*.55,y:bw*1.02,l:len*.62,w:bw*.12});
+    else if(k==="plinth") out.push({k,x:nose*(.30+r()*.14),y:0,l:len*.14,w:bw*2.2});
+    else if(k==="comb")   out.push({k,x:nose*.34,y:0,l:len*.62,w:bw*2.3});
+    else if(k==="bowsprit")out.push({k,x:nose,y:0,l:len*.22,w:bw*.34});
+    else if(k==="band")   out.push({k,x:nose*.42,y:bw*.9,l:len*.5,w:bw*.30});
+    else if(k==="pennant")out.push({k,x:tail+len*.04,y:0,l:len*.16,w:bw*.7});
+    else if(k==="tanks")  out.push({k,x:lerp(nose*.2,tail*.5,.4+r()*.2),y:bw*1.7,l:len*.3,w:bw*.9});
+    else if(k==="braces") out.push({k,x:lerp(nose*.3,tail*.4,r()),y:bw*1.3,l:len*.16,w:bw*.5});
+    else if(k==="array")  out.push({k,x:nose*.3,y:bw*1.5,l:len*1.06,w:bw*.16});
+    else if(k==="under")  out.push({k,x:lerp(nose*.5,tail*.6,.5),y:bw*1.06,l:len*.5,w:bw*.16});
+  }
+  return out;
+}
+/* ── стык: чем навеска встречается с обшивкой (§19.4, измерение 4) ──
+   Одна короткая фигура в точке, где деталь садится на борт. Дёшево, а породу
+   держит: у Орднунга фланец с болтами, у Рассвета сварной шов, у Хай-Фронта
+   тёмный зазор — деталь висит в пикселе от корпуса. */
+function makerJoint(h,x,y,s){
+  const J=makerRow(h.by).joint;
+  const u=Math.max(.5,h.bw*.24);
+  ctx.save();
+  if(J==="clamp"){
+    ctx.strokeStyle=rgba(h.iron,.9);ctx.lineWidth=.55;
+    ctx.beginPath();ctx.rect(x-u*.7,y-u*.5*s-(s>0?0:u*.5),u*1.4,u*.5);ctx.stroke();
+  }else if(J==="flush"){
+    ctx.strokeStyle=rgba(h.lite,.28);ctx.lineWidth=.4;
+    ctx.beginPath();ctx.moveTo(x-u,y);ctx.quadraticCurveTo(x,y-u*.4*s,x+u,y);ctx.stroke();
+  }else if(J==="flange"){
+    ctx.fillStyle=rgba(h.iron,.95);
+    ctx.fillRect(x-u*.8,y-u*.22,u*1.6,u*.44);
+    ctx.fillStyle=rgba(h.lite,.5);
+    for(let k=0;k<4;k++)ctx.fillRect(x-u*.62+k*u*.4,y-u*.1,u*.14,u*.2);
+  }else if(J==="fillet"){
+    ctx.strokeStyle=rgba(h.lite,.35);ctx.lineWidth=.5;
+    ctx.beginPath();ctx.arc(x,y,u*.8,0,Math.PI,s>0);ctx.stroke();
+  }else if(J==="weld"){
+    ctx.strokeStyle="rgba(40,32,26,.75)";ctx.lineWidth=.7;
+    ctx.beginPath();
+    for(let k=0;k<5;k++)ctx.lineTo(x-u+k*u*.5,y+(k&1?u*.16:-u*.16)*s);
+    ctx.stroke();
+  }else if(J==="gap"){
+    ctx.strokeStyle="rgba(0,0,0,.7)";ctx.lineWidth=.8;
+    ctx.beginPath();ctx.moveTo(x-u*.9,y);ctx.lineTo(x+u*.9,y);ctx.stroke();
+  }
+  ctx.restore();
+}
+/* ── приметы и огни на корпусе ──
+   Рисуется после тела и до общего света: примета — часть корабля, а не
+   наклейка поверх кадра. */
+function makerDraw(h){
+  const M=makerRow(h.by),u=h.bw;
+  for(const o of (h.outs||[])){
+    const sides=(o.k==="hook"||o.k==="plinth"||o.k==="comb"||o.k==="bowsprit"||o.k==="pennant")?[0]:[1,-1];
+    for(const s of sides){
+      const y=o.y*(s||1);
+      ctx.save();
+      if(o.k==="hook"){
+        /* буксирный крюк: ГЛАВТРАССА возит чужое, и крюк у неё всегда */
+        ctx.strokeStyle=rgba(h.iron,1);ctx.lineWidth=Math.max(.6,u*.18);
+        ctx.beginPath();ctx.moveTo(o.x+o.l,0);ctx.lineTo(o.x,0);
+        ctx.arc(o.x,o.w*.3,o.w*.3,-Math.PI/2,Math.PI*.9);ctx.stroke();
+      }else if(o.k==="rad"){
+        ctx.fillStyle=rgba(h.radm,1);ctx.strokeStyle=rgba(h.iron,.8);ctx.lineWidth=.4;
+        ctx.beginPath();ctx.rect(o.x-o.l*.5,y-o.w*.5*(s||1)-(s>0?0:o.w*.5),o.l,o.w*.5);
+        ctx.fill();ctx.stroke();
+        makerJoint(h,o.x,y*.72,s||1);
+      }else if(o.k==="logofin"){
+        /* киль с логотипом: у Компании он и есть вывеска */
+        ctx.fillStyle=rgba(h.col,1);ctx.strokeStyle=rgba(h.dark,.8);ctx.lineWidth=.45;
+        ctx.beginPath();
+        ctx.moveTo(o.x+o.l*.5,y*.62);ctx.lineTo(o.x-o.l*.5,y);
+        ctx.lineTo(o.x-o.l*.1,y*1.02);ctx.closePath();ctx.fill();ctx.stroke();
+        ctx.fillStyle="rgba(70,130,220,.95)";
+        ctx.beginPath();ctx.arc(o.x-o.l*.14,y*.86,Math.max(.5,u*.16),0,TAU);ctx.fill();
+        makerJoint(h,o.x,y*.6,s||1);
+      }else if(o.k==="runline"){
+        ctx.fillStyle="rgba(120,190,255,.55)";
+        ctx.fillRect(o.x-o.l,y-o.w*.5,o.l,o.w);
+        ctx.fillStyle="rgba(200,235,255,.9)";
+        for(let k=0;k<5;k++)ctx.fillRect(o.x-o.l+k*o.l*.2+((G.t*.6)%(o.l*.2)),y-o.w*.4,o.l*.05,o.w*.8);
+      }else if(o.k==="plinth"){
+        /* тумба под турель: Орднунг возит её даже на грузовике */
+        ctx.fillStyle=rgba(h.body,1);ctx.strokeStyle=rgba(h.iron,.9);ctx.lineWidth=.5;
+        ctx.beginPath();ctx.rect(o.x-o.l*.5,-o.w*.5,o.l,o.w);ctx.fill();ctx.stroke();
+        ctx.strokeStyle=rgba(h.iron,1);ctx.lineWidth=Math.max(.6,u*.16);
+        ctx.beginPath();ctx.moveTo(o.x,0);ctx.lineTo(o.x+o.l*.9,0);ctx.stroke();
+        makerJoint(h,o.x-o.l*.5,-o.w*.5,1);
+      }else if(o.k==="comb"){
+        /* гребень рёбер по хребту: каждые восемь пикселей, ровно */
+        ctx.strokeStyle=rgba(h.iron,.85);ctx.lineWidth=.5;
+        const n=Math.max(4,Math.round(o.l/Math.max(2,u*.7)));
+        for(let k=0;k<n;k++){
+          const x=o.x-o.l*(k/n);
+          ctx.beginPath();ctx.moveTo(x,-o.w*.5);ctx.lineTo(x,o.w*.5);ctx.stroke();
+        }
+      }else if(o.k==="bowsprit"){
+        /* бушприт: штанга ВПЕРЁД, ни у кого больше её нет. Сходит на конус и
+           кончается шаром — иначе на листе это была игла шприца */
+        ctx.strokeStyle=rgba(h.lite,.95);ctx.lineWidth=Math.max(1,o.w);
+        ctx.beginPath();ctx.moveTo(o.x,0);ctx.lineTo(o.x+o.l*.7,0);ctx.stroke();
+        ctx.lineWidth=Math.max(.6,o.w*.55);
+        ctx.beginPath();ctx.moveTo(o.x+o.l*.7,0);ctx.lineTo(o.x+o.l,0);ctx.stroke();
+        ctx.fillStyle=rgba(h.lite,.85);
+        ctx.beginPath();ctx.arc(o.x+o.l,0,Math.max(.6,o.w*.8),0,TAU);ctx.fill();
+        /* и растяжки к скулам: без них штанга висит в пустоте */
+        ctx.strokeStyle=rgba(h.lite,.45);ctx.lineWidth=.4;
+        for(const q of [1,-1]){
+          ctx.beginPath();ctx.moveTo(o.x+o.l*.7,0);ctx.lineTo(o.x-o.l*.3,q*h.bw*.55);ctx.stroke();
+        }
+      }else if(o.k==="band"){
+        ctx.fillStyle="rgba(190,230,255,.5)";
+        ctx.fillRect(o.x-o.l,y-o.w*.5,o.l,o.w*.6);
+        ctx.strokeStyle=rgba(h.lite,.5);ctx.lineWidth=.35;
+        ctx.strokeRect(o.x-o.l,y-o.w*.5,o.l,o.w*.6);
+      }else if(o.k==="pennant"){
+        /* вымпел: у Коммуны он вместо номера */
+        ctx.strokeStyle=rgba(h.lite,.7);ctx.lineWidth=.45;
+        ctx.beginPath();ctx.moveTo(o.x,0);ctx.lineTo(o.x-o.l,0);ctx.stroke();
+        ctx.fillStyle="rgba(226,238,255,.9)";
+        ctx.beginPath();
+        ctx.moveTo(o.x-o.l,-o.w*.34);ctx.lineTo(o.x-o.l*.45,0);
+        ctx.lineTo(o.x-o.l,o.w*.34);ctx.closePath();ctx.fill();
+      }else if(o.k==="tanks"){
+        /* баки наружу: у Рассвета внутренности снаружи, и это его порода */
+        ctx.fillStyle=rgba(h.foil,1);ctx.strokeStyle="rgba(40,32,26,.8)";ctx.lineWidth=.5;
+        ctx.beginPath();ctx.rect(o.x-o.l*.5,y-o.w*.5*(s||1)-(s>0?0:o.w*.5),o.l,o.w*.5);
+        ctx.fill();ctx.stroke();
+        makerJoint(h,o.x,y*.7,s||1);
+      }else if(o.k==="braces"){
+        ctx.strokeStyle=rgba(h.iron,.95);ctx.lineWidth=Math.max(.5,u*.12);
+        ctx.beginPath();
+        ctx.moveTo(o.x-o.l*.5,u*.6*(s||1));ctx.lineTo(o.x+o.l*.5,y);
+        ctx.moveTo(o.x+o.l*.5,u*.6*(s||1));ctx.lineTo(o.x-o.l*.5,y);
+        ctx.stroke();
+      }else if(o.k==="array"){
+        /* антенны длиннее корпуса (§19.4): но это МАЧТА с траверсами и
+           тарелкой на конце, а не волосок во весь лист — тонкая линия длиной
+           в полтора корпуса читалась царапиной на снимке, а не антенной */
+        ctx.strokeStyle=rgba(h.lite,.95);ctx.lineWidth=Math.max(.9,o.w);
+        ctx.beginPath();
+        ctx.moveTo(o.x-o.l*.5,y*.5);ctx.lineTo(o.x+o.l*.5,y*.5);ctx.stroke();
+        ctx.lineWidth=Math.max(.6,o.w*.7);
+        for(let k=1;k<5;k++){
+          const x=o.x-o.l*.5+o.l*(k/5);
+          ctx.beginPath();ctx.moveTo(x,y*.5-u*(.34+k*.06));ctx.lineTo(x,y*.5+u*(.34+k*.06));ctx.stroke();
+        }
+        ctx.strokeStyle=rgba(h.lite,.85);ctx.lineWidth=Math.max(.5,o.w*.6);
+        ctx.beginPath();ctx.arc(o.x+o.l*.5,y*.5,u*.5,-1.2,1.2);ctx.stroke();
+      }else if(o.k==="under"){
+        /* свет из-под обшивки: не огонь и не окно — полоса под бортом */
+        const g=ctx.createLinearGradient(0,y-o.w,0,y+o.w);
+        g.addColorStop(0,"rgba(255,90,80,0)");
+        g.addColorStop(.5,"rgba(255,96,86,.75)");
+        g.addColorStop(1,"rgba(255,90,80,0)");
+        ctx.fillStyle=g;ctx.fillRect(o.x-o.l*.5,y-o.w,o.l,o.w*2);
+      }
+      ctx.restore();
+    }
+  }
+  /* ── огни изготовителя ── одна семья на всех: не гирлянда, а подпись */
+  if(M.lights==="amber"){
+    ctx.fillStyle="rgba(255,190,90,.85)";
+    for(const s of [1,-1]){
+      ctx.beginPath();ctx.arc(h.nose*.42,profW(h.prof,h.nose*.42)*.55*s,Math.max(.5,u*.14),0,TAU);ctx.fill();
+    }
+  }else if(M.lights==="lantern"){
+    const x=h.nose*.5;
+    ctx.fillStyle="rgba(255,214,140,.9)";
+    ctx.beginPath();ctx.arc(x,-profW(h.prof,x)*.7,Math.max(.6,u*.2),0,TAU);ctx.fill();
+    ctx.strokeStyle="rgba(70,52,30,.8)";ctx.lineWidth=.4;ctx.stroke();
+  }
+}
+/* ── метки: номер, логотип, имя, солнце, глиф (измерение 6) ──
+   Каждый изготовитель метит корпус по-своему, и это второй после силуэта
+   признак: на восьми пикселях его не видно, на тридцати — уже да. */
+function makerMarks(h){
+  const M=makerRow(h.by),S=h.seed,u=Math.max(1.2,h.bw*.5);
+  const mid=lerp(h.nose*.6,h.tail*.4,.5);
+  ctx.save();
+  if(M.mark==="num"){
+    /* номер и слово «изделие»: у ГЛАВТРАССЫ борт — это накладная */
+    ctx.fillStyle="rgba(30,28,26,.55)";
+    const n=(S%900+100)|0;
+    ctx.font=u.toFixed(1)+"px monospace";ctx.textAlign="center";
+    ctx.fillText(String(n),mid,u*.35);
+  }else if(M.mark==="logo"){
+    /* логотип во весь борт: круг с хвостом, читается пятном */
+    ctx.strokeStyle="rgba(60,120,210,.75)";ctx.lineWidth=Math.max(.5,u*.22);
+    ctx.beginPath();ctx.arc(mid,0,u*.9,-2.1,1.4);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(mid+u*.5,u*.5);ctx.lineTo(mid+u*1.5,u*.9);ctx.stroke();
+  }else if(M.mark==="stencil"){
+    /* трафарет в трёх местах и ни одного имени */
+    ctx.fillStyle="rgba(20,22,24,.7)";
+    ctx.font=(u*.8).toFixed(1)+"px monospace";ctx.textAlign="center";
+    const n=(S%90+10)|0;
+    for(const t of [.24,.52,.8]){
+      const x=lerp(h.nose*.86,h.tail*.86,t);
+      ctx.fillText(String(n)+"-"+((S>>>(3+t*10))&7),x,u*.3);
+    }
+  }else if(M.mark==="name"){
+    /* имя, и никогда номер */
+    ctx.fillStyle="rgba(40,60,90,.6)";
+    ctx.font="italic "+(u*.85).toFixed(1)+"px serif";ctx.textAlign="center";
+    ctx.fillText("«"+String.fromCharCode(65+(S%26))+"»",mid,u*.3);
+  }else if(M.mark==="sun"){
+    /* солнце от руки: круг и лучи, нарочно неровные */
+    ctx.strokeStyle="rgba(60,36,18,.8)";ctx.lineWidth=Math.max(.5,u*.16);
+    ctx.beginPath();ctx.arc(mid,0,u*.55,0,TAU);ctx.stroke();
+    for(let k=0;k<7;k++){
+      const a=k/7*TAU+((S>>>k)&3)*.06;
+      ctx.beginPath();
+      ctx.moveTo(mid+Math.cos(a)*u*.7,Math.sin(a)*u*.7);
+      ctx.lineTo(mid+Math.cos(a)*u*1.05,Math.sin(a)*u*1.05);ctx.stroke();
+    }
+  }else if(M.mark==="glyph"){
+    /* один глиф и версия: Хай-Фронт метит корпус так же, как прошивку */
+    ctx.strokeStyle="rgba(210,60,50,.85)";ctx.lineWidth=Math.max(.5,u*.2);
+    ctx.beginPath();ctx.arc(mid,0,u*.42,0,TAU);ctx.stroke();
+    ctx.fillStyle="rgba(40,44,48,.6)";
+    ctx.font=(u*.55).toFixed(1)+"px monospace";ctx.textAlign="center";
+    ctx.fillText("v"+(1+(S%4))+"."+(S%10),mid+u*1.5,u*.2);
+  }
+  ctx.restore();
+}
+/* подпись тяги (измерение 7) и крен со звуком (измерение 8) */
+function makerFlame(by){return makerRow(by).eng;}
+function makerBank(by){return makerRow(by).snd.bank;}
+function makerHum(by){return makerRow(by).snd.f;}
 
 function tracePoly(pts,sy){
   ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]*(sy||1));
@@ -2950,14 +3389,25 @@ function tracePoly(pts,sy){
    `cool` — люксовая тяга: вдвое короче, бело-голубая и почти без зарева.
    Оранжевый костёр на корме читается работой и топливом; дорогая вещь
    уходит тихо, и это видно раньше, чем читается название класса. */
-function drawFlame(x,y,rad,pow,cool){
+function drawFlame(x,y,rad,pow,cool,tint){
   const f=rad*(cool?1.5+Math.random()*.8:2.4+Math.random()*1.7)*pow;
   const gl=ctx.createRadialGradient(x-f*.25,y,0,x-f*.25,y,f*1.15);
-  if(cool){gl.addColorStop(0,"rgba(150,205,255,.2)");gl.addColorStop(1,"rgba(110,170,255,0)");}
+  /* цвет факела — подпись изготовителя (M369, §19.4 измерение 7): у Орднунга
+     короткая белая игла, у Коммуны длинный фиалковый шлейф, у Хай-Фронта
+     тонкая бирюза. Без тона факел остаётся прежним оранжевым */
+  if(tint&&!cool){
+    gl.addColorStop(0,rgba(mixc(tint,[255,255,255],.3),.34));
+    gl.addColorStop(1,rgba(tint,0));
+  }else if(cool){gl.addColorStop(0,"rgba(150,205,255,.2)");gl.addColorStop(1,"rgba(110,170,255,0)");}
   else{gl.addColorStop(0,"rgba(255,180,110,.34)");gl.addColorStop(1,"rgba(255,120,60,0)");}
   ctx.fillStyle=gl;ctx.beginPath();ctx.arc(x-f*.25,y,f*1.15,0,TAU);ctx.fill();
   const g=ctx.createLinearGradient(x,y,x-f,y);
-  if(cool){
+  if(tint&&!cool){
+    g.addColorStop(0,"rgba(255,252,244,.95)");
+    g.addColorStop(.22,rgba(mixc(tint,[255,255,255],.35),.86));
+    g.addColorStop(.6,rgba(tint,.42));
+    g.addColorStop(1,rgba(mixc(tint,[0,0,0],.2),0));
+  }else if(cool){
     g.addColorStop(0,"rgba(255,255,255,.95)");g.addColorStop(.24,"rgba(198,232,255,.8)");
     g.addColorStop(.62,"rgba(126,178,255,.34)");g.addColorStop(1,"rgba(90,140,240,0)");
   }else{
@@ -3843,7 +4293,9 @@ function drawHull(id,thrusting,braking,lvl,bank){
     ctx.restore();
   }
   /* ── факелы ── */
-  if(thrusting)for(const e of h.eng)drawFlame(e.x,e.y,e.r,1+lvl*.22,h.lux);
+  const MF=(typeof makerFlame==="function")?makerFlame(h.by):null;
+  if(thrusting)for(const e of h.eng)
+    drawFlame(e.x,e.y,e.r*(MF?MF.w:1),1+lvl*.22,h.lux,MF&&MF.col);
   else if(h.lux)for(const e of h.eng){
     /* на стоянке у люкса светится не зев, а КОЛЬЦО среза: холодная нить по
        ободу и тёмная глубина внутри — сопло видно и выключенным */
@@ -4147,18 +4599,26 @@ function drawHull(id,thrusting,braking,lvl,bank){
      На костяном борту цвет владельца работает не заливкой, а ЗАПЛАТОЙ: одна
      панель другого тона с тёмной окантовкой, как крашеный лист на белом
      грунте. Прежняя полупрозрачная полоса в .2 просто мылила борт. */
-  ctx.closePath();ctx.fillStyle=rgba(h.accent,h.yac?.2:1);ctx.fill();
-  if(!h.yac){
+  /* ── полоса по борту принадлежит изготовителю (M369, §19.4 измерение 5) ──
+     У ГЛАВТРАССЫ это крашеная заплата суриком, у Компании — фирменная синяя
+     лента во весь борт, у Орднунга, Рассвета и Хай-Фронта борт не красят
+     вовсе: у первого рёбра, у второго роспись от руки, у третьего чистая
+     обшивка с одной красной точкой. */
+  const STR=(typeof makerRow==="function")?makerRow(h.by).stripe:1;
+  const strCol=STR===2?[46,110,206]:h.accent;
+  ctx.closePath();
+  if(STR){ctx.fillStyle=rgba(strCol,h.yac?.2:1);ctx.fill();}
+  if(!h.yac&&STR){
     ctx.strokeStyle="rgba(0,0,0,.45)";ctx.lineWidth=.4;ctx.stroke();
     /* та же панель с другого борта: борт красят с обеих сторон */
     ctx.beginPath();
     for(let i=i0;i<=i1;i++)ctx.lineTo(P[i][0],P[i][1]*sa);
     for(let i=i1;i>=i0;i--)ctx.lineTo(P[i][0],P[i][1]*sb);
-    ctx.closePath();ctx.fillStyle=rgba(h.accent,1);ctx.fill();
+    ctx.closePath();ctx.fillStyle=rgba(strCol,1);ctx.fill();
     ctx.strokeStyle="rgba(0,0,0,.45)";ctx.lineWidth=.4;ctx.stroke();
     /* и вторая, короткая, у самой кормы: так метят машинное отделение */
     const ax0=lerp(h.tail,h.nose,.06), ax1=lerp(h.tail,h.nose,.20);
-    ctx.fillStyle=rgba(mixc(h.accent,[0,0,0],.2),.8);
+    ctx.fillStyle=rgba(mixc(strCol,[0,0,0],.2),.8);
     ctx.beginPath();
     ctx.moveTo(ax0,-profW(P,ax0)*.9);ctx.lineTo(ax1,-profW(P,ax1)*.9);
     ctx.lineTo(ax1,-profW(P,ax1)*.44);ctx.lineTo(ax0,-profW(P,ax0)*.44);
@@ -4172,6 +4632,18 @@ function drawHull(id,thrusting,braking,lvl,bank){
   ctx.strokeStyle="rgba(0,0,0,.34)";ctx.lineWidth=.75;
   for(const i of h.ribs){
     ctx.beginPath();ctx.moveTo(P[i][0],-P[i][1]);ctx.lineTo(P[i][0],P[i][1]);ctx.stroke();
+  }
+  /* ── гребёнка Орднунга (M369, §19.4 измерение 5) ──
+     «Ребро каждые восемь пикселей, чёрные, матовое»: не украшение, а то, по
+     чему его борт отличается от костяного борта ГЛАВТРАССЫ на любом масштабе */
+  if((typeof makerRow==="function")&&makerRow(h.by).ribs){
+    ctx.strokeStyle="rgba(0,0,0,.55)";ctx.lineWidth=.6;
+    const step=Math.max(2.2,h.bw*.55);
+    for(let x=h.tail+step;x<h.nose-step;x+=step){
+      const w=profW(P,x);
+      if(w<1)continue;
+      ctx.beginPath();ctx.moveTo(x,-w*.92);ctx.lineTo(x,w*.92);ctx.stroke();
+    }
   }
   ctx.strokeStyle="rgba(255,255,255,.09)";
   for(const f of [.34,.72]){
@@ -4296,7 +4768,10 @@ function drawHull(id,thrusting,braking,lvl,bank){
   ctx.fillStyle=sp;ctx.fillRect(h.tail,-h.bw,h.len,h.bw*2);
   /* налёт прожитых часов — последним слоем и внутри обрезки по корпусу, чтобы
      ни одна царапина не вылезла за силуэт (12s-wear) */
-  if(typeof drawWear==="function")drawWear(h,wearOf(id));
+  /* налёт умножается на износ изготовителя: у Компании корпус моют, у
+     Рассвета его не мыли никогда (§19.4, измерение 5) */
+  if(typeof drawWear==="function")
+    drawWear(h,clamp(wearOf(id)*((typeof makerRow==="function")?makerRow(h.by).wear:1),0,1));
   /* швы починок — поверх налёта и тоже в обрезке: биография не смывается (12s) */
   if(typeof drawSeams==="function")drawSeams(h,typeof seamsOf==="function"?seamsOf(id):0);
   ctx.restore();
@@ -4313,6 +4788,9 @@ function drawHull(id,thrusting,braking,lvl,bank){
   ctx.restore();
   drawTierTrim(h);
   drawHullMarks(h);
+  /* приметы и метки изготовителя (M369): часть корабля, а не наклейка —
+     поэтому до бортовых огней и общего света, вместе со всей навеской */
+  if(typeof makerDraw==="function"){makerDraw(h);makerMarks(h);}
   if(h.pirate)drawPirateSkin(h);
   if(typeof drawCrowns==="function")drawCrowns(h,id);
   /* ── боксы по бортам ──
@@ -8133,7 +8611,7 @@ function sfx(name,o){
   catch(e){if(curTok&&!curTok.freed){curTok.freed=true;SND.voices=Math.max(0,SND.voices-1);}}
 }
 /* ── непрерывный гул двигателя: один голос, живёт всё время полёта ── */
-function engineLoop(level,tone){
+function engineLoop(level,tone,hz){
   if(!audioOn()||!SND.ready||SND.ctx.state!=="running"){stopEngine();return;}
   const c=SND.ctx;
   let L=SND.loops.engine;
@@ -8155,7 +8633,10 @@ function engineLoop(level,tone){
   L.g.gain.setTargetAtTime(clamp(level,0,1)*.15,t,.09);
   L.lp.frequency.setTargetAtTime(280+level*900,t,.12);
   L.hp.frequency.setTargetAtTime(150-level*60,t,.12);
-  L.osc.frequency.setTargetAtTime(66+(tone||0)*34,t,.12);
+  /* основа тона — от изготовителя (M369): низкий гул ГЛАВТРАССЫ, ровная
+     середина Компании, почти неслышный писк Хай-Фронта. Уровень модуля
+     по-прежнему двигает её вверх */
+  L.osc.frequency.setTargetAtTime((hz||66)+(tone||0)*34,t,.12);
 }
 function stopEngine(){
   const L=SND.loops.engine;
@@ -19302,6 +19783,174 @@ function lockerTakeRes(k){
 function lockerLine(){
   const L=lockerRec(),v=lockerValue(L);
   return lockerUsed(L)+" / "+lockerSlots()+" · хранение "+Math.round(v*LOCKER_FEE)+" кр в сутки";
+}
+
+/* ══════════════ шесть держав (M369, §7.1) ══════════════
+   Держава — не фракция с полоской отношения, а страна: у неё своя дорога, свои
+   ворота, свой голос в эфире и свой завод. Завод — это `HULL_MAKER`
+   (03a-hull-maker), и ключи здесь те же: держава и её изготовитель — одно, но
+   таблицы разные, потому что грамматика формы живёт отдельно от политики.
+
+   ГЛАВТРАССА — та, откуда игрок: «ты по рождению уже тут» (§7.5). Флаг у него
+   её и остаётся, на каком бы корпусе он ни летал: транспондер — не обшивка
+   (D09). Пираты — не держава, а то, что между ними осталось.
+
+   Сатира здесь на ГОСУДАРСТВО — на его канцелярию и его эфир, — и никогда на
+   людей: правило §7.1, и оно же мера при любом добавлении строки.
+
+   Что уже работает: имена, эфирная строка, приветствие на подходе, семейства
+   орудий (они есть в 05b-guns; ракеты — не семейство, а вид части, поэтому у
+   доктрины они отдельным полем `msl`), эмблема и флаг. Война, фронты и сводки — M371
+   и дальше; здесь только таблица, к которой они придут. */
+const POWERS={
+  gt:{ru:"ГЛАВТРАССА",full:"ГЛАВТРАССА",from:"СССР",
+    wants:"чтобы дорога была открыта",
+    fams:["heavy","flak","auto","cluster"],
+    doctrine:"масса и терпение: отступает редко, теряет много, не сообщает ничего",
+    emblem:"star",col:"#e0d28a",
+    hail:"Борт, откуда, чей, по какой надобности. Записываю",
+    air:"На трассе спокойно",
+    never:"о потерях",
+    voice:{f:150,to:120,d:.5}},
+  co:{ru:"Компания",full:"КОМПАНИЯ ВОСТОЧНЫХ РЫНКОВ",from:"США",
+    wants:"рыночные станции и всё, что продаётся",
+    fams:["aimed","flak","auto"],msl:1,
+    doctrine:"бьёт издалека и деньгами, нанимает пиратов",
+    emblem:"ring",col:"#7fb8ff",
+    hail:"Приветствуем на территории партнёра. Стыковка от 40 кредитов, спасибо за выбор",
+    air:"Выгодно как никогда",
+    never:"о ценах — только «выгодно»",
+    voice:{f:320,to:360,d:.3}},
+  or:{ru:"Орднунг",full:"ОРДНУНГ",from:"Германия",
+    wants:"узлы прыжка и горловины",
+    fams:["rail","heavy","shot"],
+    doctrine:"стоит стеной, не отступает, строй ровный",
+    emblem:"grid",col:"#c9c9d4",
+    hail:"Идентификация. Формуляр. Ожидайте",
+    air:"Согласно регламенту",
+    never:"о чувствах",
+    voice:{f:200,to:200,d:.22}},
+  km:{ru:"Коммуна",full:"ЛА КОММУНА",from:"Франция",
+    wants:"верфи и красивые системы (для неё это одно и то же)",
+    fams:["laser","siphon","jam","harpoon"],
+    doctrine:"изящно: уходит показательно и возвращается внезапно",
+    emblem:"wave",col:"#9fd8ff",
+    hail:"А, ещё один. Ну проходи, только не сегодня, сегодня мы не работаем",
+    air:"Об этом стоит подумать дольше, чем длится сводка",
+    never:"— она говорит обо всём и часами",
+    voice:{f:260,to:190,d:.7}},
+  ra:{ru:"Рассвет",full:"ПАН-АФРИКАНСКИЙ КООПЕРАТИВ «РАССВЕТ»",from:"Африка",
+    wants:"пояса, руду и всё, что копают",
+    fams:["drill","shove","mortar","ram"],
+    doctrine:"вплотную, много мелких, чинится в бою из хлама",
+    emblem:"sun",col:"#f2b25c",
+    hail:"Заходи, брат, чинить есть что?",
+    air:"Успеется",
+    never:"о сроках",
+    voice:{f:120,to:150,d:.9}},
+  hf:{ru:"Хай-Фронт",full:"ХАЙ-ФРОНТ",from:"Япония и Корея",
+    wants:"маяки и ретрансляторы — всё, что смотрит",
+    fams:["aimed","laser","cluster","needle"],
+    doctrine:"видит первым, бьёт первым, не спорит",
+    emblem:"dot",col:"#ff8b7a",
+    hail:"Добро пожаловать. Ваш рейтинг доверия рассчитан. Просим извинить за неудобства",
+    air:"Обновление установлено",
+    never:"о том, что уже сделала",
+    voice:{f:420,to:430,d:.18}}
+};
+const POWER_KEYS=Object.keys(POWERS);
+function powerOf(k){return POWERS[k]||POWERS.gt;}
+function powerRu(k){return powerOf(k).ru;}
+/* ── флаг, а не обшивка (D09) ──
+   Транспондер отвечает за принадлежность, корпус — нет: на компанейском
+   корпусе под флагом ГЛАВТРАССЫ вас запишут именно как своего, просто в
+   приветствии это отметят. Пираты флага не несут вовсе. */
+function playerFlag(){return G.flag||"gt";}
+function flagOf(o){
+  if(!o)return null;
+  if(o===G.ship)return playerFlag();
+  if(o.pw)return o.pw;
+  if((o.owner||"")==="fleet")return "gt";
+  return null;                     /* пират — не держава */
+}
+/* приветствие на подходе: одна строка на державу (§7.1) */
+function powerHail(k){return powerOf(k).hail;}
+/* эмблема — круглая, одной конструкции на все шесть: круг, внутри знак.
+   Шесть цветов на карте были бы шумом (holding §13), поэтому на карте — чип
+   с эмблемой, а не заливка. */
+function powerEmblem(k,x,y,r){
+  const P=powerOf(k),col=P.col;
+  ctx.save();
+  ctx.strokeStyle=col;ctx.lineWidth=Math.max(1,r*.16);
+  ctx.beginPath();ctx.arc(x,y,r,0,TAU);ctx.stroke();
+  ctx.fillStyle=col;
+  if(P.emblem==="star"){
+    /* пятиконечная — но собранная из лучей, а не залитая: на чипе в шесть
+       пикселей залитая звезда превращается в кляксу */
+    for(let i=0;i<5;i++){
+      const a=-Math.PI/2+i/5*TAU;
+      ctx.beginPath();ctx.moveTo(x,y);
+      ctx.lineTo(x+Math.cos(a)*r*.72,y+Math.sin(a)*r*.72);
+      ctx.lineWidth=Math.max(1,r*.22);ctx.strokeStyle=col;ctx.stroke();
+    }
+  }else if(P.emblem==="ring"){
+    ctx.beginPath();ctx.arc(x,y,r*.42,0,TAU);ctx.stroke();
+  }else if(P.emblem==="grid"){
+    ctx.lineWidth=Math.max(1,r*.14);
+    for(const t of [-.35,.35]){
+      ctx.beginPath();ctx.moveTo(x+r*t,y-r*.55);ctx.lineTo(x+r*t,y+r*.55);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(x-r*.55,y+r*t);ctx.lineTo(x+r*.55,y+r*t);ctx.stroke();
+    }
+  }else if(P.emblem==="wave"){
+    ctx.lineWidth=Math.max(1,r*.16);
+    ctx.beginPath();
+    for(let i=0;i<=8;i++){
+      const t=i/8,px=x-r*.6+r*1.2*t,py=y+Math.sin(t*TAU)*r*.34;
+      i?ctx.lineTo(px,py):ctx.moveTo(px,py);
+    }
+    ctx.stroke();
+  }else if(P.emblem==="sun"){
+    ctx.beginPath();ctx.arc(x,y,r*.34,0,TAU);ctx.fill();
+    ctx.lineWidth=Math.max(1,r*.12);
+    for(let i=0;i<8;i++){
+      const a=i/8*TAU;
+      ctx.beginPath();
+      ctx.moveTo(x+Math.cos(a)*r*.5,y+Math.sin(a)*r*.5);
+      ctx.lineTo(x+Math.cos(a)*r*.78,y+Math.sin(a)*r*.78);ctx.stroke();
+    }
+  }else{
+    ctx.beginPath();ctx.arc(x,y,r*.3,0,TAU);ctx.fill();
+  }
+  ctx.restore();
+}
+/* ══════════════ «Ялта» (M369, D12) ══════════════
+   Одна система на всю галактику, куда все шестеро летают отдыхать и где никто
+   не стреляет: пиратов там нет, оружие опечатано, фронт туда не приходит
+   никогда. Адрес считается от постоянного зерна галактики — значит он один и
+   тот же у всех и его можно назвать вслух, не сговариваясь.
+
+   Содержимое «Ялты» — регата, рынок, встречи — приходит в M372; здесь только
+   адрес и три запрета, на которые уже сегодня опирается бой. */
+const YALTA_R=6;
+function yaltaAt(){
+  if(G._yalta)return G._yalta;
+  /* зерно галактики постоянно (§7.5: одна галактика на всех), поэтому и адрес
+     постоянен: угол от зерна, радиус ровно шестой круг */
+  const a=h01(0x1A17,0x5EA,77)*TAU;
+  const p={sx:Math.round(Math.cos(a)*YALTA_R),sy:Math.round(Math.sin(a)*YALTA_R)};
+  return G._yalta=p;
+}
+function yaltaIs(sx,sy){
+  const y=yaltaAt();
+  return (sx|0)===y.sx&&(sy|0)===y.sy;
+}
+function yaltaHere(){return yaltaIs(G.sx,G.sy);}
+/* оружие опечатано: не «выстрел не проходит», а прямой отказ с причиной —
+   игрок обязан понимать, почему кнопка молчит */
+function yaltaSealed(){
+  if(!yaltaHere())return false;
+  if((G._yaltaSaid||0)<G.t-180){G._yaltaSaid=G.t;say("ЯЛТА · ОРУЖИЕ ОПЕЧАТАНО",90);}
+  return true;
 }
 
 /* ══════════════ наёмники: рейс как раздача карт ══════════════ */
@@ -32462,6 +33111,9 @@ function spawnPirates(){
   /* под пиратами система держит патруль сверх обычного случайного налёта */
   let n=(r()<danger*.85?1+Math.floor(r()*(1+danger*2)):0)+occExtraPirates(G.sx,G.sy);
   if(typeof quietNoPirates==="function"&&quietNoPirates())n=0;   /* тихий уезд (11n): никто не грабит */
+  /* «Ялта» (M369, D12): туда не приходят ни пираты, ни фронт — это её первое
+     и главное свойство, и оно работает раньше всего остального */
+  if(typeof yaltaIs==="function"&&yaltaIs(G.sx,G.sy))n=0;
   if(typeof holdAmbushMul==="function")n=Math.floor(n*holdAmbushMul());   /* Заграждение (H4) */
   n=Math.min(n,ARMED_CAP);   /* потолок вооружённых (§5, M361) */
   for(let i=0;i<n;i++){
@@ -32568,13 +33220,16 @@ function updateCombat(dt){
      стволом; зажатый ОГОНЬ/F/ЛКМ — принудительно, по носу. Место помнит бой
      один раз за стычку, а не каждый выстрел (D16). */
   const ctl=G.ctl||{};
+  /* в «Ялте» оружие опечатано (M369): отказ с причиной, а не молчащая кнопка */
+  const sealed=(typeof yaltaHere==="function")&&yaltaHere();
+  if(sealed&&(ctl.fire||keys.fire)&&typeof yaltaSealed==="function")yaltaSealed();
   const mk=(G.marks&&G.marks[0])||null;
   const live=(mk&&mk.hull>0&&!mk.iff)?mk:null;
   const all=(st.guns&&st.guns.length)?st.guns:[{slot:0,g:st.gun,m:null}];
   const grp=(typeof gunGroupPick==="function")?gunGroupPick(all,sh,live):0;
   const act=(typeof gunsInGroup==="function")?gunsInGroup(all,grp):all;
   if(!G.gunCool)G.gunCool={};
-  for(let gi=0;gi<act.length;gi++){
+  for(let gi=0;gi<act.length&&!sealed;gi++){
     const A=act[gi],g=A.g,first=gi===0;
     let cd=first?fireCool:((G.gunCool[A.slot]||0)-dt);
     let auto=false;
@@ -32658,7 +33313,10 @@ function updateCombat(dt){
   /* ракеты (16b): свой пуск, своя перезарядка и свой расход из трюма — но живут
      они в том же цикле боя, а не отдельным таймером */
   if(typeof mslTick==="function")mslTick(dt);
-  if((keys.msl||(G.ctl&&G.ctl.msl))&&typeof mslFire==="function"&&(G.mslCool||0)<=0)mslFire();
+  if((keys.msl||(G.ctl&&G.ctl.msl))&&typeof mslFire==="function"&&(G.mslCool||0)<=0){
+    if(sealed){if(typeof yaltaSealed==="function")yaltaSealed();}
+    else mslFire();
+  }
 }
 /* трепло (12x, M116) слышит бой: имя сбитого — это то, что потом прозвучит
    на чужой станции, и уже не как ваша заслуга */
@@ -36149,7 +36807,13 @@ const TRAIL_CHAR={
   miner:  {len:.85, w:1.32},  // «Обод»
   hauler: {len:.78, w:1.6}    // «Вьюк», «Скат», «Мамонт»: короткий выдох
 };
-const trailChar=id=>TRAIL_CHAR[shipData(id).hcls]||TRAIL_CHAR.scout;
+function trailChar(id){
+  const C=TRAIL_CHAR[shipData(id).hcls]||TRAIL_CHAR.scout;
+  const MF=(typeof makerFlame==="function")?makerFlame(makerOf(id)):null;
+  /* длина следа — тоже подпись: Орднунг не оставляет его вовсе, Коммуна
+     тянет полторы длины (M369) */
+  return MF?{len:C.len*MF.trail,w:C.w*(MF.w||1)}:C;
+}
 const TRAIL_TINT={};
 /* Цвет зависит ещё и от модуля двигателя: чем горячее камера, тем белее и
    голубее пламя — прокачка видна в полёте, а не только строкой в меню.
@@ -36157,9 +36821,13 @@ const TRAIL_TINT={};
    старый цвет до перезагрузки. */
 function trailTint(id,lvl){
   lvl=lvl|0;
-  const key=id+":"+lvl;
+  const by=(typeof makerOf==="function")?makerOf(id):"gt";
+  const key=id+":"+lvl+":"+by;
   if(TRAIL_TINT[key])return TRAIL_TINT[key];
-  const c=hex2rgb(shipData(id).col);
+  /* изготовитель слышен и в следе (M369, §19.4 измерение 7): фиалковый шлейф
+     Коммуны, чистая синь Компании, у Орднунга и Хай-Фронта следа почти нет */
+  const MF=(typeof makerFlame==="function")?makerFlame(by):null;
+  const c=MF?mixc(hex2rgb(shipData(id).col),MF.col,.7):hex2rgb(shipData(id).col);
   const heat=clamp(lvl*.26,0,.78);                 // 0 — паспортный, выше — форсаж
   const hot=mixc([255,252,238],[214,236,255],heat); // добела → в голубизну
   /* ядро — почти белое с оттенком акцента, чтобы не выглядело чужой наклейкой */
@@ -37329,7 +37997,11 @@ function updateSystem(dt){
   sh.x+=sh.vx*dt;sh.y+=sh.vy*dt;
   /* крен считаем по фактической скорости поворота — работает и на автопилоте */
   const rate=angDiff(sh.a,a0)/Math.max(dt,.0001);
-  sh.bank+=(clamp(rate*13,-.8,.8)-sh.bank)*Math.min(1,.07*dt);
+  /* насколько корабль ложится в поворот — подпись изготовителя (M369, §19.4
+     измерение 8): Коммуна валится широко, Орднунг не кренится вовсе. Скорость
+     поворота при этом не меняется: числа принадлежат классу и модулям */
+  const BK=(typeof makerBank==="function")?makerBank(makerOf(G.shipId)):1;
+  sh.bank+=(clamp(rate*13*BK,-.8*BK,.8*BK)-sh.bank)*Math.min(1,.07*dt);
   trailStep(dt,G.fuel>0&&((helm&&helm.main)||apOn),!apOn&&!!helm&&Math.abs(helm.rate)>1e-4,
     !apOn&&!!helm&&helm.thr&&G.fuel>0);
   }
@@ -74681,9 +75353,9 @@ function audioTick(dt){
      превращался в бесконечное гудение и глушил всю остальную звуковую картину */
   if(G.mode==="system"||G.mode==="dock"){
     const on=((G.ctl&&G.ctl.out.main)||G.ap)&&G.fuel>0&&G.mode!=="dock";
-    if(on)engineLoop(1,G.mods.engine/4);else stopEngine();
+    if(on)engineLoop(1,G.mods.engine/4,(typeof makerHum==="function")?makerHum(makerOf(G.shipId)):0);else stopEngine();
   }else if(G.mode==="belt"&&G.belt){
-    if(keys.thrust)engineLoop(.9,G.mods.engine/4);else stopEngine();
+    if(keys.thrust)engineLoop(.9,G.mods.engine/4,(typeof makerHum==="function")?makerHum(makerOf(G.shipId)):0);else stopEngine();
   }else if(G.mode==="landing"&&G.land){
     if(keys.thrust)engineLoop(1,.5);else stopEngine();
   }else stopEngine();
@@ -75403,6 +76075,169 @@ if(/[?&]look\b/.test(location.search)){
       body:btoa(unescape(encodeURIComponent(body)))});}catch(e){}
     document.title="LOOKDONE";
   },900));
+}
+
+/* ══════════════ читается ли изготовитель (M369, §19.4) ══════════════
+   Свод требует, чтобы чужой корпус называл своего изготовителя ВЗГЛЯДОМ, а не
+   подписью. «Мне кажется, читается» — не довод: прибор смотрит на ту же
+   картинку, что игрок, и считает долю угаданных.
+
+   Как считает. Корпус рисуется в маленькую канву носом вправо; из пикселей
+   берётся вектор примет: восемь замеров полувысоты силуэта (это и есть закон
+   профиля), скачки между соседними колонками (ступени и модули против гладкой
+   капсулы и веретена), доля чернил ЗА телом (приметы, торчащие из обвода),
+   вытянутость и средний тон обшивки. Шесть образцов считаются по обучающим
+   семенам, проверка идёт по ДРУГИМ — иначе прибор хвалил бы сам себя.
+
+   makerRead()        — доля угаданных по ста семенам на класс;
+   makerRead(20)      — быстрее и грубее, для правки на ходу. */
+const MAKER_PX=52;
+let MAKER_CV=null;
+function makerFeat(id){
+  if(!MAKER_CV){
+    MAKER_CV=document.createElement("canvas");
+    MAKER_CV.width=MAKER_CV.height=MAKER_PX;
+  }
+  const c=MAKER_CV.getContext("2d");
+  c.setTransform(1,0,0,1,0,0);
+  c.clearRect(0,0,MAKER_PX,MAKER_PX);
+  const h=hullOf(id);
+  const k=MAKER_PX*.86/Math.max(8,h.len+h.halfW*.9);
+  const old=ctx;ctx=c;
+  c.save();c.translate(MAKER_PX*.5-((h.nose+h.tail)*.5)*k,MAKER_PX*.5);c.scale(k,k);
+  try{drawHull(id,false,false,0,0);}catch(e){}
+  c.restore();ctx=old;
+  const d=c.getImageData(0,0,MAKER_PX,MAKER_PX).data;
+  /* полувысота силуэта по колонкам и средний тон того, что нарисовано */
+  const col=new Array(MAKER_PX).fill(0);
+  /* лучи: наибольший радиус чернил в двенадцати секторах. Крюк за кормой,
+     бушприт перед носом, антенны и баки по борту — все они торчат в СВОЮ
+     сторону, и в столбцах этого не видно, а в лучах видно */
+  const RAY=12,ray=new Array(RAY).fill(0);
+  let ink=0,rs=0,gs=0,bs=0,dark=0;
+  for(let x=0;x<MAKER_PX;x++){
+    for(let y=0;y<MAKER_PX;y++){
+      const i=(y*MAKER_PX+x)*4;
+      if(d[i+3]<40)continue;
+      col[x]=Math.max(col[x],Math.abs(y-MAKER_PX*.5)+.5);
+      const dx=x-MAKER_PX*.5,dy=y-MAKER_PX*.5;
+      const a=(Math.atan2(dy,dx)+Math.PI*2)%(Math.PI*2);
+      const sct=Math.floor(a/(Math.PI*2)*RAY)%RAY;
+      const rr=Math.hypot(dx,dy);
+      if(rr>ray[sct])ray[sct]=rr;
+      ink++;rs+=d[i];gs+=d[i+1];bs+=d[i+2];
+      if(d[i]+d[i+1]+d[i+2]<230)dark++;
+    }
+  }
+  if(!ink)return null;
+  const on=[];for(let x=0;x<MAKER_PX;x++)if(col[x]>0)on.push(x);
+  const x0=on[0],x1=on[on.length-1],L=Math.max(1,x1-x0);
+  let wmax=0;for(let x=x0;x<=x1;x++)wmax=Math.max(wmax,col[x]);
+  const f=[];
+  for(let s=0;s<8;s++){
+    const x=Math.round(x0+L*(s+.5)/8);
+    f.push(col[x]/Math.max(1,wmax));
+  }
+  /* скачки: ступенчатый профиль рвётся, капсула и веретено — нет */
+  let jump=0,steps=0,xw=x0;
+  for(let x=x0+1;x<=x1;x++){
+    if(col[x]>=wmax)xw=x;
+    if(!col[x]||!col[x-1])continue;
+    const dd=Math.abs(col[x]-col[x-1])/Math.max(1,wmax);
+    jump+=dd;if(dd>.12)steps++;
+  }
+  f.push(jump/Math.max(1,L)*8);
+  f.push(steps/Math.max(1,L)*4);
+  /* чернила за телом: приметы, которые торчат за обвод */
+  let out=0;
+  for(let x=x0;x<=x1;x++)if(col[x]>wmax*1.02)out++;
+  f.push(out/Math.max(1,L)*2);
+  f.push(L/Math.max(1,wmax*2)/6);                 /* вытянутость */
+  /* нос и корма: бушприт Коммуны, крюк ГЛАВТРАССЫ и антенны Хай-Фронта живут
+     именно здесь — далеко от миделя и за обводом */
+  f.push((x1-xw)/Math.max(1,L));
+  f.push((xw-x0)/Math.max(1,L));
+  f.push(col[Math.min(x1,x0+Math.round(L*.06))]/Math.max(1,wmax));
+  f.push(col[Math.max(x0,x1-Math.round(L*.06))]/Math.max(1,wmax));
+  /* краска: грунт изготовителя и то, сколько на борту чёрного */
+  f.push((rs-bs)/ink/255+.5);                     /* тепло обшивки */
+  f.push((rs+gs+bs)/(3*ink)/255);                 /* светлота обшивки */
+  f.push(dark/ink);                               /* доля тёмного: рёбра, охра, сварка */
+  let rmean=0;for(let k2=0;k2<RAY;k2++)rmean+=ray[k2]/RAY;
+  for(let k2=0;k2<RAY;k2++)f.push(ray[k2]/Math.max(1,rmean));
+  return f;
+}
+function makerStand(by,i,cls){
+  const id="mk_"+by+"_"+(cls||"scout")+"_"+i;
+  NPC_SHIPS[id]={name:id,seed:(i*7919+by.charCodeAt(0)*104729+(cls||"s").charCodeAt(0)*31)>>>0,
+    hcls:cls||"scout",col:"#9fd8ff",hull:100,cargo:60,fuel:100,thr:1,cls:cls||"scout",by};
+  delete HULL_CACHE[id+"!"+by];
+  return id;
+}
+function makerRead(n){
+  n=n||100;
+  const cls=Object.keys(HULL_CLASS),keys=MAKER_KEYS;
+  const per=Math.max(4,Math.ceil(n/cls.length));
+  /* ── как прибор спрашивает ──
+     Класс читается первым, изготовитель вторым (§0 закон 7) — значит и вопрос
+     ставится так же: класс известен, чей корпус? Образцы считаются на КАЖДЫЙ
+     класс отдельно по обучающим семенам, проверка идёт по другим, а все приметы
+     приводятся к одному разбросу: иначе одна крупная величина (скажем, длина
+     в пикселях) перевешивает семь остальных просто потому, что она больше. */
+  const rows=[],hit={},tot={},miss={};
+  for(const by of keys){hit[by]=0;tot[by]=0;miss[by]={};}
+  let ok=0,all=0;
+  for(const k of cls){
+    const mid={},cnt={},test=[];
+    for(const by of keys){
+      for(let i=0;i<10;i++){
+        const f=makerFeat(makerStand(by,900+i,k));
+        if(!f)continue;
+        if(!mid[by]){mid[by]=f.slice();cnt[by]=1;}
+        else{for(let j=0;j<f.length;j++)mid[by][j]+=f[j];cnt[by]++;}
+      }
+      if(mid[by])for(let j=0;j<mid[by].length;j++)mid[by][j]/=cnt[by];
+      for(let i=0;i<per;i++){
+        const f=makerFeat(makerStand(by,i,k));
+        if(f)test.push({by,f});
+      }
+    }
+    if(!test.length)continue;
+    /* разброс каждой приметы по этому классу — им и делим */
+    const D=test[0].f.length,mu=new Array(D).fill(0),sd=new Array(D).fill(0);
+    for(const t of test)for(let j=0;j<D;j++)mu[j]+=t.f[j]/test.length;
+    for(const t of test)for(let j=0;j<D;j++)sd[j]+=Math.pow(t.f[j]-mu[j],2)/test.length;
+    for(let j=0;j<D;j++)sd[j]=Math.sqrt(sd[j])||1;
+    /* вес приметы: форма весит больше краски — краску перекрасят, форму нет */
+    /* веса подобраны замером (M369): форма профиля и приметы держат основную
+       часть, краска — треть, лучи силуэта почти ничего: у них своя беда, в них
+       громче всего слышен КЛАСС (крыло, контейнеры), а не порода */
+    const W=[1,1,1,1,1,1,1,1, 1.3,1.3, 1.6, 1.1, 1.2,1.2,1,1, 2.2,2.2,2,
+      .4,.4,.4,.4,.4,.4,.4,.4,.4,.4,.4,.4];
+    for(const t of test){
+      let best=null,bd=1e9;
+      for(const q of keys){
+        if(!mid[q])continue;
+        let s2=0;
+        for(let j=0;j<D;j++){const dd=(t.f[j]-mid[q][j])/sd[j]*(W[j]||1);s2+=dd*dd;}
+        if(s2<bd){bd=s2;best=q;}
+      }
+      tot[t.by]++;all++;
+      if(best===t.by){hit[t.by]++;ok++;}
+      else if(best)miss[t.by][best]=(miss[t.by][best]||0)+1;
+    }
+  }
+  for(const by of keys)rows.push({by,ru:makerRu(by),
+    acc:tot[by]?+(hit[by]/tot[by]*100).toFixed(1):0,
+    /* с кем путают: прибор обязан не только ставить оценку, но и говорить,
+       какие две породы похожи — иначе править нечего */
+    with:(function(){let b=null,n=0;for(const q of keys)if(q!==by&&(miss[by][q]||0)>n){n=miss[by][q];b=q;}
+      return b?makerRu(b)+" "+n:"";})()});
+  const out={acc:all?+(ok/all*100).toFixed(1):0,n:all,rows};
+  if(typeof console!=="undefined")
+    console.log("изготовитель читается на "+out.acc+" % ("+all+" корпусов): "+
+      rows.map(r=>r.ru+" "+r.acc).join(" · "));
+  return out;
 }
 
 /* ══════════════ пробник G11: ?g11 ══════════════

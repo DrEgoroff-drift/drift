@@ -7,6 +7,57 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.369.0 - M369: every hull now has a maker, and you can see whose it is
+
+Stage B of the war opens (`docs/DESIGN-war.md` §19.1, §19.4, §18). Until now a ship's generator
+had one axis: the class — courier, hauler, frigate. Everything else was a seed. Now there is a
+second axis across it: **who built it**. A courier of Орднунг and a courier of Коммуны are the
+same class and different breeds, and the difference is a grammar of form, not a coat of paint.
+
+**Eight dimensions per maker** (`03a-hull-maker`), and the first three must read as silhouette:
+the profile law (ГЛАВТРАССА's ledges and box amidships, Компания's capsule, Орднунг's chamfers,
+Коммуна's swan waist, Рассвет's butted modules, Хай-Фронт's spindle); the scheme set — which
+airframes that maker will build at all; the signature protrusions that always stick out past the
+outline (a tow hook, a fin with the logo, a turret plinth and a rib comb, a bowsprit and a
+pennant, exposed tanks on welded braces, antenna masts longer than the hull). Then the joint
+grammar — clamp, flush fairing, bolted flange, fillet, weld bead, or a dark gap where the part
+floats a pixel off the plating; the surface — ground, stripe, gloss and a wear multiplier; the
+marks and lights — a number and «изделие», a logo, stencils in three places, a name and a lit
+window band, a hand-painted sun, one glyph and a version; the engine signature — flare colour,
+width and trail length; and finally the bank and the engine's hum. That last one is deliberately
+small: a maker changes how a ship lays into a turn and how it sounds, never the numbers the
+player paid for.
+
+**Nothing about the catalogue changes.** Every ship in `SHIPS` is ГЛАВТРАССА's, so the player's
+own hull looks and sounds exactly as it did; the grammar shows up on strangers — pirate hulls,
+unique hulls, everything generated from a seed. The hull cache is keyed by maker now, so the
+same seed built by two makers is two ships and not whichever was drawn first.
+
+**Is it actually readable?** `makerRead()` in `28y-look` answers with a number instead of an
+opinion: it draws each hull into a small canvas and guesses the maker from the pixels — profile
+samples, the jumps in it, the ink beyond the body, elongation, and the surface's warmth, value
+and dark fraction — with centroids trained on held-out seeds. **92.4 % over 630 hulls**, worst
+row 85.7 %. The stand is `python docs/shot.py maker` (a six-row overview) and `?by=<key>` for a
+hundred hulls of one maker; almanac issue IV records the sheets and what they forced — the first
+cut's bowsprit and antenna masts were long enough to read as scratches across the sheet.
+
+**The six powers** (`12al-powers`) get their table from §7.1: where each comes from, what it
+wants, how it fights, its emblem, its one line on the air and its hail at the approach. And the
+flag is a transponder, not paint: fly a Коммуна hull all you like, your flag stays ГЛАВТРАССА's —
+you were born here.
+
+**«Ялта».** The one system everybody flies to and nobody shoots in. Its address comes from the
+galaxy's own seed on the sixth ring, so it is the same for everyone and can be named out loud;
+pirates never spawn there, weapons are sealed (the refusal says why), and the front will never
+reach it. What is inside it comes with M372.
+
+Tests: `91zzzx-maker` — the eight dimensions row by row, the catalogue being ГЛАВТРАССА's, a
+maker that never drifts between calls, the cache telling two makers apart, geometry identical for
+the same seed and maker, the profile law leaving ledges where the spindle leaves none, the scheme
+filter, the class still reading first, the powers' table against `GUN_FAMILY`, the flag surviving
+a foreign hull, and «Ялта»'s address, empty sky and sealed guns; `91j-art` — `makerRead()` above
+90 % in the browser tier and over a hundred seeds per class in `-Full`.
+
 ## 0.368.0 - M368: a pirate's rank now has a loadout, and you can see it before he fires
 
 The war's ninth pass (`docs/DESIGN-war.md` §5, §18). Rank used to be a habit and a number: the

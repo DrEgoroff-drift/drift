@@ -96,6 +96,7 @@ One phrase per module; the module's own header says the rest. Grep `docs/INDEX.m
 | `01-core` | math, seeded RNG (`hashi`/`rng`/`fbm`), names, `sysDanger`, `VER` |
 | `02-world` `06-galaxy` `06a-celest` `07-planet` | resources, world types, `starAt`/`getSystem`, the sky calendar `celestAt`, planet textures |
 | `03-ships` `04-mods` `05-parts` | hulls (`hullOf`/`drawHull`), modules and science, parts and slots |
+| `03a-hull-maker` `12al-powers` | the maker grammar (M369): eight dimensions per maker read by `hullOf` and the paint conveyor, `makerRead()` measures whether it reads; the six powers of §7.1 with hails, emblems and the flag, and «Ялта» with its three prohibitions |
 | `08-state` `14-save` `14a-cloud` | the `G` object, `snapshot()`/`applySave()`, account and push/pull (risks: `docs/DESIGN-online-risks.md`) |
 | `09-audio` `10-music` `09a-roomtone` | sound synthesis, generative music, room tone |
 | `11-log` `12-economy` `13-pirates` | journal, live market and drones, pirates |

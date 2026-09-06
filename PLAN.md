@@ -694,8 +694,15 @@ Three stages, each playable on /dev before the next starts:
   чужая сторона девяти повадок, поле по рангу, зенитка и пусковая по снаряжению,
   стволы на корпусе в `12i-pirate-hull`, флаг `deserter` заготовлен для M369a;
   тесты `91zzzw-combat`).
-- **B — the powers, by seed** (client only; the galaxy lives with no server): M369 the maker
-  grammar layer on `hullOf`, measured by `makerRead()`, «Ялта» · M369a the grammar in the fleet,
+- **B — the powers, by seed** (client only; the galaxy lives with no server):
+  ~~M369 the maker grammar layer on `hullOf`, measured by `makerRead()`, «Ялта»~~ (0.369.0,
+  2026-09-06: `03a-hull-maker` — восемь измерений на шесть пород, закон профиля и набор схем в
+  `hullOf`, приметы за обводом, стык, поверхность, метки, огни, факел, след, крен и тембр;
+  `12al-powers` — таблица §7.1, приветствия, эмблемы и флаг, который не зависит от корпуса;
+  «Ялта» по зерну на шестом круге: без пиратов, оружие опечатано, фронт туда не приходит;
+  прибор `makerRead()` — 92.4 % на 630 корпусах — и стенд `docs/shot.py maker`; альманах,
+  выпуск IV. Не сделано: остальные четыре генератора — M369a, и авторская проверка шести
+  листов на /dev) · M369a the grammar in the fleet,
   barges, pirate hulls, stations, domes, papers · M369b the having of things · M370 chronicle core (integer replay, hash, clock, geometry) · M371 the Director ·
   M372 the war seen · M373 the four rules · M374 episodes and the notebook · M375 the rescuer.
 - **C — everyone** (server): M376 `war.php` and ведомости · M377 leftovers and ghosts · M378

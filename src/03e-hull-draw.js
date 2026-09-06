@@ -11,7 +11,9 @@ function drawHull(id,thrusting,braking,lvl,bank){
     ctx.restore();
   }
   /* ── факелы ── */
-  if(thrusting)for(const e of h.eng)drawFlame(e.x,e.y,e.r,1+lvl*.22,h.lux);
+  const MF=(typeof makerFlame==="function")?makerFlame(h.by):null;
+  if(thrusting)for(const e of h.eng)
+    drawFlame(e.x,e.y,e.r*(MF?MF.w:1),1+lvl*.22,h.lux,MF&&MF.col);
   else if(h.lux)for(const e of h.eng){
     /* на стоянке у люкса светится не зев, а КОЛЬЦО среза: холодная нить по
        ободу и тёмная глубина внутри — сопло видно и выключенным */
@@ -315,18 +317,26 @@ function drawHull(id,thrusting,braking,lvl,bank){
      На костяном борту цвет владельца работает не заливкой, а ЗАПЛАТОЙ: одна
      панель другого тона с тёмной окантовкой, как крашеный лист на белом
      грунте. Прежняя полупрозрачная полоса в .2 просто мылила борт. */
-  ctx.closePath();ctx.fillStyle=rgba(h.accent,h.yac?.2:1);ctx.fill();
-  if(!h.yac){
+  /* ── полоса по борту принадлежит изготовителю (M369, §19.4 измерение 5) ──
+     У ГЛАВТРАССЫ это крашеная заплата суриком, у Компании — фирменная синяя
+     лента во весь борт, у Орднунга, Рассвета и Хай-Фронта борт не красят
+     вовсе: у первого рёбра, у второго роспись от руки, у третьего чистая
+     обшивка с одной красной точкой. */
+  const STR=(typeof makerRow==="function")?makerRow(h.by).stripe:1;
+  const strCol=STR===2?[46,110,206]:h.accent;
+  ctx.closePath();
+  if(STR){ctx.fillStyle=rgba(strCol,h.yac?.2:1);ctx.fill();}
+  if(!h.yac&&STR){
     ctx.strokeStyle="rgba(0,0,0,.45)";ctx.lineWidth=.4;ctx.stroke();
     /* та же панель с другого борта: борт красят с обеих сторон */
     ctx.beginPath();
     for(let i=i0;i<=i1;i++)ctx.lineTo(P[i][0],P[i][1]*sa);
     for(let i=i1;i>=i0;i--)ctx.lineTo(P[i][0],P[i][1]*sb);
-    ctx.closePath();ctx.fillStyle=rgba(h.accent,1);ctx.fill();
+    ctx.closePath();ctx.fillStyle=rgba(strCol,1);ctx.fill();
     ctx.strokeStyle="rgba(0,0,0,.45)";ctx.lineWidth=.4;ctx.stroke();
     /* и вторая, короткая, у самой кормы: так метят машинное отделение */
     const ax0=lerp(h.tail,h.nose,.06), ax1=lerp(h.tail,h.nose,.20);
-    ctx.fillStyle=rgba(mixc(h.accent,[0,0,0],.2),.8);
+    ctx.fillStyle=rgba(mixc(strCol,[0,0,0],.2),.8);
     ctx.beginPath();
     ctx.moveTo(ax0,-profW(P,ax0)*.9);ctx.lineTo(ax1,-profW(P,ax1)*.9);
     ctx.lineTo(ax1,-profW(P,ax1)*.44);ctx.lineTo(ax0,-profW(P,ax0)*.44);
@@ -340,6 +350,18 @@ function drawHull(id,thrusting,braking,lvl,bank){
   ctx.strokeStyle="rgba(0,0,0,.34)";ctx.lineWidth=.75;
   for(const i of h.ribs){
     ctx.beginPath();ctx.moveTo(P[i][0],-P[i][1]);ctx.lineTo(P[i][0],P[i][1]);ctx.stroke();
+  }
+  /* ── гребёнка Орднунга (M369, §19.4 измерение 5) ──
+     «Ребро каждые восемь пикселей, чёрные, матовое»: не украшение, а то, по
+     чему его борт отличается от костяного борта ГЛАВТРАССЫ на любом масштабе */
+  if((typeof makerRow==="function")&&makerRow(h.by).ribs){
+    ctx.strokeStyle="rgba(0,0,0,.55)";ctx.lineWidth=.6;
+    const step=Math.max(2.2,h.bw*.55);
+    for(let x=h.tail+step;x<h.nose-step;x+=step){
+      const w=profW(P,x);
+      if(w<1)continue;
+      ctx.beginPath();ctx.moveTo(x,-w*.92);ctx.lineTo(x,w*.92);ctx.stroke();
+    }
   }
   ctx.strokeStyle="rgba(255,255,255,.09)";
   for(const f of [.34,.72]){
@@ -464,7 +486,10 @@ function drawHull(id,thrusting,braking,lvl,bank){
   ctx.fillStyle=sp;ctx.fillRect(h.tail,-h.bw,h.len,h.bw*2);
   /* налёт прожитых часов — последним слоем и внутри обрезки по корпусу, чтобы
      ни одна царапина не вылезла за силуэт (12s-wear) */
-  if(typeof drawWear==="function")drawWear(h,wearOf(id));
+  /* налёт умножается на износ изготовителя: у Компании корпус моют, у
+     Рассвета его не мыли никогда (§19.4, измерение 5) */
+  if(typeof drawWear==="function")
+    drawWear(h,clamp(wearOf(id)*((typeof makerRow==="function")?makerRow(h.by).wear:1),0,1));
   /* швы починок — поверх налёта и тоже в обрезке: биография не смывается (12s) */
   if(typeof drawSeams==="function")drawSeams(h,typeof seamsOf==="function"?seamsOf(id):0);
   ctx.restore();
@@ -481,6 +506,9 @@ function drawHull(id,thrusting,braking,lvl,bank){
   ctx.restore();
   drawTierTrim(h);
   drawHullMarks(h);
+  /* приметы и метки изготовителя (M369): часть корабля, а не наклейка —
+     поэтому до бортовых огней и общего света, вместе со всей навеской */
+  if(typeof makerDraw==="function"){makerDraw(h);makerMarks(h);}
   if(h.pirate)drawPirateSkin(h);
   if(typeof drawCrowns==="function")drawCrowns(h,id);
   /* ── боксы по бортам ──

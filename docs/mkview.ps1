@@ -581,6 +581,45 @@ setTimeout(function(){
       for(var i7=0;i7<LR.length&&i7<8;i7++)radioTune(LR[i7].f);
     }
     if(scene==="relay")tableToggle(true,"relay");
+  }else if(scene==="maker"){
+    /* ── лист пород (M369) ──
+       Шесть изготовителей на семь классов: строка — порода, столбец — класс.
+       makerSheet("co") на том же стенде даёт сотню корпусов ОДНОЙ породы, и
+       именно эти шесть листов судит альманах. Подписей на листе нет нарочно:
+       если породу видно только по подписи, породы нет. */
+    G.running=false;
+    window.makerSheet=function(by,seeds){
+      var cls=Object.keys(HULL_CLASS),keys=MAKER_KEYS;
+      var one=!!by, COLS=one?10:cls.length, ROWS=one?10:keys.length;
+      var W2=innerWidth,H2=innerHeight;
+      var cw=W2/COLS, ch=H2/ROWS;
+      var cv=document.getElementById("mksheet");
+      if(!cv){cv=document.createElement("canvas");cv.id="mksheet";document.body.appendChild(cv);}
+      var dpr=2;cv.width=W2*dpr;cv.height=H2*dpr;
+      cv.style.cssText="position:fixed;left:0;top:0;z-index:99999;width:"+W2+"px;height:"+H2+"px";
+      var c=cv.getContext("2d");c.setTransform(dpr,0,0,dpr,0,0);
+      c.fillStyle="#0a0d12";c.fillRect(0,0,W2,H2);
+      var old=ctx;ctx=c;
+      for(var ri=0;ri<ROWS;ri++)for(var ci=0;ci<COLS;ci++){
+        var mk=one?by:keys[ri], k=one?cls[(ri*COLS+ci)%cls.length]:cls[ci];
+        var n=one?(ri*COLS+ci):(ci*17+ri*3+(seeds||0));
+        var id="sheet_"+mk+"_"+k+"_"+n;
+        NPC_SHIPS[id]={name:id,seed:(n*7919+mk.charCodeAt(0)*104729+k.charCodeAt(0)*31)>>>0,
+          hcls:k,col:"#9fd8ff",hull:100,cargo:60,fuel:100,thr:1,cls:k,by:mk};
+        delete HULL_CACHE[id+"!"+mk];
+        c.save();c.translate(ci*cw+cw/2,ri*ch+ch/2);
+        var h=hullOf(id);
+        var z=Math.min(cw,ch)*.82/Math.max(10,h.len+h.halfW);
+        c.scale(z,z);c.rotate(-Math.PI/2);
+        try{drawHull(id,false,false,0,0);}catch(e){}
+        c.restore();
+        c.strokeStyle="rgba(120,150,175,.10)";
+        c.strokeRect(ci*cw+.5,ri*ch+.5,cw-1,ch-1);
+      }
+      ctx=old;
+      return "sheet "+(one?by:"all");
+    };
+    window.makerSheet((location.search.match(/[?&]by=([a-z]+)/)||[])[1]||"");
   }else{
     var p3=land("terran");hour(p3,.30);G.mode="surface";atPlant();
     run(6,updateSurface,drawSurface);

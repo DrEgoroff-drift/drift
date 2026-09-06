@@ -142,7 +142,11 @@ function updateSystem(dt){
   sh.x+=sh.vx*dt;sh.y+=sh.vy*dt;
   /* крен считаем по фактической скорости поворота — работает и на автопилоте */
   const rate=angDiff(sh.a,a0)/Math.max(dt,.0001);
-  sh.bank+=(clamp(rate*13,-.8,.8)-sh.bank)*Math.min(1,.07*dt);
+  /* насколько корабль ложится в поворот — подпись изготовителя (M369, §19.4
+     измерение 8): Коммуна валится широко, Орднунг не кренится вовсе. Скорость
+     поворота при этом не меняется: числа принадлежат классу и модулям */
+  const BK=(typeof makerBank==="function")?makerBank(makerOf(G.shipId)):1;
+  sh.bank+=(clamp(rate*13*BK,-.8*BK,.8*BK)-sh.bank)*Math.min(1,.07*dt);
   trailStep(dt,G.fuel>0&&((helm&&helm.main)||apOn),!apOn&&!!helm&&Math.abs(helm.rate)>1e-4,
     !apOn&&!!helm&&helm.thr&&G.fuel>0);
   }

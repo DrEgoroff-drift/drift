@@ -1,12 +1,22 @@
 function hullOf(id){
-  if(HULL_CACHE[id])return HULL_CACHE[id];
-  const S=shipData(id),r=rng(S.seed);
+  /* ── изготовитель входит в ключ (M369) ──
+     Один и тот же корпус, собранный ГЛАВТРАССОЙ и Коммуной, — два разных
+     корабля: у них разный закон профиля и разные приметы. Кэш обязан их
+     различать, иначе первый нарисованный станет и вторым. */
+  const S0=shipData(id);
+  const by=(typeof makerOf==="function")?makerOf(id,S0):"gt";
+  const ck=id+"!"+by;
+  if(HULL_CACHE[ck])return HULL_CACHE[ck];
+  const S=S0,r=rng(S.seed);
+  const MB=(typeof makerRow==="function")?makerRow(by):null;
   const K=HULL_CLASS[hullClassOf(id,S)]||HULL_CLASS.scout;
 
   /* ── продольный профиль: станции от носа к корме ── */
   /* не `const`: люксовая яхта переопределяет габариты под свой обвод */
-  let nose=(16+r()*14)*K.len, tail=-(13+r()*13)*K.len, len=nose-tail;
-  let bw=(3.8+r()*4.4)*K.bw;
+  /* пропорции: класс задаёт их, изготовитель смещает (§19.4, измерение 1).
+     Смещение мало нарочно — класс обязан читаться первым */
+  let nose=(16+r()*14)*K.len*(MB?MB.len:1), tail=-(13+r()*13)*K.len*(MB?MB.len:1), len=nose-tail;
+  let bw=(3.8+r()*4.4)*K.bw*(MB?MB.bw:1);
   const segs=9+Math.floor(r()*5);
   /* у рудовоза корма почти равна миделю — корпус-ящик; у курьера сходит
      на конус. Это и есть первое, что читается силуэтом */
@@ -63,7 +73,11 @@ function hullOf(id){
     yacht:  ["swept"],
     survey: ["disc","twin","boxed","xwing","swept"]
   };
-  const forms=FORM_BY_CLASS[S.hcls]||["swept"];
+  /* набор схем сужает изготовитель (измерение 2): плита у Орднунга, веретено
+     с трезубцем у Хай-Фронта. Класс сильнее: пустое пересечение отменяет
+     сужение, а не корабль */
+  const forms0=FORM_BY_CLASS[S.hcls]||["swept"];
+  const forms=(typeof makerForms==="function")?makerForms(by,forms0):forms0;
   const form=YAC?"swept":forms[Math.floor(r()*forms.length)];
   /* диск и плита — не веретено: у них свой обвод, иначе схема остаётся
      припиской к прежнему корпусу. Диск почти круглый в плане, плита —
@@ -115,6 +129,15 @@ function hullOf(id){
       prof.push([x,Math.max(.5,w)]);
     }
     tip[0]=nose+len*.10;                       // нос вытянут в тонкое остриё
+    poly.length=0;poly.push(tip);
+    for(const p of prof)poly.push([p[0],-p[1]]);
+    for(let i=prof.length-1;i>=0;i--)poly.push([prof[i][0],prof[i][1]]);
+  }
+  /* ── закон профиля изготовителя (измерение 1) ──
+     Идёт последним по обводу: класс уже сказал пропорции, схема — свои
+     переделки, и только теперь кривая полуширины получает характер. */
+  if(typeof makerProfile==="function"&&!YAC){
+    makerProfile(by,prof,r);
     poly.length=0;poly.push(tip);
     for(const p of prof)poly.push([p[0],-p[1]]);
     for(let i=prof.length-1;i>=0;i--)poly.push([prof[i][0],prof[i][1]]);
@@ -467,8 +490,16 @@ function hullOf(id){
      настоящей технике, — АКЦЕНТОМ: несколько панелей, кант, полоса на киле.
      Яхты живут по своим правилам (лак и латунь), их это не касается. */
   const own=hex2rgb(S.col);
-  const col=YAC?own:mixc([214,211,200],own,.10);
+  /* грунт — от изготовителя (измерение 5): белёсая кость ГЛАВТРАССЫ, белое
+     Компании, серая сталь Орднунга, охра Рассвета. Цвет владельца остаётся
+     акцентом, а не заливкой */
+  const grd=MB?MB.ground:[214,211,200];
+  const col=YAC?own:mixc(grd,own,MB?MB.tint:.10);
   const h={poly,prof,wings,pods,nacs,eng,greeb,ants,ribs,canopy,stripe,fin,mark,
+    by,
+    /* приметы, которые торчат за обвод (измерение 3): без них изготовитель
+       читается краской, а краски на восьми пикселях нет */
+    outs:(typeof makerOuts==="function")?makerOuts(by,nose,tail,bw,len,S.seed):[],
     hcls:S.hcls,clsRu:K.ru,tier:S.tier,seed:S.seed,lux:LUX,yac:YAC,form,pirate:!!(id&&id[0]==="p"),
     nose,bw,tail,len,tailW,halfW:hw,
     /* акцент — кирпичный сурик, а не подмешанный цвет владельца: подмес к
@@ -496,5 +527,5 @@ function hullOf(id){
        отличаться от всего флота: глубокий лак с металликом вместо крашеных
        листов, тик на открытой палубе, латунь в канте и жемчуг надстройки. */
     lac:mixc(col,[4,7,14],.62), gold:[212,176,98], teak:[166,122,72], pearl:[236,238,240]};
-  HULL_CACHE[id]=h;return h;
+  HULL_CACHE[ck]=h;return h;
 }

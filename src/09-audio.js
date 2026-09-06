@@ -306,7 +306,7 @@ function sfx(name,o){
   catch(e){if(curTok&&!curTok.freed){curTok.freed=true;SND.voices=Math.max(0,SND.voices-1);}}
 }
 /* ── непрерывный гул двигателя: один голос, живёт всё время полёта ── */
-function engineLoop(level,tone){
+function engineLoop(level,tone,hz){
   if(!audioOn()||!SND.ready||SND.ctx.state!=="running"){stopEngine();return;}
   const c=SND.ctx;
   let L=SND.loops.engine;
@@ -328,7 +328,10 @@ function engineLoop(level,tone){
   L.g.gain.setTargetAtTime(clamp(level,0,1)*.15,t,.09);
   L.lp.frequency.setTargetAtTime(280+level*900,t,.12);
   L.hp.frequency.setTargetAtTime(150-level*60,t,.12);
-  L.osc.frequency.setTargetAtTime(66+(tone||0)*34,t,.12);
+  /* основа тона — от изготовителя (M369): низкий гул ГЛАВТРАССЫ, ровная
+     середина Компании, почти неслышный писк Хай-Фронта. Уровень модуля
+     по-прежнему двигает её вверх */
+  L.osc.frequency.setTargetAtTime((hz||66)+(tone||0)*34,t,.12);
 }
 function stopEngine(){
   const L=SND.loops.engine;

@@ -54,9 +54,9 @@ function audioTick(dt){
      превращался в бесконечное гудение и глушил всю остальную звуковую картину */
   if(G.mode==="system"||G.mode==="dock"){
     const on=((G.ctl&&G.ctl.out.main)||G.ap)&&G.fuel>0&&G.mode!=="dock";
-    if(on)engineLoop(1,G.mods.engine/4);else stopEngine();
+    if(on)engineLoop(1,G.mods.engine/4,(typeof makerHum==="function")?makerHum(makerOf(G.shipId)):0);else stopEngine();
   }else if(G.mode==="belt"&&G.belt){
-    if(keys.thrust)engineLoop(.9,G.mods.engine/4);else stopEngine();
+    if(keys.thrust)engineLoop(.9,G.mods.engine/4,(typeof makerHum==="function")?makerHum(makerOf(G.shipId)):0);else stopEngine();
   }else if(G.mode==="landing"&&G.land){
     if(keys.thrust)engineLoop(1,.5);else stopEngine();
   }else stopEngine();

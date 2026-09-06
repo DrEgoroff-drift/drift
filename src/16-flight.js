@@ -249,7 +249,13 @@ const TRAIL_CHAR={
   miner:  {len:.85, w:1.32},  // «Обод»
   hauler: {len:.78, w:1.6}    // «Вьюк», «Скат», «Мамонт»: короткий выдох
 };
-const trailChar=id=>TRAIL_CHAR[shipData(id).hcls]||TRAIL_CHAR.scout;
+function trailChar(id){
+  const C=TRAIL_CHAR[shipData(id).hcls]||TRAIL_CHAR.scout;
+  const MF=(typeof makerFlame==="function")?makerFlame(makerOf(id)):null;
+  /* длина следа — тоже подпись: Орднунг не оставляет его вовсе, Коммуна
+     тянет полторы длины (M369) */
+  return MF?{len:C.len*MF.trail,w:C.w*(MF.w||1)}:C;
+}
 const TRAIL_TINT={};
 /* Цвет зависит ещё и от модуля двигателя: чем горячее камера, тем белее и
    голубее пламя — прокачка видна в полёте, а не только строкой в меню.
@@ -257,9 +263,13 @@ const TRAIL_TINT={};
    старый цвет до перезагрузки. */
 function trailTint(id,lvl){
   lvl=lvl|0;
-  const key=id+":"+lvl;
+  const by=(typeof makerOf==="function")?makerOf(id):"gt";
+  const key=id+":"+lvl+":"+by;
   if(TRAIL_TINT[key])return TRAIL_TINT[key];
-  const c=hex2rgb(shipData(id).col);
+  /* изготовитель слышен и в следе (M369, §19.4 измерение 7): фиалковый шлейф
+     Коммуны, чистая синь Компании, у Орднунга и Хай-Фронта следа почти нет */
+  const MF=(typeof makerFlame==="function")?makerFlame(by):null;
+  const c=MF?mixc(hex2rgb(shipData(id).col),MF.col,.7):hex2rgb(shipData(id).col);
   const heat=clamp(lvl*.26,0,.78);                 // 0 — паспортный, выше — форсаж
   const hot=mixc([255,252,238],[214,236,255],heat); // добела → в голубизну
   /* ядро — почти белое с оттенком акцента, чтобы не выглядело чужой наклейкой */

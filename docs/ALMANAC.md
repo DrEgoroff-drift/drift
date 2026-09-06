@@ -465,6 +465,51 @@ remains for the fleet is content (the заявка), not look.
 
 ---
 
+## Issue IV — 2026-09-06 (0.369.0) — the maker grammar on hulls
+
+Opened by M369 (§19.1, §19.4): every generated hull now carries a **maker** — a second axis of
+the generator, orthogonal to class. Six sheets on the stand (`python docs/shot.py maker` for the
+six-row overview, `?by=<key>` for a hundred hulls of one maker), and for the first time the
+verdict has a number of its own: `makerRead()` in `28y-look` renders each hull into a small
+canvas and guesses its maker from the pixels — the same kind of instrument as `look()`, applied
+to породу instead of the frame.
+
+**Measured, 0.369.0:** 92.4 % over 630 hulls (a hundred seeds per class, centroids trained on
+held-out seeds, features z-scored per class). By maker: Рассвет 100 · Орднунг 95.2 · Коммуна 93.3
+· Хай-Фронт 93.3 · ГЛАВТРАССА 86.7 · Компания 85.7. The one confusion that survives is
+ГЛАВТРАССА ↔ Орднунг (8 + 5 of 105 each): both are grey, both angular, and the ledge profile and
+the chamfer profile can meet in the middle at small sizes. Everything else is under five.
+
+Held against the codex:
+
+- **§1 layer order** ✓ — the maker changes ground, stripe and wear multiplier inside the existing
+  pipeline (dark ground → greys → glazes → wear → one light), and its protrusions are drawn with
+  the rest of the навеска, before the source-atop light. Nothing is painted after the light.
+- **§13 body-outline-one-light** ✓ — protrusions carry the hull's own edge and joint; the tow
+  hook, the bowsprit, the masts and the tanks read as parts of one body, not as stickers.
+- **§12 values before colour** ✓ — the six grounds are separated in value first (Рассвет 140,
+  Орднунг 144, Коммуна ~204, ГЛАВТРАССА 208, Хай-Фронт 216, Компания 246) and only then in hue.
+- **§0 law 7 (class first, maker second)** ✓ by construction: the maker's bias on proportions is
+  ≤ ±30 %, and the class's own bias is larger — a Хай-Фронт hauler is still wider than a
+  Хай-Фронт scout, and the test pins it.
+- **§3 keep the empty** — the first cut failed it: the bowsprit at 0.40 of the hull and the
+  antenna mast at 1.5 of it read on the sheet as **scratches across the cell**, not as rigging.
+  Shortened to 0.22 and 1.06 and given substance (a taper and a ball; traverses and a dish). This
+  is the single change the sheets forced.
+- **§8 one joint grammar** ✓ for the six new vocabularies (хомут / flush fairing / bolted flange /
+  fillet / weld bead / dark gap), drawn where a protrusion meets the plating — but only there:
+  the class's own appendages (wings, nacelles, pods) still meet the hull in the old way. That is
+  the first item of M369a.
+
+Weakest rows on the sheet, named so they are not argued about later: **ГЛАВТРАССА** — the box
+amidships is the whole signature at 8 px, and it is one silhouette away from Орднунг's chamfers;
+**Компания** — the capsule is clean but its fin and running line are small, and at distance it
+survives on white alone. Both are readable at 86 %, which is above the bar and below the rest.
+
+**What the instrument cannot do:** it reads a hull on black at 52 px, not a hull in a fight at
+20 px behind a nebula. The author's own test — «name every row of the six sheets on /dev without
+a label» — is still owed and is what actually closes the design half of this issue.
+
 ## ~~Reserved — issue III (continued)~~ — struck 2026-09-03
 
 All thirteen are drawn (M310–M313) and judged in the addenda above; the section stays only
