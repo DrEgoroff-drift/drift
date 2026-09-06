@@ -482,3 +482,64 @@ TEST_SUITES.push(()=>suite("Ревизия M380: поле, двадцать се
   ok(near<=.25+1e-9,"рядом с ним толпа весит вчетверо меньше: "+near);
   eq(far,1,"а в другом конце круга — как обычно");
 }));
+
+/* ══════════════ циркуляры и конституция (M381, §12, D18) ══════════════
+   Конституция — не пожелание: негодный циркуляр не применяется ВОВСЕ. Здесь
+   же сверяются два списка — в коде клиента и в тексте `WAR-CONSTITUTION.md`. */
+TEST_SUITES.push(()=>suite("циркуляр M381: годный применяется, негодный не применяется вовсе",()=>{
+  chWorld();
+  try{localStorage.removeItem(CHRON_KEY);}catch(e){}
+  WAR_LED_CACHE=null;
+  /* годный */
+  ok(circValid({n:5,need:{gt:{ore:10}}}),"веса в границах");
+  ok(circValid({n:5,event:{kind:"truce"}}),"событие из списка");
+  ok(circValid({n:5,say:{gt:"На трассе спокойно."}}),"строка волны");
+  ok(circValid({n:5,dials:{sat:10}}),"ручка в границах");
+  /* негодный — каждая строка конституции отдельно */
+  eq(circValid({n:5,need:{gt:{ore:40}}}),false,"вес больше тридцати процентов");
+  eq(circValid({n:5,need:{нет:{ore:1}}}),false,"нет такой державы");
+  eq(circValid({n:5,need:{gt:{чепуха:1}}}),false,"нет такой нужды");
+  eq(circValid({n:5,event:{kind:"забрать"}}),false,"событие вне списка");
+  eq(circValid({n:5,dials:{sat:50}}),false,"ручка за пределом");
+  eq(circValid({n:5,dials:{деньги:1}}),false,"нет такой ручки");
+  eq(circValid({n:5,say:{gt:"a@b"}}),false,"в строке волны адресат");
+  eq(circValid({n:5,credits:1000}),false,"поле, которого конституция не знает");
+  eq(circValid({n:5,season:{tension:5000,theme:"x"}}),false,"негодный сезон");
+  eq(circValid(null),false,"пустой циркуляр");
+  /* и он действительно ничего не делает */
+  circPut([{n:0,credits:1000}]);
+  eq(circAll().length,0,"негодный не кладётся даже в кэш");
+  const st=chronFresh();
+  const before=JSON.stringify(st.powers[0].need);
+  circApply(st,10);
+  eq(JSON.stringify(st.powers[0].need),before,"и в повторе ничего не меняет");
+  /* годный меняет ровно то, что ему позволено */
+  circPut([{n:0,need:{gt:{ore:20}}}]);
+  eq(circAll().length,1,"годный лёг");
+  const st2=chronFresh();
+  const was=st2.powers[0].need.ore;
+  circApply(st2,10);
+  ok(st2.powers[0].need.ore>was,"нужда сдвинулась: "+was+" → "+st2.powers[0].need.ore);
+  eq(st2.powers[0].need.goods,500,"а соседняя нужда — нет");
+  try{localStorage.removeItem(CHRON_KEY);}catch(e){}
+  WAR_LED_CACHE=null;
+}));
+
+TEST_SUITES.push(()=>suite("циркуляр M381: конституция в коде и в тексте — один список",()=>{
+  /* Правило М381: списки в `12aw-circ.js`, в `war.php` и в WAR-CONSTITUTION.md
+     обязаны совпадать. Проверить текст файла набор не может (его нет в сборке),
+     но может проверить, что в коде списки закрытые и совпадают между собой. */
+  const src=document.scripts[0].textContent;
+  const i0=src.indexOf("══ циркуляры и конституция (M381");
+  ok(i0>0,"модуль циркуляров в сборке");
+  const body=src.slice(i0,i0+9000);
+  for(const e of CIRC_EVENTS)ok(body.indexOf('"'+e+'"')>0,"событие «"+e+"» названо в модуле");
+  for(const d of CIRC_DIALS)ok(body.indexOf('"'+d+'"')>0,"ручка «"+d+"» названа в модуле");
+  /* и список разрешённых полей закрыт: любое новое поле обязано быть добавлено
+     руками и в конституцию, и сюда */
+  const allowed=["n","need","event","dials","say","season","who","ru"];
+  for(const f of allowed)ok(circValid(Object.assign({n:1},f==="n"?{}:{[f]:f==="need"?{}:
+    (f==="event"?{kind:"truce"}:(f==="dials"?{}:(f==="say"?{}:(f==="season"?
+    {tension:500,theme:"месяц"}:"текст"))))})),"поле «"+f+"» разрешено");
+  eq(circValid({n:1,ships:1}),false,"а незнакомое — нет");
+}));

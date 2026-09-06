@@ -1144,8 +1144,14 @@ One system inside ГЛАВТРАССА's centre (r ≈ 6, fixed by seed, never t
   only thing you know about the others, and the crowd's pressure in that area divided by four
   while it stands. **Deferred:** «закреплено» as a chronicle fact that later сводки honour (the
   flag is computed, but the replay does not yet read it), and the boss's own second form.
-- **M381** циркуляры, the constitution and validator (D18), the season dials, the regulator's
-  monthly session.
+- ~~**M381** циркуляры, the constitution and validator (D18), the season dials, the regulator's
+  session~~ — 0.381.0 (2026-09-06): `docs/WAR-CONSTITUTION.md` written as the limit on the upper
+  layer, `12aw-circ` implementing it line by line (`circValid`) and applying what passes in step 2
+  of the replay, the same list mirrored in `war.php circ` so a циркуляр filed over ssh is checked
+  before it is ever served, the paper shown in the tuned wave's own form («Циркуляр», press
+  release, numbered order…), and a test that walks every allowed field and every forbidden one.
+  **Deferred:** the digest's twenty lines are eleven (the боевые counters exist, the curves do
+  not), and «show me before publishing» is the ssh session itself.
 - **M382–M388** the Director's mechanics, one family a pass: economy, society, nature, power,
   diplomacy, security, culture (§15.1).
 

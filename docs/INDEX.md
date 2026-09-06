@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 468 · символов верхнего уровня: 4245
+Файлов: 469 · символов верхнего уровня: 4257
 
 ## СИМВОЛЫ
 
@@ -352,19 +352,19 @@ camStep                      src/19c-light.js:141
 canPay                       src/21a-mode-base.js:51
 CANT_STYLE                   src/27d-ui-cantina.js:15
 cantBarkeep                  src/27d-ui-cantina-props.js:15
-cantBubble                   src/27c-ui-hq.js:260
+cantBubble                   src/27c-ui-hq.js:261
 cantCounter                  src/27d-ui-cantina-props.js:306
-cantDealRow                  src/27c-ui-hq.js:163
+cantDealRow                  src/27c-ui-hq.js:164
 cantFigure                   src/27d-ui-cantina.js:403
-cantFolkRow                  src/27c-ui-hq.js:194
-cantHireRow                  src/27c-ui-hq.js:129
+cantFolkRow                  src/27c-ui-hq.js:195
+cantHireRow                  src/27c-ui-hq.js:130
 cantinaPool                  src/12c-mgr-core.js:259
-cantinaScene                 src/27c-ui-hq.js:266
+cantinaScene                 src/27c-ui-hq.js:267
 cantProps                    src/27d-ui-cantina-props.js:153
 cantRoomBody                 src/27d-ui-cantina.js:45
-cantSay                      src/27c-ui-hq.js:261
+cantSay                      src/27c-ui-hq.js:262
 cantSeats                    src/27d-ui-cantina.js:395
-cantSel                      src/27c-ui-hq.js:265
+cantSel                      src/27c-ui-hq.js:266
 cantStyle                    src/27d-ui-cantina.js:27
 cantTables                   src/27d-ui-cantina-props.js:241
 cantView                     src/27d-ui-cantina-props.js:82
@@ -497,37 +497,37 @@ CHRON_WANT                   src/12am-chron-agents.js:11
 chronAgentMove               src/12am-chron-agents.js:39
 chronArcs                    src/12am-chron-director.js:165
 chronAtWar                   src/12am-chron-agents.js:34
-chronBorders                 src/12am-chron.js:163
-chronClone                   src/12am-chron.js:221
+chronBorders                 src/12am-chron.js:164
+chronClone                   src/12am-chron.js:222
 chronDirector                src/12am-chron-director.js:73
-chronFlip                    src/12am-chron.js:135
+chronFlip                    src/12am-chron.js:136
 chronFresh                   src/12am-chron.js:63
-chronFront                   src/12am-chron.js:302
-chronHash                    src/12am-chron.js:191
+chronFront                   src/12am-chron.js:303
+chronHash                    src/12am-chron.js:192
 chronHomeOf                  src/12am-chron.js:48
 chronKeys                    src/12am-chron.js:41
-chronLine                    src/12am-chron.js:172
-chronLineRu                  src/12am-chron.js:176
-chronLoad                    src/12am-chron.js:268
+chronLine                    src/12am-chron.js:173
+chronLineRu                  src/12am-chron.js:177
+chronLoad                    src/12am-chron.js:269
 chronMonth                   src/12am-chron-director.js:53
 chronNeedLow                 src/12am-chron-agents.js:19
-chronNow                     src/12am-chron.js:186
-chronOwner                   src/12am-chron.js:293
-chronOwnerKey                src/12am-chron.js:298
+chronNow                     src/12am-chron.js:187
+chronOwner                   src/12am-chron.js:294
+chronOwnerKey                src/12am-chron.js:299
 chronRelBest                 src/12am-chron-agents.js:29
 chronRelWorst                src/12am-chron-agents.js:24
-chronReplay                  src/12am-chron.js:215
+chronReplay                  src/12am-chron.js:216
 chronRites                   src/12am-chron-director.js:166
 chronSat                     src/12am-chron.js:36
-chronSave                    src/12am-chron.js:249
+chronSave                    src/12am-chron.js:250
 chronSay                     src/12am-chron-lines.js:106
 chronSeason                  src/12am-chron-director.js:63
 chronSeasonValid             src/12am-chron-director.js:54
-chronState                   src/12am-chron.js:234
+chronState                   src/12am-chron.js:235
 chronStep                    src/12am-chron.js:82
 chronTension                 src/12am-chron-director.js:167
-chronWarBetween              src/12am-chron.js:309
-chronWars                    src/12am-chron.js:307
+chronWarBetween              src/12am-chron.js:310
+chronWars                    src/12am-chron.js:308
 chronWave                    src/12am-chron-lines.js:92
 chronWaveHead                src/12am-chron-lines.js:132
 chronWaveLines               src/12am-chron-lines.js:119
@@ -544,11 +544,23 @@ chunkAt                      src/18c-chunks.js:72
 chunkStore                   src/18c-chunks.js:66
 chWhite                      src/25n-chess.js:36
 chWorld                      tests/91zzzw-chron.js:7
+CIRC_DIALS                   src/12aw-circ.js:19
+CIRC_EVENTS                  src/12aw-circ.js:18
+CIRC_MAX_TEXT                src/12aw-circ.js:20
+CIRC_PAPER                   src/12aw-circ.js:120
+circAll                      src/12aw-circ.js:21
+circApply                    src/12aw-circ.js:87
+circBlock                    src/12aw-circ.js:128
+circFor                      src/12aw-circ.js:82
+circPaperName                src/12aw-circ.js:122
+circPut                      src/12aw-circ.js:26
+circSay                      src/12aw-circ.js:123
+circValid                    src/12aw-circ.js:34
 cirrusSprite                 src/19e-clouds.js:226
 CKPT                         src/25-cockpit.js:91
 CKPT_STYLE                   src/25-cockpit.js:19
 clamp                        src/01-core.js:7
-clampi                       src/12am-chron.js:133
+clampi                       src/12am-chron.js:134
 CLEARANCE                    src/05e-clearance.js:22
 clearanceEarned              src/05e-clearance.js:32
 clearanceNow                 src/05e-clearance.js:45
@@ -1162,7 +1174,7 @@ FACE_SKIN                    src/12d-mgr-face.js:10
 faceEl                       src/27c-ui-hq.js:6
 facePath                     src/12d-mgr-face.js:19
 faceRnd                      src/12d-mgr-face.js:16
-factPrices                   src/27c-ui-hq.js:576
+factPrices                   src/27c-ui-hq.js:577
 FAUNA_RES                    src/02-world.js:96
 faunaOf                      src/20e-species.js:268
 fbm1                         src/01-core.js:30
@@ -1389,7 +1401,7 @@ GROK_DIRT                    src/12tb-grok.js:29
 GROK_LIKE                    src/12tb-grok.js:28
 GROK_MIN                     src/12tb-grok.js:27
 GROK_NAME                    src/12tb-grok.js:26
-grokBlock                    src/27c-ui-hq.js:207
+grokBlock                    src/27c-ui-hq.js:208
 grokBusy                     src/12tb-grok.js:68
 grokCanTeach                 src/12tb-grok.js:136
 grokFace                     src/12tb-grok.js:173
@@ -1705,14 +1717,14 @@ HOUSES                       src/12u-scrip.js:21
 houseWallMark                src/17d-house-shapes.js:72
 HQ_H                         src/27f-hq-room.js:18
 HQ_ORDER                     src/27f-hq-room.js:21
-hqAiOffer                    src/27c-ui-hq.js:474
-hqBtnTick                    src/27c-ui-hq.js:311
+hqAiOffer                    src/27c-ui-hq.js:475
+hqBtnTick                    src/27c-ui-hq.js:312
 hqConsole                    src/27f-hq-room.js:228
 hqFigure                     src/27f-hq-room.js:513
 hqHover                      src/27f-hq-room.js:687
-hqJobCard                    src/27c-ui-hq.js:533
-hqRelicSlot                  src/27c-ui-hq.js:499
-hqRender                     src/27c-ui-hq.js:318
+hqJobCard                    src/27c-ui-hq.js:534
+hqRelicSlot                  src/27c-ui-hq.js:500
+hqRender                     src/27c-ui-hq.js:319
 hqRoomBody                   src/27f-hq-room.js:32
 hqScene                      src/27f-hq-room.js:644
 hqScreenData                 src/27f-hq-room.js:316
@@ -2217,7 +2229,7 @@ mgrCrewYield                 src/12c-mgr-core.js:203
 mgrCut                       src/12c-mgr-core.js:173
 mgrDefect                    src/12c-mgr-core.js:348
 mgrDomain                    src/12c-mgr-core.js:515
-mgrDomainLine                src/27c-ui-hq.js:595
+mgrDomainLine                src/27c-ui-hq.js:596
 mgrDroneRate                 src/12c-mgr-core.js:219
 mgrFace                      src/12d-mgr-face.js:29
 mgrFee                       src/12c-mgr-core.js:299
@@ -2492,7 +2504,7 @@ opCensus                     tests/91zzzzzt-opis.js:15
 openBarge                    src/12l-barge.js:635
 openCrewView                 src/27b-ui-crew.js:230
 openDeal                     src/27n-ui-deal.js:163
-openHq                       src/27c-ui-hq.js:615
+openHq                       src/27c-ui-hq.js:616
 openStation                  src/26-ui-station.js:5
 openWanderer                 src/24c-mode-wanderer.js:22
 OPIS                         src/27j-ui-opis.js:32
@@ -3770,7 +3782,7 @@ TAB_ID                       src/14a-cloud.js:20
 TAB_LIVE                     src/14a-cloud.js:19
 TABLE_REPLY                  src/11b-speech.js:158
 tableBake                    src/27i-ui-table.js:109
-tableBlock                   src/27c-ui-hq.js:635
+tableBlock                   src/27c-ui-hq.js:636
 tableIsOpen                  src/27i-ui-table.js:23
 tableNewBy                   src/27i-ui-table.js:76
 tableNewThings               src/27i-ui-table.js:73
@@ -4130,7 +4142,7 @@ WAR_API                      src/14b-war-net.js:19
 WAR_BUSY                     src/14b-war-net.js:21
 WAR_LED_CACHE                src/14b-war-net.js:45
 WAR_PULL_MS                  src/14b-war-net.js:20
-warBoot                      src/14b-war-net.js:145
+warBoot                      src/14b-war-net.js:149
 warCall                      src/14b-war-net.js:80
 warClock                     src/14b-war-net.js:70
 warHere                      src/14b-war-net.js:22
@@ -4138,9 +4150,9 @@ warLed                       src/14b-war-net.js:46
 warLedger                    src/14b-war-net.js:51
 warLedLast                   src/14b-war-net.js:63
 warLedPut                    src/14b-war-net.js:55
-warPressure                  src/14b-war-net.js:124
+warPressure                  src/14b-war-net.js:128
 warPull                      src/14b-war-net.js:86
-warPut                       src/14b-war-net.js:114
+warPut                       src/14b-war-net.js:118
 warStore                     src/14b-war-net.js:24
 warStoreSet                  src/14b-war-net.js:30
 warTok                       src/14b-war-net.js:23
@@ -4580,6 +4592,9 @@ zooTick                      src/11ad-zoo.js:41
 
 ## src/12av-boss.js · 8 КБ
   · «РЕВИЗИЯ» (M380, §11.2, D13):1
+
+## src/12aw-circ.js · 7 КБ
+  · циркуляры и конституция (M381, §12, D18):1
 
 ## src/12b-crew-events.js · 17 КБ
   · наёмники: рейс как раздача карт:1
@@ -5561,7 +5576,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzzv-wall.js · 7 КБ
   · автотесты: стена, которая помнит (M210):1
 
-## tests/91zzzw-chron.js · 28 КБ
+## tests/91zzzw-chron.js · 32 КБ
   · летопись (M370, §16.2–16.5):1
   · Директор и шесть волн (M371, §15, §7.3):135
   · война, которую видно (M372, §7.4):206
@@ -5570,6 +5585,7 @@ zooTick                      src/11ad-zoo.js:41
   · выборы и сбор (M378, §11.2, §14):343
   · обряды (M379, §14):386
   · «Ревизия» (M380, §11.2):419
+  · циркуляры и конституция (M381, §12, D18):486
 
 ## tests/91zzzw-combat.js · 41 КБ
   · бой между кораблями (M361, §5):1

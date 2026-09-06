@@ -7,6 +7,32 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.381.0 - M381: the paper from above, and the limit on it
+
+The war's upper layer — the one the regulator writes — now exists, and so does the fence around
+it.
+
+**`docs/WAR-CONSTITUTION.md`** says what a циркуляр may do: shift a power's needs by up to thirty
+per cent, call one of seven named events, give the six waves their line for the day, move the
+dials of §11.5 by up to a fifth, set the month's season. And what it may never do: touch a
+player's things or money in any direction, erase an episode or a person from a notebook, undo
+«закреплено», name or quote a player, move systems directly, or reach back into history already
+replayed.
+
+**The fence is code, not advice.** `circValid()` is written from that file line by line; the same
+list is mirrored in `war.php` so a циркуляр filed over ssh is refused before it is ever served;
+and a циркуляр that fails is **not applied at all** — not clamped, not partially honoured. The
+unknown-field rule is the important one: any key the constitution does not list fails the whole
+циркуляр, because otherwise tomorrow there is one more small field.
+
+**In the game it is paper**, in the voice of the wave you are tuned to: ГЛАВТРАССА prints a
+«Циркуляр», Компания a press release, Орднунг a numbered order. The satire closes on the
+regulator itself, which is right — from inside the world, the upper layer is paper from above.
+
+Tests: every allowed field accepted and every forbidden one refused, a bad циркуляр changing
+nothing in a replay, a good one moving exactly the need it names and no other, and the code's own
+lists checked closed.
+
 ## 0.380.0 - M380: «Ревизия» — the ceiling with a face
 
 The crowd can redraw a quarter of the galaxy in a week and then hits a wall. This is the wall,

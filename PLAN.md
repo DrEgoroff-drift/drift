@@ -750,8 +750,10 @@ Three stages, each playable on /dev before the next starts:
   заём через `earn`) · ~~M380 «Ревизия»~~ (0.380.0, 2026-09-06: `12av-boss` — область из летописи, корпус из
   ведомостей и без восстановления, поле, которое один не продавит, окно в двадцать секунд раз в
   десять минут, «в бою бортов: N», вклад толпы в его области вчетверо меньше; попутно починена
-  цена свежей оккупации — она поднимала только сдачу) · M381 циркуляры and
-  the constitution · M382–M388 the Director's mechanics, one family a pass.
+  цена свежей оккупации — она поднимала только сдачу) · ~~M381 циркуляры и конституция~~ (0.381.0, 2026-09-06: `docs/WAR-CONSTITUTION.md` —
+  что можно и чего нельзя никогда; `circValid` написан по нему построчно, тот же список в
+  `war.php circ`, негодный циркуляр не применяется вовсе, годный виден бумагой в голосе своей
+  волны) · M382–M388 the Director's mechanics, one family a pass.
 
 Measured from M360 on: `prof()` with eight armed ships on the phone layout; the pad row on the
 44 px sweep (`91zzy-screens`); `91zzzw-chron` replay hashes browser vs Node.

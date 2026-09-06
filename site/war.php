@@ -433,11 +433,53 @@ if (PHP_SAPI === 'cli' && $a === 'digest') {
   }
   exit;
 }
+/* ── та же конституция, что и на клиенте (M381, docs/WAR-CONSTITUTION.md) ──
+   Проверка стоит здесь ВТОРОЙ раз не из недоверия к клиенту, а потому что
+   циркуляр подшивает регулятор через ssh, минуя клиента вовсе. Списки должны
+   совпадать буква в букву с `circValid` в `12aw-circ.js`. */
+const CIRC_EVENTS = ['election','strike','embargo','ultimatum','truce','build','revizia'];
+const CIRC_DIALS  = ['sat','ceiling','bosstrig','leftlife','rally'];
+const CIRC_FIELDS = ['n','need','event','dials','say','season','who','ru'];
+const CIRC_POWERS = ['gt','co','or','km','ra','hf'];
+const CIRC_NEEDS  = ['ore','goods','hulls','link'];
+function circCheck($c, &$why) {
+  if (!is_array($c)) { $why = 'не объект'; return false; }
+  foreach ($c as $k => $v) if (!in_array($k, CIRC_FIELDS, true)) { $why = "лишнее поле: $k"; return false; }
+  if (isset($c['need'])) {
+    if (!is_array($c['need'])) { $why = 'need не объект'; return false; }
+    foreach ($c['need'] as $by => $w) {
+      if (!in_array($by, CIRC_POWERS, true)) { $why = "нет такой державы: $by"; return false; }
+      if (!is_array($w)) { $why = 'need не объект'; return false; }
+      foreach ($w as $k => $v) {
+        if (!in_array($k, CIRC_NEEDS, true)) { $why = "нет такой нужды: $k"; return false; }
+        if (!is_numeric($v) || $v < -30 || $v > 30) { $why = "вес вне тридцати процентов: $k"; return false; }
+      }
+    }
+  }
+  if (isset($c['event'])) {
+    if (!is_array($c['event']) || !in_array($c['event']['kind'] ?? '', CIRC_EVENTS, true)) { $why = 'событие вне списка'; return false; }
+  }
+  if (isset($c['dials'])) {
+    foreach ($c['dials'] as $k => $v) {
+      if (!in_array($k, CIRC_DIALS, true)) { $why = "нет такой ручки: $k"; return false; }
+      if (!is_numeric($v) || $v < -20 || $v > 20) { $why = "ручка вне двадцати процентов: $k"; return false; }
+    }
+  }
+  if (isset($c['say'])) {
+    foreach ($c['say'] as $by => $t) {
+      if (!in_array($by, CIRC_POWERS, true)) { $why = "нет такой волны: $by"; return false; }
+      if (!is_string($t) || $t === '' || mb_strlen($t) > 280 || preg_match('/[<>@]/u', $t)) { $why = 'строка волны не по форме'; return false; }
+    }
+  }
+  return true;
+}
 if (PHP_SAPI === 'cli' && $a === 'circ') {
   $file = (string)($argv[2] ?? '');
   $c = wread($file);
   if (!$c) { echo "не читается: $file\n"; exit(1); }
   $c['n'] = wnow();
+  $why = '';
+  if (!circCheck($c, $why)) { echo "циркуляр не проходит конституцию: $why\n"; exit(1); }
   wwrite(wroot() . '/circ/' . wnum($c['n']) . '.json', $c);
   echo "циркуляр подшит на сводку " . $c['n'] . "\n";
   exit;

@@ -97,6 +97,10 @@ function warPull(force){
     const body=s=>{const o=s.sys||{};o.__votes=s.votes||{};return o;};
     for(const s of (r.svodki||[]))if(s&&s.n!==undefined)warLedPut(s.n|0,body(s));
     if(r.open&&r.open.n!==undefined)warLedPut(r.open.n|0,body(r.open));
+    /* циркуляры приезжают тем же ответом и проверяются конституцией на входе
+       (M381): негодный не кладётся вовсе */
+    if(Array.isArray(r.circ)&&r.circ.length&&typeof circPut==="function")
+      circPut(circAll().concat(r.circ));
     /* хэш за прошлую сводку: сервер только считает, кто с кем сошёлся */
     try{
       const st=chronState();
