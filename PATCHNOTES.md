@@ -7,6 +7,35 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.405.0 - M405: a hundred управляющих, and one
+
+The whole layer demands the player's attention, and there is exactly one way to buy it back: a
+**person**, not an upgrade. About a hundred of them exist in a galaxy; all of them call themselves
+управляющий, all have a call-sign and references, all are hireable. One is real.
+
+They are not three buckets but a **curve** (§48): every candidate is a roll, and «плохой ·
+сносный · настоящий» are places on it. `q = .12 + .78·r()^2.6` is the whole design in one
+expression — the mass sits at the bottom, the tail is thin, and there is no visible ceiling.
+Measured over four thousand rolls: 56 % below a third of the potential, 3 % above .85, a real middle
+that makes hiring a decent man a permanent and viable strategy, and a flaw on about two thirds.
+
+**The interview has one tell, and it is the only one in the game:** the real one asks about the
+place before he answers about himself — what is the heat, is there ice, what does the charter say.
+The fakes flatter and agree to everything. Some of the fakes have learned to imitate a question, so
+it is a strong signal and never a proof — the suite pins exactly that: every perceptive candidate
+asks, most fakes flatter, and a few fakes ask anyway.
+
+A hired man is charged **per shift** in wages and takes his **share** of what the base earns, and
+his flaw surfaces only after his own срок of shifts under load. Три of the six are wired here:
+**тащит** (the store never matches the drill, by a few percent, forever), **пишет красиво** (the
+report from a distance is excellent and the base is not — fly there and see for yourself), and
+**молчит** (the journal simply stops). And a bad manager is deliberately **worse than none**: he
+pulls his fraction of the base's potential, and most fractions are small.
+
+Not paying him ends it his way: he leaves. Ending it yours costs six shifts of severance, and the
+ПАЛАТА will want a form about it too.
+
+---
 ## 0.404.0 - M404: the craft pass over the base, and Almanac issue V
 
 Fourteen passes of mechanics went into the base and not one of them was drawn: shifts, stores,

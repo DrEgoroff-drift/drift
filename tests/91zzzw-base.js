@@ -1306,3 +1306,99 @@ TEST_SUITES.push(()=>suite("база M403: свой прилавок стоит 
   eq(typeof baseBlocked(B),"boolean","блокада — это состояние системы");
   ok(basePayLine(B).indexOf("undefined")<0,"строка без мусора: "+basePayLine(B));
 }));
+
+/* ── сто управляющих и один (M405) ──
+   §48: не три коробки, а кривая. Проверяется форма кривой, единственная
+   зацепка собеседования и то, что плохой управляющий ХУЖЕ, чем никакой. */
+TEST_SUITES.push(()=>suite("база M405: кривая, а не список",()=>{
+  /* бросок чистый и повторяемый */
+  const a=bmgrOf(12345),b2=bmgrOf(12345);
+  eq(a.q,b2.q,"один и тот же номер — один и тот же человек");
+  eq(a.name,b2.name,"и имя то же");
+  ok(bmgrOf(1).q!==bmgrOf(2).q,"а разные номера — разные люди");
+  /* форма кривой: масса у дна, хвост тонкий (§48.1) */
+  let lo=0,mid=0,hi=0,top=0,flaw=0;
+  const N=4000;
+  for(let i=0;i<N;i++){
+    const M=bmgrOf(i*7919+3);
+    if(M.q<.35)lo++;else if(M.q<.6)mid++;else if(M.q<.85)hi++;else top++;
+    if(M.flaw)flaw++;
+  }
+  ok(lo/N>.5,"масса у дна: "+Math.round(lo/N*100)+"% ниже трети");
+  ok(top/N<.08,"и хвост тонкий: "+Math.round(top/N*100)+"% выше .85");
+  ok(mid/N>.1,"середина существует — сносный найм это стратегия");
+  near(flaw/N,.62,.05,"изъян примерно у двух третей: "+(flaw/N).toFixed(2));
+  /* у каждого изъяна есть имя и объяснение */
+  eq(BMGR_FLAWS.length,6,"шесть изъянов");
+  for(const F of BMGR_FLAWS)ok(F.ru&&F.how&&F.how.length>20,"изъян «"+F.ru+"» объяснён");
+  /* кандидаты у прилавка стабильны и их немного */
+  resetWorld();
+  const sys=G.sys;
+  if(sys&&sys.station){
+    const c1=bmgrAt(sys),c2=bmgrAt(sys);
+    ok(c1.length>=2&&c1.length<=3,"у прилавка двое-трое: "+c1.length);
+    eq(c1.map(x=>x.id).join(),c2.map(x=>x.id).join(),"и это те же самые люди");
+  }
+}));
+
+TEST_SUITES.push(()=>suite("база M405: единственная зацепка — вопрос о месте",()=>{
+  /* настоящий спрашивает о МЕСТЕ; поддельный говорит о себе */
+  let asked=0,flat=0,fakeAsked=0,n=0;
+  for(let i=0;i<3000;i++){
+    const M=bmgrOf(i*613+11);
+    const L=bmgrLine(M);
+    const q=L.indexOf("?")>0;
+    if(M.sense>=.5){n++;if(q)asked++;}
+    else{if(q)fakeAsked++;else flat++;}
+  }
+  ok(n>0,"чуткие в галактике есть: "+n);
+  eq(asked,n,"и все они спрашивают о месте");
+  ok(flat>fakeAsked*3,"а поддельные в основном льстят: "+flat+" против "+fakeAsked);
+  ok(fakeAsked>0,"но некоторые научились изображать вопрос — признак, а не доказательство");
+}));
+
+TEST_SUITES.push(()=>suite("база M405: наём, доля, изъян и расторжение",()=>{
+  const B=bLife();
+  G.crew=[];
+  /* найти чуткого и посредственного */
+  let good=null,bad=null;
+  for(let i=0;i<9000&&!(good&&bad);i++){
+    const M=bmgrOf(i*7919+3);
+    if(!good&&M.q>.8&&!M.flaw)good=M;
+    if(!bad&&M.q<.3&&M.flaw&&M.flaw.id==="steal"&&M.term<30)bad=M;
+  }
+  ok(!!good&&!!bad,"нашлись и хороший, и плохой");
+  /* хороший вытягивает больше, плохой — меньше, чем никакой */
+  eq(bmgrWorkMul(B),1,"без управляющего база работает как есть");
+  B.mgr={id:bad.id,since:baseShift()};
+  ok(bmgrWorkMul(B)<1,"плохой ХУЖЕ, чем никакого: ×"+bmgrWorkMul(B).toFixed(2));
+  B.mgr={id:good.id,since:baseShift()};
+  ok(bmgrWorkMul(B)>1,"хороший вытягивает больше: ×"+bmgrWorkMul(B).toFixed(2));
+  /* изъян всплывает не раньше срока */
+  B.mgr={id:bad.id,since:100};
+  eq(bmgrFlawOn(B,100+bad.term-1),null,"до срока изъяна не видно");
+  ok(!!bmgrFlawOn(B,100+bad.term),"а после срока — видно");
+  /* он тащит: склад не сходится */
+  B.pool={iron:100};
+  let n2=100+bad.term;
+  while(n2%4)n2++;
+  bmgrStep(B,n2);
+  ok((B.pool.iron|0)<100,"со склада ушло: "+B.pool.iron);
+  /* жалованье платится, и без денег он уходит сам */
+  G.credits=100000;
+  const cr=G.credits;
+  bmgrStep(B,n2+1);
+  ok(G.credits<cr,"жалованье списано: −"+(cr-G.credits));
+  G.credits=0;
+  bmgrStep(B,n2+2);
+  eq(B.mgr,null,"без денег он ушёл сам");
+  ok(B.log.some(x=>x.k==="mgrgo"),"и это записано");
+  /* расторжение стоит выходного пособия */
+  B.mgr={id:good.id,since:baseShift()};
+  G.credits=10;
+  eq(bmgrFire(B),false,"без пособия не расторгнуть");
+  G.credits=good.pay*BMGR_SEV+50;
+  ok(bmgrFire(B),"с пособием — расторгли");
+  eq(B.mgr,null,"договора нет");
+  eq(G.credits,50,"и пособие ушло");
+}));

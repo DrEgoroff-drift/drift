@@ -223,6 +223,15 @@ function renderBasesTab(st){
         b.onclick=()=>{baseRuinTake(B);renderTab();};
         r.appendChild(b);
       }
+      /* управляющий (M405, §34): один на базу, и он не улучшение, а человек */
+      if(typeof bmgrLineOf==="function"&&bmgrLineOf(B))
+        r.firstChild.innerHTML+="<s><b style='color:#e8c46a'>"+bmgrLineOf(B)+"</b></s>";
+      if(typeof bmgrOfBase==="function"&&bmgrOfBase(B)){
+        const b=el("button","act","РАСТОРГНУТЬ");
+        b.title="выходное пособие "+(bmgrOfBase(B).pay*BMGR_SEV)+" кр";
+        b.onclick=()=>{bmgrFire(B);renderTab();};
+        r.appendChild(b);
+      }
       /* устав (M399, §9): четыре закона, каждый навсегда, и берут их здесь —
          там же, где смотрят на базу целиком */
       if(typeof charterLine==="function"){
@@ -263,5 +272,25 @@ function renderBasesTab(st){
         r.appendChild(b);
       }
       $body.appendChild(r);
+    }
+    /* ── собеседование (M405, §35) ──
+       Кандидаты стоят у прилавка этой станции и говорят. Единственная зацепка
+       — в словах: настоящий спрашивает о МЕСТЕ раньше, чем отвечает о себе. */
+    if(typeof bmgrAt==="function"&&G.sys&&G.sys.station&&list.length){
+      const cand=bmgrAt(G.sys);
+      $body.appendChild(el("div","sec","УПРАВЛЯЮЩИЕ · ГОВОРЯТ ВСЕ, УМЕЮТ РАЗНОЕ"));
+      for(const M of cand){
+        const row=el("div","row");
+        row.appendChild(el("div","nm","<b>"+M.name+" · "+M.call+"</b><s>"+bmgrLine(M)+
+          "<br>жалованье "+M.pay+" кр в смену · доля "+Math.round(M.greed*100)+"%</s>"));
+        for(const B of list){
+          if(B.mgr)continue;
+          const b=el("button","act sm",B.name.toUpperCase().slice(0,12));
+          b.title="поставить его на эту базу";
+          b.onclick=()=>{bmgrHire(B,M);renderTab();};
+          row.appendChild(b);
+        }
+        $body.appendChild(row);
+      }
     }
 }

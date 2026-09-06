@@ -1607,7 +1607,15 @@ halls without inner walls as §7 wrote it, frost and heat haze for the two-sided
 green — accents and interface, not new mass. **Deferred:** day-for-night in the cut (§15's lever
 this scene has never pulled) and the ruin's own look. **Stage C is closed** (M400–M404).
 
-**D · человек** — M405 сотня и распределение (§34, §35, §48) · M406 охота (§24.4, §35.1) ·
+**D · человек** — ~~M405 сотня и распределение~~ — 0.405.0 (2026-09-07): `21b2-base-mgr` — the roll
+of §48.1 exactly as written (q, жад, плата, изъян, срок, маска, чутьё), candidates standing at each
+station's counter and stable there, the interview with its single tell (perceptive candidates ask
+about the place; high-mask fakes sometimes imitate it), refusal of a hopeless rock, wages and share
+per shift, and three of the six flaws wired — тащит, пишет красиво (the remote report lies, the
+place does not), молчит. **Measured** over 4 000 rolls: 56 % below .35, 3 % above .85, flaw on 62 %.
+**Deferred:** the other three flaws (строит не то · паникует · боится глубины) — they all need him
+to *build*, which is M407; and the real one himself, who by §35.1 never stands at a counter — that
+is M406's hunt. · M406 охота (§24.4, §35.1) ·
 M407 он строит и развивает (§24.6, §37).
 
 **E · дело и мир** — M408 ПАЛАТА и станция платит, тон на максимум (§28–§32, §40) ·

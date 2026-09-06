@@ -678,6 +678,9 @@ function applySave(s){
           who:(b.ruin.who==="pirate"||b.ruin.who==="squat")?b.ruin.who:null}:null,
         /* устав (M399): законы берутся навсегда, значит они в записи */
         charter:Array.isArray(b.charter)?b.charter.filter(x=>typeof CHARTER_BY!=="undefined"&&CHARTER_BY[x]):[],
+        /* договор с управляющим (M405): в записи только НОМЕР — сам он
+           выводится броском, как и всё остальное в этой игре */
+        mgr:(b.mgr&&typeof b.mgr==="object")?{id:b.mgr.id|0,since:b.mgr.since|0}:null,
         fire:(b.fire&&typeof b.fire==="object")?{c:b.fire.c|0,r:b.fire.r|0,
           k:String(b.fire.k||"fire"),n:b.fire.n|0}:null,
         park:b.park|0,

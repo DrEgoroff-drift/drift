@@ -69,6 +69,8 @@ const BLOG={
   tenant:  (B,a)=>"в развалину въехали: "+a.who,
   back:    ()=>"база снова наша. Чинить придётся от нуля",
   uniq:    (B,a)=>"со склада забрали, чего нигде не купить: "+a.what,
+  mgrgo:   (B,a)=>a.who+" ушёл: жалованье не заплачено",
+  short:   (B,a)=>"склад не сходится на "+a.q+" ед. Опять",
   warn:    (B,a)=>a.warn,
   law:     (B,a)=>"устав: принят закон «"+a.ru+"». Навсегда",
   thief:   (B,a)=>"со склада пропало "+a.q+" ед. Дверь была открыта",
@@ -100,6 +102,9 @@ const BLOG={
 function baseLog(B,kind,n,args){
   const f=BLOG[kind];
   if(!f)return;
+  /* «молчит» (M405, §34.1): управляющий не подаёт сводок вовсе, и журнал
+     базы замолкает — кроме тех строк, которые про него самого */
+  if(typeof bmgrSilent==="function"&&bmgrSilent(B)&&kind!=="mgrgo"&&kind!=="short")return;
   if(!B.log)B.log=[];
   const line={n:n|0,k:kind,t:f(B,args||{})};
   B.log.push(line);
@@ -147,6 +152,8 @@ function baseShiftRun(B,n){
     said|=baseMine(B,P,BASE_MIN,n)?1:0;
     /* плата решённой базы (M403, §23.1): то, чего нигде не купить */
     if(typeof baseUniqStep==="function")said|=baseUniqStep(B,n)?1:0;
+    /* управляющий (M405): жалованье, доля и изъян — после всего, что он вёл */
+    if(typeof bmgrStep==="function")said|=bmgrStep(B,n)?1:0;
   }
   /* тихая смена тоже строка — но не каждая: журнал, в котором пусто, читается
      как поломка, а журнал из одних «тихо» вытесняет то, ради чего его открыли.
@@ -165,6 +172,7 @@ function baseEarn(B,P,min,n){
   if(cr<=0)return 0;
   earn(cr,"base");
   B.sold=(B.sold|0)+cr;
+  B._earned=(B._earned|0)+cr;      /* с этого управляющий возьмёт свою долю */
   if(B.sold>=400){
     logAdd("money","База «"+B.name+"» сдала излишки энергии · +"+B.sold.toLocaleString("ru")+" кр");
     baseLog(B,"grid",n,{cr:B.sold});
@@ -192,7 +200,10 @@ function baseMine(B,P,min,n){
   const world=(typeof dialOreMul==="function")?dialOreMul(B)*clamp(dialGrav(B),.8,1.4):1;
   /* закон 5 (M401): пьющий работает вполсилы смену через смену */
   const folk=(typeof baseDrinkMul==="function")?baseDrinkMul(B,n):1;
-  const want=min*P.drillEff*eff*crewBoost*heat*adj*vein*law*world*folk*1.1;
+  /* управляющий (M405): база выдаёт ту долю своего потенциала, какую он умеет
+     вытянуть. Плохой хуже, чем никакого, — так и задумано (§48.2) */
+  const mgr=(typeof bmgrWorkMul==="function")?bmgrWorkMul(B):1;
+  const want=min*P.drillEff*eff*crewBoost*heat*adj*vein*law*world*folk*mgr*1.1;
   let left=Math.min(want,Math.max(0,cap-held));
   const full=want>0&&left<want*.5;      /* склад забит: добыча стоит, и это строка */
   const r=rng(hashi(B.sx*7919+B.sy,B.idx,hashi(n,0x9111,0x2D)));
