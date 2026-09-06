@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 457 · символов верхнего уровня: 4083
+Файлов: 459 · символов верхнего уровня: 4110
 
 ## СИМВОЛЫ
 
@@ -459,41 +459,59 @@ chName                       tests/91zzzt-chess.js:3
 chPosition                   src/25n-chess.js:43
 chPseudo                     src/25n-chess.js:119
 CHRON                        src/12am-chron.js:62
+CHRON_ARC_RU                 src/12am-chron-lines.js:16
 CHRON_EPOCH                  src/12am-chron.js:27
 CHRON_HOME                   src/12am-chron.js:40
+CHRON_INC_RU                 src/12am-chron-lines.js:10
 CHRON_KEY                    src/12am-chron.js:23
 CHRON_LINES                  src/12am-chron.js:30
 CHRON_MOVES                  src/12am-chron-agents.js:9
 CHRON_R                      src/12am-chron.js:29
+CHRON_RITE_RU                src/12am-chron-lines.js:20
 CHRON_SAT                    src/12am-chron.js:33
+CHRON_SAY                    src/12am-chron-lines.js:26
 CHRON_SEED                   src/12am-chron.js:28
 CHRON_SHIFT                  src/12am-chron.js:24
 CHRON_WANT                   src/12am-chron-agents.js:11
 chronAgentMove               src/12am-chron-agents.js:39
+chronArcs                    src/12am-chron-director.js:162
 chronAtWar                   src/12am-chron-agents.js:34
-chronBorders                 src/12am-chron.js:151
-chronClone                   src/12am-chron.js:202
+chronBorders                 src/12am-chron.js:154
+chronClone                   src/12am-chron.js:212
+chronDirector                src/12am-chron-director.js:70
 chronFlip                    src/12am-chron.js:135
 chronFresh                   src/12am-chron.js:63
-chronFront                   src/12am-chron.js:267
-chronHash                    src/12am-chron.js:179
+chronFront                   src/12am-chron.js:287
+chronHash                    src/12am-chron.js:182
 chronHomeOf                  src/12am-chron.js:48
 chronKeys                    src/12am-chron.js:41
-chronLine                    src/12am-chron.js:160
-chronLineRu                  src/12am-chron.js:164
-chronLoad                    src/12am-chron.js:236
+chronLine                    src/12am-chron.js:163
+chronLineRu                  src/12am-chron.js:167
+chronLoad                    src/12am-chron.js:253
+chronMonth                   src/12am-chron-director.js:50
 chronNeedLow                 src/12am-chron-agents.js:19
-chronNow                     src/12am-chron.js:174
-chronOwner                   src/12am-chron.js:258
-chronOwnerKey                src/12am-chron.js:263
+chronNow                     src/12am-chron.js:177
+chronOwner                   src/12am-chron.js:278
+chronOwnerKey                src/12am-chron.js:283
 chronRelBest                 src/12am-chron-agents.js:29
 chronRelWorst                src/12am-chron-agents.js:24
-chronReplay                  src/12am-chron.js:196
+chronReplay                  src/12am-chron.js:206
+chronRites                   src/12am-chron-director.js:163
 chronSat                     src/12am-chron.js:36
-chronSave                    src/12am-chron.js:226
-chronState                   src/12am-chron.js:211
+chronSave                    src/12am-chron.js:240
+chronSay                     src/12am-chron-lines.js:106
+chronSeason                  src/12am-chron-director.js:60
+chronSeasonValid             src/12am-chron-director.js:51
+chronState                   src/12am-chron.js:225
 chronStep                    src/12am-chron.js:82
-chronWars                    src/12am-chron.js:272
+chronTension                 src/12am-chron-director.js:164
+chronWarBetween              src/12am-chron.js:294
+chronWars                    src/12am-chron.js:292
+chronWave                    src/12am-chron-lines.js:92
+chronWaveHead                src/12am-chron-lines.js:132
+chronWaveLines               src/12am-chron-lines.js:119
+chronWaveNext                src/12am-chron-lines.js:101
+chronWaveSet                 src/12am-chron-lines.js:96
 chronYaltaKey                src/12am-chron.js:57
 chRun                        tests/91zzzw-chron.js:13
 chSel                        src/25n-chess.js:251
@@ -787,6 +805,14 @@ digSoilCols                  src/23aa-dig-rock.js:473
 digSurfFringe                src/23aa-dig-rock.js:610
 digSurfY                     src/23aa-dig-rock.js:469
 digVoidPath                  src/23a-dig-draw.js:4
+DIR_ARC_MAX                  src/12am-chron-director.js:43
+DIR_ARCS                     src/12am-chron-director.js:37
+DIR_FAMILY                   src/12am-chron-director.js:17
+DIR_INCIDENTS                src/12am-chron-director.js:19
+DIR_PEAK                     src/12am-chron-director.js:42
+DIR_QUIET                    src/12am-chron-director.js:39
+DIR_RITES                    src/12am-chron-director.js:38
+DIR_THEMES                   src/12am-chron-director.js:48
 dirAt                        src/01-core.js:79
 dispatchEtherLine            src/12ag-holdfx.js:57
 dkPaper                      src/27ia-desk-top.js:37
@@ -2046,7 +2072,7 @@ mapFit                       src/18-mode-map.js:93
 mapGoAddr                    src/18a-map-addr.js:215
 mapGridDraw                  src/18a-map-addr.js:55
 mapHoldingsDraw              src/18b-map-hold.js:80
-mapHoldingsTop               src/18b-map-hold.js:159
+mapHoldingsTop               src/18b-map-hold.js:174
 mapHousePatch                src/18b-map-hold.js:31
 mapLayer                     src/18b-map-hold.js:26
 mapLayerNext                 src/18b-map-hold.js:28
@@ -2094,7 +2120,7 @@ matchesScrapNote             src/12uc-matches.js:45
 matchesSpend                 src/12uc-matches.js:27
 MAYAK_KEEP                   src/12pa-beacon.js:37
 MAYAK_NUM                    src/12pa-beacon.js:65
-mayakBlock                   src/12pa-beacon.js:142
+mayakBlock                   src/12pa-beacon.js:164
 mayakCompose                 src/12pa-beacon.js:68
 mayakFreed                   src/12pa-beacon.js:54
 mayakHead                    src/12pa-beacon.js:120
@@ -3180,7 +3206,7 @@ rtWant                       src/09a-roomtone.js:42
 RUMOUR_DETAIL                src/11t-rumours.js:46
 RUMOUR_IMG                   src/11t-rumours.js:32
 RUMOUR_SRC                   src/11t-rumours.js:53
-rumourBlock                  src/11t-rumours.js:120
+rumourBlock                  src/11t-rumours.js:129
 rumourEtherLine              src/11t-rumours.js:109
 rumourRemember               src/18a-map-addr.js:44
 rumourSeedHere               src/11t-rumours.js:55
@@ -3877,19 +3903,19 @@ visitMark                    src/11b-speech.js:91
 visitsAll                    src/11b-speech.js:86
 vLink                        src/18d-verlet.js:78
 voice                        src/09-audio.js:84
-VOICE_FEMALE                 src/12pa-beacon.js:162
+VOICE_FEMALE                 src/12pa-beacon.js:185
 VOICE_KEYS                   src/02a-worldmix.js:81
-VOICE_MALE                   src/12pa-beacon.js:161
+VOICE_MALE                   src/12pa-beacon.js:184
 VOICE_MAX                    src/09-audio.js:5
-VOICE_Q                      src/12pa-beacon.js:172
-voiceCan                     src/12pa-beacon.js:173
-voiceCancel                  src/12pa-beacon.js:176
-voiceList                    src/12pa-beacon.js:156
-voiceNext                    src/12pa-beacon.js:194
-voiceOpts                    src/12pa-beacon.js:151
-voicePick                    src/12pa-beacon.js:163
-voiceSay                     src/12pa-beacon.js:182
-voiceTick                    src/12pa-beacon.js:210
+VOICE_Q                      src/12pa-beacon.js:195
+voiceCan                     src/12pa-beacon.js:196
+voiceCancel                  src/12pa-beacon.js:199
+voiceList                    src/12pa-beacon.js:179
+voiceNext                    src/12pa-beacon.js:217
+voiceOpts                    src/12pa-beacon.js:174
+voicePick                    src/12pa-beacon.js:186
+voiceSay                     src/12pa-beacon.js:205
+voiceTick                    src/12pa-beacon.js:241
 vRope                        src/18d-verlet.js:27
 vRopeAt                      src/18d-verlet.js:125
 vStep                        src/18d-verlet.js:53
@@ -3990,6 +4016,7 @@ waterAlga                    src/21e-surface-draw.js:765
 waterAlgae                   src/21e-surface-draw.js:758
 waterDeepAt                  src/21e-surface-draw.js:771
 waterOf                      src/21e-surface-draw.js:733
+waveBlock                    src/12pa-beacon.js:146
 wcBlots                      src/16a-space.js:141
 wcDeform                     src/16a-space.js:128
 wcGauss                      src/16a-space.js:127
@@ -4392,7 +4419,13 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12am-chron-agents.js · 6 КБ
   · шесть агентов (M370, §7.5, §16.2 шаг 4):1
 
-## src/12am-chron.js · 14 КБ
+## src/12am-chron-director.js · 9 КБ
+  · Директор (M371, §15):1
+
+## src/12am-chron-lines.js · 9 КБ
+  · шесть волн (M371, §7.3, §15):1
+
+## src/12am-chron.js · 15 КБ
   · летопись (M370, §7.5, §16.2–16.4):1
 
 ## src/12b-crew-events.js · 17 КБ
@@ -4473,7 +4506,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12p-news.js · 12 КБ
   · пересказ: мир двигался, пока вас не было:1
 
-## src/12pa-beacon.js · 14 КБ
+## src/12pa-beacon.js · 16 КБ
   · «Маяк ГЛАВТРАССЫ»: официальный голос в эфире (M349, M349a):1
 
 ## src/12q-lore.js · 18 КБ
@@ -4641,7 +4674,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/18b-geology.js · 14 КБ
   · геология:1
 
-## src/18b-map-hold.js · 12 КБ
+## src/18b-map-hold.js · 13 КБ
   · владения на карте (M348):1
 
 ## src/18c-chunks.js · 9 КБ
@@ -5369,8 +5402,9 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzzv-wall.js · 7 КБ
   · автотесты: стена, которая помнит (M210):1
 
-## tests/91zzzw-chron.js · 8 КБ
+## tests/91zzzw-chron.js · 12 КБ
   · летопись (M370, §16.2–16.5):1
+  · Директор и шесть волн (M371, §15, §7.3):135
 
 ## tests/91zzzw-combat.js · 36 КБ
   · бой между кораблями (M361, §5):1

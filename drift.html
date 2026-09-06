@@ -1756,7 +1756,7 @@ body.table u.addr{color:#7a4a20}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.370.0";
+const VER="0.371.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -15289,6 +15289,15 @@ function rumoursHere(){
 function rumourEtherLine(r){
   /* слуховая трубка («Сорока»): приёмник ловит слухи почти вчетверо чаще */
   if(!G.sys||r()>((typeof wanderHas==="function"&&wanderHas("trumpet"))?.45:.12))return null;
+  /* ── война приходит в эфир (M371) ──
+     Своего экрана у войны нет: она едет теми же каналами, что и всё остальное.
+     Приёмник — первый из них, и он говорит той волной, на которую настроен;
+     кантина и новости берут строку оттуда же. */
+  if(typeof chronWaveLines==="function"&&r()<.4){
+    const w=(typeof chronWave==="function")?chronWave():"gt";
+    const WL=chronWaveLines(undefined,w,1);
+    if(WL.length)return "…"+WL[0];
+  }
   const L=rumoursHere();
   return L.length?"…говорят, есть "+L[Math.floor(r()*L.length)].short:null;
 }
@@ -19998,7 +20007,7 @@ const POWERS={
     never:"о потерях",
     food:"щи из концентрата, компот, хлеб по норме",
     paper:"трафарет и параграф",suit:"«Стриж»",
-    voice:{f:150,to:120,d:.5}},
+    voice:{f:150,to:120,d:.5},say:{rate:.92,pitch:.85}},
   co:{ru:"Компания",full:"КОМПАНИЯ ВОСТОЧНЫХ РЫНКОВ",from:"США",
     wants:"рыночные станции и всё, что продаётся",
     fams:["aimed","flak","auto"],msl:1,
@@ -20009,7 +20018,7 @@ const POWERS={
     never:"о ценах — только «выгодно»",
     food:"комплексный обед «Партнёр»™ — три перемены, кофе отдельно",
     paper:"фирменный знак на каждой странице",suit:"SafeLine™",
-    voice:{f:320,to:360,d:.3}},
+    voice:{f:320,to:360,d:.3},say:{rate:1.18,pitch:1.05}},
   or:{ru:"Орднунг",full:"ОРДНУНГ",from:"Германия",
     wants:"узлы прыжка и горловины",
     fams:["rail","heavy","shot"],
@@ -20020,7 +20029,7 @@ const POWERS={
     never:"о чувствах",
     food:"порция 2-Б: суп, второе, компот. Время приёма пищи — 18 минут",
     paper:"нумерованные параграфы, без единой лишней строки",suit:"Typ 4/B",
-    voice:{f:200,to:200,d:.22}},
+    voice:{f:200,to:200,d:.22},say:{rate:1.05,pitch:.8}},
   km:{ru:"Коммуна",full:"ЛА КОММУНА",from:"Франция",
     wants:"верфи и красивые системы (для неё это одно и то же)",
     fams:["laser","siphon","jam","harpoon"],
@@ -20031,7 +20040,7 @@ const POWERS={
     never:"— она говорит обо всём и часами",
     food:"суп дня, сыр, и разговор — обед идёт час, меньше не бывает",
     paper:"курсив и длинные абзацы",suit:"«Éloise»",
-    voice:{f:260,to:190,d:.7}},
+    voice:{f:260,to:190,d:.7},say:{rate:.85,pitch:1}},
   ra:{ru:"Рассвет",full:"ПАН-АФРИКАНСКИЙ КООПЕРАТИВ «РАССВЕТ»",from:"Африка",
     wants:"пояса, руду и всё, что копают",
     fams:["drill","shove","mortar","ram"],
@@ -20042,7 +20051,7 @@ const POWERS={
     never:"о сроках",
     food:"общий котёл: кто пришёл, тот и ест",
     paper:"надписи от руки",suit:"собран из трёх",
-    voice:{f:120,to:150,d:.9}},
+    voice:{f:120,to:150,d:.9},say:{rate:.8,pitch:.9}},
   hf:{ru:"Хай-Фронт",full:"ХАЙ-ФРОНТ",from:"Япония и Корея",
     wants:"маяки и ретрансляторы — всё, что смотрит",
     fams:["aimed","laser","cluster","needle"],
@@ -20053,7 +20062,7 @@ const POWERS={
     never:"о том, что уже сделала",
     food:"набор питания v4.1, время приёма рассчитано",
     paper:"строка версии на обложке",suit:"KIT v3.2",
-    voice:{f:420,to:430,d:.18}}
+    voice:{f:420,to:430,d:.18},say:{rate:1.25,pitch:1.15}}
 };
 const POWER_KEYS=Object.keys(POWERS);
 function powerOf(k){return POWERS[k]||POWERS.gt;}
@@ -20257,6 +20266,310 @@ function chronAgentMove(st,N,i,rr){
   return move;
 }
 
+/* ══════════════ Директор (M371, §15) ══════════════
+   Автор: «продумай, чтобы оно месяц без тебя автономно могло жить… ты рулящий
+   верхнеуровнево». Директор — это не сюжет и не расписание, а РИТМ: он следит,
+   чтобы в галактике не наступала тишина дольше четырёх сводок, чтобы после
+   пика был спад, и чтобы ничего не разгонялось до бесконечности.
+
+   Три вида событий (§15): происшествие — одна сводка и одна строка; дуга —
+   от четырёх до двадцати сводок со стадиями и обязательной развязкой; обряд —
+   то, в чём участвуют игроки (объявляется здесь, работает с M379).
+
+   Напряжение — целое 0…1000 на державу плюс общее по галактике. Оно растёт от
+   происшествий и войн и падает в тишине; пик держится не дольше трёх суток
+   (12 сводок), тишина — не дольше двух. Это тот самый режиссёр из Left 4 Dead,
+   только на шестичасовом шаге и целыми числами.
+
+   Всё детерминировано: те же зерно и номер сводки — те же события у всех. */
+const DIR_FAMILY=["econ","soc","nature","power","diplo","sec","cult"];
+/* происшествия: семья, ключ, и то, насколько поднимают напряжение */
+const DIR_INCIDENTS=[
+  {k:"vein",   f:"econ",  up:40},   /* жила в поясе: туда летят все */
+  {k:"fair",   f:"econ",  up:0},    /* ярмарка */
+  {k:"embargo",f:"econ",  up:90},
+  {k:"strike", f:"soc",   up:60},
+  {k:"holiday",f:"soc",   up:0},
+  {k:"refugee",f:"soc",   up:70},
+  {k:"storm",  f:"nature",up:50},
+  {k:"swarm",  f:"nature",up:60},
+  {k:"drain",  f:"nature",up:40},
+  {k:"coup",   f:"power", up:150},
+  {k:"purge",  f:"power", up:130},
+  {k:"envoy",  f:"diplo", up:0},
+  {k:"spy",    f:"sec",   up:110},
+  {k:"patrol", f:"sec",   up:30},
+  {k:"census", f:"cult",  up:0},
+  {k:"cult",   f:"cult",  up:40}
+];
+const DIR_ARCS=["shortage","frontier","succession","expedition","quarantine","goldrush"];
+const DIR_RITES=["regatta","census","parade","subbotnik","relief","memorial"];
+const DIR_QUIET=4;      /* дольше четырёх сводок без события галактика не молчит */
+/* пик держится не дольше трёх суток (§15) — а это ДВЕНАДЦАТЬ сводок вместе со
+   спадом, а не двенадцать сводок до него: считать надо то, что видит игрок */
+const DIR_PEAK=8;
+const DIR_ARC_MAX=20;   /* дуга обязана кончиться */
+/* ── сезон: восемь ручек, раз в месяц или никогда (§15) ──
+   Регулятор (это Клод раз в месяц, §12) может положить сезон; если его нет или
+   он не проходит проверку — «автопилот»: умеренное напряжение и тема от зерна
+   месяца. Плохой сезон не ломает ничего и не применяется вовсе. */
+const DIR_THEMES=["месяц дефицита","весна строек","тихий месяц","месяц перемен",
+  "месяц дорог","месяц отчётов"];
+function chronMonth(N){return Math.floor((N|0)/120);}
+function chronSeasonValid(s){
+  if(!s||typeof s!=="object")return false;
+  if(typeof s.tension!=="number"||s.tension<0||s.tension>1000)return false;
+  if(typeof s.theme!=="string"||!s.theme.length||s.theme.length>40)return false;
+  if(s.arcs&&!Array.isArray(s.arcs))return false;
+  if(s.arcs&&s.arcs.some(a=>DIR_ARCS.indexOf(a)<0))return false;
+  if(s.rites&&(!Array.isArray(s.rites)||s.rites.some(a=>DIR_RITES.indexOf(a)<0)))return false;
+  return true;
+}
+function chronSeason(N){
+  const m=chronMonth(N);
+  const put=(typeof G!=="undefined"&&G.warSeason&&G.warSeason.m===m)?G.warSeason.s:null;
+  if(chronSeasonValid(put))return put;
+  /* автопилот */
+  const h=hashi(m,0x5EA,CHRON_SEED);
+  return {tension:420+(h%180),theme:DIR_THEMES[h%DIR_THEMES.length],
+    arcs:DIR_ARCS,rites:DIR_RITES,auto:1};
+}
+/* ── один шаг Директора (шаг 3 в §16.2) ── */
+function chronDirector(st,N){
+  const S=chronSeason(N);
+  const rr=(a,b)=>hashi(N,a,(b|0)^0x0D18);
+  if(!st.dir)st.dir={quiet:0,peak:0,calm:0,tens:0,last:{},arcs:[],rites:[]};
+  const D=st.dir;
+  /* напряжение галактики тянется к сезонной цели и растёт от войн */
+  const wars=st.wars.length;
+  const target=clampi(S.tension+wars*120,0,1000);
+  /* ── подъём, пик, СПАД ──
+     Первый заход сбрасывал напряжение на пике и тут же получал его обратно от
+     происшествий той же сводки: пик длился сорок сводок вместо двенадцати
+     (замер 0.371.0). Спад поэтому не «минус двести шестьдесят», а ОКНО: пока
+     оно идёт, происшествия напряжение не поднимают вовсе. */
+  if(D.calm>0){
+    D.calm--;
+    D.tens=clampi(D.tens-120,0,1000);
+    D.peak=0;
+  }else{
+    D.tens=clampi(D.tens+((target>D.tens)?18:-14),0,1000);
+    if(D.tens>800)D.peak++;else D.peak=0;
+    if(D.peak>DIR_PEAK){D.calm=5;D.peak=0;}
+  }
+  let any=false;
+  /* происшествия: у каждой державы свой бросок, и один вид не повторяется
+     раньше чем через десять сводок */
+  for(let i=0;i<6;i++){
+    if((rr(i,0x11)%1000)>=350)continue;
+    const pool=DIR_INCIDENTS.filter(x=>((N-(D.last[i+"|"+x.k]||-99))>10));
+    if(!pool.length)continue;
+    const inc=pool[rr(i,0x22)%pool.length];
+    D.last[i+"|"+inc.k]=N;
+    st.powers[i].tension=clampi(st.powers[i].tension+inc.up,0,1000);
+    if(D.calm<=0)D.tens=clampi(D.tens+(inc.up/3|0),0,1000);
+    chronLine(st,N,"inc",i,null,{k:inc.k,f:inc.f});
+    any=true;
+  }
+  /* дуги: начинаются редко и обязаны кончиться — либо своей развязкой, либо
+     развязкой по умолчанию на двадцатой сводке */
+  for(let i=0;i<6;i++){
+    const cur=D.arcs.find(a=>a.p===i);
+    if(!cur){
+      if(D.tens<820&&(rr(i,0x33)%1000)<120){
+        const allow=(S.arcs&&S.arcs.length)?S.arcs:DIR_ARCS;
+        const kind=allow[rr(i,0x44)%allow.length];
+        D.arcs.push({p:i,kind,t0:N,stage:0});
+        chronLine(st,N,"arc",i,null,{k:kind,stage:0});
+        any=true;
+      }
+    }else{
+      const age=N-cur.t0;
+      if(age>=DIR_ARC_MAX||((rr(i,0x55)%1000)<140&&age>=4)){
+        chronLine(st,N,"arcend",i,null,{k:cur.kind,forced:age>=DIR_ARC_MAX?1:0});
+        D.arcs.splice(D.arcs.indexOf(cur),1);
+        any=true;
+      }else if(age>0&&age%4===0&&cur.stage<4){
+        cur.stage++;
+        chronLine(st,N,"arc",i,null,{k:cur.kind,stage:cur.stage});
+        any=true;
+      }
+    }
+  }
+  /* обряды: объявляются, пока их меньше трёх; работают с M379 */
+  D.rites=D.rites.filter(r=>N-r.t0<12);
+  if(D.rites.length<3&&(rr(0,0x66)%1000)<200){
+    const allow=(S.rites&&S.rites.length)?S.rites:DIR_RITES;
+    const kind=allow[rr(1,0x77)%allow.length];
+    const p=rr(2,0x88)%6;
+    D.rites.push({kind,p,t0:N});
+    chronLine(st,N,"rite",p,null,{k:kind});
+    any=true;
+  }
+  /* ── гарантия жизни ──
+     Четыре сводки подряд без единого события — это сутки тишины, и она
+     кончается не «когда-нибудь», а принудительно: Директор объявляет
+     происшествие сам. Без этой строки месяц без игрока превращается в
+     пустой лог, и никакие вероятности этого не чинят. */
+  D.quiet=any?0:D.quiet+1;
+  if(D.quiet>=DIR_QUIET){
+    const i=rr(3,0x99)%6;
+    const inc=DIR_INCIDENTS[rr(4,0xAA)%DIR_INCIDENTS.length];
+    D.last[i+"|"+inc.k]=N;
+    chronLine(st,N,"inc",i,null,{k:inc.k,f:inc.f,forced:1});
+    D.quiet=0;
+  }
+  /* ограничители §15: сила восстанавливается, но держава не падает ниже
+     трети своего дома — ниже этого она «выживает», а не исчезает */
+  for(let i=0;i<6;i++){
+    const P=st.powers[i];
+    P.str=clampi(P.str+((1000-P.str)/12|0),100,1000);
+  }
+}
+/* сколько сейчас идёт дуг и обрядов — для новостей и тестов */
+function chronArcs(){const st=chronState();return (st.dir&&st.dir.arcs)||[];}
+function chronRites(){const st=chronState();return (st.dir&&st.dir.rites)||[];}
+function chronTension(){const st=chronState();return (st.dir&&st.dir.tens)|0;}
+
+/* ══════════════ шесть волн (M371, §7.3, §15) ══════════════
+   Одна и та же сводка, шесть версий. Правда — это карта; эфир — это то, что
+   каждая держава считает нужным сказать. Сатира здесь на ГОСУДАРСТВО и его
+   канцелярию, никогда на людей (§7.1), и она ровная: ГЛАВТРАССА врёт не больше
+   и не меньше остальных, просто по-своему.
+
+   Шаблон выбирается по виду события и волне; вставки — держава, сектор, вид
+   происшествия. Ни одной свободной строки от игрока здесь нет и быть не может
+   (правило открытки: без имён и без свободного текста). */
+const CHRON_INC_RU={
+  vein:"жила в поясе",fair:"ярмарка",embargo:"эмбарго",strike:"забастовка",
+  holiday:"праздник",refugee:"переселение",storm:"вспышка",swarm:"рой",
+  drain:"истощение",coup:"смена правления",purge:"чистка",envoy:"посольство",
+  spy:"утечка",patrol:"досмотр",census:"перепись",cult:"тихий уезд"
+};
+const CHRON_ARC_RU={
+  shortage:"дефицит",frontier:"рубеж",succession:"наследство",
+  expedition:"экспедиция",quarantine:"карантин",goldrush:"золотая лихорадка"
+};
+const CHRON_RITE_RU={
+  regatta:"регата",census:"перепись",parade:"парад",subbotnik:"субботник",
+  relief:"помощь",memorial:"память"
+};
+/* по волне и виду события — одна строка. `%p` — держава, о которой речь,
+   `%s` — сектор, `%k` — вид происшествия, `%n` — номер сводки. */
+const CHRON_SAY={
+  war:{
+    gt:"На трассе спокойно. Отмечены временные трудности на отдельных участках.",
+    co:"Рынок реагирует ростом: %p открывает новое направление. Отличное время войти.",
+    or:"Пункт 4.1: %p приступила к операции. Формуляры приняты.",
+    km:"%p объявила войну. Мы находим это грубым и предсказуемым — и всё же спросим себя, чего ей не хватало.",
+    ra:"Опять начали. Ну ничего, мы уже готовим место, где чинить.",
+    hf:"%p начала боевые действия. Ваш рейтинг доверия не изменился. Приносим извинения за потери противника."
+  },
+  truce:{
+    gt:"На трассе спокойно. В Ялте подписано.",
+    co:"Стороны договорились. Наши партнёры не пострадали, спасибо за выбор.",
+    or:"Пункт 9.2: боевые действия прекращены согласно регламенту.",
+    km:"Подписано. Как всегда, в Ялте, как всегда, за обедом, и как всегда — поздно.",
+    ra:"Помирились. Значит, будем чинить не под огнём.",
+    hf:"Соглашение зарегистрировано. Обновление доставлено всем сторонам."
+  },
+  take:{
+    gt:"На трассе спокойно. Отмечено движение в секторе %s.",
+    co:"Сектор %s меняет владельца — ожидаем оживления торга.",
+    or:"Сектор %s. Формуляр передачи оформлен в трёх экземплярах.",
+    km:"В секторе %s опять переставили флаг. Люди там те же самые.",
+    ra:"В %s пришли новые. Барже всё равно, кому платить пошлину.",
+    hf:"Сектор %s: владелец обновлён. Данные синхронизированы."
+  },
+  deal:{
+    gt:"На трассе спокойно. План выполнен на 103 %.",
+    co:"Сделка закрыта. Выгодно как никогда.",
+    or:"Обмен произведён согласно регламенту.",
+    km:"Договорились. Не спрашивайте о чём: важно, что говорили долго.",
+    ra:"Сговорились. Значит, будет чем чинить.",
+    hf:"Сделка зафиксирована. Рейтинг доверия сторон пересчитан."
+  },
+  inc:{
+    gt:"На трассе спокойно. По многочисленным просьбам трудящихся: %k.",
+    co:"%k — и это возможность. Наши партнёры уже там.",
+    or:"%k. Согласно регламенту, пункт 12.",
+    km:"%k. Мы напишем об этом эссе, а пока — просто помолчим.",
+    ra:"%k. Ну что ж, бывает. Заходи, чинить есть что?",
+    hf:"%k. Обновление установлено. Просим извинить за неудобства."
+  },
+  arc:{
+    gt:"На трассе спокойно. Отдельные участки: %k.",
+    co:"%k продолжается — рынок держим в курсе.",
+    or:"%k, стадия по плану.",
+    km:"%k. Это надолго, и это интересно.",
+    ra:"%k. Мы посмотрим, чем это кончится.",
+    hf:"%k: этап завершён, следующий начат."
+  },
+  arcend:{
+    gt:"На трассе спокойно. Вопрос снят.",
+    co:"История закрыта. Кто был с нами — заработал.",
+    or:"Дело закрыто, формуляр подшит.",
+    km:"Кончилось. Как всё кончается: тише, чем начиналось.",
+    ra:"Отпустило.",
+    hf:"Инцидент закрыт. Благодарим за понимание."
+  },
+  rite:{
+    gt:"На трассе спокойно. Объявлен %k. Явка добровольная.",
+    co:"%k — участие платное, места ограничены.",
+    or:"%k проводится согласно регламенту. Форма одежды по списку.",
+    km:"%k. Приходите, если хочется; не приходите, если не хочется.",
+    ra:"%k. Приходи, брат, всем хватит.",
+    hf:"%k. Ваше участие повысит рейтинг доверия."
+  }
+};
+function chronWave(){
+  const w=(typeof G!=="undefined"&&G.opts&&G.opts.wave)||"gt";
+  return (typeof HULL_MAKER!=="undefined"&&HULL_MAKER[w])?w:"gt";
+}
+function chronWaveSet(by){
+  if(typeof HULL_MAKER!=="undefined"&&!HULL_MAKER[by])return chronWave();
+  if(typeof G!=="undefined"&&G.opts)G.opts.wave=by;
+  return by;
+}
+function chronWaveNext(){
+  const k=MAKER_KEYS,i=k.indexOf(chronWave());
+  return chronWaveSet(k[(i+1)%k.length]);
+}
+/* строка события в заданной волне */
+function chronSay(L,wave){
+  wave=wave||chronWave();
+  const T=CHRON_SAY[L.kind];
+  if(!T)return "";
+  let s=T[wave]||T.gt;
+  const who=(typeof POWERS!=="undefined"&&POWERS[MAKER_KEYS[L.p]])?POWERS[MAKER_KEYS[L.p]].ru:"держава";
+  const k=L.args&&L.args.k;
+  const kru=k?(CHRON_INC_RU[k]||CHRON_ARC_RU[k]||CHRON_RITE_RU[k]||k):"";
+  s=s.split("%p").join(who).split("%s").join(L.sys||"—").split("%k").join(kru)
+     .split("%n").join(String(L.N));
+  return s;
+}
+/* последние строки сводки N в выбранной волне: это и есть «повернуть ручку» */
+function chronWaveLines(N,wave,max){
+  const st=chronState();
+  if(N===undefined)N=st.N;
+  const out=[];
+  for(let i=st.lines.length-1;i>=0&&out.length<(max||6);i--){
+    const L=st.lines[i];
+    if(L.N!==N)continue;
+    const s=chronSay(L,wave);
+    if(s)out.push(s);
+  }
+  return out;
+}
+/* один заголовок волны: у каждой державы своя подпись эфира */
+function chronWaveHead(wave,N){
+  wave=wave||chronWave();
+  const P=(typeof POWERS!=="undefined")?POWERS[wave]:null;
+  const st=chronState();
+  if(N===undefined)N=st.N;
+  return (P?P.ru.toUpperCase():"ЭФИР")+" · СВОДКА "+((N|0)%1000);
+}
+
 /* ══════════════ летопись (M370, §7.5, §16.2–16.4) ══════════════
    Галактика живёт без игрока: шесть держав торгуют, ссорятся, воюют и мирятся,
    фронты ходят, системы меняют хозяев. Ни один такт при этом нигде не тикает.
@@ -20333,9 +20646,9 @@ function chronFresh(){
     const yalta=(k===yk);
     const o=yalta?-1:chronHomeOf(x,y);
     S[k]={owner:o,since:0,front:0,yalta:yalta?1:0};
-    if(o>=0)P[o].hold++;
+    if(o>=0){P[o].hold++;P[o].home=(P[o].home|0)+1;}
   }
-  return {N:-1,powers:P,systems:S,wars:[],lines:[],_keys:CHRON._keys,off:CHRON.off|0};
+  return {N:-1,powers:P,systems:S,wars:[],lines:[],dir:null,_keys:CHRON._keys,off:CHRON.off|0};
 }
 /* ── ход одной сводки (§16.2) ── */
 function chronStep(st,N){
@@ -20398,6 +20711,9 @@ function chronFlip(st,N,from,to,rr){
     const k=keys[(start+i)%keys.length];
     const S=st.systems[k];
     if(!S||S.yalta||S.owner!==to)continue;        /* «Ялта» не переходит никогда */
+    /* §15: ниже трети своего дома держава не падает — она «выживает», а не
+       исчезает, иначе месяц без игрока кончается пятью державами */
+    if(st.powers[to].hold<=((st.powers[to].home*3/10)|0))continue;
     /* фронт идёт по границе: берём только то, что соседствует с наступающим */
     if(!chronBorders(st,k,from))continue;
     S.owner=from;S.since=N;S.front=1;
@@ -20449,6 +20765,13 @@ function chronHash(st){
     mix((S.owner+2)*8+S.front);
   }
   for(const w of st.wars){mix(w.a*8+w.b);mix(w.t0+1);}
+  /* Директор входит в хэш: расхождение по напряжению — такое же расхождение,
+     как по владениям, и молчать о нём нельзя (D06) */
+  if(st.dir){
+    mix(st.dir.tens+1);mix(st.dir.quiet+1);mix(st.dir.peak+1);
+    for(const a of st.dir.arcs)mix(a.p*32+a.stage*4+(a.t0&3)+1);
+    mix(st.dir.rites.length+1);
+  }
   return h>>>0;
 }
 /* ── повтор: от нуля или от кэша ── */
@@ -20463,8 +20786,12 @@ function chronClone(st){
   for(const k in st.systems){const s=st.systems[k];S[k]={owner:s.owner,since:s.since,front:s.front,yalta:s.yalta};}
   const P=st.powers.map(p=>({hold:p.hold,need:{ore:p.need.ore,goods:p.need.goods,hulls:p.need.hulls,link:p.need.link},
     rel:p.rel.slice(),str:p.str,tension:p.tension,arc:p.arc}));
+  const D=st.dir?{quiet:st.dir.quiet|0,peak:st.dir.peak|0,calm:st.dir.calm|0,tens:st.dir.tens|0,
+    last:Object.assign({},st.dir.last),
+    arcs:st.dir.arcs.map(a=>({p:a.p,kind:a.kind,t0:a.t0,stage:a.stage})),
+    rites:st.dir.rites.map(r=>({kind:r.kind,p:r.p,t0:r.t0}))}:null;
   return {N:st.N,powers:P,systems:S,wars:st.wars.map(w=>({a:w.a,b:w.b,t0:w.t0})),
-    lines:st.lines.slice(),off:st.off|0};
+    lines:st.lines.slice(),dir:D,off:st.off|0};
 }
 /* ── состояние на сейчас: кэш, потом повтор ── */
 function chronState(N){
@@ -20488,7 +20815,10 @@ function chronSave(st){
       p:st.powers.map(p=>[p.hold,p.str,p.tension,p.rel.slice(),
         [p.need.ore,p.need.goods,p.need.hulls,p.need.link]]),
       s:chronKeys().map(k=>st.systems[k].owner+","+st.systems[k].since+","+st.systems[k].front).join("|"),
-      w:st.wars.map(w=>[w.a,w.b,w.t0])};
+      w:st.wars.map(w=>[w.a,w.b,w.t0]),
+      d:st.dir?{q:st.dir.quiet|0,pk:st.dir.peak|0,cm:st.dir.calm|0,t:st.dir.tens|0,l:st.dir.last,
+        a:st.dir.arcs.map(a=>[a.p,a.kind,a.t0,a.stage]),
+        r:st.dir.rites.map(r=>[r.kind,r.p,r.t0])}:null};
     localStorage.setItem(CHRON_KEY,JSON.stringify(o));
   }catch(e){}
 }
@@ -20510,6 +20840,9 @@ function chronLoad(){
       st.systems[k].owner=v[0]|0;st.systems[k].since=v[1]|0;st.systems[k].front=v[2]|0;
     });
     st.wars=(o.w||[]).map(w=>({a:w[0]|0,b:w[1]|0,t0:w[2]|0}));
+    st.dir=o.d?{quiet:o.d.q|0,peak:o.d.pk|0,calm:o.d.cm|0,tens:o.d.t|0,last:o.d.l||{},
+      arcs:(o.d.a||[]).map(a=>({p:a[0]|0,kind:a[1],t0:a[2]|0,stage:a[3]|0})),
+      rites:(o.d.r||[]).map(r=>({kind:r[0],p:r[1]|0,t0:r[2]|0}))}:null;
     return st;
   }catch(e){return null;}
 }
@@ -20529,6 +20862,13 @@ function chronFront(sx,sy){
   return !!(S&&S.front);
 }
 function chronWars(){return chronState().wars;}
+/* воюют ли эти двое прямо сейчас — спрашивает карта, чтобы нарисовать фронт */
+function chronWarBetween(a,b){
+  if(a<0||b<0||a===b)return false;
+  for(const w of chronState().wars)
+    if((w.a===a&&w.b===b)||(w.a===b&&w.b===a))return true;
+  return false;
+}
 
 /* ══════════════ наёмники: рейс как раздача карт ══════════════ */
 /* Наёмник — не альтернатива дрону, а ставка. Дрон даёт маленький надёжный плюс,
@@ -26560,7 +26900,30 @@ function mayakTick(){
   return bul;
 }
 /* лист на стене кантины (27c) */
+/* ── шесть волн на одной сводке (M371) ──
+   Ручка приёмника: та же сводка, шесть версий, и правда — это карта. Блок
+   стоит рядом с листом «Маяка», потому что «Маяк» — это одна из шести волн,
+   а не голос мира. */
+function waveBlock(){
+  if(typeof $body==="undefined"||typeof chronWaveLines!=="function")return;
+  const w=chronWave();
+  const lines=chronWaveLines(undefined,w,4);
+  $body.appendChild(el("div","sec","ЭФИР · "+chronWaveHead(w)));
+  const r=el("div","row");
+  r.appendChild(el("div","nm","<b>"+((typeof POWERS!=="undefined"&&POWERS[w])?POWERS[w].full:"")+
+    "</b><s style='line-height:1.9'>"+
+    (lines.length?lines.join("<br>"):"…несущая частота. Сводка ещё не закрылась.")+"</s>"));
+  const b=el("button","act","ДРУГАЯ ВОЛНА");
+  b.onclick=()=>{
+    chronWaveNext();
+    if(typeof voiceSay==="function")voiceSay(chronWaveLines(undefined,chronWave(),2),"wave");
+    if(typeof renderTab==="function")renderTab();
+  };
+  r.appendChild(b);
+  $body.appendChild(r);
+}
 function mayakBlock(){
+  waveBlock();
   const bul=mayakLast();if(!bul||typeof $body==="undefined")return;
   $body.appendChild(el("div","sec","МАЯК ГЛАВТРАССЫ · СМЕНА "+(bul.shift%1000)+" · ЛИСТ НА СТЕНЕ"));
   const r=el("div","row");
@@ -26619,6 +26982,14 @@ function voiceNext(){
   const o=voiceOpts();
   const u=new SpeechSynthesisUtterance(it.t);
   u.lang="ru-RU";u.voice=it.v;u.rate=clamp(+o.rate||1,.7,1.3);u.pitch=clamp(+o.pitch||.9,.6,1.3);
+  /* волна державы говорит своим темпом и своей высотой (M371, §7.3): Компания
+     частит, Коммуна тянет, Хай-Фронт почти щебечет. Это не украшение — по
+     голосу волна узнаётся раньше, чем по словам */
+  if(it.role==="wave"){
+    const W=(typeof chronWave==="function")?chronWave():"gt";
+    const SP=(typeof POWERS!=="undefined"&&POWERS[W])?POWERS[W].say:null;
+    if(SP){u.rate=clamp(u.rate*SP.rate,.6,1.6);u.pitch=clamp(u.pitch*SP.pitch,.5,1.6);}
+  }
   /* гаснет, не рвётся: под боем и сбоем вполголоса */
   const duck=((G.pirates||[]).some(p=>p.aware)||(typeof G.fail!=="undefined"&&G.fail))?.5:1;
   u.volume=clamp((+o.vol||.35)*duck,0,1);
@@ -41971,6 +42342,21 @@ function mapHoldingsDraw(vis,cell,V,st){
     if(chronFront(v.gx,v.gy)){
       ctx.strokeStyle="rgba(255,90,70,"+(.7*fade).toFixed(2)+")";ctx.lineWidth=1.4;
       ctx.strokeRect(x0+.7,y0+.7,cell-1.4,cell-1.4);
+    }
+    /* ── фронт пунктиром по границе (M371, §7.4) ──
+       Не заливка и не рамка вокруг клетки, а ЛИНИЯ между двумя владениями,
+       которые сейчас воюют: по ней видно, где именно проходит война, а не
+       «в этом районе неспокойно». */
+    if(typeof chronWarBetween==="function"){
+      ctx.save();ctx.setLineDash([3,3]);
+      ctx.strokeStyle="rgba(255,120,90,"+(.85*fade).toFixed(2)+")";ctx.lineWidth=1.6;
+      const nb=[[1,0,x0+cell,y0,x0+cell,y0+cell],[0,1,x0,y0+cell,x0+cell,y0+cell]];
+      for(const q of nb){
+        const o2=chronOwner(v.gx+q[0],v.gy+q[1]);
+        if(o2<0||o2===o||!chronWarBetween(o,o2))continue;
+        ctx.beginPath();ctx.moveTo(q[2],q[3]);ctx.lineTo(q[4],q[5]);ctx.stroke();
+      }
+      ctx.restore();
     }
   }
   for(const k in P){

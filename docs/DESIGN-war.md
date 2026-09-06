@@ -1073,8 +1073,16 @@ One system inside ГЛАВТРАССА's centre (r ≈ 6, fixed by seed, never t
   layer. **Measured:** over 1460 сводки — 79 wars, 79 truces, 342 systems changing hands, no
   power above three quarters of the circle. **Deferred:** the ведомость step (M376), the
   циркуляр step (M381) and the Director (M371) — their places in `step()` are marked and empty.
-- **M371** the Director: tension, the §15 table, arcs with default endings, rites announced,
-  limiters, «автопилот» season; lines ×6 voices; map chips and the front; news and rumours.
+- ~~**M371** the Director~~ — 0.371.0 (2026-09-06): `12am-chron-director` (tension with a real
+  relief window — the first cut let incidents refill it the same сводка and a peak ran forty
+  сводки instead of twelve; incidents that do not repeat a kind within ten; arcs of 4–20 with a
+  forced ending; rites announced, three at a time; the season with its validator and «автопилот»;
+  the guarantee that the galaxy is never quiet for more than four сводки) and `12am-chron-lines`
+  (six voices over seven kinds of event, the receiver's wave with its own rate and pitch, the
+  ЭФИР block on the board with «ДРУГАЯ ВОЛНА», war lines riding the receiver like every other
+  rumour, and the front drawn as a dotted line along the border on the map). **Deferred:** the
+  §15.1 families as mechanics (they are announced but do nothing yet — M382–M388) and the
+  digest «чё там».
 - **M372** the war seen: battle at jump-in, power occupation (D10, D11), station bodies and
   domes from build lines; «Ялта» at its maximum, embassies, all six waves at once.
 - **M373** the four rules and the hail.

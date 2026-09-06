@@ -7,6 +7,40 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.371.0 - M371: the Director, and six voices telling one сводка
+
+The chronicle had events; now it has **pace**, and the war has a voice — six of them.
+
+**The Director** (`12am-chron-director`) is not a plot and not a schedule: it is the thing that
+makes sure the galaxy is never silent for more than four сводки, that a peak is followed by
+relief, and that nothing runs away. Incidents (one сводка, one line) come from seven families and
+never repeat a kind within ten сводки. Arcs run four to twenty сводки with stages and a
+**guaranteed** ending — the twentieth сводка ends them whether or not the roll agrees. Rites are
+announced three at a time (they do something from M379). Tension is an integer 0…1000 that rises
+with wars and incidents and falls in quiet, with a real relief window: the first cut let the same
+сводка's incidents refill it immediately, and a measured peak ran forty сводки instead of twelve.
+
+**The season** — eight dials the regulator may set once a month — has a validator: a season with
+an out-of-range tension, an unknown arc or no theme is not applied at all, and the month runs on
+«автопилот» with a theme from its own seed.
+
+**Six waves.** The same сводка now reads six ways. ГЛАВТРАССА opens every bulletin with «На
+трассе спокойно» — including the ones where it lost a system; Компания sees a market opportunity;
+Орднунг cites a paragraph; Коммуна writes an essay; Рассвет says it will be ready to repair;
+Хай-Фронт apologises for the enemy's losses. The station board carries an ЭФИР block with the
+tuned wave and a «ДРУГАЯ ВОЛНА» button, the receiver speaks that wave with its own rate and pitch,
+and war lines ride the receiver the way every other rumour does — the war gets no screen of its
+own, by design.
+
+**On the map** the front is now a dotted line along the border between two powers actually at war,
+not a stain over a region.
+
+Tests: `91zzzw-chron` — half a year of сводки with the longest silence at four, no peak longer
+than three days, no arc past twenty, all three kinds of event actually occurring; a bad season
+ignored four different ways and a good one applied; and one event rendered in six voices giving
+six different lines, with the receiver's knob cycling all six and refusing a wave that does not
+exist.
+
 ## 0.370.0 - M370: the galaxy lives without you
 
 Stage B's core. Six powers now trade, quarrel, go to war, sign truces and take systems from each

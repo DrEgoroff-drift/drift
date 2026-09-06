@@ -139,7 +139,30 @@ function mayakTick(){
   return bul;
 }
 /* лист на стене кантины (27c) */
+/* ── шесть волн на одной сводке (M371) ──
+   Ручка приёмника: та же сводка, шесть версий, и правда — это карта. Блок
+   стоит рядом с листом «Маяка», потому что «Маяк» — это одна из шести волн,
+   а не голос мира. */
+function waveBlock(){
+  if(typeof $body==="undefined"||typeof chronWaveLines!=="function")return;
+  const w=chronWave();
+  const lines=chronWaveLines(undefined,w,4);
+  $body.appendChild(el("div","sec","ЭФИР · "+chronWaveHead(w)));
+  const r=el("div","row");
+  r.appendChild(el("div","nm","<b>"+((typeof POWERS!=="undefined"&&POWERS[w])?POWERS[w].full:"")+
+    "</b><s style='line-height:1.9'>"+
+    (lines.length?lines.join("<br>"):"…несущая частота. Сводка ещё не закрылась.")+"</s>"));
+  const b=el("button","act","ДРУГАЯ ВОЛНА");
+  b.onclick=()=>{
+    chronWaveNext();
+    if(typeof voiceSay==="function")voiceSay(chronWaveLines(undefined,chronWave(),2),"wave");
+    if(typeof renderTab==="function")renderTab();
+  };
+  r.appendChild(b);
+  $body.appendChild(r);
+}
 function mayakBlock(){
+  waveBlock();
   const bul=mayakLast();if(!bul||typeof $body==="undefined")return;
   $body.appendChild(el("div","sec","МАЯК ГЛАВТРАССЫ · СМЕНА "+(bul.shift%1000)+" · ЛИСТ НА СТЕНЕ"));
   const r=el("div","row");
@@ -198,6 +221,14 @@ function voiceNext(){
   const o=voiceOpts();
   const u=new SpeechSynthesisUtterance(it.t);
   u.lang="ru-RU";u.voice=it.v;u.rate=clamp(+o.rate||1,.7,1.3);u.pitch=clamp(+o.pitch||.9,.6,1.3);
+  /* волна державы говорит своим темпом и своей высотой (M371, §7.3): Компания
+     частит, Коммуна тянет, Хай-Фронт почти щебечет. Это не украшение — по
+     голосу волна узнаётся раньше, чем по словам */
+  if(it.role==="wave"){
+    const W=(typeof chronWave==="function")?chronWave():"gt";
+    const SP=(typeof POWERS!=="undefined"&&POWERS[W])?POWERS[W].say:null;
+    if(SP){u.rate=clamp(u.rate*SP.rate,.6,1.6);u.pitch=clamp(u.pitch*SP.pitch,.5,1.6);}
+  }
   /* гаснет, не рвётся: под боем и сбоем вполголоса */
   const duck=((G.pirates||[]).some(p=>p.aware)||(typeof G.fail!=="undefined"&&G.fail))?.5:1;
   u.volume=clamp((+o.vol||.35)*duck,0,1);

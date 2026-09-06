@@ -127,6 +127,78 @@ TEST_SUITES.push(()=>suite("летопись M370: карта знает хоз�
    числа сознательно, одной правкой вместе с изменением. */
 TEST_SUITES.push(()=>suite("летопись M370: узел и браузер считают одинаково",()=>{
   chWorld();
-  eq(chronHash(chRun(100)),2324073287,"сто сводок — известный хэш");
-  eq(chronHash(chRun(500)),1299790492,"пятьсот сводок — известный хэш");
+  /* пересняты сознательно в 0.371.0: Директор вошёл в шаг 3 и в хэш */
+  eq(chronHash(chRun(100)),916970371,"сто сводок — известный хэш");
+  eq(chronHash(chRun(500)),1305621383,"пятьсот сводок — известный хэш");
+}));
+
+/* ══════════════ Директор и шесть волн (M371, §15, §7.3) ══════════════ */
+TEST_SUITES.push(()=>suite("Директор M371: месяц без никого не молчит и не разгоняется",()=>{
+  chWorld();
+  const st=chronFresh();
+  let last=-1,maxGap=0,peak=0,maxPeak=0;
+  const arcAge={};
+  for(let n=0;n<=720;n++){                       /* полгода сводок */
+    chronStep(st,n);
+    if(st.lines.some(L=>L.N===n)){if(last>=0)maxGap=Math.max(maxGap,n-last);last=n;}
+    if(st.dir.tens>800){peak++;maxPeak=Math.max(maxPeak,peak);}else peak=0;
+    for(const a of st.dir.arcs)arcAge[a.p+"|"+a.t0]=n-a.t0;
+  }
+  ok(maxGap<=4,"галактика не молчит дольше четырёх сводок: "+maxGap);
+  ok(maxPeak<=12,"пик вместе со спадом укладывается в трое суток: "+maxPeak);
+  let over=0;for(const k in arcAge)if(arcAge[k]>DIR_ARC_MAX)over++;
+  eq(over,0,"ни одна дуга не переросла двадцати сводок");
+  /* и события всех трёх видов действительно случаются */
+  const kinds={};st.lines.forEach(L=>kinds[L.kind]=(kinds[L.kind]||0)+1);
+  ok(kinds.inc>0,"происшествия есть: "+kinds.inc);
+  ok((kinds.arc|0)+(kinds.arcend|0)>0,"дуги есть");
+  ok(kinds.rite>0,"обряды объявляются: "+kinds.rite);
+}));
+
+TEST_SUITES.push(()=>suite("Директор M371: сезон принимается только годный",()=>{
+  chWorld();
+  const N=300,m=chronMonth(N);
+  /* автопилот: без сезона Директор берёт тему от зерна месяца */
+  G.warSeason=null;
+  const auto=chronSeason(N);
+  ok(auto.auto===1,"без сезона — автопилот");
+  ok(!!auto.theme&&auto.tension>=0&&auto.tension<=1000,"и у него есть тема и цель");
+  /* негодный сезон не применяется вовсе */
+  G.warSeason={m,s:{tension:5000,theme:"перебор"}};
+  eq(chronSeason(N).auto,1,"напряжение вне границ — сезон не взят");
+  G.warSeason={m,s:{tension:500,theme:"месяц проверок",arcs:["чепуха"]}};
+  eq(chronSeason(N).auto,1,"неизвестная дуга — сезон не взят");
+  G.warSeason={m,s:{tension:500}};
+  eq(chronSeason(N).auto,1,"без темы — не взят");
+  /* годный — применяется */
+  G.warSeason={m,s:{tension:640,theme:"месяц проверок",arcs:["shortage","frontier"]}};
+  const s=chronSeason(N);
+  ok(!s.auto,"годный сезон взят");
+  eq(s.theme,"месяц проверок","и это его тема");
+  G.warSeason=null;
+}));
+
+TEST_SUITES.push(()=>suite("волны M371: одна сводка, шесть версий",()=>{
+  chWorld();
+  const st=chronFresh();
+  for(let n=0;n<=40;n++)chronStep(st,n);
+  CHRON=st;                                   /* смотрим на это состояние */
+  const L=st.lines.filter(x=>x.N===40);
+  ok(L.length>0,"на сводке есть о чём говорить");
+  const said={};
+  for(const w of MAKER_KEYS){
+    const s=chronSay(L[0],w);
+    ok(!!s&&s.length>8,w+": строка есть");
+    said[s]=(said[s]||0)+1;
+  }
+  eq(Object.keys(said).length,6,"шесть волн — шесть разных версий одного события");
+  /* ручка приёмника действительно крутится по кругу */
+  G.opts.wave="gt";
+  const seen=[];
+  for(let i=0;i<6;i++)seen.push(chronWaveNext());
+  eq(seen.length,6,"шесть щелчков");
+  eq(chronWave(),"gt","и ручка вернулась на своё");
+  eq(chronWaveSet("чепуха"),chronWave(),"несуществующая волна не берётся");
+  /* заголовок называет державу и номер сводки */
+  ok(chronWaveHead("km").indexOf(POWERS.km.ru.toUpperCase())>=0,"в заголовке имя волны");
 }));

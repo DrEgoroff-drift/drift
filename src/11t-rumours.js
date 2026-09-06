@@ -109,6 +109,15 @@ function rumoursHere(){
 function rumourEtherLine(r){
   /* слуховая трубка («Сорока»): приёмник ловит слухи почти вчетверо чаще */
   if(!G.sys||r()>((typeof wanderHas==="function"&&wanderHas("trumpet"))?.45:.12))return null;
+  /* ── война приходит в эфир (M371) ──
+     Своего экрана у войны нет: она едет теми же каналами, что и всё остальное.
+     Приёмник — первый из них, и он говорит той волной, на которую настроен;
+     кантина и новости берут строку оттуда же. */
+  if(typeof chronWaveLines==="function"&&r()<.4){
+    const w=(typeof chronWave==="function")?chronWave():"gt";
+    const WL=chronWaveLines(undefined,w,1);
+    if(WL.length)return "…"+WL[0];
+  }
   const L=rumoursHere();
   return L.length?"…говорят, есть "+L[Math.floor(r()*L.length)].short:null;
 }

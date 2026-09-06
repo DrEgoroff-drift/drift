@@ -106,6 +106,21 @@ function mapHoldingsDraw(vis,cell,V,st){
       ctx.strokeStyle="rgba(255,90,70,"+(.7*fade).toFixed(2)+")";ctx.lineWidth=1.4;
       ctx.strokeRect(x0+.7,y0+.7,cell-1.4,cell-1.4);
     }
+    /* ── фронт пунктиром по границе (M371, §7.4) ──
+       Не заливка и не рамка вокруг клетки, а ЛИНИЯ между двумя владениями,
+       которые сейчас воюют: по ней видно, где именно проходит война, а не
+       «в этом районе неспокойно». */
+    if(typeof chronWarBetween==="function"){
+      ctx.save();ctx.setLineDash([3,3]);
+      ctx.strokeStyle="rgba(255,120,90,"+(.85*fade).toFixed(2)+")";ctx.lineWidth=1.6;
+      const nb=[[1,0,x0+cell,y0,x0+cell,y0+cell],[0,1,x0,y0+cell,x0+cell,y0+cell]];
+      for(const q of nb){
+        const o2=chronOwner(v.gx+q[0],v.gy+q[1]);
+        if(o2<0||o2===o||!chronWarBetween(o,o2))continue;
+        ctx.beginPath();ctx.moveTo(q[2],q[3]);ctx.lineTo(q[4],q[5]);ctx.stroke();
+      }
+      ctx.restore();
+    }
   }
   for(const k in P){
     const [gx,gy]=k.split(",").map(Number);
