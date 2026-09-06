@@ -681,6 +681,11 @@ function applySave(s){
         /* договор с управляющим (M405): в записи только НОМЕР — сам он
            выводится броском, как и всё остальное в этой игре */
         mgr:(b.mgr&&typeof b.mgr==="object")?{id:b.mgr.id|0,since:b.mgr.since|0}:null,
+        /* участок в реестре ПАЛАТЫ (M408): режим, сроки и долг. Из записи это
+           не исчезает — в том и вся мысль §30 */
+        pal:(b.pal&&typeof b.pal==="object")?{mode:String(b.pal.mode||"common"),
+          since:b.pal.since|0,paid:b.pal.paid|0,svod:b.pal.svod|0,
+          debt:Math.max(0,b.pal.debt|0),closed:b.pal.closed?1:0,switched:b.pal.switched|0}:null,
         fire:(b.fire&&typeof b.fire==="object")?{c:b.fire.c|0,r:b.fire.r|0,
           k:String(b.fire.k||"fire"),n:b.fire.n|0}:null,
         park:b.park|0,

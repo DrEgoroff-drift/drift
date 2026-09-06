@@ -7,6 +7,34 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.408.0 - M408: ПАЛАТА — the register, the fee, and the notice that arrives anyway
+
+The deadpan law is withdrawn on the author's instruction and the joke is played to the end. What
+replaces it is a craft rule, because loud comedy fails faster than quiet comedy: **the absurdity is
+always bureaucratic logic taken seriously to its conclusion, never a joke from outside the world.**
+The ПАЛАТА is funny because it is *consistent*, and the player laughs at an institution that is
+sincerely doing its best.
+
+Six of §28's eight instruments now exist. **Участковый сбор** is charged per period **per registered
+site** — while the base is parked, while it is buried, while it is a ruin, because it is a fee on
+being in the register and not on producing anything. **Доля с оборота** takes one percent of
+everything above a threshold, so success raises the bill by itself. **Сводка** is due every forty
+shifts and is filed by a радист or a управляющий; nobody files it otherwise and the пеня compounds
+quietly in a place the player is not looking. **Проверка** arrives mid-period; the inspector is
+polite, competent, has a name, is promoted every nine hundred shifts, and finds something. There is
+always something: «Форма 1-ПРИЛ, лист 3 из 2: перечень листов».
+
+**Режим** is the real strategy and a direct lift of choosing your tax regime: **простой** (tiny fee,
+one drill counts, no hired hands, and genuine peace), **патент** (expensive, known in advance, no
+share of turnover — the regime of a solved base), **общий** (small fee plus the share and
+everything else). It can be changed no oftener than every two hundred shifts, and the default is
+общий, because of course it is.
+
+And §30's harshest line, now true: **abandoning a base does not close it.** A ruin stays in the
+register and keeps billing until it is deregistered for 800 credits — or until the debt reaches nine
+thousand and the ПАЛАТА seizes the site, moves in, and encloses an inventory.
+
+---
 ## 0.407.0 - M407: he builds and develops, and that is where the trap is
 
 A hired keeper stops a base idling. The real one **develops** it — every few shifts, out of your

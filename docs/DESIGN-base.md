@@ -1633,7 +1633,15 @@ reversed), боится глубины (the lower row does not exist for him), �
 now exist. **Found here:** `baseLifeNeed` had no `food` field, so every `need.food` comparison was
 against `undefined` and silently false. **Stage D is closed** (M405–M407).
 
-**E · дело и мир** — M408 ПАЛАТА и станция платит, тон на максимум (§28–§32, §40) ·
+**E · дело и мир** — ~~M408 ПАЛАТА, тон на максимум~~ — 0.408.0 (2026-09-07): `21b5-base-palata` —
+six of §28's eight instruments (реестр · участковый сбор charged on the register and not on
+production · доля с оборота above a floor · сводка filed by a радист or a управляющий, пеня when
+nobody does · проверка with a named inspector who is promoted every 900 shifts and always finds
+something · снятие с учёта), §29's three режимы with the 200-shift lock and общий as the default,
+and §30's harshest line made true: a ruin keeps billing until it is deregistered or seized at nine
+thousand of debt. **Deferred:** клеймо and счётчик отгрузки — both live on the path of a *lot*
+rather than the path of a base; and «станция платит» (§32's advance and receivable), which wants the
+holding's ledger. ·
 M409 опорный пункт экспедиции (§44).
 
 §46 and §50 are not passes: they are the register every line of the layer is written in, and a law

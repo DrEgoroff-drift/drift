@@ -120,7 +120,7 @@ TEST_SUITES.push(()=>suite("база M390: журнал пишет о том, ч
   for(const k of kinds){
     baseLog(B,k,7,{who:"Гриша",lost:3,broke:"Склад",what:"Солнечная панель",out:1,
       cr:400,q:5,from:1,to:9,guard:1,shield:0,say:"«Ухожу»",by:"empty",
-      warn:"барограф падает",ru:"ПОЖАР"});
+      warn:"барограф падает",ru:"ПОЖАР",rank:"инспектор",form:"Форма 4-БУР-2"});
     const L=B.log[B.log.length-1];
     ok(L&&L.t&&L.t.length>4,"вид «"+k+"» пишет строку: "+(L&&L.t));
     ok(!seen[L.t],"и она не повторяет чужую: "+k);
@@ -1617,4 +1617,98 @@ TEST_SUITES.push(()=>suite("база M407: он снабжает себя сам
   eq(devSupply(B,n),0,"плохой в этот момент ещё не чешется");
   baseLife(B).food=1;
   ok(devSupply(B,n),"а когда припёрло — заказывает и он");
+}));
+
+/* ── ПАЛАТА (M408) ──
+   §28: каждый инструмент мал, вместе они смертельны. §30: брошенная база —
+   это ДОЛГ, а не только развалина. Проверяется и арифметика, и эта строка. */
+TEST_SUITES.push(()=>suite("база M408: реестр считает всегда",()=>{
+  const B=bLife();
+  G.crew=[];
+  const P=palOf(B);
+  eq(P.mode,"common","по умолчанию режим общий — потому что он общий");
+  eq(P.debt|0,0,"долга поначалу нет");
+  ok(palRegistered(B),"участок в реестре с закладки");
+  /* участковый сбор идёт за период, и он не про работу */
+  const n=baseShift();
+  P.paid=n-PAL_PERIOD;
+  ok(palStep(B,n),"период кончился — начислено");
+  eq(P.debt|0,PAL_MODES.common.fee,"ровно сбор: "+P.debt);
+  ok(B.log.some(x=>x.k==="palfee"),"и это в журнале, словами");
+  /* доля с оборота — только сверх порога */
+  P.debt=0;B._turn=PAL_FLOOR-10;
+  palStep(B,n+1);
+  eq(P.debt|0,0,"ниже порога доли нет");
+  B._turn=PAL_FLOOR+5000;
+  palStep(B,n+2);
+  eq(P.debt|0,Math.round(5000*PAL_SHARE),"а выше — ровно процент: "+P.debt);
+  /* сводка: не подал — пеня, и никто не пришёл сказать */
+  P.debt=0;P.svod=n-PAL_SVOD;
+  palStep(B,n+3);
+  eq(P.debt|0,PAL_PENY,"пеня за несданную сводку");
+  ok(B.log.some(x=>x.k==="palpeny"),"о ней сказано только в журнале");
+  /* проверка приходит и всегда что-нибудь находит */
+  P.debt=0;
+  let m=n+4;while((m%PAL_PERIOD)!==Math.floor(PAL_PERIOD/2))m++;
+  palStep(B,m);
+  ok((P.debt|0)>0,"инспектор нашёл: "+P.debt+" кр");
+  const line=B.log.filter(x=>x.k==="palcheck").pop();
+  ok(line&&line.t.indexOf("вежлив")>0,"и был вежлив: "+(line&&line.t));
+  ok(line.t.indexOf("Форма")>0,"и назвал форму");
+  /* уплата */
+  G.credits=100;
+  eq(palPay(B),0,"без денег не уплатить");
+  G.credits=(P.debt|0)+10;
+  const d=P.debt|0;
+  eq(palPay(B),d,"уплачено");
+  eq(P.debt|0,0,"долга нет");
+  eq(G.credits,10,"и деньги ушли");
+}));
+
+TEST_SUITES.push(()=>suite("база M408: режим — это выбор, а брошенная база — долг",()=>{
+  const B=bLife();
+  const P=palOf(B),n=baseShift();
+  /* три режима, и у каждого своя честная сделка */
+  eq(PAL_MODE_KEYS.length,3,"режима три");
+  for(const k of PAL_MODE_KEYS){
+    const M=PAL_MODES[k];
+    ok(M.ru&&M.note&&M.note.length>20,"у режима «"+M.ru+"» сказано, чем платишь");
+    ok(M.fee>0,"и у каждого свой сбор");
+  }
+  ok(PAL_MODES.patent.fee>PAL_MODES.common.fee,"патент дороже общего в сборе");
+  eq(PAL_MODES.patent.share,0,"зато без доли с оборота — в этом весь смысл");
+  /* «простой» и правда ограничивает */
+  eq(palCapWork(B),1,"на общем потолка нет");
+  P.mode="simple";
+  for(let i=0;i<3;i++)B.cells[i]={k:"drill",hp:1};
+  B.cells[4]={k:"reactor",hp:1};
+  ok(palCapWork(B)<1,"на простом три бура не считаются: ×"+palCapWork(B).toFixed(2));
+  /* режим меняют не чаще раза в двести смен */
+  P.mode="common";P.switched=n;
+  eq(palSetMode(B,"patent"),false,"сразу переключить нельзя");
+  P.switched=n-PAL_SWITCH;
+  ok(palSetMode(B,"patent"),"через двести смен — можно");
+  eq(palOf(B).mode,"patent","режим сменился");
+  /* ── и самая жестокая строка §30 ── */
+  const B2=bLife();
+  const P2=palOf(B2);
+  B2.ruin={n,who:null};
+  for(const c of B2.cells)if(c)c.hp=0;
+  P2.debt=0;P2.paid=n-PAL_PERIOD;
+  palStep(B2,n);
+  ok((P2.debt|0)>0,"развалина продолжает начислять: "+P2.debt+" кр");
+  /* снять с учёта — единственный способ это прекратить */
+  G.credits=PAL_CLOSE+(P2.debt|0)+50;
+  ok(palClose(B2),"сняли с учёта");
+  ok(!palRegistered(B2),"участок больше не в реестре");
+  P2.paid=n-PAL_PERIOD*2;
+  eq(palStep(B2,n+1),0,"и начислять перестало");
+  /* а долг, который никто не платит, кончается изъятием */
+  const B3=bLife();
+  const P3=palOf(B3);
+  P3.debt=PAL_SEIZE;
+  palStep(B3,n);
+  ok(typeof baseIsRuin==="function"&&baseIsRuin(B3),"участок изъят за долг");
+  eq(B3.ruin.who,"pal","и въехала в него сама ПАЛАТА");
+  ok(B3.log.some(x=>x.k==="palseize"),"с описью");
 }));

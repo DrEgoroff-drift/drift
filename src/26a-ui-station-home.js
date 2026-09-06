@@ -223,6 +223,28 @@ function renderBasesTab(st){
         b.onclick=()=>{baseRuinTake(B);renderTab();};
         r.appendChild(b);
       }
+      /* ПАЛАТА (M408, §28): участок, режим и то, что он вам начислил */
+      if(typeof palLine==="function"){
+        r.firstChild.innerHTML+="<s>"+palLine(B)+"</s>";
+        if(palRegistered(B)){
+          if((palOf(B).debt|0)>0){
+            const b=el("button","act gold","УПЛАТИТЬ");
+            b.onclick=()=>{palPay(B);renderTab();};
+            r.appendChild(b);
+          }
+          for(const k of PAL_MODE_KEYS){
+            if(palOf(B).mode===k)continue;
+            const b=el("button","act sm",PAL_MODES[k].ru.toUpperCase());
+            b.title=PAL_MODES[k].note+" · сбор "+PAL_MODES[k].fee+" кр за период";
+            b.onclick=()=>{palSetMode(B,k);renderTab();};
+            r.appendChild(b);
+          }
+          const bc=el("button","act sm","С УЧЁТА");
+          bc.title="снятие с учёта: "+PAL_CLOSE+" кр и погашение долга. Брошенная база с учёта НЕ снимается";
+          bc.onclick=()=>{palClose(B);renderTab();};
+          r.appendChild(bc);
+        }
+      }
       /* управляющий (M405, §34): один на базу, и он не улучшение, а человек */
       if(typeof bmgrLineOf==="function"&&bmgrLineOf(B))
         r.firstChild.innerHTML+="<s><b style='color:#e8c46a'>"+bmgrLineOf(B)+"</b></s>";

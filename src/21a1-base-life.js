@@ -75,6 +75,12 @@ const BLOG={
   devfix:  (B,a)=>a.who+" восстановил "+a.what,
   devbuy:  (B,a)=>a.who+" заказал припас, пока не кончился",
   panic:   (B,a)=>"на царапину извели "+a.q+" ед. со склада",
+  palfee:  (B,a)=>a.ru+" — "+a.q+" кр. Начислено",
+  palshare:(B,a)=>"доля с оборота — "+a.q+" кр. Успехи не остаются незамеченными",
+  palsvod: ()=>"сводка подана. ПАЛАТА подтвердила получение подтверждения",
+  palpeny: (B,a)=>"сводка не подана: пеня "+a.q+" кр. Никто не приходил и не спрашивал",
+  palcheck:(B,a)=>a.rank+" "+a.who+" был вежлив и нашёл: «"+a.form+"». Штраф "+a.q+" кр",
+  palseize:(B,a)=>"участок изъят ПАЛАТОЙ за долг "+a.q+" кр. Опись прилагается",
   warn:    (B,a)=>a.warn,
   law:     (B,a)=>"устав: принят закон «"+a.ru+"». Навсегда",
   thief:   (B,a)=>"со склада пропало "+a.q+" ед. Дверь была открыта",
@@ -135,6 +141,9 @@ function baseShiftRun(B,n){
       logAdd("tech","База «"+B.name+"»: батарея снова под напряжением");}
   }
   said|=baseFixTick(B,BASE_MIN,n)?1:0;
+  /* ПАЛАТА (M408): начисляет всегда — база работает, стоит на консервации или
+     лежит под завалом, ей всё равно. Сбор берётся за реестр */
+  if(typeof palStep==="function")said|=palStep(B,n)?1:0;
   /* жизнеобеспечение (M391) считается ПЕРВЫМ: оно решает, работает ли база в
      эту смену вообще */
   said|=baseLifeStep(B,P,n)?1:0;
@@ -180,6 +189,7 @@ function baseEarn(B,P,min,n){
   earn(cr,"base");
   B.sold=(B.sold|0)+cr;
   B._earned=(B._earned|0)+cr;      /* с этого управляющий возьмёт свою долю */
+  B._turn=(B._turn|0)+cr;          /* а ПАЛАТА — свою долю с оборота (M408) */
   if(B.sold>=400){
     logAdd("money","База «"+B.name+"» сдала излишки энергии · +"+B.sold.toLocaleString("ru")+" кр");
     baseLog(B,"grid",n,{cr:B.sold});
@@ -210,7 +220,10 @@ function baseMine(B,P,min,n){
   /* управляющий (M405): база выдаёт ту долю своего потенциала, какую он умеет
      вытянуть. Плохой хуже, чем никакого, — так и задумано (§48.2) */
   const mgr=(typeof bmgrWorkMul==="function")?bmgrWorkMul(B):1;
-  const want=min*P.drillEff*eff*crewBoost*heat*adj*vein*law*world*folk*mgr*1.1;
+  /* режим участка (M408, §29): «простой» и правда простой — один бур в счёт и
+     наёмные не в помощь. Это не наказание, а честная сделка за тишину */
+  const pal=(typeof palCapWork==="function")?palCapWork(B):1;
+  const want=min*P.drillEff*eff*crewBoost*heat*adj*vein*law*world*folk*mgr*pal*1.1;
   let left=Math.min(want,Math.max(0,cap-held));
   const full=want>0&&left<want*.5;      /* склад забит: добыча стоит, и это строка */
   const r=rng(hashi(B.sx*7919+B.sy,B.idx,hashi(n,0x9111,0x2D)));
@@ -693,10 +706,17 @@ function baseResolve(B,now){
   if(!B)return 0;
   now=now||Date.now();
   /* развалина (M402) не работает: в ней некому и нечем. Часы ей всё равно
-     двигаем — по ним считается, когда в неё въедут */
+     двигаем — по ним считается, когда в неё въедут. И ПАЛАТА (M408) считает
+     тоже: сбор идёт за нахождение В РЕЕСТРЕ, а брошенная база из него не
+     исчезает — это и есть самая жестокая строка §30 */
   if(typeof baseIsRuin==="function"&&baseIsRuin(B)){
     const nn=baseSince(B,now);
-    if(nn>0){B.t0=baseT0(B)+nn;B.tMs=now;if(typeof baseTenant==="function")baseTenant(B,B.t0);}
+    if(nn>0){
+      const t0=baseT0(B);
+      for(let i=1;i<=nn;i++)if(typeof palStep==="function")palStep(B,t0+i);
+      B.t0=t0+nn;B.tMs=now;
+      if(typeof baseTenant==="function")baseTenant(B,B.t0);
+    }
     return 0;
   }
   const n=baseSince(B,now);
