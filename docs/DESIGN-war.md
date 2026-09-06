@@ -1001,7 +1001,16 @@ One system inside ГЛАВТРАССА's centre (r ≈ 6, fixed by seed, never t
   with it. Learned: **run `-Browser` before striking anything that touches `stat()` or a
   screen** — the Node tier missed a TDZ in `stat()` and a suite that left the station
   screen open and silenced the helm's mouse branch in every suite after it.
-- **M364–M366** twenty families, seven a pass; `PART_GEN` 2; factories, series, affixes; именные.
+- ~~**M364** the first seven families~~ — 0.364.0 (2026-09-06): `05b-guns` (`GUN_FAMILY`,
+  `GUN_FACTORY`, series, names), `13a-guns` (bullet, rail with pierce, pellets, beam,
+  homing; heat, burning, overheat silence), the `therm` damage type, `PART_GEN` 2 with a
+  real lock (`genPart` takes the generation, `unpackPart` passes the saved one, twenty
+  seeds pinned in `91zzzw-guns`). Learned: **`PART_GEN` was a promise without a lock** —
+  check that a versioned generator is actually called with its version before trusting it.
+- **M365** игольник, сифон, импульсник, буровой, толкатель, миномёт, помеховая.
+- **M366** гарпун, кассетник, дуговик, плазмомёт, зенитка, таран; the именные; the maker
+  grammar on factories (§19.2); and the M362 debt — the tank and jump range off the
+  reactor, capacity/regen affixes on it (§4), now cheap because `g:2` exists.
 - **M367** missiles ×5; зенитка in the loop.
 - **M368** pirate loadouts by rank (deserter art waits for M369).
 

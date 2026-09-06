@@ -100,7 +100,23 @@ TEST_SUITES.push(() => suite("порченый сейв: числа строка
 
 TEST_SUITES.push(() => suite("порченый сейв: круг сейв→загрузка→сейв со второго раза неподвижен", () => {
   resetWorld(); fuzzRich();
-  const cut=o=>{const c=JSON.parse(JSON.stringify(o));delete c.ts;delete c.log;return c;};
+  /* Часы, которые applySave ПЕРЕСТАВЛЯЕТ намеренно, из сравнения убираем.
+     `tMs`/`paidMs`/`job.t0` — это отсчёт начислений управляющему и наёмнику:
+     если бы он переживал загрузку, игра платила бы за то время, когда её не
+     было открыто. Раньше набор проходил случайно — два снимка обычно
+     укладывались в одну миллисекунду; на загруженной машине они расходились
+     на семь, и набор падал не своей виной (найдено 06.09.2026). */
+  const CLOCKS={ts:1,tMs:1,paidMs:1,t0:1};
+  const strip=x=>{
+    if(Array.isArray(x))return x.map(strip);
+    if(x&&typeof x==="object"){
+      const o={};
+      for(const k in x)if(!CLOCKS[k])o[k]=strip(x[k]);
+      return o;
+    }
+    return x;
+  };
+  const cut=o=>{const c=strip(JSON.parse(JSON.stringify(o)));delete c.log;return c;};
   const a=[];
   for(let i=0;i<4;i++){
     const s=snapshot();

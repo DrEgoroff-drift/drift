@@ -155,6 +155,19 @@ function resetWorld(){
   G.mods={engine:0,tank:0,hold:0,armor:0,drill:0,hyper:0,weapon:0};
   G.modsOwned={engine:0,tank:0,hold:0,armor:0,drill:0,hyper:0,weapon:0};
   G.inv=[];G.fit={};G.loot=[];G.partsBought={};invalidateParts();
+  /* допуск, налёт, группа орудий и жар (M362–M364): новый мир начинает
+     с первого допуска и с нулевого налёта, иначе набор, поднявший себе
+     допуск, оставляет его следующим — а это ровно тот случай, который
+     сеть изоляции и ловит */
+  G.clearance=1;G.flownMs=0;G.gunGroup=0;G.gunPin=false;G.gunCool={};G.aim={};
+  /* шкала энергии — полная, как при начале игры (spawnPirates делает то же):
+     нулевая означала бы, что свежий мир стартует обесточенным, и половина
+     маневровых в наборах про штурвал мерилась бы не тем */
+  /* считаем ёмкость напрямую, а не через stat(): stat() по дороге ЛЕНИВО
+     заводит комплект скафандра и зверинец, и свежий мир переставал быть
+     свежим — сеть изоляции поймала это в ту же минуту */
+  G.energy=energyCap(G.mods.weapon,0);G.shieldHit=0;G.shieldPulse=0;
+  G.heat=0;G.burnT=0;G.stunT=0;G.beams=[];
   G.tech=new Set();G.techLvl={};G.barter=new Set();
   G.found=new Set();G.species=new Set();
   G.ap=null;G.orbit=null;G.watch=null;

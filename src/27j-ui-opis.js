@@ -480,9 +480,12 @@ function opisPartHtml(p){
   /* M363: у ствола есть размер — он решает, в какой подвес часть встанет;
      опечатанное лежит в трюме и пишет, чего ждёт (§11.4) */
   const sz=(p.kind==="gun"&&typeof partSize==="function")?" · "+MOUNT_SIZE_RU[partSize(p)]:"";
+  /* семейство, завод и серия — у стволов второго поколения (M364) */
+  const fam=(p.fam&&GUN_FAMILY[p.fam])?GUN_FAMILY[p.fam].ru.toLowerCase()+" · ":"";
+  const made=p.fam?"<br>"+GUN_FACTORY[p.fact].ru+" · серия "+p.ser:"";
   const seal=(typeof partSealed==="function"&&partSealed(p))?
     "<span class='dn'>опечатано · "+sealedWhy(p)+"</span> · ":"";
-  return "<b>"+p.name+"</b><s>"+K.ru.toLowerCase()+" · "+TIER_RU[p.tier]+sz+
+  return "<b>"+p.name+"</b><s>"+fam+(fam?"":K.ru.toLowerCase()+" · ")+TIER_RU[p.tier]+sz+made+
     " · место "+p.cap+"</s><i>"+seal+p.aff.map(a=>"<span class='"+(a.v>0?"up":"dn")+"'>"+affLabel(a)+"</span>").join(" · ")+"</i>";
 }
 function opisPartCard(p,where){

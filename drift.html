@@ -1756,7 +1756,7 @@ body.table u.addr{color:#7a4a20}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.363.0";
+const VER="0.364.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -4773,7 +4773,10 @@ function stationFleet(sys){
    имя, аффиксы и числа восстанавливаются из seed этой же функцией. Поэтому
    genPart НЕЛЬЗЯ менять задним числом: при правке заводим новую ветку по g,
    иначе у всех игроков втихую поменяются уже собранные части. */
-const PART_GEN=1;
+/* 2 с M364: у стволов появились семейство, завод и серия, а у оружейных
+   аффиксов — новые ключи. Части с `g:1` собираются старой веткой и не
+   меняются ни на волос; замок на это — набор `91zzzw-guns`. */
+const PART_GEN=2;
 /* g — род существительного: прилагательное в имени части согласуется с ним */
 const PART_KINDS={
   gun:   {ru:"Орудие",           col:"#ff9d7a",note:"бортовой огонь",g:"n",sh:"ОРУДИЕ"},
@@ -4813,8 +4816,28 @@ const AFFIX=[
   {k:"mslLockMul",ru:"наведение",       step:.11, kinds:["missile"]}
 ];
 /* штрафы: у сильной части есть цена, иначе выбор очевиден и сборка бессмысленна */
+/* второе поколение (M364): у ствола появились свои ручки — дальность, конус,
+   наводка, расход и жар. В пул ПЕРВОГО поколения они не входят: список
+   аффиксов там заморожен навсегда, иначе у всех игроков молча поменялись бы
+   уже собранные части. */
+const AFFIX2=AFFIX.concat([
+  {k:"rangeMul",ru:"дальность",       step:.09, kinds:["gun"]},
+  {k:"coneMul", ru:"конус",           step:.10, kinds:["gun"]},
+  {k:"leadMul", ru:"скорость наводки",step:.10, kinds:["gun"]},
+  {k:"enMul",   ru:"расход энергии",  step:.09, kinds:["gun"]},
+  {k:"burnMul", ru:"жар",             step:.12, kinds:["gun"]},
+  {k:"knockMul",ru:"отдача по цели",  step:.11, kinds:["gun"]}
+]);
 const AFFIX_BAD=["thrMul","turnMul","cargoMul","hullAdd","fuelAdd","rateMul"];
+/* обратные стороны второго поколения: разброс и расход растут */
+const AFFIX_BAD2=AFFIX_BAD.concat(["spreadMul","enMul"]);
+const AFFIX_SPREAD={k:"spreadMul",ru:"разброс",step:.13,kinds:["gun"]};
 const AFFIX_BY_K={};for(const a of AFFIX)AFFIX_BY_K[a.k]=a;
+/* ключи второго поколения тоже должны находиться по имени: их читают
+   affLabel и карточка. Таблица одна, а ПУЛЫ РОЗЫГРЫША разные — в этом и
+   смысл поколения. */
+for(const a of AFFIX2)if(!AFFIX_BY_K[a.k])AFFIX_BY_K[a.k]=a;
+AFFIX_BY_K.spreadMul=AFFIX_SPREAD;
 const PART_PRE=["Тяжёлый","Форсированный","Кустарный","Трофейный","Опытный","Импульсный",
   "Резонансный","Полевой","Штурмовой","Компактный","Усиленный","Аварийный","Сдвоенный","Литой"];
 const PART_SUF=["М1","М2","К-7","Тип-3","серия B","мод. 9","Р-12","XT","дубль","прототип","ТУ-4","«Клык»"];
@@ -4837,12 +4860,19 @@ function tierFromDanger(d,r){
   const base=1+d*3.2+r()*1.4;
   return clamp(Math.round(base),1,5);
 }
-function genPart(seed,tier,kind){
+/* `gen` — ПОКОЛЕНИЕ генератора, а не украшение: часть из сейва обязана
+   пересобираться тем же генератором, каким была выдана, иначе первая же
+   правка таблиц молча переписывает игрокам их сборки. До M364 unpackPart
+   звал genPart без него — обещание было, замка не было. */
+function genPart(seed,tier,kind,gen){
   const r=rng((seed>>>0)||1);
   tier=clamp(tier|0||1,1,5);
   kind=kind||pick(PART_KEYS,r);
-  const own=AFFIX.filter(a=>a.kinds.indexOf(kind)>=0);
-  const other=AFFIX.filter(a=>a.kinds.indexOf(kind)<0);
+  const g=(gen|0)||PART_GEN;
+  const POOL=g>=2?AFFIX2:AFFIX;
+  const BAD=g>=2?AFFIX_BAD2:AFFIX_BAD;
+  const own=POOL.filter(a=>a.kinds.indexOf(kind)>=0);
+  const other=POOL.filter(a=>a.kinds.indexOf(kind)<0);
   const n=clamp(1+Math.floor(r()*(1+tier*.55)),1,3);
   const aff=[],used={};
   /* первый аффикс всегда профильный — часть должна делать то, что обещает категория */
@@ -4858,7 +4888,7 @@ function genPart(seed,tier,kind){
   }
   /* чем сильнее часть, тем вероятнее у неё обратная сторона */
   if(tier>=3&&r()<.22+tier*.1){
-    const pool=AFFIX_BAD.filter(k=>!used[k]);
+    const pool=BAD.filter(k=>!used[k]);
     if(pool.length){
       const k=pick(pool,r);
       aff.push({k,v:affVal(AFFIX_BY_K[k],tier,r,1)});used[k]=1;
@@ -4868,9 +4898,19 @@ function genPart(seed,tier,kind){
   for(const x of aff)bonus[x.k]=(bonus[x.k]||0)+x.v;
   if(kind==="gun")bonus.gun=1;
   if(kind==="missile")bonus.msl=1;
-  return {seed:seed>>>0,tier,kind,gen:PART_GEN,aff,bonus,
+  const out={seed:seed>>>0,tier,kind,gen:g,aff,bonus,
     name:adjTo(pick(PART_PRE,r),PART_KINDS[kind].g)+" "+PART_KINDS[kind].ru.toLowerCase()+" "+pick(PART_SUF,r),
     cap:Math.ceil(tier/2)};
+  /* у ствола второго поколения есть семейство, завод и серия (05b-guns):
+     имя становится «АП-23 «Оса»», а повадка — тем, что решает 13a-guns */
+  if(g>=2&&kind==="gun"&&typeof gunFamilyKeyOf==="function"){
+    const sd=seed>>>0;
+    out.fam=gunFamilyKeyOf(sd);
+    out.fact=GUN_FACTORY.indexOf(gunFactoryOf(sd));
+    out.ser=gunSeriesOf(sd);
+    out.name=gunNameOf(sd,out.fam);
+  }
+  return out;
 }
 /* ── ёмкость оснастки: модули и части делят один бюджет ──
    Нижняя граница подобрана так, чтобы полностью прокачанные модули (7×4=28)
@@ -5130,7 +5170,7 @@ function scrapPart(id){
 function packPart(p){return {s:p.seed,t:p.tier,k:p.kind,g:p.gen,i:p.id};}
 function unpackPart(o){
   if(!o||!PART_KINDS[o.k])return null;
-  const p=genPart(o.s>>>0,o.t|0,o.k);
+  const p=genPart(o.s>>>0,o.t|0,o.k,o.g|0);
   p.id=typeof o.i==="string"?o.i:("p"+(partSeq++));
   return p;
 }
@@ -5550,6 +5590,84 @@ function drawCrowns(h,id){
   ctx.beginPath();ctx.arc(x0,0,7+list.length*2.2,0,TAU);ctx.fill();
 }
 
+/* ══════════════ семейства орудий (M364, §2.1–§2.2) ══════════════
+   До сих пор все стволы были одним стволом с разными числами: семь чисел из
+   seed'а — и всё. Семейство меняет не числа, а ТО, КАК ты летишь. Автопушка
+   прощает разворот и не прощает дистанции; рельса бьёт мгновенно и на всю
+   систему, но за выстрел отдаёт полреактора и не поспевает за манёвром;
+   дробовик существует ради двухсот единиц и бесполезен на пятистах.
+
+   Как это устроено. Семейство — это МНОЖИТЕЛИ поверх тех же семи чисел
+   (05c-arms) плюс ключ повадки `fx`, по которому 13a-guns решает, чем именно
+   стрелять: снарядом, лучом, дробью, наводящейся пулей. Числа не переписаны
+   заново, потому что кривая попаданий M362 замерена и её незачем терять.
+
+   `speed:0` значит «мгновенно»: рельса и лазер попадают в тот же кадр, и
+   упреждение им не нужно.
+
+   Семейства приходят по семь за проход (M364–M366) — и ровно те, у которых
+   УЖЕ есть код повадки. Таблица без кода — это ровно то, что запрещено
+   правилом «перк без кода — ложь»: `91zzzzy-names` читает исходник и проверит.
+
+   Второе поколение генератора. Семейство, завод и серия появляются только у
+   частей `g:2`; выданные раньше стволы читаются старой веткой genPart и не
+   меняются ни на волос (замок — `91zzzw-guns`). */
+
+const GUN_FAMILY={
+  /* ── ломать корпус ── */
+  auto:{ru:"Автопушка",ab:"АП",size:"L",mount:"turret",type:"kin",fx:"bullet",
+    dmg:.62,cool:.5,range:.82,speed:1.15,cone:1.5,lead:1.5,spread:1.9,en:.55,
+    line:"пум-пум-пум: дёшево, широкий конус, быстрая наводка, заметный разброс"},
+  heavy:{ru:"Тяжёлое орудийное",ab:"ТО",size:"M",mount:"fix",type:"kin",fx:"bullet",
+    dmg:2.4,cool:2.4,range:1.15,speed:.85,cone:.55,lead:.5,spread:.75,en:1.6,
+    line:"редкое, тяжёлое, узкий конус, медленная наводка"},
+  rail:{ru:"Рельсотрон",ab:"РС",size:"H",mount:"fix",type:"kin",fx:"rail",
+    dmg:3.4,cool:3.6,range:2,speed:0,cone:.45,lead:.32,spread:.3,en:6,
+    line:"мгновенно и дальше всех; полреактора за выстрел; пробивает насквозь"},
+  shot:{ru:"Дробовик",ab:"ДР",size:"M",mount:"turret",type:"kin",fx:"pellets",pellets:7,
+    dmg:.34,cool:1.6,range:.3,speed:1,cone:1.4,lead:1.2,spread:5.5,en:1.1,
+    line:"семь дробин, короткая рука, в упор — гибельно"},
+  /* ── добивать ── */
+  laser:{ru:"Лазер",ab:"ЛЗ",size:"M",mount:"turret",type:"therm",fx:"beam",burn:1,
+    dmg:.16,cool:.12,range:.72,speed:0,cone:1,lead:1.1,spread:0,en:.28,
+    line:"луч, удерживаемый на метке; греет корпус, и за порогом цель горит сама"},
+  heat:{ru:"Тепловик",ab:"ТП",size:"M",mount:"turret",type:"kin",fx:"bullet",heat:1,
+    dmg:.8,cool:1,range:.88,speed:1,cone:.9,lead:.9,spread:1,en:.9,
+    line:"кинетика, которая греет: перегретый перестаёт стрелять"},
+  aimed:{ru:"Наводящиеся пули",ab:"НП",size:"L",mount:"turret",type:"kin",fx:"homing",
+    dmg:.42,cool:.58,range:.76,speed:.95,cone:1.2,lead:1.3,spread:1.2,en:.7,
+    line:"пуля доворачивает к метке: вдвое меньше промахов, на треть меньше урона"}
+};
+const GUN_FAM_KEYS=Object.keys(GUN_FAMILY);
+/* ── завод и серия (§2.2) ──
+   Завод — это небольшой сдвиг чисел и имя на карточке; серия — год. Оба берутся
+   из seed, оба ничего не стоят в сохранении и оба существуют затем, чтобы два
+   ствола одного семейства не были одинаковыми. Полная грамматика заводов —
+   в M369 (§19.2), здесь ровно то, что видно на стволе. */
+const GUN_FACTORY=[
+  {ru:"«Красный Путиловец»",dmg:1.08,cool:1.06,spread:1},
+  {ru:"«Уралмаш»",          dmg:1.14,cool:1.14,spread:.95},
+  {ru:"«Арсенал»",          dmg:1,   cool:.92, spread:1.1},
+  {ru:"«Двигатель»",        dmg:.96, cool:.9,  spread:.9},
+  {ru:"артель «Заря»",      dmg:.9,  cool:.86, spread:1.25},
+  {ru:"ГЛАВТРАССА",         dmg:1.05,cool:.95, spread:.85}
+];
+const GUN_NICK=["«Оса»","«Клык»","«Шмель»","«Стриж»","«Гвоздь»","«Веретено»","«Зубр»",
+  "«Игла»","«Кремень»","«Сойка»","«Молот»","«Пила»","«Синица»","«Топь»","«Ворон»","«Уголёк»"];
+function gunSeriesOf(seed){return 1954+((seed>>>7)%38);}
+function gunFamilyKeyOf(seed){return GUN_FAM_KEYS[(seed>>>13)%GUN_FAM_KEYS.length];}
+function gunFactoryOf(seed){return GUN_FACTORY[(seed>>>19)%GUN_FACTORY.length];}
+/* имя вида «АП-23 «Оса»» — индекс от seed, чтобы номер не совпадал с серией */
+function gunNameOf(seed,fam){
+  const F=GUN_FAMILY[fam];
+  return F.ab+"-"+(11+((seed>>>3)%89))+" "+GUN_NICK[(seed>>>23)%GUN_NICK.length];
+}
+/* полная строка для карточки: имя, завод, серия */
+function gunTitleOf(p){
+  if(!p||!p.fam)return p?p.name:"";
+  return p.name+" · завод "+GUN_FACTORY[p.fact].ru+" · серия "+p.ser;
+}
+
 /* ══════════════ приборы — это товар ══════════════
    M127. До сих пор пять приборов области были свойством корабля: они просто
    есть, одинаковые у всех, и отличаются только профессией корпуса (03f). Здесь
@@ -5759,7 +5877,13 @@ function instrFromShelf(k){
 const DMG_TYPES={
   kin:  {ru:"кинетический", hull:1,  shield:.5},
   en:   {ru:"энергетический",hull:.5, shield:1},
-  blast:{ru:"фугасный",     hull:.8, shield:.8}
+  blast:{ru:"фугасный",     hull:.8, shield:.8},
+  /* термический (M364): §2 знает три типа, а §2.1 говорит про лазер «слаб по
+     щиту» — энергетический по матрице как раз СИЛЁН по щиту. Лазер не режет
+     поле, он добивает корпус, и ему нужен свой тип. В DMG_KEYS его нет
+     намеренно: типы стволов первого поколения выбираются по `%3`, и четвёртый
+     ключ в списке переписал бы их всем. */
+  therm:{ru:"термический",  hull:1.15,shield:.35}
 };
 const DMG_KEYS=["kin","en","blast"];
 function dmgMul(type,onShield){
@@ -5799,7 +5923,7 @@ const GUN_RANGE0=760, GUN_SPEED0=9, GUN_CONE0=.35, GUN_LEAD0=.2;
    toFixed — считаем один раз на сборку. */
 let GUN_CACHE=null,GUN_KEY="";
 function gunSpec(dmg,cool,gunPart,lvl){
-  const key=dmg+"|"+cool+"|"+(gunPart?gunPart.seed+":"+gunPart.tier:"-")+"|"+lvl;
+  const key=dmg+"|"+cool+"|"+(gunPart?gunPart.seed+":"+gunPart.tier+":"+(gunPart.fam||"-"):"-")+"|"+lvl;
   if(GUN_KEY===key&&GUN_CACHE)return GUN_CACHE;
   GUN_KEY=key;return GUN_CACHE=gunSpecMake(dmg,cool,gunPart,lvl);
 }
@@ -5814,7 +5938,7 @@ function gunSpecMake(dmg,cool,gunPart,lvl){
   const type=gunPart?DMG_KEYS[(s>>>3)%3]:"kin";
   /* тир двигает числа в разные стороны: тяжёлый ствол бьёт дальше и точнее,
      но ведёт цель медленнее и смотрит уже */
-  return {
+  const base={
     dmg,type,cool,
     range:Math.round(GUN_RANGE0*(.85+r(0)*.35)+t*40),
     speed:+(GUN_SPEED0*(.8+r(8)*.5)+t*.35).toFixed(2),
@@ -5825,8 +5949,38 @@ function gunSpecMake(dmg,cool,gunPart,lvl){
        86 % на четырёхстах, 43 % на шестистах, 34 % на пределе. Точка,
        где стоит подойти ближе, — примерно пятьсот. */
     spread:+(.05*(.6+r(2)*1.2)/(1+t*.35)).toFixed(4),
-    lvl:lvl|0
+    fx:"bullet",en:1,lvl:lvl|0
   };
+  return gunPart&&gunPart.fam?gunFamilyApply(base,gunPart):base;
+}
+/* ── семейство поверх семи чисел (M364, §2.1) ──
+   Семейство и завод двигают ТЕ ЖЕ числа, а не заводят вторых: кривая
+   попаданий M362 замерена, терять её незачем. Свои аффиксы ствола
+   (дальность, конус, наводка, расход, жар, разброс) читаются из бонусов
+   САМОЙ части — они про этот ствол, а не про всю сборку. */
+function gunFamilyApply(g,p){
+  const F=GUN_FAMILY[p.fam];
+  if(!F)return g;
+  const W=GUN_FACTORY[p.fact]||GUN_FACTORY[0];
+  const b=p.bonus||{};
+  const mul=(k,d)=>Math.max(.15,1+(b[k]||0))*(d===undefined?1:d);
+  const out={
+    dmg:g.dmg*F.dmg*W.dmg,
+    type:F.type,
+    cool:Math.max(3,Math.round(g.cool*F.cool*W.cool)),
+    range:Math.round(g.range*F.range*mul("rangeMul")),
+    speed:F.speed?+(g.speed*F.speed).toFixed(2):0,
+    cone:+(g.cone*F.cone*mul("coneMul")).toFixed(3),
+    lead:+(g.lead*F.lead*mul("leadMul")).toFixed(3),
+    spread:+(g.spread*F.spread*W.spread*mul("spreadMul")).toFixed(4),
+    en:+(F.en*mul("enMul")).toFixed(3),
+    fx:F.fx,fam:p.fam,lvl:g.lvl
+  };
+  if(F.pellets)out.pellets=F.pellets;
+  if(F.burn)out.burn=+(F.burn*mul("burnMul")).toFixed(3);
+  if(F.heat)out.heat=+(F.heat*mul("burnMul")).toFixed(3);
+  if(b.knockMul)out.knock=+b.knockMul.toFixed(3);
+  return out;
 }
 /* промах — это угол, а не скрытый бросок (§2): снаряд виден, и видно, что он
    ушёл мимо. Ошибка растёт с дальностью и с угловой скоростью цели. */
@@ -31940,11 +32094,46 @@ function pirateFellTo(p,owner){
   const who=owner==="fleet"?"огнём ГЛАВТРАССЫ":"чужим огнём";
   logAdd("kill","«"+p.name+"» разбит "+who+" · награды нет");
 }
+/* ── одно попадание по чужому кораблю (M364) ──
+   Раньше этот расчёт жил внутри петли выстрелов; лучевым стволам он нужен без
+   всякого полёта, поэтому вынесен отдельно. Возвращает true, если корпус
+   развалился — рельсе это нужно, чтобы решить, пробивать ли дальше. */
+function hitShip(p,s,rawDmg){
+  let d=(rawDmg!==undefined?rawDmg:s.dmg)*hitLocMul(s,p);
+  /* у пирата от ранга бывает своё поле, и его повадка та же (M362):
+     лобового бьют в корму, импульсного — быстрее, чем он собирается */
+  p.shieldHit=SHIELD_DELAY;
+  if(p.shield>0){
+    const face=shieldFace(p.shieldType,angDiff(Math.atan2(s.vy,s.vx),p.a));
+    if(face>0){
+      const want=d*dmgMul(s.type,true)/face;
+      const a=Math.min(p.shield,want);
+      p.shield-=a;
+      d=Math.max(0,d-a*face/Math.max(1e-6,dmgMul(s.type,true)));
+    }
+  }
+  const done=d*dmgMul(s.type,false);
+  p.hull-=done;
+  /* жар и толчок — то, что остаётся на цели после выстрела (13a-guns) */
+  if(s.heat&&typeof heatAdd==="function")heatAdd(p,s.heat*done*.5);
+  if(s.knock){
+    const sp=Math.hypot(s.vx,s.vy)||1;
+    p.vx+=s.vx/sp*s.knock*.5;p.vy+=s.vy/sp*s.knock*.5;
+  }
+  if(p.dummy&&s.owner==="player"&&typeof rangeHit==="function")rangeHit(done);
+  sfx("hit",{v:.3});
+  if(p.hull<=0){
+    if(s.owner==="player")killPirate(p);else pirateFellTo(p,s.owner);
+    return true;
+  }
+  return false;
+}
 /* одна петля на все выстрелы; возвращает true, если игрок погиб */
 function combatShots(dt){
   const sh=G.ship;
   for(let i=G.shots.length-1;i>=0;i--){
     const s=G.shots[i];
+    if(s.hom&&typeof homingStep==="function")homingStep(s,dt);   /* наводящаяся пуля (M364) */
     s.x+=s.vx*dt;s.y+=s.vy*dt;s.life-=dt;
     let gone=s.life<=0;
     if(!gone&&s.owner!=="player"&&s.owner!=="fleet"&&Math.hypot(s.x-sh.x,s.y-sh.y)<18){
@@ -31956,23 +32145,7 @@ function combatShots(dt){
         if((p.owner||"pirate")===s.owner||p.hull<=0)continue;
         if(Math.hypot(s.x-p.x,s.y-p.y)<20){
           gone=true;
-          let d=s.dmg*hitLocMul(s,p);
-          /* у пирата от ранга бывает своё поле, и его повадка та же (M362):
-             лобового бьют в корму, импульсного — быстрее, чем он собирается */
-          p.shieldHit=SHIELD_DELAY;
-          if(p.shield>0){
-            const face=shieldFace(p.shieldType,angDiff(Math.atan2(s.vy,s.vx),p.a));
-            if(face>0){
-              const want=d*dmgMul(s.type,true)/face;
-              const a=Math.min(p.shield,want);
-              p.shield-=a;
-              d=Math.max(0,d-a*face/Math.max(1e-6,dmgMul(s.type,true)));
-            }
-          }
-          p.hull-=d*dmgMul(s.type,false);
-          if(p.dummy&&s.owner==="player"&&typeof rangeHit==="function")rangeHit(d*dmgMul(s.type,false));
-          sfx("hit",{v:.3});
-          if(p.hull<=0){if(s.owner==="player")killPirate(p);else pirateFellTo(p,s.owner);}
+          hitShip(p,s);
           break;
         }
       }
@@ -32091,6 +32264,9 @@ function updateCombat(dt){
      ПОПАДАНИЯ: прежнее правило means один заметивший вас шакал на другом
      конце системы держал поле выключенным весь бой. */
   if(G.energy===undefined)G.energy=st.energyMax;
+  /* жар и на вашем корпусе тоже: матрица одна на всех (M364) */
+  if(typeof heatTick==="function")heatTick(G,dt,d0=>{G.hull=Math.max(0,G.hull-d0);});
+  if(typeof beamsTick==="function")beamsTick(dt);
   G.energy=Math.min(st.energyMax,G.energy+st.energyRegen*dt);
   const lowE=G.energy<EN_SHOT;
   G.shieldHit=Math.max(0,(G.shieldHit||0)-dt);
@@ -32145,13 +32321,13 @@ function updateCombat(dt){
        добавленный к выстрелу, а не скрытый бросок. */
     const ang=gunAimTick(g,sh,live,dt,A.slot);
     if((auto||ctl.fire)&&st.armed&&cd<=0){
-      const tgtD=live?Math.hypot(live.x-sh.x,live.y-sh.y):0;
-      const err=gunMiss(g,tgtD,live?(live.av||0):0,Math.random());
-      fireShot(sh.x,sh.y,ang+err,g.speed,g.dmg,true,g.type,g.range);
+      /* чем именно стреляет этот ствол, решает его семейство (13a-guns):
+         снаряд, дробь, мгновенный луч или доворачивающая пуля */
+      gunFireOnce(g,sh,live,ang);
       if(!G.engaged&&typeof placeNote==="function")placeNote("hurt",1);   // место помнит выстрел (11d)
       G.engaged=true;
       /* пустая шкала — не «нельзя стрелять», а вдвое реже (§4) */
-      G.energy=Math.max(0,G.energy-EN_SHOT);
+      G.energy=Math.max(0,G.energy-EN_SHOT*(g.en||1));
       cd=g.cool*(lowE?2:1);
     }
     if(first)fireCool=Math.max(0,cd);else G.gunCool[A.slot]=Math.max(0,cd);
@@ -32166,6 +32342,9 @@ function updateCombat(dt){
     else if(d>seeRange*2.4)p.aware=false;
     if(typeof fleetEscortActive==="function"&&fleetEscortActive())p.aware=false;   /* конвой ГЛАВТРАССЫ (M311) */
     p.thrust=false;
+    /* жар, горение и молчание перегретого (M364, 13a-guns) */
+    if(typeof heatTick==="function")heatTick(p,dt,d0=>{p.hull-=d0;});
+    if(p.hull<=0&&!p.dummy){killPirate(p);continue;}
     /* поле пирата живёт по тем же трём повадкам, что и ваше (M362) */
     if(p.shieldMax>0){
       p.shieldHit=Math.max(0,(p.shieldHit||0)-dt);
@@ -32243,6 +32422,9 @@ function killPirate(p){
     (dropped?" · контейнер с частью":""));
 }
 function drawCombat(zx,zy,Z){
+  /* лучи (M364): у них нет полёта, поэтому и в петле выстрелов их нет —
+     свой короткий след, гаснущий за четыре кадра */
+  if(typeof beamsDraw==="function")beamsDraw(zx,zy,Z);
   /* линия батареи с грунта (21d) — рисуется до всего остального, чтобы луч
      уходил под корабли, а не поверх них */
   if(typeof battDraw==="function")battDraw(zx,zy,Z);
@@ -32302,9 +32484,17 @@ function drawCombat(zx,zy,Z){
         ctx.fillStyle="rgba(159,216,255,.85)";
         ctx.fillRect(x-w/2,by-3,w*clamp(p.shield/p.shieldMax,0,1),2);
       }
-      ctx.fillStyle=p.rogue?"rgba(197,138,224,.95)":"rgba(255,107,87,.75)";
+      /* горит и молчит — это надо ВИДЕТЬ, иначе добивающая роль работает
+         втёмную (M364): горящий корпус подписан огнём поверх полосы,
+         перегретый вместо имени носит «ПЕРЕГРЕВ» на те секунды, пока молчит */
+      if(p.burnT>0){
+        ctx.fillStyle="rgba(255,150,70,"+(.5+.35*Math.abs(Math.sin(G.t*.35+p.seed))).toFixed(2)+")";
+        ctx.fillRect(x-w/2,by+(p.rogue?4:3),w*clamp(p.burnT/BURN_TIME,0,1),1.6);
+      }
+      const hot=p.stunT>0;
+      ctx.fillStyle=hot?"rgba(255,178,92,.95)":(p.rogue?"rgba(197,138,224,.95)":"rgba(255,107,87,.75)");
       ctx.font=(p.rogue?"9px":"8px")+" ui-monospace,monospace";ctx.textAlign="center";
-      ctx.fillText(p.name.toUpperCase(),x,y+26);
+      ctx.fillText(hot?"ПЕРЕГРЕВ":p.name.toUpperCase(),x,y+26);
       if(p.rogue){
         ctx.fillStyle="rgba(197,138,224,.6)";ctx.font="8px ui-monospace,monospace";
         ctx.fillText("БЫВШИЙ УПРАВЛЯЮЩИЙ",x,y+37);
@@ -32321,6 +32511,160 @@ function drawCombat(zx,zy,Z){
     ctx.strokeStyle=s.mine?"rgba(127,230,216,.95)":"rgba(255,107,87,.95)";ctx.lineWidth=2;
     ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x-s.vx*1.6*Z,y-s.vy*1.6*Z);ctx.stroke();
   }
+}
+
+/* ══════════════ повадки семейств (M364, §2.1) ══════════════
+   Числа делают ствол сильнее или слабее; повадка делает его ДРУГИМ. Здесь
+   живёт то, чем именно стреляет каждое семейство, и то, что после выстрела
+   остаётся на цели: жар, горение, толчок.
+
+   Пять повадок этого прохода:
+     bullet — снаряд, как было всегда (автопушка, тяжёлое, тепловик);
+     rail   — мгновенный луч на всю дальность, пробивает насквозь, если первый
+              корпус развалился от этого же выстрела;
+     pellets— семь снарядов одним нажатием, разброс семейства;
+     beam   — мгновенный луч по ПЕРВОМУ на пути, урон каждый выстрел, греет;
+     homing — снаряд, который доворачивает к метке в полёте.
+
+   Жар и горение — одна шкала на цель. Кинетика тепловика греет прямо; лазер
+   греет лучом. За порогом цель загорается и горит сама, а перегретый пират
+   перестаёт стрелять: это те самые «секунды без вас», ради которых §2.1 и
+   заводит добивающую роль.
+
+   Луч рисуется отдельным коротким следом (`G.beams`), а не выстрелом: у него
+   нет полёта, и в общую петлю попаданий ему не надо. */
+const HEAT_MAX=140;        /* выше не растёт */
+const HEAT_STUN=95;        /* перегрев: цель перестаёт стрелять */
+const HEAT_BURN=70;        /* порог, за которым цель загорается */
+const HEAT_COOL=.16;       /* остывание за кадр */
+const BURN_TIME=150;       /* сколько горит */
+const BURN_DPS=.42;        /* урон горения за кадр */
+const STUN_TIME=170;       /* сколько молчит перегретый */
+const BEAM_LIFE=4;         /* кадров живёт след луча */
+const RAY_R=19;            /* насколько близко к лучу надо быть, чтобы получить */
+
+/* ── жар и то, что из него следует ── */
+function heatAdd(o,n){
+  if(!o||!n)return;
+  o.heat=Math.min(HEAT_MAX,(o.heat||0)+n);
+  if(o.heat>=HEAT_BURN&&!(o.burnT>0))o.burnT=BURN_TIME;
+  if(o.heat>=HEAT_STUN){o.stunT=STUN_TIME;o.heat=HEAT_BURN;}
+}
+/* один такт жара для любого корабля: остывание, горение, молчание */
+function heatTick(o,dt,dmgTo){
+  if(!o)return;
+  if(o.heat)o.heat=Math.max(0,o.heat-HEAT_COOL*dt);
+  if(o.stunT>0)o.stunT=Math.max(0,o.stunT-dt);
+  if(o.burnT>0){
+    o.burnT=Math.max(0,o.burnT-dt);
+    if(dmgTo)dmgTo(BURN_DPS*dt);
+  }
+}
+/* ── кто на луче ──
+   Возвращает цели в порядке удаления вдоль луча. Игрок сюда не попадает:
+   лучевые стволы этого прохода есть только у него (пиратские сборки — M368). */
+function rayHits(x,y,ang,range,skipIff){
+  const cx=Math.cos(ang),cy=Math.sin(ang),out=[];
+  for(const p of (G.pirates||[])){
+    if(p.hull<=0||(skipIff&&p.iff))continue;
+    const dx=p.x-x,dy=p.y-y;
+    const t=dx*cx+dy*cy;
+    if(t<0||t>range)continue;
+    if(Math.abs(dx*cy-dy*cx)>RAY_R)continue;
+    out.push({p,t});
+  }
+  out.sort((a,b)=>a.t-b.t);
+  return out;
+}
+function beamAdd(x1,y1,x2,y2,col,w){
+  if(!G.beams)G.beams=[];
+  if(G.beams.length>24)G.beams.shift();
+  G.beams.push({x1,y1,x2,y2,col,w:w||1.6,life:BEAM_LIFE});
+}
+function beamsTick(dt){
+  if(!G.beams||!G.beams.length)return;
+  for(let i=G.beams.length-1;i>=0;i--){
+    G.beams[i].life-=dt;
+    if(G.beams[i].life<=0)G.beams.splice(i,1);
+  }
+}
+function beamsDraw(zx,zy,Z){
+  if(!G.beams||!G.beams.length)return;
+  ctx.save();ctx.lineCap="round";
+  for(const b of G.beams){
+    const a=clamp(b.life/BEAM_LIFE,0,1);
+    ctx.globalAlpha=.85*a;ctx.strokeStyle=b.col;ctx.lineWidth=b.w*clamp(Z,.5,2);
+    ctx.beginPath();ctx.moveTo(zx(b.x1),zy(b.y1));ctx.lineTo(zx(b.x2),zy(b.y2));ctx.stroke();
+    ctx.globalAlpha=.26*a;ctx.lineWidth=b.w*2.6*clamp(Z,.5,2);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+/* урон по цели от луча: тот же расчёт, что у попадания снаряда (13-combat),
+   но без полёта — поэтому «выстрел» собирается на месте и сразу применяется */
+function rayDamage(p,ang,g,dmg){
+  const s={vx:Math.cos(ang),vy:Math.sin(ang),dmg,type:g.type,owner:"player",mine:true};
+  return hitShip(p,s,dmg);
+}
+/* ── выстрел по повадке ──
+   Возвращает true, если ствол действительно выстрелил (значит, пора считать
+   откат и списывать энергию). `rnd` — источник случайности, чтобы набор мог
+   подставить свой и получить повторимый прогон. */
+function gunFireOnce(g,sh,tgt,ang,rnd){
+  const R=rnd||Math.random;
+  const fx=g.fx||"bullet";
+  if(fx==="rail"){
+    const hits=rayHits(sh.x,sh.y,ang,g.range,true);
+    let left=1;                       /* один пробой: следующий корпус только если первый развалился */
+    let far=g.range;
+    for(const h of hits){
+      const dead=rayDamage(h.p,ang,g,g.dmg);
+      far=h.t;
+      if(!dead||left--<=0)break;
+    }
+    beamAdd(sh.x,sh.y,sh.x+Math.cos(ang)*far,sh.y+Math.sin(ang)*far,"rgba(180,220,255,.95)",2);
+    sfx("shot",{f:150,to:900,d:.22,v:.55});
+    return true;
+  }
+  if(fx==="beam"){
+    const hits=rayHits(sh.x,sh.y,ang,g.range,true);
+    const h=hits[0];
+    const far=h?h.t:g.range;
+    if(h){
+      rayDamage(h.p,ang,g,g.dmg);
+      if(g.burn)heatAdd(h.p,g.burn*2.2);
+    }
+    beamAdd(sh.x,sh.y,sh.x+Math.cos(ang)*far,sh.y+Math.sin(ang)*far,"rgba(255,150,110,.9)",1.2);
+    sfx("shot",{f:1300,to:1150,d:.06,v:.14});
+    return true;
+  }
+  if(fx==="pellets"){
+    const n=g.pellets||7;
+    for(let i=0;i<n;i++){
+      const err=gunMiss(g,tgt?Math.hypot(tgt.x-sh.x,tgt.y-sh.y):0,tgt?(tgt.av||0):0,R());
+      fireShot(sh.x,sh.y,ang+err,g.speed,g.dmg,true,g.type,g.range);
+    }
+    sfx("shot",{f:230,to:120,d:.14,v:.5});
+    return true;
+  }
+  const err=gunMiss(g,tgt?Math.hypot(tgt.x-sh.x,tgt.y-sh.y):0,tgt?(tgt.av||0):0,R());
+  fireShot(sh.x,sh.y,ang+err,g.speed,g.dmg,true,g.type,g.range);
+  const s=G.shots[G.shots.length-1];
+  if(s){
+    if(g.heat)s.heat=g.heat;
+    if(g.knock)s.knock=g.knock;
+    if(fx==="homing"&&tgt){s.hom=.17;s.tgt=tgt;}
+  }
+  return true;
+}
+/* доворот наводящейся пули: зовётся из петли выстрелов каждый кадр */
+function homingStep(s,dt){
+  if(!s.hom||!s.tgt||s.tgt.hull<=0)return;
+  const sp=Math.hypot(s.vx,s.vy)||1;
+  const want=Math.atan2(s.tgt.y-s.y,s.tgt.x-s.x);
+  const cur=Math.atan2(s.vy,s.vx);
+  const a=angWrap(cur+clamp(angDiff(want,cur),-s.hom*dt,s.hom*dt));
+  s.vx=Math.cos(a)*sp;s.vy=Math.sin(a)*sp;
 }
 
 /* ══════════════ пираты берут системы ══════════════ */
@@ -32638,6 +32982,9 @@ function roleSteer(p,ang,dt,rate){p.a+=clamp(angDiff(ang,p.a),-(rate||.035),rate
 function roleThrust(p,dt,k){p.vx+=Math.cos(p.a)*(k||.055)*dt;p.vy+=Math.sin(p.a)*(k||.055)*dt;p.thrust=true;}
 function roleDamp(p,dt,k){const q=Math.pow(k||.97,dt);p.vx*=q;p.vy*=q;}
 function roleFire(p,d,want,range,cool){
+  /* перегретый молчит: это те самые секунды без вас, ради которых
+     заведена добивающая роль (M364, §2.1) */
+  if(p.stunT>0)return false;
   if(d<range&&p.cool<=0&&Math.abs(angDiff(want,p.a))<.35){
     /* у ренегата свой урон: он бьёт вашими же перками */
     fireShot(p.x,p.y,p.a,7,p.dmg||3.5+sysDanger(G.sx,G.sy)*5,p.owner||"pirate");
@@ -32710,7 +33057,7 @@ function pirateRoleTick(p,dt,d,want){
     if(d<700){roleSteer(p,want,dt,.05);const k=.06*dt;p.vx-=Math.cos(want)*k;p.vy-=Math.sin(want)*k;p.thrust=true;}
     else if(d>950){roleSteer(p,want,dt);roleThrust(p,dt,.045);}
     else{roleSteer(p,want,dt,.05);roleDamp(p,dt,.96);}
-    if(d<1100&&p.cool<=0&&Math.abs(angDiff(want,p.a))<.3){
+    if(d<1100&&p.cool<=0&&!(p.stunT>0)&&Math.abs(angDiff(want,p.a))<.3){
       fireShot(p.x,p.y,p.a,9,(p.dmg||3.5+sysDanger(G.sx,G.sy)*5)*1.6,p.owner||"pirate");
       p.cool=95;helmShotAt(p);
     }
@@ -64519,7 +64866,16 @@ function stTabMods(){
        места для одного и того же числа расходятся при первой же правке. */
     if(s2.armed){
       const g=s2.gun;
+      /* семейство пишется раньше чисел: оно и есть ответ на «как я летаю» */
+      const fp=(s2.guns&&s2.guns[0])?s2.guns[0].part:null;
+      const F=(fp&&fp.fam)?GUN_FAMILY[fp.fam]:null;
       $body.appendChild(el("div","sec","ОРУДИЕ · СЕМЬ ЧИСЕЛ"));
+      if(F){
+        const rf=el("div","row");
+        rf.appendChild(el("div","nm","<b>"+fp.name+"</b><s>"+F.ru.toLowerCase()+
+          " · "+GUN_FACTORY[fp.fact].ru+" · серия "+fp.ser+"</s><i>"+F.line+"</i>"));
+        $body.appendChild(rf);
+      }
       const rg=el("div","row");
       rg.appendChild(el("div","nm","<s>урон "+g.dmg.toFixed(1)+" · "+DMG_TYPES[g.type].ru+
         "<br>откат "+g.cool+" кадров · дальность "+g.range+
@@ -70714,9 +71070,12 @@ function opisPartHtml(p){
   /* M363: у ствола есть размер — он решает, в какой подвес часть встанет;
      опечатанное лежит в трюме и пишет, чего ждёт (§11.4) */
   const sz=(p.kind==="gun"&&typeof partSize==="function")?" · "+MOUNT_SIZE_RU[partSize(p)]:"";
+  /* семейство, завод и серия — у стволов второго поколения (M364) */
+  const fam=(p.fam&&GUN_FAMILY[p.fam])?GUN_FAMILY[p.fam].ru.toLowerCase()+" · ":"";
+  const made=p.fam?"<br>"+GUN_FACTORY[p.fact].ru+" · серия "+p.ser:"";
   const seal=(typeof partSealed==="function"&&partSealed(p))?
     "<span class='dn'>опечатано · "+sealedWhy(p)+"</span> · ":"";
-  return "<b>"+p.name+"</b><s>"+K.ru.toLowerCase()+" · "+TIER_RU[p.tier]+sz+
+  return "<b>"+p.name+"</b><s>"+fam+(fam?"":K.ru.toLowerCase()+" · ")+TIER_RU[p.tier]+sz+made+
     " · место "+p.cap+"</s><i>"+seal+p.aff.map(a=>"<span class='"+(a.v>0?"up":"dn")+"'>"+affLabel(a)+"</span>").join(" · ")+"</i>";
 }
 function opisPartCard(p,where){

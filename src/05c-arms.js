@@ -24,7 +24,13 @@
 const DMG_TYPES={
   kin:  {ru:"кинетический", hull:1,  shield:.5},
   en:   {ru:"энергетический",hull:.5, shield:1},
-  blast:{ru:"фугасный",     hull:.8, shield:.8}
+  blast:{ru:"фугасный",     hull:.8, shield:.8},
+  /* термический (M364): §2 знает три типа, а §2.1 говорит про лазер «слаб по
+     щиту» — энергетический по матрице как раз СИЛЁН по щиту. Лазер не режет
+     поле, он добивает корпус, и ему нужен свой тип. В DMG_KEYS его нет
+     намеренно: типы стволов первого поколения выбираются по `%3`, и четвёртый
+     ключ в списке переписал бы их всем. */
+  therm:{ru:"термический",  hull:1.15,shield:.35}
 };
 const DMG_KEYS=["kin","en","blast"];
 function dmgMul(type,onShield){
@@ -64,7 +70,7 @@ const GUN_RANGE0=760, GUN_SPEED0=9, GUN_CONE0=.35, GUN_LEAD0=.2;
    toFixed — считаем один раз на сборку. */
 let GUN_CACHE=null,GUN_KEY="";
 function gunSpec(dmg,cool,gunPart,lvl){
-  const key=dmg+"|"+cool+"|"+(gunPart?gunPart.seed+":"+gunPart.tier:"-")+"|"+lvl;
+  const key=dmg+"|"+cool+"|"+(gunPart?gunPart.seed+":"+gunPart.tier+":"+(gunPart.fam||"-"):"-")+"|"+lvl;
   if(GUN_KEY===key&&GUN_CACHE)return GUN_CACHE;
   GUN_KEY=key;return GUN_CACHE=gunSpecMake(dmg,cool,gunPart,lvl);
 }
@@ -79,7 +85,7 @@ function gunSpecMake(dmg,cool,gunPart,lvl){
   const type=gunPart?DMG_KEYS[(s>>>3)%3]:"kin";
   /* тир двигает числа в разные стороны: тяжёлый ствол бьёт дальше и точнее,
      но ведёт цель медленнее и смотрит уже */
-  return {
+  const base={
     dmg,type,cool,
     range:Math.round(GUN_RANGE0*(.85+r(0)*.35)+t*40),
     speed:+(GUN_SPEED0*(.8+r(8)*.5)+t*.35).toFixed(2),
@@ -90,8 +96,38 @@ function gunSpecMake(dmg,cool,gunPart,lvl){
        86 % на четырёхстах, 43 % на шестистах, 34 % на пределе. Точка,
        где стоит подойти ближе, — примерно пятьсот. */
     spread:+(.05*(.6+r(2)*1.2)/(1+t*.35)).toFixed(4),
-    lvl:lvl|0
+    fx:"bullet",en:1,lvl:lvl|0
   };
+  return gunPart&&gunPart.fam?gunFamilyApply(base,gunPart):base;
+}
+/* ── семейство поверх семи чисел (M364, §2.1) ──
+   Семейство и завод двигают ТЕ ЖЕ числа, а не заводят вторых: кривая
+   попаданий M362 замерена, терять её незачем. Свои аффиксы ствола
+   (дальность, конус, наводка, расход, жар, разброс) читаются из бонусов
+   САМОЙ части — они про этот ствол, а не про всю сборку. */
+function gunFamilyApply(g,p){
+  const F=GUN_FAMILY[p.fam];
+  if(!F)return g;
+  const W=GUN_FACTORY[p.fact]||GUN_FACTORY[0];
+  const b=p.bonus||{};
+  const mul=(k,d)=>Math.max(.15,1+(b[k]||0))*(d===undefined?1:d);
+  const out={
+    dmg:g.dmg*F.dmg*W.dmg,
+    type:F.type,
+    cool:Math.max(3,Math.round(g.cool*F.cool*W.cool)),
+    range:Math.round(g.range*F.range*mul("rangeMul")),
+    speed:F.speed?+(g.speed*F.speed).toFixed(2):0,
+    cone:+(g.cone*F.cone*mul("coneMul")).toFixed(3),
+    lead:+(g.lead*F.lead*mul("leadMul")).toFixed(3),
+    spread:+(g.spread*F.spread*W.spread*mul("spreadMul")).toFixed(4),
+    en:+(F.en*mul("enMul")).toFixed(3),
+    fx:F.fx,fam:p.fam,lvl:g.lvl
+  };
+  if(F.pellets)out.pellets=F.pellets;
+  if(F.burn)out.burn=+(F.burn*mul("burnMul")).toFixed(3);
+  if(F.heat)out.heat=+(F.heat*mul("burnMul")).toFixed(3);
+  if(b.knockMul)out.knock=+b.knockMul.toFixed(3);
+  return out;
 }
 /* промах — это угол, а не скрытый бросок (§2): снаряд виден, и видно, что он
    ушёл мимо. Ошибка растёт с дальностью и с угловой скоростью цели. */

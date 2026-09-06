@@ -3,7 +3,10 @@
    имя, аффиксы и числа восстанавливаются из seed этой же функцией. Поэтому
    genPart НЕЛЬЗЯ менять задним числом: при правке заводим новую ветку по g,
    иначе у всех игроков втихую поменяются уже собранные части. */
-const PART_GEN=1;
+/* 2 с M364: у стволов появились семейство, завод и серия, а у оружейных
+   аффиксов — новые ключи. Части с `g:1` собираются старой веткой и не
+   меняются ни на волос; замок на это — набор `91zzzw-guns`. */
+const PART_GEN=2;
 /* g — род существительного: прилагательное в имени части согласуется с ним */
 const PART_KINDS={
   gun:   {ru:"Орудие",           col:"#ff9d7a",note:"бортовой огонь",g:"n",sh:"ОРУДИЕ"},
@@ -43,8 +46,28 @@ const AFFIX=[
   {k:"mslLockMul",ru:"наведение",       step:.11, kinds:["missile"]}
 ];
 /* штрафы: у сильной части есть цена, иначе выбор очевиден и сборка бессмысленна */
+/* второе поколение (M364): у ствола появились свои ручки — дальность, конус,
+   наводка, расход и жар. В пул ПЕРВОГО поколения они не входят: список
+   аффиксов там заморожен навсегда, иначе у всех игроков молча поменялись бы
+   уже собранные части. */
+const AFFIX2=AFFIX.concat([
+  {k:"rangeMul",ru:"дальность",       step:.09, kinds:["gun"]},
+  {k:"coneMul", ru:"конус",           step:.10, kinds:["gun"]},
+  {k:"leadMul", ru:"скорость наводки",step:.10, kinds:["gun"]},
+  {k:"enMul",   ru:"расход энергии",  step:.09, kinds:["gun"]},
+  {k:"burnMul", ru:"жар",             step:.12, kinds:["gun"]},
+  {k:"knockMul",ru:"отдача по цели",  step:.11, kinds:["gun"]}
+]);
 const AFFIX_BAD=["thrMul","turnMul","cargoMul","hullAdd","fuelAdd","rateMul"];
+/* обратные стороны второго поколения: разброс и расход растут */
+const AFFIX_BAD2=AFFIX_BAD.concat(["spreadMul","enMul"]);
+const AFFIX_SPREAD={k:"spreadMul",ru:"разброс",step:.13,kinds:["gun"]};
 const AFFIX_BY_K={};for(const a of AFFIX)AFFIX_BY_K[a.k]=a;
+/* ключи второго поколения тоже должны находиться по имени: их читают
+   affLabel и карточка. Таблица одна, а ПУЛЫ РОЗЫГРЫША разные — в этом и
+   смысл поколения. */
+for(const a of AFFIX2)if(!AFFIX_BY_K[a.k])AFFIX_BY_K[a.k]=a;
+AFFIX_BY_K.spreadMul=AFFIX_SPREAD;
 const PART_PRE=["Тяжёлый","Форсированный","Кустарный","Трофейный","Опытный","Импульсный",
   "Резонансный","Полевой","Штурмовой","Компактный","Усиленный","Аварийный","Сдвоенный","Литой"];
 const PART_SUF=["М1","М2","К-7","Тип-3","серия B","мод. 9","Р-12","XT","дубль","прототип","ТУ-4","«Клык»"];
@@ -67,12 +90,19 @@ function tierFromDanger(d,r){
   const base=1+d*3.2+r()*1.4;
   return clamp(Math.round(base),1,5);
 }
-function genPart(seed,tier,kind){
+/* `gen` — ПОКОЛЕНИЕ генератора, а не украшение: часть из сейва обязана
+   пересобираться тем же генератором, каким была выдана, иначе первая же
+   правка таблиц молча переписывает игрокам их сборки. До M364 unpackPart
+   звал genPart без него — обещание было, замка не было. */
+function genPart(seed,tier,kind,gen){
   const r=rng((seed>>>0)||1);
   tier=clamp(tier|0||1,1,5);
   kind=kind||pick(PART_KEYS,r);
-  const own=AFFIX.filter(a=>a.kinds.indexOf(kind)>=0);
-  const other=AFFIX.filter(a=>a.kinds.indexOf(kind)<0);
+  const g=(gen|0)||PART_GEN;
+  const POOL=g>=2?AFFIX2:AFFIX;
+  const BAD=g>=2?AFFIX_BAD2:AFFIX_BAD;
+  const own=POOL.filter(a=>a.kinds.indexOf(kind)>=0);
+  const other=POOL.filter(a=>a.kinds.indexOf(kind)<0);
   const n=clamp(1+Math.floor(r()*(1+tier*.55)),1,3);
   const aff=[],used={};
   /* первый аффикс всегда профильный — часть должна делать то, что обещает категория */
@@ -88,7 +118,7 @@ function genPart(seed,tier,kind){
   }
   /* чем сильнее часть, тем вероятнее у неё обратная сторона */
   if(tier>=3&&r()<.22+tier*.1){
-    const pool=AFFIX_BAD.filter(k=>!used[k]);
+    const pool=BAD.filter(k=>!used[k]);
     if(pool.length){
       const k=pick(pool,r);
       aff.push({k,v:affVal(AFFIX_BY_K[k],tier,r,1)});used[k]=1;
@@ -98,9 +128,19 @@ function genPart(seed,tier,kind){
   for(const x of aff)bonus[x.k]=(bonus[x.k]||0)+x.v;
   if(kind==="gun")bonus.gun=1;
   if(kind==="missile")bonus.msl=1;
-  return {seed:seed>>>0,tier,kind,gen:PART_GEN,aff,bonus,
+  const out={seed:seed>>>0,tier,kind,gen:g,aff,bonus,
     name:adjTo(pick(PART_PRE,r),PART_KINDS[kind].g)+" "+PART_KINDS[kind].ru.toLowerCase()+" "+pick(PART_SUF,r),
     cap:Math.ceil(tier/2)};
+  /* у ствола второго поколения есть семейство, завод и серия (05b-guns):
+     имя становится «АП-23 «Оса»», а повадка — тем, что решает 13a-guns */
+  if(g>=2&&kind==="gun"&&typeof gunFamilyKeyOf==="function"){
+    const sd=seed>>>0;
+    out.fam=gunFamilyKeyOf(sd);
+    out.fact=GUN_FACTORY.indexOf(gunFactoryOf(sd));
+    out.ser=gunSeriesOf(sd);
+    out.name=gunNameOf(sd,out.fam);
+  }
+  return out;
 }
 /* ── ёмкость оснастки: модули и части делят один бюджет ──
    Нижняя граница подобрана так, чтобы полностью прокачанные модули (7×4=28)
@@ -360,7 +400,7 @@ function scrapPart(id){
 function packPart(p){return {s:p.seed,t:p.tier,k:p.kind,g:p.gen,i:p.id};}
 function unpackPart(o){
   if(!o||!PART_KINDS[o.k])return null;
-  const p=genPart(o.s>>>0,o.t|0,o.k);
+  const p=genPart(o.s>>>0,o.t|0,o.k,o.g|0);
   p.id=typeof o.i==="string"?o.i:("p"+(partSeq++));
   return p;
 }

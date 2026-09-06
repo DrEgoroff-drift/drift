@@ -109,7 +109,16 @@ function stTabMods(){
        места для одного и того же числа расходятся при первой же правке. */
     if(s2.armed){
       const g=s2.gun;
+      /* семейство пишется раньше чисел: оно и есть ответ на «как я летаю» */
+      const fp=(s2.guns&&s2.guns[0])?s2.guns[0].part:null;
+      const F=(fp&&fp.fam)?GUN_FAMILY[fp.fam]:null;
       $body.appendChild(el("div","sec","ОРУДИЕ · СЕМЬ ЧИСЕЛ"));
+      if(F){
+        const rf=el("div","row");
+        rf.appendChild(el("div","nm","<b>"+fp.name+"</b><s>"+F.ru.toLowerCase()+
+          " · "+GUN_FACTORY[fp.fact].ru+" · серия "+fp.ser+"</s><i>"+F.line+"</i>"));
+        $body.appendChild(rf);
+      }
       const rg=el("div","row");
       rg.appendChild(el("div","nm","<s>урон "+g.dmg.toFixed(1)+" · "+DMG_TYPES[g.type].ru+
         "<br>откат "+g.cool+" кадров · дальность "+g.range+

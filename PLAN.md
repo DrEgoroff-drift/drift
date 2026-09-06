@@ -680,7 +680,14 @@ Three stages, each playable on /dev before the next starts:
   standing unshielded ship in about fifty frames. **M364–M366 owe two debts from earlier
   passes:** `PART_GEN` 2 (move the tank and jump range off the reactor, give it
   capacity/regen affixes — §4) and a gun's class by family instead of by tier (§11.4).
-  · M364–M366 twenty gun families, seven a pass · M367 missiles · M368 pirate loadouts.
+  · ~~M364 first seven families~~ (0.364.0, 2026-09-06: `05b-guns` семейства/заводы/серии,
+  `13a-guns` повадки — снаряд, рельса, дробь, луч, наводящаяся; жар, горение и молчание
+  перегретого; тип «термический»; `PART_GEN` 2 с настоящим замком на первое поколение)
+  · M365 игольник, сифон, импульсник, буровой, толкатель, миномёт, помеховая · M366 гарпун,
+  кассетник, дуговик, плазмомёт, зенитка, таран, именные, заводы и серии по §19.2
+  · M367 missiles · M368 pirate loadouts.
+  **Долг M362 всё ещё открыт:** перенести бак и прыжок с реактора на бак и двигатель
+  (§4) — теперь это дёшево, второе поколение уже есть.
 - **B — the powers, by seed** (client only; the galaxy lives with no server): M369 the maker
   grammar layer on `hullOf`, measured by `makerRead()`, «Ялта» · M369a the grammar in the fleet,
   barges, pirate hulls, stations, domes, papers · M369b the having of things · M370 chronicle core (integer replay, hash, clock, geometry) · M371 the Director ·

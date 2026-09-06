@@ -70,11 +70,46 @@ function pirateFellTo(p,owner){
   const who=owner==="fleet"?"огнём ГЛАВТРАССЫ":"чужим огнём";
   logAdd("kill","«"+p.name+"» разбит "+who+" · награды нет");
 }
+/* ── одно попадание по чужому кораблю (M364) ──
+   Раньше этот расчёт жил внутри петли выстрелов; лучевым стволам он нужен без
+   всякого полёта, поэтому вынесен отдельно. Возвращает true, если корпус
+   развалился — рельсе это нужно, чтобы решить, пробивать ли дальше. */
+function hitShip(p,s,rawDmg){
+  let d=(rawDmg!==undefined?rawDmg:s.dmg)*hitLocMul(s,p);
+  /* у пирата от ранга бывает своё поле, и его повадка та же (M362):
+     лобового бьют в корму, импульсного — быстрее, чем он собирается */
+  p.shieldHit=SHIELD_DELAY;
+  if(p.shield>0){
+    const face=shieldFace(p.shieldType,angDiff(Math.atan2(s.vy,s.vx),p.a));
+    if(face>0){
+      const want=d*dmgMul(s.type,true)/face;
+      const a=Math.min(p.shield,want);
+      p.shield-=a;
+      d=Math.max(0,d-a*face/Math.max(1e-6,dmgMul(s.type,true)));
+    }
+  }
+  const done=d*dmgMul(s.type,false);
+  p.hull-=done;
+  /* жар и толчок — то, что остаётся на цели после выстрела (13a-guns) */
+  if(s.heat&&typeof heatAdd==="function")heatAdd(p,s.heat*done*.5);
+  if(s.knock){
+    const sp=Math.hypot(s.vx,s.vy)||1;
+    p.vx+=s.vx/sp*s.knock*.5;p.vy+=s.vy/sp*s.knock*.5;
+  }
+  if(p.dummy&&s.owner==="player"&&typeof rangeHit==="function")rangeHit(done);
+  sfx("hit",{v:.3});
+  if(p.hull<=0){
+    if(s.owner==="player")killPirate(p);else pirateFellTo(p,s.owner);
+    return true;
+  }
+  return false;
+}
 /* одна петля на все выстрелы; возвращает true, если игрок погиб */
 function combatShots(dt){
   const sh=G.ship;
   for(let i=G.shots.length-1;i>=0;i--){
     const s=G.shots[i];
+    if(s.hom&&typeof homingStep==="function")homingStep(s,dt);   /* наводящаяся пуля (M364) */
     s.x+=s.vx*dt;s.y+=s.vy*dt;s.life-=dt;
     let gone=s.life<=0;
     if(!gone&&s.owner!=="player"&&s.owner!=="fleet"&&Math.hypot(s.x-sh.x,s.y-sh.y)<18){
@@ -86,23 +121,7 @@ function combatShots(dt){
         if((p.owner||"pirate")===s.owner||p.hull<=0)continue;
         if(Math.hypot(s.x-p.x,s.y-p.y)<20){
           gone=true;
-          let d=s.dmg*hitLocMul(s,p);
-          /* у пирата от ранга бывает своё поле, и его повадка та же (M362):
-             лобового бьют в корму, импульсного — быстрее, чем он собирается */
-          p.shieldHit=SHIELD_DELAY;
-          if(p.shield>0){
-            const face=shieldFace(p.shieldType,angDiff(Math.atan2(s.vy,s.vx),p.a));
-            if(face>0){
-              const want=d*dmgMul(s.type,true)/face;
-              const a=Math.min(p.shield,want);
-              p.shield-=a;
-              d=Math.max(0,d-a*face/Math.max(1e-6,dmgMul(s.type,true)));
-            }
-          }
-          p.hull-=d*dmgMul(s.type,false);
-          if(p.dummy&&s.owner==="player"&&typeof rangeHit==="function")rangeHit(d*dmgMul(s.type,false));
-          sfx("hit",{v:.3});
-          if(p.hull<=0){if(s.owner==="player")killPirate(p);else pirateFellTo(p,s.owner);}
+          hitShip(p,s);
           break;
         }
       }

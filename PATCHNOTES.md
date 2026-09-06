@@ -7,6 +7,54 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.364.0 - M364: seven gun families, and a generator that keeps its word
+
+The war's fifth pass (`docs/DESIGN-war.md` §2.1–§2.2, §18) — the first seven of the twenty
+families. Until now every gun was the same gun with different numbers.
+
+**`PART_GEN` finally locks.** The constant existed so an already-issued part would not change when
+the generator is edited — but `unpackPart` called `genPart(seed, tier, kind)` **without** the
+generation, so a part from an old save was rebuilt by whatever generator was current. The promise
+was there, the lock was not. `genPart` now takes the generation, `unpackPart` passes the saved
+one, and twenty seeds taken from the first generation before this pass are pinned in
+`91zzzw-guns` for ever. That is what made the rest of this pass safe.
+
+**Seven families** (`05b-guns`, `13a-guns`), each a multiplier over the same seven numbers plus a
+habit — the measured hit curve of M362 is kept, not replaced:
+- **автопушка** L, turret — wide cone, quick lead, small damage, visible spread; the starter;
+- **тяжёлое орудийное** M, hardpoint — rare, heavy, narrow cone, slow lead;
+- **рельсотрон** H, hardpoint — instant, twice the range of an autocannon, six shots' worth of
+  reactor each time, and it **pierces** to the next hull if the first came apart from that shot;
+- **дробовик** M, turret — seven pellets on one press, a third of the range, ruinous at contact;
+- **лазер** M — an instant beam on the mark, small damage often, and it **heats**;
+- **тепловик** M — kinetic that heats, sharing the laser's counter;
+- **наводящиеся пули** L — the shot bends toward the mark in flight.
+
+**Heat, burning and silence.** One counter per ship. Past a threshold the target catches fire and
+burns for seconds without you; past a higher one it overheats and **stops firing** — the seconds
+that make a finisher worth carrying. Both are visible: a burning hull carries a flickering orange
+line under its bar, an overheated one wears «ПЕРЕГРЕВ» instead of its name. The player's hull runs
+the same counter — the matrix is one for everybody.
+
+**A термический damage type** joins the matrix (hull ×1.15, shield ×.35): §2 has three types and
+§2.1 says the laser is weak on shields, which the energy row is not. It is deliberately absent
+from `DMG_KEYS` — first-generation guns pick their type by `%3`, and a fourth key there would have
+changed every one of them.
+
+**Завод and серия** on the card: «АП-23 «Оса» · завод «Красный Путиловец» · серия 1961». The
+factory shifts damage, cooldown and spread; the family's own affixes (дальность, конус, наводка,
+расход, жар, разброс, отдача) belong to **that** barrel, not to the whole loadout, and live only
+in the second generation's affix pool.
+
+Measured (`prof(80)`, phone layout 375×812 @2, on a machine also running another build): JS 4.1 ms
+idle, 4.3–4.5 ms with eight armed ships and up to twenty-four beams on screen — the beam layer
+costs a few tenths of a millisecond.
+
+Two more wall-clock flakes fixed on the way, both of the same shape as 0.361.0's: the hostile-save
+round trip compared manager clocks that `applySave` re-stamps on purpose (an accrual clock that
+survived a load would pay for time the game was closed), and `resetWorld` did not reset the fields
+M362–M364 added, so a suite that raised its own clearance left it to the next one.
+
 ## 0.363.0 - M363: a mount has a size and a habit, and a gun waits for a clearance
 
 The war's fourth pass (`docs/DESIGN-war.md` §3, §11.4, §18). The points on the hull have existed

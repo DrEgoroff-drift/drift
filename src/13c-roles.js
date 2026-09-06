@@ -9,6 +9,9 @@ function roleSteer(p,ang,dt,rate){p.a+=clamp(angDiff(ang,p.a),-(rate||.035),rate
 function roleThrust(p,dt,k){p.vx+=Math.cos(p.a)*(k||.055)*dt;p.vy+=Math.sin(p.a)*(k||.055)*dt;p.thrust=true;}
 function roleDamp(p,dt,k){const q=Math.pow(k||.97,dt);p.vx*=q;p.vy*=q;}
 function roleFire(p,d,want,range,cool){
+  /* перегретый молчит: это те самые секунды без вас, ради которых
+     заведена добивающая роль (M364, §2.1) */
+  if(p.stunT>0)return false;
   if(d<range&&p.cool<=0&&Math.abs(angDiff(want,p.a))<.35){
     /* у ренегата свой урон: он бьёт вашими же перками */
     fireShot(p.x,p.y,p.a,7,p.dmg||3.5+sysDanger(G.sx,G.sy)*5,p.owner||"pirate");
@@ -81,7 +84,7 @@ function pirateRoleTick(p,dt,d,want){
     if(d<700){roleSteer(p,want,dt,.05);const k=.06*dt;p.vx-=Math.cos(want)*k;p.vy-=Math.sin(want)*k;p.thrust=true;}
     else if(d>950){roleSteer(p,want,dt);roleThrust(p,dt,.045);}
     else{roleSteer(p,want,dt,.05);roleDamp(p,dt,.96);}
-    if(d<1100&&p.cool<=0&&Math.abs(angDiff(want,p.a))<.3){
+    if(d<1100&&p.cool<=0&&!(p.stunT>0)&&Math.abs(angDiff(want,p.a))<.3){
       fireShot(p.x,p.y,p.a,9,(p.dmg||3.5+sysDanger(G.sx,G.sy)*5)*1.6,p.owner||"pirate");
       p.cool=95;helmShotAt(p);
     }

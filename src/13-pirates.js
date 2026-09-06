@@ -82,6 +82,9 @@ function updateCombat(dt){
      ПОПАДАНИЯ: прежнее правило means один заметивший вас шакал на другом
      конце системы держал поле выключенным весь бой. */
   if(G.energy===undefined)G.energy=st.energyMax;
+  /* жар и на вашем корпусе тоже: матрица одна на всех (M364) */
+  if(typeof heatTick==="function")heatTick(G,dt,d0=>{G.hull=Math.max(0,G.hull-d0);});
+  if(typeof beamsTick==="function")beamsTick(dt);
   G.energy=Math.min(st.energyMax,G.energy+st.energyRegen*dt);
   const lowE=G.energy<EN_SHOT;
   G.shieldHit=Math.max(0,(G.shieldHit||0)-dt);
@@ -136,13 +139,13 @@ function updateCombat(dt){
        добавленный к выстрелу, а не скрытый бросок. */
     const ang=gunAimTick(g,sh,live,dt,A.slot);
     if((auto||ctl.fire)&&st.armed&&cd<=0){
-      const tgtD=live?Math.hypot(live.x-sh.x,live.y-sh.y):0;
-      const err=gunMiss(g,tgtD,live?(live.av||0):0,Math.random());
-      fireShot(sh.x,sh.y,ang+err,g.speed,g.dmg,true,g.type,g.range);
+      /* чем именно стреляет этот ствол, решает его семейство (13a-guns):
+         снаряд, дробь, мгновенный луч или доворачивающая пуля */
+      gunFireOnce(g,sh,live,ang);
       if(!G.engaged&&typeof placeNote==="function")placeNote("hurt",1);   // место помнит выстрел (11d)
       G.engaged=true;
       /* пустая шкала — не «нельзя стрелять», а вдвое реже (§4) */
-      G.energy=Math.max(0,G.energy-EN_SHOT);
+      G.energy=Math.max(0,G.energy-EN_SHOT*(g.en||1));
       cd=g.cool*(lowE?2:1);
     }
     if(first)fireCool=Math.max(0,cd);else G.gunCool[A.slot]=Math.max(0,cd);
@@ -157,6 +160,9 @@ function updateCombat(dt){
     else if(d>seeRange*2.4)p.aware=false;
     if(typeof fleetEscortActive==="function"&&fleetEscortActive())p.aware=false;   /* конвой ГЛАВТРАССЫ (M311) */
     p.thrust=false;
+    /* жар, горение и молчание перегретого (M364, 13a-guns) */
+    if(typeof heatTick==="function")heatTick(p,dt,d0=>{p.hull-=d0;});
+    if(p.hull<=0&&!p.dummy){killPirate(p);continue;}
     /* поле пирата живёт по тем же трём повадкам, что и ваше (M362) */
     if(p.shieldMax>0){
       p.shieldHit=Math.max(0,(p.shieldHit||0)-dt);
@@ -234,6 +240,9 @@ function killPirate(p){
     (dropped?" · контейнер с частью":""));
 }
 function drawCombat(zx,zy,Z){
+  /* лучи (M364): у них нет полёта, поэтому и в петле выстрелов их нет —
+     свой короткий след, гаснущий за четыре кадра */
+  if(typeof beamsDraw==="function")beamsDraw(zx,zy,Z);
   /* линия батареи с грунта (21d) — рисуется до всего остального, чтобы луч
      уходил под корабли, а не поверх них */
   if(typeof battDraw==="function")battDraw(zx,zy,Z);
@@ -293,9 +302,17 @@ function drawCombat(zx,zy,Z){
         ctx.fillStyle="rgba(159,216,255,.85)";
         ctx.fillRect(x-w/2,by-3,w*clamp(p.shield/p.shieldMax,0,1),2);
       }
-      ctx.fillStyle=p.rogue?"rgba(197,138,224,.95)":"rgba(255,107,87,.75)";
+      /* горит и молчит — это надо ВИДЕТЬ, иначе добивающая роль работает
+         втёмную (M364): горящий корпус подписан огнём поверх полосы,
+         перегретый вместо имени носит «ПЕРЕГРЕВ» на те секунды, пока молчит */
+      if(p.burnT>0){
+        ctx.fillStyle="rgba(255,150,70,"+(.5+.35*Math.abs(Math.sin(G.t*.35+p.seed))).toFixed(2)+")";
+        ctx.fillRect(x-w/2,by+(p.rogue?4:3),w*clamp(p.burnT/BURN_TIME,0,1),1.6);
+      }
+      const hot=p.stunT>0;
+      ctx.fillStyle=hot?"rgba(255,178,92,.95)":(p.rogue?"rgba(197,138,224,.95)":"rgba(255,107,87,.75)");
       ctx.font=(p.rogue?"9px":"8px")+" ui-monospace,monospace";ctx.textAlign="center";
-      ctx.fillText(p.name.toUpperCase(),x,y+26);
+      ctx.fillText(hot?"ПЕРЕГРЕВ":p.name.toUpperCase(),x,y+26);
       if(p.rogue){
         ctx.fillStyle="rgba(197,138,224,.6)";ctx.font="8px ui-monospace,monospace";
         ctx.fillText("БЫВШИЙ УПРАВЛЯЮЩИЙ",x,y+37);
