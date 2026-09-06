@@ -81,6 +81,32 @@ function mapHoldingsDraw(vis,cell,V,st){
   if(!mapLayerOn("own"))return;
   const P=mapHousePatch(vis,st);
   ctx.save();
+  /* ── чьи это системы (M370, §7.4 «на карте эмблемный чип») ──
+     Летопись знает хозяина каждой системы обжитого круга. Шесть заливок на
+     телефоне были бы шумом (вывод holding §13), поэтому владение читается
+     чипом с эмблемой в углу клетки, а фронт — красной кромкой. */
+  if(typeof chronOwner==="function")for(const v of vis){
+    const o=chronOwner(v.gx,v.gy);
+    if(o<0)continue;
+    const key=MAKER_KEYS[o];
+    const x0=v.x-cell/2,y0=v.y-cell/2;
+    const d=Math.hypot(v.gx-G.sx,v.gy-G.sy),fade=clamp(1.1-d/(st.jump*2.4),.25,1);
+    if(typeof powerEmblem==="function"&&cell>=18){
+      /* чип растёт с клеткой: на трёх пикселях эмблема — точка, а точек на
+         карте и так хватает */
+      const cr=clamp(cell*.075,3.2,7.5);
+      ctx.globalAlpha=.8*fade;
+      powerEmblem(key,x0+cell-cr*1.7,y0+cr*1.7,cr);
+      ctx.globalAlpha=1;
+    }else{
+      ctx.fillStyle=rgba(hex2rgb(powerOf(key).col),(.5*fade).toFixed(3));
+      ctx.beginPath();ctx.arc(x0+cell-6,y0+6,2,0,TAU);ctx.fill();
+    }
+    if(chronFront(v.gx,v.gy)){
+      ctx.strokeStyle="rgba(255,90,70,"+(.7*fade).toFixed(2)+")";ctx.lineWidth=1.4;
+      ctx.strokeRect(x0+.7,y0+.7,cell-1.4,cell-1.4);
+    }
+  }
   for(const k in P){
     const [gx,gy]=k.split(",").map(Number);
     const c=mapCellXY(gx,gy,V,cell),x0=c.x-cell/2,y0=c.y-cell/2;

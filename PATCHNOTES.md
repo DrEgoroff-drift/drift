@@ -7,6 +7,41 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.370.0 - M370: the galaxy lives without you
+
+Stage B's core. Six powers now trade, quarrel, go to war, sign truces and take systems from each
+other — and not a single tick runs anywhere.
+
+**The chronicle is a replay, not a simulation.** The state at сводка N is the result of replaying
+сводки 0…N with a constant galaxy seed, so every client that replays the same history gets the
+same galaxy byte for byte. Nothing runs on a server; nothing is stored in your save. The whole
+thing lives in its own key, `drift_war_v1`, and even that is only a cache — lose it and the replay
+from zero costs under a millisecond for a year of history.
+
+**Three rules make that possible** (§16.3): integers only, fractions in permille; no exponent,
+sine or power anywhere in the module — the saturation curve is a 51-entry table, because browsers
+disagree on the last bits of floating point and a chronicle may not; and the сводка is six hours,
+numbered from the chronicle's own epoch.
+
+**The agents.** Each power has four needs (ore, goods, hulls, links), a strength, relations to the
+other five, and one move per сводка — trade, quarrel, war, truce, alliance, build — chosen by what
+it lacks, not by mood. Holding more systems costs more to feed, so expansion is not free; without
+that, the first measured run went three hundred сводок without a single war. Fronts move along
+borders, wars burn out in three days, and no power ever holds more than three quarters of the
+circle. Over a measured year: 79 wars, 79 truces, 342 systems changing hands.
+
+**«Ялта» never changes hands** — the limiters treat it as no one's, and a test walks fifteen
+hundred сводок to prove it.
+
+**On the map**, the ВЛАДЕНИЯ layer now carries an emblem chip per system and a red edge where the
+front is standing this сводка.
+
+Tests: `91zzzw-chron` — replaying twice gives the same hash, replaying from a cache equals
+replaying from zero, the limiters hold over two thousand steps with no number leaving its range,
+«Ялта» stays no one's, the chronicle never appears in the save, a lost cache changes nothing, and
+two pinned fixture hashes are checked in both the Node and the browser tier — the same numbers in
+two engines, which is the whole point. The module's own source is scanned for exp/sin/cos/pow.
+
 ## 0.369.2 - M369b: how a foreign thing is actually had
 
 The maker layer stops being a look and becomes property (§19.3).

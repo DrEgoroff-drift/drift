@@ -713,7 +713,11 @@ Three stages, each playable on /dev before the next starts:
   без эпизода не продаётся (`hasEpisode` до M374 отвечает «нет»), значит достаётся тросом:
   дерелик на буксир, верфь восстанавливает за деньги; сплав берёт грамматику тяжёлого родителя;
   пикет отмечает чужой корпус под своим флагом) · M369a the grammar in the fleet,
-  barges, pirate hulls, stations, domes, papers · M369b the having of things · M370 chronicle core (integer replay, hash, clock, geometry) · M371 the Director ·
+  barges, pirate hulls, stations, domes, papers · M369b the having of things ·
+  ~~M370 chronicle core~~ (0.370.0, 2026-09-06: `12am-chron` + `12am-chron-agents` — повтор от
+  нуля, кэш в своём ключе, хэш FNV, целая математика с таблицей насыщения, шесть агентов с
+  нуждами и ходами, фронты и ограничители, чипы владений на карте; год истории повторяется за
+  доли миллисекунды, «Ялта» ничья навсегда) · M371 the Director ·
   M372 the war seen · M373 the four rules · M374 episodes and the notebook · M375 the rescuer.
 - **C — everyone** (server): M376 `war.php` and ведомости · M377 leftovers and ghosts · M378
   votes, elections, сигнал сбора · M379 the nine rites · M380 «Ревизия» · M381 циркуляры and

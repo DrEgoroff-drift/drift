@@ -1756,7 +1756,7 @@ body.table u.addr{color:#7a4a20}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.369.2";
+const VER="0.370.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -20149,6 +20149,386 @@ function yaltaSealed(){
   if((G._yaltaSaid||0)<G.t-180){G._yaltaSaid=G.t;say("ЯЛТА · ОРУЖИЕ ОПЕЧАТАНО",90);}
   return true;
 }
+
+/* ══════════════ шесть агентов (M370, §7.5, §16.2 шаг 4) ══════════════
+   Держава — не таблица настроений, а АГЕНТ с нуждами. У каждой четыре нужды в
+   промилле (руда, товары, корпуса, связь), сила, отношения к пятерым и ход раз
+   в сводку. Ход выбирается не «настроением», а тем, чего не хватает: у кого
+   просела руда — тот идёт за поясами, у кого связь — за узлами.
+
+   Шесть ходов, ровно как в §16.2: сделка, ссора, война, перемирие, альянс,
+   стройка. Ни одного дробного числа: всё целое, броски через `hashi`. */
+const CHRON_MOVES=["deal","quarrel","war","truce","ally","build"];
+/* чего хочет каждая (§7.1 «wants»), в порядке ключей MAKER_KEYS */
+const CHRON_WANT=[
+  {ore:1,goods:1,hulls:1,link:2},   /* ГЛАВТРАССА: дорога и связь */
+  {ore:0,goods:3,hulls:1,link:1},   /* Компания: товары */
+  {ore:1,goods:1,hulls:2,link:1},   /* Орднунг: узлы и корпуса */
+  {ore:0,goods:1,hulls:3,link:1},   /* Коммуна: верфи */
+  {ore:3,goods:1,hulls:0,link:1},   /* Рассвет: руда */
+  {ore:0,goods:1,hulls:1,link:3}    /* Хай-Фронт: связь и маяки */
+];
+function chronNeedLow(P){
+  let k="ore",v=P.need.ore;
+  for(const q of ["goods","hulls","link"])if(P.need[q]<v){v=P.need[q];k=q;}
+  return k;
+}
+function chronRelWorst(st,i){
+  let j=-1,v=1001;
+  for(let q=0;q<6;q++){if(q===i)continue;if(st.powers[i].rel[q]<v){v=st.powers[i].rel[q];j=q;}}
+  return j;
+}
+function chronRelBest(st,i){
+  let j=-1,v=-1001;
+  for(let q=0;q<6;q++){if(q===i)continue;if(st.powers[i].rel[q]>v){v=st.powers[i].rel[q];j=q;}}
+  return j;
+}
+function chronAtWar(st,a,b){
+  for(const w of st.wars)if((w.a===a&&w.b===b)||(w.a===b&&w.b===a))return w;
+  return null;
+}
+/* один ход одной державы */
+function chronAgentMove(st,N,i,rr){
+  const P=st.powers[i];
+  const roll=rr(i,0x9A)%1000;
+  const low=chronNeedLow(P);
+  const want=CHRON_WANT[i];
+  /* нужды тают сами и пополняются тем, что держава держит: чем больше систем,
+     тем медленнее просадка. Это и есть «экономика» на данном проходе */
+  for(const k of ["ore","goods","hulls","link"]){
+    /* держава ест столько, сколько держит: расширение не бесплатно, иначе
+       большой ни в чём не нуждается и воевать ему незачем (замер 0.370.0:
+       при дешёвом расширении за триста сводок не случилось ни одной войны) */
+    const gain=(P.hold*(want[k]+1))/12|0;
+    P.need[k]=clampi(P.need[k]-20-(want[k]*6)+gain,0,1000);
+  }
+  /* отношения тянет к нулю: без этого через сотню сводок все дружат со всеми
+     на тысячу и галактика застывает */
+  for(let q=0;q<6;q++){
+    if(q===i)continue;
+    const v=P.rel[q];
+    P.rel[q]=v>0?v-((v/40|0)+1):(v<0?v+((-v/40|0)+1):0);
+  }
+  /* выбор хода: злее всего тот, у кого нужда на дне и есть с кем ссориться */
+  const worst=chronRelWorst(st,i),best=chronRelBest(st,i);
+  let move;
+  if(P.need[low]<250&&worst>=0&&P.rel[worst]<-150&&P.str>280)move="war";
+  else if(P.need[low]<450&&worst>=0)move="quarrel";
+  else if(chronAtWar(st,i,worst)&&(P.str<260||roll<120))move="truce";
+  else if(P.rel[best]>500&&roll<200)move="ally";
+  else if(roll<520)move="deal";
+  else move="build";
+  const j=(move==="ally")?best:worst;
+  if(move==="deal"&&j>=0){
+    /* сделка: обе стороны получают то, чего им не хватает, и теплеют */
+    P.need[low]=clampi(P.need[low]+50,0,1000);
+    const Q=st.powers[j];
+    Q.need[chronNeedLow(Q)]=clampi(Q.need[chronNeedLow(Q)]+35,0,1000);
+    P.rel[j]=clampi(P.rel[j]+40,-1000,1000);Q.rel[i]=clampi(Q.rel[i]+40,-1000,1000);
+    if((rr(i,0x0D)%1000)<120)chronLine(st,N,"deal",i,null,{b:j});
+  }else if(move==="quarrel"&&j>=0){
+    const Q=st.powers[j];
+    P.rel[j]=clampi(P.rel[j]-130,-1000,1000);Q.rel[i]=clampi(Q.rel[i]-90,-1000,1000);
+    P.tension=clampi(P.tension+120,0,1000);
+  }else if(move==="war"&&j>=0&&!chronAtWar(st,i,j)){
+    st.wars.push({a:i,b:j,t0:N});
+    P.rel[j]=clampi(P.rel[j]-300,-1000,1000);
+    st.powers[j].rel[i]=clampi(st.powers[j].rel[i]-300,-1000,1000);
+    P.tension=clampi(P.tension+300,0,1000);
+    chronLine(st,N,"war",i,null,{b:j});
+  }else if(move==="truce"){
+    const w=chronAtWar(st,i,worst);
+    if(w){
+      st.wars.splice(st.wars.indexOf(w),1);
+      P.rel[worst]=clampi(P.rel[worst]+280,-1000,1000);
+      st.powers[worst].rel[i]=clampi(st.powers[worst].rel[i]+280,-1000,1000);
+      chronLine(st,N,"truce",i,null,{b:worst});
+    }
+  }else if(move==="ally"&&j>=0){
+    P.rel[j]=clampi(P.rel[j]+120,-1000,1000);
+    st.powers[j].rel[i]=clampi(st.powers[j].rel[i]+120,-1000,1000);
+    P.str=clampi(P.str+12,100,1000);
+  }else{
+    /* стройка: сила растёт медленно и упирается в то, сколько держава держит */
+    const cap=300+P.hold*6;
+    P.str=clampi(P.str+((P.str<cap)?16:2),100,1000);
+    P.need.goods=clampi(P.need.goods-8,0,1000);
+  }
+  return move;
+}
+
+/* ══════════════ летопись (M370, §7.5, §16.2–16.4) ══════════════
+   Галактика живёт без игрока: шесть держав торгуют, ссорятся, воюют и мирятся,
+   фронты ходят, системы меняют хозяев. Ни один такт при этом нигде не тикает.
+
+   Как это устроено. Состояние на сводке N — это РЕЗУЛЬТАТ ПОВТОРА сводок 0…N:
+   `step()` детерминирован, зерно галактики постоянно, значит любой клиент,
+   повторив ту же историю, получит те же владения байт в байт. Ничего не
+   моделируется на сервере, и в сохранение летопись не попадает вовсе (§16.4):
+   её место — свой ключ `drift_war_v1`, и он всего лишь КЭШ. Потерялся — повтор
+   от нуля занимает миллисекунды.
+
+   Три правила, из которых всё остальное следует (§16.3, D04):
+     · только целые, доли — в промилле;
+     · ни экспонент, ни синусов, ни степеней в этом файле — насыщение берётся
+       таблицей (тест проверяет это чтением исходника: на дробной математике
+       браузеры расходятся, а летопись обязана совпадать байт в байт);
+     · сводка длится шесть часов, номер считается от часов, а не от такта.
+
+   Что здесь есть сегодня: география (D12), агенты и их ходы, фронты, ограничители,
+   строки в эфир голосом ГЛАВТРАССЫ, хэш и кэш. Чего нет: ведомости игроков
+   (M376), циркуляры (M381) и Директор (M371) — их места в `step()` отмечены и
+   пусты, и это НЕ заглушки-обманки: пустой шаг честно ничего не делает. */
+const CHRON_KEY="drift_war_v1";
+const CHRON_SHIFT=21600000;               /* шесть часов — одна сводка */
+/* сводка № 0 — начало летописи, а не начало эпохи Unix: иначе повтор считал бы
+   восемьдесят тысяч пустых сводок до того, как в галактике кто-то родился */
+const CHRON_EPOCH=Date.UTC(2026,0,1);
+const CHRON_SEED=0x0DF17;                 /* зерно летописи: одна галактика на всех */
+const CHRON_R=10;                         /* радиус обжитого круга: ~317 систем */
+const CHRON_LINES=500;                    /* сколько строк держим для новостей */
+/* насыщение 1−exp(−n/12) в промилле, 51 запись (§16.3): дробей в коде нет,
+   значит и расхождений между браузерами нет */
+const CHRON_SAT=[0,80,154,221,283,341,393,442,487,528,565,600,632,662,689,713,736,757,777,795,
+  811,826,840,853,865,875,885,895,903,911,918,924,931,936,941,946,950,954,958,961,964,967,970,
+  972,974,976,978,980,982,983,984];
+function chronSat(n){n=n|0;return CHRON_SAT[n<0?0:(n>50?50:n)];}
+/* ── география (D12) ──
+   Шесть домов стоят шестиугольником вокруг центра — целыми координатами, без
+   единого синуса. «Ялта» лежит в центре круга и не принадлежит никому. */
+const CHRON_HOME=[[8,0],[4,7],[-4,7],[-8,0],[-4,-7],[4,-7]];
+function chronKeys(){
+  if(CHRON._keys)return CHRON._keys;
+  const out=[];
+  for(let x=-CHRON_R;x<=CHRON_R;x++)for(let y=-CHRON_R;y<=CHRON_R;y++)
+    if(x*x+y*y<=CHRON_R*CHRON_R)out.push(x+","+y);
+  return CHRON._keys=out;
+}
+function chronHomeOf(x,y){
+  /* хозяин по рождению — ближайший дом; при равенстве побеждает младший индекс */
+  let best=0,bd=1e9;
+  for(let i=0;i<6;i++){
+    const dx=x-CHRON_HOME[i][0],dy=y-CHRON_HOME[i][1],d=dx*dx+dy*dy;
+    if(d<bd){bd=d;best=i;}
+  }
+  return best;
+}
+function chronYaltaKey(){
+  const y=(typeof yaltaAt==="function")?yaltaAt():{sx:0,sy:0};
+  return y.sx+","+y.sy;
+}
+/* ── состояние ── */
+let CHRON={N:-1,powers:null,systems:null,wars:null,lines:null,_keys:null,off:0};
+function chronFresh(){
+  const P=[];
+  for(let i=0;i<6;i++)P.push({
+    hold:0,                                  /* сколько систем держит */
+    need:{ore:500,goods:500,hulls:500,link:500},
+    rel:[0,0,0,0,0,0],                       /* −1000…1000 */
+    str:500,tension:0,arc:null});
+  const S={};
+  const yk=chronYaltaKey();
+  for(const k of chronKeys()){
+    const p=k.split(","),x=p[0]|0,y=p[1]|0;
+    const yalta=(k===yk);
+    const o=yalta?-1:chronHomeOf(x,y);
+    S[k]={owner:o,since:0,front:0,yalta:yalta?1:0};
+    if(o>=0)P[o].hold++;
+  }
+  return {N:-1,powers:P,systems:S,wars:[],lines:[],_keys:CHRON._keys,off:CHRON.off|0};
+}
+/* ── ход одной сводки (§16.2) ── */
+function chronStep(st,N){
+  const rr=(a,b)=>hashi(N,a,(b|0)^CHRON_SEED);           /* целый бросок */
+  /* 1 ведомость игроков — M376; 2 циркуляр — M381; 3 Директор — M371.
+     Места заняты и пусты: пустой шаг ничего не делает и ничего не врёт. */
+  if(typeof chronDirector==="function")chronDirector(st,N);
+  /* 4 агенты ходят по семенному порядку: каждый делает один ход */
+  const order=[0,1,2,3,4,5].sort((a,b)=>(rr(a,7)%1000)-(rr(b,7)%1000));
+  for(const i of order){
+    if(typeof chronAgentMove==="function")chronAgentMove(st,N,i,rr);
+  }
+  /* 5 фронты: у каждой войны фронт ходит на систему за сводку. Куда — решает
+     бросок с поправкой на силу сторон, насыщенную таблицей */
+  for(const w of st.wars){
+    const A=st.powers[w.a],B=st.powers[w.b];
+    const push=chronSat(Math.abs(A.str-B.str)/40|0);
+    const dir=(A.str>=B.str)?1:-1;
+    const roll=rr(w.a*13+w.b,0x1F)%1000;
+    if(roll>500-((push*dir)/4|0))chronFlip(st,N,w.a,w.b,rr);
+    else chronFlip(st,N,w.b,w.a,rr);
+  }
+  /* 6 ограничители (§15): никто не держит больше половины круга, война не
+     идёт вечно, «Ялта» не меняет хозяина никогда */
+  const total=chronKeys().length;
+  for(let i=0;i<6;i++){
+    const P=st.powers[i];
+    /* сила гуляет вокруг потолка, а не упирается в тысячу: потолок считается
+       от того, сколько держава держит, и выше него её тянет вниз */
+    const cap=clampi(300+P.hold*6,300,900);
+    P.str=clampi(P.str+((rr(i,0x5E)%21)-10)+(P.str>cap?-7:3),100,1000);
+    P.tension=clampi(P.tension-3,0,1000);
+    if(P.hold>(total/2|0))P.str=clampi(P.str-40,100,1000);
+  }
+  /* фронт — не клеймо: через две сводки после перехода система перестаёт быть
+     фронтом, иначе половина круга навсегда светится войной */
+  for(const k of chronKeys()){
+    const S=st.systems[k];
+    if(S.front&&N-S.since>2)S.front=0;
+  }
+  for(let i=st.wars.length-1;i>=0;i--){
+    const w=st.wars[i];
+    if(N-w.t0>=12||st.powers[w.a].str<160||st.powers[w.b].str<160){
+      st.wars.splice(i,1);
+      const A=st.powers[w.a],B=st.powers[w.b];
+      A.rel[w.b]=clampi(A.rel[w.b]+250,-1000,1000);
+      B.rel[w.a]=A.rel[w.b];
+      chronLine(st,N,"truce",w.a,null,{b:w.b});
+    }
+  }
+  st.N=N;
+  return st;
+}
+function clampi(v,a,b){v=v|0;return v<a?a:(v>b?b:v);}
+/* ── одна система переходит из рук в руки ── */
+function chronFlip(st,N,from,to,rr){
+  const keys=chronKeys();
+  const start=rr(from*7+to,0x2C)%keys.length;
+  for(let i=0;i<keys.length;i++){
+    const k=keys[(start+i)%keys.length];
+    const S=st.systems[k];
+    if(!S||S.yalta||S.owner!==to)continue;        /* «Ялта» не переходит никогда */
+    /* фронт идёт по границе: берём только то, что соседствует с наступающим */
+    if(!chronBorders(st,k,from))continue;
+    S.owner=from;S.since=N;S.front=1;
+    st.powers[to].hold--;st.powers[from].hold++;
+    chronLine(st,N,"take",from,k,{from:to});
+    return true;
+  }
+  return false;
+}
+function chronBorders(st,k,who){
+  const p=k.split(","),x=p[0]|0,y=p[1]|0;
+  for(const d of [[1,0],[-1,0],[0,1],[0,-1]]){
+    const S=st.systems[(x+d[0])+","+(y+d[1])];
+    if(S&&S.owner===who)return true;
+  }
+  return false;
+}
+/* ── строки: пока звучит только ГЛАВТРАССА (шесть волн — M371) ── */
+function chronLine(st,N,kind,p,sys,args){
+  st.lines.push({N,kind,p,sys:sys||null,args:args||null});
+  if(st.lines.length>CHRON_LINES)st.lines.splice(0,st.lines.length-CHRON_LINES);
+}
+function chronLineRu(L){
+  const P=(typeof POWERS!=="undefined")?POWERS[MAKER_KEYS[L.p]]:null;
+  const who=P?P.ru:"держава";
+  if(L.kind==="take")return "На трассе спокойно. Отмечено движение в секторе "+L.sys+".";
+  if(L.kind==="truce")return "На трассе спокойно. Подписано в Ялте.";
+  if(L.kind==="war")return "На трассе спокойно. "+who+" сообщает о временных трудностях на отдельных участках.";
+  if(L.kind==="deal")return "На трассе спокойно. План выполнен на 103 %.";
+  return "На трассе спокойно.";
+}
+/* ── номер сводки от часов (§16.3) ── */
+function chronNow(){
+  const t=Date.now()+(CHRON.off|0)-CHRON_EPOCH;
+  return t>0?Math.floor(t/CHRON_SHIFT):0;
+}
+/* ── хэш состояния: FNV-1a по целым (D06) ── */
+function chronHash(st){
+  let h=0x811c9dc5>>>0;
+  const mix=v=>{h=(h^(v>>>0))>>>0;h=Math.imul(h,0x01000193)>>>0;};
+  mix(st.N+1);
+  for(const P of st.powers){
+    mix(P.hold);mix(P.str);mix(P.tension);
+    for(const r of P.rel)mix(r+2000);
+    mix(P.need.ore);mix(P.need.goods);mix(P.need.hulls);mix(P.need.link);
+  }
+  for(const k of chronKeys()){
+    const S=st.systems[k];
+    mix((S.owner+2)*8+S.front);
+  }
+  for(const w of st.wars){mix(w.a*8+w.b);mix(w.t0+1);}
+  return h>>>0;
+}
+/* ── повтор: от нуля или от кэша ── */
+function chronReplay(N,from){
+  let st=from?chronClone(from):chronFresh();
+  const start=(st.N|0)+1;
+  for(let n=start;n<=N;n++)chronStep(st,n);
+  return st;
+}
+function chronClone(st){
+  const S={};
+  for(const k in st.systems){const s=st.systems[k];S[k]={owner:s.owner,since:s.since,front:s.front,yalta:s.yalta};}
+  const P=st.powers.map(p=>({hold:p.hold,need:{ore:p.need.ore,goods:p.need.goods,hulls:p.need.hulls,link:p.need.link},
+    rel:p.rel.slice(),str:p.str,tension:p.tension,arc:p.arc}));
+  return {N:st.N,powers:P,systems:S,wars:st.wars.map(w=>({a:w.a,b:w.b,t0:w.t0})),
+    lines:st.lines.slice(),off:st.off|0};
+}
+/* ── состояние на сейчас: кэш, потом повтор ── */
+function chronState(N){
+  if(N===undefined)N=chronNow();
+  if(CHRON.powers&&CHRON.N===N)return CHRON;
+  let base=null;
+  if(CHRON.powers&&CHRON.N<=N)base=CHRON;
+  else{
+    const c=chronLoad();
+    if(c&&c.N<=N)base=c;
+  }
+  const st=chronReplay(N,base);
+  CHRON=st;CHRON._keys=chronKeys();
+  chronSave(st);
+  return st;
+}
+/* ── кэш в своём ключе, а не в сохранении (§16.4) ── */
+function chronSave(st){
+  try{
+    const o={v:1,N:st.N,off:st.off|0,
+      p:st.powers.map(p=>[p.hold,p.str,p.tension,p.rel.slice(),
+        [p.need.ore,p.need.goods,p.need.hulls,p.need.link]]),
+      s:chronKeys().map(k=>st.systems[k].owner+","+st.systems[k].since+","+st.systems[k].front).join("|"),
+      w:st.wars.map(w=>[w.a,w.b,w.t0])};
+    localStorage.setItem(CHRON_KEY,JSON.stringify(o));
+  }catch(e){}
+}
+function chronLoad(){
+  try{
+    const o=JSON.parse(localStorage.getItem(CHRON_KEY)||"null");
+    if(!o||o.v!==1||!o.p||!o.s)return null;
+    const st=chronFresh();
+    st.N=o.N|0;st.off=o.off|0;
+    o.p.forEach((q,i)=>{
+      st.powers[i].hold=q[0]|0;st.powers[i].str=q[1]|0;st.powers[i].tension=q[2]|0;
+      st.powers[i].rel=q[3].map(v=>v|0);
+      st.powers[i].need={ore:q[4][0]|0,goods:q[4][1]|0,hulls:q[4][2]|0,link:q[4][3]|0};
+    });
+    const parts=o.s.split("|"),keys=chronKeys();
+    if(parts.length!==keys.length)return null;
+    keys.forEach((k,i)=>{
+      const v=parts[i].split(",");
+      st.systems[k].owner=v[0]|0;st.systems[k].since=v[1]|0;st.systems[k].front=v[2]|0;
+    });
+    st.wars=(o.w||[]).map(w=>({a:w[0]|0,b:w[1]|0,t0:w[2]|0}));
+    return st;
+  }catch(e){return null;}
+}
+/* ── что спрашивает у летописи остальная игра ── */
+function chronOwner(sx,sy){
+  const st=chronState();
+  const S=st.systems[(sx|0)+","+(sy|0)];
+  return S?S.owner:-1;
+}
+function chronOwnerKey(sx,sy){
+  const o=chronOwner(sx,sy);
+  return o>=0?MAKER_KEYS[o]:null;
+}
+function chronFront(sx,sy){
+  const st=chronState();
+  const S=st.systems[(sx|0)+","+(sy|0)];
+  return !!(S&&S.front);
+}
+function chronWars(){return chronState().wars;}
 
 /* ══════════════ наёмники: рейс как раздача карт ══════════════ */
 /* Наёмник — не альтернатива дрону, а ставка. Дрон даёт маленький надёжный плюс,
@@ -41567,6 +41947,32 @@ function mapHoldingsDraw(vis,cell,V,st){
   if(!mapLayerOn("own"))return;
   const P=mapHousePatch(vis,st);
   ctx.save();
+  /* ── чьи это системы (M370, §7.4 «на карте эмблемный чип») ──
+     Летопись знает хозяина каждой системы обжитого круга. Шесть заливок на
+     телефоне были бы шумом (вывод holding §13), поэтому владение читается
+     чипом с эмблемой в углу клетки, а фронт — красной кромкой. */
+  if(typeof chronOwner==="function")for(const v of vis){
+    const o=chronOwner(v.gx,v.gy);
+    if(o<0)continue;
+    const key=MAKER_KEYS[o];
+    const x0=v.x-cell/2,y0=v.y-cell/2;
+    const d=Math.hypot(v.gx-G.sx,v.gy-G.sy),fade=clamp(1.1-d/(st.jump*2.4),.25,1);
+    if(typeof powerEmblem==="function"&&cell>=18){
+      /* чип растёт с клеткой: на трёх пикселях эмблема — точка, а точек на
+         карте и так хватает */
+      const cr=clamp(cell*.075,3.2,7.5);
+      ctx.globalAlpha=.8*fade;
+      powerEmblem(key,x0+cell-cr*1.7,y0+cr*1.7,cr);
+      ctx.globalAlpha=1;
+    }else{
+      ctx.fillStyle=rgba(hex2rgb(powerOf(key).col),(.5*fade).toFixed(3));
+      ctx.beginPath();ctx.arc(x0+cell-6,y0+6,2,0,TAU);ctx.fill();
+    }
+    if(chronFront(v.gx,v.gy)){
+      ctx.strokeStyle="rgba(255,90,70,"+(.7*fade).toFixed(2)+")";ctx.lineWidth=1.4;
+      ctx.strokeRect(x0+.7,y0+.7,cell-1.4,cell-1.4);
+    }
+  }
   for(const k in P){
     const [gx,gy]=k.split(",").map(Number);
     const c=mapCellXY(gx,gy,V,cell),x0=c.x-cell/2,y0=c.y-cell/2;

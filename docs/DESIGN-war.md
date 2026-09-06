@@ -1065,8 +1065,14 @@ One system inside ГЛАВТРАССА's centre (r ≈ 6, fixed by seed, never t
   `G.uniqueShips` with its `by`; the fuse takes the heavier parent's grammar and names the other;
   the picket notes a foreign hull under your own flag. **Deferred:** the gift (M374), the scrap
   pool per maker, and the card's frame by maker.
-- **M370** chronicle core: state, `step`, replay, cache, hash, clock offset, geometry (D12),
-  integer RNG; agents; `91zzzw-chron` with the Node hash check.
+- ~~**M370** chronicle core~~ — 0.370.0 (2026-09-06): `12am-chron` (state, `step(N)`, replay from
+  0, cache in `drift_war_v1`, FNV hash, clock from a chronicle epoch, geometry D12 with the six
+  homes as an integer hexagon and «Ялта» at the centre) and `12am-chron-agents` (four needs in
+  permille, relations, strength, six moves — deal, quarrel, war, truce, ally, build). A year of
+  history replays in under a millisecond; owner chips and front edges are on the map's ВЛАДЕНИЯ
+  layer. **Measured:** over 1460 сводки — 79 wars, 79 truces, 342 systems changing hands, no
+  power above three quarters of the circle. **Deferred:** the ведомость step (M376), the
+  циркуляр step (M381) and the Director (M371) — their places in `step()` are marked and empty.
 - **M371** the Director: tension, the §15 table, arcs with default endings, rites announced,
   limiters, «автопилот» season; lines ×6 voices; map chips and the front; news and rumours.
 - **M372** the war seen: battle at jump-in, power occupation (D10, D11), station bodies and

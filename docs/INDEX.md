@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 454 · символов верхнего уровня: 4043
+Файлов: 457 · символов верхнего уровня: 4083
 
 ## СИМВОЛЫ
 
@@ -458,6 +458,44 @@ chMoves                      src/25n-chess.js:166
 chName                       tests/91zzzt-chess.js:3
 chPosition                   src/25n-chess.js:43
 chPseudo                     src/25n-chess.js:119
+CHRON                        src/12am-chron.js:62
+CHRON_EPOCH                  src/12am-chron.js:27
+CHRON_HOME                   src/12am-chron.js:40
+CHRON_KEY                    src/12am-chron.js:23
+CHRON_LINES                  src/12am-chron.js:30
+CHRON_MOVES                  src/12am-chron-agents.js:9
+CHRON_R                      src/12am-chron.js:29
+CHRON_SAT                    src/12am-chron.js:33
+CHRON_SEED                   src/12am-chron.js:28
+CHRON_SHIFT                  src/12am-chron.js:24
+CHRON_WANT                   src/12am-chron-agents.js:11
+chronAgentMove               src/12am-chron-agents.js:39
+chronAtWar                   src/12am-chron-agents.js:34
+chronBorders                 src/12am-chron.js:151
+chronClone                   src/12am-chron.js:202
+chronFlip                    src/12am-chron.js:135
+chronFresh                   src/12am-chron.js:63
+chronFront                   src/12am-chron.js:267
+chronHash                    src/12am-chron.js:179
+chronHomeOf                  src/12am-chron.js:48
+chronKeys                    src/12am-chron.js:41
+chronLine                    src/12am-chron.js:160
+chronLineRu                  src/12am-chron.js:164
+chronLoad                    src/12am-chron.js:236
+chronNeedLow                 src/12am-chron-agents.js:19
+chronNow                     src/12am-chron.js:174
+chronOwner                   src/12am-chron.js:258
+chronOwnerKey                src/12am-chron.js:263
+chronRelBest                 src/12am-chron-agents.js:29
+chronRelWorst                src/12am-chron-agents.js:24
+chronReplay                  src/12am-chron.js:196
+chronSat                     src/12am-chron.js:36
+chronSave                    src/12am-chron.js:226
+chronState                   src/12am-chron.js:211
+chronStep                    src/12am-chron.js:82
+chronWars                    src/12am-chron.js:272
+chronYaltaKey                src/12am-chron.js:57
+chRun                        tests/91zzzw-chron.js:13
 chSel                        src/25n-chess.js:251
 chSq                         tests/91zzzt-chess.js:2
 chState                      src/25n-chess.js:184
@@ -466,10 +504,12 @@ CHUNK_W                      src/18c-chunks.js:19
 chunkAt                      src/18c-chunks.js:72
 chunkStore                   src/18c-chunks.js:66
 chWhite                      src/25n-chess.js:36
+chWorld                      tests/91zzzw-chron.js:7
 cirrusSprite                 src/19e-clouds.js:226
 CKPT                         src/25-cockpit.js:91
 CKPT_STYLE                   src/25-cockpit.js:19
 clamp                        src/01-core.js:7
+clampi                       src/12am-chron.js:133
 CLEARANCE                    src/05e-clearance.js:22
 clearanceEarned              src/05e-clearance.js:32
 clearanceNow                 src/05e-clearance.js:39
@@ -2006,7 +2046,7 @@ mapFit                       src/18-mode-map.js:93
 mapGoAddr                    src/18a-map-addr.js:215
 mapGridDraw                  src/18a-map-addr.js:55
 mapHoldingsDraw              src/18b-map-hold.js:80
-mapHoldingsTop               src/18b-map-hold.js:133
+mapHoldingsTop               src/18b-map-hold.js:159
 mapHousePatch                src/18b-map-hold.js:31
 mapLayer                     src/18b-map-hold.js:26
 mapLayerNext                 src/18b-map-hold.js:28
@@ -4349,6 +4389,12 @@ zooTick                      src/11ad-zoo.js:41
   · шесть держав (M369, §7.1):1
   · «Ялта» (M369, D12):151
 
+## src/12am-chron-agents.js · 6 КБ
+  · шесть агентов (M370, §7.5, §16.2 шаг 4):1
+
+## src/12am-chron.js · 14 КБ
+  · летопись (M370, §7.5, §16.2–16.4):1
+
 ## src/12b-crew-events.js · 17 КБ
   · наёмники: рейс как раздача карт:1
 
@@ -4595,7 +4641,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/18b-geology.js · 14 КБ
   · геология:1
 
-## src/18b-map-hold.js · 10 КБ
+## src/18b-map-hold.js · 12 КБ
   · владения на карте (M348):1
 
 ## src/18c-chunks.js · 9 КБ
@@ -5322,6 +5368,9 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzzv-wall.js · 7 КБ
   · автотесты: стена, которая помнит (M210):1
+
+## tests/91zzzw-chron.js · 8 КБ
+  · летопись (M370, §16.2–16.5):1
 
 ## tests/91zzzw-combat.js · 36 КБ
   · бой между кораблями (M361, §5):1
