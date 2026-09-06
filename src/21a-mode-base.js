@@ -119,7 +119,7 @@ function enterBase(p){
      после следующего тика, и игрок не понимал бы, что уже можно строить ниже */
   baseGrowCheck(B);
   G.base={B,p,cur:Math.floor(BASE_COLS/2),row:0,x:0,y:0,walkPhase:0,menu:false,pick:0,
-    pmenu:false,ppick:0,lockHeld:0};
+    pmenu:false,ppick:0,lockHeld:0,avr:null,avrDone:0};
   G.base.x=cellX(G.base.cur);G.base.y=cellY(0);
   G.mode="base";
   for(const k in keys)keys[k]=false;
@@ -370,6 +370,12 @@ function updateBase(dt){
   S.x+=clamp(dx,-3.2*dt,3.2*dt);S.y+=clamp(dy,-2.6*dt,2.6*dt);
   const moving=Math.abs(dx)>2||Math.abs(dy)>2;
   S.walkPhase+=moving?.22*dt:0;
+  /* ── аврал (M398, §11) ──
+     Единственное, что на базе идёт настоящим временем. Бросок делается один
+     раз на заход, такт — раньше меню и раньше сбора: пока горит, база занята
+     этим и ничем больше */
+  if(typeof avrRoll==="function"&&!S.avrDone&&G.t>60)avrRoll(S,B);
+  if(typeof avrTick==="function"&&avrTick(S,B,dt,keys.act))return;
   /* ── меню людей (M395, §8) ──
      Штат базы набирается ТАМ, ГДЕ ОН СТОИТ: подошли к отсеку, нажали ЦЕЛЬ,
      выбрали, кто здесь работает. Лента та же, что у меню постройки, и клавиши

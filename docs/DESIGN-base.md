@@ -1555,7 +1555,13 @@ table is per world with the good share **computed** as a third of the bad weight
 its quarter; and the walking fire with `гермозатвор` as the only thing that stops it. **Measured:**
 a modest rocky base at threat 0.065 sees an event every ~16 shifts, about a third of them good.
 **Deferred:** the аврал (M398) — the fire the player fights with his own hands — and the war layer's
-pirate roles in a raid, which arrive with §20's seam. · M398 аврал (§11) · M399 устав (§9).
+pirate roles in a raid, which arrive with §20's seam. · ~~M398 аврал~~ — 0.398.0 (2026-09-06): `21a6-base-avral` — one roll per visit at a quarter, forty
+seconds, a two-second hold that people on that job and a neighbouring мастерская shorten, the cell
+drawn with its own glow and the hold bar inside it, and a miss handing the trouble to M397's walking
+fire. Node, browser and **mobile** tiers all green — the pass includes the phone check because a
+held button is the thing that is easy on a keyboard and awkward on glass. **Deferred:** the
+different cures per kind (fire/vent/flood all take the same hold today) and the crew handling an
+аврал *while you watch* — today they only handle the walking fire that follows it. · M399 устав (§9).
 
 **C · тяжёлая игра** — M400 формуляр планеты (§21) · M401 девять законов (§22) · M402 развалина и
 возврат (§22.1, §39) · M403 плата и блокада (§23, §42, §43) · M404 ремесленный проход по всей

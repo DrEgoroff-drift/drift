@@ -110,7 +110,7 @@ TEST_SUITES.push(()=>suite("база M390: журнал пишет о том, ч
   for(const k of kinds){
     baseLog(B,k,7,{who:"Гриша",lost:3,broke:"Склад",what:"Солнечная панель",out:1,
       cr:400,q:5,from:1,to:9,guard:1,shield:0,say:"«Ухожу»",by:"empty",
-      warn:"барограф падает"});
+      warn:"барограф падает",ru:"ПОЖАР"});
     const L=B.log[B.log.length-1];
     ok(L&&L.t&&L.t.length>4,"вид «"+k+"» пишет строку: "+(L&&L.t));
     ok(!seen[L.t],"и она не повторяет чужую: "+k);
@@ -854,4 +854,50 @@ TEST_SUITES.push(()=>suite("база M397: у каждой погоды своё
   B.guest=null;
   baseEventApply(B,{k:"newman"},n);
   ok(!!B.guest,"человек со стороны пришёл: "+(B.guest&&B.guest.name));
+}));
+
+/* ── аврал (M398) ──
+   Единственное место слоя, где время настоящее. Проверяется то, что делает его
+   игрой, а не роликом: дойти, подержать, успеть — и что провал не смертелен. */
+TEST_SUITES.push(()=>suite("база M398: аврал — руки против времени",()=>{
+  const B=bLife();
+  B.cells[1]={k:"storage",hp:1};B.cells[4]={k:"reactor",hp:1};
+  G.crew=[];
+  const S={cur:0,row:0,avr:null,avrDone:0};
+  /* виды беды названы и различны */
+  eq(AVR_KINDS.length,3,"три вида беды");
+  const seen={};
+  for(const k of AVR_KINDS){
+    ok(k.ru&&k.note,"у «"+k.k+"» есть имя и слово: "+k.ru);
+    ok(!seen[k.ru],"и они не повторяются");seen[k.ru]=1;
+  }
+  /* аврал ставится руками — и он занимает сцену целиком */
+  S.avr={c:0,r:0,k:"fire",t:AVR_TIME,hold:0};
+  ok(avrTick(S,B,1,false),"пока горит, сцена занята этим");
+  ok(G.prompt.indexOf("АВРАЛ")===0,"и говорит об этом первой строкой: "+G.prompt.split("\n")[0]);
+  /* держать надо ТАМ: в другом отсеке кнопка ничего не даёт */
+  S.cur=1;
+  const h0=S.avr.hold;
+  avrTick(S,B,10,true);
+  eq(S.avr.hold,h0,"из соседнего отсека не потушишь");
+  /* пришёл и подержал — потушил */
+  S.cur=0;
+  let win=false;
+  for(let i=0;i<40&&S.avr;i++)win=avrTick(S,B,10,true)===false||!S.avr;
+  ok(!S.avr,"дошёл, подержал — потушил");
+  ok(B.log.some(x=>x.k==="avrok"),"и это в журнале");
+  /* руки: люди и мастерская держат вместе с вами */
+  const A={c:0,r:0,k:"fire",t:AVR_TIME,hold:0};
+  const bare=avrHands(B,A);
+  B.cells[1]={k:"shop",hp:1};
+  ok(avrHands(B,A)>bare,"мастерская под боком помогает: "+bare+" → "+avrHands(B,A));
+  /* не успел — беда идёт дальше, но никто не умер */
+  const S2={cur:2,row:0,avr:{c:0,r:0,k:"fire",t:1,hold:0},avrDone:1};
+  const hp0=B.cells[0].hp;
+  avrTick(S2,B,10,false);
+  eq(S2.avr,null,"время вышло");
+  ok(B.cells[0].hp<hp0,"отсек побит");
+  ok(!!B.fire,"и беда стала ходячей — той самой из §10.3");
+  ok(B.log.some(x=>x.k==="avrno"),"о провале сказано");
+  eq(G.crew.length,0,"и никто не погиб: аврал — про вещи, а не про людей");
 }));

@@ -7,6 +7,27 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.398.0 - M398: аврал — the one place on a base where your hands matter
+
+Everything else about a base is lazy: however many shifts have passed, that many are resolved, and
+the player's hands have nothing to do with it. **Аврал** is the opposite, and it is the answer to
+«why open the scene at all».
+
+While you are **inside**, the director can set a compartment burning, venting or flooding. You have
+forty seconds to walk there and hold ДЕЙСТВИЕ for two. People working that module hold it with you;
+a мастерская next door helps; a гермозатвор beside it helps a little. Miss it and the compartment
+takes a beating and the trouble becomes the **walking** kind from M397 — which is exactly what
+would have happened if you had not been there at all.
+
+That asymmetry is the design: away, the crew handle it as well as their roles allow; present, you
+handle it better than they can. One per visit, about one visit in four, no new mode and no new
+machinery — the same walking, the same light, the same camera. The burning cell is drawn with its
+own glow, its own frame and the hold bar inside it, where the trouble is, rather than at the edge
+of the screen. Nobody dies in an аврал: it is about things, not people. The phone layout was
+checked as part of the pass, because holding a button is exactly the kind of thing that is easy on
+a keyboard and awkward on glass.
+
+---
 ## 0.397.0 - M397: the director — weather instead of dice
 
 The base had two rolls, a raid and a storm. Both were dice, neither looked at anything, and both

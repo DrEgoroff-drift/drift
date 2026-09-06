@@ -890,6 +890,8 @@ function drawBase(){
     ctx.fillStyle="rgba(127,230,216,.5)";ctx.font="9px ui-monospace,monospace";ctx.textAlign="center";
     ctx.fillText("МЕСТО ПОД ЗАСТРОЙКУ",sx+BCELL_W/2,sy+BCELL_H/2+3);
   }
+  /* аврал (M398): отсек, в котором беда, видно раньше всякого текста */
+  if(typeof avrDraw==="function")avrDraw(S,X,Y,lit);
   /* переходящий вымпел (M206): знамя на стене у входа, если оно в этом
      квартале досталось этой базе. Ничего не даёт, только висит */
   if(typeof pennHere==="function"&&pennHere()&&typeof pennDraw==="function")
