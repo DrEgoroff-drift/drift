@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 485 · символов верхнего уровня: 4585
+Файлов: 486 · символов верхнего уровня: 4609
 
 ## СИМВОЛЫ
 
@@ -106,7 +106,7 @@ appetitePrice                src/12ab-hold.js:84
 applyCrewEvent               src/12b-crew-events.js:215
 applyPadMode                 src/15-input.js:72
 applyPadSize                 src/15-input.js:8
-applySave                    src/14-save.js:206
+applySave                    src/14-save.js:207
 applyVolumes                 src/09-audio.js:40
 apVel                        src/16-flight.js:132
 ARC_JUMP                     src/13a-guns.js:39
@@ -116,7 +116,7 @@ armedCount                   src/13-combat.js:223
 arrive                       src/16-flight.js:178
 ARTIFACTS                    src/12h-relic.js:48
 askText                      src/11u-names.js:59
-asMap                        src/14-save.js:199
+asMap                        src/14-save.js:200
 assignToBase                 src/12a-crew.js:181
 AST_N                        src/24-mode-belt.js:86
 audioHush                    src/09-audio.js:12
@@ -188,7 +188,7 @@ BASE_MIN                     src/21a1-base-life.js:27
 BASE_OX                      src/21a-mode-base.js:9
 BASE_ROLES                   src/12a-crew.js:158
 BASE_ROOM                    src/21ab-base-interiors.js:9
-BASE_STANDBY                 src/21a1-base-life.js:231
+BASE_STANDBY                 src/21a1-base-life.js:233
 baseAdjAir                   src/21a4-base-adj.js:105
 baseAdjCount                 src/21a4-base-adj.js:55
 baseAdjFix                   src/21a4-base-adj.js:109
@@ -202,31 +202,33 @@ baseAssignHere               src/21a3-base-people.js:61
 baseAt                       src/21a-mode-base.js:85
 baseCall                     src/21a2-base-link.js:35
 baseCallOut                  src/21a2-base-link.js:117
-baseCell                     src/21a-mode-base.js:144
+baseCell                     src/21a-mode-base.js:146
 baseCellRole                 src/21a3-base-people.js:49
 baseCellStaff                src/21a3-base-people.js:50
-baseColdHit                  src/21a5-base-dir.js:196
-baseCollect                  src/21a-mode-base.js:325
+baseColdHit                  src/21a5-base-dir.js:201
+baseCollect                  src/21a-mode-base.js:330
 baseCost                     src/21a-mode-base.js:88
-baseCrewN                    src/21a1-base-life.js:240
-baseCryoMake                 src/21a1-base-life.js:509
-baseCryoOn                   src/21a1-base-life.js:429
-baseDepth                    src/21a1-base-life.js:436
-baseDirLine                  src/21a5-base-dir.js:215
-baseDirStep                  src/21a5-base-dir.js:205
-baseDusty                    src/21a5-base-dir.js:192
+baseCrewN                    src/21a1-base-life.js:242
+baseCryoMake                 src/21a1-base-life.js:520
+baseCryoOn                   src/21a1-base-life.js:436
+baseDepth                    src/21a1-base-life.js:443
+baseDial                     src/21a8-base-world.js:33
+baseDialOf                   src/21a8-base-world.js:59
+baseDirLine                  src/21a5-base-dir.js:220
+baseDirStep                  src/21a5-base-dir.js:210
+baseDusty                    src/21a5-base-dir.js:197
 baseEarn                     src/21a1-base-life.js:151
-baseEventApply               src/21a5-base-dir.js:145
-baseEventAt                  src/21a5-base-dir.js:88
-baseFireStart                src/21a5-base-dir.js:109
-baseFireStep                 src/21a5-base-dir.js:115
-baseFixTick                  src/21a-mode-base.js:305
+baseEventApply               src/21a5-base-dir.js:150
+baseEventAt                  src/21a5-base-dir.js:93
+baseFireStart                src/21a5-base-dir.js:114
+baseFireStep                 src/21a5-base-dir.js:120
+baseFixTick                  src/21a-mode-base.js:310
 baseFoodBoost                src/21a3-base-people.js:39
 baseFoodKeepsGood            src/21a3-base-people.js:42
-baseFoodStep                 src/21a1-base-life.js:593
-baseForecast                 src/21a5-base-dir.js:98
+baseFoodStep                 src/21a1-base-life.js:604
+baseForecast                 src/21a5-base-dir.js:103
 baseFreeCrew                 src/21a3-base-people.js:58
-baseFrozen                   src/21a1-base-life.js:486
+baseFrozen                   src/21a1-base-life.js:497
 baseGrowCheck                src/21a-mode-base.js:14
 baseGuestDrop                src/21a3-base-people.js:117
 baseGuestRoll                src/21a3-base-people.js:70
@@ -237,62 +239,62 @@ baseHalls                    src/21a4-base-adj.js:64
 baseHasBeacon                src/21a3-base-people.js:31
 baseHasMast                  src/21a2-base-link.js:28
 baseHear                     src/21a2-base-link.js:59
-baseHeat                     src/21a1-base-life.js:444
-baseHeatBand                 src/21a1-base-life.js:469
-baseHeatLine                 src/21a1-base-life.js:524
-baseHeatMul                  src/21a1-base-life.js:478
-baseHeatWear                 src/21a1-base-life.js:489
-baseJumpCost                 src/21a-mode-base.js:344
+baseHeat                     src/21a1-base-life.js:451
+baseHeatBand                 src/21a1-base-life.js:480
+baseHeatLine                 src/21a1-base-life.js:535
+baseHeatMul                  src/21a1-base-life.js:489
+baseHeatWear                 src/21a1-base-life.js:500
+baseJumpCost                 src/21a-mode-base.js:349
 baseKey                      src/21a-mode-base.js:84
-baseLife                     src/21a1-base-life.js:232
+baseLife                     src/21a1-base-life.js:234
 baseLifeBoost                src/21a3-base-people.js:36
-baseLifeLeft                 src/21a1-base-life.js:256
-baseLifeLine                 src/21a1-base-life.js:385
-baseLifeMakers               src/21a1-base-life.js:247
-baseLifeNeed                 src/21a1-base-life.js:242
-baseLifeStep                 src/21a1-base-life.js:279
+baseLifeLeft                 src/21a1-base-life.js:258
+baseLifeLine                 src/21a1-base-life.js:392
+baseLifeMakers               src/21a1-base-life.js:249
+baseLifeNeed                 src/21a1-base-life.js:244
+baseLifeStep                 src/21a1-base-life.js:281
 baseLinkCan                  src/21a2-base-link.js:103
 baseLinkPark                 src/21a2-base-link.js:104
-baseList                     src/21a-mode-base.js:338
+baseList                     src/21a-mode-base.js:343
 baseLog                      src/21a1-base-life.js:95
 baseLogList                  src/21a1-base-life.js:105
 baseMine                     src/21a1-base-life.js:167
-baseNeighbors                src/21a-mode-base.js:155
+baseNeighbors                src/21a-mode-base.js:157
 baseOneWord                  src/21a2-base-link.js:76
-basePads                     src/21a-mode-base.js:343
-basePark                     src/21a1-base-life.js:260
-baseParked                   src/21a1-base-life.js:241
+basePads                     src/21a-mode-base.js:348
+basePark                     src/21a1-base-life.js:262
+baseParked                   src/21a1-base-life.js:243
 basePeopleLine               src/21a3-base-people.js:132
 basePeopleList               src/21a3-base-people.js:127
-basePoolHeld                 src/21a-mode-base.js:216
-basePower                    src/21a-mode-base.js:165
-baseRaid                     src/21a-mode-base.js:225
+basePoolHeld                 src/21a-mode-base.js:221
+basePower                    src/21a-mode-base.js:167
+baseRaid                     src/21a-mode-base.js:230
 baseReport                   src/21a2-base-link.js:86
-baseResolve                  src/21a1-base-life.js:639
-baseResolveAll               src/21a1-base-life.js:663
+baseResolve                  src/21a1-base-life.js:650
+baseResolveAll               src/21a1-base-life.js:674
 baseRoleForce                src/12a-crew.js:177
 baseRoomPath                 src/21ac-base-draw.js:14
 baseRows                     src/21a-mode-base.js:13
-baseSeal                     src/21a5-base-dir.js:105
-baseSet                      src/21a-mode-base.js:148
+baseSeal                     src/21a5-base-dir.js:110
+baseSet                      src/21a-mode-base.js:150
 baseShift                    src/21a1-base-life.js:28
 baseShiftRun                 src/21a1-base-life.js:113
 baseSignal                   src/21a2-base-link.js:41
 baseSince                    src/21a1-base-life.js:36
 baseSlots                    src/12a-crew.js:172
-baseSpirit                   src/21a1-base-life.js:551
-baseSpiritStep               src/21a1-base-life.js:625
+baseSpirit                   src/21a1-base-life.js:562
+baseSpiritStep               src/21a1-base-life.js:636
 baseStaff                    src/12a-crew.js:173
-baseStorm                    src/21a-mode-base.js:270
-baseSupply                   src/21a1-base-life.js:342
+baseStorm                    src/21a-mode-base.js:275
+baseSupply                   src/21a1-base-life.js:349
 baseT0                       src/21a1-base-life.js:31
-baseThreat                   src/21a5-base-dir.js:79
-baseVein                     src/21a5-base-dir.js:200
-baseWake                     src/21a1-base-life.js:268
-baseWalkOut                  src/21a1-base-life.js:580
+baseThreat                   src/21a5-base-dir.js:84
+baseVein                     src/21a5-base-dir.js:205
+baseWake                     src/21a1-base-life.js:270
+baseWalkOut                  src/21a1-base-life.js:591
 baseWho                      src/21a1-base-life.js:45
 baseWordLine                 src/21a2-base-link.js:65
-baseWorth                    src/21a5-base-dir.js:71
+baseWorth                    src/21a5-base-dir.js:76
 BATT_COOL                    src/21d-battery.js:13
 BATT_DMG                     src/21d-battery.js:14
 BATT_RANGE                   src/21d-battery.js:12
@@ -302,7 +304,7 @@ battTarget                   src/21d-battery.js:33
 battTick                     src/21d-battery.js:36
 bBox                         src/21aa-base-rooms.js:23
 bCrate                       src/21aa-base-rooms.js:270
-bCrew                        tests/91zzzw-base.js:155
+bCrew                        tests/91zzzw-base.js:165
 bDress                       src/21aa-base-rooms.js:122
 BEACON_COOL                  src/23-mode-dig.js:85
 beaconCool                   src/23-mode-dig.js:86
@@ -387,7 +389,7 @@ BLUE_TAB                     src/01-core.js:48
 blueNoise                    src/01-core.js:49
 BLUEPRINTS                   src/12c-mgr-core.js:662
 BM_WARM                      src/21aa-base-rooms.js:20
-bNoDir                       tests/91zzzw-base.js:33
+bNoDir                       tests/91zzzw-base.js:43
 boardLanes                   src/26-ui-station.js:299
 bodyInSystem                 src/16-flight.js:109
 bookAll                      src/12ub-books.js:122
@@ -428,7 +430,7 @@ boxRoll                      src/12ue-boxes.js:60
 BP_KEYS                      src/12c-mgr-core.js:669
 bPipe                        src/21aa-base-rooms.js:244
 bpMul                        src/12c-mgr-core.js:673
-bPool                        tests/91zzzw-base.js:27
+bPool                        tests/91zzzw-base.js:37
 bpRecheck                    src/12c-mgr-core.js:740
 bpState                      src/12c-mgr-core.js:670
 brLaws                       tests/91zzzzzc-broke.js:21
@@ -453,7 +455,7 @@ bWorker                      src/21aa-base-rooms.js:322
 camBtnTick                   src/25g-postcard.js:666
 camOffset                    src/19c-light.js:155
 camStep                      src/19c-light.js:141
-canPay                       src/21a-mode-base.js:97
+canPay                       src/21a-mode-base.js:99
 CANT_STYLE                   src/27d-ui-cantina.js:15
 cantBarkeep                  src/27d-ui-cantina-props.js:15
 cantBubble                   src/27c-ui-hq.js:264
@@ -538,8 +540,8 @@ celHere                      src/06a-celest.js:130
 cellCenter                   src/24a-mode-raid.js:83
 celLine                      src/06a-celest.js:145
 celLon                       src/06a-celest.js:54
-cellX                        src/21a-mode-base.js:138
-cellY                        src/21a-mode-base.js:139
+cellX                        src/21a-mode-base.js:140
+cellY                        src/21a-mode-base.js:141
 celMoonPeriod                src/06a-celest.js:59
 celMoonPhase                 src/06a-celest.js:60
 celNow                       src/06a-celest.js:133
@@ -883,7 +885,7 @@ crownForge                   src/05a-nodes.js:160
 crownHas                     src/05a-nodes.js:171
 crownOwned                   src/05a-nodes.js:159
 crownReady                   src/05a-nodes.js:158
-CRYO_RECIPE                  src/21a1-base-life.js:428
+CRYO_RECIPE                  src/21a1-base-life.js:435
 CSW                          src/19e-clouds.js:68
 ctlHint                      src/15-input.js:168
 ctlReset                     src/15a-helm.js:33
@@ -986,6 +988,23 @@ DESK_ITEMS                   src/27ia-desk-top.js:298
 deskItemNew                  src/27ia-desk-top.js:337
 deskItemOf                   src/27ia-desk-top.js:331
 dgy                          src/21b-surface-deco.js:144
+DIAL_KEYS                    src/21a8-base-world.js:25
+DIAL_RU                      src/21a8-base-world.js:26
+DIAL_WORLD                   src/21a8-base-world.js:14
+dialBuildMul                 src/21a8-base-world.js:122
+dialGrav                     src/21a8-base-world.js:116
+dialHeat                     src/21a8-base-world.js:110
+dialIceFree                  src/21a8-base-world.js:119
+dialLeak                     src/21a8-base-world.js:112
+dialLevel                    src/21a8-base-world.js:82
+dialLight                    src/21a8-base-world.js:111
+dialLine                     src/21a8-base-world.js:100
+dialNum                      src/21a8-base-world.js:94
+dialOnFoot                   src/21a8-base-world.js:78
+dialOreMul                   src/21a8-base-world.js:120
+dialQuake                    src/21a8-base-world.js:118
+dialWind                     src/21a8-base-world.js:117
+dialWords                    src/21a8-base-world.js:88
 DIG_CELL                     src/23-mode-dig.js:3
 DIG_GEO_K                    src/23-mode-dig.js:9
 DIG_TURF                     src/23aa-dig-rock.js:463
@@ -1043,7 +1062,7 @@ DIR_VEIN                     src/21a5-base-dir.js:29
 DIR_WORTH                    src/21a5-base-dir.js:25
 DIR_WORTH_CAP                src/21a5-base-dir.js:26
 dirAt                        src/01-core.js:79
-dirGoodShare                 src/21a5-base-dir.js:61
+dirGoodShare                 src/21a5-base-dir.js:66
 dirPool                      src/21a5-base-dir.js:44
 dirWeights                   src/21a5-base-dir.js:54
 dispatchEtherLine            src/12ag-holdfx.js:57
@@ -1207,9 +1226,9 @@ drawSurface                  src/21e-surface-draw.js:859
 drawSurfaceHud               src/21e-surface-draw.js:21
 drawSurfaceWorld             src/21e-surface-draw.js:110
 drawSurvey                   src/12w-survey.js:63
-drawSysHud                   src/17-mode-system.js:588
+drawSysHud                   src/17-mode-system.js:600
 drawSysNebula                src/16a-space.js:208
-drawSystem                   src/17-mode-system.js:350
+drawSystem                   src/17-mode-system.js:362
 drawSysTraffic               src/17f-sys-traffic.js:29
 drawTemple                   src/20aa-poi-shapes.js:50
 drawThingIcon                src/27i-ui-table.js:330
@@ -1295,7 +1314,7 @@ endPtr                       src/15-input.js:381
 energyCap                    src/05c-arms.js:166
 energyRegen                  src/05c-arms.js:167
 engineLoop                   src/09-audio.js:309
-enterBase                    src/21a-mode-base.js:114
+enterBase                    src/21a-mode-base.js:116
 enterBelt                    src/24-mode-belt.js:89
 enterCave                    src/22-mode-cave.js:175
 enterDig                     src/23-mode-dig.js:50
@@ -1334,12 +1353,12 @@ etherTick                    src/11b-speech.js:39
 ethOn                        src/25l-post-ether.js:52
 ethReset                     src/25l-post-ether.js:106
 ethTick                      src/25l-post-ether.js:59
-evacCost                     src/21-mode-surface.js:660
-evacFrom                     src/21-mode-surface.js:661
-evacuate                     src/21-mode-surface.js:662
+evacCost                     src/21-mode-surface.js:664
+evacFrom                     src/21-mode-surface.js:665
+evacuate                     src/21-mode-surface.js:666
 exhaustHaze                  src/16a-space.js:347
 exileCandidates              src/12g-mgr-rogue.js:123
-exitBase                     src/21a-mode-base.js:134
+exitBase                     src/21a-mode-base.js:136
 exitBelt                     src/24-mode-belt.js:175
 exitCave                     src/22-mode-cave.js:233
 exitDig                      src/23-mode-dig.js:70
@@ -1501,8 +1520,8 @@ folkShown                    src/12u-folk.js:114
 folkShut                     src/11ah-offer.js:90
 folkState                    src/12u-folk.js:83
 folkVisit                    src/12u-folk.js:104
-FOOD_SUPPLY                  src/21a1-base-life.js:549
-foundBase                    src/21a-mode-base.js:99
+FOOD_SUPPLY                  src/21a1-base-life.js:560
+foundBase                    src/21a-mode-base.js:101
 frame                        src/28-loop.js:339
 frameBody                    src/28-loop.js:190
 frameLastAt                  src/28-loop.js:338
@@ -1726,17 +1745,17 @@ heardUse                     src/12x-parrot.js:116
 heardWordsRu                 src/12x-parrot.js:79
 heardYours                   src/12x-parrot.js:71
 HEAT_BURN                    src/13a-guns.js:23
-HEAT_CELL                    src/21a1-base-life.js:413
+HEAT_CELL                    src/21a1-base-life.js:420
 HEAT_COOL                    src/13a-guns.js:24
-HEAT_CRYO                    src/21a1-base-life.js:426
-HEAT_CRYO_SH                 src/21a1-base-life.js:427
-HEAT_HARD                    src/21a1-base-life.js:417
+HEAT_CRYO                    src/21a1-base-life.js:433
+HEAT_CRYO_SH                 src/21a1-base-life.js:434
+HEAT_HARD                    src/21a1-base-life.js:424
 HEAT_MAX                     src/13a-guns.js:21
-HEAT_OK                      src/21a1-base-life.js:416
-HEAT_ROW                     src/21a1-base-life.js:415
+HEAT_OK                      src/21a1-base-life.js:423
+HEAT_ROW                     src/21a1-base-life.js:422
 HEAT_STUN                    src/13a-guns.js:22
-HEAT_WORLD                   src/21a1-base-life.js:412
-HEAT_WORST                   src/21a1-base-life.js:418
+HEAT_WORLD                   src/21a1-base-life.js:419
+HEAT_WORST                   src/21a1-base-life.js:425
 heatAdd                      src/13a-guns.js:47
 heatHaze                     src/18d-postfx.js:23
 heatTick                     src/13a-guns.js:54
@@ -2076,7 +2095,7 @@ jobPick                      src/12e-mgr-jobs.js:259
 jobRefuse                    src/12e-mgr-jobs.js:57
 jobTick                      src/12e-mgr-jobs.js:287
 jump                         src/18-mode-map.js:586
-jumpToBase                   src/21a-mode-base.js:348
+jumpToBase                   src/21a-mode-base.js:353
 KEEP_DARK_AFTER              src/11k-keepers.js:48
 KEEP_HABIT                   src/11k-keepers.js:35
 KEEP_LAST                    src/11k-keepers.js:84
@@ -2183,8 +2202,8 @@ lateAll                      src/11aq-late.js:52
 lateBlock                    src/11aq-late.js:118
 lateLeft                     src/11aq-late.js:57
 lateSit                      src/11aq-late.js:65
-launch                       src/21-mode-surface.js:700
-launchHold                   src/21-mode-surface.js:640
+launch                       src/21-mode-surface.js:704
+launchHold                   src/21-mode-surface.js:644
 layerLevel                   src/10-music.js:326
 ldFoe                        tests/91zzzw-combat.js:472
 LEADBREAK                    src/13a-guns.js:42
@@ -2222,18 +2241,18 @@ lgBox                        tests/91zzzzy-light.js:22
 lgBrightest                  tests/91zzzzy-light.js:40
 lgClean                      tests/91zzzzy-light.js:54
 lgHour                       tests/91zzzzy-light.js:75
-LIFE_AIR                     src/21a1-base-life.js:218
-LIFE_CAP                     src/21a1-base-life.js:220
-LIFE_COOL                    src/21a1-base-life.js:228
-LIFE_FOOD                    src/21a1-base-life.js:544
-LIFE_GARDEN                  src/21a1-base-life.js:545
-LIFE_LOW                     src/21a1-base-life.js:222
-LIFE_LYSE                    src/21a1-base-life.js:223
-LIFE_MELT                    src/21a1-base-life.js:224
-LIFE_START                   src/21a1-base-life.js:221
-LIFE_SUPPLY                  src/21a1-base-life.js:226
-LIFE_VAT                     src/21a1-base-life.js:546
-LIFE_WATER                   src/21a1-base-life.js:219
+LIFE_AIR                     src/21a1-base-life.js:220
+LIFE_CAP                     src/21a1-base-life.js:222
+LIFE_COOL                    src/21a1-base-life.js:230
+LIFE_FOOD                    src/21a1-base-life.js:555
+LIFE_GARDEN                  src/21a1-base-life.js:556
+LIFE_LOW                     src/21a1-base-life.js:224
+LIFE_LYSE                    src/21a1-base-life.js:225
+LIFE_MELT                    src/21a1-base-life.js:226
+LIFE_START                   src/21a1-base-life.js:223
+LIFE_SUPPLY                  src/21a1-base-life.js:228
+LIFE_VAT                     src/21a1-base-life.js:557
+LIFE_WATER                   src/21a1-base-life.js:221
 LIGHTS_SOON                  src/11g-lights.js:23
 lightsAll                    src/11g-lights.js:24
 lightsArrive                 src/11g-lights.js:53
@@ -2822,7 +2841,7 @@ opisWear                     src/27j-ui-opis.js:209
 OPT_TABS                     src/27-ui-ship.js:330
 optGroups                    src/27-ui-ship.js:333
 optTab                       src/27-ui-ship.js:332
-orbPathOf                    src/17-mode-system.js:339
+orbPathOf                    src/17-mode-system.js:351
 ORDER_WIN                    src/12aa-need.js:74
 orderDeliver                 src/12aa-need.js:114
 orderHere                    src/12aa-need.js:110
@@ -2907,7 +2926,7 @@ passLight                    src/11p-pass.js:49
 passShipX                    src/11p-pass.js:34
 passTell                     src/11p-pass.js:55
 PAX_KEYS                     src/02-world.js:93
-payCost                      src/21a-mode-base.js:98
+payCost                      src/21a-mode-base.js:100
 PC_GRAIN                     src/25g-post-craft.js:7
 pcA                          src/25g-postcard.js:149
 pcBelt                       src/25g-post-void.js:58
@@ -3152,16 +3171,21 @@ pricesOpen                   src/12aa-need.js:284
 pricesSeen                   src/12aa-need.js:194
 pricesTrim                   src/12aa-need.js:203
 prism                        src/21b-surface-deco.js:216
+PROBE_COST                   src/21a8-base-world.js:28
 PROBE_COST_CR                src/25m-probe.js:27
 PROBE_COST_DATA              src/25m-probe.js:26
 PROBE_MAX                    src/25m-probe.js:30
+PROBE_SHOW                   src/21a8-base-world.js:29
 PROBE_SPREAD                 src/25m-probe.js:29
 PROBE_WAIT                   src/25m-probe.js:28
 probeAll                     src/25m-probe.js:31
 probeBlock                   src/25m-probe.js:125
 probeBuild                   src/25m-probe.js:51
+probeBuy                     src/21a8-base-world.js:68
 probeCanBuild                src/25m-probe.js:47
 probeDue                     src/25m-probe.js:68
+probeHas                     src/21a8-base-world.js:65
+probeKey                     src/21a8-base-world.js:64
 probeShot                    src/25m-probe.js:85
 probeSpeak                   src/25m-probe.js:100
 probeTarget                  src/25m-probe.js:38
@@ -3635,13 +3659,13 @@ runTests                     tests/90-harness.js:239
 rxRecord                     src/11x-ring.js:64
 S1                           src/01-core.js:96
 S2                           src/01-core.js:97
-SAVE_BUDGET                  src/14-save.js:114
+SAVE_BUDGET                  src/14-save.js:115
 SAVE_KEY                     src/14-save.js:6
-saveFatSaid                  src/14-save.js:115
+saveFatSaid                  src/14-save.js:116
 saveGame                     src/14a-cloud.js:38
-saveText                     src/14-save.js:136
-saveTop                      src/14-save.js:130
-saveWeigh                    src/14-save.js:117
+saveText                     src/14-save.js:137
+saveTop                      src/14-save.js:131
+saveWeigh                    src/14-save.js:118
 say                          src/08-state.js:213
 SCALE_KEYS                   src/10-music.js:25
 SCALES                       src/10-music.js:5
@@ -3957,9 +3981,9 @@ speechAll                    src/11b-speech.js:117
 speechHere                   src/11b-speech.js:119
 SPHERE                       src/24-mode-belt.js:50
 SPHERE2                      src/24-mode-belt.js:51
-SPIRIT_BYE                   src/21a1-base-life.js:578
-SPIRIT_HOLD                  src/21a1-base-life.js:548
-SPIRIT_LOW                   src/21a1-base-life.js:547
+SPIRIT_BYE                   src/21a1-base-life.js:589
+SPIRIT_HOLD                  src/21a1-base-life.js:559
+SPIRIT_LOW                   src/21a1-base-life.js:558
 sprgba                       src/29i-spa-draw.js:22
 SRC_DISCOUNT                 src/12ad-site.js:22
 srcPrice                     src/12ad-site.js:294
@@ -4005,7 +4029,7 @@ STORIES                      src/12k-stories-a.js:45
 STORIES_B                    src/12k-stories-b.js:27
 STORIES_C                    src/12k-stories-c.js:23
 STORIES_D                    src/12k-stories-d.js:15
-STORM_WORLDS                 src/21a-mode-base.js:269
+STORM_WORLDS                 src/21a-mode-base.js:274
 STORY_DAY                    src/11c-stories.js:24
 STORY_ETHER_SHARE            src/11c-stories.js:26
 STORY_FIX                    src/11c-stories.js:54
@@ -4160,7 +4184,7 @@ tfbm                         src/18a-material.js:23
 thingAdd                     src/27i-ui-table.js:37
 thingsAll                    src/27i-ui-table.js:36
 tickDrones                   src/12-economy.js:212
-tickLaunchHold               src/21-mode-surface.js:641
+tickLaunchHold               src/21-mode-surface.js:645
 TIER_RU                      src/05-parts.js:86
 tierAt                       src/04-mods.js:56
 tierFromDanger               src/05-parts.js:101
@@ -4215,7 +4239,7 @@ toldOf                       src/11aj-told.js:36
 toldOffBlock                 src/11ar-doors.js:53
 toldWorked                   src/11aj-told.js:41
 toldWorth                    src/11aj-told.js:49
-totalLoss                    src/21-mode-surface.js:678
+totalLoss                    src/21-mode-surface.js:682
 towShare                     src/03f-hull-role.js:87
 TRACE_CAP_DAY                src/11ag-trace.js:46
 TRACE_MARK                   src/11ag-trace.js:32
@@ -4278,7 +4302,7 @@ unlockAudio                  src/09-audio.js:48
 unpackPart                   src/05-parts.js:484
 updateAllies                 src/12a-crew.js:624
 updateBarges                 src/12l-barge.js:165
-updateBase                   src/21a-mode-base.js:367
+updateBase                   src/21a-mode-base.js:372
 updateBelt                   src/24-mode-belt.js:185
 updateCave                   src/22-mode-cave.js:251
 updateCaveDeco               src/22a-cave-deco.js:205
@@ -5130,8 +5154,8 @@ zooTick                      src/11ad-zoo.js:41
 
 ## src/14-save.js · 68 КБ
   · сохранение:1
-  · запись не имеет права убить полёт:98
-  · пустая карта возвращается из облака СПИСКОМ:177
+  · запись не имеет права убить полёт:99
+  · пустая карта возвращается из облака СПИСКОМ:178
 
 ## src/14a-cloud.js · 12 КБ
   · облако, вкладки и обмен:1
@@ -5162,7 +5186,7 @@ zooTick                      src/11ad-zoo.js:41
   · ракеты: боеприпас — это груз:1
   · пять видов боеприпаса (M367, §4):21
 
-## src/17-mode-system.js · 46 КБ
+## src/17-mode-system.js · 47 КБ
   · режим: система:1
 
 ## src/17a-station-mod.js · 13 КБ
@@ -5263,22 +5287,22 @@ zooTick                      src/11ad-zoo.js:41
 
 ## src/21-mode-surface.js · 48 КБ
   · поверхность:1
-  · навигатор и подсказки сверху:716
+  · навигатор и подсказки сверху:720
 
-## src/21a-mode-base.js · 32 КБ
+## src/21a-mode-base.js · 33 КБ
   · база на планете: вид в разрезе:1
-  · энергия и соседство:152
-  · ленивое время базы:217
-  · налёты пиратов на базу:221
-  · буря:264
-  · сеть баз:335
-  · обновление сцены:366
+  · энергия и соседство:154
+  · ленивое время базы:222
+  · налёты пиратов на базу:226
+  · буря:269
+  · сеть баз:340
+  · обновление сцены:371
 
-## src/21a1-base-life.js · 41 КБ
+## src/21a1-base-life.js · 42 КБ
   · смена базы и журнал (M390, DESIGN-base §3, §12, §15):1
-  · воздух и вода (M391, DESIGN-base §4–6, §13):207
-  · тепло, глубина, криоген (M392, DESIGN-base §4, §7, §16):396
-  · харч и дух (M393, DESIGN-base §6, §8, §16):534
+  · воздух и вода (M391, DESIGN-base §4–6, §13):209
+  · тепло, глубина, криоген (M392, DESIGN-base §4, §7, §16):403
+  · харч и дух (M393, DESIGN-base §6, §8, §16):545
 
 ## src/21a2-base-link.js · 9 КБ
   · СВЯЗЬ и мачта (M394, DESIGN-base §38, §45):1
@@ -5289,7 +5313,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/21a4-base-adj.js · 6 КБ
   · соседство и залы (M396, DESIGN-base §7):1
 
-## src/21a5-base-dir.js · 12 КБ
+## src/21a5-base-dir.js · 13 КБ
   · директор базы (M397, DESIGN-base §10):1
 
 ## src/21a6-base-avral.js · 8 КБ
@@ -5297,6 +5321,9 @@ zooTick                      src/11ad-zoo.js:41
 
 ## src/21a7-base-charter.js · 5 КБ
   · устав базы (M399, DESIGN-base §9):1
+
+## src/21a8-base-world.js · 7 КБ
+  · формуляр планеты (M400, DESIGN-base §21):1
 
 ## src/21aa-base-rooms.js · 36 КБ
   · база: внутренности отсеков:1
@@ -5949,7 +5976,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzzv-wall.js · 7 КБ
   · автотесты: стена, которая помнит (M210):1
 
-## tests/91zzzw-base.js · 56 КБ
+## tests/91zzzw-base.js · 63 КБ
   · база: смена, повтор и журнал (M390, DESIGN-base §3, §12):1
 
 ## tests/91zzzw-chron.js · 33 КБ

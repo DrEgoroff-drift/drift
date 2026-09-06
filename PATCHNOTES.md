@@ -7,6 +7,30 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.400.0 - M400: the planet is the difficulty setting
+
+«Дрейф» will never have a difficulty slider. It has a galaxy in which some rocks will kill you, and
+from this version the rock says which kind it is. Eight dials — тепло, свет, давление, тяжесть,
+ветер, дрожь, лёд, порода — derived from what a planet already has (type, star, seed, and the site
+inside the planet) and stored nowhere.
+
+Every dial does something: heat sets the base's baseline, light sets what a solar panel is worth,
+pressure leaks air every shift whether or not anyone is breathing it, gravity makes building dearer
+and drilling better, wind and tremor weight the director's storms and quakes, ice decides whether
+water is free or flown in, and ore decides what the drill is worth. Two bases on the same planet are
+not the same base: the site shifts the dials too.
+
+The reading that matters is §21.2's: **the free thing on a world is never the thing that makes it
+rich.** A comfortable planet is poor; a planet that pays is trying to kill you. That curve is drawn
+by the table rather than tuned by hand, and the suite checks the character of each world against it.
+
+**Разведка перед закладкой.** From orbit you get three words and not one number — «жарко · ветрено ·
+порода богатая». A **зонд** costs 300 credits (ЦЕЛЬ on approach) and shows five of the eight dials
+in numbers. Landing shows all eight, because you measured them yourself. So the first mistake every
+player makes is founding a base on the strength of three words, and the probe is the cheapest
+tuition in the game.
+
+---
 ## 0.399.0 - M399: устав — four laws, each of them for good
 
 Four laws, taken one at a time as the base grows — at two, four, six and eight built compartments —

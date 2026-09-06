@@ -178,7 +178,9 @@ function baseMine(B,P,min,n){
   const vein=(typeof baseVein==="function")?baseVein(B,n):1;
   /* устав (M399): двойная смена гонит всё, общий котёл придерживает */
   const law=(typeof charterWorkMul==="function")?charterWorkMul(B):1;
-  const want=min*P.drillEff*eff*crewBoost*heat*adj*vein*law*1.1;
+  /* порода и тяжесть (M400): богатая порода и тяжёлый мир бурятся лучше */
+  const world=(typeof dialOreMul==="function")?dialOreMul(B)*clamp(dialGrav(B),.8,1.4):1;
+  const want=min*P.drillEff*eff*crewBoost*heat*adj*vein*law*world*1.1;
   let left=Math.min(want,Math.max(0,cap-held));
   const full=want>0&&left<want*.5;      /* склад забит: добыча стоит, и это строка */
   const r=rng(hashi(B.sx*7919+B.sy,B.idx,hashi(n,0x9111,0x2D)));
@@ -296,8 +298,9 @@ function baseLifeStep(B,P,n){
     }
   };
   /* подача (M396): ледоплавка рядом с электролизёром отдаёт ему талую воду
-     прямо, и льда тому нужно меньше */
-  const feed=(typeof baseAdjIce==="function")?baseAdjIce(B):0;
+     прямо, и льда тому нужно меньше. Ледяной мир (M400) отдаёт её даром */
+  const free=(typeof dialIceFree==="function")&&dialIceFree(B);
+  const feed=((typeof baseAdjIce==="function")?baseAdjIce(B):0)+(free?3:0);
   make(M.lyse,feed?{ice:Math.max(1,LIFE_LYSE.ice-feed),air:LIFE_LYSE.air}:LIFE_LYSE,"air");
   /* зелень в жилом (M396): немного воздуха сверх того, что даёт оранжерея */
   if(typeof baseAdjAir==="function"&&baseAdjAir(B))
@@ -308,6 +311,10 @@ function baseLifeStep(B,P,n){
   /* харч (M393) растёт здесь же: оранжерея пьёт ту самую воду, что натаяла
      ледоплавка, и отдаёт заодно немного воздуха */
   said|=baseFoodStep(B,P,n)?1:0;
+  /* давление (M400, §21.1): на мире с атмосферой воздух уходит сам, и на
+     двойке электролизёр становится не решением, а беговой дорожкой */
+  const leak=(typeof dialLeak==="function")?dialLeak(B):0;
+  if(leak&&baseCrewN(B))L.air=Math.max(0,L.air-leak);
   /* расход: только людьми и только пока они тут */
   const need=baseLifeNeed(B);
   if(need.air||need.water){
@@ -442,7 +449,11 @@ function baseDepth(B){
   return deep;
 }
 function baseHeat(B,n){
-  let h=(HEAT_WORLD[B.type]!==undefined)?HEAT_WORLD[B.type]:0;
+  /* формуляр (M400, §21.1): основание тепла — ручка планеты, а не тип по
+     таблице. Тип в ней и так учтён, но у двух каменистых миров теперь может
+     быть разное небо, и это главное, ради чего формуляр заводили */
+  let h=(typeof dialHeat==="function")?dialHeat(B)
+       :((HEAT_WORLD[B.type]!==undefined)?HEAT_WORLD[B.type]:0);
   for(let r=0;r<baseRows(B);r++)for(let c=0;c<BASE_COLS;c++){
     const cell=baseCell(B,c,r);
     if(!cell||cell.hp<=0)continue;

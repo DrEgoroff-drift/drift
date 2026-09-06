@@ -597,7 +597,11 @@ function updateSurface(dt){
     G.prompt="ДЕЙСТВИЕ — СПУСТИТЬСЯ В БАЗУ";
     if(actEdge){enterBase(S.p);return;}
   }else if(dShip<shipZoneR()&&!baseAt(G.sx,G.sy,S.p.idx)&&S.p.type!=="gas"){
-    G.prompt="ДЕЙСТВИЕ — ЗАЛОЖИТЬ БАЗУ · 2500 КР + 10 СПЛАВОВ";
+    /* формуляр (M400, §21.3): стоя на грунте, игрок видит все восемь ручек —
+       он их сам и намерил. Заложить вслепую по-прежнему можно, но теперь это
+       выбор, а не случайность */
+    const dl=(typeof dialLine==="function")?dialLine(G.sx,G.sy,S.p.idx):"";
+    G.prompt=(dl?dl+"\n":"")+"ДЕЙСТВИЕ — ЗАЛОЖИТЬ БАЗУ · 2500 КР + 10 СПЛАВОВ";
     if(actEdge&&foundBase(S.p)){enterBase(S.p);return;}
   }else if(S.on&&!atCave){
     /* ── шахта у планеты одна, и теперь у неё есть адрес (M234) ──

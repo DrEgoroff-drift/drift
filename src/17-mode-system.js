@@ -301,7 +301,19 @@ function updateSystem(dt){
         let ln="ДЕЙСТВИЕ — "+(G.opts.easyLand?"АВТО-ПОСАДКА":"ПОСАДКА")+" · "+near.name;
         if(G.tech.has("deep")&&near.res.length)
           ln+="\nНЕДРА: "+near.res.map(k=>RES[k].ru).join(", ");
+        /* формуляр планеты (M400, §21.3): с орбиты — три слова и ни одного
+           числа; зонд за 300 кр показывает пять ручек из восьми. Заложить
+           базу вслепую по-прежнему можно, и это самая дорогая экономия в игре */
+        if(typeof dialLine==="function"&&near.type!=="gas"){
+          ln+="\n"+dialLine(G.sx,G.sy,near.idx);
+          if(typeof probeHas==="function"&&!probeHas(G.sx,G.sy,near.idx))
+            ln+="\nЦЕЛЬ — ЗОНД ЗА "+PROBE_COST+" КР";
+        }
         G.prompt=ln;
+        if(keys.lock&&!G.probeHeld&&typeof probeBuy==="function"&&near.type!=="gas"){
+          G.probeHeld=1;probeBuy(G.sx,G.sy,near.idx);
+        }
+        if(!keys.lock)G.probeHeld=0;
         if(actEdge){startLanding(near);return;}
       }
     }else if(!G.prompt)G.prompt=near.name+" · "+Math.round(nd)+" ед.";

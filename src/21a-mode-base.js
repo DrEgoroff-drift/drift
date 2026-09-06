@@ -90,7 +90,9 @@ function baseCost(k,B){
      процентов — она и есть та причина, по которой мастерскую ставят первой */
   let shop=1;
   if(B&&B.cells)for(const cell of B.cells)if(cell&&cell.hp>0&&cell.k==="shop"){shop=.85;break;}
-  const d=mgrBuildDiscount()*shop,c=BUILD[k].cost;
+  /* тяжесть (M400): на тяжёлом мире всё дороже поднимать и ставить */
+  const grav=(B&&typeof dialBuildMul==="function")?dialBuildMul(B):1;
+  const d=mgrBuildDiscount()*shop*grav,c=BUILD[k].cost;
   if(d>=1)return c;
   return {credits:Math.round(c.credits*d),alloy:c.alloy?Math.max(1,Math.round(c.alloy*d)):c.alloy};
 }
@@ -164,7 +166,10 @@ function baseNeighbors(B,c,r){
 }
 function basePower(B){
   let prod=0,cons=0,core=0,drills=0,drillEff=0,hab=0,habPenalty=0,store=0,ref=0,pads=0,guns=0;
-  const cls=(getSystem(B.sx,B.sy).cls&&getSystem(B.sx,B.sy).cls.lum)||1;
+  /* свет (M400, §21.1): отдача панели — ручка планеты, а не только звезда:
+     на тусклом мире реактор остаётся единственным выходом */
+  const cls=(typeof dialLight==="function")?dialLight(B)
+           :((getSystem(B.sx,B.sy).cls&&getSystem(B.sx,B.sy).cls.lum)||1);
   for(let r=0;r<baseRows(B);r++)for(let c=0;c<BASE_COLS;c++){
     const cell=baseCell(B,c,r);if(!cell||cell.hp<=0)continue;   // разбитый отсек не работает и не ест энергию
     const M=BUILD[cell.k];if(!M)continue;

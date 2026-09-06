@@ -1569,7 +1569,15 @@ Taken at the desk, logged in the journal. **Deferred:** «сухой закон�
 (that module is not built yet) and the other two faces of the bad guest — a fire and a rumour that
 reaches the pirates; today he steals. **Stage B is closed** (M394–M399).
 
-**C · тяжёлая игра** — M400 формуляр планеты (§21) · M401 девять законов (§22) · M402 развалина и
+**C · тяжёлая игра** — ~~M400 формуляр планеты~~ — 0.400.0 (2026-09-06): `21a8-base-world` — eight
+derived dials cached by address **and type**, wired to heat, panel yield, an air leak per shift,
+build cost and drill yield, the director's storm and quake weights, free water and ore richness; the
+site inside the planet shifts them; and §21.3's three levels of scouting — three words from orbit, a
+300-credit probe on ЦЕЛЬ during approach for five dials, and all eight when you are standing on the
+ground. Suites in `91zzzw-base`, and the base suites now pin a flat formulary so they measure people
+and machines rather than the world. **Deferred:** the gas giant as a floating station with its own
+build list (§21.2 says «later»), and «затопление» as the ocean's own walking incident — the fire of
+M397 is the only kind so far. · M401 девять законов (§22) · M402 развалина и
 возврат (§22.1, §39) · M403 плата и блокада (§23, §42, §43) · M404 ремесленный проход по всей
 сцене (`DESIGN-craft`, `look()`, its own almanac issue).
 

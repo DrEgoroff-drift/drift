@@ -22,6 +22,16 @@ function bLife(){
      тратит оранжерея — набор начинал зависеть от того, что выпало буру в эту
      смену. Меряем посадку, а не удачу */
   B.res=["iron"];
+  /* ── и мир без характера ──
+     С M400 у планеты восемь ручек, и они трогают воздух, тепло, стройку и
+     бур. Набор, который меряет ЛЮДЕЙ и МАШИНЫ, обязан мерить их, а не мир:
+     ставим формуляр ровным и говорим об этом вслух. Сам формуляр проверяется
+     своим набором. */
+  if(typeof G._dial!=="undefined"||true){
+    if(!G._dial)G._dial={};
+    G._dial[B.sx+","+B.sy+":"+B.idx+":"+B.type]={heat:0,light:1,press:0,grav:1,
+      wind:0,quake:0,ice:0,ore:2,type:B.type,key:"тест"};
+  }
   return B;
 }
 function bPool(B){let s=0;for(const k in B.pool)s+=B.pool[k]|0;return s;}
@@ -289,12 +299,11 @@ TEST_SUITES.push(()=>suite("база M391: старая запись грузи�
 TEST_SUITES.push(()=>suite("база M392: тепло с обеих сторон",()=>{
   const B=bLife();
   /* мир задаёт основание, и оно на виду */
-  B.type="ice";
-  const cold=baseHeat(B);
-  B.type="volcanic";
-  ok(baseHeat(B)>cold,"на вулкане теплее, чем на льду: "+cold+" → "+baseHeat(B));
-  eq(baseHeat(B)-cold,HEAT_WORLD.volcanic-HEAT_WORLD.ice,"ровно на разницу оснований");
-  B.type="gas";
+  /* мир задаёт основание — теперь формуляром (M400), и у двух миров оно разное */
+  const cold=baseDial(B.sx,B.sy,B.idx,"ice").heat;
+  const hot=baseDial(B.sx,B.sy,B.idx,"volcanic").heat;
+  ok(hot>cold,"на вулкане теплее, чем на льду: "+cold.toFixed(1)+" → "+hot.toFixed(1));
+  ok(cold<0&&hot>0,"и знак у них разный");
   /* машины греют по таблице */
   const h0=baseHeat(B);
   B.cells[1]={k:"lyse",hp:1};
@@ -960,4 +969,97 @@ TEST_SUITES.push(()=>suite("база M399: четыре закона, и каж�
   ok((B4.pool.iron|0)<90,"и правда меньше: "+B4.pool.iron);
   eq(charterThiefStep(B4,baseShift()),0,"второй раз не пропадает");
   ok(B4.log.some(x=>x.k==="thief"),"и это записано в журнал");
+}));
+
+/* ── формуляр планеты (M400) ──
+   Восемь ручек, все выводятся, ничего не хранится. И главное чтение §21.2:
+   даровое на мире — никогда не то, что делает его богатым. */
+TEST_SUITES.push(()=>suite("база M400: планета и есть сложность",()=>{
+  resetWorld();
+  G.sx=0;G.sy=0;
+  /* таблица честная: у каждого мира все восемь ручек и в своих границах */
+  for(const w in DIAL_WORLD){
+    const D=baseDial(3,4,0,w);
+    for(const k of DIAL_KEYS)ok(typeof D[k]==="number","у мира «"+w+"» есть ручка "+k);
+    ok(D.heat>=-3&&D.heat<=3,"тепло в границах: "+w+" "+D.heat.toFixed(1));
+    ok(D.ore>=1&&D.ore<=5,"порода в границах: "+w+" "+D.ore);
+    ok(D.light>=0&&D.light<=2,"свет в границах: "+w);
+  }
+  /* характер миров — тот, что описан в §21.2 */
+  ok(baseDial(3,4,0,"volcanic").heat>baseDial(3,4,0,"ice").heat,"вулкан теплее льда");
+  ok(baseDial(3,4,0,"ice").ice>baseDial(3,4,0,"desert").ice,"на льду лёд даром, в пустыне нет");
+  ok(baseDial(3,4,0,"desert").wind>baseDial(3,4,0,"terran").wind,"в пустыне дует сильнее");
+  ok(baseDial(3,4,0,"toxic").press>baseDial(3,4,0,"rocky").press,"на ядовитой воздух уходит");
+  ok(baseDial(3,4,0,"toxic").ore>baseDial(3,4,0,"terran").ore,"и порода там богаче, чем на земной");
+  /* тот же адрес — тот же формуляр, и он не хранится в сейве */
+  const a=baseDial(3,4,0,"rocky"),b2=baseDial(3,4,0,"rocky");
+  eq(a.ore,b2.ore,"формуляр не гуляет между вызовами");
+  const snap=JSON.stringify(snapshot());
+  ok(snap.indexOf("_dial")<0,"и в сохранение он не попадает");
+  /* участок: две базы на одной планете — не одна и та же база */
+  const c=baseDial(3,4,1,"rocky");
+  ok(a.ore!==c.ore||a.ice!==c.ice||a.heat!==c.heat,"у соседнего участка формуляр свой");
+  /* ── разведка: три слова, зонд, замер ── */
+  G.probed={};
+  eq(dialLevel(3,4,0),1,"с орбиты — первый уровень");
+  const w1=dialLine(3,4,0);
+  ok(w1.indexOf("ОРБИТЫ")>=0,"и это три слова: "+w1);
+  ok(!/\d/.test(w1.replace(/[^\d]/g,"")),"без единого числа");
+  G.credits=1000;
+  ok(probeBuy(3,4,0),"зонд куплен");
+  eq(G.credits,1000-PROBE_COST,"и стоил он своих денег");
+  eq(dialLevel(3,4,0),2,"второй уровень");
+  const w2=dialLine(3,4,0);
+  ok(w2.indexOf("ЗОНД")>=0&&/\d/.test(w2),"зонд даёт числа: "+w2);
+  eq(w2.split("·").length-1>=PROBE_SHOW-1,true,"и их пять");
+  ok(w2.indexOf("порода")<0,"но не все восемь: порода остаётся на высадку");
+  ok(probeBuy(3,4,0),"второй раз зонд не покупают");
+  eq(G.credits,1000-PROBE_COST,"и денег он больше не берёт");
+}));
+
+TEST_SUITES.push(()=>suite("база M400: ручки и правда крутят",()=>{
+  const B=bLife();
+  const key=B.sx+","+B.sy+":"+B.idx+":"+B.type;
+  const set=o=>{G._dial[key]=Object.assign({heat:0,light:1,press:0,grav:1,wind:0,
+    quake:0,ice:0,ore:2,type:B.type,key:"тест"},o);};
+  /* тепло: основание идёт от формуляра */
+  set({heat:2});
+  const hot=baseHeat(B);
+  set({heat:-2});
+  ok(baseHeat(B)<hot,"тёплая ручка греет базу: "+baseHeat(B)+" против "+hot);
+  eq(hot-baseHeat(B),40,"и ровно на свою разницу в десятых");
+  /* давление: воздух уходит сам */
+  set({press:0});
+  bCrew(B,2);
+  eq(dialLeak(B),0,"без давления не течёт");
+  set({press:2});
+  ok(dialLeak(B)>0,"с давлением уходит: "+dialLeak(B)+" за смену");
+  baseLife(B).air=100;
+  B.t0=baseShift()-1;
+  bNoDir(()=>baseResolve(B,Date.now()));
+  ok(baseLife(B).air<100-2*LIFE_AIR,"и это сверх того, что надышали");
+  /* лёд: на ледяном мире ледоплавке нужно меньше */
+  set({ice:2});
+  ok(dialIceFree(B),"на ледяном мире вода почти даром");
+  set({ice:0});
+  ok(!dialIceFree(B),"а в пустыне нет");
+  /* тяжесть: дороже строить, лучше бурить */
+  set({grav:2});
+  const heavy=baseCost("storage",B).credits;
+  set({grav:.5});
+  ok(baseCost("storage",B).credits<heavy,"на лёгком мире стройка дешевле: "+
+    baseCost("storage",B).credits+" против "+heavy);
+  /* порода: богатая даёт больше */
+  set({ore:5});
+  const rich=dialOreMul(B);
+  set({ore:1});
+  ok(dialOreMul(B)<rich,"бедная порода даёт меньше: "+dialOreMul(B).toFixed(2)+" против "+rich.toFixed(2));
+  /* свет: панель на тусклом мире почти бесполезна */
+  for(let i=0;i<B.cells.length;i++)B.cells[i]=null;
+  B.cells[0]={k:"solar",hp:1};
+  set({light:2});
+  const bright=basePower(B).prod;
+  set({light:.2});
+  ok(basePower(B).prod<bright,"на тусклом мире панель даёт меньше: "+
+    basePower(B).prod+" против "+bright);
 }));

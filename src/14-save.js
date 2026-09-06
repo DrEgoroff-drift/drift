@@ -60,6 +60,7 @@ function snapshot(){
     episodes:G.episodes,notebook:G.notebook,gifts:G.gifts,mslBy:G.mslBy,
     bonds:G.bonds,coupN:G.coupN,
     letter:G.letter||null,dipSwapN:G.dipSwapN,smugN:G.smugN,smugBy:G.smugBy,
+    probed:G.probed,
     longHod:G.longHod,race:G.race||null,raceBest:G.raceBest,
     drones:G.drones,droneInventory:G.droneInventory,droneIds:G.droneIds,droneSold:G.droneSold||{},crew:G.crew,bases:G.bases,
     mgrs:G.mgrs,blueprints:G.blueprints,aiRift:G.aiRift,rogues:G.rogues,exiles:G.exiles,
@@ -225,6 +226,8 @@ function applySave(s){
   /* «Долгий Ход» и олимпиада (M388): собранные обрывки и своё время — это то,
      что игрок сделал сам, значит оно живёт в сейве, как книжная полка */
   G.longHod=Array.isArray(s.longHod)?s.longHod:[];
+  /* зонды (M400): купленное знание о планете — это то, что игрок сделал */
+  G.probed=(s.probed&&typeof s.probed==="object")?s.probed:{};
   G.race=(s.race&&typeof s.race==="object")?s.race:null;
   G.raceBest=s.raceBest|0||undefined;
   G.shipId=shipData(s.shipId)?s.shipId:"strizh";

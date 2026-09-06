@@ -53,10 +53,15 @@ function dirPool(B){
    мире (§10.2). */
 function dirWeights(B){
   const pool=dirPool(B);
+  /* формуляр (M400): ветер и дрожь — это ручки планеты, а не строчки таблицы.
+     На пустынной буря приходит вдвое чаще, на вулканической трясёт всерьёз */
+  const wind=(typeof dialWind==="function")?dialWind(B):1;
+  const quake=(typeof dialQuake==="function")?dialQuake(B):1;
+  const wOf=e=>e.k==="storm"?e.w*clamp(wind,.2,2):(e.k==="quake"?e.w*clamp(quake,.2,2):e.w);
   let bad=0,good=0;
-  for(const e of pool)if(e.good)good+=e.w;else bad+=e.w;
+  for(const e of pool)if(e.good)good+=e.w;else bad+=wOf(e);
   const kGood=good>0?(bad/3)/good:0;
-  return pool.map(e=>({e,w:e.good?e.w*kGood:e.w}));
+  return pool.map(e=>({e,w:e.good?e.w*kGood:wOf(e)}));
 }
 function dirGoodShare(B){
   const W=dirWeights(B);
