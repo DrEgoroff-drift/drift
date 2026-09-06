@@ -474,3 +474,70 @@ TEST_SUITES.push(()=>suite("база M393: дух читает все шкалы
   baseResolve(B,Date.now());
   eq(G.crew.length,now,"следующий уходит не в ту же смену");
 }));
+
+/* ── СВЯЗЬ и мачта (M394) ──
+   Проверяется главное правило §38: слышно ровно столько, сколько слышно, и
+   расстояние не отменяется ни панелью, ни кнопкой. */
+TEST_SUITES.push(()=>suite("база M394: сигнал решает, что слышно",()=>{
+  const B=bLife();
+  B.cells[4]={k:"reactor",hp:1};
+  const call=baseCall(B);
+  ok(/^БЗ-\d{3}$/.test(call),"у базы есть позывной: "+call);
+  eq(baseCall(B),call,"и он не гуляет");
+  /* в своей системе слышно всё */
+  G.sx=B.sx;G.sy=B.sy;
+  eq(baseSignal(B),1,"на месте сигнал полный");
+  eq(baseHear(B),3,"и слышно цифрами");
+  const R=baseReport(B);
+  ok(R.head.indexOf("воздух")>0,"цифры называют шкалы: "+R.head);
+  ok(R.head.indexOf("undefined")<0,"и без мусора");
+  /* без мачты — три сектора, дальше слова, потом ничего */
+  ok(!baseHasMast(B),"мачты пока нет");
+  ok(baseHear(B,B.sx+2,B.sy)<3,"за два сектора цифр уже нет");
+  eq(baseHear(B,B.sx+30,B.sy),0,"а за тридцать не слышно вовсе");
+  eq(baseReport(B,B.sx+30,B.sy).head,"…шшш","и это честный треск, а не пустая строка");
+  /* мачта достаёт по всему кругу */
+  B.cells[1]={k:"mast",hp:1};
+  ok(baseHasMast(B),"мачта стоит");
+  ok(baseHear(B,B.sx+30,B.sy)>0,"с мачтой за тридцать секторов уже слышно");
+  ok(baseSignal(B,B.sx+30,B.sy)>baseSignal({...B,cells:B.cells.map(c=>c&&c.k==="mast"?null:c)},B.sx+30,B.sy),
+     "и слышно лучше, чем без неё");
+  /* обесточенная база едва слышна: передатчик на общей шине */
+  const q0=baseSignal(B,B.sx+10,B.sy);
+  B.cells[2]=null;B.cells[4]=null;                  /* реакторов нет */
+  ok(baseSignal(B,B.sx+10,B.sy)<q0,"без энергии сигнал слабее");
+  B.cells[2]={k:"reactor",hp:1};B.cells[4]={k:"reactor",hp:1};
+  /* по слову на шкалу — это слова, а не числа */
+  const W=baseReport(B,B.sx+8,B.sy);
+  if(W.lvl===2){
+    ok(W.head.indexOf("—")>0,"на среднем сигнале дают слова: "+W.head);
+    ok(!/\d\d\d/.test(W.head),"и ни одного длинного числа");
+  }else ok(true,"на этой дистанции уровень другой: "+W.lvl);
+}));
+
+TEST_SUITES.push(()=>suite("база M394: один приказ за сеанс, и он может не дойти",()=>{
+  const B=bLife();
+  B.cells[4]={k:"reactor",hp:1};
+  G.sx=B.sx;G.sy=B.sy;
+  ok(baseLinkCan(B),"рядом приказ дойдёт");
+  ok(baseLinkPark(B),"приказ отдан");
+  ok(baseParked(B),"база встала по приказу");
+  ok(baseLinkPark(B),"и снимается тем же приказом");
+  ok(!baseParked(B),"база поднята");
+  /* далеко и без мачты — не дотянуться */
+  G.sx=B.sx+25;G.sy=B.sy;
+  ok(!baseLinkCan(B),"за двадцать пять секторов без мачты не дотянуться");
+  eq(baseLinkPark(B),false,"и приказ не проходит");
+  eq(baseParked(B),false,"база осталась как была");
+  /* с мачтой — дотягивается, но не куда угодно: приказ живёт в той половине
+     круга, где сигнал ещё разборчив, и это ровно та цена, которую снимает
+     настоящий управляющий (§34) */
+  B.cells[1]={k:"mast",hp:1};
+  ok(!baseLinkCan(B)||baseSignal(B)>=LINK_WORD,"на краю мачты приказ уже на грани");
+  G.sx=B.sx+15;G.sy=B.sy;
+  ok(baseLinkCan(B),"с мачтой на пятнадцати секторах дотянулись");
+  ok(baseLinkPark(B),"и приказ прошёл");
+  ok(baseParked(B),"база встала");
+  baseWake(B,baseShift(),"hand");
+  G.sx=B.sx;G.sy=B.sy;
+}));

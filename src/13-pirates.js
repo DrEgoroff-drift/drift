@@ -93,6 +93,9 @@ function spawnPirates(){
   G.npcWrecks=null;
   if(typeof npcSpawn==="function")npcSpawn();
   if(typeof warPull==="function")warPull();      /* ведомости — на каждом прыжке (M376) */
+  /* базы догоняются на каждом прыжке (M394): иначе они «зовут» ровно тогда,
+     когда игрок и так на них смотрит, а весь смысл СВЯЗИ — услышать в дороге */
+  if(typeof baseResolveAll==="function")baseResolveAll();
 }
 /* fireShot — в 13-combat (M361): у выстрела есть хозяин */
 let fireCool=0;

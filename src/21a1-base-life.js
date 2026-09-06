@@ -79,8 +79,11 @@ function baseLog(B,kind,n,args){
   const f=BLOG[kind];
   if(!f)return;
   if(!B.log)B.log=[];
-  B.log.push({n:n|0,k:kind,t:f(B,args||{})});
+  const line={n:n|0,k:kind,t:f(B,args||{})};
+  B.log.push(line);
   if(B.log.length>BASE_LOG)B.log.splice(0,B.log.length-BASE_LOG);
+  /* СВЯЗЬ (M394): о том, что случилось, база говорит САМА — если её слышно */
+  if(typeof baseCallOut==="function")baseCallOut(B,line);
 }
 function baseLogList(B,max){
   const L=(B&&B.log)||[];

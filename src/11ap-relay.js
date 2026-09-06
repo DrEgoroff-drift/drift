@@ -242,6 +242,9 @@ function relayDial(box){
 }
 function renderRelays(box){
   box.textContent="";
+  /* свои базы (M394, §38): та же панель, тот же приёмник — потому что это и
+     есть приёмник, а не второй экран про базы */
+  if(typeof renderBaseLink==="function")renderBaseLink(box);
   const L=relayList();
   if(!L.length){
     tableRow(box,"dim","","приёмников ещё не слышали: их частоты лежат в шуме, между диапазонами");

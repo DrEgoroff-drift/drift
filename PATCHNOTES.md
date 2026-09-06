@@ -7,6 +7,36 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.394.0 - M394: СВЯЗЬ — the base from anywhere, on the receiver and not on a screen
+
+«Можно посмотреть, из любого места» — and the answer is deliberately not a screen. A base is a
+**channel on the receiver**, in the same panel where the galaxy's other masts are caught, and it
+tells you exactly as much as the signal carries:
+
+- in its own system — numbers on every gauge and the last two journal lines;
+- a few sectors out — one word per gauge («воздух — впритык») and the last line;
+- far, or unpowered — one word about the base as a whole: порядок, терпимо, плохо, встали;
+- beyond that — «…шшш», and that is information too.
+
+A panel would have shown everything always and made distance, the radio operator and the mast
+worthless in one stroke. The receiver makes each of them worth something — and it is how a manager
+will be judged when managers arrive (§34): the report says one thing, the gauge says another, and
+the difference is audible.
+
+**Мачта** is a surface-row module: with it the base is heard across the circle, without it for
+three sectors. Nothing is locked behind it — without a mast you hear badly, not never. That is the
+difference between hearing and knowing, which is what the whole game is about.
+
+**The base calls you.** A stop, a departure, a raid, heat that finished a module off — the crew say
+it themselves over the ether while you are flying, at whatever quality the signal has, and turning
+back is then a decision rather than a line in a panel. Bases are now caught up on **every jump**, so
+this happens in the road and not only when you look at them.
+
+**One order per contact**: park a base or raise it from anywhere the signal is good enough — which
+is about half the mast's reach. A distant base is genuinely harder to steer, exactly as §38 says,
+and that is the cost the real управляющий will one day remove.
+
+---
 ## 0.393.0 - M393: food has a taste, and the base has a spirit
 
 The fourth gauge is **харч**, and it is the only one with a flavour. **Оранжерея** drinks 6 water,

@@ -1524,8 +1524,14 @@ in `91zzzw-base`. **Deferred:** the кают-компания and лазарет
 место» group, M394–M395), and the seven roles — жизнеобеспеченец, садовод and радист arrive with the
 people in the room.
 
-**B · место и люди** — M394 СВЯЗЬ и мачта (§38, §45 — pulled forward: it is what makes every later
-pass observable) · M395 люди в комнате (§8) · M396 соседство, залы, ствол, сетка 6×4 (§7) ·
+**B · место и люди** — ~~M394 СВЯЗЬ и мачта~~ — 0.394.0 (2026-09-06): `21a2-base-link` — the base as
+a channel in the receiver panel (11ap), four levels of legibility (numbers · a word per gauge · one
+word · static) from distance, mast, power and a радист hook that is honestly zero until the role
+lands; `мачта` in `BUILD` as a surface-row module; the base calling out over the ether when it stops,
+loses someone, is raided or cooks a module, with bases now resolved on **every jump** so it happens
+on the road; and one order per contact (park/raise) gated at the legible-word level, i.e. about half
+the mast's reach. Suites in `91zzzw-base`. **Deferred:** the shift's plan and «sell the receivable» as
+further orders (they need §10's director and §23's money), and the радист himself (M395). · M395 люди в комнате (§8) · M396 соседство, залы, ствол, сетка 6×4 (§7) ·
 M397 директор (§10) · M398 аврал (§11) · M399 устав (§9).
 
 **C · тяжёлая игра** — M400 формуляр планеты (§21) · M401 девять законов (§22) · M402 развалина и
