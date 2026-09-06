@@ -277,6 +277,9 @@ body:not(.inflight) .ipod{display:none}
 .pads button[data-k=msl].on::before{border-color:#ff8f6a;
   box-shadow:0 0 18px rgba(255,143,106,.3),inset 0 0 14px rgba(255,143,106,.2)}
 .pads button[data-k=msl].empty{opacity:.4}
+/* ЦЕЛЬ (M360): захват ближайшего — той же тревожной семьи, что огонь, но тоньше */
+.pads button[data-k=lock]{font-size:9px;color:var(--alarm);letter-spacing:.03em}
+.pads button[data-k=lock]::before{border-color:rgba(255,107,87,.38)}
 #launchbtn{position:fixed;right:14px;bottom:calc(env(safe-area-inset-bottom) + 100px);
   z-index:6;
   width:88px;height:44px;border-radius:var(--rad-b);background:var(--glass);

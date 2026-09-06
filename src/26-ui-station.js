@@ -329,6 +329,10 @@ function shipRow(id,S){
     const b=el("button","act"+(own?"":" gold"),own?"ПЕРЕСЕСТЬ":pay.toLocaleString("ru")+" кр");
     b.disabled=!own&&G.credits<pay;
     b.onclick=()=>{
+      /* касса проверяется В МОМЕНТ нажатия, а не при отрисовке: между ними
+         другой тычок мог её опустошить, и второй тычок уводил счёт в минус
+         (сеть «полный трюм», 0.360.0) */
+      if(!own&&G.credits<pay){say("НЕ ХВАТАЕТ КРЕДИТОВ",60);return;}
       if(!own){G.credits-=pay;G.owned[id]=true;
         logAdd("money","Куплен корабль «"+S.ru+"» за "+pay.toLocaleString("ru")+" кр");
         /* вторая строка «Ключа от верфи»: уникальный корпус приходит не пустым */

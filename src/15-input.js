@@ -360,7 +360,7 @@ cvs.addEventListener("pointermove",e=>{
   const dx=e.clientX-p.x,dy=e.clientY-p.y;
   p.x=e.clientX;p.y=e.clientY;
   if(Math.hypot(e.clientX-p.x0,e.clientY-p.y0)>8)p.moved=true;
-  if(ptr.size===2&&(G.mode==="system"||G.mode==="map")){
+  if(ptr.size===2&&(G.mode==="system"||G.mode==="map")&&!(typeof helmPinchBlocked==="function"&&helmPinchBlocked())){
     const [a,b]=[...ptr.values()];
     const d=Math.hypot(a.x-b.x,a.y-b.y)||1;
     if(G.mode==="system")setZoom(zoom0*d/pinch0);
@@ -462,6 +462,8 @@ function tap(sxp,syp){
     return;
   }
   if(G.mode!=="system")return;
+  /* корпус в 40 px — захват (M360); пустое небо в конце снимает метки */
+  if(helmTap(sxp,syp))return;
   /* ── сперва фишки компаса ──
      Они нарисованы на канве и лежат поверх мира, поэтому и в проверке идут
      первыми: тычок в плашку «ЗВЕЗДА · 3105» — это выбор звезды, а не точки
@@ -524,7 +526,7 @@ function tap(sxp,syp){
     G.ap=best;G.ap.phase="fly";
     const nm=best.kind==="planet"?best.p.name:(best.kind==="station"?S.name:B.name);
     say("Автопилот → "+nm,90);
-  }
+  }else if(G.marks&&G.marks.length)G.marks.length=0;   /* тап в пустоту снимает захват (M360) */
   /* ── промах НЕ отменяет цель ──
      Здесь стояло `else{G.ap=null}`: один мимо-тычок по движущейся планете — и
      игрок терял то, к чему уже летел. Наказание за неточность в игре, где

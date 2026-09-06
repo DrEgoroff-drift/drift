@@ -962,9 +962,9 @@ One system inside ГЛАВТРАССА's centre (r ≈ 6, fixed by seed, never t
 ## 18. The queue — three stages, playable on /dev after each (replaces the M360–M383 list)
 
 **Stage A — the fight** (client only)
-- **M360** helm and lock: `G.ctl`, inertia to drawing, thrust vector, release rule, marks,
-  auto-lock, autofire on today's gun, mouse + arrows, two floating sticks, pads row for the
-  system mode; D07, D08, D16.
+- ~~**M360** helm and lock~~ — 0.360.0 (2026-09-06): `15a-helm`, `G.ctl`, suite `91zzzw-helm`.
+  Learned: Space stays ДЕЙСТВИЕ; the raw key layer bypasses `G.opts.keys`; two-finger pinch in
+  the system mode is gone (zoom = rail buttons); the pad-row key must include the mode.
 - **M361** ships shoot each other: `owner`, rank roles, rear hit, hull bar, flee; IFF hook (D09).
 - **M362** energy bar and the seven numbers on today's gun; three shield types.
 - **M363** ОСНАСТКА: sizes/types on the points, the dock screen, comparison, стрельбище, groups;

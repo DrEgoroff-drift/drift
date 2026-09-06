@@ -62,7 +62,11 @@ TEST_SUITES.push(()=>suite("телефон: опись одной лентой, 
   G.mods.weapon=0;G.mode="system";hud();
   eq($f.style.display,"none","без оружия ОГНЯ нет вовсе");
   G.mods.weapon=1;G.mode="system";hud();
-  eq($f.style.display!=="none",true,"с оружием в системе виден");
+  /* M360: в системе огонь идёт по захвату, кнопки ОГОНЬ в ряду нет */
+  eq($f.style.display,"none","с оружием в системе ОГОНЬ убран — стреляет захват");
+  eq(document.getElementById("lockbtn").style.display!=="none",true,"а ЦЕЛЬ стоит");
+  G.mode="belt";hud();
+  eq($f.style.display!=="none",true,"в поясе ОГОНЬ виден");
   ok(!$f.classList.contains("off"),"и живой");
   G.mode="surface";G.surf={p:{type:"terran",T:{atm:"есть"},name:"т"},suit:100,x:0,y:0,fauna:[],plants:[]};
   hud();
@@ -97,10 +101,13 @@ TEST_SUITES.push(()=>suite("телефон: ряд пэдов помещаетс
   G.mods.weapon=1;G.mode="system";hud();padsFit();const pSys=place();
   G.mode="surface";G.surf={p:{type:"terran",T:{atm:"есть"},name:"т"},suit:100,x:0,y:0,fauna:[],plants:[]};
   hud();padsFit();const pSurf=place();
-  for(const k in pSys)eq(pSurf[k],pSys[k],"«"+k+"» на том же месте на поверхности");
+  /* в системе ряд другой (M360: стики и ЦЕЛЬ вместо ◀ ▶ ▲ ТОРМОЗ ОГОНЬ) —
+     сравнивается то, что стоит в обоих рядах */
+  ok(pSys.lock&&!pSys.left&&!pSys.thrust,"в системе ряд штурвала: ЦЕЛЬ есть, ◀ ▲ нет");
+  ok(pSurf.left&&pSurf.thrust&&!pSurf.lock,"на поверхности — прежний ряд");
   G.mode="belt";hud();padsFit();const pBelt=place();
   for(const k of ["left","right","fire","brake","act","thrust"])
-    eq(pBelt[k],pSys[k],"«"+k+"» на том же месте и в поясе");
+    eq(pBelt[k],pSurf[k],"«"+k+"» на том же месте и в поясе");
   G.surf=null;
   G.mods.weapon=0;G.mode="system";hud();check("без оружия");
   G.mods.weapon=1;G.mode="system";hud();check("с пушкой");

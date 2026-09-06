@@ -670,7 +670,13 @@ something. §17 is not reopened; §10 forks keep their defaults unless the autho
 
 Three stages, each playable on /dev before the next starts:
 
-- **A — the fight** (client only): M360 helm and lock · M361 ships shoot each other and rank
+- **A — the fight** (client only): ~~M360 helm and lock~~ (0.360.0, 2026-09-06: `15a-helm`;
+  Space stays ДЕЙСТВИЕ, raw helm keys ignore rebinding, pinch in the system mode is gone — see
+  the patchnote) · **M361 in progress (2026-09-06, stopped by the author mid-pass):** `13-combat`
+  (owner on shots, one hit loop, ×1.6/×.7 by location, `fleetFire`, `ARMED_CAP`), `13c-roles` (the
+  four roles, flee and jump-out), `13-pirates` rewired, allies `iff:true` — written and green in
+  the Node tier, **uncommitted in the working tree**; left: `91zzzw-combat.js`, hull bar over the
+  primary mark checked in the browser, `prof()` with eight armed ships, patchnote 0.361.0 · M361 ships shoot each other and rank
   roles · M362 energy, seven numbers, three shields · M363 ОСНАСТКА and clearance · M364–M366
   twenty gun families · M367 missiles · M368 pirate loadouts.
 - **B — the powers, by seed** (client only; the galaxy lives with no server): M369 the maker

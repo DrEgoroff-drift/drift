@@ -7,6 +7,35 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.360.0 - M360: the helm — four channels, three inputs, no inertia
+
+The war's first pass (`docs/DESIGN-war.md` §1, §18, §20). `15a-helm` writes `G.ctl = {head, turn,
+tx, ty, brake, fire, msl, headIdle}` from two floating sticks (phone: left half = heading, right
+half = thrust in screen axes, dead zone 12 px, fade on release), the mouse scheme (nose to cursor,
+WASD in screen axes, LMB held = forced fire, RMB = missile, Shift = thrusters only) and the arrows
+scheme (← → turn, ↑ thrust, ↓ reverse, Q/E strafe); last used wins. Only the system mode reads it
+(D08); belt, landing, scoop and the rest keep `keys`, and `keys.*` from the pads is translated into
+the same channels in one place. Angular inertia is gone: the nose follows the wanted heading at
+`st.turn`, no ramp, no coast; the bank is drawn from the actual turn rate. Thrust is a vector:
+full along the nose, .4 through thrusters sideways and back, and the velocity-to-nose drift is off
+while thrusters work. Release below `.55·maxSp` brakes as ТОРМОЗ does; above it coasts. Marks:
+tap/click a hull within 40 px, Tab or the ЦЕЛЬ pad cycles the nearest aware hostile, Esc or a tap
+on empty sky clears, up to three, the shooter auto-locks when nothing is locked; the nose tracks the
+primary mark only while heading input is idle (D07). The gun fires by itself when the mark is
+inside ±20° and 760 (provisional, M362), forced fire along the nose stays; `placeNote("hurt")` once
+per engagement (D16). The missile goes to the primary mark. The system-mode pad row is ЦЕЛЬ ·
+ДЕЙСТВИЕ · РАКЕТА (◀ ▶ ▲ ТОРМОЗ ОГОНЬ leave it; other modes untouched); the pad-row key now
+includes the mode, and the HUD floor is re-measured after the row changes (the map's footer read a
+stale floor for one frame). Two-finger pinch in the system mode is given to the sticks; zoom stays
+on the rail buttons. Deviations from the brief, decided here: Space stays ДЕЙСТВИЕ (docking is the
+common case; forced fire is F / ОГОНЬ / LMB), and the helm's raw key layer does not follow the
+rebinding table (`G.opts.keys`) — the pads and the old `keys` path still do. New suite
+`91zzzw-helm`; `91zzx-mobile` and `91a-flight` updated (the 20 px tap test placed the planet off a
+phone's frame — pre-existing). Also fixed from the full tier's red: buying a hull, a module, a
+part or the recorder drum re-checks the wallet at click time (the button was disabled at render
+only, and a second tap took the wallet below zero).
+
+---
 ## 0.359.3 - the tests, revised: they now test what ships, and they say when they are not looking
 
 Author, after 0.359.0: «у нас игра не запускалась, а у тебя тесты все зелёные — полная ревизия».

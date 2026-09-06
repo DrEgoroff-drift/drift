@@ -336,7 +336,8 @@ function trailStep(dt,thrusting,turning,braking){
      и есть то, чем корабль разворачивают в пустоте. Раньше обе били туда же,
      куда шёл разворот, и картинка спорила с физикой. */
   if(turning&&TRAIL.length<TRAIL_MAX-6&&Math.random()<.4){
-    const s=keys.left?-1:1;                      // -1 — разворот влево
+    const rr=G.ctl?G.ctl.out.rate:0;             // фактический поворот (M360); без него — по рулю
+    const s=rr?(rr<0?-1:1):(keys.left?-1:1);     // -1 — разворот влево
     const jets=[[h.nose*.55, h.bw*.8*-s, -s],    // нос: газ наружу по борту -s
                 [h.tail*.55, h.bw*.8*s,   s]];   // корма: газ в другую сторону
     for(const j of jets){

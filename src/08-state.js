@@ -54,7 +54,7 @@ function resize(){
 let RES_AUTO=2;
 addEventListener("resize",resize);resize();
 
-const keys={left:false,right:false,thrust:false,brake:false,act:false,fire:false,
+const keys={left:false,right:false,thrust:false,brake:false,act:false,fire:false,msl:false,lock:false,
   pup:false,pdown:false,rollL:false,rollR:false,launch:false};
 let prevAct=false,actEdge=false;
 

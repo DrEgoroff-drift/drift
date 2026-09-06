@@ -279,7 +279,9 @@ TEST_SUITES.push(()=>suite("система: по метке можно ткну�
   /* попадание меряется на экране, а не в мире: планета в полкадра ловится
      тычком рядом с краем диска при любом масштабе */
   const p=G.sys.planets[0];
-  G.ship.x=p.x+300;G.ship.y=p.y;G.ap=null;
+  /* на телефоне 300 единиц — это за левой кромкой, где стоят фишки компаса:
+     ставим корабль так, чтобы диск был в кадре при любой ширине */
+  G.ship.x=p.x+Math.min(300,W*.3/G.zoom);G.ship.y=p.y;G.ap=null;
   drawSystem();
   const sx=W/2+(p.x-G.viewCX)*G.zoom, sy=H/2+(p.y-G.viewCY)*G.zoom;
   tap(sx+p.radius*G.zoom+20,sy);

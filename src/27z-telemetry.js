@@ -86,6 +86,31 @@ function setTx(el,v){
   }
 }
 function setSt(el,k,v){v=""+v;if(el&&el.style[k]!==v)el.style[k]=v;}
+/* пол и правый борт — одним чтением на кадр. Пустая подсказка в счёт не идёт: у
+   неё нет текста, а место она занимать не должна. Вынесено в функцию (M360): ряд
+   пэдов перестраивается в hud() ПОЗЖЕ замера, и карта на тот же кадр читала
+   старый пол — после padsFit() меряем ещё раз. */
+function hudFloorMeasure(){
+   let fl=innerHeight,rl=innerWidth;
+   /* видимость проверяем по прямоугольнику, а не по offsetParent: пульт,
+      подсказка и правый борт стоят position:fixed, а у таких offsetParent
+      всегда null — первая версия этой мерки поэтому не находила НИЧЕГО и
+      честно возвращала высоту экрана */
+   const under=[$prompt,document.getElementById("console"),$padsEl];
+   for(const e of under){
+     if(!e)continue;
+     if(e===$prompt&&!(e.textContent||"").trim())continue;
+     const r=e.getBoundingClientRect();
+     if(r.height>0&&r.width>0&&r.top>0)fl=Math.min(fl,r.top);
+   }
+   const rail=document.querySelector(".rail");
+   if(rail){
+     const r=rail.getBoundingClientRect();
+     if(r.width>0&&r.height>0)rl=Math.min(rl,r.left);
+   }
+   if(HUD_RAIL!==Math.round(rl))document.documentElement.style.setProperty("--railw",Math.max(0,innerWidth-Math.round(rl))+"px");   /* ширина борта — для поля адреса (M347) */
+   HUD_FLOOR=Math.round(fl);HUD_RAIL=Math.round(rl);
+}
 function hud(){
   const st=stat();
   const fr=G.fuel/st.fuelMax, hr=G.hull/st.hullMax, cr=held()/st.cargoMax;
@@ -258,25 +283,7 @@ function hud(){
   }
   /* пол и правый борт — тем же одним чтением на кадр. Пустая подсказка в счёт
      не идёт: у неё нет текста, а место она занимать не должна. */
-  {let fl=innerHeight,rl=innerWidth;
-   /* видимость проверяем по прямоугольнику, а не по offsetParent: пульт,
-      подсказка и правый борт стоят position:fixed, а у таких offsetParent
-      всегда null — первая версия этой мерки поэтому не находила НИЧЕГО и
-      честно возвращала высоту экрана */
-   const under=[$prompt,document.getElementById("console"),$padsEl];
-   for(const e of under){
-     if(!e)continue;
-     if(e===$prompt&&!(e.textContent||"").trim())continue;
-     const r=e.getBoundingClientRect();
-     if(r.height>0&&r.width>0&&r.top>0)fl=Math.min(fl,r.top);
-   }
-   const rail=document.querySelector(".rail");
-   if(rail){
-     const r=rail.getBoundingClientRect();
-     if(r.width>0&&r.height>0)rl=Math.min(rl,r.left);
-   }
-   if(HUD_RAIL!==Math.round(rl))document.documentElement.style.setProperty("--railw",Math.max(0,innerWidth-Math.round(rl))+"px");   /* ширина борта — для поля адреса (M347) */
-   HUD_FLOOR=Math.round(fl);HUD_RAIL=Math.round(rl);}
+  hudFloorMeasure();
   setTx($msg,G.msgT>0?G.msg:"");
   setSt($msg,"opacity",G.msgT>0?clamp(G.msgT/40,0,1):0);
   setTx($prompt,G.mode==="dock"?"":G.prompt);
@@ -355,13 +362,25 @@ function hud(){
     if(has)setTx($msl,(on&&G.mslCool>0)?"…":("РАКЕТА "+(G.cargo.missile|0)));
     $msl.classList.toggle("empty",on&&(G.cargo.missile|0)<=0);
   }
+  /* ── системный режим ведут стики и захват (M360) ──
+     ◀ ▶ ▲ ТОРМОЗ ОГОНЬ уходят из ряда: курс и тяга — под большими пальцами,
+     огонь — по захвату. Остаются ДЕЙСТВИЕ, ВЗЛЁТ, РАКЕТА и ЦЕЛЬ. Остальные
+     режимы держат свои ряды как были. */
+  {
+    const helmRow=G.mode==="system";
+    for(const b of document.querySelectorAll(".pads [data-k=left],.pads [data-k=right],.pads [data-k=thrust],.pads [data-k=brake]"))
+      setSt(b,"display",helmRow?"none":"");
+    if(helmRow)setSt($fire,"display","none");
+    const $lock=document.getElementById("lockbtn");
+    if($lock)setSt($lock,"display",helmRow?"":"none");
+  }
   document.body.classList.toggle("inbelt",G.mode==="belt");
   document.body.classList.toggle("aboard",G.mode==="wanderer");   /* на борту «Сороки» (M343): приёмник и тяга ни к чему */
   /* состав ряда меняется редко (поставили пушку, вошли в пояс) — пересчитываем
      ширину кнопок только тогда, а не каждый кадр */
   {
-    const key=(fireHas?"f":"")+((st.launcher)?"m":"")+(G.mode==="belt"?"b":"");
-    if(key!==PAD_KEY){PAD_KEY=key;padsFit();}
+    const key=(fireHas?"f":"")+((st.launcher)?"m":"")+(G.mode==="belt"?"b":"")+(G.mode==="system"?"s":"");   /* «s»: ряд штурвала (M360) */
+    if(key!==PAD_KEY){PAD_KEY=key;padsFit();hudFloorMeasure();}
   }
   /* ── на ногах (релизный вид, проход 1) ──
      Приборы корабля висели над КАЖДЫМ экраном. Правило стиля говорит «над

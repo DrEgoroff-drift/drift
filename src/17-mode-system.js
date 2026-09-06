@@ -48,7 +48,9 @@ function updateSystem(dt){
      а не гоняется регулятором — дрожать нечему. Тяга/руль/тормоз снимают захват.
      Посадка и прочие проверки ниже по коду продолжают работать как обычно —
      мы только подменяем то, как двигается корабль. */
-  if(G.orbit&&(keys.thrust||keys.brake||keys.left||keys.right))G.orbit=null;
+  /* штурвал (M360): три ввода пишут G.ctl, физика ниже читает только его.
+     Орбиту и автопилот он снимает сам при любом рулении */
+  helmTick(dt);
   /* захват принадлежит телу, а тело — системе. Прыжок, стыковка, посадка, пояс,
      абордаж и авария сбрасывали автопилот, но не захват: корабль оставался
      привязан к планете из прежней системы. Её координаты больше никто не
@@ -72,43 +74,17 @@ function updateSystem(dt){
   }else{
   apOn=G.ap&&runAutopilot(dt,st);
   if(apOn)sh.av=0;
-  if(!apOn){
-    /* угловая инерция: рули набирают и сбрасывают скорость поворота,
-       поэтому корабль выписывает дугу, а не щёлкает на месте */
-    const acc=.006*st.turn*dt, lim=.038*st.turn;
-    if(keys.left)sh.av-=acc;
-    if(keys.right)sh.av+=acc;
-    if(!keys.left&&!keys.right)sh.av*=Math.pow(.9,dt);
-    sh.av=clamp(sh.av,-lim,lim);
-    /* курс сворачиваем сразу: за долгий полёт он копится оборотами, а всё, что
-       считается от него, живёт в пределах полуоборота */
-    sh.a=angWrap(sh.a+sh.av*dt);
-    if(keys.thrust&&G.fuel>0){
-      sh.vx+=Math.cos(sh.a)*.082*st.thr*dt;
-      sh.vy+=Math.sin(sh.a)*.082*st.thr*dt;
-      G.fuel=Math.max(0,G.fuel-.021*dt);
-    }
-    if(keys.brake&&G.fuel>0){
-      const sp0=Math.hypot(sh.vx,sh.vy);
-      if(sp0>.03){
-        const dec=Math.min(sp0,.058*st.thr*dt);
-        sh.vx-=sh.vx/sp0*dec;sh.vy-=sh.vy/sp0*dec;
-        G.fuel=Math.max(0,G.fuel-.017*dt);
-        /* корабль больше не разворачивается кормой к курсу: тормозят носовые
-           маневровые, курс остаётся тем, который держит игрок. Разворот на
-           торможении сбивал прицел и читался как потеря управления — а тяга
-           у маневровых и так меньше маршевой, так что цена честная. */
-      /* добивание до нуля — только когда тяга отпущена: иначе тормоз каждый кадр
-         съедает едва набранный разгон и корабль не трогается с места */
-      }else if(!keys.thrust){sh.vx=0;sh.vy=0;}
-    }
-  }
   const maxSp=(6.4+st.thr*1.6)*((typeof fleetCaravanActive==="function"&&fleetCaravanActive())?.6:1);   /* караван идёт ходом флота (M313) */
+  /* курс и тяга — штурвалом (15a-helm): без угловой инерции, тяга вектором,
+     отпущенная тяга ниже крейсерской тормозит сама */
+  const helm=apOn?null:helmApply(dt,st,sh,maxSp);
   sp=Math.hypot(sh.vx,sh.vy);
   if(sp>maxSp){sh.vx*=maxSp/sp;sh.vy*=maxSp/sp;sp=maxSp;}
   /* вектор скорости мягко доворачивается к носу — за счёт этого разворот
-     получается дугой, а не вращением на месте с прежним курсом */
-  if(sp>.08&&!apOn){
+     получается дугой, а не вращением на месте с прежним курсом. Пока работают
+     маневровые (боковой ход, реверс, Shift) — довода нет: скольжение не должно
+     затягиваться под нос */
+  if(sp>.08&&!apOn&&!(helm&&helm.thr)){
     const cur=Math.atan2(sh.vy,sh.vx);
     const na=cur+angDiff(sh.a,cur)*Math.min(1,.06*dt);
     sh.vx=Math.cos(na)*sp;sh.vy=Math.sin(na)*sp;
@@ -167,8 +143,8 @@ function updateSystem(dt){
   /* крен считаем по фактической скорости поворота — работает и на автопилоте */
   const rate=angDiff(sh.a,a0)/Math.max(dt,.0001);
   sh.bank+=(clamp(rate*13,-.8,.8)-sh.bank)*Math.min(1,.07*dt);
-  trailStep(dt,G.fuel>0&&(keys.thrust||apOn),!apOn&&(keys.left||keys.right),
-    !apOn&&keys.brake&&G.fuel>0&&sp>.03);
+  trailStep(dt,G.fuel>0&&((helm&&helm.main)||apOn),!apOn&&!!helm&&Math.abs(helm.rate)>1e-4,
+    !apOn&&!!helm&&helm.thr&&G.fuel>0);
   }
 
   const d0=Math.hypot(sh.x,sh.y)||1;
@@ -337,7 +313,7 @@ function drawSystem(){
      корабль движется как курсор мыши, а не как масса с двигателем.
      В режиме наблюдения сглаживание не нужно — там камера и так не игрока. */
   const spd=Math.hypot(sh.vx,sh.vy);
-  const thrusting=(keys.thrust||!!G.ap)&&G.fuel>0;
+  const thrusting=((G.ctl&&G.ctl.out.main)||!!G.ap)&&G.fuel>0;
   const fc=wA?{x:wA.x,y:wA.y}:flightCam(1,sh.x,sh.y,thrusting,spd);
   const cx0=fc.x, cy0=fc.y;
   const zx=x=>W/2+(x-cx0)*Z, zy=y=>H/2+(y-cy0)*Z;
@@ -504,6 +480,7 @@ function drawSystem(){
   drawExhaust(zx,zy,Z,thrusting?1:0);
   if(thrusting&&typeof heatHaze==="function")exhaustHaze(zx,zy,Z);   /* марево за соплами (M325) */
   drawCombat(zx,zy,Z);
+  helmDrawMarks(zx,zy,Z);   /* скобки захвата (M360) */
   if(typeof drawWrecksSystem==="function")drawWrecksSystem(zx,zy,Z);
   if(typeof drawFindsSystem==="function")drawFindsSystem(zx,zy,Z);
   if(typeof relayDrawSystem==="function")relayDrawSystem(zx,zy,Z);
@@ -520,7 +497,7 @@ function drawSystem(){
   /* пол масштаба .35, не .55 (M319): на дальнем отъезде корабль в .55 читался
      крупнее малой луны; ниже .35 он уже не находится глазом */
   ctx.scale(clamp(Z,.35,1.6),clamp(Z,.35,1.6));
-  drawHull(G.shipId,keys.thrust&&G.fuel>0||(G.ap&&G.fuel>0),keys.brake&&G.fuel>0,G.mods.engine,sh.bank);
+  drawHull(G.shipId,thrusting,!!(G.ctl&&G.ctl.out.thr&&G.fuel>0),G.mods.engine,sh.bank);
   /* пусковая видна на силуэте (хвост M112): подвес под корпусом — заряженный
      сплошной, сухой — только обвод с красной меткой. По нему и без панели
      ясно, что стрелять нечем */
@@ -559,6 +536,7 @@ function drawSystem(){
   if(!SHOT_CLEAN){                       /* на кадре заглавной приборов нет (M233) */
     const U=(typeof UIK==="number"&&UIK>0)?UIK:1;
     withScale(U,()=>drawSysHud(v=>zx(v)/U,v=>zy(v)/U,sh,sys,U));
+    helmDrawSticks();   /* стики под пальцами — в пикселях касания, не в мерке (M360) */
   }
 }
 function drawSysHud(zx,zy,sh,sys,U){

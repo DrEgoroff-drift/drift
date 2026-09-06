@@ -43,7 +43,10 @@ function stTabMods(){
       }
       const b=el("button","act"+(max?"":" gold"),max?"МАКСИМУМ":cost.toLocaleString("ru")+" кр");
       b.disabled=max||G.credits<cost;
-      b.onclick=()=>{G.credits-=cost;G.modsOwned[k]++;
+      /* касса — в момент нажатия: между отрисовкой и тычком её мог опустошить
+         другой тычок, и счёт уходил в минус (сеть «полный трюм», 0.360.0) */
+      b.onclick=()=>{if(G.credits<cost){say("НЕ ХВАТАЕТ КРЕДИТОВ",60);return;}
+        G.credits-=cost;G.modsOwned[k]++;
         if(capUsed()+1<=cap)G.mods[k]++;
         else say("Куплено, но места в оснастке нет\nснимите что-нибудь");
         afterFitChange();
@@ -82,6 +85,7 @@ function stTabMods(){
         const b=el("button","act"+(bought?"":" gold"),bought?"КУПЛЕНО":o.price.toLocaleString("ru")+" кр");
         b.disabled=!!bought||G.credits<o.price;
         b.onclick=()=>{
+          if(bought||G.partsBought[o.key]||G.credits<o.price){say("НЕ ХВАТАЕТ КРЕДИТОВ",60);return;}
           G.credits-=o.price;G.partsBought[o.key]=1;
           addPart(genPart(o.part.seed,o.part.tier,o.part.kind));
           tell("money","Куплена часть: "+o.part.name+" · −"+o.price.toLocaleString("ru")+" кр",
@@ -114,7 +118,7 @@ function stTabInstr(){
       if(!G.tapeLong){
         const b=el("button","act sm gold","2 400 кр");
         b.disabled=G.credits<2400;
-        b.onclick=()=>{G.credits-=2400;G.tapeLong=1;
+        b.onclick=()=>{if(G.credits<2400||G.tapeLong)return;G.credits-=2400;G.tapeLong=1;
           tell("tech","Самописец: второй барабан установлен","Второй барабан\nлента помнит вдвое дольше");renderTab();};
         r.appendChild(b);
       }else r.appendChild(el("div","nm","<s>установлен</s>"));

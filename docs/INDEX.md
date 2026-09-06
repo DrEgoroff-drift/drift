@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 434 · символов верхнего уровня: 3786
+Файлов: 436 · символов верхнего уровня: 3815
 
 ## СИМВОЛЫ
 
@@ -26,7 +26,7 @@ $menu                        src/15-input.js:239
 $msg                         src/27z-telemetry.js:38
 $msl                         src/27z-telemetry.js:41
 $nav                         src/27z-telemetry.js:40
-$opts                        src/26-ui-station.js:889
+$opts                        src/26-ui-station.js:893
 $padsEl                      src/15-input.js:4
 $place                       src/27z-telemetry.js:37
 $sh                          src/27z-telemetry.js:8
@@ -635,6 +635,7 @@ crownOwned                   src/05a-nodes.js:159
 crownReady                   src/05a-nodes.js:158
 CSW                          src/19e-clouds.js:68
 ctlHint                      src/15-input.js:168
+ctlReset                     src/15a-helm.js:26
 ctx                          src/08-state.js:3
 CUE_EPS                      src/27m-scroll-cue.js:26
 CUE_PAD                      src/27m-scroll-cue.js:25
@@ -877,15 +878,15 @@ drawSurface                  src/21e-surface-draw.js:859
 drawSurfaceHud               src/21e-surface-draw.js:21
 drawSurfaceWorld             src/21e-surface-draw.js:110
 drawSurvey                   src/12w-survey.js:63
-drawSysHud                   src/17-mode-system.js:564
+drawSysHud                   src/17-mode-system.js:542
 drawSysNebula                src/16a-space.js:208
-drawSystem                   src/17-mode-system.js:331
+drawSystem                   src/17-mode-system.js:307
 drawSysTraffic               src/17f-sys-traffic.js:29
 drawTemple                   src/20aa-poi-shapes.js:50
 drawThingIcon                src/27i-ui-table.js:330
 drawTierTrim                 src/03b-hull-paint.js:62
 drawTiles                    src/18c-chunks.js:137
-drawTrail                    src/16-flight.js:362
+drawTrail                    src/16-flight.js:363
 drawWallPaper                src/11ae-concert.js:39
 drawWanderer                 src/12v-wander.js:175
 drawWanderMap                src/12v-wander.js:159
@@ -1299,6 +1300,33 @@ heardWordsRu                 src/12x-parrot.js:79
 heardYours                   src/12x-parrot.js:71
 heatHaze                     src/18d-postfx.js:23
 held                         src/08-state.js:187
+HELM                         src/15a-helm.js:21
+HELM_CONE                    src/15a-helm.js:19
+HELM_DEAD                    src/15a-helm.js:15
+HELM_KEYS                    src/15a-helm.js:34
+HELM_MARKS                   src/15a-helm.js:18
+HELM_PICK                    src/15a-helm.js:17
+HELM_RANGE                   src/15a-helm.js:20
+HELM_REACH                   src/15a-helm.js:16
+HELM_RELEASE                 src/15a-helm.js:13
+HELM_THR                     src/15a-helm.js:14
+helmApply                    src/15a-helm.js:195
+helmCanvasXY                 src/15a-helm.js:48
+helmDrawMarks                src/15a-helm.js:238
+helmDrawSticks               src/15a-helm.js:252
+helmLock                     src/15a-helm.js:97
+helmLockNext                 src/15a-helm.js:106
+helmMarksClean               src/15a-helm.js:91
+helmPinchBlocked             src/15a-helm.js:87
+helmPirate                   tests/91zzzw-helm.js:17
+helmPtrEnd                   src/15a-helm.js:74
+helmRun                      tests/91zzzw-helm.js:16
+helmScreenOpen               src/15a-helm.js:86
+helmShip                     tests/91zzzw-helm.js:6
+helmShotAt                   src/15a-helm.js:130
+helmTap                      src/15a-helm.js:116
+helmTargets                  src/15a-helm.js:90
+helmTick                     src/15a-helm.js:136
 hex2rgb                      src/03-ships.js:145
 hexA                         src/12e-drone-flight.js:289
 hexa                         src/12w-survey.js:91
@@ -1477,11 +1505,12 @@ hqWallProps                  src/27f-hq-room.js:170
 hqWindowView                 src/27f-hq-room.js:616
 hsAlive                      tests/91zzzzza-save-hostile.js:29
 hsMut                        tests/91zzzzza-save-hostile.js:20
-hud                          src/27z-telemetry.js:89
+hud                          src/27z-telemetry.js:114
 HUD_BAND                     src/27z-telemetry.js:19
 HUD_FLOOR                    src/27z-telemetry.js:29
 HUD_PREV                     src/27z-telemetry.js:52
 HUD_STEP                     src/27z-telemetry.js:51
+hudFloorMeasure              src/27z-telemetry.js:93
 hudWake                      src/27z-telemetry.js:54
 hueToward                    src/19b-sky.js:53
 HULL_CACHE                   src/03-ships.js:142
@@ -2005,12 +2034,12 @@ MSL_LIFE                     src/16b-missile.js:19
 MSL_SPEED                    src/16b-missile.js:17
 MSL_TURN                     src/16b-missile.js:15
 MSL_VMAX                     src/16b-missile.js:18
-mslBoom                      src/16b-missile.js:96
+mslBoom                      src/16b-missile.js:98
 mslCheck                     src/16b-missile.js:72
-mslDraw                      src/16b-missile.js:141
+mslDraw                      src/16b-missile.js:143
 mslFire                      src/16b-missile.js:79
 mslPick                      src/16b-missile.js:57
-mslTick                      src/16b-missile.js:110
+mslTick                      src/16b-missile.js:112
 MUS                          src/10-music.js:100
 MUS_LAYERS                   src/10-music.js:102
 MUS_WET                      src/10-music.js:105
@@ -2201,7 +2230,7 @@ opisWear                     src/27j-ui-opis.js:186
 OPT_TABS                     src/27-ui-ship.js:330
 optGroups                    src/27-ui-ship.js:333
 optTab                       src/27-ui-ship.js:332
-orbPathOf                    src/17-mode-system.js:320
+orbPathOf                    src/17-mode-system.js:296
 ORDER_WIN                    src/12aa-need.js:74
 orderDeliver                 src/12aa-need.js:114
 orderHere                    src/12aa-need.js:110
@@ -2709,8 +2738,8 @@ renderRoute                  src/12r-route.js:349
 renderSiteTab                src/26c-ui-station-site.js:7
 renderSmena                  src/12ud-smena.js:121
 renderStrips                 src/27i-ui-table.js:270
-renderTab                    src/26-ui-station.js:366
-renderTabBody                src/26-ui-station.js:378
+renderTab                    src/26-ui-station.js:370
+renderTabBody                src/26-ui-station.js:382
 renderThings                 src/27i-ui-table.js:301
 REP_MIN                      src/12k-rep.js:16
 REP_WORDS                    src/12k-rep.js:17
@@ -2730,7 +2759,7 @@ RES_AUTO                     src/08-state.js:54
 RES_KEYS                     src/02-world.js:87
 resAuto                      src/28-loop.js:114
 resEma                       src/28-loop.js:113
-resetArm                     src/26-ui-station.js:888
+resetArm                     src/26-ui-station.js:892
 resetWorld                   tests/90-harness.js:143
 resize                       src/08-state.js:22
 RET_BOARD                    src/11s-returners.js:29
@@ -3213,7 +3242,7 @@ STAR_COLS                    src/16-flight.js:2
 STAR_LX                      src/16-flight.js:27
 starAt                       src/06-galaxy.js:2
 starRGB                      src/19c-light.js:49
-start                        src/15-input.js:561
+start                        src/15-input.js:563
 startLanding                 src/19-mode-landing.js:2
 startScoop                   src/19a-mode-scoop.js:51
 stat                         src/08-state.js:144
@@ -3294,9 +3323,9 @@ stripsAll                    src/11b-speech.js:192
 stripSell                    src/11b-speech.js:231
 stripValue                   src/11b-speech.js:193
 stSet                        src/14-save.js:14
-stTabFuse                    src/26b-ui-station-work.js:200
-stTabInstr                   src/26b-ui-station-work.js:107
-stTabLab                     src/26b-ui-station-work.js:174
+stTabFuse                    src/26b-ui-station-work.js:204
+stTabInstr                   src/26b-ui-station-work.js:111
+stTabLab                     src/26b-ui-station-work.js:178
 stTabMods                    src/26b-ui-station-work.js:12
 stTabsHere                   src/26-ui-station.js:81
 stTypeOf                     src/06-galaxy.js:73
@@ -4255,6 +4284,9 @@ zooTick                      src/11ad-zoo.js:41
   · ввод:87
   · полоса вкладок шире экрана:212
 
+## src/15a-helm.js · 14 КБ
+  · штурвал (M360):1
+
 ## src/16-flight.js · 28 КБ
   · фон:1
   · автопилот:120
@@ -4263,10 +4295,10 @@ zooTick                      src/11ad-zoo.js:41
 ## src/16a-space.js · 37 КБ
   · облик системы:1
 
-## src/16b-missile.js · 9 КБ
+## src/16b-missile.js · 10 КБ
   · ракеты: боеприпас — это груз:1
 
-## src/17-mode-system.js · 43 КБ
+## src/17-mode-system.js · 42 КБ
   · режим: система:1
 
 ## src/17a-station-mod.js · 12 КБ
@@ -4527,15 +4559,15 @@ zooTick                      src/11ad-zoo.js:41
 ## src/25n-chess.js · 15 КБ
   · шахматы по почте:1
 
-## src/26-ui-station.js · 62 КБ
+## src/26-ui-station.js · 63 КБ
   · станция:1
   · заголовки и полосы (M299, docs/DESIGN-screens.md §1a):188
-  · настройки:887
+  · настройки:891
 
 ## src/26a-ui-station-home.js · 13 КБ
   · станция: вкладка «дом и базы»:1
 
-## src/26b-ui-station-work.js · 15 КБ
+## src/26b-ui-station-work.js · 16 КБ
   · станция: мастерская и наука:1
 
 ## src/26c-ui-station-site.js · 9 КБ
@@ -4610,7 +4642,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/27n-ui-deal.js · 11 КБ
   · ДЕЛО — одно место для всего, что на вас работает:1
 
-## src/27z-telemetry.js · 31 КБ
+## src/27z-telemetry.js · 32 КБ
   · телеметрия: приборы пишут в DOM:1
 
 ## src/28-loop.js · 35 КБ
@@ -4657,9 +4689,9 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91a-flight.js · 20 КБ
   · автотесты: наборы:1
   · первая минута: цель, которую нельзя потерять:244
-  · M234: ранец — запас, а не декорация:290
-  · M234: сбой кадра не убивает игру:321
-  · M234: ВЗЛЁТ гаснет вместе с поверхностью:339
+  · M234: ранец — запас, а не декорация:292
+  · M234: сбой кадра не убивает игру:323
+  · M234: ВЗЛЁТ гаснет вместе с поверхностью:341
 
 ## tests/91b-crew.js · 18 КБ
   · автотесты: наёмники: убыток по кредитам, удача, плен, рейсы, сохранение:1
@@ -4912,7 +4944,7 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzx-mobile.js · 17 КБ
   · автотесты: телефонный вид (M167):1
-  · телефон: КАЖДЫЙ режим, а не только поверхность (M239):193
+  · телефон: КАЖДЫЙ режим, а не только поверхность (M239):200
 
 ## tests/91zzy-fx.js · 5 КБ
   · автотесты: эффекты M325 — вода, марево, хроматика, факел:1
@@ -5022,6 +5054,9 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzzv-wall.js · 7 КБ
   · автотесты: стена, которая помнит (M210):1
+
+## tests/91zzzw-helm.js · 9 КБ
+  · штурвал (M360):1
 
 ## tests/91zzzw-relay.js · 10 КБ
   · M218: приёмники как места:1

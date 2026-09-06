@@ -82,7 +82,9 @@ function mslFire(){
      «РАКЕТ В ТРЮМЕ НЕТ» писалось бы каждый кадр */
   if(!c.ok){G.mslCool=30;say(c.why.toUpperCase());return false;}
   const st=stat(),sh=G.ship;
-  const tgt=mslPick(sh,st.see*1.2);
+  /* ракета идёт на первую метку захвата (M360); без захвата — по носу, как раньше */
+  const mk=(G.marks&&G.marks[0])||null;
+  const tgt=(mk&&mk.hull>0)?mk:mslPick(sh,st.see*1.2);
   if(!tgt){G.mslCool=30;say("НЕТ ЦЕЛИ ПО НОСУ");return false;}
   G.cargo.missile--;                              // расход из трюма, а не из счётчика
   G.mslCool=st.mslCool;
