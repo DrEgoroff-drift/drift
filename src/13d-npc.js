@@ -42,6 +42,8 @@ function npcShip(by,i,rank,x,y,friend){
    своим флагом, пока не сделает того, о чём говорят четыре правила. */
 function npcSpawn(){
   if(typeof chronOwner!=="function")return;
+  /* буря (M384): пикеты уходят, чужой бой не начинается — трое суток тихо */
+  if(typeof natNoPickets==="function"&&natNoPickets())return;
   /* «Ревизия» (M380): если она в этой области, она здесь и она главная */
   if(typeof bossHere==="function"&&bossHere()&&typeof bossShip==="function"){
     const B=bossShip();

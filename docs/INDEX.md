@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 472 · символов верхнего уровня: 4289
+Файлов: 473 · символов верхнего уровня: 4307
 
 ## СИМВОЛЫ
 
@@ -28,7 +28,7 @@ $menu                        src/15-input.js:239
 $msg                         src/27z-telemetry.js:40
 $msl                         src/27z-telemetry.js:43
 $nav                         src/27z-telemetry.js:42
-$opts                        src/26-ui-station.js:945
+$opts                        src/26-ui-station.js:946
 $padsEl                      src/15-input.js:4
 $place                       src/27z-telemetry.js:39
 $sh                          src/27z-telemetry.js:8
@@ -285,7 +285,7 @@ BLUE_TAB                     src/01-core.js:48
 blueNoise                    src/01-core.js:49
 BLUEPRINTS                   src/12c-mgr-core.js:662
 BM_WARM                      src/21aa-base-rooms.js:20
-boardLanes                   src/26-ui-station.js:294
+boardLanes                   src/26-ui-station.js:295
 bodyInSystem                 src/16-flight.js:109
 bookAll                      src/12ub-books.js:122
 bookCount                    src/12ub-books.js:124
@@ -576,7 +576,7 @@ clkWorld                     tests/91zzzzzb-clock.js:42
 clNow                        tests/91zzzzzr-cloud.js:25
 closeBarge                   src/12l-barge.js:645
 closeDeal                    src/27n-ui-deal.js:169
-closeStation                 src/26-ui-station.js:140
+closeStation                 src/26-ui-station.js:141
 CLOUD                        src/14-save.js:5
 CLOUD_BASE                   src/19e-clouds.js:381
 CLOUD_KEYS                   src/02a-worldmix.js:80
@@ -915,7 +915,7 @@ drawCelest                   src/06a-celest.js:167
 drawChunks                   src/18c-chunks.js:83
 drawClouds                   src/19e-clouds.js:382
 drawCockpit                  src/25-cockpit.js:400
-drawCombat                   src/13-pirates.js:300
+drawCombat                   src/13-pirates.js:303
 drawCosmMark                 src/12va-wander-cosm.js:112
 drawCrowns                   src/05a-nodes.js:379
 drawCrystalForest            src/20aa-poi-shapes.js:115
@@ -1090,7 +1090,7 @@ econPriceMul                 src/12ax-fx-econ.js:66
 econTierBonus                src/12ax-fx-econ.js:44
 econVeinHere                 src/12ax-fx-econ.js:38
 ecoStations                  tests/91zzw-economy.js:8
-el                           src/26-ui-station.js:193
+el                           src/26-ui-station.js:194
 EN_SHIELD                    src/05c-arms.js:162
 EN_SHOT                      src/05c-arms.js:161
 EN_THR                       src/05c-arms.js:163
@@ -1291,7 +1291,7 @@ foeFlak                      src/13a-guns.js:436
 foeGun                       src/13d-loadout.js:40
 foeMineLay                   src/13d-loadout.js:132
 foeTetherTick                src/13d-loadout.js:145
-foldBlock                    src/26-ui-station.js:240
+foldBlock                    src/26-ui-station.js:241
 FOLK                         src/12u-folk.js:31
 FOLK_IDS                     src/12u-folk.js:81
 folkAll                      src/11ah-offer.js:76
@@ -1892,7 +1892,7 @@ keyMap                       src/15-input.js:133
 keyRow                       src/27-ui-ship.js:44
 keys                         src/08-state.js:57
 keyStateOK                   tests/91zzzzze-keys.js:23
-killPirate                   src/13-pirates.js:259
+killPirate                   src/13-pirates.js:262
 killRock                     src/24-mode-belt.js:151
 KINO_EVERY                   src/27da-kino.js:20
 KINO_REEL                    src/27da-kino.js:23
@@ -1957,8 +1957,8 @@ landerLen                    src/19f-lander.js:11
 landingDust                  src/19f-lander.js:344
 landOnTestPlanet             tests/90-harness.js:229
 landStartY                   src/19-mode-landing.js:38
-LANE_RU                      src/26-ui-station.js:293
-LANE_RX                      src/26-ui-station.js:289
+LANE_RU                      src/26-ui-station.js:294
+LANE_RX                      src/26-ui-station.js:290
 last                         src/28-loop.js:88
 LAST_RUN_DAY                 src/12k-letters.js:40
 lastDroneTick                src/28-loop.js:89
@@ -2287,7 +2287,7 @@ MINE_LIFE                    src/13a-guns.js:31
 MINE_MOUTH_R                 src/21-mode-surface.js:4
 MINE_R                       src/13a-guns.js:32
 mineDeep                     src/23a-dig-draw.js:625
-minedUnit                    src/11-log.js:147
+minedUnit                    src/11-log.js:150
 mineKey                      src/23a-dig-draw.js:614
 mineLay                      src/13a-guns.js:279
 mineLoad                     src/23a-dig-draw.js:629
@@ -2383,6 +2383,24 @@ namesFor                     src/11u-names.js:17
 namesMangle                  src/11u-names.js:39
 namesToldAll                 src/11u-names.js:16
 nameTell                     src/11u-names.js:32
+NAT_DRAIN                    src/12az-fx-nat.js:12
+NAT_FIND                     src/12az-fx-nat.js:13
+NAT_STORM                    src/12az-fx-nat.js:10
+NAT_SWARM                    src/12az-fx-nat.js:11
+NAT_SWARM_DMG                src/12az-fx-nat.js:14
+NAT_SWARM_SP                 src/12az-fx-nat.js:15
+natDrainHere                 src/12az-fx-nat.js:53
+natFindHere                  src/12az-fx-nat.js:61
+natInc                       src/12az-fx-nat.js:16
+natLandMul                   src/12az-fx-nat.js:62
+natLine                      src/12az-fx-nat.js:64
+natMine                      src/12az-fx-nat.js:17
+natNoPickets                 src/12az-fx-nat.js:35
+natOreMul                    src/12az-fx-nat.js:54
+natStormHere                 src/12az-fx-nat.js:27
+natStormTick                 src/12az-fx-nat.js:28
+natSwarmHere                 src/12az-fx-nat.js:39
+natSwarmTick                 src/12az-fx-nat.js:40
 navAction                    src/15-input.js:274
 nbFoe                        tests/91zzzw-notebook.js:15
 nbWorld                      tests/91zzzw-notebook.js:6
@@ -2456,15 +2474,15 @@ noteBlock                    src/12ap-notebook.js:166
 NPC_BATTLE                   src/13d-npc.js:14
 NPC_PICKET                   src/13d-npc.js:13
 NPC_SHIPS                    src/03-ships.js:185
-npcCrewOff                   src/13d-npc.js:181
+npcCrewOff                   src/13d-npc.js:183
 npcPowerHere                 src/13d-npc.js:15
-npcRescue                    src/13d-npc.js:139
+npcRescue                    src/13d-npc.js:141
 npcShip                      src/13d-npc.js:23
 npcSpawn                     src/13d-npc.js:43
-npcWreck                     src/13d-npc.js:120
-npcWreckDraw                 src/13d-npc.js:201
-npcWreckNear                 src/13d-npc.js:192
-npcYalta                     src/13d-npc.js:106
+npcWreck                     src/13d-npc.js:122
+npcWreckDraw                 src/13d-npc.js:203
+npcWreckNear                 src/13d-npc.js:194
+npcYalta                     src/13d-npc.js:108
 OCC_CALM_MS                  src/13b-occupy.js:246
 OCC_FRESH                    src/13b-occupy.js:41
 OCC_LVL                      src/13b-occupy.js:20
@@ -2619,7 +2637,7 @@ parrotDraw                   src/12y-parrot-face.js:264
 parrotFind                   src/12x-parrot.js:30
 parrotFrame                  src/12y-parrot-face.js:684
 parrotHas                    src/12x-parrot.js:25
-parrotHeardKill              src/13-pirates.js:255
+parrotHeardKill              src/13-pirates.js:258
 parrotLine                   src/12y-parrot-face.js:641
 parrotPoke                   src/12y-parrot-face.js:657
 parRow                       src/12y-parrot-face.js:141
@@ -3045,7 +3063,7 @@ recordHonour                 src/11aa-record.js:35
 recordPilot                  src/11aa-record.js:39
 recordTick                   src/11aa-record.js:41
 recordYears                  src/11aa-record.js:32
-refineBank                   src/11-log.js:146
+refineBank                   src/11-log.js:149
 REGION_A                     src/06b-region.js:22
 REGION_B                     src/06b-region.js:24
 REGION_GAP                   src/06c-regions.js:36
@@ -3126,13 +3144,13 @@ renderRoute                  src/12r-route.js:349
 renderSiteTab                src/26c-ui-station-site.js:7
 renderSmena                  src/12ud-smena.js:121
 renderStrips                 src/27i-ui-table.js:270
-renderTab                    src/26-ui-station.js:389
-renderTabBody                src/26-ui-station.js:401
+renderTab                    src/26-ui-station.js:390
+renderTabBody                src/26-ui-station.js:402
 renderThings                 src/27i-ui-table.js:301
 REP_MIN                      src/12k-rep.js:16
 REP_WORDS                    src/12k-rep.js:17
 repAdd                       src/12k-rep.js:36
-repairCost                   src/26-ui-station.js:130
+repairCost                   src/26-ui-station.js:131
 repAt                        src/12k-rep.js:27
 repFuelMul                   src/12k-rep.js:52
 repHireMul                   src/12k-rep.js:54
@@ -3147,7 +3165,7 @@ RES_AUTO                     src/08-state.js:54
 RES_KEYS                     src/02-world.js:87
 resAuto                      src/28-loop.js:117
 resEma                       src/28-loop.js:116
-resetArm                     src/26-ui-station.js:944
+resetArm                     src/26-ui-station.js:945
 resetWorld                   tests/90-harness.js:144
 resize                       src/08-state.js:22
 RET_BOARD                    src/11s-returners.js:29
@@ -3449,9 +3467,9 @@ sealedWhy                    src/05e-clearance.js:75
 seamAdd                      src/12s-wear.js:182
 seamsAll                     src/12s-wear.js:181
 seamsOf                      src/12s-wear.js:183
-SEC_CAP                      src/26-ui-station.js:263
-secHead                      src/26-ui-station.js:212
-secTidy                      src/26-ui-station.js:264
+SEC_CAP                      src/26-ui-station.js:264
+secHead                      src/26-ui-station.js:213
+secTidy                      src/26-ui-station.js:265
 sellCargo                    src/12-economy.js:68
 sellDroneYield               src/12-economy.js:90
 sellQuote                    src/12ab-hold.js:101
@@ -3516,9 +3534,9 @@ shiftLogRec                  src/12pa-beacon.js:43
 shiftTalkTick                src/03f-hull-role.js:73
 SHIP_KEYS                    src/03-ships.js:12
 shipData                     src/03-ships.js:13
-shipRow                      src/26-ui-station.js:334
+shipRow                      src/26-ui-station.js:335
 SHIPS                        src/03-ships.js:2
-shipThumb                    src/26-ui-station.js:321
+shipThumb                    src/26-ui-station.js:322
 shipTier                     src/04b-fleet.js:156
 shipZ                        src/16-flight.js:235
 shipZoneR                    src/19f-lander.js:14
@@ -3669,7 +3687,7 @@ SRC_DISCOUNT                 src/12ad-site.js:22
 srcPrice                     src/12ad-site.js:294
 ST_ART                       src/17c-system-draw.js:407
 ST_GOLD                      src/17c-system-draw.js:120
-ST_GROUPS                    src/26-ui-station.js:87
+ST_GROUPS                    src/26-ui-station.js:88
 ST_MOD_FILL                  src/17a-station-mod.js:81
 ST_MODULES                   src/17a-station-mod.js:14
 ST_TYPES                     src/06-galaxy.js:54
@@ -3700,8 +3718,8 @@ stDel                        src/14-save.js:26
 steps                        tests/90-harness.js:237
 stepWorld                    src/28-loop.js:147
 stGet                        src/14-save.js:8
-stGroup                      src/26-ui-station.js:96
-stGroupOf                    src/26-ui-station.js:95
+stGroup                      src/26-ui-station.js:97
+stGroupOf                    src/26-ui-station.js:96
 stopEngine                   src/09-audio.js:336
 STORAGE_OK                   src/14-save.js:7
 STORAGE_TOLD                 src/14-save.js:13
@@ -3764,7 +3782,7 @@ stTabFuse                    src/26b-ui-station-work.js:262
 stTabInstr                   src/26b-ui-station-work.js:169
 stTabLab                     src/26b-ui-station-work.js:236
 stTabMods                    src/26b-ui-station-work.js:12
-stTabsHere                   src/26-ui-station.js:97
+stTabsHere                   src/26-ui-station.js:98
 stTypeOf                     src/06-galaxy.js:73
 STUN_TIME                    src/13a-guns.js:27
 subdivide                    src/24-mode-belt.js:34
@@ -3790,7 +3808,7 @@ surveyLegs                   src/12w-survey.js:48
 surveyList                   src/12w-survey.js:37
 surveyPoint                  src/12w-survey.js:20
 swimTestLand                 tests/91zzzc-swim.js:8
-syncTabs                     src/26-ui-station.js:98
+syncTabs                     src/26-ui-station.js:99
 SYS_BAKE_KEEP                src/06-galaxy.js:20
 SYS_CACHE                    src/06-galaxy.js:3
 SYS_CHIPS                    src/17-mode-system.js:6
@@ -4401,7 +4419,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/10-music.js · 30 КБ
   · музыка: слои, а не треки:1
 
-## src/11-log.js · 8 КБ
+## src/11-log.js · 9 КБ
   · бортовой журнал:1
 
 ## src/11a-quests.js · 9 КБ
@@ -4633,6 +4651,9 @@ zooTick                      src/11ad-zoo.js:41
 
 ## src/12ay-fx-soc.js · 6 КБ
   · семья механик: ОБЩЕСТВО (M383, §15.1):1
+
+## src/12az-fx-nat.js · 5 КБ
+  · семья механик: ПРИРОДА (M384, §15.1):1
 
 ## src/12b-crew-events.js · 17 КБ
   · наёмники: рейс как раздача карт:1
@@ -5117,8 +5138,8 @@ zooTick                      src/11ad-zoo.js:41
 
 ## src/26-ui-station.js · 66 КБ
   · станция:1
-  · заголовки и полосы (M299, docs/DESIGN-screens.md §1a):207
-  · настройки:943
+  · заголовки и полосы (M299, docs/DESIGN-screens.md §1a):208
+  · настройки:944
 
 ## src/26a-ui-station-home.js · 13 КБ
   · станция: вкладка «дом и базы»:1
@@ -5614,16 +5635,16 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzzv-wall.js · 7 КБ
   · автотесты: стена, которая помнит (M210):1
 
-## tests/91zzzw-chron.js · 32 КБ
+## tests/91zzzw-chron.js · 33 КБ
   · летопись (M370, §16.2–16.5):1
   · Директор и шесть волн (M371, §15, §7.3):135
   · война, которую видно (M372, §7.4):206
-  · провод войны (M376, §13):267
-  · оставленное (M377, §11.3):319
-  · выборы и сбор (M378, §11.2, §14):343
-  · обряды (M379, §14):386
-  · «Ревизия» (M380, §11.2):419
-  · циркуляры и конституция (M381, §12, D18):486
+  · провод войны (M376, §13):274
+  · оставленное (M377, §11.3):326
+  · выборы и сбор (M378, §11.2, §14):350
+  · обряды (M379, §14):393
+  · «Ревизия» (M380, §11.2):426
+  · циркуляры и конституция (M381, §12, D18):493
 
 ## tests/91zzzw-combat.js · 41 КБ
   · бой между кораблями (M361, §5):1
@@ -5632,7 +5653,7 @@ zooTick                      src/11ad-zoo.js:41
   · снаряжение по рангу (M368, §5):467
   · четыре правила и позывной (M373, §6.1):624
 
-## tests/91zzzw-fx.js · 6 КБ
+## tests/91zzzw-fx.js · 8 КБ
   · семьи механик Директора (M382–M388, §15.1):1
 
 ## tests/91zzzw-guns.js · 4 КБ

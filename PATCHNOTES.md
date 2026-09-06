@@ -7,6 +7,27 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.384.0 - M384: the Director's third family — weather
+
+Nature stops being scenery.
+
+**Вспышка.** For three days the instruments lie — with the same mark the помеховая already uses,
+because inventing a second kind of interference would only mean two things to debug — and the
+pickets leave: no patrol, no somebody else's battle, empty sky.
+
+**Рой.** Asteroids cross a system and hit **whoever stands still**. The rule is visible before it
+costs anything and the cure is obvious: move. That is the difference between difficulty and
+meanness, and it is the only thing in this family that damages you at all.
+
+**Истощение.** A power's belts give **no** ore — not less. An event should feel like an event.
+
+**Находка.** A planet becomes habitable: the surface there yields a quarter more. One kind thing
+per family is about right.
+
+Tests: nothing announced meaning nothing happening; the flare jamming and emptying the sky; the
+swarm hurting a standing ship and ignoring a moving one; the depletion zeroing ore but not
+organics; the find raising the surface yield.
+
 ## 0.383.0 - M383: the Director's second family — people
 
 The war reaches the people who were already in the game: the hired hands at the counter, the clerk

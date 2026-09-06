@@ -245,6 +245,9 @@ function updateCombat(dt){
      они в том же цикле боя, а не отдельным таймером */
   if(typeof mslTick==="function")mslTick(dt);
   if(typeof hailRunCheck==="function")hailRunCheck(sh);   /* четвёртое правило (M373) */
+  /* природа (M384): буря глушит приборы, рой бьёт того, кто стоит */
+  if(typeof natStormTick==="function")natStormTick(dt);
+  if(typeof natSwarmTick==="function")natSwarmTick(dt);
   if((keys.msl||(G.ctl&&G.ctl.msl))&&typeof mslFire==="function"&&(G.mslCool||0)<=0){
     if(sealed){if(typeof yaltaSealed==="function")yaltaSealed();}
     else mslFire();

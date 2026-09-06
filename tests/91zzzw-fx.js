@@ -112,3 +112,42 @@ TEST_SUITES.push(()=>suite("общество M383: забастовка, пра�
     ok(socWageMul()<1,"и труд там дешевле: "+socWageMul());
   }
 }));
+
+TEST_SUITES.push(()=>suite("природа M384: буря, рой, истощение, находка",()=>{
+  fxWorld();
+  const own=chronOwner(0,0);
+  if(own<0){ok(true,"вне круга летописи");return;}
+  /* без происшествий ничего не идёт */
+  eq(natStormHere(0,0),false,"бури нет");
+  eq(natSwarmHere(0,0),false,"роя нет");
+  eq(natOreMul("iron",0,0),1,"руда обычная");
+  eq(natLandMul(),1,"и на поверхности как всегда");
+  /* буря: помеха и пустое небо */
+  fxInc("storm",own);
+  ok(natStormHere(0,0),"вспышка здесь");
+  ok(natNoPickets(),"пикеты уходят");
+  G.jamT=0;
+  natStormTick(1);
+  ok(G.jamT>0,"приборы врут: та же помеха, что у помеховой");
+  /* рой: бьёт стоящего и не трогает идущего */
+  fxWorld();
+  fxInc("swarm",own);
+  G.mode="system";
+  G.hull=stat().hullMax;
+  G.ship.vx=0;G.ship.vy=0;
+  natSwarmTick(3);
+  ok(G.hull<stat().hullMax,"стоящему достаётся");
+  const hurt=G.hull;
+  G.ship.vx=stat().maxSp||8;G.ship.vy=0;
+  natSwarmTick(3);
+  eq(G.hull,hurt,"а идущему — нет");
+  /* истощение: пояс пуст, а не беднее */
+  fxWorld();
+  fxInc("drain",own);
+  eq(natOreMul("iron",0,0),0,"железа нет вовсе");
+  eq(natOreMul("organics",0,0),1,"а органика не руда — её это не трогает");
+  /* находка: единственное доброе происшествие семьи */
+  fxWorld();
+  fxInc("find",own);
+  ok(natLandMul()>1,"на поверхности берётся больше: "+natLandMul());
+}));

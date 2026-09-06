@@ -220,6 +220,13 @@ TEST_SUITES.push(()=>suite("война M372: пикет в тылу, чужой 
   const rp=rear.split(",");
   G.sx=rp[0]|0;G.sy=rp[1]|0;G.pirates=[];
   npcSpawn();
+  /* в бурю пикеты уходят (M384) — и это не поломка набора, а правило: тогда
+     проверяем то, что и должно быть, — пустое небо */
+  const storm=(typeof natNoPickets==="function")&&natNoPickets();
+  if(storm){
+    eq(G.pirates.length,0,"идёт вспышка — пикетов нет вовсе");
+    return;
+  }
   ok(G.pirates.length>=2,"в тылу стоит пикет: "+G.pirates.length);
   ok(G.pirates.every(p=>p.iff===1),"и он не берётся в захват — это не ваш бой");
   ok(G.pirates.every(p=>!!p.pw&&!!MAKER_KEYS.indexOf(p.pw)>=0),"у каждого свой флаг");

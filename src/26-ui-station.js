@@ -70,6 +70,7 @@ function openStation(){
     /* экономика Директора одной строкой (M382): ярмарка, эмбарго, жила, волна */
     ((typeof econLine==="function"&&econLine(G.sys))?"\n"+econLine(G.sys):"")+
     ((typeof socLine==="function"&&socLine())?"\n"+socLine():"")+
+    ((typeof natLine==="function"&&natLine())?"\n"+natLine():"")+
     ((typeof occPowerHere==="function"&&occPowerHere())
       ?"\nФЛАГ СМЕНИЛСЯ · "+powerOf(occPowerHere().by).ru.toUpperCase()+
         " · треть выработки в реквизицию":"");

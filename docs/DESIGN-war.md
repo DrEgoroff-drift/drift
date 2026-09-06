@@ -1166,7 +1166,13 @@ One system inside ГЛАВТРАССА's centre (r ≈ 6, fixed by seed, never t
   sect's тихий уезд emptying a system of pirates for a week, and a revolt that flips a fresh
   occupation only if the crowd's own defence counter in that system backs it. **Deferred:** the
   parade drawn in formation (the fleet flies its own line and does not take orders yet).
-  · nature · power · diplomacy · security · culture — still open.
+  · ~~**M384 nature**~~ — 0.384.0 (2026-09-06): `12az-fx-nat` — the flare that jams the
+  instruments with the same mark the помеховая uses and empties the sky of pickets for three days,
+  the swarm that damages whoever stands still (a rule visible in advance with an obvious cure),
+  the depletion that gives a power's belts **no** ore rather than less, and the find that makes a
+  planet's surface a quarter richer. **Deferred:** the storm hiding the map (the map is the one
+  screen the player needs to leave a storm).
+  · power · diplomacy · security · culture — still open.
 
 Every pass ends with the usual: parse, empty console, a manual scenario, an old save,
 `build.ps1`, tests, the craft-codex check for anything drawn, and — from M360 on — `prof()` with

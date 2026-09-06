@@ -139,6 +139,9 @@ function toggleLog(open){
 }
 function modCost(k,lvl){return Math.round(MODS[k].base*Math.pow(lvl+1,1.55));}
 function addRes(k,n){
+  /* истощение (M384, §15.1): в поясах этой державы руды нет вовсе, и это
+     событие, а не цифра — поэтому ноль, а не «меньше» */
+  if(typeof natOreMul==="function")n=n*natOreMul(k);
   const cap=stat().cargoMax,free=cap-held();
   const t=Math.min(n,free);if(t>0)G.cargo[k]+=t;return t;
 }
