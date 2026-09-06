@@ -7,6 +7,29 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.378.0 - M378: one vote, one signal, and not a single word typed
+
+Two ways for a crowd to push the war, both on one button, both with nothing to type.
+
+**Elections.** Once a month each power decides what it is doing next: «держать фронт» or «строить
+и торговать», «добывать» or «связывать узлы», «пускать всех» or «только своих». The question and
+its two answers come from the month's own seed, so they are the same for every player without
+anything being stored or sent. One vote per account, counted by the server; the winner becomes a
+**course** that shifts that power's move thresholds for the month. The crowd does not rule a power
+— it pushes, and the push shows up on the map a сводка later.
+
+**Сигнал сбора.** «Всем сказать в игре», with no chat and no message: three fields — a system, a
+сводка, and that is all. One signal per account per day, an answer on one button, a counter
+«ответили: 23» and a chip on the map with the number in it. This is the whole of gathering a fleet
+for «Ревизия», and nothing more is needed for it.
+
+Votes ride the same ведомость as deeds — there is no second channel, and there is no place in
+either where a player could put a word.
+
+Tests: the month's question stable, different per power and different next month; no ledger
+meaning no result and no course at all; votes in a ledger producing a winner and that winner
+becoming the course; and a rally row carrying nothing but a system, a сводка and a count.
+
 ## 0.377.0 - M377: what people leave behind, and the ones who did not make it
 
 Death Stranding on the postcard's terms: **no names, no text, one way, no reply.** You do not

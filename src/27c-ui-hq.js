@@ -94,6 +94,7 @@ function renderCantina(){
     if(folk&&FOLK[folk.id])cantFolkRow(folk,false);
     if(typeof mayakBlock==="function")mayakBlock();   /* лист маяка на стене (M349) */
     if(typeof noteBlock==="function")noteBlock();     /* записная книжка (M374) */
+    if(typeof voteBlock==="function")voteBlock();     /* выборы и сбор (M378) */
   }else if(cantSel==="counter"){
     secHead("У СТОЙКИ",{back});
     if(typeof putOnTable==="function")tableBlock();

@@ -57,14 +57,20 @@ function chronAgentMove(st,N,i,rr){
     const v=P.rel[q];
     P.rel[q]=v>0?v-((v/40|0)+1):(v<0?v+((-v/40|0)+1):0);
   }
+  /* ── курс месяца (M378) ──
+     Толпа не правит державой, но подталкивает её: победивший на выборах ответ
+     смещает пороги хода. «Держать фронт» — раньше ссорится и воюет; «строить»
+     — чаще строит и торгует. Держава при этом остаётся собой. */
+  const course=(typeof voteCourse==="function")?voteCourse(i,N):null;
+  const warBias=(course==="war")?90:((course==="build")?-70:0);
   /* выбор хода: злее всего тот, у кого нужда на дне и есть с кем ссориться */
   const worst=chronRelWorst(st,i),best=chronRelBest(st,i);
   let move;
-  if(P.need[low]<250&&worst>=0&&P.rel[worst]<-150&&P.str>280)move="war";
-  else if(P.need[low]<450&&worst>=0)move="quarrel";
+  if(P.need[low]<250+warBias&&worst>=0&&P.rel[worst]<-150&&P.str>280)move="war";
+  else if(P.need[low]<450+warBias&&worst>=0)move="quarrel";
   else if(chronAtWar(st,i,worst)&&(P.str<260||roll<120))move="truce";
   else if(P.rel[best]>500&&roll<200)move="ally";
-  else if(roll<520)move="deal";
+  else if(roll<520-warBias)move="deal";
   else move="build";
   const j=(move==="ally")?best:worst;
   if(move==="deal"&&j>=0){

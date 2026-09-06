@@ -102,6 +102,18 @@ function mapHoldingsDraw(vis,cell,V,st){
       ctx.fillStyle=rgba(hex2rgb(powerOf(key).col),(.5*fade).toFixed(3));
       ctx.beginPath();ctx.arc(x0+cell-6,y0+6,2,0,TAU);ctx.fill();
     }
+    /* сигнал сбора (M378): чип с числом ответивших — ни имени, ни слова */
+    if(typeof rallyAt==="function"){
+      const R=rallyAt(v.gx,v.gy);
+      if(R){
+        ctx.strokeStyle="rgba(255,214,120,.9)";ctx.lineWidth=1.4;
+        ctx.beginPath();ctx.arc(x0+cell*.5,y0+cell*.5,cell*.32,0,TAU);ctx.stroke();
+        ctx.fillStyle="rgba(255,214,120,.9)";
+        ctx.font=Math.max(8,cell*.16).toFixed(0)+"px ui-monospace,monospace";
+        ctx.textAlign="center";
+        ctx.fillText("СБОР "+(R.yes|0),x0+cell*.5,y0+cell*.5+cell*.06);
+      }
+    }
     if(chronFront(v.gx,v.gy)){
       ctx.strokeStyle="rgba(255,90,70,"+(.7*fade).toFixed(2)+")";ctx.lineWidth=1.4;
       ctx.strokeRect(x0+.7,y0+.7,cell-1.4,cell-1.4);

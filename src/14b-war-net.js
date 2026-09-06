@@ -92,8 +92,11 @@ function warPull(force){
     WAR_BUSY=0;
     if(!r||!r.ok)return false;
     warClock(r.N|0);
-    for(const s of (r.svodki||[]))if(s&&s.n!==undefined)warLedPut(s.n|0,s.sys||{});
-    if(r.open&&r.open.n!==undefined)warLedPut(r.open.n|0,r.open.sys||{});
+    /* голоса лежат в той же сводке, что и дела, и приезжают вместе с ними:
+       отдельного канала у выборов нет (M378) */
+    const body=s=>{const o=s.sys||{};o.__votes=s.votes||{};return o;};
+    for(const s of (r.svodki||[]))if(s&&s.n!==undefined)warLedPut(s.n|0,body(s));
+    if(r.open&&r.open.n!==undefined)warLedPut(r.open.n|0,body(r.open));
     /* хэш за прошлую сводку: сервер только считает, кто с кем сошёлся */
     try{
       const st=chronState();

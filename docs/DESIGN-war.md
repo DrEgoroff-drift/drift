@@ -1118,7 +1118,14 @@ One system inside ГЛАВТРАССА's centre (r ≈ 6, fixed by seed, never t
   somebody died, drawn by the same generator at a fifth of the alpha. Risks doc §G written.
   **Deferred:** signs and fuel cans as things you can leave from the hold (the hold has no can),
   and the ghost's own trace of a flight rather than of a death.
-- **M378** votes, elections, сигнал сбора.
+- ~~**M378** votes, elections, сигнал сбора~~ — 0.378.0 (2026-09-06): `12at-vote` — the month's
+  question per power taken from the month's own seed (so it is the same for everyone and needs no
+  storage), two ready answers and one vote per account counted by the server, the winner becoming
+  a **course** that shifts that power's move thresholds for the month without ever giving it an
+  order; and the сигнал сбора of §11.2 — three fields and no words, one per account per day, an
+  answer on one button, a counter «ответили: N» and a chip on the map. Votes ride the same
+  ведомость as deeds, so there is no second channel. **Deferred:** the waves reading a rally aloud
+  in their own voices (M371's lines cover events, not player signals).
 - **M379** the nine rites' counters and effects (§14), the regatta from «Ялта».
 - **M380** «Ревизия» (D13).
 - **M381** циркуляры, the constitution and validator (D18), the season dials, the regulator's

@@ -339,3 +339,46 @@ TEST_SUITES.push(()=>suite("оставленное M377: копия приход
   ok(Math.abs(c.x-a.x)>1||Math.abs(c.y-a.y)>1,"у другой записи другое место");
   ok(Math.hypot(a.x,a.y)>800,"и оно не под носом у точки прыжка");
 }));
+
+/* ══════════════ выборы и сбор (M378, §11.2, §14) ══════════════ */
+TEST_SUITES.push(()=>suite("выборы M378: вопрос от зерна месяца, курс от голосов",()=>{
+  chWorld();
+  try{localStorage.removeItem(CHRON_KEY);}catch(e){}
+  WAR_LED_CACHE=null;
+  const N=600;
+  /* вопрос один и тот же у всех и не гуляет между вызовами */
+  const a=voteQuestion("or",N),b=voteQuestion("or",N);
+  ok(!!a&&a.key===b.key,"вопрос месяца не гуляет: "+a.key);
+  eq(a.picks.length,2,"два ответа, и оба готовы заранее");
+  ok(voteQuestion("km",N).key!==a.key,"у другой державы свой вопрос");
+  ok(voteQuestion("or",N+VOTE_MONTH).key!==a.key,"и в следующем месяце другой");
+  eq(voteQuestion("нет такой",N),null,"несуществующая держава вопроса не получает");
+  /* без ведомостей итога нет — держава идёт своим ходом */
+  eq(voteWinner("or",N),null,"голосов нет — итога нет");
+  eq(voteCourse(MAKER_KEYS.indexOf("or"),N),null,"и курса нет");
+  /* кладём голоса в ведомость: побеждает тот ответ, за который больше */
+  const v={};v[a.key]={p:{}};
+  v[a.key].p[a.picks[0][0]]=3;
+  v[a.key].p[a.picks[1][0]]=7;
+  warLedPut(N,{__votes:v});
+  const w=voteWinner("or",N);
+  ok(!!w,"итог посчитан");
+  eq(w.pick,a.picks[1][0],"победил тот, за кого больше голосов");
+  eq(w.n,7,"и число голосов названо");
+  eq(voteCourse(MAKER_KEYS.indexOf("or"),N),a.picks[1][0],"курс державы — это он");
+  try{localStorage.removeItem(CHRON_KEY);}catch(e){}
+  WAR_LED_CACHE=null;
+}));
+
+TEST_SUITES.push(()=>suite("сбор M378: три поля и ни одного слова",()=>{
+  chWorld();
+  /* сигнал — это система, сводка и счётчик. Ничего больше в нём нет */
+  RALLY_CACHE={t:Date.now(),rows:[{sys:"3,4",at:700,n:698,yes:5,a:[]}]};
+  const R=rallyAt(3,4);
+  ok(!!R,"сигнал виден по адресу");
+  eq(R.yes,5,"и счётчик при нём");
+  eq(rallyAt(9,9),null,"в чужой системе сигнала нет");
+  for(const k in R)ok(["sys","at","n","yes","a","h"].indexOf(k)>=0,
+    "в сигнале нет лишних полей: "+k);
+  RALLY_CACHE=null;
+}));

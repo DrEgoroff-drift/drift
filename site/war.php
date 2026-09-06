@@ -243,6 +243,63 @@ if ($a === 'hash') {
   wout(['ok' => true, 'agree' => ($top === $h), 'n' => $n, 'seen' => $rec['h'][$h]]);
 }
 
+/* ══════════════ сигнал сбора (M378, §11.2) ══════════════
+   «Всем сказать в игре» без чата: три поля и ни одного слова — система, сводка,
+   и всё. Виден всем, отвечается одной кнопкой, счётчик «ответили: 23». Один
+   сигнал на учётную запись в сутки: иначе это станет доской объявлений, а
+   доски объявлений тут нет и не будет. */
+const RALLY_LIFE = 8;           // сводок живёт сигнал (двое суток)
+function rfile() { return wroot() . '/rally.json'; }
+function rread($N) {
+  $r = wread(rfile());
+  $rows = [];
+  if ($r && is_array($r['rows'] ?? null))
+    foreach ($r['rows'] as $x) if ((int)($x['n'] ?? 0) > $N - RALLY_LIFE) $rows[] = $x;
+  return ['rows' => $rows];
+}
+if ($a === 'rallies') {
+  $N = wclose();
+  wout(['ok' => true, 'N' => $N, 'rows' => rread($N)['rows']]);
+}
+if ($a === 'rally') {
+  $login = wwho();
+  if (!$login) wfail('нужна учётная запись', 401);
+  $N   = wclose();
+  $sys = (string)($in['sys'] ?? '');
+  $at  = (int)($in['at'] ?? $N);
+  if (!preg_match('/^-?\d{1,3},-?\d{1,3}$/', $sys)) wfail('не адрес системы');
+  if ($at < $N || $at > $N + 8) wfail('сводка сбора вне окна');
+  list($acct, $af) = wacct($login, $N);
+  if ((int)($acct['rallyN'] ?? -99) > $N - 4) wfail('сигнал уже поднимали сегодня');
+  $acct['rallyN'] = $N;
+  wwrite($af, $acct);
+  $r = rread($N);
+  $r['rows'][] = ['sys' => $sys, 'at' => $at, 'n' => $N,
+                  'h' => substr(hash('sha256', $login), 0, 8), 'yes' => 0, 'a' => []];
+  wwrite(rfile(), $r);
+  wout(['ok' => true]);
+}
+if ($a === 'join') {
+  $login = wwho();
+  if (!$login) wfail('нужна учётная запись', 401);
+  $N = wclose();
+  $i = (int)($in['i'] ?? -1);
+  $r = rread($N);
+  if (!isset($r['rows'][$i])) wfail('сигнала нет');
+  $h = substr(hash('sha256', $login), 0, 8);
+  if (in_array($h, $r['rows'][$i]['a'], true)) wfail('уже ответили');
+  $r['rows'][$i]['a'][] = $h;
+  $r['rows'][$i]['yes'] = (int)$r['rows'][$i]['yes'] + 1;
+  wwrite(rfile(), $r);
+  wout(['ok' => true, 'yes' => $r['rows'][$i]['yes']]);
+}
+/* голоса открытой сводки — их читает клиент, чтобы показать итог выборов */
+if ($a === 'votes') {
+  $N = wclose();
+  $o = wopen();
+  wout(['ok' => true, 'N' => $N, 'votes' => $o['votes'] ?? new stdClass()]);
+}
+
 /* ══════════════ оставленное (M377, §11.3) ══════════════
    Правило одно и оно короткое: ни имён, ни текста, в одну сторону, без ответа.
    Не «подарить», а ОСТАВИТЬ; кто нашёл, тот нашёл. Обмена нет — значит нет и

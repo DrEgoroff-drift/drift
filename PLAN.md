@@ -743,8 +743,9 @@ Three stages, each playable on /dev before the next starts:
   ведомость в шаг 1 повтора, давление не больше четверти, часы от сервера) ·
   ~~M377 leftovers and ghosts~~ (0.377.0, 2026-09-06: `left/here/take/thank` на сервере с числами
   §11.5, `12as-left` — оставить ствол из трюма, копия стёрта на тир и один аффикс, место записи
-  от её семени, благодарность числом, призрак там, где кто-то не дошёл; §G в рисках) · M378
-  votes, elections, сигнал сбора · M379 the nine rites · M380 «Ревизия» · M381 циркуляры and
+  от её семени, благодарность числом, призрак там, где кто-то не дошёл; §G в рисках) · ~~M378 votes, elections, сигнал сбора~~ (0.378.0, 2026-09-06: вопрос месяца от зерна,
+  один голос на борт, победивший ответ — курс державы на месяц; сигнал сбора: три поля, одна
+  кнопка, счётчик и чип на карте) · M379 the nine rites · M380 «Ревизия» · M381 циркуляры and
   the constitution · M382–M388 the Director's mechanics, one family a pass.
 
 Measured from M360 on: `prof()` with eight armed ships on the phone layout; the pad row on the

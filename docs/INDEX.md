@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 465 · символов верхнего уровня: 4196
+Файлов: 466 · символов верхнего уровня: 4211
 
 ## СИМВОЛЫ
 
@@ -333,19 +333,19 @@ camStep                      src/19c-light.js:141
 canPay                       src/21a-mode-base.js:51
 CANT_STYLE                   src/27d-ui-cantina.js:15
 cantBarkeep                  src/27d-ui-cantina-props.js:15
-cantBubble                   src/27c-ui-hq.js:258
+cantBubble                   src/27c-ui-hq.js:259
 cantCounter                  src/27d-ui-cantina-props.js:306
-cantDealRow                  src/27c-ui-hq.js:161
+cantDealRow                  src/27c-ui-hq.js:162
 cantFigure                   src/27d-ui-cantina.js:403
-cantFolkRow                  src/27c-ui-hq.js:192
-cantHireRow                  src/27c-ui-hq.js:127
+cantFolkRow                  src/27c-ui-hq.js:193
+cantHireRow                  src/27c-ui-hq.js:128
 cantinaPool                  src/12c-mgr-core.js:259
-cantinaScene                 src/27c-ui-hq.js:264
+cantinaScene                 src/27c-ui-hq.js:265
 cantProps                    src/27d-ui-cantina-props.js:153
 cantRoomBody                 src/27d-ui-cantina.js:45
-cantSay                      src/27c-ui-hq.js:259
+cantSay                      src/27c-ui-hq.js:260
 cantSeats                    src/27d-ui-cantina.js:395
-cantSel                      src/27c-ui-hq.js:263
+cantSel                      src/27c-ui-hq.js:264
 cantStyle                    src/27d-ui-cantina.js:27
 cantTables                   src/27d-ui-cantina-props.js:241
 cantView                     src/27d-ui-cantina-props.js:82
@@ -1143,7 +1143,7 @@ FACE_SKIN                    src/12d-mgr-face.js:10
 faceEl                       src/27c-ui-hq.js:6
 facePath                     src/12d-mgr-face.js:19
 faceRnd                      src/12d-mgr-face.js:16
-factPrices                   src/27c-ui-hq.js:574
+factPrices                   src/27c-ui-hq.js:575
 FAUNA_RES                    src/02-world.js:96
 faunaOf                      src/20e-species.js:268
 fbm1                         src/01-core.js:30
@@ -1370,7 +1370,7 @@ GROK_DIRT                    src/12tb-grok.js:29
 GROK_LIKE                    src/12tb-grok.js:28
 GROK_MIN                     src/12tb-grok.js:27
 GROK_NAME                    src/12tb-grok.js:26
-grokBlock                    src/27c-ui-hq.js:205
+grokBlock                    src/27c-ui-hq.js:206
 grokBusy                     src/12tb-grok.js:68
 grokCanTeach                 src/12tb-grok.js:136
 grokFace                     src/12tb-grok.js:173
@@ -1686,14 +1686,14 @@ HOUSES                       src/12u-scrip.js:21
 houseWallMark                src/17d-house-shapes.js:72
 HQ_H                         src/27f-hq-room.js:18
 HQ_ORDER                     src/27f-hq-room.js:21
-hqAiOffer                    src/27c-ui-hq.js:472
-hqBtnTick                    src/27c-ui-hq.js:309
+hqAiOffer                    src/27c-ui-hq.js:473
+hqBtnTick                    src/27c-ui-hq.js:310
 hqConsole                    src/27f-hq-room.js:228
 hqFigure                     src/27f-hq-room.js:513
 hqHover                      src/27f-hq-room.js:687
-hqJobCard                    src/27c-ui-hq.js:531
-hqRelicSlot                  src/27c-ui-hq.js:497
-hqRender                     src/27c-ui-hq.js:316
+hqJobCard                    src/27c-ui-hq.js:532
+hqRelicSlot                  src/27c-ui-hq.js:498
+hqRender                     src/27c-ui-hq.js:317
 hqRoomBody                   src/27f-hq-room.js:32
 hqScene                      src/27f-hq-room.js:644
 hqScreenData                 src/27f-hq-room.js:316
@@ -2118,7 +2118,7 @@ mapFit                       src/18-mode-map.js:93
 mapGoAddr                    src/18a-map-addr.js:215
 mapGridDraw                  src/18a-map-addr.js:55
 mapHoldingsDraw              src/18b-map-hold.js:80
-mapHoldingsTop               src/18b-map-hold.js:174
+mapHoldingsTop               src/18b-map-hold.js:186
 mapHousePatch                src/18b-map-hold.js:31
 mapLayer                     src/18b-map-hold.js:26
 mapLayerNext                 src/18b-map-hold.js:28
@@ -2198,7 +2198,7 @@ mgrCrewYield                 src/12c-mgr-core.js:203
 mgrCut                       src/12c-mgr-core.js:173
 mgrDefect                    src/12c-mgr-core.js:348
 mgrDomain                    src/12c-mgr-core.js:515
-mgrDomainLine                src/27c-ui-hq.js:593
+mgrDomainLine                src/27c-ui-hq.js:594
 mgrDroneRate                 src/12c-mgr-core.js:219
 mgrFace                      src/12d-mgr-face.js:29
 mgrFee                       src/12c-mgr-core.js:299
@@ -2473,7 +2473,7 @@ opCensus                     tests/91zzzzzt-opis.js:15
 openBarge                    src/12l-barge.js:635
 openCrewView                 src/27b-ui-crew.js:230
 openDeal                     src/27n-ui-deal.js:163
-openHq                       src/27c-ui-hq.js:613
+openHq                       src/27c-ui-hq.js:614
 openStation                  src/26-ui-station.js:5
 openWanderer                 src/24c-mode-wanderer.js:22
 OPIS                         src/27j-ui-opis.js:32
@@ -2942,6 +2942,12 @@ raidLineOfSight              src/24a-mode-raid.js:347
 raidSolid                    src/24a-mode-raid.js:78
 raidSolidAt                  src/24a-mode-raid.js:82
 raidUp                       src/24aa-raid-draw.js:8
+RALLY_CACHE                  src/12at-vote.js:69
+rallyAt                      src/12at-vote.js:102
+rallyJoin                    src/12at-vote.js:94
+rallyList                    src/12at-vote.js:70
+rallyRaise                   src/12at-vote.js:80
+rallyRows                    src/12at-vote.js:79
 RAM_K                        src/13a-guns.js:44
 RAM_R                        src/13a-guns.js:43
 ramp                         src/07-planet.js:2
@@ -3730,7 +3736,7 @@ TAB_ID                       src/14a-cloud.js:20
 TAB_LIVE                     src/14a-cloud.js:19
 TABLE_REPLY                  src/11b-speech.js:158
 tableBake                    src/27i-ui-table.js:109
-tableBlock                   src/27c-ui-hq.js:633
+tableBlock                   src/27c-ui-hq.js:634
 tableIsOpen                  src/27i-ui-table.js:23
 tableNewBy                   src/27i-ui-table.js:76
 tableNewThings               src/27i-ui-table.js:73
@@ -3984,6 +3990,15 @@ voiceOpts                    src/12pa-beacon.js:174
 voicePick                    src/12pa-beacon.js:186
 voiceSay                     src/12pa-beacon.js:205
 voiceTick                    src/12pa-beacon.js:241
+VOTE_MONTH                   src/12at-vote.js:15
+VOTE_Q                       src/12at-vote.js:16
+voteBlock                    src/12at-vote.js:108
+voteCast                     src/12at-vote.js:58
+voteCourse                   src/12at-vote.js:53
+voteMonth                    src/12at-vote.js:21
+voteQuestion                 src/12at-vote.js:23
+voteTally                    src/12at-vote.js:32
+voteWinner                   src/12at-vote.js:43
 vRope                        src/18d-verlet.js:27
 vRopeAt                      src/18d-verlet.js:125
 vStep                        src/18d-verlet.js:53
@@ -4081,7 +4096,7 @@ WAR_API                      src/14b-war-net.js:19
 WAR_BUSY                     src/14b-war-net.js:21
 WAR_LED_CACHE                src/14b-war-net.js:45
 WAR_PULL_MS                  src/14b-war-net.js:20
-warBoot                      src/14b-war-net.js:138
+warBoot                      src/14b-war-net.js:141
 warCall                      src/14b-war-net.js:80
 warClock                     src/14b-war-net.js:70
 warHere                      src/14b-war-net.js:22
@@ -4089,9 +4104,9 @@ warLed                       src/14b-war-net.js:46
 warLedger                    src/14b-war-net.js:51
 warLedLast                   src/14b-war-net.js:63
 warLedPut                    src/14b-war-net.js:55
-warPressure                  src/14b-war-net.js:121
+warPressure                  src/14b-war-net.js:124
 warPull                      src/14b-war-net.js:86
-warPut                       src/14b-war-net.js:111
+warPut                       src/14b-war-net.js:114
 warStore                     src/14b-war-net.js:24
 warStoreSet                  src/14b-war-net.js:30
 warTok                       src/14b-war-net.js:23
@@ -4522,6 +4537,9 @@ zooTick                      src/11ad-zoo.js:41
 
 ## src/12as-left.js · 9 КБ
   · оставленное (M377, §11.3):1
+
+## src/12at-vote.js · 7 КБ
+  · выборы и сигнал сбора (M378, §11.2, §14):1
 
 ## src/12b-crew-events.js · 17 КБ
   · наёмники: рейс как раздача карт:1
@@ -5503,12 +5521,13 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzzv-wall.js · 7 КБ
   · автотесты: стена, которая помнит (M210):1
 
-## tests/91zzzw-chron.js · 19 КБ
+## tests/91zzzw-chron.js · 22 КБ
   · летопись (M370, §16.2–16.5):1
   · Директор и шесть волн (M371, §15, §7.3):135
   · война, которую видно (M372, §7.4):206
   · провод войны (M376, §13):267
   · оставленное (M377, §11.3):319
+  · выборы и сбор (M378, §11.2, §14):343
 
 ## tests/91zzzw-combat.js · 41 КБ
   · бой между кораблями (M361, §5):1
