@@ -7,6 +7,31 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.403.0 - M403: what a solved base pays, and the blockade it carries you through
+
+The rule the whole layer is charging for: **a good base does not print credits — it makes what
+cannot be bought.** This economy has already been burned once by the other shape (the солнечная
+ферма of M240, where money made money with no attention and no ceiling), so the payoff is built to
+that rule and checked against it by the suite.
+
+A **solved** base makes something nobody stocks: техкомпоненты from a volcanic base drilled deep
+with a smelter, гидразин from a toxic world's laboratory, криоген where the cold is already
+outside, карбид where a heavy world lets the drill reach. One unit every four shifts each — a
+handful in a day, a batch in a week. Not income: **supply**.
+
+Here the design contradicted itself and the suite caught it. §23.1 names иридий and ксенобиом, and
+both have a **price** in `RES` — any counter buys them. A base making those would print credits,
+which is precisely what §23's first line forbids. So the list is built from what genuinely has
+`price:0`, and every row is asserted to have it.
+
+**Блокада (§43).** When the war layer closes a system there is no fuel, no repairs, and the nearest
+open station is four jumps the wrong way. A base is then the only supply the player controls: at
+the ледоплавка or электролизёр you fill the tanks with your own ice (ЦЕЛЬ, two fuel per unit), and
+at the мастерская you repair the hull with your own alloy. Both cost the base's stores — the point
+is not that it is free, but that it is **yours**. A player with a working base flies through a war;
+a player without one is grounded and watches, which in this game is the worse fate.
+
+---
 ## 0.402.0 - M402: a base can be lost, and can always be got back
 
 Losing a base has to hurt. Losing it **forever** must be impossible — that is §39, and it is

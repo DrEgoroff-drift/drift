@@ -1591,7 +1591,15 @@ pirate outpost by sector danger; recovery is always available — free when empt
 settlers, 6 500 from the outpost **or nothing if you clear the system yourself** (the existing war,
 not a new scene); repair from zero costs a quarter of the build price per cell. Nothing is deleted
 from the save in any state, and the suite checks that too. **Deferred:** the ПАЛАТА's seizure and
-its auction (§40 — that is M408's tone pass), and the ruin as a rumour the world retells. · M403 плата и блокада (§23, §42, §43) · M404 ремесленный проход по всей
+its auction (§40 — that is M408's tone pass), and the ruin as a rumour the world retells. · ~~M403 плата и блокада~~ — 0.403.0 (2026-09-06): `21b1-base-pay` — the unique output of a solved
+base (техкомпоненты · гидразин · криоген · карбид), one unit each per four shifts, gated on world,
+depth and the module that does the work; and the base as its owner's counter — ice into the tanks at
+two per unit, alloy into the hull through the мастерская, both out of the base's own stores.
+**Found here:** §23.1 names иридий and ксенобиом as the unique output, and both have a price in
+`RES` — a base making them would print credits, which §23's own first line forbids. The list is now
+built from `price:0` goods and the suite asserts the price of every row. **Deferred:** the
+blockade's own gate — the counter works whenever you are at your base, and the blockade is what
+makes it matter rather than what unlocks it. · M404 ремесленный проход по всей
 сцене (`DESIGN-craft`, `look()`, its own almanac issue).
 
 **D · человек** — M405 сотня и распределение (§34, §35, §48) · M406 охота (§24.4, §35.1) ·

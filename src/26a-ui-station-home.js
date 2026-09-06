@@ -190,6 +190,9 @@ function renderBasesTab(st){
          что с базой не так. Строка пишется даже когда всё хорошо */
       if(typeof baseWhy==="function")
         r.firstChild.innerHTML+="<s>почему: "+baseWhy(B)+"</s>";
+      /* плата (M403): что эта база делает такого, чего не купить нигде */
+      if(typeof basePayLine==="function"&&basePayLine(B))
+        r.firstChild.innerHTML+="<s><b style='color:#7fe6d8'>"+basePayLine(B)+"</b></s>";
       /* гость у затвора (M395): его берут или ему отказывают, и то и другое —
          решение игрока, а не строка в журнале */
       if(B.guest)r.firstChild.innerHTML+="<s><b style='color:#e8c46a'>у затвора ждёт "+

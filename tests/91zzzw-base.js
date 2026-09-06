@@ -1233,3 +1233,76 @@ TEST_SUITES.push(()=>suite("база M402: вернуть можно всегд�
   applySave(JSON.parse(JSON.stringify(snapshot())));
   ok(!!G.bases[key],"и переживает сохранение даже разбитой");
 }));
+
+/* ── плата и блокада (M403) ──
+   Правило §23: хорошая база не печатает кредиты — она делает то, чего не
+   купить. Набор проверяет и это правило, и что прилавок базы не бесплатный. */
+TEST_SUITES.push(()=>suite("база M403: решённая делает то, чего не купить",()=>{
+  const B=bLife();
+  /* формуляр ставим ПОД ТЕКУЩИЙ тип: ключ включает его, и правка «не тому
+     миру» — ровно та ошибка, которую этот набор однажды и поймал */
+  const dial=o=>{G._dial[B.sx+","+B.sy+":"+B.idx+":"+B.type]=
+    Object.assign({heat:0,light:1,press:0,grav:1,wind:0,quake:0,ice:0,ore:2,
+      type:B.type,key:"тест"},o);};
+  /* таблица честная: у каждого умения есть настоящий ресурс и настоящий модуль */
+  for(const U of UNIQ){
+    ok(!!RES[U.k],"умение «"+U.ru+"» даёт настоящий ресурс: "+U.k);
+    eq(RES[U.k].price,0,"и его нигде не купить — цена ноль");
+    ok(!U.need.cell||!!BUILD[U.need.cell],"и модуль для него существует");
+    ok(U.note&&U.note.length>10,"и сказано, почему только здесь");
+  }
+  /* обычная база не умеет ничего особенного */
+  eq(baseUnique(B).length,0,"простая база уникального не делает");
+  /* вулкан на глубине с плавильней — иридий */
+  B.type="volcanic";
+  dial({heat:2});
+  B.cells[BASE_COLS*3]={k:"refinery",hp:1};
+  ok(baseUnique(B).some(u=>u.k==="techcomp"),"вулкан на глубине даёт техкомпоненты");
+  /* без плавильни — не умеет */
+  B.cells[BASE_COLS*3]=null;
+  ok(!baseUnique(B).some(u=>u.k==="techcomp"),"без плавильни — нет");
+  /* и на лёгком мире того же не выйдет */
+  B.type="rocky";
+  dial({});
+  B.cells[BASE_COLS*3]={k:"refinery",hp:1};
+  ok(!baseUnique(B).some(u=>u.k==="techcomp"),"на каменистой — нет");
+  /* тяжёлый мир и глубина — карбид */
+  dial({grav:1.5});
+  B.cells[BASE_COLS*3]={k:"drill",hp:1};
+  ok(baseUnique(B).some(u=>u.k==="carbide"),"тяжёлый мир достаёт карбид");
+  /* и оно правда кладётся на склад, но медленно */
+  B.cells[0]={k:"reactor",hp:1};B.cells[1]={k:"reactor",hp:1};
+  const n=baseShift()-(baseShift()%UNIQ_EVERY);
+  const q0=B.pool.carbide|0;
+  eq(baseUniqStep(B,n+1),0,"не каждую смену");
+  ok(baseUniqStep(B,n),"а раз в несколько смен — да");
+  ok((B.pool.carbide|0)>q0,"и это легло на склад");
+  ok(B.log.some(x=>x.k==="uniq"),"и записано в журнал");
+}));
+
+TEST_SUITES.push(()=>suite("база M403: свой прилавок стоит своего",()=>{
+  const B=bLife();
+  /* топливо из своего льда */
+  G.fuel=10;
+  B.pool.ice=0;
+  eq(baseRefuel(B),0,"без льда не заправиться");
+  B.pool.ice=50;
+  const f0=G.fuel,i0=B.pool.ice;
+  const took=baseRefuel(B);
+  ok(took>0,"залили: "+took+" льда");
+  ok(G.fuel>f0,"в баках прибавилось");
+  eq(B.pool.ice,i0-took,"и лёд ушёл со склада — даром не бывает");
+  /* ремонт своими сплавами и только при мастерской */
+  G.hull=20;
+  B.pool.alloy=9;
+  eq(baseRepairShip(B),0,"без мастерской не чинят");
+  B.cells[1]={k:"shop",hp:1};
+  const h0=G.hull,a0=B.pool.alloy;
+  const used=baseRepairShip(B);
+  ok(used>0,"починили: −"+used+" сплавов");
+  ok(G.hull>h0,"корпус целее");
+  eq(B.pool.alloy,a0-used,"и сплавы ушли");
+  /* блокада: она читается из летописи, а не из воздуха */
+  eq(typeof baseBlocked(B),"boolean","блокада — это состояние системы");
+  ok(basePayLine(B).indexOf("undefined")<0,"строка без мусора: "+basePayLine(B));
+}));
