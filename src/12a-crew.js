@@ -54,7 +54,11 @@ function crewSkill(c){return 1+Math.min(.6,(c.xp||0)/200);}
    лучшим вариантом — выручка от него росла, а расходы нет. */
 function crewHullPay(c){const S=c.shipId?shipData(c.shipId):null;return S?S.cargo*.1:0;}
 function crewPay(c){
-  return Math.round((CREW_SPEC[c.spec].pay+crewHullPay(c))*crewMul(c,"pay")*crewSkill(c));
+  /* переселенцы (M383, §15.1): рядом с занятой системой людей много, и труд
+     там дешевле на четверть. Это единственное место, где война трогает
+     жалованье, и трогает она его вниз */
+  const soc=(typeof socWageMul==="function")?socWageMul():1;
+  return Math.round((CREW_SPEC[c.spec].pay+crewHullPay(c))*crewMul(c,"pay")*crewSkill(c)*soc);
 }
 function genMerc(seed,specPool){
   const r=rng(seed);

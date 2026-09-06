@@ -5,6 +5,9 @@
    границы, которые сам себе назначил. */
 function fxWorld(){
   resetWorld();
+  /* адрес ставим явно: часть последствий спрашивает «здесь», а `resetWorld`
+     оставляет борт там, где его положил мир, и в двух ярусах это разные места */
+  G.sx=0;G.sy=0;
   try{localStorage.removeItem(CHRON_KEY);}catch(e){}
   if(typeof WAR_LED_CACHE!=="undefined")WAR_LED_CACHE=null;
   CHRON={N:-1,powers:null,systems:null,wars:null,lines:null,_keys:null,off:0};
@@ -63,5 +66,49 @@ TEST_SUITES.push(()=>suite("экономика M382: волна, жила, яр�
     const after=econPriceMul(0,0);
     ok(after>before,"эмбарго дороже: "+before.toFixed(3)+" → "+after.toFixed(3));
     ok(after/before<1.3,"но не втрое: "+(after/before).toFixed(2));
+  }
+}));
+
+TEST_SUITES.push(()=>suite("общество M383: забастовка, праздник, секта, переселенцы",()=>{
+  fxWorld();
+  /* без происшествий ничего не закрыто и ничего не подешевело */
+  eq(socStrikeHere(),false,"забастовки нет");
+  eq(socService("yard"),true,"док открыт");
+  eq(socWageMul(),1,"труд по обычной цене");
+  eq(socPirateMul(0,0),1,"и грабят как обычно");
+  const own=chronOwner(0,0);
+  if(own<0){ok(true,"мы вне круга летописи — правила проверены ниже на числах");return;}
+  /* забастовка закрывает всё, кроме заправки */
+  fxInc("strike",own);
+  /* Директор объявляет забастовки и сам: наша строка идёт последней и потому
+     побеждает — на равных сводках берётся свежая (12am-chron-director) */
+  const dbg=chronIncOf("strike",SOC_STRIKE);
+  ok(!!dbg&&dbg.p===own,"происшествие видно и оно наше");
+  ok(socStrikeHere(),"забастовка здесь");
+  eq(socService("fuel"),true,"заправка работает");
+  eq(socService("yard"),false,"а док стоит");
+  eq(occService("lab"),false,"и лаборатория тоже");
+  ok(socPriceMul(0,0)>1,"пока станция стоит, всё дороже");
+  /* праздник — наоборот */
+  fxWorld();
+  fxInc("holiday",own);
+  ok(socHolidayHere(),"праздник здесь");
+  ok(socPriceMul(0,0)<1,"и на прилавке скидка");
+  /* секта уводит систему в тишину */
+  fxWorld();
+  fxInc("cult",own);
+  eq(socPirateMul(0,0),0,"в тихом уезде не грабят вовсе");
+  /* переселенцы: у СОСЕДА дешевле, а у себя нет */
+  fxWorld();
+  fxInc("refugee",own);
+  eq(socRefugeeNear(0,0),false,"в самой занятой системе никто не дешевеет");
+  let near=null;
+  for(const d of [[1,0],[-1,0],[0,1],[0,-1]]){
+    if(chronOwner(d[0],d[1])>=0&&chronOwner(d[0],d[1])!==own){near=d;break;}
+  }
+  if(near){
+    G.sx=near[0];G.sy=near[1];
+    ok(socRefugeeNear(),"у соседа переселенцы");
+    ok(socWageMul()<1,"и труд там дешевле: "+socWageMul());
   }
 }));

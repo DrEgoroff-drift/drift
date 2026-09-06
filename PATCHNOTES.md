@@ -7,6 +7,35 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.383.0 - M383: the Director's second family — people
+
+The war reaches the people who were already in the game: the hired hands at the counter, the clerk
+at the dock, the keepers who take a station quiet.
+
+**Переселенцы.** After a system is taken, people leave for the neighbours — and in those
+neighbouring systems a hired hand costs a quarter less, because there are many of them and they
+are not choosing. It is the one place the war touches wages, and it touches them downward.
+
+**Забастовка.** The station stands: everything but the pump is closed, through the same service
+gate an occupation uses — because what closes is always the same things. Prices go up a tenth
+while it stands.
+
+**Праздник.** A parade, a tenth off the counter, and the wave sings.
+
+**Тихий уезд.** Once a quarter a sect takes a station into silence and nobody robs anyone in that
+system for a week — the mechanic from 11n gets its second reason to exist.
+
+**Бунт.** In a freshly taken system a revolt can flip the flag back — but only if the crowd
+actually backed it, which is measured the way everything else is: by the defence counter in that
+system's ведомость. There is no «press to revolt» button, and there will not be one.
+
+Also: when two incidents of the same kind land on the same сводка, the newer line now wins. The
+old rule kept the first, which meant the Director's own strike out-shouted a fresher one.
+
+Tests: nothing announced meaning nothing closed and nothing cheaper; the strike closing the yard
+and the lab but not the pump; the holiday discounting and the strike surcharging; the sect
+emptying the system; and refugees making labour cheaper next door but never at home.
+
 ## 0.382.0 - M382: the Director's first family — money
 
 The Director has been announcing incidents since 0.371.0; from here they start doing things. One

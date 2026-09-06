@@ -39,6 +39,8 @@ function spawnPirates(){
   if(typeof holdAmbushMul==="function")n=Math.floor(n*holdAmbushMul());   /* Заграждение (H4) */
   /* субботник расчистил пояс, амнистия увела дезертиров (M379, §14) */
   if(typeof ritePirateMul==="function")n=Math.floor(n*ritePirateMul());
+  /* тихий уезд секты (M383): в этой системе неделю не грабят вовсе */
+  if(typeof socPirateMul==="function")n=Math.floor(n*socPirateMul(G.sx,G.sy));
   n=Math.min(n,ARMED_CAP);   /* потолок вооружённых (§5, M361) */
   for(let i=0;i<n;i++){
     const a=r()*TAU,rad=2200+r()*1600;

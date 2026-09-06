@@ -1160,7 +1160,13 @@ One system inside ГЛАВТРАССА's centre (r ≈ 6, fixed by seed, never t
   multiplier so both sides of the counter move together, and all four computed from the chronicle
   rather than stored. **Deferred here:** station bankruptcy (it needs a station to be able to
   close, which nothing in the game can do yet).
-  · society · nature · power · diplomacy · security · culture — still open.
+  · ~~**M383 society**~~ — 0.383.0 (2026-09-06): `12ay-fx-soc` — refugees making hired hands a
+  quarter cheaper in the systems *around* a taken one, a strike closing everything but the pump
+  through the same service gate the occupation uses, a power holiday with its parade discount, the
+  sect's тихий уезд emptying a system of pirates for a week, and a revolt that flips a fresh
+  occupation only if the crowd's own defence counter in that system backs it. **Deferred:** the
+  parade drawn in formation (the fleet flies its own line and does not take orders yet).
+  · nature · power · diplomacy · security · culture — still open.
 
 Every pass ends with the usual: parse, empty console, a manual scenario, an old save,
 `build.ps1`, tests, the craft-codex check for anything drawn, and — from M360 on — `prof()` with

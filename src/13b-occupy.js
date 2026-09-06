@@ -171,10 +171,14 @@ function occPriceMul(sx,sy){
   /* экономика Директора (M382): волна цен державы, ярмарка и эмбарго живут
      здесь же — в ОДНОМ множителе на обе стороны прилавка */
   const ec=(typeof econPriceMul==="function")?econPriceMul(sx,sy):1;
-  return (occInfo(occLvl(sx,sy)).price||1)*pw*ec;
+  const so=(typeof socPriceMul==="function")?socPriceMul(sx,sy):1;
+  return (occInfo(occLvl(sx,sy)).price||1)*pw*ec*so;
 }
 /* службы станции: под блокадой закрывается док, под пиратами — всё, кроме заправки */
 function occService(kind){
+  /* забастовка (M383): станция стоит, и закрывается ровно то же, что при
+     оккупации — потому что закрывают всегда одно и то же */
+  if(typeof socService==="function"&&!socService(kind))return false;
   const l=occHere();
   if(l>=OCC_MAX)return kind==="fuel";
   if(l>=2)return kind!=="yard"&&kind!=="lab";

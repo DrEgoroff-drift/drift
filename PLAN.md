@@ -755,7 +755,9 @@ Three stages, each playable on /dev before the next starts:
   `war.php circ`, негодный циркуляр не применяется вовсе, годный виден бумагой в голосе своей
   волны) · M382–M388 the Director's mechanics, one family a pass:
   ~~M382 economy~~ (0.382.0, 2026-09-06: волна цен державы, жила, ярмарка, эмбарго — всё в одном
-  множителе прилавка и всё из летописи) · society · nature · power · diplomacy · security ·
+  множителе прилавка и всё из летописи) ·
+  ~~M383 society~~ (0.383.0: переселенцы дешевят труд у соседа, забастовка закрывает всё кроме
+  заправки, праздник со скидкой, тихий уезд секты, бунт по счётчику обороны) · nature · power · diplomacy · security ·
   culture.
 
 Measured from M360 on: `prof()` with eight armed ships on the phone layout; the pad row on the

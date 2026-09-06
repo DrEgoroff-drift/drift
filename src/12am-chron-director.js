@@ -180,7 +180,9 @@ function chronIncSince(span,st,N){
 function chronIncOf(kind,span,st,N){
   const L=chronIncSince(span===undefined?8:span,st,N);
   let best=null;
-  for(const x of L)if(x.k===kind&&(!best||x.N>best.N))best=x;
+  /* при равных сводках побеждает ПОСЛЕДНЯЯ строка: строки идут по времени, и
+     свежая новость о том же виде происшествия отменяет предыдущую */
+  for(const x of L)if(x.k===kind&&(!best||x.N>=best.N))best=x;
   return best;
 }
 /* сколько сейчас идёт дуг и обрядов — для новостей и тестов */
