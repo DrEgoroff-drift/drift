@@ -53814,6 +53814,56 @@ function baseLifeLine(B){
   return head+" · хватит на "+n+" "+pl3(n,"смену","смены","смен")+
     ((M.lyse||M.melter)?"":" · машин жизнеобеспечения нет");
 }
+/* ── где остальное ──
+   Тепло (M392) живёт в `21a1a-base-heat`, харч и дух (M393) — в
+   `21a1b-base-food`. Разрезано на 0.409.0, когда файл дорос до пятидесяти
+   килобайт: резали по швам вех, а не посередине семьи функций. */
+/* ── догнать одну базу ──
+   Возвращает, сколько смен отыграно. Хвост длиннее суток отбрасывается: это и
+   есть `CREW_OFFLINE_CAP`, только в сменах. */
+function baseResolve(B,now){
+  if(!B)return 0;
+  now=now||Date.now();
+  /* развалина (M402) не работает: в ней некому и нечем. Часы ей всё равно
+     двигаем — по ним считается, когда в неё въедут. И ПАЛАТА (M408) считает
+     тоже: сбор идёт за нахождение В РЕЕСТРЕ, а брошенная база из него не
+     исчезает — это и есть самая жестокая строка §30 */
+  if(typeof baseIsRuin==="function"&&baseIsRuin(B)){
+    const nn=baseSince(B,now);
+    if(nn>0){
+      const t0=baseT0(B);
+      for(let i=1;i<=nn;i++)if(typeof palStep==="function")palStep(B,t0+i);
+      B.t0=t0+nn;B.tMs=now;
+      if(typeof baseTenant==="function")baseTenant(B,B.t0);
+    }
+    return 0;
+  }
+  const n=baseSince(B,now);
+  if(n<=0){baseT0(B);B.tMs=now;return 0;}
+  const t0=baseT0(B);
+  B.t0=t0+n;B.tMs=now;
+  baseGrowCheck(B);
+  /* глубже суток не помним. Всё, что старше 24 смен, сводится одной строкой и
+     считается ровно так же, но без бросков: подробности позавчерашней бури
+     никому не нужны, а руда за неё — нужна */
+  const deep=Math.max(0,n-BASE_DETAIL);
+  if(deep>0){
+    const P=basePower(B);
+    baseEarn(B,P,BASE_MIN*deep,t0+deep);
+    baseMine(B,P,BASE_MIN*deep,t0+deep);
+    baseLog(B,"away",t0+deep,{from:t0+1,to:t0+deep});
+  }
+  for(let i=deep;i<n;i++)baseShiftRun(B,t0+i+1);
+  return n;
+}
+/* ── догнать все ──
+   Зовётся из тех же трёх мест, откуда звался `baseTick`: вход в базу, кадр
+   сцены и домашний стол. */
+function baseResolveAll(){
+  const now=Date.now();
+  for(const key in G.bases)baseResolve(G.bases[key],now);
+}
+
 /* ══════════════ тепло, глубина, криоген (M392, DESIGN-base §4, §7, §16) ══════════════
    Третья шкала — единственная ДВУСТОРОННЯЯ, и в этом весь смысл: односторонняя
    была бы просто второй энергией. У базы есть полоса покоя ±3, и по обе стороны
@@ -53956,6 +54006,7 @@ function baseHeatLine(B){
          " · холодно"+(a===3?": вода не тает, люди еле ходят":
                        (a===2?": вода не тает, работа медленнее":": вода не тает"))));
 }
+
 /* ══════════════ харч и дух (M393, DESIGN-base §6, §8, §16) ══════════════
    Четвёртая шкала — еда, и у неё есть то, чего нет у остальных: ВКУС. Оранжерея
    кормит хорошо, белковый бак — вдвое сытнее и скверно, и разница между ними не
@@ -54059,51 +54110,6 @@ function baseSpiritStep(B,n){
   B.low=(B.low|0)+1;
   if(B.low<SPIRIT_HOLD)return 0;
   return baseWalkOut(B,n);
-}
-/* ── догнать одну базу ──
-   Возвращает, сколько смен отыграно. Хвост длиннее суток отбрасывается: это и
-   есть `CREW_OFFLINE_CAP`, только в сменах. */
-function baseResolve(B,now){
-  if(!B)return 0;
-  now=now||Date.now();
-  /* развалина (M402) не работает: в ней некому и нечем. Часы ей всё равно
-     двигаем — по ним считается, когда в неё въедут. И ПАЛАТА (M408) считает
-     тоже: сбор идёт за нахождение В РЕЕСТРЕ, а брошенная база из него не
-     исчезает — это и есть самая жестокая строка §30 */
-  if(typeof baseIsRuin==="function"&&baseIsRuin(B)){
-    const nn=baseSince(B,now);
-    if(nn>0){
-      const t0=baseT0(B);
-      for(let i=1;i<=nn;i++)if(typeof palStep==="function")palStep(B,t0+i);
-      B.t0=t0+nn;B.tMs=now;
-      if(typeof baseTenant==="function")baseTenant(B,B.t0);
-    }
-    return 0;
-  }
-  const n=baseSince(B,now);
-  if(n<=0){baseT0(B);B.tMs=now;return 0;}
-  const t0=baseT0(B);
-  B.t0=t0+n;B.tMs=now;
-  baseGrowCheck(B);
-  /* глубже суток не помним. Всё, что старше 24 смен, сводится одной строкой и
-     считается ровно так же, но без бросков: подробности позавчерашней бури
-     никому не нужны, а руда за неё — нужна */
-  const deep=Math.max(0,n-BASE_DETAIL);
-  if(deep>0){
-    const P=basePower(B);
-    baseEarn(B,P,BASE_MIN*deep,t0+deep);
-    baseMine(B,P,BASE_MIN*deep,t0+deep);
-    baseLog(B,"away",t0+deep,{from:t0+1,to:t0+deep});
-  }
-  for(let i=deep;i<n;i++)baseShiftRun(B,t0+i+1);
-  return n;
-}
-/* ── догнать все ──
-   Зовётся из тех же трёх мест, откуда звался `baseTick`: вход в базу, кадр
-   сцены и домашний стол. */
-function baseResolveAll(){
-  const now=Date.now();
-  for(const key in G.bases)baseResolve(G.bases[key],now);
 }
 
 /* ══════════════ СВЯЗЬ и мачта (M394, DESIGN-base §38, §45) ══════════════
