@@ -1491,7 +1491,13 @@ grace · **11** the ПАЛАТА is wrong exactly once — yes.
 The staged order below supersedes §17, §25, §41 and §47 wherever they disagree. Twenty passes, one
 version each, each playable on /dev before the next starts.
 
-**A · хозяйство** — M390 смена и `baseResolve` (§3, §12, §15) · M391 воздух и вода (§4–6, §13) ·
+**A · хозяйство** — ~~M390 смена и `baseResolve`~~ — 0.390.0 (2026-09-06): `21a1-base-life` —
+`baseResolve`/`baseResolveAll` replace `baseTick`, the shift is `HOLD_SHIFT` and nothing else, every
+roll is keyed by shift number so ten visits of one shift equal one visit of ten (suite
+`91zzzw-base`), the catch-up stops at 72 shifts and collapses anything older than 24 into one
+summary line, and the journal keeps 24 lines in ten kinds — the ten things the base already does —
+with the visit opening on it. **Deferred:** nothing; the stores it exists for arrive with M391.
+· M391 воздух и вода (§4–6, §13) ·
 M392 тепло, глубина, криоцех (§4–7) · M393 харч и дух (§6, §8).
 
 **B · место и люди** — M394 СВЯЗЬ и мачта (§38, §45 — pulled forward: it is what makes every later

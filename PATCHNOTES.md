@@ -7,6 +7,36 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.390.0 - M390: the base gets a shift, a replay and a journal
+
+The base used to live on its own clock: `baseTick` counted **minutes** off the wall clock, and
+took its raid and storm rolls from the current minute plus a counter inside the base itself. Three
+things were wrong with that at once. The layer had no unit — the holding measures in **смены**
+(20 minutes) and a player who had learned one arrived at a base and found minutes. The outcome
+depended on **how often you looked**: ten one-minute visits and one ten-minute visit rolled
+different dice. And none of it could be checked, because the replay did not even reproduce itself.
+
+Now the base's unit is the shift, and a shift is a pure function of its **number**: `baseResolve`
+catches up as many shifts as have passed and resolves each one exactly as it would resolve for
+anybody else. Ten visits of one shift and one visit of ten now produce the same ore, the same
+credits and the same journal, line for line — the new suite `91zzzw-base` checks precisely that,
+along with the ceiling of 72 shifts (`CREW_OFFLINE_CAP`, in shifts) and the collapse of everything
+older than 24 shifts into arithmetic plus one line.
+
+**Журнал базы.** The base writes a line a shift and keeps the last 24, in the voice of whoever it
+concerns: «Пришли двое. Ушли ни с чем» — Нина; «Склад полон, бурить некуда» — Гриша; «буря.
+Выбито: Солнечная панель»; «смены 570–575 · база работала сама». Ten kinds of line, and they are
+exactly the ten things the base already does — an eleventh kind would be the base lying in its own
+log. A quiet shift writes «смена прошла тихо», but only one in four, and by shift number rather
+than by visit: otherwise the journal would be a report on the player's habits. Entering the base
+now opens with the journal — that is what the visit is for — and the movement hint moved to the
+last line.
+
+Nothing new is consumed yet (the stores are M391): this is the same base, resolved differently,
+and every old save opens unchanged — the shift is stamped at load exactly as the minute clock was,
+so no idle time is credited retroactively.
+
+---
 ## 0.388.0 - M388: the Director's last family — science and culture, and the war queue closes
 
 **Радиоспектакль «Седьмая смена».** For six days out of every twenty-eight the ether tells a

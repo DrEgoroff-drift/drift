@@ -144,7 +144,7 @@ function renderBasesTab(st){
       }
     }
     /* сеть баз одним экраном: где, что копают, сколько накопили, чем больны */
-    baseTick();
+    baseResolveAll();
     const list=baseList();
     $body.appendChild(el("div","sec","ВАШИ БАЗЫ "+list.length+
       " · НАКОПЛЕННОЕ ЖДЁТ НА МЕСТЕ · ПЛОЩАДКА ПОЗВОЛЯЕТ ПЕРЕБРОСКУ"));

@@ -720,7 +720,10 @@ strikes the pass here and in §51. Unanswered forks keep the defaults listed in 
 
 Five stages, each playable on /dev before the next starts:
 
-- **A · хозяйство** — M390 смена and `baseResolve` · M391 воздух и вода · M392 тепло, глубина,
+- **A · хозяйство** — ~~M390 смена and `baseResolve`~~ (0.390.0, 2026-09-06: смена базы — это
+  смена холдинга, ход смены — чистая функция от её номера, догон до 72 смен, глубже суток —
+  арифметика и одна строка; журнал на 24 строки в десяти видах, и визит открывается им) ·
+  M391 воздух и вода · M392 тепло, глубина,
   криоцех (pays the «криогенный цех на базе» promise `02-world`/`19a` has been making) ·
   M393 харч и дух. Playable after M391 (a base can be starved), a game after M393.
 - **B · место и люди** — M394 СВЯЗЬ и мачта · M395 люди в комнате · M396 соседство, залы, ствол,

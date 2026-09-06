@@ -653,6 +653,12 @@ function applySave(s){
       G.bases[k]={sx:b.sx|0,sy:b.sy|0,idx:b.idx|0,name:String(b.name||"База"),
         type:String(b.type||"rocky"),res:Array.isArray(b.res)?b.res.filter(x=>RES[x]):["iron"],
         rows,cells,pool:(b.pool&&typeof b.pool==="object")?b.pool:{},
+        /* смена базы и журнал (M390): `t0` подтягивается к загрузке ровно так
+           же, как раньше подтягивался `tMs`, — простой между сеансами базе не
+           начисляется. Журнал переживает загрузку: это её память, а не кэш */
+        t0:(typeof baseShift==="function")?baseShift():0,
+        log:Array.isArray(b.log)?b.log.slice(-24).map(x=>({n:x.n|0,k:String(x.k||""),
+          t:String(x.t||"").slice(0,160)})):[],
         tMs:Date.now(),built:+b.built||Date.now()};
     }
   G.base=null;

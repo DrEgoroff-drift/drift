@@ -3,14 +3,16 @@ TEST_SUITES.push(()=>suite("база: ленивое время не падае�
   resetWorld();
   /* `baseTick` читал CREW_OFFLINE_CAP, которой не существовало: каждый тик базы
      после первого падал с ReferenceError, и вместе с ним падал вход в базу.
-     Держим и константу, и сам путь входа под проверкой. */
+     Держим и константу, и сам путь входа под проверкой. С M390 тик считает
+     СМЕНЫ (`baseResolveAll`), а потолок остался тот же — сутки. */
   ok(typeof CREW_OFFLINE_CAP==="number"&&CREW_OFFLINE_CAP>0,"потолок ленивого времени объявлен");
+  eq(BASE_CAP_SH,Math.floor(CREW_OFFLINE_CAP/HOLD_SHIFT),"и в сменах это те же сутки");
   G.credits=500000;G.cargo.alloy=99;
   const p=G.sys.planets.find(x=>x.type!=="gas");
   ok(foundBase(p),"база заложена");
   const B=baseAt(G.sx,G.sy,p.idx);
-  B.tMs=Date.now()-600000;
-  baseTick();
+  B.t0=baseShift()-2;
+  baseResolveAll();
   ok(true,"второй тик базы не падает");
   G.mode="surface";
   enterBase(p);
@@ -53,10 +55,10 @@ TEST_SUITES.push(()=>suite("смотритель: энергия, стройка
   const P=basePower(B);
   ok(P.surplus>0,"лишняя мощность посчитана");
   kp.perks=[];
-  G.credits=1000;B.tMs=Date.now()-600000;baseTick();
+  G.credits=1000;B.t0=baseShift()-1;baseResolveAll();
   eq(G.credits,1000,"без перка излишки никуда не идут");
   kp.perks=["grid"];
-  B.tMs=Date.now()-600000;baseTick();
+  B.t0=baseShift()-1;baseResolveAll();
   eq(G.credits,1000,"и электростанция без базы не продаёт ничего: потребителей нет");
   /* работающая база: бур ест, часть мощности лишняя — её и берут.
      Такт базы двигает не только деньги: за десять минут на неё может прийти
@@ -66,14 +68,14 @@ TEST_SUITES.push(()=>suite("смотритель: энергия, стройка
   B.cells[0]={k:"drill",hp:1};
   const P2=basePower(B);
   ok(P2.cons>0&&P2.surplus>0,"база работает и всё равно имеет излишек");
-  G.credits=1000;B.tMs=Date.now()-120000;baseTick();
+  G.credits=1000;B.t0=baseShift()-1;baseResolveAll();
   const alive=B.cells[0]&&B.cells[0].hp>0&&B.cells[2]&&B.cells[2].hp>0;
   const gain=G.credits-1000;
   if(!alive)ok(true,"налёт разбил базу за эти минуты — доход не про этот прогон");
   else{
     ok(gain>0,"с «излишками» работающая база даёт в кассу: +"+gain);
-    /* и не больше, чем она съедает сама: минуты × min(surplus,cons) × 1.4 */
-    ok(gain<=Math.round(Math.min(P2.surplus,P2.cons)*2*1.4)+1,
+    /* и не больше, чем она съедает сама: смена × min(surplus,cons) × 1.4 */
+    ok(gain<=Math.round(Math.min(P2.surplus,P2.cons)*BASE_MIN*1.4)+1,
        "и не больше собственного потребления ("+gain+")");
   }
   /* «второй ярус» */

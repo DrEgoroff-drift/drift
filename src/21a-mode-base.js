@@ -17,6 +17,7 @@ function baseGrowCheck(B){
   B.rows=BASE_ROWS_DEEP;
   while(B.cells.length<BASE_COLS*B.rows)B.cells.push(null);
   logAdd("tech","База «"+B.name+"»: смотритель вскрыл нижний ярус");
+  if(typeof baseLog==="function")baseLog(B,"deep",(typeof baseShift==="function")?baseShift():0);
   return true;
 }
 const BUILD={
@@ -67,7 +68,7 @@ function foundBase(p){
 }
 function enterBase(p){
   const B=baseAt(G.sx,G.sy,p.idx);if(!B)return;
-  baseTick();
+  baseResolveAll();
   if(typeof planDeliver==="function")planDeliver(B);   /* изделие комбината — в запас базы (11r) */
   /* ярус проверяем и на входе: иначе вскрытый нижний ряд появлялся бы только
      после следующего тика, и игрок не понимал бы, что уже можно строить ниже */
@@ -76,8 +77,13 @@ function enterBase(p){
   G.base.x=cellX(G.base.cur);G.base.y=cellY(0);
   G.mode="base";
   for(const k in keys)keys[k]=false;
-  /* имя базы стоит в сводке места — здесь только то, как тут ходить */
-  say("◀ ▶ — переход · ▲ ▼ — уровни\nДЕЙСТВИЕ — строить в пустой ячейке · НАЗАД — наружу");
+  /* ── визит начинается с журнала (M390, §12) ──
+     Ради этого сюда и прилетают: не построить ещё один отсек, а узнать, что
+     тут без вас было. Подсказка про ходьбу остаётся последней строкой — она
+     нужна в первый раз, а журнал нужен каждый. */
+  const J=(typeof baseLogList==="function")?baseLogList(B,3):[];
+  say((J.length?J.map(x=>"смена "+((x.n|0)%1000)+" · "+x.t).join("\n")+"\n":"")+
+    "◀ ▶ — переход · ▲ ▼ — уровни · ДЕЙСТВИЕ — строить · НАЗАД — наружу");
 }
 function exitBase(){
   G.base=null;G.mode="surface";
@@ -144,91 +150,30 @@ function basePower(B){
 }
 function basePoolHeld(B){let s=0;for(const k in B.pool)s+=B.pool[k]|0;return s;}
 /* ══════════════ ленивое время базы ══════════════ */
-function baseTick(){
-  const now=Date.now();
-  for(const key in G.bases){
-    const B=G.bases[key];
-    if(!B.tMs){B.tMs=now;continue;}
-    const dtMs=Math.min(now-B.tMs,CREW_OFFLINE_CAP);
-    if(dtMs<1000)continue;
-    B.tMs=now;
-    baseGrowCheck(B);
-    const P=basePower(B),min=dtMs/60000;
-    /* батарея замолчала: обесточенная база не стреляет, и об этом говорят
-       один раз, а не молчат (хвост M111). Флаг живёт на базе, чтобы не
-       повторяться каждую минуту */
-    if(P.guns){
-      const quiet=P.eff<=0;
-      if(quiet&&!B.quiet){B.quiet=true;logAdd("warn","База «"+B.name+"»: батарея обесточена, оборона молчит");}
-      else if(!quiet&&B.quiet){B.quiet=false;logAdd("tech","База «"+B.name+"»: батарея снова под напряжением");}
-    }
-    baseRaid(B,min);baseFixTick(B,min);baseStorm(B,min);
-    /* «Излишки»: лишняя мощность продаётся станции. Считается всегда, даже
-       если бура нет вовсе — солнечная ферма без бура тоже чего-то стоит. */
-    /* ── станция берёт ИЗЛИШЕК, а не покупает электростанцию (M240) ──
-       Платили за всю лишнюю мощность и не спрашивали, работает ли база вообще.
-       Отсюда «солнечная ферма»: реактор и четыре панели без единого
-       потребителя — 4 600 кр вложено, 2 856 кр в час навсегда, окупаемость
-       полтора часа, и таких баз можно ставить сколько угодно. То есть деньги
-       делали деньги без внимания и без предела — ровно та дыра, что была у
-       верфи. Теперь платят за спил РАБОТАЮЩЕЙ базы: нужен хоть один
-       потребитель, и купят не больше, чем база съедает сама. Ферма из одних
-       панелей не продаёт ничего — к пустой скале никто не тянет провод. */
-    if(P.surplus>0&&P.cons>0&&mgrPerkOf("keep","grid")){
-      const sell=Math.min(P.surplus,P.cons);
-      const cr=Math.round(sell*min*1.4);
-      if(cr>0){
-        earn(cr,"base");
-        B.sold=(B.sold|0)+cr;
-        if(B.sold>=400){logAdd("money","База «"+B.name+"» сдала излишки энергии · +"+
-          B.sold.toLocaleString("ru")+" кр");B.sold=0;}
-      }
-    }
-    if(!P.drills)continue;
-    const cap=P.store;
-    /* персонал (M47) — множитель к тому, что база и так умеет: бурильщик ускоряет
-       выработку, инженер вытягивает отдачу при нехватке энергии */
-    const crewBoost=1+baseRoleForce(B,"driller")*.45;
-    const eff=clamp(P.eff+baseRoleForce(B,"engineer")*.18,0,1);
-    let left=Math.min(min*P.drillEff*eff*crewBoost*1.1,Math.max(0,cap-basePoolHeld(B)));
-    const r=rng(hashi(B.sx*7919+B.sy,B.idx,Math.floor(now/60000)));
-    const pool=(B.res&&B.res.length)?B.res:["iron"];
-    while(left>=1){
-      const k=pick(pool,r);
-      B.pool[k]=(B.pool[k]|0)+1;left--;
-    }
-    /* плавильня превращает часть добытого в сплавы прямо на месте */
-    if(P.ref){
-      /* «Плавильня» смотрителя: переплавка идёт без присмотра — вдвое быстрее
-         и не проседает вместе с энергией */
-      const melt=mgrPerkOf("keep","melt");
-      let conv=Math.floor(min*P.ref*(melt?1:eff)*(melt?.3:.15));   // медленнее станции: база берёт не темпом, а тем, что работает сама
-      while(conv>0){
-        let src=null;
-        for(const k in B.pool)if((B.pool[k]|0)>=4&&RARE_RES.indexOf(k)<0){src=k;break;}
-        if(!src)break;
-        B.pool[src]-=4;B.pool.alloy=(B.pool.alloy|0)+1;conv--;
-      }
-    }
-  }
-}
+/* Часы базы, её смена и журнал живут в `21a1-base-life` (M390): здесь остались
+   только сами события — налёт, буря, починка, — потому что они про место, а не
+   про время. `baseTick` больше нет: его заменил `baseResolveAll`. */
 /* ══════════════ налёты пиратов на базу ══════════════ */
 /* Разрешаются ленивым счётчиком, без отдельной сцены: последствия видно в
    разрезе (разбитый отсек) и в журнале. Охранник — единственная защита, и
    поэтому осмысленный. */
-function baseRaid(B,min){
+function baseRaid(B,min,sh){
   const danger=sysDanger(B.sx,B.sy);
-  if(danger<=.05)return;
+  if(danger<=.05)return 0;
   const chance=min*danger*.012;
-  /* seed берём от самого отрезка времени, а не от текущей минуты: иначе
-     несколько тиков подряд внутри одной минуты дают один и тот же исход */
-  B.raidSeq=(B.raidSeq|0)+1;
-  const r=rng(hashi(B.sx*131+B.sy,B.idx*7+3,hashi(B.tMs|0,B.raidSeq,0x2A1D)));
-  if(r()>chance)return;
+  /* бросок берётся от НОМЕРА СМЕНЫ (M390): одна и та же смена одной и той же
+     базы разрешается одинаково, сколько раз её ни считай. Прежний seed шёл от
+     стенных часов и счётчика заходов — тогда исход зависел от того, как часто
+     заглядывали, и повторить его было нельзя */
+  const r=(typeof sh==="number")
+    ?rng(hashi(B.sx*131+B.sy,B.idx*7+3,hashi(sh,0x2A1D,0x7)))
+    :rng(hashi(B.sx*131+B.sy,B.idx*7+3,hashi(B.tMs|0,(B.raidSeq=(B.raidSeq|0)+1),0x2A1D)));
+  if(r()>chance)return 0;
   const guard=baseRoleForce(B,"guard");
   if(guard>0&&r()<guard*.7){
     logAdd("kill","Налёт на базу «"+B.name+"» отбит охраной");
-    return;
+    baseLog(B,"raid_off",sh,{who:baseWho(B,"guard")});
+    return 1;
   }
   /* без охраны пропадает часть накопленного, иногда ломается отсек */
   let lost=0;
@@ -247,6 +192,8 @@ function baseRaid(B,min){
   }
   logAdd("warn","Налёт на базу «"+B.name+"»"+(lost?" · унесено "+lost+" ед":"")+
     (broke?" · разбит отсек: "+broke:"")+(guard?"":" · охраны нет"));
+  baseLog(B,"raid_hit",sh,{lost,broke,guard});
+  return 1;
 }
 /* ══════════════ буря ══════════════ */
 /* У базы должна быть угроза, которую нельзя отбить охраной: налёт — про людей,
@@ -254,15 +201,17 @@ function baseRaid(B,min){
    и её отменяет «буревой щит» смотрителя. Мир у планеты уже есть: тип задаёт,
    насколько тут вообще дует. */
 const STORM_WORLDS={terran:.5,ocean:.9,desert:1.4,rocky:.7,ice:1.3,volcanic:1.4,toxic:1.5,gas:0};
-function baseStorm(B,min){
+function baseStorm(B,min,sh){
   const force=STORM_WORLDS[B.type]!==undefined?STORM_WORLDS[B.type]:.8;
-  if(force<=0)return;
-  B.stormSeq=(B.stormSeq|0)+1;
-  const r=rng(hashi(B.sx*313+B.sy,B.idx*11+5,hashi(B.tMs|0,B.stormSeq,0x51D)));
-  if(r()>min*force*.010)return;
+  if(force<=0)return 0;
+  const r=(typeof sh==="number")
+    ?rng(hashi(B.sx*313+B.sy,B.idx*11+5,hashi(sh,0x51D,0xB)))
+    :rng(hashi(B.sx*313+B.sy,B.idx*11+5,hashi(B.tMs|0,(B.stormSeq=(B.stormSeq|0)+1),0x51D)));
+  if(r()>min*force*.010)return 0;
   if(mgrPerkOf("keep","storm")){
     logAdd("dim","Буря на «"+B.name+"» прошла без потерь — щит держит");
-    return;
+    baseLog(B,"storm",sh,{shield:1});
+    return 1;
   }
   /* сначала достаётся тому, что снаружи: панели и верхний ряд */
   const top=[];
@@ -270,23 +219,32 @@ function baseStorm(B,min){
   const solar=[];
   for(let i=0;i<B.cells.length;i++)if(B.cells[i]&&B.cells[i].k==="solar"&&B.cells[i].hp>0)solar.push(i);
   const pickList=solar.length?solar:top;
-  if(!pickList.length){logAdd("dim","Буря на «"+B.name+"» — ломать снаружи нечего");return;}
+  if(!pickList.length){
+    logAdd("dim","Буря на «"+B.name+"» — ломать снаружи нечего");
+    baseLog(B,"storm",sh,{});
+    return 1;
+  }
   const i=pickList[Math.floor(r()*pickList.length)];
   B.cells[i].hp=Math.max(0,B.cells[i].hp-(.5+r()*.5));
   logAdd("warn","Буря на «"+B.name+"» повредила отсек: "+BUILD[B.cells[i].k].ru+
     (B.cells[i].hp<=0?" (выбит)":""));
+  baseLog(B,"storm",sh,{what:BUILD[B.cells[i].k].ru,out:B.cells[i].hp<=0?1:0});
+  return 1;
 }
 /* инженер чинит разбитое сам, медленно.
    «Очередь» смотрителя доводит начатое до конца и без инженера: домен на то и домен. */
-function baseFixTick(B,min){
+function baseFixTick(B,min,sh){
   const eng=baseRoleForce(B,"engineer")+(mgrPerkOf("keep","queue")?.8:0);
-  if(eng<=0)return;
+  if(eng<=0)return 0;
+  let done=0;
   for(const cell of B.cells){
     if(cell&&cell.hp<1){
       cell.hp=Math.min(1,cell.hp+min*eng*.02);
-      if(cell.hp>=1)logAdd("dim","Инженер восстановил отсек на базе «"+B.name+"»");
+      if(cell.hp>=1){logAdd("dim","Инженер восстановил отсек на базе «"+B.name+"»");done=1;}
     }
   }
+  if(done)baseLog(B,"fix",sh,{who:baseWho(B,"engineer")});
+  return done;
 }
 /* забрать накопленное в трюм — за этим и прилетаешь */
 function baseCollect(B){
@@ -333,7 +291,7 @@ function jumpToBase(B){
 /* ══════════════ обновление сцены ══════════════ */
 function updateBase(dt){
   const S=G.base,B=S.B;
-  if(G.t%30<dt)baseTick();
+  if(G.t%30<dt)baseResolveAll();
   const tx=cellX(S.cur),ty=cellY(S.row);
   const dx=tx-S.x,dy=ty-S.y;
   S.x+=clamp(dx,-3.2*dt,3.2*dt);S.y+=clamp(dy,-2.6*dt,2.6*dt);
