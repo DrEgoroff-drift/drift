@@ -55,6 +55,9 @@ const BUILD={
      голосом в приёмнике. Только наверху — она смотрит в небо */
   mast:   {ru:"Мачта",       cost:{credits:1100,alloy:3},power:-3,surfaceOnly:true,
            note:"слышно базу по всему кругу, а не за три сектора"},
+  /* маяк (M395, §6): единственный модуль, который приводит ЛЮДЕЙ */
+  beacon: {ru:"Маяк",        cost:{credits:1400,alloy:3},power:-3,
+           note:"раз в тридцать смен кто-то приходит и просится остаться"},
   garden: {ru:"Оранжерея",   cost:{credits:1600,alloy:4},power:-4,
            note:"вода → харч и немного воздуха; на посадку нужна органика"},
   vat:    {ru:"Белковый бак",cost:{credits:1900,alloy:5},power:-6,
@@ -100,7 +103,8 @@ function enterBase(p){
   /* ярус проверяем и на входе: иначе вскрытый нижний ряд появлялся бы только
      после следующего тика, и игрок не понимал бы, что уже можно строить ниже */
   baseGrowCheck(B);
-  G.base={B,p,cur:Math.floor(BASE_COLS/2),row:0,x:0,y:0,walkPhase:0,menu:false,pick:0};
+  G.base={B,p,cur:Math.floor(BASE_COLS/2),row:0,x:0,y:0,walkPhase:0,menu:false,pick:0,
+    pmenu:false,ppick:0,lockHeld:0};
   G.base.x=cellX(G.base.cur);G.base.y=cellY(0);
   G.mode="base";
   for(const k in keys)keys[k]=false;
@@ -327,6 +331,28 @@ function updateBase(dt){
   S.x+=clamp(dx,-3.2*dt,3.2*dt);S.y+=clamp(dy,-2.6*dt,2.6*dt);
   const moving=Math.abs(dx)>2||Math.abs(dy)>2;
   S.walkPhase+=moving?.22*dt:0;
+  /* ── меню людей (M395, §8) ──
+     Штат базы набирается ТАМ, ГДЕ ОН СТОИТ: подошли к отсеку, нажали ЦЕЛЬ,
+     выбрали, кто здесь работает. Лента та же, что у меню постройки, и клавиши
+     те же — ничего нового учить не надо. */
+  if(S.pmenu){
+    const cell=baseCell(B,S.cur,S.row);
+    const L=(typeof basePeopleList==="function")?basePeopleList(B,cell):[];
+    if(keys.left&&!S.held&&L.length){S.ppick=(S.ppick+L.length-1)%L.length;S.held=1;}
+    if(keys.right&&!S.held&&L.length){S.ppick=(S.ppick+1)%L.length;S.held=1;}
+    if(!keys.left&&!keys.right)S.held=0;
+    G.prompt=basePeopleLine(B,cell,S.ppick|0);
+    if(actEdge&&L.length){
+      const c=L[(S.ppick|0)%L.length];
+      if(baseAssignHere(B,cell,c)){
+        S.pmenu=false;
+        tell("good",c.name+" → "+BASE_ROLES[baseCellRole(cell)].ru,
+          c.name+"\n"+BASE_ROLES[baseCellRole(cell)].ru+" на базе «"+B.name+"»");
+      }
+    }
+    if(!cell)S.pmenu=false;
+    return;
+  }
   if(S.menu){
     /* меню постройки: ▲▼ выбирают модуль, ДЕЙСТВ ставит, НАЗАД закрывает */
     if(keys.left&&!S.held){S.pick=(S.pick+BUILD_KEYS.length-1)%BUILD_KEYS.length;S.held=1;}
@@ -379,9 +405,18 @@ function updateBase(dt){
       if(actEdge)jumpToBase(T);
       return;
     }
+    /* кто здесь работает (M395): роль ячейки — это её работа, и человек на ней
+       стоит нарисованным. ЦЕЛЬ открывает список, ДЕЙСТВИЕ по-прежнему забирает */
+    const role=(typeof baseCellRole==="function")?baseCellRole(cell):null;
+    const who=(typeof baseCellStaff==="function")?baseCellStaff(B,cell):[];
     G.prompt=head+"\n"+M.ru.toUpperCase()+" · "+M.note+
+      (role?"\n"+BASE_ROLES[role].ru.toUpperCase()+": "+
+        (who.length?who.map(c=>c.name).join(", "):"никого")+" · ЦЕЛЬ — КТО ЗДЕСЬ":"")+
+      (B.guest?"\nУ ЗАТВОРА ЖДЁТ "+B.guest.name.toUpperCase()+" · ПРОСИТСЯ ОСТАТЬСЯ":"")+
       (basePoolHeld(B)>0?"\nДЕЙСТВИЕ — ЗАБРАТЬ НАКОПЛЕННОЕ":"");
     if(actEdge&&basePoolHeld(B)>0)baseCollect(B);
+    if(role&&keys.lock&&!S.lockHeld){S.pmenu=true;S.ppick=0;S.lockHeld=1;}
+    if(!keys.lock)S.lockHeld=0;
   }else{
     G.prompt=head+"\nПОРОДА · ДЕЙСТВИЕ — ПРОКОПАТЬ И ПОСТАВИТЬ МОДУЛЬ";
     if(actEdge){S.menu=true;S.pick=0;}

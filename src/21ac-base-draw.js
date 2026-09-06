@@ -661,6 +661,29 @@ function drawBase(){
       bWorker(px,fy2,lit,false,G.t*.30,cb>ca?1:-1);
     }
   }
+  /* ── человек на своём месте (M395, §8) ──
+     Раньше по базе ходил безымянный силуэт, который никого не изображал:
+     «персонал 2/4» жил в списке на станции, а в разрезе стоял манекен. Теперь
+     нарисованный человек — это тот, кто здесь работает, и над ним его имя. */
+  if(typeof baseCellStaff==="function"&&B)
+    for(let r=0;r<baseRows(B);r++)for(let c=0;c<BASE_COLS;c++){
+      const cell=baseCell(B,c,r);
+      if(!cell||cell.hp<=0)continue;
+      const who=baseCellStaff(B,cell)[0];
+      if(!who)continue;
+      const px=X(cellX(c))+22,fy=Y(BASE_OY+r*BCELL_H)+BCELL_H-12;
+      if(px<-40||px>W+40)continue;
+      ctx.fillStyle="rgba(0,0,0,.34)";
+      ctx.beginPath();ctx.ellipse(px,fy-1,7,2,0,0,TAU);ctx.fill();
+      bWorker(px,fy,lit,false,G.t*.06+c*1.7,-1);
+      /* подпись поверх машинерии читается только с подложкой: имя — это то,
+         ради чего человека вообще нарисовали, и терять его в железе нельзя */
+      ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+      ctx.fillStyle="rgba(0,0,0,.55)";
+      ctx.fillText(who.name,px+1,fy-25);
+      ctx.fillStyle="rgba(196,246,238,.82)";
+      ctx.fillText(who.name,px,fy-26);
+    }
   /* ── переборки ──
      Отсеки одного яруса стояли встык и сливались в ленту: где кончается склад
      и начинается жильё, было видно только по мебели. На образце каждая

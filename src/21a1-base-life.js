@@ -64,6 +64,8 @@ const BLOG={
   melt:    (B,a)=>"плавильня дала "+a.q+" сплав"+pl3(a.q,"","а","ов"),
   deep:    ()=>"смотритель вскрыл нижний ярус",
   wear:    (B,a)=>"жара доконала: "+a.what,
+  guest:   (B,a)=>"пришёл человек со стороны, просится остаться. Ждёт у затвора — "+a.who,
+  guestno: (B,a)=>a.who+" постоял у затвора и ушёл своей дорогой",
   leave:   (B,a)=>a.say+" — "+a.who+", и ушёл",
   hungry:  ()=>"харч кончился. Люди держатся на духе, а он не бесконечен",
   cryo:    (B,a)=>"криоцех дал "+a.q+" криоген"+pl3(a.q,"","а","ов"),
@@ -253,11 +255,15 @@ function baseLifeStep(B,P,n){
   let said=0;
   /* производство: сколько машин, столько и льда со склада. Лёд кончился —
      машина стоит, и это не поломка, а пустой склад */
-  const k=(eff<.5)?.5:eff;
+  /* жизнеобеспеченец (M395): его треть — здесь, в самом производстве */
+  const boost=(typeof baseLifeBoost==="function")?baseLifeBoost(B):1;
+  const k=((eff<.5)?.5:eff)*boost;
   const make=(cnt,rec,key)=>{
     for(let i=0;i<cnt;i++){
       if(L[key]>=LIFE_CAP)return;
-      const need=Math.ceil(rec.ice*k);
+      /* лёд машина ест по своей мерке, а не по мерке человека при ней:
+         иначе жизнеобеспеченец ел бы больше, чем экономил */
+      const need=Math.ceil(rec.ice*((eff<.5)?.5:eff));
       if((B.pool.ice|0)<need)return;
       B.pool.ice-=need;
       L[key]=Math.min(LIFE_CAP,L[key]+Math.round(rec[key]*k));
@@ -289,6 +295,8 @@ function baseLifeStep(B,P,n){
     if(wasFed&&L.food<=0){baseLog(B,"hungry",n);said=1;}
   }
   said|=baseSpiritStep(B,n)?1:0;
+  /* маяк зовёт (M395): раз в тридцать смен кто-то просится остаться */
+  if(typeof baseGuestRoll==="function")said|=baseGuestRoll(B,n)?1:0;
   /* запас пришёл — база встаёт на ход сама, но смена уходит на разгон */
   if(B.park>0&&L.air>need.air&&L.water>need.water){baseWake(B,n);said=1;}
   return said;
@@ -539,7 +547,9 @@ function baseWalkOut(B,n){
 }
 /* ── харч за смену ── */
 function baseFoodStep(B,P,n){
-  const L=baseLife(B),eff=clamp(P.eff,0,1),k=(eff<.5)?.5:eff;
+  const L=baseLife(B),eff=clamp(P.eff,0,1);
+  /* садовод (M395): две пятых сверху и обещание, что скверного харча не будет */
+  const k=((eff<.5)?.5:eff)*((typeof baseFoodBoost==="function")?baseFoodBoost(B):1);
   let good=0,poor=0;
   for(const cell of B.cells){
     if(!cell||cell.hp<=0)continue;
@@ -564,7 +574,7 @@ function baseFoodStep(B,P,n){
   /* вкус: оранжерея перебивает бак — она кормит первым делом людей, а бак идёт
      в добавку. Ничего не выросло — вкус остаётся прежним, каким был */
   if(good)L.q="good";
-  else if(poor)L.q="poor";
+  else if(poor)L.q=(typeof baseFoodKeepsGood==="function"&&baseFoodKeepsGood(B))?"good":"poor";
   return (good||poor)?1:0;
 }
 /* ── дух за смену: терпят, терпят и уходят ── */

@@ -183,6 +183,10 @@ function renderBasesTab(st){
             (roleForce(c)<1?" (не по профилю)":"")).join(", "):"")+"</s>";
       if(typeof baseLifeLine==="function")
         r.firstChild.innerHTML+="<s>"+baseLifeLine(B)+"</s>";
+      /* гость у затвора (M395): его берут или ему отказывают, и то и другое —
+         решение игрока, а не строка в журнале */
+      if(B.guest)r.firstChild.innerHTML+="<s><b style='color:#e8c46a'>у затвора ждёт "+
+        B.guest.name+" · просится остаться</b></s>";
       r.appendChild(el("div","qt",P.pads?"площадка":"—"));
       /* снабдить можно только там, где вы есть: запас возят, а не заказывают */
       if(here&&typeof baseSupply==="function"){
@@ -193,6 +197,14 @@ function renderBasesTab(st){
           b.onclick=()=>{baseSupply(B,k,G.cargo[k]|0);renderTab();};
           r.appendChild(b);
         }
+      }
+      if(B.guest&&typeof baseGuestTake==="function"){
+        const bt=el("button","act gold","ВЗЯТЬ");
+        bt.onclick=()=>{baseGuestTake(B);renderTab();};
+        r.appendChild(bt);
+        const bn=el("button","act","ОТКАЗАТЬ");
+        bn.onclick=()=>{baseGuestDrop(B);renderTab();};
+        r.appendChild(bn);
       }
       /* консервация (§13): правильный ход перед долгой дорогой, а не наказание */
       if(typeof basePark==="function"){

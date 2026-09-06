@@ -159,7 +159,12 @@ const BASE_ROLES={
   driller:{ru:"бурильщик",spec:"mine", note:"+выработка буровых"},
   engineer:{ru:"инженер", spec:"mine", note:"меньше потерь энергии, чинит разбитые отсеки"},
   guard:  {ru:"охранник", spec:"fight",note:"отражает налёты пиратов на базу"},
-  logist: {ru:"логист",   spec:"haul", note:"позволяет забирать добычу со станции, не прилетая"}
+  logist: {ru:"логист",   spec:"haul", note:"позволяет забирать добычу со станции, не прилетая"},
+  /* три новые роли (M395, DESIGN-base §8) — ровно под три шкалы, которые
+     появились у базы, и под мачту */
+  life:   {ru:"жизнеобеспеченец",spec:"mine",note:"воздух и вода идут на треть щедрее"},
+  gardener:{ru:"садовод", spec:"mine", note:"харча больше, и он никогда не скверный"},
+  radist: {ru:"радист",   spec:"haul", note:"база слышна дальше и зовёт даже сквозь помеху"}
 };
 const ROLE_KEYS=Object.keys(BASE_ROLES);
 function roleForce(c){return BASE_ROLES[c.role]&&BASE_ROLES[c.role].spec===c.spec?1:.5;}

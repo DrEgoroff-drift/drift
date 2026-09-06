@@ -664,6 +664,9 @@ function applySave(s){
               food:(b.life&&+b.life.food>=0)?+b.life.food|0:LIFE_START,
               q:(b.life&&b.life.q==="poor")?"poor":"good"},
         low:b.low|0,
+        /* гость у затвора (M395): он ждёт и между сеансами — уходить ему некуда */
+        guest:(b.guest&&typeof b.guest==="object")?{name:String(b.guest.name||"").slice(0,24),
+          role:String(b.guest.role||"driller"),seed:b.guest.seed|0,n:b.guest.n|0}:null,
         park:b.park|0,
         /* срок криогена (M392): это не запас, а до какой смены держит холод */
         cryo:(b.cryo&&typeof b.cryo==="object")?{until:b.cryo.until|0,q:b.cryo.q|0}:null,

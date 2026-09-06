@@ -18,6 +18,10 @@ function bLife(){
      запустили. Ставим базу там, где не дует (`STORM_WORLDS.gas`=0), и меряем
      то, что собирались. Налёта здесь тоже нет: сектор 0,0 безопасен. */
   B.type="gas";
+  /* и добыча только железо: в списке залежи может стоять органика, а её же
+     тратит оранжерея — набор начинал зависеть от того, что выпало буру в эту
+     смену. Меряем посадку, а не удачу */
+  B.res=["iron"];
   return B;
 }
 function bPool(B){let s=0;for(const k in B.pool)s+=B.pool[k]|0;return s;}
@@ -139,7 +143,7 @@ TEST_SUITES.push(()=>suite("база M390: старое сохранение о�
 function bCrew(B,n){
   G.crew=[];
   for(let i=0;i<n;i++)G.crew.push({name:"Вахтовик "+(i+1),role:"driller",spec:"mine",
-    lvl:1,morale:1,seed:i+1,trips:0,state:null,
+    lvl:1,morale:1,seed:i+1,trips:0,state:null,traits:[],xp:10,cargo:{},
     order:{kind:"base",sx:B.sx,sy:B.sy,idx:B.idx}});
   return G.crew;
 }
@@ -540,4 +544,101 @@ TEST_SUITES.push(()=>suite("база M394: один приказ за сеанс
   ok(baseParked(B),"база встала");
   baseWake(B,baseShift(),"hand");
   G.sx=B.sx;G.sy=B.sy;
+}));
+
+/* ── люди в комнате (M395) ──
+   Роль ячейки — это её работа; человек на этой работе — тот, кого рисуют в
+   отсеке; и три новые роли обязаны что-то делать, а не украшать список. */
+TEST_SUITES.push(()=>suite("база M395: у каждой работы есть человек",()=>{
+  const B=bLife();
+  B.cells[1]={k:"lyse",hp:1};B.cells[3]={k:"garden",hp:1};B.cells[4]={k:"reactor",hp:1};
+  /* у каждого модуля есть работа, и она названа */
+  for(const k of BUILD_KEYS){
+    const role=baseCellRole({k,hp:1});
+    ok(!role||!!BASE_ROLES[role],"работа модуля «"+k+"» — существующая роль: "+role);
+  }
+  eq(baseCellRole({k:"lyse",hp:1}),"life","электролизёр — работа жизнеобеспеченца");
+  eq(baseCellRole({k:"garden",hp:1}),"gardener","оранжерея — работа садовода");
+  eq(baseCellRole({k:"mast",hp:1}),"radist","мачта — работа радиста");
+  eq(baseCellRole(null),null,"у породы работы нет");
+  /* назначение на месте */
+  G.crew=[];
+  bCrew(B,1);
+  G.crew[0].role="driller";G.crew[0].order={kind:"home",sx:B.sx,sy:B.sy};
+  B.cells[5]={k:"habitat",hp:1};                  /* место для человека */
+  const cell=baseCell(B,1,0);
+  ok(basePeopleList(B,cell).length>0,"свободный человек попадает в список");
+  ok(baseAssignHere(B,cell,G.crew[0]),"его ставят прямо здесь");
+  eq(G.crew[0].role,"life","и он получает работу этой ячейки");
+  eq(baseCellStaff(B,cell)[0],G.crew[0],"он же и стоит в этом отсеке");
+  ok(basePeopleLine(B,cell,0).indexOf(G.crew[0].name)>0,"и строка меню называет его по имени");
+}));
+
+TEST_SUITES.push(()=>suite("база M395: три новые роли и правда работают",()=>{
+  const B=bLife();
+  B.cells[1]={k:"lyse",hp:1};B.cells[3]={k:"melter",hp:1};B.cells[4]={k:"reactor",hp:1};
+  B.cells[5]={k:"habitat",hp:1};B.cells[6]={k:"habitat",hp:1};
+  B.pool.ice=200;
+  G.crew=[];
+  eq(baseLifeBoost(B),1,"без жизнеобеспеченца прибавки нет");
+  bCrew(B,1);
+  G.crew[0].role="life";
+  ok(baseLifeBoost(B)>1,"с ним воздух и вода идут щедрее: ×"+baseLifeBoost(B).toFixed(2));
+  /* треть — это ставка роли; опыт человека её слегка двигает, как и у
+     бурильщика, а потолок стоит на трёх таких людях */
+  ok(baseLifeBoost(B)<=1.4,"с одним человеком прибавка около трети: ×"+baseLifeBoost(B).toFixed(2));
+  /* садовод: больше харча и никакого скверного */
+  const B2=bLife();
+  B2.cells[1]={k:"vat",hp:1};B2.cells[4]={k:"reactor",hp:1};B2.cells[5]={k:"habitat",hp:1};
+  B2.pool.organics=99;
+  baseLife(B2).food=0;
+  B2.t0=baseShift()-1;
+  baseResolve(B2,Date.now());
+  eq(baseLife(B2).q,"poor","бак без садовода кормит скверно");
+  G.crew=[];bCrew(B2,1);G.crew[0].role="gardener";
+  ok(baseFoodBoost(B2)>1,"садовод прибавляет харча: ×"+baseFoodBoost(B2).toFixed(2));
+  ok(baseFoodKeepsGood(B2),"и держит вкус");
+  baseLife(B2).q="poor";
+  B2.t0=baseShift()-1;
+  baseResolve(B2,Date.now());
+  eq(baseLife(B2).q,"good","при садоводе даже бак кормит по-человечески");
+  /* радист: слышно дальше */
+  const B3=bLife();
+  B3.cells[4]={k:"reactor",hp:1};B3.cells[5]={k:"habitat",hp:1};
+  G.crew=[];
+  const q0=baseSignal(B3,B3.sx+3,B3.sy);
+  bCrew(B3,1);G.crew[0].role="radist";
+  ok(baseSignal(B3,B3.sx+3,B3.sy)>q0,"с радистом слышно лучше: "+q0.toFixed(2)+" → "+
+    baseSignal(B3,B3.sx+3,B3.sy).toFixed(2));
+}));
+
+TEST_SUITES.push(()=>suite("база M395: маяк приводит людей, и их берут за руку",()=>{
+  const B=bLife();
+  /* взять человека — это найм, а нанимают в этой игре кооперативы: закон один
+     на всех, и маяк его не отменяет */
+  coopStamp();
+  B.cells[4]={k:"reactor",hp:1};B.cells[5]={k:"habitat",hp:1};
+  G.crew=[];
+  eq(baseHasBeacon(B),false,"маяка нет");
+  eq(baseGuestRoll(B,GUEST_EVERY*3),0,"и никто не приходит");
+  B.cells[1]={k:"beacon",hp:1};
+  ok(baseHasBeacon(B),"маяк построен");
+  /* гость приходит по календарю смен, а не по кадру */
+  let got=0;
+  for(let n=0;n<GUEST_EVERY*12&&!got;n++)got=baseGuestRoll(B,n);
+  ok(got,"за дюжину сроков кто-то пришёл");
+  ok(!!B.guest,"он ждёт у затвора: "+(B.guest&&B.guest.name));
+  ok(B.log.some(x=>x.k==="guest"),"и об этом сказано в журнале");
+  eq(baseGuestRoll(B,GUEST_EVERY),0,"пока он ждёт, второй не приходит");
+  /* взять — это найм со всеми его законами */
+  const was=G.crew.length;
+  ok(baseGuestTake(B),"его взяли");
+  eq(G.crew.length,was+1,"он в звене");
+  eq(G.crew[G.crew.length-1].order.kind,"base","и сразу на базе");
+  eq(B.guest,null,"у затвора пусто");
+  /* и отказать тоже можно */
+  B.guest={name:"Кто-то",role:"driller",seed:7,n:0};
+  ok(baseGuestDrop(B),"отказали");
+  eq(B.guest,null,"ушёл");
+  ok(B.log.some(x=>x.k==="guestno"),"и это записано");
 }));

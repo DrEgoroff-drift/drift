@@ -7,6 +7,30 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.395.0 - M395: the people are in the room
+
+Until today a base was staffed from a menu on a station — another place, another screen — and the
+person was a number in a list, «персонал 2/4». Meanwhile the base itself had a little figure drawn
+walking about who represented nobody.
+
+Now those two are the same person. **The drawn worker is the assignee**, standing in the module he
+works in, with his name over his head. And he is put there **where he stands**: walk up to the
+module, press ЦЕЛЬ, and choose who works here — the same ribbon of choices as the build menu, the
+same keys. The station menu stays, because it is about the fleet; a base is staffed where you can
+see it.
+
+**Roles grow from four to seven**, exactly matching the gauges of the last three passes:
+
+- **жизнеобеспеченец** — air and water come a third more freely;
+- **садовод** — two fifths more food, and it never turns poor, even out of the protein vat;
+- **радист** — the base is heard further, and calls through a worse signal.
+
+**Маяк** is the one module that brings *people*: once every thirty shifts somebody asks to stay,
+scaled by how good the place is to live in, and waits at the gate. Taking them is a decision at the
+desk, not a line in the journal — they are a hire like any other, with the same crew ceiling and the
+same wages, because a person who costs nothing would not be a person.
+
+---
 ## 0.394.0 - M394: СВЯЗЬ — the base from anywhere, on the receiver and not on a screen
 
 «Можно посмотреть, из любого места» — and the answer is deliberately not a screen. A base is a

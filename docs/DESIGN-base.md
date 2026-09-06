@@ -1531,7 +1531,15 @@ lands; `мачта` in `BUILD` as a surface-row module; the base calling out ove
 loses someone, is raided or cooks a module, with bases now resolved on **every jump** so it happens
 on the road; and one order per contact (park/raise) gated at the legible-word level, i.e. about half
 the mast's reach. Suites in `91zzzw-base`. **Deferred:** the shift's plan and «sell the receivable» as
-further orders (they need §10's director and §23's money), and the радист himself (M395). · M395 люди в комнате (§8) · M396 соседство, залы, ствол, сетка 6×4 (§7) ·
+further orders (they need §10's director and §23's money), and the радист himself (M395). · ~~M395 люди в комнате~~ — 0.395.0 (2026-09-06): `21a3-base-people` — `JOB_ROLE` gives every module
+its job, ЦЕЛЬ on a module opens the people ribbon in the scene, the drawn `bWorker` is the assignee
+with the name over him, and the three new roles do what §8 promised (жизнеобеспеченец +30% to air
+and water, садовод +40% food and no poor quality, радист further signal and calls through a worse
+one). `маяк` in `BUILD` brings a guest to the gate once every thirty shifts, scaled by дух, taken or
+refused at the desk under the same crew ceiling and wages as any hire. Suites in `91zzzw-base`, and
+the scene was looked at rather than argued about. **Deferred:** the hall bonus of seven people in
+three habitats (that is M396's merging), and the лазарет/кают-компания/мастерская/гермозатвор of §6.
+· M396 соседство, залы, ствол, сетка 6×4 (§7) ·
 M397 директор (§10) · M398 аврал (§11) · M399 устав (§9).
 
 **C · тяжёлая игра** — M400 формуляр планеты (§21) · M401 девять законов (§22) · M402 развалина и

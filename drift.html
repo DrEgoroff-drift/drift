@@ -1756,7 +1756,7 @@ body.table u.addr{color:#7a4a20}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.394.0";
+const VER="0.395.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -16811,7 +16811,12 @@ const BASE_ROLES={
   driller:{ru:"бурильщик",spec:"mine", note:"+выработка буровых"},
   engineer:{ru:"инженер", spec:"mine", note:"меньше потерь энергии, чинит разбитые отсеки"},
   guard:  {ru:"охранник", spec:"fight",note:"отражает налёты пиратов на базу"},
-  logist: {ru:"логист",   spec:"haul", note:"позволяет забирать добычу со станции, не прилетая"}
+  logist: {ru:"логист",   spec:"haul", note:"позволяет забирать добычу со станции, не прилетая"},
+  /* три новые роли (M395, DESIGN-base §8) — ровно под три шкалы, которые
+     появились у базы, и под мачту */
+  life:   {ru:"жизнеобеспеченец",spec:"mine",note:"воздух и вода идут на треть щедрее"},
+  gardener:{ru:"садовод", spec:"mine", note:"харча больше, и он никогда не скверный"},
+  radist: {ru:"радист",   spec:"haul", note:"база слышна дальше и зовёт даже сквозь помеху"}
 };
 const ROLE_KEYS=Object.keys(BASE_ROLES);
 function roleForce(c){return BASE_ROLES[c.role]&&BASE_ROLES[c.role].spec===c.spec?1:.5;}
@@ -39141,6 +39146,9 @@ function applySave(s){
               food:(b.life&&+b.life.food>=0)?+b.life.food|0:LIFE_START,
               q:(b.life&&b.life.q==="poor")?"poor":"good"},
         low:b.low|0,
+        /* гость у затвора (M395): он ждёт и между сеансами — уходить ему некуда */
+        guest:(b.guest&&typeof b.guest==="object")?{name:String(b.guest.name||"").slice(0,24),
+          role:String(b.guest.role||"driller"),seed:b.guest.seed|0,n:b.guest.n|0}:null,
         park:b.park|0,
         /* срок криогена (M392): это не запас, а до какой смены держит холод */
         cryo:(b.cryo&&typeof b.cryo==="object")?{until:b.cryo.until|0,q:b.cryo.q|0}:null,
@@ -52548,6 +52556,9 @@ const BUILD={
      голосом в приёмнике. Только наверху — она смотрит в небо */
   mast:   {ru:"Мачта",       cost:{credits:1100,alloy:3},power:-3,surfaceOnly:true,
            note:"слышно базу по всему кругу, а не за три сектора"},
+  /* маяк (M395, §6): единственный модуль, который приводит ЛЮДЕЙ */
+  beacon: {ru:"Маяк",        cost:{credits:1400,alloy:3},power:-3,
+           note:"раз в тридцать смен кто-то приходит и просится остаться"},
   garden: {ru:"Оранжерея",   cost:{credits:1600,alloy:4},power:-4,
            note:"вода → харч и немного воздуха; на посадку нужна органика"},
   vat:    {ru:"Белковый бак",cost:{credits:1900,alloy:5},power:-6,
@@ -52593,7 +52604,8 @@ function enterBase(p){
   /* ярус проверяем и на входе: иначе вскрытый нижний ряд появлялся бы только
      после следующего тика, и игрок не понимал бы, что уже можно строить ниже */
   baseGrowCheck(B);
-  G.base={B,p,cur:Math.floor(BASE_COLS/2),row:0,x:0,y:0,walkPhase:0,menu:false,pick:0};
+  G.base={B,p,cur:Math.floor(BASE_COLS/2),row:0,x:0,y:0,walkPhase:0,menu:false,pick:0,
+    pmenu:false,ppick:0,lockHeld:0};
   G.base.x=cellX(G.base.cur);G.base.y=cellY(0);
   G.mode="base";
   for(const k in keys)keys[k]=false;
@@ -52820,6 +52832,28 @@ function updateBase(dt){
   S.x+=clamp(dx,-3.2*dt,3.2*dt);S.y+=clamp(dy,-2.6*dt,2.6*dt);
   const moving=Math.abs(dx)>2||Math.abs(dy)>2;
   S.walkPhase+=moving?.22*dt:0;
+  /* ── меню людей (M395, §8) ──
+     Штат базы набирается ТАМ, ГДЕ ОН СТОИТ: подошли к отсеку, нажали ЦЕЛЬ,
+     выбрали, кто здесь работает. Лента та же, что у меню постройки, и клавиши
+     те же — ничего нового учить не надо. */
+  if(S.pmenu){
+    const cell=baseCell(B,S.cur,S.row);
+    const L=(typeof basePeopleList==="function")?basePeopleList(B,cell):[];
+    if(keys.left&&!S.held&&L.length){S.ppick=(S.ppick+L.length-1)%L.length;S.held=1;}
+    if(keys.right&&!S.held&&L.length){S.ppick=(S.ppick+1)%L.length;S.held=1;}
+    if(!keys.left&&!keys.right)S.held=0;
+    G.prompt=basePeopleLine(B,cell,S.ppick|0);
+    if(actEdge&&L.length){
+      const c=L[(S.ppick|0)%L.length];
+      if(baseAssignHere(B,cell,c)){
+        S.pmenu=false;
+        tell("good",c.name+" → "+BASE_ROLES[baseCellRole(cell)].ru,
+          c.name+"\n"+BASE_ROLES[baseCellRole(cell)].ru+" на базе «"+B.name+"»");
+      }
+    }
+    if(!cell)S.pmenu=false;
+    return;
+  }
   if(S.menu){
     /* меню постройки: ▲▼ выбирают модуль, ДЕЙСТВ ставит, НАЗАД закрывает */
     if(keys.left&&!S.held){S.pick=(S.pick+BUILD_KEYS.length-1)%BUILD_KEYS.length;S.held=1;}
@@ -52872,9 +52906,18 @@ function updateBase(dt){
       if(actEdge)jumpToBase(T);
       return;
     }
+    /* кто здесь работает (M395): роль ячейки — это её работа, и человек на ней
+       стоит нарисованным. ЦЕЛЬ открывает список, ДЕЙСТВИЕ по-прежнему забирает */
+    const role=(typeof baseCellRole==="function")?baseCellRole(cell):null;
+    const who=(typeof baseCellStaff==="function")?baseCellStaff(B,cell):[];
     G.prompt=head+"\n"+M.ru.toUpperCase()+" · "+M.note+
+      (role?"\n"+BASE_ROLES[role].ru.toUpperCase()+": "+
+        (who.length?who.map(c=>c.name).join(", "):"никого")+" · ЦЕЛЬ — КТО ЗДЕСЬ":"")+
+      (B.guest?"\nУ ЗАТВОРА ЖДЁТ "+B.guest.name.toUpperCase()+" · ПРОСИТСЯ ОСТАТЬСЯ":"")+
       (basePoolHeld(B)>0?"\nДЕЙСТВИЕ — ЗАБРАТЬ НАКОПЛЕННОЕ":"");
     if(actEdge&&basePoolHeld(B)>0)baseCollect(B);
+    if(role&&keys.lock&&!S.lockHeld){S.pmenu=true;S.ppick=0;S.lockHeld=1;}
+    if(!keys.lock)S.lockHeld=0;
   }else{
     G.prompt=head+"\nПОРОДА · ДЕЙСТВИЕ — ПРОКОПАТЬ И ПОСТАВИТЬ МОДУЛЬ";
     if(actEdge){S.menu=true;S.pick=0;}
@@ -52947,6 +52990,8 @@ const BLOG={
   melt:    (B,a)=>"плавильня дала "+a.q+" сплав"+pl3(a.q,"","а","ов"),
   deep:    ()=>"смотритель вскрыл нижний ярус",
   wear:    (B,a)=>"жара доконала: "+a.what,
+  guest:   (B,a)=>"пришёл человек со стороны, просится остаться. Ждёт у затвора — "+a.who,
+  guestno: (B,a)=>a.who+" постоял у затвора и ушёл своей дорогой",
   leave:   (B,a)=>a.say+" — "+a.who+", и ушёл",
   hungry:  ()=>"харч кончился. Люди держатся на духе, а он не бесконечен",
   cryo:    (B,a)=>"криоцех дал "+a.q+" криоген"+pl3(a.q,"","а","ов"),
@@ -53136,11 +53181,15 @@ function baseLifeStep(B,P,n){
   let said=0;
   /* производство: сколько машин, столько и льда со склада. Лёд кончился —
      машина стоит, и это не поломка, а пустой склад */
-  const k=(eff<.5)?.5:eff;
+  /* жизнеобеспеченец (M395): его треть — здесь, в самом производстве */
+  const boost=(typeof baseLifeBoost==="function")?baseLifeBoost(B):1;
+  const k=((eff<.5)?.5:eff)*boost;
   const make=(cnt,rec,key)=>{
     for(let i=0;i<cnt;i++){
       if(L[key]>=LIFE_CAP)return;
-      const need=Math.ceil(rec.ice*k);
+      /* лёд машина ест по своей мерке, а не по мерке человека при ней:
+         иначе жизнеобеспеченец ел бы больше, чем экономил */
+      const need=Math.ceil(rec.ice*((eff<.5)?.5:eff));
       if((B.pool.ice|0)<need)return;
       B.pool.ice-=need;
       L[key]=Math.min(LIFE_CAP,L[key]+Math.round(rec[key]*k));
@@ -53172,6 +53221,8 @@ function baseLifeStep(B,P,n){
     if(wasFed&&L.food<=0){baseLog(B,"hungry",n);said=1;}
   }
   said|=baseSpiritStep(B,n)?1:0;
+  /* маяк зовёт (M395): раз в тридцать смен кто-то просится остаться */
+  if(typeof baseGuestRoll==="function")said|=baseGuestRoll(B,n)?1:0;
   /* запас пришёл — база встаёт на ход сама, но смена уходит на разгон */
   if(B.park>0&&L.air>need.air&&L.water>need.water){baseWake(B,n);said=1;}
   return said;
@@ -53422,7 +53473,9 @@ function baseWalkOut(B,n){
 }
 /* ── харч за смену ── */
 function baseFoodStep(B,P,n){
-  const L=baseLife(B),eff=clamp(P.eff,0,1),k=(eff<.5)?.5:eff;
+  const L=baseLife(B),eff=clamp(P.eff,0,1);
+  /* садовод (M395): две пятых сверху и обещание, что скверного харча не будет */
+  const k=((eff<.5)?.5:eff)*((typeof baseFoodBoost==="function")?baseFoodBoost(B):1);
   let good=0,poor=0;
   for(const cell of B.cells){
     if(!cell||cell.hp<=0)continue;
@@ -53447,7 +53500,7 @@ function baseFoodStep(B,P,n){
   /* вкус: оранжерея перебивает бак — она кормит первым делом людей, а бак идёт
      в добавку. Ничего не выросло — вкус остаётся прежним, каким был */
   if(good)L.q="good";
-  else if(poor)L.q="poor";
+  else if(poor)L.q=(typeof baseFoodKeepsGood==="function"&&baseFoodKeepsGood(B))?"good":"poor";
   return (good||poor)?1:0;
 }
 /* ── дух за смену: терпят, терпят и уходят ── */
@@ -53643,6 +53696,142 @@ function renderBaseLink(box){
       row.appendChild(b);
     }
   }
+}
+
+/* ══════════════ люди в комнате (M395, DESIGN-base §8) ══════════════
+   До сих пор людей на базу назначали из меню на станции — то есть из другого
+   места и другого экрана. Человек при этом был числом в списке: «персонал 2/4».
+   А на базе в это время был нарисован рабочий, который никого не изображал.
+
+   Здесь эти двое становятся одним. Нарисованный рабочий — это тот самый
+   человек, у него есть имя над головой, и назначают его ТАМ, ГДЕ ОН СТОИТ:
+   подошли к отсеку, нажали ЦЕЛЬ, выбрали, кто здесь работает. Меню на станции
+   остаётся — оно про флот; база штатится там, где её видно.
+
+   И роли растут с четырёх до семи (§8). Три новых — ровно под те три шкалы,
+   которые появились в M391–M393, и под мачту из M394:
+
+     жизнеобеспеченец — воздух и вода идут на треть щедрее;
+     садовод          — харча на две пятых больше, и он никогда не скверный;
+     радист           — база слышна дальше и зовёт даже сквозь плохой сигнал.
+
+   Приходят люди сами: у маяка раз в тридцать смен кто-то просится остаться и
+   ждёт у затвора. Взять его — решение игрока, а не строка в журнале: у гостя
+   есть жалованье, как у всех. */
+const JOB_ROLE={
+  drill:"driller",
+  lyse:"life",melter:"life",cryo:"life",radiator:"life",
+  garden:"gardener",vat:"gardener",
+  mast:"radist",beacon:"radist",
+  battery:"guard",
+  refinery:"engineer",storage:"logist",habitat:"engineer",lab:"engineer",
+  reactor:"engineer",solar:"engineer",pad:"logist"
+};
+const GUEST_EVERY=30;        /* раз в столько смен у маяка кто-то просится */
+function baseHasBeacon(B){
+  for(const cell of (B.cells||[]))if(cell&&cell.hp>0&&cell.k==="beacon")return true;
+  return false;
+}
+/* ── что дают три новые роли ── */
+function baseLifeBoost(B){
+  return 1+((typeof baseRoleForce==="function")?clamp(baseRoleForce(B,"life")*.3,0,.9):0);
+}
+function baseFoodBoost(B){
+  return 1+((typeof baseRoleForce==="function")?clamp(baseRoleForce(B,"gardener")*.4,0,1.2):0);
+}
+function baseFoodKeepsGood(B){
+  return (typeof baseRoleForce==="function")&&baseRoleForce(B,"gardener")>0;
+}
+/* ── кто работает в этой ячейке ──
+   Роль ячейки — это её работа; человек, стоящий на этой работе, и есть тот,
+   кого рисуют в отсеке. Двое на одной работе — рисуется первый, а список знает
+   обоих. */
+function baseCellRole(cell){return cell?JOB_ROLE[cell.k]||null:null;}
+function baseCellStaff(B,cell){
+  const role=baseCellRole(cell);
+  if(!role||typeof baseStaff!=="function")return [];
+  return baseStaff(B).filter(c=>c.role===role);
+}
+/* ── назначить прямо здесь ──
+   Свободный человек — тот, кто не занят другим приказом. Мест не хватает —
+   говорим об этом словами, а не молчим. */
+function baseFreeCrew(){
+  return (G.crew||[]).filter(c=>!c.order||c.order.kind==="home");
+}
+function baseAssignHere(B,cell,c){
+  const role=baseCellRole(cell);
+  if(!role||!c)return false;
+  if(typeof assignToBase!=="function")return false;
+  return assignToBase(c,B,role);
+}
+/* ── гость у затвора (§8) ──
+   Маяк зовёт, и раз в тридцать смен кто-то приходит. Чем выше дух, тем охотнее
+   идут: место, где людям хорошо, слышно дальше всякой мачты. */
+function baseGuestRoll(B,n){
+  if(B.guest||!baseHasBeacon(B))return 0;
+  if((n%GUEST_EVERY)!==0)return 0;
+  const sp=(typeof baseSpirit==="function")?baseSpirit(B,n):100;
+  const r=rng(hashi(B.sx*331+B.sy,B.idx*23+11,hashi(n,0x6E57,0x9)));
+  if(r()>clamp(sp/140,.1,.85))return 0;
+  const seed=hashi(B.sx,B.sy,n)>>>0;
+  const rr=rng(seed);
+  const roles=(typeof ROLE_KEYS!=="undefined")?ROLE_KEYS:["driller"];
+  B.guest={name:(typeof genName==="function")?genName(rr):"Человек",
+    role:pick(roles,rr),seed,n};
+  baseLog(B,"guest",n,{who:B.guest.name});
+  return 1;
+}
+/* взять гостя: он становится обычным наёмником — с жалованьем и с местом */
+function baseGuestTake(B){
+  const g=B.guest;
+  if(!g)return false;
+  if(typeof baseSlots==="function"&&typeof baseStaff==="function"&&
+     baseStaff(B).length>=baseSlots(B)){
+    say("На базе нет жилых мест\nстройте жилой отсек");
+    return false;
+  }
+  /* он такой же наёмник, как все: тот же генератор, тот же потолок звена,
+     то же жалованье. Даром приходит человек, а не работник без цены */
+  if(typeof crewCap==="function"&&G.crew.length>=crewCap()){
+    say("Человек пришёл, а места в звене нет\nнужна лицензия на флот");
+    return false;
+  }
+  const m=(typeof genMerc==="function")?genMerc(g.seed,null):{name:g.name,spec:"mine"};
+  m.name=g.name;m.fee=0;m.role=g.role;
+  const p=Object.assign(m,{cargo:{},order:{kind:"base",sx:B.sx,sy:B.sy,idx:B.idx},
+    tMs:Date.now(),paidMs:Date.now()});
+  G.crew.push(p);
+  B.guest=null;
+  tell("good",p.name+" остался на базе «"+B.name+"»",
+    "ОСТАЛСЯ\n"+p.name+" · "+((typeof BASE_ROLES!=="undefined"&&BASE_ROLES[p.role])?BASE_ROLES[p.role].ru:p.role)+
+    "\nжалованье идёт как у всех");
+  return true;
+}
+function baseGuestDrop(B){
+  if(!B.guest)return false;
+  const n=(typeof baseShift==="function")?baseShift():0;
+  baseLog(B,"guestno",n,{who:B.guest.name});
+  B.guest=null;
+  return true;
+}
+/* ── меню людей в сцене ──
+   Строится не списком на экране, а той же лентой, что и меню постройки: ◀ ▶
+   выбирают, ДЕЙСТВИЕ ставит, НАЗАД закрывает. */
+function basePeopleList(B,cell){
+  const here=baseCellStaff(B,cell);
+  const free=baseFreeCrew().filter(c=>here.indexOf(c)<0);
+  return here.concat(free);
+}
+function basePeopleLine(B,cell,i){
+  const L=basePeopleList(B,cell),role=baseCellRole(cell);
+  const R=(typeof BASE_ROLES!=="undefined")?BASE_ROLES[role]:null;
+  const head=(R?R.ru.toUpperCase():"РАБОТА")+" · "+(R?R.note:"");
+  if(!L.length)return head+"\nсвободных людей нет — нанимают на станции";
+  const c=L[i%L.length];
+  const here=baseCellStaff(B,cell).indexOf(c)>=0;
+  return head+"\n"+c.name+" · "+((typeof crewSkill==="function")?("опыт "+Math.round(crewSkill(c)*100)+"%"):"")+
+    (c.spec===(R?R.spec:"")?" · по специальности":" · не по профилю")+
+    "\n"+(here?"уже здесь":"ДЕЙСТВИЕ — поставить сюда")+" · ◀ ▶ — кто · НАЗАД — закрыть";
 }
 
 /* ══════════════ база: внутренности отсеков ══════════════ */
@@ -55839,6 +56028,29 @@ function drawBase(){
       bWorker(px,fy2,lit,false,G.t*.30,cb>ca?1:-1);
     }
   }
+  /* ── человек на своём месте (M395, §8) ──
+     Раньше по базе ходил безымянный силуэт, который никого не изображал:
+     «персонал 2/4» жил в списке на станции, а в разрезе стоял манекен. Теперь
+     нарисованный человек — это тот, кто здесь работает, и над ним его имя. */
+  if(typeof baseCellStaff==="function"&&B)
+    for(let r=0;r<baseRows(B);r++)for(let c=0;c<BASE_COLS;c++){
+      const cell=baseCell(B,c,r);
+      if(!cell||cell.hp<=0)continue;
+      const who=baseCellStaff(B,cell)[0];
+      if(!who)continue;
+      const px=X(cellX(c))+22,fy=Y(BASE_OY+r*BCELL_H)+BCELL_H-12;
+      if(px<-40||px>W+40)continue;
+      ctx.fillStyle="rgba(0,0,0,.34)";
+      ctx.beginPath();ctx.ellipse(px,fy-1,7,2,0,0,TAU);ctx.fill();
+      bWorker(px,fy,lit,false,G.t*.06+c*1.7,-1);
+      /* подпись поверх машинерии читается только с подложкой: имя — это то,
+         ради чего человека вообще нарисовали, и терять его в железе нельзя */
+      ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+      ctx.fillStyle="rgba(0,0,0,.55)";
+      ctx.fillText(who.name,px+1,fy-25);
+      ctx.fillStyle="rgba(196,246,238,.82)";
+      ctx.fillText(who.name,px,fy-26);
+    }
   /* ── переборки ──
      Отсеки одного яруса стояли встык и сливались в ленту: где кончается склад
      и начинается жильё, было видно только по мебели. На образце каждая
@@ -71390,6 +71602,10 @@ function renderBasesTab(st){
             (roleForce(c)<1?" (не по профилю)":"")).join(", "):"")+"</s>";
       if(typeof baseLifeLine==="function")
         r.firstChild.innerHTML+="<s>"+baseLifeLine(B)+"</s>";
+      /* гость у затвора (M395): его берут или ему отказывают, и то и другое —
+         решение игрока, а не строка в журнале */
+      if(B.guest)r.firstChild.innerHTML+="<s><b style='color:#e8c46a'>у затвора ждёт "+
+        B.guest.name+" · просится остаться</b></s>";
       r.appendChild(el("div","qt",P.pads?"площадка":"—"));
       /* снабдить можно только там, где вы есть: запас возят, а не заказывают */
       if(here&&typeof baseSupply==="function"){
@@ -71400,6 +71616,14 @@ function renderBasesTab(st){
           b.onclick=()=>{baseSupply(B,k,G.cargo[k]|0);renderTab();};
           r.appendChild(b);
         }
+      }
+      if(B.guest&&typeof baseGuestTake==="function"){
+        const bt=el("button","act gold","ВЗЯТЬ");
+        bt.onclick=()=>{baseGuestTake(B);renderTab();};
+        r.appendChild(bt);
+        const bn=el("button","act","ОТКАЗАТЬ");
+        bn.onclick=()=>{baseGuestDrop(B);renderTab();};
+        r.appendChild(bn);
       }
       /* консервация (§13): правильный ход перед долгой дорогой, а не наказание */
       if(typeof basePark==="function"){
