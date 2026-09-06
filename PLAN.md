@@ -687,7 +687,13 @@ Three stages, each playable on /dev before the next starts:
   **The layer's first numbers** (`prof(60)`, phone 375×812 @2, system): JS 2.59 ms idle,
   2.61 with eight armed ships and two marks, 2.81 with two live sticks — everything after
   M361 is measured against these. **For M362:** eight aware ships kill a standing unshielded
-  ship in about fifty frames. · M362 energy, seven numbers, three shields · M363 ОСНАСТКА and clearance · M364–M366
+  ship in about fifty frames. · ~~M362 energy, seven numbers, three shields~~ (0.362.0, 2026-09-06:
+  `05c-arms` — семь чисел ствола из seed части, свой угол ствола внутри конуса, честное
+  упреждение, промах углом; матрица типов урона; одна шкала энергии на выстрел, щит и
+  маневровые; три повадки щита у вас и у ранговых пиратов. Замеренная кривая попаданий
+  стартового ствола: 100 % на 200, 86 % на 400, 43 % на 600, 34 % на пределе. Перенос
+  аффиксов бака и прыжка с реактора отложен: это `PART_GEN` 2, он в M364–M366)
+  · M363 ОСНАСТКА and clearance · M364–M366
   twenty gun families · M367 missiles · M368 pirate loadouts.
 - **B — the powers, by seed** (client only; the galaxy lives with no server): M369 the maker
   grammar layer on `hullOf`, measured by `makerRead()`, «Ялта» · M369a the grammar in the fleet,

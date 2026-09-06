@@ -218,6 +218,10 @@ function helmApply(dt,st,sh,maxSp){
   const along=c.tx*ca+c.ty*sa,side=-c.tx*sa+c.ty*ca;
   o.main=false;o.thr=false;
   const mag=Math.hypot(c.tx,c.ty);
+  /* маневровые пьют из той же шкалы, что выстрел и щит (M362, §4).
+     Пустая — не «нельзя», а вполовину: корабль остаётся управляемым. */
+  const eLow=(typeof EN_SHOT==="number")&&(G.energy||0)<EN_SHOT;
+  const eK=eLow?.5:1;
   if(mag>0&&G.fuel>0){
     let fwd=0,tx=0,ty=0;
     if(c.thrOnly||along<0){tx=c.tx*HELM_THR;ty=c.ty*HELM_THR;o.thr=true;}
@@ -226,9 +230,12 @@ function helmApply(dt,st,sh,maxSp){
       tx=-sa*side*HELM_THR;ty=ca*side*HELM_THR;
       if(Math.abs(side)>.05)o.thr=true;
     }
-    sh.vx+=(ca*fwd+tx)*.082*st.thr*dt;
-    sh.vy+=(sa*fwd+ty)*.082*st.thr*dt;
-    G.fuel=Math.max(0,G.fuel-(.021*fwd+.017*Math.hypot(tx,ty)/HELM_THR)*dt);
+    const side2=Math.hypot(tx,ty)/HELM_THR;
+    sh.vx+=(ca*fwd+tx*eK)*.082*st.thr*dt;
+    sh.vy+=(sa*fwd+ty*eK)*.082*st.thr*dt;
+    G.fuel=Math.max(0,G.fuel-(.021*fwd+.017*side2)*dt);
+    if(typeof EN_THR==="number"&&side2>0)
+      G.energy=Math.max(0,(G.energy||0)-EN_THR*side2*dt);
   }
   /* отпустил ниже крейсерской — маневровые гасят ход, как ТОРМОЗ; выше — накат */
   const sp0=Math.hypot(sh.vx,sh.vy);

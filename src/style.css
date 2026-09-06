@@ -155,6 +155,7 @@ html,body{height:100%;overflow:hidden;background:var(--void);
 .bar.hull i{background:var(--amber)}
 .bar.hold i{background:var(--rare)}
 .bar.shld i{background:#9fd8ff}
+.bar.enr i{background:#c58ae0}
 .bar.suit i{background:#cfe3ea}
 .bar.jet i{background:#ffd27a}
 .bar.low i{background:var(--alarm)}
@@ -1102,7 +1103,7 @@ body.helmstick #console{opacity:.3;transition:opacity .12s}
    и есть «нужно сейчас». */
 body.afoot #vFuel:not(.crit),
 body.afoot #vHull:not(.crit),
-body.afoot #sgauge,
+body.afoot #sgauge,body.afoot #egauge,
 body.afoot .ipod{display:none}
 
 /* ── альбом (M188) ──

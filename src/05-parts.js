@@ -193,8 +193,15 @@ function slotAnchors(id){
   return out;
 }
 /* сумма бонусов установленных частей — кэшируется, stat() зовут каждый кадр */
-let PART_BONUS=null;
-function invalidateParts(){PART_BONUS=null;}
+let PART_BONUS=null,PART_KIND=null;
+function invalidateParts(){PART_BONUS=null;PART_KIND=null;}
+/* первая установленная часть своего рода: орудие, поле, реактор. Нужна
+   каждому кадру (семь чисел орудия, повадка щита, ёмкость энергии — M362),
+   поэтому лежит рядом с бонусами и гаснет тем же invalidateParts. */
+function fittedOfKind(kind){
+  if(!PART_KIND){PART_KIND={};for(const p of fittedParts())if(!PART_KIND[p.kind])PART_KIND[p.kind]=p;}
+  return PART_KIND[kind]||null;
+}
 function partById(id){
   for(const p of G.inv)if(p.id===id)return p;
   return null;

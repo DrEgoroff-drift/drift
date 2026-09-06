@@ -67,7 +67,7 @@ const G={
   /* mods — установленные уровни, modsOwned — купленные: модуль можно снять и вернуть без потери денег */
   mods:{engine:0,tank:0,hold:0,armor:0,drill:0,hyper:0,weapon:0},
   modsOwned:{engine:0,tank:0,hold:0,armor:0,drill:0,hyper:0,weapon:0},
-  inv:[],fit:{},shield:0,loot:[],partsBought:{},
+  inv:[],fit:{},shield:0,shieldHit:0,energy:0,loot:[],partsBought:{},
   tech:new Set(),techLvl:{},barter:new Set(),
   found:new Set(),species:new Set(),
   ap:null,          // автопилот
@@ -153,6 +153,15 @@ function stat(){
   const rs=t=>(typeof rareSum==="function"?rareSum(t):0);
   /* инструменты с полки «Сороки» (12v-wander-shop): малые прибавки, читаются тут же */
   const WT=(typeof wanderStat==="function")?wanderStat():{turn:1,fuel:0,jump:0,cool:1};
+  /* орудие, поле и реактор как ВЕЩИ, а не как два числа (M362, 05c-arms):
+     семь чисел ствола, повадка щита и ёмкость энергии считаются от того,
+     что стоит в гнёздах, — поэтому их части нужны здесь по отдельности */
+  const gunP=(typeof fittedOfKind==="function")?fittedOfKind("gun"):null;
+  const shldP=(typeof fittedOfKind==="function")?fittedOfKind("shield"):null;
+  const coreP=(typeof fittedOfKind==="function")?fittedOfKind("core"):null;
+  const coreT=coreP?(coreP.tier|0):0;
+  const dmgV=(5+m.weapon*4.5)*(T.has("gunai")?1.35:1)*mul("dmgMul")*(cr("pyre")?1.35:1)*(1+rs("dmg"));
+  const coolV=Math.max(6,Math.round((34-m.weapon*4)/mul("rateMul")/(cr("pyre")?2:1)/(1+rs("cool"))*WT.cool));
   return {
     S,
     /* налёт часов: облезлая машина слушается хуже — единственное, чем износ
@@ -166,8 +175,12 @@ function stat(){
     synthRatio:B.has("isosynth")?8:4,
     jump:Math.max(1,3+m.hyper*.5+(T.has("coil")?2:0)+(P.jumpAdd||0)+rs("jump")+WT.jump),
     armed:m.weapon>0||!!P.gun,
-    dmg:(5+m.weapon*4.5)*(T.has("gunai")?1.35:1)*mul("dmgMul")*(cr("pyre")?1.35:1)*(1+rs("dmg")),
-    cool:Math.max(6,Math.round((34-m.weapon*4)/mul("rateMul")/(cr("pyre")?2:1)/(1+rs("cool"))*WT.cool)),
+    dmg:dmgV,
+    cool:coolV,
+    /* семь чисел ствола (§2) и запас энергии (§4) — M362 */
+    gun:gunSpec(dmgV,coolV,gunP,m.weapon),
+    energyMax:energyCap(m.weapon,coreT),
+    energyRegen:energyRegen(m.weapon,coreT),
     /* пусковая (M112): она не усиливает бортовой огонь, а даёт отдельное оружие,
        и без ракет в трюме её числа ничего не значат */
     launcher:!!P.msl,
@@ -176,6 +189,7 @@ function stat(){
     mslCool:Math.max(24,Math.round(MSL_COOL/mul("mslLockMul"))),
     shieldMax:Math.max(0,Math.round((P.shieldAdd||0)+(cr("veil")?40:0)+rs("shield"))),
     shieldRegen:Math.max(0,P.regenAdd||0),
+    shieldType:shieldTypeOf(shldP),
     see:(((cr("echo")?2:1))*(T.has("cloak")?520:1040)+(P.scanAdd||0)+(bpState("longeye")>0?180:(bpState("longeye")<0?-120:0)))+rs("see"),
     digTier:T.has("deepcore")?2:((T.has("deepdrill")||m.drill>=2)?1:0),
     suitWear:1/(1+techLv("suit")*.55)*(typeof kitStat==="function"?kitStat().wear:1),   /* комплект (M152) */

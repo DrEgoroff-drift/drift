@@ -6,45 +6,47 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 439 · символов верхнего уровня: 3843
+Файлов: 440 · символов верхнего уровня: 3867
 
 ## СИМВОЛЫ
 
 $bg                          src/12l-barge.js:595
-$bThr                        src/27z-telemetry.js:39
+$bThr                        src/27z-telemetry.js:41
 $cv                          src/27b-ui-crew.js:6
 $dl                          src/27n-ui-deal.js:18
+$en                          src/27z-telemetry.js:9
+$enn                         src/27z-telemetry.js:14
 $f                           src/27z-telemetry.js:6
 $fb                          src/27z-telemetry.js:7
-$fn                          src/27z-telemetry.js:11
+$fn                          src/27z-telemetry.js:12
 $hq                          src/27c-ui-hq.js:4
-$hudp                        src/27z-telemetry.js:53
+$hudp                        src/27z-telemetry.js:55
 $ipod                        src/25c-instr-hud.js:16
-$jn                          src/27z-telemetry.js:36
-$launch                      src/27z-telemetry.js:42
+$jn                          src/27z-telemetry.js:38
+$launch                      src/27z-telemetry.js:44
 $menu                        src/15-input.js:239
-$msg                         src/27z-telemetry.js:38
-$msl                         src/27z-telemetry.js:41
-$nav                         src/27z-telemetry.js:40
+$msg                         src/27z-telemetry.js:40
+$msl                         src/27z-telemetry.js:43
+$nav                         src/27z-telemetry.js:42
 $opts                        src/26-ui-station.js:893
 $padsEl                      src/15-input.js:4
-$place                       src/27z-telemetry.js:37
+$place                       src/27z-telemetry.js:39
 $sh                          src/27z-telemetry.js:8
-$sn                          src/27z-telemetry.js:12
+$sn                          src/27z-telemetry.js:13
 $st                          src/26-ui-station.js:2
-$un                          src/27z-telemetry.js:34
-$vc                          src/27z-telemetry.js:32
-$vf                          src/27z-telemetry.js:31
-$vitals                      src/27z-telemetry.js:30
-$vj                          src/27z-telemetry.js:35
-$vs                          src/27z-telemetry.js:33
+$un                          src/27z-telemetry.js:36
+$vc                          src/27z-telemetry.js:34
+$vf                          src/27z-telemetry.js:33
+$vitals                      src/27z-telemetry.js:32
+$vj                          src/27z-telemetry.js:37
+$vs                          src/27z-telemetry.js:35
 _indPrice                    src/12ac-bld.js:112
 _mapDirty                    src/15-input.js:121
 _suite                       tests/90-harness.js:11
 ACTION_RU                    src/15-input.js:141
 actionKey                    src/15-input.js:156
 actPressT                    src/15-input.js:94
-addPart                      src/05-parts.js:227
+addPart                      src/05-parts.js:234
 addPath                      src/25-cockpit.js:154
 addRes                       src/11-log.js:141
 addrForm                     src/11b-speech.js:96
@@ -55,7 +57,7 @@ AFFIX_BAD                    src/05-parts.js:46
 AFFIX_BY_K                   src/05-parts.js:47
 affLabel                     src/05-parts.js:60
 affVal                       src/05-parts.js:54
-afterFitChange               src/05-parts.js:262
+afterFitChange               src/05-parts.js:269
 AI_COST                      src/12f-mgr-ai.js:8
 AI_NAMES                     src/12f-mgr-ai.js:9
 AI_STAGES                    src/12f-mgr-ai.js:12
@@ -101,7 +103,7 @@ applySave                    src/14-save.js:200
 applyVolumes                 src/09-audio.js:40
 apVel                        src/16-flight.js:132
 ARMED_CAP                    src/13-combat.js:12
-armedCount                   src/13-combat.js:103
+armedCount                   src/13-combat.js:136
 arrive                       src/16-flight.js:178
 ARTIFACTS                    src/12h-relic.js:48
 askText                      src/11u-names.js:59
@@ -337,7 +339,7 @@ capIv                        src/28-loop.js:125
 capLum                       src/19e-clouds.js:55
 capOf                        src/05-parts.js:108
 capRu                        src/11t-rumours.js:58
-capUsed                      src/05-parts.js:219
+capUsed                      src/05-parts.js:226
 CAST                         src/12k-stories-a.js:22
 CAST_B                       src/12k-stories-b.js:7
 CAST_C                       src/12k-stories-c.js:7
@@ -492,7 +494,7 @@ clWith                       tests/91zzzzzr-cloud.js:30
 cockpitPlan                  src/25-cockpit.js:92
 cockpitStyleKey              src/25-cockpit.js:46
 cockpitTex                   src/25-cockpit.js:187
-combatShots                  src/13-combat.js:54
+combatShots                  src/13-combat.js:73
 concertAll                   src/11ae-concert.js:22
 concertNotes                 src/11ae-concert.js:82
 concertSend                  src/11ae-concert.js:87
@@ -696,7 +698,7 @@ decoTwinCanopy               src/21bb-deco-biomes.js:328
 decoWall                     src/21ba-deco-shapes.js:147
 deedAdd                      src/11ai-ledger.js:53
 DEEDS                        src/11ai-ledger.js:25
-deltaHtml                    src/05-parts.js:293
+deltaHtml                    src/05-parts.js:300
 depKind                      src/21b-surface-deco.js:382
 deployDrone                  src/12-economy.js:183
 DEPTH_TIERS                  src/04-mods.js:51
@@ -729,6 +731,9 @@ dispatchEtherLine            src/12ag-holdfx.js:57
 dkPaper                      src/27ia-desk-top.js:37
 dkRule                       src/27ia-desk-top.js:46
 dkShadow                     src/27ia-desk-top.js:30
+DMG_KEYS                     src/05c-arms.js:29
+DMG_TYPES                    src/05c-arms.js:24
+dmgMul                       src/05c-arms.js:30
 dmStation                    tests/91zzzza-drone-miner.js:2
 DOM_GAME                     src/11af-domino.js:12
 dominoBlock                  src/11af-domino.js:58
@@ -788,7 +793,7 @@ drawCelest                   src/06a-celest.js:167
 drawChunks                   src/18c-chunks.js:83
 drawClouds                   src/19e-clouds.js:382
 drawCockpit                  src/25-cockpit.js:400
-drawCombat                   src/13-pirates.js:185
+drawCombat                   src/13-pirates.js:227
 drawCosmMark                 src/12va-wander-cosm.js:112
 drawCrowns                   src/05a-nodes.js:379
 drawCrystalForest            src/20aa-poi-shapes.js:115
@@ -952,7 +957,12 @@ earn                         src/12j-home.js:38
 ecoBestLeg                   tests/91zzw-economy.js:18
 ecoStations                  tests/91zzw-economy.js:8
 el                           src/26-ui-station.js:174
+EN_SHIELD                    src/05c-arms.js:118
+EN_SHOT                      src/05c-arms.js:117
+EN_THR                       src/05c-arms.js:119
 endPtr                       src/15-input.js:381
+energyCap                    src/05c-arms.js:120
+energyRegen                  src/05c-arms.js:121
 engineLoop                   src/09-audio.js:309
 enterBase                    src/21a-mode-base.js:68
 enterBelt                    src/24-mode-belt.js:89
@@ -1049,7 +1059,7 @@ findsHere                    src/17b-finds.js:53
 findsIn                      src/17b-finds.js:27
 findTake                     src/17b-finds.js:58
 findTestSys                  tests/91x-finds.js:3
-fireCool                     src/13-pirates.js:69
+fireCool                     src/13-pirates.js:73
 fireMerc                     src/12a-crew.js:230
 fireMgr                      src/12c-mgr-core.js:356
 fireShot                     src/13-combat.js:14
@@ -1059,9 +1069,10 @@ firstAll                     src/11ao-firsthour.js:36
 firstSaid                    src/11ao-firsthour.js:37
 firstSay                     src/11ao-firsthour.js:39
 firstTick                    src/11ao-firsthour.js:50
-fitMap                       src/05-parts.js:202
-fitPart                      src/05-parts.js:251
-fittedParts                  src/05-parts.js:207
+fitMap                       src/05-parts.js:209
+fitPart                      src/05-parts.js:258
+fittedOfKind                 src/05-parts.js:201
+fittedParts                  src/05-parts.js:214
 FLEA_EPOCH                   src/12ua-flea.js:26
 FLEA_GOT                     src/12ua-flea.js:27
 FLEA_MARKUP                  src/12ua-flea.js:24
@@ -1082,7 +1093,7 @@ fleaScrip                    src/12ua-flea.js:122
 FLEET                        src/04b-fleet.js:107
 FLEET_ART                    src/12ai-fleet.js:101
 FLEET_CLASSES                src/12ai-fleet.js:20
-FLEET_COOL                   src/13-combat.js:85
+FLEET_COOL                   src/13-combat.js:118
 FLEET_EPITH                  src/04b-fleet.js:57
 FLEET_KEYS                   src/04b-fleet.js:148
 FLEET_LUXE                   src/04b-fleet.js:59
@@ -1104,7 +1115,7 @@ fleetArtOf                   src/12ai-fleet.js:102
 fleetCaravanActive           src/12ai-fleet.js:648
 fleetColor                   src/04b-fleet.js:95
 fleetEscortActive            src/12ai-fleet.js:646
-fleetFire                    src/13-combat.js:86
+fleetFire                    src/13-combat.js:119
 fleetGlyph                   src/12ai-fleet.js:419
 fleetHailFirst               src/12ai-fleet.js:525
 fleetHere                    src/12ai-fleet.js:50
@@ -1278,6 +1289,13 @@ grownExtra                   src/11q-grown.js:35
 grownGroundLine              src/11q-grown.js:39
 grownIsCore                  src/11q-grown.js:27
 grownOnGive                  src/11q-grown.js:54
+GUN_CACHE                    src/05c-arms.js:65
+GUN_RANGE0                   src/05c-arms.js:61
+gunAimTick                   src/05c-arms.js:128
+gunLeadAngle                 src/05c-arms.js:105
+gunMiss                      src/05c-arms.js:98
+gunSpec                      src/05c-arms.js:66
+gunSpecMake                  src/05c-arms.js:71
 h01                          src/01-core.js:14
 HAND_LINE                    src/12td-settle-hand.js:31
 HAND_STEP                    src/12td-settle-hand.js:27
@@ -1306,7 +1324,7 @@ heardUse                     src/12x-parrot.js:116
 heardWordsRu                 src/12x-parrot.js:79
 heardYours                   src/12x-parrot.js:71
 heatHaze                     src/18d-postfx.js:23
-held                         src/08-state.js:187
+held                         src/08-state.js:201
 HELM                         src/15a-helm.js:28
 HELM_ARC0                    src/15a-helm.js:22
 HELM_ARC1                    src/15a-helm.js:23
@@ -1323,13 +1341,13 @@ HELM_RELEASE                 src/15a-helm.js:13
 HELM_THR                     src/15a-helm.js:14
 helmApply                    src/15a-helm.js:203
 helmCanvasXY                 src/15a-helm.js:55
-helmDrawMarks                src/15a-helm.js:246
-helmDrawSticks               src/15a-helm.js:319
-helmLift                     src/15a-helm.js:283
+helmDrawMarks                src/15a-helm.js:253
+helmDrawSticks               src/15a-helm.js:326
+helmLift                     src/15a-helm.js:290
 helmLock                     src/15a-helm.js:104
 helmLockNext                 src/15a-helm.js:113
 helmMarksClean               src/15a-helm.js:98
-helmMarkTop                  src/15a-helm.js:313
+helmMarkTop                  src/15a-helm.js:320
 helmPinchBlocked             src/15a-helm.js:94
 helmPirate                   tests/91zzzw-helm.js:17
 helmPtrEnd                   src/15a-helm.js:81
@@ -1337,8 +1355,8 @@ helmRun                      tests/91zzzw-helm.js:16
 helmScreenOpen               src/15a-helm.js:93
 helmShip                     tests/91zzzw-helm.js:6
 helmShotAt                   src/15a-helm.js:137
-helmStickFoot                src/15a-helm.js:275
-helmStickShape               src/15a-helm.js:267
+helmStickFoot                src/15a-helm.js:282
+helmStickShape               src/15a-helm.js:274
 helmTap                      src/15a-helm.js:123
 helmTargets                  src/15a-helm.js:97
 helmTick                     src/15a-helm.js:143
@@ -1384,7 +1402,7 @@ HIT_REAR                     src/13-combat.js:11
 hitCandidates                tests/91zzzzzg-hit.js:19
 hitCovered                   tests/91zzzzzg-hit.js:41
 hitFx                        src/18d-postfx.js:11
-hitLocMul                    src/13-combat.js:27
+hitLocMul                    src/13-combat.js:31
 HOL_BY                       src/11am-holiday.js:26
 HOL_D                        tests/91zzzm-holiday.js:2
 HOL_ETHER                    src/11am-holiday.js:28
@@ -1522,13 +1540,13 @@ hqWallProps                  src/27f-hq-room.js:170
 hqWindowView                 src/27f-hq-room.js:616
 hsAlive                      tests/91zzzzza-save-hostile.js:29
 hsMut                        tests/91zzzzza-save-hostile.js:20
-hud                          src/27z-telemetry.js:114
-HUD_BAND                     src/27z-telemetry.js:19
-HUD_FLOOR                    src/27z-telemetry.js:29
-HUD_PREV                     src/27z-telemetry.js:52
-HUD_STEP                     src/27z-telemetry.js:51
-hudFloorMeasure              src/27z-telemetry.js:93
-hudWake                      src/27z-telemetry.js:54
+hud                          src/27z-telemetry.js:116
+HUD_BAND                     src/27z-telemetry.js:21
+HUD_FLOOR                    src/27z-telemetry.js:31
+HUD_PREV                     src/27z-telemetry.js:54
+HUD_STEP                     src/27z-telemetry.js:53
+hudFloorMeasure              src/27z-telemetry.js:95
+hudWake                      src/27z-telemetry.js:56
 hueToward                    src/19b-sky.js:53
 HULL_CACHE                   src/03-ships.js:142
 HULL_CLASS                   src/03-ships.js:174
@@ -1606,7 +1624,7 @@ invalidateKeyMap             src/15-input.js:122
 invalidateParts              src/05-parts.js:197
 ipctx                        src/25c-instr-hud.js:17
 IPOD_S                       src/25c-instr-hud.js:18
-isFitted                     src/05-parts.js:243
+isFitted                     src/05-parts.js:250
 ISLAND_LETTERS               src/11y-island.js:15
 islandAll                    src/11y-island.js:23
 islandBlock                  src/11y-island.js:60
@@ -1660,7 +1678,7 @@ keyMap                       src/15-input.js:133
 keyRow                       src/27-ui-ship.js:44
 keys                         src/08-state.js:57
 keyStateOK                   tests/91zzzzze-keys.js:23
-killPirate                   src/13-pirates.js:152
+killPirate                   src/13-pirates.js:194
 killRock                     src/24-mode-belt.js:151
 KINO_EVERY                   src/27da-kino.js:20
 KINO_REEL                    src/27da-kino.js:23
@@ -2260,7 +2278,7 @@ ORE_KEYS                     src/02-world.js:102
 ORE_NODE_W                   src/23-mode-dig.js:12
 oreNode                      src/23-mode-dig.js:13
 ownerOf                      src/13-combat.js:13
-packPart                     src/05-parts.js:327
+packPart                     src/05-parts.js:334
 PAD_KEY                      src/15-input.js:19
 PAD_SAFE                     src/18-mode-map.js:2
 padsAuto                     src/15-input.js:69
@@ -2293,7 +2311,7 @@ parrotDraw                   src/12y-parrot-face.js:264
 parrotFind                   src/12x-parrot.js:30
 parrotFrame                  src/12y-parrot-face.js:684
 parrotHas                    src/12x-parrot.js:25
-parrotHeardKill              src/13-pirates.js:148
+parrotHeardKill              src/13-pirates.js:190
 parrotLine                   src/12y-parrot-face.js:641
 parrotPoke                   src/12y-parrot-face.js:657
 parRow                       src/12y-parrot-face.js:141
@@ -2305,12 +2323,12 @@ PART_BONUS                   src/05-parts.js:196
 PART_GEN                     src/05-parts.js:6
 PART_KEYS                    src/05-parts.js:27
 PART_KINDS                   src/05-parts.js:8
-PART_MAX                     src/05-parts.js:225
+PART_MAX                     src/05-parts.js:232
 PART_PRE                     src/05-parts.js:48
 PART_SUF                     src/05-parts.js:50
-partBonus                    src/05-parts.js:212
-partById                     src/05-parts.js:198
-partSeq                      src/05-parts.js:226
+partBonus                    src/05-parts.js:219
+partById                     src/05-parts.js:205
+partSeq                      src/05-parts.js:233
 parWin                       src/12y-parrot-face.js:48
 passAll                      src/11p-pass.js:19
 passAtShip                   src/11p-pass.js:47
@@ -2385,14 +2403,14 @@ PIR_CLASS                    src/12i-pirate-hull.js:20
 PIR_SS                       src/12i-pirate-hull.js:17
 PIRATE_COLS                  src/13-pirates.js:4
 PIRATE_NAMES                 src/13-pirates.js:3
-PIRATE_RANKS                 src/13-pirates.js:10
+PIRATE_RANKS                 src/13-pirates.js:13
 pirateArtOf                  src/12i-pirate-hull.js:197
 pirateBaseOf                 src/24a-mode-raid.js:87
 pirateBuild                  src/12i-pirate-hull.js:33
 pirateClass                  src/12i-pirate-hull.js:26
-pirateFellTo                 src/13-combat.js:46
+pirateFellTo                 src/13-combat.js:65
 pirateRoleTick               src/13c-roles.js:40
-pirateShipId                 src/13-pirates.js:17
+pirateShipId                 src/13-pirates.js:20
 PL_SKIP                      tests/91zzzzzo-plural.js:31
 pl3                          src/01-core.js:22
 PLACE_KINDS                  src/11d-place.js:22
@@ -2473,7 +2491,7 @@ plantSpeciesName             src/20e-species.js:86
 plantStemForm                src/20e-species.js:27
 plantTraitWord               src/20e-species.js:29
 plate                        src/25-cockpit.js:160
-playerHit                    src/13-combat.js:32
+playerHit                    src/13-combat.js:36
 plClass                      tests/91zzzzzo-plural.js:23
 plLand                       tests/91zzzzy-place.js:28
 plWorlds                     tests/91zzzzy-place.js:15
@@ -2997,7 +3015,7 @@ saveGame                     src/14a-cloud.js:38
 saveText                     src/14-save.js:130
 saveTop                      src/14-save.js:124
 saveWeigh                    src/14-save.js:111
-say                          src/08-state.js:188
+say                          src/08-state.js:202
 SCALE_KEYS                   src/10-music.js:25
 SCALES                       src/10-music.js:5
 SCK                          src/18c-chunks.js:39
@@ -3008,8 +3026,8 @@ scoopBandAt                  src/19a-mode-scoop.js:25
 scoopCenter                  src/19a-mode-scoop.js:17
 scoopScrX                    src/19a-mode-scoop.js:265
 scoopSpawn                   src/19a-mode-scoop.js:33
-scrapPart                    src/05-parts.js:316
-scrapYield                   src/05-parts.js:306
+scrapPart                    src/05-parts.js:323
+scrapYield                   src/05-parts.js:313
 SCREEN_LAYERS                src/18c-chunks.js:104
 screenLayer                  src/18c-chunks.js:105
 SCRIP_BASE                   src/12u-scrip.js:28
@@ -3072,7 +3090,7 @@ secTidy                      src/26-ui-station.js:245
 sellCargo                    src/12-economy.js:68
 sellDroneYield               src/12-economy.js:90
 sellQuote                    src/12ab-hold.js:101
-setSt                        src/27z-telemetry.js:88
+setSt                        src/27z-telemetry.js:90
 SETTLE_BUILD                 src/12t-settle.js:31
 SETTLE_BY_K                  src/12t-settle.js:39
 SETTLE_CAP                   src/12t-settle.js:20
@@ -3115,12 +3133,18 @@ settleWallHereX              src/12t-settle.js:124
 settleWallX                  src/12t-settle.js:119
 settleWatch                  src/12t-settle.js:397
 settleWords                  src/12t-settle.js:258
-setTx                        src/27z-telemetry.js:78
+setTx                        src/27z-telemetry.js:80
 setZoom                      src/15-input.js:318
 sfx                          src/09-audio.js:301
 SFX                          src/09-audio.js:97
 SH_DX                        src/03b-hull-paint.js:164
 shatter                      src/24-mode-belt.js:136
+SHIELD_DELAY                 src/05c-arms.js:41
+SHIELD_KEYS                  src/05c-arms.js:40
+SHIELD_PULSE                 src/05c-arms.js:42
+SHIELD_TYPES                 src/05c-arms.js:35
+shieldFace                   src/05c-arms.js:47
+shieldTypeOf                 src/05c-arms.js:53
 SHIFT_TALK                   src/03f-hull-role.js:63
 shiftLogRec                  src/12pa-beacon.js:43
 shiftTalkTick                src/03f-hull-role.js:73
@@ -3244,7 +3268,7 @@ spaTestStart                 tests/91zzzl-spa.js:2
 spaTookToday                 src/29i-spa-draw.js:39
 spawnAllies                  src/12a-crew.js:571
 spawnBarges                  src/12l-barge.js:110
-spawnPirates                 src/13-pirates.js:25
+spawnPirates                 src/13-pirates.js:28
 spcol                        src/29i-spa-draw.js:20
 SPEC_KEYS                    src/12a-crew.js:17
 speciesBeast                 src/20e-species.js:234
@@ -3274,7 +3298,7 @@ start                        src/15-input.js:563
 startLanding                 src/19-mode-landing.js:2
 startScoop                   src/19a-mode-scoop.js:51
 stat                         src/08-state.js:144
-STAT_SHOW                    src/05-parts.js:280
+STAT_SHOW                    src/05-parts.js:287
 stationArt                   src/17c-system-draw.js:408
 stationDeals                 src/27g-deals.js:141
 stationFleet                 src/04b-fleet.js:163
@@ -3285,7 +3309,7 @@ stationModsLine              src/17a-station-mod.js:59
 stationParts                 src/03-ships.js:116
 stationUniqueOffer           src/03-ships.js:107
 stationViz                   src/17c-system-draw.js:111
-statPreview                  src/05-parts.js:271
+statPreview                  src/05-parts.js:278
 stCore                       src/17c-system-draw.js:131
 stDel                        src/14-save.js:26
 steps                        tests/90-harness.js:223
@@ -3351,9 +3375,9 @@ stripsAll                    src/11b-speech.js:192
 stripSell                    src/11b-speech.js:231
 stripValue                   src/11b-speech.js:193
 stSet                        src/14-save.js:14
-stTabFuse                    src/26b-ui-station-work.js:204
-stTabInstr                   src/26b-ui-station-work.js:111
-stTabLab                     src/26b-ui-station-work.js:178
+stTabFuse                    src/26b-ui-station-work.js:219
+stTabInstr                   src/26b-ui-station-work.js:126
+stTabLab                     src/26b-ui-station-work.js:193
 stTabMods                    src/26b-ui-station-work.js:12
 stTabsHere                   src/26-ui-station.js:81
 stTypeOf                     src/06-galaxy.js:73
@@ -3562,18 +3586,18 @@ tvSizes                      tests/91zzzzzw-travel.js:17
 TYPES                        src/02-world.js:125
 UIK                          src/08-state.js:13
 uiScale                      src/08-state.js:21
-unfitPart                    src/05-parts.js:247
+unfitPart                    src/05-parts.js:254
 UNIQUE_COLS                  src/03-ships.js:14
 UNIQUE_TAG                   src/03-ships.js:15
 unlockAudio                  src/09-audio.js:48
-unpackPart                   src/05-parts.js:328
+unpackPart                   src/05-parts.js:335
 updateAllies                 src/12a-crew.js:615
 updateBarges                 src/12l-barge.js:165
 updateBase                   src/21a-mode-base.js:334
 updateBelt                   src/24-mode-belt.js:185
 updateCave                   src/22-mode-cave.js:251
 updateCaveDeco               src/22a-cave-deco.js:205
-updateCombat                 src/13-pirates.js:70
+updateCombat                 src/13-pirates.js:74
 updateDig                    src/23-mode-dig.js:128
 updateHomeIn                 src/29c-home-in.js:160
 updateLanding                src/19-mode-landing.js:68
@@ -3896,7 +3920,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/04b-fleet.js · 14 КБ
   · флот: сто корпусов и их редкость:1
 
-## src/05-parts.js · 17 КБ
+## src/05-parts.js · 18 КБ
   · части корабля:1
 
 ## src/05a-nodes.js · 26 КБ
@@ -3905,6 +3929,9 @@ zooTick                      src/11ad-zoo.js:41
 
 ## src/05b-instr-kit.js · 10 КБ
   · приборы — это товар:1
+
+## src/05c-arms.js · 10 КБ
+  · орудие в семи числах, щит в трёх повадках (M362, §2 §4):1
 
 ## src/06-galaxy.js · 14 КБ
   · галактика:1
@@ -3926,7 +3953,7 @@ zooTick                      src/11ad-zoo.js:41
   · рельеф:375
   · где сел — то и видел:399
 
-## src/08-state.js · 15 КБ
+## src/08-state.js · 16 КБ
   · состояние:1
 
 ## src/09-audio.js · 16 КБ
@@ -4290,10 +4317,10 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12z-parrot-acts.js · 17 КБ
   · трепло: репертуар:1
 
-## src/13-combat.js · 6 КБ
+## src/13-combat.js · 7 КБ
   · бой: выстрелы с владельцем (M361):1
 
-## src/13-pirates.js · 15 КБ
+## src/13-pirates.js · 19 КБ
   · пираты:1
 
 ## src/13b-occupy.js · 18 КБ
@@ -4318,7 +4345,7 @@ zooTick                      src/11ad-zoo.js:41
   · ввод:87
   · полоса вкладок шире экрана:212
 
-## src/15a-helm.js · 18 КБ
+## src/15a-helm.js · 19 КБ
   · штурвал (M360):1
 
 ## src/16-flight.js · 28 КБ
@@ -4601,7 +4628,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/26a-ui-station-home.js · 13 КБ
   · станция: вкладка «дом и базы»:1
 
-## src/26b-ui-station-work.js · 16 КБ
+## src/26b-ui-station-work.js · 17 КБ
   · станция: мастерская и наука:1
 
 ## src/26c-ui-station-site.js · 9 КБ
@@ -4676,7 +4703,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/27n-ui-deal.js · 11 КБ
   · ДЕЛО — одно место для всего, что на вас работает:1
 
-## src/27z-telemetry.js · 32 КБ
+## src/27z-telemetry.js · 33 КБ
   · телеметрия: приборы пишут в DOM:1
 
 ## src/28-loop.js · 35 КБ
@@ -5090,8 +5117,9 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzzv-wall.js · 7 КБ
   · автотесты: стена, которая помнит (M210):1
 
-## tests/91zzzw-combat.js · 10 КБ
+## tests/91zzzw-combat.js · 18 КБ
   · бой между кораблями (M361, §5):1
+  · энергия, семь чисел, три щита (M362, §2 §4):179
 
 ## tests/91zzzw-helm.js · 10 КБ
   · штурвал (M360):1

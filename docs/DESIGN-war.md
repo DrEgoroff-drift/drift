@@ -983,7 +983,15 @@ One system inside ГЛАВТРАССА's centre (r ≈ 6, fixed by seed, never t
   later brief that adds behaviour gets the same band measurement. The layer's baseline:
   `prof(60)`, phone 375×812 @2 — JS 2.59 ms idle, 2.61 with eight armed ships. For M362:
   eight aware ships kill a standing unshielded ship in about fifty frames.
-- **M362** energy bar and the seven numbers on today's gun; three shield types.
+- ~~**M362** energy bar and the seven numbers~~ — 0.362.0 (2026-09-06): `05c-arms`
+  (`gunSpec`, `gunAimTick`, `gunLeadAngle`, `gunMiss`, `DMG_TYPES`, `SHIELD_TYPES`,
+  `energyCap`), `G.energy`, shields on ranked pirates, the card. **Deferred, and it belongs
+  in the M364–M366 brief:** moving the tank and jump range off the reactor and giving it
+  capacity/regen affixes is a `genPart` change — affixes are restored from a seed, so it
+  silently rewrites parts every player owns and therefore needs `PART_GEN` 2. Learned:
+  **`stat()` is called dozens of times a frame — anything new in it must be cached** (four
+  `toFixed` in the gun spec were enough to matter). Baseline unchanged: `prof(80)`, phone
+  375×812 @2, JS 2.8–3.0 ms idle and with eight armed ships alike.
 - **M363** ОСНАСТКА: sizes/types on the points, the dock screen, comparison, стрельбище, groups;
   clearance I–IV (D15); parts carry a maker (`b`, §19.2) with names, affix biases and scrap
   pools per maker — ГЛАВТРАССА's are the ones that exist today.

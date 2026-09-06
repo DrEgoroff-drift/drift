@@ -7,6 +7,50 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.362.0 - M362: a gun is a thing with seven numbers, and one bar feeds everything
+
+The war's third pass (`docs/DESIGN-war.md` §2, §4, §18). A gun used to be two numbers — damage and
+cooldown — so the whole fight was «keep the nose on him».
+
+**Seven numbers** (`05c-arms`, `stat().gun`), all of them on the card, none hidden: урон and its
+тип, откат, дальность, скорость снаряда, конус, скорость наводки, разброс. They come from the
+fitted `gun` part's seed and tier, so two guns already differ without a new table (the twenty
+families arrive in M364–M366 and replace this unfolding). The barrel now has its own angle: it
+lives inside the cone around the nose and walks toward the lead at its own rate — you can no
+longer swing the nose and have the gun follow instantly. The lead is honest, computed against the
+target's velocity, and a miss is an **angle added to the shot**, visible in flight, not a hidden
+roll: the error grows with range and with the target's angular speed. Measured hit curve for the
+starting gun: 100 % at 200, 86 % at 400, 43 % at 600, 34 % at the limit — closing in is worth it,
+and the numbers say so before you try.
+
+**Damage types.** Kinetic: full to hull, half to shield. Energy: the reverse. Blast: even. One
+matrix, and it is the same one that is used against you.
+
+**Энергия — one bar** (§4), shown under hull and shield in the cabin. The reactor gives capacity
+and regen (the `weapon` module level plus the fitted `core` part's tier). A shot, the shield's
+regeneration and the thrusters all drink from it. Empty is not death: the gun's cooldown doubles,
+the shield stops, the thrusters go to half. No venting, no overload. The shield also stopped
+depending on «is anybody aware of me» — it now waits out a delay after **a hit**, which is what
+the design asked for and what one distant jackal used to prevent for a whole fight.
+
+**Three shield behaviours, not thirty numbers.** сплошной — even all round; лобовой — double in
+front, nothing in the stern; импульсный — never grows, returns whole every twenty seconds. The
+type is read from the part's own seed, so the field lying in your hold already has a character.
+Ranked pirates carry shields too (ветеран .35 of hull, капитан .5, барон .7, шакал none) with the
+same three behaviours, drawn as a thin blue thread over the hull bar — so where to hit is
+something you see, not something you are told.
+
+Not done here, and why: §4 also asks to move the tank and jump range off the reactor and give it
+capacity and regen affixes. That is a `genPart` change — affixes are restored from a seed, so
+changing a kind's affix set would silently rewrite parts every player already owns. It opens
+`PART_GEN` 2, which is already queued for M364–M366.
+
+Measured (`prof(80)`, phone layout 375×812 @2): JS 2.8–3.0 ms with nobody and with eight armed
+ships alike — unchanged from M361 within the noise. `91zzzw-combat` grows three suites: energy
+drain, regen and the empty rule; the damage matrix, the three shield behaviours and a лобовой
+pirate dying twice as fast from behind; the seven numbers, the barrel walking inside its cone,
+honest lead, and the hit curve against distance.
+
 ## 0.361.0 - M361: ships shoot each other, and rank is a way of fighting
 
 The war's second pass (`docs/DESIGN-war.md` §5, §0 law 6, §18). Until now a shot was either mine

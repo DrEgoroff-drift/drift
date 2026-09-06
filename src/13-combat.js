@@ -11,9 +11,13 @@
 const HIT_REAR=1.6,HIT_FRONT=.7;
 const ARMED_CAP=8;   /* вооружённых кораблей в системе, кроме своих (§5) */
 function ownerOf(mine){return mine===true?"player":(mine===false||mine==null?"pirate":mine);}
-function fireShot(x,y,ang,speed,dmg,mine){
+function fireShot(x,y,ang,speed,dmg,mine,type,range){
   const owner=ownerOf(mine);
-  G.shots.push({x,y,vx:Math.cos(ang)*speed,vy:Math.sin(ang)*speed,dmg,owner,mine:owner==="player",life:150});
+  /* тип урона и дальность — часть выстрела (M362): снаряд умирает за
+     дальностью своего ствола, а не по общему сроку в 150 кадров */
+  const life=range?Math.max(12,Math.round(range/Math.max(.5,speed))):150;
+  G.shots.push({x,y,vx:Math.cos(ang)*speed,vy:Math.sin(ang)*speed,dmg,owner,
+    type:type||"kin",mine:owner==="player",life});
   /* тембр своего выстрела берём из установленной пушки: у каждой части свой seed,
      значит разные орудия звучат по-разному сами собой, без отдельного контента */
   if(owner==="player"){
@@ -31,7 +35,22 @@ function hitLocMul(s,tgt){
 /* попадание по игроку: щит первым, затем корпус; звук говорит, что пробили */
 function playerHit(s){
   let d=s.dmg*hitLocMul(s,G.ship);
-  if(G.shield>0){const a=Math.min(G.shield,d);G.shield-=a;d-=a;sfx("ui",{f:1250,to:700,d:.12,v:.28});}
+  const st=stat();
+  G.shieldHit=SHIELD_DELAY;      /* поле растёт через паузу после попадания (M362) */
+  if(G.shield>0){
+    /* по щиту урон идёт СВОИМ типом, и лобовое поле держит лоб вдвое,
+       а корму не держит вовсе (§4). Что щит не удержал — уходит в корпус
+       уже по корпусному множителю того же типа. */
+    const face=shieldFace(st.shieldType,angDiff(Math.atan2(s.vy,s.vx),G.ship.a));
+    if(face>0){
+      const want=d*dmgMul(s.type,true)/face;
+      const a=Math.min(G.shield,want);
+      G.shield-=a;
+      d=Math.max(0,d-a*face/Math.max(1e-6,dmgMul(s.type,true)));
+      sfx("ui",{f:1250,to:700,d:.12,v:.28});
+    }
+  }
+  d*=dmgMul(s.type,false);
   if(d>0){
     sfx("hit",{v:.55});
     G.hull=Math.max(0,G.hull-d);
@@ -65,7 +84,21 @@ function combatShots(dt){
       for(const p of G.pirates){
         if((p.owner||"pirate")===s.owner||p.hull<=0)continue;
         if(Math.hypot(s.x-p.x,s.y-p.y)<20){
-          p.hull-=s.dmg*hitLocMul(s,p);gone=true;
+          gone=true;
+          let d=s.dmg*hitLocMul(s,p);
+          /* у пирата от ранга бывает своё поле, и его повадка та же (M362):
+             лобового бьют в корму, импульсного — быстрее, чем он собирается */
+          p.shieldHit=SHIELD_DELAY;
+          if(p.shield>0){
+            const face=shieldFace(p.shieldType,angDiff(Math.atan2(s.vy,s.vx),p.a));
+            if(face>0){
+              const want=d*dmgMul(s.type,true)/face;
+              const a=Math.min(p.shield,want);
+              p.shield-=a;
+              d=Math.max(0,d-a*face/Math.max(1e-6,dmgMul(s.type,true)));
+            }
+          }
+          p.hull-=d*dmgMul(s.type,false);
           sfx("hit",{v:.3});
           if(p.hull<=0){if(s.owner==="player")killPirate(p);else pirateFellTo(p,s.owner);}
           break;

@@ -175,3 +175,131 @@ TEST_SUITES.push(()=>suite("бой M361: потолок восьми и свои
   spawnAllies();
   ok((G.allies||[]).every(A=>A.iff===true),"каждый свой несёт iff");
 }));
+
+/* ══════════════ энергия, семь чисел, три щита (M362, §2 §4) ══════════════
+   Одна шкала кормит выстрел, поле и маневровые; пустая — не смерть, а
+   половина. Тип урона и повадка поля решают, ОТКУДА бить, а не сколько раз. */
+TEST_SUITES.push(()=>suite("бой M362: энергия — одна шкала на всё",()=>{
+  cbWorld();
+  const st=stat();
+  ok(st.energyMax>0,"ёмкость есть: "+st.energyMax);
+  ok(st.energyRegen>0,"и восполнение: "+st.energyRegen);
+  /* выстрел стоит энергии */
+  G.mods.weapon=1;G.energy=st.energyMax;
+  const foe=cbFoe(300,0,1,null,1e6);
+  G.marks=[foe];G.shots=[];fireCool=0;
+  const e0=G.energy;
+  updateCombat(1);
+  ok(G.shots.some(x=>x.owner==="player"),"пушка выстрелила");
+  ok(G.energy<e0,"и это стоило энергии: "+e0.toFixed(1)+" → "+G.energy.toFixed(1));
+  /* пустая шкала: откат вдвое, но огонь не пропадает */
+  cbWorld();G.mods.weapon=1;
+  const f2=cbFoe(300,0,1,null,1e6);G.marks=[f2];G.shots=[];fireCool=0;
+  G.energy=stat().energyMax;updateCombat(1);const coolFull=fireCool;
+  cbWorld();G.mods.weapon=1;
+  const f3=cbFoe(300,0,1,null,1e6);G.marks=[f3];G.shots=[];fireCool=0;
+  G.energy=0;updateCombat(1);const coolLow=fireCool;
+  ok(G.shots.some(x=>x.owner==="player"),"на пустой шкале пушка всё равно стреляет");
+  near(coolLow,coolFull*2,1e-6,"но откат вдвое длиннее ("+coolFull+" → "+coolLow+")");
+  /* восполняется само */
+  cbWorld();G.energy=0;
+  for(let i=0;i<20;i++){G.t+=1;updateCombat(1);}
+  ok(G.energy>0,"молчание восполняет шкалу: "+G.energy.toFixed(1));
+  G.mods.weapon=0;
+}));
+
+TEST_SUITES.push(()=>suite("бой M362: тип урона и три повадки щита",()=>{
+  /* матрица §2: кинетика по корпусу полностью, по щиту вполовину; энергия наоборот */
+  near(dmgMul("kin",false),1,1e-9,"кинетика по корпусу — полностью");
+  near(dmgMul("kin",true),.5,1e-9,"…по щиту — вполовину");
+  near(dmgMul("en",false),.5,1e-9,"энергия по корпусу — вполовину");
+  near(dmgMul("en",true),1,1e-9,"…по щиту — полностью");
+  eq(dmgMul("blast",false),dmgMul("blast",true),"фугас — поровну");
+  /* лобовое поле: вдвое в лоб, ничего в корму */
+  /* угол меряется между курсом выстрела и носом цели: ноль — вошёл с кормы */
+  near(shieldFace("front",Math.PI),2,1e-9,"лобовой держит лоб вдвое");
+  near(shieldFace("front",0),0,1e-9,"…и не держит корму вовсе");
+  near(shieldFace("solid",0),1,1e-9,"сплошной — ровно со всех сторон");
+  /* и это видно в бою: лобового бьют в корму вдвое быстрее, чем в лоб */
+  const kill=(type,fromBehind)=>{
+    cbWorld();
+    const p=cbFoe(400,0,1,null,200);
+    p.a=fromBehind?0:Math.PI;              /* нос по +x — выстрел летит ему в корму */
+    p.shieldMax=200;p.shield=200;p.shieldType=type;p.shieldHit=0;
+    let n=0;
+    while(p.hull>0&&n<4000){
+      G.shots=[{x:400,y:0,vx:9,vy:0,dmg:10,owner:"player",mine:true,type:"kin",life:100}];
+      combatShots(1);n++;
+    }
+    return n;
+  };
+  const rear=kill("front",true),face=kill("front",false);
+  const solidR=kill("solid",true),solidF=kill("solid",false);
+  ok(rear*2<=face,"лобового бьют в корму вдвое быстрее: "+rear+" против "+face);
+  ok(rear<=solidR,"в корму лобовое поле не помогает вовсе: "+rear+" против "+solidR);
+  ok(face>solidF,"а в лоб держит лучше сплошного: "+face+" против "+solidF);
+  /* у сплошного разница между сторонами — только от места попадания (×1.6/×.7) */
+  near(solidR/solidF,HIT_FRONT/HIT_REAR,.12,"сплошной: разница только от кормы и лба ("+solidR+"/"+solidF+")");
+  /* импульсный не растёт понемногу — он возвращается целиком */
+  cbWorld();
+  const q=cbFoe(600,0,1,null,1e6);
+  q.shieldMax=100;q.shield=10;q.shieldType="pulse";q.shieldHit=0;q.shieldPulse=0;
+  for(let i=0;i<200;i++){G.t+=1;updateCombat(1);}
+  eq(q.shield,10,"импульсный не восстанавливается понемногу");
+  q.shieldPulse=SHIELD_PULSE;
+  G.t+=1;updateCombat(1);
+  eq(q.shield,q.shieldMax,"…а возвращается целиком");
+}));
+
+TEST_SUITES.push(()=>suite("бой M362: у орудия семь чисел, и они на карточке",()=>{
+  cbWorld();
+  const g=stat().gun;
+  for(const k of ["dmg","type","cool","range","speed","cone","lead","spread"])
+    ok(g[k]!==undefined,"у ствола есть "+k);
+  ok(DMG_TYPES[g.type],"тип урона из таблицы: "+g.type);
+  ok(g.range>200&&g.range<2000,"дальность в разумных пределах: "+g.range);
+  ok(g.cone>0&&g.cone<1.2,"конус в разумных пределах: "+g.cone);
+  /* разные стволы — разные числа: это seed части, а не одна таблица */
+  const a=gunSpec(10,20,{seed:12345,tier:2},1),b=gunSpec(10,20,{seed:999,tier:2},1);
+  ok(a.range!==b.range||a.cone!==b.cone||a.speed!==b.speed,"два ствола различаются числами");
+  ok(gunSpec(10,20,{seed:12345,tier:4},1).spread<a.spread,"тир выше — разброс меньше");
+  /* ствол ведёт метку внутри конуса, а не мгновенно */
+  cbWorld();
+  const sh=G.ship;sh.a=0;G.aim=0;
+  const mk={x:sh.x+300,y:sh.y+300,vx:0,vy:0,hull:10};
+  const g2=gunSpec(10,20,{seed:7,tier:1},1);
+  const a1=gunAimTick(g2,sh,mk,1);
+  ok(Math.abs(angDiff(a1,0))<=g2.lead+1e-9,"за кадр ствол проходит не больше скорости наводки");
+  let ang=a1;for(let i=0;i<200;i++)ang=gunAimTick(g2,sh,mk,1);
+  ok(Math.abs(angDiff(ang,sh.a))<=g2.cone+1e-6,"и никогда не выходит за конус");
+  /* упреждение честное: по идущей цели ствол смотрит ВПЕРЁД неё */
+  const mov={x:sh.x+600,y:sh.y,vx:0,vy:3,hull:10};
+  const lead=gunLeadAngle(sh.x,sh.y,mov,9);
+  ok(lead>Math.atan2(0,600),"по идущей цели ствол берёт упреждение: "+lead.toFixed(3));
+  /* промах — это угол, и он растёт с дальностью */
+  /* и это видно в попаданиях, а не только в числе: кривая замерена в браузере
+     06.09.2026 — в упор наверняка, на пределе примерно треть */
+  const rate=(g,dist)=>{
+    let hit=0;const N=400;
+    const rr=rng(4242);
+    for(let k=0;k<N;k++){
+      const tgt={x:dist,y:0,vx:0,vy:0};
+      const ang=gunLeadAngle(0,0,tgt,g.speed)+gunMiss(g,dist,0,rr());
+      const vx=Math.cos(ang)*g.speed,vy=Math.sin(ang)*g.speed;
+      let x=0,y=0;
+      for(let f=0;f<Math.ceil(g.range/g.speed)+10;f++){
+        x+=vx;y+=vy;
+        if(Math.hypot(x-tgt.x,y-tgt.y)<20){hit++;break;}
+      }
+    }
+    return Math.round(hit/N*100);
+  };
+  const gb=stat().gun;
+  const near200=rate(gb,200),far=rate(gb,Math.min(gb.range-20,740));
+  ok(near200>=90,"в упор стартовый ствол не мажет: "+near200+"%");
+  ok(far>=20&&far<=60,"на пределе — примерно треть, есть повод подойти: "+far+"%");
+  ok(near200-far>=30,"кривая попаданий действительно падает с дальностью");
+  const near0=Math.abs(gunMiss(g2,10,0,1)),far0=Math.abs(gunMiss(g2,g2.range,0,1));
+  ok(far0>near0,"дальше — больше ошибка: "+near0.toFixed(4)+" → "+far0.toFixed(4));
+  eq(gunMiss(g2,100,0,.5),0,"по центру броска ошибки нет");
+}));

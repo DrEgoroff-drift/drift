@@ -6,10 +6,12 @@
 const $f=document.querySelector("#fbar i"),$h=document.querySelector("#hbar i"),$cg=document.querySelector("#cbar i");
 const $fb=document.getElementById("fbar"),$hb=document.getElementById("hbar");
 const $sh=document.querySelector("#sbar i"),$sg=document.getElementById("sgauge");
+const $en=document.querySelector("#ebar i"),$eg=document.getElementById("egauge");
 /* числа рядом со шкалами: «полоска чуть больше половины» не отвечает на
    вопрос «дотяну ли до станции», а «34/100» отвечает */
 const $fn=document.getElementById("fnum"),$hn=document.getElementById("hnum");
 const $sn=document.getElementById("snum"),$cn=document.getElementById("cnum");
+const $enn=document.getElementById("enum");
 /* ── высота приборной полосы ──
    Приборы вернулись к верхней кромке, и всё, что рисуется по канве наверху
    (подсказка поверхности, фишки целей), обязано знать, где полоса кончается,
@@ -121,6 +123,17 @@ function hud(){
   setTx($hn,Math.round(G.hull)+"/"+Math.round(st.hullMax));
   setTx($cn,held()+"/"+st.cargoMax);
   setSt($sg,"display",st.shieldMax>0?"":"none");
+  /* энергия (M362): шкала есть у всех — она кормит и маневровые, — но в
+     кабине корабля, а не на ногах и не за столом */
+  {
+    const on=st.energyMax>0&&(G.mode==="system"||G.mode==="belt"||G.mode==="dock");
+    setSt($eg,"display",on?"":"none");
+    if(on){
+      const e=clamp(G.energy||0,0,st.energyMax);
+      setSt($en,"width",(e/st.energyMax*100).toFixed(1)+"%");
+      setTx($enn,Math.round(e)+"/"+st.energyMax);
+    }
+  }
   if(st.shieldMax>0){
     setSt($sh,"width",clamp(G.shield/st.shieldMax*100,0,100).toFixed(1)+"%");
     setTx($sn,Math.round(G.shield)+"/"+Math.round(st.shieldMax));

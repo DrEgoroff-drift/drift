@@ -841,7 +841,7 @@ function applySave(s){
   const st=stat();
   G.fuel=clamp(+s.fuel||0,0,st.fuelMax);
   G.hull=clamp(+s.hull||st.hullMax,1,st.hullMax);
-  G.shield=st.shieldMax;G.loot=[];   // щит и лут в системе — эфемерные, не персистятся
+  G.shield=st.shieldMax;G.energy=st.energyMax;G.shieldHit=0;G.loot=[];   // щит, энергия и лут в системе — эфемерные, не персистятся
   /* курс из старых записей мог накопить десятки оборотов — чиним на входе,
      иначе испорченное сохранение чинит себя только после полного разворота */
   G.ship.x=+s.x||0;G.ship.y=+s.y||-760;G.ship.a=angWrap(+s.a||0);

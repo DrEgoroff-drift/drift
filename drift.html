@@ -169,6 +169,7 @@ html,body{height:100%;overflow:hidden;background:var(--void);
 .bar.hull i{background:var(--amber)}
 .bar.hold i{background:var(--rare)}
 .bar.shld i{background:#9fd8ff}
+.bar.enr i{background:#c58ae0}
 .bar.suit i{background:#cfe3ea}
 .bar.jet i{background:#ffd27a}
 .bar.low i{background:var(--alarm)}
@@ -1116,7 +1117,7 @@ body.helmstick #console{opacity:.3;transition:opacity .12s}
    и есть «нужно сейчас». */
 body.afoot #vFuel:not(.crit),
 body.afoot #vHull:not(.crit),
-body.afoot #sgauge,
+body.afoot #sgauge,body.afoot #egauge,
 body.afoot .ipod{display:none}
 
 /* ── альбом (M188) ──
@@ -1497,6 +1498,9 @@ body.table u.addr{color:#7a4a20}
     <div class="v" id="vFuel"><b>ТОПЛИВО</b><div class="bar" id="fbar"><i></i></div><u id="fnum">—</u></div>
     <div class="v" id="vHull"><b>КОРПУС</b><div class="bar hull" id="hbar"><i></i></div><u id="hnum">—</u></div>
     <div class="v" id="sgauge" style="display:none"><b>ЩИТ</b><div class="bar shld" id="sbar"><i></i></div><u id="snum">—</u></div>
+    <!-- энергия (M362): одна шкала на выстрелы, поле и маневровые; стоит под щитом,
+         потому что отвечает на «чем я ещё могу», а не на «жив ли я» -->
+    <div class="v" id="egauge" style="display:none"><b>ЭНЕРГИЯ</b><div class="bar enr" id="ebar"><i></i></div><u id="enum">—</u></div>
     <div class="v" id="vSuit" style="display:none"><b>СКАФАНДР</b><div class="bar suit" id="ubar"><i></i></div><u id="unum">—</u></div>
     <div class="v" id="vJet" style="display:none"><b>РАНЕЦ</b><div class="bar jet" id="jbar"><i></i></div><u id="jnum">—</u></div>
     <div class="v" id="vHold"><b>ТРЮМ</b><div class="bar hold" id="cbar"><i></i></div><u id="cnum">—</u></div>
@@ -1752,7 +1756,7 @@ body.table u.addr{color:#7a4a20}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.361.0";
+const VER="0.362.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -4959,8 +4963,15 @@ function slotAnchors(id){
   return out;
 }
 /* сумма бонусов установленных частей — кэшируется, stat() зовут каждый кадр */
-let PART_BONUS=null;
-function invalidateParts(){PART_BONUS=null;}
+let PART_BONUS=null,PART_KIND=null;
+function invalidateParts(){PART_BONUS=null;PART_KIND=null;}
+/* первая установленная часть своего рода: орудие, поле, реактор. Нужна
+   каждому кадру (семь чисел орудия, повадка щита, ёмкость энергии — M362),
+   поэтому лежит рядом с бонусами и гаснет тем же invalidateParts. */
+function fittedOfKind(kind){
+  if(!PART_KIND){PART_KIND={};for(const p of fittedParts())if(!PART_KIND[p.kind])PART_KIND[p.kind]=p;}
+  return PART_KIND[kind]||null;
+}
 function partById(id){
   for(const p of G.inv)if(p.id===id)return p;
   return null;
@@ -5694,6 +5705,147 @@ function instrFromShelf(k){
   sh.splice(k,1);
   instrInstall(it.id,it.u);
   return true;
+}
+
+/* ══════════════ орудие в семи числах, щит в трёх повадках (M362, §2 §4) ══════════════
+   До сих пор «пушка» была двумя числами — урон и откат, — и весь бой сводился
+   к тому, чтобы держать нос на цели. Семь чисел делают из неё вещь, у которой
+   есть характер: медленный снаряд промахивается по быстрому, узкий конус не
+   прощает разворота, медленная наводка не поспевает за тем, кто ходит бортом.
+   Всё семь пишутся на карточке — скрытых чисел у орудия нет (§2).
+
+   Щит — не тридцать чисел, а три повадки: сплошной, лобовой, импульсный (§4).
+   Тип берётся из seed самой части, а не из отдельной таблицы: значит, поле,
+   которое лежит у вас в трюме, УЖЕ имеет свой характер, и его не надо выдавать
+   заново. Так же и у пиратов — по рангу.
+
+   Чего здесь НЕТ и почему. §4 просит перенести бак и дальность прыжка с
+   реактора на бак и двигатель, а реактору отдать ёмкость и регенерацию. Это
+   правка genPart: аффиксы восстанавливаются из seed, и смена набора аффиксов
+   категории втихую переписала бы уже собранные части у всех. Такая правка
+   заводит `PART_GEN` 2 — она стоит в очереди на M364–M366 вместе с двадцатью
+   семействами. Пока ёмкость и регенерация энергии считаются от уровня реактора
+   (модуль `weapon`) и тира установленной части `core`. */
+
+/* ── тип урона (§2) ──
+   Кинетика: по корпусу полностью, по щиту вполовину. Энергия — наоборот.
+   Фугас — поровну. Матрица одна на всех: и по вам стреляют по ней же. */
+const DMG_TYPES={
+  kin:  {ru:"кинетический", hull:1,  shield:.5},
+  en:   {ru:"энергетический",hull:.5, shield:1},
+  blast:{ru:"фугасный",     hull:.8, shield:.8}
+};
+const DMG_KEYS=["kin","en","blast"];
+function dmgMul(type,onShield){
+  const T=DMG_TYPES[type]||DMG_TYPES.kin;
+  return onShield?T.shield:T.hull;
+}
+/* ── три повадки щита (§4) ── */
+const SHIELD_TYPES={
+  solid:{ru:"сплошной", note:"ровно со всех сторон"},
+  front:{ru:"лобовой",  note:"вдвое в лоб, ничего в корму"},
+  pulse:{ru:"импульсный",note:"не восстанавливается, возвращается целиком раз в 20 с"}
+};
+const SHIELD_KEYS=["solid","front","pulse"];
+const SHIELD_DELAY=90;       /* кадров тишины после попадания, прежде чем поле растёт */
+const SHIELD_PULSE=1200;     /* импульсный собирается целиком раз в двадцать секунд */
+/* Доля щита по месту попадания: лобовой держит вдвое в лоб и не держит в корму.
+   `ang` — угол между КУРСОМ ВЫСТРЕЛА и носом цели, та же мера, что у
+   hitLocMul: ноль значит «летит туда же, куда смотрит нос», то есть вошёл
+   С КОРМЫ; π значит «летит навстречу носу», то есть в лоб. */
+function shieldFace(type,ang){
+  if(type!=="front")return 1;
+  const a=Math.abs(ang);
+  return a<Math.PI/3?0:(a>Math.PI*2/3?2:1);
+}
+/* тип берётся из seed части: поле в трюме уже имеет характер */
+function shieldTypeOf(part){
+  if(!part)return "solid";
+  return SHIELD_KEYS[(part.seed>>>5)%3];
+}
+/* ── семь чисел орудия ──
+   Считаются от того, что уже есть: уровня орудийного модуля, установленной
+   части `gun` и её тира. Разные пушки различаются seed'ом части, а не новой
+   таблицей: двадцать семейств придут в M364–M366 и заменят эту развёртку. */
+const GUN_RANGE0=760, GUN_SPEED0=9, GUN_CONE0=.35, GUN_LEAD0=.2;
+/* stat() зовут десятки раз за кадр, а семь чисел меняются только со сменой
+   ствола или уровня. Без этой памятки прогон набора вырос вчетверо на одних
+   toFixed — считаем один раз на сборку. */
+let GUN_CACHE=null,GUN_KEY="";
+function gunSpec(dmg,cool,gunPart,lvl){
+  const key=dmg+"|"+cool+"|"+(gunPart?gunPart.seed+":"+gunPart.tier:"-")+"|"+lvl;
+  if(GUN_KEY===key&&GUN_CACHE)return GUN_CACHE;
+  GUN_KEY=key;return GUN_CACHE=gunSpecMake(dmg,cool,gunPart,lvl);
+}
+function gunSpecMake(dmg,cool,gunPart,lvl){
+  const s=gunPart?gunPart.seed:0;
+  const t=gunPart?(gunPart.tier|0):0;
+  /* без установленной части ствол — середина каждого разброса, а не его дно:
+     seed 0 давал бы самый узкий конус, самый медленный снаряд и худшую
+     точность разом, и стартовое орудие читалось бы как поломанное */
+  const r=k=>gunPart?((s>>>k)&255)/255:.5;
+  /* тип орудия: у ствола он свой и написан на карточке */
+  const type=gunPart?DMG_KEYS[(s>>>3)%3]:"kin";
+  /* тир двигает числа в разные стороны: тяжёлый ствол бьёт дальше и точнее,
+     но ведёт цель медленнее и смотрит уже */
+  return {
+    dmg,type,cool,
+    range:Math.round(GUN_RANGE0*(.85+r(0)*.35)+t*40),
+    speed:+(GUN_SPEED0*(.8+r(8)*.5)+t*.35).toFixed(2),
+    cone:+(GUN_CONE0*(.6+r(16)*1.1)).toFixed(3),
+    lead:+(GUN_LEAD0*(.55+r(24)*1.0)).toFixed(3),
+    /* разброс падает с тиром: отменный ствол кладёт снаряд туда, куда смотрит */
+    /* .05 в середине даёт замеренную кривую попаданий: 100 % на двухстах,
+       86 % на четырёхстах, 43 % на шестистах, 34 % на пределе. Точка,
+       где стоит подойти ближе, — примерно пятьсот. */
+    spread:+(.05*(.6+r(2)*1.2)/(1+t*.35)).toFixed(4),
+    lvl:lvl|0
+  };
+}
+/* промах — это угол, а не скрытый бросок (§2): снаряд виден, и видно, что он
+   ушёл мимо. Ошибка растёт с дальностью и с угловой скоростью цели. */
+function gunMiss(g,dist,angVel,r){
+  const far=clamp(dist/Math.max(1,g.range),0,1);
+  const spin=clamp(Math.abs(angVel||0)*26,0,1.4);
+  return (r-.5)*2*g.spread*(.45+far)*(1+spin);
+}
+/* честное упреждение по снаряду: куда смотреть, чтобы попасть в того, кто идёт.
+   Две итерации — этого хватает, и это дешевле решения квадратного уравнения. */
+function gunLeadAngle(sx,sy,tgt,speed){
+  let t=0;
+  for(let i=0;i<2;i++){
+    const px=tgt.x+(tgt.vx||0)*t,py=tgt.y+(tgt.vy||0)*t;
+    t=Math.hypot(px-sx,py-sy)/Math.max(.1,speed);
+  }
+  const px=tgt.x+(tgt.vx||0)*t,py=tgt.y+(tgt.vy||0)*t;
+  return Math.atan2(py-sy,px-sx);
+}
+/* ── энергия (§4) ──
+   Одна шкала на выстрелы, регенерацию щита и маневровые. Пустая — не смерть:
+   огонь вполовину, щит стоит, маневровые вялые. Ни сброса, ни перегрева. */
+const EN_SHOT=7;        /* выстрел */
+const EN_SHIELD=.9;     /* за единицу восстановленного щита */
+const EN_THR=.055;      /* маневровые, за кадр полной тяги */
+function energyCap(lvl,coreTier){return Math.round(48+lvl*26+coreTier*14);}
+function energyRegen(lvl,coreTier){return Math.round((.34+lvl*.16+coreTier*.07)*1000)/1000;}
+/* ── ствол ведёт метку сам (§2) ──
+   У ствола есть свой угол. Он живёт внутри конуса вокруг носа и подходит
+   к упреждению со своей скоростью наводки — не мгновенно. Автор о старом
+   поведении: «можно носом вертеть, и она не наводится». Состояние на
+   корабле одно: подвесов пока один, в M363 их станет несколько и каждый
+   получит свой угол в этом же виде. */
+function gunAimTick(g,sh,mk,dt){
+  if(G.aim===undefined||!isFinite(G.aim))G.aim=sh.a;
+  let want=sh.a;
+  if(mk&&mk.hull>0)want=gunLeadAngle(sh.x,sh.y,mk,g.speed);
+  /* внутрь конуса: за его край ствол не выходит ни при каком упреждении */
+  const off=clamp(angDiff(want,sh.a),-g.cone,g.cone);
+  const goal=angWrap(sh.a+off);
+  G.aim=angWrap(G.aim+clamp(angDiff(goal,G.aim),-g.lead*dt,g.lead*dt));
+  /* нос повернули рывком — ствол не телепортируется, но и не остаётся за спиной */
+  const back=angDiff(G.aim,sh.a);
+  if(Math.abs(back)>g.cone)G.aim=angWrap(sh.a+clamp(back,-g.cone,g.cone));
+  return G.aim;
 }
 
 /* ══════════════ галактика ══════════════ */
@@ -6929,7 +7081,7 @@ const G={
   /* mods — установленные уровни, modsOwned — купленные: модуль можно снять и вернуть без потери денег */
   mods:{engine:0,tank:0,hold:0,armor:0,drill:0,hyper:0,weapon:0},
   modsOwned:{engine:0,tank:0,hold:0,armor:0,drill:0,hyper:0,weapon:0},
-  inv:[],fit:{},shield:0,loot:[],partsBought:{},
+  inv:[],fit:{},shield:0,shieldHit:0,energy:0,loot:[],partsBought:{},
   tech:new Set(),techLvl:{},barter:new Set(),
   found:new Set(),species:new Set(),
   ap:null,          // автопилот
@@ -7015,6 +7167,15 @@ function stat(){
   const rs=t=>(typeof rareSum==="function"?rareSum(t):0);
   /* инструменты с полки «Сороки» (12v-wander-shop): малые прибавки, читаются тут же */
   const WT=(typeof wanderStat==="function")?wanderStat():{turn:1,fuel:0,jump:0,cool:1};
+  /* орудие, поле и реактор как ВЕЩИ, а не как два числа (M362, 05c-arms):
+     семь чисел ствола, повадка щита и ёмкость энергии считаются от того,
+     что стоит в гнёздах, — поэтому их части нужны здесь по отдельности */
+  const gunP=(typeof fittedOfKind==="function")?fittedOfKind("gun"):null;
+  const shldP=(typeof fittedOfKind==="function")?fittedOfKind("shield"):null;
+  const coreP=(typeof fittedOfKind==="function")?fittedOfKind("core"):null;
+  const coreT=coreP?(coreP.tier|0):0;
+  const dmgV=(5+m.weapon*4.5)*(T.has("gunai")?1.35:1)*mul("dmgMul")*(cr("pyre")?1.35:1)*(1+rs("dmg"));
+  const coolV=Math.max(6,Math.round((34-m.weapon*4)/mul("rateMul")/(cr("pyre")?2:1)/(1+rs("cool"))*WT.cool));
   return {
     S,
     /* налёт часов: облезлая машина слушается хуже — единственное, чем износ
@@ -7028,8 +7189,12 @@ function stat(){
     synthRatio:B.has("isosynth")?8:4,
     jump:Math.max(1,3+m.hyper*.5+(T.has("coil")?2:0)+(P.jumpAdd||0)+rs("jump")+WT.jump),
     armed:m.weapon>0||!!P.gun,
-    dmg:(5+m.weapon*4.5)*(T.has("gunai")?1.35:1)*mul("dmgMul")*(cr("pyre")?1.35:1)*(1+rs("dmg")),
-    cool:Math.max(6,Math.round((34-m.weapon*4)/mul("rateMul")/(cr("pyre")?2:1)/(1+rs("cool"))*WT.cool)),
+    dmg:dmgV,
+    cool:coolV,
+    /* семь чисел ствола (§2) и запас энергии (§4) — M362 */
+    gun:gunSpec(dmgV,coolV,gunP,m.weapon),
+    energyMax:energyCap(m.weapon,coreT),
+    energyRegen:energyRegen(m.weapon,coreT),
     /* пусковая (M112): она не усиливает бортовой огонь, а даёт отдельное оружие,
        и без ракет в трюме её числа ничего не значат */
     launcher:!!P.msl,
@@ -7038,6 +7203,7 @@ function stat(){
     mslCool:Math.max(24,Math.round(MSL_COOL/mul("mslLockMul"))),
     shieldMax:Math.max(0,Math.round((P.shieldAdd||0)+(cr("veil")?40:0)+rs("shield"))),
     shieldRegen:Math.max(0,P.regenAdd||0),
+    shieldType:shieldTypeOf(shldP),
     see:(((cr("echo")?2:1))*(T.has("cloak")?520:1040)+(P.scanAdd||0)+(bpState("longeye")>0?180:(bpState("longeye")<0?-120:0)))+rs("see"),
     digTier:T.has("deepcore")?2:((T.has("deepdrill")||m.drill>=2)?1:0),
     suitWear:1/(1+techLv("suit")*.55)*(typeof kitStat==="function"?kitStat().wear:1),   /* комплект (M152) */
@@ -31401,9 +31567,13 @@ function parActs(dt){
 const HIT_REAR=1.6,HIT_FRONT=.7;
 const ARMED_CAP=8;   /* вооружённых кораблей в системе, кроме своих (§5) */
 function ownerOf(mine){return mine===true?"player":(mine===false||mine==null?"pirate":mine);}
-function fireShot(x,y,ang,speed,dmg,mine){
+function fireShot(x,y,ang,speed,dmg,mine,type,range){
   const owner=ownerOf(mine);
-  G.shots.push({x,y,vx:Math.cos(ang)*speed,vy:Math.sin(ang)*speed,dmg,owner,mine:owner==="player",life:150});
+  /* тип урона и дальность — часть выстрела (M362): снаряд умирает за
+     дальностью своего ствола, а не по общему сроку в 150 кадров */
+  const life=range?Math.max(12,Math.round(range/Math.max(.5,speed))):150;
+  G.shots.push({x,y,vx:Math.cos(ang)*speed,vy:Math.sin(ang)*speed,dmg,owner,
+    type:type||"kin",mine:owner==="player",life});
   /* тембр своего выстрела берём из установленной пушки: у каждой части свой seed,
      значит разные орудия звучат по-разному сами собой, без отдельного контента */
   if(owner==="player"){
@@ -31421,7 +31591,22 @@ function hitLocMul(s,tgt){
 /* попадание по игроку: щит первым, затем корпус; звук говорит, что пробили */
 function playerHit(s){
   let d=s.dmg*hitLocMul(s,G.ship);
-  if(G.shield>0){const a=Math.min(G.shield,d);G.shield-=a;d-=a;sfx("ui",{f:1250,to:700,d:.12,v:.28});}
+  const st=stat();
+  G.shieldHit=SHIELD_DELAY;      /* поле растёт через паузу после попадания (M362) */
+  if(G.shield>0){
+    /* по щиту урон идёт СВОИМ типом, и лобовое поле держит лоб вдвое,
+       а корму не держит вовсе (§4). Что щит не удержал — уходит в корпус
+       уже по корпусному множителю того же типа. */
+    const face=shieldFace(st.shieldType,angDiff(Math.atan2(s.vy,s.vx),G.ship.a));
+    if(face>0){
+      const want=d*dmgMul(s.type,true)/face;
+      const a=Math.min(G.shield,want);
+      G.shield-=a;
+      d=Math.max(0,d-a*face/Math.max(1e-6,dmgMul(s.type,true)));
+      sfx("ui",{f:1250,to:700,d:.12,v:.28});
+    }
+  }
+  d*=dmgMul(s.type,false);
   if(d>0){
     sfx("hit",{v:.55});
     G.hull=Math.max(0,G.hull-d);
@@ -31455,7 +31640,21 @@ function combatShots(dt){
       for(const p of G.pirates){
         if((p.owner||"pirate")===s.owner||p.hull<=0)continue;
         if(Math.hypot(s.x-p.x,s.y-p.y)<20){
-          p.hull-=s.dmg*hitLocMul(s,p);gone=true;
+          gone=true;
+          let d=s.dmg*hitLocMul(s,p);
+          /* у пирата от ранга бывает своё поле, и его повадка та же (M362):
+             лобового бьют в корму, импульсного — быстрее, чем он собирается */
+          p.shieldHit=SHIELD_DELAY;
+          if(p.shield>0){
+            const face=shieldFace(p.shieldType,angDiff(Math.atan2(s.vy,s.vx),p.a));
+            if(face>0){
+              const want=d*dmgMul(s.type,true)/face;
+              const a=Math.min(p.shield,want);
+              p.shield-=a;
+              d=Math.max(0,d-a*face/Math.max(1e-6,dmgMul(s.type,true)));
+            }
+          }
+          p.hull-=d*dmgMul(s.type,false);
           sfx("hit",{v:.3});
           if(p.hull<=0){if(s.owner==="player")killPirate(p);else pirateFellTo(p,s.owner);}
           break;
@@ -31501,11 +31700,14 @@ const PIRATE_COLS=["#ff6b57","#d95a3c","#c4694f","#e08a5a","#b85a6a","#cf7a45"];
    на сколоченном корпусе, капитан патруля и барон, который держит систему.
    Награда и живучесть растут вместе с рангом, поэтому занятая система — это
    и риск, и заработок. */
+/* shield — доля корпуса, которую ранг несёт полем (M362, §4). У шакала его
+   нет вовсе: он и так живёт одну стычку. Повадка поля берётся из seed
+   пирата, как у части в трюме, — и по ней читается, откуда его бить. */
 const PIRATE_RANKS=[
-  {ru:"",         pre:"",        hull:1,   bounty:1,   col:null},
-  {ru:"ветеран",  pre:"Старый",  hull:1.6, bounty:1.7, col:"#e0885a"},
-  {ru:"капитан",  pre:"Капитан", hull:2.4, bounty:2.8, col:"#f2b25c"},
-  {ru:"барон",    pre:"Барон",   hull:4.2, bounty:6,   col:"#ff9d7a"}
+  {ru:"",         pre:"",        hull:1,   bounty:1,   col:null,    shield:0},
+  {ru:"ветеран",  pre:"Старый",  hull:1.6, bounty:1.7, col:"#e0885a",shield:.35},
+  {ru:"капитан",  pre:"Капитан", hull:2.4, bounty:2.8, col:"#f2b25c",shield:.5},
+  {ru:"барон",    pre:"Барон",   hull:4.2, bounty:6,   col:"#ff9d7a",shield:.7}
 ];
 /* у каждого пирата свой генерируемый корпус — через NPC_SHIPS, мимо персистентных G.uniqueShips */
 function pirateShipId(seed){
@@ -31518,7 +31720,7 @@ function pirateShipId(seed){
 }
 function spawnPirates(){
   G.pirates=[];G.shots=[];G.loot=[];
-  G.shield=stat().shieldMax;
+  G.shield=stat().shieldMax;G.energy=stat().energyMax;G.shieldHit=0;
   const danger=sysDanger(G.sx,G.sy);
   const r=rng(hashi(G.sx,G.sy,Math.floor(Date.now()/900000)));
   /* под пиратами система держит патруль сверх обычного случайного налёта */
@@ -31545,7 +31747,8 @@ function spawnPirates(){
     G.pirates.push({x:Math.cos(a)*rad,y:Math.sin(a)*rad,vx:0,vy:0,a:a+Math.PI,
       hull:hp,hullMax:hp,name:(R.pre?R.pre+" ":"")+pick(PIRATE_NAMES,r),
       rank,seed,shipId:pirateShipId(seed),
-      cool:0,aware:false,thrust:false});
+      cool:0,aware:false,thrust:false,
+      shield:hp*R.shield,shieldMax:hp*R.shield,shieldType:shieldTypeOf({seed}),shieldHit:0});
   }
   /* ушедший управляющий сидит в своём секторе и ждёт: он такая же запись в
      G.pirates, поэтому весь бой уже написан — добавлять к нему нечего */
@@ -31564,11 +31767,29 @@ let fireCool=0;
 function updateCombat(dt){
   const sh=G.ship,st=stat();
   const seeRange=st.see;
-  /* щит восстанавливается только когда по вам никто не целится */
+  /* ── энергия и щит (M362, §4) ──
+     Одна шкала кормит выстрелы, регенерацию поля и маневровые. Пустая —
+     не смерть: огонь вполовину, поле стоит, маневровые вялые; полная —
+     за пару секунд молчания. Ни сброса, ни перегрева.
+     Щит растёт не «когда никто не целится», а через паузу после
+     ПОПАДАНИЯ: прежнее правило means один заметивший вас шакал на другом
+     конце системы держал поле выключенным весь бой. */
+  if(G.energy===undefined)G.energy=st.energyMax;
+  G.energy=Math.min(st.energyMax,G.energy+st.energyRegen*dt);
+  const lowE=G.energy<EN_SHOT;
+  G.shieldHit=Math.max(0,(G.shieldHit||0)-dt);
   if(st.shieldMax>0){
-    const calm=!G.pirates.some(p=>p.aware);
-    if(calm&&G.shield<st.shieldMax)
-      G.shield=Math.min(st.shieldMax,G.shield+st.shieldRegen*dt*.06);
+    if(G.shield>st.shieldMax)G.shield=st.shieldMax;
+    if(st.shieldType==="pulse"){
+      /* импульсный не растёт вовсе — он возвращается целиком раз в двадцать секунд */
+      G.shieldPulse=(G.shieldPulse||0)+dt;
+      if(G.shieldPulse>=SHIELD_PULSE){G.shieldPulse=0;
+        if(G.shield<st.shieldMax){G.shield=st.shieldMax;sfx("ui",{f:420,to:1200,d:.22,v:.3});}}
+    }else if(G.shieldHit<=0&&!lowE&&G.shield<st.shieldMax){
+      const grow=Math.min(st.shieldMax-G.shield,st.shieldRegen*dt*.06);
+      const paid=Math.min(grow,G.energy/EN_SHIELD);
+      G.shield+=paid;G.energy=Math.max(0,G.energy-paid*EN_SHIELD);
+    }
   }else G.shield=0;
   /* контейнеры с трофеями: подбираются пролётом сквозь */
   for(let i=G.loot.length-1;i>=0;i--){
@@ -31592,14 +31813,25 @@ function updateCombat(dt){
   const mk=(G.marks&&G.marks[0])||null;
   let auto=false;
   if(mk&&mk.hull>0&&!mk.iff){
-    const d=Math.hypot(mk.x-sh.x,mk.y-sh.y);
-    auto=d<HELM_RANGE&&Math.abs(angDiff(Math.atan2(mk.y-sh.y,mk.x-sh.x),sh.a))<HELM_CONE;
+    /* конус и дальность теперь у ствола свои (M362 заменил временные
+       HELM_CONE/HELM_RANGE — они остались мерой захвата, не огня) */
+    const gg=st.gun,d=Math.hypot(mk.x-sh.x,mk.y-sh.y);
+    auto=d<gg.range&&Math.abs(angDiff(Math.atan2(mk.y-sh.y,mk.x-sh.x),sh.a))<gg.cone;
   }
   if((auto||ctl.fire)&&st.armed&&fireCool<=0){
-    fireShot(sh.x,sh.y,sh.a,9,st.dmg,true);
+    /* ствол ведёт метку внутри своего конуса со своей скоростью наводки
+       (M362): носом её больше не «донаводишь» мгновенно. Промах — это
+       угол, добавленный к выстрелу, а не скрытый бросок. */
+    const g=st.gun;
+    const ang=gunAimTick(g,sh,mk,dt);
+    const tgtD=mk?Math.hypot(mk.x-sh.x,mk.y-sh.y):0;
+    const err=gunMiss(g,tgtD,mk?(mk.av||0):0,Math.random());
+    fireShot(sh.x,sh.y,ang+err,g.speed,g.dmg,true,g.type,g.range);
     if(!G.engaged&&typeof placeNote==="function")placeNote("hurt",1);   // место помнит выстрел (11d)
     G.engaged=true;
-    fireCool=st.cool;
+    /* пустая шкала — не «нельзя стрелять», а вдвое реже (§4) */
+    G.energy=Math.max(0,G.energy-EN_SHOT);
+    fireCool=st.cool*(lowE?2:1);
   }
   if(G.engaged&&!G.pirates.some(p=>p.aware))G.engaged=false;
   for(let i=G.pirates.length-1;i>=0;i--){
@@ -31609,6 +31841,15 @@ function updateCombat(dt){
     else if(d>seeRange*2.4)p.aware=false;
     if(typeof fleetEscortActive==="function"&&fleetEscortActive())p.aware=false;   /* конвой ГЛАВТРАССЫ (M311) */
     p.thrust=false;
+    /* поле пирата живёт по тем же трём повадкам, что и ваше (M362) */
+    if(p.shieldMax>0){
+      p.shieldHit=Math.max(0,(p.shieldHit||0)-dt);
+      if(p.shieldType==="pulse"){
+        p.shieldPulse=(p.shieldPulse||0)+dt;
+        if(p.shieldPulse>=SHIELD_PULSE){p.shieldPulse=0;p.shield=p.shieldMax;}
+      }else if(p.shieldHit<=0&&p.shield<p.shieldMax)
+        p.shield=Math.min(p.shieldMax,p.shield+p.shieldMax*.0016*dt);
+    }
     const pa0=p.a;
     if(p.aware){
       const want=Math.atan2(dy,dx);
@@ -31730,6 +31971,12 @@ function drawCombat(zx,zy,Z){
       const by=y-Math.max(26,(typeof helmMarkTop==="function"?helmMarkTop(p,Z):0)+18);
       ctx.fillStyle="rgba(255,255,255,.14)";ctx.fillRect(x-w/2,by,w,p.rogue?4:3);
       ctx.fillStyle=p.rogue?"#c58ae0":"#ff6b57";ctx.fillRect(x-w/2,by,w*hp,p.rogue?4:3);
+      /* поле — своей ниткой над полосой корпуса: видно, что бить пока
+         бесполезно, и видно, как оно садится (M362) */
+      if(p.shieldMax>0&&p.shield>0){
+        ctx.fillStyle="rgba(159,216,255,.85)";
+        ctx.fillRect(x-w/2,by-3,w*clamp(p.shield/p.shieldMax,0,1),2);
+      }
       ctx.fillStyle=p.rogue?"rgba(197,138,224,.95)":"rgba(255,107,87,.75)";
       ctx.font=(p.rogue?"9px":"8px")+" ui-monospace,monospace";ctx.textAlign="center";
       ctx.fillText(p.name.toUpperCase(),x,y+26);
@@ -33010,7 +33257,7 @@ function applySave(s){
   const st=stat();
   G.fuel=clamp(+s.fuel||0,0,st.fuelMax);
   G.hull=clamp(+s.hull||st.hullMax,1,st.hullMax);
-  G.shield=st.shieldMax;G.loot=[];   // щит и лут в системе — эфемерные, не персистятся
+  G.shield=st.shieldMax;G.energy=st.energyMax;G.shieldHit=0;G.loot=[];   // щит, энергия и лут в системе — эфемерные, не персистятся
   /* курс из старых записей мог накопить десятки оборотов — чиним на входе,
      иначе испорченное сохранение чинит себя только после полного разворота */
   G.ship.x=+s.x||0;G.ship.y=+s.y||-760;G.ship.a=angWrap(+s.a||0);
@@ -34008,6 +34255,10 @@ function helmApply(dt,st,sh,maxSp){
   const along=c.tx*ca+c.ty*sa,side=-c.tx*sa+c.ty*ca;
   o.main=false;o.thr=false;
   const mag=Math.hypot(c.tx,c.ty);
+  /* маневровые пьют из той же шкалы, что выстрел и щит (M362, §4).
+     Пустая — не «нельзя», а вполовину: корабль остаётся управляемым. */
+  const eLow=(typeof EN_SHOT==="number")&&(G.energy||0)<EN_SHOT;
+  const eK=eLow?.5:1;
   if(mag>0&&G.fuel>0){
     let fwd=0,tx=0,ty=0;
     if(c.thrOnly||along<0){tx=c.tx*HELM_THR;ty=c.ty*HELM_THR;o.thr=true;}
@@ -34016,9 +34267,12 @@ function helmApply(dt,st,sh,maxSp){
       tx=-sa*side*HELM_THR;ty=ca*side*HELM_THR;
       if(Math.abs(side)>.05)o.thr=true;
     }
-    sh.vx+=(ca*fwd+tx)*.082*st.thr*dt;
-    sh.vy+=(sa*fwd+ty)*.082*st.thr*dt;
-    G.fuel=Math.max(0,G.fuel-(.021*fwd+.017*Math.hypot(tx,ty)/HELM_THR)*dt);
+    const side2=Math.hypot(tx,ty)/HELM_THR;
+    sh.vx+=(ca*fwd+tx*eK)*.082*st.thr*dt;
+    sh.vy+=(sa*fwd+ty*eK)*.082*st.thr*dt;
+    G.fuel=Math.max(0,G.fuel-(.021*fwd+.017*side2)*dt);
+    if(typeof EN_THR==="number"&&side2>0)
+      G.energy=Math.max(0,(G.energy||0)-EN_THR*side2*dt);
   }
   /* отпустил ниже крейсерской — маневровые гасят ход, как ТОРМОЗ; выше — накат */
   const sp0=Math.hypot(sh.vx,sh.vy);
@@ -63846,8 +64100,23 @@ function stTabMods(){
       "<br>бак "+s2.fuelMax+" · трюм "+s2.cargoMax+" · корпус "+s2.hullMax+
       (s2.shieldMax?" · щит "+s2.shieldMax:"")+
       "<br>бур ×"+s2.drill.toFixed(2)+" · прыжок "+s2.jump.toFixed(1)+" пк"+
-      (s2.armed?"<br>урон "+s2.dmg.toFixed(1)+" · откат "+s2.cool:"")+"</s>"));
+      "<br>энергия "+s2.energyMax+" · восполнение "+s2.energyRegen.toFixed(2)+"/кадр"+
+      (s2.shieldMax?" · поле "+SHIELD_TYPES[s2.shieldType].ru:"")+"</s>"));
     $body.appendChild(r);
+    /* семь чисел ствола — все на карточке: скрытых чисел у орудия нет (§2,
+       M362). Прежняя строка «урон · откат» в общем списке ушла сюда — два
+       места для одного и того же числа расходятся при первой же правке. */
+    if(s2.armed){
+      const g=s2.gun;
+      $body.appendChild(el("div","sec","ОРУДИЕ · СЕМЬ ЧИСЕЛ"));
+      const rg=el("div","row");
+      rg.appendChild(el("div","nm","<s>урон "+g.dmg.toFixed(1)+" · "+DMG_TYPES[g.type].ru+
+        "<br>откат "+g.cool+" кадров · дальность "+g.range+
+        "<br>скорость снаряда "+g.speed.toFixed(1)+" · конус "+Math.round(g.cone*180/Math.PI)+"°"+
+        "<br>наводка "+g.lead.toFixed(2)+" рад/кадр · разброс "+(g.spread*100).toFixed(1)+"%"+
+        "</s>"));
+      $body.appendChild(rg);
+    }
   }
   /* ── приборы (M127) ──
      Прилавок, гнёзда и полка. Прибор — вещь: у него завод, возраст и характер,
@@ -72158,10 +72427,12 @@ function closeDeal(){$dl.classList.remove("open");}
 const $f=document.querySelector("#fbar i"),$h=document.querySelector("#hbar i"),$cg=document.querySelector("#cbar i");
 const $fb=document.getElementById("fbar"),$hb=document.getElementById("hbar");
 const $sh=document.querySelector("#sbar i"),$sg=document.getElementById("sgauge");
+const $en=document.querySelector("#ebar i"),$eg=document.getElementById("egauge");
 /* числа рядом со шкалами: «полоска чуть больше половины» не отвечает на
    вопрос «дотяну ли до станции», а «34/100» отвечает */
 const $fn=document.getElementById("fnum"),$hn=document.getElementById("hnum");
 const $sn=document.getElementById("snum"),$cn=document.getElementById("cnum");
+const $enn=document.getElementById("enum");
 /* ── высота приборной полосы ──
    Приборы вернулись к верхней кромке, и всё, что рисуется по канве наверху
    (подсказка поверхности, фишки целей), обязано знать, где полоса кончается,
@@ -72273,6 +72544,17 @@ function hud(){
   setTx($hn,Math.round(G.hull)+"/"+Math.round(st.hullMax));
   setTx($cn,held()+"/"+st.cargoMax);
   setSt($sg,"display",st.shieldMax>0?"":"none");
+  /* энергия (M362): шкала есть у всех — она кормит и маневровые, — но в
+     кабине корабля, а не на ногах и не за столом */
+  {
+    const on=st.energyMax>0&&(G.mode==="system"||G.mode==="belt"||G.mode==="dock");
+    setSt($eg,"display",on?"":"none");
+    if(on){
+      const e=clamp(G.energy||0,0,st.energyMax);
+      setSt($en,"width",(e/st.energyMax*100).toFixed(1)+"%");
+      setTx($enn,Math.round(e)+"/"+st.energyMax);
+    }
+  }
   if(st.shieldMax>0){
     setSt($sh,"width",clamp(G.shield/st.shieldMax*100,0,100).toFixed(1)+"%");
     setTx($sn,Math.round(G.shield)+"/"+Math.round(st.shieldMax));

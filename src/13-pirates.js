@@ -7,11 +7,14 @@ const PIRATE_COLS=["#ff6b57","#d95a3c","#c4694f","#e08a5a","#b85a6a","#cf7a45"];
    на сколоченном корпусе, капитан патруля и барон, который держит систему.
    Награда и живучесть растут вместе с рангом, поэтому занятая система — это
    и риск, и заработок. */
+/* shield — доля корпуса, которую ранг несёт полем (M362, §4). У шакала его
+   нет вовсе: он и так живёт одну стычку. Повадка поля берётся из seed
+   пирата, как у части в трюме, — и по ней читается, откуда его бить. */
 const PIRATE_RANKS=[
-  {ru:"",         pre:"",        hull:1,   bounty:1,   col:null},
-  {ru:"ветеран",  pre:"Старый",  hull:1.6, bounty:1.7, col:"#e0885a"},
-  {ru:"капитан",  pre:"Капитан", hull:2.4, bounty:2.8, col:"#f2b25c"},
-  {ru:"барон",    pre:"Барон",   hull:4.2, bounty:6,   col:"#ff9d7a"}
+  {ru:"",         pre:"",        hull:1,   bounty:1,   col:null,    shield:0},
+  {ru:"ветеран",  pre:"Старый",  hull:1.6, bounty:1.7, col:"#e0885a",shield:.35},
+  {ru:"капитан",  pre:"Капитан", hull:2.4, bounty:2.8, col:"#f2b25c",shield:.5},
+  {ru:"барон",    pre:"Барон",   hull:4.2, bounty:6,   col:"#ff9d7a",shield:.7}
 ];
 /* у каждого пирата свой генерируемый корпус — через NPC_SHIPS, мимо персистентных G.uniqueShips */
 function pirateShipId(seed){
@@ -24,7 +27,7 @@ function pirateShipId(seed){
 }
 function spawnPirates(){
   G.pirates=[];G.shots=[];G.loot=[];
-  G.shield=stat().shieldMax;
+  G.shield=stat().shieldMax;G.energy=stat().energyMax;G.shieldHit=0;
   const danger=sysDanger(G.sx,G.sy);
   const r=rng(hashi(G.sx,G.sy,Math.floor(Date.now()/900000)));
   /* под пиратами система держит патруль сверх обычного случайного налёта */
@@ -51,7 +54,8 @@ function spawnPirates(){
     G.pirates.push({x:Math.cos(a)*rad,y:Math.sin(a)*rad,vx:0,vy:0,a:a+Math.PI,
       hull:hp,hullMax:hp,name:(R.pre?R.pre+" ":"")+pick(PIRATE_NAMES,r),
       rank,seed,shipId:pirateShipId(seed),
-      cool:0,aware:false,thrust:false});
+      cool:0,aware:false,thrust:false,
+      shield:hp*R.shield,shieldMax:hp*R.shield,shieldType:shieldTypeOf({seed}),shieldHit:0});
   }
   /* ушедший управляющий сидит в своём секторе и ждёт: он такая же запись в
      G.pirates, поэтому весь бой уже написан — добавлять к нему нечего */
@@ -70,11 +74,29 @@ let fireCool=0;
 function updateCombat(dt){
   const sh=G.ship,st=stat();
   const seeRange=st.see;
-  /* щит восстанавливается только когда по вам никто не целится */
+  /* ── энергия и щит (M362, §4) ──
+     Одна шкала кормит выстрелы, регенерацию поля и маневровые. Пустая —
+     не смерть: огонь вполовину, поле стоит, маневровые вялые; полная —
+     за пару секунд молчания. Ни сброса, ни перегрева.
+     Щит растёт не «когда никто не целится», а через паузу после
+     ПОПАДАНИЯ: прежнее правило means один заметивший вас шакал на другом
+     конце системы держал поле выключенным весь бой. */
+  if(G.energy===undefined)G.energy=st.energyMax;
+  G.energy=Math.min(st.energyMax,G.energy+st.energyRegen*dt);
+  const lowE=G.energy<EN_SHOT;
+  G.shieldHit=Math.max(0,(G.shieldHit||0)-dt);
   if(st.shieldMax>0){
-    const calm=!G.pirates.some(p=>p.aware);
-    if(calm&&G.shield<st.shieldMax)
-      G.shield=Math.min(st.shieldMax,G.shield+st.shieldRegen*dt*.06);
+    if(G.shield>st.shieldMax)G.shield=st.shieldMax;
+    if(st.shieldType==="pulse"){
+      /* импульсный не растёт вовсе — он возвращается целиком раз в двадцать секунд */
+      G.shieldPulse=(G.shieldPulse||0)+dt;
+      if(G.shieldPulse>=SHIELD_PULSE){G.shieldPulse=0;
+        if(G.shield<st.shieldMax){G.shield=st.shieldMax;sfx("ui",{f:420,to:1200,d:.22,v:.3});}}
+    }else if(G.shieldHit<=0&&!lowE&&G.shield<st.shieldMax){
+      const grow=Math.min(st.shieldMax-G.shield,st.shieldRegen*dt*.06);
+      const paid=Math.min(grow,G.energy/EN_SHIELD);
+      G.shield+=paid;G.energy=Math.max(0,G.energy-paid*EN_SHIELD);
+    }
   }else G.shield=0;
   /* контейнеры с трофеями: подбираются пролётом сквозь */
   for(let i=G.loot.length-1;i>=0;i--){
@@ -98,14 +120,25 @@ function updateCombat(dt){
   const mk=(G.marks&&G.marks[0])||null;
   let auto=false;
   if(mk&&mk.hull>0&&!mk.iff){
-    const d=Math.hypot(mk.x-sh.x,mk.y-sh.y);
-    auto=d<HELM_RANGE&&Math.abs(angDiff(Math.atan2(mk.y-sh.y,mk.x-sh.x),sh.a))<HELM_CONE;
+    /* конус и дальность теперь у ствола свои (M362 заменил временные
+       HELM_CONE/HELM_RANGE — они остались мерой захвата, не огня) */
+    const gg=st.gun,d=Math.hypot(mk.x-sh.x,mk.y-sh.y);
+    auto=d<gg.range&&Math.abs(angDiff(Math.atan2(mk.y-sh.y,mk.x-sh.x),sh.a))<gg.cone;
   }
   if((auto||ctl.fire)&&st.armed&&fireCool<=0){
-    fireShot(sh.x,sh.y,sh.a,9,st.dmg,true);
+    /* ствол ведёт метку внутри своего конуса со своей скоростью наводки
+       (M362): носом её больше не «донаводишь» мгновенно. Промах — это
+       угол, добавленный к выстрелу, а не скрытый бросок. */
+    const g=st.gun;
+    const ang=gunAimTick(g,sh,mk,dt);
+    const tgtD=mk?Math.hypot(mk.x-sh.x,mk.y-sh.y):0;
+    const err=gunMiss(g,tgtD,mk?(mk.av||0):0,Math.random());
+    fireShot(sh.x,sh.y,ang+err,g.speed,g.dmg,true,g.type,g.range);
     if(!G.engaged&&typeof placeNote==="function")placeNote("hurt",1);   // место помнит выстрел (11d)
     G.engaged=true;
-    fireCool=st.cool;
+    /* пустая шкала — не «нельзя стрелять», а вдвое реже (§4) */
+    G.energy=Math.max(0,G.energy-EN_SHOT);
+    fireCool=st.cool*(lowE?2:1);
   }
   if(G.engaged&&!G.pirates.some(p=>p.aware))G.engaged=false;
   for(let i=G.pirates.length-1;i>=0;i--){
@@ -115,6 +148,15 @@ function updateCombat(dt){
     else if(d>seeRange*2.4)p.aware=false;
     if(typeof fleetEscortActive==="function"&&fleetEscortActive())p.aware=false;   /* конвой ГЛАВТРАССЫ (M311) */
     p.thrust=false;
+    /* поле пирата живёт по тем же трём повадкам, что и ваше (M362) */
+    if(p.shieldMax>0){
+      p.shieldHit=Math.max(0,(p.shieldHit||0)-dt);
+      if(p.shieldType==="pulse"){
+        p.shieldPulse=(p.shieldPulse||0)+dt;
+        if(p.shieldPulse>=SHIELD_PULSE){p.shieldPulse=0;p.shield=p.shieldMax;}
+      }else if(p.shieldHit<=0&&p.shield<p.shieldMax)
+        p.shield=Math.min(p.shieldMax,p.shield+p.shieldMax*.0016*dt);
+    }
     const pa0=p.a;
     if(p.aware){
       const want=Math.atan2(dy,dx);
@@ -236,6 +278,12 @@ function drawCombat(zx,zy,Z){
       const by=y-Math.max(26,(typeof helmMarkTop==="function"?helmMarkTop(p,Z):0)+18);
       ctx.fillStyle="rgba(255,255,255,.14)";ctx.fillRect(x-w/2,by,w,p.rogue?4:3);
       ctx.fillStyle=p.rogue?"#c58ae0":"#ff6b57";ctx.fillRect(x-w/2,by,w*hp,p.rogue?4:3);
+      /* поле — своей ниткой над полосой корпуса: видно, что бить пока
+         бесполезно, и видно, как оно садится (M362) */
+      if(p.shieldMax>0&&p.shield>0){
+        ctx.fillStyle="rgba(159,216,255,.85)";
+        ctx.fillRect(x-w/2,by-3,w*clamp(p.shield/p.shieldMax,0,1),2);
+      }
       ctx.fillStyle=p.rogue?"rgba(197,138,224,.95)":"rgba(255,107,87,.75)";
       ctx.font=(p.rogue?"9px":"8px")+" ui-monospace,monospace";ctx.textAlign="center";
       ctx.fillText(p.name.toUpperCase(),x,y+26);

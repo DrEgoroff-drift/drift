@@ -101,8 +101,23 @@ function stTabMods(){
       "<br>бак "+s2.fuelMax+" · трюм "+s2.cargoMax+" · корпус "+s2.hullMax+
       (s2.shieldMax?" · щит "+s2.shieldMax:"")+
       "<br>бур ×"+s2.drill.toFixed(2)+" · прыжок "+s2.jump.toFixed(1)+" пк"+
-      (s2.armed?"<br>урон "+s2.dmg.toFixed(1)+" · откат "+s2.cool:"")+"</s>"));
+      "<br>энергия "+s2.energyMax+" · восполнение "+s2.energyRegen.toFixed(2)+"/кадр"+
+      (s2.shieldMax?" · поле "+SHIELD_TYPES[s2.shieldType].ru:"")+"</s>"));
     $body.appendChild(r);
+    /* семь чисел ствола — все на карточке: скрытых чисел у орудия нет (§2,
+       M362). Прежняя строка «урон · откат» в общем списке ушла сюда — два
+       места для одного и того же числа расходятся при первой же правке. */
+    if(s2.armed){
+      const g=s2.gun;
+      $body.appendChild(el("div","sec","ОРУДИЕ · СЕМЬ ЧИСЕЛ"));
+      const rg=el("div","row");
+      rg.appendChild(el("div","nm","<s>урон "+g.dmg.toFixed(1)+" · "+DMG_TYPES[g.type].ru+
+        "<br>откат "+g.cool+" кадров · дальность "+g.range+
+        "<br>скорость снаряда "+g.speed.toFixed(1)+" · конус "+Math.round(g.cone*180/Math.PI)+"°"+
+        "<br>наводка "+g.lead.toFixed(2)+" рад/кадр · разброс "+(g.spread*100).toFixed(1)+"%"+
+        "</s>"));
+      $body.appendChild(rg);
+    }
   }
   /* ── приборы (M127) ──
      Прилавок, гнёзда и полка. Прибор — вещь: у него завод, возраст и характер,
