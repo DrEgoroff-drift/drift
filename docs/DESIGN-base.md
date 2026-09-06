@@ -1599,8 +1599,13 @@ two per unit, alloy into the hull through the мастерская, both out of 
 `RES` — a base making them would print credits, which §23's own first line forbids. The list is now
 built from `price:0` goods and the suite asserts the price of every row. **Deferred:** the
 blockade's own gate — the counter works whenever you are at your base, and the blockade is what
-makes it matter rather than what unlocks it. · M404 ремесленный проход по всей
-сцене (`DESIGN-craft`, `look()`, its own almanac issue).
+makes it matter rather than what unlocks it. · ~~M404 ремесленный проход по всей
+сцене~~ — 0.404.0 (2026-09-07): the four gauges as bars in screen space (three attempts: the shaft
+edge cut them, the prompt buried them), the nine adjacency rules drawn as pipes and hazard stripes,
+halls without inner walls as §7 wrote it, frost and heat haze for the two-sided scale, and Almanac
+**issue V** holding it against the codex. The `91zzzzy-look` ledger for «база» is unchanged and
+green — accents and interface, not new mass. **Deferred:** day-for-night in the cut (§15's lever
+this scene has never pulled) and the ruin's own look. **Stage C is closed** (M400–M404).
 
 **D · человек** — M405 сотня и распределение (§34, §35, §48) · M406 охота (§24.4, §35.1) ·
 M407 он строит и развивает (§24.6, §37).

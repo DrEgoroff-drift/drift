@@ -523,6 +523,66 @@ opposite about the same ship. Open: the poster on the node wall (M372's content)
 appendages' joints, and the fleet, which today is all one maker and so cannot be judged on a
 sheet until foreign wings exist (M371).
 
+## Issue V — 2026-09-07 (0.404.0) — the base, after fourteen passes of mechanics
+
+Opened by M404. Between M390 and M403 the base gained eleven systems — shifts and a journal, four
+stores, a two-sided heat scale, a formulary of eight dials per planet, adjacency and halls, a
+director with a forecast, an аврал, a charter, ruins and a unique output — and **not one of them was
+drawn**. Every one of them lived in text: the prompt line at the bottom of the scene and the row at
+the desk. A layer whose whole point is a cross-section you can look at was being read instead of
+seen.
+
+Three things were added, and each was added because the sheets showed a specific absence.
+
+**The gauges belong in the room.** Four bars — воздух, вода, харч, дух — in the scene itself. Their
+place took three attempts and both failures are the same failure: I put them in **world** space.
+Against the shaft they were sliced by the left edge of the frame the moment the camera followed the
+captain into the lift; under the grid the prompt text landed on top of them. They are interface,
+not an object in the rock, so they now sit in screen space at the left edge under the ship's own
+instruments — the rule the canvas-as-UI has followed since M221, applied to a panel that had
+forgotten it.
+
+**The nine adjacency rules are drawn.** A short pipe between two cells that give each other
+something, in the colour of what passes along it (a warm wire for transmission, green for the
+greenhouse beside housing, cold blue for melt feeding the electrolyser); a dashed diagonal between
+two that harm each other — the reactor beside housing, the battery beside housing. A plan of a base
+stops being a list of modules and becomes a diagram, which is what §7 promised when it called the
+adjacency a puzzle.
+
+**A hall is one room, not three.** M396 made three identical modules in a row into a зал with a
+third off their power and one disaster taking all three, but the drawing still put a bulkhead
+between them. Now the inner walls are dropped, exactly as §7 wrote it: «the same brushes with the
+inner walls dropped». The outer wall of the hall stays thick, so the row still reads as a череда
+помещений — one of them simply three cells wide.
+
+And the two-sided scale is finally two-sided **in the frame**: below the calm band the whole cut
+takes a blue cast and frost picks out the upper edge of every compartment; above it a warm haze
+rises from the floor of the grid. A player who walks in now knows which of the two it is before
+reading a word.
+
+Held against the codex:
+
+- **§1 layer order** ✓ — everything new is added light or a flat mark over the finished room: the
+  haze is `lighter`, the frost is a thin high edge, the pipes are drawn after the rooms and before
+  the selection frame. Nothing is painted after the scene's own light.
+- **§3 keep the empty** — the reason there are four bars and not six. Энергия and тепло already have
+  their line in the prompt, and a sixth bar would have made the corner a dashboard. The panel is
+  116 px wide and holds four rows; the rest of the frame is the base.
+- **§11 even light and pattern density** ✓ — the pipes are the same weight everywhere (3 px, one
+  dot at the middle) and the hazard stripe is the same 2 px dash wherever it appears; no cell gets
+  a denser treatment than its neighbour for being important.
+- **§14 the chart is an instrument** — the panel is read as an instrument, not a HUD: bars over a
+  dark ground, three-letter labels, no numbers on them at all. The digits live in the prompt line
+  and only if the player has bought them (M401's law 3).
+- **§16 the zone system** ✓ by the net rather than by eye: the frame ledger for «база»
+  (`91zzzzy-look`, tones 5 · mass 7 · contrast 0.34 · empty 74) is **unchanged** by this pass and
+  still green. That is the honest reading of what was added — accents and interface, not new mass.
+
+What the sheets did not force but is worth writing down: the base scene has no night. The rooms are
+lit by their own light and the sky above the grid is the planet's, so the frost and the haze are the
+only weather the cut has. §15's day-for-night is a lever this scene has never pulled, and the next
+craft pass over it should ask whether it should.
+
 ## ~~Reserved — issue III (continued)~~ — struck 2026-09-03
 
 All thirteen are drawn (M310–M313) and judged in the addenda above; the section stays only

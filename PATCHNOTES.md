@@ -7,6 +7,35 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.404.0 - M404: the craft pass over the base, and Almanac issue V
+
+Fourteen passes of mechanics went into the base and not one of them was drawn: shifts, stores,
+heat, the formulary, adjacency, halls, the director, the аврал, the charter, ruins and the unique
+output all lived in the prompt line and the desk row. A layer whose whole point is a cross-section
+was being read instead of looked at.
+
+**Four gauges in the room** — воздух, вода, харч, дух — as bars, in screen space at the left edge.
+Their position took three attempts, and both failures were the same one: put in world space they
+were sliced by the frame edge when the camera followed the captain into the shaft, and buried under
+the prompt when moved below the grid. They are interface, not an object in the rock.
+
+**The nine adjacency rules are drawn**: a short pipe between two cells that give each other
+something, in the colour of what passes along it, and a dashed diagonal between two that harm each
+other. The plan of a base stops being a list of modules and becomes a diagram.
+
+**A hall is one room.** M396 merged three identical modules into a зал and the drawing kept putting
+a bulkhead between them; the inner walls are gone now, exactly as §7 wrote it, and the outer wall
+stays thick so the row still reads as a череда помещений.
+
+**And the heat scale is two-sided in the frame**: a blue cast and frost along every upper edge below
+the calm band, a warm haze rising from the floor above it. You know which it is before reading a
+word.
+
+Almanac issue V holds all of it against the craft codex, and the frame ledger for «база» is
+unchanged and still green — which is the honest reading of what was added: accents and interface,
+not new mass.
+
+---
 ## 0.403.0 - M403: what a solved base pays, and the blockade it carries you through
 
 The rule the whole layer is charging for: **a good base does not print credits — it makes what

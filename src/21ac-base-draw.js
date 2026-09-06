@@ -734,6 +734,14 @@ function drawBase(){
   for(let r=0;r<baseRows(B);r++)for(let c=0;c<=BASE_COLS;c++){
     const a=c>0?baseCell(B,c-1,r):null, b=c<BASE_COLS?baseCell(B,c,r):null;
     if(!a&&!b)continue;
+    /* ── зал (M396, §7) ──
+       Три одинаковых подряд — одно помещение, а не три: внутренние стены между
+       ними снимаются, и общий контур виден глазами. Ровно это и обещал §7:
+       «зал — те же кисти с убранными внутренними стенами». */
+    if(typeof baseHallAt==="function"&&a&&b&&c>0&&c<BASE_COLS){
+      const HA=baseHallAt(B,c-1,r),HB=baseHallAt(B,c,r);
+      if(HA&&HB&&HA.c0===HB.c0&&HA.r===HB.r)continue;
+    }
     const x=X(BASE_OX+c*BCELL_W), y0=Y(BASE_OY+r*BCELL_H), y1=Y(BASE_OY+(r+1)*BCELL_H);
     if(x<-20||x>W+20)continue;
     const wdt=(a&&b)?5:7;                       // внешняя стена толще внутренней
@@ -889,6 +897,103 @@ function drawBase(){
     ctx.setLineDash([]);
     ctx.fillStyle="rgba(127,230,216,.5)";ctx.font="9px ui-monospace,monospace";ctx.textAlign="center";
     ctx.fillText("МЕСТО ПОД ЗАСТРОЙКУ",sx+BCELL_W/2,sy+BCELL_H/2+3);
+  }
+  /* ── патрубки соседства (M404, §7) ──
+     Девять правил были числами в подсказке; здесь они становятся тем, что
+     видно: между двумя клетками, которые друг другу что-то дают, идёт короткий
+     патрубок, а между теми, кто друг другу мешает, — косая полоса. План базы
+     перестаёт быть списком модулей и делается схемой. */
+  if(typeof baseAdjPairs==="function"){
+    const COL={wire:[242,178,92],green:[140,220,150],care:[150,220,255],
+      feed:[130,200,255],vent:[190,210,230],store:[210,190,140],fix:[200,200,210],
+      noise:[255,120,90],gun:[255,120,90]};
+    for(const P2 of baseAdjPairs(B)){
+      const bad=(P2.k==="noise"||P2.k==="gun");
+      const x1=X(cellX(P2.ac)),y1=Y(cellY(P2.ar)),x2=X(cellX(P2.bc)),y2=Y(cellY(P2.br));
+      if(Math.min(x1,x2)<-BCELL_W||Math.max(x1,x2)>W+BCELL_W)continue;
+      const mx=(x1+x2)/2,my=(y1+y2)/2;
+      const c3=COL[P2.k]||[200,200,200];
+      ctx.save();
+      ctx.globalAlpha=.55+lit*.3;
+      if(bad){
+        /* опасное соседство — косая штриховка, а не труба: это не связь */
+        ctx.strokeStyle="rgba("+c3.join(",")+",.75)";ctx.lineWidth=2;
+        ctx.setLineDash([4,4]);
+        ctx.beginPath();ctx.moveTo(mx-9,my-9);ctx.lineTo(mx+9,my+9);ctx.stroke();
+        ctx.setLineDash([]);
+      }else{
+        ctx.strokeStyle="rgba("+c3.join(",")+",.7)";ctx.lineWidth=3;
+        ctx.beginPath();ctx.moveTo(x1+(x2-x1)*.28,y1+(y2-y1)*.28);
+        ctx.lineTo(x1+(x2-x1)*.72,y1+(y2-y1)*.72);ctx.stroke();
+        ctx.fillStyle="rgba("+c3.join(",")+",.85)";
+        ctx.beginPath();ctx.arc(mx,my,2.4,0,TAU);ctx.fill();
+      }
+      ctx.restore();
+    }
+  }
+  /* ── мороз и марево (M404, §4) ──
+     Двусторонняя шкала должна быть видна кадром, а не строкой: в мороз по
+     кадру идёт синь и иней по кромкам, в жару — тёплая дымка. */
+  if(typeof baseHeatBand==="function"){
+    const bnd=baseHeatBand(B);
+    if(bnd){
+      const a2=Math.min(.3,Math.abs(bnd)*.09);
+      ctx.save();
+      if(bnd<0){
+        ctx.fillStyle="rgba(150,205,255,"+a2.toFixed(3)+")";
+        ctx.fillRect(0,0,W,H);
+        /* иней по верхним кромкам отсеков */
+        ctx.fillStyle="rgba(220,240,255,"+(a2*1.6).toFixed(3)+")";
+        for(let r=0;r<baseRows(B);r++)for(let c=0;c<BASE_COLS;c++){
+          const cell=baseCell(B,c,r);
+          if(!cell||cell.hp<=0)continue;
+          const x=X(BASE_OX+c*BCELL_W),y=Y(BASE_OY+r*BCELL_H);
+          if(x<-BCELL_W||x>W+BCELL_W)continue;
+          ctx.fillRect(x+6,y+6,BCELL_W-12,2);
+        }
+      }else{
+        ctx.globalCompositeOperation="lighter";
+        const g2=ctx.createLinearGradient(0,Y(BASE_OY+baseRows(B)*BCELL_H),0,Y(BASE_OY));
+        g2.addColorStop(0,"rgba(255,150,90,"+(a2*.9).toFixed(3)+")");
+        g2.addColorStop(1,"rgba(255,150,90,0)");
+        ctx.fillStyle=g2;ctx.fillRect(0,0,W,H);
+      }
+      ctx.restore();
+    }
+  }
+  /* ── пять шкал одним прибором (M404, §4) ──
+     До сих пор запас базы жил только в тексте — на столе и в подсказке. В
+     разрезе он теперь стоит там, где ему место: маленькая приборная доска у
+     ствола, пять полос, и ни одной цифры сверх той, что игрок себе купил. */
+  if(typeof baseLife==="function"&&typeof baseSharp==="function"){
+    /* ── где ей стоять ──
+       В мире доску резало кромкой кадра: у ствола её съедала левая граница,
+       под сеткой на неё ложился текст подсказки. Это ИНТЕРФЕЙС сцены, а не
+       предмет в породе, и место у него экранное — левый край, под приборами
+       корабля и над кнопками. Правило кадра то же, что у всей канвы-как-UI:
+       рисуем в экранных координатах и ничем не перекрываем (26-ui). */
+    const L=baseLife(B),bx=14,by=64;
+    if(1){
+      const rows=[["ВЗД",L.air,LIFE_CAP,[150,220,255]],
+                  ["ВОД",L.water,LIFE_CAP,[120,190,255]],
+                  ["ХРЧ",L.food|0,LIFE_CAP,[190,220,140]],
+                  ["ДУХ",(typeof baseSpirit==="function")?baseSpirit(B):100,100,[242,178,92]]];
+      ctx.save();
+      ctx.fillStyle="rgba(10,13,18,.82)";
+      ctx.fillRect(bx-6,by-6,116,rows.length*11+12);
+      ctx.strokeStyle="rgba(150,178,198,"+(.18+lit*.18).toFixed(2)+")";
+      ctx.strokeRect(bx-5.5,by-5.5,115,rows.length*11+11);
+      ctx.font="8px ui-monospace,monospace";ctx.textAlign="left";
+      rows.forEach((q,i)=>{
+        const y=by+i*11;
+        ctx.fillStyle="rgba(190,210,224,.75)";
+        ctx.fillText(q[0],bx,y+7);
+        const w=70,k=clamp(q[1]/q[2],0,1);
+        ctx.fillStyle="rgba(255,255,255,.10)";ctx.fillRect(bx+26,y+2,w,5);
+        ctx.fillStyle="rgba("+q[3].join(",")+",.85)";ctx.fillRect(bx+26,y+2,w*k,5);
+      });
+      ctx.restore();
+    }
   }
   /* аврал (M398): отсек, в котором беда, видно раньше всякого текста */
   if(typeof avrDraw==="function")avrDraw(S,X,Y,lit);
