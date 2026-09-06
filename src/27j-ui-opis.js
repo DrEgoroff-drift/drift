@@ -482,7 +482,9 @@ function opisPartHtml(p){
   const sz=(p.kind==="gun"&&typeof partSize==="function")?" · "+MOUNT_SIZE_RU[partSize(p)]:"";
   /* семейство, завод и серия — у стволов второго поколения (M364) */
   const fam=(p.fam&&GUN_FAMILY[p.fam])?GUN_FAMILY[p.fam].ru.toLowerCase()+" · ":"";
-  const made=p.fam?"<br>"+GUN_FACTORY[p.fact].ru+" · серия "+p.ser:"";
+  /* у именного вместо завода — история: она и есть его карточка (M366) */
+  const N=(p.named&&typeof GUN_NAMED_BY_ID!=="undefined")?GUN_NAMED_BY_ID[p.named]:null;
+  const made=N?"<br>именное · "+N.note:(p.fam?"<br>"+GUN_FACTORY[p.fact].ru+" · серия "+p.ser:"");
   const seal=(typeof partSealed==="function"&&partSealed(p))?
     "<span class='dn'>опечатано · "+sealedWhy(p)+"</span> · ":"";
   return "<b>"+p.name+"</b><s>"+fam+(fam?"":K.ru.toLowerCase()+" · ")+TIER_RU[p.tier]+sz+made+

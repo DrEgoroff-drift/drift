@@ -112,7 +112,22 @@ function combatShots(dt){
     const s=G.shots[i];
     if(s.hom&&typeof homingStep==="function")homingStep(s,dt);   /* наводящаяся пуля (M364) */
     s.x+=s.vx*dt;s.y+=s.vy*dt;s.life-=dt;
-    let gone=s.life<=0;
+    /* кассета раскрывается на полпути (M366): один снаряд становится пятью,
+       и в точку он уже не попадёт, а в свору попадёт всегда */
+    if(s.split>0){
+      s.split-=Math.hypot(s.vx,s.vy)*dt;
+      if(s.split<=0){
+        const sp=Math.hypot(s.vx,s.vy)||1,a0=Math.atan2(s.vy,s.vx);
+        const n=s.parts||5,wide=(s.gspread||.06)*6;
+        for(let k=0;k<n;k++){
+          const a=a0+(k/(n-1)-.5)*wide;
+          G.shots.push({x:s.x,y:s.y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,
+            dmg:s.dmg,owner:s.owner,type:s.type,mine:s.mine,life:Math.max(12,s.life)});
+        }
+        G.shots.splice(i,1);
+        continue;
+      }
+    }    let gone=s.life<=0;
     if(!gone&&s.owner!=="player"&&s.owner!=="fleet"&&Math.hypot(s.x-sh.x,s.y-sh.y)<18){
       gone=true;
       if(playerHit(s))return true;
@@ -123,6 +138,18 @@ function combatShots(dt){
         if(Math.hypot(s.x-p.x,s.y-p.y)<20){
           gone=true;
           hitShip(p,s);
+          /* плазма бьёт по площади и сбивает наводку тому, кто рядом (M366) */
+          if(s.splash>0){
+            for(const q of G.pirates){
+              if(q===p||q.hull<=0||q.iff||q.dummy)continue;
+              const d=Math.hypot(q.x-s.x,q.y-s.y);
+              if(d>s.splash)continue;
+              const k=clamp(1-d/s.splash,.2,1);
+              const a=Math.atan2(q.y-s.y,q.x-s.x);
+              hitShip(q,{vx:Math.cos(a),vy:Math.sin(a),type:s.type,owner:s.owner,mine:s.mine},s.dmg*k*.6);
+            }
+            p.leadBreak=LEADBREAK;
+          }
           break;
         }
       }

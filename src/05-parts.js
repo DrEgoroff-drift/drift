@@ -50,7 +50,19 @@ const AFFIX=[
    наводка, расход и жар. В пул ПЕРВОГО поколения они не входят: список
    аффиксов там заморожен навсегда, иначе у всех игроков молча поменялись бы
    уже собранные части. */
-const AFFIX2=AFFIX.concat([
+/* Долг M362 отдан здесь (§4): бак уезжает на утилиту, дальность прыжка — на
+   двигатель, а реактору достаётся то, чем он и должен быть, — ёмкость и
+   восполнение энергии. Записи КЛОНИРУЮТСЯ: `AFFIX2` строится из тех же
+   объектов, и правка `kinds` на месте переписала бы первое поколение тоже.
+   Второе поколение — единственное место, где такой переезд возможен. */
+const AFFIX_MOVED=AFFIX.map(a=>{
+  if(a.k==="fuelAdd")return Object.assign({},a,{kinds:["util"]});
+  if(a.k==="jumpAdd")return Object.assign({},a,{kinds:["engine"]});
+  return a;
+});
+const AFFIX2=AFFIX_MOVED.concat([
+  {k:"enCapAdd",  ru:"ёмкость энергии",   step:9,  kinds:["core"],flat:1},
+  {k:"enRegenAdd",ru:"восполнение энергии",step:.06,kinds:["core"],fix:2},
   {k:"rangeMul",ru:"дальность",       step:.09, kinds:["gun"]},
   {k:"coneMul", ru:"конус",           step:.10, kinds:["gun"]},
   {k:"leadMul", ru:"скорость наводки",step:.10, kinds:["gun"]},
@@ -94,7 +106,7 @@ function tierFromDanger(d,r){
    пересобираться тем же генератором, каким была выдана, иначе первая же
    правка таблиц молча переписывает игрокам их сборки. До M364 unpackPart
    звал genPart без него — обещание было, замка не было. */
-function genPart(seed,tier,kind,gen){
+function genPart(seed,tier,kind,gen,named){
   const r=rng((seed>>>0)||1);
   tier=clamp(tier|0||1,1,5);
   kind=kind||pick(PART_KEYS,r);
@@ -133,6 +145,16 @@ function genPart(seed,tier,kind,gen){
     cap:Math.ceil(tier/2)};
   /* у ствола второго поколения есть семейство, завод и серия (05b-guns):
      имя становится «АП-23 «Оса»», а повадка — тем, что решает 13a-guns */
+  /* именной (M366): не «то же, только больше», а семейство с чужой повадкой.
+     Выдаётся не розыгрышем, а поводом — барон или налёт (`named` в вызове). */
+  if(g>=2&&kind==="gun"&&named&&typeof GUN_NAMED_BY_ID!=="undefined"&&GUN_NAMED_BY_ID[named]){
+    const N=GUN_NAMED_BY_ID[named];
+    out.fam=N.fam;out.named=N.id;
+    out.fact=GUN_FACTORY.length-1;
+    out.ser=gunSeriesOf(seed>>>0);
+    out.name=N.ru;
+    return out;
+  }
   if(g>=2&&kind==="gun"&&typeof gunFamilyKeyOf==="function"){
     const sd=seed>>>0;
     out.fam=gunFamilyKeyOf(sd);
@@ -397,10 +419,13 @@ function scrapPart(id){
   if(matches&&typeof matchesAdd==="function")matchesAdd(matches);
   return {part:p,got,matches};
 }
-function packPart(p){return {s:p.seed,t:p.tier,k:p.kind,g:p.gen,i:p.id};}
+/* именной не выводится из зерна — его выдаёт повод (барон, налёт), значит
+   он обязан лежать в сейве, иначе после загрузки «Маяк» станет обычной
+   рельсой (M366). Поле короткое и появляется только у именных. */
+function packPart(p){const o={s:p.seed,t:p.tier,k:p.kind,g:p.gen,i:p.id};if(p.named)o.n=p.named;return o;}
 function unpackPart(o){
   if(!o||!PART_KINDS[o.k])return null;
-  const p=genPart(o.s>>>0,o.t|0,o.k,o.g|0);
+  const p=genPart(o.s>>>0,o.t|0,o.k,o.g|0,typeof o.n==="string"?o.n:null);
   p.id=typeof o.i==="string"?o.i:("p"+(partSeq++));
   return p;
 }

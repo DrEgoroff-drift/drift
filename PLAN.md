@@ -677,19 +677,16 @@ Three stages, each playable on /dev before the next starts:
   out in `PATCHNOTES.md`. **The layer's baseline, measured, and everything after M361 is
   compared with it:** `prof(80)`, phone 375×812 @2, system mode — JS 2.6–3.0 ms idle and
   with eight armed ships alike. **For M362's successors:** eight aware ships kill a
-  standing unshielded ship in about fifty frames. **M364–M366 owe two debts from earlier
-  passes:** `PART_GEN` 2 (move the tank and jump range off the reactor, give it
-  capacity/regen affixes — §4) and a gun's class by family instead of by tier (§11.4).
-  · ~~M364 first seven families~~ (0.364.0, 2026-09-06: `05b-guns` семейства/заводы/серии,
-  `13a-guns` повадки — снаряд, рельса, дробь, луч, наводящаяся; жар, горение и молчание
-  перегретого; тип «термический»; `PART_GEN` 2 с настоящим замком на первое поколение)
-  · ~~M365 игольник, сифон, импульсник, буровой, толкатель, миномёт, помеховая~~ (0.365.0,
-  2026-09-06: иглы сквозь поле, перелив поля, поле в ноль на две секунды, бур наружу за железо,
-  волна без урона, мина на минуту без метки, круг слепоты в шестистах) · M366 гарпун,
-  кассетник, дуговик, плазмомёт, зенитка, таран, именные, заводы и серии по §19.2
+  standing unshielded ship in about fifty frames. **M363 still owes one debt from an earlier
+  passes:** a gun's class by family instead of by tier (§11.4) — M363 reads it from the
+  tier as a stand-in, and the twenty families now exist to replace that.
+  · ~~M364–M366 двадцать семейств орудий~~ (0.364.0…0.366.0, 2026-09-06: `05b-guns` семейства,
+  заводы, серии и двадцать именных; `13a-guns` восемнадцать повадок — снаряд, рельса, дробь,
+  луч, наводящаяся, иглы, сифон, импульс, бур, волна, мина, помеха, разряд, сгусток, зенитка,
+  кассета, трос, таран; жар, горение и молчание перегретого; `PART_GEN` 2 с настоящим замком
+  на первое поколение; долг M362 отдан — бак на утилиту, прыжок на двигатель, реактору
+  ёмкость и восполнение)
   · M367 missiles · M368 pirate loadouts.
-  **Долг M362 всё ещё открыт:** перенести бак и прыжок с реактора на бак и двигатель
-  (§4) — теперь это дёшево, второе поколение уже есть.
 - **B — the powers, by seed** (client only; the galaxy lives with no server): M369 the maker
   grammar layer on `hullOf`, measured by `makerRead()`, «Ялта» · M369a the grammar in the fleet,
   barges, pirate hulls, stations, domes, papers · M369b the having of things · M370 chronicle core (integer replay, hash, clock, geometry) · M371 the Director ·

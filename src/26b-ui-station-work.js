@@ -116,7 +116,8 @@ function stTabMods(){
       if(F){
         const rf=el("div","row");
         rf.appendChild(el("div","nm","<b>"+fp.name+"</b><s>"+F.ru.toLowerCase()+
-          " · "+GUN_FACTORY[fp.fact].ru+" · серия "+fp.ser+"</s><i>"+F.line+"</i>"));
+          " · "+(fp.named&&GUN_NAMED_BY_ID[fp.named]?"именное":GUN_FACTORY[fp.fact].ru+" · серия "+fp.ser)+
+          "</s><i>"+(fp.named&&GUN_NAMED_BY_ID[fp.named]?GUN_NAMED_BY_ID[fp.named].note:F.line)+"</i>"));
         $body.appendChild(rf);
       }
       const rg=el("div","row");

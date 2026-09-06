@@ -87,6 +87,11 @@ function updateCombat(dt){
   if(typeof beamsTick==="function")beamsTick(dt);
   /* мины миномёта живут своей минутой и рвутся сами (M365) */
   if(typeof minesTick==="function")minesTick(dt);
+  /* трос тянет, таран считает столкновения, зенитка снимает то, что летит (M366) */
+  if(typeof tetherTick==="function")tetherTick(dt);
+  if(typeof ramTick==="function")ramTick(dt);
+  if(typeof flakCatch==="function")flakCatch(dt);
+  G.ramOn=!!(st.guns&&st.guns.some(a=>a.g&&a.g.fx==="ram"));
   G.energy=Math.min(st.energyMax,G.energy+st.energyRegen*dt);
   const lowE=G.energy<EN_SHOT;
   G.shieldHit=Math.max(0,(G.shieldHit||0)-dt);
@@ -173,6 +178,9 @@ function updateCombat(dt){
        не растёт вовсе, чем бы оно ни было (M365) */
     if(p.shieldOff>0){p.shieldOff=Math.max(0,p.shieldOff-dt);p.shield=0;}
     if(p.jamT>0){p.jamT=Math.max(0,p.jamT-dt);}
+    if(p.leadBreak>0)p.leadBreak=Math.max(0,p.leadBreak-dt);
+    /* привязанный тросом теряет половину хода: гарпун держит, а не убивает */
+    if(p.tether){p.vx*=Math.pow(.985,dt);p.vy*=Math.pow(.985,dt);p.tether=0;}
     if(p.shieldMax>0&&!(p.shieldOff>0)){
       p.shieldHit=Math.max(0,(p.shieldHit||0)-dt);
       if(p.shieldType==="pulse"){
@@ -236,7 +244,15 @@ function killPirate(p){
   const d=sysDanger(G.sx,G.sy);
   /* обломок с частью — не в трюм сразу, а контейнером: у боя своя петля «убил → собрал» */
   let dropped=null;
-  if(r()<.3+d*.45){
+  /* именной падает только с барона и только иногда (M366, §2.2): оружие,
+     оставленное кем-то, — цель для новичка, а не короткая дорога */
+  if((p.rank|0)>=3&&r()<.5&&typeof gunNamedRoll==="function"){
+    const N=gunNamedRoll(hashi(p.seed,0x4E41,7));
+    dropped=genPart(hashi(p.seed,0x4E41,Math.floor(Date.now()/1000)),5,"gun",2,N.id);
+    const a=r()*TAU,sp=.35+r()*.5;
+    G.loot.push({x:p.x,y:p.y,vx:p.vx*.4+Math.cos(a)*sp,vy:p.vy*.4+Math.sin(a)*sp,
+      spin:r()*TAU,life:5400,part:dropped});
+  }else if(r()<.3+d*.45){
     dropped=genPart(hashi(p.seed,3131,Math.floor(Date.now()/1000)),tierFromDanger(d,r));
     const a=r()*TAU,sp=.35+r()*.5;
     G.loot.push({x:p.x,y:p.y,vx:p.vx*.4+Math.cos(a)*sp,vy:p.vy*.4+Math.sin(a)*sp,

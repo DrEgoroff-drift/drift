@@ -70,7 +70,7 @@ const GUN_RANGE0=760, GUN_SPEED0=9, GUN_CONE0=.35, GUN_LEAD0=.2;
    toFixed — считаем один раз на сборку. */
 let GUN_CACHE=null,GUN_KEY="";
 function gunSpec(dmg,cool,gunPart,lvl){
-  const key=dmg+"|"+cool+"|"+(gunPart?gunPart.seed+":"+gunPart.tier+":"+(gunPart.fam||"-"):"-")+"|"+lvl;
+  const key=dmg+"|"+cool+"|"+(gunPart?gunPart.seed+":"+gunPart.tier+":"+(gunPart.fam||"-")+":"+(gunPart.named||"-"):"-")+"|"+lvl;
   if(GUN_KEY===key&&GUN_CACHE)return GUN_CACHE;
   GUN_KEY=key;return GUN_CACHE=gunSpecMake(dmg,cool,gunPart,lvl);
 }
@@ -123,6 +123,14 @@ function gunFamilyApply(g,p){
     en:+(F.en*mul("enMul")).toFixed(3),
     fx:F.fx,fam:p.fam,lvl:g.lvl
   };
+  /* именной: та же семья, но повадка чужая и числа сильнее (M366) */
+  if(p.named&&typeof GUN_NAMED_BY_ID!=="undefined"&&GUN_NAMED_BY_ID[p.named]){
+    const N=GUN_NAMED_BY_ID[p.named];
+    out.fx=N.fx;
+    out.dmg*=N.dmg;
+    out.cool=Math.max(3,Math.round(out.cool*N.cool));
+    out.named=N.id;
+  }
   if(F.pellets)out.pellets=F.pellets;
   if(F.burn)out.burn=+(F.burn*mul("burnMul")).toFixed(3);
   if(F.heat)out.heat=+(F.heat*mul("burnMul")).toFixed(3);
@@ -153,8 +161,10 @@ function gunLeadAngle(sx,sy,tgt,speed){
 const EN_SHOT=7;        /* выстрел */
 const EN_SHIELD=.9;     /* за единицу восстановленного щита */
 const EN_THR=.055;      /* маневровые, за кадр полной тяги */
-function energyCap(lvl,coreTier){return Math.round(48+lvl*26+coreTier*14);}
-function energyRegen(lvl,coreTier){return Math.round((.34+lvl*.16+coreTier*.07)*1000)/1000;}
+/* Ёмкость и восполнение — от уровня реактора, тира его части и её аффиксов
+   (M366 отдал долг M362: `enCapAdd`/`enRegenAdd` живут на `core`). */
+function energyCap(lvl,coreTier,add){return Math.round(48+lvl*26+coreTier*14+(add||0));}
+function energyRegen(lvl,coreTier,add){return Math.round((.34+lvl*.16+coreTier*.07+(add||0))*1000)/1000;}
 /* ── ствол ведёт метку сам (§2) ──
    У ствола есть свой угол. Он живёт внутри конуса вокруг носа и подходит
    к упреждению со своей скоростью наводки — не мгновенно. Автор о старом

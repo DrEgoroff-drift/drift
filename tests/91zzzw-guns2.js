@@ -33,7 +33,8 @@ TEST_SUITES.push(()=>suite("орудия M364: у каждого семейст�
      он и есть та самая проверка «перк без кода — ложь», а вывести его из
      самого кода значило бы сравнить таблицу с ней же. */
   const known={bullet:1,rail:1,pellets:1,beam:1,homing:1,
-    needles:1,siphon:1,pulse:1,drillbeam:1,shove:1,mortar:1,jam:1};
+    needles:1,siphon:1,pulse:1,drillbeam:1,shove:1,mortar:1,jam:1,
+    arc:1,plasma:1,flak:1,cluster:1,tether:1,ram:1};
   const noFire=[];
   for(const k of GUN_FAM_KEYS){
     const F=GUN_FAMILY[k];
@@ -49,12 +50,18 @@ TEST_SUITES.push(()=>suite("орудия M364: у каждого семейст�
     /* «выстрелил» — это любой видимый след: снаряд, луч, мина или ослепление.
        Помеховая не стреляет вовсе, и это её повадка, а не её отсутствие. */
     G.cargo.iron=5;
-    const mark=()=>G.shots.length+(G.beams||[]).length+((G.gmines||[]).length)+
+    const mark=()=>G.shots.length+(G.beams||[]).length+((G.gmines||[]).length)+(G.tether?1:0)+
       ((G.pirates||[]).filter(x=>x.jamT>0).length)+((G.pirates||[]).filter(x=>x.shieldOff>0).length)+
       Math.round((foe.hullMax-foe.hull)*100)+Math.round((Math.hypot(foe.vx,foe.vy))*100);
+    /* зенитке нужна цель в воздухе, тарану — столкновение: у обоих «сработал»
+       означает не выстрел. Даём им их повод и меряем след. */
+    if(F.fx==="flak"){G.msl=[{x:120,y:0,vx:-4,vy:0,mine:false}];}
+    if(F.fx==="ram"){foe.x=12;foe.y=0;G.ship.vx=3;G.ramOn=true;}
     const n0=mark();
     gunFireOnce(g,G.ship,foe,0,()=>.5);
+    if(F.fx==="ram"&&typeof ramTick==="function")ramTick(1);
     if(mark()<=n0)noFire.push(k);
+    G.msl=[];G.ship.vx=0;G.ramOn=false;
   }
   eq(noFire.join(", "),"","каждое семейство выстрелило");
   /* завод и серия читаются с любого зерна */

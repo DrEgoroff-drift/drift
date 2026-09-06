@@ -15,6 +15,8 @@ function roleFire(p,d,want,range,cool){
   /* под помехой (M365) половина выстрелов уходит в пустоту: цель есть,
      наводка врёт */
   if(p.jamT>0&&Math.random()<.5){p.cool=cool*.5;return false;}
+  /* близкий разрыв плазмы сбивает наводку на секунду (M366) */
+  if(p.leadBreak>0&&Math.random()<.6){p.cool=cool*.4;return false;}
   if(d<range&&p.cool<=0&&Math.abs(angDiff(want,p.a))<.35){
     /* у ренегата свой урон: он бьёт вашими же перками */
     fireShot(p.x,p.y,p.a,7,p.dmg||3.5+sysDanger(G.sx,G.sy)*5,p.owner||"pirate");

@@ -7,6 +7,45 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.366.0 - M366: the last six families, twenty named guns, and the reactor debt paid
+
+The war's seventh pass (`docs/DESIGN-war.md` §2.1–§2.2, §18). Twenty families exist now, and
+every one of them has code behind its line.
+
+**Against a pack.** **Дуговик** M — a discharge that jumps to the nearest ship within two hundred
+and again after that, losing half each jump and never striking the same hull twice. **Плазмомёт**
+H — a slow fat blob: blast damage, splash on everyone within a hundred and twenty, and a close
+burst breaks the mark's aim for a second. **Зенитка** L — fires by itself and only at what flies:
+missiles and plasma; against a hull it is nearly nothing.
+
+**And three that are not quite guns.** **Кассетник** H — a heavy shell that comes apart halfway to
+the mark into five; it will never hit a point and will always hit a pack. **Гарпун** H — a tether:
+the lighter ship is drawn to the heavier (mass is hull), the tethered one loses half its way, and
+the line lets go on its own time or when the distance breaks it. **Таран** H — not a gun at all:
+it thickens the bow by a third and turns a collision into damage by relative speed, four times
+harder on the other ship than on you.
+
+**Twenty именные.** A named gun is not «the same, only more» — it is a family wearing somebody
+else's habit: «Маяк», a rail that pulls instead of piercing; «Вера», a laser that pours a field
+instead of burning; «Кузнец», a heavy gun with a cluster warhead. Every habit already had code, so
+not one line of that table is a promise without one. They drop only from barons, they carry their
+story on the card instead of a factory, and they ride the save (`n` in the packed part — without
+that, «Маяк» would come back from a load as an ordinary rail).
+
+**The M362 debt is paid.** The tank moves off the reactor to the utility, jump range to the drive,
+and the reactor finally gets what it should always have had: `enCapAdd` and `enRegenAdd`. This is
+exactly the change that needed a generation — the affix entries are cloned, because `AFFIX2` is
+built from the same objects and editing `kinds` in place would have rewritten the first generation
+too. First-generation parts keep the tank and the jump on the reactor for ever, and the twenty
+pinned seeds prove it.
+
+Tests: `91zzzw-guns4` — the arc chain and its halving, the plasma's splash and broken aim, the
+flak silent with nothing in the air and killing a missile with something in it, the cluster coming
+apart halfway, the tether pulling the lighter ship and letting go, the ram doing damage by
+collision and taking a quarter of it back, all twenty named guns resolving to a real family and a
+real habit, a named gun surviving a save, a baron dropping one and a jackal not, and the affix
+move being visible in the second generation and invisible in the first.
+
 ## 0.365.0 - M365: seven guns that do not break a hull
 
 The war's sixth pass (`docs/DESIGN-war.md` §2.1, §18) — the roles «cut the shield» and «keep your

@@ -1012,9 +1012,13 @@ One system inside ГЛАВТРАССА's centre (r ≈ 6, fixed by seed, never t
   `13a-guns`; `s.pass` on a needle, `p.shieldOff`, `p.jamT`, `G.gmines`. Learned: **a family
   whose whole point is that it fires nothing needs its own definition of «it worked»** — the
   coverage suite counts a mine, a blinding or a shove as a shot, or the jammer reads as dead code.
-- **M366** гарпун, кассетник, дуговик, плазмомёт, зенитка, таран; the именные; the maker
-  grammar on factories (§19.2); and the M362 debt — the tank and jump range off the
-  reactor, capacity/regen affixes on it (§4), now cheap because `g:2` exists.
+- ~~**M366** гарпун, кассетник, дуговик, плазмомёт, зенитка, таран; the именные~~ — 0.366.0
+  (2026-09-06): habits `arc`, `plasma`, `flak`, `cluster`, `tether`, `ram`; `GUN_NAMED` (twenty,
+  each a family wearing another family's habit, dropped by barons, packed as `n` in the save);
+  the M362 debt paid — tank to `util`, jump to `engine`, `enCapAdd`/`enRegenAdd` on `core`, the
+  affix entries CLONED so the first generation is untouched. Learned: **a table entry earns its
+  line by reusing an implemented habit** — twenty named guns cost no new behaviour code and are
+  honest for exactly that reason. Still owed to M369: the maker grammar over factories (§19.2).
 - **M367** missiles ×5; зенитка in the loop.
 - **M368** pirate loadouts by rank (deserter art waits for M369).
 

@@ -1756,7 +1756,7 @@ body.table u.addr{color:#7a4a20}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.365.0";
+const VER="0.366.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -4820,7 +4820,19 @@ const AFFIX=[
    наводка, расход и жар. В пул ПЕРВОГО поколения они не входят: список
    аффиксов там заморожен навсегда, иначе у всех игроков молча поменялись бы
    уже собранные части. */
-const AFFIX2=AFFIX.concat([
+/* Долг M362 отдан здесь (§4): бак уезжает на утилиту, дальность прыжка — на
+   двигатель, а реактору достаётся то, чем он и должен быть, — ёмкость и
+   восполнение энергии. Записи КЛОНИРУЮТСЯ: `AFFIX2` строится из тех же
+   объектов, и правка `kinds` на месте переписала бы первое поколение тоже.
+   Второе поколение — единственное место, где такой переезд возможен. */
+const AFFIX_MOVED=AFFIX.map(a=>{
+  if(a.k==="fuelAdd")return Object.assign({},a,{kinds:["util"]});
+  if(a.k==="jumpAdd")return Object.assign({},a,{kinds:["engine"]});
+  return a;
+});
+const AFFIX2=AFFIX_MOVED.concat([
+  {k:"enCapAdd",  ru:"ёмкость энергии",   step:9,  kinds:["core"],flat:1},
+  {k:"enRegenAdd",ru:"восполнение энергии",step:.06,kinds:["core"],fix:2},
   {k:"rangeMul",ru:"дальность",       step:.09, kinds:["gun"]},
   {k:"coneMul", ru:"конус",           step:.10, kinds:["gun"]},
   {k:"leadMul", ru:"скорость наводки",step:.10, kinds:["gun"]},
@@ -4864,7 +4876,7 @@ function tierFromDanger(d,r){
    пересобираться тем же генератором, каким была выдана, иначе первая же
    правка таблиц молча переписывает игрокам их сборки. До M364 unpackPart
    звал genPart без него — обещание было, замка не было. */
-function genPart(seed,tier,kind,gen){
+function genPart(seed,tier,kind,gen,named){
   const r=rng((seed>>>0)||1);
   tier=clamp(tier|0||1,1,5);
   kind=kind||pick(PART_KEYS,r);
@@ -4903,6 +4915,16 @@ function genPart(seed,tier,kind,gen){
     cap:Math.ceil(tier/2)};
   /* у ствола второго поколения есть семейство, завод и серия (05b-guns):
      имя становится «АП-23 «Оса»», а повадка — тем, что решает 13a-guns */
+  /* именной (M366): не «то же, только больше», а семейство с чужой повадкой.
+     Выдаётся не розыгрышем, а поводом — барон или налёт (`named` в вызове). */
+  if(g>=2&&kind==="gun"&&named&&typeof GUN_NAMED_BY_ID!=="undefined"&&GUN_NAMED_BY_ID[named]){
+    const N=GUN_NAMED_BY_ID[named];
+    out.fam=N.fam;out.named=N.id;
+    out.fact=GUN_FACTORY.length-1;
+    out.ser=gunSeriesOf(seed>>>0);
+    out.name=N.ru;
+    return out;
+  }
   if(g>=2&&kind==="gun"&&typeof gunFamilyKeyOf==="function"){
     const sd=seed>>>0;
     out.fam=gunFamilyKeyOf(sd);
@@ -5167,10 +5189,13 @@ function scrapPart(id){
   if(matches&&typeof matchesAdd==="function")matchesAdd(matches);
   return {part:p,got,matches};
 }
-function packPart(p){return {s:p.seed,t:p.tier,k:p.kind,g:p.gen,i:p.id};}
+/* именной не выводится из зерна — его выдаёт повод (барон, налёт), значит
+   он обязан лежать в сейве, иначе после загрузки «Маяк» станет обычной
+   рельсой (M366). Поле короткое и появляется только у именных. */
+function packPart(p){const o={s:p.seed,t:p.tier,k:p.kind,g:p.gen,i:p.id};if(p.named)o.n=p.named;return o;}
 function unpackPart(o){
   if(!o||!PART_KINDS[o.k])return null;
-  const p=genPart(o.s>>>0,o.t|0,o.k,o.g|0);
+  const p=genPart(o.s>>>0,o.t|0,o.k,o.g|0,typeof o.n==="string"?o.n:null);
   p.id=typeof o.i==="string"?o.i:("p"+(partSeq++));
   return p;
 }
@@ -5659,7 +5684,28 @@ const GUN_FAMILY={
     line:"кладёт мину за корму на минуту — единственный ствол, которому не нужна метка"},
   jam:{ru:"Помеховая",ab:"ПМ",size:"L",mount:"turret",type:"en",fx:"jam",
     dmg:0,cool:.5,range:.79,speed:0,cone:9,lead:2,spread:0,en:.5,
-    line:"не стреляет вовсе: в шестистах вокруг вас теряют вас из виду и бьют мимо"}
+    line:"не стреляет вовсе: в шестистах вокруг вас теряют вас из виду и бьют мимо"},
+  /* ── против своры (M366) ── */
+  arc:{ru:"Дуговик",ab:"ДГ",size:"M",mount:"turret",type:"en",fx:"arc",jumps:2,
+    dmg:.5,cool:1.3,range:.5,speed:0,cone:1.1,lead:1.1,spread:0,en:1.1,
+    line:"разряд перескакивает на ближнего в двухстах и дальше, теряя половину"},
+  plasma:{ru:"Плазмомёт",ab:"ПЛ",size:"H",mount:"fix",type:"blast",fx:"plasma",splash:120,
+    dmg:2.6,cool:2.6,range:.6,speed:.45,cone:.7,lead:.6,spread:1.1,en:2.2,
+    line:"медленный жирный сгусток: бьёт по площади и сбивает цели наводку на секунду"},
+  flak:{ru:"Зенитка",ab:"ЗН",size:"L",mount:"turret",type:"kin",fx:"flak",
+    dmg:.18,cool:.4,range:.42,speed:1.4,cone:9,lead:2.2,spread:1,en:.4,
+    line:"стреляет сама и только по ракетам и плазме; по корпусам почти бесполезна"},
+  /* ── ломать корпус, продолжение (M366) ── */
+  cluster:{ru:"Кассетник",ab:"КС",size:"H",mount:"fix",type:"blast",fx:"cluster",parts:5,
+    dmg:.7,cool:3.2,range:.9,speed:.7,cone:.6,lead:.5,spread:1.4,en:2,
+    line:"тяжёлый снаряд на полпути разваливается на пять: в точку не попадёт, в свору попадёт всегда"},
+  /* ── держать дистанцию, продолжение (M366) ── */
+  harpoon:{ru:"Гарпун",ab:"ГП",size:"H",mount:"fix",type:"kin",fx:"tether",
+    dmg:.3,cool:3.4,range:.55,speed:0,cone:.5,lead:.5,spread:0,en:1.6,
+    line:"трос: кто легче, того тянет к тяжёлому, и привязанный теряет половину тяги"},
+  ram:{ru:"Таран",ab:"ТР",size:"H",mount:"fix",type:"kin",fx:"ram",
+    dmg:0,cool:6,range:.05,speed:0,cone:.2,lead:.4,spread:0,en:0,
+    line:"не орудие: утраивает лоб корпуса и превращает столкновение в урон по массе и ходу"}
 };
 const GUN_FAM_KEYS=Object.keys(GUN_FAMILY);
 /* ── завод и серия (§2.2) ──
@@ -5677,6 +5723,66 @@ const GUN_FACTORY=[
 ];
 const GUN_NICK=["«Оса»","«Клык»","«Шмель»","«Стриж»","«Гвоздь»","«Веретено»","«Зубр»",
   "«Игла»","«Кремень»","«Сойка»","«Молот»","«Пила»","«Синица»","«Топь»","«Ворон»","«Уголёк»"];
+/* ══════════════ именные (M366, §2.2) ══════════════
+   Двадцать стволов с историей. Именной — это не «то же самое, только больше»:
+   это семейство, которому приделали ЧУЖУЮ повадку. Рельса, которая тянет
+   вместо того чтобы пробивать; лазер, который переливает поле; миномёт,
+   стреляющий дугой. Все повадки уже написаны (13a-guns) — ни одной строки
+   таблицы без кода, и оттого именной честен: он делает ровно то, что обещает.
+
+   Падают только с баронов и из налётов на базы. Купить нельзя: §2.2 говорит
+   «оружие, оставленное кем-то, — цель для новичка, а не читерство».
+
+   Числа именного — множители поверх его семейства, и они СИЛЬНЫЕ: у именного
+   всегда есть и обратная сторона, иначе он не выбор, а ответ. */
+const GUN_NAMED=[
+  {id:"mayak", ru:"«Маяк»",        fam:"rail",   fx:"tether", dmg:1.1, cool:1.2,
+   note:"рельса, которую сняли с «Маяка» после невязки: она не пробивает, она тянет"},
+  {id:"vera",  ru:"«Вера»",        fam:"laser",  fx:"siphon", dmg:1,   cool:.9,
+   note:"лазер санитарной баржи: переливает поле, а не жжёт"},
+  {id:"kuznec",ru:"«Кузнец»",      fam:"heavy",  fx:"cluster",dmg:.85, cool:1.1,
+   note:"тяжёлое орудие с кассетной боевой частью — переделка мастерской «Кузнец»"},
+  {id:"perst", ru:"«Перстень»",    fam:"auto",   fx:"arc",    dmg:.8,  cool:1,
+   note:"автопушка, у которой снаряд заменили разрядом: бьёт по своре"},
+  {id:"shchel",ru:"«Щель»",        fam:"needle", fx:"needles",dmg:1.6, cool:.8,
+   note:"игольник таможни: игл вдвое больше, и проходят они чаще"},
+  {id:"gorka", ru:"«Горка»",       fam:"mortar", fx:"mortar", dmg:1.7, cool:1.2,
+   note:"миномёт заставы: мина тяжелее и живёт дольше"},
+  {id:"tishina",ru:"«Тишина»",     fam:"jam",    fx:"jam",    dmg:1,   cool:.6,
+   note:"помеховая почтовика: круг шире, а держится дольше"},
+  {id:"zub",   ru:"«Зуб»",         fam:"shot",   fx:"pellets",dmg:1.5, cool:1.2,
+   note:"дробовик абордажной команды: в упор — гибель"},
+  {id:"veter", ru:"«Ветер»",       fam:"shove",  fx:"shove",  dmg:1,   cool:.7,
+   note:"толкатель спасателя: волна чаще и шире"},
+  {id:"koval", ru:"«Коваль»",      fam:"drill",  fx:"drillbeam",dmg:1.8,cool:.9,
+   note:"буровой луч рудовоза: режет корпус, как породу"},
+  {id:"grad",  ru:"«Град»",        fam:"cluster",fx:"cluster",dmg:1.3, cool:1.1,
+   note:"кассетник конвоя: восемь частей вместо пяти"},
+  {id:"struna",ru:"«Струна»",      fam:"harpoon",fx:"tether", dmg:1.4, cool:.8,
+   note:"гарпун буксира: трос короче и держит крепче"},
+  {id:"iskra", ru:"«Искра»",       fam:"arc",    fx:"arc",    dmg:1.2, cool:.8,
+   note:"дуговик станции: разряд перескакивает трижды"},
+  {id:"solnce",ru:"«Солнце»",      fam:"plasma", fx:"plasma", dmg:1.3, cool:1.1,
+   note:"плазмомёт с верфи: сгусток шире и медленнее"},
+  {id:"straj", ru:"«Страж»",       fam:"flak",   fx:"flak",   dmg:1.6, cool:.7,
+   note:"зенитка причала: снимает ракеты раньше, чем их видно"},
+  {id:"kremen",ru:"«Кремень»",     fam:"rail",   fx:"rail",   dmg:1.35,cool:1.15,
+   note:"рельса полигона: пробивает двоих, а не одного"},
+  {id:"pepel", ru:"«Пепел»",       fam:"laser",  fx:"beam",   dmg:1.45,cool:.85,
+   note:"лазер, снятый с горелого корпуса: греет вдвое быстрее"},
+  {id:"nagan", ru:"«Наган»",       fam:"pulse",  fx:"pulse",  dmg:1.2, cool:.7,
+   note:"импульсник инспекции: гасит поле и почти всегда что-нибудь выбивает"},
+  {id:"ugol",  ru:"«Уголь»",       fam:"heat",   fx:"bullet", dmg:1.5, cool:.9,
+   note:"тепловик шахтёров: греет так, что цель молчит дольше, чем стреляет"},
+  {id:"taran", ru:"«Таран»",       fam:"ram",    fx:"ram",    dmg:1.6, cool:.8,
+   note:"таран, которым однажды открыли пиратскую базу изнутри"}
+];
+const GUN_NAMED_BY_ID={};for(const n of GUN_NAMED)GUN_NAMED_BY_ID[n.id]=n;
+/* именной выпадает только с барона и из налёта — и только раз на своё зерно */
+function gunNamedRoll(seed){
+  const r=rng((seed>>>0)||7);
+  return GUN_NAMED[Math.floor(r()*GUN_NAMED.length)];
+}
 function gunSeriesOf(seed){return 1954+((seed>>>7)%38);}
 function gunFamilyKeyOf(seed){return GUN_FAM_KEYS[(seed>>>13)%GUN_FAM_KEYS.length];}
 function gunFactoryOf(seed){return GUN_FACTORY[(seed>>>19)%GUN_FACTORY.length];}
@@ -5946,7 +6052,7 @@ const GUN_RANGE0=760, GUN_SPEED0=9, GUN_CONE0=.35, GUN_LEAD0=.2;
    toFixed — считаем один раз на сборку. */
 let GUN_CACHE=null,GUN_KEY="";
 function gunSpec(dmg,cool,gunPart,lvl){
-  const key=dmg+"|"+cool+"|"+(gunPart?gunPart.seed+":"+gunPart.tier+":"+(gunPart.fam||"-"):"-")+"|"+lvl;
+  const key=dmg+"|"+cool+"|"+(gunPart?gunPart.seed+":"+gunPart.tier+":"+(gunPart.fam||"-")+":"+(gunPart.named||"-"):"-")+"|"+lvl;
   if(GUN_KEY===key&&GUN_CACHE)return GUN_CACHE;
   GUN_KEY=key;return GUN_CACHE=gunSpecMake(dmg,cool,gunPart,lvl);
 }
@@ -5999,6 +6105,14 @@ function gunFamilyApply(g,p){
     en:+(F.en*mul("enMul")).toFixed(3),
     fx:F.fx,fam:p.fam,lvl:g.lvl
   };
+  /* именной: та же семья, но повадка чужая и числа сильнее (M366) */
+  if(p.named&&typeof GUN_NAMED_BY_ID!=="undefined"&&GUN_NAMED_BY_ID[p.named]){
+    const N=GUN_NAMED_BY_ID[p.named];
+    out.fx=N.fx;
+    out.dmg*=N.dmg;
+    out.cool=Math.max(3,Math.round(out.cool*N.cool));
+    out.named=N.id;
+  }
   if(F.pellets)out.pellets=F.pellets;
   if(F.burn)out.burn=+(F.burn*mul("burnMul")).toFixed(3);
   if(F.heat)out.heat=+(F.heat*mul("burnMul")).toFixed(3);
@@ -6029,8 +6143,10 @@ function gunLeadAngle(sx,sy,tgt,speed){
 const EN_SHOT=7;        /* выстрел */
 const EN_SHIELD=.9;     /* за единицу восстановленного щита */
 const EN_THR=.055;      /* маневровые, за кадр полной тяги */
-function energyCap(lvl,coreTier){return Math.round(48+lvl*26+coreTier*14);}
-function energyRegen(lvl,coreTier){return Math.round((.34+lvl*.16+coreTier*.07)*1000)/1000;}
+/* Ёмкость и восполнение — от уровня реактора, тира его части и её аффиксов
+   (M366 отдал долг M362: `enCapAdd`/`enRegenAdd` живут на `core`). */
+function energyCap(lvl,coreTier,add){return Math.round(48+lvl*26+coreTier*14+(add||0));}
+function energyRegen(lvl,coreTier,add){return Math.round((.34+lvl*.16+coreTier*.07+(add||0))*1000)/1000;}
 /* ── ствол ведёт метку сам (§2) ──
    У ствола есть свой угол. Он живёт внутри конуса вокруг носа и подходит
    к упреждению со своей скоростью наводки — не мгновенно. Автор о старом
@@ -7673,7 +7789,7 @@ function stat(){
     turn:S.turn*(1+m.engine*.07)*mul("turnMul")*(cr("moth")?1.25:1)*(1+rs("turn"))*wearMul()*WT.turn,
     fuelMax:Math.max(20,Math.round(S.fuel*(1+m.tank*.3)+(B.has("icecore")?50:0)+(P.fuelAdd||0)+(cr("well")?60:0)+rs("fuel")+WT.fuel)),
     cargoMax:Math.max(8,-(typeof vegaAboard==="function"&&vegaAboard()?1:0)-(typeof zooCargoSlots==="function"?zooCargoSlots():0)+Math.round(S.cargo*(1+m.hold*.32)*(T.has("pack")?1.4:1)*(B.has("bioseal")?1.2:1)*mul("cargoMul")*bpMul("wide",1.12,.92)*(cr("ark")?1.2:1)*(1+rs("cargo")))),
-    hullMax:Math.max(20,Math.round(S.hull*(1+m.armor*.2)+(T.has("cera")?30:0)+(B.has("crystplate")?40:0)+(P.hullAdd||0)+(bpState("hardweld")>0?25:(bpState("hardweld")<0?-15:0))+(cr("ark")?40:0))),
+    hullMax:Math.max(20,Math.round((gunList.some(a=>a.g&&a.g.fx==="ram")?1.35:1)*(S.hull*(1+m.armor*.2)+(T.has("cera")?30:0)+(B.has("crystplate")?40:0)+(P.hullAdd||0)+(bpState("hardweld")>0?25:(bpState("hardweld")<0?-15:0))+(cr("ark")?40:0)))),
     drill:(cr("cair")?1.3:1)*(1+m.drill*.55)*(T.has("drone")?2:1)*drillBonus*(B.has("iridrill")?1.25:1)*mul("drillMul")*bpMul("coldbore",1.18,.88)*(1+rs("drill")),
     synthRatio:B.has("isosynth")?8:4,
     jump:Math.max(1,3+m.hyper*.5+(T.has("coil")?2:0)+(P.jumpAdd||0)+rs("jump")+WT.jump),
@@ -7684,8 +7800,11 @@ function stat(){
     gun:(gunList[0]?gunList[0].g:gunSpec(dmgV,coolV,gunP,m.weapon)),
     guns:gunList,
     gunTot:gunTotals(gunList),
-    energyMax:energyCap(m.weapon,coreT),
-    energyRegen:energyRegen(m.weapon,coreT),
+    /* таран (M366) — не орудие: он утраивает лоб корпуса. Это единственное
+       семейство, которое живёт в числах корабля, а не в числах выстрела. */
+    ram:gunList.some(a=>a.g&&a.g.fx==="ram"),
+    energyMax:energyCap(m.weapon,coreT,P.enCapAdd||0),
+    energyRegen:energyRegen(m.weapon,coreT,P.enRegenAdd||0),
     /* пусковая (M112): она не усиливает бортовой огонь, а даёт отдельное оружие,
        и без ракет в трюме её числа ничего не значат */
     launcher:!!P.msl,
@@ -32159,7 +32278,22 @@ function combatShots(dt){
     const s=G.shots[i];
     if(s.hom&&typeof homingStep==="function")homingStep(s,dt);   /* наводящаяся пуля (M364) */
     s.x+=s.vx*dt;s.y+=s.vy*dt;s.life-=dt;
-    let gone=s.life<=0;
+    /* кассета раскрывается на полпути (M366): один снаряд становится пятью,
+       и в точку он уже не попадёт, а в свору попадёт всегда */
+    if(s.split>0){
+      s.split-=Math.hypot(s.vx,s.vy)*dt;
+      if(s.split<=0){
+        const sp=Math.hypot(s.vx,s.vy)||1,a0=Math.atan2(s.vy,s.vx);
+        const n=s.parts||5,wide=(s.gspread||.06)*6;
+        for(let k=0;k<n;k++){
+          const a=a0+(k/(n-1)-.5)*wide;
+          G.shots.push({x:s.x,y:s.y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,
+            dmg:s.dmg,owner:s.owner,type:s.type,mine:s.mine,life:Math.max(12,s.life)});
+        }
+        G.shots.splice(i,1);
+        continue;
+      }
+    }    let gone=s.life<=0;
     if(!gone&&s.owner!=="player"&&s.owner!=="fleet"&&Math.hypot(s.x-sh.x,s.y-sh.y)<18){
       gone=true;
       if(playerHit(s))return true;
@@ -32170,6 +32304,18 @@ function combatShots(dt){
         if(Math.hypot(s.x-p.x,s.y-p.y)<20){
           gone=true;
           hitShip(p,s);
+          /* плазма бьёт по площади и сбивает наводку тому, кто рядом (M366) */
+          if(s.splash>0){
+            for(const q of G.pirates){
+              if(q===p||q.hull<=0||q.iff||q.dummy)continue;
+              const d=Math.hypot(q.x-s.x,q.y-s.y);
+              if(d>s.splash)continue;
+              const k=clamp(1-d/s.splash,.2,1);
+              const a=Math.atan2(q.y-s.y,q.x-s.x);
+              hitShip(q,{vx:Math.cos(a),vy:Math.sin(a),type:s.type,owner:s.owner,mine:s.mine},s.dmg*k*.6);
+            }
+            p.leadBreak=LEADBREAK;
+          }
           break;
         }
       }
@@ -32293,6 +32439,11 @@ function updateCombat(dt){
   if(typeof beamsTick==="function")beamsTick(dt);
   /* мины миномёта живут своей минутой и рвутся сами (M365) */
   if(typeof minesTick==="function")minesTick(dt);
+  /* трос тянет, таран считает столкновения, зенитка снимает то, что летит (M366) */
+  if(typeof tetherTick==="function")tetherTick(dt);
+  if(typeof ramTick==="function")ramTick(dt);
+  if(typeof flakCatch==="function")flakCatch(dt);
+  G.ramOn=!!(st.guns&&st.guns.some(a=>a.g&&a.g.fx==="ram"));
   G.energy=Math.min(st.energyMax,G.energy+st.energyRegen*dt);
   const lowE=G.energy<EN_SHOT;
   G.shieldHit=Math.max(0,(G.shieldHit||0)-dt);
@@ -32379,6 +32530,9 @@ function updateCombat(dt){
        не растёт вовсе, чем бы оно ни было (M365) */
     if(p.shieldOff>0){p.shieldOff=Math.max(0,p.shieldOff-dt);p.shield=0;}
     if(p.jamT>0){p.jamT=Math.max(0,p.jamT-dt);}
+    if(p.leadBreak>0)p.leadBreak=Math.max(0,p.leadBreak-dt);
+    /* привязанный тросом теряет половину хода: гарпун держит, а не убивает */
+    if(p.tether){p.vx*=Math.pow(.985,dt);p.vy*=Math.pow(.985,dt);p.tether=0;}
     if(p.shieldMax>0&&!(p.shieldOff>0)){
       p.shieldHit=Math.max(0,(p.shieldHit||0)-dt);
       if(p.shieldType==="pulse"){
@@ -32442,7 +32596,15 @@ function killPirate(p){
   const d=sysDanger(G.sx,G.sy);
   /* обломок с частью — не в трюм сразу, а контейнером: у боя своя петля «убил → собрал» */
   let dropped=null;
-  if(r()<.3+d*.45){
+  /* именной падает только с барона и только иногда (M366, §2.2): оружие,
+     оставленное кем-то, — цель для новичка, а не короткая дорога */
+  if((p.rank|0)>=3&&r()<.5&&typeof gunNamedRoll==="function"){
+    const N=gunNamedRoll(hashi(p.seed,0x4E41,7));
+    dropped=genPart(hashi(p.seed,0x4E41,Math.floor(Date.now()/1000)),5,"gun",2,N.id);
+    const a=r()*TAU,sp=.35+r()*.5;
+    G.loot.push({x:p.x,y:p.y,vx:p.vx*.4+Math.cos(a)*sp,vy:p.vy*.4+Math.sin(a)*sp,
+      spin:r()*TAU,life:5400,part:dropped});
+  }else if(r()<.3+d*.45){
     dropped=genPart(hashi(p.seed,3131,Math.floor(Date.now()/1000)),tierFromDanger(d,r));
     const a=r()*TAU,sp=.35+r()*.5;
     G.loot.push({x:p.x,y:p.y,vx:p.vx*.4+Math.cos(a)*sp,vy:p.vy*.4+Math.sin(a)*sp,
@@ -32584,6 +32746,13 @@ const JAM_R=600;           /* радиус помехи */
 const JAM_TIME=90;         /* сколько держится ослепление после последнего такта */
 const SHOVE_V=1.9;         /* толчок волны */
 const DRILL_EAT=.06;       /* железа за выстрел бурового луча */
+/* ── M366 ── */
+const ARC_JUMP=200;        /* на сколько перескакивает разряд */
+const TETHER_LIFE=420;     /* сколько держит трос */
+const TETHER_PULL=.055;    /* с какой силой тянет */
+const LEADBREAK=60;        /* секунда без наводки после близкого разрыва плазмы */
+const RAM_R=30;            /* с какого расстояния таран считается столкновением */
+const RAM_K=9;             /* урон тарана за единицу относительного хода */
 
 /* ── жар и то, что из него следует ── */
 function heatAdd(o,n){
@@ -32681,6 +32850,41 @@ function gunFireOnce(g,sh,tgt,ang,rnd){
     return true;
   }
   if(fx==="needles")return needleShot(g,sh,tgt,ang,R);
+  if(fx==="flak")return flakTick(g,sh);
+  if(fx==="ram")return false;   /* таран не стреляет: он работает столкновением (ramTick) */
+  if(fx==="arc"){
+    const hits=rayHits(sh.x,sh.y,ang,g.range,true);
+    if(!hits.length)return false;
+    arcHit(g,sh,hits[0].p,ang);
+    sfx("shot",{f:700,to:1500,d:.09,v:.2});
+    return true;
+  }
+  if(fx==="tether"){
+    const hits=rayHits(sh.x,sh.y,ang,g.range,true);
+    if(!hits.length)return false;
+    const p=hits[0].p;
+    G.tether={p,life:TETHER_LIFE,range:g.range};
+    if(g.dmg>0)rayDamage(p,ang,g,g.dmg);
+    sfx("shot",{f:260,to:150,d:.18,v:.4});
+    return true;
+  }
+  if(fx==="cluster"){
+    /* тяжёлый снаряд разваливается на полпути к метке — или на середине руки */
+    const d=tgt?Math.hypot(tgt.x-sh.x,tgt.y-sh.y):g.range;
+    fireShot(sh.x,sh.y,ang,g.speed,g.dmg,true,g.type,g.range);
+    const s=G.shots[G.shots.length-1];
+    if(s){s.split=Math.max(20,d*.5);s.parts=(GUN_FAMILY[g.fam]&&GUN_FAMILY[g.fam].parts)||5;s.gspread=g.spread;}
+    sfx("shot",{f:210,to:150,d:.16,v:.45});
+    return true;
+  }
+  if(fx==="plasma"){
+    const err=gunMiss(g,tgt?Math.hypot(tgt.x-sh.x,tgt.y-sh.y):0,tgt?(tgt.av||0):0,R());
+    fireShot(sh.x,sh.y,ang+err,g.speed,g.dmg,true,g.type,g.range);
+    const s=G.shots[G.shots.length-1];
+    if(s){s.blob=1;s.splash=(GUN_FAMILY[g.fam]&&GUN_FAMILY[g.fam].splash)||120;}
+    sfx("shot",{f:130,to:70,d:.3,v:.5});
+    return true;
+  }
   if(fx==="mortar")return mineLay(g,sh);
   if(fx==="jam")return jamPulse(g,sh);
   if(fx==="shove"){
@@ -32850,6 +33054,111 @@ function jamPulse(g,sh){
   }
   if(n)sfx("ui",{f:220,to:180,d:.12,v:.1});
   return true;
+}
+/* ── разряд (M366) ──
+   Бьёт первого и перескакивает на ближайшего в двухстах, теряя половину на
+   каждом прыжке. Дважды по одному не бьёт: иначе это не свора, а цепь. */
+function arcHit(g,sh,first,ang){
+  let cur=first,dmg=g.dmg,used=new Set([first]);
+  let px=sh.x,py=sh.y;
+  const jumps=(GUN_FAMILY[g.fam]&&GUN_FAMILY[g.fam].jumps)||2;
+  for(let j=0;j<=jumps&&cur;j++){
+    const a=Math.atan2(cur.y-py,cur.x-px);
+    rayDamage(cur,a,g,dmg);
+    beamAdd(px,py,cur.x,cur.y,"rgba(200,220,255,.9)",1.4);
+    px=cur.x;py=cur.y;dmg*=.5;
+    let best=null,bd=ARC_JUMP;
+    for(const p of (G.pirates||[])){
+      if(p.hull<=0||p.iff||p.dummy||used.has(p))continue;
+      const d=Math.hypot(p.x-px,p.y-py);
+      if(d<bd){bd=d;best=p;}
+    }
+    cur=best;if(cur)used.add(cur);
+  }
+}
+/* ── трос (M366) ──
+   Тянет того, кто легче. Масса — это корпус: у пирата hullMax, у вас — свой.
+   Привязанный теряет половину тяги, и это чувствуется обеим сторонам. */
+function tetherTick(dt){
+  const T=G.tether;
+  if(!T)return;
+  const p=T.p;
+  if(!p||p.hull<=0||!(G.pirates||[]).includes(p)){G.tether=null;return;}
+  T.life-=dt;
+  const sh=G.ship;
+  const dx=p.x-sh.x,dy=p.y-sh.y,d=Math.hypot(dx,dy)||1;
+  if(T.life<=0||d>T.range*1.35){G.tether=null;return;}
+  const mine=stat().hullMax,his=p.hullMax||60;
+  const k=TETHER_PULL*dt;
+  /* лёгкого тянет к тяжёлому — и наоборот тоже, только слабее */
+  const pullHim=mine/(mine+his),pullMe=his/(mine+his);
+  p.vx-=dx/d*k*pullHim;p.vy-=dy/d*k*pullHim;
+  sh.vx+=dx/d*k*pullMe;sh.vy+=dy/d*k*pullMe;
+  p.tether=1;
+  beamAdd(sh.x,sh.y,p.x,p.y,"rgba(230,220,180,.55)",1);
+}
+/* ── зенитка (M366) ──
+   Стреляет сама и только по тому, что летит: ракетам и плазме. По корпусам
+   почти бесполезна — и потому её ставят те, кто возит, а не те, кто дерётся. */
+function flakTick(g,sh){
+  let best=null,bd=g.range;
+  for(const m of (G.msl||[])){
+    if(m.mine)continue;
+    const d=Math.hypot(m.x-sh.x,m.y-sh.y);
+    if(d<bd){bd=d;best=m;}
+  }
+  for(const s2 of (G.shots||[])){
+    if(s2.owner==="player"||!s2.blob)continue;
+    const d=Math.hypot(s2.x-sh.x,s2.y-sh.y);
+    if(d<bd){bd=d;best=s2;}
+  }
+  if(!best)return false;
+  const a=Math.atan2(best.y-sh.y,best.x-sh.x);
+  fireShot(sh.x,sh.y,a,g.speed,g.dmg,true,g.type,g.range);
+  const s3=G.shots[G.shots.length-1];
+  if(s3){s3.flak=1;s3.hom=.3;s3.tgt=best;}
+  sfx("shot",{f:900,to:1400,d:.04,v:.1});
+  return true;
+}
+/* сбитая зениткой цель исчезает: попадание по ракете или сгустку, не по корпусу */
+function flakCatch(dt){
+  const L=G.shots;
+  if(!L)return;
+  for(let i=L.length-1;i>=0;i--){
+    const s=L[i];
+    if(!s.flak)continue;
+    const t=s.tgt;
+    if(!t){L.splice(i,1);continue;}
+    if(Math.hypot(s.x-t.x,s.y-t.y)>16)continue;
+    if(G.msl&&G.msl.indexOf(t)>=0)G.msl.splice(G.msl.indexOf(t),1);
+    else{const j=L.indexOf(t);if(j>=0&&j!==i)L.splice(j,1);}
+    const k=L.indexOf(s);if(k>=0)L.splice(k,1);
+    sfx("hit",{v:.2});
+  }
+}
+/* ── таран (M366) ──
+   Не орудие: лоб корпуса втрое крепче, а столкновение считается уроном по
+   массе и относительному ходу. Бьёт обе стороны, но вас — вчетверо слабее:
+   иначе таран был бы самоубийством, а не приёмом. */
+function ramTick(dt){
+  if(!G.ramOn)return;
+  const sh=G.ship;
+  for(const p of (G.pirates||[])){
+    if(p.hull<=0||p.iff||p.dummy)continue;
+    const dx=p.x-sh.x,dy=p.y-sh.y,d=Math.hypot(dx,dy);
+    if(d>RAM_R)continue;
+    if((p.ramCool||0)>0){p.ramCool-=dt;continue;}
+    const rv=Math.hypot(sh.vx-(p.vx||0),sh.vy-(p.vy||0));
+    if(rv<.6)continue;
+    const dmg=rv*RAM_K;
+    const a=Math.atan2(dy,dx);
+    hitShip(p,{vx:Math.cos(a),vy:Math.sin(a),type:"kin",owner:"player",mine:true},dmg);
+    G.hull=Math.max(0,G.hull-dmg*.25);
+    p.ramCool=45;
+    p.vx+=Math.cos(a)*rv*.5;p.vy+=Math.sin(a)*rv*.5;
+    sfx("boom",{v:.45});
+    if(G.hull<=0){wreck();return;}
+  }
 }
 function homingStep(s,dt){
   if(!s.hom||!s.tgt||s.tgt.hull<=0)return;
@@ -33181,6 +33490,8 @@ function roleFire(p,d,want,range,cool){
   /* под помехой (M365) половина выстрелов уходит в пустоту: цель есть,
      наводка врёт */
   if(p.jamT>0&&Math.random()<.5){p.cool=cool*.5;return false;}
+  /* близкий разрыв плазмы сбивает наводку на секунду (M366) */
+  if(p.leadBreak>0&&Math.random()<.6){p.cool=cool*.4;return false;}
   if(d<range&&p.cool<=0&&Math.abs(angDiff(want,p.a))<.35){
     /* у ренегата свой урон: он бьёт вашими же перками */
     fireShot(p.x,p.y,p.a,7,p.dmg||3.5+sysDanger(G.sx,G.sy)*5,p.owner||"pirate");
@@ -65069,7 +65380,8 @@ function stTabMods(){
       if(F){
         const rf=el("div","row");
         rf.appendChild(el("div","nm","<b>"+fp.name+"</b><s>"+F.ru.toLowerCase()+
-          " · "+GUN_FACTORY[fp.fact].ru+" · серия "+fp.ser+"</s><i>"+F.line+"</i>"));
+          " · "+(fp.named&&GUN_NAMED_BY_ID[fp.named]?"именное":GUN_FACTORY[fp.fact].ru+" · серия "+fp.ser)+
+          "</s><i>"+(fp.named&&GUN_NAMED_BY_ID[fp.named]?GUN_NAMED_BY_ID[fp.named].note:F.line)+"</i>"));
         $body.appendChild(rf);
       }
       const rg=el("div","row");
@@ -71268,7 +71580,9 @@ function opisPartHtml(p){
   const sz=(p.kind==="gun"&&typeof partSize==="function")?" · "+MOUNT_SIZE_RU[partSize(p)]:"";
   /* семейство, завод и серия — у стволов второго поколения (M364) */
   const fam=(p.fam&&GUN_FAMILY[p.fam])?GUN_FAMILY[p.fam].ru.toLowerCase()+" · ":"";
-  const made=p.fam?"<br>"+GUN_FACTORY[p.fact].ru+" · серия "+p.ser:"";
+  /* у именного вместо завода — история: она и есть его карточка (M366) */
+  const N=(p.named&&typeof GUN_NAMED_BY_ID!=="undefined")?GUN_NAMED_BY_ID[p.named]:null;
+  const made=N?"<br>именное · "+N.note:(p.fam?"<br>"+GUN_FACTORY[p.fact].ru+" · серия "+p.ser:"");
   const seal=(typeof partSealed==="function"&&partSealed(p))?
     "<span class='dn'>опечатано · "+sealedWhy(p)+"</span> · ":"";
   return "<b>"+p.name+"</b><s>"+fam+(fam?"":K.ru.toLowerCase()+" · ")+TIER_RU[p.tier]+sz+made+
