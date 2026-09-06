@@ -719,93 +719,11 @@ pad row on the 44 px sweep (`91zzy-screens`); `91zzzw-chron` replay hashes brows
   and that seam is what Soviet science fiction was made of.
 
 
-# The base — queued (M390–M409, designed 2026-09-06)
+# ~~The base — M390–M409~~ — closed 0.409.0 (2026-09-07); body in `docs/PLAN-archive.md`
 
-Design in [`docs/DESIGN-base.md`](docs/DESIGN-base.md), 1512 lines, six parts: the diagnosis and the
-nine source games §0–§1, the register and the clock §2–§3, the six gauges and the loop §4–§5,
-modules §6, adjacency/merging/depth §7, people §8, the charter §9, the director §10, аврал §11, the
-journal §12, консервация §13, the boundary with the holding §14, save shape §15, numbers §16,
-**the planet as the difficulty §21**, **the nine laws of hardness §22**, the payoff §23,
-**the one управляющий among a hundred §24, §34–§37**, **СВЯЗЬ — the base from anywhere §38**,
-loss and recovery §39, **ПАЛАТА §27–§32, §40** (the layer's satire of registering as a sole trader
-in Russia — the author's brief), **why a base is necessary, Part V §42–§46**, the self-critique §49,
-**the two honest playstyles §50**, and **§51 — the settled forks and the queue in build order**.
-
-Read §51 first: it holds every decision the author took on 2026-09-06 and the twenty passes in the
-order they are built. `docs/DESIGN-winter.md` is a separate sketch — «зимовка» is its own survival
-mini-game, not part of this queue, and is designed after M396.
-
-**Author's decisions, 2026-09-06 (do not reopen):** scope **(a) — nothing is cut, all of it is
-combined**; **one** управляющий per galaxy, hidden in a continuous distribution of about a hundred
-candidates (§48), meetable on the very first interview; **no notebook** — the player judges by
-whether the base works, heard over the receiver; a base can be lost and is **always recoverable**;
-the joke is played **at maximum**, and §27's deadpan law is withdrawn; the real one **builds and
-develops** the base himself; **playing by hand is a complete game with the higher ceiling** and
-nothing is gated behind a manager.
-
-**Handoff:** a fresh session takes the first open pass below, reads `DESIGN-base.md` §51 and only
-the sections that pass names (grep `docs/INDEX.md`, then `Read` with an offset), builds, runs the
-named suites and `test.ps1`, measures what the pass says, publishes to /dev, commits one version,
-strikes the pass here and in §51. Unanswered forks keep the defaults listed in §51.
-
-Five stages, each playable on /dev before the next starts:
-
-- **A · хозяйство** — ~~M390 смена and `baseResolve`~~ (0.390.0, 2026-09-06: смена базы — это
-  смена холдинга, ход смены — чистая функция от её номера, догон до 72 смен, глубже суток —
-  арифметика и одна строка; журнал на 24 строки в десяти видах, и визит открывается им) ·
-  ~~M391 воздух и вода~~ (0.391.0, 2026-09-06: две шкалы и две машины, лёд → воздух и вода,
-  расход считают только люди; кончился запас — база встала и ничего не разрушила, снабжение
-  кислородом и льдом её поднимает, консервация — кнопка на столе) · ~~M392 тепло, глубина,
-  криоцех~~ (0.392.0, 2026-09-06: двусторонняя шкала из мира, машин, глубины и того, чем её
-  сбрасывают; мороз держит воду, жара точит технику и в пределе останавливает бур; пороги выбраны
-  по УЖЕ стоящей базе — она в первой ступени и лечится одним радиатором; глубина даёт буру +8 % за
-  ряд; криоцех платит обещание `02-world`, и криоген возят между базами) ·
-  ~~M393 харч и дух~~ (0.393.0, 2026-09-06: оранжерея с посадкой и бак со скверным вкусом, консервы
-  и синтебелок с борта, дух как свод остальных четырёх шкал и настроение людей за ним; ниже
-  четверти три смены подряд — один уходит на станцию, и его снова можно нанять).
-  Playable after M391 (a base can be starved), a game after M393.
-- **B · место и люди** — ~~M394 СВЯЗЬ и мачта~~ (0.394.0, 2026-09-06: база — канал на приёмнике,
-  четыре уровня разборчивости, мачта на верхнем ряду, база зовёт сама на каждом прыжке, один приказ
-  за сеанс и он может не дойти) · ~~M395 люди в комнате~~ (0.395.0, 2026-09-06: назначение в сцене по ЦЕЛИ, нарисованный
-  рабочий — это назначенный человек с именем над головой, три новые роли работают, маяк приводит
-  гостя к затвору) · ~~M396 соседство, залы, ствол,
-  сетка 6×4~~ (0.396.0, 2026-09-06: девять правил таблицей, лазарет и мастерская под них, зал из
-  трёх с общей скидкой и общей бедой, ствол шестой колонкой — и `baseCell` больше не принимает
-  адрес вне сетки) · ~~M397 директор~~ (0.397.0, 2026-09-06: один бросок вместо двух, прогноз на смену вперёд в
-  журнале, таблица бед по мирам и четверть доброго на каждом, ходячий пожар и гермозатвор против
-  него) · ~~M398 аврал~~ (0.398.0, 2026-09-06: настоящее время внутри базы — дойти и держать
-  ДЕЙСТВИЕ две секунды, люди и мастерская держат вместе с вами, упустил — беда пошла ходить сама;
-  один на заход, телефон проверен) · ~~M399 устав~~ (0.399.0, 2026-09-06: четыре закона по ступеням роста базы, каждый навсегда,
-  у каждого цена другой природы; открытая дверь приводит и того, из-за кого пропадает треть склада).
-  **Ярус B закрыт.**
-- **C · тяжёлая игра** — ~~M400 формуляр планеты~~ (0.400.0, 2026-09-06: восемь выводимых ручек,
-  каждая что-то крутит, участок сдвигает свои; разведка тремя словами с орбиты, зондом за 300 кр и
-  замером на грунте) · ~~M401 девять законов~~ (0.401.0, 2026-09-06: сведения покупаются радистом и приборами,
-  изнашивается всё и тем быстрее, чем дальше тепло от нормы, у вахтовиков черты; и сторож — строка
-  «почему» на столе всегда) · ~~M402 развалина и возврат~~ (0.402.0, 2026-09-06: сутки без людей и запаса — развалина;
-  въезжают поселенцы или застава; вернуть можно всегда — даром, выкупом или руками, и чинить от
-  нуля за четверть) ·
-  ~~M403 плата и блокада~~ (0.403.0, 2026-09-06: решённая база делает то, чего нет ни на одном
-  прилавке — по одной вещи в четыре смены; в блокаду свой лёд идёт в баки, а свои сплавы — в
-  корпус; попутно найдено, что §23.1 называл товары С ЦЕНОЙ, и это была бы инфляция) ·
-  ~~M404 the craft pass over the whole scene~~ (0.404.0, 2026-09-07: четыре шкалы в комнате,
-  патрубки соседства, зал без внутренних стен, иней и марево; альманах, выпуск V). **Ярус C
-  закрыт.**
-- **D · человек** — ~~M405 сотня и распределение~~ (0.405.0, 2026-09-07: кандидат — бросок по
-  кривой §48, у прилавка их двое-трое и они постоянны, единственная зацепка — вопрос о месте;
-  жалованье, доля и три изъяна из шести; плохой хуже, чем никакой) · ~~M406 охота~~ (0.406.0, 2026-09-07: он функция времени и переезжает по работам; пеленг без
-  дальности с враньём в пятнадцать градусов, слух про прошлое, дюжина ложных целей; и встреча без
-  всякой отметки, если вы оказались там же) · ~~M407 он строит и развивает~~ (0.407.0, 2026-09-07: чинит раньше, чем строит; ставит по
-  формуляру планеты, а плохой — тот же список задом наперёд; снабжает себя заранее или когда
-  припёрло; три оставшихся изъяна). **Ярус D закрыт.**
-- **E · дело и мир** — ~~M408 ПАЛАТА, тон на максимум~~ (0.408.0, 2026-09-07: шесть инструментов
-  из восьми — реестр, участковый сбор, доля с оборота, сводка с пенёй, вежливый инспектор с
-  биографией и снятие с учёта; три режима участка; и брошенная база продолжает начислять, пока её
-  не изымут) · ~~M409 опорный пункт экспедиции~~ (0.409.0, 2026-09-07: годную базу за девятым кольцом
-  циркуляр называет опорным пунктом; борта садятся, платят за приём и едят с её склада).
-  **Очередь M390–M409 закрыта.**
-
-**Seams with the war (M360–M388):** no file is shared. `baseRaid` takes its attackers from
-`13c-roles` when those land (M397 reads whatever shipped); a blockade closes a system's counters and
-M403 answers it; a base overrun, defended or provisioned is an episode for the chronicle
-(`DESIGN-war` §6). Neither queue blocks the other.
+Twenty passes, all closed: хозяйство (M390–M393), место и люди (M394–M399), тяжёлая игра
+(M400–M404), человек (M405–M407) and дело и мир (M408–M409). Design stays in
+[`docs/DESIGN-base.md`](docs/DESIGN-base.md) — §51.1 is the struck queue with what each pass
+measured and what it deferred, and «Deferred» there is the only remaining base work. The layer's
+own craft audit is Almanac **issue V**; `docs/DESIGN-winter.md` is still a separate sketch and still
+not part of this queue.
