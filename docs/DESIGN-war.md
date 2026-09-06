@@ -1109,7 +1109,15 @@ One system inside ГЛАВТРАССА's centre (r ≈ 6, fixed by seed, never t
   `pull` after every release. **Deferred:** monthly bundles (a year of сводки still fits in the
   forty-per-pull window), leftovers `left`/`take` (M377) and the boss window (M380).
   CLI; the client applies ведомости at jump-in (D01–D06).
-- **M377** leftovers, благодарность, ghosts; `DESIGN-online-risks.md` (D19).
+- ~~**M377** leftovers, благодарность, ghosts; `DESIGN-online-risks.md` (D19)~~ — 0.377.0
+  (2026-09-06): `war.php` gains `left`/`here`/`take`/`thank`/`thanks` with the numbers of §11.5
+  (five per system, three per account per day, two finds per сводка, ten сводки of life) and
+  `12as-left` — leaving a gun from the hold through the опись, a copy that arrives one tier down
+  with an affix erased, the place of a row computed from its own seed so it needs no storage,
+  благодарность as the only return channel and it is a number, and the ghost: a hull left where
+  somebody died, drawn by the same generator at a fifth of the alpha. Risks doc §G written.
+  **Deferred:** signs and fuel cans as things you can leave from the hold (the hold has no can),
+  and the ghost's own trace of a flight rather than of a death.
 - **M378** votes, elections, сигнал сбора.
 - **M379** the nine rites' counters and effects (§14), the regatta from «Ялта».
 - **M380** «Ревизия» (D13).

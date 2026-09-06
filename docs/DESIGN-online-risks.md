@@ -258,6 +258,39 @@ who asks to be removed has to be handled by hand, and there is nothing to point 
 
 ---
 
+
+## G. The war's wire (M376–M377, D19)
+
+The war adds a second server file (`site/war.php`) and three new shared surfaces: the ведомость,
+the leftovers and the ghosts. Every one of them is built so that the answer to «what if someone
+is hostile» is a rule rather than a moderator.
+
+**No names, no text, no exchange.** A deed is `{system, kind, quantity}` and a leftover is
+`{system, kind, seed, tier}`. There is no addressee, no reply, no trade and no way to say
+anything: the postcard rule extended, unchanged. The single return channel is the **благодарность
+counter** — a number in the leaver's own book, which cannot carry an insult, a demand or a price.
+
+**Cheating buys nothing worth having.** Deeds are capped per account per kind per сводка, and the
+front pressure they buy saturates over the number of **accounts**: a hundred rows from one player
+weigh less than five players (measured in the suite). Ten fake accounts move one system for one
+сводка and then hit the ceiling of §11.1 — the map cannot be taken by a crowd, let alone by one
+person with scripts.
+
+**Leftovers cannot be a market.** Five per system, three per account per day, two finds per
+account per сводка, ten сводки of life, and a taken copy arrives one tier down with an affix
+erased. Nothing is transferred: the row stays where it is until it dissolves. So there is no
+duplication, no farming loop, and nothing to sell for real money — the good thing you gave away
+is gone from your hold and the copy someone found is worse than what you had.
+
+**Ghosts carry no data about a person.** A ghost row is a hull seed and a system: the client draws
+it with the same generator everyone has. There is no position stream, no chat, no presence — the
+one thing another player learns is «here someone did not make it».
+
+**The failure mode is silence, not damage.** Every call is optional: no network means the
+chronicle replays without the ведомости, the leftovers simply are not there, and the game plays
+on. The one thing that could quietly rot — clients drifting apart in their replay — is the reason
+for the hash log: `php war.php digest 7` names the сводка where they disagreed.
+
 ## Suggested order
 
 1. **E1** — the disk-fill hole. The only item where a stranger can hurt everyone.

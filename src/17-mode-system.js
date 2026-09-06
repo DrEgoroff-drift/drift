@@ -244,6 +244,8 @@ function updateSystem(dt){
   }
   /* оклик пикета (M373, §6.1): пока на него не ответили, остальное ждёт */
   if(typeof hailTick==="function"&&hailTick(sh,dt,actEdge))return;
+  /* оставленное (M377, §11.3): чужая вещь в пустоте, копия и благодарность */
+  if(typeof leftInteract==="function"&&leftInteract(sh,actEdge))return;
   /* спасатель (M375, §6.4): подбитым — топливо, обломкам — трос и экипаж.
      Нейтрален обеим сторонам по определению, и эпизоды даёт с обеими */
   if(typeof npcRescue==="function"&&npcRescue(sh,actEdge))return;

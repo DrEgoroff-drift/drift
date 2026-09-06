@@ -120,6 +120,9 @@ function helmLockNext(){
   if(G.hail&&typeof hailAnswer==="function"){hailAnswer("busy");return false;}
   /* у обломка ЦЕЛЬ снимает экипаж (M375): целиться там не в кого */
   if(typeof npcCrewOff==="function"&&G.mode==="system"&&npcCrewOff(G.ship))return false;
+  /* у чужой вещи ЦЕЛЬ объявляет благодарность (M377) — единственный обратный
+     канал во всей игре, и он число */
+  if(typeof leftThankNear==="function"&&G.mode==="system"&&leftThankNear())return false;
   if(G.jamT>0){say("ПОМЕХА · ЗАХВАТА НЕТ",70);return false;}
   helmMarksClean();
   const sh=G.ship;

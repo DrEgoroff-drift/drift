@@ -303,6 +303,7 @@ function drawCombat(zx,zy,Z){
   if(typeof battDraw==="function")battDraw(zx,zy,Z);
   if(typeof mslDraw==="function")mslDraw(zx,zy,Z);
   if(typeof npcWreckDraw==="function")npcWreckDraw(zx,zy,Z);
+  if(typeof leftDraw==="function")leftDraw(zx,zy,Z);
   /* контейнеры: гранёная коробка в цвет категории части, мигает маячком */
   for(const L of G.loot){
     const x=zx(L.x),y=zy(L.y);

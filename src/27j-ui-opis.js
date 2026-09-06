@@ -515,6 +515,13 @@ function opisPartCard(p,where){
   }
   acts.push({ru:opisArmed(scrapKey)?"ТОЧНО?":"РАЗОБРАТЬ",gold:opisArmed(scrapKey),go:()=>opisScrap(p)});
   if(!fitted&&typeof lockerHere==="function"&&lockerHere())acts.push({ru:"В ЯЩИК",go:()=>{lockerPutPart(p.id);OPIS.sel=null;opisRerender();}});
+  /* ── оставить (M377, §11.3) ──
+     Не «подарить» и не «продать»: вещь уходит из трюма насовсем и ложится в
+     этой системе для того, кто придёт следующим. Кнопка есть только в полёте и
+     только под учётной записью — оставлять некому, если тебя никто не знает. */
+  if(!fitted&&G.mode==="system"&&typeof leftLeave==="function"&&
+     typeof warTok==="function"&&warTok())
+    acts.push({ru:"ОСТАВИТЬ",go:()=>{leftLeave("gun",p).then(()=>{OPIS.sel=null;opisRerender();});}});
   opisActs(card,acts);
   return card;
 }

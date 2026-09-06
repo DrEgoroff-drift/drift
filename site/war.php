@@ -41,6 +41,12 @@ const WAR_TAIL  = 300;          // пять минут хвоста: запис�
 const WAR_KINDS = ['def','tow','ore','mail','clear','build','crew','fuel'];
 const WAR_CAP   = ['def'=>40,'tow'=>10,'ore'=>2000,'mail'=>20,'clear'=>50,'build'=>2000,'crew'=>20,'fuel'=>50];
 const WAR_PULL  = 40;           // сколько закрытых сводок отдаём за раз
+/* оставленное (§11.3, M377): числа из §11.5 и ни одного своего */
+const LEFT_KINDS = ['gun','ammo','fuel','sign','tow','ghost'];
+const LEFT_PER_SYS  = 5;        // сколько лежит в одной системе
+const LEFT_PER_DAY  = 3;        // сколько один борт оставляет за сутки
+const LEFT_TAKE     = 2;        // сколько находок в сводку на борт
+const LEFT_LIFE     = 10;       // сводок живёт запись
 
 /* ── ответы ── */
 function wout($o, $code = 200) {
@@ -53,7 +59,7 @@ function wfail($m, $code = 400) { wout(['ok' => false, 'error' => $m], $code); }
 /* ── хранилище ── */
 function wroot() {
   $r = dirname(dirname(__DIR__)) . '/drift-data/war';
-  foreach ([$r, "$r/svodka", "$r/circ", "$r/acct", "$r/hash"] as $d) if (!is_dir($d)) @mkdir($d, 0700, true);
+  foreach ([$r, "$r/svodka", "$r/circ", "$r/acct", "$r/hash", "$r/left", "$r/thanks"] as $d) if (!is_dir($d)) @mkdir($d, 0700, true);
   return $r;
 }
 function wread($f) {
@@ -235,6 +241,101 @@ if ($a === 'hash') {
   arsort($rec['h']);
   $top = array_key_first($rec['h']);
   wout(['ok' => true, 'agree' => ($top === $h), 'n' => $n, 'seen' => $rec['h'][$h]]);
+}
+
+/* ══════════════ оставленное (M377, §11.3) ══════════════
+   Правило одно и оно короткое: ни имён, ни текста, в одну сторону, без ответа.
+   Не «подарить», а ОСТАВИТЬ; кто нашёл, тот нашёл. Обмена нет — значит нет и
+   рынка, нет попрошаек, нет «продай мне за реал». Взятое приходит СТЁРТЫМ на
+   тир: отдать хорошее — потеря настоящая, найти хорошее — подарок настоящий,
+   а размножить нельзя. */
+function lfile($sys) { return wroot() . '/left/' . str_replace(',', '_', $sys) . '.json'; }
+function lread($sys, $N) {
+  $r = wread(lfile($sys));
+  if (!$r || !is_array($r['rows'] ?? null)) return ['sys' => $sys, 'rows' => []];
+  /* десять сводок — и запись растворяется: склад тут не заводится */
+  $rows = [];
+  foreach ($r['rows'] as $x) if ((int)($x['n'] ?? 0) > $N - LEFT_LIFE) $rows[] = $x;
+  $r['rows'] = $rows;
+  return $r;
+}
+if ($a === 'left') {
+  $login = wwho();
+  if (!$login) wfail('нужна учётная запись', 401);
+  $N   = wclose();
+  $sys = (string)($in['sys'] ?? '');
+  $k   = (string)($in['kind'] ?? '');
+  $sd  = (int)($in['seed'] ?? 0);
+  $t   = (int)($in['tier'] ?? 1);
+  if (!preg_match('/^-?\d{1,3},-?\d{1,3}$/', $sys)) wfail('не адрес системы');
+  if (!in_array($k, LEFT_KINDS, true)) wfail('неизвестный вид');
+  if ($t < 1 || $t > 5) wfail('тир вне границ');
+  /* потолок на борт в сутки (четыре сводки) */
+  list($acct, $af) = wacct($login, $N);
+  $day = (int)($acct['left'] ?? 0);
+  if ((int)($acct['leftN'] ?? -99) < $N - 3) { $day = 0; }
+  if ($day >= LEFT_PER_DAY) wfail('за сутки больше не оставляют');
+  $acct['left'] = $day + 1; $acct['leftN'] = $N;
+  wwrite($af, $acct);
+  $r = lread($sys, $N);
+  if (count($r['rows']) >= LEFT_PER_SYS) array_shift($r['rows']);
+  $r['rows'][] = ['k' => $k, 's' => $sd, 't' => $t, 'n' => $N,
+                  'h' => substr(hash('sha256', $login), 0, 8), 'ty' => 0];
+  wwrite(lfile($sys), $r);
+  wout(['ok' => true, 'left' => LEFT_PER_DAY - $acct['left']]);
+}
+if ($a === 'here') {
+  /* что лежит в этой системе: читать может кто угодно, это не секрет */
+  $N = wclose();
+  $sys = (string)($in['sys'] ?? $_GET['sys'] ?? '');
+  if (!preg_match('/^-?\d{1,3},-?\d{1,3}$/', $sys)) wfail('не адрес системы');
+  $r = lread($sys, $N);
+  wout(['ok' => true, 'rows' => $r['rows'], 'N' => $N]);
+}
+if ($a === 'take') {
+  $login = wwho();
+  if (!$login) wfail('нужна учётная запись', 401);
+  $N   = wclose();
+  $sys = (string)($in['sys'] ?? '');
+  $i   = (int)($in['i'] ?? -1);
+  if (!preg_match('/^-?\d{1,3},-?\d{1,3}$/', $sys)) wfail('не адрес системы');
+  list($acct, $af) = wacct($login, $N);
+  if ((int)($acct['take'] ?? 0) >= LEFT_TAKE) wfail('за сводку больше не берут');
+  $r = lread($sys, $N);
+  if (!isset($r['rows'][$i])) wfail('там уже пусто');
+  $acct['take'] = (int)($acct['take'] ?? 0) + 1;
+  wwrite($af, $acct);
+  /* КОПИЯ, а не перенос: запись остаётся лежать до своего срока. Стирание на
+     тир считает клиент — сервер только говорит, что копия стёртая */
+  $row = $r['rows'][$i];
+  $row['worn'] = 1;
+  wout(['ok' => true, 'row' => $row, 'left' => LEFT_TAKE - $acct['take']]);
+}
+if ($a === 'thank') {
+  /* благодарность — единственный обратный канал, и он число, а не слово */
+  $login = wwho();
+  if (!$login) wfail('нужна учётная запись', 401);
+  $N   = wclose();
+  $sys = (string)($in['sys'] ?? '');
+  $i   = (int)($in['i'] ?? -1);
+  if (!preg_match('/^-?\d{1,3},-?\d{1,3}$/', $sys)) wfail('не адрес системы');
+  $r = lread($sys, $N);
+  if (!isset($r['rows'][$i])) wfail('там уже пусто');
+  $r['rows'][$i]['ty'] = (int)($r['rows'][$i]['ty'] ?? 0) + 1;
+  wwrite(lfile($sys), $r);
+  /* счётчик самого оставившего: он увидит его в трудовой книжке */
+  $hf = wroot() . '/thanks/' . $r['rows'][$i]['h'] . '.json';
+  if (!is_dir(dirname($hf))) @mkdir(dirname($hf), 0700, true);
+  $t = wread($hf) ?: ['n' => 0];
+  $t['n'] = (int)$t['n'] + 1;
+  wwrite($hf, $t);
+  wout(['ok' => true, 'ty' => $r['rows'][$i]['ty']]);
+}
+if ($a === 'thanks') {
+  $login = wwho();
+  if (!$login) wfail('нужна учётная запись', 401);
+  $t = wread(wroot() . '/thanks/' . substr(hash('sha256', $login), 0, 8) . '.json');
+  wout(['ok' => true, 'n' => (int)($t['n'] ?? 0)]);
 }
 
 /* ── CLI регулятора (§13) ── */

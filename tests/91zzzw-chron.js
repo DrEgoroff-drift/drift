@@ -315,3 +315,27 @@ TEST_SUITES.push(()=>suite("война M376: ключ один, поля раз�
   try{localStorage.removeItem(CHRON_KEY);}catch(e){}
   WAR_LED_CACHE=null;
 }));
+
+/* ══════════════ оставленное (M377, §11.3) ══════════════
+   Сеть здесь не дёргается: мерится то, что решает клиент — стирание копии,
+   место записи от её же семени и то, что призрак читается иначе, чем канистра. */
+TEST_SUITES.push(()=>suite("оставленное M377: копия приходит стёртой",()=>{
+  chWorld();
+  const row={k:"gun",s:987654,t:4,n:1,ty:0};
+  const worn=leftWorn(row);
+  ok(!!worn,"копия собралась");
+  eq(worn.tier,3,"тир на ступень ниже оригинала");
+  ok(worn.worn===1,"и она помечена стёртой");
+  const full=genPart(row.s>>>0,4,"gun");
+  ok(worn.aff.length<=full.aff.length,"аффиксов не больше, чем у оригинала");
+  /* бонусы пересчитаны по оставшимся аффиксам, а не унаследованы */
+  let sum=0;for(const x of worn.aff)sum+=Math.abs(x.v);
+  ok(sum>0,"часть всё ещё что-то умеет");
+  eq(leftWorn({k:"fuel",s:1,t:2}),null,"канистра не часть — стирать нечего");
+  /* место лежит на семени: у всех одинаково и нигде не хранится */
+  const a=leftPos(row,0),b=leftPos(row,0);
+  eq(a.x,b.x,"место не гуляет");
+  const c=leftPos({k:"gun",s:12,t:1},1);
+  ok(Math.abs(c.x-a.x)>1||Math.abs(c.y-a.y)>1,"у другой записи другое место");
+  ok(Math.hypot(a.x,a.y)>800,"и оно не под носом у точки прыжка");
+}));

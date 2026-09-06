@@ -7,6 +7,35 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.377.0 - M377: what people leave behind, and the ones who did not make it
+
+Death Stranding on the postcard's terms: **no names, no text, one way, no reply.** You do not
+give — you **leave**. Whoever finds, finds.
+
+A gun can be left from the hold, in flight, in the system you are standing in; it is gone from
+your hold for good. Whoever comes later sees a container out in the dark and may take a **copy** —
+one tier down, one affix erased. Nothing is transferred and nothing is duplicated: giving a good
+thing away is a real loss, finding one is a real gift, and there is no way to farm either. Five
+rows per system, three left per account per day, two finds per сводка, ten сводки before a row
+dissolves; the server holds those numbers, because a number the client holds is a wish.
+
+**Благодарность** is the only return channel in the whole game, and it is a **number**: one
+button on a thing you found, one counter in the leaver's own book. It cannot carry a word, a
+demand or a price.
+
+**And the ghosts.** Where somebody's ship was lost, a hull stays — drawn by the same generator
+everyone has, from a seed and a system number and nothing else, at a fifth of the alpha. There is
+no position stream, no presence and no chat behind it. The one thing you learn is: here someone
+did not make it.
+
+`docs/DESIGN-online-risks.md` gains section G — why none of this can become a market, why a
+hundred rows from one account weigh less than five accounts, and why the failure mode of the whole
+wire is silence rather than damage.
+
+Tests: the worn copy losing exactly one tier and one affix, a row's place computed from its own
+seed so it is the same for everyone and stored nowhere, and a canister refusing to be «worn» at
+all because it is not a part.
+
 ## 0.376.0 - M376: the war's ledger, and the one thing a client cannot be trusted with
 
 Stage C opens: the war gets a wire. Not a simulation on a server — the chronicle is still

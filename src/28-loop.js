@@ -7,6 +7,9 @@ function wreck(){
   G.ship.x=Math.cos(a)*1600;G.ship.y=Math.sin(a)*1600;
   G.ship.vx=0;G.ship.vy=0;G.mode="system";G.ap=null;G.belt=null;G.dig=null;G.cave=null;G.surf=null;G.land=null;
   G.pirates=[];G.shots=[];   /* без этого авария у пиратов превращается в петлю */
+  /* след для тех, кто придёт сюда после (M377, §11.3): не сообщение и не
+     подарок — просто корпус, которого больше нет */
+  if(typeof leftGhost==="function")leftGhost();
   /* люди на борту (M114) гибнут вместе с кораблём, и это записывается отдельной
      строкой: вывоз — не перевозка ящиков, и цена ошибки должна называться */
   const pax=G.cargo.folk|0;
