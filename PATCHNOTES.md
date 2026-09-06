@@ -7,6 +7,34 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.374.0 - M374: they remember deeds, not numbers
+
+There is no reputation number, and now there is what replaces it: **episodes** — what you did,
+where, when, and with whom.
+
+**A deed needs a witness.** If none of their hulls survived inside your see range and the parrot
+is not aboard, nothing happened — the galaxy does not have an omniscient scorekeeper. **A deed
+travels**: three sectors a сводка, along the same lanes the rumours crawl. A picket two days away
+has not heard yet; the same picket next week has. **At a place they take the heaviest episode that
+reached it, never a sum.** Good and bad do not cancel: if both arrived, the hail says both — «тот
+самый, который вытащил на тросе? но и стрелял по их борту. Лети, но мы смотрим».
+
+**The notebook** holds twelve people, oldest pushed out, and each can be asked one thing per
+сводка: fuel over the norm, or where the front stands. **«Не простил»** is the one thing nothing
+overwrites: kill a person from your own notebook and they leave it for ever, and that is what
+their side remembers about you from then on.
+
+**And the doors these open.** The fourth clearance is no longer «not issued yet»: it is issued for
+a heavy deed ГЛАВТРАССА knows about. A foreign shipyard sells you a hull once you have an episode
+with that power — the gate M369b left as a stub is now answered by the notebook. And once per
+power, for a heavy enough deed, they do not sell but **give**: a hull «со списания», with their
+grammar and their story on the card.
+
+Tests: new `91zzzw-notebook` — no witness means no episode, the notebook capped at twelve, travel
+that arrives late and then arrives, the heaviest episode winning over the sum, good and bad in one
+hail line, the clearance gate, the purchase gate, the gift once, and «не простил» surviving a
+later good deed.
+
 ## 0.373.0 - M373: four rules instead of a reputation bar
 
 There is no reputation number in this game and there will not be one. Instead there are four

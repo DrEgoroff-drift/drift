@@ -1514,13 +1514,16 @@ stamp is on the lab's line), a blockade that answers «стоять» to «пр�
 running. Anger is local: those who saw it shoot, and the chronicle knows nothing — that memory
 travels with M374.
 
-**M374 · episodes and the notebook** — *Read* §6.2–6.3, D15, D17. Symbols: `heardYours`,
-`parrotHas` (`12x-parrot`), the трасса lanes (`18b-map-hold`), the desk pages (`27e-ui-home`).
-*Build* `12ap-notebook`: episode kinds and weights bound to named people; the travel along the
-lanes on the rumour clock; witnesses (a surviving hull in see range, or the parrot);
-resolution = the heaviest episode that reached this place; the notebook page (12, asks once per
-сводка); «не простил»; clearance III/IV gates real; the hull-purchase gate real; the gift.
-*Tests* new `tests/91zzzw-notebook.js`. *Done when:* a picket you never met greets you by a deed.
+~~**M374 · episodes and the notebook**~~ — 0.374.0 (2026-09-06): `12ap-notebook` — nine kinds of
+episode with weights, each bound to a named person; a witness required (their hull alive inside
+see range, or the parrot aboard) or the deed never happened; travel at three sectors a сводка, so
+a far picket does not know yet; resolution by the **heaviest** episode that reached this place,
+never a sum, and if good and bad both arrived the hail says both; the notebook page on the board
+(twelve people, one ask per сводка — fuel over norm or where the front stands); «не простил»
+removing the person for ever and outweighing everything; clearance IV gated on a heavy
+ГЛАВТРАССА episode instead of «not issued yet»; the hull-purchase gate of §19.3 answered by
+`episodeWith`; the gift, once per power. **Deferred:** episodes from the fleet's own errands
+(mail, refuel) — they need M375's signals to be worth anything.
 
 **M375 · the rescuer** — *Read* §6.4. *Build:* signals after front battles for six makers
 (`fleetInteract` «идти на сигнал» generalised); tow / refuel / crew off a derelict earn

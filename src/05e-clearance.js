@@ -23,7 +23,7 @@ const CLEARANCE=[
   {n:1,ru:"I",   how:"с начала"},
   {n:2,ru:"II",  how:"экзамен кооператива и десять сбитых"},
   {n:3,ru:"III", how:"сто часов налёта"},
-  {n:4,ru:"IV",  how:"допуск по форме от ГЛАВТРАССЫ (ещё не выдают)"}
+  {n:4,ru:"IV",  how:"по форме от ГЛАВТРАССЫ: за дело, о котором она знает"}
 ];
 const CLR_KILLS=10;
 const CLR_HOURS=100;
@@ -34,6 +34,12 @@ function clearanceEarned(){
   const exam=(typeof coopHas==="function")&&coopHas();
   if(exam&&(G.kills|0)>=CLR_KILLS)n=2;
   if(n>=2&&clrHours()>=CLR_HOURS)n=3;
+  /* четвёртый допуск выдают не за часы, а за дело (M374, §6.2): нужен эпизод
+     с ГЛАВТРАССОЙ, и не любой, а тяжёлый — тот, о котором говорят */
+  if(n>=3&&typeof epiHere==="function"){
+    const e=epiHere("gt");
+    if(e&&e.w>=50)n=4;
+  }
   return n;
 }
 function clearanceNow(){

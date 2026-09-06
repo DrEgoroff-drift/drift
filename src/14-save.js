@@ -57,6 +57,7 @@ function snapshot(){
     tech:[...G.tech],techLvl:G.techLvl,barter:[...G.barter],found:[...G.found],
     species:[...G.species],bioV:2,
     opts:G.opts,zoom:G.zoom,market:G.market,uniqueShips:G.uniqueShips,tow:G.tow,
+    episodes:G.episodes,notebook:G.notebook,gifts:G.gifts,mslBy:G.mslBy,
     drones:G.drones,droneInventory:G.droneInventory,droneIds:G.droneIds,droneSold:G.droneSold||{},crew:G.crew,bases:G.bases,
     mgrs:G.mgrs,blueprints:G.blueprints,aiRift:G.aiRift,rogues:G.rogues,exiles:G.exiles,
     relics:G.relics,relicHint:G.relicHint,bio:G.bio,home:G.home,course:G.course||null,
@@ -204,6 +205,12 @@ function applySave(s){
   G.sx=s.sx|0;G.sy=s.sy|0;G.sys=getSystem(G.sx,G.sy);
   G.uniqueShips=asMap(s.uniqueShips);
   G.tow=(s.tow&&typeof s.tow==="object")?s.tow:null;   /* корпус на тросе (M369b) */
+  /* дела и люди (M374): без них четвёртый допуск и покупка корпуса теряют
+     основание, поэтому они в сейве, а летопись — нет */
+  G.episodes=Array.isArray(s.episodes)?s.episodes:[];
+  G.notebook=Array.isArray(s.notebook)?s.notebook:[];
+  G.gifts=(s.gifts&&typeof s.gifts==="object")?s.gifts:{};
+  G.mslBy=(typeof s.mslBy==="string")?s.mslBy:"gt";
   G.shipId=shipData(s.shipId)?s.shipId:"strizh";
   G.owned=Object.assign({strizh:true},s.owned||{});
   /* старое сохранение знает только s.mods — считаем, что всё купленное и установлено.

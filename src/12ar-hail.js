@@ -69,6 +69,12 @@ function hailAnger(by,why){
     etherLine("…"+(P?P.ru:"пикет")+": борт нарушил "+(why||"правило")+". Работаем.",
       P?P.ru:"пикет");
   logAdd("warn","Пикет "+(P?P.ru:"")+" открыл огонь: "+(why||"нарушение"));
+  /* нарушение правила — это эпизод (M374): его запомнит человек, и он поедет
+     по трассам вперёд вас */
+  if(typeof epiAdd==="function"){
+    const k=/первое/.test(why||"")?"shot":(/второе/.test(why||"")?"contra":"ran");
+    epiAdd(k,by,{force:1});
+  }
 }
 /* игрок выстрелил по державе — первое правило, и оно самое короткое */
 function hailShotAt(p){
@@ -83,7 +89,8 @@ function hailTick(sh,dt,actEdge){
     H.t-=dt;
     const P=(typeof powerOf==="function")?powerOf(H.by):null;
     const who=P?P.ru.toUpperCase():"ПИКЕТ";
-    G.prompt=who+" · «"+(P?P.hail:"Кто такой")+"»\n"+
+    const deed=(typeof epiHailLine==="function")?epiHailLine(H.by):"";
+    G.prompt=who+" · «"+(deed||(P?P.hail:"Кто такой"))+"»\n"+
       "ДЕЙСТВИЕ — «ПРОХОДОМ» · ЦЕЛЬ — «ПО ДЕЛУ»"+(H.warn?" · ВАС УЖЕ ПРЕДУПРЕДИЛИ":"");
     if(actEdge){hailAnswer("pass");return true;}
     if(H.t<=0){

@@ -255,6 +255,7 @@ function updateSystem(dt){
         G.npcWrecks=G.npcWrecks.filter(w=>w!==wk);
         say("КОРПУС НА ТРОСЕ · В ДОК",120);
         logAdd("tech","Корпус после боя взят на буксир · сектор "+G.sx+":"+G.sy);
+        if(typeof epiAdd==="function")epiAdd("tow",wk.by);
       }
       return;
     }

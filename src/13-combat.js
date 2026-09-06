@@ -107,7 +107,16 @@ function hitShip(p,s,rawDmg){
   if(p.dummy&&s.owner==="player"&&typeof rangeHit==="function")rangeHit(done);
   sfx("hit",{v:.3});
   if(p.hull<=0){
-    if(s.owner==="player")killPirate(p);else pirateFellTo(p,s.owner);
+    if(s.owner==="player"){
+      /* эпизоды (M374): пирата сняли при их свидетеле — это дело; сбитый
+         ЗНАКОМЫЙ из книжки не прощается никогда */
+      if(typeof epiAdd==="function"&&!p.pw&&typeof MAKER_KEYS!=="undefined"){
+        for(const by of MAKER_KEYS)if(epiWitness(by)){epiAdd("guard",by);break;}
+      }
+      if(p.pw&&typeof epiNeverForgave==="function"&&
+         (G.notebook||[]).some(x=>x.by===p.pw&&x.who===p.name))epiNeverForgave(p);
+      killPirate(p);
+    }else pirateFellTo(p,s.owner);
     return true;
   }
   return false;
