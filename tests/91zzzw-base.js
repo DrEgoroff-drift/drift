@@ -1497,3 +1497,124 @@ TEST_SUITES.push(()=>suite("база M406: у прилавка его нет, а
     ok(!L.some(x=>x.id===theOne().id),"там его нет — он не рекламирует себя (§35.1)");
   }
 }));
+
+/* ── он строит и развивает (M407) ──
+   §37: строят ВСЕ, правильно — один. Проверяется именно разница, а не факт
+   стройки, и три изъяна, которым нужна была именно она. */
+TEST_SUITES.push(()=>suite("база M407: строят все, правильно — один",()=>{
+  const B=bLife();
+  G.crew=[];
+  G.credits=500000;G.cargo.alloy=200;
+  for(let i=0;i<B.cells.length;i++)B.cells[i]=null;
+  B.cells[0]={k:"reactor",hp:1};
+  /* без управляющего база не строит сама */
+  const n=baseShift()-(baseShift()%DEV_EVERY);
+  eq(devStep(B,n),0,"без управляющего никто ничего не ставит");
+  /* хороший читает формуляр: на жарком мире радиатор раньше бура */
+  let good=null,bad=null;
+  for(let i=0;i<9000&&!(good&&bad);i++){
+    const M=bmgrOf(i*7919+3);
+    if(!good&&M.q>.8&&!M.flaw)good=M;
+    if(!bad&&M.flaw&&M.flaw.id==="wrong"&&M.term<20)bad=M;
+  }
+  ok(!!good&&!!bad,"нашлись оба");
+  G._dial[B.sx+","+B.sy+":"+B.idx+":"+B.type]={heat:2.5,light:1,press:0,grav:1,
+    wind:0,quake:0,ice:0,ore:3,type:B.type,key:"тест"};
+  B.mgr={id:good.id,since:n};
+  const want=devWant(B,good);
+  eq(want[0],"radiator","на жарком мире хороший ставит радиатор первым: "+want.slice(0,3).join(","));
+  ok(devStep(B,n),"и ставит его");
+  ok(B.cells.some(c=>c&&c.k==="radiator"),"радиатор стоит");
+  /* плохой ставит тот же список задом наперёд */
+  const B2=bLife();
+  for(let i=0;i<B2.cells.length;i++)B2.cells[i]=null;
+  B2.cells[0]={k:"reactor",hp:1};
+  G._dial[B2.sx+","+B2.sy+":"+B2.idx+":"+B2.type]={heat:2.5,light:1,press:0,grav:1,
+    wind:0,quake:0,ice:0,ore:3,type:B2.type,key:"тест"};
+  B2.mgr={id:bad.id,since:n-bad.term-1};
+  ok(!!bmgrFlawOn(B2,n),"его изъян уже виден");
+  const want2=devWant(B2,bad);
+  ok(want2[0]!=="radiator","а плохой начинает с другого конца: "+want2.slice(0,3).join(","));
+  /* он тратит ВАШИ деньги и оставляет запас на счету */
+  const cr=G.credits;
+  devStep(B,n+DEV_EVERY);
+  ok(G.credits<cr,"стройка идёт из вашего кармана: −"+(cr-G.credits));
+  G.credits=DEV_KEEP+10;
+  const c2=G.credits;
+  devStep(B,n+DEV_EVERY*2);
+  eq(G.credits,c2,"и на последние он не строит");
+  /* и чинит разбитое раньше, чем ставит новое */
+  G.credits=500000;
+  B.cells[0].hp=0;
+  ok(devStep(B,n+DEV_EVERY*3),"ход сделан");
+  eq(B.cells[0].hp,1,"сперва починил разбитое");
+  ok(B.log.some(x=>x.k==="devfix"),"и это в журнале");
+}));
+
+TEST_SUITES.push(()=>suite("база M407: три изъяна, которым нужна была стройка",()=>{
+  const n=baseShift()-(baseShift()%DEV_EVERY);
+  /* боится глубины: нижний ряд не трогает никогда */
+  let deep=null,panic=null;
+  for(let i=0;i<9000&&!(deep&&panic);i++){
+    const M=bmgrOf(i*7919+3);
+    if(!deep&&M.flaw&&M.flaw.id==="deep"&&M.term<20)deep=M;
+    if(!panic&&M.flaw&&M.flaw.id==="panic"&&M.term<20)panic=M;
+  }
+  ok(!!deep&&!!panic,"нашлись оба изъяна");
+  const B=bLife();
+  G.credits=500000;G.cargo.alloy=200;
+  /* заполняем всё, кроме нижнего ряда */
+  for(let i=0;i<B.cells.length;i++)B.cells[i]={k:"storage",hp:1};
+  const last=baseRows(B)-1;
+  for(let c=0;c<BASE_COLS;c++)baseSet(B,c,last,null);
+  B.mgr={id:deep.id,since:n-deep.term-1};
+  eq(devSpot(B,"drill",deep),null,"боящийся глубины не видит нижнего ряда");
+  const B2=bLife();
+  for(let i=0;i<B2.cells.length;i++)B2.cells[i]={k:"storage",hp:1};
+  for(let c=0;c<BASE_COLS;c++)baseSet(B2,c,last,null);
+  let plain=null;
+  for(let i=0;i<9000&&!plain;i++){const M=bmgrOf(i*7919+3);if(!M.flaw&&M.q>.5)plain=M;}
+  B2.mgr={id:plain.id,since:n};
+  ok(!!devSpot(B2,"drill",plain),"а обычный — видит");
+  /* паникует: после аврала изводит полсклада */
+  const B3=bLife();
+  G.credits=500000;
+  B3.mgr={id:panic.id,since:n-panic.term-1};
+  B3.pool={iron:80};
+  B3.fire={c:0,r:0,k:"fire",n};
+  ok(devStep(B3,n),"ход сделан");
+  ok((B3.pool.iron|0)<80,"полсклада ушло на царапину: "+B3.pool.iron);
+  ok(B3.log.some(x=>x.k==="panic"),"и это записано");
+}));
+
+TEST_SUITES.push(()=>suite("база M407: он снабжает себя сам",()=>{
+  const B=bLife();
+  G.crew=[];
+  B.cells[5]={k:"habitat",hp:1};
+  bCrew(B,1);
+  G.credits=500000;
+  const n=baseShift();
+  /* без управляющего никто ничего не заказывает */
+  baseLife(B).food=1;baseLife(B).air=1;baseLife(B).water=1;
+  eq(devSupply(B,n),0,"без управляющего припас никто не закажет");
+  /* хороший заказывает ЗАРАНЕЕ, плохой — когда уже поздно */
+  let good=null,poor=null;
+  for(let i=0;i<9000&&!(good&&poor);i++){
+    const M=bmgrOf(i*7919+3);
+    if(!good&&M.q>.8&&!M.flaw)good=M;
+    if(!poor&&M.q<.3)poor=M;
+  }
+  B.mgr={id:good.id,since:n};
+  baseLife(B).food=baseLifeNeed(B).food*6;
+  ok(devSupply(B,n),"хороший заказал, пока ещё есть");
+  ok((B.pool.ice|0)>0,"лёд пришёл");
+  B.mgr={id:poor.id,since:n};
+  B.pool.ice=0;
+  /* и воздух с водой тоже полные: иначе плохой сорвётся на них, а мы меряем
+     ИМЕННО дальновидность, а не тревогу */
+  baseLife(B).air=LIFE_START;baseLife(B).water=LIFE_START;
+  baseLife(B).food=baseLifeNeed(B).food*6;
+  eq(devSupply(B,n),0,"плохой в этот момент ещё не чешется");
+  baseLife(B).food=1;
+  ok(devSupply(B,n),"а когда припёрло — заказывает и он");
+}));

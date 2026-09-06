@@ -1624,7 +1624,14 @@ the ungated accident — he stands among the candidates of whatever station he i
 by nothing. Suites in `91zzzw-base`. **Deferred:** the flea-market provenance and the wall/retelling
 channels of §24.4 (two channels are enough for triangulation to be a real skill), and §24.5's rivals
 taking him on an NPC contract. ·
-M407 он строит и развивает (§24.6, §37).
+~~M407 он строит и развивает~~ — 0.407.0 (2026-09-07): `21b4-base-build` — one move every six
+shifts out of the player's account, repairs first, then the next module chosen by the planet's
+formulary (радиатор before a second drill where it is hot, a second reactor where it is cold), a
+reserve of 1 500 credits he never spends past, and self-provisioning that a good man does early and
+a bad one does late. The three flaws that needed building are wired — строит не то (the same list
+reversed), боится глубины (the lower row does not exist for him), паникует — so all six of §34.1
+now exist. **Found here:** `baseLifeNeed` had no `food` field, so every `need.food` comparison was
+against `undefined` and silently false. **Stage D is closed** (M405–M407).
 
 **E · дело и мир** — M408 ПАЛАТА и станция платит, тон на максимум (§28–§32, §40) ·
 M409 опорный пункт экспедиции (§44).

@@ -71,6 +71,10 @@ const BLOG={
   uniq:    (B,a)=>"со склада забрали, чего нигде не купить: "+a.what,
   mgrgo:   (B,a)=>a.who+" ушёл: жалованье не заплачено",
   short:   (B,a)=>"склад не сходится на "+a.q+" ед. Опять",
+  dev:     (B,a)=>a.who+" поставил "+a.what+". Не спросил",
+  devfix:  (B,a)=>a.who+" восстановил "+a.what,
+  devbuy:  (B,a)=>a.who+" заказал припас, пока не кончился",
+  panic:   (B,a)=>"на царапину извели "+a.q+" ед. со склада",
   warn:    (B,a)=>a.warn,
   law:     (B,a)=>"устав: принят закон «"+a.ru+"». Навсегда",
   thief:   (B,a)=>"со склада пропало "+a.q+" ед. Дверь была открыта",
@@ -154,6 +158,9 @@ function baseShiftRun(B,n){
     if(typeof baseUniqStep==="function")said|=baseUniqStep(B,n)?1:0;
     /* управляющий (M405): жалованье, доля и изъян — после всего, что он вёл */
     if(typeof bmgrStep==="function")said|=bmgrStep(B,n)?1:0;
+    /* и он же развивает базу (M407): строят все, правильно — один */
+    if(typeof devSupply==="function")said|=devSupply(B,n)?1:0;
+    if(typeof devStep==="function")said|=devStep(B,n)?1:0;
   }
   /* тихая смена тоже строка — но не каждая: журнал, в котором пусто, читается
      как поломка, а журнал из одних «тихо» вытесняет то, ради чего его открыли.
@@ -264,9 +271,13 @@ function baseLife(B){
 }
 function baseCrewN(B){return (typeof baseStaff==="function")?baseStaff(B).length:0;}
 function baseParked(B){return !!(B&&B.park);}
+/* нужда за смену. Харч тут же, третьим полем: без него всякий, кто спросит
+   `need.food`, получит `undefined` и сравнение с ним — тихую ложь (так и
+   вышло у снабжения M407, и набор это поймал) */
 function baseLifeNeed(B){
   const n=baseCrewN(B),d=baseParked(B)?LIFE_LOW:1;
-  return {air:Math.ceil(n*LIFE_AIR/d),water:Math.ceil(n*LIFE_WATER/d)};
+  return {air:Math.ceil(n*LIFE_AIR/d),water:Math.ceil(n*LIFE_WATER/d),
+          food:Math.ceil(n*LIFE_FOOD/d)};
 }
 /* сколько на базе живых машин жизнеобеспечения */
 function baseLifeMakers(B){
@@ -350,7 +361,7 @@ function baseLifeStep(B,P,n){
   }
   /* харч не останавливает базу: голод — это про дух, а не про механизмы.
      Голодная база работает и теряет людей, и это разные наказания */
-  const eat=Math.ceil(baseCrewN(B)*LIFE_FOOD/(baseParked(B)?LIFE_LOW:1));
+  const eat=baseLifeNeed(B).food;
   if(eat){
     const wasFed=(L.food|0)>0;
     L.food=Math.max(0,(L.food|0)-eat);

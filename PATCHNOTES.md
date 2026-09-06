@@ -7,6 +7,30 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.407.0 - M407: he builds and develops, and that is where the trap is
+
+A hired keeper stops a base idling. The real one **develops** it — every few shifts, out of your
+account, without asking: he repairs what is broken before he builds anything new, puts up what the
+planet's formulary demands (a радиатор on a hot world **before** a second drill, a second reactor
+on a cold one), orders ice and food before the stores run out rather than after, and refuses to
+grow past what the place can hold.
+
+And here is the trap the whole hunt exists for: **everybody builds.** The bad ones build too, with
+the same money, on the same schedule. The difference is only in *what* goes up — the bad one works
+down the same list from the wrong end, so the third склад stands where the радиатор had to be, and
+it is built, and it is paid for. It does not read as an error. It reads as a base that is quietly
+wrong for forty shifts.
+
+The three flaws that needed building now exist: **строит не то** (the list, reversed), **боится
+глубины** (the lower row simply does not exist for him — the best ore is never touched), and
+**паникует** (perfect until the first fire, then half the store goes on a scratch). With M405's
+three, all six of §34.1 are wired.
+
+Found here: `baseLifeNeed` returned air and water and no **food**, so anything asking for
+`need.food` compared against `undefined` and silently did nothing. The supply routine did exactly
+that, and the suite caught it on the first run.
+
+---
 ## 0.406.0 - M406: the hunt — he does not advertise, and he moves
 
 The hundred stand at counters selling themselves. **The real one does not.** He is working
