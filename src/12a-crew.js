@@ -576,7 +576,7 @@ function spawnAllies(){
     if(c.order.sx!==G.sx||c.order.sy!==G.sy)continue;
     const a=rng(hashi(c.seed,G.sx*131+G.sy,5))()*TAU;
     G.allies.push({c,x:G.ship.x+Math.cos(a)*420,y:G.ship.y+Math.sin(a)*420,
-      vx:0,vy:0,a:a,cool:0,thrust:false});
+      vx:0,vy:0,a:a,cool:0,thrust:false,iff:true});   /* свои: не цель (D09) */
   }
   if(G.allies.length)say("В системе работает ваш экипаж\n"+G.allies.map(A=>A.c.name).join(", "));
 }

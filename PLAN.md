@@ -672,20 +672,22 @@ Three stages, each playable on /dev before the next starts:
 
 - **A — the fight** (client only): ~~M360 helm and lock~~ (0.360.0, 2026-09-06: `15a-helm`;
   Space stays ДЕЙСТВИЕ, raw helm keys ignore rebinding, pinch in the system mode is gone — see
-  the patchnote) · **M361 in progress (2026-09-06, stopped by the author mid-pass):** `13-combat`
-  (owner on shots, one hit loop, ×1.6/×.7 by location, `fleetFire`, `ARMED_CAP`), `13c-roles` (the
-  four roles, flee and jump-out), `13-pirates` rewired, allies `iff:true` — written and green in
-  the Node tier, **uncommitted in the working tree**; left: `91zzzw-combat.js`, hull bar over the
-  primary mark checked in the browser, `prof()` with eight armed ships, patchnote 0.361.0.
-  ~~**M360a — the helm frame, redone**~~ — 0.360.1 (2026-09-06), answer to the author's phone
-  shot «у меня только разочарование»; all five items in the patchnote. Stick = faint arc + dot
-  (51 px footprint, not 93); chips/МАСШТАБ/prompt step out from under a live finger
-  (`helmLift`, `--helmlift`); `#msg`/`#prompt` keep line breaks on the phone; the hint names
-  the new controls; hull bar above the bracket. **Found on the way:** `HELM_CONE`/`HELM_RANGE`
-  and `G.ctl.fire`/`.msl` had no reader — autofire on the mark and the mouse LMB/RMB did not
-  exist, and `91zzzw-helm` was red in the browser tier since 0.360.0. `prof(60)`, phone
-  375×812 @2: JS 2.0 ms idle, 2.7 with two live sticks. · M361 ships shoot each other and rank
-  roles · M362 energy, seven numbers, three shields · M363 ОСНАСТКА and clearance · M364–M366
+  the patchnote) · ~~M361 ships shoot each other and rank roles~~ (0.361.0, 2026-09-06: `13-combat` — `owner`
+  on every shot, one hit loop, ×1.6 stern / ×.7 bow, `fleetFire`, `ARMED_CAP`; `13c-roles` —
+  four roles, flee and jump-out; `iff` on your crew; suite `91zzzw-combat`. Bands measured:
+  шакал 39…889, ветеран 480…660 from either side, капитан 797…870, барон stands at 700; that
+  measurement found and fixed a baron who never paused between bursts and a veteran who
+  spiralled out to 1300)
+  ~~M360a the helm frame redone~~ (0.360.1, 2026-09-06, answer to the author's phone shot
+  «у меня только разочарование»: stick = faint arc + dot, 51 px footprint not 93;
+  chips/МАСШТАБ/prompt step out from under a live finger; line breaks alive on the phone;
+  hull bar above the bracket; and `HELM_CONE`/`HELM_RANGE`/`ctl.fire`/`ctl.msl` had no
+  reader at all — autofire and the mouse LMB/RMB did not exist, `91zzzw-helm` red in the
+  browser tier since 0.360.0) 
+  **The layer's first numbers** (`prof(60)`, phone 375×812 @2, system): JS 2.59 ms idle,
+  2.61 with eight armed ships and two marks, 2.81 with two live sticks — everything after
+  M361 is measured against these. **For M362:** eight aware ships kill a standing unshielded
+  ship in about fifty frames. · M362 energy, seven numbers, three shields · M363 ОСНАСТКА and clearance · M364–M366
   twenty gun families · M367 missiles · M368 pirate loadouts.
 - **B — the powers, by seed** (client only; the galaxy lives with no server): M369 the maker
   grammar layer on `hullOf`, measured by `makerRead()`, «Ялта» · M369a the grammar in the fleet,

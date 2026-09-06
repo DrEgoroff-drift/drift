@@ -974,7 +974,15 @@ One system inside ГЛАВТРАССА's centre (r ≈ 6, fixed by seed, never t
   `HELM_CONE`/`HELM_RANGE`/`ctl.fire`/`ctl.msl` with no reader, its own suite red in the
   browser tier, and the pass was still written down as done. Run `test.ps1 -Browser` and
   `-Mobile`, not only the Node tier, before striking a pass.
-- **M361** ships shoot each other: `owner`, rank roles, rear hit, hull bar, flee; IFF hook (D09).
+- ~~**M361** ships shoot each other~~ — 0.361.0 (2026-09-06): `13-combat` (`owner`, one hit
+  loop, ×1.6 stern / ×.7 bow, `fleetFire`, `ARMED_CAP`), `13c-roles` (four roles, flee,
+  jump-out), `iff` on your crew, hull bar over anyone aware, suite `91zzzw-combat`.
+  Learned: **a role is only real once its distance band is measured over hundreds of
+  frames** — reading the code said the baron paused between bursts and the veteran held
+  400–600; the measurement said 82 shots without a pause and a spiral out to 1300. Every
+  later brief that adds behaviour gets the same band measurement. The layer's baseline:
+  `prof(60)`, phone 375×812 @2 — JS 2.59 ms idle, 2.61 with eight armed ships. For M362:
+  eight aware ships kill a standing unshielded ship in about fifty frames.
 - **M362** energy bar and the seven numbers on today's gun; three shield types.
 - **M363** ОСНАСТКА: sizes/types on the points, the dock screen, comparison, стрельбище, groups;
   clearance I–IV (D15); parts carry a maker (`b`, §19.2) with names, affix biases and scrap

@@ -1,0 +1,103 @@
+/* ══════════════ бой: выстрелы с владельцем (M361) ══════════════
+   У выстрела есть хозяин: player | pirate | fleet | power:k (позже). Одна петля
+   разрешает каждую пару «выстрел — корпус», чей бы он ни был: пираты попадают
+   друг в друга, если у них разные хозяева (дезертиры, ренегат), флот бьёт
+   пиратов, батарея с грунта живёт своим лучом (21d). `s.mine` остаётся как
+   краткое «это выстрел игрока» — для рисования и баржи (12l).
+
+   Место попадания (§4): в корму — ×1.6, в лоб — ×.7, по углу между ходом
+   выстрела и носом цели. Так корма стоит того, чтобы за неё заходить, — и это
+   же правило бьёт и по игроку. */
+const HIT_REAR=1.6,HIT_FRONT=.7;
+const ARMED_CAP=8;   /* вооружённых кораблей в системе, кроме своих (§5) */
+function ownerOf(mine){return mine===true?"player":(mine===false||mine==null?"pirate":mine);}
+function fireShot(x,y,ang,speed,dmg,mine){
+  const owner=ownerOf(mine);
+  G.shots.push({x,y,vx:Math.cos(ang)*speed,vy:Math.sin(ang)*speed,dmg,owner,mine:owner==="player",life:150});
+  /* тембр своего выстрела берём из установленной пушки: у каждой части свой seed,
+     значит разные орудия звучат по-разному сами собой, без отдельного контента */
+  if(owner==="player"){
+    const g=fittedParts().filter(p=>p.kind==="gun")[0];
+    const f=g?420+(g.seed%9)*90:620;
+    sfx("shot",{f,v:.5});
+  }else if(owner==="fleet")sfx("shot",{f:520,v:.22});
+  else sfx("shot",{f:300,v:.3});
+}
+/* множитель по месту: откуда прилетело относительно носа цели */
+function hitLocMul(s,tgt){
+  const d=Math.abs(angDiff(Math.atan2(s.vy,s.vx),tgt.a));
+  return d<Math.PI/3?HIT_REAR:(d>Math.PI*2/3?HIT_FRONT:1);
+}
+/* попадание по игроку: щит первым, затем корпус; звук говорит, что пробили */
+function playerHit(s){
+  let d=s.dmg*hitLocMul(s,G.ship);
+  if(G.shield>0){const a=Math.min(G.shield,d);G.shield-=a;d-=a;sfx("ui",{f:1250,to:700,d:.12,v:.28});}
+  if(d>0){
+    sfx("hit",{v:.55});
+    G.hull=Math.max(0,G.hull-d);
+    if(typeof hitFx==="function")hitFx(Math.min(1,.5+d/40));   /* объектив разъезжается (M325) */
+    if(G.hull<=0){wreck();return true;}
+    if(typeof instrKnock==="function")instrKnock();   // попадание может выбить гнездо прибора (хвост M127)
+  }
+  return false;
+}
+/* пират разбит не игроком: награды нет, только строка; особые (ренегат, охотник,
+   соперник) уходят своими выходами, как и от вашего выстрела */
+function pirateFellTo(p,owner){
+  if(p.rogue||p.hunter||p.rival){killPirate(p);return;}
+  parrotHeardKill(p);
+  sfx("boom",{v:.6});
+  const who=owner==="fleet"?"огнём ГЛАВТРАССЫ":"чужим огнём";
+  logAdd("kill","«"+p.name+"» разбит "+who+" · награды нет");
+}
+/* одна петля на все выстрелы; возвращает true, если игрок погиб */
+function combatShots(dt){
+  const sh=G.ship;
+  for(let i=G.shots.length-1;i>=0;i--){
+    const s=G.shots[i];
+    s.x+=s.vx*dt;s.y+=s.vy*dt;s.life-=dt;
+    let gone=s.life<=0;
+    if(!gone&&s.owner!=="player"&&s.owner!=="fleet"&&Math.hypot(s.x-sh.x,s.y-sh.y)<18){
+      gone=true;
+      if(playerHit(s))return true;
+    }
+    if(!gone){
+      for(const p of G.pirates){
+        if((p.owner||"pirate")===s.owner||p.hull<=0)continue;
+        if(Math.hypot(s.x-p.x,s.y-p.y)<20){
+          p.hull-=s.dmg*hitLocMul(s,p);gone=true;
+          sfx("hit",{v:.3});
+          if(p.hull<=0){if(s.owner==="player")killPirate(p);else pirateFellTo(p,s.owner);}
+          break;
+        }
+      }
+    }
+    /* ваш выстрел мог прийтись и по барже — так её добивают самому (12l) */
+    if(!gone&&s.mine&&typeof bargeMineHit==="function"&&bargeMineHit(s))gone=true;
+    if(gone)G.shots.splice(i,1);
+  }
+  return false;
+}
+/* ── флот в конвое стреляет (M361) ──
+   Конвой ГЛАВТРАССЫ (M311) делал пиратов слепыми к вам; теперь корабли линии
+   ещё и отвечают тем, кто подошёл к каравану на девятьсот. Их выстрелы — свои,
+   награды за сбитых ими нет. Откат — по индексу корабля в списке системы. */
+const FLEET_COOL={};
+function fleetFire(dt){
+  if(typeof fleetHere!=="function"||typeof fleetEscortActive!=="function"||!fleetEscortActive())return;
+  const list=fleetHere(G.sys);
+  for(let i=0;i<list.length;i++){
+    const f=list[i];if(f.still)continue;
+    const pos=fleetPos(f);
+    const key=G.sx+","+G.sy+":"+i;
+    if((FLEET_COOL[key]||0)>G.t)continue;
+    let best=null,bd=900;
+    for(const p of G.pirates){if(p.hull<=0)continue;const d=Math.hypot(p.x-pos.x,p.y-pos.y);if(d<bd){bd=d;best=p;}}
+    if(!best)continue;
+    const ang=Math.atan2(best.y-pos.y,best.x-pos.x);
+    fireShot(pos.x,pos.y,ang,8,6,"fleet");
+    FLEET_COOL[key]=G.t+55;
+  }
+}
+/* сколько вооружённых чужих в системе — потолок §5 */
+function armedCount(){return G.pirates.filter(p=>p.hull>0).length;}

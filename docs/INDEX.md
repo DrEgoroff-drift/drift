@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 436 · символов верхнего уровня: 3823
+Файлов: 439 · символов верхнего уровня: 3843
 
 ## СИМВОЛЫ
 
@@ -100,6 +100,8 @@ applyPadSize                 src/15-input.js:8
 applySave                    src/14-save.js:200
 applyVolumes                 src/09-audio.js:40
 apVel                        src/16-flight.js:132
+ARMED_CAP                    src/13-combat.js:12
+armedCount                   src/13-combat.js:103
 arrive                       src/16-flight.js:178
 ARTIFACTS                    src/12h-relic.js:48
 askText                      src/11u-names.js:59
@@ -379,6 +381,8 @@ caveVault                    src/22a-cave-deco.js:64
 caveWet                      src/22a-cave-deco.js:88
 caveZoneAt                   src/22a-cave-deco.js:57
 caveZones                    src/22a-cave-deco.js:28
+cbFoe                        tests/91zzzw-combat.js:18
+cbWorld                      tests/91zzzw-combat.js:8
 CEL_CONJ_W                   src/06a-celest.js:22
 CEL_DAY                      src/06a-celest.js:21
 CEL_STAR_ANG                 src/06a-celest.js:27
@@ -488,6 +492,7 @@ clWith                       tests/91zzzzzr-cloud.js:30
 cockpitPlan                  src/25-cockpit.js:92
 cockpitStyleKey              src/25-cockpit.js:46
 cockpitTex                   src/25-cockpit.js:187
+combatShots                  src/13-combat.js:54
 concertAll                   src/11ae-concert.js:22
 concertNotes                 src/11ae-concert.js:82
 concertSend                  src/11ae-concert.js:87
@@ -783,7 +788,7 @@ drawCelest                   src/06a-celest.js:167
 drawChunks                   src/18c-chunks.js:83
 drawClouds                   src/19e-clouds.js:382
 drawCockpit                  src/25-cockpit.js:400
-drawCombat                   src/13-pirates.js:231
+drawCombat                   src/13-pirates.js:185
 drawCosmMark                 src/12va-wander-cosm.js:112
 drawCrowns                   src/05a-nodes.js:379
 drawCrystalForest            src/20aa-poi-shapes.js:115
@@ -1044,10 +1049,10 @@ findsHere                    src/17b-finds.js:53
 findsIn                      src/17b-finds.js:27
 findTake                     src/17b-finds.js:58
 findTestSys                  tests/91x-finds.js:3
-fireCool                     src/13-pirates.js:77
+fireCool                     src/13-pirates.js:69
 fireMerc                     src/12a-crew.js:230
 fireMgr                      src/12c-mgr-core.js:356
-fireShot                     src/13-pirates.js:67
+fireShot                     src/13-combat.js:14
 FIRST_BY                     src/11ao-firsthour.js:35
 FIRST_LINES                  src/11ao-firsthour.js:25
 firstAll                     src/11ao-firsthour.js:36
@@ -1077,6 +1082,7 @@ fleaScrip                    src/12ua-flea.js:122
 FLEET                        src/04b-fleet.js:107
 FLEET_ART                    src/12ai-fleet.js:101
 FLEET_CLASSES                src/12ai-fleet.js:20
+FLEET_COOL                   src/13-combat.js:85
 FLEET_EPITH                  src/04b-fleet.js:57
 FLEET_KEYS                   src/04b-fleet.js:148
 FLEET_LUXE                   src/04b-fleet.js:59
@@ -1098,6 +1104,7 @@ fleetArtOf                   src/12ai-fleet.js:102
 fleetCaravanActive           src/12ai-fleet.js:648
 fleetColor                   src/04b-fleet.js:95
 fleetEscortActive            src/12ai-fleet.js:646
+fleetFire                    src/13-combat.js:86
 fleetGlyph                   src/12ai-fleet.js:419
 fleetHailFirst               src/12ai-fleet.js:525
 fleetHere                    src/12ai-fleet.js:50
@@ -1373,9 +1380,11 @@ hinWidth                     src/29c-home-in.js:50
 hireMerc                     src/12a-crew.js:210
 hireMgr                      src/12c-mgr-core.js:301
 HIT_FX                       src/18d-postfx.js:10
+HIT_REAR                     src/13-combat.js:11
 hitCandidates                tests/91zzzzzg-hit.js:19
 hitCovered                   tests/91zzzzzg-hit.js:41
 hitFx                        src/18d-postfx.js:11
+hitLocMul                    src/13-combat.js:27
 HOL_BY                       src/11am-holiday.js:26
 HOL_D                        tests/91zzzm-holiday.js:2
 HOL_ETHER                    src/11am-holiday.js:28
@@ -1651,7 +1660,7 @@ keyMap                       src/15-input.js:133
 keyRow                       src/27-ui-ship.js:44
 keys                         src/08-state.js:57
 keyStateOK                   tests/91zzzzze-keys.js:23
-killPirate                   src/13-pirates.js:198
+killPirate                   src/13-pirates.js:152
 killRock                     src/24-mode-belt.js:151
 KINO_EVERY                   src/27da-kino.js:20
 KINO_REEL                    src/27da-kino.js:23
@@ -2250,6 +2259,7 @@ orderWin                     src/12aa-need.js:75
 ORE_KEYS                     src/02-world.js:102
 ORE_NODE_W                   src/23-mode-dig.js:12
 oreNode                      src/23-mode-dig.js:13
+ownerOf                      src/13-combat.js:13
 packPart                     src/05-parts.js:327
 PAD_KEY                      src/15-input.js:19
 PAD_SAFE                     src/18-mode-map.js:2
@@ -2283,7 +2293,7 @@ parrotDraw                   src/12y-parrot-face.js:264
 parrotFind                   src/12x-parrot.js:30
 parrotFrame                  src/12y-parrot-face.js:684
 parrotHas                    src/12x-parrot.js:25
-parrotHeardKill              src/13-pirates.js:194
+parrotHeardKill              src/13-pirates.js:148
 parrotLine                   src/12y-parrot-face.js:641
 parrotPoke                   src/12y-parrot-face.js:657
 parRow                       src/12y-parrot-face.js:141
@@ -2380,6 +2390,8 @@ pirateArtOf                  src/12i-pirate-hull.js:197
 pirateBaseOf                 src/24a-mode-raid.js:87
 pirateBuild                  src/12i-pirate-hull.js:33
 pirateClass                  src/12i-pirate-hull.js:26
+pirateFellTo                 src/13-combat.js:46
+pirateRoleTick               src/13c-roles.js:40
 pirateShipId                 src/13-pirates.js:17
 PL_SKIP                      tests/91zzzzzo-plural.js:31
 pl3                          src/01-core.js:22
@@ -2461,6 +2473,7 @@ plantSpeciesName             src/20e-species.js:86
 plantStemForm                src/20e-species.js:27
 plantTraitWord               src/20e-species.js:29
 plate                        src/25-cockpit.js:160
+playerHit                    src/13-combat.js:32
 plClass                      tests/91zzzzzo-plural.js:23
 plLand                       tests/91zzzzy-place.js:28
 plWorlds                     tests/91zzzzy-place.js:15
@@ -2900,9 +2913,16 @@ rogueSpawn                   src/12g-mgr-rogue.js:72
 rogueTakesCrew               src/12g-mgr-rogue.js:25
 ROLE_BY_HULL                 src/03f-hull-role.js:33
 ROLE_KEYS                    src/12a-crew.js:160
+ROLE_LIM                     src/13c-roles.js:7
+roleAllyNear                 src/13c-roles.js:21
+roleDamp                     src/13c-roles.js:10
+roleFire                     src/13c-roles.js:11
+roleFlee                     src/13c-roles.js:26
 roleForce                    src/12a-crew.js:161
 roleFromStats                src/03f-hull-role.js:37
 roleOf                       src/03f-hull-role.js:46
+roleSteer                    src/13c-roles.js:8
+roleThrust                   src/13c-roles.js:9
 rollCrewEvent                src/12b-crew-events.js:70
 rollWorld                    src/02a-worldmix.js:67
 ROMAN                        src/01-core.js:98
@@ -3553,7 +3573,7 @@ updateBase                   src/21a-mode-base.js:334
 updateBelt                   src/24-mode-belt.js:185
 updateCave                   src/22-mode-cave.js:251
 updateCaveDeco               src/22a-cave-deco.js:205
-updateCombat                 src/13-pirates.js:78
+updateCombat                 src/13-pirates.js:70
 updateDig                    src/23-mode-dig.js:128
 updateHomeIn                 src/29c-home-in.js:160
 updateLanding                src/19-mode-landing.js:68
@@ -4270,11 +4290,17 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12z-parrot-acts.js · 17 КБ
   · трепло: репертуар:1
 
-## src/13-pirates.js · 17 КБ
+## src/13-combat.js · 6 КБ
+  · бой: выстрелы с владельцем (M361):1
+
+## src/13-pirates.js · 15 КБ
   · пираты:1
 
 ## src/13b-occupy.js · 18 КБ
   · пираты берут системы:1
+
+## src/13c-roles.js · 7 КБ
+  · роли пиратов по рангу (M361, §5):1
 
 ## src/14-save.js · 64 КБ
   · сохранение:1
@@ -5063,6 +5089,9 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzzv-wall.js · 7 КБ
   · автотесты: стена, которая помнит (M210):1
+
+## tests/91zzzw-combat.js · 10 КБ
+  · бой между кораблями (M361, §5):1
 
 ## tests/91zzzw-helm.js · 10 КБ
   · штурвал (M360):1

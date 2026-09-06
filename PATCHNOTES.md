@@ -7,6 +7,53 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.361.0 - M361: ships shoot each other, and rank is a way of fighting
+
+The war's second pass (`docs/DESIGN-war.md` §5, §0 law 6, §18). Until now a shot was either mine
+or somebody's, and every pirate flew the same way with different numbers.
+
+**A shot has an owner** (`13-combat`). `fireShot` writes `owner` — player | pirate | fleet |
+power:k later — and one loop resolves every pair of shot and hull, not just "my shot against a
+stranger": pirates of different owners hit each other (deserters, the renegade), the escort of
+ГЛАВТРАССА answers those who come within 900 of the caravan (`fleetFire`) and a pirate it
+destroys carries no bounty, only a line. `s.mine` survives as the short "this one is the
+player's" for drawing and for the barge. **Hit location:** by the angle between the shot's course
+and the target's nose — ×1.6 into the stern, ×.7 into the bow, ×1 across. It pays to get behind
+somebody; it pays for them too, and the same rule hits the player.
+
+**Rank is behaviour, not a multiplier** (`13c-roles`). Шакал dashes in, empties a salvo and
+breaks off, and opens the distance under 30 %; ветеран holds 400–600 and circles broadside;
+капитан never comes under 700 and fires rarely and heavily; барон stands, fires in threes and at
+half hull calls two шакалы — once. Under a quarter of its hull and with no ally within 1200 any
+of them runs and jumps out in three or four seconds: the bounty is lost and the journal says so.
+Measured bands (browser, 900 frames per role): шакал 39…889, ветеран settles at 480…660 from any
+start, капитан 797…870, барон stands at 700 and fires 24 shots in fifteen seconds.
+
+Two defects the measurement found and this pass fixes: the baron's long cooldown between bursts
+was set *after* the "time to start a burst" check and therefore never applied — he fired without
+a pause, 82 shots where there should be about 20; and the veteran's broadside push accumulated
+frame after frame with nothing damping it, so he spiralled out to 1300 instead of holding
+400–600. The radial correction now steers by closing speed and is scaled by distance, so he comes
+into the band from either side and stays there.
+
+**IFF and the ceiling.** Every ship record carries an `iff` flag; your crew's ships in the system
+are `iff:true` and lock, autofire and forced fire all skip them. Eight armed strangers is the
+ceiling (`ARMED_CAP`), it is applied at spawn and the baron's call cannot break it. The hull bar
+and the name now stand over anyone who is aware of you or is taken as a mark — a pirate hanging
+peacefully in the distance wears no label — and the primary mark's bar is wider.
+
+Measured (`prof(60)`, phone layout 375×812 @2, system mode): JS 2.59 ms with nobody, 2.61 ms with
+eight armed ships fighting and two marks taken, 2.81 ms with two live sticks on top. The whole
+combat layer costs about two tenths of a millisecond — this is the number the rest of the war is
+measured against from here on. Note for M362: eight aware ships destroy a standing, unshielded
+ship in about fifty frames, which is what the energy and shield pass exists to answer.
+
+New suite `tests/91zzzw-combat.js`: owner resolution in every direction, the fleet's fire and its
+missing bounty, the rear and bow multipliers on both a pirate and the player, the distance band
+of each role over 900 frames, the flee and the jump-out, the baron's single call, the cap and the
+`iff` skip. `91e-rogue`, `91r-hunter`, `91z-missile`, `91n-barge` stay green, and so does the full
+tier (222 s).
+
 ## 0.360.1 - M360a: the helm frame redone, and the wires M360 forgot
 
 The author's phone shot of 0.360.0: «у меня только разочарование». The pass is the answer to that

@@ -1752,7 +1752,7 @@ body.table u.addr{color:#7a4a20}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.360.1";
+const VER="0.361.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -15795,7 +15795,7 @@ function spawnAllies(){
     if(c.order.sx!==G.sx||c.order.sy!==G.sy)continue;
     const a=rng(hashi(c.seed,G.sx*131+G.sy,5))()*TAU;
     G.allies.push({c,x:G.ship.x+Math.cos(a)*420,y:G.ship.y+Math.sin(a)*420,
-      vx:0,vy:0,a:a,cool:0,thrust:false});
+      vx:0,vy:0,a:a,cool:0,thrust:false,iff:true});   /* свои: не цель (D09) */
   }
   if(G.allies.length)say("В системе работает ваш экипаж\n"+G.allies.map(A=>A.c.name).join(", "));
 }
@@ -31388,6 +31388,110 @@ function parActs(dt){
   PAR.actDur=a.d*(.85+Math.random()*.3);
 }
 
+/* ══════════════ бой: выстрелы с владельцем (M361) ══════════════
+   У выстрела есть хозяин: player | pirate | fleet | power:k (позже). Одна петля
+   разрешает каждую пару «выстрел — корпус», чей бы он ни был: пираты попадают
+   друг в друга, если у них разные хозяева (дезертиры, ренегат), флот бьёт
+   пиратов, батарея с грунта живёт своим лучом (21d). `s.mine` остаётся как
+   краткое «это выстрел игрока» — для рисования и баржи (12l).
+
+   Место попадания (§4): в корму — ×1.6, в лоб — ×.7, по углу между ходом
+   выстрела и носом цели. Так корма стоит того, чтобы за неё заходить, — и это
+   же правило бьёт и по игроку. */
+const HIT_REAR=1.6,HIT_FRONT=.7;
+const ARMED_CAP=8;   /* вооружённых кораблей в системе, кроме своих (§5) */
+function ownerOf(mine){return mine===true?"player":(mine===false||mine==null?"pirate":mine);}
+function fireShot(x,y,ang,speed,dmg,mine){
+  const owner=ownerOf(mine);
+  G.shots.push({x,y,vx:Math.cos(ang)*speed,vy:Math.sin(ang)*speed,dmg,owner,mine:owner==="player",life:150});
+  /* тембр своего выстрела берём из установленной пушки: у каждой части свой seed,
+     значит разные орудия звучат по-разному сами собой, без отдельного контента */
+  if(owner==="player"){
+    const g=fittedParts().filter(p=>p.kind==="gun")[0];
+    const f=g?420+(g.seed%9)*90:620;
+    sfx("shot",{f,v:.5});
+  }else if(owner==="fleet")sfx("shot",{f:520,v:.22});
+  else sfx("shot",{f:300,v:.3});
+}
+/* множитель по месту: откуда прилетело относительно носа цели */
+function hitLocMul(s,tgt){
+  const d=Math.abs(angDiff(Math.atan2(s.vy,s.vx),tgt.a));
+  return d<Math.PI/3?HIT_REAR:(d>Math.PI*2/3?HIT_FRONT:1);
+}
+/* попадание по игроку: щит первым, затем корпус; звук говорит, что пробили */
+function playerHit(s){
+  let d=s.dmg*hitLocMul(s,G.ship);
+  if(G.shield>0){const a=Math.min(G.shield,d);G.shield-=a;d-=a;sfx("ui",{f:1250,to:700,d:.12,v:.28});}
+  if(d>0){
+    sfx("hit",{v:.55});
+    G.hull=Math.max(0,G.hull-d);
+    if(typeof hitFx==="function")hitFx(Math.min(1,.5+d/40));   /* объектив разъезжается (M325) */
+    if(G.hull<=0){wreck();return true;}
+    if(typeof instrKnock==="function")instrKnock();   // попадание может выбить гнездо прибора (хвост M127)
+  }
+  return false;
+}
+/* пират разбит не игроком: награды нет, только строка; особые (ренегат, охотник,
+   соперник) уходят своими выходами, как и от вашего выстрела */
+function pirateFellTo(p,owner){
+  if(p.rogue||p.hunter||p.rival){killPirate(p);return;}
+  parrotHeardKill(p);
+  sfx("boom",{v:.6});
+  const who=owner==="fleet"?"огнём ГЛАВТРАССЫ":"чужим огнём";
+  logAdd("kill","«"+p.name+"» разбит "+who+" · награды нет");
+}
+/* одна петля на все выстрелы; возвращает true, если игрок погиб */
+function combatShots(dt){
+  const sh=G.ship;
+  for(let i=G.shots.length-1;i>=0;i--){
+    const s=G.shots[i];
+    s.x+=s.vx*dt;s.y+=s.vy*dt;s.life-=dt;
+    let gone=s.life<=0;
+    if(!gone&&s.owner!=="player"&&s.owner!=="fleet"&&Math.hypot(s.x-sh.x,s.y-sh.y)<18){
+      gone=true;
+      if(playerHit(s))return true;
+    }
+    if(!gone){
+      for(const p of G.pirates){
+        if((p.owner||"pirate")===s.owner||p.hull<=0)continue;
+        if(Math.hypot(s.x-p.x,s.y-p.y)<20){
+          p.hull-=s.dmg*hitLocMul(s,p);gone=true;
+          sfx("hit",{v:.3});
+          if(p.hull<=0){if(s.owner==="player")killPirate(p);else pirateFellTo(p,s.owner);}
+          break;
+        }
+      }
+    }
+    /* ваш выстрел мог прийтись и по барже — так её добивают самому (12l) */
+    if(!gone&&s.mine&&typeof bargeMineHit==="function"&&bargeMineHit(s))gone=true;
+    if(gone)G.shots.splice(i,1);
+  }
+  return false;
+}
+/* ── флот в конвое стреляет (M361) ──
+   Конвой ГЛАВТРАССЫ (M311) делал пиратов слепыми к вам; теперь корабли линии
+   ещё и отвечают тем, кто подошёл к каравану на девятьсот. Их выстрелы — свои,
+   награды за сбитых ими нет. Откат — по индексу корабля в списке системы. */
+const FLEET_COOL={};
+function fleetFire(dt){
+  if(typeof fleetHere!=="function"||typeof fleetEscortActive!=="function"||!fleetEscortActive())return;
+  const list=fleetHere(G.sys);
+  for(let i=0;i<list.length;i++){
+    const f=list[i];if(f.still)continue;
+    const pos=fleetPos(f);
+    const key=G.sx+","+G.sy+":"+i;
+    if((FLEET_COOL[key]||0)>G.t)continue;
+    let best=null,bd=900;
+    for(const p of G.pirates){if(p.hull<=0)continue;const d=Math.hypot(p.x-pos.x,p.y-pos.y);if(d<bd){bd=d;best=p;}}
+    if(!best)continue;
+    const ang=Math.atan2(best.y-pos.y,best.x-pos.x);
+    fireShot(pos.x,pos.y,ang,8,6,"fleet");
+    FLEET_COOL[key]=G.t+55;
+  }
+}
+/* сколько вооружённых чужих в системе — потолок §5 */
+function armedCount(){return G.pirates.filter(p=>p.hull>0).length;}
+
 /* ══════════════ пираты ══════════════ */
 /* эфемерны: набираются заново при каждом входе в систему, как орбиты и пояс */
 const PIRATE_NAMES=["Шакал","Гриф","Клык","Ржавый","Стервятник","Сиплый","Крюк","Оса"];
@@ -31421,6 +31525,7 @@ function spawnPirates(){
   let n=(r()<danger*.85?1+Math.floor(r()*(1+danger*2)):0)+occExtraPirates(G.sx,G.sy);
   if(typeof quietNoPirates==="function"&&quietNoPirates())n=0;   /* тихий уезд (11n): никто не грабит */
   if(typeof holdAmbushMul==="function")n=Math.floor(n*holdAmbushMul());   /* Заграждение (H4) */
+  n=Math.min(n,ARMED_CAP);   /* потолок вооружённых (§5, M361) */
   for(let i=0;i<n;i++){
     const a=r()*TAU,rad=2200+r()*1600;
     const seed=hashi(G.sx,G.sy,i*977);
@@ -31454,16 +31559,7 @@ function spawnPirates(){
      откуда входят в систему (12l-barge) */
   if(typeof spawnBarges==="function")spawnBarges();
 }
-function fireShot(x,y,ang,speed,dmg,mine){
-  G.shots.push({x,y,vx:Math.cos(ang)*speed,vy:Math.sin(ang)*speed,dmg,mine,life:150});
-  /* тембр своего выстрела берём из установленной пушки: у каждой части свой seed,
-     значит разные орудия звучат по-разному сами собой, без отдельного контента */
-  if(mine){
-    const g=fittedParts().filter(p=>p.kind==="gun")[0];
-    const f=g?420+(g.seed%9)*90:620;
-    sfx("shot",{f,v:.5});
-  }else sfx("shot",{f:300,v:.3});
-}
+/* fireShot — в 13-combat (M361): у выстрела есть хозяин */
 let fireCool=0;
 function updateCombat(dt){
   const sh=G.ship,st=stat();
@@ -31487,27 +31583,25 @@ function updateCombat(dt){
     }else if(L.life<=0)G.loot.splice(i,1);
   }
   if(fireCool>0)fireCool-=dt;
-  /* ── огонь — это захват (M360, доведено в M360a) ──
-     M360 объявил автоогонь в заметках и в тесте, а провода не положил:
-     HELM_CONE и HELM_RANGE лежали константами без единого читателя, а
-     каналы G.ctl.fire/msl (ЛКМ и ПКМ мышиной схемы) — без единого
-     потребителя. Пушка била только по keys.fire. Здесь оба конца сходятся:
-     принудительный выстрел по носу — ЛКМ, F, пэд ОГОНЬ (в поясе он есть);
-     сам по себе — пока первая метка в конусе и в дальности. */
-  let firing=keys.fire||!!(G.ctl&&G.ctl.fire);
-  if(!firing&&st.armed&&G.marks&&G.marks.length){
-    const mk=G.marks[0];
-    if(mk&&mk.hull>0&&!mk.iff){
-      const mdx=mk.x-sh.x,mdy=mk.y-sh.y;
-      firing=Math.hypot(mdx,mdy)<HELM_RANGE&&
-        Math.abs(angDiff(Math.atan2(mdy,mdx),sh.a))<HELM_CONE;
-    }
+  /* ── огонь (M360) ──
+     Пушка стреляет сама, когда первая метка захвата в конусе и в дальности
+     (пока ±20° и 760 — M362 заменит числами орудия). Зажатый ОГОНЬ/F/ЛКМ —
+     принудительно по носу: баржи, батареи, обломки. Место помнит бой один раз
+     за стычку, а не каждый выстрел (D16). */
+  const ctl=G.ctl||{};
+  const mk=(G.marks&&G.marks[0])||null;
+  let auto=false;
+  if(mk&&mk.hull>0&&!mk.iff){
+    const d=Math.hypot(mk.x-sh.x,mk.y-sh.y);
+    auto=d<HELM_RANGE&&Math.abs(angDiff(Math.atan2(mk.y-sh.y,mk.x-sh.x),sh.a))<HELM_CONE;
   }
-  if(firing&&st.armed&&fireCool<=0){
+  if((auto||ctl.fire)&&st.armed&&fireCool<=0){
     fireShot(sh.x,sh.y,sh.a,9,st.dmg,true);
-    if(typeof placeNote==="function")placeNote("hurt",1);   // место помнит выстрел (11d)
+    if(!G.engaged&&typeof placeNote==="function")placeNote("hurt",1);   // место помнит выстрел (11d)
+    G.engaged=true;
     fireCool=st.cool;
   }
+  if(G.engaged&&!G.pirates.some(p=>p.aware))G.engaged=false;
   for(let i=G.pirates.length-1;i>=0;i--){
     const p=G.pirates[i];
     const dx=sh.x-p.x,dy=sh.y-p.y,d=Math.hypot(dx,dy)||1;
@@ -31518,17 +31612,10 @@ function updateCombat(dt){
     const pa0=p.a;
     if(p.aware){
       const want=Math.atan2(dy,dx);
-      p.a+=clamp(angDiff(want,p.a),-.035,.035)*dt;
-      if(d>260){p.vx+=Math.cos(p.a)*.055*dt;p.vy+=Math.sin(p.a)*.055*dt;p.thrust=true;}
-      else{const k=Math.pow(.97,dt);p.vx*=k;p.vy*=k;}
-      p.cool-=dt;
-      if(d<760&&p.cool<=0&&Math.abs(angDiff(want,p.a))<.35){
-        /* у ренегата свой урон: он бьёт вашими же перками */
-        fireShot(p.x,p.y,p.a,7,p.dmg||3.5+sysDanger(G.sx,G.sy)*5,false);
-        p.cool=70+Math.random()*60;
-      }
+      /* поведение — по рангу (13c-roles): бросок, борт, дистанция, очереди; бегство */
+      if(pirateRoleTick(p,dt,d,want))continue;
     }
-    const sp=Math.hypot(p.vx,p.vy),lim=4.4;
+    const sp=Math.hypot(p.vx,p.vy),lim=ROLE_LIM[p.rank|0]||4.4;
     if(sp>lim){p.vx*=lim/sp;p.vy*=lim/sp;}
     if(sp>.08){   // тот же довод вектора к носу, что и у игрока
       const cur=Math.atan2(p.vy,p.vx);
@@ -31538,38 +31625,9 @@ function updateCombat(dt){
     p.x+=p.vx*dt;p.y+=p.vy*dt;
     p.bank=(p.bank||0)+(clamp(angDiff(p.a,pa0)/Math.max(dt,.0001)*17,-.95,.95)-(p.bank||0))*Math.min(1,.11*dt);
   }
-  for(let i=G.shots.length-1;i>=0;i--){
-    const s=G.shots[i];
-    s.x+=s.vx*dt;s.y+=s.vy*dt;s.life-=dt;
-    let gone=s.life<=0;
-    if(!gone&&s.mine){
-      for(const p of G.pirates){
-        if(Math.hypot(s.x-p.x,s.y-p.y)<20){
-          p.hull-=s.dmg;gone=true;
-          sfx("hit",{v:.3});
-          if(p.hull<=0)killPirate(p);
-          break;
-        }
-      }
-      /* ваш выстрел мог прийтись и по барже — так её добивают самому (12l) */
-      if(!gone&&typeof bargeMineHit==="function"&&bargeMineHit(s))gone=true;
-    }else if(!gone){
-      if(Math.hypot(s.x-sh.x,s.y-sh.y)<18){
-        gone=true;
-        let d=s.dmg;
-        /* по щиту — звонкий отбой, по корпусу — глухой удар: слышно, что пробили */
-        if(G.shield>0){const a=Math.min(G.shield,d);G.shield-=a;d-=a;sfx("ui",{f:1250,to:700,d:.12,v:.28});}
-        if(d>0){
-          sfx("hit",{v:.55});
-          G.hull=Math.max(0,G.hull-d);
-          if(typeof hitFx==="function")hitFx(Math.min(1,.5+d/40));   /* объектив разъезжается (M325) */
-          if(G.hull<=0){wreck();return;}
-          if(typeof instrKnock==="function")instrKnock();   // попадание может выбить гнездо прибора (хвост M127)
-        }
-      }
-    }
-    if(gone)G.shots.splice(i,1);
-  }
+  /* все выстрелы — одной петлёй, чей бы ни был выстрел (13-combat, M361) */
+  if(combatShots(dt))return;
+  fleetFire(dt);
   G.pirates=G.pirates.filter(p=>p.hull>0);
   /* батарея с грунта (21d): своя система, только мелочь — она сама решает,
      стрелять ли, и делает это в общем цикле боя, а не своим таймером */
@@ -31577,7 +31635,7 @@ function updateCombat(dt){
   /* ракеты (16b): свой пуск, своя перезарядка и свой расход из трюма — но живут
      они в том же цикле боя, а не отдельным таймером */
   if(typeof mslTick==="function")mslTick(dt);
-  if((keys.msl||!!(G.ctl&&G.ctl.msl))&&typeof mslFire==="function"&&(G.mslCool||0)<=0)mslFire();
+  if((keys.msl||(G.ctl&&G.ctl.msl))&&typeof mslFire==="function"&&(G.mslCool||0)<=0)mslFire();
 }
 /* трепло (12x, M116) слышит бой: имя сбитого — это то, что потом прозвучит
    на чужой станции, и уже не как ваша заслуга */
@@ -31662,9 +31720,13 @@ function drawCombat(zx,zy,Z){
       ctx.restore();
       /* ренегата видно сразу: полоса шире, имя ярче и подпись, кто это такой —
          игрок должен узнать своего человека раньше, чем получит от него */
-      const w=p.rogue?54:34,hp=clamp(p.hull/p.hullMax,0,1);
+      /* полоса и имя — над тем, кто знает о вас или взят в захват (M361):
+         мирно висящий вдали пират подписи не носит */
+      const marked=G.marks&&G.marks.includes(p);
+      if(!(p.aware||marked||p.rogue))continue;
+      const w=p.rogue?54:(marked&&G.marks[0]===p?42:34),hp=clamp(p.hull/p.hullMax,0,1);
       /* полоска встаёт ВЫШЕ скобки захвата (M360a): на 26 px верхняя грань
-         скобки ложилась ровно на неё и корпус цели было не видно */
+         скобки ложилась ровно на неё, и корпус цели было не видно */
       const by=y-Math.max(26,(typeof helmMarkTop==="function"?helmMarkTop(p,Z):0)+18);
       ctx.fillStyle="rgba(255,255,255,.14)";ctx.fillRect(x-w/2,by,w,p.rogue?4:3);
       ctx.fillStyle=p.rogue?"#c58ae0":"#ff6b57";ctx.fillRect(x-w/2,by,w*hp,p.rogue?4:3);
@@ -31991,6 +32053,118 @@ function drawFactRoute(vis){
   ctx.fillStyle="#f2b25c";ctx.fillText(label,mx,my+.5);
   ctx.textBaseline="alphabetic";
   ctx.restore();
+}
+
+/* ══════════════ роли пиратов по рангу (M361, §5) ══════════════
+   Ранг — не «плюс к числам», а то, КАК с вами дерутся: шакал бросается, даёт
+   залп и уходит; ветеран держит четыреста-шестьсот и ходит бортом; капитан
+   не подходит ближе семисот; барон стоит, бьёт очередями и на половине корпуса
+   зовёт двух шакалов. Под четвертью корпуса без своих рядом любой уходит в
+   прыжок за три-четыре секунды — награда потеряна, одна строка в журнале. */
+const ROLE_LIM=[5.2,4.4,4.0,3.2];   /* потолок скорости по рангу */
+function roleSteer(p,ang,dt,rate){p.a+=clamp(angDiff(ang,p.a),-(rate||.035),rate||.035)*dt;}
+function roleThrust(p,dt,k){p.vx+=Math.cos(p.a)*(k||.055)*dt;p.vy+=Math.sin(p.a)*(k||.055)*dt;p.thrust=true;}
+function roleDamp(p,dt,k){const q=Math.pow(k||.97,dt);p.vx*=q;p.vy*=q;}
+function roleFire(p,d,want,range,cool){
+  if(d<range&&p.cool<=0&&Math.abs(angDiff(want,p.a))<.35){
+    /* у ренегата свой урон: он бьёт вашими же перками */
+    fireShot(p.x,p.y,p.a,7,p.dmg||3.5+sysDanger(G.sx,G.sy)*5,p.owner||"pirate");
+    p.cool=cool;
+    helmShotAt(p);   /* стрелявший сам встаёт в захват, если захвата нет (M360) */
+    return true;
+  }
+  return false;
+}
+function roleAllyNear(p){
+  for(const q of G.pirates)if(q!==p&&q.hull>0&&(q.owner||"pirate")===(p.owner||"pirate")&&Math.hypot(q.x-p.x,q.y-p.y)<1200)return true;
+  return false;
+}
+/* бегство и прыжок: true — запись уже снята */
+function roleFlee(p,dt,want){
+  roleSteer(p,want+Math.PI,dt,.05);roleThrust(p,dt,.07);
+  if(!p.jumpT){
+    p.jumpT=G.t+180+Math.random()*60;
+    say("«"+p.name+"» уходит",70);
+  }else if(G.t>=p.jumpT){
+    logAdd("kill","«"+p.name+"» ушёл в прыжок · награда потеряна");
+    if(typeof sfx==="function")sfx("ui",{f:180,to:90,d:.3,v:.3});
+    p.hull=0;p.fled=1;
+    return true;
+  }
+  return false;
+}
+/* один шаг роли; d — до игрока, want — курс на игрока */
+function pirateRoleTick(p,dt,d,want){
+  const st=p.rs||(p.rs={st:"dash",t:0,spin:(p.seed&1)?1:-1,burst:0});
+  const hp=p.hull/Math.max(1,p.hullMax);
+  p.cool-=dt;
+  /* под четвертью и один — в прыжок */
+  if(hp<.25&&!roleAllyNear(p))return roleFlee(p,dt,want);
+  const rank=p.rank|0;
+  if(rank===0){
+    /* шакал: бросок — залп — отход; под тридцатью процентами разрывает дистанцию */
+    if(hp<.3&&st.st!=="break"){st.st="break";st.t=160;}
+    if(st.st==="dash"){
+      roleSteer(p,want,dt,.045);roleThrust(p,dt,.06);
+      if(d<500)roleFire(p,d,want,760,26);
+      if(d<260){st.st="salvo";st.t=45;}
+    }else if(st.st==="salvo"){
+      roleSteer(p,want,dt,.06);roleDamp(p,dt,.96);
+      roleFire(p,d,want,760,10);
+      st.t-=dt;if(st.t<=0){st.st="break";st.t=90;}
+    }else{
+      roleSteer(p,want+Math.PI+.6*st.spin,dt,.05);roleThrust(p,dt,.06);
+      st.t-=dt;if((d>650||st.t<=0)&&hp>=.3){st.st="dash";}
+    }
+  }else if(rank===1){
+    /* ветеран: держит 400–600, ходит бортом, нос на вас */
+    /* ход по борту не копится: без гашения тангенциальная скорость росла
+       каждый кадр, и «ветеран» уходил на 1300 вместо 400–600 (замер M361).
+       Радиальная поправка идёт по скорости сближения, а не по расстоянию:
+       так он входит в полосу и остаётся в ней, а не проскакивает насквозь. */
+    roleSteer(p,want,dt,.05);
+    roleDamp(p,dt,.985);
+    const rad=(p.vx*Math.cos(want)+p.vy*Math.sin(want));   /* + = сближается: want смотрит на игрока */
+    /* издалека идёт ходко, у полосы — шагом: одна и та же скорость сближения
+       на 1500 означала бы двадцать секунд подхода */
+    const wantRad=d>600?Math.min(2.6,(d-500)/160):(d<400?-1.1:0);
+    const push=clamp(wantRad-rad,-1,1)*.055*dt;
+    p.vx+=Math.cos(want)*push;p.vy+=Math.sin(want)*push;p.thrust=true;
+    const tang=want+Math.PI/2*st.spin;
+    p.vx+=Math.cos(tang)*.05*dt;p.vy+=Math.sin(tang)*.05*dt;
+    roleFire(p,d,want,760,60);
+  }else if(rank===2){
+    /* капитан: никогда ближе семисот, редкий тяжёлый огонь */
+    if(d<700){roleSteer(p,want,dt,.05);const k=.06*dt;p.vx-=Math.cos(want)*k;p.vy-=Math.sin(want)*k;p.thrust=true;}
+    else if(d>950){roleSteer(p,want,dt);roleThrust(p,dt,.045);}
+    else{roleSteer(p,want,dt,.05);roleDamp(p,dt,.96);}
+    if(d<1100&&p.cool<=0&&Math.abs(angDiff(want,p.a))<.3){
+      fireShot(p.x,p.y,p.a,9,(p.dmg||3.5+sysDanger(G.sx,G.sy)*5)*1.6,p.owner||"pirate");
+      p.cool=95;helmShotAt(p);
+    }
+  }else{
+    /* барон: стоит, бьёт очередями по три, на половине зовёт двух шакалов */
+    roleSteer(p,want,dt,.03);roleDamp(p,dt,.94);
+    /* очередь по три, потом настоящая пауза. Раньше длинный откат ставился
+       отдельной строкой ПОСЛЕ проверки «пора начинать очередь», и в тот же
+       кадр, когда откат доходил до нуля, очередь начиналась заново — барон
+       бил без перерыва (82 выстрела за десять секунд на замере M361). */
+    if(st.burst>0){if(roleFire(p,d,want,900,7)&&--st.burst===0)p.cool=110;}
+    else if(p.cool<=0&&d<900)st.burst=3;
+    if(hp<.5&&!p.called){
+      p.called=1;
+      const n=Math.min(2,ARMED_CAP-armedCount());
+      for(let i=0;i<n;i++){
+        const a=Math.random()*TAU,seed=hashi(p.seed,i+1,0xBA);
+        const hp0=(26+sysDanger(G.sx,G.sy)*70);
+        G.pirates.push({x:p.x+Math.cos(a)*900,y:p.y+Math.sin(a)*900,vx:0,vy:0,a:a+Math.PI,
+          hull:hp0,hullMax:hp0,name:pick(PIRATE_NAMES,rng(seed)),rank:0,seed,shipId:pirateShipId(seed),
+          cool:30,aware:true,thrust:false});
+      }
+      if(n>0)say("«"+p.name+"» зовёт подмогу",90);
+    }
+  }
+  return false;
 }
 
 /* ══════════════ сохранение ══════════════ */
