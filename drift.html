@@ -1756,7 +1756,7 @@ body.table u.addr{color:#7a4a20}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.362.0";
+const VER="0.363.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -4964,13 +4964,31 @@ function slotAnchors(id){
 }
 /* сумма бонусов установленных частей — кэшируется, stat() зовут каждый кадр */
 let PART_BONUS=null,PART_KIND=null;
-function invalidateParts(){PART_BONUS=null;PART_KIND=null;}
+function invalidateParts(){PART_BONUS=null;PART_KIND=null;GUN_LIST=null;}
 /* первая установленная часть своего рода: орудие, поле, реактор. Нужна
    каждому кадру (семь чисел орудия, повадка щита, ёмкость энергии — M362),
    поэтому лежит рядом с бонусами и гаснет тем же invalidateParts. */
 function fittedOfKind(kind){
   if(!PART_KIND){PART_KIND={};for(const p of fittedParts())if(!PART_KIND[p.kind])PART_KIND[p.kind]=p;}
   return PART_KIND[kind]||null;
+}
+/* ── все стволы со своими подвесами (M363) ──
+   Слот знает свою точку, точка — свою повадку; ствол в жёсткой смотрит
+   уже и бьёт сильнее. Список кэшируется вместе с бонусами: его читает
+   stat(), а stat() зовут десятки раз за кадр. */
+let GUN_LIST=null;
+function fittedGuns(){
+  if(GUN_LIST)return GUN_LIST;
+  const f=G.fit[G.shipId]||{},out=[];
+  const st=(typeof stat0Gun==="function")?null:null;
+  for(const k in f){
+    const p=partById(f[k]);
+    if(!p||p.kind!=="gun")continue;
+    out.push({slot:+k,part:p,m:(typeof mountAt==="function")?mountAt(G.shipId,+k):null});
+  }
+  out.sort((a,b)=>a.slot-b.slot);
+  GUN_LIST=out;
+  return out;
 }
 function partById(id){
   for(const p of G.inv)if(p.id===id)return p;
@@ -5029,6 +5047,14 @@ function fitPart(slot,id){
   const p=partById(id),slots=slotsOf(G.shipId);
   if(!p||slots[slot]!==p.kind)return false;
   if(isFitted(id))return false;
+  /* M363: у подвеса есть размер, у части — тоже; и опечатанное не ставят.
+     Уже стоящее не трогаем: правило пришло позже сборки, и отбирать
+     поставленное — наказание за то, чего игрок не делал. */
+  if(typeof mountAt==="function"){
+    const m=mountAt(G.shipId,slot);
+    if(m&&!mountTakes(m,p))return false;
+  }
+  if(typeof partSealed==="function"&&partSealed(p))return false;
   const f=fitMap(),prev=f[slot];
   if(prev!=null)delete f[slot];
   if(capUsed()+p.cap>capOf(G.shipId)){if(prev!=null)f[slot]=prev;return false;}
@@ -5834,18 +5860,298 @@ function energyRegen(lvl,coreTier){return Math.round((.34+lvl*.16+coreTier*.07)*
    поведении: «можно носом вертеть, и она не наводится». Состояние на
    корабле одно: подвесов пока один, в M363 их станет несколько и каждый
    получит свой угол в этом же виде. */
-function gunAimTick(g,sh,mk,dt){
-  if(G.aim===undefined||!isFinite(G.aim))G.aim=sh.a;
+function gunAimTick(g,sh,mk,dt,key){
+  const k=key===undefined?0:key;
+  if(!G.aim||typeof G.aim!=="object")G.aim={};
+  if(!isFinite(G.aim[k]))G.aim[k]=sh.a;
   let want=sh.a;
   if(mk&&mk.hull>0)want=gunLeadAngle(sh.x,sh.y,mk,g.speed);
   /* внутрь конуса: за его край ствол не выходит ни при каком упреждении */
   const off=clamp(angDiff(want,sh.a),-g.cone,g.cone);
   const goal=angWrap(sh.a+off);
-  G.aim=angWrap(G.aim+clamp(angDiff(goal,G.aim),-g.lead*dt,g.lead*dt));
+  G.aim[k]=angWrap(G.aim[k]+clamp(angDiff(goal,G.aim[k]),-g.lead*dt,g.lead*dt));
   /* нос повернули рывком — ствол не телепортируется, но и не остаётся за спиной */
-  const back=angDiff(G.aim,sh.a);
-  if(Math.abs(back)>g.cone)G.aim=angWrap(sh.a+clamp(back,-g.cone,g.cone));
-  return G.aim;
+  const back=angDiff(G.aim[k],sh.a);
+  if(Math.abs(back)>g.cone)G.aim[k]=angWrap(sh.a+clamp(back,-g.cone,g.cone));
+  return G.aim[k];
+}
+/* ── подвес правит числа ствола (M363, §3.1) ──
+   Жёсткая: конус вдвое уже, урон ×1.25. Турель: как есть. Это не новый
+   ствол, а тот же — поставленный иначе, поэтому правка идёт поверх семи
+   чисел, а не внутрь них. */
+function gunOnMount(g,m){
+  if(!m)return g;
+  const M=MOUNT_KINDS[m.mount]||MOUNT_KINDS.turret;
+  if(M.cone===1&&M.dmg===1)return g;
+  const out=Object.assign({},g);
+  out.cone=+(g.cone*M.cone).toFixed(3);
+  out.dmg=g.dmg*M.dmg;
+  out.mount=m.mount;
+  return out;
+}
+/* Семь чисел для КАЖДОГО установленного ствола, с поправкой его подвеса.
+   Кэш тот же по смыслу, что у одиночного: stat() зовут десятки раз за кадр,
+   а список меняется только при смене оснастки или уровня. */
+let GUNS_CACHE=null,GUNS_KEY="";
+function gunSpecs(list,dmg,cool,lvl){
+  const key=dmg+"|"+cool+"|"+lvl+"|"+list.map(a=>a.slot+":"+a.part.seed+":"+a.part.tier+":"+(a.m?a.m.mount:"-")).join(",");
+  if(GUNS_KEY===key&&GUNS_CACHE)return GUNS_CACHE;
+  GUNS_KEY=key;
+  return GUNS_CACHE=list.map(a=>({slot:a.slot,part:a.part,m:a.m,
+    g:gunOnMount(gunSpecMake(dmg,cool,a.part,lvl),a.m)}));
+}
+/* ── группы 1–3 (§3.3) ──
+   «всё», «дальнее», «ближнее». Дальнее — стволы с дальностью выше средней
+   по сборке, ближнее — остальные; при одном стволе он и там, и там.
+   Автоогонь берёт группу, у которой метка в дальности и в конусе, и
+   переключается сам, пока игрок не закрепил одну (`G.gunPin`). */
+const GUN_GROUPS=[{ru:"всё"},{ru:"дальнее"},{ru:"ближнее"}];
+function gunGroupOf(list,i){
+  if(list.length<2)return 0;
+  let sum=0;for(const a of list)sum+=a.g.range;
+  return list[i].g.range>=sum/list.length?1:2;
+}
+function gunsInGroup(list,grp){
+  if(!grp)return list;
+  return list.filter((a,i)=>gunGroupOf(list,i)===grp);
+}
+/* какая группа сейчас работает: закреплённая — или та, что достаёт метку */
+function gunGroupPick(list,sh,mk){
+  if(G.gunPin)return clamp(G.gunGroup|0,0,2);
+  if(!mk||mk.hull<=0||list.length<2)return 0;
+  const d=Math.hypot(mk.x-sh.x,mk.y-sh.y);
+  const fits=g=>d<g.range&&Math.abs(angDiff(Math.atan2(mk.y-sh.y,mk.x-sh.x),sh.a))<g.cone;
+  /* берём группу, у которой метку достаёт наибольшая ДОЛЯ стволов: иначе
+     «всё» побеждало всегда — в него входит и дальний ствол, и ближний,
+     который на девятистах только жжёт энергию. При равной доле выигрывает
+     та, где стволов больше. */
+  let best=0,bs=-1,bn=-1;
+  for(const grp of [0,1,2]){
+    const gs=gunsInGroup(list,grp);
+    if(!gs.length)continue;
+    const n=gs.filter(a=>fits(a.g)).length,sc=n/gs.length;
+    if(sc>bs+1e-9||(Math.abs(sc-bs)<1e-9&&n>bn)){bs=sc;bn=n;best=grp;}
+  }
+  G.gunGroup=best;
+  return best;
+}
+/* ── ствол виден на корпусе (M363, §3.1) ──
+   Рисуется в осях корпуса, внутри его же поворота и масштаба, и смотрит
+   туда, куда наведён: жёсткая почти по носу, турель — вслед за меткой.
+   По этому и читается сборка раньше первого выстрела (кодекс §13: сперва
+   увидеть, потом узнать). У пиратов стволов пока нет — их сборки приходят
+   в M368, и тогда эта же функция нарисует и их. */
+function gunBarrelsDraw(guns,shipA){
+  if(!guns||!guns.length)return;
+  ctx.save();
+  for(const A of guns){
+    const m=A.m;if(!m)continue;
+    const aim=(G.aim&&isFinite(G.aim[A.slot]))?G.aim[A.slot]:shipA;
+    const la=angWrap(aim-shipA);
+    const sz=sizeIdx(partSize(A.part));
+    /* длина мерена по корпусу: 2.6 читалось только на стенде, в игре ствола
+       было не видно вовсе. 4.5–9 единиц — это десятая-пятая часть корпуса,
+       столько и должен занимать ствол, чтобы сборка читалась силуэтом. */
+    const len=4.5+sz*2.2, w=1.05+sz*.3;
+    ctx.save();ctx.translate(m.x,m.y);ctx.rotate(la);
+    /* ствол — тело в тени, а не проволока: конусная трубка тёмной заливкой,
+       один светлый блик по верхней грани и дульный срез. Первая версия рисовала
+       светлую линию поверх корпуса, и на близком плане она читалась усиком
+       антенны, а не орудием (самокритика M363). */
+    ctx.fillStyle="rgba(20,24,30,.95)";
+    ctx.beginPath();
+    ctx.moveTo(0,-w);ctx.lineTo(len,-w*.62);ctx.lineTo(len,w*.62);ctx.lineTo(0,w);
+    ctx.closePath();ctx.fill();
+    /* обвод, как у пластин корпуса: тёмное тело на тёмном корпусе без него
+       не читается вовсе — на кадре ствол пропадал в силуэте */
+    ctx.strokeStyle="rgba(186,198,212,.5)";ctx.lineWidth=.4;ctx.stroke();
+    ctx.strokeStyle="rgba(214,224,236,.4)";ctx.lineWidth=.3;
+    ctx.beginPath();ctx.moveTo(.5,-w*.62);ctx.lineTo(len-.4,-w*.42);ctx.stroke();
+    /* жёсткая сидит в набор приливом, турель стоит на тумбе */
+    ctx.fillStyle=m.mount==="fix"?"rgba(20,24,30,.95)":"rgba(52,60,70,.95)";
+    ctx.beginPath();ctx.arc(0,0,m.mount==="fix"?w*.9:w*1.35,0,TAU);ctx.fill();
+    ctx.restore();
+  }
+  ctx.restore();
+}
+function gunTotals(guns){
+  const out={hull:0,shield:0,perEnergy:0};
+  if(!guns||!guns.length)return out;
+  let dmgSum=0;
+  for(const A of guns){
+    const g=A.g,rate=60/Math.max(1,g.cool);
+    out.hull+=g.dmg*dmgMul(g.type,false)*rate;
+    out.shield+=g.dmg*dmgMul(g.type,true)*rate;
+    dmgSum+=g.dmg;
+  }
+  out.hull=Math.round(out.hull*10)/10;
+  out.shield=Math.round(out.shield*10)/10;
+  out.perEnergy=Math.round(dmgSum/Math.max(1e-6,EN_SHOT*guns.length)*100)/100;
+  return out;
+}
+
+/* ══════════════ подвесы: размер и повадка (M363, §3.1) ══════════════
+   Точки на корпусе уже есть (`slotAnchors`, 05-parts) — до сих пор они
+   различались только категорией: сюда орудие, сюда двигательный блок. Теперь у
+   каждой ещё две вещи, и они делают корпуса разными НЕ силуэтом.
+
+   Размер — L/M/H. Тяжёлое в лёгкое не встаёт; лёгкое в тяжёлое встаёт всегда,
+   и это не подарок: место занято, а числа остались лёгкими. Размер точки
+   выводится из массы корпуса и из того, где точка сидит: на законцовке крыла
+   подвес всегда на ступень легче, чем в теле.
+
+   Повадка — жёсткая или турель. Жёсткая смотрит по носу: конус вдвое уже, зато
+   урон ×1.25 — ствол упирается в набор, а не висит на приводе. Турель ходит в
+   своём конусе целиком. Точки на оси корпуса (нос, брюхо) — жёсткие; всё, что
+   вынесено вбок, — турели. У сторожевого корпуса (`guard`) жёсткой становится
+   и первая крыльевая: он для того и построен.
+
+   Ничего из этого не сохраняется: и размер, и повадка выводятся из корпуса,
+   как и сами точки (сквозное правило — не персистить выводимое). */
+const MOUNT_SIZES=["L","M","H"];
+const MOUNT_SIZE_RU={L:"лёгкий",M:"средний",H:"тяжёлый"};
+const MOUNT_KINDS={
+  fix:   {ru:"жёсткая", sh:"Ж", cone:.5,  dmg:1.25, note:"смотрит по носу: конус вдвое уже, урон выше"},
+  turret:{ru:"турель",  sh:"Т", cone:1,   dmg:1,    note:"ходит в своём конусе целиком"}
+};
+const MOUNT_CACHE={};
+function mountsOf(id){
+  if(MOUNT_CACHE[id])return MOUNT_CACHE[id];
+  const S=shipData(id),h=hullOf(id),an=slotAnchors(id);
+  const guard=(typeof roleOf==="function")&&roleOf(id)&&roleOf(id).id==="guard";
+  const mass=S?(S.hull>=180?2:(S.hull>=120?1:0)):1;
+  let wing=0;
+  const out=an.map(a=>{
+    const side=Math.abs(a.y)>h.len*.09;
+    let sz=mass;
+    if(side)sz=Math.max(0,sz-1);                 /* на выносе подвес легче */
+    let kind=side?"turret":"fix";
+    if(side&&guard&&wing++===0)kind="fix";        /* сторожевой несёт одну жёсткую на крыле */
+    return {i:a.i,kind:a.kind,size:MOUNT_SIZES[sz],mount:kind,x:a.x,y:a.y};
+  });
+  MOUNT_CACHE[id]=out;
+  return out;
+}
+function mountAt(id,slot){
+  const m=mountsOf(id);
+  for(const x of m)if(x.i===slot)return x;
+  return null;
+}
+/* ── размер самой части ──
+   Выводится из seed и тира: тяжёлые стволы редки и просят тяжёлого подвеса.
+   Части не-орудийных категорий размера не имеют — они ставятся в своё гнездо
+   и спорить там не с чем. */
+function partSize(p){
+  /* размер есть только у стволов: пусковая висит в своём единственном
+     подвесе, и спорить там не с чем (M112) — размерное правило её не
+     касается, иначе тяжёлая пусковая просто переставала ставиться */
+  if(!p||p.kind!=="gun")return "L";
+  const t=p.tier|0,r=((p.seed>>>11)&255)/255;
+  if(t>=4&&r>.35)return "H";
+  if(t>=2&&r>.45)return "M";
+  return t>=3?"M":"L";
+}
+function sizeIdx(s){const i=MOUNT_SIZES.indexOf(s);return i<0?0:i;}
+/* тяжёлое в лёгкое не встаёт */
+function mountTakes(m,p){
+  if(!m||!p)return false;
+  if(m.kind!==p.kind)return false;
+  if(p.kind!=="gun")return true;
+  return sizeIdx(partSize(p))<=sizeIdx(m.size);
+}
+/* почему не встало — одной строкой, на языке игрока */
+function mountWhyNot(m,p){
+  if(!m)return "на этом корпусе нет такого подвеса";
+  if(m.kind!==p.kind)return "не тот подвес: там "+PART_KINDS[m.kind].ru.toLowerCase();
+  if(p.kind==="gun"&&sizeIdx(partSize(p))>sizeIdx(m.size))
+    return "подвес "+MOUNT_SIZE_RU[m.size]+", а часть "+MOUNT_SIZE_RU[partSize(p)];
+  return "";
+}
+
+/* ══════════════ допуск вместо уровней (M363, §11.4) ══════════════
+   Уровня у игрока нет и не будет. Есть допуск — четыре класса, и он не растёт
+   сам: его дают за дело. Найти, увезти, продать, оставить можно что угодно;
+   СТАВИТЬ на корпус — только в пределах своего допуска. Остальное лежит в
+   трюме опечатанным, и опись пишет, чего оно ждёт.
+
+   Ворота (§11.4, D15):
+     I   — с начала;
+     II  — экзамен кооператива (он уже есть, 12aj) плюс десять сбитых;
+     III — сто часов налёта ИЛИ пять случаев в трёх державах; случаев пока нет
+           (они приходят в M374), поэтому здесь работают только часы;
+     IV  — случай от ГЛАВТРАССЫ лично плюс залп в бою с «Ревизией»; ни того,
+           ни другого ещё нет (M374/M380), и четвёртый допуск честно закрыт.
+
+   Пока двадцати семейств нет (они в M364–M366), класс читается по тиру и
+   только у СТВОЛОВ: отменный — II, легендарный — III, остальное — I. Это
+   стоит переписать на семейство, когда семейства появятся; здесь это записано,
+   чтобы переписать было чем.
+
+   Достигнутый допуск персистится (`G.clearance`) и НЕ ПАДАЕТ: сбитые можно
+   пересчитать, а отнятое обратно — это наказание за то, чего игрок не делал. */
+const CLEARANCE=[
+  {n:1,ru:"I",   how:"с начала"},
+  {n:2,ru:"II",  how:"экзамен кооператива и десять сбитых"},
+  {n:3,ru:"III", how:"сто часов налёта"},
+  {n:4,ru:"IV",  how:"допуск по форме от ГЛАВТРАССЫ (ещё не выдают)"}
+];
+const CLR_KILLS=10;
+const CLR_HOURS=100;
+function clrHours(){return (G.flownMs||0)/3600000;}
+/* что заработано ПРЯМО СЕЙЧАС; G.clearance помнит максимум за всё время */
+function clearanceEarned(){
+  let n=1;
+  const exam=(typeof coopHas==="function")&&coopHas();
+  if(exam&&(G.kills|0)>=CLR_KILLS)n=2;
+  if(n>=2&&clrHours()>=CLR_HOURS)n=3;
+  return n;
+}
+function clearanceNow(){
+  const e=clearanceEarned();
+  if(e>(G.clearance|0))clearanceRaise(e);
+  return Math.max(1,G.clearance|0);
+}
+function clearanceRaise(n){
+  const was=G.clearance|0;
+  if(n<=was)return;
+  G.clearance=n;
+  const C=CLEARANCE[n-1];
+  if(typeof tell==="function")
+    tell("kill","Допуск "+C.ru+" · опечатанное в трюме открыто",
+         "ДОПУСК "+C.ru+"\n"+C.how);
+  else if(typeof say==="function")say("ДОПУСК "+C.ru,120);
+}
+/* Класс части: пока нет семейств — по тиру, и ТОЛЬКО у стволов. Таблица
+   §11.4 гейтит семейства орудий, а не «всё, что дороже обычного»: первая
+   развёртка по тиру запечатывала пусковую и рядовые части и ломала игру
+   с самого начала. Отменный ствол ждёт второго допуска, легендарный —
+   третьего; четвёртый пока не выдают никому (M374/M380). */
+function partClearance(p){
+  if(!p||p.kind!=="gun")return 1;
+  const t=p.tier|0;
+  return t>=5?3:(t>=4?2:1);
+}
+function partSealed(p){return partClearance(p)>clearanceNow();}
+/* Чего ждёт опечатанная часть — одной строкой для описи. Пишем КЛАСС части
+   и ближайшие незакрытые ворота, а не ворота её класса: игроку с первым
+   допуском бесполезно читать «нужно сто часов», когда перед ним ещё
+   экзамен. */
+function sealedWhy(p){
+  const need=partClearance(p),now=clearanceNow();
+  if(need<=now)return "";
+  const C=CLEARANCE[need-1];
+  const exam=(typeof coopHas==="function")&&coopHas();
+  let step;
+  if(now<2)step=!exam?"нужен экзамен кооператива":("сбитых "+(G.kills|0)+" из "+CLR_KILLS);
+  else if(now<3)step="налёт "+clrHours().toFixed(1)+" ч из "+CLR_HOURS;
+  else step=CLEARANCE[3].how;
+  return "допуск "+C.ru+" · "+step;
+}
+/* налёт копится только в полёте — на станции и за столом время не идёт */
+function clrTick(ms){
+  if(!G.running)return;
+  if(G.mode!=="system"&&G.mode!=="belt"&&G.mode!=="landing"&&G.mode!=="scoop")return;
+  G.flownMs=(G.flownMs||0)+Math.min(2000,Math.max(0,ms||0));
 }
 
 /* ══════════════ галактика ══════════════ */
@@ -7082,6 +7388,8 @@ const G={
   mods:{engine:0,tank:0,hold:0,armor:0,drill:0,hyper:0,weapon:0},
   modsOwned:{engine:0,tank:0,hold:0,armor:0,drill:0,hyper:0,weapon:0},
   inv:[],fit:{},shield:0,shieldHit:0,energy:0,loot:[],partsBought:{},
+  /* допуск и налёт (M363, §11.4): допуск не падает, налёт копится только в полёте */
+  clearance:1,flownMs:0,gunGroup:0,
   tech:new Set(),techLvl:{},barter:new Set(),
   found:new Set(),species:new Set(),
   ap:null,          // автопилот
@@ -7176,6 +7484,10 @@ function stat(){
   const coreT=coreP?(coreP.tier|0):0;
   const dmgV=(5+m.weapon*4.5)*(T.has("gunai")?1.35:1)*mul("dmgMul")*(cr("pyre")?1.35:1)*(1+rs("dmg"));
   const coolV=Math.max(6,Math.round((34-m.weapon*4)/mul("rateMul")/(cr("pyre")?2:1)/(1+rs("cool"))*WT.cool));
+  /* все стволы разом (M363): у каждого свой подвес, а значит свой конус и
+     свой урон. `gun` остаётся первым — его показывают карточка и HUD. */
+  const gunRaw=(typeof fittedGuns==="function")?fittedGuns():[];
+  const gunList=gunRaw.length?gunSpecs(gunRaw,dmgV,coolV,m.weapon):[];
   return {
     S,
     /* налёт часов: облезлая машина слушается хуже — единственное, чем износ
@@ -7192,7 +7504,9 @@ function stat(){
     dmg:dmgV,
     cool:coolV,
     /* семь чисел ствола (§2) и запас энергии (§4) — M362 */
-    gun:gunSpec(dmgV,coolV,gunP,m.weapon),
+    gun:(gunList[0]?gunList[0].g:gunSpec(dmgV,coolV,gunP,m.weapon)),
+    guns:gunList,
+    gunTot:gunTotals(gunList),
     energyMax:energyCap(m.weapon,coreT),
     energyRegen:energyRegen(m.weapon,coreT),
     /* пусковая (M112): она не усиливает бортовой огонь, а даёт отдельное оружие,
@@ -31574,6 +31888,7 @@ function fireShot(x,y,ang,speed,dmg,mine,type,range){
   const life=range?Math.max(12,Math.round(range/Math.max(.5,speed))):150;
   G.shots.push({x,y,vx:Math.cos(ang)*speed,vy:Math.sin(ang)*speed,dmg,owner,
     type:type||"kin",mine:owner==="player",life});
+  if(owner==="player"&&typeof rangeShot==="function")rangeShot();
   /* тембр своего выстрела берём из установленной пушки: у каждой части свой seed,
      значит разные орудия звучат по-разному сами собой, без отдельного контента */
   if(owner==="player"){
@@ -31655,6 +31970,7 @@ function combatShots(dt){
             }
           }
           p.hull-=d*dmgMul(s.type,false);
+          if(p.dummy&&s.owner==="player"&&typeof rangeHit==="function")rangeHit(d*dmgMul(s.type,false));
           sfx("hit",{v:.3});
           if(p.hull<=0){if(s.owner==="player")killPirate(p);else pirateFellTo(p,s.owner);}
           break;
@@ -31804,39 +32120,48 @@ function updateCombat(dt){
     }else if(L.life<=0)G.loot.splice(i,1);
   }
   if(fireCool>0)fireCool-=dt;
-  /* ── огонь (M360) ──
-     Пушка стреляет сама, когда первая метка захвата в конусе и в дальности
-     (пока ±20° и 760 — M362 заменит числами орудия). Зажатый ОГОНЬ/F/ЛКМ —
-     принудительно по носу: баржи, батареи, обломки. Место помнит бой один раз
-     за стычку, а не каждый выстрел (D16). */
+  /* ── огонь (M360, стволы по подвесам — M363) ──
+     Стреляет КАЖДЫЙ ствол активной группы, у каждого свой откат, свой угол и
+     свой конус от подвеса. Автоогонь идёт, пока первая метка достаётся этим
+     стволом; зажатый ОГОНЬ/F/ЛКМ — принудительно, по носу. Место помнит бой
+     один раз за стычку, а не каждый выстрел (D16). */
   const ctl=G.ctl||{};
   const mk=(G.marks&&G.marks[0])||null;
-  let auto=false;
-  if(mk&&mk.hull>0&&!mk.iff){
-    /* конус и дальность теперь у ствола свои (M362 заменил временные
-       HELM_CONE/HELM_RANGE — они остались мерой захвата, не огня) */
-    const gg=st.gun,d=Math.hypot(mk.x-sh.x,mk.y-sh.y);
-    auto=d<gg.range&&Math.abs(angDiff(Math.atan2(mk.y-sh.y,mk.x-sh.x),sh.a))<gg.cone;
-  }
-  if((auto||ctl.fire)&&st.armed&&fireCool<=0){
+  const live=(mk&&mk.hull>0&&!mk.iff)?mk:null;
+  const all=(st.guns&&st.guns.length)?st.guns:[{slot:0,g:st.gun,m:null}];
+  const grp=(typeof gunGroupPick==="function")?gunGroupPick(all,sh,live):0;
+  const act=(typeof gunsInGroup==="function")?gunsInGroup(all,grp):all;
+  if(!G.gunCool)G.gunCool={};
+  for(let gi=0;gi<act.length;gi++){
+    const A=act[gi],g=A.g,first=gi===0;
+    let cd=first?fireCool:((G.gunCool[A.slot]||0)-dt);
+    let auto=false;
+    if(live){
+      const d=Math.hypot(live.x-sh.x,live.y-sh.y);
+      auto=d<g.range&&Math.abs(angDiff(Math.atan2(live.y-sh.y,live.x-sh.x),sh.a))<g.cone;
+    }
     /* ствол ведёт метку внутри своего конуса со своей скоростью наводки
-       (M362): носом её больше не «донаводишь» мгновенно. Промах — это
-       угол, добавленный к выстрелу, а не скрытый бросок. */
-    const g=st.gun;
-    const ang=gunAimTick(g,sh,mk,dt);
-    const tgtD=mk?Math.hypot(mk.x-sh.x,mk.y-sh.y):0;
-    const err=gunMiss(g,tgtD,mk?(mk.av||0):0,Math.random());
-    fireShot(sh.x,sh.y,ang+err,g.speed,g.dmg,true,g.type,g.range);
-    if(!G.engaged&&typeof placeNote==="function")placeNote("hurt",1);   // место помнит выстрел (11d)
-    G.engaged=true;
-    /* пустая шкала — не «нельзя стрелять», а вдвое реже (§4) */
-    G.energy=Math.max(0,G.energy-EN_SHOT);
-    fireCool=st.cool*(lowE?2:1);
+       (M362): носом её больше не «донаводишь» мгновенно. Промах — это угол,
+       добавленный к выстрелу, а не скрытый бросок. */
+    const ang=gunAimTick(g,sh,live,dt,A.slot);
+    if((auto||ctl.fire)&&st.armed&&cd<=0){
+      const tgtD=live?Math.hypot(live.x-sh.x,live.y-sh.y):0;
+      const err=gunMiss(g,tgtD,live?(live.av||0):0,Math.random());
+      fireShot(sh.x,sh.y,ang+err,g.speed,g.dmg,true,g.type,g.range);
+      if(!G.engaged&&typeof placeNote==="function")placeNote("hurt",1);   // место помнит выстрел (11d)
+      G.engaged=true;
+      /* пустая шкала — не «нельзя стрелять», а вдвое реже (§4) */
+      G.energy=Math.max(0,G.energy-EN_SHOT);
+      cd=g.cool*(lowE?2:1);
+    }
+    if(first)fireCool=Math.max(0,cd);else G.gunCool[A.slot]=Math.max(0,cd);
   }
   if(G.engaged&&!G.pirates.some(p=>p.aware))G.engaged=false;
   for(let i=G.pirates.length-1;i>=0;i--){
     const p=G.pirates[i];
     const dx=sh.x-p.x,dy=sh.y-p.y,d=Math.hypot(dx,dy)||1;
+    /* мишень стрельбища (24d) ничего о вас не знает и не стреляет */
+    if(p.dummy){p.aware=false;p.vx=0;p.vy=0;continue;}
     if(d<seeRange)p.aware=true;
     else if(d>seeRange*2.4)p.aware=false;
     if(typeof fleetEscortActive==="function"&&fleetEscortActive())p.aware=false;   /* конвой ГЛАВТРАССЫ (M311) */
@@ -32467,6 +32792,8 @@ function snapshot(){
   return {v:5,sx:G.sx,sy:G.sy,shipId:G.shipId,owned:G.owned,
     x:G.ship.x,y:G.ship.y,a:G.ship.a,fuel:G.fuel,hull:G.hull,
     cargo:G.cargo,credits:G.credits,data:G.data,soldTotal:G.soldTotal|0,mods:G.mods,modsOwned:G.modsOwned,
+    /* допуск, налёт и выбранная группа орудий (M363, §16.4) */
+    clearance:G.clearance|0,flownMs:G.flownMs|0,gunGroup:G.gunGroup|0,
     inv:G.inv.map(packPart),fit:G.fit,partsBought:prunePartsBought(),
     tech:[...G.tech],techLvl:G.techLvl,barter:[...G.barter],found:[...G.found],
     species:[...G.species],bioV:2,
@@ -33253,6 +33580,10 @@ function applySave(s){
   G.lastDig=(s.lastDig&&typeof s.lastDig==="object")?s.lastDig:null;
   G.credits=Math.max(0,s.credits|0);G.data=Math.max(0,s.data|0);
   G.soldTotal=Math.max(0,s.soldTotal|0);   /* оборот для экзамена кооператива (12aj) — раньше терялся при каждой загрузке */
+  /* безопасные значения по умолчанию: старый сейв не знает этих полей (M363) */
+  G.clearance=Math.max(1,s.clearance|0);
+  G.flownMs=Math.max(0,s.flownMs|0);
+  G.gunGroup=clamp(s.gunGroup|0,0,2);
   for(const k of RES_KEYS)G.cargo[k]=Math.max(0,(s.cargo&&s.cargo[k])|0);
   const st=stat();
   G.fuel=clamp(+s.fuel||0,0,st.fuelMax);
@@ -35731,6 +36062,8 @@ function updateSystem(dt){
     return;
   }
   if(apOn)return;
+  /* стрельбище (24d): пока идёт минута, подсказку держит оно */
+  if(typeof rangeOn==="function"&&rangeOn()){rangeTick(dt);return;}
   G.prompt=atEdge?"ГРАВИТАЦИОННЫЙ ЯКОРЬ · КРАЙ СИСТЕМЫ\nКУРС К ЗВЕЗДЕ СВОБОДЕН":"";
   const hostile=G.pirates.filter(p=>p.aware).length;
   /* подсказка боя переписана под новое управление (M360a): пэда ОГОНЬ в
@@ -36069,6 +36402,9 @@ function drawSystem(){
      крупнее малой луны; ниже .35 он уже не находится глазом */
   ctx.scale(clamp(Z,.35,1.6),clamp(Z,.35,1.6));
   drawHull(G.shipId,thrusting,!!(G.ctl&&G.ctl.out.thr&&G.fuel>0),G.mods.engine,sh.bank);
+  /* стволы на подвесах, повёрнутые по наводке (M363): сборка читается
+     силуэтом раньше первого выстрела */
+  if(typeof gunBarrelsDraw==="function")gunBarrelsDraw(stat().guns,sh.a);
   /* пусковая видна на силуэте (хвост M112): подвес под корпусом — заряженный
      сплошной, сухой — только обвод с красной меткой. По нему и без панели
      ясно, что стрелять нечем */
@@ -57615,6 +57951,81 @@ function updateWanderRoom(dt){
   if(typeof wanPanelSync==="function")wanPanelSync();
 }
 
+/* ══════════════ стрельбище (M363, §3.2) ══════════════
+   У всякого причала есть списанная баржа-мишень. «Проверить» — это минута
+   наружу и обратно: сборку не сравнивают в уме, её пробуют. Числа на карточке
+   честны и без стрельбища, но ощущение — попадаю я или мажу, успевает ли
+   турель за целью, хватает ли энергии на очередь — живёт только здесь.
+
+   Мишень — обычная запись в `G.pirates` с признаком `dummy`: она не знает о
+   вас, не стреляет, не разбирается на трофеи и не считается сбитой. Так весь
+   бой уже написан, а стрельбище не заводит второго боевого цикла.
+
+   Ничего не персистится: минута кончилась — корабль у причала, отчёт в журнале. */
+const RANGE_SEC=60;
+const RANGE_DIST=520;
+function rangeOn(){return !!G.range;}
+function rangeCanHere(){return !!(G.sys&&G.sys.station);}
+function rangeTarget(){
+  const S=G.sys.station,hp=1e7;
+  const a=Math.atan2(G.ship.y-S.y,G.ship.x-S.x);
+  return {x:S.x+Math.cos(a)*RANGE_DIST*1.7,y:S.y+Math.sin(a)*RANGE_DIST*1.7,
+    vx:0,vy:0,a:a+Math.PI,hull:hp,hullMax:hp,name:"Мишень",rank:0,seed:4242,
+    shipId:pirateShipId(4242),cool:1e9,aware:false,thrust:false,dummy:true,
+    shield:0,shieldMax:0,shieldType:"solid",shieldHit:0};
+}
+function rangeStart(){
+  if(!rangeCanHere()){say("Стрельбище есть только у причала");return false;}
+  if(rangeOn())return false;
+  const S=G.sys.station;
+  if(typeof closeStation==="function"&&G.mode==="dock")closeStation();
+  G.mode="system";G.ap=null;G.orbit=null;
+  G.ship.x=S.x+RANGE_DIST*.4;G.ship.y=S.y+RANGE_DIST*.4;
+  G.ship.vx=0;G.ship.vy=0;
+  G.pirates=[];G.shots=[];G.marks=[];
+  const t=rangeTarget();
+  G.pirates.push(t);
+  helmLock(t);
+  G.hull=stat().hullMax;G.energy=stat().energyMax;
+  G.range={left:RANGE_SEC*60,shots:0,hits:0,dmg:0,x:S.x,y:S.y};
+  say("СТРЕЛЬБИЩЕ · МИНУТА\nмишень взята в захват\nчисла честные, ощущение — ваше",180);
+  return true;
+}
+/* попадание в мишень считается здесь, чтобы петля боя ничего о стрельбище не знала */
+function rangeHit(d){
+  if(!G.range)return;
+  G.range.hits++;G.range.dmg+=d;
+}
+function rangeShot(){if(G.range)G.range.shots++;}
+function rangeTick(dt){
+  const R=G.range;
+  if(!R)return;
+  R.left-=dt;
+  const sec=Math.max(0,R.left/60);
+  const hitPc=R.shots?Math.round(R.hits/R.shots*100):0;
+  G.prompt="СТРЕЛЬБИЩЕ · "+sec.toFixed(0)+" с\nПОПАДАНИЙ "+R.hits+" ИЗ "+R.shots+
+    " ("+hitPc+"%) · УРОН/С "+(R.dmg/Math.max(1,(RANGE_SEC*60-R.left)/60)).toFixed(1);
+  if(R.left<=0)rangeEnd();
+}
+function rangeEnd(){
+  const R=G.range;
+  if(!R)return;
+  const secs=Math.max(1,(RANGE_SEC*60-Math.max(0,R.left))/60);
+  const hitPc=R.shots?Math.round(R.hits/R.shots*100):0;
+  G.range=null;
+  G.pirates=G.pirates.filter(p=>!p.dummy);
+  G.shots=[];G.marks=[];
+  logAdd("kill","Стрельбище: попаданий "+R.hits+" из "+R.shots+" ("+hitPc+"%) · урон/с "+
+    (R.dmg/secs).toFixed(1));
+  G.hull=stat().hullMax;
+  if(typeof openStation==="function"&&G.sys&&G.sys.station){
+    const S=G.sys.station;
+    G.ship.x=S.x;G.ship.y=S.y;G.ship.vx=S.vx||0;G.ship.vy=S.vy||0;
+    openStation();
+  }
+  say("СТРЕЛЬБИЩЕ ЗАКРЫТО\nпопаданий "+hitPc+"%\nурон/с "+(R.dmg/secs).toFixed(1),180);
+}
+
 /* ══════════════ кабина: процедурная, статика в offscreen ══════════════ */
 /* Кабина — не панель поверх космоса, а помещение, из которого на космос смотрят.
    Отсюда три правила, которым подчинён весь файл:
@@ -64116,6 +64527,39 @@ function stTabMods(){
         "<br>наводка "+g.lead.toFixed(2)+" рад/кадр · разброс "+(g.spread*100).toFixed(1)+"%"+
         "</s>"));
       $body.appendChild(rg);
+      /* три итога — по ним и сравнивают сборку со сборкой (§3.2, M363) */
+      const T=s2.gunTot||{hull:0,shield:0,perEnergy:0};
+      const rt=el("div","row");
+      rt.appendChild(el("div","nm","<s>урон/с по корпусу "+T.hull.toFixed(1)+
+        " · по щиту "+T.shield.toFixed(1)+"<br>урон на энергию "+T.perEnergy.toFixed(2)+
+        " · стволов "+(s2.guns?s2.guns.length:0)+"</s>"));
+      $body.appendChild(rt);
+      /* группы 1–3 (§3.3): по умолчанию выбирает автоогонь, закрепить — здесь */
+      if(s2.guns&&s2.guns.length>1){
+        const rgr=el("div","row");
+        rgr.appendChild(el("div","nm","<s>группа орудий</s>"));
+        GUN_GROUPS.forEach((gg,gi)=>{
+          const b=el("button","",gg.ru.toUpperCase());
+          if(G.gunPin&&(G.gunGroup|0)===gi)b.classList.add("on");
+          b.onclick=()=>{
+            if(G.gunPin&&(G.gunGroup|0)===gi){G.gunPin=false;}
+            else{G.gunPin=true;G.gunGroup=gi;}
+            renderTab();};
+          rgr.appendChild(b);
+        });
+        const nb=el("div","nm","<s>"+(G.gunPin?"закреплена":"выбирает сама")+"</s>");
+        rgr.appendChild(nb);
+        $body.appendChild(rgr);
+      }
+      /* стрельбище: списанная баржа у причала, минута наружу и обратно */
+      if(typeof rangeCanHere==="function"&&rangeCanHere()){
+        const rr=el("div","row");
+        rr.appendChild(el("div","nm","<s>стрельбище · списанная баржа у причала<br>минута наружу и обратно, числа честные</s>"));
+        const b=el("button","","ПРОВЕРИТЬ");
+        b.onclick=()=>{$st.classList.remove("open");rangeStart();};
+        rr.appendChild(b);
+        $body.appendChild(rr);
+      }
     }
   }
   /* ── приборы (M127) ──
@@ -69833,7 +70277,12 @@ const OPIS_SHIP=[
   {k:"see",      ru:"радар",      fix:0},
   {k:"jump",     ru:"прыжок",     fix:1},
   {k:"dmg",      ru:"урон",       fix:1},
-  {k:"cool",     ru:"охлаждение", fix:0, less:1}
+  {k:"cool",     ru:"охлаждение", fix:0, less:1},
+  /* три итога сборки (M363, §3.2): по ним и сравнивают карточку с карточкой */
+  {k:"energyMax",ru:"энергия",    fix:0},
+  {k:"gunHull",  ru:"урон/с корпус", fix:1, get:st=>st.gunTot?st.gunTot.hull:0},
+  {k:"gunShield",ru:"урон/с щит",    fix:1, get:st=>st.gunTot?st.gunTot.shield:0},
+  {k:"gunPerEn", ru:"урон на энергию",fix:2, get:st=>st.gunTot?st.gunTot.perEnergy:0}
 ];
 const OPIS_KIT=[
   {k:"weight",ru:"вес",      fix:1, less:1},
@@ -69852,9 +70301,17 @@ function opisFocus(){return OPIS.hover||OPIS.sel;}
    свободный своего рода, иначе первый своего рода (замена) */
 function opisTarget(p){
   const slots=slotsOf(G.shipId),fm=G.fit[G.shipId]||{},s=OPIS.sel;
-  if(s&&s.t==="slot"&&slots[s.i]===p.kind)return s.i;
-  for(let i=0;i<slots.length;i++)if(slots[i]===p.kind&&fm[i]==null)return i;
-  for(let i=0;i<slots.length;i++)if(slots[i]===p.kind)return i;
+  /* M363: подвес не только рода, но и размера — тяжёлый ствол в лёгкую
+     точку не встанет, и предлагать её не надо */
+  const takes=i=>{
+    if(slots[i]!==p.kind)return false;
+    if(typeof mountAt!=="function")return true;
+    const m=mountAt(G.shipId,i);
+    return !m||mountTakes(m,p);
+  };
+  if(s&&s.t==="slot"&&takes(s.i))return s.i;
+  for(let i=0;i<slots.length;i++)if(takes(i)&&fm[i]==null)return i;
+  for(let i=0;i<slots.length;i++)if(takes(i))return i;
   return -1;
 }
 function opisSlotOf(id){
@@ -69892,10 +70349,13 @@ function opisKitFuture(f){
 function opisPanel(id,title,rows,cur,fut,extra){
   const box=document.createElement("div");box.className="op-panel";box.dataset.p=id;
   let h="<h4>"+title+(extra?"<s>"+extra+"</s>":"")+"</h4>";
+  /* строка может читать не поле, а свою мерку по всей сборке (M363: три
+     итога) — тогда у неё есть get(st) вместо ключа */
+  const val=(d,st)=>+(d.get?d.get(st):st[d.k])||0;
   for(const d of rows){
-    const x=+cur[d.k]||0;let cell="";
+    const x=val(d,cur);let cell="";
     if(fut&&fut.st){
-      const y=+fut.st[d.k]||0;
+      const y=val(d,fut.st);
       if(Math.abs(x-y)>=(d.fix?Math.pow(10,-d.fix)*.5:.5)){
         const better=d.less?y<x:y>x;
         cell="<u class='"+(better?"up":"dn")+"'>→ "+y.toFixed(d.fix)+"</u>";
@@ -69939,8 +70399,15 @@ function opisConfirm(key,run){
 }
 function opisFit(p,slot){
   const t=slot!==undefined&&slot>=0?slot:opisTarget(p);
-  if(t<0){say("На этом корпусе нет такого слота");return false;}
+  if(t<0){say("На этом корпусе нет подвеса под такую часть");return false;}
   if(slotsOf(G.shipId)[t]!==p.kind){say("Не тот слот: там "+PART_KINDS[slotsOf(G.shipId)[t]].ru.toLowerCase());return false;}
+  /* отказ называет причину (M363): размер подвеса или допуск, а не общее
+     «не встаёт» — по нему нечего делать дальше */
+  if(typeof partSealed==="function"&&partSealed(p)){say("Опечатано · "+sealedWhy(p));return false;}
+  if(typeof mountAt==="function"){
+    const m=mountAt(G.shipId,t);
+    if(m&&!mountTakes(m,p)){say("Не встаёт: "+mountWhyNot(m,p));return false;}
+  }
   if(!fitPart(t,p.id)){say("Не встаёт: нет места в оснастке");return false;}
   OPIS.sel=null;OPIS.hover=null;opisRerender();
   return true;
@@ -70244,8 +70711,13 @@ function opisActs(card,list){
 }
 function opisPartHtml(p){
   const K=PART_KINDS[p.kind];
-  return "<b>"+p.name+"</b><s>"+K.ru.toLowerCase()+" · "+TIER_RU[p.tier]+
-    " · место "+p.cap+"</s><i>"+p.aff.map(a=>"<span class='"+(a.v>0?"up":"dn")+"'>"+affLabel(a)+"</span>").join(" · ")+"</i>";
+  /* M363: у ствола есть размер — он решает, в какой подвес часть встанет;
+     опечатанное лежит в трюме и пишет, чего ждёт (§11.4) */
+  const sz=(p.kind==="gun"&&typeof partSize==="function")?" · "+MOUNT_SIZE_RU[partSize(p)]:"";
+  const seal=(typeof partSealed==="function"&&partSealed(p))?
+    "<span class='dn'>опечатано · "+sealedWhy(p)+"</span> · ":"";
+  return "<b>"+p.name+"</b><s>"+K.ru.toLowerCase()+" · "+TIER_RU[p.tier]+sz+
+    " · место "+p.cap+"</s><i>"+seal+p.aff.map(a=>"<span class='"+(a.v>0?"up":"dn")+"'>"+affLabel(a)+"</span>").join(" · ")+"</i>";
 }
 function opisPartCard(p,where){
   const fitted=where==="slot",slot=fitted?opisSlotOf(p.id):-1;
@@ -70479,7 +70951,11 @@ function opisRender(box){
     const K=PART_KINDS[kind];
     const chip=document.createElement("div");chip.className="op-slot"+(OPIS.sel&&OPIS.sel.t==="slot"&&OPIS.sel.i===i?" on":"");
     chip.dataset.drop="slot";chip.dataset.slot=i;
-    chip.innerHTML="<em style='color:"+K.col+"'>"+K.sh+" · слот "+(i+1)+"</em>";
+    /* M363: подвес называет себя — размер и повадка. По ним видно, что
+       именно сюда встанет, ещё до того как часть взята в руку. */
+    const M=(typeof mountAt==="function")?mountAt(G.shipId,i):null;
+    const mru=M?(kind==="gun"?" · "+MOUNT_SIZE_RU[M.size]+" · "+MOUNT_KINDS[M.mount].ru:""):"";
+    chip.innerHTML="<em style='color:"+K.col+"'>"+K.sh+" · слот "+(i+1)+mru+"</em>";
     if(fm[i]!=null)chip.appendChild(opisPartCard(partById(fm[i]),"slot"));
     else{
       const e=document.createElement("s");e.className="chalk";e.textContent="пусто";
@@ -73066,6 +73542,9 @@ function frameBody(now){
   actEdge=keys.act&&!prevAct;prevAct=keys.act;
   if(G.running){
     G.t+=dt;
+    /* налёт для допуска (M363, 05e): настоящими миллисекундами и только в
+       полётных режимах — на станции и за столом время не идёт */
+    if(typeof clrTick==="function")clrTick(dt*16.667);
     if(now-lastDroneTick>3000){lastDroneTick=now;tickDrones();crewTick();mgrTick();occTick();dealsTick();
       /* срок (12v): считается лениво по часам, тем же редким тактом, что и всё
          остальное фоновое. Узнают о нём, оказавшись под тем самым небом. */

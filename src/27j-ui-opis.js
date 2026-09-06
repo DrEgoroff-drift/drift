@@ -43,7 +43,12 @@ const OPIS_SHIP=[
   {k:"see",      ru:"радар",      fix:0},
   {k:"jump",     ru:"прыжок",     fix:1},
   {k:"dmg",      ru:"урон",       fix:1},
-  {k:"cool",     ru:"охлаждение", fix:0, less:1}
+  {k:"cool",     ru:"охлаждение", fix:0, less:1},
+  /* три итога сборки (M363, §3.2): по ним и сравнивают карточку с карточкой */
+  {k:"energyMax",ru:"энергия",    fix:0},
+  {k:"gunHull",  ru:"урон/с корпус", fix:1, get:st=>st.gunTot?st.gunTot.hull:0},
+  {k:"gunShield",ru:"урон/с щит",    fix:1, get:st=>st.gunTot?st.gunTot.shield:0},
+  {k:"gunPerEn", ru:"урон на энергию",fix:2, get:st=>st.gunTot?st.gunTot.perEnergy:0}
 ];
 const OPIS_KIT=[
   {k:"weight",ru:"вес",      fix:1, less:1},
@@ -62,9 +67,17 @@ function opisFocus(){return OPIS.hover||OPIS.sel;}
    свободный своего рода, иначе первый своего рода (замена) */
 function opisTarget(p){
   const slots=slotsOf(G.shipId),fm=G.fit[G.shipId]||{},s=OPIS.sel;
-  if(s&&s.t==="slot"&&slots[s.i]===p.kind)return s.i;
-  for(let i=0;i<slots.length;i++)if(slots[i]===p.kind&&fm[i]==null)return i;
-  for(let i=0;i<slots.length;i++)if(slots[i]===p.kind)return i;
+  /* M363: подвес не только рода, но и размера — тяжёлый ствол в лёгкую
+     точку не встанет, и предлагать её не надо */
+  const takes=i=>{
+    if(slots[i]!==p.kind)return false;
+    if(typeof mountAt!=="function")return true;
+    const m=mountAt(G.shipId,i);
+    return !m||mountTakes(m,p);
+  };
+  if(s&&s.t==="slot"&&takes(s.i))return s.i;
+  for(let i=0;i<slots.length;i++)if(takes(i)&&fm[i]==null)return i;
+  for(let i=0;i<slots.length;i++)if(takes(i))return i;
   return -1;
 }
 function opisSlotOf(id){
@@ -102,10 +115,13 @@ function opisKitFuture(f){
 function opisPanel(id,title,rows,cur,fut,extra){
   const box=document.createElement("div");box.className="op-panel";box.dataset.p=id;
   let h="<h4>"+title+(extra?"<s>"+extra+"</s>":"")+"</h4>";
+  /* строка может читать не поле, а свою мерку по всей сборке (M363: три
+     итога) — тогда у неё есть get(st) вместо ключа */
+  const val=(d,st)=>+(d.get?d.get(st):st[d.k])||0;
   for(const d of rows){
-    const x=+cur[d.k]||0;let cell="";
+    const x=val(d,cur);let cell="";
     if(fut&&fut.st){
-      const y=+fut.st[d.k]||0;
+      const y=val(d,fut.st);
       if(Math.abs(x-y)>=(d.fix?Math.pow(10,-d.fix)*.5:.5)){
         const better=d.less?y<x:y>x;
         cell="<u class='"+(better?"up":"dn")+"'>→ "+y.toFixed(d.fix)+"</u>";
@@ -149,8 +165,15 @@ function opisConfirm(key,run){
 }
 function opisFit(p,slot){
   const t=slot!==undefined&&slot>=0?slot:opisTarget(p);
-  if(t<0){say("На этом корпусе нет такого слота");return false;}
+  if(t<0){say("На этом корпусе нет подвеса под такую часть");return false;}
   if(slotsOf(G.shipId)[t]!==p.kind){say("Не тот слот: там "+PART_KINDS[slotsOf(G.shipId)[t]].ru.toLowerCase());return false;}
+  /* отказ называет причину (M363): размер подвеса или допуск, а не общее
+     «не встаёт» — по нему нечего делать дальше */
+  if(typeof partSealed==="function"&&partSealed(p)){say("Опечатано · "+sealedWhy(p));return false;}
+  if(typeof mountAt==="function"){
+    const m=mountAt(G.shipId,t);
+    if(m&&!mountTakes(m,p)){say("Не встаёт: "+mountWhyNot(m,p));return false;}
+  }
   if(!fitPart(t,p.id)){say("Не встаёт: нет места в оснастке");return false;}
   OPIS.sel=null;OPIS.hover=null;opisRerender();
   return true;
@@ -454,8 +477,13 @@ function opisActs(card,list){
 }
 function opisPartHtml(p){
   const K=PART_KINDS[p.kind];
-  return "<b>"+p.name+"</b><s>"+K.ru.toLowerCase()+" · "+TIER_RU[p.tier]+
-    " · место "+p.cap+"</s><i>"+p.aff.map(a=>"<span class='"+(a.v>0?"up":"dn")+"'>"+affLabel(a)+"</span>").join(" · ")+"</i>";
+  /* M363: у ствола есть размер — он решает, в какой подвес часть встанет;
+     опечатанное лежит в трюме и пишет, чего ждёт (§11.4) */
+  const sz=(p.kind==="gun"&&typeof partSize==="function")?" · "+MOUNT_SIZE_RU[partSize(p)]:"";
+  const seal=(typeof partSealed==="function"&&partSealed(p))?
+    "<span class='dn'>опечатано · "+sealedWhy(p)+"</span> · ":"";
+  return "<b>"+p.name+"</b><s>"+K.ru.toLowerCase()+" · "+TIER_RU[p.tier]+sz+
+    " · место "+p.cap+"</s><i>"+seal+p.aff.map(a=>"<span class='"+(a.v>0?"up":"dn")+"'>"+affLabel(a)+"</span>").join(" · ")+"</i>";
 }
 function opisPartCard(p,where){
   const fitted=where==="slot",slot=fitted?opisSlotOf(p.id):-1;
@@ -689,7 +717,11 @@ function opisRender(box){
     const K=PART_KINDS[kind];
     const chip=document.createElement("div");chip.className="op-slot"+(OPIS.sel&&OPIS.sel.t==="slot"&&OPIS.sel.i===i?" on":"");
     chip.dataset.drop="slot";chip.dataset.slot=i;
-    chip.innerHTML="<em style='color:"+K.col+"'>"+K.sh+" · слот "+(i+1)+"</em>";
+    /* M363: подвес называет себя — размер и повадка. По ним видно, что
+       именно сюда встанет, ещё до того как часть взята в руку. */
+    const M=(typeof mountAt==="function")?mountAt(G.shipId,i):null;
+    const mru=M?(kind==="gun"?" · "+MOUNT_SIZE_RU[M.size]+" · "+MOUNT_KINDS[M.mount].ru:""):"";
+    chip.innerHTML="<em style='color:"+K.col+"'>"+K.sh+" · слот "+(i+1)+mru+"</em>";
     if(fm[i]!=null)chip.appendChild(opisPartCard(partById(fm[i]),"slot"));
     else{
       const e=document.createElement("s");e.className="chalk";e.textContent="пусто";

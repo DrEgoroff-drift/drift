@@ -7,6 +7,9 @@
    считается без экрана, поэтому набор идёт и в узле. */
 function cbWorld(){
   resetWorld();
+  /* экран, оставшийся открытым от прошлого набора, гасит мышиную ветку
+     штурвала (`helmScreenOpen`) — и следующий набор падает не своей виной */
+  if(document.querySelectorAll)document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
   G.mode="system";
   G.ship.x=0;G.ship.y=0;G.ship.vx=0;G.ship.vy=0;G.ship.a=0;
   G.ap=null;G.orbit=null;G.pirates=[];G.shots=[];G.marks=[];G.allies=[];
@@ -302,4 +305,161 @@ TEST_SUITES.push(()=>suite("бой M362: у орудия семь чисел, и
   const near0=Math.abs(gunMiss(g2,10,0,1)),far0=Math.abs(gunMiss(g2,g2.range,0,1));
   ok(far0>near0,"дальше — больше ошибка: "+near0.toFixed(4)+" → "+far0.toFixed(4));
   eq(gunMiss(g2,100,0,.5),0,"по центру броска ошибки нет");
+}));
+
+/* ══════════════ подвесы, допуск, группы (M363, §3 §11.4) ══════════════
+   Точка на корпусе теперь знает свой размер и свою повадку, часть — свой
+   размер, а игрок — свой допуск. Здесь мерится, что из этого во что встаёт и
+   что при этом говорят игроку: «не встаёт» без причины — не ответ. */
+function cbGun(seed,tier){
+  /* через addPart, а не push: идентификатор части выдаёт именно он, а без
+     него partById/isFitted работают по undefined и врут */
+  const p=genPart(seed,tier,"gun");
+  addPart(p);
+  return p;
+}
+TEST_SUITES.push(()=>suite("оснастка M363: подвес знает размер и повадку",()=>{
+  cbWorld();
+  const ms=mountsOf(G.shipId);
+  ok(ms.length>0,"у корпуса есть подвесы: "+ms.length);
+  for(const m of ms){
+    ok(MOUNT_SIZES.indexOf(m.size)>=0,"размер из таблицы: "+m.size);
+    ok(!!MOUNT_KINDS[m.mount],"повадка из таблицы: "+m.mount);
+  }
+  /* жёсткая уже смотрит и сильнее бьёт — это правка поверх семи чисел */
+  const g=stat().gun;
+  const fix=gunOnMount(g,{mount:"fix"}),tur=gunOnMount(g,{mount:"turret"});
+  ok(fix.cone<g.cone,"жёсткая смотрит уже: "+fix.cone+" против "+g.cone);
+  near(fix.dmg,g.dmg*MOUNT_KINDS.fix.dmg,1e-9,"…и бьёт сильнее");
+  eq(tur.cone,g.cone,"турель числа не трогает");
+  /* тяжёлое в лёгкое не встаёт, лёгкое в тяжёлое встаёт всегда */
+  const light={kind:"gun",seed:0,tier:1},heavy={kind:"gun",seed:0xFFFFFFFF,tier:5};
+  eq(partSize(light),"L","обычный ствол лёгкий");
+  eq(partSize(heavy),"H","легендарный тяжёлый");
+  ok(mountTakes({kind:"gun",size:"H",mount:"fix"},light),"лёгкое в тяжёлый подвес — встаёт");
+  ok(!mountTakes({kind:"gun",size:"L",mount:"fix"},heavy),"тяжёлое в лёгкий — нет");
+  ok(mountWhyNot({kind:"gun",size:"L",mount:"fix"},heavy).indexOf("подвес")>=0,
+     "и отказ называет причину: "+mountWhyNot({kind:"gun",size:"L",mount:"fix"},heavy));
+  /* пусковая размерного правила не знает: подвес у неё один */
+  ok(mountTakes({kind:"missile",size:"L",mount:"fix"},{kind:"missile",seed:9,tier:5}),
+     "тяжёлая пусковая встаёт в свой единственный подвес");
+}));
+
+TEST_SUITES.push(()=>suite("оснастка M363: допуск вместо уровней",()=>{
+  cbWorld();
+  G.clearance=1;G.kills=0;G.flownMs=0;G.coop=null;
+  eq(clearanceNow(),1,"с начала — первый допуск");
+  /* отменный ствол ждёт второго, легендарный — третьего */
+  const t4={kind:"gun",seed:5,tier:4},t5={kind:"gun",seed:5,tier:5},t2={kind:"gun",seed:5,tier:2};
+  eq(partClearance(t2),1,"добротный ствол — первый допуск");
+  eq(partClearance(t4),2,"отменный — второй");
+  eq(partClearance(t5),3,"легендарный — третий");
+  ok(partSealed(t4),"отменный опечатан");
+  ok(!partSealed(t2),"добротный — нет");
+  ok(sealedWhy(t4).indexOf("экзамен")>=0,"и написано, чего он ждёт: "+sealedWhy(t4));
+  /* ворота II: экзамен и десять сбитых; одного из двух мало */
+  G.kills=CLR_KILLS;
+  eq(clearanceEarned(),1,"сбитые без экзамена — ещё не допуск");
+  G.coop={name:"Артель"};
+  eq(clearanceEarned(),2,"экзамен и десять сбитых — второй");
+  eq(clearanceNow(),2,"…и он записан");
+  ok(!partSealed(t4),"отменный ствол открыт");
+  /* ворота III: сто часов налёта */
+  ok(partSealed(t5),"легендарный ещё опечатан");
+  G.flownMs=CLR_HOURS*3600000;
+  eq(clearanceNow(),3,"сто часов налёта — третий");
+  ok(!partSealed(t5),"и легендарный открыт");
+  /* допуск не падает */
+  G.kills=0;G.coop=null;G.flownMs=0;
+  eq(clearanceNow(),3,"заработанное не отбирают");
+  /* налёт копится только в полёте */
+  G.flownMs=0;G.running=true;G.mode="dock";clrTick(5000);
+  eq(G.flownMs,0,"на станции время не идёт");
+  G.mode="system";clrTick(1000);
+  eq(G.flownMs,1000,"в полёте идёт");
+  G.clearance=1;G.kills=0;G.coop=null;G.flownMs=0;
+}));
+
+TEST_SUITES.push(()=>suite("оснастка M363: ствол встаёт в подвес, а не куда попало",()=>{
+  cbWorld();
+  G.clearance=4;
+  const slots=slotsOf(G.shipId);
+  const gunSlots=[];slots.forEach((k,i)=>{if(k==="gun")gunSlots.push(i);});
+  ok(gunSlots.length>0,"на корпусе есть орудийный подвес");
+  /* лёгкий ствол встаёт и снимается */
+  const p=cbGun(1234,1);
+  ok(fitPart(gunSlots[0],p.id),"лёгкий ствол встал");
+  ok(isFitted(p.id),"…и числится установленным");
+  eq(stat().guns.length,1,"stat() видит один ствол");
+  ok(stat().gunTot.hull>0,"и считает урон/с по корпусу: "+stat().gunTot.hull);
+  unfitPart(gunSlots[0]);
+  ok(!isFitted(p.id),"снялся");
+  /* опечатанный не встаёт вовсе */
+  G.clearance=1;G.kills=0;G.coop=null;
+  const heavy=cbGun(777,5);
+  ok(partSealed(heavy),"легендарный опечатан при первом допуске");
+  ok(!fitPart(gunSlots[0],heavy.id),"и в подвес не идёт");
+  G.clearance=4;
+  /* размер подвеса решает */
+  let placed=false,refused=false;
+  for(const i of gunSlots){
+    const m=mountAt(G.shipId,i);
+    if(!m)continue;
+    if(mountTakes(m,heavy)){if(fitPart(i,heavy.id)){placed=true;unfitPart(i);}}
+    else if(!fitPart(i,heavy.id))refused=true;
+  }
+  ok(placed||refused,"тяжёлый ствол либо встал в тяжёлый подвес, либо отказ по размеру");
+  G.inv=G.inv.filter(x=>x!==p&&x!==heavy);
+  G.clearance=1;
+}));
+
+TEST_SUITES.push(()=>suite("оснастка M363: группы выбирают себя сами",()=>{
+  cbWorld();
+  const far={slot:0,g:{range:1200,cone:.5,dmg:5,cool:20,type:"kin",speed:9,lead:.2,spread:.05}};
+  const near2={slot:1,g:{range:400,cone:.5,dmg:5,cool:20,type:"kin",speed:9,lead:.2,spread:.05}};
+  const list=[far,near2];
+  eq(gunGroupOf(list,0),1,"дальний ствол — в «дальнее»");
+  eq(gunGroupOf(list,1),2,"ближний — в «ближнее»");
+  eq(gunsInGroup(list,0).length,2,"«всё» — оба");
+  eq(gunsInGroup(list,1).length,1,"«дальнее» — один");
+  /* далёкая метка: работает дальняя группа, близкая — обе */
+  G.gunPin=false;
+  const sh=G.ship;sh.x=0;sh.y=0;sh.a=0;
+  eq(gunGroupPick(list,sh,{x:900,y:0,hull:10}),1,"метка на девятистах — «дальнее»");
+  eq(gunGroupPick(list,sh,{x:300,y:0,hull:10}),0,"метка на трёхстах — достают оба, значит «всё»");
+  /* закреплённая группа не переключается */
+  G.gunPin=true;G.gunGroup=2;
+  eq(gunGroupPick(list,sh,{x:900,y:0,hull:10}),2,"закреплённую не трогают");
+  G.gunPin=false;G.gunGroup=0;
+}));
+
+TEST_SUITES.push(()=>suite("оснастка M363: стрельбище — минута и честные числа",()=>{
+  cbWorld();
+  if(!G.sys||!G.sys.station){ok(true,"в этой системе нет причала — стрельбища тоже");return;}
+  ok(rangeCanHere(),"у причала есть стрельбище");
+  ok(rangeStart(),"минута началась");
+  ok(rangeOn(),"стрельбище идёт");
+  const t=G.pirates.find(p=>p.dummy);
+  ok(!!t,"мишень на месте");
+  eq(G.marks[0],t,"и сразу взята в захват");
+  /* мишень не оживает: сто кадров — и она всё так же ничего не знает */
+  for(let i=0;i<100;i++){G.t+=1;updateCombat(1);}
+  ok(!t.aware,"мишень о вас не знает и не стреляет");
+  ok(!G.shots.some(s=>s.owner==="pirate"),"по вам никто не бьёт");
+  /* попадания считаются */
+  G.range.shots=0;G.range.hits=0;G.range.dmg=0;
+  G.shots=[{x:t.x,y:t.y,vx:9,vy:0,dmg:10,owner:"player",mine:true,type:"kin",life:100}];
+  combatShots(1);
+  eq(G.range.hits,1,"попадание сосчитано");
+  ok(G.range.dmg>0,"и урон тоже: "+G.range.dmg.toFixed(1));
+  /* минута кончилась — мишени нет, отчёт в журнале */
+  G.range.left=0;
+  const n0=(G.log||[]).length;
+  rangeTick(1);
+  ok(!rangeOn(),"минута кончилась");
+  ok(!G.pirates.some(p=>p.dummy),"мишень убрана");
+  ok((G.log||[]).length>n0,"отчёт записан");
+  /* стрельбище возвращает к причалу — экран станции закрываем за собой */
+  if(document.querySelectorAll)document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
+  G.mode="system";
 }));

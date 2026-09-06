@@ -992,9 +992,15 @@ One system inside ГЛАВТРАССА's centre (r ≈ 6, fixed by seed, never t
   **`stat()` is called dozens of times a frame — anything new in it must be cached** (four
   `toFixed` in the gun spec were enough to matter). Baseline unchanged: `prof(80)`, phone
   375×812 @2, JS 2.8–3.0 ms idle and with eight armed ships alike.
-- **M363** ОСНАСТКА: sizes/types on the points, the dock screen, comparison, стрельбище, groups;
-  clearance I–IV (D15); parts carry a maker (`b`, §19.2) with names, affix biases and scrap
-  pools per maker — ГЛАВТРАССА's are the ones that exist today.
+- ~~**M363** ОСНАСТКА, clearance, groups~~ — 0.363.0 (2026-09-06): `05d-mounts` (size L/M/H,
+  жёсткая/турель, `mountTakes`), several guns at once with their own cooldowns and barrels
+  drawn on the hull, groups 1–3 picking themselves, the three totals, `05e-clearance`
+  (I–IV, sealed parts naming the nearest gate, flight hours), `24d-range` (стрельбище).
+  **Deferred with its reason:** a gun's class is read from its tier until the twenty
+  families exist — M364–M366 must replace that unfolding and carry the `b` maker field
+  with it. Learned: **run `-Browser` before striking anything that touches `stat()` or a
+  screen** — the Node tier missed a TDZ in `stat()` and a suite that left the station
+  screen open and silenced the helm's mouse branch in every suite after it.
 - **M364–M366** twenty families, seven a pass; `PART_GEN` 2; factories, series, affixes; именные.
 - **M367** missiles ×5; зенитка in the loop.
 - **M368** pirate loadouts by rank (deserter art waits for M369).

@@ -125,16 +125,132 @@ function energyRegen(lvl,coreTier){return Math.round((.34+lvl*.16+coreTier*.07)*
    поведении: «можно носом вертеть, и она не наводится». Состояние на
    корабле одно: подвесов пока один, в M363 их станет несколько и каждый
    получит свой угол в этом же виде. */
-function gunAimTick(g,sh,mk,dt){
-  if(G.aim===undefined||!isFinite(G.aim))G.aim=sh.a;
+function gunAimTick(g,sh,mk,dt,key){
+  const k=key===undefined?0:key;
+  if(!G.aim||typeof G.aim!=="object")G.aim={};
+  if(!isFinite(G.aim[k]))G.aim[k]=sh.a;
   let want=sh.a;
   if(mk&&mk.hull>0)want=gunLeadAngle(sh.x,sh.y,mk,g.speed);
   /* внутрь конуса: за его край ствол не выходит ни при каком упреждении */
   const off=clamp(angDiff(want,sh.a),-g.cone,g.cone);
   const goal=angWrap(sh.a+off);
-  G.aim=angWrap(G.aim+clamp(angDiff(goal,G.aim),-g.lead*dt,g.lead*dt));
+  G.aim[k]=angWrap(G.aim[k]+clamp(angDiff(goal,G.aim[k]),-g.lead*dt,g.lead*dt));
   /* нос повернули рывком — ствол не телепортируется, но и не остаётся за спиной */
-  const back=angDiff(G.aim,sh.a);
-  if(Math.abs(back)>g.cone)G.aim=angWrap(sh.a+clamp(back,-g.cone,g.cone));
-  return G.aim;
+  const back=angDiff(G.aim[k],sh.a);
+  if(Math.abs(back)>g.cone)G.aim[k]=angWrap(sh.a+clamp(back,-g.cone,g.cone));
+  return G.aim[k];
+}
+/* ── подвес правит числа ствола (M363, §3.1) ──
+   Жёсткая: конус вдвое уже, урон ×1.25. Турель: как есть. Это не новый
+   ствол, а тот же — поставленный иначе, поэтому правка идёт поверх семи
+   чисел, а не внутрь них. */
+function gunOnMount(g,m){
+  if(!m)return g;
+  const M=MOUNT_KINDS[m.mount]||MOUNT_KINDS.turret;
+  if(M.cone===1&&M.dmg===1)return g;
+  const out=Object.assign({},g);
+  out.cone=+(g.cone*M.cone).toFixed(3);
+  out.dmg=g.dmg*M.dmg;
+  out.mount=m.mount;
+  return out;
+}
+/* Семь чисел для КАЖДОГО установленного ствола, с поправкой его подвеса.
+   Кэш тот же по смыслу, что у одиночного: stat() зовут десятки раз за кадр,
+   а список меняется только при смене оснастки или уровня. */
+let GUNS_CACHE=null,GUNS_KEY="";
+function gunSpecs(list,dmg,cool,lvl){
+  const key=dmg+"|"+cool+"|"+lvl+"|"+list.map(a=>a.slot+":"+a.part.seed+":"+a.part.tier+":"+(a.m?a.m.mount:"-")).join(",");
+  if(GUNS_KEY===key&&GUNS_CACHE)return GUNS_CACHE;
+  GUNS_KEY=key;
+  return GUNS_CACHE=list.map(a=>({slot:a.slot,part:a.part,m:a.m,
+    g:gunOnMount(gunSpecMake(dmg,cool,a.part,lvl),a.m)}));
+}
+/* ── группы 1–3 (§3.3) ──
+   «всё», «дальнее», «ближнее». Дальнее — стволы с дальностью выше средней
+   по сборке, ближнее — остальные; при одном стволе он и там, и там.
+   Автоогонь берёт группу, у которой метка в дальности и в конусе, и
+   переключается сам, пока игрок не закрепил одну (`G.gunPin`). */
+const GUN_GROUPS=[{ru:"всё"},{ru:"дальнее"},{ru:"ближнее"}];
+function gunGroupOf(list,i){
+  if(list.length<2)return 0;
+  let sum=0;for(const a of list)sum+=a.g.range;
+  return list[i].g.range>=sum/list.length?1:2;
+}
+function gunsInGroup(list,grp){
+  if(!grp)return list;
+  return list.filter((a,i)=>gunGroupOf(list,i)===grp);
+}
+/* какая группа сейчас работает: закреплённая — или та, что достаёт метку */
+function gunGroupPick(list,sh,mk){
+  if(G.gunPin)return clamp(G.gunGroup|0,0,2);
+  if(!mk||mk.hull<=0||list.length<2)return 0;
+  const d=Math.hypot(mk.x-sh.x,mk.y-sh.y);
+  const fits=g=>d<g.range&&Math.abs(angDiff(Math.atan2(mk.y-sh.y,mk.x-sh.x),sh.a))<g.cone;
+  /* берём группу, у которой метку достаёт наибольшая ДОЛЯ стволов: иначе
+     «всё» побеждало всегда — в него входит и дальний ствол, и ближний,
+     который на девятистах только жжёт энергию. При равной доле выигрывает
+     та, где стволов больше. */
+  let best=0,bs=-1,bn=-1;
+  for(const grp of [0,1,2]){
+    const gs=gunsInGroup(list,grp);
+    if(!gs.length)continue;
+    const n=gs.filter(a=>fits(a.g)).length,sc=n/gs.length;
+    if(sc>bs+1e-9||(Math.abs(sc-bs)<1e-9&&n>bn)){bs=sc;bn=n;best=grp;}
+  }
+  G.gunGroup=best;
+  return best;
+}
+/* ── ствол виден на корпусе (M363, §3.1) ──
+   Рисуется в осях корпуса, внутри его же поворота и масштаба, и смотрит
+   туда, куда наведён: жёсткая почти по носу, турель — вслед за меткой.
+   По этому и читается сборка раньше первого выстрела (кодекс §13: сперва
+   увидеть, потом узнать). У пиратов стволов пока нет — их сборки приходят
+   в M368, и тогда эта же функция нарисует и их. */
+function gunBarrelsDraw(guns,shipA){
+  if(!guns||!guns.length)return;
+  ctx.save();
+  for(const A of guns){
+    const m=A.m;if(!m)continue;
+    const aim=(G.aim&&isFinite(G.aim[A.slot]))?G.aim[A.slot]:shipA;
+    const la=angWrap(aim-shipA);
+    const sz=sizeIdx(partSize(A.part));
+    /* длина мерена по корпусу: 2.6 читалось только на стенде, в игре ствола
+       было не видно вовсе. 4.5–9 единиц — это десятая-пятая часть корпуса,
+       столько и должен занимать ствол, чтобы сборка читалась силуэтом. */
+    const len=4.5+sz*2.2, w=1.05+sz*.3;
+    ctx.save();ctx.translate(m.x,m.y);ctx.rotate(la);
+    /* ствол — тело в тени, а не проволока: конусная трубка тёмной заливкой,
+       один светлый блик по верхней грани и дульный срез. Первая версия рисовала
+       светлую линию поверх корпуса, и на близком плане она читалась усиком
+       антенны, а не орудием (самокритика M363). */
+    ctx.fillStyle="rgba(20,24,30,.95)";
+    ctx.beginPath();
+    ctx.moveTo(0,-w);ctx.lineTo(len,-w*.62);ctx.lineTo(len,w*.62);ctx.lineTo(0,w);
+    ctx.closePath();ctx.fill();
+    /* обвод, как у пластин корпуса: тёмное тело на тёмном корпусе без него
+       не читается вовсе — на кадре ствол пропадал в силуэте */
+    ctx.strokeStyle="rgba(186,198,212,.5)";ctx.lineWidth=.4;ctx.stroke();
+    ctx.strokeStyle="rgba(214,224,236,.4)";ctx.lineWidth=.3;
+    ctx.beginPath();ctx.moveTo(.5,-w*.62);ctx.lineTo(len-.4,-w*.42);ctx.stroke();
+    /* жёсткая сидит в набор приливом, турель стоит на тумбе */
+    ctx.fillStyle=m.mount==="fix"?"rgba(20,24,30,.95)":"rgba(52,60,70,.95)";
+    ctx.beginPath();ctx.arc(0,0,m.mount==="fix"?w*.9:w*1.35,0,TAU);ctx.fill();
+    ctx.restore();
+  }
+  ctx.restore();
+}
+function gunTotals(guns){
+  const out={hull:0,shield:0,perEnergy:0};
+  if(!guns||!guns.length)return out;
+  let dmgSum=0;
+  for(const A of guns){
+    const g=A.g,rate=60/Math.max(1,g.cool);
+    out.hull+=g.dmg*dmgMul(g.type,false)*rate;
+    out.shield+=g.dmg*dmgMul(g.type,true)*rate;
+    dmgSum+=g.dmg;
+  }
+  out.hull=Math.round(out.hull*10)/10;
+  out.shield=Math.round(out.shield*10)/10;
+  out.perEnergy=Math.round(dmgSum/Math.max(1e-6,EN_SHOT*guns.length)*100)/100;
+  return out;
 }

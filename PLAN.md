@@ -670,31 +670,17 @@ something. §17 is not reopened; §10 forks keep their defaults unless the autho
 
 Three stages, each playable on /dev before the next starts:
 
-- **A — the fight** (client only): ~~M360 helm and lock~~ (0.360.0, 2026-09-06: `15a-helm`;
-  Space stays ДЕЙСТВИЕ, raw helm keys ignore rebinding, pinch in the system mode is gone — see
-  the patchnote) · ~~M361 ships shoot each other and rank roles~~ (0.361.0, 2026-09-06: `13-combat` — `owner`
-  on every shot, one hit loop, ×1.6 stern / ×.7 bow, `fleetFire`, `ARMED_CAP`; `13c-roles` —
-  four roles, flee and jump-out; `iff` on your crew; suite `91zzzw-combat`. Bands measured:
-  шакал 39…889, ветеран 480…660 from either side, капитан 797…870, барон stands at 700; that
-  measurement found and fixed a baron who never paused between bursts and a veteran who
-  spiralled out to 1300)
-  ~~M360a the helm frame redone~~ (0.360.1, 2026-09-06, answer to the author's phone shot
-  «у меня только разочарование»: stick = faint arc + dot, 51 px footprint not 93;
-  chips/МАСШТАБ/prompt step out from under a live finger; line breaks alive on the phone;
-  hull bar above the bracket; and `HELM_CONE`/`HELM_RANGE`/`ctl.fire`/`ctl.msl` had no
-  reader at all — autofire and the mouse LMB/RMB did not exist, `91zzzw-helm` red in the
-  browser tier since 0.360.0) 
-  **The layer's first numbers** (`prof(60)`, phone 375×812 @2, system): JS 2.59 ms idle,
-  2.61 with eight armed ships and two marks, 2.81 with two live sticks — everything after
-  M361 is measured against these. **For M362:** eight aware ships kill a standing unshielded
-  ship in about fifty frames. · ~~M362 energy, seven numbers, three shields~~ (0.362.0, 2026-09-06:
-  `05c-arms` — семь чисел ствола из seed части, свой угол ствола внутри конуса, честное
-  упреждение, промах углом; матрица типов урона; одна шкала энергии на выстрел, щит и
-  маневровые; три повадки щита у вас и у ранговых пиратов. Замеренная кривая попаданий
-  стартового ствола: 100 % на 200, 86 % на 400, 43 % на 600, 34 % на пределе. Перенос
-  аффиксов бака и прыжка с реактора отложен: это `PART_GEN` 2, он в M364–M366)
-  · M363 ОСНАСТКА and clearance · M364–M366
-  twenty gun families · M367 missiles · M368 pirate loadouts.
+- **A — the fight** (client only): ~~M360 helm and lock · M360a the helm frame redone ·
+  M361 ships shoot each other and rank roles · M362 energy, seven numbers, three shields ·
+  M363 ОСНАСТКА, clearance, groups, стрельбище~~ — 0.360.0…0.363.0 (2026-09-06); each is
+  struck in `docs/DESIGN-war.md` §18 with what it built and what it deferred, and written
+  out in `PATCHNOTES.md`. **The layer's baseline, measured, and everything after M361 is
+  compared with it:** `prof(80)`, phone 375×812 @2, system mode — JS 2.6–3.0 ms idle and
+  with eight armed ships alike. **For M362's successors:** eight aware ships kill a
+  standing unshielded ship in about fifty frames. **M364–M366 owe two debts from earlier
+  passes:** `PART_GEN` 2 (move the tank and jump range off the reactor, give it
+  capacity/regen affixes — §4) and a gun's class by family instead of by tier (§11.4).
+  · M364–M366 twenty gun families, seven a pass · M367 missiles · M368 pirate loadouts.
 - **B — the powers, by seed** (client only; the galaxy lives with no server): M369 the maker
   grammar layer on `hullOf`, measured by `makerRead()`, «Ялта» · M369a the grammar in the fleet,
   barges, pirate hulls, stations, domes, papers · M369b the having of things · M370 chronicle core (integer replay, hash, clock, geometry) · M371 the Director ·

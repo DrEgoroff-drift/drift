@@ -51,6 +51,8 @@ function snapshot(){
   return {v:5,sx:G.sx,sy:G.sy,shipId:G.shipId,owned:G.owned,
     x:G.ship.x,y:G.ship.y,a:G.ship.a,fuel:G.fuel,hull:G.hull,
     cargo:G.cargo,credits:G.credits,data:G.data,soldTotal:G.soldTotal|0,mods:G.mods,modsOwned:G.modsOwned,
+    /* допуск, налёт и выбранная группа орудий (M363, §16.4) */
+    clearance:G.clearance|0,flownMs:G.flownMs|0,gunGroup:G.gunGroup|0,
     inv:G.inv.map(packPart),fit:G.fit,partsBought:prunePartsBought(),
     tech:[...G.tech],techLvl:G.techLvl,barter:[...G.barter],found:[...G.found],
     species:[...G.species],bioV:2,
@@ -837,6 +839,10 @@ function applySave(s){
   G.lastDig=(s.lastDig&&typeof s.lastDig==="object")?s.lastDig:null;
   G.credits=Math.max(0,s.credits|0);G.data=Math.max(0,s.data|0);
   G.soldTotal=Math.max(0,s.soldTotal|0);   /* оборот для экзамена кооператива (12aj) — раньше терялся при каждой загрузке */
+  /* безопасные значения по умолчанию: старый сейв не знает этих полей (M363) */
+  G.clearance=Math.max(1,s.clearance|0);
+  G.flownMs=Math.max(0,s.flownMs|0);
+  G.gunGroup=clamp(s.gunGroup|0,0,2);
   for(const k of RES_KEYS)G.cargo[k]=Math.max(0,(s.cargo&&s.cargo[k])|0);
   const st=stat();
   G.fuel=clamp(+s.fuel||0,0,st.fuelMax);

@@ -7,6 +7,52 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.363.0 - M363: a mount has a size and a habit, and a gun waits for a clearance
+
+The war's fourth pass (`docs/DESIGN-war.md` §3, §11.4, §18). The points on the hull have existed
+since parts did; until now they differed only by which kind went where.
+
+**A mount knows two more things** (`05d-mounts`). **Size** L/M/H: heavy does not go into light,
+light goes into heavy and is no gift — the place is taken and the numbers stayed light. A point's
+size comes from the hull's mass and from where it sits: on a wing tip a mount is always one step
+lighter than in the body. **Habit**: жёсткая or турель. A hardpoint looks along the nose — cone
+halved, damage ×1.25, because the barrel rests in the frame instead of hanging on a drive; a
+turret walks its whole cone. Points on the hull's axis are hardpoints, anything carried out to the
+side is a turret, and the guard hull gets one hardpoint on a wing because that is what it is for.
+Nothing of this is saved: like the points themselves, it is derived from the hull.
+
+**More than one gun.** `stat().guns` now carries every fitted gun with its own seven numbers,
+corrected by its mount; each has its own cooldown and its own barrel angle, and the barrel is
+drawn on the hull turning with the lead — the loadout reads from the silhouette before the first
+shot. Groups 1–3 («всё», «дальнее», «ближнее», split by range against the loadout's average): the
+autofire picks the group the largest share of whose barrels actually reaches the mark, and stops
+picking once you pin one at the dock.
+
+**Three totals** on the card and in the опись, because seven numbers per gun cannot be compared in
+the head: урон/с по корпусу, урон/с по щиту, урон на энергию — and the опись shows them as deltas
+against what you are about to fit, like every other number there.
+
+**Допуск instead of levels** (`05e-clearance`, §11.4). Four classes, and none of them grows by
+itself. Find, carry, sell, leave anything; **mount** only within your clearance, and the rest lies
+in the hold опечатано with a line saying what it waits for — the nearest unmet gate, not the
+gate of its own class. II is the cooperative's exam plus ten kills; III is a hundred flight hours
+(the five episodes across three powers arrive with M374); IV is honestly closed until M374/M380.
+Flight hours are counted in real milliseconds and only in flight — at a station, time does not
+pass. While the twenty families do not exist (M364–M366), a gun's class is read from its tier:
+отменное waits for II, легендарное for III, everything else is I. What is already mounted stays
+mounted: the rule arrived after the loadout, and taking it back would punish nobody's mistake.
+
+**Стрельбище** (`24d-range`): every dock has a written-off target barge. «ПРОВЕРИТЬ» flies you out
+for a minute and back, counting shots, hits and damage a second in the prompt and leaving the
+report in the journal. The target is an ordinary record with a `dummy` flag — it knows nothing of
+you, never fires and is never a kill, so the range needed no second combat loop.
+
+Tests: `91zzzw-combat` gains five suites — mounts and sizes, the clearance gates and that a
+clearance never falls, a gun going into a mount and being refused by size or seal with the reason
+said out loud, the groups choosing themselves, and the range's minute end to end. The browser tier
+caught two things the Node tier could not: a TDZ in `stat()` and a station screen left open by a
+suite, which silenced the helm's mouse branch in the suites that followed.
+
 ## 0.362.0 - M362: a gun is a thing with seven numbers, and one bar feeds everything
 
 The war's third pass (`docs/DESIGN-war.md` §2, §4, §18). A gun used to be two numbers — damage and

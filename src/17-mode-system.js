@@ -167,6 +167,8 @@ function updateSystem(dt){
     return;
   }
   if(apOn)return;
+  /* стрельбище (24d): пока идёт минута, подсказку держит оно */
+  if(typeof rangeOn==="function"&&rangeOn()){rangeTick(dt);return;}
   G.prompt=atEdge?"ГРАВИТАЦИОННЫЙ ЯКОРЬ · КРАЙ СИСТЕМЫ\nКУРС К ЗВЕЗДЕ СВОБОДЕН":"";
   const hostile=G.pirates.filter(p=>p.aware).length;
   /* подсказка боя переписана под новое управление (M360a): пэда ОГОНЬ в
@@ -505,6 +507,9 @@ function drawSystem(){
      крупнее малой луны; ниже .35 он уже не находится глазом */
   ctx.scale(clamp(Z,.35,1.6),clamp(Z,.35,1.6));
   drawHull(G.shipId,thrusting,!!(G.ctl&&G.ctl.out.thr&&G.fuel>0),G.mods.engine,sh.bank);
+  /* стволы на подвесах, повёрнутые по наводке (M363): сборка читается
+     силуэтом раньше первого выстрела */
+  if(typeof gunBarrelsDraw==="function")gunBarrelsDraw(stat().guns,sh.a);
   /* пусковая видна на силуэте (хвост M112): подвес под корпусом — заряженный
      сплошной, сухой — только обвод с красной меткой. По нему и без панели
      ясно, что стрелять нечем */

@@ -117,6 +117,39 @@ function stTabMods(){
         "<br>наводка "+g.lead.toFixed(2)+" рад/кадр · разброс "+(g.spread*100).toFixed(1)+"%"+
         "</s>"));
       $body.appendChild(rg);
+      /* три итога — по ним и сравнивают сборку со сборкой (§3.2, M363) */
+      const T=s2.gunTot||{hull:0,shield:0,perEnergy:0};
+      const rt=el("div","row");
+      rt.appendChild(el("div","nm","<s>урон/с по корпусу "+T.hull.toFixed(1)+
+        " · по щиту "+T.shield.toFixed(1)+"<br>урон на энергию "+T.perEnergy.toFixed(2)+
+        " · стволов "+(s2.guns?s2.guns.length:0)+"</s>"));
+      $body.appendChild(rt);
+      /* группы 1–3 (§3.3): по умолчанию выбирает автоогонь, закрепить — здесь */
+      if(s2.guns&&s2.guns.length>1){
+        const rgr=el("div","row");
+        rgr.appendChild(el("div","nm","<s>группа орудий</s>"));
+        GUN_GROUPS.forEach((gg,gi)=>{
+          const b=el("button","",gg.ru.toUpperCase());
+          if(G.gunPin&&(G.gunGroup|0)===gi)b.classList.add("on");
+          b.onclick=()=>{
+            if(G.gunPin&&(G.gunGroup|0)===gi){G.gunPin=false;}
+            else{G.gunPin=true;G.gunGroup=gi;}
+            renderTab();};
+          rgr.appendChild(b);
+        });
+        const nb=el("div","nm","<s>"+(G.gunPin?"закреплена":"выбирает сама")+"</s>");
+        rgr.appendChild(nb);
+        $body.appendChild(rgr);
+      }
+      /* стрельбище: списанная баржа у причала, минута наружу и обратно */
+      if(typeof rangeCanHere==="function"&&rangeCanHere()){
+        const rr=el("div","row");
+        rr.appendChild(el("div","nm","<s>стрельбище · списанная баржа у причала<br>минута наружу и обратно, числа честные</s>"));
+        const b=el("button","","ПРОВЕРИТЬ");
+        b.onclick=()=>{$st.classList.remove("open");rangeStart();};
+        rr.appendChild(b);
+        $body.appendChild(rr);
+      }
     }
   }
   /* ── приборы (M127) ──

@@ -225,6 +225,9 @@ function frameBody(now){
   actEdge=keys.act&&!prevAct;prevAct=keys.act;
   if(G.running){
     G.t+=dt;
+    /* налёт для допуска (M363, 05e): настоящими миллисекундами и только в
+       полётных режимах — на станции и за столом время не идёт */
+    if(typeof clrTick==="function")clrTick(dt*16.667);
     if(now-lastDroneTick>3000){lastDroneTick=now;tickDrones();crewTick();mgrTick();occTick();dealsTick();
       /* срок (12v): считается лениво по часам, тем же редким тактом, что и всё
          остальное фоновое. Узнают о нём, оказавшись под тем самым небом. */

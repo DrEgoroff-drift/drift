@@ -68,6 +68,8 @@ const G={
   mods:{engine:0,tank:0,hold:0,armor:0,drill:0,hyper:0,weapon:0},
   modsOwned:{engine:0,tank:0,hold:0,armor:0,drill:0,hyper:0,weapon:0},
   inv:[],fit:{},shield:0,shieldHit:0,energy:0,loot:[],partsBought:{},
+  /* допуск и налёт (M363, §11.4): допуск не падает, налёт копится только в полёте */
+  clearance:1,flownMs:0,gunGroup:0,
   tech:new Set(),techLvl:{},barter:new Set(),
   found:new Set(),species:new Set(),
   ap:null,          // автопилот
@@ -162,6 +164,10 @@ function stat(){
   const coreT=coreP?(coreP.tier|0):0;
   const dmgV=(5+m.weapon*4.5)*(T.has("gunai")?1.35:1)*mul("dmgMul")*(cr("pyre")?1.35:1)*(1+rs("dmg"));
   const coolV=Math.max(6,Math.round((34-m.weapon*4)/mul("rateMul")/(cr("pyre")?2:1)/(1+rs("cool"))*WT.cool));
+  /* все стволы разом (M363): у каждого свой подвес, а значит свой конус и
+     свой урон. `gun` остаётся первым — его показывают карточка и HUD. */
+  const gunRaw=(typeof fittedGuns==="function")?fittedGuns():[];
+  const gunList=gunRaw.length?gunSpecs(gunRaw,dmgV,coolV,m.weapon):[];
   return {
     S,
     /* налёт часов: облезлая машина слушается хуже — единственное, чем износ
@@ -178,7 +184,9 @@ function stat(){
     dmg:dmgV,
     cool:coolV,
     /* семь чисел ствола (§2) и запас энергии (§4) — M362 */
-    gun:gunSpec(dmgV,coolV,gunP,m.weapon),
+    gun:(gunList[0]?gunList[0].g:gunSpec(dmgV,coolV,gunP,m.weapon)),
+    guns:gunList,
+    gunTot:gunTotals(gunList),
     energyMax:energyCap(m.weapon,coreT),
     energyRegen:energyRegen(m.weapon,coreT),
     /* пусковая (M112): она не усиливает бортовой огонь, а даёт отдельное оружие,

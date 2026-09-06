@@ -111,39 +111,48 @@ function updateCombat(dt){
     }else if(L.life<=0)G.loot.splice(i,1);
   }
   if(fireCool>0)fireCool-=dt;
-  /* ── огонь (M360) ──
-     Пушка стреляет сама, когда первая метка захвата в конусе и в дальности
-     (пока ±20° и 760 — M362 заменит числами орудия). Зажатый ОГОНЬ/F/ЛКМ —
-     принудительно по носу: баржи, батареи, обломки. Место помнит бой один раз
-     за стычку, а не каждый выстрел (D16). */
+  /* ── огонь (M360, стволы по подвесам — M363) ──
+     Стреляет КАЖДЫЙ ствол активной группы, у каждого свой откат, свой угол и
+     свой конус от подвеса. Автоогонь идёт, пока первая метка достаётся этим
+     стволом; зажатый ОГОНЬ/F/ЛКМ — принудительно, по носу. Место помнит бой
+     один раз за стычку, а не каждый выстрел (D16). */
   const ctl=G.ctl||{};
   const mk=(G.marks&&G.marks[0])||null;
-  let auto=false;
-  if(mk&&mk.hull>0&&!mk.iff){
-    /* конус и дальность теперь у ствола свои (M362 заменил временные
-       HELM_CONE/HELM_RANGE — они остались мерой захвата, не огня) */
-    const gg=st.gun,d=Math.hypot(mk.x-sh.x,mk.y-sh.y);
-    auto=d<gg.range&&Math.abs(angDiff(Math.atan2(mk.y-sh.y,mk.x-sh.x),sh.a))<gg.cone;
-  }
-  if((auto||ctl.fire)&&st.armed&&fireCool<=0){
+  const live=(mk&&mk.hull>0&&!mk.iff)?mk:null;
+  const all=(st.guns&&st.guns.length)?st.guns:[{slot:0,g:st.gun,m:null}];
+  const grp=(typeof gunGroupPick==="function")?gunGroupPick(all,sh,live):0;
+  const act=(typeof gunsInGroup==="function")?gunsInGroup(all,grp):all;
+  if(!G.gunCool)G.gunCool={};
+  for(let gi=0;gi<act.length;gi++){
+    const A=act[gi],g=A.g,first=gi===0;
+    let cd=first?fireCool:((G.gunCool[A.slot]||0)-dt);
+    let auto=false;
+    if(live){
+      const d=Math.hypot(live.x-sh.x,live.y-sh.y);
+      auto=d<g.range&&Math.abs(angDiff(Math.atan2(live.y-sh.y,live.x-sh.x),sh.a))<g.cone;
+    }
     /* ствол ведёт метку внутри своего конуса со своей скоростью наводки
-       (M362): носом её больше не «донаводишь» мгновенно. Промах — это
-       угол, добавленный к выстрелу, а не скрытый бросок. */
-    const g=st.gun;
-    const ang=gunAimTick(g,sh,mk,dt);
-    const tgtD=mk?Math.hypot(mk.x-sh.x,mk.y-sh.y):0;
-    const err=gunMiss(g,tgtD,mk?(mk.av||0):0,Math.random());
-    fireShot(sh.x,sh.y,ang+err,g.speed,g.dmg,true,g.type,g.range);
-    if(!G.engaged&&typeof placeNote==="function")placeNote("hurt",1);   // место помнит выстрел (11d)
-    G.engaged=true;
-    /* пустая шкала — не «нельзя стрелять», а вдвое реже (§4) */
-    G.energy=Math.max(0,G.energy-EN_SHOT);
-    fireCool=st.cool*(lowE?2:1);
+       (M362): носом её больше не «донаводишь» мгновенно. Промах — это угол,
+       добавленный к выстрелу, а не скрытый бросок. */
+    const ang=gunAimTick(g,sh,live,dt,A.slot);
+    if((auto||ctl.fire)&&st.armed&&cd<=0){
+      const tgtD=live?Math.hypot(live.x-sh.x,live.y-sh.y):0;
+      const err=gunMiss(g,tgtD,live?(live.av||0):0,Math.random());
+      fireShot(sh.x,sh.y,ang+err,g.speed,g.dmg,true,g.type,g.range);
+      if(!G.engaged&&typeof placeNote==="function")placeNote("hurt",1);   // место помнит выстрел (11d)
+      G.engaged=true;
+      /* пустая шкала — не «нельзя стрелять», а вдвое реже (§4) */
+      G.energy=Math.max(0,G.energy-EN_SHOT);
+      cd=g.cool*(lowE?2:1);
+    }
+    if(first)fireCool=Math.max(0,cd);else G.gunCool[A.slot]=Math.max(0,cd);
   }
   if(G.engaged&&!G.pirates.some(p=>p.aware))G.engaged=false;
   for(let i=G.pirates.length-1;i>=0;i--){
     const p=G.pirates[i];
     const dx=sh.x-p.x,dy=sh.y-p.y,d=Math.hypot(dx,dy)||1;
+    /* мишень стрельбища (24d) ничего о вас не знает и не стреляет */
+    if(p.dummy){p.aware=false;p.vx=0;p.vy=0;continue;}
     if(d<seeRange)p.aware=true;
     else if(d>seeRange*2.4)p.aware=false;
     if(typeof fleetEscortActive==="function"&&fleetEscortActive())p.aware=false;   /* конвой ГЛАВТРАССЫ (M311) */

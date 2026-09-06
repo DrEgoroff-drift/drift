@@ -194,13 +194,31 @@ function slotAnchors(id){
 }
 /* сумма бонусов установленных частей — кэшируется, stat() зовут каждый кадр */
 let PART_BONUS=null,PART_KIND=null;
-function invalidateParts(){PART_BONUS=null;PART_KIND=null;}
+function invalidateParts(){PART_BONUS=null;PART_KIND=null;GUN_LIST=null;}
 /* первая установленная часть своего рода: орудие, поле, реактор. Нужна
    каждому кадру (семь чисел орудия, повадка щита, ёмкость энергии — M362),
    поэтому лежит рядом с бонусами и гаснет тем же invalidateParts. */
 function fittedOfKind(kind){
   if(!PART_KIND){PART_KIND={};for(const p of fittedParts())if(!PART_KIND[p.kind])PART_KIND[p.kind]=p;}
   return PART_KIND[kind]||null;
+}
+/* ── все стволы со своими подвесами (M363) ──
+   Слот знает свою точку, точка — свою повадку; ствол в жёсткой смотрит
+   уже и бьёт сильнее. Список кэшируется вместе с бонусами: его читает
+   stat(), а stat() зовут десятки раз за кадр. */
+let GUN_LIST=null;
+function fittedGuns(){
+  if(GUN_LIST)return GUN_LIST;
+  const f=G.fit[G.shipId]||{},out=[];
+  const st=(typeof stat0Gun==="function")?null:null;
+  for(const k in f){
+    const p=partById(f[k]);
+    if(!p||p.kind!=="gun")continue;
+    out.push({slot:+k,part:p,m:(typeof mountAt==="function")?mountAt(G.shipId,+k):null});
+  }
+  out.sort((a,b)=>a.slot-b.slot);
+  GUN_LIST=out;
+  return out;
 }
 function partById(id){
   for(const p of G.inv)if(p.id===id)return p;
@@ -259,6 +277,14 @@ function fitPart(slot,id){
   const p=partById(id),slots=slotsOf(G.shipId);
   if(!p||slots[slot]!==p.kind)return false;
   if(isFitted(id))return false;
+  /* M363: у подвеса есть размер, у части — тоже; и опечатанное не ставят.
+     Уже стоящее не трогаем: правило пришло позже сборки, и отбирать
+     поставленное — наказание за то, чего игрок не делал. */
+  if(typeof mountAt==="function"){
+    const m=mountAt(G.shipId,slot);
+    if(m&&!mountTakes(m,p))return false;
+  }
+  if(typeof partSealed==="function"&&partSealed(p))return false;
   const f=fitMap(),prev=f[slot];
   if(prev!=null)delete f[slot];
   if(capUsed()+p.cap>capOf(G.shipId)){if(prev!=null)f[slot]=prev;return false;}

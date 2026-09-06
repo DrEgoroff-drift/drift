@@ -18,6 +18,7 @@ function fireShot(x,y,ang,speed,dmg,mine,type,range){
   const life=range?Math.max(12,Math.round(range/Math.max(.5,speed))):150;
   G.shots.push({x,y,vx:Math.cos(ang)*speed,vy:Math.sin(ang)*speed,dmg,owner,
     type:type||"kin",mine:owner==="player",life});
+  if(owner==="player"&&typeof rangeShot==="function")rangeShot();
   /* тембр своего выстрела берём из установленной пушки: у каждой части свой seed,
      значит разные орудия звучат по-разному сами собой, без отдельного контента */
   if(owner==="player"){
@@ -99,6 +100,7 @@ function combatShots(dt){
             }
           }
           p.hull-=d*dmgMul(s.type,false);
+          if(p.dummy&&s.owner==="player"&&typeof rangeHit==="function")rangeHit(d*dmgMul(s.type,false));
           sfx("hit",{v:.3});
           if(p.hull<=0){if(s.owner==="player")killPirate(p);else pirateFellTo(p,s.owner);}
           break;
