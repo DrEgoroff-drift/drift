@@ -1759,7 +1759,7 @@ body.table u.addr{color:#7a4a20}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.401.3";
+const VER="0.407.1";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -12307,6 +12307,13 @@ function relayDial(box){
 }
 function renderRelays(box){
   box.textContent="";
+  /* пеленг на управляющего (M406, §24.4): направление и ни слова о расстоянии.
+     Два пеленга из двух далёких систем в пределах нескольких смен пересекаются
+     там, где он сейчас, — и это единственное настоящее умение в охоте */
+  if(typeof mgrBearLine==="function"&&typeof baseList==="function"&&baseList().length){
+    tableRow(box,"head","","ЧУЖОЙ ПОЗЫВНОЙ · ПЕЛЕНГ БЕЗ ДАЛЬНОСТИ");
+    tableRow(box,"","",mgrBearLine());
+  }
   /* свои базы (M394, §38): та же панель, тот же приёмник — потому что это и
      есть приёмник, а не второй экран про базы */
   if(typeof renderBaseLink==="function")renderBaseLink(box);
@@ -15310,6 +15317,16 @@ function rumoursHere(){
   /* «Сорока» (12v, M342): третий слух, пока борт стоит в шести прыжках — паруса
      трудно перепутать, поэтому разброс уже обычного, но 15 % всё так же врут */
   if(typeof wanderRumour==="function"){const wq=wanderRumour(r);if(wq)out.push(wq);}
+  /* управляющий (M406, §24.4): о нём говорят так же, как обо всём остальном —
+     областью и временем, и половина этих разговоров вообще о другом человеке */
+  if(typeof mgrRumour==="function"&&typeof baseList==="function"&&baseList().length&&r()<.35){
+    const mq=mgrRumour(r);
+    out.push({id:"mgr",sx:mq.sx,sy:mq.sy,rad:mq.rad,wrong:mq.wrong,
+      img:"управляющий",src:"за стойкой",det:"рассказывают охотно, помнят плохо",
+      where:"где-то у сектора "+mq.sx+":"+mq.sy,text:mq.text,
+      lines:["Управляющий",capRu("где-то у сектора "+mq.sx+":"+mq.sy),mq.text],
+      short:"управляющий — где-то у сектора "+mq.sx+":"+mq.sy});
+  }
   return out;
 }
 /* приёмник: изредка слух приходит строкой эфира */
@@ -39355,9 +39372,16 @@ function applySave(s){
         guest:(b.guest&&typeof b.guest==="object")?{name:String(b.guest.name||"").slice(0,24),
           role:String(b.guest.role||"driller"),seed:b.guest.seed|0,n:b.guest.n|0}:null,
         /* погода директора (M397): у неё есть сроки, и они переживают выход */
-        dust:b.dust|0,cold:b.cold|0,vein:b.vein|0,thief:b.thief|0,
+        dust:b.dust|0,cold:b.cold|0,vein:b.vein|0,thief:b.thief|0,dead:b.dead|0,
+        /* развалина (M402, §39): из аккаунта ничего не удаляется — база живёт
+           в записи и разбитой, вместе с тем, кто в неё въехал */
+        ruin:(b.ruin&&typeof b.ruin==="object")?{n:b.ruin.n|0,
+          who:(b.ruin.who==="pirate"||b.ruin.who==="squat")?b.ruin.who:null}:null,
         /* устав (M399): законы берутся навсегда, значит они в записи */
         charter:Array.isArray(b.charter)?b.charter.filter(x=>typeof CHARTER_BY!=="undefined"&&CHARTER_BY[x]):[],
+        /* договор с управляющим (M405): в записи только НОМЕР — сам он
+           выводится броском, как и всё остальное в этой игре */
+        mgr:(b.mgr&&typeof b.mgr==="object")?{id:b.mgr.id|0,since:b.mgr.since|0}:null,
         fire:(b.fire&&typeof b.fire==="object")?{c:b.fire.c|0,r:b.fire.r|0,
           k:String(b.fire.k||"fire"),n:b.fire.n|0}:null,
         park:b.park|0,
@@ -53289,6 +53313,34 @@ function updateBase(dt){
         (who.length?who.map(c=>c.name).join(", "):"никого")+" · ЦЕЛЬ — КТО ЗДЕСЬ":"")+
       (B.guest?"\nУ ЗАТВОРА ЖДЁТ "+B.guest.name.toUpperCase()+" · ПРОСИТСЯ ОСТАТЬСЯ":"")+
       (basePoolHeld(B)>0?"\nДЕЙСТВИЕ — ЗАБРАТЬ НАКОПЛЕННОЕ":"");
+    /* починка от нуля (M402, §39): разбитый отсек не потерян — он стоит
+       четверть постройки и ждёт. Забирать в такой ячейке нечего */
+    if(cell.hp<=0&&typeof baseFixCost==="function"){
+      const fc=baseFixCost(B,cell.k);
+      G.prompt=head+"\n"+M.ru.toUpperCase()+" · РАЗБИТ"+
+        "\nДЕЙСТВИЕ — ВОССТАНОВИТЬ · "+fc.credits+" кр"+(fc.alloy?" + "+fc.alloy+" спл":"");
+      if(actEdge)baseFixCell(B,S.cur,S.row);
+      return;
+    }
+    /* прилавок базы (M403, §43): у ледоплавки и электролизёра можно залить
+       баки своим льдом, у мастерской — починить корпус своими сплавами. В
+       блокаду это единственное снабжение, которым игрок распоряжается сам */
+    if(cell.k==="melter"||cell.k==="lyse"){
+      G.prompt=head+"\n"+M.ru.toUpperCase()+" · ЦЕЛЬ — ЗАЛИТЬ БАКИ СВОИМ ЛЬДОМ"+
+        (typeof basePayLine==="function"&&basePayLine(B)?"\n"+basePayLine(B):"");
+      if(keys.lock&&!S.lockHeld){S.lockHeld=1;baseRefuel(B);}
+      if(!keys.lock)S.lockHeld=0;
+      if(actEdge&&basePoolHeld(B)>0)baseCollect(B);
+      return;
+    }
+    if(cell.k==="shop"){
+      G.prompt=head+"\n"+M.ru.toUpperCase()+" · ЦЕЛЬ — ПОЧИНИТЬ КОРПУС СВОИМИ СПЛАВАМИ"+
+        (typeof basePayLine==="function"&&basePayLine(B)?"\n"+basePayLine(B):"");
+      if(keys.lock&&!S.lockHeld){S.lockHeld=1;baseRepairShip(B);}
+      if(!keys.lock)S.lockHeld=0;
+      if(actEdge&&basePoolHeld(B)>0)baseCollect(B);
+      return;
+    }
     if(actEdge&&basePoolHeld(B)>0)baseCollect(B);
     if(role&&keys.lock&&!S.lockHeld){S.pmenu=true;S.ppick=0;S.lockHeld=1;}
     if(!keys.lock)S.lockHeld=0;
@@ -53365,6 +53417,16 @@ const BLOG={
   deep:    ()=>"смотритель вскрыл нижний ярус",
   wear:    (B,a)=>"жара доконала: "+a.what,
   worn:    (B,a)=>a.what+" отработал своё. Ничто не доделано навсегда",
+  ruin:    ()=>"базу бросили. Людей нет, запаса нет, свет погашен",
+  tenant:  (B,a)=>"в развалину въехали: "+a.who,
+  back:    ()=>"база снова наша. Чинить придётся от нуля",
+  uniq:    (B,a)=>"со склада забрали, чего нигде не купить: "+a.what,
+  mgrgo:   (B,a)=>a.who+" ушёл: жалованье не заплачено",
+  short:   (B,a)=>"склад не сходится на "+a.q+" ед. Опять",
+  dev:     (B,a)=>a.who+" поставил "+a.what+". Не спросил",
+  devfix:  (B,a)=>a.who+" восстановил "+a.what,
+  devbuy:  (B,a)=>a.who+" заказал припас, пока не кончился",
+  panic:   (B,a)=>"на царапину извели "+a.q+" ед. со склада",
   warn:    (B,a)=>a.warn,
   law:     (B,a)=>"устав: принят закон «"+a.ru+"». Навсегда",
   thief:   (B,a)=>"со склада пропало "+a.q+" ед. Дверь была открыта",
@@ -53396,6 +53458,9 @@ const BLOG={
 function baseLog(B,kind,n,args){
   const f=BLOG[kind];
   if(!f)return;
+  /* «молчит» (M405, §34.1): управляющий не подаёт сводок вовсе, и журнал
+     базы замолкает — кроме тех строк, которые про него самого */
+  if(typeof bmgrSilent==="function"&&bmgrSilent(B)&&kind!=="mgrgo"&&kind!=="short")return;
   if(!B.log)B.log=[];
   const line={n:n|0,k:kind,t:f(B,args||{})};
   B.log.push(line);
@@ -53441,6 +53506,13 @@ function baseShiftRun(B,n){
          :((baseRaid(B,BASE_MIN,n)?1:0)|(baseStorm(B,BASE_MIN,n)?1:0));
     said|=baseEarn(B,P,BASE_MIN,n)?1:0;
     said|=baseMine(B,P,BASE_MIN,n)?1:0;
+    /* плата решённой базы (M403, §23.1): то, чего нигде не купить */
+    if(typeof baseUniqStep==="function")said|=baseUniqStep(B,n)?1:0;
+    /* управляющий (M405): жалованье, доля и изъян — после всего, что он вёл */
+    if(typeof bmgrStep==="function")said|=bmgrStep(B,n)?1:0;
+    /* и он же развивает базу (M407): строят все, правильно — один */
+    if(typeof devSupply==="function")said|=devSupply(B,n)?1:0;
+    if(typeof devStep==="function")said|=devStep(B,n)?1:0;
   }
   /* тихая смена тоже строка — но не каждая: журнал, в котором пусто, читается
      как поломка, а журнал из одних «тихо» вытесняет то, ради чего его открыли.
@@ -53459,6 +53531,7 @@ function baseEarn(B,P,min,n){
   if(cr<=0)return 0;
   earn(cr,"base");
   B.sold=(B.sold|0)+cr;
+  B._earned=(B._earned|0)+cr;      /* с этого управляющий возьмёт свою долю */
   if(B.sold>=400){
     logAdd("money","База «"+B.name+"» сдала излишки энергии · +"+B.sold.toLocaleString("ru")+" кр");
     baseLog(B,"grid",n,{cr:B.sold});
@@ -53486,7 +53559,10 @@ function baseMine(B,P,min,n){
   const world=(typeof dialOreMul==="function")?dialOreMul(B)*clamp(dialGrav(B),.8,1.4):1;
   /* закон 5 (M401): пьющий работает вполсилы смену через смену */
   const folk=(typeof baseDrinkMul==="function")?baseDrinkMul(B,n):1;
-  const want=min*P.drillEff*eff*crewBoost*heat*adj*vein*law*world*folk*1.1;
+  /* управляющий (M405): база выдаёт ту долю своего потенциала, какую он умеет
+     вытянуть. Плохой хуже, чем никакого, — так и задумано (§48.2) */
+  const mgr=(typeof bmgrWorkMul==="function")?bmgrWorkMul(B):1;
+  const want=min*P.drillEff*eff*crewBoost*heat*adj*vein*law*world*folk*mgr*1.1;
   let left=Math.min(want,Math.max(0,cap-held));
   const full=want>0&&left<want*.5;      /* склад забит: добыча стоит, и это строка */
   const r=rng(hashi(B.sx*7919+B.sy,B.idx,hashi(n,0x9111,0x2D)));
@@ -53547,9 +53623,13 @@ function baseLife(B){
 }
 function baseCrewN(B){return (typeof baseStaff==="function")?baseStaff(B).length:0;}
 function baseParked(B){return !!(B&&B.park);}
+/* нужда за смену. Харч тут же, третьим полем: без него всякий, кто спросит
+   `need.food`, получит `undefined` и сравнение с ним — тихую ложь (так и
+   вышло у снабжения M407, и набор это поймал) */
 function baseLifeNeed(B){
   const n=baseCrewN(B),d=baseParked(B)?LIFE_LOW:1;
-  return {air:Math.ceil(n*LIFE_AIR/d),water:Math.ceil(n*LIFE_WATER/d)};
+  return {air:Math.ceil(n*LIFE_AIR/d),water:Math.ceil(n*LIFE_WATER/d),
+          food:Math.ceil(n*LIFE_FOOD/d)};
 }
 /* сколько на базе живых машин жизнеобеспечения */
 function baseLifeMakers(B){
@@ -53633,7 +53713,7 @@ function baseLifeStep(B,P,n){
   }
   /* харч не останавливает базу: голод — это про дух, а не про механизмы.
      Голодная база работает и теряет людей, и это разные наказания */
-  const eat=Math.ceil(baseCrewN(B)*LIFE_FOOD/(baseParked(B)?LIFE_LOW:1));
+  const eat=baseLifeNeed(B).food;
   if(eat){
     const wasFed=(L.food|0)>0;
     L.food=Math.max(0,(L.food|0)-eat);
@@ -53642,6 +53722,9 @@ function baseLifeStep(B,P,n){
   said|=baseSpiritStep(B,n)?1:0;
   /* маяк зовёт (M395): раз в тридцать смен кто-то просится остаться */
   if(typeof baseGuestRoll==="function")said|=baseGuestRoll(B,n)?1:0;
+  /* развалина (M402, §39): брошенная по-настоящему база доходит до неё за
+     сутки — и с этого дня её можно вернуть, но нельзя потерять навсегда */
+  if(typeof baseRuinCheck==="function")said|=baseRuinCheck(B,n)?1:0;
   /* открытая дверь (M399): однажды пропадает треть склада */
   if(typeof charterThiefStep==="function")said|=charterThiefStep(B,n)?1:0;
   /* запас пришёл — база встаёт на ход сама, но смена уходит на разгон */
@@ -53961,6 +54044,13 @@ function baseSpiritStep(B,n){
 function baseResolve(B,now){
   if(!B)return 0;
   now=now||Date.now();
+  /* развалина (M402) не работает: в ней некому и нечем. Часы ей всё равно
+     двигаем — по ним считается, когда в неё въедут */
+  if(typeof baseIsRuin==="function"&&baseIsRuin(B)){
+    const nn=baseSince(B,now);
+    if(nn>0){B.t0=baseT0(B)+nn;B.tMs=now;if(typeof baseTenant==="function")baseTenant(B,B.t0);}
+    return 0;
+  }
   const n=baseSince(B,now);
   if(n<=0){baseT0(B);B.tMs=now;return 0;}
   const t0=baseT0(B);
@@ -54079,7 +54169,13 @@ function baseReport(B,sx,sy){
   if(lvl===1)return {lvl,head:call+" · …"+baseOneWord(B),lines:[]};
   if(lvl===2)return {lvl,head:call+" · "+baseWordLine(B),
     lines:baseLogList(B,1).map(x=>x.t)};
-  const L=baseLife(B),h=baseHeat(B);
+  const L0=baseLife(B),h=baseHeat(B);
+  /* «пишет красиво» (M405): сводки отличные, база — нет. Врёт ИМЕННО СВОДКА:
+     прилетите и посмотрите своими глазами — увидите правду */
+  const lie=(typeof bmgrLies==="function")&&bmgrLies(B)&&
+    !((B.sx|0)===(G.sx|0)&&(B.sy|0)===(G.sy|0));
+  const L=lie?{air:Math.max(L0.air,LIFE_CAP*.8|0),water:Math.max(L0.water,LIFE_CAP*.8|0),
+    food:Math.max(L0.food|0,LIFE_CAP*.6|0),q:"good"}:L0;
   return {lvl,head:call+" · воздух "+L.air+" · вода "+L.water+" · харч "+(L.food|0)+
     " · тепло "+(h>0?"+":"")+(h/10).toFixed(1)+
     (baseCrewN(B)?" · дух "+baseSpirit(B)+"%":" · людей нет")+
@@ -57419,6 +57515,14 @@ function drawBase(){
   for(let r=0;r<baseRows(B);r++)for(let c=0;c<=BASE_COLS;c++){
     const a=c>0?baseCell(B,c-1,r):null, b=c<BASE_COLS?baseCell(B,c,r):null;
     if(!a&&!b)continue;
+    /* ── зал (M396, §7) ──
+       Три одинаковых подряд — одно помещение, а не три: внутренние стены между
+       ними снимаются, и общий контур виден глазами. Ровно это и обещал §7:
+       «зал — те же кисти с убранными внутренними стенами». */
+    if(typeof baseHallAt==="function"&&a&&b&&c>0&&c<BASE_COLS){
+      const HA=baseHallAt(B,c-1,r),HB=baseHallAt(B,c,r);
+      if(HA&&HB&&HA.c0===HB.c0&&HA.r===HB.r)continue;
+    }
     const x=X(BASE_OX+c*BCELL_W), y0=Y(BASE_OY+r*BCELL_H), y1=Y(BASE_OY+(r+1)*BCELL_H);
     if(x<-20||x>W+20)continue;
     const wdt=(a&&b)?5:7;                       // внешняя стена толще внутренней
@@ -57574,6 +57678,103 @@ function drawBase(){
     ctx.setLineDash([]);
     ctx.fillStyle="rgba(127,230,216,.5)";ctx.font="9px ui-monospace,monospace";ctx.textAlign="center";
     ctx.fillText("МЕСТО ПОД ЗАСТРОЙКУ",sx+BCELL_W/2,sy+BCELL_H/2+3);
+  }
+  /* ── патрубки соседства (M404, §7) ──
+     Девять правил были числами в подсказке; здесь они становятся тем, что
+     видно: между двумя клетками, которые друг другу что-то дают, идёт короткий
+     патрубок, а между теми, кто друг другу мешает, — косая полоса. План базы
+     перестаёт быть списком модулей и делается схемой. */
+  if(typeof baseAdjPairs==="function"){
+    const COL={wire:[242,178,92],green:[140,220,150],care:[150,220,255],
+      feed:[130,200,255],vent:[190,210,230],store:[210,190,140],fix:[200,200,210],
+      noise:[255,120,90],gun:[255,120,90]};
+    for(const P2 of baseAdjPairs(B)){
+      const bad=(P2.k==="noise"||P2.k==="gun");
+      const x1=X(cellX(P2.ac)),y1=Y(cellY(P2.ar)),x2=X(cellX(P2.bc)),y2=Y(cellY(P2.br));
+      if(Math.min(x1,x2)<-BCELL_W||Math.max(x1,x2)>W+BCELL_W)continue;
+      const mx=(x1+x2)/2,my=(y1+y2)/2;
+      const c3=COL[P2.k]||[200,200,200];
+      ctx.save();
+      ctx.globalAlpha=.55+lit*.3;
+      if(bad){
+        /* опасное соседство — косая штриховка, а не труба: это не связь */
+        ctx.strokeStyle="rgba("+c3.join(",")+",.75)";ctx.lineWidth=2;
+        ctx.setLineDash([4,4]);
+        ctx.beginPath();ctx.moveTo(mx-9,my-9);ctx.lineTo(mx+9,my+9);ctx.stroke();
+        ctx.setLineDash([]);
+      }else{
+        ctx.strokeStyle="rgba("+c3.join(",")+",.7)";ctx.lineWidth=3;
+        ctx.beginPath();ctx.moveTo(x1+(x2-x1)*.28,y1+(y2-y1)*.28);
+        ctx.lineTo(x1+(x2-x1)*.72,y1+(y2-y1)*.72);ctx.stroke();
+        ctx.fillStyle="rgba("+c3.join(",")+",.85)";
+        ctx.beginPath();ctx.arc(mx,my,2.4,0,TAU);ctx.fill();
+      }
+      ctx.restore();
+    }
+  }
+  /* ── мороз и марево (M404, §4) ──
+     Двусторонняя шкала должна быть видна кадром, а не строкой: в мороз по
+     кадру идёт синь и иней по кромкам, в жару — тёплая дымка. */
+  if(typeof baseHeatBand==="function"){
+    const bnd=baseHeatBand(B);
+    if(bnd){
+      const a2=Math.min(.3,Math.abs(bnd)*.09);
+      ctx.save();
+      if(bnd<0){
+        ctx.fillStyle="rgba(150,205,255,"+a2.toFixed(3)+")";
+        ctx.fillRect(0,0,W,H);
+        /* иней по верхним кромкам отсеков */
+        ctx.fillStyle="rgba(220,240,255,"+(a2*1.6).toFixed(3)+")";
+        for(let r=0;r<baseRows(B);r++)for(let c=0;c<BASE_COLS;c++){
+          const cell=baseCell(B,c,r);
+          if(!cell||cell.hp<=0)continue;
+          const x=X(BASE_OX+c*BCELL_W),y=Y(BASE_OY+r*BCELL_H);
+          if(x<-BCELL_W||x>W+BCELL_W)continue;
+          ctx.fillRect(x+6,y+6,BCELL_W-12,2);
+        }
+      }else{
+        ctx.globalCompositeOperation="lighter";
+        const g2=ctx.createLinearGradient(0,Y(BASE_OY+baseRows(B)*BCELL_H),0,Y(BASE_OY));
+        g2.addColorStop(0,"rgba(255,150,90,"+(a2*.9).toFixed(3)+")");
+        g2.addColorStop(1,"rgba(255,150,90,0)");
+        ctx.fillStyle=g2;ctx.fillRect(0,0,W,H);
+      }
+      ctx.restore();
+    }
+  }
+  /* ── пять шкал одним прибором (M404, §4) ──
+     До сих пор запас базы жил только в тексте — на столе и в подсказке. В
+     разрезе он теперь стоит там, где ему место: маленькая приборная доска у
+     ствола, пять полос, и ни одной цифры сверх той, что игрок себе купил. */
+  if(typeof baseLife==="function"&&typeof baseSharp==="function"){
+    /* ── где ей стоять ──
+       В мире доску резало кромкой кадра: у ствола её съедала левая граница,
+       под сеткой на неё ложился текст подсказки. Это ИНТЕРФЕЙС сцены, а не
+       предмет в породе, и место у него экранное — левый край, под приборами
+       корабля и над кнопками. Правило кадра то же, что у всей канвы-как-UI:
+       рисуем в экранных координатах и ничем не перекрываем (26-ui). */
+    const L=baseLife(B),bx=14,by=64;
+    if(1){
+      const rows=[["ВЗД",L.air,LIFE_CAP,[150,220,255]],
+                  ["ВОД",L.water,LIFE_CAP,[120,190,255]],
+                  ["ХРЧ",L.food|0,LIFE_CAP,[190,220,140]],
+                  ["ДУХ",(typeof baseSpirit==="function")?baseSpirit(B):100,100,[242,178,92]]];
+      ctx.save();
+      ctx.fillStyle="rgba(10,13,18,.82)";
+      ctx.fillRect(bx-6,by-6,116,rows.length*11+12);
+      ctx.strokeStyle="rgba(150,178,198,"+(.18+lit*.18).toFixed(2)+")";
+      ctx.strokeRect(bx-5.5,by-5.5,115,rows.length*11+11);
+      ctx.font="8px ui-monospace,monospace";ctx.textAlign="left";
+      rows.forEach((q,i)=>{
+        const y=by+i*11;
+        ctx.fillStyle="rgba(190,210,224,.75)";
+        ctx.fillText(q[0],bx,y+7);
+        const w=70,k=clamp(q[1]/q[2],0,1);
+        ctx.fillStyle="rgba(255,255,255,.10)";ctx.fillRect(bx+26,y+2,w,5);
+        ctx.fillStyle="rgba("+q[3].join(",")+",.85)";ctx.fillRect(bx+26,y+2,w*k,5);
+      });
+      ctx.restore();
+    }
   }
   /* аврал (M398): отсек, в котором беда, видно раньше всякого текста */
   if(typeof avrDraw==="function")avrDraw(S,X,Y,lit);
@@ -58129,6 +58330,710 @@ function drawDeposit(x,y,res,left,near,seed,pal){
     ctx.beginPath();ctx.ellipse(x,y-S*.45,S*1.15,S*.85,0,Math.PI*1.15,Math.PI*1.95);ctx.stroke();
   }
   ctx.restore();
+}
+
+/* ══════════════ развалина и возврат (M402, DESIGN-base §22.1, §39) ══════════════
+   Потерять базу можно, и это должно быть по-настоящему больно. Но потерять её
+   НАВСЕГДА нельзя ни из какого состояния — это правило §39, и оно сильнее
+   всякой драмы: из аккаунта ничего не удаляется, и нет положения, из которого
+   базу нельзя было бы поднять.
+
+   Что происходит, когда база брошена по-настоящему — не «встала» (это M391 и
+   консервация), а осталась без людей и без запаса на целые сутки:
+
+     · она становится РАЗВАЛИНОЙ: построенное стоит разбитым (`hp:0`);
+     · через несколько смен в неё кто-то въезжает — поселенец или пиратская
+       застава, то есть цель для военного слоя, сложенная из ваших же стен;
+     · вернуться можно ВСЕГДА: выкупить, вычистить или просто прийти в пустую,
+       а потом чинить от нуля за долю постройки.
+
+   Что теряется на самом деле — время, деньги, ушедшие люди и та история, что о
+   вас теперь рассказывают. Этого достаточно. */
+const RUIN_AFTER=24;         /* сутки без людей и без запаса — и это развалина */
+const RUIN_TENANT=12;        /* через столько смен в неё кто-то въезжает */
+const RUIN_SQUAT=2200;       /* выкуп у поселенца */
+const RUIN_PIRATE=6500;      /* и у заставы, если не хочется драться */
+const RUIN_FIX=.25;          /* починка от нуля — четверть постройки */
+function baseIsRuin(B){return !!(B&&B.ruin);}
+/* ── как база доходит до развалины ──
+   Только через полное запустение: ни одного человека, пустой запас и сутки в
+   таком виде. Игрок, который просто улетел на неделю, к этому не придёт —
+   у него база стоит на консервации и ждёт (§13). */
+function baseRuinCheck(B,n){
+  if(B.ruin)return 0;
+  const crew=(typeof baseCrewN==="function")?baseCrewN(B):0;
+  const L=(typeof baseLife==="function")?baseLife(B):{air:1,water:1,food:1};
+  const empty=(L.air|0)<=0&&(L.water|0)<=0;
+  if(crew>0||!empty){B.dead=0;return 0;}
+  B.dead=(B.dead|0)+1;
+  if(B.dead<RUIN_AFTER)return 0;
+  B.ruin={n:n|0,who:null};
+  for(const cell of (B.cells||[]))if(cell)cell.hp=0;
+  B.fire=null;B.guest=null;
+  baseLog(B,"ruin",n,{});
+  logAdd("warn","База «"+B.name+"» брошена: людей нет, запаса нет");
+  return 1;
+}
+/* ── кто въехал ──
+   Считается от номера смены, как всё остальное: поселенец или застава. */
+function baseTenant(B,n){
+  if(!B.ruin)return null;
+  if(n===undefined)n=(typeof baseShift==="function")?baseShift():0;
+  if(n-(B.ruin.n|0)<RUIN_TENANT)return null;
+  if(B.ruin.who)return B.ruin.who;
+  const d=(typeof sysDanger==="function")?sysDanger(B.sx,B.sy):.3;
+  const r=rng(hashi(B.sx*211+B.sy,(B.idx|0)*41+3,B.ruin.n|0));
+  B.ruin.who=(r()<clamp(.25+d*.5,0,.85))?"pirate":"squat";
+  baseLog(B,"tenant",n,{who:B.ruin.who==="pirate"?"пиратская застава":"поселенцы"});
+  return B.ruin.who;
+}
+function baseRuinPrice(B){
+  const who=baseTenant(B);
+  return who==="pirate"?RUIN_PIRATE:(who==="squat"?RUIN_SQUAT:0);
+}
+/* заставу можно и вычистить: прилететь и снять всех, кто в системе. Это не
+   отдельная сцена — это та же война, которая в игре уже есть */
+function baseRuinClearable(B){
+  if(baseTenant(B)!=="pirate")return false;
+  if((G.sx|0)!==(B.sx|0)||(G.sy|0)!==(B.sy|0))return false;
+  return !(G.pirates||[]).some(p=>p.hull>0&&!p.pw);
+}
+/* ── вернуться ── */
+function baseRuinTake(B){
+  if(!B.ruin)return false;
+  const who=baseTenant(B);
+  const n=(typeof baseShift==="function")?baseShift():0;
+  if(who==="pirate"&&!baseRuinClearable(B)){
+    if(G.credits<RUIN_PIRATE){
+      say("Застава уйдёт за "+RUIN_PIRATE.toLocaleString("ru")+" кр\nили за то, что вы её снимете");
+      return false;
+    }
+    G.credits-=RUIN_PIRATE;
+  }else if(who==="squat"){
+    if(G.credits<RUIN_SQUAT){
+      say("Поселенцы съедут за "+RUIN_SQUAT.toLocaleString("ru")+" кр");
+      return false;
+    }
+    G.credits-=RUIN_SQUAT;
+  }
+  B.ruin=null;B.dead=0;
+  const L=baseLife(B);
+  L.air=Math.max(L.air,LIFE_START/2);L.water=Math.max(L.water,LIFE_START/2);
+  L.food=Math.max(L.food|0,LIFE_START/2);
+  B.t0=n;
+  baseLog(B,"back",n,{});
+  tell("good","База «"+B.name+"» снова ваша","БАЗА ВЕРНУЛАСЬ\nотсеки стоят разбитыми — чинить от нуля");
+  return true;
+}
+/* починка отсека от нуля: четверть постройки, и ни один не потерян навсегда */
+function baseFixCost(B,k){
+  const c=baseCost(k,B);
+  return {credits:Math.max(50,Math.round(c.credits*RUIN_FIX/10)*10),
+          alloy:Math.max(1,Math.round((c.alloy||0)*RUIN_FIX))};
+}
+function baseFixCell(B,c,r){
+  const cell=baseCell(B,c,r);
+  if(!cell||cell.hp>0)return false;
+  if(baseIsRuin(B)){say("Сперва вернуть базу себе");return false;}
+  const cost=baseFixCost(B,cell.k);
+  if(!canPay(cost)){
+    say("На починку нужно "+cost.credits+" кр"+(cost.alloy?" и "+cost.alloy+" сплавов":""));
+    return false;
+  }
+  payCost(cost);
+  cell.hp=1;
+  tell("money","Отсек восстановлен: "+BUILD[cell.k].ru,
+    "ВОССТАНОВЛЕНО\n"+BUILD[cell.k].ru+"\n−"+cost.credits+" кр");
+  return true;
+}
+/* строка для стола */
+function baseRuinLine(B){
+  if(!B.ruin)return "";
+  const who=baseTenant(B);
+  return "РАЗВАЛИНА"+(who==="pirate"?" · пиратская застава":(who==="squat"?" · въехали поселенцы":" · пока пусто"))+
+    (baseRuinClearable(B)?" · снять её можно прямо сейчас":
+      (baseRuinPrice(B)?" · выкуп "+baseRuinPrice(B).toLocaleString("ru")+" кр":""));
+}
+
+/* ══════════════ плата и блокада (M403, DESIGN-base §23, §42, §43) ══════════════
+   Трудность оправдывается только платой, и плата должна быть огромной, не став
+   при этом инфляцией. Экономику этой игры однажды уже сожгли ровно такой
+   формой — «солнечной фермой», где деньги делали деньги без внимания и без
+   предела (M240). Поэтому правило платы одно:
+
+     ХОРОШАЯ БАЗА НЕ ПЕЧАТАЕТ КРЕДИТЫ. ОНА ДЕЛАЕТ ТО, ЧЕГО НЕ КУПИТЬ.
+
+   Три яруса (§23.1). Работающая база окупает себя рудой — это уже есть с
+   M390. Отлаженная даёт вдвое-втрое больше через глубину, роли и передел на
+   месте — это M392–M396. А решённая делает УНИКАЛЬНОЕ: то, чего нет ни на
+   одном прилавке (`price:0`, §42) и что нужно верфи, лаборатории, третьему
+   ярусу холдинга и оснастке военного слоя. Список — ниже, и почему он не тот,
+   что назван в §23.1, — там же.
+
+   И блокада (§43). Держава закрывает систему — ни топлива, ни ремонта, ни
+   частей, а ближайшая открытая станция в четырёх прыжках не в ту сторону. База
+   при этом остаётся ЕДИНСТВЕННЫМ снабжением, которым игрок распоряжается сам:
+   лёд становится топливом, мастерская чинит корпус. Летящий сквозь войну — это
+   тот, у кого есть база; у кого её нет, тот стоит и смотрит. */
+/* ── что именно делает решённая база ──
+   §23.1 называет иридий и ксенобиом, и это оказалось единственным местом, где
+   замысел спорит сам с собой: у обоих в `RES` есть ЦЕНА, их берёт любой
+   прилавок. База, которая их делает, печатала бы кредиты — то самое, что §23
+   запрещает первой же строкой. Поэтому список собран из того, что и правда
+   нигде не купить (`price:0`), и каждая строка отвечает своему миру:
+
+     вулкан на глубине с плавильней  → техкомпоненты (оснастка баз и приборы);
+     ядовитый мир с лабораторией     → гидразин (та самая химия из §43);
+     ледяной мир с криоцехом         → криоген;
+     тяжёлый мир на глубине          → карбид.
+
+   Набор проверяет цену каждого: строка, у которой она не ноль, — это не плата,
+   а инфляция. */
+const UNIQ=[
+  {k:"techcomp",ru:"техкомпоненты",need:{type:"volcanic",deep:3,cell:"refinery"},
+   note:"точная сборка идёт только там, где тепло даровое"},
+  {k:"hydrazine",ru:"гидразин",  need:{type:"toxic",deep:0,cell:"lab"},
+   note:"такая химия выходит только из такой атмосферы"},
+  {k:"cryo",    ru:"криоген",    need:{ice:1.5,deep:0,cell:"cryo"},
+   note:"дёшев только там, где холод и так снаружи"},
+  {k:"carbide", ru:"карбид",     need:{grav:1.35,deep:3,cell:"drill"},
+   note:"на тяжёлом мире бур достаёт то, чего на лёгком нет"}
+];
+const UNIQ_EVERY=4;          /* раз в столько смен одна единица */
+function baseHasCell(B,k){
+  for(const cell of (B.cells||[]))if(cell&&cell.hp>0&&cell.k===k)return true;
+  return false;
+}
+/* что именно умеет ЭТА база — по формуляру, глубине и тому, что построено */
+function baseUnique(B){
+  const out=[];
+  if(!B)return out;
+  const D=(typeof baseDialOf==="function")?baseDialOf(B):null;
+  const deep=(typeof baseDepth==="function")?baseDepth(B):0;
+  for(const U of UNIQ){
+    const n=U.need;
+    if(n.type&&(B.type!==n.type))continue;
+    if(n.ice!==undefined&&!(D&&D.ice>=n.ice))continue;
+    if(n.grav!==undefined&&!(D&&D.grav>=n.grav))continue;
+    if(deep<(n.deep|0))continue;
+    if(n.cell&&!baseHasCell(B,n.cell))continue;
+    out.push(U);
+  }
+  return out;
+}
+/* ── уникальное за смену ──
+   Понемногу и медленно: это не доход, а поставка. Одна единица в четыре смены
+   на каждое умение — за сутки набирается горсть, за неделю партия. */
+function baseUniqStep(B,n){
+  const L=baseUnique(B);
+  if(!L.length)return 0;
+  if((n%UNIQ_EVERY)!==0)return 0;
+  const P=(typeof basePower==="function")?basePower(B):{eff:1};
+  if(P.eff<.5)return 0;                    /* на голодном пайке это не идёт */
+  let made=0;
+  for(const U of L){
+    B.pool[U.k]=(B.pool[U.k]|0)+1;made++;
+  }
+  if(made)baseLog(B,"uniq",n,{what:L.map(x=>x.ru).join(", ")});
+  return made?1:0;
+}
+/* ── блокада (§43) ──
+   Фронт военного слоя закрывает систему. Тогда база — единственный прилавок,
+   который остался у игрока, и стоит он по себестоимости. */
+function baseBlocked(B){
+  if(!B)return false;
+  return !!(typeof chronFront==="function"&&chronFront(B.sx,B.sy));
+}
+/* лёд в баки: своё топливо из своего льда, по себестоимости */
+const FUEL_PER_ICE=2;
+function baseRefuel(B){
+  const st=(typeof stat==="function")?stat():{fuelMax:100};
+  const need=Math.ceil((st.fuelMax||100)-G.fuel);
+  if(need<=0){say("Баки полны");return 0;}
+  const have=B.pool.ice|0;
+  if(have<=0){say("На складе базы нет льда");return 0;}
+  const take=Math.min(have,Math.ceil(need/FUEL_PER_ICE));
+  B.pool.ice=have-take;
+  G.fuel=Math.min(st.fuelMax||100,G.fuel+take*FUEL_PER_ICE);
+  tell("good","Заправка со своего склада: "+take+" льда",
+    "СВОЁ ТОПЛИВО\nлёд "+take+" → бак "+Math.round(G.fuel)+
+    (baseBlocked(B)?"\nсистема закрыта — больше взять негде":""));
+  return take;
+}
+/* мастерская чинит корпус: свои сплавы и своя работа */
+const HULL_PER_ALLOY=14;
+function baseRepairShip(B){
+  if(!baseHasCell(B,"shop")){say("Нужна мастерская");return 0;}
+  const st=(typeof stat==="function")?stat():{hullMax:100};
+  const need=Math.ceil((st.hullMax||100)-G.hull);
+  if(need<=0){say("Корпус цел");return 0;}
+  const have=B.pool.alloy|0;
+  if(have<=0){say("На складе базы нет сплавов");return 0;}
+  const take=Math.min(have,Math.ceil(need/HULL_PER_ALLOY));
+  B.pool.alloy=have-take;
+  G.hull=Math.min(st.hullMax||100,G.hull+take*HULL_PER_ALLOY);
+  if(typeof seamAdd==="function")seamAdd();
+  tell("good","Мастерская базы: −"+take+" сплавов",
+    "СВОЙ РЕМОНТ\nсплавы "+take+" → корпус "+Math.round(G.hull));
+  return take;
+}
+/* строка для стола и сцены: что эта база умеет и закрыта ли система */
+function basePayLine(B){
+  const out=[];
+  const U=baseUnique(B);
+  if(U.length)out.push("ДЕЛАЕТ САМА: "+U.map(x=>x.ru).join(", ").toUpperCase());
+  if(baseBlocked(B))out.push("СИСТЕМА ЗАКРЫТА · БАЗА — ЕДИНСТВЕННЫЙ ПРИЛАВОК");
+  return out.join(" · ");
+}
+
+/* ══════════════ сто управляющих и один (M405, DESIGN-base §34, §35, §48) ══════════════
+   Весь слой требует внимания игрока. Купить это внимание обратно можно ровно
+   одним способом, и это ЧЕЛОВЕК, а не улучшение.
+
+   Управляющих в галактике около сотни. Все называют себя управляющими, у всех
+   есть позывной, послужной список и рекомендации, все нанимаются. По-настоящему
+   хорош один. Но и это не список из трёх коробок (§48 отменил их): каждый
+   кандидат — БРОСОК, и «плохой · сносный · настоящий» — места на кривой, а не
+   разряды. Мера — `pow(r(), 2.6)`: масса у дна, хвост тонкий, потолка не видно.
+
+   Из этого сразу следует три вещи, и все три — замысел, а не побочность:
+
+   · нанять сносного и жить на шести десятых — НОРМАЛЬНАЯ и рабочая стратегия;
+   · разница между «сносно» и «по-настоящему» — то, ради чего вся охота;
+   · встретить лучшего в галактике можно на первом же собеседовании, и игра
+     об этом не узнает и не подыграет.
+
+   Единственная зацепка на собеседовании (§35): НАСТОЯЩИЙ СПРАШИВАЕТ О МЕСТЕ
+   РАНЬШЕ, ЧЕМ ОТВЕЧАЕТ О СЕБЕ. Он хочет формуляр, он откажется от безнадёжного
+   камня — единственный в галактике, кто вообще отказывается от работы. Поддельные
+   льстят и соглашаются на всё; те из них, у кого высокая маскировка, научились
+   изображать вопрос-другой, поэтому это сильный признак и никогда не
+   доказательство. */
+const BMGR_FLAWS=[
+  {id:"steal", ru:"тащит",          how:"склад никогда не сходится с буром — на несколько процентов, зато всегда"},
+  {id:"wrong", ru:"строит не то",   how:"третий склад там, где нужен был радиатор, — и он построен, и оплачен"},
+  {id:"panic", ru:"паникует",       how:"безупречен до первого аврала, а потом изводит полсклада на царапину"},
+  {id:"pretty",ru:"пишет красиво",  how:"сводки отличные. База — нет"},
+  {id:"mute",  ru:"молчит",         how:"не подаёт вовсе: пеня набегает там, где никто не смотрит"},
+  {id:"deep",  ru:"боится глубины", how:"нижний ярус не вскрывается никогда: лучшая порода не тронута"}
+];
+const BMGR_BY={};for(const F of BMGR_FLAWS)BMGR_BY[F.id]=F;
+const BMGR_SEV=6;            /* смен жалованья в выходное пособие */
+/* ── бросок (§48.1) ──
+   Чистая функция от номера кандидата: ничего не хранится, и один и тот же
+   прилавок показывает одного и того же человека каждый раз. */
+function bmgrOf(id){
+  const r=rng(hashi(id|0,0x0BA5E,0x3E17));
+  const q=.12+.78*Math.pow(r(),2.6);
+  const greed=.10+.22*r();
+  const pay=Math.round(40+90*r());
+  const flaw=(r()<.62)?BMGR_FLAWS[Math.floor(r()*BMGR_FLAWS.length)]:null;
+  const term=15+Math.floor(105*r());
+  const mask=Math.pow(r(),1.6);
+  const sense=q*(1-.5*mask);
+  const name=(typeof genName==="function")?genName(r):"Управляющий";
+  const call=String.fromCharCode(1040+Math.floor(r()*32))+"-"+(100+Math.floor(r()*900));
+  return {id:id|0,q,greed,pay,flaw,term,mask,sense,name,call};
+}
+/* ── кандидаты у прилавка (§35.1) ──
+   Они стоят на станциях и рекламируют себя. Настоящий — не стоит: он работает,
+   пьёт или сидит в развалине, которую не покинул. Значит тот, кто ходит только
+   по прилавкам, встретит лучшего из поддельных — и это ловушка, вокруг которой
+   построен весь слой. */
+function bmgrAt(sys){
+  if(!sys||!sys.station)return [];
+  const out=[],r=rng(hashi(sys.seed|0,0x0C4D,0x11));
+  const n=2+Math.floor(r()*2);
+  for(let i=0;i<n;i++)out.push(bmgrOf(hashi(sys.seed|0,i*977+13,0x0C4D)));
+  return out;
+}
+/* ── собеседование (§35) ──
+   Чутьё — единственное, что видно в словах. Оно и есть тот самый признак:
+   человек с чутьём спрашивает о МЕСТЕ, а не рассказывает о себе. */
+const BMGR_SAY_FLAT=[
+  "«Возьмусь за что угодно. Где база — там и работа»",
+  "«У меня везде получалось. Получится и тут»",
+  "«Условия ваши, сроки ваши. Я человек простой»",
+  "«Сделаю как надо. Не спрашивайте как — сделаю»"
+];
+const BMGR_SAY_ASK=[
+  "«Какое там тепло? И порода какая — по формуляру, а не на глаз»",
+  "«Лёд есть? Если нет — считайте, что половину смены я вожу воду»",
+  "«Устав какой? Двойная смена — я тогда не берусь»",
+  "«Глубина сколько рядов? И радиатор стоит или собираетесь ставить?»"
+];
+function bmgrLine(M){
+  const r=rng(hashi(M.id|0,0x5A19,0x7));
+  if(M.sense>=.5)return pick(BMGR_SAY_ASK,r);
+  /* маскировка: некоторые поддельные научились изображать вопрос */
+  if(M.mask>.7&&r()<.5)return pick(BMGR_SAY_ASK,r);
+  return pick(BMGR_SAY_FLAT,r);
+}
+/* откажется ли он от этого камня: единственный в галактике, кто отказывается */
+function bmgrRefuses(M,B){
+  if(!B||M.sense<.5)return false;
+  const D=(typeof baseDialOf==="function")?baseDialOf(B):null;
+  if(!D)return false;
+  const hard=(Math.abs(D.heat)>=2.2?1:0)+(D.press>=1.6?1:0)+(D.ore<=1?1:0)+(D.ice<=.2?1:0);
+  return hard>=3;
+}
+/* ── у базы есть управляющий ── */
+function bmgrOfBase(B){
+  if(!B||!B.mgr)return null;
+  const M=bmgrOf(B.mgr.id);
+  M.since=B.mgr.since|0;
+  return M;
+}
+function bmgrHire(B,M){
+  if(!B||!M)return false;
+  if(B.mgr){say("У этой базы уже есть управляющий");return false;}
+  if(bmgrRefuses(M,B)){
+    say(M.name+" отказался:\n«Такое место я не потяну, и врать не буду»");
+    return false;
+  }
+  B.mgr={id:M.id,since:(typeof baseShift==="function")?baseShift():0};
+  tell("tech","Управляющий на базе «"+B.name+"»: "+M.name,
+    "УПРАВЛЯЮЩИЙ\n"+M.name+" · "+M.call+
+    "\nжалованье "+M.pay+" кр в смену, доля "+Math.round(M.greed*100)+"%"+
+    "\nчто он на самом деле умеет — покажет база");
+  return true;
+}
+function bmgrFire(B){
+  const M=bmgrOfBase(B);
+  if(!M)return false;
+  const sev=M.pay*BMGR_SEV;
+  if(G.credits<sev){say("Расторжение стоит "+sev+" кр выходного пособия");return false;}
+  G.credits-=sev;
+  B.mgr=null;
+  tell("warn","Расторгнут договор с "+M.name,
+    "РАСТОРЖЕНИЕ\nвыходное пособие "+sev+" кр\nи ПАЛАТА тоже захочет об этом бумагу");
+  return true;
+}
+/* ── что он делает со сменой ──
+   Он вытягивает свою долю потенциала, берёт жалованье и свою долю, а изъян
+   всплывает не раньше своего срока — и тем позже, чем лучше маскировка. */
+function bmgrWorkMul(B){
+  const M=bmgrOfBase(B);
+  return M?clamp(M.q+.15,.2,1.15):1;
+}
+function bmgrFlawOn(B,n){
+  const M=bmgrOfBase(B);
+  if(!M||!M.flaw)return null;
+  if(n===undefined)n=(typeof baseShift==="function")?baseShift():0;
+  return (n-(M.since|0))>=M.term?M.flaw:null;
+}
+function bmgrStep(B,n){
+  const M=bmgrOfBase(B);
+  if(!M)return 0;
+  let said=0;
+  /* жалованье и доля — прямой расход, а не «−процент к эффективности» */
+  const cost=M.pay+Math.round((B._earned|0)*M.greed);
+  B._earned=0;
+  if(cost>0){
+    if(G.credits>=cost)G.credits-=cost;
+    else{
+      /* не заплатили — он уходит сам, и это тоже честно */
+      B.mgr=null;
+      baseLog(B,"mgrgo",n,{who:M.name});
+      logAdd("warn",M.name+" ушёл с базы «"+B.name+"»: жалованье не заплачено");
+      return 1;
+    }
+  }
+  const F=bmgrFlawOn(B,n);
+  if(F&&F.id==="steal"&&(n%4)===0){
+    /* тащит: со склада уходит понемногу и всегда */
+    let lost=0;
+    for(const k in (B.pool||{})){
+      const q=B.pool[k]|0;
+      if(q<8)continue;
+      const t=Math.max(1,Math.round(q*.05));B.pool[k]=q-t;lost+=t;
+    }
+    if(lost){baseLog(B,"short",n,{q:lost});said=1;}
+  }
+  return said;
+}
+/* «пишет красиво» и «молчит» — про то, что игрок ВИДИТ, а не про склад */
+function bmgrLies(B){
+  const F=bmgrFlawOn(B);
+  return !!(F&&F.id==="pretty");
+}
+function bmgrSilent(B){
+  const F=bmgrFlawOn(B);
+  return !!(F&&F.id==="mute");
+}
+/* строка для стола: кто ведёт базу и во что это обходится */
+function bmgrLineOf(B){
+  const M=bmgrOfBase(B);
+  if(!M)return "";
+  const F=bmgrFlawOn(B);
+  return "ведёт "+M.name+" · "+M.call+" · "+M.pay+" кр/смену и "+
+    Math.round(M.greed*100)+"%"+(F?" · и что-то не так: "+F.how:"");
+}
+
+/* ══════════════ охота на управляющего (M406, DESIGN-base §24.2–§24.5, §35.1) ══════════════
+   Сотня стоит у прилавков и рекламирует себя (M405). НАСТОЯЩИЙ НЕ РЕКЛАМИРУЕТ:
+   он где-то работает, где-то пьёт или сидит в развалине, которую не покинул.
+   Поэтому тот, кто ходит только по прилавкам, встретит лучшего из поддельных —
+   и это ловушка, вокруг которой построен весь слой.
+
+   Он — ФУНКЦИЯ ВРЕМЕНИ, а не запись: `mgrWhere(смена)` считает, где он сейчас,
+   из семени и номера смены. Маршрут — череда работ по несколько сотен смен, по
+   настоящим местам. Он работает, смотрите вы на него или нет, и он ПЕРЕЕЗЖАЕТ.
+   В этом вся трудность охоты: любая улика описывает, где он БЫЛ.
+
+   Каналов четыре, и все уже построены в игре (§24.4). Здесь заведены два, на
+   которых стоит настоящее умение:
+
+   · ПЕЛЕНГ (приёмник): направление ±15° и ни слова о расстоянии. Два пеленга,
+     взятых из двух далёких систем в пределах нескольких смен, пересекаются там,
+     где он сейчас. Это и есть план: лететь широко, слушать, лететь ещё шире,
+     слушать снова, провести крест по карте — и идти;
+   · СЛУХ (`11t`): область в три-пять систем и ВРЕМЯ — «месяц назад». Пятнадцать
+     процентов слухов просто неверны, а верный показывает его прошлое.
+
+   И ложные цели: в галактике есть дюжина обыкновенных, но известных смотрителей,
+   и слухи их путают постоянно. Убедиться по одному источнику нельзя — ровно для
+   этого в игре и есть правило двух источников. */
+const ONE_JOB=260;           /* столько смен он держится одной работы */
+const ONE_BEAR_ERR=15;       /* градусов вранья в пеленге */
+const FAME_N=12;             /* столько известных смотрителей путают со всеми */
+/* ── он сам ──
+   Один на галактику, и он всегда на самом верху кривой M405: без изъяна и с
+   чутьём, которого нет ни у кого из сотни. */
+function theOneId(){
+  if(G._oneId!==undefined)return G._oneId;
+  /* ищем по той же кривой, что и всех: он не исключение из неё, он её хвост */
+  let best=null,bq=0;
+  for(let i=0;i<4000;i++){
+    const M=bmgrOf(hashi(i,0x0DEAD,0x0BA5E));
+    if(M.flaw)continue;
+    if(M.q>bq){bq=M.q;best=M.id;}
+  }
+  return G._oneId=(best===null?hashi(1,0x0DEAD,0x0BA5E):best);
+}
+function theOne(){const M=bmgrOf(theOneId());M.real=1;return M;}
+/* ── где он сейчас (§24.2) ──
+   Череда работ; каждая — настоящая система с настоящей станцией. Ничего не
+   хранится: тот же ответ у всех и на любую смену. */
+function mgrJobAt(n){
+  return Math.floor((n||0)/ONE_JOB);
+}
+function mgrWhere(n){
+  if(n===undefined)n=(typeof baseShift==="function")?baseShift():0;
+  const job=mgrJobAt(n);
+  const r=rng(hashi(job,theOneId(),0x0C0FFEE|0));
+  /* место ищем от центра круга наружу: первая же система со станцией */
+  for(let ring=1;ring<14;ring++){
+    const a=r()*TAU;
+    const sx=Math.round(Math.cos(a)*ring*2.6),sy=Math.round(Math.sin(a)*ring*2.6);
+    if(typeof starAt!=="function"||!starAt(sx,sy))continue;
+    const sys=(typeof getSystem==="function")?getSystem(sx,sy):null;
+    if(!sys||!sys.station)continue;
+    return {sx,sy,job,since:job*ONE_JOB,kind:"станция"};
+  }
+  return {sx:0,sy:0,job,since:job*ONE_JOB,kind:"станция"};
+}
+function mgrHereNow(sx,sy,n){
+  const W=mgrWhere(n);
+  return (W.sx===(sx===undefined?G.sx:sx)|0)&&(W.sy===(sy===undefined?G.sy:sy)|0);
+}
+/* ── пеленг (§24.4) ──
+   Направление и ничего больше. Врёт на ±15°, и это враньё — своё у каждой
+   системы и каждой смены: два пеленга из одной точки не уточняют ничего. */
+function mgrBearing(sx,sy,n){
+  sx=(sx===undefined)?G.sx:sx;sy=(sy===undefined)?G.sy:sy;
+  if(n===undefined)n=(typeof baseShift==="function")?baseShift():0;
+  const W=mgrWhere(n);
+  const dx=W.sx-(sx|0),dy=W.sy-(sy|0);
+  if(!dx&&!dy)return {deg:0,here:1,n};
+  const r=rng(hashi((sx|0)*71+(sy|0),n,0x0BEA5));
+  const err=(r()*2-1)*ONE_BEAR_ERR;
+  let deg=Math.atan2(dy,dx)*180/Math.PI+err;
+  deg=((deg%360)+360)%360;
+  return {deg:Math.round(deg),here:0,n};
+}
+/* строка пеленга: румб словами и ни одной цифры расстояния */
+const RUMB=["восток","северо-восток","север","северо-запад","запад","юго-запад","юг","юго-восток"];
+function mgrBearLine(sx,sy,n){
+  const b=mgrBearing(sx,sy,n);
+  if(b.here)return "…он здесь. Где-то в этой системе";
+  const i=Math.round(b.deg/45)%8;
+  return "…слышно слабо, но ровно: "+RUMB[i]+", румб "+b.deg+"°. Расстояния не разобрать";
+}
+/* ── ложные цели ──
+   Дюжина обыкновенных, но известных смотрителей. Слухи путают их с ним
+   постоянно, и отличить по одному источнику нельзя. */
+function fameOf(i){
+  const M=bmgrOf(hashi(i|0,0x0FA3E,0x11));
+  M.fame=1;
+  return M;
+}
+function fameWhere(i,n){
+  if(n===undefined)n=(typeof baseShift==="function")?baseShift():0;
+  const r=rng(hashi(i|0,mgrJobAt(n),0x0FA3E));
+  for(let ring=1;ring<14;ring++){
+    const a=r()*TAU;
+    const sx=Math.round(Math.cos(a)*ring*2.6),sy=Math.round(Math.sin(a)*ring*2.6);
+    if(typeof starAt!=="function"||!starAt(sx,sy))continue;
+    const sys=(typeof getSystem==="function")?getSystem(sx,sy):null;
+    if(!sys||!sys.station)continue;
+    return {sx,sy};
+  }
+  return {sx:0,sy:0};
+}
+/* ── слух о нём (§24.4) ──
+   Область и ВРЕМЯ. Верный слух показывает его ПРОШЛОЕ: работу, которую он уже
+   оставил. Пятнадцать процентов просто неверны — как и всякий слух в этой игре. */
+function mgrRumour(r){
+  r=r||rng(hashi(G.sx|0,G.sy|0,0x0D5EE));
+  const n=(typeof baseShift==="function")?baseShift():0;
+  const back=1+Math.floor(r()*3);                 /* про какую работу назад говорят */
+  const past=Math.max(0,n-back*ONE_JOB);
+  const fake=r()<.5;                              /* половина слухов — о ложной цели */
+  const wrong=r()<.15;
+  const W=fake?fameWhere(Math.floor(r()*FAME_N),past):mgrWhere(past);
+  let sx=W.sx+Math.round((r()-.5)*4),sy=W.sy+Math.round((r()-.5)*4);
+  if(wrong){sx=Math.round((r()-.5)*60);sy=Math.round((r()-.5)*60);}
+  const who=fake?fameOf(Math.floor(r()*FAME_N)):theOne();
+  const when=back===1?"с месяц назад":(back===2?"прошлой зимой":"давно, ещё до всего");
+  return {sx,sy,rad:3+Math.floor(r()*3),wrong,fake,
+    text:"«Был тут управляющий, "+who.call+". Взял базу и вытянул её из ничего. "+
+      "Говорят, "+when+" видели у сектора "+sx+":"+sy+"»"};
+}
+/* ── случайная встреча (§24.3) ──
+   Никакой отметки. Он просто стоит среди кандидатов, если он здесь. */
+function mgrCandidatesHere(sys){
+  const L=(typeof bmgrAt==="function")?bmgrAt(sys):[];
+  if(!sys)return L;
+  if(mgrHereNow(sys.sx,sys.sy))L.unshift(theOne());
+  return L;
+}
+
+/* ══════════════ он строит и развивает (M407, DESIGN-base §24.6, §37) ══════════════
+   Наёмный смотритель не даёт базе простаивать. НАСТОЯЩИЙ её развивает — сам,
+   каждую смену, из вашего кармана и не спрашивая.
+
+   И вот в чём ловушка, ради которой вся веха: СТРОЯТ ВСЕ. Строят и плохие, и
+   сносные, и настоящий. Разница не в том, строит ли он, а в том, ЧТО он ставит:
+   радиатор на вулкане раньше второго бура; электролизёр раньше третьего склада;
+   нижний ярус — только когда порода и тепло это оправдывают. Хороший читает
+   формуляр планеты (M400), плохой — шаблон у себя в голове, и это читается не
+   как ошибка, а как база, которая сорок смен тихо не такая.
+
+   Отсюда и три оставшихся изъяна M405, которым нужно было именно это:
+   «строит не то» ставит по своему шаблону, «боится глубины» никогда не вскроет
+   нижний ряд, «паникует» после аврала изводит полсклада на царапину.
+
+   Планету он по-прежнему не выбирает, баз не закладывает и от безнадёжного
+   камня откажется (§24.7): разведка и расширение остаются игроку. */
+const DEV_EVERY=6;           /* раз в столько смен он делает один ход */
+const DEV_KEEP=1500;         /* меньше этого на счету он не тратит */
+/* ── что он поставит следующим ──
+   Чтение формуляра: сперва то, чего не хватает жизни, потом то, что мешает
+   планета, и только потом добыча. Плохой берёт тот же список задом наперёд. */
+function devWant(B,M){
+  const P=basePower(B),D=(typeof baseDialOf==="function")?baseDialOf(B):null;
+  const has=k=>{for(const c of (B.cells||[]))if(c&&c.hp>0&&c.k===k)return true;return false;};
+  const cnt=k=>{let n=0;for(const c of (B.cells||[]))if(c&&c.hp>0&&c.k===k)n++;return n;};
+  const good=[];
+  /* 1. энергия: без неё всё остальное — половина */
+  if(P.prod<=0||P.eff<.75)good.push("reactor");
+  /* 2. жизнь: воздух, вода, харч — в этом порядке */
+  if(!has("lyse"))good.push("lyse");
+  if(!has("melter"))good.push("melter");
+  if(!has("garden")&&!has("vat"))good.push("garden");
+  if(!has("habitat"))good.push("habitat");
+  /* 3. то, чем эта планета бьёт (M400) */
+  if(D&&D.heat>=1&&!has("radiator"))good.unshift("radiator");
+  if(D&&D.heat<=-1&&cnt("reactor")<2)good.unshift("reactor");
+  if(D&&D.press>=1.4&&!has("seal"))good.push("seal");
+  if(D&&D.wind>=1.4&&!has("shop"))good.push("shop");
+  /* 4. и только теперь добыча и передел */
+  if(cnt("drill")<2)good.push("drill");
+  if(!has("storage"))good.push("storage");
+  if(!has("refinery"))good.push("refinery");
+  if(!has("mast"))good.push("mast");
+  /* плохой строит тот же список задом наперёд: склад там, где нужен радиатор */
+  const F=(typeof bmgrFlawOn==="function")?bmgrFlawOn(B):null;
+  if(F&&F.id==="wrong")return good.slice().reverse();
+  return good;
+}
+/* куда поставить: наверх — то, что смотрит в небо, вниз — остальное */
+function devSpot(B,k,M){
+  const surf=!!(BUILD[k]&&BUILD[k].surfaceOnly);
+  const F=(typeof bmgrFlawOn==="function")?bmgrFlawOn(B):null;
+  const deepOk=!(F&&F.id==="deep");
+  const rows=baseRows(B);
+  for(let r=surf?0:0;r<rows;r++){
+    if(surf&&r>0)break;
+    /* «боится глубины» (M405): нижний ярус для него не существует */
+    if(!deepOk&&r>=rows-1)continue;
+    for(let c=0;c<BASE_COLS;c++)if(!baseCell(B,c,r))return {c,r};
+  }
+  return null;
+}
+/* ── один ход развития ── */
+function devStep(B,n){
+  const M=(typeof bmgrOfBase==="function")?bmgrOfBase(B):null;
+  if(!M||(n%DEV_EVERY))return 0;
+  if(typeof baseIsRuin==="function"&&baseIsRuin(B))return 0;
+  /* паникует (M405): после аврала он изводит полсклада на царапину */
+  const F=(typeof bmgrFlawOn==="function")?bmgrFlawOn(B):null;
+  if(F&&F.id==="panic"&&B.fire){
+    let lost=0;
+    for(const k in (B.pool||{})){
+      const q=B.pool[k]|0;if(q<4)continue;
+      const t=Math.ceil(q/2);B.pool[k]=q-t;lost+=t;
+    }
+    if(lost){baseLog(B,"panic",n,{q:lost});return 1;}
+  }
+  /* сперва чинит разбитое: развивать поверх сломанного — это не развитие */
+  for(let r=0;r<baseRows(B);r++)for(let c=0;c<BASE_COLS;c++){
+    const cell=baseCell(B,c,r);
+    if(!cell||cell.hp>0)continue;
+    const fc=(typeof baseFixCost==="function")?baseFixCost(B,cell.k):{credits:400,alloy:1};
+    if(G.credits-fc.credits<DEV_KEEP)return 0;
+    if((G.cargo.alloy|0)<(fc.alloy|0))return 0;
+    G.credits-=fc.credits;G.cargo.alloy-=(fc.alloy|0);
+    cell.hp=1;
+    baseLog(B,"devfix",n,{what:BUILD[cell.k].ru,who:M.name});
+    return 1;
+  }
+  /* потом ставит следующее — по формуляру или по своему шаблону */
+  const want=devWant(B,M);
+  for(const k of want){
+    const spot=devSpot(B,k,M);
+    if(!spot)continue;
+    const cost=baseCost(k,B);
+    if(G.credits-cost.credits<DEV_KEEP)return 0;
+    if(cost.alloy&&(G.cargo.alloy|0)<cost.alloy)continue;
+    G.credits-=cost.credits;if(cost.alloy)G.cargo.alloy-=cost.alloy;
+    baseSet(B,spot.c,spot.r,{k,hp:1});
+    baseLog(B,"dev",n,{what:BUILD[k].ru,who:M.name});
+    return 1;
+  }
+  /* и отказывается расти дальше того, что планета держит: это тоже ход */
+  return 0;
+}
+/* ── он снабжает себя (§37) ──
+   Заказывает лёд и харч в свой запас, пока на счету есть деньги. Настоящий
+   делает это раньше, чем запас кончится; плохой — когда уже поздно. */
+const DEV_ICE=40, DEV_FOOD=40, DEV_BUY=9;
+function devSupply(B,n){
+  const M=(typeof bmgrOfBase==="function")?bmgrOfBase(B):null;
+  if(!M)return 0;
+  const L=baseLife(B),need=baseLifeNeed(B);
+  const soon=M.q>=.6?8:3;                    /* хороший смотрит вперёд дальше */
+  const low=(L.air<need.air*soon)||(L.water<need.water*soon)||((L.food|0)<need.food*soon);
+  if(!low)return 0;
+  const cost=DEV_BUY*(DEV_ICE+DEV_FOOD)/10|0;
+  if(G.credits-cost<DEV_KEEP)return 0;
+  G.credits-=cost;
+  B.pool.ice=(B.pool.ice|0)+DEV_ICE;
+  L.food=Math.min(LIFE_CAP,(L.food|0)+DEV_FOOD);
+  if(L.q!=="good"&&M.q>=.6)L.q="good";
+  baseLog(B,"devbuy",n,{who:M.name});
+  return 1;
 }
 
 /* ══════════════ приметы места: формы ══════════════
@@ -72944,6 +73849,7 @@ function renderBasesTab(st){
       /* жизнеобеспечение (M391): встала база или дышит — первое, что надо
          знать о ней со стола, потому что это единственное, что нельзя
          отложить до следующего прилёта */
+      if(typeof baseIsRuin==="function"&&baseIsRuin(B))warn.push(baseRuinLine(B));
       if(B.fire)warn.push("ГОРИТ — тушат тем, что есть");
       if(typeof baseDusty==="function"&&baseDusty(B))warn.push("занос: бур стоит");
       if(typeof baseParked==="function"&&baseParked(B))
@@ -72972,6 +73878,9 @@ function renderBasesTab(st){
          что с базой не так. Строка пишется даже когда всё хорошо */
       if(typeof baseWhy==="function")
         r.firstChild.innerHTML+="<s>почему: "+baseWhy(B)+"</s>";
+      /* плата (M403): что эта база делает такого, чего не купить нигде */
+      if(typeof basePayLine==="function"&&basePayLine(B))
+        r.firstChild.innerHTML+="<s><b style='color:#7fe6d8'>"+basePayLine(B)+"</b></s>";
       /* гость у затвора (M395): его берут или ему отказывают, и то и другое —
          решение игрока, а не строка в журнале */
       if(B.guest)r.firstChild.innerHTML+="<s><b style='color:#e8c46a'>у затвора ждёт "+
@@ -72994,6 +73903,22 @@ function renderBasesTab(st){
         const bn=el("button","act","ОТКАЗАТЬ");
         bn.onclick=()=>{baseGuestDrop(B);renderTab();};
         r.appendChild(bn);
+      }
+      if(typeof baseIsRuin==="function"&&baseIsRuin(B)){
+        const b=el("button","act gold",baseRuinClearable(B)?"СНЯТЬ ЗАСТАВУ":
+          (baseRuinPrice(B)?"ВЫКУПИТЬ":"ВЕРНУТЬ"));
+        b.title="из аккаунта ничего не удаляется: база возвращается всегда";
+        b.onclick=()=>{baseRuinTake(B);renderTab();};
+        r.appendChild(b);
+      }
+      /* управляющий (M405, §34): один на базу, и он не улучшение, а человек */
+      if(typeof bmgrLineOf==="function"&&bmgrLineOf(B))
+        r.firstChild.innerHTML+="<s><b style='color:#e8c46a'>"+bmgrLineOf(B)+"</b></s>";
+      if(typeof bmgrOfBase==="function"&&bmgrOfBase(B)){
+        const b=el("button","act","РАСТОРГНУТЬ");
+        b.title="выходное пособие "+(bmgrOfBase(B).pay*BMGR_SEV)+" кр";
+        b.onclick=()=>{bmgrFire(B);renderTab();};
+        r.appendChild(b);
       }
       /* устав (M399, §9): четыре закона, каждый навсегда, и берут их здесь —
          там же, где смотрят на базу целиком */
@@ -73035,6 +73960,28 @@ function renderBasesTab(st){
         r.appendChild(b);
       }
       $body.appendChild(r);
+    }
+    /* ── собеседование (M405, §35) ──
+       Кандидаты стоят у прилавка этой станции и говорят. Единственная зацепка
+       — в словах: настоящий спрашивает о МЕСТЕ раньше, чем отвечает о себе. */
+    if(typeof bmgrAt==="function"&&G.sys&&G.sys.station&&list.length){
+      /* охота (M406, §24.3): если он сегодня здесь — он просто стоит среди
+         прочих, ничем не отмеченный. Ни маркера, ни подсказки */
+      const cand=(typeof mgrCandidatesHere==="function")?mgrCandidatesHere(G.sys):bmgrAt(G.sys);
+      $body.appendChild(el("div","sec","УПРАВЛЯЮЩИЕ · ГОВОРЯТ ВСЕ, УМЕЮТ РАЗНОЕ"));
+      for(const M of cand){
+        const row=el("div","row");
+        row.appendChild(el("div","nm","<b>"+M.name+" · "+M.call+"</b><s>"+bmgrLine(M)+
+          "<br>жалованье "+M.pay+" кр в смену · доля "+Math.round(M.greed*100)+"%</s>"));
+        for(const B of list){
+          if(B.mgr)continue;
+          const b=el("button","act sm",B.name.toUpperCase().slice(0,12));
+          b.title="поставить его на эту базу";
+          b.onclick=()=>{bmgrHire(B,M);renderTab();};
+          row.appendChild(b);
+        }
+        $body.appendChild(row);
+      }
     }
 }
 

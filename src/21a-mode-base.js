@@ -478,6 +478,34 @@ function updateBase(dt){
         (who.length?who.map(c=>c.name).join(", "):"никого")+" · ЦЕЛЬ — КТО ЗДЕСЬ":"")+
       (B.guest?"\nУ ЗАТВОРА ЖДЁТ "+B.guest.name.toUpperCase()+" · ПРОСИТСЯ ОСТАТЬСЯ":"")+
       (basePoolHeld(B)>0?"\nДЕЙСТВИЕ — ЗАБРАТЬ НАКОПЛЕННОЕ":"");
+    /* починка от нуля (M402, §39): разбитый отсек не потерян — он стоит
+       четверть постройки и ждёт. Забирать в такой ячейке нечего */
+    if(cell.hp<=0&&typeof baseFixCost==="function"){
+      const fc=baseFixCost(B,cell.k);
+      G.prompt=head+"\n"+M.ru.toUpperCase()+" · РАЗБИТ"+
+        "\nДЕЙСТВИЕ — ВОССТАНОВИТЬ · "+fc.credits+" кр"+(fc.alloy?" + "+fc.alloy+" спл":"");
+      if(actEdge)baseFixCell(B,S.cur,S.row);
+      return;
+    }
+    /* прилавок базы (M403, §43): у ледоплавки и электролизёра можно залить
+       баки своим льдом, у мастерской — починить корпус своими сплавами. В
+       блокаду это единственное снабжение, которым игрок распоряжается сам */
+    if(cell.k==="melter"||cell.k==="lyse"){
+      G.prompt=head+"\n"+M.ru.toUpperCase()+" · ЦЕЛЬ — ЗАЛИТЬ БАКИ СВОИМ ЛЬДОМ"+
+        (typeof basePayLine==="function"&&basePayLine(B)?"\n"+basePayLine(B):"");
+      if(keys.lock&&!S.lockHeld){S.lockHeld=1;baseRefuel(B);}
+      if(!keys.lock)S.lockHeld=0;
+      if(actEdge&&basePoolHeld(B)>0)baseCollect(B);
+      return;
+    }
+    if(cell.k==="shop"){
+      G.prompt=head+"\n"+M.ru.toUpperCase()+" · ЦЕЛЬ — ПОЧИНИТЬ КОРПУС СВОИМИ СПЛАВАМИ"+
+        (typeof basePayLine==="function"&&basePayLine(B)?"\n"+basePayLine(B):"");
+      if(keys.lock&&!S.lockHeld){S.lockHeld=1;baseRepairShip(B);}
+      if(!keys.lock)S.lockHeld=0;
+      if(actEdge&&basePoolHeld(B)>0)baseCollect(B);
+      return;
+    }
     if(actEdge&&basePoolHeld(B)>0)baseCollect(B);
     if(role&&keys.lock&&!S.lockHeld){S.pmenu=true;S.ppick=0;S.lockHeld=1;}
     if(!keys.lock)S.lockHeld=0;

@@ -7,6 +7,162 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.407.0 - M407: he builds and develops, and that is where the trap is
+
+A hired keeper stops a base idling. The real one **develops** it — every few shifts, out of your
+account, without asking: he repairs what is broken before he builds anything new, puts up what the
+planet's formulary demands (a радиатор on a hot world **before** a second drill, a second reactor
+on a cold one), orders ice and food before the stores run out rather than after, and refuses to
+grow past what the place can hold.
+
+And here is the trap the whole hunt exists for: **everybody builds.** The bad ones build too, with
+the same money, on the same schedule. The difference is only in *what* goes up — the bad one works
+down the same list from the wrong end, so the third склад stands where the радиатор had to be, and
+it is built, and it is paid for. It does not read as an error. It reads as a base that is quietly
+wrong for forty shifts.
+
+The three flaws that needed building now exist: **строит не то** (the list, reversed), **боится
+глубины** (the lower row simply does not exist for him — the best ore is never touched), and
+**паникует** (perfect until the first fire, then half the store goes on a scratch). With M405's
+three, all six of §34.1 are wired.
+
+Found here: `baseLifeNeed` returned air and water and no **food**, so anything asking for
+`need.food` compared against `undefined` and silently did nothing. The supply routine did exactly
+that, and the suite caught it on the first run.
+
+---
+## 0.406.0 - M406: the hunt — he does not advertise, and he moves
+
+The hundred stand at counters selling themselves. **The real one does not.** He is working
+somewhere, and a player who only ever interviews at counters will meet the best of the fakes and
+nobody else — which is the trap the whole layer is built around.
+
+He is a **function of time**, not a record: where he is at any shift is computed from the seed and
+the shift number. His route is a chain of jobs a few hundred shifts long each, always at a real
+station, and he works whether you are looking or not. That is the whole difficulty of the hunt:
+every piece of evidence describes where he **was**.
+
+Two channels carry it, and both were already in the game:
+
+- **Пеленг** on the receiver: a direction and **not one word about distance**, wrong by up to
+  fifteen degrees, and the error is its own in every system and every shift — two bearings from the
+  same spot refine nothing. Two bearings from two distant systems, taken within a few shifts of each
+  other, cross where he is now. That is a real plan: fly wide, listen, fly wider, listen again, draw
+  the cross, go.
+- **Слух** in the ordinary rumour feed: a region of three to five systems and a **time** — «с месяц
+  назад», «прошлой зимой». Half of them are about one of the dozen ordinary-but-famous смотрители
+  the galaxy also holds, fifteen percent are simply wrong, and a true one points at a job he has
+  already left.
+
+And the accident stands, ungated: **if you walk into the station where he happens to be, he is
+standing among the candidates** with the same kind of line as everybody else. Nothing marks him.
+The only tell is the one M405 built: he asks about the place before he answers about himself.
+
+---
+## 0.405.0 - M405: a hundred управляющих, and one
+
+The whole layer demands the player's attention, and there is exactly one way to buy it back: a
+**person**, not an upgrade. About a hundred of them exist in a galaxy; all of them call themselves
+управляющий, all have a call-sign and references, all are hireable. One is real.
+
+They are not three buckets but a **curve** (§48): every candidate is a roll, and «плохой ·
+сносный · настоящий» are places on it. `q = .12 + .78·r()^2.6` is the whole design in one
+expression — the mass sits at the bottom, the tail is thin, and there is no visible ceiling.
+Measured over four thousand rolls: 56 % below a third of the potential, 3 % above .85, a real middle
+that makes hiring a decent man a permanent and viable strategy, and a flaw on about two thirds.
+
+**The interview has one tell, and it is the only one in the game:** the real one asks about the
+place before he answers about himself — what is the heat, is there ice, what does the charter say.
+The fakes flatter and agree to everything. Some of the fakes have learned to imitate a question, so
+it is a strong signal and never a proof — the suite pins exactly that: every perceptive candidate
+asks, most fakes flatter, and a few fakes ask anyway.
+
+A hired man is charged **per shift** in wages and takes his **share** of what the base earns, and
+his flaw surfaces only after his own срок of shifts under load. Три of the six are wired here:
+**тащит** (the store never matches the drill, by a few percent, forever), **пишет красиво** (the
+report from a distance is excellent and the base is not — fly there and see for yourself), and
+**молчит** (the journal simply stops). And a bad manager is deliberately **worse than none**: he
+pulls his fraction of the base's potential, and most fractions are small.
+
+Not paying him ends it his way: he leaves. Ending it yours costs six shifts of severance, and the
+ПАЛАТА will want a form about it too.
+
+---
+## 0.404.0 - M404: the craft pass over the base, and Almanac issue V
+
+Fourteen passes of mechanics went into the base and not one of them was drawn: shifts, stores,
+heat, the formulary, adjacency, halls, the director, the аврал, the charter, ruins and the unique
+output all lived in the prompt line and the desk row. A layer whose whole point is a cross-section
+was being read instead of looked at.
+
+**Four gauges in the room** — воздух, вода, харч, дух — as bars, in screen space at the left edge.
+Their position took three attempts, and both failures were the same one: put in world space they
+were sliced by the frame edge when the camera followed the captain into the shaft, and buried under
+the prompt when moved below the grid. They are interface, not an object in the rock.
+
+**The nine adjacency rules are drawn**: a short pipe between two cells that give each other
+something, in the colour of what passes along it, and a dashed diagonal between two that harm each
+other. The plan of a base stops being a list of modules and becomes a diagram.
+
+**A hall is one room.** M396 merged three identical modules into a зал and the drawing kept putting
+a bulkhead between them; the inner walls are gone now, exactly as §7 wrote it, and the outer wall
+stays thick so the row still reads as a череда помещений.
+
+**And the heat scale is two-sided in the frame**: a blue cast and frost along every upper edge below
+the calm band, a warm haze rising from the floor above it. You know which it is before reading a
+word.
+
+Almanac issue V holds all of it against the craft codex, and the frame ledger for «база» is
+unchanged and still green — which is the honest reading of what was added: accents and interface,
+not new mass.
+
+---
+## 0.403.0 - M403: what a solved base pays, and the blockade it carries you through
+
+The rule the whole layer is charging for: **a good base does not print credits — it makes what
+cannot be bought.** This economy has already been burned once by the other shape (the солнечная
+ферма of M240, where money made money with no attention and no ceiling), so the payoff is built to
+that rule and checked against it by the suite.
+
+A **solved** base makes something nobody stocks: техкомпоненты from a volcanic base drilled deep
+with a smelter, гидразин from a toxic world's laboratory, криоген where the cold is already
+outside, карбид where a heavy world lets the drill reach. One unit every four shifts each — a
+handful in a day, a batch in a week. Not income: **supply**.
+
+Here the design contradicted itself and the suite caught it. §23.1 names иридий and ксенобиом, and
+both have a **price** in `RES` — any counter buys them. A base making those would print credits,
+which is precisely what §23's first line forbids. So the list is built from what genuinely has
+`price:0`, and every row is asserted to have it.
+
+**Блокада (§43).** When the war layer closes a system there is no fuel, no repairs, and the nearest
+open station is four jumps the wrong way. A base is then the only supply the player controls: at
+the ледоплавка or электролизёр you fill the tanks with your own ice (ЦЕЛЬ, two fuel per unit), and
+at the мастерская you repair the hull with your own alloy. Both cost the base's stores — the point
+is not that it is free, but that it is **yours**. A player with a working base flies through a war;
+a player without one is grounded and watches, which in this game is the worse fate.
+
+---
+## 0.402.0 - M402: a base can be lost, and can always be got back
+
+Losing a base has to hurt. Losing it **forever** must be impossible — that is §39, and it is
+stronger than any drama: nothing is ever deleted from the account, and there is no state from which
+a base cannot be restarted.
+
+A base that has genuinely been abandoned — no people, no stores, a full day in that condition —
+becomes a **развалина**: what you built stands there broken, and the journal says so. That takes
+neglect, not absence: a base you simply flew away from parks itself and waits (§13), and a base
+with a single person on it never gets there at all.
+
+After a few shifts somebody moves in — **поселенцы** or a **пиратская застава**, the odds set by
+how dangerous the sector is. The outpost is the war layer's target built out of your own walls.
+
+And you can always come back. An empty ruin costs nothing. Settlers move out for 2 200. The outpost
+leaves for 6 500 — **or for nothing at all** if you fly in and clear every pirate in the system,
+which is not a new scene but the war that is already in the game. Then the compartments are
+repaired from zero at a quarter of the build cost, one at a time, and none of them was ever lost.
+
+What a loss actually costs is time, money, the people who left, and the story of having lost it.
+That is enough.
 ## 0.401.3 - M411: the war on the site
 
 The author (2026-09-07): «надо на сайте сделать карту, чё там у них происходит, прям онлайн,

@@ -1584,12 +1584,54 @@ distance from the calm band and retuned after the first cut turned it from a law
 5: crew traits derived from the seed with a condition each. Plus the guard — `baseWhy` on the desk
 row, always, naming the cause in the vocabulary the player has. **Deferred:** «не ладит с конкретным
 человеком» (it needs a pair, and pairs need a list the player can read) and instrument wear feeding
-back into the reading — today one working приёмник is enough. · M402 развалина и
-возврат (§22.1, §39) · M403 плата и блокада (§23, §42, §43) · M404 ремесленный проход по всей
-сцене (`DESIGN-craft`, `look()`, its own almanac issue).
+back into the reading — today one working приёмник is enough. · ~~M402 развалина и
+возврат~~ — 0.402.0 (2026-09-06): `21b0-base-ruin` — a base with no crew and empty stores for a full
+day becomes a ruin with every cell at `hp:0`; a tenant moves in after twelve shifts, squatter or
+pirate outpost by sector danger; recovery is always available — free when empty, 2 200 from
+settlers, 6 500 from the outpost **or nothing if you clear the system yourself** (the existing war,
+not a new scene); repair from zero costs a quarter of the build price per cell. Nothing is deleted
+from the save in any state, and the suite checks that too. **Deferred:** the ПАЛАТА's seizure and
+its auction (§40 — that is M408's tone pass), and the ruin as a rumour the world retells. · ~~M403 плата и блокада~~ — 0.403.0 (2026-09-06): `21b1-base-pay` — the unique output of a solved
+base (техкомпоненты · гидразин · криоген · карбид), one unit each per four shifts, gated on world,
+depth and the module that does the work; and the base as its owner's counter — ice into the tanks at
+two per unit, alloy into the hull through the мастерская, both out of the base's own stores.
+**Found here:** §23.1 names иридий and ксенобиом as the unique output, and both have a price in
+`RES` — a base making them would print credits, which §23's own first line forbids. The list is now
+built from `price:0` goods and the suite asserts the price of every row. **Deferred:** the
+blockade's own gate — the counter works whenever you are at your base, and the blockade is what
+makes it matter rather than what unlocks it. · ~~M404 ремесленный проход по всей
+сцене~~ — 0.404.0 (2026-09-07): the four gauges as bars in screen space (three attempts: the shaft
+edge cut them, the prompt buried them), the nine adjacency rules drawn as pipes and hazard stripes,
+halls without inner walls as §7 wrote it, frost and heat haze for the two-sided scale, and Almanac
+**issue V** holding it against the codex. The `91zzzzy-look` ledger for «база» is unchanged and
+green — accents and interface, not new mass. **Deferred:** day-for-night in the cut (§15's lever
+this scene has never pulled) and the ruin's own look. **Stage C is closed** (M400–M404).
 
-**D · человек** — M405 сотня и распределение (§34, §35, §48) · M406 охота (§24.4, §35.1) ·
-M407 он строит и развивает (§24.6, §37).
+**D · человек** — ~~M405 сотня и распределение~~ — 0.405.0 (2026-09-07): `21b2-base-mgr` — the roll
+of §48.1 exactly as written (q, жад, плата, изъян, срок, маска, чутьё), candidates standing at each
+station's counter and stable there, the interview with its single tell (perceptive candidates ask
+about the place; high-mask fakes sometimes imitate it), refusal of a hopeless rock, wages and share
+per shift, and three of the six flaws wired — тащит, пишет красиво (the remote report lies, the
+place does not), молчит. **Measured** over 4 000 rolls: 56 % below .35, 3 % above .85, flaw on 62 %.
+**Deferred:** the other three flaws (строит не то · паникует · боится глубины) — they all need him
+to *build*, which is M407; and the real one himself, who by §35.1 never stands at a counter — that
+is M406's hunt. · ~~M406 охота~~ — 0.406.0 (2026-09-07): `21b3-base-hunt` — `theOne()` is the tail of M405's own
+curve rather than an exception to it; `mgrWhere(n)` is a chain of `ONE_JOB`-long jobs at real
+stations, computed and never stored; the bearing gives direction ±15° and no distance, with the
+error keyed to system **and** shift so two readings from one spot refine nothing; the rumour carries
+a region and a time, half of them about one of twelve famous смотрители and 15 % simply wrong; and
+the ungated accident — he stands among the candidates of whatever station he is working at, marked
+by nothing. Suites in `91zzzw-base`. **Deferred:** the flea-market provenance and the wall/retelling
+channels of §24.4 (two channels are enough for triangulation to be a real skill), and §24.5's rivals
+taking him on an NPC contract. ·
+~~M407 он строит и развивает~~ — 0.407.0 (2026-09-07): `21b4-base-build` — one move every six
+shifts out of the player's account, repairs first, then the next module chosen by the planet's
+formulary (радиатор before a second drill where it is hot, a second reactor where it is cold), a
+reserve of 1 500 credits he never spends past, and self-provisioning that a good man does early and
+a bad one does late. The three flaws that needed building are wired — строит не то (the same list
+reversed), боится глубины (the lower row does not exist for him), паникует — so all six of §34.1
+now exist. **Found here:** `baseLifeNeed` had no `food` field, so every `need.food` comparison was
+against `undefined` and silently false. **Stage D is closed** (M405–M407).
 
 **E · дело и мир** — M408 ПАЛАТА и станция платит, тон на максимум (§28–§32, §40) ·
 M409 опорный пункт экспедиции (§44).

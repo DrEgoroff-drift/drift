@@ -65,6 +65,16 @@ const BLOG={
   deep:    ()=>"смотритель вскрыл нижний ярус",
   wear:    (B,a)=>"жара доконала: "+a.what,
   worn:    (B,a)=>a.what+" отработал своё. Ничто не доделано навсегда",
+  ruin:    ()=>"базу бросили. Людей нет, запаса нет, свет погашен",
+  tenant:  (B,a)=>"в развалину въехали: "+a.who,
+  back:    ()=>"база снова наша. Чинить придётся от нуля",
+  uniq:    (B,a)=>"со склада забрали, чего нигде не купить: "+a.what,
+  mgrgo:   (B,a)=>a.who+" ушёл: жалованье не заплачено",
+  short:   (B,a)=>"склад не сходится на "+a.q+" ед. Опять",
+  dev:     (B,a)=>a.who+" поставил "+a.what+". Не спросил",
+  devfix:  (B,a)=>a.who+" восстановил "+a.what,
+  devbuy:  (B,a)=>a.who+" заказал припас, пока не кончился",
+  panic:   (B,a)=>"на царапину извели "+a.q+" ед. со склада",
   warn:    (B,a)=>a.warn,
   law:     (B,a)=>"устав: принят закон «"+a.ru+"». Навсегда",
   thief:   (B,a)=>"со склада пропало "+a.q+" ед. Дверь была открыта",
@@ -96,6 +106,9 @@ const BLOG={
 function baseLog(B,kind,n,args){
   const f=BLOG[kind];
   if(!f)return;
+  /* «молчит» (M405, §34.1): управляющий не подаёт сводок вовсе, и журнал
+     базы замолкает — кроме тех строк, которые про него самого */
+  if(typeof bmgrSilent==="function"&&bmgrSilent(B)&&kind!=="mgrgo"&&kind!=="short")return;
   if(!B.log)B.log=[];
   const line={n:n|0,k:kind,t:f(B,args||{})};
   B.log.push(line);
@@ -141,6 +154,13 @@ function baseShiftRun(B,n){
          :((baseRaid(B,BASE_MIN,n)?1:0)|(baseStorm(B,BASE_MIN,n)?1:0));
     said|=baseEarn(B,P,BASE_MIN,n)?1:0;
     said|=baseMine(B,P,BASE_MIN,n)?1:0;
+    /* плата решённой базы (M403, §23.1): то, чего нигде не купить */
+    if(typeof baseUniqStep==="function")said|=baseUniqStep(B,n)?1:0;
+    /* управляющий (M405): жалованье, доля и изъян — после всего, что он вёл */
+    if(typeof bmgrStep==="function")said|=bmgrStep(B,n)?1:0;
+    /* и он же развивает базу (M407): строят все, правильно — один */
+    if(typeof devSupply==="function")said|=devSupply(B,n)?1:0;
+    if(typeof devStep==="function")said|=devStep(B,n)?1:0;
   }
   /* тихая смена тоже строка — но не каждая: журнал, в котором пусто, читается
      как поломка, а журнал из одних «тихо» вытесняет то, ради чего его открыли.
@@ -159,6 +179,7 @@ function baseEarn(B,P,min,n){
   if(cr<=0)return 0;
   earn(cr,"base");
   B.sold=(B.sold|0)+cr;
+  B._earned=(B._earned|0)+cr;      /* с этого управляющий возьмёт свою долю */
   if(B.sold>=400){
     logAdd("money","База «"+B.name+"» сдала излишки энергии · +"+B.sold.toLocaleString("ru")+" кр");
     baseLog(B,"grid",n,{cr:B.sold});
@@ -186,7 +207,10 @@ function baseMine(B,P,min,n){
   const world=(typeof dialOreMul==="function")?dialOreMul(B)*clamp(dialGrav(B),.8,1.4):1;
   /* закон 5 (M401): пьющий работает вполсилы смену через смену */
   const folk=(typeof baseDrinkMul==="function")?baseDrinkMul(B,n):1;
-  const want=min*P.drillEff*eff*crewBoost*heat*adj*vein*law*world*folk*1.1;
+  /* управляющий (M405): база выдаёт ту долю своего потенциала, какую он умеет
+     вытянуть. Плохой хуже, чем никакого, — так и задумано (§48.2) */
+  const mgr=(typeof bmgrWorkMul==="function")?bmgrWorkMul(B):1;
+  const want=min*P.drillEff*eff*crewBoost*heat*adj*vein*law*world*folk*mgr*1.1;
   let left=Math.min(want,Math.max(0,cap-held));
   const full=want>0&&left<want*.5;      /* склад забит: добыча стоит, и это строка */
   const r=rng(hashi(B.sx*7919+B.sy,B.idx,hashi(n,0x9111,0x2D)));
@@ -247,9 +271,13 @@ function baseLife(B){
 }
 function baseCrewN(B){return (typeof baseStaff==="function")?baseStaff(B).length:0;}
 function baseParked(B){return !!(B&&B.park);}
+/* нужда за смену. Харч тут же, третьим полем: без него всякий, кто спросит
+   `need.food`, получит `undefined` и сравнение с ним — тихую ложь (так и
+   вышло у снабжения M407, и набор это поймал) */
 function baseLifeNeed(B){
   const n=baseCrewN(B),d=baseParked(B)?LIFE_LOW:1;
-  return {air:Math.ceil(n*LIFE_AIR/d),water:Math.ceil(n*LIFE_WATER/d)};
+  return {air:Math.ceil(n*LIFE_AIR/d),water:Math.ceil(n*LIFE_WATER/d),
+          food:Math.ceil(n*LIFE_FOOD/d)};
 }
 /* сколько на базе живых машин жизнеобеспечения */
 function baseLifeMakers(B){
@@ -333,7 +361,7 @@ function baseLifeStep(B,P,n){
   }
   /* харч не останавливает базу: голод — это про дух, а не про механизмы.
      Голодная база работает и теряет людей, и это разные наказания */
-  const eat=Math.ceil(baseCrewN(B)*LIFE_FOOD/(baseParked(B)?LIFE_LOW:1));
+  const eat=baseLifeNeed(B).food;
   if(eat){
     const wasFed=(L.food|0)>0;
     L.food=Math.max(0,(L.food|0)-eat);
@@ -342,6 +370,9 @@ function baseLifeStep(B,P,n){
   said|=baseSpiritStep(B,n)?1:0;
   /* маяк зовёт (M395): раз в тридцать смен кто-то просится остаться */
   if(typeof baseGuestRoll==="function")said|=baseGuestRoll(B,n)?1:0;
+  /* развалина (M402, §39): брошенная по-настоящему база доходит до неё за
+     сутки — и с этого дня её можно вернуть, но нельзя потерять навсегда */
+  if(typeof baseRuinCheck==="function")said|=baseRuinCheck(B,n)?1:0;
   /* открытая дверь (M399): однажды пропадает треть склада */
   if(typeof charterThiefStep==="function")said|=charterThiefStep(B,n)?1:0;
   /* запас пришёл — база встаёт на ход сама, но смена уходит на разгон */
@@ -661,6 +692,13 @@ function baseSpiritStep(B,n){
 function baseResolve(B,now){
   if(!B)return 0;
   now=now||Date.now();
+  /* развалина (M402) не работает: в ней некому и нечем. Часы ей всё равно
+     двигаем — по ним считается, когда в неё въедут */
+  if(typeof baseIsRuin==="function"&&baseIsRuin(B)){
+    const nn=baseSince(B,now);
+    if(nn>0){B.t0=baseT0(B)+nn;B.tMs=now;if(typeof baseTenant==="function")baseTenant(B,B.t0);}
+    return 0;
+  }
   const n=baseSince(B,now);
   if(n<=0){baseT0(B);B.tMs=now;return 0;}
   const t0=baseT0(B);

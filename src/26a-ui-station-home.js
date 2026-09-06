@@ -161,6 +161,7 @@ function renderBasesTab(st){
       /* жизнеобеспечение (M391): встала база или дышит — первое, что надо
          знать о ней со стола, потому что это единственное, что нельзя
          отложить до следующего прилёта */
+      if(typeof baseIsRuin==="function"&&baseIsRuin(B))warn.push(baseRuinLine(B));
       if(B.fire)warn.push("ГОРИТ — тушат тем, что есть");
       if(typeof baseDusty==="function"&&baseDusty(B))warn.push("занос: бур стоит");
       if(typeof baseParked==="function"&&baseParked(B))
@@ -189,6 +190,9 @@ function renderBasesTab(st){
          что с базой не так. Строка пишется даже когда всё хорошо */
       if(typeof baseWhy==="function")
         r.firstChild.innerHTML+="<s>почему: "+baseWhy(B)+"</s>";
+      /* плата (M403): что эта база делает такого, чего не купить нигде */
+      if(typeof basePayLine==="function"&&basePayLine(B))
+        r.firstChild.innerHTML+="<s><b style='color:#7fe6d8'>"+basePayLine(B)+"</b></s>";
       /* гость у затвора (M395): его берут или ему отказывают, и то и другое —
          решение игрока, а не строка в журнале */
       if(B.guest)r.firstChild.innerHTML+="<s><b style='color:#e8c46a'>у затвора ждёт "+
@@ -211,6 +215,22 @@ function renderBasesTab(st){
         const bn=el("button","act","ОТКАЗАТЬ");
         bn.onclick=()=>{baseGuestDrop(B);renderTab();};
         r.appendChild(bn);
+      }
+      if(typeof baseIsRuin==="function"&&baseIsRuin(B)){
+        const b=el("button","act gold",baseRuinClearable(B)?"СНЯТЬ ЗАСТАВУ":
+          (baseRuinPrice(B)?"ВЫКУПИТЬ":"ВЕРНУТЬ"));
+        b.title="из аккаунта ничего не удаляется: база возвращается всегда";
+        b.onclick=()=>{baseRuinTake(B);renderTab();};
+        r.appendChild(b);
+      }
+      /* управляющий (M405, §34): один на базу, и он не улучшение, а человек */
+      if(typeof bmgrLineOf==="function"&&bmgrLineOf(B))
+        r.firstChild.innerHTML+="<s><b style='color:#e8c46a'>"+bmgrLineOf(B)+"</b></s>";
+      if(typeof bmgrOfBase==="function"&&bmgrOfBase(B)){
+        const b=el("button","act","РАСТОРГНУТЬ");
+        b.title="выходное пособие "+(bmgrOfBase(B).pay*BMGR_SEV)+" кр";
+        b.onclick=()=>{bmgrFire(B);renderTab();};
+        r.appendChild(b);
       }
       /* устав (M399, §9): четыре закона, каждый навсегда, и берут их здесь —
          там же, где смотрят на базу целиком */
@@ -252,5 +272,27 @@ function renderBasesTab(st){
         r.appendChild(b);
       }
       $body.appendChild(r);
+    }
+    /* ── собеседование (M405, §35) ──
+       Кандидаты стоят у прилавка этой станции и говорят. Единственная зацепка
+       — в словах: настоящий спрашивает о МЕСТЕ раньше, чем отвечает о себе. */
+    if(typeof bmgrAt==="function"&&G.sys&&G.sys.station&&list.length){
+      /* охота (M406, §24.3): если он сегодня здесь — он просто стоит среди
+         прочих, ничем не отмеченный. Ни маркера, ни подсказки */
+      const cand=(typeof mgrCandidatesHere==="function")?mgrCandidatesHere(G.sys):bmgrAt(G.sys);
+      $body.appendChild(el("div","sec","УПРАВЛЯЮЩИЕ · ГОВОРЯТ ВСЕ, УМЕЮТ РАЗНОЕ"));
+      for(const M of cand){
+        const row=el("div","row");
+        row.appendChild(el("div","nm","<b>"+M.name+" · "+M.call+"</b><s>"+bmgrLine(M)+
+          "<br>жалованье "+M.pay+" кр в смену · доля "+Math.round(M.greed*100)+"%</s>"));
+        for(const B of list){
+          if(B.mgr)continue;
+          const b=el("button","act sm",B.name.toUpperCase().slice(0,12));
+          b.title="поставить его на эту базу";
+          b.onclick=()=>{bmgrHire(B,M);renderTab();};
+          row.appendChild(b);
+        }
+        $body.appendChild(row);
+      }
     }
 }

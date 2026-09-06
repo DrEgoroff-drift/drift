@@ -242,6 +242,13 @@ function relayDial(box){
 }
 function renderRelays(box){
   box.textContent="";
+  /* пеленг на управляющего (M406, §24.4): направление и ни слова о расстоянии.
+     Два пеленга из двух далёких систем в пределах нескольких смен пересекаются
+     там, где он сейчас, — и это единственное настоящее умение в охоте */
+  if(typeof mgrBearLine==="function"&&typeof baseList==="function"&&baseList().length){
+    tableRow(box,"head","","ЧУЖОЙ ПОЗЫВНОЙ · ПЕЛЕНГ БЕЗ ДАЛЬНОСТИ");
+    tableRow(box,"","",mgrBearLine());
+  }
   /* свои базы (M394, §38): та же панель, тот же приёмник — потому что это и
      есть приёмник, а не второй экран про базы */
   if(typeof renderBaseLink==="function")renderBaseLink(box);

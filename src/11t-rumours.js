@@ -103,6 +103,16 @@ function rumoursHere(){
   /* «Сорока» (12v, M342): третий слух, пока борт стоит в шести прыжках — паруса
      трудно перепутать, поэтому разброс уже обычного, но 15 % всё так же врут */
   if(typeof wanderRumour==="function"){const wq=wanderRumour(r);if(wq)out.push(wq);}
+  /* управляющий (M406, §24.4): о нём говорят так же, как обо всём остальном —
+     областью и временем, и половина этих разговоров вообще о другом человеке */
+  if(typeof mgrRumour==="function"&&typeof baseList==="function"&&baseList().length&&r()<.35){
+    const mq=mgrRumour(r);
+    out.push({id:"mgr",sx:mq.sx,sy:mq.sy,rad:mq.rad,wrong:mq.wrong,
+      img:"управляющий",src:"за стойкой",det:"рассказывают охотно, помнят плохо",
+      where:"где-то у сектора "+mq.sx+":"+mq.sy,text:mq.text,
+      lines:["Управляющий",capRu("где-то у сектора "+mq.sx+":"+mq.sy),mq.text],
+      short:"управляющий — где-то у сектора "+mq.sx+":"+mq.sy});
+  }
   return out;
 }
 /* приёмник: изредка слух приходит строкой эфира */
