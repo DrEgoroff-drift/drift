@@ -21,8 +21,28 @@ function chronNeedLow(P){
   for(const q of ["goods","hulls","link"])if(P.need[q]<v){v=P.need[q];k=q;}
   return k;
 }
+/* с кем граничим: матрица 6×6 по клеткам круга, считается раз на сводку в
+   chronStep и лежит в `st._touch` (кэш, не состояние: в клон не входит).
+   Ссорятся и воюют с соседом — у войны без общей границы нет фронта, и до
+   M412 половина войн шла «через круг» и не двигала ни одной системы */
+function chronTouch(st){
+  const T=[];for(let i=0;i<6;i++){T.push([false,false,false,false,false,false]);}
+  for(const k of chronKeys()){
+    const S=st.systems[k];if(!S||S.owner<0)continue;
+    const p=k.split(","),x=p[0]|0,y=p[1]|0;
+    for(const d of [[1,0],[0,1]]){
+      const Q=st.systems[(x+d[0])+","+(y+d[1])];
+      if(!Q||Q.owner<0||Q.owner===S.owner)continue;
+      T[S.owner][Q.owner]=true;T[Q.owner][S.owner]=true;
+    }
+  }
+  return T;
+}
 function chronRelWorst(st,i){
+  const T=st._touch;
   let j=-1,v=1001;
+  for(let q=0;q<6;q++){if(q===i||(T&&!T[i][q]))continue;if(st.powers[i].rel[q]<v){v=st.powers[i].rel[q];j=q;}}
+  if(j>=0||!T)return j;
   for(let q=0;q<6;q++){if(q===i)continue;if(st.powers[i].rel[q]<v){v=st.powers[i].rel[q];j=q;}}
   return j;
 }
@@ -35,27 +55,61 @@ function chronAtWar(st,a,b){
   for(const w of st.wars)if((w.a===a&&w.b===b)||(w.a===b&&w.b===a))return w;
   return null;
 }
+/* любая война этой державы: §15 — одна война на державу, две на галактику */
+function chronWarOf(st,i){
+  for(const w of st.wars)if(w.a===i||w.b===i)return w;
+  return null;
+}
+function chronAtWarAny(st,i){return !!chronWarOf(st,i);}
+/* сколько систем j забрал у i за последние сутки — по строкам летописи, они
+   хронологичны, и старше суток дальше смотреть незачем */
+function chronGrudge(st,N,i,j){
+  if(j<0)return 0;
+  let n=0;
+  for(let q=st.lines.length-1;q>=0;q--){
+    const L=st.lines[q];
+    if(N-L.N>24)break;
+    if(L.kind==="take"&&L.p===j&&L.args&&L.args.from===i)n++;
+  }
+  return n;
+}
+const CHRON_NEED_KEYS=["ore","goods","hulls","link"];
 /* один ход одной державы */
 function chronAgentMove(st,N,i,rr){
   const P=st.powers[i];
   const roll=rr(i,0x9A)%1000;
-  const low=chronNeedLow(P);
   const want=CHRON_WANT[i];
-  /* нужды тают сами и пополняются тем, что держава держит: чем больше систем,
-     тем медленнее просадка. Это и есть «экономика» на данном проходе */
-  for(const k of ["ore","goods","hulls","link"]){
-    /* держава ест столько, сколько держит: расширение не бесплатно, иначе
-       большой ни в чём не нуждается и воевать ему незачем (замер 0.370.0:
-       при дешёвом расширении за триста сводок не случилось ни одной войны) */
-    const gain=(P.hold*(want[k]+1))/12|0;
-    P.need[k]=clampi(P.need[k]-20-(want[k]*6)+gain,0,1000);
+  /* ── нужды (M412) ──
+     Тают от того, чего держава хочет, и пополняются тем, что она держит.
+     Равновесие — у державы размером с дом (~53 системы): меньше дома — нужды
+     тают, и она идёт за ними; больше — копятся, и ей есть чем торговать.
+     Прежний закон «−20−want·6+hold·(want+1)/12» бил прибыль убылью всегда:
+     все шестеро сидели на нуле, ход был вечно «ссора/война», сделок не
+     случалось — 24 войны в месяц против 2–4 по §15 (замер 0.401.1,
+     docs/warsim.js). Дрожь ±6 от зерна — чтобы равновесие не было мёртвой
+     точкой, из которой нечему выйти. */
+  for(let q=0;q<4;q++){
+    const k=CHRON_NEED_KEYS[q];
+    const gain=(P.hold*(want[k]+1)*3/16)|0;
+    const use=16+want[k]*6;
+    const jit=(rr(i*4+q,0x7E)%13)-6;
+    P.need[k]=clampi(P.need[k]-use+gain+jit,0,1000);
   }
+  /* война ест: каждая её сводка стоит силы, товаров и корпусов — потому она и
+     кончается, и потому после неё есть о чём торговать */
+  if(chronAtWarAny(st,i)){
+    P.str=clampi(P.str-6,100,1000);
+    P.need.goods=clampi(P.need.goods-6,0,1000);
+    P.need.hulls=clampi(P.need.hulls-8,0,1000);
+  }
+  const low=chronNeedLow(P);
   /* отношения тянет к нулю: без этого через сотню сводок все дружат со всеми
      на тысячу и галактика застывает */
   for(let q=0;q<6;q++){
     if(q===i)continue;
     const v=P.rel[q];
-    P.rel[q]=v>0?v-((v/40|0)+1):(v<0?v+((-v/40|0)+1):0);
+    /* §15: пять процентов за сводку (было 2,5: пары примерзали к ±1000) */
+    P.rel[q]=v>0?v-((v/20|0)+1):(v<0?v+((-v/20|0)+1):0);
   }
   /* ── курс месяца (M378) ──
      Толпа не правит державой, но подталкивает её: победивший на выборах ответ
@@ -66,20 +120,50 @@ function chronAgentMove(st,N,i,rr){
   const course=(typeof powCourse==="function")?powCourse(i,N,st)
     :((typeof voteCourse==="function")?voteCourse(i,N):null);
   const warBias=(course==="war")?90:((course==="build")?-70:0);
-  /* выбор хода: злее всего тот, у кого нужда на дне и есть с кем ссориться */
+  /* ── выбор хода (M412) ──
+     Злее всего тот, у кого нужда на дне и есть с кем ссориться, — но за нуждой
+     держава сперва идёт ТОРГОВАТЬ (у кого отношения не испорчены), и только
+     потом ссориться. Прежний порядок «война, иначе ссора» не давал сделке
+     случиться никогда, пока нужда ниже 450, — и нужда не поднималась никогда.
+     §15: одна война на державу, две на галактику. */
   const worst=chronRelWorst(st,i),best=chronRelBest(st,i);
-  let move;
-  if(P.need[low]<250+warBias&&worst>=0&&P.rel[worst]<-150&&P.str>280)move="war";
-  else if(P.need[low]<450+warBias&&worst>=0)move="quarrel";
-  else if(chronAtWar(st,i,worst)&&(P.str<260||roll<120))move="truce";
-  else if(P.rel[best]>500&&roll<200)move="ally";
-  else if(roll<520-warBias)move="deal";
-  else move="build";
-  const j=(move==="ally")?best:worst;
+  const atWar=chronAtWarAny(st,i);
+  const scarce=P.need[low]<450+warBias,dire=P.need[low]<250+warBias;
+  /* обида: сколько систем худший забрал у нас за последние сутки. Это и есть
+     «спорная граница» §7.5 — повод для ссоры, а с ней и для войны в ответ */
+  const grudge=chronGrudge(st,N,i,worst);
+  /* ── вероятности ходов, в промилле (таблица §15) ──
+     В войне держава мирится тем охотнее, чем дольше воюет, а между делом
+     строит и торгует; вне войны — объявляет её, ссорится, торгует, дружит или
+     строит, и каждое с вероятностью, которую двигают нужда, обида, напряжение
+     и курс месяца. Розыгрыш один на ход, бросок один и тот же (`roll`) */
+  let move="build";
+  if(atWar){
+    const w=chronWarOf(st,i),age=N-w.t0;
+    if(P.str<300||roll<60+age*30)move="truce";
+    else move=(roll&1)?"build":"deal";
+  }else{
+    /* воюет тот, кто может: сила выше 450, владений не меньше половины дома
+       (карлик у пола §15 выживает, а не воюет), отношения с худшим ниже −200 */
+    const canWar=st.wars.length<2&&worst>=0&&!chronAtWarAny(st,worst)&&P.str>450&&
+      P.hold*20>=P.home*9&&P.rel[worst]<=-250;
+    const partnerOk=best>=0&&P.rel[best]>-50&&st.powers[best].need[low]>=550;   /* у партнёра излишек */
+    const pWar=canWar?(35+(dire?80:0)+grudge*60):0;
+    const pQuar=(worst>=0)?(20+(scarce?60:0)+(P.tension/40|0)+grudge*60+Math.max(0,warBias)):0;
+    const pDeal=(scarce&&partnerOk)?600:(partnerOk?150:40);
+    const pAlly=(best>=0&&P.rel[best]>350)?80:0;
+    let t=roll;
+    if((t-=pWar)<0)move="war";else if((t-=pQuar)<0)move="quarrel";else if((t-=pDeal)<0)move="deal";
+    else if((t-=pAlly)<0)move="ally";else move="build";
+  }
+  /* торгуют и дружат с лучшим; ссорятся и воюют с худшим */
+  const j=(move==="ally"||move==="deal")?best:worst;
   if(move==="deal"&&j>=0){
-    /* сделка: обе стороны получают то, чего им не хватает, и теплеют */
+    /* сделка: нужда закрывается тем, что у партнёра в избытке, и обе теплеют.
+       Излишек конечен: партнёр отдаёт, и у него становится меньше */
     P.need[low]=clampi(P.need[low]+50,0,1000);
     const Q=st.powers[j];
+    Q.need[low]=clampi(Q.need[low]-25,0,1000);
     Q.need[chronNeedLow(Q)]=clampi(Q.need[chronNeedLow(Q)]+35,0,1000);
     P.rel[j]=clampi(P.rel[j]+40,-1000,1000);Q.rel[i]=clampi(Q.rel[i]+40,-1000,1000);
     /* договорились — нота отозвана (M386): это единственный способ отменить
@@ -100,12 +184,15 @@ function chronAgentMove(st,N,i,rr){
     P.tension=clampi(P.tension+300,0,1000);
     chronLine(st,N,"war",i,null,{b:j});
   }else if(move==="truce"){
-    const w=chronAtWar(st,i,worst);
+    /* мирятся с тем, с кем воюют, — а не с тем, кто сейчас худший: за время
+       войны худшим успевает стать третий, и война шла бы до срока всегда */
+    const w=chronWarOf(st,i);
     if(w){
+      const e=(w.a===i)?w.b:w.a;
       st.wars.splice(st.wars.indexOf(w),1);
-      P.rel[worst]=clampi(P.rel[worst]+280,-1000,1000);
-      st.powers[worst].rel[i]=clampi(st.powers[worst].rel[i]+280,-1000,1000);
-      chronLine(st,N,"truce",i,null,{b:worst});
+      P.rel[e]=clampi(P.rel[e]+280,-1000,1000);
+      st.powers[e].rel[i]=clampi(st.powers[e].rel[i]+280,-1000,1000);
+      chronLine(st,N,"truce",i,null,{b:e});
     }
   }else if(move==="ally"&&j>=0){
     if(typeof chronUltDrop==="function")chronUltDrop(st,N,i,j);
@@ -168,7 +255,12 @@ function chronUltStep(st,N,rr){
       continue;
     }
     if(N-u.t0<DIP_ULT_DUE)continue;
+    /* §15: двух войн разом галактике хватает — нота ждёт своей очереди (M412) */
+    if(st.wars.length>=2)continue;
     st.ults.splice(q,1);
+    /* срок вышел — но воюют не от обиды, а от нужды: если у предъявившей
+       ноту нужда за это время выправилась, воевать ей больше незачем, и нота
+       гаснет сама. Это и есть «нота, на которую ответили» */
     /* срок вышел — но воюют не от обиды, а от нужды: если у предъявившей
        ноту нужда за это время выправилась, воевать ей больше незачем, и нота
        гаснет сама. Это и есть «нота, на которую ответили» */

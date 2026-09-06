@@ -1759,7 +1759,7 @@ body.table u.addr{color:#7a4a20}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.401.1";
+const VER="0.401.2";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -20224,8 +20224,28 @@ function chronNeedLow(P){
   for(const q of ["goods","hulls","link"])if(P.need[q]<v){v=P.need[q];k=q;}
   return k;
 }
+/* с кем граничим: матрица 6×6 по клеткам круга, считается раз на сводку в
+   chronStep и лежит в `st._touch` (кэш, не состояние: в клон не входит).
+   Ссорятся и воюют с соседом — у войны без общей границы нет фронта, и до
+   M412 половина войн шла «через круг» и не двигала ни одной системы */
+function chronTouch(st){
+  const T=[];for(let i=0;i<6;i++){T.push([false,false,false,false,false,false]);}
+  for(const k of chronKeys()){
+    const S=st.systems[k];if(!S||S.owner<0)continue;
+    const p=k.split(","),x=p[0]|0,y=p[1]|0;
+    for(const d of [[1,0],[0,1]]){
+      const Q=st.systems[(x+d[0])+","+(y+d[1])];
+      if(!Q||Q.owner<0||Q.owner===S.owner)continue;
+      T[S.owner][Q.owner]=true;T[Q.owner][S.owner]=true;
+    }
+  }
+  return T;
+}
 function chronRelWorst(st,i){
+  const T=st._touch;
   let j=-1,v=1001;
+  for(let q=0;q<6;q++){if(q===i||(T&&!T[i][q]))continue;if(st.powers[i].rel[q]<v){v=st.powers[i].rel[q];j=q;}}
+  if(j>=0||!T)return j;
   for(let q=0;q<6;q++){if(q===i)continue;if(st.powers[i].rel[q]<v){v=st.powers[i].rel[q];j=q;}}
   return j;
 }
@@ -20238,27 +20258,61 @@ function chronAtWar(st,a,b){
   for(const w of st.wars)if((w.a===a&&w.b===b)||(w.a===b&&w.b===a))return w;
   return null;
 }
+/* любая война этой державы: §15 — одна война на державу, две на галактику */
+function chronWarOf(st,i){
+  for(const w of st.wars)if(w.a===i||w.b===i)return w;
+  return null;
+}
+function chronAtWarAny(st,i){return !!chronWarOf(st,i);}
+/* сколько систем j забрал у i за последние сутки — по строкам летописи, они
+   хронологичны, и старше суток дальше смотреть незачем */
+function chronGrudge(st,N,i,j){
+  if(j<0)return 0;
+  let n=0;
+  for(let q=st.lines.length-1;q>=0;q--){
+    const L=st.lines[q];
+    if(N-L.N>24)break;
+    if(L.kind==="take"&&L.p===j&&L.args&&L.args.from===i)n++;
+  }
+  return n;
+}
+const CHRON_NEED_KEYS=["ore","goods","hulls","link"];
 /* один ход одной державы */
 function chronAgentMove(st,N,i,rr){
   const P=st.powers[i];
   const roll=rr(i,0x9A)%1000;
-  const low=chronNeedLow(P);
   const want=CHRON_WANT[i];
-  /* нужды тают сами и пополняются тем, что держава держит: чем больше систем,
-     тем медленнее просадка. Это и есть «экономика» на данном проходе */
-  for(const k of ["ore","goods","hulls","link"]){
-    /* держава ест столько, сколько держит: расширение не бесплатно, иначе
-       большой ни в чём не нуждается и воевать ему незачем (замер 0.370.0:
-       при дешёвом расширении за триста сводок не случилось ни одной войны) */
-    const gain=(P.hold*(want[k]+1))/12|0;
-    P.need[k]=clampi(P.need[k]-20-(want[k]*6)+gain,0,1000);
+  /* ── нужды (M412) ──
+     Тают от того, чего держава хочет, и пополняются тем, что она держит.
+     Равновесие — у державы размером с дом (~53 системы): меньше дома — нужды
+     тают, и она идёт за ними; больше — копятся, и ей есть чем торговать.
+     Прежний закон «−20−want·6+hold·(want+1)/12» бил прибыль убылью всегда:
+     все шестеро сидели на нуле, ход был вечно «ссора/война», сделок не
+     случалось — 24 войны в месяц против 2–4 по §15 (замер 0.401.1,
+     docs/warsim.js). Дрожь ±6 от зерна — чтобы равновесие не было мёртвой
+     точкой, из которой нечему выйти. */
+  for(let q=0;q<4;q++){
+    const k=CHRON_NEED_KEYS[q];
+    const gain=(P.hold*(want[k]+1)*3/16)|0;
+    const use=16+want[k]*6;
+    const jit=(rr(i*4+q,0x7E)%13)-6;
+    P.need[k]=clampi(P.need[k]-use+gain+jit,0,1000);
   }
+  /* война ест: каждая её сводка стоит силы, товаров и корпусов — потому она и
+     кончается, и потому после неё есть о чём торговать */
+  if(chronAtWarAny(st,i)){
+    P.str=clampi(P.str-6,100,1000);
+    P.need.goods=clampi(P.need.goods-6,0,1000);
+    P.need.hulls=clampi(P.need.hulls-8,0,1000);
+  }
+  const low=chronNeedLow(P);
   /* отношения тянет к нулю: без этого через сотню сводок все дружат со всеми
      на тысячу и галактика застывает */
   for(let q=0;q<6;q++){
     if(q===i)continue;
     const v=P.rel[q];
-    P.rel[q]=v>0?v-((v/40|0)+1):(v<0?v+((-v/40|0)+1):0);
+    /* §15: пять процентов за сводку (было 2,5: пары примерзали к ±1000) */
+    P.rel[q]=v>0?v-((v/20|0)+1):(v<0?v+((-v/20|0)+1):0);
   }
   /* ── курс месяца (M378) ──
      Толпа не правит державой, но подталкивает её: победивший на выборах ответ
@@ -20269,20 +20323,50 @@ function chronAgentMove(st,N,i,rr){
   const course=(typeof powCourse==="function")?powCourse(i,N,st)
     :((typeof voteCourse==="function")?voteCourse(i,N):null);
   const warBias=(course==="war")?90:((course==="build")?-70:0);
-  /* выбор хода: злее всего тот, у кого нужда на дне и есть с кем ссориться */
+  /* ── выбор хода (M412) ──
+     Злее всего тот, у кого нужда на дне и есть с кем ссориться, — но за нуждой
+     держава сперва идёт ТОРГОВАТЬ (у кого отношения не испорчены), и только
+     потом ссориться. Прежний порядок «война, иначе ссора» не давал сделке
+     случиться никогда, пока нужда ниже 450, — и нужда не поднималась никогда.
+     §15: одна война на державу, две на галактику. */
   const worst=chronRelWorst(st,i),best=chronRelBest(st,i);
-  let move;
-  if(P.need[low]<250+warBias&&worst>=0&&P.rel[worst]<-150&&P.str>280)move="war";
-  else if(P.need[low]<450+warBias&&worst>=0)move="quarrel";
-  else if(chronAtWar(st,i,worst)&&(P.str<260||roll<120))move="truce";
-  else if(P.rel[best]>500&&roll<200)move="ally";
-  else if(roll<520-warBias)move="deal";
-  else move="build";
-  const j=(move==="ally")?best:worst;
+  const atWar=chronAtWarAny(st,i);
+  const scarce=P.need[low]<450+warBias,dire=P.need[low]<250+warBias;
+  /* обида: сколько систем худший забрал у нас за последние сутки. Это и есть
+     «спорная граница» §7.5 — повод для ссоры, а с ней и для войны в ответ */
+  const grudge=chronGrudge(st,N,i,worst);
+  /* ── вероятности ходов, в промилле (таблица §15) ──
+     В войне держава мирится тем охотнее, чем дольше воюет, а между делом
+     строит и торгует; вне войны — объявляет её, ссорится, торгует, дружит или
+     строит, и каждое с вероятностью, которую двигают нужда, обида, напряжение
+     и курс месяца. Розыгрыш один на ход, бросок один и тот же (`roll`) */
+  let move="build";
+  if(atWar){
+    const w=chronWarOf(st,i),age=N-w.t0;
+    if(P.str<300||roll<60+age*30)move="truce";
+    else move=(roll&1)?"build":"deal";
+  }else{
+    /* воюет тот, кто может: сила выше 450, владений не меньше половины дома
+       (карлик у пола §15 выживает, а не воюет), отношения с худшим ниже −200 */
+    const canWar=st.wars.length<2&&worst>=0&&!chronAtWarAny(st,worst)&&P.str>450&&
+      P.hold*20>=P.home*9&&P.rel[worst]<=-250;
+    const partnerOk=best>=0&&P.rel[best]>-50&&st.powers[best].need[low]>=550;   /* у партнёра излишек */
+    const pWar=canWar?(35+(dire?80:0)+grudge*60):0;
+    const pQuar=(worst>=0)?(20+(scarce?60:0)+(P.tension/40|0)+grudge*60+Math.max(0,warBias)):0;
+    const pDeal=(scarce&&partnerOk)?600:(partnerOk?150:40);
+    const pAlly=(best>=0&&P.rel[best]>350)?80:0;
+    let t=roll;
+    if((t-=pWar)<0)move="war";else if((t-=pQuar)<0)move="quarrel";else if((t-=pDeal)<0)move="deal";
+    else if((t-=pAlly)<0)move="ally";else move="build";
+  }
+  /* торгуют и дружат с лучшим; ссорятся и воюют с худшим */
+  const j=(move==="ally"||move==="deal")?best:worst;
   if(move==="deal"&&j>=0){
-    /* сделка: обе стороны получают то, чего им не хватает, и теплеют */
+    /* сделка: нужда закрывается тем, что у партнёра в избытке, и обе теплеют.
+       Излишек конечен: партнёр отдаёт, и у него становится меньше */
     P.need[low]=clampi(P.need[low]+50,0,1000);
     const Q=st.powers[j];
+    Q.need[low]=clampi(Q.need[low]-25,0,1000);
     Q.need[chronNeedLow(Q)]=clampi(Q.need[chronNeedLow(Q)]+35,0,1000);
     P.rel[j]=clampi(P.rel[j]+40,-1000,1000);Q.rel[i]=clampi(Q.rel[i]+40,-1000,1000);
     /* договорились — нота отозвана (M386): это единственный способ отменить
@@ -20303,12 +20387,15 @@ function chronAgentMove(st,N,i,rr){
     P.tension=clampi(P.tension+300,0,1000);
     chronLine(st,N,"war",i,null,{b:j});
   }else if(move==="truce"){
-    const w=chronAtWar(st,i,worst);
+    /* мирятся с тем, с кем воюют, — а не с тем, кто сейчас худший: за время
+       войны худшим успевает стать третий, и война шла бы до срока всегда */
+    const w=chronWarOf(st,i);
     if(w){
+      const e=(w.a===i)?w.b:w.a;
       st.wars.splice(st.wars.indexOf(w),1);
-      P.rel[worst]=clampi(P.rel[worst]+280,-1000,1000);
-      st.powers[worst].rel[i]=clampi(st.powers[worst].rel[i]+280,-1000,1000);
-      chronLine(st,N,"truce",i,null,{b:worst});
+      P.rel[e]=clampi(P.rel[e]+280,-1000,1000);
+      st.powers[e].rel[i]=clampi(st.powers[e].rel[i]+280,-1000,1000);
+      chronLine(st,N,"truce",i,null,{b:e});
     }
   }else if(move==="ally"&&j>=0){
     if(typeof chronUltDrop==="function")chronUltDrop(st,N,i,j);
@@ -20371,7 +20458,12 @@ function chronUltStep(st,N,rr){
       continue;
     }
     if(N-u.t0<DIP_ULT_DUE)continue;
+    /* §15: двух войн разом галактике хватает — нота ждёт своей очереди (M412) */
+    if(st.wars.length>=2)continue;
     st.ults.splice(q,1);
+    /* срок вышел — но воюют не от обиды, а от нужды: если у предъявившей
+       ноту нужда за это время выправилась, воевать ей больше незачем, и нота
+       гаснет сама. Это и есть «нота, на которую ответили» */
     /* срок вышел — но воюют не от обиды, а от нужды: если у предъявившей
        ноту нужда за это время выправилась, воевать ей больше незачем, и нота
        гаснет сама. Это и есть «нота, на которую ответили» */
@@ -20418,7 +20510,13 @@ const DIR_INCIDENTS=[
   {k:"spy",    f:"sec",   up:110},
   {k:"patrol", f:"sec",   up:30},
   {k:"census", f:"cult",  up:0},
-  {k:"cult",   f:"cult",  up:40}
+  {k:"cult",   f:"cult",  up:40},
+  /* три вида, которые семьи читали, а Директор не объявлял (M412): бунт в
+     занятой системе (12ay), находка — планета пригодна (12az), откол кластера
+     (12b0). Обещание без строки в этой таблице — ложь по правилу проекта */
+  {k:"revolt", f:"soc",   up:80},
+  {k:"find",   f:"nature",up:0},
+  {k:"secede", f:"power", up:120}
 ];
 const DIR_ARCS=["shortage","frontier","succession","expedition","quarantine","goldrush"];
 /* обряды §14 своими именами (M379): Директор их объявляет, `12au-rites` знает,
@@ -20446,9 +20544,14 @@ function chronSeasonValid(s){
   if(s.rites&&(!Array.isArray(s.rites)||s.rites.some(a=>DIR_RITES.indexOf(a)<0)))return false;
   return true;
 }
-function chronSeason(N){
+function chronSeason(N,st){
   const m=chronMonth(N);
-  const put=(typeof G!=="undefined"&&G.warSeason&&G.warSeason.m===m)?G.warSeason.s:null;
+  /* сезон живёт в состоянии летописи (M412): его кладёт циркуляр в свою сводку
+     (12aw), и он едет с повтором у всех одинаково. `G.warSeason` остаётся
+     вторым входом — для стенда и наборов */
+  let put=null;
+  if(st&&st.season&&st.season.m===m)put=st.season.s;
+  else if(typeof G!=="undefined"&&G.warSeason&&G.warSeason.m===m)put=G.warSeason.s;
   if(chronSeasonValid(put))return put;
   /* автопилот */
   const h=hashi(m,0x5EA,CHRON_SEED);
@@ -20457,7 +20560,7 @@ function chronSeason(N){
 }
 /* ── один шаг Директора (шаг 3 в §16.2) ── */
 function chronDirector(st,N){
-  const S=chronSeason(N);
+  const S=chronSeason(N,st);
   const rr=(a,b)=>hashi(N,a,(b|0)^0x0D18);
   if(!st.dir)st.dir={quiet:0,peak:0,calm:0,tens:0,last:{},arcs:[],rites:[]};
   const D=st.dir;
@@ -20473,11 +20576,7 @@ function chronDirector(st,N){
     D.calm--;
     D.tens=clampi(D.tens-120,0,1000);
     D.peak=0;
-  }else{
-    D.tens=clampi(D.tens+((target>D.tens)?18:-14),0,1000);
-    if(D.tens>800)D.peak++;else D.peak=0;
-    if(D.peak>DIR_PEAK){D.calm=5;D.peak=0;}
-  }
+  }else D.tens=clampi(D.tens+((target>D.tens)?18:-14),0,1000);
   let any=false;
   /* происшествия: у каждой державы свой бросок, и один вид не повторяется
      раньше чем через десять сводок */
@@ -20494,6 +20593,26 @@ function chronDirector(st,N){
        поэтому живут они здесь, внутри повтора: чистка отнимает треть силы,
        наследник обнуляет отношения, переворот переворачивает курс. Всё это
        детерминировано, как и остальное, и входит в хэш. */
+    /* ── происшествие трогает нужды (M412) ──
+       Жила и находка кладут руду, истощение и эмбарго её и товары отнимают,
+       забастовка и переселение бьют по товарам, ярмарка их прибавляет. Так у
+       агентов появляется то, чего им не хватает, — и повод торговать или
+       ссориться приходит извне, от Директора, а не только из их же арифметики:
+       без этого нужды сходились к равновесию и галактика засыпала */
+    {
+      const Q=st.powers[i].need,k=inc.k;
+      const bump=(key,v)=>{Q[key]=clampi(Q[key]+v,0,1000);};
+      if(k==="vein")bump("ore",150);else if(k==="find")bump("ore",100);
+      else if(k==="drain")bump("ore",-150);
+      else if(k==="embargo")bump("goods",-100);
+      else if(k==="strike")bump("goods",-60);
+      else if(k==="refugee")bump("goods",-40);
+      else if(k==="fair")bump("goods",100);
+      else if(k==="holiday")bump("goods",60);
+      else if(k==="storm")bump("link",-60);
+      else if(k==="swarm")bump("hulls",-40);
+      else if(k==="patrol")bump("link",40);
+    }
     if(inc.k==="purge")st.powers[i].str=clampi((st.powers[i].str*7/10)|0,100,1000);
     if(inc.k==="coup")st.powers[i].tension=clampi(st.powers[i].tension+150,0,1000);
     if(inc.k==="envoy"){                       /* посольство: наследник и сброс */
@@ -20506,12 +20625,20 @@ function chronDirector(st,N){
     chronLine(st,N,"inc",i,null,{k:inc.k,f:inc.f});
     any=true;
   }
+  /* пик считается ПОСЛЕ происшествий (M412): они поднимают напряжение в ту же
+     сводку, и счётчик, стоявший до них, видел спад там, где игрок видел пик —
+     пик тянулся четырнадцать сводок вместо двенадцати */
+  if(D.calm<=0){
+    if(D.tens>800)D.peak++;else D.peak=0;
+    if(D.peak>DIR_PEAK){D.calm=5;D.peak=0;}
+  }
   /* дуги: начинаются редко и обязаны кончиться — либо своей развязкой, либо
      развязкой по умолчанию на двадцатой сводке */
   for(let i=0;i<6;i++){
     const cur=D.arcs.find(a=>a.p===i);
     if(!cur){
-      if(D.tens<820&&(rr(i,0x33)%1000)<120){
+      /* §15: .08 — при .12 дуга висела на каждой державе всегда (M412) */
+      if(D.tens<820&&(rr(i,0x33)%1000)<80){
         const allow=(S.arcs&&S.arcs.length)?S.arcs:DIR_ARCS;
         const kind=allow[rr(i,0x44)%allow.length];
         D.arcs.push({p:i,kind,t0:N,stage:0});
@@ -20554,11 +20681,16 @@ function chronDirector(st,N){
     chronLine(st,N,"inc",i,null,{k:inc.k,f:inc.f,forced:1});
     D.quiet=0;
   }
-  /* ограничители §15: сила восстанавливается, но держава не падает ниже
-     трети своего дома — ниже этого она «выживает», а не исчезает */
+  /* ограничители §15: сила восстанавливается на восьмую часть разрыва за
+     сводку — к ПОТОЛКУ ОТ ВЛАДЕНИЙ, а не к тысяче (M412). Тянуть к тысяче
+     значило, что ограничитель шага 6 не работает: все шестеро сидели у 900,
+     разница сил была нулём и фронт бросал монетку (замер 0.401.1). Держава
+     не падает ниже трети своего дома — ниже этого она «выживает», а не
+     исчезает; это шаг 6 в 12am-chron */
   for(let i=0;i<6;i++){
     const P=st.powers[i];
-    P.str=clampi(P.str+((1000-P.str)/12|0),100,1000);
+    const cap=clampi(300+P.hold*6,300,900);
+    P.str=clampi(P.str+((cap-P.str)/12|0),100,1000);
   }
 }
 /* ── что сейчас происходит ──
@@ -20603,7 +20735,8 @@ const CHRON_INC_RU={
   vein:"жила в поясе",fair:"ярмарка",embargo:"эмбарго",strike:"забастовка",
   holiday:"праздник",refugee:"переселение",storm:"вспышка",swarm:"рой",
   drain:"истощение",coup:"смена правления",purge:"чистка",envoy:"посольство",
-  spy:"утечка",patrol:"досмотр",census:"перепись",cult:"тихий уезд"
+  spy:"утечка",patrol:"досмотр",census:"перепись",cult:"тихий уезд",
+  revolt:"бунт",find:"находка",secede:"откол"
 };
 const CHRON_ARC_RU={
   shortage:"дефицит",frontier:"рубеж",succession:"наследство",
@@ -20833,7 +20966,7 @@ function chronFresh(){
     S[k]={owner:o,since:0,front:0,yalta:yalta?1:0};
     if(o>=0){P[o].hold++;P[o].home=(P[o].home|0)+1;}
   }
-  return {N:-1,powers:P,systems:S,wars:[],ults:[],lines:[],dir:null,_keys:CHRON._keys,off:CHRON.off|0};
+  return {N:-1,powers:P,systems:S,wars:[],ults:[],lines:[],dir:null,season:null,_keys:CHRON._keys,off:CHRON.off|0};
 }
 /* ── ход одной сводки (§16.2) ── */
 function chronStep(st,N){
@@ -20842,7 +20975,9 @@ function chronStep(st,N){
      здесь; 3 Директор (M371) следом. */
   if(typeof circApply==="function")circApply(st,N);
   if(typeof chronDirector==="function")chronDirector(st,N);
-  /* 4 агенты ходят по семенному порядку: каждый делает один ход */
+  /* 4 агенты ходят по семенному порядку: каждый делает один ход — и знают,
+     с кем граничат (M412): ссора и война идут к соседу */
+  if(typeof chronTouch==="function")st._touch=chronTouch(st);
   const order=[0,1,2,3,4,5].sort((a,b)=>(rr(a,7)%1000)-(rr(b,7)%1000));
   for(const i of order){
     if(typeof chronAgentMove==="function")chronAgentMove(st,N,i,rr);
@@ -20869,7 +21004,9 @@ function chronStep(st,N){
        от того, сколько держава держит, и выше него её тянет вниз */
     const cap=clampi(300+P.hold*6,300,900);
     P.str=clampi(P.str+((rr(i,0x5E)%21)-10)+(P.str>cap?-7:3),100,1000);
-    P.tension=clampi(P.tension-3,0,1000);
+    /* напряжение державы остывает долей, а не тремя единицами: при двух
+       происшествиях на сводку −3 держало всех у тысячи навсегда (M412) */
+    P.tension=clampi(P.tension-(P.tension/12|0)-2,0,1000);
     if(P.hold>(total/2|0))P.str=clampi(P.str-40,100,1000);
   }
   /* фронт — не клеймо: через две сводки после перехода система перестаёт быть
@@ -20914,12 +21051,20 @@ function chronFlip(st,N,from,to,rr){
     if(st.powers[to].hold<=((st.powers[to].home*3/10)|0))continue;
     /* фронт идёт по границе: берём только то, что соседствует с наступающим */
     if(!chronBorders(st,k,from))continue;
+    /* дом держат (M412): в шести секторах от своего дома защитник отбивает
+       треть попыток — фронты ходят по окраинам, а не съедают дома за
+       неделю; без этого сильный ел слабого до пола и там оставался */
+    if(chronHomeNear(k,to)&&(rr(from*5+to,0x0DE)%1000)<350)continue;
     S.owner=from;S.since=N;S.front=1;
     st.powers[to].hold--;st.powers[from].hold++;
     chronLine(st,N,"take",from,k,{from:to});
     return true;
   }
   return false;
+}
+function chronHomeNear(k,i){
+  const p=k.split(","),dx=(p[0]|0)-CHRON_HOME[i][0],dy=(p[1]|0)-CHRON_HOME[i][1];
+  return dx*dx+dy*dy<=36;
 }
 function chronBorders(st,k,who){
   const p=k.split(","),x=p[0]|0,y=p[1]|0;
@@ -20973,6 +21118,8 @@ function chronHash(st){
     for(const a of st.dir.arcs)mix(a.p*32+a.stage*4+(a.t0&3)+1);
     mix(st.dir.rites.length+1);
   }
+  /* сезон из циркуляра (M412) входит в хэш: он двигает цель напряжения */
+  if(st.season&&st.season.s)mix((st.season.m|0)*4096+(st.season.s.tension|0)+1);
   return h>>>0;
 }
 /* ── повтор: от нуля или от кэша ── */
@@ -20985,7 +21132,10 @@ function chronReplay(N,from){
 function chronClone(st){
   const S={};
   for(const k in st.systems){const s=st.systems[k];S[k]={owner:s.owner,since:s.since,front:s.front,yalta:s.yalta};}
-  const P=st.powers.map(p=>({hold:p.hold,need:{ore:p.need.ore,goods:p.need.goods,hulls:p.need.hulls,link:p.need.link},
+  /* `home` — тоже в клон (M412): без него пол «треть дома» после кэша считался
+     от undefined, то есть не работал никогда, а повтор от кэша расходился с
+     повтором от нуля ровно на этом */
+  const P=st.powers.map(p=>({hold:p.hold,home:p.home|0,need:{ore:p.need.ore,goods:p.need.goods,hulls:p.need.hulls,link:p.need.link},
     rel:p.rel.slice(),str:p.str,tension:p.tension,arc:p.arc}));
   const D=st.dir?{quiet:st.dir.quiet|0,peak:st.dir.peak|0,calm:st.dir.calm|0,tens:st.dir.tens|0,
     last:Object.assign({},st.dir.last),
@@ -20993,10 +21143,22 @@ function chronClone(st){
     rites:st.dir.rites.map(r=>({kind:r.kind,p:r.p,t0:r.t0}))}:null;
   return {N:st.N,powers:P,systems:S,wars:st.wars.map(w=>({a:w.a,b:w.b,t0:w.t0})),
     ults:(st.ults||[]).map(u=>({a:u.a,b:u.b,t0:u.t0})),
-    lines:st.lines.slice(),dir:D,off:st.off|0};
+    lines:st.lines.slice(),dir:D,off:st.off|0,
+    season:st.season?{m:st.season.m|0,n:st.season.n|0,s:st.season.s}:null};
 }
-/* ── состояние на сейчас: кэш, потом повтор ── */
+/* ── состояние на сейчас: закрытые сводки из кэша, открытая — поверх ──
+   D01/D02: кэшируется и пишется на диск только состояние после последней
+   ЗАКРЫТОЙ сводки (N−1); открытая шагается поверх него при каждом вопросе —
+   её ведомость ещё растёт. До M412 кэшем была открытая сводка: она шагалась
+   один раз с той ведомостью, что была на руках в первую секунду, и никогда
+   больше; клиенты расходились по тому, кто когда впервые посчитал, а рука
+   людей (M376) в повтор почти не попадала. */
+let CHRON_BASE=null;     /* состояние после сводки N−1 */
+let CHRON_STAMP=0;       /* растёт с каждой приехавшей ведомостью и циркуляром */
 let CHRON_BUSY=0;
+/* заморозка — для наборов (90-harness): состояние отдаётся как есть, ведомости
+   его не сбрасывают. Игра этого флага не ставит никогда */
+let CHRON_FREEZE=false;
 function chronState(N){
   if(N===undefined)N=chronNow();
   /* ── повтор не зовёт себя ──
@@ -21006,19 +21168,40 @@ function chronState(N){
      состояние передаётся параметром; предохранитель ниже — на случай, когда
      кто-то опять забудет. */
   if(CHRON_BUSY)return CHRON;
-  if(CHRON.powers&&CHRON.N===N)return CHRON;
-  let base=null;
-  if(CHRON.powers&&CHRON.N<=N)base=CHRON;
-  else{
-    const c=chronLoad();
-    if(c&&c.N<=N)base=c;
-  }
+  if(CHRON_FREEZE&&CHRON.powers)return CHRON;
+  if(CHRON.powers&&CHRON.N===N&&CHRON.stamp===CHRON_STAMP)return CHRON;
   CHRON_BUSY=1;
-  let st;
-  try{st=chronReplay(N,base);}finally{CHRON_BUSY=0;}
-  CHRON=st;CHRON._keys=chronKeys();
-  chronSave(st);
-  return st;
+  try{
+    if(!(CHRON_BASE&&CHRON_BASE.N===N-1)){
+      let base=null;
+      if(CHRON_BASE&&CHRON_BASE.N<=N-1)base=CHRON_BASE;
+      else{const c=chronLoad();if(c&&c.N<=N-1)base=c;}
+      CHRON_BASE=chronReplay(N-1,base);
+      chronSave(CHRON_BASE);
+    }
+    const st=chronClone(CHRON_BASE);
+    chronStep(st,N);
+    st.stamp=CHRON_STAMP;
+    CHRON=st;CHRON._keys=chronKeys();
+  }finally{CHRON_BUSY=0;}
+  return CHRON;
+}
+/* ведомость или циркуляр за сводку n приехали после того, как n уже шагали:
+   всё от n и дальше считается заново. Это и есть рука людей в повторе. */
+function chronInvalidate(n){
+  if(CHRON_FREEZE)return;
+  CHRON_STAMP++;
+  if(CHRON_BASE&&(n|0)<=CHRON_BASE.N){CHRON_BASE=null;chronForget();}
+  CHRON.powers=null;CHRON.N=-1;
+}
+/* забыть кэш состояния на диске, не трогая ведомости, циркуляры и часы */
+function chronForget(){
+  try{
+    const o=JSON.parse(localStorage.getItem(CHRON_KEY)||"null");
+    if(!o||typeof o!=="object")return;
+    delete o.p;delete o.s;delete o.w;delete o.u;delete o.d;delete o.se;o.N=-1;
+    localStorage.setItem(CHRON_KEY,JSON.stringify(o));
+  }catch(e){}
 }
 /* ── кэш в своём ключе, а не в сохранении (§16.4) ── */
 function chronSave(st){
@@ -21037,7 +21220,10 @@ function chronSave(st){
       u:(st.ults||[]).map(u=>[u.a,u.b,u.t0]),
       d:st.dir?{q:st.dir.quiet|0,pk:st.dir.peak|0,cm:st.dir.calm|0,t:st.dir.tens|0,l:st.dir.last,
         a:st.dir.arcs.map(a=>[a.p,a.kind,a.t0,a.stage]),
-        r:st.dir.rites.map(r=>[r.kind,r.p,r.t0])}:null};
+        r:st.dir.rites.map(r=>[r.kind,r.p,r.t0])}:null,
+      se:st.season||null};
+    /* циркуляры — чужое поле того же ключа (12aw): не трогаем */
+    if(keep.circ)o.circ=keep.circ;
     localStorage.setItem(CHRON_KEY,JSON.stringify(o));
   }catch(e){}
 }
@@ -21063,6 +21249,8 @@ function chronLoad(){
     st.dir=o.d?{quiet:o.d.q|0,peak:o.d.pk|0,calm:o.d.cm|0,tens:o.d.t|0,last:o.d.l||{},
       arcs:(o.d.a||[]).map(a=>({p:a[0]|0,kind:a[1],t0:a[2]|0,stage:a[3]|0})),
       rites:(o.d.r||[]).map(r=>({kind:r[0],p:r[1]|0,t0:r[2]|0}))}:null;
+    st.season=(o.se&&typeof o.se==="object"&&typeof chronSeasonValid==="function"&&chronSeasonValid(o.se.s))
+      ?{m:o.se.m|0,n:o.se.n|0,s:o.se.s}:null;
     return st;
   }catch(e){return null;}
 }
@@ -22252,6 +22440,17 @@ function circFor(N){
 function circApply(st,N){
   const c=circFor(N);
   if(!c||!circValid(c))return null;
+  /* сезон — стоячее (M412): он про месяц и живёт в состоянии летописи, пока
+     его не сменит следующий циркуляр; Директор читает его через chronSeason */
+  if(c.season&&typeof chronMonth==="function"){
+    const m=chronMonth(c.n|0);
+    if(!st.season||st.season.n!==(c.n|0))st.season={m,n:c.n|0,s:c.season};
+  }
+  /* нужды и событие — разово, в ту сводку, которой циркуляр помечен
+     (конституция: «применяется от неё вперёд», а не каждую сводку заново: до
+     M412 один и тот же циркуляр складывал +30 % за сводку до тысячи и одним
+     перемирием кончал все войны навсегда) */
+  if((c.n|0)!==(N|0))return c;
   if(c.need)for(const by in c.need){
     const i=MAKER_KEYS.indexOf(by);
     if(i<0)continue;
@@ -39654,6 +39853,8 @@ function warLedPut(N,body){
   while(keys.length>120)delete L[keys.shift()];
   WAR_LED_CACHE=L;
   warStoreSet({led:L});
+  /* сводка, которую уже шагали, получила ведомость: повтор от неё заново (M412) */
+  if(typeof chronInvalidate==="function")chronInvalidate(N);
 }
 function warLedLast(){
   const keys=Object.keys(warLed()).map(Number);
@@ -39694,13 +39895,20 @@ function warPull(force){
     if(r.open&&r.open.n!==undefined)warLedPut(r.open.n|0,body(r.open));
     /* циркуляры приезжают тем же ответом и проверяются конституцией на входе
        (M381): негодный не кладётся вовсе */
-    if(Array.isArray(r.circ)&&r.circ.length&&typeof circPut==="function")
+    if(Array.isArray(r.circ)&&r.circ.length&&typeof circPut==="function"){
       circPut(circAll().concat(r.circ));
-    /* хэш за прошлую сводку: сервер только считает, кто с кем сошёлся */
+      /* циркуляр помечен сводкой: от неё повтор заново (M412) */
+      if(typeof chronInvalidate==="function")
+        chronInvalidate(Math.min.apply(null,r.circ.map(c=>c.n|0)));
+    }
+    /* хэш за прошлую сводку: сервер только считает, кто с кем сошёлся. Прошлая
+       сводка — это и есть закрытая база повтора (M412), считать её заново от
+       нуля незачем */
     try{
       const st=chronState();
-      if(st&&st.N>0)warCall("hash",{n:st.N-1,h:String(chronHash(chronReplay(st.N-1,null)))})
-        .then(h=>{if(h&&h.ok&&h.agree===false)logAdd("warn","Летопись разошлась с большинством на сводке "+h.n);})
+      const base=(typeof CHRON_BASE!=="undefined"&&CHRON_BASE&&CHRON_BASE.N===st.N-1)?CHRON_BASE:null;
+      if(st&&st.N>0)warCall("hash",{n:st.N-1,h:String(chronHash(base||chronReplay(st.N-1,null)))})
+        .then(h=>{if(h&&h.ok&&h.agree===false&&typeof logAdd==="function")logAdd("warn","Летопись разошлась с большинством на сводке "+h.n);})
         .catch(()=>{});
     }catch(e){}
     return true;

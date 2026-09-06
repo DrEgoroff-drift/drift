@@ -87,6 +87,17 @@ function circFor(N){
 function circApply(st,N){
   const c=circFor(N);
   if(!c||!circValid(c))return null;
+  /* сезон — стоячее (M412): он про месяц и живёт в состоянии летописи, пока
+     его не сменит следующий циркуляр; Директор читает его через chronSeason */
+  if(c.season&&typeof chronMonth==="function"){
+    const m=chronMonth(c.n|0);
+    if(!st.season||st.season.n!==(c.n|0))st.season={m,n:c.n|0,s:c.season};
+  }
+  /* нужды и событие — разово, в ту сводку, которой циркуляр помечен
+     (конституция: «применяется от неё вперёд», а не каждую сводку заново: до
+     M412 один и тот же циркуляр складывал +30 % за сводку до тысячи и одним
+     перемирием кончал все войны навсегда) */
+  if((c.n|0)!==(N|0))return c;
   if(c.need)for(const by in c.need){
     const i=MAKER_KEYS.indexOf(by);
     if(i<0)continue;

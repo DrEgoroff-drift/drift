@@ -76,7 +76,7 @@ function chronFresh(){
     S[k]={owner:o,since:0,front:0,yalta:yalta?1:0};
     if(o>=0){P[o].hold++;P[o].home=(P[o].home|0)+1;}
   }
-  return {N:-1,powers:P,systems:S,wars:[],ults:[],lines:[],dir:null,_keys:CHRON._keys,off:CHRON.off|0};
+  return {N:-1,powers:P,systems:S,wars:[],ults:[],lines:[],dir:null,season:null,_keys:CHRON._keys,off:CHRON.off|0};
 }
 /* ── ход одной сводки (§16.2) ── */
 function chronStep(st,N){
@@ -85,7 +85,9 @@ function chronStep(st,N){
      здесь; 3 Директор (M371) следом. */
   if(typeof circApply==="function")circApply(st,N);
   if(typeof chronDirector==="function")chronDirector(st,N);
-  /* 4 агенты ходят по семенному порядку: каждый делает один ход */
+  /* 4 агенты ходят по семенному порядку: каждый делает один ход — и знают,
+     с кем граничат (M412): ссора и война идут к соседу */
+  if(typeof chronTouch==="function")st._touch=chronTouch(st);
   const order=[0,1,2,3,4,5].sort((a,b)=>(rr(a,7)%1000)-(rr(b,7)%1000));
   for(const i of order){
     if(typeof chronAgentMove==="function")chronAgentMove(st,N,i,rr);
@@ -112,7 +114,9 @@ function chronStep(st,N){
        от того, сколько держава держит, и выше него её тянет вниз */
     const cap=clampi(300+P.hold*6,300,900);
     P.str=clampi(P.str+((rr(i,0x5E)%21)-10)+(P.str>cap?-7:3),100,1000);
-    P.tension=clampi(P.tension-3,0,1000);
+    /* напряжение державы остывает долей, а не тремя единицами: при двух
+       происшествиях на сводку −3 держало всех у тысячи навсегда (M412) */
+    P.tension=clampi(P.tension-(P.tension/12|0)-2,0,1000);
     if(P.hold>(total/2|0))P.str=clampi(P.str-40,100,1000);
   }
   /* фронт — не клеймо: через две сводки после перехода система перестаёт быть
@@ -157,12 +161,20 @@ function chronFlip(st,N,from,to,rr){
     if(st.powers[to].hold<=((st.powers[to].home*3/10)|0))continue;
     /* фронт идёт по границе: берём только то, что соседствует с наступающим */
     if(!chronBorders(st,k,from))continue;
+    /* дом держат (M412): в шести секторах от своего дома защитник отбивает
+       треть попыток — фронты ходят по окраинам, а не съедают дома за
+       неделю; без этого сильный ел слабого до пола и там оставался */
+    if(chronHomeNear(k,to)&&(rr(from*5+to,0x0DE)%1000)<350)continue;
     S.owner=from;S.since=N;S.front=1;
     st.powers[to].hold--;st.powers[from].hold++;
     chronLine(st,N,"take",from,k,{from:to});
     return true;
   }
   return false;
+}
+function chronHomeNear(k,i){
+  const p=k.split(","),dx=(p[0]|0)-CHRON_HOME[i][0],dy=(p[1]|0)-CHRON_HOME[i][1];
+  return dx*dx+dy*dy<=36;
 }
 function chronBorders(st,k,who){
   const p=k.split(","),x=p[0]|0,y=p[1]|0;
@@ -216,6 +228,8 @@ function chronHash(st){
     for(const a of st.dir.arcs)mix(a.p*32+a.stage*4+(a.t0&3)+1);
     mix(st.dir.rites.length+1);
   }
+  /* сезон из циркуляра (M412) входит в хэш: он двигает цель напряжения */
+  if(st.season&&st.season.s)mix((st.season.m|0)*4096+(st.season.s.tension|0)+1);
   return h>>>0;
 }
 /* ── повтор: от нуля или от кэша ── */
@@ -228,7 +242,10 @@ function chronReplay(N,from){
 function chronClone(st){
   const S={};
   for(const k in st.systems){const s=st.systems[k];S[k]={owner:s.owner,since:s.since,front:s.front,yalta:s.yalta};}
-  const P=st.powers.map(p=>({hold:p.hold,need:{ore:p.need.ore,goods:p.need.goods,hulls:p.need.hulls,link:p.need.link},
+  /* `home` — тоже в клон (M412): без него пол «треть дома» после кэша считался
+     от undefined, то есть не работал никогда, а повтор от кэша расходился с
+     повтором от нуля ровно на этом */
+  const P=st.powers.map(p=>({hold:p.hold,home:p.home|0,need:{ore:p.need.ore,goods:p.need.goods,hulls:p.need.hulls,link:p.need.link},
     rel:p.rel.slice(),str:p.str,tension:p.tension,arc:p.arc}));
   const D=st.dir?{quiet:st.dir.quiet|0,peak:st.dir.peak|0,calm:st.dir.calm|0,tens:st.dir.tens|0,
     last:Object.assign({},st.dir.last),
@@ -236,10 +253,22 @@ function chronClone(st){
     rites:st.dir.rites.map(r=>({kind:r.kind,p:r.p,t0:r.t0}))}:null;
   return {N:st.N,powers:P,systems:S,wars:st.wars.map(w=>({a:w.a,b:w.b,t0:w.t0})),
     ults:(st.ults||[]).map(u=>({a:u.a,b:u.b,t0:u.t0})),
-    lines:st.lines.slice(),dir:D,off:st.off|0};
+    lines:st.lines.slice(),dir:D,off:st.off|0,
+    season:st.season?{m:st.season.m|0,n:st.season.n|0,s:st.season.s}:null};
 }
-/* ── состояние на сейчас: кэш, потом повтор ── */
+/* ── состояние на сейчас: закрытые сводки из кэша, открытая — поверх ──
+   D01/D02: кэшируется и пишется на диск только состояние после последней
+   ЗАКРЫТОЙ сводки (N−1); открытая шагается поверх него при каждом вопросе —
+   её ведомость ещё растёт. До M412 кэшем была открытая сводка: она шагалась
+   один раз с той ведомостью, что была на руках в первую секунду, и никогда
+   больше; клиенты расходились по тому, кто когда впервые посчитал, а рука
+   людей (M376) в повтор почти не попадала. */
+let CHRON_BASE=null;     /* состояние после сводки N−1 */
+let CHRON_STAMP=0;       /* растёт с каждой приехавшей ведомостью и циркуляром */
 let CHRON_BUSY=0;
+/* заморозка — для наборов (90-harness): состояние отдаётся как есть, ведомости
+   его не сбрасывают. Игра этого флага не ставит никогда */
+let CHRON_FREEZE=false;
 function chronState(N){
   if(N===undefined)N=chronNow();
   /* ── повтор не зовёт себя ──
@@ -249,19 +278,40 @@ function chronState(N){
      состояние передаётся параметром; предохранитель ниже — на случай, когда
      кто-то опять забудет. */
   if(CHRON_BUSY)return CHRON;
-  if(CHRON.powers&&CHRON.N===N)return CHRON;
-  let base=null;
-  if(CHRON.powers&&CHRON.N<=N)base=CHRON;
-  else{
-    const c=chronLoad();
-    if(c&&c.N<=N)base=c;
-  }
+  if(CHRON_FREEZE&&CHRON.powers)return CHRON;
+  if(CHRON.powers&&CHRON.N===N&&CHRON.stamp===CHRON_STAMP)return CHRON;
   CHRON_BUSY=1;
-  let st;
-  try{st=chronReplay(N,base);}finally{CHRON_BUSY=0;}
-  CHRON=st;CHRON._keys=chronKeys();
-  chronSave(st);
-  return st;
+  try{
+    if(!(CHRON_BASE&&CHRON_BASE.N===N-1)){
+      let base=null;
+      if(CHRON_BASE&&CHRON_BASE.N<=N-1)base=CHRON_BASE;
+      else{const c=chronLoad();if(c&&c.N<=N-1)base=c;}
+      CHRON_BASE=chronReplay(N-1,base);
+      chronSave(CHRON_BASE);
+    }
+    const st=chronClone(CHRON_BASE);
+    chronStep(st,N);
+    st.stamp=CHRON_STAMP;
+    CHRON=st;CHRON._keys=chronKeys();
+  }finally{CHRON_BUSY=0;}
+  return CHRON;
+}
+/* ведомость или циркуляр за сводку n приехали после того, как n уже шагали:
+   всё от n и дальше считается заново. Это и есть рука людей в повторе. */
+function chronInvalidate(n){
+  if(CHRON_FREEZE)return;
+  CHRON_STAMP++;
+  if(CHRON_BASE&&(n|0)<=CHRON_BASE.N){CHRON_BASE=null;chronForget();}
+  CHRON.powers=null;CHRON.N=-1;
+}
+/* забыть кэш состояния на диске, не трогая ведомости, циркуляры и часы */
+function chronForget(){
+  try{
+    const o=JSON.parse(localStorage.getItem(CHRON_KEY)||"null");
+    if(!o||typeof o!=="object")return;
+    delete o.p;delete o.s;delete o.w;delete o.u;delete o.d;delete o.se;o.N=-1;
+    localStorage.setItem(CHRON_KEY,JSON.stringify(o));
+  }catch(e){}
 }
 /* ── кэш в своём ключе, а не в сохранении (§16.4) ── */
 function chronSave(st){
@@ -280,7 +330,10 @@ function chronSave(st){
       u:(st.ults||[]).map(u=>[u.a,u.b,u.t0]),
       d:st.dir?{q:st.dir.quiet|0,pk:st.dir.peak|0,cm:st.dir.calm|0,t:st.dir.tens|0,l:st.dir.last,
         a:st.dir.arcs.map(a=>[a.p,a.kind,a.t0,a.stage]),
-        r:st.dir.rites.map(r=>[r.kind,r.p,r.t0])}:null};
+        r:st.dir.rites.map(r=>[r.kind,r.p,r.t0])}:null,
+      se:st.season||null};
+    /* циркуляры — чужое поле того же ключа (12aw): не трогаем */
+    if(keep.circ)o.circ=keep.circ;
     localStorage.setItem(CHRON_KEY,JSON.stringify(o));
   }catch(e){}
 }
@@ -306,6 +359,8 @@ function chronLoad(){
     st.dir=o.d?{quiet:o.d.q|0,peak:o.d.pk|0,calm:o.d.cm|0,tens:o.d.t|0,last:o.d.l||{},
       arcs:(o.d.a||[]).map(a=>({p:a[0]|0,kind:a[1],t0:a[2]|0,stage:a[3]|0})),
       rites:(o.d.r||[]).map(r=>({kind:r[0],p:r[1]|0,t0:r[2]|0}))}:null;
+    st.season=(o.se&&typeof o.se==="object"&&typeof chronSeasonValid==="function"&&chronSeasonValid(o.se.s))
+      ?{m:o.se.m|0,n:o.se.n|0,s:o.se.s}:null;
     return st;
   }catch(e){return null;}
 }

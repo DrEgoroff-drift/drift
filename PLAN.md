@@ -352,12 +352,15 @@ main release, as M360a/M369b were.
   Territory by power, fronts, wars and notes, the line of takes with dates, the powers' needs and
   relations, rallies and «Ревизия»; a slider over the сводки — the whole history replays in
   milliseconds. Linked from the site's nav and footer.
-- **M412 the war runs by itself** — the review of M370–M388 found: the open сводка is cached as
-  the replay base and never re-stepped with its closed ledger (`chronState`), so the players'
-  hand almost never enters the replay; `circApply` applies the latest circular every сводка for
-  ever; the Director's strength regen overrides the step-6 cap so every power sits near 1000 and
-  fronts flip coins; «revolt», «find», «secede» are read by three families and emitted by nobody;
-  the circular's `season` is validated and dropped. Measured with a Node replay before and after.
+- ~~**M412 the war runs by itself**~~ — 0.401.2: `docs/warsim.js` (a Node replay over the same
+  `site/war.js` bundle) showed needs pinned at zero, 24 wars a month, strength at ~900 for all;
+  now needs balance at home size and are moved by incidents, moves are drawn by probability
+  (trade first, quarrel second, war only below −250 with strength and holdings to spare, ≤2 wars
+  in the galaxy), war costs, home systems are defended, strength tracks the cap its holdings set,
+  relations revert at 5 %. Closed state is the replay base and the open сводка is stepped on top
+  each call, ledgers and circulars invalidate (`chronInvalidate`); circulars apply once at their
+  сводка and the season lives in the state; «бунт», «находка», «откол» announced. Suites:
+  `91zzzw-chron2`. A year: ~10 wars/month, ~30 takes, ~8 net changes, needs ~450.
 
 ## Loose ends (as of 2026-08-28, after the graphics run 0.237.0–0.244.0)
 

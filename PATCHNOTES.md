@@ -7,6 +7,42 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.401.2 - M412: the war runs by itself
+
+The author (2026-09-07): «там появилась вселенная и война, которая сама идёт, надо чтобы сама шла
+естественно». A Node replay of the chronicle (`docs/warsim.js`, the same `site/war.js` bundle the
+site's map uses) showed it did not: the agents' needs pinned at zero after the first month, every
+move was a quarrel or a war — 24 wars a month against §15's two to four — while the Director's
+strength regen pulled every power to ~900 and the fronts flipped coins.
+
+**The economy breathes.** Needs decline by what a power wants and grow by what it holds, balanced
+at home size, with a seeded jitter so equilibrium is not a dead point; war costs strength, goods
+and hulls every сводка; the Director's incidents move needs (a vein or a find brings ore, an
+embargo or a strike takes goods, a storm takes link) so scarcity arrives from outside and not only
+from arithmetic. Moves are drawn by probability, not by the first condition that matches: a power
+in need trades first, quarrels second, and declares war only with relations below −250, strength
+above 450, holdings at least half its home, no war of its own and fewer than two in the galaxy.
+Truce grows likelier with every сводка of war; a home's systems are defended a third of the time.
+Strength regenerates toward the cap its holdings set, not toward 1000; a power's tension cools by
+a share, not by three points. Relations revert at 5 % per сводка, as §15 says. A year replays in
+0.3 s: about ten wars a month, thirty systems taken, eight net changes, needs around 450, calm
+months and busy ones. Suite: `91zzzw-chron2` «в меру, а не нулём и не лавиной».
+
+**The players' hand actually enters the replay.** `chronState` used to cache the open сводка as
+the base of every later replay: it was stepped once with whatever ledger was on hand at that
+second and never again, and clients diverged by when they first looked. Now only the closed state
+(N−1) is cached and written to disk; the open сводка is stepped on top on every call, and a ledger
+or a circular arriving for a сводка already stepped throws the base away (`chronInvalidate`).
+`warPull` hashes the closed base instead of replaying from zero.
+
+**Circulars apply once.** `circApply` applied the latest circular every сводка for ever — needs
+crept +30 % a сводка to a thousand and a single `truce` ended every war until the end of time.
+Needs and events now apply at the сводка the paper is stamped with; the `season` is standing, lives
+in the chronicle state (clone, cache, hash) and is what the Director reads. **Бунт, находка and
+откол** are now in the Director's table — three families read them and nobody ever announced them.
+The pinned hashes in `91zzzw-chron` are re-recorded with the change, deliberately.
+
+---
 ## 0.401.1 - M410: one thumb
 
 The two-stick helm of M360 asked the right hand to hold the thrust while the left held the

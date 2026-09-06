@@ -141,8 +141,19 @@ function near(a,b,tol,msg){const h=Math.abs(a-b)<=tol;ok(h,h?msg:msg+" (полу
 const G_BOOT_KEYS=new Set(Object.keys(G));
 
 /* полный сброс мира: то же, что «начать заново», но без перезагрузки страницы */
+let TEST_CHRON=null;
 function resetWorld(){
   for(const k of Object.keys(G))if(!G_BOOT_KEYS.has(k))delete G[k];
+  /* летопись в наборах — тихая и одна на весь прогон (M412): семьи механик
+     читают её происшествия, и живая история в любой день подкладывала
+     истощение или утечку под набор про добычу — набор краснел от календаря.
+     Один повтор на прогон, происшествия сняты, состояние заморожено:
+     chronState() отдаёт его как есть, ведомости его не сбрасывают. Наборы
+     самой летописи (91zzzw-chron*) снимают заморозку сами */
+  if(typeof chronState==="function"&&typeof CHRON_FREEZE!=="undefined"){
+    if(!TEST_CHRON){CHRON_FREEZE=false;const s=chronState();s.lines=s.lines.filter(L=>L.kind!=="inc");TEST_CHRON=s;}
+    CHRON=chronClone(TEST_CHRON);CHRON._keys=chronKeys();CHRON_FREEZE=true;
+  }
   /* кэш систем — тоже мир: набор про озеро ставил планете type="terran" и
      уходил, а набор про семя через сорок наборов читал из кэша чужую планету.
      Красным это стало только когда быстрый ярус выкинул тяжёлый набор между

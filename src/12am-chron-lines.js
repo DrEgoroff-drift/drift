@@ -11,7 +11,8 @@ const CHRON_INC_RU={
   vein:"жила в поясе",fair:"ярмарка",embargo:"эмбарго",strike:"забастовка",
   holiday:"праздник",refugee:"переселение",storm:"вспышка",swarm:"рой",
   drain:"истощение",coup:"смена правления",purge:"чистка",envoy:"посольство",
-  spy:"утечка",patrol:"досмотр",census:"перепись",cult:"тихий уезд"
+  spy:"утечка",patrol:"досмотр",census:"перепись",cult:"тихий уезд",
+  revolt:"бунт",find:"находка",secede:"откол"
 };
 const CHRON_ARC_RU={
   shortage:"дефицит",frontier:"рубеж",succession:"наследство",

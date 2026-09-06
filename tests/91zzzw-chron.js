@@ -8,6 +8,7 @@ function chWorld(){
   resetWorld();
   try{localStorage.removeItem(CHRON_KEY);}catch(e){}
   CHRON={N:-1,powers:null,systems:null,wars:null,lines:null,_keys:null,off:0};
+  CHRON_BASE=null;CHRON_FREEZE=false;
   return G;
 }
 function chRun(n){
@@ -82,7 +83,7 @@ TEST_SUITES.push(()=>suite("летопись M370: в исходнике нет 
   const body=src.slice(i0,i2>i1?i2:i1+40000);
   /* потолок — не «сколько влезет», а проверка, что взяты ДВА модуля, а не
      полсборки: 0.386.0 добавил сюда ноту со сроком и упёрся в прежние 40 КБ */
-  ok(body.length>3000&&body.length<48000,"взят именно этот кусок: "+body.length);
+  ok(body.length>3000&&body.length<60000,"взят именно этот кусок: "+body.length);
   for(const bad of ["Math.exp","Math.sin","Math.cos","Math.pow","Math.tan","Math.log"])
     eq(body.indexOf(bad),-1,"в летописи нет "+bad);
   ok(body.indexOf("CHRON_SAT")>0,"насыщение берётся таблицей");
@@ -129,10 +130,11 @@ TEST_SUITES.push(()=>suite("летопись M370: карта знает хоз�
    числа сознательно, одной правкой вместе с изменением. */
 TEST_SUITES.push(()=>suite("летопись M370: узел и браузер считают одинаково",()=>{
   chWorld();
-  /* пересняты сознательно в 0.386.0: война начинается с ноты со сроком, и
-     нота вошла в шаг 4a и в хэш (до этого — 0.371.0, Директор в шаге 3) */
-  eq(chronHash(chRun(100)),2801870576,"сто сводок — известный хэш");
-  eq(chronHash(chRun(500)),1909606448,"пятьсот сводок — известный хэш");
+  /* пересняты сознательно в 0.401.2 (M412): нужды, ходы по вероятностям,
+     сила к потолку, дом держат, три новых происшествия — история другая
+     (до этого — 0.386.0: нота со сроком в шаге 4a; 0.371.0: Директор) */
+  eq(chronHash(chRun(100)),4144448898,"сто сводок — известный хэш");
+  eq(chronHash(chRun(500)),2518832259,"пятьсот сводок — известный хэш");
 }));
 
 /* ══════════════ Директор и шесть волн (M371, §15, §7.3) ══════════════ */
@@ -530,9 +532,14 @@ TEST_SUITES.push(()=>suite("циркуляр M381: годный применяе
   eq(circAll().length,1,"годный лёг");
   const st2=chronFresh();
   const was=st2.powers[0].need.ore;
-  circApply(st2,10);
+  /* применяется в СВОЮ сводку и разово (M412): циркуляр с n:0 двигает нужду
+     на нулевой сводке и не трогает её на десятой */
+  circApply(st2,0);
   ok(st2.powers[0].need.ore>was,"нужда сдвинулась: "+was+" → "+st2.powers[0].need.ore);
   eq(st2.powers[0].need.goods,500,"а соседняя нужда — нет");
+  const once=st2.powers[0].need.ore;
+  circApply(st2,10);
+  eq(st2.powers[0].need.ore,once,"и не копится сводка за сводкой");
   try{localStorage.removeItem(CHRON_KEY);}catch(e){}
   WAR_LED_CACHE=null;
 }));

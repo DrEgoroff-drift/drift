@@ -252,8 +252,32 @@ function Bird {
   "treplo.html: {0} КБ" -f [math]::Round((Get-Item $out).Length / 1KB)
 }
 
+# Летопись войны для сайта (M411). Карта на drift-game.ru/war.html повторяет
+# ту же историю, что и клиенты, — тем же кодом: здесь из src/ склеивается
+# `site/war.js` — заголовок с заглушками (`site/war-head.js`) плюс модули
+# летописи в порядке склейки игры. Список явный: страница не должна тянуть
+# шесть мегабайт игры ради трёхсот систем и шести агентов.
+$WAR_MODULES = @("01-core.js", "03a-hull-maker.js", "12al-powers.js",
+  "12am-chron-agents.js", "12am-chron-director.js", "12am-chron-lines.js", "12am-chron.js",
+  "12at-vote.js", "12av-boss.js", "12aw-circ.js", "12b0-fx-pow.js", "14b-war-net.js")
+function War {
+  $s = Join-Path $root "site"
+  $head = Join-Path $s "war-head.js"
+  if (-not (Test-Path $head)) { return "летописи для сайта нет" }
+  $parts = @([System.IO.File]::ReadAllText($head, $enc))
+  foreach ($m in $WAR_MODULES) {
+    $f = Join-Path $src $m
+    if (-not (Test-Path $f)) { throw "нет $f — war.js не соберётся" }
+    $parts += [System.IO.File]::ReadAllText($f, $enc)
+  }
+  $out = Join-Path $s "war.js"
+  [System.IO.File]::WriteAllText($out, ($parts -join "`n"), $enc)
+  "war.js: {0} КБ из {1} модулей" -f [math]::Round((Get-Item $out).Length / 1KB), $WAR_MODULES.Count
+}
+
 Build
 Bird
+War
 
 if ($Watch) {
   "слежу за src/ — Ctrl+C чтобы остановить"

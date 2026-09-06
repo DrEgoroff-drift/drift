@@ -32,7 +32,13 @@ const DIR_INCIDENTS=[
   {k:"spy",    f:"sec",   up:110},
   {k:"patrol", f:"sec",   up:30},
   {k:"census", f:"cult",  up:0},
-  {k:"cult",   f:"cult",  up:40}
+  {k:"cult",   f:"cult",  up:40},
+  /* три вида, которые семьи читали, а Директор не объявлял (M412): бунт в
+     занятой системе (12ay), находка — планета пригодна (12az), откол кластера
+     (12b0). Обещание без строки в этой таблице — ложь по правилу проекта */
+  {k:"revolt", f:"soc",   up:80},
+  {k:"find",   f:"nature",up:0},
+  {k:"secede", f:"power", up:120}
 ];
 const DIR_ARCS=["shortage","frontier","succession","expedition","quarantine","goldrush"];
 /* обряды §14 своими именами (M379): Директор их объявляет, `12au-rites` знает,
@@ -60,9 +66,14 @@ function chronSeasonValid(s){
   if(s.rites&&(!Array.isArray(s.rites)||s.rites.some(a=>DIR_RITES.indexOf(a)<0)))return false;
   return true;
 }
-function chronSeason(N){
+function chronSeason(N,st){
   const m=chronMonth(N);
-  const put=(typeof G!=="undefined"&&G.warSeason&&G.warSeason.m===m)?G.warSeason.s:null;
+  /* сезон живёт в состоянии летописи (M412): его кладёт циркуляр в свою сводку
+     (12aw), и он едет с повтором у всех одинаково. `G.warSeason` остаётся
+     вторым входом — для стенда и наборов */
+  let put=null;
+  if(st&&st.season&&st.season.m===m)put=st.season.s;
+  else if(typeof G!=="undefined"&&G.warSeason&&G.warSeason.m===m)put=G.warSeason.s;
   if(chronSeasonValid(put))return put;
   /* автопилот */
   const h=hashi(m,0x5EA,CHRON_SEED);
@@ -71,7 +82,7 @@ function chronSeason(N){
 }
 /* ── один шаг Директора (шаг 3 в §16.2) ── */
 function chronDirector(st,N){
-  const S=chronSeason(N);
+  const S=chronSeason(N,st);
   const rr=(a,b)=>hashi(N,a,(b|0)^0x0D18);
   if(!st.dir)st.dir={quiet:0,peak:0,calm:0,tens:0,last:{},arcs:[],rites:[]};
   const D=st.dir;
@@ -87,11 +98,7 @@ function chronDirector(st,N){
     D.calm--;
     D.tens=clampi(D.tens-120,0,1000);
     D.peak=0;
-  }else{
-    D.tens=clampi(D.tens+((target>D.tens)?18:-14),0,1000);
-    if(D.tens>800)D.peak++;else D.peak=0;
-    if(D.peak>DIR_PEAK){D.calm=5;D.peak=0;}
-  }
+  }else D.tens=clampi(D.tens+((target>D.tens)?18:-14),0,1000);
   let any=false;
   /* происшествия: у каждой державы свой бросок, и один вид не повторяется
      раньше чем через десять сводок */
@@ -108,6 +115,26 @@ function chronDirector(st,N){
        поэтому живут они здесь, внутри повтора: чистка отнимает треть силы,
        наследник обнуляет отношения, переворот переворачивает курс. Всё это
        детерминировано, как и остальное, и входит в хэш. */
+    /* ── происшествие трогает нужды (M412) ──
+       Жила и находка кладут руду, истощение и эмбарго её и товары отнимают,
+       забастовка и переселение бьют по товарам, ярмарка их прибавляет. Так у
+       агентов появляется то, чего им не хватает, — и повод торговать или
+       ссориться приходит извне, от Директора, а не только из их же арифметики:
+       без этого нужды сходились к равновесию и галактика засыпала */
+    {
+      const Q=st.powers[i].need,k=inc.k;
+      const bump=(key,v)=>{Q[key]=clampi(Q[key]+v,0,1000);};
+      if(k==="vein")bump("ore",150);else if(k==="find")bump("ore",100);
+      else if(k==="drain")bump("ore",-150);
+      else if(k==="embargo")bump("goods",-100);
+      else if(k==="strike")bump("goods",-60);
+      else if(k==="refugee")bump("goods",-40);
+      else if(k==="fair")bump("goods",100);
+      else if(k==="holiday")bump("goods",60);
+      else if(k==="storm")bump("link",-60);
+      else if(k==="swarm")bump("hulls",-40);
+      else if(k==="patrol")bump("link",40);
+    }
     if(inc.k==="purge")st.powers[i].str=clampi((st.powers[i].str*7/10)|0,100,1000);
     if(inc.k==="coup")st.powers[i].tension=clampi(st.powers[i].tension+150,0,1000);
     if(inc.k==="envoy"){                       /* посольство: наследник и сброс */
@@ -120,12 +147,20 @@ function chronDirector(st,N){
     chronLine(st,N,"inc",i,null,{k:inc.k,f:inc.f});
     any=true;
   }
+  /* пик считается ПОСЛЕ происшествий (M412): они поднимают напряжение в ту же
+     сводку, и счётчик, стоявший до них, видел спад там, где игрок видел пик —
+     пик тянулся четырнадцать сводок вместо двенадцати */
+  if(D.calm<=0){
+    if(D.tens>800)D.peak++;else D.peak=0;
+    if(D.peak>DIR_PEAK){D.calm=5;D.peak=0;}
+  }
   /* дуги: начинаются редко и обязаны кончиться — либо своей развязкой, либо
      развязкой по умолчанию на двадцатой сводке */
   for(let i=0;i<6;i++){
     const cur=D.arcs.find(a=>a.p===i);
     if(!cur){
-      if(D.tens<820&&(rr(i,0x33)%1000)<120){
+      /* §15: .08 — при .12 дуга висела на каждой державе всегда (M412) */
+      if(D.tens<820&&(rr(i,0x33)%1000)<80){
         const allow=(S.arcs&&S.arcs.length)?S.arcs:DIR_ARCS;
         const kind=allow[rr(i,0x44)%allow.length];
         D.arcs.push({p:i,kind,t0:N,stage:0});
@@ -168,11 +203,16 @@ function chronDirector(st,N){
     chronLine(st,N,"inc",i,null,{k:inc.k,f:inc.f,forced:1});
     D.quiet=0;
   }
-  /* ограничители §15: сила восстанавливается, но держава не падает ниже
-     трети своего дома — ниже этого она «выживает», а не исчезает */
+  /* ограничители §15: сила восстанавливается на восьмую часть разрыва за
+     сводку — к ПОТОЛКУ ОТ ВЛАДЕНИЙ, а не к тысяче (M412). Тянуть к тысяче
+     значило, что ограничитель шага 6 не работает: все шестеро сидели у 900,
+     разница сил была нулём и фронт бросал монетку (замер 0.401.1). Держава
+     не падает ниже трети своего дома — ниже этого она «выживает», а не
+     исчезает; это шаг 6 в 12am-chron */
   for(let i=0;i<6;i++){
     const P=st.powers[i];
-    P.str=clampi(P.str+((1000-P.str)/12|0),100,1000);
+    const cap=clampi(300+P.hold*6,300,900);
+    P.str=clampi(P.str+((cap-P.str)/12|0),100,1000);
   }
 }
 /* ── что сейчас происходит ──

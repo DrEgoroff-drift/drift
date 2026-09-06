@@ -10,7 +10,8 @@ function fxWorld(){
   G.sx=0;G.sy=0;
   try{localStorage.removeItem(CHRON_KEY);}catch(e){}
   if(typeof WAR_LED_CACHE!=="undefined")WAR_LED_CACHE=null;
-  CHRON={N:-1,powers:null,systems:null,wars:null,lines:null,_keys:null,off:0};
+  /* летопись — тихая и замороженная из resetWorld (M412): происшествия
+     наборы ставят сами через fxInc, а не берут из календаря */
   return G;
 }
 /* поставить одно происшествие в летопись «здесь и сейчас» */
@@ -484,6 +485,11 @@ TEST_SUITES.push(()=>suite("безопасность M387: король, шпи�
   fxWorld();
   const own=chronOwner(0,0);
   if(own>=0){
+    /* «без утечки» — это условие, а не удача: в живой истории утечка у хозяина
+       нулевого сектора может как раз идти (M412 переписал историю, и шла).
+       Снимаем её из строк перед проверкой */
+    {const S0=chronState();S0.lines=S0.lines.filter(L=>!(L.kind==="inc"&&L.args&&L.args.k==="spy"));}
+    SEC_SPY_CACHE={k:"",v:false};
     eq(secSpyMul("iron",0,0),1,"без утечки цены не врут");
     fxInc("spy",own);
     SEC_SPY_CACHE={k:"",v:false};

@@ -59,6 +59,8 @@ function warLedPut(N,body){
   while(keys.length>120)delete L[keys.shift()];
   WAR_LED_CACHE=L;
   warStoreSet({led:L});
+  /* сводка, которую уже шагали, получила ведомость: повтор от неё заново (M412) */
+  if(typeof chronInvalidate==="function")chronInvalidate(N);
 }
 function warLedLast(){
   const keys=Object.keys(warLed()).map(Number);
@@ -99,13 +101,20 @@ function warPull(force){
     if(r.open&&r.open.n!==undefined)warLedPut(r.open.n|0,body(r.open));
     /* циркуляры приезжают тем же ответом и проверяются конституцией на входе
        (M381): негодный не кладётся вовсе */
-    if(Array.isArray(r.circ)&&r.circ.length&&typeof circPut==="function")
+    if(Array.isArray(r.circ)&&r.circ.length&&typeof circPut==="function"){
       circPut(circAll().concat(r.circ));
-    /* хэш за прошлую сводку: сервер только считает, кто с кем сошёлся */
+      /* циркуляр помечен сводкой: от неё повтор заново (M412) */
+      if(typeof chronInvalidate==="function")
+        chronInvalidate(Math.min.apply(null,r.circ.map(c=>c.n|0)));
+    }
+    /* хэш за прошлую сводку: сервер только считает, кто с кем сошёлся. Прошлая
+       сводка — это и есть закрытая база повтора (M412), считать её заново от
+       нуля незачем */
     try{
       const st=chronState();
-      if(st&&st.N>0)warCall("hash",{n:st.N-1,h:String(chronHash(chronReplay(st.N-1,null)))})
-        .then(h=>{if(h&&h.ok&&h.agree===false)logAdd("warn","Летопись разошлась с большинством на сводке "+h.n);})
+      const base=(typeof CHRON_BASE!=="undefined"&&CHRON_BASE&&CHRON_BASE.N===st.N-1)?CHRON_BASE:null;
+      if(st&&st.N>0)warCall("hash",{n:st.N-1,h:String(chronHash(base||chronReplay(st.N-1,null)))})
+        .then(h=>{if(h&&h.ok&&h.agree===false&&typeof logAdd==="function")logAdd("warn","Летопись разошлась с большинством на сводке "+h.n);})
         .catch(()=>{});
     }catch(e){}
     return true;
