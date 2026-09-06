@@ -126,3 +126,137 @@ TEST_SUITES.push(()=>suite("база M390: старое сохранение о�
   eq(B3.log.length,1,"журнал пережил сохранение");
   eq(B3.log[0].t,"смена прошла тихо","и текст цел");
 }));
+
+/* ── воздух и вода (M391) ──
+   Мерится главное обещание §13: базу можно уморить, но не насмерть. Она встаёт
+   раньше, чем начнёт голодать, и встаёт обратимо. */
+function bCrew(B,n){
+  G.crew=[];
+  for(let i=0;i<n;i++)G.crew.push({name:"Вахтовик "+(i+1),role:"driller",spec:"mine",
+    lvl:1,morale:1,seed:i+1,trips:0,state:null,
+    order:{kind:"base",sx:B.sx,sy:B.sy,idx:B.idx}});
+  return G.crew;
+}
+
+TEST_SUITES.push(()=>suite("база M391: воздух и вода, и кто их тратит",()=>{
+  const B=bLife();
+  /* запас есть у всякой базы, и он целый */
+  const L=baseLife(B);
+  eq(L.air,LIFE_START,"воздух с чего-то начинается");
+  eq(L.water,LIFE_START,"и вода тоже");
+  /* ── без людей база не ест ──
+     Иначе всякий, кто заложил базу и улетел, возвращался бы к развалине, ни
+     разу не согласившись на эту игру. */
+  G.crew=[];
+  B.t0=baseShift()-20;
+  baseResolve(B,Date.now());
+  eq(baseLife(B).air,LIFE_START,"за двадцать смен без людей воздух не тронут");
+  eq(baseLife(B).water,LIFE_START,"и вода тоже");
+  ok(!baseParked(B),"и вставать не с чего");
+  /* ── с людьми ест ровно по таблице ── */
+  bCrew(B,2);
+  eq(baseLifeNeed(B).air,2*LIFE_AIR,"двое дышат вдвое");
+  B.t0=baseShift()-3;
+  baseResolve(B,Date.now());
+  eq(baseLife(B).air,LIFE_START-3*2*LIFE_AIR,"три смены на двоих — шесть заходов дыхания");
+  eq(baseLife(B).water,LIFE_START-3*2*LIFE_WATER,"и столько же воды");
+  /* ── машины делают запас изо льда ──
+     И делают ровно столько, сколько им дали энергии: на голодном пайке
+     электролизёр отдаёт меньше, чем люди дышат, и это не ошибка, а сцепка
+     двух шкал. Поэтому второй реактор здесь не для красоты. */
+  B.cells[1]={k:"lyse",hp:1};B.cells[3]={k:"melter",hp:1};
+  ok(basePower(B).eff<1,"на одном реакторе энергии не хватает");
+  B.cells[4]={k:"reactor",hp:1};
+  eq(basePower(B).eff,1,"со вторым — хватает");
+  B.pool.ice=100;
+  const a0=baseLife(B).air,i0=B.pool.ice;
+  B.t0=baseShift()-1;
+  baseResolve(B,Date.now());
+  ok(baseLife(B).air>a0,"электролизёр прибавил воздуха: "+a0+" → "+baseLife(B).air);
+  ok(B.pool.ice<i0,"и лёд на это ушёл: "+i0+" → "+B.pool.ice);
+  /* лёд кончился — машина просто стоит, и это не поломка */
+  B.pool.ice=0;
+  const a1=baseLife(B).air;
+  B.t0=baseShift()-1;
+  baseResolve(B,Date.now());
+  ok(baseLife(B).air<a1,"без льда машина не делает ничего, а люди дышат");
+}));
+
+TEST_SUITES.push(()=>suite("база M391: встала, но не умерла",()=>{
+  const B=bLife();
+  bCrew(B,2);
+  B.pool.ice=0;
+  baseLife(B).air=2;baseLife(B).water=LIFE_START;
+  const ore0=bPool(B);
+  B.t0=baseShift()-1;
+  baseResolve(B,Date.now());
+  /* ── §13: перестаёт работать раньше, чем начнёт голодать ── */
+  ok(baseParked(B),"запас кончился — база встала");
+  eq(baseLife(B).air,0,"воздух в нуле, а не в минусе: долг не копится");
+  ok(B.log.some(x=>x.k==="park"),"и журнал говорит, когда это случилось");
+  ok(bPool(B)===ore0,"вставшая база не добывает");
+  /* люди на малом ходу едят втрое меньше */
+  eq(baseLifeNeed(B).air,Math.ceil(2*LIFE_AIR/LIFE_LOW),"на малом ходу расход втрое меньше");
+  /* никто не умер и ничего не разрушено */
+  eq(G.crew.length,2,"люди на месте");
+  for(const c of B.cells)if(c)ok(c.hp>0,"и отсеки целы");
+  /* ── снабжение поднимает базу ── */
+  G.cargo.oxygen=(G.cargo.oxygen|0)+10;
+  const got=baseSupply(B,"oxygen",10);
+  eq(got,10,"кислород сдан");
+  eq(baseLife(B).air,10*LIFE_SUPPLY.oxygen.q,"и стал воздухом по таблице");
+  ok(!baseParked(B),"база снялась с консервации");
+  ok(B.log.some(x=>x.k==="wake"),"и это записано");
+  /* смена на раскочегарку: первая смена после подъёма ничего не даёт */
+  const ore1=bPool(B);
+  B.t0=baseShift()-1;
+  baseResolve(B,Date.now());
+  eq(bPool(B),ore1,"смена на раскочегарку не добывает");
+  B.t0=baseShift()-1;
+  baseResolve(B,Date.now());
+  ok(bPool(B)>ore1,"а следующая — уже да");
+  /* лёд идёт и в запас, и на склад: он и вода, и сырьё */
+  G.cargo.ice=(G.cargo.ice|0)+5;
+  const w0=baseLife(B).water,ice0=B.pool.ice|0;
+  baseSupply(B,"ice",5);
+  eq(baseLife(B).water,w0+5*LIFE_SUPPLY.ice.q,"лёд стал водой");
+  eq(B.pool.ice|0,ice0+5,"и лёг на склад");
+}));
+
+TEST_SUITES.push(()=>suite("база M391: консервация — это ход, а не наказание",()=>{
+  const B=bLife();
+  bCrew(B,1);
+  ok(basePark(B,"hand",baseShift()),"базу законсервировали рукой");
+  ok(baseParked(B),"она стоит");
+  ok(B.park<0,"и стоит она НЕ из-за запаса");
+  const ore0=bPool(B);
+  B.t0=baseShift()-5;
+  baseResolve(B,Date.now());
+  eq(bPool(B),ore0,"пять смен консервации не добыли ничего");
+  ok(baseParked(B),"и сама она не встанет: рукой поставили — рукой и снимать");
+  ok(baseLife(B).air>0,"запас при этом цел");
+  ok(baseWake(B,baseShift(),"hand"),"сняли");
+  ok(!baseParked(B),"база на ходу");
+  /* и запас на консервации расходуется втрое медленнее полного хода */
+  const B2=bLife();
+  bCrew(B2,3);
+  const full=baseLifeNeed(B2).air;
+  basePark(B2,"hand",baseShift());
+  ok(baseLifeNeed(B2).air<full,"на малом ходу расход меньше: "+baseLifeNeed(B2).air+" против "+full);
+}));
+
+TEST_SUITES.push(()=>suite("база M391: старая запись грузится полной",()=>{
+  const B=bLife();
+  baseLife(B).air=17;
+  const s=JSON.parse(JSON.stringify(snapshot()));
+  eq(s.bases[Object.keys(s.bases)[0]].life.air,17,"запас пишется в сохранение");
+  applySave(JSON.parse(JSON.stringify(s)));
+  eq(G.bases[Object.keys(G.bases)[0]].life.air,17,"и читается обратно");
+  /* запись до M391 запаса не знает — база грузится полной и не встаёт с порога */
+  for(const k in s.bases)delete s.bases[k].life;
+  applySave(s);
+  const B2=G.bases[Object.keys(G.bases)[0]];
+  eq(B2.life.air,LIFE_START,"старая база грузится с полным запасом");
+  eq(B2.life.water,LIFE_START,"по обоим");
+  ok(!baseParked(B2),"и не встаёт с порога");
+}));

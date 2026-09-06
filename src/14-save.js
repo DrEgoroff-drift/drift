@@ -657,6 +657,11 @@ function applySave(s){
            же, как раньше подтягивался `tMs`, — простой между сеансами базе не
            начисляется. Журнал переживает загрузку: это её память, а не кэш */
         t0:(typeof baseShift==="function")?baseShift():0,
+        /* запас и консервация (M391): старая база грузится полной — она и
+           правда стояла без людей, а значит ничего не тратила */
+        life:{air:(b.life&&+b.life.air>=0)?+b.life.air|0:LIFE_START,
+              water:(b.life&&+b.life.water>=0)?+b.life.water|0:LIFE_START},
+        park:b.park|0,
         log:Array.isArray(b.log)?b.log.slice(-24).map(x=>({n:x.n|0,k:String(x.k||""),
           t:String(x.t||"").slice(0,160)})):[],
         tMs:Date.now(),built:+b.built||Date.now()};

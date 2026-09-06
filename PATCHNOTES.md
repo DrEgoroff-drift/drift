@@ -7,6 +7,32 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.391.0 - M391: the base breathes, and can be starved without being killed
+
+Two gauges and two modules. **Электролизёр** turns 6 ice into 6 air a shift, **ледоплавка** turns
+8 ice into 8 water, and both scale with the power they actually get — on one reactor an
+electrolyser gives back less than the crew breathes, which is not a bug but the two gauges being
+wired to each other. A person breathes 2 and drinks 2 a shift, and **only people consume**: a base
+with nobody on it eats nothing and can stand forever, so founding a base and flying away does not
+quietly turn it into a ruin.
+
+**Кончился запас — база встаёт.** §13's promise, and it is a promise, not a threat: the store
+stops at zero instead of going negative, mining and refining stop, the crew go to «малый ход» and
+consume a third, the journal writes the shift it happened, and nothing is destroyed, nobody dies
+and no debt accrues. What is lost is tempo. Bring oxygen (1 → 8 air) or ice (1 → 1 water, and it
+also lands in the store as feedstock for both machines) and the base wakes by itself — one shift
+goes on getting the fires up again, and then it works.
+
+**Консервация as a button**, on the base's row at the home desk: park the base deliberately before
+a long flight, and it stops consuming and stops producing until you unpark it. That is the correct
+play before a long trip, and it is the same mechanism as the involuntary stop — a base parked by
+hand does not wake itself when supplies arrive, because a hand put it there.
+
+This is the pass after which the layer is a game: something can now go wrong at a base while you
+are away, and the answer to it is a flight with a hold full of the holding's own oxygen and ice —
+the first thing in the game that eats them (`DESIGN-base` §14).
+
+---
 ## 0.390.0 - M390: the base gets a shift, a replay and a journal
 
 The base used to live on its own clock: `baseTick` counted **minutes** off the wall clock, and

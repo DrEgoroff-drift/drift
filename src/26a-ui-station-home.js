@@ -158,6 +158,16 @@ function renderBasesTab(st){
       if(!P.drills)warn.push("нет буровой — база ничего не добывает");
       if(hold>=P.store*.98)warn.push("склад полон — добыча встала");
       if(P.habPenalty)warn.push("жилой отсек прижат к реактору");
+      /* жизнеобеспечение (M391): встала база или дышит — первое, что надо
+         знать о ней со стола, потому что это единственное, что нельзя
+         отложить до следующего прилёта */
+      if(typeof baseParked==="function"&&baseParked(B))
+        warn.push(B.park<0?"законсервирована — добычи нет"
+                          :"встала: кончился запас — добычи нет");
+      else if(typeof baseLifeLeft==="function"&&baseCrewN(B)){
+        const lf=baseLifeLeft(B);
+        if(Math.min(lf.air,lf.water)<=6)warn.push("запаса меньше чем на шесть смен");
+      }
       const r=el("div","row");
       r.appendChild(el("div","nm","<b>"+B.name+"</b> <span style='color:var(--dim)'>сектор "+
         B.sx+","+B.sy+(here?" · вы здесь":"")+"</span><s>"+
@@ -171,7 +181,32 @@ function renderBasesTab(st){
         r.firstChild.innerHTML+="<s>персонал "+staff.length+"/"+baseSlots(B)+
           (staff.length?" · "+staff.map(c=>c.name+" — "+BASE_ROLES[c.role].ru+
             (roleForce(c)<1?" (не по профилю)":"")).join(", "):"")+"</s>";
+      if(typeof baseLifeLine==="function")
+        r.firstChild.innerHTML+="<s>"+baseLifeLine(B)+"</s>";
       r.appendChild(el("div","qt",P.pads?"площадка":"—"));
+      /* снабдить можно только там, где вы есть: запас возят, а не заказывают */
+      if(here&&typeof baseSupply==="function"){
+        for(const k in LIFE_SUPPLY){
+          if((G.cargo[k]|0)<=0)continue;
+          const b=el("button","act",RES[k].ru.toUpperCase());
+          b.title="сдать на базу весь "+RES[k].ru.toLowerCase()+" из трюма";
+          b.onclick=()=>{baseSupply(B,k,G.cargo[k]|0);renderTab();};
+          r.appendChild(b);
+        }
+      }
+      /* консервация (§13): правильный ход перед долгой дорогой, а не наказание */
+      if(typeof basePark==="function"){
+        const parked=baseParked(B);
+        const b=el("button","act",parked?"РАСКОНСЕРВИРОВАТЬ":"КОНСЕРВАЦИЯ");
+        b.title=parked?"смена уйдёт на раскочегарку"
+                      :"база встанет сама и перестанет тратить запас";
+        b.onclick=()=>{
+          const n=(typeof baseShift==="function")?baseShift():0;
+          if(parked)baseWake(B,n,"hand");else basePark(B,"hand",n);
+          renderTab();
+        };
+        r.appendChild(b);
+      }
       /* логист на месте — груз можно забрать отсюда, не прилетая (M38) */
       if(baseRoleForce(B,"logist")>0&&hold>0){
         const b=el("button","act","ЗАБРАТЬ");

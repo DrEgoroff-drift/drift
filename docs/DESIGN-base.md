@@ -1497,7 +1497,15 @@ roll is keyed by shift number so ten visits of one shift equal one visit of ten 
 `91zzzw-base`), the catch-up stops at 72 shifts and collapses anything older than 24 into one
 summary line, and the journal keeps 24 lines in ten kinds — the ten things the base already does —
 with the visit opening on it. **Deferred:** nothing; the stores it exists for arrive with M391.
-· M391 воздух и вода (§4–6, §13) ·
+· ~~M391 воздух и вода~~ — 0.391.0 (2026-09-06): two gauges in `21a1-base-life`, электролизёр and
+ледоплавка in `BUILD`, production scaled by the power actually available, consumption **only by
+people** so an unstaffed base stands forever, the §13 stop (store clamps at zero, mining and
+refining stop, crew to «малый ход» at a third, one journal line, nothing destroyed), provisioning
+from the hold (кислород 1 → воздух 8, лёд 1 → вода 1 and into the store as feedstock), and
+консервация as a button on the desk row — a hand-parked base does not wake itself. Suites in
+`91zzzw-base`. **Deferred:** the person who walks to the station on a long stop (it belongs with
+дух, M393), and standby as a partial shutdown in the §13 order — today the stop is whole-base and
+the order table only names what stopped. ·
 M392 тепло, глубина, криоцех (§4–7) · M393 харч и дух (§6, §8).
 
 **B · место и люди** — M394 СВЯЗЬ и мачта (§38, §45 — pulled forward: it is what makes every later

@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 479 · символов верхнего уровня: 4432
+Файлов: 479 · символов верхнего уровня: 4453
 
 ## СИМВОЛЫ
 
@@ -176,38 +176,50 @@ BASE_MIN                     src/21a1-base-life.js:27
 BASE_OX                      src/21a-mode-base.js:9
 BASE_ROLES                   src/12a-crew.js:158
 BASE_ROOM                    src/21ab-base-interiors.js:9
-baseAt                       src/21a-mode-base.js:44
-baseCell                     src/21a-mode-base.js:94
-baseCollect                  src/21a-mode-base.js:250
-baseCost                     src/21a-mode-base.js:47
-baseEarn                     src/21a1-base-life.js:108
-baseFixTick                  src/21a-mode-base.js:236
+BASE_STANDBY                 src/21a1-base-life.js:189
+baseAt                       src/21a-mode-base.js:53
+baseCell                     src/21a-mode-base.js:103
+baseCollect                  src/21a-mode-base.js:259
+baseCost                     src/21a-mode-base.js:56
+baseCrewN                    src/21a1-base-life.js:196
+baseEarn                     src/21a1-base-life.js:120
+baseFixTick                  src/21a-mode-base.js:245
 baseGrowCheck                src/21a-mode-base.js:14
-baseJumpCost                 src/21a-mode-base.js:269
-baseKey                      src/21a-mode-base.js:43
-baseList                     src/21a-mode-base.js:263
-baseLog                      src/21a1-base-life.js:68
-baseLogList                  src/21a1-base-life.js:75
-baseMine                     src/21a1-base-life.js:124
-baseNeighbors                src/21a-mode-base.js:99
-basePads                     src/21a-mode-base.js:268
-basePoolHeld                 src/21a-mode-base.js:151
-basePower                    src/21a-mode-base.js:109
-baseRaid                     src/21a-mode-base.js:160
-baseResolve                  src/21a1-base-life.js:158
-baseResolveAll               src/21a1-base-life.js:182
+baseJumpCost                 src/21a-mode-base.js:278
+baseKey                      src/21a-mode-base.js:52
+baseLife                     src/21a1-base-life.js:190
+baseLifeLeft                 src/21a1-base-life.js:212
+baseLifeLine                 src/21a1-base-life.js:287
+baseLifeMakers               src/21a1-base-life.js:203
+baseLifeNeed                 src/21a1-base-life.js:198
+baseLifeStep                 src/21a1-base-life.js:235
+baseList                     src/21a-mode-base.js:272
+baseLog                      src/21a1-base-life.js:74
+baseLogList                  src/21a1-base-life.js:81
+baseMine                     src/21a1-base-life.js:136
+baseNeighbors                src/21a-mode-base.js:108
+basePads                     src/21a-mode-base.js:277
+basePark                     src/21a1-base-life.js:216
+baseParked                   src/21a1-base-life.js:197
+basePoolHeld                 src/21a-mode-base.js:160
+basePower                    src/21a-mode-base.js:118
+baseRaid                     src/21a-mode-base.js:169
+baseResolve                  src/21a1-base-life.js:298
+baseResolveAll               src/21a1-base-life.js:322
 baseRoleForce                src/12a-crew.js:172
 baseRoomPath                 src/21ac-base-draw.js:14
 baseRows                     src/21a-mode-base.js:13
-baseSet                      src/21a-mode-base.js:95
+baseSet                      src/21a-mode-base.js:104
 baseShift                    src/21a1-base-life.js:28
-baseShiftRun                 src/21a1-base-life.js:83
+baseShiftRun                 src/21a1-base-life.js:89
 baseSince                    src/21a1-base-life.js:36
 baseSlots                    src/12a-crew.js:167
 baseStaff                    src/12a-crew.js:168
-baseStorm                    src/21a-mode-base.js:204
+baseStorm                    src/21a-mode-base.js:213
+baseSupply                   src/21a1-base-life.js:270
 baseT0                       src/21a1-base-life.js:31
-baseWho                      src/21a1-base-life.js:44
+baseWake                     src/21a1-base-life.js:224
+baseWho                      src/21a1-base-life.js:45
 BATT_COOL                    src/21d-battery.js:13
 BATT_DMG                     src/21d-battery.js:14
 BATT_RANGE                   src/21d-battery.js:12
@@ -217,6 +229,7 @@ battTarget                   src/21d-battery.js:33
 battTick                     src/21d-battery.js:36
 bBox                         src/21aa-base-rooms.js:23
 bCrate                       src/21aa-base-rooms.js:270
+bCrew                        tests/91zzzw-base.js:133
 bDress                       src/21aa-base-rooms.js:122
 BEACON_COOL                  src/23-mode-dig.js:85
 beaconCool                   src/23-mode-dig.js:86
@@ -293,7 +306,7 @@ bldUpgradeCost               src/12ac-bld.js:152
 bldWant                      src/12ad-site.js:243
 bldWhy                       src/12ad-site.js:147
 bLife                        tests/91zzzw-base.js:5
-BLOG                         src/21a1-base-life.js:49
+BLOG                         src/21a1-base-life.js:50
 BLOOM_CV                     src/19c-light.js:338
 BLOOM_K                      src/19c-light.js:339
 bloomPass                    src/19c-light.js:341
@@ -350,7 +363,7 @@ brownNoise                   src/10-music.js:126
 brSweep                      tests/91zzzzzc-broke.js:41
 bScreen                      src/21aa-base-rooms.js:256
 BUILD                        src/21a-mode-base.js:23
-BUILD_KEYS                   src/21a-mode-base.js:42
+BUILD_KEYS                   src/21a-mode-base.js:51
 buildAi                      src/12f-mgr-ai.js:29
 builtHere                    src/21c-built.js:19
 builtKey                     src/21c-built.js:17
@@ -366,7 +379,7 @@ bWorker                      src/21aa-base-rooms.js:322
 camBtnTick                   src/25g-postcard.js:666
 camOffset                    src/19c-light.js:155
 camStep                      src/19c-light.js:141
-canPay                       src/21a-mode-base.js:52
+canPay                       src/21a-mode-base.js:61
 CANT_STYLE                   src/27d-ui-cantina.js:15
 cantBarkeep                  src/27d-ui-cantina-props.js:15
 cantBubble                   src/27c-ui-hq.js:264
@@ -451,8 +464,8 @@ celHere                      src/06a-celest.js:130
 cellCenter                   src/24a-mode-raid.js:83
 celLine                      src/06a-celest.js:145
 celLon                       src/06a-celest.js:54
-cellX                        src/21a-mode-base.js:92
-cellY                        src/21a-mode-base.js:93
+cellX                        src/21a-mode-base.js:101
+cellY                        src/21a-mode-base.js:102
 celMoonPeriod                src/06a-celest.js:59
 celMoonPhase                 src/06a-celest.js:60
 celNow                       src/06a-celest.js:133
@@ -1178,7 +1191,7 @@ endPtr                       src/15-input.js:381
 energyCap                    src/05c-arms.js:166
 energyRegen                  src/05c-arms.js:167
 engineLoop                   src/09-audio.js:309
-enterBase                    src/21a-mode-base.js:69
+enterBase                    src/21a-mode-base.js:78
 enterBelt                    src/24-mode-belt.js:89
 enterCave                    src/22-mode-cave.js:175
 enterDig                     src/23-mode-dig.js:50
@@ -1222,7 +1235,7 @@ evacFrom                     src/21-mode-surface.js:661
 evacuate                     src/21-mode-surface.js:662
 exhaustHaze                  src/16a-space.js:347
 exileCandidates              src/12g-mgr-rogue.js:123
-exitBase                     src/21a-mode-base.js:88
+exitBase                     src/21a-mode-base.js:97
 exitBelt                     src/24-mode-belt.js:175
 exitCave                     src/22-mode-cave.js:233
 exitDig                      src/23-mode-dig.js:70
@@ -1384,7 +1397,7 @@ folkShown                    src/12u-folk.js:114
 folkShut                     src/11ah-offer.js:90
 folkState                    src/12u-folk.js:83
 folkVisit                    src/12u-folk.js:104
-foundBase                    src/21a-mode-base.js:54
+foundBase                    src/21a-mode-base.js:63
 frame                        src/28-loop.js:339
 frameBody                    src/28-loop.js:190
 frameLastAt                  src/28-loop.js:338
@@ -1946,7 +1959,7 @@ jobPick                      src/12e-mgr-jobs.js:259
 jobRefuse                    src/12e-mgr-jobs.js:57
 jobTick                      src/12e-mgr-jobs.js:287
 jump                         src/18-mode-map.js:586
-jumpToBase                   src/21a-mode-base.js:273
+jumpToBase                   src/21a-mode-base.js:282
 KEEP_DARK_AFTER              src/11k-keepers.js:48
 KEEP_HABIT                   src/11k-keepers.js:35
 KEEP_LAST                    src/11k-keepers.js:84
@@ -2092,6 +2105,14 @@ lgBox                        tests/91zzzzy-light.js:22
 lgBrightest                  tests/91zzzzy-light.js:40
 lgClean                      tests/91zzzzy-light.js:54
 lgHour                       tests/91zzzzy-light.js:75
+LIFE_AIR                     src/21a1-base-life.js:178
+LIFE_CAP                     src/21a1-base-life.js:180
+LIFE_LOW                     src/21a1-base-life.js:182
+LIFE_LYSE                    src/21a1-base-life.js:183
+LIFE_MELT                    src/21a1-base-life.js:184
+LIFE_START                   src/21a1-base-life.js:181
+LIFE_SUPPLY                  src/21a1-base-life.js:186
+LIFE_WATER                   src/21a1-base-life.js:179
 LIGHTS_SOON                  src/11g-lights.js:23
 lightsAll                    src/11g-lights.js:24
 lightsArrive                 src/11g-lights.js:53
@@ -2758,7 +2779,7 @@ passLight                    src/11p-pass.js:49
 passShipX                    src/11p-pass.js:34
 passTell                     src/11p-pass.js:55
 PAX_KEYS                     src/02-world.js:93
-payCost                      src/21a-mode-base.js:53
+payCost                      src/21a-mode-base.js:62
 PC_GRAIN                     src/25g-post-craft.js:7
 pcA                          src/25g-postcard.js:149
 pcBelt                       src/25g-post-void.js:58
@@ -3852,7 +3873,7 @@ STORIES                      src/12k-stories-a.js:45
 STORIES_B                    src/12k-stories-b.js:27
 STORIES_C                    src/12k-stories-c.js:23
 STORIES_D                    src/12k-stories-d.js:15
-STORM_WORLDS                 src/21a-mode-base.js:203
+STORM_WORLDS                 src/21a-mode-base.js:212
 STORY_DAY                    src/11c-stories.js:24
 STORY_ETHER_SHARE            src/11c-stories.js:26
 STORY_FIX                    src/11c-stories.js:54
@@ -4125,7 +4146,7 @@ unlockAudio                  src/09-audio.js:48
 unpackPart                   src/05-parts.js:484
 updateAllies                 src/12a-crew.js:619
 updateBarges                 src/12l-barge.js:165
-updateBase                   src/21a-mode-base.js:292
+updateBase                   src/21a-mode-base.js:301
 updateBelt                   src/24-mode-belt.js:185
 updateCave                   src/22-mode-cave.js:251
 updateCaveDeco               src/22a-cave-deco.js:205
@@ -4975,7 +4996,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/13d-npc.js · 13 КБ
   · война, которую видно (M372, §7.4):1
 
-## src/14-save.js · 66 КБ
+## src/14-save.js · 67 КБ
   · сохранение:1
   · запись не имеет права убить полёт:98
   · пустая карта возвращается из облака СПИСКОМ:177
@@ -5112,17 +5133,18 @@ zooTick                      src/11ad-zoo.js:41
   · поверхность:1
   · навигатор и подсказки сверху:716
 
-## src/21a-mode-base.js · 22 КБ
+## src/21a-mode-base.js · 23 КБ
   · база на планете: вид в разрезе:1
-  · энергия и соседство:96
-  · ленивое время базы:152
-  · налёты пиратов на базу:156
-  · буря:198
-  · сеть баз:260
-  · обновление сцены:291
+  · энергия и соседство:105
+  · ленивое время базы:161
+  · налёты пиратов на базу:165
+  · буря:207
+  · сеть баз:269
+  · обновление сцены:300
 
-## src/21a1-base-life.js · 11 КБ
+## src/21a1-base-life.js · 19 КБ
   · смена базы и журнал (M390, DESIGN-base §3, §12, §15):1
+  · воздух и вода (M391, DESIGN-base §4–6, §13):167
 
 ## src/21aa-base-rooms.js · 36 КБ
   · база: внутренности отсеков:1
@@ -5281,7 +5303,7 @@ zooTick                      src/11ad-zoo.js:41
   · заголовки и полосы (M299, docs/DESIGN-screens.md §1a):212
   · настройки:948
 
-## src/26a-ui-station-home.js · 13 КБ
+## src/26a-ui-station-home.js · 15 КБ
   · станция: вкладка «дом и базы»:1
 
 ## src/26b-ui-station-work.js · 19 КБ
@@ -5775,7 +5797,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzzv-wall.js · 7 КБ
   · автотесты: стена, которая помнит (M210):1
 
-## tests/91zzzw-base.js · 8 КБ
+## tests/91zzzw-base.js · 15 КБ
   · база: смена, повтор и журнал (M390, DESIGN-base §3, §12):1
 
 ## tests/91zzzw-chron.js · 33 КБ
