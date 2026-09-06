@@ -61,7 +61,11 @@ function repLine(sys){
    Обе функции живут здесь, а не в станции: цена — это отношение, и держать её
    рядом с репутацией честнее, чем размазывать множители по экранам. */
 function fuelPriceHere(){
-  return Math.max(1,Math.round((G.st?G.st.fuelPrice:10)*repFuelMul()*(typeof holdFuelMul==="function"?holdFuelMul():1)));   /* Заправочный узел (F2) */
+  /* талоны (M379, §14 обряд 4): бак по талону стоит четверть — один на борт за
+     сводку. Это единственное место, где обряд трогает кошелёк напрямую */
+  const coup=(typeof riteFuelMul==="function")?riteFuelMul():1;
+  return Math.max(1,Math.round((G.st?G.st.fuelPrice:10)*repFuelMul()*
+    (typeof holdFuelMul==="function"?holdFuelMul():1)*coup));   /* Заправочный узел (F2) */
 }
 /* железо в доке: части и корпуса. Скидка вдвое меньше, чем на работе, — станок
    не помнит вас лично, а продавец помнит наполовину */

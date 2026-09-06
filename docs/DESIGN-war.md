@@ -1126,7 +1126,15 @@ One system inside ГЛАВТРАССА's centre (r ≈ 6, fixed by seed, never t
   answer on one button, a counter «ответили: N» and a chip on the map. Votes ride the same
   ведомость as deeds, so there is no second channel. **Deferred:** the waves reading a rally aloud
   in their own voices (M371's lines cover events, not player signals).
-- **M379** the nine rites' counters and effects (§14), the regatta from «Ялта».
+- ~~**M379** the nine rites' counters and effects (§14), the regatta from «Ялта»~~ — 0.379.0
+  (2026-09-06): `12au-rites` — the nine of §14 plus the regatta, each with its own kind of deed on
+  the server (capped there), its goal, and an effect read from the ledger rather than stored:
+  талоны give a quarter-price tank once per сводка, субботник and амнистия quiet a system,
+  карантин turns the picket back until the medicine arrives, стройка века keeps its «построено
+  бортами: N», the заём pays 1.5× if the campaign closed and burns if it did not (through `earn`,
+  the one funnel), and the regatta's button only works in «Ялте». The Director announces them by
+  the same names §14 uses. **Deferred:** пропажа's scan rows want a scan verb the game does not
+  have yet, and перепись's six questions are one question until M381's dials.
 - **M380** «Ревизия» (D13).
 - **M381** циркуляры, the constitution and validator (D18), the season dials, the regulator's
   monthly session.

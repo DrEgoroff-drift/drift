@@ -173,7 +173,10 @@ document.getElementById("bRefuel").addEventListener("click",()=>{
   if(need<=0){say("Баки полны");return;}
   const per=fuelPriceHere(),can=Math.min(need,Math.floor(G.credits/per));
   if(can<=0){say("Не хватает кредитов");return;}
-  G.credits-=can*per;G.fuel+=can;renderTab();
+  G.credits-=can*per;G.fuel+=can;
+  /* талон отоварен: следующий бак в эту сводку уже по обычной цене (M379) */
+  if(typeof riteFuelMul==="function"&&riteFuelMul()<1&&typeof riteFuelUsed==="function")riteFuelUsed();
+  renderTab();
 });
 document.getElementById("bRepair").addEventListener("click",()=>{
   const st=stat(),need=Math.ceil(st.hullMax-G.hull);

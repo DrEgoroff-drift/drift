@@ -7,6 +7,30 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.379.0 - M379: nine rites, one button each
+
+The rites of §14 exist now, with counters that mean something and effects you can feel.
+
+**Стройка века** takes material out of your hold and keeps «построено бортами: N» when it stands.
+**Заём** takes credits and pays them back one and a half times if the campaign closed — or burns
+them if it did not; the payout goes through the same funnel as every other income, so the house
+and the cooperative see it. **Субботник** and **амнистия** make a system quieter for a сводка.
+**Талоны** give one quarter-price tank per сводка, and the second tank the same сводка is at the
+usual price. **Карантин** turns the picket back until the medicine arrives. **Перепись**,
+**реформа**, **пропажа** and the **регата** carry their counters, and the regatta's button only
+works where the regatta is — in «Ялте», where nobody shoots.
+
+Every effect is **read from the ledger, not stored**: two players who pulled the same сводки see
+the same rite at the same percentage, and nothing has to be synchronised or trusted. No ledger —
+no rite, and the game plays on without one.
+
+The Director announces them by the names §14 uses, three at a time, so the board never shows
+everything at once.
+
+Tests: ten rites each with a name, a goal and a kind of deed; an empty ledger giving an empty
+counter and no effect at all; a ledger crossing the goal turning the effect on; and the coupon
+working exactly once per сводка.
+
 ## 0.378.0 - M378: one vote, one signal, and not a single word typed
 
 Two ways for a crowd to push the war, both on one button, both with nothing to type.

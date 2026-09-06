@@ -37,6 +37,8 @@ function spawnPirates(){
      и главное свойство, и оно работает раньше всего остального */
   if(typeof yaltaIs==="function"&&yaltaIs(G.sx,G.sy))n=0;
   if(typeof holdAmbushMul==="function")n=Math.floor(n*holdAmbushMul());   /* Заграждение (H4) */
+  /* субботник расчистил пояс, амнистия увела дезертиров (M379, §14) */
+  if(typeof ritePirateMul==="function")n=Math.floor(n*ritePirateMul());
   n=Math.min(n,ARMED_CAP);   /* потолок вооружённых (§5, M361) */
   for(let i=0;i<n;i++){
     const a=r()*TAU,rad=2200+r()*1600;

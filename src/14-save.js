@@ -58,6 +58,7 @@ function snapshot(){
     species:[...G.species],bioV:2,
     opts:G.opts,zoom:G.zoom,market:G.market,uniqueShips:G.uniqueShips,tow:G.tow,
     episodes:G.episodes,notebook:G.notebook,gifts:G.gifts,mslBy:G.mslBy,
+    bonds:G.bonds,coupN:G.coupN,
     drones:G.drones,droneInventory:G.droneInventory,droneIds:G.droneIds,droneSold:G.droneSold||{},crew:G.crew,bases:G.bases,
     mgrs:G.mgrs,blueprints:G.blueprints,aiRift:G.aiRift,rogues:G.rogues,exiles:G.exiles,
     relics:G.relics,relicHint:G.relicHint,bio:G.bio,home:G.home,course:G.course||null,
@@ -211,6 +212,7 @@ function applySave(s){
   G.notebook=Array.isArray(s.notebook)?s.notebook:[];
   G.gifts=(s.gifts&&typeof s.gifts==="object")?s.gifts:{};
   G.mslBy=(typeof s.mslBy==="string")?s.mslBy:"gt";
+  G.bonds=s.bonds|0;G.coupN=(typeof s.coupN==="number")?s.coupN:-1;   /* заём и талон (M379) */
   G.shipId=shipData(s.shipId)?s.shipId:"strizh";
   G.owned=Object.assign({strizh:true},s.owned||{});
   /* старое сохранение знает только s.mods — считаем, что всё купленное и установлено.

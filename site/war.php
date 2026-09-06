@@ -38,8 +38,13 @@ error_reporting(E_ALL);
 const WAR_SHIFT = 21600;        // сводка — шесть часов, в секундах
 const WAR_EPOCH = 1767225600;   // 2026-01-01 UTC: сводка № 0 (CHRON_EPOCH в 12am-chron)
 const WAR_TAIL  = 300;          // пять минут хвоста: запись в закрывшуюся сводку ещё принимается
-const WAR_KINDS = ['def','tow','ore','mail','clear','build','crew','fuel'];
-const WAR_CAP   = ['def'=>40,'tow'=>10,'ore'=>2000,'mail'=>20,'clear'=>50,'build'=>2000,'crew'=>20,'fuel'=>50];
+/* виды дел: первые восемь — обычная работа борта, дальше обряды §14 (M379).
+   Потолок у каждого свой и он же — граница правдоподобного: выше не примем. */
+const WAR_KINDS = ['def','tow','ore','mail','clear','build','crew','fuel',
+                   'med','loan','scan','coup','amn','reg','cens'];
+const WAR_CAP   = ['def'=>40,'tow'=>10,'ore'=>2000,'mail'=>20,'clear'=>50,'build'=>2000,
+                   'crew'=>20,'fuel'=>50,'med'=>40,'loan'=>5000,'scan'=>30,'coup'=>4,
+                   'amn'=>10,'reg'=>3,'cens'=>1];
 const WAR_PULL  = 40;           // сколько закрытых сводок отдаём за раз
 /* оставленное (§11.3, M377): числа из §11.5 и ни одного своего */
 const LEFT_KINDS = ['gun','ammo','fuel','sign','tow','ghost'];

@@ -382,3 +382,36 @@ TEST_SUITES.push(()=>suite("сбор M378: три поля и ни одного 
     "в сигнале нет лишних полей: "+k);
   RALLY_CACHE=null;
 }));
+
+/* ══════════════ обряды (M379, §14) ══════════════ */
+TEST_SUITES.push(()=>suite("обряды M379: счётчик, порог и что из этого выходит",()=>{
+  chWorld();
+  try{localStorage.removeItem(CHRON_KEY);}catch(e){}
+  WAR_LED_CACHE=null;
+  /* девять обрядов §14 и регата «Ялты» — и у каждого своё дело на сервере */
+  eq(RITE_KEYS.length,10,"девять обрядов и регата");
+  for(const k of RITE_KEYS){
+    const R=RITES[k];
+    ok(!!R.ru&&!!R.ru2&&!!R.note,k+": имя, кнопка и строка");
+    ok(R.goal>0,k+": у порога есть число");
+    ok(!!R.kind,k+": и свой вид дела на сервере");
+  }
+  /* без ведомостей счётчик пуст, и это не ошибка */
+  const N=(typeof chronNow==="function")?chronNow():0;
+  eq(riteCount("subbot",N-2).q,0,"ведомостей нет — счётчик пуст");
+  eq(riteDone("subbot",N-2),false,"и порог не взят");
+  eq(ritePirateMul(),1,"последствий тоже нет");
+  /* кладём ведомость: порог берётся, последствие включается */
+  warLedPut(N,{"1,1":{clear:{q:500,a:["a","b","c"]}}});
+  ok(riteCount("subbot",N-2).q>=500,"счётчик считает по ведомости");
+  ok(riteDone("subbot",N-2),"порог взят");
+  ok(ritePirateMul()<1,"и в системе стало тише: "+ritePirateMul());
+  /* талоны: четверть цены, но один раз за сводку */
+  warLedPut(N,{"1,1":{clear:{q:500,a:["a","b","c"]},coup:{q:99,a:["a","b"]}}});
+  G.coupN=-1;
+  ok(riteFuelMul()<1,"талон отоваривается");
+  riteFuelUsed();
+  eq(riteFuelMul(),1,"второй раз за ту же сводку — по обычной цене");
+  try{localStorage.removeItem(CHRON_KEY);}catch(e){}
+  WAR_LED_CACHE=null;
+}));

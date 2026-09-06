@@ -35,7 +35,10 @@ const DIR_INCIDENTS=[
   {k:"cult",   f:"cult",  up:40}
 ];
 const DIR_ARCS=["shortage","frontier","succession","expedition","quarantine","goldrush"];
-const DIR_RITES=["regatta","census","parade","subbotnik","relief","memorial"];
+/* обряды §14 своими именами (M379): Директор их объявляет, `12au-rites` знает,
+   что они значат и что делают */
+const DIR_RITES=["build","loan","subbot","coupon","quar","lost","census","amnesty",
+  "reform","regatta"];
 const DIR_QUIET=4;      /* дольше четырёх сводок без события галактика не молчит */
 /* пик держится не дольше трёх суток (§15) — а это ДВЕНАДЦАТЬ сводок вместе со
    спадом, а не двенадцать сводок до него: считать надо то, что видит игрок */
