@@ -65,6 +65,9 @@ const BLOG={
   deep:    ()=>"смотритель вскрыл нижний ярус",
   wear:    (B,a)=>"жара доконала: "+a.what,
   worn:    (B,a)=>a.what+" отработал своё. Ничто не доделано навсегда",
+  ruin:    ()=>"базу бросили. Людей нет, запаса нет, свет погашен",
+  tenant:  (B,a)=>"в развалину въехали: "+a.who,
+  back:    ()=>"база снова наша. Чинить придётся от нуля",
   warn:    (B,a)=>a.warn,
   law:     (B,a)=>"устав: принят закон «"+a.ru+"». Навсегда",
   thief:   (B,a)=>"со склада пропало "+a.q+" ед. Дверь была открыта",
@@ -342,6 +345,9 @@ function baseLifeStep(B,P,n){
   said|=baseSpiritStep(B,n)?1:0;
   /* маяк зовёт (M395): раз в тридцать смен кто-то просится остаться */
   if(typeof baseGuestRoll==="function")said|=baseGuestRoll(B,n)?1:0;
+  /* развалина (M402, §39): брошенная по-настоящему база доходит до неё за
+     сутки — и с этого дня её можно вернуть, но нельзя потерять навсегда */
+  if(typeof baseRuinCheck==="function")said|=baseRuinCheck(B,n)?1:0;
   /* открытая дверь (M399): однажды пропадает треть склада */
   if(typeof charterThiefStep==="function")said|=charterThiefStep(B,n)?1:0;
   /* запас пришёл — база встаёт на ход сама, но смена уходит на разгон */
@@ -661,6 +667,13 @@ function baseSpiritStep(B,n){
 function baseResolve(B,now){
   if(!B)return 0;
   now=now||Date.now();
+  /* развалина (M402) не работает: в ней некому и нечем. Часы ей всё равно
+     двигаем — по ним считается, когда в неё въедут */
+  if(typeof baseIsRuin==="function"&&baseIsRuin(B)){
+    const nn=baseSince(B,now);
+    if(nn>0){B.t0=baseT0(B)+nn;B.tMs=now;if(typeof baseTenant==="function")baseTenant(B,B.t0);}
+    return 0;
+  }
   const n=baseSince(B,now);
   if(n<=0){baseT0(B);B.tMs=now;return 0;}
   const t0=baseT0(B);

@@ -7,6 +7,29 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.402.0 - M402: a base can be lost, and can always be got back
+
+Losing a base has to hurt. Losing it **forever** must be impossible — that is §39, and it is
+stronger than any drama: nothing is ever deleted from the account, and there is no state from which
+a base cannot be restarted.
+
+A base that has genuinely been abandoned — no people, no stores, a full day in that condition —
+becomes a **развалина**: what you built stands there broken, and the journal says so. That takes
+neglect, not absence: a base you simply flew away from parks itself and waits (§13), and a base
+with a single person on it never gets there at all.
+
+After a few shifts somebody moves in — **поселенцы** or a **пиратская застава**, the odds set by
+how dangerous the sector is. The outpost is the war layer's target built out of your own walls.
+
+And you can always come back. An empty ruin costs nothing. Settlers move out for 2 200. The outpost
+leaves for 6 500 — **or for nothing at all** if you fly in and clear every pirate in the system,
+which is not a new scene but the war that is already in the game. Then the compartments are
+repaired from zero at a quarter of the build cost, one at a time, and none of them was ever lost.
+
+What a loss actually costs is time, money, the people who left, and the story of having lost it.
+That is enough.
+
+---
 ## 0.401.0 - M401: three laws that were missing, and the guard over all nine
 
 Hard is not big numbers; big numbers are tedium. Six of §22's nine laws were already standing —

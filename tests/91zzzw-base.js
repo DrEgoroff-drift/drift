@@ -1158,3 +1158,78 @@ TEST_SUITES.push(()=>suite("база M401: игрок всегда может с
   ok(baseWhy(B).indexOf("приказу")>=0,"и консервация — тоже причина: "+baseWhy(B));
   ok(baseWhy(B).indexOf("undefined")<0,"и нигде не мусор");
 }));
+
+/* ── развалина и возврат (M402) ──
+   Главное правило §39: потерять можно, вернуть можно ВСЕГДА и из любого
+   состояния. Набор проверяет обе половины, и вторую строже. */
+TEST_SUITES.push(()=>suite("база M402: брошенная становится развалиной",()=>{
+  const B=bLife();
+  G.crew=[];
+  const n=baseShift();
+  /* живая база развалиной не становится */
+  baseLife(B).air=100;baseLife(B).water=100;
+  eq(baseRuinCheck(B,n),0,"с запасом — не развалина");
+  eq(B.dead|0,0,"и счётчик запустения не идёт");
+  /* пустая и без людей — доходит, но не сразу */
+  baseLife(B).air=0;baseLife(B).water=0;
+  for(let i=0;i<RUIN_AFTER-1;i++)baseRuinCheck(B,n+i);
+  ok(!baseIsRuin(B),"за неполные сутки ещё нет");
+  baseRuinCheck(B,n+RUIN_AFTER);
+  ok(baseIsRuin(B),"а за сутки — да");
+  ok(B.cells.every(c=>!c||c.hp<=0),"построенное стоит разбитым");
+  ok(B.log.some(x=>x.k==="ruin"),"и об этом сказано в журнале");
+  /* с людьми не доходит никогда */
+  const B2=bLife();
+  B2.cells[5]={k:"habitat",hp:1};
+  bCrew(B2,1);
+  baseLife(B2).air=0;baseLife(B2).water=0;
+  for(let i=0;i<RUIN_AFTER*2;i++)baseRuinCheck(B2,n+i);
+  ok(!baseIsRuin(B2),"пока есть люди, база не развалина");
+}));
+
+TEST_SUITES.push(()=>suite("база M402: вернуть можно всегда",()=>{
+  const B=bLife();
+  G.crew=[];
+  const n=baseShift();
+  B.ruin={n,who:null};
+  for(const c of B.cells)if(c)c.hp=0;
+  /* пока пусто — вернуть даром */
+  eq(baseTenant(B,n),null,"сразу никто не въезжает");
+  const cr=G.credits;
+  ok(baseRuinTake(B),"пустую вернули");
+  eq(G.credits,cr,"и даром");
+  ok(!baseIsRuin(B),"база снова наша");
+  ok(B.cells.some(c=>c&&c.hp<=0),"но отсеки так и стоят разбитыми");
+  /* поселенцы: выкуп */
+  B.ruin={n:n-RUIN_TENANT-1,who:"squat"};
+  eq(baseRuinPrice(B),RUIN_SQUAT,"у поселенцев своя цена");
+  G.credits=10;
+  eq(baseRuinTake(B),false,"без денег не выкупить");
+  ok(baseIsRuin(B),"и база всё ещё не ваша");
+  G.credits=RUIN_SQUAT+100;
+  ok(baseRuinTake(B),"с деньгами — выкупили");
+  eq(G.credits,100,"и они ушли");
+  /* застава: или деньги, или руки */
+  B.ruin={n:n-RUIN_TENANT-1,who:"pirate"};
+  G.credits=10;
+  G.sx=B.sx;G.sy=B.sy;G.pirates=[{hull:50}];
+  eq(baseRuinClearable(B),false,"пока пираты в системе — не снять");
+  eq(baseRuinTake(B),false,"и не выкупить без денег");
+  G.pirates=[];
+  ok(baseRuinClearable(B),"пиратов сняли — застава снимается руками");
+  ok(baseRuinTake(B),"и база возвращается без денег");
+  eq(G.credits,10,"денег это не стоило");
+  /* починка от нуля: четверть постройки и ни одного потерянного отсека */
+  B.cells[0]={k:"drill",hp:0};
+  const full=baseCost("drill",B).credits;
+  const fix=baseFixCost(B,"drill").credits;
+  ok(fix<full/2,"починка дешевле постройки: "+fix+" против "+full);
+  G.credits=fix+5;G.cargo.alloy=99;
+  ok(baseFixCell(B,0,0),"отсек восстановлен");
+  eq(baseCell(B,0,0).hp,1,"и он снова целый");
+  /* и ни одно состояние не удаляет базу из мира */
+  const key=Object.keys(G.bases)[0];
+  ok(!!G.bases[key],"база на месте");
+  applySave(JSON.parse(JSON.stringify(snapshot())));
+  ok(!!G.bases[key],"и переживает сохранение даже разбитой");
+}));

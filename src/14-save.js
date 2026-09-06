@@ -671,7 +671,11 @@ function applySave(s){
         guest:(b.guest&&typeof b.guest==="object")?{name:String(b.guest.name||"").slice(0,24),
           role:String(b.guest.role||"driller"),seed:b.guest.seed|0,n:b.guest.n|0}:null,
         /* погода директора (M397): у неё есть сроки, и они переживают выход */
-        dust:b.dust|0,cold:b.cold|0,vein:b.vein|0,thief:b.thief|0,
+        dust:b.dust|0,cold:b.cold|0,vein:b.vein|0,thief:b.thief|0,dead:b.dead|0,
+        /* развалина (M402, §39): из аккаунта ничего не удаляется — база живёт
+           в записи и разбитой, вместе с тем, кто в неё въехал */
+        ruin:(b.ruin&&typeof b.ruin==="object")?{n:b.ruin.n|0,
+          who:(b.ruin.who==="pirate"||b.ruin.who==="squat")?b.ruin.who:null}:null,
         /* устав (M399): законы берутся навсегда, значит они в записи */
         charter:Array.isArray(b.charter)?b.charter.filter(x=>typeof CHARTER_BY!=="undefined"&&CHARTER_BY[x]):[],
         fire:(b.fire&&typeof b.fire==="object")?{c:b.fire.c|0,r:b.fire.r|0,

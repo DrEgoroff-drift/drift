@@ -161,6 +161,7 @@ function renderBasesTab(st){
       /* жизнеобеспечение (M391): встала база или дышит — первое, что надо
          знать о ней со стола, потому что это единственное, что нельзя
          отложить до следующего прилёта */
+      if(typeof baseIsRuin==="function"&&baseIsRuin(B))warn.push(baseRuinLine(B));
       if(B.fire)warn.push("ГОРИТ — тушат тем, что есть");
       if(typeof baseDusty==="function"&&baseDusty(B))warn.push("занос: бур стоит");
       if(typeof baseParked==="function"&&baseParked(B))
@@ -211,6 +212,13 @@ function renderBasesTab(st){
         const bn=el("button","act","ОТКАЗАТЬ");
         bn.onclick=()=>{baseGuestDrop(B);renderTab();};
         r.appendChild(bn);
+      }
+      if(typeof baseIsRuin==="function"&&baseIsRuin(B)){
+        const b=el("button","act gold",baseRuinClearable(B)?"СНЯТЬ ЗАСТАВУ":
+          (baseRuinPrice(B)?"ВЫКУПИТЬ":"ВЕРНУТЬ"));
+        b.title="из аккаунта ничего не удаляется: база возвращается всегда";
+        b.onclick=()=>{baseRuinTake(B);renderTab();};
+        r.appendChild(b);
       }
       /* устав (M399, §9): четыре закона, каждый навсегда, и берут их здесь —
          там же, где смотрят на базу целиком */

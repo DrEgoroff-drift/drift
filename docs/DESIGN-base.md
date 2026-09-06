@@ -1584,8 +1584,14 @@ distance from the calm band and retuned after the first cut turned it from a law
 5: crew traits derived from the seed with a condition each. Plus the guard — `baseWhy` on the desk
 row, always, naming the cause in the vocabulary the player has. **Deferred:** «не ладит с конкретным
 человеком» (it needs a pair, and pairs need a list the player can read) and instrument wear feeding
-back into the reading — today one working приёмник is enough. · M402 развалина и
-возврат (§22.1, §39) · M403 плата и блокада (§23, §42, §43) · M404 ремесленный проход по всей
+back into the reading — today one working приёмник is enough. · ~~M402 развалина и
+возврат~~ — 0.402.0 (2026-09-06): `21b0-base-ruin` — a base with no crew and empty stores for a full
+day becomes a ruin with every cell at `hp:0`; a tenant moves in after twelve shifts, squatter or
+pirate outpost by sector danger; recovery is always available — free when empty, 2 200 from
+settlers, 6 500 from the outpost **or nothing if you clear the system yourself** (the existing war,
+not a new scene); repair from zero costs a quarter of the build price per cell. Nothing is deleted
+from the save in any state, and the suite checks that too. **Deferred:** the ПАЛАТА's seizure and
+its auction (§40 — that is M408's tone pass), and the ruin as a rumour the world retells. · M403 плата и блокада (§23, §42, §43) · M404 ремесленный проход по всей
 сцене (`DESIGN-craft`, `look()`, its own almanac issue).
 
 **D · человек** — M405 сотня и распределение (§34, §35, §48) · M406 охота (§24.4, §35.1) ·
