@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070c">
+<title>ДРЕЙФ — карта войны</title>
+<meta name="description" content="Шесть держав живут без нас: торгуют, ссорятся, воюют и мирятся. Здесь видно, что с галактикой прямо сейчас — кто что держит, где идёт фронт, кто у кого что забрал и когда.">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="alternate icon" href="/icons/fav-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="/icons/fav-180.png">
+<meta property="og:type" content="website">
+<meta property="og:title" content="ДРЕЙФ — карта войны">
+<meta property="og:description" content="Что с галактикой прямо сейчас: владения шести держав, фронты, войны и ноты, кто у кого что забрал и когда.">
+<meta property="og:image" content="https://drift-game.ru/og.jpg">
+<meta property="og:url" content="https://drift-game.ru/war.html">
+<link rel="stylesheet" href="/site.css">
+<style>
+/* ── карта войны (M411) ──
+   Та же летопись, что у клиентов игры: страница повторяет историю тем же кодом
+   (war.js — модули игры, склеенные build.ps1) и рисует правду — карту. Эфир
+   шести волн тут тоже есть, но он подписан как эфир. */
+section.war{padding-top:34px}
+.warhead{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 18px;margin-bottom:18px}
+.warhead .now{font-size:11.5px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase}
+.warhead .now b{color:var(--phos);font-weight:400}
+.warwrap{display:grid;grid-template-columns:minmax(0,1fr) 352px;gap:22px;align-items:start}
+@media(max-width:900px){.warwrap{grid-template-columns:1fr}}
+.mapbox{position:relative;border:1px solid var(--line);background:rgba(8,13,22,.55);
+  backdrop-filter:blur(3px)}
+#map{display:block;width:100%;aspect-ratio:1;touch-action:none;cursor:crosshair}
+#tip{position:absolute;pointer-events:none;display:none;max-width:280px;padding:8px 10px;
+  background:rgba(5,7,12,.94);border:1px solid rgba(127,230,216,.25);font-size:11.5px;line-height:1.5;
+  color:var(--text);z-index:3}
+#tip b{color:var(--phos);font-weight:400}
+#tip s{display:block;text-decoration:none;color:var(--dim);font-size:11px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;padding:10px 12px;border-top:1px solid var(--line);
+  font-size:10.5px;letter-spacing:.08em;color:var(--dim);text-transform:uppercase}
+.legend i{display:inline-block;width:10px;height:10px;margin-right:6px;vertical-align:-1px;border:1px solid rgba(255,255,255,.25)}
+.legend .f{border-radius:50%;border:1.5px solid var(--alarm);background:transparent}
+.legend .y{border-radius:50%;border:1px solid rgba(207,227,234,.7);background:transparent}
+.legend .t{border:0;border-left:8px solid var(--amber);border-top:8px solid transparent;width:0;height:0;margin-right:8px}
+/* ── ползунок времени ── */
+.ctl{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;padding:12px;border-top:1px solid var(--line)}
+.ctl input[type=range]{flex:1 1 200px;min-width:120px;height:44px;margin:0;accent-color:var(--phos);background:transparent}
+.ctl .lbl{font-size:11.5px;letter-spacing:.1em;color:var(--dim);text-transform:uppercase;min-width:13em}
+.ctl .lbl b{color:var(--text);font-weight:400}
+.ctl button,.ctl select{height:40px;padding:0 14px;background:rgba(127,230,216,.05);border:1px solid var(--line);
+  color:var(--phos);font:inherit;font-size:11px;letter-spacing:.16em;cursor:pointer;text-transform:uppercase}
+.ctl button:hover{border-color:rgba(127,230,216,.45)}
+.ctl select{text-transform:none;letter-spacing:.04em;color:var(--text)}
+/* ── панель справа ── */
+.panel h3{font-size:11px;letter-spacing:.22em;color:var(--dim);text-transform:uppercase;font-weight:400;
+  margin:0 0 8px;padding-top:16px}
+.panel h3:first-child{padding-top:0}
+.pw{display:grid;grid-template-columns:18px 1fr auto;gap:4px 10px;align-items:center;padding:8px 0;
+  border-top:1px solid var(--line);font-size:12px}
+.pw:first-of-type{border-top:0}
+.pw canvas{width:18px;height:18px;display:block}
+.pw .nm{color:var(--text)}
+.pw .nm s{display:block;text-decoration:none;color:var(--dim);font-size:11px;line-height:1.45}
+.pw .n{color:var(--phos);font-size:14px;text-align:right}
+.pw .n s{display:block;text-decoration:none;color:var(--dim);font-size:10.5px}
+.bars{grid-column:1/4;display:grid;grid-template-columns:repeat(4,1fr) 1.4fr;gap:6px;font-size:10px;color:var(--dim);letter-spacing:.06em}
+.bar{position:relative;height:14px;background:rgba(127,230,216,.06);border:1px solid var(--line)}
+.bar i{position:absolute;left:0;top:0;bottom:0;background:rgba(127,230,216,.35)}
+.bar.s i{background:rgba(242,178,92,.45)}
+.bar em{position:absolute;left:4px;top:0;line-height:12px;font-style:normal;color:var(--text)}
+.rel{grid-column:1/4;display:flex;gap:6px;flex-wrap:wrap;font-size:10.5px;color:var(--dim)}
+.rel b{font-weight:400;padding:1px 6px;border:1px solid var(--line)}
+.rel b.w{color:var(--alarm);border-color:rgba(255,107,87,.45)}
+.rel b.u{color:var(--amber);border-color:rgba(242,178,92,.45)}
+.rel b.a{color:var(--good);border-color:rgba(143,208,138,.4)}
+.li{padding:7px 0;border-top:1px solid var(--line);font-size:12px;line-height:1.5}
+.li:first-of-type{border-top:0}
+.li s{text-decoration:none;color:var(--dim);font-size:11px}
+.li.alarm{color:#ffb2a2}
+.li.good{color:#c8f0ff}
+.empty{color:var(--dim);font-size:11.5px;padding:6px 0}
+/* ── лента событий ── */
+.tl{max-width:1120px;margin:0 auto;padding:0 22px 60px}
+.tl h3{font-size:11px;letter-spacing:.22em;color:var(--dim);text-transform:uppercase;font-weight:400;margin:0 0 6px}
+.tlh{font-size:11px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase;padding:14px 0 4px;border-bottom:1px solid var(--line)}
+.tlh.now{color:var(--phos)}
+.tle{display:grid;grid-template-columns:12px 1fr;gap:10px;padding:5px 0;font-size:12.5px;line-height:1.5;color:var(--text)}
+.tle i{width:8px;height:8px;margin-top:6px;border-radius:50%;display:block}
+.tle.dim{color:var(--dim)}
+.tle.war{color:#ffb2a2}
+.tle.take{color:#f6e7b1}
+.tle.truce{color:#c3ecc0}
+.tle .w{color:var(--dim);font-size:11px}
+</style>
+</head>
+<body>
+<canvas id="sky"></canvas><div class="vig"></div>
+<div class="wrap">
+
+<header class="top">
+  <a class="logo" href="/">
+    <svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="12.5" fill="#143a45"/><path d="M16 3.5A12.5 12.5 0 0 1 16 28.5A3 12.5 0 0 0 16 3.5Z" fill="#7fe6d8"/></svg><span>ДРЕЙФ</span>
+  </a>
+  <nav>
+    <a href="/">Игра</a>
+    <a href="/mechanics.html">Как играть</a>
+    <a href="/war.html" class="on">Война</a>
+    <a href="/play.html" class="cta">Играть</a>
+  </nav>
+</header>
+
+<section class="war">
+  <div class="eyebrow">Летопись · галактика живёт без нас</div>
+  <div class="warhead">
+    <h2>Война, которая <b>идёт сама</b></h2>
+    <div class="now" id="now">…</div>
+  </div>
+  <p class="lead" style="margin-bottom:22px">
+    Шесть держав торгуют, ссорятся, воюют и мирятся по сводке раз в шесть часов — без нас и
+    без сервера: каждая игра повторяет ту же историю от одного зерна, и эта страница повторяет её
+    тем же кодом. Внизу — <b>правда</b>: карта и кто у кого что забрал. Эфир шести волн о том же
+    самом врёт по-своему, его можно послушать в ленте.
+  </p>
+
+  <div class="warwrap">
+    <div class="mapbox">
+      <canvas id="map"></canvas>
+      <div id="tip"></div>
+      <div class="legend" id="legend"></div>
+      <div class="ctl">
+        <span class="lbl" id="svodLbl">сводка</span>
+        <input type="range" id="svod" min="0" max="0" value="0" step="1" aria-label="сводка">
+        <button id="nowBtn" type="button">Сейчас</button>
+      </div>
+    </div>
+    <aside class="panel" id="panel"></aside>
+  </div>
+</section>
+
+<div class="tl">
+  <div class="ctl" style="border-top:0;padding-left:0;padding-right:0">
+    <h3 style="margin:0">Кто куда когда</h3>
+    <select id="wave" aria-label="чей голос">
+      <option value="">правда — что было на самом деле</option>
+    </select>
+  </div>
+  <div id="lines"></div>
+</div>
+
+<footer>
+  <span>ДРЕЙФ</span>
+  <span id="ver">—</span>
+  <a href="/play.html">играть</a>
+  <a href="/mechanics.html">как играть</a>
+  <a href="/war.html">война</a>
+  <a href="/parrot.html">птица</a>
+  <a href="https://github.com/DrEgoroff-drift/drift">исходники</a>
+</footer>
+
+</div>
+<script src="/planets.js"></script>
+<script src="/sky.js"></script>
+<script src="/war.js"></script>
+<script src="/war-map.js"></script>
+</body>
+</html>

@@ -345,13 +345,15 @@ main release, as M360a/M369b were.
   the nose is never the thumb's job — mark, else heading. A resting ring marks the stick's place
   (`helmHome`, measured from the pads row). Suites: `91zzzw-helm` (M410), `91zzx-mobile` (the
   resting point lands on the canvas). Mouse and arrows untouched.
-- **M411 the war on the site** — `site/war.html`: the galaxy as it stands right now, from the
-  same chronicle the clients replay (a bundle `site/war.js` built by `build.ps1` from
-  `01-core`, `03a-hull-maker` (tables), `12al-powers`, `12am-chron*`, `12at-vote`, `12av-boss`,
-  `12aw-circ`, `12b0-fx-pow`, `14b-war-net`), the ledgers from `war.php?a=pull` (public).
-  Territory by power, fronts, wars and notes, the line of takes with dates, the powers' needs and
-  relations, rallies and «Ревизия»; a slider over the сводки — the whole history replays in
-  milliseconds. Linked from the site's nav and footer.
+- ~~**M411 the war on the site**~~ — 0.401.3: `site/war.html` + `site/war-map.js` over
+  `site/war.js` (built by `build.ps1 War` from `site/war-head.js` + thirteen chronicle modules):
+  territory by power (Коммуна hatched — two blues), borders and war borders, stars in the owner's
+  colour, homes as emblems, fronts breathing, the previous flag's corner on a system taken within
+  two days, ledger ticks (the players' hand), rallies, «Ревизия»; six powers with holdings,
+  needs, strength, tension and relations; wars with takes, notes with deadlines, arcs, rites, the
+  last two days' incidents; the line «кто куда когда» in the truth voice or any wave's; a slider
+  over the last 720 сводки (snapshots every 24, replay from a snapshot); pull every 90 s. Linked
+  from the nav and the footer; `docs/DEPLOY.md` has the rows.
 - ~~**M412 the war runs by itself**~~ — 0.401.2: `docs/warsim.js` (a Node replay over the same
   `site/war.js` bundle) showed needs pinned at zero, 24 wars a month, strength at ~900 for all;
   now needs balance at home size and are moved by incidents, moves are drawn by probability

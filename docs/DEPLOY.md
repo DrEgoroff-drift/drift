@@ -11,6 +11,8 @@ the game changes on every push, the pages around it almost never, and the backen
 | `/treplo.html` | built by `build.ps1` | the same bird as one self-contained offline file |
 | `/reset.html` | `site/reset.html` | where a password-recovery link lands |
 | `/play.html` | `drift.html` (built from `src/`) | the game itself, one self-contained file |
+| `/war.html`, `/war-map.js` | `site/` | the war map (M411): the galaxy as the chronicle has it right now — territory, fronts, wars and notes, who took what when, a slider over the сводки, the six waves' voices |
+| `/war.js` | built by `build.ps1` (`War`) | the chronicle modules of the game glued for the site (`site/war-head.js` + `$WAR_MODULES`), so the map replays the same history byte for byte; `docs/warsim.js` runs the same bundle in Node |
 | `/api.php` | `site/api.php` | accounts, cloud saves, password recovery |
 | `/log.php` | `site/log.php` | error log receiver (0.359.0): every client error → `~/drift-data/crash.log`, JSON lines, rotated at 5 MB; read with `ssh drift 'tail -n 50 ~/drift-data/crash.log'` |
 | `/drift.webmanifest`, `/drift-sw.js` | `site/` | the game as an installable app: manifest and a network-first cache of `play.html` |

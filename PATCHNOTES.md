@@ -7,6 +7,26 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.401.3 - M411: the war on the site
+
+The author (2026-09-07): «надо на сайте сделать карту, чё там у них происходит, прям онлайн,
+чтобы видеть, чё с галактикой, кто куда когда, какие планеты завоёваны».
+
+`drift-game.ru/war.html`. There is no second chronicle behind it: `build.ps1` glues the game's
+own chronicle modules into `site/war.js`, and the page calls the same `chronStep` the clients
+call, with the ledgers and circulars from `war.php`, so it shows what every game shows — byte
+for byte. The map: the circle of ~317 systems filled by owner (Коммуна hatched, since the game
+gives it and Компания the same blue), borders, war borders in fire, stars in the owner's colour
+placed as the game's map places them, the six homes as their emblems, fronts breathing, the
+previous flag's corner on a system taken within two days, «Ялта» marked as nobody's, the
+players' hand as ticks on systems with a ledger, rallies, «Ревизия». Hover a system: its name,
+owner and since when, what happened there. The panel: six powers with holdings against home,
+needs, strength, tension and relations; wars with takes on each side; notes with deadlines;
+arcs and rites; the last two days' incidents. The line «кто куда когда» tells the truth — or
+any of the six waves' versions of it. A slider walks the last 720 сводки; the whole history
+replays in milliseconds. Offline it works from the seed alone and says so.
+
+---
 ## 0.401.2 - M412: the war runs by itself
 
 The author (2026-09-07): «там появилась вселенная и война, которая сама идёт, надо чтобы сама шла
