@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 463 · символов верхнего уровня: 4158
+Файлов: 463 · символов верхнего уровня: 4160
 
 ## СИМВОЛЫ
 
@@ -977,9 +977,9 @@ drawSurface                  src/21e-surface-draw.js:859
 drawSurfaceHud               src/21e-surface-draw.js:21
 drawSurfaceWorld             src/21e-surface-draw.js:110
 drawSurvey                   src/12w-survey.js:63
-drawSysHud                   src/17-mode-system.js:583
+drawSysHud                   src/17-mode-system.js:586
 drawSysNebula                src/16a-space.js:208
-drawSystem                   src/17-mode-system.js:345
+drawSystem                   src/17-mode-system.js:348
 drawSysTraffic               src/17f-sys-traffic.js:29
 drawTemple                   src/20aa-poi-shapes.js:50
 drawThingIcon                src/27i-ui-table.js:330
@@ -1500,27 +1500,27 @@ HELM_RANGE                   src/15a-helm.js:27
 HELM_REACH                   src/15a-helm.js:16
 HELM_RELEASE                 src/15a-helm.js:13
 HELM_THR                     src/15a-helm.js:14
-helmApply                    src/15a-helm.js:211
+helmApply                    src/15a-helm.js:213
 helmCanvasXY                 src/15a-helm.js:55
-helmDrawMarks                src/15a-helm.js:261
-helmDrawSticks               src/15a-helm.js:334
-helmLift                     src/15a-helm.js:298
+helmDrawMarks                src/15a-helm.js:263
+helmDrawSticks               src/15a-helm.js:336
+helmLift                     src/15a-helm.js:300
 helmLock                     src/15a-helm.js:107
 helmLockNext                 src/15a-helm.js:117
 helmMarksClean               src/15a-helm.js:98
-helmMarkTop                  src/15a-helm.js:328
+helmMarkTop                  src/15a-helm.js:330
 helmPinchBlocked             src/15a-helm.js:94
 helmPirate                   tests/91zzzw-helm.js:17
 helmPtrEnd                   src/15a-helm.js:81
 helmRun                      tests/91zzzw-helm.js:16
 helmScreenOpen               src/15a-helm.js:93
 helmShip                     tests/91zzzw-helm.js:6
-helmShotAt                   src/15a-helm.js:145
-helmStickFoot                src/15a-helm.js:290
-helmStickShape               src/15a-helm.js:282
-helmTap                      src/15a-helm.js:131
+helmShotAt                   src/15a-helm.js:147
+helmStickFoot                src/15a-helm.js:292
+helmStickShape               src/15a-helm.js:284
+helmTap                      src/15a-helm.js:133
 helmTargets                  src/15a-helm.js:97
-helmTick                     src/15a-helm.js:151
+helmTick                     src/15a-helm.js:153
 hex2rgb                      src/03-ships.js:186
 hexA                         src/12e-drone-flight.js:289
 hexa                         src/12w-survey.js:91
@@ -2320,7 +2320,7 @@ namesMangle                  src/11u-names.js:39
 namesToldAll                 src/11u-names.js:16
 nameTell                     src/11u-names.js:32
 navAction                    src/15-input.js:274
-nbFoe                        tests/91zzzw-notebook.js:12
+nbFoe                        tests/91zzzw-notebook.js:15
 nbWorld                      tests/91zzzw-notebook.js:6
 near                         tests/90-harness.js:127
 nearestPOI                   src/20a-poi.js:236
@@ -2392,12 +2392,14 @@ noteBlock                    src/12ap-notebook.js:166
 NPC_BATTLE                   src/13d-npc.js:14
 NPC_PICKET                   src/13d-npc.js:13
 NPC_SHIPS                    src/03-ships.js:185
+npcCrewOff                   src/13d-npc.js:165
 npcPowerHere                 src/13d-npc.js:15
+npcRescue                    src/13d-npc.js:125
 npcShip                      src/13d-npc.js:23
 npcSpawn                     src/13d-npc.js:43
 npcWreck                     src/13d-npc.js:106
-npcWreckDraw                 src/13d-npc.js:121
-npcWreckNear                 src/13d-npc.js:112
+npcWreckDraw                 src/13d-npc.js:184
+npcWreckNear                 src/13d-npc.js:175
 npcYalta                     src/13d-npc.js:92
 OCC_CALM_MS                  src/13b-occupy.js:232
 OCC_FRESH                    src/13b-occupy.js:41
@@ -2507,7 +2509,7 @@ opisWear                     src/27j-ui-opis.js:209
 OPT_TABS                     src/27-ui-ship.js:330
 optGroups                    src/27-ui-ship.js:333
 optTab                       src/27-ui-ship.js:332
-orbPathOf                    src/17-mode-system.js:334
+orbPathOf                    src/17-mode-system.js:337
 ORDER_WIN                    src/12aa-need.js:74
 orderDeliver                 src/12aa-need.js:114
 orderHere                    src/12aa-need.js:110
@@ -4662,7 +4664,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/13d-loadout.js · 9 КБ
   · снаряжение пирата по рангу (M368, §5):1
 
-## src/13d-npc.js · 7 КБ
+## src/13d-npc.js · 10 КБ
   · война, которую видно (M372, §7.4):1
 
 ## src/14-save.js · 65 КБ
@@ -4696,7 +4698,7 @@ zooTick                      src/11ad-zoo.js:41
   · ракеты: боеприпас — это груз:1
   · пять видов боеприпаса (M367, §4):21
 
-## src/17-mode-system.js · 45 КБ
+## src/17-mode-system.js · 46 КБ
   · режим: система:1
 
 ## src/17a-station-mod.js · 13 КБ
@@ -5489,8 +5491,9 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzzw-msl.js · 8 КБ
   · пять видов боеприпаса (M367, §4):1
 
-## tests/91zzzw-notebook.js · 6 КБ
+## tests/91zzzw-notebook.js · 8 КБ
   · эпизоды и записная книжка (M374, §6.2–6.3):1
+  · спасатель (M375, §6.4):122
 
 ## tests/91zzzw-relay.js · 10 КБ
   · M218: приёмники как места:1

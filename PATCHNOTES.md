@@ -7,6 +7,22 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.375.0 - M375: the tug is neutral to both sides by definition
+
+Stage B closes with the role the whole layer was built to make possible: the one who does not
+fight.
+
+A battle between two powers leaves hulls of **both** sides — up to four, each with a crew still
+aboard and an automatic signal on the air. Three deeds sit on the two buttons already under your
+thumb: fuel to a ship below a third of its hull, the tow on ДЕЙСТВИЕ, the crew off on ЦЕЛЬ. Each
+one writes an episode with **that** side, and towing one hull while taking the crew off the other
+after the same battle leaves you with two episodes from two powers who were shooting at each other
+an hour ago. That is the only way to be owed something by both, and it is the answer to «зачем
+лететь» that the saga has been circling: not a soldier, a person with a ship who happened by.
+
+Tests: `91zzzw-notebook` — two wrecks from one battle giving two episodes with two powers, and the
+fuel given to a hurt hull counting as a deed with its side.
+
 ## 0.374.0 - M374: they remember deeds, not numbers
 
 There is no reputation number, and now there is what replaces it: **episodes** — what you did,

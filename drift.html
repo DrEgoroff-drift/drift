@@ -1756,7 +1756,7 @@ body.table u.addr{color:#7a4a20}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.374.0";
+const VER="0.375.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -36171,10 +36171,73 @@ function npcYalta(){
    Кто-то из них погибнет и без вас. Корпус остаётся висеть, и его можно взять
    на трос — тот же путь, что у чёрного дерелика (M369b). */
 function npcWreck(p){
-  if(!p||!p.pw||G.tow)return;
+  if(!p||!p.pw)return;
   if(!G.npcWrecks)G.npcWrecks=[];
-  if(G.npcWrecks.length>=3)return;
-  G.npcWrecks.push({x:p.x,y:p.y,seed:p.seed>>>0,by:p.pw});
+  if(G.npcWrecks.length>=4)return;
+  /* обломок остаётся, даже если у вас уже есть буксир: экипаж с него можно
+     снять и без троса (M375) */
+  G.npcWrecks.push({x:p.x,y:p.y,seed:p.seed>>>0,by:p.pw,crew:1});
+  if(typeof etherLine==="function")
+    etherLine("…сигнал с обломка. Автомат, голоса нет.","сигнал");
+}
+/* ── спасатель (M375, §6.4) ──
+   После чужого боя остаются корпуса и подбитые. Тот, кто тащит, заправляет и
+   снимает людей, НЕЙТРАЛЕН обеим сторонам по определению — и это единственный
+   способ заработать эпизоды сразу у двоих. Здесь же и вся выгода: не награда,
+   а два человека, которые вас теперь знают.
+
+   Свидетель тут особый: обломок ничего не расскажет, зато расскажет снятый
+   экипаж и док, куда пришёл корпус. Поэтому эпизод пишется принудительно —
+   это не дыра в правиле, а его вторая половина. */
+function npcRescue(sh,actEdge,cel){
+  /* подбитый живой борт: ему нужно топливо, и это самое дешёвое доброе дело */
+  let hurt=null,hd=320;
+  for(const p of (G.pirates||[])){
+    if(p.hull<=0||!p.pw||p.envoy)continue;
+    if(p.hull>p.hullMax*.35)continue;
+    const d=Math.hypot(sh.x-p.x,sh.y-p.y);
+    if(d<hd){hd=d;hurt=p;}
+  }
+  if(hurt){
+    const P=(typeof powerOf==="function")?powerOf(hurt.pw):null;
+    G.prompt="ПОДБИТЫЙ БОРТ · "+(P?P.ru.toUpperCase():"")+"\n"+
+      "ДЕЙСТВИЕ — ПОДЕЛИТЬСЯ ТОПЛИВОМ";
+    if(actEdge){
+      const st=stat();
+      const give=Math.min(G.fuel,st.fuelMax*.15);
+      if(give<=1){say("НЕЧЕМ ДЕЛИТЬСЯ",90);return true;}
+      G.fuel-=give;
+      hurt.hull=Math.min(hurt.hullMax,hurt.hull+hurt.hullMax*.15);
+      say("ОТДАНО ТОПЛИВО · "+Math.round(give),120);
+      if(typeof epiAdd==="function")epiAdd("fuel",hurt.pw,{force:1});
+    }
+    return true;
+  }
+  const wk=npcWreckNear(sh);
+  if(!wk)return false;
+  const P=(typeof powerOf==="function")?powerOf(wk.by):null;
+  G.prompt="КОРПУС ПОСЛЕ БОЯ · "+(P?P.ru.toUpperCase():"")+"\n"+
+    (G.tow?"У ВАС УЖЕ ЕСТЬ БУКСИР · ":"ДЕЙСТВИЕ — ВЗЯТЬ НА БУКСИР · ")+
+    (wk.crew?"ЦЕЛЬ — СНЯТЬ ЭКИПАЖ":"ЭКИПАЖ СНЯТ");
+  if(actEdge&&!G.tow){
+    G.tow={seed:wk.seed,by:wk.by,sx:G.sx,sy:G.sy};
+    G.npcWrecks=G.npcWrecks.filter(w=>w!==wk);
+    say("КОРПУС НА ТРОСЕ · В ДОК",120);
+    logAdd("tech","Корпус после боя взят на буксир · сектор "+G.sx+":"+G.sy);
+    if(typeof epiAdd==="function")epiAdd("tow",wk.by,{force:1});
+  }
+  return true;
+}
+/* снять экипаж — второй ответ, на той же кнопке, что «по делу» в окликах */
+function npcCrewOff(sh){
+  const wk=npcWreckNear(sh||G.ship);
+  if(!wk||!wk.crew)return false;
+  wk.crew=0;
+  const P=(typeof powerOf==="function")?powerOf(wk.by):null;
+  say("ЭКИПАЖ СНЯТ · "+(P?P.ru.toUpperCase():""),140);
+  logAdd("kill","Снят экипаж с обломка "+(P?P.ru:"")+" · сектор "+G.sx+":"+G.sy);
+  if(typeof epiAdd==="function")epiAdd("distress",wk.by,{force:1});
+  return true;
 }
 function npcWreckNear(sh){
   if(!G.npcWrecks||!G.npcWrecks.length)return null;
@@ -37954,6 +38017,8 @@ function helmLockNext(){
   /* пока висит оклик, ЦЕЛЬ — это второй ответ, а не захват (M373): брать
      пикет в прицел в этот момент означало бы совсем другой разговор */
   if(G.hail&&typeof hailAnswer==="function"){hailAnswer("busy");return false;}
+  /* у обломка ЦЕЛЬ снимает экипаж (M375): целиться там не в кого */
+  if(typeof npcCrewOff==="function"&&G.mode==="system"&&npcCrewOff(G.ship))return false;
   if(G.jamT>0){say("ПОМЕХА · ЗАХВАТА НЕТ",70);return false;}
   helmMarksClean();
   const sh=G.ship;
@@ -39741,8 +39806,11 @@ function updateSystem(dt){
   }
   /* оклик пикета (M373, §6.1): пока на него не ответили, остальное ждёт */
   if(typeof hailTick==="function"&&hailTick(sh,dt,actEdge))return;
-  /* корпус, оставшийся после чужого боя (M372): его можно взять на трос */
-  if(typeof npcWreckNear==="function"){
+  /* спасатель (M375, §6.4): подбитым — топливо, обломкам — трос и экипаж.
+     Нейтрален обеим сторонам по определению, и эпизоды даёт с обеими */
+  if(typeof npcRescue==="function"&&npcRescue(sh,actEdge))return;
+  /* прежняя ветка на случай, если спасателя нет в сборке */
+  if(typeof npcWreckNear==="function"&&typeof npcRescue!=="function"){
     const wk=npcWreckNear(sh);
     if(wk){
       G.prompt=G.tow?("КОРПУС ПОСЛЕ БОЯ · У ВАС УЖЕ ЕСТЬ БУКСИР")

@@ -244,8 +244,11 @@ function updateSystem(dt){
   }
   /* оклик пикета (M373, §6.1): пока на него не ответили, остальное ждёт */
   if(typeof hailTick==="function"&&hailTick(sh,dt,actEdge))return;
-  /* корпус, оставшийся после чужого боя (M372): его можно взять на трос */
-  if(typeof npcWreckNear==="function"){
+  /* спасатель (M375, §6.4): подбитым — топливо, обломкам — трос и экипаж.
+     Нейтрален обеим сторонам по определению, и эпизоды даёт с обеими */
+  if(typeof npcRescue==="function"&&npcRescue(sh,actEdge))return;
+  /* прежняя ветка на случай, если спасателя нет в сборке */
+  if(typeof npcWreckNear==="function"&&typeof npcRescue!=="function"){
     const wk=npcWreckNear(sh);
     if(wk){
       G.prompt=G.tow?("КОРПУС ПОСЛЕ БОЯ · У ВАС УЖЕ ЕСТЬ БУКСИР")

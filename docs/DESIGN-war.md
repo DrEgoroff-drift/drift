@@ -1525,10 +1525,13 @@ removing the person for ever and outweighing everything; clearance IV gated on a
 `episodeWith`; the gift, once per power. **Deferred:** episodes from the fleet's own errands
 (mail, refuel) — they need M375's signals to be worth anything.
 
-**M375 · the rescuer** — *Read* §6.4. *Build:* signals after front battles for six makers
-(`fleetInteract` «идти на сигнал» generalised); tow / refuel / crew off a derelict earn
-episodes with both sides. *Done when:* two towed hulls after one battle give two episodes from
-two powers.
+~~**M375 · the rescuer**~~ — 0.375.0 (2026-09-06): a battle leaves hulls of both sides (four at a
+time) and each carries a crew and a signal; `npcRescue` puts three deeds on the two buttons
+already under the thumb — fuel to a ship under a third of its hull, the tow on ДЕЙСТВИЕ, the crew
+off on ЦЕЛЬ — and each writes an episode with **that** side. Towing one hull and taking the crew
+off the other after the same battle gives two episodes with two powers, which is the whole point:
+the tug is neutral to both by definition (§6.4). **Deferred:** the rescue class of the fleet
+calling you along (it needs M377's leftovers to have something to say).
 
 ### Stage C — everyone (refine these briefs when stage B closes)
 
