@@ -7,6 +7,33 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.372.0 - M372: you jump in and the war is already happening
+
+The chronicle knew whose system this is and where the front stands; now you can see it.
+
+**In the rear** — a picket of the owner: two or three ships at the jump point, flying that
+power's grammar, not interested in you. **On a front** — a battle already under way between the
+owner and whoever it is at war with, up to eight hulls, both sides shooting each other through
+the same loop that resolves your own fights. You are a civil hull under your own flag: nobody
+touches you until you shoot, and the prompt says exactly that instead of counting eight
+«преследуют» at a man who is being ignored. The battle is spawned at jump-in and never resumed,
+so a hidden tab or a moved clock cannot make the war jump inside the frame.
+
+**What is left over is yours to take.** A hull that loses its fight stays there, and it can go on
+the tow line — the same path as the black derelict, ending at a shipyard.
+
+**Occupation by a power.** For eight сводки after a flag changes, the station header says so,
+prices are a quarter higher, and a third of your holding's output in that system goes to the new
+owner — the buildings keep working, they are not confiscated. After that they are locals.
+
+**«Ялта».** Six embassies at anchor, one per power, six workshops on one counter — the only place
+that sells every power's iron, at twice the price — and not a shot fired: weapons are sealed
+there.
+
+Tests: `91zzzw-chron` — a picket in the rear that cannot be locked, the cap of eight on a front,
+six embassies with six flags in «Ялта», the requisition multiplier and its absence outside the
+chronicle's circle.
+
 ## 0.371.0 - M371: the Director, and six voices telling one сводка
 
 The chronicle had events; now it has **pace**, and the war has a voice — six of them.

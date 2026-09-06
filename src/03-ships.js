@@ -156,12 +156,16 @@ function stationParts(sys){
        её. Чужое сюда попадает как привезённое — примерно каждая четвёртая
        вещь, и это единственный способ купить чужую часть, не летая туда */
     const stBy=(sys.station&&sys.station.by)||"gt";
-    const pby=(rng(hashi(seed,7,3))()<.26&&typeof makerBySeed==="function")
-      ?makerBySeed(hashi(seed,11,5)):stBy;
+    /* «Ялта» (§16.6): шесть мастерских разом — на прилавке железо всех шести
+       по очереди, и вдвое дороже, потому что это единственное такое место */
+    const yal=(typeof yaltaIs==="function")&&yaltaIs(sys.sx,sys.sy);
+    const pby=yal?MAKER_KEYS[i%MAKER_KEYS.length]
+      :((rng(hashi(seed,7,3))()<.26&&typeof makerBySeed==="function")
+        ?makerBySeed(hashi(seed,11,5)):stBy);
     const part=genPart(seed,tierFromDanger(d,rng(seed)),null,0,null,pby);
     /* репутация станции идёт и в цену железа: продавец тоже человек (12k-rep) */
     const price=Math.round((320+part.tier*part.tier*460+part.aff.length*180)*
-      (.85+r()*.4)*repPartMul(sys)/10)*10;
+      (.85+r()*.4)*repPartMul(sys)*(yal?2:1)/10)*10;
     out.push({key:sys.key+"|"+bucket+"|"+i,part,price});
   }
   /* «Чёрный список» фактора: его связи открывают то, чего в открытой продаже нет —

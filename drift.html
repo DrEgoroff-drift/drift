@@ -1756,7 +1756,7 @@ body.table u.addr{color:#7a4a20}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.371.0";
+const VER="0.372.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -2382,12 +2382,16 @@ function stationParts(sys){
        её. Чужое сюда попадает как привезённое — примерно каждая четвёртая
        вещь, и это единственный способ купить чужую часть, не летая туда */
     const stBy=(sys.station&&sys.station.by)||"gt";
-    const pby=(rng(hashi(seed,7,3))()<.26&&typeof makerBySeed==="function")
-      ?makerBySeed(hashi(seed,11,5)):stBy;
+    /* «Ялта» (§16.6): шесть мастерских разом — на прилавке железо всех шести
+       по очереди, и вдвое дороже, потому что это единственное такое место */
+    const yal=(typeof yaltaIs==="function")&&yaltaIs(sys.sx,sys.sy);
+    const pby=yal?MAKER_KEYS[i%MAKER_KEYS.length]
+      :((rng(hashi(seed,7,3))()<.26&&typeof makerBySeed==="function")
+        ?makerBySeed(hashi(seed,11,5)):stBy);
     const part=genPart(seed,tierFromDanger(d,rng(seed)),null,0,null,pby);
     /* репутация станции идёт и в цену железа: продавец тоже человек (12k-rep) */
     const price=Math.round((320+part.tier*part.tier*460+part.aff.length*180)*
-      (.85+r()*.4)*repPartMul(sys)/10)*10;
+      (.85+r()*.4)*repPartMul(sys)*(yal?2:1)/10)*10;
     out.push({key:sys.key+"|"+bucket+"|"+i,part,price});
   }
   /* «Чёрный список» фактора: его связи открывают то, чего в открытой продаже нет —
@@ -16362,7 +16366,12 @@ function marketPriceCtx(sys,C,k,add){
 }
 function marketPrice(sys,k,add){
   marketFor(sys);   /* давление досчитано, запись есть */
-  return marketPriceCtx(sys,marketCtx(sys,G.market[sys.key]),k,add);
+  const p=marketPriceCtx(sys,marketCtx(sys,G.market[sys.key]),k,add);
+  /* свежая оккупация державой (M372): «оружие и топливо дороже» — прилавок
+     первым говорит игроку, что флаг сменился */
+  if(typeof occPowerAt==="function"&&sys&&occPowerAt(sys.sx,sys.sy))
+    return Math.round(p*1.25);
+  return p;
 }
 /* ── взять товар с прилавка (M289) ──
    Станция продаёт дороже, чем берёт: BUY_SPREAD поверх её же закупочной цены,
@@ -18181,10 +18190,13 @@ function bldTick(key,id,now){
   if(s<=0)return;
   s=Math.min(s,72);
   const cap=HOLD_CAP_SHIFTS*holdCapMul(key);
+  /* реквизиция свежего хозяина (M372): треть выработки уходит ему. Постройки
+     при этом работают — их не отбирают, с них берут */
+  const req=(typeof occReqMul==="function"&&key)?occReqMul(...key.split(",").map(Number)):1;
   if(def.fam==="A"){
     /* добыча: запас растёт, режется тремя сменами */
     const O=bldOut(def,B.lvl);
-    for(const k in O)B.got[k]=Math.min(O[k]*cap,(B.got[k]||0)+O[k]*s);
+    for(const k in O)B.got[k]=Math.min(O[k]*cap,(B.got[k]||0)+O[k]*s*req);
   }else{
     const Q=bldQuota(def,B.lvl),O=bldOut(def,B.lvl);
     let tot=0;for(const k in Q)tot+=Q[k];
@@ -18192,7 +18204,7 @@ function bldTick(key,id,now){
       let ate=0;
       for(const k in Q){const e=Math.min(B.my[k]|0,Q[k]);B.my[k]=(B.my[k]|0)-e;ate+=e;}
       if(ate<=0)break;   /* бункер пуст — дальше смены ничьи */
-      const sh=ate/tot;
+      const sh=(ate/tot)*req;
       for(const k in O)B.got[k]=Math.min(O[k]*cap,(B.got[k]||0)+O[k]*sh);
     }
   }
@@ -34002,6 +34014,8 @@ function playerHit(s){
 /* пират разбит не игроком: награды нет, только строка; особые (ренегат, охотник,
    соперник) уходят своими выходами, как и от вашего выстрела */
 function pirateFellTo(p,owner){
+  /* корабль державы оставляет корпус: его можно взять на трос (M372, §19.3) */
+  if(typeof npcWreck==="function"&&p.pw)npcWreck(p);
   if(p.rogue||p.hunter||p.rival){killPirate(p);return;}
   parrotHeardKill(p);
   sfx("boom",{v:.6});
@@ -34201,6 +34215,10 @@ function spawnPirates(){
   /* баржи набираются тем же входом, что и пираты: одна точка на все режимы,
      откуда входят в систему (12l-barge) */
   if(typeof spawnBarges==="function")spawnBarges();
+  /* пикет державы или чужой бой на фронте (M372): летопись говорит, чья это
+     система, вход в систему это показывает */
+  G.npcWrecks=null;
+  if(typeof npcSpawn==="function")npcSpawn();
 }
 /* fireShot — в 13-combat (M361): у выстрела есть хозяин */
 let fireCool=0;
@@ -34420,6 +34438,7 @@ function drawCombat(zx,zy,Z){
      уходил под корабли, а не поверх них */
   if(typeof battDraw==="function")battDraw(zx,zy,Z);
   if(typeof mslDraw==="function")mslDraw(zx,zy,Z);
+  if(typeof npcWreckDraw==="function")npcWreckDraw(zx,zy,Z);
   /* контейнеры: гранёная коробка в цвет категории части, мигает маячком */
   for(const L of G.loot){
     const x=zx(L.x),y=zy(L.y);
@@ -35048,6 +35067,23 @@ function occAt(sx,sy){
   return o&&o.lvl>0?o:null;
 }
 function occLvl(sx,sy){const o=occAt(sx,sy);return o?o.lvl:0;}
+/* ── свежая оккупация ДЕРЖАВОЙ (M372, §7.4) ──
+   Пираты занимают систему сами (это `occAt` выше). Держава занимает её в
+   летописи: флаг сменился, и восемь сводок после этого система живёт иначе —
+   чужой пикет, цены вверх, треть выработки идёт в реквизицию. Дальше они
+   становятся местными, и всё возвращается к обычному. */
+const OCC_FRESH=8;
+function occPowerAt(sx,sy){
+  if(typeof chronOwner!=="function")return null;
+  const st=chronState();
+  const S=st.systems[(sx|0)+","+(sy|0)];
+  if(!S||S.owner<0)return null;
+  if(st.N-S.since>OCC_FRESH)return null;
+  return {by:MAKER_KEYS[S.owner],since:S.since,age:st.N-S.since};
+}
+function occPowerHere(){return occPowerAt(G.sx,G.sy);}
+/* реквизиция: треть выработки уходит новому хозяину, пока он свежий */
+function occReqMul(sx,sy){return occPowerAt(sx,sy)?.7:1;}
 function occHere(){return occLvl(G.sx,G.sy);}
 function occInfo(lvl){return OCC_LVL[clamp(lvl|0,0,OCC_MAX)];}
 /* ── очаги ──
@@ -35620,6 +35656,140 @@ function pirateArmTick(p,dt){
     if(C[fam]>0)continue;
     if(foeArmFire(p,fam,d))C[fam]=FOE_ARM_COOL[fam]||60;
     else C[fam]=12;                          /* не вышло — пробуем скоро снова */
+  }
+}
+
+/* ══════════════ война, которую видно (M372, §7.4) ══════════════
+   Летопись знает, чья это система и идёт ли по ней фронт. Здесь это становится
+   тем, что игрок ВИДИТ, прыгнув сюда: в тылу стоит пикет хозяина, а на фронте
+   уже идёт бой — чужой бой, в котором игрока никто не ждал.
+
+   Правило кадра: бой спавнится НА ВХОДЕ и не возобновляется (D01) — иначе
+   спрятанная вкладка или переведённые часы дают скачок войны прямо в кадре.
+   Потолок восьми вооружённых на систему тот же, что у пиратов (§5).
+
+   Стороны стреляют друг в друга общей петлёй боя (M361): у выстрела есть
+   хозяин, и петля разрешает каждую пару. Игрок в этой паре не участвует —
+   пока он не выстрелит сам, но это уже четыре правила (M373). */
+const NPC_PICKET=2;                 /* сколько стоит в тылу */
+const NPC_BATTLE=8;                 /* потолок вооружённых в системе */
+function npcPowerHere(){
+  if(typeof chronOwnerKey!=="function")return null;
+  return chronOwnerKey(G.sx,G.sy);
+}
+/* ── один корабль державы ──
+   Корпус берётся тем же генератором, что у всех: запись в `NPC_SHIPS` с `by`
+   державы, значит порода читается силуэтом (M369). Роль и ранг — пиратские:
+   поведение уже написано, и переписывать его ради флага незачем. */
+function npcShip(by,i,rank,x,y,friend){
+  const seed=hashi(G.sx*73+G.sy,i*911+7,0x0DEF);
+  const id="np"+by+seed;
+  if(!NPC_SHIPS[id])NPC_SHIPS[id]={name:id,seed,hcls:(rank>=2?"warship":"courier"),
+    col:(typeof powerOf==="function")?powerOf(by).col:"#c9c9d4",
+    hull:120,cargo:40,fuel:120,thr:1,cls:"патруль",by};
+  const danger=sysDanger(G.sx,G.sy);
+  const hp=(30+danger*70)*(1+rank*.6);
+  return {x,y,vx:0,vy:0,a:Math.atan2(-y,-x),
+    hull:hp,hullMax:hp,name:(typeof powerOf==="function"?powerOf(by).ru:by)+" "+(100+(seed%900)),
+    rank,seed,shipId:id,cool:0,aware:true,thrust:false,
+    owner:by,pw:by,iff:friend?1:0,
+    shield:hp*.4,shieldMax:hp*.4,shieldHit:0,
+    shieldType:(typeof PIRATE_LOADOUT!=="undefined"&&PIRATE_LOADOUT[rank])
+      ?(PIRATE_LOADOUT[rank].shield||"solid"):"solid"};
+}
+/* ── что стоит в системе ──
+   Тыл: пикет хозяина у точки прыжка, мирный. Фронт: два крыла, и они дерутся
+   между собой. Игрока не трогает ни то, ни другое: он гражданский борт под
+   своим флагом, пока не сделает того, о чём говорят четыре правила. */
+function npcSpawn(){
+  if(typeof chronOwner!=="function")return;
+  if(typeof yaltaHere==="function"&&yaltaHere()){npcYalta();return;}
+  const own=chronOwner(G.sx,G.sy);
+  if(own<0)return;
+  const by=MAKER_KEYS[own];
+  const front=chronFront(G.sx,G.sy);
+  const armed=()=>(G.pirates||[]).filter(p=>p.hull>0).length;
+  const r=rng(hashi(G.sx,G.sy,0x0B47));
+  if(!front){
+    /* тыл: два-три корабля у точки прыжка, стоят и смотрят */
+    const n=Math.min(NPC_PICKET+((r()<.4)?1:0),Math.max(0,NPC_BATTLE-armed()));
+    for(let i=0;i<n;i++){
+      const a=r()*TAU,rad=1500+r()*900;
+      const p=npcShip(by,i,1,Math.cos(a)*rad,Math.sin(a)*rad,1);
+      p.aware=false;
+      G.pirates.push(p);
+    }
+    return;
+  }
+  /* фронт: хозяин против того, с кем он воюет. Обе стороны уже здесь, и бой
+     идёт сам — игрок в него входит зрителем */
+  let foe=-1;
+  for(const w of chronWars()){
+    if(w.a===own){foe=w.b;break;}
+    if(w.b===own){foe=w.a;break;}
+  }
+  if(foe<0)return;
+  const fby=MAKER_KEYS[foe];
+  const room=Math.max(0,NPC_BATTLE-armed());
+  const nA=Math.min(3+((r()<.5)?1:0),room);
+  const nB=Math.min(3+((r()<.5)?1:0),Math.max(0,room-nA));
+  for(let i=0;i<nA;i++){
+    const a=r()*TAU,rad=700+r()*700;
+    G.pirates.push(npcShip(by,i,i?1:2,Math.cos(a)*rad,Math.sin(a)*rad,1));
+  }
+  for(let i=0;i<nB;i++){
+    const a=r()*TAU,rad=700+r()*700;
+    G.pirates.push(npcShip(fby,10+i,i?1:2,Math.cos(a)*rad+400,Math.sin(a)*rad+400,1));
+  }
+  if(nA&&nB){
+    say("ЗДЕСЬ БОЙ · ВЫ НЕ ЗВАНЫ",120);
+    if(typeof etherLine==="function"&&typeof powerOf==="function")
+      etherLine("…"+powerOf(by).ru+" и "+powerOf(fby).ru+" в этом секторе. Гражданским уйти с линии.","эфир");
+  }
+}
+/* ── «Ялта» (M372, §16.6) ──
+   Шесть посольств на рейде, шесть волн разом, ярмарка. Никто не стреляет:
+   оружие опечатано ещё в M369, здесь только те, кто стоит на якоре. */
+function npcYalta(){
+  const r=rng(hashi(G.sx,G.sy,0x1A17));
+  for(let i=0;i<6;i++){
+    const by=MAKER_KEYS[i];
+    const a=(i/6)*TAU+r()*.2,rad=1200+r()*500;
+    const p=npcShip(by,20+i,0,Math.cos(a)*rad,Math.sin(a)*rad,1);
+    p.aware=false;p.envoy=1;p.name="посольство "+((typeof powerOf==="function")?powerOf(by).ru:by);
+    p.vx=0;p.vy=0;
+    G.pirates.push(p);
+  }
+}
+/* ── обломок после боя (M372 → §19.3) ──
+   Кто-то из них погибнет и без вас. Корпус остаётся висеть, и его можно взять
+   на трос — тот же путь, что у чёрного дерелика (M369b). */
+function npcWreck(p){
+  if(!p||!p.pw||G.tow)return;
+  if(!G.npcWrecks)G.npcWrecks=[];
+  if(G.npcWrecks.length>=3)return;
+  G.npcWrecks.push({x:p.x,y:p.y,seed:p.seed>>>0,by:p.pw});
+}
+function npcWreckNear(sh){
+  if(!G.npcWrecks||!G.npcWrecks.length)return null;
+  let best=null,bd=260;
+  for(const w of G.npcWrecks){
+    const d=Math.hypot(sh.x-w.x,sh.y-w.y);
+    if(d<bd){bd=d;best=w;}
+  }
+  return best;
+}
+function npcWreckDraw(zx,zy,Z){
+  if(!G.npcWrecks)return;
+  for(const w of G.npcWrecks){
+    const x=zx(w.x),y=zy(w.y);
+    if(x<-40||x>W+40||y<-40||y>H+40)continue;
+    ctx.strokeStyle="rgba(150,160,175,.75)";ctx.lineWidth=1;
+    ctx.beginPath();ctx.arc(x,y,7*clamp(Z,.5,2),0,TAU);ctx.stroke();
+    ctx.fillStyle="rgba(40,46,54,.9)";ctx.fill();
+    ctx.fillStyle="rgba(200,210,220,.5)";
+    ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+    ctx.fillText("КОРПУС",x,y-11*clamp(Z,.5,2));
   }
 }
 
@@ -39076,7 +39246,11 @@ function updateSystem(dt){
   /* стрельбище (24d): пока идёт минута, подсказку держит оно */
   if(typeof rangeOn==="function"&&rangeOn()){rangeTick(dt);return;}
   G.prompt=atEdge?"ГРАВИТАЦИОННЫЙ ЯКОРЬ · КРАЙ СИСТЕМЫ\nКУРС К ЗВЕЗДЕ СВОБОДЕН":"";
-  const hostile=G.pirates.filter(p=>p.aware).length;
+  /* «преследуют» — это те, кто идёт ЗА ВАМИ. Чужой бой на фронте (M372) идёт
+     мимо: его корабли помечены iff и в счёт не входят, иначе строка пугала бы
+     игрока восемью преследователями, которые о нём даже не знают */
+  const hostile=G.pirates.filter(p=>p.aware&&!p.iff).length;
+  const bystand=G.pirates.filter(p=>p.iff&&p.pw).length;
   /* подсказка боя переписана под новое управление (M360a): пэда ОГОНЬ в
      системе больше нет, огонь — это захват. Две мысли — две строки, а не
      одна во всю ширину телефона: «что делать» и «можно не делать». */
@@ -39085,6 +39259,9 @@ function updateSystem(dt){
     const how=got?"ЦЕЛЬ ВЗЯТА · ОГОНЬ САМ"
       :(stick?"ЦЕЛЬ ИЛИ ТЫЧОК ПО КОРПУСУ — ЗАХВАТ":"TAB ИЛИ ЩЕЛЧОК ПО КОРПУСУ — ЗАХВАТ");
     G.prompt=(st.armed?how:"ОРУДИЯ НЕТ")+"\nПРЕСЛЕДУЮТ: "+hostile+" · МОЖНО УЙТИ ИЛИ ПРЫГНУТЬ";
+  }else if(bystand>=4&&typeof chronFront==="function"&&chronFront(G.sx,G.sy)){
+    /* чужой бой: подсказка говорит ровно то, что происходит */
+    G.prompt="ЗДЕСЬ ИДЁТ ЧУЖОЙ БОЙ · "+bystand+" БОРТОВ"+"\nВАС НЕ ТРОГАЮТ, ПОКА ВЫ НЕ СТРЕЛЯЕТЕ";
   }
 
   if(sys.station){
@@ -39135,6 +39312,21 @@ function updateSystem(dt){
           (withLetter?"\nДЕЙСТВИЕ — СЕСТЬ С ПИСЬМОМ · без оружия":"\nДЕЙСТВИЕ — АБОРДАЖ"+(st.armed?"":" (ОРУЖИЯ НЕТ)"));
         if(actEdge){if(withLetter)islandLand(PB);else enterRaid(PB);return;}
       }
+    }
+  }
+  /* корпус, оставшийся после чужого боя (M372): его можно взять на трос */
+  if(typeof npcWreckNear==="function"){
+    const wk=npcWreckNear(sh);
+    if(wk){
+      G.prompt=G.tow?("КОРПУС ПОСЛЕ БОЯ · У ВАС УЖЕ ЕСТЬ БУКСИР")
+        :("КОРПУС ПОСЛЕ БОЯ\nДЕЙСТВИЕ — ВЗЯТЬ НА БУКСИР");
+      if(actEdge&&!G.tow){
+        G.tow={seed:wk.seed,by:wk.by,sx:G.sx,sy:G.sy};
+        G.npcWrecks=G.npcWrecks.filter(w=>w!==wk);
+        say("КОРПУС НА ТРОСЕ · В ДОК",120);
+        logAdd("tech","Корпус после боя взят на буксир · сектор "+G.sx+":"+G.sy);
+      }
+      return;
     }
   }
   /* флот ГЛАВТРАССЫ: позывной, заправка по норме (12ai) */
@@ -66451,7 +66643,12 @@ function openStation(){
   const stP=(typeof powerOf==="function")?powerOf(stBy):null;
   document.getElementById("stKind").textContent=
     G.st.kind+" · система "+G.sys.name+"\n"+stationModsLine(G.sys)+
-    (stP?"\n"+stP.ru+" · "+stP.hail:"");
+    (stP?"\n"+stP.ru+" · "+stP.hail:"")+
+    /* флаг сменился (M372): пока хозяин свежий, станция говорит об этом
+       первой строкой — и по ней же понятно, почему цены другие */
+    ((typeof occPowerHere==="function"&&occPowerHere())
+      ?"\nФЛАГ СМЕНИЛСЯ · "+powerOf(occPowerHere().by).ru.toUpperCase()+
+        " · треть выработки в реквизицию":"");
   if(stP)document.getElementById("stName").style.color=stP.col;
   syncTabs();
   /* новая стыковка — новый экран: высоту прошлого захода не помним */

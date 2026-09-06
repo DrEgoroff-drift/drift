@@ -1083,8 +1083,16 @@ One system inside ГЛАВТРАССА's centre (r ≈ 6, fixed by seed, never t
   rumour, and the front drawn as a dotted line along the border on the map). **Deferred:** the
   §15.1 families as mechanics (they are announced but do nothing yet — M382–M388) and the
   digest «чё там».
-- **M372** the war seen: battle at jump-in, power occupation (D10, D11), station bodies and
-  domes from build lines; «Ялта» at its maximum, embassies, all six waves at once.
+- ~~**M372** the war seen~~ — 0.372.0 (2026-09-06): `13d-npc` — a picket of the owner in the
+  rear, two wings fighting each other on a front, spawned at jump-in and never resumed (D01), the
+  cap of eight held, and the hull left over after their battle can be put on the tow line; the
+  power branch of occupation (`occPowerAt`/`occReqMul`: for eight сводки after a flag change the
+  prices rise a quarter, the station header says so, and a third of a holding's output goes to
+  the new owner while the buildings keep working); «Ялта» with six embassies at anchor, six
+  workshops on one counter at double price and no shooting at all. The chase line no longer
+  counts bystanders — a battle you are not part of says so in its own words.
+  **Deferred:** station bodies growing from build lines and domes appearing (there are no
+  per-system build facts yet), the fair, and the six waves audible at once.
 - **M373** the four rules and the hail.
 - **M374** episodes, notebook, the word along the lines, witnesses, «не простил».
 - **M375** the rescuer.

@@ -77,6 +77,10 @@ function spawnPirates(){
   /* баржи набираются тем же входом, что и пираты: одна точка на все режимы,
      откуда входят в систему (12l-barge) */
   if(typeof spawnBarges==="function")spawnBarges();
+  /* пикет державы или чужой бой на фронте (M372): летопись говорит, чья это
+     система, вход в систему это показывает */
+  G.npcWrecks=null;
+  if(typeof npcSpawn==="function")npcSpawn();
 }
 /* fireShot — в 13-combat (M361): у выстрела есть хозяин */
 let fireCool=0;
@@ -296,6 +300,7 @@ function drawCombat(zx,zy,Z){
      уходил под корабли, а не поверх них */
   if(typeof battDraw==="function")battDraw(zx,zy,Z);
   if(typeof mslDraw==="function")mslDraw(zx,zy,Z);
+  if(typeof npcWreckDraw==="function")npcWreckDraw(zx,zy,Z);
   /* контейнеры: гранёная коробка в цвет категории части, мигает маячком */
   for(const L of G.loot){
     const x=zx(L.x),y=zy(L.y);

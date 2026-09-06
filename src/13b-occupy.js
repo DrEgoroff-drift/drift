@@ -33,6 +33,23 @@ function occAt(sx,sy){
   return o&&o.lvl>0?o:null;
 }
 function occLvl(sx,sy){const o=occAt(sx,sy);return o?o.lvl:0;}
+/* ── свежая оккупация ДЕРЖАВОЙ (M372, §7.4) ──
+   Пираты занимают систему сами (это `occAt` выше). Держава занимает её в
+   летописи: флаг сменился, и восемь сводок после этого система живёт иначе —
+   чужой пикет, цены вверх, треть выработки идёт в реквизицию. Дальше они
+   становятся местными, и всё возвращается к обычному. */
+const OCC_FRESH=8;
+function occPowerAt(sx,sy){
+  if(typeof chronOwner!=="function")return null;
+  const st=chronState();
+  const S=st.systems[(sx|0)+","+(sy|0)];
+  if(!S||S.owner<0)return null;
+  if(st.N-S.since>OCC_FRESH)return null;
+  return {by:MAKER_KEYS[S.owner],since:S.since,age:st.N-S.since};
+}
+function occPowerHere(){return occPowerAt(G.sx,G.sy);}
+/* реквизиция: треть выработки уходит новому хозяину, пока он свежий */
+function occReqMul(sx,sy){return occPowerAt(sx,sy)?.7:1;}
 function occHere(){return occLvl(G.sx,G.sy);}
 function occInfo(lvl){return OCC_LVL[clamp(lvl|0,0,OCC_MAX)];}
 /* ── очаги ──

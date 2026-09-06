@@ -219,10 +219,13 @@ function bldTick(key,id,now){
   if(s<=0)return;
   s=Math.min(s,72);
   const cap=HOLD_CAP_SHIFTS*holdCapMul(key);
+  /* реквизиция свежего хозяина (M372): треть выработки уходит ему. Постройки
+     при этом работают — их не отбирают, с них берут */
+  const req=(typeof occReqMul==="function"&&key)?occReqMul(...key.split(",").map(Number)):1;
   if(def.fam==="A"){
     /* добыча: запас растёт, режется тремя сменами */
     const O=bldOut(def,B.lvl);
-    for(const k in O)B.got[k]=Math.min(O[k]*cap,(B.got[k]||0)+O[k]*s);
+    for(const k in O)B.got[k]=Math.min(O[k]*cap,(B.got[k]||0)+O[k]*s*req);
   }else{
     const Q=bldQuota(def,B.lvl),O=bldOut(def,B.lvl);
     let tot=0;for(const k in Q)tot+=Q[k];
@@ -230,7 +233,7 @@ function bldTick(key,id,now){
       let ate=0;
       for(const k in Q){const e=Math.min(B.my[k]|0,Q[k]);B.my[k]=(B.my[k]|0)-e;ate+=e;}
       if(ate<=0)break;   /* бункер пуст — дальше смены ничьи */
-      const sh=ate/tot;
+      const sh=(ate/tot)*req;
       for(const k in O)B.got[k]=Math.min(O[k]*cap,(B.got[k]||0)+O[k]*sh);
     }
   }

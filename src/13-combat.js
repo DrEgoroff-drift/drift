@@ -66,6 +66,8 @@ function playerHit(s){
 /* пират разбит не игроком: награды нет, только строка; особые (ренегат, охотник,
    соперник) уходят своими выходами, как и от вашего выстрела */
 function pirateFellTo(p,owner){
+  /* корабль державы оставляет корпус: его можно взять на трос (M372, §19.3) */
+  if(typeof npcWreck==="function"&&p.pw)npcWreck(p);
   if(p.rogue||p.hunter||p.rival){killPirate(p);return;}
   parrotHeardKill(p);
   sfx("boom",{v:.6});

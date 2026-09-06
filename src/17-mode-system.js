@@ -174,7 +174,11 @@ function updateSystem(dt){
   /* стрельбище (24d): пока идёт минута, подсказку держит оно */
   if(typeof rangeOn==="function"&&rangeOn()){rangeTick(dt);return;}
   G.prompt=atEdge?"ГРАВИТАЦИОННЫЙ ЯКОРЬ · КРАЙ СИСТЕМЫ\nКУРС К ЗВЕЗДЕ СВОБОДЕН":"";
-  const hostile=G.pirates.filter(p=>p.aware).length;
+  /* «преследуют» — это те, кто идёт ЗА ВАМИ. Чужой бой на фронте (M372) идёт
+     мимо: его корабли помечены iff и в счёт не входят, иначе строка пугала бы
+     игрока восемью преследователями, которые о нём даже не знают */
+  const hostile=G.pirates.filter(p=>p.aware&&!p.iff).length;
+  const bystand=G.pirates.filter(p=>p.iff&&p.pw).length;
   /* подсказка боя переписана под новое управление (M360a): пэда ОГОНЬ в
      системе больше нет, огонь — это захват. Две мысли — две строки, а не
      одна во всю ширину телефона: «что делать» и «можно не делать». */
@@ -183,6 +187,9 @@ function updateSystem(dt){
     const how=got?"ЦЕЛЬ ВЗЯТА · ОГОНЬ САМ"
       :(stick?"ЦЕЛЬ ИЛИ ТЫЧОК ПО КОРПУСУ — ЗАХВАТ":"TAB ИЛИ ЩЕЛЧОК ПО КОРПУСУ — ЗАХВАТ");
     G.prompt=(st.armed?how:"ОРУДИЯ НЕТ")+"\nПРЕСЛЕДУЮТ: "+hostile+" · МОЖНО УЙТИ ИЛИ ПРЫГНУТЬ";
+  }else if(bystand>=4&&typeof chronFront==="function"&&chronFront(G.sx,G.sy)){
+    /* чужой бой: подсказка говорит ровно то, что происходит */
+    G.prompt="ЗДЕСЬ ИДЁТ ЧУЖОЙ БОЙ · "+bystand+" БОРТОВ"+"\nВАС НЕ ТРОГАЮТ, ПОКА ВЫ НЕ СТРЕЛЯЕТЕ";
   }
 
   if(sys.station){
@@ -233,6 +240,21 @@ function updateSystem(dt){
           (withLetter?"\nДЕЙСТВИЕ — СЕСТЬ С ПИСЬМОМ · без оружия":"\nДЕЙСТВИЕ — АБОРДАЖ"+(st.armed?"":" (ОРУЖИЯ НЕТ)"));
         if(actEdge){if(withLetter)islandLand(PB);else enterRaid(PB);return;}
       }
+    }
+  }
+  /* корпус, оставшийся после чужого боя (M372): его можно взять на трос */
+  if(typeof npcWreckNear==="function"){
+    const wk=npcWreckNear(sh);
+    if(wk){
+      G.prompt=G.tow?("КОРПУС ПОСЛЕ БОЯ · У ВАС УЖЕ ЕСТЬ БУКСИР")
+        :("КОРПУС ПОСЛЕ БОЯ\nДЕЙСТВИЕ — ВЗЯТЬ НА БУКСИР");
+      if(actEdge&&!G.tow){
+        G.tow={seed:wk.seed,by:wk.by,sx:G.sx,sy:G.sy};
+        G.npcWrecks=G.npcWrecks.filter(w=>w!==wk);
+        say("КОРПУС НА ТРОСЕ · В ДОК",120);
+        logAdd("tech","Корпус после боя взят на буксир · сектор "+G.sx+":"+G.sy);
+      }
+      return;
     }
   }
   /* флот ГЛАВТРАССЫ: позывной, заправка по норме (12ai) */

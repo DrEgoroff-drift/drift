@@ -64,7 +64,12 @@ function openStation(){
   const stP=(typeof powerOf==="function")?powerOf(stBy):null;
   document.getElementById("stKind").textContent=
     G.st.kind+" · система "+G.sys.name+"\n"+stationModsLine(G.sys)+
-    (stP?"\n"+stP.ru+" · "+stP.hail:"");
+    (stP?"\n"+stP.ru+" · "+stP.hail:"")+
+    /* флаг сменился (M372): пока хозяин свежий, станция говорит об этом
+       первой строкой — и по ней же понятно, почему цены другие */
+    ((typeof occPowerHere==="function"&&occPowerHere())
+      ?"\nФЛАГ СМЕНИЛСЯ · "+powerOf(occPowerHere().by).ru.toUpperCase()+
+        " · треть выработки в реквизицию":"");
   if(stP)document.getElementById("stName").style.color=stP.col;
   syncTabs();
   /* новая стыковка — новый экран: высоту прошлого захода не помним */

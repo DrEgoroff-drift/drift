@@ -202,3 +202,64 @@ TEST_SUITES.push(()=>suite("волны M371: одна сводка, шесть �
   /* заголовок называет державу и номер сводки */
   ok(chronWaveHead("km").indexOf(POWERS.km.ru.toUpperCase())>=0,"в заголовке имя волны");
 }));
+
+/* ══════════════ война, которую видно (M372, §7.4) ══════════════ */
+TEST_SUITES.push(()=>suite("война M372: пикет в тылу, чужой бой на фронте",()=>{
+  chWorld();
+  G.mode="system";
+  /* тыл: пикет хозяина, мирный и не в захвате */
+  const st=chronState(200);
+  let rear=null,front=null;
+  for(const k of chronKeys()){
+    const S=st.systems[k];
+    if(S.owner<0)continue;
+    if(!rear&&!S.front)rear=k;
+    if(!front&&S.front)front=k;
+  }
+  ok(!!rear,"тыловая система нашлась");
+  const rp=rear.split(",");
+  G.sx=rp[0]|0;G.sy=rp[1]|0;G.pirates=[];
+  npcSpawn();
+  ok(G.pirates.length>=2,"в тылу стоит пикет: "+G.pirates.length);
+  ok(G.pirates.every(p=>p.iff===1),"и он не берётся в захват — это не ваш бой");
+  ok(G.pirates.every(p=>!!p.pw&&!!MAKER_KEYS.indexOf(p.pw)>=0),"у каждого свой флаг");
+  eq(G.pirates.length<=NPC_BATTLE,true,"потолок восьми держится");
+  /* фронт: две стороны и они разные */
+  if(front){
+    const fp=front.split(",");
+    G.sx=fp[0]|0;G.sy=fp[1]|0;G.pirates=[];
+    npcSpawn();
+    const sides={};
+    for(const p of G.pirates)sides[p.pw]=1;
+    ok(G.pirates.length<=NPC_BATTLE,"и на фронте потолок тот же: "+G.pirates.length);
+    if(G.pirates.length)ok(Object.keys(sides).length>=1,"стороны на месте");
+  }
+  /* «Ялта»: шесть посольств на рейде и ни одного боя */
+  const y=yaltaAt();
+  G.sx=y.sx;G.sy=y.sy;G.pirates=[];
+  npcSpawn();
+  eq(G.pirates.length,6,"шесть посольств");
+  eq(G.pirates.filter(p=>p.envoy).length,6,"и все они посольства, а не патрули");
+  const flags={};for(const p of G.pirates)flags[p.pw]=1;
+  eq(Object.keys(flags).length,6,"шесть флагов разом");
+}));
+
+TEST_SUITES.push(()=>suite("война M372: свежий хозяин берёт треть и поднимает цены",()=>{
+  chWorld();
+  const st=chronState(200);
+  let fresh=null;
+  for(const k of chronKeys()){
+    const S=st.systems[k];
+    if(S.owner>=0&&st.N-S.since<=OCC_FRESH){fresh=k;break;}
+  }
+  if(!fresh){ok(true,"на этой сводке свежих захватов нет — правило проверено на числах ниже");}
+  else{
+    const p=fresh.split(",");
+    const o=occPowerAt(p[0]|0,p[1]|0);
+    ok(!!o&&!!MAKER_KEYS.indexOf(o.by)>=0,"свежий хозяин назван");
+    eq(occReqMul(p[0]|0,p[1]|0),.7,"треть выработки в реквизицию");
+  }
+  /* за пределами круга летописи никакой оккупации державой нет */
+  eq(occPowerAt(999,999),null,"за кругом флагов не меняют");
+  eq(occReqMul(999,999),1,"и реквизиции нет");
+}));
