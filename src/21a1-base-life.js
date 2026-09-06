@@ -81,6 +81,8 @@ const BLOG={
   palpeny: (B,a)=>"сводка не подана: пеня "+a.q+" кр. Никто не приходил и не спрашивал",
   palcheck:(B,a)=>a.rank+" "+a.who+" был вежлив и нашёл: «"+a.form+"». Штраф "+a.q+" кр",
   palseize:(B,a)=>"участок изъят ПАЛАТОЙ за долг "+a.q+" кр. Опись прилагается",
+  fwd:     ()=>"нас назвали опорным пунктом экспедиции. Всем бортам — сюда",
+  fwdpay:  (B,a)=>"сел борт: приём и заправка, "+a.q+" кр. И поели",
   warn:    (B,a)=>a.warn,
   law:     (B,a)=>"устав: принят закон «"+a.ru+"». Навсегда",
   thief:   (B,a)=>"со склада пропало "+a.q+" ед. Дверь была открыта",
@@ -167,6 +169,8 @@ function baseShiftRun(B,n){
     if(typeof baseUniqStep==="function")said|=baseUniqStep(B,n)?1:0;
     /* управляющий (M405): жалованье, доля и изъян — после всего, что он вёл */
     if(typeof bmgrStep==="function")said|=bmgrStep(B,n)?1:0;
+    /* опорный пункт экспедиции (M409, §44): трафик мира сворачивает сюда */
+    if(typeof fwdStep==="function")said|=fwdStep(B,n)?1:0;
     /* и он же развивает базу (M407): строят все, правильно — один */
     if(typeof devSupply==="function")said|=devSupply(B,n)?1:0;
     if(typeof devStep==="function")said|=devStep(B,n)?1:0;

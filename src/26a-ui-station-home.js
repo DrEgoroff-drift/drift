@@ -223,6 +223,9 @@ function renderBasesTab(st){
         b.onclick=()=>{baseRuinTake(B);renderTab();};
         r.appendChild(b);
       }
+      /* опорный пункт (M409, §44): это не награда, а место, которое вдруг занято */
+      if(typeof fwdLineOf==="function"&&fwdLineOf(B))
+        r.firstChild.innerHTML+="<s><b style='color:#7fe6d8'>"+fwdLineOf(B)+"</b></s>";
       /* ПАЛАТА (M408, §28): участок, режим и то, что он вам начислил */
       if(typeof palLine==="function"){
         r.firstChild.innerHTML+="<s>"+palLine(B)+"</s>";

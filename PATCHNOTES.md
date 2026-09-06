@@ -7,6 +7,31 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.409.0 - M409: the expedition names your base, and the base queue closes
+
+The expedition of `11x-expedition` states its own honest cruelty in its header: «Игрок не герой
+экспедиции. Он — один из тысячи рук.» The base is the one thing that changes it.
+
+An expedition into the far dark cannot be mounted from stations alone: it needs a **forward post**
+on the way out — a pad, a mast, housing, closed life support, at least two people living there, and
+standing beyond the ninth ring rather than in the comfortable middle. The world has candidates of
+its own, all mediocre. If yours qualifies, the circular names **it**:
+
+> «…опорный пункт экспедиции — участок «Тишина», БЗ-417, система 12:3. Всем бортам: приём и
+> заправка там.»
+
+And it is paid for in the only currency that arc accepts. The world's traffic reroutes through your
+pad: a ship lands every few shifts, pays for reception and refuelling, **and eats from your stores**
+— so the reward is not a prize you collect but a place that is suddenly busy, and busy in your
+name. Run the food down and nobody lands, because there is nothing to feed them with. Your call
+sign is said on a channel you did not pay for, for sixty days.
+
+With this the base queue **M390–M409 is closed**: the shift and the journal, four stores, heat and
+the planet's formulary, adjacency and halls, the director, the аврал, the charter, ruins, the
+payoff, the hundred управляющих and the one, the ПАЛАТА — and, at the end of it, a place the whole
+world flies through. Full tier green: 17 571 assertions over 756 suites.
+
+---
 ## 0.408.0 - M408: ПАЛАТА — the register, the fee, and the notice that arrives anyway
 
 The deadpan law is withdrawn on the author's instruction and the joke is played to the end. What

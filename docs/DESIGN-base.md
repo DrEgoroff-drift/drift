@@ -1642,7 +1642,13 @@ and §30's harshest line made true: a ruin keeps billing until it is deregistere
 thousand of debt. **Deferred:** клеймо and счётчик отгрузки — both live on the path of a *lot*
 rather than the path of a base; and «станция платит» (§32's advance and receivable), which wants the
 holding's ledger. ·
-M409 опорный пункт экспедиции (§44).
+~~M409 опорный пункт экспедиции~~ — 0.409.0 (2026-09-07): `21b6-base-forward` — a base with a pad,
+a mast, housing and closed life support, two people aboard and standing beyond the ninth ring is
+named by the circular itself; ships land every few shifts, pay for reception and **eat from its
+stores**, so an empty larder means nobody lands. **Deferred:** the expedition's own stores and the
+person who stays afterwards (§44's «access, not credits» — they want the expedition's end, which is
+its own arc). **The queue M390–M409 is closed**; every stage struck, full tier green at 17 571
+assertions over 756 suites.
 
 §46 and §50 are not passes: they are the register every line of the layer is written in, and a law
 every pass is checked against.

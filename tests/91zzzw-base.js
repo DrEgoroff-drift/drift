@@ -1712,3 +1712,66 @@ TEST_SUITES.push(()=>suite("база M408: режим — это выбор, а 
   eq(B3.ruin.who,"pal","и въехала в него сама ПАЛАТА");
   ok(B3.log.some(x=>x.k==="palseize"),"с описью");
 }));
+
+/* ── опорный пункт экспедиции (M409) ──
+   §44: экспедицию нельзя снарядить с одних станций. Проверяется, что пункт —
+   это ТРЕБОВАНИЯ К МЕСТУ, а не кнопка, и что платят за него не деньгами. */
+TEST_SUITES.push(()=>suite("база M409: опорный пункт — это место, а не награда",()=>{
+  const B=bLife();
+  G.crew=[];
+  /* без экспедиции никакого пункта нет */
+  G.exp=null;
+  eq(fwdBase(),null,"пока экспедиции нет — и пункта нет");
+  eq(fwdLineOf(B),"","и на столе про это ни слова");
+  /* требования: площадка, мачта, жильё, воздух, вода и хотя бы двое людей */
+  G.exp={phase:1,day0:0,coll:{},gone:[],gave:0,pax:null};
+  ok(expOn(),"экспедиция идёт");
+  ok(!fwdFits(B),"обычная база не годится");
+  const miss=fwdMissing(B);
+  ok(miss.length>=3,"и сказано, чего не хватает: "+miss.join(", "));
+  for(const k in FWD_NEED)ok(!!BUILD[k],"требование «"+k+"» — настоящий модуль");
+  /* собираем годную */
+  let i=0;
+  for(const k in FWD_NEED)B.cells[i++]={k,hp:1};
+  B.cells[i++]={k:"reactor",hp:1};B.cells[i++]={k:"reactor",hp:1};
+  /* адрес двигаем ДО того, как заводим людей: экипаж привязан приказом к
+     координатам базы, и переезд без них оставляет базу без людей */
+  B.sx=12;B.sy=3;
+  bCrew(B,2);
+  const L=baseLife(B);L.air=100;L.water=100;L.food=100;
+  ok(fwdFits(B),"теперь годится: "+fwdMissing(B).join(",")||"—");
+  /* но коридор решает: близко к центру — не годится */
+  ok(fwdCorridor(B),"дальше девяти — тот коридор");
+  const near={sx:1,sy:1,cells:B.cells,idx:B.idx,type:B.type,pool:{},life:baseLife(B)};
+  ok(!fwdCorridor(near),"а у центра — не тот");
+  /* пункт находится и объявляется один раз */
+  const F=fwdBase();
+  ok(!!F,"пункт выбран");
+  ok(fwdIs(B),"и это наша база");
+  const line=fwdLine(B);
+  ok(line.indexOf("опорный пункт")>0&&line.indexOf(String(B.sx))>0,"циркуляр называет её и адрес: "+line);
+  const n=baseShift()-(baseShift()%FWD_PAY_EVERY);
+  ok(fwdAnnounce(B,n),"объявлено");
+  eq(fwdAnnounce(B,n),0,"и второй раз не объявляется");
+  ok(B.log.some(x=>x.k==="fwd"),"в журнале это есть");
+  /* платят не деньгами: борт садится, платит за приём — и ест */
+  const cr=G.credits,f0=L.food,w0=L.water;
+  ok(fwdStep(B,n),"борт сел");
+  ok(G.credits>cr,"за приём заплатили: +"+(G.credits-cr));
+  ok(L.food<f0&&L.water<w0,"и поели с нашего склада: харч "+f0+"→"+L.food);
+  ok(B.log.some(x=>x.k==="fwdpay"),"и это записано");
+  /* на пустых складах борт не садится: кормить нечем */
+  L.food=0;L.water=0;
+  const cr2=G.credits;
+  fwdStep(B,n+FWD_PAY_EVERY);
+  eq(G.credits,cr2,"кормить нечем — и приёма нет");
+  /* развалина и консервация пунктом не бывают */
+  L.food=100;L.water=100;
+  basePark(B,"hand",n);
+  ok(!fwdFits(B),"на консервации — не пункт");
+  baseWake(B,n,"hand");
+  B.ruin={n,who:null};
+  ok(!fwdFits(B),"и развалина — не пункт");
+  B.ruin=null;
+  G.exp=null;
+}));
