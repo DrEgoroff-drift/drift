@@ -58,6 +58,13 @@ const BUILD={
   /* маяк (M395, §6): единственный модуль, который приводит ЛЮДЕЙ */
   beacon: {ru:"Маяк",        cost:{credits:1400,alloy:3},power:-3,
            note:"раз в тридцать смен кто-то приходит и просится остаться"},
+  /* два модуля из §6, на которые ссылается таблица соседства (M396). Оба
+     делают ровно то, что написано, и ни слова сверх: обещание без кода —
+     ложь, и правилами проекта запрещено прямо */
+  med:    {ru:"Лазарет",     cost:{credits:1700,alloy:4},power:-4,
+           note:"+4 духа жилому отсеку по соседству"},
+  shop:   {ru:"Мастерская",  cost:{credits:1500,alloy:4},power:-5,
+           note:"чинит сама, без инженера; соседний отсек — вдвое быстрее"},
   garden: {ru:"Оранжерея",   cost:{credits:1600,alloy:4},power:-4,
            note:"вода → харч и немного воздуха; на посадку нужна органика"},
   vat:    {ru:"Белковый бак",cost:{credits:1900,alloy:5},power:-6,
@@ -74,8 +81,12 @@ function baseKey(sx,sy,idx){return sx+","+sy+":"+idx;}
 function baseAt(sx,sy,idx){return G.bases[baseKey(sx,sy,idx)]||null;}
 /* смета смотрителя удешевляет стройку — поэтому цена берётся здесь, а не из
    таблицы напрямую: и в интерфейсе, и при оплате она должна быть одна и та же */
-function baseCost(k){
-  const d=mgrBuildDiscount(),c=BUILD[k].cost;
+function baseCost(k,B){
+  /* мастерская (M396): на базе, где она стоит, стройка дешевле на пятнадцать
+     процентов — она и есть та причина, по которой мастерскую ставят первой */
+  let shop=1;
+  if(B&&B.cells)for(const cell of B.cells)if(cell&&cell.hp>0&&cell.k==="shop"){shop=.85;break;}
+  const d=mgrBuildDiscount()*shop,c=BUILD[k].cost;
   if(d>=1)return c;
   return {credits:Math.round(c.credits*d),alloy:c.alloy?Math.max(1,Math.round(c.alloy*d)):c.alloy};
 }
@@ -122,8 +133,18 @@ function exitBase(){
 }
 function cellX(c){return BASE_OX+c*BCELL_W+BCELL_W/2;}
 function cellY(r){return BASE_OY+r*BCELL_H+BCELL_H/2;}
-function baseCell(B,c,r){return B.cells[r*BASE_COLS+c];}
-function baseSet(B,c,r,v){B.cells[r*BASE_COLS+c]=v;}
+/* ── адрес клетки ──
+   Колонка −1 — это ствол (M396), и он НЕ КЛЕТКА. Без этой проверки `-1`
+   складывался с началом ряда и возвращал последнюю клетку предыдущего: сцена
+   честно рисовала над стволом рамку с надписью «РАДИАТОР». */
+function baseCell(B,c,r){
+  if(c<0||c>=BASE_COLS||r<0||r>=baseRows(B))return null;
+  return B.cells[r*BASE_COLS+c];
+}
+function baseSet(B,c,r,v){
+  if(c<0||c>=BASE_COLS||r<0||r>=baseRows(B))return;
+  B.cells[r*BASE_COLS+c]=v;
+}
 /* ══════════════ энергия и соседство ══════════════ */
 /* Энергобаланс — центральная механика и причина рисовать разрез: нехватка не
    строка в таблице, а тусклый свет и вставший бур. */
@@ -147,6 +168,9 @@ function basePower(B){
     if(cell.k==="solar"){prod+=M.power*(r===0?1:.25)*cls;continue;}
     if(M.power>0){prod+=M.power;continue;}
     let use=-M.power;
+    /* передача (M396, §7): та же скидка теперь и электролизёру с криоцехом —
+       она про провод, а не про бур */
+    if((cell.k==="lyse"||cell.k==="cryo")&&near.indexOf("reactor")>=0)use*=.78;
     if(cell.k==="drill"){
       /* реактор по соседству — меньше потерь в передаче */
       const wired=near.indexOf("reactor")>=0;
@@ -164,6 +188,9 @@ function basePower(B){
     if(cell.k==="refinery")ref++;
     if(cell.k==="pad")pads++;
     if(cell.k==="battery")guns++;
+    /* зал (M396, §7): три одинаковых подряд едят на треть меньше — общая
+       стена, общий контур, общий человек. Цена у этого своя, и её берёт беда */
+    if(typeof baseHallAt==="function"&&baseHallAt(B,c,r))use*=HALL_POWER;
     /* ядро нагрузки — то, ради чего база стоит: остальное можно и притушить */
     if(cell.k==="drill"||cell.k==="lab")core+=use;
     cons+=use;
@@ -222,6 +249,7 @@ function baseRaid(B,min,sh){
     if(live.length){
       const i=live[Math.floor(r()*live.length)];
       B.cells[i].hp=0;broke=BUILD[B.cells[i].k].ru;
+      if(typeof baseHallHit==="function")baseHallHit(B,i%BASE_COLS,(i/BASE_COLS)|0,1);
     }
   }
   logAdd("warn","Налёт на базу «"+B.name+"»"+(lost?" · унесено "+lost+" ед":"")+
@@ -259,7 +287,10 @@ function baseStorm(B,min,sh){
     return 1;
   }
   const i=pickList[Math.floor(r()*pickList.length)];
-  B.cells[i].hp=Math.max(0,B.cells[i].hp-(.5+r()*.5));
+  const dmg=.5+r()*.5;
+  B.cells[i].hp=Math.max(0,B.cells[i].hp-dmg);
+  /* зал ломается целиком (M396, §7): у общей стены общая беда */
+  if(typeof baseHallHit==="function")baseHallHit(B,i%BASE_COLS,(i/BASE_COLS)|0,dmg);
   logAdd("warn","Буря на «"+B.name+"» повредила отсек: "+BUILD[B.cells[i].k].ru+
     (B.cells[i].hp<=0?" (выбит)":""));
   baseLog(B,"storm",sh,{what:BUILD[B.cells[i].k].ru,out:B.cells[i].hp<=0?1:0});
@@ -268,12 +299,16 @@ function baseStorm(B,min,sh){
 /* инженер чинит разбитое сам, медленно.
    «Очередь» смотрителя доводит начатое до конца и без инженера: домен на то и домен. */
 function baseFixTick(B,min,sh){
-  const eng=baseRoleForce(B,"engineer")+(mgrPerkOf("keep","queue")?.8:0);
+  /* мастерская (M396, §6): чинит сама и без инженера, а соседу — вдвое быстрее */
+  let shop=0;
+  for(const cell of (B.cells||[]))if(cell&&cell.hp>0&&cell.k==="shop")shop++;
+  const eng=baseRoleForce(B,"engineer")+(mgrPerkOf("keep","queue")?.8:0)+shop*.5;
   if(eng<=0)return 0;
+  const near=(typeof baseAdjFix==="function")?baseAdjFix(B):1;
   let done=0;
   for(const cell of B.cells){
     if(cell&&cell.hp<1){
-      cell.hp=Math.min(1,cell.hp+min*eng*.02);
+      cell.hp=Math.min(1,cell.hp+min*eng*near*.02);
       if(cell.hp>=1){logAdd("dim","Инженер восстановил отсек на базе «"+B.name+"»");done=1;}
     }
   }
@@ -364,7 +399,7 @@ function updateBase(dt){
     const locked=M.needTech&&techLv(M.needTech)<=0;
     const bad=(M.surfaceOnly&&S.row>0)||locked;
     G.prompt="СТРОИТЬ: "+M.ru.toUpperCase()+"\n"+M.note+
-      "\n"+baseCost(k).credits+" кр"+(M.cost.alloy?" + "+baseCost(k).alloy+" сплавов":"")+
+      "\n"+baseCost(k,B).credits+" кр"+(M.cost.alloy?" + "+baseCost(k,B).alloy+" сплавов":"")+
       (locked?"\nНУЖНА НАУКА: "+TECH[M.needTech].ru.toUpperCase():"")+
       (M.surfaceOnly&&S.row>0?"\nТОЛЬКО НА ВЕРХНЕМ УРОВНЕ":"")+
       "\n◀ ▶ — выбор · ДЕЙСТВИЕ — построить";
@@ -373,23 +408,33 @@ function updateBase(dt){
       else if(bad)say("Панель ставится только сверху");
       /* цена — через baseCost: смета смотрителя должна работать и здесь,
          иначе скидка показывалась в интерфейсе, а списывалось полное */
-      else if(!canPay(baseCost(k)))say("Не хватает: "+baseCost(k).credits+" кр"+
-        (M.cost.alloy?" и "+baseCost(k).alloy+" сплавов":""));
+      else if(!canPay(baseCost(k,B)))say("Не хватает: "+baseCost(k,B).credits+" кр"+
+        (M.cost.alloy?" и "+baseCost(k,B).alloy+" сплавов":""));
       else{
-        payCost(baseCost(k));baseSet(B,S.cur,S.row,{k,hp:1});
+        payCost(baseCost(k,B));baseSet(B,S.cur,S.row,{k,hp:1});
         S.menu=false;
         tell("money","На базе «"+B.name+"» построено: "+M.ru,"Построено\n"+M.ru);
       }
     }
     return;
   }
-  if(keys.left&&!S.held){S.cur=Math.max(0,S.cur-1);S.held=1;}
+  /* ствол (M396, §7): шестая колонка слева — не модуль и не постройка, она
+     есть всегда и бесплатно. В неё можно зайти, и она же объясняет, почему
+     уровни меняются: в базе есть лифт */
+  if(keys.left&&!S.held){S.cur=Math.max(-1,S.cur-1);S.held=1;}
   if(keys.right&&!S.held){S.cur=Math.min(BASE_COLS-1,S.cur+1);S.held=1;}
   if(keys.thrust&&!S.held){S.row=Math.max(0,S.row-1);S.held=1;}
   if(keys.brake&&!S.held){S.row=Math.min(baseRows(B)-1,S.row+1);S.held=1;}
   if(!keys.left&&!keys.right&&!keys.thrust&&!keys.brake)S.held=0;
-  const cell=baseCell(B,S.cur,S.row);
+  const cell=(S.cur<0)?null:baseCell(B,S.cur,S.row);
   const P=basePower(B);
+  if(S.cur<0){
+    const A=(typeof baseAdjLine==="function")?baseAdjLine(B):"";
+    G.prompt="ЭНЕРГИЯ "+P.prod+" / "+P.cons+" · ОТДАЧА "+Math.round(P.eff*100)+"%"+
+      "\nСТВОЛ · ▲ ▼ — УРОВНИ · ▶ — В ОТСЕКИ"+
+      (A?"\nСОСЕДСТВО: "+A:"");
+    return;
+  }
   const head="ЭНЕРГИЯ "+P.prod+" / "+P.cons+" · ОТДАЧА "+Math.round(P.eff*100)+"%"+
     "\nНА СКЛАДЕ "+basePoolHeld(B)+" / "+P.store;
   if(cell){
@@ -409,7 +454,8 @@ function updateBase(dt){
        стоит нарисованным. ЦЕЛЬ открывает список, ДЕЙСТВИЕ по-прежнему забирает */
     const role=(typeof baseCellRole==="function")?baseCellRole(cell):null;
     const who=(typeof baseCellStaff==="function")?baseCellStaff(B,cell):[];
-    G.prompt=head+"\n"+M.ru.toUpperCase()+" · "+M.note+
+    const hall=(typeof baseHallAt==="function")?baseHallAt(B,S.cur,S.row):null;
+    G.prompt=head+"\n"+M.ru.toUpperCase()+(hall?" · В ЗАЛЕ ИЗ ТРЁХ":"")+" · "+M.note+
       (role?"\n"+BASE_ROLES[role].ru.toUpperCase()+": "+
         (who.length?who.map(c=>c.name).join(", "):"никого")+" · ЦЕЛЬ — КТО ЗДЕСЬ":"")+
       (B.guest?"\nУ ЗАТВОРА ЖДЁТ "+B.guest.name.toUpperCase()+" · ПРОСИТСЯ ОСТАТЬСЯ":"")+

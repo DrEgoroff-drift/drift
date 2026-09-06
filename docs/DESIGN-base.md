@@ -1539,7 +1539,15 @@ one). `маяк` in `BUILD` brings a guest to the gate once every thirty shifts,
 refused at the desk under the same crew ceiling and wages as any hire. Suites in `91zzzw-base`, and
 the scene was looked at rather than argued about. **Deferred:** the hall bonus of seven people in
 three habitats (that is M396's merging), and the лазарет/кают-компания/мастерская/гермозатвор of §6.
-· M396 соседство, залы, ствол, сетка 6×4 (§7) ·
+· ~~M396 соседство, залы, ствол, сетка 6×4~~ — 0.396.0 (2026-09-06): `21a4-base-adj` — the nine rules
+as a table with the pairs computed per cell (the vent rule column-only), `лазарет` and `мастерская`
+added because two rules named modules that did not exist, halls of three identical modules in a row
+at −30% energy with the whole hall taking any single blow, and the shaft as the sixth column: drawn,
+walkable, and not a module. `baseCell`/`baseSet` now refuse out-of-grid addresses — column −1 used to
+fold into the previous row and the scene drew a «РАДИАТОР» frame over the shaft. Suites in
+`91zzzw-base`. **Deferred:** the hall's «one worker covers three» (assignment is per role, not per
+cell, so it already holds) and the pipes drawn between adjacent cells — the rules are in the prompt
+line for now, and the drawing belongs with the craft pass M404. ·
 M397 директор (§10) · M398 аврал (§11) · M399 устав (§9).
 
 **C · тяжёлая игра** — M400 формуляр планеты (§21) · M401 девять законов (§22) · M402 развалина и

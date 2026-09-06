@@ -7,6 +7,33 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.396.0 - M396: nine rules of adjacency, halls of three, and a shaft to ride
+
+A base had two adjacency rules, and they lived in the code as two exceptions. Now there are
+**nine**, and they live in a table: reactor to drill/electrolyser/cryo saves 22% of the
+transmission; reactor next to housing costs spirit; a greenhouse next to housing gives spirit and a
+little air; a **лазарет** next to housing gives spirit; a melter feeding an electrolyser saves it
+ice; a **радиатор directly above a reactor in the same column** vents three more; a store beside a
+drill or a smelter lets 20% more of the haul land; a **мастерская** repairs its neighbour twice as
+fast; and a battery next to housing costs spirit, because nobody sleeps beside the gun.
+
+Two of the nine referenced modules that did not exist, so they exist now and do exactly what is
+written and nothing more: **лазарет** (+4 spirit next door) and **мастерская** (repairs without an
+engineer, doubles a neighbour's repair, and takes 15% off building on that base — the reason to put
+it up first).
+
+**Залы.** Three identical modules side by side in a row become a hall: a third less energy for all
+three. The price is Fallout Shelter's own price, and it is what makes the hall a decision — a
+disaster that reaches a hall takes **the whole hall**, not one cell. A raid or a storm that breaks
+one of the three breaks all three.
+
+**Ствол.** The lift shaft is not a module and never was: it is the sixth column, free and always
+there, and now it is drawn and can be walked into — which is finally an answer to why one can move
+between levels at all. Its first version had the classic off-by-one behind it: column −1 folded into
+the end of the previous row, so the game cheerfully drew a frame labelled «РАДИАТОР» over the shaft.
+`baseCell` now refuses addresses outside the grid, which is where that belonged all along.
+
+---
 ## 0.395.0 - M395: the people are in the room
 
 Until today a base was staffed from a menu on a station — another place, another screen — and the

@@ -1756,7 +1756,7 @@ body.table u.addr{color:#7a4a20}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.395.0";
+const VER="0.396.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -52559,6 +52559,13 @@ const BUILD={
   /* маяк (M395, §6): единственный модуль, который приводит ЛЮДЕЙ */
   beacon: {ru:"Маяк",        cost:{credits:1400,alloy:3},power:-3,
            note:"раз в тридцать смен кто-то приходит и просится остаться"},
+  /* два модуля из §6, на которые ссылается таблица соседства (M396). Оба
+     делают ровно то, что написано, и ни слова сверх: обещание без кода —
+     ложь, и правилами проекта запрещено прямо */
+  med:    {ru:"Лазарет",     cost:{credits:1700,alloy:4},power:-4,
+           note:"+4 духа жилому отсеку по соседству"},
+  shop:   {ru:"Мастерская",  cost:{credits:1500,alloy:4},power:-5,
+           note:"чинит сама, без инженера; соседний отсек — вдвое быстрее"},
   garden: {ru:"Оранжерея",   cost:{credits:1600,alloy:4},power:-4,
            note:"вода → харч и немного воздуха; на посадку нужна органика"},
   vat:    {ru:"Белковый бак",cost:{credits:1900,alloy:5},power:-6,
@@ -52575,8 +52582,12 @@ function baseKey(sx,sy,idx){return sx+","+sy+":"+idx;}
 function baseAt(sx,sy,idx){return G.bases[baseKey(sx,sy,idx)]||null;}
 /* смета смотрителя удешевляет стройку — поэтому цена берётся здесь, а не из
    таблицы напрямую: и в интерфейсе, и при оплате она должна быть одна и та же */
-function baseCost(k){
-  const d=mgrBuildDiscount(),c=BUILD[k].cost;
+function baseCost(k,B){
+  /* мастерская (M396): на базе, где она стоит, стройка дешевле на пятнадцать
+     процентов — она и есть та причина, по которой мастерскую ставят первой */
+  let shop=1;
+  if(B&&B.cells)for(const cell of B.cells)if(cell&&cell.hp>0&&cell.k==="shop"){shop=.85;break;}
+  const d=mgrBuildDiscount()*shop,c=BUILD[k].cost;
   if(d>=1)return c;
   return {credits:Math.round(c.credits*d),alloy:c.alloy?Math.max(1,Math.round(c.alloy*d)):c.alloy};
 }
@@ -52623,8 +52634,18 @@ function exitBase(){
 }
 function cellX(c){return BASE_OX+c*BCELL_W+BCELL_W/2;}
 function cellY(r){return BASE_OY+r*BCELL_H+BCELL_H/2;}
-function baseCell(B,c,r){return B.cells[r*BASE_COLS+c];}
-function baseSet(B,c,r,v){B.cells[r*BASE_COLS+c]=v;}
+/* ── адрес клетки ──
+   Колонка −1 — это ствол (M396), и он НЕ КЛЕТКА. Без этой проверки `-1`
+   складывался с началом ряда и возвращал последнюю клетку предыдущего: сцена
+   честно рисовала над стволом рамку с надписью «РАДИАТОР». */
+function baseCell(B,c,r){
+  if(c<0||c>=BASE_COLS||r<0||r>=baseRows(B))return null;
+  return B.cells[r*BASE_COLS+c];
+}
+function baseSet(B,c,r,v){
+  if(c<0||c>=BASE_COLS||r<0||r>=baseRows(B))return;
+  B.cells[r*BASE_COLS+c]=v;
+}
 /* ══════════════ энергия и соседство ══════════════ */
 /* Энергобаланс — центральная механика и причина рисовать разрез: нехватка не
    строка в таблице, а тусклый свет и вставший бур. */
@@ -52648,6 +52669,9 @@ function basePower(B){
     if(cell.k==="solar"){prod+=M.power*(r===0?1:.25)*cls;continue;}
     if(M.power>0){prod+=M.power;continue;}
     let use=-M.power;
+    /* передача (M396, §7): та же скидка теперь и электролизёру с криоцехом —
+       она про провод, а не про бур */
+    if((cell.k==="lyse"||cell.k==="cryo")&&near.indexOf("reactor")>=0)use*=.78;
     if(cell.k==="drill"){
       /* реактор по соседству — меньше потерь в передаче */
       const wired=near.indexOf("reactor")>=0;
@@ -52665,6 +52689,9 @@ function basePower(B){
     if(cell.k==="refinery")ref++;
     if(cell.k==="pad")pads++;
     if(cell.k==="battery")guns++;
+    /* зал (M396, §7): три одинаковых подряд едят на треть меньше — общая
+       стена, общий контур, общий человек. Цена у этого своя, и её берёт беда */
+    if(typeof baseHallAt==="function"&&baseHallAt(B,c,r))use*=HALL_POWER;
     /* ядро нагрузки — то, ради чего база стоит: остальное можно и притушить */
     if(cell.k==="drill"||cell.k==="lab")core+=use;
     cons+=use;
@@ -52723,6 +52750,7 @@ function baseRaid(B,min,sh){
     if(live.length){
       const i=live[Math.floor(r()*live.length)];
       B.cells[i].hp=0;broke=BUILD[B.cells[i].k].ru;
+      if(typeof baseHallHit==="function")baseHallHit(B,i%BASE_COLS,(i/BASE_COLS)|0,1);
     }
   }
   logAdd("warn","Налёт на базу «"+B.name+"»"+(lost?" · унесено "+lost+" ед":"")+
@@ -52760,7 +52788,10 @@ function baseStorm(B,min,sh){
     return 1;
   }
   const i=pickList[Math.floor(r()*pickList.length)];
-  B.cells[i].hp=Math.max(0,B.cells[i].hp-(.5+r()*.5));
+  const dmg=.5+r()*.5;
+  B.cells[i].hp=Math.max(0,B.cells[i].hp-dmg);
+  /* зал ломается целиком (M396, §7): у общей стены общая беда */
+  if(typeof baseHallHit==="function")baseHallHit(B,i%BASE_COLS,(i/BASE_COLS)|0,dmg);
   logAdd("warn","Буря на «"+B.name+"» повредила отсек: "+BUILD[B.cells[i].k].ru+
     (B.cells[i].hp<=0?" (выбит)":""));
   baseLog(B,"storm",sh,{what:BUILD[B.cells[i].k].ru,out:B.cells[i].hp<=0?1:0});
@@ -52769,12 +52800,16 @@ function baseStorm(B,min,sh){
 /* инженер чинит разбитое сам, медленно.
    «Очередь» смотрителя доводит начатое до конца и без инженера: домен на то и домен. */
 function baseFixTick(B,min,sh){
-  const eng=baseRoleForce(B,"engineer")+(mgrPerkOf("keep","queue")?.8:0);
+  /* мастерская (M396, §6): чинит сама и без инженера, а соседу — вдвое быстрее */
+  let shop=0;
+  for(const cell of (B.cells||[]))if(cell&&cell.hp>0&&cell.k==="shop")shop++;
+  const eng=baseRoleForce(B,"engineer")+(mgrPerkOf("keep","queue")?.8:0)+shop*.5;
   if(eng<=0)return 0;
+  const near=(typeof baseAdjFix==="function")?baseAdjFix(B):1;
   let done=0;
   for(const cell of B.cells){
     if(cell&&cell.hp<1){
-      cell.hp=Math.min(1,cell.hp+min*eng*.02);
+      cell.hp=Math.min(1,cell.hp+min*eng*near*.02);
       if(cell.hp>=1){logAdd("dim","Инженер восстановил отсек на базе «"+B.name+"»");done=1;}
     }
   }
@@ -52865,7 +52900,7 @@ function updateBase(dt){
     const locked=M.needTech&&techLv(M.needTech)<=0;
     const bad=(M.surfaceOnly&&S.row>0)||locked;
     G.prompt="СТРОИТЬ: "+M.ru.toUpperCase()+"\n"+M.note+
-      "\n"+baseCost(k).credits+" кр"+(M.cost.alloy?" + "+baseCost(k).alloy+" сплавов":"")+
+      "\n"+baseCost(k,B).credits+" кр"+(M.cost.alloy?" + "+baseCost(k,B).alloy+" сплавов":"")+
       (locked?"\nНУЖНА НАУКА: "+TECH[M.needTech].ru.toUpperCase():"")+
       (M.surfaceOnly&&S.row>0?"\nТОЛЬКО НА ВЕРХНЕМ УРОВНЕ":"")+
       "\n◀ ▶ — выбор · ДЕЙСТВИЕ — построить";
@@ -52874,23 +52909,33 @@ function updateBase(dt){
       else if(bad)say("Панель ставится только сверху");
       /* цена — через baseCost: смета смотрителя должна работать и здесь,
          иначе скидка показывалась в интерфейсе, а списывалось полное */
-      else if(!canPay(baseCost(k)))say("Не хватает: "+baseCost(k).credits+" кр"+
-        (M.cost.alloy?" и "+baseCost(k).alloy+" сплавов":""));
+      else if(!canPay(baseCost(k,B)))say("Не хватает: "+baseCost(k,B).credits+" кр"+
+        (M.cost.alloy?" и "+baseCost(k,B).alloy+" сплавов":""));
       else{
-        payCost(baseCost(k));baseSet(B,S.cur,S.row,{k,hp:1});
+        payCost(baseCost(k,B));baseSet(B,S.cur,S.row,{k,hp:1});
         S.menu=false;
         tell("money","На базе «"+B.name+"» построено: "+M.ru,"Построено\n"+M.ru);
       }
     }
     return;
   }
-  if(keys.left&&!S.held){S.cur=Math.max(0,S.cur-1);S.held=1;}
+  /* ствол (M396, §7): шестая колонка слева — не модуль и не постройка, она
+     есть всегда и бесплатно. В неё можно зайти, и она же объясняет, почему
+     уровни меняются: в базе есть лифт */
+  if(keys.left&&!S.held){S.cur=Math.max(-1,S.cur-1);S.held=1;}
   if(keys.right&&!S.held){S.cur=Math.min(BASE_COLS-1,S.cur+1);S.held=1;}
   if(keys.thrust&&!S.held){S.row=Math.max(0,S.row-1);S.held=1;}
   if(keys.brake&&!S.held){S.row=Math.min(baseRows(B)-1,S.row+1);S.held=1;}
   if(!keys.left&&!keys.right&&!keys.thrust&&!keys.brake)S.held=0;
-  const cell=baseCell(B,S.cur,S.row);
+  const cell=(S.cur<0)?null:baseCell(B,S.cur,S.row);
   const P=basePower(B);
+  if(S.cur<0){
+    const A=(typeof baseAdjLine==="function")?baseAdjLine(B):"";
+    G.prompt="ЭНЕРГИЯ "+P.prod+" / "+P.cons+" · ОТДАЧА "+Math.round(P.eff*100)+"%"+
+      "\nСТВОЛ · ▲ ▼ — УРОВНИ · ▶ — В ОТСЕКИ"+
+      (A?"\nСОСЕДСТВО: "+A:"");
+    return;
+  }
   const head="ЭНЕРГИЯ "+P.prod+" / "+P.cons+" · ОТДАЧА "+Math.round(P.eff*100)+"%"+
     "\nНА СКЛАДЕ "+basePoolHeld(B)+" / "+P.store;
   if(cell){
@@ -52910,7 +52955,8 @@ function updateBase(dt){
        стоит нарисованным. ЦЕЛЬ открывает список, ДЕЙСТВИЕ по-прежнему забирает */
     const role=(typeof baseCellRole==="function")?baseCellRole(cell):null;
     const who=(typeof baseCellStaff==="function")?baseCellStaff(B,cell):[];
-    G.prompt=head+"\n"+M.ru.toUpperCase()+" · "+M.note+
+    const hall=(typeof baseHallAt==="function")?baseHallAt(B,S.cur,S.row):null;
+    G.prompt=head+"\n"+M.ru.toUpperCase()+(hall?" · В ЗАЛЕ ИЗ ТРЁХ":"")+" · "+M.note+
       (role?"\n"+BASE_ROLES[role].ru.toUpperCase()+": "+
         (who.length?who.map(c=>c.name).join(", "):"никого")+" · ЦЕЛЬ — КТО ЗДЕСЬ":"")+
       (B.guest?"\nУ ЗАТВОРА ЖДЁТ "+B.guest.name.toUpperCase()+" · ПРОСИТСЯ ОСТАТЬСЯ":"")+
@@ -53078,7 +53124,9 @@ function baseMine(B,P,min,n){
   const eff=clamp(P.eff+baseRoleForce(B,"engineer")*.18,0,1);
   /* тепло (M392): в жару бур встаёт, в мороз люди медленнее */
   const heat=(typeof baseHeatMul==="function")?baseHeatMul(B,n):1;
-  const want=min*P.drillEff*eff*crewBoost*heat*1.1;
+  /* склад под боком (M396): успевает лечь больше */
+  const adj=(typeof baseAdjMine==="function")?baseAdjMine(B):1;
+  const want=min*P.drillEff*eff*crewBoost*heat*adj*1.1;
   let left=Math.min(want,Math.max(0,cap-held));
   const full=want>0&&left<want*.5;      /* склад забит: добыча стоит, и это строка */
   const r=rng(hashi(B.sx*7919+B.sy,B.idx,hashi(n,0x9111,0x2D)));
@@ -53195,7 +53243,13 @@ function baseLifeStep(B,P,n){
       L[key]=Math.min(LIFE_CAP,L[key]+Math.round(rec[key]*k));
     }
   };
-  make(M.lyse,LIFE_LYSE,"air");
+  /* подача (M396): ледоплавка рядом с электролизёром отдаёт ему талую воду
+     прямо, и льда тому нужно меньше */
+  const feed=(typeof baseAdjIce==="function")?baseAdjIce(B):0;
+  make(M.lyse,feed?{ice:Math.max(1,LIFE_LYSE.ice-feed),air:LIFE_LYSE.air}:LIFE_LYSE,"air");
+  /* зелень в жилом (M396): немного воздуха сверх того, что даёт оранжерея */
+  if(typeof baseAdjAir==="function"&&baseAdjAir(B))
+    L.air=Math.min(LIFE_CAP,L.air+baseAdjAir(B));
   /* мороз (M392): вода не тает. Не «медленнее» — не тает вовсе, и это видно
      по шкале заранее */
   if(!baseFrozen(B,n))make(M.melter,LIFE_MELT,"water");
@@ -53345,6 +53399,8 @@ function baseHeat(B,n){
     h+=v;
   }
   h+=baseDepth(B)*HEAT_ROW;
+  /* вытяжка (M396): радиатор над реактором в одной колонке снимает ещё */
+  if(typeof baseAdjHeat==="function")h+=baseAdjHeat(B);
   h-=baseCryoOn(B,n);
   return h;
 }
@@ -53450,6 +53506,8 @@ function baseSpirit(B,n){
   s-=(b<0?-b:b)*8;                                         /* холодно или жарко */
   const P=basePower(B);
   s-=(P.habPenalty|0)*8;                                   /* жильё прижато к реактору */
+  /* соседство (M396): зелень и уход поднимают, батарея под ухом роняет */
+  if(typeof baseAdjSpirit==="function")s+=baseAdjSpirit(B);
   if(P.eff<.7)s-=8;                                        /* и свет мигает */
   if(L.q==="good"&&(L.food|0)>0&&!baseParked(B)&&!b)s+=10; /* а бывает и хорошо */
   return clamp(s|0,0,100);
@@ -53832,6 +53890,127 @@ function basePeopleLine(B,cell,i){
   return head+"\n"+c.name+" · "+((typeof crewSkill==="function")?("опыт "+Math.round(crewSkill(c)*100)+"%"):"")+
     (c.spec===(R?R.spec:"")?" · по специальности":" · не по профилю")+
     "\n"+(here?"уже здесь":"ДЕЙСТВИЕ — поставить сюда")+" · ◀ ▶ — кто · НАЗАД — закрыть";
+}
+
+/* ══════════════ соседство и залы (M396, DESIGN-base §7) ══════════════
+   У базы было два правила соседства: реактор рядом с буром экономит передачу,
+   реактор рядом с жильём портит людям жизнь. Их и было видно — как два
+   исключения в общем коде. Здесь их девять, и они лежат ТАБЛИЦЕЙ: строчка про
+   то, кто с кем и что из этого выходит.
+
+   Это тот самый механизм, ради которого сетку вообще рисуют клетками. Пока
+   правил два, план базы — это список модулей; когда их девять, план — это
+   головоломка, у которой есть хорошие решения и плохие, и обе видны глазами:
+   каждое правило рисуется коротким патрубком или полосой между двумя клетками.
+
+   ЗАЛ — вторая половина той же мысли. Три одинаковых модуля подряд в одном
+   ряду сливаются в зал: на троих уходит на треть меньше энергии, и склад у
+   зала больше. Цена честная и та же, что у Fallout Shelter: беда, пришедшая в
+   зал, забирает ЕГО ЦЕЛИКОМ, а не одну клетку. Три реактора в ряд — красиво и
+   опасно, и это решение игрока, а не подарок. */
+const ADJ=[
+  {a:"reactor",b:["drill","lyse","cryo"],   k:"wire",  ru:"передача",  note:"−22% энергии на передачу"},
+  {a:"reactor",b:["habitat"],               k:"noise", ru:"шум",       note:"−8 духа жилому"},
+  {a:"garden", b:["habitat"],               k:"green", ru:"зелень",    note:"+6 духа и немного воздуха"},
+  {a:"med",    b:["habitat"],               k:"care",  ru:"уход",      note:"+4 духа жилому"},
+  {a:"melter", b:["lyse"],                  k:"feed",  ru:"подача",    note:"электролизёру нужно меньше льда"},
+  {a:"radiator",b:["reactor"],              k:"vent",  ru:"вытяжка",   note:"−3 тепла, если стоят в одной колонке",col:1},
+  {a:"storage",b:["drill","refinery"],      k:"store", ru:"склад рядом",note:"+20% к тому, что успевает лечь"},
+  {a:"shop",   b:["*"],                     k:"fix",   ru:"мастерская",note:"сосед чинится вдвое быстрее"},
+  {a:"battery",b:["habitat"],               k:"gun",   ru:"батарея",   note:"−4 духа: рядом со стволом не спят"}
+];
+const HALL_N=3;              /* столько одинаковых подряд — и это зал */
+const HALL_POWER=.7;         /* на треть меньше энергии на всех троих */
+/* ── пары соседей ──
+   Считается по клеткам: правило срабатывает, если a и b стоят бок о бок (а для
+   вытяжки — друг над другом в одной колонке). Возвращаем и список пар (их
+   рисует сцена), и сводку по видам. */
+function baseAdjPairs(B){
+  const out=[];
+  if(!B||!B.cells)return out;
+  const cell=(c,r)=>(c<0||c>=BASE_COLS||r<0||r>=baseRows(B))?null:baseCell(B,c,r);
+  for(let r=0;r<baseRows(B);r++)for(let c=0;c<BASE_COLS;c++){
+    const A=cell(c,r);
+    if(!A||A.hp<=0)continue;
+    for(const R of ADJ){
+      if(R.a!==A.k)continue;
+      const dirs=R.col?[[0,1],[0,-1]]:[[1,0],[-1,0],[0,1],[0,-1]];
+      for(const d of dirs){
+        const Bc=cell(c+d[0],r+d[1]);
+        if(!Bc||Bc.hp<=0)continue;
+        if(R.b[0]!=="*"&&R.b.indexOf(Bc.k)<0)continue;
+        out.push({k:R.k,ru:R.ru,note:R.note,ac:c,ar:r,bc:c+d[0],br:r+d[1],
+          a:A.k,b:Bc.k});
+      }
+    }
+  }
+  return out;
+}
+function baseAdjCount(B,kind){
+  let n=0;
+  for(const p of baseAdjPairs(B))if(p.k===kind)n++;
+  return n;
+}
+/* ── залы ──
+   Три одинаковых подряд в одном ряду. Четыре подряд — это зал и ещё один
+   модуль: зал ровно на три клетки, иначе ряд из пяти реакторов давал бы
+   скидку дважды. */
+function baseHalls(B){
+  const out=[];
+  if(!B||!B.cells)return out;
+  for(let r=0;r<baseRows(B);r++){
+    let c=0;
+    while(c<BASE_COLS-HALL_N+1){
+      const A=baseCell(B,c,r);
+      if(!A||A.hp<=0){c++;continue;}
+      let same=1;
+      while(same<HALL_N){
+        const N=baseCell(B,c+same,r);
+        if(!N||N.hp<=0||N.k!==A.k)break;
+        same++;
+      }
+      if(same>=HALL_N){out.push({k:A.k,r,c0:c,c1:c+HALL_N-1});c+=HALL_N;}
+      else c++;
+    }
+  }
+  return out;
+}
+function baseHallAt(B,c,r){
+  for(const H of baseHalls(B))if(H.r===r&&c>=H.c0&&c<=H.c1)return H;
+  return null;
+}
+/* беда, пришедшая в зал, берёт его целиком: тот же удар по всем трём клеткам */
+function baseHallHit(B,c,r,dmg){
+  const H=baseHallAt(B,c,r);
+  if(!H)return 0;
+  let n=0;
+  for(let x=H.c0;x<=H.c1;x++){
+    if(x===c)continue;
+    const cell=baseCell(B,x,r);
+    if(!cell||cell.hp<=0)continue;
+    cell.hp=Math.max(0,cell.hp-dmg);n++;
+  }
+  return n;
+}
+/* ── что соседство даёт ── */
+function baseAdjSpirit(B){
+  return baseAdjCount(B,"green")*6+baseAdjCount(B,"care")*4-baseAdjCount(B,"gun")*4;
+}
+function baseAdjAir(B){return baseAdjCount(B,"green");}
+function baseAdjHeat(B){return -baseAdjCount(B,"vent")*30;}   /* в десятых (§16) */
+function baseAdjIce(B){return baseAdjCount(B,"feed");}
+function baseAdjMine(B){return 1+clamp(baseAdjCount(B,"store")*.2,0,.6);}
+function baseAdjFix(B){return baseAdjCount(B,"fix")?2:1;}
+/* строка для сцены и для стола: что здесь с чем соседствует */
+function baseAdjLine(B){
+  const P=baseAdjPairs(B),seen={},out=[];
+  for(const p of P){
+    if(seen[p.k])continue;
+    seen[p.k]=1;out.push(p.ru);
+  }
+  const H=baseHalls(B);
+  if(H.length)out.push("зал"+(H.length>1?"ов "+H.length:""));
+  return out.join(" · ");
 }
 
 /* ══════════════ база: внутренности отсеков ══════════════ */
@@ -54349,7 +54528,7 @@ function drawBuildMenu(S){
     ctx.fillStyle=on?"rgba(255,230,180,.95)":"rgba(200,210,220,.5)";
     ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
     ctx.fillText(BUILD[k].ru.toUpperCase().slice(0,9),x+i*cw+cw/2,y+22);
-    const bc=baseCost(k);
+    const bc=baseCost(k,(G.base&&G.base.B)||null);   /* смета этой базы (M396) */
     ctx.fillText(bc.credits+"кр",x+i*cw+cw/2,y+36);
     if(bc.alloy)ctx.fillText(bc.alloy+"спл",x+i*cw+cw/2,y+48);
   }
@@ -55409,7 +55588,9 @@ function baseRoomPath(B,X,Y,pad){
 }
 function drawBase(){
   const S=G.base,B=S.B,P=basePower(B);
-  const camx=clamp(S.x-W/2,-40,BASE_OX+BASE_COLS*BCELL_W+90-W);
+  /* ствол (M396) стоит слева от сетки — камера обязана его пускать, иначе
+     человек уходит в колонку, которой на экране нет */
+  const camx=clamp(S.x-W/2,BASE_OX-BCELL_W-60,BASE_OX+BASE_COLS*BCELL_W+90-W);
   const camy=clamp(S.y-H/2,-120,baseRows(B)*BCELL_H+260-H);
   const X=x=>x-camx, Y=y=>y-camy;
   const pl=G.sys.planets[B.idx];
@@ -55868,6 +56049,45 @@ function drawBase(){
   ctx.fillStyle=bgi;ctx.fill(RP);
   ctx.strokeStyle="rgba(210,226,240,"+(.10+lit*.10).toFixed(2)+")";ctx.lineWidth=1.4;ctx.stroke(RP);
   ctx.restore();
+  /* ── ствол (M396, §7) ──
+     Лифтовая шахта слева от сетки: не модуль, не постройка, просто место,
+     которое есть всегда. Она объясняет глазами то, что до сих пор было только
+     правилом управления, — почему по базе можно ходить вверх и вниз. */
+  {
+    const sx0=X(BASE_OX-BCELL_W)+10,sw=BCELL_W-20;
+  const inShaft=(S.cur|0)<0;
+    const y0=Y(BASE_OY)+4,y1=Y(BASE_OY+baseRows(B)*BCELL_H)-6;
+    if(sx0>-BCELL_W&&sx0<W+BCELL_W){
+      ctx.fillStyle="rgba(10,13,18,.92)";
+      ctx.fillRect(sx0,y0,sw,y1-y0);
+      ctx.strokeStyle="rgba(190,214,232,"+(.14+lit*.14).toFixed(2)+")";ctx.lineWidth=1.2;
+      ctx.strokeRect(sx0+.5,y0+.5,sw-1,y1-y0-1);
+      /* направляющие и стяжки: шахта читается вертикалью, а не прямоугольником */
+      ctx.beginPath();
+      ctx.moveTo(sx0+sw*.32,y0);ctx.lineTo(sx0+sw*.32,y1);
+      ctx.moveTo(sx0+sw*.68,y0);ctx.lineTo(sx0+sw*.68,y1);
+      for(let r=0;r<=baseRows(B);r++){
+        const yy=Y(BASE_OY+r*BCELL_H);
+        ctx.moveTo(sx0,yy);ctx.lineTo(sx0+sw,yy);
+      }
+      ctx.strokeStyle="rgba(150,178,198,"+(.10+lit*.16).toFixed(2)+")";ctx.lineWidth=1;
+      ctx.stroke();
+      /* кабина стоит на том ярусе, где сейчас человек */
+      const cy=Y(BASE_OY+(S.row|0)*BCELL_H)+8;
+      ctx.fillStyle="rgba(38,48,58,.95)";
+      ctx.fillRect(sx0+sw*.16,cy,sw*.68,BCELL_H-20);
+      ctx.strokeStyle="rgba(242,178,92,"+(.22+lit*.3).toFixed(2)+")";
+      ctx.strokeRect(sx0+sw*.16+.5,cy+.5,sw*.68-1,BCELL_H-21);
+      ctx.fillStyle="rgba(242,178,92,"+(.12+lit*.18).toFixed(2)+")";
+      ctx.fillRect(sx0+sw*.16,cy+BCELL_H-26,sw*.68,3);
+      /* человек в стволе: подпись места, а не рамка отсека */
+      if(inShaft){
+        ctx.fillStyle="rgba(196,246,238,.82)";
+        ctx.font="9px ui-monospace,monospace";ctx.textAlign="center";
+        ctx.fillText("СТВОЛ",sx0+sw/2,y0-6);
+      }
+    }
+  }
   /* свет изнутри ложится на породу вокруг отсеков */
   ctx.save();ctx.globalCompositeOperation="lighter";
   for(let r=0;r<baseRows(B);r++)for(let c=0;c<BASE_COLS;c++){
@@ -56191,6 +56411,9 @@ function drawBase(){
   ctx.strokeStyle=on?"rgba(127,230,216,.95)":"rgba(127,230,216,.4)";
   ctx.lineWidth=2;
   const selCell=baseCell(B,S.cur,S.row);
+  /* в стволе (M396) выбирать нечего: ни отсека, ни места под застройку —
+     там просто стоят и едут */
+  if((S.cur|0)<0){if(S.menu)drawBuildMenu(S);return;}
   if(selCell){
     /* у построенного отсека — не рамка во всю клетку, а уголки и подпись:
        имена всех отсеков разом снова превращали разрез в таблицу */

@@ -152,7 +152,9 @@ function baseMine(B,P,min,n){
   const eff=clamp(P.eff+baseRoleForce(B,"engineer")*.18,0,1);
   /* тепло (M392): в жару бур встаёт, в мороз люди медленнее */
   const heat=(typeof baseHeatMul==="function")?baseHeatMul(B,n):1;
-  const want=min*P.drillEff*eff*crewBoost*heat*1.1;
+  /* склад под боком (M396): успевает лечь больше */
+  const adj=(typeof baseAdjMine==="function")?baseAdjMine(B):1;
+  const want=min*P.drillEff*eff*crewBoost*heat*adj*1.1;
   let left=Math.min(want,Math.max(0,cap-held));
   const full=want>0&&left<want*.5;      /* склад забит: добыча стоит, и это строка */
   const r=rng(hashi(B.sx*7919+B.sy,B.idx,hashi(n,0x9111,0x2D)));
@@ -269,7 +271,13 @@ function baseLifeStep(B,P,n){
       L[key]=Math.min(LIFE_CAP,L[key]+Math.round(rec[key]*k));
     }
   };
-  make(M.lyse,LIFE_LYSE,"air");
+  /* подача (M396): ледоплавка рядом с электролизёром отдаёт ему талую воду
+     прямо, и льда тому нужно меньше */
+  const feed=(typeof baseAdjIce==="function")?baseAdjIce(B):0;
+  make(M.lyse,feed?{ice:Math.max(1,LIFE_LYSE.ice-feed),air:LIFE_LYSE.air}:LIFE_LYSE,"air");
+  /* зелень в жилом (M396): немного воздуха сверх того, что даёт оранжерея */
+  if(typeof baseAdjAir==="function"&&baseAdjAir(B))
+    L.air=Math.min(LIFE_CAP,L.air+baseAdjAir(B));
   /* мороз (M392): вода не тает. Не «медленнее» — не тает вовсе, и это видно
      по шкале заранее */
   if(!baseFrozen(B,n))make(M.melter,LIFE_MELT,"water");
@@ -419,6 +427,8 @@ function baseHeat(B,n){
     h+=v;
   }
   h+=baseDepth(B)*HEAT_ROW;
+  /* вытяжка (M396): радиатор над реактором в одной колонке снимает ещё */
+  if(typeof baseAdjHeat==="function")h+=baseAdjHeat(B);
   h-=baseCryoOn(B,n);
   return h;
 }
@@ -524,6 +534,8 @@ function baseSpirit(B,n){
   s-=(b<0?-b:b)*8;                                         /* холодно или жарко */
   const P=basePower(B);
   s-=(P.habPenalty|0)*8;                                   /* жильё прижато к реактору */
+  /* соседство (M396): зелень и уход поднимают, батарея под ухом роняет */
+  if(typeof baseAdjSpirit==="function")s+=baseAdjSpirit(B);
   if(P.eff<.7)s-=8;                                        /* и свет мигает */
   if(L.q==="good"&&(L.food|0)>0&&!baseParked(B)&&!b)s+=10; /* а бывает и хорошо */
   return clamp(s|0,0,100);

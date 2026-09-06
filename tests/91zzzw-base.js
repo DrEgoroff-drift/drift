@@ -642,3 +642,86 @@ TEST_SUITES.push(()=>suite("база M395: маяк приводит людей,
   eq(B.guest,null,"ушёл");
   ok(B.log.some(x=>x.k==="guestno"),"и это записано");
 }));
+
+/* ── соседство и залы (M396) ──
+   Девять правил обязаны быть девятью правилами, а не двумя исключениями в коде:
+   каждое видно в таблице, каждое считается по клеткам и каждое что-то меняет. */
+TEST_SUITES.push(()=>suite("база M396: девять правил соседства",()=>{
+  const B=bLife();
+  for(let i=0;i<B.cells.length;i++)B.cells[i]=null;
+  /* таблица честная: у каждого правила есть и тот, и другой модуль */
+  for(const R of ADJ){
+    ok(!!BUILD[R.a],"правило «"+R.ru+"»: первый модуль существует — "+R.a);
+    for(const b of R.b)ok(b==="*"||!!BUILD[b],"и второй тоже — "+b);
+    ok(R.note&&R.note.length>6,"и оно сказано словами: "+R.note);
+  }
+  eq(ADJ.length,9,"правил ровно девять");
+  /* зелень рядом с жильём: дух и воздух */
+  B.cells[0]={k:"garden",hp:1};B.cells[1]={k:"habitat",hp:1};
+  eq(baseAdjCount(B,"green"),1,"оранжерея рядом с жильём — правило сработало");
+  ok(baseAdjSpirit(B)>0,"и дух от этого выше: +"+baseAdjSpirit(B));
+  ok(baseAdjAir(B)>0,"и воздуха немного больше");
+  /* батарея рядом с жильём — наоборот */
+  B.cells[2]={k:"battery",hp:1};
+  const withGun=baseAdjSpirit(B);
+  ok(withGun<6,"батарея под ухом дух роняет: "+withGun);
+  /* подача: ледоплавка рядом с электролизёром */
+  for(let i=0;i<B.cells.length;i++)B.cells[i]=null;
+  B.cells[0]={k:"melter",hp:1};B.cells[1]={k:"lyse",hp:1};
+  eq(baseAdjIce(B),1,"ледоплавка подаёт электролизёру");
+  /* вытяжка: только в одной колонке, а не вбок */
+  for(let i=0;i<B.cells.length;i++)B.cells[i]=null;
+  B.cells[0]={k:"radiator",hp:1};B.cells[1]={k:"reactor",hp:1};
+  eq(baseAdjHeat(B),0,"бок о бок вытяжки нет");
+  B.cells[1]=null;B.cells[BASE_COLS]={k:"reactor",hp:1};
+  ok(baseAdjHeat(B)<0,"а друг над другом — есть: "+baseAdjHeat(B));
+  /* склад под боком */
+  for(let i=0;i<B.cells.length;i++)B.cells[i]=null;
+  B.cells[0]={k:"drill",hp:1};
+  eq(baseAdjMine(B),1,"без склада прибавки нет");
+  B.cells[1]={k:"storage",hp:1};
+  ok(baseAdjMine(B)>1,"со складом рядом успевает лечь больше: ×"+baseAdjMine(B).toFixed(2));
+  /* мастерская чинит соседа вдвое быстрее */
+  for(let i=0;i<B.cells.length;i++)B.cells[i]=null;
+  B.cells[0]={k:"shop",hp:1};B.cells[1]={k:"drill",hp:.5};
+  eq(baseAdjFix(B),2,"у мастерской сосед чинится вдвое быстрее");
+  /* разбитый отсек в правилах не участвует */
+  B.cells[0].hp=0;
+  eq(baseAdjFix(B),1,"разбитая мастерская не чинит никого");
+  /* и строка для сцены не врёт */
+  for(let i=0;i<B.cells.length;i++)B.cells[i]=null;
+  B.cells[0]={k:"garden",hp:1};B.cells[1]={k:"habitat",hp:1};
+  ok(baseAdjLine(B).indexOf("зелень")>=0,"строка называет то, что есть: "+baseAdjLine(B));
+}));
+
+TEST_SUITES.push(()=>suite("база M396: зал из трёх — и беда на всех троих",()=>{
+  const B=bLife();
+  for(let i=0;i<B.cells.length;i++)B.cells[i]=null;
+  B.cells[0]={k:"storage",hp:1};B.cells[1]={k:"storage",hp:1};
+  eq(baseHalls(B).length,0,"двух мало");
+  B.cells[2]={k:"storage",hp:1};
+  eq(baseHalls(B).length,1,"три подряд — зал");
+  eq(baseHalls(B)[0].k,"storage","и он знает, из чего собран");
+  ok(!!baseHallAt(B,1,0),"средняя клетка в зале");
+  ok(!baseHallAt(B,3,0),"а соседняя — нет");
+  /* четыре подряд — это зал и ещё один, а не полтора зала */
+  B.cells[3]={k:"storage",hp:1};
+  eq(baseHalls(B).length,1,"четвёртый не делает второго зала");
+  /* разные модули залом не становятся */
+  B.cells[1]={k:"drill",hp:1};
+  eq(baseHalls(B).length,0,"разные подряд — не зал");
+  /* энергия: зал ест на треть меньше */
+  for(let i=0;i<B.cells.length;i++)B.cells[i]=null;
+  B.cells[0]={k:"lyse",hp:1};B.cells[1]={k:"lyse",hp:1};
+  const two=basePower(B).cons;
+  B.cells[2]={k:"lyse",hp:1};
+  const three=basePower(B).cons;
+  ok(three<two/2*3,"зал из трёх ест меньше трёх одиночек: "+three+" против "+(two/2*3));
+  near(three,two/2*3*HALL_POWER,.6,"и меньше ровно на треть");
+  /* беда берёт зал целиком */
+  B.cells[0].hp=1;B.cells[1].hp=1;B.cells[2].hp=1;
+  const n=baseHallHit(B,1,0,.5);
+  eq(n,2,"удар по средней достался двум соседям");
+  ok(B.cells[0].hp<1&&B.cells[2].hp<1,"и они и правда побиты");
+  eq(baseHallHit(B,4,0,.5),0,"а вне зала бить некого");
+}));

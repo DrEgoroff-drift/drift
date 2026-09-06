@@ -42,7 +42,9 @@ function baseRoomPath(B,X,Y,pad){
 }
 function drawBase(){
   const S=G.base,B=S.B,P=basePower(B);
-  const camx=clamp(S.x-W/2,-40,BASE_OX+BASE_COLS*BCELL_W+90-W);
+  /* ствол (M396) стоит слева от сетки — камера обязана его пускать, иначе
+     человек уходит в колонку, которой на экране нет */
+  const camx=clamp(S.x-W/2,BASE_OX-BCELL_W-60,BASE_OX+BASE_COLS*BCELL_W+90-W);
   const camy=clamp(S.y-H/2,-120,baseRows(B)*BCELL_H+260-H);
   const X=x=>x-camx, Y=y=>y-camy;
   const pl=G.sys.planets[B.idx];
@@ -501,6 +503,45 @@ function drawBase(){
   ctx.fillStyle=bgi;ctx.fill(RP);
   ctx.strokeStyle="rgba(210,226,240,"+(.10+lit*.10).toFixed(2)+")";ctx.lineWidth=1.4;ctx.stroke(RP);
   ctx.restore();
+  /* ── ствол (M396, §7) ──
+     Лифтовая шахта слева от сетки: не модуль, не постройка, просто место,
+     которое есть всегда. Она объясняет глазами то, что до сих пор было только
+     правилом управления, — почему по базе можно ходить вверх и вниз. */
+  {
+    const sx0=X(BASE_OX-BCELL_W)+10,sw=BCELL_W-20;
+  const inShaft=(S.cur|0)<0;
+    const y0=Y(BASE_OY)+4,y1=Y(BASE_OY+baseRows(B)*BCELL_H)-6;
+    if(sx0>-BCELL_W&&sx0<W+BCELL_W){
+      ctx.fillStyle="rgba(10,13,18,.92)";
+      ctx.fillRect(sx0,y0,sw,y1-y0);
+      ctx.strokeStyle="rgba(190,214,232,"+(.14+lit*.14).toFixed(2)+")";ctx.lineWidth=1.2;
+      ctx.strokeRect(sx0+.5,y0+.5,sw-1,y1-y0-1);
+      /* направляющие и стяжки: шахта читается вертикалью, а не прямоугольником */
+      ctx.beginPath();
+      ctx.moveTo(sx0+sw*.32,y0);ctx.lineTo(sx0+sw*.32,y1);
+      ctx.moveTo(sx0+sw*.68,y0);ctx.lineTo(sx0+sw*.68,y1);
+      for(let r=0;r<=baseRows(B);r++){
+        const yy=Y(BASE_OY+r*BCELL_H);
+        ctx.moveTo(sx0,yy);ctx.lineTo(sx0+sw,yy);
+      }
+      ctx.strokeStyle="rgba(150,178,198,"+(.10+lit*.16).toFixed(2)+")";ctx.lineWidth=1;
+      ctx.stroke();
+      /* кабина стоит на том ярусе, где сейчас человек */
+      const cy=Y(BASE_OY+(S.row|0)*BCELL_H)+8;
+      ctx.fillStyle="rgba(38,48,58,.95)";
+      ctx.fillRect(sx0+sw*.16,cy,sw*.68,BCELL_H-20);
+      ctx.strokeStyle="rgba(242,178,92,"+(.22+lit*.3).toFixed(2)+")";
+      ctx.strokeRect(sx0+sw*.16+.5,cy+.5,sw*.68-1,BCELL_H-21);
+      ctx.fillStyle="rgba(242,178,92,"+(.12+lit*.18).toFixed(2)+")";
+      ctx.fillRect(sx0+sw*.16,cy+BCELL_H-26,sw*.68,3);
+      /* человек в стволе: подпись места, а не рамка отсека */
+      if(inShaft){
+        ctx.fillStyle="rgba(196,246,238,.82)";
+        ctx.font="9px ui-monospace,monospace";ctx.textAlign="center";
+        ctx.fillText("СТВОЛ",sx0+sw/2,y0-6);
+      }
+    }
+  }
   /* свет изнутри ложится на породу вокруг отсеков */
   ctx.save();ctx.globalCompositeOperation="lighter";
   for(let r=0;r<baseRows(B);r++)for(let c=0;c<BASE_COLS;c++){
@@ -824,6 +865,9 @@ function drawBase(){
   ctx.strokeStyle=on?"rgba(127,230,216,.95)":"rgba(127,230,216,.4)";
   ctx.lineWidth=2;
   const selCell=baseCell(B,S.cur,S.row);
+  /* в стволе (M396) выбирать нечего: ни отсека, ни места под застройку —
+     там просто стоят и едут */
+  if((S.cur|0)<0){if(S.menu)drawBuildMenu(S);return;}
   if(selCell){
     /* у построенного отсека — не рамка во всю клетку, а уголки и подпись:
        имена всех отсеков разом снова превращали разрез в таблицу */
