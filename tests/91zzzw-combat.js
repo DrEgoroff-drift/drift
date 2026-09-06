@@ -463,3 +463,156 @@ TEST_SUITES.push(()=>suite("оснастка M363: стрельбище — ми
   if(document.querySelectorAll)document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
   G.mode="system";
 }));
+
+/* ══════════════ снаряжение по рангу (M368, §5) ══════════════
+   Ранг перестаёт быть только повадкой: у него есть стволы, и они те же, что у
+   вас, — из `GUN_FAMILY`. Здесь мерится, что таблица §5 действительно лежит в
+   коде, что каждая чужая повадка ДОХОДИТ до игрока, и что зенитка с пусковой
+   раздаются по снаряжению, а не по номеру ранга. */
+function ldFoe(rank,x){
+  const p=cbFoe(x===undefined?300:x,0,rank);
+  p.a=Math.PI;p.armCool={};p.arm=null;
+  return p;
+}
+TEST_SUITES.push(()=>suite("снаряжение M368: таблица §5 лежит в коде",()=>{
+  cbWorld();
+  eq(PIRATE_LOADOUT.length,4,"четыре ранга");
+  const want=[["auto","auto","needle"],["heavy","auto","harpoon"],
+    ["laser","siphon","pulse","jam"],["rail","cluster","flak","mortar"]];
+  const shields=[null,"solid","front","pulse"];
+  for(let r=0;r<4;r++){
+    eq(PIRATE_LOADOUT[r].guns.join(","),want[r].join(","),"ранг "+r+": стволы по таблице");
+    eq(PIRATE_LOADOUT[r].shield,shields[r],"ранг "+r+": поле по таблице");
+    for(const f of PIRATE_LOADOUT[r].guns)ok(!!GUN_FAMILY[f],f+": семейство из общей таблицы, а не своё");
+  }
+  /* пусковая — у капитана, зенитка — у барона: раздаются снаряжением */
+  ok(pirateHas({rank:2},"msl"),"ракеты у капитана");
+  ok(!pirateHas({rank:3},"msl"),"а у барона их нет");
+  ok(pirateHas({rank:3},"flak"),"зенитка у барона");
+  ok(!pirateHas({rank:2},"flak"),"а у капитана её нет");
+  /* числа берутся тем же кодом, что ваши: у рельсы дальше, у тяжёлого больнее */
+  const bar=ldFoe(3),jac=ldFoe(0);
+  ok(foeGun(bar,"rail").range>foeGun(jac,"auto").range*1.5,
+     "рельса барона бьёт дальше автопушки шакала");
+  ok(foeGun(ldFoe(1),"heavy").dmg>foeGun(jac,"auto").dmg,"тяжёлое больнее автопушки");
+  eq(foeGun(bar,"rail").fx,"rail","и повадка семейства та же самая");
+}));
+
+TEST_SUITES.push(()=>suite("снаряжение M368: чужая повадка доходит до вас",()=>{
+  /* игольник шакала: часть игл проходит поле насквозь */
+  cbWorld();
+  const jac=ldFoe(0);
+  G.shots=[];
+  ok(foeArmFire(jac,"needle",300),"шакал дал очередь иглами");
+  ok(G.shots.length>=3,"их несколько: "+G.shots.length);
+  ok(G.shots.every(s=>s.needle===1),"и все они иглы");
+  G.shield=40;G.hull=stat().hullMax;
+  playerHit({vx:-1,vy:0,dmg:10,type:"en",owner:"pirate",pass:1});
+  eq(G.shield,40,"прошедшая игла поле не тронула");
+  ok(G.hull<stat().hullMax,"…а корпус тронула");
+  /* гарпун ветерана тянет ВАС */
+  cbWorld();
+  const vet=ldFoe(1,260);
+  ok(foeArmFire(vet,"harpoon",260),"ветеран бросил трос");
+  ok(!!G.foeTether,"трос держит");
+  G.ship.vx=0;G.ship.vy=0;
+  foeTetherTick(1);
+  ok(G.ship.vx>0,"и тянет вас к нему: "+G.ship.vx.toFixed(3));
+  /* лазер капитана бьёт лучом, без снаряда в воздухе */
+  cbWorld();
+  const cap=ldFoe(2);
+  G.shots=[];G.hull=stat().hullMax;
+  ok(foeArmFire(cap,"laser",300),"капитан ударил лучом");
+  eq(G.shots.length,0,"снаряда в воздухе нет");
+  ok(G.hull<stat().hullMax,"а корпусу досталось");
+  /* сифон переливает ваше поле в его */
+  cbWorld();
+  const cap2=ldFoe(2);
+  cap2.shield=0;cap2.shieldMax=100;
+  G.shield=50;
+  ok(foeArmFire(cap2,"siphon",300),"сифон включился");
+  ok(G.shield<50,"ваше поле убыло: "+G.shield.toFixed(1));
+  ok(cap2.shield>0,"а его прибыло: "+cap2.shield.toFixed(1));
+  /* импульсник гасит поле на две секунды */
+  cbWorld();
+  const cap3=ldFoe(2);
+  G.shield=60;G.shieldOff=0;
+  ok(foeArmFire(cap3,"pulse",300),"импульс ушёл");
+  eq(G.shield,0,"поле в ноль");
+  ok(G.shieldOff>0,"и не растёт: "+G.shieldOff);
+  /* помеховая сбивает захват */
+  cbWorld();
+  const cap4=ldFoe(2,400);
+  G.marks=[cap4];G.jamT=0;
+  ok(foeArmFire(cap4,"jam",400),"помеха работает в шестистах");
+  ok(G.jamT>0,"метка помехи стоит");
+  helmMarksClean();
+  eq(G.marks.length,0,"захват сорван");
+  helmLock(cap4);
+  eq(G.marks.length,0,"и заново не берётся, пока не отойти");
+  eq(foeArmFire(cap4,"jam",900),false,"дальше шестисот помехи нет");
+  /* рельса барона бьёт мгновенно, кассетник разваливается по дороге */
+  cbWorld();
+  const bar=ldFoe(3);
+  G.shots=[];G.hull=stat().hullMax;
+  ok(foeArmFire(bar,"rail",300),"рельса выстрелила");
+  eq(G.shots.length,0,"мгновенно: снаряда нет");
+  ok(G.hull<stat().hullMax,"и она попала");
+  ok(foeArmFire(bar,"cluster",300),"кассетник выстрелил");
+  const cl=G.shots[G.shots.length-1];
+  ok(cl&&cl.split>0,"его снаряд развалится по дороге");
+  /* мины за корму: своя мина барона рвётся на ВАС */
+  cbWorld();
+  const bar2=ldFoe(3,300);
+  G.gmines=[];
+  ok(foeArmFire(bar2,"mortar",300),"барон положил мину");
+  const mn=G.gmines[0];
+  ok(mn&&mn.foe===1,"мина чужая");
+  mn.arm=0;mn.x=G.ship.x+10;mn.y=G.ship.y;
+  G.hull=stat().hullMax;
+  minesTick(1);
+  ok(G.hull<stat().hullMax,"и она сработала на вас");
+  eq(G.gmines.length,0,"мина ушла в разрыв");
+}));
+
+TEST_SUITES.push(()=>suite("снаряжение M368: поле от ранга и дезертир в записи",()=>{
+  cbWorld();
+  /* набор системы: у каждого пирата поле своего ранга, а не своего seed */
+  let seen=0;
+  for(let sx=0;sx<14&&seen<6;sx++){
+    G.sx=sx;G.sy=3;
+    spawnPirates();
+    for(const p of G.pirates){
+      if(p.rogue||p.hunter||p.rival||p.iff||p.dummy)continue;
+      seen++;
+      eq(p.shieldType,PIRATE_LOADOUT[p.rank|0].shield||"solid",
+         "ранг "+p.rank+": поле по таблице");
+      ok(p.deserter===0||p.deserter===1,"флаг дезертира выставлен (§7, читает M369a)");
+      if((p.rank|0)===0)eq(p.shieldMax,0,"у шакала поля нет вовсе");
+    }
+  }
+  ok(seen>0,"пираты в наборе нашлись: "+seen);
+}));
+
+TEST_SUITES.push(()=>suite("снаряжение M368: ранг читается по стволам, силуэт разный",()=>{
+  cbWorld();
+  const seed=hashi(7,11,3);
+  const B0=pirateBuild(seed,"raid",0),B3=pirateBuild(seed,"raid",3);
+  eq(B0.guns.length,PIRATE_LOADOUT[0].guns.length,"у шакала стволов по снаряжению");
+  eq(B3.guns.length,PIRATE_LOADOUT[3].guns.length,"у барона тоже");
+  const rail=B3.guns.find(g=>g.fam==="rail"),auto=B0.guns.find(g=>g.fam==="auto");
+  ok(rail&&auto&&rail.len>auto.len*2,"рельса длиннее автопушки: "+rail.len+" против "+auto.len);
+  const B2=pirateBuild(seed,"raid",2);
+  ok(B2.guns.some(g=>g.dish),"у капитана вместо ствола тарелка помеховой");
+  ok(B3.guns.some(g=>g.fam==="mortar"&&Math.abs(g.a-Math.PI)<1e-6),"мины барона смотрят за корму");
+  /* ствол не должен вылезать за выпечку: за её краем он просто обрежется,
+     и рельса нарисуется короче автопушки */
+  for(const g of B3.guns){
+    const reach=B3.L*.15*g.len+Math.hypot(g.x,g.y);
+    ok(reach<B3.L*.9*.94,g.fam+": ствол помещается в выпечку ("+reach.toFixed(1)+")");
+  }
+  /* выпечка у рангов разная: иначе на экране они одинаковые */
+  const id=pirateShipId(seed);
+  ok(pirateArtOf(id,false,false,0)!==pirateArtOf(id,false,false,3),
+     "две выпечки, а не одна на всех");
+}));

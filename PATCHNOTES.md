@@ -7,6 +7,45 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.368.0 - M368: a pirate's rank now has a loadout, and you can see it before he fires
+
+The war's ninth pass (`docs/DESIGN-war.md` §5, §18). Rank used to be a habit and a number: the
+шакал rushed, the барон stood, each with his own damage. What he was armed with was never asked,
+and all four shot the same orange dots.
+
+**The table of §5 is now code.** Шакал: two автопушки and an игольник, no field at all.
+Ветеран: тяжёлое, автопушка, гарпун, a solid field. Капитан: лазер, сифон, импульсник,
+помеховая and missiles, a frontal field. Барон: рельса, кассетник, зенитка, mines astern, a
+pulsed field. The guns are not a pirate edition of anything: they are the same `GUN_FAMILY`
+entries your own guns come from, run through the same `gunSpecMake` — so a baron's rail reaches
+further than a jackal's autocannon for the same reason yours does.
+
+**Nine habits now work from the other side.** The needle passes your field the way yours passes
+theirs (and the hole in `playerHit` that ignored it is closed). The harpoon pulls **you** and
+halves your way. The laser burns without a shell in the air, the siphon pours your field into
+his, the импульсник drops it to zero for two seconds, and the captain's помеховая breaks your
+lock outright — within six hundred of him nothing stays marked, by finger or by Tab. The baron's
+rail hits instantly, his cluster shell comes apart halfway, and his mines wait astern in red.
+
+**Зенитка and the launcher are handed out by loadout now, not by rank number.** M367 gave flak to
+everyone from captain up; by the table it is the baron's, and the launcher is the captain's. The
+baron no longer closes his burst with a missile.
+
+**And it reads before the first shot.** The barrels are baked into the hull from the loadout: the
+rail is a long thin tube, the cluster a short fat one, the captain carries a dish instead of a
+barrel, the veteran a hook, the baron a mine rack facing astern. The bake is keyed by rank, so the
+four ranks are four silhouettes rather than one.
+
+`deserter` (§7) is set at spawn in occupied systems and read by nobody yet — the hull with the
+painted-over number comes with M369a.
+
+Tests: `91zzzw-combat` — the §5 table against the code row by row, every family resolving in the
+common table, rail out-ranging autocannon, and each of the nine habits landing on the player: the
+needle through the field, the harpoon pulling the ship, the laser with no shell in flight, the
+siphon moving the field across, the impulse zeroing it, the jam clearing the marks and refusing a
+new lock, the cluster splitting, the mine going off on you; plus the field type coming from the
+rank on a real spawn, and the barrels differing by rank while fitting inside the bake.
+
 ## 0.367.0 - M367: five kinds of missile, and the launcher already knows which
 
 The war's eighth pass (`docs/DESIGN-war.md` §4, §18). The launcher stays one part; what comes out

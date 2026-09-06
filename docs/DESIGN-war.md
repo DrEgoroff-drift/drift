@@ -1026,7 +1026,14 @@ One system inside ГЛАВТРАССА's centre (r ≈ 6, fixed by seed, never t
   width, colour and the lure's blink — and a foe missile wears the red of a foe shot.
   **Deferred:** the missile is still one shape (a head and a flame); a torpedo silhouette of its
   own rides the drawing pass with the deserter art (M369a).
-- **M368** pirate loadouts by rank (deserter art waits for M369).
+- ~~**M368** pirate loadouts by rank~~ — 0.368.0 (2026-09-06): `13d-loadout` holds the §5 table
+  (guns, shield, tier per rank) and the foe side of nine habits — игольник, гарпун, лазер,
+  сифон, импульсник, помеховая, рельса, кассетник, мины; the shield type comes from the
+  table instead of the seed, and зенитка/пусковая are handed out by loadout (M367 had given
+  flak to every captain — by the table it is the baron's). Barrels are baked from the loadout, so
+  the rank reads before the first shot. `deserter` is set at spawn and read by nobody yet.
+  **Deferred:** the deserter's hull and its painted-over number (M369a), and the loadout on the
+  опись of a killed pirate — drops still come from the tier, not from what he actually carried.
 
 **Stage B — the powers, by seed** (client only; the galaxy lives with no server)
 - **M369** the grammar layer (§19.4): `03a-hull-maker` with the six makers over the eight

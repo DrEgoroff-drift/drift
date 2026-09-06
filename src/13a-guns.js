@@ -294,6 +294,21 @@ function minesTick(dt){
     m.life-=dt;if(m.arm>0)m.arm-=dt;
     if(m.life<=0){L.splice(i,1);continue;}
     if(m.arm>0)continue;
+    /* мина барона (M368): своих не трогает так же, как ваша — чужих */
+    if(m.foe){
+      const dd=Math.hypot(G.ship.x-m.x,G.ship.y-m.y);
+      if(dd<MINE_R*1.6){
+        const ang=Math.atan2(G.ship.y-m.y,G.ship.x-m.x);
+        const k=clamp(1-dd/(MINE_R*1.6),.25,1);
+        if(typeof playerHit==="function")playerHit({vx:Math.cos(ang),vy:Math.sin(ang),
+          type:m.type,owner:m.owner||"pirate",mine:false,dmg:m.dmg*k});
+        beamAdd(m.x-MINE_R*.6,m.y,m.x+MINE_R*.6,m.y,"rgba(255,190,110,.9)",4);
+        beamAdd(m.x,m.y-MINE_R*.6,m.x,m.y+MINE_R*.6,"rgba(255,190,110,.9)",4);
+        sfx("boom",{v:.5});
+        L.splice(i,1);
+      }
+      continue;
+    }
     let near=false;
     for(const p of (G.pirates||[])){
       if(p.hull<=0||p.iff||p.dummy)continue;
@@ -324,9 +339,12 @@ function minesDraw(zx,zy,Z){
     if(x<-40||x>W+40||y<-40||y>H+40)continue;
     const on=m.arm<=0;
     ctx.globalAlpha=on?(.55+.35*Math.abs(Math.sin(G.t*.16))):.3;
-    ctx.fillStyle=on?"#ffb25c":"#8fa0b0";
+    /* чужая мина красится чужим цветом (M368): решение «облетать или нет»
+       принимается по кругу на земле, а не после взрыва */
+    const col=m.foe?"#ff6b57":"#ffb25c";
+    ctx.fillStyle=on?col:"#8fa0b0";
     ctx.beginPath();ctx.arc(x,y,3.2*clamp(Z,.5,1.8),0,TAU);ctx.fill();
-    ctx.globalAlpha=.16;ctx.strokeStyle="#ffb25c";ctx.lineWidth=1;
+    ctx.globalAlpha=.16;ctx.strokeStyle=col;ctx.lineWidth=1;
     ctx.beginPath();ctx.arc(x,y,MINE_R*Z,0,TAU);ctx.stroke();
   }
   ctx.restore();
@@ -416,7 +434,9 @@ function flakTick(g,sh){
    Спасибо этому и ловушка получает смысл: чужой зенитке всё равно, за чем
    гнаться, а вашей ловушке — нет. */
 function foeFlak(p,dt){
-  if((p.rank|0)<2||p.hull<=0)return;
+  /* кто её носит, решает таблица §5 (M368): по ней зенитка у барона */
+  if(p.hull<=0)return;
+  if(typeof pirateHas==="function"&&!pirateHas(p,"flak"))return;
   p.flakCool=(p.flakCool||0)-dt;
   if(p.flakCool>0)return;
   let best=null,bd=420;

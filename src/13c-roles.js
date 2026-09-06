@@ -91,9 +91,9 @@ function pirateRoleTick(p,dt,d,want){
     else{roleSteer(p,want,dt,.05);roleDamp(p,dt,.96);}
     if(d<1100&&p.cool<=0&&!(p.stunT>0)&&Math.abs(angDiff(want,p.a))<.3){
       fireShot(p.x,p.y,p.a,9,(p.dmg||3.5+sysDanger(G.sx,G.sy)*5)*1.6,p.owner||"pirate");
-      /* капитан носит пусковую (M367): раз в несколько залпов уходит ракета,
-         и её можно сбить зениткой или увести ловушкой */
-      if(typeof mslFoeFire==="function"&&Math.random()<.3)mslFoeFire(p);
+      /* пусковая — по таблице §5 у капитана (M367/M368): раз в несколько
+         залпов уходит ракета, и её сбивают зениткой или уводят ловушкой */
+      if(typeof mslFoeFire==="function"&&pirateHas(p,"msl")&&Math.random()<.3)mslFoeFire(p);
       p.cool=95;helmShotAt(p);
     }
   }else{
@@ -103,11 +103,9 @@ function pirateRoleTick(p,dt,d,want){
        отдельной строкой ПОСЛЕ проверки «пора начинать очередь», и в тот же
        кадр, когда откат доходил до нуля, очередь начиналась заново — барон
        бил без перерыва (82 выстрела за десять секунд на замере M361). */
-    if(st.burst>0){if(roleFire(p,d,want,900,7)&&--st.burst===0){
-      p.cool=110;
-      /* барон закрывает очередь ракетой (M367) */
-      if(typeof mslFoeFire==="function"&&Math.random()<.5)mslFoeFire(p);
-    }}
+    /* очередь барона закрывается не ракетой, а паузой: пусковая по таблице
+       §5 у капитана, у барона рельса, кассетник, зенитка и мины (M368) */
+    if(st.burst>0){if(roleFire(p,d,want,900,7)&&--st.burst===0)p.cool=110;}
     else if(p.cool<=0&&d<900)st.burst=3;
     if(hp<.5&&!p.called){
       p.called=1;

@@ -689,7 +689,11 @@ Three stages, each playable on /dev before the next starts:
   · ~~M367 missiles ×5~~ (0.367.0, 2026-09-06: `16b-missile` пять видов боеприпаса от зерна
   самой пусковой — обычная, роевая по взятым меткам, ЭМИ в поле и молчание, торпеда без доводки,
   ловушка в сторону; чужая ракета с капитана и чужая зенитка с ранга 2; вид на карточке описи;
-  тесты `91zzzw-msl`) · M368 pirate loadouts.
+  тесты `91zzzw-msl`)
+  · ~~M368 pirate loadouts by rank~~ (0.368.0, 2026-09-06: `13d-loadout` — таблица §5 в коде,
+  чужая сторона девяти повадок, поле по рангу, зенитка и пусковая по снаряжению,
+  стволы на корпусе в `12i-pirate-hull`, флаг `deserter` заготовлен для M369a;
+  тесты `91zzzw-combat`).
 - **B — the powers, by seed** (client only; the galaxy lives with no server): M369 the maker
   grammar layer on `hullOf`, measured by `makerRead()`, «Ялта» · M369a the grammar in the fleet,
   barges, pirate hulls, stations, domes, papers · M369b the having of things · M370 chronicle core (integer replay, hash, clock, geometry) · M371 the Director ·

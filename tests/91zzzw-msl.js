@@ -127,9 +127,11 @@ TEST_SUITES.push(()=>suite("ракеты M367: ловушка уводит, зе
   f.x=G.msl[0].x;f.y=G.msl[0].y;
   flakCatch(1);
   eq(G.msl.length,0,"и сняла");
-  /* а чужая зенитка снимает вашу торпеду: медленная и жирная — первая цель */
+  /* а чужая зенитка снимает вашу торпеду: медленная и жирная — первая цель.
+     Зенитку носит барон — так стоит в таблице §5 (M368); M367 давал её всем
+     с капитана, и таблица оказалась старше кода */
   gnWorld();
-  const guard=gnFoe(300,0);guard.rank=2;guard.flakCool=0;
+  const guard=gnFoe(300,0);guard.rank=3;guard.flakCool=0;
   G.msl=[{x:200,y:0,vx:4,vy:0,a:0,tgt:guard,dmg:90,turn:0,big:1,
     life:MSL_LIFE,age:MSL_ARM+1,puff:0,kind:"torp"}];
   G.shots=[];
@@ -141,7 +143,7 @@ TEST_SUITES.push(()=>suite("ракеты M367: ловушка уводит, зе
   eq(G.msl.length,0,"торпеда сбита");
   /* и по вашей плазме чужая зенитка бьёт так же, как ваша по чужой */
   gnWorld();
-  const guard3=gnFoe(300,0);guard3.rank=2;guard3.flakCool=0;
+  const guard3=gnFoe(300,0);guard3.rank=3;guard3.flakCool=0;
   G.msl=[];G.shots=[];
   fireShot(guard3.x-120,guard3.y,0,5,20,"player","pla",600);
   const bl=G.shots[G.shots.length-1];bl.blob=1;
@@ -153,7 +155,7 @@ TEST_SUITES.push(()=>suite("ракеты M367: ловушка уводит, зе
   G.msl=[{x:200,y:0,vx:4,vy:0,a:0,tgt:null,dmg:20,turn:0,life:MSL_LIFE,age:0,puff:0,kind:"plain"}];
   G.shots=[];
   eq(gunFireOnce(gnGun("flak"),G.ship,null,0,()=>.5),false,"по своей ракете ваша зенитка молчит");
-  const guard2=gnFoe(250,0);guard2.rank=2;guard2.flakCool=0;
+  const guard2=gnFoe(250,0);guard2.rank=3;guard2.flakCool=0;
   G.msl=[{x:200,y:0,vx:-4,vy:0,a:Math.PI,tgt:null,foe:1,dmg:20,turn:0,
     life:MSL_LIFE,age:0,puff:0,kind:"plain"}];
   G.shots=[];

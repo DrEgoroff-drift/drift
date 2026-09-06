@@ -23,6 +23,27 @@ const PIR_CLASS={
   heavy:{ru:"тяжёлый",   len:62,bw:.30,eng:3,engL:.8,  cage:1,plate:6,spike:6,ram:1},
   flag:{ru:"флагман",    len:66,bw:.26,eng:4,engL:1.1, cage:2,plate:4,spike:5,ram:1}
 };
+/* ── чем он вооружён, видно до первого выстрела (M368, §5) ──
+   Ранг читался по величине и по повадке, но повадка показывает себя через
+   несколько секунд боя, а решение «драться или уходить» принимается раньше.
+   Стволы из снаряжения ранга (13d-loadout) рисуются на корпусе: рельса —
+   длинная тонкая труба, кассетник — короткая толстая, у капитана вместо
+   ствола тарелка помеховой, у ветерана крюк гарпуна, у барона стойка мин
+   за кормой. Форма — от семейства, а не от числа. */
+const PIR_GUNART={
+  auto:   {len:1.1,w:.14,n:1},
+  heavy:  {len:2.1,w:.26,n:1},
+  needle: {len:.95,w:.05,n:3},
+  laser:  {len:1.5,w:.09,n:1},
+  siphon: {len:1.2,w:.11,n:1},
+  pulse:  {len:.75,w:.20,n:1,ring:1},
+  jam:    {dish:1},
+  rail:   {len:3.0,w:.11,n:1},
+  cluster:{len:1.15,w:.40,n:1},
+  flak:   {len:.65,w:.09,n:2},
+  mortar: {len:.8,w:.24,n:1,aft:1},
+  harpoon:{len:1.0,w:.20,n:1,hook:1}
+};
 function pirateClass(seed,rogue){
   if(rogue)return "flag";
   const r=rng(hashi(seed,0x9A17,3));
@@ -30,7 +51,7 @@ function pirateClass(seed,rogue){
   return v<.36?"fast":v<.74?"raid":"heavy";
 }
 /* ── сборка: список полигонов и навески в местных единицах корпуса ── */
-function pirateBuild(seed,cls){
+function pirateBuild(seed,cls,rank){
   const K=PIR_CLASS[cls],r=rng(hashi(seed,0x51D3,11));
   const L=K.len*(.9+r()*.25), hw=L*K.bw;
   const nose=L*.55, tail=-L*.45;
@@ -191,18 +212,34 @@ function pirateBuild(seed,cls){
   /* метки сбитых: короткие насечки на носовой плите, число — по seed */
   const kills=Math.floor(r()*7);
   for(let i=0;i<kills;i++)lines.push([nose*.45-i*L*.03,-hw*.35,nose*.45-i*L*.03,-hw*.12,1]);
-  return {L,hw,nose,tail,polys,lines,rust,eng,turrets,cls,kills,top:bodyTop,coreN};
+  /* ── стволы снаряжения: по одному месту на семейство ── */
+  const guns=[];
+  const LOAD=(typeof PIRATE_LOADOUT!=="undefined")?
+    PIRATE_LOADOUT[clamp(rank|0,0,PIRATE_LOADOUT.length-1)]:null;
+  if(LOAD)for(let i=0;i<LOAD.guns.length;i++){
+    const fam=LOAD.guns[i],A=PIR_GUNART[fam]||PIR_GUNART.auto;
+    const t=LOAD.guns.length>1?i/(LOAD.guns.length-1):0;
+    const sg=i%2?1:-1;
+    guns.push({fam,
+      x:A.aft?tail*.8:lerp(nose*.6,tail*.15,t),
+      y:A.dish?0:sg*hw*(.5+(i%3)*.16),
+      a:A.aft?Math.PI:(sg*.12),
+      len:A.len||1,w:A.w||.12,n:A.n||1,
+      dish:A.dish?1:0,hook:A.hook?1:0,ring:A.ring?1:0});
+  }
+  return {L,hw,nose,tail,polys,lines,rust,eng,turrets,guns,cls,kills,top:bodyTop,coreN};
 }
 /* ── выпечка: один раз на seed, дальше — картинка с поворотом ── */
-function pirateArtOf(id,rogue,hurt){
+function pirateArtOf(id,rogue,hurt,rank){
   /* побитый корабль — вторая выпечка, а не пятна поверх целой: пока силуэт
      оставался прежним, разбитый пират выглядел просто испачканным */
-  const key=id+(rogue?"!r":"")+(hurt?"!h":"");
+  /* ранг входит в ключ: у него своё снаряжение, а значит и свои стволы (M368) */
+  const key=id+(rogue?"!r":"")+(hurt?"!h":"")+"!"+(rank|0);
   if(PIR_ART[key])return PIR_ART[key];
   /* `shipData` знает все три источника корпусов: у ренегата это ВАШ корабль */
   const S=shipData(id)||{seed:hashi(1,2,3),col:"#d95a3c"};
   const cls=pirateClass(S.seed,rogue);
-  const B=pirateBuild(S.seed,cls);
+  const B=pirateBuild(S.seed,cls,rank);
   const col=hex2rgb(S.col);
   /* палитра сварного корпуса: куски разной эпохи не совпадают по цвету, и
      именно это делает корабль сваренным, а не покрашенным */
@@ -259,6 +296,44 @@ function pirateArtOf(id,rogue,hurt){
     ctx.strokeStyle=rgba(C[2],.9);ctx.lineWidth=t.r*.5;
     ctx.beginPath();ctx.moveTo(t.x,t.y);
     ctx.lineTo(t.x+Math.cos(t.a)*t.r*2.6,t.y+Math.sin(t.a)*t.r*2.6);ctx.stroke();
+  }
+  /* ── стволы: то, чем он вооружён, до первого выстрела (M368) ── */
+  for(const gn of (B.guns||[])){
+    const u=B.hw;
+    /* длина ствола мерится корпусом, а не полушириной: у длинного корабля
+       рельса длиннее автопушки, но ни та ни другая не вылезает за выпечку —
+       вылезший ствол обрезался бы краем канвы, и рельса читалась бы короткой */
+    const reach=Math.min(B.L*.15*gn.len,rad*.94-Math.hypot(gn.x,gn.y));
+    ctx.save();ctx.translate(gn.x,gn.y);ctx.rotate(gn.a);
+    ctx.fillStyle=rgba(C[0],1);ctx.strokeStyle="rgba(0,0,0,.5)";ctx.lineWidth=.6;
+    ctx.beginPath();ctx.arc(0,0,u*.24,0,TAU);ctx.fill();ctx.stroke();
+    if(gn.dish){
+      /* тарелка помеховой: она не стреляет, и ствола у неё нет */
+      ctx.strokeStyle=rgba(C[2],.85);ctx.lineWidth=Math.max(.6,u*.12);
+      ctx.beginPath();ctx.arc(reach*.5,0,u*.62,-1.15,1.15);ctx.stroke();
+      ctx.lineWidth=Math.max(.5,u*.08);
+      ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(reach*.5,0);ctx.stroke();
+    }else{
+      for(let k=0;k<gn.n;k++){
+        const off=(k-(gn.n-1)/2)*u*.26;
+        ctx.strokeStyle=rgba(C[2],.9);ctx.lineWidth=Math.max(.5,u*gn.w);
+        ctx.beginPath();ctx.moveTo(0,off);ctx.lineTo(reach,off);ctx.stroke();
+      }
+      /* крюк гарпуна загибается — по нему трос и узнаётся */
+      if(gn.hook){
+        ctx.lineWidth=Math.max(.5,u*.1);
+        ctx.beginPath();ctx.moveTo(reach,0);
+        ctx.lineTo(reach-u*.35,-u*.45);ctx.stroke();
+      }
+      /* кольцо импульсника: намотка вокруг короткого ствола */
+      if(gn.ring){
+        ctx.lineWidth=Math.max(.4,u*.07);
+        for(let k=1;k<=2;k++){
+          ctx.beginPath();ctx.arc(reach*(.35*k),0,u*.3,0,TAU);ctx.stroke();
+        }
+      }
+    }
+    ctx.restore();
   }
   /* у побитого выгрызаем куски самого корпуса: рваный силуэт узнаётся
      раньше, чем копоть на нём */
@@ -323,7 +398,7 @@ function drawPirate(p){
      в пятнах. Обе картинки живут в кэше и считаются по одному разу */
   /* охотник (12o) печётся флагманской выпечкой, как ренегат: его силуэт должен
      опознаваться в бою с одного взгляда */
-  const art=pirateArtOf(p.shipId,p.rogue||p.hunter,hp<.5);
+  const art=pirateArtOf(p.shipId,p.rogue||p.hunter,hp<.5,p.rank|0);
   const B=art.B;
   /* выхлоп: чад из закопчённых сопел, у каждого своя фаза — один обязательно
      чадит сильнее прочих */

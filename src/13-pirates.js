@@ -55,7 +55,13 @@ function spawnPirates(){
       hull:hp,hullMax:hp,name:(R.pre?R.pre+" ":"")+pick(PIRATE_NAMES,r),
       rank,seed,shipId:pirateShipId(seed),
       cool:0,aware:false,thrust:false,
-      shield:hp*R.shield,shieldMax:hp*R.shield,shieldType:shieldTypeOf({seed}),shieldHit:0});
+      shield:hp*R.shield,shieldMax:hp*R.shield,shieldHit:0,
+      /* поле — от ранга, по таблице §5: у шакала его нет вовсе, у ветерана
+         сплошное, у капитана лобовое, у барона импульсное (M368) */
+      shieldType:(PIRATE_LOADOUT[rank].shield||"solid"),
+      /* дезертир (§7): пират на корпусе державы с закрашенным номером. Флаг
+         ставится уже сейчас, читать его будет M369a — там же и корпус */
+      deserter:(occ>=2&&((seed>>>11)&3)===0)?1:0});
   }
   /* ушедший управляющий сидит в своём секторе и ждёт: он такая же запись в
      G.pirates, поэтому весь бой уже написан — добавлять к нему нечего */
@@ -95,7 +101,13 @@ function updateCombat(dt){
   G.energy=Math.min(st.energyMax,G.energy+st.energyRegen*dt);
   const lowE=G.energy<EN_SHOT;
   G.shieldHit=Math.max(0,(G.shieldHit||0)-dt);
-  if(st.shieldMax>0){
+  /* чужой импульсник гасит ваше поле на две секунды, чужая помеховая сбивает
+     захват (M368): обе метки живут здесь, где живёт и сам щит */
+  G.jamT=Math.max(0,(G.jamT||0)-dt);
+  G.shieldOff=Math.max(0,(G.shieldOff||0)-dt);
+  if(typeof foeTetherTick==="function")foeTetherTick(dt);
+  if(G.shieldOff>0)G.shield=0;
+  if(st.shieldMax>0&&G.shieldOff<=0){
     if(G.shield>st.shieldMax)G.shield=st.shieldMax;
     if(st.shieldType==="pulse"){
       /* импульсный не растёт вовсе — он возвращается целиком раз в двадцать секунд */
@@ -179,8 +191,8 @@ function updateCombat(dt){
     if(p.shieldOff>0){p.shieldOff=Math.max(0,p.shieldOff-dt);p.shield=0;}
     if(p.jamT>0){p.jamT=Math.max(0,p.jamT-dt);}
     if(p.leadBreak>0)p.leadBreak=Math.max(0,p.leadBreak-dt);
-    /* с капитана и выше корабль снимает то, что летит в него (M367) */
-    if(typeof foeFlak==="function")foeFlak(p,dt);
+    /* снаряжение ранга: зенитка, лучи, помеха, трос, мины (M368, §5) */
+    if(typeof pirateArmTick==="function")pirateArmTick(p,dt);
     /* привязанный тросом теряет половину хода: гарпун держит, а не убивает */
     if(p.tether){p.vx*=Math.pow(.985,dt);p.vy*=Math.pow(.985,dt);p.tether=0;}
     if(p.shieldMax>0&&!(p.shieldOff>0)){

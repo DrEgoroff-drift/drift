@@ -1756,7 +1756,7 @@ body.table u.addr{color:#7a4a20}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.367.0";
+const VER="0.368.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -21612,6 +21612,27 @@ const PIR_CLASS={
   heavy:{ru:"тяжёлый",   len:62,bw:.30,eng:3,engL:.8,  cage:1,plate:6,spike:6,ram:1},
   flag:{ru:"флагман",    len:66,bw:.26,eng:4,engL:1.1, cage:2,plate:4,spike:5,ram:1}
 };
+/* ── чем он вооружён, видно до первого выстрела (M368, §5) ──
+   Ранг читался по величине и по повадке, но повадка показывает себя через
+   несколько секунд боя, а решение «драться или уходить» принимается раньше.
+   Стволы из снаряжения ранга (13d-loadout) рисуются на корпусе: рельса —
+   длинная тонкая труба, кассетник — короткая толстая, у капитана вместо
+   ствола тарелка помеховой, у ветерана крюк гарпуна, у барона стойка мин
+   за кормой. Форма — от семейства, а не от числа. */
+const PIR_GUNART={
+  auto:   {len:1.1,w:.14,n:1},
+  heavy:  {len:2.1,w:.26,n:1},
+  needle: {len:.95,w:.05,n:3},
+  laser:  {len:1.5,w:.09,n:1},
+  siphon: {len:1.2,w:.11,n:1},
+  pulse:  {len:.75,w:.20,n:1,ring:1},
+  jam:    {dish:1},
+  rail:   {len:3.0,w:.11,n:1},
+  cluster:{len:1.15,w:.40,n:1},
+  flak:   {len:.65,w:.09,n:2},
+  mortar: {len:.8,w:.24,n:1,aft:1},
+  harpoon:{len:1.0,w:.20,n:1,hook:1}
+};
 function pirateClass(seed,rogue){
   if(rogue)return "flag";
   const r=rng(hashi(seed,0x9A17,3));
@@ -21619,7 +21640,7 @@ function pirateClass(seed,rogue){
   return v<.36?"fast":v<.74?"raid":"heavy";
 }
 /* ── сборка: список полигонов и навески в местных единицах корпуса ── */
-function pirateBuild(seed,cls){
+function pirateBuild(seed,cls,rank){
   const K=PIR_CLASS[cls],r=rng(hashi(seed,0x51D3,11));
   const L=K.len*(.9+r()*.25), hw=L*K.bw;
   const nose=L*.55, tail=-L*.45;
@@ -21780,18 +21801,34 @@ function pirateBuild(seed,cls){
   /* метки сбитых: короткие насечки на носовой плите, число — по seed */
   const kills=Math.floor(r()*7);
   for(let i=0;i<kills;i++)lines.push([nose*.45-i*L*.03,-hw*.35,nose*.45-i*L*.03,-hw*.12,1]);
-  return {L,hw,nose,tail,polys,lines,rust,eng,turrets,cls,kills,top:bodyTop,coreN};
+  /* ── стволы снаряжения: по одному месту на семейство ── */
+  const guns=[];
+  const LOAD=(typeof PIRATE_LOADOUT!=="undefined")?
+    PIRATE_LOADOUT[clamp(rank|0,0,PIRATE_LOADOUT.length-1)]:null;
+  if(LOAD)for(let i=0;i<LOAD.guns.length;i++){
+    const fam=LOAD.guns[i],A=PIR_GUNART[fam]||PIR_GUNART.auto;
+    const t=LOAD.guns.length>1?i/(LOAD.guns.length-1):0;
+    const sg=i%2?1:-1;
+    guns.push({fam,
+      x:A.aft?tail*.8:lerp(nose*.6,tail*.15,t),
+      y:A.dish?0:sg*hw*(.5+(i%3)*.16),
+      a:A.aft?Math.PI:(sg*.12),
+      len:A.len||1,w:A.w||.12,n:A.n||1,
+      dish:A.dish?1:0,hook:A.hook?1:0,ring:A.ring?1:0});
+  }
+  return {L,hw,nose,tail,polys,lines,rust,eng,turrets,guns,cls,kills,top:bodyTop,coreN};
 }
 /* ── выпечка: один раз на seed, дальше — картинка с поворотом ── */
-function pirateArtOf(id,rogue,hurt){
+function pirateArtOf(id,rogue,hurt,rank){
   /* побитый корабль — вторая выпечка, а не пятна поверх целой: пока силуэт
      оставался прежним, разбитый пират выглядел просто испачканным */
-  const key=id+(rogue?"!r":"")+(hurt?"!h":"");
+  /* ранг входит в ключ: у него своё снаряжение, а значит и свои стволы (M368) */
+  const key=id+(rogue?"!r":"")+(hurt?"!h":"")+"!"+(rank|0);
   if(PIR_ART[key])return PIR_ART[key];
   /* `shipData` знает все три источника корпусов: у ренегата это ВАШ корабль */
   const S=shipData(id)||{seed:hashi(1,2,3),col:"#d95a3c"};
   const cls=pirateClass(S.seed,rogue);
-  const B=pirateBuild(S.seed,cls);
+  const B=pirateBuild(S.seed,cls,rank);
   const col=hex2rgb(S.col);
   /* палитра сварного корпуса: куски разной эпохи не совпадают по цвету, и
      именно это делает корабль сваренным, а не покрашенным */
@@ -21848,6 +21885,44 @@ function pirateArtOf(id,rogue,hurt){
     ctx.strokeStyle=rgba(C[2],.9);ctx.lineWidth=t.r*.5;
     ctx.beginPath();ctx.moveTo(t.x,t.y);
     ctx.lineTo(t.x+Math.cos(t.a)*t.r*2.6,t.y+Math.sin(t.a)*t.r*2.6);ctx.stroke();
+  }
+  /* ── стволы: то, чем он вооружён, до первого выстрела (M368) ── */
+  for(const gn of (B.guns||[])){
+    const u=B.hw;
+    /* длина ствола мерится корпусом, а не полушириной: у длинного корабля
+       рельса длиннее автопушки, но ни та ни другая не вылезает за выпечку —
+       вылезший ствол обрезался бы краем канвы, и рельса читалась бы короткой */
+    const reach=Math.min(B.L*.15*gn.len,rad*.94-Math.hypot(gn.x,gn.y));
+    ctx.save();ctx.translate(gn.x,gn.y);ctx.rotate(gn.a);
+    ctx.fillStyle=rgba(C[0],1);ctx.strokeStyle="rgba(0,0,0,.5)";ctx.lineWidth=.6;
+    ctx.beginPath();ctx.arc(0,0,u*.24,0,TAU);ctx.fill();ctx.stroke();
+    if(gn.dish){
+      /* тарелка помеховой: она не стреляет, и ствола у неё нет */
+      ctx.strokeStyle=rgba(C[2],.85);ctx.lineWidth=Math.max(.6,u*.12);
+      ctx.beginPath();ctx.arc(reach*.5,0,u*.62,-1.15,1.15);ctx.stroke();
+      ctx.lineWidth=Math.max(.5,u*.08);
+      ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(reach*.5,0);ctx.stroke();
+    }else{
+      for(let k=0;k<gn.n;k++){
+        const off=(k-(gn.n-1)/2)*u*.26;
+        ctx.strokeStyle=rgba(C[2],.9);ctx.lineWidth=Math.max(.5,u*gn.w);
+        ctx.beginPath();ctx.moveTo(0,off);ctx.lineTo(reach,off);ctx.stroke();
+      }
+      /* крюк гарпуна загибается — по нему трос и узнаётся */
+      if(gn.hook){
+        ctx.lineWidth=Math.max(.5,u*.1);
+        ctx.beginPath();ctx.moveTo(reach,0);
+        ctx.lineTo(reach-u*.35,-u*.45);ctx.stroke();
+      }
+      /* кольцо импульсника: намотка вокруг короткого ствола */
+      if(gn.ring){
+        ctx.lineWidth=Math.max(.4,u*.07);
+        for(let k=1;k<=2;k++){
+          ctx.beginPath();ctx.arc(reach*(.35*k),0,u*.3,0,TAU);ctx.stroke();
+        }
+      }
+    }
+    ctx.restore();
   }
   /* у побитого выгрызаем куски самого корпуса: рваный силуэт узнаётся
      раньше, чем копоть на нём */
@@ -21912,7 +21987,7 @@ function drawPirate(p){
      в пятнах. Обе картинки живут в кэше и считаются по одному разу */
   /* охотник (12o) печётся флагманской выпечкой, как ренегат: его силуэт должен
      опознаваться в бою с одного взгляда */
-  const art=pirateArtOf(p.shipId,p.rogue||p.hunter,hp<.5);
+  const art=pirateArtOf(p.shipId,p.rogue||p.hunter,hp<.5,p.rank|0);
   const B=art.B;
   /* выхлоп: чад из закопчённых сопел, у каждого своя фаза — один обязательно
      чадит сильнее прочих */
@@ -32204,7 +32279,9 @@ function playerHit(s){
   let d=s.dmg*hitLocMul(s,G.ship);
   const st=stat();
   G.shieldHit=SHIELD_DELAY;      /* поле растёт через паузу после попадания (M362) */
-  if(G.shield>0){
+  /* игла, прошедшая поле (M365/M368), садится в корпус и у вас: правило одно
+     на обе стороны, иначе игольник шакала — не игольник */
+  if(G.shield>0&&!s.pass){
     /* по щиту урон идёт СВОИМ типом, и лобовое поле держит лоб вдвое,
        а корму не держит вовсе (§4). Что щит не удержал — уходит в корпус
        уже по корпусному множителю того же типа. */
@@ -32407,7 +32484,13 @@ function spawnPirates(){
       hull:hp,hullMax:hp,name:(R.pre?R.pre+" ":"")+pick(PIRATE_NAMES,r),
       rank,seed,shipId:pirateShipId(seed),
       cool:0,aware:false,thrust:false,
-      shield:hp*R.shield,shieldMax:hp*R.shield,shieldType:shieldTypeOf({seed}),shieldHit:0});
+      shield:hp*R.shield,shieldMax:hp*R.shield,shieldHit:0,
+      /* поле — от ранга, по таблице §5: у шакала его нет вовсе, у ветерана
+         сплошное, у капитана лобовое, у барона импульсное (M368) */
+      shieldType:(PIRATE_LOADOUT[rank].shield||"solid"),
+      /* дезертир (§7): пират на корпусе державы с закрашенным номером. Флаг
+         ставится уже сейчас, читать его будет M369a — там же и корпус */
+      deserter:(occ>=2&&((seed>>>11)&3)===0)?1:0});
   }
   /* ушедший управляющий сидит в своём секторе и ждёт: он такая же запись в
      G.pirates, поэтому весь бой уже написан — добавлять к нему нечего */
@@ -32447,7 +32530,13 @@ function updateCombat(dt){
   G.energy=Math.min(st.energyMax,G.energy+st.energyRegen*dt);
   const lowE=G.energy<EN_SHOT;
   G.shieldHit=Math.max(0,(G.shieldHit||0)-dt);
-  if(st.shieldMax>0){
+  /* чужой импульсник гасит ваше поле на две секунды, чужая помеховая сбивает
+     захват (M368): обе метки живут здесь, где живёт и сам щит */
+  G.jamT=Math.max(0,(G.jamT||0)-dt);
+  G.shieldOff=Math.max(0,(G.shieldOff||0)-dt);
+  if(typeof foeTetherTick==="function")foeTetherTick(dt);
+  if(G.shieldOff>0)G.shield=0;
+  if(st.shieldMax>0&&G.shieldOff<=0){
     if(G.shield>st.shieldMax)G.shield=st.shieldMax;
     if(st.shieldType==="pulse"){
       /* импульсный не растёт вовсе — он возвращается целиком раз в двадцать секунд */
@@ -32531,8 +32620,8 @@ function updateCombat(dt){
     if(p.shieldOff>0){p.shieldOff=Math.max(0,p.shieldOff-dt);p.shield=0;}
     if(p.jamT>0){p.jamT=Math.max(0,p.jamT-dt);}
     if(p.leadBreak>0)p.leadBreak=Math.max(0,p.leadBreak-dt);
-    /* с капитана и выше корабль снимает то, что летит в него (M367) */
-    if(typeof foeFlak==="function")foeFlak(p,dt);
+    /* снаряжение ранга: зенитка, лучи, помеха, трос, мины (M368, §5) */
+    if(typeof pirateArmTick==="function")pirateArmTick(p,dt);
     /* привязанный тросом теряет половину хода: гарпун держит, а не убивает */
     if(p.tether){p.vx*=Math.pow(.985,dt);p.vy*=Math.pow(.985,dt);p.tether=0;}
     if(p.shieldMax>0&&!(p.shieldOff>0)){
@@ -33007,6 +33096,21 @@ function minesTick(dt){
     m.life-=dt;if(m.arm>0)m.arm-=dt;
     if(m.life<=0){L.splice(i,1);continue;}
     if(m.arm>0)continue;
+    /* мина барона (M368): своих не трогает так же, как ваша — чужих */
+    if(m.foe){
+      const dd=Math.hypot(G.ship.x-m.x,G.ship.y-m.y);
+      if(dd<MINE_R*1.6){
+        const ang=Math.atan2(G.ship.y-m.y,G.ship.x-m.x);
+        const k=clamp(1-dd/(MINE_R*1.6),.25,1);
+        if(typeof playerHit==="function")playerHit({vx:Math.cos(ang),vy:Math.sin(ang),
+          type:m.type,owner:m.owner||"pirate",mine:false,dmg:m.dmg*k});
+        beamAdd(m.x-MINE_R*.6,m.y,m.x+MINE_R*.6,m.y,"rgba(255,190,110,.9)",4);
+        beamAdd(m.x,m.y-MINE_R*.6,m.x,m.y+MINE_R*.6,"rgba(255,190,110,.9)",4);
+        sfx("boom",{v:.5});
+        L.splice(i,1);
+      }
+      continue;
+    }
     let near=false;
     for(const p of (G.pirates||[])){
       if(p.hull<=0||p.iff||p.dummy)continue;
@@ -33037,9 +33141,12 @@ function minesDraw(zx,zy,Z){
     if(x<-40||x>W+40||y<-40||y>H+40)continue;
     const on=m.arm<=0;
     ctx.globalAlpha=on?(.55+.35*Math.abs(Math.sin(G.t*.16))):.3;
-    ctx.fillStyle=on?"#ffb25c":"#8fa0b0";
+    /* чужая мина красится чужим цветом (M368): решение «облетать или нет»
+       принимается по кругу на земле, а не после взрыва */
+    const col=m.foe?"#ff6b57":"#ffb25c";
+    ctx.fillStyle=on?col:"#8fa0b0";
     ctx.beginPath();ctx.arc(x,y,3.2*clamp(Z,.5,1.8),0,TAU);ctx.fill();
-    ctx.globalAlpha=.16;ctx.strokeStyle="#ffb25c";ctx.lineWidth=1;
+    ctx.globalAlpha=.16;ctx.strokeStyle=col;ctx.lineWidth=1;
     ctx.beginPath();ctx.arc(x,y,MINE_R*Z,0,TAU);ctx.stroke();
   }
   ctx.restore();
@@ -33129,7 +33236,9 @@ function flakTick(g,sh){
    Спасибо этому и ловушка получает смысл: чужой зенитке всё равно, за чем
    гнаться, а вашей ловушке — нет. */
 function foeFlak(p,dt){
-  if((p.rank|0)<2||p.hull<=0)return;
+  /* кто её носит, решает таблица §5 (M368): по ней зенитка у барона */
+  if(p.hull<=0)return;
+  if(typeof pirateHas==="function"&&!pirateHas(p,"flak"))return;
   p.flakCool=(p.flakCool||0)-dt;
   if(p.flakCool>0)return;
   let best=null,bd=420;
@@ -33597,9 +33706,9 @@ function pirateRoleTick(p,dt,d,want){
     else{roleSteer(p,want,dt,.05);roleDamp(p,dt,.96);}
     if(d<1100&&p.cool<=0&&!(p.stunT>0)&&Math.abs(angDiff(want,p.a))<.3){
       fireShot(p.x,p.y,p.a,9,(p.dmg||3.5+sysDanger(G.sx,G.sy)*5)*1.6,p.owner||"pirate");
-      /* капитан носит пусковую (M367): раз в несколько залпов уходит ракета,
-         и её можно сбить зениткой или увести ловушкой */
-      if(typeof mslFoeFire==="function"&&Math.random()<.3)mslFoeFire(p);
+      /* пусковая — по таблице §5 у капитана (M367/M368): раз в несколько
+         залпов уходит ракета, и её сбивают зениткой или уводят ловушкой */
+      if(typeof mslFoeFire==="function"&&pirateHas(p,"msl")&&Math.random()<.3)mslFoeFire(p);
       p.cool=95;helmShotAt(p);
     }
   }else{
@@ -33609,11 +33718,9 @@ function pirateRoleTick(p,dt,d,want){
        отдельной строкой ПОСЛЕ проверки «пора начинать очередь», и в тот же
        кадр, когда откат доходил до нуля, очередь начиналась заново — барон
        бил без перерыва (82 выстрела за десять секунд на замере M361). */
-    if(st.burst>0){if(roleFire(p,d,want,900,7)&&--st.burst===0){
-      p.cool=110;
-      /* барон закрывает очередь ракетой (M367) */
-      if(typeof mslFoeFire==="function"&&Math.random()<.5)mslFoeFire(p);
-    }}
+    /* очередь барона закрывается не ракетой, а паузой: пусковая по таблице
+       §5 у капитана, у барона рельса, кассетник, зенитка и мины (M368) */
+    if(st.burst>0){if(roleFire(p,d,want,900,7)&&--st.burst===0)p.cool=110;}
     else if(p.cool<=0&&d<900)st.burst=3;
     if(hp<.5&&!p.called){
       p.called=1;
@@ -33629,6 +33736,187 @@ function pirateRoleTick(p,dt,d,want){
     }
   }
   return false;
+}
+
+/* ══════════════ снаряжение пирата по рангу (M368, §5) ══════════════
+   До этого прохода ранг был повадкой и числом: шакал бросался, барон стоял,
+   у каждого свой урон и свой откат. Чем он вооружён — не спрашивалось, и в
+   бою все четверо стреляли одинаковыми оранжевыми точками.
+
+   Здесь у ранга появляется СНАРЯЖЕНИЕ, и берётся оно из той же таблицы, что
+   ваше: `GUN_FAMILY` (05b-guns), числа через `gunSpecMake` (05c-arms). Не
+   «пиратская версия автопушки», а та же автопушка — иначе таблица врёт.
+
+     шакал   2× автопушка, игольник        поля нет
+     ветеран тяжёлое, автопушка, гарпун    сплошное
+     капитан лазер, сифон, импульсник,     лобовое
+             помеховая, ракеты
+     барон   рельса, кассетник, зенитка,   импульсное
+             мины за корму
+
+   Повадки живут здесь, а не в `13a-guns`: там они написаны от ВАШЕГО лица —
+   лучи ищут пиратов, мины не трогают своих. Чужая сторона тех же повадок
+   короче: цель одна, и она всегда вы.
+
+   Ракеты (M367) и зенитка теперь тоже идут от снаряжения, а не от ранга:
+   по таблице пусковая у капитана, зенитка у барона. */
+const PIRATE_LOADOUT=[
+  {guns:["auto","auto","needle"],           shield:null,    tier:1},
+  {guns:["heavy","auto","harpoon"],          shield:"solid", tier:2},
+  {guns:["laser","siphon","pulse","jam"],   shield:"front", tier:3,msl:1},
+  {guns:["rail","cluster","flak","mortar"], shield:"pulse", tier:4}
+];
+/* откаты чужих повадок: у вашего ствола откат считается от числа орудия, у
+   чужого он ещё и мерило того, как часто игроку прилетает неприятность */
+const FOE_ARM_COOL={needle:40,harpoon:170,laser:10,siphon:16,pulse:280,jam:20,
+  rail:220,cluster:130,mortar:200};
+function pirateLoadout(p){return PIRATE_LOADOUT[clamp((p&&p.rank)|0,0,PIRATE_LOADOUT.length-1)];}
+function pirateHas(p,fam){
+  const L=pirateLoadout(p);
+  return fam==="msl"?!!L.msl:L.guns.indexOf(fam)>=0;
+}
+/* ствол пирата считается ровно тем же кодом, что ваш: семейство из таблицы,
+   тир от ранга, seed от самого пирата — значит два ветерана не близнецы */
+function foeGun(p,fam){
+  if(!p.arm)p.arm={};
+  if(p.arm[fam])return p.arm[fam];
+  const L=pirateLoadout(p);
+  const part={seed:hashi(p.seed||1,fam.charCodeAt(0)*977,0x6A),tier:L.tier,
+    fam,fact:0,ser:1900,bonus:{}};
+  const dmg=p.dmg||3.5+sysDanger(G.sx,G.sy)*5;
+  return p.arm[fam]=gunSpecMake(dmg,20,part,L.tier);
+}
+/* ── одна повадка, один раз ──
+   Возвращает true, если сработала: откат ставит вызывающий. */
+function foeArmFire(p,fam,d){
+  const g=foeGun(p,fam),sh=G.ship;
+  const ang=Math.atan2(sh.y-p.y,sh.x-p.x);
+  const facing=Math.abs(angDiff(ang,p.a))<.6;
+  const own=p.owner||"pirate";
+  const shot=s2=>{if(s2)return s2;return null;};
+  if(fam==="needle"){
+    if(d>g.range||!facing)return false;
+    /* игла тонкая и частая; часть игл проходит поле насквозь — та же доля,
+       что у вашего игольника */
+    for(let i=0;i<3;i++){
+      const a=ang+(Math.random()-.5)*g.spread*8;
+      fireShot(p.x,p.y,a,g.speed,g.dmg,own,g.type,g.range);
+      const s2=shot(G.shots[G.shots.length-1]);
+      if(s2){s2.needle=1;s2.pass=Math.random()<(GUN_FAMILY.needle.pass||.45)?1:0;}
+    }
+    return true;
+  }
+  if(fam==="harpoon"){
+    if(d>g.range||G.foeTether)return false;
+    G.foeTether={p,life:TETHER_LIFE};
+    say("«"+p.name+"» бросил трос",70);
+    sfx("shot",{f:260,to:150,d:.18,v:.4});
+    return true;
+  }
+  if(fam==="laser"){
+    if(d>g.range||!facing)return false;
+    beamAdd(p.x,p.y,sh.x,sh.y,"rgba(255,150,110,.9)",1.2);
+    playerHit({vx:Math.cos(ang),vy:Math.sin(ang),dmg:g.dmg,type:g.type,owner:own,mine:false});
+    return true;
+  }
+  if(fam==="siphon"){
+    /* сифон не бьёт: он переливает ваше поле в своё, и оставляет вас голым */
+    if(d>g.range||!facing)return false;
+    const a=Math.min(G.shield||0,1.4+g.dmg);
+    if(a<=0)return false;
+    G.shield-=a;G.shieldHit=SHIELD_DELAY;
+    if(p.shieldMax>0)p.shield=Math.min(p.shieldMax,(p.shield||0)+a);
+    beamAdd(p.x,p.y,sh.x,sh.y,"rgba(140,230,255,.75)",1.4);
+    return true;
+  }
+  if(fam==="pulse"){
+    if(d>g.range)return false;
+    if((G.shield||0)<=0&&(G.shieldOff||0)>0)return false;   /* нечего гасить */
+    G.shield=0;G.shieldOff=SHIELD_OFF;G.shieldHit=SHIELD_DELAY;
+    beamAdd(p.x,p.y,sh.x,sh.y,"rgba(190,200,255,.8)",2);
+    say("ИМПУЛЬС · ПОЛЕ СБИТО",90);
+    sfx("ui",{f:520,to:120,d:.3,v:.4});
+    return true;
+  }
+  if(fam==="jam"){
+    /* помеховая не стреляет вовсе: рядом с капитаном захват не держится */
+    if(d>JAM_R)return false;
+    G.jamT=JAM_TIME;
+    return true;
+  }
+  if(fam==="rail"){
+    if(d>g.range||!facing)return false;
+    beamAdd(p.x,p.y,p.x+Math.cos(ang)*g.range,p.y+Math.sin(ang)*g.range,
+      "rgba(180,220,255,.95)",2);
+    playerHit({vx:Math.cos(ang),vy:Math.sin(ang),dmg:g.dmg,type:g.type,owner:own,mine:false});
+    sfx("shot",{f:150,to:900,d:.22,v:.5});
+    return true;
+  }
+  if(fam==="cluster"){
+    if(d>g.range)return false;
+    fireShot(p.x,p.y,ang,g.speed,g.dmg,own,g.type,g.range);
+    const s2=shot(G.shots[G.shots.length-1]);
+    if(s2){s2.split=Math.max(20,d*.5);s2.parts=(GUN_FAMILY.cluster&&GUN_FAMILY.cluster.parts)||5;
+      s2.gspread=g.spread;}
+    return true;
+  }
+  if(fam==="mortar"){
+    /* мина за корму: барон не гонится за вами, он делает место, где вам плохо */
+    if(d>1000)return false;
+    foeMineLay(p,g);
+    return true;
+  }
+  return false;
+}
+/* мина барона: та же запись, что ваша (13a-guns), только сторона другая */
+function foeMineLay(p,g){
+  if(!G.gmines)G.gmines=[];
+  if(G.gmines.filter(m=>m.foe).length>=5)return false;
+  const a=p.a+Math.PI;
+  G.gmines.push({x:p.x+Math.cos(a)*26,y:p.y+Math.sin(a)*26,
+    vx:(p.vx||0)*.3,vy:(p.vy||0)*.3,dmg:g.dmg,type:g.type,
+    life:MINE_LIFE,arm:60,foe:1,owner:p.owner||"pirate"});
+  sfx("shot",{f:190,to:110,d:.2,v:.3});
+  return true;
+}
+/* ── трос с той стороны ──
+   Ваш гарпун тянет вас к тяжёлому и отнимает половину хода; чужой делает то же
+   с вами. Рвётся сам по времени или когда трос не выдерживает расстояния. */
+function foeTetherTick(dt){
+  const T=G.foeTether;
+  if(!T)return;
+  const p=T.p,sh=G.ship;
+  T.life-=dt;
+  const d=p?Math.hypot(p.x-sh.x,p.y-sh.y):1e9;
+  if(!p||p.hull<=0||T.life<=0||d>1400){G.foeTether=null;return;}
+  const dx=p.x-sh.x,dy=p.y-sh.y;
+  const mine=stat().hullMax,his=p.hullMax||60;
+  const k=TETHER_PULL*dt;
+  sh.vx+=dx/d*k*(his/(mine+his));sh.vy+=dy/d*k*(his/(mine+his));
+  p.vx-=dx/d*k*(mine/(mine+his));p.vy-=dy/d*k*(mine/(mine+his));
+  const q=Math.pow(.985,dt);sh.vx*=q;sh.vy*=q;   /* привязанный теряет половину хода */
+  beamAdd(sh.x,sh.y,p.x,p.y,"rgba(230,220,180,.55)",1);
+}
+/* ── такт снаряжения: один пират, все его повадки ──
+   Роль (13c-roles) по-прежнему решает, КАК он ходит и когда даёт основной
+   залп; здесь работает всё остальное, что у него на борту. */
+function pirateArmTick(p,dt){
+  if(!p||p.hull<=0||p.dummy||p.iff||!p.aware)return;
+  if(p.stunT>0)return;                       /* перегретый молчит целиком */
+  const L=pirateLoadout(p);
+  /* зенитка идёт своей петлёй: ей нужна цель в воздухе, а не откат */
+  if(L.guns.indexOf("flak")>=0&&typeof foeFlak==="function")foeFlak(p,dt);
+  if(p.jamT>0&&Math.random()<.5)return;      /* сам под помехой: половина мимо */
+  const d=Math.hypot(G.ship.x-p.x,G.ship.y-p.y);
+  if(!p.armCool)p.armCool={};
+  const C=p.armCool;
+  for(const fam of L.guns){
+    if(fam==="flak")continue;
+    C[fam]=(C[fam]||0)-dt;
+    if(C[fam]>0)continue;
+    if(foeArmFire(p,fam,d))C[fam]=FOE_ARM_COOL[fam]||60;
+    else C[fam]=12;                          /* не вышло — пробуем скоро снова */
+  }
 }
 
 /* ══════════════ сохранение ══════════════ */
@@ -35357,11 +35645,15 @@ function helmPinchBlocked(){return G.mode==="system"&&(!!HELM.L||!!HELM.R);}
 function helmTargets(){return (G.pirates||[]).filter(p=>p.hull>0&&!p.iff);}
 function helmMarksClean(){
   if(!G.marks)G.marks=[];
+  /* помеховая капитана (M368, §5): рядом с ним захват не держится вовсе —
+     ни ваш палец, ни автозахват стрелявшего его не вернут, пока не отойти */
+  if(G.jamT>0){G.marks.length=0;return;}
   const alive=new Set(G.pirates||[]);
   for(let i=G.marks.length-1;i>=0;i--)if(!alive.has(G.marks[i])||G.marks[i].hull<=0||G.marks[i].iff)G.marks.splice(i,1);
   if(G.marks.length>HELM_MARKS)G.marks.length=HELM_MARKS;
 }
 function helmLock(p){
+  if(G.jamT>0){say("ПОМЕХА · ЗАХВАТА НЕТ",70);return;}
   helmMarksClean();
   const i=G.marks.indexOf(p);
   if(i>=0)G.marks.splice(i,1);
@@ -35371,6 +35663,7 @@ function helmLock(p){
 }
 /* Tab / ЦЕЛЬ: ближайший знающий о вас враг; повтор — следующий по кругу */
 function helmLockNext(){
+  if(G.jamT>0){say("ПОМЕХА · ЗАХВАТА НЕТ",70);return false;}
   helmMarksClean();
   const sh=G.ship;
   const list=helmTargets().filter(p=>p.aware).sort((a,b)=>Math.hypot(a.x-sh.x,a.y-sh.y)-Math.hypot(b.x-sh.x,b.y-sh.y));
