@@ -677,20 +677,14 @@ Three stages, each playable on /dev before the next starts:
   four roles, flee and jump-out), `13-pirates` rewired, allies `iff:true` — written and green in
   the Node tier, **uncommitted in the working tree**; left: `91zzzw-combat.js`, hull bar over the
   primary mark checked in the browser, `prof()` with eight armed ships, patchnote 0.361.0.
-  **M360a — the helm frame, redone (author 2026-09-06, phone shot: «у меня только разочарование»;
-  goes BEFORE M361 is finished).** Self-critique of the shipped frame: (1) the sticks are drawn as
-  two 82 px instruments with a fat 11 px knob — the left one lies over the compass chips, МАСШТАБ
-  and the receiver, the right one over the prompt; redo as a faint direction arc plus a dot under
-  the thumb (alpha ≈.25), and move the chips/prompt out from under a live stick; (2) the prompt
-  still says «ОГОНЬ — ОТСТРЕЛИВАТЬСЯ» — there is no ОГОНЬ pad in the system mode any more, fire
-  is the lock; rewrite the combat hints for the new controls and stop gluing two hints into one
-  phone-wide line; (3) the lock bracket's top edge sits on the hull bar (y−26) and hides it — bar
-  above the bracket; (4) the anchor message «ГРАВИТАЦИОННЫЙ ЯКОРЬ …» renders its `
-` as one
-  edge-to-edge line on the phone; (5) process: one pane screenshot, the overlap seen and excused,
-  no self-critique pass, no hands-on check on a phone (stick born under the thumb, first tap not
-  stolen by a planet, two fingers vs the old pinch) — a draft was committed as done. Run the
-  §0 design passes on this frame and put the overlap checks into `91zzx-mobile` · M361 ships shoot each other and rank
+  ~~**M360a — the helm frame, redone**~~ — 0.360.1 (2026-09-06), answer to the author's phone
+  shot «у меня только разочарование»; all five items in the patchnote. Stick = faint arc + dot
+  (51 px footprint, not 93); chips/МАСШТАБ/prompt step out from under a live finger
+  (`helmLift`, `--helmlift`); `#msg`/`#prompt` keep line breaks on the phone; the hint names
+  the new controls; hull bar above the bracket. **Found on the way:** `HELM_CONE`/`HELM_RANGE`
+  and `G.ctl.fire`/`.msl` had no reader — autofire on the mark and the mouse LMB/RMB did not
+  exist, and `91zzzw-helm` was red in the browser tier since 0.360.0. `prof(60)`, phone
+  375×812 @2: JS 2.0 ms idle, 2.7 with two live sticks. · M361 ships shoot each other and rank
   roles · M362 energy, seven numbers, three shields · M363 ОСНАСТКА and clearance · M364–M366
   twenty gun families · M367 missiles · M368 pirate loadouts.
 - **B — the powers, by seed** (client only; the galaxy lives with no server): M369 the maker

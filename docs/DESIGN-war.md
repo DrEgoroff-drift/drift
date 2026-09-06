@@ -965,6 +965,15 @@ One system inside ГЛАВТРАССА's centre (r ≈ 6, fixed by seed, never t
 - ~~**M360** helm and lock~~ — 0.360.0 (2026-09-06): `15a-helm`, `G.ctl`, suite `91zzzw-helm`.
   Learned: Space stays ДЕЙСТВИЕ; the raw key layer bypasses `G.opts.keys`; two-finger pinch in
   the system mode is gone (zoom = rail buttons); the pad-row key must include the mode.
+- ~~**M360a** the helm frame, redone~~ — 0.360.1 (2026-09-06), after the author's phone shot
+  «у меня только разочарование». The stick is a faint arc plus a dot (51 px footprint, not 93);
+  chips, МАСШТАБ and the prompt step out from under a live finger (`helmLift`, `--helmlift`);
+  `#msg`/`#prompt` keep their line breaks on the phone; the combat hint names the new controls;
+  the hull bar stands above the lock bracket. Learned, and it changes every brief below:
+  **a channel written in `G.ctl` is not a channel until something reads it** — M360 left
+  `HELM_CONE`/`HELM_RANGE`/`ctl.fire`/`ctl.msl` with no reader, its own suite red in the
+  browser tier, and the pass was still written down as done. Run `test.ps1 -Browser` and
+  `-Mobile`, not only the Node tier, before striking a pass.
 - **M361** ships shoot each other: `owner`, rank roles, rear hit, hull bar, flee; IFF hook (D09).
 - **M362** energy bar and the seven numbers on today's gun; three shield types.
 - **M363** ОСНАСТКА: sizes/types on the points, the dock screen, comparison, стрельбище, groups;

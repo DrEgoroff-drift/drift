@@ -97,7 +97,23 @@ function updateCombat(dt){
     }else if(L.life<=0)G.loot.splice(i,1);
   }
   if(fireCool>0)fireCool-=dt;
-  if(keys.fire&&st.armed&&fireCool<=0){
+  /* ── огонь — это захват (M360, доведено в M360a) ──
+     M360 объявил автоогонь в заметках и в тесте, а провода не положил:
+     HELM_CONE и HELM_RANGE лежали константами без единого читателя, а
+     каналы G.ctl.fire/msl (ЛКМ и ПКМ мышиной схемы) — без единого
+     потребителя. Пушка била только по keys.fire. Здесь оба конца сходятся:
+     принудительный выстрел по носу — ЛКМ, F, пэд ОГОНЬ (в поясе он есть);
+     сам по себе — пока первая метка в конусе и в дальности. */
+  let firing=keys.fire||!!(G.ctl&&G.ctl.fire);
+  if(!firing&&st.armed&&G.marks&&G.marks.length){
+    const mk=G.marks[0];
+    if(mk&&mk.hull>0&&!mk.iff){
+      const mdx=mk.x-sh.x,mdy=mk.y-sh.y;
+      firing=Math.hypot(mdx,mdy)<HELM_RANGE&&
+        Math.abs(angDiff(Math.atan2(mdy,mdx),sh.a))<HELM_CONE;
+    }
+  }
+  if(firing&&st.armed&&fireCool<=0){
     fireShot(sh.x,sh.y,sh.a,9,st.dmg,true);
     if(typeof placeNote==="function")placeNote("hurt",1);   // место помнит выстрел (11d)
     fireCool=st.cool;
@@ -171,7 +187,7 @@ function updateCombat(dt){
   /* ракеты (16b): свой пуск, своя перезарядка и свой расход из трюма — но живут
      они в том же цикле боя, а не отдельным таймером */
   if(typeof mslTick==="function")mslTick(dt);
-  if(keys.msl&&typeof mslFire==="function"&&(G.mslCool||0)<=0)mslFire();
+  if((keys.msl||!!(G.ctl&&G.ctl.msl))&&typeof mslFire==="function"&&(G.mslCool||0)<=0)mslFire();
 }
 /* трепло (12x, M116) слышит бой: имя сбитого — это то, что потом прозвучит
    на чужой станции, и уже не как ваша заслуга */
@@ -257,8 +273,11 @@ function drawCombat(zx,zy,Z){
       /* ренегата видно сразу: полоса шире, имя ярче и подпись, кто это такой —
          игрок должен узнать своего человека раньше, чем получит от него */
       const w=p.rogue?54:34,hp=clamp(p.hull/p.hullMax,0,1);
-      ctx.fillStyle="rgba(255,255,255,.14)";ctx.fillRect(x-w/2,y-26,w,p.rogue?4:3);
-      ctx.fillStyle=p.rogue?"#c58ae0":"#ff6b57";ctx.fillRect(x-w/2,y-26,w*hp,p.rogue?4:3);
+      /* полоска встаёт ВЫШЕ скобки захвата (M360a): на 26 px верхняя грань
+         скобки ложилась ровно на неё и корпус цели было не видно */
+      const by=y-Math.max(26,(typeof helmMarkTop==="function"?helmMarkTop(p,Z):0)+18);
+      ctx.fillStyle="rgba(255,255,255,.14)";ctx.fillRect(x-w/2,by,w,p.rogue?4:3);
+      ctx.fillStyle=p.rogue?"#c58ae0":"#ff6b57";ctx.fillRect(x-w/2,by,w*hp,p.rogue?4:3);
       ctx.fillStyle=p.rogue?"rgba(197,138,224,.95)":"rgba(255,107,87,.75)";
       ctx.font=(p.rogue?"9px":"8px")+" ui-monospace,monospace";ctx.textAlign="center";
       ctx.fillText(p.name.toUpperCase(),x,y+26);

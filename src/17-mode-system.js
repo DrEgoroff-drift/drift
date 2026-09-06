@@ -169,8 +169,15 @@ function updateSystem(dt){
   if(apOn)return;
   G.prompt=atEdge?"ГРАВИТАЦИОННЫЙ ЯКОРЬ · КРАЙ СИСТЕМЫ\nКУРС К ЗВЕЗДЕ СВОБОДЕН":"";
   const hostile=G.pirates.filter(p=>p.aware).length;
-  if(hostile)G.prompt=(st.armed?"ОГОНЬ — ОТСТРЕЛИВАТЬСЯ":"ОРУДИЯ НЕТ")+
-    " · ПРЕСЛЕДУЮТ: "+hostile+"\nМОЖНО ПРОСТО УЙТИ ИЛИ ПРЫГНУТЬ";
+  /* подсказка боя переписана под новое управление (M360a): пэда ОГОНЬ в
+     системе больше нет, огонь — это захват. Две мысли — две строки, а не
+     одна во всю ширину телефона: «что делать» и «можно не делать». */
+  if(hostile){
+    const stick=G.ctl&&G.ctl.src==="stick",got=G.marks&&G.marks.length;
+    const how=got?"ЦЕЛЬ ВЗЯТА · ОГОНЬ САМ"
+      :(stick?"ЦЕЛЬ ИЛИ ТЫЧОК ПО КОРПУСУ — ЗАХВАТ":"TAB ИЛИ ЩЕЛЧОК ПО КОРПУСУ — ЗАХВАТ");
+    G.prompt=(st.armed?how:"ОРУДИЯ НЕТ")+"\nПРЕСЛЕДУЮТ: "+hostile+" · МОЖНО УЙТИ ИЛИ ПРЫГНУТЬ";
+  }
 
   if(sys.station){
     const S=sys.station,ds=Math.hypot(sh.x-S.x,sh.y-S.y);
@@ -540,9 +547,14 @@ function drawSystem(){
   }
 }
 function drawSysHud(zx,zy,sh,sys,U){
-  /* масштаб — над пэдом, а не под ним: внизу слева его закрывал руль */
+  /* масштаб — над пэдом, а не под ним: внизу слева его закрывал руль.
+     А с M360a — ещё и выше следа левого стика: палец рождается где угодно
+     в нижней половине, и приборная мелочь уходит из-под него сама. */
+  const feet=(typeof helmStickFoot==="function")?helmStickFoot():[];
+  let scaleY=H-108;
+  for(const f of feet)if(f.side==="L")scaleY=Math.min(scaleY,(f.y-f.r)/U-10);
   ctx.fillStyle="rgba(93,115,130,.75)";ctx.font="9px ui-monospace,monospace";ctx.textAlign="left";
-  ctx.fillText("МАСШТАБ ×"+G.zoom.toFixed(2),14,H-108);
+  ctx.fillText("МАСШТАБ ×"+G.zoom.toFixed(2),14,Math.max(96,scaleY));
   /* компас на край экрана: звезда, станция и текущая цель автопилота,
      если они за кадром — чтобы в бесконечном космосе нельзя было заблудиться */
   /* ── у метки есть цель, и по метке можно ткнуть (плейтест, 26.08.2026) ──
@@ -576,6 +588,7 @@ function drawSysHud(zx,zy,sh,sys,U){
      «ЗВЕЗДА» ложился ровно на «МОЖНО ПРОСТО УЙТИ ИЛИ ПРЫГНУТЬ» (полировочный
      круг). Меряем сам DOM (правило 27z: не пересчитывать CSS в JS). */
   let inY1=H-(innerWidth<=760?150:120);
+  for(const f of feet)inY1=Math.min(inY1,(f.y-f.r)/U-10);
   {
     const pe=document.getElementById("prompt");
     if(pe&&pe.textContent){
@@ -583,7 +596,7 @@ function drawSysHud(zx,zy,sh,sys,U){
       if(r.height>0)inY1=Math.min(inY1,r.top/U-8);
     }
   }
-  const inset={x0:10,x1:W-10,y0:76,y1:inY1};
+  const inset={x0:10,x1:W-10,y0:76,y1:Math.max(140,inY1)};
   const placed=[];
   ctx.font="8px ui-monospace,monospace";
   for(const m of marks){

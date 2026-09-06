@@ -141,7 +141,24 @@ TEST_SUITES.push(()=>suite("штурвал: метки, автозахват, р
   ok(G.shots.some(s=>s.mine),"пушка выстрелила сама по метке в конусе");
   G.shots=[];G.marks.length=0;fireCool=0;updateCombat(1);
   ok(!G.shots.some(s=>s.mine),"без метки и без ОГНЯ — тишина");
-  G.mods.weapon=0;
+  /* метка за спиной — не в конусе: сама пушка молчит (M360a) */
+  G.marks.length=0;G.marks.push(a);G.ship.a=Math.PI;G.shots=[];fireCool=0;updateCombat(1);
+  ok(!G.shots.some(s=>s.mine),"метка за спиной — автоогня нет");
+  /* и слишком далеко — тоже молчит */
+  G.ship.a=0;a.x=G.ship.x+HELM_RANGE+400;G.shots=[];fireCool=0;updateCombat(1);
+  ok(!G.shots.some(s=>s.mine),"метка дальше "+HELM_RANGE+" — автоогня нет");
+  a.x=G.ship.x+300;
+  /* ЛКМ мышиной схемы: канал G.ctl.fire бьёт по носу без всякой метки.
+     До M360a этот канал никто не читал, и левая кнопка мыши не стреляла */
+  G.marks.length=0;G.shots=[];fireCool=0;
+  for(const k in keys)keys[k]=false;
+  G.ctl.fire=true;updateCombat(1);G.ctl.fire=false;
+  ok(G.shots.some(s=>s.mine),"ЛКМ — принудительный выстрел по носу");
+  /* ПКМ — ракета, тем же каналом */
+  G.cargo.missile=2;G.mslCool=0;G.msl=[];G.mods.launcher=1;
+  G.ctl.msl=true;updateCombat(1);G.ctl.msl=false;
+  ok((G.msl||[]).length>0||(G.mslCool||0)>0,"ПКМ — пусковая отработала");
+  G.mods.weapon=0;G.mods.launcher=0;G.msl=[];G.cargo.missile=0;
 }));
 
 TEST_SUITES.push(()=>suite("штурвал: другие режимы по-прежнему на keys (D08)",()=>{

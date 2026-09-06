@@ -16,13 +16,20 @@ const HELM_DEAD=12;          /* мёртвая зона стика, px */
 const HELM_REACH=70;         /* px хода стика до полной тяги */
 const HELM_PICK=40;          /* px до корпуса, чтобы взять его в захват */
 const HELM_MARKS=3;
+/* след стика (M360a): дуга под пальцем вместо кольца в 82 px. Радиус дуги —
+   это сила тяги, её угол — направление; весь рисунок умещается в HELM_FOOT от
+   точки касания, и это число читают и вёрстка, и тесты. */
+const HELM_ARC0=20;          /* радиус дуги в мёртвой зоне, px */
+const HELM_ARC1=46;          /* радиус дуги на полном ходе */
+const HELM_ARCW=.5;          /* полураствор дуги, рад */
+const HELM_FOOT=HELM_ARC1+5; /* весь след стика от точки касания, px */
 const HELM_CONE=.35;         /* ±20° — временный конус автоогня (M362 заменит) */
 const HELM_RANGE=760;
 const HELM={src:"arrows",   /* кто вёл последним: mouse | arrows | stick */
   mouse:{x:0,y:0,t:-1e9,on:false,down:false,moved:0,rmb:false},
   L:null,R:null,             /* живые стики: {id,x0,y0,x,y} */
   fadeL:null,fadeR:null,     /* след отпущенного стика: {x0,y0,a} */
-  key:{},lockEdge:false,lockWas:false};
+  key:{},lockEdge:false,lockWas:false,lift:-1};
 function ctlReset(){
   G.ctl={head:null,headK:1,turn:0,tx:0,ty:0,brake:false,fire:false,msl:false,
     headIdle:true,thrOnly:false,src:HELM.src,out:{main:false,thr:false,rate:0}};
@@ -75,7 +82,7 @@ function helmPtrEnd(e){
   if(e.pointerType==="mouse"){if(e.button===0)HELM.mouse.down=false;if(e.button===2)HELM.mouse.rmb=false;return;}
   for(const side of ["L","R"]){
     const s=HELM[side];
-    if(s&&s.id===e.pointerId){HELM["fade"+side]={x0:s.x0,y0:s.y0,a:1};HELM[side]=null;}
+    if(s&&s.id===e.pointerId){HELM["fade"+side]={x0:s.x0,y0:s.y0,x:s.x,y:s.y,f:1};HELM[side]=null;}
   }
 }
 cvs.addEventListener("pointerup",helmPtrEnd);
@@ -188,6 +195,7 @@ function helmTick(dt){
     const p=G.marks[0];c.head=Math.atan2(p.y-sh.y,p.x-sh.x);c.headK=1;
   }
   c.src=HELM.src;
+  helmLift();          /* подсказка над пальцем (M360a) */
   return c;
 }
 /* ── физика штурвала: курс, тяга, правило отпускания. Вызывается системным
@@ -249,18 +257,83 @@ function helmDrawMarks(zx,zy,Z){
     ctx.stroke();
   });
 }
-function helmDrawSticks(){
-  const one=(s,f,col)=>{
-    const x0=s.x0,y0=s.y0,a=f?s.a:1;
-    ctx.globalAlpha=.55*a;ctx.strokeStyle=col;ctx.lineWidth=1;
-    ctx.beginPath();ctx.arc(x0,y0,HELM_REACH+HELM_DEAD,0,TAU);ctx.stroke();
-    ctx.globalAlpha=.25*a;ctx.beginPath();ctx.arc(x0,y0,HELM_DEAD,0,TAU);ctx.stroke();
-    if(!f){
-      const dx=s.x-x0,dy=s.y-y0,m=Math.hypot(dx,dy),k=m>HELM_REACH+HELM_DEAD?(HELM_REACH+HELM_DEAD)/m:1;
-      ctx.globalAlpha=.85;ctx.fillStyle=col;ctx.beginPath();ctx.arc(x0+dx*k,y0+dy*k,11,0,TAU);ctx.fill();
+/* ── след стика (M360a) ──
+   M360 рисовал два кольца в 82 px с шапкой в 11: на телефоне левое ложилось на
+   фишки компаса, МАСШТАБ и приёмник, правое — на подсказку, и кадр читался как
+   два прибора поверх мира. Стик не прибор. Он говорит одно — куда и насколько
+   я тяну, — и говорит это дугой под большим пальцем: угол дуги это направление,
+   её радиус это сила, точка это сам палец. Всё бледное (.2….3): рука и так
+   знает, где она, глаз в это место не зовут. */
+function helmStickShape(s){
+  const dx=s.x-s.x0,dy=s.y-s.y0,m=Math.hypot(dx,dy);
+  const k=clamp((m-HELM_DEAD)/HELM_REACH,0,1);
+  const r=HELM_ARC0+(HELM_ARC1-HELM_ARC0)*k,c=m>1e-3?Math.min(m,r)/m:0;
+  return {x0:s.x0,y0:s.y0,live:m>HELM_DEAD,ang:Math.atan2(dy,dx),r,k,dx:dx*c,dy:dy*c};
+}
+/* след живых стиков в пикселях экрана: его читают приборная мелочь на канве
+   (drawSysHud), подсказка в DOM (helmLift) и набор 91zzx-mobile */
+function helmStickFoot(){
+  const out=[];
+  for(const side of ["L","R"]){const s=HELM[side];if(s)out.push({side,x:s.x0,y:s.y0,r:HELM_FOOT});}
+  return out;
+}
+/* подсказка уходит выше пальца, а не гаснет под ним: пока стик накрывает её
+   строку, #prompt поднимается ровно на высоту следа. Меряем DOM, а не считаем
+   CSS (правило 27z); пишем в стиль только на изменение. */
+function helmLift(){
+  const el=(typeof document!=="undefined")&&document.getElementById&&document.getElementById("prompt");
+  let lift=0;
+  const foot=helmStickFoot();
+  if(el&&el.getBoundingClientRect&&foot.length){
+    const r=el.getBoundingClientRect();
+    /* мерим ОТ НЕПОДНЯТОГО места: подсказка уже поднята на прошлый lift, и
+       без этой поправки следующий кадр увидел бы её чистой и уронил обратно —
+       строка бы дрожала под пальцем */
+    const base=Math.max(0,HELM.lift),top=r.top+base,bot=r.bottom+base;
+    if(r.height>0)for(const f of foot)
+      if(f.x+f.r>r.left&&f.x-f.r<r.right&&f.y-f.r<bot&&f.y+f.r>top)
+        lift=Math.max(lift,bot-(f.y-f.r)+8);
+    /* потолок: подсказка поднимается ровно настолько, чтобы разойтись с
+       пальцем, и никогда не уезжает на середину экрана */
+    lift=Math.min(lift,Math.round(innerHeight*.22));
+  }
+  if(lift!==HELM.lift){
+    HELM.lift=lift;
+    if(document.body&&document.body.style&&document.body.style.setProperty){
+      document.body.style.setProperty("--helmlift",lift+"px");
+      document.body.classList.toggle("helmstick",foot.length>0);
     }
-    ctx.globalAlpha=1;
+  }else if(document.body&&document.body.classList&&
+           document.body.classList.contains("helmstick")!==(foot.length>0)){
+    document.body.classList.toggle("helmstick",foot.length>0);
+  }
+}
+/* сколько места занимает скобка захвата над корпусом: полоску корпуса ставят
+   ВЫШЕ неё, иначе верхняя грань скобки ложится ровно на полоску (M360a) */
+function helmMarkTop(p,Z){
+  if(!G.marks)return 0;
+  const i=G.marks.indexOf(p);
+  if(i<0)return 0;
+  return clamp(Z,.55,1.6)*(i?16:20)+8;
+}
+function helmDrawSticks(){
+  const one=(s,fade)=>{
+    const q=helmStickShape(s),a=fade?s.f:1;
+    ctx.save();ctx.lineCap="round";
+    ctx.strokeStyle="#cfe6ea";ctx.fillStyle="#cfe6ea";ctx.lineWidth=1.5;
+    if(q.live){
+      ctx.globalAlpha=(.16+.14*q.k)*a;
+      ctx.beginPath();ctx.arc(q.x0,q.y0,q.r,q.ang-HELM_ARCW,q.ang+HELM_ARCW);ctx.stroke();
+    }
+    ctx.globalAlpha=.13*a;
+    ctx.beginPath();ctx.arc(q.x0,q.y0,1.8,0,TAU);ctx.fill();
+    ctx.globalAlpha=.28*a;
+    ctx.beginPath();ctx.arc(q.x0+q.dx,q.y0+q.dy,3.2,0,TAU);ctx.fill();
+    ctx.restore();
   };
-  if(HELM.L)one(HELM.L,false,"#7fe6d8");else if(HELM.fadeL){one(HELM.fadeL,true,"#7fe6d8");HELM.fadeL.a-=.06;if(HELM.fadeL.a<=0)HELM.fadeL=null;}
-  if(HELM.R)one(HELM.R,false,"#f2b25c");else if(HELM.fadeR){one(HELM.fadeR,true,"#f2b25c");HELM.fadeR.a-=.06;if(HELM.fadeR.a<=0)HELM.fadeR=null;}
+  for(const side of ["L","R"]){
+    const live=HELM[side],fade=HELM["fade"+side];
+    if(live)one(live,false);
+    else if(fade){one(fade,true);fade.f-=.08;if(fade.f<=0)HELM["fade"+side]=null;}
+  }
 }

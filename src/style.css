@@ -211,7 +211,7 @@ body:not(.inflight) .ipod{display:none}
 /* подсказка держится над пэдами: это ответ на «что тут можно», её место у рук.
    Она стоит НИЖЕ строки состояния (A2): действие спрашивают чаще, чем остаток
    топлива, поэтому оно ближе к рукам */
-#prompt{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 112px);transform:translateX(-50%);
+#prompt{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 112px + var(--helmlift,0px));transform:translateX(-50%);
   pointer-events:none;font-size:10px;letter-spacing:.1em;color:var(--amber);text-align:center;
   /* то же и для подсказки: она висит над грунтом, а грунт бывает светлым */
   text-shadow:0 1px 3px rgba(2,4,8,.95),0 0 10px rgba(2,4,8,.75),0 0 14px rgba(242,178,92,.4);
@@ -1044,7 +1044,12 @@ body.road .scr footer .act.gold{background:linear-gradient(180deg,rgba(242,178,9
      чисто, а внизу стало тесно: пульт, подсказка и строка состояния встали в
      три этажа, и событию там уже не помещаться. Наверху оно ничему не мешает —
      оно не панель, оно проходит. */
-  #msg{top:20%;bottom:auto;white-space:nowrap;overflow:hidden;
+  /* Сообщение пишется в три строки, а nowrap склеивал их в одну
+     полосу от края до края с многоточием на конце (M360a, телефонный
+     кадр автора). Перевод строки снова работает, потолок держит
+     line-clamp: длинное не зальёт экран. */
+  #msg{top:20%;bottom:auto;white-space:pre-line;overflow:hidden;
+    display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;
     text-overflow:ellipsis;max-width:calc(100vw - 24px);font-size:11px;line-height:1.4}
   /* ── ВЗЛЁТ на телефоне стоял поверх ФОТО (M234) ──
      Кнопка висела на 100 px от низа — ровно на пульте (96 px), у которого
@@ -1061,7 +1066,11 @@ body.road .scr footer .act.gold{background:linear-gradient(180deg,rgba(242,178,9
      на 129 px, а не на 128 — и жёсткое «right:128px» заводило подсказку под
      него ровно на пиксель (найдено телефонным набором 05.09.2026). 128 остаётся
      запасным значением на первый кадр, до первой мерки. */
-  #prompt{bottom:calc(env(safe-area-inset-bottom) + var(--padsh,86px) + 118px);white-space:nowrap;overflow:hidden;
+  /* две строки вместо одной во всю ширину (M360a); --helmlift поднимает
+     подсказку выше следа живого стика (helmLift в 15a-helm) */
+  #prompt{bottom:calc(env(safe-area-inset-bottom) + var(--padsh,86px) + 118px + var(--helmlift,0px));
+    white-space:pre-line;overflow:hidden;
+    display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;
     left:10px;right:calc(var(--railw,128px) + 4px);transform:none;
     text-overflow:ellipsis;max-width:none;line-height:1.4}
 }
@@ -1072,6 +1081,10 @@ body.road .scr footer .act.gold{background:linear-gradient(180deg,rgba(242,178,9
    стоит там же, но погашена и не ловит нажатий — рука всегда знает, где что. */
 /* .22 читалось призраком — «кнопка почти пропала». Погашенная кнопка должна
    читаться как ВЫКЛЮЧЕННАЯ вещь: тело видно, ободок виден, надпись тусклая. */
+/* пока палец на стике, пульт отступает (M360a): приёмник под большим
+   пальцем всё равно не читают, а спорить с дугой за глаз он не должен.
+   Кнопки правого борта и пэды не трогаем: в них целятся. */
+body.helmstick #console{opacity:.3;transition:opacity .12s}
 .pads button.off{opacity:.38;pointer-events:none}
 .pads button.off::before{border-color:rgba(127,230,216,.16)}
 /* фишки комплекта (M167): класс — фишкой, новое — точкой; ничего не переносится */

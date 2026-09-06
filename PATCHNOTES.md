@@ -7,6 +7,45 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.360.1 - M360a: the helm frame redone, and the wires M360 forgot
+
+The author's phone shot of 0.360.0: «у меня только разочарование». The pass is the answer to that
+frame, item by item, plus the two channels M360 declared and never connected.
+
+- **The stick is not an instrument.** Two 82 px rings with an 11 px knob lay over the compass
+  chips, МАСШТАБ, the receiver and the prompt, and read as two gauges painted over the world.
+  A stick now says one thing — where and how hard the thumb pulls — and says it with a faint arc
+  under the thumb: the arc's angle is the direction, its radius is the force, a 3 px dot is the
+  finger. Everything at alpha .16–.30; the whole footprint is 51 px instead of 93 (`HELM_FOOT`,
+  `helmStickShape`, `helmStickFoot` in `15a-helm`).
+- **What was under the thumb steps aside, instead of arguing with it.** The compass chips and
+  МАСШТАБ take the stick footprint into their edge inset (`drawSysHud`); the prompt rises by
+  exactly enough to clear the finger and no more — `helmLift()` measures the DOM and writes
+  `--helmlift`, capped at .22 of the screen, and it is measured from the unlifted position so the
+  line cannot shiver frame to frame; the console (the receiver) steps back to .3 while a finger is
+  on the glass (`body.helmstick`). The rail buttons and the pads do not move: you aim at those.
+- **Two lines are two lines again.** On the phone `#msg` and `#prompt` carried
+  `white-space:nowrap`, so `say("ГРАВИТАЦИОННЫЙ ЯКОРЬ\nдальше корабль не уходит\nкурс
+  к звезде свободен")` came out as one edge-to-edge line ending in an ellipsis. Both are `pre-line` with a
+  line clamp now (3 lines for the message, 2 for the prompt).
+- **The combat hint tells the truth.** It still said «ОГОНЬ — ОТСТРЕЛИВАТЬСЯ» about a pad that no
+  longer exists in the system mode. Now: «ЦЕЛЬ ИЛИ ТЫЧОК ПО КОРПУСУ — ЗАХВАТ» under a thumb,
+  «TAB ИЛИ ЩЕЛЧОК ПО КОРПУСУ — ЗАХВАТ» under a hand, «ЦЕЛЬ ВЗЯТА · ОГОНЬ САМ» once a mark is
+  taken — and the count of pursuers moves to its own second line.
+- **The hull bar stands above the lock bracket.** The bar sat at y−26 and the bracket's top edge
+  landed on it: the one number the bracket exists to frame was hidden (`helmMarkTop`).
+- **The two dead channels.** `HELM_CONE` and `HELM_RANGE` had no reader and `G.ctl.fire`/`.msl`
+  had no consumer: the gun only ever fired on `keys.fire`, so the promised autofire on the mark
+  did not exist and the mouse scheme's LMB and RMB did nothing. Both ends are joined in
+  `updateCombat` now — forced fire along the nose from LMB, F or the ОГОНЬ pad, and fire by itself
+  while the primary mark is inside ±20° and 760. The suite `91zzzw-helm` had been red in the
+  browser tier since 0.360.0 for exactly this; it is green.
+
+Measured (`prof(60)`, phone layout 375×812 @2): JS 2.0 ms with no stick, 2.7 ms with two live —
+the old two-ring drawing cost the same, so the win here is the frame, not the budget. New guards:
+`91zzx-mobile` gets the stick footprint against the prompt and the compass chips and the line-break
+check for both hint rows; `91zzzw-helm` gets the cone, the range, LMB and RMB.
+
 ## 0.360.0 - M360: the helm — four channels, three inputs, no inertia
 
 The war's first pass (`docs/DESIGN-war.md` §1, §18, §20). `15a-helm` writes `G.ctl = {head, turn,

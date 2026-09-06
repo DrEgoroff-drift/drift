@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 436 · символов верхнего уровня: 3815
+Файлов: 436 · символов верхнего уровня: 3823
 
 ## СИМВОЛЫ
 
@@ -635,7 +635,7 @@ crownOwned                   src/05a-nodes.js:159
 crownReady                   src/05a-nodes.js:158
 CSW                          src/19e-clouds.js:68
 ctlHint                      src/15-input.js:168
-ctlReset                     src/15a-helm.js:26
+ctlReset                     src/15a-helm.js:33
 ctx                          src/08-state.js:3
 CUE_EPS                      src/27m-scroll-cue.js:26
 CUE_PAD                      src/27m-scroll-cue.js:25
@@ -783,7 +783,7 @@ drawCelest                   src/06a-celest.js:167
 drawChunks                   src/18c-chunks.js:83
 drawClouds                   src/19e-clouds.js:382
 drawCockpit                  src/25-cockpit.js:400
-drawCombat                   src/13-pirates.js:215
+drawCombat                   src/13-pirates.js:231
 drawCosmMark                 src/12va-wander-cosm.js:112
 drawCrowns                   src/05a-nodes.js:379
 drawCrystalForest            src/20aa-poi-shapes.js:115
@@ -878,9 +878,9 @@ drawSurface                  src/21e-surface-draw.js:859
 drawSurfaceHud               src/21e-surface-draw.js:21
 drawSurfaceWorld             src/21e-surface-draw.js:110
 drawSurvey                   src/12w-survey.js:63
-drawSysHud                   src/17-mode-system.js:542
+drawSysHud                   src/17-mode-system.js:549
 drawSysNebula                src/16a-space.js:208
-drawSystem                   src/17-mode-system.js:307
+drawSystem                   src/17-mode-system.js:314
 drawSysTraffic               src/17f-sys-traffic.js:29
 drawTemple                   src/20aa-poi-shapes.js:50
 drawThingIcon                src/27i-ui-table.js:330
@@ -1300,33 +1300,41 @@ heardWordsRu                 src/12x-parrot.js:79
 heardYours                   src/12x-parrot.js:71
 heatHaze                     src/18d-postfx.js:23
 held                         src/08-state.js:187
-HELM                         src/15a-helm.js:21
-HELM_CONE                    src/15a-helm.js:19
+HELM                         src/15a-helm.js:28
+HELM_ARC0                    src/15a-helm.js:22
+HELM_ARC1                    src/15a-helm.js:23
+HELM_ARCW                    src/15a-helm.js:24
+HELM_CONE                    src/15a-helm.js:26
 HELM_DEAD                    src/15a-helm.js:15
-HELM_KEYS                    src/15a-helm.js:34
+HELM_FOOT                    src/15a-helm.js:25
+HELM_KEYS                    src/15a-helm.js:41
 HELM_MARKS                   src/15a-helm.js:18
 HELM_PICK                    src/15a-helm.js:17
-HELM_RANGE                   src/15a-helm.js:20
+HELM_RANGE                   src/15a-helm.js:27
 HELM_REACH                   src/15a-helm.js:16
 HELM_RELEASE                 src/15a-helm.js:13
 HELM_THR                     src/15a-helm.js:14
-helmApply                    src/15a-helm.js:195
-helmCanvasXY                 src/15a-helm.js:48
-helmDrawMarks                src/15a-helm.js:238
-helmDrawSticks               src/15a-helm.js:252
-helmLock                     src/15a-helm.js:97
-helmLockNext                 src/15a-helm.js:106
-helmMarksClean               src/15a-helm.js:91
-helmPinchBlocked             src/15a-helm.js:87
+helmApply                    src/15a-helm.js:203
+helmCanvasXY                 src/15a-helm.js:55
+helmDrawMarks                src/15a-helm.js:246
+helmDrawSticks               src/15a-helm.js:319
+helmLift                     src/15a-helm.js:283
+helmLock                     src/15a-helm.js:104
+helmLockNext                 src/15a-helm.js:113
+helmMarksClean               src/15a-helm.js:98
+helmMarkTop                  src/15a-helm.js:313
+helmPinchBlocked             src/15a-helm.js:94
 helmPirate                   tests/91zzzw-helm.js:17
-helmPtrEnd                   src/15a-helm.js:74
+helmPtrEnd                   src/15a-helm.js:81
 helmRun                      tests/91zzzw-helm.js:16
-helmScreenOpen               src/15a-helm.js:86
+helmScreenOpen               src/15a-helm.js:93
 helmShip                     tests/91zzzw-helm.js:6
-helmShotAt                   src/15a-helm.js:130
-helmTap                      src/15a-helm.js:116
-helmTargets                  src/15a-helm.js:90
-helmTick                     src/15a-helm.js:136
+helmShotAt                   src/15a-helm.js:137
+helmStickFoot                src/15a-helm.js:275
+helmStickShape               src/15a-helm.js:267
+helmTap                      src/15a-helm.js:123
+helmTargets                  src/15a-helm.js:97
+helmTick                     src/15a-helm.js:143
 hex2rgb                      src/03-ships.js:145
 hexA                         src/12e-drone-flight.js:289
 hexa                         src/12w-survey.js:91
@@ -1643,7 +1651,7 @@ keyMap                       src/15-input.js:133
 keyRow                       src/27-ui-ship.js:44
 keys                         src/08-state.js:57
 keyStateOK                   tests/91zzzzze-keys.js:23
-killPirate                   src/13-pirates.js:182
+killPirate                   src/13-pirates.js:198
 killRock                     src/24-mode-belt.js:151
 KINO_EVERY                   src/27da-kino.js:20
 KINO_REEL                    src/27da-kino.js:23
@@ -2230,7 +2238,7 @@ opisWear                     src/27j-ui-opis.js:186
 OPT_TABS                     src/27-ui-ship.js:330
 optGroups                    src/27-ui-ship.js:333
 optTab                       src/27-ui-ship.js:332
-orbPathOf                    src/17-mode-system.js:296
+orbPathOf                    src/17-mode-system.js:303
 ORDER_WIN                    src/12aa-need.js:74
 orderDeliver                 src/12aa-need.js:114
 orderHere                    src/12aa-need.js:110
@@ -2275,7 +2283,7 @@ parrotDraw                   src/12y-parrot-face.js:264
 parrotFind                   src/12x-parrot.js:30
 parrotFrame                  src/12y-parrot-face.js:684
 parrotHas                    src/12x-parrot.js:25
-parrotHeardKill              src/13-pirates.js:178
+parrotHeardKill              src/13-pirates.js:194
 parrotLine                   src/12y-parrot-face.js:641
 parrotPoke                   src/12y-parrot-face.js:657
 parRow                       src/12y-parrot-face.js:141
@@ -4262,7 +4270,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12z-parrot-acts.js · 17 КБ
   · трепло: репертуар:1
 
-## src/13-pirates.js · 16 КБ
+## src/13-pirates.js · 17 КБ
   · пираты:1
 
 ## src/13b-occupy.js · 18 КБ
@@ -4284,7 +4292,7 @@ zooTick                      src/11ad-zoo.js:41
   · ввод:87
   · полоса вкладок шире экрана:212
 
-## src/15a-helm.js · 14 КБ
+## src/15a-helm.js · 18 КБ
   · штурвал (M360):1
 
 ## src/16-flight.js · 28 КБ
@@ -4298,7 +4306,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/16b-missile.js · 10 КБ
   · ракеты: боеприпас — это груз:1
 
-## src/17-mode-system.js · 42 КБ
+## src/17-mode-system.js · 43 КБ
   · режим: система:1
 
 ## src/17a-station-mod.js · 12 КБ
@@ -4942,9 +4950,10 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzw-holding.js · 6 КБ
   · замер: холдинг против целей §16 (M293, шаг 5):1
 
-## tests/91zzx-mobile.js · 17 КБ
+## tests/91zzx-mobile.js · 24 КБ
   · автотесты: телефонный вид (M167):1
   · телефон: КАЖДЫЙ режим, а не только поверхность (M239):200
+  · M360a: след стика и то, что под ним:245
 
 ## tests/91zzy-fx.js · 5 КБ
   · автотесты: эффекты M325 — вода, марево, хроматика, факел:1
@@ -5055,7 +5064,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzzv-wall.js · 7 КБ
   · автотесты: стена, которая помнит (M210):1
 
-## tests/91zzzw-helm.js · 9 КБ
+## tests/91zzzw-helm.js · 10 КБ
   · штурвал (M360):1
 
 ## tests/91zzzw-relay.js · 10 КБ

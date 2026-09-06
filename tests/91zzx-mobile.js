@@ -241,3 +241,87 @@ TEST_SUITES.push(()=>suite("телефон: этажи не налезают н�
   eq(bad.slice(0,5).join(" ;; "),"","этажи не пересекаются ни в одном режиме");
   ok(seen.length>=8,"режимов промерено: "+seen.length+" ("+seen.join(" ")+")");
 }));
+
+/* ══════════════ M360a: след стика и то, что под ним ══════════════
+   Автор о кадре M360 (телефон, 06.09.2026): «у меня только разочарование».
+   Два кольца в 82 px с шапкой в 11 лежали на фишках компаса, на МАСШТАБе, на
+   приёмнике и на подсказке — и всё это было ВИДНО на снимке, который прошёл
+   как готовый. Здесь мерится ровно то, что глаз тогда увидел, а рука прошла
+   мимо: рисунок стика умещается в свой след, а всё читаемое из-под следа
+   уходит само. Набор телефонный: на мониторе стиков не бывает. */
+TEST_SUITES.push(()=>suite("телефон: стик не ложится на приборы и подсказку",()=>{
+  if(!document.body.classList.contains("mobile")){
+    resetWorld();ok(true,"окно не телефонное — проверку пропускаем");return;
+  }
+  resetWorld();
+  document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
+  G.mode="system";
+  /* 1. рисунок не выходит за объявленный след, как бы далеко ни увели палец */
+  const far=helmStickShape({x0:0,y0:0,x:900,y:120});
+  ok(far.r<=HELM_ARC1+.01,"дуга не растёт бесконечно: "+far.r.toFixed(1));
+  ok(Math.hypot(far.dx,far.dy)<=HELM_FOOT,"точка держится следа: "+Math.round(Math.hypot(far.dx,far.dy)));
+  ok(HELM_FOOT<=52,"весь след стика не больше 52 px (было 93): "+HELM_FOOT);
+  const dead=helmStickShape({x0:0,y0:0,x:4,y:0});
+  ok(!dead.live,"в мёртвой зоне дуги нет вовсе");
+  /* 2. большой палец в своей зоне: приборы и подсказка уходят выше следа */
+  HELM.lift=-1;document.body.style.removeProperty("--helmlift");
+  /* палец кладём ровно на строку подсказки — там, где и был спор */
+  G.prompt="ЦЕЛЬ ИЛИ ТЫЧОК ПО КОРПУСУ — ЗАХВАТ\nПРЕСЛЕДУЮТ: 3 · МОЖНО УЙТИ ИЛИ ПРЫГНУТЬ";
+  hud();               /* текст подсказки — сперва в DOM, потом мерка */
+  const r0=document.getElementById("prompt").getBoundingClientRect();
+  const cy=Math.round(r0.top+r0.height/2);
+  HELM.L={id:1,x0:Math.round(r0.left+50),y0:cy,x:Math.round(r0.left+50)+55,y:cy-35};
+  HELM.R={id:2,x0:Math.round(r0.right-40),y0:cy+18,x:Math.round(r0.right-40)-25,y:cy-60};
+  const foot=helmStickFoot();
+  eq(foot.length,2,"два живых стика — два следа");
+  helmLift();hud();
+  ok(HELM.lift>0,"подсказка под пальцем — её поднимает ("+HELM.lift+" px)");
+  ok(HELM.lift<=Math.round(innerHeight*.22)+1,"но не на середину экрана");
+  ok(document.body.classList.contains("helmstick"),"пока палец на стекле, пульт отступает");
+  const hitBox=(f,r)=>f.x+f.r>r.left&&f.x-f.r<r.right&&f.y+f.r>r.top&&f.y-f.r<r.bottom;
+  const pr=document.getElementById("prompt").getBoundingClientRect();
+  ok(pr.height>0,"подсказка на экране");
+  ok(!foot.some(f=>hitBox(f,pr)),"подсказка ушла из-под пальца ("+Math.round(pr.top)+")");
+  /* и второй кадр её не роняет обратно: мерка идёт от неподнятого места */
+  const lift1=HELM.lift;helmLift();
+  eq(HELM.lift,lift1,"подъём не дрожит от кадра к кадру");
+  /* 3. фишки целей у кромки — тоже не под пальцем */
+  G.ship.x=9000;G.ship.y=-7000;G.ship.vx=0;G.ship.vy=0;G.ap=null;G.orbit=null;
+  let okDraw=true;try{drawSystem();}catch(e){okDraw=false;TEST.lines.push("  · "+e.message);}
+  ok(okDraw,"системный вид рисуется со стиками");
+  ok(SYS_CHIPS.length>0,"метки у края есть: "+SYS_CHIPS.length);
+  const clash=[];
+  for(const c of SYS_CHIPS)for(const f of foot)
+    if(hitBox(f,{left:c.x,right:c.x+c.w,top:c.y,bottom:c.y+c.h}))
+      clash.push(Math.round(c.x)+","+Math.round(c.y));
+  eq(clash.join(", "),"","фишки компаса не лежат под следом стика");
+  /* 4. отпустили — всё вернулось на своё место */
+  HELM.L=HELM.R=null;HELM.fadeL=HELM.fadeR=null;
+  helmLift();hud();
+  eq(HELM.lift,0,"палец убран — подсказка на своём месте");
+  ok(!document.body.classList.contains("helmstick"),"и пульт вернулся");
+  G.prompt="";G.ship.x=0;G.ship.y=0;resetWorld();hud();
+}));
+
+/* ── M360a: две мысли — две строки, а не одна полоса во всю ширину ──
+   `say("ГРАВИТАЦИОННЫЙ ЯКОРЬ\nдальше корабль не уходит\nкурс к звезде свободен")`
+   на телефоне выходил одной строкой от края до края с многоточием: у #msg и
+   #prompt в узком окне стоял white-space:nowrap. */
+TEST_SUITES.push(()=>suite("телефон: перевод строки в сообщении и подсказке жив",()=>{
+  if(!document.body.classList.contains("mobile")){
+    resetWorld();ok(true,"окно не телефонное — проверку пропускаем");return;
+  }
+  resetWorld();
+  const m=document.getElementById("msg"),p=document.getElementById("prompt");
+  say("ГРАВИТАЦИОННЫЙ ЯКОРЬ\nдальше корабль не уходит\nкурс к звезде свободен");
+  G.prompt="ЦЕЛЬ ИЛИ ТЫЧОК ПО КОРПУСУ — ЗАХВАТ\nПРЕСЛЕДУЮТ: 3 · МОЖНО УЙТИ ИЛИ ПРЫГНУТЬ";
+  hud();
+  for(const e of [m,p]){
+    const ws=getComputedStyle(e).whiteSpace;
+    ok(ws==="pre-line"||ws==="pre-wrap","перевод строки жив у #"+e.id+" ("+ws+")");
+    const lh=parseFloat(getComputedStyle(e).lineHeight)||14;
+    ok(e.getBoundingClientRect().height>lh*1.5,
+       "#"+e.id+" встал в две строки и выше ("+Math.round(e.getBoundingClientRect().height)+" px)");
+  }
+  G.msgT=0;G.prompt="";hud();
+}));
