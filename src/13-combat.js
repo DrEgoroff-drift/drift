@@ -79,7 +79,8 @@ function hitShip(p,s,rawDmg){
   /* у пирата от ранга бывает своё поле, и его повадка та же (M362):
      лобового бьют в корму, импульсного — быстрее, чем он собирается */
   p.shieldHit=SHIELD_DELAY;
-  if(p.shield>0){
+  /* игла, прошедшая поле (M365), садится прямо в корпус: поле её не видит */
+  if(p.shield>0&&!s.pass){
     const face=shieldFace(p.shieldType,angDiff(Math.atan2(s.vy,s.vx),p.a));
     if(face>0){
       const want=d*dmgMul(s.type,true)/face;

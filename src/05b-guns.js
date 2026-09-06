@@ -44,7 +44,30 @@ const GUN_FAMILY={
     line:"кинетика, которая греет: перегретый перестаёт стрелять"},
   aimed:{ru:"Наводящиеся пули",ab:"НП",size:"L",mount:"turret",type:"kin",fx:"homing",
     dmg:.42,cool:.58,range:.76,speed:.95,cone:1.2,lead:1.3,spread:1.2,en:.7,
-    line:"пуля доворачивает к метке: вдвое меньше промахов, на треть меньше урона"}
+    line:"пуля доворачивает к метке: вдвое меньше промахов, на треть меньше урона"},
+  /* ── резать щит (M365) ── */
+  needle:{ru:"Игольник",ab:"ИГ",size:"L",mount:"turret",type:"en",fx:"needles",needles:5,pass:.45,
+    dmg:.16,cool:.35,range:.6,speed:1.3,cone:1.3,lead:1.4,spread:1.6,en:.5,
+    line:"сотня игл в секунду, часть проходит поле насквозь; по голому корпусу бесполезен"},
+  siphon:{ru:"Сифон",ab:"СФ",size:"M",mount:"turret",type:"en",fx:"siphon",
+    dmg:0,cool:.3,range:.55,speed:0,cone:.9,lead:1,spread:0,en:.5,
+    line:"луч переливает поле цели в ваше: урона нет, но она остаётся голой"},
+  pulse:{ru:"Импульсник",ab:"ИМ",size:"L",mount:"turret",type:"en",fx:"pulse",
+    dmg:.08,cool:2.6,range:.5,speed:0,cone:1.1,lead:1.2,spread:0,en:1.4,
+    line:"урона почти нет: гасит поле на две секунды и может выбить двигатель или ствол"},
+  drill:{ru:"Буровой луч",ab:"БЛ",size:"M",mount:"fix",type:"kin",fx:"drillbeam",
+    dmg:.55,cool:.2,range:.13,speed:0,cone:.7,lead:.8,spread:0,en:0,
+    line:"бур наружу: поле ему безразлично, но бить надо в упор, и он ест не энергию, а железо из трюма"},
+  /* ── держать дистанцию (M365) ── */
+  shove:{ru:"Толкатель",ab:"ТЛ",size:"L",mount:"turret",type:"kin",fx:"shove",
+    dmg:0,cool:1.8,range:.42,speed:0,cone:2.4,lead:1.6,spread:0,en:1.2,
+    line:"волна без урона: расталкивает всё в конусе — корабли, снаряды, обломки"},
+  mortar:{ru:"Миномёт",ab:"МН",size:"L",mount:"turret",type:"blast",fx:"mortar",
+    dmg:2.2,cool:3,range:.25,speed:0,cone:3.2,lead:1,spread:0,en:1.3,
+    line:"кладёт мину за корму на минуту — единственный ствол, которому не нужна метка"},
+  jam:{ru:"Помеховая",ab:"ПМ",size:"L",mount:"turret",type:"en",fx:"jam",
+    dmg:0,cool:.5,range:.79,speed:0,cone:9,lead:2,spread:0,en:.5,
+    line:"не стреляет вовсе: в шестистах вокруг вас теряют вас из виду и бьют мимо"}
 };
 const GUN_FAM_KEYS=Object.keys(GUN_FAMILY);
 /* ── завод и серия (§2.2) ──

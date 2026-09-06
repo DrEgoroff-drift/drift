@@ -12,6 +12,9 @@ function roleFire(p,d,want,range,cool){
   /* перегретый молчит: это те самые секунды без вас, ради которых
      заведена добивающая роль (M364, §2.1) */
   if(p.stunT>0)return false;
+  /* под помехой (M365) половина выстрелов уходит в пустоту: цель есть,
+     наводка врёт */
+  if(p.jamT>0&&Math.random()<.5){p.cool=cool*.5;return false;}
   if(d<range&&p.cool<=0&&Math.abs(angDiff(want,p.a))<.35){
     /* у ренегата свой урон: он бьёт вашими же перками */
     fireShot(p.x,p.y,p.a,7,p.dmg||3.5+sysDanger(G.sx,G.sy)*5,p.owner||"pirate");

@@ -1007,7 +1007,11 @@ One system inside ГЛАВТРАССА's centre (r ≈ 6, fixed by seed, never t
   real lock (`genPart` takes the generation, `unpackPart` passes the saved one, twenty
   seeds pinned in `91zzzw-guns`). Learned: **`PART_GEN` was a promise without a lock** —
   check that a versioned generator is actually called with its version before trusting it.
-- **M365** игольник, сифон, импульсник, буровой, толкатель, миномёт, помеховая.
+- ~~**M365** игольник, сифон, импульсник, буровой, толкатель, миномёт, помеховая~~ — 0.365.0
+  (2026-09-06): habits `needles`, `siphon`, `pulse`, `drillbeam`, `shove`, `mortar`, `jam` in
+  `13a-guns`; `s.pass` on a needle, `p.shieldOff`, `p.jamT`, `G.gmines`. Learned: **a family
+  whose whole point is that it fires nothing needs its own definition of «it worked»** — the
+  coverage suite counts a mine, a blinding or a shove as a shot, or the jammer reads as dead code.
 - **M366** гарпун, кассетник, дуговик, плазмомёт, зенитка, таран; the именные; the maker
   grammar on factories (§19.2); and the M362 debt — the tank and jump range off the
   reactor, capacity/regen affixes on it (§4), now cheap because `g:2` exists.

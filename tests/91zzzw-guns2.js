@@ -29,7 +29,11 @@ function gnGun(fam,tier){
 
 TEST_SUITES.push(()=>suite("орудия M364: у каждого семейства есть код, а не строка",()=>{
   gnWorld();
-  const known={bullet:1,rail:1,pellets:1,beam:1,homing:1};
+  /* повадки, у которых есть код в 13a-guns. Список ведётся руками нарочно:
+     он и есть та самая проверка «перк без кода — ложь», а вывести его из
+     самого кода значило бы сравнить таблицу с ней же. */
+  const known={bullet:1,rail:1,pellets:1,beam:1,homing:1,
+    needles:1,siphon:1,pulse:1,drillbeam:1,shove:1,mortar:1,jam:1};
   const noFire=[];
   for(const k of GUN_FAM_KEYS){
     const F=GUN_FAMILY[k];
@@ -42,9 +46,15 @@ TEST_SUITES.push(()=>suite("орудия M364: у каждого семейст�
     const foe=gnFoe(260,0);
     G.marks=[foe];
     const g=gnGun(k);
-    const n0=G.shots.length+(G.beams||[]).length;
+    /* «выстрелил» — это любой видимый след: снаряд, луч, мина или ослепление.
+       Помеховая не стреляет вовсе, и это её повадка, а не её отсутствие. */
+    G.cargo.iron=5;
+    const mark=()=>G.shots.length+(G.beams||[]).length+((G.gmines||[]).length)+
+      ((G.pirates||[]).filter(x=>x.jamT>0).length)+((G.pirates||[]).filter(x=>x.shieldOff>0).length)+
+      Math.round((foe.hullMax-foe.hull)*100)+Math.round((Math.hypot(foe.vx,foe.vy))*100);
+    const n0=mark();
     gunFireOnce(g,G.ship,foe,0,()=>.5);
-    if(G.shots.length+(G.beams||[]).length<=n0)noFire.push(k);
+    if(mark()<=n0)noFire.push(k);
   }
   eq(noFire.join(", "),"","каждое семейство выстрелило");
   /* завод и серия читаются с любого зерна */

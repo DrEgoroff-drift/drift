@@ -85,6 +85,8 @@ function updateCombat(dt){
   /* жар и на вашем корпусе тоже: матрица одна на всех (M364) */
   if(typeof heatTick==="function")heatTick(G,dt,d0=>{G.hull=Math.max(0,G.hull-d0);});
   if(typeof beamsTick==="function")beamsTick(dt);
+  /* мины миномёта живут своей минутой и рвутся сами (M365) */
+  if(typeof minesTick==="function")minesTick(dt);
   G.energy=Math.min(st.energyMax,G.energy+st.energyRegen*dt);
   const lowE=G.energy<EN_SHOT;
   G.shieldHit=Math.max(0,(G.shieldHit||0)-dt);
@@ -156,7 +158,10 @@ function updateCombat(dt){
     const dx=sh.x-p.x,dy=sh.y-p.y,d=Math.hypot(dx,dy)||1;
     /* мишень стрельбища (24d) ничего о вас не знает и не стреляет */
     if(p.dummy){p.aware=false;p.vx=0;p.vy=0;continue;}
-    if(d<seeRange)p.aware=true;
+    /* под помехой (M365) вас не видят: пока счётчик горит, чужой не наводится
+       и половину времени бьёт в пустоту */
+    if(p.jamT>0){p.aware=false;}
+    else if(d<seeRange)p.aware=true;
     else if(d>seeRange*2.4)p.aware=false;
     if(typeof fleetEscortActive==="function"&&fleetEscortActive())p.aware=false;   /* конвой ГЛАВТРАССЫ (M311) */
     p.thrust=false;
@@ -164,7 +169,11 @@ function updateCombat(dt){
     if(typeof heatTick==="function")heatTick(p,dt,d0=>{p.hull-=d0;});
     if(p.hull<=0&&!p.dummy){killPirate(p);continue;}
     /* поле пирата живёт по тем же трём повадкам, что и ваше (M362) */
-    if(p.shieldMax>0){
+    /* импульсник гасит поле на две секунды: пока горит этот счётчик, поле
+       не растёт вовсе, чем бы оно ни было (M365) */
+    if(p.shieldOff>0){p.shieldOff=Math.max(0,p.shieldOff-dt);p.shield=0;}
+    if(p.jamT>0){p.jamT=Math.max(0,p.jamT-dt);}
+    if(p.shieldMax>0&&!(p.shieldOff>0)){
       p.shieldHit=Math.max(0,(p.shieldHit||0)-dt);
       if(p.shieldType==="pulse"){
         p.shieldPulse=(p.shieldPulse||0)+dt;
@@ -243,6 +252,7 @@ function drawCombat(zx,zy,Z){
   /* лучи (M364): у них нет полёта, поэтому и в петле выстрелов их нет —
      свой короткий след, гаснущий за четыре кадра */
   if(typeof beamsDraw==="function")beamsDraw(zx,zy,Z);
+  if(typeof minesDraw==="function")minesDraw(zx,zy,Z);
   /* линия батареи с грунта (21d) — рисуется до всего остального, чтобы луч
      уходил под корабли, а не поверх них */
   if(typeof battDraw==="function")battDraw(zx,zy,Z);

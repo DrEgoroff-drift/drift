@@ -7,6 +7,38 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.365.0 - M365: seven guns that do not break a hull
+
+The war's sixth pass (`docs/DESIGN-war.md` §2.1, §18) — the roles «cut the shield» and «keep your
+distance». Not one of these seven exists to lower a hull bar faster, and that is the point: they
+change where you fly and what the other ship can still do.
+
+**Cut the shield.** **Игольник** L — five needles a press, each with its own roll to pass the
+field and sit straight in the hull; the ones that fail stick in the field, and against a bare hull
+the whole gun is nearly useless. **Сифон** M — a beam that pours the mark's field into yours: no
+damage at all, and the mark is left naked. **Импульсник** L — almost no damage; the field drops to
+zero and stays down two seconds (it does not regrow while the counter runs), and a third of the
+time it knocks something loose — the reverse of `instrKnock`. **Буровой луч** M — the mining drill
+turned outward: the field is nothing to it, but it has to be used at arm's length, and it eats
+iron from the hold instead of energy, so it belongs to anyone who digs.
+
+**Keep your distance.** **Толкатель** L — a wave with no damage that shoves everything in its
+cone: ships, and other people's shots. **Миномёт** — lays a mine behind you for a minute; the only
+gun in the game that needs no mark, and it never touches your own. **Помеховая** L — does not
+fire: inside six hundred, hostiles lose sight of you and half their shots go into empty space.
+
+Cost written down where it is paid: the drill beam draws породу out of the hold and simply refuses
+to start when there is none; the jammer and the pulse drink energy like a laser; the mortar arms
+a second after it is laid, so nobody rides their own mine.
+
+Tests: `91zzzw-guns3` — the needle passing and not passing a field, the siphon moving the field
+without touching a hull, the pulse holding the field down while the counter runs, the drill
+ignoring the field and refusing to fire without iron, the shove moving a ship and an incoming
+shot without damage, the mine arming, splashing everyone near it and dying after its minute, and
+the jammer blinding the near ship and not the far one. `91zzzw-guns2`'s coverage suite now counts
+a mine or a blinding as «it fired» — the jammer fires nothing, and that is its habit, not its
+absence.
+
 ## 0.364.0 - M364: seven gun families, and a generator that keeps its word
 
 The war's fifth pass (`docs/DESIGN-war.md` §2.1–§2.2, §18) — the first seven of the twenty
