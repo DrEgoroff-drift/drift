@@ -186,7 +186,7 @@ function renderBasesTab(st){
       r.appendChild(el("div","qt",P.pads?"площадка":"—"));
       /* снабдить можно только там, где вы есть: запас возят, а не заказывают */
       if(here&&typeof baseSupply==="function"){
-        for(const k in LIFE_SUPPLY){
+        for(const k in Object.assign({},LIFE_SUPPLY,LIFE_COOL)){
           if((G.cargo[k]|0)<=0)continue;
           const b=el("button","act",RES[k].ru.toUpperCase());
           b.title="сдать на базу весь "+RES[k].ru.toLowerCase()+" из трюма";

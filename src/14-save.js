@@ -662,6 +662,8 @@ function applySave(s){
         life:{air:(b.life&&+b.life.air>=0)?+b.life.air|0:LIFE_START,
               water:(b.life&&+b.life.water>=0)?+b.life.water|0:LIFE_START},
         park:b.park|0,
+        /* срок криогена (M392): это не запас, а до какой смены держит холод */
+        cryo:(b.cryo&&typeof b.cryo==="object")?{until:b.cryo.until|0,q:b.cryo.q|0}:null,
         log:Array.isArray(b.log)?b.log.slice(-24).map(x=>({n:x.n|0,k:String(x.k||""),
           t:String(x.t||"").slice(0,160)})):[],
         tMs:Date.now(),built:+b.built||Date.now()};

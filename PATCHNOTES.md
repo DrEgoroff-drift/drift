@@ -7,6 +7,33 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.392.0 - M392: heat, depth, and the cryogenics shop that was promised
+
+The third gauge, and the only **two-sided** one — one-sided it would just be a second energy bar.
+Heat is the sum of four things, all of them visible: the world (лёд −2, вулкан +2), the machines
+themselves (реактор +6, бур +3, электролизёр +2, ледоплавка −1), the depth (+0.4 a row, because
+the rock below is warm), and whatever sheds it — **радиатор** (−8, surface only, and the storm
+takes it first) and **криоцех** (−14, and only while it has gas to run on: a cryo shop without
+volatiles is a stopped shop, not a free radiator).
+
+Cold freezes the water: ледоплавка gives nothing at all, which is the point — not «slower», not.
+Heat wears the machinery down and, far enough up, stops the drill. Three steps rather than two,
+and the thresholds were chosen against the base that players already have rather than out of the
+air: a reactor and a drill is **+9**, so that base has to land in the first step — fifteen percent
+off the output and no wear — and be cured by **one** radiator at 900 credits, which brings it
+exactly into the calm band. §16's own worked example (five people at +11) lands in the second step
+and wants the second radiator, exactly as it says. A pass that silently halved the output of every
+base already standing would not be a gauge, it would be a confiscation.
+
+**Глубина** now pays as well as costs: every row below the first is +8% to that drill's output and
++0.4 heat. That is the only reason to dig deeper other than room, and it is a real trade.
+
+**Криоцех** finally pays the promise `02-world` has been printing since the rare goods were
+written: летучие газы 3 → криоген 1 a shift, and the cryogen can be flown to another base — one
+unit is −6 heat for 12 shifts. It is the answer for a hot world, and the one thing on a base that
+cools harder than a radiator.
+
+---
 ## 0.391.0 - M391: the base breathes, and can be starved without being killed
 
 Two gauges and two modules. **Электролизёр** turns 6 ice into 6 air a shift, **ледоплавка** turns

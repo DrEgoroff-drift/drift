@@ -12,6 +12,12 @@ function bLife(){
   for(let i=0;i<B.cells.length;i++)B.cells[i]=null;
   B.cells[2]={k:"reactor",hp:1};B.cells[0]={k:"drill",hp:1};
   B.pool={};B.log=[];
+  /* ── без погоды ──
+     Буря выбивает верхний ряд, а в верхнем ряду тут стоит реактор: набор,
+     меряющий запас и повтор, начинал зависеть от того, в какую смену его
+     запустили. Ставим базу там, где не дует (`STORM_WORLDS.gas`=0), и меряем
+     то, что собирались. Налёта здесь тоже нет: сектор 0,0 безопасен. */
+  B.type="gas";
   return B;
 }
 function bPool(B){let s=0;for(const k in B.pool)s+=B.pool[k]|0;return s;}
@@ -259,4 +265,115 @@ TEST_SUITES.push(()=>suite("база M391: старая запись грузи�
   eq(B2.life.air,LIFE_START,"старая база грузится с полным запасом");
   eq(B2.life.water,LIFE_START,"по обоим");
   ok(!baseParked(B2),"и не встаёт с порога");
+}));
+
+/* ── тепло, глубина, криоген (M392) ──
+   Шкала двусторонняя, и обе стороны обязаны быть видны заранее и лечиться
+   постройкой, а не удачей. */
+TEST_SUITES.push(()=>suite("база M392: тепло с обеих сторон",()=>{
+  const B=bLife();
+  /* мир задаёт основание, и оно на виду */
+  B.type="ice";
+  const cold=baseHeat(B);
+  B.type="volcanic";
+  ok(baseHeat(B)>cold,"на вулкане теплее, чем на льду: "+cold+" → "+baseHeat(B));
+  eq(baseHeat(B)-cold,HEAT_WORLD.volcanic-HEAT_WORLD.ice,"ровно на разницу оснований");
+  B.type="gas";
+  /* машины греют по таблице */
+  const h0=baseHeat(B);
+  B.cells[1]={k:"lyse",hp:1};
+  eq(baseHeat(B),h0+HEAT_CELL.lyse,"электролизёр добавил своё");
+  /* радиатор сбрасывает */
+  B.cells[3]={k:"radiator",hp:1};
+  eq(baseHeat(B),h0+HEAT_CELL.lyse+HEAT_CELL.radiator,"радиатор снял своё");
+  ok(HEAT_CELL.radiator<0&&HEAT_CELL.cryo<HEAT_CELL.radiator,"криоцех холодит сильнее радиатора");
+  /* разбитый отсек не греет и не холодит */
+  B.cells[3].hp=0;
+  eq(baseHeat(B),h0+HEAT_CELL.lyse,"выбитый радиатор не считается");
+  B.cells[3]={k:"radiator",hp:1};
+  /* глубина: ниже — теплее */
+  const flat=baseHeat(B);
+  B.cells[BASE_COLS*2]={k:"storage",hp:1};
+  eq(baseHeat(B),flat+2*HEAT_ROW,"два ряда вниз — плюс два шага тепла");
+  B.cells[BASE_COLS*2]=null;
+  /* полосы и последствия */
+  const set=h=>{B.cells[4]={k:"reactor",hp:1};return h;};
+  set();
+  ok(baseHeatBand(B)>=0,"полоса читается");
+  eq(baseHeatMul(B),baseHeatBand(B)===0?1:baseHeatMul(B),"множитель согласован с полосой");
+  /* холод: вода не тает */
+  B.type="ice";
+  for(let i=0;i<3;i++)B.cells[10+i]={k:"cryo",hp:1};
+  B.pool.volatiles=99;
+  ok(baseHeat(B)<-HEAT_OK,"три криоцеха выморозили базу: "+baseHeat(B));
+  ok(baseFrozen(B),"мороз");
+  const M={lyse:0,melter:1};
+  B.cells[3]={k:"melter",hp:1};
+  B.pool.ice=100;
+  const w0=baseLife(B).water;
+  B.t0=baseShift()-1;
+  baseResolve(B,Date.now());
+  eq(baseLife(B).water,w0,"в мороз ледоплавка не даёт воды");
+  /* жара: техника изнашивается, и только настоящая жара */
+  const B2=bLife();
+  B2.type="volcanic";
+  for(let i=0;i<4;i++)B2.cells[5+i]={k:"reactor",hp:1};
+  ok(baseHeat(B2)>HEAT_HARD,"база в печке: "+baseHeat(B2));
+  const hp0=B2.cells.filter(c=>c).reduce((s,c)=>s+c.hp,0);
+  B2.t0=baseShift()-20;
+  baseResolve(B2,Date.now());
+  const hp1=B2.cells.filter(c=>c).reduce((s,c)=>s+c.hp,0);
+  ok(hp1<hp0,"жара сточила технику: "+hp0.toFixed(2)+" → "+hp1.toFixed(2));
+  /* ── и главная проверка вехи ──
+     Обычная база — реактор и бур — тёплая, но не печка: она теряет пятнадцать
+     процентов выработки и не изнашивается, а лечится ОДНИМ радиатором за 900
+     кр. Так и задумано: веха, которая молча уронила бы добычу вдвое всем, кто
+     уже построил базу, — это не шкала, а отнятое. */
+  const B3=bLife();
+  ok(baseHeat(B3)>HEAT_OK,"обычная база тёплая: "+baseHeat(B3));
+  ok(baseHeat(B3)<=HEAT_HARD,"но не печка");
+  eq(baseHeatBand(B3),1,"первая ступень");
+  eq(baseHeatMul(B3),.85,"минус пятнадцать процентов выработки, и только");
+  const hp2=B3.cells.filter(c=>c).reduce((s,c)=>s+c.hp,0);
+  B3.t0=baseShift()-20;
+  baseResolve(B3,Date.now());
+  eq(B3.cells.filter(c=>c).reduce((s,c)=>s+c.hp,0),hp2,"и её не точит ничто");
+  B3.cells[3]={k:"radiator",hp:1};
+  eq(baseHeatBand(B3),0,"один радиатор приводит её в норму");
+  eq(baseHeatMul(B3),1,"и выработка возвращается целиком");
+}));
+
+TEST_SUITES.push(()=>suite("база M392: криоген везут, криоцех делает",()=>{
+  const B=bLife();
+  B.type="volcanic";
+  for(let i=0;i<4;i++)B.cells[5+i]={k:"reactor",hp:1};
+  const hot=baseHeat(B);
+  ok(hot>HEAT_HARD,"жарко");
+  /* криоген с борта: не запас, а срок */
+  G.cargo.cryo=(G.cargo.cryo|0)+2;
+  eq(baseSupply(B,"cryo",2),2,"криоген сдан");
+  eq(G.cargo.cryo|0,0,"из трюма ушёл");
+  eq(baseHeat(B),hot-2*HEAT_CRYO,"и охладил базу на своё");
+  ok(!!B.cryo&&B.cryo.until>baseShift(),"у холода есть срок");
+  /* срок вышел — холода нет */
+  B.cryo.until=baseShift()-1;
+  eq(baseHeat(B),hot,"после срока всё вернулось");
+  /* криоцех: газы в криоген, и он холодит, только пока ему есть что гнать */
+  const B2=bLife();
+  B2.cells[6]={k:"cryo",hp:1};
+  const idle=baseHeat(B2);
+  B2.pool.volatiles=9;
+  eq(baseHeat(B2),idle+HEAT_CELL.cryo,"с газом криоцех холодит");
+  B2.cells[4]={k:"reactor",hp:1};B2.cells[9]={k:"reactor",hp:1};
+  B2.t0=baseShift()-1;
+  baseResolve(B2,Date.now());
+  eq(B2.pool.cryo|0,CRYO_RECIPE.cryo,"за смену дал криоген");
+  eq(B2.pool.volatiles|0,9-CRYO_RECIPE.volatiles,"и съел газы");
+  ok(B2.log.some(x=>x.k==="cryo"),"и это в журнале");
+  /* газы кончились — цех стоит и не холодит, а не холодит даром */
+  B2.pool.volatiles=0;
+  eq(baseHeat(B2),baseHeat(B2),"без газа он просто стоит");
+  const stand=baseHeat(B2);
+  B2.pool.volatiles=9;
+  ok(baseHeat(B2)<stand,"а с газом — снова холодит");
 }));

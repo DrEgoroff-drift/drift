@@ -1506,7 +1506,16 @@ from the hold (кислород 1 → воздух 8, лёд 1 → вода 1 an
 `91zzzw-base`. **Deferred:** the person who walks to the station on a long stop (it belongs with
 дух, M393), and standby as a partial shutdown in the §13 order — today the stop is whole-base and
 the order table only names what stopped. ·
-M392 тепло, глубина, криоцех (§4–7) · M393 харч и дух (§6, §8).
+~~M392 тепло, глубина, криоцех~~ — 0.392.0 (2026-09-06): the two-sided gauge in tenths and
+integers (world baseline + cells + 0.4/row − radiator − cryo shop − delivered cryogen), frost that
+stops the melter outright, heat that wears machinery and at the top step stops the drill, depth
+paying +8% per row to that drill, `радиатор` and `криоцех` in `BUILD`, and criogen as a supply that
+buys 12 shifts of cold. **Thresholds measured against the installed base**: a reactor and a drill
+is +9, which had to land in the first step (−15% output, no wear) and be cured by one 900-credit
+radiator; §16's five-person +11 lands in the second and wants a second radiator, as written.
+Suites in `91zzzw-base`; two older base suites were made weather-proof after the shift-keyed storm
+roll turned them into a lottery on the wall clock. **Deferred:** the оранжерея and белковый бак
+that §16 pairs with these numbers — they are M393 with харч and дух. · M393 харч и дух (§6, §8).
 
 **B · место и люди** — M394 СВЯЗЬ и мачта (§38, §45 — pulled forward: it is what makes every later
 pass observable) · M395 люди в комнате (§8) · M396 соседство, залы, ствол, сетка 6×4 (§7) ·
