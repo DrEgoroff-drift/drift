@@ -61,7 +61,10 @@ function chronAgentMove(st,N,i,rr){
      Толпа не правит державой, но подталкивает её: победивший на выборах ответ
      смещает пороги хода. «Держать фронт» — раньше ссорится и воюет; «строить»
      — чаще строит и торгует. Держава при этом остаётся собой. */
-  const course=(typeof voteCourse==="function")?voteCourse(i,N):null;
+  /* курс: то, за что проголосовала толпа, — и то, что от него оставил
+     переворот (M385) */
+  const course=(typeof powCourse==="function")?powCourse(i,N,st)
+    :((typeof voteCourse==="function")?voteCourse(i,N):null);
   const warBias=(course==="war")?90:((course==="build")?-70:0);
   /* выбор хода: злее всего тот, у кого нужда на дне и есть с кем ссориться */
   const worst=chronRelWorst(st,i),best=chronRelBest(st,i);

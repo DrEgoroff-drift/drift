@@ -117,6 +117,9 @@ function chronSay(L,wave){
 }
 /* последние строки сводки N в выбранной волне: это и есть «повернуть ручку» */
 function chronWaveLines(N,wave,max){
+  /* позор (M385): волна молчит. Не «говорит другое» — молчит, и это слышно
+     лучше любых слов */
+  if(typeof powWaveSilent==="function"&&powWaveSilent(wave||chronWave()))return [];
   const st=chronState();
   if(N===undefined)N=st.N;
   const out=[];

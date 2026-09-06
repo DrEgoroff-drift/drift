@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 473 · символов верхнего уровня: 4307
+Файлов: 474 · символов верхнего уровня: 4321
 
 ## СИМВОЛЫ
 
@@ -28,7 +28,7 @@ $menu                        src/15-input.js:239
 $msg                         src/27z-telemetry.js:40
 $msl                         src/27z-telemetry.js:43
 $nav                         src/27z-telemetry.js:42
-$opts                        src/26-ui-station.js:946
+$opts                        src/26-ui-station.js:947
 $padsEl                      src/15-input.js:4
 $place                       src/27z-telemetry.js:39
 $sh                          src/27z-telemetry.js:8
@@ -285,7 +285,7 @@ BLUE_TAB                     src/01-core.js:48
 blueNoise                    src/01-core.js:49
 BLUEPRINTS                   src/12c-mgr-core.js:662
 BM_WARM                      src/21aa-base-rooms.js:20
-boardLanes                   src/26-ui-station.js:295
+boardLanes                   src/26-ui-station.js:296
 bodyInSystem                 src/16-flight.js:109
 bookAll                      src/12ub-books.js:122
 bookCount                    src/12ub-books.js:124
@@ -481,6 +481,7 @@ chPosition                   src/25n-chess.js:43
 chPseudo                     src/25n-chess.js:119
 CHRON                        src/12am-chron.js:62
 CHRON_ARC_RU                 src/12am-chron-lines.js:16
+CHRON_BUSY                   src/12am-chron.js:235
 CHRON_EPOCH                  src/12am-chron.js:27
 CHRON_HOME                   src/12am-chron.js:40
 CHRON_INC_RU                 src/12am-chron-lines.js:10
@@ -495,43 +496,43 @@ CHRON_SEED                   src/12am-chron.js:28
 CHRON_SHIFT                  src/12am-chron.js:24
 CHRON_WANT                   src/12am-chron-agents.js:11
 chronAgentMove               src/12am-chron-agents.js:39
-chronArcs                    src/12am-chron-director.js:189
+chronArcs                    src/12am-chron-director.js:203
 chronAtWar                   src/12am-chron-agents.js:34
 chronBorders                 src/12am-chron.js:164
 chronClone                   src/12am-chron.js:222
 chronDirector                src/12am-chron-director.js:73
 chronFlip                    src/12am-chron.js:136
 chronFresh                   src/12am-chron.js:63
-chronFront                   src/12am-chron.js:303
+chronFront                   src/12am-chron.js:313
 chronHash                    src/12am-chron.js:192
 chronHomeOf                  src/12am-chron.js:48
-chronIncOf                   src/12am-chron-director.js:180
-chronIncSince                src/12am-chron-director.js:168
+chronIncOf                   src/12am-chron-director.js:194
+chronIncSince                src/12am-chron-director.js:182
 chronKeys                    src/12am-chron.js:41
 chronLine                    src/12am-chron.js:173
 chronLineRu                  src/12am-chron.js:177
-chronLoad                    src/12am-chron.js:269
+chronLoad                    src/12am-chron.js:279
 chronMonth                   src/12am-chron-director.js:53
 chronNeedLow                 src/12am-chron-agents.js:19
 chronNow                     src/12am-chron.js:187
-chronOwner                   src/12am-chron.js:294
-chronOwnerKey                src/12am-chron.js:299
+chronOwner                   src/12am-chron.js:304
+chronOwnerKey                src/12am-chron.js:309
 chronRelBest                 src/12am-chron-agents.js:29
 chronRelWorst                src/12am-chron-agents.js:24
 chronReplay                  src/12am-chron.js:216
-chronRites                   src/12am-chron-director.js:190
+chronRites                   src/12am-chron-director.js:204
 chronSat                     src/12am-chron.js:36
-chronSave                    src/12am-chron.js:250
+chronSave                    src/12am-chron.js:260
 chronSay                     src/12am-chron-lines.js:106
 chronSeason                  src/12am-chron-director.js:63
 chronSeasonValid             src/12am-chron-director.js:54
-chronState                   src/12am-chron.js:235
+chronState                   src/12am-chron.js:236
 chronStep                    src/12am-chron.js:82
-chronTension                 src/12am-chron-director.js:191
-chronWarBetween              src/12am-chron.js:310
-chronWars                    src/12am-chron.js:308
+chronTension                 src/12am-chron-director.js:205
+chronWarBetween              src/12am-chron.js:320
+chronWars                    src/12am-chron.js:318
 chronWave                    src/12am-chron-lines.js:92
-chronWaveHead                src/12am-chron-lines.js:132
+chronWaveHead                src/12am-chron-lines.js:135
 chronWaveLines               src/12am-chron-lines.js:119
 chronWaveNext                src/12am-chron-lines.js:101
 chronWaveSet                 src/12am-chron-lines.js:96
@@ -576,7 +577,7 @@ clkWorld                     tests/91zzzzzb-clock.js:42
 clNow                        tests/91zzzzzr-cloud.js:25
 closeBarge                   src/12l-barge.js:645
 closeDeal                    src/27n-ui-deal.js:169
-closeStation                 src/26-ui-station.js:141
+closeStation                 src/26-ui-station.js:142
 CLOUD                        src/14-save.js:5
 CLOUD_BASE                   src/19e-clouds.js:381
 CLOUD_KEYS                   src/02a-worldmix.js:80
@@ -915,7 +916,7 @@ drawCelest                   src/06a-celest.js:167
 drawChunks                   src/18c-chunks.js:83
 drawClouds                   src/19e-clouds.js:382
 drawCockpit                  src/25-cockpit.js:400
-drawCombat                   src/13-pirates.js:303
+drawCombat                   src/13-pirates.js:306
 drawCosmMark                 src/12va-wander-cosm.js:112
 drawCrowns                   src/05a-nodes.js:379
 drawCrystalForest            src/20aa-poi-shapes.js:115
@@ -1090,7 +1091,7 @@ econPriceMul                 src/12ax-fx-econ.js:66
 econTierBonus                src/12ax-fx-econ.js:44
 econVeinHere                 src/12ax-fx-econ.js:38
 ecoStations                  tests/91zzw-economy.js:8
-el                           src/26-ui-station.js:194
+el                           src/26-ui-station.js:195
 EN_SHIELD                    src/05c-arms.js:162
 EN_SHOT                      src/05c-arms.js:161
 EN_THR                       src/05c-arms.js:163
@@ -1208,7 +1209,7 @@ findsHere                    src/17b-finds.js:53
 findsIn                      src/17b-finds.js:27
 findTake                     src/17b-finds.js:58
 findTestSys                  tests/91x-finds.js:3
-fireCool                     src/13-pirates.js:91
+fireCool                     src/13-pirates.js:94
 fireMerc                     src/12a-crew.js:234
 fireMgr                      src/12c-mgr-core.js:356
 fireShot                     src/13-combat.js:14
@@ -1291,7 +1292,7 @@ foeFlak                      src/13a-guns.js:436
 foeGun                       src/13d-loadout.js:40
 foeMineLay                   src/13d-loadout.js:132
 foeTetherTick                src/13d-loadout.js:145
-foldBlock                    src/26-ui-station.js:241
+foldBlock                    src/26-ui-station.js:242
 FOLK                         src/12u-folk.js:31
 FOLK_IDS                     src/12u-folk.js:81
 folkAll                      src/11ah-offer.js:76
@@ -1892,7 +1893,7 @@ keyMap                       src/15-input.js:133
 keyRow                       src/27-ui-ship.js:44
 keys                         src/08-state.js:57
 keyStateOK                   tests/91zzzzze-keys.js:23
-killPirate                   src/13-pirates.js:262
+killPirate                   src/13-pirates.js:265
 killRock                     src/24-mode-belt.js:151
 KINO_EVERY                   src/27da-kino.js:20
 KINO_REEL                    src/27da-kino.js:23
@@ -1957,8 +1958,8 @@ landerLen                    src/19f-lander.js:11
 landingDust                  src/19f-lander.js:344
 landOnTestPlanet             tests/90-harness.js:229
 landStartY                   src/19-mode-landing.js:38
-LANE_RU                      src/26-ui-station.js:294
-LANE_RX                      src/26-ui-station.js:290
+LANE_RU                      src/26-ui-station.js:295
+LANE_RX                      src/26-ui-station.js:291
 last                         src/28-loop.js:88
 LAST_RUN_DAY                 src/12k-letters.js:40
 lastDroneTick                src/28-loop.js:89
@@ -2637,7 +2638,7 @@ parrotDraw                   src/12y-parrot-face.js:264
 parrotFind                   src/12x-parrot.js:30
 parrotFrame                  src/12y-parrot-face.js:684
 parrotHas                    src/12x-parrot.js:25
-parrotHeardKill              src/13-pirates.js:258
+parrotHeardKill              src/13-pirates.js:261
 parrotLine                   src/12y-parrot-face.js:641
 parrotPoke                   src/12y-parrot-face.js:657
 parRow                       src/12y-parrot-face.js:141
@@ -2887,12 +2888,25 @@ postSnap                     src/25g-postcard.js:65
 postTake                     src/25g-postcard.js:650
 postTerrain                  src/25g-postcard.js:41
 postWorld                    src/25g-postcard.js:49
+POW_COUP                     src/12b0-fx-pow.js:10
+POW_PURGE                    src/12b0-fx-pow.js:11
+POW_SCANDAL                  src/12b0-fx-pow.js:12
+POW_SECEDE                   src/12b0-fx-pow.js:13
+powCoupOn                    src/12b0-fx-pow.js:26
+powCourse                    src/12b0-fx-pow.js:30
+powDeserterMul               src/12b0-fx-pow.js:46
 POWER_KEYS                   src/12al-powers.js:86
 powerEmblem                  src/12al-powers.js:106
 powerHail                    src/12al-powers.js:102
 powerOf                      src/12al-powers.js:87
 powerRu                      src/12al-powers.js:88
 POWERS                       src/12al-powers.js:18
+powInc                       src/12b0-fx-pow.js:19
+powLine                      src/12b0-fx-pow.js:69
+powPurgeOn                   src/12b0-fx-pow.js:42
+powScandalOn                 src/12b0-fx-pow.js:54
+powSecedeOn                  src/12b0-fx-pow.js:64
+powWaveSilent                src/12b0-fx-pow.js:58
 PR_SAID                      tests/91zzzzzi-promise.js:58
 PR_VERBS                     tests/91zzzzzi-promise.js:42
 prbLeg                       tests/91zzw-eco-probe.js:5
@@ -3144,13 +3158,13 @@ renderRoute                  src/12r-route.js:349
 renderSiteTab                src/26c-ui-station-site.js:7
 renderSmena                  src/12ud-smena.js:121
 renderStrips                 src/27i-ui-table.js:270
-renderTab                    src/26-ui-station.js:390
-renderTabBody                src/26-ui-station.js:402
+renderTab                    src/26-ui-station.js:391
+renderTabBody                src/26-ui-station.js:403
 renderThings                 src/27i-ui-table.js:301
 REP_MIN                      src/12k-rep.js:16
 REP_WORDS                    src/12k-rep.js:17
 repAdd                       src/12k-rep.js:36
-repairCost                   src/26-ui-station.js:131
+repairCost                   src/26-ui-station.js:132
 repAt                        src/12k-rep.js:27
 repFuelMul                   src/12k-rep.js:52
 repHireMul                   src/12k-rep.js:54
@@ -3165,7 +3179,7 @@ RES_AUTO                     src/08-state.js:54
 RES_KEYS                     src/02-world.js:87
 resAuto                      src/28-loop.js:117
 resEma                       src/28-loop.js:116
-resetArm                     src/26-ui-station.js:945
+resetArm                     src/26-ui-station.js:946
 resetWorld                   tests/90-harness.js:144
 resize                       src/08-state.js:22
 RET_BOARD                    src/11s-returners.js:29
@@ -3467,9 +3481,9 @@ sealedWhy                    src/05e-clearance.js:75
 seamAdd                      src/12s-wear.js:182
 seamsAll                     src/12s-wear.js:181
 seamsOf                      src/12s-wear.js:183
-SEC_CAP                      src/26-ui-station.js:264
-secHead                      src/26-ui-station.js:213
-secTidy                      src/26-ui-station.js:265
+SEC_CAP                      src/26-ui-station.js:265
+secHead                      src/26-ui-station.js:214
+secTidy                      src/26-ui-station.js:266
 sellCargo                    src/12-economy.js:68
 sellDroneYield               src/12-economy.js:90
 sellQuote                    src/12ab-hold.js:101
@@ -3534,9 +3548,9 @@ shiftLogRec                  src/12pa-beacon.js:43
 shiftTalkTick                src/03f-hull-role.js:73
 SHIP_KEYS                    src/03-ships.js:12
 shipData                     src/03-ships.js:13
-shipRow                      src/26-ui-station.js:335
+shipRow                      src/26-ui-station.js:336
 SHIPS                        src/03-ships.js:2
-shipThumb                    src/26-ui-station.js:322
+shipThumb                    src/26-ui-station.js:323
 shipTier                     src/04b-fleet.js:156
 shipZ                        src/16-flight.js:235
 shipZoneR                    src/19f-lander.js:14
@@ -3687,7 +3701,7 @@ SRC_DISCOUNT                 src/12ad-site.js:22
 srcPrice                     src/12ad-site.js:294
 ST_ART                       src/17c-system-draw.js:407
 ST_GOLD                      src/17c-system-draw.js:120
-ST_GROUPS                    src/26-ui-station.js:88
+ST_GROUPS                    src/26-ui-station.js:89
 ST_MOD_FILL                  src/17a-station-mod.js:81
 ST_MODULES                   src/17a-station-mod.js:14
 ST_TYPES                     src/06-galaxy.js:54
@@ -3718,8 +3732,8 @@ stDel                        src/14-save.js:26
 steps                        tests/90-harness.js:237
 stepWorld                    src/28-loop.js:147
 stGet                        src/14-save.js:8
-stGroup                      src/26-ui-station.js:97
-stGroupOf                    src/26-ui-station.js:96
+stGroup                      src/26-ui-station.js:98
+stGroupOf                    src/26-ui-station.js:97
 stopEngine                   src/09-audio.js:336
 STORAGE_OK                   src/14-save.js:7
 STORAGE_TOLD                 src/14-save.js:13
@@ -3782,7 +3796,7 @@ stTabFuse                    src/26b-ui-station-work.js:262
 stTabInstr                   src/26b-ui-station-work.js:169
 stTabLab                     src/26b-ui-station-work.js:236
 stTabMods                    src/26b-ui-station-work.js:12
-stTabsHere                   src/26-ui-station.js:98
+stTabsHere                   src/26-ui-station.js:99
 stTypeOf                     src/06-galaxy.js:73
 STUN_TIME                    src/13a-guns.js:27
 subdivide                    src/24-mode-belt.js:34
@@ -3808,7 +3822,7 @@ surveyLegs                   src/12w-survey.js:48
 surveyList                   src/12w-survey.js:37
 surveyPoint                  src/12w-survey.js:20
 swimTestLand                 tests/91zzzc-swim.js:8
-syncTabs                     src/26-ui-station.js:99
+syncTabs                     src/26-ui-station.js:100
 SYS_BAKE_KEEP                src/06-galaxy.js:20
 SYS_CACHE                    src/06-galaxy.js:3
 SYS_CHIPS                    src/17-mode-system.js:6
@@ -4004,7 +4018,7 @@ updateBase                   src/21a-mode-base.js:334
 updateBelt                   src/24-mode-belt.js:185
 updateCave                   src/22-mode-cave.js:251
 updateCaveDeco               src/22a-cave-deco.js:205
-updateCombat                 src/13-pirates.js:92
+updateCombat                 src/13-pirates.js:95
 updateDig                    src/23-mode-dig.js:128
 updateHomeIn                 src/29c-home-in.js:160
 updateLanding                src/19-mode-landing.js:68
@@ -4616,7 +4630,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12am-chron-agents.js · 6 КБ
   · шесть агентов (M370, §7.5, §16.2 шаг 4):1
 
-## src/12am-chron-director.js · 11 КБ
+## src/12am-chron-director.js · 12 КБ
   · Директор (M371, §15):1
 
 ## src/12am-chron-lines.js · 9 КБ
@@ -4657,6 +4671,9 @@ zooTick                      src/11ad-zoo.js:41
 
 ## src/12b-crew-events.js · 17 КБ
   · наёмники: рейс как раздача карт:1
+
+## src/12b0-fx-pow.js · 5 КБ
+  · семья механик: ВЛАСТЬ (M385, §15.1):1
 
 ## src/12c-mgr-core.js · 48 КБ
   · управляющие: домен вместо приказов:1
@@ -5138,8 +5155,8 @@ zooTick                      src/11ad-zoo.js:41
 
 ## src/26-ui-station.js · 66 КБ
   · станция:1
-  · заголовки и полосы (M299, docs/DESIGN-screens.md §1a):208
-  · настройки:944
+  · заголовки и полосы (M299, docs/DESIGN-screens.md §1a):209
+  · настройки:945
 
 ## src/26a-ui-station-home.js · 13 КБ
   · станция: вкладка «дом и базы»:1
@@ -5639,12 +5656,12 @@ zooTick                      src/11ad-zoo.js:41
   · летопись (M370, §16.2–16.5):1
   · Директор и шесть волн (M371, §15, §7.3):135
   · война, которую видно (M372, §7.4):206
-  · провод войны (M376, §13):274
-  · оставленное (M377, §11.3):326
-  · выборы и сбор (M378, §11.2, §14):350
-  · обряды (M379, §14):393
-  · «Ревизия» (M380, §11.2):426
-  · циркуляры и конституция (M381, §12, D18):493
+  · провод войны (M376, §13):276
+  · оставленное (M377, §11.3):328
+  · выборы и сбор (M378, §11.2, §14):352
+  · обряды (M379, §14):395
+  · «Ревизия» (M380, §11.2):428
+  · циркуляры и конституция (M381, §12, D18):495
 
 ## tests/91zzzw-combat.js · 41 КБ
   · бой между кораблями (M361, §5):1
@@ -5653,7 +5670,7 @@ zooTick                      src/11ad-zoo.js:41
   · снаряжение по рангу (M368, §5):467
   · четыре правила и позывной (M373, §6.1):624
 
-## tests/91zzzw-fx.js · 8 КБ
+## tests/91zzzw-fx.js · 12 КБ
   · семьи механик Директора (M382–M388, §15.1):1
 
 ## tests/91zzzw-guns.js · 4 КБ

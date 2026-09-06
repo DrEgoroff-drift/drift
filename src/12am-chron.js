@@ -232,8 +232,16 @@ function chronClone(st){
     lines:st.lines.slice(),dir:D,off:st.off|0};
 }
 /* ── состояние на сейчас: кэш, потом повтор ── */
+let CHRON_BUSY=0;
 function chronState(N){
   if(N===undefined)N=chronNow();
+  /* ── повтор не зовёт себя ──
+     Любой вызов `chronState()` ИЗНУТРИ шага — это повтор внутри повтора, то
+     есть бесконечная рекурсия. Такое уже случилось однажды (0.385.0: курс
+     державы спросил у летописи, идёт ли переворот). Правило: внутри шага
+     состояние передаётся параметром; предохранитель ниже — на случай, когда
+     кто-то опять забудет. */
+  if(CHRON_BUSY)return CHRON;
   if(CHRON.powers&&CHRON.N===N)return CHRON;
   let base=null;
   if(CHRON.powers&&CHRON.N<=N)base=CHRON;
@@ -241,7 +249,9 @@ function chronState(N){
     const c=chronLoad();
     if(c&&c.N<=N)base=c;
   }
-  const st=chronReplay(N,base);
+  CHRON_BUSY=1;
+  let st;
+  try{st=chronReplay(N,base);}finally{CHRON_BUSY=0;}
   CHRON=st;CHRON._keys=chronKeys();
   chronSave(st);
   return st;

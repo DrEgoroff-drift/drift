@@ -71,6 +71,7 @@ function openStation(){
     ((typeof econLine==="function"&&econLine(G.sys))?"\n"+econLine(G.sys):"")+
     ((typeof socLine==="function"&&socLine())?"\n"+socLine():"")+
     ((typeof natLine==="function"&&natLine())?"\n"+natLine():"")+
+    ((typeof powLine==="function"&&powLine())?"\n"+powLine():"")+
     ((typeof occPowerHere==="function"&&occPowerHere())
       ?"\nФЛАГ СМЕНИЛСЯ · "+powerOf(occPowerHere().by).ru.toUpperCase()+
         " · треть выработки в реквизицию":"");

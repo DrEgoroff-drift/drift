@@ -68,7 +68,10 @@ function spawnPirates(){
       shieldType:(PIRATE_LOADOUT[rank].shield||"solid"),
       /* дезертир (§7): пират на корпусе державы с закрашенным номером. Флаг
          ставится уже сейчас, читать его будет M369a — там же и корпус */
-      deserter:(occ>=2&&((seed>>>11)&3)===0)?1:0});
+      /* чистка (M385): после неё дезертиров вдвое больше, и это те самые, у
+         кого номер закрашен свежо (M369a) */
+      deserter:((occ>=2||((typeof powDeserterMul==="function")&&powDeserterMul(G.sx,G.sy)>1))&&
+        ((seed>>>11)&(((typeof powDeserterMul==="function")&&powDeserterMul(G.sx,G.sy)>1)?1:3))===0)?1:0});
   }
   /* ушедший управляющий сидит в своём секторе и ждёт: он такая же запись в
      G.pirates, поэтому весь бой уже написан — добавлять к нему нечего */

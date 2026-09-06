@@ -7,6 +7,30 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.385.0 - M385: the Director's fourth family — who is in charge
+
+**Чистка** takes a third of a power's strength, and **наследник** halves its relations with
+everyone both ways — both inside the replay, because they change the state itself and must be the
+same for every client.
+
+**Переворот** inverts the course the crowd voted for. It is the only thing in the game that can
+overrule a vote, and it costs the power a spike of tension to do it; next month the question is
+put again.
+
+After a purge there are **twice as many deserters** in that power's systems — and they are the
+ones whose number was painted over cleanly, the mark M369a drew for exactly this.
+
+**Утечка** does not make a wave say something else: it makes it **silent**. That is louder.
+
+**A bug worth naming.** Asking the chronicle a question from inside a step is a replay inside a
+replay: the course did exactly that and hung the whole suite. State is now passed down through the
+step, and a re-entry guard stands where the next one would land — with the story written next to
+it, because this is the kind of mistake that comes back.
+
+Tests: the purge and the successor visible in the state over four hundred сводки; a coup inverting
+a voted course and only a coup doing it; a leak silencing exactly one wave; and sixty сводки with
+a course computing instantly instead of never.
+
 ## 0.384.0 - M384: the Director's third family — weather
 
 Nature stops being scenery.

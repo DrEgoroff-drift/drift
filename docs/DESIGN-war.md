@@ -1172,7 +1172,16 @@ One system inside ГЛАВТРАССА's centre (r ≈ 6, fixed by seed, never t
   the depletion that gives a power's belts **no** ore rather than less, and the find that makes a
   planet's surface a quarter richer. **Deferred:** the storm hiding the map (the map is the one
   screen the player needs to leave a storm).
-  · power · diplomacy · security · culture — still open.
+  · ~~**M385 power**~~ — 0.385.0 (2026-09-06): the purge and the successor change the state inside
+  the replay (a third of the strength gone; relations halved both ways), while `12b0-fx-pow` holds
+  what the player sees — a coup **inverting** the course the crowd voted for (the only thing that
+  can overrule a vote), twice the deserters after a purge, a wave that goes silent after a leak
+  rather than saying something else, and a secession's flag. **Found and fixed here:** asking the
+  chronicle a question from inside a step is a replay inside a replay — the course did exactly
+  that and hung the suite; state is now passed down, and a re-entry guard stands where the next
+  one would land. **Deferred:** the seventh force as mechanics — six, and there will be no
+  seventh (§20 settled).
+  · diplomacy · security · culture — still open.
 
 Every pass ends with the usual: parse, empty console, a manual scenario, an old save,
 `build.ps1`, tests, the craft-codex check for anything drawn, and — from M360 on — `prof()` with

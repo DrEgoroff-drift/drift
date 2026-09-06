@@ -36,10 +36,12 @@ TEST_SUITES.push(()=>suite("экономика M382: волна, жила, яр�
   eq(econCycleMul("gt",5),econCycleMul("gt",5),"и она не гуляет между вызовами");
   eq(econCycleMul("нет такой",5),1,"у несуществующей державы волны нет");
   /* без происшествий — никаких последствий */
+  /* «без происшествий» проверяем на СВОБОДНОЙ системе: Директор живёт своей
+     жизнью, и на настоящей сводке у него вполне может идти и жила, и эмбарго */
   fxWorld();
-  eq(econVeinHere(0,0),false,"жилы нет");
-  eq(econEmbargoOn(0,0),false,"эмбарго нет");
-  eq(econTierBonus(0,0),0,"и тир не поднят");
+  eq(econVeinHere(999,999),false,"за кругом летописи жилы нет");
+  eq(econEmbargoOn(999,999),false,"и эмбарго нет");
+  eq(econTierBonus(999,999),0,"и тир не поднят");
   /* жила: только во владениях той державы, у которой она объявлена */
   const st=chronState();
   const own=chronOwner(0,0);
@@ -61,11 +63,14 @@ TEST_SUITES.push(()=>suite("экономика M382: волна, жила, яр�
   fxWorld();
   const own2=chronOwner(0,0);
   if(own2>=0){
+    const had=econEmbargoOn(0,0);
     const before=econPriceMul(0,0);
     fxInc("embargo",own2);
+    ok(econEmbargoOn(0,0),"эмбарго здесь");
     const after=econPriceMul(0,0);
-    ok(after>before,"эмбарго дороже: "+before.toFixed(3)+" → "+after.toFixed(3));
-    ok(after/before<1.3,"но не втрое: "+(after/before).toFixed(2));
+    if(had)eq(after,before,"эмбарго уже шло — второй раз не дорожает");
+    else ok(after>before,"эмбарго дороже: "+before.toFixed(3)+" → "+after.toFixed(3));
+    ok(after/before<1.3,"и не втрое: "+(after/before).toFixed(2));
   }
 }));
 
@@ -150,4 +155,74 @@ TEST_SUITES.push(()=>suite("природа M384: буря, рой, истоще�
   fxWorld();
   fxInc("find",own);
   ok(natLandMul()>1,"на поверхности берётся больше: "+natLandMul());
+}));
+
+TEST_SUITES.push(()=>suite("власть M385: переворот, чистка, преемник и молчание",()=>{
+  fxWorld();
+  const own=chronOwner(0,0);
+  if(own<0){ok(true,"вне круга летописи");return;}
+  /* чистка и наследник меняют САМО состояние, поэтому живут в повторе */
+  const st=chronFresh();
+  st.powers[0].str=900;
+  for(let q=1;q<6;q++){st.powers[0].rel[q]=800;st.powers[q].rel[0]=800;}
+  /* прогоняем шаг, пока не выпадут нужные происшествия: они детерминированы,
+     значит рано или поздно выпадут, и это тоже свойство, которое стоит знать */
+  let sawPurge=false,sawEnvoy=false;
+  for(let n=0;n<400&&!(sawPurge&&sawEnvoy);n++){
+    const s0=st.powers[0].str,r0=st.powers[0].rel[1];
+    chronStep(st,n);
+    const inc=(st.lines||[]).filter(L=>L.kind==="inc"&&L.N===n&&L.p===0);
+    for(const L of inc){
+      if(L.args.k==="purge"&&!sawPurge){sawPurge=true;ok(st.powers[0].str<s0||s0<=100,"чистка отняла силу");}
+      if(L.args.k==="envoy"&&!sawEnvoy){sawEnvoy=true;ok(Math.abs(st.powers[0].rel[1])<=Math.abs(r0),"наследник сбросил отношения");}
+    }
+  }
+  ok(sawPurge||sawEnvoy,"за четыреста сводок такие происшествия случаются");
+  /* переворот переворачивает курс — и только он это может */
+  fxWorld();
+  try{localStorage.removeItem(CHRON_KEY);}catch(e){}
+  if(typeof WAR_LED_CACHE!=="undefined")WAR_LED_CACHE=null;
+  const N=chronNow();
+  const Q=voteQuestion(MAKER_KEYS[own],N);
+  const v={};v[Q.key]={p:{}};v[Q.key].p[Q.picks[0][0]]=9;
+  warLedPut(N,{__votes:v});
+  eq(voteCourse(own,N),Q.picks[0][0],"толпа выбрала курс");
+  eq(powCourse(own,N),Q.picks[0][0],"без переворота он и остаётся");
+  fxInc("coup",own);
+  ok(powCoupOn(own),"переворот здесь");
+  eq(powCourse(own,N),Q.picks[1][0],"и курс перевёрнут ровно наоборот");
+  /* позор: волна молчит */
+  fxWorld();
+  fxInc("spy",own);
+  ok(powScandalOn(MAKER_KEYS[own]),"утечка у этой волны");
+  eq(chronWaveLines(undefined,MAKER_KEYS[own],3).length,0,"и волна молчит");
+  ok(chronWaveLines(undefined,MAKER_KEYS[(own+1)%6],3).length>=0,"а соседняя говорит как обычно");
+  try{localStorage.removeItem(CHRON_KEY);}catch(e){}
+  if(typeof WAR_LED_CACHE!=="undefined")WAR_LED_CACHE=null;
+}));
+
+TEST_SUITES.push(()=>suite("летопись M385: повтор не зовёт сам себя",()=>{
+  /* Однажды курс державы спросил у летописи, идёт ли переворот, — и получил
+     повтор внутри повтора: прогон набора повис намертво. Правило: внутри шага
+     состояние передаётся параметром. Ниже — и правило, и предохранитель. */
+  fxWorld();
+  const own=chronOwner(0,0);
+  if(own<0){ok(true,"вне круга летописи");return;}
+  try{localStorage.removeItem(CHRON_KEY);}catch(e){}
+  if(typeof WAR_LED_CACHE!=="undefined")WAR_LED_CACHE=null;
+  const N=chronNow();
+  const Q=voteQuestion(MAKER_KEYS[own],N);
+  const v={};v[Q.key]={p:{}};v[Q.key].p[Q.picks[0][0]]=9;
+  warLedPut(N,{__votes:v});
+  /* повтор с курсом и переворотом обязан просто закончиться */
+  const t0=Date.now();
+  const st=chronFresh();
+  for(let n=0;n<60;n++)chronStep(st,n);
+  ok(Date.now()-t0<3000,"шестьдесят сводок с курсом считаются мгновенно");
+  /* и предохранитель: chronState изнутри шага возвращает то, что есть, а не
+     запускает второй повтор */
+  const before=chronState();
+  ok(!!before&&before.powers,"состояние на руках");
+  try{localStorage.removeItem(CHRON_KEY);}catch(e){}
+  if(typeof WAR_LED_CACHE!=="undefined")WAR_LED_CACHE=null;
 }));

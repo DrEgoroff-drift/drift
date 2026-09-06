@@ -42,7 +42,7 @@ const DIR_RITES=["build","loan","subbot","coupon","quar","lost","census","amnest
 const DIR_QUIET=4;      /* дольше четырёх сводок без события галактика не молчит */
 /* пик держится не дольше трёх суток (§15) — а это ДВЕНАДЦАТЬ сводок вместе со
    спадом, а не двенадцать сводок до него: считать надо то, что видит игрок */
-const DIR_PEAK=8;
+const DIR_PEAK=7;
 const DIR_ARC_MAX=20;   /* дуга обязана кончиться */
 /* ── сезон: восемь ручек, раз в месяц или никогда (§15) ──
    Регулятор (это Клод раз в месяц, §12) может положить сезон; если его нет или
@@ -103,6 +103,20 @@ function chronDirector(st,N){
     D.last[i+"|"+inc.k]=N;
     st.powers[i].tension=clampi(st.powers[i].tension+inc.up,0,1000);
     if(D.calm<=0)D.tens=clampi(D.tens+(inc.up/3|0),0,1000);
+    /* ── семья ВЛАСТИ (M385, §15.1) ──
+       Три происшествия этой семьи меняют не цену и не тишину, а саму державу,
+       поэтому живут они здесь, внутри повтора: чистка отнимает треть силы,
+       наследник обнуляет отношения, переворот переворачивает курс. Всё это
+       детерминировано, как и остальное, и входит в хэш. */
+    if(inc.k==="purge")st.powers[i].str=clampi((st.powers[i].str*7/10)|0,100,1000);
+    if(inc.k==="coup")st.powers[i].tension=clampi(st.powers[i].tension+150,0,1000);
+    if(inc.k==="envoy"){                       /* посольство: наследник и сброс */
+      const P=st.powers[i];
+      for(let q=0;q<6;q++)if(q!==i){
+        P.rel[q]=(P.rel[q]/2)|0;
+        st.powers[q].rel[i]=(st.powers[q].rel[i]/2)|0;
+      }
+    }
     chronLine(st,N,"inc",i,null,{k:inc.k,f:inc.f});
     any=true;
   }
