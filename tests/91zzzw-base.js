@@ -94,7 +94,7 @@ TEST_SUITES.push(()=>suite("база M390: журнал пишет о том, ч
   const seen={};
   for(const k of kinds){
     baseLog(B,k,7,{who:"Гриша",lost:3,broke:"Склад",what:"Солнечная панель",out:1,
-      cr:400,q:5,from:1,to:9,guard:1,shield:0});
+      cr:400,q:5,from:1,to:9,guard:1,shield:0,say:"«Ухожу»",by:"empty"});
     const L=B.log[B.log.length-1];
     ok(L&&L.t&&L.t.length>4,"вид «"+k+"» пишет строку: "+(L&&L.t));
     ok(!seen[L.t],"и она не повторяет чужую: "+k);
@@ -376,4 +376,101 @@ TEST_SUITES.push(()=>suite("база M392: криоген везут, криоц
   const stand=baseHeat(B2);
   B2.pool.volatiles=9;
   ok(baseHeat(B2)<stand,"а с газом — снова холодит");
+}));
+
+/* ── харч и дух (M393) ──
+   Главное обещание §8: от отсутствия игрока здесь не умирают. Худшее, что
+   может случиться, — один человек соберётся и уйдёт, и его снова можно нанять. */
+TEST_SUITES.push(()=>suite("база M393: харч, вкус и кто его растит",()=>{
+  const B=bLife();
+  const L=baseLife(B);
+  eq(typeof L.food,"number","у базы есть харч");
+  eq(L.q,"good","и он поначалу нормальный");
+  /* оранжерея: пьёт воду, даёт харч и немного воздуха, но сперва её надо засеять */
+  B.cells[1]={k:"garden",hp:1};B.cells[4]={k:"reactor",hp:1};
+  B.pool.organics=0;
+  L.food=0;L.water=100;
+  B.t0=baseShift()-1;
+  baseResolve(B,Date.now());
+  eq(baseLife(B).food,0,"без органики грядку не засеять");
+  B.pool.organics=LIFE_GARDEN.seed;
+  const w0=baseLife(B).water,a0=baseLife(B).air;
+  B.t0=baseShift()-1;
+  baseResolve(B,Date.now());
+  ok(baseLife(B).food>0,"засеяли — и харч пошёл: "+baseLife(B).food);
+  eq(B.pool.organics|0,0,"органика ушла на посадку");
+  ok(baseLife(B).water<w0,"оранжерея пьёт воду");
+  ok(baseLife(B).air>=a0,"и отдаёт немного воздуха");
+  eq(baseLife(B).q,"good","её харч хороший");
+  /* второй раз сеять не надо */
+  const org=B.pool.organics|0;
+  B.t0=baseShift()-1;
+  baseResolve(B,Date.now());
+  eq(B.pool.organics|0,org,"грядку не пересевают каждую смену");
+  /* белковый бак: сытнее и скверно */
+  const B2=bLife();
+  B2.cells[1]={k:"vat",hp:1};B2.cells[4]={k:"reactor",hp:1};
+  B2.pool.organics=LIFE_VAT.organics*2;
+  baseLife(B2).food=0;
+  B2.t0=baseShift()-1;
+  baseResolve(B2,Date.now());
+  ok(baseLife(B2).food>0,"бак кормит: "+baseLife(B2).food);
+  eq(baseLife(B2).q,"poor","и кормит скверно");
+  ok(LIFE_VAT.food>LIFE_GARDEN.food,"зато сытнее оранжереи");
+  /* консервы и синтебелок с борта — то же самое, только привозное */
+  G.cargo.canned=(G.cargo.canned|0)+3;
+  const f0=baseLife(B2).food;
+  eq(baseSupply(B2,"canned",3),3,"консервы сданы");
+  eq(baseLife(B2).food,f0+3*FOOD_SUPPLY.canned.q,"и легли в харч по таблице");
+  eq(baseLife(B2).q,"good","консервы — это хороший харч");
+  G.cargo.protein=(G.cargo.protein|0)+2;
+  baseSupply(B2,"protein",2);
+  eq(baseLife(B2).q,"poor","а синтебелок — скверный");
+}));
+
+TEST_SUITES.push(()=>suite("база M393: дух читает все шкалы, и один уходит",()=>{
+  const B=bLife();
+  bCrew(B,2);
+  B.cells[4]={k:"reactor",hp:1};
+  /* всё хорошо — это ещё и НЕ ЖАРКО: реактор с буром и вторым реактором стоят
+     в печке, пока их не остудить. Дух читает и это тоже */
+  B.cells[1]={k:"radiator",hp:1};B.cells[3]={k:"radiator",hp:1};
+  eq(baseHeatBand(B),0,"база в полосе покоя");
+  const L=baseLife(B);
+  L.air=LIFE_START;L.water=LIFE_START;L.food=LIFE_START;L.q="good";
+  ok(baseSpirit(B)>=90,"на сытой и тёплой базе дух высокий: "+baseSpirit(B));
+  /* скверный харч его роняет, и ровно на своё */
+  const goodS=baseSpirit(B);
+  L.q="poor";
+  ok(baseSpirit(B)<goodS,"от скверного харча дух ниже: "+baseSpirit(B)+" против "+goodS);
+  L.q="good";
+  /* голод роняет сильнее */
+  L.food=0;
+  ok(baseSpirit(B)<goodS-20,"голод роняет дух заметно: "+baseSpirit(B)+" против "+goodS);
+  /* без людей духа нет вовсе: некому его иметь */
+  G.crew=[];
+  eq(baseSpirit(B),100,"пустой базе дух не считают");
+  /* ── и главное: один уходит, а не умирает ──
+     Чтобы дух упал ниже четверти, должно сойтись всё сразу: ни воздуха, ни
+     воды, ни харча, харч скверный, база встала и вдобавок в печке. Это не
+     «не долетел вовремя», это «бросил людей». */
+  bCrew(B,2);
+  B.cells[1]=null;B.cells[3]=null;             /* радиаторы долой — снова печка */
+  L.air=0;L.water=0;L.food=0;L.q="poor";
+  B.pool.ice=0;
+  basePark(B,"empty",baseShift()-4,"воздух");
+  ok(baseSpirit(B)<SPIRIT_LOW,"на такой базе жить нельзя: дух "+baseSpirit(B));
+  const was=G.crew.length;
+  B.t0=baseShift()-SPIRIT_HOLD;
+  baseResolve(B,Date.now());
+  eq(G.crew.length,was-1,"через три смены один ушёл");
+  ok(B.log.some(x=>x.k==="leave"),"и сказал об этом своими словами");
+  const line=B.log.filter(x=>x.k==="leave")[0].t;
+  ok(line.indexOf("«")===0,"строка — прямая речь: "+line);
+  ok(G.crew.every(c=>c.state!=="dead"),"никто не умер");
+  /* и второй уходит не сразу: счётчик терпения начинается заново */
+  const now=G.crew.length;
+  B.t0=baseShift()-1;
+  baseResolve(B,Date.now());
+  eq(G.crew.length,now,"следующий уходит не в ту же смену");
 }));

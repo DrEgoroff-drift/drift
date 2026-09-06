@@ -7,6 +7,29 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.393.0 - M393: food has a taste, and the base has a spirit
+
+The fourth gauge is **харч**, and it is the only one with a flavour. **Оранжерея** drinks 6 water,
+gives 5 food and 2 air, and has to be sown once with 4 organics — no organics, no bed, and it
+stands empty until you bring some. **Белковый бак** turns 4 organics into 8 food: half again as
+much, and squarely worse — while the vat is what people are eating, the base's spirit carries a
+standing tax. Canned food flown in from the holding counts as good, синтебелок as poor, and both
+are the second thing on the list of goods the game finally eats.
+
+**Дух** is the fifth gauge and produces nothing. It reads the other four — hunger, poor food, a
+stopped base, air or water down to the last three shifts, heat outside the calm band, housing
+pressed against the reactor, a flickering grid — and answers one question: how much longer will
+they put up with this. It also drags each person's own morale towards itself, so the base's mood
+and the crew's mood stop being two unrelated numbers.
+
+**And when the answer is «no longer», nobody dies.** Дух under a quarter for three shifts running
+and **one** person packs up and walks to the station, hireable again from the usual roster, with a
+line in the journal in their own voice: «Тут больше нечем дышать. Ушёл» — Гриша, и ушёл. Reaching
+that takes everything at once — no air, no water, no food, the food poor, the base stopped and hot
+— which is not «I was late», it is «I abandoned them». Dying of the player's absence stays where
+`DESIGN-base` §8 put it: in the зимовка, which is opt-in.
+
+---
 ## 0.392.0 - M392: heat, depth, and the cryogenics shop that was promised
 
 The third gauge, and the only **two-sided** one — one-sided it would just be a second energy bar.

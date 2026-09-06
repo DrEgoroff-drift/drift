@@ -1515,7 +1515,14 @@ is +9, which had to land in the first step (−15% output, no wear) and be cured
 radiator; §16's five-person +11 lands in the second and wants a second radiator, as written.
 Suites in `91zzzw-base`; two older base suites were made weather-proof after the shift-keyed storm
 roll turned them into a lottery on the wall clock. **Deferred:** the оранжерея and белковый бак
-that §16 pairs with these numbers — they are M393 with харч and дух. · M393 харч и дух (§6, §8).
+that §16 pairs with these numbers — they are M393 with харч and дух. · ~~M393 харч и дух~~ — 0.393.0 (2026-09-06): оранжерея (вода 6 → харч 5 + воздух 2, sown once with
+4 organics and idle without them) and белковый бак (органика 4 → харч 8, quality poor), консервы and
+синтебелок as supplies, and **дух** as the roll-up of the other four gauges that also pulls each
+person's morale towards it. Under a quarter for three shifts and one person walks out to the station
+with a line in their own voice, hireable again — nobody dies of the player's absence, per §8. Suites
+in `91zzzw-base`. **Deferred:** the кают-компания and лазарет that lift дух (they are §6's «люди и
+место» group, M394–M395), and the seven roles — жизнеобеспеченец, садовод and радист arrive with the
+people in the room.
 
 **B · место и люди** — M394 СВЯЗЬ и мачта (§38, §45 — pulled forward: it is what makes every later
 pass observable) · M395 люди в комнате (§8) · M396 соседство, залы, ствол, сетка 6×4 (§7) ·
