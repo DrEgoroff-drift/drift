@@ -553,3 +553,134 @@ TEST_SUITES.push(()=>suite("безопасность M387: король, шпи�
   try{localStorage.removeItem(CHRON_KEY);}catch(e){}
   if(typeof WAR_LED_CACHE!=="undefined")WAR_LED_CACHE=null;
 }));
+
+TEST_SUITES.push(()=>suite("культура M388: свод, серия, гонка и сериал",()=>{
+  fxWorld();
+  /* ── радиоспектакль ──
+     Неделя из двадцати восьми суток, шесть частей по суткам, шесть версий у
+     каждой части — и ни одной пустой ячейки: сериал, у которого на одной волне
+     дырка, слышен сразу. */
+  eq(CULT_PLAY.length,6,"шесть частей");
+  for(const P of CULT_PLAY){
+    ok(P.ru&&P.ru.length>5,"у части есть имя: "+P.ru);
+    for(const w of MAKER_KEYS){
+      ok(typeof P[w]==="string"&&P[w].length>30,"часть звучит на волне "+w+": "+P.ru);
+      /* проценты в тексте — законные («план на 104 %»); ищем именно вставки */
+      ok(!/%[pskbn]/.test(P[w]),"и без незаполненных вставок: "+w);
+    }
+    /* шесть версий — это шесть РАЗНЫХ строк, а не одна с перестановкой слов */
+    const set={};
+    for(const w of MAKER_KEYS)set[P[w]]=1;
+    eq(Object.keys(set).length,6,"шесть версий и все разные: "+P.ru);
+  }
+  let live=0;
+  for(let n=0;n<CULT_PLAY_EVERY;n++)if(cultPlayWindow(n)>=0)live++;
+  eq(live,CULT_PLAY_LIVE,"идёт шесть суток из двадцати восьми");
+  eq(cultPlayPart(0),0,"в первый день — первая часть");
+  eq(cultPlayPart(CULT_PLAY_STEP),1,"через сутки — вторая");
+  eq(cultPlayPart(CULT_PLAY_LIVE-1),CULT_PLAY.length-1,"к концу окна — последняя");
+  eq(cultPlayPart(CULT_PLAY_LIVE),-1,"а после окна тишина");
+  ok(cultPlayLine("km",0).length>30,"строка берётся по волне");
+  ok(cultPlayLine("km",0)!==cultPlayLine("ra",0),"и у соседней волны она другая");
+  /* молчащая волна молчит и здесь */
+  const own=chronOwner(0,0);
+  if(own>=0){
+    fxInc("spy",own);
+    if(typeof SEC_SPY_CACHE!=="undefined")SEC_SPY_CACHE={k:"",v:false};
+    const by=MAKER_KEYS[own];
+    if(powWaveSilent(by))eq(cultPlayLine(by,0),"","на молчащей волне спектакля нет");
+  }
+  /* ── обрывки «Долгого Хода» ──
+     Таблица, а не генератор: шесть кусков, у каждого своё имя и свой текст, и
+     ни один не повторяет другой. */
+  fxWorld();
+  eq(LONG_HOD.length,6,"шесть обрывков");
+  const seen={},ids={};
+  for(const F of LONG_HOD){
+    ok(F.t.length>120,"обрывок написан, а не сгенерирован: "+F.ru);
+    ok(!seen[F.t],"и он не повторяется: "+F.ru);
+    ok(!ids[F.id],"номера не сталкиваются: "+F.id);
+    seen[F.t]=1;ids[F.id]=1;
+  }
+  eq(cultLongCount(),0,"полка пуста");
+  /* ── экспедиция ──
+     Счётчик считает сканирования ТОЛЬКО в системах той державы и только с той
+     сводки, в которую началась дуга. */
+  fxWorld();
+  const st=chronState();
+  const o2=chronOwner(0,0);
+  if(o2>=0){
+    st.dir=st.dir||{arcs:[],rites:[],tens:0,quiet:0,peak:0,calm:0,last:{}};
+    st.dir.arcs=[{p:o2,kind:"expedition",t0:st.N,stage:1}];
+    const A=cultExpedition();
+    ok(!!A,"дуга экспедиции видна");
+    eq(cultExpCount(A),0,"сканирований пока нет");
+    ok(!cultExpFound(),"и находки нет");
+    eq(cultLongDue(),null,"и обрывок не всплыл");
+    if(typeof WAR_LED_CACHE!=="undefined")WAR_LED_CACHE=null;
+    const body={};body["0,0"]={scan:{q:CULT_EXP_GOAL,a:["a","b"]}};
+    warLedPut(chronNow(),body);
+    eq(cultExpCount(A),CULT_EXP_GOAL,"сканирования сосчитаны");
+    ok(cultExpFound(),"экспедиция нашла");
+    const F=cultLongDue();
+    ok(!!F,"и всплыл обрывок свода");
+    if(F){
+      ok(cultLongTake(),"его прочли");
+      eq(cultLongCount(),1,"и он лёг на полку");
+      eq(cultLongDue(),null,"дважды один и тот же не дают");
+      eq(G.longHod.length,1,"на полке ровно один");
+    }
+    G.longHod=[];
+    if(typeof WAR_LED_CACHE!=="undefined")WAR_LED_CACHE=null;
+  }
+  /* ── новая серия ──
+     Месяц у ОДНОЙ державы, и имя у серии одно на весь месяц. */
+  fxWorld();
+  const who=cultSeriesWho(0);
+  ok(MAKER_KEYS.indexOf(who)>=0,"серия у одной из шести: "+who);
+  let others=0;
+  for(const by of MAKER_KEYS)if(cultSeriesWho(0)===by)others++;
+  eq(others,1,"ровно у одной");
+  eq(cultSeriesWho(CULT_SERIES-1),who,"и весь месяц у неё же");
+  ok(cultSeriesName(who).length>3,"у серии есть имя: "+cultSeriesName(who));
+  eq(cultSeriesName(who),cultSeriesName(who),"и оно не гуляет между вызовами");
+  eq(cultSeriesOn("нет такой"),false,"у несуществующей державы серии нет");
+  /* ── олимпиада ──
+     Одна кнопка на старте, одна на финише; финиш — не ближе шести секторов. */
+  fxWorld();
+  const savedNow=chronNow;
+  chronNow=()=>CULT_RACE_EVERY;                    /* начало окна */
+  try{
+    ok(cultRaceOn(),"олимпиада идёт");
+    G.sx=0;G.sy=0;G.sys={station:{by:"gt"}};
+    ok(cultRaceStart(),"время пошло");
+    ok(!!G.race,"гонка записана");
+    eq(cultRaceDue(),false,"на своей же станции финиша нет");
+    eq(cultRaceFinish(),0,"и кнопка финиша не сработает");
+    G.sx=CULT_RACE_FAR;G.sy=0;
+    ok(cultRaceDue(),"за шесть секторов — можно финишировать");
+    const c0=G.credits;
+    const s=cultRaceFinish();
+    ok(s>0,"время записано: "+s+" с");
+    eq(G.race,null,"гонка закрыта");
+    eq(G.raceBest,s,"и это ваш лучший ход");
+    eq(G.credits,c0,"за гонку не платят: это олимпиада, а не заказ");
+    /* второй заход хуже — лучший не портится */
+    G.sx=0;G.sy=0;
+    cultRaceStart();
+    G.race.t0=Date.now()-60000;
+    G.sx=CULT_RACE_FAR;G.sy=0;
+    const s2=cultRaceFinish();
+    ok(s2>=s,"второй ход дольше: "+s2);
+    eq(G.raceBest,s,"а лучший остался прежним");
+  }finally{chronNow=savedNow;}
+  /* вне окна олимпиады нет */
+  chronNow=()=>CULT_RACE_EVERY+CULT_RACE_LIVE;
+  try{
+    eq(cultRaceOn(),false,"после окна олимпиады нет");
+    eq(cultRaceStart(),false,"и стартовать негде");
+  }finally{chronNow=savedNow;}
+  G.race=null;G.raceBest=undefined;
+  try{localStorage.removeItem(CHRON_KEY);}catch(e){}
+  if(typeof WAR_LED_CACHE!=="undefined")WAR_LED_CACHE=null;
+}));

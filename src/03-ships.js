@@ -162,7 +162,11 @@ function stationParts(sys){
     const pby=yal?MAKER_KEYS[i%MAKER_KEYS.length]
       :((rng(hashi(seed,7,3))()<.26&&typeof makerBySeed==="function")
         ?makerBySeed(hashi(seed,11,5)):stBy);
-    const part=genPart(seed,tierFromDanger(d,rng(seed)),null,0,null,pby);
+    /* новая серия завода (M388): месяц у одной державы на прилавке своя серия
+       орудий — тиром выше и с именем. Имя живёт в строке доски, а не в самой
+       части: часть обязана пересобираться из сейва прежней */
+    const ser=(typeof cultSeriesOn==="function"&&cultSeriesOn(pby))?1:0;
+    const part=genPart(seed,Math.min(5,tierFromDanger(d,rng(seed))+ser),ser?"gun":null,0,null,pby);
     /* репутация станции идёт и в цену железа: продавец тоже человек (12k-rep) */
     const price=Math.round((320+part.tier*part.tier*460+part.aff.length*180)*
       (.85+r()*.4)*repPartMul(sys)*(yal?2:1)/10)*10;

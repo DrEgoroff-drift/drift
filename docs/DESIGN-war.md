@@ -1206,7 +1206,17 @@ One system inside ГЛАВТРАССА's centre (r ≈ 6, fixed by seed, never t
   and the blockade (M373) are this family's other two members and were already written.
   **Deferred:** the king as a ship — he is a condition, not a boss, and «Ревизия» already occupies
   that seat.
-  · culture — still open.
+  · ~~**M388 science and culture**~~ — 0.388.0 (2026-09-06): `12b3-fx-cult` — the radio play
+  «Седьмая смена», six chapters a day apart for six days out of twenty-eight, each chapter written
+  in all six voices and absent from a wave that a leak has silenced; the **expedition** arc given a
+  crowd counter of 200 `scan` deeds and, at the end of it, a page of the «Долгий Ход» chronicle —
+  six hand-written fragments collected one at a time, on the same law as the forty books of M202
+  (a table, never a generator, and no reward but itself); a **factory series** for a month, one
+  power at a time, a tier higher and named in the board line rather than in the part, because a
+  part must rebuild from a save exactly as issued; and the **fleet olympiad**, three days out of
+  fifteen, one button at the start and one at the finish six sectors away, your time yours and
+  only attendance going to the crowd. **Deferred:** nothing of this family — the seventh closes
+  the queue **M360–M388**.
 
 Every pass ends with the usual: parse, empty console, a manual scenario, an old save,
 `build.ps1`, tests, the craft-codex check for anything drawn, and — from M360 on — `prof()` with

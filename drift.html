@@ -1756,7 +1756,7 @@ body.table u.addr{color:#7a4a20}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.387.0";
+const VER="0.388.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -2388,7 +2388,11 @@ function stationParts(sys){
     const pby=yal?MAKER_KEYS[i%MAKER_KEYS.length]
       :((rng(hashi(seed,7,3))()<.26&&typeof makerBySeed==="function")
         ?makerBySeed(hashi(seed,11,5)):stBy);
-    const part=genPart(seed,tierFromDanger(d,rng(seed)),null,0,null,pby);
+    /* новая серия завода (M388): месяц у одной державы на прилавке своя серия
+       орудий — тиром выше и с именем. Имя живёт в строке доски, а не в самой
+       части: часть обязана пересобираться из сейва прежней */
+    const ser=(typeof cultSeriesOn==="function"&&cultSeriesOn(pby))?1:0;
+    const part=genPart(seed,Math.min(5,tierFromDanger(d,rng(seed))+ser),ser?"gun":null,0,null,pby);
     /* репутация станции идёт и в цену железа: продавец тоже человек (12k-rep) */
     const price=Math.round((320+part.tier*part.tier*460+part.aff.length*180)*
       (.85+r()*.4)*repPartMul(sys)*(yal?2:1)/10)*10;
@@ -23336,6 +23340,306 @@ function secLine(){
   return out.join(" · ");
 }
 
+/* ══════════════ семья механик: НАУКА И КУЛЬТУРА (M388, §15.1) ══════════════
+   Последняя из семи семей — и единственная, где держава ничего у игрока не
+   отнимает и ничем ему не грозит. Здесь она рассказывает, ищет и празднует.
+
+   · **экспедиция** — держава ищет неизвестные системы, и толпа помогает
+     сканированием. Счётчик добран — экспедиция что-то нашла;
+   · **обрывок «Долгого Хода»** — и находит она не месторождение, а страницу
+     чужого свода. Шесть обрывков, собираются по одному, лежат рядом с книгами
+     (12ub) и ровно так же ничего не дают, кроме себя самих;
+   · **новая серия завода** — месяц у одной державы на прилавке своя серия
+     орудий: тиром выше и с именем. Имя живёт в строке, а не в самой части:
+     часть обязана пересобираться из сейва той же, какой её выдали, и вшивать
+     в неё месяц — значит менять поколение генератора ради вывески;
+   · **олимпиада флота** — гонка по трассе. Одна кнопка на старте, одна на
+     финише, между ними — чистое время. Ни таблицы чемпионов, ни имён: правило
+     открытки держится и здесь, у толпы считается только явка, а время своё;
+   · **радиоспектакль** — неделю волна ведёт сериал. Один сюжет, шесть версий,
+     по части в сутки; на молчащей волне (M385) его, разумеется, нет. */
+const CULT_PLAY_EVERY=112;   /* раз в двадцать восемь суток */
+const CULT_PLAY_LIVE=24;     /* и шесть суток подряд */
+const CULT_PLAY_STEP=4;      /* сутки на часть — всего шесть частей */
+const CULT_EXP_GOAL=200;     /* столько сканирований — и экспедиция нашла */
+const CULT_SERIES=120;       /* месяц новой серии */
+const CULT_RACE_EVERY=60;    /* олимпиада раз в пятнадцать суток */
+const CULT_RACE_LIVE=12;     /* и держится трое суток */
+const CULT_RACE_FAR=6;       /* столько секторов между стартом и финишем */
+/* ── обрывки «Долгого Хода» (§15.1, к книге 9 из 12ub) ──
+   ЭТО ТАБЛИЦА, А НЕ ГЕНЕРАТОР — по тому же закону, что и книжная полка: свод,
+   от которого остались куски, узнаётся голосом, а сгенерированный свод не
+   узнаётся ничем. Шесть кусков, и они не сходятся в одну историю до конца:
+   так и должно быть у свода, который вели четыре поколения. */
+const LONG_HOD=[
+  {id:1,ru:"Часть I, лист 12",
+   t:"Считали дни, пока не сбились. Сбились не от усталости, а от того, что дни перестали отличаться друг от друга. Тогда завели вторую тетрадь: в первой — что сделано, во второй — что видели. Вторая оказалась толще."},
+  {id:2,ru:"Часть I, лист 40",
+   t:"Старший сказал: возвращаться будем не тем путём. Его спросили почему. Он ответил, что тем путём мы уже прошли и ничего там больше нет, а нам нужно, чтобы впереди что-то было. С этого дня мы ходили только вперёд."},
+  {id:3,ru:"Часть II, вкладыш",
+   t:"Спор о том, кому принадлежит найденное, решили просто: найденное принадлежит тому, кто его назовёт. Назвали все вместе и по очереди, так что у каждой третьей вещи в этом своде два имени. Мы не стали править."},
+  {id:4,ru:"Часть III, лист 7",
+   t:"Здесь потеряли Тишку. Не в бою и не в пустоте: он остался, потому что захотел остаться. Записываем это в потери, хотя он жив и, кажется, счастливее нас. Свод не умеет считать иначе."},
+  {id:5,ru:"Часть III, лист 61",
+   t:"Держава прислала запрос: перечислить открытое в порядке значимости. Мы перечислили в порядке, в каком открывали. Ответа не было. Это тоже ответ, и он нас устроил."},
+  {id:6,ru:"Часть IV, последний лист",
+   t:"Дошли. Оказалось, что «дошли» — это не место, а день, в который перестаёшь смотреть вперёд и начинаешь смотреть вокруг. Место при этом было самое обыкновенное. Мы бы его и не заметили, если бы не устали."}
+];
+/* ── радиоспектакль «Седьмая смена» ──
+   Один сюжет, шесть версий. Сатира здесь на КАНЦЕЛЯРИЮ и никогда на людей
+   (§7.1): смена, которая пошла на сигнал, у всех шестерых сделала одно и то
+   же, а рассказано это шестью разными способами. */
+const CULT_PLAY_RU="«Седьмая смена»";
+const CULT_PLAY=[
+  {ru:"Часть первая · Сигнал",
+   gt:"Часть первая. На трассе спокойно. Принят сигнал с неучтённого борта. Смена приступила согласно графику, график выполнен на 104 %.",
+   co:"Часть первая. Сигнал! Первым его услышал наш абонент — и это лучшая реклама связи, какую можно купить. Кстати, её можно купить.",
+   or:"Часть первая. В 04:10 принят сигнал. Пункт 3.1: принять, записать, доложить. Принято, записано, доложено. Действие продолжается.",
+   km:"Часть первая. Сигнал пришёл ночью, как и всё важное. Никто ещё не знал, что это надолго, и потому все спали хорошо.",
+   ra:"Часть первая. Ночью запищало. Ну, встали, послушали. Кто-то зовёт — значит, надо ехать.",
+   hf:"Часть первая. Обнаружен входящий сигнал. Приоритет высокий. Ваш рейтинг доверия к смене не изменился."},
+  {ru:"Часть вторая · Смена",
+   gt:"Часть вторая. По многочисленным просьбам сформирована сводная смена. Отмечен высокий подъём.",
+   co:"Часть вторая. Собрали команду. Каждый вложился своим — и это тот случай, когда доли считать не стали.",
+   or:"Часть вторая. Пункт 7: состав смены утверждён в трёх экземплярах. Один экземпляр взяли с собой, зачем — в регламенте не сказано.",
+   km:"Часть вторая. Собрались семеро, из них шестеро — не по службе. Седьмой был по службе и потому молчал всю дорогу.",
+   ra:"Часть вторая. Набралось семь человек. Двоих я знаю, они рукастые. Остальные научатся.",
+   hf:"Часть вторая. Смена укомплектована. Совместимость участников 92 %. Приносим извинения за оставшиеся восемь."},
+  {ru:"Часть третья · Ход",
+   gt:"Часть третья. Переход выполнен досрочно. Отмечены временные трудности на отдельных участках.",
+   co:"Часть третья. В пути пришлось поменять маршрут — и это вышло дешевле, чем идти как собирались. Запомните этот приём.",
+   or:"Часть третья. Отклонение от маршрута оформлено задним числом. Формуляр подшит.",
+   km:"Часть третья. Шли долго. Дорога — это когда ты уже не там, но ещё не здесь, и вот в этом «ещё не здесь» с людьми что-то происходит.",
+   ra:"Часть третья. По дороге чинились дважды. Второй раз — на ходу, красиво вышло.",
+   hf:"Часть третья. Маршрут пересчитан. Обновление доставлено. Расчётное время прибытия уточняется."},
+  {ru:"Часть четвёртая · Не то",
+   gt:"Часть четвёртая. На месте установлено: сигнал соответствует иным обстоятельствам. План скорректирован.",
+   co:"Часть четвёртая. Пришли не туда, куда рассчитывали. Убыток отнесли на опыт — статья, между прочим, самая доходная.",
+   or:"Часть четвёртая. Обнаруженное не подпадает ни под один пункт. Составлен акт о том, что акт составить не представилось возможным.",
+   km:"Часть четвёртая. Нашли не то. Это, вообще говоря, и есть главное умение — понять, что нашёл не то, и не сделать вид, что то.",
+   ra:"Часть четвёртая. Ну, не то. Бывает. Зато посмотрели.",
+   hf:"Часть четвёртая. Результат не соответствует запросу. Рекомендуем уточнить запрос."},
+  {ru:"Часть пятая · Остались",
+   gt:"Часть пятая. Смена оставлена на месте до выяснения. Настроение бодрое.",
+   co:"Часть пятая. Остались зимовать. Считаем это вложением: место оказалось перспективным, а перспективное надо занимать первым.",
+   or:"Часть пятая. Пункт 19: до особого распоряжения. Особого распоряжения не поступило и, судя по всему, не поступит.",
+   km:"Часть пятая. Остались. Не потому, что не могли уйти, а потому что уже начали чинить чужую антенну, а брошенное на середине — хуже, чем не начатое.",
+   ra:"Часть пятая. Остались до весны. Антенну доделаем, печку сложим — и жить можно.",
+   hf:"Часть пятая. Статус смены: на месте. Автопродление включено. Отключить можно в настройках, которых нет."},
+  {ru:"Часть шестая · Возвращение",
+   gt:"Часть шестая. Смена вернулась в срок. На трассе спокойно.",
+   co:"Часть шестая. Вернулись с прибылью — если считать прибылью то, чего не продать. Мы считаем.",
+   or:"Часть шестая. Возвращение оформлено. Дело закрыто, свод подшит, экземпляр второй утерян при передаче.",
+   km:"Часть шестая. Вернулись — и не узнали дома. Дом, разумеется, был тот же самый. Это, конечно, история не про дом.",
+   ra:"Часть шестая. Приехали. Ставьте чайник, рассказывать будем долго.",
+   hf:"Часть шестая. Смена завершена. Оцените выпуск. Ваша оценка важна и никуда не будет отправлена."}
+];
+/* ── радиоспектакль: окно и часть ── */
+function cultPlayWindow(N){
+  if(N===undefined)N=(typeof chronNow==="function")?chronNow():0;
+  const n0=N-(N%CULT_PLAY_EVERY);
+  return (N-n0<CULT_PLAY_LIVE)?n0:-1;
+}
+function cultPlayPart(N){
+  if(N===undefined)N=(typeof chronNow==="function")?chronNow():0;
+  const n0=cultPlayWindow(N);
+  if(n0<0)return -1;
+  return Math.min(CULT_PLAY.length-1,Math.floor((N-n0)/CULT_PLAY_STEP));
+}
+function cultPlayLine(wave,N){
+  const i=cultPlayPart(N);
+  if(i<0)return "";
+  wave=wave||((typeof chronWave==="function")?chronWave():"gt");
+  /* молчащая волна молчит и здесь: спектакль идёт по эфиру, а не мимо него */
+  if(typeof powWaveSilent==="function"&&powWaveSilent(wave))return "";
+  const P=CULT_PLAY[i];
+  return P[wave]||P.gt;
+}
+function cultPlayBlock(){
+  if(typeof $body==="undefined")return;
+  const i=cultPlayPart();
+  if(i<0)return;
+  const w=(typeof chronWave==="function")?chronWave():"gt";
+  const line=cultPlayLine(w);
+  if(!line)return;
+  $body.appendChild(el("div","sec","РАДИОСПЕКТАКЛЬ · "+CULT_PLAY_RU.toUpperCase()+
+    " · "+CULT_PLAY[i].ru.toUpperCase()));
+  const r=el("div","row");
+  r.appendChild(el("div","nm","<b>"+((typeof POWERS!=="undefined"&&POWERS[w])?POWERS[w].ru:"эфир")+
+    "</b><s style='line-height:1.9'>"+line+"</s>"));
+  $body.appendChild(r);
+}
+/* ── экспедиция и обрывок ──
+   Дуга «экспедиция» уже есть у Директора (M371). Здесь у неё появляется то,
+   ради чего в неё можно вложиться: счётчик сканирований от толпы и страница
+   чужого свода в конце. */
+function cultExpedition(){
+  if(typeof chronArcs!=="function")return null;
+  for(const a of chronArcs())if(a.kind==="expedition")return a;
+  return null;
+}
+function cultExpCount(A){
+  A=A||cultExpedition();
+  if(!A||typeof warLed!=="function"||typeof chronOwner!=="function")return 0;
+  const L=warLed(),N=(typeof chronNow==="function")?chronNow():0;
+  let q=0;
+  for(const n in L){
+    if((n|0)<A.t0||(n|0)>N)continue;
+    const body=L[n];
+    for(const sys in body){
+      if(sys==="__votes")continue;
+      const p=sys.split(",");
+      if(chronOwner(p[0]|0,p[1]|0)!==A.p)continue;
+      const cell=body[sys].scan;
+      if(cell)q+=cell.q|0;
+    }
+  }
+  return q;
+}
+function cultExpFound(){
+  const A=cultExpedition();
+  return !!(A&&cultExpCount(A)>=CULT_EXP_GOAL);
+}
+/* какой именно обрывок всплыл: от державы и от сводки, в которую началась дуга */
+function cultLongDue(){
+  const A=cultExpedition();
+  if(!A||cultExpCount(A)<CULT_EXP_GOAL)return null;
+  const i=hashi(A.p,A.t0,0x10D)%LONG_HOD.length;
+  const F=LONG_HOD[i];
+  return ((G.longHod||[]).indexOf(F.id)>=0)?null:F;
+}
+function cultLongTake(){
+  const F=cultLongDue();
+  if(!F)return false;
+  if(!G.longHod)G.longHod=[];
+  G.longHod.push(F.id);
+  tell("good","«Долгий Ход» · "+F.ru,"ДОЛГИЙ ХОД · "+F.ru+"\n\n"+F.t);
+  return true;
+}
+function cultLongCount(){return (G.longHod||[]).length;}
+/* ── новая серия завода ──
+   Месяц у одной державы на прилавке своя серия орудий. Кто именно — по
+   календарю, как и спектакль: это праздник, а не последствие, и вычислять его
+   из состояния значило бы делать вид, что у него есть причина. */
+const CULT_SER_RU=["«Зубр»","«Веретено»","«Ковш»","«Стриж-М»","«Ладога»","«Кедр»"];
+function cultSeriesWindow(N){
+  if(N===undefined)N=(typeof chronNow==="function")?chronNow():0;
+  return N-(N%CULT_SERIES);
+}
+function cultSeriesWho(N){
+  const n0=cultSeriesWindow(N);
+  return MAKER_KEYS[hashi(n0,0x5E71,0x2C)%6];
+}
+function cultSeriesOn(by){return !!by&&cultSeriesWho()===by;}
+function cultSeriesName(by,N){
+  const n0=cultSeriesWindow(N);
+  if(!cultSeriesOn(by||cultSeriesWho(N)))return "";
+  const h=hashi(n0,0x5E72,0x2C);
+  return CULT_SER_RU[h%CULT_SER_RU.length]+"-"+(1+(h>>>4)%9)+(((h>>>8)%2)?"":"0");
+}
+/* ── олимпиада флота ──
+   Гонка по трассе: одна кнопка на старте, одна на финише. Считается чистое
+   время между ними; в толпу уходит только ЯВКА, время остаётся вашим (§11.3:
+   без имён и без обмена). */
+function cultRaceWindow(N){
+  if(N===undefined)N=(typeof chronNow==="function")?chronNow():0;
+  const n0=N-(N%CULT_RACE_EVERY);
+  return (N-n0<CULT_RACE_LIVE)?n0:-1;
+}
+function cultRaceOn(){return cultRaceWindow()>=0;}
+function cultRaceStart(){
+  if(!cultRaceOn())return false;
+  G.race={t0:Date.now(),sx:G.sx|0,sy:G.sy|0,n:cultRaceWindow()};
+  tell("tech","Олимпиада: время пошло",
+    "ОЛИМПИАДА\nвремя пошло\nфиниш — на станции не ближе "+CULT_RACE_FAR+" секторов");
+  return true;
+}
+function cultRaceFar(){
+  const R=G.race;
+  if(!R)return 0;
+  return Math.hypot((G.sx|0)-R.sx,(G.sy|0)-R.sy);
+}
+function cultRaceDue(){
+  const R=G.race;
+  if(!R||!G.sys||!G.sys.station)return false;
+  return cultRaceFar()>=CULT_RACE_FAR;
+}
+function cultRaceFinish(){
+  if(!cultRaceDue())return 0;
+  const ms=Date.now()-G.race.t0;
+  G.race=null;
+  const s=Math.max(1,Math.round(ms/1000));
+  if(!G.raceBest||s<G.raceBest)G.raceBest=s;
+  if(typeof warPut==="function")warPut("reg",1);
+  tell("good","Олимпиада: "+s+" с","ОЛИМПИАДА\nваше время "+s+" с"+
+    (G.raceBest===s?"\nэто ваш лучший ход":"\nлучший ваш — "+G.raceBest+" с"));
+  return s;
+}
+/* ── доска ── */
+function cultBlock(){
+  if(typeof $body==="undefined")return;
+  /* экспедиция: счётчик и кнопка, как у обряда */
+  const A=cultExpedition();
+  if(A){
+    const P=(typeof powerOf==="function")?powerOf(MAKER_KEYS[A.p]):null;
+    const q=cultExpCount(A);
+    $body.appendChild(el("div","sec","ЭКСПЕДИЦИЯ"+(P?" · "+P.ru.toUpperCase():"")));
+    const r=el("div","row");
+    r.appendChild(el("div","nm","<b>Ищут неизвестные системы</b><s>толпа помогает сканированием · собрано "+
+      q+" из "+CULT_EXP_GOAL+"</s>"));
+    if(q<CULT_EXP_GOAL){
+      const b=el("button","act","ПРОСКАНИРОВАТЬ");
+      b.onclick=()=>{if(typeof warPut==="function")warPut("scan",1);say("СКАНИРОВАНИЕ ОТПРАВЛЕНО",120);renderTab();};
+      r.appendChild(b);
+    }else r.appendChild(el("div","qt","НАШЛИ"));
+    $body.appendChild(r);
+  }
+  const F=cultLongDue();
+  if(F){
+    $body.appendChild(el("div","sec","«ДОЛГИЙ ХОД» · ВСПЛЫЛ ОБРЫВОК"));
+    const r=el("div","row");
+    r.appendChild(el("div","nm","<b>"+F.ru+"</b><s>страница чужого свода · собрано "+
+      cultLongCount()+" из "+LONG_HOD.length+"</s>"));
+    const b=el("button","act gold","ПРОЧИТАТЬ");
+    b.onclick=()=>{cultLongTake();renderTab();};
+    r.appendChild(b);
+    $body.appendChild(r);
+  }
+  /* олимпиада */
+  if(cultRaceOn()){
+    $body.appendChild(el("div","sec","ОЛИМПИАДА ФЛОТА"));
+    const r=el("div","row");
+    const best=G.raceBest?(" · ваш лучший ход "+G.raceBest+" с"):"";
+    if(G.race){
+      const far=Math.floor(cultRaceFar());
+      r.appendChild(el("div","nm","<b>Время идёт</b><s>от старта "+far+" из "+CULT_RACE_FAR+
+        " секторов"+best+"</s>"));
+      if(cultRaceDue()){
+        const b=el("button","act gold","ФИНИШ");
+        b.onclick=()=>{cultRaceFinish();renderTab();};
+        r.appendChild(b);
+      }else r.appendChild(el("div","qt","ДАЛЬШЕ"));
+    }else{
+      r.appendChild(el("div","nm","<b>Гонка по трассе</b><s>одна кнопка на старте, одна на финише"+
+        " · время своё, у толпы — только явка"+best+"</s>"));
+      const b=el("button","act","СТАРТ");
+      b.onclick=()=>{cultRaceStart();renderTab();};
+      r.appendChild(b);
+    }
+    $body.appendChild(r);
+  }
+  cultPlayBlock();
+}
+function cultLine(){
+  const out=[];
+  const by=(typeof chronOwnerKey==="function")?chronOwnerKey(G.sx,G.sy):null;
+  if(by&&cultSeriesOn(by))out.push("НОВАЯ СЕРИЯ "+cultSeriesName(by)+" · ОРУДИЯ ТИРОМ ВЫШЕ");
+  if(cultRaceOn())out.push("ОЛИМПИАДА ФЛОТА · СТАРТ ЗДЕСЬ");
+  const A=cultExpedition();
+  if(A&&by&&MAKER_KEYS[A.p]===by)out.push("ЭКСПЕДИЦИЯ · СКАНИРОВАНИЯ СЧИТАЮТ");
+  return out.join(" · ");
+}
+
 /* ══════════════ управляющие: домен вместо приказов ══════════════ */
 /* Наёмник — ставка со скрытой удачей, которой игрок управляет вручную. Управляющий —
    противоположность: всё видно (уровень, перки, доля), но он стоит дорого и имеет
@@ -38227,6 +38531,7 @@ function snapshot(){
     episodes:G.episodes,notebook:G.notebook,gifts:G.gifts,mslBy:G.mslBy,
     bonds:G.bonds,coupN:G.coupN,
     letter:G.letter||null,dipSwapN:G.dipSwapN,smugN:G.smugN,smugBy:G.smugBy,
+    longHod:G.longHod,race:G.race||null,raceBest:G.raceBest,
     drones:G.drones,droneInventory:G.droneInventory,droneIds:G.droneIds,droneSold:G.droneSold||{},crew:G.crew,bases:G.bases,
     mgrs:G.mgrs,blueprints:G.blueprints,aiRift:G.aiRift,rogues:G.rogues,exiles:G.exiles,
     relics:G.relics,relicHint:G.relicHint,bio:G.bio,home:G.home,course:G.course||null,
@@ -38388,6 +38693,11 @@ function applySave(s){
   /* чужой талон в баках (M387): клеймо живёт сутки и переживает выход из игры */
   G.smugN=(typeof s.smugN==="number")?s.smugN:undefined;
   G.smugBy=(typeof s.smugBy==="string")?s.smugBy:undefined;
+  /* «Долгий Ход» и олимпиада (M388): собранные обрывки и своё время — это то,
+     что игрок сделал сам, значит оно живёт в сейве, как книжная полка */
+  G.longHod=Array.isArray(s.longHod)?s.longHod:[];
+  G.race=(s.race&&typeof s.race==="object")?s.race:null;
+  G.raceBest=s.raceBest|0||undefined;
   G.shipId=shipData(s.shipId)?s.shipId:"strizh";
   G.owned=Object.assign({strizh:true},s.owned||{});
   /* старое сохранение знает только s.mods — считаем, что всё купленное и установлено.
@@ -69239,6 +69549,7 @@ function openStation(){
     ((typeof powLine==="function"&&powLine())?"\n"+powLine():"")+
     ((typeof dipLine==="function"&&dipLine())?"\n"+dipLine():"")+
     ((typeof secLine==="function"&&secLine())?"\n"+secLine():"")+
+    ((typeof cultLine==="function"&&cultLine())?"\n"+cultLine():"")+
     ((typeof occPowerHere==="function"&&occPowerHere())
       ?"\nФЛАГ СМЕНИЛСЯ · "+powerOf(occPowerHere().by).ru.toUpperCase()+
         " · треть выработки в реквизицию":"");
@@ -71540,6 +71851,7 @@ function renderCantina(){
     if(typeof circBlock==="function")circBlock();     /* бумага сверху (M381) */
     if(typeof dipBlock==="function")dipBlock();       /* письмо и обмен (M386) */
     if(typeof secBlock==="function")secBlock();       /* ретранслятор и талон (M387) */
+    if(typeof cultBlock==="function")cultBlock();     /* свод, гонка, спектакль (M388) */
   }else if(cantSel==="counter"){
     secHead("У СТОЙКИ",{back});
     if(typeof putOnTable==="function")tableBlock();

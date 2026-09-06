@@ -60,6 +60,7 @@ function snapshot(){
     episodes:G.episodes,notebook:G.notebook,gifts:G.gifts,mslBy:G.mslBy,
     bonds:G.bonds,coupN:G.coupN,
     letter:G.letter||null,dipSwapN:G.dipSwapN,smugN:G.smugN,smugBy:G.smugBy,
+    longHod:G.longHod,race:G.race||null,raceBest:G.raceBest,
     drones:G.drones,droneInventory:G.droneInventory,droneIds:G.droneIds,droneSold:G.droneSold||{},crew:G.crew,bases:G.bases,
     mgrs:G.mgrs,blueprints:G.blueprints,aiRift:G.aiRift,rogues:G.rogues,exiles:G.exiles,
     relics:G.relics,relicHint:G.relicHint,bio:G.bio,home:G.home,course:G.course||null,
@@ -221,6 +222,11 @@ function applySave(s){
   /* чужой талон в баках (M387): клеймо живёт сутки и переживает выход из игры */
   G.smugN=(typeof s.smugN==="number")?s.smugN:undefined;
   G.smugBy=(typeof s.smugBy==="string")?s.smugBy:undefined;
+  /* «Долгий Ход» и олимпиада (M388): собранные обрывки и своё время — это то,
+     что игрок сделал сам, значит оно живёт в сейве, как книжная полка */
+  G.longHod=Array.isArray(s.longHod)?s.longHod:[];
+  G.race=(s.race&&typeof s.race==="object")?s.race:null;
+  G.raceBest=s.raceBest|0||undefined;
   G.shipId=shipData(s.shipId)?s.shipId:"strizh";
   G.owned=Object.assign({strizh:true},s.owned||{});
   /* старое сохранение знает только s.mods — считаем, что всё купленное и установлено.

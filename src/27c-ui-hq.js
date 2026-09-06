@@ -99,6 +99,7 @@ function renderCantina(){
     if(typeof circBlock==="function")circBlock();     /* бумага сверху (M381) */
     if(typeof dipBlock==="function")dipBlock();       /* письмо и обмен (M386) */
     if(typeof secBlock==="function")secBlock();       /* ретранслятор и талон (M387) */
+    if(typeof cultBlock==="function")cultBlock();     /* свод, гонка, спектакль (M388) */
   }else if(cantSel==="counter"){
     secHead("У СТОЙКИ",{back});
     if(typeof putOnTable==="function")tableBlock();

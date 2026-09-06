@@ -651,7 +651,11 @@ planet's dump/dome/strip drawn. Deeds with no counter yet (pirate bases boarded,
 monuments, nodes) join the rung score when their hooks are written.
 
 
-# The war — queued (M360–M388, designed 2026-09-06)
+# ~~The war — queued (M360–M388, designed 2026-09-06)~~ — closed 0.388.0 (2026-09-06)
+
+**Все двадцать девять вех закрыты**: бой (M360–M363), мир (M364–M375), все (M376–M381) и семь
+семей механик Директора (M382–M388). Дальше по войне — только то, что помечено «Deferred» в
+§18 к своей вехе; отдельной очереди больше нет.
 
 Design in `docs/DESIGN-war.md`: laws §0, helm §1, guns §2, mounts §3, energy/shields/missiles
 §4, pirate roles §5, episodes instead of reputation §6, six powers and the chronicle §7, the
@@ -769,7 +773,10 @@ Three stages, each playable on /dev before the next starts:
   ни пикетов, вдвое пиратов, снимает его счётчик расчистки; шпион врёт ценами в обе стороны;
   молчащая волна чинится сканированием; досмотр окликает вдвое дальше; бак мимо талона —
   контрабанда на сутки) ·
-  culture.
+  ~~M388 science and culture~~ (0.388.0: радиоспектакль «Седьмая смена» — шесть частей по суткам
+  и шесть версий у каждой; экспедиция со счётчиком сканирований и обрывком «Долгого Хода» — шесть
+  написанных кусков, собираются как книги; новая серия завода на месяц; олимпиада флота — старт,
+  финиш и своё время, у толпы только явка). **Очередь M360–M388 закрыта.**
 
 Measured from M360 on: `prof()` with eight armed ships on the phone layout; the pad row on the
 44 px sweep (`91zzy-screens`); `91zzzw-chron` replay hashes browser vs Node.

@@ -7,6 +7,36 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.388.0 - M388: the Director's last family — science and culture, and the war queue closes
+
+**Радиоспектакль «Седьмая смена».** For six days out of every twenty-eight the ether tells a
+serial — a chapter a day, six chapters, and each chapter exists in all six voices. One plot: a
+watch takes a signal, goes, finds the wrong thing, stays anyway, and comes back to a home it does
+not recognise. ГЛАВТРАССА reports it fulfilled at 104 %, the Company counts it as profit that
+cannot be sold, the Order files it in triplicate and loses the second copy, and the workshop just
+says put the kettle on, this will take a while. On a wave silenced by a leak (M385) there is no
+play — the serial goes through the ether, not past it.
+
+**Экспедиция и обрывок «Долгого Хода».** The Director's expedition arc now has something to put
+your hands to: 200 `scan` deeds in that power's systems, counted from the сводка the arc began,
+and the expedition finds — not an ore body, but a page of somebody else's chronicle. Six
+fragments, hand-written like the forty books of M202 and collected the same way, one at a time,
+giving nothing but themselves.
+
+**Новая серия завода.** For a month one power's counters carry its own series of guns — a tier
+higher and with a name («Ладога-3», «Зубр-70»). The name lives in the board line and not in the
+part: a part must rebuild from a save exactly as it was issued, and baking a calendar month into
+it would mean a new generator generation for the sake of a label.
+
+**Олимпиада флота.** A race along the трасса, three days out of every fifteen: one button at the
+start, one at the finish no nearer than six sectors, and clean elapsed time between them. Your
+time is yours and your best is kept; what goes to the crowd is attendance and nothing else — the
+postcard rule holds here too, so there is no table of champions and no names in it.
+
+That is the seventh family, and with it the war queue **M360–M388 is closed**: the fight, the
+world, everyone, and the Director's seven families of mechanics, in twenty-nine versions.
+
+---
 ## 0.387.0 - M387: the Director's sixth family — security, and the places with no law in them
 
 **Пиратский король.** For a week out of every twenty-four days the barons hold one area of the
