@@ -392,7 +392,7 @@ function tetherTick(dt){
 function flakTick(g,sh){
   let best=null,bd=g.range;
   for(const m of (G.msl||[])){
-    if(m.mine)continue;
+    if(!m.foe)continue;                       /* по своим ракетам зенитка не бьёт */
     const d=Math.hypot(m.x-sh.x,m.y-sh.y);
     if(d<bd){bd=d;best=m;}
   }
@@ -408,6 +408,35 @@ function flakTick(g,sh){
   if(s3){s3.flak=1;s3.hom=.3;s3.tgt=best;}
   sfx("shot",{f:900,to:1400,d:.04,v:.1});
   return true;
+}
+/* ── зенитка чужая (M367) ──
+   С капитана и выше корабль умеет снимать то, что летит в него. Приём тот же,
+   что у вашей зенитки, и виден так же: выстрел, а не скрытый бросок. Именно
+   поэтому торпеду — медленную и жирную — сбивают чаще всего.
+   Спасибо этому и ловушка получает смысл: чужой зенитке всё равно, за чем
+   гнаться, а вашей ловушке — нет. */
+function foeFlak(p,dt){
+  if((p.rank|0)<2||p.hull<=0)return;
+  p.flakCool=(p.flakCool||0)-dt;
+  if(p.flakCool>0)return;
+  let best=null,bd=420;
+  for(const m of (G.msl||[])){
+    if(m.foe)continue;                        /* свои чужому не мешают */
+    const d=Math.hypot(m.x-p.x,m.y-p.y);
+    if(d<bd){bd=d;best=m;}
+  }
+  /* и по вашей плазме — то же правило, что у вашей зенитки по чужой */
+  for(const s2 of (G.shots||[])){
+    if(s2.owner!=="player"||!s2.blob)continue;
+    const d=Math.hypot(s2.x-p.x,s2.y-p.y);
+    if(d<bd){bd=d;best=s2;}
+  }
+  if(!best)return;
+  const a=Math.atan2(best.y-p.y,best.x-p.x);
+  fireShot(p.x,p.y,a,11,1,p.owner||"pirate","kin",420);
+  const s2=G.shots[G.shots.length-1];
+  if(s2){s2.flak=1;s2.hom=.34;s2.tgt=best;}
+  p.flakCool=34;
 }
 /* сбитая зениткой цель исчезает: попадание по ракете или сгустку, не по корпусу */
 function flakCatch(dt){

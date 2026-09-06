@@ -18,6 +18,39 @@ const MSL_SPEED=3.4;     // стартовая; разгоняется до MSL_
 const MSL_VMAX=8.6;
 const MSL_LIFE=280;      // кадров до самоликвидации: промах — это потеря
 const MSL_ARM=14;        // первые кадры летит прямо, наведение ещё не включилось
+/* ══════════════ пять видов боеприпаса (M367, §4) ══════════════
+   Пусковая одна, а ракеты разные — и различаются они не уроном, а тем, ЗАЧЕМ
+   их пускают. Вид берётся из seed самой пусковой: часть, лежащая в трюме, уже
+   знает, чем она стреляет, и это видно на карточке.
+
+   обычная — знает метку, ведёт упреждение; всё как было;
+   роевая  — шесть маленьких, по одной на каждую взятую метку;
+   ЭМИ     — урона почти нет: поле в ноль и две секунды молчания;
+   торпеда — медленная, тупая (не доворачивает), огромная; её сбивают зениткой;
+   ловушка — уходит В СТОРОНУ от метки и тянет на себя чужие ракеты.
+
+   Своих ловушка не путает: у чужой ракеты своя. */
+const MSL_KINDS={
+  plain:{ru:"обычная",   dmg:1,   turn:1,  speed:1,  n:1,
+    note:"знает метку и ведёт упреждение"},
+  swarm:{ru:"роевая",    dmg:.34, turn:1.2,speed:1.1,n:6,
+    note:"шесть малых: расходятся по всем взятым меткам"},
+  emp:  {ru:"ЭМИ",       dmg:.12, turn:.9, speed:1,  n:1,emp:1,
+    note:"урона почти нет: поле в ноль и две секунды молчания"},
+  torp: {ru:"торпеда",   dmg:3.2, turn:0,  speed:.55,n:1,big:1,
+    note:"медленная и тупая, зато страшная; её сбивают зениткой"},
+  decoy:{ru:"ловушка",   dmg:0,   turn:.6, speed:1.2,n:1,decoy:1,
+    note:"уходит в сторону и тянет на себя чужие ракеты"}
+};
+const MSL_KEYS=Object.keys(MSL_KINDS);
+function mslKindOf(part){
+  if(!part)return MSL_KINDS.plain;
+  return MSL_KINDS[MSL_KEYS[(part.seed>>>9)%MSL_KEYS.length]]||MSL_KINDS.plain;
+}
+function mslKindKeyOf(part){
+  if(!part)return "plain";
+  return MSL_KEYS[(part.seed>>>9)%MSL_KEYS.length];
+}
 /* ── откуда они берутся ──
    Не с прилавка: ракеты собирают там же, где части, из того же редкого сырья
    (03-ships, CRAFT_TIERS). Своя работающая лаборатория (12h-relic) добавляет к
@@ -87,11 +120,25 @@ function mslFire(){
   const tgt=(mk&&mk.hull>0)?mk:mslPick(sh,st.see*1.2);
   if(!tgt){G.mslCool=30;say("НЕТ ЦЕЛИ ПО НОСУ");return false;}
   G.cargo.missile--;                              // расход из трюма, а не из счётчика
+  /* вид боеприпаса — от пусковой (M367): роевая уходит по всем меткам,
+     ловушка — В СТОРОНУ, торпеда не доворачивает вовсе */
+  const KP=(typeof fittedOfKind==="function")?fittedOfKind("missile"):null;
+  const K=mslKindOf(KP);
   G.mslCool=st.mslCool;
   if(!G.msl)G.msl=[];
-  G.msl.push({x:sh.x+Math.cos(sh.a)*14,y:sh.y+Math.sin(sh.a)*14,
-    vx:sh.vx+Math.cos(sh.a)*MSL_SPEED,vy:sh.vy+Math.sin(sh.a)*MSL_SPEED,
-    a:sh.a,tgt,dmg:st.mslDmg,turn:st.mslTurn,life:MSL_LIFE,age:0,puff:0});
+  const marks=(G.marks||[]).filter(m=>m&&m.hull>0);
+  const n=Math.max(1,K.n|0);
+  for(let i=0;i<n;i++){
+    /* роевая делит себя по взятым меткам; остальным видам метка одна */
+    const t2=K.n>1?(marks[i%Math.max(1,marks.length)]||tgt):tgt;
+    const spread=K.n>1?(i/(n-1)-.5)*.9:0;
+    const a0=sh.a+spread+(K.decoy?(i%2?1:-1)*1.1:0);
+    G.msl.push({x:sh.x+Math.cos(a0)*14,y:sh.y+Math.sin(a0)*14,
+      vx:sh.vx+Math.cos(a0)*MSL_SPEED*K.speed,vy:sh.vy+Math.sin(a0)*MSL_SPEED*K.speed,
+      a:a0,tgt:K.decoy?null:t2,dmg:st.mslDmg*K.dmg,turn:st.mslTurn*K.turn,
+      life:MSL_LIFE,age:0,puff:0,kind:mslKindKeyOf(KP),
+      emp:K.emp?1:0,decoy:K.decoy?1:0,big:K.big?1:0});
+  }
   sfx("shot",{f:190,to:110,d:.26,v:.5});
   return true;
 }
@@ -109,6 +156,20 @@ function mslBoom(m,hit){
     G.pirates=G.pirates.filter(q=>q.hull>0);
   }
 }
+/* ── ракета чужая (M367) ──
+   С капитана и выше пират носит пусковую. Его ракета ведёт ВАС, сбивается
+   зениткой и ловится ловушкой — то есть живёт по тем же правилам, что ваша.
+   Разница одна: её никто не собирал в лаборатории, она приходит с рангом. */
+function mslFoeFire(p){
+  if(!G.msl)G.msl=[];
+  if(G.msl.filter(m=>m.foe).length>=6)return false;
+  const a=Math.atan2(G.ship.y-p.y,G.ship.x-p.x);
+  G.msl.push({x:p.x+Math.cos(a)*14,y:p.y+Math.sin(a)*14,
+    vx:(p.vx||0)+Math.cos(a)*MSL_SPEED,vy:(p.vy||0)+Math.sin(a)*MSL_SPEED,
+    a,tgt:null,foe:1,dmg:MSL_DMG*.5,turn:MSL_TURN*.8,life:MSL_LIFE,age:0,puff:0,kind:"plain"});
+  sfx("shot",{f:170,to:120,d:.22,v:.4});
+  return true;
+}
 function mslTick(dt){
   if(G.mslCool>0)G.mslCool-=dt;
   if(G.mslFx)for(let i=G.mslFx.length-1;i>=0;i--){
@@ -120,7 +181,20 @@ function mslTick(dt){
     m.age+=dt;m.life-=dt;
     /* цель сбита кем-то другим или ушла — ракета продолжает лететь по прямой и
        догорает. Никакого перенацеливания: потраченное потрачено. */
-    const t=(m.tgt&&m.tgt.hull>0&&(G.pirates||[]).indexOf(m.tgt)>=0)?m.tgt:null;
+    /* ловушка (M367) не ведёт никого — она ЛОВИТ: чужая ракета рядом с ней
+       переводит наведение на неё и уходит в пустоту */
+    if(m.decoy){
+      for(const o of G.msl){
+        if(o===m||!o.foe)continue;
+        if(Math.hypot(o.x-m.x,o.y-m.y)<260)o.lure=m;
+      }
+    }
+    /* кого ведёт эта ракета: ловушка перебивает всё, чужая ведёт вас,
+       своя — свою метку (M367) */
+    let t=null;
+    if(m.lure&&G.msl.indexOf(m.lure)>=0)t=m.lure;
+    else if(m.foe)t=G.ship;
+    else if(m.tgt&&m.tgt.hull>0&&(G.pirates||[]).indexOf(m.tgt)>=0)t=m.tgt;
     if(t&&m.age>MSL_ARM){
       /* упреждение по той же скорости, что уже считает бой: ракета целит туда,
          где цель будет, иначе она вечно догоняет хвост */
@@ -133,26 +207,59 @@ function mslTick(dt){
     m.vx=Math.cos(m.a)*sp;m.vy=Math.sin(m.a)*sp;
     m.x+=m.vx*dt;m.y+=m.vy*dt;
     let hit=null;
-    for(const p of G.pirates||[]){
+    if(m.foe){
+      /* чужая ракета ищет вас — и только вас: пиратов она не трогает */
+      if(Math.hypot(G.ship.x-m.x,G.ship.y-m.y)<26){
+        const ang=Math.atan2(m.vy,m.vx);
+        if(typeof playerHit==="function")playerHit({vx:Math.cos(ang),vy:Math.sin(ang),
+          dmg:m.dmg,type:"blast",owner:"pirate",mine:false});
+        mslBoom(m,null);G.msl.splice(i,1);continue;
+      }
+    }else for(const p of G.pirates||[]){
       if(p.hull<=0)continue;
       if(Math.hypot(p.x-m.x,p.y-m.y)<26){hit=p;break;}
+    }
+    /* ЭМИ: поле в ноль и две секунды молчания вместо урона (M367) */
+    if(hit&&m.emp){
+      hit.shield=0;hit.shieldOff=(typeof SHIELD_OFF==="number")?SHIELD_OFF:120;
+      hit.shieldHit=(typeof SHIELD_DELAY==="number")?SHIELD_DELAY:90;
+      hit.stunT=Math.max(hit.stunT||0,(typeof STUN_TIME==="number")?STUN_TIME:170);
     }
     if(hit||m.life<=0){mslBoom(m,hit);G.msl.splice(i,1);}
   }
 }
+/* ── как выглядит каждая (M367) ──
+   Решение принимается по следу за полсекунды, значит след и должен говорить:
+   чья ракета (чужая — красная, как чужой выстрел), какая она (торпеда толстая и
+   медленная, рой мелкий, ЭМИ холодная, ловушка бледная и без огня). Цвет тут не
+   украшение: не сбив торпеду, вы теряете четверть корпуса. */
+const MSL_PAINT={
+  plain:{head:"rgba(255,214,150,.9)",tail:"rgba(255,120,60,0)",dot:"#e8ecf2",r:1.9,len:9},
+  swarm:{head:"rgba(255,226,170,.85)",tail:"rgba(255,140,70,0)",dot:"#dfe6ee",r:1.2,len:6},
+  emp:  {head:"rgba(170,225,255,.9)", tail:"rgba(90,150,255,0)",dot:"#dff0ff",r:1.7,len:8},
+  torp: {head:"rgba(255,176,96,.95)", tail:"rgba(220,70,40,0)", dot:"#f2e6d8",r:3.2,len:13},
+  decoy:{head:"rgba(214,214,206,.55)",tail:"rgba(150,150,140,0)",dot:"#b9bcb4",r:1.5,len:5}
+};
+const MSL_PAINT_FOE={head:"rgba(255,150,120,.9)",tail:"rgba(255,60,50,0)",dot:"#ffb0a2",r:1.9,len:9};
 function mslDraw(zx,zy,Z){
   for(const m of G.msl||[]){
     const x=zx(m.x),y=zy(m.y);
+    const P=m.foe?MSL_PAINT_FOE:(MSL_PAINT[m.kind]||MSL_PAINT.plain);
     /* факел длиннее самой ракеты: на масштабе системы корпус — три пикселя,
        и видно её именно по следу */
-    const bx=x-Math.cos(m.a)*9*Z,by=y-Math.sin(m.a)*9*Z;
+    const bx=x-Math.cos(m.a)*P.len*Z,by=y-Math.sin(m.a)*P.len*Z;
     const g=ctx.createLinearGradient(x,y,bx,by);
-    g.addColorStop(0,"rgba(255,214,150,.9)");
-    g.addColorStop(1,"rgba(255,120,60,0)");
-    ctx.strokeStyle=g;ctx.lineWidth=Math.max(1,2.6*Z);
+    g.addColorStop(0,P.head);
+    g.addColorStop(1,P.tail);
+    ctx.strokeStyle=g;ctx.lineWidth=Math.max(1,(m.big?3.6:2.6)*Z);
     ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(bx,by);ctx.stroke();
-    ctx.fillStyle="#e8ecf2";
-    ctx.beginPath();ctx.arc(x,y,Math.max(1,1.9*Z),0,TAU);ctx.fill();
+    ctx.fillStyle=P.dot;
+    ctx.beginPath();ctx.arc(x,y,Math.max(1,P.r*Z),0,TAU);ctx.fill();
+    /* ловушка мигает: она и работает тем, что заметна больше, чем есть */
+    if(m.decoy&&(m.age|0)%20<8){
+      ctx.strokeStyle="rgba(214,214,206,.35)";ctx.lineWidth=Math.max(1,Z);
+      ctx.beginPath();ctx.arc(x,y,Math.max(2,4.5*Z),0,TAU);ctx.stroke();
+    }
   }
   for(const f of G.mslFx||[]){
     const a=Math.max(0,f.t/18),r=(1-a)*34*Z+4;

@@ -1019,7 +1019,13 @@ One system inside ГЛАВТРАССА's centre (r ≈ 6, fixed by seed, never t
   affix entries CLONED so the first generation is untouched. Learned: **a table entry earns its
   line by reusing an implemented habit** — twenty named guns cost no new behaviour code and are
   honest for exactly that reason. Still owed to M369: the maker grammar over factories (§19.2).
-- **M367** missiles ×5; зенитка in the loop.
+- ~~**M367** missiles ×5; зенитка in the loop~~ — 0.367.0 (2026-09-06): five ammo
+  kinds off the launcher's own seed (обычная, роевая over `G.marks`, ЭМИ, торпеда, ловушка), the kind on the
+  опись card, `mslFoeFire` from капитан up, `foeFlak` for rank ≥ 2 over missiles and plasma
+  alike. Each kind is read off its trail — length,
+  width, colour and the lure's blink — and a foe missile wears the red of a foe shot.
+  **Deferred:** the missile is still one shape (a head and a flame); a torpedo silhouette of its
+  own rides the drawing pass with the deserter art (M369a).
 - **M368** pirate loadouts by rank (deserter art waits for M369).
 
 **Stage B — the powers, by seed** (client only; the galaxy lives with no server)

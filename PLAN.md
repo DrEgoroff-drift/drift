@@ -686,7 +686,10 @@ Three stages, each playable on /dev before the next starts:
   кассета, трос, таран; жар, горение и молчание перегретого; `PART_GEN` 2 с настоящим замком
   на первое поколение; долг M362 отдан — бак на утилиту, прыжок на двигатель, реактору
   ёмкость и восполнение)
-  · M367 missiles · M368 pirate loadouts.
+  · ~~M367 missiles ×5~~ (0.367.0, 2026-09-06: `16b-missile` пять видов боеприпаса от зерна
+  самой пусковой — обычная, роевая по взятым меткам, ЭМИ в поле и молчание, торпеда без доводки,
+  ловушка в сторону; чужая ракета с капитана и чужая зенитка с ранга 2; вид на карточке описи;
+  тесты `91zzzw-msl`) · M368 pirate loadouts.
 - **B — the powers, by seed** (client only; the galaxy lives with no server): M369 the maker
   grammar layer on `hullOf`, measured by `makerRead()`, «Ялта» · M369a the grammar in the fleet,
   barges, pirate hulls, stations, domes, papers · M369b the having of things · M370 chronicle core (integer replay, hash, clock, geometry) · M371 the Director ·

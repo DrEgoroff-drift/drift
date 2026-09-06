@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 449 · символов верхнего уровня: 3974
+Файлов: 450 · символов верхнего уровня: 3984
 
 ## СИМВОЛЫ
 
@@ -80,11 +80,11 @@ allyOf                       src/27b-ui-crew.js:8
 allyWork                     src/12a-crew.js:585
 ambK                         src/19c-light.js:115
 ambRGB                       src/19c-light.js:100
-AMMO_BATCH                   src/16b-missile.js:26
-AMMO_COST                    src/16b-missile.js:25
+AMMO_BATCH                   src/16b-missile.js:59
+AMMO_COST                    src/16b-missile.js:58
 AMMO_KEYS                    src/02-world.js:90
-ammoBatch                    src/16b-missile.js:27
-ammoRow                      src/16b-missile.js:41
+ammoBatch                    src/16b-missile.js:60
+ammoRow                      src/16b-missile.js:74
 ANCHOR_CACHE                 src/05-parts.js:202
 angDiff                      src/01-core.js:93
 angWrap                      src/01-core.js:92
@@ -598,7 +598,7 @@ countyNoiseTick              src/11l-county.js:47
 countyPoiK                   src/11l-county.js:36
 CRAFT_TIERS                  src/03-ships.js:80
 craftAffordable              src/03-ships.js:85
-craftAmmo                    src/16b-missile.js:28
+craftAmmo                    src/16b-missile.js:61
 craftPart                    src/03-ships.js:90
 CRASH_SHIP                   src/01a-crashlog.js:19
 crashAt                      src/28-loop.js:284
@@ -814,7 +814,7 @@ drawCelest                   src/06a-celest.js:167
 drawChunks                   src/18c-chunks.js:83
 drawClouds                   src/19e-clouds.js:382
 drawCockpit                  src/25-cockpit.js:400
-drawCombat                   src/13-pirates.js:267
+drawCombat                   src/13-pirates.js:269
 drawCosmMark                 src/12va-wander-cosm.js:112
 drawCrowns                   src/05a-nodes.js:379
 drawCrystalForest            src/20aa-poi-shapes.js:115
@@ -1096,7 +1096,7 @@ fitPart                      src/05-parts.js:338
 fittedGuns                   src/05-parts.js:272
 fittedOfKind                 src/05-parts.js:263
 fittedParts                  src/05-parts.js:294
-flakCatch                    src/13a-guns.js:413
+flakCatch                    src/13a-guns.js:442
 flakTick                     src/13a-guns.js:392
 FLEA_EPOCH                   src/12ua-flea.js:26
 FLEA_GOT                     src/12ua-flea.js:27
@@ -1157,6 +1157,7 @@ fleetUniqueName              src/04b-fleet.js:100
 flightCam                    src/16a-space.js:316
 floraOf                      src/20e-species.js:91
 FOE_KINDS                    src/24a-mode-raid.js:17
+foeFlak                      src/13a-guns.js:418
 foldBlock                    src/26-ui-station.js:221
 FOLK                         src/12u-folk.js:31
 FOLK_IDS                     src/12u-folk.js:81
@@ -1509,7 +1510,7 @@ holdSkyMul                   src/12ag-holdfx.js:117
 holdTechMul                  src/12ag-holdfx.js:119
 holdTestStation              tests/91x-hold.js:2
 holdUklad                    src/12ah-holdnews.js:19
-holdWorth                    src/27j-ui-opis.js:525
+holdWorth                    src/27j-ui-opis.js:528
 holEtherLine                 src/11am-holiday.js:77
 HOLIDAYS                     src/11am-holiday.js:22
 holIs                        src/11am-holiday.js:74
@@ -1558,7 +1559,7 @@ homeSpotX                    src/21f-home-out.js:34
 homeStore                    src/12j-home.js:195
 homeTurn                     src/12j-home.js:46
 homeUpWorld                  tests/91zzzc-home-up.js:5
-homingStep                   src/13a-guns.js:452
+homingStep                   src/13a-guns.js:481
 HOURS_COIN                   src/11h-hours.js:87
 HOURS_ETHER                  src/11h-hours.js:23
 hoursAll                     src/11h-hours.js:31
@@ -1743,7 +1744,7 @@ keyMap                       src/15-input.js:133
 keyRow                       src/27-ui-ship.js:44
 keys                         src/08-state.js:57
 keyStateOK                   tests/91zzzzze-keys.js:23
-killPirate                   src/13-pirates.js:226
+killPirate                   src/13-pirates.js:228
 killRock                     src/24-mode-belt.js:151
 KINO_EVERY                   src/27da-kino.js:20
 KINO_REEL                    src/27da-kino.js:23
@@ -2128,6 +2129,8 @@ mixPal                       src/02a-worldmix.js:34
 mkCanvas                     src/18c-chunks.js:59
 mkMerc                       tests/91b-crew.js:3
 mkSystems                    tests/91zzzzzf-market.js:18
+mlFit                        tests/91zzzw-msl.js:16
+mlLauncher                   tests/91zzzw-msl.js:8
 modCost                      src/11-log.js:140
 MODE_RU                      src/27i-ui-table.js:29
 modeRu                       src/27i-ui-table.js:32
@@ -2144,16 +2147,23 @@ mouseWalkAt                  src/15-input.js:391
 MSL_ARM                      src/16b-missile.js:20
 MSL_COOL                     src/16b-missile.js:16
 MSL_DMG                      src/16b-missile.js:14
+MSL_KEYS                     src/16b-missile.js:45
+MSL_KINDS                    src/16b-missile.js:33
 MSL_LIFE                     src/16b-missile.js:19
+MSL_PAINT                    src/16b-missile.js:236
+MSL_PAINT_FOE                src/16b-missile.js:243
 MSL_SPEED                    src/16b-missile.js:17
 MSL_TURN                     src/16b-missile.js:15
 MSL_VMAX                     src/16b-missile.js:18
-mslBoom                      src/16b-missile.js:98
-mslCheck                     src/16b-missile.js:72
-mslDraw                      src/16b-missile.js:143
-mslFire                      src/16b-missile.js:79
-mslPick                      src/16b-missile.js:57
-mslTick                      src/16b-missile.js:112
+mslBoom                      src/16b-missile.js:145
+mslCheck                     src/16b-missile.js:105
+mslDraw                      src/16b-missile.js:244
+mslFire                      src/16b-missile.js:112
+mslFoeFire                   src/16b-missile.js:163
+mslKindKeyOf                 src/16b-missile.js:50
+mslKindOf                    src/16b-missile.js:46
+mslPick                      src/16b-missile.js:90
+mslTick                      src/16b-missile.js:173
 MUS                          src/10-music.js:100
 MUS_LAYERS                   src/10-music.js:102
 MUS_WET                      src/10-music.js:105
@@ -2301,8 +2311,8 @@ OPIS_SHIP                    src/27j-ui-opis.js:35
 opisActs                     src/27j-ui-opis.js:467
 opisArmed                    src/27j-ui-opis.js:160
 opisAsk                      src/27j-ui-opis.js:195
-opisAskForm                  src/27j-ui-opis.js:571
-opisBar                      src/27j-ui-opis.js:591
+opisAskForm                  src/27j-ui-opis.js:574
+opisBar                      src/27j-ui-opis.js:594
 opisCanDump                  src/27j-ui-opis.js:194
 opisCard                     src/27j-ui-opis.js:453
 opisConfirm                  src/27j-ui-opis.js:161
@@ -2317,23 +2327,23 @@ opisDump                     src/27j-ui-opis.js:199
 opisFit                      src/27j-ui-opis.js:166
 opisFocus                    src/27j-ui-opis.js:65
 opisGhostMove                src/27j-ui-opis.js:266
-opisHead                     src/27j-ui-opis.js:565
+opisHead                     src/27j-ui-opis.js:568
 opisHullRedraw               src/27j-ui-opis.js:347
 opisHullSlotAt               src/27j-ui-opis.js:364
-opisKitCard                  src/27j-ui-opis.js:556
+opisKitCard                  src/27j-ui-opis.js:559
 opisKitFuture                src/27j-ui-opis.js:107
-opisLeave                    src/27j-ui-opis.js:841
+opisLeave                    src/27j-ui-opis.js:844
 opisLift                     src/27j-ui-opis.js:240
 opisMarkCan                  src/27j-ui-opis.js:271
 opisMarkOver                 src/27j-ui-opis.js:287
 opisPanel                    src/27j-ui-opis.js:115
 opisPanels                   src/27j-ui-opis.js:139
-opisPartCard                 src/27j-ui-opis.js:493
+opisPartCard                 src/27j-ui-opis.js:496
 opisPartHtml                 src/27j-ui-opis.js:478
 opisPhone                    src/27j-ui-opis.js:62
-opisPileCard                 src/27j-ui-opis.js:534
-opisPriceCue                 src/27j-ui-opis.js:515
-opisRender                   src/27j-ui-opis.js:608
+opisPileCard                 src/27j-ui-opis.js:537
+opisPriceCue                 src/27j-ui-opis.js:518
+opisRender                   src/27j-ui-opis.js:611
 opisRerender                 src/27j-ui-opis.js:63
 opisSame                     src/27j-ui-opis.js:64
 opisScrap                    src/27j-ui-opis.js:182
@@ -2391,7 +2401,7 @@ parrotDraw                   src/12y-parrot-face.js:264
 parrotFind                   src/12x-parrot.js:30
 parrotFrame                  src/12y-parrot-face.js:684
 parrotHas                    src/12x-parrot.js:25
-parrotHeardKill              src/13-pirates.js:222
+parrotHeardKill              src/13-pirates.js:224
 parrotLine                   src/12y-parrot-face.js:641
 parrotPoke                   src/12y-parrot-face.js:657
 parRow                       src/12y-parrot-face.js:141
@@ -2747,7 +2757,7 @@ raidUp                       src/24aa-raid-draw.js:8
 RAM_K                        src/13a-guns.js:44
 RAM_R                        src/13a-guns.js:43
 ramp                         src/07-planet.js:2
-ramTick                      src/13a-guns.js:432
+ramTick                      src/13a-guns.js:461
 RANGE_DIST                   src/24d-range.js:13
 RANGE_SEC                    src/24d-range.js:12
 rangeCanHere                 src/24d-range.js:15
@@ -4440,13 +4450,13 @@ zooTick                      src/11ad-zoo.js:41
 ## src/13-pirates.js · 23 КБ
   · пираты:1
 
-## src/13a-guns.js · 21 КБ
+## src/13a-guns.js · 22 КБ
   · повадки семейств (M364, §2.1):1
 
 ## src/13b-occupy.js · 18 КБ
   · пираты берут системы:1
 
-## src/13c-roles.js · 7 КБ
+## src/13c-roles.js · 8 КБ
   · роли пиратов по рангу (M361, §5):1
 
 ## src/14-save.js · 64 КБ
@@ -4476,8 +4486,9 @@ zooTick                      src/11ad-zoo.js:41
 ## src/16a-space.js · 37 КБ
   · облик системы:1
 
-## src/16b-missile.js · 10 КБ
+## src/16b-missile.js · 17 КБ
   · ракеты: боеприпас — это груз:1
+  · пять видов боеприпаса (M367, §4):21
 
 ## src/17-mode-system.js · 43 КБ
   · режим: система:1
@@ -5259,6 +5270,9 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzzw-helm.js · 10 КБ
   · штурвал (M360):1
+
+## tests/91zzzw-msl.js · 8 КБ
+  · пять видов боеприпаса (M367, §4):1
 
 ## tests/91zzzw-relay.js · 10 КБ
   · M218: приёмники как места:1

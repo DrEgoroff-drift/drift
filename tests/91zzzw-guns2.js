@@ -55,7 +55,7 @@ TEST_SUITES.push(()=>suite("орудия M364: у каждого семейст�
       Math.round((foe.hullMax-foe.hull)*100)+Math.round((Math.hypot(foe.vx,foe.vy))*100);
     /* зенитке нужна цель в воздухе, тарану — столкновение: у обоих «сработал»
        означает не выстрел. Даём им их повод и меряем след. */
-    if(F.fx==="flak"){G.msl=[{x:120,y:0,vx:-4,vy:0,mine:false}];}
+    if(F.fx==="flak"){G.msl=[{x:120,y:0,vx:-4,vy:0,foe:1}];}
     if(F.fx==="ram"){foe.x=12;foe.y=0;G.ship.vx=3;G.ramOn=true;}
     const n0=mark();
     gunFireOnce(g,G.ship,foe,0,()=>.5);

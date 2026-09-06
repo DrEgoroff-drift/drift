@@ -484,7 +484,10 @@ function opisPartHtml(p){
   const fam=(p.fam&&GUN_FAMILY[p.fam])?GUN_FAMILY[p.fam].ru.toLowerCase()+" · ":"";
   /* у именного вместо завода — история: она и есть его карточка (M366) */
   const N=(p.named&&typeof GUN_NAMED_BY_ID!=="undefined")?GUN_NAMED_BY_ID[p.named]:null;
-  const made=N?"<br>именное · "+N.note:(p.fam?"<br>"+GUN_FACTORY[p.fact].ru+" · серия "+p.ser:"");
+  /* пусковая знает свой боеприпас (M367): он от её же зерна, и это на карточке */
+  const MK=(p.kind==="missile"&&typeof mslKindOf==="function")?mslKindOf(p):null;
+  const made=N?"<br>именное · "+N.note:(MK?"<br>"+MK.ru+" · "+MK.note:
+    (p.fam?"<br>"+GUN_FACTORY[p.fact].ru+" · серия "+p.ser:""));
   const seal=(typeof partSealed==="function"&&partSealed(p))?
     "<span class='dn'>опечатано · "+sealedWhy(p)+"</span> · ":"";
   return "<b>"+p.name+"</b><s>"+fam+(fam?"":K.ru.toLowerCase()+" · ")+TIER_RU[p.tier]+sz+made+

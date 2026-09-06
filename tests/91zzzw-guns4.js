@@ -37,7 +37,7 @@ TEST_SUITES.push(()=>suite("орудия M366: разряд, сгусток, з�
   G.msl=[];G.shots=[];
   const flak=gnGun("flak");
   eq(gunFireOnce(flak,G.ship,null,0,()=>.5),false,"нечего снимать — зенитка молчит");
-  G.msl=[{x:150,y:0,vx:-3,vy:0,mine:false}];
+  G.msl=[{x:150,y:0,vx:-3,vy:0,foe:1}];
   ok(gunFireOnce(flak,G.ship,null,0,()=>.5),"а по ракете стреляет сама");
   const f=G.shots[G.shots.length-1];
   ok(f&&f.flak===1,"и это зенитный выстрел");

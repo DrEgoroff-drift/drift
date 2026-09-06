@@ -179,6 +179,8 @@ function updateCombat(dt){
     if(p.shieldOff>0){p.shieldOff=Math.max(0,p.shieldOff-dt);p.shield=0;}
     if(p.jamT>0){p.jamT=Math.max(0,p.jamT-dt);}
     if(p.leadBreak>0)p.leadBreak=Math.max(0,p.leadBreak-dt);
+    /* с капитана и выше корабль снимает то, что летит в него (M367) */
+    if(typeof foeFlak==="function")foeFlak(p,dt);
     /* привязанный тросом теряет половину хода: гарпун держит, а не убивает */
     if(p.tether){p.vx*=Math.pow(.985,dt);p.vy*=Math.pow(.985,dt);p.tether=0;}
     if(p.shieldMax>0&&!(p.shieldOff>0)){

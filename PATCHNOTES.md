@@ -7,6 +7,36 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.367.0 - M367: five kinds of missile, and the launcher already knows which
+
+The war's eighth pass (`docs/DESIGN-war.md` §4, §18). The launcher stays one part; what comes out
+of it does not. The kind is taken from the launcher's own seed, so a launcher lying in the hold
+already knows what it fires, and the опись card says so before you fit it.
+
+**Обычная** — as it was: it knows the mark and leads it. **Роевая** — six small ones a press,
+one to each mark you have taken, a third of the damage each; against a single ship it is worse
+than a plain missile, against three it is not. **ЭМИ** — almost no damage at all: the field to
+zero, no regrowth for two seconds, and the ship itself quiet for the same. **Торпеда** — slow,
+dumb (it does not correct its course by a hair after launch) and three times the damage; it hits
+what cannot dodge, and it is what a captain's flak shoots down first. **Ловушка** — no damage
+and no target: it leaves at an angle to the nose and pulls foreign missiles onto itself.
+
+**And the other side has the same rules.** From капитан up a pirate carries a launcher: his
+missile leads you, your flak shoots it down, your ловушка takes it away. From rank two up he also
+carries flak of his own — over missiles and plasma alike, the same rule your flak follows — which
+is what finally makes the ловушка worth a slot: his flak does not care what it chases, yours does.
+
+**Read off the trail.** All five used to be one white dot and one orange flame. Now the trail says
+which: the torpedo is thick and long, the swarm small, the ЭМИ cold blue, the ловушка pale and
+blinking — and a foe missile wears the red of a foe shot, because deciding whether to shoot it
+down takes half a second and the colour is what you have.
+
+Tests: `91zzzw-msl` — all five kinds fall out of launcher seeds, the swarm splits over the marks,
+the ЭМИ empties the field and leaves the hull, the torpedo holds its course to the last decimal
+over twenty frames, the ловушка leaves off the nose and takes a foreign missile's guidance, a
+captain's missile reaches you, your flak kills it, his flak kills your torpedo and your plasma,
+and neither flak ever fires at its own side.
+
 ## 0.366.0 - M366: the last six families, twenty named guns, and the reactor debt paid
 
 The war's seventh pass (`docs/DESIGN-war.md` §2.1–§2.2, §18). Twenty families exist now, and
