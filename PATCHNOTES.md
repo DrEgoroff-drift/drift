@@ -7,6 +7,36 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.369.2 - M369b: how a foreign thing is actually had
+
+The maker layer stops being a look and becomes property (§19.3).
+
+**A part now has a maker too** (§19.2). It gives three things and no more: the name in that
+maker's typographic habit («PowerCore™ 400», «Typ 4/B», «двигатель «Éloise»», «двигатель, собран
+из трёх», «ДВИ-4 v2.1»), a ±12 % lean of its own affixes toward its doctrine, and one line on the
+опись card. Numbers stay inside the same tier — a maker is a bias, not a second tier. The compact
+save writes `b` only when it is not ГЛАВТРАССА, so every part already in a hold reads unchanged
+and the generation stays 2.
+
+**A workshop stocks what its power makes** — with about a quarter brought in from elsewhere, which
+is the only way to buy foreign iron without flying there.
+
+**A foreign hull is not for sale.** A shipyard of another power wants an episode with it
+(«разрешение на покупку»), and episodes do not exist until M374 — `hasEpisode()` asks for the real
+function and answers false until it appears. So today a foreign hull is had by **tow**: the black
+derelict in a far system can be put on the line, it rides in the save, and a shipyard restores it
+for a price — after which it is yours, with the yard it came off still in its grammar. «Ялта» is
+the one place that sells across the board, at twice the price.
+
+**The fuse** is where two makers meet on one hull: the heavier parent gives the grammar, the other
+is named on the card. And the picket notices: «На компанейском корпусе, а флаг наш? Записываю» —
+the flag is a transponder, and it stays yours.
+
+Tests: `91zzzx-maker` — the part's maker in the name, in the bias and through the pack/unpack
+circle (and its absence for ГЛАВТРАССА), no foreign hull on any counter while episodes do not
+exist, «Ялта» excepted, and the towed hull becoming a ship that remembers its yard while your flag
+stays your own.
+
 ## 0.369.1 - M369a: the same grammar everywhere else
 
 M369 put the maker on hulls; this pass hands the same table to the other four generators, which

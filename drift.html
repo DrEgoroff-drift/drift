@@ -1756,7 +1756,7 @@ body.table u.addr{color:#7a4a20}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.369.1";
+const VER="0.369.2";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -2286,7 +2286,20 @@ function fuseShips(idA,idB){
   base.cargo=Math.round(mix(A.cargo,B.cargo)*(1+gain));
   base.hull=Math.round(mix(A.hull,B.hull)*(1+gain));
   base.cls="лабораторный сплав";
-  base.note="Сплав «"+A.ru+"» и «"+B.ru+"». Поколение "+(g+1)+".";
+  /* единственное место, где две породы встречаются на одном корпусе (§19.3):
+     сплав берёт грамматику того родителя, чей вклад тяжелее, и помнит второго */
+  {
+    const ba=(typeof makerOf==="function")?makerOf(idA,A):"gt";
+    const bb=(typeof makerOf==="function")?makerOf(idB,B):"gt";
+    /* тяжелее тот, у кого больше корпус, трюм и бак вместе взятые */
+    const wa=(A.hull|0)+(A.cargo|0)+(A.fuel|0), wb=(B.hull|0)+(B.cargo|0)+(B.fuel|0);
+    base.by=wa>=wb?ba:bb;
+    base.by2=(ba===bb)?null:(wa>=wb?bb:ba);
+  }
+  base.note="Сплав «"+A.ru+"» и «"+B.ru+"». Поколение "+(g+1)+"."+
+    (base.by2&&typeof powerOf==="function"
+      ?" Обвод "+powerOf(base.by).ru+", повадки от "+powerOf(base.by2).ru+"."
+      :"");
   base.fused=g+1;
   const id="f"+seed;
   G.credits-=c.credits;
@@ -2330,12 +2343,30 @@ function timeBucket(){
   const period=(typeof mgrPerkOf==="function"&&mgrPerkOf("fact","stock"))?57600000:172800000;
   return Math.floor(Date.now()/period);
 }
+/* ── эпизод как разрешение на покупку корпуса (M369b, §19.3, D14) ──
+   Корпус — не деталь: чужой завод не продаёт его первому встречному. Нужен
+   эпизод с этим заводом («разрешение на покупку»), а эпизодов не существует до
+   M374 — значит сегодня чужой корпус можно только притащить на буксире или
+   купить в «Ялте», где торгуют все и со всеми (там же он и вдвое дороже).
+   Заглушка честная: она не «вернёт false навсегда», а спросит настоящую
+   функцию, как только та появится. */
+function hasEpisode(by){
+  if(typeof episodeWith==="function")return !!episodeWith(by);
+  return false;
+}
 function stationUniqueOffer(sys){
   if(!sys.station)return null;
   const r=rng(hashi(sys.seed,999,timeBucket()));
   const chance=.35+sysDanger(sys.sx,sys.sy)*.35;
   if(r()>chance)return null;
-  return genUniqueShip(hashi(sys.seed,4242,timeBucket()));
+  const sh=genUniqueShip(hashi(sys.seed,4242,timeBucket()));
+  /* корпус приходит с завода той державы, что держит станцию */
+  const stBy=(sys.station&&sys.station.by)||"gt";
+  const yalta=(typeof yaltaIs==="function")&&yaltaIs(sys.sx,sys.sy);
+  sh.by=stBy;
+  if(stBy!=="gt"&&!hasEpisode(stBy)&&!yalta)return null;   /* без эпизода не продадут */
+  if(yalta&&stBy!=="gt")sh.price=Math.round(sh.price*2/50)*50;   /* «Ялта»: вдвое */
+  return sh;
 }
 /* части в продаже: как и уникальный корабль — ничего не персистится,
    ассортимент детерминирован seed станции и временным бакетом */
@@ -2347,7 +2378,13 @@ function stationParts(sys){
   const out=[];
   for(let i=0;i<n;i++){
     const seed=hashi(sys.seed,i*613+17,bucket);
-    const part=genPart(seed,tierFromDanger(d,rng(seed)));
+    /* прилавок держит своё: на станции ГЛАВТРАССЫ лежит её железо, у Компании
+       её. Чужое сюда попадает как привезённое — примерно каждая четвёртая
+       вещь, и это единственный способ купить чужую часть, не летая туда */
+    const stBy=(sys.station&&sys.station.by)||"gt";
+    const pby=(rng(hashi(seed,7,3))()<.26&&typeof makerBySeed==="function")
+      ?makerBySeed(hashi(seed,11,5)):stBy;
+    const part=genPart(seed,tierFromDanger(d,rng(seed)),null,0,null,pby);
     /* репутация станции идёт и в цену железа: продавец тоже человек (12k-rep) */
     const price=Math.round((320+part.tier*part.tier*460+part.aff.length*180)*
       (.85+r()*.4)*repPartMul(sys)/10)*10;
@@ -5402,7 +5439,38 @@ function tierFromDanger(d,r){
    пересобираться тем же генератором, каким была выдана, иначе первая же
    правка таблиц молча переписывает игрокам их сборки. До M364 unpackPart
    звал genPart без него — обещание было, замка не было. */
-function genPart(seed,tier,kind,gen,named){
+/* ══════════════ завод части (M369b, §19.2) ══════════════
+   У каждой части есть изготовитель — тот же список, что у корпусов. Он даёт
+   ТРИ вещи и ни одной больше: имя (его типографскую повадку), небольшой перекос
+   аффиксов в сторону его доктрины и строку на карточке. Числа при этом остаются
+   в тех же границах: перекос — это ±12 %, а не второй тир.
+
+   `b` в упакованном виде необязателен: его отсутствие означает ГЛАВТРАССУ,
+   поэтому всё, что уже выдано игроку, читается как раньше и поколение менять
+   не надо (PART_GEN остаётся 2). */
+const PART_MAKER_BIAS={
+  gt:{},
+  co:{up:["rateMul","thrMul","mslLockMul"],down:["fuelAdd","enMul"]},
+  or:{up:["dmgMul","hullAdd"],down:["coneMul"]},
+  km:{up:["turnMul","scanAdd","enCapAdd"],down:["hullAdd"]},
+  ra:{up:["hullAdd","cargoMul","drillMul"],down:["spreadMul"]},
+  hf:{up:["scanAdd","leadMul","rangeMul"],down:["hullAdd"]}
+};
+const PART_MAKER_NAME={
+  gt:(k,r)=>null,                                        /* как было: своё имя */
+  co:(k,r)=>PART_KINDS[k].ru+"™ "+(100+Math.floor(r()*900)),
+  or:(k,r)=>"Typ "+(1+Math.floor(r()*9))+"/"+"ABCD"[Math.floor(r()*4)],
+  km:(k,r)=>PART_KINDS[k].ru+" «"+pick(["Éloise","Colette","Amie","Étoile","Marguerite"],r)+"»",
+  ra:(k,r)=>PART_KINDS[k].ru+", собран"+(PART_KINDS[k].g==="f"?"а":"")+" из трёх",
+  hf:(k,r)=>PART_KINDS[k].ru.slice(0,3).toUpperCase()+"-"+(1+Math.floor(r()*9))+" v"+
+    (1+Math.floor(r()*4))+"."+Math.floor(r()*10)
+};
+function partMaker(p){return (p&&p.by)||"gt";}
+function partMakerRu(p){
+  const by=partMaker(p);
+  return (by==="gt"||typeof powerOf!=="function")?"":powerOf(by).ru;
+}
+function genPart(seed,tier,kind,gen,named,by){
   const r=rng((seed>>>0)||1);
   tier=clamp(tier|0||1,1,5);
   kind=kind||pick(PART_KEYS,r);
@@ -5436,9 +5504,25 @@ function genPart(seed,tier,kind,gen,named){
   for(const x of aff)bonus[x.k]=(bonus[x.k]||0)+x.v;
   if(kind==="gun")bonus.gun=1;
   if(kind==="missile")bonus.msl=1;
-  const out={seed:seed>>>0,tier,kind,gen:g,aff,bonus,
+  /* перекос завода: те же аффиксы, слегка сдвинутые в его сторону. Ни одного
+     нового ключа — иначе завод стал бы вторым тиром */
+  const BW=PART_MAKER_BIAS[by]||null;
+  if(BW&&(BW.up||BW.down))for(const x of aff){
+    if(BW.up&&BW.up.indexOf(x.k)>=0)x.v=+(x.v*1.12).toFixed(4);
+    else if(BW.down&&BW.down.indexOf(x.k)>=0)x.v=+(x.v*.88).toFixed(4);
+  }
+  const bonus2={};
+  for(const x of aff)bonus2[x.k]=(bonus2[x.k]||0)+x.v;
+  for(const k in bonus2)bonus[k]=bonus2[k];
+  const out={seed:seed>>>0,tier,kind,gen:g,aff,bonus,by:by||"gt",
     name:adjTo(pick(PART_PRE,r),PART_KINDS[kind].g)+" "+PART_KINDS[kind].ru.toLowerCase()+" "+pick(PART_SUF,r),
     cap:Math.ceil(tier/2)};
+  /* имя по типографской повадке завода (§19.2): ГЛАВТРАССА зовёт вещь по-своему
+     и своё имя не меняет, остальные — по своей привычке */
+  if(by&&by!=="gt"&&PART_MAKER_NAME[by]){
+    const nm=PART_MAKER_NAME[by](kind,r);
+    if(nm)out.name=nm;
+  }
   /* у ствола второго поколения есть семейство, завод и серия (05b-guns):
      имя становится «АП-23 «Оса»», а повадка — тем, что решает 13a-guns */
   /* именной (M366): не «то же, только больше», а семейство с чужой повадкой.
@@ -5718,10 +5802,18 @@ function scrapPart(id){
 /* именной не выводится из зерна — его выдаёт повод (барон, налёт), значит
    он обязан лежать в сейве, иначе после загрузки «Маяк» станет обычной
    рельсой (M366). Поле короткое и появляется только у именных. */
-function packPart(p){const o={s:p.seed,t:p.tier,k:p.kind,g:p.gen,i:p.id};if(p.named)o.n=p.named;return o;}
+function packPart(p){
+  const o={s:p.seed,t:p.tier,k:p.kind,g:p.gen,i:p.id};
+  if(p.named)o.n=p.named;
+  /* завод пишется, только если он не ГЛАВТРАССА: старые записи остаются
+     читаемыми буква в букву (M369b, §19.2) */
+  if(p.by&&p.by!=="gt")o.b=p.by;
+  return o;
+}
 function unpackPart(o){
   if(!o||!PART_KINDS[o.k])return null;
-  const p=genPart(o.s>>>0,o.t|0,o.k,o.g|0,typeof o.n==="string"?o.n:null);
+  const p=genPart(o.s>>>0,o.t|0,o.k,o.g|0,typeof o.n==="string"?o.n:null,
+    typeof o.b==="string"?o.b:"gt");
   p.id=typeof o.i==="string"?o.i:("p"+(partSeq++));
   return p;
 }
@@ -19307,7 +19399,14 @@ function fleetHailFirst(sh,F){
     const p=fleetPos(f);if(Math.hypot(sh.x-p.x,sh.y-p.y)>700)continue;
     const C=FLEET_CLASSES[f.k],who=(G.name&&G.name.trim())?G.name.trim():"борт";
     G.fleetLog[key]=bucket;
-    etherLine("«"+f.name+"» — "+who+"у: …видим вас. Кольцо ваше, идём рядом, если надо. Конец связи.",C.ru);
+    /* ── чужой корпус под своим флагом (M369b, §19.3, D09) ──
+       Летать можно на чём угодно, флаг от этого не меняется — но замполит
+       обязательно отметит, на чём вы прилетели. Это и есть вся разница. */
+    const hby=(typeof makerOf==="function")?makerOf(G.shipId):"gt";
+    const hp=(hby!=="gt"&&typeof powerOf==="function")?powerOf(hby):null;
+    etherLine("«"+f.name+"» — "+who+"у: …видим вас."+
+      (hp?" На "+hp.ru+"ском корпусе, а флаг наш? Записываю.":"")+
+      " Кольцо ваше, идём рядом, если надо. Конец связи.",C.ru);
     return;
   }
 }
@@ -19318,7 +19417,25 @@ function fleetInteract(sh){
   for(const f of F){const p=fleetPos(f),d=Math.hypot(sh.x-p.x,sh.y-p.y);if(d<nd){nd=d;near=f;np=p;}}
   if(!near||nd>260)return false;
   if(near.k==="derelict"){
-    G.prompt="ЧЁРНЫЙ КОРПУС · БЕЗ ИМЕНИ\nДЕЙСТВИЕ — ПОЗЫВНОЙ";
+    /* ── взять на буксир (M369b, §19.3 «tow») ──
+       Чёрный корпус — не декорация: его можно утащить в док и там
+       восстановить. Это единственный способ получить чужой корпус, пока
+       эпизодов не существует, и он честный: тащить долго, платить дорого. */
+    const towed=!!G.tow;
+    const dby=(typeof makerBySeed==="function")?makerBySeed(near.seed):"gt";
+    G.prompt=towed
+      ?"ЧЁРНЫЙ КОРПУС · У ВАС УЖЕ ЕСТЬ БУКСИР\nДЕЙСТВИЕ — ПОЗЫВНОЙ"
+      :"ЧЁРНЫЙ КОРПУС · БЕЗ ИМЕНИ\nДЕЙСТВИЕ — ВЗЯТЬ НА БУКСИР";
+    if(actEdge&&!towed){
+      G.tow={seed:near.seed>>>0,by:dby,sx:G.sx,sy:G.sy};
+      G.fleetLog=G.fleetLog||{};
+      G.fleetLog["towed|"+fleetLogKey()]=1;
+      say("КОРПУС НА ТРОСЕ · В ДОК",120);
+      logAdd("tech","Чёрный корпус взят на буксир · сектор "+G.sx+":"+G.sy+
+        " · восстановление в доке");
+      if(typeof recordAdd==="function")recordAdd("эфир","взял на буксир чёрный корпус в секторе "+G.sx+":"+G.sy);
+      return true;
+    }
     if(actEdge){
       etherLine("…тишина. Ни позывного, ни огня. Только корпус, и он чёрный.","эфир");
       G.fleetLog=G.fleetLog||{};
@@ -34813,7 +34930,7 @@ function snapshot(){
     inv:G.inv.map(packPart),fit:G.fit,partsBought:prunePartsBought(),
     tech:[...G.tech],techLvl:G.techLvl,barter:[...G.barter],found:[...G.found],
     species:[...G.species],bioV:2,
-    opts:G.opts,zoom:G.zoom,market:G.market,uniqueShips:G.uniqueShips,
+    opts:G.opts,zoom:G.zoom,market:G.market,uniqueShips:G.uniqueShips,tow:G.tow,
     drones:G.drones,droneInventory:G.droneInventory,droneIds:G.droneIds,droneSold:G.droneSold||{},crew:G.crew,bases:G.bases,
     mgrs:G.mgrs,blueprints:G.blueprints,aiRift:G.aiRift,rogues:G.rogues,exiles:G.exiles,
     relics:G.relics,relicHint:G.relicHint,bio:G.bio,home:G.home,course:G.course||null,
@@ -34960,6 +35077,7 @@ function applySave(s){
   if(!s||(s.v!==4&&s.v!==5))return false;
   G.sx=s.sx|0;G.sy=s.sy|0;G.sys=getSystem(G.sx,G.sy);
   G.uniqueShips=asMap(s.uniqueShips);
+  G.tow=(s.tow&&typeof s.tow==="object")?s.tow:null;   /* корпус на тросе (M369b) */
   G.shipId=shipData(s.shipId)?s.shipId:"strizh";
   G.owned=Object.assign({strizh:true},s.owned||{});
   /* старое сохранение знает только s.mods — считаем, что всё купленное и установлено.
@@ -66151,6 +66269,39 @@ function renderTabBody(){
       $body.appendChild(el("div","sec","ВАШ АНГАР · ПЕРЕСЕСТЬ МОЖНО В ЛЮБОМ ДОКЕ"));
       for(const id of own){const S=shipData(id);if(S)$body.appendChild(shipRow(id,S));}
     }
+    /* ── восстановление притащенного корпуса (M369b, §19.3 «tow») ──
+       Чёрный корпус на тросе становится вашим не даром и не сразу: док берёт
+       за работу, и только после неё у корпуса появляется имя. Порода — та, с
+       которой он сошёл со стапеля, и она никуда не девается. */
+    if(G.tow){
+      const TB=G.tow.by||"gt";
+      const TP=(typeof powerOf==="function")?powerOf(TB):null;
+      const base=genUniqueShip(hashi(G.tow.seed,0x0E57,7));
+      base.by=TB;
+      base.cls="восстановленный корпус";
+      base.note="Пришёл на тросе чёрным, без имени и огней. "+
+        (TP?"Стапель "+TP.ru+".":"")+" Что с ним было — не написано нигде.";
+      const cost=Math.round((2200+base.price*.45)/50)*50;
+      $body.appendChild(el("div","sec","НА ТРОСЕ · ВОССТАНОВЛЕНИЕ"+(TP?" · "+TP.ru.toUpperCase():"")));
+      const rr=el("div","row");
+      rr.appendChild(el("div","nm","<b>Чёрный корпус</b><s>"+base.note+
+        "<br>тяга "+base.thr.toFixed(2)+" · поворот "+base.turn.toFixed(2)+
+        " · трюм "+base.cargo+" · бак "+base.fuel+" · корпус "+base.hull+"</s>"));
+      const rb=el("button","act"+(G.credits>=cost?" gold":""),cost.toLocaleString("ru")+" кр");
+      rb.disabled=G.credits<cost||G.st.stype!=="yard";
+      rb.onclick=()=>{
+        if(G.credits<cost){say("НЕ ХВАТАЕТ КРЕДИТОВ",60);return;}
+        G.credits-=cost;
+        const uid="t"+G.tow.seed;
+        G.uniqueShips[uid]=base;G.owned[uid]=true;G.tow=null;
+        tell("tech","Корпус восстановлен: «"+base.ru+"»",
+          "Восстановлен\n«"+base.ru+"»\n"+(TP?TP.ru:""));
+        renderTab();saveGame(true);
+      };
+      if(G.st.stype!=="yard")rr.appendChild(el("div","qt","ТОЛЬКО ВЕРФЬ"));
+      else rr.appendChild(rb);
+      $body.appendChild(rr);
+    }
     $body.appendChild(el("div","sec","СЕРИЙНЫЙ РЯД · ЕСТЬ В ЛЮБОМ ДОКЕ"));
     for(const id of SHIP_KEYS)$body.appendChild(shipRow(id,SHIPS[id]));
     /* уникальный корпус строят только на верфи — у торгового узла док слабый */
@@ -72912,9 +73063,13 @@ function opisPartHtml(p){
   const MK=(p.kind==="missile"&&typeof mslKindOf==="function")?mslKindOf(p):null;
   const made=N?"<br>именное · "+N.note:(MK?"<br>"+MK.ru+" · "+MK.note:
     (p.fam?"<br>"+GUN_FACTORY[p.fact].ru+" · серия "+p.ser:""));
+  /* завод части (M369b, §19.2): у ГЛАВТРАССЫ строки нет — это норма, а не
+     отсутствие; чужое подписано, и по подписи видно, где вы это взяли */
+  const mkBy=(typeof partMakerRu==="function")?partMakerRu(p):"";
   const seal=(typeof partSealed==="function"&&partSealed(p))?
     "<span class='dn'>опечатано · "+sealedWhy(p)+"</span> · ":"";
-  return "<b>"+p.name+"</b><s>"+fam+(fam?"":K.ru.toLowerCase()+" · ")+TIER_RU[p.tier]+sz+made+
+  return "<b>"+p.name+"</b><s>"+fam+(fam?"":K.ru.toLowerCase()+" · ")+TIER_RU[p.tier]+sz+
+    (mkBy?" · "+mkBy:"")+made+
     " · место "+p.cap+"</s><i>"+seal+p.aff.map(a=>"<span class='"+(a.v>0?"up":"dn")+"'>"+affLabel(a)+"</span>").join(" · ")+"</i>";
 }
 function opisPartCard(p,where){

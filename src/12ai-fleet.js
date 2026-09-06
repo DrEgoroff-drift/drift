@@ -552,7 +552,14 @@ function fleetHailFirst(sh,F){
     const p=fleetPos(f);if(Math.hypot(sh.x-p.x,sh.y-p.y)>700)continue;
     const C=FLEET_CLASSES[f.k],who=(G.name&&G.name.trim())?G.name.trim():"борт";
     G.fleetLog[key]=bucket;
-    etherLine("«"+f.name+"» — "+who+"у: …видим вас. Кольцо ваше, идём рядом, если надо. Конец связи.",C.ru);
+    /* ── чужой корпус под своим флагом (M369b, §19.3, D09) ──
+       Летать можно на чём угодно, флаг от этого не меняется — но замполит
+       обязательно отметит, на чём вы прилетели. Это и есть вся разница. */
+    const hby=(typeof makerOf==="function")?makerOf(G.shipId):"gt";
+    const hp=(hby!=="gt"&&typeof powerOf==="function")?powerOf(hby):null;
+    etherLine("«"+f.name+"» — "+who+"у: …видим вас."+
+      (hp?" На "+hp.ru+"ском корпусе, а флаг наш? Записываю.":"")+
+      " Кольцо ваше, идём рядом, если надо. Конец связи.",C.ru);
     return;
   }
 }
@@ -563,7 +570,25 @@ function fleetInteract(sh){
   for(const f of F){const p=fleetPos(f),d=Math.hypot(sh.x-p.x,sh.y-p.y);if(d<nd){nd=d;near=f;np=p;}}
   if(!near||nd>260)return false;
   if(near.k==="derelict"){
-    G.prompt="ЧЁРНЫЙ КОРПУС · БЕЗ ИМЕНИ\nДЕЙСТВИЕ — ПОЗЫВНОЙ";
+    /* ── взять на буксир (M369b, §19.3 «tow») ──
+       Чёрный корпус — не декорация: его можно утащить в док и там
+       восстановить. Это единственный способ получить чужой корпус, пока
+       эпизодов не существует, и он честный: тащить долго, платить дорого. */
+    const towed=!!G.tow;
+    const dby=(typeof makerBySeed==="function")?makerBySeed(near.seed):"gt";
+    G.prompt=towed
+      ?"ЧЁРНЫЙ КОРПУС · У ВАС УЖЕ ЕСТЬ БУКСИР\nДЕЙСТВИЕ — ПОЗЫВНОЙ"
+      :"ЧЁРНЫЙ КОРПУС · БЕЗ ИМЕНИ\nДЕЙСТВИЕ — ВЗЯТЬ НА БУКСИР";
+    if(actEdge&&!towed){
+      G.tow={seed:near.seed>>>0,by:dby,sx:G.sx,sy:G.sy};
+      G.fleetLog=G.fleetLog||{};
+      G.fleetLog["towed|"+fleetLogKey()]=1;
+      say("КОРПУС НА ТРОСЕ · В ДОК",120);
+      logAdd("tech","Чёрный корпус взят на буксир · сектор "+G.sx+":"+G.sy+
+        " · восстановление в доке");
+      if(typeof recordAdd==="function")recordAdd("эфир","взял на буксир чёрный корпус в секторе "+G.sx+":"+G.sy);
+      return true;
+    }
     if(actEdge){
       etherLine("…тишина. Ни позывного, ни огня. Только корпус, и он чёрный.","эфир");
       G.fleetLog=G.fleetLog||{};

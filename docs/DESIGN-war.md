@@ -1056,9 +1056,15 @@ One system inside ГЛАВТРАССА's centre (r ≈ 6, fixed by seed, never t
   the cantina, greeting and accent in the station header, and its brand on foreign kit.
   **Deferred:** the poster on the node wall (it changes per сводка — M372), suits' own art, and
   the class appendages' joints.
-- **M369b** the having of things (§19.3): shipyards and workshops per maker, the hull purchase
-  gated by an episode, the tow-and-restore path for derelict hulls, the gift, the fuse of two
-  makers' hulls; the hail about a foreign hull.
+- ~~**M369b** the having of things (§19.3)~~ — 0.369.2 (2026-09-06): parts carry `b` (§19.2 —
+  name, a ±12 % affix bias, the card line; absent means ГЛАВТРАССА, so every part already issued
+  reads unchanged and `PART_GEN` stays 2); a workshop stocks its own power's iron with about a
+  quarter brought in; a foreign hull is not sold without an episode (`hasEpisode` asks a function
+  that arrives with M374 and answers false until then), so today it is had by tow — a black
+  derelict goes on the line, rides in the save, and a shipyard restores it for a price into
+  `G.uniqueShips` with its `by`; the fuse takes the heavier parent's grammar and names the other;
+  the picket notes a foreign hull under your own flag. **Deferred:** the gift (M374), the scrap
+  pool per maker, and the card's frame by maker.
 - **M370** chronicle core: state, `step`, replay, cache, hash, clock offset, geometry (D12),
   integer RNG; agents; `91zzzw-chron` with the Node hash check.
 - **M371** the Director: tension, the §15 table, arcs with default endings, rites announced,

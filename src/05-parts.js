@@ -106,7 +106,38 @@ function tierFromDanger(d,r){
    пересобираться тем же генератором, каким была выдана, иначе первая же
    правка таблиц молча переписывает игрокам их сборки. До M364 unpackPart
    звал genPart без него — обещание было, замка не было. */
-function genPart(seed,tier,kind,gen,named){
+/* ══════════════ завод части (M369b, §19.2) ══════════════
+   У каждой части есть изготовитель — тот же список, что у корпусов. Он даёт
+   ТРИ вещи и ни одной больше: имя (его типографскую повадку), небольшой перекос
+   аффиксов в сторону его доктрины и строку на карточке. Числа при этом остаются
+   в тех же границах: перекос — это ±12 %, а не второй тир.
+
+   `b` в упакованном виде необязателен: его отсутствие означает ГЛАВТРАССУ,
+   поэтому всё, что уже выдано игроку, читается как раньше и поколение менять
+   не надо (PART_GEN остаётся 2). */
+const PART_MAKER_BIAS={
+  gt:{},
+  co:{up:["rateMul","thrMul","mslLockMul"],down:["fuelAdd","enMul"]},
+  or:{up:["dmgMul","hullAdd"],down:["coneMul"]},
+  km:{up:["turnMul","scanAdd","enCapAdd"],down:["hullAdd"]},
+  ra:{up:["hullAdd","cargoMul","drillMul"],down:["spreadMul"]},
+  hf:{up:["scanAdd","leadMul","rangeMul"],down:["hullAdd"]}
+};
+const PART_MAKER_NAME={
+  gt:(k,r)=>null,                                        /* как было: своё имя */
+  co:(k,r)=>PART_KINDS[k].ru+"™ "+(100+Math.floor(r()*900)),
+  or:(k,r)=>"Typ "+(1+Math.floor(r()*9))+"/"+"ABCD"[Math.floor(r()*4)],
+  km:(k,r)=>PART_KINDS[k].ru+" «"+pick(["Éloise","Colette","Amie","Étoile","Marguerite"],r)+"»",
+  ra:(k,r)=>PART_KINDS[k].ru+", собран"+(PART_KINDS[k].g==="f"?"а":"")+" из трёх",
+  hf:(k,r)=>PART_KINDS[k].ru.slice(0,3).toUpperCase()+"-"+(1+Math.floor(r()*9))+" v"+
+    (1+Math.floor(r()*4))+"."+Math.floor(r()*10)
+};
+function partMaker(p){return (p&&p.by)||"gt";}
+function partMakerRu(p){
+  const by=partMaker(p);
+  return (by==="gt"||typeof powerOf!=="function")?"":powerOf(by).ru;
+}
+function genPart(seed,tier,kind,gen,named,by){
   const r=rng((seed>>>0)||1);
   tier=clamp(tier|0||1,1,5);
   kind=kind||pick(PART_KEYS,r);
@@ -140,9 +171,25 @@ function genPart(seed,tier,kind,gen,named){
   for(const x of aff)bonus[x.k]=(bonus[x.k]||0)+x.v;
   if(kind==="gun")bonus.gun=1;
   if(kind==="missile")bonus.msl=1;
-  const out={seed:seed>>>0,tier,kind,gen:g,aff,bonus,
+  /* перекос завода: те же аффиксы, слегка сдвинутые в его сторону. Ни одного
+     нового ключа — иначе завод стал бы вторым тиром */
+  const BW=PART_MAKER_BIAS[by]||null;
+  if(BW&&(BW.up||BW.down))for(const x of aff){
+    if(BW.up&&BW.up.indexOf(x.k)>=0)x.v=+(x.v*1.12).toFixed(4);
+    else if(BW.down&&BW.down.indexOf(x.k)>=0)x.v=+(x.v*.88).toFixed(4);
+  }
+  const bonus2={};
+  for(const x of aff)bonus2[x.k]=(bonus2[x.k]||0)+x.v;
+  for(const k in bonus2)bonus[k]=bonus2[k];
+  const out={seed:seed>>>0,tier,kind,gen:g,aff,bonus,by:by||"gt",
     name:adjTo(pick(PART_PRE,r),PART_KINDS[kind].g)+" "+PART_KINDS[kind].ru.toLowerCase()+" "+pick(PART_SUF,r),
     cap:Math.ceil(tier/2)};
+  /* имя по типографской повадке завода (§19.2): ГЛАВТРАССА зовёт вещь по-своему
+     и своё имя не меняет, остальные — по своей привычке */
+  if(by&&by!=="gt"&&PART_MAKER_NAME[by]){
+    const nm=PART_MAKER_NAME[by](kind,r);
+    if(nm)out.name=nm;
+  }
   /* у ствола второго поколения есть семейство, завод и серия (05b-guns):
      имя становится «АП-23 «Оса»», а повадка — тем, что решает 13a-guns */
   /* именной (M366): не «то же, только больше», а семейство с чужой повадкой.
@@ -422,10 +469,18 @@ function scrapPart(id){
 /* именной не выводится из зерна — его выдаёт повод (барон, налёт), значит
    он обязан лежать в сейве, иначе после загрузки «Маяк» станет обычной
    рельсой (M366). Поле короткое и появляется только у именных. */
-function packPart(p){const o={s:p.seed,t:p.tier,k:p.kind,g:p.gen,i:p.id};if(p.named)o.n=p.named;return o;}
+function packPart(p){
+  const o={s:p.seed,t:p.tier,k:p.kind,g:p.gen,i:p.id};
+  if(p.named)o.n=p.named;
+  /* завод пишется, только если он не ГЛАВТРАССА: старые записи остаются
+     читаемыми буква в букву (M369b, §19.2) */
+  if(p.by&&p.by!=="gt")o.b=p.by;
+  return o;
+}
 function unpackPart(o){
   if(!o||!PART_KINDS[o.k])return null;
-  const p=genPart(o.s>>>0,o.t|0,o.k,o.g|0,typeof o.n==="string"?o.n:null);
+  const p=genPart(o.s>>>0,o.t|0,o.k,o.g|0,typeof o.n==="string"?o.n:null,
+    typeof o.b==="string"?o.b:"gt");
   p.id=typeof o.i==="string"?o.i:("p"+(partSeq++));
   return p;
 }

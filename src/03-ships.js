@@ -60,7 +60,20 @@ function fuseShips(idA,idB){
   base.cargo=Math.round(mix(A.cargo,B.cargo)*(1+gain));
   base.hull=Math.round(mix(A.hull,B.hull)*(1+gain));
   base.cls="лабораторный сплав";
-  base.note="Сплав «"+A.ru+"» и «"+B.ru+"». Поколение "+(g+1)+".";
+  /* единственное место, где две породы встречаются на одном корпусе (§19.3):
+     сплав берёт грамматику того родителя, чей вклад тяжелее, и помнит второго */
+  {
+    const ba=(typeof makerOf==="function")?makerOf(idA,A):"gt";
+    const bb=(typeof makerOf==="function")?makerOf(idB,B):"gt";
+    /* тяжелее тот, у кого больше корпус, трюм и бак вместе взятые */
+    const wa=(A.hull|0)+(A.cargo|0)+(A.fuel|0), wb=(B.hull|0)+(B.cargo|0)+(B.fuel|0);
+    base.by=wa>=wb?ba:bb;
+    base.by2=(ba===bb)?null:(wa>=wb?bb:ba);
+  }
+  base.note="Сплав «"+A.ru+"» и «"+B.ru+"». Поколение "+(g+1)+"."+
+    (base.by2&&typeof powerOf==="function"
+      ?" Обвод "+powerOf(base.by).ru+", повадки от "+powerOf(base.by2).ru+"."
+      :"");
   base.fused=g+1;
   const id="f"+seed;
   G.credits-=c.credits;
@@ -104,12 +117,30 @@ function timeBucket(){
   const period=(typeof mgrPerkOf==="function"&&mgrPerkOf("fact","stock"))?57600000:172800000;
   return Math.floor(Date.now()/period);
 }
+/* ── эпизод как разрешение на покупку корпуса (M369b, §19.3, D14) ──
+   Корпус — не деталь: чужой завод не продаёт его первому встречному. Нужен
+   эпизод с этим заводом («разрешение на покупку»), а эпизодов не существует до
+   M374 — значит сегодня чужой корпус можно только притащить на буксире или
+   купить в «Ялте», где торгуют все и со всеми (там же он и вдвое дороже).
+   Заглушка честная: она не «вернёт false навсегда», а спросит настоящую
+   функцию, как только та появится. */
+function hasEpisode(by){
+  if(typeof episodeWith==="function")return !!episodeWith(by);
+  return false;
+}
 function stationUniqueOffer(sys){
   if(!sys.station)return null;
   const r=rng(hashi(sys.seed,999,timeBucket()));
   const chance=.35+sysDanger(sys.sx,sys.sy)*.35;
   if(r()>chance)return null;
-  return genUniqueShip(hashi(sys.seed,4242,timeBucket()));
+  const sh=genUniqueShip(hashi(sys.seed,4242,timeBucket()));
+  /* корпус приходит с завода той державы, что держит станцию */
+  const stBy=(sys.station&&sys.station.by)||"gt";
+  const yalta=(typeof yaltaIs==="function")&&yaltaIs(sys.sx,sys.sy);
+  sh.by=stBy;
+  if(stBy!=="gt"&&!hasEpisode(stBy)&&!yalta)return null;   /* без эпизода не продадут */
+  if(yalta&&stBy!=="gt")sh.price=Math.round(sh.price*2/50)*50;   /* «Ялта»: вдвое */
+  return sh;
 }
 /* части в продаже: как и уникальный корабль — ничего не персистится,
    ассортимент детерминирован seed станции и временным бакетом */
@@ -121,7 +152,13 @@ function stationParts(sys){
   const out=[];
   for(let i=0;i<n;i++){
     const seed=hashi(sys.seed,i*613+17,bucket);
-    const part=genPart(seed,tierFromDanger(d,rng(seed)));
+    /* прилавок держит своё: на станции ГЛАВТРАССЫ лежит её железо, у Компании
+       её. Чужое сюда попадает как привезённое — примерно каждая четвёртая
+       вещь, и это единственный способ купить чужую часть, не летая туда */
+    const stBy=(sys.station&&sys.station.by)||"gt";
+    const pby=(rng(hashi(seed,7,3))()<.26&&typeof makerBySeed==="function")
+      ?makerBySeed(hashi(seed,11,5)):stBy;
+    const part=genPart(seed,tierFromDanger(d,rng(seed)),null,0,null,pby);
     /* репутация станции идёт и в цену железа: продавец тоже человек (12k-rep) */
     const price=Math.round((320+part.tier*part.tier*460+part.aff.length*180)*
       (.85+r()*.4)*repPartMul(sys)/10)*10;

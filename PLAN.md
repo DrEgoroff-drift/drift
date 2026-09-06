@@ -707,7 +707,12 @@ Three stages, each playable on /dev before the next starts:
   `makerGround`, `makerAssembly` — один слой на пятерых; баржа по закону профиля со сварными
   швами, станция по закону сборки, пиратский корпус с закрашенной меткой и износом вдвое,
   дезертир со свежей заплатой, флот с полем `by`, купол грунтом строителя, шесть чужих книг,
-  строка еды в кантине, приветствие и акцент в шапке станции, марка на чужом снаряжении) · M369a the grammar in the fleet,
+  строка еды в кантине, приветствие и акцент в шапке станции, марка на чужом снаряжении)
+  · ~~M369b как это достаётся~~ (0.369.2, 2026-09-06: у части есть `b` — имя, перекос аффиксов
+  ±12 %, строка на карточке, в сейве только у чужого; прилавок держит своё железо; чужой корпус
+  без эпизода не продаётся (`hasEpisode` до M374 отвечает «нет»), значит достаётся тросом:
+  дерелик на буксир, верфь восстанавливает за деньги; сплав берёт грамматику тяжёлого родителя;
+  пикет отмечает чужой корпус под своим флагом) · M369a the grammar in the fleet,
   barges, pirate hulls, stations, domes, papers · M369b the having of things · M370 chronicle core (integer replay, hash, clock, geometry) · M371 the Director ·
   M372 the war seen · M373 the four rules · M374 episodes and the notebook · M375 the rescuer.
 - **C — everyone** (server): M376 `war.php` and ведомости · M377 leftovers and ghosts · M378

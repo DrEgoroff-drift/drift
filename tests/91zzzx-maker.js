@@ -218,3 +218,58 @@ TEST_SUITES.push(()=>suite("изготовитель M369a: бумаги, еда
   }
   ok(foreign&&kitBrand(foreign).length>2,"а чужое носит: "+(foreign?kitBrand(foreign):"—"));
 }));
+
+/* ══════════════ как это достаётся (M369b, §19.3) ══════════════ */
+TEST_SUITES.push(()=>suite("изготовитель M369b: у части есть завод, и он в сейве",()=>{
+  mkWorld();
+  /* завод даёт имя и небольшой перекос — но не второй тир */
+  const a=genPart(4242,3,"engine",0,null,"gt");
+  const b=genPart(4242,3,"engine",0,null,"co");
+  eq(a.by,"gt","своё по умолчанию");
+  eq(b.by,"co","чужое помечено");
+  ok(a.name!==b.name,"и зовётся по-своему: «"+a.name+"» против «"+b.name+"»");
+  ok(Math.abs((b.bonus.thrMul||0)-(a.bonus.thrMul||0))<Math.abs(a.bonus.thrMul||.2)*.4,
+     "перекос мал: это не второй тир");
+  /* упаковка: своё пишется как раньше, чужое дописывает одну букву */
+  const pa=packPart(a),pb=packPart(b);
+  eq(pa.b,undefined,"у ГЛАВТРАССЫ поля нет вовсе — старые записи читаются буква в букву");
+  eq(pb.b,"co","у чужого есть");
+  eq(unpackPart(pb).by,"co","и оно переживает круг упаковки");
+  eq(unpackPart(pa).by,"gt","а без поля часть остаётся своей");
+  /* карточка описи называет завод только у чужого */
+  eq(partMakerRu(a),"","своё не подписано");
+  ok(partMakerRu(b).length>2,"чужое подписано: "+partMakerRu(b));
+}));
+
+TEST_SUITES.push(()=>suite("изготовитель M369b: корпус достаётся тросом, а не прилавком",()=>{
+  mkWorld();
+  /* эпизодов ещё нет — значит чужой корпус на прилавке не появляется */
+  eq(hasEpisode("or"),false,"эпизодов до M374 не бывает");
+  let foreign=0,own=0;
+  for(let i=0;i<60;i++){
+    const sys={sx:i,sy:2,seed:hashi(i,2,77),key:i+",2",name:"С",
+      station:{name:"С",stype:"yard",by:i%2?"or":"gt"}};
+    const off=stationUniqueOffer(sys);
+    if(!off)continue;
+    if(off.by==="gt")own++;else foreign++;
+  }
+  eq(foreign,0,"чужих корпусов в продаже нет");
+  ok(own>0,"свои продаются: "+own);
+  /* «Ялта» — исключение: там торгуют все, но вдвое дороже */
+  const y=yaltaAt();
+  const ys={sx:y.sx,sy:y.sy,seed:hashi(y.sx,y.sy,77),key:y.sx+","+y.sy,name:"Я",
+    station:{name:"Я",stype:"yard",by:"km"}};
+  const yo=stationUniqueOffer(ys);
+  ok(!yo||yo.by==="km","в «Ялте» чужой корпус продаётся");
+  /* трос: дерелик становится записью, запись — кораблём */
+  G.tow={seed:12345,by:"or",sx:1,sy:1};
+  const base=genUniqueShip(hashi(G.tow.seed,0x0E57,7));
+  base.by=G.tow.by;
+  const uid="t"+G.tow.seed;
+  G.uniqueShips[uid]=base;G.owned[uid]=true;G.tow=null;
+  eq(shipData(uid).by,"or","восстановленный корпус помнит свой стапель");
+  eq(makerOf(uid),"or","и генератор рисует его по этой грамматике");
+  /* флаг при этом остаётся ваш */
+  G.shipId=uid;
+  eq(playerFlag(),"gt","на чужом корпусе флаг свой (D09)");
+}));

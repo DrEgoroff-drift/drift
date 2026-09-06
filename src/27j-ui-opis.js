@@ -488,9 +488,13 @@ function opisPartHtml(p){
   const MK=(p.kind==="missile"&&typeof mslKindOf==="function")?mslKindOf(p):null;
   const made=N?"<br>именное · "+N.note:(MK?"<br>"+MK.ru+" · "+MK.note:
     (p.fam?"<br>"+GUN_FACTORY[p.fact].ru+" · серия "+p.ser:""));
+  /* завод части (M369b, §19.2): у ГЛАВТРАССЫ строки нет — это норма, а не
+     отсутствие; чужое подписано, и по подписи видно, где вы это взяли */
+  const mkBy=(typeof partMakerRu==="function")?partMakerRu(p):"";
   const seal=(typeof partSealed==="function"&&partSealed(p))?
     "<span class='dn'>опечатано · "+sealedWhy(p)+"</span> · ":"";
-  return "<b>"+p.name+"</b><s>"+fam+(fam?"":K.ru.toLowerCase()+" · ")+TIER_RU[p.tier]+sz+made+
+  return "<b>"+p.name+"</b><s>"+fam+(fam?"":K.ru.toLowerCase()+" · ")+TIER_RU[p.tier]+sz+
+    (mkBy?" · "+mkBy:"")+made+
     " · место "+p.cap+"</s><i>"+seal+p.aff.map(a=>"<span class='"+(a.v>0?"up":"dn")+"'>"+affLabel(a)+"</span>").join(" · ")+"</i>";
 }
 function opisPartCard(p,where){

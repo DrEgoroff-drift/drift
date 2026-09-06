@@ -56,7 +56,7 @@ function snapshot(){
     inv:G.inv.map(packPart),fit:G.fit,partsBought:prunePartsBought(),
     tech:[...G.tech],techLvl:G.techLvl,barter:[...G.barter],found:[...G.found],
     species:[...G.species],bioV:2,
-    opts:G.opts,zoom:G.zoom,market:G.market,uniqueShips:G.uniqueShips,
+    opts:G.opts,zoom:G.zoom,market:G.market,uniqueShips:G.uniqueShips,tow:G.tow,
     drones:G.drones,droneInventory:G.droneInventory,droneIds:G.droneIds,droneSold:G.droneSold||{},crew:G.crew,bases:G.bases,
     mgrs:G.mgrs,blueprints:G.blueprints,aiRift:G.aiRift,rogues:G.rogues,exiles:G.exiles,
     relics:G.relics,relicHint:G.relicHint,bio:G.bio,home:G.home,course:G.course||null,
@@ -203,6 +203,7 @@ function applySave(s){
   if(!s||(s.v!==4&&s.v!==5))return false;
   G.sx=s.sx|0;G.sy=s.sy|0;G.sys=getSystem(G.sx,G.sy);
   G.uniqueShips=asMap(s.uniqueShips);
+  G.tow=(s.tow&&typeof s.tow==="object")?s.tow:null;   /* корпус на тросе (M369b) */
   G.shipId=shipData(s.shipId)?s.shipId:"strizh";
   G.owned=Object.assign({strizh:true},s.owned||{});
   /* старое сохранение знает только s.mods — считаем, что всё купленное и установлено.

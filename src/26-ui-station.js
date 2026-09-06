@@ -674,6 +674,39 @@ function renderTabBody(){
       $body.appendChild(el("div","sec","ВАШ АНГАР · ПЕРЕСЕСТЬ МОЖНО В ЛЮБОМ ДОКЕ"));
       for(const id of own){const S=shipData(id);if(S)$body.appendChild(shipRow(id,S));}
     }
+    /* ── восстановление притащенного корпуса (M369b, §19.3 «tow») ──
+       Чёрный корпус на тросе становится вашим не даром и не сразу: док берёт
+       за работу, и только после неё у корпуса появляется имя. Порода — та, с
+       которой он сошёл со стапеля, и она никуда не девается. */
+    if(G.tow){
+      const TB=G.tow.by||"gt";
+      const TP=(typeof powerOf==="function")?powerOf(TB):null;
+      const base=genUniqueShip(hashi(G.tow.seed,0x0E57,7));
+      base.by=TB;
+      base.cls="восстановленный корпус";
+      base.note="Пришёл на тросе чёрным, без имени и огней. "+
+        (TP?"Стапель "+TP.ru+".":"")+" Что с ним было — не написано нигде.";
+      const cost=Math.round((2200+base.price*.45)/50)*50;
+      $body.appendChild(el("div","sec","НА ТРОСЕ · ВОССТАНОВЛЕНИЕ"+(TP?" · "+TP.ru.toUpperCase():"")));
+      const rr=el("div","row");
+      rr.appendChild(el("div","nm","<b>Чёрный корпус</b><s>"+base.note+
+        "<br>тяга "+base.thr.toFixed(2)+" · поворот "+base.turn.toFixed(2)+
+        " · трюм "+base.cargo+" · бак "+base.fuel+" · корпус "+base.hull+"</s>"));
+      const rb=el("button","act"+(G.credits>=cost?" gold":""),cost.toLocaleString("ru")+" кр");
+      rb.disabled=G.credits<cost||G.st.stype!=="yard";
+      rb.onclick=()=>{
+        if(G.credits<cost){say("НЕ ХВАТАЕТ КРЕДИТОВ",60);return;}
+        G.credits-=cost;
+        const uid="t"+G.tow.seed;
+        G.uniqueShips[uid]=base;G.owned[uid]=true;G.tow=null;
+        tell("tech","Корпус восстановлен: «"+base.ru+"»",
+          "Восстановлен\n«"+base.ru+"»\n"+(TP?TP.ru:""));
+        renderTab();saveGame(true);
+      };
+      if(G.st.stype!=="yard")rr.appendChild(el("div","qt","ТОЛЬКО ВЕРФЬ"));
+      else rr.appendChild(rb);
+      $body.appendChild(rr);
+    }
     $body.appendChild(el("div","sec","СЕРИЙНЫЙ РЯД · ЕСТЬ В ЛЮБОМ ДОКЕ"));
     for(const id of SHIP_KEYS)$body.appendChild(shipRow(id,SHIPS[id]));
     /* уникальный корпус строят только на верфи — у торгового узла док слабый */
