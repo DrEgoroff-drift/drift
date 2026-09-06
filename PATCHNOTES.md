@@ -7,6 +7,30 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.399.0 - M399: устав — four laws, each of them for good
+
+Four laws, taken one at a time as the base grows — at two, four, six and eight built compartments —
+and **each irrevocable for that base**. That is what makes a law a decision rather than a slider: a
+slider can be moved back.
+
+- **Двойная смена** — a quarter more of everything the base makes, paid for with ten points of
+  spirit and two fifths more trouble from the director.
+- **Общий котёл** — nobody goes hungry while there is any food at all, paid for with eight percent
+  of the output: there are no half-fed halves either.
+- **Сухой закон** — the spirit ration goes to technical needs and repairs run twice as fast, paid
+  for with twelve points of spirit.
+- **Открытая дверь** — twice as many people walk up to the gate, and **one in six of them is not
+  the right one**: two days after you take him, a third of the store is gone. That is not a bad
+  person; it is what an open door costs.
+
+The keeper's perks are *how well* a base runs; the charter is *what kind of place it is*. They do
+not argue and do not add up into one number. The laws are taken at the desk, where the base is
+looked at whole, and the journal records each one: «устав: принят закон «Сухой закон». Навсегда».
+
+With this the base's second stage is closed: СВЯЗЬ, the people in the room, adjacency and halls,
+the director, the аврал and the charter — M394 through M399.
+
+---
 ## 0.398.0 - M398: аврал — the one place on a base where your hands matter
 
 Everything else about a base is lazy: however many shifts have passed, that many are resolved, and

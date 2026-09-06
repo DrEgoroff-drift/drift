@@ -1756,7 +1756,7 @@ body.table u.addr{color:#7a4a20}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.398.0";
+const VER="0.399.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -39150,7 +39150,9 @@ function applySave(s){
         guest:(b.guest&&typeof b.guest==="object")?{name:String(b.guest.name||"").slice(0,24),
           role:String(b.guest.role||"driller"),seed:b.guest.seed|0,n:b.guest.n|0}:null,
         /* погода директора (M397): у неё есть сроки, и они переживают выход */
-        dust:b.dust|0,cold:b.cold|0,vein:b.vein|0,
+        dust:b.dust|0,cold:b.cold|0,vein:b.vein|0,thief:b.thief|0,
+        /* устав (M399): законы берутся навсегда, значит они в записи */
+        charter:Array.isArray(b.charter)?b.charter.filter(x=>typeof CHARTER_BY!=="undefined"&&CHARTER_BY[x]):[],
         fire:(b.fire&&typeof b.fire==="object")?{c:b.fire.c|0,r:b.fire.r|0,
           k:String(b.fire.k||"fire"),n:b.fire.n|0}:null,
         park:b.park|0,
@@ -52813,7 +52815,9 @@ function baseFixTick(B,min,sh){
   for(const cell of (B.cells||[]))if(cell&&cell.hp>0&&cell.k==="shop")shop++;
   const eng=baseRoleForce(B,"engineer")+(mgrPerkOf("keep","queue")?.8:0)+shop*.5;
   if(eng<=0)return 0;
-  const near=(typeof baseAdjFix==="function")?baseAdjFix(B):1;
+  /* сухой закон (M399): спирт идёт в технужды, и чинится всё вдвое быстрее */
+  const near=((typeof baseAdjFix==="function")?baseAdjFix(B):1)*
+             ((typeof charterFixMul==="function")?charterFixMul(B):1);
   let done=0;
   for(const cell of B.cells){
     if(cell&&cell.hp<1){
@@ -53052,6 +53056,8 @@ const BLOG={
   deep:    ()=>"смотритель вскрыл нижний ярус",
   wear:    (B,a)=>"жара доконала: "+a.what,
   warn:    (B,a)=>a.warn,
+  law:     (B,a)=>"устав: принят закон «"+a.ru+"». Навсегда",
+  thief:   (B,a)=>"со склада пропало "+a.q+" ед. Дверь была открыта",
   avral:   (B,a)=>"аврал: "+a.ru.toLowerCase()+" в отсеке "+a.what,
   avrok:   (B,a)=>a.who?"«Успели» — "+a.who:"аврал отбит, отсек цел",
   avrno:   ()=>"аврал упустили. Дальше оно пошло само",
@@ -53161,7 +53167,9 @@ function baseMine(B,P,min,n){
   /* погода (M397): занос останавливает бур, жила гонит его вдвое веселее */
   if(typeof baseDusty==="function"&&baseDusty(B,n))return 0;
   const vein=(typeof baseVein==="function")?baseVein(B,n):1;
-  const want=min*P.drillEff*eff*crewBoost*heat*adj*vein*1.1;
+  /* устав (M399): двойная смена гонит всё, общий котёл придерживает */
+  const law=(typeof charterWorkMul==="function")?charterWorkMul(B):1;
+  const want=min*P.drillEff*eff*crewBoost*heat*adj*vein*law*1.1;
   let left=Math.min(want,Math.max(0,cap-held));
   const full=want>0&&left<want*.5;      /* склад забит: добыча стоит, и это строка */
   const r=rng(hashi(B.sx*7919+B.sy,B.idx,hashi(n,0x9111,0x2D)));
@@ -53312,6 +53320,8 @@ function baseLifeStep(B,P,n){
   said|=baseSpiritStep(B,n)?1:0;
   /* маяк зовёт (M395): раз в тридцать смен кто-то просится остаться */
   if(typeof baseGuestRoll==="function")said|=baseGuestRoll(B,n)?1:0;
+  /* открытая дверь (M399): однажды пропадает треть склада */
+  if(typeof charterThiefStep==="function")said|=charterThiefStep(B,n)?1:0;
   /* запас пришёл — база встаёт на ход сама, но смена уходит на разгон */
   if(B.park>0&&L.air>need.air&&L.water>need.water){baseWake(B,n);said=1;}
   return said;
@@ -53534,8 +53544,10 @@ function baseSpirit(B,n){
   if(!baseCrewN(B))return 100;
   let s=100;
   const left=baseLifeLeft(B);
+  /* общий котёл (M399): пока харч есть вообще, голодных нет — делят поровну */
+  const pot=(typeof charterFed==="function")&&charterFed(B);
   if((L.food|0)<=0)s-=30;                                  /* голодно */
-  else if(L.food<baseCrewN(B)*LIFE_FOOD*3)s-=10;           /* и почти голодно */
+  else if(!pot&&L.food<baseCrewN(B)*LIFE_FOOD*3)s-=10;     /* и почти голодно */
   if(L.q==="poor")s-=12;                                   /* невкусно (§16) */
   if(baseParked(B))s-=20;                                  /* стоим */
   if(left.air<3||left.water<3)s-=15;                       /* дышать нечем */
@@ -53545,6 +53557,8 @@ function baseSpirit(B,n){
   s-=(P.habPenalty|0)*8;                                   /* жильё прижато к реактору */
   /* соседство (M396): зелень и уход поднимают, батарея под ухом роняет */
   if(typeof baseAdjSpirit==="function")s+=baseAdjSpirit(B);
+  /* устав (M399): у каждого закона своя цена, и платят её духом */
+  if(typeof charterSpirit==="function")s+=charterSpirit(B);
   if(P.eff<.7)s-=8;                                        /* и свет мигает */
   if(L.q==="good"&&(L.food|0)>0&&!baseParked(B)&&!b)s+=10; /* а бывает и хорошо */
   return clamp(s|0,0,100);
@@ -53867,12 +53881,17 @@ function baseGuestRoll(B,n){
   if((n%GUEST_EVERY)!==0)return 0;
   const sp=(typeof baseSpirit==="function")?baseSpirit(B,n):100;
   const r=rng(hashi(B.sx*331+B.sy,B.idx*23+11,hashi(n,0x6E57,0x9)));
-  if(r()>clamp(sp/140,.1,.85))return 0;
+  /* открытая дверь (M399): к такой базе идут вдвое охотнее */
+  const door=(typeof charterGuestMul==="function")?charterGuestMul(B):1;
+  if(r()>clamp(sp/140*door,.1,.92))return 0;
   const seed=hashi(B.sx,B.sy,n)>>>0;
   const rr=rng(seed);
   const roles=(typeof ROLE_KEYS!=="undefined")?ROLE_KEYS:["driller"];
   B.guest={name:(typeof genName==="function")?genName(rr):"Человек",
     role:pick(roles,rr),seed,n};
+  /* и один из шести приходит не тот — это цена открытой двери, а не характер
+     человека: дверь открыта всем, значит однажды войдёт и такой */
+  if(typeof charterBadGuest==="function"&&charterBadGuest(B,seed))B.guest.bad=1;
   baseLog(B,"guest",n,{who:B.guest.name});
   return 1;
 }
@@ -53896,6 +53915,8 @@ function baseGuestTake(B){
   const p=Object.assign(m,{cargo:{},order:{kind:"base",sx:B.sx,sy:B.sy,idx:B.idx},
     tMs:Date.now(),paidMs:Date.now()});
   G.crew.push(p);
+  /* если это был тот самый один из шести — через двое суток на складе недосчёт */
+  if(g.bad)B.thief=((typeof baseShift==="function")?baseShift():0)+8;
   B.guest=null;
   tell("good",p.name+" остался на базе «"+B.name+"»",
     "ОСТАЛСЯ\n"+p.name+" · "+((typeof BASE_ROLES!=="undefined"&&BASE_ROLES[p.role])?BASE_ROLES[p.role].ru:p.role)+
@@ -54131,7 +54152,9 @@ function baseWorth(B){
 function baseThreat(B){
   const d=(typeof sysDanger==="function")?sysDanger(B.sx,B.sy):0;
   const worth=clamp(baseWorth(B)/DIR_WORTH_CAP,0,1);
-  return clamp(DIR_BASE+DIR_DANGER*d+DIR_WORTH*worth,0,.35);
+  /* двойная смена (M399): база работает на износ, и беды к ней ходят чаще */
+  const law=(typeof charterThreatMul==="function")?charterThreatMul(B):1;
+  return clamp((DIR_BASE+DIR_DANGER*d+DIR_WORTH*worth)*law,0,.45);
 }
 /* ── что случится в эту смену ──
    Чистая функция: тот же ответ у всех и на смену вперёд. */
@@ -54408,6 +54431,115 @@ function avrDraw(S,X,Y,lit){
     ctx.fillStyle="rgba(127,230,216,.85)";
     ctx.fillRect(x+12,y+BCELL_H-16,w,4);
   }
+}
+
+/* ══════════════ устав базы (M399, DESIGN-base §9) ══════════════
+   Четыре закона, и каждый берётся НАВСЕГДА. Это и делает их решением, а не
+   ползунком: ползунок можно подвинуть обратно, закон — нельзя.
+
+   Законы открываются по мере того, как база растёт: на втором, четвёртом,
+   шестом и восьмом построенном отсеке. То есть выбирает их тот, кто уже что-то
+   построил, и выбирает под то, что построил.
+
+   У каждого закона есть цена, и цена не «немного хуже», а другая по природе:
+   двойная смена даёт четверть выработки и берёт духом и бедой; общий котёл
+   снимает голод и берёт темпом; сухой закон чинит вдвое быстрее и берёт духом;
+   открытая дверь приводит людей — и одного из шести приводит не того.
+
+   Смотритель (перки) — это НАСКОЛЬКО ХОРОШО база работает; устав — ЧТО ЭТО ЗА
+   МЕСТО. Они не спорят и не складываются в одну шкалу. */
+const CHARTER=[
+  {id:"double",ru:"Двойная смена",
+   gives:"+25% ко всему, что база делает",
+   costs:"−10 духа, беды на две пятых чаще"},
+  {id:"pot",   ru:"Общий котёл",
+   gives:"никто не голодает: харч делится поровну",
+   costs:"−8% выработки: сытых половин не бывает"},
+  {id:"dry",   ru:"Сухой закон",
+   gives:"спирт идёт в технужды: ремонт вдвое быстрее",
+   costs:"−12 духа"},
+  {id:"door",  ru:"Открытая дверь",
+   gives:"вдвое чаще приходят люди со стороны",
+   costs:"один из шести приходит не тот"}
+];
+const CHARTER_AT=[2,4,6,8];       /* на скольких отсеках открывается закон */
+const CHARTER_BY={};for(const L of CHARTER)CHARTER_BY[L.id]=L;
+function charterOf(B){
+  if(!B.charter||!Array.isArray(B.charter))B.charter=[];
+  return B.charter;
+}
+function charterHas(B,id){return charterOf(B).indexOf(id)>=0;}
+function charterBuilt(B){
+  let n=0;
+  for(const cell of (B.cells||[]))if(cell&&cell.hp>0)n++;
+  return n;
+}
+/* сколько законов уже можно иметь: по числу построенного */
+function charterSlots(B){
+  const n=charterBuilt(B);
+  let s=0;
+  for(const need of CHARTER_AT)if(n>=need)s++;
+  return s;
+}
+function charterFree(B){return Math.max(0,charterSlots(B)-charterOf(B).length);}
+function charterTake(B,id){
+  if(!CHARTER_BY[id]||charterHas(B,id))return false;
+  if(charterFree(B)<=0){
+    say("Устав пополняется, когда база растёт\nследующий закон — на "+
+      (CHARTER_AT[charterOf(B).length]||"—")+" отсеках");
+    return false;
+  }
+  charterOf(B).push(id);
+  const n=(typeof baseShift==="function")?baseShift():0;
+  if(typeof baseLog==="function")baseLog(B,"law",n,{ru:CHARTER_BY[id].ru});
+  tell("tech","Устав базы «"+B.name+"»: "+CHARTER_BY[id].ru,
+    "УСТАВ\n"+CHARTER_BY[id].ru+"\n"+CHARTER_BY[id].gives+"\n"+CHARTER_BY[id].costs+
+    "\nзакон берётся навсегда");
+  return true;
+}
+/* ── что законы делают ── */
+function charterWorkMul(B){
+  let m=1;
+  if(charterHas(B,"double"))m*=1.25;
+  if(charterHas(B,"pot"))m*=.92;
+  return m;
+}
+function charterSpirit(B){
+  let s=0;
+  if(charterHas(B,"double"))s-=10;
+  if(charterHas(B,"dry"))s-=12;
+  return s;
+}
+/* общий котёл: пока харч есть вообще, голодных нет */
+function charterFed(B){return charterHas(B,"pot");}
+function charterFixMul(B){return charterHas(B,"dry")?2:1;}
+function charterThreatMul(B){return charterHas(B,"double")?1.4:1;}
+function charterGuestMul(B){return charterHas(B,"door")?2:1;}
+/* открытая дверь: один из шести — не тот. Это не «плохой человек», а то, что
+   бывает, когда дверь открыта всем: однажды из склада пропадёт треть */
+function charterBadGuest(B,seed){
+  if(!charterHas(B,"door"))return 0;
+  return (hashi(seed|0,0x0D00,0x77)%6)===0?1:0;
+}
+function charterThiefStep(B,n){
+  if(!B.thief||(B.thief|0)>n)return 0;
+  B.thief=0;
+  let lost=0;
+  for(const k in (B.pool||{})){
+    const q=B.pool[k]|0;
+    if(q<=0)continue;
+    const t=Math.ceil(q/3);B.pool[k]=q-t;lost+=t;
+  }
+  if(typeof baseLog==="function")baseLog(B,"thief",n,{q:lost});
+  logAdd("warn","База «"+B.name+"»: со склада пропало "+lost+" ед");
+  return 1;
+}
+/* строка для стола: что это за место */
+function charterLine(B){
+  const L=charterOf(B);
+  if(!L.length)return charterSlots(B)?"устав пуст · можно взять закон":"устав пуст";
+  return "устав: "+L.map(id=>CHARTER_BY[id].ru.toLowerCase()).join(" · ")+
+    (charterFree(B)?" · можно взять ещё":"");
 }
 
 /* ══════════════ база: внутренности отсеков ══════════════ */
@@ -72248,6 +72380,18 @@ function renderBasesTab(st){
         const bn=el("button","act","ОТКАЗАТЬ");
         bn.onclick=()=>{baseGuestDrop(B);renderTab();};
         r.appendChild(bn);
+      }
+      /* устав (M399, §9): четыре закона, каждый навсегда, и берут их здесь —
+         там же, где смотрят на базу целиком */
+      if(typeof charterLine==="function"){
+        r.firstChild.innerHTML+="<s>"+charterLine(B)+"</s>";
+        if(charterFree(B)>0)for(const L of CHARTER){
+          if(charterHas(B,L.id))continue;
+          const b=el("button","act",L.ru.toUpperCase());
+          b.title=L.gives+" · "+L.costs+" · навсегда";
+          b.onclick=()=>{charterTake(B,L.id);renderTab();};
+          r.appendChild(b);
+        }
       }
       /* консервация (§13): правильный ход перед долгой дорогой, а не наказание */
       if(typeof basePark==="function"){

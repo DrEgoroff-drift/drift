@@ -901,3 +901,63 @@ TEST_SUITES.push(()=>suite("база M398: аврал — руки против 
   ok(B.log.some(x=>x.k==="avrno"),"о провале сказано");
   eq(G.crew.length,0,"и никто не погиб: аврал — про вещи, а не про людей");
 }));
+
+/* ── устав (M399) ──
+   Четыре закона, каждый навсегда, каждый с ценой другой природы. Проверяется
+   и то, что они дают, и то, что берут, — второе важнее. */
+TEST_SUITES.push(()=>suite("база M399: четыре закона, и каждый навсегда",()=>{
+  const B=bLife();
+  for(let i=0;i<B.cells.length;i++)B.cells[i]=null;
+  /* таблица честная */
+  eq(CHARTER.length,4,"законов четыре");
+  eq(CHARTER_AT.length,4,"и у каждого своя ступень");
+  for(const L of CHARTER){
+    ok(L.ru&&L.gives&&L.costs,"у закона «"+L.ru+"» сказано и что даёт, и чего стоит");
+    ok(L.costs.length>6,"и цена не отписка: "+L.costs);
+  }
+  /* открываются ростом базы, а не деньгами */
+  eq(charterSlots(B),0,"на пустой базе устава нет");
+  eq(charterTake(B,"double"),false,"и взять нечего");
+  B.cells[0]={k:"reactor",hp:1};B.cells[1]={k:"drill",hp:1};
+  eq(charterBuilt(B),2,"два отсека построено");
+  eq(charterSlots(B),1,"открылась первая ступень");
+  ok(charterTake(B,"double"),"закон принят");
+  ok(charterHas(B,"double"),"и он у базы есть");
+  eq(charterTake(B,"pot"),false,"второй сразу не берут: ступень одна");
+  eq(charterFree(B),0,"свободных мест нет");
+  /* и обратно его не отдать: в модуле нет такой функции вовсе */
+  eq(typeof charterDrop,"undefined","закон нельзя отменить — этого просто нет");
+  /* растём — открывается следующая */
+  B.cells[2]={k:"storage",hp:1};B.cells[3]={k:"habitat",hp:1};
+  eq(charterSlots(B),2,"вторая ступень на четырёх отсеках");
+  ok(charterTake(B,"pot"),"второй закон принят");
+  /* ── что они делают ── */
+  ok(charterWorkMul(B)>1,"двойная смена гонит выработку: ×"+charterWorkMul(B).toFixed(2));
+  ok(charterWorkMul(B)<1.25,"а общий котёл её придерживает");
+  ok(charterSpirit(B)<0,"и за это платят духом: "+charterSpirit(B));
+  ok(charterThreatMul(B)>1,"беды к такой базе ходят чаще: ×"+charterThreatMul(B));
+  ok(charterFed(B),"общий котёл кормит всех");
+  /* сухой закон чинит вдвое */
+  const B2=bLife();
+  eq(charterFixMul(B2),1,"без сухого закона ремонт обычный");
+  B2.charter=["dry"];
+  eq(charterFixMul(B2),2,"с ним — вдвое быстрее");
+  ok(charterSpirit(B2)<0,"и дух ниже: "+charterSpirit(B2));
+  /* открытая дверь: вдвое чаще гости, и один из шести — не тот */
+  const B3=bLife();
+  eq(charterGuestMul(B3),1,"без двери как обычно");
+  B3.charter=["door"];
+  eq(charterGuestMul(B3),2,"с дверью вдвое охотнее идут");
+  let bad=0,all=0;
+  for(let s=0;s<600;s++){all++;if(charterBadGuest(B3,s))bad++;}
+  near(bad/all,1/6,.05,"и один из шести — не тот: "+(bad/all).toFixed(2));
+  eq(charterBadGuest(bLife(),1),0,"а без двери таких не бывает вовсе");
+  /* недосчёт приходит позже и один раз */
+  const B4=bLife();
+  B4.pool={iron:90};
+  B4.thief=baseShift();
+  ok(charterThiefStep(B4,baseShift()),"со склада пропало");
+  ok((B4.pool.iron|0)<90,"и правда меньше: "+B4.pool.iron);
+  eq(charterThiefStep(B4,baseShift()),0,"второй раз не пропадает");
+  ok(B4.log.some(x=>x.k==="thief"),"и это записано в журнал");
+}));

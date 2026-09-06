@@ -308,7 +308,9 @@ function baseFixTick(B,min,sh){
   for(const cell of (B.cells||[]))if(cell&&cell.hp>0&&cell.k==="shop")shop++;
   const eng=baseRoleForce(B,"engineer")+(mgrPerkOf("keep","queue")?.8:0)+shop*.5;
   if(eng<=0)return 0;
-  const near=(typeof baseAdjFix==="function")?baseAdjFix(B):1;
+  /* сухой закон (M399): спирт идёт в технужды, и чинится всё вдвое быстрее */
+  const near=((typeof baseAdjFix==="function")?baseAdjFix(B):1)*
+             ((typeof charterFixMul==="function")?charterFixMul(B):1);
   let done=0;
   for(const cell of B.cells){
     if(cell&&cell.hp<1){

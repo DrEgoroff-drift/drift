@@ -668,7 +668,9 @@ function applySave(s){
         guest:(b.guest&&typeof b.guest==="object")?{name:String(b.guest.name||"").slice(0,24),
           role:String(b.guest.role||"driller"),seed:b.guest.seed|0,n:b.guest.n|0}:null,
         /* погода директора (M397): у неё есть сроки, и они переживают выход */
-        dust:b.dust|0,cold:b.cold|0,vein:b.vein|0,
+        dust:b.dust|0,cold:b.cold|0,vein:b.vein|0,thief:b.thief|0,
+        /* устав (M399): законы берутся навсегда, значит они в записи */
+        charter:Array.isArray(b.charter)?b.charter.filter(x=>typeof CHARTER_BY!=="undefined"&&CHARTER_BY[x]):[],
         fire:(b.fire&&typeof b.fire==="object")?{c:b.fire.c|0,r:b.fire.r|0,
           k:String(b.fire.k||"fire"),n:b.fire.n|0}:null,
         park:b.park|0,

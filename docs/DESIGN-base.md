@@ -1561,7 +1561,13 @@ drawn with its own glow and the hold bar inside it, and a miss handing the troub
 fire. Node, browser and **mobile** tiers all green — the pass includes the phone check because a
 held button is the thing that is easy on a keyboard and awkward on glass. **Deferred:** the
 different cures per kind (fire/vent/flood all take the same hold today) and the crew handling an
-аврал *while you watch* — today they only handle the walking fire that follows it. · M399 устав (§9).
+аврал *while you watch* — today they only handle the walking fire that follows it. · ~~M399 устав~~ — 0.399.0 (2026-09-06): `21a7-base-charter` — four laws unlocked at 2/4/6/8 built
+compartments, irrevocable by construction (there is no function that takes one back, and the suite
+asserts that), each wired to something real: work multiplier, spirit, the director's threat, the
+repair rate, the guest rate and the one-in-six guest who costs a third of the store two days later.
+Taken at the desk, logged in the journal. **Deferred:** «сухой закон» halving the кают-компания
+(that module is not built yet) and the other two faces of the bad guest — a fire and a rumour that
+reaches the pirates; today he steals. **Stage B is closed** (M394–M399).
 
 **C · тяжёлая игра** — M400 формуляр планеты (§21) · M401 девять законов (§22) · M402 развалина и
 возврат (§22.1, §39) · M403 плата и блокада (§23, §42, §43) · M404 ремесленный проход по всей

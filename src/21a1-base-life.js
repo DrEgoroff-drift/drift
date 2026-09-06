@@ -65,6 +65,8 @@ const BLOG={
   deep:    ()=>"смотритель вскрыл нижний ярус",
   wear:    (B,a)=>"жара доконала: "+a.what,
   warn:    (B,a)=>a.warn,
+  law:     (B,a)=>"устав: принят закон «"+a.ru+"». Навсегда",
+  thief:   (B,a)=>"со склада пропало "+a.q+" ед. Дверь была открыта",
   avral:   (B,a)=>"аврал: "+a.ru.toLowerCase()+" в отсеке "+a.what,
   avrok:   (B,a)=>a.who?"«Успели» — "+a.who:"аврал отбит, отсек цел",
   avrno:   ()=>"аврал упустили. Дальше оно пошло само",
@@ -174,7 +176,9 @@ function baseMine(B,P,min,n){
   /* погода (M397): занос останавливает бур, жила гонит его вдвое веселее */
   if(typeof baseDusty==="function"&&baseDusty(B,n))return 0;
   const vein=(typeof baseVein==="function")?baseVein(B,n):1;
-  const want=min*P.drillEff*eff*crewBoost*heat*adj*vein*1.1;
+  /* устав (M399): двойная смена гонит всё, общий котёл придерживает */
+  const law=(typeof charterWorkMul==="function")?charterWorkMul(B):1;
+  const want=min*P.drillEff*eff*crewBoost*heat*adj*vein*law*1.1;
   let left=Math.min(want,Math.max(0,cap-held));
   const full=want>0&&left<want*.5;      /* склад забит: добыча стоит, и это строка */
   const r=rng(hashi(B.sx*7919+B.sy,B.idx,hashi(n,0x9111,0x2D)));
@@ -325,6 +329,8 @@ function baseLifeStep(B,P,n){
   said|=baseSpiritStep(B,n)?1:0;
   /* маяк зовёт (M395): раз в тридцать смен кто-то просится остаться */
   if(typeof baseGuestRoll==="function")said|=baseGuestRoll(B,n)?1:0;
+  /* открытая дверь (M399): однажды пропадает треть склада */
+  if(typeof charterThiefStep==="function")said|=charterThiefStep(B,n)?1:0;
   /* запас пришёл — база встаёт на ход сама, но смена уходит на разгон */
   if(B.park>0&&L.air>need.air&&L.water>need.water){baseWake(B,n);said=1;}
   return said;
@@ -547,8 +553,10 @@ function baseSpirit(B,n){
   if(!baseCrewN(B))return 100;
   let s=100;
   const left=baseLifeLeft(B);
+  /* общий котёл (M399): пока харч есть вообще, голодных нет — делят поровну */
+  const pot=(typeof charterFed==="function")&&charterFed(B);
   if((L.food|0)<=0)s-=30;                                  /* голодно */
-  else if(L.food<baseCrewN(B)*LIFE_FOOD*3)s-=10;           /* и почти голодно */
+  else if(!pot&&L.food<baseCrewN(B)*LIFE_FOOD*3)s-=10;     /* и почти голодно */
   if(L.q==="poor")s-=12;                                   /* невкусно (§16) */
   if(baseParked(B))s-=20;                                  /* стоим */
   if(left.air<3||left.water<3)s-=15;                       /* дышать нечем */
@@ -558,6 +566,8 @@ function baseSpirit(B,n){
   s-=(P.habPenalty|0)*8;                                   /* жильё прижато к реактору */
   /* соседство (M396): зелень и уход поднимают, батарея под ухом роняет */
   if(typeof baseAdjSpirit==="function")s+=baseAdjSpirit(B);
+  /* устав (M399): у каждого закона своя цена, и платят её духом */
+  if(typeof charterSpirit==="function")s+=charterSpirit(B);
   if(P.eff<.7)s-=8;                                        /* и свет мигает */
   if(L.q==="good"&&(L.food|0)>0&&!baseParked(B)&&!b)s+=10; /* а бывает и хорошо */
   return clamp(s|0,0,100);

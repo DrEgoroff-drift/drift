@@ -72,12 +72,17 @@ function baseGuestRoll(B,n){
   if((n%GUEST_EVERY)!==0)return 0;
   const sp=(typeof baseSpirit==="function")?baseSpirit(B,n):100;
   const r=rng(hashi(B.sx*331+B.sy,B.idx*23+11,hashi(n,0x6E57,0x9)));
-  if(r()>clamp(sp/140,.1,.85))return 0;
+  /* открытая дверь (M399): к такой базе идут вдвое охотнее */
+  const door=(typeof charterGuestMul==="function")?charterGuestMul(B):1;
+  if(r()>clamp(sp/140*door,.1,.92))return 0;
   const seed=hashi(B.sx,B.sy,n)>>>0;
   const rr=rng(seed);
   const roles=(typeof ROLE_KEYS!=="undefined")?ROLE_KEYS:["driller"];
   B.guest={name:(typeof genName==="function")?genName(rr):"Человек",
     role:pick(roles,rr),seed,n};
+  /* и один из шести приходит не тот — это цена открытой двери, а не характер
+     человека: дверь открыта всем, значит однажды войдёт и такой */
+  if(typeof charterBadGuest==="function"&&charterBadGuest(B,seed))B.guest.bad=1;
   baseLog(B,"guest",n,{who:B.guest.name});
   return 1;
 }
@@ -101,6 +106,8 @@ function baseGuestTake(B){
   const p=Object.assign(m,{cargo:{},order:{kind:"base",sx:B.sx,sy:B.sy,idx:B.idx},
     tMs:Date.now(),paidMs:Date.now()});
   G.crew.push(p);
+  /* если это был тот самый один из шести — через двое суток на складе недосчёт */
+  if(g.bad)B.thief=((typeof baseShift==="function")?baseShift():0)+8;
   B.guest=null;
   tell("good",p.name+" остался на базе «"+B.name+"»",
     "ОСТАЛСЯ\n"+p.name+" · "+((typeof BASE_ROLES!=="undefined"&&BASE_ROLES[p.role])?BASE_ROLES[p.role].ru:p.role)+

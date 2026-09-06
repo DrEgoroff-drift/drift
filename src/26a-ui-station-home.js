@@ -208,6 +208,18 @@ function renderBasesTab(st){
         bn.onclick=()=>{baseGuestDrop(B);renderTab();};
         r.appendChild(bn);
       }
+      /* устав (M399, §9): четыре закона, каждый навсегда, и берут их здесь —
+         там же, где смотрят на базу целиком */
+      if(typeof charterLine==="function"){
+        r.firstChild.innerHTML+="<s>"+charterLine(B)+"</s>";
+        if(charterFree(B)>0)for(const L of CHARTER){
+          if(charterHas(B,L.id))continue;
+          const b=el("button","act",L.ru.toUpperCase());
+          b.title=L.gives+" · "+L.costs+" · навсегда";
+          b.onclick=()=>{charterTake(B,L.id);renderTab();};
+          r.appendChild(b);
+        }
+      }
       /* консервация (§13): правильный ход перед долгой дорогой, а не наказание */
       if(typeof basePark==="function"){
         const parked=baseParked(B);

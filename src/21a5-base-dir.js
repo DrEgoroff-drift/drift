@@ -79,7 +79,9 @@ function baseWorth(B){
 function baseThreat(B){
   const d=(typeof sysDanger==="function")?sysDanger(B.sx,B.sy):0;
   const worth=clamp(baseWorth(B)/DIR_WORTH_CAP,0,1);
-  return clamp(DIR_BASE+DIR_DANGER*d+DIR_WORTH*worth,0,.35);
+  /* двойная смена (M399): база работает на износ, и беды к ней ходят чаще */
+  const law=(typeof charterThreatMul==="function")?charterThreatMul(B):1;
+  return clamp((DIR_BASE+DIR_DANGER*d+DIR_WORTH*worth)*law,0,.45);
 }
 /* ── что случится в эту смену ──
    Чистая функция: тот же ответ у всех и на смену вперёд. */
