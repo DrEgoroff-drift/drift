@@ -161,6 +161,28 @@ function chronDirector(st,N){
     P.str=clampi(P.str+((1000-P.str)/12|0),100,1000);
   }
 }
+/* ── что сейчас происходит ──
+   Директор объявляет происшествия строкой; семьи механик (M382–M388) читают
+   их отсюда и превращают в последствия. Живым считается происшествие, которому
+   меньше `span` сводок: у каждой семьи свой срок, и он написан у неё. */
+function chronIncSince(span,st,N){
+  st=st||chronState();
+  N=(N===undefined)?st.N:N;
+  const out=[];
+  for(const L of st.lines||[]){
+    if(L.kind!=="inc"||!L.args)continue;
+    if(N-L.N>span)continue;
+    out.push({k:L.args.k,f:L.args.f,p:L.p,N:L.N});
+  }
+  return out;
+}
+/* происшествие этого вида — у кого и когда; null, если его сейчас нет */
+function chronIncOf(kind,span,st,N){
+  const L=chronIncSince(span===undefined?8:span,st,N);
+  let best=null;
+  for(const x of L)if(x.k===kind&&(!best||x.N>best.N))best=x;
+  return best;
+}
 /* сколько сейчас идёт дуг и обрядов — для новостей и тестов */
 function chronArcs(){const st=chronState();return (st.dir&&st.dir.arcs)||[];}
 function chronRites(){const st=chronState();return (st.dir&&st.dir.rites)||[];}

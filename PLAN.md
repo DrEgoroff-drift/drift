@@ -753,7 +753,10 @@ Three stages, each playable on /dev before the next starts:
   цена свежей оккупации — она поднимала только сдачу) · ~~M381 циркуляры и конституция~~ (0.381.0, 2026-09-06: `docs/WAR-CONSTITUTION.md` —
   что можно и чего нельзя никогда; `circValid` написан по нему построчно, тот же список в
   `war.php circ`, негодный циркуляр не применяется вовсе, годный виден бумагой в голосе своей
-  волны) · M382–M388 the Director's mechanics, one family a pass.
+  волны) · M382–M388 the Director's mechanics, one family a pass:
+  ~~M382 economy~~ (0.382.0, 2026-09-06: волна цен державы, жила, ярмарка, эмбарго — всё в одном
+  множителе прилавка и всё из летописи) · society · nature · power · diplomacy · security ·
+  culture.
 
 Measured from M360 on: `prof()` with eight armed ships on the phone layout; the pad row on the
 44 px sweep (`91zzy-screens`); `91zzzw-chron` replay hashes browser vs Node.

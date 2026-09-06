@@ -168,7 +168,10 @@ function occPriceMul(sx,sy){
      поднимала только цену сдачи, и на такой станции взять становилось дешевле,
      чем сдать: сеть «взять дороже, чем сдать» покраснела по делу (0.380.0) */
   const pw=(typeof occPowerAt==="function"&&occPowerAt(sx,sy))?1.25:1;
-  return (occInfo(occLvl(sx,sy)).price||1)*pw;
+  /* экономика Директора (M382): волна цен державы, ярмарка и эмбарго живут
+     здесь же — в ОДНОМ множителе на обе стороны прилавка */
+  const ec=(typeof econPriceMul==="function")?econPriceMul(sx,sy):1;
+  return (occInfo(occLvl(sx,sy)).price||1)*pw*ec;
 }
 /* службы станции: под блокадой закрывается док, под пиратами — всё, кроме заправки */
 function occService(kind){

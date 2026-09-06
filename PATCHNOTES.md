@@ -7,6 +7,33 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.382.0 - M382: the Director's first family — money
+
+The Director has been announcing incidents since 0.371.0; from here they start doing things. One
+family per pass, and the first is economy.
+
+**A price wave per power.** Every power's prices ride a thirty-сводка saw of ±9 % — not an event,
+a background, and the reason carrying the same cargo the same route is not equally worth it every
+day. It is built from integers so two clients cannot disagree about it.
+
+**Жила.** For three days after a vein is announced, everything found in that power's systems comes
+one tier better — and everybody flies there, pirates included.
+
+**Ярмарка.** One station in eight in that power's space keeps a discount and an extra part on the
+counter for two days.
+
+**Эмбарго.** Goods in that power's systems cost a fifth more, and the counter says so before the
+air does.
+
+All four live in the **same** shared multiplier the pirate grip and the fresh occupation already
+use — the M380 lesson: a price that moves on one side of the counter only turns a station into a
+money printer. And all four are computed from the chronicle, so two players who replayed the same
+сводки see the same prices without anything being sent.
+
+Tests: the wave inside its nine per cent, shifted per power and stable between calls; no incident
+meaning no effect at all; the vein raising the tier only in the announcing power's systems; and
+the embargo moving the price up but not by a factor.
+
 ## 0.381.0 - M381: the paper from above, and the limit on it
 
 The war's upper layer — the one the regulator writes — now exists, and so does the fence around

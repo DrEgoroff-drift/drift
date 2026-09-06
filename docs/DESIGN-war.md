@@ -1152,8 +1152,15 @@ One system inside ГЛАВТРАССА's centre (r ≈ 6, fixed by seed, never t
   release, numbered order…), and a test that walks every allowed field and every forbidden one.
   **Deferred:** the digest's twenty lines are eleven (the боевые counters exist, the curves do
   not), and «show me before publishing» is the ssh session itself.
-- **M382–M388** the Director's mechanics, one family a pass: economy, society, nature, power,
-  diplomacy, security, culture (§15.1).
+- **M382–M388** the Director's mechanics, one family a pass (§15.1):
+  ~~**M382 economy**~~ — 0.382.0 (2026-09-06): `12ax-fx-econ` — a price wave per power (a saw from
+  the seed, ±9 %, no fractional maths at its base), the vein raising find tiers by one in that
+  power's systems for three days, the fair with a discount and an extra part on one station in
+  eight, and the embargo raising goods by a fifth — all four in the **one** shared price
+  multiplier so both sides of the counter move together, and all four computed from the chronicle
+  rather than stored. **Deferred here:** station bankruptcy (it needs a station to be able to
+  close, which nothing in the game can do yet).
+  · society · nature · power · diplomacy · security · culture — still open.
 
 Every pass ends with the usual: parse, empty console, a manual scenario, an old save,
 `build.ps1`, tests, the craft-codex check for anything drawn, and — from M360 on — `prof()` with

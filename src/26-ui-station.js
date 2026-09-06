@@ -67,6 +67,8 @@ function openStation(){
     (stP?"\n"+stP.ru+" · "+stP.hail:"")+
     /* флаг сменился (M372): пока хозяин свежий, станция говорит об этом
        первой строкой — и по ней же понятно, почему цены другие */
+    /* экономика Директора одной строкой (M382): ярмарка, эмбарго, жила, волна */
+    ((typeof econLine==="function"&&econLine(G.sys))?"\n"+econLine(G.sys):"")+
     ((typeof occPowerHere==="function"&&occPowerHere())
       ?"\nФЛАГ СМЕНИЛСЯ · "+powerOf(occPowerHere().by).ru.toUpperCase()+
         " · треть выработки в реквизицию":"");
