@@ -81,6 +81,7 @@ function spawnPirates(){
      система, вход в систему это показывает */
   G.npcWrecks=null;
   if(typeof npcSpawn==="function")npcSpawn();
+  if(typeof warPull==="function")warPull();      /* ведомости — на каждом прыжке (M376) */
 }
 /* fireShot — в 13-combat (M361): у выстрела есть хозяин */
 let fireCool=0;

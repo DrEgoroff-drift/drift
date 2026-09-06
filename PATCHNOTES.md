@@ -7,6 +7,43 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.376.0 - M376: the war's ledger, and the one thing a client cannot be trusted with
+
+Stage C opens: the war gets a wire. Not a simulation on a server — the chronicle is still
+replayed on every client from the same seed, and the server is not told where the front is,
+because it cannot be wrong about something it does not know. What travels is **what people did**.
+
+**`site/war.php`** — one file, four ops, no database (the host is PHP 7.4 on shared hosting).
+`pull` hands back the closed сводки after the one you hold, the open one and any циркуляры;
+`put` files one deed — a defence, a tow, a crew taken off, fuel given — against a system and a
+сводка; `vote` takes one vote per account per question; `hash` collects the chronicle hash each
+client computed for the previous сводка. A сводка closes **lazily**: the first request that sees
+the number has grown moves the open file under `flock`. There is no cron on purpose — a second
+mechanism could disagree with the first, and nobody would know which was right.
+
+**Saturation counts accounts, not rows.** A hundred entries from one player are one player: the
+server stores short account hashes per cell and the client's pressure grows with their number
+through the same 51-entry table the chronicle uses. Caps are per account per kind per сводка.
+Nothing carries a name, a free-text string or an exchange between players — the postcard rule
+holds here exactly as it holds for postcards.
+
+**On the client**, `14b-war-net` pulls on load and on every jump, keeps the ledger in the same
+`drift_war_v1` key beside the chronicle's cache (one key, one owner per field), takes the сводка
+number from the server so a moved clock cannot move the war, and feeds the ledger into step 1 of
+the replay: defence, clearing and building in a system pull that сводка's front roll toward its
+owner — by at most a quarter. One system can be held for one сводка; the war cannot be turned.
+
+**And the divergence log.** Every pull reports the client's own chronicle hash for the previous
+сводка. The server counts who agreed with whom; `php war.php digest 7` over ssh prints the week
+and names any сводка where clients disagreed. That is the only way a replay drift can ever be
+seen, and now it is written down.
+
+Tests: `91zzzw-chron` — the replay unchanged when there is no ledger at all (the wire is
+optional), pressure that appears with a ledger and stays under a quarter, four hundred rows from
+one account weighing less than five accounts, and the one storage key holding the chronicle cache,
+the ledger and the clock offset without any of them overwriting the others. The deploy workflow
+now lints `war.php` and smoke-tests `pull` after every release.
+
 ## 0.375.0 - M375: the tug is neutral to both sides by definition
 
 Stage B closes with the role the whole layer was built to make possible: the one who does not

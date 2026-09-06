@@ -100,6 +100,7 @@ jobs:
           # там. На раннере PHP есть всегда — разбираем до заливки.
           php -v | head -1
           php -l site/api.php || { echo "api.php не разбирается — выкладки не будет"; exit 1; }
+          php -l site/war.php || { echo "war.php не разбирается — выкладки не будет"; exit 1; }
 
       - name: Ключ для выкладки
         env:
@@ -167,6 +168,10 @@ jobs:
           [ "$(hc https://drift-game.ru/)" = "200" ] || { echo "заглавная не отвечает"; exit 1; }
           code=$(hc -X POST 'https://drift-game.ru/api.php?a=me')
           [ "$code" = "401" ] || { echo "api.php отвечает $code вместо 401"; exit 1; }
+          # война (M376): pull открыт всем и обязан отвечать номером сводки
+          war=$(curl -s --max-time 30 -X POST 'https://drift-game.ru/war.php?a=pull' -d '{"since":-1}' || true)
+          echo "war.php pull: $(echo "$war" | head -c 120)"
+          echo "$war" | grep -q '"ok":true' || { echo "war.php не отвечает ok"; exit 1; }
           # страницы и их ассеты: битая картинка на заглавной — тоже поломка выкладки
           for u in mechanics.html parrot.html reset.html treplo.html treplo3d.html site.css sky.js planets.js \
                    auth.js parrot.js favicon.svg og.jpg shots/world.webp shots/land.webp \

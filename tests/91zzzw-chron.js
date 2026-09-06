@@ -263,3 +263,55 @@ TEST_SUITES.push(()=>suite("война M372: свежий хозяин берё�
   eq(occPowerAt(999,999),null,"за кругом флагов не меняют");
   eq(occReqMul(999,999),1,"и реквизиции нет");
 }));
+
+/* ══════════════ провод войны (M376, §13) ══════════════
+   Сеть в наборе не дёргаем: здесь мерится то, что делает КЛИЕНТ с ведомостью —
+   как она ложится в повтор и как выглядит давление людей на бросок фронта. */
+TEST_SUITES.push(()=>suite("война M376: ведомость ложится в повтор и не ломает хэш",()=>{
+  chWorld();
+  try{localStorage.removeItem(CHRON_KEY);}catch(e){}
+  WAR_LED_CACHE=null;
+  /* без ведомостей повтор такой же, как был: провод необязателен */
+  const a=chRun(120);
+  eq(warLedger(50),null,"ведомостей нет");
+  eq(chronHash(chRun(120)),chronHash(a),"и повтор от этого не гуляет");
+  /* кладём ведомость: оборона в системе даёт давление, и оно ограничено четвертью */
+  warLedPut(50,{"3,4":{def:{q:12,a:["a1","a2","a3","a4","a5"]}}});
+  ok(!!warLedger(50),"ведомость на руках");
+  const st=chronFresh();
+  const press=warPressure(st,50,0,1,"3,4");
+  ok(press>0,"давление есть: "+press);
+  ok(press<=250,"и оно не больше четверти броска: "+press);
+  eq(warPressure(st,50,0,1,"9,9"),0,"в чужой системе давления нет");
+  eq(warPressure(st,49,0,1,"3,4"),0,"и в другой сводке тоже");
+  /* давление растёт по ЧИСЛУ БОРТОВ, а не по числу строк */
+  warLedPut(51,{"3,4":{def:{q:400,a:["one"]}}});
+  const solo=warPressure(st,51,0,1,"3,4");
+  ok(solo<press,"четыреста строк одного борта слабее пяти бортов: "+solo+" против "+press);
+  /* и вся ведомость целиком не выносит хэш за пределы: повтор остаётся повтором */
+  const b=chRun(120);
+  ok(typeof chronHash(b)==="number","хэш считается и с ведомостями");
+  try{localStorage.removeItem(CHRON_KEY);}catch(e){}
+  WAR_LED_CACHE=null;
+}));
+
+TEST_SUITES.push(()=>suite("война M376: ключ один, поля разные",()=>{
+  chWorld();
+  try{localStorage.removeItem(CHRON_KEY);}catch(e){}
+  WAR_LED_CACHE=null;
+  /* кэш летописи и ведомости живут в одном ключе и не затирают друг друга */
+  warLedPut(7,{"0,0":{def:{q:1,a:["x"]}}});
+  const st=chRun(30);
+  chronSave(st);
+  ok(!!warLedger(7),"ведомость пережила запись кэша летописи");
+  const back=chronLoad();
+  ok(!!back&&back.N===st.N,"а кэш летописи прочитался");
+  /* смещение часов тоже своё поле */
+  warStoreSet({off:12345});
+  chronSave(st);
+  const o=warStore();
+  eq(o.off,12345,"смещение часов на месте");
+  ok(!!o.led,"и ведомости на месте");
+  try{localStorage.removeItem(CHRON_KEY);}catch(e){}
+  WAR_LED_CACHE=null;
+}));

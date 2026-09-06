@@ -113,6 +113,10 @@ function hitShip(p,s,rawDmg){
       if(typeof epiAdd==="function"&&!p.pw&&typeof MAKER_KEYS!=="undefined"){
         for(const by of MAKER_KEYS)if(epiWitness(by)){epiAdd("guard",by);break;}
       }
+      /* оборона (M376): пират, снятый в системе, по которой идёт фронт, — это
+         строка в ведомости сводки, и она потянет следующий бросок */
+      if(!p.pw&&typeof warPut==="function"&&typeof chronFront==="function"&&chronFront(G.sx,G.sy))
+        warPut("def",1);
       if(p.pw&&typeof epiNeverForgave==="function"&&
          (G.notebook||[]).some(x=>x.by===p.pw&&x.who===p.name))epiNeverForgave(p);
       killPirate(p);

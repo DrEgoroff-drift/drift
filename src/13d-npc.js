@@ -143,6 +143,7 @@ function npcRescue(sh,actEdge,cel){
       hurt.hull=Math.min(hurt.hullMax,hurt.hull+hurt.hullMax*.15);
       say("ОТДАНО ТОПЛИВО · "+Math.round(give),120);
       if(typeof epiAdd==="function")epiAdd("fuel",hurt.pw,{force:1});
+      if(typeof warPut==="function")warPut("fuel",1);
     }
     return true;
   }
@@ -158,6 +159,7 @@ function npcRescue(sh,actEdge,cel){
     say("КОРПУС НА ТРОСЕ · В ДОК",120);
     logAdd("tech","Корпус после боя взят на буксир · сектор "+G.sx+":"+G.sy);
     if(typeof epiAdd==="function")epiAdd("tow",wk.by,{force:1});
+    if(typeof warPut==="function")warPut("tow",1);
   }
   return true;
 }
@@ -170,6 +172,7 @@ function npcCrewOff(sh){
   say("ЭКИПАЖ СНЯТ · "+(P?P.ru.toUpperCase():""),140);
   logAdd("kill","Снят экипаж с обломка "+(P?P.ru:"")+" · сектор "+G.sx+":"+G.sy);
   if(typeof epiAdd==="function")epiAdd("distress",wk.by,{force:1});
+  if(typeof warPut==="function")warPut("crew",1);
   return true;
 }
 function npcWreckNear(sh){

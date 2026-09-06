@@ -139,6 +139,15 @@ function chronFlip(st,N,from,to,rr){
     const k=keys[(start+i)%keys.length];
     const S=st.systems[k];
     if(!S||S.yalta||S.owner!==to)continue;        /* «Ялта» не переходит никогда */
+    /* ── рука людей (шаг 1, §16.2) ──
+       Ведомость сводки — единственное, чего клиент сам знать не может. Оборона,
+       расчистка и стройка в этой системе тянут бросок к её хозяину, но не
+       больше чем на четверть: одну систему на сводку удержать можно, войну
+       повернуть нельзя (§7.4). */
+    if(typeof warPressure==="function"){
+      const press=warPressure(st,N,from,to,k);
+      if(press>0&&(rr(from*3+to,0x77)%1000)<press)continue;
+    }
     /* §15: ниже трети своего дома держава не падает — она «выживает», а не
        исчезает, иначе месяц без игрока кончается пятью державами */
     if(st.powers[to].hold<=((st.powers[to].home*3/10)|0))continue;
@@ -239,7 +248,13 @@ function chronState(N){
 /* ── кэш в своём ключе, а не в сохранении (§16.4) ── */
 function chronSave(st){
   try{
-    const o={v:1,N:st.N,off:st.off|0,
+    /* ключ один на всё военное (§16.4): здесь же лежат ведомости и смещение
+       часов от `14b-war-net`. Пишем свои поля и не трогаем чужие */
+    let keep={};
+    try{const q=JSON.parse(localStorage.getItem(CHRON_KEY)||"null");if(q&&typeof q==="object")keep=q;}catch(e){}
+    /* смещение часов пишет только провод (`warClock`): у одного поля один
+       хозяин, иначе они затирают друг друга по очереди */
+    const o={v:1,N:st.N,off:(typeof keep.off==="number")?keep.off:(st.off|0),led:keep.led,
       p:st.powers.map(p=>[p.hold,p.str,p.tension,p.rel.slice(),
         [p.need.ore,p.need.goods,p.need.hulls,p.need.link]]),
       s:chronKeys().map(k=>st.systems[k].owner+","+st.systems[k].since+","+st.systems[k].front).join("|"),

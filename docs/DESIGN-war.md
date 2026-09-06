@@ -1098,7 +1098,16 @@ One system inside ГЛАВТРАССА's centre (r ≈ 6, fixed by seed, never t
 - **M375** the rescuer.
 
 **Stage C — everyone** (server)
-- **M376** `war.php` pull/put, bundles, caps, saturation by accounts, the fuse, hash log, digest
+- ~~**M376** `war.php` pull/put, caps, saturation by accounts, hash log, digest~~ — 0.376.0
+  (2026-09-06): `site/war.php` — four ops (pull, put, vote, hash), сводки closed lazily under
+  `flock` with no cron, caps per account per kind per сводка, saturation counted over account
+  hashes rather than rows, the chronicle-hash log that is the only way a replay divergence can be
+  noticed (D06), and the ssh CLI `digest`/`circ` for the regulator; `14b-war-net` — pull on load
+  and on every jump, the ledger in the same `drift_war_v1` key beside the chronicle's cache, the
+  clock offset owned by the wire alone (D05), and the ledger entering `step()` as pressure on the
+  front roll, capped at a quarter (§7.4). The deploy workflow lints `war.php` and smoke-tests
+  `pull` after every release. **Deferred:** monthly bundles (a year of сводки still fits in the
+  forty-per-pull window), leftovers `left`/`take` (M377) and the boss window (M380).
   CLI; the client applies ведомости at jump-in (D01–D06).
 - **M377** leftovers, благодарность, ghosts; `DESIGN-online-risks.md` (D19).
 - **M378** votes, elections, сигнал сбора.
