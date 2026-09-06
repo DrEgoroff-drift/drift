@@ -80,6 +80,18 @@ function cantRoomBody(c,W2,H2,list,sel,hover,deals,folk){
   const flick=(Math.sin(G.t*.31+seed%7)>-.92)?1:.35;   // неон подмигивает
   c.fillStyle=rgba(acc,.85*flick);c.fillText(S.sign,22,33);
   c.shadowColor=rgba(acc,.5*flick);c.shadowBlur=10;c.fillText(S.sign,22,33);c.shadowBlur=0;
+  /* что сегодня дают — по заводу станции (M369a): одна строка, и она же
+     говорит, чей это дом, лучше любой таблички */
+  {
+    const cby=(G.sys&&G.sys.station&&G.sys.station.by)||"gt";
+    const CP=(typeof powerOf==="function")?powerOf(cby):null;
+    if(CP&&CP.food){
+      c.font="9px ui-monospace,monospace";
+      c.fillStyle="rgba(226,230,236,.55)";
+      c.fillText("сегодня: "+CP.food,22,50);
+      c.font="10px ui-monospace,monospace";
+    }
+  }
   /* ── полка с бутылками за стойкой ── */
   /* ── что за стойкой ──
      Стена бутылок стояла всюду, включая научную станцию и аванпост, где ей

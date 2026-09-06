@@ -56,8 +56,16 @@ function openStation(){
   /* модули названы прямо в шапке: снаружи игрок видит их силуэты, внутри —
      читает списком. Услуги при этом по-прежнему от типа станции, модули
      ничего не открывают (17a-station-mod) */
+  /* ── чей это дом (M369a, §19.4 «бумаги и одна строка») ──
+     Станцию строил кто-то, и это слышно в первой же строке: приветствие
+     державы и её цвет в акценте шапки. Не перекраска интерфейса — одна
+     строка и один цвет, как и договорено в §19.1. */
+  const stBy=(G.sys.station&&G.sys.station.by)||"gt";
+  const stP=(typeof powerOf==="function")?powerOf(stBy):null;
   document.getElementById("stKind").textContent=
-    G.st.kind+" · система "+G.sys.name+"\n"+stationModsLine(G.sys);
+    G.st.kind+" · система "+G.sys.name+"\n"+stationModsLine(G.sys)+
+    (stP?"\n"+stP.ru+" · "+stP.hail:"");
+  if(stP)document.getElementById("stName").style.color=stP.col;
   syncTabs();
   /* новая стыковка — новый экран: высоту прошлого захода не помним */
   renderTab._tab=null;

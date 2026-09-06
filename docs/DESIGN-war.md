@@ -1045,9 +1045,17 @@ One system inside ГЛАВТРАССА's centre (r ≈ 6, fixed by seed, never t
   `docs/shot.py maker` (`?by=<key>` for one maker's hundred). Almanac issue IV.
   **Deferred:** the other four generators (M369a), the author's own naming of the six sheets on
   /dev, and the class's own appendages still meeting the hull in the old joint grammar.
-- **M369a** the same grammar in the other generators: the fleet (`12ai`), barges (`12l`),
-  pirate hulls and deserters (`12i`), station bodies (`17e`: assembly law, forms, lights),
-  domes and strips, papers, suits, the station's accent and greeting, engine sound.
+- ~~**M369a** the same grammar in the other generators~~ — 0.369.1 (2026-09-06): one layer read
+  by all five (D24) — `makerWidth`/`makerGround`/`makerAssembly` in `03a-hull-maker`; the barge
+  takes the profile law, the ground, one protrusion and the weld seams (a Рассвет barge is three
+  barges butted); the station takes the **assembly law** (rack, stack, ring, patch, spine, block)
+  in `stationMods`; the pirate hull takes the maker's ground with the marks painted over and wear
+  ×2, and a `deserter` gets the clean fresh rectangle instead of the crossed-out one; the fleet
+  takes ground and flare and now carries `by`, so foreign wings need only that field; the dome
+  glows in its builder's ground; six foreign books, one per power, and the power's food line in
+  the cantina, greeting and accent in the station header, and its brand on foreign kit.
+  **Deferred:** the poster on the node wall (it changes per сводка — M372), suits' own art, and
+  the class appendages' joints.
 - **M369b** the having of things (§19.3): shipyards and workshops per maker, the hull purchase
   gated by an episode, the tow-and-restore path for derelict hulls, the gift, the fuse of two
   makers' hulls; the hail about a foreign hull.

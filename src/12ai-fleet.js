@@ -100,7 +100,14 @@ function fleetPos(f){
 /* ── окраска: один конвейер на все классы (§18.5, §1) ── */
 const FLEET_ART={},FLEET_SS=3;
 function fleetArtOf(f){
-  const key="fl"+f.k+f.seed;
+  /* ── флот тоже чей-то (M369a, §19.4) ──
+     Тринадцать классов остаются классами: они про РАБОТУ — почтовик, танкер,
+     буксир. Завод берёт у них измерения 5–7: грунт, огни и подпись тяги, — и
+     собственная грамматика стыков этого флота становится строкой ГЛАВТРАССЫ.
+     Пока весь флот её и есть; чужие крылья прилетят с M371, и генератор их
+     уже ждёт: достаточно положить `by` в запись. */
+  const fby=f.by||"gt";
+  const key="fl"+f.k+f.seed+"!"+fby;
   if(FLEET_ART[key])return FLEET_ART[key];
   const r=rng(hashi(f.seed,0xF1A7,5));
   const polys=[],lines=[],lights=[];
@@ -113,7 +120,12 @@ function fleetArtOf(f){
      p95 кадра .21). Тона опущены на ступень ВНУТРИ серых — освещённый борт
      остаётся в VII, медиана тела ниже, теневая сторона уходит в III–IV; класс
      никогда не отличается подкраской (автор, 03.09: светло-серые с красным). */
-  const C=[[204,206,211],[162,166,173],[96,100,108],[168,52,44],[128,84,56],[40,44,52]];
+  const C0=[[204,206,211],[162,166,173],[96,100,108],[168,52,44],[128,84,56],[40,44,52]];
+  /* грунт завода подмешивается в три корпусных тона; полоса, медь и тень
+     остаются общими — иначе флот перестанет читаться флотом */
+  const C=(fby==="gt"||typeof makerGround!=="function")?C0:
+    [mixc(C0[0],makerGround(fby),.5),mixc(C0[1],makerGround(fby),.42),
+     mixc(C0[2],makerGround(fby),.3),C0[3],C0[4],C0[5]];
   let L,hw,nose,tail,band=[];
   /* стыки (§8, альманах III): всё навесное встречает корпус нарисованным
      узлом — тёмный хомут и светлая пластина, одна грамматика от панели до
@@ -461,8 +473,16 @@ function drawFleetShip(f){
       ctx.fillStyle=(Math.sin(G.t*.03+li.x)>-.4)?"rgba(255,228,170,.9)":"rgba(255,228,170,.4)";
       ctx.beginPath();ctx.arc(li.x,li.y,1.3,0,TAU);ctx.fill();
     }else if(li.c==="eng"){
+      /* зев сопла — подпись тяги завода (M369a, измерение 7): у ГЛАВТРАССЫ
+         оранжевый, у Коммуны фиалковый, у Хай-Фронта бирюзовый */
+      const MF=(typeof makerFlame==="function")?makerFlame(f.by||"gt"):null;
       const fg=ctx.createRadialGradient(li.x,li.y,0,li.x,li.y,li.r*1.3);
-      fg.addColorStop(0,"rgba(255,214,158,.85)");fg.addColorStop(.5,"rgba(255,150,80,.35)");fg.addColorStop(1,"rgba(255,120,60,0)");
+      if(MF&&(f.by||"gt")!=="gt"){
+        fg.addColorStop(0,rgba(mixc(MF.col,[255,255,255],.35),.85));
+        fg.addColorStop(.5,rgba(MF.col,.35));
+        fg.addColorStop(1,rgba(MF.col,0));
+      }else{
+      fg.addColorStop(0,"rgba(255,214,158,.85)");fg.addColorStop(.5,"rgba(255,150,80,.35)");fg.addColorStop(1,"rgba(255,120,60,0)");}
       ctx.fillStyle=fg;ctx.beginPath();ctx.arc(li.x,li.y,li.r*1.3,0,TAU);ctx.fill();
     }
   }

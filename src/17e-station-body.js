@@ -109,8 +109,11 @@ function drawPlanetWorks(sys,p,x,y,r){
     const a=Math.atan2(uy,ux)+(rr()<.5?1:-1)*(1.05+rr()*.25), d=r*.78;
     const dx=x+Math.cos(a)*d, dy=y+Math.sin(a)*d;
     ctx.save();ctx.globalCompositeOperation="lighter";
+    /* купол светится грунтом того, кто его ставил (M369a, §19.4 «купола») */
+    const dby=(G.sys&&G.sys.station&&G.sys.station.by)||"gt";
+    const dc=(typeof makerGround==="function")?mixc(makerGround(dby),[200,255,230],.5):[200,255,230];
     const g=ctx.createRadialGradient(dx,dy,0,dx,dy,r*.07);
-    g.addColorStop(0,"rgba(200,255,230,.55)");g.addColorStop(1,"rgba(200,255,230,0)");
+    g.addColorStop(0,rgba(dc,.55));g.addColorStop(1,rgba(dc,0));
     ctx.fillStyle=g;ctx.beginPath();ctx.arc(dx,dy,r*.07,0,TAU);ctx.fill();
     ctx.restore();
     ctx.fillStyle="rgba(255,255,244,.95)";

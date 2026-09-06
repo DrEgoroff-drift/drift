@@ -147,3 +147,74 @@ TEST_SUITES.push(()=>suite("«Ялта» M369: один адрес на всех
   ok(!yaltaHere(),"за её пределами обычная система");
   eq(yaltaSealed(),false,"и оружие работает");
 }));
+
+/* ══════════════ та же грамматика у остальных генераторов (M369a) ══════════════
+   Слой один на пятерых (D24): корпуса, флот, баржи, пиратские корпуса и тела
+   станций читают одну таблицу. Здесь мерится, что читают её действительно все,
+   а не только `hullOf`. */
+TEST_SUITES.push(()=>suite("изготовитель M369a: баржа собрана по своему закону",()=>{
+  mkWorld();
+  const mk=(by,seed)=>{
+    const b={seed:seed|0,by,x:0,y:0,a:0,hp:100,hullMax:100};
+    const art=bargeArtOf(b);
+    return {b,art};
+  };
+  /* у баржи появился завод, и он в ключе выпечки */
+  const a=mk("ra",11),c=mk("co",11);
+  ok(a.art!==c.art,"две баржи одного семени, но разных заводов — две выпечки");
+  eq(a.b.by,"ra","и он записан в самой барже");
+  /* закон профиля: у Рассвета блоки встык, у Компании гладкая капсула */
+  /* блоки встык дают НЕСКОЛЬКО ПОСТОЯННЫХ ширин, гладкая капсула — плавную
+     череду разных: считаем именно это, а не скачки (у капсулы свой заход) */
+  const levels=(by)=>{
+    const set={};
+    for(let i=0;i<=20;i++)set[makerWidth(by,i/20,11).toFixed(3)]=1;
+    return Object.keys(set).length;
+  };
+  ok(levels("ra")<=4,"у Рассвета три-четыре блока встык: "+levels("ra"));
+  ok(levels("co")>=8,"а у Компании обвод идёт плавно: "+levels("co"));
+}));
+
+TEST_SUITES.push(()=>suite("изготовитель M369a: станция собрана по своему закону",()=>{
+  mkWorld();
+  const modsFor=(by)=>{
+    const sys={sx:3,sy:4,seed:hashi(3,4,77),name:"Т",station:{name:"Т",stype:"trade",by}};
+    return stationMods(sys);
+  };
+  const hf=modsFor("hf"),or=modsFor("or"),km=modsFor("km");
+  /* Хай-Фронт: один хребет, мачты поперёк — все углы ±90° */
+  ok(hf.every(m=>Math.abs(Math.abs(m.ang)-Math.PI/2)<1e-6),"мачты Хай-Фронта строго поперёк");
+  /* Орднунг: стопка по одной оси, одинакового размера */
+  ok(or.every(m=>Math.abs(m.ang)<1e-6||Math.abs(m.ang-Math.PI)<1e-6),"стопка Орднунга по оси");
+  ok(or.every(m=>Math.abs(m.s-or[0].s)<1e-6),"и модули одинаковые");
+  /* Коммуна: кольцо равного выноса */
+  ok(km.every(m=>Math.abs(m.d-km[0].d)<1e-6),"кольцо Коммуны ровное");
+  /* и у станции есть свой завод, даже если её не спрашивали */
+  const sys2={sx:5,sy:6,seed:hashi(5,6,77),name:"Р",station:{name:"Р",stype:"trade"}};
+  stationMods(sys2);
+  ok(!!HULL_MAKER[sys2.station.by],"станция без записи получает завод от зерна");
+}));
+
+TEST_SUITES.push(()=>suite("изготовитель M369a: бумаги, еда и марка на вещи",()=>{
+  mkWorld();
+  /* по книге на державу — и все шесть находятся */
+  const byPower={};
+  for(const b of BOOKS)for(const k of POWER_KEYS)
+    if(b.ru.indexOf(POWERS[k].ru)>=0||(b.by||"").indexOf(POWERS[k].ru)>=0||
+       (b.by||"").indexOf(POWERS[k].full)>=0)byPower[k]=b.id;
+  eq(Object.keys(byPower).length,6,"шесть чужих книг, по одной на державу: "+JSON.stringify(byPower));
+  for(const k of POWER_KEYS){
+    ok(!!POWERS[k].food&&POWERS[k].food.length>8,k+": строка еды в кантине");
+    ok(!!POWERS[k].paper,k+": типографская повадка");
+    ok(!!POWERS[k].suit,k+": марка снаряжения");
+  }
+  /* марка на вещи: своё без марки, чужое с маркой */
+  const own=kitPiece("helmet",1,0,0);
+  eq(kitBrand(own),"","выданное ГЛАВТРАССОЙ марки не носит");
+  let foreign=null;
+  for(let s=1;s<200&&!foreign;s++){
+    const x=kitPiece("helmet",1,0,s);
+    if(kitBy(x)!=="gt")foreign=x;
+  }
+  ok(foreign&&kitBrand(foreign).length>2,"а чужое носит: "+(foreign?kitBrand(foreign):"—"));
+}));

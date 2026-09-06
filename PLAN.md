@@ -702,7 +702,12 @@ Three stages, each playable on /dev before the next starts:
   «Ялта» по зерну на шестом круге: без пиратов, оружие опечатано, фронт туда не приходит;
   прибор `makerRead()` — 92.4 % на 630 корпусах — и стенд `docs/shot.py maker`; альманах,
   выпуск IV. Не сделано: остальные четыре генератора — M369a, и авторская проверка шести
-  листов на /dev) · M369a the grammar in the fleet,
+  листов на /dev)
+  · ~~M369a грамматика в остальных генераторах~~ (0.369.1, 2026-09-06: `makerWidth`,
+  `makerGround`, `makerAssembly` — один слой на пятерых; баржа по закону профиля со сварными
+  швами, станция по закону сборки, пиратский корпус с закрашенной меткой и износом вдвое,
+  дезертир со свежей заплатой, флот с полем `by`, купол грунтом строителя, шесть чужих книг,
+  строка еды в кантине, приветствие и акцент в шапке станции, марка на чужом снаряжении) · M369a the grammar in the fleet,
   barges, pirate hulls, stations, domes, papers · M369b the having of things · M370 chronicle core (integer replay, hash, clock, geometry) · M371 the Director ·
   M372 the war seen · M373 the four rules · M374 episodes and the notebook · M375 the rescuer.
 - **C — everyone** (server): M376 `war.php` and ведомости · M377 leftovers and ghosts · M378

@@ -31,6 +31,9 @@ function stationMods(sys){
   const S=sys.station;if(!S)return [];
   if(S.mods)return S.mods;
   const r=rng(hashi(sys.seed,0x50DD,17));
+  /* чей это завод: пока от зерна системы — кто её строил. С M372 сюда придёт
+     держава, которая систему держит, и строка станет её строкой */
+  const by=S.by||(S.by=(typeof makerBySeed==="function")?makerBySeed(sys.seed):"gt");
   const ty=S.stype||"trade";
   const danger=sysDanger(sys.sx,sys.sy);
   const pool=ST_MODULES.filter(m=>!m.on||m.on.indexOf(ty)>=0);
@@ -49,8 +52,20 @@ function stationMods(sys){
     pool.splice(pool.indexOf(M),1);
     /* точка крепления: угол по кольцу и вынос от ядра. Модули разводятся по
        углам, иначе слипаются в один ком с одной стороны. */
-    const ang=(i/n)*TAU+(r()-.5)*.5;
-    out.push({id:M.id,ru:M.ru,sh:M.sh,ang,d:22+r()*16,s:.7+r()*.7,ph:r()*TAU});
+    /* ── закон сборки завода (M369a, §19.4) ──
+       Куски одни и те же, а собраны они по-разному, и это видно раньше цвета:
+       ГЛАВТРАССА — стойка и барабан по кругу (как было), Орднунг — стопка
+       одинаковых по одной оси, Коммуна — кольцо равных дуг, Рассвет — лоскут
+       на ферме, разнокалиберный, Хай-Фронт — один хребет с мачтами поперёк,
+       Компания — короб с подами вокруг него. */
+    const asm=(typeof makerAssembly==="function")?makerAssembly(by):"rack";
+    let ang=(i/n)*TAU+(r()-.5)*.5, dd=22+r()*16, sz=.7+r()*.7;
+    if(asm==="stack"){ang=(i&1)?0:Math.PI;dd=18+i*11;sz=.95;}
+    else if(asm==="ring"){ang=(i/n)*TAU;dd=30;sz=.85;}
+    else if(asm==="patch"){ang=(i/n)*TAU+(r()-.5)*1.5;dd=16+r()*30;sz=.55+r()*1.1;}
+    else if(asm==="spine"){ang=(i&1)?Math.PI/2:-Math.PI/2;dd=14+i*10;sz=.6+(i%3)*.2;}
+    else if(asm==="block"){ang=i?(i/Math.max(1,n-1))*TAU:0;dd=i?34:0;sz=i?.7:1.5;}
+    out.push({id:M.id,ru:M.ru,sh:M.sh,ang,d:dd,s:sz,ph:r()*TAU});
   }
   S.mods=out;
   return out;

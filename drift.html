@@ -1756,7 +1756,7 @@ body.table u.addr{color:#7a4a20}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.369.0";
+const VER="0.369.1";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -3059,6 +3059,8 @@ function makerOf(id,S){
   return S.by=MAKER_KEYS[hashi(S.seed||1,0x4B17,0x11)%MAKER_KEYS.length];
 }
 function makerRow(by){return HULL_MAKER[by]||HULL_MAKER.gt;}
+/* порода вещи, у которой нет записи корабля: баржа, тело станции, купол */
+function makerBySeed(seed){return MAKER_KEYS[hashi(seed|0,0x4B17,0x11)%MAKER_KEYS.length];}
 function makerRu(by){return makerRow(by).ru;}
 /* схемы планера: изготовитель сужает выбор класса, но не отменяет его —
    если пересечение пусто, класс сильнее (рудовоз Хай-Фронта существует) */
@@ -3379,6 +3381,52 @@ function makerMarks(h){
 function makerFlame(by){return makerRow(by).eng;}
 function makerBank(by){return makerRow(by).snd.bank;}
 function makerHum(by){return makerRow(by).snd.f;}
+/* ── закон профиля как чистая функция (M369a) ──
+   `makerProfile` правит готовый обвод корабля; остальным генераторам — флоту,
+   баржам, телам станций — нужна та же грамматика в виде «дай долю ширины на
+   доле длины». Один закон, шесть строк, читают все пятеро (D24). */
+function makerWidth(by,t,q){
+  const P=makerRow(by).prof;
+  t=clamp(t,0,1);
+  if(P==="step"){
+    /* полки: три уступа и короб амидшип */
+    return t<.30?(t<.15?.42:.68):(t<.62?1:(t<.80?.74:.52));
+  }
+  if(P==="capsule")return t<.20?lerp(.34,1,Math.pow(t/.20,.7)):
+    (t>.80?lerp(1,.44,Math.pow((t-.80)/.20,1.3)):1);
+  if(P==="chamfer"){
+    /* прямые отрезки между тремя узлами */
+    const kn=[0,.30,.62,1],kw=[.46,.96,.88,.52];
+    let s=0;while(s<kn.length-2&&t>kn[s+1])s++;
+    return lerp(kw[s],kw[s+1],(t-kn[s])/(kn[s+1]-kn[s]));
+  }
+  if(P==="swan"){
+    const dip=1-.55*Math.exp(-Math.pow((t-.26)/.10,2));
+    return (.18+.82*Math.exp(-Math.pow((t-.62)/.30,2)))*dip;
+  }
+  if(P==="modules"){
+    /* блоки встык: их число и ширины от того же зерна, что и сама вещь */
+    const n=4,k=Math.min(n-1,Math.floor(t*n));
+    const w=[.72,1,.62,.86];
+    return w[(k+((q|0)%n))%n];
+  }
+  if(P==="spindle")return Math.sqrt(Math.max(.04,1-Math.pow(t*2-1,2)));
+  return 1;
+}
+/* грунт, огонь и огни — то, чем красится любая сборка изготовителя */
+function makerGround(by){return makerRow(by).ground;}
+function makerWear(by){return makerRow(by).wear;}
+function makerLightCol(by){
+  const L=makerRow(by).lights;
+  return L==="amber"?[255,190,90]:L==="run"?[150,200,255]:L==="band"?[190,230,255]:
+         L==="lantern"?[255,214,140]:L==="under"?[255,96,86]:[160,170,180];
+}
+/* ── сборка по-своему (M369a, §19.4 «то же восемь на других генераторах») ──
+   Для станций и барж грамматика говорит не про обвод, а про то, КАК куски
+   собраны: стойка и барабан, ряд одинаковых, дуги и кольцо, лоскут на ферме,
+   один хребет с мачтами, короб с логотипом и подами вокруг. */
+const MAKER_ASSEMBLY={gt:"rack",co:"block",or:"stack",km:"ring",ra:"patch",hf:"spine"};
+function makerAssembly(by){return MAKER_ASSEMBLY[by]||"rack";}
 
 function tracePoly(pts,sy){
   ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]*(sy||1));
@@ -18807,7 +18855,14 @@ function fleetPos(f){
 /* ── окраска: один конвейер на все классы (§18.5, §1) ── */
 const FLEET_ART={},FLEET_SS=3;
 function fleetArtOf(f){
-  const key="fl"+f.k+f.seed;
+  /* ── флот тоже чей-то (M369a, §19.4) ──
+     Тринадцать классов остаются классами: они про РАБОТУ — почтовик, танкер,
+     буксир. Завод берёт у них измерения 5–7: грунт, огни и подпись тяги, — и
+     собственная грамматика стыков этого флота становится строкой ГЛАВТРАССЫ.
+     Пока весь флот её и есть; чужие крылья прилетят с M371, и генератор их
+     уже ждёт: достаточно положить `by` в запись. */
+  const fby=f.by||"gt";
+  const key="fl"+f.k+f.seed+"!"+fby;
   if(FLEET_ART[key])return FLEET_ART[key];
   const r=rng(hashi(f.seed,0xF1A7,5));
   const polys=[],lines=[],lights=[];
@@ -18820,7 +18875,12 @@ function fleetArtOf(f){
      p95 кадра .21). Тона опущены на ступень ВНУТРИ серых — освещённый борт
      остаётся в VII, медиана тела ниже, теневая сторона уходит в III–IV; класс
      никогда не отличается подкраской (автор, 03.09: светло-серые с красным). */
-  const C=[[204,206,211],[162,166,173],[96,100,108],[168,52,44],[128,84,56],[40,44,52]];
+  const C0=[[204,206,211],[162,166,173],[96,100,108],[168,52,44],[128,84,56],[40,44,52]];
+  /* грунт завода подмешивается в три корпусных тона; полоса, медь и тень
+     остаются общими — иначе флот перестанет читаться флотом */
+  const C=(fby==="gt"||typeof makerGround!=="function")?C0:
+    [mixc(C0[0],makerGround(fby),.5),mixc(C0[1],makerGround(fby),.42),
+     mixc(C0[2],makerGround(fby),.3),C0[3],C0[4],C0[5]];
   let L,hw,nose,tail,band=[];
   /* стыки (§8, альманах III): всё навесное встречает корпус нарисованным
      узлом — тёмный хомут и светлая пластина, одна грамматика от панели до
@@ -19168,8 +19228,16 @@ function drawFleetShip(f){
       ctx.fillStyle=(Math.sin(G.t*.03+li.x)>-.4)?"rgba(255,228,170,.9)":"rgba(255,228,170,.4)";
       ctx.beginPath();ctx.arc(li.x,li.y,1.3,0,TAU);ctx.fill();
     }else if(li.c==="eng"){
+      /* зев сопла — подпись тяги завода (M369a, измерение 7): у ГЛАВТРАССЫ
+         оранжевый, у Коммуны фиалковый, у Хай-Фронта бирюзовый */
+      const MF=(typeof makerFlame==="function")?makerFlame(f.by||"gt"):null;
       const fg=ctx.createRadialGradient(li.x,li.y,0,li.x,li.y,li.r*1.3);
-      fg.addColorStop(0,"rgba(255,214,158,.85)");fg.addColorStop(.5,"rgba(255,150,80,.35)");fg.addColorStop(1,"rgba(255,120,60,0)");
+      if(MF&&(f.by||"gt")!=="gt"){
+        fg.addColorStop(0,rgba(mixc(MF.col,[255,255,255],.35),.85));
+        fg.addColorStop(.5,rgba(MF.col,.35));
+        fg.addColorStop(1,rgba(MF.col,0));
+      }else{
+      fg.addColorStop(0,"rgba(255,214,158,.85)");fg.addColorStop(.5,"rgba(255,150,80,.35)");fg.addColorStop(1,"rgba(255,120,60,0)");}
       ctx.fillStyle=fg;ctx.beginPath();ctx.arc(li.x,li.y,li.r*1.3,0,TAU);ctx.fill();
     }
   }
@@ -19811,6 +19879,8 @@ const POWERS={
     hail:"Борт, откуда, чей, по какой надобности. Записываю",
     air:"На трассе спокойно",
     never:"о потерях",
+    food:"щи из концентрата, компот, хлеб по норме",
+    paper:"трафарет и параграф",suit:"«Стриж»",
     voice:{f:150,to:120,d:.5}},
   co:{ru:"Компания",full:"КОМПАНИЯ ВОСТОЧНЫХ РЫНКОВ",from:"США",
     wants:"рыночные станции и всё, что продаётся",
@@ -19820,6 +19890,8 @@ const POWERS={
     hail:"Приветствуем на территории партнёра. Стыковка от 40 кредитов, спасибо за выбор",
     air:"Выгодно как никогда",
     never:"о ценах — только «выгодно»",
+    food:"комплексный обед «Партнёр»™ — три перемены, кофе отдельно",
+    paper:"фирменный знак на каждой странице",suit:"SafeLine™",
     voice:{f:320,to:360,d:.3}},
   or:{ru:"Орднунг",full:"ОРДНУНГ",from:"Германия",
     wants:"узлы прыжка и горловины",
@@ -19829,6 +19901,8 @@ const POWERS={
     hail:"Идентификация. Формуляр. Ожидайте",
     air:"Согласно регламенту",
     never:"о чувствах",
+    food:"порция 2-Б: суп, второе, компот. Время приёма пищи — 18 минут",
+    paper:"нумерованные параграфы, без единой лишней строки",suit:"Typ 4/B",
     voice:{f:200,to:200,d:.22}},
   km:{ru:"Коммуна",full:"ЛА КОММУНА",from:"Франция",
     wants:"верфи и красивые системы (для неё это одно и то же)",
@@ -19838,6 +19912,8 @@ const POWERS={
     hail:"А, ещё один. Ну проходи, только не сегодня, сегодня мы не работаем",
     air:"Об этом стоит подумать дольше, чем длится сводка",
     never:"— она говорит обо всём и часами",
+    food:"суп дня, сыр, и разговор — обед идёт час, меньше не бывает",
+    paper:"курсив и длинные абзацы",suit:"«Éloise»",
     voice:{f:260,to:190,d:.7}},
   ra:{ru:"Рассвет",full:"ПАН-АФРИКАНСКИЙ КООПЕРАТИВ «РАССВЕТ»",from:"Африка",
     wants:"пояса, руду и всё, что копают",
@@ -19847,6 +19923,8 @@ const POWERS={
     hail:"Заходи, брат, чинить есть что?",
     air:"Успеется",
     never:"о сроках",
+    food:"общий котёл: кто пришёл, тот и ест",
+    paper:"надписи от руки",suit:"собран из трёх",
     voice:{f:120,to:150,d:.9}},
   hf:{ru:"Хай-Фронт",full:"ХАЙ-ФРОНТ",from:"Япония и Корея",
     wants:"маяки и ретрансляторы — всё, что смотрит",
@@ -19856,6 +19934,8 @@ const POWERS={
     hail:"Добро пожаловать. Ваш рейтинг доверия рассчитан. Просим извинить за неудобства",
     air:"Обновление установлено",
     never:"о том, что уже сделала",
+    food:"набор питания v4.1, время приёма рассчитано",
+    paper:"строка версии на обложке",suit:"KIT v3.2",
     voice:{f:420,to:430,d:.18}}
 };
 const POWER_KEYS=Object.keys(POWERS);
@@ -22468,17 +22548,26 @@ function pirateBuild(seed,cls,rank){
   return {L,hw,nose,tail,polys,lines,rust,eng,turrets,guns,cls,kills,top:bodyTop,coreN};
 }
 /* ── выпечка: один раз на seed, дальше — картинка с поворотом ── */
-function pirateArtOf(id,rogue,hurt,rank){
+/* ── чей это корпус был (M369a, §19.4) ──
+   Пират не строит кораблей: он летает на чужом. Значит его корпус говорит о
+   ЗАВОДЕ, а не о нём, — но говорит через ограбление: метки закрашены, износ
+   вдвое, грунт проступает из-под чужой краски. Дезертир (§7) — тот же корпус,
+   только номер закрашен свежо и ровно, как это делают свои. */
+function pirateArtOf(id,rogue,hurt,rank,des){
   /* побитый корабль — вторая выпечка, а не пятна поверх целой: пока силуэт
      оставался прежним, разбитый пират выглядел просто испачканным */
   /* ранг входит в ключ: у него своё снаряжение, а значит и свои стволы (M368) */
-  const key=id+(rogue?"!r":"")+(hurt?"!h":"")+"!"+(rank|0);
+  const key=id+(rogue?"!r":"")+(hurt?"!h":"")+"!"+(rank|0)+(des?"!d":"");
   if(PIR_ART[key])return PIR_ART[key];
   /* `shipData` знает все три источника корпусов: у ренегата это ВАШ корабль */
   const S=shipData(id)||{seed:hashi(1,2,3),col:"#d95a3c"};
   const cls=pirateClass(S.seed,rogue);
   const B=pirateBuild(S.seed,cls,rank);
-  const col=hex2rgb(S.col);
+  const by=(typeof makerOf==="function")?makerOf(id,S):"gt";
+  /* грунт завода проступает из-под краски банды: цвет владельца остаётся,
+     но он теперь поверх чужой обшивки, а не вместо неё */
+  const col=(typeof makerGround==="function")
+    ?mixc(makerGround(by),hex2rgb(S.col),.42):hex2rgb(S.col);
   /* палитра сварного корпуса: куски разной эпохи не совпадают по цвету, и
      именно это делает корабль сваренным, а не покрашенным */
   /* палитра идёт от тёмного: полный цвет — это акцент на нескольких кусках, а
@@ -22573,6 +22662,30 @@ function pirateArtOf(id,rogue,hurt,rank){
     }
     ctx.restore();
   }
+  /* ── износ вдвое и закрашенная метка (M369a) ──
+     Ворованный корпус не моют: потёков вдвое против заводской нормы, а там,
+     где стоял номер или логотип, — прямоугольник чужой краски. У дезертира он
+     ровный и свежий, у банды — мазня поперёк. */
+  {
+    const wr=((typeof makerWear==="function")?makerWear(by):1)*2;
+    const rr=rng(hashi(S.seed,0x1055,3));
+    for(let i=0;i<Math.round(6*wr);i++){
+      const x=lerp(B.tail,B.nose*.8,rr()),y=(rr()*2-1)*B.hw*.8;
+      const g2=ctx.createLinearGradient(x,y,x,y+B.hw*(.4+rr()*.5));
+      g2.addColorStop(0,"rgba(96,52,26,.5)");g2.addColorStop(1,"rgba(96,52,26,0)");
+      ctx.fillStyle=g2;ctx.fillRect(x-B.hw*.06,y,B.hw*.12,B.hw*(.4+rr()*.5));
+    }
+    const mx=B.nose*.34,mw=B.L*.16,mh=B.hw*.5;
+    ctx.fillStyle=des?"rgba(46,50,56,.95)":"rgba(38,34,32,.85)";
+    ctx.fillRect(mx-mw*.5,-mh*.5,mw,mh);
+    if(!des){
+      ctx.strokeStyle="rgba(28,24,22,.9)";ctx.lineWidth=Math.max(.6,B.hw*.1);
+      ctx.beginPath();
+      ctx.moveTo(mx-mw*.6,-mh*.6);ctx.lineTo(mx+mw*.6,mh*.6);
+      ctx.moveTo(mx-mw*.6,mh*.5);ctx.lineTo(mx+mw*.5,-mh*.5);
+      ctx.stroke();
+    }
+  }
   /* у побитого выгрызаем куски самого корпуса: рваный силуэт узнаётся
      раньше, чем копоть на нём */
   if(hurt){
@@ -22636,7 +22749,7 @@ function drawPirate(p){
      в пятнах. Обе картинки живут в кэше и считаются по одному разу */
   /* охотник (12o) печётся флагманской выпечкой, как ренегат: его силуэт должен
      опознаваться в бою с одного взгляда */
-  const art=pirateArtOf(p.shipId,p.rogue||p.hunter,hp<.5,p.rank|0);
+  const art=pirateArtOf(p.shipId,p.rogue||p.hunter,hp<.5,p.rank|0,p.deserter?1:0);
   const B=art.B;
   /* выхлоп: чад из закопчённых сопел, у каждого своя фаза — один обязательно
      чадит сильнее прочих */
@@ -24748,7 +24861,13 @@ function drawWrecksSystem(zx,zy,Z){
 const BARGE_SS=3;
 const BARGE_ART={};
 function bargeArtOf(b){
-  const key="bg"+b.seed;
+  /* ── у баржи тоже есть завод (M369a, §19.4) ──
+     Баржа Рассвета — это три баржи, сваренные встык; баржа Компании — белая
+     капсула с логотипом; баржа Орднунга — ряд одинаковых секций. Закон профиля
+     и грунт берутся из той же таблицы, что у корпусов: один слой грамматики на
+     всех пятерых генераторов (D24). */
+  const by=b.by||(b.by=(typeof makerBySeed==="function")?makerBySeed(b.seed):"gt");
+  const key="bg"+b.seed+"!"+by;
   if(BARGE_ART[key])return BARGE_ART[key];
   const r=rng(hashi(b.seed,0x5A19,9));
   const L=104+r()*40, hw=L*(.14+r()*.04);
@@ -24756,22 +24875,32 @@ function bargeArtOf(b){
   const polys=[],lines=[],cont=[],lights=[];
   const add=(pts,c,e)=>polys.push({p:pts,c,e:e||0});
   /* корпусный цвет — промышленный, приглушённый, не пиратская ржавь */
-  const base=[54+r()*26,64+r()*30,80+r()*30];
+  const base0=[54+r()*26,64+r()*30,80+r()*30];
+  const base=(typeof makerGround==="function")?mixc(base0,makerGround(by),.55):base0;
   const C=[mixc(base,[8,10,14],.72),mixc(base,[10,12,18],.42),
     mixc(base,[236,226,206],.30),mixc(base,[24,28,36],.55)];
   /* ── тело: одна длинная масса под всей сборкой ── */
-  const bodyN=8,body=[],top=[];
+  const bodyN=12,body=[],top=[];
+  /* ширина по закону завода, концы по-баржевому подрезаны */
+  const wAt=t=>hw*(typeof makerWidth==="function"?makerWidth(by,t,b.seed):1)*
+    (t<.10?t/.10:(t>.88?(1-t)/.12*.7+.3:1));
   for(let i=0;i<=bodyN;i++){
-    const t=i/bodyN,x=lerp(tail,nose,t);
-    const w=hw*(t<.12?t/.12:(t>.86?(1-t)/.14*.7+.3:1));
+    const t=i/bodyN,x=lerp(tail,nose,t),w=Math.max(hw*.18,wAt(t));
     top.push([x,-w]);body.push([x,-w]);
   }
   for(let i=bodyN;i>=0;i--){
-    const t=i/bodyN,x=lerp(tail,nose,t);
-    const w=hw*(t<.12?t/.12:(t>.86?(1-t)/.14*.7+.3:1));
+    const t=i/bodyN,x=lerp(tail,nose,t),w=Math.max(hw*.18,wAt(t));
     body.push([x,w]);
   }
   add(body,0);
+  /* сварные швы Рассвета (M369a): его баржа — это три баржи, сваренные встык,
+     и без явного шва блоки читаются просто уступом обшивки */
+  if((typeof makerRow==="function")&&makerRow(by).prof==="modules")
+    for(let k=1;k<4;k++){
+      const x=lerp(tail,nose,k/4);
+      lines.push([x,-hw*1.12,x,hw*1.12,1.3]);
+      lines.push([x-L*.012,-hw*1.02,x-L*.012,hw*1.02,.5]);
+    }
   /* обшивка секциями: длинный корпус без швов читается штампованной трубой */
   const segN=6+Math.floor(r()*3);
   for(let i=1;i<segN;i++){
@@ -24815,6 +24944,28 @@ function bargeArtOf(b){
     const x=lerp(tail*.85,nose*.8,r()), y=(r()*2-1)*hw*.55;
     const w=L*(.01+r()*.02),h=hw*(.08+r()*.14);
     add([[x,y],[x+w,y-h*.2],[x+w,y+h],[x,y+h*.9]],r()<.4?0:3);
+  }
+  /* ── подпись завода на барже (M369a, измерение 3) ──
+     Одна примета на борт: буксирный крюк, киль с логотипом, гребёнка рёбер,
+     лента окон, наружные баки на растяжках, мачта. */
+  {
+    const O=(typeof makerRow==="function")?makerRow(by).out[0]:null;
+    if(O==="hook")add([[tail-L*.05,-hw*.14],[tail,-hw*.14],[tail,hw*.14],[tail-L*.05,hw*.14]],3);
+    else if(O==="logofin")add([[nose*.2,-hw*1.05],[nose*.42,-hw*1.05],[nose*.34,-hw*1.9],[nose*.24,-hw*1.9]],2,1);
+    else if(O==="plinth")for(let i=0;i<7;i++){
+      const x=lerp(tail*.7,nose*.7,i/6);lines.push([x,-hw*1.02,x,hw*1.02,.8]);
+    }
+    else if(O==="bowsprit")add([[nose,-hw*.1],[nose+L*.12,-hw*.05],[nose+L*.12,hw*.05],[nose,hw*.1]],2);
+    else if(O==="tanks")for(const sg of [1,-1]){
+      add([[tail*.5,sg*hw*1.05],[nose*.2,sg*hw*1.05],[nose*.2,sg*hw*1.7],[tail*.5,sg*hw*1.7]],3,1);
+      lines.push([tail*.4,sg*hw*1.05,tail*.2,sg*hw*1.7,.7]);
+      lines.push([nose*.1,sg*hw*1.05,tail*.05,sg*hw*1.7,.7]);
+    }
+    else if(O==="array"){
+      add([[nose*.1,-hw*.06],[nose*.1,-hw*2.1],[nose*.16,-hw*2.1],[nose*.16,-hw*.06]],2);
+      lines.push([nose*.06,-hw*1.6,nose*.2,-hw*1.6,.6]);
+      lines.push([nose*.06,-hw*1.95,nose*.2,-hw*1.95,.6]);
+    }
   }
   /* бортовые ходовые огни: красный слева, зелёный справа — как у станции */
   lights.push({x:nose*.4,y:-hw,c:"nav",g:0});
@@ -30006,7 +30157,23 @@ const BOOKS=[
   {id:39,ru:"Каталог семян",by:"с отметками владельца",
    t:"Против каждой строки карандашом: «взошло», «взошло», «не взошло», «взошло, но не то». Против последней строки — «выросло такое, что не знаю, как записать. Записал как «дерево»."},
   {id:40,ru:"Судовой журнал баржи «Стойкая»",by:"последние страницы",
-   t:"Груз принят по описи. Курс прежний. Настроение команды хорошее. Погода не имеет значения. Дальше почерк меняется, и записи идут через день, потом через неделю, потом одна."}
+   t:"Груз принят по описи. Курс прежний. Настроение команды хорошее. Погода не имеет значения. Дальше почерк меняется, и записи идут через день, потом через неделю, потом одна."},
+  /* ── шесть чужих книг (M369a, §19.4 «бумаги») ──
+     У каждой державы своя типографская повадка, и книга — единственный канал,
+     через который она попадает к игроку без всякой войны: нашёл в обломках и
+     прочитал. Сатира здесь на канцелярию, не на людей (§7.1). */
+  {id:41,ru:"Наставление по эксплуатации изделия 4-Б",by:"ГЛАВТРАССА, издание третье, с изменениями",
+   t:"§ 7. Изделие рассчитано на работу в условиях, для которых оно не предназначено. § 8. В случае отказа изделия составить акт. § 9. При невозможности составить акт продолжать эксплуатацию."},
+  {id:42,ru:"PARTNER™ Onboard Guide",by:"Компания восточных рынков, версия для борта",
+   t:"Ваш комфорт — наша забота™. Стыковка, воздух, тишина и вид в иллюминаторе тарифицируются отдельно. Спасибо, что выбрали нас: другого выбора в этом секторе нет, и мы работаем над тем, чтобы так и осталось."},
+  {id:43,ru:"Vorschrift 12/4: Formularordnung",by:"Орднунг, отдел учёта",
+   t:"1.1. Каждое действие оформляется формуляром. 1.2. Формуляр оформляется до действия. 1.3. Формуляр на оформление формуляра оформляется в трёх экземплярах. 1.4. Отступления от 1.1–1.3 оформляются формуляром."},
+  {id:44,ru:"О смысле долгой дороги",by:"Ла Коммуна, эссе, оттиск",
+   t:"Мы спрашиваем не «куда ты летишь», а «зачем». Ответ «за грузом» принимается, но с сожалением. Ответ «не знаю» принимается с уважением. Ответ «по регламенту» не принимается вовсе — это не ответ, а расписание."},
+  {id:45,ru:"Как чинить то, чего у тебя нет",by:"«Рассвет», записано со слов мастера",
+   t:"Сначала посмотри, что сломалось. Потом посмотри, что стоит рядом и не сломалось. Дальше думай сам, я не буду тебе это писать: напишу — ты станешь читать, а надо смотреть."},
+  {id:46,ru:"HF-CORE Release Notes v3.2",by:"Хай-Фронт, обложка с версией",
+   t:"Улучшена стабильность. Исправлены неполадки, о которых мы не сообщали. Функция, к которой вы привыкли, снята с поддержки вчера. Благодарим за понимание; ваш рейтинг доверия пересчитан."}
 ];
 const BOOKS_BY={};BOOKS.forEach(b=>BOOKS_BY[b.id]=b);
 function bookAll(){if(!Array.isArray(G.books))G.books=[];return G.books;}
@@ -31621,6 +31788,15 @@ function kitShelf(){return (G.kitShelf||(G.kitShelf=[]));}
 /* «Полка шире» с «Сороки» (12v-wander-shop): восемнадцать вещей вместо двенадцати */
 function kitShelfMax(){return (typeof wanderHas==="function"&&wanderHas("shelfwide"))?18:12;}
 function kitName(x){return KIT_MODELS[x.p][x.model]||KIT_MODELS[x.p][0];}
+/* ── чья это вещь (M369a, §19.4 «скафандры по заводам») ──
+   Ваш комплект выдан ГЛАВТРАССОЙ, а найденное и купленное на чужой станции
+   приходит со своей маркой: она ничего не меняет в числах и говорит только
+   одно — где вы это взяли. */
+function kitBy(x){return (x&&x.seed&&typeof makerBySeed==="function")?makerBySeed(x.seed):"gt";}
+function kitBrand(x){
+  const by=kitBy(x);
+  return (by==="gt"||typeof powerOf!=="function")?"":powerOf(by).suit;
+}
 function kitRoman(c){return ["","I","II","III"][c]||"I";}
 /* множитель слоя износа: ношеный −10%, латаный −5% (починен), чужой — без заплат */
 function kitWearMul(x){return x.wear===1?.9:(x.wear===2?.95:1);}
@@ -31656,7 +31832,9 @@ function kitLine(){
 function kitGive(x,why){
   kitShelf().push(x);
   while(kitShelf().length>kitShelfMax())kitShelf().shift();
-  const ru=KIT_RU[x.p]+" «"+kitName(x)+"» "+kitRoman(x.cls)+" класса · "+KIT_WEAR[x.wear];
+  const br=kitBrand(x);
+  const ru=KIT_RU[x.p]+" «"+kitName(x)+"» "+kitRoman(x.cls)+" класса · "+KIT_WEAR[x.wear]+
+    (br?" · "+br:"");
   logAdd("tech","Снаряжение: "+ru+(why?" · "+why:""));
   if(typeof thingAdd==="function")thingAdd("kit",ru[0].toUpperCase()+ru.slice(1),(why||"")+" · лежит на полке · надеть — ОПИСЬ, запас комплекта");
   return x;
@@ -38534,6 +38712,9 @@ function stationMods(sys){
   const S=sys.station;if(!S)return [];
   if(S.mods)return S.mods;
   const r=rng(hashi(sys.seed,0x50DD,17));
+  /* чей это завод: пока от зерна системы — кто её строил. С M372 сюда придёт
+     держава, которая систему держит, и строка станет её строкой */
+  const by=S.by||(S.by=(typeof makerBySeed==="function")?makerBySeed(sys.seed):"gt");
   const ty=S.stype||"trade";
   const danger=sysDanger(sys.sx,sys.sy);
   const pool=ST_MODULES.filter(m=>!m.on||m.on.indexOf(ty)>=0);
@@ -38552,8 +38733,20 @@ function stationMods(sys){
     pool.splice(pool.indexOf(M),1);
     /* точка крепления: угол по кольцу и вынос от ядра. Модули разводятся по
        углам, иначе слипаются в один ком с одной стороны. */
-    const ang=(i/n)*TAU+(r()-.5)*.5;
-    out.push({id:M.id,ru:M.ru,sh:M.sh,ang,d:22+r()*16,s:.7+r()*.7,ph:r()*TAU});
+    /* ── закон сборки завода (M369a, §19.4) ──
+       Куски одни и те же, а собраны они по-разному, и это видно раньше цвета:
+       ГЛАВТРАССА — стойка и барабан по кругу (как было), Орднунг — стопка
+       одинаковых по одной оси, Коммуна — кольцо равных дуг, Рассвет — лоскут
+       на ферме, разнокалиберный, Хай-Фронт — один хребет с мачтами поперёк,
+       Компания — короб с подами вокруг него. */
+    const asm=(typeof makerAssembly==="function")?makerAssembly(by):"rack";
+    let ang=(i/n)*TAU+(r()-.5)*.5, dd=22+r()*16, sz=.7+r()*.7;
+    if(asm==="stack"){ang=(i&1)?0:Math.PI;dd=18+i*11;sz=.95;}
+    else if(asm==="ring"){ang=(i/n)*TAU;dd=30;sz=.85;}
+    else if(asm==="patch"){ang=(i/n)*TAU+(r()-.5)*1.5;dd=16+r()*30;sz=.55+r()*1.1;}
+    else if(asm==="spine"){ang=(i&1)?Math.PI/2:-Math.PI/2;dd=14+i*10;sz=.6+(i%3)*.2;}
+    else if(asm==="block"){ang=i?(i/Math.max(1,n-1))*TAU:0;dd=i?34:0;sz=i?.7:1.5;}
+    out.push({id:M.id,ru:M.ru,sh:M.sh,ang,d:dd,s:sz,ph:r()*TAU});
   }
   S.mods=out;
   return out;
@@ -39681,8 +39874,11 @@ function drawPlanetWorks(sys,p,x,y,r){
     const a=Math.atan2(uy,ux)+(rr()<.5?1:-1)*(1.05+rr()*.25), d=r*.78;
     const dx=x+Math.cos(a)*d, dy=y+Math.sin(a)*d;
     ctx.save();ctx.globalCompositeOperation="lighter";
+    /* купол светится грунтом того, кто его ставил (M369a, §19.4 «купола») */
+    const dby=(G.sys&&G.sys.station&&G.sys.station.by)||"gt";
+    const dc=(typeof makerGround==="function")?mixc(makerGround(dby),[200,255,230],.5):[200,255,230];
     const g=ctx.createRadialGradient(dx,dy,0,dx,dy,r*.07);
-    g.addColorStop(0,"rgba(200,255,230,.55)");g.addColorStop(1,"rgba(200,255,230,0)");
+    g.addColorStop(0,rgba(dc,.55));g.addColorStop(1,rgba(dc,0));
     ctx.fillStyle=g;ctx.beginPath();ctx.arc(dx,dy,r*.07,0,TAU);ctx.fill();
     ctx.restore();
     ctx.fillStyle="rgba(255,255,244,.95)";
@@ -65337,8 +65533,16 @@ function openStation(){
   /* модули названы прямо в шапке: снаружи игрок видит их силуэты, внутри —
      читает списком. Услуги при этом по-прежнему от типа станции, модули
      ничего не открывают (17a-station-mod) */
+  /* ── чей это дом (M369a, §19.4 «бумаги и одна строка») ──
+     Станцию строил кто-то, и это слышно в первой же строке: приветствие
+     державы и её цвет в акценте шапки. Не перекраска интерфейса — одна
+     строка и один цвет, как и договорено в §19.1. */
+  const stBy=(G.sys.station&&G.sys.station.by)||"gt";
+  const stP=(typeof powerOf==="function")?powerOf(stBy):null;
   document.getElementById("stKind").textContent=
-    G.st.kind+" · система "+G.sys.name+"\n"+stationModsLine(G.sys);
+    G.st.kind+" · система "+G.sys.name+"\n"+stationModsLine(G.sys)+
+    (stP?"\n"+stP.ru+" · "+stP.hail:"");
+  if(stP)document.getElementById("stName").style.color=stP.col;
   syncTabs();
   /* новая стыковка — новый экран: высоту прошлого захода не помним */
   renderTab._tab=null;
@@ -68688,6 +68892,18 @@ function cantRoomBody(c,W2,H2,list,sel,hover,deals,folk){
   const flick=(Math.sin(G.t*.31+seed%7)>-.92)?1:.35;   // неон подмигивает
   c.fillStyle=rgba(acc,.85*flick);c.fillText(S.sign,22,33);
   c.shadowColor=rgba(acc,.5*flick);c.shadowBlur=10;c.fillText(S.sign,22,33);c.shadowBlur=0;
+  /* что сегодня дают — по заводу станции (M369a): одна строка, и она же
+     говорит, чей это дом, лучше любой таблички */
+  {
+    const cby=(G.sys&&G.sys.station&&G.sys.station.by)||"gt";
+    const CP=(typeof powerOf==="function")?powerOf(cby):null;
+    if(CP&&CP.food){
+      c.font="9px ui-monospace,monospace";
+      c.fillStyle="rgba(226,230,236,.55)";
+      c.fillText("сегодня: "+CP.food,22,50);
+      c.font="10px ui-monospace,monospace";
+    }
+  }
   /* ── полка с бутылками за стойкой ── */
   /* ── что за стойкой ──
      Стена бутылок стояла всюду, включая научную станцию и аванпост, где ей

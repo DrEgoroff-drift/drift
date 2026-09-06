@@ -7,6 +7,36 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.369.1 - M369a: the same grammar everywhere else
+
+M369 put the maker on hulls; this pass hands the same table to the other four generators, which
+was the whole point of the layer (D24: one grammar, five readers).
+
+**Barges.** The body is built by the maker's profile law, painted with its ground and carries one
+of its protrusions — and a Рассвет barge gets its weld seams, so it reads as three barges butted
+together rather than one hull with steps. **Stations** get an assembly law instead of a paint job:
+the same modules stand as ГЛАВТРАССА's rack around a drum, Орднунг's stack of equal blocks on one
+axis, Коммуна's even ring, Рассвет's patchwork of unequal pieces, Хай-Фронт's single spine with
+masts across it, Компания's big block with pods around. **Pirate hulls** show whose ship was
+stolen: the maker's ground under the gang's paint, wear twice the factory norm, and the number
+crossed out with a brush — a `deserter` has it painted over cleanly instead, the way one's own
+side does it. **The fleet** carries `by` now and takes the ground and the flare from it; today
+every wing is ГЛАВТРАССА's, and a foreign wing needs only that field set. **Domes** glow in the
+ground of whoever built them.
+
+**And the papers.** Six foreign books, one per power, each in its own typographic habit — a
+ГЛАВТРАССА maintenance manual whose §9 says to keep operating the failed item, a PARTNER™ onboard
+guide that tariffs the view out of the window, an Орднунг regulation on the form for filling in
+forms, a Коммуна essay on why «по регламенту» is not an answer, a Рассвет master's «how to repair
+what you do not have», and Хай-Фронт release notes that discontinued a feature yesterday. The
+station header now carries the power's greeting and its accent colour, the cantina says what is
+being served today, and kit found on a foreign station comes with that maker's brand.
+
+Tests: `91zzzx-maker` — the barge's law and the seams, the station's assembly law per maker
+(masts across the spine, the stack on one axis, the even ring), a station with no record still
+getting a maker from the seed, six books that resolve to six powers, and a brand that appears on
+foreign kit and never on your own.
+
 ## 0.369.0 - M369: every hull now has a maker, and you can see whose it is
 
 Stage B of the war opens (`docs/DESIGN-war.md` §19.1, §19.4, §18). Until now a ship's generator

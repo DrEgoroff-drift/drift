@@ -54,6 +54,15 @@ function kitShelf(){return (G.kitShelf||(G.kitShelf=[]));}
 /* «Полка шире» с «Сороки» (12v-wander-shop): восемнадцать вещей вместо двенадцати */
 function kitShelfMax(){return (typeof wanderHas==="function"&&wanderHas("shelfwide"))?18:12;}
 function kitName(x){return KIT_MODELS[x.p][x.model]||KIT_MODELS[x.p][0];}
+/* ── чья это вещь (M369a, §19.4 «скафандры по заводам») ──
+   Ваш комплект выдан ГЛАВТРАССОЙ, а найденное и купленное на чужой станции
+   приходит со своей маркой: она ничего не меняет в числах и говорит только
+   одно — где вы это взяли. */
+function kitBy(x){return (x&&x.seed&&typeof makerBySeed==="function")?makerBySeed(x.seed):"gt";}
+function kitBrand(x){
+  const by=kitBy(x);
+  return (by==="gt"||typeof powerOf!=="function")?"":powerOf(by).suit;
+}
 function kitRoman(c){return ["","I","II","III"][c]||"I";}
 /* множитель слоя износа: ношеный −10%, латаный −5% (починен), чужой — без заплат */
 function kitWearMul(x){return x.wear===1?.9:(x.wear===2?.95:1);}
@@ -89,7 +98,9 @@ function kitLine(){
 function kitGive(x,why){
   kitShelf().push(x);
   while(kitShelf().length>kitShelfMax())kitShelf().shift();
-  const ru=KIT_RU[x.p]+" «"+kitName(x)+"» "+kitRoman(x.cls)+" класса · "+KIT_WEAR[x.wear];
+  const br=kitBrand(x);
+  const ru=KIT_RU[x.p]+" «"+kitName(x)+"» "+kitRoman(x.cls)+" класса · "+KIT_WEAR[x.wear]+
+    (br?" · "+br:"");
   logAdd("tech","Снаряжение: "+ru+(why?" · "+why:""));
   if(typeof thingAdd==="function")thingAdd("kit",ru[0].toUpperCase()+ru.slice(1),(why||"")+" · лежит на полке · надеть — ОПИСЬ, запас комплекта");
   return x;

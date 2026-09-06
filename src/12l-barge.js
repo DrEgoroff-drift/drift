@@ -396,7 +396,13 @@ function drawWrecksSystem(zx,zy,Z){
 const BARGE_SS=3;
 const BARGE_ART={};
 function bargeArtOf(b){
-  const key="bg"+b.seed;
+  /* ── у баржи тоже есть завод (M369a, §19.4) ──
+     Баржа Рассвета — это три баржи, сваренные встык; баржа Компании — белая
+     капсула с логотипом; баржа Орднунга — ряд одинаковых секций. Закон профиля
+     и грунт берутся из той же таблицы, что у корпусов: один слой грамматики на
+     всех пятерых генераторов (D24). */
+  const by=b.by||(b.by=(typeof makerBySeed==="function")?makerBySeed(b.seed):"gt");
+  const key="bg"+b.seed+"!"+by;
   if(BARGE_ART[key])return BARGE_ART[key];
   const r=rng(hashi(b.seed,0x5A19,9));
   const L=104+r()*40, hw=L*(.14+r()*.04);
@@ -404,22 +410,32 @@ function bargeArtOf(b){
   const polys=[],lines=[],cont=[],lights=[];
   const add=(pts,c,e)=>polys.push({p:pts,c,e:e||0});
   /* корпусный цвет — промышленный, приглушённый, не пиратская ржавь */
-  const base=[54+r()*26,64+r()*30,80+r()*30];
+  const base0=[54+r()*26,64+r()*30,80+r()*30];
+  const base=(typeof makerGround==="function")?mixc(base0,makerGround(by),.55):base0;
   const C=[mixc(base,[8,10,14],.72),mixc(base,[10,12,18],.42),
     mixc(base,[236,226,206],.30),mixc(base,[24,28,36],.55)];
   /* ── тело: одна длинная масса под всей сборкой ── */
-  const bodyN=8,body=[],top=[];
+  const bodyN=12,body=[],top=[];
+  /* ширина по закону завода, концы по-баржевому подрезаны */
+  const wAt=t=>hw*(typeof makerWidth==="function"?makerWidth(by,t,b.seed):1)*
+    (t<.10?t/.10:(t>.88?(1-t)/.12*.7+.3:1));
   for(let i=0;i<=bodyN;i++){
-    const t=i/bodyN,x=lerp(tail,nose,t);
-    const w=hw*(t<.12?t/.12:(t>.86?(1-t)/.14*.7+.3:1));
+    const t=i/bodyN,x=lerp(tail,nose,t),w=Math.max(hw*.18,wAt(t));
     top.push([x,-w]);body.push([x,-w]);
   }
   for(let i=bodyN;i>=0;i--){
-    const t=i/bodyN,x=lerp(tail,nose,t);
-    const w=hw*(t<.12?t/.12:(t>.86?(1-t)/.14*.7+.3:1));
+    const t=i/bodyN,x=lerp(tail,nose,t),w=Math.max(hw*.18,wAt(t));
     body.push([x,w]);
   }
   add(body,0);
+  /* сварные швы Рассвета (M369a): его баржа — это три баржи, сваренные встык,
+     и без явного шва блоки читаются просто уступом обшивки */
+  if((typeof makerRow==="function")&&makerRow(by).prof==="modules")
+    for(let k=1;k<4;k++){
+      const x=lerp(tail,nose,k/4);
+      lines.push([x,-hw*1.12,x,hw*1.12,1.3]);
+      lines.push([x-L*.012,-hw*1.02,x-L*.012,hw*1.02,.5]);
+    }
   /* обшивка секциями: длинный корпус без швов читается штампованной трубой */
   const segN=6+Math.floor(r()*3);
   for(let i=1;i<segN;i++){
@@ -463,6 +479,28 @@ function bargeArtOf(b){
     const x=lerp(tail*.85,nose*.8,r()), y=(r()*2-1)*hw*.55;
     const w=L*(.01+r()*.02),h=hw*(.08+r()*.14);
     add([[x,y],[x+w,y-h*.2],[x+w,y+h],[x,y+h*.9]],r()<.4?0:3);
+  }
+  /* ── подпись завода на барже (M369a, измерение 3) ──
+     Одна примета на борт: буксирный крюк, киль с логотипом, гребёнка рёбер,
+     лента окон, наружные баки на растяжках, мачта. */
+  {
+    const O=(typeof makerRow==="function")?makerRow(by).out[0]:null;
+    if(O==="hook")add([[tail-L*.05,-hw*.14],[tail,-hw*.14],[tail,hw*.14],[tail-L*.05,hw*.14]],3);
+    else if(O==="logofin")add([[nose*.2,-hw*1.05],[nose*.42,-hw*1.05],[nose*.34,-hw*1.9],[nose*.24,-hw*1.9]],2,1);
+    else if(O==="plinth")for(let i=0;i<7;i++){
+      const x=lerp(tail*.7,nose*.7,i/6);lines.push([x,-hw*1.02,x,hw*1.02,.8]);
+    }
+    else if(O==="bowsprit")add([[nose,-hw*.1],[nose+L*.12,-hw*.05],[nose+L*.12,hw*.05],[nose,hw*.1]],2);
+    else if(O==="tanks")for(const sg of [1,-1]){
+      add([[tail*.5,sg*hw*1.05],[nose*.2,sg*hw*1.05],[nose*.2,sg*hw*1.7],[tail*.5,sg*hw*1.7]],3,1);
+      lines.push([tail*.4,sg*hw*1.05,tail*.2,sg*hw*1.7,.7]);
+      lines.push([nose*.1,sg*hw*1.05,tail*.05,sg*hw*1.7,.7]);
+    }
+    else if(O==="array"){
+      add([[nose*.1,-hw*.06],[nose*.1,-hw*2.1],[nose*.16,-hw*2.1],[nose*.16,-hw*.06]],2);
+      lines.push([nose*.06,-hw*1.6,nose*.2,-hw*1.6,.6]);
+      lines.push([nose*.06,-hw*1.95,nose*.2,-hw*1.95,.6]);
+    }
   }
   /* бортовые ходовые огни: красный слева, зелёный справа — как у станции */
   lights.push({x:nose*.4,y:-hw,c:"nav",g:0});

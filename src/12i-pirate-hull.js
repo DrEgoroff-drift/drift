@@ -230,17 +230,26 @@ function pirateBuild(seed,cls,rank){
   return {L,hw,nose,tail,polys,lines,rust,eng,turrets,guns,cls,kills,top:bodyTop,coreN};
 }
 /* ── выпечка: один раз на seed, дальше — картинка с поворотом ── */
-function pirateArtOf(id,rogue,hurt,rank){
+/* ── чей это корпус был (M369a, §19.4) ──
+   Пират не строит кораблей: он летает на чужом. Значит его корпус говорит о
+   ЗАВОДЕ, а не о нём, — но говорит через ограбление: метки закрашены, износ
+   вдвое, грунт проступает из-под чужой краски. Дезертир (§7) — тот же корпус,
+   только номер закрашен свежо и ровно, как это делают свои. */
+function pirateArtOf(id,rogue,hurt,rank,des){
   /* побитый корабль — вторая выпечка, а не пятна поверх целой: пока силуэт
      оставался прежним, разбитый пират выглядел просто испачканным */
   /* ранг входит в ключ: у него своё снаряжение, а значит и свои стволы (M368) */
-  const key=id+(rogue?"!r":"")+(hurt?"!h":"")+"!"+(rank|0);
+  const key=id+(rogue?"!r":"")+(hurt?"!h":"")+"!"+(rank|0)+(des?"!d":"");
   if(PIR_ART[key])return PIR_ART[key];
   /* `shipData` знает все три источника корпусов: у ренегата это ВАШ корабль */
   const S=shipData(id)||{seed:hashi(1,2,3),col:"#d95a3c"};
   const cls=pirateClass(S.seed,rogue);
   const B=pirateBuild(S.seed,cls,rank);
-  const col=hex2rgb(S.col);
+  const by=(typeof makerOf==="function")?makerOf(id,S):"gt";
+  /* грунт завода проступает из-под краски банды: цвет владельца остаётся,
+     но он теперь поверх чужой обшивки, а не вместо неё */
+  const col=(typeof makerGround==="function")
+    ?mixc(makerGround(by),hex2rgb(S.col),.42):hex2rgb(S.col);
   /* палитра сварного корпуса: куски разной эпохи не совпадают по цвету, и
      именно это делает корабль сваренным, а не покрашенным */
   /* палитра идёт от тёмного: полный цвет — это акцент на нескольких кусках, а
@@ -335,6 +344,30 @@ function pirateArtOf(id,rogue,hurt,rank){
     }
     ctx.restore();
   }
+  /* ── износ вдвое и закрашенная метка (M369a) ──
+     Ворованный корпус не моют: потёков вдвое против заводской нормы, а там,
+     где стоял номер или логотип, — прямоугольник чужой краски. У дезертира он
+     ровный и свежий, у банды — мазня поперёк. */
+  {
+    const wr=((typeof makerWear==="function")?makerWear(by):1)*2;
+    const rr=rng(hashi(S.seed,0x1055,3));
+    for(let i=0;i<Math.round(6*wr);i++){
+      const x=lerp(B.tail,B.nose*.8,rr()),y=(rr()*2-1)*B.hw*.8;
+      const g2=ctx.createLinearGradient(x,y,x,y+B.hw*(.4+rr()*.5));
+      g2.addColorStop(0,"rgba(96,52,26,.5)");g2.addColorStop(1,"rgba(96,52,26,0)");
+      ctx.fillStyle=g2;ctx.fillRect(x-B.hw*.06,y,B.hw*.12,B.hw*(.4+rr()*.5));
+    }
+    const mx=B.nose*.34,mw=B.L*.16,mh=B.hw*.5;
+    ctx.fillStyle=des?"rgba(46,50,56,.95)":"rgba(38,34,32,.85)";
+    ctx.fillRect(mx-mw*.5,-mh*.5,mw,mh);
+    if(!des){
+      ctx.strokeStyle="rgba(28,24,22,.9)";ctx.lineWidth=Math.max(.6,B.hw*.1);
+      ctx.beginPath();
+      ctx.moveTo(mx-mw*.6,-mh*.6);ctx.lineTo(mx+mw*.6,mh*.6);
+      ctx.moveTo(mx-mw*.6,mh*.5);ctx.lineTo(mx+mw*.5,-mh*.5);
+      ctx.stroke();
+    }
+  }
   /* у побитого выгрызаем куски самого корпуса: рваный силуэт узнаётся
      раньше, чем копоть на нём */
   if(hurt){
@@ -398,7 +431,7 @@ function drawPirate(p){
      в пятнах. Обе картинки живут в кэше и считаются по одному разу */
   /* охотник (12o) печётся флагманской выпечкой, как ренегат: его силуэт должен
      опознаваться в бою с одного взгляда */
-  const art=pirateArtOf(p.shipId,p.rogue||p.hunter,hp<.5,p.rank|0);
+  const art=pirateArtOf(p.shipId,p.rogue||p.hunter,hp<.5,p.rank|0,p.deserter?1:0);
   const B=art.B;
   /* выхлоп: чад из закопчённых сопел, у каждого своя фаза — один обязательно
      чадит сильнее прочих */

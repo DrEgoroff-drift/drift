@@ -510,6 +510,19 @@ survives on white alone. Both are readable at 86 %, which is above the bar and b
 20 px behind a nebula. The author's own test — «name every row of the six sheets on /dev without
 a label» — is still owed and is what actually closes the design half of this issue.
 
+
+**Addendum, 0.369.1 (M369a).** The grammar reached the other four generators. What the sheets
+showed: the **barge** carries the law best of all — the Рассвет hull needed one thing the ships
+did not, a drawn weld at every module joint, and with it the «three barges butted» reading is
+immediate; without it the same widths read as a dented hull. The **station** does not need paint
+at all: the assembly law alone (spine with masts vs. stack vs. ring) names the builder before any
+colour arrives, which is the §13 rule about silhouette holding at the largest scale too. The
+**pirate hull** gained the most meaning for the least ink: the crossed-out number is a whole
+sentence — the ship had an owner and does not now — and a deserter's clean rectangle says the
+opposite about the same ship. Open: the poster on the node wall (M372's content), the class
+appendages' joints, and the fleet, which today is all one maker and so cannot be judged on a
+sheet until foreign wings exist (M371).
+
 ## ~~Reserved — issue III (continued)~~ — struck 2026-09-03
 
 All thirteen are drawn (M310–M313) and judged in the addenda above; the section stays only

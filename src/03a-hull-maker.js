@@ -85,6 +85,8 @@ function makerOf(id,S){
   return S.by=MAKER_KEYS[hashi(S.seed||1,0x4B17,0x11)%MAKER_KEYS.length];
 }
 function makerRow(by){return HULL_MAKER[by]||HULL_MAKER.gt;}
+/* порода вещи, у которой нет записи корабля: баржа, тело станции, купол */
+function makerBySeed(seed){return MAKER_KEYS[hashi(seed|0,0x4B17,0x11)%MAKER_KEYS.length];}
 function makerRu(by){return makerRow(by).ru;}
 /* схемы планера: изготовитель сужает выбор класса, но не отменяет его —
    если пересечение пусто, класс сильнее (рудовоз Хай-Фронта существует) */
@@ -405,3 +407,49 @@ function makerMarks(h){
 function makerFlame(by){return makerRow(by).eng;}
 function makerBank(by){return makerRow(by).snd.bank;}
 function makerHum(by){return makerRow(by).snd.f;}
+/* ── закон профиля как чистая функция (M369a) ──
+   `makerProfile` правит готовый обвод корабля; остальным генераторам — флоту,
+   баржам, телам станций — нужна та же грамматика в виде «дай долю ширины на
+   доле длины». Один закон, шесть строк, читают все пятеро (D24). */
+function makerWidth(by,t,q){
+  const P=makerRow(by).prof;
+  t=clamp(t,0,1);
+  if(P==="step"){
+    /* полки: три уступа и короб амидшип */
+    return t<.30?(t<.15?.42:.68):(t<.62?1:(t<.80?.74:.52));
+  }
+  if(P==="capsule")return t<.20?lerp(.34,1,Math.pow(t/.20,.7)):
+    (t>.80?lerp(1,.44,Math.pow((t-.80)/.20,1.3)):1);
+  if(P==="chamfer"){
+    /* прямые отрезки между тремя узлами */
+    const kn=[0,.30,.62,1],kw=[.46,.96,.88,.52];
+    let s=0;while(s<kn.length-2&&t>kn[s+1])s++;
+    return lerp(kw[s],kw[s+1],(t-kn[s])/(kn[s+1]-kn[s]));
+  }
+  if(P==="swan"){
+    const dip=1-.55*Math.exp(-Math.pow((t-.26)/.10,2));
+    return (.18+.82*Math.exp(-Math.pow((t-.62)/.30,2)))*dip;
+  }
+  if(P==="modules"){
+    /* блоки встык: их число и ширины от того же зерна, что и сама вещь */
+    const n=4,k=Math.min(n-1,Math.floor(t*n));
+    const w=[.72,1,.62,.86];
+    return w[(k+((q|0)%n))%n];
+  }
+  if(P==="spindle")return Math.sqrt(Math.max(.04,1-Math.pow(t*2-1,2)));
+  return 1;
+}
+/* грунт, огонь и огни — то, чем красится любая сборка изготовителя */
+function makerGround(by){return makerRow(by).ground;}
+function makerWear(by){return makerRow(by).wear;}
+function makerLightCol(by){
+  const L=makerRow(by).lights;
+  return L==="amber"?[255,190,90]:L==="run"?[150,200,255]:L==="band"?[190,230,255]:
+         L==="lantern"?[255,214,140]:L==="under"?[255,96,86]:[160,170,180];
+}
+/* ── сборка по-своему (M369a, §19.4 «то же восемь на других генераторах») ──
+   Для станций и барж грамматика говорит не про обвод, а про то, КАК куски
+   собраны: стойка и барабан, ряд одинаковых, дуги и кольцо, лоскут на ферме,
+   один хребет с мачтами, короб с логотипом и подами вокруг. */
+const MAKER_ASSEMBLY={gt:"rack",co:"block",or:"stack",km:"ring",ra:"patch",hf:"spine"};
+function makerAssembly(by){return MAKER_ASSEMBLY[by]||"rack";}
