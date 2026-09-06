@@ -84,7 +84,7 @@ function updateSystem(dt){
      получается дугой, а не вращением на месте с прежним курсом. Пока работают
      маневровые (боковой ход, реверс, Shift) — довода нет: скольжение не должно
      затягиваться под нос */
-  if(sp>.08&&!apOn&&!(helm&&helm.thr)){
+  if(sp>.08&&!apOn&&!(helm&&(helm.thr||helm.hold))){
     const cur=Math.atan2(sh.vy,sh.vx);
     const na=cur+angDiff(sh.a,cur)*Math.min(1,.06*dt);
     sh.vx=Math.cos(na)*sp;sh.vy=Math.sin(na)*sp;
@@ -603,6 +603,9 @@ function drawSysHud(zx,zy,sh,sys,U){
      в нижней половине, и приборная мелочь уходит из-под него сама. */
   const feet=(typeof helmStickFoot==="function")?helmStickFoot():[];
   let scaleY=H-108;
+  /* и выше пульта (M410): на телефоне приёмник стоит над рядом пэдов и ложился
+     ровно на эту строку; низ меряет 27z-telemetry, здесь его только читают */
+  if(typeof HUD_FLOOR==="number"&&HUD_FLOOR>40)scaleY=Math.min(scaleY,HUD_FLOOR*H/innerHeight/U-10);
   for(const f of feet)if(f.side==="L")scaleY=Math.min(scaleY,(f.y-f.r)/U-10);
   ctx.fillStyle="rgba(93,115,130,.75)";ctx.font="9px ui-monospace,monospace";ctx.textAlign="left";
   ctx.fillText("МАСШТАБ ×"+G.zoom.toFixed(2),14,Math.max(96,scaleY));

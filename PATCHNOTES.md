@@ -7,6 +7,30 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.401.1 - M410: one thumb
+
+The two-stick helm of M360 asked the right hand to hold the thrust while the left held the
+nose, and on a phone that is two jobs for two thumbs that also want to tap. The author's verdict
+(2026-09-07): «управление получилось не очень… джойстик внизу, левой рукой… куда джойстик
+двигаешь, туда и летит, нос сам потом на цель наводится».
+
+**One stick, left thumb.** It is born where the thumb lands on the left half; the right half is
+for taps — lock, autopilot, chips, pads; two fingers on the right are a pinch again. When no
+thumb is down a pale ring shows where the stick rests: where it last was, and before that the
+empty lower-left corner.
+
+**«Fly there», not «push there».** The stick's vector is the wanted velocity — direction and
+fraction of cruise. The physics computes the thrust that closes the gap and decomposes it as it
+always did: along the nose the main engine, sideways the thrusters. Speed reached — engines off,
+nothing burns. Thumb resting in the dead zone — the ship stops: that is the ТОРМОЗ the system row
+lost in M360. Release above half cruise coasts, below brakes, as before.
+
+**The nose is never the thumb's job.** With a mark it stays on the mark; without one it turns to
+where the ship flies. Combat on a phone is: tap the hull, fly — the guns fire themselves inside
+their cones. Mouse and arrows are untouched: the assist is a property of the stick, not of the
+device. Suites: `91zzzw-helm` M410, `91zzx-mobile` (the resting point lands on the canvas).
+
+---
 ## 0.401.0 - M401: three laws that were missing, and the guard over all nine
 
 Hard is not big numbers; big numbers are tedium. Six of §22's nine laws were already standing —

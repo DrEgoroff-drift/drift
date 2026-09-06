@@ -1,6 +1,6 @@
 /* ══════════════ штурвал (M360) ══════════════
    Четыре канала вместо двух: курс, вектор тяги, захват, огонь. Их пишут три
-   ввода — два плавающих стика на телефоне, мышь и стрелки на клавиатуре — и
+   ввода — один плавающий стик на телефоне, мышь и стрелки на клавиатуре — и
    читает один системный режим (D08). Ниже слоя ввода никто не знает, чем
    именно вели корабль. Старые `keys.*` (пэды, пояс, посадка, тесты) здесь же
    переводятся в те же каналы: пояс, посадка, черпак и поверхность не тронуты.
@@ -9,11 +9,28 @@
    без разгона и без выбега; крен — только рисунок от фактической скорости
    поворота. Тяга — вектор в осях экрана: вдоль носа полная (маршевый), вбок и
    назад — .4 через маневровые. Отпустил всё ниже .55 крейсерской — тормоз, как
-   ТОРМОЗ; выше — накат (развилка §10, по умолчанию .55). */
+   ТОРМОЗ; выше — накат (развилка §10, по умолчанию .55).
+
+   ── один палец (M410) ──
+   Автор о двух стиках (07.09.2026): «управление получилось не очень… джойстик
+   внизу, пусть управляется левой рукой, не надо правой… куда джойстик
+   двигаешь, туда и летит, нос сам потом на цель наводится, на мобилке должно
+   легче быть». Стик теперь один и под левым большим пальцем, а правая рука
+   свободна для тычков — захват, автопилот, фишки, пэды. И говорит стик не
+   «жми туда», а «ЛЕТИ туда»: его вектор — это желаемая скорость в осях экрана
+   (направление и доля крейсерской), а тягу, чтобы к ней прийти, физика
+   (`helmApply`) считает сама — по носу маршевым, вбок маневровыми, как и у
+   мыши. Палец в мёртвой зоне — «стой»: тот самый ТОРМОЗ, которого в ряду
+   пэдов системы нет. Нос стик не задаёт: с меткой он идёт за меткой (D07 без
+   оговорки о руке на курсе — руки на курсе больше не бывает), без метки —
+   туда, куда летим. Мышь и стрелки не тронуты: помощь включается только от
+   стика (`G.ctl.assist`), и это не режим устройства, а свойство ввода. */
 const HELM_RELEASE=.55;      /* доля maxSp, ниже которой отпущенная тяга тормозит */
 const HELM_THR=.4;           /* маневровые против маршевого */
 const HELM_DEAD=12;          /* мёртвая зона стика, px */
 const HELM_REACH=70;         /* px хода стика до полной тяги */
+const HELM_ASSIST_BAND=.35;  /* помощь: дальше этой доли крейсерской от цели — полная тяга (M410) */
+const HELM_ASSIST_EPS=.02;   /* ближе этой доли — цель достигнута, тяги нет */
 const HELM_PICK=40;          /* px до корпуса, чтобы взять его в захват */
 const HELM_MARKS=3;
 /* след стика (M360a): дуга под пальцем вместо кольца в 82 px. Радиус дуги —
@@ -27,12 +44,14 @@ const HELM_CONE=.35;         /* ±20° — временный конус авт�
 const HELM_RANGE=760;
 const HELM={src:"arrows",   /* кто вёл последним: mouse | arrows | stick */
   mouse:{x:0,y:0,t:-1e9,on:false,down:false,moved:0,rmb:false},
-  L:null,R:null,             /* живые стики: {id,x0,y0,x,y} */
-  fadeL:null,fadeR:null,     /* след отпущенного стика: {x0,y0,a} */
+  S:null,                    /* живой стик: {id,x0,y0,x,y} — один, под левым пальцем (M410) */
+  fade:null,                 /* след отпущенного стика: {x0,y0,x,y,f} */
+  home:null,                 /* где стик был в последний раз: точка покоя рисунка (M410) */
   key:{},lockEdge:false,lockWas:false,lift:-1};
 function ctlReset(){
   G.ctl={head:null,headK:1,turn:0,tx:0,ty:0,brake:false,fire:false,msl:false,
-    headIdle:true,thrOnly:false,src:HELM.src,out:{main:false,thr:false,rate:0}};
+    headIdle:true,thrOnly:false,assist:false,ax:0,ay:0,src:HELM.src,
+    out:{main:false,thr:false,rate:0,hold:false}};
   return G.ctl;
 }
 /* ── сырые клавиши штурвала ──
@@ -50,7 +69,7 @@ addEventListener("keydown",e=>{
   }
 });
 addEventListener("keyup",e=>{if(HELM_KEYS.has(e.code))HELM.key[e.code]=false;});
-addEventListener("blur",()=>{HELM.key={};HELM.L=HELM.R=null;HELM.mouse.down=false;HELM.mouse.rmb=false;});
+addEventListener("blur",()=>{HELM.key={};HELM.S=null;HELM.mouse.down=false;HELM.mouse.rmb=false;});
 /* ── мышь над холстом ── */
 function helmCanvasXY(e){const rc=cvs.getBoundingClientRect();return [(e.clientX-rc.left)*W/rc.width,(e.clientY-rc.top)*H/rc.height];}
 cvs.addEventListener("pointermove",e=>{
@@ -60,7 +79,7 @@ cvs.addEventListener("pointermove",e=>{
     HELM.mouse.x=x;HELM.mouse.y=y;HELM.mouse.t=performance.now();HELM.mouse.on=true;
     return;
   }
-  const s=HELM.L&&HELM.L.id===e.pointerId?HELM.L:(HELM.R&&HELM.R.id===e.pointerId?HELM.R:null);
+  const s=(HELM.S&&HELM.S.id===e.pointerId)?HELM.S:null;
   if(s){const xy=helmCanvasXY(e);s.x=xy[0];s.y=xy[1];}
 });
 cvs.addEventListener("pointerleave",e=>{if(e.pointerType==="mouse"){HELM.mouse.on=false;HELM.mouse.down=false;HELM.mouse.rmb=false;}});
@@ -71,27 +90,28 @@ cvs.addEventListener("pointerdown",e=>{
     if(e.button===2)HELM.mouse.rmb=true;
     HELM.src="mouse";return;
   }
-  /* палец: левая половина — курс, правая — тяга; стик рождается под пальцем */
+  /* палец: стик один и рождается под ним на ЛЕВОЙ половине (M410); правая
+     остаётся тычкам — захват, автопилот, фишки. Второй палец слева и любой
+     справа — просто тап, его разбирает 15-input */
   const xy=helmCanvasXY(e);
-  const side=xy[0]<W/2?"L":"R";
-  if(HELM[side])return;               /* второй палец на той же половине — просто тап */
-  HELM[side]={id:e.pointerId,x0:xy[0],y0:xy[1],x:xy[0],y:xy[1]};
+  if(xy[0]>=W/2||HELM.S)return;
+  HELM.S={id:e.pointerId,x0:xy[0],y0:xy[1],x:xy[0],y:xy[1]};
+  HELM.home={x:xy[0],y:xy[1]};
   HELM.src="stick";
 });
 function helmPtrEnd(e){
   if(e.pointerType==="mouse"){if(e.button===0)HELM.mouse.down=false;if(e.button===2)HELM.mouse.rmb=false;return;}
-  for(const side of ["L","R"]){
-    const s=HELM[side];
-    if(s&&s.id===e.pointerId){HELM["fade"+side]={x0:s.x0,y0:s.y0,x:s.x,y:s.y,f:1};HELM[side]=null;}
-  }
+  const s=HELM.S;
+  if(s&&s.id===e.pointerId){HELM.fade={x0:s.x0,y0:s.y0,x:s.x,y:s.y,f:1};HELM.S=null;}
 }
 cvs.addEventListener("pointerup",helmPtrEnd);
 cvs.addEventListener("pointercancel",helmPtrEnd);
 cvs.addEventListener("contextmenu",e=>{if(G.mode==="system")e.preventDefault();});
-/* щипок в системе отдан стикам: два пальца — это два стика, а не зум (зум — кнопками борта) */
 /* открытый экран над холстом: в Node любой селектор «находит» заглушку, поэтому спрашиваем класс */
 function helmScreenOpen(){const el=document.querySelector(".scr.open");return !!(el&&el.classList&&el.classList.contains&&el.classList.contains("open"));}
-function helmPinchBlocked(){return G.mode==="system"&&(!!HELM.L||!!HELM.R);}
+/* щипок в системе (M410): пока живёт стик, второй палец — тап, а не зум;
+   без стика два пальца справа — зум, как на карте */
+function helmPinchBlocked(){return G.mode==="system"&&!!HELM.S;}
 
 /* ── захват ── */
 function helmTargets(){return (G.pirates||[]).filter(p=>p.hull>0&&!p.iff);}
@@ -156,20 +176,25 @@ function helmShotAt(p){
 function helmTick(dt){
   const c=G.ctl||ctlReset(),sh=G.ship,K=HELM.key,now=performance.now();
   c.head=null;c.headK=1;c.turn=0;c.tx=0;c.ty=0;c.brake=false;c.thrOnly=false;c.fire=false;c.msl=false;
+  c.assist=false;c.ax=0;c.ay=0;
   let headBusy=false,input=false;
   helmMarksClean();
   /* ЦЕЛЬ на пэде и Tab — по фронту нажатия */
   const lockPad=!!keys.lock;
   if((lockPad&&!HELM.lockWas)||HELM.lockEdge)helmLockNext();
   HELM.lockWas=lockPad;HELM.lockEdge=false;
-  /* 1. стики */
-  if(HELM.L){
-    const dx=HELM.L.x-HELM.L.x0,dy=HELM.L.y-HELM.L.y0;
-    if(Math.hypot(dx,dy)>HELM_DEAD){c.head=Math.atan2(dy,dx);headBusy=true;input=true;}
-  }
-  if(HELM.R){
-    const dx=HELM.R.x-HELM.R.x0,dy=HELM.R.y-HELM.R.y0,m=Math.hypot(dx,dy);
-    if(m>HELM_DEAD){const k=Math.min(1,(m-HELM_DEAD)/HELM_REACH)/m;c.tx=dx*k;c.ty=dy*k;input=true;}
+  /* 1. стик (M410): один, под левым пальцем. Его вектор — КУДА лететь и
+     НАСКОЛЬКО быстро, в осях экрана; тягу до этой скорости подбирает
+     helmApply. Курс он не держит: нос идёт за меткой, если она есть, иначе —
+     по ходу. Палец в мёртвой зоне — «стой»: тормоз без кнопки тормоза */
+  if(HELM.S){
+    const dx=HELM.S.x-HELM.S.x0,dy=HELM.S.y-HELM.S.y0,m=Math.hypot(dx,dy);
+    if(m>HELM_DEAD){
+      const k=Math.min(1,(m-HELM_DEAD)/HELM_REACH)/m;
+      c.assist=true;c.ax=dx*k;c.ay=dy*k;
+      c.head=Math.atan2(dy,dx);
+    }else c.brake=true;
+    input=true;
   }
   /* 2. клавиатура */
   const mouseScheme=HELM.src==="mouse";
@@ -226,6 +251,23 @@ function helmApply(dt,st,sh,maxSp){
   }
   sh.av=angDiff(sh.a,a0)/Math.max(dt,1e-4);
   o.rate=sh.av;
+  /* ── помощь (M410) ──
+     Стик задаёт скорость, а не тягу: считаем, какой скорости не хватает до
+     заданной, и даём тягу ровно в ту сторону — полную, пока разница больше
+     трети крейсерской, и никакой, когда скорость набрана. Разложение по носу
+     ниже общее с мышью и стрелками: вдоль носа маршевый, вбок маневровые.
+     Пока стик в руке, ход ДЕРЖИТСЯ (`o.hold`): ни тормоза по отпусканию, ни
+     довода вектора к носу (17-mode-system) — иначе с меткой в стороне нос
+     тянул бы скорость к себе, а помощь возвращала бы её обратно, и корабль
+     дрожал бы между ними. */
+  o.hold=!!c.assist;
+  if(c.assist){
+    const ex=c.ax*maxSp-sh.vx,ey=c.ay*maxSp-sh.vy,em=Math.hypot(ex,ey);
+    if(em>maxSp*HELM_ASSIST_EPS){
+      const k=Math.min(1,em/(maxSp*HELM_ASSIST_BAND))/em;
+      c.tx=ex*k;c.ty=ey*k;
+    }else{c.tx=0;c.ty=0;}
+  }
   /* тяга: вдоль носа — маршевый, остальное — маневровые */
   const ca=Math.cos(sh.a),sa=Math.sin(sh.a);
   const along=c.tx*ca+c.ty*sa,side=-c.tx*sa+c.ty*ca;
@@ -252,7 +294,7 @@ function helmApply(dt,st,sh,maxSp){
   }
   /* отпустил ниже крейсерской — маневровые гасят ход, как ТОРМОЗ; выше — накат */
   const sp0=Math.hypot(sh.vx,sh.vy);
-  const wantBrake=c.brake||(mag===0&&sp0<maxSp*HELM_RELEASE&&sp0>0&&!c.thrOnly);
+  const wantBrake=c.brake||(mag===0&&!o.hold&&sp0<maxSp*HELM_RELEASE&&sp0>0&&!c.thrOnly);
   if(wantBrake&&G.fuel>0){
     if(sp0>.03){
       const dec=Math.min(sp0,.058*st.thr*dt);
@@ -293,9 +335,27 @@ function helmStickShape(s){
 /* след живых стиков в пикселях экрана: его читают приборная мелочь на канве
    (drawSysHud), подсказка в DOM (helmLift) и набор 91zzx-mobile */
 function helmStickFoot(){
-  const out=[];
-  for(const side of ["L","R"]){const s=HELM[side];if(s)out.push({side,x:s.x0,y:s.y0,r:HELM_FOOT});}
-  return out;
+  const s=HELM.S;
+  return s?[{side:"L",x:s.x0,y:s.y0,r:HELM_FOOT}]:[];
+}
+/* ── точка покоя (M410) ──
+   Стик — вещь, и у вещи есть место: там, где палец был в последний раз, а до
+   первого раза — внизу слева, где в других режимах стоят ◀ ▶ (в системе их
+   нет, и угол пуст). Меряем DOM, а не считаем CSS: ряд пэдов сам говорит,
+   где он стоит. Телефону только: мышь этой точки не видит. */
+function helmHome(){
+  if(HELM.home)return HELM.home;
+  let x=64,y=H-60;
+  const pads=(typeof document!=="undefined")&&document.querySelector&&document.querySelector(".pads");
+  if(pads&&pads.getBoundingClientRect){
+    const r=pads.getBoundingClientRect(),rc=cvs.getBoundingClientRect();
+    if(r.height>0&&rc.height>0){
+      const kx=W/rc.width,ky=H/rc.height;
+      x=(r.left-rc.left+14+28)*kx;
+      y=(r.top-rc.top+r.height*.5)*ky;
+    }
+  }
+  return {x:clamp(x,HELM_FOOT+4,W/2-HELM_FOOT),y:clamp(y,HELM_FOOT+4,H-HELM_FOOT-4)};
 }
 /* подсказка уходит выше пальца, а не гаснет под ним: пока стик накрывает её
    строку, #prompt поднимается ровно на высоту следа. Меряем DOM, а не считаем
@@ -351,9 +411,17 @@ function helmDrawSticks(){
     ctx.beginPath();ctx.arc(q.x0+q.dx,q.y0+q.dy,3.2,0,TAU);ctx.fill();
     ctx.restore();
   };
-  for(const side of ["L","R"]){
-    const live=HELM[side],fade=HELM["fade"+side];
-    if(live)one(live,false);
-    else if(fade){one(fade,true);fade.f-=.08;if(fade.f<=0)HELM["fade"+side]=null;}
+  const live=HELM.S,fade=HELM.fade;
+  if(live)one(live,false);
+  else if(fade){one(fade,true);fade.f-=.08;if(fade.f<=0)HELM.fade=null;}
+  else if(typeof document!=="undefined"&&document.body&&document.body.classList&&
+          document.body.classList.contains("mobile")){
+    /* точка покоя: бледное кольцо мёртвой зоны и точка. Сказать «стик здесь»
+       и не спорить с миром за глаз — те же .1…2, что у самого следа */
+    const h=helmHome();
+    ctx.save();ctx.strokeStyle="#cfe6ea";ctx.fillStyle="#cfe6ea";ctx.lineWidth=1;
+    ctx.globalAlpha=.16;ctx.beginPath();ctx.arc(h.x,h.y,HELM_ARC0,0,TAU);ctx.stroke();
+    ctx.globalAlpha=.3;ctx.beginPath();ctx.arc(h.x,h.y,2.2,0,TAU);ctx.fill();
+    ctx.restore();
   }
 }

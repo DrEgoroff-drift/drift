@@ -9,7 +9,7 @@ function helmShip(){
   G.ship.x=0;G.ship.y=-760;G.ship.vx=0;G.ship.vy=0;G.ship.a=0;G.ship.av=0;
   G.ap=null;G.orbit=null;G.pirates=[];G.shots=[];G.marks=[];G.fuel=100;
   for(const k in keys)keys[k]=false;
-  HELM.key={};HELM.L=HELM.R=null;HELM.src="arrows";HELM.mouse.on=false;HELM.mouse.down=false;
+  HELM.key={};HELM.S=null;HELM.fade=null;HELM.home=null;HELM.src="arrows";HELM.mouse.on=false;HELM.mouse.down=false;
   ctlReset();
   return G.ship;
 }
@@ -46,16 +46,17 @@ TEST_SUITES.push(()=>suite("штурвал: каждый ввод пишет т�
   HELM.key.KeyD=false;HELM.key.ShiftLeft=true;HELM.key.KeyW=true;helmTick(1);
   ok(G.ctl.thrOnly,"Shift — всё через маневровые");
   HELM.key={};
-  /* стик: левый — курс, правый — тяга в осях экрана */
-  HELM.src="stick";HELM.L={id:1,x0:100,y0:400,x:100,y:300};helmTick(1);
-  near(G.ctl.head,-Math.PI/2,1e-6,"левый стик вверх → курс вверх");
-  HELM.L={id:1,x0:100,y0:400,x:106,y:400};helmTick(1);
-  eq(G.ctl.head,null,"в мёртвой зоне 12 px курс не пишется");
-  HELM.L=null;HELM.R={id:2,x0:600,y0:400,x:600+12+70,y:400};helmTick(1);
-  near(G.ctl.tx,1,1e-6,"правый стик на полный ход → tx=1");
-  HELM.R={id:2,x0:600,y0:400,x:600+12+35,y:400};helmTick(1);
-  near(G.ctl.tx,.5,1e-6,"полхода → .5");
-  HELM.R=null;
+  /* стик (M410): один, задаёт СКОРОСТЬ в осях экрана; нос — по ходу, метка перебьёт */
+  HELM.src="stick";HELM.S={id:1,x0:100,y0:400,x:100,y:300};helmTick(1);
+  ok(G.ctl.assist,"стик включает помощь");
+  near(G.ctl.ay,-1,1e-6,"стик вверх на полный ход → ay=−1");
+  near(G.ctl.head,-Math.PI/2,1e-6,"…и нос по ходу: вверх");
+  ok(G.ctl.headIdle,"рука на курсе не лежит — метка перебьёт нос");
+  HELM.S={id:1,x0:100,y0:400,x:100+12+35,y:400};helmTick(1);
+  near(G.ctl.ax,.5,1e-6,"полхода → .5");
+  HELM.S={id:1,x0:100,y0:400,x:106,y:400};helmTick(1);
+  ok(!G.ctl.assist&&G.ctl.brake,"в мёртвой зоне 12 px — «стой»: тормоз без кнопки");
+  HELM.S=null;
   ok(sh===G.ship,"корабль тот же");
 }));
 
@@ -159,6 +160,60 @@ TEST_SUITES.push(()=>suite("штурвал: метки, автозахват, р
   G.ctl.msl=true;updateCombat(1);G.ctl.msl=false;
   ok((G.msl||[]).length>0||(G.mslCool||0)>0,"ПКМ — пусковая отработала");
   G.mods.weapon=0;G.mods.launcher=0;G.msl=[];G.cargo.missile=0;
+}));
+
+/* ── один палец (M410) ──
+   Стик говорит не «жми», а «лети»: его вектор — скорость, тягу подбирает
+   физика. Проверяется то, что обещано автору: летит туда, куда тянут; набрал —
+   держит и не жжёт; полхода — полскорости; палец на месте — стоит; с меткой
+   нос на ней, а ход — куда тянут. */
+TEST_SUITES.push(()=>suite("штурвал M410: стик задаёт ход, нос идёт за меткой",()=>{
+  const sh=helmShip(),st=stat();
+  const maxSp=6.4+st.thr*1.6;
+  HELM.src="stick";HELM.S={id:1,x0:100,y0:400,x:100+12+70,y:400};
+  helmRun(240,1);
+  const sp=Math.hypot(sh.vx,sh.vy);
+  ok(sp>maxSp*.9&&sp<=maxSp+1e-6,"за четыре секунды набрана крейсерская: "+sp.toFixed(2)+" из "+maxSp.toFixed(2));
+  ok(Math.abs(Math.atan2(sh.vy,sh.vx))<.05,"и летит туда, куда тянут: угол "+Math.atan2(sh.vy,sh.vx).toFixed(3));
+  ok(Math.abs(angWrap(sh.a))<.05,"нос по ходу: "+angWrap(sh.a).toFixed(3));
+  /* держать — не жечь */
+  const f0=G.fuel;helmRun(60,1);
+  ok(!G.ctl.out.main&&!G.ctl.out.thr,"скорость набрана — двигатели молчат");
+  eq(G.fuel,f0,"и топливо не горит");
+  /* полхода — полскорости, без перелёта */
+  HELM.S={id:1,x0:100,y0:400,x:100+12+35,y:400};
+  helmRun(240,1);
+  near(Math.hypot(sh.vx,sh.vy),maxSp*.5,maxSp*.06,"полхода стика — половина крейсерской: "+Math.hypot(sh.vx,sh.vy).toFixed(2));
+  /* палец в мёртвой зоне — стоп */
+  HELM.S={id:1,x0:100,y0:400,x:102,y:400};
+  helmRun(300,1);
+  eq(Math.hypot(sh.vx,sh.vy),0,"палец на месте — корабль встал");
+  /* отпустил на ходу выше .55 — накат, как у всех вводов */
+  HELM.S={id:1,x0:100,y0:400,x:182,y:400};helmRun(240,1);
+  HELM.S=null;const v0=Math.hypot(sh.vx,sh.vy);helmRun(60,1);
+  near(Math.hypot(sh.vx,sh.vy),v0,1e-6,"отпустил выше .55 — накат");
+  /* с меткой: нос на неё, ход — куда тянут. Мишень немая (dummy): бой
+     здесь не проверяется, проверяется штурвал */
+  helmShip();
+  const p=helmPirate(0,-760-500,false);p.dummy=1;
+  G.marks.push(p);
+  HELM.src="stick";HELM.S={id:1,x0:100,y0:400,x:100+12+70,y:400};
+  helmRun(240,1);
+  /* корабль за четыре секунды ушёл вправо, и метка теперь слева-сверху:
+     нос обязан быть на ней, где бы она ни оказалась, а не «вверху» */
+  const want=Math.atan2(p.y-G.ship.y,p.x-G.ship.x);
+  ok(Math.abs(angDiff(want,G.ship.a))<.08,"нос на метке: "+G.ship.a.toFixed(2)+" при цели "+want.toFixed(2));
+  const ang=Math.atan2(G.ship.vy,G.ship.vx);
+  ok(Math.abs(ang)<.25,"а летит вправо, куда тянут: "+ang.toFixed(2));
+  ok(Math.hypot(G.ship.vx,G.ship.vy)>maxSp*.35,"бортом медленнее, но идёт: "+Math.hypot(G.ship.vx,G.ship.vy).toFixed(2));
+  HELM.S=null;
+  ok(!keys.thrust&&!keys.brake&&!keys.left,"keys стик не трогает");
+  /* след и точка покоя: один стик — один след; без стика у рисунка есть место */
+  HELM.S={id:1,x0:100,y0:400,x:150,y:400};
+  eq(helmStickFoot().length,1,"один стик — один след");
+  HELM.S=null;HELM.home=null;
+  const h=helmHome();
+  ok(h.x<W/2&&h.y>H/2,"точка покоя — внизу слева: "+Math.round(h.x)+","+Math.round(h.y));
 }));
 
 TEST_SUITES.push(()=>suite("штурвал: другие режимы по-прежнему на keys (D08)",()=>{

@@ -94,15 +94,32 @@ they drop on any key today.
 A held fire input forces fire along the nose/cursor when nothing is locked (barges, batteries,
 debris). Missile = its own input, goes to the primary mark.
 
-### 1.1 Phone — two floating sticks
+### 1.1 Phone — one floating stick under the left thumb (M410; two sticks in M360–M409)
 
-- **Left stick = heading.** Appears where the thumb lands on the left half; the thumb's angle
-  from the stick centre is the wanted nose; dead zone 12 px; fades on release (Game Developer's
-  twin-stick guide: the stick under the thumb, never a fixed pad the thumb has to find).
-- **Right stick = thrust vector in screen axes.** Push up, the ship goes up the screen, whatever
-  the nose does. Power by angle to the nose (§1). Release = brake/coast rule.
-- With a mark locked the nose tracks the mark by itself inside the guns' cone, so combat is
-  played with the right thumb alone; the left only re-aims or picks the next mark.
+The author on the two-stick frame (2026-09-07): «управление получилось не очень… джойстик внизу,
+пусть управляется левой рукой, не надо правой… куда джойстик двигаешь, туда и летит, нос сам
+потом на цель наводится, на мобилке должно легче быть». So:
+
+- **One stick, left half.** It is born where the thumb lands on the left half of the glass (Game
+  Developer's twin-stick guide: under the thumb, never a pad the thumb must find); when no thumb
+  is down, a pale ring marks its resting place — where the thumb last was, and before the first
+  touch the empty lower-left corner where ◀ ▶ stand in the other modes (`helmHome`, measured from
+  the pads row, never from CSS). The right half is for taps only: lock, autopilot, chips, pads;
+  two fingers on the right with no stick live = pinch zoom.
+- **The stick says «fly there», not «push there».** Its vector is the wanted velocity in screen
+  axes — direction and fraction of cruise (dead zone 12 px, full at 70 px). `helmApply` computes
+  the thrust that closes the gap (full while the gap is over `.35` of cruise, none once the speed
+  is reached — holding a speed burns nothing) and decomposes it exactly as for the mouse: along
+  the nose the main engine, sideways `.4` on thrusters. `G.ctl.assist` is a property of the
+  *input*, not of the device: mouse and arrows are untouched.
+- **Thumb resting in the dead zone = stop.** That is the ТОРМОЗ the system row no longer has.
+  Release above `.55` of cruise = coast, below = brake — the §10 rule, unchanged.
+- **The nose is never the thumb's job.** With a mark it tracks the mark (D07, now without the
+  «hand on the course» clause — there is no hand on the course); without one it turns to where
+  the ship flies. Combat on a phone is therefore: tap the hull (or ЦЕЛЬ), fly; the guns fire
+  themselves inside their cones. While the stick is held the velocity-to-nose easing of
+  `17-mode-system` is off (`out.hold`), otherwise the nose on a mark would drag the velocity
+  toward itself and the assist would push it back, frame after frame.
 - Pads that stay in the system mode: ДЕЙСТВИЕ, ВЗЛЁТ, РАКЕТА, and a small ЦЕЛЬ (Tab). Gone from
   the system mode: ◀ ▶ ▲ ТОРМОЗ ОГОНЬ. Surface, dig, cave, belt keep their rows as they are.
 

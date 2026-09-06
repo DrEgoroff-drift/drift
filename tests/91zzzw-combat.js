@@ -15,7 +15,7 @@ function cbWorld(){
   G.ap=null;G.orbit=null;G.pirates=[];G.shots=[];G.marks=[];G.allies=[];
   G.fuel=100;G.hull=stat().hullMax;G.shield=0;G.engaged=false;
   for(const k in keys)keys[k]=false;
-  HELM.key={};HELM.L=HELM.R=null;ctlReset();
+  HELM.key={};HELM.S=null;HELM.fade=null;ctlReset();
   return G.ship;
 }
 function cbFoe(x,y,rank,owner,hp){

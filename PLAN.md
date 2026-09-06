@@ -334,6 +334,31 @@ The state-and-rules half of a two-session hunt (the picture half is M358).
   — потолки держат все: пираты, выстрелы, дроны, новости, слухи, дела, обломки. И то, что
   принадлежало системе, уходит с ней: после прыжка ни один помеченный пират не летит следом.
 
+## Side passes of 2026-09-07 — the author's own asks, built in a worktree beside the base queue
+
+Numbered past the base queue so the two do not collide; versions are side versions of the last
+main release, as M360a/M369b were.
+
+- ~~**M410 one thumb**~~ — 0.401.1: the phone helm is one stick under the left thumb, and it says
+  «fly there», not «push there» — `G.ctl.assist` turns the stick vector into a wanted velocity
+  and `helmApply` closes the gap (`15a-helm`, `DESIGN-war` §1.1). Thumb in the dead zone = stop;
+  the nose is never the thumb's job — mark, else heading. A resting ring marks the stick's place
+  (`helmHome`, measured from the pads row). Suites: `91zzzw-helm` (M410), `91zzx-mobile` (the
+  resting point lands on the canvas). Mouse and arrows untouched.
+- **M411 the war on the site** — `site/war.html`: the galaxy as it stands right now, from the
+  same chronicle the clients replay (a bundle `site/war.js` built by `build.ps1` from
+  `01-core`, `03a-hull-maker` (tables), `12al-powers`, `12am-chron*`, `12at-vote`, `12av-boss`,
+  `12aw-circ`, `12b0-fx-pow`, `14b-war-net`), the ledgers from `war.php?a=pull` (public).
+  Territory by power, fronts, wars and notes, the line of takes with dates, the powers' needs and
+  relations, rallies and «Ревизия»; a slider over the сводки — the whole history replays in
+  milliseconds. Linked from the site's nav and footer.
+- **M412 the war runs by itself** — the review of M370–M388 found: the open сводка is cached as
+  the replay base and never re-stepped with its closed ledger (`chronState`), so the players'
+  hand almost never enters the replay; `circApply` applies the latest circular every сводка for
+  ever; the Director's strength regen overrides the step-6 cap so every power sits near 1000 and
+  fronts flip coins; «revolt», «find», «secede» are read by three families and emitted by nobody;
+  the circular's `season` is validated and dropped. Measured with a Node replay before and after.
+
 ## Loose ends (as of 2026-08-28, after the graphics run 0.237.0–0.244.0)
 
 Everything left open, with the reason it is open. Nothing here is a bug report — bugs are fixed

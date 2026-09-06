@@ -270,10 +270,10 @@ TEST_SUITES.push(()=>suite("телефон: стик не ложится на п
   hud();               /* текст подсказки — сперва в DOM, потом мерка */
   const r0=document.getElementById("prompt").getBoundingClientRect();
   const cy=Math.round(r0.top+r0.height/2);
-  HELM.L={id:1,x0:Math.round(r0.left+50),y0:cy,x:Math.round(r0.left+50)+55,y:cy-35};
-  HELM.R={id:2,x0:Math.round(r0.right-40),y0:cy+18,x:Math.round(r0.right-40)-25,y:cy-60};
+  /* стик один (M410) — под левым пальцем; кладём его на строку подсказки */
+  HELM.S={id:1,x0:Math.round(r0.left+50),y0:cy,x:Math.round(r0.left+50)+55,y:cy-35};
   const foot=helmStickFoot();
-  eq(foot.length,2,"два живых стика — два следа");
+  eq(foot.length,1,"один живой стик — один след");
   helmLift();hud();
   ok(HELM.lift>0,"подсказка под пальцем — её поднимает ("+HELM.lift+" px)");
   ok(HELM.lift<=Math.round(innerHeight*.22)+1,"но не на середину экрана");
@@ -296,10 +296,21 @@ TEST_SUITES.push(()=>suite("телефон: стик не ложится на п
       clash.push(Math.round(c.x)+","+Math.round(c.y));
   eq(clash.join(", "),"","фишки компаса не лежат под следом стика");
   /* 4. отпустили — всё вернулось на своё место */
-  HELM.L=HELM.R=null;HELM.fadeL=HELM.fadeR=null;
+  HELM.S=null;HELM.fade=null;
   helmLift();hud();
   eq(HELM.lift,0,"палец убран — подсказка на своём месте");
   ok(!document.body.classList.contains("helmstick"),"и пульт вернулся");
+  /* 5. точка покоя (M410): внизу слева, и палец на ней попадает в холст, а не
+     в приёмник или кнопку — иначе стик там не родится */
+  HELM.home=null;
+  const hm=helmHome();
+  ok(hm.x<W/2&&hm.y>H*.6,"точка покоя внизу слева: "+Math.round(hm.x)+","+Math.round(hm.y));
+  {
+    const rc=cvs.getBoundingClientRect();
+    const cx=rc.left+hm.x*rc.width/W,cy2=rc.top+hm.y*rc.height/H;
+    const under=document.elementFromPoint(cx,cy2);
+    ok(under===cvs,"под точкой покоя — холст, а не "+(under?(under.id||under.className||under.tagName):"ничего"));
+  }
   G.prompt="";G.ship.x=0;G.ship.y=0;resetWorld();hud();
 }));
 
