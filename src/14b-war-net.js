@@ -132,8 +132,12 @@ function warPressure(st,N,fromIdx,toIdx,key){
     if(k==="def"||k==="clear"||k==="build"){def+=c.q|0;acc=Math.max(acc,(c.a&&c.a.length)|0);}
   }
   if(!def)return 0;
-  /* насыщение по числу бортов, а не по числу строк */
-  return Math.min(250,(chronSat(acc)/4)|0);
+  /* насыщение по числу бортов, а не по числу строк; а если в области стоит
+     «Ревизия» — вклад толпы там делится на четыре (M380, §11.2) */
+  const p=Math.min(250,(chronSat(acc)/4)|0);
+  const pr=key.split(",");
+  const mul=(typeof bossPressMul==="function")?bossPressMul(pr[0]|0,pr[1]|0):1;
+  return Math.round(p*mul);
 }
 /* ── запуск ──
    Тянем при загрузке и при каждом прыжке; чаще незачем — сводка длится шесть

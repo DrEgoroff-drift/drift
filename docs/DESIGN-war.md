@@ -1135,7 +1135,15 @@ One system inside ГЛАВТРАССА's centre (r ≈ 6, fixed by seed, never t
   the one funnel), and the regatta's button only works in «Ялте». The Director announces them by
   the same names §14 uses. **Deferred:** пропажа's scan rows want a scan verb the game does not
   have yet, and перепись's six questions are one question until M381's dials.
-- **M380** «Ревизия» (D13).
+- ~~**M380** «Ревизия» (D13)~~ — 0.380.0 (2026-09-06): `12av-boss` — the trigger read from the
+  chronicle (a home area whose systems changed by more than a quarter in three days, so it is the
+  same for everyone and stored nowhere), the hull summed from the ledger and never regenerating,
+  the shield that a single pilot cannot outpace and eight can, the twenty-second window every ten
+  minutes that makes solo possible and very hard, damage sent once a minute and capped at thirteen
+  minutes of the best build per account per сводка, the ведомость line «в бою бортов: N» as the
+  only thing you know about the others, and the crowd's pressure in that area divided by four
+  while it stands. **Deferred:** «закреплено» as a chronicle fact that later сводки honour (the
+  flag is computed, but the replay does not yet read it), and the boss's own second form.
 - **M381** циркуляры, the constitution and validator (D18), the season dials, the regulator's
   monthly session.
 - **M382–M388** the Director's mechanics, one family a pass: economy, society, nature, power,

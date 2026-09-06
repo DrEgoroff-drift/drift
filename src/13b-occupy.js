@@ -162,7 +162,14 @@ function occKill(sx,sy){
        "освобождено систем: "+G.freed);
 }
 /* ── что занятость делает с миром ── */
-function occPriceMul(sx,sy){return occInfo(occLvl(sx,sy)).price||1;}
+function occPriceMul(sx,sy){
+  /* свежая оккупация державой (M372) стоит той же четверти, что и пиратская
+     хватка, — и живёт она ЗДЕСЬ, в общем множителе цены. В `marketPrice` она
+     поднимала только цену сдачи, и на такой станции взять становилось дешевле,
+     чем сдать: сеть «взять дороже, чем сдать» покраснела по делу (0.380.0) */
+  const pw=(typeof occPowerAt==="function"&&occPowerAt(sx,sy))?1.25:1;
+  return (occInfo(occLvl(sx,sy)).price||1)*pw;
+}
 /* службы станции: под блокадой закрывается док, под пиратами — всё, кроме заправки */
 function occService(kind){
   const l=occHere();

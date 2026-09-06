@@ -42,6 +42,20 @@ function npcShip(by,i,rank,x,y,friend){
    своим флагом, пока не сделает того, о чём говорят четыре правила. */
 function npcSpawn(){
   if(typeof chronOwner!=="function")return;
+  /* «Ревизия» (M380): если она в этой области, она здесь и она главная */
+  if(typeof bossHere==="function"&&bossHere()&&typeof bossShip==="function"){
+    const B=bossShip();
+    if(B){
+      const hp=Math.max(1,B.A.hull);
+      G.pirates.push({x:1800,y:0,vx:0,vy:0,a:Math.PI,
+        hull:hp,hullMax:BOSS_HULL,name:"«Ревизия»",rank:3,seed:0x0E7151,
+        shipId:B.id,cool:0,aware:true,thrust:false,boss:1,
+        shield:BOSS_SHIELD,shieldMax:BOSS_SHIELD,shieldHit:0,shieldType:"pulse"});
+      say(bossLine(),200);
+      if(typeof etherLine==="function")
+        etherLine("…внимание всем бортам. В районе работает «Ревизия». Восстановление плана.","эфир");
+    }
+  }
   if(typeof yaltaHere==="function"&&yaltaHere()){npcYalta();return;}
   const own=chronOwner(G.sx,G.sy);
   if(own<0)return;

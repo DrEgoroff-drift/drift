@@ -415,3 +415,70 @@ TEST_SUITES.push(()=>suite("обряды M379: счётчик, порог и ч�
   try{localStorage.removeItem(CHRON_KEY);}catch(e){}
   WAR_LED_CACHE=null;
 }));
+
+/* ══════════════ «Ревизия» (M380, §11.2) ══════════════
+   Босс проверяется числами, а не боем: где он появляется, когда падает поле,
+   почему один может, а толпа быстрее, и что вклад толпы в его области режется. */
+TEST_SUITES.push(()=>suite("Ревизия M380: приходит туда, где карту перекроили",()=>{
+  chWorld();
+  try{localStorage.removeItem(CHRON_KEY);}catch(e){}
+  WAR_LED_CACHE=null;
+  const st=chronFresh();
+  st.N=100;
+  /* спокойная область босса не зовёт */
+  eq(bossArea(st,100),null,"ничего не менялось — «Ревизии» нет");
+  /* перекроим дом первой державы: половина систем сменилась только что */
+  let touched=0;
+  for(const k of chronKeys()){
+    const p=k.split(","),x=p[0]|0,y=p[1]|0;
+    const dx=x-CHRON_HOME[0][0],dy=y-CHRON_HOME[0][1];
+    if(dx*dx+dy*dy>36)continue;
+    if((touched++)%2)continue;
+    st.systems[k].since=100;
+  }
+  const A=bossArea(st,100);
+  ok(!!A,"область нашлась");
+  eq(A.i,0,"и это тот дом, где перекроили");
+  ok(A.pct>BOSS_TRIG,"выше порога в четверть: "+A.pct+" %");
+  /* корпус на сервере: без ведомостей он целый */
+  eq(bossDamage(90).q,0,"урона нет");
+  warLedPut(95,{"8,0":{boss:{q:400000,a:["a","b","c","d"]}}});
+  const d=bossDamage(90);
+  eq(d.q,400000,"урон складывается по ведомостям");
+  eq(d.a,4,"и видно, сколько бортов било");
+  try{localStorage.removeItem(CHRON_KEY);}catch(e){}
+  WAR_LED_CACHE=null;
+}));
+
+TEST_SUITES.push(()=>suite("Ревизия M380: поле, двадцать секунд и потолок толпы",()=>{
+  chWorld();
+  /* окно щита живёт по часам и повторяется раз в десять минут */
+  let open=0;
+  for(let s=0;s<BOSS_EVERY;s++){
+    const t=s%BOSS_EVERY;
+    if(t<BOSS_WIN)open++;
+  }
+  eq(open,BOSS_WIN,"поле само падает на двадцать секунд из шестисот");
+  ok(BOSS_REGEN>2*3000,"восстановление поля быстрее лучшего одиночки: "+BOSS_REGEN);
+  /* один пробить не может, а восемь — могут: считаем по минутам */
+  const solo=3000,crowd=8*3000;
+  ok(solo<BOSS_REGEN,"один не продавит: "+solo+" против "+BOSS_REGEN);
+  ok(crowd>BOSS_REGEN,"восьмеро продавят: "+crowd);
+  /* тридцать минут огня толпы — и корпус кончился */
+  const mins=BOSS_HULL/crowd;
+  ok(mins>=25&&mins<=40,"корпус держит около получаса такого огня: "+Math.round(mins)+" мин");
+  /* в его области вклад толпы делится на четыре */
+  const st=chronFresh();st.N=100;
+  for(const k of chronKeys()){
+    const p=k.split(","),x=p[0]|0,y=p[1]|0;
+    const dx=x-CHRON_HOME[0][0],dy=y-CHRON_HOME[0][1];
+    if(dx*dx+dy*dy<=36)st.systems[k].since=100;
+  }
+  /* спрашиваем про ЗАДАННУЮ область: `bossActive` пересчитал бы состояние на
+     сегодняшнюю сводку и снёс бы подстроенную историю */
+  const A={i:0,x:CHRON_HOME[0][0],y:CHRON_HOME[0][1],hull:BOSS_HULL,dead:false};
+  const near=bossPressMul(CHRON_HOME[0][0],CHRON_HOME[0][1],A);
+  const far=bossPressMul(-CHRON_HOME[0][0],-CHRON_HOME[0][1],A);
+  ok(near<=.25+1e-9,"рядом с ним толпа весит вчетверо меньше: "+near);
+  eq(far,1,"а в другом конце круга — как обычно");
+}));

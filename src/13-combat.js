@@ -79,6 +79,21 @@ function pirateFellTo(p,owner){
    всякого полёта, поэтому вынесен отдельно. Возвращает true, если корпус
    развалился — рельсе это нужно, чтобы решить, пробивать ли дальше. */
 function hitShip(p,s,rawDmg){
+  /* ── «Ревизия» (M380) ──
+     Её корпус живёт на сервере и там не восстанавливается: клиент только
+     складывает свой урон и раз в минуту его отправляет. Пока поле держит,
+     до корпуса не доходит ничего — и это тот случай, когда «подождите
+     окна» честнее, чем «стреляйте дольше». */
+  if(p&&p.boss&&s&&s.owner==="player"){
+    const d0=(rawDmg!==undefined?rawDmg:s.dmg)|0;
+    if(typeof bossShieldDown==="function"&&!bossShieldDown(bossActive())){
+      p.shield=Math.max(0,(p.shield||0)-d0);
+      return false;
+    }
+    if(typeof bossHit==="function")bossHit(d0);
+    p.hull=Math.max(1,p.hull-d0);
+    return false;
+  }
   /* первое из четырёх правил (M373): выстрел по борту державы — и пикет
      перестаёт быть мимо проходящим */
   if(s&&s.owner==="player"&&p&&p.pw&&p.iff&&typeof hailShotAt==="function")hailShotAt(p);

@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 467 · символов верхнего уровня: 4226
+Файлов: 468 · символов верхнего уровня: 4245
 
 ## СИМВОЛЫ
 
@@ -111,7 +111,7 @@ apVel                        src/16-flight.js:132
 ARC_JUMP                     src/13a-guns.js:39
 arcHit                       src/13a-guns.js:368
 ARMED_CAP                    src/13-combat.js:12
-armedCount                   src/13-combat.js:205
+armedCount                   src/13-combat.js:220
 arrive                       src/16-flight.js:178
 ARTIFACTS                    src/12h-relic.js:48
 askText                      src/11u-names.js:59
@@ -295,6 +295,25 @@ bookOpen                     src/12ub-books.js:156
 bookRoll                     src/12ub-books.js:149
 BOOKS                        src/12ub-books.js:23
 BOOKS_BY                     src/12ub-books.js:121
+BOSS_ACC                     src/12av-boss.js:117
+BOSS_EVERY                   src/12av-boss.js:29
+BOSS_HULL                    src/12av-boss.js:25
+BOSS_LIFE                    src/12av-boss.js:32
+BOSS_REGEN                   src/12av-boss.js:27
+BOSS_SHIELD                  src/12av-boss.js:26
+BOSS_SPAN                    src/12av-boss.js:31
+BOSS_TRIG                    src/12av-boss.js:30
+BOSS_WIN                     src/12av-boss.js:28
+bossActive                   src/12av-boss.js:83
+bossArea                     src/12av-boss.js:37
+bossDamage                   src/12av-boss.js:66
+bossHere                     src/12av-boss.js:57
+bossHit                      src/12av-boss.js:120
+bossLine                     src/12av-boss.js:134
+bossPressMul                 src/12av-boss.js:143
+bossShieldDown               src/12av-boss.js:100
+bossShip                     src/12av-boss.js:109
+bossWindow                   src/12av-boss.js:95
 boxAll                       src/12ue-boxes.js:39
 boxCount                     src/12ue-boxes.js:41
 BOXES                        src/12ue-boxes.js:16
@@ -322,9 +341,9 @@ builtSpot                    src/21c-built.js:43
 buoyEtherLine                src/12ae-ladder.js:125
 BURN_DPS                     src/13a-guns.js:26
 BURN_TIME                    src/13a-guns.js:25
-BUY_SPREAD                   src/12-economy.js:53
-buyCargo                     src/12-economy.js:59
-buyPriceFor                  src/12-economy.js:54
+BUY_SPREAD                   src/12-economy.js:48
+buyCargo                     src/12-economy.js:54
+buyPriceFor                  src/12-economy.js:49
 bWall                        src/21aa-base-rooms.js:187
 bWorker                      src/21aa-base-rooms.js:322
 camBtnTick                   src/25g-postcard.js:666
@@ -575,7 +594,7 @@ clWith                       tests/91zzzzzr-cloud.js:30
 cockpitPlan                  src/25-cockpit.js:92
 cockpitStyleKey              src/25-cockpit.js:46
 cockpitTex                   src/25-cockpit.js:187
-combatShots                  src/13-combat.js:129
+combatShots                  src/13-combat.js:144
 concertAll                   src/11ae-concert.js:22
 concertNotes                 src/11ae-concert.js:82
 concertSend                  src/11ae-concert.js:87
@@ -781,7 +800,7 @@ deedAdd                      src/11ai-ledger.js:53
 DEEDS                        src/11ai-ledger.js:25
 deltaHtml                    src/05-parts.js:435
 depKind                      src/21b-surface-deco.js:382
-deployDrone                  src/12-economy.js:188
+deployDrone                  src/12-economy.js:183
 DEPTH_TIERS                  src/04-mods.js:51
 DESC_MOOD                    src/01-core.js:109
 DESC_TAIL                    src/01-core.js:115
@@ -898,7 +917,7 @@ drawDustMotes                src/19-mode-landing.js:552
 drawElevator                 src/20aa-poi-shapes.js:91
 drawExhaust                  src/16a-space.js:360
 drawFactory                  src/20aa-poi-shapes.js:378
-drawFactRoute                src/13b-occupy.js:267
+drawFactRoute                src/13b-occupy.js:274
 drawFindsSystem              src/17b-finds.js:182
 drawFlame                    src/03b-hull-paint.js:10
 drawFleet                    src/12ai-fleet.js:516
@@ -1006,27 +1025,27 @@ DRONE_TAIL                   src/12e-drone-flight.js:194
 DRONE_TRIP_BASE              src/12e-drone-flight.js:18
 droneBreakP                  src/12e-drone-flight.js:134
 droneBreaks                  src/12e-drone-flight.js:139
-droneCapacity                src/12-economy.js:183
+droneCapacity                src/12-economy.js:178
 droneFar                     src/12e-drone-flight.js:73
 droneFixMs                   src/12e-drone-flight.js:140
 droneGuestPos                src/12e-drone-flight.js:200
 droneHome                    src/12e-drone-flight.js:74
-droneMarket                  src/12-economy.js:137
+droneMarket                  src/12-economy.js:132
 droneName                    src/12e-drone-flight.js:38
 droneNextId                  src/12e-drone-flight.js:32
 droneNormalize               src/12e-drone-flight.js:44
-dronePaybackH                src/12-economy.js:114
+dronePaybackH                src/12-economy.js:109
 dronePhase                   src/12e-drone-flight.js:101
 dronePoint                   src/12e-drone-flight.js:65
 dronePos                     src/12e-drone-flight.js:113
-droneRecall                  src/12-economy.js:104
+droneRecall                  src/12-economy.js:99
 droneRoutes                  src/12e-drone-flight.js:166
 DRONES                       src/04-mods.js:57
-droneShopHas                 src/12-economy.js:116
-droneShopTake                src/12-economy.js:123
+droneShopHas                 src/12-economy.js:111
+droneShopTake                src/12-economy.js:118
 droneStateRu                 src/12e-drone-flight.js:151
 droneSys                     src/12e-drone-flight.js:62
-droneTarget                  src/12-economy.js:187
+droneTarget                  src/12-economy.js:182
 droneTripMs                  src/12e-drone-flight.js:89
 drOut                        tests/91zzzzzn-doors.js:45
 drPair                       tests/91zzzzzn-doors.js:19
@@ -1202,7 +1221,7 @@ fleaScrip                    src/12ua-flea.js:122
 FLEET                        src/04b-fleet.js:107
 FLEET_ART                    src/12ai-fleet.js:101
 FLEET_CLASSES                src/12ai-fleet.js:20
-FLEET_COOL                   src/13-combat.js:187
+FLEET_COOL                   src/13-combat.js:202
 FLEET_EPITH                  src/04b-fleet.js:57
 FLEET_KEYS                   src/04b-fleet.js:148
 FLEET_LUXE                   src/04b-fleet.js:59
@@ -1224,7 +1243,7 @@ fleetArtOf                   src/12ai-fleet.js:102
 fleetCaravanActive           src/12ai-fleet.js:693
 fleetColor                   src/04b-fleet.js:95
 fleetEscortActive            src/12ai-fleet.js:691
-fleetFire                    src/13-combat.js:188
+fleetFire                    src/13-combat.js:203
 fleetGlyph                   src/12ai-fleet.js:431
 fleetHailFirst               src/12ai-fleet.js:545
 fleetHere                    src/12ai-fleet.js:50
@@ -1345,8 +1364,8 @@ gn5Foe                       tests/91zzzw-guns3.js:10
 gnFoe                        tests/91zzzw-guns2.js:17
 gnGun                        tests/91zzzw-guns2.js:25
 gnWorld                      tests/91zzzw-guns2.js:7
-goalCard                     src/13b-occupy.js:197
-goalOwnYacht                 src/13b-occupy.js:190
+goalCard                     src/13b-occupy.js:204
+goalOwnYacht                 src/13b-occupy.js:197
 gotoSector                   src/11a-quests.js:68
 gradePass                    src/19c-light.js:258
 GRAIN_PAT                    src/19c-light.js:378
@@ -2342,7 +2361,7 @@ nbFoe                        tests/91zzzw-notebook.js:15
 nbWorld                      tests/91zzzw-notebook.js:6
 near                         tests/90-harness.js:127
 nearestPOI                   src/20a-poi.js:236
-nearestStation               src/12-economy.js:160
+nearestStation               src/12-economy.js:155
 NEB_COMP                     src/16a-space.js:119
 NEB_JOB                      src/16a-space.js:52
 NEB_MS                       src/16a-space.js:51
@@ -2410,40 +2429,40 @@ noteBlock                    src/12ap-notebook.js:166
 NPC_BATTLE                   src/13d-npc.js:14
 NPC_PICKET                   src/13d-npc.js:13
 NPC_SHIPS                    src/03-ships.js:185
-npcCrewOff                   src/13d-npc.js:167
+npcCrewOff                   src/13d-npc.js:181
 npcPowerHere                 src/13d-npc.js:15
-npcRescue                    src/13d-npc.js:125
+npcRescue                    src/13d-npc.js:139
 npcShip                      src/13d-npc.js:23
 npcSpawn                     src/13d-npc.js:43
-npcWreck                     src/13d-npc.js:106
-npcWreckDraw                 src/13d-npc.js:187
-npcWreckNear                 src/13d-npc.js:178
-npcYalta                     src/13d-npc.js:92
-OCC_CALM_MS                  src/13b-occupy.js:232
+npcWreck                     src/13d-npc.js:120
+npcWreckDraw                 src/13d-npc.js:201
+npcWreckNear                 src/13d-npc.js:192
+npcYalta                     src/13d-npc.js:106
+OCC_CALM_MS                  src/13b-occupy.js:239
 OCC_FRESH                    src/13b-occupy.js:41
 OCC_LVL                      src/13b-occupy.js:20
 OCC_MAX                      src/13b-occupy.js:19
 OCC_PERIOD                   src/13b-occupy.js:28
 occAt                        src/13b-occupy.js:31
-occCalmNear                  src/13b-occupy.js:242
-occExtraPirates              src/13b-occupy.js:174
+occCalmNear                  src/13b-occupy.js:249
+occExtraPirates              src/13b-occupy.js:181
 occHere                      src/13b-occupy.js:53
 occInfo                      src/13b-occupy.js:54
 occInit                      src/13b-occupy.js:29
 occKey                       src/13b-occupy.js:30
 occKill                      src/13b-occupy.js:136
-occLairLevel                 src/13b-occupy.js:256
-occLairName                  src/13b-occupy.js:257
+occLairLevel                 src/13b-occupy.js:263
+occLairName                  src/13b-occupy.js:264
 occLvl                       src/13b-occupy.js:35
 occNest                      src/13b-occupy.js:60
 occPowerAt                   src/13b-occupy.js:42
 occPowerHere                 src/13b-occupy.js:50
 occPriceMul                  src/13b-occupy.js:165
 occReqMul                    src/13b-occupy.js:52
-occService                   src/13b-occupy.js:167
+occService                   src/13b-occupy.js:174
 occSet                       src/13b-occupy.js:66
-occSummary                   src/13b-occupy.js:181
-occSuppress                  src/13b-occupy.js:233
+occSummary                   src/13b-occupy.js:188
+occSuppress                  src/13b-occupy.js:240
 occTick                      src/13b-occupy.js:77
 odo                          src/11d-place.js:24
 odoAdd                       src/11d-place.js:26
@@ -3406,8 +3425,8 @@ seamsOf                      src/12s-wear.js:183
 SEC_CAP                      src/26-ui-station.js:260
 secHead                      src/26-ui-station.js:209
 secTidy                      src/26-ui-station.js:261
-sellCargo                    src/12-economy.js:73
-sellDroneYield               src/12-economy.js:95
+sellCargo                    src/12-economy.js:68
+sellDroneYield               src/12-economy.js:90
 sellQuote                    src/12ab-hold.js:101
 setSt                        src/27z-telemetry.js:90
 SETTLE_BUILD                 src/12t-settle.js:31
@@ -3800,7 +3819,7 @@ tetherTick                   src/13a-guns.js:389
 tfbm                         src/18a-material.js:23
 thingAdd                     src/27i-ui-table.js:37
 thingsAll                    src/27i-ui-table.js:36
-tickDrones                   src/12-economy.js:214
+tickDrones                   src/12-economy.js:209
 tickLaunchHold               src/21-mode-surface.js:641
 TIER_RU                      src/05-parts.js:86
 tierAt                       src/04-mods.js:56
@@ -4111,7 +4130,7 @@ WAR_API                      src/14b-war-net.js:19
 WAR_BUSY                     src/14b-war-net.js:21
 WAR_LED_CACHE                src/14b-war-net.js:45
 WAR_PULL_MS                  src/14b-war-net.js:20
-warBoot                      src/14b-war-net.js:141
+warBoot                      src/14b-war-net.js:145
 warCall                      src/14b-war-net.js:80
 warClock                     src/14b-war-net.js:70
 warHere                      src/14b-war-net.js:22
@@ -4485,7 +4504,7 @@ zooTick                      src/11ad-zoo.js:41
 
 ## src/12-economy.js · 20 КБ
   · живой рынок:1
-  · дроны:102
+  · дроны:97
 
 ## src/12a-crew.js · 43 КБ
   · наёмники: флот, которым не управляешь напрямую:1
@@ -4558,6 +4577,9 @@ zooTick                      src/11ad-zoo.js:41
 
 ## src/12au-rites.js · 10 КБ
   · девять обрядов и регата (M379, §14):1
+
+## src/12av-boss.js · 8 КБ
+  · «РЕВИЗИЯ» (M380, §11.2, D13):1
 
 ## src/12b-crew-events.js · 17 КБ
   · наёмники: рейс как раздача карт:1
@@ -4730,7 +4752,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/13a-guns.js · 24 КБ
   · повадки семейств (M364, §2.1):1
 
-## src/13b-occupy.js · 19 КБ
+## src/13b-occupy.js · 20 КБ
   · пираты берут системы:1
 
 ## src/13c-roles.js · 8 КБ
@@ -4753,7 +4775,7 @@ zooTick                      src/11ad-zoo.js:41
   · облако:65
   · видимое состояние обмена:80
 
-## src/14b-war-net.js · 8 КБ
+## src/14b-war-net.js · 9 КБ
   · провод войны (M376, §13, §16.4):1
 
 ## src/15-input.js · 35 КБ
@@ -5539,7 +5561,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzzv-wall.js · 7 КБ
   · автотесты: стена, которая помнит (M210):1
 
-## tests/91zzzw-chron.js · 24 КБ
+## tests/91zzzw-chron.js · 28 КБ
   · летопись (M370, §16.2–16.5):1
   · Директор и шесть волн (M371, §15, §7.3):135
   · война, которую видно (M372, §7.4):206
@@ -5547,6 +5569,7 @@ zooTick                      src/11ad-zoo.js:41
   · оставленное (M377, §11.3):319
   · выборы и сбор (M378, §11.2, §14):343
   · обряды (M379, §14):386
+  · «Ревизия» (M380, §11.2):419
 
 ## tests/91zzzw-combat.js · 41 КБ
   · бой между кораблями (M361, §5):1

@@ -37,12 +37,7 @@ function marketPriceCtx(sys,C,k,add){
 }
 function marketPrice(sys,k,add){
   marketFor(sys);   /* давление досчитано, запись есть */
-  const p=marketPriceCtx(sys,marketCtx(sys,G.market[sys.key]),k,add);
-  /* свежая оккупация державой (M372): «оружие и топливо дороже» — прилавок
-     первым говорит игроку, что флаг сменился */
-  if(typeof occPowerAt==="function"&&sys&&occPowerAt(sys.sx,sys.sy))
-    return Math.round(p*1.25);
-  return p;
+  return marketPriceCtx(sys,marketCtx(sys,G.market[sys.key]),k,add);
 }
 /* ── взять товар с прилавка (M289) ──
    Станция продаёт дороже, чем берёт: BUY_SPREAD поверх её же закупочной цены,

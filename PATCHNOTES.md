@@ -7,6 +7,38 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.380.0 - M380: «Ревизия» — the ceiling with a face
+
+The crowd can redraw a quarter of the galaxy in a week and then hits a wall. This is the wall,
+and it has a hull: a flagship from the «Долгий Ход» years, automatic, carrying out an order
+nobody cancelled — «восстановить план».
+
+**It comes where the map moved most.** A home area whose systems changed by more than a quarter
+in three days gets it; that is read from the chronicle, so every client knows where it is without
+being told. While it stands, everything the crowd contributes in that area counts for a quarter.
+
+**Why one pilot cannot and a crowd can, with no live multiplayer at all.** Its shield regenerates
+faster than the best solo pilot shoots, damage is summed on the server by minutes and by accounts,
+and the hull there does not regenerate. Three strong or eight average pilots in the same сводка
+push the shield down — and none of them sees the others: each sees the ведомость line «в бою
+бортов: 7». **And yet one can**: the shield is импульсный and drops by itself for twenty seconds
+every ten minutes. A hundred such windows is seventeen hours of fighting. Possible. Very hard, as
+asked.
+
+Damage goes up once a minute, capped at thirteen minutes of the best build per account per
+сводка — not because more is impossible but because more cannot be checked, and one line should
+not be able to end everyone else's fight.
+
+Also fixed here, found by a net rather than by eye: M372's fresh-occupation price rise was applied
+to the selling price only, so on a just-taken station buying became cheaper than selling. It now
+lives in the shared multiplier where the pirate grip already lived, and both sides move together.
+
+Tests: an untouched area calling nobody; a redrawn one crossing the quarter and naming its own
+home; damage summing across ведомости with the number of hulls that fired; the shield window
+twenty seconds in six hundred; one pilot below the regeneration and eight above it; the hull
+lasting about half an hour of that; and the crowd's weight quartered inside the area and untouched
+outside it.
+
 ## 0.379.0 - M379: nine rites, one button each
 
 The rites of §14 exist now, with counters that mean something and effects you can feel.
