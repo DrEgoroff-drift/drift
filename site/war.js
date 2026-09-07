@@ -27,7 +27,7 @@ function earn(){}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.409.0";
+const VER="0.410.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -2113,6 +2113,12 @@ function riteGive(key,qty){
     if(G.credits<qty){say("НЕ ХВАТАЕТ КРЕДИТОВ",120);return Promise.resolve(false);}
     G.credits-=qty;
     G.bonds=(G.bonds|0)+qty;
+    /* запоминаем, СКОЛЬКО держава держала, когда у неё занимали: по этому и
+       считается «кампания выиграна» при расчёте (разбор 0.409.1) */
+    if(!G.bondHold){
+      const st=(typeof chronState==="function")?chronState():null;
+      G.bondHold=(st&&st.powers[R.p])?st.powers[R.p].hold:0;
+    }
   }
   return warPut(R.kind,qty).then(ok=>{
     if(ok){
@@ -2154,9 +2160,21 @@ function riteLoanSettle(){
   const b=G.bonds|0;
   if(!b)return 0;
   if(!riteDone("loan"))return 0;
-  const wars=(typeof chronWars==="function")?chronWars().length:0;
-  const win=wars===0;                       /* войн нет — значит кампания закрыта */
-  G.bonds=0;
+  /* ── что значит «выиграна» (разбор 0.409.1) ──
+     Было: `chronWars().length===0` в МОМЕНТ предъявления. То есть «сейчас в
+     галактике тихо», а не «кампания удалась»: игрок клал пять тысяч за сводку,
+     ждал затишья и получал полтора конца. Это печатало деньги, и ни одна сеть
+     не ловила — в тестах ведомости пусты.
+
+     Теперь считаем то, за что и брали заём: держава-эмитент должна ДЕРЖАТЬ
+     больше, чем держала, когда обряд объявили. Не тишина, а результат. */
+  const L=(typeof riteLive==="function")?riteLive().filter(x=>x.key==="loan"):[];
+  const R=L[0]||null;
+  const st=(typeof chronState==="function")?chronState():null;
+  const hold=(st&&R&&st.powers[R.p])?st.powers[R.p].hold:0;
+  const was=(G.bondHold|0);
+  const win=!!(R&&was&&hold>was);
+  G.bonds=0;G.bondHold=0;
   const pay=win?Math.round(b*1.5):0;
   /* деньги входят одной воронкой (`earn`), иначе их не видят ни дом, ни
      кооператив, и сеть «доход идёт одной воронкой» краснеет по делу */
