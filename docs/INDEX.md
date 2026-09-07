@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 507 · символов верхнего уровня: 4778
+Файлов: 507 · символов верхнего уровня: 4779
 
 ## СИМВОЛЫ
 
@@ -1498,7 +1498,7 @@ fbm1                         src/01-core.js:30
 fbm2                         src/01-core.js:37
 fbm3                         src/24-mode-belt.js:16
 FG_MAN                       src/21b-surface-deco.js:263
-fillMaterial                 src/18a-material.js:322
+fillMaterial                 src/18a-material.js:331
 FIN_DEF                      src/21aa-base-rooms.js:184
 FIND_BUCKET                  src/17b-finds.js:17
 FIND_CACHE                   src/17b-finds.js:26
@@ -2555,8 +2555,9 @@ marketCtx                    src/12-economy.js:18
 marketFor                    src/12-economy.js:2
 marketPrice                  src/12-economy.js:41
 marketPriceCtx               src/12-economy.js:33
+MAT_CAP                      src/18a-material.js:96
 MAT_CHAR                     src/18a-material.js:49
-MAT_JOB                      src/18a-material.js:89
+MAT_JOB                      src/18a-material.js:97
 MAT_MS                       src/18a-material.js:87
 MAT_ROWS                     src/18a-material.js:88
 MAT_S                        src/18a-material.js:34
@@ -2570,10 +2571,10 @@ matchesRec                   src/12uc-matches.js:22
 matchesRu                    src/12uc-matches.js:36
 matchesScrapNote             src/12uc-matches.js:45
 matchesSpend                 src/12uc-matches.js:27
-matJobDone                   src/18a-material.js:311
-matJobMake                   src/18a-material.js:119
-matJobRows                   src/18a-material.js:148
-matTick                      src/18a-material.js:100
+matJobDone                   src/18a-material.js:320
+matJobMake                   src/18a-material.js:128
+matJobRows                   src/18a-material.js:157
+matTick                      src/18a-material.js:108
 MAYAK_KEEP                   src/12pa-beacon.js:37
 MAYAK_NUM                    src/12pa-beacon.js:65
 mayakBlock                   src/12pa-beacon.js:164
@@ -3195,8 +3196,8 @@ planEtherLine                src/11r-plan.js:43
 planetLight                  src/07-planet.js:199
 planetLightsN                src/17e-station-body.js:39
 planetLoadSum                src/12n-planet.js:122
-planetMat                    src/18a-material.js:91
-planetMatNow                 src/18a-material.js:111
+planetMat                    src/18a-material.js:99
+planetMatNow                 src/18a-material.js:120
 planetPaint                  src/07-planet.js:252
 planetPeriod                 src/07-planet.js:37
 planetReady                  src/12n-planet.js:19
@@ -5393,7 +5394,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/18a-map-addr.js · 17 КБ
   · карта говорит адресами (M347):1
 
-## src/18a-material.js · 25 КБ
+## src/18a-material.js · 26 КБ
   · материал грунта:1
 
 ## src/18b-geology.js · 14 КБ
@@ -6321,8 +6322,9 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzzzn-deco-biomes.js · 4 КБ
   · автотесты: большая вещь на каждый биом (M352):1
 
-## tests/91zzzzy-bake.js · 11 КБ
+## tests/91zzzzy-bake.js · 17 КБ
   · печь: сколько растра игра держит и сколько печёт заново (M358):1
+  · и ЧЕМ печь занята за один раз (M419):137
 
 ## tests/91zzzzy-hold.js · 9 КБ
   · холдинг: круг стройки числами (M339):1

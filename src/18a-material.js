@@ -86,6 +86,14 @@ function matCell(u,v,N,sd,warp){
    бюджет с перебором на одну строку, а не на восемь. */
 const MAT_MS=3;              /* столько миллисекунд кадра отдаём выпечке */
 const MAT_ROWS=1;            /* через сколько строк сверяться с часами */
+/* ── и потолок на случай СТОЯЩИХ ЧАСОВ ──
+   Бюджет в миллисекундах хорош ровно до тех пор, пока часы идут. В стенде
+   наборов их нет вовсе: `--virtual-time-budget` останавливает время внутри
+   синхронного блока, и замер показал ноль миллисекунд на тридцати миллионах
+   корней. Значит цикл «пока не вышел бюджет» там не выходит НИКОГДА и печёт
+   весь тайл разом — то есть ровно то, от чего мы уходили. В настоящем браузере
+   часы идут и потолок не срабатывает; он для всего остального. */
+const MAT_CAP=8;             /* строк за одну порцию, что бы ни говорили часы */
 let MAT_JOB=null;
 /* Возвращает готовый материал — или null, пока печётся. Заказ ставится сам */
 function planetMat(p){
@@ -100,9 +108,10 @@ function planetMat(p){
 function matTick(){
   const J=MAT_JOB;if(!J)return;
   const t0=performance.now();
+  let rows=0;
   while(J.y<J.S){
-    matJobRows(J,MAT_ROWS);
-    if(performance.now()-t0>MAT_MS)return;
+    matJobRows(J,MAT_ROWS);rows+=MAT_ROWS;
+    if(rows>=MAT_CAP||performance.now()-t0>MAT_MS)return;
   }
   matJobDone(J);MAT_JOB=null;
 }

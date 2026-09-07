@@ -236,6 +236,15 @@ through, waited out until night, or opened on a phone.
   interior read 27 ms, then 24–49 ms *with* a full chunk bake in; `?g11` said 60 fps both ways,
   and the bake was reverted). Use it to rank draw functions and to mute one and see the delta;
   for the verdict, `docs/g11.ps1` and nothing else.
+- **The test harness has no clock, so no assertion about time means anything there.** `test.ps1`
+  runs Chrome with `--virtual-time-budget`, and inside a synchronous block time does not move at
+  all: measured 07.09.2026, thirty million square roots between two reads gave `performance.now()`
+  0.00 ms and `Date.now()` 0 ms. A suite that asserts «this took under N ms» is not flaky there —
+  it is **vacuous**, always true. Worse, production code that paces itself by the clock (a bake
+  with a per-frame budget) degenerates in that harness to doing everything at once, so the suite
+  exercises a code path no player ever runs. Pace such code by a work cap *as well as* a clock
+  (`MAT_CAP` beside `MAT_MS` in `18a-material`), and let the net assert the work, not the time.
+  `test.ps1:90` already counted its seconds outside the page for the same reason.
 - **Never measure the frame with `--virtual-time-budget`.** It fast-forwards
   timers, so the probe measures the fast-forward. `docs/g11.ps1` runs `?g11`
   correctly; it also leaves the GPU on, because `--disable-gpu` reads ~10 fps in
@@ -311,7 +320,7 @@ starts with `resetWorld()`).
 If you do open it in the pane: it caches `file://` — after a rebuild open `tests.html?v=N` with
 a fresh `N`, or you'll be reading the previous run. Headless has no such cache.
 
-**Six cross-cutting nets sit above the topic suites** (M329–M338). They do not test a mechanic;
+**Seven cross-cutting nets sit above the topic suites** (M329–M338, M358, M419). They do not test a mechanic;
 they test properties of the whole game, and between them they found the raster leak behind the
 freeze, a softlock in space, a money printer at the counter and a screen that could become a trap:
 
@@ -323,6 +332,7 @@ freeze, a softlock in space, a money printer at the counter and a screen that co
 | game QA | `91zzzzy-play` | can the player get stuck, does the game print money, is any screen a dead end, what happens after death, does the autopilot arrive |
 | someone else's clock | `91zzzzy-time` | the save travels between devices: every epoch stamp shifted three days forward and thirty back, and the world lives on |
 | names and the picture | `91zzzzy-names` / `-look` / `-mem` | the game reads its own source and checks every name called by string against its table («a perk without code is a lie», applied to every table); the frame ledger pinned per scene as a baseline; the raster held by `SYS_CACHE` stays on a shelf instead of growing with the evening |
+| the oven | `91zzzzy-bake` | M358: how much raster the game holds (in screens, not megabytes) and how often it re-bakes — a key with a continuously changing value bakes a full-screen canvas sixty times a second and nothing says so. M419: and what the oven does **in one go** — a cold ask queues and bakes nothing, one slice is capped by **work as well as time** (the harness has no clock, see the gotcha above), budgets are declared numbers, and the synchronous path (`planetMatNow`) is called from stands only, never from `src/`. Born of a 383 ms tile bake that stood three hundred versions because nothing crashed |
 
 Two rules come out of them and are worth keeping. **A mode that is not in `lookScenes` is driven
 by nobody** — that list is shared by the frame meter and the fuzzer, and until M337–M338 the raid,

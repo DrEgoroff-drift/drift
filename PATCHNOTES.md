@@ -7,6 +7,45 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.415.0 - M419: what the oven does in one go, and the harness has no clock
+
+M418 found a 383 ms synchronous bake that had been in the game for three hundred versions. Nothing
+caught it: the tile came out correct, no frame crashed, no exception was thrown. The game simply
+stopped for a moment, which is not a thing any suite was looking for.
+
+`tests/91zzzzy-bake` has measured the oven since M358 - how much raster the game holds and how
+often it re-bakes - but never **what it does in one go**. That is the gap, and it now holds one
+property: every heavy bake has either a budget or speed. The new suites assert that a cold ask for the ground material bakes *no rows at all* (it
+queues), that one slice is bounded, that the budgets are declared as numbers rather than assumed,
+and that the synchronous path exists only for stands — `planetMatNow` must not be called from
+anywhere in `src/`, checked against the page's own source the way the names net checks that a perk
+without code is a lie.
+
+**And writing it turned up something that invalidates a whole category of test.** The net's first
+draft asserted milliseconds. It passed - and then kept passing when it should not have. The
+harness has no clock: `test.ps1` runs Chrome with `--virtual-time-budget`, and inside a
+synchronous block time does not move. Measured: thirty million square roots between two reads give
+`performance.now()` 0.00 ms and `Date.now()` 0 ms.
+
+Two consequences, both now written into `CLAUDE.md`:
+
+- **any suite asserting «this took under N ms» is vacuous there** - not flaky, always true;
+- worse, **code that paces itself by the clock degenerates in that harness to doing everything at
+  once.** `matTick` did exactly that: with a frozen clock its «until the budget runs out» loop
+  never ran out, so the tests exercised the whole-tile bake - the very path M418 removed - while
+  the real browser ran the sliced one. The suite was testing a code path no player ever executes.
+
+So the bake is now capped by *work* as well as by time: `MAT_CAP=8` rows beside `MAT_MS=3` ms. In
+a real browser the clock stops the slice first (two or three rows) and the cap never binds; where
+the clock is frozen or coarse, the cap does. The net asserts the cap, because that is the part it
+can actually see.
+
+`test.ps1:90` already counted its seconds outside the page for this reason. The knowledge existed;
+it had just never been carried across to what a suite is allowed to claim.
+
+Full tier green: 17789 assertions over 781 suites.
+
+---
 ## 0.414.0 - M418: the freeze had a cause, and it was 383 milliseconds of noise
 
 0.413.0 cleared the crash log of its own false alarms and left one real line in it: **2766 ms on
