@@ -24,34 +24,87 @@
    пэдов системы нет. Нос стик не задаёт: с меткой он идёт за меткой (D07 без
    оговорки о руке на курсе — руки на курсе больше не бывает), без метки —
    туда, куда летим. Мышь и стрелки не тронуты: помощь включается только от
-   стика (`G.ctl.assist`), и это не режим устройства, а свойство ввода. */
+   стика (`G.ctl.assist`), и это не режим устройства, а свойство ввода.
+
+   ── палец где угодно (M422) ──
+   Автор 07.09.2026: «управление на мобилке говно… из любого места на экране
+   пальцем двигаешь и корабль туда летил… тормозить в другую сторону, коротко
+   назад он тормозит… за пальцем идёт широкая полоска, чтобы понимать как оно».
+   Замысел M410 был верен, беда была в пяти числах и в одной границе:
+
+   1. Стик рождался только на левой половине — правая рука не дотягивалась.
+      Теперь он рождается где угодно, а тычок остаётся тычком: палец становится
+      стиком, сдвинувшись на HELM_TAKE или пролежав дольше HELM_TAKE_MS, и это
+      ровно за окном тапа в 400 мс (15-input), так что одно не отнимает другое.
+   2. Центр стика был прибит к точке касания: провёл 250 px — отматывай 250.
+      Центр теперь бежит за пальцем (`helmDrag`), и обратный ход всегда стоит
+      восемьдесят пикселей, откуда бы ты ни тянул. Отсюда и «коротко назад» —
+      отдельного жеста-рывка не нужно, он выпадает из геометрии.
+   3. Тяга против носа шла через маневровые в .4: тормозить, потянув назад,
+      было вчетверо дольше (4.1 с), чем просто держать палец на месте (2.3 с) —
+      наказание за верную догадку. Теперь торможение идёт одной дорогой с
+      мёртвой зоной и с кнопкой ТОРМОЗ — ходом HELM_STOP и мимо носа вовсе:
+      полная остановка за 1.4 с при разгоне 1.6 с, откуда бы ни смотрел нос.
+   4. Нос шёл за пальцем всегда, и на торможении разворачивался на 180°, а на
+      полпути физика перескакивала с маневровых на маршевый. Теперь на
+      торможении нос стоит по ходу, гасит тормоз; в остальном нос
+      по-прежнему смотрит туда, куда тянут (иначе разворот теряет три пятых
+      тяги: боковая идёт в .4), а метка перебивает всё.
+   5. Следа не было видно (дуга в .16 альфы). Теперь за пальцем идёт лента:
+      её длина и ширина — заданный ход, её заливка — фактический, её цвет —
+      разгон или торможение. Лента и есть обучение схеме.
+   И ещё две поблажки телефону: камера уводит корабль из-под пальца
+   (`helmCamOff`), а отпущенный стик всегда оставляет накат — правило .55
+   осталось мыши и стрелкам, где отпускание однозначно. */
 const HELM_RELEASE=.55;      /* доля maxSp, ниже которой отпущенная тяга тормозит */
 const HELM_THR=.4;           /* маневровые против маршевого */
+const HELM_ACC=.082;         /* маршевый разгон за кадр (был литералом в helmApply) */
+const HELM_STOP=.095;        /* тормоз стика за кадр: сильнее газа (M422) */
+const HELM_BRAKE_DOT=-.5;    /* cos120°: заданный ход против нынешнего — это торможение */
+const HELM_TAKE=8;           /* px сдвига, после которых палец становится стиком:
+                                ровно порог `moved` в 15-input, иначе между 8 и 10 px
+                                палец не тычок и не стик (M422) */
+const HELM_TAKE_MS=420;      /* …или столько миллисекунд неподвижно (окно тапа — 400) */
+const HELM_NUDGE=70;         /* px, на которые камера уводит корабль от пальца */
+const HELM_NUDGE_R=120;      /* ближе этого палец считается «поверх корабля» */
 const HELM_DEAD=12;          /* мёртвая зона стика, px */
 const HELM_REACH=70;         /* px хода стика до полной тяги */
 const HELM_ASSIST_BAND=.35;  /* помощь: дальше этой доли крейсерской от цели — полная тяга (M410) */
 const HELM_ASSIST_EPS=.02;   /* ближе этой доли — цель достигнута, тяги нет */
-const HELM_PICK=40;          /* px до корпуса, чтобы взять его в захват */
+const HELM_PICK=44;          /* px до корпуса, чтобы взять его в захват: правило
+                                «палец» интерфейса, а не своё число (M422) */
 const HELM_MARKS=3;
 /* след стика (M360a): дуга под пальцем вместо кольца в 82 px. Радиус дуги —
    это сила тяги, её угол — направление; весь рисунок умещается в HELM_FOOT от
    точки касания, и это число читают и вёрстка, и тесты. */
-const HELM_ARC0=20;          /* радиус дуги в мёртвой зоне, px */
-const HELM_ARC1=46;          /* радиус дуги на полном ходе */
-const HELM_ARCW=.5;          /* полураствор дуги, рад */
-const HELM_FOOT=HELM_ARC1+5; /* весь след стика от точки касания, px */
+const HELM_ARC0=20;          /* радиус кольца «СТОП» в мёртвой зоне, px */
+/* след стика — не круг, а капсула от центра к пальцу (M422): `helmStickFoot`
+   выкладывает вдоль ленты кружки этого радиуса, и приборы уходят из-под них.
+   Кольцо в 93 px, на которое жаловался автор в M360, так не возвращается. */
+const HELM_FOOT=34;
+/* лента (M422): она идёт от центра стика к пальцу и говорит две вещи разом —
+   тело ленты это ЗАДАННЫЙ ход (длина и ширина), заливка внутри это
+   ФАКТИЧЕСКИЙ (докуда корабль уже разогнался вдоль него). Голова обрывается
+   за HELM_GAP до пальца: под подушечкой всё равно ничего не видно. */
+const HELM_BAND=26;          /* ширина ленты у пальца на полном ходе, px */
+const HELM_BAND0=10;         /* ширина у центра стика: лента, а не клин */
+const HELM_GAP=24;           /* лента не доходит до пальца на столько px */
+const HELM_TRAIL=7;          /* сколько следов пальца тянется за ним */
 const HELM_CONE=.35;         /* ±20° — временный конус автоогня (M362 заменит) */
 const HELM_RANGE=760;
 const HELM={src:"arrows",   /* кто вёл последним: mouse | arrows | stick */
   mouse:{x:0,y:0,t:-1e9,on:false,down:false,moved:0,rmb:false},
-  S:null,                    /* живой стик: {id,x0,y0,x,y} — один, под левым пальцем (M410) */
+  S:null,                    /* живой стик: {id,x0,y0,x,y} — один, где угодно на холсте (M422) */
+  P:null,                    /* палец, который ещё не решил: тычок или стик (M422) */
   fade:null,                 /* след отпущенного стика: {x0,y0,x,y,f} */
   home:null,                 /* где стик был в последний раз: точка покоя рисунка (M410) */
+  trail:[],                  /* последние положения пальца — хвост ленты (M422) */
+  cam:{x:0,y:0,dx:0,dy:1},   /* увод камеры из-под пальца, мировые единицы (M422) */
   key:{},lockEdge:false,lockWas:false,lift:-1};
 function ctlReset(){
   G.ctl={head:null,headK:1,turn:0,tx:0,ty:0,brake:false,fire:false,msl:false,
-    headIdle:true,thrOnly:false,assist:false,ax:0,ay:0,src:HELM.src,
-    out:{main:false,thr:false,rate:0,hold:false}};
+    headIdle:true,thrOnly:false,assist:false,ax:0,ay:0,src:HELM.src,slow:false,vk:0,vp:0,
+    out:{main:false,thr:false,rate:0,hold:false,slow:false}};
   return G.ctl;
 }
 /* ── сырые клавиши штурвала ──
@@ -69,7 +122,7 @@ addEventListener("keydown",e=>{
   }
 });
 addEventListener("keyup",e=>{if(HELM_KEYS.has(e.code))HELM.key[e.code]=false;});
-addEventListener("blur",()=>{HELM.key={};HELM.S=null;HELM.mouse.down=false;HELM.mouse.rmb=false;});
+addEventListener("blur",()=>{HELM.key={};HELM.S=null;HELM.P=null;HELM.trail=[];HELM.mouse.down=false;HELM.mouse.rmb=false;});
 /* ── мышь над холстом ── */
 function helmCanvasXY(e){const rc=cvs.getBoundingClientRect();return [(e.clientX-rc.left)*W/rc.width,(e.clientY-rc.top)*H/rc.height];}
 cvs.addEventListener("pointermove",e=>{
@@ -80,8 +133,41 @@ cvs.addEventListener("pointermove",e=>{
     return;
   }
   const s=(HELM.S&&HELM.S.id===e.pointerId)?HELM.S:null;
-  if(s){const xy=helmCanvasXY(e);s.x=xy[0];s.y=xy[1];}
+  if(s){const xy=helmCanvasXY(e);s.x=xy[0];s.y=xy[1];helmDrag(s);helmTrail(s);return;}
+  /* палец ещё не решил, кто он: сдвинулся дальше HELM_TAKE — значит стик (M422) */
+  const p=(HELM.P&&HELM.P.id===e.pointerId)?HELM.P:null;
+  if(p){
+    const xy=helmCanvasXY(e);p.x=xy[0];p.y=xy[1];
+    if(Math.hypot(p.x-p.x0,p.y-p.y0)>HELM_TAKE)helmTake();
+  }
 });
+/* ── бегущий центр (M422) ──
+   Центр стика не прибит к точке касания: уехал палец дальше полного хода —
+   центр подтягивается за ним и висит в HELM_DEAD+HELM_REACH позади. Тогда
+   обратный ход стоит одинаково, откуда бы ты ни тянул, и «коротко назад»
+   тормозит одинаково коротко на любом конце экрана. */
+function helmDrag(s){
+  const dx=s.x-s.x0,dy=s.y-s.y0,m=Math.hypot(dx,dy),lim=HELM_DEAD+HELM_REACH;
+  if(m>lim){const k=(m-lim)/m;s.x0+=dx*k;s.y0+=dy*k;}
+}
+function helmTrail(s){
+  const t=HELM.trail;
+  const last=t[t.length-1];
+  if(last&&Math.hypot(last.x-s.x,last.y-s.y)<3)return;
+  t.push({x:s.x,y:s.y});
+  while(t.length>HELM_TRAIL)t.shift();
+}
+/* палец становится стиком: центр там, где он лёг, а не там, где он сейчас —
+   иначе первый же кадр отдал бы полный ход */
+function helmTake(){
+  const p=HELM.P;
+  if(!p||HELM.S)return;
+  HELM.S={id:p.id,x0:p.x0,y0:p.y0,x:p.x,y:p.y};
+  HELM.home={x:p.x0,y:p.y0};
+  HELM.trail=[];
+  HELM.P=null;HELM.src="stick";
+  helmDrag(HELM.S);
+}
 cvs.addEventListener("pointerleave",e=>{if(e.pointerType==="mouse"){HELM.mouse.on=false;HELM.mouse.down=false;HELM.mouse.rmb=false;}});
 cvs.addEventListener("pointerdown",e=>{
   if(G.mode!=="system")return;
@@ -90,19 +176,19 @@ cvs.addEventListener("pointerdown",e=>{
     if(e.button===2)HELM.mouse.rmb=true;
     HELM.src="mouse";return;
   }
-  /* палец: стик один и рождается под ним на ЛЕВОЙ половине (M410); правая
-     остаётся тычкам — захват, автопилот, фишки. Второй палец слева и любой
-     справа — просто тап, его разбирает 15-input */
+  /* палец: стик один и рождается ГДЕ УГОДНО на холсте (M422). Пока он не
+     сдвинулся и не пролежал своё, это ещё тычок — захват, автопилот, фишки;
+     второй палец при живом стике тоже тычок, а при ждущем — щипок, и тогда
+     ждущий снимается, иначе зум на телефоне достался бы одному стику */
   const xy=helmCanvasXY(e);
-  if(xy[0]>=W/2||HELM.S)return;
-  HELM.S={id:e.pointerId,x0:xy[0],y0:xy[1],x:xy[0],y:xy[1]};
-  HELM.home={x:xy[0],y:xy[1]};
-  HELM.src="stick";
+  if(HELM.S||HELM.P){HELM.P=null;return;}
+  HELM.P={id:e.pointerId,x0:xy[0],y0:xy[1],x:xy[0],y:xy[1],t0:performance.now()};
 });
 function helmPtrEnd(e){
   if(e.pointerType==="mouse"){if(e.button===0)HELM.mouse.down=false;if(e.button===2)HELM.mouse.rmb=false;return;}
+  if(HELM.P&&HELM.P.id===e.pointerId)HELM.P=null;
   const s=HELM.S;
-  if(s&&s.id===e.pointerId){HELM.fade={x0:s.x0,y0:s.y0,x:s.x,y:s.y,f:1};HELM.S=null;}
+  if(s&&s.id===e.pointerId){HELM.fade={x0:s.x0,y0:s.y0,x:s.x,y:s.y,f:1};HELM.S=null;HELM.trail=[];}
 }
 cvs.addEventListener("pointerup",helmPtrEnd);
 cvs.addEventListener("pointercancel",helmPtrEnd);
@@ -176,8 +262,11 @@ function helmShotAt(p){
 function helmTick(dt){
   const c=G.ctl||ctlReset(),sh=G.ship,K=HELM.key,now=performance.now();
   c.head=null;c.headK=1;c.turn=0;c.tx=0;c.ty=0;c.brake=false;c.thrOnly=false;c.fire=false;c.msl=false;
-  c.assist=false;c.ax=0;c.ay=0;
+  c.assist=false;c.ax=0;c.ay=0;c.slow=false;
   let headBusy=false,input=false;
+  /* палец, пролежавший дольше окна тапа, — это стик, даже если не сдвинулся:
+     так «положил и держу» останавливает корабль без единого движения (M422) */
+  if(HELM.P&&now-HELM.P.t0>HELM_TAKE_MS)helmTake();
   helmMarksClean();
   /* ЦЕЛЬ на пэде и Tab — по фронту нажатия */
   const lockPad=!!keys.lock;
@@ -191,11 +280,22 @@ function helmTick(dt){
      helmApply. Курс он не держит: нос идёт за меткой, если она есть, иначе —
      по ходу. Палец в мёртвой зоне — «стой»: тормоз без кнопки тормоза */
   if(HELM.S){
+    helmDrag(HELM.S);
     const dx=HELM.S.x-HELM.S.x0,dy=HELM.S.y-HELM.S.y0,m=Math.hypot(dx,dy);
     if(m>HELM_DEAD){
       const k=Math.min(1,(m-HELM_DEAD)/HELM_REACH)/m;
       c.assist=true;c.ax=dx*k;c.ay=dy*k;
-      c.head=Math.atan2(dy,dx);
+      /* ── нос (M422) ──
+         Обычно он смотрит туда, куда тянут: маршевый бьёт в ту же сторону, и
+         разворот выходит дугой на полной тяге. Но когда заданный ход идёт
+         ПРОТИВ нынешнего — это торможение, и разворачивать нос на 180° посреди
+         него нельзя: полторы секунды корабль летел бы кормой вперёд, а тяга на
+         полпути перескакивала бы с маневровых на маршевый. На торможении нос
+         стоит по ходу, гасят ретро-сопла. Метка ниже перебьёт и то и другое. */
+      const sp=Math.hypot(sh.vx,sh.vy);
+      const dot=sp>1e-4?(c.ax*sh.vx+c.ay*sh.vy)/(Math.hypot(c.ax,c.ay)*sp):1;
+      c.slow=dot<HELM_BRAKE_DOT;
+      c.head=c.slow?Math.atan2(sh.vy,sh.vx):Math.atan2(dy,dx);
     }else c.brake=true;
     input=true;
   }
@@ -263,7 +363,14 @@ function helmApply(dt,st,sh,maxSp){
      довода вектора к носу (17-mode-system) — иначе с меткой в стороне нос
      тянул бы скорость к себе, а помощь возвращала бы её обратно, и корабль
      дрожал бы между ними. */
-  o.hold=!!c.assist;
+  o.hold=!!c.assist;o.slow=false;
+  /* доли для ленты (M422): сколько корабль уже идёт вообще и сколько — вдоль
+     заданного. Рисунок не считает физику сам, он читает то, что она посчитала */
+  {
+    const sp=Math.hypot(sh.vx,sh.vy),am=Math.hypot(c.ax,c.ay);
+    c.vk=sp/maxSp;
+    c.vp=am>1e-6?(sh.vx*c.ax+sh.vy*c.ay)/(am*maxSp):0;
+  }
   if(c.assist){
     const ex=c.ax*maxSp-sh.vx,ey=c.ay*maxSp-sh.vy,em=Math.hypot(ex,ey);
     if(em>maxSp*HELM_ASSIST_EPS){
@@ -280,7 +387,18 @@ function helmApply(dt,st,sh,maxSp){
      Пустая — не «нельзя», а вполовину: корабль остаётся управляемым. */
   const eLow=(typeof EN_SHOT==="number")&&(G.energy||0)<EN_SHOT;
   const eK=eLow?.5:1;
-  if(mag>0&&G.fuel>0){
+  /* ── торможение важнее геометрии (M422) ──
+     Когда заданный ход идёт против нынешнего, это не «тяга под углом», это
+     ТОРМОЗ, и он не должен зависеть от того, куда сейчас смотрит нос. Раньше
+     он зависел: против носа тяга шла маневровыми в .4, и «потянул назад»
+     тормозило вчетверо дольше (4.1 с), чем «убрал палец в мёртвую зону»
+     (2.3 с) — наказание за единственную верную догадку про телефон. Теперь
+     торможение идёт одной дорогой с мёртвой зоной и с кнопкой ТОРМОЗ, ходом
+     HELM_STOP: полная остановка за 1.4 с при разгоне 1.6 с. Скорость падает до
+     нуля, `slow` снимается сам (стоящий корабль не идёт «против»), и помощь
+     разгоняет уже в новую сторону. */
+  o.slow=!!(c.assist&&c.slow);
+  if(mag>0&&G.fuel>0&&!o.slow){
     let fwd=0,tx=0,ty=0;
     if(c.thrOnly||along<0){tx=c.tx*HELM_THR;ty=c.ty*HELM_THR;o.thr=true;}
     else{
@@ -289,142 +407,28 @@ function helmApply(dt,st,sh,maxSp){
       if(Math.abs(side)>.05)o.thr=true;
     }
     const side2=Math.hypot(tx,ty)/HELM_THR;
-    sh.vx+=(ca*fwd+tx*eK)*.082*st.thr*dt;
-    sh.vy+=(sa*fwd+ty*eK)*.082*st.thr*dt;
-    G.fuel=Math.max(0,G.fuel-(.021*fwd+.017*side2)*dt);
+    sh.vx+=(ca*fwd+tx*eK)*HELM_ACC*st.thr*dt;
+    sh.vy+=(sa*fwd+ty*eK)*HELM_ACC*st.thr*dt;
+    G.fuel=Math.max(0,G.fuel-(.021*Math.abs(fwd)+.017*side2)*dt);
     if(typeof EN_THR==="number"&&side2>0)
       G.energy=Math.max(0,(G.energy||0)-EN_THR*side2*dt);
   }
-  /* отпустил ниже крейсерской — маневровые гасят ход, как ТОРМОЗ; выше — накат */
+  /* отпустил ниже крейсерской — маневровые гасят ход, как ТОРМОЗ; выше — накат.
+     Стик из этого правила выведен (M422): палец снят — всегда накат. На
+     телефоне отпускание ничего не значит (палец сняли, чтобы ткнуть по
+     планете), и один жест с двумя исходами по порогу скорости читался как
+     «корабль иногда тормозит сам». Тормоз там — жест: назад или мёртвая зона. */
   const sp0=Math.hypot(sh.vx,sh.vy);
-  const wantBrake=c.brake||(mag===0&&!o.hold&&sp0<maxSp*HELM_RELEASE&&sp0>0&&!c.thrOnly);
+  const stick=c.src==="stick";
+  const wantBrake=c.brake||o.slow||(mag===0&&!o.hold&&!stick&&sp0<maxSp*HELM_RELEASE&&sp0>0&&!c.thrOnly);
   if(wantBrake&&G.fuel>0){
     if(sp0>.03){
-      const dec=Math.min(sp0,.058*st.thr*dt);
+      /* стику — тот же тормоз, что и ретро: мёртвая зона и «назад» обязаны
+         останавливать одинаково, иначе игрок учит два разных корабля */
+      const dec=Math.min(sp0,(stick?HELM_STOP:.058)*st.thr*dt);
       sh.vx-=sh.vx/sp0*dec;sh.vy-=sh.vy/sp0*dec;
       G.fuel=Math.max(0,G.fuel-.017*dt);o.thr=true;
     }else{sh.vx=0;sh.vy=0;}
   }
   return o;
-}
-/* ── рисунок: скобки захвата в мире, стики в пикселях экрана ── */
-function helmDrawMarks(zx,zy,Z){
-  if(!G.marks||!G.marks.length)return;
-  G.marks.forEach((p,i)=>{
-    const x=zx(p.x),y=zy(p.y);
-    if(x<-40||x>W+40||y<-40||y>H+40)return;
-    const r=clamp(Z,.55,1.6)*(i?16:20),g=r*.45;
-    ctx.strokeStyle=i?"rgba(255,157,122,.5)":"rgba(255,107,87,.92)";ctx.lineWidth=i?1:1.4;
-    ctx.beginPath();
-    for(const c of [[-1,-1],[1,-1],[1,1],[-1,1]]){
-      ctx.moveTo(x+c[0]*r,y+c[1]*(r-g));ctx.lineTo(x+c[0]*r,y+c[1]*r);ctx.lineTo(x+c[0]*(r-g),y+c[1]*r);
-    }
-    ctx.stroke();
-  });
-}
-/* ── след стика (M360a) ──
-   M360 рисовал два кольца в 82 px с шапкой в 11: на телефоне левое ложилось на
-   фишки компаса, МАСШТАБ и приёмник, правое — на подсказку, и кадр читался как
-   два прибора поверх мира. Стик не прибор. Он говорит одно — куда и насколько
-   я тяну, — и говорит это дугой под большим пальцем: угол дуги это направление,
-   её радиус это сила, точка это сам палец. Всё бледное (.2….3): рука и так
-   знает, где она, глаз в это место не зовут. */
-function helmStickShape(s){
-  const dx=s.x-s.x0,dy=s.y-s.y0,m=Math.hypot(dx,dy);
-  const k=clamp((m-HELM_DEAD)/HELM_REACH,0,1);
-  const r=HELM_ARC0+(HELM_ARC1-HELM_ARC0)*k,c=m>1e-3?Math.min(m,r)/m:0;
-  return {x0:s.x0,y0:s.y0,live:m>HELM_DEAD,ang:Math.atan2(dy,dx),r,k,dx:dx*c,dy:dy*c};
-}
-/* след живых стиков в пикселях экрана: его читают приборная мелочь на канве
-   (drawSysHud), подсказка в DOM (helmLift) и набор 91zzx-mobile */
-function helmStickFoot(){
-  const s=HELM.S;
-  return s?[{side:"L",x:s.x0,y:s.y0,r:HELM_FOOT}]:[];
-}
-/* ── точка покоя (M410) ──
-   Стик — вещь, и у вещи есть место: там, где палец был в последний раз, а до
-   первого раза — внизу слева, где в других режимах стоят ◀ ▶ (в системе их
-   нет, и угол пуст). Меряем DOM, а не считаем CSS: ряд пэдов сам говорит,
-   где он стоит. Телефону только: мышь этой точки не видит. */
-function helmHome(){
-  if(HELM.home)return HELM.home;
-  let x=64,y=H-60;
-  const pads=(typeof document!=="undefined")&&document.querySelector&&document.querySelector(".pads");
-  if(pads&&pads.getBoundingClientRect){
-    const r=pads.getBoundingClientRect(),rc=cvs.getBoundingClientRect();
-    if(r.height>0&&rc.height>0){
-      const kx=W/rc.width,ky=H/rc.height;
-      x=(r.left-rc.left+14+28)*kx;
-      y=(r.top-rc.top+r.height*.5)*ky;
-    }
-  }
-  return {x:clamp(x,HELM_FOOT+4,W/2-HELM_FOOT),y:clamp(y,HELM_FOOT+4,H-HELM_FOOT-4)};
-}
-/* подсказка уходит выше пальца, а не гаснет под ним: пока стик накрывает её
-   строку, #prompt поднимается ровно на высоту следа. Меряем DOM, а не считаем
-   CSS (правило 27z); пишем в стиль только на изменение. */
-function helmLift(){
-  const el=(typeof document!=="undefined")&&document.getElementById&&document.getElementById("prompt");
-  let lift=0;
-  const foot=helmStickFoot();
-  if(el&&el.getBoundingClientRect&&foot.length){
-    const r=el.getBoundingClientRect();
-    /* мерим ОТ НЕПОДНЯТОГО места: подсказка уже поднята на прошлый lift, и
-       без этой поправки следующий кадр увидел бы её чистой и уронил обратно —
-       строка бы дрожала под пальцем */
-    const base=Math.max(0,HELM.lift),top=r.top+base,bot=r.bottom+base;
-    if(r.height>0)for(const f of foot)
-      if(f.x+f.r>r.left&&f.x-f.r<r.right&&f.y-f.r<bot&&f.y+f.r>top)
-        lift=Math.max(lift,bot-(f.y-f.r)+8);
-    /* потолок: подсказка поднимается ровно настолько, чтобы разойтись с
-       пальцем, и никогда не уезжает на середину экрана */
-    lift=Math.min(lift,Math.round(innerHeight*.22));
-  }
-  if(lift!==HELM.lift){
-    HELM.lift=lift;
-    if(document.body&&document.body.style&&document.body.style.setProperty){
-      document.body.style.setProperty("--helmlift",lift+"px");
-      document.body.classList.toggle("helmstick",foot.length>0);
-    }
-  }else if(document.body&&document.body.classList&&
-           document.body.classList.contains("helmstick")!==(foot.length>0)){
-    document.body.classList.toggle("helmstick",foot.length>0);
-  }
-}
-/* сколько места занимает скобка захвата над корпусом: полоску корпуса ставят
-   ВЫШЕ неё, иначе верхняя грань скобки ложится ровно на полоску (M360a) */
-function helmMarkTop(p,Z){
-  if(!G.marks)return 0;
-  const i=G.marks.indexOf(p);
-  if(i<0)return 0;
-  return clamp(Z,.55,1.6)*(i?16:20)+8;
-}
-function helmDrawSticks(){
-  const one=(s,fade)=>{
-    const q=helmStickShape(s),a=fade?s.f:1;
-    ctx.save();ctx.lineCap="round";
-    ctx.strokeStyle="#cfe6ea";ctx.fillStyle="#cfe6ea";ctx.lineWidth=1.5;
-    if(q.live){
-      ctx.globalAlpha=(.16+.14*q.k)*a;
-      ctx.beginPath();ctx.arc(q.x0,q.y0,q.r,q.ang-HELM_ARCW,q.ang+HELM_ARCW);ctx.stroke();
-    }
-    ctx.globalAlpha=.13*a;
-    ctx.beginPath();ctx.arc(q.x0,q.y0,1.8,0,TAU);ctx.fill();
-    ctx.globalAlpha=.28*a;
-    ctx.beginPath();ctx.arc(q.x0+q.dx,q.y0+q.dy,3.2,0,TAU);ctx.fill();
-    ctx.restore();
-  };
-  const live=HELM.S,fade=HELM.fade;
-  if(live)one(live,false);
-  else if(fade){one(fade,true);fade.f-=.08;if(fade.f<=0)HELM.fade=null;}
-  else if(typeof document!=="undefined"&&document.body&&document.body.classList&&
-          document.body.classList.contains("mobile")){
-    /* точка покоя: бледное кольцо мёртвой зоны и точка. Сказать «стик здесь»
-       и не спорить с миром за глаз — те же .1…2, что у самого следа */
-    const h=helmHome();
-    ctx.save();ctx.strokeStyle="#cfe6ea";ctx.fillStyle="#cfe6ea";ctx.lineWidth=1;
-    ctx.globalAlpha=.16;ctx.beginPath();ctx.arc(h.x,h.y,HELM_ARC0,0,TAU);ctx.stroke();
-    ctx.globalAlpha=.3;ctx.beginPath();ctx.arc(h.x,h.y,2.2,0,TAU);ctx.fill();
-    ctx.restore();
-  }
 }

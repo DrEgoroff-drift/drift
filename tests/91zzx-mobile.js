@@ -257,12 +257,14 @@ TEST_SUITES.push(()=>suite("телефон: стик не ложится на п
   document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
   G.mode="system";
   /* 1. рисунок не выходит за объявленный след, как бы далеко ни увели палец */
-  const far=helmStickShape({x0:0,y0:0,x:900,y:120});
-  ok(far.r<=HELM_ARC1+.01,"дуга не растёт бесконечно: "+far.r.toFixed(1));
-  ok(Math.hypot(far.dx,far.dy)<=HELM_FOOT,"точка держится следа: "+Math.round(Math.hypot(far.dx,far.dy)));
-  ok(HELM_FOOT<=52,"весь след стика не больше 52 px (было 93): "+HELM_FOOT);
+  const s0={x0:0,y0:0,x:900,y:120};helmDrag(s0);
+  const reach=Math.hypot(s0.x-s0.x0,s0.y-s0.y0);
+  near(reach,HELM_DEAD+HELM_REACH,.01,"центр бежит за пальцем: дальше полного хода палец не уходит");
+  const far=helmStickShape(s0);
+  ok(far.r<=HELM_DEAD+HELM_REACH-HELM_GAP+.01,"тело ленты не растёт бесконечно: "+far.r.toFixed(1));
+  ok(HELM_FOOT<=40,"след вокруг любой точки ленты не больше 40 px (кольца M360 были 93): "+HELM_FOOT);
   const dead=helmStickShape({x0:0,y0:0,x:4,y:0});
-  ok(!dead.live,"в мёртвой зоне дуги нет вовсе");
+  ok(!dead.live,"в мёртвой зоне ленты нет вовсе");
   /* 2. большой палец в своей зоне: приборы и подсказка уходят выше следа */
   HELM.lift=-1;document.body.style.removeProperty("--helmlift");
   /* палец кладём ровно на строку подсказки — там, где и был спор */
@@ -273,7 +275,7 @@ TEST_SUITES.push(()=>suite("телефон: стик не ложится на п
   /* стик один (M410) — под левым пальцем; кладём его на строку подсказки */
   HELM.S={id:1,x0:Math.round(r0.left+50),y0:cy,x:Math.round(r0.left+50)+55,y:cy-35};
   const foot=helmStickFoot();
-  eq(foot.length,1,"один живой стик — один след");
+  ok(foot.length>=2&&foot.length<=5,"след стика — капсула от центра к пальцу: "+foot.length+" кружка");
   helmLift();hud();
   ok(HELM.lift>0,"подсказка под пальцем — её поднимает ("+HELM.lift+" px)");
   ok(HELM.lift<=Math.round(innerHeight*.22)+1,"но не на середину экрана");
@@ -335,4 +337,56 @@ TEST_SUITES.push(()=>suite("телефон: перевод строки в со�
        "#"+e.id+" встал в две строки и выше ("+Math.round(e.getBoundingClientRect().height)+" px)");
   }
   G.msgT=0;G.prompt="";hud();
+}));
+
+/* ══════════════ M422: палец где угодно — настоящими событиями ══════════════
+   Остальные наборы кладут `HELM.S` руками и меряют физику. Здесь проверяется
+   то, что между пальцем и `HELM.S`: настоящие PointerEvent на холсте, обе
+   половины экрана, и главное — что стик не отнял тычок. Набор телефонный. */
+TEST_SUITES.push(()=>suite("телефон: стик рождается под пальцем, а тычок остаётся тычком",()=>{
+  if(!document.body.classList.contains("mobile")){
+    resetWorld();ok(true,"окно не телефонное — проверку пропускаем");return;
+  }
+  resetWorld();
+  document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
+  G.mode="system";G.ap=null;G.orbit=null;G.marks=[];
+  HELM.S=null;HELM.P=null;HELM.fade=null;HELM.trail=[];
+  const rc=cvs.getBoundingClientRect();
+  const send=(t,id,cx,cy)=>cvs.dispatchEvent(new PointerEvent(t,
+    {pointerId:id,pointerType:"touch",clientX:cx,clientY:cy,bubbles:true,cancelable:true}));
+  /* 1. правая половина — тоже штурвал (до M422 там не рождалось ничего) */
+  const rx=rc.left+rc.width*.78,ry=rc.top+rc.height*.42;
+  send("pointerdown",11,rx,ry);
+  ok(HELM.P&&!HELM.S,"палец лёг — он ещё тычок, стика нет");
+  send("pointermove",11,rx-30,ry-10);
+  ok(!!HELM.S,"сдвинулся — родился стик, и это ПРАВАЯ половина");
+  ok(Math.abs(HELM.S.x0-(rx-rc.left)*W/rc.width)<2,"центр там, где палец лёг, а не там, где он сейчас");
+  helmTick(1);
+  ok(G.ctl.assist,"штурвал взял ход с него");
+  ok(G.ctl.ax<0,"ведут влево — и ход влево: "+G.ctl.ax.toFixed(2));
+  send("pointerup",11,rx-30,ry-10);
+  ok(!HELM.S&&!HELM.P,"палец снят — стика нет");
+  ok(!!HELM.fade,"…и остался тающий след");
+  HELM.fade=null;
+  /* 2. короткий тычок стиком НЕ становится: его разбирает 15-input */
+  G.ap=null;
+  send("pointerdown",12,rc.left+rc.width*.3,rc.top+rc.height*.3);
+  ok(HELM.P&&!HELM.S,"тычок на левой половине — тоже сперва тычок");
+  send("pointerup",12,rc.left+rc.width*.3,rc.top+rc.height*.3);
+  ok(!HELM.S&&!HELM.P,"отпустил быстро — стик не родился");
+  /* 3. второй палец при ждущем — щипок, а не второй стик */
+  send("pointerdown",13,rc.left+rc.width*.4,rc.top+rc.height*.5);
+  send("pointerdown",14,rc.left+rc.width*.6,rc.top+rc.height*.5);
+  ok(!HELM.P&&!HELM.S,"два пальца разом — это щипок, стик уступает");
+  ok(!helmPinchBlocked(),"…и зум не заблокирован");
+  send("pointerup",13,rc.left+rc.width*.4,rc.top+rc.height*.5);
+  send("pointerup",14,rc.left+rc.width*.6,rc.top+rc.height*.5);
+  /* 4. при живом стике второй палец щипок не открывает */
+  send("pointerdown",15,rc.left+rc.width*.5,rc.top+rc.height*.5);
+  send("pointermove",15,rc.left+rc.width*.5+40,rc.top+rc.height*.5);
+  ok(!!HELM.S,"стик жив");
+  ok(helmPinchBlocked(),"пока он жив, щипок не мешает рулю");
+  send("pointerup",15,rc.left+rc.width*.5+40,rc.top+rc.height*.5);
+  HELM.S=null;HELM.P=null;HELM.fade=null;HELM.trail=[];
+  resetWorld();
 }));

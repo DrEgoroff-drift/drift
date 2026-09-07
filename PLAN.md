@@ -339,30 +339,27 @@ The state-and-rules half of a two-session hunt (the picture half is M358).
 Numbered past the base queue so the two do not collide; versions are side versions of the last
 main release, as M360a/M369b were.
 
-- ~~**M410 one thumb**~~ — 0.401.1: the phone helm is one stick under the left thumb, and it says
-  «fly there», not «push there» — `G.ctl.assist` turns the stick vector into a wanted velocity
-  and `helmApply` closes the gap (`15a-helm`, `DESIGN-war` §1.1). Thumb in the dead zone = stop;
-  the nose is never the thumb's job — mark, else heading. A resting ring marks the stick's place
-  (`helmHome`, measured from the pads row). Suites: `91zzzw-helm` (M410), `91zzx-mobile` (the
-  resting point lands on the canvas). Mouse and arrows untouched.
-- ~~**M411 the war on the site**~~ — 0.401.3: `site/war.html` + `site/war-map.js` over
-  `site/war.js` (built by `build.ps1 War` from `site/war-head.js` + thirteen chronicle modules):
-  territory by power (Коммуна hatched — two blues), borders and war borders, stars in the owner's
-  colour, homes as emblems, fronts breathing, the previous flag's corner on a system taken within
-  two days, ledger ticks (the players' hand), rallies, «Ревизия»; six powers with holdings,
-  needs, strength, tension and relations; wars with takes, notes with deadlines, arcs, rites, the
-  last two days' incidents; the line «кто куда когда» in the truth voice or any wave's; a slider
-  over the last 720 сводки (snapshots every 24, replay from a snapshot); pull every 90 s. Linked
-  from the nav and the footer; `docs/DEPLOY.md` has the rows.
-- ~~**M412 the war runs by itself**~~ — 0.401.2: `docs/warsim.js` (a Node replay over the same
-  `site/war.js` bundle) showed needs pinned at zero, 24 wars a month, strength at ~900 for all;
-  now needs balance at home size and are moved by incidents, moves are drawn by probability
-  (trade first, quarrel second, war only below −250 with strength and holdings to spare, ≤2 wars
-  in the galaxy), war costs, home systems are defended, strength tracks the cap its holdings set,
-  relations revert at 5 %. Closed state is the replay base and the open сводка is stepped on top
-  each call, ledgers and circulars invalidate (`chronInvalidate`); circulars apply once at their
-  сводка and the season lives in the state; «бунт», «находка», «откол» announced. Suites:
-  `91zzzw-chron2`. A year: ~10 wars/month, ~30 takes, ~8 net changes, needs ~450.
+- ~~**M422 the thumb anywhere**~~ — 0.418.0: the author, 07.09.2026 — «управление на мобилке
+  говно… из любого места на экране пальцем двигаешь и корабль туда летил… коротко назад он
+  тормозит… за пальцем идёт широкая полоска, чтобы понимать как оно». M410's intent was right;
+  five numbers and one boundary were wrong (`15a-helm` header has the five). The stick is now born
+  **anywhere** on the canvas — a finger becomes one by moving `HELM_TAKE` px or lying still past
+  `HELM_TAKE_MS`, which is outside the 400 ms tap window, so taps (autopilot, lock, chips) keep
+  both halves. Its centre **runs after the finger** (`helmDrag`), so the way back always costs the
+  same 82 px however far you dragged — that is «коротко назад» falling out of the geometry rather
+  than being a gesture of its own. Pulling back **is the brake** and takes the same road as the
+  dead zone and the ТОРМОЗ pad, at `HELM_STOP` and regardless of where the nose points: a full
+  stop in 1.4 s against 1.6 s to full speed, where before it was 4.1 s of maneuvering thrust — the
+  one correct guess about a phone, punished. The nose holds along the course while braking (it
+  used to swing 180° mid-stop, and the physics jumped from maneuvering to main halfway). A
+  released stick always coasts; the .55 rule stays with mouse and arrows, where releasing is
+  unambiguous. Two more concessions to the phone: the camera walks the ship out from under the
+  thumb (`helmCamOff`), and the drag draws a **ribbon** — its body is the wanted velocity, its
+  fill is the actual one, its colour says accelerating or braking, and its foot is a capsule along
+  the band, not the 93 px ring M360 was scolded for. Suites: `91zzzw-helm` (M422), `91zzx-mobile`.
+- ~~**M410 one thumb**~~ (0.401.1), ~~**M411 the war on the site**~~ (0.401.3) and ~~**M412 the
+  war runs by itself**~~ (0.401.2) — closed; bodies in `docs/PLAN-archive.md` under their numbers.
+
 
 ## Loose ends (as of 2026-08-28, after the graphics run 0.237.0–0.244.0)
 

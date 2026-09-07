@@ -564,8 +564,8 @@ function start(easy){
   G.opts.easyLand=easy;
   document.getElementById("intro").style.display="none";
   G.running=true;spawnPirates();spawnAllies();saveGame(true);
-  /* телефону — и про стик (M410): он под левым пальцем, и его надо назвать
-     один раз, иначе первые минуты летают одним автопилотом */
+  /* телефону — и про стик (M422): он рождается под пальцем где угодно, и это
+     надо назвать один раз, иначе первые минуты летают одним автопилотом */
   say("Система "+G.sys.name+"\nткните по объекту —\nавтопилот доведёт"+
-    (document.body.classList.contains("mobile")?"\nпалец слева — ход":""));
+    (document.body.classList.contains("mobile")?"\nведите пальцем — летите\nназад — тормоз":""));
 }

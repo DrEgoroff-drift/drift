@@ -7,6 +7,47 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.418.0 - M422: the thumb goes anywhere, and pulling back is the brake
+
+The author on the phone: «управление на мобилке говно… из любого места на экране пальцем
+двигаешь и корабль туда летил… коротко назад он тормозит… за пальцем идёт широкая полоска,
+чтобы понимать как оно». M410's idea was right — the stick says «fly there», not «push there» —
+and five numbers around it were wrong.
+
+**The stick is born anywhere on the canvas.** The left half was the whole rule before, so a right
+hand could not reach the helm at all. A finger becomes a stick by moving 10 px or by lying still
+past 420 ms — outside the 400 ms tap window, so a tap is still a tap on both halves: autopilot to
+a planet, lock on a hull, the compass chips. Two fingers still pinch; the waiting finger steps
+aside for them.
+
+**Its centre runs after the finger.** Drag 250 px and the way back used to cost 250 px of thumb.
+The centre now trails 82 px behind, so the way back always costs the same 82 px — «коротко назад»
+falls out of the geometry instead of being a gesture of its own.
+
+**Pulling back is the brake, and the brake is stronger than the throttle.** Thrust against the
+nose went through maneuvering jets at .4: braking by pulling back took 4.1 s, while simply
+resting the thumb in the dead zone took 2.3 s — the one correct guess about a phone, punished.
+Braking now takes the same road as the dead zone and the ТОРМОЗ pad, regardless of where the nose
+points: a full stop in 1.4 s against 1.6 s to full speed. An empty energy bar does not weaken it.
+
+**The nose no longer spins while stopping.** It used to swing 180° to follow the thumb, and
+halfway through the turn the physics jumped from maneuvering jets to the main engine. While
+braking the nose holds the course; a locked mark still owns it, as before.
+
+**A released stick always coasts.** One gesture with two outcomes depending on speed read as «the
+ship sometimes brakes by itself». The .55 rule stays with mouse and arrows.
+
+**And the drag draws a ribbon.** Its body is the wanted velocity — length and width; the fill
+inside it is the actual one, so you watch the ship catch up with your thumb; its colour turns
+amber when you are braking, and the dead zone becomes a «СТОП» ring that drains with the speed. A
+tail follows the finger, and the same vector is drawn short at the ship, where the eye already is.
+The camera also walks the ship out from under the thumb when the finger lands on top of it.
+
+Taking a hull into the lock now costs 44 px of miss, not 40 — the interface's own finger rule,
+which the helm had quietly undercut. `15a-helm` split at 40 KB: the drawing half moved to
+`15b-helm-draw`.
+
+---
 ## 0.417.4 - the war page speaks lore, not engineering
 
 The lead on `war.html` talked about seeds, servers and code. It now says who holds what around

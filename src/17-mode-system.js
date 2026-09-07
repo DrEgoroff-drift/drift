@@ -369,7 +369,11 @@ function drawSystem(){
   const spd=Math.hypot(sh.vx,sh.vy);
   const thrusting=((G.ctl&&G.ctl.out.main)||!!G.ap)&&G.fuel>0;
   const fc=wA?{x:wA.x,y:wA.y}:flightCam(1,sh.x,sh.y,thrusting,spd);
-  const cx0=fc.x, cy0=fc.y;
+  /* палец, легший поверх корабля, накрывает ровно то, чем правят: камера
+     уводит корабль в сторону от него (M422). Тычок пересчитывается через ту же
+     G.viewCX ниже, так что автопилот и захват целятся туда же, куда смотришь */
+  const co=(!wA&&typeof helmCamOff==="function")?helmCamOff(Z):null;
+  const cx0=fc.x+(co?co.x:0), cy0=fc.y+(co?co.y:0);
   const zx=x=>W/2+(x-cx0)*Z, zy=y=>H/2+(y-cy0)*Z;
   /* ввод пересчитывает тычок через ту же камеру */
   G.viewCX=cx0;G.viewCY=cy0;

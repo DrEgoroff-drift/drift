@@ -210,7 +210,7 @@ TEST_SUITES.push(()=>suite("штурвал M410: стик задаёт ход, �
   ok(!keys.thrust&&!keys.brake&&!keys.left,"keys стик не трогает");
   /* след и точка покоя: один стик — один след; без стика у рисунка есть место */
   HELM.S={id:1,x0:100,y0:400,x:150,y:400};
-  eq(helmStickFoot().length,1,"один стик — один след");
+  ok(helmStickFoot().length>=1,"у живого стика есть след");
   HELM.S=null;HELM.home=null;
   const h=helmHome();
   ok(h.x<W/2&&h.y>H/2,"точка покоя — внизу слева: "+Math.round(h.x)+","+Math.round(h.y));
@@ -225,4 +225,84 @@ TEST_SUITES.push(()=>suite("штурвал: другие режимы по-пр�
   ok(!("pup" in G.ctl),"в G.ctl нет чужих каналов");
   keys.pup=false;
   ok(src.length===3,"список для чтения глазами");
+}));
+
+/* ── палец где угодно (M422) ──
+   Проверяется ровно то, что обещано автору: стик рождается на любой половине,
+   центр бежит за пальцем (обратный ход стоит одинаково), «коротко назад» —
+   это тормоз и он не медленнее мёртвой зоны, нос на торможении не крутится,
+   отпущенный палец не тормозит сам, камера уводит корабль из-под пальца. */
+TEST_SUITES.push(()=>suite("штурвал M422: палец где угодно, назад — тормоз",()=>{
+  helmShip();const st=stat();
+  const maxSp=6.4+st.thr*1.6,LIM=HELM_DEAD+HELM_REACH;
+  /* 1. тычок остаётся тычком, а полежавший палец становится стиком — и справа */
+  HELM.S=null;HELM.P={id:7,x0:W-40,y0:60,x:W-40,y:60,t0:performance.now()};
+  helmTick(1);
+  ok(!HELM.S,"свежий палец — ещё тычок, а не стик");
+  HELM.P.t0=performance.now()-HELM_TAKE_MS-10;
+  helmTick(1);
+  ok(HELM.S&&HELM.S.x0===W-40,"полежал дольше окна тапа — стик, и на ПРАВОЙ половине");
+  ok(!HELM.P,"ждущий палец снят");
+  ok(G.ctl.brake,"…и он стоит в мёртвой зоне: это «стой»");
+  HELM.S=null;
+  /* 2. центр бежит за пальцем: как далеко ни веди, обратный ход один */
+  const s={x0:100,y0:400,x:900,y:400};
+  helmDrag(s);
+  near(s.x0,900-LIM,1e-9,"центр подтянулся за пальцем на полный ход");
+  s.x-=LIM+HELM_DEAD+1;helmDrag(s);
+  ok(s.x-s.x0<-HELM_DEAD,"…и обратный ход в "+(LIM+HELM_DEAD+1)+" px уже даёт задний ход");
+  /* 3. «коротко назад» тормозит, и не медленнее мёртвой зоны */
+  const stopIn=(back)=>{
+    helmShip();HELM.src="stick";
+    G.ship.vx=maxSp;G.ship.vy=0;G.ship.a=0;
+    HELM.S={id:1,x0:400,y0:400,x:400-(back?LIM:0),y:400};
+    let n=0;
+    while(Math.hypot(G.ship.vx,G.ship.vy)>0&&n<600){updateSystem(1);G.t+=1;n++;}
+    return n;
+  };
+  const nBack=stopIn(true),nDead=stopIn(false);
+  ok(nBack<=110,"назад — полная остановка за "+nBack+" кадров (было ~244)");
+  ok(nBack<=nDead+2,"…и не медленнее мёртвой зоны ("+nDead+"): один корабль, а не два");
+  /* 4. нос на торможении стоит по ходу, а не разворачивается на 180° */
+  helmShip();HELM.src="stick";
+  G.ship.vx=maxSp;G.ship.a=0;
+  HELM.S={id:1,x0:400,y0:400,x:400-LIM,y:400};
+  helmRun(30,1);
+  ok(G.ctl.slow,"тяга против хода — это торможение");
+  ok(Math.abs(angWrap(G.ship.a))<.05,"нос не крутится: "+angWrap(G.ship.a).toFixed(3));
+  ok(G.ctl.out.slow&&!G.ctl.out.main,"маршевый на торможении молчит");
+  /* 5. пустая энергия тормоз не отнимает, а топливо на него тратится */
+  helmShip();HELM.src="stick";
+  G.ship.vx=maxSp;G.ship.a=0;G.energy=0;const fu=G.fuel;
+  HELM.S={id:1,x0:400,y0:400,x:400-LIM,y:400};
+  helmRun(40,1);
+  ok(Math.hypot(G.ship.vx,G.ship.vy)<maxSp*.6,"с пустой энергией тормоз работает в полную");
+  ok(G.fuel<fu,"и топливо на него тратится, а не прибывает");
+  /* 6. отпустил — накат на любой скорости (правило .55 осталось мыши) */
+  helmShip();HELM.src="stick";HELM.S=null;
+  G.ship.vx=maxSp*.3;const v0=G.ship.vx;
+  helmRun(60,1);
+  near(G.ship.vx,v0,1e-6,"стик отпущен ниже .55 — всё равно накат");
+  HELM.src="arrows";
+  helmShip();G.ship.vx=maxSp*.3;
+  helmRun(60,1);
+  ok(Math.hypot(G.ship.vx,G.ship.vy)<maxSp*.3,"а стрелкам порог .55 оставлен как был");
+  /* 7. камера уводит корабль из-под пальца и возвращает его */
+  HELM.S=null;HELM.cam={x:0,y:0,dx:0,dy:1};
+  let o=helmCamOff(1);
+  near(o.y,0,1e-9,"без пальца камера стоит на месте");
+  HELM.S={id:1,x0:W/2,y0:H/2+20,x:W/2,y:H/2+20};
+  for(let i=0;i<200;i++)o=helmCamOff(1);
+  ok(o.y>10&&o.y<=HELM_NUDGE,"палец поверх корабля — камера увела: "+o.y.toFixed(1)+" px");
+  HELM.S=null;
+  for(let i=0;i<200;i++)o=helmCamOff(1);
+  near(o.y,0,.5,"палец снят — камера вернулась");
+  /* 8. след стика укладывается в свой же радиус */
+  HELM.S={id:1,x0:200,y0:300,x:200+LIM,y:300};
+  const f=helmStickFoot();
+  ok(f.length>=2,"след — капсула вдоль ленты, а не круг: "+f.length);
+  const last=f[f.length-1];
+  ok(Math.hypot(HELM.S.x-last.x,HELM.S.y-last.y)<1e-6,"последний кружок стоит на пальце");
+  ok(f.every((c,i)=>i===0||Math.hypot(c.x-f[i-1].x,c.y-f[i-1].y)<=c.r),"кружки перекрываются: под лентой дыр нет");
+  HELM.S=null;HELM.trail=[];
 }));

@@ -94,7 +94,7 @@ they drop on any key today.
 A held fire input forces fire along the nose/cursor when nothing is locked (barges, batteries,
 debris). Missile = its own input, goes to the primary mark.
 
-### 1.1 Phone — one floating stick under the left thumb (M410; two sticks in M360–M409)
+### 1.1 Phone — one floating stick, born anywhere (M422; left half in M410, two sticks in M360–M409)
 
 The author on the two-stick frame (2026-09-07): «управление получилось не очень… джойстик внизу,
 пусть управляется левой рукой, не надо правой… куда джойстик двигаешь, туда и летит, нос сам
@@ -122,6 +122,40 @@ The author on the two-stick frame (2026-09-07): «управление полу�
   toward itself and the assist would push it back, frame after frame.
 - Pads that stay in the system mode: ДЕЙСТВИЕ, ВЗЛЁТ, РАКЕТА, and a small ЦЕЛЬ (Tab). Gone from
   the system mode: ◀ ▶ ▲ ТОРМОЗ ОГОНЬ. Surface, dig, cave, belt keep their rows as they are.
+
+**M422 — what the author found still wrong, and the six answers.** «Управление на мобилке
+говно… из любого места на экране пальцем двигаешь и корабль туда летил… коротко назад он
+тормозит… за пальцем идёт широкая полоска, чтобы понимать как оно.» The scheme held; its numbers
+did not. Each answer below replaces a bullet above.
+
+- **Born anywhere, not on the left half.** The half was a borrowed rule — mobile guides limit the
+  stick's area to keep it off the action buttons, and this game's buttons are DOM below the
+  canvas, so there was nothing to keep it off. A finger becomes a stick by moving `HELM_TAKE`
+  (10 px) or by lying still past `HELM_TAKE_MS` (420 ms), which is *outside* the 400 ms tap
+  window of `15-input`: a tap stays a tap on both halves, and a second finger on a waiting one is
+  a pinch.
+- **The centre runs after the finger** (`helmDrag`). Fixed at the touch point, a 250 px drag cost
+  250 px of thumb to undo; trailing 82 px behind, the way back always costs 82 px. This is the
+  whole of «коротко назад»: no flick to detect, no second gesture to learn.
+- **Braking is nose-blind and stronger than the throttle.** Thrust against the nose ran through
+  maneuvering jets at `.4`, so pulling back stopped the ship in 4.1 s while resting the thumb
+  stopped it in 2.3 s. Now a wanted velocity more than 120° off the current one (`HELM_BRAKE_DOT`)
+  takes the brake road with the dead zone and the pad, at `HELM_STOP`: 1.4 s to a stop against
+  1.6 s to cruise, whatever the nose is doing, and an empty energy bar does not weaken it.
+- **The nose holds course while braking.** It followed the thumb through 180°, and halfway round
+  the decomposition flipped from jets to the main engine — the ship's own brake changed strength
+  mid-stop. A mark still wins over both.
+- **A released stick coasts, always.** The `.55` rule of §10 stays with mouse and arrows, where
+  releasing means «I stopped steering»; on glass it means «I lifted my thumb to tap something».
+- **The ribbon** (`15b-helm-draw`). The M360a arc was `.16` alpha and 46 px — the thumb knew where
+  it was, but nothing said what the stick *meant*. The band runs from the centre to 24 px short of
+  the finger: its length and width are the wanted velocity, the fill inside is the actual one
+  (so the player watches the ship catch up), its colour turns amber against the course, and the
+  dead zone is a «СТОП» ring draining with the speed. A tail follows the finger, the same vector
+  is drawn short at the ship, and the camera walks the ship out from under a thumb that lands on
+  it (`helmCamOff`, ≤70 px, ~0.4 s). The declared foot is a capsule of 34 px circles along the
+  band — instruments still step out from under it, as M360a demands, without the 93 px ring.
+
 
 ### 1.2 Keyboard — mouse or arrows, both live, last used wins
 

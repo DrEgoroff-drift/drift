@@ -8297,3 +8297,31 @@ Five stages, each playable on /dev before the next starts:
 `13c-roles` when those land (M397 reads whatever shipped); a blockade closes a system's counters and
 M403 answers it; a base overrun, defended or provisioned is an episode for the chronicle
 (`DESIGN-war` §6). Neither queue blocks the other.
+
+
+## Side passes of 2026-09-07 — M410, M411, M412 (moved from `PLAN.md` 2026-09-08)
+
+- ~~**M410 one thumb**~~ — 0.401.1: the phone helm is one stick under the left thumb, and it says
+  «fly there», not «push there» — `G.ctl.assist` turns the stick vector into a wanted velocity
+  and `helmApply` closes the gap (`15a-helm`, `DESIGN-war` §1.1). Thumb in the dead zone = stop;
+  the nose is never the thumb's job — mark, else heading. A resting ring marks the stick's place
+  (`helmHome`, measured from the pads row). Suites: `91zzzw-helm` (M410), `91zzx-mobile` (the
+  resting point lands on the canvas). Mouse and arrows untouched.
+- ~~**M411 the war on the site**~~ — 0.401.3: `site/war.html` + `site/war-map.js` over
+  `site/war.js` (built by `build.ps1 War` from `site/war-head.js` + thirteen chronicle modules):
+  territory by power (Коммуна hatched — two blues), borders and war borders, stars in the owner's
+  colour, homes as emblems, fronts breathing, the previous flag's corner on a system taken within
+  two days, ledger ticks (the players' hand), rallies, «Ревизия»; six powers with holdings,
+  needs, strength, tension and relations; wars with takes, notes with deadlines, arcs, rites, the
+  last two days' incidents; the line «кто куда когда» in the truth voice or any wave's; a slider
+  over the last 720 сводки (snapshots every 24, replay from a snapshot); pull every 90 s. Linked
+  from the nav and the footer; `docs/DEPLOY.md` has the rows.
+- ~~**M412 the war runs by itself**~~ — 0.401.2: `docs/warsim.js` (a Node replay over the same
+  `site/war.js` bundle) showed needs pinned at zero, 24 wars a month, strength at ~900 for all;
+  now needs balance at home size and are moved by incidents, moves are drawn by probability
+  (trade first, quarrel second, war only below −250 with strength and holdings to spare, ≤2 wars
+  in the galaxy), war costs, home systems are defended, strength tracks the cap its holdings set,
+  relations revert at 5 %. Closed state is the replay base and the open сводка is stepped on top
+  each call, ledgers and circulars invalidate (`chronInvalidate`); circulars apply once at their
+  сводка and the season lives in the state; «бунт», «находка», «откол» announced. Suites:
+  `91zzzw-chron2`. A year: ~10 wars/month, ~30 takes, ~8 net changes, needs ~450.
