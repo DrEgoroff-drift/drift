@@ -75,3 +75,48 @@ TEST_SUITES.push(()=>suite("темп: концы спрашивают сторо
   ok(clockSeg("toldoff")>=0,"отрицательные сегменты не проходят: "+clockSeg("toldoff"));
   ok(!G.clocks["ЧУЖОЕ"],"и незнакомый ключ тоже");
 }));
+
+/* ══════════════ приборы, которые врали (M417) ══════════════
+   Три сторожа за один заход оказались сломаны одинаково: они срабатывали
+   ВСЕГДА, и от этого перестали что-либо значить. Два из них — здесь: провал
+   кадра и пульс. Оба меряли одно и то же — время между кадрами — и оба
+   мерили не то. */
+TEST_SUITES.push(()=>suite("сторож: провал считается от ПРОШЛОЙ метки, а не от свежей",()=>{
+  const src=(typeof frame==="function")?frame.toString():"";
+  ok(src.indexOf("framePrev")>0,"есть отдельная метка прошлого кадра");
+  /* метка обязана сниматься ДО того, как её перезапишут: иначе разрыв всегда 0 */
+  const iPrev=src.indexOf("framePrev=frameLastAt");
+  const iSet=src.indexOf("frameLastAt=now");
+  ok(iPrev>0&&iSet>iPrev,"снимается раньше, чем перезаписывается ("+iPrev+" < "+iSet+")");
+  /* пульс считает от неё же, а не от только что записанной */
+  const iBeat=src.indexOf("BEAT.ms+=");
+  ok(iBeat>0&&src.slice(iBeat,iBeat+60).indexOf("framePrev")>0,
+    "пульс считает от прошлой метки: "+src.slice(iBeat,iBeat+46));
+}));
+
+TEST_SUITES.push(()=>suite("сторож: пульс не шлёт того, что не число",()=>{
+  const src=(typeof frame==="function")?frame.toString():"";
+  ok(src.indexOf("isFinite(fps)")>0,"перед отправкой проверяется, что это число");
+  ok(src.indexOf("Math.max(1,BEAT.ms/BEAT.n)")>0,"и деления на ноль больше нет");
+  /* та же арифметика вручную: пустое окно не даёт Infinity */
+  const ms=0,n=60;
+  const fps=Math.round(1000/Math.max(1,ms/n));
+  ok(isFinite(fps),"пустое окно даёт число, а не Infinity: "+fps);
+  /* и настоящее окно даёт настоящий кадр */
+  eq(Math.round(1000/Math.max(1,1000/60)),60,"шестьдесят кадров считаются шестьюдесятью");
+}));
+
+TEST_SUITES.push(()=>suite("сторож: возврат из скрытого не считается зависанием",()=>{
+  /* ловушка стоит в 01a и снимает метку, а не спрашивает document.hidden в тот
+     момент, когда вкладка уже видима (в этом и была ошибка) */
+  const has=(typeof document!=="undefined"&&document.documentElement)?1:0;
+  ok(has,"документ есть");
+  /* сама проверка — по исходнику страницы: обработчик обязан существовать */
+  const all=(typeof document!=="undefined"&&document.scripts&&document.scripts[0])
+    ?document.scripts[0].textContent:"";
+  if(!all){ok(true,"исходник страницы не виден (node) — проверка в браузере");return;}
+  ok(all.indexOf('addEventListener("visibilitychange"')>0,"ловушка возврата стоит");
+  const i=all.indexOf('addEventListener("visibilitychange"');
+  const near=all.slice(i,i+220);
+  ok(near.indexOf("frameLastAt=0")>0,"и она снимает метку кадра: "+near.slice(0,120));
+}));

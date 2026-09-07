@@ -1003,7 +1003,7 @@ CUT_RANGE                    src/24-mode-belt.js:184
 cvs                          src/08-state.js:2
 dayK                         src/19c-light.js:68
 dayKq                        src/19c-light.js:74
-dbg                          src/28-loop.js:419
+dbg                          src/28-loop.js:438
 dcol                         src/21b-surface-deco.js:149
 DEAL_KINDS                   src/27g-deals.js:17
 dealAnswer                   src/27g-deals.js:163
@@ -3333,7 +3333,7 @@ probeShot                    src/25m-probe.js:85
 probeSpeak                   src/25m-probe.js:100
 probeTarget                  src/25m-probe.js:38
 probeVoice                   src/25m-probe.js:75
-prof                         src/28-loop.js:381
+prof                         src/28-loop.js:400
 PROFILE                      src/02-world.js:103
 profW                        src/03-ships.js:197
 prRestore                    tests/91zzzzzi-promise.js:89
@@ -4787,7 +4787,7 @@ zooTick                      src/11ad-zoo.js:41
   · имена:95
   · удалённость и настрой сектора:102
 
-## src/01a-crashlog.js · 5 КБ
+## src/01a-crashlog.js · 6 КБ
 
 ## src/02-world.js · 14 КБ
   · ресурсы:1
@@ -5769,15 +5769,15 @@ zooTick                      src/11ad-zoo.js:41
 ## src/27z-telemetry.js · 33 КБ
   · телеметрия: приборы пишут в DOM:1
 
-## src/28-loop.js · 36 КБ
+## src/28-loop.js · 38 КБ
   · авария:1
   · звук по кадрам:29
   · цикл:87
   · авторазрешение:110
   · развилка режимов — одна на всех (M238):140
   · кадр, который не убивает игру (M234):274
-  · prof() — на что уходит кадр:369
-  · dbg() — что держит корабль:410
+  · prof() — на что уходит кадр:388
+  · dbg() — что держит корабль:429
 
 ## src/28y-look.js · 29 КБ
   · look() — прибор кадра:1
@@ -6396,8 +6396,9 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzzzzp-balance.js · 8 КБ
   · числа, записанные в договоре (M357):1
 
-## tests/91zzzzzp-clocks.js · 5 КБ
+## tests/91zzzzzp-clocks.js · 8 КБ
   · сторож темпа (P8, M416):1
+  · приборы, которые врали (M417):79
 
 ## tests/91zzzzzq-input.js · 8 КБ
   · руки отпускают (M357):1

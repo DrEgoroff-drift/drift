@@ -7,6 +7,58 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.413.0 - M417: the instruments that lied
+
+`PLAN.md` has carried one line for weeks: «The author's freeze has no cause yet… Next step is to
+read `crash.log` after the next freeze.» So I read it. Seventy-eight entries, and this is what
+they were:
+
+| kind | n | what it actually was |
+|---|---|---|
+| `journal` | 70 | «Летопись разошлась с большинством» - a false alarm, every single time |
+| `stall` | 2 | one real 2.8 s hitch on a Pixel 8; one 11.7-minute «stall» that was a hidden tab |
+| `probe` | 4 | |
+| `beat` | 1 | «fps Infinity» |
+| `outside` | 1 | |
+
+**Three instruments were broken, all in the same way: they fired always, and so meant nothing.**
+
+**The frame-stall detector counted a hidden tab as a freeze.** The guard did carry
+`&& !document.hidden`, but it asked at the wrong moment: `requestAnimationFrame` wakes up *after*
+the tab is restored, so by that line the tab is visible again and the gap it measures is the whole
+time it spent hidden. That is where «кадр стоял 701631 мс» came from - eleven and a half minutes
+of a minimised window, filed as a freeze, in the log kept specifically to catch a freeze. The
+hidden period is now remembered *when it happens*: a `visibilitychange` handler clears the frame
+mark, and the first frame after a return is not measured.
+
+**The fps pulse had never measured anything.** `frameLastAt=now` sat one line above the
+accumulator, so `now-frameLastAt` inside it was always zero: the sum of frame times never grew,
+`1000/0` went to the server as «fps Infinity», and the server stored it as 0. The whole
+«measure what players actually see on their own phones» instrument had produced exactly one row
+in `digest.json` - `{"0.360.0 system desk": {"n":1, "avg":0, "min":0}}` - since the day it
+shipped. It now counts from the previous mark, like the stall, and refuses to send anything that
+is not a finite number in range.
+
+**And the third is not ours to fix, so it was reported with the proof.** «Летопись разошлась с
+большинством» fires on every load. The live tally on the server for сводка 995 is
+`{"h":{"3714082066":22}}` - one hash, twenty-two agreements, i.e. *everybody agrees* - and the
+server still answers `agree:false`. `site/war.php` writes the client's hash string as an array
+key, and PHP casts numeric string keys to int; `array_key_first` then returns an int, `$h` is
+still a string, and `===` is strict. Verified on the host itself: `$top === $h` is `false`,
+`(string)$top === $h` is `true`. The chronicle has, as far as this instrument can tell, never
+diverged - and 70 of the 78 log entries were this.
+
+What is left in the log once the noise is gone is the one real thing: **2766 ms on a Pixel 8,
+nine seconds in, in system mode, right after «В вещах нашлось живое: трепло «Пискля»».** That is
+the first honest lead the freeze hunt has ever had, and it is written down here rather than
+chased on a hunch.
+
+Guarded by three suites in `91zzzzzp-clocks`: the previous mark is taken before it is
+overwritten, the pulse counts from it, and nothing that is not a finite number is sent.
+
+Full tier green: 17770 assertions over 779 suites.
+
+---
 ## 0.412.0 - M416: the pacing guard, and the line that could arrive on day one
 
 P8, the last craft law that was actually blocked rather than a fork. Its own contract forbade

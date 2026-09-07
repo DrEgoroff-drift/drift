@@ -447,8 +447,14 @@ Left from the queue: nothing — the band's second step is M308, the station's c
 - **The author's freeze has no cause yet.** The frame guard (M234) survives it and names it on
   screen; the fuzzer (M238) drives eleven modes with random input and finds nothing. **0.359.1: the logger is born first** (`01a-crashlog`, right after `VER`), so a build that dies on load reports itself — 0.359.0 did not, and the site lay for 25 minutes with an empty log. **Since
   0.359.0 the evidence ships itself:** every error of any kind, and every frame stall over two
-  seconds, lands in `~/drift-data/crash.log` (`site/log.php`, PATCHNOTES 0.359.0). Next step is
-  to read it after the next freeze: `ssh drift 'tail -n 50 ~/drift-data/crash.log'`.
+  seconds, lands in `~/drift-data/crash.log` (`site/log.php`, PATCHNOTES 0.359.0).
+  **Read 2026-09-07 (M417): 70 of 78 entries were the log's own noise** — a consensus alarm
+  false by construction (PHP int/string key cast in `site/war.php`, reported with proof to its
+  owner), a hidden tab filed as an 11.7-minute freeze, and an fps pulse sending `Infinity` since
+  the day it shipped. All fixed or reported. **What is left is the first honest lead: 2766 ms on
+  a Pixel 8, nine seconds in, mode `system`, right after «В вещах нашлось живое: трепло
+  «Пискля»»** — a one-time bake on a phone at world start. Next: reproduce with `-Mobile` and
+  `?g11` on the system scene.
 
 ### Housekeeping
 

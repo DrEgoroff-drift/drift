@@ -344,16 +344,35 @@ function frame(now){
      выкладки, и человек в консоли. 0.359.0 уехал мёртвым при зелёных тестах —
      потому что никто не спрашивал сам файл, что уехал, живёт ли он */
   if(++frameN===1&&!crashN){try{document.documentElement.setAttribute("data-alive",VER);}catch(_){}}
-  if(frameLastAt&&now-frameLastAt>2000&&!document.hidden)crashShip("stall","кадр стоял "+((now-frameLastAt)|0)+" мс","",{gap:(now-frameLastAt)|0});
+  /* ── провал кадра: только настоящий (M417) ──
+     Проверка `!document.hidden` стояла на месте, но спрашивала не в тот
+     момент: rAF просыпается уже ПОСЛЕ того, как вкладку вернули, — вкладка к
+     этой строке снова видима, а разрыв в ней весь тот, что она провела
+     скрытой. В журнале сервера это выглядело так: «кадр стоял 701631 мс», то
+     есть одиннадцать с половиной минут свёрнутого окна, поданные как
+     зависание. Ровно то, ради чего лог заведён, — авторское зависание — в
+     таком логе не найти. Поэтому скрытость помнится СО ВРЕМЕНИ СОБЫТИЯ:
+     `frameLastAt=0` на возврате, и первый кадр после возврата не мерится. */
+  const framePrev=frameLastAt;
   frameLastAt=now;
+  if(framePrev&&now-framePrev>2000)crashShip("stall","кадр стоял "+((now-framePrev)|0)+" мс","",{gap:(now-framePrev)|0});
   /* пульс: раз в три минуты, потом раз в десять — версия, режим, средний fps,
      окно. Не ошибка, а мерка с настоящих телефонов: «60 fps в девяти режимах»
      мерились дома; здесь — то, что видят игроки. Ничего личного: ни текста,
      ни имён (правило открытки). Считается сервером в digest.json */
-  if(frameLastAt){BEAT.n++;BEAT.ms+=Math.min(200,now-frameLastAt);
+  /* ── пульс: и он мерил ноль (M417) ──
+     `frameLastAt=now` стояло СТРОКОЙ ВЫШЕ, поэтому `now-frameLastAt` здесь
+     было всегда нулём: сумма кадровых времён не росла, `1000/0` уходило на
+     сервер как «fps Infinity», а сервер записывал это нулём. Замер «сколько
+     кадров видят игроки на своих телефонах» не работал ни разу за всё время
+     существования — в `digest.json` одна строка, avg 0, min 0. Считаем от
+     предыдущей метки, как и провал кадра. */
+  if(framePrev){BEAT.n++;BEAT.ms+=Math.min(200,now-framePrev);
     if(BEAT.n>=60){const dt=now-BEAT.t;if(dt>(BEAT.sent?600000:180000)){
-      const fps=Math.round(1000/(BEAT.ms/BEAT.n));
-      crashShip("beat","fps "+fps,"",{fps});
+      const fps=Math.round(1000/Math.max(1,BEAT.ms/BEAT.n));
+      /* и в письмо не уходит то, что не число: сторож, который шлёт Infinity,
+         портит сводку молча — сервер кладёт ноль и считает его замером */
+      if(isFinite(fps)&&fps>0&&fps<1000)crashShip("beat","fps "+fps,"",{fps});
       BEAT.sent++;BEAT.t=now;BEAT.n=0;BEAT.ms=0;}}}
   if(!STORAGE_OK&&!CRASH_SHIP.st){CRASH_SHIP.st=1;crashShip("storage","localStorage недоступен","");}
   try{frameBody(now);}catch(e){crashSay(e,G&&G.mode);}

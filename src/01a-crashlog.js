@@ -49,6 +49,15 @@ function crashStack(e){
     if(t&&t!==window&&(t.src||t.href)){crashShip("resource",String(t.src||t.href).slice(0,300),"");return;}
     if(e&&(e.error||e.message)){const x=e.error;crashShip("outside",(x&&x.message)||String(e.message),crashStack(x)||((e.filename||"")+":"+(e.lineno||0)));}
   },true);}catch(_){}
+  /* ── вкладку вернули: следующий кадр не мерится (M417) ──
+     Ловушка стоит здесь, а не в 28-loop, по той же причине, что и все
+     остальные: она обязана родиться раньше любого кода, который может упасть.
+     `frameLastAt` объявлен в 28-loop и на момент этой строки ещё не
+     существует — поэтому сброс идёт через окно и читается там же, где
+     мерится. */
+  try{addEventListener("visibilitychange",()=>{
+    if(!document.hidden)try{frameLastAt=0;BEAT.n=0;BEAT.ms=0;BEAT.t=Date.now();}catch(_){}
+  });}catch(_){}
   try{addEventListener("unhandledrejection",e=>{const x=e&&e.reason;crashShip("rejection",(x&&x.message)||String(x),crashStack(x));});}catch(_){}
   /* всё, что игра или браузер печатает как ошибку — тоже улика */
   try{
