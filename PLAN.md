@@ -271,7 +271,7 @@ four files, all asking one question: not whether a control works, but whether it
 Two laws out of the run: `planetSpin` fell back to the **wall clock** at `G.t===0`, so staged
 scenes were irreproducible and the light/ledger suites flickered on «заход» — the world's clock is
 used whenever there is a world; and **a word boundary does not work next to Cyrillic** in JS
-(Russian letters are not word characters), so `/кр/` never matches «−17 кр» — a suite now holds
+(Russian letters are not word characters), so `/кр\b/` never matches «−17 кр» — a suite now holds
 that nowhere in the game.
 
 ## M357 — hunting by search (0.355.0, 2026-09-05) — done

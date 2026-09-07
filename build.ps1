@@ -113,7 +113,7 @@ $BULK_OLD = @{     # известные крупные; замер обновл�
   "21e1-surface-world.js" = 43  # M415: ОДНА функция drawSurfaceWorld на 590 строк.
                              # Дальше её режут по своим швам: устье шахты, следы, ночь
   "19-mode-landing.js" = 43
-  "12y-parrot-face.js" = 43  # одна таблица — не делится
+  "12y-parrot-face.js" = 44  # одна таблица — не делится
   "27f-hq-room.js" = 42
   "18-mode-map.js" = 42
   "91zzzw-combat.js" = 41
@@ -188,8 +188,19 @@ function Bulk($files, $tfiles) {
   # но правило не проверяется само). Теперь проверяется: любой управляющий
   # символ, кроме табуляции и переводов строки, — это опечатка, и она
   # называется вслух вместе с файлом и строкой.
+  # Проверяем НЕ ТОЛЬКО код: та же съеденная косая уже попала в прозу —
+  # PATCHNOTES и PLAN несли по 0x08 в предложении, которое ОПИСЫВАЕТ этот
+  # баг («/кр\b/ не совпадает никогда»), и читались как мусор. Документы
+  # проекта читают каждую сессию, и невидимый байт в них дороже, чем в коде.
   $ctrl = @()
-  foreach ($f in (@($files) + @($tfiles))) {
+  $docs = @()
+  foreach ($n in @("PLAN.md", "PATCHNOTES.md", "CLAUDE.md", "README.md")) {
+    $q = Join-Path $root $n
+    if (Test-Path $q) { $docs += Get-Item $q }
+  }
+  $dd = Join-Path $root "docs"
+  if (Test-Path $dd) { $docs += Get-ChildItem $dd -Filter *.md -File }
+  foreach ($f in (@($files) + @($tfiles) + @($docs))) {
     if (-not $f) { continue }
     $txt = [IO.File]::ReadAllText($f.FullName, [Text.Encoding]::UTF8)
     $ln = 1

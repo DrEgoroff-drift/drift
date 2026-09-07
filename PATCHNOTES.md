@@ -7,6 +7,20 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.417.1 - the guard reads the prose too
+
+The control-character scan of 0.416.0 covered `src/` and `tests/`. It should have covered the
+documents from the start: the two survivors it could not see were in `PATCHNOTES.md` and
+`PLAN.md`, and both sat inside the sentence that **describes this very bug** - «`/кр\b/` never
+matches» - carrying a raw 0x08 where the escape belonged, so the sentence read as garbage in the
+one place a reader would go to understand it. Repaired, and the scan now walks `PLAN.md`,
+`PATCHNOTES.md`, `CLAUDE.md`, `README.md` and every `docs/*.md`. Verified by planting a byte in
+`docs/DESIGN-arc.md` and watching the build name the file and the line.
+
+These documents are read every session; an invisible byte costs more there than in code, where at
+least a regex will fail loudly enough to be chased.
+
+---
 ## 0.417.0 - M421: the whole parrot, once a second, for forty-four pixels
 
 While measuring the bakes for M418 I timed the console's perch icon and left it alone because it
@@ -2335,7 +2349,7 @@ Two more things came out of the run. `planetSpin` fell back to **the wall clock*
 so a staged scene came out different every time and the light and frame-ledger suites flickered on
 «заход»; the world's clock is now used whenever there is a world. And one law was written down
 after it bit the test itself: in JavaScript a word boundary does not work next to Cyrillic — the
-engine does not count Russian letters as word characters — so `/кр/` never matches «−17 кр». A
+engine does not count Russian letters as word characters — so `/кр\b/` never matches «−17 кр». A
 suite now reads the whole source and holds that nowhere in the game.
 
 ## 0.353.0 - M356: the sky in storeys
@@ -2910,7 +2924,7 @@ Two findings:
   by `stTabsHere`, so it could never show — leftover markup from a mechanic that moved. Removed.
 
 Also in this milestone, a lesson already written in CLAUDE.md and paid for again: a heredoc
-through the Bash tool ate `` and put a literal 0x08 byte inside a regular expression. It is
+through the Bash tool ate `\b` and put a literal 0x08 byte inside a regular expression. It is
 invisible in every editor and in `sed`; only `cat -A` showed `^H`. The check looked green and
 matched nothing. Anything patched through a heredoc is now grepped for control characters before
 it is trusted.
