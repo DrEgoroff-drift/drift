@@ -7,6 +7,21 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.415.1 - two notes from the parallel session, both right
+
+- **The probe took the press only when it could afford it.** `probeClaim` returned whatever
+  `probeBuy` returned, and `probeBuy` returns false on an empty account — so on a poor ship the
+  same press produced «Зонд стоит 900 кр» *and* «ЦЕЛЕЙ НЕТ», one over the other, in one frame.
+  What claims a press is the fact that the probe was on offer here, not the luck of the purchase.
+- **The walk hint was a third prompt line in every compartment, every time.** It is teaching, and
+  teaching ends when it has been used: it now disappears the moment the player takes their first
+  step inside the base, not after a timer. Two lines again.
+
+Both found by the session working the war layer in a parallel worktree, reading the frame rather
+than the diff. `site/war.js` joins this and every later commit of mine, at that session's request:
+the deploy rebuilds it regardless, but the repository should not disagree with the site.
+
+---
 ## 0.415.0 - M419: what the oven does in one go, and the harness has no clock
 
 M418 found a 383 ms synchronous bake that had been in the game for three hundred versions. Nothing

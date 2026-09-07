@@ -86,7 +86,13 @@ function probeClaim(){
   if(!A||G.mode!=="system")return false;
   if((G.sx|0)!==(A.sx|0)||(G.sy|0)!==(A.sy|0))return false;
   if(probeHas(A.sx,A.sy,A.idx))return false;
-  return probeBuy(A.sx,A.sy,A.idx);
+  /* ── нажатие забрано, даже если денег не хватило ──
+     `probeBuy` возвращает false на пустом счету — и раньше это значило, что
+     нажатие уходит дальше, целям. На бедном борту в одном кадре приходили
+     «Зонд стоит 900 кр» и «ЦЕЛЕЙ НЕТ», одно поверх другого. Забирает нажатие
+     сам ФАКТ предложения, а не удача покупки. */
+  probeBuy(A.sx,A.sy,A.idx);
+  return true;
 }
 /* высадка: игрок стоит на этой поверхности — значит мерил своими руками */
 function dialOnFoot(sx,sy,idx){

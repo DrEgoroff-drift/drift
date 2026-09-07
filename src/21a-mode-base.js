@@ -125,7 +125,9 @@ function enterBase(p){
   /* ярус проверяем и на входе: иначе вскрытый нижний ряд появлялся бы только
      после следующего тика, и игрок не понимал бы, что уже можно строить ниже */
   baseGrowCheck(B);
-  G.base={B,p,cur:Math.floor(BASE_COLS/2),row:0,x:0,y:0,walkPhase:0,menu:false,pick:0,
+  G.base={B,p,cur:Math.floor(BASE_COLS/2),row:0,
+    cur0:Math.floor(BASE_COLS/2),row0:0,          /* где встали: подсказка живёт до первого шага */
+    x:0,y:0,walkPhase:0,menu:false,pick:0,
     pmenu:false,ppick:0,lockHeld:0,avr:null,avrDone:0};
   G.base.x=cellX(G.base.cur);G.base.y=cellY(0);
   G.mode="base";
@@ -401,7 +403,9 @@ function jumpToBase(B){
 function updateBase(dt){
   const S=G.base,B=S.B;
   if(G.t%30<dt)baseResolveAll();
-  if(BASE_HINT>0)BASE_HINT-=dt;
+  /* подсказка про ходьбу уходит, как только ею воспользовались: она нужна до
+     первого перехода, а не в каждом отсеке каждый раз (сосед, 07.09) */
+  if(BASE_HINT>0){BASE_HINT-=dt;if(S.cur!==S.cur0||S.row!==S.row0)BASE_HINT=0;}
   /* карточка «пока вас не было» гаснет сама (M413), как гасло сообщение */
   if(S.note&&S.note.t>0)S.note.t-=dt;
   const tx=cellX(S.cur),ty=cellY(S.row);

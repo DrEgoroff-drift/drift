@@ -1759,7 +1759,7 @@ body.table u.addr{color:#7a4a20}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.415.0";
+const VER="0.415.1";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -53274,7 +53274,9 @@ function enterBase(p){
   /* ярус проверяем и на входе: иначе вскрытый нижний ряд появлялся бы только
      после следующего тика, и игрок не понимал бы, что уже можно строить ниже */
   baseGrowCheck(B);
-  G.base={B,p,cur:Math.floor(BASE_COLS/2),row:0,x:0,y:0,walkPhase:0,menu:false,pick:0,
+  G.base={B,p,cur:Math.floor(BASE_COLS/2),row:0,
+    cur0:Math.floor(BASE_COLS/2),row0:0,          /* где встали: подсказка живёт до первого шага */
+    x:0,y:0,walkPhase:0,menu:false,pick:0,
     pmenu:false,ppick:0,lockHeld:0,avr:null,avrDone:0};
   G.base.x=cellX(G.base.cur);G.base.y=cellY(0);
   G.mode="base";
@@ -53550,7 +53552,9 @@ function jumpToBase(B){
 function updateBase(dt){
   const S=G.base,B=S.B;
   if(G.t%30<dt)baseResolveAll();
-  if(BASE_HINT>0)BASE_HINT-=dt;
+  /* подсказка про ходьбу уходит, как только ею воспользовались: она нужна до
+     первого перехода, а не в каждом отсеке каждый раз (сосед, 07.09) */
+  if(BASE_HINT>0){BASE_HINT-=dt;if(S.cur!==S.cur0||S.row!==S.row0)BASE_HINT=0;}
   /* карточка «пока вас не было» гаснет сама (M413), как гасло сообщение */
   if(S.note&&S.note.t>0)S.note.t-=dt;
   const tx=cellX(S.cur),ty=cellY(S.row);
@@ -55554,7 +55558,13 @@ function probeClaim(){
   if(!A||G.mode!=="system")return false;
   if((G.sx|0)!==(A.sx|0)||(G.sy|0)!==(A.sy|0))return false;
   if(probeHas(A.sx,A.sy,A.idx))return false;
-  return probeBuy(A.sx,A.sy,A.idx);
+  /* ── нажатие забрано, даже если денег не хватило ──
+     `probeBuy` возвращает false на пустом счету — и раньше это значило, что
+     нажатие уходит дальше, целям. На бедном борту в одном кадре приходили
+     «Зонд стоит 900 кр» и «ЦЕЛЕЙ НЕТ», одно поверх другого. Забирает нажатие
+     сам ФАКТ предложения, а не удача покупки. */
+  probeBuy(A.sx,A.sy,A.idx);
+  return true;
 }
 /* высадка: игрок стоит на этой поверхности — значит мерил своими руками */
 function dialOnFoot(sx,sy,idx){

@@ -210,3 +210,43 @@ TEST_SUITES.push(()=>suite("M413: шкалы названы словами",()=>
   ok(src.indexOf('"ВЗД"')<0,"а обрубков не осталось");
   ok(src.indexOf('"ХРЧ"')<0,"и этого тоже");
 }));
+
+/* ══════════════ по письму соседнего захода (0.415.1) ══════════════ */
+TEST_SUITES.push(()=>suite("зонд: нажатие забрано, даже когда денег нет",()=>{
+  resetWorld();
+  G.mode="system";
+  const p=G.sys.planets.find(x=>x.type!=="gas");
+  ok(p,"есть планета");
+  G._probeAt={sx:G.sx,sy:G.sy,idx:p.idx};
+  G.probed={};
+  /* денег нет: зонд не куплен, но нажатие всё равно его */
+  G.credits=0;G.msg="";
+  eq(probeClaim(),true,"нажатие забрал зонд, а не цели");
+  ok(!probeHas(G.sx,G.sy,p.idx),"а куплен он не был");
+  ok((G.msg||"").indexOf("Зонд стоит")>=0,"и сказано ровно одно: «"+G.msg+"»");
+  /* с деньгами — покупается, и нажатие тоже его */
+  G.credits=PROBE_COST+10;
+  eq(probeClaim(),true,"с деньгами — тем более");
+  ok(probeHas(G.sx,G.sy,p.idx),"зонд ушёл к планете");
+  /* уже есть — нажатие идёт целям */
+  eq(probeClaim(),false,"второй раз зонд нажатие не берёт");
+}));
+
+TEST_SUITES.push(()=>suite("база: строка про ходьбу живёт до первого шага",()=>{
+  const B=bLife();
+  BASE_WALKED=0;
+  enterBase(B.p||{idx:B.idx});
+  const S=G.base;
+  ok(S,"вошли");
+  ok(BASE_HINT>0,"в первый заход подсказка есть");
+  updateBase(0);
+  ok((G.prompt||"").indexOf("ПЕРЕХОД")>0,"и она в подсказке: «"+
+    (G.prompt||"").replace(/\n/g," / ")+"»");
+  /* шаг вбок — и она уходит навсегда */
+  S.cur=(S.cur0|0)+1;
+  updateBase(1);
+  eq(BASE_HINT,0,"после первого перехода подсказки нет");
+  updateBase(0);
+  ok((G.prompt||"").indexOf("ПЕРЕХОД")<0,"и в подсказке её больше нет");
+  ok((G.prompt||"").split("\n").length<=2,"строк снова две");
+}));
