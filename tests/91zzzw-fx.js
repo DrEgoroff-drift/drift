@@ -215,11 +215,22 @@ TEST_SUITES.push(()=>suite("летопись M385: повтор не зовёт 
   const Q=voteQuestion(MAKER_KEYS[own],N);
   const v={};v[Q.key]={p:{}};v[Q.key].p[Q.picks[0][0]]=9;
   warLedPut(N,{__votes:v});
-  /* повтор с курсом и переворотом обязан просто закончиться */
-  const t0=Date.now();
+  /* ── повтор с курсом и переворотом обязан просто закончиться ──
+     Здесь стояло «сколько прошло по часам, меньше трёх секунд» — и утверждение
+     это было ПУСТЫМ: в стенде
+     наборов часов нет (`--virtual-time-budget` останавливает время внутри
+     синхронного блока — замер 07.09.2026, см. CLAUDE.md). Оно всегда было
+     верным и не поймало бы ничего. Считаем не время, а РАБОТУ: шаг сводки не
+     имеет права запускать полный повтор — иначе шестьдесят шагов стоят
+     шестидесяти повторов, и это как раз то, что тут ловится. */
   const st=chronFresh();
-  for(let n=0;n<60;n++)chronStep(st,n);
-  ok(Date.now()-t0<3000,"шестьдесят сводок с курсом считаются мгновенно");
+  const realReplay=chronReplay;
+  let replays=0;
+  try{
+    chronReplay=function(){replays++;return realReplay.apply(null,arguments);};
+    for(let n=0;n<60;n++)chronStep(st,n);
+  }finally{chronReplay=realReplay;}
+  ok(replays<=2,"шестьдесят шагов не позвали повтор заново ("+replays+" повторов)");
   /* и предохранитель: chronState изнутри шага возвращает то, что есть, а не
      запускает второй повтор */
   const before=chronState();

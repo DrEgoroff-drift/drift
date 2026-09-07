@@ -715,7 +715,7 @@ chronStep                    src/12am-chron.js:82
 chronTension                 src/12am-chron-director.js:245
 chronTouch                   src/12am-chron-agents.js:28
 chronUltBetween              src/12am-chron.js:385
-chronUltBetweenIn            tests/91zzzw-fx.js:436
+chronUltBetweenIn            tests/91zzzw-fx.js:447
 chronUltDrop                 src/12am-chron-agents.js:235
 chronUltFile                 src/12am-chron-agents.js:226
 chronUlts                    src/12am-chron.js:384
@@ -6227,7 +6227,7 @@ zooTick                      src/11ad-zoo.js:41
   · снаряжение по рангу (M368, §5):467
   · четыре правила и позывной (M373, §6.1):624
 
-## tests/91zzzw-fx.js · 38 КБ
+## tests/91zzzw-fx.js · 39 КБ
   · семьи механик Директора (M382–M388, §15.1):1
 
 ## tests/91zzzw-guns.js · 4 КБ
@@ -6323,7 +6323,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzzzn-deco-biomes.js · 4 КБ
   · автотесты: большая вещь на каждый биом (M352):1
 
-## tests/91zzzzy-bake.js · 17 КБ
+## tests/91zzzzy-bake.js · 19 КБ
   · печь: сколько растра игра держит и сколько печёт заново (M358):1
   · и ЧЕМ печь занята за один раз (M419):137
 

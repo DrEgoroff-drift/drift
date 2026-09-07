@@ -117,6 +117,7 @@ $BULK_OLD = @{     # известные крупные; замер обновл�
   "27f-hq-room.js" = 42
   "18-mode-map.js" = 42
   "91zzzw-combat.js" = 41
+  "91zzzw-base.js" = 42     # помощники четырёх базовых наборов, включая bShift (M418)
   "26-ui-station.js" = 41    # M415: доска, рынок и док — в 26e-ui-station-trade
   "23a-dig-draw.js" = 41
 }
@@ -178,6 +179,31 @@ function Bulk($files, $tfiles) {
   if ($ghosts.Count) {
     "  ! typeof-проверка бережёт несуществующую функцию (вызов не сработает НИКОГДА): {0}" -f
       ($ghosts -join ", ")
+  }
+  # ── байт, которого не видно ──
+  # Heredoc через Bash съедает обратную косую: `\b` в исходнике превращается
+  # в НАСТОЯЩИЙ 0x08. В редакторе его не видно, в `grep` не видно, в diff не
+  # видно — а регулярное выражение с ним не совпадает никогда и молча. Это
+  # уже стоило проекту зелёного сторожа дважды (правило есть в CLAUDE.md,
+  # но правило не проверяется само). Теперь проверяется: любой управляющий
+  # символ, кроме табуляции и переводов строки, — это опечатка, и она
+  # называется вслух вместе с файлом и строкой.
+  $ctrl = @()
+  foreach ($f in (@($files) + @($tfiles))) {
+    if (-not $f) { continue }
+    $txt = [IO.File]::ReadAllText($f.FullName, [Text.Encoding]::UTF8)
+    $ln = 1
+    foreach ($ch in $txt.ToCharArray()) {
+      $c = [int]$ch
+      if ($c -eq 10) { $ln++; continue }
+      if ($c -lt 32 -and $c -ne 9 -and $c -ne 13) {
+        $ctrl += ("{0}:{1} 0x{2:X2}" -f $f.Name, $ln, $c)
+      }
+    }
+  }
+  if ($ctrl.Count) {
+    "  ! управляющий символ в исходнике (съеденная обратная косая? см. CLAUDE.md): {0}" -f
+      (($ctrl | Select-Object -First 8) -join ", ")
   }
   $plan = Join-Path $root "PLAN.md"
   if (Test-Path $plan) {

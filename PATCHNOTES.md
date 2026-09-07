@@ -7,6 +7,40 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.416.0 - M420: the byte you cannot see, and the last suite that claimed milliseconds
+
+Two consequences of 0.415.0's finding that the harness has no clock, and one of them bit me while
+I was writing the guard against it.
+
+**The only suite in the repository that asserted milliseconds was mine**, in `91zzzw-fx`: «шестьдесят
+сводок с курсом считаются мгновенно», `Date.now()-t0<3000`. Vacuous - always true, catching
+nothing. What it was actually guarding is worth guarding, so it now counts **work**: a wrapper on
+`chronReplay` proves that sixty chronicle steps do not each trigger a full replay. That is the
+failure it was written for, and now it can see it.
+
+**And a guard was added so no suite can claim milliseconds again** - it reads the page's own
+source, finds every time comparison, and fails if one sits inside `ok`/`eq`/`near`. Waiting on a
+clock stays legal: between `setTimeout` calls virtual time does advance, which is why `99-run`'s
+wait for the first frame is correct and must not be flagged.
+
+**Then the guard came out green, and it was lying too.** Written through a shell heredoc, its
+`\b` had been eaten and replaced by a literal 0x08 byte, so the regex read «backspace, then ok»
+and matched nothing, ever. This trap is written down in `CLAUDE.md` - it has cost this project a
+green-looking regex before - and the rule still did not stop me, because a rule that is only
+prose is checked by nobody.
+
+So it is checked now. `build.ps1` scans every source and suite for control characters other than
+tab and newline and names the file and line:
+
+    ! управляющий символ в исходнике (съеденная обратная косая? см. CLAUDE.md): 02-world.js:2 0x08
+
+Verified by planting one and watching it be found. A sweep of everything touched today turned up
+no others in code; the two in `PATCHNOTES.md` and `PLAN.md` are older prose *describing this very
+bug* and carrying it - left as they are, since they are quotations of the accident.
+
+Full tier green: 17811 assertions over 787 suites.
+
+---
 ## 0.415.1 - two notes from the parallel session, both right
 
 - **The probe took the press only when it could afford it.** `probeClaim` returned whatever

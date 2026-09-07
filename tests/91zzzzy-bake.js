@@ -207,3 +207,28 @@ TEST_SUITES.push(()=>suite("выпечка: синхронный путь — д
   /* и она всё-таки есть — иначе стенды и снимки остались бы без зерна */
   eq(typeof planetMatNow,"function","а стендам она доступна");
 }));
+
+TEST_SUITES.push(()=>suite("выпечка: ни один набор не утверждает миллисекунды",()=>{
+  /* Прямое следствие того, что часов в стенде нет: утверждение «это заняло
+     меньше N мс» здесь всегда верно, то есть не утверждение вовсе. Один такой
+     сторожил повтор летописи (`91zzzw-fx`) и не поймал бы ничего; заменён на
+     счёт РАБОТЫ. Эта проверка держит правило: считать в наборах можно вызовы,
+     строки, кадры — что угодно, кроме времени. */
+  const all=(typeof document!=="undefined"&&document.scripts&&document.scripts[0])
+    ?document.scripts[0].textContent:"";
+  if(!all){ok(true,"исходник страницы не виден — проверка в браузере");return;}
+  const cut=all.indexOf("TEST_SUITES");
+  if(cut<0){ok(true,"наборов в этой сборке нет");return;}
+  const suites=all.slice(cut);
+  /* ЖДАТЬ по часам можно: между `setTimeout` виртуальное время идёт, и
+     ожидание первого кадра в `99-run` — законное. Нельзя УТВЕРЖДАТЬ: ищем
+     сравнение времени внутри `ok`/`eq`/`near`, а не вообще всякое. */
+  const rx=/(performance\.now\(\)|Date\.now\(\))\s*-\s*[A-Za-z_$][\w$]*\s*[<>]/g;
+  const bad=[];
+  let m;
+  while((m=rx.exec(suites))){
+    const back=suites.slice(Math.max(0,m.index-40),m.index);
+    if(/(ok|eq|near)\s*\([^)]*$/.test(back))bad.push(m[0]);
+  }
+  eq(bad.length,0,"наборы не утверждают миллисекунды (нашлось: "+bad.join(", ")+")");
+}));
