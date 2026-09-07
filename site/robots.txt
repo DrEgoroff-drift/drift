@@ -1,0 +1,14 @@
+# drift-game.ru
+# Сканировать можно всё, что показывается людям. Ассистентам (Google-Extended,
+# GPTBot, PerplexityBot, ClaudeBot и прочим) отдельных запретов нет намеренно:
+# страницы написаны для того, чтобы их цитировали.
+
+User-agent: *
+Allow: /
+Disallow: /api.php
+Disallow: /log.php
+Disallow: /war.php
+Disallow: /reset.html
+Disallow: /dev.html
+
+Sitemap: https://drift-game.ru/sitemap.xml

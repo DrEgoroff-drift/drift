@@ -15,6 +15,8 @@ the game changes on every push, the pages around it almost never, and the backen
 | `/war.js` | built by `build.ps1` (`War`) | the chronicle modules of the game glued for the site (`site/war-head.js` + `$WAR_MODULES`), so the map replays the same history byte for byte; `docs/warsim.js` runs the same bundle in Node |
 | `/api.php` | `site/api.php` | accounts, cloud saves, password recovery |
 | `/log.php` | `site/log.php` | error log receiver (0.359.0): every client error → `~/drift-data/crash.log`, JSON lines, rotated at 5 MB; read with `ssh drift 'tail -n 50 ~/drift-data/crash.log'` |
+| `/robots.txt` | `site/robots.txt` | сканировать можно всё, кроме PHP-точек, `reset.html` и `dev.html`; ссылка на sitemap. Запретов для сборщиков ассистентов (Google-Extended, GPTBot, ClaudeBot) нет намеренно |
+| `/sitemap.xml` | `site/sitemap.xml` | шесть адресов для поисковиков; `lastmod` правится руками, когда страницы меняются по сути |
 | `/drift.webmanifest`, `/drift-sw.js` | `site/` | the game as an installable app: manifest and a network-first cache of `play.html` |
 
 Everything under `site/` is copied to the web root as it stands, so a new page or picture needs no
