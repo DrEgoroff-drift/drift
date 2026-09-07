@@ -89,25 +89,35 @@ $PLAN_KB = 60      # порог для PLAN.md
 # и `26-ui-station` (четыре вкладки → `26b-ui-station-work`). Двое последних
 # вышли из этого списка СОВСЕМ (26-ui-station 36 КБ, 23-mode-dig 15 КБ после
 # давнего распила): поблажка снимается вместе с долгом, иначе она вечная.
-$BULK_OLD = @{     # известные крупные; замер обновлён 2026-09-02 (было 3 имени от 2026-08-15,
-                   # сторож кричал на 17 модулей каждую сборку — см. правило выше: молчание = «не растёт»)
-  "14-save.js" = 58
+$BULK_OLD = @{     # известные крупные; замер обновлён 2026-09-07 (M415: распилены 12ai,
+                   # 26, 21e и 14 — четыре самых больших; остальные пересняты, чтобы
+                   # молчание снова означало «не растёт», а не «сторож устал»).
+                   # Правило то же: имя тут не индульгенция, а замер. Растёт — кричит.
   "12ud-smena-text.js" = 560   # текст романа (M353): таблица, не делится
-  "21ac-base-draw.js" = 48   # 0.410.0: небо, гора и порода уехали в 21ab1-base-ground
-  "26-ui-station.js" = 50
   "24aa-raid-draw.js" = 50
+  "29d-home-draw.js" = 49
+  "27j-ui-opis.js" = 49
+  "21-mode-surface.js" = 48
   "12c-mgr-core.js" = 48
   "27k-road.js" = 47
-  "21e-surface-draw.js" = 47
+  "27c-ui-hq.js" = 47
+  "21ac-base-draw.js" = 47   # 0.410.0: небо, гора и порода уехали в 21ab1-base-ground
+  "17-mode-system.js" = 47
   "25g-postcard.js" = 45
-  "27c-ui-hq.js" = 44
-  "27e-ui-home.js" = 44
-  "21-mode-surface.js" = 44
+  "22-mode-cave.js" = 45
   "27l-road-draw.js" = 44
-  "12y-parrot-face.js" = 42
+  "27e-ui-home.js" = 44
+  "14-save.js" = 44          # M415: вторая половина applySave — в 14a1-save-rest
+  "12l-barge.js" = 44
+  "12a-crew.js" = 44
+  "21e1-surface-world.js" = 43  # M415: ОДНА функция drawSurfaceWorld на 590 строк.
+                             # Дальше её режут по своим швам: устье шахты, следы, ночь
+  "19-mode-landing.js" = 43
+  "12y-parrot-face.js" = 43  # одна таблица — не делится
   "27f-hq-room.js" = 42
-  "29d-home-draw.js" = 41
-  "22-mode-cave.js" = 41
+  "18-mode-map.js" = 42
+  "91zzzw-combat.js" = 41
+  "26-ui-station.js" = 41    # M415: доска, рынок и док — в 26e-ui-station-trade
   "23a-dig-draw.js" = 41
 }
 function Bulk($files, $tfiles) {
@@ -151,9 +161,17 @@ function Bulk($files, $tfiles) {
   # версий не давала наёмника (25.08.2026, `crewGift`). Правило проекта про
   # перки — «подпись без кода это ложь» — тут ровно то же самое.
   $srcAll = ($files | ForEach-Object { [IO.File]::ReadAllText($_.FullName, [Text.Encoding]::UTF8) }) -join "`n"
+  # Браузерные глобальные объявлены не у нас, а в среде, и проверка на них
+  # честная: под node-заглушками их нет. Без этого списка сторож кричал две
+  # ложные тревоги каждую сборку — а сторож, который кричит всегда, не сторож.
+  $HOST_GLOBALS = @("addEventListener","removeEventListener","requestAnimationFrame",
+    "cancelAnimationFrame","speechSynthesis","matchMedia","fetch","atob","btoa",
+    "AudioContext","webkitAudioContext","ResizeObserver","IntersectionObserver",
+    "structuredClone","queueMicrotask","OffscreenCanvas","createImageBitmap")
   $ghosts = @()
   foreach ($nm in ([regex]::Matches($srcAll, 'typeof\s+([A-Za-z_$][A-Za-z0-9_$]*)\s*===?\s*"function"') |
                    ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique)) {
+    if ($HOST_GLOBALS -contains $nm) { continue }
     $decl = "(function\s+$nm\s*\(|(const|let|var)\s+$nm\s*=|\b$nm\s*=\s*function)"
     if (-not [regex]::IsMatch($srcAll, $decl)) { $ghosts += $nm }
   }

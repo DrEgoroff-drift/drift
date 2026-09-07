@@ -1759,7 +1759,7 @@ body.table u.addr{color:#7a4a20}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.410.0";
+const VER="0.411.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -5667,7 +5667,6 @@ let GUN_LIST=null;
 function fittedGuns(){
   if(GUN_LIST)return GUN_LIST;
   const f=G.fit[G.shipId]||{},out=[];
-  const st=(typeof stat0Gun==="function")?null:null;
   for(const k in f){
     const p=partById(f[k]);
     if(!p||p.kind!=="gun")continue;
@@ -19012,6 +19011,272 @@ function fleetPos(f){
   return {x,y,a,u};
 }
 
+/* окраска флота — отдельным слоем (12ai1, M415) */
+
+/* масштаб спрайта в системе (§8, альманах III): упирался в 1.5, пока setZoom
+   идёт до 2.4 — последняя треть зума растила мир, а флот нет, и на сближении
+   почтовик оказывался меньше баржи. Спрайт печётся в ×3: до потолка зума
+   разрешение уже оплачено. */
+function fleetScale(Z){return clamp(Z,.5,2.4)*.85;}
+/* строка подсказки — живой DOM, меряем его (27z); null, когда её нет */
+function fleetPromptRect(){
+  const pe=document.getElementById("prompt");if(!pe||!pe.textContent)return null;
+  const r=pe.getBoundingClientRect();return r.height>0?r:null;
+}
+/* подпись под кораблём (§3): не по константе (+30/+40 ложились на корпус
+   высоких классов и на фишки планет), а от видимой полувысоты тела под текущим
+   углом; если снизу фишка или строка подсказки — уходит наверх. Фишки — SYS_CHIPS
+   предыдущего кадра, в тех же пикселях холста. Возвращает базовую линию первой
+   строки; вторая идёт на +10. */
+function fleetLabelY(x,y,hh,tw,rows){
+  const bh=8+rows*10,pr=fleetPromptRect();
+  const hit=ly=>{
+    const x0=x-tw/2,x1=x+tw/2,y0=ly-8,y1=ly-8+bh;
+    if(y1>H-40)return true;
+    if(pr&&!(x1<pr.left||pr.right<x0||y1<pr.top-4||pr.bottom+4<y0))return true;
+    if(typeof SYS_CHIPS!=="undefined")for(const c of SYS_CHIPS)if(!(x1<c.x||c.x+c.w<x0||y1<c.y||c.y+c.h<y0))return true;
+    return false;};
+  const below=y+hh+12,above=y-hh-4-bh+8;
+  return (hit(below)&&!hit(above))?above:below;
+}
+function drawFleet(zx,zy,Z){
+  const F=fleetHere(G.sys);if(!F.length)return;
+  for(const f of F){
+    const p=fleetPos(f),x=zx(p.x),y=zy(p.y);
+    if(x<-260||x>W+260||y<-260||y>H+260)continue;
+    const s=fleetScale(Z),art=fleetArtOf(f);
+    ctx.save();ctx.translate(x,y);ctx.rotate(p.a);ctx.scale(s,s);
+    drawFleetShip(f);
+    ctx.restore();
+    if(f.k==="derelict")continue;
+    const C=FLEET_CLASSES[f.k];
+    const hh=(Math.abs(art.bx*Math.sin(p.a))+Math.abs(art.by*Math.cos(p.a)))*s;
+    ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+    const l1=f.k==="node"?"«"+f.name+"» · УЗЕЛ ТРАСС · ГЛАВТРАССА":"«"+f.name+"» · ГЛАВТРАССА · "+f.num+" · ТРАССА "+f.line;
+    const rows=f.k==="node"?1:2,ly=fleetLabelY(x,y,hh,ctx.measureText(l1).width,rows);
+    ctx.fillStyle="rgba(226,214,200,.8)";ctx.fillText(l1,x,ly);
+    if(rows>1){ctx.fillStyle="rgba(226,214,200,.5)";ctx.fillText(C.ru.toUpperCase(),x,ly+10);}
+    ctx.textAlign="left";
+  }
+}
+/* ── позывной и заправка по норме (§18.7 п.1, п.3) ── */
+function fleetLogKey(){return G.sx+","+G.sy;}
+/* праздник по календарю (11am): норма флота двойная в этот день (M349) */
+function fleetNormTwice(){return !!(typeof holNow==="function"&&holNow());}
+function fleetNormKey(){return Math.floor(Date.now()/((typeof HOLD_SHIFT==="number")?HOLD_SHIFT:1800000))+(fleetNormTwice()?"h":"");}
+/* ── Кольцо (рунг 30): окликают первыми (§18.8, M315) ──
+   До сих пор эфир отвечал только на ваш позывной. На последней ступени лестницы
+   флот узнаёт борт сам: первый корабль линии, подошедший на семьсот, называет вас
+   раньше, чем вы его. Раз в окно на систему; хранится одно число (`fleetLog`). */
+function fleetHailFirst(sh,F){
+  if(fleetRung(G.sys)<30)return;
+  const bucket=Math.floor(Date.now()/FLEET_PERIOD),key="hail|"+fleetLogKey();
+  G.fleetLog=G.fleetLog||{};
+  if(G.fleetLog[key]===bucket)return;
+  for(const f of F){
+    if(f.k==="derelict"||f.k==="node")continue;
+    const p=fleetPos(f);if(Math.hypot(sh.x-p.x,sh.y-p.y)>700)continue;
+    const C=FLEET_CLASSES[f.k],who=(G.name&&G.name.trim())?G.name.trim():"борт";
+    G.fleetLog[key]=bucket;
+    /* ── чужой корпус под своим флагом (M369b, §19.3, D09) ──
+       Летать можно на чём угодно, флаг от этого не меняется — но замполит
+       обязательно отметит, на чём вы прилетели. Это и есть вся разница. */
+    const hby=(typeof makerOf==="function")?makerOf(G.shipId):"gt";
+    const hp=(hby!=="gt"&&typeof powerOf==="function")?powerOf(hby):null;
+    etherLine("«"+f.name+"» — "+who+"у: …видим вас."+
+      (hp?" На "+hp.ru+"ском корпусе, а флаг наш? Записываю.":"")+
+      " Кольцо ваше, идём рядом, если надо. Конец связи.",C.ru);
+    return;
+  }
+}
+function fleetInteract(sh){
+  const F=fleetHere(G.sys);if(!F.length)return false;
+  fleetHailFirst(sh,F);
+  let near=null,nd=1e9,np=null;
+  for(const f of F){const p=fleetPos(f),d=Math.hypot(sh.x-p.x,sh.y-p.y);if(d<nd){nd=d;near=f;np=p;}}
+  if(!near||nd>260)return false;
+  if(near.k==="derelict"){
+    /* ── взять на буксир (M369b, §19.3 «tow») ──
+       Чёрный корпус — не декорация: его можно утащить в док и там
+       восстановить. Это единственный способ получить чужой корпус, пока
+       эпизодов не существует, и он честный: тащить долго, платить дорого. */
+    const towed=!!G.tow;
+    const dby=(typeof makerBySeed==="function")?makerBySeed(near.seed):"gt";
+    G.prompt=towed
+      ?"ЧЁРНЫЙ КОРПУС · У ВАС УЖЕ ЕСТЬ БУКСИР\nДЕЙСТВИЕ — ПОЗЫВНОЙ"
+      :"ЧЁРНЫЙ КОРПУС · БЕЗ ИМЕНИ\nДЕЙСТВИЕ — ВЗЯТЬ НА БУКСИР";
+    if(actEdge&&!towed){
+      G.tow={seed:near.seed>>>0,by:dby,sx:G.sx,sy:G.sy};
+      G.fleetLog=G.fleetLog||{};
+      G.fleetLog["towed|"+fleetLogKey()]=1;
+      say("КОРПУС НА ТРОСЕ · В ДОК",120);
+      logAdd("tech","Чёрный корпус взят на буксир · сектор "+G.sx+":"+G.sy+
+        " · восстановление в доке");
+      if(typeof recordAdd==="function")recordAdd("эфир","взял на буксир чёрный корпус в секторе "+G.sx+":"+G.sy);
+      return true;
+    }
+    if(actEdge){
+      etherLine("…тишина. Ни позывного, ни огня. Только корпус, и он чёрный.","эфир");
+      G.fleetLog=G.fleetLog||{};
+      if(!G.fleetLog["derelict|"+fleetLogKey()]){G.fleetLog["derelict|"+fleetLogKey()]=1;
+        if(typeof recordAdd==="function")recordAdd("эфир","чёрный корпус в секторе "+G.sx+":"+G.sy+" · не ответил");}
+    }
+    return true;
+  }
+  if(near.k==="node"){
+    G.prompt="УЗЛОВАЯ «"+near.name+"» · УЗЕЛ ТРАСС\nДЕЙСТВИЕ — ПОЗЫВНОЙ";
+    if(actEdge)etherLine("«"+near.name+"»: …узел трасс. Стоянка есть, торга нет: Короб полон, Кубрик спит, Воротник открыт. Держитесь линии.","узловая");
+    return true;
+  }
+  const C=FLEET_CLASSES[near.k];
+  /* караван (§18.7 п.6): идти рядом — пираты не подходят, ход медленнее */
+  const canCaravan=!(G.caravan&&G.caravan.until>G.t);
+  /* спасатель (п.11): идёт на чужой сигнал и зовёт с собой — если в системе есть баржа в беде */
+  const dist=(near.k==="rescue"&&G.barges)?G.barges.find(b=>b.distress&&!b.done):null;
+  const st=stat(), low=G.fuel<st.fuelMax*.6;
+  const shift=Math.floor(Date.now()/((typeof HOLD_SHIFT==="number")?HOLD_SHIFT:1800000));
+  G.fleetLog=G.fleetLog||{};
+  /* норма — одна на смену; в праздник (11am, маяк объявляет) — две (M349) */
+  const fe=G.fleetLog[fleetLogKey()],feS=(fe&&typeof fe==="object")?fe.s:(fe|0),feN=(fe&&typeof fe==="object")?fe.n|0:(fe?1:0);
+  const gave=feS>=shift-(FLEET_NORM_SHIFTS-1)&&feN>=(fleetNormTwice()?2:1);
+  const canFuel=near.k==="tanker"&&low&&!gave;
+  /* буксир: корпус, который не дотянет, тянут на верфь — подлатан до 40 %, чтобы дошёл (§18.7 п.4) */
+  const hurt=G.hull<st.hullMax*.3;
+  const tugKey=fleetLogKey()+"|tug", baseKey=fleetLogKey()+"|base";
+  const canTow=near.k==="tug"&&hurt&&(G.fleetLog[tugKey]||0)<shift;
+  /* плавбаза: пока стоит здесь — она вам станция: ремонт по норме раз в смену (п.7) */
+  const canFix=near.k==="base"&&G.hull<st.hullMax*.9&&(G.fleetLog[baseKey]||0)<shift;
+  /* сторожевик: с доброй репутацией проводит, с худой досматривает (п.10) */
+  const rep=(typeof repAt==="function")?repAt():0;
+  const canEscort=near.k==="patrol"&&rep>=2&&!(G.fleetEscort>G.t);
+  /* почтовик: карточки в руки — он привозит ваши (п.5); только в сети */
+  const canMail=near.k==="post"&&typeof mailOn==="function"&&mailOn()&&typeof mailDock==="function";
+  /* госпитальное: выкуп заложника вдвое дешевле (п.8) */
+  const hostage=(G.crew||[]).find(c=>c.state==="hostage"&&c.ransom>0);
+  const canRansom=near.k==="hosp"&&!!hostage;
+  /* учебное: берёт свободного наёмника на рейс и возвращает грамотнее (п.9), раз в смену */
+  const pupil=(G.crew||[]).find(c=>!c.state&&(!c.order||c.order.kind==="home"));
+  const schoolKey=fleetLogKey()+"|school";
+  const canSchool=near.k==="school"&&!!pupil&&(G.fleetLog[schoolKey]||0)<shift;
+  const verb=canFuel?"ЗАПРАВКА ПО НОРМЕ":canTow?"БУКСИР НА ВЕРФЬ":canFix?"РЕМОНТ ПО НОРМЕ":canEscort?"ПРОСИТЬ КОНВОЙ":
+    canMail?"СДАТЬ ПОЧТУ":canRansom?"ВЫКУП ЧЕРЕЗ ГОСПИТАЛЬ · "+Math.round(hostage.ransom*.5).toLocaleString("ru")+" КР":canSchool?"ОТДАТЬ В УЧЁБУ · "+pupil.name.toUpperCase():dist?"ИДТИ НА СИГНАЛ · «"+dist.capName.toUpperCase()+"»":canCaravan?"ИДТИ КАРАВАНОМ":"ПОЗЫВНОЙ";
+  G.prompt=C.ru.toUpperCase()+" ГЛАВТРАССЫ «"+near.name+"»"+
+    "\nДЕЙСТВИЕ — "+verb;
+  if(actEdge){
+    if(dist){
+      const ang=Math.atan2(dist.y-sh.y,dist.x-sh.x),deg=Math.round(((ang/TAU)*360+360)%360);
+      const dd=Math.round(Math.hypot(dist.x-sh.x,dist.y-sh.y));
+      etherLine("«"+near.name+"»: …спасатель. Сигнал с баржи «"+dist.capName+"», курс "+deg+"°, "+dd+". Идём. Кто с нами — за нами.","спасатель");
+      if(typeof say==="function")say("СПАСАТЕЛЬ ИДЁТ НА «"+dist.capName.toUpperCase()+"»\nкурс "+deg+"° · "+dd);
+    }else if(!canFuel&&!canTow&&!canFix&&!canEscort&&!canMail&&!canRansom&&!canSchool&&canCaravan){
+      G.caravan={until:G.t+1200,name:near.name};
+      etherLine("«"+near.name+"»: …идите рядом, борт. Ход наш, пираты к каравану не суются. Отстанете — сами по себе.",C.ru);
+    }else if(canMail){
+      mailDock();
+      etherLine("«"+near.name+"»: …почтовик. Стопку приняли, ваши — на борту, смотрите стол.","почтовик");
+    }else if(canRansom){
+      hostage.ransom=Math.round(hostage.ransom*.5);
+      if(typeof ransomPay==="function"&&ransomPay(hostage))
+        etherLine("«"+near.name+"»: …госпитальное. Человека забрали с той стороны, по нашей таксе. Живой.","госпитальное");
+      else hostage.ransom*=2;
+    }else if(canSchool){
+      pupil.xp=(pupil.xp||0)+35;G.fleetLog[schoolKey]=shift;
+      if(typeof crewHistory==="function")crewHistory(pupil,{cat:"good",id:"school"},"учился на «"+near.name+"»");
+      etherLine("«"+near.name+"»: …учебное. "+pupil.name+" на борту, рейс — и вернём грамотнее.","учебное");
+      if(typeof recordAdd==="function")recordAdd("ГЛАВТРАССА","учёба · "+pupil.name+" · «"+near.name+"»");
+    }else if(canTow){
+      G.hull=Math.max(G.hull,Math.round(st.hullMax*.4));G.fleetLog[tugKey]=shift;
+      etherLine("«"+near.name+"»: …взяли на буксир. До верфи дотянете сами, дальше — их работа.","буксир");
+      if(typeof recordAdd==="function")recordAdd("ГЛАВТРАССА","буксир «"+near.name+"» · "+near.num);
+    }else if(canFix){
+      G.hull=st.hullMax;G.fleetLog[baseKey]=shift;
+      etherLine("«"+near.name+"»: …плавбаза. Пока стоим здесь — мы вам станция. Корпус закрыли.","плавбаза");
+      if(typeof recordAdd==="function")recordAdd("ГЛАВТРАССА","ремонт на плавбазе «"+near.name+"»");
+    }else if(canEscort){
+      G.fleetEscort=G.t+900;
+      etherLine("«"+near.name+"»: …сторожевик. Ваш борт в списках чист — идём рядом. Пятнадцать минут по трассе.","сторожевик");
+    }else if(near.k==="patrol"&&rep<=-2){
+      etherLine("«"+near.name+"»: …сторожевик. Ваш борт в списках. Досмотр: трюм открыть. Чисто. На этот раз.","сторожевик");
+    }else if(canFuel){
+      G.fuel=st.fuelMax;G.fleetLog[fleetLogKey()]=(feS===shift)?{s:shift,n:feN+1}:{s:shift,n:1};
+      etherLine("«"+near.name+"»: …по норме, до полного. Расписок не пишем — трасса помнит сама.","танкер");
+      if(typeof recordAdd==="function")recordAdd("ГЛАВТРАССА","заправка по норме · «"+near.name+"» · "+near.num);
+      if(typeof sfx==="function")sfx("ui",{f:520,to:880,d:.3,v:.12});
+    }else{
+      const r=rng(hashi(near.seed,G.t|0,0xCA11));
+      let line=C.say[Math.floor(r()*C.say.length)];
+      if(near.k==="tanker"&&!low)line=C.say[1];
+      if(near.k==="tanker"&&low&&gave)line="…танкер. Норму в этом секторе вы уже брали. Следующая — со сменой.";
+      etherLine("«"+near.name+"»: "+line,C.ru);
+    }
+  }
+  return true;
+}
+
+/* конвой сторожевика: пока действует, пираты вас не видят (§18.7 п.6/п.10) */
+function fleetEscortActive(){return G.mode==="system"&&((G.fleetEscort||0)>G.t||fleetCaravanActive());}
+/* караван действует, пока срок не вышел и рядом (до 520) идёт корабль флота */
+function fleetCaravanActive(){
+  if(G.mode!=="system"||!G.caravan||G.caravan.until<=G.t)return false;
+  const sh=G.ship;let ok=false;
+  for(const f of fleetHere(G.sys)){if(f.still)continue;const p=fleetPos(f);if(Math.hypot(sh.x-p.x,sh.y-p.y)<520){ok=true;break;}}
+  if(!ok)G.caravan=null;
+  return ok;
+}
+
+/* ── трассы на карте (§14: линия заработана управляемостью) ──
+   Между соседними системами, где ходит флот (станция и рунг ≥ 5), пунктир
+   красно-белого цвета флота — по нему можно идти, это и есть трасса. Узловая
+   (рунг ≥ 25) — квадратная засечка у звезды. Рисуется поверх связей, под
+   звёздами; ничего не хранится. */
+let FLEET_MAP_LEGS=0;   /* сколько плеч нарисовано за кадр — читает набор M318 */
+function drawFleetMap(vis,cell){
+  const on=v=>!!(v.s&&v.s.station&&fleetRung(v.s)>=5);
+  const L=vis.filter(on);
+  FLEET_MAP_LEGS=0;
+  if(!L.length)return;
+  ctx.save();ctx.lineWidth=1;
+  const seen=new Set();
+  /* линия — цепочка, не сетка (§14, альманах III 0.314.0): у каждой станции
+     плечо только к двум ближайшим соседям с флотом; иначе кучка из пяти
+     станций давала десять пунктиров, и трасса переставала быть направлением */
+  for(const a of L){
+    const nb=L.filter(b=>b!==a&&Math.hypot(a.x-b.x,a.y-b.y)<=cell*1.6)
+      .sort((p,q)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(a.x-q.x,a.y-q.y)).slice(0,2);
+    for(const b of nb){
+    const key=a.gx<b.gx||(a.gx===b.gx&&a.gy<b.gy)?a.gx+","+a.gy+">"+b.gx+","+b.gy:b.gx+","+b.gy+">"+a.gx+","+a.gy;
+    if(seen.has(key))continue;seen.add(key);FLEET_MAP_LEGS++;
+    /* тонкая двойная линия с засечками-верстами (M348): трасса — дорога на карте, не пунктир */
+    const dx=b.x-a.x,dy=b.y-a.y,L=Math.hypot(dx,dy)||1,nx=-dy/L*1.3,ny=dx/L*1.3;
+    /* закон темноты (M348): за кромкой прыжка трасса не горит в полную силу —
+       на постановочном кадре со всеми станциями пятой ступени дальние плечи
+       читались ярче ближних дорог; здесь они уходят в треть */
+    const k=(a.near||b.near)?1:.35;
+    ctx.strokeStyle="rgba(236,232,220,"+(.42*k).toFixed(3)+")";
+    ctx.beginPath();ctx.moveTo(a.x+nx,a.y+ny);ctx.lineTo(b.x+nx,b.y+ny);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(a.x-nx,a.y-ny);ctx.lineTo(b.x-nx,b.y-ny);ctx.stroke();
+    ctx.strokeStyle="rgba(226,120,100,"+(.6*k).toFixed(3)+")";
+    for(let t=.25;t<.99;t+=.25){const tx=a.x+dx*t,ty=a.y+dy*t;ctx.beginPath();ctx.moveTo(tx+nx*2.6,ty+ny*2.6);ctx.lineTo(tx-nx*2.6,ty-ny*2.6);ctx.stroke();}
+  }}
+  for(const v of L){
+    if(fleetRung(v.s)<25)continue;
+    ctx.strokeStyle="rgba(236,232,220,.7)";ctx.lineWidth=1;
+    ctx.strokeRect(v.x+7,v.y-11,6,6);
+    ctx.fillStyle="rgba(226,120,100,.9)";ctx.fillRect(v.x+8,v.y-10,4,1.5);
+  }
+  ctx.restore();
+}
+
+/* ══════════════ ГЛАВТРАССА: как флот выглядит (выделено из 12ai, M415) ══════════════
+   Треть модуля флота была не флотом, а ЕГО ОКРАСКОЙ: конвейер спрайта на все
+   тринадцать классов, дом-мейкер поверх класса (§19.4), глифы промысла и
+   отрисовка готового борта с огнями. Это самостоятельный слой — он ничего не
+   знает ни про проход через систему, ни про норму топлива, ни про позывной, —
+   и держать его в одном файле с ними мешало обоим: 58 КБ не читаются целиком.
+
+   Порядок склейки: `12ai1-` ложится сразу за `12ai-fleet` (байтовый порядок:
+   '-' < '1' < 'a'). Здесь объявлен `FLEET_ART` — кэш спрайтов; его читает
+   только `fleetArtOf`, то есть во время кадра, а не на верхнем уровне. */
 /* ── окраска: один конвейер на все классы (§18.5, §1) ── */
 const FLEET_ART={},FLEET_SS=3;
 function fleetArtOf(f){
@@ -19401,259 +19666,6 @@ function drawFleetShip(f){
       ctx.fillStyle=fg;ctx.beginPath();ctx.arc(li.x,li.y,li.r*1.3,0,TAU);ctx.fill();
     }
   }
-}
-/* масштаб спрайта в системе (§8, альманах III): упирался в 1.5, пока setZoom
-   идёт до 2.4 — последняя треть зума растила мир, а флот нет, и на сближении
-   почтовик оказывался меньше баржи. Спрайт печётся в ×3: до потолка зума
-   разрешение уже оплачено. */
-function fleetScale(Z){return clamp(Z,.5,2.4)*.85;}
-/* строка подсказки — живой DOM, меряем его (27z); null, когда её нет */
-function fleetPromptRect(){
-  const pe=document.getElementById("prompt");if(!pe||!pe.textContent)return null;
-  const r=pe.getBoundingClientRect();return r.height>0?r:null;
-}
-/* подпись под кораблём (§3): не по константе (+30/+40 ложились на корпус
-   высоких классов и на фишки планет), а от видимой полувысоты тела под текущим
-   углом; если снизу фишка или строка подсказки — уходит наверх. Фишки — SYS_CHIPS
-   предыдущего кадра, в тех же пикселях холста. Возвращает базовую линию первой
-   строки; вторая идёт на +10. */
-function fleetLabelY(x,y,hh,tw,rows){
-  const bh=8+rows*10,pr=fleetPromptRect();
-  const hit=ly=>{
-    const x0=x-tw/2,x1=x+tw/2,y0=ly-8,y1=ly-8+bh;
-    if(y1>H-40)return true;
-    if(pr&&!(x1<pr.left||pr.right<x0||y1<pr.top-4||pr.bottom+4<y0))return true;
-    if(typeof SYS_CHIPS!=="undefined")for(const c of SYS_CHIPS)if(!(x1<c.x||c.x+c.w<x0||y1<c.y||c.y+c.h<y0))return true;
-    return false;};
-  const below=y+hh+12,above=y-hh-4-bh+8;
-  return (hit(below)&&!hit(above))?above:below;
-}
-function drawFleet(zx,zy,Z){
-  const F=fleetHere(G.sys);if(!F.length)return;
-  for(const f of F){
-    const p=fleetPos(f),x=zx(p.x),y=zy(p.y);
-    if(x<-260||x>W+260||y<-260||y>H+260)continue;
-    const s=fleetScale(Z),art=fleetArtOf(f);
-    ctx.save();ctx.translate(x,y);ctx.rotate(p.a);ctx.scale(s,s);
-    drawFleetShip(f);
-    ctx.restore();
-    if(f.k==="derelict")continue;
-    const C=FLEET_CLASSES[f.k];
-    const hh=(Math.abs(art.bx*Math.sin(p.a))+Math.abs(art.by*Math.cos(p.a)))*s;
-    ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
-    const l1=f.k==="node"?"«"+f.name+"» · УЗЕЛ ТРАСС · ГЛАВТРАССА":"«"+f.name+"» · ГЛАВТРАССА · "+f.num+" · ТРАССА "+f.line;
-    const rows=f.k==="node"?1:2,ly=fleetLabelY(x,y,hh,ctx.measureText(l1).width,rows);
-    ctx.fillStyle="rgba(226,214,200,.8)";ctx.fillText(l1,x,ly);
-    if(rows>1){ctx.fillStyle="rgba(226,214,200,.5)";ctx.fillText(C.ru.toUpperCase(),x,ly+10);}
-    ctx.textAlign="left";
-  }
-}
-/* ── позывной и заправка по норме (§18.7 п.1, п.3) ── */
-function fleetLogKey(){return G.sx+","+G.sy;}
-/* праздник по календарю (11am): норма флота двойная в этот день (M349) */
-function fleetNormTwice(){return !!(typeof holNow==="function"&&holNow());}
-function fleetNormKey(){return Math.floor(Date.now()/((typeof HOLD_SHIFT==="number")?HOLD_SHIFT:1800000))+(fleetNormTwice()?"h":"");}
-/* ── Кольцо (рунг 30): окликают первыми (§18.8, M315) ──
-   До сих пор эфир отвечал только на ваш позывной. На последней ступени лестницы
-   флот узнаёт борт сам: первый корабль линии, подошедший на семьсот, называет вас
-   раньше, чем вы его. Раз в окно на систему; хранится одно число (`fleetLog`). */
-function fleetHailFirst(sh,F){
-  if(fleetRung(G.sys)<30)return;
-  const bucket=Math.floor(Date.now()/FLEET_PERIOD),key="hail|"+fleetLogKey();
-  G.fleetLog=G.fleetLog||{};
-  if(G.fleetLog[key]===bucket)return;
-  for(const f of F){
-    if(f.k==="derelict"||f.k==="node")continue;
-    const p=fleetPos(f);if(Math.hypot(sh.x-p.x,sh.y-p.y)>700)continue;
-    const C=FLEET_CLASSES[f.k],who=(G.name&&G.name.trim())?G.name.trim():"борт";
-    G.fleetLog[key]=bucket;
-    /* ── чужой корпус под своим флагом (M369b, §19.3, D09) ──
-       Летать можно на чём угодно, флаг от этого не меняется — но замполит
-       обязательно отметит, на чём вы прилетели. Это и есть вся разница. */
-    const hby=(typeof makerOf==="function")?makerOf(G.shipId):"gt";
-    const hp=(hby!=="gt"&&typeof powerOf==="function")?powerOf(hby):null;
-    etherLine("«"+f.name+"» — "+who+"у: …видим вас."+
-      (hp?" На "+hp.ru+"ском корпусе, а флаг наш? Записываю.":"")+
-      " Кольцо ваше, идём рядом, если надо. Конец связи.",C.ru);
-    return;
-  }
-}
-function fleetInteract(sh){
-  const F=fleetHere(G.sys);if(!F.length)return false;
-  fleetHailFirst(sh,F);
-  let near=null,nd=1e9,np=null;
-  for(const f of F){const p=fleetPos(f),d=Math.hypot(sh.x-p.x,sh.y-p.y);if(d<nd){nd=d;near=f;np=p;}}
-  if(!near||nd>260)return false;
-  if(near.k==="derelict"){
-    /* ── взять на буксир (M369b, §19.3 «tow») ──
-       Чёрный корпус — не декорация: его можно утащить в док и там
-       восстановить. Это единственный способ получить чужой корпус, пока
-       эпизодов не существует, и он честный: тащить долго, платить дорого. */
-    const towed=!!G.tow;
-    const dby=(typeof makerBySeed==="function")?makerBySeed(near.seed):"gt";
-    G.prompt=towed
-      ?"ЧЁРНЫЙ КОРПУС · У ВАС УЖЕ ЕСТЬ БУКСИР\nДЕЙСТВИЕ — ПОЗЫВНОЙ"
-      :"ЧЁРНЫЙ КОРПУС · БЕЗ ИМЕНИ\nДЕЙСТВИЕ — ВЗЯТЬ НА БУКСИР";
-    if(actEdge&&!towed){
-      G.tow={seed:near.seed>>>0,by:dby,sx:G.sx,sy:G.sy};
-      G.fleetLog=G.fleetLog||{};
-      G.fleetLog["towed|"+fleetLogKey()]=1;
-      say("КОРПУС НА ТРОСЕ · В ДОК",120);
-      logAdd("tech","Чёрный корпус взят на буксир · сектор "+G.sx+":"+G.sy+
-        " · восстановление в доке");
-      if(typeof recordAdd==="function")recordAdd("эфир","взял на буксир чёрный корпус в секторе "+G.sx+":"+G.sy);
-      return true;
-    }
-    if(actEdge){
-      etherLine("…тишина. Ни позывного, ни огня. Только корпус, и он чёрный.","эфир");
-      G.fleetLog=G.fleetLog||{};
-      if(!G.fleetLog["derelict|"+fleetLogKey()]){G.fleetLog["derelict|"+fleetLogKey()]=1;
-        if(typeof recordAdd==="function")recordAdd("эфир","чёрный корпус в секторе "+G.sx+":"+G.sy+" · не ответил");}
-    }
-    return true;
-  }
-  if(near.k==="node"){
-    G.prompt="УЗЛОВАЯ «"+near.name+"» · УЗЕЛ ТРАСС\nДЕЙСТВИЕ — ПОЗЫВНОЙ";
-    if(actEdge)etherLine("«"+near.name+"»: …узел трасс. Стоянка есть, торга нет: Короб полон, Кубрик спит, Воротник открыт. Держитесь линии.","узловая");
-    return true;
-  }
-  const C=FLEET_CLASSES[near.k];
-  /* караван (§18.7 п.6): идти рядом — пираты не подходят, ход медленнее */
-  const canCaravan=!(G.caravan&&G.caravan.until>G.t);
-  /* спасатель (п.11): идёт на чужой сигнал и зовёт с собой — если в системе есть баржа в беде */
-  const dist=(near.k==="rescue"&&G.barges)?G.barges.find(b=>b.distress&&!b.done):null;
-  const st=stat(), low=G.fuel<st.fuelMax*.6;
-  const shift=Math.floor(Date.now()/((typeof HOLD_SHIFT==="number")?HOLD_SHIFT:1800000));
-  G.fleetLog=G.fleetLog||{};
-  /* норма — одна на смену; в праздник (11am, маяк объявляет) — две (M349) */
-  const fe=G.fleetLog[fleetLogKey()],feS=(fe&&typeof fe==="object")?fe.s:(fe|0),feN=(fe&&typeof fe==="object")?fe.n|0:(fe?1:0);
-  const gave=feS>=shift-(FLEET_NORM_SHIFTS-1)&&feN>=(fleetNormTwice()?2:1);
-  const canFuel=near.k==="tanker"&&low&&!gave;
-  /* буксир: корпус, который не дотянет, тянут на верфь — подлатан до 40 %, чтобы дошёл (§18.7 п.4) */
-  const hurt=G.hull<st.hullMax*.3;
-  const tugKey=fleetLogKey()+"|tug", baseKey=fleetLogKey()+"|base";
-  const canTow=near.k==="tug"&&hurt&&(G.fleetLog[tugKey]||0)<shift;
-  /* плавбаза: пока стоит здесь — она вам станция: ремонт по норме раз в смену (п.7) */
-  const canFix=near.k==="base"&&G.hull<st.hullMax*.9&&(G.fleetLog[baseKey]||0)<shift;
-  /* сторожевик: с доброй репутацией проводит, с худой досматривает (п.10) */
-  const rep=(typeof repAt==="function")?repAt():0;
-  const canEscort=near.k==="patrol"&&rep>=2&&!(G.fleetEscort>G.t);
-  /* почтовик: карточки в руки — он привозит ваши (п.5); только в сети */
-  const canMail=near.k==="post"&&typeof mailOn==="function"&&mailOn()&&typeof mailDock==="function";
-  /* госпитальное: выкуп заложника вдвое дешевле (п.8) */
-  const hostage=(G.crew||[]).find(c=>c.state==="hostage"&&c.ransom>0);
-  const canRansom=near.k==="hosp"&&!!hostage;
-  /* учебное: берёт свободного наёмника на рейс и возвращает грамотнее (п.9), раз в смену */
-  const pupil=(G.crew||[]).find(c=>!c.state&&(!c.order||c.order.kind==="home"));
-  const schoolKey=fleetLogKey()+"|school";
-  const canSchool=near.k==="school"&&!!pupil&&(G.fleetLog[schoolKey]||0)<shift;
-  const verb=canFuel?"ЗАПРАВКА ПО НОРМЕ":canTow?"БУКСИР НА ВЕРФЬ":canFix?"РЕМОНТ ПО НОРМЕ":canEscort?"ПРОСИТЬ КОНВОЙ":
-    canMail?"СДАТЬ ПОЧТУ":canRansom?"ВЫКУП ЧЕРЕЗ ГОСПИТАЛЬ · "+Math.round(hostage.ransom*.5).toLocaleString("ru")+" КР":canSchool?"ОТДАТЬ В УЧЁБУ · "+pupil.name.toUpperCase():dist?"ИДТИ НА СИГНАЛ · «"+dist.capName.toUpperCase()+"»":canCaravan?"ИДТИ КАРАВАНОМ":"ПОЗЫВНОЙ";
-  G.prompt=C.ru.toUpperCase()+" ГЛАВТРАССЫ «"+near.name+"»"+
-    "\nДЕЙСТВИЕ — "+verb;
-  if(actEdge){
-    if(dist){
-      const ang=Math.atan2(dist.y-sh.y,dist.x-sh.x),deg=Math.round(((ang/TAU)*360+360)%360);
-      const dd=Math.round(Math.hypot(dist.x-sh.x,dist.y-sh.y));
-      etherLine("«"+near.name+"»: …спасатель. Сигнал с баржи «"+dist.capName+"», курс "+deg+"°, "+dd+". Идём. Кто с нами — за нами.","спасатель");
-      if(typeof say==="function")say("СПАСАТЕЛЬ ИДЁТ НА «"+dist.capName.toUpperCase()+"»\nкурс "+deg+"° · "+dd);
-    }else if(!canFuel&&!canTow&&!canFix&&!canEscort&&!canMail&&!canRansom&&!canSchool&&canCaravan){
-      G.caravan={until:G.t+1200,name:near.name};
-      etherLine("«"+near.name+"»: …идите рядом, борт. Ход наш, пираты к каравану не суются. Отстанете — сами по себе.",C.ru);
-    }else if(canMail){
-      mailDock();
-      etherLine("«"+near.name+"»: …почтовик. Стопку приняли, ваши — на борту, смотрите стол.","почтовик");
-    }else if(canRansom){
-      hostage.ransom=Math.round(hostage.ransom*.5);
-      if(typeof ransomPay==="function"&&ransomPay(hostage))
-        etherLine("«"+near.name+"»: …госпитальное. Человека забрали с той стороны, по нашей таксе. Живой.","госпитальное");
-      else hostage.ransom*=2;
-    }else if(canSchool){
-      pupil.xp=(pupil.xp||0)+35;G.fleetLog[schoolKey]=shift;
-      if(typeof crewHistory==="function")crewHistory(pupil,{cat:"good",id:"school"},"учился на «"+near.name+"»");
-      etherLine("«"+near.name+"»: …учебное. "+pupil.name+" на борту, рейс — и вернём грамотнее.","учебное");
-      if(typeof recordAdd==="function")recordAdd("ГЛАВТРАССА","учёба · "+pupil.name+" · «"+near.name+"»");
-    }else if(canTow){
-      G.hull=Math.max(G.hull,Math.round(st.hullMax*.4));G.fleetLog[tugKey]=shift;
-      etherLine("«"+near.name+"»: …взяли на буксир. До верфи дотянете сами, дальше — их работа.","буксир");
-      if(typeof recordAdd==="function")recordAdd("ГЛАВТРАССА","буксир «"+near.name+"» · "+near.num);
-    }else if(canFix){
-      G.hull=st.hullMax;G.fleetLog[baseKey]=shift;
-      etherLine("«"+near.name+"»: …плавбаза. Пока стоим здесь — мы вам станция. Корпус закрыли.","плавбаза");
-      if(typeof recordAdd==="function")recordAdd("ГЛАВТРАССА","ремонт на плавбазе «"+near.name+"»");
-    }else if(canEscort){
-      G.fleetEscort=G.t+900;
-      etherLine("«"+near.name+"»: …сторожевик. Ваш борт в списках чист — идём рядом. Пятнадцать минут по трассе.","сторожевик");
-    }else if(near.k==="patrol"&&rep<=-2){
-      etherLine("«"+near.name+"»: …сторожевик. Ваш борт в списках. Досмотр: трюм открыть. Чисто. На этот раз.","сторожевик");
-    }else if(canFuel){
-      G.fuel=st.fuelMax;G.fleetLog[fleetLogKey()]=(feS===shift)?{s:shift,n:feN+1}:{s:shift,n:1};
-      etherLine("«"+near.name+"»: …по норме, до полного. Расписок не пишем — трасса помнит сама.","танкер");
-      if(typeof recordAdd==="function")recordAdd("ГЛАВТРАССА","заправка по норме · «"+near.name+"» · "+near.num);
-      if(typeof sfx==="function")sfx("ui",{f:520,to:880,d:.3,v:.12});
-    }else{
-      const r=rng(hashi(near.seed,G.t|0,0xCA11));
-      let line=C.say[Math.floor(r()*C.say.length)];
-      if(near.k==="tanker"&&!low)line=C.say[1];
-      if(near.k==="tanker"&&low&&gave)line="…танкер. Норму в этом секторе вы уже брали. Следующая — со сменой.";
-      etherLine("«"+near.name+"»: "+line,C.ru);
-    }
-  }
-  return true;
-}
-
-/* конвой сторожевика: пока действует, пираты вас не видят (§18.7 п.6/п.10) */
-function fleetEscortActive(){return G.mode==="system"&&((G.fleetEscort||0)>G.t||fleetCaravanActive());}
-/* караван действует, пока срок не вышел и рядом (до 520) идёт корабль флота */
-function fleetCaravanActive(){
-  if(G.mode!=="system"||!G.caravan||G.caravan.until<=G.t)return false;
-  const sh=G.ship;let ok=false;
-  for(const f of fleetHere(G.sys)){if(f.still)continue;const p=fleetPos(f);if(Math.hypot(sh.x-p.x,sh.y-p.y)<520){ok=true;break;}}
-  if(!ok)G.caravan=null;
-  return ok;
-}
-
-/* ── трассы на карте (§14: линия заработана управляемостью) ──
-   Между соседними системами, где ходит флот (станция и рунг ≥ 5), пунктир
-   красно-белого цвета флота — по нему можно идти, это и есть трасса. Узловая
-   (рунг ≥ 25) — квадратная засечка у звезды. Рисуется поверх связей, под
-   звёздами; ничего не хранится. */
-let FLEET_MAP_LEGS=0;   /* сколько плеч нарисовано за кадр — читает набор M318 */
-function drawFleetMap(vis,cell){
-  const on=v=>!!(v.s&&v.s.station&&fleetRung(v.s)>=5);
-  const L=vis.filter(on);
-  FLEET_MAP_LEGS=0;
-  if(!L.length)return;
-  ctx.save();ctx.lineWidth=1;
-  const seen=new Set();
-  /* линия — цепочка, не сетка (§14, альманах III 0.314.0): у каждой станции
-     плечо только к двум ближайшим соседям с флотом; иначе кучка из пяти
-     станций давала десять пунктиров, и трасса переставала быть направлением */
-  for(const a of L){
-    const nb=L.filter(b=>b!==a&&Math.hypot(a.x-b.x,a.y-b.y)<=cell*1.6)
-      .sort((p,q)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(a.x-q.x,a.y-q.y)).slice(0,2);
-    for(const b of nb){
-    const key=a.gx<b.gx||(a.gx===b.gx&&a.gy<b.gy)?a.gx+","+a.gy+">"+b.gx+","+b.gy:b.gx+","+b.gy+">"+a.gx+","+a.gy;
-    if(seen.has(key))continue;seen.add(key);FLEET_MAP_LEGS++;
-    /* тонкая двойная линия с засечками-верстами (M348): трасса — дорога на карте, не пунктир */
-    const dx=b.x-a.x,dy=b.y-a.y,L=Math.hypot(dx,dy)||1,nx=-dy/L*1.3,ny=dx/L*1.3;
-    /* закон темноты (M348): за кромкой прыжка трасса не горит в полную силу —
-       на постановочном кадре со всеми станциями пятой ступени дальние плечи
-       читались ярче ближних дорог; здесь они уходят в треть */
-    const k=(a.near||b.near)?1:.35;
-    ctx.strokeStyle="rgba(236,232,220,"+(.42*k).toFixed(3)+")";
-    ctx.beginPath();ctx.moveTo(a.x+nx,a.y+ny);ctx.lineTo(b.x+nx,b.y+ny);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(a.x-nx,a.y-ny);ctx.lineTo(b.x-nx,b.y-ny);ctx.stroke();
-    ctx.strokeStyle="rgba(226,120,100,"+(.6*k).toFixed(3)+")";
-    for(let t=.25;t<.99;t+=.25){const tx=a.x+dx*t,ty=a.y+dy*t;ctx.beginPath();ctx.moveTo(tx+nx*2.6,ty+ny*2.6);ctx.lineTo(tx-nx*2.6,ty-ny*2.6);ctx.stroke();}
-  }}
-  for(const v of L){
-    if(fleetRung(v.s)<25)continue;
-    ctx.strokeStyle="rgba(236,232,220,.7)";ctx.lineWidth=1;
-    ctx.strokeRect(v.x+7,v.y-11,6,6);
-    ctx.fillStyle="rgba(226,120,100,.9)";ctx.fillRect(v.x+8,v.y-10,4,1.5);
-  }
-  ctx.restore();
 }
 
 /* ══════════════ кооператив: покупать для себя, и люди, которые делают это с вами (M351) ══════════════
@@ -39357,6 +39369,211 @@ function applySave(s){
      Роль сверяется с таблицей, иначе битая запись уронила бы бой и кантину. */
   G.rogues=Array.isArray(s.rogues)?s.rogues.filter(R=>R&&MGR_ROLES[R.role]).slice(0,ROGUE_CAP):[];
   G.exiles=Array.isArray(s.exiles)?s.exiles.filter(E=>E&&MGR_ROLES[E.role]).slice(0,ROGUE_CAP):[];
+  /* вторая половина загрузки — в 14a1 (M415): порядок сохранён, шов там,
+     где ни одна локальная не переходит границу */
+  return applySaveRest(s);
+}
+
+/* ══════════════ облако, вкладки и обмен ══════════════
+   Отрезано от `14-save` 25.08.2026: там остались снимок игры и его разбор
+   (`snapshot`/`applySave` — пара, которую разносить нельзя), здесь всё про
+   ОБМЕН: учётная запись, отправка и приём, видимое состояние обмена и правило
+   «играет та вкладка, которую открыли последней».
+
+   Разбор рисков онлайна — docs/DESIGN-online-risks.md. Главное из него: сервер
+   не знает и не может знать, сколько игрок заработал, и это правильно; опасен
+   не читер, а ТИШИНА — обмен, который не сложился и промолчал.
+/* ══════════════ одна вкладка — одна игра ══════════════
+   Две открытые вкладки писали в один и тот же ключ, каждая своё, и побеждала та,
+   что сохранилась последней: вкладка, забытая утром, к вечеру затирала вечер.
+   Никакого злоумышленника для этого не нужно — достаточно случайно открыть игру
+   дважды, что люди и делают.
+
+   Правило: играет та вкладка, которую открыли ПОСЛЕДНЕЙ. Старая не спорит и не
+   пропадает — она перестаёт записывать и говорит об этом прямо, чтобы человек
+   понимал, в каком окне продолжать. Летать в ней по-прежнему можно. */
+let TAB_LIVE=true;
+const TAB_ID=Math.random().toString(36).slice(2)+Date.now().toString(36);
+let TAB_CH=null;
+try{
+  TAB_CH=new BroadcastChannel("drift-tabs");
+  TAB_CH.onmessage=e=>{
+    const d=e&&e.data;
+    if(!d||d.id===TAB_ID)return;
+    if(d.k==="hello"&&TAB_LIVE){
+      /* пришла новая — уступаем место и замолкаем */
+      TAB_LIVE=false;
+      if(typeof say==="function")say("ИГРА ОТКРЫТА В ДРУГОЙ ВКЛАДКЕ\nздесь запись остановлена,\nчтобы не затереть ту",420);
+      if(typeof logAdd==="function")logAdd("warn","Игра открыта в другой вкладке — эта больше не сохраняется.");
+    }
+  };
+  TAB_CH.postMessage({k:"hello",id:TAB_ID});
+}catch(e){TAB_CH=null;}          /* нет BroadcastChannel — работаем как раньше */
+function tabLive(){return TAB_LIVE;}
+
+function saveGame(quiet){
+  if(!TAB_LIVE){
+    if(!quiet)say("Здесь запись остановлена\nигра открыта в другой вкладке");
+    return false;
+  }
+  /* строка собирается через saveText (14-save): она не бросает и сама
+     называет виновника, если состояние разбухло. Раньше здесь стоял голый
+     JSON.stringify, и его исключение уходило в сторож кадра. */
+  const txt=saveText();
+  const ok=(txt!==null)&&stSet(SAVE_KEY,txt);
+  if(!quiet)say(ok?"Полёт записан":"Хранилище недоступно\nвоспользуйтесь кодом");
+  if(ok)cloudPush(false);
+  return ok;
+}
+function autosave(){
+  if(G.t-lastSave<600)return;
+  lastSave=G.t;saveGame(true);
+}
+function loadGame(){
+  const raw=stGet(SAVE_KEY);if(!raw)return false;
+  try{return applySave(JSON.parse(raw));}catch(e){return false;}
+}
+function hasSave(){return !!stGet(SAVE_KEY);}
+function exportCode(){const t=saveText();return t?b64enc(t):"";}
+function importCode(c){
+  try{return applySave(JSON.parse(b64dec(c)));}catch(e){return false;}
+}
+/* ══════════════ облако ══════════════
+   Три состояния, и путать их нельзя: игра с диска (облака нет вовсе), игра на
+   сайте без входа (есть, но не наше) и игра с учётной записью. */
+function cloudTok(){return stGet(CLOUD.tkey)||"";}
+function cloudName(){return stGet(CLOUD.lkey)||"";}
+function cloudHere(){return location.protocol==="http:"||location.protocol==="https:";}
+function cloudOn(){return cloudHere()&&!!cloudTok();}
+function cloudCall(a,body){
+  return fetch(CLOUD.api+"?a="+a,{method:"POST",
+    headers:{"Content-Type":"application/json","X-Drift-Token":cloudTok()},
+    body:JSON.stringify(body||{})}).then(r=>r.json()).catch(e=>{try{crashShip("net","облако "+a+": "+(e&&e.message||e),"");}catch(_){}throw e;});
+}
+function cloudForget(){stDel(CLOUD.tkey);stDel(CLOUD.lkey);}
+
+let cloudBusy=0,cloudLastTs=0;
+/* ══════════════ видимое состояние обмена ══════════════
+   Отправка молчалива по замыслу — она случается сама, раз в двадцать секунд, и
+   болтать о каждой удаче ей незачем. Беда была в том, что молчала она и когда
+   НЕ вышло: сеть пропала, вход устарел, в облаке запись новее. Игрок при этом
+   уверен, что всё сложено, летит дальше — а вечером открывает игру на другом
+   устройстве и не находит своего вечера.
+
+   Поэтому: удача по-прежнему молчит (кроме короткой отметки времени), а всякая
+   неудача остаётся на виду до тех пор, пока не разрешится. Ругаемся один раз
+   на смену состояния, а не каждые двадцать секунд: строка в углу — не
+   напоминание, а сообщение. */
+let CLOUD_ST={k:"",ts:0,said:""};
+function cloudMark(k){
+  CLOUD_ST.k=k;CLOUD_ST.ts=Date.now();
+  if(CLOUD_ST.said===k)return;                 /* об одном и том же — один раз */
+  CLOUD_ST.said=k;
+  if(k==="gone"){
+    logAdd("warn","Облако: вход устарел — войдите заново на вкладке КОРАБЛЬ");
+    say("ОБЛАКО\nвход устарел\nвойдите заново",220);
+  }else if(k==="conflict"){
+    logAdd("warn","Облако: там запись новее этой. Заберите её или выгрузите свою — вкладка КОРАБЛЬ");
+    say("ОБЛАКО\nтам запись новее\nвкладка КОРАБЛЬ",240);
+  }else if(k==="big"){
+    logAdd("warn","Облако: запись слишком велика, она больше не отправляется");
+  }
+}
+/* Строка для угла кадра. Пусто — значит сказать нечего, и место остаётся миру. */
+function cloudLine(){
+  if(typeof TAB_LIVE!=="undefined"&&!TAB_LIVE)return "запись здесь остановлена";
+  if(!cloudOn())return "";
+  const k=CLOUD_ST.k;
+  if(k==="fail")return "облако · не отправлено";
+  if(k==="gone")return "облако · вход устарел";
+  if(k==="conflict")return "облако · там запись новее";
+  if(k==="big")return "облако · запись велика";
+  return "";
+}
+/* Не вышло — пробуем снова, когда появился повод: вернулась сеть или игрок
+   вернулся во вкладку. Раньше следующая попытка ждала следующего сохранения, а
+   его могло и не случиться — игру просто закрывали. */
+function cloudRetry(){
+  if(!cloudOn())return;
+  const k=CLOUD_ST.k;
+  if(k!=="fail"&&k!=="")return;
+  cloudBusy=0;cloudPush(false);
+}
+if(typeof window!=="undefined"){
+  window.addEventListener("online",cloudRetry);
+  document.addEventListener("visibilitychange",()=>{if(!document.hidden)cloudRetry();});
+}
+/* Отправка идёт молча и не чаще раза в двадцать секунд: сохранение случается
+   часто, а сеть — единственное в игре, что умеет тормозить кадр. */
+function cloudPush(loud){
+  if(!cloudOn()){if(loud)say("Вы не вошли в учётную запись");return;}
+  const now=Date.now();
+  if(!loud&&now-cloudBusy<20000)return;
+  cloudBusy=now;
+  /* та же охраняемая строка, что и у местной записи: голый snapshot() уходил
+     в fetch, а тот сериализует тело сам — и падал бы ровно там же, только
+     уже внутри отправки (14-save, saveText) */
+  const txt=saveText();
+  if(txt===null){if(loud)say("Запись не собралась\nв облако не отправлена");return;}
+  cloudCall("push",{save:JSON.parse(txt)})
+    .then(d=>{
+      if(d&&d.ok){cloudLastTs=d.ts;cloudMark("");CLOUD_ST.said="";if(loud)say("Отправлено в облако");}
+      else if(d&&d.reason){cloudMark("conflict");if(loud)say("В облаке запись новее\nсначала заберите её");}
+      else if(d&&d.error==="нужен вход"){cloudForget();cloudMark("gone");if(loud)say("Вход устарел\nвойдите заново");}
+      /* «слишком большая запись» приходила как 413 и не подходила ни под одну
+         ветку: облако переставало обновляться навсегда, и никто об этом не
+         узнавал (A5 в docs/DESIGN-online-risks.md) */
+      else if(d&&d.error){cloudMark("big");if(loud)say("Облако не приняло запись\n"+d.error);}
+    })
+    .catch(()=>{cloudMark("fail");if(loud)say("Облако недоступно");});
+}
+function cloudPull(){
+  if(!cloudOn()){say("Вы не вошли в учётную запись");return;}
+  cloudCall("pull")
+    .then(d=>{
+      if(!d||!d.ok){say("В облаке нет записи");return;}
+      /* забрали чужое-новое — спор исчерпан, метка снимается */
+      /* в местное хранилище кладём НАШ снимок, а не то, что приехало: облако
+         возвращает пустые карты списками (14-save, asMap), и хранить эту форму
+         у себя незачем — applySave её уже выправил */
+      if(applySave(d.save)){const t=saveText();if(t!==null)stSet(SAVE_KEY,t);
+        cloudMark("");CLOUD_ST.said="";say("Загружено из облака");}
+      else say("Запись из облака не подошла");
+    })
+    .catch(()=>say("Облако недоступно"));
+}
+/* На запуске облако не спрашивает игрока и ничего не перетирает молча: оно лишь
+   кладёт в локальное хранилище ту запись, которая новее, — а продолжать полёт
+   или начинать заново, по-прежнему решает кнопка на заставке. */
+function cloudBoot(then){
+  if(!cloudOn()){then&&then(false);return;}
+  cloudCall("pull")
+    .then(d=>{
+      if(!d||!d.ok||!d.save){then&&then(false);return;}
+      let mine=0;
+      try{mine=(JSON.parse(stGet(SAVE_KEY))||{}).ts||0;}catch(e){}
+      if((d.save.ts||0)>mine){stSet(SAVE_KEY,JSON.stringify(d.save));then&&then(true);}
+      else then&&then(false);
+    })
+    .catch(()=>{then&&then(false);});
+}
+
+
+/* ══════════════ загрузка: вторая половина (выделено из 14, M415) ══════════════
+   `applySave` — семьсот строк подряд, и это не случайность: порядок в ней
+   значим, а полей у мира больше трёхсот. Разрезать её пополам можно ровно
+   в одном месте — там, где ни одна локальная переменная не переходит границу
+   (`seen` кончается раньше, `pn` тоже, `st` объявляется уже за швом).
+
+   Что здесь: артефакты, курс, дом, базы, холдинг, истории, тринадцать областей
+   тринадцатого прохода, «Сорока», почта, попугай и настройки. Что осталось
+   в `14-save`: корабль, мир, экономика, экипаж, управляющие — и `snapshot`,
+   без которого эту половину не прочесть.
+
+   Белый список полей — по-прежнему белый список: новое поле не переживёт
+   перезагрузку, пока его не впишут сюда руками. Разрез этого не меняет,
+   но теперь искать надо в двух файлах — grep по `docs/INDEX.md`. */
+function applySaveRest(s){
   /* артефакты: только те, что есть в таблице — иначе битая запись пролезла бы
      в слот и в глобальный эффект */
   G.relics={};
@@ -39696,191 +39913,6 @@ function applySave(s){
   invalidateKeyMap();applyPadMode();applyPadSize();applyVolumes();
   return true;
 }
-
-/* ══════════════ облако, вкладки и обмен ══════════════
-   Отрезано от `14-save` 25.08.2026: там остались снимок игры и его разбор
-   (`snapshot`/`applySave` — пара, которую разносить нельзя), здесь всё про
-   ОБМЕН: учётная запись, отправка и приём, видимое состояние обмена и правило
-   «играет та вкладка, которую открыли последней».
-
-   Разбор рисков онлайна — docs/DESIGN-online-risks.md. Главное из него: сервер
-   не знает и не может знать, сколько игрок заработал, и это правильно; опасен
-   не читер, а ТИШИНА — обмен, который не сложился и промолчал.
-/* ══════════════ одна вкладка — одна игра ══════════════
-   Две открытые вкладки писали в один и тот же ключ, каждая своё, и побеждала та,
-   что сохранилась последней: вкладка, забытая утром, к вечеру затирала вечер.
-   Никакого злоумышленника для этого не нужно — достаточно случайно открыть игру
-   дважды, что люди и делают.
-
-   Правило: играет та вкладка, которую открыли ПОСЛЕДНЕЙ. Старая не спорит и не
-   пропадает — она перестаёт записывать и говорит об этом прямо, чтобы человек
-   понимал, в каком окне продолжать. Летать в ней по-прежнему можно. */
-let TAB_LIVE=true;
-const TAB_ID=Math.random().toString(36).slice(2)+Date.now().toString(36);
-let TAB_CH=null;
-try{
-  TAB_CH=new BroadcastChannel("drift-tabs");
-  TAB_CH.onmessage=e=>{
-    const d=e&&e.data;
-    if(!d||d.id===TAB_ID)return;
-    if(d.k==="hello"&&TAB_LIVE){
-      /* пришла новая — уступаем место и замолкаем */
-      TAB_LIVE=false;
-      if(typeof say==="function")say("ИГРА ОТКРЫТА В ДРУГОЙ ВКЛАДКЕ\nздесь запись остановлена,\nчтобы не затереть ту",420);
-      if(typeof logAdd==="function")logAdd("warn","Игра открыта в другой вкладке — эта больше не сохраняется.");
-    }
-  };
-  TAB_CH.postMessage({k:"hello",id:TAB_ID});
-}catch(e){TAB_CH=null;}          /* нет BroadcastChannel — работаем как раньше */
-function tabLive(){return TAB_LIVE;}
-
-function saveGame(quiet){
-  if(!TAB_LIVE){
-    if(!quiet)say("Здесь запись остановлена\nигра открыта в другой вкладке");
-    return false;
-  }
-  /* строка собирается через saveText (14-save): она не бросает и сама
-     называет виновника, если состояние разбухло. Раньше здесь стоял голый
-     JSON.stringify, и его исключение уходило в сторож кадра. */
-  const txt=saveText();
-  const ok=(txt!==null)&&stSet(SAVE_KEY,txt);
-  if(!quiet)say(ok?"Полёт записан":"Хранилище недоступно\nвоспользуйтесь кодом");
-  if(ok)cloudPush(false);
-  return ok;
-}
-function autosave(){
-  if(G.t-lastSave<600)return;
-  lastSave=G.t;saveGame(true);
-}
-function loadGame(){
-  const raw=stGet(SAVE_KEY);if(!raw)return false;
-  try{return applySave(JSON.parse(raw));}catch(e){return false;}
-}
-function hasSave(){return !!stGet(SAVE_KEY);}
-function exportCode(){const t=saveText();return t?b64enc(t):"";}
-function importCode(c){
-  try{return applySave(JSON.parse(b64dec(c)));}catch(e){return false;}
-}
-/* ══════════════ облако ══════════════
-   Три состояния, и путать их нельзя: игра с диска (облака нет вовсе), игра на
-   сайте без входа (есть, но не наше) и игра с учётной записью. */
-function cloudTok(){return stGet(CLOUD.tkey)||"";}
-function cloudName(){return stGet(CLOUD.lkey)||"";}
-function cloudHere(){return location.protocol==="http:"||location.protocol==="https:";}
-function cloudOn(){return cloudHere()&&!!cloudTok();}
-function cloudCall(a,body){
-  return fetch(CLOUD.api+"?a="+a,{method:"POST",
-    headers:{"Content-Type":"application/json","X-Drift-Token":cloudTok()},
-    body:JSON.stringify(body||{})}).then(r=>r.json()).catch(e=>{try{crashShip("net","облако "+a+": "+(e&&e.message||e),"");}catch(_){}throw e;});
-}
-function cloudForget(){stDel(CLOUD.tkey);stDel(CLOUD.lkey);}
-
-let cloudBusy=0,cloudLastTs=0;
-/* ══════════════ видимое состояние обмена ══════════════
-   Отправка молчалива по замыслу — она случается сама, раз в двадцать секунд, и
-   болтать о каждой удаче ей незачем. Беда была в том, что молчала она и когда
-   НЕ вышло: сеть пропала, вход устарел, в облаке запись новее. Игрок при этом
-   уверен, что всё сложено, летит дальше — а вечером открывает игру на другом
-   устройстве и не находит своего вечера.
-
-   Поэтому: удача по-прежнему молчит (кроме короткой отметки времени), а всякая
-   неудача остаётся на виду до тех пор, пока не разрешится. Ругаемся один раз
-   на смену состояния, а не каждые двадцать секунд: строка в углу — не
-   напоминание, а сообщение. */
-let CLOUD_ST={k:"",ts:0,said:""};
-function cloudMark(k){
-  CLOUD_ST.k=k;CLOUD_ST.ts=Date.now();
-  if(CLOUD_ST.said===k)return;                 /* об одном и том же — один раз */
-  CLOUD_ST.said=k;
-  if(k==="gone"){
-    logAdd("warn","Облако: вход устарел — войдите заново на вкладке КОРАБЛЬ");
-    say("ОБЛАКО\nвход устарел\nвойдите заново",220);
-  }else if(k==="conflict"){
-    logAdd("warn","Облако: там запись новее этой. Заберите её или выгрузите свою — вкладка КОРАБЛЬ");
-    say("ОБЛАКО\nтам запись новее\nвкладка КОРАБЛЬ",240);
-  }else if(k==="big"){
-    logAdd("warn","Облако: запись слишком велика, она больше не отправляется");
-  }
-}
-/* Строка для угла кадра. Пусто — значит сказать нечего, и место остаётся миру. */
-function cloudLine(){
-  if(typeof TAB_LIVE!=="undefined"&&!TAB_LIVE)return "запись здесь остановлена";
-  if(!cloudOn())return "";
-  const k=CLOUD_ST.k;
-  if(k==="fail")return "облако · не отправлено";
-  if(k==="gone")return "облако · вход устарел";
-  if(k==="conflict")return "облако · там запись новее";
-  if(k==="big")return "облако · запись велика";
-  return "";
-}
-/* Не вышло — пробуем снова, когда появился повод: вернулась сеть или игрок
-   вернулся во вкладку. Раньше следующая попытка ждала следующего сохранения, а
-   его могло и не случиться — игру просто закрывали. */
-function cloudRetry(){
-  if(!cloudOn())return;
-  const k=CLOUD_ST.k;
-  if(k!=="fail"&&k!=="")return;
-  cloudBusy=0;cloudPush(false);
-}
-if(typeof window!=="undefined"){
-  window.addEventListener("online",cloudRetry);
-  document.addEventListener("visibilitychange",()=>{if(!document.hidden)cloudRetry();});
-}
-/* Отправка идёт молча и не чаще раза в двадцать секунд: сохранение случается
-   часто, а сеть — единственное в игре, что умеет тормозить кадр. */
-function cloudPush(loud){
-  if(!cloudOn()){if(loud)say("Вы не вошли в учётную запись");return;}
-  const now=Date.now();
-  if(!loud&&now-cloudBusy<20000)return;
-  cloudBusy=now;
-  /* та же охраняемая строка, что и у местной записи: голый snapshot() уходил
-     в fetch, а тот сериализует тело сам — и падал бы ровно там же, только
-     уже внутри отправки (14-save, saveText) */
-  const txt=saveText();
-  if(txt===null){if(loud)say("Запись не собралась\nв облако не отправлена");return;}
-  cloudCall("push",{save:JSON.parse(txt)})
-    .then(d=>{
-      if(d&&d.ok){cloudLastTs=d.ts;cloudMark("");CLOUD_ST.said="";if(loud)say("Отправлено в облако");}
-      else if(d&&d.reason){cloudMark("conflict");if(loud)say("В облаке запись новее\nсначала заберите её");}
-      else if(d&&d.error==="нужен вход"){cloudForget();cloudMark("gone");if(loud)say("Вход устарел\nвойдите заново");}
-      /* «слишком большая запись» приходила как 413 и не подходила ни под одну
-         ветку: облако переставало обновляться навсегда, и никто об этом не
-         узнавал (A5 в docs/DESIGN-online-risks.md) */
-      else if(d&&d.error){cloudMark("big");if(loud)say("Облако не приняло запись\n"+d.error);}
-    })
-    .catch(()=>{cloudMark("fail");if(loud)say("Облако недоступно");});
-}
-function cloudPull(){
-  if(!cloudOn()){say("Вы не вошли в учётную запись");return;}
-  cloudCall("pull")
-    .then(d=>{
-      if(!d||!d.ok){say("В облаке нет записи");return;}
-      /* забрали чужое-новое — спор исчерпан, метка снимается */
-      /* в местное хранилище кладём НАШ снимок, а не то, что приехало: облако
-         возвращает пустые карты списками (14-save, asMap), и хранить эту форму
-         у себя незачем — applySave её уже выправил */
-      if(applySave(d.save)){const t=saveText();if(t!==null)stSet(SAVE_KEY,t);
-        cloudMark("");CLOUD_ST.said="";say("Загружено из облака");}
-      else say("Запись из облака не подошла");
-    })
-    .catch(()=>say("Облако недоступно"));
-}
-/* На запуске облако не спрашивает игрока и ничего не перетирает молча: оно лишь
-   кладёт в локальное хранилище ту запись, которая новее, — а продолжать полёт
-   или начинать заново, по-прежнему решает кнопка на заставке. */
-function cloudBoot(then){
-  if(!cloudOn()){then&&then(false);return;}
-  cloudCall("pull")
-    .then(d=>{
-      if(!d||!d.ok||!d.save){then&&then(false);return;}
-      let mine=0;
-      try{mine=(JSON.parse(stGet(SAVE_KEY))||{}).ts||0;}catch(e){}
-      if((d.save.ts||0)>mine){stSet(SAVE_KEY,JSON.stringify(d.save));then&&then(true);}
-      else then&&then(false);
-    })
-    .catch(()=>{then&&then(false);});
-}
-
 
 /* ══════════════ провод войны (M376, §13, §16.4) ══════════════
    Летопись считается у каждого своя и совпадает у всех (12am-chron). По проводу
@@ -60847,6 +60879,192 @@ function drawSurfaceHud(camx,camy,K){
     }
   }
 }
+/* сам мир поверхности — отдельным слоем (21e1, M415) */
+
+
+/* ── масштаб мира под размер окна (M217) ──
+   Жалоба внешнего плейтеста: «двадцать секунд не мог найти себя на поверхности».
+   Дело было не в рисунке ходока, а в мерке: камера шла ровно по пикселю, и
+   рост человека мерился монитором, а не кадром — 3.6% высоты в окне 720 и
+   1.8% на 1440p. Чем лучше экран, тем мельче человек.
+
+   Мерка — доля кадра. База 560: при ней 26 нарисованных пикселей ходока
+   держатся около 4.6% высоты на любом экране. Выше 2.4 не поднимаемся — за
+   этим пределом в кадр перестаёт помещаться дорога до цели, и мир становится
+   комнатой. Малое окно не ужимаем (k≥1): телефону и так достаётся мало мира.
+
+   Мир идёт через ctx-масштаб (withScale, 18c), приборы и фишки — нет: текст
+   обязан остаться того же роста и той же чёткости, чем бы ни был занят мир. */
+const SURF_BASE=560, SURF_WIDE=1000, SURF_KMAX=2.4;
+/* ── и мерка обязана видеть ОБЕ стороны кадра (M222) ──
+   Первый счёт брал одну высоту. У телефона высота как у монитора, а ширина
+   втрое меньше: мир увеличивался в полтора раза, и в кадр переставала
+   помещаться дорога — оставалась щель шириной в триста единиц мира. Кадр
+   двумерен, значит и мерка двумерна: растём настолько, насколько позволяет
+   ТЕСНАЯ сторона. 1000 к 560 — это те же 16:9, поэтому на обычном мониторе
+   обе стороны говорят одно и то же, а узкий экран получает единицу. */
+/* ── вода (M325) ──
+   На поверхности не было ни одной воды — камыши из M316 ждали её. Озеро
+   ложится в самую глубокую ложбину полосы, если полоса сырая (tr.wet — то же
+   поле, что красит зелёные пятна глобуса) и миру есть чем быть мокрым;
+   на токсичном мире это кислота своего цвета. Уровень — на два-три роста
+   ниже гребней ложбины, зеркало не короче двухсот шагов, иначе это лужа.
+   Считается один раз на рельеф (tr.water) — рельеф не меняется.
+   Отражение — самокопия кадра: полоса над урезом переворачивается под него,
+   режется на ленты со сдвигом по синусу (рябь) и гаснет с глубиной; ветер
+   кладёт блики. Камыш по обоим берегам — тот, что ждал воды. */
+const WATER_MIN_SPAN=200,WATER_DEPTH=46;
+function waterOf(tr,p){
+  if(tr.water!==undefined)return tr.water;
+  tr.water=null;
+  const t=p&&p.type;
+  const liquid=(p&&p.T&&p.T.atm!=="отсутствует")&&(t==="terran"||t==="jungle"||t==="ocean"||t==="toxic"||t==="ruin"||t==="rocky");
+  if(!liquid||(tr.wet||0)<(t==="ocean"?.15:.32))return null;
+  const r=rng((tr.sseed|0)^0x7A7E);
+  /* самая глубокая точка полосы, не под площадкой */
+  let i0=-1,y0=-1e9;
+  for(let i=40;i<tr.N-40;i++){if(Math.abs(i-tr.padI)<70)continue;if(tr.h[i]>y0){y0=tr.h[i];i0=i;}}
+  if(i0<0)return null;
+  const M=(typeof HOME_MAN==="number")?HOME_MAN:17;
+  const level=y0-M*(2.2+r()*1.2);
+  let a=i0,b=i0;
+  while(a>1&&tr.h[a-1]>level)a--;
+  while(b<tr.N-2&&tr.h[b+1]>level)b++;
+  const x0=a*tr.step,x1=b*tr.step;
+  if(x1-x0<WATER_MIN_SPAN)return null;
+  tr.water={x0,x1,y:level,cx:(x0+x1)/2,acid:t==="toxic",seed:tr.sseed|0,reeds:Math.round(4+r()*5)};
+  return tr.water;
+}
+/* ── водоросли (M327): что собирают, плавая ──
+   Автор: «надо придумать механику, чтобы плыть… и что-то собирать, водоросли».
+   Кусты на дне озера, сеются от озера, снимаются раз за визит — эфемерны, как
+   залежи. Дают органику: ресурс уже есть, цена и рынок — тоже. */
+function waterAlgae(Wt){
+  if(Wt.algae)return Wt.algae;
+  const r=rng(Wt.seed^0xA16A),n=3+Math.floor(r()*3),span=Wt.x1-Wt.x0;
+  Wt.algae=[];
+  for(let i=0;i<n;i++)Wt.algae.push({x:Wt.x0+span*(.15+.7*(i+r()*.6)/n),h:12+r()*12,ph:r()*TAU,taken:false});
+  return Wt.algae;
+}
+function waterAlga(S,tr){
+  const Wt=(typeof waterOf==="function")?waterOf(tr,S.p):null;
+  if(!Wt)return null;
+  return waterAlgae(Wt).find(a=>!a.taken&&Math.abs(a.x-S.x)<22)||null;
+}
+/* глубоко ли под ногами: плыть, а не идти по дну */
+function waterDeepAt(S,tr){
+  const Wt=(typeof waterOf==="function")?waterOf(tr,S.p):null;
+  if(!Wt||S.x<Wt.x0+6||S.x>Wt.x1-6)return null;
+  return (groundAt(tr,S.x)-Wt.y>14)?Wt:null;
+}
+function drawWater(tr,camx,camy,p){
+  const Wt=waterOf(tr,p);
+  if(!Wt)return;
+  const xa=Wt.x0-camx,xb=Wt.x1-camx;
+  if(xb<-40||xa>W+40)return;
+  const y=Wt.y-camy;
+  if(y<0||y>H+20)return;
+  const sky=p.T.sky[1],pal=p.T.pal[Math.min(p.T.pal.length-1,2)];
+  const col=Wt.acid?[120,180,60]:[sky[0]*.78+pal[0]*.12,sky[1]*.82+pal[1]*.12,sky[2]*.9+pal[2]*.1];
+  const wind=(typeof WIND==="number")?WIND:0;
+  /* зеркало: контур — уровень сверху, дно по рельефу */
+  ctx.save();
+  ctx.beginPath();ctx.moveTo(xa,y);ctx.lineTo(xb,y);
+  for(let x=Wt.x1;x>=Wt.x0;x-=tr.step*2)ctx.lineTo(x-camx,groundAt(tr,x)-camy+1);
+  ctx.closePath();ctx.clip();
+  /* толща: у уреза цвет неба, в глубине — тёмный тон породы */
+  const g=ctx.createLinearGradient(0,y,0,y+WATER_DEPTH);
+  g.addColorStop(0,"rgb("+col.map(v=>v|0).join(",")+")");
+  g.addColorStop(1,"rgb("+col.map(v=>(v*.5)|0).join(",")+")");
+  ctx.fillStyle=g;ctx.fillRect(xa,y,xb-xa,WATER_DEPTH+40);
+  /* водоросли (M327): кусты со дна, качаются медленнее камыша — вода вязче ветра */
+  for(const a of waterAlgae(Wt)){
+    if(a.taken)continue;
+    const ax=a.x-camx;if(ax<-24||ax>W+24)continue;
+    const by=groundAt(tr,a.x)-camy,tp=Math.max(y+5,by-a.h);
+    const sw=Math.sin(G.t*.035+a.ph)*3;
+    ctx.strokeStyle="rgba(38,92,54,.88)";ctx.lineWidth=1.7;ctx.lineCap="round";
+    for(let k=-1;k<=1;k++){
+      ctx.beginPath();ctx.moveTo(ax+k*3,by+1);
+      ctx.quadraticCurveTo(ax+k*3+sw*.4,(by+tp)/2,ax+k*4.5+sw,tp+Math.abs(k)*4);ctx.stroke();
+    }
+    ctx.fillStyle="rgba(128,196,96,.75)";                 /* светлые макушки — их и видно с берега */
+    for(let k=-1;k<=1;k++){ctx.beginPath();ctx.arc(ax+k*4.5+sw,tp+Math.abs(k)*4,1.6,0,TAU);ctx.fill();}
+  }
+  /* отражение: полоса над урезом, перевёрнутая, лентами со сдвигом */
+  const hh=Math.min(64,y);
+  if(hh>6){
+    const sx0=Math.max(0,Math.floor(xa)),sw=Math.min(W,Math.ceil(xb))-sx0;
+    if(sw>4){
+      const n=8,bh=hh/n;
+      for(let i=0;i<n;i++){
+        const t=(i+.5)/n;
+        const dx=Math.sin(G.t*.9+i*1.7+Wt.seed)*(1+2*t)+wind*2*t;
+        const syTop=y-hh+i*bh;         /* лента источника, считая от верха полосы */
+        const dyTop=y+(hh-(i+1)*bh);   /* в зеркале верхняя лента ложится глубже всего */
+        ctx.globalAlpha=.5*(1-t*.6);
+        ctx.save();ctx.translate(0,dyTop+bh);ctx.scale(1,-1);
+        ctx.drawImage(cvs,sx0*DPR,syTop*DPR,sw*DPR,Math.ceil(bh)*DPR,sx0+dx,0,sw,Math.ceil(bh));
+        ctx.restore();
+      }
+      ctx.globalAlpha=1;
+    }
+  }
+  /* блики по ветру: короткие светлые штрихи у уреза */
+  ctx.fillStyle="rgba(255,255,255,.22)";
+  const rr=rng(Wt.seed^0x11);
+  for(let i=0;i<14;i++){
+    const fx=Wt.x0+rr()*(Wt.x1-Wt.x0),ph=rr()*TAU,ln=4+rr()*10,dy=2+rr()*10;
+    const a=.5+.5*Math.sin(G.t*.07+ph+wind*3);
+    if(a<.4)continue;
+    ctx.globalAlpha=(a-.4)*.6;
+    ctx.fillRect(fx-camx+Math.sin(G.t*.03+ph)*6,y+dy,ln,1);
+  }
+  ctx.globalAlpha=1;
+  ctx.restore();
+  /* урез: тонкая светлая нить */
+  ctx.strokeStyle="rgba(255,255,255,.28)";ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(xa,y+.5);ctx.lineTo(xb,y+.5);ctx.stroke();
+  /* камыш по берегам */
+  const rc=rng(Wt.seed^0x5EED);
+  const reed=(x,n,dir)=>{
+    for(let i=0;i<n;i++){
+      const rx=x+dir*(i*5+rc()*4),ry=groundAt(tr,rx)-camy,h=14+rc()*16;
+      const sw=Math.sin(G.t*.05+rx*.1)*(1.5+wind*3);
+      ctx.strokeStyle="rgba(34,52,28,.85)";ctx.lineWidth=1.1;
+      ctx.beginPath();ctx.moveTo(rx-camx,ry);ctx.quadraticCurveTo(rx-camx+sw*.5,ry-h*.6,rx-camx+sw,ry-h);ctx.stroke();
+      ctx.fillStyle="rgba(78,58,34,.9)";
+      ctx.beginPath();ctx.ellipse(rx-camx+sw,ry-h+2,1.2,3.2,0,0,TAU);ctx.fill();
+    }
+  };
+  reed(Wt.x0-3,Wt.reeds,-1);reed(Wt.x1+3,Wt.reeds,1);
+}
+function surfScale(){return clamp(Math.min(H/SURF_BASE,W/SURF_WIDE),1,SURF_KMAX);}
+function drawSurface(){
+  const K=surfScale();
+  /* единственный источник правды о масштабе на кадр: по нему же 15-input
+     пересчитывает тычок в мировую координату */
+  G.viewK=K;
+  withScale(K,drawSurfaceWorld);
+  /* ── приборы живут в мерке ИНТЕРФЕЙСА, а не мира (M221) ──
+     Фишки целей и строка-подсказка рисуются на канве, а рядом с ними лежит
+     DOM, который с M221 растёт вместе с окном (`--ui`). Оставить их в пикселях
+     значило бы развести надвое один и тот же интерфейс: половина выросла,
+     половина нет. Рисуем их в UI-мерке; мировая координата попадает туда
+     делением на неё же — отсюда K/U. */
+  const U=(typeof UIK==="number"&&UIK>0)?UIK:1;
+  withScale(U,()=>drawSurfaceHud(G.viewX,G.viewY,K/U));
+}
+
+/* ══════════════ поверхность: сам мир (выделено из 21e, M415) ══════════════
+   `drawSurfaceWorld` — шестьсот строк и три пятых модуля: небо и звёзды,
+   дальние гряды кэшем по тайлам, дымка, дождь, ваши постройки, посёлок,
+   корабль на шасси, устье шахты, идущие, астронавт, следы, пыль из-под ног и
+   ночь. Это МИР; в `21e-surface-draw` остаётся то, что вокруг него, — подсказка,
+   HUD, вода и сам кадр `drawSurface`, который их собирает.
+
+   Порядок склейки: `21e1-` ложится сразу за `21e-surface-draw` (байтовый
+   порядок: '-' < '1'). Своих `const` на верхнем уровне здесь нет. */
 function drawSurfaceWorld(){
   const S=G.surf,tr=S.tr,p=S.p;
   tr.mat=planetMat(p);tr.p=p;
@@ -61436,180 +61654,6 @@ function drawSurfaceWorld(){
   }
   lightShafts(p);
   gradePass(p);
-}
-
-/* ── масштаб мира под размер окна (M217) ──
-   Жалоба внешнего плейтеста: «двадцать секунд не мог найти себя на поверхности».
-   Дело было не в рисунке ходока, а в мерке: камера шла ровно по пикселю, и
-   рост человека мерился монитором, а не кадром — 3.6% высоты в окне 720 и
-   1.8% на 1440p. Чем лучше экран, тем мельче человек.
-
-   Мерка — доля кадра. База 560: при ней 26 нарисованных пикселей ходока
-   держатся около 4.6% высоты на любом экране. Выше 2.4 не поднимаемся — за
-   этим пределом в кадр перестаёт помещаться дорога до цели, и мир становится
-   комнатой. Малое окно не ужимаем (k≥1): телефону и так достаётся мало мира.
-
-   Мир идёт через ctx-масштаб (withScale, 18c), приборы и фишки — нет: текст
-   обязан остаться того же роста и той же чёткости, чем бы ни был занят мир. */
-const SURF_BASE=560, SURF_WIDE=1000, SURF_KMAX=2.4;
-/* ── и мерка обязана видеть ОБЕ стороны кадра (M222) ──
-   Первый счёт брал одну высоту. У телефона высота как у монитора, а ширина
-   втрое меньше: мир увеличивался в полтора раза, и в кадр переставала
-   помещаться дорога — оставалась щель шириной в триста единиц мира. Кадр
-   двумерен, значит и мерка двумерна: растём настолько, насколько позволяет
-   ТЕСНАЯ сторона. 1000 к 560 — это те же 16:9, поэтому на обычном мониторе
-   обе стороны говорят одно и то же, а узкий экран получает единицу. */
-/* ── вода (M325) ──
-   На поверхности не было ни одной воды — камыши из M316 ждали её. Озеро
-   ложится в самую глубокую ложбину полосы, если полоса сырая (tr.wet — то же
-   поле, что красит зелёные пятна глобуса) и миру есть чем быть мокрым;
-   на токсичном мире это кислота своего цвета. Уровень — на два-три роста
-   ниже гребней ложбины, зеркало не короче двухсот шагов, иначе это лужа.
-   Считается один раз на рельеф (tr.water) — рельеф не меняется.
-   Отражение — самокопия кадра: полоса над урезом переворачивается под него,
-   режется на ленты со сдвигом по синусу (рябь) и гаснет с глубиной; ветер
-   кладёт блики. Камыш по обоим берегам — тот, что ждал воды. */
-const WATER_MIN_SPAN=200,WATER_DEPTH=46;
-function waterOf(tr,p){
-  if(tr.water!==undefined)return tr.water;
-  tr.water=null;
-  const t=p&&p.type;
-  const liquid=(p&&p.T&&p.T.atm!=="отсутствует")&&(t==="terran"||t==="jungle"||t==="ocean"||t==="toxic"||t==="ruin"||t==="rocky");
-  if(!liquid||(tr.wet||0)<(t==="ocean"?.15:.32))return null;
-  const r=rng((tr.sseed|0)^0x7A7E);
-  /* самая глубокая точка полосы, не под площадкой */
-  let i0=-1,y0=-1e9;
-  for(let i=40;i<tr.N-40;i++){if(Math.abs(i-tr.padI)<70)continue;if(tr.h[i]>y0){y0=tr.h[i];i0=i;}}
-  if(i0<0)return null;
-  const M=(typeof HOME_MAN==="number")?HOME_MAN:17;
-  const level=y0-M*(2.2+r()*1.2);
-  let a=i0,b=i0;
-  while(a>1&&tr.h[a-1]>level)a--;
-  while(b<tr.N-2&&tr.h[b+1]>level)b++;
-  const x0=a*tr.step,x1=b*tr.step;
-  if(x1-x0<WATER_MIN_SPAN)return null;
-  tr.water={x0,x1,y:level,cx:(x0+x1)/2,acid:t==="toxic",seed:tr.sseed|0,reeds:Math.round(4+r()*5)};
-  return tr.water;
-}
-/* ── водоросли (M327): что собирают, плавая ──
-   Автор: «надо придумать механику, чтобы плыть… и что-то собирать, водоросли».
-   Кусты на дне озера, сеются от озера, снимаются раз за визит — эфемерны, как
-   залежи. Дают органику: ресурс уже есть, цена и рынок — тоже. */
-function waterAlgae(Wt){
-  if(Wt.algae)return Wt.algae;
-  const r=rng(Wt.seed^0xA16A),n=3+Math.floor(r()*3),span=Wt.x1-Wt.x0;
-  Wt.algae=[];
-  for(let i=0;i<n;i++)Wt.algae.push({x:Wt.x0+span*(.15+.7*(i+r()*.6)/n),h:12+r()*12,ph:r()*TAU,taken:false});
-  return Wt.algae;
-}
-function waterAlga(S,tr){
-  const Wt=(typeof waterOf==="function")?waterOf(tr,S.p):null;
-  if(!Wt)return null;
-  return waterAlgae(Wt).find(a=>!a.taken&&Math.abs(a.x-S.x)<22)||null;
-}
-/* глубоко ли под ногами: плыть, а не идти по дну */
-function waterDeepAt(S,tr){
-  const Wt=(typeof waterOf==="function")?waterOf(tr,S.p):null;
-  if(!Wt||S.x<Wt.x0+6||S.x>Wt.x1-6)return null;
-  return (groundAt(tr,S.x)-Wt.y>14)?Wt:null;
-}
-function drawWater(tr,camx,camy,p){
-  const Wt=waterOf(tr,p);
-  if(!Wt)return;
-  const xa=Wt.x0-camx,xb=Wt.x1-camx;
-  if(xb<-40||xa>W+40)return;
-  const y=Wt.y-camy;
-  if(y<0||y>H+20)return;
-  const sky=p.T.sky[1],pal=p.T.pal[Math.min(p.T.pal.length-1,2)];
-  const col=Wt.acid?[120,180,60]:[sky[0]*.78+pal[0]*.12,sky[1]*.82+pal[1]*.12,sky[2]*.9+pal[2]*.1];
-  const wind=(typeof WIND==="number")?WIND:0;
-  /* зеркало: контур — уровень сверху, дно по рельефу */
-  ctx.save();
-  ctx.beginPath();ctx.moveTo(xa,y);ctx.lineTo(xb,y);
-  for(let x=Wt.x1;x>=Wt.x0;x-=tr.step*2)ctx.lineTo(x-camx,groundAt(tr,x)-camy+1);
-  ctx.closePath();ctx.clip();
-  /* толща: у уреза цвет неба, в глубине — тёмный тон породы */
-  const g=ctx.createLinearGradient(0,y,0,y+WATER_DEPTH);
-  g.addColorStop(0,"rgb("+col.map(v=>v|0).join(",")+")");
-  g.addColorStop(1,"rgb("+col.map(v=>(v*.5)|0).join(",")+")");
-  ctx.fillStyle=g;ctx.fillRect(xa,y,xb-xa,WATER_DEPTH+40);
-  /* водоросли (M327): кусты со дна, качаются медленнее камыша — вода вязче ветра */
-  for(const a of waterAlgae(Wt)){
-    if(a.taken)continue;
-    const ax=a.x-camx;if(ax<-24||ax>W+24)continue;
-    const by=groundAt(tr,a.x)-camy,tp=Math.max(y+5,by-a.h);
-    const sw=Math.sin(G.t*.035+a.ph)*3;
-    ctx.strokeStyle="rgba(38,92,54,.88)";ctx.lineWidth=1.7;ctx.lineCap="round";
-    for(let k=-1;k<=1;k++){
-      ctx.beginPath();ctx.moveTo(ax+k*3,by+1);
-      ctx.quadraticCurveTo(ax+k*3+sw*.4,(by+tp)/2,ax+k*4.5+sw,tp+Math.abs(k)*4);ctx.stroke();
-    }
-    ctx.fillStyle="rgba(128,196,96,.75)";                 /* светлые макушки — их и видно с берега */
-    for(let k=-1;k<=1;k++){ctx.beginPath();ctx.arc(ax+k*4.5+sw,tp+Math.abs(k)*4,1.6,0,TAU);ctx.fill();}
-  }
-  /* отражение: полоса над урезом, перевёрнутая, лентами со сдвигом */
-  const hh=Math.min(64,y);
-  if(hh>6){
-    const sx0=Math.max(0,Math.floor(xa)),sw=Math.min(W,Math.ceil(xb))-sx0;
-    if(sw>4){
-      const n=8,bh=hh/n;
-      for(let i=0;i<n;i++){
-        const t=(i+.5)/n;
-        const dx=Math.sin(G.t*.9+i*1.7+Wt.seed)*(1+2*t)+wind*2*t;
-        const syTop=y-hh+i*bh;         /* лента источника, считая от верха полосы */
-        const dyTop=y+(hh-(i+1)*bh);   /* в зеркале верхняя лента ложится глубже всего */
-        ctx.globalAlpha=.5*(1-t*.6);
-        ctx.save();ctx.translate(0,dyTop+bh);ctx.scale(1,-1);
-        ctx.drawImage(cvs,sx0*DPR,syTop*DPR,sw*DPR,Math.ceil(bh)*DPR,sx0+dx,0,sw,Math.ceil(bh));
-        ctx.restore();
-      }
-      ctx.globalAlpha=1;
-    }
-  }
-  /* блики по ветру: короткие светлые штрихи у уреза */
-  ctx.fillStyle="rgba(255,255,255,.22)";
-  const rr=rng(Wt.seed^0x11);
-  for(let i=0;i<14;i++){
-    const fx=Wt.x0+rr()*(Wt.x1-Wt.x0),ph=rr()*TAU,ln=4+rr()*10,dy=2+rr()*10;
-    const a=.5+.5*Math.sin(G.t*.07+ph+wind*3);
-    if(a<.4)continue;
-    ctx.globalAlpha=(a-.4)*.6;
-    ctx.fillRect(fx-camx+Math.sin(G.t*.03+ph)*6,y+dy,ln,1);
-  }
-  ctx.globalAlpha=1;
-  ctx.restore();
-  /* урез: тонкая светлая нить */
-  ctx.strokeStyle="rgba(255,255,255,.28)";ctx.lineWidth=1;
-  ctx.beginPath();ctx.moveTo(xa,y+.5);ctx.lineTo(xb,y+.5);ctx.stroke();
-  /* камыш по берегам */
-  const rc=rng(Wt.seed^0x5EED);
-  const reed=(x,n,dir)=>{
-    for(let i=0;i<n;i++){
-      const rx=x+dir*(i*5+rc()*4),ry=groundAt(tr,rx)-camy,h=14+rc()*16;
-      const sw=Math.sin(G.t*.05+rx*.1)*(1.5+wind*3);
-      ctx.strokeStyle="rgba(34,52,28,.85)";ctx.lineWidth=1.1;
-      ctx.beginPath();ctx.moveTo(rx-camx,ry);ctx.quadraticCurveTo(rx-camx+sw*.5,ry-h*.6,rx-camx+sw,ry-h);ctx.stroke();
-      ctx.fillStyle="rgba(78,58,34,.9)";
-      ctx.beginPath();ctx.ellipse(rx-camx+sw,ry-h+2,1.2,3.2,0,0,TAU);ctx.fill();
-    }
-  };
-  reed(Wt.x0-3,Wt.reeds,-1);reed(Wt.x1+3,Wt.reeds,1);
-}
-function surfScale(){return clamp(Math.min(H/SURF_BASE,W/SURF_WIDE),1,SURF_KMAX);}
-function drawSurface(){
-  const K=surfScale();
-  /* единственный источник правды о масштабе на кадр: по нему же 15-input
-     пересчитывает тычок в мировую координату */
-  G.viewK=K;
-  withScale(K,drawSurfaceWorld);
-  /* ── приборы живут в мерке ИНТЕРФЕЙСА, а не мира (M221) ──
-     Фишки целей и строка-подсказка рисуются на канве, а рядом с ними лежит
-     DOM, который с M221 растёт вместе с окном (`--ui`). Оставить их в пикселях
-     значило бы развести надвое один и тот же интерфейс: половина выросла,
-     половина нет. Рисуем их в UI-мерке; мировая координата попадает туда
-     делением на неё же — отсюда K/U. */
-  const U=(typeof UIK==="number"&&UIK>0)?UIK:1;
-  withScale(U,()=>drawSurfaceHud(G.viewX,G.viewY,K/U));
 }
 
 /* ══════════════ дом снаружи ══════════════
@@ -73932,361 +73976,9 @@ function renderTabBody(){
       "зато баки полны и корпус залатан</s></div>"));
     return;
   }
-  if(tab==="board"){
-    /* ДОСКА (M151a): всё, что мир говорит о себе, на одной стене — очередь у
-       стойки, дела здесь, табло прибытий, слухи, имя системы. Сюда же лягут
-       наряды (M152e), циркуляр (M156), стенгазета (M165), доска почёта (M161). */
-    if(stTypeOf(G.st.stype).tabs.length===0)
-      $body.appendChild(el("div","sec","ТОПЛИВО "+fuelPriceHere()+" кр/ед · РЕМОНТ "+repairCost()+" кр/ед · "+repLine(G.sys).toUpperCase()));
-    const sp=(typeof speechHere==="function")?speechHere():null;
-    if(sp){
-      secHead("ОЧЕРЕДЬ У СТОЙКИ",{count:sp.addr});
-      $body.appendChild(el("div","row","<div class='nm'><s style='color:#cfe3ea;line-height:1.9'>"+
-        (sp.silent?"<i>смотрит и ничего не говорит</i>":sp.line)+"</s><s>следующая реплика — в следующий заход</s></div>"));
-      const tag=G.sys.key+"#"+visitHere();
-      if(G.spLogged!==tag&&!sp.silent){G.spLogged=tag;peopleLine(sp.line,G.st.name);}
-    }
-    /* ── кто здесь (12u-folk) ──
-       Свои. Стоят не на каждом причале и не каждую смену: человек, который
-       есть всегда, перестаёт быть человеком. Говорят про своё и никогда — про
-       игрока; попросить о чём-нибудь тоже не могут, это не их разговор. */
-    if(typeof folkShown==="function"){
-      const fs=folkShown();
-      if(fs&&FOLK[fs.id]){
-        /* подпись, кто это (M299): голое «РЫБА» с цитатой читалось сбоем */
-        secHead(FOLK[fs.id].where==="dock"?"У ДОКА":"В ЗАЛЕ");
-        $body.appendChild(el("div","row","<div class='nm'><b>"+FOLK[fs.id].ru+" · завсегдатай</b>"+
-          "<s style='color:#cfe3ea;line-height:1.8'>"+fs.line+"</s></div>"));
-      }
-    }
-    /* ── рассказать, где взяли (11aj) ──
-       Появляется, только если он и правда где-то взял заметно, и только по разу
-       на место. Ни предупреждения, ни последствий в тексте: человек слушает,
-       благодарит, и всё. Счёт придёт через несколько дней и чужим голосом. */
-    if(typeof toldWorth==="function"){
-      const tw=toldWorth();
-      if(tw){
-        $body.appendChild(el("div","sec","У СТОЙКИ СЛУШАЮТ"));
-        const r=el("div","row");
-        r.appendChild(el("div","nm","<b>Рассказать, где взяли "+
-          RES[tw.res].ru.toLowerCase()+"</b><s>тут любят, когда делятся</s>"));
-        const b=el("button","act","РАССКАЗАТЬ");
-        b.onclick=()=>{toldDo();renderTab();};
-        r.appendChild(b);$body.appendChild(r);
-      }
-    }
-    /* ── что вы уже взяли ──
-       Не задание: ни стрелки, ни срока, ни напоминания вне этой строки.
-       Настоящий журнал — бумага на столе (27i), она ложится туда при взятии.
-       Здесь только строчка, чтобы человек, стоящий у доски, не вспоминал по
-       памяти, куда он собирался. */
-    if(typeof offerCarried==="function"){
-      const car=offerCarried();
-      if(car.length){
-        $body.appendChild(el("div","sec","ВЕЗЁТЕ"));
-        for(const o of car){
-          const K=OFFER_KIND[o.kind];
-          $body.appendChild(el("div","row","<div class='nm'><b>"+
-            K.ru[0].toUpperCase()+K.ru.slice(1)+"</b><s>на «"+o.to.name+"»"+
-            (o.named?" · вас назвали":"")+"</s></div>"));
-        }
-      }
-    }
-    /* ── возможности (11ah) ──
-       Не задания: у них нет цели, нет маркера и нет напоминания. Это то, что
-       здесь сегодня предлагают, и половина предложений — не тебе.
-       Именное стоит первым и подписано «вам»: разница между «кто рядом» и
-       «вам» — это вся дуга книги, набранная двумя словами. Платит оно втрое,
-       и в этом весь смысл — закрытую дверь игрок почувствует кошельком, а не
-       строкой интерфейса. */
-    if(typeof offerHere==="function"){
-      const oh=offerHere();
-      if(oh.length){
-        oh.sort((a,b)=>b.named-a.named);
-        $body.appendChild(el("div","sec","ЧТО ПРЕДЛАГАЮТ"));
-        for(const o of oh){
-          const K=OFFER_KIND[o.kind];
-          const r=el("div","row");
-          r.appendChild(el("div","nm","<b>"+(o.named?"Вам":K.ru[0].toUpperCase()+K.ru.slice(1))+
-            (o.named?" — "+K.ru:"")+"</b><s>"+K.note+"</s>"));
-          const pay=offerPay(o);
-          if(pay>0)r.appendChild(el("div","qt",pay+"<s>кр</s>"));
-          const b=el("button","act"+(o.named?" gold":""),"ВЗЯТЬ");
-          b.onclick=()=>{
-            offerTake(o);
-            const d=o.to;
-            tell("","Взято: "+K.ru+(d?" · на «"+d.name+"»":""),
-                 d?K.ru+"\nна «"+d.name+"»":K.ru);
-            renderTab();
-          };
-          r.appendChild(b);$body.appendChild(r);
-        }
-      }
-    }
-    if(typeof questOpen==="function"){
-      const here=questOpen().filter(q=>q.sx===G.sx&&q.sy===G.sy);
-      if(here.length){
-        $body.appendChild(el("div","sec","ДЕЛА ЗДЕСЬ"));
-        for(const q of here)$body.appendChild(el("div","row","<div class='nm'><b>"+q.ru+"</b><s>"+(q.note||"")+
-          (q.reward?" · награда: "+q.reward:"")+"</s></div>"));
-      }
-    }
-    if(typeof needBlock==="function")needBlock();         /* нужда и наряд (M152e) */
-    if(typeof appetiteBlock==="function")appetiteBlock();  /* что станция берёт с надбавкой (M290) */
-    if(typeof rungBoardBlock==="function")rungBoardBlock();  /* пятилетка и что здесь стоит (M292) */
-    if(typeof holdMeteoLines==="function"){const ML=holdMeteoLines(G.sys);   /* Метеостанция (I6) */
-      if(ML.length){$body.appendChild(el("div","sec","МЕТЕОСТАНЦИЯ · ПОГОДА НА ТЕЛАХ"));
-        for(const l of ML)$body.appendChild(el("div","row","<div class='nm'><s>"+l+"</s></div>"));}}
-    if(typeof findsBlock==="function")findsBlock();       /* находки: институту или с рук (M152e) */
-    if(typeof kitDepotBlock==="function")kitDepotBlock();   /* склад института: комплект (M152) */
-    if(typeof vegaFleaBlock==="function")vegaFleaBlock();   /* дед с лотка (M153) */
-    if(typeof ringBlock==="function")ringBlock();           /* ленты Кольца (M154) */
-    if(typeof misBlock==="function")misBlock();             /* часы станции против неба (M155) */
-    if(typeof expBlock==="function")expBlock();             /* экспедиция: собираем, отпустить, попутчик (M156) */
-    if(typeof lettersBlock==="function")lettersBlock();     /* письма с содержанием (M158) */
-    if(typeof expOfferBlock==="function")expOfferBlock();   /* есть место (M159) */
-    if(typeof islandBlock==="function")islandBlock();       /* письмо на Остров (M160) */
-    if(typeof recordBlock==="function")recordBlock();       /* доска почёта, комиссия (M161) */
-    if(typeof instBlock==="function")instBlock();           /* институт: темы и отчёты (M162) */
-    if(typeof skyBlock==="function")skyBlock();             /* небесная вахта (M195) */
-    if(typeof winBlock==="function")winBlock();             /* зимовка: месяц одному (M197) */
-    if(typeof traineeBlock==="function")traineeBlock();     /* диплом стажёру (M163) */
-    if(typeof zooBlock==="function")zooBlock();             /* зоостанция (M164) */
-    if(typeof wallBlock==="function")wallBlock();           /* стенгазета и заявки (M165) */
-    if(typeof retBlock==="function")retBlock();           /* табло прибытий (11s) */
-    if(typeof rumourBlock==="function")rumourBlock();     /* слухи (11t) */
-    /* имя системы ушло с доски на карту (M299): поле «ваше имя. На карте — оно»
-       читалось как имя капитана, и туда вписывали позывной */
-    boardLanes(0);
-    $body.appendChild(el("div","sec","ПРИЁМНИК — НА ПУЛЬТЕ ВНИЗУ · У СТОЙКИ ЛОВИТ ЛУЧШЕ"));
-    return;
-  }
-  if(tab==="market"){
-    const prices=marketFor(G.sys),mkt=G.market[G.sys.key];
-    $body.appendChild(el("div","sec","ТРЮМ "+held()+" / "+st.cargoMax+
-      " · ТОПЛИВО "+fuelPriceHere()+" кр/ед · РЕМОНТ "+repairCost()+" кр/ед"));
-    /* Маршрут переехал в конец вкладки (проход «дорога»). Он стоял вторым
-       блоком сверху, и у игрока без маршрута — то есть у всякого, кто открыл
-       рынок впервые, — первая цена оказывалась ниже середины экрана: шапка,
-       пустой маршрут в три строки, «трюм пуст», и только потом товар.
-       Рынок открывают ради цен; маршрут — это планирование, ему место после
-       того, ради чего пришли. Учить он меньше не стал, просто ждёт своей
-       очереди.
-       Но заведённый маршрут — не подсказка, а дело: он говорит, что грузить
-       прямо сейчас. Такой остаётся наверху. */
-    const hasRoute=(typeof routeOf==="function")&&routeOf().legs.length>=2;
-    if(hasRoute)renderRoute();
-    let any=false,tot=0;
-    for(const k of TRADE_KEYS){
-      const q=G.cargo[k];if(!q)continue;any=true;
-      const price=prices[k],base=RES[k].price;
-      /* котировка с аппетитом (M290): тег говорит правду для первых N единиц и
-         для (N+1)-й — «берут первые 6», а не «выгодно» на весь трюм */
-      const Q=(typeof sellQuote==="function")?sellQuote(G.sys,k,q):{revenue:q*price,nA:0,priceA:price};
-      tot+=Q.revenue;
-      let tg=price>base*1.12?"выгодно":(price<base*.9?"дёшево":"обычная цена");
-      if(Q.nA)tg="берут первые "+Q.nA+" по "+Q.priceA+" кр"+(Q.nA<q?", остальное "+price:"");
-      if((mkt.pressure[k]||0)<-.05)tg+=" · недавно продавали здесь";
-      const r=el("div","row");
-      r.appendChild(el("div","nm","<b style='color:"+RES[k].col+"'>"+RES[k].ru+
-        "</b><s>"+price+" кр/ед · "+tg+" (база "+base+")</s>"));
-      r.appendChild(el("div","qt",q+"<s>"+Math.round(Q.revenue).toLocaleString("ru")+" кр</s>"));
-      const b=el("button","act"+(Q.nA?" gold":""),"ПРОДАТЬ");
-      b.onclick=()=>{const rev=sellCargo(G.sys,k,q),L=sellCargo.last||{};
-        const extra=L.nA?" · "+L.nA+" с надбавкой":"";
-        tell("money","Продано на «"+G.st.name+"»: "+RES[k].ru.toLowerCase()+" ×"+q+" · +"+rev.toLocaleString("ru")+" кр"+extra,
-             "Продано: "+RES[k].ru+" ×"+q+"\n+"+rev.toLocaleString("ru")+" кр"+extra);
-        renderTab();};
-      r.appendChild(b);$body.appendChild(r);
-    }
-    if(any){
-      const r=el("div","row");
-      r.appendChild(el("div","nm","<b>Продать весь груз</b><s>по ценам этой станции</s>"));
-      r.appendChild(el("div","qt",tot.toLocaleString("ru")+"<s>кр</s>"));
-      const b=el("button","act gold","ПРОДАТЬ ВСЁ");
-      b.onclick=()=>{let sum=0,n=0;
-        for(const k of TRADE_KEYS){const q=G.cargo[k];if(q>0){sum+=sellCargo(G.sys,k,q);n+=q;}}
-        tell("money","Груз сдан на «"+G.st.name+"» · "+n+" ед · +"+sum.toLocaleString("ru")+" кр",
-             "Груз реализован\n+"+sum.toLocaleString("ru")+" кр");
-        renderTab();};
-      r.appendChild(b);$body.appendChild(r);
-    }else $body.appendChild(el("div","sec","ТРЮМ ПУСТ — САДИТЕСЬ НА ПЛАНЕТУ ИЛИ ИДИТЕ В ПОЯС"));
-    /* прилавок ВЗЯТЬ — кооперативу, запись — на станции дома (12aj, M351) */
-    if(typeof coopCounterBlock==="function")coopCounterBlock();
-    if(typeof coopRegBlock==="function")coopRegBlock();
-    /* редкое лежит в том же трюме, но купить его никто не возьмётся:
-       оно тратится, а не продаётся — поэтому отдельной секцией и без кнопки */
-    if(RARE_RES.some(k=>G.cargo[k]>0)){
-      $body.appendChild(el("div","sec","РЕДКОЕ СЫРЬЁ · РЫНОК НЕ БЕРЁТ · ИДЁТ НА ЛАБОРАТОРИЮ, БАЗЫ И КОРАБЛИ · ЛИШНЕЕ БЕРУТ ТОРГОВЫЕ БАРЖИ"));
-      for(const k of RARE_RES){
-        const q=G.cargo[k];if(!q)continue;
-        const r=el("div","row");
-        /* сперва «зачем», потом «откуда»: игрок и так знает, где это взял */
-        r.appendChild(el("div","nm","<b style='color:"+RES[k].col+"'>"+RES[k].ru+"</b><s>"+
-          (RES[k].use?RES[k].use+" · добыча: "+RES[k].rare:RES[k].rare)+"</s>"));
-        r.appendChild(el("div","qt",q+"<s>ед</s>"));
-        $body.appendChild(r);
-      }
-    }
-    /* промышленное (M291): рынок не берёт — ряд называет ближайший свой цех, который ест */
-    if(IND_KEYS.some(k=>G.cargo[k]>0)){
-      $body.appendChild(el("div","sec","ПРОМЫШЛЕННОЕ · РЫНОК НЕ БЕРЁТ · СДАЁТСЯ В СВОЙ ЦЕХ"));
-      for(const k of IND_KEYS){
-        const q=G.cargo[k];if(!q)continue;
-        const e=(typeof holdNearestEater==="function")?holdNearestEater(k):null;
-        const r=el("div","row");
-        r.appendChild(el("div","nm","<b style='color:"+RES[k].col+"'>"+RES[k].ru+"</b><s>"+
-          (e?(e.d?"едят на «"+e.name+"» · "+e.d+" "+pl3(e.d,"прыжок","прыжка","прыжков"):"едят здесь — вкладка СТРОЙКА"):"едока пока нет — поставьте цех, который это ест")+"</s>"));
-        r.appendChild(el("div","qt",q+"<s>ед</s>"));
-        $body.appendChild(r);
-      }
-    }
-    $body.appendChild(el("div","sec","ЗАКУПОЧНЫЕ ЦЕНЫ ЗДЕСЬ — МЕНЯЮТСЯ ОТ ПРОДАЖ И СО ВРЕМЕНЕМ"));
-    for(const k of TRADE_KEYS){
-      const r=el("div","row");
-      r.appendChild(el("div","nm","<b style='color:"+RES[k].col+"'>"+RES[k].ru+"</b>"));
-      r.appendChild(el("div","qt",prices[k]+"<s>кр/ед</s>"));
-      $body.appendChild(r);
-    }
-    if(!hasRoute)renderRoute();
-  }
-  else if(tab==="yard"){
-    /* Под блокадой док не строит и не продаёт: занятость — это отнятые службы,
-       а не отнятые числа. Топливо остаётся всегда, иначе игрок застревает */
-    if(!occService("yard")){
-      $body.appendChild(el("div","sec","ДОК ЗАКРЫТ · СИСТЕМА ПОД ПИРАТАМИ"));
-      $body.appendChild(el("div","row","<div class='nm'><s>"+occInfo(occHere()).note+
-        "<br>верфь откроется, когда систему отобьют: сбивайте патрули здесь же — "+
-        "счёт идёт по этой системе.</s></div>"));
-    }else{
-    /* Ряд дока, а не склад всей галактики: что стоит здесь сегодня. Ряд держится
-       на seed станции и временном бакете — вернулись через час, ряд другой. */
-    /* ── налёт часов ──
-       Верфь берёт деньги и снимает половину: работа сменная, корабль ждать
-       не будет. До чистого доводят только дома, в своём гараже (12s-wear). */
-    $body.appendChild(el("div","sec",wearLine()));
-    {
-      /* ── у верфи есть пол (M235) ──
-         Он назван числом прямо в строке: игрок должен видеть, ЧТО именно
-         купит, и почему второй раз нажимать бессмысленно. Ниже пола налёт
-         снимают только дома, и об этом сказано здесь же. */
-      const floor=wearFloor();
-      const w=wearOf();
-      if(w>floor+.02){
-        const cost=wearYardCost();
-        const r=el("div","row");
-        r.appendChild(el("div","nm","<b>Обслуживание корпуса</b><s>"+
-          "пескоструй, промывка сопел, подкраска: снимут налёт до "+Math.round(floor*100)+"%.<br>"+
-          "ниже верфь не берётся — до чистого доводят только в своём гараже</s>"));
-        r.appendChild(el("div","qt",cost.toLocaleString("ru")+"<s>кр</s>"));
-        const b=el("button","act","ОБСЛУЖИТЬ");
-        b.disabled=G.credits<cost;
-        b.onclick=()=>{
-          if(G.credits<cost)return;
-          G.credits-=cost;
-          const got=wearServiceTo(floor);
-          tell("tech","Обслуживание на «"+G.st.name+"» · снято "+Math.round(got*100)+"% налёта",
-               "Корпус обслужен\nналёт "+Math.round(wearOf()*100)+"% · это пол этой верфи\n"+
-               "до чистого — только гараж дома");
-          renderTab();
-        };
-        r.appendChild(b);$body.appendChild(r);
-      }else if(w>.02){
-        $body.appendChild(el("div","row","<div class='nm'><s>налёт "+Math.round(w*100)+
-          "% — это пол здешней верфи ("+Math.round(floor*100)+"%), ниже она не берётся. "+
-          "На настоящей верфи снимают больше, дома — всё и бесплатно.</s></div>"));
-      }
-    }
-    const yard=stationFleet(G.sys);
-    $body.appendChild(el("div","sec","КОРПУСА В ЭТОМ ДОКЕ · РЯД МЕНЯЕТСЯ САМ · МОДУЛИ ПЕРЕСТАВЛЯЮТСЯ БЕСПЛАТНО"));
-    for(const id of yard)$body.appendChild(shipRow(id,FLEET[id]));
-    /* Свои корпуса из ангара показываем всегда: пересесть обратно можно везде */
-    const own=Object.keys(G.owned).filter(id=>id!==G.shipId&&yard.indexOf(id)<0);
-    if(own.length){
-      $body.appendChild(el("div","sec","ВАШ АНГАР · ПЕРЕСЕСТЬ МОЖНО В ЛЮБОМ ДОКЕ"));
-      for(const id of own){const S=shipData(id);if(S)$body.appendChild(shipRow(id,S));}
-    }
-    /* ── восстановление притащенного корпуса (M369b, §19.3 «tow») ──
-       Чёрный корпус на тросе становится вашим не даром и не сразу: док берёт
-       за работу, и только после неё у корпуса появляется имя. Порода — та, с
-       которой он сошёл со стапеля, и она никуда не девается. */
-    if(G.tow){
-      const TB=G.tow.by||"gt";
-      const TP=(typeof powerOf==="function")?powerOf(TB):null;
-      const base=genUniqueShip(hashi(G.tow.seed,0x0E57,7));
-      base.by=TB;
-      base.cls="восстановленный корпус";
-      base.note="Пришёл на тросе чёрным, без имени и огней. "+
-        (TP?"Стапель "+TP.ru+".":"")+" Что с ним было — не написано нигде.";
-      const cost=Math.round((2200+base.price*.45)/50)*50;
-      $body.appendChild(el("div","sec","НА ТРОСЕ · ВОССТАНОВЛЕНИЕ"+(TP?" · "+TP.ru.toUpperCase():"")));
-      const rr=el("div","row");
-      rr.appendChild(el("div","nm","<b>Чёрный корпус</b><s>"+base.note+
-        "<br>тяга "+base.thr.toFixed(2)+" · поворот "+base.turn.toFixed(2)+
-        " · трюм "+base.cargo+" · бак "+base.fuel+" · корпус "+base.hull+"</s>"));
-      const rb=el("button","act"+(G.credits>=cost?" gold":""),cost.toLocaleString("ru")+" кр");
-      rb.disabled=G.credits<cost||G.st.stype!=="yard";
-      rb.onclick=()=>{
-        if(G.credits<cost){say("НЕ ХВАТАЕТ КРЕДИТОВ",60);return;}
-        G.credits-=cost;
-        const uid="t"+G.tow.seed;
-        G.uniqueShips[uid]=base;G.owned[uid]=true;G.tow=null;
-        tell("tech","Корпус восстановлен: «"+base.ru+"»",
-          "Восстановлен\n«"+base.ru+"»\n"+(TP?TP.ru:""));
-        renderTab();saveGame(true);
-      };
-      if(G.st.stype!=="yard")rr.appendChild(el("div","qt","ТОЛЬКО ВЕРФЬ"));
-      else rr.appendChild(rb);
-      $body.appendChild(rr);
-    }
-    $body.appendChild(el("div","sec","СЕРИЙНЫЙ РЯД · ЕСТЬ В ЛЮБОМ ДОКЕ"));
-    for(const id of SHIP_KEYS)$body.appendChild(shipRow(id,SHIPS[id]));
-    /* уникальный корпус строят только на верфи — у торгового узла док слабый */
-    /* «Ключ от верфи» открывает единственный экземпляр в любом доке, а не
-       только на верфи: это его первая строка и есть */
-    const offer=(G.st.stype==="yard"||relicOn("key"))?stationUniqueOffer(G.sys):null;
-    if(offer){
-      const uid="u"+offer.seed;
-      G.uniqueShips[uid]=offer;
-      $body.appendChild(el("div","sec","НАЙДЕНО ЗДЕСЬ · ЕДИНСТВЕННЫЙ ЭКЗЕМПЛЯР · ПРЕДЛОЖЕНИЕ СМЕНИТСЯ"+
-        (relicDeep("key")?" · УЖЕ С ЧАСТЯМИ В СЛОТАХ":"")));
-      $body.appendChild(shipRow(uid,offer));
-    }
-    const dr=DRONES.miner;
-    $body.appendChild(el("div","sec","ДРОНЫ · РАЗМЕЩАЮТСЯ НА ЗАЛЕЖИ ИЛИ АСТЕРОИДЕ · САМИ ВОЗЯТ И ПРОДАЮТ РУДУ"));
-    const rd=el("div","row");
-    /* окупаемость — по ценам ЭТОЙ станции (M350): игрок видит, на какой руде машина себя отобьёт */
-    const PM=marketFor(G.sys),pb=["crystal","titan","iron"].filter(k=>PM[k]).map(k=>RES[k].ru.toLowerCase()+" ~"+dronePaybackH(PM[k],dr.ratePerMin*stat().droneRate)+" ч").join(" · ");
-    const shop=droneShopHas(G.sys),sells=G.st.stype==="yard"||G.st.stype==="indust";
-    rd.appendChild(el("div","nm","<b>"+dr.ru+"</b><s>"+dr.note+
-      "<br>окупится: "+(pb||"—")+"<br>в запасе: "+G.droneInventory+" · развёрнуто: "+G.drones.length+
-      (sells?(shop?"":"<br>здесь уже брали — следующая машина через двое суток"):"<br>продают только верфь и завод")+"</s>"));
-    const bd=el("button","act"+(shop?" gold":""),dr.price.toLocaleString("ru")+" кр");
-    bd.disabled=G.credits<dr.price||!shop;
-    bd.onclick=()=>{if(!droneShopTake(G.sys))return;G.credits-=dr.price;G.droneInventory++;
-      tell("money","Куплен "+dr.ru.toLowerCase()+" за "+dr.price.toLocaleString("ru")+" кр",
-           "Дрон куплен\nв запасе: "+G.droneInventory);
-      renderTab();};
-    rd.appendChild(bd);$body.appendChild(rd);
-    /* машина, а не строка списка (M237): номер, состояние, круги. Весь
-       список маршрутов живёт на столе, здесь — что стоит в этой системе */
-    for(const d of G.drones){
-      const home=nearestStation(d.sx,d.sy);
-      const r=el("div","row");
-      const mk=(typeof droneFar==="function")?droneFar(d):null;
-      r.appendChild(el("div","nm","<b style='color:"+RES[d.res].col+"'>"+droneName(d)+" · "+RES[d.res].ru+
-        "</b><s>сектор "+d.sx+":"+d.sy+" · возит на «"+(mk?mk.name:home.name)+"» · "+droneStateRu(d)+
-        " · кругов "+(d.trips|0)+" · "+(d.earned|0).toLocaleString("ru")+" кр"+(d.pool>=0?" · осталось "+d.pool:"")+"</s>"));
-      /* отозвать можно только там, где машина работает: за ней надо прилететь (M350) */
-      if(d.sx===G.sx&&d.sy===G.sy){
-        const rb=el("button","act sm","ВЕРНУТЬ");
-        rb.onclick=()=>{droneRecall(d);renderTab();};
-        r.appendChild(rb);
-      }
-      $body.appendChild(r);
-    }
-  }
-  }
+  if(tab==="board"){stTabBoard();return;}
+  if(tab==="market"){stTabMarket(st);}
+  else if(tab==="yard"){stTabYard(st);}
   else if(tab==="mods"){stTabMods();}
   else if(tab==="instr"){stTabInstr();}
   else if(tab==="lab"){stTabLab();}
@@ -75316,6 +75008,371 @@ function wanPanelSync(){
   if(lot&&!lot.empty&&!lot.gone)mk(lot.pay.ask?"ОБМЕНЯТЬ":"ВЗЯТЬ","gold",()=>wanderBuy(lot),!!wanderCant(lot));
   mk("СЫРЬЁ","",()=>{S.counter=true;});
   mk("УЙТИ","",()=>exitWanderer());
+}
+
+/* ══════════════ станция: доска, рынок и док (выделено из 26, M415) ══════════════
+   Три вкладки из `renderTabBody` занимали три пятых модуля станции: доска
+   (M151a) со всем, что мир говорит о себе, рынок с ценами и маршрутом и док с
+   корпусами. Остальные вкладки давно живут по своим файлам —
+   `stTabMods`/`stTabInstr`/`stTabLab`/`stTabFuse` в `26b`, стройка в `26c`, —
+   и эти три просто не переехали вместе с ними. Здесь они по тому же образцу:
+   одна функция на вкладку, `st` передаётся, как в `renderBasesTab(st)`.
+
+   Порядок склейки: `26e-` ложится после `26d-ui-wanderer`; всё, чем эти
+   вкладки пользуются ($body, el, secHead, boardLanes), объявлено раньше. */
+function stTabBoard(){
+    /* ДОСКА (M151a): всё, что мир говорит о себе, на одной стене — очередь у
+       стойки, дела здесь, табло прибытий, слухи, имя системы. Сюда же лягут
+       наряды (M152e), циркуляр (M156), стенгазета (M165), доска почёта (M161). */
+    if(stTypeOf(G.st.stype).tabs.length===0)
+      $body.appendChild(el("div","sec","ТОПЛИВО "+fuelPriceHere()+" кр/ед · РЕМОНТ "+repairCost()+" кр/ед · "+repLine(G.sys).toUpperCase()));
+    const sp=(typeof speechHere==="function")?speechHere():null;
+    if(sp){
+      secHead("ОЧЕРЕДЬ У СТОЙКИ",{count:sp.addr});
+      $body.appendChild(el("div","row","<div class='nm'><s style='color:#cfe3ea;line-height:1.9'>"+
+        (sp.silent?"<i>смотрит и ничего не говорит</i>":sp.line)+"</s><s>следующая реплика — в следующий заход</s></div>"));
+      const tag=G.sys.key+"#"+visitHere();
+      if(G.spLogged!==tag&&!sp.silent){G.spLogged=tag;peopleLine(sp.line,G.st.name);}
+    }
+    /* ── кто здесь (12u-folk) ──
+       Свои. Стоят не на каждом причале и не каждую смену: человек, который
+       есть всегда, перестаёт быть человеком. Говорят про своё и никогда — про
+       игрока; попросить о чём-нибудь тоже не могут, это не их разговор. */
+    if(typeof folkShown==="function"){
+      const fs=folkShown();
+      if(fs&&FOLK[fs.id]){
+        /* подпись, кто это (M299): голое «РЫБА» с цитатой читалось сбоем */
+        secHead(FOLK[fs.id].where==="dock"?"У ДОКА":"В ЗАЛЕ");
+        $body.appendChild(el("div","row","<div class='nm'><b>"+FOLK[fs.id].ru+" · завсегдатай</b>"+
+          "<s style='color:#cfe3ea;line-height:1.8'>"+fs.line+"</s></div>"));
+      }
+    }
+    /* ── рассказать, где взяли (11aj) ──
+       Появляется, только если он и правда где-то взял заметно, и только по разу
+       на место. Ни предупреждения, ни последствий в тексте: человек слушает,
+       благодарит, и всё. Счёт придёт через несколько дней и чужим голосом. */
+    if(typeof toldWorth==="function"){
+      const tw=toldWorth();
+      if(tw){
+        $body.appendChild(el("div","sec","У СТОЙКИ СЛУШАЮТ"));
+        const r=el("div","row");
+        r.appendChild(el("div","nm","<b>Рассказать, где взяли "+
+          RES[tw.res].ru.toLowerCase()+"</b><s>тут любят, когда делятся</s>"));
+        const b=el("button","act","РАССКАЗАТЬ");
+        b.onclick=()=>{toldDo();renderTab();};
+        r.appendChild(b);$body.appendChild(r);
+      }
+    }
+    /* ── что вы уже взяли ──
+       Не задание: ни стрелки, ни срока, ни напоминания вне этой строки.
+       Настоящий журнал — бумага на столе (27i), она ложится туда при взятии.
+       Здесь только строчка, чтобы человек, стоящий у доски, не вспоминал по
+       памяти, куда он собирался. */
+    if(typeof offerCarried==="function"){
+      const car=offerCarried();
+      if(car.length){
+        $body.appendChild(el("div","sec","ВЕЗЁТЕ"));
+        for(const o of car){
+          const K=OFFER_KIND[o.kind];
+          $body.appendChild(el("div","row","<div class='nm'><b>"+
+            K.ru[0].toUpperCase()+K.ru.slice(1)+"</b><s>на «"+o.to.name+"»"+
+            (o.named?" · вас назвали":"")+"</s></div>"));
+        }
+      }
+    }
+    /* ── возможности (11ah) ──
+       Не задания: у них нет цели, нет маркера и нет напоминания. Это то, что
+       здесь сегодня предлагают, и половина предложений — не тебе.
+       Именное стоит первым и подписано «вам»: разница между «кто рядом» и
+       «вам» — это вся дуга книги, набранная двумя словами. Платит оно втрое,
+       и в этом весь смысл — закрытую дверь игрок почувствует кошельком, а не
+       строкой интерфейса. */
+    if(typeof offerHere==="function"){
+      const oh=offerHere();
+      if(oh.length){
+        oh.sort((a,b)=>b.named-a.named);
+        $body.appendChild(el("div","sec","ЧТО ПРЕДЛАГАЮТ"));
+        for(const o of oh){
+          const K=OFFER_KIND[o.kind];
+          const r=el("div","row");
+          r.appendChild(el("div","nm","<b>"+(o.named?"Вам":K.ru[0].toUpperCase()+K.ru.slice(1))+
+            (o.named?" — "+K.ru:"")+"</b><s>"+K.note+"</s>"));
+          const pay=offerPay(o);
+          if(pay>0)r.appendChild(el("div","qt",pay+"<s>кр</s>"));
+          const b=el("button","act"+(o.named?" gold":""),"ВЗЯТЬ");
+          b.onclick=()=>{
+            offerTake(o);
+            const d=o.to;
+            tell("","Взято: "+K.ru+(d?" · на «"+d.name+"»":""),
+                 d?K.ru+"\nна «"+d.name+"»":K.ru);
+            renderTab();
+          };
+          r.appendChild(b);$body.appendChild(r);
+        }
+      }
+    }
+    if(typeof questOpen==="function"){
+      const here=questOpen().filter(q=>q.sx===G.sx&&q.sy===G.sy);
+      if(here.length){
+        $body.appendChild(el("div","sec","ДЕЛА ЗДЕСЬ"));
+        for(const q of here)$body.appendChild(el("div","row","<div class='nm'><b>"+q.ru+"</b><s>"+(q.note||"")+
+          (q.reward?" · награда: "+q.reward:"")+"</s></div>"));
+      }
+    }
+    if(typeof needBlock==="function")needBlock();         /* нужда и наряд (M152e) */
+    if(typeof appetiteBlock==="function")appetiteBlock();  /* что станция берёт с надбавкой (M290) */
+    if(typeof rungBoardBlock==="function")rungBoardBlock();  /* пятилетка и что здесь стоит (M292) */
+    if(typeof holdMeteoLines==="function"){const ML=holdMeteoLines(G.sys);   /* Метеостанция (I6) */
+      if(ML.length){$body.appendChild(el("div","sec","МЕТЕОСТАНЦИЯ · ПОГОДА НА ТЕЛАХ"));
+        for(const l of ML)$body.appendChild(el("div","row","<div class='nm'><s>"+l+"</s></div>"));}}
+    if(typeof findsBlock==="function")findsBlock();       /* находки: институту или с рук (M152e) */
+    if(typeof kitDepotBlock==="function")kitDepotBlock();   /* склад института: комплект (M152) */
+    if(typeof vegaFleaBlock==="function")vegaFleaBlock();   /* дед с лотка (M153) */
+    if(typeof ringBlock==="function")ringBlock();           /* ленты Кольца (M154) */
+    if(typeof misBlock==="function")misBlock();             /* часы станции против неба (M155) */
+    if(typeof expBlock==="function")expBlock();             /* экспедиция: собираем, отпустить, попутчик (M156) */
+    if(typeof lettersBlock==="function")lettersBlock();     /* письма с содержанием (M158) */
+    if(typeof expOfferBlock==="function")expOfferBlock();   /* есть место (M159) */
+    if(typeof islandBlock==="function")islandBlock();       /* письмо на Остров (M160) */
+    if(typeof recordBlock==="function")recordBlock();       /* доска почёта, комиссия (M161) */
+    if(typeof instBlock==="function")instBlock();           /* институт: темы и отчёты (M162) */
+    if(typeof skyBlock==="function")skyBlock();             /* небесная вахта (M195) */
+    if(typeof winBlock==="function")winBlock();             /* зимовка: месяц одному (M197) */
+    if(typeof traineeBlock==="function")traineeBlock();     /* диплом стажёру (M163) */
+    if(typeof zooBlock==="function")zooBlock();             /* зоостанция (M164) */
+    if(typeof wallBlock==="function")wallBlock();           /* стенгазета и заявки (M165) */
+    if(typeof retBlock==="function")retBlock();           /* табло прибытий (11s) */
+    if(typeof rumourBlock==="function")rumourBlock();     /* слухи (11t) */
+    /* имя системы ушло с доски на карту (M299): поле «ваше имя. На карте — оно»
+       читалось как имя капитана, и туда вписывали позывной */
+    boardLanes(0);
+    $body.appendChild(el("div","sec","ПРИЁМНИК — НА ПУЛЬТЕ ВНИЗУ · У СТОЙКИ ЛОВИТ ЛУЧШЕ"));
+}
+function stTabMarket(st){
+    const prices=marketFor(G.sys),mkt=G.market[G.sys.key];
+    $body.appendChild(el("div","sec","ТРЮМ "+held()+" / "+st.cargoMax+
+      " · ТОПЛИВО "+fuelPriceHere()+" кр/ед · РЕМОНТ "+repairCost()+" кр/ед"));
+    /* Маршрут переехал в конец вкладки (проход «дорога»). Он стоял вторым
+       блоком сверху, и у игрока без маршрута — то есть у всякого, кто открыл
+       рынок впервые, — первая цена оказывалась ниже середины экрана: шапка,
+       пустой маршрут в три строки, «трюм пуст», и только потом товар.
+       Рынок открывают ради цен; маршрут — это планирование, ему место после
+       того, ради чего пришли. Учить он меньше не стал, просто ждёт своей
+       очереди.
+       Но заведённый маршрут — не подсказка, а дело: он говорит, что грузить
+       прямо сейчас. Такой остаётся наверху. */
+    const hasRoute=(typeof routeOf==="function")&&routeOf().legs.length>=2;
+    if(hasRoute)renderRoute();
+    let any=false,tot=0;
+    for(const k of TRADE_KEYS){
+      const q=G.cargo[k];if(!q)continue;any=true;
+      const price=prices[k],base=RES[k].price;
+      /* котировка с аппетитом (M290): тег говорит правду для первых N единиц и
+         для (N+1)-й — «берут первые 6», а не «выгодно» на весь трюм */
+      const Q=(typeof sellQuote==="function")?sellQuote(G.sys,k,q):{revenue:q*price,nA:0,priceA:price};
+      tot+=Q.revenue;
+      let tg=price>base*1.12?"выгодно":(price<base*.9?"дёшево":"обычная цена");
+      if(Q.nA)tg="берут первые "+Q.nA+" по "+Q.priceA+" кр"+(Q.nA<q?", остальное "+price:"");
+      if((mkt.pressure[k]||0)<-.05)tg+=" · недавно продавали здесь";
+      const r=el("div","row");
+      r.appendChild(el("div","nm","<b style='color:"+RES[k].col+"'>"+RES[k].ru+
+        "</b><s>"+price+" кр/ед · "+tg+" (база "+base+")</s>"));
+      r.appendChild(el("div","qt",q+"<s>"+Math.round(Q.revenue).toLocaleString("ru")+" кр</s>"));
+      const b=el("button","act"+(Q.nA?" gold":""),"ПРОДАТЬ");
+      b.onclick=()=>{const rev=sellCargo(G.sys,k,q),L=sellCargo.last||{};
+        const extra=L.nA?" · "+L.nA+" с надбавкой":"";
+        tell("money","Продано на «"+G.st.name+"»: "+RES[k].ru.toLowerCase()+" ×"+q+" · +"+rev.toLocaleString("ru")+" кр"+extra,
+             "Продано: "+RES[k].ru+" ×"+q+"\n+"+rev.toLocaleString("ru")+" кр"+extra);
+        renderTab();};
+      r.appendChild(b);$body.appendChild(r);
+    }
+    if(any){
+      const r=el("div","row");
+      r.appendChild(el("div","nm","<b>Продать весь груз</b><s>по ценам этой станции</s>"));
+      r.appendChild(el("div","qt",tot.toLocaleString("ru")+"<s>кр</s>"));
+      const b=el("button","act gold","ПРОДАТЬ ВСЁ");
+      b.onclick=()=>{let sum=0,n=0;
+        for(const k of TRADE_KEYS){const q=G.cargo[k];if(q>0){sum+=sellCargo(G.sys,k,q);n+=q;}}
+        tell("money","Груз сдан на «"+G.st.name+"» · "+n+" ед · +"+sum.toLocaleString("ru")+" кр",
+             "Груз реализован\n+"+sum.toLocaleString("ru")+" кр");
+        renderTab();};
+      r.appendChild(b);$body.appendChild(r);
+    }else $body.appendChild(el("div","sec","ТРЮМ ПУСТ — САДИТЕСЬ НА ПЛАНЕТУ ИЛИ ИДИТЕ В ПОЯС"));
+    /* прилавок ВЗЯТЬ — кооперативу, запись — на станции дома (12aj, M351) */
+    if(typeof coopCounterBlock==="function")coopCounterBlock();
+    if(typeof coopRegBlock==="function")coopRegBlock();
+    /* редкое лежит в том же трюме, но купить его никто не возьмётся:
+       оно тратится, а не продаётся — поэтому отдельной секцией и без кнопки */
+    if(RARE_RES.some(k=>G.cargo[k]>0)){
+      $body.appendChild(el("div","sec","РЕДКОЕ СЫРЬЁ · РЫНОК НЕ БЕРЁТ · ИДЁТ НА ЛАБОРАТОРИЮ, БАЗЫ И КОРАБЛИ · ЛИШНЕЕ БЕРУТ ТОРГОВЫЕ БАРЖИ"));
+      for(const k of RARE_RES){
+        const q=G.cargo[k];if(!q)continue;
+        const r=el("div","row");
+        /* сперва «зачем», потом «откуда»: игрок и так знает, где это взял */
+        r.appendChild(el("div","nm","<b style='color:"+RES[k].col+"'>"+RES[k].ru+"</b><s>"+
+          (RES[k].use?RES[k].use+" · добыча: "+RES[k].rare:RES[k].rare)+"</s>"));
+        r.appendChild(el("div","qt",q+"<s>ед</s>"));
+        $body.appendChild(r);
+      }
+    }
+    /* промышленное (M291): рынок не берёт — ряд называет ближайший свой цех, который ест */
+    if(IND_KEYS.some(k=>G.cargo[k]>0)){
+      $body.appendChild(el("div","sec","ПРОМЫШЛЕННОЕ · РЫНОК НЕ БЕРЁТ · СДАЁТСЯ В СВОЙ ЦЕХ"));
+      for(const k of IND_KEYS){
+        const q=G.cargo[k];if(!q)continue;
+        const e=(typeof holdNearestEater==="function")?holdNearestEater(k):null;
+        const r=el("div","row");
+        r.appendChild(el("div","nm","<b style='color:"+RES[k].col+"'>"+RES[k].ru+"</b><s>"+
+          (e?(e.d?"едят на «"+e.name+"» · "+e.d+" "+pl3(e.d,"прыжок","прыжка","прыжков"):"едят здесь — вкладка СТРОЙКА"):"едока пока нет — поставьте цех, который это ест")+"</s>"));
+        r.appendChild(el("div","qt",q+"<s>ед</s>"));
+        $body.appendChild(r);
+      }
+    }
+    $body.appendChild(el("div","sec","ЗАКУПОЧНЫЕ ЦЕНЫ ЗДЕСЬ — МЕНЯЮТСЯ ОТ ПРОДАЖ И СО ВРЕМЕНЕМ"));
+    for(const k of TRADE_KEYS){
+      const r=el("div","row");
+      r.appendChild(el("div","nm","<b style='color:"+RES[k].col+"'>"+RES[k].ru+"</b>"));
+      r.appendChild(el("div","qt",prices[k]+"<s>кр/ед</s>"));
+      $body.appendChild(r);
+    }
+    if(!hasRoute)renderRoute();
+}
+function stTabYard(st){
+    /* Под блокадой док не строит и не продаёт: занятость — это отнятые службы,
+       а не отнятые числа. Топливо остаётся всегда, иначе игрок застревает */
+    if(!occService("yard")){
+      $body.appendChild(el("div","sec","ДОК ЗАКРЫТ · СИСТЕМА ПОД ПИРАТАМИ"));
+      $body.appendChild(el("div","row","<div class='nm'><s>"+occInfo(occHere()).note+
+        "<br>верфь откроется, когда систему отобьют: сбивайте патрули здесь же — "+
+        "счёт идёт по этой системе.</s></div>"));
+    }else{
+    /* Ряд дока, а не склад всей галактики: что стоит здесь сегодня. Ряд держится
+       на seed станции и временном бакете — вернулись через час, ряд другой. */
+    /* ── налёт часов ──
+       Верфь берёт деньги и снимает половину: работа сменная, корабль ждать
+       не будет. До чистого доводят только дома, в своём гараже (12s-wear). */
+    $body.appendChild(el("div","sec",wearLine()));
+    {
+      /* ── у верфи есть пол (M235) ──
+         Он назван числом прямо в строке: игрок должен видеть, ЧТО именно
+         купит, и почему второй раз нажимать бессмысленно. Ниже пола налёт
+         снимают только дома, и об этом сказано здесь же. */
+      const floor=wearFloor();
+      const w=wearOf();
+      if(w>floor+.02){
+        const cost=wearYardCost();
+        const r=el("div","row");
+        r.appendChild(el("div","nm","<b>Обслуживание корпуса</b><s>"+
+          "пескоструй, промывка сопел, подкраска: снимут налёт до "+Math.round(floor*100)+"%.<br>"+
+          "ниже верфь не берётся — до чистого доводят только в своём гараже</s>"));
+        r.appendChild(el("div","qt",cost.toLocaleString("ru")+"<s>кр</s>"));
+        const b=el("button","act","ОБСЛУЖИТЬ");
+        b.disabled=G.credits<cost;
+        b.onclick=()=>{
+          if(G.credits<cost)return;
+          G.credits-=cost;
+          const got=wearServiceTo(floor);
+          tell("tech","Обслуживание на «"+G.st.name+"» · снято "+Math.round(got*100)+"% налёта",
+               "Корпус обслужен\nналёт "+Math.round(wearOf()*100)+"% · это пол этой верфи\n"+
+               "до чистого — только гараж дома");
+          renderTab();
+        };
+        r.appendChild(b);$body.appendChild(r);
+      }else if(w>.02){
+        $body.appendChild(el("div","row","<div class='nm'><s>налёт "+Math.round(w*100)+
+          "% — это пол здешней верфи ("+Math.round(floor*100)+"%), ниже она не берётся. "+
+          "На настоящей верфи снимают больше, дома — всё и бесплатно.</s></div>"));
+      }
+    }
+    const yard=stationFleet(G.sys);
+    $body.appendChild(el("div","sec","КОРПУСА В ЭТОМ ДОКЕ · РЯД МЕНЯЕТСЯ САМ · МОДУЛИ ПЕРЕСТАВЛЯЮТСЯ БЕСПЛАТНО"));
+    for(const id of yard)$body.appendChild(shipRow(id,FLEET[id]));
+    /* Свои корпуса из ангара показываем всегда: пересесть обратно можно везде */
+    const own=Object.keys(G.owned).filter(id=>id!==G.shipId&&yard.indexOf(id)<0);
+    if(own.length){
+      $body.appendChild(el("div","sec","ВАШ АНГАР · ПЕРЕСЕСТЬ МОЖНО В ЛЮБОМ ДОКЕ"));
+      for(const id of own){const S=shipData(id);if(S)$body.appendChild(shipRow(id,S));}
+    }
+    /* ── восстановление притащенного корпуса (M369b, §19.3 «tow») ──
+       Чёрный корпус на тросе становится вашим не даром и не сразу: док берёт
+       за работу, и только после неё у корпуса появляется имя. Порода — та, с
+       которой он сошёл со стапеля, и она никуда не девается. */
+    if(G.tow){
+      const TB=G.tow.by||"gt";
+      const TP=(typeof powerOf==="function")?powerOf(TB):null;
+      const base=genUniqueShip(hashi(G.tow.seed,0x0E57,7));
+      base.by=TB;
+      base.cls="восстановленный корпус";
+      base.note="Пришёл на тросе чёрным, без имени и огней. "+
+        (TP?"Стапель "+TP.ru+".":"")+" Что с ним было — не написано нигде.";
+      const cost=Math.round((2200+base.price*.45)/50)*50;
+      $body.appendChild(el("div","sec","НА ТРОСЕ · ВОССТАНОВЛЕНИЕ"+(TP?" · "+TP.ru.toUpperCase():"")));
+      const rr=el("div","row");
+      rr.appendChild(el("div","nm","<b>Чёрный корпус</b><s>"+base.note+
+        "<br>тяга "+base.thr.toFixed(2)+" · поворот "+base.turn.toFixed(2)+
+        " · трюм "+base.cargo+" · бак "+base.fuel+" · корпус "+base.hull+"</s>"));
+      const rb=el("button","act"+(G.credits>=cost?" gold":""),cost.toLocaleString("ru")+" кр");
+      rb.disabled=G.credits<cost||G.st.stype!=="yard";
+      rb.onclick=()=>{
+        if(G.credits<cost){say("НЕ ХВАТАЕТ КРЕДИТОВ",60);return;}
+        G.credits-=cost;
+        const uid="t"+G.tow.seed;
+        G.uniqueShips[uid]=base;G.owned[uid]=true;G.tow=null;
+        tell("tech","Корпус восстановлен: «"+base.ru+"»",
+          "Восстановлен\n«"+base.ru+"»\n"+(TP?TP.ru:""));
+        renderTab();saveGame(true);
+      };
+      if(G.st.stype!=="yard")rr.appendChild(el("div","qt","ТОЛЬКО ВЕРФЬ"));
+      else rr.appendChild(rb);
+      $body.appendChild(rr);
+    }
+    $body.appendChild(el("div","sec","СЕРИЙНЫЙ РЯД · ЕСТЬ В ЛЮБОМ ДОКЕ"));
+    for(const id of SHIP_KEYS)$body.appendChild(shipRow(id,SHIPS[id]));
+    /* уникальный корпус строят только на верфи — у торгового узла док слабый */
+    /* «Ключ от верфи» открывает единственный экземпляр в любом доке, а не
+       только на верфи: это его первая строка и есть */
+    const offer=(G.st.stype==="yard"||relicOn("key"))?stationUniqueOffer(G.sys):null;
+    if(offer){
+      const uid="u"+offer.seed;
+      G.uniqueShips[uid]=offer;
+      $body.appendChild(el("div","sec","НАЙДЕНО ЗДЕСЬ · ЕДИНСТВЕННЫЙ ЭКЗЕМПЛЯР · ПРЕДЛОЖЕНИЕ СМЕНИТСЯ"+
+        (relicDeep("key")?" · УЖЕ С ЧАСТЯМИ В СЛОТАХ":"")));
+      $body.appendChild(shipRow(uid,offer));
+    }
+    const dr=DRONES.miner;
+    $body.appendChild(el("div","sec","ДРОНЫ · РАЗМЕЩАЮТСЯ НА ЗАЛЕЖИ ИЛИ АСТЕРОИДЕ · САМИ ВОЗЯТ И ПРОДАЮТ РУДУ"));
+    const rd=el("div","row");
+    /* окупаемость — по ценам ЭТОЙ станции (M350): игрок видит, на какой руде машина себя отобьёт */
+    const PM=marketFor(G.sys),pb=["crystal","titan","iron"].filter(k=>PM[k]).map(k=>RES[k].ru.toLowerCase()+" ~"+dronePaybackH(PM[k],dr.ratePerMin*stat().droneRate)+" ч").join(" · ");
+    const shop=droneShopHas(G.sys),sells=G.st.stype==="yard"||G.st.stype==="indust";
+    rd.appendChild(el("div","nm","<b>"+dr.ru+"</b><s>"+dr.note+
+      "<br>окупится: "+(pb||"—")+"<br>в запасе: "+G.droneInventory+" · развёрнуто: "+G.drones.length+
+      (sells?(shop?"":"<br>здесь уже брали — следующая машина через двое суток"):"<br>продают только верфь и завод")+"</s>"));
+    const bd=el("button","act"+(shop?" gold":""),dr.price.toLocaleString("ru")+" кр");
+    bd.disabled=G.credits<dr.price||!shop;
+    bd.onclick=()=>{if(!droneShopTake(G.sys))return;G.credits-=dr.price;G.droneInventory++;
+      tell("money","Куплен "+dr.ru.toLowerCase()+" за "+dr.price.toLocaleString("ru")+" кр",
+           "Дрон куплен\nв запасе: "+G.droneInventory);
+      renderTab();};
+    rd.appendChild(bd);$body.appendChild(rd);
+    /* машина, а не строка списка (M237): номер, состояние, круги. Весь
+       список маршрутов живёт на столе, здесь — что стоит в этой системе */
+    for(const d of G.drones){
+      const home=nearestStation(d.sx,d.sy);
+      const r=el("div","row");
+      const mk=(typeof droneFar==="function")?droneFar(d):null;
+      r.appendChild(el("div","nm","<b style='color:"+RES[d.res].col+"'>"+droneName(d)+" · "+RES[d.res].ru+
+        "</b><s>сектор "+d.sx+":"+d.sy+" · возит на «"+(mk?mk.name:home.name)+"» · "+droneStateRu(d)+
+        " · кругов "+(d.trips|0)+" · "+(d.earned|0).toLocaleString("ru")+" кр"+(d.pool>=0?" · осталось "+d.pool:"")+"</s>"));
+      /* отозвать можно только там, где машина работает: за ней надо прилететь (M350) */
+      if(d.sx===G.sx&&d.sy===G.sy){
+        const rb=el("button","act sm","ВЕРНУТЬ");
+        rb.onclick=()=>{droneRecall(d);renderTab();};
+        r.appendChild(rb);
+      }
+      $body.appendChild(r);
+    }
+  }
 }
 
 /* ══════════════ силуэт корпуса и вход в ОПИСЬ ══════════════

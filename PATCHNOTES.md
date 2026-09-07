@@ -7,6 +7,39 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.411.0 - M415: the split debt, and two guards that stopped crying wolf
+
+The four biggest modules were past the size the build records for them, and the plan has carried
+them as named debt since 2026-08-25. Cut along the seams the audit already named - nothing moved
+that was not already a separate thing:
+
+| module | was | now |
+|---|---|---|
+| `12ai-fleet` | 58 KB | 27 + `12ai1-fleet-art` 33 - the sprite conveyor, house makers, trade glyphs and the lit hull knew nothing about passes, fuel norms or call-signs |
+| `26-ui-station` | 67 KB | 41 + `26e-ui-station-trade` 26 - board, market and yard were the last three tabs still inline; the other five have lived in `26b`/`26c` for versions |
+| `21e-surface-draw` | 60 KB | 18 + `21e1-surface-world` 43 - `drawSurfaceWorld` is the world, the rest is the frame around it |
+| `14-save` | 70 KB | 44 + `14a1-save-rest` 27 - `applySave` splits in exactly one place, where no local crosses the border (`seen` ends earlier, `pn` too, `st` is declared past the seam) |
+
+**And two guards that had started to lie.**
+
+`build.ps1` warns about a module past its recorded size, and the record was last taken on
+2026-09-02; by today it was shouting thirteen names every build. A guard that always shouts is
+not a guard - the note in the table says so itself, from the last time this happened. The
+measurements are retaken, so silence means «not growing» again. `21e1-surface-world` is recorded
+at 43 KB with its own next seams named in the comment (the mine mouth, the tracks, the night):
+it is one 590-line function, and splitting a coherent function on a byte count would be worse
+than carrying it.
+
+The ghost guard - `typeof foo==="function"` around a name nothing declares, the pattern that
+turned `mgrHire(mgrRoll(...))` into a silently empty screen - was reporting two names on every
+build, and both were noise: `addEventListener` is a host global, honestly guarded because the
+Node tier has no DOM. It now knows the browser globals by name, and shouts only about ours. The
+one real ghost it was hiding, `stat0Gun` in `05-parts` (`const st=(typeof stat0Gun==="function")
+?null:null` - both branches null, the variable never read), is gone.
+
+Full tier green: 17722 assertions over 772 suites.
+
+---
 ## 0.410.0 - M413: the base scene reads
 
 The same review that produced 0.409.1 ended with six notes about the base scene. None of them

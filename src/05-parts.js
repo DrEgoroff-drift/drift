@@ -323,7 +323,6 @@ let GUN_LIST=null;
 function fittedGuns(){
   if(GUN_LIST)return GUN_LIST;
   const f=G.fit[G.shipId]||{},out=[];
-  const st=(typeof stat0Gun==="function")?null:null;
   for(const k in f){
     const p=partById(f[k]);
     if(!p||p.kind!=="gun")continue;
