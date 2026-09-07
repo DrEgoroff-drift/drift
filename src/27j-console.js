@@ -17,6 +17,10 @@
    1. Пульт ничего не сочиняет и не хранит, кроме частоты (G.radioF).
    2. DOM обновляется раз в секунду с небольшим, не каждый кадр: это текст. */
 let conT=0,conLast="",conFresh=0,conHeld=null,conDwell=0,perchT=0;
+/* когда птицу на жёрдочке рисовали в последний раз, и как редко это надо
+   делать (M421): иконка в сорок четыре пикселя не показывает позы */
+let PERCH_AT=-1e9;
+const PERCH_EVERY=300;       /* кадров между перерисовками — около пяти секунд */
 function consoleHeard(text,who){
   const line=document.getElementById("rxLine"),band=document.getElementById("rxBand"),rx=document.getElementById("rx");
   if(!line)return;
@@ -98,13 +102,26 @@ function consoleTick(dt){
            показываем — он уводит птицу за край. Канва в плотности экрана,
            иначе мыло. Сторож: 91f-ui «жёрдочка: птица в иконке целиком». */
         const k=Math.min(2,window.devicePixelRatio||1),px=Math.round(44*k);
-        if(cv.width!==px||cv.height!==px){cv.width=px;cv.height=px;}
-        const c=cv.getContext("2d");c.setTransform(1,0,0,1,0,0);c.clearRect(0,0,px,px);
-        if(typeof parStep==="function")parStep(1.1);
-        const m=px*.08,sc=(px-2*m)/260,P=typeof PAR==="object"?PAR:null,hang=P?P.hang:0;
-        if(P)P.hang=0;
-        c.setTransform(sc,0,0,sc,px/2-sc*113.5,m-sc*43);
-        try{parrotDraw(c,230,304);}finally{if(P)P.hang=hang;c.setTransform(1,0,0,1,0,0);}
+        if(cv.width!==px||cv.height!==px){cv.width=px;cv.height=px;PERCH_AT=-1e9;}
+        /* ── и не каждую секунду (M421) ──
+           Пульт обновляется раз в секунду, и всё это время сюда заново
+           рисовалась ВСЯ птица — весь процедурный конвейер `12y-parrot-face`
+           ради сорока четырёх пикселей. Замер в живом браузере: 4.9 мс на
+           разогретой машине, то есть на телефоне около двадцати, раз в
+           секунду и до конца игры. На иконке такого размера поза не читается
+           вовсе: перерисовываем раз в пять секунд, между ними канва просто
+           стоит — это ноль работы, а не быстрый перерисов. */
+        /* `G.t<PERCH_AT` — это новый мир (часы пошли с нуля): рисуем сразу,
+           иначе после `resetWorld` иконка осталась бы пустой до пяти секунд */
+        if(G.t-PERCH_AT>=PERCH_EVERY||G.t<PERCH_AT){
+          PERCH_AT=G.t;
+          const c=cv.getContext("2d");c.setTransform(1,0,0,1,0,0);c.clearRect(0,0,px,px);
+          if(typeof parStep==="function")parStep(1.1);
+          const m=px*.08,sc=(px-2*m)/260,P=typeof PAR==="object"?PAR:null,hang=P?P.hang:0;
+          if(P)P.hang=0;
+          c.setTransform(sc,0,0,sc,px/2-sc*113.5,m-sc*43);
+          try{parrotDraw(c,230,304);}finally{if(P)P.hang=hang;c.setTransform(1,0,0,1,0,0);}
+        }
       }
     }
   }

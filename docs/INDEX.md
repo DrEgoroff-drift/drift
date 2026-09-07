@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 507 · символов верхнего уровня: 4779
+Файлов: 507 · символов верхнего уровня: 4781
 
 ## СИМВОЛЫ
 
@@ -813,8 +813,8 @@ combatShots                  src/13-combat.js:147
 concertAll                   src/11ae-concert.js:22
 concertNotes                 src/11ae-concert.js:82
 concertSend                  src/11ae-concert.js:87
-consoleHeard                 src/27j-console.js:20
-consoleTick                  src/27j-console.js:29
+consoleHeard                 src/27j-console.js:24
+consoleTick                  src/27j-console.js:33
 conT                         src/27j-console.js:19
 COOP_ASK_BY                  src/12aj-coop.js:135
 COOP_ASKS                    src/12aj-coop.js:126
@@ -3015,8 +3015,8 @@ palStep                      src/21b5-base-palata.js:98
 PAR                          src/12y-parrot-face.js:50
 PAR_ACT                      src/12z-parrot-acts.js:58
 PAR_C                        src/12y-parrot-face.js:37
-PAR_DPR                      src/12y-parrot-face.js:683
-PAR_IDLE                     src/12y-parrot-face.js:640
+PAR_DPR                      src/12y-parrot-face.js:692
+PAR_IDLE                     src/12y-parrot-face.js:649
 PAR_L                        src/12y-parrot-face.js:575
 PAR_LAST                     src/12z-parrot-acts.js:202
 parActs                      src/12z-parrot-acts.js:233
@@ -3032,15 +3032,15 @@ parPickAct                   src/12z-parrot-acts.js:208
 parPlume                     src/12y-parrot-face.js:76
 parQuill                     src/12y-parrot-face.js:61
 PARROT_NAMES                 src/12x-parrot.js:24
-parrotBtnTick                src/12y-parrot-face.js:677
+parrotBtnTick                src/12y-parrot-face.js:686
 parrotDock                   src/12x-parrot.js:141
 parrotDraw                   src/12y-parrot-face.js:264
 parrotFind                   src/12x-parrot.js:30
-parrotFrame                  src/12y-parrot-face.js:684
+parrotFrame                  src/12y-parrot-face.js:693
 parrotHas                    src/12x-parrot.js:25
 parrotHeardKill              src/13-pirates.js:303
-parrotLine                   src/12y-parrot-face.js:641
-parrotPoke                   src/12y-parrot-face.js:657
+parrotLine                   src/12y-parrot-face.js:650
+parrotPoke                   src/12y-parrot-face.js:666
 parRow                       src/12y-parrot-face.js:141
 parSay                       src/12z-parrot-acts.js:43
 parScale                     src/12y-parrot-face.js:107
@@ -3123,6 +3123,8 @@ pennScore                    src/21h-pennant.js:26
 pennTestBase                 tests/91zzzr-penn.js:2
 pennTick                     src/21h-pennant.js:65
 peopleLine                   src/11-log.js:40
+PERCH_AT                     src/27j-console.js:22
+PERCH_EVERY                  src/27j-console.js:23
 PHYS_DT                      tests/91zzzzy-phys.js:14
 physRun                      tests/91zzzzy-phys.js:29
 physShip                     tests/91zzzzy-phys.js:19
@@ -4396,7 +4398,7 @@ tnoise                       src/18a-material.js:16
 toggleLog                    src/11-log.js:135
 toggleLoreBoard              src/27h-ui-lore.js:81
 toggleMenu                   src/15-input.js:240
-toggleParrotWin              src/12y-parrot-face.js:697
+toggleParrotWin              src/12y-parrot-face.js:706
 TOLD_LAG                     src/11aj-told.js:32
 toldAll                      src/11aj-told.js:34
 toldDo                       src/11aj-told.js:58
@@ -5301,7 +5303,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12x-suit.js · 21 КБ
   · скафандр как комплект:1
 
-## src/12y-parrot-face.js · 43 КБ
+## src/12y-parrot-face.js · 44 КБ
   · трепло: жёрдочка:1
 
 ## src/12z-parrot-acts.js · 17 КБ
@@ -5746,7 +5748,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/27ia-desk-top.js · 21 КБ
   · стол как стол: предметы, а не тринадцать закладок:1
 
-## src/27j-console.js · 10 КБ
+## src/27j-console.js · 11 КБ
   · пульт: приёмник, подсказка, кресло:1
 
 ## src/27j-ui-hold.js · 8 КБ
@@ -5840,7 +5842,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91e-rogue.js · 6 КБ
   · автотесты: ушедший управляющий: ультиматум, ренегат, изгнанник:1
 
-## tests/91f-ui.js · 27 КБ
+## tests/91f-ui.js · 29 КБ
   · автотесты: интерфейс: 44 px, непересечение, кнопка называет действие, разделы:1
   · ключи из кода не показываются игроку:204
   · на чистом старте в кадре нет лишнего:249
@@ -5939,7 +5941,7 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91ze-parrot.js · 5 КБ
 
-## tests/91zf-parrot-acts.js · 5 КБ
+## tests/91zf-parrot-acts.js · 7 КБ
 
 ## tests/91zf-peep.js · 5 КБ
 

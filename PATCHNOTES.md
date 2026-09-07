@@ -7,6 +7,44 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.417.0 - M421: the whole parrot, once a second, for forty-four pixels
+
+While measuring the bakes for M418 I timed the console's perch icon and left it alone because it
+was not the freeze. It is still a real cost, and now that the log is quiet it is the loudest thing
+left: **the console refreshes once a second, and every refresh redrew the entire procedural
+parrot** - the whole of `12y-parrot-face`, quills, plumes, scales, beads - into a 44-pixel icon.
+Measured in a live browser: 4.9 ms warm on this desktop, so roughly twenty on a phone, once a
+second, for as long as the player owns the bird.
+
+At that size the pose does not read at all. The icon is redrawn every five seconds; in between,
+the canvas simply stands, which is no work rather than fast work.
+
+Pinned by counting **calls, not milliseconds** (the harness has no clock): eight console refreshes
+in a row must produce one draw, and one more after the interval. Verified the way every guard
+written since 0.416.0 is verified - by planting the failure. With the throttle removed the suite
+reports nine draws where it wants one.
+
+One nicety the test itself found: a world whose clock has restarted (`G.t` below the last draw's
+stamp) redraws at once, or a new game would show an empty perch for five seconds.
+
+**And the throttle shook a real bug out of the bird.** Slowing the icon's redraw changed which
+suite ran with the parrot mid-gesture, and «трепло: репертуар» went red on `bow` - it asserts that
+at rest every degree of freedom is zero, but it was reading live module state that `resetWorld`
+does not touch. Repaired into two checks that are about different things: the *declared* rest is
+read out of the `PAR` table in the page's own source, and the *return* to rest is measured by
+clearing the gesture, muting new ones and letting the springs settle.
+
+The second check failed on its first honest run, on the phone tier: **`PAR.turn` never decayed.**
+It was not in the decay list at all - the gestures that use it zero it themselves, one explicitly
+at the end and two by ending on a bell curve. That holds only while a gesture runs to completion;
+interrupt one (close the window, reset the world, clear `act`) and the bird stayed turned for
+ever, at 0.55 of a full turn. It decays like everything else now, before `parActs`, so a running
+gesture still overwrites it on the same frame.
+
+Full tier green: 17822 full / 17541 browser / 17631 phone / 11859 node over 788 suites, plus two
+long fuzzer runs on different seeds.
+
+---
 ## 0.416.0 - M420: the byte you cannot see, and the last suite that claimed milliseconds
 
 Two consequences of 0.415.0's finding that the harness has no clock, and one of them bit me while
