@@ -181,7 +181,7 @@ TEST_SUITES.push(()=>suite("M413: подсказка отвечает на на�
 
 TEST_SUITES.push(()=>suite("M413: журнал встречает карточкой, а не поперёк базы",()=>{
   const B=bLife();
-  const n=baseShift();
+  const n=bShift();
   baseLog(B,"palfee",n-2,{q:420,ru:"Сбор"});
   baseLog(B,"short",n-1,{q:7});
   G.msg="";G.msgT=0;

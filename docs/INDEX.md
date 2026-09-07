@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 507 · символов верхнего уровня: 4769
+Файлов: 507 · символов верхнего уровня: 4770
 
 ## СИМВОЛЫ
 
@@ -333,7 +333,7 @@ battTarget                   src/21d-battery.js:33
 battTick                     src/21d-battery.js:36
 bBox                         src/21aa-base-rooms.js:23
 bCrate                       src/21aa-base-rooms.js:270
-bCrew                        tests/91zzzw-base.js:165
+bCrew                        tests/91zzzw-base.js:185
 bDress                       src/21aa-base-rooms.js:122
 BEACON_COOL                  src/23-mode-dig.js:85
 beaconCool                   src/23-mode-dig.js:86
@@ -409,7 +409,7 @@ bldUpgrade                   src/12ad-site.js:193
 bldUpgradeCost               src/12ac-bld.js:152
 bldWant                      src/12ad-site.js:243
 bldWhy                       src/12ad-site.js:147
-bLife                        tests/91zzzw-base.js:5
+bLife                        tests/91zzzw-base.js:25
 BLOG                         src/21a1-base-life.js:50
 BLOOM_CV                     src/19c-light.js:338
 BLOOM_K                      src/19c-light.js:339
@@ -437,7 +437,7 @@ bmgrRefuses                  src/21b2-base-mgr.js:86
 bmgrSilent                   src/21b2-base-mgr.js:182
 bmgrStep                     src/21b2-base-mgr.js:138
 bmgrWorkMul                  src/21b2-base-mgr.js:128
-bNoDir                       tests/91zzzw-base.js:43
+bNoDir                       tests/91zzzw-base.js:63
 boardLanes                   src/26-ui-station.js:299
 bodyInSystem                 src/16-flight.js:109
 bookAll                      src/12ub-books.js:122
@@ -478,7 +478,7 @@ boxRoll                      src/12ue-boxes.js:60
 BP_KEYS                      src/12c-mgr-core.js:669
 bPipe                        src/21aa-base-rooms.js:244
 bpMul                        src/12c-mgr-core.js:673
-bPool                        tests/91zzzw-base.js:37
+bPool                        tests/91zzzw-base.js:57
 bpRecheck                    src/12c-mgr-core.js:740
 bpState                      src/12c-mgr-core.js:670
 brLaws                       tests/91zzzzzc-broke.js:21
@@ -486,6 +486,7 @@ brownBuf                     src/10-music.js:125
 brownNoise                   src/10-music.js:126
 brSweep                      tests/91zzzzzc-broke.js:41
 bScreen                      src/21aa-base-rooms.js:256
+bShift                       tests/91zzzw-base.js:21
 BUILD                        src/21a-mode-base.js:23
 BUILD_KEYS                   src/21a-mode-base.js:83
 buildAi                      src/12f-mgr-ai.js:29
@@ -6182,13 +6183,13 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzzv-wall.js · 7 КБ
   · автотесты: стена, которая помнит (M210):1
 
-## tests/91zzzw-base.js · 40 КБ
+## tests/91zzzw-base.js · 42 КБ
   · база: смена, повтор и журнал (M390, DESIGN-base §3, §12):1
 
 ## tests/91zzzw-base2.js · 29 КБ
   · база: наборы M396–M401:1
 
-## tests/91zzzw-base3.js · 34 КБ
+## tests/91zzzw-base3.js · 35 КБ
   · база: наборы M402–M409:1
 
 ## tests/91zzzw-base4.js · 12 КБ

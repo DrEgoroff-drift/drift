@@ -56,6 +56,17 @@ chased on a hunch.
 Guarded by three suites in `91zzzzzp-clocks`: the previous mark is taken before it is
 overwritten, the pulse counts from it, and nothing that is not a finite number is sent.
 
+**A fourth clock-dependent instrument, found the same hour and in our own suite.** «база M408:
+реестр считает всегда» went red on a change that had nothing to do with ПАЛАТА: it took the shift
+number from `baseShift()` - i.e. from the wall clock - and then called `palStep(B, n+3)`. When
+that window happened to land on the middle of the reporting period, the inspector arrived with his
+fine and «пеня 180» read «300». The suite was red because of the time of day. `bShift(k)` in the
+base helpers now returns the current shift *aligned down to a multiple of k*, so the absolute
+number still tracks now (a test that resolves from `B.t0` to `Date.now()` needs that) while the
+position inside every schedule is pinned. The rule is in the helper's own comment: a suite that
+does arithmetic on a shift number takes it through `bShift(X)`; bare `baseShift()` is only for a
+number that goes no further than a journal line.
+
 Full tier green: 17770 assertions over 779 suites.
 
 ---

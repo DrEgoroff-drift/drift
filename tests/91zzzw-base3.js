@@ -115,7 +115,7 @@ TEST_SUITES.push(()=>suite("база M403: решённая делает то, �
   ok(baseUnique(B).some(u=>u.k==="carbide"),"тяжёлый мир достаёт карбид");
   /* и оно правда кладётся на склад, но медленно */
   B.cells[0]={k:"reactor",hp:1};B.cells[1]={k:"reactor",hp:1};
-  const n=baseShift()-(baseShift()%UNIQ_EVERY);
+  const n=bShift(UNIQ_EVERY);
   const q0=B.pool.carbide|0;
   eq(baseUniqStep(B,n+1),0,"не каждую смену");
   ok(baseUniqStep(B,n),"а раз в несколько смен — да");
@@ -356,7 +356,7 @@ TEST_SUITES.push(()=>suite("база M407: строят все, правильн
   for(let i=0;i<B.cells.length;i++)B.cells[i]=null;
   B.cells[0]={k:"reactor",hp:1};
   /* без управляющего база не строит сама */
-  const n=baseShift()-(baseShift()%DEV_EVERY);
+  const n=bShift(DEV_EVERY);
   eq(devStep(B,n),0,"без управляющего никто ничего не ставит");
   /* хороший читает формуляр: на жарком мире радиатор раньше бура */
   let good=null,bad=null;
@@ -400,7 +400,7 @@ TEST_SUITES.push(()=>suite("база M407: строят все, правильн
 }));
 
 TEST_SUITES.push(()=>suite("база M407: три изъяна, которым нужна была стройка",()=>{
-  const n=baseShift()-(baseShift()%DEV_EVERY);
+  const n=bShift(DEV_EVERY);
   /* боится глубины: нижний ряд не трогает никогда */
   let deep=null,panic=null;
   for(let i=0;i<9000&&!(deep&&panic);i++){
@@ -477,8 +477,15 @@ TEST_SUITES.push(()=>suite("база M408: реестр считает всег�
   eq(P.mode,"common","по умолчанию режим общий — потому что он общий");
   eq(P.debt|0,0,"долга поначалу нет");
   ok(palRegistered(B),"участок в реестре с закладки");
-  /* участковый сбор идёт за период, и он не про работу */
-  const n=baseShift();
+  /* участковый сбор идёт за период, и он не про работу.
+     ── смена ПРИШПИЛЕНА, а не взята с часов (M418) ──
+     Было `baseShift()`, то есть номер смены от настенных часов. Набор дёргает
+     `palStep` на n+1…n+4, и стоило этому окну наехать на середину периода —
+     приходил инспектор со своим штрафом, и пеня «180» становилась «300».
+     Набор краснел не от правки, а от времени суток. Берём номер, у которого
+     всё окно заведомо далеко и от проверки (середина периода), и от прогноза
+     за четыре смены до неё. */
+  const n=bShift(PAL_PERIOD)+1;
   P.paid=n-PAL_PERIOD;
   ok(palStep(B,n),"период кончился — начислено");
   eq(P.debt|0,PAL_MODES.common.fee,"ровно сбор: "+P.debt);
@@ -598,7 +605,7 @@ TEST_SUITES.push(()=>suite("база M409: опорный пункт — это 
   ok(fwdIs(B),"и это наша база");
   const line=fwdLine(B);
   ok(line.indexOf("опорный пункт")>0&&line.indexOf(String(B.sx))>0,"циркуляр называет её и адрес: "+line);
-  const n=baseShift()-(baseShift()%FWD_PAY_EVERY);
+  const n=bShift(FWD_PAY_EVERY);
   ok(fwdAnnounce(B,n),"объявлено");
   eq(fwdAnnounce(B,n),0,"и второй раз не объявляется");
   ok(B.log.some(x=>x.k==="fwd"),"в журнале это есть");

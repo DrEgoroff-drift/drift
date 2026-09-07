@@ -116,7 +116,7 @@ TEST_SUITES.push(()=>suite("база M397: погода вместо косте�
   ok(baseWorth(B)>0&&baseThreat(B)>bare,"с нажитым беда чаще: "+bare.toFixed(3)+" → "+baseThreat(B).toFixed(3));
   ok(baseThreat(B)<=.35,"но не выше потолка");
   /* он предупреждает: прогноз на смену вперёд — это то же событие */
-  const n=baseShift();
+  const n=bShift();
   const f=baseForecast(B,n);
   const e=baseEventAt(B,n+1);
   eq(f&&f.k,e&&e.k,"прогноз — это событие следующей смены, а не гадание");
@@ -132,7 +132,7 @@ TEST_SUITES.push(()=>suite("база M397: беда ходит, а гермоз�
   G.crew=[];
   for(let i=0;i<B.cells.length;i++)B.cells[i]=null;
   B.cells[0]={k:"storage",hp:1};B.cells[1]={k:"storage",hp:1};B.cells[2]={k:"storage",hp:1};
-  const n=baseShift();
+  const n=bShift();
   ok(baseFireStart(B,0,0,n),"пожар начался");
   ok(!!B.fire,"и он записан на базе");
   ok(B.log.some(x=>x.k==="fire"),"и в журнале");
@@ -167,7 +167,7 @@ TEST_SUITES.push(()=>suite("база M397: беда ходит, а гермоз�
 
 TEST_SUITES.push(()=>suite("база M397: у каждой погоды своё последствие",()=>{
   const B=bLife();
-  const n=baseShift();
+  const n=bShift();
   /* занос: бур стоит, и это видно */
   baseEventApply(B,{k:"dust"},n);
   ok(baseDusty(B,n),"занос идёт");
@@ -425,7 +425,7 @@ TEST_SUITES.push(()=>suite("база M401: сведения покупаются
   const nums=baseGaugeLine(B);
   ok(/\d/.test(nums),"с ним шкалы в цифрах: "+nums);
   /* прогноз: без сведений примета, с ними — событие и срок */
-  const n=baseShift();
+  const n=bShift();
   const w1=baseWarnLine(B,n);
   G.crew[1].role="radist";
   for(const id of INSTR_KEYS)instrUnit(id).wear=0;
@@ -440,7 +440,7 @@ TEST_SUITES.push(()=>suite("база M401: изнашивается всё, и �
   const B=bLife();
   /* закон 4: ровный износ есть всегда */
   const hp0=B.cells.filter(c=>c).reduce((s,c)=>s+c.hp,0);
-  const n=baseShift();
+  const n=bShift();
   for(let i=0;i<10;i++)baseWearStep(B,n+i);
   const worn=hp0-B.cells.filter(c=>c).reduce((s,c)=>s+c.hp,0);
   ok(worn>0,"за десять смен что-то стёрлось: "+worn.toFixed(3));
