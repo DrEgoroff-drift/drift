@@ -335,6 +335,9 @@ function planetDraw(p,x,y,r){
   const lvl=r>150?2:(r>60?1:0);
   const S=planetStrip(p,lvl);
   planetStripTick();
+  /* материал грунта печётся тем же порядком и тем же бюджетом (M418):
+     383 мс одним куском — это и есть провал кадра из журнала сервера */
+  if(typeof matTick==="function")matTick();
   const L=planetLight(p,S?Math.min(lvl,p.stripLvl):0);
   const turn=planetSpin(p)/TAU;
   const rr=Math.ceil(r)+1, side=rr*2;

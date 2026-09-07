@@ -451,10 +451,10 @@ Left from the queue: nothing — the band's second step is M308, the station's c
   **Read 2026-09-07 (M417): 70 of 78 entries were the log's own noise** — a consensus alarm
   false by construction (PHP int/string key cast in `site/war.php`, reported with proof to its
   owner), a hidden tab filed as an 11.7-minute freeze, and an fps pulse sending `Infinity` since
-  the day it shipped. All fixed or reported. **What is left is the first honest lead: 2766 ms on
-  a Pixel 8, nine seconds in, mode `system`, right after «В вещах нашлось живое: трепло
-  «Пискля»»** — a one-time bake on a phone at world start. Next: reproduce with `-Mobile` and
-  `?g11` on the system scene.
+  the day it shipped. All fixed or reported. **Lead chased and closed the same night (M418,
+  0.414.0):** the bake is `planetMat` — **383 ms in one block**, measured in a real browser, i.e.
+  two to three seconds on a phone. Now sliced across frames, worst slice 6.2 ms. **The freeze item
+  is closed until the log shows a new one**.
 
 ### Housekeeping
 

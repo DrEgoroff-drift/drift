@@ -60,8 +60,63 @@ function matCell(u,v,N,sd,warp){
   const edge=Math.min(du,1-du,dv,1-dv);
   return {tone:h01(i,j,sd)-.5, edge, du, dv, tilt:h01(i,j,sd+404)-.5};
 }
+/* ── и печётся она ПО КАДРАМ (M418) ──
+   Замер в браузере 07.09.2026: `planetMat` на землеподобной планете идёт
+   **383 мс одним куском**. Это 256×256 точек, и в каждой от двух до пяти
+   многооктавных шумов. На телефоне это секунды — и в журнале сервера ровно
+   один настоящий провал кадра за всё время наблюдений: «кадр стоял 2766 мс»,
+   Pixel 8, девятая секунда жизни страницы. Столько эта выпечка и стоит.
+
+   Лечится тем же приёмом, каким в игре уже печётся развёртка планеты
+   (`planetStripTick`, 07-planet): работа режется на строки, за кадр отдаётся
+   пара миллисекунд, а пока не готово — рисуется БЕЗ материала. Все, кто его
+   спрашивает, уже умеют получить пустоту: `drawGround` кладёт ровную заливку
+   силуэта, `drawRocks` — валун без породы, пещера и шахта проверяют так же.
+   Ничего не пропадает: первые полсекунды у грунта нет зерна.
+
+   ПОЧЕМУ НЕ ВОРКЕР. Тайл строится из наших же чистых функций (`tfbm`, `h01`),
+   но воркеру пришлось бы отдать половину `01-core` и палитру, а вернуть он
+   может только пиксели — и всё это ради работы, которая после нарезки
+   перестаёт быть заметной вовсе. */
+/* ── бюджет мерился, а не назначался (M418) ──
+   Первый заход брал по восемь строк между сверками с часами. Замер в браузере:
+   одна порция — 11–14 мс, то есть весь кадр целиком, и на телефоне это тридцать
+   три подряд заикания вместо одного провала. Строка тайла стоит около 1.4 мс
+   здесь, значит сверяться надо КАЖДУЮ строку, и тогда порция укладывается в
+   бюджет с перебором на одну строку, а не на восемь. */
+const MAT_MS=3;              /* столько миллисекунд кадра отдаём выпечке */
+const MAT_ROWS=1;            /* через сколько строк сверяться с часами */
+let MAT_JOB=null;
+/* Возвращает готовый материал — или null, пока печётся. Заказ ставится сам */
 function planetMat(p){
   if(p.mat)return p.mat;
+  /* спрашивают про ДРУГУЮ планету — печём её: игрок стоит на ней, а не на
+     той, что осталась в задании. Иначе первая незаконченная выпечка держала бы
+     все следующие, и материал не приходил бы вовсе (поймано набором) */
+  if(!MAT_JOB||MAT_JOB.p!==p)MAT_JOB=matJobMake(p);
+  return null;
+}
+/* допекаем по кадрам — зовётся из planetDraw рядом с развёрткой */
+function matTick(){
+  const J=MAT_JOB;if(!J)return;
+  const t0=performance.now();
+  while(J.y<J.S){
+    matJobRows(J,MAT_ROWS);
+    if(performance.now()-t0>MAT_MS)return;
+  }
+  matJobDone(J);MAT_JOB=null;
+}
+/* когда материал нужен ПРЯМО СЕЙЧАС и кадра нет — из набора, из стенда, из
+   снимка: печём целиком и платим те самые 383 мс, потому что платить некому */
+function planetMatNow(p){
+  if(p.mat)return p.mat;
+  if(!MAT_JOB||MAT_JOB.p!==p)MAT_JOB=matJobMake(p);
+  const J=MAT_JOB;
+  while(J.y<J.S)matJobRows(J,64);
+  matJobDone(J);MAT_JOB=null;
+  return p.mat;
+}
+function matJobMake(p){
   const S=MAT_S,cn=document.createElement("canvas");cn.width=cn.height=S;
   const c=cn.getContext("2d"),img=c.createImageData(S,S),d=img.data;
   const pal=p.T.pal,sd=(p.seed^0x4D41)>>>0;
@@ -87,7 +142,14 @@ function planetMat(p){
   else if(ch==="sludge"){crackK*=.15;veinK*=.2;wear*=.8;grainK*=.7;}
   else if(ch==="soil"){crackK*=.35;veinK*=.3;}
   const cellN=ch==="facet"?9:(ch==="plate"?4:(ch==="rubble"?7:(ch==="frost"?5:(ch==="crust"?6:6))));
-  for(let y=0;y<S;y++)for(let x=0;x<S;x++){
+  return {p,S,cn,c,img,d,y:0,pal,sd,mn,wear,crackK,veinK,grainK,ch,cellN};
+}
+/* одна порция строк: та же арифметика, что и была, только внешний цикл снаружи */
+function matJobRows(J,rows){
+  const S=J.S,d=J.d,pal=J.pal,sd=J.sd,mn=J.mn;
+  const wear=J.wear,crackK=J.crackK,veinK=J.veinK,grainK=J.grainK,ch=J.ch,cellN=J.cellN;
+  const yEnd=Math.min(S,J.y+rows);
+  for(let y=J.y;y<yEnd;y++)for(let x=0;x<S;x++){
     const o=(y*S+x)*4,u=x/S,v=y/S;
     /* макро: крупные поля породы */
     const macro=tfbm(u,v,3,sd,4);
@@ -244,10 +306,13 @@ function planetMat(p){
     else if(peb<.006){R*=.62;Gc*=.62;B*=.62;}
     d[o]=clamp(R,0,255);d[o+1]=clamp(Gc,0,255);d[o+2]=clamp(B,0,255);d[o+3]=255;
   }
-  c.putImageData(img,0,0);
-  p.mat=c.createPattern(cn,"repeat");
-  p.matCn=cn;
-  return p.mat;
+  J.y=yEnd;
+}
+function matJobDone(J){
+  J.c.putImageData(J.img,0,0);
+  J.p.mat=J.c.createPattern(J.cn,"repeat");
+  J.p.matCn=J.cn;
+  return J.p.mat;
 }
 /* положить материал в уже построенный путь (путь должен быть текущим).
    Два прохода: свой масштаб и увеличенный — второй убивает видимую сетку 256. */

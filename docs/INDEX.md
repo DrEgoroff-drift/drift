@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 507 · символов верхнего уровня: 4770
+Файлов: 507 · символов верхнего уровня: 4778
 
 ## СИМВОЛЫ
 
@@ -1498,7 +1498,7 @@ fbm1                         src/01-core.js:30
 fbm2                         src/01-core.js:37
 fbm3                         src/24-mode-belt.js:16
 FG_MAN                       src/21b-surface-deco.js:263
-fillMaterial                 src/18a-material.js:257
+fillMaterial                 src/18a-material.js:322
 FIN_DEF                      src/21aa-base-rooms.js:184
 FIND_BUCKET                  src/17b-finds.js:17
 FIND_CACHE                   src/17b-finds.js:26
@@ -1661,7 +1661,7 @@ genPart                      src/05-parts.js:144
 genPlant                     src/20-life.js:189
 genPOI                       src/20a-poi.js:32
 genRaid                      src/24a-mode-raid.js:30
-genTerrain                   src/07-planet.js:437
+genTerrain                   src/07-planet.js:440
 genUniqueShip                src/03-ships.js:16
 GEO_FAULT                    src/18b-geology.js:91
 GEO_KIND                     src/18b-geology.js:13
@@ -1752,7 +1752,7 @@ grokTeach                    src/12tb-grok.js:144
 grokTick                     src/12tb-grok.js:75
 grokWant                     src/12tb-grok.js:41
 GROUND_BAKING                src/19-mode-landing.js:292
-groundAt                     src/07-planet.js:563
+groundAt                     src/07-planet.js:566
 groundShadow                 src/19-mode-landing.js:436
 GROVE_ETHER                  src/11j-grove.js:23
 groveAll                     src/11j-grove.js:29
@@ -2286,7 +2286,7 @@ KMAP_BELT                    src/15-input.js:113
 labCount                     src/12h-relic.js:16
 labStaffed                   src/12h-relic.js:27
 labWorking                   src/12h-relic.js:32
-LAND_ARC                     src/07-planet.js:413
+LAND_ARC                     src/07-planet.js:416
 LAND_GY                      src/19f-lander.js:10
 landerGearTick               src/19f-lander.js:15
 landerInk                    tests/91j-art.js:156
@@ -2556,6 +2556,9 @@ marketFor                    src/12-economy.js:2
 marketPrice                  src/12-economy.js:41
 marketPriceCtx               src/12-economy.js:33
 MAT_CHAR                     src/18a-material.js:49
+MAT_JOB                      src/18a-material.js:89
+MAT_MS                       src/18a-material.js:87
+MAT_ROWS                     src/18a-material.js:88
 MAT_S                        src/18a-material.js:34
 matCell                      src/18a-material.js:53
 MATCH_BOX                    src/12uc-matches.js:21
@@ -2567,6 +2570,10 @@ matchesRec                   src/12uc-matches.js:22
 matchesRu                    src/12uc-matches.js:36
 matchesScrapNote             src/12uc-matches.js:45
 matchesSpend                 src/12uc-matches.js:27
+matJobDone                   src/18a-material.js:311
+matJobMake                   src/18a-material.js:119
+matJobRows                   src/18a-material.js:148
+matTick                      src/18a-material.js:100
 MAYAK_KEEP                   src/12pa-beacon.js:37
 MAYAK_NUM                    src/12pa-beacon.js:65
 mayakBlock                   src/12pa-beacon.js:164
@@ -3180,15 +3187,16 @@ planetBiome                  src/20-life.js:161
 planetCols                   src/07-planet.js:235
 planetDraw                   src/07-planet.js:330
 planetGrant                  src/12n-planet.js:25
-planetHasLife                src/07-planet.js:425
+planetHasLife                src/07-planet.js:428
 planetHaul                   src/12n-planet.js:67
-planetHeightAt               src/07-planet.js:429
+planetHeightAt               src/07-planet.js:432
 planetHere                   src/12n-planet.js:61
 planEtherLine                src/11r-plan.js:43
 planetLight                  src/07-planet.js:199
 planetLightsN                src/17e-station-body.js:39
 planetLoadSum                src/12n-planet.js:122
-planetMat                    src/18a-material.js:63
+planetMat                    src/18a-material.js:91
+planetMatNow                 src/18a-material.js:111
 planetPaint                  src/07-planet.js:252
 planetPeriod                 src/07-planet.js:37
 planetReady                  src/12n-planet.js:19
@@ -3207,7 +3215,7 @@ planetStripTick              src/07-planet.js:160
 planetSunRot                 src/07-planet.js:307
 planetTakeLoad               src/12n-planet.js:126
 planetTick                   src/12n-planet.js:44
-planetWetAt                  src/07-planet.js:420
+planetWetAt                  src/07-planet.js:423
 planGroundLine               src/11r-plan.js:47
 planIsCore                   src/11r-plan.js:41
 planIsCoreT                  src/11r-plan.js:42
@@ -3532,7 +3540,7 @@ relicSlotOpen                src/12h-relic.js:71
 relicSynth                   src/12h-relic.js:113
 relicUnequip                 src/12h-relic.js:87
 RELIEF_KEYS                  src/02a-worldmix.js:79
-RELIEF_MIX                   src/07-planet.js:380
+RELIEF_MIX                   src/07-planet.js:383
 renderAlbum                  src/25g-postcard.js:678
 renderBarge                  src/12l-barge.js:670
 renderBaseLink               src/21a2-base-link.js:137
@@ -4866,9 +4874,9 @@ zooTick                      src/11ad-zoo.js:41
 ## src/07-planet.js · 38 КБ
   · текстуры планет:1
   · вращение:8
-  · рельеф:374
-  · рельеф:375
-  · где сел — то и видел:399
+  · рельеф:377
+  · рельеф:378
+  · где сел — то и видел:402
 
 ## src/08-state.js · 17 КБ
   · состояние:1
@@ -5385,7 +5393,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/18a-map-addr.js · 17 КБ
   · карта говорит адресами (M347):1
 
-## src/18a-material.js · 21 КБ
+## src/18a-material.js · 25 КБ
   · материал грунта:1
 
 ## src/18b-geology.js · 14 КБ
@@ -5866,10 +5874,10 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91p-lore.js · 10 КБ
   · отчёт «Долгого Хода»: сто кусков:1
 
-## tests/91q-planet.js · 19 КБ
+## tests/91q-planet.js · 22 КБ
   · планета за полный набор:1
-  · M242: свет идёт оттуда, где нарисовано солнце:261
-  · M242: дом не стоит на посадочной площадке:293
+  · M242: свет идёт оттуда, где нарисовано солнце:267
+  · M242: дом не стоит на посадочной площадке:299
 
 ## tests/91r-hunter.js · 3 КБ
   · охотник: приходит только за долгом:1

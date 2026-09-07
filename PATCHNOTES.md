@@ -7,6 +7,44 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.414.0 - M418: the freeze had a cause, and it was 383 milliseconds of noise
+
+0.413.0 cleared the crash log of its own false alarms and left one real line in it: **2766 ms on
+a Pixel 8, nine seconds into the page, mode `system`.** This is that stall, found and measured
+rather than guessed.
+
+`planetMat` - the planet's ground material, a 256×256 tile with two to five multi-octave noises
+per pixel - runs **as one synchronous block, and it takes 383 ms on this desktop.** Measured in
+a real browser, not under virtual time. On a phone that is comfortably two to three seconds:
+exactly the stall in the log, at exactly the moment the world first needs ground.
+
+It is now baked the way the game already bakes the planet's own texture (`planetStripTick`,
+`07-planet`): sliced into rows, a couple of milliseconds of each frame, and until it is ready the
+ground is drawn *without* it. Nothing disappears - every caller already handled a missing
+material, because `drawGround` falls back to a flat silhouette fill and `drawRocks` to a boulder
+without rock. For the first second or so the ground has no grain. That is the whole cost.
+
+**The budget was measured, not decided.** The first cut checked the clock every eight rows: one
+slice measured 11-14 ms, i.e. the entire frame, so a single freeze became thirty-three stutters -
+worse, not better. A row costs about 1.4 ms here, so the clock is checked every row; the worst
+slice is then 6.2 ms and the median 4.6, across 108 slices. And because the budget is in real
+milliseconds, it scales itself: a slower phone does fewer rows per frame and takes longer, but
+never blows a frame.
+
+Two things the pinning suite caught while being written, both real:
+
+- **a stale job blocked every later one.** `if(!MAT_JOB)` meant that once a bake was in flight,
+  asking for a *different* planet's material returned null for ever - the player standing on a
+  new world would never get ground grain. The newest planet asked for now wins.
+- **`docs/shot.py` came out without grain**, because a stand runs six frames and six frames bake
+  twenty rows of two hundred and fifty-six. Stands and suites pay the 383 ms in one piece through
+  `planetMatNow`, which exists for exactly the places where there is no frame to spread across.
+  The frame meter on `surface` reads identically to before the change - 4 tones, pair 7, contrast
+  .55, mass 11, empty 40 - which is the proof that nothing about the picture moved.
+
+Full tier green: 17782 assertions over 781 suites; browser and phone tiers too.
+
+---
 ## 0.413.0 - M417: the instruments that lied
 
 `PLAN.md` has carried one line for weeks: «The author's freeze has no cause yet… Next step is to

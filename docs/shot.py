@@ -34,6 +34,12 @@ def page_for(scene, tail, a):
 setTimeout(function(){
   try{ %s }catch(e){ console.error("shot js: "+e); }
   for(var n=0;n<6;n++){ try{ frame(performance.now()+n*16); }catch(e){} }
+  /* материал грунта печётся по кадрам (M418): шести кадров ему мало, и
+     снимок выходил без зерна породы. Стенд платит за него разом — 400 мс,
+     ради того `planetMatNow` и заведён (кадра тут всё равно нет) */
+  try{ if(typeof MAT_JOB!=="undefined" && MAT_JOB && typeof planetMatNow==="function"){
+         planetMatNow(MAT_JOB.p);
+         for(var m=0;m<4;m++) frame(performance.now()+(7+m)*16); } }catch(e){}
   var pre=document.createElement("pre"); pre.id="out"; pre.style.display="none";
   try{ var o={scene:%s, ver:VER}; if(%s)Object.assign(o,lookFrame()); if(%s)o.eval=(function(){return eval(%s);})(); pre.textContent=JSON.stringify(o); }
   catch(e){ pre.textContent = JSON.stringify({error:String(e)}); }
