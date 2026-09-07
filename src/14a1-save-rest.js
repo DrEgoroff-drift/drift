@@ -128,6 +128,15 @@ function applySaveRest(s){
   G.walled=asMap(s.walled);
   G.mailed=asMap(s.mailed);
   /* истории (11c): только то, что игрок видел, якоря и повороты */
+  /* часы над концами (P8, M416): что и когда сделано — это решение игрока,
+     а не производная от seed. Роняем в безопасный вид поимённо */
+  G.clocks={};
+  if(s.clocks&&typeof s.clocks==="object")
+    for(const k in s.clocks){
+      if(typeof CLOCKS!=="undefined"&&!CLOCKS[k])continue;
+      const c=s.clocks[k];if(!c||typeof c!=="object")continue;
+      G.clocks[k]={n:Math.max(0,c.n|0),last:c.last|0};
+    }
   G.seen=asMap(s.seen);
   G.storyPin=asMap(s.storyPin);
   G.storyFlags=asMap(s.storyFlags);

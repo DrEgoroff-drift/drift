@@ -1759,7 +1759,7 @@ body.table u.addr{color:#7a4a20}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.411.0";
+const VER="0.412.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -9749,6 +9749,10 @@ function recordTick(){
 function recordBoardHere(){
   const R=recordAll();
   if(R.grounded||recordYears()<RECORD_YEARS)return false;
+  /* эталон договора (P8, правило 4) проходит через сторожа вместе с прочими —
+     не потому, что ему нужно окно, а потому, что таблица окон должна быть
+     полной: конец без строки в ней — это конец без окна */
+  if(typeof clockOpen==="function"&&!clockOpen("record"))return false;
   return !!(G.st&&typeof hoursDepthAt==="function"&&hoursDepthAt(G.sx,G.sy)===2);
 }
 function recordGround(){
@@ -10717,7 +10721,11 @@ function folkOf(id){
    происходящему вес (`СУД`, проход XVIII). */
 function folkShut(id){
   const f=folkOf(id);
+  if(f.shut)return;                 /* дверь закрывается один раз */
   f.good=0;f.shut=1;
+  /* сегмент часов части VI (P8): дверь — это ДЕЛО, и оно считается только
+     если с прошлой двери прошло время. Сторож молчит об этом (11d) */
+  if(typeof clockPush==="function")clockPush("toldoff");
 }
 function offerPay(o){
   const K=OFFER_KIND[o.kind];if(!K)return 0;
@@ -12736,6 +12744,12 @@ function quietDoorLine(){
 function toldOffBlock(){
   if(typeof $body==="undefined"||!$body)return;
   if(G.toldOff||!worldQuiet())return;
+  /* ── и своё окно (P8, M416) ──
+     До сторожа сюда вело ровно одно условие — три закрытые двери, — а три
+     двери можно закрыть в первый вечер. Самая тяжёлая реплика игры приходила
+     раньше, чем в ней что-то прожито. Теперь она ждёт своего окна, молча и
+     не истекая: часы `toldoff` в `11d-clocks`. */
+  if(typeof clockOpen==="function"&&!clockOpen("toldoff"))return;
   G.toldOff=1;
   $body.appendChild(el("div","row","<div class='nm'><s style='color:#cfe3ea;line-height:1.9'>"+
     "Человек у стойки допил, поставил стакан и сказал, не поворачиваясь: "+
@@ -12774,6 +12788,9 @@ const GIFT_DAY=365;        /* год прожитой жизни, раньше �
 
 function giftDue(){
   if(G.uniqueShips&&G.uniqueShips.gift1)return false;      /* уже стоит */
+  /* то же окно, но названное вслух в одном месте со всеми (P8, M416): числа
+     здесь свои и прежние, сторож их только повторяет */
+  if(typeof clockOpen==="function"&&!clockOpen("gift"))return false;
   const L=(typeof ledgerAll==="function")?ledgerAll():null;
   if(!L||(L.n|0)<GIFT_DEEDS||(L.w||0)<GIFT_W)return false;
   if(celDay()<GIFT_DAY)return false;
@@ -13473,6 +13490,107 @@ function storyGroundLine(via){
 function storyNote(via){
   const l=storyGroundLine(via);
   return l?"\n"+l:"";
+}
+
+/* ══════════════ часы над концами: сторож темпа (P8, M416) ══════════════
+   Последний незакрытый пункт плана ремесла, и он лечит болезнь, которую Эмили
+   Шорт назвала болезнью «архитектуры значимого»: игрок честно играет акт, а
+   потом БОЛЕЕ ИЛИ МЕНЕЕ СЛУЧАЙНО удовлетворяет все условия конца — и конец
+   приходит не вовремя. В «Дрейфе» это не выдумка: строку части VI «Вы просто
+   не тянете» отпирали три закрытые двери и больше ничего. Три двери можно
+   закрыть в первый вечер — и получить самую тяжёлую реплику игры до того, как
+   в ней вообще что-то прожито.
+
+   Договор написан в `docs/DESIGN-arc.md` («The pacing guard», 2026-08-29) и
+   здесь исполняется дословно:
+
+     1. У КАЖДОГО КОНЦА СВОИ ЧАСЫ. Часы идут от ПОСТУПКА и ВРЕМЕНИ: сегмент
+        засчитывается только за названное дело и только если с прошлого
+        сегмента прошло сколько-то небесных суток. Наблюдение не двигает
+        часы никогда.
+     2. КОНЕЦ ПРИХОДИТ ТОЛЬКО В СВОЁ ОКНО: свои часы полны И прожито не
+        меньше стольких-то суток. Условия, сошедшиеся рано, просто ЖДУТ —
+        невидимо, и ничто не истекает.
+     3. СТОРОЖ НЕ ПИШЕТ НИЧЕГО. Ни строки, ни записи в журнал, ни намёка, что
+        окно есть. Он не история — он вахтёр.
+     4. Эталон — медкомиссия (M161): часы у неё — двенадцать лет стажа, место
+        — стойка ядра, и приходит она предложением, а не засадой. Остальные
+        концы повторяют её форму.
+     5. Движка раньше потребителей не бывает. Он и не появился: первый конец
+        второго акта построен (M225–M231), и только теперь сторож встаёт над
+        всеми тремя разом.
+
+   ЧТО ЭТО ДАЁТ СВЕРХ ТРЁХ ПРОВЕРОК. Одно место, где ОБЪЯВЛЕНЫ все окна.
+   Пока каждый конец сторожил себя сам, четвёртый мог родиться вовсе без
+   окна — и родился: `toldOffBlock` не смотрел на время ни секунды. Теперь
+   новый конец не пишется без строки в этой таблице, и набор это проверяет. */
+
+/* сутки — небесные (`celDay`), потому что вся прожитая жизнь в этой игре
+   меряется ими: и стаж в трудовой, и год до подарка */
+const CLOCKS={
+  /* эталон: часы — стаж, место — стойка ядра. Числа не трогаем, они прожиты */
+  record:{ru:"медкомиссия", day:365*12, seg:0,  gap:0,
+          note:"двенадцать лет стажа и стойка ядра (11aa)"},
+  /* подарок: пять поступков и год. Свои условия у него уже были — сторож их
+     только называет вслух, чтобы они стояли рядом с остальными. Сегменты он
+     не ведёт: их давно считает тетрадь доброты, и заводить второй счёт того
+     же — это способ рассинхронизировать их через десять версий */
+  gift:  {ru:"«Тихоня»",    day:365,    seg:5,  gap:0,
+          segOf:()=>((typeof ledgerAll==="function"?ledgerAll():null)||{}).n|0,
+          note:"тетрадь доброты, год жизни и дом (11at)"},
+  /* и тот, у кого окна не было вовсе. Три двери — это часы; но три двери,
+     закрытые за один вечер, — это неудачный вечер, а не прожитая жизнь.
+     Поэтому между сегментами двадцать суток, а до окна — двести. */
+  toldoff:{ru:"тот один",   day:200,    seg:3,  gap:20,
+          note:"три двери с промежутком и двести суток (11ar)"}
+};
+const CLOCK_KEYS=Object.keys(CLOCKS);
+/* ── состояние ──
+   Сегменты и сутки последнего сегмента. Это НЕ производная от seed: она
+   описывает, что и когда сделал игрок, — значит хранится (14-save). */
+function clockAll(){
+  if(!G.clocks||typeof G.clocks!=="object")G.clocks={};
+  return G.clocks;
+}
+function clockOf(key){
+  const C=clockAll();
+  if(!C[key]||typeof C[key]!=="object")C[key]={n:0,last:-9999};
+  return C[key];
+}
+/* ── сегмент ──
+   Засчитывается за ДЕЛО и только если с прошлого прошло `gap` суток. Возвращает
+   true, если часы сдвинулись, — но никто этого не показывает. */
+function clockPush(key){
+  const K=CLOCKS[key];if(!K)return false;
+  const c=clockOf(key),d=(typeof celDay==="function")?celDay():0;
+  if(K.gap&&(d-(c.last|0))<K.gap)return false;
+  c.n=(c.n|0)+1;c.last=d;
+  return true;
+}
+/* ── сколько сегментов набрано ──
+   У одних концов сторож ведёт счёт сам (дверь части VI), у других счёт уже
+   есть в мире и второй был бы ложью (тетрадь доброты). `segOf` — про это. */
+function clockSeg(key){
+  const K=CLOCKS[key];
+  if(K&&typeof K.segOf==="function"){try{return K.segOf()|0;}catch(e){return 0;}}
+  return clockOf(key).n|0;
+}
+/* ── окно ──
+   Единственное, что сторож умеет отвечать: «ещё нет» или «можно». */
+function clockOpen(key){
+  const K=CLOCKS[key];if(!K)return true;          /* нет строки — нет запрета */
+  const d=(typeof celDay==="function")?celDay():0;
+  if(d<K.day)return false;
+  return clockSeg(key)>=(K.seg|0);
+}
+/* почему закрыто — для набора, а НЕ для игрока: в игре эта строка не звучит
+   нигде и звучать не должна (правило 3) */
+function clockWhy(key){
+  const K=CLOCKS[key];if(!K)return "";
+  const d=(typeof celDay==="function")?celDay():0;
+  if(d<K.day)return "рано: сутки "+d+" из "+K.day;
+  if(clockSeg(key)<(K.seg|0))return "мало дел: "+clockSeg(key)+" из "+K.seg;
+  return "";
 }
 
 /* ══════════════ память места: три счётчика и одометр ══════════════
@@ -38844,6 +38962,7 @@ function snapshot(){
     kit:G.kit,kitShelf:G.kitShelf,kitDepot:G.kitDepot,   /* комплект (M152) */
     vega:G.vega,wishDevice:G.wishDevice,   /* Вега (M153) */
     ring:G.ring,exp:G.exp,letters:G.letters,island:G.island,record:G.record,inst:G.inst,trainee:G.trainee,zoo:G.zoo,concert:G.concert,road:G.road,trace:G.trace,duty:G.duty,album:G.album,mail:G.mail,probes:G.probes,win:G.win,spa:G.spa,hol:G.hol,books:G.books,qsl:G.qsl,relay:G.relay,green:G.green,kino:G.kino,penn:G.penn,first:G.first,chess:G.chess,   /* M154–M207, M192 */
+    clocks:G.clocks,
     seen:G.seen,storyPin:G.storyPin,storyFlags:G.storyFlags,place:G.place,odo:G.odo,post:G.post,mirror:G.mirror,lights:G.lights,hours:G.hours,grove:G.grove,keepers:G.keepers,county:G.county,charts:G.charts,quiet:G.quiet,slow:G.slow,pass:G.pass,grown:G.grown,plan:G.plan,ret:G.ret,names:G.names,namesTold:G.namesTold,name:G.name||"",
     tape:(typeof tapePack==="function")?tapePack():null,tapeLong:G.tapeLong|0,
     fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,rep:G.rep,poiSeen:G.poiSeen,findsSeen:G.findsSeen,
@@ -39689,6 +39808,15 @@ function applySaveRest(s){
   G.walled=asMap(s.walled);
   G.mailed=asMap(s.mailed);
   /* истории (11c): только то, что игрок видел, якоря и повороты */
+  /* часы над концами (P8, M416): что и когда сделано — это решение игрока,
+     а не производная от seed. Роняем в безопасный вид поимённо */
+  G.clocks={};
+  if(s.clocks&&typeof s.clocks==="object")
+    for(const k in s.clocks){
+      if(typeof CLOCKS!=="undefined"&&!CLOCKS[k])continue;
+      const c=s.clocks[k];if(!c||typeof c!=="object")continue;
+      G.clocks[k]={n:Math.max(0,c.n|0),last:c.last|0};
+    }
   G.seen=asMap(s.seen);
   G.storyPin=asMap(s.storyPin);
   G.storyFlags=asMap(s.storyFlags);

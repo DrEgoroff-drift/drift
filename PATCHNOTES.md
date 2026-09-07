@@ -7,6 +7,42 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.412.0 - M416: the pacing guard, and the line that could arrive on day one
+
+P8, the last craft law that was actually blocked rather than a fork. Its own contract forbade
+building it before the first ending of the second act existed; that has been true since 0.216.0,
+and the guard was still waiting. It is built now, and the wiring found exactly the fault the law
+was written to prevent.
+
+**Part VI's «Вы просто не тянете» had no window at all.** The heaviest line in the game — the one
+man who says it to your face, once per game, and whom the game confirms with nothing because he
+is wrong — was unlocked by three shut doors and nothing else. Three doors can be shut in a first
+evening. It could arrive before anything had been lived: the textbook case of what Emily Short
+calls the disease of salience architecture, a player satisfying an ending's preconditions more or
+less by accident.
+
+It now needs its three doors **twenty sky-days apart** and **two hundred days lived**. A shut door
+is a deed; three of them in one evening is a bad evening, not a life.
+
+`src/11d-clocks.js` executes the contract in `docs/DESIGN-arc.md` word for word: `CLOCKS` is the
+one table where every ending's window is declared, a segment advances only on a named deed and
+only after the minimum gap, and **the guard writes nothing** - no line, no journal entry, no hint
+that a window exists. It only withholds. Preconditions met early simply wait.
+
+The other two endings keep their numbers exactly: the medical board (twelve years of стаж, the
+core counter) and «Тихоня» (five deeds in the kindness ledger, a year, a home). The yacht's clock
+*reads the ledger* rather than keeping a second count of the same deeds - two counts of one thing
+drift apart in about ten versions.
+
+The point of a table, though, is not the three rows in it. It is that a fourth ending cannot be
+written without one, and `tests/91zzzzzp-clocks` fails if it is. That suite also pins the parts
+that are about what does *not* happen: fifty observations advance no clock, the guard leaves
+`G.msg` and the journal untouched, and a corrupt save cannot inject a segment. `91zzzx-late`, the
+suite that used to reach part VI by shutting three doors on day zero, now has to live the life.
+
+Full tier green: 17756 assertions over 776 suites.
+
+---
 ## 0.411.0 - M415: the split debt, and two guards that stopped crying wolf
 
 The four biggest modules were past the size the build records for them, and the plan has carried

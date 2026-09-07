@@ -104,7 +104,16 @@ TEST_SUITES.push(()=>suite("тишина: называют рядом, а не �
 TEST_SUITES.push(()=>suite("тот один: говорит прямо ровно раз, и игра его не подтверждает",()=>{
   resetWorld();
   G.folk={};G.toldOff=0;
-  folkOf("st:1,1").shut=1;folkOf("st:2,2").shut=1;folkOf("st:3,3").shut=1;
+  /* ── и прожитая жизнь (P8, M416) ──
+     Раньше набор ставил три закрытые двери и звал реплику: ровно то, что мог
+     сделать игрок в первый вечер. Теперь у части VI есть окно, и набор его
+     проходит так же, как его проходят, — двери с промежутком и двести суток.
+     Если однажды окно закроют плотнее, красным станет ЭТОТ набор, а не игра. */
+  G.t=0;folkShut("st:1,1");
+  G.t=CEL_DAY*(CLOCKS.toldoff.gap+1);folkShut("st:2,2");
+  G.t=CEL_DAY*(CLOCKS.toldoff.gap*2+2);folkShut("st:3,3");
+  G.t=CEL_DAY*(CLOCKS.toldoff.day+1);
+  ok(clockOpen("toldoff"),"окно части VI открыто: "+(clockWhy("toldoff")||"пора"));
   /* $body — настоящий элемент станции: модуль читает свою константу, а не окно */
   const box=$body;const keep=box.innerHTML;box.textContent="";
   toldOffBlock();

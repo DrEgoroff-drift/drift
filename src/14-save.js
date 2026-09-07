@@ -75,6 +75,7 @@ function snapshot(){
     kit:G.kit,kitShelf:G.kitShelf,kitDepot:G.kitDepot,   /* комплект (M152) */
     vega:G.vega,wishDevice:G.wishDevice,   /* Вега (M153) */
     ring:G.ring,exp:G.exp,letters:G.letters,island:G.island,record:G.record,inst:G.inst,trainee:G.trainee,zoo:G.zoo,concert:G.concert,road:G.road,trace:G.trace,duty:G.duty,album:G.album,mail:G.mail,probes:G.probes,win:G.win,spa:G.spa,hol:G.hol,books:G.books,qsl:G.qsl,relay:G.relay,green:G.green,kino:G.kino,penn:G.penn,first:G.first,chess:G.chess,   /* M154–M207, M192 */
+    clocks:G.clocks,
     seen:G.seen,storyPin:G.storyPin,storyFlags:G.storyFlags,place:G.place,odo:G.odo,post:G.post,mirror:G.mirror,lights:G.lights,hours:G.hours,grove:G.grove,keepers:G.keepers,county:G.county,charts:G.charts,quiet:G.quiet,slow:G.slow,pass:G.pass,grown:G.grown,plan:G.plan,ret:G.ret,names:G.names,namesTold:G.namesTold,name:G.name||"",
     tape:(typeof tapePack==="function")?tapePack():null,tapeLong:G.tapeLong|0,
     fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,rep:G.rep,poiSeen:G.poiSeen,findsSeen:G.findsSeen,

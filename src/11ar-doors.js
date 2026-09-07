@@ -53,6 +53,12 @@ function quietDoorLine(){
 function toldOffBlock(){
   if(typeof $body==="undefined"||!$body)return;
   if(G.toldOff||!worldQuiet())return;
+  /* ── и своё окно (P8, M416) ──
+     До сторожа сюда вело ровно одно условие — три закрытые двери, — а три
+     двери можно закрыть в первый вечер. Самая тяжёлая реплика игры приходила
+     раньше, чем в ней что-то прожито. Теперь она ждёт своего окна, молча и
+     не истекая: часы `toldoff` в `11d-clocks`. */
+  if(typeof clockOpen==="function"&&!clockOpen("toldoff"))return;
   G.toldOff=1;
   $body.appendChild(el("div","row","<div class='nm'><s style='color:#cfe3ea;line-height:1.9'>"+
     "Человек у стойки допил, поставил стакан и сказал, не поворачиваясь: "+

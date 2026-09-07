@@ -115,3 +115,28 @@ is a layer that only **withholds**. Contract, for whenever an ending is wired:
 5. **No engine before consumers.** A clocks engine with no second ending wired would be a perk
    without code. The engine lands together with the first ending of the second act (M159–M161
    queue), not before.
+
+### The guard is built (M416, 0.412.0)
+
+`src/11d-clocks.js` is the doorman the contract above describes, and the contract is executed
+word for word: `CLOCKS` is the single table where every ending's window is declared, `clockPush`
+advances a segment only on a named deed and only after the minimum sky-day gap, `clockOpen`
+answers «not yet» or «go», and nothing anywhere writes a line about any of it.
+
+What the build found while wiring it — and the reason clause 5 was right to wait for consumers
+rather than for a design: **one of the three endings had no window at all.** Part VI's «Вы просто
+не тянете» (`11ar-doors`) was unlocked by three shut doors and nothing else, and three doors can
+be shut in a first evening. The heaviest line in the game could arrive before anything had been
+lived. It now needs its three doors *spaced twenty sky-days apart* and two hundred days lived —
+a shut door is a deed, and three of them in one evening is a bad evening, not a life.
+
+Two of the three keep their own numbers exactly: the medical board (twelve years of стаж and the
+core counter) and «Тихоня» (five deeds in the kindness ledger, a year, a home). The yacht's clock
+**reads the ledger** instead of keeping a second count of the same deeds — `CLOCKS.gift.segOf` —
+because two counts of one thing drift apart in about ten versions.
+
+Guarded by `tests/91zzzzzp-clocks`: every key in the table is named and explained and shut in a
+fresh world; three doors in one evening advance the clock once; fifty observations advance
+nothing; the guard leaves `G.msg` and the journal untouched; the clock survives the save circle
+and a corrupt record cannot inject a segment. And `91zzzx-late` — the suite that used to reach
+part VI by shutting three doors on day zero — now has to live the life first.

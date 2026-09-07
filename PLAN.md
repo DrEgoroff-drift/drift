@@ -380,9 +380,11 @@ the day they are found; this is work that was deliberately not done, or that nee
 - ~~`pair` as a target for natural light~~ — decided 2026-09-03, M308: daylight scenes
   (`LOOK_DAYLIGHT`) print the pair as a reference, without a verdict.
 - **Craft plan remainder** (P0–P9, last section of `docs/DESIGN-story-craft.md`; M249–M270 paid
-  eight laws of ten). P4 grisaille — a refactor, its own session. P7b the glyph notebook —
-  understanding is a state of the head, not a flag; needs the author. P8 the clocks engine — with
-  the first Act II ending, earlier it is a perk without code. С5 fatigue — the author's fork: hired
+  eight laws of ten). P4 grisaille — a fork, see below. P7b the glyph notebook —
+  understanding is a state of the head, not a flag; needs the author. ~~P8 the clocks engine~~ —
+  **built, M416 (0.412.0)**: `11d-clocks` is the doorman its contract describes, and wiring it
+  found that part VI's «Вы просто не тянете» had no window at all — three shut doors and nothing
+  else, i.e. it could arrive in a first evening. Page in `docs/DESIGN-arc.md`. С5 fatigue — the author's fork: hired
   hands have no figure, so either portraits (the `mgr-face` brushes) or an axis on managers. P9b
   settlement recursion (Eglash) — by eye over many settlements.
   **P4 grisaille — spelled out by the author 2026-09-05, built and measured 2026-09-07, then

@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 505 · символов верхнего уровня: 4761
+Файлов: 507 · символов верхнего уровня: 4769
 
 ## СИМВОЛЫ
 
@@ -106,7 +106,7 @@ appetitePrice                src/12ab-hold.js:84
 applyCrewEvent               src/12b-crew-events.js:215
 applyPadMode                 src/15-input.js:72
 applyPadSize                 src/15-input.js:8
-applySave                    src/14-save.js:207
+applySave                    src/14-save.js:208
 applySaveRest                src/14a1-save-rest.js:15
 applyVolumes                 src/09-audio.js:40
 apVel                        src/16-flight.js:132
@@ -117,7 +117,7 @@ armedCount                   src/13-combat.js:229
 arrive                       src/16-flight.js:178
 ARTIFACTS                    src/12h-relic.js:48
 askText                      src/11u-names.js:59
-asMap                        src/14-save.js:200
+asMap                        src/14-save.js:201
 assignToBase                 src/12a-crew.js:181
 AST_N                        src/24-mode-belt.js:86
 audioHush                    src/09-audio.js:12
@@ -766,6 +766,14 @@ clkRun                       tests/91zzzzzb-clock.js:32
 clkShift                     tests/91zzzzzb-clock.js:58
 clkWorld                     tests/91zzzzzb-clock.js:42
 clNow                        tests/91zzzzzr-cloud.js:25
+CLOCK_KEYS                   src/11d-clocks.js:53
+clockAll                     src/11d-clocks.js:57
+clockOf                      src/11d-clocks.js:61
+clockOpen                    src/11d-clocks.js:86
+clockPush                    src/11d-clocks.js:69
+CLOCKS                       src/11d-clocks.js:36
+clockSeg                     src/11d-clocks.js:79
+clockWhy                     src/11d-clocks.js:94
 closeBarge                   src/12l-barge.js:645
 closeDeal                    src/27n-ui-deal.js:169
 closeStation                 src/26-ui-station.js:145
@@ -1669,7 +1677,7 @@ giantTex                     src/19a-mode-scoop.js:189
 GIFT_DAY                     src/11at-gift.js:28
 GIFT_DEEDS                   src/11at-gift.js:26
 GIFT_W                       src/11at-gift.js:27
-giftArrive                   src/11at-gift.js:40
+giftArrive                   src/11at-gift.js:43
 giftDue                      src/11at-gift.js:30
 glassOutline                 src/25-cockpit.js:54
 GLOB                         src/25f-globus.js:44
@@ -2874,21 +2882,21 @@ OFFER_KIND                   src/11ah-offer.js:41
 OFFER_NAMED_K                src/11ah-offer.js:52
 OFFER_SHIFT                  src/11ah-offer.js:67
 OFFER_TTL                    src/11ah-offer.js:61
-offerAdd                     src/11ah-offer.js:103
-offerCaravDone               src/11ah-offer.js:320
-offerCarried                 src/11ah-offer.js:250
-offerDeliver                 src/11ah-offer.js:230
-offerDest                    src/11ah-offer.js:191
-offerHere                    src/11ah-offer.js:158
-offerLine                    src/11ah-offer.js:256
-offerListTaken               src/11ah-offer.js:312
-offerLive                    src/11ah-offer.js:154
-offerPay                     src/11ah-offer.js:94
+offerAdd                     src/11ah-offer.js:107
+offerCaravDone               src/11ah-offer.js:324
+offerCarried                 src/11ah-offer.js:254
+offerDeliver                 src/11ah-offer.js:234
+offerDest                    src/11ah-offer.js:195
+offerHere                    src/11ah-offer.js:162
+offerLine                    src/11ah-offer.js:260
+offerListTaken               src/11ah-offer.js:316
+offerLive                    src/11ah-offer.js:158
+offerPay                     src/11ah-offer.js:98
 offersAll                    src/11ah-offer.js:69
-offerShutLine                src/11ah-offer.js:278
-offerTake                    src/11ah-offer.js:209
-offerTick                    src/11ah-offer.js:166
-offerVisit                   src/11ah-offer.js:124
+offerShutLine                src/11ah-offer.js:282
+offerTake                    src/11ah-offer.js:213
+offerTick                    src/11ah-offer.js:170
+offerVisit                   src/11ah-offer.js:128
 ok                           tests/90-harness.js:120
 ONE_BEAR_ERR                 src/21b3-base-hunt.js:26
 ONE_ID                       src/21b3-base-hunt.js:34
@@ -3458,10 +3466,10 @@ rebinding                    src/15-input.js:173
 RECORD_YEARS                 src/11aa-record.js:17
 recordAdd                    src/11aa-record.js:22
 recordAll                    src/11aa-record.js:18
-recordBlock                  src/11aa-record.js:66
+recordBlock                  src/11aa-record.js:70
 recordBoardHere              src/11aa-record.js:51
 recordByAuthor               src/11aa-record.js:33
-recordGround                 src/11aa-record.js:56
+recordGround                 src/11aa-record.js:60
 recordHonour                 src/11aa-record.js:35
 recordPilot                  src/11aa-record.js:39
 recordTick                   src/11aa-record.js:41
@@ -3542,7 +3550,7 @@ renderMail                   src/25k-post-mail.js:36
 renderOpts                   src/27-ui-ship.js:54
 renderPrices                 src/12aa-need.js:256
 renderQsl                    src/11an-qsl.js:160
-renderRecord                 src/11aa-record.js:80
+renderRecord                 src/11aa-record.js:84
 renderRelays                 src/11ap-relay.js:243
 renderRoute                  src/12r-route.js:349
 renderSiteTab                src/26c-ui-station-site.js:7
@@ -3800,13 +3808,13 @@ runTests                     tests/90-harness.js:250
 rxRecord                     src/11x-ring.js:64
 S1                           src/01-core.js:96
 S2                           src/01-core.js:97
-SAVE_BUDGET                  src/14-save.js:115
+SAVE_BUDGET                  src/14-save.js:116
 SAVE_KEY                     src/14-save.js:6
-saveFatSaid                  src/14-save.js:116
+saveFatSaid                  src/14-save.js:117
 saveGame                     src/14a-cloud.js:38
-saveText                     src/14-save.js:137
-saveTop                      src/14-save.js:131
-saveWeigh                    src/14-save.js:118
+saveText                     src/14-save.js:138
+saveTop                      src/14-save.js:132
+saveWeigh                    src/14-save.js:119
 say                          src/08-state.js:213
 SCALE_KEYS                   src/10-music.js:25
 SCALES                       src/10-music.js:5
@@ -3984,7 +3992,7 @@ shipZ                        src/16-flight.js:235
 shipZoneR                    src/19f-lander.js:14
 SHOT_CLEAN                   src/28-loop.js:139
 SHOVE_V                      src/13a-guns.js:36
-SHUT_LINES                   src/11ah-offer.js:272
+SHUT_LINES                   src/11ah-offer.js:276
 siteTestOpen                 tests/91x-hold-site.js:11
 siteTestStation              tests/91x-hold-site.js:2
 sixthGone                    src/12k-stories-d.js:77
@@ -4879,7 +4887,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/11a-quests.js · 9 КБ
   · журнал дел:1
 
-## src/11aa-record.js · 6 КБ
+## src/11aa-record.js · 7 КБ
   · трудовая книжка: биография, написанная другими:1
 
 ## src/11ab-institute.js · 9 КБ
@@ -4902,7 +4910,7 @@ zooTick                      src/11ad-zoo.js:41
 
 ## src/11ah-offer.js · 22 КБ
   · возможность:1
-  · возможности углубляются экспедицией (M229):287
+  · возможности углубляются экспедицией (M229):291
 
 ## src/11ah-wall.js · 15 КБ
   · стена, которая помнит:1
@@ -4935,7 +4943,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/11ar-doors.js · 5 КБ
   · тишина: двери закрыты, мир предлагает:1
 
-## src/11at-gift.js · 4 КБ
+## src/11at-gift.js · 5 КБ
   · «Тихоня»: подарок, которого никто не считал:1
 
 ## src/11b-speech.js · 18 КБ
@@ -4944,6 +4952,9 @@ zooTick                      src/11ad-zoo.js:41
 ## src/11c-stories.js · 25 КБ
   · истории: следы, а не задания:1
   · каналы:259
+
+## src/11d-clocks.js · 7 КБ
+  · часы над концами: сторож темпа (P8, M416):1
 
 ## src/11d-place.js · 4 КБ
   · память места: три счётчика и одометр:1
@@ -5309,8 +5320,8 @@ zooTick                      src/11ad-zoo.js:41
 
 ## src/14-save.js · 44 КБ
   · сохранение:1
-  · запись не имеет права убить полёт:99
-  · пустая карта возвращается из облака СПИСКОМ:178
+  · запись не имеет права убить полёт:100
+  · пустая карта возвращается из облака СПИСКОМ:179
 
 ## src/14a-cloud.js · 12 КБ
   · облако, вкладки и обмен:1
@@ -6233,7 +6244,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzzw-relay.js · 10 КБ
   · M218: приёмники как места:1
 
-## tests/91zzzx-late.js · 7 КБ
+## tests/91zzzx-late.js · 8 КБ
   · M225: поздний час у стойки:1
 
 ## tests/91zzzx-maker.js · 17 КБ
@@ -6384,6 +6395,9 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzzzzp-balance.js · 8 КБ
   · числа, записанные в договоре (M357):1
+
+## tests/91zzzzzp-clocks.js · 5 КБ
+  · сторож темпа (P8, M416):1
 
 ## tests/91zzzzzq-input.js · 8 КБ
   · руки отпускают (M357):1

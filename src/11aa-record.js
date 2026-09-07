@@ -51,6 +51,10 @@ function recordTick(){
 function recordBoardHere(){
   const R=recordAll();
   if(R.grounded||recordYears()<RECORD_YEARS)return false;
+  /* эталон договора (P8, правило 4) проходит через сторожа вместе с прочими —
+     не потому, что ему нужно окно, а потому, что таблица окон должна быть
+     полной: конец без строки в ней — это конец без окна */
+  if(typeof clockOpen==="function"&&!clockOpen("record"))return false;
   return !!(G.st&&typeof hoursDepthAt==="function"&&hoursDepthAt(G.sx,G.sy)===2);
 }
 function recordGround(){

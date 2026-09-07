@@ -29,6 +29,9 @@ const GIFT_DAY=365;        /* год прожитой жизни, раньше �
 
 function giftDue(){
   if(G.uniqueShips&&G.uniqueShips.gift1)return false;      /* уже стоит */
+  /* то же окно, но названное вслух в одном месте со всеми (P8, M416): числа
+     здесь свои и прежние, сторож их только повторяет */
+  if(typeof clockOpen==="function"&&!clockOpen("gift"))return false;
   const L=(typeof ledgerAll==="function")?ledgerAll():null;
   if(!L||(L.n|0)<GIFT_DEEDS||(L.w||0)<GIFT_W)return false;
   if(celDay()<GIFT_DAY)return false;

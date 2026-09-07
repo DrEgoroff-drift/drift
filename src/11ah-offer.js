@@ -89,7 +89,11 @@ function folkOf(id){
    происходящему вес (`СУД`, проход XVIII). */
 function folkShut(id){
   const f=folkOf(id);
+  if(f.shut)return;                 /* дверь закрывается один раз */
   f.good=0;f.shut=1;
+  /* сегмент часов части VI (P8): дверь — это ДЕЛО, и оно считается только
+     если с прошлой двери прошло время. Сторож молчит об этом (11d) */
+  if(typeof clockPush==="function")clockPush("toldoff");
 }
 function offerPay(o){
   const K=OFFER_KIND[o.kind];if(!K)return 0;
