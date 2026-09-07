@@ -422,3 +422,122 @@ Second expedition (2026-08-30):
   Representation*; Siromoney & Siromoney, array grammars for kolam.
 - Differential growth: Anders Hoff (inconvergent), *On Generative Algorithms: Hyphae*,
   *Differential Mesh*.
+
+---
+
+## P4 гризайль — spelled out, built, measured, and handed back as a fork (2026-09-07)
+
+The tenth craft law, and the last one still queued. The author spelled it out on 2026-09-05; it
+was built end to end on 2026-09-07, measured, and reverted without a commit. **Nothing here is a
+defeat — the code worked. What it decides is not a code question.** This section is everything a
+future session needs to redo it in an hour and everything the author needs to settle it in a
+glance.
+
+### What it is
+
+Every drawer of the landing cross-section picks its own colour out of the world palette:
+`drawGround`, `drawRocks`, `drawStrata`, the material tile (`18a-material`) and the 皴 hatch all
+read `pal`. Light and colour live in one brush stroke, and three things follow:
+
+- a palette change means touching every drawer;
+- **the light on most of the frame is a constant** — `rgba(0,0,0,.35)` under a boulder,
+  `rgba(255,246,226,.16)` on a bedding contact — not the light of this star under this sky.
+  Real illumination (`litRGB`) is computed for the slope strips only: one ribbon out of the
+  whole cross-section;
+- the hour of day sits in the chunk key, because colour is baked together with form.
+
+Grisaille splits it: the form bakes in **grey** (mass, relief, shadow, edge), and one **glaze**
+turns grey `v` into `dark + v·(light − dark)`, where `dark` is the sky's colour (`ambRGB`×`ambK`)
+and `light` is the star's (`starRGB`).
+
+**It is the same physics the game already has.** `litRGB` computes `base·(k·amb + I·sun)` — linear
+in `I`. So a two-stop glaze with `dark = base⊗amb·k` and `light = base⊗(amb·k + sun·df)` *is*
+`litRGB` with the Lambert term read from the grey pass instead of from the slope. No new light
+model: the existing one, finally reaching the whole cross-section instead of one ribbon.
+
+### The list step 5 asked for: nine hue events that luminance cannot carry
+
+Before starting, the plan required an inventory of colour detail living inside a drawer. Here it
+is, from the bake path:
+
+| event | where | why it cannot be a grey |
+|---|---|---|
+| mineral veins | `18a` `MINERAL`, 8 hues per world | a vein and a facet edge share a luminance |
+| veins inside a bed | `18b` `L.vein` | same |
+| a bed's own colour `L.col` | `18b` | two beds can share a luminance |
+| lava seam `255,118,34` | `18a` `edgeLo<0` | the only warm thing on a volcanic world |
+| ice seam `226,240,255` | `18a` `seam<0` | cold by definition |
+| oxide streaks `104,54,32` | `18a` plate | metal reads as plastic without them |
+| facet-edge dispersion | `18a` `edgeHi` | warm/cold per facet is the whole point |
+| crystal spark `250,248,255` | `18a` facet | — |
+| lichen | `19` `growLichen` | green on any rock |
+
+**The rule that falls out: grey means «paint me», colour means «I know my own hue».** Hue events
+are drawn in a second pass *after* the glaze, so it never touches them.
+
+### Why composites, not the LUT the plan proposed
+
+The plan suggested a 256-entry LUT per material through `getImageData`/`putImageData`, once per
+chunk. A chunk is 512×~1000 — half a million pixels read and written — and, more to the point,
+reading a canvas drops it into software rasterisation (the `prof()` rule in `CLAUDE.md`). The
+two-stop glaze needs no readback at all:
+
+```
+multiply by (light − dark)      →  v·(light − dark)
+lighter   by  dark              →  v·(light − dark) + dark
+destination-in with a copy      →  restores the original alpha
+```
+
+Three ops, two `drawImage`, zero pixel reads. The alpha copy is required because blend modes also
+act where the canvas is transparent: without it `lighter` sows shadow into the sky.
+
+### What it looks like, and the fork
+
+Built for the whole first session (grey material tile + grey beds + grey boulders + grey hatch +
+Lambert-only slope strips + one glaze per chunk), on a terran world at rainy dusk:
+
+| | tones | warm | pair | contrast | mass | edge | empty |
+|---|---|---|---|---|---|---|---|
+| today | 4 | 7 | 7 | .55 | 11 | 3 | 41 |
+| grisaille | 5 | 10 | 10 | .54 | 11 | 4 | 48 |
+| grisaille + chroma pass | 5 | 1 | 1 | .57 | 12 | 5 | 47 |
+
+The middle row is better on the meter's own terms — and the improvement lands exactly on the
+long-standing shortfall recorded after M304 («грунт день — pair still short: the disc is the only
+second hue»). The cost is `empty` +7 and one thing no number captures:
+
+> **The ground stops taking its hue from the world's palette ramp and takes it from the light.**
+> A terran world goes from olive-green to terracotta. Two worlds still differ (the glaze's base is
+> their own `pal[top]`), but *within* one world the multi-hue ramp collapses to one hue lit from
+> two sides.
+
+A third pass was built to keep both — the albedo painted back with `globalCompositeOperation:
+"color"`, which takes hue and saturation from the source and luminosity from the glaze. It is the
+bottom row: it restores the palette and destroys the pair (10 → 1), i.e. it undoes the only thing
+the law was for. At every strength tried (.30, .45, .62) it measured worse than either extreme.
+
+So the question is not «is grisaille correct» — it is **should a planet's ground be coloured by
+its palette or by its light**, and that is the author's to answer. Nothing was committed.
+
+### The trap that cost half the session
+
+**The surface scene cannot be A/B'd with `lookFrame` as things stand.** The sky calendar
+(`celestAt`) runs on the wall clock, so `dayKq` — which drives both the light and the chunk key —
+changes between two runs of the same build. The same build measured `pair` 10 and `pair` 4 four
+minutes apart. Any future run at this pins the clock first (stub `Date.now`, as `crewTick` already
+demands elsewhere) and only then trusts a before/after. This applies to every daylight scene in
+`lookScenes`, not only to grisaille.
+
+### If it is taken: the order
+
+1. `18a-material`: the tile bakes `V` (already a scalar `t` — the colour was only pasted on at the
+   end) into a grey tile, and the nine events into a second, mostly transparent one. Normalise `V`
+   by `lum(pal[top])`, or the palette multiplies twice and the cross-section goes flat olive —
+   that was the first wrong build.
+2. Stretch the grey around the mid by ~1.6: two composite fills compress the scale, and an
+   underpainting written in natural values reads flat after glazing. Grisaille painters knew this.
+3. `18b-geology`, `19-mode-landing`: beds, boulders, hatch, crust edge and slope strips emit
+   greys; veins and lichen move to the hue pass.
+4. The chunk paint callback runs form → glaze → hue; `GLAZE_PASS` gates the drawers the way
+   `GROUND_BAKING` already gates the chunk.
+5. Then `23a/23aa` (dig, cave) as the plan's second session, and the parity sheet on `/dev`.

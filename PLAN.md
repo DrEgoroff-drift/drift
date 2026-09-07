@@ -385,29 +385,15 @@ the day they are found; this is work that was deliberately not done, or that nee
   the first Act II ending, earlier it is a perk without code. С5 fatigue — the author's fork: hired
   hands have no figure, so either portraits (the `mgr-face` brushes) or an axis on managers. P9b
   settlement recursion (Eglash) — by eye over many settlements.
-  **P4 grisaille, spelled out (author asked 2026-09-05; the only craft item still queued):**
-  today every chunk (`18c-chunks`: ground, rocks, strata, cave rock in `23a/23aa`) is baked in
-  final colour — each drawer picks its own hue from `pal`, so a palette change means touching
-  every drawer, and light and colour are entangled in one pass. Grisaille splits it in two:
-  1. **Form bake in grey.** The chunk painters draw value only (0–255 luminance: mass, relief,
-     shadow strips, edge light) into the chunk canvas. Every `fillStyle` in `drawGround`,
-     `drawRocks`, `drawStrata`, the dig rock and the cave wall becomes a grey from the material's
-     value ramp; `pal` is not read there at all. `GROUND_BAKING` already marks the pass.
-  2. **Glaze pass in colour.** One function, `glaze(canvas, pal)`, maps luminance to the
-     palette: a 256-entry LUT per material (shadow hue → midtone → light hue, not one hue
-     scaled), applied once per chunk on bake through `getImageData`/`putImageData`, or via
-     `multiply`/`color` composite when the LUT is a plain gradient. The LUT is keyed into the
-     chunk store so a palette change re-glazes, not re-draws.
-  3. **What comes free.** A world's palette becomes data (three ramps per material), day/dusk
-     is a LUT swap instead of a re-bake, and the meter's `pair`/`tones` can be tuned per world
-     without touching the drawers. Cast shadows (P5) drop into the grey pass naturally.
-  4. **Measure.** `?g11` before/after on landing, dig, cave (the bake must not cost more than
-     one `getImageData` per chunk); a parity sheet of three palettes on `/dev` from one grey
-     bake; `lookAll` tones/pair per scene not worse than the 0.301.0 table above.
-  5. **Cost and risk.** Two sessions: one for the grey pass and the glaze on `18c` + `07-planet`
-     (ground, rocks, strata), one for `23a/23aa` (dig, cave) and the parity sheet. Risk: fine
-     colour detail that today lives inside a drawer (lichen tint, ore glints) has to move to the
-     glaze or stay as a small colour pass after it — list those before starting.
+  **P4 grisaille — spelled out by the author 2026-09-05, built and measured 2026-09-07, then
+  reverted: it is a fork of intent, not a refactor.** The glaze gives the whole cross-section
+  real light (sky-coloured shadow, star-coloured light) instead of today's constants, and in
+  exchange the ground takes its hue from the light rather than from the world's palette ramp —
+  a terran world goes olive → terracotta. That is the author's call, so nothing was committed.
+  The spec, the nine irreducible hue events, why composites and not a LUT on this engine, the
+  numbers, the hour-long path to redo it and **the measuring trap that cost half the session**
+  (the sky calendar runs on the wall clock — pin it before any A/B of a daylight scene) are all
+  in `docs/DESIGN-craft.md` § «P4 гризайль».
 
 ### Picture queue — built as M304 (0.301.0, 2026-09-03)
 
