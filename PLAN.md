@@ -730,5 +730,5 @@ not part of this queue.
 
 **Read back by another session** (0.409.1): fifteen real faults across M390–M409 and the war
 queue, all fixed, pinned by the «разбор …» suites in `tests/91zzzw-base4.js`. The list, the two
-rules that outlive it and **six still-open scene notes — the next base work** are in §51.2 of
-`docs/DESIGN-base.md`.
+rules that outlive it are in §51.2 of `docs/DESIGN-base.md`. The six scene notes from the same
+review are closed too (**M413**, 0.410.0) — §51.3 there has the three frame rules they produced.

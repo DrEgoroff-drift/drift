@@ -1675,8 +1675,34 @@ same shape appeared in the fix for it — `force` on the director skipped the pr
 *and* the place checks, and storms started landing on gas worlds. A bulk path must run every
 consequence the slow path runs, or it is not the same world.
 
-**Still open — the frame, not the rules.** Six notes from the same review, all about the base
-scene and none about its laws: the entry message overlays the top row; the five-line prompt
-overlays the bottom row; the ГЛАВТРАССА flag is the loudest patch in the frame; the shaft reads
-as an empty grey square; gauge labels are three-letter codes where words would fit; adjacency
-pipes are too faint to read as connections. They are the next base work.
+### 51.3 The frame, M413 — six notes, one fault
+
+The same review ended with six notes about the scene rather than its laws: the entry message over
+the top row; a five-line prompt over the bottom row; the ГЛАВТРАССА pennant as the loudest patch
+in the frame; a shaft that reads as an empty grey square; three-letter gauge stumps; adjacency
+pipes too faint to read as connections. All six are closed in 0.410.0, and they turned out to be
+one fault written six times: **the frame said things in the wrong register and in the wrong
+place.**
+
+Three rules came out of it, and they hold for any scene in this game, not only the base.
+
+**State goes on an instrument; an answer goes in the prompt.** Energy, store and forecast were in
+the prompt because that is where there was room, and the prompt grew to five lines and lay across
+the base. They are the base's state and they belong on its board, which existed already and was
+half empty. The prompt answers one question — what is under the cursor and what the button does —
+and two lines are enough for it.
+
+**A thing in the world is lit by the world.** The pennant was drawn at full saturation and half a
+compartment tall, so a decoration that gives nothing was the first thing the eye found in a scene
+built out of browns and turquoise under one light. Anything hung in the frame takes the frame's
+light and the frame's scale, and decoration takes less of both than the machinery does.
+
+**A body needs a detail the eye can name.** The shaft had a fill, an outline and ties — all at
+alphas between .10 and .14 — which is a rectangle, and a rectangle in a game about places reads as
+a missing texture. Rails with a highlight, a cable, rungs, numbered levels, a cage with a floor and
+one lamp: the same amount of ink, spent on things that have names. The same applies to the
+adjacency pipes, which were a single pale line and are now a bed, a coloured body and a coupling.
+
+The pass also uncovered a real fault of its own: stepping into the shaft hit an early `return`
+meant to drop the cursor, and it dropped the pipes, the frost, the emergency marker and the board
+with them — from the lift, where the base is seen whole, the player saw the least.

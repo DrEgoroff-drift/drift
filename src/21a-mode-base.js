@@ -113,6 +113,11 @@ function foundBase(p){
   tell("money","Заложена база на "+p.name+" · −2500 кр, 10 сплавов","База заложена\n"+p.name);
   return true;
 }
+/* подсказка про ходьбу нужна один раз за сеанс и не является состоянием мира:
+   поэтому она живёт на модуле, а не в `G` — `resetWorld` его чистит, а учить
+   ходить заново после каждого сброса незачем */
+let BASE_WALKED=0, BASE_HINT=0;
+const BASE_NOTE_W=560;       /* уже этого карточке журнала места нет */
 function enterBase(p){
   const B=baseAt(G.sx,G.sy,p.idx);if(!B)return;
   baseResolveAll();
@@ -125,13 +130,23 @@ function enterBase(p){
   G.base.x=cellX(G.base.cur);G.base.y=cellY(0);
   G.mode="base";
   for(const k in keys)keys[k]=false;
-  /* ── визит начинается с журнала (M390, §12) ──
+  /* ── визит начинается с журнала (M390, §12; переделка M413) ──
      Ради этого сюда и прилетают: не построить ещё один отсек, а узнать, что
-     тут без вас было. Подсказка про ходьбу остаётся последней строкой — она
-     нужна в первый раз, а журнал нужен каждый. */
+     тут без вас было. Но `say` печатает по центру на четверти высоты — ровно
+     там, где верхний ряд сетки, — и четыре строки ложились на базу. Записи
+     уходят на СВОЮ карточку у правого края (21ac рисует её в свободном небе),
+     а по центру остаётся одна строка про ходьбу, и только в первый заход. */
   const J=(typeof baseLogList==="function")?baseLogList(B,3):[];
-  say((J.length?J.map(x=>"смена "+((x.n|0)%1000)+" · "+x.t).join("\n")+"\n":"")+
-    "◀ ▶ — переход · ▲ ▼ — уровни · ДЕЙСТВИЕ — строить · НАЗАД — наружу");
+  const jl=J.map(x=>"смена "+((x.n|0)%1000)+" · "+x.t);
+  /* карточке нужна свободная половина неба справа. В телефонном окне её
+     нет — там записи идут по-старому, сообщением: на узком экране это
+     единственное место, где их видно целиком */
+  if(jl.length&&W>=BASE_NOTE_W)G.base.note={n:(typeof baseShift==="function")?baseShift():0,
+    lines:jl,t:260};
+  else{G.base.note=null;if(jl.length)say(jl.join("\n"));}
+  /* и подсказка про ходьбу тоже не встаёт поперёк базы: её место — там же,
+     где всякое «что тут можно», то есть внизу у рук (M413) */
+  BASE_HINT=BASE_WALKED?0:200;BASE_WALKED=1;
 }
 function exitBase(){
   G.base=null;G.mode="surface";
@@ -386,6 +401,9 @@ function jumpToBase(B){
 function updateBase(dt){
   const S=G.base,B=S.B;
   if(G.t%30<dt)baseResolveAll();
+  if(BASE_HINT>0)BASE_HINT-=dt;
+  /* карточка «пока вас не было» гаснет сама (M413), как гасло сообщение */
+  if(S.note&&S.note.t>0)S.note.t-=dt;
   const tx=cellX(S.cur),ty=cellY(S.row);
   const dx=tx-S.x,dy=ty-S.y;
   S.x+=clamp(dx,-3.2*dt,3.2*dt);S.y+=clamp(dy,-2.6*dt,2.6*dt);
@@ -461,14 +479,14 @@ function updateBase(dt){
   const P=basePower(B);
   if(S.cur<0){
     const A=(typeof baseAdjLine==="function")?baseAdjLine(B):"";
-    G.prompt="ЭНЕРГИЯ "+P.prod+" / "+P.cons+" · ОТДАЧА "+Math.round(P.eff*100)+"%"+
-      "\nСТВОЛ · ▲ ▼ — УРОВНИ · ▶ — В ОТСЕКИ"+
-      (A?"\nСОСЕДСТВО: "+A:"");
+    G.prompt="СТВОЛ · ▲ ▼ — УРОВНИ · ▶ — В ОТСЕКИ"+(A?"\nСОСЕДСТВО: "+A:"");
     return;
   }
-  const dir=(typeof baseDirLine==="function")?baseDirLine(B):"";
-  const head="ЭНЕРГИЯ "+P.prod+" / "+P.cons+" · ОТДАЧА "+Math.round(P.eff*100)+"%"+
-    "\nНА СКЛАДЕ "+basePoolHeld(B)+" / "+P.store+(dir?"\n"+dir:"");
+  /* ── подсказка — это ответ на «что тут можно» (переделка M413) ──
+     Было пять строк: энергия, склад, прогноз, отсек и роль, — и они ложились
+     на нижний ряд сетки. Энергия, склад и прогноз уехали на приборную доску у
+     левого края (21ac): это состояние базы, а не ответ на нажатие. Здесь
+     остаётся то, что под курсором, и то, что сделает кнопка. */
   if(cell){
     const M=BUILD[cell.k];
     /* стоя на площадке, ДЕЙСТВ отправляет на следующую базу сети, а не собирает груз */
@@ -477,7 +495,7 @@ function updateBase(dt){
       /* цель — ближайшая площадка сети: выбирать некому, стрелки заняты ходьбой */
       net.sort((a,b)=>Math.hypot(a.sx-B.sx,a.sy-B.sy)-Math.hypot(b.sx-B.sx,b.sy-B.sy));
       const T=net[0],c=baseJumpCost(T);
-      G.prompt=head+"\nПЛОЩАДКА · ДЕЙСТВИЕ — ПЕРЕБРОСКА НА «"+T.name.toUpperCase()+"»"+
+      G.prompt="ПЛОЩАДКА · ДЕЙСТВИЕ — ПЕРЕБРОСКА НА «"+T.name.toUpperCase()+"»"+
         "\n"+c.credits+" кр и "+c.fuel+" топлива";
       if(actEdge)jumpToBase(T);
       return;
@@ -487,16 +505,20 @@ function updateBase(dt){
     const role=(typeof baseCellRole==="function")?baseCellRole(cell):null;
     const who=(typeof baseCellStaff==="function")?baseCellStaff(B,cell):[];
     const hall=(typeof baseHallAt==="function")?baseHallAt(B,S.cur,S.row):null;
-    G.prompt=head+"\n"+M.ru.toUpperCase()+(hall?" · В ЗАЛЕ ИЗ ТРЁХ":"")+" · "+M.note+
-      (role?"\n"+BASE_ROLES[role].ru.toUpperCase()+": "+
-        (who.length?who.map(c=>c.name).join(", "):"никого")+" · ЦЕЛЬ — КТО ЗДЕСЬ":"")+
-      (B.guest?"\nУ ЗАТВОРА ЖДЁТ "+B.guest.name.toUpperCase()+" · ПРОСИТСЯ ОСТАТЬСЯ":"")+
-      (basePoolHeld(B)>0?"\nДЕЙСТВИЕ — ЗАБРАТЬ НАКОПЛЕННОЕ":"");
+    /* две строки: ЧТО это и ЧТО сделает кнопка. Роль и «забрать» — про одно
+       нажатие каждая, поэтому идут одной строкой через точку, а не двумя */
+    const acts=[];
+    if(role)acts.push("ЦЕЛЬ — КТО ЗДЕСЬ ("+
+      (who.length?who.map(c=>c.name).join(", "):"никого")+")");
+    if(basePoolHeld(B)>0)acts.push("ДЕЙСТВИЕ — ЗАБРАТЬ НАКОПЛЕННОЕ");
+    G.prompt=M.ru.toUpperCase()+(hall?" · В ЗАЛЕ ИЗ ТРЁХ":"")+" · "+M.note+
+      (acts.length?"\n"+acts.join(" · "):"")+
+      (B.guest?"\nУ ЗАТВОРА ЖДЁТ "+B.guest.name.toUpperCase()+" · ПРОСИТСЯ ОСТАТЬСЯ":"");
     /* починка от нуля (M402, §39): разбитый отсек не потерян — он стоит
        четверть постройки и ждёт. Забирать в такой ячейке нечего */
     if(cell.hp<=0&&typeof baseFixCost==="function"){
       const fc=baseFixCost(B,cell.k);
-      G.prompt=head+"\n"+M.ru.toUpperCase()+" · РАЗБИТ"+
+      G.prompt=M.ru.toUpperCase()+" · РАЗБИТ"+
         "\nДЕЙСТВИЕ — ВОССТАНОВИТЬ · "+fc.credits+" кр"+(fc.alloy?" + "+fc.alloy+" спл":"");
       if(actEdge)baseFixCell(B,S.cur,S.row);
       return;
@@ -505,7 +527,7 @@ function updateBase(dt){
        баки своим льдом, у мастерской — починить корпус своими сплавами. В
        блокаду это единственное снабжение, которым игрок распоряжается сам */
     if(cell.k==="melter"||cell.k==="lyse"){
-      G.prompt=head+"\n"+M.ru.toUpperCase()+" · ЦЕЛЬ — ЗАЛИТЬ БАКИ СВОИМ ЛЬДОМ"+
+      G.prompt=M.ru.toUpperCase()+" · ЦЕЛЬ — ЗАЛИТЬ БАКИ СВОИМ ЛЬДОМ"+
         (typeof basePayLine==="function"&&basePayLine(B)?"\n"+basePayLine(B):"");
       if(keys.lock&&!S.lockHeld){S.lockHeld=1;baseRefuel(B);}
       if(!keys.lock)S.lockHeld=0;
@@ -513,7 +535,7 @@ function updateBase(dt){
       return;
     }
     if(cell.k==="shop"){
-      G.prompt=head+"\n"+M.ru.toUpperCase()+" · ЦЕЛЬ — ПОЧИНИТЬ КОРПУС СВОИМИ СПЛАВАМИ"+
+      G.prompt=M.ru.toUpperCase()+" · ЦЕЛЬ — ПОЧИНИТЬ КОРПУС СВОИМИ СПЛАВАМИ"+
         (typeof basePayLine==="function"&&basePayLine(B)?"\n"+basePayLine(B):"");
       if(keys.lock&&!S.lockHeld){S.lockHeld=1;baseRepairShip(B);}
       if(!keys.lock)S.lockHeld=0;
@@ -524,7 +546,8 @@ function updateBase(dt){
     if(role&&keys.lock&&!S.lockHeld){S.pmenu=true;S.ppick=0;S.lockHeld=1;}
     if(!keys.lock)S.lockHeld=0;
   }else{
-    G.prompt=head+"\nПОРОДА · ДЕЙСТВИЕ — ПРОКОПАТЬ И ПОСТАВИТЬ МОДУЛЬ";
+    G.prompt="ПОРОДА · ДЕЙСТВИЕ — ПРОКОПАТЬ И ПОСТАВИТЬ МОДУЛЬ";
     if(actEdge){S.menu=true;S.pick=0;}
   }
+  if(BASE_HINT>0)G.prompt+="\n◀ ▶ — ПЕРЕХОД · ▲ ▼ — УРОВНИ · НАЗАД — НАРУЖУ";
 }

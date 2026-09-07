@@ -51,403 +51,8 @@ function drawBase(){
   const sky=pl?pl.T.sky:[[20,24,34],[8,10,16]];
   const pal=pl?pl.T.pal:[[70,58,46],[52,42,34],[38,30,24],[26,20,16],[18,14,11]];
   const gy=Y(150);                                   // уровень грунта
-  /* ── небо и поверхность ── */
-  const g=ctx.createLinearGradient(0,Y(-140),0,gy);
-  g.addColorStop(0,"rgb("+sky[1].join(",")+")");
-  g.addColorStop(1,"rgb("+sky[0].join(",")+")");
-  ctx.fillStyle=g;ctx.fillRect(0,0,W,Math.max(0,gy));
-  /* Четверть кадра занимала ровная заливка — небо было пустым полем краски.
-     Ставим два плана дальнего рельефа (дальний светлее и выше по горизонту),
-     пыль у самой земли и то, что база построила на поверхности. */
-  if(gy>0){
-    for(let pl2=0;pl2<2;pl2++){
-      const far=pl2===0;
-      /* дальняя гряда выше и бледнее (её съедает воздух), ближняя ниже и темнее.
-         Частота у обеих заметная: на низкой шум давал почти прямую линию, и
-         «рельеф» читался просто второй полосой краски */
-      const amp=far?24:30, base0=gy-(far?34:6), par=far?.3:.6;
-      ctx.fillStyle=rgba(mixc(sky[0],[12,14,20],far?.45:.78),far?.75:.95);
-      ctx.beginPath();ctx.moveTo(0,gy+2);
-      for(let sx2=0;sx2<=W;sx2+=6){
-        const wx=(sx2+camx*par)*.005;
-        ctx.lineTo(sx2,base0-fbm2(wx,pl2*4.7+B.idx,B.idx*53+9,4)*amp
-                        -Math.sin(wx*3.1+pl2)*amp*.25);
-      }
-      ctx.lineTo(W,gy+2);ctx.closePath();ctx.fill();
-    }
-    /* пыль у горизонта: воздух между базой и грядой */
-    const dg=ctx.createLinearGradient(0,gy-54,0,gy);
-    dg.addColorStop(0,"rgba("+sky[0].join(",")+",0)");
-    dg.addColorStop(1,"rgba("+sky[0].join(",")+",.35)");
-    ctx.fillStyle=dg;ctx.fillRect(0,Math.max(0,gy-54),W,Math.min(54,gy));
-  }
-  /* кромка грунта не линейка: мелкий рельеф из того же шума, что и планета.
-     Путь держим объектом: fillMaterial клипует по ПЕРЕДАННОМУ пути, а не по
-     текущему — иначе материал ляжет в последний нарисованный пласт (так и было) */
-  /* ── база сидит в ГОРЕ, а не под степью ──
-     Кромка была почти прямой линией с мелкой рябью: база лежала под ровным
-     полем, и верхний ряд отсеков упирался в небо. На образце, по которому это
-     переделывается, убежище врезано в толщу холма — над верхним ярусом висит
-     масса породы, и именно она объясняет, почему вход один, а всё остальное
-     внизу. Гора строится тем же шумом, но с большой амплитудой и горбом ровно
-     над базой: середина сооружения — вершина, к краям склон уходит вниз.
-     Мелкая рябь остаётся сверху: гора не должна быть гладким куполом. */
-  /* ── не холм, а ГОРА (M137) ──
-     Два горба высотой в полтора отсека давали курган: база читалась вкопанной
-     под степь, а верхний ряд упирался в небо. В образце гора занимает кадр до
-     верха, равнина остаётся слева, и в гору ЗАХОДЯТ сбоку — ворота врезаны в
-     её подошву. Профиль: с равнины склон поднимается к вершине над серединой
-     базы и дальше вправо держится плато. Высота — до самого верха кадра. */
-  const bMidX=X(BASE_OX+BASE_COLS*BCELL_W*.5);          // середина базы на экране
-  const bHalf=BCELL_W*BASE_COLS*.62;
-  const bLeft=X(cellX(0))-BCELL_W*.55;
-  const mtnX0=X(BASE_GATE_X)-95, mtnTop=Math.max(40,gy-22);
-  const humpAt=x=>{
-    const u=clamp((x-mtnX0)/(bHalf*.95),0,1), s=u*u*(3-2*u);
-    const plateau=clamp((x-bMidX)/(bHalf*2.2),0,1)*14;
-    return s*mtnTop-plateau;
-  };
-  const GP=new Path2D();
-  /* профиль поверхности запоминается по ходу построения: почвенный профиль,
-     труба плавильни и грибок должны сидеть на ТОЙ ЖЕ кромке, что и силуэт */
-  const surfYs=[];
-  GP.moveTo(0,H);GP.lineTo(0,gy);
-  for(let x=0;x<=W;x+=6){
-    const hump=humpAt(x);
-    const wob=(fbm2((x+camx)*.008,3.3,B.idx*77+13,3)-.5)*16;
-    const fine=(fbm2((x+camx)*.032,7.1,B.idx*77+31,3)-.5)*9*(hump>4?1:.4);
-    const yv=gy+wob+fine-hump;
-    surfYs.push(yv);
-    GP.lineTo(x,yv);
-  }
-  GP.lineTo(W,H);GP.closePath();
-  /* Порода — это НЕ палитра поверхности: пески и зелень с картинки планеты под
-     землёй читаются как трава и небо (так и вышло с первого раза). Берём тот же
-     цвет, но уведённый в тёмное и обесцвеченный — узнаваемо и при этом подземно */
-  const rc=i=>mixc(pal[Math.min(i,pal.length-1)],[26,19,14],.66);
-  const rock=ctx.createLinearGradient(0,gy-BCELL_H*2.1,0,Y(BASE_OY+baseRows(B)*BCELL_H+120));
-  /* холм начинается выше грунта и освещён небом: одной тёмной заливкой он
-     читался дырой в небе, а не горой (G9) */
-  rock.addColorStop(0,rgba(mixc(rc(0),sky[0],.35),1));
-  rock.addColorStop(.3,rgba(rc(1),1));
-  rock.addColorStop(.55,rgba(rc(3),1));
-  rock.addColorStop(1,rgba(rc(4),1));
-  ctx.fillStyle=rock;ctx.fill(GP);
-  /* пласты: границы гуляют, поэтому это порода, а не полосатый матрас */
-  ctx.save();ctx.clip(GP);
-  for(let r=0;r<baseRows(B)+2;r++){
-    const y0=150+r*BCELL_H*1.15;
-    ctx.beginPath();ctx.moveTo(0,Y(y0));
-    for(let x=0;x<=W;x+=10)ctx.lineTo(x,Y(y0)+(fbm2((x+camx)*.004,r*2.7,B.idx*31+5,3)-.5)*26);
-    ctx.lineTo(W,Y(y0)+BCELL_H*1.15);ctx.lineTo(0,Y(y0)+BCELL_H*1.15);ctx.closePath();
-    ctx.fillStyle=r%2?"rgba(0,0,0,.30)":"rgba(255,255,255,.055)";ctx.fill();
-  }
-  const mat=pl?planetMat(pl):null;
-  if(mat)fillMaterial(mat,camx,camy,.34,.26,GP,{x:0,y:0,w:W,h:H});   // и холму тоже — раньше материал шёл только от грунта вниз (G9)
-  /* Материал планеты — это её ПОВЕРХНОСТЬ: во всю силу под землёй он читается
-     мхом и травой. Умножением уводим всё в бурое: фактура остаётся, зелень
-     уходит, и разрез начинает выглядеть разрезом */
-  ctx.globalCompositeOperation="multiply";
-  ctx.fillStyle="rgb(126,94,64)";ctx.fill(GP);
-  ctx.globalCompositeOperation="source-over";
-  /* ── порода у выработки сжата (§16) ──
-     Вокруг отсеков стоял один тон: камень у кромки и камень в двадцати метрах
-     от неё — одна краска, ступень значения в кадре ровно одна. Первый заход
-     клал прямоугольную рамку из четырёх градиентов, и она читалась именно
-     рамкой: углы прямые, порода тут ни при чём. Ореол идёт ОТ ЯЧЕЕК: у каждой
-     краевой ячейки своё круглое затухание, круги наслаиваются и дают мягкий
-     обвод по форме выработки. Заливок не больше дюжины — краевые прореживаются. */
-  {
-    const edge=[];
-    for(let r=0;r<baseRows(B);r++)for(let c=0;c<BASE_COLS;c++){
-      if(!baseCell(B,c,r))continue;
-      /* внутренние ячейки ореола не дают: их всё равно перекроют соседи */
-      const nb=(c2,r2)=>c2>=0&&c2<BASE_COLS&&r2>=0&&r2<baseRows(B)&&!!baseCell(B,c2,r2);
-      if(nb(c-1,r)&&nb(c+1,r)&&nb(c,r-1)&&nb(c,r+1))continue;
-      edge.push([c,r]);
-    }
-    if(edge.length){
-      const step=Math.max(1,Math.ceil(edge.length/12));
-      const r0=Math.hypot(BCELL_W,BCELL_H)*.5, r1=r0+BCELL_H*1.2;
-      ctx.save();ctx.clip(GP);
-      for(let i2=0;i2<edge.length;i2+=step){
-        const cx=X(BASE_OX+edge[i2][0]*BCELL_W+BCELL_W*.5);
-        const cy=Y(BASE_OY+edge[i2][1]*BCELL_H+BCELL_H*.5);
-        if(cx+r1<0||cx-r1>W||cy+r1<0||cy-r1>H)continue;
-        const g2=ctx.createRadialGradient(cx,cy,r0,cx,cy,r1);
-        g2.addColorStop(0,"rgba(0,0,0,.30)");g2.addColorStop(1,"rgba(0,0,0,0)");
-        ctx.fillStyle=g2;ctx.fillRect(cx-r1,cy-r1,r1*2,r1*2);
-      }
-      ctx.restore();
-    }
-  }
-  /* ── почвенный профиль (M232) ──
-     Верхний слой был одной тёмной полосой — линией среза, а не землёй. Язык
-     взят у шахты (M219): дёрн → подпочва с камнями → кора выветривания,
-     ломаная, а не тонированная. На безвоздушном мире дёрна нет — реголит и
-     щебень, ни одного корня. Всё по кромке силуэта, а не по прямой. */
-  ctx.save();ctx.clip(GP);
-  {
-    const hasTurf=pl?pl.T.atm.indexOf("пригодна")>=0:false;
-    const turfC=pl?mixc(pl.T.pal[Math.min(3,pl.T.pal.length-1)],[16,12,8],.5):[40,32,22];
-    const subC=pl?mixc(pl.T.pal[Math.min(2,pl.T.pal.length-1)],[30,22,15],.55):[52,42,30];
-    const band=(o1,o2,fill)=>{
-      ctx.beginPath();
-      for(let i=0;i<surfYs.length;i++){const x=i*6;i?ctx.lineTo(x,surfYs[i]+o1):ctx.moveTo(x,surfYs[i]+o1);}
-      for(let i=surfYs.length-1;i>=0;i--)ctx.lineTo(i*6,surfYs[i]+o2);
-      ctx.closePath();ctx.fillStyle=fill;ctx.fill();
-    };
-    band(0,hasTurf?4.5:3,"rgba("+turfC.join(",")+","+(hasTurf?".8":".6")+")");
-    band(hasTurf?4.5:3,15,"rgba("+subC.join(",")+",.4)");
-    /* камни в подпочве, корни в дёрне, обломки коры — привязаны к миру,
-       а не к экрану: иначе профиль плывёт вместе с камерой */
-    for(let i=0;i<surfYs.length;i++){
-      const wq=Math.floor((i*6+camx)/9), hs=hashi(wq,B.idx*13+3,0x50F1);
-      const x=wq*9-camx, sy0=surfYs[Math.max(0,Math.min(surfYs.length-1,Math.round(x/6)))];
-      if((hs&7)<3){                                  // камень
-        const ry2=sy0+5+((hs>>>4)%9);
-        ctx.fillStyle="rgba(0,0,0,.5)";
-        ctx.beginPath();ctx.ellipse(x,ry2,1+((hs>>>7)&1)*1.6,.9+((hs>>>8)&1)*.9,0,0,TAU);ctx.fill();
-        ctx.fillStyle="rgba(226,206,176,.2)";ctx.fillRect(x-.9,ry2-1.5,1.6,.8);
-      }
-      if(((hs>>>3)&7)<3){                            // обломок коры выветривания
-        ctx.fillStyle="rgba(0,0,0,.20)";
-        ctx.fillRect(x,sy0+15+((hs>>>9)%12),3+((hs>>>6)&3),.9);
-      }
-      if(hasTurf&&(hs%23)===0){                      // редкий корень
-        ctx.strokeStyle="rgba("+turfC.join(",")+",.7)";ctx.lineWidth=.9;
-        ctx.beginPath();ctx.moveTo(x,sy0+3);
-        ctx.quadraticCurveTo(x+((hs>>>5)&3)-1.5,sy0+6.5,x+((hs>>>7)&7)-3.5,sy0+9+((hs>>>10)&3));
-        ctx.stroke();
-      }
-    }
-  }
-  ctx.restore();
-  /* кромка холма ловит небо: полоса света внутрь от силуэта и волосок по краю */
-  ctx.save();ctx.clip(GP);
-  ctx.strokeStyle=rgba(sky[0],.16);ctx.lineWidth=14;ctx.stroke(GP);
-  ctx.strokeStyle=rgba(mixc(sky[0],[255,255,255],.3),.30);ctx.lineWidth=2.4;ctx.stroke(GP);
-  ctx.restore();
-  /* ── уступ плато (хвост M137) ──
-     Справа от вершины гора была одной плоской стеной породы. Уступ: верхняя
-     грань плато отодвинута вглубь и ловит небо, под ней тень ступени, ниже —
-     та же стена. Два плана в одном склоне без второго силуэта. */
-  ctx.save();ctx.clip(GP);
-  {
-    const tx0=bMidX+40;
-    const TP=new Path2D();
-    TP.moveTo(tx0,gy-humpAt(tx0));
-    for(let x=tx0;x<=W;x+=6){
-      const u=clamp((x-tx0)/160,0,1);
-      TP.lineTo(x,gy-humpAt(x)+u*(44+fbm2((x+camx)*.007,5.5,B.idx*77+61,3)*38));
-    }
-    TP.lineTo(W,-10);TP.lineTo(tx0,-10);TP.closePath();
-    ctx.fillStyle=rgba(mixc(rc(0),sky[0],.30),.6);ctx.fill(TP);
-    ctx.strokeStyle="rgba(0,0,0,.45)";ctx.lineWidth=6;ctx.stroke(TP);
-    ctx.strokeStyle=rgba(mixc(sky[0],[255,255,255],.2),.22);ctx.lineWidth=1.6;ctx.stroke(TP);
-  }
-  ctx.restore();
-  /* ── зерно породы ──
-     Пласты у базы были, а зерна не было, и разрез читался полосатым матрасом:
-     шахта (`23-mode-dig`) прошла ровно через эту ошибку и лечится тем же —
-     камень узнают не по слоям, а по СОРУ в них. Мелкие чёрточки вдоль пласта
-     (порода слоиста, и зерно ложится по слою, а не как попало), редкие светлые
-     крупинки и совсем редкие тёмные конкреции. Всё держится на seed базы,
-     поэтому картинка у каждой базы своя и не дрожит между кадрами. */
-  ctx.save();ctx.clip(GP);
-  /* зерно идёт и по ГОРЕ, а не только ниже прежней линии земли: склон был
-     единственным местом кадра без фактуры и читался чёрной вырезкой из
-     бумаги. Клип по GP всё равно не пустит его в небо */
-  const gy0=Math.max(0,gy-BCELL_H*1.9), gh=H-gy0;
-  if(gh>0){
-    const GR=rng(hashi(B.idx||1,0xB0CE,7));
-    /* число зёрен считается от ПЛОЩАДИ, а не берётся числом: с фиксированной
-       полутысячей на широком экране порода снова становилась гладкой */
-    const gn=Math.min(4200,Math.round(W*gh/380));
-    for(let i=0;i<gn;i++){
-      const px=GR()*W, py=gy0+GR()*gh;
-      const t=GR();
-      if(t<.72){                                  // сор — теперь МАНЕРОЙ породы (皴)
-        /* матрица «закон × поверхность» (аудит 30.08): пещера, шахта и обрыв
-           получили кисть CUN, а порода базы сорила плоскими чёрточками без
-           направления и без типа мира. Тот же штрих: угол из поля, манера из
-           таблицы — база стоит в ТОЙ ЖЕ породе, что шахта рядом. */
-        const M=(typeof CUN!=="undefined"&&pl)?(CUN[pl.type]||CUN.rocky):null;
-        if(M&&!M.dot){
-          const ang=dirAt(px+camx,py+camy,(pl.seed|0)^0xBA5E,1/300)+(GR()-.5)*M.jig;
-          const ln=(2.2+GR()*3.4)*M.ln;
-          ctx.strokeStyle="rgba(0,0,0,"+(.20+GR()*.20).toFixed(3)+")";
-          ctx.lineWidth=Math.min(1.2,M.w);
-          ctx.beginPath();
-          ctx.moveTo(px-Math.cos(ang)*ln,py-Math.sin(ang)*ln);
-          ctx.lineTo(px+Math.cos(ang)*ln,py+Math.sin(ang)*ln);
-          ctx.stroke();
-        }else{
-          ctx.fillStyle="rgba(0,0,0,"+(.22+GR()*.22).toFixed(3)+")";
-          ctx.fillRect(px,py,1+GR()*1.6,.9);
-        }
-      }else if(t<.94){                            // крупинка, поймавшая свет
-        ctx.fillStyle="rgba(226,206,176,"+(.12+GR()*.13).toFixed(3)+")";
-        ctx.fillRect(px,py,.9,.9);
-      }else{                                      // конкреция покрупнее
-        ctx.fillStyle="rgba(0,0,0,.18)";
-        ctx.beginPath();ctx.ellipse(px,py,1.6+GR()*2.2,1+GR()*1.2,GR(),0,TAU);ctx.fill();
-        ctx.fillStyle="rgba(226,206,176,.06)";
-        ctx.fillRect(px-1,py-1.2,1.6,.7);
-      }
-    }
-    /* ── валуны и прожилки ──
-       Порода вокруг убежища оставалась ровным полем зерна: масштаба в ней не
-       было, и склон читался фоном, а не камнем, в котором прорубились. На
-       образце в толще лежат крупные глыбы и жилы — по ним и понятно, сколько
-       тут метров. Глыба — тёмное тело со светлой верхней гранью (свет один и
-       тот же на весь кадр, сверху), жила — тонкая наклонная нить. */
-    const BR=rng(hashi(B.idx||1,0x9B0D,3));
-    for(let i=0;i<26;i++){
-      const px=BR()*W, py=gy0+BR()*gh;
-      const rr=4+BR()*BR()*22;
-      ctx.fillStyle="rgba(0,0,0,.30)";
-      ctx.beginPath();ctx.ellipse(px,py,rr,rr*.72,BR()*.6-.3,0,TAU);ctx.fill();
-      ctx.fillStyle="rgba(228,212,186,.055)";
-      ctx.beginPath();ctx.ellipse(px-rr*.16,py-rr*.26,rr*.72,rr*.30,BR()*.5-.25,0,TAU);ctx.fill();
-    }
-    ctx.lineWidth=.8;
-    for(let i=0;i<14;i++){
-      const px=BR()*W, py=gy0+BR()*gh, ln=16+BR()*46, an=BR()*.8-.4;
-      ctx.strokeStyle=(i&3)?"rgba(214,196,164,.07)":"rgba(196,146,88,.10)";
-      ctx.beginPath();ctx.moveTo(px,py);
-      ctx.lineTo(px+Math.cos(an)*ln,py+Math.sin(an)*ln);ctx.stroke();
-    }
-  }
-  ctx.restore();
-  /* ── наземное ставится ПОСЛЕ породы ──
-     Гора рисуется поверх всего, что стояло на поверхности, и мачта с
-     воротами уходили под склон: их не было видно вовсе. Наземное теперь
-     идёт после грунта и садится на ВЫСОТУ СКЛОНА в своей точке, а не на
-     старую плоскую линию земли. */
-  {
-    /* мачта связи — на вершине горы, а не на равнине: оттуда её и видно */
-    {
-      const mx2=bMidX+18, my2=Y(150)-humpAt(bMidX+18)+4;
-      ctx.strokeStyle="rgba(30,36,44,.9)";ctx.lineWidth=2;
-      ctx.beginPath();ctx.moveTo(mx2,my2);ctx.lineTo(mx2,my2-48);ctx.stroke();
-      ctx.lineWidth=1;
-      ctx.beginPath();ctx.moveTo(mx2-7,my2-6);ctx.lineTo(mx2,my2-20);ctx.lineTo(mx2+7,my2-6);ctx.stroke();
-      const bl=Math.sin(G.t*.06)>0;
-      ctx.fillStyle=bl?"rgba(255,110,90,.9)":"rgba(255,110,90,.25)";
-      ctx.beginPath();ctx.arc(mx2,my2-50,2.2,0,TAU);ctx.fill();
-    }
-    /* ── площадка на плато (хвост M137) ──
-       Огни площадки рисовались до горы, на старой линии земли, и склон их
-       хоронил. Площадке место на плато справа от вершины: полка, врезанная
-       в склон, бетонный борт и строка огней по краю. */
-    {
-      let hasPad=false;
-      for(let c2=0;c2<BASE_COLS;c2++){const cc=baseCell(B,c2,0);if(cc&&cc.k==="pad"&&cc.hp>0)hasPad=true;}
-      if(hasPad){
-        const pxs=X(BASE_OX+BASE_COLS*BCELL_W-60), py=Y(150)-humpAt(pxs)+2;
-        ctx.fillStyle="rgba(16,18,22,.95)";
-        ctx.fillRect(pxs-58,py-4,116,14);                 // полка, врезанная в склон
-        ctx.fillStyle="rgba(44,50,60,.98)";
-        ctx.beginPath();ctx.moveTo(pxs-52,py-4);ctx.lineTo(pxs-44,py-12);
-        ctx.lineTo(pxs+44,py-12);ctx.lineTo(pxs+52,py-4);ctx.closePath();ctx.fill();
-        ctx.fillStyle="rgba(150,164,180,.35)";ctx.fillRect(pxs-44,py-12,88,1.4);
-        for(let i=0;i<7;i++){
-          const on=((G.t*.08|0)%7)===i;
-          ctx.fillStyle=on?"rgba(127,230,216,.95)":"rgba(127,230,216,.25)";
-          ctx.beginPath();ctx.arc(pxs-36+i*12,py-14,2,0,TAU);ctx.fill();
-        }
-      }
-    }
-    /* ── отвал у ворот (G9) ──
-       Из горы вырубили пять ярусов, а породы снаружи не было ни горсти. Отвал
-       лежит на равнине слева от ворот: тело в цвет породы, светлая кромка
-       сверху, сор по склону. */
-    {
-      const hx=X(BASE_GATE_X)-74, hy=Y(150)+4, hw=62, hh=24;
-      ctx.fillStyle=rgba(rc(1),1);
-      ctx.beginPath();ctx.moveTo(hx-hw,hy);
-      ctx.quadraticCurveTo(hx-hw*.45,hy-hh*1.1,hx+6,hy-hh);
-      ctx.quadraticCurveTo(hx+hw*.6,hy-hh*.7,hx+hw,hy);ctx.closePath();ctx.fill();
-      ctx.fillStyle=rgba(mixc(rc(0),sky[0],.4),.55);
-      ctx.beginPath();ctx.moveTo(hx-hw*.7,hy-hh*.45);
-      ctx.quadraticCurveTo(hx-hw*.3,hy-hh*1.02,hx+6,hy-hh);
-      ctx.quadraticCurveTo(hx+hw*.3,hy-hh*.9,hx+hw*.5,hy-hh*.5);
-      ctx.lineTo(hx+6,hy-hh*.72);ctx.closePath();ctx.fill();
-      const HR=rng(hashi(B.idx||1,0x5E4F,2));
-      for(let i=0;i<26;i++){
-        const u=HR()*2-1, px=hx+u*hw*.85, py=hy-(1-Math.abs(u))*hh*HR()*.9;
-        ctx.fillStyle=HR()<.7?"rgba(0,0,0,.35)":"rgba(226,206,176,.18)";
-        ctx.fillRect(px,py,1.2+HR()*2,1);
-      }
-    }
-    /* вход у ПОДОШВЫ склона, а не на вершине: ворота — это врез в гору на
-       уровне земли, к ним подъезжают, а не забираются */
-    const gy=Y(150)+6;
-    /* ── ворота в склоне ──
-       Убежище было врезано в гору, но входа в него снаружи не существовало:
-       на поверхности стояла одна мачта, и как люди попадают внутрь, кадр не
-       объяснял. Ворота ставятся над стволом лифта, у подошвы горы: бетонный
-       портал, откатная плита с рёбрами и тёплая щель по краю — свет изнутри.
-       Это же и оправдывает колонну: лифт начинается ровно за ними. */
-    {
-      /* ворота — в ПОДОШВЕ горы слева, там, где в неё заходят с равнины;
-         от них коридор верхнего яруса ведёт к стволу лифта */
-      const gx=X(BASE_GATE_X)+34, gwd=68, ghh=40;
-      const gyy=gy-2;
-      ctx.fillStyle="rgba(24,27,33,.98)";
-      ctx.beginPath();
-      ctx.moveTo(gx-gwd/2-7,gyy);ctx.lineTo(gx-gwd/2-3,gyy-ghh-8);
-      ctx.lineTo(gx+gwd/2+3,gyy-ghh-8);ctx.lineTo(gx+gwd/2+7,gyy);
-      ctx.closePath();ctx.fill();                       // портал
-      ctx.fillStyle="rgba(46,52,62,.98)";
-      ctx.fillRect(gx-gwd/2,gyy-ghh,gwd,ghh);           // плита
-      ctx.fillStyle="rgba(18,21,26,.9)";
-      for(let i=0;i<4;i++)ctx.fillRect(gx-gwd/2+4+i*(gwd-8)/4,gyy-ghh+3,3,ghh-6);
-      /* свет считается от энергобаланса напрямую: `lit` объявляется ниже по
-         функции, и обращение к нему отсюда роняло весь кадр */
-      ctx.fillStyle="rgba(255,206,140,"+(.30+basePower(B).eff*.4).toFixed(2)+")";
-      ctx.fillRect(gx-gwd/2,gyy-2.4,gwd,2.4);           // свет из-под плиты
-      ctx.fillStyle="rgba(150,164,180,.35)";
-      ctx.fillRect(gx-gwd/2-3,gyy-ghh-8,gwd+6,2);       // притолока
-      /* ── ворота как ДВЕРЬ, а не торец тоннеля (хвост M138) ──
-         Плита с рёбрами читалась продолжением хода. Дверь узнают по косякам,
-         выступающим из стены, порогу под ногами и створу посередине: плита
-         раздвижная, из двух половин, между ними тёмная щель. Над притолокой
-         фонарь с конусом на порог — вход виден с равнины. */
-      ctx.fillStyle="rgba(78,86,98,.98)";
-      ctx.fillRect(gx-gwd/2-9,gyy-ghh-10,7,ghh+10);     // косяки наружу
-      ctx.fillRect(gx+gwd/2+2,gyy-ghh-10,7,ghh+10);
-      ctx.fillStyle="rgba(150,164,180,.30)";
-      ctx.fillRect(gx-gwd/2-9,gyy-ghh-10,1.4,ghh+10);
-      ctx.fillRect(gx+gwd/2+2,gyy-ghh-10,1.4,ghh+10);
-      ctx.fillStyle="rgba(58,64,74,.98)";
-      ctx.fillRect(gx-gwd/2-16,gyy-1,gwd+32,5);         // порог
-      ctx.fillStyle="rgba(150,164,180,.28)";ctx.fillRect(gx-gwd/2-16,gyy-1,gwd+32,1.2);
-      ctx.fillStyle="rgba(6,8,12,.95)";
-      ctx.fillRect(gx-1.5,gyy-ghh+2,3,ghh-3);           // створ между половинами
-      ctx.fillStyle="rgba(150,164,180,.18)";
-      ctx.fillRect(gx-4,gyy-ghh+2,1,ghh-3);ctx.fillRect(gx+3,gyy-ghh+2,1,ghh-3);
-      {
-        const lamp=.35+basePower(B).eff*.5;
-        ctx.fillStyle="rgba(30,34,40,.98)";ctx.fillRect(gx-5,gyy-ghh-17,10,6);   // фонарь
-        ctx.fillStyle="rgba(255,214,150,"+lamp.toFixed(2)+")";ctx.fillRect(gx-3,gyy-ghh-12,6,2);
-        const lg=ctx.createLinearGradient(0,gyy-ghh-10,0,gyy+4);
-        lg.addColorStop(0,"rgba(255,214,150,"+(lamp*.28).toFixed(3)+")");
-        lg.addColorStop(1,"rgba(255,214,150,0)");
-        ctx.fillStyle=lg;
-        ctx.beginPath();ctx.moveTo(gx-4,gyy-ghh-10);ctx.lineTo(gx+4,gyy-ghh-10);
-        ctx.lineTo(gx+gwd*.7,gyy+4);ctx.lineTo(gx-gwd*.7,gyy+4);ctx.closePath();ctx.fill();
-      }
-    }
-  }
-  /* свет с глубиной сходит на нет */
-  const dk=clamp((camy+H*.5)/2000,0,.42);
-  /* порода уводится в почти чёрное: на светлые отсеки она обязана работать
-     фоном, а не спорить с ними за внимание. Раньше грунт был светлее
-     помещений, и база выглядела дырками в земле */
-  ctx.fillStyle="rgba(2,4,9,"+(.34+dk).toFixed(3)+")";ctx.fillRect(0,Math.max(0,gy),W,H);
-  ctx.restore();
+  /* небо, гора и порода — отдельным слоем (21ab1, M413) */
+  baseDrawGround(B,S,X,Y,camx,camy,gy,sky,pal,pl);
   /* ── помещения: один путь на всё сооружение ── */
   /* нижний порог света поднят: даже на голодном пайке в отсеке горит лампа,
      иначе половина базы читается нежилой. Разница между сытой и голодной
@@ -503,43 +108,95 @@ function drawBase(){
   ctx.fillStyle=bgi;ctx.fill(RP);
   ctx.strokeStyle="rgba(210,226,240,"+(.10+lit*.10).toFixed(2)+")";ctx.lineWidth=1.4;ctx.stroke(RP);
   ctx.restore();
-  /* ── ствол (M396, §7) ──
-     Лифтовая шахта слева от сетки: не модуль, не постройка, просто место,
-     которое есть всегда. Она объясняет глазами то, что до сих пор было только
-     правилом управления, — почему по базе можно ходить вверх и вниз. */
+  /* ── ствол (M396, §7; переделка M413) ──
+     Разбор: «шахта читается пустым серым квадратом». Так и было — тёмная
+     заливка, обводка на 0.14 и стяжки на 0.10, то есть тело без единой детали,
+     которую глаз мог бы назвать. Здесь она собрана по правилу «много кусков —
+     одно тело»: тело с глубинным градиентом, две направляющие с бликом, трос,
+     лестница из скоб по левой стенке, метки ярусов — и клеть с полом, дверью в
+     сторону отсеков и одной тёплой лампой, которая светит на стенки. */
   {
     const sx0=X(BASE_OX-BCELL_W)+10,sw=BCELL_W-20;
-  const inShaft=(S.cur|0)<0;
+    const inShaft=(S.cur|0)<0;
     const y0=Y(BASE_OY)+4,y1=Y(BASE_OY+baseRows(B)*BCELL_H)-6;
     if(sx0>-BCELL_W&&sx0<W+BCELL_W){
-      ctx.fillStyle="rgba(10,13,18,.92)";
-      ctx.fillRect(sx0,y0,sw,y1-y0);
-      ctx.strokeStyle="rgba(190,214,232,"+(.14+lit*.14).toFixed(2)+")";ctx.lineWidth=1.2;
+      /* тело: книзу темнее — это глубина, а не заливка */
+      const gg=ctx.createLinearGradient(0,y0,0,y1);
+      gg.addColorStop(0,"rgba(22,27,34,.94)");
+      gg.addColorStop(1,"rgba(8,10,14,.96)");
+      ctx.fillStyle=gg;ctx.fillRect(sx0,y0,sw,y1-y0);
+      /* обвод: одна сторона светлее — свет из отсеков падает справа */
+      ctx.strokeStyle="rgba(150,178,198,"+(.16+lit*.16).toFixed(2)+")";ctx.lineWidth=1.2;
       ctx.strokeRect(sx0+.5,y0+.5,sw-1,y1-y0-1);
-      /* направляющие и стяжки: шахта читается вертикалью, а не прямоугольником */
+      ctx.strokeStyle="rgba(210,232,246,"+(.10+lit*.20).toFixed(2)+")";ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(sx0+sw-.5,y0);ctx.lineTo(sx0+sw-.5,y1);ctx.stroke();
+      /* направляющие: тело и блик — две линии рядом, а не одна бледная */
+      const g1=sx0+sw*.34,g2=sx0+sw*.66;
+      ctx.strokeStyle="rgba(70,84,96,.9)";ctx.lineWidth=3;
+      ctx.beginPath();ctx.moveTo(g1,y0);ctx.lineTo(g1,y1);
+      ctx.moveTo(g2,y0);ctx.lineTo(g2,y1);ctx.stroke();
+      ctx.strokeStyle="rgba(196,220,236,"+(.16+lit*.22).toFixed(2)+")";ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(g1-1,y0);ctx.lineTo(g1-1,y1);
+      ctx.moveTo(g2-1,y0);ctx.lineTo(g2-1,y1);ctx.stroke();
+      /* клеть стоит на том ярусе, где сейчас человек; трос идёт от верха к ней */
+      const cy=Y(BASE_OY+(S.row|0)*BCELL_H)+8,ch=BCELL_H-20;
+      ctx.strokeStyle="rgba(160,182,198,"+(.22+lit*.2).toFixed(2)+")";ctx.lineWidth=1.4;
+      ctx.beginPath();ctx.moveTo(sx0+sw*.5,y0);ctx.lineTo(sx0+sw*.5,cy);ctx.stroke();
+      /* скобы по левой стенке: лестница, которой пользуются, когда клеть внизу */
+      ctx.strokeStyle="rgba(150,170,186,"+(.10+lit*.14).toFixed(2)+")";ctx.lineWidth=1;
       ctx.beginPath();
-      ctx.moveTo(sx0+sw*.32,y0);ctx.lineTo(sx0+sw*.32,y1);
-      ctx.moveTo(sx0+sw*.68,y0);ctx.lineTo(sx0+sw*.68,y1);
-      for(let r=0;r<=baseRows(B);r++){
-        const yy=Y(BASE_OY+r*BCELL_H);
-        ctx.moveTo(sx0,yy);ctx.lineTo(sx0+sw,yy);
-      }
-      ctx.strokeStyle="rgba(150,178,198,"+(.10+lit*.16).toFixed(2)+")";ctx.lineWidth=1;
+      for(let yy=y0+7;yy<y1-4;yy+=9){ctx.moveTo(sx0+3,yy);ctx.lineTo(sx0+sw*.22,yy);}
       ctx.stroke();
-      /* кабина стоит на том ярусе, где сейчас человек */
-      const cy=Y(BASE_OY+(S.row|0)*BCELL_H)+8;
-      ctx.fillStyle="rgba(38,48,58,.95)";
-      ctx.fillRect(sx0+sw*.16,cy,sw*.68,BCELL_H-20);
-      ctx.strokeStyle="rgba(242,178,92,"+(.22+lit*.3).toFixed(2)+")";
-      ctx.strokeRect(sx0+sw*.16+.5,cy+.5,sw*.68-1,BCELL_H-21);
-      ctx.fillStyle="rgba(242,178,92,"+(.12+lit*.18).toFixed(2)+")";
-      ctx.fillRect(sx0+sw*.16,cy+BCELL_H-26,sw*.68,3);
+      /* метки ярусов: короткая риска и номер у правой стенки */
+      ctx.font="7px ui-monospace,monospace";ctx.textAlign="right";
+      for(let r=0;r<baseRows(B);r++){
+        const yy=Y(BASE_OY+r*BCELL_H)+8;
+        ctx.strokeStyle="rgba(190,214,232,"+(.12+lit*.12).toFixed(2)+")";
+        ctx.beginPath();ctx.moveTo(sx0+sw-9,yy);ctx.lineTo(sx0+sw-2,yy);ctx.stroke();
+        ctx.fillStyle="rgba(190,214,232,"+((r===(S.row|0)?.5:.24)+lit*.16).toFixed(2)+")";
+        ctx.fillText(String(r+1),sx0+sw-11,yy+3);
+      }
+      /* сама клеть: тело, пол, дверь в сторону отсеков, лампа */
+      const kx=sx0+sw*.18,kw=sw*.64;
+      ctx.fillStyle="rgba(26,32,40,.97)";ctx.fillRect(kx,cy,kw,ch);
+      ctx.strokeStyle="rgba(120,144,160,"+(.3+lit*.25).toFixed(2)+")";ctx.lineWidth=1;
+      ctx.strokeRect(kx+.5,cy+.5,kw-1,ch-1);
+      ctx.fillStyle="rgba(28,34,42,.95)";ctx.fillRect(kx+2,cy+ch-4,kw-4,3);
+      /* дверь открыта туда, куда человек выходит */
+      ctx.strokeStyle="rgba(190,214,232,"+(.18+lit*.2).toFixed(2)+")";
+      ctx.beginPath();ctx.moveTo(kx+kw-3.5,cy+3);ctx.lineTo(kx+kw-3.5,cy+ch-5);ctx.stroke();
+      /* поручень поперёк клети: за него держатся, и он даёт ей нутро */
+      ctx.strokeStyle="rgba(150,170,186,"+(.20+lit*.18).toFixed(2)+")";ctx.lineWidth=1.2;
+      ctx.beginPath();ctx.moveTo(kx+3,cy+ch*.62);ctx.lineTo(kx+kw-3,cy+ch*.62);ctx.stroke();
+      /* ── одна лампа, и свет у неё НАПРАВЛЕННЫЙ ──
+         Круглый ореол ровно поднимал всю клеть на полсотни единиц и красил её в
+         нейтральный серый: получался тот самый «пустой серый квадрат» разбора,
+         только меньше. Лампа светит ВНИЗ, конусом на пол, и чуть-чуть — на
+         ближние стенки ствола. Тело клети остаётся тёмным. */
+      const lx=kx+kw/2,ly=cy+4;
+      ctx.fillStyle="rgba(255,214,150,"+(.5+lit*.4).toFixed(2)+")";
+      ctx.fillRect(lx-4,ly,8,2);
+      ctx.save();ctx.globalCompositeOperation="lighter";
+      const cone=ctx.createLinearGradient(0,ly,0,cy+ch);
+      cone.addColorStop(0,"rgba(255,196,120,"+(.11+lit*.07).toFixed(2)+")");
+      cone.addColorStop(1,"rgba(255,196,120,0)");
+      ctx.fillStyle=cone;
+      ctx.beginPath();
+      ctx.moveTo(lx-5,ly+2);ctx.lineTo(lx+5,ly+2);
+      ctx.lineTo(kx+kw*.86,cy+ch-3);ctx.lineTo(kx+kw*.14,cy+ch-3);
+      ctx.closePath();ctx.fill();
+      const lg=ctx.createRadialGradient(lx,ly,1,lx,ly,sw*.5);
+      lg.addColorStop(0,"rgba(255,186,110,"+(.09+lit*.06).toFixed(2)+")");
+      lg.addColorStop(1,"rgba(255,186,110,0)");
+      ctx.fillStyle=lg;ctx.beginPath();ctx.arc(lx,ly,sw*.5,0,TAU);ctx.fill();
+      ctx.restore();
       /* человек в стволе: подпись места, а не рамка отсека */
       if(inShaft){
         ctx.fillStyle="rgba(196,246,238,.82)";
         ctx.font="9px ui-monospace,monospace";ctx.textAlign="center";
         ctx.fillText("СТВОЛ",sx0+sw/2,y0-6);
       }
+      ctx.textAlign="left";
     }
   }
   /* свет изнутри ложится на породу вокруг отсеков */
@@ -868,15 +525,19 @@ function drawBase(){
   /* место под застройку: не рамка на каждой клетке, а метка только на выбранной.
      На снимке заглавной курсора нет: там показывают базу, а не выбор (M233) */
   if(SHOT_CLEAN){if(S.menu)drawBuildMenu(S);return;}
+  /* ── в стволе выбирать нечего, но видеть — есть что (правка M413) ──
+     Здесь стоял `return`: стоило шагнуть в ствол, и вместе с курсором пропадали
+     патрубки, мороз, метка аврала и приборная доска. То есть ровно в лифте,
+     откуда видно всю базу разом, игрок переставал видеть её состояние. Уходит
+     только курсор — всё остальное рисуется всегда. */
+  const inShaftSel=(S.cur|0)<0;
   const sx=X(BASE_OX+S.cur*BCELL_W),sy=Y(BASE_OY+S.row*BCELL_H);
   const on=Math.sin(G.t*.12)>0;
   ctx.strokeStyle=on?"rgba(127,230,216,.95)":"rgba(127,230,216,.4)";
   ctx.lineWidth=2;
-  const selCell=baseCell(B,S.cur,S.row);
-  /* в стволе (M396) выбирать нечего: ни отсека, ни места под застройку —
-     там просто стоят и едут */
-  if((S.cur|0)<0){if(S.menu)drawBuildMenu(S);return;}
-  if(selCell){
+  const selCell=inShaftSel?null:baseCell(B,S.cur,S.row);
+  if(inShaftSel){/* курсора нет: в стволе стоят и едут */}
+  else if(selCell){
     /* у построенного отсека — не рамка во всю клетку, а уголки и подпись:
        имена всех отсеков разом снова превращали разрез в таблицу */
     const x1=sx+6,y1=sy+6,x2=sx+BCELL_W-6,y2=sy+BCELL_H-6,L=12;
@@ -914,7 +575,7 @@ function drawBase(){
       const mx=(x1+x2)/2,my=(y1+y2)/2;
       const c3=COL[P2.k]||[200,200,200];
       ctx.save();
-      ctx.globalAlpha=.55+lit*.3;
+      ctx.globalAlpha=.78+lit*.2;
       if(bad){
         /* опасное соседство — косая штриховка, а не труба: это не связь */
         ctx.strokeStyle="rgba("+c3.join(",")+",.75)";ctx.lineWidth=2;
@@ -922,11 +583,24 @@ function drawBase(){
         ctx.beginPath();ctx.moveTo(mx-9,my-9);ctx.lineTo(mx+9,my+9);ctx.stroke();
         ctx.setLineDash([]);
       }else{
-        ctx.strokeStyle="rgba("+c3.join(",")+",.7)";ctx.lineWidth=3;
-        ctx.beginPath();ctx.moveTo(x1+(x2-x1)*.28,y1+(y2-y1)*.28);
-        ctx.lineTo(x1+(x2-x1)*.72,y1+(y2-y1)*.72);ctx.stroke();
-        ctx.fillStyle="rgba("+c3.join(",")+",.85)";
-        ctx.beginPath();ctx.arc(mx,my,2.4,0,TAU);ctx.fill();
+        /* труба — это ТЕЛО и блик, а не линия (разбор M413: «патрубки бледные,
+           связь не читается»). Тёмная подложка отделяет её от породы, цветной
+           верх её называет, муфта посередине держит взгляд */
+        const ax=x1+(x2-x1)*.26,ay=y1+(y2-y1)*.26;
+        const bx2=x1+(x2-x1)*.74,by2=y1+(y2-y1)*.74;
+        ctx.lineCap="round";
+        ctx.strokeStyle="rgba(8,11,16,.8)";ctx.lineWidth=7;
+        ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(bx2,by2);ctx.stroke();
+        ctx.strokeStyle="rgba("+c3.join(",")+",.85)";ctx.lineWidth=4.5;
+        ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(bx2,by2);ctx.stroke();
+        ctx.strokeStyle="rgba(255,255,255,"+(.12+lit*.16).toFixed(2)+")";ctx.lineWidth=1.2;
+        ctx.beginPath();ctx.moveTo(ax,ay-1.4);ctx.lineTo(bx2,by2-1.4);ctx.stroke();
+        ctx.lineCap="butt";
+        /* муфта */
+        ctx.fillStyle="rgba(8,11,16,.85)";
+        ctx.beginPath();ctx.arc(mx,my,4.4,0,TAU);ctx.fill();
+        ctx.fillStyle="rgba("+c3.join(",")+",.95)";
+        ctx.beginPath();ctx.arc(mx,my,3,0,TAU);ctx.fill();
       }
       ctx.restore();
     }
@@ -961,45 +635,92 @@ function drawBase(){
       ctx.restore();
     }
   }
-  /* ── пять шкал одним прибором (M404, §4) ──
-     До сих пор запас базы жил только в тексте — на столе и в подсказке. В
-     разрезе он теперь стоит там, где ему место: маленькая приборная доска у
-     ствола, пять полос, и ни одной цифры сверх той, что игрок себе купил. */
+  /* ── приборная доска базы (M404 §4, переделка M413) ──
+     Замечания разбора: подписи шкал были трёхбуквенными обрубками — «ВЗД»,
+     «ВОД», «ХРЧ», — которые надо расшифровывать, а подсказка внизу разрослась
+     до ПЯТИ строк и легла на нижний ряд сетки. Оба замечания об одном: числа
+     базы стояли не там. Хозяйство базы — это ПРИБОР, и место ему на доске у
+     левого края; подсказка остаётся тем, чем должна быть, — что под курсором
+     и что делает кнопка. Слова целиком, потому что место под них есть. */
   if(typeof baseLife==="function"&&typeof baseSharp==="function"){
-    /* ── где ей стоять ──
-       В мире доску резало кромкой кадра: у ствола её съедала левая граница,
-       под сеткой на неё ложился текст подсказки. Это ИНТЕРФЕЙС сцены, а не
-       предмет в породе, и место у него экранное — левый край, под приборами
-       корабля и над кнопками. Правило кадра то же, что у всей канвы-как-UI:
-       рисуем в экранных координатах и ничем не перекрываем (26-ui). */
     const L=baseLife(B),bx=14,by=64;
-    if(1){
-      const rows=[["ВЗД",L.air,LIFE_CAP,[150,220,255]],
-                  ["ВОД",L.water,LIFE_CAP,[120,190,255]],
-                  ["ХРЧ",L.food|0,LIFE_CAP,[190,220,140]],
-                  ["ДУХ",(typeof baseSpirit==="function")?baseSpirit(B):100,100,[242,178,92]]];
-      ctx.save();
-      ctx.fillStyle="rgba(10,13,18,.82)";
-      ctx.fillRect(bx-6,by-6,116,rows.length*11+12);
-      ctx.strokeStyle="rgba(150,178,198,"+(.18+lit*.18).toFixed(2)+")";
-      ctx.strokeRect(bx-5.5,by-5.5,115,rows.length*11+11);
-      ctx.font="8px ui-monospace,monospace";ctx.textAlign="left";
-      rows.forEach((q,i)=>{
-        const y=by+i*11;
-        ctx.fillStyle="rgba(190,210,224,.75)";
-        ctx.fillText(q[0],bx,y+7);
-        const w=70,k=clamp(q[1]/q[2],0,1);
-        ctx.fillStyle="rgba(255,255,255,.10)";ctx.fillRect(bx+26,y+2,w,5);
-        ctx.fillStyle="rgba("+q[3].join(",")+",.85)";ctx.fillRect(bx+26,y+2,w*k,5);
-      });
-      ctx.restore();
-    }
+    const rows=[["ВОЗДУХ",L.air,LIFE_CAP,[150,220,255]],
+                ["ВОДА",  L.water,LIFE_CAP,[120,190,255]],
+                ["ХАРЧ",  L.food|0,LIFE_CAP,[190,220,140]],
+                ["ДУХ",   (typeof baseSpirit==="function")?baseSpirit(B):100,100,[242,178,92]]];
+    /* нижняя половина доски: то, что раньше занимало три строки подсказки */
+    const P4=(typeof basePower==="function")?basePower(B):{prod:0,cons:0,eff:1,store:0};
+    const warn=(typeof baseWarnLine==="function")?baseWarnLine(B):"";
+    const foot=["ЭНЕРГИЯ "+P4.prod+" / "+P4.cons+" · ОТДАЧА "+Math.round(P4.eff*100)+"%",
+                "СКЛАД "+((typeof basePoolHeld==="function")?basePoolHeld(B):0)+" / "+P4.store];
+    if(warn)foot.push(warn.toUpperCase());
+    const bw=176,bh=rows.length*12+foot.length*11+16;
+    ctx.save();
+    ctx.fillStyle="rgba(10,13,18,.82)";
+    ctx.fillRect(bx-6,by-6,bw,bh);
+    ctx.strokeStyle="rgba(150,178,198,"+(.18+lit*.18).toFixed(2)+")";
+    ctx.strokeRect(bx-5.5,by-5.5,bw-1,bh-1);
+    ctx.font="8px ui-monospace,monospace";ctx.textAlign="left";
+    rows.forEach((q,i)=>{
+      const y=by+i*12;
+      ctx.fillStyle="rgba(190,210,224,.75)";
+      ctx.fillText(q[0],bx,y+7);
+      const w=88,k=clamp(q[1]/q[2],0,1);
+      ctx.fillStyle="rgba(255,255,255,.10)";ctx.fillRect(bx+52,y+2,w,5);
+      ctx.fillStyle="rgba("+q[3].join(",")+",.85)";ctx.fillRect(bx+52,y+2,w*k,5);
+    });
+    /* черта: выше — запас, ниже — машина. Одна доска, два разных вопроса */
+    const fy=by+rows.length*12+2;
+    ctx.strokeStyle="rgba(150,178,198,.16)";ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(bx,fy+.5);ctx.lineTo(bx+bw-14,fy+.5);ctx.stroke();
+    foot.forEach((s,i)=>{
+      ctx.fillStyle=i===2?"rgba(242,178,92,.72)":"rgba(178,198,214,.72)";
+      ctx.fillText(s.length>30?s.slice(0,30):s,bx,fy+11+i*11);
+    });
+    ctx.restore();
+  }
+  /* ── что тут было без вас (M390 §12; кадр M413) ──
+     Записи журнала встречали игрока через `say` — по центру, на четверти
+     высоты, то есть ровно поверх верхнего ряда сетки. Здесь у них своё место:
+     карточка в свободном небе справа, под шапкой сцены, шириной в текст и
+     ничем не перекрытая. Гаснет сама, как гасло сообщение. */
+  if(S.note&&S.note.t>0&&W>=BASE_NOTE_W){
+    const N=S.note,a=clamp(N.t/60,0,1);
+    ctx.save();
+    ctx.globalAlpha=a;
+    ctx.font="9px ui-monospace,monospace";ctx.textAlign="left";
+    let cw=150;
+    for(const s of N.lines)cw=Math.max(cw,ctx.measureText(s).width+22);
+    /* карточка не наезжает на приборную доску: у той левый край и 176 в ширину */
+    cw=Math.min(cw,Math.max(190,W*.34),W-214);
+    const cx=W-cw-18,cy=78,chh=N.lines.length*13+26;
+    ctx.fillStyle="rgba(10,13,18,.84)";ctx.fillRect(cx,cy,cw,chh);
+    ctx.strokeStyle="rgba(150,178,198,.22)";ctx.lineWidth=1;
+    ctx.strokeRect(cx+.5,cy+.5,cw-1,chh-1);
+    ctx.fillStyle="rgba(242,178,92,.5)";ctx.fillRect(cx,cy,3,chh);
+    ctx.fillStyle="rgba(150,178,198,.6)";
+    ctx.font="8px ui-monospace,monospace";
+    ctx.fillText("ПОКА ВАС НЕ БЫЛО",cx+12,cy+14);
+    ctx.font="9px ui-monospace,monospace";
+    N.lines.forEach((s,i)=>{
+      ctx.fillStyle="rgba(198,216,228,.86)";
+      ctx.fillText(s,cx+12,cy+29+i*13);
+    });
+    ctx.restore();
   }
   /* аврал (M398): отсек, в котором беда, видно раньше всякого текста */
   if(typeof avrDraw==="function")avrDraw(S,X,Y,lit);
-  /* переходящий вымпел (M206): знамя на стене у входа, если оно в этом
-     квартале досталось этой базе. Ничего не даёт, только висит */
-  if(typeof pennHere==="function"&&pennHere()&&typeof pennDraw==="function")
-    pennDraw(X(BASE_OX+18),Y(58),BCELL_W*0.52,BCELL_H*0.42);
+  /* ── переходящий вымпел (M206; переделка M413) ──
+     Разбор: «флаг ГЛАВТРАССЫ — самое яркое пятно кадра». Так и было: сто
+     процентов красного размером в пол-отсека, висящие посреди породы, в
+     сцене, где всё остальное — коричневое и бирюзовое под общим светом.
+     Вымпел ничего не даёт и не должен ничего требовать: он ВЕЩЬ НА СТЕНЕ у
+     ворот, вчетверо меньше, и живёт в том же свете, что и порода. */
+  if(typeof pennHere==="function"&&pennHere()&&typeof pennDraw==="function"){
+    ctx.save();
+    ctx.globalAlpha=.42+lit*.42;
+    pennDraw(X(BASE_OX+BCELL_W*.42),Y(BASE_OY-34),BCELL_W*0.24,BCELL_H*0.20);
+    ctx.restore();
+  }
   if(S.menu)drawBuildMenu(S);
 }

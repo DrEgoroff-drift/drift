@@ -7,6 +7,42 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.410.0 - M413: the base scene reads
+
+The same review that produced 0.409.1 ended with six notes about the base scene. None of them
+were about rules; all six were about a frame you have to decode instead of read. Fixed together,
+because they were one fault in six places: **the frame was saying things in the wrong register
+and in the wrong place.**
+
+- **The entry journal lay across the top row of the base.** «What happened while you were away»
+  is why the player flies here at all (§12), and it was printed through `say()` — centred, at a
+  quarter of the height, i.e. exactly over the grid. It now has its own card in the free sky at
+  the right, under the header, and fades on its own. The walk hint that followed it moved down
+  to the prompt, where every other «what can I do here» lives, and is shown once per session.
+- **The prompt had grown to five lines** and covered the bottom row. Energy, store and forecast
+  are the base's *state*, not an answer to a keypress: they moved to the instrument board. The
+  prompt is two lines again - what is under the cursor, and what the button will do.
+- **The gauges were three-letter stumps** - ВЗД, ВОД, ХРЧ. There was room for the words all
+  along. The board is now the base's one instrument: four gauges by name, a rule, and under it
+  the three numbers the prompt used to carry.
+- **The ГЛАВТРАССА pennant was the loudest patch in the frame** - full-strength red the size of
+  half a compartment, hanging in mid-rock, in a scene that is otherwise brown and turquoise
+  under one light. It gives nothing and should demand nothing: a quarter the size, hung by the
+  gates, and lit by the same light as the rock.
+- **The shaft read as an empty grey square** - a dark fill, an outline at 0.14 and ties at 0.10,
+  a body with no detail anyone could name. It is a shaft now: a depth gradient, two rails with
+  a highlight, a cable to the cage, rungs up the left wall, numbered levels, and a cage with a
+  floor, a handrail, a door facing the compartments and one lamp that throws a cone at its feet.
+- **The adjacency pipes were too faint to read as connections.** A pipe is a body and a
+  highlight, not a line: a dark bed against the rock, a coloured top that names it, a coupling
+  at the middle.
+
+**And one real fault the pass uncovered.** Stepping into the shaft hit an early `return` that
+was meant to drop the cursor and dropped everything after it: pipes, frost, the emergency marker
+and the whole instrument board. From the lift, where the base is seen whole, the player could
+see the least. Only the cursor goes now.
+
+---
 ## 0.409.1 - the base queue read back, by another pair of eyes
 
 A parallel session read M390-M409 and the war queue against the design docs and sent three
