@@ -7,6 +7,16 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.417.2 - the war page reads like a person wrote it
+
+`war.html` loaded the whole «кто куда когда» feed at once — four hundred lines, a seventeen-thousand-pixel
+page. Now it shows the last eight bulletins (two days) and a «ещё двое суток» button adds two more days
+at a time. The truth lines were database fields («Компания: эмбарго», «Хай-Фронт заняла … была у
+Рассвет»); `war-map.js` now declines the six powers (gender, genitive, dative, instrumental) and
+phrases every event kind: «Хай-Фронт отбил у Рассвета «Раий»», «началась экспедиция Рассвета»,
+«у Орднунга забастовка». The panel's sub-lines («на исходе · с 4 сен») were glued to the text
+without a space — `.li s` is a block now. Game code untouched; the chronicle hash is the same.
+
 ## 0.417.1 - the guard reads the prose too
 
 The control-character scan of 0.416.0 covered `src/` and `tests/`. It should have covered the

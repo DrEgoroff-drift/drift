@@ -78,26 +78,65 @@ function recentTakes(st,n){
 }
 
 /* ── правда: одна строка на событие, без эфира ── */
+/* ── склонения держав и слов летописи (M422): лента читается как речь, а не как
+   поле базы. Порядок — MAKER_KEYS: gt co or km ra hf. */
+const DECL={
+  gt:{g:"f",gen:"ГЛАВТРАССЫ",dat:"ГЛАВТРАССЕ",ins:"ГЛАВТРАССОЙ"},
+  co:{g:"f",gen:"Компании",dat:"Компании",ins:"Компанией"},
+  or:{g:"m",gen:"Орднунга",dat:"Орднунгу",ins:"Орднунгом"},
+  km:{g:"f",gen:"Коммуны",dat:"Коммуне",ins:"Коммуной"},
+  ra:{g:"m",gen:"Рассвета",dat:"Рассвету",ins:"Рассветом"},
+  hf:{g:"m",gen:"Хай-Фронта",dat:"Хай-Фронту",ins:"Хай-Фронтом"}
+};
+const dOf=i=>DECL[MAKER_KEYS[i]]||{g:"f",gen:"державы",dat:"державе",ins:"державой"};
+const GEN=i=>i>=0?dOf(i).gen:"соседа", DAT=i=>i>=0?dOf(i).dat:"соседу", INS=i=>i>=0?dOf(i).ins:"соседом";
+/* глагол в прошедшем времени по роду: V(i,"занял") → занял/заняла */
+const V=(i,m)=>m+(i>=0&&dOf(i).g==="f"?"а":"");
+/* происшествие — одной фразой; %n держава, %g родительный, %V(глагол) по роду */
+const INC_SAY={
+  vein:"в поясах %g нашли жилу",fair:"%n %V(собрал) ярмарку",embargo:"%n %V(объявил) эмбарго",
+  strike:"у %g забастовка",holiday:"у %g праздник",refugee:"переселение: люди уходят от %g",
+  storm:"вспышка над домом %g",swarm:"рой у границ %g",drain:"пояса %g истощены",
+  coup:"у %g сменилось правление",purge:"чистка у %g",envoy:"%n %V(отправил) посольство",
+  spy:"утечка у %g",patrol:"%n %V(ужесточил) досмотр",census:"%n %V(провёл) перепись",
+  cult:"тихий уезд из систем %g",revolt:"бунт в системах %g",find:"находка у %g",
+  secede:"откол: часть систем %g ушла сама по себе"
+};
+/* дуга — существительное со своим родом: началась экспедиция, начался дефицит */
+const ARC_G={shortage:"m",frontier:"m",succession:"n",expedition:"f",quarantine:"m",goldrush:"f"};
+const NV=(g,m)=>m+(g==="f"?"ась":g==="n"?"ось":"ся");
+function say(tpl,i){
+  return tpl.replace(/%V\(([^)]+)\)/g,(_,m)=>V(i,m)).replace(/%n/g,NAMES[i]||"держава").replace(/%g/g,GEN(i));
+}
 function truth(L){
-  const who=NAMES[L.p]||"держава";
-  const b=(L.args&&typeof L.args.b==="number")?NAMES[L.args.b]:"соседа";
+  const i=L.p|0,who=NAMES[i]||"держава";
+  const j=(L.args&&typeof L.args.b==="number")?L.args.b:-1;
   const k=L.args&&L.args.k;
   switch(L.kind){
     case "take":{
       const p=L.sys?L.sys.split(","):null;
-      const nm=p?nameOf(p[0]|0,p[1]|0):"сектор";
-      const from=(L.args&&typeof L.args.from==="number")?NAMES[L.args.from]:null;
-      return who+" заняла «"+nm+"» ("+L.sys+")"+(from?" — была у "+from:"");
+      const nm=p?"«"+nameOf(p[0]|0,p[1]|0)+"»":"сектор";
+      const from=(L.args&&typeof L.args.from==="number")?L.args.from:-1;
+      return from>=0?who+" "+V(i,"отбил")+" у "+GEN(from)+" "+nm+" <s>("+L.sys+")</s>":who+" "+V(i,"занял")+" "+nm+" <s>("+L.sys+")</s>";
     }
-    case "war":return who+" начала войну с "+b;
-    case "truce":return who+" и "+b+" — перемирие";
-    case "ult":return who+" предъявила ноту "+b+": срок "+DIP_ULT_DUE+" сводок";
-    case "note":return "нота "+who+" к "+b+" снята";
-    case "deal":return who+" и "+b+" сговорились о поставках";
-    case "inc":return who+": "+(CHRON_INC_RU[k]||k)+((L.args&&L.args.forced)?" — по настоянию Директора":"");
-    case "arc":return who+": "+(CHRON_ARC_RU[k]||k)+" — "+(ARC_STAGE[L.args&&L.args.stage|0]||"идёт");
-    case "arcend":return who+": "+(CHRON_ARC_RU[k]||k)+" — кончилось"+((L.args&&L.args.forced)?" само собой":"");
-    case "rite":return "объявлен обряд «"+((typeof RITES!=="undefined"&&RITES[k])?RITES[k].ru:k)+"» у "+who;
+    case "war":return who+" "+V(i,"начал")+" войну с "+INS(j);
+    case "truce":return who+" и "+NAMES[j]+" заключили перемирие";
+    case "ult":return who+" "+V(i,"предъявил")+" ноту "+DAT(j)+": ответ через "+DIP_ULT_DUE+" сводок";
+    case "note":return "нота "+GEN(i)+" к "+DAT(j)+" снята";
+    case "deal":return who+" и "+NAMES[j]+" договорились о поставках";
+    case "inc":return (INC_SAY[k]?say(INC_SAY[k],i):who+": "+(CHRON_INC_RU[k]||k))+((L.args&&L.args.forced)?" — по настоянию Директора":"");
+    case "arc":{
+      const a=CHRON_ARC_RU[k]||k,g=ARC_G[k]||"f",st=L.args&&L.args.stage|0;
+      return st===0?NV(g,"начал")+" "+a+" "+GEN(i):
+             st===1?a+" "+GEN(i)+" продолжается":
+             st===2?a+" "+GEN(i)+" в разгаре":
+             st===3?a+" "+GEN(i)+" на исходе":a+" "+GEN(i)+": развязка";
+    }
+    case "arcend":{
+      const a=CHRON_ARC_RU[k]||k,g=ARC_G[k]||"f";
+      return a+" "+GEN(i)+" "+NV(g,"кончил")+((L.args&&L.args.forced)?" сама собой".replace("сама",g==="f"?"сама":g==="n"?"само":"сам"):"");
+    }
+    case "rite":return who+" "+V(i,"объявил")+" обряд «"+((typeof RITES!=="undefined"&&RITES[k])?RITES[k].ru:k)+"»";
   }
   return who+": "+L.kind;
 }
@@ -324,8 +363,8 @@ function drawPanel(st,n){
     const arcs=D.arcs||[],rites=D.rites||[];
     if(arcs.length||rites.length){
       h+="<h3>Что идёт</h3>";
-      for(const a of arcs)h+="<div class='li'>"+NAMES[a.p]+": "+(CHRON_ARC_RU[a.kind]||a.kind)+"<s>"+(ARC_STAGE[a.stage|0]||"идёт")+" · с "+fmtDay(a.t0)+"</s></div>";
-      for(const r of rites)h+="<div class='li good'>обряд «"+((typeof RITES!=="undefined"&&RITES[r.kind])?RITES[r.kind].ru:r.kind)+"» у "+NAMES[r.p]+"<s>объявлен "+fmtDay(r.t0)+" · одна кнопка в игре</s></div>";
+      for(const a of arcs)h+="<div class='li'>"+(CHRON_ARC_RU[a.kind]||a.kind)+" "+GEN(a.p)+"<s>"+(ARC_STAGE[a.stage|0]||"идёт")+" · с "+fmtDay(a.t0)+"</s></div>";
+      for(const r of rites)h+="<div class='li good'>"+NAMES[r.p]+": обряд «"+((typeof RITES!=="undefined"&&RITES[r.kind])?RITES[r.kind].ru:r.kind)+"»<s>объявлен "+fmtDay(r.t0)+" · одна кнопка в игре</s></div>";
     }
     const inc=[];
     for(let i=st.lines.length-1;i>=0&&inc.length<6;i--){const L=st.lines[i];if(n-L.N>8)break;if(L.kind==="inc")inc.push(L);}
@@ -354,23 +393,34 @@ function drawPanel(st,n){
 }
 
 /* ── лента ── */
+/* Лента показывается порциями (M422): сперва последние двое суток, «ещё» —
+   ещё двое, вместо четырёхсот строк за раз. Порция — по сводкам, не по строкам,
+   чтобы день не рвался пополам. */
+const FEED_STEP=8;
+let FEED_DEPTH=FEED_STEP;
 function drawLines(st,n){
   const wave=$("#wave").value;
-  let h="",last=-1,shown=0;
-  for(let i=st.lines.length-1;i>=0&&shown<400;i--){
+  let h="",last=-1,shown=0,days=0,more=false;
+  for(let i=st.lines.length-1;i>=0;i--){
     const L=st.lines[i];
-    if(L.N!==last){last=L.N;h+="<div class='tlh"+(L.N===n?" now":"")+"'>сводка "+L.N+" · "+fmt(L.N)+"</div>";}
-    const col=L.p>=0?COLS[L.p]:"#cfe3ea";
     let txt;
     if(wave){txt=chronSay(L,wave);if(!txt)continue;txt="<span class='w'>"+POWERS[wave].ru+":</span> "+txt;}
     else txt=truth(L);
+    if(L.N!==last){
+      if(++days>FEED_DEPTH){more=true;break;}
+      last=L.N;h+="<div class='tlh"+(L.N===n?" now":"")+"'>сводка "+L.N+" · "+fmt(L.N)+"</div>";
+    }
+    const col=L.p>=0?COLS[L.p]:"#cfe3ea";
     h+="<div class='tle "+(KIND_CLASS[L.kind]||"")+"'><i style='background:"+col+"'></i><div>"+txt+"</div></div>";
     shown++;
   }
   if(!shown)h="<div class='empty'>пока ни одной строки</div>";
   $("#lines").innerHTML=h;
+  const btn=$("#moreBtn");
+  btn.hidden=!more;
+  
 }
-
+$("#moreBtn").addEventListener("click",()=>{FEED_DEPTH+=FEED_STEP;drawLines(stateAt(CUR),CUR);});
 /* ── шапка и ползунок ── */
 function drawNow(){
   const n=NOW,ms=svodMs(n+1)-Date.now();
