@@ -333,7 +333,7 @@ cv.addEventListener("pointerdown",ev=>showTip(cellAt(ev)));
 function bar(v,max,cls,txt){return "<div class='bar"+(cls?" "+cls:"")+"'><i style='width:"+Math.round(100*Math.max(0,Math.min(1,v/max)))+"%'></i>"+(txt?"<em>"+txt+"</em>":"")+"</div>";}
 function drawPanel(st,n){
   const P=st.powers;
-  let h="<h3>Шесть держав · сводка "+n+"</h3>";
+  let h="<h3>Ведомость · сводка "+n+"</h3>";
   const order=[0,1,2,3,4,5].sort((a,b)=>P[b].hold-P[a].hold);
   for(const i of order){
     const p=P[i];
@@ -361,7 +361,7 @@ function drawPanel(st,n){
   }
   /* войны и ноты */
   h+="<h3>Войны</h3>";
-  if(!st.wars.length)h+="<div class='empty'>сейчас войн нет — торгуют, ссорятся, строят</div>";
+  if(!st.wars.length)h+="<div class='empty'>войн нет: торгуют, ссорятся, строят и ждут повода</div>";
   for(const w of st.wars){
     let ta=0,tb=0;
     for(const L of st.lines)if(L.kind==="take"&&L.N>=w.t0){if(L.p===w.a&&L.args&&L.args.from===w.b)ta++;else if(L.p===w.b&&L.args&&L.args.from===w.a)tb++;}
@@ -380,16 +380,11 @@ function drawPanel(st,n){
   if(D){
     const arcs=D.arcs||[],rites=D.rites||[];
     if(arcs.length||rites.length){
-      h+="<h3>Что идёт</h3>";
+      h+="<h3>Что идёт сейчас</h3>";
       for(const a of arcs)h+="<div class='li'>"+(CHRON_ARC_RU[a.kind]||a.kind)+" "+GEN(a.p)+"<s>"+(ARC_STAGE[a.stage|0]||"идёт")+" · с "+fmtDay(a.t0)+"</s></div>";
       for(const r of rites)h+="<div class='li good'>"+NAMES[r.p]+": обряд «"+((typeof RITES!=="undefined"&&RITES[r.kind])?RITES[r.kind].ru:r.kind)+"»<s>объявлен "+fmtDay(r.t0)+" · одна кнопка в игре</s></div>";
     }
-    const inc=[];
-    for(let i=st.lines.length-1;i>=0&&inc.length<6;i--){const L=st.lines[i];if(n-L.N>8)break;if(L.kind==="inc")inc.push(L);}
-    if(inc.length){
-      h+="<h3>Последние двое суток</h3>";
-      for(const L of inc)h+="<div class='li'>"+truth(L)+"<s>"+fmt(L.N)+"</s></div>";
-    }
+    /* последние происшествия здесь не повторяются: они в ленте под картой (M424) */
   }
   if(n>=NOW){
     const B=(typeof bossActive==="function")?bossActive():null;

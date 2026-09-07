@@ -7,6 +7,14 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.417.4 - the war page speaks lore, not engineering
+
+The lead on `war.html` talked about seeds, servers and code. It now says who holds what around
+Yalta, that a bulletin reaches Yalta every six hours, that weapons are sealed there and peace is
+signed there over lunch, and that the six waves tell the same story as their own victory. The
+panel's «Последние двое суток» repeated the feed under the map word for word and is gone; the
+panel is «Ведомость», «Войны», «Что идёт сейчас». The feed's truth option reads «летопись».
+
 ## 0.417.3 - the war map is a nebula, and the feed sits under it
 
 The map was a checkerboard: flat squares, hard seams, identical dots. Holdings are now drawn on a
