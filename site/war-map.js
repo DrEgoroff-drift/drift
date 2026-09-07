@@ -144,7 +144,7 @@ const KIND_CLASS={war:"war",take:"take",truce:"truce",ult:"war",note:"truce",inc
 
 /* ── карта ── */
 const cv=$("#map"),c2=cv.getContext("2d");
-let GEO=null;
+let GEO=null,TERR=null;
 function geo(){
   const rect=cv.getBoundingClientRect();
   const W=Math.max(2,Math.round(rect.width)),H=Math.max(2,Math.round(rect.height));
@@ -160,29 +160,47 @@ function drawMap(st,n,t){
   const c=g.c,X=x=>g.ox+x*c,Y=y=>g.oy+y*c;
   const keys=chronKeys();
   const yk=chronYaltaKey();
-  /* владения: мягкая заливка цветом державы; «Ялта» — ничья. Коммуна и
-     Компания в игре обе голубые (у чипов это не спор — там эмблема), на
-     заливке их не различить: Коммуне — штриховка, и она же в легенде */
-  for(const k of keys){
-    const S=st.systems[k];const p=k.split(","),x=p[0]|0,y=p[1]|0;
-    c2.fillStyle=S.owner<0?"rgba(207,227,234,.07)":hexA(COLS[S.owner],.19);
-    c2.fillRect(X(x)-c/2,Y(y)-c/2,c,c);
-    if(S.owner===3){
-      c2.save();c2.beginPath();c2.rect(X(x)-c/2,Y(y)-c/2,c,c);c2.clip();
-      c2.strokeStyle="rgba(207,227,234,.16)";c2.lineWidth=1;
-      for(let q=-c;q<c*2;q+=c/3){c2.beginPath();c2.moveTo(X(x)-c/2+q,Y(y)-c/2);c2.lineTo(X(x)-c/2+q-c,Y(y)+c/2);c2.stroke();}
-      c2.restore();
+  /* владения (M423): не клетчатая доска, а туманности. Квадраты хозяев
+     рисуются на слой и размываются — держава становится телом с мягким краем,
+     как звёздная пыль вокруг неё; слой считается один раз на сводку и ширину
+     (карта дышит фронтами каждый кадр, а владения между кадрами не меняются).
+     Коммуна и Компания в игре обе голубые — Коммуне штриховка, она же в легенде */
+  const tk=n+"|"+g.W+"|"+NOW;
+  if(!TERR||TERR.key!==tk){
+    const raw=document.createElement("canvas"),soft=document.createElement("canvas");
+    raw.width=soft.width=g.W*dpr;raw.height=soft.height=g.H*dpr;
+    const r2=raw.getContext("2d");r2.setTransform(dpr,0,0,dpr,0,0);
+    for(const k of keys){
+      const S=st.systems[k];if(S.owner<0)continue;
+      const p=k.split(","),x=p[0]|0,y=p[1]|0;
+      r2.fillStyle=hexA(COLS[S.owner],.5);
+      r2.fillRect(X(x)-c/2,Y(y)-c/2,c,c);
+      if(S.owner===3){
+        r2.save();r2.beginPath();r2.rect(X(x)-c/2,Y(y)-c/2,c,c);r2.clip();
+        r2.strokeStyle="rgba(5,7,12,.5)";r2.lineWidth=Math.max(1,c*.08);
+        for(let q=-c;q<c*2;q+=c/3){r2.beginPath();r2.moveTo(X(x)-c/2+q,Y(y)-c/2);r2.lineTo(X(x)-c/2+q-c,Y(y)+c/2);r2.stroke();}
+        r2.restore();
+      }
     }
+    const s2=soft.getContext("2d");
+    s2.filter="blur("+(c*.55*dpr).toFixed(1)+"px)";s2.globalAlpha=.55;s2.drawImage(raw,0,0);
+    s2.filter="blur("+(c*.18*dpr).toFixed(1)+"px)";s2.globalAlpha=.35;s2.drawImage(raw,0,0);
+    s2.filter="none";s2.globalAlpha=1;
+    TERR={key:tk,cv:soft};
   }
-  /* границы: между разными хозяевами; между воюющими — огнём */
-  c2.lineWidth=1;
+  c2.drawImage(TERR.cv,0,0,g.W,g.H);
+  /* обвод круга: у карты есть тело */
+  c2.strokeStyle="rgba(207,227,234,.09)";c2.lineWidth=1;
+  c2.beginPath();c2.arc(g.ox,g.oy,(CHRON_R+.5)*c,0,TAU);c2.stroke();
+  /* границы: между воюющими — огнём; между мирными соседями — едва, туман сам показывает край */
   for(const k of keys){
-    const S=st.systems[k];const p=k.split(","),x=p[0]|0,y=p[1]|0;
+    const S=st.systems[k];if(S.owner<0)continue;
+    const p=k.split(","),x=p[0]|0,y=p[1]|0;
     for(const d of [[1,0],[0,1]]){
       const Q=st.systems[(x+d[0])+","+(y+d[1])];
-      if(!Q||Q.owner===S.owner)continue;
+      if(!Q||Q.owner<0||Q.owner===S.owner)continue;
       const war=warBetween(st,S.owner,Q.owner);
-      c2.strokeStyle=war?"rgba(255,107,87,.85)":"rgba(207,227,234,.28)";
+      c2.strokeStyle=war?"rgba(255,107,87,.85)":"rgba(5,7,12,.25)";
       c2.lineWidth=war?2:1;
       c2.beginPath();
       if(d[0]){c2.moveTo(X(x)+c/2,Y(y)-c/2);c2.lineTo(X(x)+c/2,Y(y)+c/2);}
@@ -199,17 +217,17 @@ function drawMap(st,n,t){
     c2.fillStyle=hexA(COLS[r.from],a);
     c2.beginPath();c2.moveTo(X(x)-c/2,Y(y)-c/2);c2.lineTo(X(x)-c/2+c*.42,Y(y)-c/2);c2.lineTo(X(x)-c/2,Y(y)-c/2+c*.42);c2.closePath();c2.fill();
   }
-  /* звёзды: точка в цвет хозяина, со сдвигом от зерна — как на карте в игре */
+  /* звёзды: разной величины, ничьи — тусклее; сдвиг от зерна — как в игре */
   for(const k of keys){
     const S=st.systems[k];const p=k.split(","),x=p[0]|0,y=p[1]|0;
     if(!starAt(x,y))continue;
-    const j=sysJitter(x,y);
+    const j=sysJitter(x,y),m=h01(x,y,777);
     const sx=X(x)+j[0]*c*.6,sy=Y(y)+j[1]*c*.6;
-    const col=S.owner<0?"#cfe3ea":COLS[S.owner];
-    c2.fillStyle=col;c2.globalAlpha=.9;
-    c2.beginPath();c2.arc(sx,sy,Math.max(1.4,c*.075),0,TAU);c2.fill();
-    c2.globalAlpha=.25;
-    c2.beginPath();c2.arc(sx,sy,Math.max(2.4,c*.16),0,TAU);c2.fill();
+    const own=S.owner>=0,col=own?COLS[S.owner]:"#cfe3ea";
+    const r=Math.max(1.1,c*(.045+.055*m));
+    c2.fillStyle=col;c2.globalAlpha=own?.95:.5;
+    c2.beginPath();c2.arc(sx,sy,r,0,TAU);c2.fill();
+    if(own||m>.8){c2.globalAlpha=own?.2:.1;c2.beginPath();c2.arc(sx,sy,r*2.4,0,TAU);c2.fill();}
     c2.globalAlpha=1;
   }
   /* фронт: кольцо, которое дышит */
@@ -470,7 +488,7 @@ function tick(){
   drawMap(st,CUR,performance.now());
   if(any&&document.visibilityState==="visible")RAF=requestAnimationFrame(tick);
 }
-addEventListener("resize",()=>{GEO=null;view(CUR);});
+addEventListener("resize",()=>{GEO=null;TERR=null;view(CUR);});
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&!RAF)tick();});
 
 /* ── провод: ведомости, часы, сборы — и пересчёт, когда приехало новое ── */
@@ -479,7 +497,7 @@ function pull(){
   if(typeof warPull!=="function"||typeof warHere!=="function"||!warHere())return Promise.resolve(false);
   return warPull(true).then(ok=>{
     const n2=chronNow();
-    if(n2!==NOW||ok){NOW=n2;LIVE=null;SNAP.length=0;}
+    if(n2!==NOW||ok){NOW=n2;LIVE=null;SNAP.length=0;TERR=null;}
     return (typeof warCall==="function")?warCall("rallies",{}).then(r=>{RALLY=(r&&r.ok&&Array.isArray(r.rows))?r.rows:[];return ok;}).catch(()=>ok):ok;
   }).catch(()=>false);
 }

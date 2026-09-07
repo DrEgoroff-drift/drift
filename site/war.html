@@ -24,8 +24,9 @@ section.war{padding-top:34px}
 .warhead{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 18px;margin-bottom:18px}
 .warhead .now{font-size:11.5px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase}
 .warhead .now b{color:var(--phos);font-weight:400}
-.warwrap{display:grid;grid-template-columns:minmax(0,1fr) 352px;gap:22px;align-items:start}
-@media(max-width:900px){.warwrap{grid-template-columns:1fr}}
+.warwrap{display:grid;grid-template-columns:minmax(0,1fr) 352px;grid-template-areas:"map panel" "feed panel";gap:22px;align-items:start}
+.mapbox{grid-area:map}.panel{grid-area:panel}.tl{grid-area:feed}
+@media(max-width:900px){.warwrap{grid-template-columns:1fr;grid-template-areas:"map" "panel" "feed"}}
 .mapbox{position:relative;border:1px solid var(--line);background:rgba(8,13,22,.55);
   backdrop-filter:blur(3px)}
 #map{display:block;width:100%;aspect-ratio:1;touch-action:none;cursor:crosshair}
@@ -78,7 +79,7 @@ section.war{padding-top:34px}
 .li.good{color:#c8f0ff}
 .empty{color:var(--dim);font-size:11.5px;padding:6px 0}
 /* ── лента событий ── */
-.tl{max-width:1120px;margin:0 auto;padding:0 22px 60px}
+.tl{min-width:0}
 .tl h3{font-size:11px;letter-spacing:.22em;color:var(--dim);text-transform:uppercase;font-weight:400;margin:0 0 6px}
 .tlh{font-size:11px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase;padding:14px 0 4px;border-bottom:1px solid var(--line)}
 .tlh.now{color:var(--phos)}
@@ -108,7 +109,7 @@ section.war{padding-top:34px}
   </nav>
 </header>
 
-<section class="war">
+<section class="war" style="padding-bottom:60px">
   <div class="eyebrow">Летопись · галактика живёт без нас</div>
   <div class="warhead">
     <h2>Война, которая <b>идёт сама</b></h2>
@@ -133,19 +134,20 @@ section.war{padding-top:34px}
       </div>
     </div>
     <aside class="panel" id="panel"></aside>
+    <div class="tl">
+    <div class="ctl" style="border-top:0;padding-left:0;padding-right:0">
+      <h3 style="margin:0">Кто куда когда</h3>
+      <select id="wave" aria-label="чей голос">
+        <option value="">правда — что было на самом деле</option>
+      </select>
+    </div>
+    <div id="lines"></div>
+    <div class="ctl" style="border-top:0;padding:0;justify-content:center"><button id="moreBtn" type="button" class="more" hidden>ещё двое суток</button></div>
+  </div>
   </div>
 </section>
 
-<div class="tl">
-  <div class="ctl" style="border-top:0;padding-left:0;padding-right:0">
-    <h3 style="margin:0">Кто куда когда</h3>
-    <select id="wave" aria-label="чей голос">
-      <option value="">правда — что было на самом деле</option>
-    </select>
-  </div>
-  <div id="lines"></div>
-  <div class="ctl" style="border-top:0;padding:0;justify-content:center"><button id="moreBtn" type="button" class="more" hidden>ещё двое суток</button></div>
-</div>
+
 
 <footer>
   <span>ДРЕЙФ</span>

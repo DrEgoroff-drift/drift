@@ -7,6 +7,15 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.417.3 - the war map is a nebula, and the feed sits under it
+
+The map was a checkerboard: flat squares, hard seams, identical dots. Holdings are now drawn on a
+layer and blurred twice (a wide veil and a tighter core) so each power is a body with a soft edge,
+cached per bulletin and width; seams between neighbours are a faint dark line, fronts still burn.
+Stars vary in size by seed and unowned ones sit back. The page is a two-area grid — map over feed
+on the left, the six powers on the right — so the column under the map is no longer empty; on a
+phone it stacks map, panel, feed.
+
 ## 0.417.2 - the war page reads like a person wrote it
 
 `war.html` loaded the whole «кто куда когда» feed at once — four hundred lines, a seventeen-thousand-pixel
