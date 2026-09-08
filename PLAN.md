@@ -376,6 +376,13 @@ main release, as M360a/M369b were.
   war runs by itself**~~ (0.401.2) — closed; bodies in `docs/PLAN-archive.md` under their numbers.
 
 
+- ~~**M431 the bulletin tells a story**~~ - 0.419.3: `src/12an-chron-news.js` (`newsOf`) writes a
+  three-part note per chronicle record - detail, the real consequence with its number and span,
+  and a closing line in the power's voice. Wired into the site feed (`war-map.js`, the headline
+  is now a rubric) and into the cantina's ether block (`12pa-beacon`). Suite `91zzzw-news` pins
+  the spans to `ECON_*`/`SOC_*`/`NAT_*`/`DIP_*`. Tail: the six waves still speak the old one-line
+  ether - whether a wave should retell the whole note in its own voice is an author's call.
+
 ## Loose ends (as of 2026-08-28, after the graphics run 0.237.0–0.244.0)
 
 Everything left open, with the reason it is open. Nothing here is a bug report — bugs are fixed

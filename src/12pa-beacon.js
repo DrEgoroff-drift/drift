@@ -152,6 +152,18 @@ function waveBlock(){
   r.appendChild(el("div","nm","<b>"+((typeof POWERS!=="undefined"&&POWERS[w])?POWERS[w].full:"")+
     "</b><s style='line-height:1.9'>"+
     (lines.length?lines.join("<br>"):"…несущая частота. Сводка ещё не закрылась.")+"</s>"));
+  /* заметка (M431): волна говорит «что», заметка — «в подробностях и что вам с
+     этого». Берётся последняя запись закрытой сводки: одна на блок, потому что
+     эфир в кантине — это лист на стене, а не лента. */
+  if(typeof newsOf==="function"){
+    if(typeof NEWS_NAME!=="undefined"&&!NEWS_NAME)
+      NEWS_NAME=(x,y)=>{const sys=(typeof getSystem==="function")?getSystem(x,y):null;return sys?nameOf(sys):"";};
+    const st=(typeof chronState==="function")?chronState():null;
+    let L=null;
+    if(st&&st.lines)for(let i=st.lines.length-1;i>=0;i--)if(st.lines[i].N===st.N){L=st.lines[i];break;}
+    const note=L?newsOf(L,st):"";
+    if(note)r.appendChild(el("div","nm","<s style='line-height:1.7;grid-column:1/-1'>"+note+"</s>"));
+  }
   const b=el("button","act","ДРУГАЯ ВОЛНА");
   b.onclick=()=>{
     chronWaveNext();

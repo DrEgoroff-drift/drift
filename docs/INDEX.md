@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 509 · символов верхнего уровня: 4798
+Файлов: 511 · символов верхнего уровня: 4823
 
 ## СИМВОЛЫ
 
@@ -2593,7 +2593,7 @@ matJobRows                   src/18a-material.js:157
 matTick                      src/18a-material.js:108
 MAYAK_KEEP                   src/12pa-beacon.js:37
 MAYAK_NUM                    src/12pa-beacon.js:65
-mayakBlock                   src/12pa-beacon.js:164
+mayakBlock                   src/12pa-beacon.js:176
 mayakCompose                 src/12pa-beacon.js:68
 mayakFreed                   src/12pa-beacon.js:54
 mayakHead                    src/12pa-beacon.js:120
@@ -2809,19 +2809,44 @@ needleShot                   src/13a-guns.js:264
 needOf                       src/12aa-need.js:26
 needsNear                    src/12aa-need.js:50
 needWin                      src/12aa-need.js:24
+NEWS_ALL_INC                 tests/91zzzw-news.js:17
+NEWS_ARC                     src/12an-chron-news.js:182
+NEWS_ARC_END                 src/12an-chron-news.js:222
+NEWS_ARC_MID                 src/12an-chron-news.js:203
+NEWS_CAUSE                   src/12an-chron-news.js:107
+NEWS_DECL                    src/12an-chron-news.js:38
 NEWS_EVERY                   src/12p-news.js:13
 NEWS_KEEP                    src/12p-news.js:15
 NEWS_KINDS                   src/12p-news.js:92
+NEWS_LINES                   src/12an-chron-news.js:28
 NEWS_MAX_ROLL                src/12p-news.js:14
+NEWS_NAME                    src/12an-chron-news.js:32
+NEWS_RITE                    src/12an-chron-news.js:244
 NEWS_RIVALS                  src/12p-news.js:16
+NEWS_SCENE                   src/12an-chron-news.js:122
+NEWS_TAIL                    src/12an-chron-news.js:349
 newsAll                      src/12p-news.js:18
+newsCost                     src/12an-chron-news.js:269
+newsDecl                     src/12an-chron-news.js:46
+newsFill                     src/12an-chron-news.js:378
 newsKeepLimit                src/03f-hull-role.js:56
+newsLine                     tests/91zzzw-news.js:16
 newsMark                     src/12p-news.js:22
 newsMarkAt                   src/12p-news.js:26
 newsMarks                    src/12p-news.js:19
+newsName                     src/12an-chron-news.js:33
+newsOf                       src/12an-chron-news.js:440
+newsPick                     src/12an-chron-news.js:65
 newsRender                   src/12p-news.js:184
 newsRivals                   src/12p-news.js:43
+newsRu                       src/12an-chron-news.js:50
+newsScene                    src/12an-chron-news.js:402
+newsSeed                     src/12an-chron-news.js:57
+newsSent                     src/12an-chron-news.js:395
 newsSomewhere                src/12p-news.js:28
+newsSpan                     src/12an-chron-news.js:90
+newsSysOf                    src/12an-chron-news.js:73
+newsTail                     src/12an-chron-news.js:373
 newsTick                     src/12p-news.js:153
 nmCalls                      tests/91zzzzy-names.js:27
 nmSource                     tests/91zzzzy-names.js:17
@@ -4562,19 +4587,19 @@ visitMark                    src/11b-speech.js:91
 visitsAll                    src/11b-speech.js:86
 vLink                        src/18d-verlet.js:78
 voice                        src/09-audio.js:84
-VOICE_FEMALE                 src/12pa-beacon.js:185
+VOICE_FEMALE                 src/12pa-beacon.js:197
 VOICE_KEYS                   src/02a-worldmix.js:81
-VOICE_MALE                   src/12pa-beacon.js:184
+VOICE_MALE                   src/12pa-beacon.js:196
 VOICE_MAX                    src/09-audio.js:5
-VOICE_Q                      src/12pa-beacon.js:195
-voiceCan                     src/12pa-beacon.js:196
-voiceCancel                  src/12pa-beacon.js:199
-voiceList                    src/12pa-beacon.js:179
-voiceNext                    src/12pa-beacon.js:217
-voiceOpts                    src/12pa-beacon.js:174
-voicePick                    src/12pa-beacon.js:186
-voiceSay                     src/12pa-beacon.js:205
-voiceTick                    src/12pa-beacon.js:241
+VOICE_Q                      src/12pa-beacon.js:207
+voiceCan                     src/12pa-beacon.js:208
+voiceCancel                  src/12pa-beacon.js:211
+voiceList                    src/12pa-beacon.js:191
+voiceNext                    src/12pa-beacon.js:229
+voiceOpts                    src/12pa-beacon.js:186
+voicePick                    src/12pa-beacon.js:198
+voiceSay                     src/12pa-beacon.js:217
+voiceTick                    src/12pa-beacon.js:253
 VOTE_MONTH                   src/12at-vote.js:15
 VOTE_Q                       src/12at-vote.js:16
 voteBlock                    src/12at-vote.js:108
@@ -5122,6 +5147,9 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12am-chron.js · 25 КБ
   · летопись (M370, §7.5, §16.2–16.4):1
 
+## src/12an-chron-news.js · 40 КБ
+  · сводка как новость, а не как список (M431, §7.3):1
+
 ## src/12ap-notebook.js · 12 КБ
   · эпизоды и записная книжка (M374, §6.2–6.3):1
 
@@ -5242,7 +5270,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12p-news.js · 12 КБ
   · пересказ: мир двигался, пока вас не было:1
 
-## src/12pa-beacon.js · 16 КБ
+## src/12pa-beacon.js · 17 КБ
   · «Маяк ГЛАВТРАССЫ»: официальный голос в эфире (M349, M349a):1
 
 ## src/12q-lore.js · 18 КБ
@@ -6270,6 +6298,9 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzzw-msl.js · 8 КБ
   · пять видов боеприпаса (M367, §4):1
+
+## tests/91zzzw-news.js · 6 КБ
+  · сводка-новость (M431):1
 
 ## tests/91zzzw-notebook.js · 8 КБ
   · эпизоды и записная книжка (M374, §6.2–6.3):1

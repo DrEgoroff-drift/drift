@@ -26,6 +26,7 @@ function nameOf(x,y){
   const r=rng(hashi(x,y,90210));r();
   return NAME_CACHE[k]=genName(r);
 }
+if(typeof NEWS_NAME!=="undefined")NEWS_NAME=nameOf;
 const MONTHS=["янв","фев","мар","апр","мая","июн","июл","авг","сен","окт","ноя","дек"];
 const svodMs=n=>CHRON_EPOCH+n*CHRON_SHIFT-(CHRON.off|0);
 const two=v=>String(v).padStart(2,"0");
@@ -405,6 +406,26 @@ function drawPanel(st,n){
   });
 }
 
+/* рубрика (M431): раньше заголовком строки была целая фраза, и заметка под ней
+   начинала с того же самого — «Коммуна объявила обряд „регата“ / Коммуна
+   объявила регату». Теперь сверху ярлык: что и у кого, тремя словами. */
+const STAGE_TAG=["начало","идёт","в разгаре","на исходе","развязка"];
+function tag(L){
+  const who=(L.p>=0?NAMES[L.p]:"галактика"),k=L.args&&L.args.k;
+  switch(L.kind){
+    case "inc":return (CHRON_INC_RU[k]||k)+" · "+who;
+    case "arc":return (CHRON_ARC_RU[k]||k)+" · "+who+" · "+(STAGE_TAG[(L.args&&L.args.stage|0)>4?4:(L.args&&L.args.stage|0)]||"идёт");
+    case "arcend":return (CHRON_ARC_RU[k]||k)+" · "+who+" · конец";
+    case "rite":return ((typeof RITES!=="undefined"&&RITES[k])?RITES[k].ru:k)+" · "+who;
+    case "take":return "передел · "+who;
+    case "war":return "война · "+who+" × "+(L.args&&L.args.b>=0?NAMES[L.args.b]:"соседом");
+    case "truce":return "перемирие · "+who+" × "+(L.args&&L.args.b>=0?NAMES[L.args.b]:"соседом");
+    case "ult":return "нота со сроком · "+who;
+    case "note":return "нота снята · "+who;
+    case "deal":return "поставки · "+who;
+  }
+  return who;
+}
 /* ── лента ── */
 /* Лента показывается порциями (M422): сперва последние двое суток, «ещё» —
    ещё двое, вместо четырёхсот строк за раз. Порция — по сводкам, не по строкам,
@@ -424,7 +445,12 @@ function drawLines(st,n){
       last=L.N;h+="<div class='tlh"+(L.N===n?" now":"")+"'>сводка "+L.N+" · "+fmt(L.N)+"</div>";
     }
     const col=L.p>=0?COLS[L.p]:"#cfe3ea";
-    h+="<div class='tle "+(KIND_CLASS[L.kind]||"")+"'><i style='background:"+col+"'></i><div>"+txt+"</div></div>";
+    /* заметка (M431): заголовок отвечает «что», абзац под ним — «в подробностях,
+       и что вам с этого». Сводка без второго — это опись, а не новость. */
+    const note=(wave||typeof newsOf!=="function")?"":newsOf(L,st);
+    const head=note?"<span class='tg'>"+tag(L)+"</span>":txt;
+    h+="<div class='tle "+(KIND_CLASS[L.kind]||"")+"'><i style='background:"+col+"'></i><div>"+head+
+      (note?"<span class='nw'>"+note+"</span>":"")+"</div></div>";
     shown++;
   }
   if(!shown)h="<div class='empty'>пока ни одной строки</div>";
