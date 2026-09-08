@@ -223,116 +223,12 @@ cosmetics exist; the desk gets one table «ОПИСЬ»; a locker exists at stat
   not a crutch), starting with a sample chapter for the author to judge before the rest.
   The text stays in markdown; every rewrite runs `mksmena.py` and the suite.
 
-## M354 — deep tests (0.352.0, 2026-09-05) — done
+## Closed milestones M354, M355, M357, M359 (0.352.0-0.357.0, 2026-09-05) — bodies moved to `docs/PLAN-archive.md` (2026-09-08)
 
-Author: «пиши глубокие тесты, все кликай, по интерфейсам, по логике, ищи баги». Twenty-six suites in
-eight files, each a class of defect nothing asked about: a save whose fields are the wrong TYPE
-(`91zzzzza`), the wall clock moved back three days / forward five years / a save stamped a year ahead
-(`91zzzzzb`), every button pressed twice while broke and with a full hold plus «a button that left the
-screen may not pay again» (`91zzzzzc`), the world out of its seed and nothing ephemeral in the save
-(`91zzzzzd`), every key held alone in every scene with mode and state required to agree (`91zzzzze`),
-the counter across the whole galaxy (`91zzzzzf`), the tap that reaches the control — `elementFromPoint`
-instead of `el.click()` (`91zzzzzg`), and what grows over an evening in the page itself (`91zzzzzh`).
-
-Four bugs fixed: `found`/`species` as an object threw out of `applySave` (white screen on an aged
-record) and `zoom` as an object survived into `G.zoom`; on a phone the «Сорока» panel spanned the full
-width over the rail, so КАРТА and МЕНЮ could not be pressed aboard the sail-ship, and the map's prompt
-ran one pixel under the rail — both now off the measured `--railw`.
-
-**The lesson worth keeping:** «В ДОРОГУ» is an ordinary button, so any sweep that clicks everything
-enters the road companion, and `body.road` hides the whole page. `resetWorld` did not leave it — so
-from that click on, every later suite measured an invisible page and passed. Two old assertions were
-green only because of it. `resetWorld` now leaves the road and closes the menu and the desk, and a
-guard suite in `91zzzzzh` holds it. A measurement that finds nothing to measure is a failure, not a
-pass — new layout suites say so out loud.
-
-Also: `test.ps1 -Size W,H` (a tall window puts the interface zoom at its 1.75 ceiling — a regime
-nothing had measured; it is healthy), and the frame ledger judges only in the window its baseline
-was shot in.
-
-## M355 — does the button do what it says (0.354.0, 2026-09-05) — done
-
-Author: «тесты на логику, каких никогда не делали: действие и ожидаемое поведение — верное или
-нет; не «экран открылся», а зачем этот экран, что на нём можно и ради чего». Fourteen suites in
-four files, all asking one question: not whether a control works, but whether it tells the truth.
-
-- `91zzzzzi-promise` — the verb is kept, the price on the button is the price charged, and every
-  tap leaves a trace (world, screen or word). **Found and fixed:** «ВЗЯТЬ ВСЁ» at the counter with
-  an empty till did nothing and said nothing, while «ВЗЯТЬ ×N» beside it refused out loud.
-- `91zzzzzj-why` — instruments show the world; every module level pays what its line promises; no
-  technology is a signature without code; the prompt's promise is executed in every scene; the
-  scoop fills the hold, which is what it is for.
-- `91zzzzzk-fair` — the yard hands over the hull you tapped; no hull is dearer and worse in every
-  number; module levels never cheapen; the game takes no money without a line in the journal.
-- `91zzzzzl-gates` — a closed door names the cause (hiring, the counter, take-off without fuel →
-  the evacuation and its price); every disabled button is explained by its row; refuel and repair
-  charge exactly the advertised rate, and a pauper is told why.
-
-Two laws out of the run: `planetSpin` fell back to the **wall clock** at `G.t===0`, so staged
-scenes were irreproducible and the light/ledger suites flickered on «заход» — the world's clock is
-used whenever there is a world; and **a word boundary does not work next to Cyrillic** in JS
-(Russian letters are not word characters), so `/кр\b/` never matches «−17 кр» — a suite now holds
-that nowhere in the game.
-
-## M357 — hunting by search (0.355.0, 2026-09-05) — done
-
-Author: «ищи ещё баги, как хочешь ищи». Four nets built on properties instead of case lists.
-
-- `91zzzzzm-exploit` — splitting a deal never beats doing it whole; a buy-and-sell round loses on
-  every station; and six hundred random sequences of ordinary actions with the clock STOPPED never
-  make the player richer (worth priced at that counter's own prices). No holes.
-- `91zzzzzn-doors` — the door matrix: every scene × every door, over a hundred cells, each checked
-  for the mode/state pair, a living frame and a whole world on the way back, plus a save taken on
-  the threshold. **The freeze is not here** — that is now measured, not assumed.
-- `91zzzzzo-plural` — `pl3` over the whole hundred (11–14, 111–114), and the game's own text read
-  for «number + word» disagreement without a dictionary.
-- `91zzzzzp-balance` — the designed numbers are pinned to the documents that state them
-  (CREW_YIELD, the locker, the cooperative, the spread, the drone-miner, the rank caps); a
-  deliberate rebalance turns this red once and asks for the PLAN line to be updated too.
-
-Still open for the freeze, and the cheapest next step: measure not time but WORK over a long
-evening — `SYS_CACHE` size, the chunk store, the `screenLayer` cache over tens of thousands of
-frames with system changes. If any of them grows linearly, that is the cause.
-
-## M359 — the evidence, the hands, the things (0.357.0, 2026-09-05) — done
-
-The state-and-rules half of a two-session hunt (the picture half is M358).
-
-- **the frame guard stopped talking** — the same crash was announced once ever, so a crash that
-  repeats every frame (which is what a freeze IS) left no trace after two seconds. It now reminds
-  every fifteen seconds with the count; `91zzzzzn-doors` pins the contract. This may be why the
-  author's freeze has never carried a «СБОЙ · …» line.
-- `91zzzzzq-input` — the input layer had no suite at all: focus and tab-hide release the keys, a
-  finger leaving a pad releases it, and the action edge lives one frame across a whole hold.
-- `91zzzzzr-cloud` — boot never lets an older cloud record replace a fresher local one, takes a
-  newer one, and survives ten malformed answers. (Both suites use a synchronous stand-in: a
-  promise's `.then` lands after the report is built.)
-- `91zzzzzs-quests` — every kind of deed has code that closes it; deeds do not double; the journal
-  keeps its cap; an open deed has an address or an honest «адреса нет».
-- `91zzzzzt-opis` — parts do not double or vanish across ten fit/unfit rounds; scrapping pays once;
-  «за борт» throws exactly what was named and never people.
-- `91zzzzzu-monotone` — what may never run backwards: the rung never falls for doing more, danger
-  grows with distance (and is the same all round the ring), and a price flooded down stops at its
-  floor and returns with time (measured on the market's own clock, not «a day»).
-- `91zzzzzv-quote` — the quote does not lie: the row's breakdown («берут первые 6 по 41 кр») adds
-  up to its own total, the total equals the money that actually arrives, the station's premium ends
-  exactly where it was promised, and the cooperative's counter charges the slices it showed.
-- `91zzzzzw-travel` — the evening measured along the ROAD instead of the clock: a hundred real jumps
-  with docking and trade. Half the state is sparse by system (market, seen prices, places, holding,
-  names), so it grows with travel and not with frames — an axis no suite had touched. The save stays
-  readable, no map grows faster than the road itself, and `SYS_CACHE` stays proportional to the
-  jumps (the state-side half of M358's raster question).
-- `91zzzzzx-sound` — звук был единственной подсистемой без единой проверки: в headless нет
-  колонок и автозапуска, настоящий `AudioContext` спит, и `sfx` выходит первой строкой. Стенд
-  строит НАСТОЯЩИЙ `OfflineAudioContext` и приписывает ему «running» своим свойством — синтез
-  идёт живой. Держит четыре закона: каждый звук из таблицы запускается и ГАСНЕТ (23 источника,
-  23 стопа — иначе узел звучит вечно), выключенный звук и глушение «Дороги» молчат и не тратят
-  голосов, полифония не переливается через VOICE_MAX, гул двигателя — один узел на весь полёт,
-  и голос маяка не читает поверх экранов (только полёт и дорога).
-- `91zzzzzy-alive` — третья ось вечера: не растр и не карты, а ЖИВЫЕ сущности. Пять тысяч кадров
-  настоящего боя (система ищется, пока в ней не родятся пираты, иначе набор мерил бы пустое небо)
-  — потолки держат все: пираты, выстрелы, дроны, новости, слухи, дела, обломки. И то, что
-  принадлежало системе, уходит с ней: после прыжка ни один помеченный пират не летит следом.
+- **M354 deep tests** — the seven cross-cutting nets over the topic suites.
+- **M355 does the button do what it says** — an action button names its action and takes its verb from the prompt.
+- **M357 hunting by search** — the game reads its own source and checks every name called by string.
+- **M359 the evidence, the hands, the things** — the ledger, the players' hand, the objects that stay.
 
 ## Side passes of 2026-09-07 — the author's own asks, built in a worktree beside the base queue
 
