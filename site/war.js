@@ -27,7 +27,7 @@ function earn(){}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.419.0";
+const VER="0.419.1";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -1810,7 +1810,7 @@ function chronSave(st){
     try{const q=JSON.parse(localStorage.getItem(CHRON_KEY)||"null");if(q&&typeof q==="object")keep=q;}catch(e){}
     /* смещение часов пишет только провод (`warClock`): у одного поля один
        хозяин, иначе они затирают друг друга по очереди */
-    const o={v:1,N:st.N,off:(typeof keep.off==="number")?keep.off:(st.off|0),led:keep.led,
+    const o={v:2,N:st.N,off:(typeof keep.off==="number")?keep.off:(st.off|0),led:keep.led,
       p:st.powers.map(p=>[p.hold,p.str,p.tension,p.rel.slice(),
         [p.need.ore,p.need.goods,p.need.hulls,p.need.link]]),
       s:chronKeys().map(k=>st.systems[k].owner+","+st.systems[k].since+","+st.systems[k].front).join("|"),
@@ -1830,7 +1830,11 @@ function chronSave(st){
 function chronLoad(){
   try{
     const o=JSON.parse(localStorage.getItem(CHRON_KEY)||"null");
-    if(!o||o.v!==1||!o.p||!o.s)return null;
+    /* v:2 — кэш со строками (0.419). Записи v:1 не читаются вовсе: они посчитаны
+       БЕЗ строк летописи, то есть без обид и происшествий, и это не «старый, но
+       годный» кэш, а другая история. Такой клиент молча спорил бы с соседями
+       ровно так, как спорил до 0.419; повтор от нуля стоит миллисекунды. */
+    if(!o||o.v!==2||!o.p||!o.s)return null;
     const st=chronFresh();
     st.N=o.N|0;st.off=o.off|0;
     o.p.forEach((q,i)=>{

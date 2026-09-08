@@ -369,7 +369,9 @@ main release, as M360a/M369b were.
   first-time clients walked into different histories. Now the tail rides in the cache
   (`CHRON_LINE_KEEP`), the server counts hashes per version under a quorum with `flock`
   (`site/war.php`), and the open сводка's ledger is marked provisional so it is re-pulled once
-  closed (`14b-war-net`). Suites: `91zzzzzz-crashlog`, `91zzzy-drones`, `91zzzw-chron`.
+  closed (`14b-war-net`). Suites: `91zzzzzz-crashlog`, `91zzzy-drones`, `91zzzw-chron`. 0.419.1
+  finished it from the live page: the cache record became `v:2`, because a `v:1` record was
+  computed without the lines and is another history, not an older one.
 - ~~**M410 one thumb**~~ (0.401.1), ~~**M411 the war on the site**~~ (0.401.3) and ~~**M412 the
   war runs by itself**~~ (0.401.2) — closed; bodies in `docs/PLAN-archive.md` under their numbers.
 

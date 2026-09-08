@@ -7,6 +7,17 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.419.1 - the old cache is not a cache, it is another history
+
+Found on the live site minutes after 0.419.0 went out, in one tab: `chronHash(CHRON_BASE)` and
+`chronHash(chronReplay(1000,null))` disagreed — a state carried over from a cache written by the
+previous build, which had been computed without the chronicle's lines and therefore without
+grievances or incidents. A cache like that is never rebuilt on its own: it is only invalidated
+when a ledger arrives for a сводка it already covers, so a client could keep arguing with its
+neighbours for days. The cache record is now `v:2`, and `v:1` is not read at all — a replay from
+zero costs milliseconds, and it is the same history for everybody.
+
+---
 ## 0.419.0 - M423: the log told the truth, the drones went back to work, and the chronicle stopped drifting
 
 The author, 08.09.2026: «а посмотри мои логи в игре». Four days of `~/drift-data/crash.log`: 116

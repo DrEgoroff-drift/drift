@@ -590,3 +590,4 @@ TEST_SUITES.push(()=>suite("летопись: повтор от кэша НА Д
   chronSave(st2);
   eq(chronHash(chronReplay(400,chronLoad())),chronHash(a),"и через две посадки подряд");
 }));
+
