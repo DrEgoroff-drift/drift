@@ -7,6 +7,16 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.419.2 - the mark of the open сводка stopped disappearing
+
+`drift_war_v1` holds four things with four owners: the chronicle's state cache, the ledgers, the
+circulars and — since 0.419.0 — the marks that say which ledger is only a snapshot of a сводка
+still open. Whoever writes his own field must carry the others over, and `chronSave` carried the
+ledgers and the circulars but not the marks: the mark died on the first save of the state, and the
+snapshot became «closed forever» again, which is the very thing 0.419.0 set out to stop. A suite
+now writes all four into the key and checks that saving the state leaves the other three alone.
+
+---
 ## 0.419.1 - the old cache is not a cache, it is another history
 
 Found on the live site minutes after 0.419.0 went out, in one tab: `chronHash(CHRON_BASE)` and

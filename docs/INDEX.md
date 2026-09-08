@@ -685,7 +685,7 @@ chronDirector                src/12am-chron-director.js:84
 chronFlip                    src/12am-chron.js:154
 chronForget                  src/12am-chron.js:319
 chronFresh                   src/12am-chron.js:74
-chronFront                   src/12am-chron.js:395
+chronFront                   src/12am-chron.js:399
 chronGrudge                  src/12am-chron-agents.js:66
 chronHash                    src/12am-chron.js:218
 chronHomeNear                src/12am-chron.js:186
@@ -696,12 +696,12 @@ chronInvalidate              src/12am-chron.js:312
 chronKeys                    src/12am-chron.js:52
 chronLine                    src/12am-chron.js:199
 chronLineRu                  src/12am-chron.js:203
-chronLoad                    src/12am-chron.js:353
+chronLoad                    src/12am-chron.js:357
 chronMonth                   src/12am-chron-director.js:59
 chronNeedLow                 src/12am-chron-agents.js:19
 chronNow                     src/12am-chron.js:213
-chronOwner                   src/12am-chron.js:386
-chronOwnerKey                src/12am-chron.js:391
+chronOwner                   src/12am-chron.js:390
+chronOwnerKey                src/12am-chron.js:395
 chronRelBest                 src/12am-chron-agents.js:49
 chronRelWorst                src/12am-chron-agents.js:41
 chronReplay                  src/12am-chron.js:247
@@ -715,15 +715,15 @@ chronState                   src/12am-chron.js:283
 chronStep                    src/12am-chron.js:93
 chronTension                 src/12am-chron-director.js:245
 chronTouch                   src/12am-chron-agents.js:28
-chronUltBetween              src/12am-chron.js:403
+chronUltBetween              src/12am-chron.js:407
 chronUltBetweenIn            tests/91zzzw-fx.js:447
 chronUltDrop                 src/12am-chron-agents.js:235
 chronUltFile                 src/12am-chron-agents.js:226
-chronUlts                    src/12am-chron.js:402
+chronUlts                    src/12am-chron.js:406
 chronUltStep                 src/12am-chron-agents.js:247
-chronWarBetween              src/12am-chron.js:408
+chronWarBetween              src/12am-chron.js:412
 chronWarOf                   src/12am-chron-agents.js:59
-chronWars                    src/12am-chron.js:400
+chronWars                    src/12am-chron.js:404
 chronWave                    src/12am-chron-lines.js:111
 chronWaveHead                src/12am-chron-lines.js:159
 chronWaveLines               src/12am-chron-lines.js:143
@@ -6229,7 +6229,7 @@ zooTick                      src/11ad-zoo.js:41
   · кадр базы (M413):159
   · по письму соседнего захода (0.415.1):214
 
-## tests/91zzzw-chron.js · 36 КБ
+## tests/91zzzw-chron.js · 37 КБ
   · летопись (M370, §16.2–16.5):1
   · Директор и шесть волн (M371, §15, §7.3):140
   · война, которую видно (M372, §7.4):211

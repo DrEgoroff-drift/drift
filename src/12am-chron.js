@@ -345,8 +345,12 @@ function chronSave(st){
       se:st.season||null,
       /* хвост строк: без него повтор от кэша расходится с повтором от нуля */
       l:st.lines.filter(L=>(st.N-L.N)<=CHRON_LINE_KEEP).map(L=>[L.N,L.kind,L.p,L.sys,L.args])};
-    /* циркуляры — чужое поле того же ключа (12aw): не трогаем */
+    /* чужие поля того же ключа: циркуляры (12aw) и метки снимков открытой
+       сводки (14b-war-net). Кто их не перенёс — тот их стёр: `prov` пропадала
+       на первом же сохранении кэша, и снимок открытой сводки снова становился
+       «закрытым навсегда» (0.419.2) */
     if(keep.circ)o.circ=keep.circ;
+    if(keep.prov)o.prov=keep.prov;
     localStorage.setItem(CHRON_KEY,JSON.stringify(o));
   }catch(e){}
 }
