@@ -48,6 +48,9 @@ function droneNormalize(d,now){
   if(!d.t0)d.t0=d.soldAtMs||now;
   if(!d.lastMs)d.lastMs=d.soldAtMs||now;
   if(!d.trips)d.trips=0;
+  /* износ считается ОТ ПОСЛЕДНЕГО РЕМОНТА (0.419); старая запись выходит из
+     дока как новая, а не тащит за собой тысячи кругов */
+  if(!d.wear)d.wear=0;
   if(!d.down)d.down=0;
   if(!d.sold)d.sold=0;
   if(!d.carry)d.carry=0;
@@ -131,10 +134,18 @@ function dronePos(d,now,sys){
    Отдельной функцией, потому что её подменяют тесты: договор проверяется, а не
    случайность. Ломается дрон на РАЗГРУЗКЕ — то есть у станции, где и стоит
    потом в доке: чинить его посреди пустоты было бы некому. */
+/* ── износ живёт от ремонта до ремонта ──
+   До 0.419 износ считался за ВСЮ жизнь машины: `d.trips` растёт и после дока,
+   и после ночи, которую догоняет цикл. Круг у дрона — от двадцати пяти секунд,
+   догон за сутки даёт их сотнями, и за неделю игры счётчик уезжал в тысячи:
+   шанс поломки упирался в потолок, а одиннадцать минут дока съедали смену.
+   Автор увидел это глазами — на входе в игру восемь машин из тринадцати стояли
+   в доке, три сеанса подряд (crash.log, 07–08.09). Починенный дрон снова здоров:
+   износ копится заново. */
 function droneBreakP(d){
   if(typeof bldHas==="function"&&bldHas(d.sx,d.sy,"hangar"))return 0;   /* Ангар (F4) */
   const dg=(typeof sysDanger==="function")?sysDanger(d.sx,d.sy):0;
-  return clamp(DRONE_BREAK_P*(1+dg*1.6)+(d.trips|0)*DRONE_BREAK_WEAR,0,.2);
+  return clamp(DRONE_BREAK_P*(1+dg*1.6)+(d.wear|0)*DRONE_BREAK_WEAR,0,.2);
 }
 function droneBreaks(d){return Math.random()<droneBreakP(d);}
 function droneFixMs(d){

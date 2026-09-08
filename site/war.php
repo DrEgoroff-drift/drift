@@ -13,7 +13,7 @@
  *   ~/drift-data/war/svodka/NNNNNN.json   one сводка: counters per system and kind, votes
  *   ~/drift-data/war/circ/NNNNNN.json     циркуляры filed by the regulator over ssh
  *   ~/drift-data/war/acct/<login>.json    that account's caps for the current сводка
- *   ~/drift-data/war/hash/NNNNNN.json     how many clients reported which chronicle hash
+ *   ~/drift-data/war/hash/NNNNNN.json     reported chronicle hashes, counted per game version
  *
  * No cron. A сводка closes lazily: the first request that sees the number has grown moves the
  * open file under flock. Using the host's cron would be a second mechanism able to disagree
@@ -24,7 +24,7 @@
  *   pull  {since}          -> {ok,N,svodki:[…],open,circ:[…]}   closed сводки after `since`
  *   put   {n,sys,kind,qty} -> {ok,left}   one deed; capped per account per kind per сводка
  *   vote  {n,q,pick}       -> {ok}        one account, one vote per question
- *   hash  {n,h}            -> {ok,agree}  the client's chronicle hash for N−1 (D06)
+ *   hash  {n,h,ver}        -> {ok,agree,seen,total,top}  the client's chronicle hash for N−1 (D06)
  *
  * CLI for the regulator over ssh:  php war.php digest 7   ·   php war.php circ file.json
  *
@@ -240,18 +240,44 @@ if ($a === 'vote') {
    было строгим и ложным всегда — 78 «расхождений» в crash.log при одном хэше на всех) —
    он считает, сколько клиентов сошлись, и это единственный способ заметить, что
    повтор где-то разошёлся (D06). */
+/* Голоса считаются ПО ВЕРСИЯМ игры и не раньше кворума. Три причины, каждая
+   стоила журналу сорока ложных тревог подряд (crash.log, сводки 993–999):
+     · правила летописи меняются с релизом — новая сборка расходится со старой
+       не потому, что она не права, а потому, что это другая история;
+     · первый же голос за новую сводку сравнивался сам с собой, а второй,
+       иной, объявлялся меньшинством при счёте 1:1 — ничья не расхождение;
+     · чтение-правка-запись шли без замка, и одновременные голоса затирали
+       друг друга вместе с уликой.
+   Старое поле `h` (голоса вперемешку по версиям) остаётся в файлах как есть и
+   больше не читается: переписывать историю задним числом нечестно. */
+const WAR_HASH_QUORUM = 4;      // меньше — вердикта нет, а не «сошлись»
 if ($a === 'hash') {
   $N = wclose();
   $n = (int)($in['n'] ?? ($N - 1));
   $h = (string)($in['h'] ?? '');
   if (!preg_match('/^\d{1,10}$/', $h)) wfail('не хэш');
-  $f = wroot() . '/hash/' . wnum($n) . '.json';
-  $rec = wread($f) ?: ['n' => $n, 'h' => []];
-  $rec['h'][$h] = (int)($rec['h'][$h] ?? 0) + 1;
-  wwrite($f, $rec);
-  arsort($rec['h']);
-  $top = array_key_first($rec['h']);
-  wout(['ok' => true, 'agree' => ((string)$top === $h), 'n' => $n, 'seen' => $rec['h'][$h]]);
+  $ver = substr(preg_replace('/[^0-9A-Za-z._-]/', '', (string)($in['ver'] ?? '')), 0, 16);
+  if ($ver === '') $ver = 'x';
+  $f  = wroot() . '/hash/' . wnum($n) . '.json';
+  $fh = @fopen($f, 'c+');
+  if ($fh) flock($fh, LOCK_EX);
+  $raw = $fh ? stream_get_contents($fh) : '';
+  $rec = json_decode($raw !== '' ? $raw : 'null', true);
+  if (!is_array($rec)) $rec = ['n' => $n];
+  if (!isset($rec['v']) || !is_array($rec['v'])) $rec['v'] = [];
+  $b = (isset($rec['v'][$ver]) && is_array($rec['v'][$ver])) ? $rec['v'][$ver] : [];
+  $b[$h] = (int)($b[$h] ?? 0) + 1;
+  $rec['v'][$ver] = $b;
+  if ($fh) {
+    ftruncate($fh, 0); rewind($fh);
+    fwrite($fh, json_encode($rec, JSON_UNESCAPED_UNICODE));
+    fflush($fh); flock($fh, LOCK_UN); fclose($fh); @chmod($f, 0600);
+  }
+  $total = array_sum($b);
+  $mine  = (int)$b[$h];
+  $top   = max($b);
+  $agree = ($total < WAR_HASH_QUORUM) || ($mine >= $top);
+  wout(['ok' => true, 'agree' => $agree, 'n' => $n, 'seen' => $mine, 'total' => $total, 'top' => $top]);
 }
 
 /* ══════════════ сигнал сбора (M378, §11.2) ══════════════

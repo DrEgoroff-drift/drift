@@ -1759,7 +1759,7 @@ body.table u.addr{color:#7a4a20}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.418.0";
+const VER="0.419.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -1924,6 +1924,18 @@ function crashShip(kind,msg,at,extra){
 /* стек — только наши кадры, до восьми строк */
 function crashStack(e){
   try{return String((e&&e.stack)||"").split(/[\r\n]+/).filter(L=>/^\s*at\s|@/.test(L)).slice(0,8).join("\n");}catch(_){return "";}
+}
+/* ── улика, которую называет сама игра ──
+   До 0.419 на сервер уходил КАЖДЫЙ «warn» судового журнала (хук жил в 28-loop):
+   «просто пиши всё, потом разберём» (автор, 05.09). Разобрали: за четверо суток
+   в crash.log легло сто строк, и все сто — новости игры. Дрон встал в док,
+   смотритель ворчит про голый процент, пираты закрепились в секторе — это не
+   сбой, это игра, а настоящую улику в такой стене не найти. Теперь письмо шлёт
+   тот, кто и правда нашёл неладное: отказ записи, отказ облака, расхождение
+   летописи. Игрок при этом видит ту же строку в журнале, что и раньше. */
+function logShip(text,extra){
+  try{if(typeof logAdd==="function")logAdd("warn",text);}catch(_){}
+  crashShip("journal",text,"",extra);
 }
 /* ловушки — до всего остального: сбой при загрузке самого скрипта ложится в
    журнал первым, а не пропадает вместе с логгером */
@@ -16738,7 +16750,7 @@ function tickDrones(){
     while(guard-->0){
       if(d.down){
         if(d.down>now)break;              /* ещё стоит в доке */
-        d.t0=d.down;d.down=0;fixed=true;  /* починился сам и пошёл дальше */
+        d.t0=d.down;d.down=0;d.wear=0;fixed=true;  /* починился сам и пошёл дальше — как новый */
       }
       const done=d.t0+T;
       if(done>now)break;                  /* круг ещё в пути */
@@ -16756,7 +16768,7 @@ function tickDrones(){
         if(d.pool>=0)d.pool-=n;
         d.carry-=n;d.sold=(d.sold|0)+n;d.earned=(d.earned|0)+rev;
       }
-      d.trips=(d.trips|0)+1;d.soldAtMs=done;
+      d.trips=(d.trips|0)+1;d.wear=(d.wear|0)+1;d.soldAtMs=done;
       if(d.pool===0){d.t0=done;break;}
       /* ломается дрон на разгрузке — у станции, где его и чинить */
       if(droneBreaks(d)){
@@ -21077,6 +21089,17 @@ const CHRON_EPOCH=Date.UTC(2026,0,1);
 const CHRON_SEED=0x0DF17;                 /* зерно летописи: одна галактика на всех */
 const CHRON_R=10;                         /* радиус обжитого круга: ~317 систем */
 const CHRON_LINES=500;                    /* сколько строк держим для новостей */
+/* ── сколько строк уезжает в кэш (0.419) ──
+   Строки летописи — не украшение. `chronGrudge` (12am-chron-agents) считает по
+   ним обиды за последние сутки, то есть за 24 сводки, и держава решает по ним,
+   на кого идти; семьи механик читают происшествия на срок до сорока сводок
+   (SEC_SPY, 12b2-fx-sec). До 0.419 кэш строк не хранил ВОВСЕ: клиент, поднявший
+   состояние с диска, шагал дальше с пустой памятью — ни обид, ни происшествий, —
+   и расходился с тем, кто повторил ту же историю от нуля. Вот так летопись и
+   расходилась: сводки 993–999 в hash-ведомости сервера разъехались на два
+   лагеря — те, кто пришёл с кэшем, и те, кто открыл игру впервые. Хвост держим
+   шире самого длинного срока, с запасом. */
+const CHRON_LINE_KEEP=64;
 /* насыщение 1−exp(−n/12) в промилле, 51 запись (§16.3): дробей в коде нет,
    значит и расхождений между браузерами нет */
 const CHRON_SAT=[0,80,154,221,283,341,393,442,487,528,565,600,632,662,689,713,736,757,777,795,
@@ -21358,7 +21381,7 @@ function chronForget(){
   try{
     const o=JSON.parse(localStorage.getItem(CHRON_KEY)||"null");
     if(!o||typeof o!=="object")return;
-    delete o.p;delete o.s;delete o.w;delete o.u;delete o.d;delete o.se;o.N=-1;
+    delete o.p;delete o.s;delete o.w;delete o.u;delete o.d;delete o.se;delete o.l;o.N=-1;
     localStorage.setItem(CHRON_KEY,JSON.stringify(o));
   }catch(e){}
 }
@@ -21380,7 +21403,9 @@ function chronSave(st){
       d:st.dir?{q:st.dir.quiet|0,pk:st.dir.peak|0,cm:st.dir.calm|0,t:st.dir.tens|0,l:st.dir.last,
         a:st.dir.arcs.map(a=>[a.p,a.kind,a.t0,a.stage]),
         r:st.dir.rites.map(r=>[r.kind,r.p,r.t0])}:null,
-      se:st.season||null};
+      se:st.season||null,
+      /* хвост строк: без него повтор от кэша расходится с повтором от нуля */
+      l:st.lines.filter(L=>(st.N-L.N)<=CHRON_LINE_KEEP).map(L=>[L.N,L.kind,L.p,L.sys,L.args])};
     /* циркуляры — чужое поле того же ключа (12aw): не трогаем */
     if(keep.circ)o.circ=keep.circ;
     localStorage.setItem(CHRON_KEY,JSON.stringify(o));
@@ -21410,6 +21435,7 @@ function chronLoad(){
       rites:(o.d.r||[]).map(r=>({kind:r[0],p:r[1]|0,t0:r[2]|0}))}:null;
     st.season=(o.se&&typeof o.se==="object"&&typeof chronSeasonValid==="function"&&chronSeasonValid(o.se.s))
       ?{m:o.se.m|0,n:o.se.n|0,s:o.se.s}:null;
+    st.lines=Array.isArray(o.l)?o.l.map(a=>({N:a[0]|0,kind:a[1],p:a[2],sys:a[3]||null,args:a[4]||null})):[];
     return st;
   }catch(e){return null;}
 }
@@ -25078,6 +25104,9 @@ function droneNormalize(d,now){
   if(!d.t0)d.t0=d.soldAtMs||now;
   if(!d.lastMs)d.lastMs=d.soldAtMs||now;
   if(!d.trips)d.trips=0;
+  /* износ считается ОТ ПОСЛЕДНЕГО РЕМОНТА (0.419); старая запись выходит из
+     дока как новая, а не тащит за собой тысячи кругов */
+  if(!d.wear)d.wear=0;
   if(!d.down)d.down=0;
   if(!d.sold)d.sold=0;
   if(!d.carry)d.carry=0;
@@ -25161,10 +25190,18 @@ function dronePos(d,now,sys){
    Отдельной функцией, потому что её подменяют тесты: договор проверяется, а не
    случайность. Ломается дрон на РАЗГРУЗКЕ — то есть у станции, где и стоит
    потом в доке: чинить его посреди пустоты было бы некому. */
+/* ── износ живёт от ремонта до ремонта ──
+   До 0.419 износ считался за ВСЮ жизнь машины: `d.trips` растёт и после дока,
+   и после ночи, которую догоняет цикл. Круг у дрона — от двадцати пяти секунд,
+   догон за сутки даёт их сотнями, и за неделю игры счётчик уезжал в тысячи:
+   шанс поломки упирался в потолок, а одиннадцать минут дока съедали смену.
+   Автор увидел это глазами — на входе в игру восемь машин из тринадцати стояли
+   в доке, три сеанса подряд (crash.log, 07–08.09). Починенный дрон снова здоров:
+   износ копится заново. */
 function droneBreakP(d){
   if(typeof bldHas==="function"&&bldHas(d.sx,d.sy,"hangar"))return 0;   /* Ангар (F4) */
   const dg=(typeof sysDanger==="function")?sysDanger(d.sx,d.sy):0;
-  return clamp(DRONE_BREAK_P*(1+dg*1.6)+(d.trips|0)*DRONE_BREAK_WEAR,0,.2);
+  return clamp(DRONE_BREAK_P*(1+dg*1.6)+(d.wear|0)*DRONE_BREAK_WEAR,0,.2);
 }
 function droneBreaks(d){return Math.random()<droneBreakP(d);}
 function droneFixMs(d){
@@ -38926,7 +38963,7 @@ function stSet(k,v){
     if(!STORAGE_TOLD){
       STORAGE_TOLD=true;
       if(typeof say==="function")say("ИГРА НЕ ЗАПИСЫВАЕТСЯ\nбраузер не даёт хранить\nсохраните код: НАСТРОЙКИ → СОХРАНЕНИЕ",420);
-      if(typeof logAdd==="function")logAdd("warn","Браузер не даёт записывать: полёт не сохраняется. НАСТРОЙКИ → СОХРАНЕНИЕ, скопируйте код.");
+      logShip("Браузер не даёт записывать: полёт не сохраняется. НАСТРОЙКИ → СОХРАНЕНИЕ, скопируйте код.");
     }
     return false;
   }
@@ -39047,7 +39084,7 @@ function saveText(){
   let s;
   try{s=snapshot();}
   catch(e){
-    if(typeof logAdd==="function")logAdd("warn","Запись не собралась: "+((e&&e.message)||e));
+    logShip("Запись не собралась: "+((e&&e.message)||e));
     return null;
   }
   for(let pass=0;pass<4;pass++){
@@ -39060,9 +39097,8 @@ function saveText(){
         const top=saveTop(saveWeigh(s));
         if(saveFatSaid!==top){
           saveFatSaid=top;
-          if(typeof logAdd==="function")
-            logAdd("warn","Запись разбухла: "+Math.round(t.length/1024)+
-              " КБ · тяжелее всего "+top);
+          logShip("Запись разбухла: "+Math.round(t.length/1024)+
+            " КБ · тяжелее всего "+top);
         }
       }
       return t;
@@ -39076,8 +39112,7 @@ function saveText(){
        успел прочитать первую (скрин 30.08.2026, 23:23) */
     if(saveCutSaid!==bad[0]){
       saveCutSaid=bad[0];
-      if(typeof logAdd==="function")
-        logAdd("warn","Запись не влезла в строку: раздел «"+bad[0]+"» вынут · "+saveTop(rows));
+      logShip("Запись не влезла в строку: раздел «"+bad[0]+"» вынут · "+saveTop(rows));
       if(typeof say==="function")
         say("ЗАПИСЬ ПОЧИНЕНА\nраздел «"+bad[0]+"» разросся и вынут\nостальное записано",420);
     }
@@ -39544,7 +39579,7 @@ try{
       /* пришла новая — уступаем место и замолкаем */
       TAB_LIVE=false;
       if(typeof say==="function")say("ИГРА ОТКРЫТА В ДРУГОЙ ВКЛАДКЕ\nздесь запись остановлена,\nчтобы не затереть ту",420);
-      if(typeof logAdd==="function")logAdd("warn","Игра открыта в другой вкладке — эта больше не сохраняется.");
+      logShip("Игра открыта в другой вкладке — эта больше не сохраняется.");
     }
   };
   TAB_CH.postMessage({k:"hello",id:TAB_ID});
@@ -39610,13 +39645,13 @@ function cloudMark(k){
   if(CLOUD_ST.said===k)return;                 /* об одном и том же — один раз */
   CLOUD_ST.said=k;
   if(k==="gone"){
-    logAdd("warn","Облако: вход устарел — войдите заново на вкладке КОРАБЛЬ");
+    logShip("Облако: вход устарел — войдите заново на вкладке КОРАБЛЬ");
     say("ОБЛАКО\nвход устарел\nвойдите заново",220);
   }else if(k==="conflict"){
-    logAdd("warn","Облако: там запись новее этой. Заберите её или выгрузите свою — вкладка КОРАБЛЬ");
+    logShip("Облако: там запись новее этой. Заберите её или выгрузите свою — вкладка КОРАБЛЬ");
     say("ОБЛАКО\nтам запись новее\nвкладка КОРАБЛЬ",240);
   }else if(k==="big"){
-    logAdd("warn","Облако: запись слишком велика, она больше не отправляется");
+    logShip("Облако: запись слишком велика, она больше не отправляется");
   }
 }
 /* Строка для угла кадра. Пусто — значит сказать нечего, и место остаётся миру. */
@@ -40117,19 +40152,37 @@ function warLedger(N){
   const L=warLed();
   return L[N]||null;
 }
-function warLedPut(N,body){
+/* ── снимок открытой сводки — не итог (0.419) ──
+   Открытая сводка ещё растёт: то, что приехало в поле `open`, это её состояние
+   на сейчас. До 0.419 снимок ложился в тот же ящик, что и закрытые, и `since`
+   с того мига переставал спрашивать про эту сводку НАВСЕГДА: клиент навсегда
+   оставался с половиной чужих дел в повторе, а сосед, зашедший часом позже,
+   получал ту же сводку целиком — и повторы у них расходились. Теперь номер
+   снимка помечен: `since` его своим не считает, и закрытой сводка приезжает
+   второй раз, поверх снимка. */
+function warProv(){
+  const o=warStore();
+  return (o.prov&&typeof o.prov==="object")?o.prov:{};
+}
+function warLedPut(N,body,prov){
   const L=warLed();
   L[N]=body;
   const keys=Object.keys(L).map(Number).sort((a,b)=>a-b);
   while(keys.length>120)delete L[keys.shift()];
   WAR_LED_CACHE=L;
-  warStoreSet({led:L});
+  const P=warProv();
+  if(prov)P[N]=1;else delete P[N];
+  for(const k in P)if(!(k in L))delete P[k];      /* ушла ведомость — ушла и метка */
+  warStoreSet({led:L,prov:P});
   /* сводка, которую уже шагали, получила ведомость: повтор от неё заново (M412) */
   if(typeof chronInvalidate==="function")chronInvalidate(N);
 }
+/* последняя ЗАКРЫТАЯ на руках: снимок открытой не считается */
 function warLedLast(){
-  const keys=Object.keys(warLed()).map(Number);
-  return keys.length?Math.max.apply(null,keys):-1;
+  const P=warProv();
+  let last=-1;
+  for(const k in warLed()){const n=+k;if(!P[n]&&n>last)last=n;}
+  return last;
 }
 /* ── часы ──
    Номер сводки считает сервер, и его ответ задаёт смещение локальных часов
@@ -40163,7 +40216,7 @@ function warPull(force){
        отдельного канала у выборов нет (M378) */
     const body=s=>{const o=s.sys||{};o.__votes=s.votes||{};return o;};
     for(const s of (r.svodki||[]))if(s&&s.n!==undefined)warLedPut(s.n|0,body(s));
-    if(r.open&&r.open.n!==undefined)warLedPut(r.open.n|0,body(r.open));
+    if(r.open&&r.open.n!==undefined)warLedPut(r.open.n|0,body(r.open),1);
     /* циркуляры приезжают тем же ответом и проверяются конституцией на входе
        (M381): негодный не кладётся вовсе */
     if(Array.isArray(r.circ)&&r.circ.length&&typeof circPut==="function"){
@@ -40178,8 +40231,19 @@ function warPull(force){
     try{
       const st=chronState();
       const base=(typeof CHRON_BASE!=="undefined"&&CHRON_BASE&&CHRON_BASE.N===st.N-1)?CHRON_BASE:null;
-      if(st&&st.N>0)warCall("hash",{n:st.N-1,h:String(chronHash(base||chronReplay(st.N-1,null)))})
-        .then(h=>{if(h&&h.ok&&h.agree===false&&typeof logAdd==="function")logAdd("warn","Летопись разошлась с большинством на сводке "+h.n);})
+      /* про сводку, чья ведомость у нас только снимком, хэш не шлём: он посчитан
+         по половине чужих дел, и спор вышел бы не о летописи, а о том, кто когда
+         зашёл. Версия едет вместе с хэшем: голоса считаются внутри своей сборки
+         (war.php), потому что чужие правила — это не расхождение */
+      if(st&&st.N>0&&!warProv()[st.N-1])
+        warCall("hash",{n:st.N-1,h:String(chronHash(base||chronReplay(st.N-1,null))),ver:VER})
+        .then(h=>{
+          /* «разошлась» — только когда есть с чем сравнивать: сервер молчит,
+             пока голосов меньше кворума. Одинокий голос не меньшинство */
+          if(h&&h.ok&&h.agree===false&&typeof logShip==="function")
+            logShip("Летопись разошлась с большинством на сводке "+h.n+
+              " · у меня "+(h.seen|0)+" из "+(h.total|0));
+        })
         .catch(()=>{});
     }catch(e){}
     return true;
@@ -84588,10 +84652,10 @@ function crashAt(e){
   }
   return out.join("←");
 }
-/* логгер и ловушки живут в 01a-crashlog — с самого начала склейки; здесь
-   только то, чего там ещё нет: «warn» судового журнала — игра сама называет
-   беду, пусть называет и серверу */
-try{if(typeof logAdd==="function"){const la=logAdd;logAdd=function(kind,text){if(kind==="warn"&&String(text).indexOf("Сбой кадра")!==0)crashShip("journal",text,"");return la(kind,text);};}}catch(_){}
+/* логгер и ловушки живут в 01a-crashlog — с самого начала склейки. Здесь ничего
+   не подменяется: «warn» судового журнала — это новости игры, а не беда, и на
+   сервер их больше не шлют (0.419, см. `logShip` в 01a-crashlog). Сбой кадра
+   уходит отдельно, из `crashSay` ниже. */
 function crashSay(e,where){
   crashN++;
   try{document.documentElement.removeAttribute("data-alive");}catch(_){}   /* метка живости снимается: сайт со сбоем — не живой */

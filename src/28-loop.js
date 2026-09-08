@@ -299,10 +299,10 @@ function crashAt(e){
   }
   return out.join("←");
 }
-/* логгер и ловушки живут в 01a-crashlog — с самого начала склейки; здесь
-   только то, чего там ещё нет: «warn» судового журнала — игра сама называет
-   беду, пусть называет и серверу */
-try{if(typeof logAdd==="function"){const la=logAdd;logAdd=function(kind,text){if(kind==="warn"&&String(text).indexOf("Сбой кадра")!==0)crashShip("journal",text,"");return la(kind,text);};}}catch(_){}
+/* логгер и ловушки живут в 01a-crashlog — с самого начала склейки. Здесь ничего
+   не подменяется: «warn» судового журнала — это новости игры, а не беда, и на
+   сервер их больше не шлют (0.419, см. `logShip` в 01a-crashlog). Сбой кадра
+   уходит отдельно, из `crashSay` ниже. */
 function crashSay(e,where){
   crashN++;
   try{document.documentElement.removeAttribute("data-alive");}catch(_){}   /* метка живости снимается: сайт со сбоем — не живой */

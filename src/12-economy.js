@@ -240,7 +240,7 @@ function tickDrones(){
     while(guard-->0){
       if(d.down){
         if(d.down>now)break;              /* ещё стоит в доке */
-        d.t0=d.down;d.down=0;fixed=true;  /* починился сам и пошёл дальше */
+        d.t0=d.down;d.down=0;d.wear=0;fixed=true;  /* починился сам и пошёл дальше — как новый */
       }
       const done=d.t0+T;
       if(done>now)break;                  /* круг ещё в пути */
@@ -258,7 +258,7 @@ function tickDrones(){
         if(d.pool>=0)d.pool-=n;
         d.carry-=n;d.sold=(d.sold|0)+n;d.earned=(d.earned|0)+rev;
       }
-      d.trips=(d.trips|0)+1;d.soldAtMs=done;
+      d.trips=(d.trips|0)+1;d.wear=(d.wear|0)+1;d.soldAtMs=done;
       if(d.pool===0){d.t0=done;break;}
       /* ломается дрон на разгрузке — у станции, где его и чинить */
       if(droneBreaks(d)){

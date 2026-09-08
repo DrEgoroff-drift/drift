@@ -28,6 +28,17 @@ const CHRON_EPOCH=Date.UTC(2026,0,1);
 const CHRON_SEED=0x0DF17;                 /* зерно летописи: одна галактика на всех */
 const CHRON_R=10;                         /* радиус обжитого круга: ~317 систем */
 const CHRON_LINES=500;                    /* сколько строк держим для новостей */
+/* ── сколько строк уезжает в кэш (0.419) ──
+   Строки летописи — не украшение. `chronGrudge` (12am-chron-agents) считает по
+   ним обиды за последние сутки, то есть за 24 сводки, и держава решает по ним,
+   на кого идти; семьи механик читают происшествия на срок до сорока сводок
+   (SEC_SPY, 12b2-fx-sec). До 0.419 кэш строк не хранил ВОВСЕ: клиент, поднявший
+   состояние с диска, шагал дальше с пустой памятью — ни обид, ни происшествий, —
+   и расходился с тем, кто повторил ту же историю от нуля. Вот так летопись и
+   расходилась: сводки 993–999 в hash-ведомости сервера разъехались на два
+   лагеря — те, кто пришёл с кэшем, и те, кто открыл игру впервые. Хвост держим
+   шире самого длинного срока, с запасом. */
+const CHRON_LINE_KEEP=64;
 /* насыщение 1−exp(−n/12) в промилле, 51 запись (§16.3): дробей в коде нет,
    значит и расхождений между браузерами нет */
 const CHRON_SAT=[0,80,154,221,283,341,393,442,487,528,565,600,632,662,689,713,736,757,777,795,
@@ -309,7 +320,7 @@ function chronForget(){
   try{
     const o=JSON.parse(localStorage.getItem(CHRON_KEY)||"null");
     if(!o||typeof o!=="object")return;
-    delete o.p;delete o.s;delete o.w;delete o.u;delete o.d;delete o.se;o.N=-1;
+    delete o.p;delete o.s;delete o.w;delete o.u;delete o.d;delete o.se;delete o.l;o.N=-1;
     localStorage.setItem(CHRON_KEY,JSON.stringify(o));
   }catch(e){}
 }
@@ -331,7 +342,9 @@ function chronSave(st){
       d:st.dir?{q:st.dir.quiet|0,pk:st.dir.peak|0,cm:st.dir.calm|0,t:st.dir.tens|0,l:st.dir.last,
         a:st.dir.arcs.map(a=>[a.p,a.kind,a.t0,a.stage]),
         r:st.dir.rites.map(r=>[r.kind,r.p,r.t0])}:null,
-      se:st.season||null};
+      se:st.season||null,
+      /* хвост строк: без него повтор от кэша расходится с повтором от нуля */
+      l:st.lines.filter(L=>(st.N-L.N)<=CHRON_LINE_KEEP).map(L=>[L.N,L.kind,L.p,L.sys,L.args])};
     /* циркуляры — чужое поле того же ключа (12aw): не трогаем */
     if(keep.circ)o.circ=keep.circ;
     localStorage.setItem(CHRON_KEY,JSON.stringify(o));
@@ -361,6 +374,7 @@ function chronLoad(){
       rites:(o.d.r||[]).map(r=>({kind:r[0],p:r[1]|0,t0:r[2]|0}))}:null;
     st.season=(o.se&&typeof o.se==="object"&&typeof chronSeasonValid==="function"&&chronSeasonValid(o.se.s))
       ?{m:o.se.m|0,n:o.se.n|0,s:o.se.s}:null;
+    st.lines=Array.isArray(o.l)?o.l.map(a=>({N:a[0]|0,kind:a[1],p:a[2],sys:a[3]||null,args:a[4]||null})):[];
     return st;
   }catch(e){return null;}
 }

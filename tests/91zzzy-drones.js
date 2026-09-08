@@ -162,3 +162,56 @@ TEST_SUITES.push(()=>suite("дроны M324: смотритель уводит �
   eq(droneMarket(d).key,near.key,"пустой стол — ближайшая");
   G.mgrs=[];G.seenPrices={};
 }));
+
+/* ── износ (0.419) ──
+   Автор вошёл в игру и увидел восемь машин из тринадцати в доке — три сеанса
+   подряд (crash.log, 07–08.09). Причина не в невезении: износ считался за всю
+   жизнь машины, а круг у дрона от двадцати пяти секунд, и сутки догона дают их
+   больше тысячи. За неделю игры шанс поломки упирался в потолок, и дрон стоял
+   в доке дольше, чем работал. Ремонт теперь обнуляет износ, а набор держит оба
+   договора: починенная машина здорова, и простой не съедает смену. */
+TEST_SUITES.push(()=>suite("дроны: износ живёт от ремонта до ремонта",()=>{
+  resetWorld();
+  G.droneInventory=1;droneTarget="iron";G.mode="system";
+  deployDrone();
+  const d=G.drones[0];d.pool=1e9;
+  const p0=droneBreakP(d);
+  d.trips=5000;d.wear=5000;
+  ok(droneBreakP(d)>p0*3,"износ и правда поднимает шанс поломки: "+droneBreakP(d).toFixed(3));
+  d.wear=0;                                   /* ровно это делает ремонт */
+  eq(droneBreakP(d),p0,"починенная машина снова здорова — сколько бы кругов за жизнь ни налетала");
+  eq(d.trips,5000,"а прожитые круги остаются в её послужном списке");
+  /* договор: машина работает больше, чем чинится */
+  const T=droneTripMs(d),F=droneFixMs(d);
+  d.wear=200;                                 /* невезучий заход между ремонтами */
+  const p=droneBreakP(d),share=p*F/(T+p*F);
+  ok(share<.2,"простой держится ниже пятой доли времени: "+(share*100).toFixed(1)+"%");
+}));
+
+TEST_SUITES.push(()=>suite("дроны: после суток догона флот не стоит в доке",()=>{
+  resetWorld();
+  droneTarget="iron";G.mode="system";
+  G.droneInventory=13;
+  for(let i=0;i<13;i++)deployDrone();
+  const fleet=G.drones.slice();
+  ok(fleet.length>=6,"флот развёрнут: "+fleet.length);
+  /* поломка здесь настоящая: набор выше подменял её заглушкой на весь прогон */
+  droneBreaks=d=>Math.random()<droneBreakP(d);
+  /* пять заходов через сутки — ровно так и играют: каждый раз цикл догоняет
+     сутки, и за неделю у машины набегают тысячи кругов */
+  const day=24*3600*1000;
+  for(const d of fleet)d.pool=1e9;
+  for(let i=0;i<5;i++){
+    /* сутки прошли: круг начат сутки назад, док за это время кончился */
+    for(const d of fleet){const t=Date.now()-day;d.lastMs=t;d.t0=t;d.soldAtMs=t;if(d.down)d.down-=day;}
+    tickDrones();
+  }
+  let down=0,trips=0;
+  for(const d of fleet){if(d.down>Date.now())down++;trips=Math.max(trips,d.trips|0);}
+  ok(trips>3000,"пять суток и правда догнали: кругов "+trips);
+  /* главный договор — детерминированный: шанс поломки не уползает за жизнь
+     машины. Счёт машин в доке случаен, и он здесь только как здравый смысл */
+  let worst=0;for(const d of fleet)worst=Math.max(worst,droneBreakP(d));
+  ok(worst<.05,"шанс поломки не уполз за тысячи кругов: "+worst.toFixed(3));
+  ok(down<=Math.ceil(fleet.length/2),"и в доке не половина флота: "+down+" из "+fleet.length);
+}));

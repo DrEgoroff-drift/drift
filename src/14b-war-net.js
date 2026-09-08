@@ -52,19 +52,37 @@ function warLedger(N){
   const L=warLed();
   return L[N]||null;
 }
-function warLedPut(N,body){
+/* ── снимок открытой сводки — не итог (0.419) ──
+   Открытая сводка ещё растёт: то, что приехало в поле `open`, это её состояние
+   на сейчас. До 0.419 снимок ложился в тот же ящик, что и закрытые, и `since`
+   с того мига переставал спрашивать про эту сводку НАВСЕГДА: клиент навсегда
+   оставался с половиной чужих дел в повторе, а сосед, зашедший часом позже,
+   получал ту же сводку целиком — и повторы у них расходились. Теперь номер
+   снимка помечен: `since` его своим не считает, и закрытой сводка приезжает
+   второй раз, поверх снимка. */
+function warProv(){
+  const o=warStore();
+  return (o.prov&&typeof o.prov==="object")?o.prov:{};
+}
+function warLedPut(N,body,prov){
   const L=warLed();
   L[N]=body;
   const keys=Object.keys(L).map(Number).sort((a,b)=>a-b);
   while(keys.length>120)delete L[keys.shift()];
   WAR_LED_CACHE=L;
-  warStoreSet({led:L});
+  const P=warProv();
+  if(prov)P[N]=1;else delete P[N];
+  for(const k in P)if(!(k in L))delete P[k];      /* ушла ведомость — ушла и метка */
+  warStoreSet({led:L,prov:P});
   /* сводка, которую уже шагали, получила ведомость: повтор от неё заново (M412) */
   if(typeof chronInvalidate==="function")chronInvalidate(N);
 }
+/* последняя ЗАКРЫТАЯ на руках: снимок открытой не считается */
 function warLedLast(){
-  const keys=Object.keys(warLed()).map(Number);
-  return keys.length?Math.max.apply(null,keys):-1;
+  const P=warProv();
+  let last=-1;
+  for(const k in warLed()){const n=+k;if(!P[n]&&n>last)last=n;}
+  return last;
 }
 /* ── часы ──
    Номер сводки считает сервер, и его ответ задаёт смещение локальных часов
@@ -98,7 +116,7 @@ function warPull(force){
        отдельного канала у выборов нет (M378) */
     const body=s=>{const o=s.sys||{};o.__votes=s.votes||{};return o;};
     for(const s of (r.svodki||[]))if(s&&s.n!==undefined)warLedPut(s.n|0,body(s));
-    if(r.open&&r.open.n!==undefined)warLedPut(r.open.n|0,body(r.open));
+    if(r.open&&r.open.n!==undefined)warLedPut(r.open.n|0,body(r.open),1);
     /* циркуляры приезжают тем же ответом и проверяются конституцией на входе
        (M381): негодный не кладётся вовсе */
     if(Array.isArray(r.circ)&&r.circ.length&&typeof circPut==="function"){
@@ -113,8 +131,19 @@ function warPull(force){
     try{
       const st=chronState();
       const base=(typeof CHRON_BASE!=="undefined"&&CHRON_BASE&&CHRON_BASE.N===st.N-1)?CHRON_BASE:null;
-      if(st&&st.N>0)warCall("hash",{n:st.N-1,h:String(chronHash(base||chronReplay(st.N-1,null)))})
-        .then(h=>{if(h&&h.ok&&h.agree===false&&typeof logAdd==="function")logAdd("warn","Летопись разошлась с большинством на сводке "+h.n);})
+      /* про сводку, чья ведомость у нас только снимком, хэш не шлём: он посчитан
+         по половине чужих дел, и спор вышел бы не о летописи, а о том, кто когда
+         зашёл. Версия едет вместе с хэшем: голоса считаются внутри своей сборки
+         (war.php), потому что чужие правила — это не расхождение */
+      if(st&&st.N>0&&!warProv()[st.N-1])
+        warCall("hash",{n:st.N-1,h:String(chronHash(base||chronReplay(st.N-1,null))),ver:VER})
+        .then(h=>{
+          /* «разошлась» — только когда есть с чем сравнивать: сервер молчит,
+             пока голосов меньше кворума. Одинокий голос не меньшинство */
+          if(h&&h.ok&&h.agree===false&&typeof logShip==="function")
+            logShip("Летопись разошлась с большинством на сводке "+h.n+
+              " · у меня "+(h.seen|0)+" из "+(h.total|0));
+        })
         .catch(()=>{});
     }catch(e){}
     return true;

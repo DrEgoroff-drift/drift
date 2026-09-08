@@ -357,6 +357,19 @@ main release, as M360a/M369b were.
   thumb (`helmCamOff`), and the drag draws a **ribbon** — its body is the wanted velocity, its
   fill is the actual one, its colour says accelerating or braking, and its foot is a capsule along
   the band, not the 93 px ring M360 was scolded for. Suites: `91zzzw-helm` (M422), `91zzx-mobile`.
+- ~~**M423 the log told the truth**~~ — 0.419.0: the author, 08.09.2026 — «а посмотри мои логи в
+  игре», then «чини все три, и сделай чтобы летопись не расходилась, как она ваще может
+  расходится». `crash.log` held 116 lines over four days, no crashes, and a hundred lines of
+  ordinary journal news: the `28-loop` hook posted every `warn` to the server. Replaced by
+  `logShip` (`01a-crashlog`) at the eight places that mean a defect — storage, save, cloud,
+  chronicle. Drone wear moved from lifetime `d.trips` to `d.wear` since the last repair: a day of
+  catch-up is a thousand circles, and after a week the break chance sat at 11–15% with the fleet
+  standing in the dock. And the chronicle diverged because `chronSave` never wrote its own lines,
+  which `chronGrudge` (24 сводки) and the fx families (up to 40) read: cache-borne clients and
+  first-time clients walked into different histories. Now the tail rides in the cache
+  (`CHRON_LINE_KEEP`), the server counts hashes per version under a quorum with `flock`
+  (`site/war.php`), and the open сводка's ledger is marked provisional so it is re-pulled once
+  closed (`14b-war-net`). Suites: `91zzzzzz-crashlog`, `91zzzy-drones`, `91zzzw-chron`.
 - ~~**M410 one thumb**~~ (0.401.1), ~~**M411 the war on the site**~~ (0.401.3) and ~~**M412 the
   war runs by itself**~~ (0.401.2) — closed; bodies in `docs/PLAN-archive.md` under their numbers.
 

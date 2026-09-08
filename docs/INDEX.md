@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 508 · символов верхнего уровня: 4795
+Файлов: 509 · символов верхнего уровня: 4798
 
 ## СИМВОЛЫ
 
@@ -106,7 +106,7 @@ appetitePrice                src/12ab-hold.js:84
 applyCrewEvent               src/12b-crew-events.js:215
 applyPadMode                 src/15-input.js:72
 applyPadSize                 src/15-input.js:8
-applySave                    src/14-save.js:208
+applySave                    src/14-save.js:206
 applySaveRest                src/14a1-save-rest.js:15
 applyVolumes                 src/09-audio.js:40
 apVel                        src/16-flight.js:132
@@ -117,7 +117,7 @@ armedCount                   src/13-combat.js:229
 arrive                       src/16-flight.js:178
 ARTIFACTS                    src/12h-relic.js:48
 askText                      src/11u-names.js:59
-asMap                        src/14-save.js:201
+asMap                        src/14-save.js:199
 assignToBase                 src/12a-crew.js:181
 AST_N                        src/24-mode-belt.js:86
 audioHush                    src/09-audio.js:12
@@ -654,81 +654,82 @@ chMoves                      src/25n-chess.js:166
 chName                       tests/91zzzt-chess.js:3
 chPosition                   src/25n-chess.js:43
 chPseudo                     src/25n-chess.js:119
-CHRON                        src/12am-chron.js:62
+CHRON                        src/12am-chron.js:73
 CHRON_ARC_RU                 src/12am-chron-lines.js:17
-CHRON_BASE                   src/12am-chron.js:266
-CHRON_BUSY                   src/12am-chron.js:268
+CHRON_BASE                   src/12am-chron.js:277
+CHRON_BUSY                   src/12am-chron.js:279
 CHRON_EPOCH                  src/12am-chron.js:27
-CHRON_FREEZE                 src/12am-chron.js:271
-CHRON_HOME                   src/12am-chron.js:40
+CHRON_FREEZE                 src/12am-chron.js:282
+CHRON_HOME                   src/12am-chron.js:51
 CHRON_INC_RU                 src/12am-chron-lines.js:10
 CHRON_KEY                    src/12am-chron.js:23
+CHRON_LINE_KEEP              src/12am-chron.js:41
 CHRON_LINES                  src/12am-chron.js:30
 CHRON_MOVES                  src/12am-chron-agents.js:9
 CHRON_NEED_KEYS              src/12am-chron-agents.js:76
 CHRON_R                      src/12am-chron.js:29
 CHRON_RITE_RU                src/12am-chron-lines.js:21
-CHRON_SAT                    src/12am-chron.js:33
+CHRON_SAT                    src/12am-chron.js:44
 CHRON_SAY                    src/12am-chron-lines.js:27
 CHRON_SEED                   src/12am-chron.js:28
 CHRON_SHIFT                  src/12am-chron.js:24
-CHRON_STAMP                  src/12am-chron.js:267
+CHRON_STAMP                  src/12am-chron.js:278
 CHRON_WANT                   src/12am-chron-agents.js:11
 chronAgentMove               src/12am-chron-agents.js:78
 chronArcs                    src/12am-chron-director.js:243
 chronAtWar                   src/12am-chron-agents.js:54
 chronAtWarAny                src/12am-chron-agents.js:63
-chronBorders                 src/12am-chron.js:179
-chronClone                   src/12am-chron.js:242
+chronBorders                 src/12am-chron.js:190
+chronClone                   src/12am-chron.js:253
 chronDirector                src/12am-chron-director.js:84
-chronFlip                    src/12am-chron.js:143
-chronForget                  src/12am-chron.js:308
-chronFresh                   src/12am-chron.js:63
-chronFront                   src/12am-chron.js:377
+chronFlip                    src/12am-chron.js:154
+chronForget                  src/12am-chron.js:319
+chronFresh                   src/12am-chron.js:74
+chronFront                   src/12am-chron.js:391
 chronGrudge                  src/12am-chron-agents.js:66
-chronHash                    src/12am-chron.js:207
-chronHomeNear                src/12am-chron.js:175
-chronHomeOf                  src/12am-chron.js:48
+chronHash                    src/12am-chron.js:218
+chronHomeNear                src/12am-chron.js:186
+chronHomeOf                  src/12am-chron.js:59
 chronIncOf                   src/12am-chron-director.js:234
 chronIncSince                src/12am-chron-director.js:222
-chronInvalidate              src/12am-chron.js:301
-chronKeys                    src/12am-chron.js:41
-chronLine                    src/12am-chron.js:188
-chronLineRu                  src/12am-chron.js:192
-chronLoad                    src/12am-chron.js:340
+chronInvalidate              src/12am-chron.js:312
+chronKeys                    src/12am-chron.js:52
+chronLine                    src/12am-chron.js:199
+chronLineRu                  src/12am-chron.js:203
+chronLoad                    src/12am-chron.js:353
 chronMonth                   src/12am-chron-director.js:59
 chronNeedLow                 src/12am-chron-agents.js:19
-chronNow                     src/12am-chron.js:202
-chronOwner                   src/12am-chron.js:368
-chronOwnerKey                src/12am-chron.js:373
+chronNow                     src/12am-chron.js:213
+chronOwner                   src/12am-chron.js:382
+chronOwnerKey                src/12am-chron.js:387
 chronRelBest                 src/12am-chron-agents.js:49
 chronRelWorst                src/12am-chron-agents.js:41
-chronReplay                  src/12am-chron.js:236
+chronReplay                  src/12am-chron.js:247
 chronRites                   src/12am-chron-director.js:244
-chronSat                     src/12am-chron.js:36
-chronSave                    src/12am-chron.js:317
+chronSat                     src/12am-chron.js:47
+chronSave                    src/12am-chron.js:328
 chronSay                     src/12am-chron-lines.js:125
 chronSeason                  src/12am-chron-director.js:69
 chronSeasonValid             src/12am-chron-director.js:60
-chronState                   src/12am-chron.js:272
-chronStep                    src/12am-chron.js:82
+chronState                   src/12am-chron.js:283
+chronStep                    src/12am-chron.js:93
 chronTension                 src/12am-chron-director.js:245
 chronTouch                   src/12am-chron-agents.js:28
-chronUltBetween              src/12am-chron.js:385
+chronUltBetween              src/12am-chron.js:399
 chronUltBetweenIn            tests/91zzzw-fx.js:447
 chronUltDrop                 src/12am-chron-agents.js:235
 chronUltFile                 src/12am-chron-agents.js:226
-chronUlts                    src/12am-chron.js:384
+chronUlts                    src/12am-chron.js:398
 chronUltStep                 src/12am-chron-agents.js:247
-chronWarBetween              src/12am-chron.js:390
+chronWarBetween              src/12am-chron.js:404
 chronWarOf                   src/12am-chron-agents.js:59
-chronWars                    src/12am-chron.js:382
+chronWars                    src/12am-chron.js:396
 chronWave                    src/12am-chron-lines.js:111
 chronWaveHead                src/12am-chron-lines.js:159
 chronWaveLines               src/12am-chron-lines.js:143
 chronWaveNext                src/12am-chron-lines.js:120
 chronWaveSet                 src/12am-chron-lines.js:115
-chronYaltaKey                src/12am-chron.js:57
+chronYaltaKey                src/12am-chron.js:68
 chRun                        tests/91zzzw-chron.js:14
 chSel                        src/25n-chess.js:251
 chSq                         tests/91zzzt-chess.js:2
@@ -755,7 +756,7 @@ cirrusSprite                 src/19e-clouds.js:226
 CKPT                         src/25-cockpit.js:91
 CKPT_STYLE                   src/25-cockpit.js:19
 clamp                        src/01-core.js:7
-clampi                       src/12am-chron.js:141
+clampi                       src/12am-chron.js:152
 CLEARANCE                    src/05e-clearance.js:22
 clearanceEarned              src/05e-clearance.js:32
 clearanceNow                 src/05e-clearance.js:45
@@ -1226,8 +1227,8 @@ drawDeposit                  src/21b-surface-deco.js:392
 drawDig                      src/23a-dig-draw.js:655
 drawDigFauna                 src/23-mode-dig.js:313
 drawDigWorld                 src/23a-dig-draw.js:45
-drawDronesMap                src/12e-drone-flight.js:299
-drawDronesSystem             src/12e-drone-flight.js:213
+drawDronesMap                src/12e-drone-flight.js:310
+drawDronesSystem             src/12e-drone-flight.js:224
 drawDustMotes                src/19-mode-landing.js:552
 drawElevator                 src/20aa-poi-shapes.js:91
 drawExhaust                  src/16a-space.js:360
@@ -1336,32 +1337,32 @@ DRILL_EAT                    src/13a-guns.js:37
 DRONE_BREAK_P                src/12e-drone-flight.js:21
 DRONE_FIX_MS                 src/12e-drone-flight.js:24
 DRONE_MAX_CATCHUP            src/12e-drone-flight.js:27
-DRONE_TAIL                   src/12e-drone-flight.js:194
+DRONE_TAIL                   src/12e-drone-flight.js:205
 DRONE_TRIP_BASE              src/12e-drone-flight.js:18
-droneBreakP                  src/12e-drone-flight.js:134
-droneBreaks                  src/12e-drone-flight.js:139
+droneBreakP                  src/12e-drone-flight.js:145
+droneBreaks                  src/12e-drone-flight.js:150
 droneCapacity                src/12-economy.js:181
-droneFar                     src/12e-drone-flight.js:73
-droneFixMs                   src/12e-drone-flight.js:140
-droneGuestPos                src/12e-drone-flight.js:200
-droneHome                    src/12e-drone-flight.js:74
+droneFar                     src/12e-drone-flight.js:76
+droneFixMs                   src/12e-drone-flight.js:151
+droneGuestPos                src/12e-drone-flight.js:211
+droneHome                    src/12e-drone-flight.js:77
 droneMarket                  src/12-economy.js:135
 droneName                    src/12e-drone-flight.js:38
 droneNextId                  src/12e-drone-flight.js:32
 droneNormalize               src/12e-drone-flight.js:44
 dronePaybackH                src/12-economy.js:112
-dronePhase                   src/12e-drone-flight.js:101
-dronePoint                   src/12e-drone-flight.js:65
-dronePos                     src/12e-drone-flight.js:113
+dronePhase                   src/12e-drone-flight.js:104
+dronePoint                   src/12e-drone-flight.js:68
+dronePos                     src/12e-drone-flight.js:116
 droneRecall                  src/12-economy.js:102
-droneRoutes                  src/12e-drone-flight.js:166
+droneRoutes                  src/12e-drone-flight.js:177
 DRONES                       src/04-mods.js:57
 droneShopHas                 src/12-economy.js:114
 droneShopTake                src/12-economy.js:121
-droneStateRu                 src/12e-drone-flight.js:151
-droneSys                     src/12e-drone-flight.js:62
+droneStateRu                 src/12e-drone-flight.js:162
+droneSys                     src/12e-drone-flight.js:65
 droneTarget                  src/12-economy.js:185
-droneTripMs                  src/12e-drone-flight.js:89
+droneTripMs                  src/12e-drone-flight.js:92
 drOut                        tests/91zzzzzn-doors.js:45
 drPair                       tests/91zzzzzn-doors.js:19
 DUST_COL                     src/16a-space.js:252
@@ -1917,7 +1918,7 @@ helmTargets                  src/15a-helm.js:203
 helmTick                     src/15a-helm.js:262
 helmTrail                    src/15a-helm.js:153
 hex2rgb                      src/03-ships.js:190
-hexA                         src/12e-drone-flight.js:289
+hexA                         src/12e-drone-flight.js:300
 hexa                         src/12w-survey.js:91
 hexRGB                       src/24-mode-belt.js:81
 HIN_DOORW                    src/29c-home-in.js:24
@@ -2428,6 +2429,7 @@ logAdd                       src/11-log.js:15
 logBtnLabel                  src/11-log.js:60
 logOpen                      src/11-log.js:14
 logPageOf                    src/11-log.js:13
+logShip                      src/01a-crashlog.js:50
 logTime                      src/11-log.js:54
 LONG_HOD                     src/12b3-fx-cult.js:32
 look                         src/28y-look.js:270
@@ -4679,17 +4681,18 @@ WAR_API                      src/14b-war-net.js:19
 WAR_BUSY                     src/14b-war-net.js:21
 WAR_LED_CACHE                src/14b-war-net.js:45
 WAR_PULL_MS                  src/14b-war-net.js:20
-warBoot                      src/14b-war-net.js:158
-warCall                      src/14b-war-net.js:82
-warClock                     src/14b-war-net.js:72
+warBoot                      src/14b-war-net.js:187
+warCall                      src/14b-war-net.js:100
+warClock                     src/14b-war-net.js:90
 warHere                      src/14b-war-net.js:22
 warLed                       src/14b-war-net.js:46
 warLedger                    src/14b-war-net.js:51
-warLedLast                   src/14b-war-net.js:65
-warLedPut                    src/14b-war-net.js:55
-warPressure                  src/14b-war-net.js:137
-warPull                      src/14b-war-net.js:88
-warPut                       src/14b-war-net.js:127
+warLedLast                   src/14b-war-net.js:81
+warLedPut                    src/14b-war-net.js:67
+warPressure                  src/14b-war-net.js:166
+warProv                      src/14b-war-net.js:63
+warPull                      src/14b-war-net.js:106
+warPut                       src/14b-war-net.js:156
 warStore                     src/14b-war-net.js:24
 warStoreSet                  src/14b-war-net.js:30
 warTok                       src/14b-war-net.js:23
@@ -4813,7 +4816,7 @@ zooTick                      src/11ad-zoo.js:41
   · имена:95
   · удалённость и настрой сектора:102
 
-## src/01a-crashlog.js · 6 КБ
+## src/01a-crashlog.js · 7 КБ
 
 ## src/02-world.js · 14 КБ
   · ресурсы:1
@@ -5116,7 +5119,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12am-chron-lines.js · 11 КБ
   · шесть волн (M371, §7.3, §15):1
 
-## src/12am-chron.js · 23 КБ
+## src/12am-chron.js · 24 КБ
   · летопись (M370, §7.5, §16.2–16.4):1
 
 ## src/12ap-notebook.js · 12 КБ
@@ -5172,10 +5175,10 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12d-mgr-face.js · 13 КБ
   · портреты управляющих:1
 
-## src/12e-drone-flight.js · 20 КБ
+## src/12e-drone-flight.js · 21 КБ
   · дроны летают:1
-  · дрон в кадре:188
-  · куда делась вкладка РЕЙСЫ:319
+  · дрон в кадре:199
+  · куда делась вкладка РЕЙСЫ:330
 
 ## src/12e-mgr-jobs.js · 19 КБ
   · поручения управляющих:1
@@ -5347,7 +5350,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/14-save.js · 44 КБ
   · сохранение:1
   · запись не имеет права убить полёт:100
-  · пустая карта возвращается из облака СПИСКОМ:179
+  · пустая карта возвращается из облака СПИСКОМ:177
 
 ## src/14a-cloud.js · 12 КБ
   · облако, вкладки и обмен:1
@@ -5358,7 +5361,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/14a1-save-rest.js · 27 КБ
   · загрузка: вторая половина (выделено из 14, M415):1
 
-## src/14b-war-net.js · 10 КБ
+## src/14b-war-net.js · 12 КБ
   · провод войны (M376, §13, §16.4):1
 
 ## src/15-input.js · 35 КБ
@@ -6226,7 +6229,7 @@ zooTick                      src/11ad-zoo.js:41
   · кадр базы (M413):159
   · по письму соседнего захода (0.415.1):214
 
-## tests/91zzzw-chron.js · 34 КБ
+## tests/91zzzw-chron.js · 36 КБ
   · летопись (M370, §16.2–16.5):1
   · Директор и шесть волн (M371, §15, §7.3):140
   · война, которую видно (M372, §7.4):211
@@ -6283,7 +6286,7 @@ zooTick                      src/11ad-zoo.js:41
   · та же грамматика у остальных генераторов (M369a):151
   · как это достаётся (M369b, §19.3):222
 
-## tests/91zzzy-drones.js · 10 КБ
+## tests/91zzzy-drones.js · 14 КБ
   · автотесты: рейсы дронов (M237):1
 
 ## tests/91zzzz-fuzz.js · 15 КБ
@@ -6458,5 +6461,8 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzzzzy-alive.js · 9 КБ
   · живые сущности за вечер (M359):1
+
+## tests/91zzzzzz-crashlog.js · 3 КБ
+  · автотесты: что уезжает в crash.log (0.419):1
 
 ## tests/99-run.js · 2 КБ

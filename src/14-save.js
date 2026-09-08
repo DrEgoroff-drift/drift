@@ -18,7 +18,7 @@ function stSet(k,v){
     if(!STORAGE_TOLD){
       STORAGE_TOLD=true;
       if(typeof say==="function")say("ИГРА НЕ ЗАПИСЫВАЕТСЯ\nбраузер не даёт хранить\nсохраните код: НАСТРОЙКИ → СОХРАНЕНИЕ",420);
-      if(typeof logAdd==="function")logAdd("warn","Браузер не даёт записывать: полёт не сохраняется. НАСТРОЙКИ → СОХРАНЕНИЕ, скопируйте код.");
+      logShip("Браузер не даёт записывать: полёт не сохраняется. НАСТРОЙКИ → СОХРАНЕНИЕ, скопируйте код.");
     }
     return false;
   }
@@ -139,7 +139,7 @@ function saveText(){
   let s;
   try{s=snapshot();}
   catch(e){
-    if(typeof logAdd==="function")logAdd("warn","Запись не собралась: "+((e&&e.message)||e));
+    logShip("Запись не собралась: "+((e&&e.message)||e));
     return null;
   }
   for(let pass=0;pass<4;pass++){
@@ -152,9 +152,8 @@ function saveText(){
         const top=saveTop(saveWeigh(s));
         if(saveFatSaid!==top){
           saveFatSaid=top;
-          if(typeof logAdd==="function")
-            logAdd("warn","Запись разбухла: "+Math.round(t.length/1024)+
-              " КБ · тяжелее всего "+top);
+          logShip("Запись разбухла: "+Math.round(t.length/1024)+
+            " КБ · тяжелее всего "+top);
         }
       }
       return t;
@@ -168,8 +167,7 @@ function saveText(){
        успел прочитать первую (скрин 30.08.2026, 23:23) */
     if(saveCutSaid!==bad[0]){
       saveCutSaid=bad[0];
-      if(typeof logAdd==="function")
-        logAdd("warn","Запись не влезла в строку: раздел «"+bad[0]+"» вынут · "+saveTop(rows));
+      logShip("Запись не влезла в строку: раздел «"+bad[0]+"» вынут · "+saveTop(rows));
       if(typeof say==="function")
         say("ЗАПИСЬ ПОЧИНЕНА\nраздел «"+bad[0]+"» разросся и вынут\nостальное записано",420);
     }

@@ -7,6 +7,59 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.419.0 - M423: the log told the truth, the drones went back to work, and the chronicle stopped drifting
+
+The author, 08.09.2026: «а посмотри мои логи в игре». Four days of `~/drift-data/crash.log`: 116
+lines and not one real crash — but a hundred of those lines were the game talking to itself, and
+behind the noise stood three defects. All three are fixed here, each with a suite that fails on
+the old code.
+
+**The ship's journal is not the error log.** Since 0.359.0 a hook in `28-loop` posted every `warn`
+line of the journal to the server: «просто пиши всё, потом разберём». We разобрали. A drone in
+the dock, pirates digging into a sector, a управляющий grumbling about his bare percentage — news,
+not trouble, and a real clue was no longer findable in that wall. The hook is gone; `logShip`
+(`01a-crashlog`) writes the journal line and posts the letter in one call, and it is used by the
+eight places that mean a defect: storage refusing to write, a save that would not assemble or fit,
+the cloud gone stale, conflicting or too large, and the chronicle disagreeing with the majority.
+Suite `91zzzzzz-crashlog` reads the build itself: exactly one place in it may post the journal.
+
+**A repaired drone is a healthy drone.** Wear was counted over the whole life of the machine —
+`d.trips`, which never resets — and a drone's circle is 25 to 240 seconds, so one offline day the
+loop catches up adds more than a thousand circles. After a week the break chance had climbed from
+1.5% to 11–15%, and eight minutes of dock ate the shift: the author entered the game to find eight
+of his thirteen machines standing at «Лухаара», three sessions running. Wear now counts from the
+last repair (`d.wear`, zeroed where the loop repairs), while `d.trips` stays the machine's service
+record. Suite: five days of catch-up, thousands of circles, and the break chance stays where a
+healthy machine's is.
+
+**How the chronicle could diverge at all.** It could not, by design: `step()` is integers only, the
+seed is one for everybody, and replaying сводки 0…N gives the same galaxy byte for byte. But the
+disk cache did not store the chronicle's own lines, and the lines are not decoration: `chronGrudge`
+counts a power's grievances over the last 24 сводки from them, and the mechanic families read
+incidents up to 40 сводки back. A client rising from cache stepped on with no memory of either and
+walked into its own history; a client opening the game for the first time replayed from zero and
+walked into another. That is the whole of «Летопись разошлась с большинством», which had fired on
+every release from 0.376.0 to 0.418.0. `chronSave` now carries the tail of the lines
+(`CHRON_LINE_KEEP`, wider than the longest span that reads them), and a new suite replays 400
+сводки from zero, from a disk cache written at 200, and from two landings in a row: one hash.
+
+Three more repairs around the same report, so it can be trusted next time:
+
+- The verdict is counted **per game version** (`war.php`, buckets under `v`). The rules of the
+  chronicle change with releases; a build that follows new rules is not a minority, it is a
+  different history, and it used to be told off for it forty releases running.
+- **No verdict below a quorum of four**, and a tie is agreement. A lone first report used to agree
+  with itself, and the second, different one was declared a minority at 1:1.
+- The read-modify-write of the hash ledger now runs **under `flock`**, so simultaneous reports stop
+  overwriting each other along with the evidence.
+
+And the ledger of the **open** сводка is marked as what it is — a snapshot. It used to be filed
+next to the closed ones, so `since` stopped asking about that сводка forever: the client kept half
+of other people's deeds in its replay while a neighbour who arrived an hour later got the whole of
+it. Marked provisional, it arrives a second time, closed, and the hash for a сводка still held as a
+snapshot is not reported at all.
+
+---
 ## 0.418.0 - M422: the thumb goes anywhere, and pulling back is the brake
 
 The author on the phone: «управление на мобилке говно… из любого места на экране пальцем
