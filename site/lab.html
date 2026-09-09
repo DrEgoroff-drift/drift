@@ -45,7 +45,7 @@ td .suite{color:var(--text)}td .msg{color:var(--dim);display:block;margin-top:2p
 .tag{display:inline-block;padding:1px 6px;border:1px solid var(--line);font-size:10px;letter-spacing:.1em;
   text-transform:uppercase;color:var(--dim);margin-right:4px}
 .tag.red{color:var(--alarm);border-color:rgba(255,107,87,.4)}.tag.green{color:var(--good);border-color:rgba(143,208,138,.35)}
-.tag.noreport,.tag.timeout{color:var(--amber);border-color:rgba(242,178,92,.4)}
+.tag.noreport,.tag.timeout{color:var(--amber);border-color:rgba(242,178,92,.4)}.tag.oom{color:var(--rare);border-color:rgba(197,138,224,.4)}
 .tag.new{color:var(--phos);border-color:rgba(127,230,216,.4)}
 tr.err{cursor:pointer}tr.err:hover td{background:rgba(127,230,216,.04)}
 tr.det td{background:rgba(8,13,22,.8);color:var(--dim);font-size:11px;white-space:pre-wrap;word-break:break-word;padding:8px 14px}
@@ -84,7 +84,7 @@ tr.det td{background:rgba(8,13,22,.8);color:var(--dim);font-size:11px;white-spac
 
   <h3>Сессии: <b>прогоны за ночь</b></h3>
   <div class="chart"><canvas id="c1"></canvas><div class="tip"></div>
-    <div class="legend"><span><i style="background:var(--good)"></i>зелёные</span><span><i style="background:var(--alarm)"></i>красные</span><span><i style="background:var(--amber)"></i>без отчёта</span><span><i style="background:var(--phos)"></i>новых ошибок</span></div></div>
+    <div class="legend"><span><i style="background:var(--good)"></i>зелёные</span><span><i style="background:var(--alarm)"></i>красные</span><span><i style="background:var(--amber)"></i>без отчёта</span><span><i style="background:var(--rare)"></i>убит по памяти</span><span><i style="background:var(--phos)"></i>новых ошибок</span></div></div>
 
   <h3>Тяжёлые сети: <b>секунды на прогон</b></h3>
   <div class="chart"><canvas id="c2"></canvas><div class="tip"></div><div class="legend" id="l2"></div></div>
@@ -134,7 +134,7 @@ tr.det td{background:rgba(8,13,22,.8);color:var(--dim);font-size:11px;white-spac
   // ── плитки ──
   const errs=D.errors||[],day=Date.now()-864e5;
   const newDay=errs.filter(e=>Date.parse(e.first.replace(" ","T")+"Z")>day).length;
-  const red=(last.red||0)+(last.noreport||0)+(last.timeout||0);
+  const red=(last.red||0)+(last.noreport||0)+(last.timeout||0)+(last.oom||0);
   const tiles=[
     ["прогонов за сессию",last.units||0,"",(last.secs?Math.round(last.secs/60)+" мин работы":"")],
     ["зелёных",last.green||0,"ok",""],
@@ -160,13 +160,13 @@ tr.det td{background:rgba(8,13,22,.8);color:var(--dim);font-size:11px;white-spac
   // 1. сессии: столбики
   {const {cv,cx,W,H}=canvas("#c1");const pad={l:36,r:10,t:10,b:22};const n=S.length;
     const max=Math.max(1,...S.map(s=>s.units||0));axis(cx,W,H,pad,max,"");
-    const bw=(W-pad.l-pad.r)/n,h0=H-pad.b,sc=(H-pad.t-pad.b)/max;
+    const bw=Math.min(56,(W-pad.l-pad.r)/n),h0=H-pad.b,sc=(H-pad.t-pad.b)/max;
     S.forEach((s,i)=>{const x=pad.l+i*bw+bw*.15,w=Math.max(2,bw*.7);let y=h0;
-      for(const [k,c] of [["green",C.good],["red",C.alarm],["noreport",C.amber],["timeout",C.amber]]){const v=s[k]||0;if(!v)continue;cx.fillStyle=c;cx.fillRect(x,y-v*sc,w,v*sc);y-=v*sc;}
+      for(const [k,c] of [["green",C.good],["red",C.alarm],["noreport",C.amber],["timeout",C.amber],["oom",C.rare]]){const v=s[k]||0;if(!v)continue;cx.fillStyle=c;cx.fillRect(x,y-v*sc,w,v*sc);y-=v*sc;}
       if(s.new){cx.fillStyle=C.phos;cx.fillRect(x+w/2-1.5,h0-(s.units||0)*sc-4-s.new*3,3,s.new*3);}
       if(n<=20||i%Math.ceil(n/12)===0){cx.fillStyle=C.dim;cx.fillText(s.id.slice(4,6)+"."+s.id.slice(6,8)+" "+s.id.slice(9,11)+"ч",x-2,H-6);}});
     tipOn(cv,(x)=>{const i=Math.floor((x-pad.l)/bw);const s=S[i];if(!s)return "";
-      return "<b>"+s.id+"</b> · "+s.ver+"<br>прогонов "+(s.units||0)+": зелёных "+(s.green||0)+", красных "+(s.red||0)+", без отчёта "+((s.noreport||0)+(s.timeout||0))+"<br>новых ошибок "+(s.new||0)+" · "+Math.round((s.secs||0)/60)+" мин · пик "+(s.rss||0)+" МБ"+(s.t1?"":" · не закончена");});}
+      return "<b>"+s.id+"</b> · "+s.ver+"<br>прогонов "+(s.units||0)+": зелёных "+(s.green||0)+", красных "+(s.red||0)+", без отчёта "+((s.noreport||0)+(s.timeout||0))+", по памяти "+(s.oom||0)+"<br>новых ошибок "+(s.new||0)+" · "+Math.round((s.secs||0)/60)+" мин · пик "+(s.rss||0)+" МБ"+(s.t1?"":" · не закончена");});}
 
   // 2. тяжёлые: линии по сессиям (восемь самых долгих)
   {const {cv,cx,W,H}=canvas("#c2");const pad={l:40,r:10,t:10,b:22};
