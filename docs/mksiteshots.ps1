@@ -33,7 +33,8 @@ $add = @'
            surface:[updateSurface,drawSurface],dig:[updateDig,drawDig],
            cave:[updateCave,drawCave],belt:[updateBelt,drawBelt],
            scoop:[updateScoop,drawScoop],base:[updateBase,drawBase],
-           raid:[updateRaid,drawRaid],homein:[updateHomeIn,drawHomeIn]}[G.mode];
+           raid:[updateRaid,drawRaid],homein:[updateHomeIn,drawHomeIn],
+           wanderer:[updateWanderRoom,drawWanderRoom],winter:[updateWinter,drawWinter]}[G.mode];
     if(!M){document.title="ERR режим "+G.mode;return;}
     /* 240 шагов: столько нужно камере, чтобы доехать до цели, а чанкам —
        чтобы испечься; дальше картинка уже не меняется */
@@ -75,7 +76,8 @@ $add = @'
 
 # имя на сайте ← сцена в игре
 $map = [ordered]@{ world="surface"; sys="system"; map="map"; cockpit="belt";
-                   cave="cave"; base="base"; land="landing"; home="rooms" }
+                   cave="cave"; base="base"; land="landing"; home="rooms";
+                   soroka="wander"; winter="winter" }
 $chrome = "C:\Program Files\Google\Chrome\Application\chrome.exe"
 $siteDir = Join-Path $root "site\shots"
 

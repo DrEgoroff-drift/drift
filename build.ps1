@@ -312,7 +312,7 @@ function Bird {
 # `site/war.js` — заголовок с заглушками (`site/war-head.js`) плюс модули
 # летописи в порядке склейки игры. Список явный: страница не должна тянуть
 # шесть мегабайт игры ради трёхсот систем и шести агентов.
-$WAR_MODULES = @("01-core.js", "03a-hull-maker.js", "12al-powers.js",
+$WAR_MODULES = @("01-core.js", "03a-hull-maker.js", "12al-powers.js", "17z-map-backdrop.js",
   "12am-chron-agents.js", "12am-chron-director.js", "12am-chron-lines.js", "12am-chron.js",
   "12an-chron-news.js",
   "12at-vote.js", "12au-rites.js", "12av-boss.js", "12aw-circ.js", "12b0-fx-pow.js", "14b-war-net.js")

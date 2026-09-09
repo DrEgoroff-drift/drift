@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 517 · символов верхнего уровня: 4851
+Файлов: 518 · символов верхнего уровня: 4853
 
 ## СИМВОЛЫ
 
@@ -1274,7 +1274,7 @@ drawLanding                  src/19-mode-landing.js:281
 drawLoreMarks                src/12q-lore.js:235
 drawLuxeDeck                 src/03c-hull-luxe.js:109
 drawLuxeSkin                 src/03c-hull-luxe.js:27
-drawMap                      src/18-mode-map.js:126
+drawMap                      src/18-mode-map.js:106
 drawMisFigure                src/11z-misclosure.js:63
 drawModule                   src/21aa-base-rooms.js:384
 drawMonolith                 src/20aa-poi-shapes.js:193
@@ -2242,7 +2242,7 @@ jobOffer                     src/12e-mgr-jobs.js:228
 jobPick                      src/12e-mgr-jobs.js:259
 jobRefuse                    src/12e-mgr-jobs.js:57
 jobTick                      src/12e-mgr-jobs.js:287
-jump                         src/18-mode-map.js:586
+jump                         src/18-mode-map.js:511
 jumpToBase                   src/21a-mode-base.js:384
 KEEP_DARK_AFTER              src/11k-keepers.js:48
 KEEP_HABIT                   src/11k-keepers.js:35
@@ -2552,14 +2552,15 @@ MAP_BOX                      src/18-mode-map.js:27
 MAP_LAYERS                   src/18b-map-hold.js:25
 MAP_MARKS_MAX                src/18a-map-addr.js:29
 mapAddrBox                   src/18a-map-addr.js:227
-mapBack                      src/18-mode-map.js:111
-MAPBG                        src/18-mode-map.js:61
+mapBack                      src/18-mode-map.js:91
+mapBandPaint                 src/17z-map-backdrop.js:36
+MAPBG                        src/17z-map-backdrop.js:14
 mapBox                       src/18-mode-map.js:28
-mapCell                      src/18-mode-map.js:88
+mapCell                      src/18-mode-map.js:68
 mapCellXY                    src/18a-map-addr.js:52
-mapCleanSet                  src/18-mode-map.js:125
+mapCleanSet                  src/18-mode-map.js:105
 mapDeck                      src/18-mode-map.js:13
-mapFit                       src/18-mode-map.js:93
+mapFit                       src/18-mode-map.js:73
 mapGoAddr                    src/18a-map-addr.js:215
 mapGridDraw                  src/18a-map-addr.js:55
 mapHoldingsDraw              src/18b-map-hold.js:80
@@ -2573,15 +2574,16 @@ mapMarkAt                    src/18a-map-addr.js:31
 mapMarks                     src/18a-map-addr.js:30
 mapMarksDraw                 src/18a-map-addr.js:105
 mapMarkToggle                src/18a-map-addr.js:33
-mapNebula                    src/18-mode-map.js:62
+mapNebula                    src/17z-map-backdrop.js:15
 mapOwnHere                   src/18b-map-hold.js:64
 mapParseAddr                 src/18a-map-addr.js:223
-mapPeek                      src/18-mode-map.js:104
+mapPeek                      src/18-mode-map.js:84
 mapPriceDraw                 src/12aa-need.js:327
 mapPriceRows                 src/12aa-need.js:302
 mapRail                      src/18-mode-map.js:17
-mapRange                     src/18-mode-map.js:89
-mapReset                     src/18-mode-map.js:123
+mapRange                     src/18-mode-map.js:69
+mapReset                     src/18-mode-map.js:103
+mapRhumbPaint                src/17z-map-backdrop.js:80
 mapRingsDraw                 src/18a-map-addr.js:72
 mapRoseDraw                  src/18a-map-addr.js:196
 mapRulersDraw                src/18a-map-addr.js:122
@@ -2590,9 +2592,9 @@ mapRumoursDraw               src/18a-map-addr.js:86
 mapTagAt                     src/18b-map-hold.js:71
 mapTrassaPairs               src/18b-map-hold.js:47
 mapUnderTrassa               src/18b-map-hold.js:60
-mapViewC                     src/18-mode-map.js:82
-mapZoomK                     src/18-mode-map.js:87
-mapZoomSet                   src/18-mode-map.js:90
+mapViewC                     src/18-mode-map.js:62
+mapZoomK                     src/18-mode-map.js:67
+mapZoomSet                   src/18-mode-map.js:70
 marketCtx                    src/12-economy.js:18
 marketFor                    src/12-economy.js:2
 marketPrice                  src/12-economy.js:41
@@ -5467,7 +5469,9 @@ zooTick                      src/11ad-zoo.js:41
 ## src/17f-sys-traffic.js · 4 КБ
   · трафик системы: чужие машины, которым тут есть дело (M309):1
 
-## src/18-mode-map.js · 42 КБ
+## src/17z-map-backdrop.js · 5 КБ
+
+## src/18-mode-map.js · 38 КБ
   · карта:1
   · где у карты пол и где правый борт:3
   · карта: ночное небо, а не схема молекулы:51

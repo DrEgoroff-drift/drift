@@ -180,6 +180,12 @@ setTimeout(function(){
       }
       if(T){winTake(T);enterWinter();}
     },
+    wander:function(){
+      /* «Сорока» ходит по кругу и стоит не везде: стенду она нужна здесь и
+         сейчас, поэтому лавка открывается принудительно (openWanderer force) */
+      var S=sysWhere(function(S){return !!S.station;});if(S)goTo(S);
+      openWanderer({force:true});
+    },
     spa:function(){
       var S=sysWhere(function(S){return !!solid(S);});if(S)goTo(S);
       var p=solid(S);surf(p);
@@ -224,7 +230,7 @@ $out=$head+$add+"</body></html>"
 Write-Output "docs/shots.html собран"
 if($Shoot){
   $chrome="C:\Program Files\Google\Chrome\Application\chrome.exe"
-  $scenes=@("system","system2","map","belt","belt2","scoop","landing","surface","surface2","cave","mine","base","raid","station","cantina","hq","hours","lights","home","rooms")
+  $scenes=@("system","system2","map","belt","belt2","scoop","landing","surface","surface2","cave","mine","base","raid","station","cantina","hq","hours","lights","home","rooms","wander","winter")
   $dir=Join-Path $root "docs\shots"
   foreach($s in $scenes){
     $png=Join-Path $dir "$s.png"

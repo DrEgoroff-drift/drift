@@ -118,3 +118,24 @@ input:focus-visible{outline-offset:0}
 .x{float:right;color:var(--dim);cursor:pointer;font-size:16px;line-height:1;margin:-4px -4px 0 0}
 
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+
+/* кадр, который увеличивается: класс ставит сам lightbox.js */
+img.zoomable{cursor:zoom-in}
+
+/* ── кадр во весь экран ── */
+.lb{position:fixed;inset:0;z-index:90;display:none;background:rgba(2,4,8,.94);
+  backdrop-filter:blur(2px);align-items:center;justify-content:center;
+  flex-direction:column;gap:14px;padding:22px;cursor:zoom-out}
+.lb.on{display:flex}
+.lb img{max-width:min(1600px,100%);max-height:calc(100% - 74px);object-fit:contain;
+  border:1px solid var(--line);background:#03050a}
+.lb .cap{font-size:12px;letter-spacing:.07em;color:var(--dim);text-align:center;
+  max-width:760px}
+.lb .x{position:absolute;top:14px;right:20px;font-size:26px;line-height:1;
+  color:var(--dim);cursor:pointer}
+.lb .x:hover{color:var(--text)}
+.lb .nav{position:absolute;top:50%;transform:translateY(-50%);font-size:34px;
+  line-height:1;color:var(--dim);cursor:pointer;padding:14px 18px;user-select:none}
+.lb .nav:hover{color:var(--text)}
+.lb .prev{left:4px}.lb .next{right:4px}
+@media(max-width:700px){.lb .nav{font-size:26px;padding:10px 8px}}
