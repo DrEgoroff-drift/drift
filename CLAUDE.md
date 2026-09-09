@@ -56,36 +56,28 @@ Never read whole: `docs/PLAN-archive.md`, `docs/INDEX.md`, `drift.html`, `tests.
 ## Size guard
 
 `build.ps1` warns when a module in `src/` or a suite in `tests/` passes **40 KB**, and when
-`PLAN.md` passes **60 KB**. It is a reminder, not an error: past that size a file can no longer
-be read whole cheaply, and the next milestone inside it costs more than splitting it would.
+`PLAN.md` passes **60 KB** — a reminder, not an error: past that a file can no longer be read
+whole cheaply. The rule looks forward. Modules already over the line for good reason are listed
+in `build.ps1` (`$BULK_OLD`) and stay silent until they **grow**; a new one crossing it is
+flagged at once. When splitting: cut along an existing seam, keep the concatenation order, never
+split a `const` table.
 
-The rule looks forward, not back. The modules already over the threshold for good reason are listed in `build.ps1` (`$BULK_OLD`)
-with their measured size and stay silent until they **grow**. A new module crossing
-the line is flagged immediately. When splitting: cut along an existing seam (a section header,
-a family of functions), keep the concatenation order, and never split a `const` table.
-
-That guard is about text; binaries are the real risk. `docs/shots/` collecting one full-res PNG
-per `mk*.ps1` design-review stand once grew `.git` to 650 MB before a cleanup — untraceable
-afterwards, since old blobs stay in history even once a file is untracked. `.githooks/pre-commit`
-warns at 500 KB and refuses the commit at 10 MB for any staged file (`git commit --no-verify`
-overrides it once, for the rare legitimate case). It is not wired in by git itself — a hooks
-directory isn't part of the tree it guards — so every clone runs this once:
+Binaries are the real risk — `docs/shots/` once grew `.git` to 650 MB, and old blobs stay in
+history even after the file is untracked. `.githooks/pre-commit` warns at 500 KB and refuses at
+10 MB; it is not wired in by git itself, so every clone runs this once:
 
 ```bash
 git config core.hooksPath .githooks
 ```
 
-**The default answer for a new picture is no.** `docs/shots/*.png` is ignored and whitelists only
-the 24 frames `README.md`/`ALMANAC.md`/`PLAN-archive.md` actually cite (same pattern as the older
-`docs/shots/x_*.png` rule). A stand's shot stays local unless it earns a line there — and a stand
-is meant to be looked at through `dev.ps1` anyway, which needs no file in git at all.
-
-**A reshoot is not free, and this is what actually grew the 562 MB.** Those 24 frames weigh 24 MB
-and git cannot delta a PNG, so every wholesale reshoot writes the full 24 MB into history *for
-ever*: `scoop.png` alone had piled up 48 MB across its versions. So reshoot the frames a change
-actually touched — `docs/mkshots.ps1 -Shoot` sweeps all twenty scenes and is the expensive habit,
-not the safe one. Never refresh the gallery "while I'm here"; when many frames are genuinely
-stale, that is a deliberate act with the cost said out loud, not a tidy-up.
+**The default answer for a new picture is no.** `docs/shots/*.png` is ignored and whitelists
+only the 24 frames `README.md`/`ALMANAC.md`/`PLAN-archive.md` actually cite; a stand is meant to
+be looked at through `dev.ps1`, which needs no file in git at all. **And a reshoot is not free**
+— those 24 frames weigh 24 MB, git cannot delta a PNG, so every wholesale reshoot writes 24 MB
+into history for ever (`scoop.png` alone piled up 48 MB). Reshoot only the frames a change
+touched; `docs/mkshots.ps1 -Shoot` sweeps all twenty scenes and is the expensive habit. Never
+refresh the gallery «while I'm here» — when many frames are genuinely stale, that is a
+deliberate act with the cost said out loud.
 
 ## Where things live
 
@@ -201,189 +193,74 @@ through, waited out until night, or opened on a phone.
 
 ## Tooling gotchas that cost real time
 
-- **A `.ps1` with Russian text MUST be saved UTF-8 *with* BOM.** Windows
-  PowerShell 5.1 reads a BOM-less file as the system ANSI codepage and turns
-  every Cyrillic literal into mojibake — silently, no error, and the file still
-  looks right in an editor. `build.ps1` now flags such files. To fix one:
-  `$t=[IO.File]::ReadAllText($p,[Text.Encoding]::UTF8); [IO.File]::WriteAllText($p,$t,(New-Object Text.UTF8Encoding $true))`.
-  Files under `src/` are safe — `build.ps1` reads them as UTF-8 explicitly.
-- **The build orders `src/` by bytes (`Sort-Ordinal`, 0.359.1), not by `Sort-Object Name`.** The
-  culture-aware sort treated `-` as a minor difference and, worse, sorted differently on Windows
-  PowerShell and on the ubuntu runner's pwsh: 0.359.0 was green here and dead on the site
-  («Cannot access WANDER_CAT before initialization» — the runner glued `12v-wander-shop-cosm`
-  before `12v-wander-shop`). Byte order is what `ls` shows in Git Bash: `-` (0x2d) < `.` (0x2e)
-  < digits < letters, so `12v-x.js` < `12v.js` < `12va-x.js`. To land *after* an existing module,
-  step its letter (`21ba-`, `21bb-`), and check the top-level `const` tables it reads are declared
-  earlier in that order. The deploy workflow now opens `tests.html` in headless Chrome and refuses
-  to publish on an `Uncaught` — a top-level TDZ stops the whole script and the game shows a title
-  screen over a dead loop, which is what «всё упало» looked like.
-- **`typeof foo==="function"` around a call you know must exist turns your own typo into silence.**
-  It is the right guard for a genuinely optional cross-module call — the pattern the game is full of,
-  and it earns its keep there. It is the wrong guard in a stand or a caller that *requires* the
-  function: the name is never checked, the `else` branch runs, and the page looks plausible while
-  showing something else entirely. `docs/mkview.ps1` had `mgrHire(mgrRoll(…))` — neither function
-  exists (they are `hireMgr` and `genMgr`) — wrapped in exactly that guard, so `?s=hqfull` had been
-  quietly rendering the **empty** HQ, i.e. the same picture as `?s=hq`, with nothing to compare.
-  Two more of the same were introduced the same night (`crewPool`/`crewHire`, `cockpitOn`). To audit
-  a file: pull every guarded name and check it against `src/`:
-  `grep -o 'typeof [A-Za-z_][A-Za-z0-9_]*==="function"' file | sed 's/typeof //;s/==="function"//' | sort -u`
-- **A script parameter shadows a variable of the same name, case-insensitively.**
-  `param([switch]$Shots)` plus a later `$shots = Get-ChildItem …` fails with
-  "Cannot convert System.Object[] to SwitchParameter".
-- **`prof()` cannot say whether a mode is fast — only what a frame does.** It reads the canvas
-  with `getImageData` every frame, and after a few readbacks Chrome demotes the canvas to software
-  rasterisation: from then on `prof()` measures a CPU raster the player never sees (M319: the home
-  interior read 27 ms, then 24–49 ms *with* a full chunk bake in; `?g11` said 60 fps both ways,
-  and the bake was reverted). Use it to rank draw functions and to mute one and see the delta;
-  for the verdict, `docs/g11.ps1` and nothing else.
-- **The test harness has no clock, so no assertion about time means anything there.** `test.ps1`
-  runs Chrome with `--virtual-time-budget`, and inside a synchronous block time does not move at
-  all: measured 07.09.2026, thirty million square roots between two reads gave `performance.now()`
-  0.00 ms and `Date.now()` 0 ms. A suite that asserts «this took under N ms» is not flaky there —
-  it is **vacuous**, always true. Worse, production code that paces itself by the clock (a bake
-  with a per-frame budget) degenerates in that harness to doing everything at once, so the suite
-  exercises a code path no player ever runs. Pace such code by a work cap *as well as* a clock
-  (`MAT_CAP` beside `MAT_MS` in `18a-material`), and let the net assert the work, not the time.
-  `test.ps1:90` already counted its seconds outside the page for the same reason.
-- **Never measure the frame with `--virtual-time-budget`.** It fast-forwards
-  timers, so the probe measures the fast-forward. `docs/g11.ps1` runs `?g11`
-  correctly; it also leaves the GPU on, because `--disable-gpu` reads ~10 fps in
-  every mode and tells you nothing.
-- **`docs/pageshot.ps1` does not give an honest narrow width.** Asked for 430×800 it writes a
-  430 px PNG, but the page inside is laid out wider and the shot is a crop — the right rail and the
-  last pad look cut off when in the real viewport they are not (measured 25.08.2026: rail right
-  edge 418 of 430). For anything about the screen's edge — pads, rail, overlap — measure
-  `getBoundingClientRect()` in the browser pane at a set viewport, or run `test.ps1 -Mobile`.
-  Use `pageshot` for how things *look*, never for whether they *fit*.
-- **Long shell one-liners with quotes get mangled.** Write a script to the
-  scratchpad and run it instead — a `Remove-Item` once received `"C:\Program`
-  as its path. **This includes a long quoted heredoc** (`python - <<'PY' … PY`): a
-  hundred-line docs patch with prose in it died with «unexpected EOF while looking for
-  matching `'`» before Python ever ran, while a twenty-line one with the same apostrophes
-  and backticks passed (2026-09-09) — the cause was not pinned down, so the rule is by
-  size, not by content: a short patch inline, anything with paragraphs goes to a `.py` in
-  the scratchpad and runs by path.
-- **A heredoc through the Bash tool eats backslash escapes.** `<<'EOF'` should pass the
-  body through literally, but by the time Python sees it, `\\n` has become `\n` and `\b`
-  has become a literal 0x08 byte — which then lands in a source file and is invisible in
-  every editor and in `sed` output. Cost a green-looking regex that could never match
-  (`/\bон\b/` arrived as `/он/` with control characters around it). When a patch script needs a
-  backslash, build it as `chr(92)` instead of typing it, and grep the result for control
-  characters before trusting it:
-  `any(ord(c)<9 or 10<ord(c)<32 for c in text)`.
-- There is **no `node`** on this machine — hence the PowerShell build. Python 3.12 **is**
-  there (the older "no python" note was wrong): `python -` with a heredoc is the cheapest
-  way to patch a UTF-8 source file. A `.ps1` must be rewritten **with** its BOM
-  (`codecs.BOM_UTF8`), or PowerShell 5.1 turns every Cyrillic literal to mojibake.
-- `ssh drift` prints a post-quantum key-exchange warning on every connection.
-  That is the shared host being old; it is not an error. The louder
-  `client_global_hostkeys_prove_confirm` line was silenced with
-  `UpdateHostKeys no` in `~/.ssh/config`.
+One line each, with the evidence and the fix in **`docs/GOTCHAS.md`** — open it
+before doing the thing, not after it bites.
+
+- **`.ps1` with Russian text must be saved UTF-8 *with* BOM.** PowerShell 5.1 mojibakes a
+  BOM-less file silently; `build.ps1` flags them. `src/` is safe.
+- **`src/` is glued in byte order** (`Sort-Ordinal`), not `Sort-Object Name`. Culture sort
+  differs between Windows and the runner — 0.359.0 was green here and dead on the site.
+  To land after a module, step its letter (`21ba-`, `21bb-`).
+- **`typeof foo==="function"` around a call that must exist turns your typo into silence.**
+  Right guard for an optional cross-module call, wrong one anywhere it is required.
+- **A `param([switch]$Shots)` shadows a later `$shots`**, case-insensitively.
+- **`prof()` ranks draw functions; it cannot say a mode is fast** — readback demotes the
+  canvas to software raster. For the verdict, `docs/g11.ps1` and nothing else.
+- **The test harness has no clock.** Any «took under N ms» assertion there is vacuous, and
+  clock-paced production code degenerates to doing everything at once. Cap by work *and* time.
+- **Never measure the frame with `--virtual-time-budget`** — it fast-forwards the timers.
+- **`docs/pageshot.ps1` crops instead of narrowing.** Use it for how things look, never for
+  whether they fit; for edges measure `getBoundingClientRect()` or run `test.ps1 -Mobile`.
+- **Long quoted one-liners and paragraph-sized heredocs get mangled.** Anything with prose in
+  it goes to a `.py` in the scratchpad and runs by path.
+- **A heredoc through the Bash tool eats backslash escapes** (`\\n` → `\n`, `\b` → 0x08, into
+  the source file, invisible everywhere). Build a backslash as `chr(92)` and grep the result.
+- **No `node` on this machine**; Python 3.12 is there. A `.ps1` must be rewritten **with**
+  `codecs.BOM_UTF8`.
+- **`ssh drift`'s post-quantum warning is the old host,** not an error.
 
 ## How to verify
 
-**A fuzzer sits in the suite** (`tests/91zzzz-fuzz`, M238): fourteen scenes driven by seeded random
-input, a second pass over a lived-in world, and a sweep that renders every desk/station tab and
-clicks every button in them. The build runs a short version; `test.ps1 -Fuzz 4000` runs the long
-one by hand when hunting a crash. **A long run alone only walks the same path further** — the hands
-are seeded, so more frames means more of the same sequence; `-Seed N` gives a different path
-altogether, and a hunt goes across several seeds (M339). Its scene list is also the cheapest way to ask whether the
-whole game still starts after a cross-cutting change.
-
-**Three tiers (0.359.3).** `test.ps1` with no flags is the per-edit run: the Node tier
-(`test-node.js` — the page's scripts under DOM/canvas stubs, only the «формулы и данные»
-suites, ~5 s) plus one Chrome smoke (the page boots, a frame runs, the guard is silent, ~2 s).
-`-Browser` runs picture and interface suites in Chrome (~30 s); `-Full` runs everything
-including the heavy nets (~4 min) — on request, before a release. Node lives outside the repo at
-`C:\Claude	ools
-ode` (portable, no installer); `test.ps1` finds it there or on PATH. Under the
-stubs any pixel or layout measure is zero, so a suite that belongs in the browser goes red in
-Node, not green: name it in `NODE_BROWSER` (90-harness) and it moves. `SLOW_SUITES` there is the
-heavy-net list `-Full` adds back.
-
-**Autotests first, headless.** `build.ps1` also builds `tests.html` — the same game plus
-`tests/*.js` at the end. Run it without the browser pane:
+The long form — the suites, the seven cross-cutting nets, the staging traps — is in
+**`docs/VERIFY.md`**. The everyday commands:
 
 ```bash
 powershell -ExecutionPolicy Bypass -File test.ps1
 ```
 
-It builds, runs `tests.html` in headless Chrome at 1280×800 and prints one head line plus the
-failures block (exit 1 on failure) — ~30 tokens instead of a 5 500-line page. `-Only текст`
-runs only suites whose name contains the text, `-NoBuild` skips the build. **Never read the
-test page through the browser pane** — it is the single most expensive call in the project;
-the pane is for pixels and manual looks. (In the pane the report is also in `window.TEST` —
-`TEST.summary`, `TEST.failed` — and `tests.html?only=текст` works there too. Chrome's default
-800×600 window makes the UI-overlap suite `91f-ui` fail for real, hence the fixed size.)
-Tests drive the real `G` through `resetWorld()` and mock nothing.
+**Three tiers (0.359.3).** No flags is the per-edit run: the Node tier (`test-node.js`, the
+formula-and-data suites, ~5 s) plus one Chrome smoke (~2 s). `-Browser` adds the picture and
+interface suites (~30 s); `-Full` runs everything including the heavy nets (~4 min) — on
+request, before a release. `-Only текст` narrows, `-NoBuild` skips the build, `-Mobile` is the
+only way the phone-layout guards run at all (they skip themselves in a desktop window).
 
-Suites are split by topic: `tests/91a-flight` … `91n-barge` (harness in `90-harness`). New
-mechanics go into the suite they belong to, not at the end of a file; if there is no fitting
-topic, add `91x-name.js` (concatenation is alphabetical, but suites are independent — each
-starts with `resetWorld()`).
+**Never read the test page through the browser pane** — it is the single most expensive call in
+the project. `test.ps1` prints one head line plus the failures block, ~30 tokens instead of a
+5 500-line page; the pane is for pixels and manual looks.
 
-If you do open it in the pane: it caches `file://` — after a rebuild open `tests.html?v=N` with
-a fresh `N`, or you'll be reading the previous run. Headless has no such cache.
-
-**Seven cross-cutting nets sit above the topic suites** (M329–M338, M358, M419). They do not test a mechanic;
-they test properties of the whole game, and between them they found the raster leak behind the
-freeze, a softlock in space, a money printer at the counter and a screen that could become a trap:
-
-| net | file | what it holds |
-|---|---|---|
-| the world's life | `91zzzzz-e2e-life` | no NaN in the state; the save's full circle from every scene and no field lost; a save without any one field still loads and opens a screen; no «undefined»/«NaN» in the player's text; three thousand frames grow no list; everything clickable is clicked; **and the frame guard's counter is read at the end of the whole run** — an exception inside a click handler reaches no `try/catch`, only `window.onerror` |
-| isolation | `90-harness` + the last suite of `91zzzzz` | `resetWorld` deletes every field the page did not boot with, and a suite compares the world after it against the snapshot taken before the first suite. A suite that is green alone and red in the run is the worst kind of lie |
-| places, physics, light | `91zzzzy-place` / `-phys` / `-light` | everything stands on the ground, the man is never inside stone, the pad is clear; thrust/brake/fuel, Kepler, no falling through the ground — **each at frame steps 1, 2 and 3**, because the frame integrates at up to dt=3; night darker than day, halos fall off, nothing brighter than its own light source |
-| game QA | `91zzzzy-play` | can the player get stuck, does the game print money, is any screen a dead end, what happens after death, does the autopilot arrive |
-| someone else's clock | `91zzzzy-time` | the save travels between devices: every epoch stamp shifted three days forward and thirty back, and the world lives on |
-| names and the picture | `91zzzzy-names` / `-look` / `-mem` | the game reads its own source and checks every name called by string against its table («a perk without code is a lie», applied to every table); the frame ledger pinned per scene as a baseline; the raster held by `SYS_CACHE` stays on a shelf instead of growing with the evening |
-| the oven | `91zzzzy-bake` | M358: how much raster the game holds (in screens, not megabytes) and how often it re-bakes — a key with a continuously changing value bakes a full-screen canvas sixty times a second and nothing says so. M419: and what the oven does **in one go** — a cold ask queues and bakes nothing, one slice is capped by **work as well as time** (the harness has no clock, see the gotcha above), budgets are declared numbers, and the synchronous path (`planetMatNow`) is called from stands only, never from `src/`. Born of a 383 ms tile bake that stood three hundred versions because nothing crashed |
-
-Two rules come out of them and are worth keeping. **A mode that is not in `lookScenes` is driven
-by nobody** — that list is shared by the frame meter and the fuzzer, and until M337–M338 the raid,
-the wintering and the sanatorium were in neither. **A staged scene must be reproducible**: planets
-orbit inside `SYS_CACHE` all session, so a scene now rebuilds its system from the seed — without
-that both the meter's numbers and the fuzzer's «one seed, same failure» drift with how long the
-tab has been open.
-
-**The phone layout is only measured if you ask for it.** The layout guards (`91f-ui`,
-`91zzx-mobile`) skip themselves when the window is not a phone, because in a desktop window the
-phone rules are not applied at all:
-
-```bash
-powershell -ExecutionPolicy Bypass -File test.ps1 -Mobile
-```
-
-**To look at the interface, screenshot the page, not the canvas.** `docs/shot.ps1` captures what a
-stand painted on the canvas, so it shows the world and *nothing* of the instruments, console, pads
-or rail — they are DOM. `docs/pageshot.ps1` runs Chrome's own `--screenshot` and captures
-everything:
-
-```bash
-powershell -ExecutionPolicy Bypass -File docs\pageshot.ps1 view -Q "?s=surface"
-```
-
-Scenes live in `docs/mkview.ps1` (`surface`, `system`, `cave`, `night`, `lowsuit`). Two traps that
-cost a session: the browser pane's screenshot does **not** show the game's DOM overlay at all (it
-shows the canvas only, whatever the z-index), and inside a stand the loop must be left running —
-`G.running=false` paints the title-screen starfield over everything (`28-loop`, the `else` branch),
-and `LOOP_OFF=true` freezes a half-baked frame because the world takes several frames to bake.
+Suites are split by topic: `tests/91a-flight` … `91n-barge`, harness in `90-harness`. A new
+mechanic goes into the suite it belongs to; if no topic fits, add `91x-name.js`. Each suite
+starts with `resetWorld()` and drives the real `G` — nothing is mocked. A suite that needs
+pixels or layout goes red under the Node stubs: name it in `NODE_BROWSER` (`90-harness`) and
+it moves to Chrome.
 
 ```bash
 powershell -ExecutionPolicy Bypass -File build.ps1
+powershell -ExecutionPolicy Bypass -File docs\pageshot.ps1 view -Q "?s=surface"
 ```
 
-Then by hand, because not everything can be expressed as an assertion:
+**To look at the interface, screenshot the page, not the canvas.** `docs/shot.ps1` captures the
+canvas only — no instruments, console, pads or rail, they are DOM; the browser pane's own
+screenshot has the same blind spot whatever the z-index. `docs/pageshot.ps1` captures
+everything. Scenes live in `docs/mkview.ps1`. Inside a stand the loop must be left running:
+`G.running=false` paints the title starfield over the world, and `LOOP_OFF=true` freezes a
+half-baked frame.
 
-- parsing — `new Function(document.scripts[0].textContent)` in the browser;
-- `read_console_messages` for errors;
-- pixels — synchronous `ctx.getImageData`;
-- logic — assertions through `javascript_exec`;
-- sound — `AnalyserNode` by RMS and spectrum. **Reading `AudioParam.value` does not reflect
-  automation in flight** — measure the node's output only.
-
-`javascript_exec` shares the global scope between calls — a repeated `const` with the same name
-throws, so wrap in an IIFE.
+Then by hand, because not everything can be expressed as an assertion: parsing through
+`new Function(document.scripts[0].textContent)`; `read_console_messages` for errors; pixels
+through synchronous `ctx.getImageData`; logic through `javascript_exec` (it shares the global
+scope between calls — wrap in an IIFE or a repeated `const` throws); sound by `AnalyserNode`
+RMS and spectrum, measuring the node's output, never `AudioParam.value`.
 
 ## The plan
 
