@@ -9,7 +9,7 @@ function helmShip(){
   G.ship.x=0;G.ship.y=-760;G.ship.vx=0;G.ship.vy=0;G.ship.a=0;G.ship.av=0;
   G.ap=null;G.orbit=null;G.pirates=[];G.shots=[];G.marks=[];G.fuel=100;
   for(const k in keys)keys[k]=false;
-  HELM.key={};HELM.S=null;HELM.fade=null;HELM.home=null;HELM.src="arrows";HELM.mouse.on=false;HELM.mouse.down=false;
+  HELM.key={};HELM.S=null;HELM.fade=null;HELM.home=null;HELM.src="keys";HELM.mouse.on=false;HELM.mouse.down=false;HELM.mouse.rmb=false;
   ctlReset();
   return G.ship;
 }
@@ -34,18 +34,23 @@ TEST_SUITES.push(()=>suite("штурвал: каждый ввод пишет т�
   /* сырые стрелки: Q/E — бок */
   HELM.key.KeyE=true;helmTick(1);
   near(G.ctl.ty,1,1e-9,"E → бок вправо от носа");
-  HELM.key.KeyE=false;HELM.key.ArrowDown=true;helmTick(1);
-  near(G.ctl.tx,-1,1e-9,"↓ → реверс");
-  HELM.key.ArrowDown=false;
-  /* мышь: WASD — оси экрана, нос к курсору */
-  HELM.src="mouse";HELM.mouse.on=true;HELM.mouse.x=W/2;HELM.mouse.y=H/2-200;HELM.mouse.t=performance.now()-2000;
-  HELM.key.KeyD=true;helmTick(1);
-  near(G.ctl.tx,1,1e-9,"D → вправо по экрану");
-  near(G.ctl.head,-Math.PI/2,1e-6,"курсор над кораблём → курс вверх");
-  ok(G.ctl.headIdle,"курсор стоит полсекунды — нос свободен");
-  HELM.key.KeyD=false;HELM.key.ShiftLeft=true;HELM.key.KeyW=true;helmTick(1);
+  HELM.key.KeyE=false;keys.brake=true;helmTick(1);
+  ok(G.ctl.brake&&!G.ctl.tx,"S/↓ → тормоз, не реверс (M436)");
+  keys.brake=false;
+  /* мышь (M436): нос за курсором только при зажатой ПКМ, и тогда A/D — бок */
+  HELM.mouse.on=true;HELM.mouse.x=W/2;HELM.mouse.y=H/2-200;
+  keys.right=true;helmTick(1);
+  eq(G.ctl.turn,1,"без ПКМ мышь молчит: D — руль");
+  ok(G.ctl.head==null,"…и курсор нос не ведёт");
+  HELM.mouse.rmb=true;helmTick(1);
+  near(G.ctl.head,-Math.PI/2,1e-6,"ПКМ зажата: курсор над кораблём → курс вверх");
+  ok(!G.ctl.headIdle,"рука на курсоре — метка нос не перебьёт");
+  eq(G.ctl.turn,0,"руль занят курсором…");
+  near(G.ctl.ty,1,1e-9,"…и D стал боком вправо от носа");
+  keys.right=false;HELM.mouse.rmb=false;
+  HELM.key.ShiftLeft=true;keys.thrust=true;helmTick(1);
   ok(G.ctl.thrOnly,"Shift — всё через маневровые");
-  HELM.key={};
+  keys.thrust=false;HELM.key={};HELM.mouse.on=false;
   /* стик (M410): один, задаёт СКОРОСТЬ в осях экрана; нос — по ходу, метка перебьёт */
   HELM.src="stick";HELM.S={id:1,x0:100,y0:400,x:100,y:300};helmTick(1);
   ok(G.ctl.assist,"стик включает помощь");
@@ -69,11 +74,11 @@ TEST_SUITES.push(()=>suite("штурвал: курс без инерции и б
   const a1=sh.a;helmRun(30,1);
   near(sh.a,a1,1e-9,"отпустил — нос стоит, выбега нет");
   /* к заданному курсу: не перелетает */
-  HELM.src="mouse";HELM.mouse.on=true;HELM.mouse.x=W/2+300;HELM.mouse.y=H/2;HELM.mouse.t=performance.now()-2000;
+  HELM.mouse.on=true;HELM.mouse.rmb=true;HELM.mouse.x=W/2+300;HELM.mouse.y=H/2;
   sh.a=1;helmRun(120,1);
   near(sh.a,0,1e-6,"нос доходит до курсора и останавливается на нём");
   /* шаг кадра: за то же время тот же угол */
-  HELM.src="arrows";HELM.mouse.on=false;
+  HELM.mouse.rmb=false;HELM.mouse.on=false;
   for(const dt of PHYS_DT){sh.a=0;keys.left=true;helmRun(Math.round(30/dt),dt);keys.left=false;
     near(sh.a,-RATE*30,1e-6,"dt="+dt+": угол за 30 кадров не зависит от шага");}
   /* крен — от фактического поворота */
@@ -90,24 +95,27 @@ TEST_SUITES.push(()=>suite("штурвал: вектор тяги и прави�
   near(sh.vy,.082*st.thr*.4*30,.05,"бок: .4 маршевой за 30 кадров");
   ok(Math.abs(sh.vx)<.02,"и нос никуда не тянет: vx="+sh.vx.toFixed(3));
   ok(G.fuel<f0,"маневровые жгут топливо");
-  /* отпустил ниже крейсерской — тормоз до нуля */
+  /* S / ТОРМОЗ — до нуля, ходом HELM_STOP, на любой скорости (M436) */
   for(const dt of PHYS_DT){
-    helmShip();sh.vx=maxSp*.4;sh.vy=0;
-    let prev=Math.hypot(sh.vx,sh.vy),grew=0;
+    helmShip();G.ship.vx=maxSp*.4;G.ship.vy=0;keys.brake=true;
+    let prev=Math.hypot(G.ship.vx,G.ship.vy),grew=0;
     for(let i=0;i<200/dt;i++){updateSystem(dt);G.t+=dt;const s=Math.hypot(G.ship.vx,G.ship.vy);if(s>prev+1e-9)grew++;prev=s;}
+    keys.brake=false;
     eq(grew,0,"dt="+dt+": торможение монотонно");
     eq(Math.hypot(G.ship.vx,G.ship.vy),0,"dt="+dt+": корабль встал");
   }
-  /* выше крейсерской — накат */
-  for(const dt of PHYS_DT){
-    helmShip();G.ship.vx=maxSp*.9;const v0=G.ship.vx,fu=G.fuel;
+  helmShip();G.ship.vx=maxSp;keys.brake=true;helmRun(120,1);keys.brake=false;
+  eq(Math.hypot(G.ship.vx,G.ship.vy),0,"с крейсерской S останавливает за две секунды");
+  /* отпустил — накат на любой скорости: правило .55 ушло (M436) */
+  for(const dt of PHYS_DT)for(const k of [.3,.9]){
+    helmShip();G.ship.vx=maxSp*k;const v0=G.ship.vx,fu=G.fuel;
     helmRun(Math.round(60/dt),dt);
-    near(Math.hypot(G.ship.vx,G.ship.vy),v0,1e-6,"dt="+dt+": выше .55 — накат, скорость не тает");
+    near(Math.hypot(G.ship.vx,G.ship.vy),v0,1e-6,"dt="+dt+", "+k+" крейсерской: отпустил — накат");
     eq(G.fuel,fu,"dt="+dt+": и топливо не горит");
   }
-  /* реверс — маневровыми, .4 */
-  helmShip();HELM.key.ArrowDown=true;helmRun(30,1);HELM.key.ArrowDown=false;
-  near(G.ship.vx,-.082*st.thr*.4*30,.05,"реверс: .4 маршевой назад");
+  /* ↓ — тормоз, не реверс: на месте корабль стоит */
+  helmShip();keys.brake=true;helmRun(30,1);keys.brake=false;
+  eq(Math.hypot(G.ship.vx,G.ship.vy),0,"↓ на месте — стоит, реверса нет");
 }));
 
 TEST_SUITES.push(()=>suite("штурвал: метки, автозахват, ракета к метке",()=>{
@@ -155,10 +163,10 @@ TEST_SUITES.push(()=>suite("штурвал: метки, автозахват, р
   for(const k in keys)keys[k]=false;
   G.ctl.fire=true;updateCombat(1);G.ctl.fire=false;
   ok(G.shots.some(s=>s.mine),"ЛКМ — принудительный выстрел по носу");
-  /* ПКМ — ракета, тем же каналом */
+  /* G — ракета, тем же каналом (ПКМ теперь ведёт нос, M436) */
   G.cargo.missile=2;G.mslCool=0;G.msl=[];G.mods.launcher=1;
   G.ctl.msl=true;updateCombat(1);G.ctl.msl=false;
-  ok((G.msl||[]).length>0||(G.mslCool||0)>0,"ПКМ — пусковая отработала");
+  ok((G.msl||[]).length>0||(G.mslCool||0)>0,"G — пусковая отработала");
   G.mods.weapon=0;G.mods.launcher=0;G.msl=[];G.cargo.missile=0;
 }));
 
@@ -278,15 +286,15 @@ TEST_SUITES.push(()=>suite("штурвал M422: палец где угодно,
   helmRun(40,1);
   ok(Math.hypot(G.ship.vx,G.ship.vy)<maxSp*.6,"с пустой энергией тормоз работает в полную");
   ok(G.fuel<fu,"и топливо на него тратится, а не прибывает");
-  /* 6. отпустил — накат на любой скорости (правило .55 осталось мыши) */
+  /* 6. отпустил — накат на любой скорости (правила .55 больше нет ни у кого — M436) */
   helmShip();HELM.src="stick";HELM.S=null;
   G.ship.vx=maxSp*.3;const v0=G.ship.vx;
   helmRun(60,1);
   near(G.ship.vx,v0,1e-6,"стик отпущен ниже .55 — всё равно накат");
-  HELM.src="arrows";
+  HELM.src="keys";
   helmShip();G.ship.vx=maxSp*.3;
   helmRun(60,1);
-  ok(Math.hypot(G.ship.vx,G.ship.vy)<maxSp*.3,"а стрелкам порог .55 оставлен как был");
+  near(G.ship.vx,maxSp*.3,1e-6,"и клавишам тот же накат: тормоз — только S (M436)");
   /* 7. камера уводит корабль из-под пальца и возвращает его */
   HELM.S=null;HELM.cam={x:0,y:0,dx:0,dy:1};
   let o=helmCamOff(1);

@@ -8,8 +8,7 @@
    Угловой инерции нет: нос идёт к заданному курсу со скоростью `st.turn`,
    без разгона и без выбега; крен — только рисунок от фактической скорости
    поворота. Тяга — вектор в осях экрана: вдоль носа полная (маршевый), вбок и
-   назад — .4 через маневровые. Отпустил всё ниже .55 крейсерской — тормоз, как
-   ТОРМОЗ; выше — накат (развилка §10, по умолчанию .55).
+   назад — .4 через маневровые. Отпустил — накат; тормоз — жест (M436, ниже).
 
    ── один палец (M410) ──
    Автор о двух стиках (07.09.2026): «управление получилось не очень… джойстик
@@ -54,9 +53,24 @@
       её длина и ширина — заданный ход, её заливка — фактический, её цвет —
       разгон или торможение. Лента и есть обучение схеме.
    И ещё две поблажки телефону: камера уводит корабль из-под пальца
-   (`helmCamOff`), а отпущенный стик всегда оставляет накат — правило .55
-   осталось мыши и стрелкам, где отпускание однозначно. */
-const HELM_RELEASE=.55;      /* доля maxSp, ниже которой отпущенная тяга тормозит */
+   (`helmCamOff`), а отпущенный стик всегда оставляет накат.
+
+   ── одна раскладка (M436) ──
+   Автор 09.09.2026: «сломал управление… продумай логику, что на WASD, что на
+   QE, мож стрелки нахер не нужны, посмотри как сделаны другие игры». Схем
+   было две — мышиная (нос за курсором всегда, WASD по осям экрана) и
+   стрелочная (всё от носа), и переключались они САМИ: любой сдвиг мыши над
+   холстом во весь экран включал первую, и W переставал значить «вперёд» в ту
+   же секунду, когда рука задела мышь; A и D переставали рулить вовсе, потому
+   что нос уже держал курсор. Так не делает никто: Endless Sky, Starsector,
+   Escape Velocity рулят от носа, а мышь берёт нос по явному жесту. Теперь:
+   W — газ, S — тормоз, A/D — руль, Q/E — бок, Shift — всё маневровыми;
+   стрелки — те же клавиши под другими шапками, а не вторая схема. Мышь ведёт
+   нос только при зажатой ПРАВОЙ кнопке (у Starsector это Shift), и пока она
+   зажата, A/D — бок: руль занят курсором. Ракета уходит на G. И отпускание у
+   всех вводов одно — накат: правило .55 «ниже крейсерской тормозит само» ушло
+   вслед за стиком, тормоз — это жест (S, ТОРМОЗ, палец назад или на месте),
+   и у всех он ходом HELM_STOP: игрок учит один корабль, а не три. */
 const HELM_THR=.4;           /* маневровые против маршевого */
 const HELM_ACC=.082;         /* маршевый разгон за кадр (был литералом в helmApply) */
 const HELM_STOP=.095;        /* тормоз стика за кадр: сильнее газа (M422) */
@@ -92,8 +106,8 @@ const HELM_GAP=24;           /* лента не доходит до пальца
 const HELM_TRAIL=7;          /* сколько следов пальца тянется за ним */
 const HELM_CONE=.35;         /* ±20° — временный конус автоогня (M362 заменит) */
 const HELM_RANGE=760;
-const HELM={src:"arrows",   /* кто вёл последним: mouse | arrows | stick */
-  mouse:{x:0,y:0,t:-1e9,on:false,down:false,moved:0,rmb:false},
+const HELM={src:"keys",     /* кто вёл последним: keys | stick */
+  mouse:{x:0,y:0,t:-1e9,on:false,down:false,rmb:false},
   S:null,                    /* живой стик: {id,x0,y0,x,y} — один, где угодно на холсте (M422) */
   P:null,                    /* палец, который ещё не решил: тычок или стик (M422) */
   fade:null,                 /* след отпущенного стика: {x0,y0,x,y,f} */
@@ -115,7 +129,7 @@ const HELM_KEYS=new Set(["KeyW","KeyA","KeyS","KeyD","KeyQ","KeyE","ShiftLeft","
 addEventListener("keydown",e=>{
   if(!HELM_KEYS.has(e.code))return;
   HELM.key[e.code]=true;
-  if(e.code.startsWith("Arrow")||e.code==="KeyQ"||e.code==="KeyE")HELM.src="arrows";
+  HELM.src="keys";
   if(G.mode==="system"&&!helmScreenOpen()){
     if(e.code==="Tab"){e.preventDefault();HELM.lockEdge=true;}
     if(e.code==="Escape"&&G.marks&&G.marks.length){G.marks.length=0;e.preventDefault();}
@@ -128,7 +142,6 @@ function helmCanvasXY(e){const rc=cvs.getBoundingClientRect();return [(e.clientX
 cvs.addEventListener("pointermove",e=>{
   if(e.pointerType==="mouse"){
     const [x,y]=helmCanvasXY(e);
-    if(G.mode==="system"){HELM.mouse.moved+=Math.hypot(x-HELM.mouse.x,y-HELM.mouse.y);HELM.src="mouse";}
     HELM.mouse.x=x;HELM.mouse.y=y;HELM.mouse.t=performance.now();HELM.mouse.on=true;
     return;
   }
@@ -174,7 +187,7 @@ cvs.addEventListener("pointerdown",e=>{
   if(e.pointerType==="mouse"){
     if(e.button===0)HELM.mouse.down=performance.now();
     if(e.button===2)HELM.mouse.rmb=true;
-    HELM.src="mouse";return;
+    return;
   }
   /* палец: стик один и рождается ГДЕ УГОДНО на холсте (M422). Пока он не
      сдвинулся и не пролежал своё, это ещё тычок — захват, автопилот, фишки;
@@ -299,37 +312,33 @@ function helmTick(dt){
     }else c.brake=true;
     input=true;
   }
-  /* 2. клавиатура */
-  const mouseScheme=HELM.src==="mouse";
-  if(mouseScheme){
-    const tx=(K.KeyD?1:0)-(K.KeyA?1:0),ty=(K.KeyS?1:0)-(K.KeyW?1:0);
-    if(tx||ty){const m=Math.hypot(tx,ty);c.tx=tx/m;c.ty=ty/m;input=true;}
-    c.thrOnly=!!(K.ShiftLeft||K.ShiftRight);
-    if(HELM.mouse.on&&!helmScreenOpen()){
-      const cx0=(G.viewCX!==undefined?G.viewCX:sh.x),cy0=(G.viewCY!==undefined?G.viewCY:sh.y);
-      const sx=W/2+(sh.x-cx0)*G.zoom,sy=H/2+(sh.y-cy0)*G.zoom;
-      const dx=HELM.mouse.x-sx,dy=HELM.mouse.y-sy,d=Math.hypot(dx,dy);
-      if(d>10){c.head=Math.atan2(dy,dx);c.headK=clamp(d/140,.25,1);}
-      if(now-HELM.mouse.t<500)headBusy=true;
-    }
-    if(HELM.mouse.down&&now-HELM.mouse.down>180)c.fire=true;
-    if(HELM.mouse.rmb)c.msl=true;
-  }else{
-    const turn=((K.ArrowRight||keys.right)?1:0)-((K.ArrowLeft||keys.left)?1:0);
-    if(turn){c.turn=turn;headBusy=true;input=true;}
-    const along=((K.ArrowUp||keys.thrust)?1:0)-(K.ArrowDown?1:0),side=(K.KeyE?1:0)-(K.KeyQ?1:0);
-    if(along||side){
-      const ca=Math.cos(sh.a),sa=Math.sin(sh.a);
-      c.tx+=ca*along-sa*side;c.ty+=sa*along+ca*side;input=true;
-    }
-    if(keys.brake){c.brake=true;input=true;}
+  /* 2. клавиатура — одна раскладка, всё от носа (M436): W газ, S тормоз,
+     A/D руль, Q/E бок, стрелки — тот же WASD (через KMAP, с переназначением).
+     Мышь ведёт нос только при зажатой правой кнопке, и тогда A/D — бок:
+     руль занят курсором. Ракета — G, огонь — F или зажатая левая */
+  const aim=HELM.mouse.rmb&&HELM.mouse.on&&!helmScreenOpen();
+  const turn=(keys.right?1:0)-(keys.left?1:0);
+  let side=(K.KeyE?1:0)-(K.KeyQ?1:0);
+  if(aim){
+    const cx0=(G.viewCX!==undefined?G.viewCX:sh.x),cy0=(G.viewCY!==undefined?G.viewCY:sh.y);
+    const sx=W/2+(sh.x-cx0)*G.zoom,sy=H/2+(sh.y-cy0)*G.zoom;
+    const dx=HELM.mouse.x-sx,dy=HELM.mouse.y-sy,d=Math.hypot(dx,dy);
+    if(d>10){c.head=Math.atan2(dy,dx);c.headK=clamp(d/140,.25,1);}
+    headBusy=true;input=true;side+=turn;
+  }else if(turn){c.turn=turn;headBusy=true;input=true;}
+  const along=keys.thrust?1:0;
+  if(along||side){
+    const ca=Math.cos(sh.a),sa=Math.sin(sh.a);
+    c.tx+=ca*along-sa*side;c.ty+=sa*along+ca*side;input=true;
   }
+  if(keys.brake){c.brake=true;input=true;}
+  c.thrOnly=!!(K.ShiftLeft||K.ShiftRight);
+  if(HELM.mouse.down&&now-HELM.mouse.down>180)c.fire=true;
   if(K.KeyF||keys.fire)c.fire=true;
   if(K.KeyG||keys.msl)c.msl=true;
   const m=Math.hypot(c.tx,c.ty);if(m>1){c.tx/=m;c.ty/=m;}
-  /* автопилот и орбита сходят с любого руления; мышь — только с заметного хода (40 px) */
-  if(input||(mouseScheme&&HELM.mouse.moved>40)){G.ap=null;G.orbit=null;}
-  HELM.mouse.moved=0;
+  /* автопилот и орбита сходят с любого руления */
+  if(input){G.ap=null;G.orbit=null;}
   /* D07: нос идёт за меткой, только когда рука с курса снята */
   c.headIdle=!headBusy;
   if(c.headIdle&&G.marks.length){
@@ -413,19 +422,16 @@ function helmApply(dt,st,sh,maxSp){
     if(typeof EN_THR==="number"&&side2>0)
       G.energy=Math.max(0,(G.energy||0)-EN_THR*side2*dt);
   }
-  /* отпустил ниже крейсерской — маневровые гасят ход, как ТОРМОЗ; выше — накат.
-     Стик из этого правила выведен (M422): палец снят — всегда накат. На
-     телефоне отпускание ничего не значит (палец сняли, чтобы ткнуть по
-     планете), и один жест с двумя исходами по порогу скорости читался как
-     «корабль иногда тормозит сам». Тормоз там — жест: назад или мёртвая зона. */
+  /* ── один тормоз на всех (M436) ──
+     Отпустил — накат, у любого ввода. Правило .55 «ниже крейсерской тормозит
+     само» ушло вслед за стиком (M422): один жест с двумя исходами по порогу
+     скорости читался как «корабль иногда тормозит сам». Тормоз — это жест:
+     S, ТОРМОЗ, палец назад или в мёртвой зоне, и у всех он ходом HELM_STOP,
+     мимо носа и без оглядки на энергию. Игрок учит один корабль. */
   const sp0=Math.hypot(sh.vx,sh.vy);
-  const stick=c.src==="stick";
-  const wantBrake=c.brake||o.slow||(mag===0&&!o.hold&&!stick&&sp0<maxSp*HELM_RELEASE&&sp0>0&&!c.thrOnly);
-  if(wantBrake&&G.fuel>0){
+  if((c.brake||o.slow)&&G.fuel>0){
     if(sp0>.03){
-      /* стику — тот же тормоз, что и ретро: мёртвая зона и «назад» обязаны
-         останавливать одинаково, иначе игрок учит два разных корабля */
-      const dec=Math.min(sp0,(stick?HELM_STOP:.058)*st.thr*dt);
+      const dec=Math.min(sp0,HELM_STOP*st.thr*dt);
       sh.vx-=sh.vx/sp0*dec;sh.vy-=sh.vy/sp0*dec;
       G.fuel=Math.max(0,G.fuel-.017*dt);o.thr=true;
     }else{sh.vx=0;sh.vy=0;}

@@ -157,18 +157,24 @@ did not. Each answer below replaces a bullet above.
   band — instruments still step out from under it, as M360a demands, without the 93 px ring.
 
 
-### 1.2 Keyboard — mouse or arrows, both live, last used wins
+### 1.2 Keyboard — one layout, everything from the nose (M436)
 
-- **Mouse.** Nose to cursor (`st.turn`-limited; cursor far = full rate, near = fine). WASD thrust
-  in screen axes. Click = lock, Tab = nearest, Esc = clear. LMB held = forced fire when nothing is
-  locked. RMB = missile. Shift held = every thrust through thrusters (slide without turning: dock
-  approach, broadside). 1–3 = gun groups (§3.3).
-- **Arrows.** Everything relative to the nose because there is no cursor. ← → turn (no inertia),
-  ↑ thrust along the nose, ↓ reverse on thrusters, **Q/E strafe** — the only two new keys. Tab /
-  Esc lock, Space forced fire, G missile as today.
+- **Keys.** W thrust along the nose, S brake (nose-blind, `HELM_STOP` — the same brake as the
+  pad and the stick's pull-back), A/D turn (no inertia), **Q/E strafe**, Shift held = every
+  thrust through thrusters (slide without turning: dock approach, broadside). Arrows are the same
+  keys under other caps, not a second scheme. Tab = nearest, Esc = clear, F fire, Space forced
+  fire, G missile, 1–3 = gun groups (§3.3).
+- **Mouse.** Nose to cursor **only while the right button is held** (`st.turn`-limited; cursor
+  far = full rate, near = fine); while it is held A/D become strafes, since the rudder is the
+  cursor's. Click = lock. LMB held = forced fire when nothing is locked.
+- **Release = coast**, for every input. The .55 rule (released below cruise → brake by itself)
+  is gone: one gesture with two outcomes read as «the ship sometimes brakes on its own».
 
-Both give the same four channels; the arrows lean toward turrets and lock, the mouse toward
-hardpoints and leading the nose. That asymmetry is fine (Endless Sky has the same).
+Before M436 there were two schemes — mouse (nose to cursor always, WASD in screen axes) and
+arrows (everything from the nose) — and any mouse motion over the full-screen canvas switched to
+the first, so W stopped meaning «forward» the moment the mouse was touched and A/D stopped
+steering at all. Endless Sky, Starsector and Escape Velocity all steer from the nose; Starsector's
+Shift-to-aim is the model for the right button here.
 
 ---
 
