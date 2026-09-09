@@ -76,10 +76,17 @@ function mapBandPaint(c,W,H){
   c.restore();
 }
 
-/* сеть пеленгов — шестнадцать румбов из центра листа */
-function mapRhumbPaint(c,W,H){
-  const L=Math.hypot(W,H);
-  c.save();c.translate(W/2,H/2);
+/* сеть пеленгов — шестнадцать румбов из центра листа.
+   `cx,cy` (необязательные) переносят узел: в игре румбы выходят из ВАШЕЙ
+   системы, а она после протяжки уже не в середине экрана. */
+function mapRhumbPaint(c,W,H,cx,cy){
+  const ox=cx===undefined?W/2:cx, oy=cy===undefined?H/2:cy;
+  /* луч тянется до самого дальнего угла кадра: узел, уехавший за край, иначе
+     не докидывал до противоположной стороны — и румбы обрывались в пустоте */
+  let L=0;
+  for(const [x,y] of [[0,0],[W,0],[0,H],[W,H]])L=Math.max(L,Math.hypot(x-ox,y-oy));
+  L*=1.02;
+  c.save();c.translate(ox,oy);
   for(let i=0;i<16;i++){
     const a=i/16*TAU;
     c.strokeStyle="rgba(150,182,212,"+((i%4===0)?.075:.04)+")";

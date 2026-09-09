@@ -80,6 +80,33 @@ changes tier in silence. There was one such name, left from a suite folded into 
 in 0.359.2.
 
 ---
+## 0.425.0 (M438) - the sky stands still in the world, the sheet slides in front of it
+
+The author, 09.09.2026, over a screenshot of the map: «карта двигается вместе с этой полосой и
+слоем звёзд… выглядит не очень», and «полосу чуть притуши, она типа как бы должна на фоне быть».
+
+The backdrop was nailed to the screen. The Galaxy band and the rhumb net were baked as
+screen-sized layers drawn at 0,0; the nebula and the star grit moved only when the SHIP moved.
+Drag the map and the sheet slid while the sky sat still - sheet and sky read as one flat plane,
+and the motion looked like a diagram crawling over wallpaper.
+
+The law now: **the sky stands in the world, the sheet slides in front of it.** The sky is
+anchored to the ship - where you are in the galaxy is what the arm looks like - and panning the
+map moves it by a fraction of the sheet's travel, the smaller the further the layer sits: grit
+~.4 of the sheet, nebula ~.14, band ~.05. The shift saturates through `mapSkyShift` (tanh): a
+small drag is honestly proportional, a long one eases into a ceiling, because there is nowhere
+for an infinitely distant sky to go. The band layer is drawn with a margin along the edge, so
+the shift never opens a bare rim; the nebula's field grew to match.
+
+The rhumb net moved the other way. It belongs to the SHEET, not the screen: sixteen bearings now
+radiate from YOUR system wherever the pan has taken it, and travel with the map 1:1 - the contrast
+between that and the barely-moving band is what makes the depth read. Sixteen lines per frame
+cost less than the full-screen layer composite they replace.
+
+And the band is quieter: drawn at .62 alpha, it is what the addresses lie AGAINST, no longer a
+glow competing with the grid and the captions. `site/war.html` keeps its own .38 - untouched.
+
+---
 ## 0.424.0 (M437) - the map answers the hand, and its captions grow with the frame
 
 The author, 09.09.2026, over a screenshot of the map: «ищи баги смотри шрифт как то размывает,
