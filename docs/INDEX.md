@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 513 · символов верхнего уровня: 4838
+Файлов: 515 · символов верхнего уровня: 4846
 
 ## СИМВОЛЫ
 
@@ -531,6 +531,14 @@ capUsed                      src/05-parts.js:356
 CAST                         src/12k-stories-a.js:22
 CAST_B                       src/12k-stories-b.js:7
 CAST_C                       src/12k-stories-c.js:7
+CAST_MAXD                    src/19c1-cast.js:36
+CAST_MIN_ALT                 src/19c1-cast.js:38
+CAST_SOFT                    src/19c1-cast.js:37
+castAt                       src/19c1-cast.js:92
+castMap                      src/19c1-cast.js:70
+castMapFor                   src/19c1-cast.js:86
+castOccH                     src/19c1-cast.js:43
+castShadeAt                  src/19c1-cast.js:54
 CAVE_NX                      src/22-mode-cave.js:14
 CAVE_W                       src/22-mode-cave.js:11
 CAVE_WALL_X0                 src/22-mode-cave.js:13
@@ -1229,7 +1237,7 @@ drawDigFauna                 src/23-mode-dig.js:313
 drawDigWorld                 src/23a-dig-draw.js:45
 drawDronesMap                src/12e-drone-flight.js:310
 drawDronesSystem             src/12e-drone-flight.js:224
-drawDustMotes                src/19-mode-landing.js:607
+drawDustMotes                src/19-mode-landing.js:637
 drawElevator                 src/20aa-poi-shapes.js:91
 drawExhaust                  src/16a-space.js:360
 drawFactory                  src/20aa-poi-shapes.js:378
@@ -1244,8 +1252,8 @@ drawForeground               src/21b-surface-deco.js:264
 drawGlassHUD                 src/24-mode-belt.js:717
 drawGlyph                    src/12t-settle.js:59
 drawGround                   src/19-mode-landing.js:134
-drawGroundCrumbs             src/19-mode-landing.js:337
-drawGroundGrass              src/19-mode-landing.js:350
+drawGroundCrumbs             src/19-mode-landing.js:365
+drawGroundGrass              src/19-mode-landing.js:378
 drawHitFx                    src/18d-postfx.js:45
 drawHoldMods                 src/12ad-site.js:362
 drawHomeIn                   src/29d-home-draw.js:9
@@ -1257,7 +1265,7 @@ drawHullMarks                src/03b-hull-paint.js:184
 drawKitFigure                src/12x-suit.js:202
 drawLander                   src/19f-lander.js:52
 drawLandGear                 src/19f-lander.js:26
-drawLanding                  src/19-mode-landing.js:621
+drawLanding                  src/19-mode-landing.js:651
 drawLoreMarks                src/12q-lore.js:235
 drawLuxeDeck                 src/03c-hull-luxe.js:109
 drawLuxeSkin                 src/03c-hull-luxe.js:27
@@ -1284,7 +1292,7 @@ drawRaid                     src/24aa-raid-draw.js:14
 drawRing                     src/17c-system-draw.js:4
 drawRingTape                 src/11x-ring.js:107
 drawRoad                     src/27l-road-draw.js:87
-drawRocks                    src/19-mode-landing.js:383
+drawRocks                    src/19-mode-landing.js:411
 drawRouteMap                 src/12r-route.js:267
 drawRungRing                 src/12ae-ladder.js:73
 drawScoop                    src/19a-mode-scoop.js:266
@@ -1292,7 +1300,7 @@ drawSeams                    src/12s-wear.js:184
 drawShuttleArc               src/17f-sys-traffic.js:36
 drawSkyBase                  src/19c-light.js:296
 drawSkyBodies                src/19b-sky.js:96
-drawSkyLayer                 src/19-mode-landing.js:507
+drawSkyLayer                 src/19-mode-landing.js:537
 drawSpa                      src/29i-spa-draw.js:41
 drawSpaceDust                src/16a-space.js:275
 drawStarBody                 src/16a-space.js:459
@@ -1764,9 +1772,9 @@ grokTake                     src/12tb-grok.js:100
 grokTeach                    src/12tb-grok.js:144
 grokTick                     src/12tb-grok.js:75
 grokWant                     src/12tb-grok.js:41
-GROUND_BAKING                src/19-mode-landing.js:335
+GROUND_BAKING                src/19-mode-landing.js:363
 groundAt                     src/07-planet.js:566
-groundShadow                 src/19-mode-landing.js:491
+groundShadow                 src/19-mode-landing.js:521
 GROVE_ETHER                  src/11j-grove.js:23
 groveAll                     src/11j-grove.js:29
 groveDepthAt                 src/11j-grove.js:30
@@ -4086,7 +4094,7 @@ skyField                     src/19b-sky.js:542
 skyFind                      src/11ak-skywatch.js:47
 skyGalaxy                    src/19b-sky.js:373
 skyGiant                     src/19b-sky.js:222
-skyGrad                      src/19-mode-landing.js:474
+skyGrad                      src/19-mode-landing.js:504
 skyHole                      src/19b-sky.js:396
 skyMoon                      src/19b-sky.js:462
 skyNameComet                 src/11ak-skywatch.js:186
@@ -5480,7 +5488,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/18d-verlet.js · 7 КБ
   · верле: верёвки и ткань:1
 
-## src/19-mode-landing.js · 47 КБ
+## src/19-mode-landing.js · 49 КБ
   · посадка:1
 
 ## src/19a-mode-scoop.js · 37 КБ
@@ -5494,6 +5502,9 @@ zooTick                      src/11ad-zoo.js:41
   · свет и воздух:1
   · свечение (bloom) — M243:331
   · зерно и виньетка — один слой на все сцены (M244):366
+
+## src/19c1-cast.js · 7 КБ
+  · падающие тени: рельеф затеняет сам себя (P5, M433):1
 
 ## src/19d-weather.js · 14 КБ
   · погода:1
@@ -6274,6 +6285,9 @@ zooTick                      src/11ad-zoo.js:41
   · разбор 0.409.1 — по письмам соседнего захода:1
   · кадр базы (M413):159
   · по письму соседнего захода (0.415.1):214
+
+## tests/91zzzw-cast.js · 6 КБ
+  · падающие тени P5: рельеф затеняет себя, и это геометрия:1
 
 ## tests/91zzzw-chron.js · 37 КБ
   · летопись (M370, §16.2–16.5):1

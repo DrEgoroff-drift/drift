@@ -7,6 +7,33 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.421.0 (M433) - evening arrives: the ground shadows itself
+
+Since 0.420.0 the cross-section has real light - sky in the shadow, star in the light - and that
+showed what was still missing: nothing stood between a point and the star. A ridge at sunset was
+as bright at its foot as at its crest, the valley behind it was lit as if the ridge were glass,
+and a boulder cast nothing but the ellipse under itself. Evening was a dimmer, not a direction.
+
+Now every sample of the ground marches a ray toward the sun and asks whether the relief or a
+boulder rises above it. Where it does, the sample gets sky and no star: in the slope strip, in
+the crust highlight and the движки (none in shadow), in the boulder's body, and as a mask on the
+body under the shadowed edge that fades with depth, the way a ridge's shadow lies on the slope
+behind it. All of it is grey in the form pass, so the glaze of 0.420.0 makes the shadow the
+colour of the sky - blue on ice, green on a toxic world, black where there is no air.
+
+It costs the frame nothing. The chunk was already keyed by the sun's side and the day's height,
+so the map is computed once per chunk bake, kept on the terrain and read by every drawer of that
+chunk; the ray stops at 900 px, at night no map is built, and at the zenith the ray goes straight
+up and meets nothing. A suite holds the geometry: a ridge shadows the slope away from the sun and
+not the one toward it, a lower sun throws a longer shadow, a boulder is a shield too, and the
+penumbra is a share and never a step.
+
+Measured at a forced low sun on three worlds (almanac issue VII): mass and contrast up by a point
+or two, the pair down by as much because a shadow is cold - and the right flanks of the ridges
+finally in the evening. Plants and deco are drawn live and keep their own light inside a cast
+shadow; that is a tail, and it is written down.
+
+---
 ## 0.420.0 (M432) - the ground is painted by its light, not by its palette
 
 The tenth and last craft law. Every drawer of the landing cross-section used to pick its own

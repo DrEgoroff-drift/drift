@@ -250,6 +250,8 @@ function drawGround(tr,camx,camy,fill,line,pal){
     const df=tr.p?(.40+.58*dayKq(tr.p)):.78;
     /* верх шкалы серого прохода — полностью освещённая поверхность (d=1) */
     const lumFull=Math.max(1,lum3([0,1,2].map(q=>P0[q]*(k*amb[q]/255+df*sun[q]/255))));
+    /* падающая тень (P5, 19c1): что стоит между точкой и светилом */
+    const CM=castMapFor(tr,camx);
     for(let i=i0;i<i1;i++){
       const x0=i*tr.step-camx,x1=(i+1)*tr.step-camx;
       if(x1<-4||x0>W+4)continue;
@@ -260,12 +262,31 @@ function drawGround(tr,camx,camy,fill,line,pal){
          (`litRGB`), и клалось оно поверх материала одной лентой. Теперь то же
          число ложится серым, а цвет ему даёт лессировка — и достаётся он
          всему разрезу, а не ленте. */
-      const c=litRGB(P0,slope,null,sun,amb,k,df);
+      /* в тени прямого света нет, остаётся небо. `litRGB` читает `df||.78`,
+         поэтому ноль ему отдавать нельзя — отдаём эпсилон */
+      const sh=castAt(CM,i);
+      const c=litRGB(P0,slope,null,sun,amb,k,sh>0?Math.max(1e-3,df*(1-sh)):df);
       ctx.fillStyle=(pal&&tr.mat)?greyA(255*clamp(lum3(c)/lumFull,0,1),.42)
         :"rgba("+c[0]+","+c[1]+","+c[2]+","+(tr.mat?.42:1)+")";
       ctx.beginPath();
       ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.lineTo(x1,y1+stripD);ctx.lineTo(x0,y0+stripD);
       ctx.closePath();ctx.fill();
+      /* ── маска тени (P5) ──
+         Погашенная лента склона — сорок процентов серого на шестидесяти px —
+         глазом не находится: первый замер дал массу +3 и ничего на кадре. Тень
+         обязана лечь на ТЕЛО под кромкой и сойти на нет к глубине, как ложится
+         тень гребня на склон за ним. Серым, в проход формы: цвет неба ей даст
+         лессировка. Печётся в ломоть, кадру даром. */
+      if(sh>.02){
+        const d2=stripD*1.5, ya=Math.min(y0,y1);
+        const dgr=ctx.createLinearGradient(0,ya,0,Math.max(y0,y1)+d2);
+        dgr.addColorStop(0,"rgba(0,0,0,"+(.55*sh).toFixed(3)+")");
+        dgr.addColorStop(1,"rgba(0,0,0,0)");
+        ctx.fillStyle=dgr;
+        ctx.beginPath();
+        ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.lineTo(x1,y1+d2);ctx.lineTo(x0,y0+d2);
+        ctx.closePath();ctx.fill();
+      }
     }
     /* крошка на кромке — неподвижна, ложится в ломоть; трава живая и идёт
        отдельно (drawGroundGrass), в кадре поверх ломтей */
@@ -297,12 +318,18 @@ function drawGround(tr,camx,camy,fill,line,pal){
              Math.max(1,lum3(pal[pal.length-1]))),1)
       :line;
     ctx.lineWidth=1.4;ctx.stroke(P);
-    ctx.save();ctx.clip(P);
-    ctx.strokeStyle="rgba(255,255,255,.09)";ctx.lineWidth=7;
-    ctx.beginPath();
-    ctx.moveTo(i0*tr.step-camx,tr.h[i0]-camy+4);
-    for(let i=i0;i<=i1;i++)ctx.lineTo(i*tr.step-camx,tr.h[i]-camy+4);
-    ctx.stroke();
+    /* блик корки гаснет в падающей тени (P5): один путь на весь разрез стал
+       отрезками, и каждый берёт свою долю тени */
+    const CMc=castMapFor(tr,camx);
+    ctx.save();ctx.clip(P);ctx.lineWidth=7;ctx.lineCap="round";
+    for(let i=i0;i<i1;i++){
+      const a=.09*(1-castAt(CMc,i));
+      if(a<.012)continue;
+      ctx.strokeStyle="rgba(255,255,255,"+a.toFixed(3)+")";
+      ctx.beginPath();
+      ctx.moveTo(i*tr.step-camx,tr.h[i]-camy+4);ctx.lineTo((i+1)*tr.step-camx,tr.h[i+1]-camy+4);
+      ctx.stroke();
+    }
     ctx.restore();
     /* ── движки (§1, стадия 5 иконописи; переделка стиля по правилам) ──
        Финальный свет — не растяжка, а несколько ЖЁСТКИХ отметин по счёту.
@@ -320,6 +347,7 @@ function drawGround(tr,camx,camy,fill,line,pal){
           if((hh&7)<5)continue;
           const slope=(tr.h[i+1]-tr.h[i])/tr.step;
           if(slope*sunx>-.07)continue;
+          if(castAt(CMc,i)>.5)continue;               /* в тени блестеть нечему (P5) */
           const x0=i*tr.step-camx,y0=tr.h[i]-camy;
           const x1=(i+1)*tr.step-camx,y1=tr.h[i+1]-camy;
           const t0=.15+((hh>>>4)&7)/7*.4, t1=Math.min(1,t0+.16+((hh>>>8)&3)/3*.2);
@@ -420,9 +448,11 @@ function drawRocks(tr,camx,camy,pal){
          лессировкой вместе с грунтом, и камень перестанет быть «другой
          породой», покрашенной своей парой ступеней палитры (гризайль M422) */
       const nk=255/Math.max(1,lum3(pal[pal.length-1]));
+      /* валун в тени гребня темнеет вместе с землёй под ним (P5): свет один */
+      const shk=1-.55*castAt(castMapFor(tr,camx),Math.round(k.x/tr.step));
       const g=ctx.createLinearGradient(0,-k.rad,0,k.rad);
-      g.addColorStop(0,greyOf([lerp(c0[0],c1[0],t),lerp(c0[1],c1[1],t),lerp(c0[2],c1[2],t)],.9*nk));
-      g.addColorStop(1,greyOf(c0,.32*nk));
+      g.addColorStop(0,greyOf([lerp(c0[0],c1[0],t),lerp(c0[1],c1[1],t),lerp(c0[2],c1[2],t)],.9*nk*shk));
+      g.addColorStop(1,greyOf(c0,.32*nk*shk));
       ctx.fillStyle=g;ctx.fill(RP);
       /* та же порода, что под ногами: валун из другого материала выглядит
          принесённым из другой игры */

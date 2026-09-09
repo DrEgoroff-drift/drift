@@ -651,6 +651,50 @@ the alpha restored by `destination-in` — zero pixel readback, because reading 
 software rasterisation (the `prof()` rule). The LUT the plan originally proposed would have read
 and written half a million pixels per chunk.
 
+## Issue VII — 2026-09-09 (0.421.0) — evening arrives: the ground shadows itself
+
+Opened by M433, the first craft phase after the ten laws (P5 in the combined plan). Issue VI gave
+the cross-section real light — sky in the shadow, star in the light — and in doing so exposed what
+was still missing: nothing stood between a point and the star. A ridge at sunset was as bright at
+its foot as at its crest; the valley behind it was lit as if the ridge were glass; a boulder cast
+nothing but the ellipse under itself. Evening was a dimmer, not a direction.
+
+Now every sample of the profile marches a ray toward the sun and asks whether the relief or a
+boulder rises above it. If it does, the sample gets sky and no star — in the slope strip, in the
+crust highlight (none), in the движки (none), in the boulder's body, and as a mask on the body
+under the edge that fades with depth. All grey, all in the form pass; the glaze colours it. Baked
+per chunk, read from a memo, never paid by the frame (`19c1-cast`; geometry pinned in
+`91zzzw-cast`).
+
+### The sheet — a forced low sun (altitude .25, star to the left), shadows off → on
+
+| frame | tones | pair | contrast | mass | edge | empty |
+|---|---|---|---|---|---|---|
+| terran, clear (`noon`, sun forced) | 4 → 4 | 20 → 16 | .54 → **.56** | 32 → **34** | 2 → 2 | 59 → 61 |
+| terran, downpour (`surface`, sun forced) | 5 → 5 | 10 → 6 | .53 → **.54** | 25 → **28** | 3 → 2 | 48 → 50 |
+| ice, clear (`noonice`, sun forced) | 6 → **7** | 39 → 36 | .40 → **.43** | 35 → **36** | 3 → 3 | 54 → 53 |
+| terran, downpour, altitude .12 | 5 → 5 | 3 → 2 | .45 → .45 | 31 → **32** | 2 → 2 | 56 → 58 |
+
+At the scenes' own suns the rows are identical to issue VI by construction: `surface` sits at
+altitude .95 (0 of 223 samples shadowed) and `noon` at the zenith, where the ray goes straight up.
+
+**The number is small and the picture is not, and this issue is the place to say why.** The
+meter samples the whole frame; a cast shadow is the right flank of two ridges and one valley — a
+tenth of the ground, a twentieth of the frame. `mass` and `contrast` move up by a point or two,
+`pair` moves down by the same, because a shadow is cold and the meter counts warm against cold.
+Held against the codex: §12, values before colour — the shadowed flank is a new value step where
+there was one flat lit plane; §16, expose for the shadows — the shadow is the sky's colour and
+keeps its beds and grain, it is not a black; §3, keep the empty — the edge count does not rise,
+the penumbra is a share and not a step. The frame with the shadows is an evening. The frame without
+is a noon with the sun drawn in the wrong place — which is exactly what M242 fixed for the slopes
+and left undone for everything behind them.
+
+**Two things it does not do, on purpose.** Plants and deco are live and keep their own light
+inside a cast shadow; the fix is a memo read per plant and it is written in the tails, not here.
+And the mine, the base and the raid — the row's first-named consumers — have no sun; their shadows
+would come from lamps that move, which is a live mask and another milestone. The surface went first
+because it is the one scene where «direction from `celSun`» means something.
+
 ## ~~Reserved — issue III (continued)~~ — struck 2026-09-03
 
 All thirteen are drawn (M310–M313) and judged in the addenda above; the section stays only

@@ -299,9 +299,26 @@ main release, as M360a/M369b were.
   black void with one lit island (§16, expose for the shadows) - the floor now walks with the day,
   .28 at noon and 1 at midnight. Suite `91zzzw-glaze` holds the algebra, not the picture: the real
   `litRGB` must land between the two stops, or the glaze is lighting the section with a different
-  sun than the strips. **Tail, for whoever picks up P5:** the cave (`22-mode-cave`) draws live and
-  is not chunked, so the glaze does not reach it; `07-planet`'s disc is still painted from the
-  ramp. Both are worth their own milestone, neither is a defect.
+  sun than the strips. **Where the glaze stops, and why (corrected 2026-09-09 after a second
+  look):** the cave and the mine are both baked in tiles already (`drawTiles`, 18c) — what they
+  lack is not a cache but a *static illuminant*: underground there is no sky and no star, the
+  light is the lamp and the moss, drawn live over the tile (`drawCaveOwnLight`, the M304 §16
+  glazes). A per-tile glaze has no `light` stop to compute there, so P4 is complete where a sky
+  exists. The one open consumer from the P4 row is `07-planet`'s disc, which lights itself through
+  `planetLight` — worth a look, not a defect.
+
+- ~~**M433 evening arrives: the ground shadows itself**~~ - 0.421.0: P5 of the combined plan,
+  built on the surface. `src/19c1-cast.js` marches a ray from every sample of the profile toward
+  `celSun`; relief or a boulder above the ray means sky and no star - in the slope strips, the
+  crust highlight, the движки, the boulder's body, and as a mask under the shadowed edge that fades
+  with depth. Grey, in the form pass, so the P4 glaze makes the shadow the sky's colour (§16 by
+  construction). Baked per chunk (the key already carried `sunAzQ`/`dayKq`), memoised on the
+  terrain, the frame pays nothing; no map at night or at the zenith. Sheet at a forced low sun in
+  almanac issue VII: `mass` +1…+3, `contrast` +.02…+.03, `pair` −3…−4 (a shadow is cold), and the
+  right flanks of the ridges finally fall into the evening. Geometry pinned in `91zzzw-cast`. The
+  row said «cave first» and «direction from `celSun`» - underground there is no sun, so the
+  surface went first; interiors are lamps that move, a live mask and another milestone. **Tail:**
+  plants and deco are live and stay lit inside a cast shadow - one memo read per plant.
 
 ## Loose ends (as of 2026-08-28, after the graphics run 0.237.0–0.244.0)
 

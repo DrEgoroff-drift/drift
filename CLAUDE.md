@@ -257,7 +257,12 @@ through, waited out until night, or opened on a phone.
   Use `pageshot` for how things *look*, never for whether they *fit*.
 - **Long shell one-liners with quotes get mangled.** Write a script to the
   scratchpad and run it instead — a `Remove-Item` once received `"C:\Program`
-  as its path.
+  as its path. **This includes a long quoted heredoc** (`python - <<'PY' … PY`): a
+  hundred-line docs patch with prose in it died with «unexpected EOF while looking for
+  matching `'`» before Python ever ran, while a twenty-line one with the same apostrophes
+  and backticks passed (2026-09-09) — the cause was not pinned down, so the rule is by
+  size, not by content: a short patch inline, anything with paragraphs goes to a `.py` in
+  the scratchpad and runs by path.
 - **A heredoc through the Bash tool eats backslash escapes.** `<<'EOF'` should pass the
   body through literally, but by the time Python sees it, `\\n` has become `\n` and `\b`
   has become a literal 0x08 byte — which then lands in a source file and is invisible in

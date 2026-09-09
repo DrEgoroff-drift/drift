@@ -425,6 +425,48 @@ Second expedition (2026-08-30):
 
 ---
 
+## P5 падающие тени — built on the surface (0.421.0, M433, 2026-09-09)
+
+The row in the combined plan said «cast shadow masks — silhouette edges, cave first, direction
+from `celSun`, baked per chunk; the frame must not pay». Read against the game as it stands, two
+of those clauses contradict each other: the cave and the mine have no `celSun` — underground there
+is no static illuminant, the light is the lamp and it moves — so «cave first» and «direction from
+`celSun`» cannot both be true. The surface has a sun, a baked cross-section and, since P4, a grey
+form pass that any darkening can be written into. It went first.
+
+**What a cast shadow is here.** Until now the cross-section knew two shadows: the Lambert one (a
+slope turned from the sun is darker) and the contact one (`groundShadow`, an ellipse under a
+thing). Neither knows what stands *between* a point and the star. A ridge at sunset glowed as
+brightly as its foot; a boulder shadowed nothing but its own patch. Evening never arrived — it
+only dimmed. `19c1-cast` adds the third kind: from every sample of the profile a ray is marched
+toward the sun in steps of the profile itself; if the terrain or a boulder (a half-disc of its
+radius, where `drawRocks` puts it) rises above the ray, the sample is in shadow — no direct
+light, sky only. The share of shadow enters where the section already computes light: the slope
+strips (`litRGB` with the direct term extinguished), the crust highlight and the движки (none in
+shadow), the boulder's body, and a **mask** — a darkening of the body under a shadowed edge that
+fades with depth, the way a ridge's shadow lies on the slope behind it. All of it grey, all of it
+in the form pass: the glaze makes the shadow the colour of the sky, blue on ice, green on toxic,
+black where there is no air. §16 — expose for the shadows — is paid by construction.
+
+**Why the frame does not pay.** Shadow is a function of the sun and the relief, and the chunk is
+already keyed by both (`sunAzQ`, `dayKq`, M242). The map is computed once per chunk bake and read
+by every drawer of that chunk from a memo on the terrain; the march stops at 900 px, because at
+the horizon a shadow is longer than the frame anyway. At night no map is built (there is no direct
+light to block), and at the zenith the ray goes straight up and meets nothing.
+
+**Sheet (almanac issue VII).** At the scenes' own suns nothing changes — `surface` sits at
+altitude .95 (0 of 223 samples shadowed), `noon` at the zenith (no map). At a forced low sun
+(altitude .25, star to the left) the meter moves by little and in the right direction — `mass`
++1…+3, `contrast` +.02…+.03, `pair` −3…−4 because a shadow is cold — and the frame moves by a lot:
+the right flanks of the ridges fall into the sky's shadow and the valley between them goes with
+them. The number is small because the shadow is a small part of the frame; the eye is not fooled
+by that, and neither is the almanac.
+
+**Tails, named.** Plants and deco are drawn live and keep their own light when they stand in a
+cast shadow; a one-line memo read per plant would fix it and was not done here. The row's other
+consumers — the mine, the base interiors, the raid — cast their lamps' shadows, which move; that is
+a different mechanism (a live mask from the lamp, not a bake) and a different milestone.
+
 ## P4 гризайль — built and shipped (0.420.0, M432, 2026-09-09)
 
 The tenth craft law, and the last one that was still queued. The author spelled it out on
