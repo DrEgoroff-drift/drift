@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 519 · символов верхнего уровня: 4867
+Файлов: 519 · символов верхнего уровня: 4868
 
 ## СИМВОЛЫ
 
@@ -1275,7 +1275,7 @@ drawLanding                  src/19-mode-landing.js:281
 drawLoreMarks                src/12q-lore.js:235
 drawLuxeDeck                 src/03c-hull-luxe.js:109
 drawLuxeSkin                 src/03c-hull-luxe.js:27
-drawMap                      src/18-mode-map.js:120
+drawMap                      src/18-mode-map.js:126
 drawMisFigure                src/11z-misclosure.js:63
 drawModule                   src/21aa-base-rooms.js:384
 drawMonolith                 src/20aa-poi-shapes.js:193
@@ -2250,7 +2250,7 @@ jobOffer                     src/12e-mgr-jobs.js:228
 jobPick                      src/12e-mgr-jobs.js:259
 jobRefuse                    src/12e-mgr-jobs.js:57
 jobTick                      src/12e-mgr-jobs.js:287
-jump                         src/18-mode-map.js:514
+jump                         src/18-mode-map.js:540
 jumpToBase                   src/21a-mode-base.js:384
 KEEP_DARK_AFTER              src/11k-keepers.js:48
 KEEP_HABIT                   src/11k-keepers.js:35
@@ -2572,7 +2572,7 @@ mapFit                       src/18-mode-map.js:87
 mapFont                      src/18-mode-map.js:42
 mapGoAddr                    src/18a-map-addr.js:212
 mapGridDraw                  src/18a-map-addr.js:55
-mapGridPaint                 src/17z-map-backdrop.js:101
+mapGridPaint                 src/17z-map-backdrop.js:108
 mapHoldingsDraw              src/18b-map-hold.js:80
 mapHoldingsTop               src/18b-map-hold.js:186
 mapHousePatch                src/18b-map-hold.js:31
@@ -2593,13 +2593,14 @@ mapPriceRows                 src/12aa-need.js:302
 mapRail                      src/18-mode-map.js:18
 mapRange                     src/18-mode-map.js:83
 mapReset                     src/18-mode-map.js:117
-mapRhumbPaint                src/17z-map-backdrop.js:80
+mapRhumbPaint                src/17z-map-backdrop.js:82
 mapRingsDraw                 src/18a-map-addr.js:62
 mapRoseDraw                  src/18a-map-addr.js:187
 mapRulersDraw                src/18a-map-addr.js:112
 mapRulerTop                  src/18a-map-addr.js:53
 mapRumoursDraw               src/18a-map-addr.js:76
-mapStarPaint                 src/17z-map-backdrop.js:119
+mapSkyShift                  src/18-mode-map.js:125
+mapStarPaint                 src/17z-map-backdrop.js:126
 mapTagAt                     src/18b-map-hold.js:71
 mapTrassaPairs               src/18b-map-hold.js:47
 mapU                         src/18-mode-map.js:41
@@ -5483,9 +5484,9 @@ zooTick                      src/11ad-zoo.js:41
 ## src/17f-sys-traffic.js · 4 КБ
   · трафик системы: чужие машины, которым тут есть дело (M309):1
 
-## src/17z-map-backdrop.js · 7 КБ
+## src/17z-map-backdrop.js · 8 КБ
 
-## src/18-mode-map.js · 39 КБ
+## src/18-mode-map.js · 41 КБ
   · карта:1
   · где у карты пол и где правый борт:3
   · карта: ночное небо, а не схема молекулы:65
@@ -6429,7 +6430,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzzzj-boxes.js · 5 КБ
   · автотесты: коробки (M346):1
 
-## tests/91zzzzk-mapaddr.js · 5 КБ
+## tests/91zzzzk-mapaddr.js · 7 КБ
   · автотесты: карта говорит адресами (M347):1
 
 ## tests/91zzzzl-maphold.js · 5 КБ

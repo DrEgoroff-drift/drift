@@ -352,6 +352,19 @@ main release, as M360a/M369b were.
   `15-input`, `27z-telemetry`, `28-loop`, `18-mode-map`, `18a-map-addr`, `18b-map-hold`;
   new suite `tests/91zzzzzzz-hands`.
 
+- ~~**M438 the sky stands, the sheet slides**~~ - 0.425.0: the author, 09.09.2026 - «карта
+  двигается вместе с этой полосой и слоем звёзд… выглядит не очень» and «полосу чуть притуши».
+  The backdrop was nailed to the screen (band and rhumbs baked at 0,0; nebula and grit keyed to
+  the SHIP), so a drag slid the sheet over a dead sky and the two read as one plane. Law: the sky
+  stands in the world, the sheet slides in front of it - anchored to the ship, panned by a
+  fraction of the sheet's travel that shrinks with distance (grit ~.4, nebula ~.14, band ~.05),
+  saturating through `mapSkyShift` (tanh) because an infinitely distant sky cannot go anywhere.
+  The band layer is drawn with an SKM margin so the shift never opens a rim; its alpha dropped to
+  .62 - it is what addresses lie against, not a glow. The rhumb net went the other way: it belongs
+  to the sheet, so its knot sits on YOUR system and travels 1:1 (`mapRhumbPaint(c,W,H,cx,cy)`),
+  and that contrast is what makes the depth read. `18-mode-map`, `17z-map-backdrop`;
+  guard in `tests/91zzzzk-mapaddr`. `site/war.html` untouched (its own .38).
+
 ## The frame is the judge for anything the player touches (M437)
 
 Eight hundred suites missed a dead button on the map for as long as it existed, and the three
