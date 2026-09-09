@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 519 · символов верхнего уровня: 4867
+Файлов: 519 · символов верхнего уровня: 4876
 
 ## СИМВОЛЫ
 
@@ -78,6 +78,7 @@ ALBUM_MAX                    src/25g-postcard.js:627
 albumAll                     src/25g-postcard.js:628
 albumOpen                    src/25g-postcard.js:677
 alCount                      tests/91zzzzzy-alive.js:15
+ALL_NAMES                    tests/90-harness.js:118
 allyOf                       src/27b-ui-crew.js:8
 allyWork                     src/12a-crew.js:594
 ambK                         src/19c-light.js:115
@@ -141,6 +142,7 @@ avrWin                       src/21a6-base-avral.js:101
 b64dec                       src/14-save.js:29
 b64enc                       src/14-save.js:27
 bakeCount                    tests/91zzzzy-bake.js:32
+bakeIdle                     tests/90-harness.js:308
 bankTransform                src/03b-hull-paint.js:59
 BARGE_ART                    src/12l-barge.js:397
 BARGE_CAP                    src/12l-barge.js:13
@@ -862,7 +864,7 @@ coopSpirit                   src/12aj-coop.js:117
 coopSpiritAdd                src/12aj-coop.js:120
 coopSpiritRu                 src/12aj-coop.js:118
 coopSpread                   src/12aj-coop.js:70
-coopStamp                    tests/90-harness.js:295
+coopStamp                    tests/90-harness.js:392
 coopVisitReset               src/12aj-coop.js:62
 COSM_CHIME                   src/12va-wander-cosm.js:59
 COSM_EXH                     src/12va-wander-cosm.js:22
@@ -1439,7 +1441,7 @@ epiPerson                    src/12ap-notebook.js:50
 epiReached                   src/12ap-notebook.js:84
 episodeWith                  src/12ap-notebook.js:112
 epiWitness                   src/12ap-notebook.js:39
-eq                           tests/90-harness.js:126
+eq                           tests/90-harness.js:151
 ETH_CATCH                    src/25l-post-ether.js:28
 ETH_H0                       src/25l-post-ether.js:27
 ETH_HOLD                     src/25l-post-ether.js:29
@@ -1641,7 +1643,7 @@ fuseSel                      src/26-ui-station.js:4
 fuseShips                    src/03-ships.js:42
 FUZZ_KEYS                    tests/91zzzz-fuzz.js:16
 fuzzN                        tests/91zzzz-fuzz.js:17
-fuzzRich                     tests/91zzzz-fuzz.js:76
+fuzzRich                     tests/91zzzz-fuzz.js:84
 fuzzScenes                   tests/91zzzz-fuzz.js:36
 fuzzSeed                     tests/91zzzz-fuzz.js:27
 FWD_CREW                     src/21b6-base-forward.js:22
@@ -1662,7 +1664,7 @@ fxCanvas                     src/18d-postfx.js:12
 fxInc                        tests/91zzzw-fx.js:18
 fxWorld                      tests/91zzzw-fx.js:6
 G                            src/08-state.js:61
-G_BOOT_KEYS                  tests/90-harness.js:141
+G_BOOT_KEYS                  tests/90-harness.js:166
 g11Fps                       src/28z-fps-probe.js:7
 GATE_WHY                     tests/91zzzzzl-gates.js:19
 genBeast                     src/20f-fauna.js:58
@@ -2340,7 +2342,7 @@ landerGearTick               src/19f-lander.js:15
 landerInk                    tests/91j-art.js:156
 landerLen                    src/19f-lander.js:11
 landingDust                  src/19f-lander.js:344
-landOnTestPlanet             tests/90-harness.js:240
+landOnTestPlanet             tests/90-harness.js:292
 landStartY                   src/19-mode-landing.js:38
 LANE_RU                      src/26-ui-station.js:298
 LANE_RX                      src/26-ui-station.js:294
@@ -2832,7 +2834,7 @@ natSwarmTick                 src/12az-fx-nat.js:40
 navAction                    src/15-input.js:274
 nbFoe                        tests/91zzzw-notebook.js:15
 nbWorld                      tests/91zzzw-notebook.js:6
-near                         tests/90-harness.js:127
+near                         tests/90-harness.js:152
 nearestPOI                   src/20a-poi.js:236
 nearestStation               src/12-economy.js:158
 NEB_COMP                     src/16a-space.js:119
@@ -2893,14 +2895,14 @@ nmSource                     tests/91zzzzy-names.js:17
 nmUses                       tests/91zzzzy-names.js:105
 NODE_A                       src/05a-nodes.js:51
 NODE_B                       src/05a-nodes.js:54
-NODE_BROWSER                 tests/90-harness.js:83
+NODE_BROWSER                 tests/90-harness.js:102
 NODE_BY_ID                   src/05a-nodes.js:71
 NODE_C                       src/05a-nodes.js:60
 NODE_FAMS                    src/05a-nodes.js:20
 NODE_GRADES                  src/05a-nodes.js:42
 NODE_N                       src/05a-nodes.js:98
 NODE_PER_FAM                 src/05a-nodes.js:69
-NODE_SKIP                    tests/90-harness.js:98
+NODE_SKIP                    tests/90-harness.js:117
 NODE_WHERE                   src/05a-nodes.js:67
 nodeCount                    src/05a-nodes.js:104
 nodeDrop                     src/05a-nodes.js:149
@@ -2987,7 +2989,7 @@ offerShutLine                src/11ah-offer.js:282
 offerTake                    src/11ah-offer.js:213
 offerTick                    src/11ah-offer.js:170
 offerVisit                   src/11ah-offer.js:128
-ok                           tests/90-harness.js:120
+ok                           tests/90-harness.js:145
 ONE_BEAR_ERR                 src/21b3-base-hunt.js:26
 ONE_ID                       src/21b3-base-hunt.js:34
 ONE_JOB                      src/21b3-base-hunt.js:25
@@ -3672,7 +3674,7 @@ RES_KEYS                     src/02-world.js:87
 resAuto                      src/28-loop.js:128
 resEma                       src/28-loop.js:127
 resetArm                     src/26-ui-station.js:597
-resetWorld                   tests/90-harness.js:145
+resetWorld                   tests/90-harness.js:182
 resize                       src/08-state.js:22
 RET_BOARD                    src/11s-returners.js:29
 RET_ETHER                    src/11s-returners.js:19
@@ -3898,7 +3900,7 @@ rungPoints                   src/12ad-site.js:45
 rungRingSegs                 src/12ae-ladder.js:57
 rungRoman                    src/12ae-ladder.js:48
 RUNGS                        src/12ae-ladder.js:13
-runTests                     tests/90-harness.js:250
+runTests                     tests/90-harness.js:329
 rxRecord                     src/11x-ring.js:64
 S1                           src/01-core.js:96
 S2                           src/01-core.js:97
@@ -4016,6 +4018,7 @@ sellCargo                    src/12-economy.js:71
 sellDroneYield               src/12-economy.js:93
 sellQuote                    src/12ab-hold.js:101
 setSt                        src/27z-telemetry.js:91
+settle                       tests/90-harness.js:314
 SETTLE_BUILD                 src/12t-settle.js:31
 SETTLE_BY_K                  src/12t-settle.js:39
 SETTLE_CAP                   src/12t-settle.js:20
@@ -4063,6 +4066,7 @@ setZoom                      src/15-input.js:331
 sfx                          src/09-audio.js:301
 SFX                          src/09-audio.js:97
 SH_DX                        src/03b-hull-paint.js:175
+SHARD_H                      tests/90-harness.js:24
 SHARP_WORD                   src/21a9-base-laws.js:41
 sharpWord                    src/21a9-base-laws.js:42
 shatter                      src/24-mode-belt.js:136
@@ -4091,8 +4095,9 @@ siteTestOpen                 tests/91x-hold-site.js:11
 siteTestStation              tests/91x-hold-site.js:2
 sixthGone                    src/12k-stories-d.js:77
 sizeIdx                      src/05d-mounts.js:62
-SKIPPED_NODE                 tests/90-harness.js:79
-SKIPPED_SLOW                 tests/90-harness.js:70
+SKIPPED_NODE                 tests/90-harness.js:98
+SKIPPED_PROBE                tests/90-harness.js:34
+SKIPPED_SLOW                 tests/90-harness.js:89
 SKY_BULL                     src/11ak-skywatch.js:27
 SKY_HOR                      src/11ak-skywatch.js:80
 SKY_KINDS                    src/11ak-skywatch.js:29
@@ -4139,7 +4144,7 @@ slotAnchors                  src/05-parts.js:254
 slotsOf                      src/05-parts.js:227
 SLOW_CYCLE                   src/11o-slow.js:24
 SLOW_ETHER                   src/11o-slow.js:25
-SLOW_SUITES                  tests/90-harness.js:21
+SLOW_SUITES                  tests/90-harness.js:41
 slowAll                      src/11o-slow.js:30
 slowCorePlanet               src/11o-slow.js:38
 slowDepthAt                  src/11o-slow.js:31
@@ -4262,7 +4267,7 @@ stationViz                   src/17c-system-draw.js:111
 statPreview                  src/05-parts.js:416
 stCore                       src/17c-system-draw.js:131
 stDel                        src/14-save.js:26
-steps                        tests/90-harness.js:248
+steps                        tests/90-harness.js:327
 stepWorld                    src/28-loop.js:174
 stGet                        src/14-save.js:8
 stGroup                      src/26-ui-station.js:101
@@ -4337,8 +4342,8 @@ stTabYard                    src/26e-ui-station-trade.js:228
 stTypeOf                     src/06-galaxy.js:73
 STUN_TIME                    src/13a-guns.js:27
 subdivide                    src/24-mode-belt.js:34
-suite                        tests/90-harness.js:99
-suiteGroup                   tests/90-harness.js:71
+suite                        tests/90-harness.js:119
+suiteGroup                   tests/90-harness.js:90
 suitFailure                  src/23-mode-dig.js:119
 suitHit                      src/23-mode-dig.js:112
 suitMax                      src/12x-suit.js:89
@@ -4422,11 +4427,14 @@ techLv                       src/04-mods.js:45
 tell                         src/11-log.js:49
 TELL_SFX                     src/11-log.js:47
 TEST                         tests/90-harness.js:10
-TEST_CHRON                   tests/90-harness.js:144
-TEST_FULL                    tests/90-harness.js:69
-TEST_NODE                    tests/90-harness.js:78
+TEST_CHRON                   tests/90-harness.js:181
+TEST_FULL                    tests/90-harness.js:88
+TEST_NODE                    tests/90-harness.js:97
 TEST_ONLY                    tests/90-harness.js:14
-TEST_SUITES                  tests/90-harness.js:292
+TEST_PROBE                   tests/90-harness.js:33
+TEST_SHARD                   tests/90-harness.js:22
+TEST_SUITES                  tests/90-harness.js:389
+TEST_TIMES                   tests/99-run.js:18
 TETHER_LIFE                  src/13a-guns.js:40
 TETHER_PULL                  src/13a-guns.js:41
 tetherTick                   src/13a-guns.js:389
@@ -4545,6 +4553,7 @@ tvHop                        tests/91zzzzzw-travel.js:36
 tvKeys                       tests/91zzzzzw-travel.js:15
 tvSizes                      tests/91zzzzzw-travel.js:17
 TYPES                        src/02-world.js:125
+UI_BOOT                      tests/90-harness.js:175
 UIK                          src/08-state.js:13
 uiScale                      src/08-state.js:21
 unfitPart                    src/05-parts.js:384
@@ -5926,7 +5935,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/29i-spa-draw.js · 24 КБ
   · санаторий: веранда:1
 
-## tests/90-harness.js · 28 КБ
+## tests/90-harness.js · 37 КБ
   · автотесты: каркас:1
 
 ## tests/91a-flight.js · 20 КБ
@@ -6116,7 +6125,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzd-grown.js · 2 КБ
   · другое взросление: один народ на ступенях, взаимность в ядре:1
 
-## tests/91zze-plan.js · 3 КБ
+## tests/91zze-plan.js · 4 КБ
   · план: комбинат без наряда, изделие, которое принимает только база:1
 
 ## tests/91zzf-last.js · 8 КБ
@@ -6173,9 +6182,9 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzu-domino.js · 2 КБ
   · автотесты: домино (M166):1
 
-## tests/91zzv-table.js · 23 КБ
+## tests/91zzv-table.js · 24 КБ
   · автотесты: пульт и стол (M151a):1
-  · огонёк: «пришло» ≠ «не прочитано»:191
+  · огонёк: «пришло» ≠ «не прочитано»:204
 
 ## tests/91zzw-eco-probe.js · 10 КБ
   · проба экономики (отчёт, не проверка; аудит 2026-09-04, docs/ECONOMY-AUDIT.md):1
@@ -6384,12 +6393,12 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzzy-drones.js · 14 КБ
   · автотесты: рейсы дронов (M237):1
 
-## tests/91zzzz-fuzz.js · 15 КБ
+## tests/91zzzz-fuzz.js · 16 КБ
   · фуззер: режим под случайными руками (M238):1
-  · прожитый мир:71
-  · все вкладки рисуются:135
-  · тычок в каждую кнопку:168
-  · прибор кадра работает:210
+  · прожитый мир:79
+  · все вкладки рисуются:143
+  · тычок в каждую кнопку:176
+  · прибор кадра работает:218
 
 ## tests/91zzzza-drone-miner.js · 3 КБ
   · автотесты: дрон-добытчик (M350) — точка бездонная, купить трудно:1
@@ -6563,4 +6572,4 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzzzzzz-hands.js · 16 КБ
   · руки игрока: судья — кадр:1
 
-## tests/99-run.js · 2 КБ
+## tests/99-run.js · 4 КБ

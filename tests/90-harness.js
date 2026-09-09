@@ -12,6 +12,26 @@ let _suite="";
 /* ?only=текст — гонять только наборы, в имени которых есть текст (быстрая итерация;
    test.ps1 -Only делает то же самое) */
 const TEST_ONLY=(()=>{try{return new URLSearchParams(location.search).get("only")||"";}catch(e){return "";}})();
+/* ── прогон по частям (?shard=i/N) ──
+   Наборы независимы по замыслу: каждый начинается с resetWorld(), и порядок
+   им не указ. Значит их можно раздать НЕСКОЛЬКИМ Хромам сразу — машина
+   шестнадцатиядерная, а прогон всю жизнь шёл в одну страницу. Тяжёлые и
+   лёгкие раздаются по кругу ОТДЕЛЬНО: тяжёлых сорок пять, и в списке они
+   лежат кучно — раздача одним счётчиком отдала бы половину времени одной
+   части. `test.ps1 -Jobs N` пускает N таких частей разом и складывает отчёты. */
+const TEST_SHARD=(()=>{try{const m=/^(\d+)\/(\d+)$/.exec(new URLSearchParams(location.search).get("shard")||"");
+  return (m&&+m[2]>1&&+m[1]<+m[2])?{i:+m[1],n:+m[2]}:null;}catch(e){return null;}})();
+let SHARD_H=0,SHARD_L=0,SKIPPED_SHARD=0,SHARD_FREE=false;   /* SHARD_FREE: набор мимо раздачи — он нужен в каждой части одинаково */
+/* ── «проба» — это стенд, а не проверка (0.426.0) ──
+   Четыре набора с именем «проба · …» состоят из `ok(true,…)` целиком: они
+   ПЕЧАТАЮТ числа экономики и не утверждают ничего. Покраснеть они не могут
+   ни при какой поломке — а стоили двенадцать секунд каждого полного прогона,
+   больше, чем весь быстрый ярус. Проверка, которая не может провалиться, —
+   не проверка, а стенд, и звать её надо руками: `?probe=1` (test.ps1 -Probe).
+   Правило по ИМЕНИ, а не список: назвал набор «проба · …» — сказал, что он
+   печатает, а не судит. Захотел судить — не зови его пробой. */
+const TEST_PROBE=(()=>{try{return new URLSearchParams(location.search).get("probe")==="1";}catch(e){return false;}})();
+let SKIPPED_PROBE=0;
 /* ── два яруса (0.359.3; автор: «чтобы быстро проходили») ──
    Замер 05.09: 254 с прогона, из них сорок пять наборов ниже — 250 с (всё дольше секунды; автор 06.09: «быстрый — 20 с»); остальные
    шестьсот вместе — секунд пятнадцать. Выкидывать мелкие — не ускорит, а
@@ -63,8 +83,7 @@ const SLOW_SUITES=new Set([
   "накрытые кнопки: в каждой сцене пульт и борт получают свой тычок",
   "медленный: переписка с долиной — копия, продолжение, осмысленная ошибка; доказательство с ленты",
   "память: сотня открытий экранов не растит документ",
-  "сквозной: за прогон по сценам в состоянии не заводится NaN",
-  "двери: сейв на пороге каждой двери читается обратно"
+  "сквозной: за прогон по сценам в состоянии не заводится NaN"
 ]);
 const TEST_FULL=(()=>{try{return new URLSearchParams(location.search).get("full")==="1";}catch(e){return false;}})();
 let SKIPPED_SLOW=0;
@@ -96,10 +115,16 @@ const NODE_BROWSER=new Set([
   "ставка: заправка и ремонт берут ровно по объявленной цене"
 ]);
 const NODE_SKIP=/дорога|микрофон|звук|музык|голос|эфир|маяк|растр|печь|пиксел|канв|рисов|иконк|жёрдочк|снимок|открытк|look|fps|анализатор|приёмник|радио|сияние|марево|факел|эффект|хроматик|дым|силуэт|тень|свет|палитр|цвет|тон|форма|гряда|рельеф|небо|звёзд|облак|погод|растение|трава|зверь|зверьё|птиц|попугай|трепло|косметик|выхлоп|след|отделк|забрал|метк|огни|стыковк|телефон|мобил|вёрстк|пэд|кнопк|экран|панел|окно|шапк|заголов|подсказ|надпис|бланк|карточ|меню|стол|вкладк|44 px|тычок|тыкают|жмут|жмётся|нажим|клик|клавиш|мышь|палец|прокрут|скролл|фолд/i;
+const ALL_NAMES=new Set();
 function suite(name,fn){
+  ALL_NAMES.add(name);   /* имя видно ДО всех отсевов: по нему сверяются списки ярусов */
   if(TEST_NODE&&!TEST_ONLY&&(suiteGroup(name)!=="4 формулы и данные"||NODE_SKIP.test(name)||NODE_BROWSER.has(name))){SKIPPED_NODE++;return;}
   if(TEST_ONLY&&!name.includes(TEST_ONLY))return;
   if(!TEST_FULL&&!TEST_ONLY&&SLOW_SUITES.has(name)){SKIPPED_SLOW++;return;}
+  if(/^проба · /.test(name)&&!TEST_PROBE&&!TEST_ONLY){SKIPPED_PROBE++;return;}
+  if(TEST_SHARD&&!SHARD_FREE){const idx=SLOW_SUITES.has(name)?SHARD_H++:SHARD_L++;
+    if(idx%TEST_SHARD.n!==TEST_SHARD.i){SKIPPED_SHARD++;return;}}
+  TEST.ran=(TEST.ran|0)+1;
   _suite=name;
   if(TEST_NODE&&globalThis.TEST_TRACE)console.error("→ "+name);   /* test-node.js --trace: где завис */
   TEST.lines.push("── "+name);
@@ -139,6 +164,18 @@ function near(a,b,tol,msg){const h=Math.abs(a-b)<=tol;ok(h,h?msg:msg+" (полу
    в `91zzzzz-e2e-life`: он сверяет мир после resetWorld со снимком, снятым
    до первого набора. */
 const G_BOOT_KEYS=new Set(Object.keys(G));
+/* ── и то же про вид страницы (0.426.0) ──
+   Половина интерфейса помнит себя ВНЕ `G`: выбранная вкладка станции (`tab`),
+   её раздел (`stGroup`), закладка стола (`tableTab`). Эти три переменные не
+   принадлежат миру и потому не сбрасывались — а набор, ушедший со станции на
+   вкладке «ЭКИПАЖ», оставлял следующему раздел «ЛЮДИ», в котором кнопки ДОСКА
+   просто нет на экране. Набор про ДОСКУ краснел через сорок наборов после
+   виновника и только при определённом порядке (нашлось прогоном по частям).
+   Значения берём не из головы, а те, что были при заводке страницы. */
+const UI_BOOT={};
+if(typeof tab!=="undefined")UI_BOOT.tab=tab;
+if(typeof stGroup!=="undefined")UI_BOOT.stGroup=stGroup;
+if(typeof tableTab!=="undefined")UI_BOOT.tableTab=tableTab;
 
 /* полный сброс мира: то же, что «начать заново», но без перезагрузки страницы */
 let TEST_CHRON=null;
@@ -235,6 +272,21 @@ function resetWorld(){
      набор про невидимую тетрадь (91zzzf) краснел от ЧУЖОГО меню. */
   if(typeof toggleMenu==="function"){try{toggleMenu(false);}catch(e){}}
   if(typeof tableToggle==="function"&&typeof tableOpenNow!=="undefined"&&tableOpenNow){try{tableToggle(false);}catch(e){}}
+  /* ── страница — тоже мир (0.426.0) ──
+     Всё, что выше, закрывает ИМЕНОВАННЫЕ окна — дорогу, меню, стол. Любой
+     другой экран оставался висеть: класс «open» снимает только своя функция
+     выхода, и набор, ушедший со станции через тычок, отдавал экран
+     следующему. Тот мерил вёрстку поверх чужого окна и МОЛЧА получал не свои
+     числа. Ловилось это случайно и не на виновнике: «утечки: страница не
+     остаётся в чужом режиме» краснела на соседе и только при определённом
+     порядке (нашлось прогоном по частям — тот же прогон, другой порядок, три
+     красных из ниоткуда). Сеть изоляции обязана чистить и страницу, иначе она
+     не сеть. Заодно возвращаем вид станции и стола: `tab`, `stGroup` и
+     `tableTab` живут вне `G`, и снос полей мира их не касается. */
+  document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
+  document.body.classList.remove("screen","table");
+  try{ if("tab" in UI_BOOT)tab=UI_BOOT.tab; if("stGroup" in UI_BOOT)stGroup=UI_BOOT.stGroup;
+       if("tableTab" in UI_BOOT)tableTab=UI_BOOT.tableTab; }catch(e){}
 }
 /* сажаем игрока на первую твёрдую планету стартовой системы — общая заготовка */
 function landOnTestPlanet(){
@@ -243,6 +295,33 @@ function landOnTestPlanet(){
   G.land={p,tr,x:tr.padX,y:groundAt(tr,tr.padX)};
   enterSurface();
   return G.surf.p;
+}
+/* ── кадры до тех пор, пока сцена не ОСЕЛА ──
+   Развёртка планеты (`planetStripTick`) и материал грунта (`matTick`) пекутся
+   ПО КАДРАМ с бюджетом на кадр: первый кадр новой сцены — плоский диск, а не
+   то, что видит игрок. Наборы обходили это на глаз — «сорок кадров и хватит», —
+   и платили сорок полных отрисовок там, где печь заканчивала на третьей. Хуже
+   того, число на глаз врёт в обе стороны: подорожает печь — сорока не хватит,
+   и набор начнёт мерить недопечённое.
+   Спрашиваем саму печь: пока в очереди что-то есть — крутим, но не дольше
+   потолка. Возвращает, сколько кадров прошло, — чтобы набор мог это сказать. */
+function bakeIdle(){
+  if(typeof STRIP_JOB!=="undefined"&&STRIP_JOB)return false;
+  if(typeof STRIP_PEND!=="undefined"&&STRIP_PEND&&STRIP_PEND.length)return false;
+  if(typeof MAT_JOB!=="undefined"&&MAT_JOB)return false;
+  return true;
+}
+function settle(max,each,floor){
+  max=max||40;floor=(floor==null)?6:floor;let i=0;
+  for(;i<max;i++){
+    G.t++;stepWorld(1);
+    if(each)each(i);else drawWorld();
+    /* пол в шесть кадров — не суеверие: очередь знает про развёртку планеты и
+       материал грунта, но не про растр, который печёт себе сама сцена (доска
+       карты, борт «Сороки»). Шесть кадров дешевле сорока и покрывают их. */
+    if(i>=floor&&bakeIdle())break;
+  }
+  return Math.min(i+1,max);
 }
 /* прогон N кадров выбранного апдейта: время в игре идёт шагами по 1 */
 function steps(n,fn){for(let i=0;i<n;i++){actEdge=false;fn(1);G.t+=1;}}
@@ -264,10 +343,28 @@ function runTests(){
      появления этой строки. Цифра, которая всегда ноль, — не измерение, а
      украшение. Реальные секунды показывает `test.ps1` снаружи, а здесь стоит
      то, что действительно считается: сколько наборов отработало. */
+  /* ── список ярусов не имеет права отставать от имён (0.426.0) ──
+     SLOW_SUITES и NODE_BROWSER — наборы, названные СТРОКОЙ. Переименовали
+     набор — имя в списке осталось, и ярус молча поехал: тяжёлый набор попал
+     в быстрый прогон, а лёгкий перестал гоняться под Node. Поймано на самом
+     себе: «двери: сейв на пороге каждой двери читается обратно» лежало в
+     тяжёлых, а такого набора в игре уже нет. Полный прогон видит все имена —
+     он и сверяет. */
+  if(!TEST_ONLY&&(!TEST_SHARD||TEST_SHARD.i===0)){
+    SHARD_FREE=true;
+    suite("ярусы: в списках нет имён, которых больше нет",()=>{
+      const stale=[...SLOW_SUITES].filter(n=>!ALL_NAMES.has(n)).map(n=>"SLOW_SUITES: "+n)
+        .concat([...NODE_BROWSER].filter(n=>!ALL_NAMES.has(n)).map(n=>"NODE_BROWSER: "+n));
+      eq(stale.join(" ;; "),"","каждое имя в списках ярусов принадлежит живому набору");
+    });
+    SHARD_FREE=false;
+  }
   const ms=Math.round(performance.now()-t0);
   const head=(TEST.fail?"ПРОВАЛЕНО "+TEST.fail:"ВСЁ ЗЕЛЁНОЕ")+
-    " · пройдено "+TEST.pass+" · наборов "+TEST_SUITES.length+
+    " · пройдено "+TEST.pass+" · наборов "+(TEST.ran|0)+" из "+TEST_SUITES.length+
+    (TEST_SHARD?" · часть "+(TEST_SHARD.i+1)+"/"+TEST_SHARD.n:"")+
     (SKIPPED_SLOW?" · без тяжёлых "+SKIPPED_SLOW+" (полный: test.ps1 -Full)":" · полный")+
+    (SKIPPED_PROBE?" · без проб "+SKIPPED_PROBE+" (стенд: test.ps1 -Probe)":"")+
     (SKIPPED_NODE?" · без картинки и интерфейса "+SKIPPED_NODE+" (они в test.ps1 -Browser)":"")+
     (ms>0?" · "+ms+" мс":"");
   TEST.summary=head;

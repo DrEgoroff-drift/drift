@@ -476,20 +476,36 @@ Left from the queue: nothing — the band's second step is M308, the station's c
   at once: the prompt's hardcoded `right:128px` against a rail that is 129 wide on the map (now off
   the measured `--railw`), and `resetWorld` not leaving the road companion — after any click sweep
   the whole page was invisible and every later layout guard measured nothing.
-- **Tests: three tiers since 0.359.3** — `test.ps1` = Node logic (325 suites, ~5 s) + one Chrome smoke;
-  `-Browser` picture/interface (~30 s); `-Full` everything (~4 min, on request). Runner: Node + smoke, then the
-  live-site check. Loose end: a pixel-fidelity net for the browser tier (reference scenes, three sizes) is the
-  one thing that would have caught the perch and «РАКЕТА 0» — not built.
+- **Tests: three tiers since 0.359.3, and the run splits since 0.426.0** — `test.ps1` = Node logic
+  (325 suites, ~5 s) + one Chrome smoke; `-Browser` picture/interface; `-Full` everything.
+  `-Jobs N` runs the corpus in N Chromes at once, `-Times` prints the thirty slowest suites on a
+  real clock, `-Probe` calls the four «проба · …» stands (they print economy numbers and assert
+  nothing, so an ordinary run leaves them alone). Runner: Node + smoke, then the live-site check.
+  Loose end: a pixel-fidelity net for the browser tier (reference scenes, three sizes) is the one
+  thing that would have caught the perch and «РАКЕТА 0» — not built.
+- **Running in parts is also a test of the tests.** The first `-Jobs 8` run turned three suites red
+  that a single run had shown green for months: the isolation net cleaned `G` but not the page
+  (an open `.scr`, a body mode class) nor the station's own globals (`tab`, `stGroup`, `tableTab`),
+  and one station assertion had been passing only because the previous suite happened to leave the
+  station on the ДОСКА tab. All four are fixed in 0.426.0. Loose end: nothing yet names the suite
+  that leaves the page dirty — the failure still surfaces on its neighbour. A per-suite check
+  after `fn()` («no screen left open, no mode class, no key held») would name the culprit; not
+  built, and it will find work when it is.
 - **Tests: two tiers since 0.359.3** — `test.ps1` fast (~25 s), `-Full` everything; the runner runs full
   and then asks the live site (`data-alive`). Loose end: in the pane at 1280×800 «свет: звезда самое светлое»
   went red on Нейэль I (0.694 vs 0.536) while headless is green — window-dependent, worth one look.
-- **The suite costs ~3.5 min, and twelve suites are the cost.** Timed 2026-09-05 (harness prints
-  «САМЫЕ ДОЛГИЕ» when run with a real clock, i.e. in the pane, not under `--virtual-time-budget`):
-  doors matrix 77 s (now folded with its save twin, 0.359.2), leaks/large-forms/fuzz/e2e 9–12 s
-  each, the other 600 suites under a second. Author, 2026-09-05: «дохуя тестов … пусть смотрят
-  реальные баги». The direction is not fewer assertions but cheaper scene set-up: `resetWorld` +
-  `sc.set()` per cell is where the doors matrix spends its time; a scene snapshot/restore for the
-  matrix suites would take it under 20 s. Not done — needs care, `resetWorld` is the isolation net.
+- **The run costs what it draws, and the top ten suites are three quarters of it.** Measured
+  2026-09-09 with the switch that now exists — `test.ps1 -Full -Times` (real clock; under
+  `--virtual-time-budget` every suite reports 0 ms, which is why the tier list had been kept from
+  memory for a year). 280 s over 807 suites: the ten dearest are 205 s of it, the five dearest
+  are 139 s, and 400 suites do not reach a millisecond. **The cost is `drawWorld()`, not scene
+  set-up** — the older note here guessed set-up and guessed wrong. The doors matrix is 221 cells
+  × 3 draws, the oven family 1 760 draws, the fuzzer 544, the reference-frame suite 680: some
+  3 600 full frames at ~40 ms each in software rasterisation. Hence the three levers, in the
+  order they pay: (1) `--disable-gpu` dropped from `test.ps1` — headless Chrome takes the real
+  card and the dearest suite goes 49 s → 17 s; (2) `-Jobs N` splits the corpus across N Chromes
+  (`?shard=i/N`, heavy and light dealt round-robin apart); (3) cutting waste inside suites —
+  `settle()` asks the oven whether it is done instead of spending forty frames on hope.
 - **Push only after a green run.** One push in this session (0.238.0) went out while the base suite
   was flaking once in three runs; caught and fixed immediately after, but the lesson is to keep the
   test run and the push in separate commands.

@@ -44,6 +44,7 @@ TEST_SUITES.push(()=>suite("фуззер: режимы под случайным
     try{ok0=sc.set()!==false;}catch(e){bad.push(sc.id+" · постановка сцены: "+e.message);continue;}
     if(!ok0||G.mode==="none"){skipped.push(sc.id);continue;}
     const r=rng(hashi(0xF0DE+fuzzSeed(),sc.id.length,7));
+    let mode0=G.mode;
     for(let i=0;i<N;i++){
       /* руки: каждые несколько кадров половина клавиш переставляется */
       if(i%5===0){
@@ -53,7 +54,14 @@ TEST_SUITES.push(()=>suite("фуззер: режимы под случайным
       try{stepWorld(1);}catch(e){
         bad.push(sc.id+"→"+G.mode+" · кадр "+i+" · update: "+e.message+" | "+
           String(e.stack||"").split("\n")[1]);break;}
-      if(i%8===0){
+      /* ── рисуем там, где рисовать опасно ──
+         Было «каждый восьмой кадр»: пять с половиной сотен полных отрисовок за
+         прогон, четверть всего времени в Хроме, и почти каждая рисовала ту же
+         сцену второй раз подряд. Опасен не восьмой кадр, а ПЕРВЫЙ ПОСЛЕ СМЕНЫ
+         РЕЖИМА: там живёт полуоткрытое состояние, ради которого фуззер и
+         написан. Его рисуем всегда, плюс раз в шестнадцать кадров — для фона. */
+      const turned=G.mode!==mode0;mode0=G.mode;
+      if(turned||i%16===0){
         try{drawWorld();}catch(e){
           bad.push(sc.id+"→"+G.mode+" · кадр "+i+" · draw: "+e.message+" | "+
             String(e.stack||"").split("\n")[1]);break;}

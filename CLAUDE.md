@@ -230,9 +230,20 @@ powershell -ExecutionPolicy Bypass -File test.ps1
 
 **Three tiers (0.359.3).** No flags is the per-edit run: the Node tier (`test-node.js`, the
 formula-and-data suites, ~5 s) plus one Chrome smoke (~2 s). `-Browser` adds the picture and
-interface suites (~30 s); `-Full` runs everything including the heavy nets (~4 min) — on
-request, before a release. `-Only текст` narrows, `-NoBuild` skips the build, `-Mobile` is the
-only way the phone-layout guards run at all (they skip themselves in a desktop window).
+interface suites; `-Full` runs everything including the heavy nets — on request, before a
+release. `-Only текст` narrows, `-NoBuild` skips the build, `-Mobile` is the only way the
+phone-layout guards run at all (they skip themselves in a desktop window).
+
+**The full run is split across Chromes (0.426.0).** `-Full` deals the corpus to four headless
+Chromes (`?shard=i/N`, heavy and light dealt round-robin apart) and adds up their reports;
+`-Jobs N` sets the number by hand, `-Jobs 1` is the old single page. Two more switches:
+`-Times` runs on a real clock and prints the thirty slowest suites (under
+`--virtual-time-budget` every suite measures 0 ms, so this is the only way to see the bill), and
+`-Probe` calls the four «проба · …» stands — they print economy numbers and assert nothing, so
+an ordinary run does not pay for them. **A different split is a different order**, and order
+finds what one page hides: the first `-Jobs 8` run turned three long-green suites red. If a run
+in parts goes red where a single page is green, that is not the split's fault — read it as an
+isolation leak and fix the leak.
 
 **Never read the test page through the browser pane** — it is the single most expensive call in
 the project. `test.ps1` prints one head line plus the failures block, ~30 tokens instead of a

@@ -7,6 +7,79 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.426.0 (M439) - the run measures itself, splits into parts, and the parts find what one page hid
+
+The author, 09.09.2026: «У тебя там тестов на 4 минуты, зачем они нужны если все равно такие баги.
+Перепридумай тесты». 0.424.0 answered the bugs; this one answers the four minutes. `-Full` now
+takes **93 s instead of 292 s**, and on the way it turned four long-green suites red for good
+reasons. Nothing in the game changed but `VER`.
+
+**First the bill, because nobody had ever seen it.** The harness has had a «САМЫЕ ДОЛГИЕ» block
+for a year and it has never once printed: `test.ps1` runs Chrome under `--virtual-time-budget`,
+and inside a synchronous block that clock does not move, so every suite measured 0 ms and the
+block was filtered away empty. The switch the harness comment pointed at - `test.ps1 -Times` -
+did not exist. It does now: real clock, the thirty slowest suites, added up across parts. The
+bill, 807 suites over 280 s: the ten dearest are 205 s of it, the five dearest are 139 s, and
+four hundred suites do not reach a millisecond. **What costs is `drawWorld()`** - some 3 600 full
+frames at ~40 ms apiece - and not scene set-up, which is what this file and PLAN had guessed
+since May. Guessing is what happens when the clock is stopped.
+
+**`--disable-gpu` was paying for three quarters of the picture.** It had stood in `test.ps1`
+since the first headless run, for no reason anyone recorded. Without it headless Chrome takes the
+real card: the dearest suite of all («печь: вечер») goes 49 s → 17 s, and the whole run 280 → 230.
+
+**The corpus splits across Chromes.** Suites are independent by design - every one starts with
+`resetWorld()` - so `?shard=i/N` deals them out and `-Jobs N` runs N headless Chromes at once,
+adding their reports into one verdict. Heavy and light are dealt round-robin **apart**: the
+forty-five heavy ones lie in clumps, and one counter would have handed a third of the run to one
+part. Measured on sixteen cores: 1 part 230 s, 4 parts 131 s, **6 parts 97 s**, 8 parts 114 s,
+12 parts 147 s - past six the Chromes fight over one card and lose. `-Full` takes half the cores,
+capped at six.
+
+**And the split found four things one page had been hiding.** A different split is a different
+order, and the first `-Jobs 8` run turned three suites red that had been green for months:
+
+- **The isolation net cleaned the world but not the page.** `resetWorld()` reset `G` and closed
+  the road, the menu and the table - but a `.scr` left open by somebody's click sweep stayed open,
+  and the next suite measured its layout through a window that was not its own, silently. The
+  sweep is part of the reset now. The suite meant to guard exactly this («утечки: страница не
+  остаётся в чужом режиме») had been passing on luck: it asserted a property `resetWorld` never
+  had.
+- **The station remembers its tab outside `G`.** `tab`, `stGroup` and `tableTab` are plain module
+  variables, so a suite that walked off the station on «ЭКИПАЖ» handed the next one the ЛЮДИ
+  group. The harness now puts all three back to the values they held when the page booted - the
+  same rule as `G_BOOT_KEYS`, and for the same reason.
+- **«станция: ДОСКА у всех» had been passing for the wrong reason.** It looked for the ДОСКА
+  button on the second rail, which shows the tabs of the *current* group - and ДОСКА is a group of
+  its own, one tab wide. That button is visible exactly when the player is already on the board,
+  so the check held only while the previous suite happened to leave the station there. It asks
+  what «у всех» means now: the group is on the first rail at every station, and it opens the board.
+- **One assertion was decided by the clock ticking over.** «план: комбинат не останавливается»
+  tops the shift up to 50 and then demanded `T.run >= 50`, while `tinTick` burns the shift by real
+  time: one millisecond between the two `Date.now()` calls and it is 49.9993. It had been falling
+  once in a few runs, it took down the 0.361.0 deploy, and under eight busy Chromes it fell twice
+  as often. It asks for the rule now, not for the tick.
+
+**Four suites that could not go red.** «проба · …» - the economy stands - are `ok(true, …)` from
+top to bottom: they print rates, slices and caps and assert nothing at all. They cost 12 s of
+every full run for numbers nobody reads. They live behind `test.ps1 -Probe` now, and the rule is
+by name: call a suite «проба · …» and you have said it prints rather than judges.
+
+**Two suites stopped paying for hope.** The reference-frame suite spent forty frames per scene so
+the planet's strip could finish baking - seventeen scenes, 680 full frames, 21 s, the dearest
+suite in the browser tier. It asks the oven now (`settle()`: run until the strip and material
+queues are empty, floor six, ceiling forty). The fuzzer drew every eighth frame - 544 draws, most
+of them the same scene twice - and now draws where drawing is dangerous: the first frame after a
+mode change, plus one in sixteen for the background. On the clock: the reference frame 21.5 → 6.7 s,
+the fuzzer 23.7 → 2.2 s, and the work inside one page 280 → 104 s before a single part is dealt.
+
+**Two small ones.** The head line says how many suites actually ran, not how many are registered
+(«наборов 804 из 807»). And a new guard reads the tier lists back: a name in `SLOW_SUITES` or
+`NODE_BROWSER` that no longer belongs to a live suite is a failure, because a renamed suite
+changes tier in silence. There was one such name, left from a suite folded into the doors matrix
+in 0.359.2.
+
+---
 ## 0.424.0 (M437) - the map answers the hand, and its captions grow with the frame
 
 The author, 09.09.2026, over a screenshot of the map: «ищи баги смотри шрифт как то размывает,
