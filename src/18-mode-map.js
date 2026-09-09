@@ -12,7 +12,8 @@ const PAD_SAFE=104;   // полоса экранных кнопок снизу: 
    константа осталась запасным ответом на первый кадр и на стенды без пульта. */
 function mapDeck(){
   const fl=(typeof HUD_FLOOR==="number"&&HUD_FLOOR>40)?HUD_FLOOR:(H-PAD_SAFE);
-  return Math.round(clamp(fl-12,H*.4,H-14));
+  const U=(typeof mapU==="function")?mapU():1;   /* зазор до вёрстки — по той же мерке (M437) */
+  return Math.round(clamp(fl-12*U,H*.4,H-14*U));
 }
 function mapRail(){
   const rl=(typeof HUD_RAIL==="number"&&HUD_RAIL>60)?HUD_RAIL:(W-16);
@@ -26,6 +27,19 @@ function mapRail(){
    же, как сравнивает панели между собой. */
 let MAP_BOX=[];
 function mapBox(name,x,y,w,h){MAP_BOX.push({s:name,x,y,w,h});}
+/* ── у карты одна линейка со всем остальным (M437) ──
+   Свод: «интерфейс имеет одну линейку, и это кадр» — всё, что канва рисует
+   как ИНТЕРФЕЙС, растёт вместе с `UIK`. Система (17) и грунт (21e) так и
+   делают — `withScale(UIK,…)`, — а карта не делала ни разу: на экране 1920
+   борт, панели и подсказка вырастали в полтора раза, а подписи самой карты
+   оставались восьмипиксельными и читались мылом рядом с крупным DOM (автор,
+   09.09: «шрифт как-то размывает»).
+   Целиком в `withScale` карту не завернуть: её линейки, шапка и подписи
+   привязаны к сетке секторов, а сетка — это мир, и растянуть его вместе с
+   надписями значит сменить масштаб карты. Поэтому линейка входит в
+   НАЧЕРТАНИЕ и в отступы интерфейса, а не в координаты сетки. */
+function mapU(){return (typeof UIK==="number"&&UIK>1)?UIK:1;}
+function mapFont(px){ctx.font=(px*mapU()).toFixed(1)+"px ui-monospace,monospace";}
 function wrapLeft(text,x,y,maxW,lh){
   const words=text.split(" ");let line="",ly=y,n=1;
   for(const w of words){
@@ -142,7 +156,7 @@ function drawMap(){
     const S=srch,sxp=W/2+(S.sx-vx)*cell,syp=H/2+(S.sy-vy)*cell;
     ctx.strokeStyle="rgba(207,227,234,.45)";ctx.lineWidth=1;ctx.setLineDash([4,5]);
     ctx.beginPath();ctx.arc(sxp,syp,Math.max(6,S.rad*cell),0,TAU);ctx.stroke();ctx.setLineDash([]);
-    ctx.fillStyle="rgba(207,227,234,.7)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+    ctx.fillStyle="rgba(207,227,234,.7)";mapFont(8);ctx.textAlign="center";
     ctx.fillText("ИСКАТЬ ЗДЕСЬ · "+S.rad+" "+pl3(S.rad,"СЕКТОР","СЕКТОРА","СЕКТОРОВ").toUpperCase(),sxp,syp-S.rad*cell-6);
   }
   const dsel=Math.hypot(G.sel.x-G.sx,G.sel.y-G.sy);
@@ -242,7 +256,7 @@ function drawMap(){
         ctx.stroke();
       }
       if(ol>=2){
-        ctx.fillStyle=rgba(oc,.95*of);ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+        ctx.fillStyle=rgba(oc,.95*of);mapFont(8);ctx.textAlign="center";
         ctx.fillText(ol>=OCC_MAX?"ПОД ПИРАТАМИ":"БЛОКАДА",x,y+orr+11);
       }
       if(ol>=OCC_MAX){                       // под пиратами: заливка изнутри
@@ -269,7 +283,7 @@ function drawMap(){
       ctx.beginPath();ctx.arc(x,y,rr+14,0,TAU);ctx.stroke();
       ctx.fillStyle="#7fe6d8";
       ctx.beginPath();ctx.moveTo(x,y-rr-24);ctx.lineTo(x-4,y-rr-17);ctx.lineTo(x+4,y-rr-17);ctx.closePath();ctx.fill();
-      ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+      mapFont(8);ctx.textAlign="center";
       ctx.fillText("ВЫ · "+((typeof nameOf==="function")?nameOf(s):s.name).toUpperCase(),x,y-rr-28);
     }
     /* ушедший управляющий и разошедшееся ядро — единственные метки на карте,
@@ -277,13 +291,13 @@ function drawMap(){
     if((G.rogues||[]).some(R=>R.sx===gx&&R.sy===gy)){
       ctx.strokeStyle="#c58ae0";ctx.lineWidth=1.4;
       ctx.beginPath();ctx.arc(x,y,rr+17,0,TAU);ctx.stroke();
-      ctx.fillStyle="rgba(197,138,224,.9)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+      ctx.fillStyle="rgba(197,138,224,.9)";mapFont(8);ctx.textAlign="center";
       ctx.fillText("РЕНЕГАТ",x,y-rr-21);
     }
     if(G.aiRift&&G.aiRift.sx===gx&&G.aiRift.sy===gy){
       ctx.strokeStyle="#7fb0e6";ctx.lineWidth=1.2;
       ctx.beginPath();ctx.arc(x,y,rr+21,0,TAU);ctx.stroke();
-      ctx.fillStyle="rgba(127,176,230,.9)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+      ctx.fillStyle="rgba(127,176,230,.9)";mapFont(8);ctx.textAlign="center";
       ctx.fillText("РАСХОЖДЕНИЕ",x,y+rr+21);
     }
     /* «Охота» командира: пиратские базы соседних секторов помечены заранее.
@@ -307,7 +321,7 @@ function drawMap(){
       ctx.strokeStyle=NM.col;ctx.globalAlpha=.75;ctx.lineWidth=1;
       ctx.beginPath();ctx.arc(x,y,rr+9,-.6,.6);ctx.stroke();
       ctx.beginPath();ctx.arc(x,y,rr+9,Math.PI-.6,Math.PI+.6);ctx.stroke();
-      ctx.fillStyle=NM.col;ctx.font="7px ui-monospace,monospace";ctx.textAlign="center";
+      ctx.fillStyle=NM.col;mapFont(7);ctx.textAlign="center";
       ctx.fillText(NM.what.toUpperCase(),x,y+rr+13);
       ctx.globalAlpha=1;
     }
@@ -315,7 +329,7 @@ function drawMap(){
     if(G.relicHint&&G.relicHint.sx===gx&&G.relicHint.sy===gy){
       ctx.strokeStyle="#c58ae0";ctx.lineWidth=1;ctx.setLineDash([3,3]);
       ctx.beginPath();ctx.arc(x,y,rr+25,0,TAU);ctx.stroke();ctx.setLineDash([]);
-      ctx.fillStyle="rgba(197,138,224,.85)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+      ctx.fillStyle="rgba(197,138,224,.85)";mapFont(8);ctx.textAlign="center";
       ctx.fillText("СЛЕД АРТЕФАКТА",x,y-rr-29);
     }
     if(gx===G.sel.x&&gy===G.sel.y)sel=v;
@@ -330,7 +344,7 @@ function drawMap(){
     ctx.save();ctx.translate(ex,ey);ctx.rotate(an);
     ctx.fillStyle="#7fe6d8";ctx.beginPath();ctx.moveTo(8,0);ctx.lineTo(-6,-6);ctx.lineTo(-6,6);ctx.closePath();ctx.fill();
     ctx.restore();
-    ctx.fillStyle="#7fe6d8";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+    ctx.fillStyle="#7fe6d8";mapFont(8);ctx.textAlign="center";
     ctx.fillText("ВЫ",ex-Math.cos(an)*16,ey-Math.sin(an)*16+3);
   }
   /* имя трассы, бирки перемен и ценники (M348) — над звёздами */
@@ -380,7 +394,7 @@ function drawMap(){
     if(occN||(G.freed|0))
       Rr.push([occN?"rgba(255,107,87,.75)":"rgba(143,208,138,.75)",occSummary()]);
     /* влезут ли рядом: меряем самые длинные из обеих колонок */
-    ctx.font="10px ui-monospace,monospace";
+    mapFont(10);
     /* строка длиннее борта делится по « · » (M300): на телефоне описание
        системы уходило под кнопки КАРТА и МЕНЮ и обрывалось на «10.82 из 3.0» */
     const avail=RX-32;
@@ -428,19 +442,20 @@ function drawMap(){
        голый текст не читается */
     const mx=(x0+x1)/2,my=(y0+y1)/2;
     const label=far?"ВНЕ РАДИУСА":(cost+" ТОПЛИВА"+(poor?" · НЕ ХВАТАЕТ":""));
-    ctx.font="10px ui-monospace,monospace";ctx.textAlign="center";ctx.textBaseline="middle";
+    const U=mapU();
+    mapFont(10);ctx.textAlign="center";ctx.textBaseline="middle";
     const tw=ctx.measureText(label).width;
     ctx.fillStyle="rgba(6,10,16,.82)";
-    ctx.fillRect(mx-tw/2-7,my-9,tw+14,18);
+    ctx.fillRect(mx-tw/2-7*U,my-9*U,tw+14*U,18*U);
     ctx.strokeStyle=col;ctx.lineWidth=1;
-    ctx.strokeRect(mx-tw/2-6.5,my-8.5,tw+13,17);
+    ctx.strokeRect(mx-tw/2-6.5*U,my-8.5*U,tw+13*U,17*U);
     ctx.fillStyle=far||poor?"rgba(255,150,135,.95)":"#f2b25c";
     ctx.fillText(label,mx,my+.5);
     /* сколько останется в баке — вторая строка, мельче: это уже подробность */
     if(!far&&!poor){
-      ctx.font="8px ui-monospace,monospace";
+      mapFont(8);
       ctx.fillStyle="rgba(160,182,192,.7)";
-      ctx.fillText("останется "+Math.round(G.fuel-cost),mx,my+18);
+      ctx.fillText("останется "+Math.round(G.fuel-cost),mx,my+18*U);
     }
     ctx.restore();
     ctx.textBaseline="alphabetic";
@@ -464,38 +479,42 @@ function drawMap(){
        КАРТА и МЕНЮ стоят там всегда, и угол карточки уезжал под них */
     if(!G.mapMore){ctx.stroke();}   /* карточка — только по второму тапу (M298) */
     if(G.mapMore){
-    const cw=Math.min(300,mapRail()-32), cx=16;
-    ctx.font="9px ui-monospace,monospace";
+    const U=mapU();
+    /* карточка встаёт ПРАВЕЕ линейки Y (M437): по константе 16 она ложилась
+       прямо на полосу с номерами секторов и закрывала их собой */
+    const cx=Math.round((typeof MAP_RUL==="number"?MAP_RUL*U:26)+6);
+    const cw=Math.min(300*U,mapRail()-cx-16);
+    mapFont(9);
     /* высота — по числу строк описания, а не константой 104: у длинного
        описания четвёртая строка вылезала за плашку */
-    const dn=wrapCount(s.desc,cw-24);
+    const dn=wrapCount(s.desc,cw-24*U);
     /* виденные цены этой станции — на карточке, где выбирают, куда лететь (M341):
        свой груз светлым, лучшая по товару жирным, услышанное помечено */
-    const PR=mapPriceRows(s,cw-24);
-    const ch=54+dn*11+8+(PR.length?PR.length*11+6:0);
-    const cy=Math.round(mapDeck()-16*(foot.rows.length-1)-12-ch);
+    const PR=mapPriceRows(s,cw-24*U);
+    const ch=(54+dn*11+8+(PR.length?PR.length*11+6:0))*U;
+    const cy=Math.round(mapDeck()-16*U*(foot.rows.length-1)-12*U-ch);
     ctx.fillStyle="rgba(6,10,16,.62)";ctx.fillRect(cx,cy,cw,ch);
     ctx.strokeStyle="rgba(127,230,216,.18)";ctx.strokeRect(cx+.5,cy+.5,cw,ch);
     mapBox("карточка системы",cx,cy,cw,ch);
     ctx.textAlign="left";
-    ctx.fillStyle="#f2b25c";ctx.font="13px ui-monospace,monospace";
-    ctx.fillText(((typeof nameOf==="function")?nameOf(s):s.name).toUpperCase(),cx+12,cy+22);   /* ваше имя (11u) */
-    ctx.fillStyle="rgba(127,230,216,.65)";ctx.font="9px ui-monospace,monospace";
-    ctx.fillText(s.cls.ru+" · "+s.planets.length+" планет"+(s.station?" · СТАНЦИЯ":"")+(s.belt?" · ПОЯС":""),cx+12,cy+38);
+    ctx.fillStyle="#f2b25c";mapFont(13);
+    ctx.fillText(((typeof nameOf==="function")?nameOf(s):s.name).toUpperCase(),cx+12*U,cy+22*U);   /* ваше имя (11u) */
+    ctx.fillStyle="rgba(127,230,216,.65)";mapFont(9);
+    ctx.fillText(s.cls.ru+" · "+s.planets.length+" планет"+(s.station?" · СТАНЦИЯ":"")+(s.belt?" · ПОЯС":""),cx+12*U,cy+38*U);
     ctx.fillStyle="rgba(160,182,192,.62)";
-    wrapLeft(s.desc,cx+12,cy+54,cw-24,11);
-    if(PR.length)mapPriceDraw(PR,cx+12,cy+54+dn*11+8);
+    wrapLeft(s.desc,cx+12*U,cy+54*U,cw-24*U,11*U);
+    if(PR.length)mapPriceDraw(PR,cx+12*U,cy+(54+dn*11+8)*U);
     }
   }
   /* ── подвал: одним циклом, снизу вверх ── */
-  if(!G.mapClean){const deck=mapDeck();
-   ctx.font="10px ui-monospace,monospace";
+  if(!G.mapClean){const deck=mapDeck(),U=mapU();
+   mapFont(10);
    foot.rows.forEach((row,i)=>{
-     const y=deck-i*16;
+     const y=deck-i*16*U;
      if(row[0]){ctx.textAlign="left";ctx.fillStyle=row[0][0];ctx.fillText(row[0][1],16,y);
-       mapBox("подвал слева",16,y-9,ctx.measureText(row[0][1]).width,12);}
+       mapBox("подвал слева",16,y-9*U,ctx.measureText(row[0][1]).width,12*U);}
      if(row[1]){ctx.textAlign="right";ctx.fillStyle=row[1][0];ctx.fillText(row[1][1],foot.RX,y);
-       const w=ctx.measureText(row[1][1]).width;mapBox("подвал справа",foot.RX-w,y-9,w,12);}
+       const w=ctx.measureText(row[1][1]).width;mapBox("подвал справа",foot.RX-w,y-9*U,w,12*U);}
    });
    ctx.textAlign="right";
    /* линейки, шапка и роза (M347): интерфейс поверх листа, сообщает свои прямоугольники */

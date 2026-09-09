@@ -40,6 +40,7 @@ const $place=document.getElementById("place"),$sub=document.getElementById("sub"
 const $msg=document.getElementById("msg"),$prompt=document.getElementById("prompt");
 const $bThr=document.querySelector("[data-k=thrust]"),$bBrk=document.querySelector("[data-k=brake]");
 const $nav=document.getElementById("navbtn"),$fire=document.getElementById("firebtn");
+const $zoombox=document.querySelector(".rail .zoom");
 const $msl=document.getElementById("mslbtn");
 const $launch=document.getElementById("launchbtn");
 /* ── пробуждение приборов ──
@@ -351,6 +352,10 @@ function hud(){
     setSt($bBrk,"opacity","");
   }
   setTx($nav,(G.mode==="belt"||G.mode==="scoop"||G.mode==="homein")?"ВЫХОД":(G.mode==="map"?"НАЗАД":"КАРТА"));
+  /* коробка «+ −» — только там, где масштаб есть (M437). На грунте, в пещере
+     и в шахте она стояла на борту всю игру и не делала ничего: кнопка, на
+     которую нельзя ответить кадром, — это обещание, которого нет. */
+  if($zoombox)setSt($zoombox,"display",(typeof zoomModeHas==="function"&&zoomModeHas(G.mode))?"":"none");
   /* ── состав ряда не меняется на ходу (автор, 25.08.2026) ──
      Правило M181 доводится до конца: ОГОНЬ и РАКЕТА тоже прыгали. У
      вооружённого игрока при уходе из системы кнопка ОГОНЬ ПРОПАДАЛА, ряд

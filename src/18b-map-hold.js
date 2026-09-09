@@ -193,7 +193,7 @@ function mapHoldingsTop(vis,cell,V,st){
     if(best&&bl>60){
       const [a,b]=best,ang=Math.atan2(b.y-a.y,b.x-a.x);
       ctx.save();ctx.translate((a.x+b.x)/2,(a.y+b.y)/2);ctx.rotate(Math.abs(ang)>Math.PI/2?ang+Math.PI:ang);
-      ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";ctx.fillStyle="rgba(236,232,220,.55)";
+      mapFont(8);ctx.textAlign="center";ctx.fillStyle="rgba(236,232,220,.55)";
       ctx.fillText("Г Л А В Т Р А С С А",0,-cell*.32);
       ctx.restore();
     }
@@ -201,7 +201,7 @@ function mapHoldingsTop(vis,cell,V,st){
     const now=Date.now();
     for(const v of vis){
       const tg=mapTagAt(v.gx,v.gy,now);if(!tg)continue;
-      ctx.font="7px ui-monospace,monospace";ctx.textAlign="left";
+      mapFont(7);ctx.textAlign="left";
       const tw=ctx.measureText(tg.ru).width;
       ctx.fillStyle="rgba(6,10,16,"+(.6*tg.a).toFixed(2)+")";ctx.fillRect(v.x+10,v.y+6,tw+8,11);
       ctx.fillStyle="rgba(127,230,216,"+(.85*tg.a).toFixed(2)+")";ctx.fillText(tg.ru,v.x+14,v.y+14);
@@ -209,7 +209,7 @@ function mapHoldingsTop(vis,cell,V,st){
   }
   /* ценники: лучшая виденная цена станции — коротко, под звездой */
   if(mapLayerOn("prices")&&G.seenPrices){
-    ctx.font="7px ui-monospace,monospace";ctx.textAlign="center";
+    mapFont(7);ctx.textAlign="center";
     for(const v of vis){
       if(!v.s||!v.s.station)continue;
       let pr=G.seenPrices[v.s.key];

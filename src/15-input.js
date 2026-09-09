@@ -284,8 +284,21 @@ function navAction(){
   else if(G.mode==="map"){if(typeof mapBack==="function"&&mapBack())return;G.mode="system";if(typeof mapReset==="function")mapReset();}
   else say("Навигация недоступна\nвне свободного полёта");
 }
-document.getElementById("zin").addEventListener("click",()=>setZoom(G.zoom*1.35));
-document.getElementById("zout").addEventListener("click",()=>setZoom(G.zoom/1.35));
+/* ── плюс и минус ──
+   Кнопка знала один зум — полётный (`G.zoom`). На карте масштаб свой
+   (`G.mapZoom`, M299), и плюс там не делал ничего видимого: он тихо крутил
+   камеру системы за спиной — игрок жмёт, карта стоит, а вернувшись в систему,
+   он находит её в чужом масштабе (автор, 09.09: «карта не увеличивается»).
+   У вещи один хозяин: масштаб берёт тот, кто сейчас на экране. У карты число
+   обратное (больше mapZoom — мельче ячейка), поэтому деление. */
+function zoomStep(k){
+  if(G.mode==="map"){if(typeof mapZoomSet==="function")mapZoomSet(mapZoomK()/k);return;}
+  setZoom(G.zoom*k);
+}
+/* где масштаба нет вовсе — коробки не должно быть на экране (hud, 27z) */
+function zoomModeHas(m){return m==="system"||m==="map";}
+document.getElementById("zin").addEventListener("click",()=>zoomStep(1.35));
+document.getElementById("zout").addEventListener("click",()=>zoomStep(1/1.35));
 document.getElementById("dronebtn").addEventListener("click",deployDrone);
 document.getElementById("beaconbtn").addEventListener("click",useBeacon);
 /* посёлок под руку (M198): решение необратимо и подтверждения не спрашивает —

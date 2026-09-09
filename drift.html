@@ -1761,7 +1761,7 @@ body.table u.addr{color:#7a4a20}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.423.0";
+const VER="0.424.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -41087,8 +41087,21 @@ function navAction(){
   else if(G.mode==="map"){if(typeof mapBack==="function"&&mapBack())return;G.mode="system";if(typeof mapReset==="function")mapReset();}
   else say("Навигация недоступна\nвне свободного полёта");
 }
-document.getElementById("zin").addEventListener("click",()=>setZoom(G.zoom*1.35));
-document.getElementById("zout").addEventListener("click",()=>setZoom(G.zoom/1.35));
+/* ── плюс и минус ──
+   Кнопка знала один зум — полётный (`G.zoom`). На карте масштаб свой
+   (`G.mapZoom`, M299), и плюс там не делал ничего видимого: он тихо крутил
+   камеру системы за спиной — игрок жмёт, карта стоит, а вернувшись в систему,
+   он находит её в чужом масштабе (автор, 09.09: «карта не увеличивается»).
+   У вещи один хозяин: масштаб берёт тот, кто сейчас на экране. У карты число
+   обратное (больше mapZoom — мельче ячейка), поэтому деление. */
+function zoomStep(k){
+  if(G.mode==="map"){if(typeof mapZoomSet==="function")mapZoomSet(mapZoomK()/k);return;}
+  setZoom(G.zoom*k);
+}
+/* где масштаба нет вовсе — коробки не должно быть на экране (hud, 27z) */
+function zoomModeHas(m){return m==="system"||m==="map";}
+document.getElementById("zin").addEventListener("click",()=>zoomStep(1.35));
+document.getElementById("zout").addEventListener("click",()=>zoomStep(1/1.35));
 document.getElementById("dronebtn").addEventListener("click",deployDrone);
 document.getElementById("beaconbtn").addEventListener("click",useBeacon);
 /* посёлок под руку (M198): решение необратимо и подтверждения не спрашивает —
@@ -45315,6 +45328,101 @@ function drawShuttleArc(t,zx,zy,Z){
   }
 }
 
+/* ДРЕЙФ — фон звёздной карты: туманность, полоса Галактики, пеленги (M436).
+ *
+ * Три слоя, которые делают карту космосом, а не листом в клетку. Жили внутри
+ * `drawMap` (18-mode-map) и потому были видны только в игре; страница войны
+ * (site/war.html) рисовала свои владения на пустоте и выглядела политической
+ * картой из учебника. Теперь слои живут здесь, `build.ps1` кладёт этот модуль
+ * и в `site/war.js`, и обе карты — одна и та же бумага.
+ *
+ * Договор: каждая функция красит ПЕРЕДАННЫЙ контекст в поле W×H и не читает
+ * ничего из `G`. В игре они зовутся внутри `screenLayer` (кэш на размер
+ * экрана), на сайте — прямо в свой холст. Ни одна из них не двигает камеру:
+ * смещение туманности по сектору остаётся делом зовущего.
+ */
+const MAPBG={tex:null};
+function mapNebula(){
+  if(MAPBG.tex)return MAPBG.tex;
+  const S=160,cn=document.createElement("canvas");cn.width=cn.height=S;
+  const c=cn.getContext("2d"),img=c.createImageData(S,S),d=img.data;
+  for(let y=0;y<S;y++)for(let x=0;x<S;x++){
+    const o=(y*S+x)*4,u=x/S*2.6,v=y/S*2.6;
+    /* два поля: холодное «молоко» рукава и тёплые угли древних вспышек */
+    const a=clamp((fbm2(u,v,7717,5)-.46)*2.6,0,1);
+    const b=clamp((fbm2(u+3.7,v-1.9,4243,4)-.52)*2.9,0,1);
+    /* пылевая полоса вычитается: без тёмных прожилок туманность — просто клякса */
+    const dust=clamp((fbm2(u*1.7-2.2,v*1.7+4.4,913,3)-.44)*3.2,0,1);
+    const al=clamp((Math.pow(a,1.9)*.46+Math.pow(b,2.2)*.34)*(1-dust*.8),0,1);
+    d[o]  =28+b*150+a*24;
+    d[o+1]=22+a*54+b*44;
+    d[o+2]=58+a*140+b*30;
+    d[o+3]=al*255;
+  }
+  c.putImageData(img,0,0);MAPBG.tex=cn;return cn;
+}
+
+/* полоса Галактики: две ступени значения, пылевая лента и тёплое ядро */
+function mapBandPaint(c,W,H){
+  c.save();
+  c.translate(W/2,H/2);c.rotate(-.34);
+  const L=Math.hypot(W,H);
+  c.globalCompositeOperation="lighter";
+  const BW=[.46,.34,.22,.12],BA=[.05,.06,.08,.10];
+  for(let i=0;i<BW.length;i++){
+    const g=c.createLinearGradient(0,-H*BW[i]/2,0,H*BW[i]/2);
+    g.addColorStop(0,"rgba(150,180,220,0)");
+    g.addColorStop(.5,"rgba(178,200,228,"+BA[i]+")");
+    g.addColorStop(1,"rgba(150,180,220,0)");
+    c.fillStyle=g;c.fillRect(-L/2,-H*BW[i]/2,L,H*BW[i]);
+  }
+  /* ── вторая ступень значения (M308, §16) ──
+     Полоса была одним плавным значением; масса на карте мерилась в 2%.
+     У настоящей полосы есть яркое узкое ядро и тёмная пылевая лента,
+     которая его режет, — две ступени вместо одной, и по ним полоса
+     читается телом, а не подсветкой. Плюс звёздная крошка в ядре. */
+  {
+    const cg2=c.createLinearGradient(0,-H*.075,0,H*.075);
+    cg2.addColorStop(0,"rgba(200,214,236,0)");cg2.addColorStop(.5,"rgba(214,224,240,.13)");cg2.addColorStop(1,"rgba(200,214,236,0)");
+    c.fillStyle=cg2;c.fillRect(-L/2,-H*.075,L,H*.15);
+    const rs=rng(0x3A11);
+    c.fillStyle="rgba(230,236,248,.5)";
+    for(let i=0;i<260;i++){const x=(rs()-.5)*L,y=(rs()-.5)*H*.16*(.4+rs()*.6);c.fillRect(x,y,rs()<.2?1.2:.8,.8);}
+    c.globalCompositeOperation="source-over";
+    const dl=c.createLinearGradient(0,-H*.03,0,H*.03);
+    dl.addColorStop(0,"rgba(6,8,14,0)");dl.addColorStop(.5,"rgba(6,8,14,.38)");dl.addColorStop(1,"rgba(6,8,14,0)");
+    c.fillStyle=dl;
+    c.beginPath();
+    for(let x=-L/2;x<=L/2;x+=40){const y=Math.sin(x*.004)*H*.02+Math.sin(x*.011+1)*H*.01;if(x===-L/2)c.moveTo(x,y-H*.03);else c.lineTo(x,y-H*.03);}
+    for(let x=L/2;x>=-L/2;x-=40){const y=Math.sin(x*.004)*H*.02+Math.sin(x*.011+1)*H*.01;c.lineTo(x,y+H*.03);}
+    c.closePath();c.fill();
+    c.globalCompositeOperation="lighter";
+  }
+  /* тёплое ядро полосы — вторая температура листа */
+  const cg=c.createRadialGradient(-W*.18,0,0,-W*.18,0,W*.34);
+  cg.addColorStop(0,"rgba(236,206,160,.10)");
+  cg.addColorStop(1,"rgba(236,206,160,0)");
+  c.fillStyle=cg;c.fillRect(-L/2,-H/2,L,H);
+  c.restore();
+}
+
+/* сеть пеленгов — шестнадцать румбов из центра листа */
+function mapRhumbPaint(c,W,H){
+  const L=Math.hypot(W,H);
+  c.save();c.translate(W/2,H/2);
+  for(let i=0;i<16;i++){
+    const a=i/16*TAU;
+    c.strokeStyle="rgba(150,182,212,"+((i%4===0)?.075:.04)+")";
+    c.lineWidth=(i%4===0)?1:.7;
+    c.beginPath();c.moveTo(0,0);
+    c.lineTo(Math.cos(a)*L,Math.sin(a)*L);c.stroke();
+  }
+  /* скрытая окружность построения — как процарапанная на пергаменте */
+  c.strokeStyle="rgba(150,182,212,.05)";c.lineWidth=1;
+  c.beginPath();c.arc(0,0,Math.min(W,H)*.42,0,TAU);c.stroke();
+  c.restore();
+}
+
 /* ══════════════ карта ══════════════ */
 const PAD_SAFE=104;   // полоса экранных кнопок снизу: запасной ответ, см. mapDeck
 /* ══════════════ где у карты пол и где правый борт ══════════════
@@ -45329,7 +45437,8 @@ const PAD_SAFE=104;   // полоса экранных кнопок снизу: 
    константа осталась запасным ответом на первый кадр и на стенды без пульта. */
 function mapDeck(){
   const fl=(typeof HUD_FLOOR==="number"&&HUD_FLOOR>40)?HUD_FLOOR:(H-PAD_SAFE);
-  return Math.round(clamp(fl-12,H*.4,H-14));
+  const U=(typeof mapU==="function")?mapU():1;   /* зазор до вёрстки — по той же мерке (M437) */
+  return Math.round(clamp(fl-12*U,H*.4,H-14*U));
 }
 function mapRail(){
   const rl=(typeof HUD_RAIL==="number"&&HUD_RAIL>60)?HUD_RAIL:(W-16);
@@ -45343,6 +45452,19 @@ function mapRail(){
    же, как сравнивает панели между собой. */
 let MAP_BOX=[];
 function mapBox(name,x,y,w,h){MAP_BOX.push({s:name,x,y,w,h});}
+/* ── у карты одна линейка со всем остальным (M437) ──
+   Свод: «интерфейс имеет одну линейку, и это кадр» — всё, что канва рисует
+   как ИНТЕРФЕЙС, растёт вместе с `UIK`. Система (17) и грунт (21e) так и
+   делают — `withScale(UIK,…)`, — а карта не делала ни разу: на экране 1920
+   борт, панели и подсказка вырастали в полтора раза, а подписи самой карты
+   оставались восьмипиксельными и читались мылом рядом с крупным DOM (автор,
+   09.09: «шрифт как-то размывает»).
+   Целиком в `withScale` карту не завернуть: её линейки, шапка и подписи
+   привязаны к сетке секторов, а сетка — это мир, и растянуть его вместе с
+   надписями значит сменить масштаб карты. Поэтому линейка входит в
+   НАЧЕРТАНИЕ и в отступы интерфейса, а не в координаты сетки. */
+function mapU(){return (typeof UIK==="number"&&UIK>1)?UIK:1;}
+function mapFont(px){ctx.font=(px*mapU()).toFixed(1)+"px ui-monospace,monospace";}
 function wrapLeft(text,x,y,maxW,lh){
   const words=text.split(" ");let line="",ly=y,n=1;
   for(const w of words){
@@ -45375,26 +45497,6 @@ function wrapCount(text,maxW){
    даётся тьмой — чем дальше сектор от игрока, тем он тусклее, и на краю
    радиуса прыжка мир буквально гаснет. Третье: линия проводится только там,
    где она что-то значит — между достижимыми системами и до выбранной цели. */
-const MAPBG={tex:null};
-function mapNebula(){
-  if(MAPBG.tex)return MAPBG.tex;
-  const S=160,cn=document.createElement("canvas");cn.width=cn.height=S;
-  const c=cn.getContext("2d"),img=c.createImageData(S,S),d=img.data;
-  for(let y=0;y<S;y++)for(let x=0;x<S;x++){
-    const o=(y*S+x)*4,u=x/S*2.6,v=y/S*2.6;
-    /* два поля: холодное «молоко» рукава и тёплые угли древних вспышек */
-    const a=clamp((fbm2(u,v,7717,5)-.46)*2.6,0,1);
-    const b=clamp((fbm2(u+3.7,v-1.9,4243,4)-.52)*2.9,0,1);
-    /* пылевая полоса вычитается: без тёмных прожилок туманность — просто клякса */
-    const dust=clamp((fbm2(u*1.7-2.2,v*1.7+4.4,913,3)-.44)*3.2,0,1);
-    const al=clamp((Math.pow(a,1.9)*.46+Math.pow(b,2.2)*.34)*(1-dust*.8),0,1);
-    d[o]  =28+b*150+a*24;
-    d[o+1]=22+a*54+b*44;
-    d[o+2]=58+a*140+b*30;
-    d[o+3]=al*255;
-  }
-  c.putImageData(img,0,0);MAPBG.tex=cn;return cn;
-}
 /* окно карты (M298): обычно вокруг вас; по слуху — вокруг названного сектора */
 function mapViewC(){return G.mapView||{x:G.sx,y:G.sy};}
 /* ── масштаб и клетка карты (M299) ──
@@ -45453,68 +45555,13 @@ function drawMap(){
      Карта звёзд обязана показывать, ЧАСТЬЮ ЧЕГО они являются — молочная
      полоса галактической плоскости наискось через лист. Печётся один раз
      на размер экрана, кадру — один drawImage. */
-  ctx.drawImage(screenLayer("mapband|"+W+"|"+H,()=>{
-    ctx.save();
-    ctx.translate(W/2,H/2);ctx.rotate(-.34);
-    const L=Math.hypot(W,H);
-    ctx.globalCompositeOperation="lighter";
-    const BW=[.46,.34,.22,.12],BA=[.05,.06,.08,.10];
-    for(let i=0;i<BW.length;i++){
-      const g=ctx.createLinearGradient(0,-H*BW[i]/2,0,H*BW[i]/2);
-      g.addColorStop(0,"rgba(150,180,220,0)");
-      g.addColorStop(.5,"rgba(178,200,228,"+BA[i]+")");
-      g.addColorStop(1,"rgba(150,180,220,0)");
-      ctx.fillStyle=g;ctx.fillRect(-L/2,-H*BW[i]/2,L,H*BW[i]);
-    }
-    /* ── вторая ступень значения (M308, §16) ──
-       Полоса была одним плавным значением; масса на карте мерилась в 2%.
-       У настоящей полосы есть яркое узкое ядро и тёмная пылевая лента,
-       которая его режет, — две ступени вместо одной, и по ним полоса
-       читается телом, а не подсветкой. Плюс звёздная крошка в ядре. */
-    {
-      const cg2=ctx.createLinearGradient(0,-H*.075,0,H*.075);
-      cg2.addColorStop(0,"rgba(200,214,236,0)");cg2.addColorStop(.5,"rgba(214,224,240,.13)");cg2.addColorStop(1,"rgba(200,214,236,0)");
-      ctx.fillStyle=cg2;ctx.fillRect(-L/2,-H*.075,L,H*.15);
-      const rs=rng(0x3A11);
-      ctx.fillStyle="rgba(230,236,248,.5)";
-      for(let i=0;i<260;i++){const x=(rs()-.5)*L,y=(rs()-.5)*H*.16*(.4+rs()*.6);ctx.fillRect(x,y,rs()<.2?1.2:.8,.8);}
-      ctx.globalCompositeOperation="source-over";
-      const dl=ctx.createLinearGradient(0,-H*.03,0,H*.03);
-      dl.addColorStop(0,"rgba(6,8,14,0)");dl.addColorStop(.5,"rgba(6,8,14,.38)");dl.addColorStop(1,"rgba(6,8,14,0)");
-      ctx.fillStyle=dl;
-      ctx.beginPath();
-      for(let x=-L/2;x<=L/2;x+=40){const y=Math.sin(x*.004)*H*.02+Math.sin(x*.011+1)*H*.01;if(x===-L/2)ctx.moveTo(x,y-H*.03);else ctx.lineTo(x,y-H*.03);}
-      for(let x=L/2;x>=-L/2;x-=40){const y=Math.sin(x*.004)*H*.02+Math.sin(x*.011+1)*H*.01;ctx.lineTo(x,y+H*.03);}
-      ctx.closePath();ctx.fill();
-      ctx.globalCompositeOperation="lighter";
-    }
-    /* тёплое ядро полосы — вторая температура листа */
-    const cg=ctx.createRadialGradient(-W*.18,0,0,-W*.18,0,W*.34);
-    cg.addColorStop(0,"rgba(236,206,160,.10)");
-    cg.addColorStop(1,"rgba(236,206,160,0)");
-    ctx.fillStyle=cg;ctx.fillRect(-L/2,-H/2,L,H);
-    ctx.restore();
-  }),0,0,W,H);
+  ctx.drawImage(screenLayer("mapband|"+W+"|"+H,()=>mapBandPaint(ctx,W,H)),0,0,W,H);
   /* ── сеть пеленгов (экспедиция-2, свод §14: портуланы) ──
      На морской карте каждая линия — пеленг, по которому можно идти; красота
      заработана управляемостью. Шестнадцать румбов из ТЕКУЩЕЙ системы (она в
      центре листа) — курс читается направлением с одного взгляда. Главные
      четыре чуть громче. Печётся раз на размер экрана. */
-  ctx.drawImage(screenLayer("maprhumb|"+W+"|"+H,()=>{
-    const L=Math.hypot(W,H);
-    ctx.save();ctx.translate(W/2,H/2);
-    for(let i=0;i<16;i++){
-      const a=i/16*TAU;
-      ctx.strokeStyle="rgba(150,182,212,"+((i%4===0)?.075:.04)+")";
-      ctx.lineWidth=(i%4===0)?1:.7;
-      ctx.beginPath();ctx.moveTo(0,0);
-      ctx.lineTo(Math.cos(a)*L,Math.sin(a)*L);ctx.stroke();
-    }
-    /* скрытая окружность построения — как процарапанная на пергаменте */
-    ctx.strokeStyle="rgba(150,182,212,.05)";ctx.lineWidth=1;
-    ctx.beginPath();ctx.arc(0,0,Math.min(W,H)*.42,0,TAU);ctx.stroke();
-    ctx.restore();
-  }),0,0,W,H);
+  ctx.drawImage(screenLayer("maprhumb|"+W+"|"+H,()=>mapRhumbPaint(ctx,W,H)),0,0,W,H);
   drawStars(G.sx*140,G.sy*140,.35);
   const cell=mapCell(),R=mapRange();
   const V=mapViewC(),vx=V.x,vy=V.y;              /* окно карты: обычно вы, по слуху — названный сектор (M298) */
@@ -45534,7 +45581,7 @@ function drawMap(){
     const S=srch,sxp=W/2+(S.sx-vx)*cell,syp=H/2+(S.sy-vy)*cell;
     ctx.strokeStyle="rgba(207,227,234,.45)";ctx.lineWidth=1;ctx.setLineDash([4,5]);
     ctx.beginPath();ctx.arc(sxp,syp,Math.max(6,S.rad*cell),0,TAU);ctx.stroke();ctx.setLineDash([]);
-    ctx.fillStyle="rgba(207,227,234,.7)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+    ctx.fillStyle="rgba(207,227,234,.7)";mapFont(8);ctx.textAlign="center";
     ctx.fillText("ИСКАТЬ ЗДЕСЬ · "+S.rad+" "+pl3(S.rad,"СЕКТОР","СЕКТОРА","СЕКТОРОВ").toUpperCase(),sxp,syp-S.rad*cell-6);
   }
   const dsel=Math.hypot(G.sel.x-G.sx,G.sel.y-G.sy);
@@ -45634,7 +45681,7 @@ function drawMap(){
         ctx.stroke();
       }
       if(ol>=2){
-        ctx.fillStyle=rgba(oc,.95*of);ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+        ctx.fillStyle=rgba(oc,.95*of);mapFont(8);ctx.textAlign="center";
         ctx.fillText(ol>=OCC_MAX?"ПОД ПИРАТАМИ":"БЛОКАДА",x,y+orr+11);
       }
       if(ol>=OCC_MAX){                       // под пиратами: заливка изнутри
@@ -45661,7 +45708,7 @@ function drawMap(){
       ctx.beginPath();ctx.arc(x,y,rr+14,0,TAU);ctx.stroke();
       ctx.fillStyle="#7fe6d8";
       ctx.beginPath();ctx.moveTo(x,y-rr-24);ctx.lineTo(x-4,y-rr-17);ctx.lineTo(x+4,y-rr-17);ctx.closePath();ctx.fill();
-      ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+      mapFont(8);ctx.textAlign="center";
       ctx.fillText("ВЫ · "+((typeof nameOf==="function")?nameOf(s):s.name).toUpperCase(),x,y-rr-28);
     }
     /* ушедший управляющий и разошедшееся ядро — единственные метки на карте,
@@ -45669,13 +45716,13 @@ function drawMap(){
     if((G.rogues||[]).some(R=>R.sx===gx&&R.sy===gy)){
       ctx.strokeStyle="#c58ae0";ctx.lineWidth=1.4;
       ctx.beginPath();ctx.arc(x,y,rr+17,0,TAU);ctx.stroke();
-      ctx.fillStyle="rgba(197,138,224,.9)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+      ctx.fillStyle="rgba(197,138,224,.9)";mapFont(8);ctx.textAlign="center";
       ctx.fillText("РЕНЕГАТ",x,y-rr-21);
     }
     if(G.aiRift&&G.aiRift.sx===gx&&G.aiRift.sy===gy){
       ctx.strokeStyle="#7fb0e6";ctx.lineWidth=1.2;
       ctx.beginPath();ctx.arc(x,y,rr+21,0,TAU);ctx.stroke();
-      ctx.fillStyle="rgba(127,176,230,.9)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+      ctx.fillStyle="rgba(127,176,230,.9)";mapFont(8);ctx.textAlign="center";
       ctx.fillText("РАСХОЖДЕНИЕ",x,y+rr+21);
     }
     /* «Охота» командира: пиратские базы соседних секторов помечены заранее.
@@ -45699,7 +45746,7 @@ function drawMap(){
       ctx.strokeStyle=NM.col;ctx.globalAlpha=.75;ctx.lineWidth=1;
       ctx.beginPath();ctx.arc(x,y,rr+9,-.6,.6);ctx.stroke();
       ctx.beginPath();ctx.arc(x,y,rr+9,Math.PI-.6,Math.PI+.6);ctx.stroke();
-      ctx.fillStyle=NM.col;ctx.font="7px ui-monospace,monospace";ctx.textAlign="center";
+      ctx.fillStyle=NM.col;mapFont(7);ctx.textAlign="center";
       ctx.fillText(NM.what.toUpperCase(),x,y+rr+13);
       ctx.globalAlpha=1;
     }
@@ -45707,7 +45754,7 @@ function drawMap(){
     if(G.relicHint&&G.relicHint.sx===gx&&G.relicHint.sy===gy){
       ctx.strokeStyle="#c58ae0";ctx.lineWidth=1;ctx.setLineDash([3,3]);
       ctx.beginPath();ctx.arc(x,y,rr+25,0,TAU);ctx.stroke();ctx.setLineDash([]);
-      ctx.fillStyle="rgba(197,138,224,.85)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+      ctx.fillStyle="rgba(197,138,224,.85)";mapFont(8);ctx.textAlign="center";
       ctx.fillText("СЛЕД АРТЕФАКТА",x,y-rr-29);
     }
     if(gx===G.sel.x&&gy===G.sel.y)sel=v;
@@ -45722,7 +45769,7 @@ function drawMap(){
     ctx.save();ctx.translate(ex,ey);ctx.rotate(an);
     ctx.fillStyle="#7fe6d8";ctx.beginPath();ctx.moveTo(8,0);ctx.lineTo(-6,-6);ctx.lineTo(-6,6);ctx.closePath();ctx.fill();
     ctx.restore();
-    ctx.fillStyle="#7fe6d8";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+    ctx.fillStyle="#7fe6d8";mapFont(8);ctx.textAlign="center";
     ctx.fillText("ВЫ",ex-Math.cos(an)*16,ey-Math.sin(an)*16+3);
   }
   /* имя трассы, бирки перемен и ценники (M348) — над звёздами */
@@ -45772,7 +45819,7 @@ function drawMap(){
     if(occN||(G.freed|0))
       Rr.push([occN?"rgba(255,107,87,.75)":"rgba(143,208,138,.75)",occSummary()]);
     /* влезут ли рядом: меряем самые длинные из обеих колонок */
-    ctx.font="10px ui-monospace,monospace";
+    mapFont(10);
     /* строка длиннее борта делится по « · » (M300): на телефоне описание
        системы уходило под кнопки КАРТА и МЕНЮ и обрывалось на «10.82 из 3.0» */
     const avail=RX-32;
@@ -45820,19 +45867,20 @@ function drawMap(){
        голый текст не читается */
     const mx=(x0+x1)/2,my=(y0+y1)/2;
     const label=far?"ВНЕ РАДИУСА":(cost+" ТОПЛИВА"+(poor?" · НЕ ХВАТАЕТ":""));
-    ctx.font="10px ui-monospace,monospace";ctx.textAlign="center";ctx.textBaseline="middle";
+    const U=mapU();
+    mapFont(10);ctx.textAlign="center";ctx.textBaseline="middle";
     const tw=ctx.measureText(label).width;
     ctx.fillStyle="rgba(6,10,16,.82)";
-    ctx.fillRect(mx-tw/2-7,my-9,tw+14,18);
+    ctx.fillRect(mx-tw/2-7*U,my-9*U,tw+14*U,18*U);
     ctx.strokeStyle=col;ctx.lineWidth=1;
-    ctx.strokeRect(mx-tw/2-6.5,my-8.5,tw+13,17);
+    ctx.strokeRect(mx-tw/2-6.5*U,my-8.5*U,tw+13*U,17*U);
     ctx.fillStyle=far||poor?"rgba(255,150,135,.95)":"#f2b25c";
     ctx.fillText(label,mx,my+.5);
     /* сколько останется в баке — вторая строка, мельче: это уже подробность */
     if(!far&&!poor){
-      ctx.font="8px ui-monospace,monospace";
+      mapFont(8);
       ctx.fillStyle="rgba(160,182,192,.7)";
-      ctx.fillText("останется "+Math.round(G.fuel-cost),mx,my+18);
+      ctx.fillText("останется "+Math.round(G.fuel-cost),mx,my+18*U);
     }
     ctx.restore();
     ctx.textBaseline="alphabetic";
@@ -45856,38 +45904,42 @@ function drawMap(){
        КАРТА и МЕНЮ стоят там всегда, и угол карточки уезжал под них */
     if(!G.mapMore){ctx.stroke();}   /* карточка — только по второму тапу (M298) */
     if(G.mapMore){
-    const cw=Math.min(300,mapRail()-32), cx=16;
-    ctx.font="9px ui-monospace,monospace";
+    const U=mapU();
+    /* карточка встаёт ПРАВЕЕ линейки Y (M437): по константе 16 она ложилась
+       прямо на полосу с номерами секторов и закрывала их собой */
+    const cx=Math.round((typeof MAP_RUL==="number"?MAP_RUL*U:26)+6);
+    const cw=Math.min(300*U,mapRail()-cx-16);
+    mapFont(9);
     /* высота — по числу строк описания, а не константой 104: у длинного
        описания четвёртая строка вылезала за плашку */
-    const dn=wrapCount(s.desc,cw-24);
+    const dn=wrapCount(s.desc,cw-24*U);
     /* виденные цены этой станции — на карточке, где выбирают, куда лететь (M341):
        свой груз светлым, лучшая по товару жирным, услышанное помечено */
-    const PR=mapPriceRows(s,cw-24);
-    const ch=54+dn*11+8+(PR.length?PR.length*11+6:0);
-    const cy=Math.round(mapDeck()-16*(foot.rows.length-1)-12-ch);
+    const PR=mapPriceRows(s,cw-24*U);
+    const ch=(54+dn*11+8+(PR.length?PR.length*11+6:0))*U;
+    const cy=Math.round(mapDeck()-16*U*(foot.rows.length-1)-12*U-ch);
     ctx.fillStyle="rgba(6,10,16,.62)";ctx.fillRect(cx,cy,cw,ch);
     ctx.strokeStyle="rgba(127,230,216,.18)";ctx.strokeRect(cx+.5,cy+.5,cw,ch);
     mapBox("карточка системы",cx,cy,cw,ch);
     ctx.textAlign="left";
-    ctx.fillStyle="#f2b25c";ctx.font="13px ui-monospace,monospace";
-    ctx.fillText(((typeof nameOf==="function")?nameOf(s):s.name).toUpperCase(),cx+12,cy+22);   /* ваше имя (11u) */
-    ctx.fillStyle="rgba(127,230,216,.65)";ctx.font="9px ui-monospace,monospace";
-    ctx.fillText(s.cls.ru+" · "+s.planets.length+" планет"+(s.station?" · СТАНЦИЯ":"")+(s.belt?" · ПОЯС":""),cx+12,cy+38);
+    ctx.fillStyle="#f2b25c";mapFont(13);
+    ctx.fillText(((typeof nameOf==="function")?nameOf(s):s.name).toUpperCase(),cx+12*U,cy+22*U);   /* ваше имя (11u) */
+    ctx.fillStyle="rgba(127,230,216,.65)";mapFont(9);
+    ctx.fillText(s.cls.ru+" · "+s.planets.length+" планет"+(s.station?" · СТАНЦИЯ":"")+(s.belt?" · ПОЯС":""),cx+12*U,cy+38*U);
     ctx.fillStyle="rgba(160,182,192,.62)";
-    wrapLeft(s.desc,cx+12,cy+54,cw-24,11);
-    if(PR.length)mapPriceDraw(PR,cx+12,cy+54+dn*11+8);
+    wrapLeft(s.desc,cx+12*U,cy+54*U,cw-24*U,11*U);
+    if(PR.length)mapPriceDraw(PR,cx+12*U,cy+(54+dn*11+8)*U);
     }
   }
   /* ── подвал: одним циклом, снизу вверх ── */
-  if(!G.mapClean){const deck=mapDeck();
-   ctx.font="10px ui-monospace,monospace";
+  if(!G.mapClean){const deck=mapDeck(),U=mapU();
+   mapFont(10);
    foot.rows.forEach((row,i)=>{
-     const y=deck-i*16;
+     const y=deck-i*16*U;
      if(row[0]){ctx.textAlign="left";ctx.fillStyle=row[0][0];ctx.fillText(row[0][1],16,y);
-       mapBox("подвал слева",16,y-9,ctx.measureText(row[0][1]).width,12);}
+       mapBox("подвал слева",16,y-9*U,ctx.measureText(row[0][1]).width,12*U);}
      if(row[1]){ctx.textAlign="right";ctx.fillStyle=row[1][0];ctx.fillText(row[1][1],foot.RX,y);
-       const w=ctx.measureText(row[1][1]).width;mapBox("подвал справа",foot.RX-w,y-9,w,12);}
+       const w=ctx.measureText(row[1][1]).width;mapBox("подвал справа",foot.RX-w,y-9*U,w,12*U);}
    });
    ctx.textAlign="right";
    /* линейки, шапка и роза (M347): интерфейс поверх листа, сообщает свои прямоугольники */
@@ -46007,7 +46059,7 @@ function mapGridDraw(V,cell,R,st){
 /* 6. кольца прыжков за освещённым кругом */
 function mapRingsDraw(px,py,cell,st){
   ctx.save();ctx.setLineDash([2,6]);ctx.lineWidth=1;
-  ctx.font="8px ui-monospace,monospace";ctx.textAlign="left";
+  mapFont(8);ctx.textAlign="left";
   for(const k of [2,3]){
     const r=k*(st.jump+.02)*cell;
     if(r>Math.hypot(W,H))continue;
@@ -46032,7 +46084,7 @@ function mapRumoursDraw(V,cell){
     ctx.restore();
     ctx.strokeStyle="rgba(207,227,234,.35)";ctx.lineWidth=1;ctx.setLineDash([4,4]);
     ctx.strokeRect(x0+.5,y0+.5,w,w);ctx.setLineDash([]);
-    ctx.fillStyle="rgba(207,227,234,.7)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="left";
+    ctx.fillStyle="rgba(207,227,234,.7)";mapFont(8);ctx.textAlign="left";
     ctx.fillText("В "+r.rad+" "+pl3(r.rad,"СЕКТОРЕ","СЕКТОРАХ","СЕКТОРАХ")+" ВОКРУГ "+r.sx+":"+r.sy+(r.src?" · "+r.src.toUpperCase():""),x0+4,y0-4);
   }
   ctx.restore();
@@ -46057,30 +46109,31 @@ function mapMarksDraw(V,cell){
 /* 2+3. линейки и шапка — интерфейс, сообщает прямоугольники */
 function mapRulersDraw(V,cell,foot){
   const RX=(typeof mapRail==="function")?mapRail():W-16;
-  const y0=mapRulerTop(),xL=MAP_RUL;
+  const U=mapU();
+  const y0=mapRulerTop(),xL=MAP_RUL*U;
   const deck=(typeof mapDeck==="function")?mapDeck():H-100;
-  const yEnd=deck-16*Math.max(1,(foot&&foot.rows?foot.rows.length:1))-14;
+  const yEnd=deck-16*U*Math.max(1,(foot&&foot.rows?foot.rows.length:1))-14*U;
   ctx.save();
-  ctx.font="8px ui-monospace,monospace";ctx.textBaseline="alphabetic";
+  mapFont(8);ctx.textBaseline="alphabetic";
   /* полоса X сверху */
-  ctx.fillStyle="rgba(6,10,16,.55)";ctx.fillRect(xL,y0,RX-xL,13);
+  ctx.fillStyle="rgba(6,10,16,.55)";ctx.fillRect(xL,y0,RX-xL,13*U);
   ctx.strokeStyle="rgba(150,182,212,.35)";ctx.lineWidth=1;
-  ctx.beginPath();ctx.moveTo(xL,y0+13.5);ctx.lineTo(RX,y0+13.5);ctx.stroke();
-  mapBox("линейка X",xL,y0,RX-xL,14);
+  ctx.beginPath();ctx.moveTo(xL,y0+13.5*U);ctx.lineTo(RX,y0+13.5*U);ctx.stroke();
+  mapBox("линейка X",xL,y0,RX-xL,14*U);
   const step=cell>=34?1:(cell>=18?2:5);
   const gx0=Math.floor(V.x-(W/2-xL)/cell)-1,gx1=Math.ceil(V.x+(RX-W/2)/cell)+1;
   ctx.textAlign="center";
   for(let gx=gx0;gx<=gx1;gx++){
     const x=W/2+(gx-V.x)*cell;if(x<xL+6||x>RX-6)continue;
     const me=gx===G.sx,sel=gx===G.sel.x;
-    ctx.strokeStyle="rgba(150,182,212,.5)";ctx.beginPath();ctx.moveTo(Math.round(x)+.5,y0+9);ctx.lineTo(Math.round(x)+.5,y0+13);ctx.stroke();
+    ctx.strokeStyle="rgba(150,182,212,.5)";ctx.beginPath();ctx.moveTo(Math.round(x)+.5,y0+9*U);ctx.lineTo(Math.round(x)+.5,y0+13*U);ctx.stroke();
     if(gx%step!==0&&!me&&!sel)continue;
     ctx.fillStyle=me?"#7fe6d8":(sel?"#f2b25c":"rgba(180,200,220,.75)");
-    ctx.fillText(String(gx),x,y0+8);
-    if(me||sel){ctx.fillRect(x-6,y0+10,12,1);}
+    ctx.fillText(String(gx),x,y0+8*U);
+    if(me||sel){ctx.fillRect(x-6*U,y0+10*U,12*U,1);}
   }
   /* полоса Y слева */
-  const yT=y0+16;
+  const yT=y0+16*U;
   ctx.fillStyle="rgba(6,10,16,.55)";ctx.fillRect(2,yT,xL-4,Math.max(10,yEnd-yT));
   ctx.strokeStyle="rgba(150,182,212,.35)";ctx.beginPath();ctx.moveTo(xL-1.5,yT);ctx.lineTo(xL-1.5,yEnd);ctx.stroke();
   mapBox("линейка Y",2,yT,xL-2,Math.max(10,yEnd-yT));
@@ -46089,14 +46142,14 @@ function mapRulersDraw(V,cell,foot){
   for(let gy=gy0;gy<=gy1;gy++){
     const y=H/2+(gy-V.y)*cell;if(y<yT+6||y>yEnd-4)continue;
     const me=gy===G.sy,sel=gy===G.sel.y;
-    ctx.strokeStyle="rgba(150,182,212,.5)";ctx.beginPath();ctx.moveTo(xL-6,Math.round(y)+.5);ctx.lineTo(xL-2,Math.round(y)+.5);ctx.stroke();
+    ctx.strokeStyle="rgba(150,182,212,.5)";ctx.beginPath();ctx.moveTo(xL-6*U,Math.round(y)+.5);ctx.lineTo(xL-2,Math.round(y)+.5);ctx.stroke();
     if(gy%step!==0&&!me&&!sel)continue;
     ctx.fillStyle=me?"#7fe6d8":(sel?"#f2b25c":"rgba(180,200,220,.75)");
-    ctx.fillText(String(gy),xL-8,y+3);
-    if(me||sel){ctx.fillRect(xL-8-String(gy).length*5,y+5,String(gy).length*5,1);}
+    ctx.fillText(String(gy),xL-8*U,y+3*U);
+    if(me||sel){ctx.fillRect(xL-8*U-String(gy).length*5*U,y+5*U,String(gy).length*5*U,1);}
   }
   /* шапка: где вы и что выбрано */
-  ctx.textAlign="left";ctx.font="9px ui-monospace,monospace";
+  ctx.textAlign="left";mapFont(9);
   const nm=(G.sys&&typeof nameOf==="function")?nameOf(G.sys):(G.sys?G.sys.name:"");
   const l1="ВЫ · сектор "+G.sx+":"+G.sy+(nm?" · «"+nm+"»":"");
   const dch=Math.max(Math.abs(G.sel.x-G.sx),Math.abs(G.sel.y-G.sy));
@@ -46104,18 +46157,18 @@ function mapRulersDraw(V,cell,foot){
   const j=dsel>0?Math.max(1,Math.ceil(dsel/Math.max(.5,st.jump))):0;
   const star=starAt(G.sel.x,G.sel.y);
   const l2=dch===0?"":"сектор "+G.sel.x+":"+G.sel.y+" · "+dch+" "+pl3(dch,"сектор","сектора","секторов")+" · "+j+" "+pl3(j,"прыжок","прыжка","прыжков")+" · "+dsel.toFixed(1).replace(".",",")+" пк"+(star?"":" · пусто, курса нет");
-  const hx=xL+8,hy=y0+30;
+  const hx=xL+8*U,hy=y0+30*U;
   const ab=document.getElementById("mapaddr"),abw=(ab&&ab.offsetWidth)?ab.offsetWidth*((typeof UIK==="number")?UIK:1)+12:0;
   const avail=RX-hx-4-abw;
   /* строка длиннее места теряет хвост по « · », а не лезет под поле адреса */
   const trim=t=>{let s2=t;while(s2&&ctx.measureText(s2).width>avail-10&&s2.indexOf(" · ")>0)s2=s2.slice(0,s2.lastIndexOf(" · "));return s2;};
   const L1=trim(l1),L2=trim(l2);
   ctx.fillStyle="rgba(6,10,16,.5)";
-  const w1=ctx.measureText(L1).width,w2=L2?ctx.measureText(L2).width:0,wmax=Math.min(avail,Math.max(w1,w2)+10);
-  ctx.fillRect(hx-4,hy-10,wmax,l2?26:14);
-  mapBox("шапка карты",hx-4,hy-10,wmax,l2?26:14);
+  const w1=ctx.measureText(L1).width,w2=L2?ctx.measureText(L2).width:0,wmax=Math.min(avail,Math.max(w1,w2)+10*U);
+  ctx.fillRect(hx-4*U,hy-10*U,wmax,(l2?26:14)*U);
+  mapBox("шапка карты",hx-4*U,hy-10*U,wmax,(l2?26:14)*U);
   ctx.fillStyle="#7fe6d8";ctx.fillText(L1,hx,hy);
-  if(L2){ctx.fillStyle="#f2b25c";ctx.fillText(L2,hx,hy+12);}
+  if(L2){ctx.fillStyle="#f2b25c";ctx.fillText(L2,hx,hy+12*U);}
   /* обводка найденной клетки — три секунды после поиска */
   if(G.mapOutline&&Date.now()-G.mapOutline.t<3000){
     const c=mapCellXY(G.mapOutline.sx,G.mapOutline.sy,V,cell);
@@ -46132,19 +46185,25 @@ function mapRulersDraw(V,cell,foot){
 function mapRoseDraw(foot){
   const deck=(typeof mapDeck==="function")?mapDeck():H-100;
   const rows=foot&&foot.rows?foot.rows.length:1;
-  const cx=MAP_RUL+34,cy=deck-16*Math.max(1,rows)-46,r=16;
-  if(cy<mapRulerTop()+80)return;
+  /* один угол — одна вещь (M437): карточка системы стоит в том же нижнем
+     левом углу и накрывала розу собой на любой мерке. Роза — постоянная
+     подсказка, карточку игрок открывает нарочно вторым тапом: уступает роза.
+     Видит она карточку по её же прямоугольнику — тот уже сообщён (MAP_BOX). */
+  if(typeof MAP_BOX!=="undefined"&&MAP_BOX.some(b=>b.s==="карточка системы"))return;
+  const U=mapU();
+  const cx=(MAP_RUL+34)*U,cy=deck-16*U*Math.max(1,rows)-46*U,r=16*U;
+  if(cy<mapRulerTop()+80*U)return;
   ctx.save();
   ctx.strokeStyle="rgba(150,182,212,.5)";ctx.lineWidth=1;
   ctx.beginPath();ctx.arc(cx,cy,r,0,TAU);ctx.stroke();
-  ctx.fillStyle="rgba(180,200,220,.8)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
-  ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+r,cy);ctx.stroke();ctx.fillText("+X",cx+r+9,cy+3);
-  ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx,cy+r);ctx.stroke();ctx.fillText("+Y",cx,cy+r+9);
+  ctx.fillStyle="rgba(180,200,220,.8)";mapFont(8);ctx.textAlign="center";
+  ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+r,cy);ctx.stroke();ctx.fillText("+X",cx+r+9*U,cy+3*U);
+  ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx,cy+r);ctx.stroke();ctx.fillText("+Y",cx,cy+r+9*U);
   const a=Math.atan2(-G.sy,-G.sx);
   if(G.sx||G.sy){ctx.strokeStyle="#f2b25c";ctx.lineWidth=1.4;
     ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.cos(a)*r*.9,cy+Math.sin(a)*r*.9);ctx.stroke();
-    ctx.fillStyle="#f2b25c";ctx.fillText("К ЯДРУ",cx+Math.cos(a)*(r+16),cy+Math.sin(a)*(r+12)+3);}
-  mapBox("роза",cx-r-6,cy-r-6,r*2+30,r*2+22);
+    ctx.fillStyle="#f2b25c";ctx.fillText("К ЯДРУ",cx+Math.cos(a)*(r+16*U),cy+Math.sin(a)*(r+12*U)+3*U);}
+  mapBox("роза",cx-r-6*U,cy-r-6*U,r*2+30*U,r*2+22*U);
   ctx.restore();
 }
 /* 7. поиск адреса: поле над картой; окно едет, клетка обводится */
@@ -47226,7 +47285,7 @@ function mapHoldingsTop(vis,cell,V,st){
     if(best&&bl>60){
       const [a,b]=best,ang=Math.atan2(b.y-a.y,b.x-a.x);
       ctx.save();ctx.translate((a.x+b.x)/2,(a.y+b.y)/2);ctx.rotate(Math.abs(ang)>Math.PI/2?ang+Math.PI:ang);
-      ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";ctx.fillStyle="rgba(236,232,220,.55)";
+      mapFont(8);ctx.textAlign="center";ctx.fillStyle="rgba(236,232,220,.55)";
       ctx.fillText("Г Л А В Т Р А С С А",0,-cell*.32);
       ctx.restore();
     }
@@ -47234,7 +47293,7 @@ function mapHoldingsTop(vis,cell,V,st){
     const now=Date.now();
     for(const v of vis){
       const tg=mapTagAt(v.gx,v.gy,now);if(!tg)continue;
-      ctx.font="7px ui-monospace,monospace";ctx.textAlign="left";
+      mapFont(7);ctx.textAlign="left";
       const tw=ctx.measureText(tg.ru).width;
       ctx.fillStyle="rgba(6,10,16,"+(.6*tg.a).toFixed(2)+")";ctx.fillRect(v.x+10,v.y+6,tw+8,11);
       ctx.fillStyle="rgba(127,230,216,"+(.85*tg.a).toFixed(2)+")";ctx.fillText(tg.ru,v.x+14,v.y+14);
@@ -47242,7 +47301,7 @@ function mapHoldingsTop(vis,cell,V,st){
   }
   /* ценники: лучшая виденная цена станции — коротко, под звездой */
   if(mapLayerOn("prices")&&G.seenPrices){
-    ctx.font="7px ui-monospace,monospace";ctx.textAlign="center";
+    mapFont(7);ctx.textAlign="center";
     for(const v of vis){
       if(!v.s||!v.s.station)continue;
       let pr=G.seenPrices[v.s.key];
@@ -84975,6 +85034,7 @@ const $place=document.getElementById("place"),$sub=document.getElementById("sub"
 const $msg=document.getElementById("msg"),$prompt=document.getElementById("prompt");
 const $bThr=document.querySelector("[data-k=thrust]"),$bBrk=document.querySelector("[data-k=brake]");
 const $nav=document.getElementById("navbtn"),$fire=document.getElementById("firebtn");
+const $zoombox=document.querySelector(".rail .zoom");
 const $msl=document.getElementById("mslbtn");
 const $launch=document.getElementById("launchbtn");
 /* ── пробуждение приборов ──
@@ -85286,6 +85346,10 @@ function hud(){
     setSt($bBrk,"opacity","");
   }
   setTx($nav,(G.mode==="belt"||G.mode==="scoop"||G.mode==="homein")?"ВЫХОД":(G.mode==="map"?"НАЗАД":"КАРТА"));
+  /* коробка «+ −» — только там, где масштаб есть (M437). На грунте, в пещере
+     и в шахте она стояла на борту всю игру и не делала ничего: кнопка, на
+     которую нельзя ответить кадром, — это обещание, которого нет. */
+  if($zoombox)setSt($zoombox,"display",(typeof zoomModeHas==="function"&&zoomModeHas(G.mode))?"":"none");
   /* ── состав ряда не меняется на ходу (автор, 25.08.2026) ──
      Правило M181 доводится до конца: ОГОНЬ и РАКЕТА тоже прыгали. У
      вооружённого игрока при уходе из системы кнопка ОГОНЬ ПРОПАДАЛА, ряд
@@ -85466,18 +85530,45 @@ let lastDroneTick=0;
    Замер 0.87: на экране ×2.5 поверхность шла в 23 кадра, при ×1 — в 49, и
    дело было не в логике (≤4 мс), а в растре. Пока игрок не выбрал разрешение
    сам, игра начинает с полного и спускается на полступени, если кадр
-   по сглаженной оценке не укладывается в 24 мс три секунды подряд. Вверх
-   сама не идёт: дрожание «чётко — мыльно — чётко» хуже ровной картинки. */
-let resEma=16,resBad=0;
+   по сглаженной оценке не укладывается в 24 мс три секунды подряд.
+
+   ── и возвращается (M437) ──
+   Прежде вверх она не шла никогда: «дрожание чётко — мыльно — чётко хуже
+   ровной картинки». Цена этого правила оказалась выше самого дрожания: три
+   тяжёлые секунды ОДИН раз — заход на планету, первая печь ломтей, чужая
+   вкладка, укравшая кадр, — и весь остальной вечер игрок смотрит на мыло,
+   включая карту, которая стоит копейки (автор, 09.09: «шрифт как-то
+   размывает»). Дрожание лечится не запретом, а терпением: вниз — три
+   секунды тяжёлого кадра, вверх — двадцать секунд подряд ЛЁГКОГО (≤13 мс,
+   вдвое быстрее порога спуска), и не больше двух возвратов за сеанс. Между
+   двумя порогами лежит вся обычная жизнь кадра: попадать в них по очереди
+   случайно нечему, а это и есть дрожание. */
+let resEma=16,resBad=0,resGood=0,resUps=0,resMode="",resFresh=0;
 function resAuto(d){
   if(!G.running||d<=0||d>250)return;
   resEma=resEma*.9+d*.1;
-  if(G.opts.gfx.res||RES_AUTO<=1||document.hidden){resBad=0;return;}
-  if(resEma>24)resBad+=d;else resBad=Math.max(0,resBad-d*.5);
-  if(resBad>3000){
-    resBad=0;resEma=16;
-    RES_AUTO=RES_AUTO>1.5?1.5:1;
-    if(DPR>RES_AUTO){resize();say("Разрешение снижено до ×"+RES_AUTO+"\nвернуть — в настройках, «Графика»");}
+  /* печь новой сцены не судим (M437): смена режима один раз пересчитывает
+     растр, и раньше именно эти кадры роняли разрешение на весь вечер */
+  if(G.mode!==resMode){resMode=G.mode;resFresh=3000;resBad=0;resGood=0;}
+  if(resFresh>0){resFresh-=d;return;}
+  if(G.opts.gfx.res||document.hidden){resBad=resGood=0;return;}
+  if(RES_AUTO>1){
+    if(resEma>24)resBad+=d;else resBad=Math.max(0,resBad-d*.5);
+    if(resBad>3000){
+      resBad=0;resGood=0;resEma=16;
+      RES_AUTO=RES_AUTO>1.5?1.5:1;
+      if(DPR>RES_AUTO){resize();say("Разрешение снижено до ×"+RES_AUTO+"\nвернуть — в настройках, «Графика»");}
+      return;
+    }
+  }
+  /* и обратно, если кадр давно и уверенно лёгкий */
+  if(RES_AUTO<2&&resUps<2){
+    if(resEma<13)resGood+=d;else resGood=Math.max(0,resGood-d*2);
+    if(resGood>20000){
+      resGood=0;resBad=0;resEma=16;resUps++;
+      RES_AUTO=RES_AUTO<1.5?1.5:2;
+      if(Math.min(RES_AUTO,window.devicePixelRatio||1)>DPR){resize();say("Разрешение вернулось на ×"+RES_AUTO);}
+    }
   }
 }
 let capIv=16.667, capPrev=0, capN=0;

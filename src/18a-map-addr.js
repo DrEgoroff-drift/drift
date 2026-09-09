@@ -71,7 +71,7 @@ function mapGridDraw(V,cell,R,st){
 /* 6. кольца прыжков за освещённым кругом */
 function mapRingsDraw(px,py,cell,st){
   ctx.save();ctx.setLineDash([2,6]);ctx.lineWidth=1;
-  ctx.font="8px ui-monospace,monospace";ctx.textAlign="left";
+  mapFont(8);ctx.textAlign="left";
   for(const k of [2,3]){
     const r=k*(st.jump+.02)*cell;
     if(r>Math.hypot(W,H))continue;
@@ -96,7 +96,7 @@ function mapRumoursDraw(V,cell){
     ctx.restore();
     ctx.strokeStyle="rgba(207,227,234,.35)";ctx.lineWidth=1;ctx.setLineDash([4,4]);
     ctx.strokeRect(x0+.5,y0+.5,w,w);ctx.setLineDash([]);
-    ctx.fillStyle="rgba(207,227,234,.7)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="left";
+    ctx.fillStyle="rgba(207,227,234,.7)";mapFont(8);ctx.textAlign="left";
     ctx.fillText("В "+r.rad+" "+pl3(r.rad,"СЕКТОРЕ","СЕКТОРАХ","СЕКТОРАХ")+" ВОКРУГ "+r.sx+":"+r.sy+(r.src?" · "+r.src.toUpperCase():""),x0+4,y0-4);
   }
   ctx.restore();
@@ -121,30 +121,31 @@ function mapMarksDraw(V,cell){
 /* 2+3. линейки и шапка — интерфейс, сообщает прямоугольники */
 function mapRulersDraw(V,cell,foot){
   const RX=(typeof mapRail==="function")?mapRail():W-16;
-  const y0=mapRulerTop(),xL=MAP_RUL;
+  const U=mapU();
+  const y0=mapRulerTop(),xL=MAP_RUL*U;
   const deck=(typeof mapDeck==="function")?mapDeck():H-100;
-  const yEnd=deck-16*Math.max(1,(foot&&foot.rows?foot.rows.length:1))-14;
+  const yEnd=deck-16*U*Math.max(1,(foot&&foot.rows?foot.rows.length:1))-14*U;
   ctx.save();
-  ctx.font="8px ui-monospace,monospace";ctx.textBaseline="alphabetic";
+  mapFont(8);ctx.textBaseline="alphabetic";
   /* полоса X сверху */
-  ctx.fillStyle="rgba(6,10,16,.55)";ctx.fillRect(xL,y0,RX-xL,13);
+  ctx.fillStyle="rgba(6,10,16,.55)";ctx.fillRect(xL,y0,RX-xL,13*U);
   ctx.strokeStyle="rgba(150,182,212,.35)";ctx.lineWidth=1;
-  ctx.beginPath();ctx.moveTo(xL,y0+13.5);ctx.lineTo(RX,y0+13.5);ctx.stroke();
-  mapBox("линейка X",xL,y0,RX-xL,14);
+  ctx.beginPath();ctx.moveTo(xL,y0+13.5*U);ctx.lineTo(RX,y0+13.5*U);ctx.stroke();
+  mapBox("линейка X",xL,y0,RX-xL,14*U);
   const step=cell>=34?1:(cell>=18?2:5);
   const gx0=Math.floor(V.x-(W/2-xL)/cell)-1,gx1=Math.ceil(V.x+(RX-W/2)/cell)+1;
   ctx.textAlign="center";
   for(let gx=gx0;gx<=gx1;gx++){
     const x=W/2+(gx-V.x)*cell;if(x<xL+6||x>RX-6)continue;
     const me=gx===G.sx,sel=gx===G.sel.x;
-    ctx.strokeStyle="rgba(150,182,212,.5)";ctx.beginPath();ctx.moveTo(Math.round(x)+.5,y0+9);ctx.lineTo(Math.round(x)+.5,y0+13);ctx.stroke();
+    ctx.strokeStyle="rgba(150,182,212,.5)";ctx.beginPath();ctx.moveTo(Math.round(x)+.5,y0+9*U);ctx.lineTo(Math.round(x)+.5,y0+13*U);ctx.stroke();
     if(gx%step!==0&&!me&&!sel)continue;
     ctx.fillStyle=me?"#7fe6d8":(sel?"#f2b25c":"rgba(180,200,220,.75)");
-    ctx.fillText(String(gx),x,y0+8);
-    if(me||sel){ctx.fillRect(x-6,y0+10,12,1);}
+    ctx.fillText(String(gx),x,y0+8*U);
+    if(me||sel){ctx.fillRect(x-6*U,y0+10*U,12*U,1);}
   }
   /* полоса Y слева */
-  const yT=y0+16;
+  const yT=y0+16*U;
   ctx.fillStyle="rgba(6,10,16,.55)";ctx.fillRect(2,yT,xL-4,Math.max(10,yEnd-yT));
   ctx.strokeStyle="rgba(150,182,212,.35)";ctx.beginPath();ctx.moveTo(xL-1.5,yT);ctx.lineTo(xL-1.5,yEnd);ctx.stroke();
   mapBox("линейка Y",2,yT,xL-2,Math.max(10,yEnd-yT));
@@ -153,14 +154,14 @@ function mapRulersDraw(V,cell,foot){
   for(let gy=gy0;gy<=gy1;gy++){
     const y=H/2+(gy-V.y)*cell;if(y<yT+6||y>yEnd-4)continue;
     const me=gy===G.sy,sel=gy===G.sel.y;
-    ctx.strokeStyle="rgba(150,182,212,.5)";ctx.beginPath();ctx.moveTo(xL-6,Math.round(y)+.5);ctx.lineTo(xL-2,Math.round(y)+.5);ctx.stroke();
+    ctx.strokeStyle="rgba(150,182,212,.5)";ctx.beginPath();ctx.moveTo(xL-6*U,Math.round(y)+.5);ctx.lineTo(xL-2,Math.round(y)+.5);ctx.stroke();
     if(gy%step!==0&&!me&&!sel)continue;
     ctx.fillStyle=me?"#7fe6d8":(sel?"#f2b25c":"rgba(180,200,220,.75)");
-    ctx.fillText(String(gy),xL-8,y+3);
-    if(me||sel){ctx.fillRect(xL-8-String(gy).length*5,y+5,String(gy).length*5,1);}
+    ctx.fillText(String(gy),xL-8*U,y+3*U);
+    if(me||sel){ctx.fillRect(xL-8*U-String(gy).length*5*U,y+5*U,String(gy).length*5*U,1);}
   }
   /* шапка: где вы и что выбрано */
-  ctx.textAlign="left";ctx.font="9px ui-monospace,monospace";
+  ctx.textAlign="left";mapFont(9);
   const nm=(G.sys&&typeof nameOf==="function")?nameOf(G.sys):(G.sys?G.sys.name:"");
   const l1="ВЫ · сектор "+G.sx+":"+G.sy+(nm?" · «"+nm+"»":"");
   const dch=Math.max(Math.abs(G.sel.x-G.sx),Math.abs(G.sel.y-G.sy));
@@ -168,18 +169,18 @@ function mapRulersDraw(V,cell,foot){
   const j=dsel>0?Math.max(1,Math.ceil(dsel/Math.max(.5,st.jump))):0;
   const star=starAt(G.sel.x,G.sel.y);
   const l2=dch===0?"":"сектор "+G.sel.x+":"+G.sel.y+" · "+dch+" "+pl3(dch,"сектор","сектора","секторов")+" · "+j+" "+pl3(j,"прыжок","прыжка","прыжков")+" · "+dsel.toFixed(1).replace(".",",")+" пк"+(star?"":" · пусто, курса нет");
-  const hx=xL+8,hy=y0+30;
+  const hx=xL+8*U,hy=y0+30*U;
   const ab=document.getElementById("mapaddr"),abw=(ab&&ab.offsetWidth)?ab.offsetWidth*((typeof UIK==="number")?UIK:1)+12:0;
   const avail=RX-hx-4-abw;
   /* строка длиннее места теряет хвост по « · », а не лезет под поле адреса */
   const trim=t=>{let s2=t;while(s2&&ctx.measureText(s2).width>avail-10&&s2.indexOf(" · ")>0)s2=s2.slice(0,s2.lastIndexOf(" · "));return s2;};
   const L1=trim(l1),L2=trim(l2);
   ctx.fillStyle="rgba(6,10,16,.5)";
-  const w1=ctx.measureText(L1).width,w2=L2?ctx.measureText(L2).width:0,wmax=Math.min(avail,Math.max(w1,w2)+10);
-  ctx.fillRect(hx-4,hy-10,wmax,l2?26:14);
-  mapBox("шапка карты",hx-4,hy-10,wmax,l2?26:14);
+  const w1=ctx.measureText(L1).width,w2=L2?ctx.measureText(L2).width:0,wmax=Math.min(avail,Math.max(w1,w2)+10*U);
+  ctx.fillRect(hx-4*U,hy-10*U,wmax,(l2?26:14)*U);
+  mapBox("шапка карты",hx-4*U,hy-10*U,wmax,(l2?26:14)*U);
   ctx.fillStyle="#7fe6d8";ctx.fillText(L1,hx,hy);
-  if(L2){ctx.fillStyle="#f2b25c";ctx.fillText(L2,hx,hy+12);}
+  if(L2){ctx.fillStyle="#f2b25c";ctx.fillText(L2,hx,hy+12*U);}
   /* обводка найденной клетки — три секунды после поиска */
   if(G.mapOutline&&Date.now()-G.mapOutline.t<3000){
     const c=mapCellXY(G.mapOutline.sx,G.mapOutline.sy,V,cell);
@@ -196,19 +197,25 @@ function mapRulersDraw(V,cell,foot){
 function mapRoseDraw(foot){
   const deck=(typeof mapDeck==="function")?mapDeck():H-100;
   const rows=foot&&foot.rows?foot.rows.length:1;
-  const cx=MAP_RUL+34,cy=deck-16*Math.max(1,rows)-46,r=16;
-  if(cy<mapRulerTop()+80)return;
+  /* один угол — одна вещь (M437): карточка системы стоит в том же нижнем
+     левом углу и накрывала розу собой на любой мерке. Роза — постоянная
+     подсказка, карточку игрок открывает нарочно вторым тапом: уступает роза.
+     Видит она карточку по её же прямоугольнику — тот уже сообщён (MAP_BOX). */
+  if(typeof MAP_BOX!=="undefined"&&MAP_BOX.some(b=>b.s==="карточка системы"))return;
+  const U=mapU();
+  const cx=(MAP_RUL+34)*U,cy=deck-16*U*Math.max(1,rows)-46*U,r=16*U;
+  if(cy<mapRulerTop()+80*U)return;
   ctx.save();
   ctx.strokeStyle="rgba(150,182,212,.5)";ctx.lineWidth=1;
   ctx.beginPath();ctx.arc(cx,cy,r,0,TAU);ctx.stroke();
-  ctx.fillStyle="rgba(180,200,220,.8)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
-  ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+r,cy);ctx.stroke();ctx.fillText("+X",cx+r+9,cy+3);
-  ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx,cy+r);ctx.stroke();ctx.fillText("+Y",cx,cy+r+9);
+  ctx.fillStyle="rgba(180,200,220,.8)";mapFont(8);ctx.textAlign="center";
+  ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+r,cy);ctx.stroke();ctx.fillText("+X",cx+r+9*U,cy+3*U);
+  ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx,cy+r);ctx.stroke();ctx.fillText("+Y",cx,cy+r+9*U);
   const a=Math.atan2(-G.sy,-G.sx);
   if(G.sx||G.sy){ctx.strokeStyle="#f2b25c";ctx.lineWidth=1.4;
     ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.cos(a)*r*.9,cy+Math.sin(a)*r*.9);ctx.stroke();
-    ctx.fillStyle="#f2b25c";ctx.fillText("К ЯДРУ",cx+Math.cos(a)*(r+16),cy+Math.sin(a)*(r+12)+3);}
-  mapBox("роза",cx-r-6,cy-r-6,r*2+30,r*2+22);
+    ctx.fillStyle="#f2b25c";ctx.fillText("К ЯДРУ",cx+Math.cos(a)*(r+16*U),cy+Math.sin(a)*(r+12*U)+3*U);}
+  mapBox("роза",cx-r-6*U,cy-r-6*U,r*2+30*U,r*2+22*U);
   ctx.restore();
 }
 /* 7. поиск адреса: поле над картой; окно едет, клетка обводится */

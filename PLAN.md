@@ -338,6 +338,42 @@ main release, as M360a/M369b were.
   G, and release = coast for every input - the .55 auto-brake is gone, the brake is one gesture
   at `HELM_STOP` for keys, pad and stick alike. The phone helm (M422) is untouched. `15a-helm`
   header, `docs/DESIGN-war.md` §1.2, the title table; suite `91zzzw-helm`.
+- ~~**M437 the map answers the hand**~~ - 0.424.0: the author, 09.09.2026 - «смотри шрифт как то
+  размывает, карта не увеличивается… перепридумай тесты, эти ничего не ловят». `+`/`−` were wired
+  to `setZoom` (the flight camera) while the map has had `G.mapZoom` since M299: on the map they
+  moved nothing and silently rescaled the system view behind the player's back. Now `zoomStep`
+  takes the scale of whatever is on screen, and the box leaves the rail where there is no scale
+  (`zoomModeHas`, shown by `hud`). The map was also the only screen ignoring the one ruler (M221):
+  in a 1920 window the DOM grows ×1.42 and its own rulers, header, footer, badge and card stayed
+  at 8-9 px - `mapU`/`mapFont` put the ruler into the type and the interface paddings, never into
+  the grid coordinates (the grid is the world). Auto-resolution now returns: down after three
+  heavy seconds as before, up after twenty seconds of a frame twice as light, at most twice a
+  session, and the first three seconds of a scene are not judged (they bake the raster once).
+  `15-input`, `27z-telemetry`, `28-loop`, `18-mode-map`, `18a-map-addr`, `18b-map-hold`;
+  new suite `tests/91zzzzzzz-hands`.
+
+## The frame is the judge for anything the player touches (M437)
+
+Eight hundred suites missed a dead button on the map for as long as it existed, and the three
+reasons are structural - worth knowing before writing the next interface test.
+
+- **A control is found by what it *is*, not by what it says.** Every sweep collected elements
+  with text and matched the text against a verb, so an icon button (`+`, `−`: an SVG and an
+  aria-label) belonged to no list at all. Enumerate what is visible and enabled; take the caption
+  from `textContent` *or* `aria-label` *or* the id.
+- **A changed field is not an answer.** `prDelta` compares `G`, and the dead `+` did change a
+  field - `G.zoom`, invisible on the map. Anything the player reaches over the world is judged by
+  the frame: sample the canvas before and after, measure the world's own motion first (a scene
+  moves by itself), and require the press to beat it. A spoken refusal, a window, or a mode change
+  count too; a field does not.
+- **The rail was never swept, because it is not a screen.** Sweeps open `.scr`. The two or three
+  buttons that hang over the world in every mode are the ones the player sees most and the ones
+  nobody tested. Drive them per *mode*, over `lookScenes()` - the same list the frame meter and
+  the fuzzer use.
+- **Clean up after a press through the game's own door.** The first draft closed the menu by hand
+  (a class off `body`, `display:none` on `#menu`); the game still thought it open, the next press
+  *closed* it, and a live button was reported dead. Cleaning up with your own hands is mocking by
+  another name.
 
 ## Loose ends (as of 2026-08-28, after the graphics run 0.237.0–0.244.0)
 

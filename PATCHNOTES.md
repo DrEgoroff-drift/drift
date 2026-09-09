@@ -7,6 +7,50 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.424.0 (M437) - the map answers the hand, and its captions grow with the frame
+
+The author, 09.09.2026, over a screenshot of the map: «ищи баги смотри шрифт как то размывает,
+карта не увеличивается. У тебя там тестов на 4 минуты, зачем они нужны если все равно такие
+баги. Перепридумай тесты, эти ничего не ловят». Three fixes, and the fourth item is the point.
+
+**+ and − did nothing on the map.** They were wired to `setZoom` - the flight camera - while
+the map has had a scale of its own since M299 (`G.mapZoom`, pinch and wheel). On the map the
+pair silently rescaled the system view behind the player's back: press, nothing moves, and the
+next flight starts in a scale nobody chose. They now take the scale of whatever is on screen
+(`zoomStep`), and where there is no scale at all - the ground, the cave, the mine, the belt,
+the base - the box leaves the rail rather than standing there as a promise nobody can keep.
+
+**The map was the only screen whose captions ignored the interface ruler.** «One ruler, and it
+is the frame» (M221): whatever the canvas draws as *interface* goes through `withScale(UIK,…)`,
+as the system view and the ground do. The map never did. In a 1920 window the rail, the panels
+and the hint grow by 1.42 while the map's own rulers, header, footer, course badge and system
+card stayed at 8-9 px - small, thin and out of step with everything around them, which is what
+«шрифт как-то размывает» looks like. The map cannot go inside `withScale` whole: its rulers and
+captions hang off the sector grid, and the grid is the world - scaling it would change the map's
+own scale. So the ruler enters the *type* and the interface paddings (`mapU`, `mapFont`), never
+the grid coordinates.
+
+**Auto-resolution comes back now.** It dropped after three heavy seconds and never returned by
+design («чётко - мыльно - чётко хуже ровной картинки»). The price turned out to be higher than
+the flicker: one landing, one first bake of chunks, one other tab stealing a frame, and the rest
+of the evening is soft - including the map, which costs pennies. Down still takes three seconds;
+up takes twenty seconds of a frame twice as light as the drop threshold, at most twice a session,
+and the first three seconds after a scene change are not judged at all - those frames bake the
+raster once and are heavy by design.
+
+**And the tests are re-thought, because 806 suites had missed all of it** (`tests/91zzzzzzz-hands`).
+Three structural holes, not three forgotten cases. Buttons were found *by their caption*, so «+»
+- an icon with an aria-label and no text - existed for no suite at all. The judge was the *state*:
+`prDelta` compares fields of `G`, and the dead button did change a field (`G.zoom`), just not one
+the player can see. And every sweep opened `.scr` screens, while the rail lives *over* the world
+and was never swept. The new contract: **the frame is the judge**. Every visible, enabled control
+of the rail is clicked in every scene of `lookScenes()`, and the answer must be something the
+player sees - the picture changes beyond the world's own motion, the game speaks, a window opens,
+or the mode changes. A changed field is not an answer. On the code as it stood the suite reports
+28 dead presses; the zoom suite fails four ways; the resolution suite measures the canvas against
+the window and the drop against the return.
+
+---
 ## 0.423.0 (M436) - one helm layout: the nose is the keyboard's, the cursor is the right button's
 
 The author, 09.09.2026: «сломал управление… продумай логику, что на WASD, что на QE, мож
