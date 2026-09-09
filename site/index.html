@@ -52,6 +52,9 @@
         "https://drift-game.ru/shots/land.webp",
         "https://drift-game.ru/shots/home.webp",
         "https://drift-game.ru/shots/coop-market.webp",
+        "https://drift-game.ru/shots/station.webp",
+        "https://drift-game.ru/shots/raid.webp",
+        "https://drift-game.ru/shots/map-trassa.webp",
         "https://drift-game.ru/shots/world.webp"
       ]
     },
@@ -101,6 +104,25 @@
 .gal h3{font-size:11.5px;letter-spacing:.19em;color:var(--amber);font-weight:400;
   text-transform:uppercase;margin-bottom:7px}
 .gal p{font-size:13.5px;color:var(--text);opacity:.86}
+.gal img,.shot img{cursor:zoom-in}
+
+/* ── кадр во весь экран ── */
+.lb{position:fixed;inset:0;z-index:90;display:none;background:rgba(2,4,8,.94);
+  backdrop-filter:blur(2px);align-items:center;justify-content:center;
+  flex-direction:column;gap:14px;padding:22px;cursor:zoom-out}
+.lb.on{display:flex}
+.lb img{max-width:min(1600px,100%);max-height:calc(100% - 74px);object-fit:contain;
+  border:1px solid var(--line);background:#03050a}
+.lb .cap{font-size:12px;letter-spacing:.07em;color:var(--dim);text-align:center;
+  max-width:760px}
+.lb .x{position:absolute;top:14px;right:20px;font-size:26px;line-height:1;
+  color:var(--dim);cursor:pointer}
+.lb .x:hover{color:var(--text)}
+.lb .nav{position:absolute;top:50%;transform:translateY(-50%);font-size:34px;
+  line-height:1;color:var(--dim);cursor:pointer;padding:14px 18px;user-select:none}
+.lb .nav:hover{color:var(--text)}
+.lb .prev{left:4px}.lb .next{right:4px}
+@media(max-width:700px){.lb .nav{font-size:26px;padding:10px 8px}}
 
 /* ── цикл ── */
 .loop{display:flex;flex-wrap:wrap;align-items:stretch;gap:0;margin-bottom:30px}
@@ -237,8 +259,9 @@
 
 <section id="gal">
   <div class="eyebrow">Как это выглядит</div>
-  <h2>Девять кадров из игры</h2>
-  <p class="lead">Всё снято прямо в игре — ничего не дорисовано для сайта.</p>
+  <h2>Двенадцать кадров из игры</h2>
+  <p class="lead">Всё снято прямо в игре — ничего не дорисовано для сайта.
+  Кадр увеличивается по клику.</p>
   <div class="gal">
 
     <figure>
@@ -256,7 +279,8 @@
       <figcaption>
         <h3>Куда лететь дальше</h3>
         <p>Карта. Каждая точка — звезда со своими планетами, и что там есть,
-        видно ещё до вылета. Но перелёт стоит топлива, поэтому маршрут
+        видно ещё до вылета. У всего здесь есть адрес — сектор и клетка, — так что
+        услышанное в эфире можно найти. Но перелёт стоит топлива, поэтому маршрут
         приходится продумывать.</p>
       </figcaption>
     </figure>
@@ -267,7 +291,8 @@
         <h3>Вид из кабины</h3>
         <p>Так выглядит полёт в поясе астероидов. Приборы перед вами немного
         врут — у каждого своя погрешность, и чем прибор дороже, тем меньше
-        он ошибается.</p>
+        он ошибается. Штурвал живой: четыре канала, тяга и тормоз под пальцем,
+        а пушка ждёт, пока хватит энергии.</p>
       </figcaption>
     </figure>
 
@@ -275,9 +300,9 @@
       <img src="/shots/cave.webp" loading="lazy" width="1600" height="900" alt="Пещера под поверхностью планеты, светит только фонарь скафандра">
       <figcaption>
         <h3>Что находите</h3>
-        <p>Пещера под поверхностью. Светит только фонарь на скафандре. Внизу
-        растёт то, чего наверху не бывает, — и живёт кто-то, кто заметил вас
-        раньше, чем вы его.</p>
+        <p>Пещера под поверхностью. Светит только фонарь на скафандре. Наверху
+        свет тоже честный: у каждой планеты своя звезда своего цвета, гребень
+        кладёт тень на склон за собой, и вечер — это направление, а не яркость.</p>
       </figcaption>
     </figure>
 
@@ -286,8 +311,9 @@
       <figcaption>
         <h3>Как обживаетесь</h3>
         <p>Своя база, вид в разрезе. Комнаты пристраиваете по одной: реактор,
-        склад, лаборатория, жильё. Нанятые люди работают в ней и тогда,
-        когда вы улетели.</p>
+        склад, лаборатория, жильё. Люди в ней живут по смене: едят, спорят,
+        ходят по коридорам — и работают, когда вы улетели. Случился аврал —
+        руки нужны ваши. А управляющий, если он есть, тянет всё сам и берёт долю.</p>
       </figcaption>
     </figure>
 
@@ -306,7 +332,8 @@
         <h3>Куда возвращаетесь</h3>
         <p>Дом стоит на своей планете, и это не окно с карточками: к нему идут
         пешком, в него заходят и ходят по комнатам. Чем больше заработали —
-        тем больше комнат. Те, кто там живёт, живут своей жизнью.</p>
+        тем больше комнат. Те, кто там живёт, живут своей жизнью, а на стол
+        ложатся письма, открытки и чужие дела.</p>
       </figcaption>
     </figure>
 
@@ -327,6 +354,37 @@
         <p>Купить товар для себя может только кооператив — экзамен оборотом, взнос,
         имя и дом-патрон. Три разряда решают, сколько взять за заход и сколько
         людей нанять; у кооператива свой гроссбух за смену и свои просьбы.</p>
+      </figcaption>
+    </figure>
+
+    <figure>
+      <img src="/shots/station.webp" loading="lazy" width="1280" height="800" alt="Экран станции: название узла, вкладки, предложение груза и очередь у стойки">
+      <figcaption>
+        <h3>Куда вы причаливаете</h3>
+        <p>Станция — не магазин, а место с людьми. Доска с работой, торговля,
+        верфь, наёмники, чужие владения. У стойки стоит очередь, и каждый в ней
+        говорит по одной фразе за заход — приходите ещё, услышите продолжение.</p>
+      </figcaption>
+    </figure>
+
+    <figure>
+      <img src="/shots/map-trassa.webp" loading="lazy" width="1280" height="800" alt="Карта с сеткой секторов: пятна владений домов, светлая полоса трассы и штриховка пиратских очагов">
+      <figcaption>
+        <h3>Чья это звезда</h3>
+        <p>Галактика поделена. Пятна — владения домов, светлая полоса поперёк —
+        ГЛАВТРАССА, штриховка — там, где сидят пираты. Всё это меняется без вас:
+        дома воюют, границы ползут, а в эфире об этом говорят раньше, чем вы долетите.</p>
+      </figcaption>
+    </figure>
+
+    <figure>
+      <img src="/shots/raid.webp" loading="lazy" width="1600" height="900" alt="Отсек пиратской базы изнутри: человек в скафандре с оружием у вскрытого контейнера">
+      <figcaption>
+        <h3>Когда договориться не вышло</h3>
+        <p>Пиратскую базу можно взять — пешком, отсек за отсеком, вскрывая
+        контейнеры и уходя от того, кто уже идёт навстречу. В космосе тем
+        временем свои правила: у пушки есть семейство и норов, у корпуса — мастер,
+        и по силуэту видно, чей он, ещё до первого выстрела.</p>
       </figcaption>
     </figure>
 
@@ -502,6 +560,14 @@
   </div>
 </div>
 
+<div class="lb" id="lb">
+  <span class="x" id="lbX">&times;</span>
+  <span class="nav prev" id="lbPrev">&#8249;</span>
+  <span class="nav next" id="lbNext">&#8250;</span>
+  <img id="lbImg" alt="">
+  <div class="cap" id="lbCap"></div>
+</div>
+
 <script src="/planets.js"></script>
 <script src="/sky.js"></script>
 <script src="/auth.js"></script>
@@ -520,6 +586,48 @@
     deferred.prompt();await deferred.userChoice;deferred=null;
     btn.style.display="none";
   };
+})();
+/* Кадр по клику. Ничего не грузится заранее: показывается тот же файл, что уже
+   стоит в странице, — просто без рамки и во весь экран. Стрелки и Esc — с клавиатуры,
+   свайп по горизонтали — на телефоне. */
+(function(){
+  const lb=document.getElementById("lb"), im=document.getElementById("lbImg"),
+        cap=document.getElementById("lbCap");
+  if(!lb)return;
+  const pics=[...document.querySelectorAll(".gal img, .shot img")];
+  let at=-1;
+  const capOf=el=>{
+    const f=el.closest("figure"); if(!f)return el.alt||"";
+    const h=f.querySelector("h3"), p=f.querySelector("figcaption p")||f.querySelector("figcaption");
+    const t=x=>x?x.textContent.replace(/\s+/g," ").trim():"";
+    return [t(h), t(p)].filter(Boolean).join(" — ");
+  };
+  const show=i=>{
+    at=(i+pics.length)%pics.length;
+    const el=pics[at];
+    im.src=el.currentSrc||el.src; im.alt=el.alt||"";
+    cap.textContent=capOf(el);
+    lb.classList.add("on"); document.body.style.overflow="hidden";
+  };
+  const hide=()=>{ lb.classList.remove("on"); document.body.style.overflow=""; im.src=""; };
+  pics.forEach((el,i)=>{ el.addEventListener("click",()=>show(i)); });
+  document.getElementById("lbX").onclick=hide;
+  document.getElementById("lbPrev").onclick=e=>{e.stopPropagation();show(at-1);};
+  document.getElementById("lbNext").onclick=e=>{e.stopPropagation();show(at+1);};
+  lb.addEventListener("click",e=>{ if(e.target===lb||e.target===im||e.target===cap)hide(); });
+  addEventListener("keydown",e=>{
+    if(!lb.classList.contains("on"))return;
+    if(e.key==="Escape")hide();
+    else if(e.key==="ArrowLeft")show(at-1);
+    else if(e.key==="ArrowRight")show(at+1);
+  });
+  let x0=null;
+  lb.addEventListener("touchstart",e=>{ x0=e.touches[0].clientX; },{passive:true});
+  lb.addEventListener("touchend",e=>{
+    if(x0===null)return;
+    const dx=e.changedTouches[0].clientX-x0; x0=null;
+    if(Math.abs(dx)>50)show(at+(dx<0?1:-1));
+  },{passive:true});
 })();
 /* Версия — из version.json, который пишет выкладка: страница показывает не то,
    что лежит в исходниках, а то, что действительно уехало на сайт. */
