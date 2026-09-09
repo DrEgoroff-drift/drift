@@ -1,0 +1,64 @@
+# Лаборатория: ночная сессия автотестов на сервере (docs/LAB.md).
+#
+# Хостинг убивает процессы вместе с ssh-сессией, поэтому раннер держит сессию
+# открытой сам: собирает игру, заливает tests.html и скрипты, запускает lab.sh
+# с бюджетом и ждёт. К выкладке (deploy.yml) отношения не имеет: не трогает
+# ни play.html, ни api.php, ни version.json — только ~/drift-lab и /lab/.
+name: lab
+on:
+  schedule:
+    - cron: '0 23 * * *'        # 02:00 по Москве
+  workflow_dispatch:
+    inputs:
+      budget:
+        description: 'бюджет сессии, минут'
+        default: '300'
+      quick:
+        description: 'только node и лёгкие шарды'
+        type: boolean
+        default: false
+concurrency:
+  group: lab
+  cancel-in-progress: false
+jobs:
+  lab:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    steps:
+      - uses: actions/checkout@v4
+      - name: Собрать
+        shell: pwsh
+        run: ./build.ps1
+      - name: Ключ
+        env:
+          KEY: ${{ secrets.DRIFT_SSH_KEY }}
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$KEY" > ~/.ssh/drift
+          chmod 600 ~/.ssh/drift
+          cat >> ~/.ssh/config <<'EOF'
+          Host drift
+              HostName ssh.dri7887661.nichost.ru
+              User dri7887661
+              IdentityFile ~/.ssh/drift
+              IdentitiesOnly yes
+              HostKeyAlgorithms +ssh-rsa
+              PubkeyAcceptedAlgorithms +ssh-rsa
+              StrictHostKeyChecking accept-new
+              ServerAliveInterval 60
+              ServerAliveCountMax 10
+          EOF
+          chmod 600 ~/.ssh/config
+      - name: Залить сборку и скрипты
+        run: |
+          ssh drift "mkdir -p drift-lab/build drift-data/lab"
+          scp lab/lab.sh lab/lab.py drift:drift-lab/
+          scp tests.html test-node.js site/lab.html drift:drift-lab/build/
+      - name: Сессия
+        run: |
+          budget="${{ github.event.inputs.budget || '300' }}"
+          quick=""; [ "${{ github.event.inputs.quick }}" = "true" ] && quick="--quick"
+          ssh drift "bash drift-lab/lab.sh --budget $budget $quick"
+      - name: Итог
+        if: always()
+        run: ssh drift "python3 drift-lab/lab.py publish; tail -c 1500 drift-game.ru/docs/lab/errors.txt || true"

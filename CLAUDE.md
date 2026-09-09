@@ -222,7 +222,7 @@ before doing the thing, not after it bites.
 ## How to verify
 
 The long form — the suites, the seven cross-cutting nets, the staging traps — is in
-**`docs/VERIFY.md`**. The everyday commands:
+**`docs/VERIFY.md`**. The same suites for hours on the server every night, with a keyed error log and a page at https://drift-game.ru/lab/, is **`docs/LAB.md`**. The everyday commands:
 
 ```bash
 powershell -ExecutionPolicy Bypass -File test.ps1

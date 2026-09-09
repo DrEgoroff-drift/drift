@@ -166,6 +166,8 @@ const SHIM = {
   DOMRect: class { constructor(x = 0, y = 0, w = 0, h = 0) { Object.assign(this, { x, y, width: w, height: h, left: x, top: y, right: x + w, bottom: y + h }); } },
   FileReader: class { readAsText() { setTimeout(() => this.onload && this.onload({ target: { result: "" } }), 0); } readAsDataURL() { setTimeout(() => this.onload && this.onload({ target: { result: "" } }), 0); } },
   FontFace: class { load() { return Promise.resolve(this); } },
+  /* fetch: в Node 16 на сервере лаборатории его нет; в Хроме с file:// он отвечает отказом — отвечаем так же */
+  fetch: (typeof globalThis.fetch === "function") ? globalThis.fetch : (() => Promise.reject(new TypeError("fetch: нет сети под Node"))),
   Notification: undefined, speechSynthesis: undefined, SpeechSynthesisUtterance: undefined, AudioContext: undefined, webkitAudioContext: undefined, caches: undefined, indexedDB: undefined,
   KeyboardEvent: class { constructor(t, o) { Object.assign(this, { type: t }, o || {}); } preventDefault() {} stopPropagation() {} },
   MouseEvent: class { constructor(t, o) { Object.assign(this, { type: t }, o || {}); } preventDefault() {} stopPropagation() {} },

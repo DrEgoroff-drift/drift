@@ -87,6 +87,10 @@ const SLOW_SUITES=new Set([
 ]);
 const TEST_FULL=(()=>{try{return new URLSearchParams(location.search).get("full")==="1";}catch(e){return false;}})();
 let SKIPPED_SLOW=0;
+/* ?skip=имя|имя — обойти наборы по имени (лаборатория, docs/LAB.md): набор, повисший
+   в шарде на сервере, следующий раз идёт отдельно, а шард — без него */
+const TEST_SKIP=(()=>{try{const s=new URLSearchParams(location.search).get("skip")||"";return s?s.split("|").filter(Boolean):[];}catch(e){return [];}})();
+let SKIPPED_SKIP=0;
 function suiteGroup(name){
   return /^(сквозной|фуззер|прогон|телефон|look\(\))/i.test(name)?"1 сквозные":
          /рисует|рисуют|силуэт|кадр|корпус|палитр|свет|дым|знак|тон|форм|цвет|тень|масштаб|сцен|факел|стан[цк]/i.test(name)?"2 картинка":
@@ -119,6 +123,7 @@ const ALL_NAMES=new Set();
 function suite(name,fn){
   ALL_NAMES.add(name);   /* имя видно ДО всех отсевов: по нему сверяются списки ярусов */
   if(TEST_NODE&&!TEST_ONLY&&(suiteGroup(name)!=="4 формулы и данные"||NODE_SKIP.test(name)||NODE_BROWSER.has(name))){SKIPPED_NODE++;return;}
+  if(TEST_SKIP.length&&TEST_SKIP.some(x=>name===x)){SKIPPED_SKIP++;return;}
   if(TEST_ONLY&&!name.includes(TEST_ONLY))return;
   if(!TEST_FULL&&!TEST_ONLY&&SLOW_SUITES.has(name)){SKIPPED_SLOW++;return;}
   if(/^проба · /.test(name)&&!TEST_PROBE&&!TEST_ONLY){SKIPPED_PROBE++;return;}
@@ -365,6 +370,7 @@ function runTests(){
     (TEST_SHARD?" · часть "+(TEST_SHARD.i+1)+"/"+TEST_SHARD.n:"")+
     (SKIPPED_SLOW?" · без тяжёлых "+SKIPPED_SLOW+" (полный: test.ps1 -Full)":" · полный")+
     (SKIPPED_PROBE?" · без проб "+SKIPPED_PROBE+" (стенд: test.ps1 -Probe)":"")+
+    (SKIPPED_SKIP?" · мимо "+SKIPPED_SKIP+" (skip=)":"")+
     (SKIPPED_NODE?" · без картинки и интерфейса "+SKIPPED_NODE+" (они в test.ps1 -Browser)":"")+
     (ms>0?" · "+ms+" мс":"");
   TEST.summary=head;

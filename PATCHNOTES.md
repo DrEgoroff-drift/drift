@@ -6,6 +6,38 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.427.0 (M440) - the lab: the tests run on the server at night and keep a log that does not fill up
+
+The author, 10.09.2026: «надо сделать на сервере какую-то штуку, которая будет гонять тесты и
+писать в лог ошибки… чтобы не долбилась в одну ошибку и не засирала лог… лаборатория — раздел
+на сайте, графики, прогоны». Nothing in the game changed but `VER`.
+
+**The host was measured first** (`docs/LAB.md`): shared hosting, 500 MB for the account, no
+cron, no Chrome, and every process dies with the ssh session. Chrome runs there anyway -
+`chrome-headless-shell` plus seven libraries unpacked from Rocky 8 RPMs into `~/chrome/lib`
+without root; the Node tier runs in 18 s, a light shard in 10 s, the heavy nets one per
+process («печь» 70 s, «память» 31 s, the fuzzer 22 s). Six Chromes at once die; one at a time
+lives. So: **one Chrome, one heavy suite per process, and a session that somebody holds open**
+- `lab.ps1` from the laptop by day, `.github/workflows/lab.yml` at 02:00 Moscow for up to six
+hours. The deploy is untouched: the lab writes `~/drift-lab`, `~/drift-data/lab` and `/lab/`.
+
+**A session** (`lab/lab.sh --budget N`): node, six light shards, the phone window and the tall
+window - the two the laptop never runs by default - then every `SLOW_SUITES` name alone, then
+the fuzzer on fresh seeds until the budget ends. Memory is sampled every two seconds; the page
+republishes after every unit.
+
+**The log counts keys, not lines** (`lab/lab.py`): an error is `sha1(suite | message with the
+numbers replaced)`, and a known key is counted, not logged. A heavy suite that went red or gave
+no report is not run again in that version. The fuzz hunt stops itself when five seeds in a row
+find nothing new, and a fixed error that returns is reopened with the version it returned in.
+`/lab/errors.txt` is the human form, newest last-seen first, with the detail block - the file
+a fixing session reads.
+
+**The page** `site/lab.html` at https://drift-game.ru/lab/ - three canvases in the site's
+palette (sessions, the eight slowest nets over time, memory peaks against the 500 MB line), the
+error table with filters and detail on click, the hunt per version, the last sixty runs. It
+reads one `data.json` and has no build step. `test-node.js` gained a `fetch` stub for Node 16.
+
 ---
 ## 0.426.0 (M439) - the run measures itself, splits into parts, and the parts find what one page hid
 

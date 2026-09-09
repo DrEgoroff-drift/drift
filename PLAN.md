@@ -364,6 +364,7 @@ main release, as M360a/M369b were.
   to the sheet, so its knot sits on YOUR system and travels 1:1 (`mapRhumbPaint(c,W,H,cx,cy)`),
   and that contrast is what makes the depth read. `18-mode-map`, `17z-map-backdrop`;
   guard in `tests/91zzzzk-mapaddr`. `site/war.html` untouched (its own .38).
+- ~~**M440 the lab**~~ - 0.427.0: the author, 10.09.2026 - «на сервере штука, которая гоняет тесты и пишет в лог ошибки… не долбилась в одну ошибку». The suites run on the host at night (`lab/lab.sh`, `lab.yml`), one Chrome at a time under 500 MB, with a keyed error log that counts instead of repeating and a fuzz hunt that stops itself; page at https://drift-game.ru/lab/. Design and measurements: `docs/LAB.md`.
 
 ## The frame is the judge for anything the player touches (M437)
 
