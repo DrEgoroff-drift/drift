@@ -7,7 +7,28 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
-<<<<<<< HEAD
+## 0.419.3 - a bulletin is a story, not an inventory
+
+The feed used to say «Коммуна объявила обряд „регата“» and stop there, so the player never
+learned that the fair is −18 % on one station in eight, that the strike leaves only the fuel
+pump open, or that the swarm eats whoever stands still. Every one of those consequences was
+already computed by the mechanic families (`12ax`–`12b1`); the bulletin simply did not say so.
+
+`src/12an-chron-news.js` turns each chronicle record into a three-part note: what happened, in
+detail the record does not carry but can be derived (the system's name, the pretext, the outcome
+of an arc); what it means for you, with the real number and the real span; and a closing line in
+the power's own voice - the only part allowed to lie, and all six lie differently. Nothing is
+stored: the note is computed from the record and the bulletin number, so it is the same for
+everyone, needs no network and costs nothing in the save. Variety comes from combinatorics -
+three parts times three or four variants times six voices.
+
+On `war.html` the headline became a rubric («РЕГАТА · КОММУНА») so it no longer repeats the note
+under it; in the game the ether block in the cantina carries one note per bulletin. Suite:
+`tests/91zzzw-news` - every kind of record is told, no unfilled template survives, and the span
+in the text is checked against the family's constant, so shortening a fair breaks the test
+instead of lying to the player.
+
+---
 ## 0.419.2 - the mark of the open сводка stopped disappearing
 
 `drift_war_v1` holds four things with four owners: the chronicle's state cache, the ledgers, the
@@ -121,28 +142,6 @@ The camera also walks the ship out from under the thumb when the finger lands on
 Taking a hull into the lock now costs 44 px of miss, not 40 — the interface's own finger rule,
 which the helm had quietly undercut. `15a-helm` split at 40 KB: the drawing half moved to
 `15b-helm-draw`.
-=======
-## 0.419.3 - a bulletin is a story, not an inventory
-
-The feed used to say «Коммуна объявила обряд „регата“» and stop there, so the player never
-learned that the fair is −18 % on one station in eight, that the strike leaves only the fuel
-pump open, or that the swarm eats whoever stands still. Every one of those consequences was
-already computed by the mechanic families (`12ax`–`12b1`); the bulletin simply did not say so.
-
-`src/12an-chron-news.js` turns each chronicle record into a three-part note: what happened, in
-detail the record does not carry but can be derived (the system's name, the pretext, the outcome
-of an arc); what it means for you, with the real number and the real span; and a closing line in
-the power's own voice - the only part allowed to lie, and all six lie differently. Nothing is
-stored: the note is computed from the record and the bulletin number, so it is the same for
-everyone, needs no network and costs nothing in the save. Variety comes from combinatorics -
-three parts times three or four variants times six voices.
-
-On `war.html` the headline became a rubric («РЕГАТА · КОММУНА») so it no longer repeats the note
-under it; in the game the ether block in the cantina carries one note per bulletin. Suite:
-`tests/91zzzw-news` - every kind of record is told, no unfilled template survives, and the span
-in the text is checked against the family's constant, so shortening a fair breaks the test
-instead of lying to the player.
->>>>>>> f434e3b (0.417.5: a bulletin is a story, not an inventory)
 
 ---
 ## 0.417.4 - the war page speaks lore, not engineering
