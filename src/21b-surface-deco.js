@@ -146,9 +146,15 @@ function dgy(A,dx){
   return groundAt(A.tr,clamp(wx,4,A.tr.W-4))-groundAt(A.tr,A.d.x);
 }
 /* цвет из палитры мира: k — множитель светлоты, a — прозрачность */
+/* ── предмет в падающей тени (M434) ──
+   Всё, что рисуется через dcol, темнеет одним множителем: drawDeco ставит его
+   по доле тени в точке предмета (castLive, 19c1) и снимает после. Блики и
+   дисперсия, заданные константами, остаются — они малы, и на них не держится
+   масса предмета. Небо предмету остаётся: полная тень — это CAST_LIVE, не ноль */
+let DECO_LIT=1;
 function dcol(pal,i,k,a){
   const c=pal[Math.min(pal.length-1,i)];
-  const s=(v)=>Math.round(clamp(v*k,0,255));
+  const s=(v)=>Math.round(clamp(v*k*DECO_LIT,0,255));
   return a===undefined?"rgb("+s(c[0])+","+s(c[1])+","+s(c[2])+")"
     :"rgba("+s(c[0])+","+s(c[1])+","+s(c[2])+","+a.toFixed(3)+")";
 }
@@ -171,9 +177,14 @@ function drawDeco(tr,camx,camy,p){
   if(!vis.length)return;
   /* тени — ДО клипа: они лежат на грунте, а клип как раз всё, что ниже линии
      грунта, и срезает (та же причина и тот же порядок, что у построек) */
+  const live=(typeof castLive==="function");
   for(const q of vis){
     POI_SEED=q.d.seed;
-    ctx.save();ctx.globalAlpha=.72;
+    /* контактная тень — от прямого света: в падающей тени её нечем отбросить */
+    const sh=live?castLive(tr,q.d.x):0;
+    q.sh=sh;
+    if(sh>.97)continue;
+    ctx.save();ctx.globalAlpha=.72*(1-sh);
     groundShadow(q.x-q.w*.45,q.y+2,Math.max(6,q.w*1.5),Math.max(2.6,q.hgt*.055));
     ctx.restore();
   }
@@ -195,16 +206,19 @@ function drawDeco(tr,camx,camy,p){
     ctx.save();ctx.translate(x,y);
     if(d.flip)ctx.scale(-1,1);
     const A={d,pal,p,tr,w,hgt,ox:camx-x,oy:camy-y};
-    const fn=DECO_FN[d.k];            // семьи биомов (21bb-deco-biomes, M352) — по таблице
-    if(fn)fn(A);
-    else if(d.k==="druse")decoDruse(A);
-    else if(d.k==="shard")decoShard(A);
-    else if(d.k==="slab")decoSlab(A);
-    else if(d.k==="truss")decoTruss(A);
-    else if(d.k==="wall")decoWall(A);
-    else if(d.k==="column")decoColumn(A);
-    else if(d.k==="canopy")decoCanopy(A);
-    else if(d.k==="frond")decoFrond(A);
+    DECO_LIT=1-((typeof CAST_LIVE==="number")?CAST_LIVE:.5)*(q.sh||0);   /* в тени гребня (M434) */
+    try{
+      const fn=DECO_FN[d.k];            // семьи биомов (21bb-deco-biomes, M352) — по таблице
+      if(fn)fn(A);
+      else if(d.k==="druse")decoDruse(A);
+      else if(d.k==="shard")decoShard(A);
+      else if(d.k==="slab")decoSlab(A);
+      else if(d.k==="truss")decoTruss(A);
+      else if(d.k==="wall")decoWall(A);
+      else if(d.k==="column")decoColumn(A);
+      else if(d.k==="canopy")decoCanopy(A);
+      else if(d.k==="frond")decoFrond(A);
+    }finally{DECO_LIT=1;}
     ctx.restore();
   }
   ctx.restore();

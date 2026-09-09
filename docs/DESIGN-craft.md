@@ -452,7 +452,8 @@ black where there is no air. §16 — expose for the shadows — is paid by cons
 already keyed by both (`sunAzQ`, `dayKq`, M242). The map is computed once per chunk bake and read
 by every drawer of that chunk from a memo on the terrain; the march stops at 900 px, because at
 the horizon a shadow is longer than the frame anyway. At night no map is built (there is no direct
-light to block), and at the zenith the ray goes straight up and meets nothing.
+light to block), and at the zenith the ray goes straight up and meets nothing. Real clock, dev
+stand, 2026-09-09: 0.7–1.9 ms per chunk map, 3.5 µs per memo read.
 
 **Sheet (almanac issue VII).** At the scenes' own suns nothing changes — `surface` sits at
 altitude .95 (0 of 223 samples shadowed), `noon` at the zenith (no map). At a forced low sun
@@ -462,10 +463,15 @@ the right flanks of the ridges fall into the sky's shadow and the valley between
 them. The number is small because the shadow is a small part of the frame; the eye is not fooled
 by that, and neither is the almanac.
 
-**Tails, named.** Plants and deco are drawn live and keep their own light when they stand in a
-cast shadow; a one-line memo read per plant would fix it and was not done here. The row's other
-consumers — the mine, the base interiors, the raid — cast their lamps' shadows, which move; that is
-a different mechanism (a live mask from the lamp, not a bake) and a different milestone.
+**Tails, named.** ~~Plants and deco are drawn live and keep their own light when they stand in a
+cast shadow~~ — paid the same day by M434 (0.421.1): the memo is a small map keyed by chunk, and
+`castLive(tr,x)` answers by world x for anything drawn in the frame — the deco through `dcol`, the
+plants through their `tone`, the grass as a second, dimmer stroke — so a bush on a flank that has
+gone into the evening goes with it, to `CAST_LIVE` of its light and no darker, because the sky
+stays. The contact ellipse under a deco fades with the shadow: nothing is left to cast it. The
+walker keeps his own light on purpose. The row's other consumers — the mine, the base interiors,
+the raid — cast their lamps' shadows, which move; that is a different mechanism (a live mask from
+the lamp, not a bake) and a different milestone.
 
 ## P4 гризайль — built and shipped (0.420.0, M432, 2026-09-09)
 

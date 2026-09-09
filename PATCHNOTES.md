@@ -7,6 +7,25 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.421.1 (M434) - what stands in the shadow goes into it
+
+0.421.0 put the evening on the ground and left everything standing on it in the noon: a bush,
+a column, a tuft of grass on a flank that had gone into the ridge's shadow kept its full light,
+because those are drawn in the frame and not in the chunk. The shadow map is now kept per chunk
+in a small memo and answered by world x, so the deco (through its colour helper), the plants
+(through their tone) and the grass (a second, dimmer stroke) darken inside the shadow to half
+their light and no further - the sky stays. The contact ellipse under a deco fades with the
+shadow, since nothing is left to cast it. One array read per object; the map is the one the
+ground already baked. The walker keeps his own light on purpose: he carries a lamp, and he is
+what the eye is for.
+
+Also: the parrot suite went red twice today by the luck of the draw. `step` is the place on the
+perch, not a pose, and it slides back at .995 a frame - twenty-eight seconds from a jump - while
+the suite gave the bird two seconds to settle and read whatever the neighbouring suite had left
+it doing. The poses are still checked at two seconds; the place is checked at half a minute, and
+the slow one is named rather than hidden.
+
+---
 ## 0.421.0 (M433) - evening arrives: the ground shadows itself
 
 Since 0.420.0 the cross-section has real light - sky in the shadow, star in the light - and that

@@ -317,8 +317,12 @@ main release, as M360a/M369b were.
   almanac issue VII: `mass` +1…+3, `contrast` +.02…+.03, `pair` −3…−4 (a shadow is cold), and the
   right flanks of the ridges finally fall into the evening. Geometry pinned in `91zzzw-cast`. The
   row said «cave first» and «direction from `celSun`» - underground there is no sun, so the
-  surface went first; interiors are lamps that move, a live mask and another milestone. **Tail:**
-  plants and deco are live and stay lit inside a cast shadow - one memo read per plant.
+  surface went first; interiors are lamps that move, a live mask and another milestone. ~~**Tail:**
+  plants and deco are live and stay lit inside a cast shadow~~ - **M434 (0.421.1)**: the memo
+  became a small map keyed by chunk, `castLive(tr,x)` reads it by world x, and the deco (through
+  `dcol`), the plants (through `tone`) and the grass (a second, dimmer path) darken to `CAST_LIVE`
+  inside the shadow; the contact ellipse under a deco fades with it, since nothing casts it. The
+  walker keeps his own light on purpose - he carries a lamp and he is what the eye is for.
 
 ## Loose ends (as of 2026-08-28, after the graphics run 0.237.0–0.244.0)
 

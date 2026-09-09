@@ -664,7 +664,10 @@ boulder rises above it. If it does, the sample gets sky and no star — in the s
 crust highlight (none), in the движки (none), in the boulder's body, and as a mask on the body
 under the edge that fades with depth. All grey, all in the form pass; the glaze colours it. Baked
 per chunk, read from a memo, never paid by the frame (`19c1-cast`; geometry pinned in
-`91zzzw-cast`).
+`91zzzw-cast`). Measured with a real clock on the dev stand, 2026-09-09, terran world, 33
+boulders, a low sun with a third of the samples in shadow: **0.7–1.9 ms per chunk map** (the
+first includes the JIT), and two hundred memo reads in 0.7 ms — 3.5 µs each, which is what a
+plant or a tuft of grass pays per frame since 0.421.1.
 
 ### The sheet — a forced low sun (altitude .25, star to the left), shadows off → on
 
@@ -689,9 +692,11 @@ the penumbra is a share and not a step. The frame with the shadows is an evening
 is a noon with the sun drawn in the wrong place — which is exactly what M242 fixed for the slopes
 and left undone for everything behind them.
 
-**Two things it does not do, on purpose.** Plants and deco are live and keep their own light
-inside a cast shadow; the fix is a memo read per plant and it is written in the tails, not here.
-And the mine, the base and the raid — the row's first-named consumers — have no sun; their shadows
+**One thing it did not do at first, and one it does not do on purpose.** Plants and deco were
+live and kept their own light inside a cast shadow — closed the same day by 0.421.1 (M434): the
+map is read by world x, and a bush, a column or a tuft of grass on a flank that has gone into the
+evening goes with it, to half its light and no darker, because the sky stays; the meter did not
+move (`empty` 61 → 60 on the terran frame), the eye did. And the mine, the base and the raid — the row's first-named consumers — have no sun; their shadows
 would come from lamps that move, which is a live mask and another milestone. The surface went first
 because it is the one scene where «direction from `celSun`» means something.
 

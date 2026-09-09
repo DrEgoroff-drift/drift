@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 515 · символов верхнего уровня: 4846
+Файлов: 515 · символов верхнего уровня: 4851
 
 ## СИМВОЛЫ
 
@@ -531,14 +531,18 @@ capUsed                      src/05-parts.js:356
 CAST                         src/12k-stories-a.js:22
 CAST_B                       src/12k-stories-b.js:7
 CAST_C                       src/12k-stories-c.js:7
-CAST_MAXD                    src/19c1-cast.js:36
-CAST_MIN_ALT                 src/19c1-cast.js:38
-CAST_SOFT                    src/19c1-cast.js:37
-castAt                       src/19c1-cast.js:92
-castMap                      src/19c1-cast.js:70
-castMapFor                   src/19c1-cast.js:86
-castOccH                     src/19c1-cast.js:43
-castShadeAt                  src/19c1-cast.js:54
+CAST_KEEP                    src/19c1-cast.js:47
+CAST_LIVE                    src/19c1-cast.js:48
+CAST_MAXD                    src/19c1-cast.js:44
+CAST_MIN_ALT                 src/19c1-cast.js:46
+CAST_SOFT                    src/19c1-cast.js:45
+castAt                       src/19c1-cast.js:118
+castChunkMap                 src/19c1-cast.js:111
+castLive                     src/19c1-cast.js:125
+castMap                      src/19c1-cast.js:81
+castMapFor                   src/19c1-cast.js:103
+castOccH                     src/19c1-cast.js:53
+castShadeAt                  src/19c1-cast.js:64
 CAVE_NX                      src/22-mode-cave.js:14
 CAVE_W                       src/22-mode-cave.js:11
 CAVE_WALL_X0                 src/22-mode-cave.js:13
@@ -1014,7 +1018,7 @@ cvs                          src/08-state.js:2
 dayK                         src/19c-light.js:68
 dayKq                        src/19c-light.js:74
 dbg                          src/28-loop.js:438
-dcol                         src/21b-surface-deco.js:149
+dcol                         src/21b-surface-deco.js:155
 DEAL_KINDS                   src/27g-deals.js:17
 dealAnswer                   src/27g-deals.js:163
 dealBtnTick                  src/27n-ui-deal.js:37
@@ -1028,6 +1032,7 @@ dealTaken                    src/27g-deals.js:159
 deckSprite                   src/19e-clouds.js:270
 DECO_FN                      src/21bb-deco-biomes.js:34
 DECO_KINDS                   src/21b-surface-deco.js:24
+DECO_LIT                     src/21b-surface-deco.js:154
 decoAntenna                  src/21bb-deco-biomes.js:283
 decoBlister                  src/21bb-deco-biomes.js:209
 decoBoulderLone              src/21bb-deco-biomes.js:121
@@ -1043,7 +1048,7 @@ decoFrond                    src/21ba-deco-shapes.js:317
 decoHummock                  src/21bb-deco-biomes.js:133
 decoLavaTree                 src/21bb-deco-biomes.js:173
 decoLitSide                  src/21bb-deco-biomes.js:37
-decoMat                      src/21b-surface-deco.js:157
+decoMat                      src/21b-surface-deco.js:163
 decoPodTree                  src/21bb-deco-biomes.js:189
 decoPoly                     src/21bb-deco-biomes.js:36
 decoScree                    src/21bb-deco-biomes.js:312
@@ -1060,7 +1065,7 @@ decoWall                     src/21ba-deco-shapes.js:147
 deedAdd                      src/11ai-ledger.js:53
 DEEDS                        src/11ai-ledger.js:25
 deltaHtml                    src/05-parts.js:438
-depKind                      src/21b-surface-deco.js:382
+depKind                      src/21b-surface-deco.js:396
 deployDrone                  src/12-economy.js:186
 DEPTH_TIERS                  src/04-mods.js:51
 DESC_MOOD                    src/01-core.js:109
@@ -1230,14 +1235,14 @@ drawCosmMark                 src/12va-wander-cosm.js:112
 drawCrowns                   src/05a-nodes.js:379
 drawCrystalForest            src/20aa-poi-shapes.js:115
 drawDeadBattery              src/20aa-poi-shapes.js:221
-drawDeco                     src/21b-surface-deco.js:160
-drawDeposit                  src/21b-surface-deco.js:392
+drawDeco                     src/21b-surface-deco.js:166
+drawDeposit                  src/21b-surface-deco.js:406
 drawDig                      src/23a-dig-draw.js:655
 drawDigFauna                 src/23-mode-dig.js:313
 drawDigWorld                 src/23a-dig-draw.js:45
 drawDronesMap                src/12e-drone-flight.js:310
 drawDronesSystem             src/12e-drone-flight.js:224
-drawDustMotes                src/19-mode-landing.js:637
+drawDustMotes                src/19-mode-landing.js:643
 drawElevator                 src/20aa-poi-shapes.js:91
 drawExhaust                  src/16a-space.js:360
 drawFactory                  src/20aa-poi-shapes.js:378
@@ -1248,7 +1253,7 @@ drawFleet                    src/12ai-fleet.js:128
 drawFleetMap                 src/12ai-fleet.js:319
 drawFleetShip                src/12ai1-fleet-art.js:375
 drawFoeBody                  src/24ab-raid-foe.js:10
-drawForeground               src/21b-surface-deco.js:264
+drawForeground               src/21b-surface-deco.js:278
 drawGlassHUD                 src/24-mode-belt.js:717
 drawGlyph                    src/12t-settle.js:59
 drawGround                   src/19-mode-landing.js:134
@@ -1265,7 +1270,7 @@ drawHullMarks                src/03b-hull-paint.js:184
 drawKitFigure                src/12x-suit.js:202
 drawLander                   src/19f-lander.js:52
 drawLandGear                 src/19f-lander.js:26
-drawLanding                  src/19-mode-landing.js:651
+drawLanding                  src/19-mode-landing.js:657
 drawLoreMarks                src/12q-lore.js:235
 drawLuxeDeck                 src/03c-hull-luxe.js:109
 drawLuxeSkin                 src/03c-hull-luxe.js:27
@@ -1292,7 +1297,7 @@ drawRaid                     src/24aa-raid-draw.js:14
 drawRing                     src/17c-system-draw.js:4
 drawRingTape                 src/11x-ring.js:107
 drawRoad                     src/27l-road-draw.js:87
-drawRocks                    src/19-mode-landing.js:411
+drawRocks                    src/19-mode-landing.js:417
 drawRouteMap                 src/12r-route.js:267
 drawRungRing                 src/12ae-ladder.js:73
 drawScoop                    src/19a-mode-scoop.js:266
@@ -1300,7 +1305,7 @@ drawSeams                    src/12s-wear.js:184
 drawShuttleArc               src/17f-sys-traffic.js:36
 drawSkyBase                  src/19c-light.js:296
 drawSkyBodies                src/19b-sky.js:96
-drawSkyLayer                 src/19-mode-landing.js:537
+drawSkyLayer                 src/19-mode-landing.js:543
 drawSpa                      src/29i-spa-draw.js:41
 drawSpaceDust                src/16a-space.js:275
 drawStarBody                 src/16a-space.js:459
@@ -1506,7 +1511,7 @@ faunaOf                      src/20e-species.js:268
 fbm1                         src/01-core.js:30
 fbm2                         src/01-core.js:37
 fbm3                         src/24-mode-belt.js:16
-FG_MAN                       src/21b-surface-deco.js:263
+FG_MAN                       src/21b-surface-deco.js:277
 fillMaterial                 src/18a-material.js:372
 FIN_DEF                      src/21aa-base-rooms.js:184
 FIND_BUCKET                  src/17b-finds.js:17
@@ -1774,7 +1779,7 @@ grokTick                     src/12tb-grok.js:75
 grokWant                     src/12tb-grok.js:41
 GROUND_BAKING                src/19-mode-landing.js:363
 groundAt                     src/07-planet.js:566
-groundShadow                 src/19-mode-landing.js:521
+groundShadow                 src/19-mode-landing.js:527
 GROVE_ETHER                  src/11j-grove.js:23
 groveAll                     src/11j-grove.js:29
 groveDepthAt                 src/11j-grove.js:30
@@ -3387,7 +3392,7 @@ pricesHeard                  src/12aa-need.js:223
 pricesOpen                   src/12aa-need.js:284
 pricesSeen                   src/12aa-need.js:194
 pricesTrim                   src/12aa-need.js:203
-prism                        src/21b-surface-deco.js:216
+prism                        src/21b-surface-deco.js:230
 PROBE_COST                   src/21a8-base-world.js:28
 PROBE_COST_CR                src/25m-probe.js:27
 PROBE_COST_DATA              src/25m-probe.js:26
@@ -4094,7 +4099,7 @@ skyField                     src/19b-sky.js:542
 skyFind                      src/11ak-skywatch.js:47
 skyGalaxy                    src/19b-sky.js:373
 skyGiant                     src/19b-sky.js:222
-skyGrad                      src/19-mode-landing.js:504
+skyGrad                      src/19-mode-landing.js:510
 skyHole                      src/19b-sky.js:396
 skyMoon                      src/19b-sky.js:462
 skyNameComet                 src/11ak-skywatch.js:186
@@ -5488,7 +5493,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/18d-verlet.js · 7 КБ
   · верле: верёвки и ткань:1
 
-## src/19-mode-landing.js · 49 КБ
+## src/19-mode-landing.js · 50 КБ
   · посадка:1
 
 ## src/19a-mode-scoop.js · 37 КБ
@@ -5503,7 +5508,7 @@ zooTick                      src/11ad-zoo.js:41
   · свечение (bloom) — M243:331
   · зерно и виньетка — один слой на все сцены (M244):366
 
-## src/19c1-cast.js · 7 КБ
+## src/19c1-cast.js · 9 КБ
   · падающие тени: рельеф затеняет сам себя (P5, M433):1
 
 ## src/19d-weather.js · 14 КБ
@@ -5515,7 +5520,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/19f-lander.js · 22 КБ
   · посадочный корабль:1
 
-## src/20-life.js · 35 КБ
+## src/20-life.js · 36 КБ
   · астронавт:1
   · флора:143
 
@@ -5606,9 +5611,9 @@ zooTick                      src/11ad-zoo.js:41
 ## src/21ac-base-draw.js · 47 КБ
   · база: рисование разреза:1
 
-## src/21b-surface-deco.js · 33 КБ
+## src/21b-surface-deco.js · 34 КБ
   · крупная форма на поверхности:1
-  · залежь как выход породы (M169):371
+  · залежь как выход породы (M169):385
 
 ## src/21b0-base-ruin.js · 8 КБ
   · развалина и возврат (M402, DESIGN-base §22.1, §39):1
@@ -6018,7 +6023,7 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91ze-parrot.js · 5 КБ
 
-## tests/91zf-parrot-acts.js · 7 КБ
+## tests/91zf-parrot-acts.js · 8 КБ
 
 ## tests/91zf-peep.js · 5 КБ
 

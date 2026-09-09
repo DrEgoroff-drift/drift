@@ -1759,7 +1759,7 @@ body.table u.addr{color:#7a4a20}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.421.0";
+const VER="0.421.1";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -47946,8 +47946,11 @@ function drawGroundGrass(tr,camx,camy){
   /* три формы куста, а не одна былинка (M232): одиночная травинка, пучок
      веером и низкий кустик дугой. Форма — от места, качаются все в один
      ветер, но пучок сильнее одиночки */
-  ctx.strokeStyle="rgba(255,255,255,.14)";ctx.lineWidth=1;
-  ctx.beginPath();
+  /* трава — белый блик, и в падающей тени гребня блестеть ей нечем (M434):
+     пучки делятся на два пути, освещённый и затенённый, — один лишний stroke
+     на кадр, а не по штриху на пучок */
+  const PL=new Path2D(),PD=new Path2D();
+  const live=(typeof castLive==="function");
   for(let i=i0;i<i1;i+=dstep){
     const wx=i*tr.step,x=wx-camx;if(x<-6||x>W+6)continue;
     const hh=hashi(Math.floor(wx/14),tr.sseed,0x6E55);
@@ -47955,21 +47958,24 @@ function drawGroundGrass(tr,camx,camy){
     const y=tr.h[i]-camy,th=2+((hh>>>4)&3);
     const sw=WIND*(1.6+th*.5)*(.7+.3*Math.sin(G.t*.045+wx*.07));
     const form=(hh>>>8)&3;
+    const P=(live&&castLive(tr,wx)>.5)?PD:PL;
     if(form===1){                              // пучок веером
       for(let b=-1;b<=1;b++){
-        ctx.moveTo(x+b*.8,y);
-        ctx.lineTo(x+b*2.2+sw*1.2,y-th+Math.abs(b));
+        P.moveTo(x+b*.8,y);
+        P.lineTo(x+b*2.2+sw*1.2,y-th+Math.abs(b));
       }
     }else if(form===2){                        // низкий кустик дугой
-      ctx.moveTo(x-2.2,y);
-      ctx.quadraticCurveTo(x-1.2+sw*.4,y-th*.9,x+sw*.6,y-th*.7);
-      ctx.moveTo(x+2.2,y);
-      ctx.quadraticCurveTo(x+1.2+sw*.4,y-th*.9,x+sw*.6,y-th*.7);
+      P.moveTo(x-2.2,y);
+      P.quadraticCurveTo(x-1.2+sw*.4,y-th*.9,x+sw*.6,y-th*.7);
+      P.moveTo(x+2.2,y);
+      P.quadraticCurveTo(x+1.2+sw*.4,y-th*.9,x+sw*.6,y-th*.7);
     }else{                                     // одиночная былинка
-      ctx.moveTo(x,y);ctx.lineTo(x+((hh>>>2)&1?1.4:-1.4)+sw,y-th);
+      P.moveTo(x,y);P.lineTo(x+((hh>>>2)&1?1.4:-1.4)+sw,y-th);
     }
   }
-  ctx.stroke();
+  ctx.lineWidth=1;
+  ctx.strokeStyle="rgba(255,255,255,.14)";ctx.stroke(PL);
+  ctx.strokeStyle="rgba(255,255,255,.05)";ctx.stroke(PD);
 }
 /* валуны и осыпь на профиле */
 function drawRocks(tr,camx,camy,pal){
@@ -49898,15 +49904,23 @@ function grainPass(vig){
    самого профиля. Перекрыл его гребень или валун — точка в тени: прямого
    света нет, остаётся небо. Доля тени идёт в те же три места, где разрез
    считает свет, — полосы склона (`litRGB` с погашенным прямым светом), блик
-   корки и движки (в тени их нет) и тело валуна.
+   корки и движки (в тени их нет) и тело валуна, — и в маску под кромкой.
 
    ── ПОЧЕМУ ЭТО ДЁШЕВО ──
    Тень — функция солнца и рельефа, и ни то, ни другое не меняется от кадра к
    кадру: ломоть земли и так ключуется стороной солнца (`sunAzQ`) и высотой
-   дня (`dayKq`, M242). Значит карта тени считается раз на пекло ломтя и
-   читается всеми рисовальщиками из памятки на рельефе. Луч ведётся не дальше
+   дня (`dayKq`, M242). Значит карта тени считается раз на ломоть и читается
+   всеми рисовальщиками из памятки на рельефе. Луч ведётся не дальше
    CAST_MAXD: у самого горизонта тень длиннее кадра, и дальше её всё равно не
    видно. Кадр за неё не платит вовсе.
+
+   ── ЖИВОЕ ТОЖЕ В ТЕНИ (M434) ──
+   Постройки, растения и трава рисуются в кадре, не в ломте, и первый заход
+   оставил их освещёнными внутри тени гребня — куст горел на склоне, который
+   сам уже ушёл в вечер. Памятка стала многослотной и ключуется ломтём:
+   живой рисовальщик спрашивает `castLive(tr, x)` по мировому x, попадает в
+   карту того же ломтя, что испёк грунт, и платит за это одно чтение массива.
+   Карта одна на ломоть и на солнце, кто бы её ни спросил первым.
 
    ── ПОЧЕМУ ЭТО ЛОЖИТСЯ НА ГРИЗАЙЛЬ, А НЕ ПОВЕРХ ──
    Тень кладётся СЕРЫМ в проход формы, а не чёрной заливкой поверх готового:
@@ -49923,6 +49937,8 @@ function grainPass(vig){
 const CAST_MAXD=900;      /* дальше луч не ведём, px по x */
 const CAST_SOFT=7;        /* на сколько px заслон должен перекрыть луч ради полной тени */
 const CAST_MIN_ALT=.02;   /* ниже — светила нет, тени нет: ночь остаётся ночью */
+const CAST_KEEP=8;        /* сколько карт держать на рельефе: экран — два-три ломтя, плюс запас */
+const CAST_LIVE=.5;       /* насколько живой предмет темнеет в полной тени: небо ему остаётся */
 
 /* высота заслона в мировой точке x: профиль и валуны, лежащие на нём.
    Валун — полукруг радиуса rad с центром там, где его кладёт drawRocks
@@ -49951,22 +49967,29 @@ function castShadeAt(tr,i,sx,sy,rocks){
   }
   return clamp(rise/CAST_SOFT,0,1);
 }
-/* карта тени на пекло: диапазон точек [i0,i1], солнце как оно сейчас.
-   Памятка на рельефе, ключ — диапазон и квантованное солнце: два рисовальщика
-   одного ломтя и два прохода (форма, оттенок) читают одну карту */
+/* карта тени на диапазон точек [i0,i1] при солнце как оно сейчас.
+   Памятка на рельефе — несколько карт, ключ: диапазон и квантованное солнце.
+   Два рисовальщика одного ломтя, два прохода (форма, оттенок) и живые
+   предметы в кадре читают одну карту; старые вытесняются по порядку */
 function castMap(tr,p,i0,i1){
   if(!tr||!p||!tr.h||typeof celSun!=="function"||typeof SUN_DIR!=="object")return null;
   if(celSun(p).alt<=CAST_MIN_ALT)return null;
   const sx=SUN_DIR.x,sy=SUN_DIR.y;
   if(!(Math.abs(sx)>=.03)||!(sy<0))return null;
   const key=i0+"|"+i1+"|"+sunAzQ(p)+"|"+dayKq(p)+"|"+(sx>0?1:0);
-  if(tr._cast&&tr._cast.key===key)return tr._cast;
+  let MM=tr._castM;
+  if(!MM)MM=tr._castM=new Map();
+  const had=MM.get(key);
+  if(had)return had;
   const lo=Math.min(i0,i1)*tr.step-CAST_MAXD-40, hi=Math.max(i0,i1)*tr.step+CAST_MAXD+40;
   const rocks=[];
   if(tr.rocks)for(const k of tr.rocks)if(k.x+k.rad>=lo&&k.x-k.rad<=hi)rocks.push(k);
   const a=new Float32Array(Math.max(0,i1-i0+1));
   for(let i=i0;i<=i1;i++)a[i-i0]=castShadeAt(tr,i,sx,sy,rocks);
-  return (tr._cast={key,i0,a});
+  const M={key,i0,a};
+  MM.set(key,M);
+  while(MM.size>CAST_KEEP)MM.delete(MM.keys().next().value);
+  return M;
 }
 /* тот же диапазон, что берёт drawGround: ломоть и два рисовальщика сходятся на
    одной карте, потому что считают i0/i1 одной формулой */
@@ -49976,10 +49999,26 @@ function castMapFor(tr,camx){
   const i1=clamp(Math.ceil((camx+W+40)/tr.step),0,tr.N-1);
   return castMap(tr,tr.p,i0,i1);
 }
+/* карта ломтя k — та же формула, что у пекла (там camx = k·CHUNK_W и W = CHUNK_W),
+   поэтому живой запрос попадает в карту, которую грунт уже испёк */
+function castChunkMap(tr,k){
+  if(!tr||!tr.p)return null;
+  const CW=(typeof CHUNK_W==="number")?CHUNK_W:512;
+  const i0=clamp(Math.floor((k*CW-40)/tr.step),0,tr.N-1);
+  const i1=clamp(Math.ceil(((k+1)*CW+40)/tr.step),0,tr.N-1);
+  return castMap(tr,tr.p,i0,i1);
+}
 function castAt(M,i){
   if(!M)return 0;
   const j=i-M.i0;
   return (j<0||j>=M.a.length)?0:M.a[j];
+}
+/* доля тени в мировой точке x — для того, что рисуется в кадре, а не в ломте:
+   постройки, растения, трава. Одно чтение массива на предмет */
+function castLive(tr,x){
+  if(!tr||!tr.p||!(tr.step>0))return 0;
+  const CW=(typeof CHUNK_W==="number")?CHUNK_W:512;
+  return castAt(castChunkMap(tr,Math.floor(x/CW)),Math.round(x/tr.step));
 }
 
 /* ══════════════ погода ══════════════ */
@@ -51526,8 +51565,13 @@ function plantPaint(pl,x,y,haze,dark){
      дальше, — тогда планы расходятся по светлоте, а не по прозрачности. */
   const AIR=(haze>0&&typeof ambRGB==="function"&&G.surf&&G.surf.p)?ambRGB(G.surf.p):null;
   const hz=AIR?clamp(haze,0,.8):0;
+  /* куст в падающей тени гребня темнеет вместе со склоном (M434): прямого
+     света нет, небо остаётся. Только на поверхности — в пещере солнца нет */
+  const shC=(G.mode==="surface"&&typeof castLive==="function"&&G.surf&&G.surf.tr)
+    ?castLive(G.surf.tr,pl.x):0;
+  const lit=1-((typeof CAST_LIVE==="number")?CAST_LIVE:.5)*shC;
   const tone=c=>{
-    const v=[c[0]*(1+jt),c[1]*(1+jt*.8),c[2]*(1+jt*1.2)];
+    const v=[c[0]*(1+jt)*lit,c[1]*(1+jt*.8)*lit,c[2]*(1+jt*1.2)*lit];
     return hz?[lerp(v[0],AIR[0],hz),lerp(v[1],AIR[1],hz),lerp(v[2],AIR[2],hz)]:v;
   };
   const SP=(typeof sunSpot==="function"&&G.surf&&G.surf.p)?sunSpot(G.surf.p):null;
@@ -59786,9 +59830,15 @@ function dgy(A,dx){
   return groundAt(A.tr,clamp(wx,4,A.tr.W-4))-groundAt(A.tr,A.d.x);
 }
 /* цвет из палитры мира: k — множитель светлоты, a — прозрачность */
+/* ── предмет в падающей тени (M434) ──
+   Всё, что рисуется через dcol, темнеет одним множителем: drawDeco ставит его
+   по доле тени в точке предмета (castLive, 19c1) и снимает после. Блики и
+   дисперсия, заданные константами, остаются — они малы, и на них не держится
+   масса предмета. Небо предмету остаётся: полная тень — это CAST_LIVE, не ноль */
+let DECO_LIT=1;
 function dcol(pal,i,k,a){
   const c=pal[Math.min(pal.length-1,i)];
-  const s=(v)=>Math.round(clamp(v*k,0,255));
+  const s=(v)=>Math.round(clamp(v*k*DECO_LIT,0,255));
   return a===undefined?"rgb("+s(c[0])+","+s(c[1])+","+s(c[2])+")"
     :"rgba("+s(c[0])+","+s(c[1])+","+s(c[2])+","+a.toFixed(3)+")";
 }
@@ -59811,9 +59861,14 @@ function drawDeco(tr,camx,camy,p){
   if(!vis.length)return;
   /* тени — ДО клипа: они лежат на грунте, а клип как раз всё, что ниже линии
      грунта, и срезает (та же причина и тот же порядок, что у построек) */
+  const live=(typeof castLive==="function");
   for(const q of vis){
     POI_SEED=q.d.seed;
-    ctx.save();ctx.globalAlpha=.72;
+    /* контактная тень — от прямого света: в падающей тени её нечем отбросить */
+    const sh=live?castLive(tr,q.d.x):0;
+    q.sh=sh;
+    if(sh>.97)continue;
+    ctx.save();ctx.globalAlpha=.72*(1-sh);
     groundShadow(q.x-q.w*.45,q.y+2,Math.max(6,q.w*1.5),Math.max(2.6,q.hgt*.055));
     ctx.restore();
   }
@@ -59835,16 +59890,19 @@ function drawDeco(tr,camx,camy,p){
     ctx.save();ctx.translate(x,y);
     if(d.flip)ctx.scale(-1,1);
     const A={d,pal,p,tr,w,hgt,ox:camx-x,oy:camy-y};
-    const fn=DECO_FN[d.k];            // семьи биомов (21bb-deco-biomes, M352) — по таблице
-    if(fn)fn(A);
-    else if(d.k==="druse")decoDruse(A);
-    else if(d.k==="shard")decoShard(A);
-    else if(d.k==="slab")decoSlab(A);
-    else if(d.k==="truss")decoTruss(A);
-    else if(d.k==="wall")decoWall(A);
-    else if(d.k==="column")decoColumn(A);
-    else if(d.k==="canopy")decoCanopy(A);
-    else if(d.k==="frond")decoFrond(A);
+    DECO_LIT=1-((typeof CAST_LIVE==="number")?CAST_LIVE:.5)*(q.sh||0);   /* в тени гребня (M434) */
+    try{
+      const fn=DECO_FN[d.k];            // семьи биомов (21bb-deco-biomes, M352) — по таблице
+      if(fn)fn(A);
+      else if(d.k==="druse")decoDruse(A);
+      else if(d.k==="shard")decoShard(A);
+      else if(d.k==="slab")decoSlab(A);
+      else if(d.k==="truss")decoTruss(A);
+      else if(d.k==="wall")decoWall(A);
+      else if(d.k==="column")decoColumn(A);
+      else if(d.k==="canopy")decoCanopy(A);
+      else if(d.k==="frond")decoFrond(A);
+    }finally{DECO_LIT=1;}
     ctx.restore();
   }
   ctx.restore();

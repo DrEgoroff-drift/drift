@@ -382,8 +382,11 @@ function drawGroundGrass(tr,camx,camy){
   /* три формы куста, а не одна былинка (M232): одиночная травинка, пучок
      веером и низкий кустик дугой. Форма — от места, качаются все в один
      ветер, но пучок сильнее одиночки */
-  ctx.strokeStyle="rgba(255,255,255,.14)";ctx.lineWidth=1;
-  ctx.beginPath();
+  /* трава — белый блик, и в падающей тени гребня блестеть ей нечем (M434):
+     пучки делятся на два пути, освещённый и затенённый, — один лишний stroke
+     на кадр, а не по штриху на пучок */
+  const PL=new Path2D(),PD=new Path2D();
+  const live=(typeof castLive==="function");
   for(let i=i0;i<i1;i+=dstep){
     const wx=i*tr.step,x=wx-camx;if(x<-6||x>W+6)continue;
     const hh=hashi(Math.floor(wx/14),tr.sseed,0x6E55);
@@ -391,21 +394,24 @@ function drawGroundGrass(tr,camx,camy){
     const y=tr.h[i]-camy,th=2+((hh>>>4)&3);
     const sw=WIND*(1.6+th*.5)*(.7+.3*Math.sin(G.t*.045+wx*.07));
     const form=(hh>>>8)&3;
+    const P=(live&&castLive(tr,wx)>.5)?PD:PL;
     if(form===1){                              // пучок веером
       for(let b=-1;b<=1;b++){
-        ctx.moveTo(x+b*.8,y);
-        ctx.lineTo(x+b*2.2+sw*1.2,y-th+Math.abs(b));
+        P.moveTo(x+b*.8,y);
+        P.lineTo(x+b*2.2+sw*1.2,y-th+Math.abs(b));
       }
     }else if(form===2){                        // низкий кустик дугой
-      ctx.moveTo(x-2.2,y);
-      ctx.quadraticCurveTo(x-1.2+sw*.4,y-th*.9,x+sw*.6,y-th*.7);
-      ctx.moveTo(x+2.2,y);
-      ctx.quadraticCurveTo(x+1.2+sw*.4,y-th*.9,x+sw*.6,y-th*.7);
+      P.moveTo(x-2.2,y);
+      P.quadraticCurveTo(x-1.2+sw*.4,y-th*.9,x+sw*.6,y-th*.7);
+      P.moveTo(x+2.2,y);
+      P.quadraticCurveTo(x+1.2+sw*.4,y-th*.9,x+sw*.6,y-th*.7);
     }else{                                     // одиночная былинка
-      ctx.moveTo(x,y);ctx.lineTo(x+((hh>>>2)&1?1.4:-1.4)+sw,y-th);
+      P.moveTo(x,y);P.lineTo(x+((hh>>>2)&1?1.4:-1.4)+sw,y-th);
     }
   }
-  ctx.stroke();
+  ctx.lineWidth=1;
+  ctx.strokeStyle="rgba(255,255,255,.14)";ctx.stroke(PL);
+  ctx.strokeStyle="rgba(255,255,255,.05)";ctx.stroke(PD);
 }
 /* валуны и осыпь на профиле */
 function drawRocks(tr,camx,camy,pal){

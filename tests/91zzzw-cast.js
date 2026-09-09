@@ -14,7 +14,7 @@ TEST_SUITES.push(()=>suite("падающие тени P5: гребень кла�
   const celReal=celSun;
   /* солнце справа сверху (az<0 → диск правее центра, свет идёт справа):
      луч из точки ведётся вправо, тень ложится на всё, что ЛЕВЕЕ заслона */
-  const sun=(alt,az)=>{celSun=()=>({ph:0,alt,az});sunDirSet(p);tr._cast=null;};
+  const sun=(alt,az)=>{celSun=()=>({ph:0,alt,az});sunDirSet(p);tr._castM=null;};
   try{
     sun(.5,-.6);
     ok(SUN_DIR.x>0&&SUN_DIR.y<0,"вектор к светилу: вправо и вверх ("+SUN_DIR.x.toFixed(2)+", "+SUN_DIR.y.toFixed(2)+")");
@@ -25,7 +25,7 @@ TEST_SUITES.push(()=>suite("падающие тени P5: гребень кла�
     eq(any,0,"на ровной земле тени нет");
     /* ── один гребень: тень слева от него, справа — нет ── */
     h[50]=300-120;                                   /* пик 120 px на x=400 */
-    tr._cast=null;M=castMap(tr,p,0,N-1);
+    tr._castM=null;M=castMap(tr,p,0,N-1);
     ok(castAt(M,45)>.9,"точка в 40 px левее гребня — в тени: "+castAt(M,45).toFixed(2));
     eq(castAt(M,55),0,"точка правее гребня, к солнцу — на свету");
     eq(castAt(M,20),0,"далёкая точка слева, куда луч уже поднялся над гребнем, — на свету");
@@ -62,7 +62,7 @@ TEST_SUITES.push(()=>suite("падающие тени P5: валун — тож�
     /* без валуна — свет; с валуном радиуса 30 на x=400 — точка у его подошвы в тени */
     let M=castMap(tr,p,0,N-1);
     eq(castAt(M,49),0,"без валуна точка на свету");
-    tr.rocks=[{x:400,rad:30,poly:[],tint:.5,flip:0}];tr._cast=null;
+    tr.rocks=[{x:400,rad:30,poly:[],tint:.5,flip:0}];tr._castM=null;
     M=castMap(tr,p,0,N-1);
     ok(castAt(M,49)>.9,"у подошвы валуна, со стороны от солнца, — тень: "+castAt(M,49).toFixed(2));
     /* точка ПОД валуном (x=416, внутри его подошвы) видит заслоном сам валун —

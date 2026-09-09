@@ -414,8 +414,13 @@ function plantPaint(pl,x,y,haze,dark){
      дальше, — тогда планы расходятся по светлоте, а не по прозрачности. */
   const AIR=(haze>0&&typeof ambRGB==="function"&&G.surf&&G.surf.p)?ambRGB(G.surf.p):null;
   const hz=AIR?clamp(haze,0,.8):0;
+  /* куст в падающей тени гребня темнеет вместе со склоном (M434): прямого
+     света нет, небо остаётся. Только на поверхности — в пещере солнца нет */
+  const shC=(G.mode==="surface"&&typeof castLive==="function"&&G.surf&&G.surf.tr)
+    ?castLive(G.surf.tr,pl.x):0;
+  const lit=1-((typeof CAST_LIVE==="number")?CAST_LIVE:.5)*shC;
   const tone=c=>{
-    const v=[c[0]*(1+jt),c[1]*(1+jt*.8),c[2]*(1+jt*1.2)];
+    const v=[c[0]*(1+jt)*lit,c[1]*(1+jt*.8)*lit,c[2]*(1+jt*1.2)*lit];
     return hz?[lerp(v[0],AIR[0],hz),lerp(v[1],AIR[1],hz),lerp(v[2],AIR[2],hz)]:v;
   };
   const SP=(typeof sunSpot==="function"&&G.surf&&G.surf.p)?sunSpot(G.surf.p):null;
