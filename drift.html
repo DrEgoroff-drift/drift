@@ -1886,6 +1886,18 @@ function genDesc(r,sys){
   return bits.join(" · ");
 }
 
+/* ── цвет ──
+   Три помощника, которыми красит вся игра: разбор #rrggbb, сборка rgba и
+   смешение двух цветов. Жили в `03-ships`, потому что первым их завёл корпус;
+   переехали сюда, когда тем же кодом стала краситься карта войны на сайте
+   (`site/war.js` собирается из 01-core и не тянет корабли). */
+function hex2rgb(h){
+  h=h.replace("#","");
+  return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];
+}
+const rgba=(c,a)=>"rgba("+(c[0]|0)+","+(c[1]|0)+","+(c[2]|0)+","+a+")";
+const mixc=(a,b,t)=>[lerp(a[0],b[0],t),lerp(a[1],b[1],t),lerp(a[2],b[2],t)];
+
 /* ── всё на сервер (автор, 2026-09-05: «просто пиши на сервер лог, все ошибки,
    любые — потом разбирать будем») ──
    Строка «СБОЙ · …» на экране — улика, которую закрывают. На сервер уходит
@@ -2439,12 +2451,8 @@ function stationParts(sys){
 const HULL_CACHE={};
 /* корпуса NPC живут отдельно от G.uniqueShips — те персистятся, эти нет */
 const NPC_SHIPS={};
-function hex2rgb(h){
-  h=h.replace("#","");
-  return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];
-}
-const rgba=(c,a)=>"rgba("+(c[0]|0)+","+(c[1]|0)+","+(c[2]|0)+","+a+")";
-const mixc=(a,b,t)=>[lerp(a[0],b[0],t),lerp(a[1],b[1],t),lerp(a[2],b[2],t)];
+/* цвет переехал в 01-core (M436): им красит и карта войны на сайте,
+   а `03-ships` в её сборку не входит */
 /* полуширина корпуса в произвольной точке оси — по станциям профиля */
 function profW(prof,x){
   for(let i=0;i<prof.length-1;i++){
@@ -45423,6 +45431,51 @@ function mapRhumbPaint(c,W,H){
   c.restore();
 }
 
+/* ── сетка секторов ──
+   Клетка в один сектор, каждая пятая громче: по ней карта читается адресом, а
+   не россыпью точек. `at(gx,gy)` даёт экранную середину клетки, `fadeAt` —
+   насколько эта клетка вообще видна (в игре гаснет к краю прыжка, на сайте —
+   к краю круга летописи). */
+function mapGridPaint(c,W,H,cell,gx0,gy0,R,at,fadeAt){
+  c.save();c.lineWidth=1;
+  for(let gy=gy0-R;gy<=gy0+R;gy++)for(let gx=gx0-R;gx<=gx0+R;gx++){
+    const f=fadeAt(gx,gy);
+    if(f<=.02)continue;
+    const p=at(gx,gy),x0=p.x-cell/2,y0=p.y-cell/2;
+    if(x0>W||y0>H||x0+cell<0||y0+cell<0)continue;
+    const fifth=(gx%5===0||gy%5===0);
+    c.strokeStyle="rgba(150,182,212,"+(f*(fifth?.16:.09)).toFixed(3)+")";
+    c.strokeRect(Math.round(x0)+.5,Math.round(y0)+.5,Math.round(cell),Math.round(cell));
+  }
+  c.restore();
+}
+
+/* ── звезда на карте ──
+   Ореол, у ярких — лучи, ядро цвета звезды, подмешанного к белому. Ровно тот
+   рисунок, что в `drawMap`: звезда светит, а не лежит кружком на фоне.
+   `col` — [r,g,b], `t` — величина (1.8+t*2.2 = радиус ядра). */
+function mapStarPaint(c,x,y,col,t,fade,opts){
+  opts=opts||{};
+  const rr=opts.rr||(1.8+t*2.2);
+  c.save();
+  c.globalCompositeOperation="lighter";
+  const gl=c.createRadialGradient(x,y,0,x,y,rr*7);
+  gl.addColorStop(0,rgba(col,(.5*fade).toFixed(3)));
+  gl.addColorStop(.35,rgba(col,(.13*fade).toFixed(3)));
+  gl.addColorStop(1,rgba(col,0));
+  c.fillStyle=gl;c.beginPath();c.arc(x,y,rr*7,0,TAU);c.fill();
+  if(t>=1.3){
+    c.strokeStyle=rgba(col,(.22*fade).toFixed(3));c.lineWidth=1;
+    const L=rr*(4.4+t);
+    c.beginPath();c.moveTo(x-L,y);c.lineTo(x+L,y);
+    c.moveTo(x,y-L);c.lineTo(x,y+L);c.stroke();
+  }
+  c.fillStyle=rgba(mixc(col,[255,255,255],.55),(.95*fade).toFixed(3));
+  c.beginPath();c.arc(x,y,rr,0,TAU);c.fill();
+  c.restore();
+  return rr;
+}
+
 /* ══════════════ карта ══════════════ */
 const PAD_SAFE=104;   // полоса экранных кнопок снизу: запасной ответ, см. mapDeck
 /* ══════════════ где у карты пол и где правый борт ══════════════
@@ -45634,24 +45687,8 @@ function drawMap(){
     const fade=clamp(1-v.d/(R*1.15),.18,1)*(v.near?1:.5);
     const rr=1.8+s.cls.t*2.2;
     const col=hex2rgb(s.cls.col);
-    ctx.save();
-    ctx.globalCompositeOperation="lighter";
-    /* ореол: звезда светит, а не лежит кружком на фоне */
-    const gl=ctx.createRadialGradient(x,y,0,x,y,rr*7);
-    gl.addColorStop(0,rgba(col,(.5*fade).toFixed(3)));
-    gl.addColorStop(.35,rgba(col,(.13*fade).toFixed(3)));
-    gl.addColorStop(1,rgba(col,0));
-    ctx.fillStyle=gl;ctx.beginPath();ctx.arc(x,y,rr*7,0,TAU);ctx.fill();
-    /* лучи — только у ярких: они и держат иерархию кадра */
-    if(s.cls.t>=1.3){
-      ctx.strokeStyle=rgba(col,(.22*fade).toFixed(3));ctx.lineWidth=1;
-      const L=rr*(4.4+s.cls.t);
-      ctx.beginPath();ctx.moveTo(x-L,y);ctx.lineTo(x+L,y);
-      ctx.moveTo(x,y-L);ctx.lineTo(x,y+L);ctx.stroke();
-    }
-    ctx.fillStyle=rgba(mixc(col,[255,255,255],.55),(.95*fade).toFixed(3));
-    ctx.beginPath();ctx.arc(x,y,rr,0,TAU);ctx.fill();
-    ctx.restore();
+    /* ореол, лучи, ядро — в 17z-map-backdrop: тот же рисунок звезды и на сайте */
+    mapStarPaint(ctx,x,y,col,s.cls.t,fade,{rr});
     ctx.globalAlpha=fade;
     /* ── занятая пиратами система ──
        Кольцо из штрихов вместо ровного круга: занятость должна читаться как
@@ -46041,20 +46078,10 @@ function mapCellXY(gx,gy,V,cell){return {x:W/2+(gx-V.x)*cell,y:H/2+(gy-V.y)*cell
 function mapRulerTop(){return (typeof HUD_BAND==="number"?HUD_BAND:72)+4;}
 /* 1. сетка под законом тьмы */
 function mapGridDraw(V,cell,R,st){
-  const vx0=Math.round(V.x),vy0=Math.round(V.y);
-  ctx.save();ctx.lineWidth=1;
-  for(let gy=vy0-R;gy<=vy0+R;gy++)for(let gx=vx0-R;gx<=vx0+R;gx++){
-    const d=Math.hypot(gx-G.sx,gy-G.sy);
-    const fade=clamp(1-d/(st.jump*1.6),0,1);   /* к краю прыжка — в ничто */
-    if(fade<=.02)continue;
-    const c=mapCellXY(gx,gy,V,cell);
-    const x0=c.x-cell/2,y0=c.y-cell/2;
-    if(x0>W||y0>H||x0+cell<0||y0+cell<0)continue;
-    const fifth=(gx%5===0||gy%5===0);
-    ctx.strokeStyle="rgba(150,182,212,"+(fade*(fifth?.16:.09)).toFixed(3)+")";
-    ctx.strokeRect(Math.round(x0)+.5,Math.round(y0)+.5,Math.round(cell),Math.round(cell));
-  }
-  ctx.restore();
+  /* рисунок сетки — в 17z-map-backdrop: тот же и на карте войны сайта */
+  mapGridPaint(ctx,W,H,cell,Math.round(V.x),Math.round(V.y),R,
+    (gx,gy)=>mapCellXY(gx,gy,V,cell),
+    (gx,gy)=>clamp(1-Math.hypot(gx-G.sx,gy-G.sy)/(st.jump*1.6),0,1));   /* к краю прыжка — в ничто */
 }
 /* 6. кольца прыжков за освещённым кругом */
 function mapRingsDraw(px,py,cell,st){

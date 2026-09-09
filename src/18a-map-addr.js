@@ -53,20 +53,10 @@ function mapCellXY(gx,gy,V,cell){return {x:W/2+(gx-V.x)*cell,y:H/2+(gy-V.y)*cell
 function mapRulerTop(){return (typeof HUD_BAND==="number"?HUD_BAND:72)+4;}
 /* 1. сетка под законом тьмы */
 function mapGridDraw(V,cell,R,st){
-  const vx0=Math.round(V.x),vy0=Math.round(V.y);
-  ctx.save();ctx.lineWidth=1;
-  for(let gy=vy0-R;gy<=vy0+R;gy++)for(let gx=vx0-R;gx<=vx0+R;gx++){
-    const d=Math.hypot(gx-G.sx,gy-G.sy);
-    const fade=clamp(1-d/(st.jump*1.6),0,1);   /* к краю прыжка — в ничто */
-    if(fade<=.02)continue;
-    const c=mapCellXY(gx,gy,V,cell);
-    const x0=c.x-cell/2,y0=c.y-cell/2;
-    if(x0>W||y0>H||x0+cell<0||y0+cell<0)continue;
-    const fifth=(gx%5===0||gy%5===0);
-    ctx.strokeStyle="rgba(150,182,212,"+(fade*(fifth?.16:.09)).toFixed(3)+")";
-    ctx.strokeRect(Math.round(x0)+.5,Math.round(y0)+.5,Math.round(cell),Math.round(cell));
-  }
-  ctx.restore();
+  /* рисунок сетки — в 17z-map-backdrop: тот же и на карте войны сайта */
+  mapGridPaint(ctx,W,H,cell,Math.round(V.x),Math.round(V.y),R,
+    (gx,gy)=>mapCellXY(gx,gy,V,cell),
+    (gx,gy)=>clamp(1-Math.hypot(gx-G.sx,gy-G.sy)/(st.jump*1.6),0,1));   /* к краю прыжка — в ничто */
 }
 /* 6. кольца прыжков за освещённым кругом */
 function mapRingsDraw(px,py,cell,st){

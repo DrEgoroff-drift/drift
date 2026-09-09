@@ -92,3 +92,48 @@ function mapRhumbPaint(c,W,H){
   c.beginPath();c.arc(0,0,Math.min(W,H)*.42,0,TAU);c.stroke();
   c.restore();
 }
+
+/* ── сетка секторов ──
+   Клетка в один сектор, каждая пятая громче: по ней карта читается адресом, а
+   не россыпью точек. `at(gx,gy)` даёт экранную середину клетки, `fadeAt` —
+   насколько эта клетка вообще видна (в игре гаснет к краю прыжка, на сайте —
+   к краю круга летописи). */
+function mapGridPaint(c,W,H,cell,gx0,gy0,R,at,fadeAt){
+  c.save();c.lineWidth=1;
+  for(let gy=gy0-R;gy<=gy0+R;gy++)for(let gx=gx0-R;gx<=gx0+R;gx++){
+    const f=fadeAt(gx,gy);
+    if(f<=.02)continue;
+    const p=at(gx,gy),x0=p.x-cell/2,y0=p.y-cell/2;
+    if(x0>W||y0>H||x0+cell<0||y0+cell<0)continue;
+    const fifth=(gx%5===0||gy%5===0);
+    c.strokeStyle="rgba(150,182,212,"+(f*(fifth?.16:.09)).toFixed(3)+")";
+    c.strokeRect(Math.round(x0)+.5,Math.round(y0)+.5,Math.round(cell),Math.round(cell));
+  }
+  c.restore();
+}
+
+/* ── звезда на карте ──
+   Ореол, у ярких — лучи, ядро цвета звезды, подмешанного к белому. Ровно тот
+   рисунок, что в `drawMap`: звезда светит, а не лежит кружком на фоне.
+   `col` — [r,g,b], `t` — величина (1.8+t*2.2 = радиус ядра). */
+function mapStarPaint(c,x,y,col,t,fade,opts){
+  opts=opts||{};
+  const rr=opts.rr||(1.8+t*2.2);
+  c.save();
+  c.globalCompositeOperation="lighter";
+  const gl=c.createRadialGradient(x,y,0,x,y,rr*7);
+  gl.addColorStop(0,rgba(col,(.5*fade).toFixed(3)));
+  gl.addColorStop(.35,rgba(col,(.13*fade).toFixed(3)));
+  gl.addColorStop(1,rgba(col,0));
+  c.fillStyle=gl;c.beginPath();c.arc(x,y,rr*7,0,TAU);c.fill();
+  if(t>=1.3){
+    c.strokeStyle=rgba(col,(.22*fade).toFixed(3));c.lineWidth=1;
+    const L=rr*(4.4+t);
+    c.beginPath();c.moveTo(x-L,y);c.lineTo(x+L,y);
+    c.moveTo(x,y-L);c.lineTo(x,y+L);c.stroke();
+  }
+  c.fillStyle=rgba(mixc(col,[255,255,255],.55),(.95*fade).toFixed(3));
+  c.beginPath();c.arc(x,y,rr,0,TAU);c.fill();
+  c.restore();
+  return rr;
+}

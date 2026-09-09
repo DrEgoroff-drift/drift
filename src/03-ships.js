@@ -187,12 +187,8 @@ function stationParts(sys){
 const HULL_CACHE={};
 /* корпуса NPC живут отдельно от G.uniqueShips — те персистятся, эти нет */
 const NPC_SHIPS={};
-function hex2rgb(h){
-  h=h.replace("#","");
-  return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];
-}
-const rgba=(c,a)=>"rgba("+(c[0]|0)+","+(c[1]|0)+","+(c[2]|0)+","+a+")";
-const mixc=(a,b,t)=>[lerp(a[0],b[0],t),lerp(a[1],b[1],t),lerp(a[2],b[2],t)];
+/* цвет переехал в 01-core (M436): им красит и карта войны на сайте,
+   а `03-ships` в её сборку не входит */
 /* полуширина корпуса в произвольной точке оси — по станциям профиля */
 function profW(prof,x){
   for(let i=0;i<prof.length-1;i++){

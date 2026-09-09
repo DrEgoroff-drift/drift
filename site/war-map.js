@@ -163,8 +163,8 @@ function backdrop(g,dpr){
   const b=cn.getContext("2d");b.setTransform(dpr,0,0,dpr,0,0);
   b.fillStyle="#03040a";b.fillRect(0,0,g.W,g.H);
   const N=mapNebula(),ex=g.W*.35,ey=g.H*.35;
-  b.globalAlpha=.34;b.drawImage(N,-ex/2,-ey/2,g.W+ex,g.H+ey);b.globalAlpha=1;
-  b.globalAlpha=.7;mapBandPaint(b,g.W,g.H);b.globalAlpha=1;
+  b.globalAlpha=.17;b.drawImage(N,-ex/2,-ey/2,g.W+ex,g.H+ey);b.globalAlpha=1;
+  b.globalAlpha=.38;mapBandPaint(b,g.W,g.H);b.globalAlpha=1;
   mapRhumbPaint(b,g.W,g.H);
   /* звёзды за кругом: галактика не кончается там, где кончается война */
   const c=g.c,R=CHRON_R+.8;
@@ -174,14 +174,14 @@ function backdrop(g,dpr){
     const j=sysJitter(x,y),m=h01(x,y,777);
     const sx=g.ox+(x+j[0]*.6)*c,sy=g.oy+(y+j[1]*.6)*c;
     if(sx<-4||sy<-4||sx>g.W+4||sy>g.H+4)continue;
-    const r=Math.max(.7,c*(.03+.035*m));
-    b.globalAlpha=.16+.2*m;b.fillStyle="#cfe3ea";
+    const r=Math.max(.6,c*(.022+.026*m));
+    b.globalAlpha=.13+.17*m;b.fillStyle="#cfe3ea";
     b.beginPath();b.arc(sx,sy,r,0,TAU);b.fill();
   }
   b.globalAlpha=1;
   {
-    const vg=b.createRadialGradient(g.ox,g.oy,Math.min(g.W,g.H)*.34,g.ox,g.oy,Math.max(g.W,g.H)*.72);
-    vg.addColorStop(0,"rgba(3,4,10,0)");vg.addColorStop(1,"rgba(3,4,10,.7)");
+    const vg=b.createRadialGradient(g.ox,g.oy,Math.min(g.W,g.H)*.22,g.ox,g.oy,Math.max(g.W,g.H)*.62);
+    vg.addColorStop(0,"rgba(3,4,10,0)");vg.addColorStop(1,"rgba(3,4,10,.92)");
     b.fillStyle=vg;b.fillRect(0,0,g.W,g.H);
   }
   BACK={key:k,cv:cn};
@@ -216,45 +216,72 @@ function drawMap(st,n,t){
     for(const k of keys){
       const S=st.systems[k];if(S.owner<0)continue;
       const p=k.split(","),x=p[0]|0,y=p[1]|0;
-      r2.fillStyle=hexA(COLS[S.owner],.40);
+      r2.fillStyle=hexA(COLS[S.owner],.17);
       r2.fillRect(X(x)-c/2,Y(y)-c/2,c,c);
       if(S.owner===3){
         r2.save();r2.beginPath();r2.rect(X(x)-c/2,Y(y)-c/2,c,c);r2.clip();
-        r2.strokeStyle="rgba(5,7,12,.5)";r2.lineWidth=Math.max(1,c*.08);
+        r2.strokeStyle="rgba(5,7,12,.62)";r2.lineWidth=Math.max(1,c*.08);
         for(let q=-c;q<c*2;q+=c/3){r2.beginPath();r2.moveTo(X(x)-c/2+q,Y(y)-c/2);r2.lineTo(X(x)-c/2+q-c,Y(y)+c/2);r2.stroke();}
         r2.restore();
       }
     }
     const s2=soft.getContext("2d");
-    s2.filter="blur("+(c*.62*dpr).toFixed(1)+"px)";s2.globalAlpha=.5;s2.drawImage(raw,0,0);
-    s2.filter="blur("+(c*.20*dpr).toFixed(1)+"px)";s2.globalAlpha=.28;s2.drawImage(raw,0,0);
+    s2.filter="blur("+(c*.75*dpr).toFixed(1)+"px)";s2.globalAlpha=.55;s2.drawImage(raw,0,0);
+    s2.filter="blur("+(c*.22*dpr).toFixed(1)+"px)";s2.globalAlpha=.22;s2.drawImage(raw,0,0);
     s2.filter="none";s2.globalAlpha=1;
     TERR={key:tk,cv:soft};
   }
   c2.drawImage(TERR.cv,0,0,g.W,g.H);
+  /* ── сетка секторов (mapGridPaint) ──
+     Та же клетка в один сектор, что в игре, и каждая пятая громче: у карты
+     появляется адрес. Гаснет к краю круга, за которым летопись не считает. */
+  {
+    const R2=CHRON_R+1,span=Math.ceil(Math.max(g.W,g.H)/c/2)+1;
+    mapGridPaint(c2,g.W,g.H,c,0,0,Math.max(span,R2),
+      (gx,gy)=>({x:X(gx),y:Y(gy)}),
+      (gx,gy)=>{const d=Math.hypot(gx,gy);return d<=R2?1:Math.max(0,1-(d-R2)/1.5);});
+  }
   /* обвод круга: у карты есть тело */
   c2.strokeStyle="rgba(207,227,234,.13)";c2.lineWidth=1;
   c2.setLineDash([3,5]);
   c2.beginPath();c2.arc(g.ox,g.oy,(CHRON_R+.5)*c,0,TAU);c2.stroke();
   c2.setLineDash([]);
-  /* границы: между воюющими — огнём; между мирными соседями — едва, туман сам показывает край */
+  /* ── кромка владения (M436) ──
+     Игра владений НЕ заливает: «шесть заливок были бы шумом» (18b-map-hold), у
+     неё хозяин читается цветом и эмблемой, а война — пунктиром по границе. Тут
+     то же: дымка выше только намекает на тело державы, а край рисуется линией
+     ЕЁ цвета — и по краю сразу видно, где держава кончается. Наружная граница
+     круга (за ней ничья пустота) берётся тем же цветом, но тише. */
+  const OWN=(x,y)=>{const Q=st.systems[x+","+y];return Q?Q.owner:-2;};
   for(const k of keys){
     const S=st.systems[k];if(S.owner<0)continue;
     const p=k.split(","),x=p[0]|0,y=p[1]|0;
-    for(const d of [[1,0],[0,1]]){
-      const Q=st.systems[(x+d[0])+","+(y+d[1])];
-      if(!Q||Q.owner<0||Q.owner===S.owner)continue;
-      const war=warBetween(st,S.owner,Q.owner);
-      /* на чёрном фоне (M436) волосок в 2 px не читался: фронт светится */
-      c2.strokeStyle=war?"rgba(255,127,104,.95)":"rgba(5,7,12,.25)";
-      c2.lineWidth=war?2.6:1;
-      c2.shadowColor=war?"rgba(255,107,87,.75)":"transparent";
-      c2.shadowBlur=war?7:0;
-      c2.beginPath();
-      if(d[0]){c2.moveTo(X(x)+c/2,Y(y)-c/2);c2.lineTo(X(x)+c/2,Y(y)+c/2);}
-      else{c2.moveTo(X(x)-c/2,Y(y)+c/2);c2.lineTo(X(x)+c/2,Y(y)+c/2);}
-      c2.stroke();
-      c2.shadowBlur=0;
+    for(const d of [[1,0],[0,1],[-1,0],[0,-1]]){
+      const o=OWN(x+d[0],y+d[1]);
+      /* только шов между ДВУМЯ державами: обвод по ничьим клеткам и по краю
+         круга давал лабиринт из ступенек — чертёж вместо карты */
+      if(o===S.owner||o<0)continue;
+      const war=o>=0&&warBetween(st,S.owner,o);
+      /* ребро клетки со стороны d */
+      const x0=X(x)-c/2,y0=Y(y)-c/2;
+      const seg=d[0]===1?[x0+c,y0,x0+c,y0+c]:d[0]===-1?[x0,y0,x0,y0+c]
+               :d[1]===1?[x0,y0+c,x0+c,y0+c]:[x0,y0,x0+c,y0];
+      if(war){
+        /* фронт: пунктир огнём — по нему видно, ГДЕ идёт война, а не «где-то тут» */
+        c2.save();c2.setLineDash([4,3]);
+        c2.strokeStyle="rgba(255,127,104,.95)";c2.lineWidth=2.2;
+        c2.shadowColor="rgba(255,107,87,.8)";c2.shadowBlur=8;
+        c2.beginPath();c2.moveTo(seg[0],seg[1]);c2.lineTo(seg[2],seg[3]);c2.stroke();
+        c2.restore();
+      }else{
+        /* мирный шов — насечка, а не сплошной контур: сплошной читался
+           чертежом, а граница здесь не стена, а место, где одни кончаются */
+        c2.save();c2.setLineDash([5,4]);
+        c2.strokeStyle=hexA(COLS[S.owner],.34);
+        c2.lineWidth=1;
+        c2.beginPath();c2.moveTo(seg[0],seg[1]);c2.lineTo(seg[2],seg[3]);c2.stroke();
+        c2.restore();
+      }
     }
   }
   /* недавние переходы: уголок прежнего флага гаснет за двое суток */
@@ -266,22 +293,22 @@ function drawMap(st,n,t){
     c2.fillStyle=hexA(COLS[r.from],a);
     c2.beginPath();c2.moveTo(X(x)-c/2,Y(y)-c/2);c2.lineTo(X(x)-c/2+c*.42,Y(y)-c/2);c2.lineTo(X(x)-c/2,Y(y)-c/2+c*.42);c2.closePath();c2.fill();
   }
-  /* звёзды: разной величины, ничьи — тусклее; сдвиг от зерна — как в игре */
+  /* ── звёзды: рисунок из игры (mapStarPaint, 17z-map-backdrop) ──
+     Ореол, у ярких — лучи, ядро цвета звезды в белом. Величина берётся от
+     зерна, как класс светила в игре; цвет — державы, если система чья-то, и
+     свой бледный, если ничья: карта войны обязана отвечать «чьё это», не
+     переставая быть звёздной. */
   for(const k of keys){
     const S=st.systems[k];const p=k.split(","),x=p[0]|0,y=p[1]|0;
     if(!starAt(x,y))continue;
     const j=sysJitter(x,y),m=h01(x,y,777);
     const sx=X(x)+j[0]*c*.6,sy=Y(y)+j[1]*c*.6;
-    const own=S.owner>=0,col=own?COLS[S.owner]:"#cfe3ea";
-    const r=Math.max(1.1,c*(.045+.055*m));
-    /* гало сначала, ядро поверх: звезда светит, а не лежит кружком */
-    const gl=c2.createRadialGradient(sx,sy,0,sx,sy,r*3.4);
-    gl.addColorStop(0,hexA(col,own?.5:.26));
-    gl.addColorStop(1,hexA(col,0));
-    c2.fillStyle=gl;c2.beginPath();c2.arc(sx,sy,r*3.4,0,TAU);c2.fill();
-    c2.fillStyle=own?col:"#dfeef3";c2.globalAlpha=own?1:.62;
-    c2.beginPath();c2.arc(sx,sy,r,0,TAU);c2.fill();
-    c2.globalAlpha=1;
+    const own=S.owner>=0;
+    const col=hex2rgb(own?COLS[S.owner]:"#cfe3ea");
+    /* лучи в игре — привилегия ярких: тут порог тот же, и до него доходит
+       примерно каждая пятая звезда, иначе карта идёт рябью */
+    const t=.15+m*1.55, rr=Math.max(1,c*(.028+.045*m));
+    mapStarPaint(c2,sx,sy,col,t,own?.85:.45,{rr});
   }
   /* фронт: кольцо, которое дышит */
   const pulse=.55+.45*Math.sin(t/380);
@@ -290,6 +317,37 @@ function drawMap(st,n,t){
     const p=k.split(","),x=p[0]|0,y=p[1]|0;
     c2.strokeStyle="rgba(255,107,87,"+(.35+.5*pulse).toFixed(2)+")";c2.lineWidth=1.5;
     c2.beginPath();c2.arc(X(x),Y(y),c*.36+pulse*1.5,0,TAU);c2.stroke();
+  }
+  /* ── линейки с адресами ──
+     В игре сектор читается по двум линейкам вдоль края кадра (18a-map-addr);
+     здесь тот же рисунок в миниатюре: полоса, засечка на каждой клетке, число
+     на каждой пятой. Без них круг — картинка, с ними — карта, по которой
+     можно назвать место. */
+  {
+    const R2=CHRON_R,font="8px "+getComputedStyle(document.body).fontFamily;
+    c2.save();c2.font=font;
+    c2.fillStyle="rgba(6,10,16,.5)";
+    c2.fillRect(0,0,g.W,13);c2.fillRect(0,0,15,g.H);
+    c2.strokeStyle="rgba(150,182,212,.28)";c2.lineWidth=1;
+    c2.beginPath();c2.moveTo(0,13.5);c2.lineTo(g.W,13.5);
+    c2.moveTo(15.5,0);c2.lineTo(15.5,g.H);c2.stroke();
+    c2.textAlign="center";c2.textBaseline="alphabetic";
+    for(let gx=-R2-2;gx<=R2+2;gx++){
+      const x=X(gx);if(x<20||x>g.W-6)continue;
+      c2.strokeStyle="rgba(150,182,212,.45)";
+      c2.beginPath();c2.moveTo(Math.round(x)+.5,9);c2.lineTo(Math.round(x)+.5,13);c2.stroke();
+      if(gx%5)continue;
+      c2.fillStyle="rgba(180,200,220,.7)";c2.fillText(String(gx),x,8);
+    }
+    c2.textAlign="right";
+    for(let gy=-R2-2;gy<=R2+2;gy++){
+      const y=Y(gy);if(y<20||y>g.H-6)continue;
+      c2.strokeStyle="rgba(150,182,212,.45)";
+      c2.beginPath();c2.moveTo(9,Math.round(y)+.5);c2.lineTo(15,Math.round(y)+.5);c2.stroke();
+      if(gy%5)continue;
+      c2.fillStyle="rgba(180,200,220,.7)";c2.fillText(String(gy),13,y+3);
+    }
+    c2.restore();
   }
   /* дома: эмблема державы тем же рисунком, что в игре (12al) */
   ctx=c2;

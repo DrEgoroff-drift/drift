@@ -209,24 +209,8 @@ function drawMap(){
     const fade=clamp(1-v.d/(R*1.15),.18,1)*(v.near?1:.5);
     const rr=1.8+s.cls.t*2.2;
     const col=hex2rgb(s.cls.col);
-    ctx.save();
-    ctx.globalCompositeOperation="lighter";
-    /* ореол: звезда светит, а не лежит кружком на фоне */
-    const gl=ctx.createRadialGradient(x,y,0,x,y,rr*7);
-    gl.addColorStop(0,rgba(col,(.5*fade).toFixed(3)));
-    gl.addColorStop(.35,rgba(col,(.13*fade).toFixed(3)));
-    gl.addColorStop(1,rgba(col,0));
-    ctx.fillStyle=gl;ctx.beginPath();ctx.arc(x,y,rr*7,0,TAU);ctx.fill();
-    /* лучи — только у ярких: они и держат иерархию кадра */
-    if(s.cls.t>=1.3){
-      ctx.strokeStyle=rgba(col,(.22*fade).toFixed(3));ctx.lineWidth=1;
-      const L=rr*(4.4+s.cls.t);
-      ctx.beginPath();ctx.moveTo(x-L,y);ctx.lineTo(x+L,y);
-      ctx.moveTo(x,y-L);ctx.lineTo(x,y+L);ctx.stroke();
-    }
-    ctx.fillStyle=rgba(mixc(col,[255,255,255],.55),(.95*fade).toFixed(3));
-    ctx.beginPath();ctx.arc(x,y,rr,0,TAU);ctx.fill();
-    ctx.restore();
+    /* ореол, лучи, ядро — в 17z-map-backdrop: тот же рисунок звезды и на сайте */
+    mapStarPaint(ctx,x,y,col,s.cls.t,fade,{rr});
     ctx.globalAlpha=fade;
     /* ── занятая пиратами система ──
        Кольцо из штрихов вместо ровного круга: занятость должна читаться как

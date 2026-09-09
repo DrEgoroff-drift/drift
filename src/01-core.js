@@ -125,3 +125,15 @@ function genDesc(r,sys){
   if(sys.station)bits.push(sys.station.kind.toLowerCase());
   return bits.join(" · ");
 }
+
+/* ── цвет ──
+   Три помощника, которыми красит вся игра: разбор #rrggbb, сборка rgba и
+   смешение двух цветов. Жили в `03-ships`, потому что первым их завёл корпус;
+   переехали сюда, когда тем же кодом стала краситься карта войны на сайте
+   (`site/war.js` собирается из 01-core и не тянет корабли). */
+function hex2rgb(h){
+  h=h.replace("#","");
+  return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];
+}
+const rgba=(c,a)=>"rgba("+(c[0]|0)+","+(c[1]|0)+","+(c[2]|0)+","+a+")";
+const mixc=(a,b,t)=>[lerp(a[0],b[0],t),lerp(a[1],b[1],t),lerp(a[2],b[2],t)];

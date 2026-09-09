@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 519 · символов верхнего уровня: 4865
+Файлов: 519 · символов верхнего уровня: 4867
 
 ## СИМВОЛЫ
 
@@ -51,7 +51,7 @@ addPart                      src/05-parts.js:364
 addPath                      src/25-cockpit.js:154
 addRes                       src/11-log.js:141
 addrForm                     src/11b-speech.js:96
-addrify                      src/18a-map-addr.js:252
+addrify                      src/18a-map-addr.js:242
 ADJ                          src/21a4-base-adj.js:17
 adjTo                        src/05-parts.js:26
 AFFIX                        src/05-parts.js:32
@@ -1947,7 +1947,7 @@ helmTap                      src/15a-helm.js:255
 helmTargets                  src/15a-helm.js:216
 helmTick                     src/15a-helm.js:275
 helmTrail                    src/15a-helm.js:166
-hex2rgb                      src/03-ships.js:190
+hex2rgb                      src/01-core.js:134
 hexA                         src/12e-drone-flight.js:300
 hexa                         src/12w-survey.js:91
 hexRGB                       src/24-mode-belt.js:81
@@ -2142,11 +2142,11 @@ hudFloorMeasure              src/27z-telemetry.js:96
 hudWake                      src/27z-telemetry.js:57
 hueToward                    src/19b-sky.js:53
 HULL_CACHE                   src/03-ships.js:187
-HULL_CLASS                   src/03-ships.js:219
+HULL_CLASS                   src/03-ships.js:215
 HULL_MAKER                   src/03a-hull-maker.js:23
 HULL_PER_ALLOY               src/21b1-base-pay.js:116
 HULL_ROLE                    src/03f-hull-role.js:17
-hullClassOf                  src/03-ships.js:245
+hullClassOf                  src/03-ships.js:241
 hullOf                       src/03a-hull-gen.js:1
 hullRole                     src/03f-hull-role.js:51
 hullShade                    src/03b-hull-paint.js:176
@@ -2250,7 +2250,7 @@ jobOffer                     src/12e-mgr-jobs.js:228
 jobPick                      src/12e-mgr-jobs.js:259
 jobRefuse                    src/12e-mgr-jobs.js:57
 jobTick                      src/12e-mgr-jobs.js:287
-jump                         src/18-mode-map.js:530
+jump                         src/18-mode-map.js:514
 jumpToBase                   src/21a-mode-base.js:384
 KEEP_DARK_AFTER              src/11k-keepers.js:48
 KEEP_HABIT                   src/11k-keepers.js:35
@@ -2559,7 +2559,7 @@ makeWorld                    src/02a-worldmix.js:47
 MAP_BOX                      src/18-mode-map.js:28
 MAP_LAYERS                   src/18b-map-hold.js:25
 MAP_MARKS_MAX                src/18a-map-addr.js:29
-mapAddrBox                   src/18a-map-addr.js:234
+mapAddrBox                   src/18a-map-addr.js:224
 mapBack                      src/18-mode-map.js:105
 mapBandPaint                 src/17z-map-backdrop.js:36
 MAPBG                        src/17z-map-backdrop.js:14
@@ -2570,8 +2570,9 @@ mapCleanSet                  src/18-mode-map.js:119
 mapDeck                      src/18-mode-map.js:13
 mapFit                       src/18-mode-map.js:87
 mapFont                      src/18-mode-map.js:42
-mapGoAddr                    src/18a-map-addr.js:222
+mapGoAddr                    src/18a-map-addr.js:212
 mapGridDraw                  src/18a-map-addr.js:55
+mapGridPaint                 src/17z-map-backdrop.js:101
 mapHoldingsDraw              src/18b-map-hold.js:80
 mapHoldingsTop               src/18b-map-hold.js:186
 mapHousePatch                src/18b-map-hold.js:31
@@ -2581,11 +2582,11 @@ mapLayerOn                   src/18b-map-hold.js:27
 mapLayerRu                   src/18b-map-hold.js:29
 mapMarkAt                    src/18a-map-addr.js:31
 mapMarks                     src/18a-map-addr.js:30
-mapMarksDraw                 src/18a-map-addr.js:105
+mapMarksDraw                 src/18a-map-addr.js:95
 mapMarkToggle                src/18a-map-addr.js:33
 mapNebula                    src/17z-map-backdrop.js:15
 mapOwnHere                   src/18b-map-hold.js:64
-mapParseAddr                 src/18a-map-addr.js:230
+mapParseAddr                 src/18a-map-addr.js:220
 mapPeek                      src/18-mode-map.js:98
 mapPriceDraw                 src/12aa-need.js:327
 mapPriceRows                 src/12aa-need.js:302
@@ -2593,11 +2594,12 @@ mapRail                      src/18-mode-map.js:18
 mapRange                     src/18-mode-map.js:83
 mapReset                     src/18-mode-map.js:117
 mapRhumbPaint                src/17z-map-backdrop.js:80
-mapRingsDraw                 src/18a-map-addr.js:72
-mapRoseDraw                  src/18a-map-addr.js:197
-mapRulersDraw                src/18a-map-addr.js:122
+mapRingsDraw                 src/18a-map-addr.js:62
+mapRoseDraw                  src/18a-map-addr.js:187
+mapRulersDraw                src/18a-map-addr.js:112
 mapRulerTop                  src/18a-map-addr.js:53
-mapRumoursDraw               src/18a-map-addr.js:86
+mapRumoursDraw               src/18a-map-addr.js:76
+mapStarPaint                 src/17z-map-backdrop.js:119
 mapTagAt                     src/18b-map-hold.js:71
 mapTrassaPairs               src/18b-map-hold.js:47
 mapU                         src/18-mode-map.js:41
@@ -2742,7 +2744,7 @@ misStationOffset             src/11z-misclosure.js:19
 misTableReply                src/11z-misclosure.js:50
 misTestRegion                tests/91zzj-misclosure.js:2
 MIX_KIN                      src/02a-worldmix.js:19
-mixc                         src/03-ships.js:195
+mixc                         src/01-core.js:139
 mixHex                       src/12x-suit.js:187
 mixNum                       src/02a-worldmix.js:43
 mixPal                       src/02a-worldmix.js:34
@@ -3427,7 +3429,7 @@ probeTarget                  src/25m-probe.js:38
 probeVoice                   src/25m-probe.js:75
 prof                         src/28-loop.js:427
 PROFILE                      src/02-world.js:103
-profW                        src/03-ships.js:197
+profW                        src/03-ships.js:193
 prRestore                    tests/91zzzzzi-promise.js:89
 prSpoke                      tests/91zzzzzi-promise.js:66
 prState                      tests/91zzzzzi-promise.js:24
@@ -3683,7 +3685,7 @@ retDrift                     src/11s-returners.js:48
 retEtherLine                 src/11s-returners.js:40
 retGroundLine                src/11s-returners.js:44
 reticle                      src/17c-system-draw.js:16
-rgba                         src/03-ships.js:194
+rgba                         src/01-core.js:138
 ridged                       src/18a-material.js:30
 RING_FIRST                   src/11x-ring.js:20
 RING_LEN                     src/11x-ring.js:21
@@ -4895,7 +4897,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/03-ships.js · 19 КБ
   · корабли: процедурные корпуса:1
   · лаборатория: сплав двух корпусов:28
-  · класс корпуса:207
+  · класс корпуса:203
 
 ## src/03a-hull-gen.js · 37 КБ
   · схема планера:58
@@ -5481,7 +5483,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/17f-sys-traffic.js · 4 КБ
   · трафик системы: чужие машины, которым тут есть дело (M309):1
 
-## src/17z-map-backdrop.js · 5 КБ
+## src/17z-map-backdrop.js · 7 КБ
 
 ## src/18-mode-map.js · 39 КБ
   · карта:1
