@@ -583,6 +583,74 @@ lit by their own light and the sky above the grid is the planet's, so the frost 
 only weather the cut has. §15's day-for-night is a lever this scene has never pulled, and the next
 craft pass over it should ask whether it should.
 
+## Issue VI — 2026-09-09 (0.420.0) — the ground, painted by its light instead of its palette
+
+Opened by M432, the tenth and last craft law. Until this version every drawer of the landing
+cross-section picked its own colour out of the world palette — `drawGround`, `drawRocks`,
+`drawStrata`, the material tile, the 皴 hatch — so light and colour lived in one brush stroke.
+Two things followed and both are visible in the before sheet: the light on most of the frame was a
+**constant** (`rgba(0,0,0,.35)` under a boulder, `rgba(255,246,226,.16)` on a bedding contact),
+real illumination reaching only the slope ribbon; and the whole cross-section read as one flat
+slab, because everything that could have separated the beds had been spent on hue.
+
+Now the form bakes in **grey** and one glaze turns grey `v` into `dark + v·(light − dark)`, where
+`dark` is the sky (`ambRGB`×`ambK`) and `light` is the star (`starRGB`). It is the same physics the
+game already had: `litRGB` is linear in the Lambert term, so the two stops *are* `litRGB` with `I`
+read from the grey pass instead of from the slope — pinned as algebra in `91zzzw-glaze`, where the
+real `litRGB` is asserted to land between the two stops. Nine hue events that luminance cannot
+carry (veins, the lava and ice seams, oxide streaks, facet dispersion, lichen) are drawn in a third
+pass *after* the glaze and never touched by it: **grey means «paint me», colour means «I know my
+own hue»**.
+
+### The sheet — five frames, three palettes, before → after
+
+| frame | tones | pair | contrast | mass | edge | empty |
+|---|---|---|---|---|---|---|
+| terran, dusk (`surface`) | 4 → 4 | 7 → **14** | .55 → **.60** | 11 → **20** | 3 → 4 | 42 → 41 |
+| terran, noon (`noon`) | 5 → *4* | 17 → **21** | .56 → **.63** | 17 → **22** | 7 → 3 | 51 → 52 |
+| ice, noon (`noonice`) | 3 → **6** | 6 → **39** | .36 → **.45** | 5 → **13** | 2 → 4 | 46 → 52 |
+| toxic, noon (`noontox`) | 5 → **6** | 0 → 0 | .48 → **.50** | 21 → 21 | 4 → 3 | 47 → 47 |
+| terran, night (`night`) | 6 → *4* | 1 → 1 | .20 → .22 | 2 → 2 | 1 → 2 | 68 → 70 |
+
+**§12, values before colour, is paid in full.** `mass` — the second-largest of three value steps,
+the number that says whether anything counters the main mass — rises on every daylight frame and
+nearly triples on ice (5 → 13). That is the beds becoming visible as beds. `contrast` rises
+everywhere. `edge` stays a guard, not a goal, and falls on the two frames where it was highest.
+
+**§16, expose for the shadows, was paid late and by measurement.** The first cut used a flat
+`GLAZE_FLOOR` = .28 on the shadow stop, which is right at noon — the sky does not reach into a
+crack, because the rock around it is lit — and wrong at midnight, when the sky is the *only* light
+and there is nothing to occlude it. The night frame came out a black void with one lit island at
+the suit, `tones` 6 → 4. The floor now walks with the day: .28 at noon, 1 at midnight. The suite
+pins both ends.
+
+**The cost is named, not hidden, and it was the author's call** (2026-09-07 → 09-09, «заливаем»).
+The ground stops taking its hue from the world's palette ramp and takes it from the light: a terran
+world goes from olive to terracotta. Two worlds still differ — the glaze's base is each world's own
+`pal[top]` — but *within* one world the multi-hue ramp collapses to one hue lit from two sides, and
+that is the `tones` 5 → 4 at noon and 6 → 4 at night in the sheet above. The third pass built to
+keep both (albedo painted back with `globalCompositeOperation:"color"`) restores the palette and
+destroys the pair, 10 → 1, at every strength tried: it undoes precisely the thing the law is for.
+Not taken. The verdict stands as a trade the meter approves of on four numbers out of five.
+
+**One frame in the sheet is worse than its numbers, and it is the ice world.** `noonice` posts the
+best row in the table — pair 6 → 39, mass 5 → 13, tones 3 → 6 — and the picture behind those
+numbers is a world that stopped being an ice world: a blue-grey section under a sandy topsoil band
+became the same terracotta as the terran one. The meter is not lying, it is answering the question
+it was given: it counts warm against cold, and a warm ground under a cold sky scores well whatever
+the warm ground is made of. The cause is the illuminant — this star is `[255,122,82]`, and at noon
+its term carries nearly the whole light stop, so every base hue arrives at the same clay. The
+§ P4 note in `DESIGN-craft.md` used to claim two worlds still differ because the glaze's base is
+each world's own `pal[top]`; measured, they differ far less than that. Kept as it is because it is
+the fork the author already settled and not a new one — but recorded here, with the frame, because
+it is the strongest argument anyone will ever have for reopening it, and because a number that
+improves while the picture worsens is the one thing this almanac exists to catch.
+
+**And it cost nothing in raster.** The glaze is two `fillRect`s and one `drawImage` per chunk, with
+the alpha restored by `destination-in` — zero pixel readback, because reading a canvas drops it to
+software rasterisation (the `prof()` rule). The LUT the plan originally proposed would have read
+and written half a million pixels per chunk.
+
 ## ~~Reserved — issue III (continued)~~ — struck 2026-09-03
 
 All thirteen are drawn (M310–M313) and judged in the addenda above; the section stays only

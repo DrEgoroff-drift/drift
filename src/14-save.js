@@ -90,7 +90,12 @@ function snapshot(){
     doom:G.doom,doomDead:G.doomDead,parrot:G.parrot,heard:G.heard,grok:G.grok,flea:G.flea,matches:G.matches|0,smena:G.smena||[],
     dealsDone:G.dealsDone,dealsWait:G.dealsWait,log:G.log,
     rumLogged:G.rumLogged||"",   /* слухи станции уже записаны в тетрадь (11t): без этого после каждой загрузки они ложились снова */
-    tableSeen:G.tableSeen|0,
+    /* отметка «стол видели» — время по стенным часам, и `|0` её РЕЖЕТ: `Date.now()`
+       давно за 2^31, и побитовое ИЛИ роняет её в 32 бита, то есть в другое число,
+       раз в 49 суток отрицательное. Пока метка проверяется только на «есть/нет»,
+       это молчит; в наборе 91zzv-table оно уже прозвучало, и заголовок 27i всё ещё
+       обещает сравнение ВРЕМЕНИ прихода с нею. Пишем число целиком. */
+    tableSeen:+G.tableSeen||0,
     /* главный квест: возможности живут недолго, а память людей и тетрадь —
        навсегда. Закрытая дверь не восстанавливается ни временем, ни загрузкой */
     offers:G.offers,folk:G.folk,ledger:G.ledger,folkSay:G.folkSay,late:G.late,toldOff:G.toldOff|0,   /* M225, M230 */

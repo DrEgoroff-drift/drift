@@ -279,6 +279,30 @@ main release, as M360a/M369b were.
   the spans to `ECON_*`/`SOC_*`/`NAT_*`/`DIP_*`. Tail: the six waves still speak the old one-line
   ether - whether a wave should retell the whole note in its own voice is an author's call.
 
+- ~~**M432 the ground is painted by its light**~~ - 0.420.0: P4 гризайль, the tenth and last
+  craft law, closed. `src/18a1-glaze.js` bakes the landing cross-section **in grey** and lays one
+  glaze per chunk - `dark + v·(light − dark)`, sky and star - so illumination reaches the whole
+  section instead of the slope ribbon it had since M242. Two `fillRect`s and a `destination-in`,
+  zero pixel readback. Nine hue events luminance cannot carry (veins, lava and ice seams, oxide,
+  dispersion, lichen) ride a third pass after the glaze: **grey means «paint me», colour means «I
+  know my own hue»**. The trade the author took on 09-07 («заливаем») is real and named in the
+  almanac: within one world the palette's hue ramp collapses to one hue lit from two sides, so
+  `tones` falls 5 → 4 at noon and 6 → 4 at night, while `mass` and `contrast` rise on every
+  daylight frame and ice goes 5 → 13 on mass, 6 → 39 on pair. Sheet of five frames across three
+  palettes: almanac issue VI. **The one frame worse than its numbers is the ice world:** it posts
+  the best row in the sheet and stopped looking like ice - this star is `[255,122,82]`, at noon its
+  term carries nearly the whole light stop, and every base hue arrives at the same clay. Left
+  standing (the author settled this fork), recorded with the frame in issue VI; if it is ever
+  reopened the lever is the illuminant, not the glaze - `starRGB()` is the disc, and the light that
+  reaches the ground through an atmosphere is whiter than the disc. Found on the way and fixed: a
+  flat shadow floor made the **night** a
+  black void with one lit island (§16, expose for the shadows) - the floor now walks with the day,
+  .28 at noon and 1 at midnight. Suite `91zzzw-glaze` holds the algebra, not the picture: the real
+  `litRGB` must land between the two stops, or the glaze is lighting the section with a different
+  sun than the strips. **Tail, for whoever picks up P5:** the cave (`22-mode-cave`) draws live and
+  is not chunked, so the glaze does not reach it; `07-planet`'s disc is still painted from the
+  ramp. Both are worth their own milestone, neither is a defect.
+
 ## Loose ends (as of 2026-08-28, after the graphics run 0.237.0–0.244.0)
 
 Everything left open, with the reason it is open. Nothing here is a bug report — bugs are fixed

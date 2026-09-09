@@ -7,6 +7,47 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.420.0 (M432) - the ground is painted by its light, not by its palette
+
+The tenth and last craft law. Every drawer of the landing cross-section used to pick its own
+colour out of the world's palette - the ground, the boulders, the beds, the material tile, the
+hatch - so light and colour lived in one brush stroke. What followed was visible in every frame:
+the light on most of the picture was a **constant** (a fixed black under a boulder, a fixed cream
+on a bedding contact), while real illumination was computed for the slope strips alone, one ribbon
+out of the whole section.
+
+Now the form bakes in **grey** and one glaze per chunk turns grey `v` into `dark + v·(light −
+dark)`, where `dark` is the sky and `light` is the star. It is the same light model the game
+already had: `litRGB` is linear in its Lambert term, so the two stops *are* `litRGB` with that term
+read off the grey pass instead of off the slope - the new suite asserts exactly that, by requiring
+the real `litRGB` to land between the two stops. Two `fillRect`s and one `drawImage`, no pixel
+readback: reading a canvas would drop the chunk into software rasterisation.
+
+Nine kinds of detail cannot survive a trip through luminance - a vein and a facet edge share a
+lightness - so veins, the lava and ice seams, oxide streaks, facet dispersion and lichen are drawn
+in a third pass, after the glaze, and it never touches them. **Grey means «paint me», colour means
+«I know my own hue».**
+
+What it costs is named rather than hidden, and it was the author's call: within one world the
+palette's hue ramp collapses to one hue lit from two sides, so a terran world goes from olive to
+terracotta and `tones` falls 5 → 4 at noon. What it buys, on the same meter, is `mass` and
+`contrast` up on every daylight frame and an ice world going 5 → 13 on mass and 6 → 39 on pair -
+the beds finally reading as beds. The five-frame, three-palette sheet is almanac issue VI.
+
+Found while measuring and fixed here: the shadow floor was flat, which is right at noon - the sky
+cannot reach into a crack past the lit rock - and wrong at midnight, where the sky is the only
+light and nothing occludes it. The night frame came out a black void with one lit island at the
+suit. The floor now walks with the day.
+
+**And three things found on the way in.** `PATCHNOTES.md` had carried committed merge markers since
+`f434e3b`, with both sides wanted and neither chosen. The base's «выброс» halved the air whether or
+not anyone was aboard, so a base founded and left became a ruin - a store of air is a store *for
+people*, the rule that already governed the atmosphere leak and the fire's term on an empty base.
+And the desk's «seen» mark was written to the save through `|0`: `Date.now()` has not fitted in 32
+bits for decades, so the mark was stored as a different number, negative for half of every 49 days
+- which is why its own suite went red by the calendar rather than by the code.
+
+---
 ## 0.419.3 - a bulletin is a story, not an inventory
 
 The feed used to say «Коммуна объявила обряд „регата“» and stop there, so the player never

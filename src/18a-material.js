@@ -128,7 +128,19 @@ function planetMatNow(p){
 function matJobMake(p){
   const S=MAT_S,cn=document.createElement("canvas");cn.width=cn.height=S;
   const c=cn.getContext("2d"),img=c.createImageData(S,S),d=img.data;
+  /* ── вторая плитка: СОБЫТИЯ (гризайль P4, M422) ──
+     В первую идёт СВЕТЛОТА — зерно, трещины, грани, швы, крошка: её красит
+     лессировка светом этой звезды под этим небом. Во вторую — то, чего из
+     светлоты не достать: минеральные жилы, дисперсия ребра и искра кристалла,
+     светлый ледяной шов, тлеющий лавовый, потёки окисла на плите. Восемь
+     оттенков `MINERAL` на мир, и жила с кромкой грани дают одну светлоту при
+     разных тонах: обратно их не разделить, значит и сводить нельзя.
+     Вторая плитка почти вся прозрачная и кладётся ПОСЛЕ лессировки. */
+  const hn=document.createElement("canvas");hn.width=hn.height=S;
+  const hc=hn.getContext("2d"),himg=hc.createImageData(S,S),hd=himg.data;
   const pal=p.T.pal,sd=(p.seed^0x4D41)>>>0;
+  const PT=pal[pal.length-1];
+  const PAL_TOP_LUM=PT[0]*.3+PT[1]*.59+PT[2]*.11;
   const mn=MINERAL[sd%MINERAL.length];
   /* сколько чего на этой планете: выветренность, трещиноватость, богатство жил.
      Две каменистые планеты благодаря этому не выглядят одной и той же породой. */
@@ -151,11 +163,12 @@ function matJobMake(p){
   else if(ch==="sludge"){crackK*=.15;veinK*=.2;wear*=.8;grainK*=.7;}
   else if(ch==="soil"){crackK*=.35;veinK*=.3;}
   const cellN=ch==="facet"?9:(ch==="plate"?4:(ch==="rubble"?7:(ch==="frost"?5:(ch==="crust"?6:6))));
-  return {p,S,cn,c,img,d,y:0,pal,sd,mn,wear,crackK,veinK,grainK,ch,cellN};
+  return {p,S,cn,c,img,d,hn,hc,himg,hd,y:0,pal,sd,mn,PAL_TOP_LUM,
+          wear,crackK,veinK,grainK,ch,cellN};
 }
 /* одна порция строк: та же арифметика, что и была, только внешний цикл снаружи */
 function matJobRows(J,rows){
-  const S=J.S,d=J.d,pal=J.pal,sd=J.sd,mn=J.mn;
+  const S=J.S,d=J.d,hd=J.hd,pal=J.pal,sd=J.sd,mn=J.mn,PAL_TOP_LUM=J.PAL_TOP_LUM;
   const wear=J.wear,crackK=J.crackK,veinK=J.veinK,grainK=J.grainK,ch=J.ch,cellN=J.cellN;
   const yEnd=Math.min(S,J.y+rows);
   for(let y=J.y;y<yEnd;y++)for(let x=0;x<S;x++){
@@ -263,44 +276,56 @@ function matJobRows(J,rows){
       }
     }
     const c0=ramp(pal,ch==="facet"?(.10+t*.86):(.26+t*.5));
-    /* и слегка сводим к собственной светлоте — цветовой разброс внутри одного
-       материала должен быть заметен, но не спорить с биомом */
-    const lum=(c0[0]*.3+c0[1]*.59+c0[2]*.11);
-    let R=lerp(c0[0],lum,.22),Gc=lerp(c0[1],lum,.22),B=lerp(c0[2],lum,.22);
+    /* ── СВЕТЛОТА вместо цвета (гризайль) ──
+       Раньше брался тон из палитры и слегка сводился к собственной светлоте.
+       Теперь берётся одна светлота, НОРМИРОВАННАЯ по верхней ступени палитры:
+       серый проход обязан мерить «сколько света отражает эта точка от полностью
+       освещённой», а не абсолютную яркость тона. Без нормировки палитра
+       множится дважды — здесь и в лессировке, — и разрез уходит в плоскую
+       оливу (замер первого захода, 07.09). */
+    let V=(c0[0]*.3+c0[1]*.59+c0[2]*.11)*(255/Math.max(1,PAL_TOP_LUM));
+    let hR=0,hG=0,hB=0,hA=0;
+    const hue=(r2,g2,b2,w)=>{
+      if(w<=0)return;
+      const wn=clamp(w,0,1);
+      hR=lerp(hR,r2,wn);hG=lerp(hG,g2,wn);hB=lerp(hB,b2,wn);
+      hA=hA+(1-hA)*wn;
+    };
     /* трещины: тонкая тёмная сеть, глубже в углублениях */
     /* трещина должна быть волосяной: широкая «жила» ридж-шума читается
        кишками, а не разломом — отсюда высокая степень и мелкая решётка */
     const crack=ridged(tfbm(u,v,17,sd+29,3),17)*crackK;
     const k=1-clamp(crack,0,.40);
-    R*=k;Gc*=k;B*=k;
-    /* жилы: узкие светящиеся прожилки минерала, редкие */
+    V*=k;
+    /* жилы: узкие прожилки минерала, редкие. Их оттенок — во вторую плитку */
     const vein=ridged(tfbm(u,v,5,sd+53,4),38)*veinK;
-    if(vein>.01){
-      const w=clamp(vein,0,.55);
-      R=lerp(R,mn[0],w);Gc=lerp(Gc,mn[1],w);B=lerp(B,mn[2],w);
-    }
+    if(vein>.01)hue(mn[0],mn[1],mn[2],clamp(vein,0,.55));
     /* микро: зерно породы и редкая крошка */
     const g=(h01(x,y,sd+7)-.5)*15*grainK;
-    R+=g;Gc+=g;B+=g;
+    V+=g;
     /* кромка грани и шов плиты кладутся последними: они рисуют форму, и любая
        фактура поверх них снова превратила бы излом в склон */
     if(edgeHi>.01){
       const top=pal[pal.length-1];
+      /* кромка грани поднимает СВЕТЛОТУ: это форма излома, а не краска */
+      V=lerp(V,255*(top[0]*.3+top[1]*.59+top[2]*.11)/Math.max(1,PAL_TOP_LUM),edgeHi*.85);
       /* Дисперсия: у прозрачной грани ребро не белое — оно уводит в холод или
-         в тепло, у каждой грани по-своему. Ровно белые рёбра давали
-         брусчатку: камень, аккуратно подсвеченный по швам. */
+         в тепло, у каждой грани по-своему. Это ОТТЕНОК, и он во второй плитке:
+         ровно белые рёбра давали брусчатку, а лессировка их бы и сравняла. */
       const disp=(h01(Math.floor(u*cellN),Math.floor(v*cellN),sd+909)-.5)*2;
-      const tr0=top[0]+disp*26, tg0=top[1]-Math.abs(disp)*10, tb0=top[2]-disp*22;
-      R=lerp(R,tr0,edgeHi*.85);Gc=lerp(Gc,tg0,edgeHi*.85);B=lerp(B,tb0,edgeHi*.85);
+      if(Math.abs(disp)>.15)
+        hue(top[0]+disp*26,top[1]-Math.abs(disp)*10,top[2]-disp*22,edgeHi*.55);
       /* и редкая искра на самом ребре: то, чем кристалл отличается от камня */
-      if(ch==="facet"&&edgeHi>.55&&h01(x,y,sd+1717)>.986){R=250;Gc=248;B=255;}
+      if(ch==="facet"&&edgeHi>.55&&h01(x,y,sd+1717)>.986){V=250;hue(250,248,255,1);}
     }
-    if(darkK<1){R*=darkK;Gc*=darkK;B*=darkK;}
-    if(edgeLo>.01){const k3=1-edgeLo*.55;R*=k3;Gc*=k3;B*=k3;}
-    if(seam>.01){const k2=1-seam*.62;R*=k2;Gc*=k2;B*=k2;}
-    /* лёд: шов светлый и холодный; лава: тлеющий шов */
-    if(seam<-.01){const w3=-seam*.6;R=lerp(R,226,w3);Gc=lerp(Gc,240,w3);B=lerp(B,255,w3);}
-    if(edgeLo<-.01){const w4=clamp(-edgeLo*1.4,0,1);R=lerp(R,255,w4);Gc=lerp(Gc,118,w4);B=lerp(B,34,w4);}
+    if(darkK<1)V*=darkK;
+    if(edgeLo>.01)V*=1-edgeLo*.55;
+    if(seam>.01)V*=1-seam*.62;
+    /* лёд: шов светлый и холодный; лава: тлеющий. Светлота сюда, холод и жар —
+       во вторую плитку: без них ледяной мир теряет синеву шва, а вулканический
+       единственное тёплое пятно на весь кадр */
+    if(seam<-.01){const w3=-seam*.6;V=lerp(V,245,w3);hue(226,240,255,w3*.9);}
+    if(edgeLo<-.01){const w4=clamp(-edgeLo*1.4,0,1);V=lerp(V,200,w4);hue(255,118,34,w4);}
     if(ch==="plate"){
       /* потёки окисла вниз по плите: без них металл читается пластиком */
       /* Узкие вертикальные потёки, а не широкие ленты: первый заход красил
@@ -308,20 +333,36 @@ function matJobRows(J,rows){
          Окисел бурый и тёмный — светлая ржавчина выглядит мясом. */
       const rust=Math.pow(clamp(tfbm(u*7.5,v*.5,14,sd+131,3)-.54,0,1)*3.2,1.7);
       if(rust>.02){const w2=clamp(rust,0,.7)*.55;
-        R=lerp(R,104,w2);Gc=lerp(Gc,54,w2);B=lerp(B,32,w2);}
+        V=lerp(V,(104*.3+54*.59+32*.11)*255/Math.max(1,PAL_TOP_LUM),w2*.5);
+        hue(104,54,32,w2);}
     }
     const peb=h01(x>>1,y>>1,sd+13);
-    if(peb>.982){const s2=(peb-.982)*36;R+=s2*70;Gc+=s2*70;B+=s2*70;}
-    else if(peb<.006){R*=.62;Gc*=.62;B*=.62;}
-    d[o]=clamp(R,0,255);d[o+1]=clamp(Gc,0,255);d[o+2]=clamp(B,0,255);d[o+3]=255;
+    if(peb>.982)V+=(peb-.982)*36*70;
+    else if(peb<.006)V*=.62;
+    /* ── подмалёвок пишут КОНТРАСТНЕЕ готового ──
+       Два композитных залива лессировки сжимают шкалу: тень поднимается на
+       `dark`, свет упирается в `light`. Гризайль «в натуральную светлоту»
+       после неё читается плоской — замер первого захода дал «пусто» 41 → 50.
+       Растягиваем вокруг середины ровно настолько, насколько потом сожмёт. */
+    const q=clamp(128+(clamp(V,0,255)-128)*GREY_K,0,255);
+    d[o]=q;d[o+1]=q;d[o+2]=q;d[o+3]=255;
+    hd[o]=clamp(hR,0,255);hd[o+1]=clamp(hG,0,255);hd[o+2]=clamp(hB,0,255);
+    hd[o+3]=clamp(hA*255,0,255);
   }
   J.y=yEnd;
 }
 function matJobDone(J){
   J.c.putImageData(J.img,0,0);
+  J.hc.putImageData(J.himg,0,0);
   J.p.mat=J.c.createPattern(J.cn,"repeat");
+  J.p.matHue=J.hc.createPattern(J.hn,"repeat");
   J.p.matCn=J.cn;
   return J.p.mat;
+}
+/* плитка событий того же мира: печётся вместе с формой, спрашивается порознь */
+function planetMatHue(p){
+  if(!p.matHue&&!p.mat)return null;      /* ещё не готово — и не надо */
+  return p.matHue||null;
 }
 /* положить материал в уже построенный путь (путь должен быть текущим).
    Два прохода: свой масштаб и увеличенный — второй убивает видимую сетку 256. */
@@ -339,6 +380,7 @@ function fillMaterial(mat,camx,camy,a1,a2,P,bnd){
   ctx.fillStyle=mat;
   ctx.fillRect(camx+bx,camy+by,bw,bh);
   ctx.restore();
+  if(a2<=0)return;
   /* второй проход — тот же тайл крупно и в режиме overlay: он добавляет
      светлые и тёмные поля масштабом с полэкрана, из-за которых сетка 256
      перестаёт читаться, но цвет породы не уезжает */

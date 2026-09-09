@@ -1759,7 +1759,7 @@ body.table u.addr{color:#7a4a20}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.419.3";
+const VER="0.420.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -39504,7 +39504,12 @@ function snapshot(){
     doom:G.doom,doomDead:G.doomDead,parrot:G.parrot,heard:G.heard,grok:G.grok,flea:G.flea,matches:G.matches|0,smena:G.smena||[],
     dealsDone:G.dealsDone,dealsWait:G.dealsWait,log:G.log,
     rumLogged:G.rumLogged||"",   /* слухи станции уже записаны в тетрадь (11t): без этого после каждой загрузки они ложились снова */
-    tableSeen:G.tableSeen|0,
+    /* отметка «стол видели» — время по стенным часам, и `|0` её РЕЖЕТ: `Date.now()`
+       давно за 2^31, и побитовое ИЛИ роняет её в 32 бита, то есть в другое число,
+       раз в 49 суток отрицательное. Пока метка проверяется только на «есть/нет»,
+       это молчит; в наборе 91zzv-table оно уже прозвучало, и заголовок 27i всё ещё
+       обещает сравнение ВРЕМЕНИ прихода с нею. Пишем число целиком. */
+    tableSeen:+G.tableSeen||0,
     /* главный квест: возможности живут недолго, а память людей и тетрадь —
        навсегда. Закрытая дверь не восстанавливается ни временем, ни загрузкой */
     offers:G.offers,folk:G.folk,ledger:G.ledger,folkSay:G.folkSay,late:G.late,toldOff:G.toldOff|0,   /* M225, M230 */
@@ -46298,7 +46303,19 @@ function planetMatNow(p){
 function matJobMake(p){
   const S=MAT_S,cn=document.createElement("canvas");cn.width=cn.height=S;
   const c=cn.getContext("2d"),img=c.createImageData(S,S),d=img.data;
+  /* ── вторая плитка: СОБЫТИЯ (гризайль P4, M422) ──
+     В первую идёт СВЕТЛОТА — зерно, трещины, грани, швы, крошка: её красит
+     лессировка светом этой звезды под этим небом. Во вторую — то, чего из
+     светлоты не достать: минеральные жилы, дисперсия ребра и искра кристалла,
+     светлый ледяной шов, тлеющий лавовый, потёки окисла на плите. Восемь
+     оттенков `MINERAL` на мир, и жила с кромкой грани дают одну светлоту при
+     разных тонах: обратно их не разделить, значит и сводить нельзя.
+     Вторая плитка почти вся прозрачная и кладётся ПОСЛЕ лессировки. */
+  const hn=document.createElement("canvas");hn.width=hn.height=S;
+  const hc=hn.getContext("2d"),himg=hc.createImageData(S,S),hd=himg.data;
   const pal=p.T.pal,sd=(p.seed^0x4D41)>>>0;
+  const PT=pal[pal.length-1];
+  const PAL_TOP_LUM=PT[0]*.3+PT[1]*.59+PT[2]*.11;
   const mn=MINERAL[sd%MINERAL.length];
   /* сколько чего на этой планете: выветренность, трещиноватость, богатство жил.
      Две каменистые планеты благодаря этому не выглядят одной и той же породой. */
@@ -46321,11 +46338,12 @@ function matJobMake(p){
   else if(ch==="sludge"){crackK*=.15;veinK*=.2;wear*=.8;grainK*=.7;}
   else if(ch==="soil"){crackK*=.35;veinK*=.3;}
   const cellN=ch==="facet"?9:(ch==="plate"?4:(ch==="rubble"?7:(ch==="frost"?5:(ch==="crust"?6:6))));
-  return {p,S,cn,c,img,d,y:0,pal,sd,mn,wear,crackK,veinK,grainK,ch,cellN};
+  return {p,S,cn,c,img,d,hn,hc,himg,hd,y:0,pal,sd,mn,PAL_TOP_LUM,
+          wear,crackK,veinK,grainK,ch,cellN};
 }
 /* одна порция строк: та же арифметика, что и была, только внешний цикл снаружи */
 function matJobRows(J,rows){
-  const S=J.S,d=J.d,pal=J.pal,sd=J.sd,mn=J.mn;
+  const S=J.S,d=J.d,hd=J.hd,pal=J.pal,sd=J.sd,mn=J.mn,PAL_TOP_LUM=J.PAL_TOP_LUM;
   const wear=J.wear,crackK=J.crackK,veinK=J.veinK,grainK=J.grainK,ch=J.ch,cellN=J.cellN;
   const yEnd=Math.min(S,J.y+rows);
   for(let y=J.y;y<yEnd;y++)for(let x=0;x<S;x++){
@@ -46433,44 +46451,56 @@ function matJobRows(J,rows){
       }
     }
     const c0=ramp(pal,ch==="facet"?(.10+t*.86):(.26+t*.5));
-    /* и слегка сводим к собственной светлоте — цветовой разброс внутри одного
-       материала должен быть заметен, но не спорить с биомом */
-    const lum=(c0[0]*.3+c0[1]*.59+c0[2]*.11);
-    let R=lerp(c0[0],lum,.22),Gc=lerp(c0[1],lum,.22),B=lerp(c0[2],lum,.22);
+    /* ── СВЕТЛОТА вместо цвета (гризайль) ──
+       Раньше брался тон из палитры и слегка сводился к собственной светлоте.
+       Теперь берётся одна светлота, НОРМИРОВАННАЯ по верхней ступени палитры:
+       серый проход обязан мерить «сколько света отражает эта точка от полностью
+       освещённой», а не абсолютную яркость тона. Без нормировки палитра
+       множится дважды — здесь и в лессировке, — и разрез уходит в плоскую
+       оливу (замер первого захода, 07.09). */
+    let V=(c0[0]*.3+c0[1]*.59+c0[2]*.11)*(255/Math.max(1,PAL_TOP_LUM));
+    let hR=0,hG=0,hB=0,hA=0;
+    const hue=(r2,g2,b2,w)=>{
+      if(w<=0)return;
+      const wn=clamp(w,0,1);
+      hR=lerp(hR,r2,wn);hG=lerp(hG,g2,wn);hB=lerp(hB,b2,wn);
+      hA=hA+(1-hA)*wn;
+    };
     /* трещины: тонкая тёмная сеть, глубже в углублениях */
     /* трещина должна быть волосяной: широкая «жила» ридж-шума читается
        кишками, а не разломом — отсюда высокая степень и мелкая решётка */
     const crack=ridged(tfbm(u,v,17,sd+29,3),17)*crackK;
     const k=1-clamp(crack,0,.40);
-    R*=k;Gc*=k;B*=k;
-    /* жилы: узкие светящиеся прожилки минерала, редкие */
+    V*=k;
+    /* жилы: узкие прожилки минерала, редкие. Их оттенок — во вторую плитку */
     const vein=ridged(tfbm(u,v,5,sd+53,4),38)*veinK;
-    if(vein>.01){
-      const w=clamp(vein,0,.55);
-      R=lerp(R,mn[0],w);Gc=lerp(Gc,mn[1],w);B=lerp(B,mn[2],w);
-    }
+    if(vein>.01)hue(mn[0],mn[1],mn[2],clamp(vein,0,.55));
     /* микро: зерно породы и редкая крошка */
     const g=(h01(x,y,sd+7)-.5)*15*grainK;
-    R+=g;Gc+=g;B+=g;
+    V+=g;
     /* кромка грани и шов плиты кладутся последними: они рисуют форму, и любая
        фактура поверх них снова превратила бы излом в склон */
     if(edgeHi>.01){
       const top=pal[pal.length-1];
+      /* кромка грани поднимает СВЕТЛОТУ: это форма излома, а не краска */
+      V=lerp(V,255*(top[0]*.3+top[1]*.59+top[2]*.11)/Math.max(1,PAL_TOP_LUM),edgeHi*.85);
       /* Дисперсия: у прозрачной грани ребро не белое — оно уводит в холод или
-         в тепло, у каждой грани по-своему. Ровно белые рёбра давали
-         брусчатку: камень, аккуратно подсвеченный по швам. */
+         в тепло, у каждой грани по-своему. Это ОТТЕНОК, и он во второй плитке:
+         ровно белые рёбра давали брусчатку, а лессировка их бы и сравняла. */
       const disp=(h01(Math.floor(u*cellN),Math.floor(v*cellN),sd+909)-.5)*2;
-      const tr0=top[0]+disp*26, tg0=top[1]-Math.abs(disp)*10, tb0=top[2]-disp*22;
-      R=lerp(R,tr0,edgeHi*.85);Gc=lerp(Gc,tg0,edgeHi*.85);B=lerp(B,tb0,edgeHi*.85);
+      if(Math.abs(disp)>.15)
+        hue(top[0]+disp*26,top[1]-Math.abs(disp)*10,top[2]-disp*22,edgeHi*.55);
       /* и редкая искра на самом ребре: то, чем кристалл отличается от камня */
-      if(ch==="facet"&&edgeHi>.55&&h01(x,y,sd+1717)>.986){R=250;Gc=248;B=255;}
+      if(ch==="facet"&&edgeHi>.55&&h01(x,y,sd+1717)>.986){V=250;hue(250,248,255,1);}
     }
-    if(darkK<1){R*=darkK;Gc*=darkK;B*=darkK;}
-    if(edgeLo>.01){const k3=1-edgeLo*.55;R*=k3;Gc*=k3;B*=k3;}
-    if(seam>.01){const k2=1-seam*.62;R*=k2;Gc*=k2;B*=k2;}
-    /* лёд: шов светлый и холодный; лава: тлеющий шов */
-    if(seam<-.01){const w3=-seam*.6;R=lerp(R,226,w3);Gc=lerp(Gc,240,w3);B=lerp(B,255,w3);}
-    if(edgeLo<-.01){const w4=clamp(-edgeLo*1.4,0,1);R=lerp(R,255,w4);Gc=lerp(Gc,118,w4);B=lerp(B,34,w4);}
+    if(darkK<1)V*=darkK;
+    if(edgeLo>.01)V*=1-edgeLo*.55;
+    if(seam>.01)V*=1-seam*.62;
+    /* лёд: шов светлый и холодный; лава: тлеющий. Светлота сюда, холод и жар —
+       во вторую плитку: без них ледяной мир теряет синеву шва, а вулканический
+       единственное тёплое пятно на весь кадр */
+    if(seam<-.01){const w3=-seam*.6;V=lerp(V,245,w3);hue(226,240,255,w3*.9);}
+    if(edgeLo<-.01){const w4=clamp(-edgeLo*1.4,0,1);V=lerp(V,200,w4);hue(255,118,34,w4);}
     if(ch==="plate"){
       /* потёки окисла вниз по плите: без них металл читается пластиком */
       /* Узкие вертикальные потёки, а не широкие ленты: первый заход красил
@@ -46478,20 +46508,36 @@ function matJobRows(J,rows){
          Окисел бурый и тёмный — светлая ржавчина выглядит мясом. */
       const rust=Math.pow(clamp(tfbm(u*7.5,v*.5,14,sd+131,3)-.54,0,1)*3.2,1.7);
       if(rust>.02){const w2=clamp(rust,0,.7)*.55;
-        R=lerp(R,104,w2);Gc=lerp(Gc,54,w2);B=lerp(B,32,w2);}
+        V=lerp(V,(104*.3+54*.59+32*.11)*255/Math.max(1,PAL_TOP_LUM),w2*.5);
+        hue(104,54,32,w2);}
     }
     const peb=h01(x>>1,y>>1,sd+13);
-    if(peb>.982){const s2=(peb-.982)*36;R+=s2*70;Gc+=s2*70;B+=s2*70;}
-    else if(peb<.006){R*=.62;Gc*=.62;B*=.62;}
-    d[o]=clamp(R,0,255);d[o+1]=clamp(Gc,0,255);d[o+2]=clamp(B,0,255);d[o+3]=255;
+    if(peb>.982)V+=(peb-.982)*36*70;
+    else if(peb<.006)V*=.62;
+    /* ── подмалёвок пишут КОНТРАСТНЕЕ готового ──
+       Два композитных залива лессировки сжимают шкалу: тень поднимается на
+       `dark`, свет упирается в `light`. Гризайль «в натуральную светлоту»
+       после неё читается плоской — замер первого захода дал «пусто» 41 → 50.
+       Растягиваем вокруг середины ровно настолько, насколько потом сожмёт. */
+    const q=clamp(128+(clamp(V,0,255)-128)*GREY_K,0,255);
+    d[o]=q;d[o+1]=q;d[o+2]=q;d[o+3]=255;
+    hd[o]=clamp(hR,0,255);hd[o+1]=clamp(hG,0,255);hd[o+2]=clamp(hB,0,255);
+    hd[o+3]=clamp(hA*255,0,255);
   }
   J.y=yEnd;
 }
 function matJobDone(J){
   J.c.putImageData(J.img,0,0);
+  J.hc.putImageData(J.himg,0,0);
   J.p.mat=J.c.createPattern(J.cn,"repeat");
+  J.p.matHue=J.hc.createPattern(J.hn,"repeat");
   J.p.matCn=J.cn;
   return J.p.mat;
+}
+/* плитка событий того же мира: печётся вместе с формой, спрашивается порознь */
+function planetMatHue(p){
+  if(!p.matHue&&!p.mat)return null;      /* ещё не готово — и не надо */
+  return p.matHue||null;
 }
 /* положить материал в уже построенный путь (путь должен быть текущим).
    Два прохода: свой масштаб и увеличенный — второй убивает видимую сетку 256. */
@@ -46509,6 +46555,7 @@ function fillMaterial(mat,camx,camy,a1,a2,P,bnd){
   ctx.fillStyle=mat;
   ctx.fillRect(camx+bx,camy+by,bw,bh);
   ctx.restore();
+  if(a2<=0)return;
   /* второй проход — тот же тайл крупно и в режиме overlay: он добавляет
      светлые и тёмные поля масштабом с полэкрана, из-за которых сетка 256
      перестаёт читаться, но цвет породы не уезжает */
@@ -46527,6 +46574,174 @@ function fillMaterial(mat,camx,camy,a1,a2,P,bnd){
   ctx.fillStyle=mat;
   ctx.fillRect((camx+PH+bx)/K,(camy+PH+by)/K,bw/K,bh/K);
   ctx.restore();
+}
+
+/* ══════════════ лессировка: форма в сером, свет одним слоем (P4, M422) ══════════════
+   Десятый закон ремесла из `docs/DESIGN-story-craft.md`, последний из десяти.
+   До сих пор каждый рисовальщик грунта сам выбирал себе цвет из палитры мира:
+   `pal` читали `drawGround`, `drawRocks`, `drawStrata`, материал и штрих. Свет
+   и цвет лежали в одном мазке, и отсюда следовали три беды сразу:
+
+     · смена палитры мира означала правку каждого рисовальщика;
+     · СВЕТ НА БОЛЬШЕЙ ЧАСТИ КАДРА БЫЛ КОНСТАНТОЙ — `rgba(0,0,0,.35)` под
+       валуном, `rgba(255,246,226,.16)` на контакте пластов, — а не светом
+       этой звезды под этим небом. По-настоящему освещение считалось только
+       для полос склона (`litRGB`), то есть для одной ленты из всего разреза;
+     · час суток входил в ключ ломтя, потому что цвет пёкся вместе с формой.
+
+   ГРИЗАЙЛЬ разводит это на два прохода. Форма печётся В СЕРОМ: рисовальщик
+   кладёт только СВЕТЛОТУ — массу, рельеф, тень, кромку. Потом на весь ломоть
+   разом ложится лессировка: серое v превращается в `тень + v·(свет − тень)`,
+   где тень — цвет неба (`ambRGB`×`ambK`), а свет — цвет звезды (`starRGB`).
+
+   ПОЧЕМУ ЭТО ТА ЖЕ ФИЗИКА, ЧТО БЫЛА. `litRGB` считает `base·(k·amb + I·sun)` —
+   линейно по I. Значит двухточечная лессировка с `dark = base⊗amb·k` и
+   `light = base⊗(amb·k + sun·df)` — это и есть `litRGB`, у которого ламбертов
+   множитель взят из серого прохода, а не из наклона профиля. Никакой новой
+   модели света: та же, но теперь она достаётся всему разрезу, а не ленте.
+
+   ── ЧТО ЭТО МЕНЯЕТ В КАРТИНЕ, И ПОЧЕМУ РЕШАЛ АВТОР ──
+   Грунт перестаёт брать оттенок от палитры мира и берёт его от СВЕТА:
+   землеподобная планета уходит из оливковой в терракотовую под холодным
+   дождливым небом. Прибор кадра на этом выигрывает — растёт пара тёплого и
+   холодного, а это и был давний долг «грунт день: pair короткий, второй тон
+   только у диска», — но мир теряет часть собственного лица. Первый заход
+   07.09.2026 был построен, измерен и откачен именно потому, что это развилка
+   замысла, а не вопрос кода; автор её снял: заливаем.
+
+   Пробовали и третий проход, который должен был сохранить оба, — альбедо
+   возвращалось режимом `color` поверх лессировки. Он восстанавливает палитру
+   и УБИВАЕТ пару (10 → 1) на любой доле, то есть отменяет ровно то, ради чего
+   закон написан. Не взят; замер лежит в `docs/DESIGN-craft.md` § P4.
+
+   ── СЕРОЕ ЗНАЧИТ «ПОКРАСЬ МЕНЯ», ЦВЕТ ЗНАЧИТ «Я СВОЙ» ──
+   Опись перед началом (её требовал план) нашла в пекле девять событий, у
+   которых цвет НЕ выводится из палитры и не восстанавливается из светлоты:
+
+     минеральные жилы в материале (`MINERAL`, восемь оттенков на мир);
+     жилы и вкрапления внутри пласта;   собственный цвет пласта `L.col`;
+     лавовый шов;                       ледяной шов;
+     потёки окисла на плите;            искра на ребре кристалла и дисперсия;
+     лишайник на валуне;                цвет полос склона — он-то и переезжает.
+
+   Жила и кромка грани дают ОДНУ светлоту при разных тонах: свести их в один
+   канал можно, разделить обратно нельзя. Поэтому события рисуются ПОСЛЕ
+   лессировки, отдельным проходом (`GLAZE_PASS`), и под неё не попадают вовсе.
+
+   ── ПОЧЕМУ КОМПОЗИТОМ, А НЕ ТАБЛИЦЕЙ ──
+   План предлагал LUT через `getImageData`/`putImageData` раз на ломоть. Ломоть
+   — 512×~1000, то есть полмиллиона точек на чтение и столько же на запись; и
+   главное, чтение канвы роняет её в программный растр (правило про `prof()` в
+   CLAUDE.md). Двухточечная лессировка выражается двумя заливками без единого
+   чтения:
+
+     multiply цветом (light − dark)   →   v·(light − dark)
+     lighter  цветом dark             →   v·(light − dark) + dark
+
+   Ровно линейная карта, ноль readback. Трёхточечную (тень → собственный тон →
+   свет) она не даёт; собственный тон материала остаётся там, где он и был, —
+   в самом тайле, серым, и его светлота и есть средняя точка. */
+
+/* два конца лессировки для данного тела под данным небом.
+   base — собственный тон материала из палитры; в гризайли ему соответствует
+   белое, то есть полностью освещённая поверхность */
+const GLAZE_FLOOR=.28;      /* сколько неба доходит до самого тёмного места */
+function glazeStops(base,p,df){
+  const sun=(typeof starRGB==="function")?starRGB():[255,244,214];
+  const amb=(p&&typeof ambRGB==="function")?ambRGB(p):[70,90,130];
+  const k=(p&&typeof ambK==="function")?ambK(p):.3;
+  const d=(df===undefined)?(p&&typeof dayKq==="function"?(.40+.58*dayKq(p)):.78):df;
+  /* ── пол тени приглушён (замер M422) ──
+     `lighter` — это ПОЛ: всё, что в подмалёвке темнее некоторого порога,
+     упирается в него и становится одним цветом. Разрез теряет глубину: чёрный
+     градиент вниз (drawGround) превращался в ровную полосу цвета неба, и
+     прибор кадра говорил «пусто» 45 → 59. Небо и правда светит в тень, но не
+     в трещину и не на дно выработки — там оно перекрыто самой породой.
+     Множитель ниже и есть эта перекрытость: тень остаётся ХОЛОДНОЙ (тон неба),
+     но перестаёт быть СВЕТЛОЙ. */
+  /* ── а НОЧЬЮ перекрывать нечем ──
+     Пол выше писан против дневного пересвета: в трещину небо не достаёт,
+     потому что его перекрывает порода, освещённая звездой. Ночью звезды нет,
+     небо — единственный свет, и тот же множитель просто гасит грунт в чёрное:
+     первый заход дал ночь, где земля вне фонаря пропадала вовсе (tones 6 → 4,
+     а на кадре — чёрная пустота с одним светлым островом у скафандра). §16
+     свода, «экспонировать по теням», говорит ровно обратное. Поэтому пол ходит
+     вместе с днём: в полдень .28, в полночь 1, и небо доходит до дна. */
+  const dq=(p&&typeof dayKq==="function")?clamp(dayKq(p),0,1):1;
+  const fl=GLAZE_FLOOR+(1-GLAZE_FLOOR)*(1-dq);
+  const dark=[0,1,2].map(i=>clamp(base[i]*(k*amb[i]/255)*fl,0,255));
+  const light=[0,1,2].map(i=>clamp(base[i]*(k*amb[i]/255+d*sun[i]/255),0,255));
+  return {dark,light};
+}
+/* серый той же светлоты, что и цвет: рисовальщик, который раньше брал тон из
+   палитры, теперь берёт из неё же светлоту — и разница между слоями остаётся
+   там, где ей место, в тоне, а не в оттенке */
+function lum3(c){return c[0]*.30+c[1]*.59+c[2]*.11;}
+function greyOf(c,mul){
+  const v=clamp(lum3(c)*(mul===undefined?1:mul),0,255)|0;
+  return "rgb("+v+","+v+","+v+")";
+}
+function greyA(v,a){
+  const q=clamp(v,0,255)|0;
+  return "rgba("+q+","+q+","+q+","+a+")";
+}
+/* ── подмалёвок пишут КОНТРАСТНЕЕ готового ──
+   Правило старой лессировки, и оно же измеряется прибором: два залива
+   сжимают шкалу — тень поднимается на `dark`, свет упирается в `light`.
+   Гризайль, написанная «в натуральную светлоту», после лессировки читается
+   плоской: первый заход дал «пусто» 41 → 50 при том, что пара выросла 7 → 10.
+   Растягиваем вокруг середины ровно настолько, насколько потом сожмёт. */
+const GREY_K=1.62;
+/* пласты разводятся сильнее общего: у них не осталось оттенка, чтобы
+   отличаться, — значит вся разница обязана лечь в тон (18b) */
+const STRATA_K=2.2, STRATA_STEP=16;
+function greyStretch(v){return clamp(128+(v-128)*GREY_K,0,255);}
+/* ── два прохода одного рисовальщика ──
+   `form` — серое, ложится под лессировку; `hue` — события со своим оттенком,
+   ложатся после неё. Флаг глобальный по той же причине, что и `GROUND_BAKING`:
+   рисовальщиков много, и передавать проход через все подписи дороже, чем
+   прочесть его в трёх местах. */
+let GLAZE_PASS="";
+function glazeIsForm(){return GLAZE_PASS!=="hue";}
+function glazeIsHue(){return GLAZE_PASS!=="form";}
+/* ── лессировка целого ломтя ──
+   Композитные операции считаются и там, где холст ПРОЗРАЧЕН: `multiply` по
+   пустому месту кладёт сам цвет, `lighter` подсыпает тень в небо. Поэтому
+   исходная альфа снимается копией и возвращается в конце `destination-in` —
+   два drawImage на ломоть, ни одного чтения пикселей. */
+let GLAZE_MASK=null;
+function glazeChunk(stops){
+  const cn=ctx.canvas;
+  if(!cn||!cn.width)return;
+  if(!GLAZE_MASK)GLAZE_MASK=document.createElement("canvas");
+  if(GLAZE_MASK.width!==cn.width||GLAZE_MASK.height!==cn.height){
+    GLAZE_MASK.width=cn.width;GLAZE_MASK.height=cn.height;
+  }
+  const m=GLAZE_MASK.getContext("2d");
+  m.setTransform(1,0,0,1,0,0);
+  m.clearRect(0,0,GLAZE_MASK.width,GLAZE_MASK.height);
+  m.drawImage(cn,0,0);
+  const dr=stops.dark,lt=stops.light;
+  const rgb=c=>"rgb("+Math.round(clamp(c[0],0,255))+","+
+    Math.round(clamp(c[1],0,255))+","+Math.round(clamp(c[2],0,255))+")";
+  ctx.save();
+  ctx.setTransform(1,0,0,1,0,0);
+  ctx.globalCompositeOperation="multiply";
+  ctx.fillStyle=rgb([lt[0]-dr[0],lt[1]-dr[1],lt[2]-dr[2]]);
+  ctx.fillRect(0,0,cn.width,cn.height);
+  ctx.globalCompositeOperation="lighter";
+  ctx.fillStyle=rgb(dr);
+  ctx.fillRect(0,0,cn.width,cn.height);
+  ctx.globalCompositeOperation="destination-in";
+  ctx.drawImage(GLAZE_MASK,0,0);
+  ctx.restore();
+}
+/* лессировка грунта: верх шкалы серого прохода — верхняя ступень палитры,
+   именно по ней нормирован материал (18a), и именно она означает
+   «полностью освещено» */
+function glazeGround(tr,camx,camy,pal){
+  if(!pal||!tr||!tr.mat)return;
+  glazeChunk(glazeStops(pal[pal.length-1],tr.p));
 }
 
 /* ══════════════ геология ══════════════ */
@@ -46660,8 +46875,26 @@ function drawStrata(tr,camx,camy,p,P){
     LP.lineTo(i1*tr.step-camx,H+20);
     LP.lineTo(i0*tr.step-camx,H+20);
     LP.closePath();
-    ctx.fillStyle="rgb("+L.col.join(",")+")";
-    ctx.fill(LP);
+    /* ── тело пласта — СВЕТЛОТОЙ (гризайль P4, M422) ──
+       Слой отличался от слоя оттенком, и на мирах с тесной палитрой этой
+       разницы не хватало: разрез читался заливкой — про это и написан абзац
+       про контакт ниже. В гризайли слои различаются ТОНОМ, который виден на
+       любой палитре, а цвет им всем разом даёт лессировка от неба и звезды.
+       Собственный оттенок остаётся у жил: там он порода, а не украшение. */
+    if(glazeIsForm()){
+      /* ── слои РАЗВОДЯТСЯ ПО ТОНУ, а не по оттенку ──
+         Раньше пласт от пласта отличался цветом, и разница читалась даже
+         когда светлоты совпадали. В гризайли этого не осталось: два слоя с
+         близкой светлотой сливаются в одно тело, и прибор кадра это увидел —
+         «кромок» 7 → 3. Настоящий разрез так и устроен: светлая пачка, тёмная
+         пачка, светлая. Разводим сильнее обычного (`STRATA_K`) и добавляем
+         шаг от семени слоя, чтобы соседние не совпадали случайно. */
+      const PT=p.T.pal[p.T.pal.length-1];
+      const v0=lum3(L.col)*255/Math.max(1,lum3(PT));
+      const step=((L.seed>>>5)&1)?1:-1;
+      ctx.fillStyle=greyA(clamp(128+(v0-128)*STRATA_K+step*STRATA_STEP,40,225),1);
+      ctx.fill(LP);
+    }
     /* ── контакт пластов ──
        Слой отличался от слоя только своим цветом плюс тёмная нить в .3 — и на
        мирах с тёмной сближенной палитрой (токсичный, джунглевый) разрез
@@ -46670,14 +46903,19 @@ function drawStrata(tr,camx,camy,p,P){
        светлая кромка на нижнем, ровно как шов обшивки и стык плит в шахте.
        Пара работает на любой палитре, потому что держится на свете, а не на
        разнице тонов. */
-    ctx.strokeStyle="rgba(0,0,0,.42)";ctx.lineWidth=2.2;ctx.stroke(LP);
-    ctx.save();ctx.clip(LP);
-    ctx.strokeStyle="rgba(255,246,226,.16)";ctx.lineWidth=1.1;
-    ctx.save();ctx.translate(0,1.4);ctx.stroke(LP);ctx.restore();
-    ctx.restore();
+    if(glazeIsForm()){
+      ctx.strokeStyle="rgba(0,0,0,.42)";ctx.lineWidth=2.2;ctx.stroke(LP);
+      ctx.save();ctx.clip(LP);
+      /* светлая кромка контакта была ТЁПЛОЙ КОНСТАНТОЙ — теперь она чистая
+         светлота, а тепло ей даёт звезда вместе со всем разрезом */
+      ctx.strokeStyle="rgba(255,255,255,.16)";ctx.lineWidth=1.1;
+      ctx.save();ctx.translate(0,1.4);ctx.stroke(LP);ctx.restore();
+      ctx.restore();
+    }
     /* жилы и вкрапления внутри слоя: короткие наклонные штрихи, детерминированы
        от координаты, поэтому не мигают при движении камеры */
-    if(L.vein>.05){
+    /* жилы своим минералом — ПОСЛЕ лессировки: их оттенок и есть порода */
+    if(L.vein>.05&&glazeIsHue()){
       const mn=MINERAL[(L.seed>>>3)%MINERAL.length];
       ctx.save();ctx.clip(LP);
       const stepv=52;
@@ -47480,9 +47718,22 @@ function drawGround(tr,camx,camy,fill,line,pal){
       "|d"+(tr.p?dayKq(tr.p):0)+"|a"+(tr.p?sunAzQ(tr.p):0),top,ch);
     drawChunks(tr.chunks,camx,camy,(g,wx0,wy0)=>{
       GROUND_BAKING=true;
-      /* валуны неподвижны и сложены из той же породы (два прохода материала
-         на каждый) — им место в ломте, а не в кадре: 6–9 мс на ×2 (G0) */
-      try{drawGround(tr,wx0,wy0,fill,line,pal);drawRocks(tr,wx0,wy0,pal);}finally{GROUND_BAKING=false;}
+      /* ── три прохода вместо одного (гризайль P4, M422) ──
+         1. ФОРМА в сером: масса, пласты, зерно, штрих, свет склона;
+         2. ЛЕССИРОВКА: серое v → тень + v·(свет − тень), где тень — цвет неба,
+            а свет — цвет звезды. Два композитных залива, ни одного чтения
+            канвы (readback уронил бы ломоть в программный растр);
+         3. ОТТЕНОК: жилы, лишайник, тлеющие швы — то, чего из светлоты не
+            достать. Идёт ПОСЛЕ лессировки, иначе она бы его перекрасила.
+         Валуны неподвижны и сложены из той же породы — им место в ломте, а не
+         в кадре: 6–9 мс на ×2 (G0). */
+      try{
+        GLAZE_PASS="form";
+        drawGround(tr,wx0,wy0,fill,line,pal);drawRocks(tr,wx0,wy0,pal);
+        glazeGround(tr,wx0,wy0,pal);
+        GLAZE_PASS="hue";
+        drawGround(tr,wx0,wy0,fill,line,pal);drawRocks(tr,wx0,wy0,pal);
+      }finally{GROUND_BAKING=false;GLAZE_PASS="";}
     });
     drawGroundGrass(tr,camx,camy);
     return;
@@ -47493,19 +47744,30 @@ function drawGround(tr,camx,camy,fill,line,pal){
   P.moveTo(i0*tr.step-camx,tr.h[i0]-camy);
   for(let i=i0;i<=i1;i++)P.lineTo(i*tr.step-camx,tr.h[i]-camy);
   P.lineTo(i1*tr.step-camx,H+10);P.lineTo(i0*tr.step-camx,H+10);P.closePath();
-  ctx.fillStyle=fill;ctx.fill(P);
+  /* в проходе формы силуэт кладётся СВЕТЛОТОЙ той же заливки: цвет придёт
+     лессировкой, и придёт всему разрезу разом, а не одной ленте склона */
+  if(glazeIsForm()){
+    ctx.fillStyle=(pal&&tr.mat)
+      ?greyOf(pal[2],.6*255/Math.max(1,lum3(pal[pal.length-1]))):fill;
+    ctx.fill(P);
+  }
   /* сначала строение (какие слои и где), потом материал (из чего они сложены):
      обратный порядок закрашивал разрез ровным зерном и снова давал «фигуру» */
   if(pal&&tr.p)drawStrata(tr,camx,camy,tr.p,P);
+  /* путь силуэта нужен лессировке — она ляжет ровно по нему */
+  if(glazeIsForm())tr._glazeP=P;
   /* порода: бесшовный тайл-материал вместо плоской заливки (18a-material).
      Заливка под ним остаётся — она держит силуэт, если материала ещё нет. */
-  if(tr.mat)fillMaterial(tr.mat,camx,camy,tr.p?.5:.92,.22,P);
+  if(tr.mat&&glazeIsForm())fillMaterial(tr.mat,camx,camy,tr.p?.5:.92,.22,P);
+  /* плитка событий — жилы, искры, тлеющие швы — после лессировки */
+  if(tr.mat&&glazeIsHue()&&tr.p&&typeof planetMatHue==="function")
+    fillMaterial(planetMatHue(tr.p),camx,camy,.85,0,P);
   /* ── 皴 на обрыве (аудит 10×10, §5): манера штриха дошла до поверхности ──
      Пещера и шахта режут ту же породу с манерой (CUN), а срез под рельефом —
      самая большая площадь дневного кадра — оставался материалом без кисти.
      Тот же ход: штрих вдоль поля направлений, манера из таблицы по типу
      мира. В ломоть, кадру бесплатно. */
-  if(pal&&tr.p&&tr.mat&&typeof CUN!=="undefined"){
+  if(pal&&tr.p&&tr.mat&&glazeIsForm()&&typeof CUN!=="undefined"){
     ctx.save();ctx.clip(P);
     const M=CUN[tr.p.type]||CUN.rocky;
     const stp=26,sd=((tr.p.seed|0)^0x51F);
@@ -47521,14 +47783,14 @@ function drawGround(tr,camx,camy,fill,line,pal){
       const jx=gx+((hh>>>3)&15)/15*stp-camx, jy=gy+((hh>>>7)&15)/15*stp-camy;
       const light=((hh>>>14)&1);
       if(M.dot){
-        ctx.fillStyle=light?"rgba(255,246,226,"+(M.la*kd).toFixed(3)+")":"rgba(0,0,0,"+(M.da*kd).toFixed(3)+")";
+        ctx.fillStyle=light?"rgba(255,255,255,"+(M.la*kd).toFixed(3)+")":"rgba(0,0,0,"+(M.da*kd).toFixed(3)+")";
         const q=1+((hh>>>11)&1);
         ctx.fillRect(jx,jy,q,q);
         continue;
       }
       const ang=dirAt(gx,gy,sd+0x11,1/300)+(((hh>>>16)&15)/15-.5)*M.jig;
       const ln=(6+((hh>>>11)&7))*M.ln;
-      ctx.strokeStyle=light?"rgba(255,246,226,"+(M.la*kd).toFixed(3)+")":"rgba(0,0,0,"+(M.da*kd).toFixed(3)+")";
+      ctx.strokeStyle=light?"rgba(255,255,255,"+(M.la*kd).toFixed(3)+")":"rgba(0,0,0,"+(M.da*kd).toFixed(3)+")";
       ctx.lineWidth=M.w;
       ctx.beginPath();
       ctx.moveTo(jx-Math.cos(ang)*ln,jy-Math.sin(ang)*ln);
@@ -47540,7 +47802,7 @@ function drawGround(tr,camx,camy,fill,line,pal){
   /* склон, обращённый к солнцу (вправо-вверх), светлее; в тень — темнее.
      Простое псевдо-освещение по наклону вместо одной плоской заливки.
      Полосы полупрозрачные: непрозрачные закрашивали материал обратно в фигуру. */
-  if(pal&&i1>i0){
+  if(pal&&i1>i0&&glazeIsForm()){
     const stripD=66;
     /* свет считается от звезды и от неба (19c-light), а не по константе
        «вправо-вверх светлее»: у токсичного мира тени зелёные, у ледяного
@@ -47550,13 +47812,21 @@ function drawGround(tr,camx,camy,fill,line,pal){
     /* прямой свет по дневному ключу: полдень ~.96, заря ~.45 — в полдень
        склоны к солнцу горят, а тени остаются цветными от неба */
     const df=tr.p?(.40+.58*dayKq(tr.p)):.78;
+    /* верх шкалы серого прохода — полностью освещённая поверхность (d=1) */
+    const lumFull=Math.max(1,lum3([0,1,2].map(q=>P0[q]*(k*amb[q]/255+df*sun[q]/255))));
     for(let i=i0;i<i1;i++){
       const x0=i*tr.step-camx,x1=(i+1)*tr.step-camx;
       if(x1<-4||x0>W+4)continue;
       const y0=tr.h[i]-camy,y1=tr.h[i+1]-camy;
       const slope=clamp((tr.h[i+1]-tr.h[i])/tr.step,-2.5,2.5);
+      /* ── свет склона тоже стал светлотой (гризайль) ──
+         Это было ЕДИНСТВЕННОЕ место разреза, где свет считался по-настоящему
+         (`litRGB`), и клалось оно поверх материала одной лентой. Теперь то же
+         число ложится серым, а цвет ему даёт лессировка — и достаётся он
+         всему разрезу, а не ленте. */
       const c=litRGB(P0,slope,null,sun,amb,k,df);
-      ctx.fillStyle="rgba("+c[0]+","+c[1]+","+c[2]+","+(tr.mat?.42:1)+")";
+      ctx.fillStyle=(pal&&tr.mat)?greyA(255*clamp(lum3(c)/lumFull,0,1),.42)
+        :"rgba("+c[0]+","+c[1]+","+c[2]+","+(tr.mat?.42:1)+")";
       ctx.beginPath();
       ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.lineTo(x1,y1+stripD);ctx.lineTo(x0,y0+stripD);
       ctx.closePath();ctx.fill();
@@ -47571,15 +47841,26 @@ function drawGround(tr,camx,camy,fill,line,pal){
   if(tr.mat){
     ctx.save();ctx.clip(P);
     const dg=ctx.createLinearGradient(0,Math.max(0,(GROUND_BAKING?tr.hMin:tr.h[i0])-camy-40),0,H);
+    /* ── глубина мягче, чем была (гризайль M422) ──
+       Чёрный размыв гасил ВСЕ каналы поровну: цвет от этого не уезжал, а
+       светлота уезжала — и раньше это было неважно, потому что низ разреза
+       держался на оттенке. В гризайли держаться больше не на чем: при .88
+       зерно, трещины и пласты внизу пропадали вовсе. Ослабляем — глубину
+       теперь и без того называет лессировка, оставляя там один свет неба. */
     dg.addColorStop(0,"rgba(0,0,0,0)");
-    dg.addColorStop(.45,"rgba(0,0,0,.42)");
-    dg.addColorStop(1,"rgba(0,0,0,.88)");
+    dg.addColorStop(.45,"rgba(0,0,0,.30)");
+    dg.addColorStop(1,"rgba(0,0,0,.66)");
     ctx.fillStyle=dg;ctx.fillRect(0,0,W,H);
     ctx.restore();
   }
   if(line){
-    /* корка: светлая кромка поверх тёмного тела породы */
-    ctx.strokeStyle=line;ctx.lineWidth=1.4;ctx.stroke(P);
+    /* корка: светлая кромка поверх тёмного тела породы. В гризайли она тоже
+       светлота — цвет ей даст лессировка вместе со всем разрезом */
+    ctx.strokeStyle=(pal&&tr.mat&&glazeIsForm())
+      ?greyA(greyStretch(lum3(pal[Math.min(pal.length-1,4)])*255/
+             Math.max(1,lum3(pal[pal.length-1]))),1)
+      :line;
+    ctx.lineWidth=1.4;ctx.stroke(P);
     ctx.save();ctx.clip(P);
     ctx.strokeStyle="rgba(255,255,255,.09)";ctx.lineWidth=7;
     ctx.beginPath();
@@ -47673,9 +47954,11 @@ function drawRocks(tr,camx,camy,pal){
     const y=groundAt(tr,k.x)-camy;
     /* контактная тень: без неё валун лежит поверх грунта, а не на нём.
        Смещена в сторону от солнца (оно справа сверху) и вытянута по земле. */
-    ctx.save();ctx.globalAlpha=.7;
-    groundShadow(x-k.rad*.35,y+1.5,k.rad*1.5,Math.max(2.2,k.rad*.3));
-    ctx.restore();
+    if(glazeIsForm()){
+      ctx.save();ctx.globalAlpha=.7;
+      groundShadow(x-k.rad*.35,y+1.5,k.rad*1.5,Math.max(2.2,k.rad*.3));
+      ctx.restore();
+    }
     ctx.save();ctx.translate(x,y-k.rad*.42);
     if(k.flip)ctx.scale(-1,1);
     const c0=pal[2],c1=pal[4];
@@ -47696,27 +47979,37 @@ function drawRocks(tr,camx,camy,pal){
       }
     }
     RP.closePath();
-    const g=ctx.createLinearGradient(0,-k.rad,0,k.rad);
-    g.addColorStop(0,"rgb("+Math.round(lerp(c0[0],c1[0],t)*.9)+","+
-      Math.round(lerp(c0[1],c1[1],t)*.9)+","+Math.round(lerp(c0[2],c1[2],t)*.9)+")");
-    g.addColorStop(1,"rgb("+Math.round(c0[0]*.32)+","+Math.round(c0[1]*.32)+","+
-      Math.round(c0[2]*.32)+")");
-    ctx.fillStyle=g;ctx.fill(RP);
-    /* та же порода, что под ногами: валун из другого материала выглядит
-       принесённым из другой игры */
-    if(tr.mat)fillMaterial(tr.mat,camx-x,camy-y+k.rad*.42,.5,.35,RP,
-      {x:-k.rad*1.4,y:-k.rad*1.4,w:k.rad*2.8,h:k.rad*2.8});
-    ctx.strokeStyle="rgba(0,0,0,.35)";ctx.lineWidth=1;ctx.stroke(RP);
-    if(k.rad>7){   // скол на крупных валунах
-      ctx.strokeStyle="rgba(255,255,255,.10)";
-      ctx.beginPath();ctx.moveTo(P[1][0],P[1][1]);ctx.lineTo(P[3][0]*.3,P[3][1]*.3);ctx.stroke();
+    if(glazeIsForm()){
+      /* верх валуна светлее низа — это и есть вся его форма; цвет придёт
+         лессировкой вместе с грунтом, и камень перестанет быть «другой
+         породой», покрашенной своей парой ступеней палитры (гризайль M422) */
+      const nk=255/Math.max(1,lum3(pal[pal.length-1]));
+      const g=ctx.createLinearGradient(0,-k.rad,0,k.rad);
+      g.addColorStop(0,greyOf([lerp(c0[0],c1[0],t),lerp(c0[1],c1[1],t),lerp(c0[2],c1[2],t)],.9*nk));
+      g.addColorStop(1,greyOf(c0,.32*nk));
+      ctx.fillStyle=g;ctx.fill(RP);
+      /* та же порода, что под ногами: валун из другого материала выглядит
+         принесённым из другой игры */
+      if(tr.mat)fillMaterial(tr.mat,camx-x,camy-y+k.rad*.42,.5,.35,RP,
+        {x:-k.rad*1.4,y:-k.rad*1.4,w:k.rad*2.8,h:k.rad*2.8});
+      ctx.strokeStyle="rgba(0,0,0,.35)";ctx.lineWidth=1;ctx.stroke(RP);
+      if(k.rad>7){   // скол на крупных валунах
+        ctx.strokeStyle="rgba(255,255,255,.10)";
+        ctx.beginPath();ctx.moveTo(P[1][0],P[1][1]);ctx.lineTo(P[3][0]*.3,P[3][1]*.3);ctx.stroke();
+      }
+    }else if(tr.mat&&tr.p&&typeof planetMatHue==="function"){
+      /* жилы и искры того же камня — после лессировки */
+      fillMaterial(planetMatHue(tr.p),camx-x,camy-y+k.rad*.42,.85,0,RP,
+        {x:-k.rad*1.4,y:-k.rad*1.4,w:k.rad*2.8,h:k.rad*2.8});
     }
     /* ── лишайник на валуне ВЫРАЩЕН (аудит 10×10, §10) ──
        Живые миры зарастают: пещера растит лишайник с M262, а валун наверху —
        у самого света и влаги — оставался голым. Тот же дифференциальный рост
        (growLichen, 22a), контур сплюснут по верхней грани камня, клип по
        телу валуна; красится палитрой мира. Печётся в ломоть — кадру даром. */
-    if(k.rad>8&&tr.p&&["terran","jungle","ocean","toxic"].indexOf(tr.p.type)>=0
+    /* лишайник — событие со своим цветом: он зелёный на любой породе, и
+       лессировка его бы усреднила. Поэтому он в проходе оттенка (M422) */
+    if(k.rad>8&&tr.p&&glazeIsHue()&&["terran","jungle","ocean","toxic"].indexOf(tr.p.type)>=0
        &&typeof growLichen==="function"){
       const rl=rng(hashi(Math.floor(k.x),0x11C4,tr.p.seed|0));
       if(rl()<.6){
@@ -55919,6 +56212,13 @@ function baseEventApply(B,e,n){
     return 1;
   }
   if(e.k==="vent"){
+    /* на базе без людей выброс не отнимает ничего (M391, набор 91zzzw-base):
+       запас воздуха — это запас ДЛЯ ЛЮДЕЙ, и заперт он тем же правилом, что
+       течь атмосферы в `baseLifeStep` («leak && baseCrewN»). Иначе всякий,
+       кто заложил базу и улетел, возвращался бы к развалине, ни разу не
+       согласившись на эту игру, — то же, из-за чего пожару на пустой базе в
+       0.409.1 вышел срок. Событие не случилось: и в журнал не пишем. */
+    if(!((typeof baseCrewN==="function")?baseCrewN(B):0))return 0;
     const L=baseLife(B);
     L.air=Math.max(0,(L.air/2)|0);
     baseLog(B,"vent",n);

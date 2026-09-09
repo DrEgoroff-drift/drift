@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 511 · символов верхнего уровня: 4823
+Файлов: 513 · символов верхнего уровня: 4838
 
 ## СИМВОЛЫ
 
@@ -106,7 +106,7 @@ appetitePrice                src/12ab-hold.js:84
 applyCrewEvent               src/12b-crew-events.js:215
 applyPadMode                 src/15-input.js:72
 applyPadSize                 src/15-input.js:8
-applySave                    src/14-save.js:206
+applySave                    src/14-save.js:211
 applySaveRest                src/14a1-save-rest.js:15
 applyVolumes                 src/09-audio.js:40
 apVel                        src/16-flight.js:132
@@ -117,7 +117,7 @@ armedCount                   src/13-combat.js:229
 arrive                       src/16-flight.js:178
 ARTIFACTS                    src/12h-relic.js:48
 askText                      src/11u-names.js:59
-asMap                        src/14-save.js:199
+asMap                        src/14-save.js:204
 assignToBase                 src/12a-crew.js:181
 AST_N                        src/24-mode-belt.js:86
 audioHush                    src/09-audio.js:12
@@ -210,7 +210,7 @@ baseCallOut                  src/21a2-base-link.js:128
 baseCell                     src/21a-mode-base.js:163
 baseCellRole                 src/21a3-base-people.js:49
 baseCellStaff                src/21a3-base-people.js:50
-baseColdHit                  src/21a5-base-dir.js:217
+baseColdHit                  src/21a5-base-dir.js:224
 baseCollect                  src/21a-mode-base.js:354
 baseCost                     src/21a-mode-base.js:88
 baseCrewN                    src/21a1-base-life.js:290
@@ -219,11 +219,11 @@ baseCryoOn                   src/21a1a-base-heat.js:34
 baseDepth                    src/21a1a-base-heat.js:41
 baseDial                     src/21a8-base-world.js:33
 baseDialOf                   src/21a8-base-world.js:59
-baseDirLine                  src/21a5-base-dir.js:236
-baseDirStep                  src/21a5-base-dir.js:226
+baseDirLine                  src/21a5-base-dir.js:243
+baseDirStep                  src/21a5-base-dir.js:233
 baseDrawGround               src/21ab1-base-ground.js:13
 baseDrinkMul                 src/21a9-base-laws.js:126
-baseDusty                    src/21a5-base-dir.js:213
+baseDusty                    src/21a5-base-dir.js:220
 baseEarn                     src/21a1-base-life.js:189
 baseEventApply               src/21a5-base-dir.js:163
 baseEventAt                  src/21a5-base-dir.js:93
@@ -315,7 +315,7 @@ baseThreat                   src/21a5-base-dir.js:84
 baseTraitSpirit              src/21a9-base-laws.js:111
 baseUniqStep                 src/21b1-base-pay.js:70
 baseUnique                   src/21b1-base-pay.js:51
-baseVein                     src/21a5-base-dir.js:221
+baseVein                     src/21a5-base-dir.js:228
 baseWake                     src/21a1-base-life.js:322
 baseWalkOut                  src/21a1b-base-food.js:49
 baseWarnLine                 src/21a9-base-laws.js:57
@@ -1229,7 +1229,7 @@ drawDigFauna                 src/23-mode-dig.js:313
 drawDigWorld                 src/23a-dig-draw.js:45
 drawDronesMap                src/12e-drone-flight.js:310
 drawDronesSystem             src/12e-drone-flight.js:224
-drawDustMotes                src/19-mode-landing.js:552
+drawDustMotes                src/19-mode-landing.js:607
 drawElevator                 src/20aa-poi-shapes.js:91
 drawExhaust                  src/16a-space.js:360
 drawFactory                  src/20aa-poi-shapes.js:378
@@ -1244,8 +1244,8 @@ drawForeground               src/21b-surface-deco.js:264
 drawGlassHUD                 src/24-mode-belt.js:717
 drawGlyph                    src/12t-settle.js:59
 drawGround                   src/19-mode-landing.js:134
-drawGroundCrumbs             src/19-mode-landing.js:294
-drawGroundGrass              src/19-mode-landing.js:307
+drawGroundCrumbs             src/19-mode-landing.js:337
+drawGroundGrass              src/19-mode-landing.js:350
 drawHitFx                    src/18d-postfx.js:45
 drawHoldMods                 src/12ad-site.js:362
 drawHomeIn                   src/29d-home-draw.js:9
@@ -1257,7 +1257,7 @@ drawHullMarks                src/03b-hull-paint.js:184
 drawKitFigure                src/12x-suit.js:202
 drawLander                   src/19f-lander.js:52
 drawLandGear                 src/19f-lander.js:26
-drawLanding                  src/19-mode-landing.js:566
+drawLanding                  src/19-mode-landing.js:621
 drawLoreMarks                src/12q-lore.js:235
 drawLuxeDeck                 src/03c-hull-luxe.js:109
 drawLuxeSkin                 src/03c-hull-luxe.js:27
@@ -1284,7 +1284,7 @@ drawRaid                     src/24aa-raid-draw.js:14
 drawRing                     src/17c-system-draw.js:4
 drawRingTape                 src/11x-ring.js:107
 drawRoad                     src/27l-road-draw.js:87
-drawRocks                    src/19-mode-landing.js:340
+drawRocks                    src/19-mode-landing.js:383
 drawRouteMap                 src/12r-route.js:267
 drawRungRing                 src/12ae-ladder.js:73
 drawScoop                    src/19a-mode-scoop.js:266
@@ -1292,7 +1292,7 @@ drawSeams                    src/12s-wear.js:184
 drawShuttleArc               src/17f-sys-traffic.js:36
 drawSkyBase                  src/19c-light.js:296
 drawSkyBodies                src/19b-sky.js:96
-drawSkyLayer                 src/19-mode-landing.js:452
+drawSkyLayer                 src/19-mode-landing.js:507
 drawSpa                      src/29i-spa-draw.js:41
 drawSpaceDust                src/16a-space.js:275
 drawStarBody                 src/16a-space.js:459
@@ -1499,7 +1499,7 @@ fbm1                         src/01-core.js:30
 fbm2                         src/01-core.js:37
 fbm3                         src/24-mode-belt.js:16
 FG_MAN                       src/21b-surface-deco.js:263
-fillMaterial                 src/18a-material.js:331
+fillMaterial                 src/18a-material.js:372
 FIN_DEF                      src/21aa-base-rooms.js:184
 FIND_BUCKET                  src/17b-finds.js:17
 FIND_CACHE                   src/17b-finds.js:26
@@ -1682,6 +1682,14 @@ GIFT_W                       src/11at-gift.js:27
 giftArrive                   src/11at-gift.js:43
 giftDue                      src/11at-gift.js:30
 glassOutline                 src/25-cockpit.js:54
+GLAZE_FLOOR                  src/18a1-glaze.js:70
+GLAZE_MASK                   src/18a1-glaze.js:134
+GLAZE_PASS                   src/18a1-glaze.js:126
+glazeChunk                   src/18a1-glaze.js:135
+glazeGround                  src/18a1-glaze.js:164
+glazeIsForm                  src/18a1-glaze.js:127
+glazeIsHue                   src/18a1-glaze.js:128
+glazeStops                   src/18a1-glaze.js:71
 GLOB                         src/25f-globus.js:44
 GLOB_STEP                    src/25f-globus.js:43
 globusAim                    src/25f-globus.js:49
@@ -1734,6 +1742,10 @@ greenSow                     src/21g-greenhouse.js:53
 greenSpecies                 src/21g-greenhouse.js:69
 greenSpeciesFields           src/21g-greenhouse.js:86
 greenWatered                 src/21g-greenhouse.js:32
+GREY_K                       src/18a1-glaze.js:116
+greyA                        src/18a1-glaze.js:106
+greyOf                       src/18a1-glaze.js:102
+greyStretch                  src/18a1-glaze.js:120
 GROK_DIRT                    src/12tb-grok.js:29
 GROK_LIKE                    src/12tb-grok.js:28
 GROK_MIN                     src/12tb-grok.js:27
@@ -1752,9 +1764,9 @@ grokTake                     src/12tb-grok.js:100
 grokTeach                    src/12tb-grok.js:144
 grokTick                     src/12tb-grok.js:75
 grokWant                     src/12tb-grok.js:41
-GROUND_BAKING                src/19-mode-landing.js:292
+GROUND_BAKING                src/19-mode-landing.js:335
 groundAt                     src/07-planet.js:566
-groundShadow                 src/19-mode-landing.js:436
+groundShadow                 src/19-mode-landing.js:491
 GROVE_ETHER                  src/11j-grove.js:23
 groveAll                     src/11j-grove.js:29
 groveDepthAt                 src/11j-grove.js:30
@@ -2470,6 +2482,7 @@ loreWinOpen                  src/27h-ui-lore.js:17
 loyBar                       src/27c-ui-hq.js:17
 loyWord                      src/27c-ui-hq.js:13
 luckLine                     src/27b-ui-crew.js:15
+lum3                         src/18a1-glaze.js:101
 luxPal                       src/03c-hull-luxe.js:16
 MAIL_CARDS_MAX               src/25j-post-wire.js:30
 MAIL_STACK_MAX               src/25j-post-wire.js:29
@@ -2587,9 +2600,9 @@ matchesRec                   src/12uc-matches.js:22
 matchesRu                    src/12uc-matches.js:36
 matchesScrapNote             src/12uc-matches.js:45
 matchesSpend                 src/12uc-matches.js:27
-matJobDone                   src/18a-material.js:320
+matJobDone                   src/18a-material.js:354
 matJobMake                   src/18a-material.js:128
-matJobRows                   src/18a-material.js:157
+matJobRows                   src/18a-material.js:170
 matTick                      src/18a-material.js:108
 MAYAK_KEEP                   src/12pa-beacon.js:37
 MAYAK_NUM                    src/12pa-beacon.js:65
@@ -3240,6 +3253,7 @@ planetLight                  src/07-planet.js:199
 planetLightsN                src/17e-station-body.js:39
 planetLoadSum                src/12n-planet.js:122
 planetMat                    src/18a-material.js:99
+planetMatHue                 src/18a-material.js:363
 planetMatNow                 src/18a-material.js:120
 planetPaint                  src/07-planet.js:252
 planetPeriod                 src/07-planet.js:37
@@ -3861,13 +3875,13 @@ runTests                     tests/90-harness.js:250
 rxRecord                     src/11x-ring.js:64
 S1                           src/01-core.js:96
 S2                           src/01-core.js:97
-SAVE_BUDGET                  src/14-save.js:116
+SAVE_BUDGET                  src/14-save.js:121
 SAVE_KEY                     src/14-save.js:6
-saveFatSaid                  src/14-save.js:117
+saveFatSaid                  src/14-save.js:122
 saveGame                     src/14a-cloud.js:38
-saveText                     src/14-save.js:138
-saveTop                      src/14-save.js:132
-saveWeigh                    src/14-save.js:119
+saveText                     src/14-save.js:143
+saveTop                      src/14-save.js:137
+saveWeigh                    src/14-save.js:124
 say                          src/08-state.js:213
 SCALE_KEYS                   src/10-music.js:25
 SCALES                       src/10-music.js:5
@@ -4072,7 +4086,7 @@ skyField                     src/19b-sky.js:542
 skyFind                      src/11ak-skywatch.js:47
 skyGalaxy                    src/19b-sky.js:373
 skyGiant                     src/19b-sky.js:222
-skyGrad                      src/19-mode-landing.js:419
+skyGrad                      src/19-mode-landing.js:474
 skyHole                      src/19b-sky.js:396
 skyMoon                      src/19b-sky.js:462
 skyNameComet                 src/11ak-skywatch.js:186
@@ -4274,6 +4288,7 @@ storyTurns                   src/11c-stories.js:121
 storyWhen                    src/11c-stories.js:205
 stPanels                     src/17c-system-draw.js:121
 stPlatePath                  src/17c-system-draw.js:170
+STRATA_K                     src/18a1-glaze.js:119
 stRing                       src/17c-system-draw.js:147
 STRIP_CHUNK                  src/07-planet.js:79
 STRIP_JOB                    src/07-planet.js:82
@@ -5375,10 +5390,10 @@ zooTick                      src/11ad-zoo.js:41
 ## src/13d-npc.js · 13 КБ
   · война, которую видно (M372, §7.4):1
 
-## src/14-save.js · 44 КБ
+## src/14-save.js · 45 КБ
   · сохранение:1
-  · запись не имеет права убить полёт:100
-  · пустая карта возвращается из облака СПИСКОМ:177
+  · запись не имеет права убить полёт:105
+  · пустая карта возвращается из облака СПИСКОМ:182
 
 ## src/14a-cloud.js · 12 КБ
   · облако, вкладки и обмен:1
@@ -5444,10 +5459,13 @@ zooTick                      src/11ad-zoo.js:41
 ## src/18a-map-addr.js · 17 КБ
   · карта говорит адресами (M347):1
 
-## src/18a-material.js · 26 КБ
+## src/18a-material.js · 30 КБ
   · материал грунта:1
 
-## src/18b-geology.js · 14 КБ
+## src/18a1-glaze.js · 13 КБ
+  · лессировка: форма в сером, свет одним слоем (P4, M422):1
+
+## src/18b-geology.js · 16 КБ
   · геология:1
 
 ## src/18b-map-hold.js · 13 КБ
@@ -5462,7 +5480,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/18d-verlet.js · 7 КБ
   · верле: верёвки и ткань:1
 
-## src/19-mode-landing.js · 43 КБ
+## src/19-mode-landing.js · 47 КБ
   · посадка:1
 
 ## src/19a-mode-scoop.js · 37 КБ
@@ -5546,7 +5564,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/21a4-base-adj.js · 6 КБ
   · соседство и залы (M396, DESIGN-base §7):1
 
-## src/21a5-base-dir.js · 14 КБ
+## src/21a5-base-dir.js · 15 КБ
   · директор базы (M397, DESIGN-base §10):1
 
 ## src/21a6-base-avral.js · 9 КБ
@@ -6115,7 +6133,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzu-domino.js · 2 КБ
   · автотесты: домино (M166):1
 
-## tests/91zzv-table.js · 22 КБ
+## tests/91zzv-table.js · 23 КБ
   · автотесты: пульт и стол (M151a):1
   · огонёк: «пришло» ≠ «не прочитано»:191
 
@@ -6243,7 +6261,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzzv-wall.js · 7 КБ
   · автотесты: стена, которая помнит (M210):1
 
-## tests/91zzzw-base.js · 42 КБ
+## tests/91zzzw-base.js · 43 КБ
   · база: смена, повтор и журнал (M390, DESIGN-base §3, §12):1
 
 ## tests/91zzzw-base2.js · 29 КБ
@@ -6280,6 +6298,9 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzzw-fx.js · 39 КБ
   · семьи механик Директора (M382–M388, §15.1):1
+
+## tests/91zzzw-glaze.js · 7 КБ
+  · лессировка P4: форму печёт серое, цвет даёт свет:1
 
 ## tests/91zzzw-guns.js · 4 КБ
   · поколение генератора частей (M364, §2.2):1

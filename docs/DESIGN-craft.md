@@ -382,8 +382,8 @@ the everyday screens; the ledger, so the next reader knows what is DONE versus d
   (M269).
 - One body for assemblies: station hull plate under modules; one orbit — one line, on the true
   ellipse (M265).
-- Still open by design: system-frame notan (needs nebula+traffic content), grisaille (P4 —
-  its own session), settlement recursion (P9b — by intent).
+- Still open by design: system-frame notan (needs nebula+traffic content), settlement recursion
+  (P9b — by intent). Grisaille (P4) closed in 0.420.0 — § P4 below and almanac issue VI.
 
 ## Sources
 
@@ -425,13 +425,20 @@ Second expedition (2026-08-30):
 
 ---
 
-## P4 гризайль — spelled out, built, measured, and handed back as a fork (2026-09-07)
+## P4 гризайль — built and shipped (0.420.0, M432, 2026-09-09)
 
-The tenth craft law, and the last one still queued. The author spelled it out on 2026-09-05; it
-was built end to end on 2026-09-07, measured, and reverted without a commit. **Nothing here is a
-defeat — the code worked. What it decides is not a code question.** This section is everything a
-future session needs to redo it in an hour and everything the author needs to settle it in a
-glance.
+The tenth craft law, and the last one that was still queued. The author spelled it out on
+2026-09-05; it was built end to end on 2026-09-07, measured, and reverted without a commit
+**because what it decides is not a code question**. The author settled it — «заливаем» — and
+0.420.0 carries it: `src/18a1-glaze.js`, the three-pass bake in `19-mode-landing`, grey drawers in
+`18a-material`/`18b-geology`, the suite `91zzzw-glaze`, the five-frame sheet in almanac issue VI.
+Everything below is the reasoning as it stood before the decision; it is kept because it is the
+argument, and the argument is what a future session will want. Two things the shipped version adds
+to it: the underpainting is written **more contrasty than the finished thing** (`GREY_K`, and
+`STRATA_K` for beds, which have no hue left to differ by), since two composite fills compress the
+scale; and the shadow floor **walks with the day** — .28 at noon, where the sky cannot reach into
+a crack past the lit rock, and 1 at midnight, where the sky is the only light and there is nothing
+to occlude it. The flat floor made the night a black void with one lit island, `tones` 6 → 4.
 
 ### What it is
 
@@ -507,9 +514,18 @@ long-standing shortfall recorded after M304 («грунт день — pair stil
 second hue»). The cost is `empty` +7 and one thing no number captures:
 
 > **The ground stops taking its hue from the world's palette ramp and takes it from the light.**
-> A terran world goes from olive-green to terracotta. Two worlds still differ (the glaze's base is
-> their own `pal[top]`), but *within* one world the multi-hue ramp collapses to one hue lit from
-> two sides.
+> A terran world goes from olive-green to terracotta. Within one world the multi-hue ramp collapses
+> to one hue lit from two sides.
+>
+> **Measured again on 2026-09-09, and the optimistic half of this sentence did not survive.** It
+> used to read «two worlds still differ, the glaze's base is their own `pal[top]`». They differ
+> much less than that promised: this system's star is `[255,122,82]`, and at noon the star term
+> carries almost the whole light stop, so a pale base and an olive base both come out terracotta.
+> The ice world (`?s=noonice`) went from a blue-grey section with a sandy topsoil band to the same
+> clay as the terran one — physically consistent under a red star, and a real loss of the thing the
+> player reads a world's kind by. Left standing because it is the same fork the author already
+> settled, not a new one; if it is ever reopened, the lever is the illuminant, not the glaze: the
+> star's light through an atmosphere is whiter than its disc, and `starRGB()` is the disc.
 
 A third pass was built to keep both — the albedo painted back with `globalCompositeOperation:
 "color"`, which takes hue and saturation from the source and luminosity from the glaze. It is the

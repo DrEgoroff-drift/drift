@@ -154,9 +154,22 @@ function drawGround(tr,camx,camy,fill,line,pal){
       "|d"+(tr.p?dayKq(tr.p):0)+"|a"+(tr.p?sunAzQ(tr.p):0),top,ch);
     drawChunks(tr.chunks,camx,camy,(g,wx0,wy0)=>{
       GROUND_BAKING=true;
-      /* валуны неподвижны и сложены из той же породы (два прохода материала
-         на каждый) — им место в ломте, а не в кадре: 6–9 мс на ×2 (G0) */
-      try{drawGround(tr,wx0,wy0,fill,line,pal);drawRocks(tr,wx0,wy0,pal);}finally{GROUND_BAKING=false;}
+      /* ── три прохода вместо одного (гризайль P4, M422) ──
+         1. ФОРМА в сером: масса, пласты, зерно, штрих, свет склона;
+         2. ЛЕССИРОВКА: серое v → тень + v·(свет − тень), где тень — цвет неба,
+            а свет — цвет звезды. Два композитных залива, ни одного чтения
+            канвы (readback уронил бы ломоть в программный растр);
+         3. ОТТЕНОК: жилы, лишайник, тлеющие швы — то, чего из светлоты не
+            достать. Идёт ПОСЛЕ лессировки, иначе она бы его перекрасила.
+         Валуны неподвижны и сложены из той же породы — им место в ломте, а не
+         в кадре: 6–9 мс на ×2 (G0). */
+      try{
+        GLAZE_PASS="form";
+        drawGround(tr,wx0,wy0,fill,line,pal);drawRocks(tr,wx0,wy0,pal);
+        glazeGround(tr,wx0,wy0,pal);
+        GLAZE_PASS="hue";
+        drawGround(tr,wx0,wy0,fill,line,pal);drawRocks(tr,wx0,wy0,pal);
+      }finally{GROUND_BAKING=false;GLAZE_PASS="";}
     });
     drawGroundGrass(tr,camx,camy);
     return;
@@ -167,19 +180,30 @@ function drawGround(tr,camx,camy,fill,line,pal){
   P.moveTo(i0*tr.step-camx,tr.h[i0]-camy);
   for(let i=i0;i<=i1;i++)P.lineTo(i*tr.step-camx,tr.h[i]-camy);
   P.lineTo(i1*tr.step-camx,H+10);P.lineTo(i0*tr.step-camx,H+10);P.closePath();
-  ctx.fillStyle=fill;ctx.fill(P);
+  /* в проходе формы силуэт кладётся СВЕТЛОТОЙ той же заливки: цвет придёт
+     лессировкой, и придёт всему разрезу разом, а не одной ленте склона */
+  if(glazeIsForm()){
+    ctx.fillStyle=(pal&&tr.mat)
+      ?greyOf(pal[2],.6*255/Math.max(1,lum3(pal[pal.length-1]))):fill;
+    ctx.fill(P);
+  }
   /* сначала строение (какие слои и где), потом материал (из чего они сложены):
      обратный порядок закрашивал разрез ровным зерном и снова давал «фигуру» */
   if(pal&&tr.p)drawStrata(tr,camx,camy,tr.p,P);
+  /* путь силуэта нужен лессировке — она ляжет ровно по нему */
+  if(glazeIsForm())tr._glazeP=P;
   /* порода: бесшовный тайл-материал вместо плоской заливки (18a-material).
      Заливка под ним остаётся — она держит силуэт, если материала ещё нет. */
-  if(tr.mat)fillMaterial(tr.mat,camx,camy,tr.p?.5:.92,.22,P);
+  if(tr.mat&&glazeIsForm())fillMaterial(tr.mat,camx,camy,tr.p?.5:.92,.22,P);
+  /* плитка событий — жилы, искры, тлеющие швы — после лессировки */
+  if(tr.mat&&glazeIsHue()&&tr.p&&typeof planetMatHue==="function")
+    fillMaterial(planetMatHue(tr.p),camx,camy,.85,0,P);
   /* ── 皴 на обрыве (аудит 10×10, §5): манера штриха дошла до поверхности ──
      Пещера и шахта режут ту же породу с манерой (CUN), а срез под рельефом —
      самая большая площадь дневного кадра — оставался материалом без кисти.
      Тот же ход: штрих вдоль поля направлений, манера из таблицы по типу
      мира. В ломоть, кадру бесплатно. */
-  if(pal&&tr.p&&tr.mat&&typeof CUN!=="undefined"){
+  if(pal&&tr.p&&tr.mat&&glazeIsForm()&&typeof CUN!=="undefined"){
     ctx.save();ctx.clip(P);
     const M=CUN[tr.p.type]||CUN.rocky;
     const stp=26,sd=((tr.p.seed|0)^0x51F);
@@ -195,14 +219,14 @@ function drawGround(tr,camx,camy,fill,line,pal){
       const jx=gx+((hh>>>3)&15)/15*stp-camx, jy=gy+((hh>>>7)&15)/15*stp-camy;
       const light=((hh>>>14)&1);
       if(M.dot){
-        ctx.fillStyle=light?"rgba(255,246,226,"+(M.la*kd).toFixed(3)+")":"rgba(0,0,0,"+(M.da*kd).toFixed(3)+")";
+        ctx.fillStyle=light?"rgba(255,255,255,"+(M.la*kd).toFixed(3)+")":"rgba(0,0,0,"+(M.da*kd).toFixed(3)+")";
         const q=1+((hh>>>11)&1);
         ctx.fillRect(jx,jy,q,q);
         continue;
       }
       const ang=dirAt(gx,gy,sd+0x11,1/300)+(((hh>>>16)&15)/15-.5)*M.jig;
       const ln=(6+((hh>>>11)&7))*M.ln;
-      ctx.strokeStyle=light?"rgba(255,246,226,"+(M.la*kd).toFixed(3)+")":"rgba(0,0,0,"+(M.da*kd).toFixed(3)+")";
+      ctx.strokeStyle=light?"rgba(255,255,255,"+(M.la*kd).toFixed(3)+")":"rgba(0,0,0,"+(M.da*kd).toFixed(3)+")";
       ctx.lineWidth=M.w;
       ctx.beginPath();
       ctx.moveTo(jx-Math.cos(ang)*ln,jy-Math.sin(ang)*ln);
@@ -214,7 +238,7 @@ function drawGround(tr,camx,camy,fill,line,pal){
   /* склон, обращённый к солнцу (вправо-вверх), светлее; в тень — темнее.
      Простое псевдо-освещение по наклону вместо одной плоской заливки.
      Полосы полупрозрачные: непрозрачные закрашивали материал обратно в фигуру. */
-  if(pal&&i1>i0){
+  if(pal&&i1>i0&&glazeIsForm()){
     const stripD=66;
     /* свет считается от звезды и от неба (19c-light), а не по константе
        «вправо-вверх светлее»: у токсичного мира тени зелёные, у ледяного
@@ -224,13 +248,21 @@ function drawGround(tr,camx,camy,fill,line,pal){
     /* прямой свет по дневному ключу: полдень ~.96, заря ~.45 — в полдень
        склоны к солнцу горят, а тени остаются цветными от неба */
     const df=tr.p?(.40+.58*dayKq(tr.p)):.78;
+    /* верх шкалы серого прохода — полностью освещённая поверхность (d=1) */
+    const lumFull=Math.max(1,lum3([0,1,2].map(q=>P0[q]*(k*amb[q]/255+df*sun[q]/255))));
     for(let i=i0;i<i1;i++){
       const x0=i*tr.step-camx,x1=(i+1)*tr.step-camx;
       if(x1<-4||x0>W+4)continue;
       const y0=tr.h[i]-camy,y1=tr.h[i+1]-camy;
       const slope=clamp((tr.h[i+1]-tr.h[i])/tr.step,-2.5,2.5);
+      /* ── свет склона тоже стал светлотой (гризайль) ──
+         Это было ЕДИНСТВЕННОЕ место разреза, где свет считался по-настоящему
+         (`litRGB`), и клалось оно поверх материала одной лентой. Теперь то же
+         число ложится серым, а цвет ему даёт лессировка — и достаётся он
+         всему разрезу, а не ленте. */
       const c=litRGB(P0,slope,null,sun,amb,k,df);
-      ctx.fillStyle="rgba("+c[0]+","+c[1]+","+c[2]+","+(tr.mat?.42:1)+")";
+      ctx.fillStyle=(pal&&tr.mat)?greyA(255*clamp(lum3(c)/lumFull,0,1),.42)
+        :"rgba("+c[0]+","+c[1]+","+c[2]+","+(tr.mat?.42:1)+")";
       ctx.beginPath();
       ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.lineTo(x1,y1+stripD);ctx.lineTo(x0,y0+stripD);
       ctx.closePath();ctx.fill();
@@ -245,15 +277,26 @@ function drawGround(tr,camx,camy,fill,line,pal){
   if(tr.mat){
     ctx.save();ctx.clip(P);
     const dg=ctx.createLinearGradient(0,Math.max(0,(GROUND_BAKING?tr.hMin:tr.h[i0])-camy-40),0,H);
+    /* ── глубина мягче, чем была (гризайль M422) ──
+       Чёрный размыв гасил ВСЕ каналы поровну: цвет от этого не уезжал, а
+       светлота уезжала — и раньше это было неважно, потому что низ разреза
+       держался на оттенке. В гризайли держаться больше не на чем: при .88
+       зерно, трещины и пласты внизу пропадали вовсе. Ослабляем — глубину
+       теперь и без того называет лессировка, оставляя там один свет неба. */
     dg.addColorStop(0,"rgba(0,0,0,0)");
-    dg.addColorStop(.45,"rgba(0,0,0,.42)");
-    dg.addColorStop(1,"rgba(0,0,0,.88)");
+    dg.addColorStop(.45,"rgba(0,0,0,.30)");
+    dg.addColorStop(1,"rgba(0,0,0,.66)");
     ctx.fillStyle=dg;ctx.fillRect(0,0,W,H);
     ctx.restore();
   }
   if(line){
-    /* корка: светлая кромка поверх тёмного тела породы */
-    ctx.strokeStyle=line;ctx.lineWidth=1.4;ctx.stroke(P);
+    /* корка: светлая кромка поверх тёмного тела породы. В гризайли она тоже
+       светлота — цвет ей даст лессировка вместе со всем разрезом */
+    ctx.strokeStyle=(pal&&tr.mat&&glazeIsForm())
+      ?greyA(greyStretch(lum3(pal[Math.min(pal.length-1,4)])*255/
+             Math.max(1,lum3(pal[pal.length-1]))),1)
+      :line;
+    ctx.lineWidth=1.4;ctx.stroke(P);
     ctx.save();ctx.clip(P);
     ctx.strokeStyle="rgba(255,255,255,.09)";ctx.lineWidth=7;
     ctx.beginPath();
@@ -347,9 +390,11 @@ function drawRocks(tr,camx,camy,pal){
     const y=groundAt(tr,k.x)-camy;
     /* контактная тень: без неё валун лежит поверх грунта, а не на нём.
        Смещена в сторону от солнца (оно справа сверху) и вытянута по земле. */
-    ctx.save();ctx.globalAlpha=.7;
-    groundShadow(x-k.rad*.35,y+1.5,k.rad*1.5,Math.max(2.2,k.rad*.3));
-    ctx.restore();
+    if(glazeIsForm()){
+      ctx.save();ctx.globalAlpha=.7;
+      groundShadow(x-k.rad*.35,y+1.5,k.rad*1.5,Math.max(2.2,k.rad*.3));
+      ctx.restore();
+    }
     ctx.save();ctx.translate(x,y-k.rad*.42);
     if(k.flip)ctx.scale(-1,1);
     const c0=pal[2],c1=pal[4];
@@ -370,27 +415,37 @@ function drawRocks(tr,camx,camy,pal){
       }
     }
     RP.closePath();
-    const g=ctx.createLinearGradient(0,-k.rad,0,k.rad);
-    g.addColorStop(0,"rgb("+Math.round(lerp(c0[0],c1[0],t)*.9)+","+
-      Math.round(lerp(c0[1],c1[1],t)*.9)+","+Math.round(lerp(c0[2],c1[2],t)*.9)+")");
-    g.addColorStop(1,"rgb("+Math.round(c0[0]*.32)+","+Math.round(c0[1]*.32)+","+
-      Math.round(c0[2]*.32)+")");
-    ctx.fillStyle=g;ctx.fill(RP);
-    /* та же порода, что под ногами: валун из другого материала выглядит
-       принесённым из другой игры */
-    if(tr.mat)fillMaterial(tr.mat,camx-x,camy-y+k.rad*.42,.5,.35,RP,
-      {x:-k.rad*1.4,y:-k.rad*1.4,w:k.rad*2.8,h:k.rad*2.8});
-    ctx.strokeStyle="rgba(0,0,0,.35)";ctx.lineWidth=1;ctx.stroke(RP);
-    if(k.rad>7){   // скол на крупных валунах
-      ctx.strokeStyle="rgba(255,255,255,.10)";
-      ctx.beginPath();ctx.moveTo(P[1][0],P[1][1]);ctx.lineTo(P[3][0]*.3,P[3][1]*.3);ctx.stroke();
+    if(glazeIsForm()){
+      /* верх валуна светлее низа — это и есть вся его форма; цвет придёт
+         лессировкой вместе с грунтом, и камень перестанет быть «другой
+         породой», покрашенной своей парой ступеней палитры (гризайль M422) */
+      const nk=255/Math.max(1,lum3(pal[pal.length-1]));
+      const g=ctx.createLinearGradient(0,-k.rad,0,k.rad);
+      g.addColorStop(0,greyOf([lerp(c0[0],c1[0],t),lerp(c0[1],c1[1],t),lerp(c0[2],c1[2],t)],.9*nk));
+      g.addColorStop(1,greyOf(c0,.32*nk));
+      ctx.fillStyle=g;ctx.fill(RP);
+      /* та же порода, что под ногами: валун из другого материала выглядит
+         принесённым из другой игры */
+      if(tr.mat)fillMaterial(tr.mat,camx-x,camy-y+k.rad*.42,.5,.35,RP,
+        {x:-k.rad*1.4,y:-k.rad*1.4,w:k.rad*2.8,h:k.rad*2.8});
+      ctx.strokeStyle="rgba(0,0,0,.35)";ctx.lineWidth=1;ctx.stroke(RP);
+      if(k.rad>7){   // скол на крупных валунах
+        ctx.strokeStyle="rgba(255,255,255,.10)";
+        ctx.beginPath();ctx.moveTo(P[1][0],P[1][1]);ctx.lineTo(P[3][0]*.3,P[3][1]*.3);ctx.stroke();
+      }
+    }else if(tr.mat&&tr.p&&typeof planetMatHue==="function"){
+      /* жилы и искры того же камня — после лессировки */
+      fillMaterial(planetMatHue(tr.p),camx-x,camy-y+k.rad*.42,.85,0,RP,
+        {x:-k.rad*1.4,y:-k.rad*1.4,w:k.rad*2.8,h:k.rad*2.8});
     }
     /* ── лишайник на валуне ВЫРАЩЕН (аудит 10×10, §10) ──
        Живые миры зарастают: пещера растит лишайник с M262, а валун наверху —
        у самого света и влаги — оставался голым. Тот же дифференциальный рост
        (growLichen, 22a), контур сплюснут по верхней грани камня, клип по
        телу валуна; красится палитрой мира. Печётся в ломоть — кадру даром. */
-    if(k.rad>8&&tr.p&&["terran","jungle","ocean","toxic"].indexOf(tr.p.type)>=0
+    /* лишайник — событие со своим цветом: он зелёный на любой породе, и
+       лессировка его бы усреднила. Поэтому он в проходе оттенка (M422) */
+    if(k.rad>8&&tr.p&&glazeIsHue()&&["terran","jungle","ocean","toxic"].indexOf(tr.p.type)>=0
        &&typeof growLichen==="function"){
       const rl=rng(hashi(Math.floor(k.x),0x11C4,tr.p.seed|0));
       if(rl()<.6){
