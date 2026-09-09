@@ -487,6 +487,10 @@ to it: the underpainting is written **more contrasty than the finished thing** (
 scale; and the shadow floor **walks with the day** — .28 at noon, where the sky cannot reach into
 a crack past the lit rock, and 1 at midnight, where the sky is the only light and there is nothing
 to occlude it. The flat floor made the night a black void with one lit island, `tones` 6 → 4.
+The row's last consumer, `07-planet`, followed in 0.422.0 (M435): the disc's day-side lift was a
+constant `235,240,245` and its limb a constant `130,180,210` on every world with a surface, air or
+no air — the same defect the cross-section had before M242. The lift is now the star's colour and
+the limb is the world's own daylight sky, absent where there is no atmosphere to scatter it.
 
 ### What it is
 

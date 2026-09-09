@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 515 · символов верхнего уровня: 4851
+Файлов: 517 · символов верхнего уровня: 4851
 
 ## СИМВОЛЫ
 
@@ -1242,7 +1242,7 @@ drawDigFauna                 src/23-mode-dig.js:313
 drawDigWorld                 src/23a-dig-draw.js:45
 drawDronesMap                src/12e-drone-flight.js:310
 drawDronesSystem             src/12e-drone-flight.js:224
-drawDustMotes                src/19-mode-landing.js:643
+drawDustMotes                src/19-mode-landing.js:267
 drawElevator                 src/20aa-poi-shapes.js:91
 drawExhaust                  src/16a-space.js:360
 drawFactory                  src/20aa-poi-shapes.js:378
@@ -1256,9 +1256,9 @@ drawFoeBody                  src/24ab-raid-foe.js:10
 drawForeground               src/21b-surface-deco.js:278
 drawGlassHUD                 src/24-mode-belt.js:717
 drawGlyph                    src/12t-settle.js:59
-drawGround                   src/19-mode-landing.js:134
-drawGroundCrumbs             src/19-mode-landing.js:365
-drawGroundGrass              src/19-mode-landing.js:378
+drawGround                   src/19-mode-landing-ground.js:11
+drawGroundCrumbs             src/19-mode-landing-ground.js:242
+drawGroundGrass              src/19-mode-landing-ground.js:255
 drawHitFx                    src/18d-postfx.js:45
 drawHoldMods                 src/12ad-site.js:362
 drawHomeIn                   src/29d-home-draw.js:9
@@ -1270,7 +1270,7 @@ drawHullMarks                src/03b-hull-paint.js:184
 drawKitFigure                src/12x-suit.js:202
 drawLander                   src/19f-lander.js:52
 drawLandGear                 src/19f-lander.js:26
-drawLanding                  src/19-mode-landing.js:657
+drawLanding                  src/19-mode-landing.js:281
 drawLoreMarks                src/12q-lore.js:235
 drawLuxeDeck                 src/03c-hull-luxe.js:109
 drawLuxeSkin                 src/03c-hull-luxe.js:27
@@ -1297,7 +1297,7 @@ drawRaid                     src/24aa-raid-draw.js:14
 drawRing                     src/17c-system-draw.js:4
 drawRingTape                 src/11x-ring.js:107
 drawRoad                     src/27l-road-draw.js:87
-drawRocks                    src/19-mode-landing.js:417
+drawRocks                    src/19-mode-landing-ground.js:294
 drawRouteMap                 src/12r-route.js:267
 drawRungRing                 src/12ae-ladder.js:73
 drawScoop                    src/19a-mode-scoop.js:266
@@ -1305,7 +1305,7 @@ drawSeams                    src/12s-wear.js:184
 drawShuttleArc               src/17f-sys-traffic.js:36
 drawSkyBase                  src/19c-light.js:296
 drawSkyBodies                src/19b-sky.js:96
-drawSkyLayer                 src/19-mode-landing.js:543
+drawSkyLayer                 src/19-mode-landing.js:167
 drawSpa                      src/29i-spa-draw.js:41
 drawSpaceDust                src/16a-space.js:275
 drawStarBody                 src/16a-space.js:459
@@ -1675,7 +1675,7 @@ genPart                      src/05-parts.js:144
 genPlant                     src/20-life.js:189
 genPOI                       src/20a-poi.js:32
 genRaid                      src/24a-mode-raid.js:30
-genTerrain                   src/07-planet.js:440
+genTerrain                   src/07a-terrain.js:73
 genUniqueShip                src/03-ships.js:16
 GEO_FAULT                    src/18b-geology.js:91
 GEO_KIND                     src/18b-geology.js:13
@@ -1777,9 +1777,9 @@ grokTake                     src/12tb-grok.js:100
 grokTeach                    src/12tb-grok.js:144
 grokTick                     src/12tb-grok.js:75
 grokWant                     src/12tb-grok.js:41
-GROUND_BAKING                src/19-mode-landing.js:363
-groundAt                     src/07-planet.js:566
-groundShadow                 src/19-mode-landing.js:527
+GROUND_BAKING                src/19-mode-landing-ground.js:240
+groundAt                     src/07a-terrain.js:199
+groundShadow                 src/19-mode-landing.js:151
 GROVE_ETHER                  src/11j-grove.js:23
 groveAll                     src/11j-grove.js:29
 groveDepthAt                 src/11j-grove.js:30
@@ -2326,7 +2326,7 @@ KMAP_BELT                    src/15-input.js:113
 labCount                     src/12h-relic.js:16
 labStaffed                   src/12h-relic.js:27
 labWorking                   src/12h-relic.js:32
-LAND_ARC                     src/07-planet.js:416
+LAND_ARC                     src/07a-terrain.js:49
 LAND_GY                      src/19f-lander.js:10
 landerGearTick               src/19f-lander.js:15
 landerInk                    tests/91j-art.js:156
@@ -3244,7 +3244,7 @@ planDeliver                  src/11r-plan.js:67
 planDepthAt                  src/11r-plan.js:28
 planDepthHere                src/11r-plan.js:34
 planEndless                  src/11r-plan.js:54
-PLANET_BAKE_ANG              src/07-planet.js:303
+PLANET_BAKE_ANG              src/07-planet.js:323
 PLANET_BARGE                 src/12n-planet.js:17
 PLANET_CAP                   src/12n-planet.js:16
 PLANET_FULL                  src/12n-planet.js:14
@@ -3254,21 +3254,21 @@ PLANET_SPIN                  src/07-planet.js:32
 planetBargeLoad              src/12n-planet.js:108
 planetBargeRow               src/12n-planet.js:145
 planetBiome                  src/20-life.js:161
-planetCols                   src/07-planet.js:235
-planetDraw                   src/07-planet.js:330
+planetCols                   src/07-planet.js:255
+planetDraw                   src/07-planet.js:350
 planetGrant                  src/12n-planet.js:25
-planetHasLife                src/07-planet.js:428
+planetHasLife                src/07a-terrain.js:61
 planetHaul                   src/12n-planet.js:67
-planetHeightAt               src/07-planet.js:432
+planetHeightAt               src/07a-terrain.js:65
 planetHere                   src/12n-planet.js:61
 planEtherLine                src/11r-plan.js:43
-planetLight                  src/07-planet.js:199
+planetLight                  src/07-planet.js:210
 planetLightsN                src/17e-station-body.js:39
 planetLoadSum                src/12n-planet.js:122
 planetMat                    src/18a-material.js:99
 planetMatHue                 src/18a-material.js:363
 planetMatNow                 src/18a-material.js:120
-planetPaint                  src/07-planet.js:252
+planetPaint                  src/07-planet.js:272
 planetPeriod                 src/07-planet.js:37
 planetReady                  src/12n-planet.js:19
 planetRender                 src/12n-planet.js:155
@@ -3283,10 +3283,10 @@ planetStripChunk             src/07-planet.js:105
 planetStripSeekRow           src/07-planet.js:98
 planetStripStart             src/07-planet.js:85
 planetStripTick              src/07-planet.js:160
-planetSunRot                 src/07-planet.js:307
+planetSunRot                 src/07-planet.js:327
 planetTakeLoad               src/12n-planet.js:126
 planetTick                   src/12n-planet.js:44
-planetWetAt                  src/07-planet.js:423
+planetWetAt                  src/07a-terrain.js:56
 planGroundLine               src/11r-plan.js:47
 planIsCore                   src/11r-plan.js:41
 planIsCoreT                  src/11r-plan.js:42
@@ -3611,7 +3611,7 @@ relicSlotOpen                src/12h-relic.js:71
 relicSynth                   src/12h-relic.js:113
 relicUnequip                 src/12h-relic.js:87
 RELIEF_KEYS                  src/02a-worldmix.js:79
-RELIEF_MIX                   src/07-planet.js:383
+RELIEF_MIX                   src/07a-terrain.js:16
 renderAlbum                  src/25g-postcard.js:678
 renderBarge                  src/12l-barge.js:670
 renderBaseLink               src/21a2-base-link.js:137
@@ -4099,7 +4099,7 @@ skyField                     src/19b-sky.js:542
 skyFind                      src/11ak-skywatch.js:47
 skyGalaxy                    src/19b-sky.js:373
 skyGiant                     src/19b-sky.js:222
-skyGrad                      src/19-mode-landing.js:510
+skyGrad                      src/19-mode-landing.js:134
 skyHole                      src/19b-sky.js:396
 skyMoon                      src/19b-sky.js:462
 skyNameComet                 src/11ak-skywatch.js:186
@@ -4944,12 +4944,15 @@ zooTick                      src/11ad-zoo.js:41
 ## src/06c-regions.js · 6 КБ
   · таблица областей: пятнадцать тем на одной решётке:1
 
-## src/07-planet.js · 38 КБ
+## src/07-planet.js · 27 КБ
   · текстуры планет:1
   · вращение:8
-  · рельеф:377
-  · рельеф:378
-  · где сел — то и видел:402
+
+## src/07a-terrain.js · 14 КБ
+  · планета: рельеф:1
+  · рельеф:10
+  · рельеф:11
+  · где сел — то и видел:35
 
 ## src/08-state.js · 17 КБ
   · состояние:1
@@ -5493,7 +5496,10 @@ zooTick                      src/11ad-zoo.js:41
 ## src/18d-verlet.js · 7 КБ
   · верле: верёвки и ткань:1
 
-## src/19-mode-landing.js · 50 КБ
+## src/19-mode-landing-ground.js · 25 КБ
+  · посадка: разрез грунта:1
+
+## src/19-mode-landing.js · 26 КБ
   · посадка:1
 
 ## src/19a-mode-scoop.js · 37 КБ

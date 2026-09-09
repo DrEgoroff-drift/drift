@@ -304,8 +304,13 @@ main release, as M360a/M369b were.
   lack is not a cache but a *static illuminant*: underground there is no sky and no star, the
   light is the lamp and the moss, drawn live over the tile (`drawCaveOwnLight`, the M304 §16
   glazes). A per-tile glaze has no `light` stop to compute there, so P4 is complete where a sky
-  exists. The one open consumer from the P4 row is `07-planet`'s disc, which lights itself through
-  `planetLight` — worth a look, not a defect.
+  exists. ~~The one open consumer from the P4 row is `07-planet`'s disc~~ — **M435 (0.422.0)**: the
+  disc's day side is now lit in the star's colour and its limb glows in its own daylight sky
+  (`sky[0]` lifted toward white); airless worlds have no limb glow at all, a gas giant is rimmed
+  by its palette; the light bake is keyed by the star. The P4 row is closed end to end. Same
+  release: `19-mode-landing` (50 KB) cut at its seam into `19-mode-landing-ground` (the three-pass
+  section painters, crumbs, grass, boulders), and `07-planet` (40.6 KB after M435's own note) into
+  `07a-terrain` (`RELIEF_MIX`, `LAND_ARC`, `genTerrain`, `groundAt`).
 
 - ~~**M433 evening arrives: the ground shadows itself**~~ - 0.421.0: P5 of the combined plan,
   built on the surface. `src/19c1-cast.js` marches a ray from every sample of the profile toward

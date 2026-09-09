@@ -7,6 +7,24 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.422.0 (M435) - the planet is lit by its star and rimmed by its own sky
+
+The last consumer named in the grisaille row. Seen from orbit, a planet's day side was lifted
+by a constant near-white and its limb glowed the same blue on every world that has a surface -
+on the airless rock as on the ocean world. The lift is now the colour of the star (the same
+`starRGB` that lights the ground since 0.420.0), the limb is the world's own daylight sky
+lifted toward white, a gas giant is rimmed by the top of its palette, and a world with no
+atmosphere has no limb glow at all: there is nothing there to scatter, and its terminator is
+the sharper for it. The light bake carries the star in its key, so a planet seen under a
+different star is baked again.
+
+Housekeeping in the same release: two files cut at their seams. `19-mode-landing` had grown to
+50 KB and now keeps the descent, the sky and the frame, while the cross-section painters -
+the three-pass bake, crumbs, grass, boulders - live in `19-mode-landing-ground`; `07-planet`
+keeps the orbit view and hands the relief - `RELIEF_MIX`, `LAND_ARC`, `genTerrain`,
+`groundAt` - to `07a-terrain`. Nothing moved but text; the build orders them by bytes.
+
+---
 ## 0.421.1 (M434) - what stands in the shadow goes into it
 
 0.421.0 put the evening on the ground and left everything standing on it in the noon: a bush,

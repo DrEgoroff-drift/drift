@@ -651,6 +651,14 @@ the alpha restored by `destination-in` — zero pixel readback, because reading 
 software rasterisation (the `prof()` rule). The LUT the plan originally proposed would have read
 and written half a million pixels per chunk.
 
+**Addendum, 0.422.0 (M435) — the disc from orbit.** The row named `07-planet` as the other
+consumer, and it had the same defect the cross-section had before M242: the day-side lift was a
+constant near-white and the limb a constant blue on every world with a surface, air or no air.
+Now the lift is the star and the limb is the world's own daylight sky, absent where there is no
+atmosphere. The meter does not see it — a disc is a few dozen pixels of a system frame, and the
+`system` row is unchanged at 9/6/.31/5 — and it is recorded here for the same reason the ice
+frame is: the almanac keeps what the meter cannot weigh.
+
 ## Issue VII — 2026-09-09 (0.421.0) — evening arrives: the ground shadows itself
 
 Opened by M433, the first craft phase after the ten laws (P5 in the combined plan). Issue VI gave

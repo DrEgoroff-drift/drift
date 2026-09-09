@@ -1759,7 +1759,7 @@ body.table u.addr{color:#7a4a20}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.421.1";
+const VER="0.422.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -7901,14 +7901,34 @@ function planetStrip(p,lvl){
    краю. Формула та же, что была в текстуре; разница в том, что накладки не
    вращаются, поэтому пекутся один раз на планету. Край диска сглаживается по
    альфе — прежняя резкая обрезка и давала ту самую лесенку на большой планете. */
+/* ── диск освещён СВОЕЙ звездой и обведён СВОИМ небом (M435, хвост P4) ──
+   Накладка света пеклась двумя константами: подсветка дневной стороны
+   235,240,245 — почти белая, ободок 130,180,210 — один и тот же голубой на
+   всякой планете, у которой есть поверхность, включая те, у которых нет
+   воздуха. Тот же изъян, что был у грунта до M242/M432: свет знал форму, но не
+   знал ни звезды, ни неба. Теперь дневная сторона подсвечивается цветом
+   звезды (`starRGB`, нормированный по светлоте), ободок — рассеянием в
+   атмосфере, то есть дневным небом этого мира (`sky[0]`, поднятым к белому),
+   а у безвоздушных ободка нет вовсе: рассеивать нечем, и терминатор у них
+   резче. Газовый гигант обводится верхней ступенью своей палитры. Ключ кэша
+   несёт и звезду: планета, увиденная под другой звездой, печётся заново. */
 function planetLight(p,lvl){
-  if(p.lite&&p.liteLvl>=lvl)return p.lite;
+  const sunC=(typeof starRGB==="function")?starRGB():[255,244,214];
+  const sunMax=Math.max(1,sunC[0],sunC[1],sunC[2]);
+  const sn=[sunC[0]*255/sunMax,sunC[1]*255/sunMax,sunC[2]*255/sunMax];
+  const liteKey=lvl+"|"+(sn[0]|0)+","+(sn[1]|0)+","+(sn[2]|0);
+  if(p.lite&&p.liteLvl>=lvl&&p.liteSun===liteKey.slice(liteKey.indexOf("|")+1))return p.lite;
   const S=PLANET_RES[lvl];
   const sh=document.createElement("canvas");sh.width=sh.height=S;
   const rim=document.createElement("canvas");rim.width=rim.height=S;
   const gs=sh.getContext("2d"),gr=rim.getContext("2d");
   const is=gs.createImageData(S,S),ir=gr.createImageData(S,S);
   const ds=is.data,dr=ir.data,gas=p.type==="gas";
+  const airless=!gas&&!!(p.T&&p.T.atm==="отсутствует");
+  /* цвет ободка: дневное небо мира, поднятое к белому; у гиганта — палитра */
+  const sk=(p.T&&((gas&&p.T.pal&&p.T.pal[p.T.pal.length-1])||(p.T.sky&&p.T.sky[0])))||[130,180,210];
+  const rc=[lerp(sk[0],255,.35),lerp(sk[1],255,.35),lerp(sk[2],255,.35)];
+  const rimK=airless?0:(gas?.5:.34);
   for(let py=0;py<S;py++)for(let px=0;px<S;px++){
     const o=(py*S+px)*4;
     const nx=(px+.5)/S*2-1,ny=(py+.5)/S*2-1,r2=nx*nx+ny*ny;
@@ -7922,16 +7942,16 @@ function planetLight(p,lvl){
        Накладка тенью так не умеет, поэтому избыток уходит в добавляемый слой,
        иначе дневная сторона выходит бледнее, чем была */
     const up=clamp(k-1,0,1)*.9;
-    const r=Math.pow(1-nz,4)*(gas?.5:.34);
-    dr[o]=clamp(130*r+235*up,0,255);
-    dr[o+1]=clamp(180*r+240*up,0,255);
-    dr[o+2]=clamp(210*r+245*up,0,255);
+    const r=Math.pow(1-nz,4)*rimK;
+    dr[o]=clamp(rc[0]*r+sn[0]*up,0,255);
+    dr[o+1]=clamp(rc[1]*r+sn[1]*up,0,255);
+    dr[o+2]=clamp(rc[2]*r+sn[2]*up,0,255);
     dr[o+3]=255*clamp(r+up,0,1);
     const edge=clamp((1-Math.sqrt(r2))*S*.5,0,1);
     ds[o+3]*=edge;dr[o+3]*=edge;
   }
   gs.putImageData(is,0,0);gr.putImageData(ir,0,0);
-  p.lite={sh,rim};p.liteLvl=lvl;return p.lite;
+  p.lite={sh,rim};p.liteLvl=lvl;p.liteSun=liteKey.slice(liteKey.indexOf("|")+1);return p.lite;
 }
 /* ── полоски ──
    Долгота левого края полоски и её ширина в пикселях развёртки зависят только
@@ -8078,6 +8098,15 @@ function planetDraw(p,x,y,r){
      одного вызова, зато тело плывёт непрерывно. */
   ctx.drawImage(p.disc,x-rr,y-rr);
 }
+
+/* ══════════════ планета: рельеф ══════════════
+   Отрезано от `07-planet` 09.09.2026: файл перерос 40 КБ, и внутри у него лежали
+   рядом две работы — как планета выглядит с орбиты (развёртка, свет, диск) и
+   из чего сложена её поверхность под ногами. Здесь второе: смесь рельефов по
+   типу мира, дуга долготы, сырость, высота, `genTerrain` и `groundAt`.
+   Порядок склейки: после `07-planet.js`; таблицы `RELIEF_MIX` и `LAND_ARC`
+   читаются только изнутри функций, поэтому порядок им безразличен. */
+
 
 /* ══════════════ рельеф ══════════════ */
 /* ══════════════ рельеф ══════════════ */
@@ -47562,139 +47591,16 @@ function vRopeAt(B,t){
   return {x:a.x+(b.x-a.x)*k, y:a.y+(b.y-a.y)*k};
 }
 
-/* ══════════════ посадка ══════════════ */
-function startLanding(p){
-  /* ── с какой стороны зашёл, туда и сядешь ──
-     Раньше место посадки не зависело ни от чего: рельеф считался по одному
-     seed, и подойти к планете с другой стороны значило увидеть ровно ту же
-     местность. Теперь долгота берётся из геометрии подхода — угол от центра
-     планеты на корабль, — а из неё вычитается текущий поворот планеты: за
-     сутки под кораблём проезжает вся поверхность, и один и тот же мир на
-     разных заходах встречает разным местом. */
-  let lon=null;
-  if(G.ship&&typeof p.x==="number"){
-    const app=Math.atan2(G.ship.y-p.y,G.ship.x-p.x);
-    const spin=(typeof planetSpinFrame==="function")
-      ? planetSpinFrame(p)/PLANET_SPIN*TAU : 0;
-    lon=app-spin;
-  }
-  const tr=genTerrain(p,lon),r=rng(p.seed^0x77);
-  tr.lon=lon;
-  /* достопримечательности вписываются в рельеф до того, как по нему расставят
-     залежи и флору: они выравнивают под собой грунт (20a-poi) */
-  genPOI(tr,p);
-  /* средний масштаб раскладывается после построек: он обходит их стороной,
-     а рельеф под ними к этому моменту уже выровнен (21b-surface-deco) */
-  genDeco(tr,p);
-  G.ap=null;
-  const x0=tr.padX+(r()-.5)*(G.opts.easyLand?900:640);
-  G.land={p,tr,x:x0,y:landStartY(tr,x0),
-    vx:(r()-.5)*1.3,vy:.35,a:0,gear:0,sq:0,sqv:0,hot:0,
-    g:.019+p.T.grav*.016+p.radius*.00012,over:0,ok:false,auto:G.opts.easyLand};
-  G.mode="landing";
-  say((G.opts.easyLand?"Автоматический заход":"Заход")+" на "+p.name+
-    "\nтяготение "+p.T.grav.toFixed(2)+"g");
-}
-/* высота начала захода (M327): было 110 при любом рельефе — на рваных мирах
-   старт в ±450 м от площадки попадал ВНУТРЬ горы, и «автопосадка» разбивалась
-   на первом кадре (тест 91zzzb: slope 66…124 при vx старта). Теперь старт не
-   ниже 150 над самой высокой точкой пути до площадки */
-function landStartY(tr,x){
-  let ridge=groundAt(tr,x);
-  const step=Math.sign(tr.padX-x)*16||16;
-  for(let xx=x;Math.abs(tr.padX-xx)>8&&Math.abs(xx-x)<1400;xx+=step)ridge=Math.min(ridge,groundAt(tr,xx));
-  return Math.min(110,ridge-150);
-}
-function autoLandInputs(L,st){
-  /* примитивный, но надёжный автопилот посадки */
-  const dx=L.tr.padX-L.x;
-  const wantVx=clamp(dx*.012,-1.6,1.6);
-  const ex=wantVx-L.vx;
-  const wantA=clamp(ex*1.5,-.5,.5);
-  L.a+=clamp(wantA-L.a,-.045,.045);
-  /* высота — над САМОЙ ВЫСОКОЙ точкой пути до площадки, а не над тем, что под
-     ногами (M327). Автор: «при автопосадке на спутник газового гиганта корабль
-     разбивался». Тест 91zzzb показал: на рваных мирах (вулканический,
-     каменистый) заход сбоку со снижением .35 втыкался в склон за 300 м до
-     площадки — slope 28…124 при vx 1.5. Пока далеко — держим ~70 над гребнем
-     пути и можем набирать высоту; снижение по-настоящему — только над площадкой */
-  const far=Math.abs(dx)>140;
-  let ridge=groundAt(L.tr,L.x);
-  if(far){
-    const step=Math.sign(dx)*16;
-    for(let x=L.x;Math.abs(L.tr.padX-x)>8&&Math.abs(x-L.x)<1400;x+=step)ridge=Math.min(ridge,groundAt(L.tr,x));
-  }
-  const alt=(far?ridge:groundAt(L.tr,L.x))-L.y-11;
-  const wantVy=far?clamp((alt-70)*.02,-1.2,1.0):clamp(alt*.02,.25,2.6);
-  const thrust=(L.vy>wantVy)||(alt<40&&L.vy>.7);
-  return {thrust,brake:Math.abs(dx)<50&&alt<120&&Math.abs(L.vx)>.25};
-}
-function updateLanding(dt){
-  const L=G.land,tr=L.tr,st=stat();
-  document.getElementById("dronebtn").style.display="none";
-  /* шасси и амортизаторы живут своей жизнью и в момент касания тоже: пока идёт
-     `over`, физика уже стоит, а стойки ещё проседают и отдают — из этого и
-     складывается посадка как движение, а не как подмена картинки */
-  landerGearTick(L,dt);
-  if(L.over>0){
-    L.over-=dt;
-    if(L.over<=0){
-      if(L.ok)enterSurface();
-      else{
-        G.mode="system";
-        G.ship.x=L.p.x+Math.cos(L.p.ang)*(L.p.radius+140);
-        G.ship.y=L.p.y+Math.sin(L.p.ang)*(L.p.radius+140);
-        G.ship.vx=0;G.ship.vy=0;
-        if(G.hull<=0)wreck();
-      }
-    }
-    return;
-  }
-  let inThr=keys.thrust,inBrk=keys.brake,inL=keys.left,inR=keys.right;
-  if(L.auto){
-    const ai=autoLandInputs(L,st);
-    inThr=ai.thrust;inBrk=ai.brake;inL=inR=false;
-    G.prompt="АВТОМАТИЧЕСКАЯ ПОСАДКА · "+Math.max(0,Math.round(groundAt(tr,L.x)-L.y-11))+" м";
-  }
-  if(inL)L.a-=.05*st.turn*dt;
-  if(inR)L.a+=.05*st.turn*dt;
-  L.a=clamp(L.a,-1.5,1.5);
-  if(inThr&&G.fuel>0){
-    L.vx+=Math.sin(L.a)*.06*st.thr*dt;
-    L.vy-=Math.cos(L.a)*.06*st.thr*dt;
-    G.fuel=Math.max(0,G.fuel-.048*dt);
-  }
-  if(inBrk&&G.fuel>0){
-    L.vx*=Math.pow(.90,dt);L.a*=Math.pow(.93,dt);
-    if(L.vy>.4)L.vy-=.014*dt;
-    G.fuel=Math.max(0,G.fuel-.03*dt);
-  }
-  L.thrOn=inThr&&G.fuel>0;
-  L.vy+=L.g*dt;L.vx*=.999;
-  L.x+=L.vx*dt;L.y+=L.vy*dt;
-  L.x=clamp(L.x,40,tr.W-40);
-  const gy=groundAt(tr,L.x),sp=Math.hypot(L.vx,L.vy);
-  if(!L.auto)
-    G.prompt="ВЫСОТА "+Math.max(0,Math.round(gy-L.y-11))+"  ВЕРТ "+L.vy.toFixed(2)+
-      "  ГОР "+Math.abs(L.vx).toFixed(2);
-  if(L.y+11>=gy){
-    L.y=gy-11;
-    const slope=Math.abs(groundAt(tr,L.x+18)-groundAt(tr,L.x-18));
-    const tol=(G.tech.has("cera")?1.4:1)*(L.auto?3:1);
-    const ok=L.vy<2.15*tol&&Math.abs(L.vx)<1.05*tol&&Math.abs(L.a)<.26*tol&&slope<9*tol;
-    L.touch={vy:+L.vy.toFixed(2),vx:+L.vx.toFixed(2),a:+L.a.toFixed(2),slope:+slope.toFixed(1),tol};  /* что было в момент касания (тест 91zzzb) */
-    L.ok=ok;L.over=70;L.vx=0;L.vy=0;
-    /* удар: стойки проседают тем глубже, чем жёстче пришли, и отдают пружиной */
-    L.gear=1;L.sq=Math.min(1,.3+sp*.3);L.sqv=0;L.hot=1;
-    if(ok)say("Посадка выполнена");
-    else{
-      const dmg=(18+Math.min(42,sp*11))/tol;
-      G.hull=Math.max(0,G.hull-dmg);
-      if(typeof hitFx==="function")hitFx(1);
-      say("Крушение\nкорпус −"+Math.round(dmg));
-    }
-  }
-}
+/* ══════════════ посадка: разрез грунта ══════════════
+   Отрезано от `19-mode-landing` 09.09.2026: файл дорос до 50 КБ, и внутри у него
+   лежали рядом две работы — сама посадка (спуск, автопилот, кадр) и то, как
+   пишется разрез под ней. Здесь второе: drawGround с тремя проходами пекла
+   (форма, лессировка, оттенок — 18a1), крошка и трава на кромке, валуны.
+   Небо, тень-контакт, пыль и сам кадр посадки остались в `19-mode-landing`.
+   Порядок склейки: этот модуль стоит ПЕРЕД `19-mode-landing.js` (дефис раньше
+   точки), и это не важно — здесь одни функции и `let GROUND_BAKING`, который
+   читается только изнутри них. Поверхность (21e1) зовёт те же функции. */
+
 function drawGround(tr,camx,camy,fill,line,pal){
   /* силуэт строится в Path2D и живёт до конца функции. Раньше он лежал в
      текущем пути контекста, и первый же beginPath в цикле склонов его затирал:
@@ -48069,6 +47975,140 @@ function drawRocks(tr,camx,camy,pal){
       }
     }
     ctx.restore();
+  }
+}
+
+/* ══════════════ посадка ══════════════ */
+function startLanding(p){
+  /* ── с какой стороны зашёл, туда и сядешь ──
+     Раньше место посадки не зависело ни от чего: рельеф считался по одному
+     seed, и подойти к планете с другой стороны значило увидеть ровно ту же
+     местность. Теперь долгота берётся из геометрии подхода — угол от центра
+     планеты на корабль, — а из неё вычитается текущий поворот планеты: за
+     сутки под кораблём проезжает вся поверхность, и один и тот же мир на
+     разных заходах встречает разным местом. */
+  let lon=null;
+  if(G.ship&&typeof p.x==="number"){
+    const app=Math.atan2(G.ship.y-p.y,G.ship.x-p.x);
+    const spin=(typeof planetSpinFrame==="function")
+      ? planetSpinFrame(p)/PLANET_SPIN*TAU : 0;
+    lon=app-spin;
+  }
+  const tr=genTerrain(p,lon),r=rng(p.seed^0x77);
+  tr.lon=lon;
+  /* достопримечательности вписываются в рельеф до того, как по нему расставят
+     залежи и флору: они выравнивают под собой грунт (20a-poi) */
+  genPOI(tr,p);
+  /* средний масштаб раскладывается после построек: он обходит их стороной,
+     а рельеф под ними к этому моменту уже выровнен (21b-surface-deco) */
+  genDeco(tr,p);
+  G.ap=null;
+  const x0=tr.padX+(r()-.5)*(G.opts.easyLand?900:640);
+  G.land={p,tr,x:x0,y:landStartY(tr,x0),
+    vx:(r()-.5)*1.3,vy:.35,a:0,gear:0,sq:0,sqv:0,hot:0,
+    g:.019+p.T.grav*.016+p.radius*.00012,over:0,ok:false,auto:G.opts.easyLand};
+  G.mode="landing";
+  say((G.opts.easyLand?"Автоматический заход":"Заход")+" на "+p.name+
+    "\nтяготение "+p.T.grav.toFixed(2)+"g");
+}
+/* высота начала захода (M327): было 110 при любом рельефе — на рваных мирах
+   старт в ±450 м от площадки попадал ВНУТРЬ горы, и «автопосадка» разбивалась
+   на первом кадре (тест 91zzzb: slope 66…124 при vx старта). Теперь старт не
+   ниже 150 над самой высокой точкой пути до площадки */
+function landStartY(tr,x){
+  let ridge=groundAt(tr,x);
+  const step=Math.sign(tr.padX-x)*16||16;
+  for(let xx=x;Math.abs(tr.padX-xx)>8&&Math.abs(xx-x)<1400;xx+=step)ridge=Math.min(ridge,groundAt(tr,xx));
+  return Math.min(110,ridge-150);
+}
+function autoLandInputs(L,st){
+  /* примитивный, но надёжный автопилот посадки */
+  const dx=L.tr.padX-L.x;
+  const wantVx=clamp(dx*.012,-1.6,1.6);
+  const ex=wantVx-L.vx;
+  const wantA=clamp(ex*1.5,-.5,.5);
+  L.a+=clamp(wantA-L.a,-.045,.045);
+  /* высота — над САМОЙ ВЫСОКОЙ точкой пути до площадки, а не над тем, что под
+     ногами (M327). Автор: «при автопосадке на спутник газового гиганта корабль
+     разбивался». Тест 91zzzb показал: на рваных мирах (вулканический,
+     каменистый) заход сбоку со снижением .35 втыкался в склон за 300 м до
+     площадки — slope 28…124 при vx 1.5. Пока далеко — держим ~70 над гребнем
+     пути и можем набирать высоту; снижение по-настоящему — только над площадкой */
+  const far=Math.abs(dx)>140;
+  let ridge=groundAt(L.tr,L.x);
+  if(far){
+    const step=Math.sign(dx)*16;
+    for(let x=L.x;Math.abs(L.tr.padX-x)>8&&Math.abs(x-L.x)<1400;x+=step)ridge=Math.min(ridge,groundAt(L.tr,x));
+  }
+  const alt=(far?ridge:groundAt(L.tr,L.x))-L.y-11;
+  const wantVy=far?clamp((alt-70)*.02,-1.2,1.0):clamp(alt*.02,.25,2.6);
+  const thrust=(L.vy>wantVy)||(alt<40&&L.vy>.7);
+  return {thrust,brake:Math.abs(dx)<50&&alt<120&&Math.abs(L.vx)>.25};
+}
+function updateLanding(dt){
+  const L=G.land,tr=L.tr,st=stat();
+  document.getElementById("dronebtn").style.display="none";
+  /* шасси и амортизаторы живут своей жизнью и в момент касания тоже: пока идёт
+     `over`, физика уже стоит, а стойки ещё проседают и отдают — из этого и
+     складывается посадка как движение, а не как подмена картинки */
+  landerGearTick(L,dt);
+  if(L.over>0){
+    L.over-=dt;
+    if(L.over<=0){
+      if(L.ok)enterSurface();
+      else{
+        G.mode="system";
+        G.ship.x=L.p.x+Math.cos(L.p.ang)*(L.p.radius+140);
+        G.ship.y=L.p.y+Math.sin(L.p.ang)*(L.p.radius+140);
+        G.ship.vx=0;G.ship.vy=0;
+        if(G.hull<=0)wreck();
+      }
+    }
+    return;
+  }
+  let inThr=keys.thrust,inBrk=keys.brake,inL=keys.left,inR=keys.right;
+  if(L.auto){
+    const ai=autoLandInputs(L,st);
+    inThr=ai.thrust;inBrk=ai.brake;inL=inR=false;
+    G.prompt="АВТОМАТИЧЕСКАЯ ПОСАДКА · "+Math.max(0,Math.round(groundAt(tr,L.x)-L.y-11))+" м";
+  }
+  if(inL)L.a-=.05*st.turn*dt;
+  if(inR)L.a+=.05*st.turn*dt;
+  L.a=clamp(L.a,-1.5,1.5);
+  if(inThr&&G.fuel>0){
+    L.vx+=Math.sin(L.a)*.06*st.thr*dt;
+    L.vy-=Math.cos(L.a)*.06*st.thr*dt;
+    G.fuel=Math.max(0,G.fuel-.048*dt);
+  }
+  if(inBrk&&G.fuel>0){
+    L.vx*=Math.pow(.90,dt);L.a*=Math.pow(.93,dt);
+    if(L.vy>.4)L.vy-=.014*dt;
+    G.fuel=Math.max(0,G.fuel-.03*dt);
+  }
+  L.thrOn=inThr&&G.fuel>0;
+  L.vy+=L.g*dt;L.vx*=.999;
+  L.x+=L.vx*dt;L.y+=L.vy*dt;
+  L.x=clamp(L.x,40,tr.W-40);
+  const gy=groundAt(tr,L.x),sp=Math.hypot(L.vx,L.vy);
+  if(!L.auto)
+    G.prompt="ВЫСОТА "+Math.max(0,Math.round(gy-L.y-11))+"  ВЕРТ "+L.vy.toFixed(2)+
+      "  ГОР "+Math.abs(L.vx).toFixed(2);
+  if(L.y+11>=gy){
+    L.y=gy-11;
+    const slope=Math.abs(groundAt(tr,L.x+18)-groundAt(tr,L.x-18));
+    const tol=(G.tech.has("cera")?1.4:1)*(L.auto?3:1);
+    const ok=L.vy<2.15*tol&&Math.abs(L.vx)<1.05*tol&&Math.abs(L.a)<.26*tol&&slope<9*tol;
+    L.touch={vy:+L.vy.toFixed(2),vx:+L.vx.toFixed(2),a:+L.a.toFixed(2),slope:+slope.toFixed(1),tol};  /* что было в момент касания (тест 91zzzb) */
+    L.ok=ok;L.over=70;L.vx=0;L.vy=0;
+    /* удар: стойки проседают тем глубже, чем жёстче пришли, и отдают пружиной */
+    L.gear=1;L.sq=Math.min(1,.3+sp*.3);L.sqv=0;L.hot=1;
+    if(ok)say("Посадка выполнена");
+    else{
+      const dmg=(18+Math.min(42,sp*11))/tol;
+      G.hull=Math.max(0,G.hull-dmg);
+      if(typeof hitFx==="function")hitFx(1);
+      say("Крушение\nкорпус −"+Math.round(dmg));
+    }
   }
 }
 function skyGrad(p){

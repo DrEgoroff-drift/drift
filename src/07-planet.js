@@ -196,14 +196,34 @@ function planetStrip(p,lvl){
    краю. Формула та же, что была в текстуре; разница в том, что накладки не
    вращаются, поэтому пекутся один раз на планету. Край диска сглаживается по
    альфе — прежняя резкая обрезка и давала ту самую лесенку на большой планете. */
+/* ── диск освещён СВОЕЙ звездой и обведён СВОИМ небом (M435, хвост P4) ──
+   Накладка света пеклась двумя константами: подсветка дневной стороны
+   235,240,245 — почти белая, ободок 130,180,210 — один и тот же голубой на
+   всякой планете, у которой есть поверхность, включая те, у которых нет
+   воздуха. Тот же изъян, что был у грунта до M242/M432: свет знал форму, но не
+   знал ни звезды, ни неба. Теперь дневная сторона подсвечивается цветом
+   звезды (`starRGB`, нормированный по светлоте), ободок — рассеянием в
+   атмосфере, то есть дневным небом этого мира (`sky[0]`, поднятым к белому),
+   а у безвоздушных ободка нет вовсе: рассеивать нечем, и терминатор у них
+   резче. Газовый гигант обводится верхней ступенью своей палитры. Ключ кэша
+   несёт и звезду: планета, увиденная под другой звездой, печётся заново. */
 function planetLight(p,lvl){
-  if(p.lite&&p.liteLvl>=lvl)return p.lite;
+  const sunC=(typeof starRGB==="function")?starRGB():[255,244,214];
+  const sunMax=Math.max(1,sunC[0],sunC[1],sunC[2]);
+  const sn=[sunC[0]*255/sunMax,sunC[1]*255/sunMax,sunC[2]*255/sunMax];
+  const liteKey=lvl+"|"+(sn[0]|0)+","+(sn[1]|0)+","+(sn[2]|0);
+  if(p.lite&&p.liteLvl>=lvl&&p.liteSun===liteKey.slice(liteKey.indexOf("|")+1))return p.lite;
   const S=PLANET_RES[lvl];
   const sh=document.createElement("canvas");sh.width=sh.height=S;
   const rim=document.createElement("canvas");rim.width=rim.height=S;
   const gs=sh.getContext("2d"),gr=rim.getContext("2d");
   const is=gs.createImageData(S,S),ir=gr.createImageData(S,S);
   const ds=is.data,dr=ir.data,gas=p.type==="gas";
+  const airless=!gas&&!!(p.T&&p.T.atm==="отсутствует");
+  /* цвет ободка: дневное небо мира, поднятое к белому; у гиганта — палитра */
+  const sk=(p.T&&((gas&&p.T.pal&&p.T.pal[p.T.pal.length-1])||(p.T.sky&&p.T.sky[0])))||[130,180,210];
+  const rc=[lerp(sk[0],255,.35),lerp(sk[1],255,.35),lerp(sk[2],255,.35)];
+  const rimK=airless?0:(gas?.5:.34);
   for(let py=0;py<S;py++)for(let px=0;px<S;px++){
     const o=(py*S+px)*4;
     const nx=(px+.5)/S*2-1,ny=(py+.5)/S*2-1,r2=nx*nx+ny*ny;
@@ -217,16 +237,16 @@ function planetLight(p,lvl){
        Накладка тенью так не умеет, поэтому избыток уходит в добавляемый слой,
        иначе дневная сторона выходит бледнее, чем была */
     const up=clamp(k-1,0,1)*.9;
-    const r=Math.pow(1-nz,4)*(gas?.5:.34);
-    dr[o]=clamp(130*r+235*up,0,255);
-    dr[o+1]=clamp(180*r+240*up,0,255);
-    dr[o+2]=clamp(210*r+245*up,0,255);
+    const r=Math.pow(1-nz,4)*rimK;
+    dr[o]=clamp(rc[0]*r+sn[0]*up,0,255);
+    dr[o+1]=clamp(rc[1]*r+sn[1]*up,0,255);
+    dr[o+2]=clamp(rc[2]*r+sn[2]*up,0,255);
     dr[o+3]=255*clamp(r+up,0,1);
     const edge=clamp((1-Math.sqrt(r2))*S*.5,0,1);
     ds[o+3]*=edge;dr[o+3]*=edge;
   }
   gs.putImageData(is,0,0);gr.putImageData(ir,0,0);
-  p.lite={sh,rim};p.liteLvl=lvl;return p.lite;
+  p.lite={sh,rim};p.liteLvl=lvl;p.liteSun=liteKey.slice(liteKey.indexOf("|")+1);return p.lite;
 }
 /* ── полоски ──
    Долгота левого края полоски и её ширина в пикселях развёртки зависят только
@@ -372,198 +392,4 @@ function planetDraw(p,x,y,r){
      давал грубый порог пересборки выше. Пересэмплировать готовый диск стоит
      одного вызова, зато тело плывёт непрерывно. */
   ctx.drawImage(p.disc,x-rr,y-rr);
-}
-
-/* ══════════════ рельеф ══════════════ */
-/* ══════════════ рельеф ══════════════ */
-/* профиль собирается из нескольких независимых форм: пологие холмы, острые
-   хребты, столовые плато, дюны, кратеры с валом и врезанные каньоны. Вес
-   каждой формы — от типа планеты и её seed, поэтому две пустынные планеты
-   выглядят по-разному, но обе остаются пустынными. */
-const RELIEF_MIX={
-  terran:  {hill:1,  ridge:.55, mesa:.15, dune:0,   crater:.2,  canyon:.4},
-  ocean:   {hill:1,  ridge:.15, mesa:.05, dune:.2,  crater:.1,  canyon:.15},
-  desert:  {hill:.7, ridge:.3,  mesa:.85, dune:1,   crater:.35, canyon:.7},
-  rocky:   {hill:.8, ridge:1,   mesa:.5,  dune:0,   crater:1,   canyon:.5},
-  ice:     {hill:.9, ridge:.7,  mesa:.35, dune:.35, crater:.45, canyon:.6},
-  volcanic:{hill:.8, ridge:1,   mesa:.25, dune:0,   crater:.9,  canyon:.85},
-  toxic:   {hill:1,  ridge:.45, mesa:.4,  dune:.25, crater:.3,  canyon:.55},
-  /* кристаллический — частокол острых гряд почти без пологого; джунгли —
-     мягкие валы с врезанными руслами; металлический — битый кратерами шар
-     без осадочных плато; руинный — ступени плато, как разрушенные террасы */
-  crystal: {hill:.35,ridge:1.2, mesa:.6,  dune:0,   crater:.5,  canyon:.4},
-  jungle:  {hill:1.1,ridge:.4,  mesa:.2,  dune:0,   crater:.1,  canyon:.9},
-  metal:   {hill:.6, ridge:.8,  mesa:.3,  dune:0,   crater:1.3, canyon:.35},
-  /* mesa 1.1 давало ровное плато во весь кадр — руинный мир выходил столом.
-     Ступени остались, но теперь между ними есть подъёмы и врезы */
-  ruin:    {hill:1.0,ridge:.35, mesa:.7,  dune:.4,  crater:.5,  canyon:.85},
-  gas:     {hill:1,  ridge:0,   mesa:0,   dune:0,   crater:0,   canyon:0}
-};
-/* ══════════════ где сел — то и видел ══════════════
-   Глобус в системе и местность под ногами считались из одного seed, но двумя
-   независимыми шумами: на карте тёмное пятно, а сядешь — плато, и наоборот.
-   Планета была двумя разными планетами, склеенными названием.
-
-   Связывает их одно число — ДОЛГОТА захода. Корабль подходит с какой-то
-   стороны; эта сторона, с поправкой на текущий поворот планеты, и есть точка,
-   куда он сядет. Дальше рельеф берёт СВОЮ низкую частоту из того же поля
-   `fbm2`, по которому напечатана текстура: где на глобусе светлее — там
-   возвышенность, где темнее — низина. Мелкие формы (гряды, дюны, кратеры)
-   остаются локальными: с орбиты их и не должно быть видно.
-
-   Ширина полосы намеренно мала: девять тысяч точек ландшафта — это узкий
-   клин долготы, иначе на одном экране уместилась бы четверть планеты. */
-const LAND_ARC=0.42;                  // сколько радиан долготы покрывает мир
-/* ── влажность ──
-   Второе поле планеты, независимое от высоты: где сыро, там жизнь. Оно нужно
-   сразу в двух местах и потому живёт здесь, а не в биоме: с орбиты по нему
-   красятся зелёные пятна, а на грунте по нему же считается, сколько вокруг
-   зарослей. Увидел с высоты тёмно-зелёное пятно, сел в него — и стоишь в
-   чаще: планета перестала быть двумя картинками с одним именем. */
-function planetWetAt(p,lon,lat){
-  const w=fbm2(lon*1.7+41,lat*1.7+41,(p.seed^0x5EA1)>>>0,4);
-  /* к полюсам суше — там всё вымерзло, у экватора влажнее */
-  return clamp(w*1.15-Math.pow(Math.abs(lat)/1.5708,1.6)*.45,0,1);
-}
-function planetHasLife(p){
-  return !!(p.T&&(p.T.atm.indexOf("пригодна")>=0||p.type==="toxic"||p.type==="jungle"||
-                  p.mix==="toxic"||p.mix==="jungle"));
-}
-function planetHeightAt(p,lon,lat){
-  /* та же формула, что печатает развёртку (`planetStrip`), — иначе связь
-     держалась бы на честном слове, а не на общем поле */
-  let v=fbm2(lon*2.4+11,lat*2.4+11,p.seed,5);
-  v=clamp((v-.5)*(1+p.rough*.9)+.5,0,1);
-  v=clamp(v+Math.pow(Math.abs(lat)/1.5708,3.2)*.55,0,1);
-  return v;
-}
-function genTerrain(p,lon0){
-  const N=1500,step=6,base=900,h=new Float32Array(N);
-  const r=rng(p.seed^0x5f3b);
-  /* долгота захода: приходит из системы, а если генерим вне полёта (стенд,
-     превью) — берём от seed, чтобы картинка была стабильной */
-  const L0=(lon0==null)?((p.seed%628)/100):lon0;
-  const LAT=((p.seed>>>9)%100)/100*0.7-0.35;   // широта полосы: не всегда экватор
-  const M=wtab(p).relief||RELIEF_MIX[p.type]||RELIEF_MIX.terran;
-  /* амплитуда по набору породы (хвост G1): дюны и раскисшие берега ниже,
-     ледяные плиты и лавовая корка выше — рельеф принадлежит материалу */
-  const AK={dune:.72,sludge:.6,frost:1.15,crust:1.3,facet:1.2,plate:1.1,rubble:.9};
-  const amp=(60+p.rough*300)*(AK[(typeof MAT_CHAR!=="undefined"&&MAT_CHAR[p.type])||""]||1);
-  /* каждой форме — свой множитель, чтобы планеты одного типа не повторялись */
-  const w={
-    hill:M.hill*(.6+r()*.7), ridge:M.ridge*(.4+r()*1.1),
-    mesa:M.mesa*(.4+r()*1.2), dune:M.dune*(.5+r()*1.0)
-  };
-  const mesaStep=amp*(.22+r()*.3), duneLen=.055+r()*.07, duneAmp=amp*.34*w.dune;   // дюны были вдвое ниже, чем нужно, и терялись в общей волне
-  for(let i=0;i<N;i++){
-    let y=base;
-    /* ── планетарная составляющая ──
-       Низкая частота приходит НЕ из локального шума, а с глобуса: та же
-       функция, что красит текстуру, взятая по долготе этой полосы. Сел на
-       светлое пятно — стоишь на возвышенности, на тёмное — в низине. */
-    const lonW=L0+(i/N-.5)*LAND_ARC;
-    y-=(planetHeightAt(p,lonW,LAT)-.5)*amp*2.2;
-    y-=fbm1(i*.0055,p.seed,5)*amp*w.hill*.6;
-    y-=fbm1(i*.05,p.seed+7,3)*amp*.22*w.hill;
-    if(w.ridge>.02){
-      const n=fbm1(i*.013,p.seed+31,4);
-      y-=Math.pow(1-Math.abs(1-2*n),2.1)*amp*.95*w.ridge;
-      /* ── средний масштаб ──
-         Формы рельефа были заданы верно (гряды, столовые горы, дюны,
-         кратеры, каньоны), но самые крупные из них ложатся на кадр по одной
-         волне: игрок видит 14% ландшафта разом, и любая планета выглядела
-         одинаково плавной. Вторая, втрое более частая гряда даёт в кадре
-         три-четыре зубца вместо одного склона — и характер типа наконец
-         виден с того места, где стоит человек, а не только на карте. */
-      const n2=fbm1(i*.038,p.seed+131,3);
-      /* вклад идёт по КВАДРАТУ веса гряды: у землеподобной (.55) вторая гряда
-         почти не слышна, у вулканической и каменистой (1) звучит в полную
-         силу. С линейным весом мягкий мир превращался в гребёнку */
-      y-=Math.pow(1-Math.abs(1-2*n2),2.6)*amp*.42*w.ridge*w.ridge;
-    }
-    if(w.mesa>.02){
-      const t=fbm1(i*.0042,p.seed+57,3);
-      y-=Math.round(t*3.4)/3.4*amp*.8*w.mesa;
-    }
-    if(duneAmp>.5){
-      const ph=fbm1(i*.006,p.seed+83,2)*7;
-      const s=Math.sin(i*duneLen+ph);
-      y-=(Math.pow(Math.abs(s),.55)*Math.sign(s)*.5+.5)*duneAmp;
-    }
-    h[i]=y;
-  }
-  /* кратеры: чаша плюс приподнятый вал по кромке */
-  const craters=[];
-  const nCr=Math.floor(M.crater*(1+r()*5));
-  for(let c=0;c<nCr;c++){
-    const ci=Math.floor(r()*N), rad=18+r()*72, depth=amp*(.12+r()*.34);
-    craters.push({i:ci,rad});
-    for(let i=Math.max(0,ci-rad*1.5|0);i<Math.min(N,ci+rad*1.5|0);i++){
-      const u=(i-ci)/rad;
-      if(Math.abs(u)>1.45)continue;
-      if(Math.abs(u)<=1)h[i]+=depth*Math.cos(u*Math.PI/2)*.9;          // чаша вниз
-      const rim=Math.exp(-Math.pow((Math.abs(u)-1)/.3,2));
-      h[i]-=depth*.42*rim;                                              // вал вверх
-    }
-  }
-  /* каньоны: узкие глубокие врезы с почти отвесными бортами */
-  const nCn=Math.floor(M.canyon*(1+r()*2.4));
-  for(let c=0;c<nCn;c++){
-    const ci=Math.floor(60+r()*(N-120)), half=7+r()*16, depth=amp*(.5+r()*.8);
-    for(let i=Math.max(0,ci-half*3|0);i<Math.min(N,ci+half*3|0);i++){
-      const u=Math.abs(i-ci)/half;
-      if(u>2.4)continue;
-      h[i]+=depth*(1/(1+Math.pow(u,7)));
-    }
-  }
-  /* площадка под посадку — ровная и подальше от кратеров */
-  let pi=90+Math.floor(r()*(N-190));
-  for(let t=0;t<40;t++){
-    const cand=90+Math.floor(r()*(N-190));
-    const near=craters.some(c=>Math.abs(cand-c.i)<c.rad*1.6);
-    if(!near){pi=cand;break;}
-  }
-  const pw=18,py=h[pi];
-  for(let i=pi-pw;i<=pi+pw;i++){
-    const t=clamp((Math.abs(i-pi)-pw*.5)/(pw*.5),0,1);
-    h[i]=lerp(py,h[i],t*t);
-  }
-  /* валуны и осыпь: детерминированы, лежат прямо на профиле */
-  const rocks=[];
-  const nRk=Math.floor(24+r()*40);
-  for(let i=0;i<nRk;i++){
-    const x=r()*N*step, rad=3+r()*r()*22, n=6+Math.floor(r()*6), poly=[];
-    for(let k=0;k<n;k++){
-      const a=k/n*TAU, q=rad*(.6+r()*.6);
-      poly.push([Math.cos(a)*q,Math.sin(a)*q*.72]);
-    }
-    const tint=r(), flip=r()<.5;
-    /* ── валун не один силуэт (M316) ──
-       Мерили: многоугольник у каждого свой (6–11 вершин, свой радиус), но
-       семейство одно — сплюснутая клякса вокруг центра. Осыпь настоящая — это
-       ещё и ГЛЫБА с плоским низом, севшая на грунт, и низкая ПЛИТА. Семейство
-       решает уже вытянутый tint: лишних вызовов r() нет, миры не сдвинулись. */
-    if(tint<.3){for(const v of poly)if(v[1]>rad*.42)v[1]=rad*.42+v[0]*.12;}          /* глыба: плоский низ с уклоном */
-    else if(tint>.82){for(const v of poly){if(v[1]>rad*.34)v[1]=rad*.34;if(v[1]<-rad*.3)v[1]=-rad*.3;v[0]*=1.35;}}   /* плита: низкая и широкая */
-    rocks.push({x,rad,poly,tint,flip});
-  }
-  /* ── пятачок чистят и от камня (M330) ──
-     Площадку выравнивают по высоте, а валуны раскидывались по всей полосе без
-     единой проверки: камень в полтора корпуса, легший на отметку посадки,
-     читается ровно как «корабль стоит в валуне» — и попадался он на каждой
-     четвёртой планете. Отсев идёт ПОСЛЕ генерации: поток r() не сдвигается,
-     и все прочие миры остаются в точности теми же. Мелкая осыпь остаётся —
-     она и должна лежать под опорами. */
-  {const padx=pi*step;
-   for(let i=rocks.length-1;i>=0;i--)if(rocks[i].rad>4&&Math.abs(rocks[i].x-padx)<54)rocks.splice(i,1);}
-  /* влажность полосы — то же поле, что рисует зелёные пятна на глобусе.
-     Кладём её в рельеф, чтобы поверхность (21-mode-surface) могла спросить
-     не «какой это тип мира», а «сыро ли ИМЕННО ЗДЕСЬ» */
-  const wet=planetWetAt(p,L0,LAT);
-  return {h,N,step,W:N*step,padI:pi,padX:pi*step,padY:h[pi],rocks,lon:L0,lat:LAT,wet,
-    strata:2+Math.floor(r()*4), sseed:p.seed};
-}
-function groundAt(tr,x){
-  const fx=clamp(x/tr.step,0,tr.N-1.001),i=Math.floor(fx),f=fx-i;
-  return lerp(tr.h[i],tr.h[i+1],f);
 }
