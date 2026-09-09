@@ -328,6 +328,16 @@ main release, as M360a/M369b were.
   `dcol`), the plants (through `tone`) and the grass (a second, dimmer path) darken to `CAST_LIVE`
   inside the shadow; the contact ellipse under a deco fades with it, since nothing casts it. The
   walker keeps his own light on purpose - he carries a lamp and he is what the eye is for.
+- ~~**M436 one helm layout**~~ - 0.423.0: the author, 09.09.2026 - «сломал управление… продумай
+  логику, что на WASD, что на QE, мож стрелки нахер не нужны, посмотри как сделаны другие игры».
+  Two keyboard schemes (mouse: nose to cursor always, WASD in screen axes; arrows: from the nose)
+  switched by themselves on any mouse motion over the full-screen canvas, so W stopped meaning
+  «forward» and A/D stopped steering the moment the mouse was touched. Now one layout from the
+  nose (W throttle, S brake, A/D turn, Q/E strafe, Shift thrusters; arrows = the same keys), the
+  mouse leads the nose only while the right button is held (A/D strafe meanwhile), the missile is
+  G, and release = coast for every input - the .55 auto-brake is gone, the brake is one gesture
+  at `HELM_STOP` for keys, pad and stick alike. The phone helm (M422) is untouched. `15a-helm`
+  header, `docs/DESIGN-war.md` §1.2, the title table; suite `91zzzw-helm`.
 
 ## Loose ends (as of 2026-08-28, after the graphics run 0.237.0–0.244.0)
 

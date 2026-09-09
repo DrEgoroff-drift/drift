@@ -7,6 +7,30 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.423.0 (M436) - one helm layout: the nose is the keyboard's, the cursor is the right button's
+
+The author, 09.09.2026: «сломал управление… продумай логику, что на WASD, что на QE, мож
+стрелки нахер не нужны, посмотри как сделаны другие игры». There were two keyboard schemes -
+mouse (nose to cursor always, WASD along the screen axes) and arrows (everything from the
+nose) - and they switched by themselves: any mouse motion over the full-screen canvas picked
+the first, so W stopped meaning «forward» the moment a hand brushed the mouse, and A/D stopped
+steering at all because the nose was already the cursor's. Nobody builds it that way: Endless
+Sky, Starsector and Escape Velocity steer from the nose and hand the nose to the mouse by an
+explicit gesture.
+
+Now there is one layout. W is throttle, S is the brake, A/D turn, Q/E strafe, Shift puts every
+thrust through the thrusters; the arrows are the same keys under other caps, not a second
+scheme. The mouse leads the nose only while the right button is held (Starsector's Shift), and
+while it is held A/D become strafes - the rudder is the cursor's. The missile moves to G. And
+letting go is the same for every input - the ship coasts: the .55 rule («below cruise a
+released throttle brakes by itself») followed the stick out, because one gesture with two
+outcomes by a speed threshold read as «the ship sometimes brakes on its own». The brake is a
+gesture - S, ТОРМОЗ, the thumb pulled back or held still - and it is one brake for all of
+them, at the stick's `HELM_STOP`, nose-blind and undimmed by an empty energy bar. The phone
+helm of 0.418.0 is untouched. The title-screen table says the new layout; `docs/DESIGN-war.md`
+§1.2 is rewritten.
+
+---
 ## 0.422.0 (M435) - the planet is lit by its star and rimmed by its own sky
 
 The last consumer named in the grisaille row. Seen from orbit, a planet's day side was lifted

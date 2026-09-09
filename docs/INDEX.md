@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 517 · символов верхнего уровня: 4851
+Файлов: 517 · символов верхнего уровня: 4850
 
 ## СИМВОЛЫ
 
@@ -974,7 +974,7 @@ crownReady                   src/05a-nodes.js:158
 CRYO_RECIPE                  src/21a1a-base-heat.js:33
 CSW                          src/19e-clouds.js:68
 ctlHint                      src/15-input.js:168
-ctlReset                     src/15a-helm.js:104
+ctlReset                     src/15a-helm.js:118
 ctx                          src/08-state.js:3
 CUE_EPS                      src/27m-scroll-cue.js:26
 CUE_PAD                      src/27m-scroll-cue.js:25
@@ -1890,58 +1890,57 @@ heatAdd                      src/13a-guns.js:47
 heatHaze                     src/18d-postfx.js:23
 heatTick                     src/13a-guns.js:54
 held                         src/08-state.js:212
-HELM                         src/15a-helm.js:95
-HELM_ACC                     src/15a-helm.js:61
-HELM_ARC0                    src/15a-helm.js:80
-HELM_ASSIST_BAND             src/15a-helm.js:72
-HELM_ASSIST_EPS              src/15a-helm.js:73
-HELM_BAND                    src/15a-helm.js:89
-HELM_BAND0                   src/15a-helm.js:90
-HELM_BRAKE_DOT               src/15a-helm.js:63
-HELM_CONE                    src/15a-helm.js:93
-HELM_DEAD                    src/15a-helm.js:70
-HELM_FOOT                    src/15a-helm.js:84
-HELM_GAP                     src/15a-helm.js:91
-HELM_KEYS                    src/15a-helm.js:113
-HELM_MARKS                   src/15a-helm.js:76
-HELM_NUDGE                   src/15a-helm.js:68
-HELM_NUDGE_R                 src/15a-helm.js:69
-HELM_PICK                    src/15a-helm.js:74
-HELM_RANGE                   src/15a-helm.js:94
-HELM_REACH                   src/15a-helm.js:71
-HELM_RELEASE                 src/15a-helm.js:59
-HELM_STOP                    src/15a-helm.js:62
-HELM_TAKE                    src/15a-helm.js:64
-HELM_TAKE_MS                 src/15a-helm.js:67
-HELM_THR                     src/15a-helm.js:60
-HELM_TRAIL                   src/15a-helm.js:92
-helmApply                    src/15a-helm.js:344
+HELM                         src/15a-helm.js:109
+HELM_ACC                     src/15a-helm.js:75
+HELM_ARC0                    src/15a-helm.js:94
+HELM_ASSIST_BAND             src/15a-helm.js:86
+HELM_ASSIST_EPS              src/15a-helm.js:87
+HELM_BAND                    src/15a-helm.js:103
+HELM_BAND0                   src/15a-helm.js:104
+HELM_BRAKE_DOT               src/15a-helm.js:77
+HELM_CONE                    src/15a-helm.js:107
+HELM_DEAD                    src/15a-helm.js:84
+HELM_FOOT                    src/15a-helm.js:98
+HELM_GAP                     src/15a-helm.js:105
+HELM_KEYS                    src/15a-helm.js:127
+HELM_MARKS                   src/15a-helm.js:90
+HELM_NUDGE                   src/15a-helm.js:82
+HELM_NUDGE_R                 src/15a-helm.js:83
+HELM_PICK                    src/15a-helm.js:88
+HELM_RANGE                   src/15a-helm.js:108
+HELM_REACH                   src/15a-helm.js:85
+HELM_STOP                    src/15a-helm.js:76
+HELM_TAKE                    src/15a-helm.js:78
+HELM_TAKE_MS                 src/15a-helm.js:81
+HELM_THR                     src/15a-helm.js:74
+HELM_TRAIL                   src/15a-helm.js:106
+helmApply                    src/15a-helm.js:353
 helmBandPath                 src/15b-helm-draw.js:125
 helmCamOff                   src/15b-helm-draw.js:110
-helmCanvasXY                 src/15a-helm.js:127
-helmDrag                     src/15a-helm.js:149
+helmCanvasXY                 src/15a-helm.js:141
+helmDrag                     src/15a-helm.js:162
 helmDrawMarks                src/15b-helm-draw.js:8
 helmDrawSticks               src/15b-helm-draw.js:134
 helmHome                     src/15b-helm-draw.js:52
 helmLift                     src/15b-helm-draw.js:69
-helmLock                     src/15a-helm.js:213
-helmLockNext                 src/15a-helm.js:223
-helmMarksClean               src/15a-helm.js:204
+helmLock                     src/15a-helm.js:226
+helmLockNext                 src/15a-helm.js:236
+helmMarksClean               src/15a-helm.js:217
 helmMarkTop                  src/15b-helm-draw.js:99
-helmPinchBlocked             src/15a-helm.js:200
+helmPinchBlocked             src/15a-helm.js:213
 helmPirate                   tests/91zzzw-helm.js:17
-helmPtrEnd                   src/15a-helm.js:187
+helmPtrEnd                   src/15a-helm.js:200
 helmRun                      tests/91zzzw-helm.js:16
-helmScreenOpen               src/15a-helm.js:197
+helmScreenOpen               src/15a-helm.js:210
 helmShip                     tests/91zzzw-helm.js:6
-helmShotAt                   src/15a-helm.js:256
+helmShotAt                   src/15a-helm.js:269
 helmStickFoot                src/15b-helm-draw.js:38
 helmStickShape               src/15b-helm-draw.js:29
-helmTake                     src/15a-helm.js:162
-helmTap                      src/15a-helm.js:242
-helmTargets                  src/15a-helm.js:203
-helmTick                     src/15a-helm.js:262
-helmTrail                    src/15a-helm.js:153
+helmTake                     src/15a-helm.js:175
+helmTap                      src/15a-helm.js:255
+helmTargets                  src/15a-helm.js:216
+helmTick                     src/15a-helm.js:275
+helmTrail                    src/15a-helm.js:166
 hex2rgb                      src/03-ships.js:190
 hexA                         src/12e-drone-flight.js:300
 hexa                         src/12w-survey.js:91
@@ -5428,7 +5427,7 @@ zooTick                      src/11ad-zoo.js:41
   · ввод:87
   · полоса вкладок шире экрана:212
 
-## src/15a-helm.js · 31 КБ
+## src/15a-helm.js · 32 КБ
   · штурвал (M360):1
 
 ## src/15b-helm-draw.js · 13 КБ
@@ -6339,7 +6338,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzzw-guns4.js · 9 КБ
   · последние шесть и именные (M366, §2.1–§2.2):1
 
-## tests/91zzzw-helm.js · 19 КБ
+## tests/91zzzw-helm.js · 20 КБ
   · штурвал (M360):1
 
 ## tests/91zzzw-msl.js · 8 КБ
