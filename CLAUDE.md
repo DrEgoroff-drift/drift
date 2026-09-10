@@ -258,7 +258,9 @@ starts with `resetWorld()` and drives the real `G` — nothing is mocked. A suit
 pixels or layout goes red under the Node stubs: declare it `suite(name,{tier:"browser"},fn)` and
 it moves to Chrome (tiers, `win`, `stage`, `?shuffle` and the tools `T.*` of `tests/90a-tools.js`:
 `docs/VERIFY.md`). A suite with zero assertions is red, and `ok(true` / `typeof`-guards in suites
-are refused by a net.
+are refused by a net. Detectors (`90b`/`90c`, driver `91zzzzzzzz-detect`) judge every scene after
+every gesture; golden frames live in `docs/golden/` as block signatures — after a deliberate
+picture change, `test.ps1 -Accept` (and `-Mobile`, `-Size 1440,1440`) re-shoots them.
 
 ```bash
 powershell -ExecutionPolicy Bypass -File build.ps1

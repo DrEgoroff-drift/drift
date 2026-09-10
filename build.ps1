@@ -102,7 +102,18 @@ function Build {
     $tfiles = Sort-Ordinal (Get-ChildItem (Join-Path $tsrc "*.js"))
     if ($tfiles.Count -gt 0) {
       $tparts = foreach ($f in $tfiles) { [System.IO.File]::ReadAllText($f.FullName, $enc) }
-      $tjs = $js + "`n" + ($tparts -join "`n")
+      # Золотые кадры (M443): эталоны docs/golden/<окно>.json вшиваются константой
+      # GOLDEN — страница с file:// прочитать их сама не может. Нет эталонов — {}.
+      $gold = "{}"
+      $gdir = Join-Path $root "docs\golden"
+      if (Test-Path $gdir) {
+        $gfiles = @(Get-ChildItem (Join-Path $gdir "*.json") -File)
+        if ($gfiles.Count -gt 0) {
+          $gl = foreach ($g in (Sort-Ordinal $gfiles)) { '"' + $g.BaseName + '":' + ([System.IO.File]::ReadAllText($g.FullName, $enc)).Trim() }
+          $gold = "{" + ($gl -join ",") + "}"
+        }
+      }
+      $tjs = $js + "`nconst GOLDEN=" + $gold + ";`n" + ($tparts -join "`n")
       $thtml = $shell.Replace("/*{{STYLE}}*/", $css).Replace("//{{SCRIPT}}", $tjs)
       [System.IO.File]::WriteAllText((Join-Path $root "tests.html"), $thtml, $enc)
       $msg += " · tests.html из {0} наборов" -f $tfiles.Count

@@ -263,7 +263,8 @@ extract tools, do not extend). Order is strict: determinism first, everything af
 
 - ~~**M441 determinism in the game**~~ — 0.428.0: `rnd`/`rndFx`/`now`/`clockSet` in `01-core`, ~400
   calls migrated, the build law, `stateHash` + the same-hash suite over `lookScenes`, `resetWorld`
-  pins seed and clock (`?hour=`), `bNoDir` gone. Open: the fuzz seed into `rndSeed`; `TEST_T0` is
+  pins seed and clock (`?hour=`), `bNoDir` gone. Open: ~~the fuzz seed into `rndSeed`~~ (`T.go`
+  seeds it since M442); `TEST_T0` is
   12:00 *local* (green in UTC, LA, Auckland); a drawn run's full hash differs from an undrawn one
   (draw fills lazy caches in `G`) — only the `rnd()` position is compared, a detector for M443.
 - ~~**M442 the test API and the harness rules**~~ — 0.430.0: `T.*` in `tests/90a-tools.js`
@@ -274,7 +275,7 @@ extract tools, do not extend). Order is strict: determinism first, everything af
   UI selections outside `G` restored after every suite. Open: `T.bot` is a stub until M444; the
   tools' self-test sits before the net; `G.opts` is still not reset by `resetWorld` (the detector
   driver keeps `DET_OPTS_BOOT`).
-- **M443 the five oracles as detectors** — crash, stuck, law (NaN/type/unknown field, a `Proxy`
+- ~~**M443 the five oracles as detectors**~~ — 0.429.0 + 0.431.0. Crash, stuck, law (NaN/type/unknown field, a `Proxy`
   over `G` counting reads of missing fields, instruments → fields table, control answer classes,
   picture laws: legible text × ruler, parallax by depth, sharpness, no flicker, no popping, one
   human height), imbalance over seeds, picture (golden frame per scene × three windows, perceptual
@@ -283,10 +284,16 @@ extract tools, do not extend). Order is strict: determinism first, everything af
   **0.429.0: four of five done** — `tests/90b-detect.js` (measures), `90c-detect-laws.js` (laws),
   driver `91zzzzzzzz-detect` (15 scenes × 5 gestures + menu doors + armed ship, 93 steps, 8–12 s);
   ten bug commits (type off the ruler in six modes, four unreadable labels, НАСТРОЙКИ dead on a
-  text pad size from the cloud). **Open:** imbalance over seeds and `detGolden` (plan in
-  DESIGN-tests §3.2, now possible on M441); not caught yet — the .55 auto-brake, the money-printing
-  counter, idle drones; partial — the helm switching itself, sharpness/perch at DPR 1; the contrast
-  check reads low under a vignette drawn after text; A/W judged in the system view only.
+  text pad size from the cloud). **0.431.0: five of five** — golden frames
+  (`91zzzzzzzzz-golden`, block signatures in `docs/golden/<W>x<H>.json` for the three harness
+  windows, `test.ps1 -Accept` re-shoots one) and the worlds oracle (`91zzzzzzzzz-worlds`, Node:
+  every station in six rings — a neighbour in reach, no ×4.5 counter, fuel ≤ ×3 median, the
+  distribution of the best one-hop deal); both staged to 2026-09-18 (§3.6), the lab's history
+  sets the thresholds. The same-hash suite also runs under seeded hands now. **Open:** not caught
+  yet — the .55 auto-brake, the money-printing counter, idle drones; partial — the helm switching
+  itself, sharpness/perch at DPR 1; the contrast check reads low under a vignette drawn after
+  text; A/W judged in the system view only; golden baselines are the laptop's GPU — the lab's
+  SwiftShader will say whether the block mean is coarse enough (that is what the week is for).
 - **M444 scenarios and coverage** — fifteen walks from the briefs and `91zzy-walk`; `?rec=1`
   recordings in `15-input` with a «bug here» key, replayed under perturbation; a six-goal bot;
   three windows; the build prints the coverage map mode × gesture × window × detector;

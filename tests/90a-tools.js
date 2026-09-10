@@ -468,12 +468,16 @@ TEST_SUITES.push(()=>suite("инструменты: руки и глаза от�
   ok(X.dom.length>0&&X.canvas.length>0,"видимый текст: вёрстка "+X.dom.length+" строк, канва "+X.canvas.length);
   /* кнопки: плюс на борту приближает камеру, колесо — тоже */
   hud();
+  /* на телефоне борт короче (КАРТА, МЕНЮ) и коробки «+ −» нет вовсе:
+     самопроверка спрашивает то, что в этом окне есть, а не ждёт широкого */
   const rail=T.controls(".rail",{btn:true});
-  ok(rail.length>=3&&rail.every(c=>c.lbl),"на борту видны кнопки, и у каждой есть имя: "+rail.map(c=>c.lbl).slice(0,6).join(", "));
+  ok(rail.length>=2&&rail.every(c=>c.lbl),"на борту видны кнопки, и у каждой есть имя: "+rail.map(c=>c.lbl).slice(0,6).join(", "));
   const z0=G.zoom;
-  ok(!!T.tap("zin")&&G.zoom>z0,"T.tap(«zin») приблизил камеру: "+z0.toFixed(2)+" → "+G.zoom.toFixed(2));
+  if(T.controls(".zoom",{btn:true}).some(c=>c.id==="zin"))
+    ok(!!T.tap("zin")&&G.zoom>z0,"T.tap(«zin») приблизил камеру: "+z0.toFixed(2)+" → "+G.zoom.toFixed(2));
+  else eq(T.tap("zin"),null,"коробки «+ −» в этом окне нет, и T.tap(«zin») честно отвечает null");
   const z1=G.zoom;T.wheel(1);
-  ok(G.zoom>z1,"T.wheel(1) — тоже крупнее");
+  ok(G.zoom>z1,"T.wheel(1) — крупнее и без коробки");
   /* протяжка по карте двигает лист */
   G.mode="map";drawMap();
   const V0=JSON.stringify(mapViewC());

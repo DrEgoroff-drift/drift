@@ -6,6 +6,28 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.431.0 - the fifth and fourth oracles: golden frames and a hundred worlds (M443 closed)
+
+Two oracles that judge no case and no law, only *difference*. **Golden frames**
+(`tests/91zzzzzzzzz-golden.js`): every `lookScenes` scene is reduced to a block signature (the
+quarter-size luma the detectors already grab, one byte per 8×8 block) and compared with
+`docs/golden/<W>x<H>.json`; a scene is red when more than 3 % of blocks moved beyond 18/255.
+Baselines exist for the three windows the harness runs (1280×800, the phone, the tall one);
+`test.ps1 -Accept [-Mobile|-Size]` re-shoots one window after a deliberate picture change and
+writes the file — kilobytes of text, no PNG in git. **A hundred worlds**
+(`tests/91zzzzzzzzz-worlds.js`, Node, 0.3 s): every station in six rings from the start is asked
+the same three questions — is there a station within one jump on a full tank, does any neighbour
+pay more than ×4.5 for what this counter sells, is fuel here more than ×3 the median — and the
+run prints the distribution of the best one-hop deal (median 3 352 net per full hold today).
+Both are staged until 2026-09-18: they print, they do not decide the verdict, and the lab's
+history sets their thresholds.
+
+Also: the same-hash suite now runs each scene twice *under seeded hands* (input timestamps,
+edge latches and the ghost click are on the game clock since M441 — this proves it); an
+exception inside a scene's settle is a «сбой» with the scene's name instead of a silently
+half-baked frame; the tools' self-test no longer expects the «+ −» box and a three-button rail
+on the phone (it was red in `-Mobile`, and would have been red in the lab tonight).
+
 ## 0.430.0 - one set of hands and eyes for every test, and rules the harness enforces itself (M442)
 
 `tests/90a-tools.js` gathers what five suites each wrote for themselves: actuators `T.go(scene, seed)`,

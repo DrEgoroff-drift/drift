@@ -43,6 +43,26 @@ only after a neighbour — an isolation leak. `?pick=3,17` runs only those posit
 thin wrappers over it. Real windows and screenshots of the whole page: `python docs/stand.py`
 (one Chrome over CDP for all scenes and sizes, PNGs to TEMP).
 
+**Golden frames (M443, 0.431.0).** `tests/91zzzzzzzzz-golden.js` compares every `lookScenes`
+scene with `docs/golden/<W>x<H>.json` — a block signature (one byte of mean luma per 8×8 block of
+the quarter-size copy), not a PNG. Red when more than 3 % of the blocks moved beyond 18/255; the
+report names the scene and the three worst blocks in canvas pixels. After a *deliberate* picture
+change, re-shoot the window(s) you changed and commit the JSON:
+
+```bash
+powershell -ExecutionPolicy Bypass -File test.ps1 -Accept
+```
+
+The file is named by the *canvas frame*, not the window: `1248x641.json` is the 1280×800 run,
+`548x685.json` the phone, `1408x1281.json` the tall one.
+`-Accept -Mobile` and `-Accept -Size 1440,1440` do the phone and the tall window; then
+`build.ps1`, because the baselines are embedded into `tests.html` as `GOLDEN`. A window without a
+baseline is not red — the suite says so and `-Accept` creates it. The suite is staged until
+2026-09-18 (its failures print but do not decide), as is the worlds oracle
+(`91zzzzzzzzz-worlds.js`, Node: every station in six rings — a neighbour within one jump, no
+counter paying ×4.5, fuel within ×3 of the median, and the printed distribution of the best
+one-hop deal).
+
 **Autotests first, headless.** `build.ps1` also builds `tests.html` — the same game plus
 `tests/*.js` at the end. Run it without the browser pane:
 

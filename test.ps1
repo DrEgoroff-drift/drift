@@ -17,7 +17,8 @@
 # -Mobile runs the same suites in a phone window instead: the layout guards are
 # declared {win:"phone"} and do not run in a desktop window at all, so without
 # this switch the phone half of the interface is never actually measured.
-param([switch]$NoBuild, [string]$Only = "", [switch]$Mobile, [int]$Fuzz = 0, [int]$Seed = 0, [string]$Size = "", [switch]$Full, [switch]$Browser, [int]$Jobs = 0, [switch]$Times, [switch]$Probe, [string]$Shuffle = "")
+#   powershell -ExecutionPolicy Bypass -File test.ps1 -Accept          # золотые кадры: снять эталон этого окна в docs/golden/ (с -Mobile/-Size — того окна)
+param([switch]$NoBuild, [string]$Only = "", [switch]$Mobile, [int]$Fuzz = 0, [int]$Seed = 0, [string]$Size = "", [switch]$Full, [switch]$Browser, [int]$Jobs = 0, [switch]$Times, [switch]$Probe, [string]$Shuffle = "", [switch]$Accept)
 # ── три яруса (0.359.3; автор 06.09: «в разработке никто хром не запускает», «быстрый — 20 с») ──
 #   test.ps1            Node: формулы и данные (325 наборов, ~5 с) + дым в Хроме: игра сама
 #                       прожила кадр (~2 с). Итого под десять секунд. Это прогон на каждую правку.
@@ -34,7 +35,7 @@ param([switch]$NoBuild, [string]$Only = "", [switch]$Mobile, [int]$Fuzz = 0, [in
 $root0 = Split-Path -Parent $MyInvocation.MyCommand.Path
 $nodeExe = (Get-Command node -ErrorAction SilentlyContinue).Source
 if (-not $nodeExe -and (Test-Path "C:\Claude\tools\node\node.exe")) { $nodeExe = "C:\Claude\tools\node\node.exe" }
-$nodeTier = -not ($Full -or $Browser -or $Only -or $Mobile -or $Fuzz -or $Size -or $Times -or $Jobs -or $Probe)
+$nodeTier = -not ($Full -or $Browser -or $Only -or $Mobile -or $Fuzz -or $Size -or $Times -or $Jobs -or $Probe -or $Accept)
 if ($nodeTier -and -not $nodeExe) { "node не найден (C:\Claude\tools\node или PATH) — идём через Хром"; $nodeTier = $false; $Browser = $true }
 if ($nodeTier) {
   [Console]::OutputEncoding = [Text.Encoding]::UTF8   # node пишет UTF-8; консоль 5.1 по умолчанию cp866
@@ -56,7 +57,12 @@ $chrome = @("C:\Program Files\Google\Chrome\Application\chrome.exe",
 if (-not $chrome) { throw "no headless browser found (Chrome/Edge)" }
 
 $url = "file:///" + ((Join-Path $root "tests.html") -replace "\\", "/")
+# -Accept (M443): золотые кадры снимаются заново и пишутся в docs/golden/<окно>.json —
+# после нарочной правки картинки или для окна, у которого эталона ещё нет. Гоняется
+# один набор, в одну страницу; страница кладёт снятое в <pre id="golden">.
+if ($Accept -and -not $Only) { $Only = "золотые кадры" }
 if ($Only) { $url += "?only=" + [uri]::EscapeDataString($Only) }
+if ($Accept) { $sep = if ($url -match "\?") { "&" } else { "?" }; $url += "$sep" + "accept=1" }
 # Фуззер (91zzzz-fuzz) на сборке гоняет короткий прогон — иначе он один стоит
 # дороже всех остальных наборов. -Fuzz 4000 включает длинный: его запускают
 # руками, когда ищут падение, и seed у него постоянный, так что провал
@@ -219,6 +225,25 @@ foreach ($r in $runs) {
 }
 # наборы не в своём окне (опция win) складываются по частям, как и карантин
 if ($offWin) { $tail += " · не в своём окне $offWin (win)" }
+# золотые кадры: снятое страницей — в docs/golden/<окно>.json (UTF-8 без BOM, LF)
+if ($Accept) {
+  $gdir = Join-Path $root "docs\golden"
+  if (-not (Test-Path $gdir)) { New-Item -ItemType Directory -Path $gdir | Out-Null }
+  $got = 0
+  foreach ($r in $runs) {
+    $raw = try { [System.IO.File]::ReadAllText($r.dom, [System.Text.Encoding]::UTF8) } catch { "" }
+    $gm = [regex]::Match($raw, '<pre id="golden"[^>]*data-key="([^"]+)"[^>]*>([\s\S]*?)</pre>')
+    if (-not $gm.Success) { continue }
+    $key = $gm.Groups[1].Value
+    $json = [System.Net.WebUtility]::HtmlDecode($gm.Groups[2].Value) -replace "`r`n", "`n"
+    $p = Join-Path $gdir ($key + ".json")
+    [System.IO.File]::WriteAllText($p, $json, (New-Object System.Text.UTF8Encoding $false))
+    $n = ([regex]::Matches($json, '"b":"')).Count
+    "эталон записан: docs/golden/$key.json ($n сцен) — пересобрать (build.ps1), чтобы прогон его увидел"
+    $got++
+  }
+  if (-not $got) { "страница не отдала золотых кадров: набор «золотые кадры» не шёл или окно не то" }
+}
 "{0} · пройдено {1} · наборов {2} из {3}{4}{5} · {6:N1} с" -f $(if ($fail) { "ПРОВАЛЕНО $fail" } else { "ВСЁ ЗЕЛЁНОЕ" }), $pass, $ran, $all, $tail, $(if ($Jobs -gt 1) { " · частей $Jobs" } else { "" }), $sw.Elapsed.TotalSeconds
 if ($stRan) { "карантин (в вердикт не идёт): наборов $stRan, провалов $stFail"; $staged | ForEach-Object { $_ } }
 if ($Times -and $slowest.Count) {

@@ -55,10 +55,11 @@ const DET_MUTE={
    `settle` из каркаса рисует без hud(), и первый кадр после приборов честно
    отличался от последнего до них: подписи карты стоят по высоте полосы
    приборов (--hudband), а её меряет hud(). Мигание, которого у игрока нет */
+const DET_SETTLE_ERRS=[];   /* осадка молчала об исключении и судила недопечённый кадр — теперь это «сбой» */
 function detSettle(max,floor){
   for(let i=0;i<max;i++){
     G.t++;
-    try{stepWorld(1);drawWorld();hud();}catch(e){break;}
+    try{stepWorld(1);drawWorld();hud();}catch(e){DET_SETTLE_ERRS.push("осадка, кадр "+i+": "+(e&&e.message||e));break;}
     if(i>=floor&&bakeIdle())break;
   }
 }
@@ -299,6 +300,8 @@ TEST_SUITES.push(() => suite("сквозной: сцены × пять жест�
     }
     steps++;
   };
+  /* исключение в осадке — «сбой» с именем сцены, а не тихий недопечённый кадр */
+  const drain=(id,where)=>{for(const e of DET_SETTLE_ERRS.splice(0))V.push({det:"сбой",scene:id,gesture:where,what:"исключение в осадке: "+e,n:1});};
   detHook(true);
   /* проверка проверки: ловушка опечаток обязана слышать, иначе закон о полях
      молча зелёный. Имени «детЗонд» в игре нет — его чтение должно лечь в счёт */
@@ -318,7 +321,7 @@ TEST_SUITES.push(() => suite("сквозной: сцены × пять жест�
       /* печь сцены почти никогда не пустеет до конца (развёртки соседних
          планет идут по одной за кадр), а дороже всего первый кадр: шести
          кадров хватает, чтобы судить устоявшееся, двенадцать стоили 13 с */
-      detSettle(6,2);
+      detSettle(6,2);drain(sc.id,"осадка");
       S.frame=detGrab();
       detCost("осадка",t0);
       let rec=null;
@@ -335,7 +338,7 @@ TEST_SUITES.push(() => suite("сквозной: сцены × пять жест�
           let back=true;try{back=sc.set()!==false;}catch(e){back=false;}
           if(!back)break;
           detHook(true);
-          detSettle(5,2);
+          detSettle(5,2);drain(sc.id,"переустановка после "+g);
           S.frame=detGrab();S.types=null;
           detCost("переустановка",t1);
         }
@@ -357,7 +360,7 @@ TEST_SUITES.push(() => suite("сквозной: сцены × пять жест�
           /* корабль стоит: после W он ещё катится, и его ход «отвечал» бы за
              немую кнопку. Покой ниже меряет шевеление мира уже при нём */
           G.ship.vx=0;G.ship.vy=0;G.ship.av=0;G.ap=null;G.orbit=null;
-          detSettle(3,3);S.frame=detGrab();   /* покой меряется от кадра уже вооружённого борта */
+          detSettle(3,3);drain(sc.id,"вооружение");S.frame=detGrab();   /* покой меряется от кадра уже вооружённого борта */
           const c1=detStep(S,"покой");armed=(c1.inst||[]).filter(r=>r.ru==="ракеты").length;judge(c1);
           G.cargo.missile=0;G.mslCool=0;
           judge(detStep(S,"РАКЕТА"));

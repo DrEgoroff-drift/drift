@@ -133,6 +133,22 @@ no PNG in git) by a YIQ-style distance, `?accept=1` rewrites the baseline, the l
 diff. Both need the pinned clock and the seeded generator — sky, weather, rain and chronicle
 change the frame and the economy by the hour today — which is why they wait for M441.
 
+**Built (0.431.0), with two departures from the plan above.** Golden frames are their own
+suite (`tests/91zzzzzzzzz-golden.js`), not a `detGolden(ctx)` inside the driver: the driver's
+idle frame is taken after gestures on a reused scene, a baseline wants the scene fresh from
+`set()` plus settle. The signature is coarser than pixelmatch — one byte of mean luma per 8×8
+block of the 320-px copy (`GOLD_BW`), red when >3 % of blocks move beyond 18/255 — because the
+lab's Chrome renders fonts and antialiasing differently from the laptop's GPU, and a
+per-pixel YIQ distance would be red every night on text alone; the week of staging says whether
+block means are coarse enough. Baselines are embedded by `build.ps1` as `GOLDEN` (a `file://`
+page cannot fetch them); `?accept=1` puts the fresh signatures in `<pre id="golden">`, and
+`test.ps1 -Accept` writes `docs/golden/<W>x<H>.json`. Imbalance is over *worlds*, not seeds:
+the galaxy is a function of coordinates, `rnd()` only touches roles, speech, cave décor and the
+belt, so «seeds ×100» would measure nothing — `tests/91zzzzzzzzz-worlds.js` asks every station in
+six rings the same three questions and prints the distribution of the best one-hop deal. Seeds
+×100 on *scenarios* (money per deal, fuel and time to goal) still belong to M446, once M444's bot
+can walk a scenario.
+
 ### 3.3 Scenarios — five lines each, readable by the author
 
 Three sources, every one passing through every detector, in three windows, on several seeds:

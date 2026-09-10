@@ -67,6 +67,46 @@ TEST_SUITES.push(()=>suite("детерминизм: рисованный кад�
   }
   ok(ran>0,"сцен с картинкой прогнано: "+ran);
 }));
+/* ── и под руками (M442 → M443) ──
+   Первые два набора шагают мир без ввода: они не видят случай, который живёт
+   в обработке клавиш — метки времени ввода (M441 перевёл их на игровые часы),
+   защёлки по фронту, «призрачный клик». Здесь те же сеяные руки, что у
+   T.hands и фуззера, дважды на одном семени: путь через ввод обязан
+   повторяться так же, как путь без него — иначе запись прогона (M444) не
+   воспроизведёт ничего. */
+function sameRunHands(sc,frames,hs){
+  resetWorld();
+  let ok0=true;
+  try{ok0=sc.set()!==false;}catch(e){return {err:"постановка упала: "+e.message};}
+  if(!ok0)return null;
+  const loop0=LOOP_OFF,dw=drawWorld,hu=hud,out=[];
+  LOOP_OFF=false;drawWorld=function(){};hud=function(){};
+  const r=rng(hashi(0xE2E,hs,17)),KS=["left","right","thrust","brake","act","fire"];
+  let i=0;
+  try{
+    for(i=1;i<=frames;i++){
+      if(i%4===1){for(const k of KS)keys[k]=r()<.3;actEdge=keys.act&&r()<.5;}else actEdge=false;
+      frameBody(wallMs());
+      if(i%100===0)out.push(stateHash());
+    }
+  }catch(e){return {err:"шаг "+i+" упал: "+e.message};}
+  finally{LOOP_OFF=loop0;drawWorld=dw;hud=hu;for(const k in keys)keys[k]=false;actEdge=false;}
+  return {h:out,t:G.t};
+}
+TEST_SUITES.push(()=>suite("детерминизм: те же сеяные руки на том же семени — тот же мир",()=>{
+  let ran=0;
+  for(const sc of lookScenes()){
+    const A=sameRunHands(sc,SAME_FRAMES,11);
+    if(A===null)continue;
+    if(A.err){ok(false,sc.id+": "+A.err);continue;}
+    ran++;
+    const B=sameRunHands(sc,SAME_FRAMES,11);
+    if(B&&B.err){ok(false,sc.id+" (второй): "+B.err);continue;}
+    eq(B&&B.h.join(" "),A.h.join(" "),sc.id+": под руками второй прогон — тот же мир");
+  }
+  ok(ran>=10,"сцен под руками прогнано "+ran);
+  resetWorld();
+}));
 TEST_SUITES.push(()=>suite("детерминизм: хэш мира видит перемену и не видит порядка полей",()=>{
   resetWorld();
   const h0=stateHash();
