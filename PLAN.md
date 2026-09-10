@@ -366,6 +366,76 @@ main release, as M360a/M369b were.
   guard in `tests/91zzzzk-mapaddr`. `site/war.html` untouched (its own .38).
 - ~~**M440 the lab**~~ - 0.427.0: the author, 10.09.2026 - «на сервере штука, которая гоняет тесты и пишет в лог ошибки… не долбилась в одну ошибку». The suites run on the host at night (`lab/lab.sh`, `lab.yml`), one Chrome at a time under 500 MB, with a keyed error log that counts instead of repeating and a fuzz hunt that stops itself; page at https://drift-game.ru/lab/. Design and measurements: `docs/LAB.md`.
 
+## Tests — the architecture and the queue (M441–M446, 2026-09-10)
+
+The author, 10.09.2026: «тесты должны проходить быстро, должны предсказывать, должны ловить
+баги, которые есть, но их не заметили… должны заменять ручное тестирование». The reasoning, the
+industry comparison and the skeleton are in **`docs/DESIGN-tests.md`**; this is the queue. Rule
+of place from §3 there: a law becomes a detector, a player's path becomes a scenario, a formula
+becomes a Node suite — nothing else becomes a suite, and the existing 809 are frozen (fix reds,
+extract tools, do not extend). Order is strict: determinism first, everything after stands on it.
+
+- **M441 determinism in the game** — `rnd()`/`now()` in `01-core`, the 114 `Math.random` and
+  245 `Date.now` migrated by script, a static law against raw calls, the same-hash test (two runs,
+  one seed, equal `G` hash every hundred frames over `lookScenes`). Kills the by-the-hour reds
+  («план: комбинат», the M391 air suite of 0.427.1) at the root.
+- **M442 the test API and the harness rules** — `tests/90a-tools.js` (actuators `go/press/tap/
+  drag/wheel/wait/advance/window/give/board/bot`, observers `frame/state/look/ledger/text/
+  controls/clock`) extracted from `hands`, `promise`, `look`, `fuzz`, `keys`; `docs/stand.py` over
+  CDP, one Chrome for all scenes; zero-assertion suite is red; `ok(true` and `typeof`-guards in
+  tests down to zero by a names-net over the test sources; `suite(name, fn, {tier, win, stage})`
+  replaces `SLOW_SUITES`/`NODE_BROWSER`/`NODE_SKIP`; `?shuffle=seed`; `stage` = quarantine (report,
+  not verdict, for a week).
+- **M443 the five oracles as detectors** — crash, stuck, law (NaN/type/unknown field, a `Proxy`
+  over `G` counting reads of missing fields, instruments → fields table, control answer classes,
+  picture laws: legible text × ruler, parallax by depth, sharpness, no flicker, no popping, one
+  human height), imbalance over seeds, picture (golden frame per scene × three windows, perceptual
+  threshold, `accept`). Run over `lookScenes` × five gestures first; every red here is a real bug
+  and gets its own commit.
+- **M444 scenarios and coverage** — fifteen walks from the briefs and `91zzy-walk`; `?rec=1`
+  recordings in `15-input` with a «bug here» key, replayed under perturbation; a six-goal bot;
+  three windows; the build prints the coverage map mode × gesture × window × detector;
+  `test.ps1 -Changed` from `docs/TESTMAP.json` (suite → modules via `INDEX.md`).
+- **M445 the mutant zoo** — ten mutants from the fifteen history bugs (`zoomStep` no-op,
+  `mapFont` without `UIK`, `mapSkyShift(d)=d`, W without effect, resolution never returns, a rail
+  button without `aria-label`, a manager field off the `applySave` whitelist, a perk without a
+  reader, a mode drawing an empty frame, `resetWorld` leaving a field); `test.ps1 -Mutants`, run
+  nightly in the lab; all must be killed.
+- **M446 the lab's own oracles** — previous-version diff, seeds ×100 on two scenarios, `look()`
+  telemetry from players into `log.php` and the lab page; and the lab's loose ends below.
+
+### The lab, first night (session 20260909-235848, 0.427.0, 178 min, 127 runs)
+
+What lies where: the log at https://drift-game.ru/lab/errors.txt (11 open keys), the page at
+https://drift-game.ru/lab/, raw `runs.jsonl`/`errors.json`/`state.json` in `~/drift-data/lab/`
+on the host (`ssh drift`), the laptop's copy of the session log in `lab/session.log`. The
+findings, sorted by what they are:
+
+- **Real reds, to fix** — «база M391: воздух и вода» (fixed in 0.427.1: measured with the weather
+  on); «полный трюм: при полном трюме ни одна кнопка не переполнила» (heavy, red alone on the
+  host — reproduce with `test.ps1 -Only "полный трюм"` on the laptop first; if green there it is
+  order- or host-dependent, which is a finding of its own); «свет: звезда — самое светлое
+  (Нейэль…)» — the window-dependent loose end already listed under «Tests: two tiers»; the lab
+  reproduces it on 1280×800 headless, so it is not window-dependent after all.
+- **OOM at the host's 768 MB, not game bugs** — the phone window dies inside «сквозной: в тексте
+  игры нет undefined», the tall window inside «шахта: та же мерка»; heavy «двери» and «устаревшая
+  кнопка» die alone; the fuzzer dies on 9 of 65 seeds (each green seed ~103 s and 700–768 MB).
+  All are `getImageData`-heavy. Solo runs of the first three are automatic now; the fuzzer's OOMs
+  cost 300 s each — M446 lowers its timeout to 150 s, tries `--renderer-process-limit=1` /
+  `--disable-dev-shm-usage`, and classes OOM/timeout as `host` so they do not sit in the table
+  with game bugs. Whether the raster these suites hold is *needed* is a question for the oven
+  net (`91zzzzy-bake`), not for the lab.
+- **The hunt** — 65 seeds, 0 game failures, streak 3 of 5; every seed is a new path (M339), so
+  the fuzzer as it stands finds nothing on 0.427.0 — the detectors of M443 are what will make the
+  same seeds informative.
+- **The lab's own loose ends (into M446)** — no `fix` command and no auto-close (a key stays open
+  until nobody sees it; rule: not seen in three sessions → closed, reopened if it returns);
+  `lab.yml` has not had its first scheduled run yet (02:00 Moscow, same `DRIFT_SSH_KEY` as the
+  deploy) — check the page on the morning of 11.09; light shards run at 550–770 MB of 768, one
+  more canvas and they join the OOM list; a PHP «can the site run short Node jobs on player hits»
+  probe was blocked by the classifier and is the author's call; `lab.ps1` holds the session only
+  while the laptop is awake.
+
 ## The frame is the judge for anything the player touches (M437)
 
 Eight hundred suites missed a dead button on the map for as long as it existed, and the three
