@@ -27,6 +27,49 @@ function Sort-Ordinal($items) {
   $a = @($items); [Array]::Sort($a, [System.Comparison[object]]{ param($x, $y) [string]::CompareOrdinal($x.Name, $y.Name) }); return $a
 }
 
+# ── закон часов и случая (M441) ──
+# Игра обязана повторяться: одно семя и одни часы — один мир (DESIGN-tests §3.5).
+# Поэтому сырые Math.random, Date.now, performance.now и new Date() без
+# аргумента в src/ запрещены везде, кроме 01-core, где живут rnd/rndFx/now и
+# настоящие часы под своими именами (wallMs, wallNow, uidRand). И rnd() —
+# случай МИРА — запрещён в рисовании: функция draw* или модуль *-draw тянут
+# rndFx(), иначе нарисованный кадр сдвигал бы мир.
+# Почему здесь, а не в наборе: сборка — единственное, что проходят ВСЕ ярусы,
+# выкладка и лаборатория, и ей не нужен ни Node, ни Хром. Нарушение — ошибка:
+# ни drift.html, ни tests.html из беззаконных исходников не собираются, а
+# старый tests.html удаляется, чтобы быстрый ярус не прогнал вчерашнюю сборку
+# и не сказал «зелёное». Комментарии закон не читает.
+$LAW_FREE = @("01-core.js")
+function ClockLaw($files) {
+  $bad = New-Object System.Collections.Generic.List[string]
+  $raw = [regex]'Math\.random\b|Date\.now\b|performance\.now\b|new\s+Date\(\s*\)'
+  $top = [regex]'(?m)^(?:async\s+)?function\s*\*?\s*([A-Za-z0-9_$]+)|^(?:const|let|var)\s+([A-Za-z0-9_$]+)'
+  $rndCall = [regex]'(?<![\w$.])rnd\s*\('
+  $cm = [regex]'(?s)/\*.*?\*/|(?<![:\\])//[^\n]*'
+  foreach ($f in $files) {
+    $text = [System.IO.File]::ReadAllText($f.FullName, $enc)
+    $free = $LAW_FREE -contains $f.Name
+    $rawM = if ($free) { @() } else { @($raw.Matches($text)) }
+    $rndM = @($rndCall.Matches($text))
+    if (-not $rawM.Count -and -not $rndM.Count) { continue }        # дёшево: большинство модулей чисты
+    $cms = @($cm.Matches($text))
+    $inCm = { param($pos) foreach ($c in $cms) { if ($c.Index -gt $pos) { return $false }; if ($pos -lt $c.Index + $c.Length) { return $true } }; return $false }
+    $lineOf = { param($pos) 1 + ([regex]::Matches($text.Substring(0, $pos), "`n")).Count }
+    foreach ($r in $rawM) { if (-not (& $inCm $r.Index)) { $bad.Add(("{0}:{1}  {2}" -f $f.Name, (& $lineOf $r.Index), $r.Value)) } }
+    if ($rndM.Count) {
+      $tops = @($top.Matches($text))
+      $drawFile = $f.Name -match '-draw'
+      foreach ($r in $rndM) {
+        if (& $inCm $r.Index) { continue }
+        $name = ""
+        foreach ($q in $tops) { if ($q.Index -gt $r.Index) { break }; $name = if ($q.Groups[1].Success) { $q.Groups[1].Value } else { $q.Groups[2].Value } }
+        if ($drawFile -or $name -match '^draw') { $bad.Add(("{0}:{1}  rnd() в рисовании ({2}) — здесь rndFx()" -f $f.Name, (& $lineOf $r.Index), $name)) }
+      }
+    }
+  }
+  return ,$bad
+}
+
 function Build {
   $shell = [System.IO.File]::ReadAllText((Join-Path $src "index.html"), $enc)
   $css   = [System.IO.File]::ReadAllText((Join-Path $src "style.css"),  $enc)
@@ -34,6 +77,12 @@ function Build {
   $files = Sort-Ordinal (Get-ChildItem (Join-Path $src "*.js"))
   if ($files.Count -eq 0) { throw "в src/ нет ни одного .js — собирать нечего" }
 
+  $law = ClockLaw $files
+  if ($law.Count) {
+    $tOld = Join-Path $root "tests.html"
+    if (Test-Path $tOld) { Remove-Item $tOld -Force }
+    throw ("закон часов и случая (M441): {0} нарушений — rnd/rndFx/now/wallMs/wallNow из 01-core`n  " -f $law.Count) + ($law -join "`n  ")
+  }
   $parts = foreach ($f in $files) { [System.IO.File]::ReadAllText($f.FullName, $enc) }
   $js = $parts -join "`n"
 
