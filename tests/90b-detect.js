@@ -207,21 +207,23 @@ function detParallax(a,b,DX,DY){
   }
   return {tex,deep:deep/Math.max(1,tex),sheet:sheet/Math.max(1,tex),still:still/Math.max(1,tex)};
 }
-/* средняя разница по блокам 8×8 копии: где именно кадр сдвинулся */
+/* сколько проб в каждом блоке 8×8 копии сдвинулось резко: где именно кадр ожил */
 function detBlocks(a,b){
-  const SW=a.w,SH=a.h,B=8,nx=Math.floor(SW/B),ny=Math.floor(SH/B),out=new Float32Array(nx*ny);
+  const SW=a.w,SH=a.h,B=8,nx=Math.floor(SW/B),ny=Math.floor(SH/B),out=new Uint8Array(nx*ny);
   for(let j=0;j<ny;j++)for(let i=0;i<nx;i++){
-    let s=0;for(let y=j*B;y<j*B+B;y++)for(let x=i*B;x<i*B+B;x++)s+=Math.abs(a[y*SW+x]-b[y*SW+x]);
-    out[j*nx+i]=s/(B*B);
+    let n=0;for(let y=j*B;y<j*B+B;y++)for(let x=i*B;x<i*B+B;x++)if(Math.abs(a[y*SW+x]-b[y*SW+x])>24)n++;
+    out[j*nx+i]=n;
   }
   return out;
 }
-/* «новое движение»: блоки, сдвинувшиеся под жестом там, где в покое было тихо.
+/* «новое движение»: блоки, ожившие под жестом там, где в покое было тихо.
    Человечек, прошедший по комнате под снегопадом, меняет полпроцента кадра —
-   меньше, чем снег за то же время, — но меняет там, где снег не менял ничего */
+   меньше, чем снег за то же время, — но меняет там, где снег не менял ничего;
+   курсор базы, ушедший на клетку, — тонкие уголки и подпись, сотые доли кадра,
+   но на месте, которое в покое стояло */
 function detNewMotion(gB,idleB){
   if(!gB||!idleB||gB.length!==idleB.length)return 0;
-  let n=0;for(let i=0;i<gB.length;i++)if(gB[i]>8&&gB[i]>3*idleB[i]+4)n++;
+  let n=0;for(let i=0;i<gB.length;i++)if(gB[i]>=3&&idleB[i]<=1)n++;
   return n;
 }
 /* блоки 8×8 копии: мигание (A→B→A) и выскакивание (плоское ↔ фактурное) */
@@ -519,7 +521,7 @@ function detControls(c){
   if(cls===false){v.push(detV(c,"закон",why));return v;}
   if(cls===true||other||c.mute)return v;
   const fresh=detNewMotion(detBlocks(c.before,c.after),c.idleB);
-  if(!(d>Math.max(churn*2,.004))&&fresh<3)
+  if(!(d>Math.max(churn*2,.004))&&fresh<2)
     v.push(detV(c,"закон","жест «"+c.gesture+"» остался без ответа: кадр "+(d*100).toFixed(2)+"% при своём шевелении "+
       (churn*100).toFixed(2)+"%, нового движения "+fresh+" блоков, голоса нет, окна нет, режим тот же"+
       (c.fieldMoved?" (поле при этом менялось — игрок его не видит)":"")));

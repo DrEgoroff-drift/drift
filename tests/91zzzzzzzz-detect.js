@@ -41,7 +41,15 @@ const DET_MUTE={
      ставит клеть на верхний ярус, и W там упирается в потолок ствола.
      Холст базы рукой не трогают — у tap() её нет */
   "base · W":"клеть стоит на верхнем ярусе — выше некуда",
-  "base · протяжка":"базу ведут клавиши — холст рукой не трогают"
+  "base · протяжка":"базу ведут клавиши — холст рукой не трогают",
+  /* санаторий, как и зимовка, трогают тычком по вещам (spaTap) — клавиш нет */
+  "spa · W":"санаторий трогают тычком — клавиш у него нет",
+  "spa · A":"санаторий трогают тычком — клавиш у него нет",
+  "spa · протяжка":"протяжка — не тычок, а вещи санатория берут тычком",
+  /* дом изнутри: ходят ◀ ▶, говорят и смотрят ДЕЙСТВИЕМ (29c-home-in);
+     газа в комнате нет, холст рукой не трогают */
+  "homein · W":"дома ходят ◀ ▶ — газа в комнате нет",
+  "homein · протяжка":"дом рукой по холсту не водят"
 };
 /* осадка сцены так, как её делает игра: шаг, рисунок, приборы — каждый кадр.
    `settle` из каркаса рисует без hud(), и первый кадр после приборов честно
@@ -252,7 +260,7 @@ TEST_SUITES.push(() => suite("сквозной: сцены × пять жест�
   const T0=performance.now();DET_INST_N=0;
   resetWorld();
   const snap=JSON.parse(JSON.stringify(snapshot()));
-  const V=[],run=[],skipped=[],seenV={};let steps=0,scenes=0;const exempted={};
+  const V=[],run=[],skipped=[],seenV={},resets=[];let steps=0,scenes=0;const exempted={};
   const judge=c=>{
     for(const D of DETECTORS){
       const t=performance.now();let got=[];
@@ -275,14 +283,20 @@ TEST_SUITES.push(() => suite("сквозной: сцены × пять жест�
   let doors=0;
   try{
     for(const sc of lookScenes()){
+      let t0=performance.now();
       resetWorld();
       let up=true;try{up=sc.set()!==false;}catch(e){up=false;V.push({det:"сбой",scene:sc.id,gesture:"сцена",what:"сцена не ставится: "+e.message,n:1});}
       if(!up||G.mode==="none"){skipped.push(sc.id);continue;}
       scenes++;
       detHook(true);
       const S={id:sc.id,frame:null,churn:0,types:null};
-      detSettle(12,3);
+      detCost("постановка",t0);t0=performance.now();
+      /* печь сцены почти никогда не пустеет до конца (развёртки соседних
+         планет идут по одной за кадр), а дороже всего первый кадр: шести
+         кадров хватает, чтобы судить устоявшееся, двенадцать стоили 13 с */
+      detSettle(6,2);
       S.frame=detGrab();
+      detCost("осадка",t0);
       let rec=null;
       for(const g of ["покой","W","A","протяжка","колесо"]){
         const c=detStep(S,g);
@@ -290,19 +304,21 @@ TEST_SUITES.push(() => suite("сквозной: сцены × пять жест�
         judge(c);
         /* жест увёл из сцены — поставить заново: следующему жесту нужна она же */
         if(G.mode!==c.mode0||detOverlays().length){
+          const t1=performance.now();resets.push(sc.id+"/"+g+"→"+G.mode);
           hCalm();resetWorld();
           let back=true;try{back=sc.set()!==false;}catch(e){back=false;}
           if(!back)break;
           detHook(true);
-          detSettle(8,2);
+          detSettle(5,2);
           S.frame=detGrab();S.types=null;
+          detCost("переустановка",t1);
         }
         detHook(true);
       }
       if(rec)run.push(rec);
       /* кегль в большом окне — последним: после него сцену больше не судят */
       {const t=performance.now();const r=detRuler(S);detCost("мерка",t);judge(r);}
-      if(sc.id==="система"){const d=detDoors(S);doors=d.overlays.length;judge(Object.assign(d,{names:null}));}
+      if(sc.id==="система"){const t=performance.now();const d=detDoors(S);doors=d.overlays.length;detCost("двери",t);judge(Object.assign(d,{names:null}));}
     }
     const t=performance.now();
     for(const v of detHuman(run)){const why=detExempt(v);if(why){exempted[why]=(exempted[why]||0)+1;continue;}V.push(Object.assign(v,{n:1}));}
@@ -319,6 +335,7 @@ TEST_SUITES.push(() => suite("сквозной: сцены × пять жест�
   for(const k in DET_COST)delete DET_COST[k];
   ok(scenes>=12&&steps>=scenes*5,"сцен "+scenes+", шагов под детекторами "+steps+(skipped.length?" (не встали: "+skipped.join(", ")+")":"")+
     " · "+Math.round(performance.now()-T0)+" мс · цена: "+cost+
+    (resets.length?" · сцена ставилась заново: "+resets.join(", "):"")+
     (Object.keys(exempted).length?" · исключено по праву: "+Object.keys(exempted).map(k=>k+" ×"+exempted[k]).join("; "):""));
   eq(Object.getPrototypeOf(G),Object.prototype,"прототип G возвращён: игра после прогона та же, что до");
   ok(heard,"ловушка опечаток слышит: чтение поля, которого нет, легло в счёт");
