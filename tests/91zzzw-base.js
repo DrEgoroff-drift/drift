@@ -190,6 +190,9 @@ function bCrew(B,n){
   return G.crew;
 }
 
+/* Замер идёт без погоды (bNoDir): директор M397 сеется номером РЕАЛЬНОЙ смены, и в
+   иное время суток он устраивал выброс — набор краснел по часам (получено 52,
+   ждали 108; лаборатория, 10.09.2026). Здесь мерится арифметика дыхания, не удача. */
 TEST_SUITES.push(()=>suite("база M391: воздух и вода, и кто их тратит",()=>{
   const B=bLife();
   /* запас есть у всякой базы, и он целый */
@@ -201,7 +204,7 @@ TEST_SUITES.push(()=>suite("база M391: воздух и вода, и кто �
      разу не согласившись на эту игру. */
   G.crew=[];
   B.t0=baseShift()-20;
-  baseResolve(B,Date.now());
+  bNoDir(()=>baseResolve(B,Date.now()));
   eq(baseLife(B).air,LIFE_START,"за двадцать смен без людей воздух не тронут");
   eq(baseLife(B).water,LIFE_START,"и вода тоже");
   ok(!baseParked(B),"и вставать не с чего");
@@ -209,7 +212,7 @@ TEST_SUITES.push(()=>suite("база M391: воздух и вода, и кто �
   bCrew(B,2);
   eq(baseLifeNeed(B).air,2*LIFE_AIR,"двое дышат вдвое");
   B.t0=baseShift()-3;
-  baseResolve(B,Date.now());
+  bNoDir(()=>baseResolve(B,Date.now()));
   eq(baseLife(B).air,LIFE_START-3*2*LIFE_AIR,"три смены на двоих — шесть заходов дыхания");
   eq(baseLife(B).water,LIFE_START-3*2*LIFE_WATER,"и столько же воды");
   /* ── машины делают запас изо льда ──
@@ -223,14 +226,14 @@ TEST_SUITES.push(()=>suite("база M391: воздух и вода, и кто �
   B.pool.ice=100;
   const a0=baseLife(B).air,i0=B.pool.ice;
   B.t0=baseShift()-1;
-  baseResolve(B,Date.now());
+  bNoDir(()=>baseResolve(B,Date.now()));
   ok(baseLife(B).air>a0,"электролизёр прибавил воздуха: "+a0+" → "+baseLife(B).air);
   ok(B.pool.ice<i0,"и лёд на это ушёл: "+i0+" → "+B.pool.ice);
   /* лёд кончился — машина просто стоит, и это не поломка */
   B.pool.ice=0;
   const a1=baseLife(B).air;
   B.t0=baseShift()-1;
-  baseResolve(B,Date.now());
+  bNoDir(()=>baseResolve(B,Date.now()));
   ok(baseLife(B).air<a1,"без льда машина не делает ничего, а люди дышат");
 }));
 
