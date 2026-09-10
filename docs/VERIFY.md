@@ -55,7 +55,8 @@ by frame, in two thirty-second segments with a world snapshot at each head — l
 `tests.html` and run `T.replay(rec)` — the same seed brings the world to the same point;
 `T.replay(rec,{seed:5,hour:3,each:i=>…})` replays under perturbation with a hook per frame for the
 detectors. Segments end only in flight, dock or map (the snapshot keeps nothing ephemeral). Screen
-clicks are not recorded.
+buttons are recorded as frame events (id and label) and pressed on replay; drags and the wheel
+are not.
 
 **Only what you touched (M444, `-Changed`).** `build.ps1` writes `docs/TESTMAP.json` — for every
 test file, the `src/` modules whose top-level symbols it names — and stamps each test file into

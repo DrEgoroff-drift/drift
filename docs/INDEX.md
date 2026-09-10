@@ -5595,7 +5595,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/15b-helm-draw.js · 13 КБ
   · штурвал: рисунок (M422):1
 
-## src/15c-rec.js · 5 КБ
+## src/15c-rec.js · 6 КБ
   · запись ввода: последние полминуты по кадрам (M444):1
 
 ## src/16-flight.js · 29 КБ
@@ -6077,7 +6077,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/90-harness.js · 43 КБ
   · автотесты: каркас:1
 
-## tests/90a-tools.js · 42 КБ
+## tests/90a-tools.js · 43 КБ
   · автотесты: инструменты (M442):1
 
 ## tests/90b-detect.js · 22 КБ
@@ -6730,7 +6730,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzzzzzzza-walks.js · 11 КБ
   · прогоны: пути игрока под детекторами (M444, DESIGN-tests §3.3):1
 
-## tests/91zzzzzzzzb-replay.js · 3 КБ
+## tests/91zzzzzzzzb-replay.js · 5 КБ
   · запись и повтор: запись игрока — это сценарий (M444, §3.3):1
 
 ## tests/91zzzzzzzzc-trips.js · 4 КБ

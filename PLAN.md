@@ -306,9 +306,10 @@ extract tools, do not extend). Order is strict: determinism first, everything af
   `drift.rec`), `T.replay(rec,{seed,hour,each})`, suite `91zzzzzzzzb-replay` (Node). **0.435.0:**
   four more walks — a fight with pirates in a far system (`T.bot("fight")` aims and fires), the
   base's lift and compartments, the home's room and a thing to look at, the wanderer's shelf and
-  a lot bought for matches — twelve paths, ~22 s. **Left:** the recorder does not see screen
-  clicks (counter, tabs) — a tap on a screen is a boundary to lift when a recording needs it; a
-  cooperative walk; the map printed per window by the build, not per run.
+  a lot bought for matches — twelve paths, ~22 s. **0.437.0:** the recorder keeps screen clicks
+  as frame events (button id and label) and the replay presses them on the screen open at that
+  frame; the bot opens the trade section by its button, as a player does. **Left:** a cooperative
+  walk; drags and the wheel are not recorded; the map printed per window by the build, not per run.
 - ~~**M445 the mutant zoo**~~ — 0.433.0: eleven mutants in `tests/mutants.json` (`zoomStep`
   no-op, `mapFont` without the ruler, `mapSkyShift(d)=d`, W without thrust, a lying fuel readout,
   an icon button without `aria-label`, a manager field off `applySave`, a perk without a reader,

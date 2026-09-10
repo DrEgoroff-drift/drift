@@ -6,6 +6,16 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.437.0 - the recorder sees the screen's buttons too (M444)
+
+A click on any button while `?rec=1` is on becomes a frame event — the button's id and label
+at that frame — and `T.replay` presses it on whatever screen is open when that frame comes
+(by id first, then by label); events after the last frame, a button pressed once docked, are
+pressed after the last frame. The bot now opens the trade section by its button ТОРГОВЛЯ instead
+of assigning the tab, so a recorded sale replays: the new suite records a flight to the station,
+the docking and ПРОДАТЬ ВСЁ, replays it and gets the same credits. Drags and the wheel are still
+not recorded.
+
 ## 0.436.0 - the same trip in twelve worlds, and the distribution it leaves (M446, first oracle)
 
 `tests/91zzzzzzzzc-trips.js` sends the bot on one round trip — to the planet, land, drill a

@@ -61,4 +61,16 @@ function recMark(){
   say("Запись сохранена\n"+Math.round(n/60)+" с ввода · drift.rec");
   return d;
 }
+/* экранные кнопки — тоже событие кадра: [кадр, "tap", id, надпись]. Повтор
+   жмёт кнопку по id или по надписи на том экране, который к этому кадру
+   открыт (T.tap). Тычки по холсту (планета, станция) уже лежат в событии
+   автопилота; протяжка и колесо в запись не входят */
+try{
+  addEventListener("click",e=>{
+    if(!REC)return;
+    const b=e.target&&e.target.closest?e.target.closest("button,[onclick]"):null;
+    if(!b)return;
+    REC.ev.push([REC.f.length/2,"tap",b.id||"",String(b.textContent||"").replace(/\s+/g," ").trim().slice(0,40)]);
+  },true);
+}catch(e){}
 try{if(/[?&]rec=1/.test(location.search))recStart();}catch(e){}

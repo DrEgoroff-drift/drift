@@ -40,3 +40,19 @@ TEST_SUITES.push(()=>suite("запись: полминуты ввода по к�
   ok(["surface","dig","landing","system"].includes(G.mode),"режим после возмущения осмысленный: "+G.mode);
   recStop();resetWorld();
 }));
+/* экранные кнопки: тычок по ПРОДАТЬ ВСЁ на прилавке записывается событием
+   кадра и повторяется тем же прилавком — деньги сходятся до кредита */
+TEST_SUITES.push(()=>suite("запись: тычок по кнопке экрана повторяется — продажа на прилавке даёт те же деньги",{tier:"browser"},()=>{
+  T.go("система");T.give("cargo","iron",10);
+  recStart();
+  const a=T.bot("station"),b=T.bot("dock"),c=T.bot("sell");
+  ok(a.ok&&b.ok&&c.ok,"бот долетел, состыковался и продал: "+[a,b,c].map(r=>r.ok?"да":r.why).join(" · "));
+  const rec=recDump();recStop();
+  const cr=G.credits,taps=rec.segs.reduce((n,s)=>n+s.ev.filter(e=>e[1]==="tap").length,0);
+  ok(taps>=1,"в записи есть событие тычка: "+taps+" ("+rec.segs.map(s=>s.ev.filter(e=>e[1]==="tap").map(e=>e[3]).join("/")).join(" ")+")");
+  T.calm();
+  const R=T.replay(JSON.parse(JSON.stringify(rec)));
+  eq(G.credits,cr,"после повтора кредиты те же: "+cr);
+  eq(G.mode,"dock","и мир на станции");
+  T.calm();resetWorld();
+}));

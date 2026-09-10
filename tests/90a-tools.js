@@ -316,7 +316,8 @@ const T=(()=>{
         if(G.mode!=="dock")return R(false,"не на станции: "+G.mode);
         if(!TRADE_KEYS.some(k=>G.cargo[k]>0))return R(false,"трюм пуст — продавать нечего");
         const cr=G.credits;
-        tab="market";syncTabs();renderTab();
+        /* раздел — кнопкой, как игрок: запись (15c-rec) видит тычок, а не присваивание */
+        if(!tap("ТОРГОВЛЯ"))return R(false,"раздела ТОРГОВЛЯ на этой станции нет");
         const c=tap("ПРОДАТЬ ВСЁ");
         if(!c)return R(false,"кнопки ПРОДАТЬ ВСЁ нет на прилавке");
         return R(G.credits>cr,"кнопка нажата, а кредиты те же: "+cr);}
@@ -430,21 +431,23 @@ const T=(()=>{
       clockSet(t0);G.t=h.t;G.mode=h.mode;
       const KS=h.keys;prevAct=false;
       const ev=(sg.ev||[]).slice();
+      const fire=e=>{
+        if(e[1]==="planet"){const p=(G.sys.planets||[])[e[2]];if(p){G.ap={kind:"planet",p,phase:"fly"};G.orbit=null;}}
+        else if(e[1]==="belt")G.ap={kind:"belt",ax:e[3],ay:e[4],phase:"fly"};
+        else if(e[1]==="tap"){if(!(e[2]&&tap(e[2]))&&e[3])tap(e[3]);}   /* экранная кнопка: по id, потом по надписи */
+        else G.ap={kind:e[1],phase:"fly"};
+      };
       for(let i=0;i<sg.f.length;i+=2){
         const m=sg.f[i],dt=(sg.f[i+1]||64)/64,fi=i/2;
-        /* события кадра: цель автопилота, поставленная тычком */
-        while(ev.length&&ev[0][0]<=fi){
-          const e=ev.shift();
-          if(e[1]==="planet"){const p=(G.sys.planets||[])[e[2]];if(p){G.ap={kind:"planet",p,phase:"fly"};G.orbit=null;}}
-          else if(e[1]==="belt")G.ap={kind:"belt",ax:e[3],ay:e[4],phase:"fly"};
-          else G.ap={kind:e[1],phase:"fly"};
-        }
+        /* события кадра: цель автопилота, поставленная тычком, и кнопки экрана */
+        while(ev.length&&ev[0][0]<=fi)fire(ev.shift());
         for(let k=0;k<KS.length;k++)keys[KS[k]]=!!(m&(1<<k));
         actEdge=keys.act&&!prevAct;prevAct=keys.act;
         clockAdvance(dt*16.667);
         stepWorld(dt);G.t+=dt;n++;
         if(o.each)o.each(n);
       }
+      while(ev.length)fire(ev.shift());   /* тычки после последнего кадра — кнопка, нажатая уже в доке */
     }
     for(const k in keys)keys[k]=false;actEdge=false;prevAct=false;
     return {frames:n,hash:stateHash(),mode:G.mode};
