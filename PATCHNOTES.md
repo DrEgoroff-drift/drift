@@ -6,6 +6,25 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.433.0 - the mutant zoo, and a run that knows what you touched (M445, M444 part two)
+
+`tests/mutants.json` holds eleven one-line breakages, each a bug from the project's history: a
+`zoomStep` that does nothing, map type without the ruler, the sky riding with the sheet, W without
+thrust, a lying fuel readout, an icon button without a word, a manager field off the save
+whitelist, a perk nobody reads, a mode drawing an empty frame, a bare label on a day sky,
+`resetWorld` leaving a field. `test.ps1 -Mutants` applies each in place, builds, runs the suites
+it names as its killers (`?only=a|b` now matches any of several fragments) and restores the file
+through git; one line per mutant — killed by which failure, or ВЫЖИЛ. First run: ten of eleven
+died in 266 s; the survivor, the button without a word, was a hole in the detectors — the law
+detector now refuses any visible control with neither text nor `aria-label` nor `title`, and
+the eleventh dies too. A survivor is fixed in a detector, never by dropping the mutant.
+
+`test.ps1 -Changed` runs only what your edit touches: `build.ps1` writes `docs/TESTMAP.json`
+(for every test file, the `src/` modules whose top-level symbols it names) and stamps each test
+file into `tests.html` as `TEST_FILE`; `-Changed` reads `git diff HEAD` plus untracked files under
+`src/` and `tests/`, picks the test files that name a changed module, and runs them in Node and in
+Chrome — heavy suites included, usually in seconds (`-Files "91a-flight|91c-mgr"` picks by hand).
+
 ## 0.432.0 - a bot walks the player's paths, and the detectors judge every step (M444, part one)
 
 `T.bot(goal)` in `tests/90a-tools.js` is no longer a stub: `star`, `station`, `planet`, `dock`,

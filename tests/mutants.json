@@ -21,7 +21,7 @@
    "why":"прибор «бак» показывает не то, что в мире (история: «РАКЕТА 0» при ракетах в трюме)"},
   {"name":"rail-no-aria","file":"src/index.html",
    "find":" aria-label=\"приблизить\"","replace":"",
-   "kill":"руки:",
+   "kill":"сквозной: сцены",
    "why":"кнопка без слова: значок без aria-label (история: кнопка на борту без имени)"},
   {"name":"save-drops-mgrs","file":"src/14-save.js",
    "find":"G\\.mgrs=\\(Array\\.isArray\\(s\\.mgrs\\)\\?s\\.mgrs:\\[\\]\\)","replace":"G.mgrs=([])",

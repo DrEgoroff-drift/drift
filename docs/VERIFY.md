@@ -43,6 +43,15 @@ only after a neighbour — an isolation leak. `?pick=3,17` runs only those posit
 thin wrappers over it. Real windows and screenshots of the whole page: `python docs/stand.py`
 (one Chrome over CDP for all scenes and sizes, PNGs to TEMP).
 
+**Only what you touched (M444, `-Changed`).** `build.ps1` writes `docs/TESTMAP.json` — for every
+test file, the `src/` modules whose top-level symbols it names — and stamps each test file into
+`tests.html` as `TEST_FILE`, so `?files=91a-flight|91c-mgr` runs the suites of those files only
+(`test-node.js --files=…` likewise). `test.ps1 -Changed` reads `git diff HEAD` plus untracked
+files under `src/` and `tests/`, picks the test files that name a changed module (a changed test
+file picks itself), and runs them in Node and in Chrome — heavy suites included — usually in a
+few seconds. A module everything names (`08-state`, `01-core`, `28-loop`) fans out to most of the
+corpus, which is right. With nothing changed it runs the fast tier as usual.
+
 **The mutant zoo (M445).** `tests/mutants.json` holds one-line breakages, each a bug from the
 project's history (a `zoomStep` that does nothing, map type without the ruler, the sky riding
 with the sheet, W without thrust, a lying fuel readout, a button without a word, a manager field

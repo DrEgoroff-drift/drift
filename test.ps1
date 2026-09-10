@@ -19,7 +19,9 @@
 # this switch the phone half of the interface is never actually measured.
 #   powershell -ExecutionPolicy Bypass -File test.ps1 -Accept          # золотые кадры: снять эталон этого окна в docs/golden/ (с -Mobile/-Size — того окна)
 #   powershell -ExecutionPolicy Bypass -File test.ps1 -Mutants         # зоопарк (M445): каждый мутант из tests/mutants.json обязан покраснеть
-param([switch]$NoBuild, [string]$Only = "", [switch]$Mobile, [int]$Fuzz = 0, [int]$Seed = 0, [string]$Size = "", [switch]$Full, [switch]$Browser, [int]$Jobs = 0, [switch]$Times, [switch]$Probe, [string]$Shuffle = "", [switch]$Accept, [switch]$Mutants)
+#   powershell -ExecutionPolicy Bypass -File test.ps1 -Changed         # только наборы, которые называют изменённые модули (docs/TESTMAP.json)
+#   powershell -ExecutionPolicy Bypass -File test.ps1 -Files "91a-flight|91c-mgr"  # наборы этих файлов
+param([switch]$NoBuild, [string]$Only = "", [switch]$Mobile, [int]$Fuzz = 0, [int]$Seed = 0, [string]$Size = "", [switch]$Full, [switch]$Browser, [int]$Jobs = 0, [switch]$Times, [switch]$Probe, [string]$Shuffle = "", [switch]$Accept, [switch]$Mutants, [switch]$Changed, [string]$Files = "")
 # ── зоопарк мутантов (M445, DESIGN-tests §5) ──
 # Мера тестов одна: долю авторских багов прогон нашёл бы первым. Каждый из
 # пятнадцати багов истории воспроизводится мутантом — правкой в одну строку
@@ -32,6 +34,7 @@ if ($Mutants) {
   $zoo = [System.IO.File]::ReadAllText($mj, [System.Text.Encoding]::UTF8) | ConvertFrom-Json
   $utf8 = New-Object System.Text.UTF8Encoding $false
   $rows = @(); $alive = 0; $sw0 = [Diagnostics.Stopwatch]::StartNew()
+  if ($Only) { $zoo = @($zoo | Where-Object { $_.name -like "*$Only*" }) }   # -Mutants -Only имя: один мутант
   foreach ($m in $zoo) {
     $path = Join-Path $root0 $m.file
     $src = [System.IO.File]::ReadAllText($path, [System.Text.Encoding]::UTF8)
@@ -78,7 +81,35 @@ if ($Mutants) {
 $root0 = Split-Path -Parent $MyInvocation.MyCommand.Path
 $nodeExe = (Get-Command node -ErrorAction SilentlyContinue).Source
 if (-not $nodeExe -and (Test-Path "C:\Claude\tools\node\node.exe")) { $nodeExe = "C:\Claude\tools\node\node.exe" }
-$nodeTier = -not ($Full -or $Browser -or $Only -or $Mobile -or $Fuzz -or $Size -or $Times -or $Jobs -or $Probe -or $Accept)
+# ── только то, что менялось (M444, -Changed) ──
+# git diff HEAD плюс неотслеженные файлы в src/ и tests/; по docs/TESTMAP.json
+# выбираются файлы наборов, называющие изменённые модули (изменённый файл
+# наборов выбирает сам себя). Их наборы идут в Node и в Хроме, с тяжёлыми.
+# Ничего не менялось — обычный быстрый ярус.
+if ($Changed) {
+  $root0 = Split-Path -Parent $MyInvocation.MyCommand.Path
+  $chg = @(& git -C $root0 diff --name-only HEAD -- src tests) + @(& git -C $root0 ls-files -o --exclude-standard -- src tests)
+  $chg = @($chg | Where-Object { $_ } | ForEach-Object { $_ -replace '\\', '/' } | Sort-Object -Unique)
+  if ($chg.Count) {
+    if (-not $NoBuild) { & powershell -ExecutionPolicy Bypass -File (Join-Path $root0 "build.ps1") | Out-Null; $NoBuild = $true }
+    $map = [System.IO.File]::ReadAllText((Join-Path $root0 "docs\TESTMAP.json"), [System.Text.Encoding]::UTF8) | ConvertFrom-Json
+    $pick = New-Object System.Collections.Generic.HashSet[string]
+    foreach ($c in $chg) { if ($c -like "tests/*") { [void]$pick.Add([System.IO.Path]::GetFileName($c)) } }
+    foreach ($p in $map.PSObject.Properties) { foreach ($c in $chg) { if (@($p.Value) -contains $c) { [void]$pick.Add([System.IO.Path]::GetFileName($p.Name)) } } }
+    $names = @($pick | Sort-Object | ForEach-Object { $_ -replace '\.js$', '' })
+    "изменено: {0} → файлов наборов: {1}" -f ($chg -join ", "), $names.Count
+    if (-not $names.Count) { "ни один набор не называет изменённые модули"; exit 0 }
+    $Files = $names -join "|"; $Full = $true; $Jobs = 1
+    $nodeExe0 = (Get-Command node -ErrorAction SilentlyContinue).Source
+    if (-not $nodeExe0 -and (Test-Path "C:\Claude\tools\node\node.exe")) { $nodeExe0 = "C:\Claude\tools\node\node.exe" }
+    if ($nodeExe0) {
+      [Console]::OutputEncoding = [Text.Encoding]::UTF8
+      & $nodeExe0 (Join-Path $root0 "test-node.js") "--files=$Files"
+      if ($LASTEXITCODE -ne 0) { exit 1 }
+    }
+  } else { "ничего не менялось со времени HEAD — обычный быстрый ярус" }
+}
+$nodeTier = -not ($Full -or $Browser -or $Only -or $Mobile -or $Fuzz -or $Size -or $Times -or $Jobs -or $Probe -or $Accept -or $Files)
 if ($nodeTier -and -not $nodeExe) { "node не найден (C:\Claude\tools\node или PATH) — идём через Хром"; $nodeTier = $false; $Browser = $true }
 if ($nodeTier) {
   [Console]::OutputEncoding = [Text.Encoding]::UTF8   # node пишет UTF-8; консоль 5.1 по умолчанию cp866
@@ -106,6 +137,7 @@ $url = "file:///" + ((Join-Path $root "tests.html") -replace "\\", "/")
 if ($Accept -and -not $Only) { $Only = "золотые кадры" }
 if ($Only) { $url += "?only=" + [uri]::EscapeDataString($Only) }
 if ($Accept) { $sep = if ($url -match "\?") { "&" } else { "?" }; $url += "$sep" + "accept=1" }
+if ($Files) { $sep = if ($url -match "\?") { "&" } else { "?" }; $url += "$sep" + "files=" + [uri]::EscapeDataString($Files) }
 # Фуззер (91zzzz-fuzz) на сборке гоняет короткий прогон — иначе он один стоит
 # дороже всех остальных наборов. -Fuzz 4000 включает длинный: его запускают
 # руками, когда ищут падение, и seed у него постоянный, так что провал

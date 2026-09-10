@@ -298,15 +298,22 @@ extract tools, do not extend). Order is strict: determinism first, everything af
   the player's controls (`90a-tools`), eight walks under all detectors with the screens kept open
   (`91zzzzzzzza-walks`, ~15 s, every harness window), the coverage map mode × step printed by the
   run; the first pass found three unreadable labels the scene runs never saw (МАСШТАБ over a
-  planet disc, ШАХТА and ПЕЩЕРА on a day sky). **Left:** `?rec=1` recordings in `15-input` with a «bug here» key,
-  replayed under perturbation (another seed, window, hour); more walks (fight with pirates, base,
-  home, the wanderer's shelf, the cooperative); `test.ps1 -Changed` from `docs/TESTMAP.json`
-  (suite → modules via `INDEX.md`); the map printed per window by the build, not per run.
-- **M445 the mutant zoo** — ten mutants from the fifteen history bugs (`zoomStep` no-op,
-  `mapFont` without `UIK`, `mapSkyShift(d)=d`, W without effect, resolution never returns, a rail
-  button without `aria-label`, a manager field off the `applySave` whitelist, a perk without a
-  reader, a mode drawing an empty frame, `resetWorld` leaving a field); `test.ps1 -Mutants`, run
-  nightly in the lab; all must be killed.
+  planet disc, ШАХТА and ПЕЩЕРА on a day sky). **Part two, 0.433.0:** `test.ps1 -Changed` —
+  `build.ps1` writes `docs/TESTMAP.json` (test file → `src/` modules whose symbols it names) and
+  stamps `TEST_FILE` into `tests.html`; `?files=a|b` / `-Files` run the suites of those files.
+  **Left:** `?rec=1` recordings in `15-input` with a «bug here» key, replayed under perturbation
+  (another seed, window, hour); more walks (fight with pirates, base, home, the wanderer's shelf,
+  the cooperative); the map printed per window by the build, not per run.
+- ~~**M445 the mutant zoo**~~ — 0.433.0: eleven mutants in `tests/mutants.json` (`zoomStep`
+  no-op, `mapFont` without the ruler, `mapSkyShift(d)=d`, W without thrust, a lying fuel readout,
+  an icon button without `aria-label`, a manager field off `applySave`, a perk without a reader,
+  `drawBelt` empty, a bare label on a day sky, `resetWorld` leaving a field); `test.ps1 -Mutants`
+  (all, ~4.5 min) or `-Mutants -Only name`; ten of eleven died on the first run, the eleventh
+  after the «кнопка без слова» law joined the detectors. The lab cannot build (no PowerShell on
+  the host), so the zoo runs on the laptop before a release, not nightly. **Open:** «resolution
+  never returns» has no mutant — the sharpness detector compares the canvas with the DPR the game
+  chose, not with the DPR it should have chosen; a mutant `DPR=.5` would survive (needs a rule
+  for when `resAuto` may lower it under virtual time). Seeds ×100 on scenarios stay in M446.
 - **M446 the lab's own oracles** — previous-version diff, seeds ×100 on two scenarios, `look()`
   telemetry from players into `log.php` and the lab page; and the lab's loose ends below.
 

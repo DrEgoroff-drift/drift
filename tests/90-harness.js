@@ -14,6 +14,12 @@ let _suite="";
 const TEST_ONLY=(()=>{try{return new URLSearchParams(location.search).get("only")||"";}catch(e){return "";}})();
 /* «a|b» — любой из нескольких кусков имени (M445: зоопарк мутантов зовёт своих убийц одним прогоном) */
 const TEST_ONLY_ANY=TEST_ONLY?TEST_ONLY.split("|").filter(Boolean):[];
+/* ?files=91a-flight|91c-mgr — только наборы этих файлов (M444, test.ps1 -Changed):
+   сборка ставит перед каждым файлом `var TEST_FILE="имя.js"`, а push в
+   TEST_SUITES запоминает его за набором (ниже) */
+const TEST_FILES=(()=>{try{const s=new URLSearchParams(location.search).get("files")||"";
+  return s?s.split("|").filter(Boolean).map(x=>x.replace(/\.js$/,"")):null;}catch(e){return null;}})();
+let _file="";
 /* ── прогон по частям (?shard=i/N) ──
    Наборы независимы по замыслу: каждый начинается с resetWorld(), и порядок
    им не указ. Значит их можно раздать НЕСКОЛЬКИМ Хромам сразу — машина
@@ -101,6 +107,7 @@ function suite(name,a,b){
   ALL_NAMES.add(name);SUITE_OPTS.set(name,o);
   const seq=SUITE_SEQ++,sel=TEST_ONLY||TEST_PICK;
   if(TEST_PICK&&!TEST_PICK.has(seq))return;
+  if(TEST_FILES&&_file&&!TEST_FILES.includes(_file.replace(/\.js$/,"")))return;
   if(TEST_NODE&&!sel&&tier!=="node"){SKIPPED_NODE++;return;}
   if(TEST_SKIP.length&&TEST_SKIP.some(x=>name===x)){SKIPPED_SKIP++;return;}
   if(TEST_ONLY&&!TEST_ONLY_ANY.some(s=>name.includes(s)))return;
@@ -402,6 +409,7 @@ function runTests(){
   LOOP_OFF=true;
   const t0=performance.now();
   for(const fn of suiteOrder(TEST_SUITES)){
+    _file=fn.file||"";
     try{fn();}catch(e){TEST.fail++;TEST.failed.push("набор упал: "+(e&&e.message||e));
       TEST.lines.push("✗✗ НАБОР УПАЛ: "+(e&&e.stack||e));}
   }
@@ -480,6 +488,8 @@ function runTests(){
   return head;
 }
 const TEST_SUITES=[];
+/* набор помнит свой файл: push идёт при загрузке файла, когда TEST_FILE — его имя */
+TEST_SUITES.push=function(fn){fn.file=(typeof TEST_FILE==="string")?TEST_FILE:"";return Array.prototype.push.call(this,fn);};
 /* кооператив по штампу (M351): наём и прилавок закрыты законом, пока его нет —
    наборы, которым нужен экипаж, ставят штамп сами */
 function coopStamp(name,house){

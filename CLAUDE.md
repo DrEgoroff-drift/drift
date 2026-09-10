@@ -261,6 +261,8 @@ it moves to Chrome (tiers, `win`, `stage`, `?shuffle` and the tools `T.*` of `te
 are refused by a net. Detectors (`90b`/`90c`, driver `91zzzzzzzz-detect`) judge every scene after
 every gesture; golden frames live in `docs/golden/` as block signatures — after a deliberate
 picture change, `test.ps1 -Accept` (and `-Mobile`, `-Size 1440,1440`) re-shoots them.
+`test.ps1 -Changed` runs only the suites that name what you edited (`docs/TESTMAP.json`);
+`test.ps1 -Mutants` runs the zoo (`tests/mutants.json`) — every mutant must die, before a release.
 
 ```bash
 powershell -ExecutionPolicy Bypass -File build.ps1

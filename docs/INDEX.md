@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 528 · символов верхнего уровня: 4988
+Файлов: 528 · символов верхнего уровня: 4992
 
 ## СИМВОЛЫ
 
@@ -41,6 +41,7 @@ $vitals                      src/27z-telemetry.js:32
 $vj                          src/27z-telemetry.js:37
 $vs                          src/27z-telemetry.js:35
 $zoombox                     src/27z-telemetry.js:43
+_file                        tests/90-harness.js:22
 _indPrice                    src/12ac-bld.js:112
 _mapDirty                    src/15-input.js:124
 _suite                       tests/90-harness.js:11
@@ -78,7 +79,7 @@ ALBUM_MAX                    src/25g-postcard.js:627
 albumAll                     src/25g-postcard.js:628
 albumOpen                    src/25g-postcard.js:677
 alCount                      tests/91zzzzzy-alive.js:15
-ALL_NAMES                    tests/90-harness.js:85
+ALL_NAMES                    tests/90-harness.js:93
 allyOf                       src/27b-ui-crew.js:8
 allyWork                     src/12a-crew.js:594
 ambK                         src/19c-light.js:115
@@ -142,7 +143,7 @@ avrWin                       src/21a6-base-avral.js:101
 b64dec                       src/14-save.js:29
 b64enc                       src/14-save.js:27
 bakeCount                    tests/91zzzzy-bake.js:32
-bakeIdle                     tests/90-harness.js:338
+bakeIdle                     tests/90-harness.js:347
 bankTransform                src/03b-hull-paint.js:59
 BARGE_ART                    src/12l-barge.js:397
 BARGE_CAP                    src/12l-barge.js:13
@@ -871,7 +872,7 @@ coopSpirit                   src/12aj-coop.js:117
 coopSpiritAdd                src/12aj-coop.js:120
 coopSpiritRu                 src/12aj-coop.js:118
 coopSpread                   src/12aj-coop.js:70
-coopStamp                    tests/90-harness.js:483
+coopStamp                    tests/90-harness.js:495
 coopVisitReset               src/12aj-coop.js:62
 COSM_CHIME                   src/12va-wander-cosm.js:59
 COSM_EXH                     src/12va-wander-cosm.js:22
@@ -1085,9 +1086,9 @@ DESK_ITEMS                   src/27ia-desk-top.js:298
 deskItemNew                  src/27ia-desk-top.js:337
 deskItemOf                   src/27ia-desk-top.js:331
 DET                          tests/90b-detect.js:34
-DET_ASTRO_H                  tests/90c-detect-laws.js:265
+DET_ASTRO_H                  tests/90c-detect-laws.js:266
 DET_CLOSE                    tests/91zzzzzzzz-detect.js:103
-DET_COST                     tests/91zzzzzzzz-detect.js:169
+DET_COST                     tests/91zzzzzzzz-detect.js:184
 DET_DIRTY                    tests/90c-detect-laws.js:139
 DET_EXEMPT                   tests/90c-detect-laws.js:64
 DET_HOOKED                   tests/90b-detect.js:341
@@ -1100,40 +1101,41 @@ DET_PROTOS                   tests/90b-detect.js:323
 DET_SETTLE_ERRS              tests/91zzzzzzzz-detect.js:58
 DET_SM                       tests/90b-detect.js:105
 DET_STATE_OF                 tests/90b-detect.js:358
-DET_TEXT_MIN                 tests/90c-detect-laws.js:198
+DET_TEXT_MIN                 tests/90c-detect-laws.js:199
 detBgShift                   tests/90b-detect.js:148
 detBlink                     tests/90b-detect.js:252
 detBlocks                    tests/90b-detect.js:229
-detCanvases                  tests/91zzzzzzzz-detect.js:142
+detCanvases                  tests/91zzzzzzzz-detect.js:157
 detCloseTry                  tests/91zzzzzzzz-detect.js:108
-detColor                     tests/90c-detect-laws.js:200
-detContrast                  tests/90c-detect-laws.js:209
-detControls                  tests/90c-detect-laws.js:154
-detCost                      tests/91zzzzzzzz-detect.js:170
+detColor                     tests/90c-detect-laws.js:201
+detContrast                  tests/90c-detect-laws.js:210
+detControls                  tests/90c-detect-laws.js:155
+detCost                      tests/91zzzzzzzz-detect.js:185
 detCrash                     tests/90c-detect-laws.js:95
 detDiff                      tests/90b-detect.js:126
-detDoors                     tests/91zzzzzzzz-detect.js:261
-DETECTORS                    tests/90c-detect-laws.js:280
+detDoors                     tests/91zzzzzzzz-detect.js:276
+DETECTORS                    tests/90c-detect-laws.js:281
 detErr                       tests/90b-detect.js:138
 detExempt                    tests/90c-detect-laws.js:79
-detFrame                     tests/91zzzzzzzz-detect.js:155
+detFrame                     tests/91zzzzzzzz-detect.js:170
 detGrab                      tests/90b-detect.js:106
 detHook                      tests/90b-detect.js:342
 detHudText                   tests/91zzzzzzzz-detect.js:134
-detHuman                     tests/90c-detect-laws.js:266
+detHuman                     tests/90c-detect-laws.js:267
 detInk                       tests/90b-detect.js:89
 detInstr                     tests/90c-detect-laws.js:140
 detInstrRead                 tests/90c-detect-laws.js:40
 detIsOpen                    tests/91zzzzzzzz-detect.js:104
 detLaw                       tests/90c-detect-laws.js:115
-detLum                       tests/90c-detect-laws.js:199
+detLum                       tests/90c-detect-laws.js:200
+detNameless                  tests/91zzzzzzzz-detect.js:145
 detNames                     tests/90b-detect.js:308
 detNewMotion                 tests/90b-detect.js:242
 detOverlays                  tests/91zzzzzzzz-detect.js:94
 detParallax                  tests/90b-detect.js:207
 detPatch                     tests/90b-detect.js:116
 detPatchShift                tests/90b-detect.js:157
-detPicture                   tests/90c-detect-laws.js:221
+detPicture                   tests/90c-detect-laws.js:222
 detProtoOf                   tests/90b-detect.js:324
 detRot                       tests/90b-detect.js:172
 detRuler                     tests/91zzzzzzzz-detect.js:71
@@ -1142,10 +1144,10 @@ detScale                     tests/90b-detect.js:193
 detSettle                    tests/91zzzzzzzz-detect.js:59
 detShipScr                   tests/91zzzzzzzz-detect.js:82
 detSig                       tests/91zzzzzzzz-detect.js:87
-detStep                      tests/91zzzzzzzz-detect.js:171
+detStep                      tests/91zzzzzzzz-detect.js:186
 detStuck                     tests/90c-detect-laws.js:104
 detSuitSrc                   tests/90c-detect-laws.js:13
-detTick                      tests/91zzzzzzzz-detect.js:161
+detTick                      tests/91zzzzzzzz-detect.js:176
 detV                         tests/90c-detect-laws.js:92
 detWalk                      tests/90b-detect.js:272
 DEV_CAP                      src/21b4-base-build.js:26
@@ -1513,7 +1515,7 @@ epiPerson                    src/12ap-notebook.js:50
 epiReached                   src/12ap-notebook.js:84
 episodeWith                  src/12ap-notebook.js:112
 epiWitness                   src/12ap-notebook.js:39
-eq                           tests/90-harness.js:152
+eq                           tests/90-harness.js:161
 ETH_CATCH                    src/25l-post-ether.js:28
 ETH_H0                       src/25l-post-ether.js:27
 ETH_HOLD                     src/25l-post-ether.js:29
@@ -1737,7 +1739,7 @@ fxCanvas                     src/18d-postfx.js:12
 fxInc                        tests/91zzzw-fx.js:18
 fxWorld                      tests/91zzzw-fx.js:6
 G                            src/08-state.js:61
-G_BOOT_KEYS                  tests/90-harness.js:167
+G_BOOT_KEYS                  tests/90-harness.js:176
 g11Fps                       src/28z-fps-probe.js:7
 GATE_WHY                     tests/91zzzzzl-gates.js:19
 genBeast                     src/20f-fauna.js:58
@@ -2412,7 +2414,7 @@ landerGearTick               src/19f-lander.js:15
 landerInk                    tests/91j-art.js:155
 landerLen                    src/19f-lander.js:11
 landingDust                  src/19f-lander.js:344
-landOnTestPlanet             tests/90-harness.js:322
+landOnTestPlanet             tests/90-harness.js:331
 landStartY                   src/19-mode-landing.js:38
 LANE_RU                      src/26-ui-station.js:298
 LANE_RX                      src/26-ui-station.js:294
@@ -2907,7 +2909,7 @@ natSwarmTick                 src/12az-fx-nat.js:40
 navAction                    src/15-input.js:277
 nbFoe                        tests/91zzzw-notebook.js:15
 nbWorld                      tests/91zzzw-notebook.js:6
-near                         tests/90-harness.js:153
+near                         tests/90-harness.js:162
 nearestPOI                   src/20a-poi.js:236
 nearestStation               src/12-economy.js:158
 NEB_COMP                     src/16a-space.js:119
@@ -2924,7 +2926,7 @@ needleShot                   src/13a-guns.js:264
 needOf                       src/12aa-need.js:26
 needsNear                    src/12aa-need.js:50
 needWin                      src/12aa-need.js:24
-NET_FROM                     tests/90-harness.js:379
+NET_FROM                     tests/90-harness.js:388
 NEWS_ALL_INC                 tests/91zzzw-news.js:17
 NEWS_ARC                     src/12an-chron-news.js:182
 NEWS_ARC_END                 src/12an-chron-news.js:222
@@ -2993,7 +2995,7 @@ noise2                       src/01-core.js:101
 noise3                       src/24-mode-belt.js:7
 noiseBuf                     src/09-audio.js:65
 normsOf                      src/12ab-hold.js:89
-note                         tests/90-harness.js:94
+note                         tests/90-harness.js:102
 NOTE_MAX                     src/12ap-notebook.js:32
 noteAll                      src/12ap-notebook.js:35
 noteAsk                      src/12ap-notebook.js:207
@@ -3063,7 +3065,7 @@ offerShutLine                src/11ah-offer.js:282
 offerTake                    src/11ah-offer.js:213
 offerTick                    src/11ah-offer.js:170
 offerVisit                   src/11ah-offer.js:128
-ok                           tests/90-harness.js:146
+ok                           tests/90-harness.js:155
 ONE_BEAR_ERR                 src/21b3-base-hunt.js:26
 ONE_ID                       src/21b3-base-hunt.js:34
 ONE_JOB                      src/21b3-base-hunt.js:25
@@ -3747,7 +3749,7 @@ RES_KEYS                     src/02-world.js:87
 resAuto                      src/28-loop.js:142
 resEma                       src/28-loop.js:141
 resetArm                     src/26-ui-station.js:597
-resetWorld                   tests/90-harness.js:211
+resetWorld                   tests/90-harness.js:220
 resize                       src/08-state.js:22
 RET_BOARD                    src/11s-returners.js:29
 RET_ETHER                    src/11s-returners.js:19
@@ -3978,7 +3980,7 @@ rungPoints                   src/12ad-site.js:45
 rungRingSegs                 src/12ae-ladder.js:57
 rungRoman                    src/12ae-ladder.js:48
 RUNGS                        src/12ae-ladder.js:13
-runTests                     tests/90-harness.js:396
+runTests                     tests/90-harness.js:405
 rxRecord                     src/11x-ring.js:64
 S1                           src/01-core.js:165
 S2                           src/01-core.js:166
@@ -4099,7 +4101,7 @@ sellCargo                    src/12-economy.js:71
 sellDroneYield               src/12-economy.js:93
 sellQuote                    src/12ab-hold.js:101
 setSt                        src/27z-telemetry.js:91
-settle                       tests/90-harness.js:344
+settle                       tests/90-harness.js:353
 SETTLE_BUILD                 src/12t-settle.js:31
 SETTLE_BY_K                  src/12t-settle.js:39
 SETTLE_CAP                   src/12t-settle.js:20
@@ -4147,7 +4149,7 @@ setZoom                      src/15-input.js:334
 sfx                          src/09-audio.js:301
 SFX                          src/09-audio.js:97
 SH_DX                        src/03b-hull-paint.js:175
-SHARD_H                      tests/90-harness.js:24
+SHARD_H                      tests/90-harness.js:32
 SHARP_WORD                   src/21a9-base-laws.js:41
 sharpWord                    src/21a9-base-laws.js:42
 shatter                      src/24-mode-belt.js:136
@@ -4176,10 +4178,10 @@ siteTestOpen                 tests/91x-hold-site.js:11
 siteTestStation              tests/91x-hold-site.js:2
 sixthGone                    src/12k-stories-d.js:77
 sizeIdx                      src/05d-mounts.js:62
-SKIPPED_NODE                 tests/90-harness.js:79
-SKIPPED_PROBE                tests/90-harness.js:51
-SKIPPED_SKIP                 tests/90-harness.js:57
-SKIPPED_SLOW                 tests/90-harness.js:53
+SKIPPED_NODE                 tests/90-harness.js:87
+SKIPPED_PROBE                tests/90-harness.js:59
+SKIPPED_SKIP                 tests/90-harness.js:65
+SKIPPED_SLOW                 tests/90-harness.js:61
 SKY_BULL                     src/11ak-skywatch.js:27
 SKY_HOR                      src/11ak-skywatch.js:80
 SKY_KINDS                    src/11ak-skywatch.js:29
@@ -4351,7 +4353,7 @@ stationViz                   src/17c-system-draw.js:111
 statPreview                  src/05-parts.js:416
 stCore                       src/17c-system-draw.js:131
 stDel                        src/14-save.js:26
-steps                        tests/90-harness.js:357
+steps                        tests/90-harness.js:366
 stepWorld                    src/28-loop.js:188
 stGet                        src/14-save.js:8
 stGroup                      src/26-ui-station.js:101
@@ -4426,15 +4428,15 @@ stTabYard                    src/26e-ui-station-trade.js:228
 stTypeOf                     src/06-galaxy.js:73
 STUN_TIME                    src/13a-guns.js:27
 subdivide                    src/24-mode-belt.js:34
-suite                        tests/90-harness.js:95
-SUITE_KEYS                   tests/90-harness.js:82
-SUITE_OPTS                   tests/90-harness.js:84
-SUITE_SEQ                    tests/90-harness.js:69
-SUITE_TIERS                  tests/90-harness.js:80
-SUITE_WINS                   tests/90-harness.js:81
-suiteGroup                   tests/90-harness.js:71
-suiteOrder                   tests/90-harness.js:364
-suiteWin                     tests/90-harness.js:86
+suite                        tests/90-harness.js:103
+SUITE_KEYS                   tests/90-harness.js:90
+SUITE_OPTS                   tests/90-harness.js:92
+SUITE_SEQ                    tests/90-harness.js:77
+SUITE_TIERS                  tests/90-harness.js:88
+SUITE_WINS                   tests/90-harness.js:89
+suiteGroup                   tests/90-harness.js:79
+suiteOrder                   tests/90-harness.js:373
+suiteWin                     tests/90-harness.js:94
 suitFailure                  src/23-mode-dig.js:119
 suitHit                      src/23-mode-dig.js:112
 suitMax                      src/12x-suit.js:89
@@ -4519,22 +4521,24 @@ techLv                       src/04-mods.js:45
 tell                         src/11-log.js:49
 TELL_SFX                     src/11-log.js:47
 TEST                         tests/90-harness.js:10
-TEST_CHRON                   tests/90-harness.js:210
-TEST_FULL                    tests/90-harness.js:52
-TEST_HOUR                    tests/90-harness.js:189
-TEST_NODE                    tests/90-harness.js:78
+TEST_CHRON                   tests/90-harness.js:219
+TEST_FILES                   tests/90-harness.js:20
+TEST_FULL                    tests/90-harness.js:60
+TEST_HOUR                    tests/90-harness.js:198
+TEST_NODE                    tests/90-harness.js:86
 TEST_ONLY                    tests/90-harness.js:14
-TEST_PICK                    tests/90-harness.js:68
-TEST_PROBE                   tests/90-harness.js:50
-TEST_SEED                    tests/90-harness.js:188
-TEST_SHARD                   tests/90-harness.js:22
-TEST_SHUFFLE                 tests/90-harness.js:62
-TEST_SKIP                    tests/90-harness.js:56
-TEST_SUITES                  tests/90-harness.js:480
-TEST_T0                      tests/90-harness.js:190
+TEST_ONLY_ANY                tests/90-harness.js:16
+TEST_PICK                    tests/90-harness.js:76
+TEST_PROBE                   tests/90-harness.js:58
+TEST_SEED                    tests/90-harness.js:197
+TEST_SHARD                   tests/90-harness.js:30
+TEST_SHUFFLE                 tests/90-harness.js:70
+TEST_SKIP                    tests/90-harness.js:64
+TEST_SUITES                  tests/90-harness.js:490
+TEST_T0                      tests/90-harness.js:199
 TEST_TIMES                   tests/99-run.js:18
-testNetHits                  tests/90-harness.js:385
-testSource                   tests/90-harness.js:380
+testNetHits                  tests/90-harness.js:394
+testSource                   tests/90-harness.js:389
 TETHER_LIFE                  src/13a-guns.js:40
 TETHER_PULL                  src/13a-guns.js:41
 tetherTick                   src/13a-guns.js:389
@@ -4653,14 +4657,14 @@ tvHop                        tests/91zzzzzw-travel.js:36
 tvKeys                       tests/91zzzzzw-travel.js:15
 tvSizes                      tests/91zzzzzw-travel.js:17
 TYPES                        src/02-world.js:125
-UI_BOOT                      tests/90-harness.js:176
-UI_SEL_BOOT                  tests/90-harness.js:206
+UI_BOOT                      tests/90-harness.js:185
+UI_SEL_BOOT                  tests/90-harness.js:215
 uidRand                      src/01-core.js:82
 uiFont                       src/18c-chunks.js:54
 UIK                          src/08-state.js:13
 uiK                          src/18c-chunks.js:53
 uiScale                      src/08-state.js:21
-uiSelRestore                 tests/90-harness.js:208
+uiSelRestore                 tests/90-harness.js:217
 unfitPart                    src/05-parts.js:384
 UNIQ                         src/21b1-base-pay.js:35
 UNIQ_EVERY                   src/21b1-base-pay.js:45
@@ -6051,7 +6055,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/29i-spa-draw.js · 25 КБ
   · санаторий: веранда:1
 
-## tests/90-harness.js · 41 КБ
+## tests/90-harness.js · 43 КБ
   · автотесты: каркас:1
 
 ## tests/90a-tools.js · 39 КБ
@@ -6701,7 +6705,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzzzzzz-hands.js · 14 КБ
   · руки игрока: судья — кадр:1
 
-## tests/91zzzzzzzz-detect.js · 28 КБ
+## tests/91zzzzzzzz-detect.js · 29 КБ
   · сквозной: каждая сцена × пять жестов под всеми детекторами (M443):1
 
 ## tests/91zzzzzzzza-walks.js · 8 КБ

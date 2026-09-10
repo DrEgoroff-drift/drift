@@ -139,6 +139,21 @@ function detHudText(){
   }
   return out;
 }
+/* кнопка без слова: видимая, нажимаемая — и ни текста, ни aria-label, ни title.
+   Значок без имени немой для читалки и для тестов (зоопарк M445: мутант
+   «rail-no-aria» пережил все наборы, пока этого закона не было) */
+function detNameless(){
+  const out=[];
+  for(const el of document.querySelectorAll("button,[onclick]")){
+    if(el.tagName==="BUTTON"&&el.disabled)continue;
+    const cs=getComputedStyle(el);if(cs.display==="none"||cs.visibility==="hidden")continue;
+    if(!el.getClientRects().length)continue;
+    const w=(String(el.textContent||"").trim()||el.getAttribute("aria-label")||el.title||"").trim();
+    if(!w)out.push("#"+(el.id||el.className||el.tagName.toLowerCase()));
+    if(out.length>=6)break;
+  }
+  return out;
+}
 function detCanvases(){
   const out=[];
   for(const k of document.querySelectorAll("canvas")){
@@ -191,7 +206,7 @@ function detStep(S,gesture){
     S.idleB=detBlocks(c.before,c.after);
     /* осадки над грунтом: капли — законно новые в каждом кадре */
     try{if(G.surf&&G.surf.p&&weatherName(G.surf.p)){const w=weatherOf(G.surf.p);if(w&&w.kind&&w.kind!=="fog")c.precip=w.kind;}}catch(e){}
-    c.canv=detCanvases();c.cvsW=cvs.width;
+    c.canv=detCanvases();c.cvsW=cvs.width;c.nameless=detNameless();
   }else{
     if(G.mode==="system"){c.ship0=detShipScr();c.nose0=G.ship.a;const t1=performance.now();c.p0=detPatch(c.ship0[0],c.ship0[1],gesture==="A"?40:48);detCost("глаз",t1);}
     const rc=cvs.getBoundingClientRect(),kx=cvs.width/Math.max(1,rc.width),ky=cvs.height/Math.max(1,rc.height);

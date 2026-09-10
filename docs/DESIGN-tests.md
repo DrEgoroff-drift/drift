@@ -208,6 +208,11 @@ solo automatically.
 ## 5. Acceptance
 
 One measure, Riot's: **the share of the author's bugs the run found first.** Today 0 of 15.
+(M445, 0.433.0: the zoo in `tests/mutants.json` — eleven one-line breakages from the history —
+is how the share is measured: `test.ps1 -Mutants` applies each, builds, runs its killers and
+expects red; a survivor is a hole in a detector and is fixed there, never by dropping the mutant.
+First run: ten of eleven died; the eleventh, an icon button without a word, needed a new law in
+the detectors and died on the second run. 11 of 11 today.)
 After the detectors and the mutant zoo, each of the fifteen is reproduced by a mutant and killed
 by a detector. After the scenarios, the coverage map has no empty cell by mode. After the lab's
 oracles, the first bug found at night or in the players' numbers before any human saw it.

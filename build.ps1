@@ -101,7 +101,8 @@ function Build {
   if (Test-Path $tsrc) {
     $tfiles = Sort-Ordinal (Get-ChildItem (Join-Path $tsrc "*.js"))
     if ($tfiles.Count -gt 0) {
-      $tparts = foreach ($f in $tfiles) { [System.IO.File]::ReadAllText($f.FullName, $enc) }
+      # перед каждым файлом — его имя (M444, ?files=): набор помнит, из какого он файла
+      $tparts = foreach ($f in $tfiles) { 'var TEST_FILE="' + $f.Name + '";' + "`n" + [System.IO.File]::ReadAllText($f.FullName, $enc) }
       # Золотые кадры (M443): эталоны docs/golden/<окно>.json вшиваются константой
       # GOLDEN — страница с file:// прочитать их сама не может. Нет эталонов — {}.
       $gold = "{}"
@@ -120,6 +121,7 @@ function Build {
     }
   }
   $msg += " · " + (Index $files $tfiles)
+  if ($tfiles) { TestMap $files $tfiles }
   $msg
   Bulk $files $tfiles
 }
@@ -289,6 +291,32 @@ function Bulk($files, $tfiles) {
       "  ! PLAN.md разросся до {0} КБ: закрытые вехи пора переносить в docs/PLAN-archive.md" -f $pkb
     }
   }
+}
+
+# Карта наборов — docs/TESTMAP.json (M444): для каждого файла тестов — модули
+# src/, чьи символы верхнего уровня он называет. По ней test.ps1 -Changed гоняет
+# только наборы, которые касаются изменённого. Общие модули (08-state, 01-core)
+# называет почти каждый набор — это правильно: их правка касается всех.
+function TestMap($files, $tfiles) {
+  $sym = @{}
+  foreach ($f in $files) {
+    $rel = ($f.FullName.Substring($root.Length + 1)) -replace '\\', '/'
+    foreach ($m in [regex]::Matches([System.IO.File]::ReadAllText($f.FullName, $enc), '(?m)^(?:function\s*\*?|const|let|var|class)\s+([A-Za-z_$][\w$]*)')) {
+      $n = $m.Groups[1].Value; if (-not $sym.ContainsKey($n)) { $sym[$n] = $rel }
+    }
+  }
+  $out = New-Object System.Collections.ArrayList
+  foreach ($t in $tfiles) {
+    $rel = ($t.FullName.Substring($root.Length + 1)) -replace '\\', '/'
+    $seen = @{}
+    foreach ($m in [regex]::Matches([System.IO.File]::ReadAllText($t.FullName, $enc), '[A-Za-z_$][\w$]*')) {
+      $n = $m.Value; if ($sym.ContainsKey($n)) { $seen[$sym[$n]] = 1 }
+    }
+    $mods = @($seen.Keys); [Array]::Sort($mods, [System.StringComparer]::Ordinal)
+    [void]$out.Add(('  "{0}": [{1}]' -f $rel, (($mods | ForEach-Object { '"' + $_ + '"' }) -join ", ")))
+  }
+  $json = "{`n" + ($out -join ",`n") + "`n}`n"
+  [System.IO.File]::WriteAllText((Join-Path $root "docs\TESTMAP.json"), $json, (New-Object System.Text.UTF8Encoding $false))
 }
 
 # Индекс символов — docs/INDEX.md. Не для чтения человеком и не для загрузки

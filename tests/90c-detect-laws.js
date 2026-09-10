@@ -148,6 +148,7 @@ function detInstr(c){
   }
   for(const t of c.texts||[])if(!t.hull&&DET_DIRTY.test(t.s))v.push(detV(c,"закон","число на канве не человеческое: «"+t.s.slice(0,40)+"»"));
   for(const s of c.hudText||[])if(DET_DIRTY.test(s))v.push(detV(c,"закон","число на приборах не человеческое: «"+s.slice(0,40)+"»"));
+  for(const s of c.nameless||[])v.push(detV(c,"закон","кнопка без слова — ни текста, ни aria-label, ни title: "+s));
   return v;
 }
 /* 3. ЗАКОН: орган управления отвечает кадром — и по смыслу (M437) */
