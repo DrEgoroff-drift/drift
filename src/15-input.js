@@ -183,6 +183,7 @@ addEventListener("keydown",e=>{
     rebinding=null;renderOpts();e.preventDefault();return;
   }
   if(e.code==="KeyM"){navAction();e.preventDefault();return;}
+  if(e.code==="F8"&&REC){recMark();e.preventDefault();return;}   /* «баг здесь» (15c-rec) */
   const k=keyMap()[e.code];
   if(k){keys[k]=true;if(k!=="act"&&k!=="fire"&&k!=="msl")G.ap=null;e.preventDefault();}
 });

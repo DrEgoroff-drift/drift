@@ -301,8 +301,11 @@ extract tools, do not extend). Order is strict: determinism first, everything af
   planet disc, ШАХТА and ПЕЩЕРА on a day sky). **Part two, 0.433.0:** `test.ps1 -Changed` —
   `build.ps1` writes `docs/TESTMAP.json` (test file → `src/` modules whose symbols it names) and
   stamps `TEST_FILE` into `tests.html`; `?files=a|b` / `-Files` run the suites of those files.
-  **Left:** `?rec=1` recordings in `15-input` with a «bug here» key, replayed under perturbation
-  (another seed, window, hour); more walks (fight with pirates, base, home, the wanderer's shelf,
+  **Part three, 0.434.0:** `?rec=1` recordings by frame (`15c-rec`: key mask + step, heads with a
+  copied snapshot, `rndState`, clock; autopilot targets as frame events; F8 «bug here» →
+  `drift.rec`), `T.replay(rec,{seed,hour,each})`, suite `91zzzzzzzzb-replay` (Node). **Left:** the
+  recorder does not see screen clicks (counter, tabs) — a tap on a screen is a boundary to lift
+  when a recording needs it; more walks (fight with pirates, base, home, the wanderer's shelf,
   the cooperative); the map printed per window by the build, not per run.
 - ~~**M445 the mutant zoo**~~ — 0.433.0: eleven mutants in `tests/mutants.json` (`zoomStep`
   no-op, `mapFont` without the ruler, `mapSkyShift(d)=d`, W without thrust, a lying fuel readout,

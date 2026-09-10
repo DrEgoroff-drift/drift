@@ -1,7 +1,7 @@
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.433.0";
+const VER="0.434.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -63,6 +63,7 @@ function rndFx(){RNDFX_S=RNDFX_S+0x6D2B79F5|0;let t=Math.imul(RNDFX_S^RNDFX_S>>>
   t=t+Math.imul(t^t>>>7,61|t)^t;return ((t^t>>>14)>>>0)/4294967296;}
 function rndSeed(s){RND_SEED=(+s||0)>>>0;RND_S=RND_SEED|0;RNDFX_S=hashi(RND_SEED,0x0F1C,0x441)|0;}
 function rndState(){return [RND_SEED,RND_S>>>0,RNDFX_S>>>0];}
+function rndRestore(a){RND_SEED=(a[0]||0)>>>0;RND_S=a[1]|0;RNDFX_S=a[2]|0;}   /* повтор записи (15c-rec) */
 /* Фаза кадра: счётчики «раз в N кадров» живут в своих модулях вне G (пульт
    раз в секунду, редкий такт дронов), и если они переживают смену часов, то
    второй прогон одной сцены начинал бы с фазы первого — и писал в журнал на

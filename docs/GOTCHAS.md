@@ -87,3 +87,4 @@ this file keeps the evidence and the fix.
   That is the shared host being old; it is not an error. The louder
   `client_global_hostkeys_prove_confirm` line was silenced with
   `UpdateHostKeys no` in `~/.ssh/config`.
+- **`snapshot()` shares references with `G`.** The object it returns holds the live `G.cargo`, `G.mods` and the like, not copies; `saveGame` stringifies at once so the game never notices, but anything that *keeps* the object (a recording head, a «before» snapshot in a suite) sees the world drift under it — the replay suite started with 13 ice it had not mined yet. Keep `JSON.parse(JSON.stringify(snapshot()))`, never the bare object (2026-09-11).

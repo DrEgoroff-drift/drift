@@ -393,6 +393,44 @@ const T=(()=>{
     }
   }
 
+  /* ── повтор записи (15c-rec, M444) ──
+     replay(rec, {seed, hour, each}): для каждого отрезка — снимок его головы,
+     случай и часы как были, потом те же клавиши тем же шагом. Возмущение:
+     seed — другое семя мира, hour — другой час суток (часы сдвигаются на
+     целые сутки+часы, календарь тот же). each(i) зовётся раз в кадр после
+     шага — сюда встают детекторы. Ответ {frames, hash, mode} */
+  function replay(rec,o){
+    o=o||{};let n=0;
+    for(const sg of rec.segs){
+      const h=sg.head;
+      resetWorld();
+      applySave(JSON.parse(JSON.stringify(h.snap)));
+      rndRestore(h.rnd);if(o.seed!=null)rndSeed(o.seed);
+      let t0=h.now;
+      if(o.hour!=null){const d=new Date(t0);d.setHours(o.hour,0,0,0);t0=d.getTime();}
+      clockSet(t0);G.t=h.t;G.mode=h.mode;
+      const KS=h.keys;prevAct=false;
+      const ev=(sg.ev||[]).slice();
+      for(let i=0;i<sg.f.length;i+=2){
+        const m=sg.f[i],dt=(sg.f[i+1]||64)/64,fi=i/2;
+        /* события кадра: цель автопилота, поставленная тычком */
+        while(ev.length&&ev[0][0]<=fi){
+          const e=ev.shift();
+          if(e[1]==="planet"){const p=(G.sys.planets||[])[e[2]];if(p){G.ap={kind:"planet",p,phase:"fly"};G.orbit=null;}}
+          else if(e[1]==="belt")G.ap={kind:"belt",ax:e[3],ay:e[4],phase:"fly"};
+          else G.ap={kind:e[1],phase:"fly"};
+        }
+        for(let k=0;k<KS.length;k++)keys[KS[k]]=!!(m&(1<<k));
+        actEdge=keys.act&&!prevAct;prevAct=keys.act;
+        clockAdvance(dt*16.667);
+        stepWorld(dt);G.t+=dt;n++;
+        if(o.each)o.each(n);
+      }
+    }
+    for(const k in keys)keys[k]=false;actEdge=false;prevAct=false;
+    return {frames:n,hash:stateHash(),mode:G.mode};
+  }
+
   /* ── глаза ── */
   /* подпись кадра: каждая восьмая проба яркости с настоящего холста (hFrame) */
   function frame(){
@@ -531,7 +569,7 @@ const T=(()=>{
     if(winSaved)win();
     if(clockT0!==null){clockSet(clockT0);clockT0=null;clockMs=0;}
   }
-  return {go,press,hands,tap,drag,wheel,wait,advance,window:win,give,board,leave,bot,
+  return {go,press,hands,tap,drag,wheel,wait,advance,window:win,give,board,leave,bot,replay,
     frame,diff,state,purse,look,ledger,text,controls,clock,
     dom,calm,spoke,said:()=>said,find,landWhere,scenes,ticks,clockShift,urlSeed,
     get seed(){return seed;},_undo};

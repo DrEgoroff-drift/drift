@@ -43,6 +43,15 @@ only after a neighbour — an isolation leak. `?pick=3,17` runs only those posit
 thin wrappers over it. Real windows and screenshots of the whole page: `python docs/stand.py`
 (one Chrome over CDP for all scenes and sizes, PNGs to TEMP).
 
+**Recordings (M444, `?rec=1`).** Open the game with `?rec=1`, play, and when something goes wrong
+press **F8** (or call `recMark()` in the console): the last minute of input — key masks and steps
+by frame, in two thirty-second segments with a world snapshot at each head — lands in
+`localStorage` as `drift.rec` and in the console. Paste it into a suite or the console of
+`tests.html` and run `T.replay(rec)` — the same seed brings the world to the same point;
+`T.replay(rec,{seed:5,hour:3,each:i=>…})` replays under perturbation with a hook per frame for the
+detectors. Segments end only in flight, dock or map (the snapshot keeps nothing ephemeral). Screen
+clicks are not recorded.
+
 **Only what you touched (M444, `-Changed`).** `build.ps1` writes `docs/TESTMAP.json` — for every
 test file, the `src/` modules whose top-level symbols it names — and stamps each test file into
 `tests.html` as `TEST_FILE`, so `?files=91a-flight|91c-mgr` runs the suites of those files only

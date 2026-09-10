@@ -6,6 +6,24 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.434.0 - the last minute of input, recorded by frame and replayed to the point (M444, part three)
+
+`?rec=1` turns on the recorder (`src/15c-rec.js`): every world frame stores the key mask and the
+step, in segments of thirty seconds; each segment carries a head — a copy of the world snapshot,
+the position of the game's chance (`rndState`), the clock and `G.t` — and the autopilot targets a
+tap sets are kept as frame events. A segment only ends in a stable mode (flight, dock, map),
+because the snapshot deliberately keeps nothing ephemeral: a head cut mid-drilling would restore a
+different strip. F8, or `recMark()` in the console, puts the last minute into `localStorage`
+`drift.rec` and the console. `T.replay(rec, {seed, hour, each})` in the tools restores a head,
+then feeds the same keys at the same step — on the same seed the world arrives at the same
+point, on another seed or hour it just has to live, under the detectors. The suite
+`91zzzzzzzzb-replay` (Node, 0.7 s) records a bot's flight, landing and drilling, replays it to
+the same cargo, position and fuel, and replays it again at three in the morning on seed 5.
+Found on the way: `snapshot()` returns an object that shares references with `G` — a kept
+snapshot drifts with the world (the replay began with thirteen ice it had not mined yet);
+the recorder copies, and `docs/GOTCHAS.md` says why. Screens' clicks are not recorded — that is
+the recorder's boundary, named in the module.
+
 ## 0.433.0 - the mutant zoo, and a run that knows what you touched (M445, M444 part two)
 
 `tests/mutants.json` holds eleven one-line breakages, each a bug from the project's history: a

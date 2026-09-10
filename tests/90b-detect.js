@@ -282,7 +282,7 @@ function detWalk(cap){
     if(seen.has(v))return;seen.add(v);
     if(typeof Node!=="undefined"&&v instanceof Node)return;
     if(v instanceof Set||v instanceof Map||v instanceof WeakMap)return;
-    if(typeof HTMLCanvasElement!=="undefined"&&(v instanceof ImageData||v instanceof CanvasRenderingContext2D))return;
+    if((typeof ImageData!=="undefined"&&v instanceof ImageData)||(typeof CanvasRenderingContext2D!=="undefined"&&v instanceof CanvasRenderingContext2D))return;
     /* в типизированных массивах NaN — законная метка «ещё не посчитано»
        (пол и свод пещеры, 22-mode-cave: `fill(NaN)` и досчёт по месту);
        бесконечность — нет */
