@@ -346,7 +346,13 @@ function applySaveRest(s){
   G.mode="system";G.ap=null;G.land=null;G.surf=null;G.belt=null;G.st=null;G.dig=null;G.cave=null;
   if(!G.opts.keys||typeof G.opts.keys!=="object")G.opts.keys={main:{},belt:{}};
   if(!G.opts.keys.main)G.opts.keys.main={};if(!G.opts.keys.belt)G.opts.keys.belt={};
-  if(!G.opts.pads)G.opts.pads="auto";if(!G.opts.padSize)G.opts.padSize=1;
+  /* пэды — значение из таблицы экрана НАСТРОЙКИ, а не «что-нибудь истинное»:
+     облако на PHP возвращает числа строками («1.25»), и строгое сравнение в
+     renderOpts падало на `find(...)[1]` — экран настроек не открывался вовсе
+     (M443, детектор сбоя: дверь НАСТРОЙКИ после порченого сейва). Число
+     возвращаем числом, чужое — к умолчанию */
+  if(["auto","always","hide"].indexOf(G.opts.pads)<0)G.opts.pads="auto";
+  {const ps=+G.opts.padSize;G.opts.padSize=[.8,1,1.25].indexOf(ps)>=0?ps:1;}
   if(!G.opts.gfx||typeof G.opts.gfx!=="object")G.opts.gfx={draw:1,detail:1,particles:1,plants:1,fps:0};
   for(const k of["draw","detail","particles","plants"])if(!G.opts.gfx[k])G.opts.gfx[k]=1;
   /* потолок кадров: 0 — без потолка. Ноль тут законное значение, поэтому

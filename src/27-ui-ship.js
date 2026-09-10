@@ -84,14 +84,15 @@ function renderOpts(){
   const rp=el("div","row");
   rp.appendChild(el("div","nm","<b>Показывать пэды</b><s>«авто» — прячутся при вводе с клавиатуры/мыши, "+
     "возвращаются от касания</s>"));
-  const bp=el("button","act gold",PADS.find(p=>p[0]===G.opts.pads)[1]);
+  /* чужое значение (порченая запись) не роняет экран: показываем первое (M443) */
+  const bp=el("button","act gold",(PADS.find(p=>p[0]===G.opts.pads)||PADS[0])[1]);
   bp.onclick=()=>{const i=PADS.findIndex(p=>p[0]===G.opts.pads);G.opts.pads=PADS[(i+1)%PADS.length][0];
     applyPadMode();renderOpts();};
   rp.appendChild(bp);$optBody.appendChild(rp);
   const rps=el("div","row");
   rps.appendChild(el("div","nm","<b>Размер кнопок</b><s>мельче — меньше загораживают экран</s>"));
   const SZ=[[.8,"МЕЛКИЕ"],[1,"ОБЫЧНЫЕ"],[1.25,"КРУПНЫЕ"]];
-  const bsz=el("button","act gold",SZ.find(s=>s[0]===G.opts.padSize)[1]);
+  const bsz=el("button","act gold",(SZ.find(s=>s[0]===G.opts.padSize)||SZ[1])[1]);
   bsz.onclick=()=>{const i=SZ.findIndex(s=>s[0]===G.opts.padSize);G.opts.padSize=SZ[(i+1)%SZ.length][0];
     applyPadSize();renderOpts();};
   rps.appendChild(bsz);$optBody.appendChild(rps);
