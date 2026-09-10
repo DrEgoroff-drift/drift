@@ -8,7 +8,7 @@
    ярусе Хрома (test.ps1 -Browser). Кто ошибётся ярусом — краснеет, а не молчит:
    заглушка возвращает ноль, а не «похоже на правду».
 
-   Запуск:  tools\node\node tests\node-run.js [--full] [--only=текст] [--verbose]
+   Запуск:  tools\node\node test-node.js [--full] [--only=текст] [--shuffle=зерно] [--verbose]
    Отчёт:   строка-заголовок, провалы, по группам. Код выхода 1 при провале. */
 "use strict";
 const fs = require("fs"), path = require("path"), vm = require("vm");
@@ -143,7 +143,7 @@ document.scripts = []; document.exitFullscreen = () => Promise.resolve(); docume
 document.elementFromPoint = () => null; document.hasFocus = () => true; document.execCommand = () => false;
 
 class Storage { constructor() { this.m = new Map(); } getItem(k) { return this.m.has(k) ? this.m.get(k) : null; } setItem(k, v) { this.m.set(k, String(v)); } removeItem(k) { this.m.delete(k); } clear() { this.m.clear(); } key(i) { return [...this.m.keys()][i] || null; } get length() { return this.m.size; } }
-const search = (flag("full") ? "full=1&" : "") + (opt("only") ? "only=" + encodeURIComponent(opt("only")) + "&" : "") + (flag("verbose") ? "verbose=1" : "");
+const search = (flag("full") ? "full=1&" : "") + (opt("only") ? "only=" + encodeURIComponent(opt("only")) + "&" : "") + (opt("shuffle") ? "shuffle=" + (+opt("shuffle") >>> 0) + "&" : "") + (flag("verbose") ? "verbose=1" : "");
 const G0 = globalThis;
 G0.TEST_NODE = true; if (flag("trace")) G0.TEST_TRACE = true;
 const SHIM = {
@@ -200,6 +200,8 @@ const tick = setInterval(() => {
   const sec = ((Date.now() - t0) / 1000).toFixed(1);
   console.log(TEST.summary + " · node · " + sec + " с");
   if (TEST.failed.length) { console.log("ПРОВАЛЫ:"); for (const f of TEST.failed) console.log("  ✗ " + f); }
+  /* карантин (опция stage у набора, M442): печатается, но код выхода не решает */
+  if ((TEST.staged || []).length) { console.log("КАРАНТИН (в вердикт не идёт):"); for (const f of TEST.staged) console.log("  ✗ " + f); }
   for (const l of TEST.lines) if (l.startsWith("ПО ГРУППАМ")) console.log(l);
   if (flag("verbose")) console.log(TEST.lines.join("\n"));
   process.exit(TEST.fail ? 1 : 0);

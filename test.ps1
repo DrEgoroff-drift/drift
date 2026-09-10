@@ -9,14 +9,15 @@
 #   powershell -ExecutionPolicy Bypass -File test.ps1 -Full -Jobs 6  # split the run across six Chromes
 #   powershell -ExecutionPolicy Bypass -File test.ps1 -Full -Times   # real clock: the thirty slowest suites
 #   powershell -ExecutionPolicy Bypass -File test.ps1 -Probe         # the "проба" stands: economy numbers, no verdict
+#   powershell -ExecutionPolicy Bypass -File test.ps1 -Full -Jobs 2 -Shuffle 7  # suites in a shuffled order (one seed, one order)
 #
 # Prints only the head line and the FAILURES block; exit code 1 on any failure.
 # Window must be 1280x800: at Chrome's default 800x600 the UI-overlap suite
 # (91f-ui) fails for real — the rail and the pads do overlap on a small screen.
 # -Mobile runs the same suites in a phone window instead: the layout guards are
-# written to skip themselves when the window is not a phone, so without this
-# switch the phone half of the interface is never actually measured.
-param([switch]$NoBuild, [string]$Only = "", [switch]$Mobile, [int]$Fuzz = 0, [int]$Seed = 0, [string]$Size = "", [switch]$Full, [switch]$Browser, [int]$Jobs = 0, [switch]$Times, [switch]$Probe)
+# declared {win:"phone"} and do not run in a desktop window at all, so without
+# this switch the phone half of the interface is never actually measured.
+param([switch]$NoBuild, [string]$Only = "", [switch]$Mobile, [int]$Fuzz = 0, [int]$Seed = 0, [string]$Size = "", [switch]$Full, [switch]$Browser, [int]$Jobs = 0, [switch]$Times, [switch]$Probe, [string]$Shuffle = "")
 # ── три яруса (0.359.3; автор 06.09: «в разработке никто хром не запускает», «быстрый — 20 с») ──
 #   test.ps1            Node: формулы и данные (325 наборов, ~5 с) + дым в Хроме: игра сама
 #                       прожила кадр (~2 с). Итого под десять секунд. Это прогон на каждую правку.
@@ -38,7 +39,8 @@ if ($nodeTier -and -not $nodeExe) { "node не найден (C:\Claude\tools\nod
 if ($nodeTier) {
   [Console]::OutputEncoding = [Text.Encoding]::UTF8   # node пишет UTF-8; консоль 5.1 по умолчанию cp866
   if (-not $NoBuild) { & powershell -ExecutionPolicy Bypass -File (Join-Path $root0 "build.ps1") | Out-Null }
-  & $nodeExe (Join-Path $root0 "test-node.js")
+  $nargs = @((Join-Path $root0 "test-node.js")); if ($Shuffle) { $nargs += "--shuffle=$Shuffle" }
+  & $nodeExe @nargs
   $nodeRc = $LASTEXITCODE
   # и дым: страница в Хроме открылась, цикл прожил кадр, сторож молчит — то, чего Node не видит
   $NoBuild = $true; $Only = "игра запустилась сама"
@@ -59,11 +61,15 @@ if ($Only) { $url += "?only=" + [uri]::EscapeDataString($Only) }
 # дороже всех остальных наборов. -Fuzz 4000 включает длинный: его запускают
 # руками, когда ищут падение, и seed у него постоянный, так что провал
 # повторяется точь-в-точь.
-# -Full — все наборы, включая тридцать тяжёлых (SLOW_SUITES в 90-harness); по умолчанию быстрый ярус
+# -Full — все наборы, включая тяжёлые (ярус heavy объявляет сам набор, 90-harness); по умолчанию быстрый ярус
 if ($Full) { $sep = if ($url -match "\?") { "&" } else { "?" }; $url += "$sep" + "full=1" }
 # «проба · …» — стенды, а не проверки: они печатают числа экономики и не судят
 # ничего (ok(true,…) целиком). Обычный прогон их не зовёт, -Probe зовёт.
 if ($Probe) { $sep = if ($url -match "\?") { "&" } else { "?" }; $url += "$sep" + "probe=1" }
+# -Shuffle N: наборы в перемешанном порядке (?shuffle=N, M442). Одно зерно — один
+# порядок, и все части прогона мешают одинаково, так что раздача по частям сходится.
+# Набор, который краснеет только в перемешке, зелёный лишь после соседа — это утечка.
+if ($Shuffle) { $sep = if ($url -match "\?") { "&" } else { "?" }; $url += "$sep" + "shuffle=$Shuffle" }
 # Замер говорит странице, что часы настоящие: тогда прогон идёт синхронно,
 # и Chrome не успевает снять разметку до отчёта (99-run.js объясняет).
 if ($Times) { $sep = if ($url -match "\?") { "&" } else { "?" }; $url += "$sep" + "times=1" }
@@ -173,6 +179,8 @@ function Read-Dump($dom) {
 # Заголовок части: «ПРОВАЛЕНО N · пройдено P · наборов R из S …» либо «ВСЁ ЗЕЛЁНОЕ · …».
 # Блок провалов идёт после заголовка через пустую строку и кончается пустой строкой.
 $pass = 0; $fail = 0; $ran = 0; $all = 0; $tail = ""; $fails = @(); $slowest = @()
+# карантин (опция stage у набора, M442): провалы печатаются своей строкой и не решают вердикт
+$stRan = 0; $stFail = 0; $staged = @(); $offWin = 0
 foreach ($r in $runs) {
   $text = Read-Dump $r.dom
   if ($null -eq $text) {
@@ -189,7 +197,13 @@ foreach ($r in $runs) {
   if ($h -match '^ПРОВАЛЕНО (\d+)')       { $fail += [int]$Matches[1] }
   if ($h -match 'наборов (\d+) из (\d+)') { $ran += [int]$Matches[1]; $all = [int]$Matches[2] }
   # хвост заголовка (без тяжёлых / полный / без картинки) один на все части
-  if ($h -match 'из \d+(.*)$') { $t = $Matches[1] -replace ' · часть \d+/\d+', ''; if ($t.Length -gt $tail.Length) { $tail = $t } }
+  if ($h -match ' · карантин (\d+)') { $stRan += [int]$Matches[1] }
+  if ($h -match ' · не в своём окне (\d+)') { $offWin += [int]$Matches[1] }
+  if ($h -match ' · карантин \d+ \(провалов (\d+)\)') { $stFail += [int]$Matches[1] }
+  if ($h -match 'из \d+(.*)$') { $t = $Matches[1] -replace ' · часть \d+/\d+', '' -replace ' · карантин \d+( \(провалов \d+\))?', '' -replace ' · не в своём окне \d+ \(win\)', ''; if ($t.Length -gt $tail.Length) { $tail = $t } }
+  for ($i = 1; $i -lt $lines.Count; $i++) {
+    if ($lines[$i] -match '^КАРАНТИН') { for ($i++; $i -lt $lines.Count -and $lines[$i] -notmatch '^\s*$'; $i++) { $staged += $lines[$i].TrimEnd() }; break }
+  }
   if ($lines[0] -match '^\S+ \d+ ') {
     $j = 2
     while ($j -lt $lines.Count -and $lines[$j] -notmatch '^\s*$') { $fails += $lines[$j].TrimEnd(); $j++ }
@@ -203,7 +217,10 @@ foreach ($r in $runs) {
     }
   }
 }
+# наборы не в своём окне (опция win) складываются по частям, как и карантин
+if ($offWin) { $tail += " · не в своём окне $offWin (win)" }
 "{0} · пройдено {1} · наборов {2} из {3}{4}{5} · {6:N1} с" -f $(if ($fail) { "ПРОВАЛЕНО $fail" } else { "ВСЁ ЗЕЛЁНОЕ" }), $pass, $ran, $all, $tail, $(if ($Jobs -gt 1) { " · частей $Jobs" } else { "" }), $sw.Elapsed.TotalSeconds
+if ($stRan) { "карантин (в вердикт не идёт): наборов $stRan, провалов $stFail"; $staged | ForEach-Object { $_ } }
 if ($Times -and $slowest.Count) {
   "САМЫЕ ДОЛГИЕ (мс):"
   $slowest | Sort-Object { - $_[0] } | Select-Object -First 30 | ForEach-Object { "  {0,6}  {1}" -f $_[0], $_[1] }
