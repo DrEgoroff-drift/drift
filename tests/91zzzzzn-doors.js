@@ -26,30 +26,30 @@ function drPair(){
 function drDoors(){
   const p=()=>(G.surf&&G.surf.p)||(G.land&&G.land.p)||(G.sys.planets||[])[0]||null;
   return [
-    {ru:"посадка",  go:()=>{const q=p();if(q&&typeof startLanding==="function")startLanding(q);}},
-    {ru:"грунт",    go:()=>{if(typeof enterSurface==="function"&&G.land)enterSurface();}},
-    {ru:"шахта",    go:()=>{if(typeof enterDig==="function")enterDig();}},
-    {ru:"пещера",   go:()=>{if(typeof enterCave==="function")enterCave();}},
-    {ru:"пояс",     go:()=>{if(typeof enterBelt==="function")enterBelt();}},
-    {ru:"черпак",   go:()=>{const q=(G.sys.planets||[]).find(x=>x.type==="gas");if(q&&typeof startScoop==="function")startScoop(q);}},
-    {ru:"база",     go:()=>{const q=p();if(q&&typeof enterBase==="function")enterBase(q);}},
-    {ru:"дом",      go:()=>{if(typeof enterHomeIn==="function")enterHomeIn();}},
-    {ru:"зимовка",  go:()=>{if(typeof enterWinter==="function")enterWinter();}},
-    {ru:"санаторий",go:()=>{if(typeof enterSpa==="function")enterSpa();}},
-    {ru:"взлёт",    go:()=>{if(typeof launch==="function"&&G.surf)launch();}},
+    {ru:"посадка",  go:()=>{const q=p();if(q)startLanding(q);}},
+    {ru:"грунт",    go:()=>{if(G.land)enterSurface();}},
+    {ru:"шахта",    go:()=>{enterDig();}},
+    {ru:"пещера",   go:()=>{enterCave();}},
+    {ru:"пояс",     go:()=>{enterBelt();}},
+    {ru:"черпак",   go:()=>{const q=(G.sys.planets||[]).find(x=>x.type==="gas");if(q)startScoop(q);}},
+    {ru:"база",     go:()=>{const q=p();if(q)enterBase(q);}},
+    {ru:"дом",      go:()=>{enterHomeIn();}},
+    {ru:"зимовка",  go:()=>{enterWinter();}},
+    {ru:"санаторий",go:()=>{enterSpa();}},
+    {ru:"взлёт",    go:()=>{if(G.surf)launch();}},
     {ru:"карта",    go:()=>{G.mode="map";}},
-    {ru:"станция",  go:()=>{if(G.sys.station&&typeof openStation==="function"){G.st=G.sys.station;G.mode="dock";openStation();}}}
+    {ru:"станция",  go:()=>{if(G.sys.station){G.st=G.sys.station;G.mode="dock";openStation();}}}
   ];
 }
 /* выходы: то, чем игрок закрывает дверь за собой */
 function drOut(){
   const out=["exitDig","exitCave","exitBelt","exitScoop","exitBase","exitHomeIn",
              "exitWinter","exitSpa","exitWanderer","closeStation"];
-  for(const n of out){const f=window[n];if(typeof f==="function"){try{f();}catch(e){}}}
+  for(const n of out){try{window[n]();}catch(e){}}
   document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
 }
 
-TEST_SUITES.push(() => suite("двери: из каждой сцены в каждую дверь — и обратно", () => {
+TEST_SUITES.push(() => suite("двери: из каждой сцены в каждую дверь — и обратно",{tier:"heavy"}, () => {
   const bad=[],ok0=[],refused=[];
   let cells=0,opened=0,saved=0;
   const doors=drDoors();

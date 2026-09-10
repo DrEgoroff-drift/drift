@@ -11,7 +11,7 @@ function relayFind(pred,rad){
   }
   return null;
 }
-TEST_SUITES.push(()=>suite("приёмники: мачты стоят от посева и лежат в щелях шкалы",()=>{
+TEST_SUITES.push(()=>suite("приёмники: мачты стоят от посева и лежат в щелях шкалы",{tier:"browser"},()=>{
   resetWorld();
   const R=relayFind(null);
   ok(!!R,"мачты в мире есть");
@@ -34,7 +34,7 @@ TEST_SUITES.push(()=>suite("приёмники: мачты стоят от по�
   ok(cnt(30,30,6)>=cnt(0,0,6),"на краю мачт не меньше, чем в середине");
 }));
 
-TEST_SUITES.push(()=>suite("приёмники: поймал разборчиво — записал, и только тогда",()=>{
+TEST_SUITES.push(()=>suite("приёмники: поймал разборчиво — записал, и только тогда",{tier:"browser"},()=>{
   resetWorld();
   const R=relayFind(null);
   G.sx=R.sx;G.sy=R.sy;G.sys=getSystem(G.sx,G.sy);
@@ -61,7 +61,7 @@ TEST_SUITES.push(()=>suite("приёмники: поймал разборчив�
   eq(radioTune(q).k,"noise","пустая щель по-прежнему шумит");
 }));
 
-TEST_SUITES.push(()=>suite("приёмники: что они дают — доход, приём или ничего",()=>{
+TEST_SUITES.push(()=>suite("приёмники: что они дают — доход, приём или ничего",{tier:"browser"},()=>{
   resetWorld();
   /* платит тот, кто там живёт */
   const P=relayFind(r=>r.give==="pay",20);
@@ -108,7 +108,7 @@ TEST_SUITES.push(()=>suite("приёмники: что они дают — до�
   }
 }));
 
-TEST_SUITES.push(()=>suite("приёмники: бумага, курс и сохранение",()=>{
+TEST_SUITES.push(()=>suite("приёмники: бумага, курс и сохранение",{tier:"browser"},()=>{
   resetWorld();
   const R=relayFind(null);
   G.sx=R.sx+3;G.sy=R.sy;G.sys=getSystem(G.sx,G.sy);
@@ -140,7 +140,7 @@ TEST_SUITES.push(()=>suite("приёмники: бумага, курс и сох
 }));
 
 /* ── M220: у мачты есть тело ── */
-TEST_SUITES.push(()=>suite("приёмники: у мачты есть тело, и к ней подходят",()=>{
+TEST_SUITES.push(()=>suite("приёмники: у мачты есть тело, и к ней подходят",{tier:"browser"},()=>{
   resetWorld();
   const R=relayFind(null,20);
   G.sx=R.sx;G.sy=R.sy;G.sys=getSystem(G.sx,G.sy);G.mode="system";
@@ -153,6 +153,6 @@ TEST_SUITES.push(()=>suite("приёмники: у мачты есть тело,
   ok(G.prompt.indexOf(R.call)===0,"и в подсказке её позывной: "+G.prompt.split("\n")[0]);
   ok(G.prompt.indexOf("ДЕЙСТВИЕ")>0||G.prompt.indexOf("уже")>0,"и то, что с ней можно сделать");
   /* рисуется и ничего не роняет */
-  relayDrawSystem(v=>v*.1+W/2,v=>v*.1+H/2,1);
-  ok(true,"кадр с мачтой рисуется");
+  const lg=T.ledger(()=>relayDrawSystem(v=>v*.1+W/2,v=>v*.1+H/2,1));
+  ok(lg.calls>0,"кадр с мачтой рисуется: вызовов канвы "+lg.calls);
 }));

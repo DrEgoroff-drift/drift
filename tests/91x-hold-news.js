@@ -3,7 +3,7 @@ TEST_SUITES.push(()=>suite("холдинг: новость с причиной, 
   resetWorld();
   const s=siteTestStation();
   const st=routeTestStations(4).filter(x=>x.key!==(s&&s.key));
-  if(!s||!st.length){ok(true,"пропущено");return;}
+  if(!ok(s&&st.length,"станция с площадкой и соседние станции нашлись"))return;
   siteTestOpen(s);
   const H=holdOf(s.key);H.bld={};
   /* новость с причиной: заложен цех — строка с адресом и давление вверх на входы */
@@ -33,12 +33,12 @@ TEST_SUITES.push(()=>suite("холдинг: новость с причиной, 
   ok(legs.some(l=>l[2]===1),"плечо помечено как проданное");
   /* соперник выбирает аппетит раз в смену */
   const A=appetiteOf(s);
-  if(A){
+  if(ok(A,"у станции есть аппетит — соперник ест из него")){
     const k=Object.keys(A)[0];
     H.rival=0;
     const ate0=appetiteAte(s,k);
     const n=rivalEat(s,k,100);
     ok(n>0&&appetiteAte(s,k)===ate0+n,"чужая баржа выбрала "+n+" из аппетита станции");
     ok(rivalEat(s,k,100)===0,"второй раз за смену не ест");
-  }else ok(true,"у станции нет аппетита — часть пропущена");
+  }
 }));

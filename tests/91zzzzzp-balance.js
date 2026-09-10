@@ -17,15 +17,15 @@
 TEST_SUITES.push(() => suite("договор: числа замысла те же, что записаны в документах", () => {
   /* каждая строка: что, сколько, и где это записано */
   const PACT=[
-    ["CREW_YIELD",        typeof CREW_YIELD!=="undefined"?CREW_YIELD:null,        .85,     "CLAUDE.md, «руки теряют деньги — это не баг»"],
-    ["CREW_OFFLINE_CAP",  typeof CREW_OFFLINE_CAP!=="undefined"?CREW_OFFLINE_CAP:null, 24*3600*1000, "офлайн догоняется сутками, не больше"],
-    ["LOCKER_FEE",        typeof LOCKER_FEE!=="undefined"?LOCKER_FEE:null,        .01,     "PLAN M345: 1 %/сутки от стоимости"],
-    ["LOCKER_LAPSE",      typeof LOCKER_LAPSE!=="undefined"?LOCKER_LAPSE:null,    30,      "PLAN M345: 30 суток без визита — на блошинец"],
-    ["LOCKER_SLOTS",      typeof LOCKER_SLOTS!=="undefined"?LOCKER_SLOTS:null,    24,      "PLAN M345: 24 места (48 со «Вторым ящиком»)"],
-    ["COOP_EXAM",         typeof COOP_EXAM!=="undefined"?COOP_EXAM:null,          12000,   "PLAN M351: экзамен по обороту"],
-    ["COOP_FEE",          typeof COOP_FEE!=="undefined"?COOP_FEE:null,            1500,    "PLAN M351: штамп за 1 500"],
-    ["BUY_SPREAD",        typeof BUY_SPREAD!=="undefined"?BUY_SPREAD:null,        1.06,    "12-economy: взять дороже, чем сдать"],
-    ["дрон-бур, цена",    (typeof DRONES!=="undefined"&&DRONES.miner)?DRONES.miner.price:null, 9000, "PLAN M350: 9 000 кр по окупаемости"]
+    ["CREW_YIELD",        CREW_YIELD,        .85,     "CLAUDE.md, «руки теряют деньги — это не баг»"],
+    ["CREW_OFFLINE_CAP",  CREW_OFFLINE_CAP, 24*3600*1000, "офлайн догоняется сутками, не больше"],
+    ["LOCKER_FEE",        LOCKER_FEE,        .01,     "PLAN M345: 1 %/сутки от стоимости"],
+    ["LOCKER_LAPSE",      LOCKER_LAPSE,    30,      "PLAN M345: 30 суток без визита — на блошинец"],
+    ["LOCKER_SLOTS",      LOCKER_SLOTS,    24,      "PLAN M345: 24 места (48 со «Вторым ящиком»)"],
+    ["COOP_EXAM",         COOP_EXAM,          12000,   "PLAN M351: экзамен по обороту"],
+    ["COOP_FEE",          COOP_FEE,            1500,    "PLAN M351: штамп за 1 500"],
+    ["BUY_SPREAD",        BUY_SPREAD,        1.06,    "12-economy: взять дороже, чем сдать"],
+    ["дрон-бур, цена",    DRONES.miner?DRONES.miner.price:null, 9000, "PLAN M350: 9 000 кр по окупаемости"]
   ];
   const bad=[];
   for(const [ru,got,want,where] of PACT){
@@ -34,7 +34,7 @@ TEST_SUITES.push(() => suite("договор: числа замысла те ж�
   }
   eq(bad.slice(0,4).join(" ;; "),"","код и документы говорят об одних числах");
   /* потолки разрядов кооператива: 60 / 150 / без потолка (PLAN M351) */
-  if(typeof COOP_RANKS!=="undefined"){
+  {
     eq(COOP_RANKS.length,3,"разрядов кооператива три");
     eq(COOP_RANKS[0].cap,60,"первый разряд берёт до 60 единиц за заход");
     eq(COOP_RANKS[1].cap,150,"второй — до 150");
@@ -44,14 +44,13 @@ TEST_SUITES.push(() => suite("договор: числа замысла те ж�
   }
 }));
 
-TEST_SUITES.push(() => suite("договор: наёмник остаётся ставкой, а не станком", () => {
+TEST_SUITES.push(() => suite("договор: наёмник остаётся ставкой, а не станком",{tier:"browser"}, () => {
   /* «Руки теряют деньги, и это не баг» (CLAUDE.md): рейс отбивает около 85 %
      жалованья, прибыль живёт в хвостах таблицы событий. Проверяем не текст, а
      поведение: без событий рейс обязан оставаться в минусе. */
   resetWorld();
-  if(typeof coopStamp==="function")coopStamp("Проверка");
+  coopStamp("Проверка");
   G.credits=200000;
-  if(typeof stationMercs!=="function"||typeof hireMerc!=="function"){ok(false,"наёма в этой сборке нет — пропуск");return;}
   const pool=stationMercs(G.sys)||[];
   ok(pool.length>0,"на станции есть кого нанять: "+pool.length);
   if(!ok(pool.length,"нашлось: pool.length"))return;
@@ -61,18 +60,18 @@ TEST_SUITES.push(() => suite("договор: наёмник остаётся с
   if(!ok(G.crew.length,"нашлось: G.crew.length"))return;
   const c=G.crew[0];
   /* оклад в минуту считает crewPay, а не поле на человеке */
-  const wage=(typeof crewPay==="function")?crewPay(c):0;
+  const wage=crewPay(c);
   ok(wage>0,"оклад в минуту назначен: "+Math.round(wage));
   /* ставка замысла: рейс отбивает CREW_YIELD от оклада, остальное — в хвостах
      таблицы событий. Множитель crewMul("yield") мы не трогаем — он про
      конкретного человека; сверяем сам закон и то, что он читается. */
-  const mul=(typeof crewMul==="function")?crewMul(c,"yield"):1;
+  const mul=crewMul(c,"yield");
   ok(mul>0&&mul<3,"множитель выработки человека в разумных пределах: "+mul.toFixed(2));
   ok(CREW_YIELD*mul<1.3,"даже с лучшим человеком рейс не становится станком: "+(CREW_YIELD*mul).toFixed(2));
   /* и «скрытая удача» нигде не показывается игроку (CLAUDE.md) */
-  const src=(typeof nmSource==="function")?nmSource():"";
+  const src=nmSource();
   if(src){
-    const tight=(typeof whyTight==="function")?whyTight(src):src.split(/\s+/).join("");
+    const tight=whyTight(src);
     ok(tight.indexOf('"удача"')<0&&tight.indexOf("crewLuck(c)+")<0,
        "скрытая удача не выведена в текст");
   }
@@ -83,7 +82,6 @@ TEST_SUITES.push(() => suite("договор: ящик конторы берёт
   /* 1 % в сутки от стоимости содержимого, тридцать суток — сдача на блошинец.
      Считаем руками и сверяем с тем, что списала игра. */
   resetWorld();
-  if(typeof lockerRec!=="function"){ok(false,"ящика в этой сборке нет — пропуск");return;}
   const L=lockerRec();
   L.items=[];L.res={};
   L.res[RES_KEYS[0]]=100;

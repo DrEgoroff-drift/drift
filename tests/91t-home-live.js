@@ -56,6 +56,6 @@ TEST_SUITES.push(()=>suite("дом: по вещам можно ткнуть",()=
     tMs:Date.now(),paidMs:Date.now()}));
   const cr=G.crew[0];
   ok(!!cr,"наёмник дома есть");
-  drawHomeRoom(c2);                       // поникший рисуется своей позой
-  ok(true,"поникший наёмник рисуется без ошибок");
+  const lg=T.ledger(()=>drawHomeRoom(c2));   // поникший рисуется своей позой
+  ok(lg.calls>10,"поникший наёмник рисуется: вызовов канвы "+lg.calls);
 }));

@@ -86,7 +86,7 @@ TEST_SUITES.push(() => suite("опись: разобранная часть ух
   resetWorld();
 }));
 
-TEST_SUITES.push(() => suite("опись: за борт уходит ровно то и столько, сколько сказано", () => {
+TEST_SUITES.push(() => suite("опись: за борт уходит ровно то и столько, сколько сказано",{tier:"browser"}, () => {
   resetWorld();
   const k=RES_KEYS.find(x=>opisCanDump(x));
   ok(!!k,"есть что выбрасывать: "+k);

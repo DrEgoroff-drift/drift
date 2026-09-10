@@ -35,7 +35,7 @@ TEST_SUITES.push(()=>suite("баржи: маршрут настоящий",()=>{
 }));
 
 /* ── баржа: гибель оставляет след ── */
-TEST_SUITES.push(()=>suite("баржа: гибель оставляет след",()=>{
+TEST_SUITES.push(()=>suite("баржа: гибель оставляет след",{tier:"browser"},()=>{
   resetWorld();
   const sys=(function(){for(let dx=-8;dx<=8;dx++)for(let dy=-8;dy<=8;dy++){
     if(!starAt(dx,dy))continue;const s=getSystem(dx,dy);if(s.station)return s;}return null;})();

@@ -34,7 +34,7 @@ function plLand(s, p) {
 }
 
 /* ── 1. всё стоит на грунте ── */
-TEST_SUITES.push(() => suite("места: залежи, растения и зверьё стоят на грунте, а не над ним", () => {
+TEST_SUITES.push(() => suite("места: залежи, растения и зверьё стоят на грунте, а не над ним",{tier:"browser"}, () => {
   const bad = [];
   let checked = 0, worlds = 0;
   for (const { s, p } of plWorlds(10)) {
@@ -63,7 +63,7 @@ TEST_SUITES.push(() => suite("места: залежи, растения и зв
    Он единственный, кто по поверхности двигается сам. Стоит забыть строку
    `b.y=groundAt(...)` рядом с `b.x+=b.vx` — и стадо поедет по воздуху ровно
    по той высоте, где родилось. */
-TEST_SUITES.push(() => suite("места: зверьё не уходит в воздух и не тонет на ходу", () => {
+TEST_SUITES.push(() => suite("места: зверьё не уходит в воздух и не тонет на ходу",{tier:"browser"}, () => {
   const bad = [];
   let steps0 = 0;
   for (const { s, p } of plWorlds(4)) {
@@ -187,7 +187,7 @@ TEST_SUITES.push(() => suite("места: устье пещеры не на пл
     const cm = S.cave;
     if (!cm) { bad.push(p.name + ": входа в пещеру нет вовсе"); continue; }
     worlds++;
-    const keep = Math.max(300, (typeof shipZoneR === "function" ? shipZoneR() : 90) * 3);
+    const keep = Math.max(300, shipZoneR() * 3);
     if (Math.abs(cm.x - S.tr.padX) < keep - 1)
       bad.push(p.name + ": устье в " + Math.round(Math.abs(cm.x - S.tr.padX)) + " px от площадки (нужно " + Math.round(keep) + ")");
     if (cm.x < 100 || cm.x > S.tr.W - 100) bad.push(p.name + ": устье у самого края полосы");
@@ -204,7 +204,7 @@ TEST_SUITES.push(() => suite("места: устье пещеры не на пл
    числом — ящик 8×21 (`caveBoxFree`). Силуэт рисуется отдельно и о ящике не
    знает: разъедься они, и человек будет входить головой в камень или висеть
    в воздухе ботинками. Меряем нарисованное. */
-TEST_SUITES.push(() => suite("места: силуэт человека совпадает с ящиком столкновений", () => {
+TEST_SUITES.push(() => suite("места: силуэт человека совпадает с ящиком столкновений",{tier:"browser"}, () => {
   const keepCtx = ctx;
   const off = document.createElement("canvas"); off.width = 80; off.height = 80;
   let box = null;

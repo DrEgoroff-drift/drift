@@ -4,7 +4,7 @@
    кончается по часам, а не по жребию. Всё это уже ломалось руками: разворот с
    единицей в покое расплющил птицу в нитку, а сонливость без конца фазы
    усыпляла её на три четверти времени. */
-TEST_SUITES.push(()=>suite("трепло: репертуар",()=>{
+TEST_SUITES.push(()=>suite("трепло: репертуар",{tier:"browser"},()=>{
   resetWorld();
   const DOF=["roll","tuck","step","turn","stretch","footUp","fan","yawn",
              "shiver","bow","hang"];
@@ -27,9 +27,9 @@ TEST_SUITES.push(()=>suite("трепло: репертуар",()=>{
      значение в объявлении, вторая — степень свободы, которая не затухает
      (у `turn` затухания нет вовсе — его гасят сами повадки, и это держится
      только на них). */
-  const src=(typeof document!=="undefined"&&document.scripts&&document.scripts[0])
+  const src=(document.scripts&&document.scripts[0])
     ?document.scripts[0].textContent:"";
-  if(src){
+  if(ok(src,"исходник страницы виден набору")){
     const i=src.indexOf("const PAR={"),j=src.indexOf("};",i);
     ok(i>0&&j>i,"таблица PAR найдена в исходнике");
     const decl=src.slice(i,j);
@@ -44,14 +44,14 @@ TEST_SUITES.push(()=>suite("трепло: репертуар",()=>{
      прыжка, «step» держал −7 (найдено 09.09.2026 на полном ярусе, дважды за
      день, один раз −0.31). Поэтому позы проверяются через две секунды, а
      место — через полминуты, и медленный шаг назван, а не спрятан. */
-  const realActs=(typeof parActs==="function")?parActs:null;
+  const realActs=parActs;
   try{
-    if(realActs)parActs=function(){};
+    parActs=function(){};
     PAR.act=null;PAR.actT=0;PAR.actDur=0;
     for(let i=0;i<200;i++)parStep(1/60);
     for(const k of DOF)if(k!=="step")near(PAR[k]||0,0,.005,"птица вернулась в покой по «"+k+"»");
     for(let i=0;i<1800;i++)parStep(1/60);
-  }finally{if(realActs)parActs=realActs;}
+  }finally{parActs=realActs;}
   near(PAR.step||0,0,.005,"и на место на жёрдочке — за полминуты, по «step»");
 
   /* 2. Ни одна повадка не выдаёт нечисло ни на одном кадре. */

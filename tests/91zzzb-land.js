@@ -8,14 +8,14 @@
    Автопилот детерминирован (случайность только в стартовой точке), поэтому
    прогон честный: startLanding → updateLanding до касания. Разбился — значит
    тяги не хватает против тяготения или заход не сходится; адрес — тип и радиус. */
-TEST_SUITES.push(()=>suite("сквозной: автопосадка садится на каждый мир",()=>{
+TEST_SUITES.push(()=>suite("сквозной: автопосадка садится на каждый мир",{tier:"browser"},()=>{
   resetWorld();
   const keep=G.opts.easyLand;G.opts.easyLand=true;
   const bad=[],seen={};let tries=0;
   const systems=[];
   for(let r0=0;r0<6&&systems.length<14;r0++)for(let x=-r0;x<=r0;x++)for(let y=-r0;y<=r0;y++){
     if(Math.max(Math.abs(x),Math.abs(y))!==r0)continue;
-    if(typeof starAt==="function"&&!starAt(x,y))continue;
+    if(!starAt(x,y))continue;
     const s=getSystem(x,y);if(s&&s.planets&&s.planets.length)systems.push({x,y,s});
   }
   for(const {x,y,s} of systems){
@@ -52,7 +52,7 @@ TEST_SUITES.push(()=>suite("сквозной: автопосадка садит�
    На каждой сцене из общего списка: видимые плавающие панели (приборы, подсказка,
    пэды, взлёт, рейка, меню, консоль, попугай) не пересекаются прямоугольниками;
    у каждой видимой кнопки текст помещается (scrollWidth ≤ clientWidth). */
-TEST_SUITES.push(()=>suite("сквозной: панели не наслаиваются, текст в кнопках помещается",()=>{
+TEST_SUITES.push(()=>suite("сквозной: панели не наслаиваются, текст в кнопках помещается",{tier:"heavy"},()=>{
   /* пэды меряются ГРУППАМИ, а не одним ящиком: `.pads` — полоса во всю
      ширину, кнопки в ней стоят по краям, а середина пуста по замыслу — там и
      висит консоль. По ящику выходило пересечение 426×68, при котором ни одна
@@ -68,7 +68,7 @@ TEST_SUITES.push(()=>suite("сквозной: панели не наслаива
     return ix>4&&iy>4?Math.round(ix)+"×"+Math.round(iy):null;};
   for(const sc of lookScenes()){
     resetWorld();
-    try{if(sc.set()===false||G.mode==="none")continue;drawWorld();if(typeof hud==="function")hud();}catch(e){continue;}
+    try{if(sc.set()===false||G.mode==="none")continue;drawWorld();hud();}catch(e){continue;}
     scenes++;
     const boxes=SEL.map(s=>({s,r:vis(document.querySelector(s))})).filter(b=>b.r);
     for(let i=0;i<boxes.length;i++)for(let j=i+1;j<boxes.length;j++){

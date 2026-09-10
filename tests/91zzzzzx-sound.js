@@ -56,7 +56,7 @@ function snStand(fn,after){
   }
 }
 
-TEST_SUITES.push(() => suite("звук: каждый звук из таблицы играется и гаснет", () => {
+TEST_SUITES.push(() => suite("звук: каждый звук из таблицы играется и гаснет",{tier:"browser"}, () => {
   resetWorld();
   const names=Object.keys(SFX);
   ok(names.length>=10,"звуков в таблице: "+names.length);
@@ -75,7 +75,7 @@ TEST_SUITES.push(() => suite("звук: каждый звук из таблиц�
     }
     return "";
   },(s)=>{started=s.started;stopped=s.stopped;});
-  if(why){ok(true,why+" — проверку пропускаем");return;}
+  if(!ok(!why,"звук поднят для замера"+(why?": "+why:"")))return;
   ok(started>=names.length,"источников запущено за перебор: "+started+", погашено: "+stopped);
   eq(bad.slice(0,5).join(" ;; "),"","каждый звук запускается и гасится"+(bad.length?" (всего "+bad.length+")":""));
   /* незнакомое имя — тишина, а не падение */
@@ -85,7 +85,7 @@ TEST_SUITES.push(() => suite("звук: каждый звук из таблиц�
   resetWorld();
 }));
 
-TEST_SUITES.push(() => suite("звук: выключенный молчит, а полифония не течёт", () => {
+TEST_SUITES.push(() => suite("звук: выключенный молчит, а полифония не течёт",{tier:"browser"}, () => {
   resetWorld();
   const names=Object.keys(SFX).slice(0,8);
   const bad=[];
@@ -112,12 +112,12 @@ TEST_SUITES.push(() => suite("звук: выключенный молчит, а 
     if(SND.voices>VOICE_MAX)bad.push("после залпа осталось занято: "+SND.voices);
     return "";
   });
-  if(why){ok(true,why+" — проверку пропускаем");return;}
+  if(!ok(!why,"звук поднят для замера"+(why?": "+why:"")))return;
   eq(bad.slice(0,4).join(" ;; "),"","выключенный звук молчит, а голоса не текут");
   resetWorld();
 }));
 
-TEST_SUITES.push(() => suite("звук: гул двигателя — один голос на весь полёт", () => {
+TEST_SUITES.push(() => suite("звук: гул двигателя — один голос на весь полёт",{tier:"browser"}, () => {
   /* «Двигатель звучит непрерывно и потому громче всего мешает» — у него своя
      шина и один-единственный узел. Если бы кадр заводил новый, за минуту полёта
      их стало бы три тысячи, и игра бы захлебнулась именно на звуке. */
@@ -139,24 +139,23 @@ TEST_SUITES.push(() => suite("звук: гул двигателя — один �
     if(stat.started-s1>0)bad.push("после стопа завёлся ещё один гул: "+(stat.started-s1));
     return "";
   });
-  if(why){ok(true,why+" — проверку пропускаем");return;}
+  if(!ok(!why,"звук поднят для замера"+(why?": "+why:"")))return;
   eq(bad.slice(0,3).join(" ;; "),"","гул двигателя один на весь полёт");
   resetWorld();
 }));
 
-TEST_SUITES.push(() => suite("звук: голос маяка молчит там, где ему велено молчать", () => {
+TEST_SUITES.push(() => suite("звук: голос маяка молчит там, где ему велено молчать",{tier:"browser"}, () => {
   /* M349: приёмник говорит в полёте и в дороге, но НЕ на столах и станциях —
      «голос не читает поверх экрана». Это правило прямо записано в voiceCan. */
   resetWorld();
-  if(typeof voiceCan!=="function"){ok(false,"маяка в этой сборке нет — пропуск");return;}
-  const opts=(typeof voiceOpts==="function")?voiceOpts():null;
+  const opts=voiceOpts();
   if(opts)opts.on=true;
   const bad=[];
   const loud=["system","road"],quiet=["dock","surface","map","dig","cave","belt","base","homein","winter","spa","wanderer","raid","scoop","landing"];
-  for(const m of loud){ G.mode=m; if(typeof speechSynthesis==="undefined")break; if(!voiceCan())bad.push("в режиме «"+m+"» голос молчит, хотя должен говорить"); }
+  for(const m of loud){ G.mode=m; if(!window.speechSynthesis)break; if(!voiceCan())bad.push("в режиме «"+m+"» голос молчит, хотя должен говорить"); }
   for(const m of quiet){ G.mode=m; if(voiceCan())bad.push("в режиме «"+m+"» голос говорит поверх экрана"); }
   G.mode="system";
-  ok(true,"режимов проверено: "+(loud.length+quiet.length));
+  note("режимов проверено: "+(loud.length+quiet.length));
   eq(bad.slice(0,3).join(" ;; "),"","голос звучит только там, где ему позволено");
   resetWorld();
 }));

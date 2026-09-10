@@ -75,7 +75,7 @@ TEST_SUITES.push(() => suite("прилавок: больше сдал — не �
   const k=TRADE_KEYS[0];
   let prev=-1,bad="";
   for(let q=1;q<=24&&!bad;q++){
-    const Q=(typeof sellQuote==="function")?sellQuote(s,k,q):null;
+    const Q=sellQuote(s,k,q);
     const rev=Q?Q.revenue:q*marketPrice(s,k);
     if(!Number.isFinite(rev))bad="выручка за "+q+": "+rev;
     else if(rev<prev)bad="за "+q+" дают "+rev+", а за "+(q-1)+" давали "+prev;

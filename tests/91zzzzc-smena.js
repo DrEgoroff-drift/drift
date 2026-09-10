@@ -5,7 +5,7 @@ TEST_SUITES.push(()=>suite("«Смена»: 72 главы, предикаты н
   eq(Object.keys(SMENA_TEXT).length,72,"у каждой есть текст");
   let empty=0;for(let n=1;n<=72;n++)if(!(SMENA_TEXT[String(n)]||[]).some(p=>p.length>200))empty++;
   eq(empty,0,"в каждой главе есть абзац длиннее двухсот знаков");
-  ok(SMENA_CH.every((r,i)=>r[0]===i+1&&typeof r[1]==="string"&&r[1].length>2&&typeof r[2]==="function"),"номер, «где» и предикат у каждой");
+  ok(SMENA_CH.every((r,i)=>r[0]===i+1&&typeof r[1]==="string"&&r[1].length>2&&r[2] instanceof Function),"номер, «где» и предикат у каждой");
   let threw=0;for(const r of SMENA_CH){try{r[2]();}catch(e){threw++;}}
   eq(threw,0,"ни один предикат не падает на пустом мире");
   smenaSync();

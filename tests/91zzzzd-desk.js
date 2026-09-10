@@ -4,7 +4,7 @@
    M151a — вещи на досках, а закладки только внутри вещи. Сторожится ровно
    это: стол открывается собой, чужих закладок в ленте нет, а вещь, которой у
    игрока не завелось, на столе не лежит. */
-TEST_SUITES.push(()=>suite("стол: открывается столом, а не закладкой",()=>{
+TEST_SUITES.push(()=>suite("стол: открывается столом, а не закладкой",{tier:"browser"},()=>{
   resetWorld();
   /* соседние наборы могли оставить снимки: проверяем правило, а не остаток */
   G.album=[];G.strips=[];G.things=[];
@@ -26,7 +26,7 @@ TEST_SUITES.push(()=>suite("стол: открывается столом, а н
   tableToggle(false);
 }));
 
-TEST_SUITES.push(()=>suite("стол: внутри вещи только её закладки",()=>{
+TEST_SUITES.push(()=>suite("стол: внутри вещи только её закладки",{tier:"browser"},()=>{
   resetWorld();
   tableToggle(true);
   const it=[...document.querySelectorAll("#loglist .item")]
@@ -49,7 +49,7 @@ TEST_SUITES.push(()=>suite("стол: внутри вещи только её з
   tableToggle(false);
 }));
 
-TEST_SUITES.push(()=>suite("стол: рейсы ушли в ДЕЛО, рисунки не падают",()=>{
+TEST_SUITES.push(()=>suite("стол: рейсы ушли в ДЕЛО, рисунки не падают",{tier:"browser"},()=>{
   resetWorld();
   const now=Date.now();
   G.drones=[{id:1,sx:G.sx,sy:G.sy,pi:0,res:"titan",rate:1,pool:100,soldAtMs:now,
@@ -76,7 +76,7 @@ TEST_SUITES.push(()=>suite("стол: рейсы ушли в ДЕЛО, рису�
    Что на тебе, что в трюме, что снято — одно сукно с четырьмя зонами; сравнение
    живёт в панели ПРИБОРЫ, а не на карточках; люк отдаёт спички; людей за борт
    не выбрасывают; накладной на столе больше нет. */
-TEST_SUITES.push(()=>suite("опись: четыре зоны, части ставятся кнопкой, люк отдаёт спички",()=>{
+TEST_SUITES.push(()=>suite("опись: четыре зоны, части ставятся кнопкой, люк отдаёт спички",{tier:"browser"},()=>{
   resetWorld();
   document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
   G.cargo.iron=12;G.cargo.ice=3;G.cargo.folk=2;G.matches=0;
@@ -160,7 +160,7 @@ TEST_SUITES.push(()=>suite("опись: четыре зоны, части ста
   for(const k of RES_KEYS)G.cargo[k]=0;
 }));
 
-TEST_SUITES.push(()=>suite("опись: комплект надевается с сукна, накладной на столе нет",()=>{
+TEST_SUITES.push(()=>suite("опись: комплект надевается с сукна, накладной на столе нет",{tier:"browser"},()=>{
   resetWorld();
   document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
   G.kit=null;G.kitShelf=[];

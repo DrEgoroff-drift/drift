@@ -21,7 +21,7 @@ function alCount(){
     wrecks:Object.keys(G.wrecks||{}).length};
 }
 
-TEST_SUITES.push(() => suite("живые: пять тысяч кадров боя не оставляют хвостов", () => {
+TEST_SUITES.push(() => suite("живые: пять тысяч кадров боя не оставляют хвостов",{tier:"browser"}, () => {
   resetWorld();
   /* уходим туда, где опасно: пираты заводятся от sysDanger */
   let far=null;
@@ -40,7 +40,7 @@ TEST_SUITES.push(() => suite("живые: пять тысяч кадров бо�
      бросок от опасности. Поэтому входим в опасные системы, пока кто-нибудь не
      появится, — иначе «бой» окажется пустым небом, а набор зелёным и слепым
      (сам этим сегодня и попался: peak pirates 0). */
-  if(typeof spawnPirates==="function")spawnPirates();
+  spawnPirates();
   for(let dx=-5;dx<=5&&!(G.pirates||[]).length;dx++)for(let dy=-5;dy<=5&&!(G.pirates||[]).length;dy++){
     const nx=far[0]+dx,ny=far[1]+dy;
     if(!starAt(nx,ny)||sysDanger(nx,ny)<.35)continue;
@@ -94,7 +94,7 @@ TEST_SUITES.push(() => suite("живые: что принадлежало сис
   /* заводим бой честным входом в систему; если в этой не родились — пробуем
      соседние опасные, а не выдумываем пиратов руками */
   let tries=0;
-  if(typeof spawnPirates==="function")spawnPirates();
+  spawnPirates();
   while(!(G.pirates||[]).length&&tries<12){
     tries++;
     for(let dx=-4;dx<=4;dx++)for(let dy=-4;dy<=4;dy++){

@@ -35,7 +35,7 @@ TEST_SUITES.push(()=>suite("находки: пустота перестала б
 TEST_SUITES.push(()=>suite("находки: взятое помнится, спутник несёт отчёт",()=>{
   resetWorld();
   const s=findTestSys();
-  if(!s){ok(true,"находок в мире не нашлось — проверять нечего");return;}
+  if(!ok(s,"система с находками нашлась"))return;
   G.sx=s.sx;G.sy=s.sy;G.sys=s;
   const f=findsIn(s)[0];
   const credits=G.credits;
@@ -54,13 +54,13 @@ TEST_SUITES.push(()=>suite("находки: взятое помнится, сп�
     const hit=findsIn(q).find(x=>x.k==="sat");
     if(hit){sat=hit;sys=q;}
   }
-  if(sat){
+  if(ok(sat,"спутник среди находок в радиусе девяти нашёлся")){
     G.sx=sys.sx;G.sy=sys.sy;G.sys=sys;
     const before=loreCount(),marks=loreMarks().length;
     findTake(sat);
     ok(loreCount()===before+1,"спутник отдал кусок отчёта ("+before+" → "+loreCount()+")");
     ok(loreMarks().length>marks,"спутник передал пеленг: на карте появилась метка");
-  }else ok(true,"спутников в округе не нашлось — редкая находка, так и задумано");
+  }
 }));
 
 /* ── пустая находка уступает планете ──

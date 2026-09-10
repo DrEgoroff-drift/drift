@@ -4,7 +4,7 @@
    про то, чего НЕ происходит: окно закрыто, часы не крутятся от наблюдения,
    и сторож молчит. Плюс полнота таблицы: конец без строки в ней — это конец
    без окна, и такой уже был («тот один» до M416). */
-TEST_SUITES.push(()=>suite("темп: у каждого конца есть окно, и в новом мире оно закрыто",()=>{
+TEST_SUITES.push(()=>suite("темп: у каждого конца есть окно, и в новом мире оно закрыто",{tier:"browser"},()=>{
   resetWorld();
   ok(CLOCK_KEYS.length>=3,"концов под сторожем: "+CLOCK_KEYS.length);
   for(const k of CLOCK_KEYS){
@@ -81,8 +81,8 @@ TEST_SUITES.push(()=>suite("темп: концы спрашивают сторо
    ВСЕГДА, и от этого перестали что-либо значить. Два из них — здесь: провал
    кадра и пульс. Оба меряли одно и то же — время между кадрами — и оба
    мерили не то. */
-TEST_SUITES.push(()=>suite("сторож: провал считается от ПРОШЛОЙ метки, а не от свежей",()=>{
-  const src=(typeof frame==="function")?frame.toString():"";
+TEST_SUITES.push(()=>suite("сторож: провал считается от ПРОШЛОЙ метки, а не от свежей",{tier:"browser"},()=>{
+  const src=frame.toString();
   ok(src.indexOf("framePrev")>0,"есть отдельная метка прошлого кадра");
   /* метка обязана сниматься ДО того, как её перезапишут: иначе разрыв всегда 0 */
   const iPrev=src.indexOf("framePrev=frameLastAt");
@@ -95,7 +95,7 @@ TEST_SUITES.push(()=>suite("сторож: провал считается от �
 }));
 
 TEST_SUITES.push(()=>suite("сторож: пульс не шлёт того, что не число",()=>{
-  const src=(typeof frame==="function")?frame.toString():"";
+  const src=frame.toString();
   ok(src.indexOf("isFinite(fps)")>0,"перед отправкой проверяется, что это число");
   ok(src.indexOf("Math.max(1,BEAT.ms/BEAT.n)")>0,"и деления на ноль больше нет");
   /* та же арифметика вручную: пустое окно не даёт Infinity */
@@ -109,12 +109,12 @@ TEST_SUITES.push(()=>suite("сторож: пульс не шлёт того, ч�
 TEST_SUITES.push(()=>suite("сторож: возврат из скрытого не считается зависанием",()=>{
   /* ловушка стоит в 01a и снимает метку, а не спрашивает document.hidden в тот
      момент, когда вкладка уже видима (в этом и была ошибка) */
-  const has=(typeof document!=="undefined"&&document.documentElement)?1:0;
+  const has=document.documentElement?1:0;
   ok(has,"документ есть");
   /* сама проверка — по исходнику страницы: обработчик обязан существовать */
-  const all=(typeof document!=="undefined"&&document.scripts&&document.scripts[0])
+  const all=(document.scripts&&document.scripts[0])
     ?document.scripts[0].textContent:"";
-  if(!all){ok(true,"исходник страницы не виден (node) — проверка в браузере");return;}
+  if(!ok(all,"исходник страницы виден набору"))return;
   ok(all.indexOf('addEventListener("visibilitychange"')>0,"ловушка возврата стоит");
   const i=all.indexOf('addEventListener("visibilitychange"');
   const near=all.slice(i,i+220);

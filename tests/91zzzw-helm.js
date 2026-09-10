@@ -118,7 +118,7 @@ TEST_SUITES.push(()=>suite("штурвал: вектор тяги и прави�
   eq(Math.hypot(G.ship.vx,G.ship.vy),0,"↓ на месте — стоит, реверса нет");
 }));
 
-TEST_SUITES.push(()=>suite("штурвал: метки, автозахват, ракета к метке",()=>{
+TEST_SUITES.push(()=>suite("штурвал: метки, автозахват, ракета к метке",{tier:"browser"},()=>{
   helmShip();
   const a=helmPirate(300,-760,true),b=helmPirate(600,-760,true),c=helmPirate(900,-760,true),d=helmPirate(1200,-760,true);
   ok(helmLockNext(),"Tab берёт ближайшего");
@@ -175,7 +175,7 @@ TEST_SUITES.push(()=>suite("штурвал: метки, автозахват, р
    физика. Проверяется то, что обещано автору: летит туда, куда тянут; набрал —
    держит и не жжёт; полхода — полскорости; палец на месте — стоит; с меткой
    нос на ней, а ход — куда тянут. */
-TEST_SUITES.push(()=>suite("штурвал M410: стик задаёт ход, нос идёт за меткой",()=>{
+TEST_SUITES.push(()=>suite("штурвал M410: стик задаёт ход, нос идёт за меткой",{tier:"browser"},()=>{
   const sh=helmShip(),st=stat();
   const maxSp=6.4+st.thr*1.6;
   HELM.src="stick";HELM.S={id:1,x0:100,y0:400,x:100+12+70,y:400};
@@ -226,7 +226,8 @@ TEST_SUITES.push(()=>suite("штурвал M410: стик задаёт ход, �
 
 TEST_SUITES.push(()=>suite("штурвал: другие режимы по-прежнему на keys (D08)",()=>{
   const src=[["24-mode-belt","belt"],["19-mode-landing","landing"],["19a-mode-scoop","scoop"]];
-  ok(typeof updateBelt==="function"||typeof updateLanding==="function","режимы на месте");
+  ok(typeof updateBelt==="function","пояс на месте");
+  ok(typeof updateLanding==="function","и заход");
   /* helmTick не трогает keys и не пишет чужие поля */
   helmShip();keys.pup=true;helmTick(1);
   ok(keys.pup,"keys.pup не тронут");
@@ -240,7 +241,7 @@ TEST_SUITES.push(()=>suite("штурвал: другие режимы по-пр�
    центр бежит за пальцем (обратный ход стоит одинаково), «коротко назад» —
    это тормоз и он не медленнее мёртвой зоны, нос на торможении не крутится,
    отпущенный палец не тормозит сам, камера уводит корабль из-под пальца. */
-TEST_SUITES.push(()=>suite("штурвал M422: палец где угодно, назад — тормоз",()=>{
+TEST_SUITES.push(()=>suite("штурвал M422: палец где угодно, назад — тормоз",{tier:"browser"},()=>{
   helmShip();const st=stat();
   const maxSp=6.4+st.thr*1.6,LIM=HELM_DEAD+HELM_REACH;
   /* 1. тычок остаётся тычком, а полежавший палец становится стиком — и справа */

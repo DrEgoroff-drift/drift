@@ -106,7 +106,7 @@ TEST_SUITES.push(()=>suite("зарубки: камень на планете —
 /* ── доска отчёта ──
    Читальня обязана быть честной: показывать ровно собранное, держать пропуски
    пропусками и не открывать замечание главы раньше, чем глава сложилась. */
-TEST_SUITES.push(()=>suite("отчёт: доска, на которой это читают",()=>{
+TEST_SUITES.push(()=>suite("отчёт: доска, на которой это читают",{tier:"browser"},()=>{
   resetWorld();
   G.loreFound=[];G.loreMarks=[];
   const box=document.getElementById("lorelist");

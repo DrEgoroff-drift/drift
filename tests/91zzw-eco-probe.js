@@ -21,15 +21,16 @@ function prbLeg(list,hold,cap){
   legs.sort((a,b)=>b.rate-a.rate);
   return legs;
 }
-TEST_SUITES.push(()=>suite("проба · плечи: распределение и устойчивая ставка",()=>{
+TEST_SUITES.push(()=>suite("проба · плечи: распределение и устойчивая ставка",{tier:"probe"},()=>{
   resetWorld();
   const list=prbStations(7);
   for(const hold of [40,150]){
     const legs=prbLeg(list,hold,0);
     const top=legs.slice(0,10).map(l=>Math.round(l.rate)).join(",");
     const n1=legs.filter(l=>l.rate>1000).length,n3=legs.filter(l=>l.rate>3000).length;
-    ok(true,"трюм "+hold+" · лучшие 10 плеч кр/мин: "+top+" · плеч >1000: "+n1+" · >3000: "+n3+" · всего "+legs.length);
-    const L=legs[0];ok(true,"трюм "+hold+" · #1: "+L.A.station.name+"→"+L.B.station.name+" "+RES[L.k].ru+" "+L.buy+"→"+L.sell+" d="+L.d+" net "+Math.round(L.net));
+    note("трюм "+hold+" · лучшие 10 плеч кр/мин: "+top+" · плеч >1000: "+n1+" · >3000: "+n3+" · всего "+legs.length);
+    ok(legs.length>0&&Number.isFinite(legs[0].rate),"трюм "+hold+": плечи посчитаны ("+legs.length+")");
+    const L=legs[0];note("трюм "+hold+" · #1: "+L.A.station.name+"→"+L.B.station.name+" "+RES[L.k].ru+" "+L.buy+"→"+L.sell+" d="+L.d+" net "+Math.round(L.net));
   }
   /* устойчивая ставка: 40 кругов по лучшему плечу с настоящими покупками и давлением; время 3.1 мин/круг */
   for(const cfg of [{id:"strizh",hold:40,cr:600},{id:"vyuk",hold:150,cr:20000}]){
@@ -45,7 +46,7 @@ TEST_SUITES.push(()=>suite("проба · плечи: распределение
       G.t+=L.min*3600;t+=L.min;laps++;
       if(i<3||i%10===9)log.push(Math.round(L.rate));
     }
-    ok(true,cfg.id+" · "+laps+" кругов за "+Math.round(t)+" мин → касса "+Math.round(G.credits)+" · ставка "+Math.round((G.credits-cfg.cr)/t)+" кр/мин · ставки плеч по ходу: "+log.join(","));
+    note(cfg.id+" · "+laps+" кругов за "+Math.round(t)+" мин → касса "+Math.round(G.credits)+" · ставка "+Math.round((G.credits-cfg.cr)/t)+" кр/мин · ставки плеч по ходу: "+log.join(","));
   }
   /* честно: покупка есть только ПО ПЛЕЧУ маршрута (12r, M289) — станций 2–6, цены видены своими глазами.
      Берём три лучшие пары на шести станциях и ходим по ним кругом с настоящим давлением. */
@@ -64,10 +65,10 @@ TEST_SUITES.push(()=>suite("проба · плечи: распределение
       G.t+=min*3600;t+=min;laps++;
       if(i<3||i%10===9)log.push(Math.round(net/min));
     }
-    ok(true,cfg.id+" · МАРШРУТ "+route.length+" плеча на "+Object.keys(used).length+" станциях · "+laps+" кругов за "+Math.round(t)+" мин → касса "+Math.round(G.credits)+" · ставка "+Math.round((G.credits-cfg.cr)/t)+" кр/мин · по ходу: "+log.join(","));
+    note(cfg.id+" · МАРШРУТ "+route.length+" плеча на "+Object.keys(used).length+" станциях · "+laps+" кругов за "+Math.round(t)+" мин → касса "+Math.round(G.credits)+" · ставка "+Math.round((G.credits-cfg.cr)/t)+" кр/мин · по ходу: "+log.join(","));
   }
 }));
-TEST_SUITES.push(()=>suite("проба · дроны: выработка точки и масштаб по числу машин",()=>{
+TEST_SUITES.push(()=>suite("проба · дроны: выработка точки и масштаб по числу машин",{tier:"probe"},()=>{
   resetWorld();
   const list=prbStations(7);
   for(const k of ORE_KEYS){
@@ -75,7 +76,7 @@ TEST_SUITES.push(()=>suite("проба · дроны: выработка точ�
     const pool=droneCapacity(k),p0=marketFor(S)[k];
     let rev=0,left=pool;
     while(left>0){const n=Math.min(left,Math.max(1,Math.round(.6*droneTripMs({sx:S.sx,sy:S.sy,pi:0,res:k,t0:0})/60000)));rev+=sellDroneYield(S,k,n);left-=n;}
-    ok(true,RES[k].ru+" · "+p0+" кр/ед → "+Math.round(rev/(pool/.6))+" кр/мин на дрона · окупаемость "+dronePaybackH(p0,.6)+" ч (M350: точка бездонная)");
+    note(RES[k].ru+" · "+p0+" кр/ед → "+Math.round(rev/(pool/.6))+" кр/мин на дрона · окупаемость "+dronePaybackH(p0,.6)+" ч (M350: точка бездонная)");
     resetWorld();
   }
   /* десять дронов на одной точке кристаллов, одна станция: давление общее */
@@ -84,30 +85,32 @@ TEST_SUITES.push(()=>suite("проба · дроны: выработка точ�
   for(const N of [1,5,10,20]){
     resetWorld();
     let rev=0;const pool=droneCapacity(k);
+    ok(!!S,"станция, которая берёт кристаллы, есть");
     for(let i=0;i<N;i++){let left=pool;while(left>0){const n=Math.min(left,12);rev+=sellDroneYield(S,k,n);left-=n;}}
-    ok(true,N+" дронов на кристаллах · цикл "+Math.round(pool/.6)+" мин · "+Math.round(rev)+" кр = "+Math.round(rev/(pool/.6))+" кр/мин · вложено "+N*2200);
+    note(N+" дронов на кристаллах · цикл "+Math.round(pool/.6)+" мин · "+Math.round(rev)+" кр = "+Math.round(rev/(pool/.6))+" кр/мин · вложено "+N*2200);
   }
-  ok(true,"давление: пол −35 % · полураспад 3 ч ИГРОВОГО времени (G.t) — офлайн не спадает · дронов на точку: предела нет, тормоз — цена 9 000 и одна машина в двое суток на верфь/завод");
+  note("давление: пол −35 % · полураспад 3 ч ИГРОВОГО времени (G.t) — офлайн не спадает · дронов на точку: предела нет, тормоз — цена 9 000 и одна машина в двое суток на верфь/завод");
 }));
-TEST_SUITES.push(()=>suite("проба · части, спички, награды, сбор газа",()=>{
+TEST_SUITES.push(()=>suite("проба · части, спички, награды, сбор газа",{tier:"probe"},()=>{
   resetWorld();
   for(const d of [.2,.5,.8]){
     const r=rng(7),h=[0,0,0,0,0,0];
     for(let i=0;i<2000;i++)h[tierFromDanger(d,r)]++;
+    eq(h.slice(1).reduce((a,b)=>a+b,0),2000,"опасность "+d+": все броски легли в тиры 1..5");
     const m=(h[3]*1+h[4]*3+h[5]*5.6)/2000;
-    ok(true,"опасность "+d+" · тиры 1..5: "+h.slice(1).map(x=>Math.round(x/20)+"%").join(" ")+" · спичек на одну часть в среднем "+m.toFixed(2)+" · награда за пирата ≈ "+Math.round((90+d*420)*1.05));
+    note("опасность "+d+" · тиры 1..5: "+h.slice(1).map(x=>Math.round(x/20)+"%").join(" ")+" · спичек на одну часть в среднем "+m.toFixed(2)+" · награда за пирата ≈ "+Math.round((90+d*420)*1.05));
   }
   const list=prbStations(7);
   const S=list.find(s=>stationParts(s).length);
-  if(S){const P=stationParts(S).map(p=>"т"+((p.part||p).tier)+" "+p.price).join(", ");ok(true,"части на «"+S.station.name+"»: "+P);}
-  ok(true,"сбор газа: .008+.004·drill ед/кадр в коридоре = "+Math.round((.008+.004)*60*60)+" ед/МИН при drill 1 и 100 % в коридоре (кадр = 1/60 с) · рынок не берёт");
-  ok(true,"ремонт корпуса: 14 кр/ед · прыжок 9+13·d топлива · топливо 5–12 кр · мод L1 900–1600 · корпус 3 400–24 000 · управляющий доля 4–9 %");
+  if(S){const P=stationParts(S).map(p=>"т"+((p.part||p).tier)+" "+p.price).join(", ");note("части на «"+S.station.name+"»: "+P);}
+  note("сбор газа: .008+.004·drill ед/кадр в коридоре = "+Math.round((.008+.004)*60*60)+" ед/МИН при drill 1 и 100 % в коридоре (кадр = 1/60 с) · рынок не берёт");
+  note("ремонт корпуса: 14 кр/ед · прыжок 9+13·d топлива · топливо 5–12 кр · мод L1 900–1600 · корпус 3 400–24 000 · управляющий доля 4–9 %");
 }));
 /* ── после кооператива (M351): прилавок с потолком за заход и ломтями по разрядам ──
    Замер, обещанный в архиве M351: три разряда × два корпуса, тот же маршрут из трёх
    лучших пар на шести станциях, каждый приход — новый заход (потолок обнуляется),
    покупка ломтями через coopBuy, продажа с давлением, топливо как выше. */
-TEST_SUITES.push(()=>suite("проба · кооператив: прилавок по разрядам, потолок и ломти",()=>{
+TEST_SUITES.push(()=>suite("проба · кооператив: прилавок по разрядам, потолок и ломти",{tier:"probe"},()=>{
   resetWorld();
   const list=prbStations(7);
   for(const cfg of [{id:"strizh",cr:600},{id:"vyuk",cr:20000}])for(const rank of [1,2,3]){
@@ -116,6 +119,7 @@ TEST_SUITES.push(()=>suite("проба · кооператив: прилавок
     if(rank>=2){G.soldTotal=C.sold0+100000;C.done=["a","b"];}
     if(rank>=3){G.soldTotal=C.sold0+500000;C.done=["a","b","c","d"];}
     const R=COOP_RANKS[rank-1];
+    ok(!!R,"разряд "+rank+" объявлен");
     const legs0=prbLeg(list,stat().cargoMax,0),route=[],used={};
     for(const L of legs0){const a=L.A.key,b=L.B.key;const nu=Object.keys(used).length+(used[a]?0:1)+(used[b]?0:1);if(nu>6)continue;if(route.some(x=>x.A===L.A&&x.B===L.B))continue;route.push(L);used[a]=1;used[b]=1;if(route.length>=3)break;}
     let t=0,laps=0,log=[],units=0;
@@ -132,7 +136,7 @@ TEST_SUITES.push(()=>suite("проба · кооператив: прилавок
       G.t+=min*3600;t+=min;laps++;units+=q;
       if(i<3||i%10===9)log.push(Math.round(net/min));
     }
-    ok(true,cfg.id+" · разряд "+rank+" ("+R.ru+", потолок "+(R.cap||"нет")+") · "+laps+" кругов за "+Math.round(t)+" мин, "+units+" ед → касса "+Math.round(G.credits)+" · ставка "+Math.round((G.credits-cfg.cr)/Math.max(1,t))+" кр/мин · по ходу: "+log.join(","));
+    note(cfg.id+" · разряд "+rank+" ("+R.ru+", потолок "+(R.cap||"нет")+") · "+laps+" кругов за "+Math.round(t)+" мин, "+units+" ед → касса "+Math.round(G.credits)+" · ставка "+Math.round((G.credits-cfg.cr)/Math.max(1,t))+" кр/мин · по ходу: "+log.join(","));
   }
   G.coop=null;G.soldTotal=0;G.sys=null;G.cargo={};
 }));

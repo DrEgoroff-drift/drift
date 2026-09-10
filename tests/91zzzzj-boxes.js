@@ -1,7 +1,7 @@
 /* ══════════════ автотесты: коробки (M346) ══════════════
    Двадцать этикеток руками; одна и та же не приходит дважды; ложатся на полку
    дома; попадаются в обломках, на блошинце и на борту «Сороки»; эффекта нет. */
-TEST_SUITES.push(()=>suite("коробки: двадцать этикеток, без повторов, на полке дома",()=>{
+TEST_SUITES.push(()=>suite("коробки: двадцать этикеток, без повторов, на полке дома",{tier:"browser"},()=>{
   resetWorld();
   G.boxes=[];G.books=[];
   eq(BOXES.length,20,"двадцать коробков в таблице");
@@ -43,7 +43,7 @@ TEST_SUITES.push(()=>suite("коробки: на блошинце и на бор
   /* блошинец: лот «пустой спичечный коробок» бывает, покупка кладёт на полку */
   let bz=null;
   for(let dx=-12;dx<=12&&!bz;dx++)for(let dy=-12;dy<=12&&!bz;dy++){if(!starAt(dx,dy))continue;const s=getSystem(dx,dy);if(s.station&&s.station.stype==="bazaar")bz=s;}
-  if(bz){
+  if(ok(bz,"блошинец в двенадцати секторах нашёлся")){
     G.sys=bz;G.sx=bz.sx;G.sy=bz.sy;G.credits=100000;
     let lot=null;
     const ep0=Date.now;
@@ -52,7 +52,7 @@ TEST_SUITES.push(()=>suite("коробки: на блошинце и на бор
       ok(!!lot,"коробок на прилавке бывает");
       if(lot){fleaBuy(lot.id,"cr",bz);eq(boxCount(),1,"куплен — на полке");}
     }finally{Date.now=ep0;}
-  }else ok(true,"блошинца рядом нет — не меряем");
+  }
   /* «Сорока»: коробок за одну спичку среди бумаг какой-нибудь эпохи */
   G.boxes=[];
   let lot2=null,w=null;

@@ -45,7 +45,7 @@ function liveScreens(){
   return px/Math.max(1,W*H*DPR*SCK*DPR*SCK);
 }
 
-TEST_SUITES.push(() => suite("печь: стоя на месте игра не печёт заново каждый кадр", () => {
+TEST_SUITES.push(() => suite("печь: стоя на месте игра не печёт заново каждый кадр",{tier:"heavy"}, () => {
   resetWorld();
   plLand(G.sys, G.sys.planets.find(p => p.type !== "gas") || G.sys.planets[0]);
   const spin = n => { for (let i = 0; i < n; i++) { try { stepWorld(1); drawWorld(); } catch (e) {} G.t += 1; } };
@@ -66,7 +66,7 @@ TEST_SUITES.push(() => suite("печь: стоя на месте игра не �
   resetWorld();
 }));
 
-TEST_SUITES.push(() => suite("печь: живой кадр держит растра не больше, чем нужно кадру", () => {
+TEST_SUITES.push(() => suite("печь: живой кадр держит растра не больше, чем нужно кадру",{tier:"heavy"}, () => {
   resetWorld();
   plLand(G.sys, G.sys.planets.find(p => p.type !== "gas") || G.sys.planets[0]);
   for (let i = 0; i < 30; i++) { try { stepWorld(1); drawWorld(); } catch (e) {} G.t += 1; }
@@ -101,7 +101,7 @@ TEST_SUITES.push(() => suite("печь: живой кадр держит рас�
    26–44 за круг при 7200 пройденных мировых пикселей, то есть ровно столько,
    сколько новой земли. Экранные слои после прогрева не промахиваются НИ РАЗУ.
    Роста нет; зависание не здесь, и этот набор держит вывод, а не надежду. */
-TEST_SUITES.push(() => suite("печь: вечер с прыжками и посадками не дорожает от круга к кругу", () => {
+TEST_SUITES.push(() => suite("печь: вечер с прыжками и посадками не дорожает от круга к кругу",{tier:"heavy"}, () => {
   resetWorld();
   const sys = [];
   for (let r = 1; r < 9 && sys.length < 3; r++)
@@ -156,7 +156,7 @@ TEST_SUITES.push(() => suite("печь: вечер с прыжками и пос
 TEST_SUITES.push(()=>suite("выпечка: холодный спрос ставит заказ, а не печёт",()=>{
   resetWorld();
   const p=(G.sys&&G.sys.planets&&G.sys.planets.find(x=>x.type!=="gas"))||null;
-  if(!p){ok(true,"в этой системе не на что садиться");return;}
+  if(!ok(p,"в стартовой системе есть твёрдая планета"))return;
   delete p.mat;delete p.matCn;MAT_JOB=null;
   const got=planetMat(p);
   eq(got,null,"с холодного кэша материал не выдаётся — и это не ошибка");
@@ -168,7 +168,7 @@ TEST_SUITES.push(()=>suite("выпечка: холодный спрос став
 TEST_SUITES.push(()=>suite("выпечка: порция ограничена и работой, а не только часами",()=>{
   resetWorld();
   const p=(G.sys&&G.sys.planets&&G.sys.planets.find(x=>x.type!=="gas"))||null;
-  if(!p){ok(true,"не на чем мерить");return;}
+  if(!ok(p,"в стартовой системе есть твёрдая планета"))return;
   /* бюджеты — числа в исходнике, а не привычка */
   ok(typeof MAT_MS==="number"&&MAT_MS>0&&MAT_MS<=6,"бюджет материала: "+MAT_MS+" мс");
   ok(typeof MAT_CAP==="number"&&MAT_CAP>0&&MAT_CAP<=32,"и потолок работы: "+MAT_CAP+" строк");
@@ -191,14 +191,14 @@ TEST_SUITES.push(()=>suite("выпечка: порция ограничена и
   ok(n>=Math.floor(MAT_S/MAT_CAP),"порций было не меньше, чем строк на потолок: "+n);
 }));
 
-TEST_SUITES.push(()=>suite("выпечка: синхронный путь — для стендов, а не для кадра",()=>{
+TEST_SUITES.push(()=>suite("выпечка: синхронный путь — для стендов, а не для кадра",{tier:"browser"},()=>{
   /* правило проекта в чистом виде: `planetMatNow` платит все 383 мс разом и
      потому зовётся только оттуда, где кадра нет. Проверяем по исходнику
      страницы — тем же способом, каким сеть имён проверяет «подпись без кода
      это ложь». Хвост с наборами отрезаем: им звать можно. */
-  const all=(typeof document!=="undefined"&&document.scripts&&document.scripts[0])
+  const all=(document.scripts&&document.scripts[0])
     ?document.scripts[0].textContent:"";
-  if(!all){ok(true,"исходник страницы не виден — проверка в браузере");return;}
+  if(!ok(all,"исходник страницы виден набору"))return;
   const cut=all.indexOf("TEST_SUITES");
   const src=cut>0?all.slice(0,cut):all;
   const calls=(src.match(/planetMatNow\s*\(/g)||[]).length;
@@ -214,11 +214,11 @@ TEST_SUITES.push(()=>suite("выпечка: ни один набор не утв
      сторожил повтор летописи (`91zzzw-fx`) и не поймал бы ничего; заменён на
      счёт РАБОТЫ. Эта проверка держит правило: считать в наборах можно вызовы,
      строки, кадры — что угодно, кроме времени. */
-  const all=(typeof document!=="undefined"&&document.scripts&&document.scripts[0])
+  const all=(document.scripts&&document.scripts[0])
     ?document.scripts[0].textContent:"";
-  if(!all){ok(true,"исходник страницы не виден — проверка в браузере");return;}
+  if(!ok(all,"исходник страницы виден набору"))return;
   const cut=all.indexOf("TEST_SUITES");
-  if(cut<0){ok(true,"наборов в этой сборке нет");return;}
+  if(!ok(cut>=0,"наборы в сборке найдены"))return;
   const suites=all.slice(cut);
   /* ЖДАТЬ по часам можно: между `setTimeout` виртуальное время идёт, и
      ожидание первого кадра в `99-run` — законное. Нельзя УТВЕРЖДАТЬ: ищем

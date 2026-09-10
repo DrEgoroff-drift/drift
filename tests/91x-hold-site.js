@@ -43,7 +43,7 @@ TEST_SUITES.push(()=>suite("холдинг: таблица построек и �
 TEST_SUITES.push(()=>suite("холдинг: ступень от дел, площадка и правило §10.1",()=>{
   resetWorld();
   const s=siteTestStation();
-  if(!s){ok(true,"станции с планетами нет — пропущено");return;}
+  if(!ok(s,"станция с планетами нашлась"))return;
   ok(rungOf(s.sx,s.sy)===0,"нетронутая система — ступень 0");
   G.place={};G.place[s.key]={f:0,l:0,n:9,take:0,hurt:0,care:0};
   G.names={};G.names[s.key]="Имя";
@@ -63,7 +63,7 @@ TEST_SUITES.push(()=>suite("холдинг: ступень от дел, площ
   ok(A.ok.every(x=>x.def.fam!=="C"&&x.def.fam!=="D"),"на ступени 11 второй и третий ярус закрыты");
   ok(A.no.every(x=>x.why.length>0),"у каждой недоступной строки есть причина");
   const good=A.ok.find(x=>x.def.fam==="B");
-  if(!good){ok(true,"в этой системе нечего заложить из передела — пропущено");return;}
+  if(!ok(good,"в этой системе есть что заложить из передела (семья B)"))return;
   const def=good.def,main=Object.keys(def.eats)[0];
   /* заложить: без денег — отказ; с деньгами — стоит и монтируется */
   G.credits=0;for(const k of RES_KEYS)G.cargo[k]=0;
@@ -122,10 +122,10 @@ TEST_SUITES.push(()=>suite("холдинг: ступень от дел, площ
 TEST_SUITES.push(()=>suite("холдинг: промысел продаёт со скидкой, цех берёт промышленное",()=>{
   resetWorld();
   const s=siteTestStation();
-  if(!s){ok(true,"пропущено");return;}
+  if(!ok(s,"станция с площадкой нашлась"))return;
   siteTestOpen(s);
   const src=bldAvailable(s).ok.find(x=>x.def.fam==="A");
-  if(src){
+  if(ok(src,"промысел для этой системы есть (семья A)")){
     const def=src.def,k=Object.keys(def.makes)[0],M=def.makes[k];
     G.credits=100000;for(const c in def.cost)if(c!=="credits")G.cargo[c]=def.cost[c];
     ok(bldLay(s,def.id)==="","заложен промысел "+def.ru);
@@ -138,7 +138,7 @@ TEST_SUITES.push(()=>suite("холдинг: промысел продаёт со
     const n=bldBuySrc(s,def.id,k,5);
     ok(n===5&&G.cargo[k]===5&&G.credits===cr-5*price,"взято пять по скидке");
     ok(bldCollect(s,def.id)===0,"промысел не дарит — продаёт");
-  }else ok(true,"промысла для этой системы нет — часть пропущена");
+  }
   /* цех второго яруса ест промышленное: сдача по теневой цене */
   const H=holdOf(s.key);H.bld={};
   H.bld.bearingshop={lvl:1,t0:Date.now(),ready:Date.now()-1,my:{},got:{}};

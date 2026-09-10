@@ -1,5 +1,5 @@
 /* ══════════════ автотесты: дорожный спутник (M168, M168b) ══════════════ */
-TEST_SUITES.push(()=>suite("дорога: километры — в кредиты живым счётчиком, комбо растёт и сгорает",()=>{
+TEST_SUITES.push(()=>suite("дорога: километры — в кредиты живым счётчиком, комбо растёт и сгорает",{tier:"browser"},()=>{
   resetWorld();
   G.road=null;G.credits=600;
   RD={crFrac:0};
@@ -40,7 +40,7 @@ TEST_SUITES.push(()=>suite("дорога: километры — в кредит
   RD=null;G.road=null;
 }));
 
-TEST_SUITES.push(()=>suite("дорога: настроение музыки — цвет, тишина — своё дыхание, бит — звёзды",()=>{
+TEST_SUITES.push(()=>suite("дорога: настроение музыки — цвет, тишина — своё дыхание, бит — звёзды",{tier:"browser"},()=>{
   resetWorld();
   G.road=null;
   RD={energy:.2,bright:.5,avg:.1,beat:0,beatT:0,wave:new Array(28).fill(.2),sparks:[],pulses:[],an:null,eq:null,kmh:0};
@@ -55,7 +55,7 @@ TEST_SUITES.push(()=>suite("дорога: настроение музыки — 
   RD=null;
 }));
 
-TEST_SUITES.push(()=>suite("дорога: экран, разгон и тормоз на корпусе, закрытие подводит итог",()=>{
+TEST_SUITES.push(()=>suite("дорога: экран, разгон и тормоз на корпусе, закрытие подводит итог",{tier:"browser"},()=>{
   resetWorld();
   document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
   G.road=null;G.credits=600;G.record=null;
@@ -83,7 +83,7 @@ TEST_SUITES.push(()=>suite("дорога: экран, разгон и тормо
   G.road=null;
 }));
 
-TEST_SUITES.push(()=>suite("дорога: кривой держатель снят автонулём, поворот меряется рысканием",()=>{
+TEST_SUITES.push(()=>suite("дорога: кривой держатель снят автонулём, поворот меряется рысканием",{tier:"browser"},()=>{
   resetWorld();
   G.road=null;
   const G0=9.80665;
@@ -140,7 +140,7 @@ TEST_SUITES.push(()=>suite("дорога: кривой держатель сня
   RD=null;G.road=null;
 }));
 
-TEST_SUITES.push(()=>suite("дорога: микрофон отдельным согласием — иначе Android Auto глушит музыку",()=>{
+TEST_SUITES.push(()=>suite("дорога: микрофон отдельным согласием — иначе Android Auto глушит музыку",{tier:"browser"},()=>{
   resetWorld();
   document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
   G.road=null;
@@ -170,7 +170,7 @@ TEST_SUITES.push(()=>suite("дорога: микрофон отдельным с
   G.road=null;
 }));
 
-TEST_SUITES.push(()=>suite("дорога: тихий сырой микрофон нормируется, гарнитуру не берём, тормоз видно",()=>{
+TEST_SUITES.push(()=>suite("дорога: тихий сырой микрофон нормируется, гарнитуру не берём, тормоз видно",{tier:"browser"},()=>{
   resetWorld();
   G.road=null;
   /* ── программное автоусиление: сырой захват тихий, но музыка должна дышать ──
@@ -219,7 +219,7 @@ TEST_SUITES.push(()=>suite("дорога: тихий сырой микрофон
   G.road=null;
 }));
 
-TEST_SUITES.push(()=>suite("дорога: сияние «моей волны» снизу — разноцветное и дышит музыкой",()=>{
+TEST_SUITES.push(()=>suite("дорога: сияние «моей волны» снизу — разноцветное и дышит музыкой",{tier:"heavy"},()=>{
   resetWorld();
   document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
   G.road=null;
@@ -249,7 +249,7 @@ TEST_SUITES.push(()=>suite("дорога: сияние «моей волны» �
 }));
 
 /* ══════════════ девятый проход (M168k) ══════════════ */
-TEST_SUITES.push(()=>suite("дорога: тон по кругу — палитра не сползает в зелень",()=>{
+TEST_SUITES.push(()=>suite("дорога: тон по кругу — палитра не сползает в зелень",{tier:"browser"},()=>{
   resetWorld();
   /* смешивание по короткой дуге, а не по числовой прямой */
   ok(Math.abs(roadHueMix(350,10,.5)-0)<.01||Math.abs(roadHueMix(350,10,.5)-360)<.01,
@@ -286,7 +286,7 @@ TEST_SUITES.push(()=>suite("дорога: тон по кругу — палит�
   eq(near,0,"соседние плюмажи не одного семейства");
 }));
 
-TEST_SUITES.push(()=>suite("дорога: шкала хода взята от настоящих скоростей, звук игры молчит",()=>{
+TEST_SUITES.push(()=>suite("дорога: шкала хода взята от настоящих скоростей, звук игры молчит",{tier:"browser"},()=>{
   resetWorld();
   /* город даёт больше половины шкалы: прежде делили на 120 км/ч, и на 35 км/ч
      выходило 0.29 — хвост звезды в три пикселя, «звёзды мигают, а не летишь» */
@@ -305,7 +305,7 @@ TEST_SUITES.push(()=>suite("дорога: шкала хода взята от н
   ok(G.opts.audio.on===true,"и сама настройка осталась как была");
 }));
 
-TEST_SUITES.push(()=>suite("дорога: три полосы звука разведены по делу",()=>{
+TEST_SUITES.push(()=>suite("дорога: три полосы звука разведены по делу",{tier:"browser"},()=>{
   resetWorld();
   const w=new Array(28).fill(0);
   for(let i=0;i<6;i++)w[i]=1;                      /* один бас */
@@ -321,7 +321,7 @@ TEST_SUITES.push(()=>suite("дорога: три полосы звука раз�
   ok(ROAD_BAND[3]===28,"полосы покрывают всю волну");
 }));
 
-TEST_SUITES.push(()=>suite("дорога: платят за то, что делаешь — повороты и обратный курс",()=>{
+TEST_SUITES.push(()=>suite("дорога: платят за то, что делаешь — повороты и обратный курс",{tier:"browser"},()=>{
   resetWorld();
   G.road=null;G.credits=600;
   RD={crFrac:0,moveT:0,back:0,turn:0,turnPk:0};
@@ -363,7 +363,7 @@ TEST_SUITES.push(()=>suite("дорога: платят за то, что дел�
   RD=null;G.road=null;
 }));
 
-TEST_SUITES.push(()=>suite("дорога: поездка и сутки — разные числа, и оба видны",()=>{
+TEST_SUITES.push(()=>suite("дорога: поездка и сутки — разные числа, и оба видны",{tier:"browser"},()=>{
   resetWorld();
   document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
   G.road=null;G.credits=600;G.record=null;
@@ -391,7 +391,7 @@ TEST_SUITES.push(()=>suite("дорога: поездка и сутки — ра�
   G.road=null;
 }));
 
-TEST_SUITES.push(()=>suite("дорога: не потолок, а запас — будни копят, дача тратит",()=>{
+TEST_SUITES.push(()=>suite("дорога: не потолок, а запас — будни копят, дача тратит",{tier:"browser"},()=>{
   resetWorld();
   G.road=null;
   /* приток: сутки дают ровно суточную норму, и не больше потолка бака */
@@ -427,7 +427,7 @@ TEST_SUITES.push(()=>suite("дорога: не потолок, а запас —
   RD=null;G.road=null;
 }));
 
-TEST_SUITES.push(()=>suite("дорога: прогрессия — кто больше наездил, больше зарабатывает",()=>{
+TEST_SUITES.push(()=>suite("дорога: прогрессия — кто больше наездил, больше зарабатывает",{tier:"browser"},()=>{
   resetWorld();
   G.road=null;
   /* ранги идут по НАСТОЯЩЕМУ пробегу за всё время */

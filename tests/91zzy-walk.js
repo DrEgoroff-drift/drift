@@ -18,7 +18,7 @@ function walkParas(root,where){
   }
   return bad;
 }
-TEST_SUITES.push(()=>suite("прогон §9: стыковка → слух на карту → зал → стойка → завсегдатай → отстыковка",()=>{
+TEST_SUITES.push(()=>suite("прогон §9: стыковка → слух на карту → зал → стойка → завсегдатай → отстыковка",{tier:"browser"},()=>{
   resetWorld();
   const cand=routeTestStations(8).find(s=>s.station&&stTypeOf(s.station.stype).tabs.indexOf("cantina")>=0)||null;
   ok(!!cand,"нашлась станция с кантиной");

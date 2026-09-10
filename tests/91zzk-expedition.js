@@ -36,12 +36,12 @@ TEST_SUITES.push(()=>suite("циркуляр: доска собирает оди
   G.crew=[];
 }));
 
-TEST_SUITES.push(()=>suite("циркуляр: попутчик занимает кресло, фраза за прыжок, сходит у своей станции",()=>{
+TEST_SUITES.push(()=>suite("циркуляр: попутчик занимает кресло, фраза за прыжок, сходит у своей станции",{tier:"browser"},()=>{
   resetWorld();
   G.exp={phase:1,day0:celDay(),coll:{},gone:[],gave:0,pax:null,lastDay:celDay()};G.seat=null;
   let S=null,P=null;
   for(let x=-10;x<=10&&!P;x++)for(let y=-10;y<=10&&!P;y++){if(!starAt(x,y))continue;const T=getSystem(x,y);if(T&&T.station){const o=expPaxOffer(T);if(o){S=T;P=o;}}}
-  if(!P){ok(true,"попутчика сегодня нет — пропущено");return;}
+  if(!ok(P,"попутчик в радиусе десяти нашёлся"))return;
   ok(expPaxTake(S),"взяли");
   ok(!!G.seat&&G.seat.name===P.name.toUpperCase(),"кресло занято им");
   G.log=[];expPaxJump();

@@ -5,7 +5,7 @@
    теперь называет себя, что удача по-прежнему молчит, и что вторая вкладка не
    затирает первую. */
 
-TEST_SUITES.push(()=>suite("облако: неудача видна, удача молчит",()=>{
+TEST_SUITES.push(()=>suite("облако: неудача видна, удача молчит",{tier:"browser"},()=>{
   resetWorld();
   const k0=CLOUD_ST.k, s0=CLOUD_ST.said;
   /* тесты открыты по file://, где облака нет по замыслу (cloudHere). Чтобы
@@ -44,7 +44,7 @@ TEST_SUITES.push(()=>suite("облако: неудача видна, удача 
   }
 }));
 
-TEST_SUITES.push(()=>suite("две вкладки: пишет только последняя",()=>{
+TEST_SUITES.push(()=>suite("две вкладки: пишет только последняя",{tier:"browser"},()=>{
   resetWorld();
   ok(tabLive(),"эта вкладка живая");
   const before=stGet(SAVE_KEY);

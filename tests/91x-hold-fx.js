@@ -8,7 +8,7 @@ TEST_SUITES.push(()=>suite("холдинг: 26 построек E–I — одн
   const rus=BLD_KEYS.map(id=>BLD[id].ru);
   ok(new Set(rus).size===82,"имена построек не повторяются");
   const s=siteTestStation();
-  if(!s){ok(true,"пропущено");return;}
+  if(!ok(s,"станция с площадкой нашлась"))return;
   siteTestOpen(s);
   const H=holdOf(s.key);H.bld={};
   const stand=id=>{H.bld[id]={lvl:1,t0:Date.now(),ready:Date.now()-1,my:{},got:{}};};
@@ -92,5 +92,6 @@ TEST_SUITES.push(()=>suite("холдинг: 26 построек E–I — одн
   ok(planetLightsN(s)===Math.min(24,nb*3),"огней на планете — по три на постройку ("+planetLightsN(s)+")");
   const mods=holdMods(s);
   ok(mods.length===nb&&mods.every(q=>q.d>=40&&q.d<=50&&q.s>=.55),"формы построек висят на внешнем кольце, штанги 40–50, готовые — крупнее");
-  ok(typeof drawMooredBarge==="function"&&typeof drawPlanetLights==="function","причаленная баржа и огни планеты рисуются");
+  ok(typeof drawMooredBarge==="function","причаленная баржа рисуется");
+  ok(typeof drawPlanetLights==="function","огни планеты рисуются");
 }));

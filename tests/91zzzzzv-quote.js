@@ -13,7 +13,7 @@
 
 TEST_SUITES.push(() => suite("котировка: разбивка сходится с итогом и с кассой", () => {
   resetWorld();
-  const list=(typeof mkSystems==="function")?mkSystems(12):[];
+  const list=mkSystems(12);
   ok(list.length>=6,"станций в обходе: "+list.length);
   const bad=[];let checked=0;
   for(const sys of list){
@@ -28,7 +28,7 @@ TEST_SUITES.push(() => suite("котировка: разбивка сходит�
         /* 1. разбивка: первые nA по priceA, остальное — по базовой ломтями.
            Ломти считает та же функция игры; здесь проверяется, что итог не
            разошёлся со своими же слагаемыми. */
-        const rest=(typeof coopSellSlice==="function")?coopSellSlice(Q.base,q-Q.nA):(q-Q.nA)*Q.base;
+        const rest=coopSellSlice(Q.base,q-Q.nA);
         const want=Math.round(Q.nA*Q.priceA+rest);
         if(want!==Q.revenue)bad.push(sys.name+"/"+RES[k].ru+" ×"+q+": разбивка "+want+" против итога "+Q.revenue);
         /* 2. что показано, то и пришло */
@@ -50,16 +50,16 @@ TEST_SUITES.push(() => suite("котировка: разбивка сходит�
   resetWorld();
 }));
 
-TEST_SUITES.push(() => suite("котировка: надбавка станции живёт ровно на объявленное количество", () => {
+TEST_SUITES.push(() => suite("котировка: надбавка станции живёт ровно на объявленное количество",{tier:"browser"}, () => {
   /* «БЕРЁТ титан · 20 в смену · +18 %» — это обещание не только цены, но и
      КОЛИЧЕСТВА. Сдал больше — остальное по обычной; сдал в другую смену —
      надбавка вернулась. Ни того, ни другого никто не проверял. */
   resetWorld();
-  const list=(typeof mkSystems==="function")?mkSystems(30):[];
+  const list=mkSystems(30);
   let sys=null,k=null,want=0;
   for(const s of list){
     for(const key of TRADE_KEYS){
-      const left=(typeof appetiteLeft==="function")?appetiteLeft(s,key):0;
+      const left=appetiteLeft(s,key);
       if(left>2){sys=s;k=key;want=left;break;}
     }
     if(sys)break;
@@ -89,11 +89,10 @@ TEST_SUITES.push(() => suite("котировка: надбавка станци�
 
 TEST_SUITES.push(() => suite("котировка: прилавок кооператива дорожает ломтями и берёт объявленное", () => {
   resetWorld();
-  if(typeof coopBuyQuote!=="function"){ok(false,"прилавка в этой сборке нет — пропуск");return;}
-  const sys=(typeof mkSystems==="function")?mkSystems(8)[0]:null;
+  const sys=mkSystems(8)[0];
   if(!sys){ok(false,"станции нет — пропуск");return;}
   G.sx=sys.sx;G.sy=sys.sy;G.sys=sys;G.st=sys.station;
-  if(typeof coopStamp==="function")coopStamp("Проверка");
+  coopStamp("Проверка");
   const k=TRADE_KEYS[0];
   const bad=[];
   /* ломти: каждые десять единиц дороже предыдущих, и никогда дешевле */

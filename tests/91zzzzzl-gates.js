@@ -23,11 +23,11 @@ TEST_SUITES.push(() => suite("порог: отказ называет причи
   const said=()=>String(G.msg||"");
   /* 1. наём без кооператива */
   resetWorld();
-  if(typeof e2eLate==="function")e2eLate();
+  e2eLate();
   G.coop=null;G.crew=[];
   G.msg="";
   let hired=false;
-  if(typeof stationMercs==="function"&&typeof hireMerc==="function"){
+  {
     const pool=stationMercs(G.sys)||[];
     if(pool.length){
       try{ hired=hireMerc(pool[0])!==false; }catch(e){ bad.push("наём бросил: "+e.message); }
@@ -38,21 +38,21 @@ TEST_SUITES.push(() => suite("порог: отказ называет причи
   }
   /* 2. прилавок кооператива без штампа: экран обязан сказать, чего не хватает */
   resetWorld();
-  if(typeof e2eLate==="function")e2eLate();
+  e2eLate();
   G.coop=null;
-  if(G.sys.station&&typeof openStation==="function"){
+  if(G.sys.station){
     G.st=G.sys.station;G.mode="dock";
     try{ openStation(); tab="market"; renderTab(); }catch(e){ }
     const txt=String((document.getElementById("stBody")||{}).textContent||"");
     seen.push("прилавок");
     if(!/кооператив/i.test(txt))bad.push("прилавок без штампа молчит о том, кому он открыт");
     else if(!GATE_WHY.test(txt))bad.push("прилавок называет дверь, но не порог");
-    if(typeof closeStation==="function")try{closeStation();}catch(e){}
+    try{closeStation();}catch(e){}
     tab="market";G.mode="system";G.st=null;
   }
   /* 3. взлёт без топлива: самый жестокий порог в игре — он обязан говорить */
   resetWorld();
-  if(typeof landOnTestPlanet==="function"){
+  {
     landOnTestPlanet();
     G.fuel=0;G.msg="";
     seen.push("взлёт");
@@ -75,12 +75,12 @@ TEST_SUITES.push(() => suite("порог: отказ называет причи
   eq(bad.slice(0,4).join(" ;; "),"","каждая закрытая дверь названа");
 }));
 
-TEST_SUITES.push(() => suite("порог: выключенная кнопка объяснена строкой, в которой стоит", () => {
+TEST_SUITES.push(() => suite("порог: выключенная кнопка объяснена строкой, в которой стоит",{tier:"browser"}, () => {
   /* Кнопка бывает выключена по делу: нет денег, нет места, нет ранга. Но
      причина обязана быть НА ЭКРАНЕ, рядом — в той же строке. Иначе игрок
      видит серую кнопку и не знает, что с ней сделать, чтобы она ожила. */
   resetWorld();
-  if(typeof e2eLate==="function")e2eLate();else fuzzRich();
+  e2eLate();
   /* нищий: именно у него выключается больше всего */
   G.credits=0;G.data=0;G.matches=0;
   for(const k of RES_KEYS)G.cargo[k]=0;
@@ -103,7 +103,7 @@ TEST_SUITES.push(() => suite("порог: выключенная кнопка о
         bad.push(ru+" · «"+lbl.slice(0,18)+"» выключена молча: «"+txt.slice(0,40)+"»");
     }
   };
-  if(typeof tableToggle==="function"){
+  {
     tableToggle(true);
     for(const t of [...document.querySelectorAll("#tableTabs button")].map(x=>x.dataset.tab)){
       try{ tableSetTab(t); }catch(e){ continue; }
@@ -111,14 +111,14 @@ TEST_SUITES.push(() => suite("порог: выключенная кнопка о
     }
     tableToggle(false);
   }
-  if(G.sys.station&&typeof openStation==="function"){
+  if(G.sys.station){
     G.st=G.sys.station;G.mode="dock";
     try{ openStation(); }catch(e){ }
     for(const t of [...document.querySelectorAll("#stTabs button")].map(x=>x.dataset.tab)){
       try{ tab=t;renderTab(); }catch(e){ continue; }
       look("#stBody","станция/"+t);
     }
-    if(typeof closeStation==="function")try{closeStation();}catch(e){}
+    try{closeStation();}catch(e){}
     tab="market";G.mode="system";G.st=null;
   }
   document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
@@ -128,7 +128,7 @@ TEST_SUITES.push(() => suite("порог: выключенная кнопка о
     (bad.length?" (всего "+bad.length+")":""));
 }));
 
-TEST_SUITES.push(() => suite("ставка: заправка и ремонт берут ровно по объявленной цене", () => {
+TEST_SUITES.push(() => suite("ставка: заправка и ремонт берут ровно по объявленной цене",{tier:"browser"}, () => {
   /* «ТОПЛИВО 12 кр/ед · РЕМОНТ 9 кр/ед» — это ставка, обещание за единицу.
      Проверка простая и раньше её не было ни у кого: заправиться, посчитать,
      сколько единиц пришло, и сверить со списанным. Ошибка на единицу здесь

@@ -63,7 +63,7 @@ TEST_SUITES.push(()=>suite("управляющий: не платят — ухо
   ok(!G.owned.obod,"и забрал флагман");
 }));
 
-TEST_SUITES.push(()=>suite("исследователь: образцы, наука и ошибочный чертёж",()=>{
+TEST_SUITES.push(()=>suite("исследователь: образцы, наука и ошибочный чертёж",{tier:"browser"},()=>{
   resetWorld();
   G.credits=200000;
   hireMgr(genMgr(31,["sci"]));
@@ -107,7 +107,7 @@ TEST_SUITES.push(()=>suite("управляющие переживают сохр
   eq(G.mgrs.length,0,"старое сохранение просто без управляющих");
 }));
 
-TEST_SUITES.push(()=>suite("портрет управляющего рисуется и различается",()=>{
+TEST_SUITES.push(()=>suite("портрет управляющего рисуется и различается",{tier:"browser"},()=>{
   resetWorld();
   const a=genMgr(11,["cmd"]),b=genMgr(12,["sci"]);
   const fa=mgrFace(a,64),fb=mgrFace(b,64);

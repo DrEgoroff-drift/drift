@@ -76,7 +76,7 @@ TEST_SUITES.push(()=>suite("имена: своё имя на карте, рас�
   ok(seen,"слух о зеркале зовёт его вашим словом");
   G.sys=getSystem(0,0);
 }));
-TEST_SUITES.push(()=>suite("единичные места: три, с адресами, без строки в журнале",()=>{
+TEST_SUITES.push(()=>suite("единичные места: три, с адресами, без строки в журнале",{tier:"heavy"},()=>{
   resetWorld();
   const P=placesAll();eq(P.length,3,"три места нашли звезду");
   const ks=new Set(P.map(q=>q.k));eq(ks.size,3,"и все разные");

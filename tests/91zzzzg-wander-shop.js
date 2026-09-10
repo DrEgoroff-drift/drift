@@ -28,17 +28,16 @@ TEST_SUITES.push(()=>suite("сорока: полка стоянки сеяна �
   const R=wanderStore();
   R.shelf=["gyro","valve","blanket","pencil","bell","notebook"];R.hold=[];
   const t2=wanderLots(w0).find(l=>l.fam==="tool"&&!l.gone&&R.shelf.indexOf(l.id)<0);
-  if(t2){G.matches=99;wanderBuy(t2);ok(R.hold.indexOf(t2.id)>=0&&!wanderHas(t2.id),"седьмой — в трюм, и не работает");
+  if(ok(t2,"седьмой инструмент на витрине есть")){G.matches=99;wanderBuy(t2);ok(R.hold.indexOf(t2.id)>=0&&!wanderHas(t2.id),"седьмой — в трюм, и не работает");
     ok(!wanderToShelf(t2.id),"на полную полку не ложится");
     ok(wanderToHold("gyro")&&wanderToShelf(t2.id)&&wanderHas(t2.id),"освободили место — лёг и работает");}
-  else ok(true,"седьмого инструмента на этой полке нет");
   /* сейв несёт полку и трюм */
   const snap=snapshot();G.wander=null;applySave(snap);
   eq(wanderStore().shelf.length,6,"полка вернулась из сейва");
   G.wander=null;G.matches=0;
 }));
 
-TEST_SUITES.push(()=>suite("сорока: у каждого инструмента есть, кто его читает; эффекты малы и настоящие",()=>{
+TEST_SUITES.push(()=>suite("сорока: у каждого инструмента есть, кто его читает; эффекты малы и настоящие",{tier:"browser"},()=>{
   resetWorld();
   G.wander=null;
   const src=document.scripts[0].textContent;
@@ -100,7 +99,7 @@ TEST_SUITES.push(()=>suite("сорока: прилавок сырья — цел
   for(const k of RES_KEYS)G.cargo[k]=0;
 }));
 
-TEST_SUITES.push(()=>suite("сорока: комната открывается у трапа, рисуется, свёрток берёт часть и отдаёт артефакт",()=>{
+TEST_SUITES.push(()=>suite("сорока: комната открывается у трапа, рисуется, свёрток берёт часть и отдаёт артефакт",{tier:"browser"},()=>{
   resetWorld();
   G.wander=null;
   const now0=Date.now;

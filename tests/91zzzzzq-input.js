@@ -14,7 +14,7 @@
    3. фронт действия (`actEdge`) — это ФРОНТ: он живёт один кадр, а не тянется,
       пока клавишу держат. Иначе одно нажатие делает сотню действий. */
 
-TEST_SUITES.push(() => suite("руки: ушёл фокус — клавиши разжались", () => {
+TEST_SUITES.push(() => suite("руки: ушёл фокус — клавиши разжались",{tier:"browser"}, () => {
   resetWorld();
   const KS=Object.keys(keys);
   ok(KS.length>=4,"клавиш в раскладке: "+KS.length);
@@ -46,7 +46,7 @@ TEST_SUITES.push(() => suite("руки: ушёл фокус — клавиши �
   resetWorld();
 }));
 
-TEST_SUITES.push(() => suite("руки: палец, ушедший с пэда, кнопку отпускает", () => {
+TEST_SUITES.push(() => suite("руки: палец, ушедший с пэда, кнопку отпускает",{tier:"browser"}, () => {
   resetWorld();
   const pads=[...document.querySelectorAll(".pads [data-k]")];
   ok(pads.length>=3,"пэдов на экране: "+pads.length);
@@ -69,7 +69,7 @@ TEST_SUITES.push(() => suite("руки: палец, ушедший с пэда, 
   resetWorld();
 }));
 
-TEST_SUITES.push(() => suite("руки: фронт действия живёт один кадр, а не всё удержание", () => {
+TEST_SUITES.push(() => suite("руки: фронт действия живёт один кадр, а не всё удержание",{tier:"browser"}, () => {
   /* `actEdge` — это «нажал», а не «держит». Считает его КАДР (`frameBody`,
      28-loop): `actEdge = keys.act && !prevAct`. Если бы фронт тянулся всё
      удержание, одно нажатие давало бы сотню действий — сто выстрелов, сто

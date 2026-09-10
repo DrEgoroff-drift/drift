@@ -2,7 +2,7 @@
    Ни строки без причины; маяк не называет «Сороку»; праздник удваивает норму
    ровно в тот день; голос — только в полёте и в дороге, без голосов молчит без
    ошибки, текст доходит до очереди синтеза. */
-TEST_SUITES.push(()=>suite("маяк: ни строки без причины, сводка на смену, «Сорока» не названа",()=>{
+TEST_SUITES.push(()=>suite("маяк: ни строки без причины, сводка на смену, «Сорока» не названа",{tier:"browser"},()=>{
   resetWorld();
   G.beacon=null;G.shiftLog=null;G.freedLog=[];G.scripLog=[];G.hold={};G.occ={};G.opts.voice={on:false};
   const now0=Date.now;
@@ -42,7 +42,7 @@ TEST_SUITES.push(()=>suite("маяк: ни строки без причины, �
   G.beacon=null;G.shiftLog=null;G.freedLog=[];G.scripLog=[];G.hold={};G.occ={};G.opts.voice=null;
 }));
 
-TEST_SUITES.push(()=>suite("маяк: продажа пишет смену, праздник удваивает норму флота",()=>{
+TEST_SUITES.push(()=>suite("маяк: продажа пишет смену, праздник удваивает норму флота",{tier:"browser"},()=>{
   resetWorld();
   G.shiftLog=null;
   const S=nearestStation(0,0);G.sys=S;G.sx=S.sx;G.sy=S.sy;G.st=S.station;G.mode="dock";
@@ -65,7 +65,7 @@ TEST_SUITES.push(()=>suite("маяк: продажа пишет смену, пр
   G.mode="system";G.st=null;G.cargo.iron=0;G.shiftLog=null;
 }));
 
-TEST_SUITES.push(()=>suite("голос приёмника: очередь синтеза, тишина без голосов, молчит на столе",()=>{
+TEST_SUITES.push(()=>suite("голос приёмника: очередь синтеза, тишина без голосов, молчит на столе",{tier:"browser"},()=>{
   resetWorld();
   const SS0=window.speechSynthesis,U0=window.SpeechSynthesisUtterance;
   const spoken=[];

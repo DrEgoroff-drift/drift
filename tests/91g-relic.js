@@ -1,5 +1,5 @@
 /* ══════════════ автотесты: лаборатория и артефакты: слот, эффекты, дерево перков без пустот ══════════════ */
-TEST_SUITES.push(()=>suite("лаборатория: домен исследователя, а не воздух",()=>{
+TEST_SUITES.push(()=>suite("лаборатория: домен исследователя, а не воздух",{tier:"browser"},()=>{
   resetWorld();
   G.credits=300000;
   hireMgr(genMgr(31,["sci"]));
@@ -29,7 +29,7 @@ TEST_SUITES.push(()=>suite("лаборатория: домен исследов�
   ok(G.data>0,"но совсем без дела он не сидит");
 }));
 
-TEST_SUITES.push(()=>suite("артефакты: слот один, эффект глобальный",()=>{
+TEST_SUITES.push(()=>suite("артефакты: слот один, эффект глобальный",{tier:"browser"},()=>{
   resetWorld();
   G.credits=300000;
   hireMgr(genMgr(31,["sci"]));
@@ -80,7 +80,7 @@ TEST_SUITES.push(()=>suite("артефакты: первые строки раб
   near(ai.drift,fast/2,.01,"с «Тихим маяком» дрейф вдвое медленнее");
 }));
 
-TEST_SUITES.push(()=>suite("оживлённые перки исследователя",()=>{
+TEST_SUITES.push(()=>suite("оживлённые перки исследователя",{tier:"browser"},()=>{
   resetWorld();
   G.credits=300000;
   hireMgr(genMgr(31,["sci"]));

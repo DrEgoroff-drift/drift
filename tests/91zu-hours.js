@@ -1,5 +1,5 @@
 /* ══════════════ расхождение времён: смещение к центру, никого днём, автомат, человек один раз ══════════════ */
-TEST_SUITES.push(()=>suite("расхождение времён: хронометр уходит к ядру, посёлок без людей, сдача верная",()=>{
+TEST_SUITES.push(()=>suite("расхождение времён: хронометр уходит к ядру, посёлок без людей, сдача верная",{tier:"heavy"},()=>{
   resetWorld();
   const at=regionOfTheme("hours");ok(!!at,"область часов расставлена");
   const R=regionAt(at.rx*REGION_SPAN,at.ry*REGION_SPAN);
@@ -12,13 +12,13 @@ TEST_SUITES.push(()=>suite("расхождение времён: хрономе�
     if(starAt(x,y)&&!(x===R.core.sx&&y===R.core.sy))edge={x,y};
   G.mode="system";G.running=true;
   /* окраина может быть пустой: узкий склон у ядра на краю области (06b) */
-  if(edge){
+  if(ok(edge,"у ядра есть окраина со звездой")){
     G.sx=edge.x;G.sy=edge.y;G.sys=getSystem(G.sx,G.sy);
     eq(hoursDepthHere(),1,"мы на окраине");
     const offE=hoursOffset();ok(offE>0&&offE<=10,"на окраине минуты ("+offE.toFixed(1)+")");
     let hit=0;for(let i=0;i<40;i++){const r=rng(hashi(i,7,9));if(hoursEtherLine(r))hit++;}
     ok(hit>0&&hit<40,"диспетчер говорит иногда, не всегда ("+hit+"/40)");
-  }else ok(true,"окраина без склона — ядро у края области, проверяем только ядро");
+  }
   /* ядро: час на орбите, больше у посёлка */
   G.sx=R.core.sx;G.sy=R.core.sy;G.sys=getSystem(G.sx,G.sy);
   eq(hoursDepthHere(),2,"мы в ядре");

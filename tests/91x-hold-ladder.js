@@ -12,7 +12,7 @@ TEST_SUITES.push(()=>suite("холдинг: тридцать ступеней, �
   ok(rungPlanOf(0)===0&&rungPlanOf(1)===1&&rungPlanOf(5)===1&&rungPlanOf(6)===2&&rungPlanOf(30)===6,"пятилетки: 1–5 → I … 26–30 → VI");
   ok(rungRingSegs(4)===0&&rungRingSegs(5)===1&&rungRingSegs(14)===2&&rungRingSegs(30)===6,"сегменты кольца — по закрытой пятилетке, с ★5");
   const s=siteTestStation();
-  if(!s){ok(true,"пропущено");return;}
+  if(!ok(s,"станция с площадкой нашлась"))return;
   ok(rungFootTxt(s.sx,s.sy)===""&&rungMoments(s)===0,"нетронутая система: ни цифры в подвале, ни момента");
   siteTestOpen(s);
   const r=rungOf(s.sx,s.sy);

@@ -26,7 +26,7 @@ TEST_SUITES.push(()=>suite("истории: данные здоровы, сло�
   ok(deed.length>=9,"поворотов-поступков не меньше девяти (есть "+deed.length+": "+deed.join(", ")+")");
 }));
 
-TEST_SUITES.push(()=>suite("истории: якорь при первой встрече и выдача по каналам",()=>{
+TEST_SUITES.push(()=>suite("истории: якорь при первой встрече и выдача по каналам",{tier:"browser"},()=>{
   resetWorld();
   G.st=G.sys.station;G.mode="dock";
   const c=storyCtx();
@@ -85,7 +85,7 @@ TEST_SUITES.push(()=>suite("истории: якорь при первой вс�
 }));
 
 /* ── M131: связи как данные и птица-переносчик ── */
-TEST_SUITES.push(()=>suite("истории: связи через seenOf и след, который уносит птица",()=>{
+TEST_SUITES.push(()=>suite("истории: связи через seenOf и след, который уносит птица",{tier:"browser"},()=>{
   resetWorld();
   ok(STORIES.length>=100,"историй не меньше ста (есть "+STORIES.length+")");
   for(const S of STORIES)for(const t of S.traces)if(t.when&&t.when.seenOf){

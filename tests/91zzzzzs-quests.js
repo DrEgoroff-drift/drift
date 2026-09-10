@@ -22,7 +22,7 @@ function qsKeys(src,fn){
 }
 
 TEST_SUITES.push(() => suite("дела: у каждого вида дела есть тот, кто его закрывает", () => {
-  const src=(typeof nmSource==="function")?nmSource():"";
+  const src=nmSource();
   ok(src.length>100000,"исходник игры доступен набору");
   if(!ok(src,"нашлось: src"))return;
   const adds=qsKeys(src,"questAdd");
@@ -47,7 +47,7 @@ TEST_SUITES.push(() => suite("дела: у каждого вида дела ес
     if(!covered)bad.push("«"+k+"» заводится, а закрывается ничем");
   }
   /* мировые дела снимает questSync — он тоже считается закрывателем */
-  const tight=(typeof whyTight==="function")?whyTight(src):src.split(/\s+/).join("");
+  const tight=whyTight(src);
   const hasSync=tight.indexOf("functionquestSync")>=0;
   ok(hasSync,"мировые дела снимает questSync");
   eq(bad.slice(0,4).join(" ;; "),"","каждое дело кто-то закрывает");
@@ -55,7 +55,6 @@ TEST_SUITES.push(() => suite("дела: у каждого вида дела ес
 
 TEST_SUITES.push(() => suite("дела: не двоятся, не переполняют журнал и не теряют адрес", () => {
   resetWorld();
-  if(typeof questAdd!=="function"){ok(false,"журнала дел в этой сборке нет — пропуск");return;}
   /* одно и то же поручение дважды — одна строка (правило 1) */
   const a=questAdd("тест:один",{ru:"Привезти лёд",sx:1,sy:2,reward:"200 кр"});
   const b=questAdd("тест:один",{ru:"Привезти лёд",sx:1,sy:2,reward:"200 кр"});
@@ -88,10 +87,9 @@ TEST_SUITES.push(() => suite("дела: не двоятся, не перепол
   resetWorld();
 }));
 
-TEST_SUITES.push(() => suite("дела: срок, который вышел, назван словами, а не числом со знаком", () => {
+TEST_SUITES.push(() => suite("дела: срок, который вышел, назван словами, а не числом со знаком",{tier:"browser"}, () => {
   /* «срок вышел» — это ответ. «-7 мин» — это протечка формулы в текст. */
   resetWorld();
-  if(typeof questLeft!=="function"){ok(false,"сроков в этой сборке нет — пропуск");return;}
   const now=Date.now();
   eq(questLeft({until:0}),"","без срока строка пустая");
   eq(questLeft({until:now-60000}),"срок вышел","истёкший срок назван словами");

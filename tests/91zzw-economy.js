@@ -45,28 +45,28 @@ TEST_SUITES.push(()=>suite("экономика: замер кр/мин по ис
   /* нужда: ×2 на один привоз */
   let needed=0,needGain=0;
   for(const S of list){const N=needOf(S);if(N){needed++;needGain=Math.max(needGain,marketFor(S)[N.k]*40);}}
-  ok(true,"нужда · станций с нуждой сейчас: "+needed+" из "+list.length+" · лучший разовый привоз на 40 ед.: "+needGain+" кр");
+  note("нужда · станций с нуждой сейчас: "+needed+" из "+list.length+" · лучший разовый привоз на 40 ед.: "+needGain+" кр");
   /* аппетит станции (M290, профиль «холдинг»): кто берёт с надбавкой и сколько это даёт за смену */
   let appN=0,appBest=0,appBestTxt="";
   for(const S of list){
-    const A=(typeof appetiteOf==="function")?appetiteOf(S):null;if(!A)continue;appN++;
+    const A=appetiteOf(S);if(!A)continue;appN++;
     for(const k in A){const gain=A[k]*(appetitePrice(S,k)-marketFor(S)[k]);if(gain>appBest){appBest=gain;appBestTxt=S.station.name+" · "+RES[k].ru.toLowerCase()+" ×"+A[k]+" · +"+gain+" кр";}}
   }
-  ok(true,"холдинг · аппетит: станций с надбавкой "+appN+" из "+list.length+" · лучшая надбавка за смену "+(appBestTxt||"нет"));
+  note("холдинг · аппетит: станций с надбавкой "+appN+" из "+list.length+" · лучшая надбавка за смену "+(appBestTxt||"нет"));
   /* наряды */
   let orders=0,paySum=0,costSum=0;
   for(const S of list){const O=orderOf(S);if(O){orders++;paySum+=O.pay;costSum+=O.qty*RES[O.k].price;}}
-  ok(true,"наряд · станций с нарядом: "+orders+" из "+list.length+" · средняя оплата "+(orders?Math.round(paySum/orders):0)+" кр при товаре на "+(orders?Math.round(costSum/orders):0)+" кр");
+  note("наряд · станций с нарядом: "+orders+" из "+list.length+" · средняя оплата "+(orders?Math.round(paySum/orders):0)+" кр при товаре на "+(orders?Math.round(costSum/orders):0)+" кр");
   /* дрон */
   const avgPrice=ORE_KEYS.reduce((a,k)=>a+RES[k].price,0)/ORE_KEYS.length;
-  ok(true,"дрон · "+DRONES.miner.ratePerMin+" ед/мин × средняя цена "+Math.round(avgPrice)+" = "+Math.round(DRONES.miner.ratePerMin*avgPrice)+" кр/мин · цена дрона "+DRONES.miner.price+" кр");
+  note("дрон · "+DRONES.miner.ratePerMin+" ед/мин × средняя цена "+Math.round(avgPrice)+" = "+Math.round(DRONES.miner.ratePerMin*avgPrice)+" кр/мин · цена дрона "+DRONES.miner.price+" кр");
   /* наёмник: оклад в минуту только в рейсе, выход 85% — ставка */
   const c=genMerc(7,["haul"]);
-  ok(true,"наёмник · оклад "+crewPay(c)+" кр/мин в рейсе · рейс возвращает "+Math.round(CREW_YIELD*100)+"% → ставка −"+Math.round(crewPay(c)*(1-CREW_YIELD))+" кр/мин, выигрыш в хвостах");
+  note("наёмник · оклад "+crewPay(c)+" кр/мин в рейсе · рейс возвращает "+Math.round(CREW_YIELD*100)+"% → ставка −"+Math.round(crewPay(c)*(1-CREW_YIELD))+" кр/мин, выигрыш в хвостах");
   /* управляющие */
   for(const role of MGR_ROLE_KEYS){
     const m=genMgr(11,[role]);
-    ok(true,"управляющий · "+MGR_ROLES[role].ru+": оклад "+mgrPay(m)+" кр/мин из доли "+(mgrCut(m)*100).toFixed(1)+"% · из кассы игрока: 0");
+    note("управляющий · "+MGR_ROLES[role].ru+": оклад "+mgrPay(m)+" кр/мин из доли "+(mgrCut(m)*100).toFixed(1)+"% · из кассы игрока: 0");
   }
 }));
 
@@ -100,7 +100,7 @@ TEST_SUITES.push(()=>suite("экономика: нужда ×2 на один п�
   const list=ecoStations(9);
   let S=null,N=null;
   for(const s of list){const n=needOf(s);if(n){S=s;N=n;break;}}
-  if(!S){ok(true,"нужды в радиусе 9 сейчас нет — проверка пропущена");return;}
+  if(!ok(S,"станция с нуждой в радиусе девяти нашлась"))return;
   const base=S.station.prices[N.k];
   const P1=marketFor(S)[N.k];
   ok(P1>=base*1.5,"цена по нужде выше базы заметно: "+P1+" при базе "+base);
@@ -119,7 +119,7 @@ TEST_SUITES.push(()=>suite("экономика: один наряд на рук�
   const list=ecoStations(9);
   let S=null,O=null;
   for(const s of list){const o=orderOf(s);if(o){S=s;O=o;break;}}
-  if(!S){ok(true,"нарядов в радиусе 9 сейчас нет — проверка пропущена");return;}
+  if(!ok(S,"станция с нарядом в радиусе девяти нашлась"))return;
   G.order=null;
   ok(orderTake(S),"наряд взят");
   ok(!!G.order&&G.order.key===S.key,"он на руках");

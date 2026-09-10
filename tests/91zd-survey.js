@@ -50,7 +50,7 @@ TEST_SUITES.push(()=>suite("отчёт: собран, а не рассказан
 
   /* карта и полка рисуются без падений */
   G.mode="map";G.sel={x:G.sx,y:G.sy};
-  drawMap();
-  ok(true,"карта со слоем съёмки нарисована");
+  const lg=T.ledger(drawMap);
+  ok(lg.calls>20,"карта со слоем съёмки нарисована: вызовов канвы "+lg.calls);
   G.mode="system";
 }));

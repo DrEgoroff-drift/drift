@@ -30,7 +30,7 @@ TEST_SUITES.push(()=>suite("уход: место предлагают один �
   G.sx=0;G.sy=0;G.sys=getSystem(0,0);G.st=G.sys.station||{stype:"x"};
   ok(!expOfferHere(),"не в ядре — не предлагают");
   G.sx=core.sx;G.sy=core.sy;G.sys=core;G.st=core.station||{stype:"x"};
-  if(!core.station){ok(true,"в ядре нет станции — предложение проверено по адресу");G.exp=null;return;}
+  if(!ok(core.station,"в ядре есть станция")){G.exp=null;return;}
   ok(expOfferHere(),"в ядре в день ухода — предлагают");
   G.t+=CEL_DAY*3;
   ok(!expOfferHere(),"через три дня — уже нет");

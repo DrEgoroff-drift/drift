@@ -17,7 +17,7 @@ function newsLine(N,kind,p,args,sys){return {N:N|0,kind,p:p|0,sys:sys||null,args
 const NEWS_ALL_INC=["vein","fair","embargo","strike","holiday","refugee","storm","swarm","drain",
   "find","cult","revolt","envoy","patrol","census","coup","spy","secede","purge"];
 
-TEST_SUITES.push(()=>suite("сводка M431: заметка есть у каждого события",()=>{
+TEST_SUITES.push(()=>suite("сводка M431: заметка есть у каждого события",{tier:"browser"},()=>{
   resetWorld();
   const bad=[];
   const check=(L,what)=>{
@@ -67,7 +67,7 @@ TEST_SUITES.push(()=>suite("сводка M431: срок в тексте — то
     "обряд называет, сколько и чего сделать");
 }));
 
-TEST_SUITES.push(()=>suite("сводка M431: одна запись — одна заметка у всех",()=>{
+TEST_SUITES.push(()=>suite("сводка M431: одна запись — одна заметка у всех",{tier:"browser"},()=>{
   resetWorld();
   const L=newsLine(777,"inc",2,{k:"fair"});
   eq(newsOf(L),newsOf(newsLine(777,"inc",2,{k:"fair"})),"та же запись — тот же текст");

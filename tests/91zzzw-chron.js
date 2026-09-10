@@ -227,7 +227,7 @@ TEST_SUITES.push(()=>suite("война M372: пикет в тылу, чужой 
   npcSpawn();
   /* в бурю пикеты уходят (M384) — и это не поломка набора, а правило: тогда
      проверяем то, что и должно быть, — пустое небо */
-  const storm=(typeof natNoPickets==="function")&&natNoPickets();
+  const storm=natNoPickets();
   if(storm){
     eq(G.pirates.length,0,"идёт вспышка — пикетов нет вовсе");
     return;
@@ -266,7 +266,7 @@ TEST_SUITES.push(()=>suite("война M372: свежий хозяин берё�
     const S=st.systems[k];
     if(S.owner>=0&&st.N-S.since<=OCC_FRESH){fresh=k;break;}
   }
-  if(!fresh){ok(true,"на этой сводке свежих захватов нет — правило проверено на числах ниже");}
+  if(!fresh){eq(occReqMul(G.sx,G.sy),1,"свежих захватов на сводке нет — и реквизиции дома нет");}
   else{
     const p=fresh.split(",");
     const o=occPowerAt(p[0]|0,p[1]|0);
@@ -355,7 +355,7 @@ TEST_SUITES.push(()=>suite("оставленное M377: копия приход
 }));
 
 /* ══════════════ выборы и сбор (M378, §11.2, §14) ══════════════ */
-TEST_SUITES.push(()=>suite("выборы M378: вопрос от зерна месяца, курс от голосов",()=>{
+TEST_SUITES.push(()=>suite("выборы M378: вопрос от зерна месяца, курс от голосов",{tier:"browser"},()=>{
   chWorld();
   try{localStorage.removeItem(CHRON_KEY);}catch(e){}
   WAR_LED_CACHE=null;
@@ -411,7 +411,7 @@ TEST_SUITES.push(()=>suite("обряды M379: счётчик, порог и ч�
     ok(!!R.kind,k+": и свой вид дела на сервере");
   }
   /* без ведомостей счётчик пуст, и это не ошибка */
-  const N=(typeof chronNow==="function")?chronNow():0;
+  const N=chronNow();
   eq(riteCount("subbot",N-2).q,0,"ведомостей нет — счётчик пуст");
   eq(riteDone("subbot",N-2),false,"и порог не взят");
   eq(ritePirateMul(),1,"последствий тоже нет");
