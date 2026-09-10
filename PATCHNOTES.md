@@ -6,6 +6,19 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.428.0 - the game owns its chance and its clock (M441)
+
+`rnd()`/`rndFx()`/`rndSeed()` and `now()`/`clockSet()`/`clockAdvance()` live in `01-core`, with named
+real-clock escapes (`wallMs`, `wallNow`, `uidRand`). All ~400 raw `Math.random`/`Date.now`/
+`performance.now`/`new Date()` calls in `src/` were migrated by class (state, picture, game time,
+real time), and `build.ps1` now refuses a raw call anywhere else, or the world's `rnd()` inside a draw
+function. On a pinned clock the frame step is fixed, so two runs of each of the 15 `lookScenes` on one
+seed give the same `stateHash()` (`08a-statehash`) every hundred steps; that test found and closed three
+leaks between suites (`G.logNew`, `G.msgT`, the radio console's own once-a-second phase). Suites start at
+one seed and one minute (`?hour=` moves it): «план: комбинат» asserts exact numbers again and `bNoDir` is
+deleted from the seven base suites. The build's two slowest checks became single regex passes: 116 s → 5 s.
+Players see nothing: both streams are seeded from the real clock at boot and nothing new is saved.
+
 ## 0.427.2 - the lab's first night, answered: two reds, one law, and the log learns to tell host from game
 
 The three-hour session of 10.09 (127 runs, 65 fuzz seeds) left eleven open keys. Two were the game's:

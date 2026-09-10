@@ -1761,7 +1761,7 @@ body.table u.addr{color:#7a4a20}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.427.2";
+const VER="0.428.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -1775,6 +1775,75 @@ const h01=(x,y,s)=>hashi(x,y,s)/4294967296;
 function rng(seed){let a=seed>>>0;return function(){a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);
   t=t+Math.imul(t^t>>>7,61|t)^t;return ((t^t>>>14)>>>0)/4294967296;};}
 const pick=(arr,r)=>arr[Math.floor(r()*arr.length)];
+/* ══════════════ случай и часы игры (M441) ══════════════
+   Игра обязана повторяться: одно семя и одни часы — один и тот же мир кадр в
+   кадр. На этом стоит всё остальное: повтор падения по семени, сравнение
+   кадров, запись прогона, облачная запись. Прятать подмену в тестах значило бы
+   сделать повторимыми ТЕСТЫ и оставить ИГРУ на песке (DESIGN-tests §3.5).
+   Поэтому сырые Math.random, Date.now, performance.now и new Date() без
+   аргумента в src/ запрещены везде, кроме этого места (закон в build.ps1), и
+   у каждого вызова есть хозяин:
+
+   rnd()          — случай МИРА, [0,1): всё, что ложится в G, — бой, дроны,
+                    баржи, эфир, таймеры режимов, даже если по смыслу это
+                    звук или вид. Поток один, с семенем.
+   rndFx()        — случай КАРТИНКИ: рисунок, звук, частицы вне G, речь птицы.
+                    Отдельный поток: нарисован кадр или нет, rnd() от этого не
+                    сдвигается. От rndFx не имеет права зависеть ничего в G, и
+                    rnd() в draw-функциях запрещён тем же законом.
+   rndSeed(s)     — пересеять оба потока (второй выводится из s).
+   rndState()     — [семя, положение мира, положение картинки]: для stateHash.
+   now()          — часы ИГРЫ, мс эпохи: метки в G, сроки, откаты, праздники по
+                    календарю, офлайн-догон, час суток, тайминг рук. По
+                    умолчанию — настоящие.
+   clockSet(ms)   — прибить часы к виртуальному времени; clockSet(null) —
+                    вернуть настоящие. clockAdvance(ms) двигает: прибитые —
+                    вперёд, настоящие — сдвигом. clockPinned() — прибиты ли.
+                    На прибитых часах кадр идёт постоянным шагом (28-loop):
+                    сколько кадров — столько и времени, и никакого rAF.
+   clockNow()     — то же, что now(), для мест, где имя now занято локальной
+                    переменной или параметром (`const now=…`, `f(B,now)`).
+   Настоящие часы там, где им и место, — под своими именами:
+   wallMs()       — монотонные мс (performance.now): бюджеты печи «по работе И
+                    по времени», prof(), look(), шаг кадра по rAF.
+   wallNow()      — настоящие мс эпохи: метки журнала сбоев и пульса,
+                    притормаживание сети, облака и почты, отметка записи для
+                    облака (её сравнивают между устройствами).
+   uidRand()      — [0,1) из crypto: то, что обязано быть единственным в мире
+                    (вкладка, устройство), а не повторяться по семени.
+
+   В игре оба потока сеются при загрузке от настоящих часов — игроку
+   распределение то же, что было с Math.random. Ни семя, ни часы в запись не
+   идут: это эфемерное (правило CLAUDE.md). Генератор тот же, что у rng()
+   (mulberry32), только с состоянием в переменной, а не в замыкании. */
+let RND_SEED=0,RND_S=0,RNDFX_S=0;
+function rnd(){RND_S=RND_S+0x6D2B79F5|0;let t=Math.imul(RND_S^RND_S>>>15,1|RND_S);
+  t=t+Math.imul(t^t>>>7,61|t)^t;return ((t^t>>>14)>>>0)/4294967296;}
+function rndFx(){RNDFX_S=RNDFX_S+0x6D2B79F5|0;let t=Math.imul(RNDFX_S^RNDFX_S>>>15,1|RNDFX_S);
+  t=t+Math.imul(t^t>>>7,61|t)^t;return ((t^t>>>14)>>>0)/4294967296;}
+function rndSeed(s){RND_SEED=(+s||0)>>>0;RND_S=RND_SEED|0;RNDFX_S=hashi(RND_SEED,0x0F1C,0x441)|0;}
+function rndState(){return [RND_SEED,RND_S>>>0,RNDFX_S>>>0];}
+/* Фаза кадра: счётчики «раз в N кадров» живут в своих модулях вне G (пульт
+   раз в секунду, редкий такт дронов), и если они переживают смену часов, то
+   второй прогон одной сцены начинал бы с фазы первого — и писал в журнал на
+   другом кадре. Модуль, чей счётчик трогает G, кладёт сюда свой сброс;
+   clockSet (через loopReset в 28-loop) зовёт их все. */
+const LOOP_PHASE=[];
+let CLOCK_PIN=null,CLOCK_OFF=0;
+function now(){return CLOCK_PIN===null?Date.now()+CLOCK_OFF:Math.floor(CLOCK_PIN);}
+function clockNow(){return now();}
+function clockPinned(){return CLOCK_PIN!==null;}
+/* смена часов рвёт фазу кадра: шаг и редкий такт считаются заново (28-loop) */
+function clockSet(ms){CLOCK_PIN=(ms==null)?null:+ms;CLOCK_OFF=0;
+  if(typeof loopReset==="function")loopReset();}
+function clockAdvance(ms){ms=+ms||0;if(CLOCK_PIN===null)CLOCK_OFF=Math.floor(CLOCK_OFF+ms);else CLOCK_PIN+=ms;}
+function wallMs(){return (typeof performance!=="undefined"&&performance.now)?performance.now():Date.now();}
+function wallNow(){return Date.now();}
+function uidRand(){
+  try{const a=new Uint32Array(1);crypto.getRandomValues(a);return a[0]/4294967296;}
+  catch(e){return Math.random();}
+}
+rndSeed(hashi(Date.now()%2147483647,Math.floor(Date.now()/2147483647),Math.floor(wallMs()*1000)));
 /* ── русское согласование числительных (полировочный круг) ──
    По коду жило четыре самодельных склонения, и три врали: «1 прыжка»,
    «1 станция получили», стаж «21 ЛЕТ». Одна честная функция на всех:
@@ -1916,13 +1985,13 @@ const mixc=(a,b,t)=>[lerp(a[0],b[0],t),lerp(a[1],b[1],t),lerp(a[2],b[2],t)];
    не родился: игра лежала, а журнал молчал. Теперь ловушки ставятся раньше
    любого кода, который может упасть, и не зависят ни от чего, кроме VER:
    G, logAdd, cloudHere — через typeof, если их ещё нет. */
-const CRASH_SHIP={n:0,last:{},t0:Date.now()};
+const CRASH_SHIP={n:0,last:{},t0:wallNow()};
 function crashShip(kind,msg,at,extra){
   try{
     if(!(location.protocol==="http:"||location.protocol==="https:")||typeof TEST!=="undefined")return;
     if(CRASH_SHIP.n>=80)return;
     msg=String(msg||"").slice(0,600);
-    const key=kind+"|"+msg,now=Date.now();
+    const key=kind+"|"+msg,now=wallNow();
     CRASH_SHIP.last[key]=CRASH_SHIP.last[key]||{t:0,n:0};
     const L=CRASH_SHIP.last[key];L.n++;
     if(now-L.t<60000)return;
@@ -1968,7 +2037,7 @@ function logShip(text,extra){
      существует — поэтому сброс идёт через окно и читается там же, где
      мерится. */
   try{addEventListener("visibilitychange",()=>{
-    if(!document.hidden)try{frameLastAt=0;BEAT.n=0;BEAT.ms=0;BEAT.t=Date.now();}catch(_){}
+    if(!document.hidden)try{frameLastAt=0;BEAT.n=0;BEAT.ms=0;BEAT.t=wallNow();}catch(_){}
   });}catch(_){}
   try{addEventListener("unhandledrejection",e=>{const x=e&&e.reason;crashShip("rejection",(x&&x.message)||String(x),crashStack(x));});}catch(_){}
   /* всё, что игра или браузер печатает как ошибку — тоже улика */
@@ -2309,7 +2378,7 @@ function fuseShips(idA,idB){
   const c=fuseCost();
   if(!fuseAffordable(c))return null;
   const g=fuseGen();
-  const seed=hashi(hashi(A.seed||1,B.seed||2,0xF05E),Date.now()&0xffff,g);
+  const seed=hashi(hashi(A.seed||1,B.seed||2,0xF05E),now()&0xffff,g);
   const base=genUniqueShip(seed);
   /* доля редкого сырья сверх обязательного минимума и есть «бонус за редкость» */
   const rich=clamp((G.cargo.volatiles+G.cargo.icecrys)/(c.volatiles+c.icecrys+24),0,1);
@@ -2368,7 +2437,7 @@ function craftPart(spec){
   if(!craftAffordable(spec.cost))return null;
   G.credits-=spec.cost.credits;
   for(const k in spec.cost)if(k!=="credits")G.cargo[k]-=spec.cost[k];
-  const part=genPart(hashi(Date.now()&0xffffff,partSeq*7717,0xC7AF),spec.tier);
+  const part=genPart(hashi(now()&0xffffff,partSeq*7717,0xC7AF),spec.tier);
   addPart(part);
   tell("tech","Собрана часть: "+part.name+" ("+TIER_RU[part.tier]+")",
        "Часть собрана\n"+part.name);
@@ -2379,7 +2448,7 @@ function craftPart(spec){
    (части, уникальный корпус, кантина), поэтому перк правится здесь, в одном месте. */
 function timeBucket(){
   const period=(typeof mgrPerkOf==="function"&&mgrPerkOf("fact","stock"))?57600000:172800000;
-  return Math.floor(Date.now()/period);
+  return Math.floor(now()/period);
 }
 /* ── эпизод как разрешение на покупку корпуса (M369b, §19.3, D14) ──
    Корпус — не деталь: чужой завод не продаёт его первому встречному. Нужен
@@ -3162,7 +3231,7 @@ function makerProfile(by,prof,r){
   if(N<2)return prof;
   const w0=prof.map(p=>p[1]);
   const wmax=Math.max.apply(null,w0);
-  const q=r||Math.random;
+  const q=r||rnd;
   if(M.prof==="step"){
     /* ступени: не кривая вовсе, а полки. Нос — две узкие, мидель — короб во
        всю ширину, корма — две пониже. Плавных переходов нет ни одного: борт
@@ -3517,7 +3586,7 @@ function tracePoly(pts,sy){
    Оранжевый костёр на корме читается работой и топливом; дорогая вещь
    уходит тихо, и это видно раньше, чем читается название класса. */
 function drawFlame(x,y,rad,pow,cool,tint){
-  const f=rad*(cool?1.5+Math.random()*.8:2.4+Math.random()*1.7)*pow;
+  const f=rad*(cool?1.5+rndFx()*.8:2.4+rndFx()*1.7)*pow;
   const gl=ctx.createRadialGradient(x-f*.25,y,0,x-f*.25,y,f*1.15);
   /* цвет факела — подпись изготовителя (M369, §19.4 измерение 7): у Орднунга
      короткая белая игла, у Коммуны длинный фиалковый шлейф, у Хай-Фронта
@@ -4431,11 +4500,11 @@ function drawHull(id,thrusting,braking,lvl,bank){
     ctx.beginPath();ctx.arc(e.x+e.r*.1,e.y,e.r*.6,0,TAU);ctx.fill();
     ctx.strokeStyle=rgba(mixc(PAL.trim,[255,244,214],.3),.9);ctx.lineWidth=.4;
     ctx.beginPath();ctx.arc(e.x+e.r*.1,e.y,e.r*.6,0,TAU);ctx.stroke();
-    ctx.fillStyle="rgba(170,215,255,"+(.16+Math.random()*.1).toFixed(2)+")";
+    ctx.fillStyle="rgba(170,215,255,"+(.16+rndFx()*.1).toFixed(2)+")";
     ctx.beginPath();ctx.arc(e.x+e.r*.1,e.y,e.r*.3,0,TAU);ctx.fill();
   }
   else for(const e of h.eng){   // холостой ход — только тлеющее сопло
-    ctx.fillStyle="rgba(255,140,70,"+(.2+Math.random()*.12).toFixed(2)+")";
+    ctx.fillStyle="rgba(255,140,70,"+(.2+rndFx()*.12).toFixed(2)+")";
     ctx.beginPath();ctx.arc(e.x+e.r*.1,e.y,e.r*.42,0,TAU);ctx.fill();
   }
   /* ── двигатель как ЖЕЛЕЗО ──
@@ -4464,7 +4533,7 @@ function drawHull(id,thrusting,braking,lvl,bank){
     ctx.strokeStyle=rgba(mixc(h.iron,[255,255,255],.2),.8);ctx.lineWidth=.4;ctx.stroke();
   }
   if(braking){
-    const f=4+Math.random()*6;
+    const f=4+rndFx()*6;
     ctx.fillStyle="rgba(127,230,216,.7)";
     for(const s of [-1,1]){
       const y=h.bw*.5*s;
@@ -5099,7 +5168,7 @@ function shiftTalkTick(dt){
   G.shiftT=(G.shiftT||0)-dt;
   if(G.shiftT>0)return;
   /* пауза длинная и случайная: голос за спиной ценен тем, что редок */
-  G.shiftT=1800+Math.random()*2400;
+  G.shiftT=1800+rnd()*2400;
   const r=rng(hashi(G.sx,G.sy,(G.t|0)));
   logAdd("talk",pick(SHIFT_TALK,r));
 }
@@ -6025,7 +6094,7 @@ function crownOwned(fam){return !!(G.crowns&&G.crowns[fam]);}
 function crownForge(fam){
   if(!crownReady(fam)||crownOwned(fam))return false;
   if(!G.crowns)G.crowns={};
-  G.crowns[fam]=Date.now();
+  G.crowns[fam]=now();
   const F=NODE_FAMS.find(f=>f.id===fam);
   tell("tech","Собран венец: «"+F.crown+"»",
        "«"+F.crown+"»\n"+F.crownNote+"\n\nнабор «"+F.ru+"» закрыт целиком");
@@ -6561,10 +6630,10 @@ function instrWearRu(w){
 /* прибор можно потерять (хвост M127): попадание по корпусу изредка выбивает
    гнездо — экземпляр разбит до мёртвой шкалы, и панель это покажет сама */
 function instrKnock(){
-  if(!G.running||Math.random()>.06)return null;
+  if(!G.running||rnd()>.06)return null;
   const K=instrKit(),ids=Object.keys(K).filter(id=>(K[id].wear||0)<.85);
   if(!ids.length)return null;
-  const id=ids[Math.floor(Math.random()*ids.length)];
+  const id=ids[Math.floor(rnd()*ids.length)];
   K[id].wear=1;
   const I=(typeof INSTR_BY_ID!=="undefined"&&INSTR_BY_ID[id])?INSTR_BY_ID[id].ru:id;
   tell("warn","Попадание: выбито гнездо — "+I,"Прибор разбит\n"+I+"\nпанель слепа по этому каналу");
@@ -6587,7 +6656,7 @@ function instrFixCost(id){
    товар меняется. Ничего не персистится — предложение выводится. */
 function instrOffers(){
   if(!G.st)return [];
-  const slot=Math.floor(Date.now()/(1000*60*45));
+  const slot=Math.floor(now()/(1000*60*45));
   const r=rng(hashi(hashi(G.sx,G.sy,0x1A7),slot,(G.st.name||"").length));
   const n=2+Math.floor(r()*2);
   const out=[];
@@ -7763,7 +7832,7 @@ function planetSpin(p){
      про свет и ледгер кадра ловили «заход» то так, то этак (05.09.2026).
      Часы берём мировые всегда, когда мир есть; Date.now() остаётся там, где
      G ещё нет вовсе (заставка до заводки). */
-  const t=(typeof G!=="undefined"&&typeof G.t==="number")?G.t*16.7:Date.now();
+  const t=(typeof G!=="undefined"&&typeof G.t==="number")?G.t*16.7:now();
   return t/per*TAU*dir;
 }
 /* прежний номер кадра остаётся ради тех, кто просил у планеты именно его
@@ -7882,14 +7951,14 @@ function planetStripTick(){
     STRIP_JOB=planetStripStart(best,Math.min(best.stripWant|0,best.stripLvl+1));
   }
   const J=STRIP_JOB;
-  const t0=performance.now();
+  const t0=wallMs();
   for(;;){
     if(J.y<0||J.x>=J.SW){
       if(J.y+1>=J.SH)break;
       planetStripSeekRow(J,J.y+1);
     }
     planetStripChunk(J,STRIP_CHUNK);
-    if(performance.now()-t0>STRIP_MS)return;
+    if(wallMs()-t0>STRIP_MS)return;
   }
   J.cx.putImageData(J.img,0,0);
   J.p.strip=J.cn;J.p.stripLvl=J.lvl;
@@ -8526,6 +8595,90 @@ function stat(){
 const held=()=>RES_KEYS.reduce((a,k)=>a+G.cargo[k],0);
 function say(s,d){G.msg=s;G.msgT=d||150;}
 
+/* ══════════════ хэш состояния (M441) ══════════════
+   Одно число на весь мир: два прогона одной сцены на одном семени и одних
+   часах обязаны давать его одинаковым каждые сто кадров (тест Factorio,
+   tests/91zzzzzs-hash). Им же пользуется наблюдатель state() тестового API
+   (M442) и будет пользоваться всё, что сравнивает миры: повтор по записи,
+   облачная запись, «где разошлось».
+
+   Что входит. Всё, что достижимо из корня как ДАННЫЕ: числа (по битам
+   float64, так что 0.1+0.2 и 0.3 — разные), строки, логические, null и
+   undefined, массивы, простые объекты (ключи в порядке сортировки — порядок
+   заведения полей не судится), Map и Set (в порядке вставки: у повторимого
+   мира он тот же), типизированные массивы поэлементно. Общая ссылка и цикл
+   хэшируются номером первой встречи — обход конечен и одинаков.
+   Что не входит. Функции и символы; всё, что не простой объект, — канвы,
+   контексты, Path2D, звуковые узлы, DOM, экземпляры классов (кэши растра
+   и звука, а не мир); ключи, начатые с «_» (закрытые кэши и подпорки:
+   `CHRON._keys`, `G._dial` наборов); и ключи из STATE_HASH_SKIP ниже.
+   Без аргумента хэшируется G и вдобавок положение потока случая МИРА (rnd)
+   и часы игры: мир, в котором те же поля, но другой следующий бросок, — уже
+   другой мир. Поток картинки (rndFx) не входит нарочно: от него в мире не
+   зависит ничего, и прогон с рисованием обязан совпасть с прогоном без.
+   stateHash(obj) — хэш одного поддерева; stateHashParts() — {ключ G: хэш}
+   для ответа на вопрос «что именно разошлось». */
+const STATE_HASH_SKIP=new Set([
+  "tex",         /* подложка карты (17z): растр, а не мир */
+  "prompt"       /* строка подсказки: пересобирается каждый кадр из мира и из
+                    того, что игрок уже видел за сеанс (BASE_WALKED и такие же
+                    «один раз за сеанс»), — это вид, а не мир */
+]);
+function stateHash(root,skip){
+  const top=root===undefined;
+  if(top)root=G;
+  skip=skip||STATE_HASH_SKIP;
+  let h1=0x2F6B3A1D|0,h2=0x6C8E9CF5|0;
+  const F=new Float64Array(1),U=new Uint32Array(F.buffer);
+  const mix=x=>{h1=Math.imul(h1^x,2654435761);h2=Math.imul(h2^x,1597334677);
+    h1^=h1>>>15;h2^=h2>>>13;};
+  const mixS=s=>{mix(s.length);for(let i=0;i<s.length;i++)mix(s.charCodeAt(i));};
+  const mixN=n=>{F[0]=n;mix(U[0]);mix(U[1]);};
+  const seen=new Map();let ids=0;
+  const walk=v=>{
+    const t=typeof v;
+    if(t==="number"){mix(1);mixN(v);return;}
+    if(t==="string"){mix(2);mixS(v);return;}
+    if(t==="boolean"){mix(v?3:4);return;}
+    if(t==="undefined"){mix(5);return;}
+    if(t==="bigint"){mix(6);mixS(String(v));return;}
+    if(t!=="object")return;                     /* функции и символы — не мир */
+    if(v===null){mix(7);return;}
+    if(seen.has(v)){mix(8);mix(seen.get(v));return;}
+    if(ArrayBuffer.isView(v)){
+      if(typeof v.length!=="number")return;     /* DataView — не данные мира */
+      seen.set(v,++ids);mix(9);mix(v.length);
+      for(let i=0;i<v.length;i++)mixN(v[i]);
+      return;
+    }
+    if(Array.isArray(v)){seen.set(v,++ids);mix(10);mix(v.length);for(let i=0;i<v.length;i++)walk(v[i]);return;}
+    if(v instanceof Map){seen.set(v,++ids);mix(11);mix(v.size);for(const [k,x] of v){walk(k);walk(x);}return;}
+    if(v instanceof Set){seen.set(v,++ids);mix(12);mix(v.size);for(const x of v)walk(x);return;}
+    const pr=Object.getPrototypeOf(v);
+    if(pr!==Object.prototype&&pr!==null)return; /* канва, DOM, класс — кэш, не мир */
+    seen.set(v,++ids);mix(13);
+    const ks=Object.keys(v).sort();
+    for(const k of ks){
+      if(k.charCodeAt(0)===95||skip.has(k))continue;
+      const x=v[k];
+      if(typeof x==="function")continue;
+      mixS(k);walk(x);
+    }
+  };
+  walk(root);
+  if(top){const r=rndState();mix(r[1]|0);mixN(now());}
+  return ((h1>>>0).toString(16).padStart(8,"0"))+((h2>>>0).toString(16).padStart(8,"0"));
+}
+function stateHashParts(root){
+  root=root||G;
+  const out={};
+  for(const k of Object.keys(root).sort()){
+    if(k.charCodeAt(0)===95||STATE_HASH_SKIP.has(k)||typeof root[k]==="function")continue;
+    out[k]=stateHash({v:root[k]});
+  }
+  return out;
+}
+
 /* ══════════════ звук: чистый синтез, ни одного файла ══════════════ */
 /* Браузер не даёт завести AudioContext до жеста пользователя, поэтому
    контекст создаётся лениво из unlockAudio(), повешенного на первый ввод. */
@@ -8598,7 +8751,7 @@ function noise(c){
     const d=noiseBuf.getChannelData(0);
     /* розоватый шум: чуть мягче белого, ближе к «железу», а не к шипению */
     let last=0;
-    for(let i=0;i<n;i++){const w=Math.random()*2-1;last=(last+w*.22)*.94;d[i]=clamp(last*3,-1,1);}
+    for(let i=0;i<n;i++){const w=rndFx()*2-1;last=(last+w*.22)*.94;d[i]=clamp(last*3,-1,1);}
   }
   const s=c.createBufferSource();
   s.buffer=noiseBuf;s.loop=true;
@@ -8668,7 +8821,7 @@ const SFX={
     const c=SND.ctx,t=c.currentTime;
     const n=noise(c),g=c.createGain(),bp=c.createBiquadFilter();
     /* узкая полоса съедала почти всю энергию — бур был не слышен, Q пришлось опустить */
-    bp.type="bandpass";bp.Q.value=1.8;bp.frequency.value=320+Math.random()*260;
+    bp.type="bandpass";bp.Q.value=1.8;bp.frequency.value=320+rndFx()*260;
     env(g,t,.004,.1,1.1);
     n.connect(bp);bp.connect(g);g.connect(SND.sfx);
     n.start(t);n.stop(t+.13);freeVoice(n);
@@ -8688,8 +8841,8 @@ const SFX={
     const c=SND.ctx,t=c.currentTime;
     const osc=c.createOscillator(),g=c.createGain(),bp=c.createBiquadFilter();
     osc.type="sawtooth";
-    osc.frequency.setValueAtTime(170+Math.random()*90,t);
-    osc.frequency.exponentialRampToValueAtTime(80+Math.random()*40,t+.34);
+    osc.frequency.setValueAtTime(170+rndFx()*90,t);
+    osc.frequency.exponentialRampToValueAtTime(80+rndFx()*40,t+.34);
     bp.type="bandpass";bp.frequency.value=340;bp.Q.value=4.5;
     env(g,t,.05,.34,.10);
     osc.connect(bp);bp.connect(g);g.connect(SND.sfx);
@@ -8961,7 +9114,7 @@ function roomToneTick(dt){
   if(G.mode==="homein"&&G.hin){
     RTONE.creak-=dt;
     if(RTONE.creak<=0){
-      RTONE.creak=900+Math.random()*2400;
+      RTONE.creak=900+rndFx()*2400;
       sfx("creak");
     }
   }
@@ -9082,7 +9235,7 @@ function makeIR(c,secs,decay){
     const d=b.getChannelData(ch);
     let last=0;
     for(let i=0;i<n;i++){
-      last=(last+(Math.random()*2-1)*.35)*.9;
+      last=(last+(rndFx()*2-1)*.35)*.9;
       d[i]=last*Math.pow(1-i/n,decay);
     }
   }
@@ -9099,13 +9252,13 @@ function brownNoise(c){
     const d=brownBuf.getChannelData(0);
     let last=0;
     for(let i=0;i<n;i++){
-      last=(last+(Math.random()*2-1)*.06)/1.02;
+      last=(last+(rndFx()*2-1)*.06)/1.02;
       d[i]=clamp(last*7,-1,1);
     }
   }
   const s=c.createBufferSource();
   s.buffer=brownBuf;s.loop=true;
-  s.loopStart=Math.random()*3;s.loopEnd=4;      // разный кусок каждому голосу
+  s.loopStart=rndFx()*3;s.loopEnd=4;      // разный кусок каждому голосу
   return s;
 }
 function musicInit(){
@@ -9478,7 +9631,7 @@ function logPageOf(kind){return LOG_PAGE[kind]||"bort";}
 let logOpen=false;   /* совместимость: «журнал открыт» = стол открыт на тетради */
 function logAdd(kind,text){
   if(typeof quietMute==="function"&&quietMute())return;   /* тихий уезд (11n): журнал не пишет */
-  G.log.push({t:Date.now(),k:kind,s:text});
+  G.log.push({t:now(),k:kind,s:text});
   if(G.log.length>LOG_MAX)G.log.splice(0,G.log.length-LOG_MAX);
   const open=typeof tableIsOpen==="function"&&tableIsOpen();
   if(open&&typeof tableRender==="function")tableRender();
@@ -9646,7 +9799,7 @@ function questAdd(key,o){
   if(has)return has;
   const q={key,ru:o.ru,note:o.note||"",from:o.from||"",kind:o.kind||"job",
     sx:(o.sx===undefined?null:o.sx),sy:(o.sy===undefined?null:o.sy),
-    place:o.place||"",state:"active",t:Date.now(),until:o.until||0,
+    place:o.place||"",state:"active",t:now(),until:o.until||0,
     reward:o.reward||""};
   list.push(q);
   if(list.length>QUEST_MAX)list.splice(0,list.length-QUEST_MAX);
@@ -9656,7 +9809,7 @@ function questAdd(key,o){
 function questFind(key){return questAll().find(q=>q.key===key&&q.state==="active")||null;}
 function questClose(key,state,note){
   const q=questFind(key);if(!q)return null;
-  q.state=state;q.doneT=Date.now();
+  q.state=state;q.doneT=now();
   if(note)q.note=note;
   logAdd(state==="done"?"good":"warn",
     (state==="done"?"Дело закрыто: ":"Дело сорвано: ")+q.ru);
@@ -9714,7 +9867,7 @@ function questGoto(q){
 /* сколько осталось по сроку, словами: точное число секунд игроку не нужно */
 function questLeft(q){
   if(!q.until)return "";
-  const left=(q.until-Date.now())/60000;
+  const left=(q.until-now())/60000;
   if(left<=0)return "срок вышел";
   return left<1?"меньше минуты":(Math.ceil(left)+" мин");
 }
@@ -10485,7 +10638,7 @@ function traceHashOf(s){
 function traceHand(id){const h=traceHashOf((id||traceId())+"|рука");return ("00000"+h.toString(16)).slice(-6);}
 function traceMarkOf(id){return traceHashOf((id||traceId())+"|знак")%TRACE_MARK.length;}
 function traceOn(){return typeof location!=="undefined"&&location.protocol.indexOf("http")===0&&!!traceId();}
-function traceToday(){const d=new Date();return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();}
+function traceToday(){const d=new Date(now());return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();}
 function traceLeftToday(){
   const T=traceAll(),t=traceToday();
   if(T.day!==t){T.day=t;T.left=0;}
@@ -10505,7 +10658,7 @@ function traceAsk(){
   const S=G.surf;if(!S||!traceOn())return;
   const key=(typeof placeKeyHere==="function")?placeKeyHere():null;
   if(!key)return;
-  const now=Date.now();
+  const now=clockNow();
   if(now-traceBusy<20000)return;
   traceBusy=now;
   traceCall("ask",{key:key}).then(j=>{
@@ -11096,7 +11249,7 @@ function wallAsk(kind){
   if(!key)return;
   const ck=wallCacheKey(kind,key);
   if(WALL_CACHE.has(ck))return;
-  const now=Date.now();
+  const now=clockNow();
   if(now-wallBusy<15000)return;
   wallBusy=now;
   /* заглушка на время ответа: без неё каждый кадр слал бы новый запрос */
@@ -11736,7 +11889,7 @@ const HOL_GREET={
 function holMap(){if(!G.hol||typeof G.hol!=="object")G.hol={};return G.hol;}
 /* какой сегодня праздник по НАСТОЯЩЕМУ календарю игрока */
 function holNow(at){
-  const d=at?new Date(at.getTime()):new Date();
+  const d=at?new Date(at.getTime()):new Date(now());
   const m=d.getMonth()+1, day=d.getDate();
   for(const h of HOLIDAYS){
     const [fm,fd]=h.from,[tm,td]=h.to;
@@ -11755,7 +11908,7 @@ function holEtherLine(){
   const h=holNow();if(!h)return "";
   const L=HOL_ETHER[h.id]||[];
   if(!L.length)return "";
-  const r=rng(hashi(Math.floor(Date.now()/60000),h.id.length,0x0801));
+  const r=rng(hashi(Math.floor(now()/60000),h.id.length,0x0801));
   return L[Math.floor(r()*L.length)];
 }
 /* ── радиограммы ──
@@ -11763,7 +11916,7 @@ function holEtherLine(){
    книжке: их имена уже написаны, придумывать некого. */
 function holDock(){
   const h=holNow();if(!h)return false;
-  const d=new Date();
+  const d=new Date(now());
   const year=d.getMonth()+1>=7?d.getFullYear():d.getFullYear()-1;   /* год ПРАЗДНИКА, а не календаря */
   const key=(h.id==="ny"?year:d.getFullYear())+":"+h.id;
   const M=holMap();
@@ -11924,7 +12077,7 @@ function qslHear(id){
   const o=QSL_BY[id];if(!o)return "";
   const Q=qslAll();
   const isNew=!Q.heard[id];
-  Q.heard[id]=Date.now();
+  Q.heard[id]=now();
   if(isNew){
     logAdd("ether",o.call+" · "+o.ru+" · позывной записан");
     tell("good","Дальний: "+o.call,"ДАЛЬНИЙ\n"+o.call+"\n"+o.ru+"\nкарточку можно послать со стола");
@@ -11933,7 +12086,7 @@ function qslHear(id){
 }
 /* строка дальнего для приёмника: возвращает текст или пусто */
 function qslEtherLine(){
-  const r=rng(hashi(Math.floor(Date.now()/40000),(G.sx|0)*31+(G.sy|0),0x0951));
+  const r=rng(hashi(Math.floor(now()/40000),(G.sx|0)*31+(G.sy|0),0x0951));
   if(r()>0.22)return "";
   const o=QSL_OPS[Math.floor(r()*QSL_OPS.length)];
   return qslHear(o.id);
@@ -11942,8 +12095,8 @@ function qslEtherLine(){
 function qslSend(id){
   const o=QSL_BY[id];const Q=qslAll();
   if(!o||!Q.heard[id]||Q.sent[id])return false;
-  const r=rng(hashi(id.length*17,Date.now()&0x7fffffff,0x0952));
-  Q.sent[id]={t:Date.now(),due:Date.now()+QSL_WAIT+Math.floor(r()*QSL_SPREAD)};
+  const r=rng(hashi(id.length*17,now()&0x7fffffff,0x0952));
+  Q.sent[id]={t:now(),due:now()+QSL_WAIT+Math.floor(r()*QSL_SPREAD)};
   logAdd("tech","Карточка послана: "+o.call+" · ответ идёт неделями");
   tell("good","Карточка послана: "+o.call,"КАРТОЧКА ПОСЛАНА\n"+o.call+"\nответ придёт не скоро");
   return true;
@@ -11952,7 +12105,7 @@ function qslSend(id){
    Считается лениво, при взгляде на стену или на стыковке. Ничего не тикает. */
 function qslTick(){
   const Q=qslAll();
-  const now=Date.now();
+  const now=clockNow();
   let n=0;
   for(const id in Q.sent){
     const s=Q.sent[id];
@@ -12932,8 +13085,8 @@ function etherTick(dt){
   if(typeof chartsTick==="function")chartsTick();       /* карта возвращается (11m) */
   if(typeof quietAfterLeave==="function")quietAfterLeave();   /* счёт суток после тихого уезда (11n) */
   if(G.etherT>0)return;
-  G.etherT=ETHER_EVERY*(.7+Math.random()*.8);
-  const r=rng(hashi(G.sx,G.sy,(Date.now()/60000)|0));
+  G.etherT=ETHER_EVERY*(.7+rnd()*.8);
+  const r=rng(hashi(G.sx,G.sy,(now()/60000)|0));
   /* строка истории (11c) — не чаще раза из трёх, остальное остаётся безликим шумом */
   const sl=(typeof storyEtherLine==="function")?storyEtherLine(r):null;
   const line=sl!=null?sl:pick(ETHER,r);
@@ -12960,8 +13113,8 @@ function etherTick(dt){
   if(typeof namesEtherLine==="function"){const h=namesEtherLine();if(h)out=h;}       /* ваше слово у диспетчера (11u) */
   if(out&&typeof regionAt==="function"){
     const R=regionAt(G.sx,G.sy);
-    if(R&&R.theme==="post"&&regionDepth(G.sx,G.sy)<.5&&Math.random()<.6)
-      out=out.replace(/[а-яёa-z]{3,}/gi,w=>Math.random()<.22?"…":w);
+    if(R&&R.theme==="post"&&regionDepth(G.sx,G.sy)<.5&&rnd()<.6)
+      out=out.replace(/[а-яёa-z]{3,}/gi,w=>rnd()<.22?"…":w);
   }
   etherLine(out);   /* на пульт и в ЭФИР (M151a) */
   if(typeof mirrorEchoArm==="function")mirrorEchoArm(out);    /* зеркало (11f): эхо повторяет то, что было слышно, а не исходник */
@@ -13084,7 +13237,7 @@ function tapeTear(){
   if(!T||T.n<24)return null;
   const s={sx:G.sx,sy:G.sy,
            mis:+((typeof instrMisclose==="function")?instrMisclose():0).toFixed(3),
-           span:T.n,t:Date.now()};
+           span:T.n,t:now()};
   if(typeof misMarkStrip==="function")misMarkStrip(s);   /* лента из уезда несёт метку (M155) */
   const L=stripsAll();
   L.unshift(s);
@@ -13927,7 +14080,7 @@ function mirrorEchoTick(){
   logAdd("dim",E.line);
   if(typeof heardAdd==="function")heardAdd("ether",{sx:G.sx,sy:G.sy,note:E.line},null);
   /* диспетчер отмахивается — изредка, иначе объяснение забьёт само явление */
-  if(Math.random()<.3)logAdd("dim","…это отражение, не отвечайте. Отражение, говорю. Летите себе.");
+  if(rnd()<.3)logAdd("dim","…это отражение, не отвечайте. Отражение, говорю. Летите себе.");
 }
 /* ── ядро: зеркало как находка ──
    В ядре всегда есть одна находка вида `echo`. Слушать — значит получить
@@ -16340,7 +16493,7 @@ function rxRecord(){
   const N=ringNow();if(!N||N.rec)return false;
   N.rec=1;
   const R=ringAll();
-  const tape={sx:N.sx,sy:N.sy,dir:+N.dir.toFixed(3),q:+N.q.toFixed(2),day:celDay(),t:Date.now(),handed:0};
+  const tape={sx:N.sx,sy:N.sy,dir:+N.dir.toFixed(3),q:+N.q.toFixed(2),day:celDay(),t:now(),handed:0};
   R.tapes.push(tape);while(R.tapes.length>12)R.tapes.shift();
   if(typeof thingAdd==="function")thingAdd("tape","Лента · сигнал вне диапазона · "+N.sx+":"+N.sy,"пульс записан · сила "+Math.round(N.q*100)+"% · направление "+Math.round(N.dir*180/Math.PI)+"° · сдать у стойки или оставить на столе",{ring:1,dir:tape.dir,q:tape.q});
   tell("tech","Лента записана: сигнал вне диапазона · "+N.sx+":"+N.sy,"ЗАПИСАНО\nлента на столе");
@@ -16739,7 +16892,7 @@ function deployDrone(){
      На грунте это планета, в поясе — кольцо (pi=-1). Без адреса рейса нет. */
   const pi=(G.mode==="surface"&&G.surf&&G.surf.p)?(G.surf.p.idx|0):
            (G.mode==="dig"&&G.dig&&G.dig.p)?(G.dig.p.idx|0):-1;
-  const now=Date.now();
+  const now=clockNow();
   const d={id:droneNextId(),sx:G.sx,sy:G.sy,pi,res:droneTarget,
     rate:DRONES.miner.ratePerMin*stat().droneRate,
     pool:-1,   /* бездонная точка (M350): старые записи с конечным пулом дорабатывают своё и возвращаются */
@@ -16759,7 +16912,7 @@ function deployDrone(){
    пока не случится то, о чём стоит рассказать: точка кончилась, дрон встал,
    дрон починился. Догон офлайна — тот же ленивый расчёт по Date.now(). */
 function tickDrones(){
-  const now=Date.now(),cap=24*3600*1000;
+  const now=clockNow(),cap=24*3600*1000;
   /* ── блокада останавливает круги, и делала она это МОЛЧА ──
      Автор развернул в системе тринадцать машин, улетел, и потом сказал:
      «дроны никуда не летали, непонятно» (30.08.2026). Они и правда стояли —
@@ -17036,7 +17189,7 @@ function assignToBase(c,B,role){
   crewTick();
   c.role=role;
   c.order={kind:"base",sx:B.sx,sy:B.sy,idx:B.idx};
-  c.tMs=Date.now();
+  c.tMs=now();
   logAdd("",c.name+" → "+BASE_ROLES[role].ru+" на базе «"+B.name+"»");
   return true;
 }
@@ -17059,10 +17212,10 @@ function crewGift(seed){
     say("Человек пришёл, а места нет\nнужна лицензия на флот");
     return false;
   }
-  const m=genMerc(seed||hashi(Date.now()&0xffffff,G.crew.length*7717,0xC1F),null);
+  const m=genMerc(seed||hashi(now()&0xffffff,G.crew.length*7717,0xC1F),null);
   m.fee=0;
   G.crew.push(Object.assign(m,{cargo:{},order:{kind:"home",sx:G.sx,sy:G.sy},
-    tMs:Date.now(),paidMs:Date.now()}));
+    tMs:now(),paidMs:now()}));
   tell("good","В звено даром: "+m.name+" · "+CREW_SPEC[m.spec].ru,
        "К вам пришёл "+m.name+"\n"+CREW_SPEC[m.spec].ru+"\nплаты не просит — выдайте корабль");
   return true;
@@ -17076,7 +17229,7 @@ function hireMerc(c){
   G.credits-=fee;
   c=Object.assign({},c,{fee});
   const m=Object.assign({},c,{cargo:{},order:{kind:"home",sx:G.sx,sy:G.sy},
-    tMs:Date.now(),paidMs:Date.now()});
+    tMs:now(),paidMs:now()});
   G.crew.push(m);
   /* спасённый с баржи, если это он: больше в кантине не мелькает */
   if(Array.isArray(G.bargePax))G.bargePax=G.bargePax.filter(p=>p.id!==m.id);
@@ -17126,7 +17279,7 @@ function crewOrder(c,kind,sx,sy){
   if(kind==="barge"&&typeof bargeStart==="function"){const why=bargeStart(c);if(why){say(why);return false;}}
   if(kind!=="barge")delete c.barge;
   c.order={kind,sx:sx!=null?sx:G.sx,sy:sy!=null?sy:G.sy};
-  c.tMs=Date.now();c.tripMin=0;                 // смена района начинает рейс заново
+  c.tMs=now();c.tripMin=0;                 // смена района начинает рейс заново
   G.orderStamp=(G.orderStamp|0)+1;    // «тишина в эфире» считает именно вмешательства
   logAdd("",c.name+" → "+ORDERS[kind].ru+" · сектор "+c.order.sx+","+c.order.sy);
   /* показываем его в небе сразу, а не только при следующем входе в систему —
@@ -17215,13 +17368,13 @@ function crewEff(c){
 function crewBusy(c){
   /* пока он в плену или в загуле, рейсы не идут и жалованье не капает */
   if(c.state==="hostage")return "hostage";
-  if(c.state==="away"&&(c.stateUntil||0)>Date.now())return "away";
+  if(c.state==="away"&&(c.stateUntil||0)>now())return "away";
   if(c.state==="away")c.state=null;
   return null;
 }
 function crewTick(){
   if(!G.crew.length)return;
-  const now=Date.now();
+  const now=clockNow();
   for(const c of G.crew){
     crewLuck(c);
     if(!c.tMs){c.tMs=now;continue;}
@@ -17368,7 +17521,7 @@ function crewDamage(c,amount){
     c.shipId=null;c.order={kind:"home",sx:c.order?c.order.sx:G.sx,sy:c.order?c.order.sy:G.sy};
     c.cargo={};
     /* корабль потерян всегда, человек — не всегда: ветеран чаще дотягивает до капсулы */
-    const survive=rng(hashi(c.seed,Math.floor(Date.now()/60000),0x5A7E))()<(.55/crewMul(c,"risk"));
+    const survive=rng(hashi(c.seed,Math.floor(now()/60000),0x5A7E))()<(.55/crewMul(c,"risk"));
     if(survive)logAdd("warn",c.name+" потерял «"+(S?S.ru:lost)+"», сам спасся — ждёт нового корабля");
     else{logAdd("warn",c.name+" не вернулся вместе с «"+(S?S.ru:lost)+"»");c.gone=true;}
   }
@@ -17567,7 +17720,7 @@ function needOf(sys){
 function needClose(sys,k){
   const N=needOf(sys);
   if(!N||N.k!==k)return false;
-  needAll()[sys.key]={win:N.win,k,t:Date.now()};
+  needAll()[sys.key]={win:N.win,k,t:now()};
   if(typeof recordAdd==="function")recordAdd(sys.station.name,"благодарность: привёз "+N.ru+", когда не было");
   if(typeof repAdd==="function")repAdd(2,sys);
   if(typeof peopleLine==="function")peopleLine("привезли "+N.ru+", когда "+(RES[k].ru.endsWith("ы")?"их":"её")+" не было. Это помнят.",sys.station.name,true);
@@ -17898,7 +18051,7 @@ const APPETITE={
   outpost:{ice:6,organics:4},
   bazaar: {silicon:4}
 };
-function holdShift(t){return Math.floor((t===undefined?Date.now():t)/HOLD_SHIFT);}
+function holdShift(t){return Math.floor((t===undefined?now():t)/HOLD_SHIFT);}
 function holdAll(){return G.hold||(G.hold={});}
 function holdOf(key){const H=holdAll();return H[key]||(H[key]={});}
 /* нормы аппетита станции: {k:n} или null */
@@ -18382,7 +18535,7 @@ function bldLay(sys,id){
   if(!bldCanPay(def.cost))return"не хватает: "+bldLack(def.cost).join(", ");
   bldPay(def.cost);
   const H=holdOf(sys.key);H.bld=H.bld||{};
-  const now=Date.now();
+  const now=clockNow();
   H.bld[id]={lvl:1,t0:now,ready:now+BLD_SHIFTS[def.tier]*HOLD_SHIFT,my:{},got:{}};
   if(typeof recordAdd==="function")recordAdd(sys.station.name,"заложен: "+def.ru);
   if(typeof holdNews==="function")holdNews(sys,def,"laid");   /* новость с причиной (M297) */
@@ -18392,23 +18545,23 @@ function bldUpgrade(sys,id){
   const def=BLD[id],B=bldEntry(sys.key,id);
   if(!def||!B)return"нечего поднимать";
   if(B.lvl>=3)return"выше ×3 не бывает";
-  if(Date.now()<(B.ready||0))return"сперва достроить";
+  if(now()<(B.ready||0))return"сперва достроить";
   const cost=bldUpgradeCost(def,B.lvl+1);
   if(!bldCanPay(cost))return"не хватает: "+bldLack(cost).join(", ");
   bldPay(cost);
   bldTick(sys.key,id);
-  B.lvl++;B.ready=Date.now()+BLD_SHIFTS[def.tier]*HOLD_SHIFT;
+  B.lvl++;B.ready=now()+BLD_SHIFTS[def.tier]*HOLD_SHIFT;
   if(typeof holdNews==="function")holdNews(sys,def,"up");
   return"";
 }
 function bldEntry(key,id){const H=G.hold&&G.hold[key];return H&&H.bld?H.bld[id]||null:null;}
-function bldReady(B,now){return !!B&&(now||Date.now())>=(B.ready||0);}
+function bldReady(B,now){return !!B&&(now||clockNow())>=(B.ready||0);}
 function holdCapMul(key){const[sx,sy]=String(key).split(",").map(Number);return (typeof bldHas==="function"&&bldHas(sx,sy,"nakop"))?2:1;}   /* Накопитель (E1) */
 /* ── бункер: догнать по сменам ── */
 function bldTick(key,id,now){
   const B=bldEntry(key,id),def=BLD[id];
   if(!B||!def)return;
-  now=now||Date.now();
+  now=now||clockNow();
   B.my=B.my||{};B.got=B.got||{};
   if(now<(B.ready||0))return;
   if(!Object.keys(def.makes).length){B.t0=now;return;}   /* семьи E–I ничего не копят */
@@ -18439,7 +18592,7 @@ function bldTick(key,id,now){
 }
 /* сколько бункеры здесь возьмут товара k прямо сейчас */
 function bldWant(sys,k){
-  const ids=bldBuiltHere(sys);let want=0;const now=Date.now();
+  const ids=bldBuiltHere(sys);let want=0;const now=clockNow();
   for(const id of ids){
     const def=BLD[id],B=bldEntry(sys.key,id);
     if(!def||!def.eats[k]||!bldReady(B,now))continue;
@@ -18452,7 +18605,7 @@ function bldWant(sys,k){
 /* положить в бункеры: возвращает, сколько взяли */
 function bldFeed(sys,k,qty){
   if(!sys||qty<=0)return 0;
-  const ids=bldBuiltHere(sys);let left=qty|0,fed=0;const now=Date.now();
+  const ids=bldBuiltHere(sys);let left=qty|0,fed=0;const now=clockNow();
   for(const id of ids){
     if(left<=0)break;
     const def=BLD[id],B=bldEntry(sys.key,id);
@@ -18520,7 +18673,7 @@ function holdNearestEater(k){
 }
 /* строки для ДЕЛО: каждая постройка — одна строка */
 function holdDealList(){
-  const H=G.hold||{},out=[];const now=Date.now();
+  const H=G.hold||{},out=[];const now=clockNow();
   for(const key in H){
     const b=H[key].bld;if(!b)continue;
     const[sx,sy]=key.split(",").map(Number);
@@ -18547,7 +18700,7 @@ function holdDealList(){
    штатные модули тоже рисуются векторно каждый кадр; проход по кодексу — шаг 8. */
 function holdMods(sys){
   const ids=bldBuiltHere(sys);if(!ids.length)return[];
-  const now=Date.now(),out=[];
+  const now=clockNow(),out=[];
   ids.forEach((id,i)=>{
     const def=BLD[id],B=bldEntry(sys.key,id);if(!def||!B)return;
     const r=rng(hashi(sys.seed,0x0B1D,i+1));
@@ -18745,14 +18898,14 @@ function bargeStart(c){
   if(R.loops<1)return"Баржа идёт по прохоженной дороге — пройдите круг сами";
   const legs=R.legs.filter(key=>{const H=G.hold&&G.hold[key];return H&&H.bld&&Object.keys(H.bld).length;});
   if(!legs.length)return"На маршруте нет ваших цехов — барже некого кормить";
-  c.barge={legs:R.legs.slice(),cursor:0,t0:Date.now(),fed:0,name:bargeName(c)};
+  c.barge={legs:R.legs.slice(),cursor:0,t0:now(),fed:0,name:bargeName(c)};
   c.cargo=c.cargo||{};
   return"";
 }
 /* смены прошли — баржа прошла плечи и ссыпала, что везла */
 function bargeTick(c,now){
   const B=c.barge;if(!B||!Array.isArray(B.legs)||!B.legs.length)return 0;
-  now=now||Date.now();
+  now=now||clockNow();
   let s=Math.floor((now-(B.t0||now))/HOLD_SHIFT);
   if(s<=0)return 0;
   s=Math.min(s,72);
@@ -19040,7 +19193,7 @@ function holdNews(sys,def,what){
   for(const k of ins)if(TRADE_KEYS.indexOf(k)>=0)m.pressure[k]=clamp((m.pressure[k]||0)+.2,-.6,.8);
   const ru="«"+sys.station.name+"»: "+(what==="up"?def.ru+" поднят до ×"+(bldEntry(sys.key,def.id)||{lvl:2}).lvl:"заложен "+def.ru.toLowerCase())+
     (ins.length?" — "+ins.filter(k=>RES[k]).map(k=>RES[k].ru.toLowerCase()).join(" и ")+" здесь в цене":" — "+def.note);
-  const item={id:"hold",ru,sx:sys.sx,sy:sys.sy,t:Date.now()};
+  const item={id:"hold",ru,sx:sys.sx,sy:sys.sy,t:now()};
   newsAll().push(item);
   if(typeof newsMark==="function")newsMark(sys.key,"стройка","#7fe6d8");
   return item;
@@ -19144,7 +19297,7 @@ function fleetRung(sys){return (typeof rungOf==="function")?rungOf(sys.sx,sys.sy
 /* кто идёт через систему в этом окне: чисто от семени и часов, ничего не хранится */
 function fleetHere(sys){
   sys=sys||G.sys;if(!sys)return [];
-  const bucket=Math.floor(Date.now()/FLEET_PERIOD);
+  const bucket=Math.floor(now()/FLEET_PERIOD);
   if(sys.fleetCache&&sys.fleetCache.b===bucket)return sys.fleetCache.list;
   const rung=fleetRung(sys), out=[];
   /* ── чёрный дерелик (§18.4, M313): в дальних секторах без станции ──
@@ -19183,7 +19336,7 @@ function fleetHere(sys){
 /* положение на линии сейчас: доля окна, дуга с прогибом */
 function fleetPos(f){
   if(f.still)return {x:f.x0,y:f.y0,a:0,u:0};
-  const u=((Date.now()/FLEET_PERIOD)+f.ph)%1;
+  const u=((now()/FLEET_PERIOD)+f.ph)%1;
   const dx=f.x1-f.x0,dy=f.y1-f.y0,L=Math.hypot(dx,dy)||1;
   const nx=-dy/L,ny=dx/L,bw=Math.sin(u*Math.PI)*f.bow;
   const x=f.x0+dx*u+nx*bw,y=f.y0+dy*u+ny*bw;
@@ -19244,14 +19397,14 @@ function drawFleet(zx,zy,Z){
 function fleetLogKey(){return G.sx+","+G.sy;}
 /* праздник по календарю (11am): норма флота двойная в этот день (M349) */
 function fleetNormTwice(){return !!(typeof holNow==="function"&&holNow());}
-function fleetNormKey(){return Math.floor(Date.now()/((typeof HOLD_SHIFT==="number")?HOLD_SHIFT:1800000))+(fleetNormTwice()?"h":"");}
+function fleetNormKey(){return Math.floor(now()/((typeof HOLD_SHIFT==="number")?HOLD_SHIFT:1800000))+(fleetNormTwice()?"h":"");}
 /* ── Кольцо (рунг 30): окликают первыми (§18.8, M315) ──
    До сих пор эфир отвечал только на ваш позывной. На последней ступени лестницы
    флот узнаёт борт сам: первый корабль линии, подошедший на семьсот, называет вас
    раньше, чем вы его. Раз в окно на систему; хранится одно число (`fleetLog`). */
 function fleetHailFirst(sh,F){
   if(fleetRung(G.sys)<30)return;
-  const bucket=Math.floor(Date.now()/FLEET_PERIOD),key="hail|"+fleetLogKey();
+  const bucket=Math.floor(now()/FLEET_PERIOD),key="hail|"+fleetLogKey();
   G.fleetLog=G.fleetLog||{};
   if(G.fleetLog[key]===bucket)return;
   for(const f of F){
@@ -19315,7 +19468,7 @@ function fleetInteract(sh){
   /* спасатель (п.11): идёт на чужой сигнал и зовёт с собой — если в системе есть баржа в беде */
   const dist=(near.k==="rescue"&&G.barges)?G.barges.find(b=>b.distress&&!b.done):null;
   const st=stat(), low=G.fuel<st.fuelMax*.6;
-  const shift=Math.floor(Date.now()/((typeof HOLD_SHIFT==="number")?HOLD_SHIFT:1800000));
+  const shift=Math.floor(now()/((typeof HOLD_SHIFT==="number")?HOLD_SHIFT:1800000));
   G.fleetLog=G.fleetLog||{};
   /* норма — одна на смену; в праздник (11am, маяк объявляет) — две (M349) */
   const fe=G.fleetLog[fleetLogKey()],feS=(fe&&typeof fe==="object")?fe.s:(fe|0),feN=(fe&&typeof fe==="object")?fe.n|0:(fe?1:0);
@@ -20018,10 +20171,10 @@ function coopGiveDayOff(){
   const C=coopRec();if(!C)return false;
   const hol=(typeof holNow==="function")?holNow():null;
   if(!hol){say("Выходной дают в праздник — по календарю");return false;}
-  C.dayoff=hol.id+":"+new Date().getFullYear();
+  C.dayoff=hol.id+":"+new Date(now()).getFullYear();
   return true;
 }
-function coopDayOff(){const C=coopRec();const hol=(typeof holNow==="function")?holNow():null;return !!(C&&hol&&C.dayoff===hol.id+":"+new Date().getFullYear());}
+function coopDayOff(){const C=coopRec();const hol=(typeof holNow==="function")?holNow():null;return !!(C&&hol&&C.dayoff===hol.id+":"+new Date(now()).getFullYear());}
 /* ── страница в ДЕЛАХ ── */
 function coopBlock(box){
   const C=coopRec();
@@ -20127,9 +20280,9 @@ function coopRegBlock(){
 const LOCKER_SLOTS=24, LOCKER_FEE=.01, LOCKER_DAY=86400e3, LOCKER_LAPSE=30;
 function lockerRec(){
   let L=G.locker;
-  if(!L||typeof L!=="object"||!Array.isArray(L.items)){L=G.locker={items:[],res:{},t:Date.now()};}
+  if(!L||typeof L!=="object"||!Array.isArray(L.items)){L=G.locker={items:[],res:{},t:now()};}
   if(!L.res||typeof L.res!=="object")L.res={};
-  if(typeof L.t!=="number")L.t=Date.now();
+  if(typeof L.t!=="number")L.t=now();
   return L;
 }
 function lockerSlots(){return LOCKER_SLOTS*((typeof wanderHas==="function"&&wanderHas("box2"))?2:1);}
@@ -20153,7 +20306,7 @@ function lockerValue(L){
 }
 /* плата за прошедшие сутки: списываем лениво; тридцать суток без визита — сдача на блошинец */
 function lockerTick(now){
-  now=now===undefined?Date.now():now;
+  now=now===undefined?clockNow():now;
   const L=lockerRec();
   if(!lockerUsed(L)){L.t=now;return {fee:0,days:0};}
   const days=Math.floor((now-L.t)/LOCKER_DAY);
@@ -21311,7 +21464,7 @@ function chronLineRu(L){
 }
 /* ── номер сводки от часов (§16.3) ── */
 function chronNow(){
-  const t=Date.now()+(CHRON.off|0)-CHRON_EPOCH;
+  const t=now()+(CHRON.off|0)-CHRON_EPOCH;
   return t>0?Math.floor(t/CHRON_SHIFT):0;
 }
 /* ── хэш состояния: FNV-1a по целым (D06) ── */
@@ -22308,7 +22461,7 @@ function hailTick(sh,dt,actEdge){
   if(!p)return false;
   G.hailLog=G.hailLog||{};
   const key=G.sx+","+G.sy+"|"+p.pw;
-  const bucket=Math.floor(Date.now()/1800000);
+  const bucket=Math.floor(now()/1800000);
   if(G.hailLog[key]===bucket)return false;
   G.hailLog[key]=bucket;
   G.hail={by:p.pw,t:HAIL_HOLD,warn:0,x:sh.x,y:sh.y,blk:hailBlockade()?1:0};
@@ -22408,7 +22561,7 @@ function leftPos(row,i){
    оставить сегодня; отказ — это не ошибка игры, а правило §11.3. */
 function leftLeave(kind,part){
   const k=leftKey();
-  const seed=part?(part.seed>>>0):(hashi(G.sx|0,G.sy|0,Date.now()&1023));
+  const seed=part?(part.seed>>>0):(hashi(G.sx|0,G.sy|0,now()&1023));
   const tier=part?(part.tier|0):1;
   return leftCall("left",{sys:k,kind,seed,tier}).then(r=>{
     if(!r||!r.ok){say((r&&r.error)?r.error.toUpperCase():"ОСТАВИТЬ НЕ ВЫШЛО",120);return false;}
@@ -22624,10 +22777,10 @@ function voteCast(by,pick,N){
 let RALLY_CACHE=null;
 function rallyList(force){
   if(typeof warCall!=="function")return Promise.resolve([]);
-  if(!force&&RALLY_CACHE&&Date.now()-RALLY_CACHE.t<120000)return Promise.resolve(RALLY_CACHE.rows);
+  if(!force&&RALLY_CACHE&&wallNow()-RALLY_CACHE.t<120000)return Promise.resolve(RALLY_CACHE.rows);
   return warCall("rallies",{}).then(r=>{
     const rows=(r&&r.ok&&Array.isArray(r.rows))?r.rows:[];
-    RALLY_CACHE={t:Date.now(),rows};
+    RALLY_CACHE={t:wallNow(),rows};
     return rows;
   }).catch(()=>[]);
 }
@@ -22996,7 +23149,7 @@ function bossActive(){
 /* окно щита: раз в десять минут поле само падает на двадцать секунд. Часы те
    же, что у сводки, значит окно у всех одно и то же */
 function bossWindow(){
-  const t=Math.floor((Date.now()+(CHRON.off|0))/1000);
+  const t=Math.floor((now()+(CHRON.off|0))/1000);
   return (t%BOSS_EVERY)<BOSS_WIN;
 }
 /* щит: пробит, если за прошлую сводку по нему били быстрее, чем он растёт */
@@ -23024,7 +23177,7 @@ function bossHit(dmg){
   const A=bossActive();
   if(!A||A.dead)return;
   BOSS_ACC+=Math.max(0,dmg|0);
-  const now=Date.now();
+  const now=clockNow();
   if(now-BOSS_SENT<60000||BOSS_ACC<=0)return;
   BOSS_SENT=now;
   const q=Math.min(60000,BOSS_ACC|0);
@@ -23578,7 +23731,7 @@ const CREW_EVENTS=[
     const S=shipData(c.shipId);
     c.state="hostage";
     c.ransomBase=Math.round(600+gross*3+(S?S.cargo:40)*22);
-    c.ransom=c.ransomBase;c.ransomAt=Date.now();
+    c.ransom=c.ransomBase;c.ransomAt=now();
     c.ransomSx=c.order.sx;c.ransomSy=c.order.sy;
     c.cargo={};
     return {tone:"warn",ru:"взят в заложники · выкуп "+c.ransom.toLocaleString("ru")+" кр"};
@@ -23608,12 +23761,12 @@ const CREW_EVENTS=[
   }},
   {id:"away",cat:"bad",run:(c,r)=>{
     const h=2+Math.floor(r()*7);
-    c.state="away";c.stateUntil=Date.now()+h*3600000;
+    c.state="away";c.stateUntil=now()+h*3600000;
     return {tone:"",ru:"загулял на "+h+" ч: "+crewTale(c)};
   }},
   {id:"breakdown",cat:"bad",when:c=>!!c.shipId,run:(c,r)=>{
     crewDamage(c,8+r()*16);
-    c.state="away";c.stateUntil=Date.now()+(1+Math.floor(r()*3))*3600000;
+    c.state="away";c.stateUntil=now()+(1+Math.floor(r()*3))*3600000;
     return {tone:"dim",ru:"встал на ремонт: сдох маршевый узел"};
   }},
   {id:"barvdebt",cat:"bad",run:(c,r,gross)=>{
@@ -23679,7 +23832,7 @@ const CREW_EVENTS=[
     const free=Object.keys(SHIPS).filter(id=>!G.owned[id]);
     const id=pick(free,r);G.owned[id]=true;
     /* хвост — на витрину (M152e): ставка видна, а не строка dim */
-    if(G.home){(G.home.trophies||(G.home.trophies=[])).push({k:"hull",id,who:c.name,t:Date.now()});}
+    if(G.home){(G.home.trophies||(G.home.trophies=[])).push({k:"hull",id,who:c.name,t:now()});}
     if(typeof thingAdd==="function")thingAdd("trophy",c.name+" пригнал корпус «"+SHIPS[id].ru+"»","трофей с рейса · корпус в ангаре · витрина дома помнит");
     return {tone:"tech",ru:"пригнал трофейный корпус «"+SHIPS[id].ru+"» — он в ангаре"};
   }}
@@ -23697,7 +23850,7 @@ function applyCrewEvent(c,ev,r,gross,danger){
 }
 function crewHistory(c,ev,ru){
   c.hist=c.hist||[];
-  c.hist.unshift({cat:ev.cat,id:ev.id,ru,t:Date.now()});
+  c.hist.unshift({cat:ev.cat,id:ev.id,ru,t:now()});
   if(c.hist.length>12)c.hist.length=12;
 }
 /* ── выкуп и освобождение ── */
@@ -23710,7 +23863,7 @@ function ransomPay(c){
 }
 function crewFreeHostage(c,why){
   const S=c.shipId?shipData(c.shipId):null;
-  c.state=null;c.ransom=0;c.tMs=Date.now();c.tripMin=0;
+  c.state=null;c.ransom=0;c.tMs=now();c.tripMin=0;
   /* корабль пираты оставляют себе примерно в половине случаев */
   const r=rng(hashi(c.seed,(c.trips|0)*17+3,0xF2EE));
   if(c.shipId&&r()<.5){
@@ -24460,7 +24613,7 @@ function cultRaceWindow(N){
 function cultRaceOn(){return cultRaceWindow()>=0;}
 function cultRaceStart(){
   if(!cultRaceOn())return false;
-  G.race={t0:Date.now(),sx:G.sx|0,sy:G.sy|0,n:cultRaceWindow()};
+  G.race={t0:now(),sx:G.sx|0,sy:G.sy|0,n:cultRaceWindow()};
   tell("tech","Олимпиада: время пошло",
     "ОЛИМПИАДА\nвремя пошло\nфиниш — на станции не ближе "+CULT_RACE_FAR+" секторов");
   return true;
@@ -24477,7 +24630,7 @@ function cultRaceDue(){
 }
 function cultRaceFinish(){
   if(!cultRaceDue())return 0;
-  const ms=Date.now()-G.race.t0;
+  const ms=now()-G.race.t0;
   G.race=null;
   const s=Math.max(1,Math.round(ms/1000));
   if(!G.raceBest||s<G.raceBest)G.raceBest=s;
@@ -24860,7 +25013,7 @@ function hireMgr(cand){
   /* изгнанник возвращается со своими перками — вы за них уже платили однажды */
   const m=Object.assign({},cand,{traits:cand.traits.slice(),
     perks:cand.exile?cand.perks.slice():[],rules:[],
-    tMs:Date.now(),earned:0,spent:0,tookCr:0,stole:0,route:[],log:[]});
+    tMs:now(),earned:0,spent:0,tookCr:0,stole:0,route:[],log:[]});
   if(cand.exile&&G.exiles)G.exiles=G.exiles.filter(e=>e.seed!==cand.seed);
   G.mgrs.push(m);
   mgrSay(m,"Принял домен: "+MGR_ROLES[m.role].dom);
@@ -24890,7 +25043,7 @@ function mgrUltimatum(m){
   if(m.job)m.job=null;                   // разговоры кончились: это важнее любого поручения
   if(m.ultCount>=2){mgrDefect(m,"ult");return;}   // третий раз он не приходит
   m.ultCount=(m.ultCount||0)+1;
-  m.job={id:"ultimatum",t0:Date.now(),mins:12,offer:1,choice:1};
+  m.job={id:"ultimatum",t0:now(),mins:12,offer:1,choice:1};
   mgrSay(m,"Так больше нельзя. У меня есть условие.","warn");
   tell("warn","Ультиматум: "+m.name,
     m.name+" ставит условие\nэкран ШТАБ · "+MGR_ROLES[m.role].ru.toLowerCase());
@@ -24920,7 +25073,7 @@ function fireMgr(m){
 /* короткая личная лента: по ней читается и работа домена, и настроение */
 function mgrSay(m,s,k){
   m.log=m.log||[];
-  m.log.unshift({t:Date.now(),k:k||"",s});
+  m.log.unshift({t:now(),k:k||"",s});
   if(m.log.length>8)m.log.length=8;
 }
 /* ══════════════ стоящие приказы ══════════════ */
@@ -24976,7 +25129,7 @@ function mgrToggleRule(m,id){
    NPC, ничего не идёт при закрытой игре. */
 function mgrTick(){
   if(!G.mgrs||!G.mgrs.length)return;
-  const now=Date.now();
+  const now=clockNow();
   for(let i=G.mgrs.length-1;i>=0;i--){
     const m=G.mgrs[i];
     if(!m.tMs){m.tMs=now;continue;}
@@ -25199,7 +25352,7 @@ function mgrWorkFact(m,min){
   if(mk)mk.pressure[leg.k]=clamp((mk.pressure[leg.k]||0)-(cap/Math.max(1,leg.buy))*.004,-.35,0);
   /* без конвоя маршрут иногда грабят: домен не бесплатная рента */
   if(!mgrPerk(m,"convoy")&&!mgrRule(m,"safe")&&
-     rng(hashi(m.seed,Math.floor(Date.now()/300000),0x7A1))()<.06*min){
+     rng(hashi(m.seed,Math.floor(now()/300000),0x7A1))()<.06*min){
     gross=Math.round(gross*.35);
     mgrSay(m,"Плечо накрыли — часть груза ушла","warn");
   }
@@ -25263,7 +25416,7 @@ function mgrWorkSci(m,min){
     /* «Биология»: отсканированные твари и растения тоже идут в образцы —
        разведка перестаёт быть только строчкой в счётчике видов */
     if(!sample&&mgrPerk(m,"bio")&&(G.bio|0)>0){G.bio--;sample="bio";}
-    const r=rng(hashi(m.seed,Math.floor(Date.now()/60000)+done*17,0x5C1));
+    const r=rng(hashi(m.seed,Math.floor(now()/60000)+done*17,0x5C1));
     const mul=(sample?2.2:1)*mgrTraitMul(m,"sample")*(mgrPerk(m,"batch")?1.5:1);
     const data=Math.round((2+r()*3)*mul);
     G.data+=data;
@@ -25298,7 +25451,7 @@ function bpRecheck(k){
   const cost=mgrPerk(m,"redo")?30:60;
   if(G.data<cost){say("Нужно "+cost+" данных на пересборку");return false;}
   G.data-=cost;
-  const r=rng(hashi(m.seed,Date.now()&0xffff,0x9B2));
+  const r=rng(hashi(m.seed,now()&0xffff,0x9B2));
   const ok=r()<(mgrPerk(m,"safe")?.9:.7);
   G.blueprints[k]=ok?1:-1;
   logAdd(ok?"":"warn","Пересборка «"+BLUEPRINTS[k].ru+"»: "+(ok?"теперь верно":"снова мимо"));
@@ -25594,7 +25747,7 @@ function droneName(d){return "Д-"+(d&&d.id?d.id:"?");}
    загрузке и при первом же такте: круг начинается сейчас, номер выдаётся по
    порядку, планета неизвестна — тогда точка берётся по кругу орбиты. */
 function droneNormalize(d,now){
-  now=now||Date.now();
+  now=now||clockNow();
   if(d.id==null)d.id=droneNextId();
   if(typeof d.pi!=="number")d.pi=-1;
   if(!d.t0)d.t0=d.soldAtMs||now;
@@ -25654,7 +25807,7 @@ function droneTripMs(d,sys){
    0…1 по кругу: 0—.08 грузится на точке, .08—.46 идёт гружёным, .46—.54 стоит
    под разгрузкой, дальше идёт порожняком. Всё, что рисуется, берётся отсюда. */
 function dronePhase(d,now){
-  now=now||Date.now();
+  now=now||clockNow();
   if(d.down)return {leg:"fix",t:1};
   const T=droneTripMs(d);
   const ph=clamp(((now-(d.t0||now))%T)/T,0,1);
@@ -25699,7 +25852,7 @@ function droneBreakP(d){
   const dg=(typeof sysDanger==="function")?sysDanger(d.sx,d.sy):0;
   return clamp(DRONE_BREAK_P*(1+dg*1.6)+(d.wear|0)*DRONE_BREAK_WEAR,0,.2);
 }
-function droneBreaks(d){return Math.random()<droneBreakP(d);}
+function droneBreaks(d){return rnd()<droneBreakP(d);}
 function droneFixMs(d){
   const dg=(typeof sysDanger==="function")?sysDanger(d.sx,d.sy):0;
   let ms=DRONE_FIX_MS+dg*DRONE_FIX_FAR;
@@ -25712,7 +25865,7 @@ function droneFixMs(d){
 }
 /* ── строка состояния для списков ── */
 function droneStateRu(d,now){
-  now=now||Date.now();
+  now=now||clockNow();
   /* стоящая машина обязана сказать, ПОЧЕМУ она стоит: под блокадой круги не
      идут вовсе, и без этой строки список показывал бы «идёт гружёным» у
      дрона, который не двигался вторые сутки (12-economy, tickDrones) */
@@ -25742,7 +25895,7 @@ function droneRoutes(){
     R.drones.push(d);
     R.pool+=d.pool|0;
     if(d.stuck)R.stuck++;
-    else if(!d.down||d.down<=Date.now())R.perMin+=d.rate*(RES[d.res]?RES[d.res].price:10);
+    else if(!d.down||d.down<=now())R.perMin+=d.rate*(RES[d.res]?RES[d.res].price:10);
     else R.down++;
   }
   return Object.keys(by).map(k=>by[k]);
@@ -25776,7 +25929,7 @@ function droneGuestPos(d,now){
 function drawDronesSystem(zx,zy,Z){
   const list=G.drones||[];
   if(!list.length)return;
-  const now=Date.now();
+  const now=clockNow();
   ctx.lineCap="round";
   for(const d of list){
     if((d.sx!==G.sx||d.sy!==G.sy)&&d.mkt&&d.mkt.sx===G.sx&&d.mkt.sy===G.sy&&!d.down){
@@ -25898,7 +26051,7 @@ function drawDronesMap(vis){
 function jobDef(id){return MGR_JOBS.find(j=>j.id===id)||null;}
 function jobLeft(m){
   if(!m.job)return 0;
-  return Math.max(0,m.job.mins-(Date.now()-m.job.t0)/60000);
+  return Math.max(0,m.job.mins-(now()-m.job.t0)/60000);
 }
 function jobGive(m,what,arg){
   if(what==="perk"){m.gift=(m.gift||0)+1;return "свободное очко перка";}
@@ -25912,9 +26065,9 @@ function jobGive(m,what,arg){
   }
   if(what==="merc"){
     if(G.crew.length>=crewCap())return "человека взять некуда — мест в экипаже нет";
-    const c=genMerc(hashi(m.seed,Date.now()&0xffff,0x3E1),null);
+    const c=genMerc(hashi(m.seed,now()&0xffff,0x3E1),null);
     G.crew.push(Object.assign({},c,{cargo:{},order:{kind:"home",sx:G.sx,sy:G.sy},
-      tMs:Date.now(),paidMs:Date.now(),fee:0}));
+      tMs:now(),paidMs:now(),fee:0}));
     return c.name+" пришёл в экипаж даром";
   }
   return "";
@@ -25962,7 +26115,7 @@ function jobChoose(m,i){
   if(opt.wait){
     /* решение принято, а последствие приходит позже — тем и отличается сцена
        от кнопки «получить награду» */
-    m.job={id:J.id,t0:Date.now(),mins:opt.wait,pick:i,armed:1};
+    m.job={id:J.id,t0:now(),mins:opt.wait,pick:i,armed:1};
     mgrSay(m,opt.said+(out.length?" · "+out.join(", "):""));
     return true;
   }
@@ -26119,10 +26272,10 @@ function jobOffer(m){
   const pool=MGR_JOBS.filter(J=>J.role===m.role&&past.indexOf(J.id)<0&&
     (!J.need||J.need(m)));
   if(!pool.length)return;
-  const r=rng(hashi(m.seed,Math.floor(Date.now()/60000),0x30B));
+  const r=rng(hashi(m.seed,Math.floor(now()/60000),0x30B));
   if(r()>.05)return;                     // примерно раз в двадцать минут работы
   const J=pool[Math.floor(r()*pool.length)];
-  m.job={id:J.id,t0:Date.now(),mins:J.mins||0,offer:1};
+  m.job={id:J.id,t0:now(),mins:J.mins||0,offer:1};
   mgrSay(m,"Есть разговор: «"+J.ru+"»");
   tell("","Поручение от "+m.name+": "+J.ru,m.name+" хочет поговорить\n«"+J.ru+"»\nэкран ШТАБ");
 }
@@ -26131,7 +26284,7 @@ function jobAccept(m){
   if(!m.job||!m.job.offer)return false;
   const J=jobDef(m.job.id);
   if(J.choice)return false;
-  m.job={id:J.id,t0:Date.now(),mins:J.mins,mark:0};
+  m.job={id:J.id,t0:now(),mins:J.mins,mark:0};
   if(J.start)J.start(m);
   mgrSay(m,"Взялись. Срок — "+J.mins+" минут");
   /* принятое поручение живёт в журнале, а не только во всплывающей строке:
@@ -26139,7 +26292,7 @@ function jobAccept(m){
   questAdd("job:"+m.id+":"+J.id,{ru:J.ru,kind:"job",from:m.name,
     note:(typeof J.text==="function"?J.text(m):J.text)||"",
     sx:G.sx,sy:G.sy,place:"домен «"+MGR_ROLES[m.role].dom+"»",
-    until:Date.now()+(J.mins||10)*60000,
+    until:now()+(J.mins||10)*60000,
     reward:J.win_ru||""});
   return true;
 }
@@ -26220,11 +26373,11 @@ function buildAi(role){
     ", кристаллы "+AI_COST.crystal+", изотопы "+AI_COST.isotopes);return false;}
   G.credits-=AI_COST.credits;
   G.cargo.iridium-=AI_COST.iridium;G.cargo.crystal-=AI_COST.crystal;G.cargo.isotopes-=AI_COST.isotopes;
-  const seed=hashi(Date.now()&0xffff,role.length*977,0xA11);
+  const seed=hashi(now()&0xffff,role.length*977,0xA11);
   const r=rng(seed);
   const m={id:"ai"+seed,seed,name:"«"+pick(AI_NAMES,r)+"»",role,ai:1,
     traits:[],lv0:1,xp:0,perks:[],rules:[],loy:100,drift:0,
-    tMs:Date.now(),earned:0,spent:0,tookCr:0,stole:0,shipId:null,route:[],log:[],fee:0};
+    tMs:now(),earned:0,spent:0,tookCr:0,stole:0,shipId:null,route:[],log:[],fee:0};
   G.mgrs.push(m);
   mgrSay(m,"Ядро запущено. Домен принят: "+MGR_ROLES[role].dom,"good");
   tell("","Собрано ИИ-ядро "+m.name+" · домен «"+MGR_ROLES[role].dom+"»",
@@ -26245,7 +26398,7 @@ function aiDrift(m,min,work){
     mgrSay(m,"Режим работы изменён: "+st.ru,st.at>=45?"warn":"");
     if(st.at>=45)logAdd("warn",m.name+": "+st.ru+" — "+st.note);
   }
-  const r=rng(hashi(m.seed,Math.floor(Date.now()/60000),0xD1F));
+  const r=rng(hashi(m.seed,Math.floor(now()/60000),0xD1F));
   /* 20+ : тратит ваши деньги на то, что считает выгодным. Иногда оно и правда
      выгодно — иначе это был бы просто штраф, а не характер. */
   if(m.drift>=20&&r()<.14*min){
@@ -26280,7 +26433,7 @@ function aiDrift(m,min,work){
      Куда именно оно ушло, видно на карте: туда можно прилететь. */
   if(m.drift>=100){
     m.gone=true;
-    G.aiRift={sx:G.sx+(m.seed%9)-4,sy:G.sy+((m.seed>>4)%9)-4,name:m.name,t:Date.now()};
+    G.aiRift={sx:G.sx+(m.seed%9)-4,sy:G.sy+((m.seed>>4)%9)-4,name:m.name,t:now()};
     logAdd("warn",m.name+" разошлось: домен «"+MGR_ROLES[m.role].dom+"» больше не ваш");
     tell("warn","Расхождение: "+m.name,
       m.name+" больше не отвечает\nоно ушло в сектор "+G.aiRift.sx+","+G.aiRift.sy+
@@ -26361,7 +26514,7 @@ function rogueFrom(m,why){
     shipId:m.shipId||null,crew,fee:m.fee,why:why||"loy",
     hullMax:Math.round((S?S.hull:100)*grit+60*lv),
     dmg:+(5+lv*1.6+m.perks.length*.5).toFixed(2),
-    t:Date.now()};
+    t:now()};
   R.hull=R.hullMax;
   if(!G.rogues)G.rogues=[];
   G.rogues.push(R);
@@ -26423,7 +26576,7 @@ function rogueDefeated(p){
     if(relic)relicFind(relic,"трофей с "+R.name);
     if(!G.exiles)G.exiles=[];
     G.exiles.push({name:R.name,role:R.role,seed:R.seed,lv:R.lv,perks:R.perks.slice(),
-      traits:R.traits.slice(),fee:Math.round(R.fee*.35),t:Date.now()});
+      traits:R.traits.slice(),fee:Math.round(R.fee*.35),t:now()});
     while(G.exiles.length>ROGUE_CAP)G.exiles.shift();
     tell("kill",R.name+" разбит · +"+back.toLocaleString("ru")+" кр",
       R.name+" разбит\n"+(R.shipId?"корпус отбит\n":"")+
@@ -26558,7 +26711,7 @@ function relicRoll(seed,chance){
 function relicSynth(m){
   if(!mgrPerk(m,"synth"))return false;
   if(relicOwned().length<2)return false;
-  const id=relicRoll(hashi(m.seed,Math.floor(Date.now()/60000),0x5E7),.04);
+  const id=relicRoll(hashi(m.seed,Math.floor(now()/60000),0x5E7),.04);
   if(!id)return false;
   relicFind(id,"синтез в лаборатории");
   mgrSay(m,"Собрал третий из двух. Не спрашивайте как.","good");
@@ -27117,7 +27270,7 @@ function homeTurn(sum,why){
   while(H.tier<HOME_TIERS.length&&H.turn>=HOME_TIERS[H.tier].t){
     const T=HOME_TIERS[H.tier];
     H.tier++;
-    if(H.tier===1){H.sx=G.sx;H.sy=G.sy;H.made=Date.now();}
+    if(H.tier===1){H.sx=G.sx;H.sy=G.sy;H.made=now();}
     /* «Оборот» — слово из ведомости, а не из жизни (плейтест 03.09.2026):
        «напиши, что не оборот, а типа за то, что заработали, у вас появился
        дом». Число остаётся — по нему видно, как далеко зашёл, — но называется
@@ -27191,7 +27344,7 @@ function homeMateTake(){
     }
   }else{
     /* слух: тот же поворот мира, что в кантине, но услышанный дома */
-    if(typeof newsTick==="function"){G.newsT=Date.now()-NEWS_EVERY-1;newsTick();}
+    if(typeof newsTick==="function"){G.newsT=now()-NEWS_EVERY-1;newsTick();}
     const last=(G.news||[])[(G.news||[]).length-1];
     logAdd("dim",who+" пересказал новость"+(last?": "+last.ru:""));
     say(who+"\n"+(last?last.ru:"«говорят всякое»"));
@@ -27301,7 +27454,7 @@ function homeRebuild(id){
   if(i<0)return null;
   const p=G.inv[i];
   const tier=Math.max(1,(p.tier|0)-1);
-  const np=genPart(hashi(p.seed,Date.now()&0xffff,0x5EB),tier,p.kind);
+  const np=genPart(hashi(p.seed,now()&0xffff,0x5EB),tier,p.kind);
   np.id=p.id;
   G.inv[i]=np;
   invalidateParts();
@@ -28852,7 +29005,7 @@ function spawnBarges(){
   /* баржи именно этой системы: те плечи, у которых текущий сектор — конец */
   const local=legs.filter(l=>l[0].key===hereKey||l[1].key===hereKey);
   if(!local.length)return;
-  const bucket=Math.floor(Date.now()/BARGE_PERIOD);
+  const bucket=Math.floor(now()/BARGE_PERIOD);
   const r=rng(hashi(G.sx,G.sy,bucket*131+0x0BA6));
   let made=0;
   for(const leg of local){
@@ -28910,7 +29063,7 @@ function updateBarges(dt){
       if(atk.length){
         b.hp-=(.05+.03*atk.length)*dt;
         /* пираты и правда стреляют по ней — видно, что бой настоящий */
-        for(const p of atk)if(Math.random()<.02*dt){
+        for(const p of atk)if(rnd()<.02*dt){
           const ang=Math.atan2(b.y-p.y,b.x-p.x);
           fireShot(p.x,p.y,ang,6,0,false);b._pshot=1;
         }
@@ -28951,8 +29104,8 @@ function bargeRescued(b){
   const dst=bargeSysAt(b.to)||bargeSysAt(b.from);
   if(dst&&typeof repAdd==="function")repAdd(2,dst);
   /* буксир берёт баржу на трос, а не просто отгоняет пиратов (03f-hull-role) */
-  const share=(typeof towShare==="function")?towShare(3+Math.floor(Math.random()*5))
-                                            :3+Math.floor(Math.random()*5);
+  const share=(typeof towShare==="function")?towShare(3+Math.floor(rnd()*5))
+                                            :3+Math.floor(rnd()*5);
   const got=addRes(b.good,share);
   if(b.escort)bargeEscortEnd(b,true);
   if(b.paxSeed)bargePaxDeliver(b);
@@ -28984,7 +29137,7 @@ function bargeSunk(b,cause){
     /* и у минуса появляется тело: за баржу приходит капитан с именем (12o) */
     if(dst&&typeof huntMark==="function")huntMark(dst,"разбитую баржу");
     /* груз ваш: часть добычи падает контейнерами, как с пирата */
-    if(typeof addRes==="function")addRes(b.good,4+Math.floor(Math.random()*6));
+    if(typeof addRes==="function")addRes(b.good,4+Math.floor(rnd()*6));
     say("Баржа «"+b.capName+"» разбита вами\nгруз ваш · вас запомнят");
     logAdd("warn","Вы разбили баржу «"+b.capName+"» · груз взят, репутация упала");
   }else{
@@ -29348,7 +29501,7 @@ function drawBargesMap(vis){
   if(!legs.length)return;
   const at=key=>{const[sx,sy]=key.split(",").map(Number);
     return vis.find(v=>v.gx===sx&&v.gy===sy)||null;};
-  const bucket=Math.floor(Date.now()/BARGE_PERIOD);
+  const bucket=Math.floor(now()/BARGE_PERIOD);
   for(let li=0;li<legs.length;li++){
     const a=at(legs[li][0].key),c=at(legs[li][1].key);
     if(!a||!c)continue;
@@ -29708,7 +29861,7 @@ function planetGrant(p){
   const sxy=p.key.split(":")[0].split(",");
   const res=(p.res||[]).filter(k=>TRADE_KEYS.indexOf(k)>=0).slice(0,4);
   G.pnode={key:p.key,sx:+sxy[0]|0,sy:+sxy[1]|0,idx:p.idx|0,name:p.name,
-    res:res.length?res:["iron"],stock:{},made:Date.now(),last:Date.now(),
+    res:res.length?res:["iron"],stock:{},made:now(),last:now(),
     hauled:0,calls:0};
   logAdd("good","Сотня собрана. «"+p.name+"» — ваш узел: она родит товар, к ней пойдут баржи");
   say("УЗЕЛ\n«"+p.name+"» теперь ваша\nне доход, а точка на карте");
@@ -29721,7 +29874,7 @@ function planetGrant(p){
    смотрят, — по прошедшему времени, как рейсы наёмников. */
 function planetTick(){
   const N=G.pnode;if(!N)return null;
-  const now=Date.now();
+  const now=clockNow();
   const mins=(now-(N.last||now))/60000;
   if(mins>0){
     N.last=now;
@@ -29901,7 +30054,7 @@ function huntMark(sys,why){
     const seed=hashi((sys?sys.sx:G.sx)*131+(sys?sys.sy:G.sy),0x4A17,7);
     const r=rng(seed);
     H=all[k]={cap:pick(HUNT_NAMES,r)+" "+pick(PIRATE_NAMES,r),seed,tier:0,
-      made:Date.now(),deeds:0,dead:0,paid:0,seen:0};
+      made:now(),deeds:0,dead:0,paid:0,seen:0};
     logAdd("warn","За «"+(why||"дело")+"» вами занялись: капитан "+H.cap+
       " ищет вас в секторе "+k);
     say("ЗА ВАМИ ПОШЛИ\nкапитан "+H.cap+"\nсектор "+k);
@@ -30010,7 +30163,7 @@ function newsMarks(){return (G.newsMarks||(G.newsMarks={}));}
    а не строчкой, которую негде посмотреть */
 function newsMark(key,what,col){
   if(!key)return;
-  newsMarks()[key]={what,col:col||"#f2b25c",t:Date.now()};
+  newsMarks()[key]={what,col:col||"#f2b25c",t:now()};
 }
 function newsMarkAt(sx,sy){const m=G.newsMarks;return m?m[sx+","+sy]||null:null;}
 /* случайный сектор со станцией неподалёку: у слуха должен быть адрес */
@@ -30117,7 +30270,7 @@ const NEWS_KINDS=[
     const s=newsSomewhere(r);if(!s)return null;
     /* правим состояние тихо, без «tell»: это чужое дело, а не ваш поступок */
     if(!G.occCalm)G.occCalm={};
-    G.occCalm[occKey(s.sx,s.sy)]=Date.now();
+    G.occCalm[occKey(s.sx,s.sy)]=now();
     const had=typeof occLvl==="function"?occLvl(s.sx,s.sy):0;
     if(had&&typeof occSet==="function")occSet(s.sx,s.sy,had-1);
     newsMark(s.sx+","+s.sy,"стало тише","#8fd08a");
@@ -30130,7 +30283,7 @@ const NEWS_KINDS=[
     if(free.length<=1)return null;        /* последнюю не трогаем никогда */
     const R=free[Math.floor(r()*free.length)];
     const s=newsSomewhere(r);if(!s)return null;
-    newsRivals()[R.id]={who:pick(NEWS_RIVALS,r),sx:s.sx,sy:s.sy,t:Date.now()};
+    newsRivals()[R.id]={who:pick(NEWS_RIVALS,r),sx:s.sx,sy:s.sy,t:now()};
     newsMark(s.sx+","+s.sy,"он держит редкость","#c58ae0");
     return {ru:"«"+R.ru+"» унесли раньше вас: теперь она у "+G.rivals[R.id].who+
       " — искать не там, а у него",sx:s.sx,sy:s.sy};
@@ -30140,7 +30293,7 @@ const NEWS_KINDS=[
    Считается лениво по прошедшему времени, как склад узла: ни таймера, ни тика
    в кадре. Слышно это в кантине — там, где и так узнают новости. */
 function newsTick(){
-  const now=Date.now();
+  const now=clockNow();
   if(!G.newsT){G.newsT=now;return 0;}
   let turns=Math.floor((now-G.newsT)/NEWS_EVERY);
   if(turns<=0)return 0;
@@ -30176,7 +30329,7 @@ function newsRender(){
   if(!list.length)return;
   $body.appendChild(el("div","sec","ЧТО РАССКАЗЫВАЮТ · МИР ДВИГАЛСЯ БЕЗ ВАС"));
   for(const n of list.slice(-6).reverse()){
-    const mins=Math.max(1,Math.round((Date.now()-n.t)/60000));
+    const mins=Math.max(1,Math.round((now()-n.t)/60000));
     $body.appendChild(el("div","row","<div class='nm'><b>"+n.ru+"</b><s>сектор "+
       n.sx+", "+n.sy+" · слышно "+mins+" мин назад · на карте появилась метка</s></div>"));
   }
@@ -30249,7 +30402,7 @@ function mayakSold(sys,k,qty,revenue){
 /* сектор очищен игроком (13b зовёт при освобождении) */
 function mayakFreed(sx,sy,sys){
   if(!Array.isArray(G.freedLog))G.freedLog=[];
-  G.freedLog.push({sx,sy,name:(sys&&sys.station)?sys.station.name:"",shift:holdShift(),t:Date.now()});
+  G.freedLog.push({sx,sy,name:(sys&&sys.station)?sys.station.name:"",shift:holdShift(),t:now()});
   while(G.freedLog.length>12)G.freedLog.shift();
 }
 /* адрес, как его говорит маяк: имя игрока в ходу (11u) */
@@ -30325,7 +30478,7 @@ function mayakTick(){
   const prev=B.shift;B.shift=s;
   const lines=mayakCompose(prev);
   if(!lines.length)return null;                      /* без перемен маяк молчит */
-  const bul={shift:prev,t:Date.now(),lines};
+  const bul={shift:prev,t:now(),lines};
   B.log.push(bul);while(B.log.length>MAYAK_KEEP)B.log.shift();
   const first=lines[0].t.replace(/ \/ /g," ");
   etherLine(mayakHead(prev)+" "+first+(lines.length>1?" …ещё "+(lines.length-1)+" "+pl3(lines.length-1,"строка","строки","строк")+" — на столе.":""),"Маяк ГЛАВТРАССЫ");
@@ -31511,7 +31664,7 @@ function settleMake(p){
   M[key]={seed,sx:G.sx,sy:G.sy,idx:(p&&p.idx|0),name:(p&&p.name)||"",
     lean:SETTLE_BUILD[Math.floor(r()*SETTLE_BUILD.length)].k,   // своя склонность
     stage:1,mood:50,fed:0,stock:{},diet:{},built:[],
-    made:Date.now(),last:Date.now(),asked:0,paid:0,raided:0};
+    made:now(),last:now(),asked:0,paid:0,raided:0};
   return M[key];
 }
 /* ── рост, считаемый лениво ──
@@ -31520,7 +31673,7 @@ function settleMake(p){
    причина, по которой оно падает само. */
 function settleTick(S){
   if(!S)return null;
-  const now=Date.now();
+  const now=clockNow();
   const mins=Math.min(now-(S.last||now),SETTLE_CAP)/60000;
   if(mins<=0)return S;
   S.last=now;
@@ -31631,7 +31784,7 @@ function settleWords(S){
 function settleAsk(S,word){
   S=settleTick(S);
   if(!S)return 0;
-  const now=Date.now();
+  const now=clockNow();
   if(now-(S.asked||0)<SETTLE_WAIT)return 0;
   let makes=settleMakes(S);
   if(!makes.length)return 0;
@@ -31928,7 +32081,7 @@ function tinMake(p){
   if(M[key])return M[key];
   const seed=hashi(G.sx,G.sy,(p&&p.idx|0)+0x71DE);
   M[key]={seed,sx:G.sx,sy:G.sy,idx:(p&&p.idx|0),name:(p&&p.name)||"",
-    fed:0,run:0,bin:0,seen:0,read:0,last:Date.now(),made:Date.now()};
+    fed:0,run:0,bin:0,seen:0,read:0,last:now(),made:now()};
   return M[key];
 }
 /* ── ход, считаемый лениво ──
@@ -31936,7 +32089,7 @@ function tinMake(p){
 function tinTick(T){
   if(!T)return null;
   if(typeof planEndless==="function")planEndless(T);   /* комбинат не останавливается (11r) */
-  const now=Date.now();
+  const now=clockNow();
   const mins=Math.min(now-(T.last||now),TIN_CAP)/60000;
   T.last=now;
   if(mins<=0||!T.run)return T;
@@ -31962,7 +32115,7 @@ function tinFeed(T,n){
     /* наряд закрыт: смена началась. Работы ровно на то, что засыпали */
     T.run=A.need;
     T.fed=A.need;
-    T.last=Date.now();
+    T.last=now();
     logAdd("good","Жестянка приняла наряд и пошла: "+RES[A.made].ru.toLowerCase());
   }
   if(typeof saveGame==="function")saveGame(true);
@@ -32273,12 +32426,12 @@ function grokBusy(){const R=grokRec();return R.state==="out";}
 function grokLeftMs(){
   const R=grokRec();
   if(R.state!=="out")return 0;
-  return Math.max(0,R.due-Date.now());
+  return Math.max(0,R.due-now());
 }
 /* ── ход ── лениво: копка кончается сама, пока игрока нет рядом */
 function grokTick(){
   const R=grokRec();
-  if(R.state==="out"&&Date.now()>=R.due)R.state="back";
+  if(R.state==="out"&&now()>=R.due)R.state="back";
   return R;
 }
 /* ── отправить ──
@@ -32290,7 +32443,7 @@ function grokSend(sx,sy){
   if((G.cargo[k]|0)<price)return false;
   G.cargo[k]-=price;
   R.state="out";R.sx=sx|0;R.sy=sy|0;
-  R.due=Date.now()+GROK_MIN+Math.floor(rng(hashi(sx,sy,Date.now()&0xffff))()*(GROK_MAX-GROK_MIN));
+  R.due=now()+GROK_MIN+Math.floor(rng(hashi(sx,sy,now()&0xffff))()*(GROK_MAX-GROK_MIN));
   logAdd("",GROK_NAME+" ушёл копать: сектор "+R.sx+":"+R.sy+" · съел "+
     RES[k].ru.toLowerCase()+" ×"+price);
   say(GROK_NAME+" УШЁЛ КОПАТЬ\nсектор "+R.sx+":"+R.sy+
@@ -32858,7 +33011,7 @@ function sdRoof(x,y,w,h,kind,pal,seed){
     }
     ctx.restore();
     ctx.fillStyle=dark;                                    /* лохматый свес */
-    for(let xx=x-eave;xx<x+w+eave;xx+=3)ctx.fillRect(xx,y-1,2,2+Math.random()*1.5);
+    for(let xx=x-eave;xx<x+w+eave;xx+=3)ctx.fillRect(xx,y-1,2,2+rndFx()*1.5);
   }else if(kind==="tile"){
     sdBody(()=>{
       ctx.moveTo(x-eave,y);ctx.lineTo(x+w*.5,y-h);ctx.lineTo(x+w+eave,y);ctx.closePath();
@@ -34033,7 +34186,7 @@ function scripMove(id,d,why){
   G.scripRate[id]=now;
   if(now===was)return 0;
   const L=G.scripLog||(G.scripLog=[]);
-  L.push({id,d:now-was,why,t:Date.now()});
+  L.push({id,d:now-was,why,t:clockNow()});
   while(L.length>SCRIP_LOG)L.shift();
   return now-was;
 }
@@ -34136,7 +34289,7 @@ function scripRender(){
   $body.appendChild(el("div","sec","ОТЧЕГО ДВИГАЛСЯ КУРС · СЛУЧАЙНО ОН НЕ ДВИГАЕТСЯ"));
   if(!L.length)$body.appendChild(el("div","row","<div class='nm'><s>пока ничего не случилось</s></div>"));
   for(const e of L){
-    const mins=Math.max(1,Math.round((Date.now()-e.t)/60000));
+    const mins=Math.max(1,Math.round((now()-e.t)/60000));
     const Ho=HOUSE_BY_ID[e.id];
     $body.appendChild(el("div","row","<div class='nm'><b>"+(Ho?Ho.ru:e.id)+" "+
       (e.d>0?"+":"")+e.d+"</b><s>"+e.why+" · "+mins+" мин назад</s></div>"));
@@ -34186,7 +34339,7 @@ function fleaHere(sys){
   const S=(sys||G.sys)&&(sys||G.sys).station;
   return !!S&&S.stype==="bazaar";
 }
-function fleaEpoch(){return Math.floor(Date.now()/FLEA_EPOCH);}
+function fleaEpoch(){return Math.floor(now()/FLEA_EPOCH);}
 /* ── провенанс ──
    Место, а не настроение: идём спиралью от станции, пока не встретим звезду.
    Правило 1 держится здесь, и суите проверять именно это. */
@@ -34333,7 +34486,7 @@ function fleaRender(){
      При первом заходе за посадку — гул голосов, в шапке — сколько народу */
   if(G.sys&&G._fleaHum!==G.sys.key+":"+visitHere()){
     G._fleaHum=G.sys.key+":"+visitHere();
-    for(let i=0;i<3;i++)sfx("ui",{f:220+Math.random()*160,to:180,d:.25,v:.08});
+    for(let i=0;i<3;i++)sfx("ui",{f:220+rndFx()*160,to:180,d:.25,v:.08});
   }
   if(G.sys)$body.appendChild(el("div","sec","ТОЛКУЧКА · У ЛОТКОВ ЧЕЛОВЕК "+
     (8+Math.abs(hashi(G.sys.seed|0,fleaEpoch(),0xF1EA))%14)+" · ГОВОР, ТОЛКОТНЯ, КТО-ТО СПОРИТ О ЦЕНЕ"));
@@ -34879,12 +35032,12 @@ function doomGet(){return G.doom||null;}
    от Date.now() — тот же ленивый способ, каким живёт весь остальной мир */
 function doomArm(S){
   if(G.doom||!S||S.stage<2)return null;
-  G.doom={sx:S.sx,sy:S.sy,key:S.sx+","+S.sy,at:Date.now()+DOOM_LEAD,
+  G.doom={sx:S.sx,sy:S.sy,key:S.sx+","+S.sy,at:now()+DOOM_LEAD,
     known:false,folk:DOOM_FOLK+((S.built.length|0)*6),lifted:0,landed:0,
     to:null,over:false,warned:[]};
   return G.doom;
 }
-function doomLeft(){const D=doomGet();return D?Math.max(0,D.at-Date.now()):0;}
+function doomLeft(){const D=doomGet();return D?Math.max(0,D.at-now()):0;}
 function doomMins(){return Math.ceil(doomLeft()/60000);}
 function doomIsHere(){const D=doomGet();return !!D&&!D.over&&D.sx===G.sx&&D.sy===G.sy;}
 /* сколько людей ещё стоит на земле */
@@ -34973,7 +35126,7 @@ function doomLand(p){
       stage:1,mood:clamp(old?old.mood:50,0,100),fed:0,stock:{},diet:{},
       /* половина построек осталась там: начинают заново и хуже */
       built:old?old.built.slice(0,Math.floor(old.built.length/2)):[],
-      made:Date.now(),last:Date.now(),asked:0,paid:0,raided:0,
+      made:now(),last:now(),asked:0,paid:0,raided:0,
       moved:1,from:D.key};
     S.stage=S.built.length>=5?3:(S.built.length>=3?2:1);
   }
@@ -34999,14 +35152,14 @@ function doomTick(){
         logAdd("warn","До срока «"+D.sx+","+D.sy+"» осталось "+w+" мин · на земле "+doomStanding());
       }
   }
-  if(Date.now()<D.at)return;
+  if(now()<D.at)return;
   D.over=true;
   /* мир кончился: посёлок на этой земле перестаёт существовать, а система
      остаётся на карте — пустой. Это и есть разрешённый исход. */
   const S=settleMap()[D.key];
   if(S&&!S.moved)delete settleMap()[D.key];
   if(!G.doomDead)G.doomDead={};
-  G.doomDead[D.key]=Date.now();
+  G.doomDead[D.key]=now();
   if(typeof newsMark==="function")newsMark(D.key,"здесь больше никого","#7d8a95");
   const stayed=doomStanding();
   if(D.landed>0)
@@ -35368,7 +35521,7 @@ function wanderLoop(){
 }
 /* где «Сорока» в момент now: стоянка k, планета, фаза и остаток фазы */
 function wanderAt(now){
-  now=now===undefined?Date.now():now;
+  now=now===undefined?clockNow():now;
   const L=wanderLoop();
   const e=Math.floor((now-WANDER_T0)/WANDER_PERIOD);
   const t=now-WANDER_T0-e*WANDER_PERIOD;
@@ -35476,7 +35629,7 @@ function drawWanderMap(vis,cell){
 /* ── рисунок в системе ── */
 function drawWanderer(zx,zy,Z){
   const sys=G.sys;if(!sys)return;
-  const w=wanderAt(),now=Date.now();
+  const w=wanderAt(),now=clockNow();
   /* уходит: первые шесть часов перехода из покинутой системы виден блик, который уменьшается по прямой */
   if(w.phase==="hop"&&sys.sx===w.prev.sx&&sys.sy===w.prev.sy){
     const th=w.tIn-WANDER_STOP;if(th>6*3600e3)return;
@@ -35915,7 +36068,7 @@ function parrotFind(seed,who){
   if(parrotHas())return null;
   const r=rng(hashi(seed|0,0xB1AD,7));
   G.parrot={seed:seed>>>0,name:pick(PARROT_NAMES,r),who:who||"неизвестного борта",
-    since:Date.now(),said:0};
+    since:now(),said:0};
   tell("tech","В вещах нашлось живое: трепло «"+G.parrot.name+"»",
     "ТРЕПЛО\n«"+G.parrot.name+"»\nиз вещей "+G.parrot.who+
     "\nоно повторяет всё, что слышало");
@@ -35926,7 +36079,7 @@ function parrotFind(seed,who){
 function heardAdd(kind,payload,words){
   if(!parrotHas()||!kind)return null;
   const L=heardAll();
-  const rec={t:Date.now(),kind,sx:payload&&payload.sx|0,sy:payload&&payload.sy|0,
+  const rec={t:now(),kind,sx:payload&&payload.sx|0,sy:payload&&payload.sy|0,
     note:(payload&&payload.note)||"",words:words||null,read:false,used:false};
   L.push(rec);
   while(L.length>HEARD_MAX)L.shift();
@@ -36039,7 +36192,7 @@ function heardBlurt(sys){
   /* бросок на КАЖДУЮ стыковку, а не на пару «фраза + станция»: детерминированный
      бросок здесь означал бы, что птица либо молчит у этой станции всегда, либо
      ляпает при первом же заходе, — а она просто иногда не вовремя */
-  if(Math.random()<.55)return null;
+  if(rnd()<.55)return null;
   h.used=true;
   if(typeof repAdd==="function")repAdd(-1,sys);
   tell("warn","«"+G.parrot.name+"» ляпнул лишнее: "+h.note,
@@ -36997,7 +37150,7 @@ function parStep(dt){
   if(PAR.preenT>0){
     const p=(PAR.t-PAR.preenT)/2.2;
     PAR.preen=p>=1?(PAR.preenT=-9,0):(1-Math.cos(p*6.283))*.5;
-  }else if(Math.random()<dt*.06&&PAR.flap<.05){PAR.preenT=PAR.t;}
+  }else if(rndFx()<dt*.06&&PAR.flap<.05){PAR.preenT=PAR.t;}
   PAR.beak*=Math.pow(.90,dt*60);
   PAR.look*=Math.pow(.985,dt*60);
   /* злость держится секунд восемь, а не одну: птицу задели — она успевает
@@ -37007,12 +37160,12 @@ function parStep(dt){
   /* подскок идёт от крыла: птица машет всем телом, а не одним крылом */
   if(PAR.flapV>0)PAR.hopV+=PAR.flapV*.10*dt*60;
   if(PAR.blink>0)PAR.blink=Math.max(0,PAR.blink-dt*7);
-  if(PAR.t>PAR.blinkAt){PAR.blink=1;PAR.blinkAt=PAR.t+1.6+Math.random()*4.2;}
+  if(PAR.t>PAR.blinkAt){PAR.blink=1;PAR.blinkAt=PAR.t+1.6+rndFx()*4.2;}
 
   /* мелкая рябь: она идёт ВСЕГДА, поверх любой повадки, и это разные вещи.
      Повадка — то, что птица делает; рябь — то, что с ней происходит. */
-  if(Math.random()<dt*.14){PAR.ruffV+=(Math.random()-.5)*5;}
-  if(Math.random()<dt*.10){PAR.look=(Math.random()-.5)*2;}
+  if(rndFx()<dt*.14){PAR.ruffV+=(rndFx()-.5)*5;}
+  if(rndFx()<dt*.10){PAR.look=(rndFx()-.5)*2;}
   /* дрожь: частая мелкая тряска поверх воротника, живёт только по команде */
   if(PAR.shiver>.001)PAR.ruff+=Math.sin(PAR.t*47)*PAR.shiver*.32;
   /* степени свободы повадки сами оседают в ноль: пока повадка идёт, она
@@ -37042,16 +37195,16 @@ const PAR_IDLE=["…","кхх-кхх","чшшш","тк-тк-тк","кхе"];
 function parrotLine(zone){
   const L=(typeof heardAll==="function")?heardAll():[];
   const pool=L.filter(h=>h.kind==="pidgin"||h.kind==="yours");
-  if(pool.length&&Math.random()<(zone==="beak"?.9:.62)){
-    const h=pool[Math.floor(Math.random()*pool.length)];
+  if(pool.length&&rndFx()<(zone==="beak"?.9:.62)){
+    const h=pool[Math.floor(rndFx()*pool.length)];
     if(h.kind==="yours")return "«"+h.note+"»";
     return heardWordsRu(h).join(" ");
   }
-  if(L.length&&Math.random()<.3){
-    const h=L[Math.floor(Math.random()*L.length)];
+  if(L.length&&rndFx()<.3){
+    const h=L[Math.floor(rndFx()*L.length)];
     if(h.kind==="price")return "цены "+(h.note||"станции");
   }
-  return pick(PAR_IDLE,Math.random);
+  return pick(PAR_IDLE,rndFx);
 }
 /* пять зон — пять разных ответов: одинаковая реакция на любой клик
    превращает животное в кнопку */
@@ -37108,7 +37261,7 @@ function toggleParrotWin(open){
       if(!cv.width||!cv.height){parWin=false;w.classList.remove("open");return;}}
     const el=document.getElementById("parrotsay");
     if(el)el.textContent=G.parrot?("из вещей "+G.parrot.who):"";
-    parT0=performance.now();parRAF=requestAnimationFrame(parrotFrame);
+    parT0=wallMs();parRAF=requestAnimationFrame(parrotFrame);
   }else if(parRAF){cancelAnimationFrame(parRAF);parRAF=0;}
 }
 (function parrotWire(){
@@ -37186,14 +37339,14 @@ const PAR_ACT=[
 /* ── осмотреться и переступить: из этого состоит покой ── */
 {ru:"осмотреться",w:9,d:2.6,m:"",f:(p,S)=>{PAR.look=Math.sin(p*6.283)*1.1;}},
 {ru:"наклон головы",w:9,d:2.2,m:"",f:(p,S)=>{
-  if(!S.s)S.s=Math.random()<.5?-1:1;
+  if(!S.s)S.s=rndFx()<.5?-1:1;
   PAR.roll=parBell(p)*S.s;}},
 {ru:"долгий наклон",w:5,d:3.4,m:"c",f:(p,S)=>{PAR.roll=parHold(p,.22,.3)*.9;PAR.look=.4;}},
 {ru:"переступить",w:8,d:1.9,m:"",f:(p,S)=>{
-  if(!S.d)S.d=(Math.random()<.5?-1:1)*(8+Math.random()*16);
+  if(!S.d)S.d=(rndFx()<.5?-1:1)*(8+rndFx()*16);
   PAR.step=parHold(p,.3,.3)*S.d;PAR.footUp=parBell(p)*.5;}},
 {ru:"пройтись по жёрдочке",w:4,d:3.6,m:"",f:(p,S)=>{
-  if(!S.d)S.d=(Math.random()<.5?-1:1)*(22+Math.random()*14);
+  if(!S.d)S.d=(rndFx()<.5?-1:1)*(22+rndFx()*14);
   PAR.step=Math.sin(p*3.14159)*S.d;
   PAR.footUp=Math.abs(Math.sin(p*12.5))*.45;PAR.lean=Math.sin(p*12.5)*.05;}},
 {ru:"переминаться",w:6,d:2.4,m:"",f:(p,S)=>{
@@ -37213,19 +37366,19 @@ const PAR_ACT=[
   PAR.shiver=h*.6+Math.sin(p*40)*h*.3;}},
 {ru:"чистить грудь",w:7,d:3.2,m:"",f:(p,S)=>{
   PAR.bow=parHold(p,.2,.2)*.7;PAR.roll=Math.sin(p*15.7)*.18;
-  if(Math.random()<.14)PAR.peck=.6;}},
+  if(rndFx()<.14)PAR.peck=.6;}},
 {ru:"чистить хвост",w:4,d:3.4,m:"",f:(p,S)=>{
   PAR.bow=parHold(p,.22,.22)*1.05;PAR.fan=parHold(p,.25,.25)*.7;
   PAR.roll=Math.sin(p*12)*.22;}},
 {ru:"перебрать перо",w:6,d:2.9,m:"",f:(p,S)=>{
-  PAR.preen=parHold(p,.25,.25);if(Math.random()<.10)PAR.peck=.5;}},
+  PAR.preen=parHold(p,.25,.25);if(rndFx()<.10)PAR.peck=.5;}},
 {ru:"распушиться",w:6,d:2.0,m:"",f:(p,S)=>{PAR.ruff+=parBell(p)*.06;PAR.tuck=parBell(p)*.5;}},
 {ru:"встряхнуться",w:6,d:1.5,m:"",f:(p,S)=>{
   PAR.shiver=parBell(p)*1.3;PAR.fan=parBell(p)*.5;
   if(!S.o&&p>.3){S.o=1;PAR.flapV+=6;PAR.crestV+=8;}}},
 {ru:"почистить клюв",w:5,d:2.6,m:"",f:(p,S)=>{
   PAR.bow=parHold(p,.2,.2)*.95;PAR.step=Math.sin(p*9)*3;
-  if(Math.random()<.22)PAR.peck=.8;}},
+  if(rndFx()<.22)PAR.peck=.8;}},
 {ru:"точить клюв",w:3,d:2.2,m:"",f:(p,S)=>{
   PAR.bow=parHold(p,.2,.2)*.8;PAR.beak=Math.abs(Math.sin(p*25))*.5;}},
 /* ── крылья и прыжки: то, что видно через всё окно ── */
@@ -37266,7 +37419,7 @@ const PAR_ACT=[
 {ru:"бормотать",w:6,d:2.8,m:"",f:(p,S)=>{
   PAR.beak=(1-Math.cos(p*25))*.22;PAR.tuck=parHold(p)*.2;
   if(!S.o&&p>.25){S.o=1;
-    if(Math.random()<.5&&typeof parrotLine==="function")parSay(parrotLine("body"));}}},
+    if(rndFx()<.5&&typeof parrotLine==="function")parSay(parrotLine("body"));}}},
 {ru:"повторить услышанное",w:4,d:2.4,m:"",f:(p,S)=>{
   if(!S.o){S.o=1;PAR.crestV+=6;
     if(typeof parrotLine==="function")parSay(parrotLine("beak"));}
@@ -37297,10 +37450,10 @@ const PAR_ACT=[
 /* ── сонная: копится сама, сбрасывается тычком ── */
 {ru:"моргать медленно",w:7,d:3.2,m:"s",f:(p,S)=>{
   PAR.tuck=parHold(p,.3,.3)*.4;
-  if(Math.random()<.05){PAR.blink=1;PAR.blinkAt=PAR.t+1.2;}}},
+  if(rndFx()<.05){PAR.blink=1;PAR.blinkAt=PAR.t+1.2;}}},
 {ru:"клевать носом",w:6,d:4.2,m:"s",f:(p,S)=>{
   PAR.bow=(1-Math.cos(p*9.4))*.30;PAR.tuck=parHold(p,.2,.2)*.6;
-  if(Math.random()<.08)PAR.blink=1;}},
+  if(rndFx()<.08)PAR.blink=1;}},
 {ru:"спрятать голову",w:5,d:6.5,m:"s",f:(p,S)=>{
   PAR.tuck=parHold(p,.14,.16);PAR.footUp=parHold(p,.2,.2)*.9;
   PAR.blink=Math.max(PAR.blink,parHold(p,.2,.2));}},
@@ -37347,7 +37500,7 @@ function parPickAct(){
     sum+=w;pool.push([a,w]);
   }
   if(!pool.length)return PAR_ACT[0];
-  let r=Math.random()*sum;
+  let r=rndFx()*sum;
   for(const e of pool){
     r-=e[1];
     if(r<=0){PAR_LAST.push(e[0]);if(PAR_LAST.length>2)PAR_LAST.shift();return e[0];}
@@ -37381,13 +37534,13 @@ function parActs(dt){
          открытое надолго, усыпляет птицу навсегда — за полчаса наблюдения
          девять повадок из полусотни не выпадали ни разу */
       if(PAR.act.m==="s")PAR.sleep=0;
-      PAR.act=null;PAR.actNext=PAR.t+.5+Math.random()*2.6;}
+      PAR.act=null;PAR.actNext=PAR.t+.5+rndFx()*2.6;}
     return;
   }
   if(PAR.t<PAR.actNext)return;
   const a=parPickAct();
   PAR.act=a;PAR.actT=0;PAR.st={};
-  PAR.actDur=a.d*(.85+Math.random()*.3);
+  PAR.actDur=a.d*(.85+rndFx()*.3);
 }
 
 /* ══════════════ бой: выстрелы с владельцем (M361) ══════════════
@@ -37651,7 +37804,7 @@ function spawnPirates(){
   G.pirates=[];G.shots=[];G.loot=[];
   G.shield=stat().shieldMax;G.energy=stat().energyMax;G.shieldHit=0;
   const danger=sysDanger(G.sx,G.sy);
-  const r=rng(hashi(G.sx,G.sy,Math.floor(Date.now()/900000)));
+  const r=rng(hashi(G.sx,G.sy,Math.floor(now()/900000)));
   /* под пиратами система держит патруль сверх обычного случайного налёта */
   let n=(r()<danger*.85?1+Math.floor(r()*(1+danger*2)):0)+occExtraPirates(G.sx,G.sy);
   if(typeof quietNoPirates==="function"&&quietNoPirates())n=0;   /* тихий уезд (11n): никто не грабит */
@@ -37942,7 +38095,7 @@ function killPirate(p){
   /* сбитый в занятой системе идёт в счёт её освобождения */
   occKill(G.sx,G.sy);
   /* узел с обломков: редкая находка, а не вторая валюта (05a-nodes) */
-  nodeDrop("с пиратов",sysDanger(G.sx,G.sy),hashi(p.seed,0x40DE,Date.now()&0xffff));
+  nodeDrop("с пиратов",sysDanger(G.sx,G.sy),hashi(p.seed,0x40DE,now()&0xffff));
   const loot=pick(TRADE_KEYS,r),   /* редкое с обломков не падает: у него свои способы добычи */got=addRes(loot,2+Math.floor(r()*7));
   const d=sysDanger(G.sx,G.sy);
   /* обломок с частью — не в трюм сразу, а контейнером: у боя своя петля «убил → собрал» */
@@ -37951,12 +38104,12 @@ function killPirate(p){
      оставленное кем-то, — цель для новичка, а не короткая дорога */
   if((p.rank|0)>=3&&r()<.5&&typeof gunNamedRoll==="function"){
     const N=gunNamedRoll(hashi(p.seed,0x4E41,7));
-    dropped=genPart(hashi(p.seed,0x4E41,Math.floor(Date.now()/1000)),5,"gun",2,N.id);
+    dropped=genPart(hashi(p.seed,0x4E41,Math.floor(now()/1000)),5,"gun",2,N.id);
     const a=r()*TAU,sp=.35+r()*.5;
     G.loot.push({x:p.x,y:p.y,vx:p.vx*.4+Math.cos(a)*sp,vy:p.vy*.4+Math.sin(a)*sp,
       spin:r()*TAU,life:5400,part:dropped});
   }else if(r()<.3+d*.45){
-    dropped=genPart(hashi(p.seed,3131,Math.floor(Date.now()/1000)),tierFromDanger(d,r));
+    dropped=genPart(hashi(p.seed,3131,Math.floor(now()/1000)),tierFromDanger(d,r));
     const a=r()*TAU,sp=.35+r()*.5;
     G.loot.push({x:p.x,y:p.y,vx:p.vx*.4+Math.cos(a)*sp,vy:p.vy*.4+Math.sin(a)*sp,
       spin:r()*TAU,life:5400,part:dropped});
@@ -38172,10 +38325,10 @@ function rayDamage(p,ang,g,dmg){
 }
 /* ── выстрел по повадке ──
    Возвращает true, если ствол действительно выстрелил (значит, пора считать
-   откат и списывать энергию). `rnd` — источник случайности, чтобы набор мог
+   откат и списывать энергию). `rf` — источник случайности, чтобы набор мог
    подставить свой и получить повторимый прогон. */
-function gunFireOnce(g,sh,tgt,ang,rnd){
-  const R=rnd||Math.random;
+function gunFireOnce(g,sh,tgt,ang,rf){
+  const R=rf||rnd;
   const fx=g.fx||"bullet";
   if(fx==="rail"){
     const hits=rayHits(sh.x,sh.y,ang,g.range,true);
@@ -38289,7 +38442,7 @@ function gunFireOnce(g,sh,tgt,ang,rnd){
       }else if(fx==="pulse"){
         /* поле гаснет на две секунды и может выбить узел: обратная сторона instrKnock */
         p.shieldOff=SHIELD_OFF;p.shield=0;p.shieldHit=SHIELD_DELAY;
-        if(Math.random()<.35)p.stunT=Math.max(p.stunT||0,STUN_TIME*.6);
+        if(rnd()<.35)p.stunT=Math.max(p.stunT||0,STUN_TIME*.6);
         if(g.dmg>0)rayDamage(p,ang,g,g.dmg);
       }else{
         /* буровому поле безразлично: он режет корпус напрямую */
@@ -38640,8 +38793,8 @@ function occSet(sx,sy,lvl){
   if(!G.occ)G.occ=occInit();
   const k=occKey(sx,sy);
   if(lvl<=0){delete G.occ[k];return;}
-  const o=G.occ[k]||(G.occ[k]={lvl:0,kills:0,t:Date.now()});
-  o.lvl=Math.min(OCC_MAX,lvl);o.kills=0;o.t=Date.now();
+  const o=G.occ[k]||(G.occ[k]={lvl:0,kills:0,t:now()});
+  o.lvl=Math.min(OCC_MAX,lvl);o.kills=0;o.t=now();
 }
 /* ── наступление ──
    Один бросок на такт: берём случайную занятую систему и пробуем расширить её
@@ -38649,7 +38802,7 @@ function occSet(sx,sy,lvl){
    ОТКУДА-ТО, и игрок видит фронт, а не сыпь по карте. */
 function occTick(){
   if(!G.occ)G.occ=occInit();
-  const now=Date.now();
+  const now=clockNow();
   if(!G.occT)G.occT=now;
   if(now-G.occT<OCC_PERIOD)return;
   G.occT=now;
@@ -38819,7 +38972,7 @@ function goalCard(){
 const OCC_CALM_MS=86400000;
 function occSuppress(sx,sy){
   if(!G.occCalm)G.occCalm={};
-  G.occCalm[occKey(sx,sy)]=Date.now();
+  G.occCalm[occKey(sx,sy)]=now();
   const had=occLvl(sx,sy);
   if(had)occSet(sx,sy,had-1);
   tell("kill","Очаг в этом секторе подавлен"+(had?" · система: "+occInfo(had-1).ru:""),
@@ -38828,7 +38981,7 @@ function occSuppress(sx,sy){
 }
 function occCalmNear(sx,sy){
   if(!G.occCalm)return false;
-  const now=Date.now();
+  const now=clockNow();
   for(const k in G.occCalm){
     if(now-G.occCalm[k]>OCC_CALM_MS){delete G.occCalm[k];continue;}
     const [cx,cy]=k.split(",").map(Number);
@@ -38922,9 +39075,9 @@ function roleFire(p,d,want,range,cool){
   if(p.stunT>0)return false;
   /* под помехой (M365) половина выстрелов уходит в пустоту: цель есть,
      наводка врёт */
-  if(p.jamT>0&&Math.random()<.5){p.cool=cool*.5;return false;}
+  if(p.jamT>0&&rnd()<.5){p.cool=cool*.5;return false;}
   /* близкий разрыв плазмы сбивает наводку на секунду (M366) */
-  if(p.leadBreak>0&&Math.random()<.6){p.cool=cool*.4;return false;}
+  if(p.leadBreak>0&&rnd()<.6){p.cool=cool*.4;return false;}
   if(d<range&&p.cool<=0&&Math.abs(angDiff(want,p.a))<.35){
     /* у ренегата свой урон: он бьёт вашими же перками */
     fireShot(p.x,p.y,p.a,7,p.dmg||3.5+sysDanger(G.sx,G.sy)*5,p.owner||"pirate");
@@ -38942,7 +39095,7 @@ function roleAllyNear(p){
 function roleFlee(p,dt,want){
   roleSteer(p,want+Math.PI,dt,.05);roleThrust(p,dt,.07);
   if(!p.jumpT){
-    p.jumpT=G.t+180+Math.random()*60;
+    p.jumpT=G.t+180+rnd()*60;
     say("«"+p.name+"» уходит",70);
   }else if(G.t>=p.jumpT){
     logAdd("kill","«"+p.name+"» ушёл в прыжок · награда потеряна");
@@ -39001,7 +39154,7 @@ function pirateRoleTick(p,dt,d,want){
       fireShot(p.x,p.y,p.a,9,(p.dmg||3.5+sysDanger(G.sx,G.sy)*5)*1.6,p.owner||"pirate");
       /* пусковая — по таблице §5 у капитана (M367/M368): раз в несколько
          залпов уходит ракета, и её сбивают зениткой или уводят ловушкой */
-      if(typeof mslFoeFire==="function"&&pirateHas(p,"msl")&&Math.random()<.3)mslFoeFire(p);
+      if(typeof mslFoeFire==="function"&&pirateHas(p,"msl")&&rnd()<.3)mslFoeFire(p);
       p.cool=95;helmShotAt(p);
     }
   }else{
@@ -39019,7 +39172,7 @@ function pirateRoleTick(p,dt,d,want){
       p.called=1;
       const n=Math.min(2,ARMED_CAP-armedCount());
       for(let i=0;i<n;i++){
-        const a=Math.random()*TAU,seed=hashi(p.seed,i+1,0xBA);
+        const a=rnd()*TAU,seed=hashi(p.seed,i+1,0xBA);
         const hp0=(26+sysDanger(G.sx,G.sy)*70);
         G.pirates.push({x:p.x+Math.cos(a)*900,y:p.y+Math.sin(a)*900,vx:0,vy:0,a:a+Math.PI,
           hull:hp0,hullMax:hp0,name:pick(PIRATE_NAMES,rng(seed)),rank:0,seed,shipId:pirateShipId(seed),
@@ -39092,10 +39245,10 @@ function foeArmFire(p,fam,d){
     /* игла тонкая и частая; часть игл проходит поле насквозь — та же доля,
        что у вашего игольника */
     for(let i=0;i<3;i++){
-      const a=ang+(Math.random()-.5)*g.spread*8;
+      const a=ang+(rnd()-.5)*g.spread*8;
       fireShot(p.x,p.y,a,g.speed,g.dmg,own,g.type,g.range);
       const s2=shot(G.shots[G.shots.length-1]);
-      if(s2){s2.needle=1;s2.pass=Math.random()<(GUN_FAMILY.needle.pass||.45)?1:0;}
+      if(s2){s2.needle=1;s2.pass=rnd()<(GUN_FAMILY.needle.pass||.45)?1:0;}
     }
     return true;
   }
@@ -39199,7 +39352,7 @@ function pirateArmTick(p,dt){
   const L=pirateLoadout(p);
   /* зенитка идёт своей петлёй: ей нужна цель в воздухе, а не откат */
   if(L.guns.indexOf("flak")>=0&&typeof foeFlak==="function")foeFlak(p,dt);
-  if(p.jamT>0&&Math.random()<.5)return;      /* сам под помехой: половина мимо */
+  if(p.jamT>0&&rnd()<.5)return;      /* сам под помехой: половина мимо */
   const d=Math.hypot(G.ship.x-p.x,G.ship.y-p.y);
   if(!p.armCool)p.armCool={};
   const C=p.armCool;
@@ -39553,7 +39706,7 @@ function snapshot(){
        навсегда. Закрытая дверь не восстанавливается ни временем, ни загрузкой */
     offers:G.offers,folk:G.folk,ledger:G.ledger,folkSay:G.folkSay,late:G.late,toldOff:G.toldOff|0,   /* M225, M230 */
     told:G.told,lastDig:G.lastDig,
-    ts:Date.now()};
+    ts:wallNow()};
 }
 /* ══════════════ запись не имеет права убить полёт ══════════════
    30.08.2026 автор прислал журнал с поверхности: «Сбой кадра: Invalid string
@@ -39768,7 +39921,7 @@ function applySave(s){
       const v=s.rivals[id];
       if(!v||typeof v!=="object"||typeof v.who!=="string"||!RARE_BY_ID[id])continue;
       if(G.rareFound.indexOf(id)>=0)continue;   /* уже у вас — соперника нет */
-      G.rivals[id]={who:v.who,sx:v.sx|0,sy:v.sy|0,t:+v.t||Date.now()};
+      G.rivals[id]={who:v.who,sx:v.sx|0,sy:v.sy|0,t:+v.t||now()};
     }
   /* охотники (12o): счёт фракции к игроку — чистое следствие поступков, и
      мёртвый должен остаться мёртвым после перезагрузки */
@@ -39778,7 +39931,7 @@ function applySave(s){
       const h=s.hunted[k];
       if(!h||typeof h!=="object"||typeof h.cap!=="string")continue;
       G.hunted[k]={cap:h.cap,seed:h.seed|0,tier:clamp(h.tier|0,0,HUNT_TIERS.length-1),
-        made:+h.made||Date.now(),deeds:Math.max(0,h.deeds|0),
+        made:+h.made||now(),deeds:Math.max(0,h.deeds|0),
         dead:h.dead?1:0,paid:h.paid?1:0,seen:h.seen?1:0};
     }
   /* планета-узел (12n): решение игрока в ней есть — где он стоял, когда собрал
@@ -39791,7 +39944,7 @@ function applySave(s){
     const N={key:pn.key,sx:pn.sx|0,sy:pn.sy|0,idx:pn.idx|0,
       name:typeof pn.name==="string"?pn.name:"узел",
       res:res.length?res.slice(0,4):["iron"],stock:{},
-      made:+pn.made||Date.now(),last:+pn.last||Date.now(),
+      made:+pn.made||now(),last:+pn.last||now(),
       hauled:Math.max(0,pn.hauled|0),calls:Math.max(0,pn.calls|0)};
     if(pn.stock&&typeof pn.stock==="object")
       for(const k of N.res)N.stock[k]=clamp(+pn.stock[k]||0,0,PLANET_CAP);
@@ -39813,7 +39966,7 @@ function applySave(s){
       stage:built.length>=5?3:(built.length>=3?2:1),
       mood:clamp(+v.mood||0,0,100),fed:Math.max(0,+v.fed||0),
       stock:{},diet:{},built,
-      made:+v.made||Date.now(),last:+v.last||Date.now(),
+      made:+v.made||now(),last:+v.last||now(),
       asked:+v.asked||0,paid:Math.max(0,v.paid|0),raided:Math.max(0,v.raided|0),
       /* взят ли под руку (M198) — это РЕШЕНИЕ ИГРОКА, и оно необратимо, значит
          обязано пережить загрузку. Список полей здесь белый: не вписал — потерял
@@ -39839,7 +39992,7 @@ function applySave(s){
       fed:clamp(+v.fed||0,0,A.need),run:clamp(+v.run||0,0,A.need),
       bin:clamp(+v.bin||0,0,TIN_BIN),seen:v.seen|0,
       read:clamp(v.read|0,0,TIN_LOG),
-      last:+v.last||Date.now(),made:+v.made||Date.now()};
+      last:+v.last||now(),made:+v.made||now()};
   }
   /* Грохотун (12tb-grok): в экипаж он не входит, поэтому и хранится отдельно —
      что он ест, где копает, сколько площадок закрыл и объяснял ли он уже глифы.
@@ -39854,7 +40007,7 @@ function applySave(s){
     if(v.dug&&typeof v.dug==="object")
       for(const k in v.dug)if(/^-?\d+,-?\d+$/.test(k))dug[k]=1;
     G.grok={want:GROK_LIKE.indexOf(v.want)>=0?v.want:null,
-      state:st==="out"&&!(+v.due>Date.now())?"back":st,
+      state:st==="out"&&!(+v.due>now())?"back":st,
       sx:v.sx|0,sy:v.sy|0,due:+v.due||0,
       took:Math.max(0,v.took|0),taught:v.taught?1:0,dug};
   }
@@ -39887,7 +40040,7 @@ function applySave(s){
   G.doom=null;
   if(s.doom&&typeof s.doom==="object"&&s.doom.key){
     const d=s.doom;
-    G.doom={sx:d.sx|0,sy:d.sy|0,key:String(d.key),at:+d.at||Date.now(),
+    G.doom={sx:d.sx|0,sy:d.sy|0,key:String(d.key),at:+d.at||now(),
       known:!!d.known,folk:Math.max(0,d.folk|0),lifted:Math.max(0,d.lifted|0),
       landed:Math.max(0,d.landed|0),lost:Math.max(0,d.lost|0),
       to:(d.to&&typeof d.to==="object")?{sx:d.to.sx|0,sy:d.to.sy|0}:null,
@@ -39900,10 +40053,10 @@ function applySave(s){
   G.parrot=(s.parrot&&typeof s.parrot==="object"&&s.parrot.name)?{
     seed:s.parrot.seed>>>0,name:String(s.parrot.name).slice(0,24),
     who:String(s.parrot.who||"").slice(0,48),
-    since:+s.parrot.since||Date.now(),said:Math.max(0,s.parrot.said|0)}:null;
+    since:+s.parrot.since||now(),said:Math.max(0,s.parrot.said|0)}:null;
   G.heard=(Array.isArray(s.heard)?s.heard:[])
     .filter(h=>h&&(h.kind==="price"||h.kind==="pidgin"||h.kind==="yours"))
-    .map(h=>({t:+h.t||Date.now(),kind:h.kind,sx:h.sx|0,sy:h.sy|0,
+    .map(h=>({t:+h.t||now(),kind:h.kind,sx:h.sx|0,sy:h.sy|0,
       note:String(h.note||"").slice(0,64),
       words:Array.isArray(h.words)?h.words.map(x=>x|0):null,
       read:!!h.read,used:!!h.used}))
@@ -39951,7 +40104,7 @@ function applySave(s){
   /* ящик конторы (12ak, M345): части упакованы, кучи числом, час последнего визита */
   {const l=(s.locker&&typeof s.locker==="object")?s.locker:null;
    G.locker=l?{items:Array.isArray(l.items)?l.items.filter(it=>it&&(it.p||it.tool)):[],
-               res:(l.res&&typeof l.res==="object")?l.res:{},t:(typeof l.t==="number")?l.t:Date.now()}:null;}
+               res:(l.res&&typeof l.res==="object")?l.res:{},t:(typeof l.t==="number")?l.t:now()}:null;}
   G.wrecks={};
   if(s.wrecks&&typeof s.wrecks==="object")
     for(const k in s.wrecks){
@@ -39974,7 +40127,7 @@ function applySave(s){
      первая же покупка. */
   G.droneIds=Array.isArray(s.droneIds)?s.droneIds.map(n=>n|0):[];
   /* записи до M237 знают четыре поля: круг, номер и часы дописываются здесь */
-  if(typeof droneNormalize==="function"){const nw=Date.now();for(const d of G.drones)droneNormalize(d,nw);}
+  if(typeof droneNormalize==="function"){const nw=now();for(const d of G.drones)droneNormalize(d,nw);}
   /* новое поле с безопасным дефолтом: старые записи грузятся как «экипажа нет».
      Момент последнего начисления подтягиваем к текущему времени, иначе после
      долгого перерыва зарплата и добыча начислились бы задним числом дважды. */
@@ -40010,9 +40163,9 @@ function applySave(s){
     /* баржа (M294): плечи, курсор, отметка смены, скормлено, имя */
     barge:(c.barge&&Array.isArray(c.barge.legs))
       ?{legs:c.barge.legs.filter(k=>typeof k==="string").slice(0,ROUTE_MAX),cursor:c.barge.cursor|0,
-        t0:+c.barge.t0||Date.now(),fed:c.barge.fed|0,name:String(c.barge.name||"")}
+        t0:+c.barge.t0||now(),fed:c.barge.fed|0,name:String(c.barge.name||"")}
       :null,
-    tMs:Date.now(),paidMs:Date.now()
+    tMs:now(),paidMs:now()
   })).slice(0,8);
   G.allies=[];
   /* управляющие: новое поле с безопасным дефолтом, формат записи прежний.
@@ -40042,11 +40195,11 @@ function applySave(s){
     jobPast:(Array.isArray(m.jobPast)?m.jobPast:[]).filter(x=>jobDef(x)).slice(0,20),
     /* поручение переживает загрузку, но срок идёт заново: счётчики-маркеры
        (убитые пираты, выручка, вмешательства в приказы) живут только в сессии */
-    job:(m.job&&jobDef(m.job.id))?{id:m.job.id,t0:Date.now(),
+    job:(m.job&&jobDef(m.job.id))?{id:m.job.id,t0:now(),
       mins:Math.max(0,+m.job.mins||0),offer:m.job.offer?1:0,
       pick:m.job.pick|0,hold:m.job.hold?1:0,mark:0}:null,
     log:Array.isArray(m.log)?m.log.slice(0,8).map(e=>({t:+e.t||0,k:String(e.k||""),s:String(e.s||"")})):[],
-    tMs:Date.now()
+    tMs:now()
   })).slice(0,MGR_CAP);
   /* один домен — один управляющий: если запись пришла битой, лишних отбрасываем */
   const seen={};
@@ -40081,7 +40234,7 @@ function applySave(s){
    пропадает — она перестаёт записывать и говорит об этом прямо, чтобы человек
    понимал, в каком окне продолжать. Летать в ней по-прежнему можно. */
 let TAB_LIVE=true;
-const TAB_ID=Math.random().toString(36).slice(2)+Date.now().toString(36);
+const TAB_ID=uidRand().toString(36).slice(2)+wallNow().toString(36);
 let TAB_CH=null;
 try{
   TAB_CH=new BroadcastChannel("drift-tabs");
@@ -40154,7 +40307,7 @@ let cloudBusy=0,cloudLastTs=0;
    напоминание, а сообщение. */
 let CLOUD_ST={k:"",ts:0,said:""};
 function cloudMark(k){
-  CLOUD_ST.k=k;CLOUD_ST.ts=Date.now();
+  CLOUD_ST.k=k;CLOUD_ST.ts=wallNow();
   if(CLOUD_ST.said===k)return;                 /* об одном и том же — один раз */
   CLOUD_ST.said=k;
   if(k==="gone"){
@@ -40195,7 +40348,7 @@ if(typeof window!=="undefined"){
    часто, а сеть — единственное в игре, что умеет тормозить кадр. */
 function cloudPush(loud){
   if(!cloudOn()){if(loud)say("Вы не вошли в учётную запись");return;}
-  const now=Date.now();
+  const now=wallNow();
   if(!loud&&now-cloudBusy<20000)return;
   cloudBusy=now;
   /* та же охраняемая строка, что и у местной записи: голый snapshot() уходил
@@ -40360,7 +40513,7 @@ function applySaveRest(s){
         cryo:(b.cryo&&typeof b.cryo==="object")?{until:b.cryo.until|0,q:b.cryo.q|0}:null,
         log:Array.isArray(b.log)?b.log.slice(-24).map(x=>({n:x.n|0,k:String(x.k||""),
           t:String(x.t||"").slice(0,160)})):[],
-        tMs:Date.now(),built:+b.built||Date.now()};
+        tMs:now(),built:+b.built||now()};
     }
   G.base=null;
   G.fuseGen=Math.max(0,s.fuseGen|0);
@@ -40550,7 +40703,7 @@ function applySaveRest(s){
   G.trace=(s.trace&&typeof s.trace==="object")?Object.assign({day:"",left:0,hands:{},seen:0},s.trace):null;
   if(G.trace&&typeof G.trace.hands!=="object")G.trace.hands={};
   G.log=Array.isArray(s.log)
-    ? s.log.filter(e=>e&&typeof e.s==="string").slice(-LOG_MAX).map(e=>({t:+e.t||Date.now(),k:String(e.k||""),s:e.s}))
+    ? s.log.filter(e=>e&&typeof e.s==="string").slice(-LOG_MAX).map(e=>({t:+e.t||now(),k:String(e.k||""),s:e.s}))
     : [];
   G.logNew=0;
   /* Отметка «стол видели» служит и признаком формата: если её в записи нет,
@@ -40704,7 +40857,7 @@ function warClock(serverN){
   if(!(serverN>=0))return;
   const mine=chronNow();
   if(mine===serverN)return;
-  const want=(serverN*CHRON_SHIFT)+CHRON_EPOCH-Date.now()+1;
+  const want=(serverN*CHRON_SHIFT)+CHRON_EPOCH-now()+1;
   CHRON.off=want;
   warStoreSet({off:want});
   /* состояние пересчитывается на новый номер: старое было посчитано по чужим часам */
@@ -40718,7 +40871,7 @@ function warCall(a,body){
 /* ── взять новое: закрытые сводки после последней известной ── */
 function warPull(force){
   if(!warHere()||WAR_BUSY)return Promise.resolve(false);
-  const now=Date.now();
+  const now=wallNow();
   if(!force&&now-WAR_LAST<WAR_PULL_MS)return Promise.resolve(false);
   WAR_BUSY=1;WAR_LAST=now;
   return warCall("pull",{since:warLedLast()}).then(r=>{
@@ -40903,14 +41056,17 @@ addEventListener("mousemove",padsFadeIn);
    — кнопке РАЗОЙТИСЬ в подвале экрана. Экран открылся и тут же закрылся.
    Полсекунды после нажатия ДЕЙСТВИЯ клики по экранам не считаются. */
 let actPressT=-1e9;
+/* метки нажатий идут по часам игры (M441): на новых часах старые метки
+   ничего не значат, и незаконченный жест снимается, как при потере фокуса */
+LOOP_PHASE.push(()=>{actPressT=-1e9;ptr.clear();});
 addEventListener("click",e=>{
-  if(performance.now()-actPressT<500&&e.target.closest&&e.target.closest(".scr")){
+  if(now()-actPressT<500&&e.target.closest&&e.target.closest(".scr")){
     e.stopPropagation();e.preventDefault();
   }
 },true);
 document.querySelectorAll("[data-k]").forEach(b=>{
   const k=b.dataset.k;
-  const on=e=>{e.preventDefault();keys[k]=true;if(k==="act")actPressT=performance.now();b.classList.add("on");padsFadeIn();
+  const on=e=>{e.preventDefault();keys[k]=true;if(k==="act")actPressT=now();b.classList.add("on");padsFadeIn();
     if(k!=="act"&&k!=="fire"&&k!=="msl")G.ap=null;};
   const off=e=>{e.preventDefault();keys[k]=false;b.classList.remove("on");};
   b.addEventListener("pointerdown",on);b.addEventListener("pointerup",off);
@@ -41172,7 +41328,7 @@ addEventListener("wheel",e=>{
 const ptr=new Map();
 let pinch0=0,zoom0=1,mzoom0=1;
 cvs.addEventListener("pointerdown",e=>{
-  ptr.set(e.pointerId,{x:e.clientX,y:e.clientY,x0:e.clientX,y0:e.clientY,t0:performance.now(),moved:false});
+  ptr.set(e.pointerId,{x:e.clientX,y:e.clientY,x0:e.clientX,y0:e.clientY,t0:now(),moved:false});
   if(ptr.size===2){
     const [a,b]=[...ptr.values()];
     pinch0=Math.hypot(a.x-b.x,a.y-b.y)||1;zoom0=G.zoom;mzoom0=(typeof mapZoomK==="function")?mapZoomK():1;
@@ -41204,7 +41360,7 @@ cvs.addEventListener("pointermove",e=>{
 });
 function endPtr(e){
   const p=ptr.get(e.pointerId);
-  if(p&&!p.moved&&performance.now()-p.t0<400)tap(p.x0,p.y0);
+  if(p&&!p.moved&&now()-p.t0<400)tap(p.x0,p.y0);
   ptr.delete(e.pointerId);
 }
 cvs.addEventListener("pointerup",endPtr);
@@ -41266,7 +41422,7 @@ function tap(sxp,syp){
       const d=Math.hypot(sxp-x,syp-y);
       if(d<bd){bd=d;best={gx,gy};}
     }
-    const now=Date.now();
+    const now=clockNow();
     if(best&&bd<cell*.6){
       /* тап по звезде — выбор; ещё раз по той же — подробнее (M298) */
       if(G.sel.x===best.gx&&G.sel.y===best.gy)G.mapMore=!G.mapMore;
@@ -41533,12 +41689,15 @@ addEventListener("keydown",e=>{
 });
 addEventListener("keyup",e=>{if(HELM_KEYS.has(e.code))HELM.key[e.code]=false;});
 addEventListener("blur",()=>{HELM.key={};HELM.S=null;HELM.P=null;HELM.trail=[];HELM.mouse.down=false;HELM.mouse.rmb=false;});
+/* смена часов игры (M441) — как потеря фокуса: метки пальца и мыши сняты с
+   прежних часов, и на новых «свежий палец» из прошлого прогона ничего не решает */
+LOOP_PHASE.push(()=>{HELM.key={};HELM.S=null;HELM.P=null;HELM.trail=[];HELM.mouse.down=false;HELM.mouse.rmb=false;HELM.mouse.t=-1e9;});
 /* ── мышь над холстом ── */
 function helmCanvasXY(e){const rc=cvs.getBoundingClientRect();return [(e.clientX-rc.left)*W/rc.width,(e.clientY-rc.top)*H/rc.height];}
 cvs.addEventListener("pointermove",e=>{
   if(e.pointerType==="mouse"){
     const [x,y]=helmCanvasXY(e);
-    HELM.mouse.x=x;HELM.mouse.y=y;HELM.mouse.t=performance.now();HELM.mouse.on=true;
+    HELM.mouse.x=x;HELM.mouse.y=y;HELM.mouse.t=now();HELM.mouse.on=true;
     return;
   }
   const s=(HELM.S&&HELM.S.id===e.pointerId)?HELM.S:null;
@@ -41581,7 +41740,7 @@ cvs.addEventListener("pointerleave",e=>{if(e.pointerType==="mouse"){HELM.mouse.o
 cvs.addEventListener("pointerdown",e=>{
   if(G.mode!=="system")return;
   if(e.pointerType==="mouse"){
-    if(e.button===0)HELM.mouse.down=performance.now();
+    if(e.button===0)HELM.mouse.down=now();
     if(e.button===2)HELM.mouse.rmb=true;
     return;
   }
@@ -41591,7 +41750,7 @@ cvs.addEventListener("pointerdown",e=>{
      ждущий снимается, иначе зум на телефоне достался бы одному стику */
   const xy=helmCanvasXY(e);
   if(HELM.S||HELM.P){HELM.P=null;return;}
-  HELM.P={id:e.pointerId,x0:xy[0],y0:xy[1],x:xy[0],y:xy[1],t0:performance.now()};
+  HELM.P={id:e.pointerId,x0:xy[0],y0:xy[1],x:xy[0],y:xy[1],t0:now()};
 });
 function helmPtrEnd(e){
   if(e.pointerType==="mouse"){if(e.button===0)HELM.mouse.down=false;if(e.button===2)HELM.mouse.rmb=false;return;}
@@ -41669,7 +41828,7 @@ function helmShotAt(p){
 
 /* ── чтение трёх вводов в G.ctl: раз в кадр, до физики ── */
 function helmTick(dt){
-  const c=G.ctl||ctlReset(),sh=G.ship,K=HELM.key,now=performance.now();
+  const c=G.ctl||ctlReset(),sh=G.ship,K=HELM.key,now=clockNow();
   c.head=null;c.headK=1;c.turn=0;c.tx=0;c.ty=0;c.brake=false;c.thrOnly=false;c.fire=false;c.msl=false;
   c.assist=false;c.ax=0;c.ay=0;c.slow=false;
   let headBusy=false,input=false;
@@ -42059,8 +42218,8 @@ function helmDrawSticks(){
 /* ══════════════ фон ══════════════ */
 const STAR_COLS=[[255,206,158],[255,232,196],[228,240,252],[255,255,255],[176,206,255],[205,190,255]];
 const BG=[];
-for(let i=0;i<340;i++)BG.push({x:Math.random(),y:Math.random(),z:.2+Math.random()*.8,
-  ph:Math.random()*TAU, ci:Math.floor(Math.random()*STAR_COLS.length)});
+for(let i=0;i<340;i++)BG.push({x:rndFx(),y:rndFx(),z:.2+rndFx()*.8,
+  ph:rndFx()*TAU, ci:Math.floor(rndFx()*STAR_COLS.length)});
 /* Звёзды сгруппированы по цвету раз и навсегда. Мерцание — это прозрачность,
    а не цвет, поэтому оно уходит в `globalAlpha`: число, а не строка. Раньше
    каждая звезда собирала «rgba(…)» и заставляла холст разбирать CSS-цвет
@@ -42073,8 +42232,8 @@ const BG_GROUP=STAR_COLS.map((c,i)=>({css:"rgb("+c[0]+","+c[1]+","+c[2]+")",
    насыщенных — оранжевые гиганты и голубые горячие, по ним небо и перестаёт
    быть ровной крупой */
 const BG_BRIGHT=[];
-for(let i=0;i<14;i++)BG_BRIGHT.push({x:Math.random(),y:Math.random(),z:.86+Math.random()*.14,
-  ph:Math.random()*TAU,css:i%3?"rgb(255,150,92)":"rgb(130,176,255)"});
+for(let i=0;i<14;i++)BG_BRIGHT.push({x:rndFx(),y:rndFx(),z:.86+rndFx()*.14,
+  ph:rndFx()*TAU,css:i%3?"rgb(255,150,92)":"rgb(130,176,255)"});
 /* ── движение, а не мигание (П8; правило записано автором 27.08.2026) ──
    Звёзды всегда мерцали и никогда не тянулись: на полном ходу поле стояло и
    моргало, как на стоянке. Теперь звезда на ходу — прочерк вдоль вектора
@@ -42378,7 +42537,7 @@ function trailStep(dt,thrusting,turning,braking){
          выброшенный в пустоту, никуда не летит вместе с кораблём: он остаётся
          там, где выброшен. Отсюда и берётся дуга пройденного пути — лента
          просто висит на месте и гаснет. */
-      const spread=(Math.random()-.5)*.04, sp=(1.2+Math.random()*.3)*(.8+span*.4)*.4;
+      const spread=(rndFx()-.5)*.04, sp=(1.2+rndFx()*.3)*(.8+span*.4)*.4;
       /* лента живёт дольше, чем раньше (было 26): на глаз хвост читался обрубком
          сразу за соплом — видно, что двигатель работает, но не видно, откуда
          корабль пришёл. Дуга траектории — главное, что шлейф вообще сообщает */
@@ -42390,10 +42549,10 @@ function trailStep(dt,thrusting,turning,braking){
          струя. «Клинок» страдал сильнее всех: у него и скорость выше, и лента
          длиннее — обе величины растут от тяги. */
       const bx=ex-sh.vx*dt*.5, by=ey-sh.vy*dt*.5;
-      TRAIL.push({x:bx,y:by,hot:1,e:i,b:trailBurst,r:e.r*(.54+Math.random()*.08),
+      TRAIL.push({x:bx,y:by,hot:1,e:i,b:trailBurst,r:e.r*(.54+rndFx()*.08),
         max:40*span,life:40*span-.5,
         vx:-Math.cos(sh.a+spread)*sp, vy:-Math.sin(sh.a+spread)*sp});
-      TRAIL.push({x:ex,y:ey,hot:1,e:i,b:trailBurst,r:e.r*(.54+Math.random()*.08),
+      TRAIL.push({x:ex,y:ey,hot:1,e:i,b:trailBurst,r:e.r*(.54+rndFx()*.08),
         max:40*span,life:40*span,
         vx:-Math.cos(sh.a+spread)*sp, vy:-Math.sin(sh.a+spread)*sp});
     }
@@ -42403,7 +42562,7 @@ function trailStep(dt,thrusting,turning,braking){
      носовое сопло выбрасывает вправо, кормовое — влево. Пара струй крест-накрест
      и есть то, чем корабль разворачивают в пустоте. Раньше обе били туда же,
      куда шёл разворот, и картинка спорила с физикой. */
-  if(turning&&TRAIL.length<TRAIL_MAX-6&&Math.random()<.4){
+  if(turning&&TRAIL.length<TRAIL_MAX-6&&rndFx()<.4){
     const rr=G.ctl?G.ctl.out.rate:0;             // фактический поворот (M360); без него — по рулю
     const s=rr?(rr<0?-1:1):(keys.left?-1:1);     // -1 — разворот влево
     const jets=[[h.nose*.55, h.bw*.8*-s, -s],    // нос: газ наружу по борту -s
@@ -42413,17 +42572,17 @@ function trailStep(dt,thrusting,turning,braking){
       const pa=sh.a+Math.PI/2*j[2];
       /* струя короткая: это укол газа у борта, а не второй шлейф —
          длинная белая цепочка вдоль всего курса читалась как помеха */
-      TRAIL.push({x:ex,y:ey,hot:0,e:-1,r:1.4+Math.random(),max:9,life:6+Math.random()*3,
+      TRAIL.push({x:ex,y:ey,hot:0,e:-1,r:1.4+rndFx(),max:9,life:6+rndFx()*3,
         vx:sh.vx*.9+Math.cos(pa)*2.2, vy:sh.vy*.9+Math.sin(pa)*2.2});
     }
   }
   /* ── торможение: носовые маневровые бьют вперёд ── */
-  if(braking&&TRAIL.length<TRAIL_MAX-6&&Math.random()<.8){
+  if(braking&&TRAIL.length<TRAIL_MAX-6&&rndFx()<.8){
     for(const s of [-1,1]){
       const px=h.nose*.5, py=h.bw*.5*s;
       const ex=sh.x+(px*ca-py*sa)*eScale, ey=sh.y+(px*sa+py*ca)*eScale;
-      const pa=sh.a+(Math.random()-.5)*.5;       // газ вперёд по курсу
-      TRAIL.push({x:ex,y:ey,hot:0,e:-1,r:1.2+Math.random()*.9,max:11,life:7+Math.random()*4,
+      const pa=sh.a+(rndFx()-.5)*.5;       // газ вперёд по курсу
+      TRAIL.push({x:ex,y:ey,hot:0,e:-1,r:1.2+rndFx()*.9,max:11,life:7+rndFx()*4,
         vx:sh.vx*.85+Math.cos(pa)*2.4, vy:sh.vy*.85+Math.sin(pa)*2.4});
     }
   }
@@ -42557,7 +42716,7 @@ function sysNebulaTex(sys){
       sd:nsd,c1:st.neb[0],c2:st.neb[1],dirs,GN};
   }
   const J=NEB_JOB,S=J.S,d=J.img.data,sd=J.sd,c1=J.c1,c2=J.c2,dirs=J.dirs,GN=J.GN;
-  const t0=performance.now();
+  const t0=wallMs();
   while(J.y<S){
     const y=J.y++;
     for(let x=0;x<S;x++){
@@ -42582,7 +42741,7 @@ function sysNebulaTex(sys){
       d[o+2]=clamp(c1[2]*a+c2[2]*b*.9+f*120,0,255);
       d[o+3]=clamp((Math.pow(a,1.8)*.5+Math.pow(b,2.1)*.34+f*.16)*255,0,255);
     }
-    if(performance.now()-t0>NEB_MS)return null;
+    if(wallMs()-t0>NEB_MS)return null;
   }
   J.c.putImageData(J.img,0,0);
   sys.nebTex=J.cn;NEB_JOB=null;
@@ -44293,7 +44452,7 @@ function drawStationMods(sys,skipRod){
    систему не крутит барабан, а вернувшись через сутки, вы застанете другое.
    Взятое помнится (`G.findsSeen`) и не возвращается никогда. */
 const FIND_BUCKET=6*3600*1000;      /* шесть часов: не автомат, но и не навсегда */
-function findBucket(){return Math.floor(Date.now()/FIND_BUCKET);}
+function findBucket(){return Math.floor(now()/FIND_BUCKET);}
 const FIND_KINDS={
   sos: {ru:"сигнал бедствия",  col:"#ff6b57",act:"ПРИНЯТЬ СИГНАЛ"},
   sat: {ru:"спутник",          col:"#f2b25c",act:"СНЯТЬ ЗАПИСЬ"},
@@ -46034,7 +46193,7 @@ function jump(cost){
   if(typeof ringJump==="function")ringJump();        // Кольцо считает прыжки (M154)
   if(typeof expPaxJump==="function")expPaxJump();    // попутчик говорит по фразе за прыжок (M156)
   if(typeof traineeJump==="function")traineeJump();  // стажёр растёт по прыжкам (M163)
-  const a=Math.random()*TAU,r=1500;
+  const a=rnd()*TAU,r=1500;
   G.ship.x=Math.cos(a)*r;G.ship.y=Math.sin(a)*r;
   G.ship.vx=-Math.cos(a)*.7;G.ship.vy=-Math.sin(a)*.7;G.ship.a=a+Math.PI;
   G.mode="system";
@@ -46230,9 +46389,9 @@ function mapRulersDraw(V,cell,foot){
   ctx.fillStyle="#7fe6d8";ctx.fillText(L1,hx,hy);
   if(L2){ctx.fillStyle="#f2b25c";ctx.fillText(L2,hx,hy+12*U);}
   /* обводка найденной клетки — три секунды после поиска */
-  if(G.mapOutline&&Date.now()-G.mapOutline.t<3000){
+  if(G.mapOutline&&now()-G.mapOutline.t<3000){
     const c=mapCellXY(G.mapOutline.sx,G.mapOutline.sy,V,cell);
-    ctx.strokeStyle="rgba(242,178,92,"+(.9-(Date.now()-G.mapOutline.t)/3400).toFixed(2)+")";ctx.lineWidth=1.5;
+    ctx.strokeStyle="rgba(242,178,92,"+(.9-(now()-G.mapOutline.t)/3400).toFixed(2)+")";ctx.lineWidth=1.5;
     ctx.strokeRect(c.x-cell/2,c.y-cell/2,cell,cell);
   }
   /* выбранная пустая клетка — тонкий квадрат вместо прицела звезды */
@@ -46271,7 +46430,7 @@ function mapGoAddr(sx,sy){
   sx|=0;sy|=0;
   G.sel={x:sx,y:sy};
   if(typeof mapFit==="function")mapFit(sx,sy);else G.mapView={x:sx,y:sy};
-  G.mapMore=false;G.mapOutline={sx,sy,t:Date.now()};
+  G.mapMore=false;G.mapOutline={sx,sy,t:now()};
   if(typeof sfx==="function")sfx("ui");
   return true;
 }
@@ -46438,11 +46597,11 @@ function planetMat(p){
 /* допекаем по кадрам — зовётся из planetDraw рядом с развёрткой */
 function matTick(){
   const J=MAT_JOB;if(!J)return;
-  const t0=performance.now();
+  const t0=wallMs();
   let rows=0;
   while(J.y<J.S){
     matJobRows(J,MAT_ROWS);rows+=MAT_ROWS;
-    if(rows>=MAT_CAP||performance.now()-t0>MAT_MS)return;
+    if(rows>=MAT_CAP||wallMs()-t0>MAT_MS)return;
   }
   matJobDone(J);MAT_JOB=null;
 }
@@ -47223,7 +47382,7 @@ function mapOwnHere(gx,gy){
 function mapTagAt(gx,gy,now){
   if(typeof newsMarkAt!=="function")return null;
   const m=newsMarkAt(gx,gy);if(!m||m.what!=="сменился хозяин"||!m.t)return null;
-  const days=(( now===undefined?Date.now():now)-m.t)/86400e3;
+  const days=(( now===undefined?clockNow():now)-m.t)/86400e3;
   if(days>=3)return null;
   const dn=Math.floor(days);
   return {ru:"сменился хозяин · "+(dn?dn+" "+pl3(dn,"день","дня","дней")+" назад":"сегодня"),a:clamp(1-days/3,.15,1)};
@@ -47350,7 +47509,7 @@ function mapHoldingsTop(vis,cell,V,st){
       ctx.restore();
     }
     /* бирки перемен */
-    const now=Date.now();
+    const now=clockNow();
     for(const v of vis){
       const tg=mapTagAt(v.gx,v.gy,now);if(!tg)continue;
       mapFont(7);ctx.textAlign="left";
@@ -48783,7 +48942,7 @@ function scoopScrX(S,wx){return W*.34+(wx-S.x)*SCOOP_PX;}
 function drawScoop(){
   const S=G.scoop,p=S.p,[bt,bb]=scoopBandAt(S.x);
   const pal=p.T.pal;
-  const sh=(S.shake>0?(Math.random()-.5)*S.shake*7:0);
+  const sh=(S.shake>0?(rndFx()-.5)*S.shake*7:0);
   ctx.save();ctx.translate(0,sh);
   const T=giantTex(p);
   /* Два эшелона одной ленты: дальний крупный и медленный, ближний мельче и
@@ -48887,8 +49046,8 @@ function drawScoop(){
   }
   ctx.globalAlpha=1;
   /* гроза в нижних слоях: редкая вспышка снизу — там, куда лучше не опускаться */
-  if(Math.random()<.012){
-    const lx=Math.random()*W, ly=H*(.86+Math.random()*.1);
+  if(rndFx()<.012){
+    const lx=rndFx()*W, ly=H*(.86+rndFx()*.1);
     const fg=ctx.createRadialGradient(lx,ly,0,lx,ly,180);
     fg.addColorStop(0,"rgba(255,246,220,.5)");fg.addColorStop(1,"rgba(255,200,140,0)");
     ctx.fillStyle=fg;ctx.beginPath();ctx.arc(lx,ly,180,0,TAU);ctx.fill();
@@ -51272,7 +51431,7 @@ function drawLander(broken,fire,opt){
       ctx.fillStyle=rgba(h.dark,1);
       ctx.fillRect(bx-br*.9,by-br*.6,br*1.8,br*1.2);
       ctx.save();ctx.translate(bx,by);ctx.rotate(Math.PI/2);
-      drawFlame(0,0,br*.8,lvl*(.8+Math.random()*.25));
+      drawFlame(0,0,br*.8,lvl*(.8+rndFx()*.25));
       ctx.restore();
     }
   }
@@ -51346,7 +51505,7 @@ function drawAstronaut(o){
   ctx.save();
   ctx.scale(o.face||1,1);
   if(o.jet){   // ранцевый импульс при прыжке
-    const f=5+Math.random()*7;
+    const f=5+rndFx()*7;
     const g=ctx.createLinearGradient(0,4,0,4+f);
     g.addColorStop(0,"rgba(255,220,150,.9)");g.addColorStop(1,"rgba(255,110,60,0)");
     ctx.fillStyle=g;
@@ -52721,7 +52880,7 @@ function drawObserv(q,r,dark,lite,pal){
       кто их не строил. */
 const POI_FIND={
   wreck:  {ru:"остов корабля",note:"в разбитой рубке нашлась годная часть",
-           give:(r,d)=>{addPart(genPart(hashi(Date.now()&0xffffff,7,0x1E),tierFromDanger(d,r)));
+           give:(r,d)=>{addPart(genPart(hashi(now()&0xffffff,7,0x1E),tierFromDanger(d,r)));
              return "часть с обломков";}},
   temple: {ru:"храм",note:"на плитах вырезаны координаты",
            give:(r,d)=>{
@@ -53153,7 +53312,7 @@ function jetTick(body,g,dt,air){
     body.vy=Math.max(vmax,body.vy-g*2.3*dt);
     fire=true;
     S.jetSfx=(S.jetSfx||0)-dt;
-    if(S.jetSfx<=0){S.jetSfx=9;sfx("ui",{f:140+Math.random()*40,to:90,d:.16,v:.05});}
+    if(S.jetSfx<=0){S.jetSfx=9;sfx("ui",{f:140+rndFx()*40,to:90,d:.16,v:.05});}
   }else if(!(keys.thrust&&!air)){
     /* на земле с зажатой тягой запас не копится: иначе игрок стоит на кнопке
        и качает шкалу быстрее, чем тратит её в воздухе */
@@ -54052,10 +54211,10 @@ function updateSurface(dt){
     if(d<520){
       S.setSnd=(S.setSnd||0)-dt;
       if(S.setSnd<=0){
-        S.setSnd=120+Math.random()*160;
+        S.setSnd=120+rnd()*160;
         const v=.12*(1-d/520);
-        if(Math.random()<.6)sfx("ui",{f:180+Math.random()*60,to:90,d:.09,v});
-        else sfx("ui",{f:300+Math.random()*120,to:240,d:.18,v:v*.7});
+        if(rndFx()<.6)sfx("ui",{f:180+rndFx()*60,to:90,d:.09,v});
+        else sfx("ui",{f:300+rndFx()*120,to:240,d:.18,v:v*.7});
       }
     }
   }
@@ -54144,7 +54303,7 @@ function updateSurface(dt){
     const away=S.x-b.x;
     if(Math.abs(away)<70*kitStat().noise*(typeof vegaAboard==="function"&&vegaAboard()?1.3:1)){if(typeof vegaBeastShout==="function"&&Math.abs(away)<50)vegaBeastShout();b.shy=Math.min(1,b.shy+.02*dt);b.vx=-Math.sign(away)*.16*b.shy;}
     else{b.shy=Math.max(0,b.shy-.01*dt);
-      if(Math.random()<.004*dt)b.vx=(Math.random()<.5?-1:1)*(.06+Math.random()*.12);}
+      if(rnd()<.004*dt)b.vx=(rnd()<.5?-1:1)*(.06+rnd()*.12);}
     b.x=clamp(b.x+b.vx*dt,40,tr.W-40);
     b.y=groundAt(tr,b.x);
     if(b.vx)b.face=b.vx>0?1:-1;
@@ -54673,7 +54832,7 @@ function foundBase(p){
   for(let i=0;i<BASE_COLS*BASE_ROWS;i++)cells.push(null);
   cells[Math.floor(BASE_COLS/2)]={k:"reactor",hp:1};   // без энергии база мертва, поэтому реактор в подарок
   G.bases[baseKey(G.sx,G.sy,p.idx)]={sx:G.sx,sy:G.sy,idx:p.idx,name:p.name,type:p.type,
-    res:p.res.slice(0,3),cells,pool:{},tMs:Date.now(),built:Date.now()};
+    res:p.res.slice(0,3),cells,pool:{},tMs:now(),built:now()};
   tell("money","Заложена база на "+p.name+" · −2500 кр, 10 сплавов","База заложена\n"+p.name);
   return true;
 }
@@ -55152,7 +55311,7 @@ function baseShift(t){return holdShift(t);}
    минутных часов, и это единственное место, где `tMs` ещё нужен */
 function baseT0(B){
   if(typeof B.t0==="number")return B.t0;
-  B.t0=baseShift(B.tMs||Date.now());
+  B.t0=baseShift(B.tMs||now());
   return B.t0;
 }
 function baseSince(B,now){
@@ -55593,7 +55752,7 @@ function baseLifeLine(B){
    есть `CREW_OFFLINE_CAP`, только в сменах. */
 function baseResolve(B,now){
   if(!B)return 0;
-  now=now||Date.now();
+  now=now||clockNow();
   /* развалина (M402) не работает: в ней некому и нечем. Часы ей всё равно
      двигаем — по ним считается, когда в неё въедут. И ПАЛАТА (M408) считает
      тоже: сбор идёт за нахождение В РЕЕСТРЕ, а брошенная база из него не
@@ -55645,7 +55804,7 @@ function baseResolve(B,now){
    Зовётся из тех же трёх мест, откуда звался `baseTick`: вход в базу, кадр
    сцены и домашний стол. */
 function baseResolveAll(){
-  const now=Date.now();
+  const now=clockNow();
   for(const key in G.bases)baseResolve(G.bases[key],now);
 }
 
@@ -56216,7 +56375,7 @@ function baseGuestTake(B){
   const m=(typeof genMerc==="function")?genMerc(g.seed,null):{name:g.name,spec:"mine"};
   m.name=g.name;m.fee=0;m.role=g.role;
   const p=Object.assign(m,{cargo:{},order:{kind:"base",sx:B.sx,sy:B.sy,idx:B.idx},
-    tMs:Date.now(),paidMs:Date.now()});
+    tMs:now(),paidMs:now()});
   G.crew.push(p);
   /* если это был тот самый один из шести — через двое суток на складе недосчёт */
   if(g.bad)B.thief=((typeof baseShift==="function")?baseShift():0)+8;
@@ -63723,7 +63882,7 @@ function greenWatered(){
 function greenGrow(b){
   if(!b||!b.t)return 0;
   const k=greenWatered()?GREEN_VEGA:1;
-  return clamp((Date.now()-b.t)*k/GREEN_FULL,0,1);
+  return clamp((now()-b.t)*k/GREEN_FULL,0,1);
 }
 /* какие виды ещё не посеяны: реестр помнит порядок открытия, и сеется тот,
    что описан позже прочих — то есть тот, который ещё в руках */
@@ -63741,7 +63900,7 @@ function greenSow(){
   if(!greenCanSow())return null;
   const name=greenNext();
   G.bio=(G.bio|0)-1;                       /* уходит образец, как у управляющего */
-  const b={name,t:Date.now()};
+  const b={name,t:now()};
   greenAll().beds.push(b);
   logAdd("good","Посеяно у дома: "+name);
   tell("good","Посеяно: "+name,"ПОСЕЯНО\n"+name.toUpperCase()+
@@ -64988,11 +65147,11 @@ function updateCaveDeco(C,dt){
     }
   }
   if(D.splash&&(D.splash.t-=dt)<=0)D.splash=null;
-  if(drops.length<12&&Math.random()<.03*dt){
+  if(drops.length<12&&rnd()<.03*dt){
     const cand=[];
     for(const t of D.tips)if(t.up&&!t.col&&Math.abs(t.x-C.x)<W*.6)cand.push(t);
     if(cand.length){
-      const t=cand[Math.floor(Math.random()*cand.length)];
+      const t=cand[Math.floor(rnd()*cand.length)];
       drops.push({x:t.x+t.lean*t.L,y:t.y0+t.L,vy:.02,fy:caveFloorOf(C,t.x,t.low)});
     }
   }
@@ -67444,7 +67603,7 @@ function shatter(b,a,n,power,px,py,pz){
 function killRock(b,a,power){
   if(typeof groveOnKill==="function")groveOnKill(a,power);   /* роща помнит (11j) */
   if(b.grove&&a.grove){const gi=b.grove.indexOf(a);if(gi>=0)b.grove.splice(gi,1);}
-  shatter(b,a,9+Math.floor(Math.random()*6),power);
+  shatter(b,a,9+Math.floor(rnd()*6),power);
   const i=b.ast.indexOf(a);
   if(i>=0)b.ast.splice(i,1);       // выработанный камень не должен остаться невидимым препятствием
   if(b.lock===a){b.lock=null;b.prog=0;}
@@ -67656,7 +67815,7 @@ function updateBelt(dt){
       if(best.left<=0){
         /* выработанный камень иногда отдаёт узел: пояс — одно из мест,
            где они водятся (05a-nodes) */
-        nodeDrop("в поясе",sysDanger(G.sx,G.sy)+.2,hashi(best.seed||1,0xB7,Date.now()&0xffff));
+        nodeDrop("в поясе",sysDanger(G.sx,G.sy)+.2,hashi(best.seed||1,0xB7,now()&0xffff));
         /* редкость на адресе выработки (12m-rare): ключ — seed самого камня */
         if(typeof rareTake==="function")rareTake("belt",hashi(best.seed||1,0xB7,0xBEE7));
         say("Астероид выработан\n"+RES[best.res].ru);
@@ -67992,13 +68151,13 @@ function drawBelt(){
     if(t){
       const gx=W/2,gy=H*.86;
       for(const off of [-16,16]){
-        ctx.strokeStyle="rgba(242,178,92,"+(.45+Math.random()*.5).toFixed(2)+")";
+        ctx.strokeStyle="rgba(242,178,92,"+(.45+rndFx()*.5).toFixed(2)+")";
         ctx.lineWidth=2.2;
         ctx.beginPath();ctx.moveTo(gx+off,gy);ctx.lineTo(t.x,t.y);ctx.stroke();
       }
       ctx.fillStyle="rgba(255,220,150,.85)";
       for(let i=0;i<5;i++){
-        const u=Math.random();
+        const u=rndFx();
         ctx.fillRect(lerp(t.x,gx,u),lerp(t.y,gy,u),2,2);
       }
     }
@@ -68377,7 +68536,7 @@ function updateRaid(dt){
             logAdd("kill","На абордаже: "+(FOE_KINDS[f.kind]||FOE_KINDS.grunt).ru+" уничтожен");
             S.bag.data+=f.boss?12:3;
             nodeDrop("в рейде на базу",sysDanger(G.sx,G.sy)+(f.baron?.5:0),
-              hashi(f.seed,0x9D,Date.now()&0xffff),f.baron?1:0);
+              hashi(f.seed,0x9D,now()&0xffff),f.baron?1:0);
             /* редкость логова (12m-rare): только на бароне, ключ — сама система,
                так что у логова каждого сектора своя, стабильная */
             if(f.baron&&typeof rareTake==="function")rareTake("lair",hashi(G.sx,G.sy,0x1A18));
@@ -69544,7 +69703,7 @@ function wanKeeper(x,y,h){
 }
 function drawWanderRoom(){
   const S=wanAll();if(!S)return;
-  const g=wanGeom(),P=g.P,vp=g.vp,now=Date.now();
+  const g=wanGeom(),P=g.P,vp=g.vp,now=clockNow();
   const lots=wanLots();
   const sys=G.sys,pl=(sys&&sys.planets&&S.w.planetIx>=0)?sys.planets[S.w.planetIx]:null;
   const pal=(pl&&TYPES[pl.type])?TYPES[pl.type].pal:[[40,60,90],[60,90,120],[90,120,150],[120,150,180]];
@@ -69796,7 +69955,7 @@ function openWanderer(opts){
   const epoch=(opts.epoch!==undefined)?opts.epoch:w.epoch;
   const W2=(opts.epoch!==undefined)?Object.assign({},w,{epoch,dark:wanderLoop()[((epoch%WANDER_N)+WANDER_N)%WANDER_N].dark}):Object.assign({},w);
   if(opts.force)W2.forced=true;
-  G.wan={sx:G.sys.sx,sy:G.sys.sy,epoch,dark:!!W2.dark,cursor:0,t0:Date.now(),
+  G.wan={sx:G.sys.sx,sy:G.sys.sy,epoch,dark:!!W2.dark,cursor:0,t0:now(),
          from:G.mode==="wanderer"?"system":G.mode,seed:hashi(epoch|0,0x50A0,0xCA),
          said:0,flash:0,counter:false,w:W2};
   G.mode="wanderer";
@@ -69835,7 +69994,7 @@ function updateWanderRoom(dt){
     S.w=w;
     /* последний час: хранитель чиркает спичку — один раз, вспышка, «Туда.» */
     if(w.tLeft<3600e3&&!S.flash){
-      S.flash=1;S.flashT=Date.now();
+      S.flash=1;S.flashT=now();
       say(WANDER_LINES.leave1+"\n… "+WANDER_LINES.leave2,300);
       if(typeof peopleLine==="function")peopleLine(WANDER_LINES.leave1+" — "+WANDER_LINES.leave2,"хранитель «Сороки»",true);
     }
@@ -71743,7 +71902,7 @@ function globusAim(){
 }
 /* Раз в секунду, а не в кадр: и дёшево, и по существу прибора. */
 function globusTick(){
-  const s=Math.floor((typeof performance!=="undefined"?performance.now():Date.now())/1000);
+  const s=Math.floor(now()/1000);
   if(s===GLOB.t)return GLOB.aim;
   GLOB.t=s;
   GLOB.turn=(GLOB.turn+.055)%(Math.PI*2);   // шар повернулся на волосок
@@ -74411,7 +74570,7 @@ function mailOn(){
   return typeof location!=="undefined"&&location.protocol.indexOf("http")===0&&
          typeof traceId==="function"&&!!traceId();
 }
-function mailToday(){const d=new Date();return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();}
+function mailToday(){const d=new Date(now());return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();}
 function mailLeft(){
   const M=mailAll(),t=mailToday();
   if(M.day!==t){M.day=t;M.sent=0;}
@@ -74443,7 +74602,7 @@ function mailStack(ch){
   const M=mailAll();
   let st=M.st.find(x=>x.ch===ch);
   if(!st){
-    st={ch:ch,c:[],t:Date.now(),mute:0};
+    st={ch:ch,c:[],t:now(),mute:0};
     M.st.unshift(st);
     while(M.st.length>MAIL_STACK_MAX)M.st.pop();
   }
@@ -74451,10 +74610,10 @@ function mailStack(ch){
 }
 function mailPush(ch,card,mine){
   const st=mailStack(ch);
-  card.mine=mine?1:0;card.at=Date.now();
+  card.mine=mine?1:0;card.at=now();
   st.c.push(card);
   while(st.c.length>MAIL_CARDS_MAX)st.c.shift();
-  st.t=Date.now();
+  st.t=now();
   if(!mine)st.fresh=1;
   return st;
 }
@@ -74497,7 +74656,7 @@ function mailSend(s,ch,mv){
    выдают в нагрузку к заправке, её дослушивают вечером. */
 function mailDock(){
   if(!mailOn())return;
-  const now=Date.now();
+  const now=wallNow();
   if(now-mailBusy<45000)return;
   mailBusy=now;
   mailCall("in").then(j=>{
@@ -74673,14 +74832,14 @@ let ethCard=null,ethLine=0,ethHold=0,ethAsk=0;
 /* час можно подставить: иначе проверить окно можно было бы только вечером,
    то есть никогда — а окно тут вся веха */
 function mailNight(h){
-  h=(h==null)?new Date().getHours():h;
+  h=(h==null)?new Date(now()).getHours():h;
   return h>=ETH_H0||h<ETH_H1;
 }
 /* вечер считается по календарю ВЕЧЕРА, а не суток: час ночи принадлежит
    вчерашнему вечеру, иначе счёт «две за вечер» обнуляется в полночь и
    получается четыре */
 function mailEve(at){
-  const d=at?new Date(at.getTime()):new Date();
+  const d=at?new Date(at.getTime()):new Date(now());
   if(d.getHours()<ETH_H1)d.setDate(d.getDate()-1);
   return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();
 }
@@ -74707,7 +74866,7 @@ function ethTick(q){
     /* тишина между карточками: эфир не выдаёт их подряд без паузы */
     if(ethHold>0){ethHold--;return "…";}
     if(mailNightLeft()<=0)return "…на сегодня эфир пуст…";
-    const now=Date.now();
+    const now=wallNow();
     if(now-ethAsk<12000)return "…";
     ethAsk=now;
     mailCall("ask").then(j=>{
@@ -74799,10 +74958,10 @@ function probeCanBuild(){
 function probeBuild(){
   if(!probeCanBuild())return false;
   G.data-=PROBE_COST_DATA;G.credits-=PROBE_COST_CR;
-  const seed=hashi(G.sx,G.sy,(Date.now()&0x7fffffff))>>>0;
+  const seed=hashi(G.sx,G.sy,(now()&0x7fffffff))>>>0;
   const t=probeTarget(seed);
-  const p={seed,tsx:t.sx,tsy:t.sy,t0:Date.now(),
-           due:Date.now()+PROBE_WAIT+Math.floor((rng(seed^0x51A7)())*PROBE_SPREAD),
+  const p={seed,tsx:t.sx,tsy:t.sy,t0:now(),
+           due:now()+PROBE_WAIT+Math.floor((rng(seed^0x51A7)())*PROBE_SPREAD),
            done:0};
   probeAll().push(p);
   thingAdd("paper","Вымпел · расписка о запуске",
@@ -74814,7 +74973,7 @@ function probeBuild(){
 }
 /* готовый заговорить: первый по сроку, ещё не отзвучавший */
 function probeDue(){
-  const now=Date.now();
+  const now=clockNow();
   return probeAll().find(p=>!p.done&&now>=p.due)||null;
 }
 /* ── голос ──
@@ -75092,7 +75251,7 @@ function chessGame(ch){return chessAll().g[ch]||null;}
 function chessStart(ch,mine){
   const C=chessAll();
   if(C.g[ch])return C.g[ch];
-  C.g[ch]={mv:[],w:mine?1:0,t:Date.now()};
+  C.g[ch]={mv:[],w:mine?1:0,t:now()};
   return C.g[ch];
 }
 /* мой ли ход: белые ходят чётными номерами */
@@ -75105,13 +75264,13 @@ function chessMyTurn(ch){
 function chessCanMove(ch){
   const g=chessGame(ch);if(!g)return false;
   if(!chessMyTurn(ch))return false;
-  return (Date.now()-(g.sent||0))>=86400000||!g.sent;
+  return (now()-(g.sent||0))>=86400000||!g.sent;
 }
 function chessMove(ch,m){
   const g=chessGame(ch);if(!g)return false;
   if(!chessMyTurn(ch)||!chLegal(g.mv,m))return false;
   g.mv.push({f:m.f|0,t:m.t|0,p:m.p|0});
-  g.sent=Date.now();
+  g.sent=now();
   const s=chState(g.mv);
   if(s)logAdd("good","Ход послан · "+s);
   else logAdd("tech","Ход послан. Ответ придёт не скоро.");
@@ -76473,7 +76632,7 @@ function stTabFuse(){
 function renderSiteTab(){
   const sys=G.sys;if(!sys||!sys.station)return;
   const r=rungOf(sys.sx,sys.sy),pts=rungPoints(sys.sx,sys.sy);
-  const sites=bldSitesAt(sys.sx,sys.sy),built=bldBuiltHere(sys),now=Date.now();
+  const sites=bldSitesAt(sys.sx,sys.sy),built=bldBuiltHere(sys),now=clockNow();
   $body.appendChild(el("div","sec","СТРОЙКА · "+(sites?"ПЛОЩАДОК "+sites+" · ЗАНЯТО "+built.length:"ПЛОЩАДКИ ЕЩЁ НЕТ")+
     " · ЗДЕСЬ ВАС ЗОВУТ: "+rungAddress(r,sys.sx,sys.sy).toUpperCase()));
   if(r<11){
@@ -77502,7 +77661,7 @@ function crewRender(){
       b.onclick=()=>{if(ransomPay(c))crewRender();};
       rh.appendChild(b);$cvBody.appendChild(rh);
     }else if(c.state==="away"){
-      const left=Math.max(0,Math.ceil(((c.stateUntil||0)-Date.now())/3600000));
+      const left=Math.max(0,Math.ceil(((c.stateUntil||0)-now())/3600000));
       $cvBody.appendChild(el("div","row","<div class='nm'><b>В ЗАГУЛЕ</b><s>вернётся примерно через "+
         left+" ч · жалованье за это время не идёт</s></div>"));
     }
@@ -77907,7 +78066,7 @@ function grokBlock(){
 /* реплика бармена над стойкой (M299): ответ на вещь произносится в зале,
    а не только меняет строку списка */
 let cantBubble=null;
-function cantSay(line){cantBubble={line:String(line||"").replace(/^—\s*/,""),t:performance.now()};}
+function cantSay(line){cantBubble={line:String(line||"").replace(/^—\s*/,""),t:now()};}
 /* Зал: канва во всю ширину панели, по сидящему тыкают. Перерисовывается своим
    rAF, пока канва жива и вкладка та же, — иначе цикл продолжал бы крутиться
    после ухода со вкладки и жёг бы кадр впустую. */
@@ -79129,8 +79288,8 @@ function cantRoomBody(c,W2,H2,list,sel,hover,deals,folk){
   if(typeof holTreeUp==="function"&&holTreeUp()&&typeof holTree==="function")
     holTree(c,W2*0.93,fy+H2*0.10,fy*0.72,rgba(acc,.5));
   /* пузырь бармена (M299) */
-  if(typeof cantBubble!=="undefined"&&cantBubble&&performance.now()-cantBubble.t<5200){
-    const age=(performance.now()-cantBubble.t)/1000,al=age<.2?age/.2:(age>4.4?Math.max(0,(5.2-age)/.8):1);
+  if(typeof cantBubble!=="undefined"&&cantBubble&&now()-cantBubble.t<5200){
+    const age=(now()-cantBubble.t)/1000,al=age<.2?age/.2:(age>4.4?Math.max(0,(5.2-age)/.8):1);
     c.save();c.globalAlpha=al;
     c.font="9px ui-monospace,monospace";c.textAlign="left";
     const words=cantBubble.line.split(" "),lines=[];let cur0="";
@@ -79273,7 +79432,7 @@ function kinoWatch(){
 /* какой кадр журнала идёт прямо сейчас: журнал крутится сам, по часам */
 function kinoFrame(K){
   if(!K)return null;
-  const i=Math.floor(Date.now()/4200)%KINO_REEL.length;
+  const i=Math.floor(now()/4200)%KINO_REEL.length;
   return Object.assign({i},KINO_REEL[i]);
 }
 /* ── экран на стене ──
@@ -79362,7 +79521,7 @@ function kinoScreen(c,x,y,w,h,K,seed){
     c.fillRect(cx-w*.04,cy+h*.02,w*.08,h*.14);
   }
   /* зерно и дрожание кадра: без них полотно — просто белый прямоугольник */
-  const rg=rng(hashi(seed|0,Math.floor(Date.now()/120),9));
+  const rg=rng(hashi(seed|0,Math.floor(now()/120),9));
   c.fillStyle="rgba(0,0,0,.10)";
   for(let i=0;i<Math.round(w*h/240);i++)c.fillRect(x+rg()*w,y+rg()*h,1,1);
   c.fillStyle="rgba(255,255,255,.10)";
@@ -81024,10 +81183,10 @@ function dealAnswer(d,i){
     const L=opt.later;
     if(!G.dealsWait)G.dealsWait=[];
     const key="deal:"+d.key;
-    G.dealsWait.push({key,at:Date.now()+L.mins*60000,odds:L.odds,
+    G.dealsWait.push({key,at:now()+L.mins*60000,odds:L.odds,
       good:L.good,bad:L.bad,ru:L.ru});
     questAdd(key,{ru:L.ru,kind:"deal",from:"кантина «"+G.st.name+"»",
-      note:L.note,sx:G.sx,sy:G.sy,until:Date.now()+L.mins*60000,
+      note:L.note,sx:G.sx,sy:G.sy,until:now()+L.mins*60000,
       reward:"как выйдет: договаривались на слово"});
   }
   return true;
@@ -81038,7 +81197,7 @@ function dealAnswer(d,i){
    когда игрок открыл журнал. */
 function dealsTick(){
   const w=G.dealsWait;if(!w||!w.length)return;
-  const now=Date.now();
+  const now=clockNow();
   for(let i=w.length-1;i>=0;i--){
     const d=w[i];
     if(now<d.at)continue;
@@ -81180,7 +81339,7 @@ function modeRu(){return MODE_RU[G.mode]||"";}
 function thingsAll(){return (G.things||(G.things=[]));}
 function thingAdd(k,ru,note,extra){
   const L=thingsAll();
-  const th=Object.assign({k,ru,note:note||"",t:Date.now(),seen:0,sx:G.sx,sy:G.sy},extra||{});
+  const th=Object.assign({k,ru,note:note||"",t:now(),seen:0,sx:G.sx,sy:G.sy},extra||{});
   L.unshift(th);
   while(L.length>40)L.pop();
   if(tableOpenNow&&tableTab==="things")tableRender();else logBtnLabel();
@@ -81212,7 +81371,7 @@ function thingAdd(k,ru,note,extra){
 function tableNoticeAll(){
   thingsAll().forEach(t=>{t.noticed=1;});
   (G.strips||[]).forEach(t=>{t.noticed=1;});
-  G.tableSeen=Date.now();
+  G.tableSeen=now();
 }
 function tableNewThings(){return thingsAll().filter(t=>!t.noticed).length;}
 /* снимок «что было новым» на момент открытия — живёт, пока стол открыт */
@@ -81911,6 +82070,8 @@ function renderDeskTop(box){
    1. Пульт ничего не сочиняет и не хранит, кроме частоты (G.radioF).
    2. DOM обновляется раз в секунду с небольшим, не каждый кадр: это текст. */
 let conT=0,conLast="",conFresh=0,conHeld=null,conDwell=0,perchT=0;
+/* пульт пишет в журнал на своём такте — такт тоже фаза кадра (M441, 01-core) */
+LOOP_PHASE.push(()=>{conT=0;conFresh=0;conHeld=null;conDwell=0;});
 /* когда птицу на жёрдочке рисовали в последний раз, и как редко это надо
    делать (M421): иконка в сорок четыре пикселя не показывает позы */
 let PERCH_AT=-1e9;
@@ -82545,10 +82706,10 @@ function opisPanels(){
   });
 }
 /* ── действия: те же ручки, что и у прежнего экрана ── */
-function opisArmed(key){return !!(OPIS.arm&&OPIS.arm.key===key&&Date.now()-OPIS.arm.t<3000);}
+function opisArmed(key){return !!(OPIS.arm&&OPIS.arm.key===key&&now()-OPIS.arm.t<3000);}
 function opisConfirm(key,run){
   if(opisArmed(key)){OPIS.arm=null;run();return;}
-  OPIS.arm={key,t:Date.now()};opisRerender();
+  OPIS.arm={key,t:now()};opisRerender();
   setTimeout(()=>{if(OPIS.arm&&OPIS.arm.key===key){OPIS.arm=null;opisRerender();}},3100);
 }
 function opisFit(p,slot){
@@ -83437,7 +83598,7 @@ function roadAll(){
 }
 /* день — календарный: игровые сутки идут 60 секунд, и на них «за поездку»
    обнулялось раз в минуту прямо посреди дороги (M168g) */
-function roadToday(){const d=new Date();return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();}
+function roadToday(){const d=new Date(now());return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();}
 /* приток в бак: чистая функция, её и гоняют автотесты. Ранг множит и приток,
    и потолок — иначе у ветерана ставка вдвое, а бак кончается вдвое быстрее */
 function roadBankAdd(bank,ms,k){
@@ -83448,7 +83609,7 @@ function roadDayReset(now){
   const R=roadAll(),d=roadToday();
   if(R.day!==d){R.day=d;R.km=0;R.cr=0;}
   /* бак: старым сохранениям наливаем полный — они его ни разу не тратили */
-  const t=now==null?Date.now():now,rk=roadRank(R.total).k;
+  const t=now==null?clockNow():now,rk=roadRank(R.total).k;
   if(R.bank==null){R.bank=ROAD_BANK_MAX*rk;R.bts=t;}
   /* именно `==null`, а не `||`: отметка времени в ноль — законное значение, а
      на `||` она подменялась текущим временем, и приток молча не начислялся */
@@ -83887,7 +84048,7 @@ function roadOpen(){
   for(const k in keys)keys[k]=false;
   RD={kmh:0,bank:0,bankT:0,shake:0,kick:0,acc:0,accT:0,phase:0,wob:0,watch:null,an:null,eq:null,
       g0:null,g0T:0,side:0,blind:false,turn:0,turnT:0,xOff:0,yOff:0,emit:0,cxPrev:null,vmax:0,
-      lastPos:null,lastT:0,lastFrame:0,t0:Date.now(),asked:0,raf:0,moveT:0,stopT:0,crFrac:0,
+      lastPos:null,lastT:0,lastFrame:0,t0:now(),asked:0,raf:0,moveT:0,stopT:0,crFrac:0,
       energy:.2,bright:.5,avg:.1,beat:0,beatT:0,wave:new Array(28).fill(.2),
       sparks:[],pulses:[],crShow:0,hintT:0,coins:[],crSeen:-1,
       pos0:null,far:0,back:0,turnPk:0,flash:"",flashT:0,crTrip:0,kmTrip:0,
@@ -84065,8 +84226,8 @@ function drawRoad(ts){
       for(let i=0;i<h.eng.length;i++){
         const e=h.eng[i];
         RD.trail.push({x:bx+(e.x*co-e.y*si)*sc,y:by+(e.x*si+e.y*co)*sc+back,e:i,b:RD.burst,cx0:bx,
-          vx:(Math.sin(t*2.3+i*2.1)*.7+(Math.random()-.5)*.6)*W*(.045+burn*.055),
-          r:e.r*rk*sc*(.92+burn*.30+Math.random()*.08),max:span,life:Math.max(.02,span-back/flow)});
+          vx:(Math.sin(t*2.3+i*2.1)*.7+(rndFx()-.5)*.6)*W*(.045+burn*.055),
+          r:e.r*rk*sc*(.92+burn*.30+rndFx()*.08),max:span,life:Math.max(.02,span-back/flow)});
       }
     }
   }
@@ -84652,7 +84813,7 @@ function roadSky(c,W,H,t,dt,spd,tier,fast,hue,en){
     c.globalAlpha=1;c.restore();
   }
   if(RD.beat>.6&&RD.sparks.length<24)
-    RD.sparks.push({x:W*(.1+Math.random()*.8),y:-20,v:2+Math.random()*3+fast*6,life:1,big:Math.random()<.2});
+    RD.sparks.push({x:W*(.1+rndFx()*.8),y:-20,v:2+rndFx()*3+fast*6,life:1,big:rndFx()<.2});
   for(let i=RD.sparks.length-1;i>=0;i--){
     const s=RD.sparks[i];
     s.y+=s.v*(H/700)*60*dt;s.life-=.24*dt;
@@ -85125,7 +85286,7 @@ const HUD_STEP=[.75,.75,.5,.5,1.5];
 let HUD_PREV=null, HUD_T=0;
 const $hudp=document.querySelector(".hud");
 function hudWake(vals,alarm){
-  const now=performance.now();
+  const now=clockNow();
   if(HUD_PREV){
     for(let i=0;i<vals.length;i++)
       if(Math.abs(vals[i]-HUD_PREV[i])>=HUD_STEP[i]){HUD_T=now;break;}
@@ -85498,7 +85659,7 @@ function wreck(){
   sfx("boom",{v:1});stopEngine();
   const st=stat();
   G.hull=Math.round(st.hullMax*.45);G.fuel=Math.max(G.fuel,30);
-  const a=Math.random()*TAU;
+  const a=rnd()*TAU;
   G.ship.x=Math.cos(a)*1600;G.ship.y=Math.sin(a)*1600;
   G.ship.vx=0;G.ship.vy=0;G.mode="system";G.ap=null;G.belt=null;G.dig=null;G.cave=null;G.surf=null;G.land=null;
   G.pirates=[];G.shots=[];   /* без этого авария у пиратов превращается в петлю */
@@ -85580,8 +85741,22 @@ function audioTick(dt){
 }
 
 /* ══════════════ цикл ══════════════ */
-let last=performance.now();
+let last=wallMs();
 let lastDroneTick=0;
+/* ── шаг на прибитых часах (M441) ──
+   На настоящих часах шаг кадра меряется rAF: сколько прошло, столько и
+   прожито, — и потому два прогона одной сцены никогда не совпадали бы: у
+   каждого своя машина и свои паузы. На прибитых (`clockSet`, 01-core) шаг
+   постоянный: кадр — это ровно FRAME_MS игрового времени, часы двигает сам
+   кадр, потолок кадров и авторазрешение молчат (оба судят настоящую
+   развёртку). Сколько кадров — столько времени, и мир повторяется кадр в кадр.
+   `loopReset` зовётся из clockSet: смена часов рвёт фазу — редкий такт и
+   замер шага начинаются заново, иначе второй прогон унаследовал бы фазу
+   первого. */
+const FRAME_MS=16.667;
+function loopReset(){last=wallMs();lastDroneTick=0;capPrev=0;capN=0;
+  lastFuelWarn=0;lastHullWarn=0;sndWalk=0;
+  for(const f of LOOP_PHASE)f();}
 /* ── потолок кадров ──
    Единственный рычаг, который снимает нагрузку с ВИДЕОКАРТЫ, ничего не упрощая
    в картинке: тридцать кадров рисуют ровно вдвое меньше пикселей, чем
@@ -85724,6 +85899,12 @@ function frameBody(now){
   /* канва нулевого размера (страница поднялась скрытой) — чинится здесь же:
      иначе кадр падает на drawImage и игра стоит до первого resize */
   if(W<2||H<2){resize();if(W<2||H<2){return;}}
+  const tReal=now,pin=clockPinned();
+  let dt;
+  if(pin){
+    /* прибитые часы: шаг постоянный, часы двигает кадр (см. FRAME_MS) */
+    clockAdvance(FRAME_MS);now=clockNow();dt=1;
+  }else{
   if(capPrev){
     const d=now-capPrev;
     /* «самый короткий за последнее время»: медленно отпускаем оценку вверх,
@@ -85739,7 +85920,8 @@ function frameBody(now){
     capN=0;
   }else capN=0;
   resAuto(now-last);
-  const dt=clamp((now-last)/16.667,0,3);last=now;
+  dt=clamp((now-last)/16.667,0,3);last=now;
+  }
   /* второй рубеж против залипших клавиш: событие blur приходит не всегда —
      фокус, ушедший в DevTools того же окна, его может не поднять. Пока страница
      не в фокусе, нажатым не может быть ничего по определению, и кадр это
@@ -85790,7 +85972,7 @@ function frameBody(now){
     if(typeof rackDraw==="function")rackDraw();
   }else{
     ctx.fillStyle="#05070c";ctx.fillRect(0,0,W,H);
-    G.t=now*.06;drawNebula(now*.004,0,1);drawStars(now*.004,0,1);
+    G.t=tReal*.06;drawNebula(tReal*.004,0,1);drawStars(tReal*.004,0,1);
   }
 }
 /* ══════════════ кадр, который не убивает игру (M234) ══════════════
@@ -85843,14 +86025,14 @@ function crashSay(e,where){
        этой улики и не хватает в PLAN («у зависания автора причины нет»).
        Поэтому повтор считается молча, но раз в пятнадцать секунд напоминает
        о себе и называет счёт. */
-    const now=Date.now();
+    const now=wallNow();
     if(now-crashSaidAt<15000)return;
     crashSaidAt=now;
     try{say("СБОЙ · "+m+"\nповторяется · "+crashN+" раз\nигра идёт дальше — сохранитесь");}catch(_){}
     try{logAdd("warn","Сбой кадра повторяется: "+m+" · "+crashN+" раз");}catch(_){}
     return;
   }
-  crashLast=m;crashSaidAt=Date.now();
+  crashLast=m;crashSaidAt=wallNow();
   if(crashSaid++<3){try{console.error("DRIFT:",e);}catch(_){}}
   try{say("СБОЙ · "+m+"\nигра идёт дальше — сохранитесь");}catch(_){}
   try{logAdd("warn","Сбой кадра: "+m);}catch(_){}
@@ -85930,13 +86112,13 @@ function prof(N,mute){
   const names=Object.keys(window).filter(k=>typeof window[k]==="function"&&/^(draw[A-Z]|fill[A-Z]|b[A-Z][a-z]|hud$)/.test(k)&&k!=="drawChunks");
   const T={},orig={};
   for(const n of names){orig[n]=window[n];
-    window[n]=function(){const t=performance.now();try{return orig[n].apply(this,arguments);}finally{T[n]=(T[n]||0)+performance.now()-t;}};}
+    window[n]=function(){const t=wallMs();try{return orig[n].apply(this,arguments);}finally{T[n]=(T[n]||0)+wallMs()-t;}};}
   if(mute&&orig[mute])window[mute]=function(){};
   let js=0,ras=0;
   try{
     for(let i=0;i<N;i++){
-      const t0=performance.now();G.t+=1;M[0](1);M[1]();hud();
-      const t1=performance.now();ctx.getImageData(0,0,1,1);const t2=performance.now();
+      const t0=wallMs();G.t+=1;M[0](1);M[1]();hud();
+      const t1=wallMs();ctx.getImageData(0,0,1,1);const t2=wallMs();
       if(i>=3){js+=t1-t0;ras+=t2-t1;}
     }
   }finally{for(const n in orig)window[n]=orig[n];}
@@ -85984,11 +86166,11 @@ function dbg(){
      звучит и при тридцати кадрах, и при намертво удерживающем состоянии.
      Заодно следим за скоростью и топливом: «жжёт и не едет» — отдельная
      болезнь, и её надо называть отдельно от просадки кадров. */
-  let n=0,t0=performance.now(),lt=t0,mx=0,slow=0;
+  let n=0,t0=wallMs(),lt=t0,mx=0,slow=0;
   const v0=Math.hypot(sh.vx,sh.vy),f0=G.fuel;
   return new Promise(r=>{
     (function f(){
-      const t=performance.now(),d=t-lt;lt=t;
+      const t=wallMs(),d=t-lt;lt=t;
       if(n++){mx=Math.max(mx,d);if(d>25)slow++;}
       if(t-t0<1000)requestAnimationFrame(f);
       else{
@@ -86800,7 +86982,7 @@ function hinFolkTick(dt){
     }
     if(f.pose==="walk"){
       const d=f.tx-f.x;
-      if(Math.abs(d)<3){f.pose=Math.random()<.5?"stand":"work";f.t=200+Math.random()*300;}
+      if(Math.abs(d)<3){f.pose=rnd()<.5?"stand":"work";f.t=200+rnd()*300;}
       else{f.face=d>0?1:-1;f.x+=f.face*Math.min(1.05,Math.abs(d))*dt*.7;f.walk=(f.walk||0)+dt*.22;}
     }
   }
@@ -88230,7 +88412,7 @@ function winTake(o){
     pw:{heat:3,air:3,light:2,ant:1},
     faults:[],diary:[],wall:0,cold:0,dark:0,
     home:{sx:G.sx,sy:G.sy},
-    t0:Date.now(),done:0};
+    t0:now(),done:0};
   thingAdd("paper","Наряд на зимовку · "+o.pname,
     "месяц один · держать баланс, вести дневник, дождаться баржи · оплата по возвращении");
   /* нанимают зимовщика у стойки, но запись не имеет права падать, если

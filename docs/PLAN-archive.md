@@ -8584,3 +8584,25 @@ Struck entries' bodies as they stood in PLAN.md; the one-line heads stay there.
   at once: the prompt's hardcoded `right:128px` against a rail that is 129 wide on the map (now off
   the measured `--railw`), and `resetWorld` not leaving the road companion — after any click sweep
   the whole page was invisible and every later layout guard measured nothing.
+
+## M441 — determinism in the game (0.428.0, 10.09.2026)
+
+The brief: `rnd()`/`now()` in `01-core`, the 114 `Math.random` and 245 `Date.now` migrated by script,
+a static law against raw calls, the same-hash test (two runs, one seed, equal `G` hash every hundred
+frames over `lookScenes`); kill the by-the-hour reds («план: комбинат», the M391 air suite of 0.427.1)
+at the root. Why first: replays, golden frames, seed distributions and the cloud save all stand on it,
+and hiding the overrides in the harness would have made the tests repeatable and left the game on sand
+(`docs/DESIGN-tests.md` §3.5).
+
+What was done: two streams, not one — `rnd()` for everything that lands in `G`, `rndFx()` for picture,
+sound and speech, so drawing or skipping a frame cannot shift the world (a Chrome suite checks the `rnd()`
+position after a drawn and an undrawn frame). Migration counts: `Math.random` 35 state / 77 picture / 1 uid;
+`Date.now` 217 game / 14 real; `performance.now` 13 game (input, helm, bubbles, globus) / 15 real; `new Date()`
+9 game. On a pinned clock `frameBody` advances the clock by exactly 16.667 ms per frame and skips the fps
+cap and auto-resolution; `LOOP_PHASE` holds the modules' own every-N-frames counters, reset by `clockSet`.
+`stateHash()` covers plain data reachable from `G` (exact number bits, sorted keys, Map/Set, typed arrays,
+cycles), plus the `rnd()` position and the clock; it skips functions, canvas/DOM/class instances, `_` keys,
+the map backdrop and `G.prompt`; `stateHashParts()` hashes per top-level key. The law lives in `build.ps1`
+because every tier, the deploy and the lab pass through the build; a violation deletes the old `tests.html`
+so no tier can go green on yesterday's build. The M391 suites now call `bCalm` (the clock moved to a stretch
+where the base director's own forecast is calm) instead of `bNoDir`; red at 03:00 and 13:00 without it.

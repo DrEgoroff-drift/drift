@@ -261,10 +261,11 @@ of place from §3 there: a law becomes a detector, a player's path becomes a sce
 becomes a Node suite — nothing else becomes a suite, and the existing 809 are frozen (fix reds,
 extract tools, do not extend). Order is strict: determinism first, everything after stands on it.
 
-- **M441 determinism in the game** — `rnd()`/`now()` in `01-core`, the 114 `Math.random` and
-  245 `Date.now` migrated by script, a static law against raw calls, the same-hash test (two runs,
-  one seed, equal `G` hash every hundred frames over `lookScenes`). Kills the by-the-hour reds
-  («план: комбинат», the M391 air suite of 0.427.1) at the root.
+- ~~**M441 determinism in the game**~~ — 0.428.0: `rnd`/`rndFx`/`now`/`clockSet` in `01-core`, ~400
+  calls migrated, the build law, `stateHash` + the same-hash suite over `lookScenes`, `resetWorld`
+  pins seed and clock (`?hour=`), `bNoDir` gone. Open: the fuzz seed into `rndSeed`; `TEST_T0` is
+  12:00 *local* (green in UTC, LA, Auckland); a drawn run's full hash differs from an undrawn one
+  (draw fills lazy caches in `G`) — only the `rnd()` position is compared, a detector for M443.
 - **M442 the test API and the harness rules** — `tests/90a-tools.js` (actuators `go/press/tap/
   drag/wheel/wait/advance/window/give/board/bot`, observers `frame/state/look/ledger/text/
   controls/clock`) extracted from `hands`, `promise`, `look`, `fuzz`, `keys`; `docs/stand.py` over
