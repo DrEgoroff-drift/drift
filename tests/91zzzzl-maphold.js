@@ -41,16 +41,16 @@ TEST_SUITES.push(()=>suite("владения: под трассой пираты
   resetWorld();
   /* станция с флотом: рунг ≥ 5 — подменяем ступень, как делает стенд */
   const r0=rungOf;
-  const now0=Date.now;
+  const now0=now();
   try{
-    let T=Date.now();Date.now=()=>T;
+    let T=now();
     rungOf=()=>6;
     const S=nearestStation(0,0);
     ok(mapUnderTrassa(S.sx,S.sy),"станция шестой ступени — под трассой");
     G.occ={};occSet(S.sx,S.sy,3);
     G.occT=T;
     /* каждый такт занятости берёт случайную занятую систему — она одна */
-    for(let i=0;i<8&&occLvl(S.sx,S.sy);i++){T+=OCC_PERIOD+1;occTick();}
+    for(let i=0;i<8&&occLvl(S.sx,S.sy);i++){T+=OCC_PERIOD+1;clockSet(T);occTick();}
     eq(occLvl(S.sx,S.sy),0,"за несколько тактов занятость под трассой сошла на нуль");
     /* и не занимают: соседний очаг не ползёт на трассу */
     rungOf=r0;
@@ -59,7 +59,7 @@ TEST_SUITES.push(()=>suite("владения: под трассой пираты
     if(nb){
       rungOf=(sx,sy)=>(sx===S.sx&&sy===S.sy)?6:0;
       occSet(nb[0],nb[1],OCC_MAX);G.occT=T;
-      for(let i=0;i<30;i++){T+=OCC_PERIOD+1;occTick();}
+      for(let i=0;i<30;i++){T+=OCC_PERIOD+1;clockSet(T);occTick();}
       eq(occLvl(S.sx,S.sy),0,"тридцать тактов — трасса не занята");
     }else ok(true,"у станции нет соседей — расползание не меряем");
     rungOf=r0;
@@ -74,6 +74,6 @@ TEST_SUITES.push(()=>suite("владения: под трассой пираты
     const t2=mapTagAt(3,3,T+2*86400e3);
     ok(!!t2&&/2 дня/.test(t2.ru)&&t2.a<tg.a,"через двое суток — «2 дня назад», бледнее");
     eq(mapTagAt(3,3,T+3*86400e3+1),null,"через трое суток бирки нет");
-  }finally{rungOf=r0;Date.now=now0;}
+  }finally{rungOf=r0;clockSet(now0);}
   G.occ={};G.newsMarks={};
 }));

@@ -16,7 +16,7 @@ TEST_SUITES.push(()=>suite("управляющий: найм, домен и до
   m.route=["0,0","1,1"];
   if(!mgrRule(m,"run"))mgrToggleRule(m,"run");
   const before=G.credits,tookBefore=m.tookCr|0;
-  m.tMs=Date.now()-60000*10;
+  m.tMs=now()-60000*10;
   mgrTick();
   ok(m.earned>0,"маршрут принёс деньги: "+m.earned);
   ok(m.tookCr>tookBefore,"и он снял с них свою долю");
@@ -57,7 +57,7 @@ TEST_SUITES.push(()=>suite("управляющий: не платят — ухо
   const m=mgrOf("cmd");
   m.shipId="obod";m.loy=20;
   G.credits=0;
-  m.tMs=Date.now()-60000*60;
+  m.tMs=now()-60000*60;
   mgrTick();
   eq(G.mgrs.length,0,"на нуле лояльности он ушёл");
   ok(!G.owned.obod,"и забрал флагман");
@@ -71,7 +71,7 @@ TEST_SUITES.push(()=>suite("исследователь: образцы, наук
   m.perks=["draft"];m.rules=["rare","queue"];m.loy=80;
   G.cargo[RARE_RES[0]]=4;
   const d0=G.data;
-  m.tMs=Date.now()-60000*60;
+  m.tMs=now()-60000*60;
   mgrTick();
   ok(G.data>d0,"разбор образцов дал науку");
   ok(G.cargo[RARE_RES[0]]<4,"и съел редкое сырьё из трюма");
@@ -132,7 +132,7 @@ TEST_SUITES.push(()=>suite("поручение: цель, срок и прова
   hireMgr(genMgr(4242,["cmd"]));
   const m=mgrOf("cmd");m.loy=70;
   /* цель считается по обычному состоянию игры, а не по счётчику ради квеста */
-  m.job={id:"showfight",t0:Date.now(),mins:25,offer:1};
+  m.job={id:"showfight",t0:now(),mins:25,offer:1};
   ok(jobAccept(m),"поручение принято");
   eq(m.job.offer,undefined,"предложение стало работой");
   jobTick(m);
@@ -143,7 +143,7 @@ TEST_SUITES.push(()=>suite("поручение: цель, срок и прова
   ok(mgrPoints(m)>0,"награда — очко перка вне очереди");
   /* «тишина в эфире» ломается любым вашим приказом — и он это помнит */
   const loy0=m.loy;
-  m.job={id:"silence",t0:Date.now(),mins:18,mark:G.orderStamp|0};
+  m.job={id:"silence",t0:now(),mins:18,mark:G.orderStamp|0};
   jobTick(m);
   ok(!!m.job,"пока вы молчите, поручение идёт");
   G.orderStamp++;                       // влезли с приказом
@@ -156,7 +156,7 @@ TEST_SUITES.push(()=>suite("поручение: выбор стоит денег
   G.credits=300000;
   hireMgr(genMgr(4242,["cmd"]));
   const m=mgrOf("cmd");m.loy=60;
-  m.job={id:"honor",t0:Date.now(),mins:0,offer:1};
+  m.job={id:"honor",t0:now(),mins:0,offer:1};
   const cr=G.credits,loy=m.loy;
   ok(jobPick(m,0),"вариант «выкупить» выбран");
   ok(G.credits<cr,"он списал деньги");
@@ -164,7 +164,7 @@ TEST_SUITES.push(()=>suite("поручение: выбор стоит денег
   ok(!m.job,"сцена закрылась");
   /* одно и то же поручение не приходит дважды */
   ok((m.jobPast||[]).indexOf("honor")>=0,"поручение ушло в прошедшие");
-  m.job={id:"honor",t0:Date.now(),mins:0,offer:1};
+  m.job={id:"honor",t0:now(),mins:0,offer:1};
   const pool=MGR_JOBS.filter(J=>J.role==="cmd"&&(m.jobPast||[]).indexOf(J.id)<0);
   ok(pool.length<MGR_JOBS.filter(J=>J.role==="cmd").length,"пул поручений сузился");
 }));

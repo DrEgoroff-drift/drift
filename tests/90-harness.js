@@ -182,9 +182,20 @@ if(typeof tab!=="undefined")UI_BOOT.tab=tab;
 if(typeof stGroup!=="undefined")UI_BOOT.stGroup=stGroup;
 if(typeof tableTab!=="undefined")UI_BOOT.tableTab=tableTab;
 
+/* ── мир начинается с одного семени и в одну минуту (M441) ──
+   Семя и часы — не подмена в тестах, а те же rndSeed/clockSet, которыми игра
+   живёт сама (01-core): каждый набор стартует в 12:00 10.09.2026 по местному
+   времени и на одном семени, и исход больше не зависит от того, в котором часу
+   его гоняют. Набору, которому нужен другой час или сутки вперёд, — clockSet
+   прямо в нём. `?hour=3` двигает стартовый час всему прогону: так проверяется,
+   что зелёное не держится на полудне (test-node.js --hour=3). */
+const TEST_SEED=0x0D441;
+const TEST_HOUR=(()=>{const m=/[?&]hour=(\d{1,2})/.exec(location.search||"");return m?Math.min(23,+m[1]):12;})();
+const TEST_T0=new Date(2026,8,10,TEST_HOUR,0,0,0).getTime();
 /* полный сброс мира: то же, что «начать заново», но без перезагрузки страницы */
 let TEST_CHRON=null;
 function resetWorld(){
+  rndSeed(TEST_SEED);clockSet(TEST_T0);
   for(const k of Object.keys(G))if(!G_BOOT_KEYS.has(k))delete G[k];
   /* летопись в наборах — тихая и одна на весь прогон (M412): семьи механик
      читают её происшествия, и живая история в любой день подкладывала
@@ -256,7 +267,7 @@ function resetWorld(){
   G.parrot=null;G.heard=[];G.trade=routeInit();G.market={};G.wear={};G.findsSeen={};
   G.mgrs=[];G.blueprints={};G.cantina=null;G.aiRift=null;
   G.orderStamp=0;G.kills=0;G.soldTotal=0;
-  G.pirates=[];G.shots=[];G.log=[];G.prompt="";G.msg="";
+  G.pirates=[];G.shots=[];G.log=[];G.logNew=0;G.prompt="";G.msg="";G.msgT=0;   /* logNew и msgT ехали из набора в набор (нашёл тест хэша, M441) */
   G.t=0;G.running=true;
   for(const k in keys)keys[k]=false;
   actEdge=false;prevAct=false;

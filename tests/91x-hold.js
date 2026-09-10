@@ -10,7 +10,7 @@ function holdTestStation(){
 TEST_SUITES.push(()=>suite("холдинг: аппетит станции — первые N в смену с надбавкой",()=>{
   resetWorld();
   ok(HOLD_SHIFT===20*60*1000,"смена слоя — двадцать минут реального времени");
-  ok(holdShift(HOLD_SHIFT*5+1)===5,"номер смены считается от Date.now()");
+  ok(holdShift(HOLD_SHIFT*5+1)===5,"номер смены считается от now()");
   const s=holdTestStation();
   if(!s){ok(true,"в радиусе нет станции с аппетитом — пропущено");return;}
   const A=appetiteOf(s),k=Object.keys(A)[0],N=A[k];

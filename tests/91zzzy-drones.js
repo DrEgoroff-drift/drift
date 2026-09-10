@@ -35,7 +35,7 @@ TEST_SUITES.push(()=>suite("дроны: за час зарабатывают с�
   const c0=G.credits;
   /* час назад — и один такт: догон офлайна */
   const hour=3600*1000;
-  d.lastMs=Date.now()-hour;d.t0=d.lastMs;d.soldAtMs=d.lastMs;
+  d.lastMs=now()-hour;d.t0=d.lastMs;d.soldAtMs=d.lastMs;
   droneBreaks=()=>false;                /* поломки здесь ни при чём */
   tickDrones();
   const soldUnits=d.sold|0;
@@ -54,9 +54,9 @@ TEST_SUITES.push(()=>suite("дроны: ломаются и чинятся са�
   const T=droneTripMs(d);
   /* следующий же круг кончается поломкой */
   droneBreaks=()=>true;
-  d.lastMs=Date.now()-T*1.2;d.t0=d.lastMs;
+  d.lastMs=now()-T*1.2;d.t0=d.lastMs;
   tickDrones();
-  ok(d.down>Date.now(),"дрон встал и чинится сам: "+droneStateRu(d));
+  ok(d.down>now(),"дрон встал и чинится сам: "+droneStateRu(d));
   ok(droneFixMs(d)>=60000,"ремонт меряется минутами, а не деньгами");
   const c0=G.credits;
   const tripsWhileDown=d.trips;
@@ -65,11 +65,11 @@ TEST_SUITES.push(()=>suite("дроны: ломаются и чинятся са�
   eq(Math.round(G.credits),Math.round(c0),"и денег не приносит");
   /* время вышло — пошёл сам, без единого нажатия и без кредита */
   droneBreaks=()=>false;
-  d.down=Date.now()-1;d.lastMs=Date.now()-1;
+  d.down=now()-1;d.lastMs=now()-1;
   tickDrones();
   eq(d.down,0,"починился сам");
   /* и снова возит: круг после ремонта считается как обычный */
-  d.t0=Date.now()-T*1.1;d.lastMs=d.t0;
+  d.t0=now()-T*1.1;d.lastMs=d.t0;
   tickDrones();
   ok(d.trips>tripsWhileDown,"и вернулся на маршрут");
 }));
@@ -83,13 +83,13 @@ TEST_SUITES.push(()=>suite("дроны: маршруты и старые зап�
   eq(R[0].drones.length,2,"и обе в нём");
   ok(R[0].from&&R[0].to,"у маршрута названы оба конца: "+R[0].from+" → "+R[0].to);
   /* запись до M237: четыре поля и ничего больше */
-  G.drones=[{sx:G.sx,sy:G.sy,res:"iron",rate:.6,pool:120,soldAtMs:Date.now()-5000}];
+  G.drones=[{sx:G.sx,sy:G.sy,res:"iron",rate:.6,pool:120,soldAtMs:now()-5000}];
   const old=G.drones[0];
   droneNormalize(old);
   ok(old.id>0,"старой записи выдан номер");
   ok(old.t0>0&&old.lastMs>0,"и круг с часами");
   eq(old.pi,-1,"планета неизвестна — точка берётся по кольцу");
-  const P=dronePos(old,Date.now());
+  const P=dronePos(old,now());
   ok(isFinite(P.x)&&isFinite(P.y),"и она всё равно откуда-то летит");
   /* сохранение переживает поля */
   const snap=JSON.parse(JSON.stringify(snapshot()));
@@ -108,7 +108,7 @@ TEST_SUITES.push(()=>suite("дроны: без станции в системе 
     if(!S.station&&(S.planets||[]).length)ns=S;
   }
   if(!ns){ok(true,"поблизости нет системы без станции — проверку пропускаем");return;}
-  const now=Date.now();
+  const now=clockNow();
   const d={id:1,sx:ns.sx,sy:ns.sy,pi:0,res:"iron",rate:.6,pool:100,t0:now,lastMs:now,
            bornMs:now,trips:0,down:0,sold:0,earned:0,carry:0};
   const b=droneHome(d,ns);
@@ -122,7 +122,7 @@ TEST_SUITES.push(()=>suite("дроны: без станции в системе 
 /* ── где сдавать (M324): без смотрителя — ближайшая; со смотрителем — по ценам со стола ── */
 TEST_SUITES.push(()=>suite("дроны M324: смотритель уводит сбыт туда, где дороже, и не дальше трёх секторов",()=>{
   resetWorld();G.mgrs=[];G.seenPrices={};
-  const now=Date.now();
+  const now=clockNow();
   const mk=(sx,sy)=>({id:41,sx,sy,pi:-1,res:"iron",rate:1,pool:50,soldAtMs:now,t0:now,lastMs:now,
                       bornMs:now,trips:0,down:0,sold:0,earned:0,carry:0});
   /* пара: станция s2 и сектор в двух шагах от неё, чей ближайший рынок — не s2 */
@@ -203,11 +203,11 @@ TEST_SUITES.push(()=>suite("дроны: после суток догона фл�
   for(const d of fleet)d.pool=1e9;
   for(let i=0;i<5;i++){
     /* сутки прошли: круг начат сутки назад, док за это время кончился */
-    for(const d of fleet){const t=Date.now()-day;d.lastMs=t;d.t0=t;d.soldAtMs=t;if(d.down)d.down-=day;}
+    for(const d of fleet){const t=now()-day;d.lastMs=t;d.t0=t;d.soldAtMs=t;if(d.down)d.down-=day;}
     tickDrones();
   }
   let down=0,trips=0;
-  for(const d of fleet){if(d.down>Date.now())down++;trips=Math.max(trips,d.trips|0);}
+  for(const d of fleet){if(d.down>now())down++;trips=Math.max(trips,d.trips|0);}
   ok(trips>3000,"пять суток и правда догнали: кругов "+trips);
   /* главный договор — детерминированный: шанс поломки не уползает за жизнь
      машины. Счёт машин в доке случаен, и он здесь только как здравый смысл */

@@ -51,7 +51,7 @@ TEST_SUITES.push(()=>suite("пересказ: слухи не врут",()=>{
   resetWorld();
   const R0=rareAtPlace("lair",12345);
   ok(!!R0,"у места есть своя редкость");
-  G.rivals={};G.rivals[R0.id]={who:"Пекарь",sx:3,sy:4,t:Date.now()};
+  G.rivals={};G.rivals[R0.id]={who:"Пекарь",sx:3,sy:4,t:now()};
   eq(rareTake("lair",12345),null,"пока она у соперника, с места её не взять");
   ok(!rareHas(R0.id),"и в коллекцию она не попала");
   rivalYield(R0.id);
@@ -59,9 +59,9 @@ TEST_SUITES.push(()=>suite("пересказ: слухи не врут",()=>{
 
   /* ── поворот мира считается по времени, а не каждый кадр ── */
   resetWorld();
-  G.newsT=Date.now();
+  G.newsT=now();
   eq(newsTick(),0,"без прошедшего времени мир не поворачивается");
-  G.newsT=Date.now()-NEWS_EVERY*10;
+  G.newsT=now()-NEWS_EVERY*10;
   const made=newsTick();
   ok(made>0&&made<=NEWS_MAX_ROLL,"за длинное отсутствие — не больше трёх перемен: "+made);
   eq(G.news.length,made,"каждая перемена оставила слух");

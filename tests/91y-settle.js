@@ -31,7 +31,7 @@ TEST_SUITES.push(()=>suite("посёлок: рацион решает, чем о
   ok(gave>0,"дар принят: ×"+gave);
   eq(G.cargo.organics,400-gave,"отданное ушло из трюма");
   ok(S.diet.organics===gave,"рацион записан");
-  S.last=Date.now()-6*3600*1000;              // шесть часов их жизни
+  S.last=now()-6*3600*1000;              // шесть часов их жизни
   settleTick(S);
   ok(S.built.length>0,"за шесть часов еды посёлок что-то поднял: "+S.built.length);
   const fed=S.built.filter(k=>SETTLE_BY_K[k].diet==="organics").length;
@@ -40,7 +40,7 @@ TEST_SUITES.push(()=>suite("посёлок: рацион решает, чем о
   const S2=settleMake(p);
   S2.built.length=0;S2.fed=0;S2.stock={};S2.diet={};
   G.cargo.iron=600;settleGive(S2,"iron",600);
-  S2.last=Date.now()-365*24*3600*1000;
+  S2.last=now()-365*24*3600*1000;
   settleTick(S2);
   ok(S2.built.length<=Math.ceil(600/SETTLE_STEP)+1,
      "год отсутствия не растит больше, чем съедено: "+S2.built.length);
@@ -52,7 +52,7 @@ TEST_SUITES.push(()=>suite("посёлок: платит товаром и не 
   const S=settleMake(p);
   const cr=G.credits;
   G.cargo.iron=400;settleGive(S,"iron",400);
-  S.last=Date.now()-6*3600*1000;settleTick(S);
+  S.last=now()-6*3600*1000;settleTick(S);
   S.asked=0;S.mood=90;
   const got=settleAsk(S);
   eq(G.credits,cr,"посёлок не платит кредитами никогда");
@@ -115,7 +115,7 @@ TEST_SUITES.push(()=>suite("посёлок: переживает сохране�
   const p=G.sys.planets.find(x=>SETTLE_ON.indexOf(x.type)>=0)||G.sys.planets[0];
   const S=settleMake(p);
   G.cargo.silicon=300;settleGive(S,"silicon",300);
-  S.last=Date.now()-5*3600*1000;settleTick(S);
+  S.last=now()-5*3600*1000;settleTick(S);
   const built=S.built.length,mood=Math.round(S.mood);
   applySave(snapshot());
   const R=settleAt(G.sx,G.sy);
@@ -137,7 +137,7 @@ TEST_SUITES.push(()=>suite("посёлок: дозор и цена чужого 
   eq(settleWatch(p),0,"у посёлка первой ступени дозора нет");
   /* поднимаем его до второй ступени честным путём — едой и временем */
   G.cargo.iron=900;settleGive(S,"iron",900);
-  S.last=Date.now()-14*3600*1000;settleTick(S);
+  S.last=now()-14*3600*1000;settleTick(S);
   ok(S.stage>=2,"посёлок дорос до второй ступени: "+S.stage);
   S.mood=80;
   ok(settleWatch(p)>0,"сытый посёлок со второй ступени держит дозор");

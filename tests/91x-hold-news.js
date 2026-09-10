@@ -10,7 +10,7 @@ TEST_SUITES.push(()=>suite("холдинг: новость с причиной, 
   const def=BLD.alloyshop,main=Object.keys(def.eats)[0];
   marketFor(s);G.market[s.key].pressure[main]=0;
   G.news=[];
-  H.bld[def.id]={lvl:1,t0:Date.now(),ready:Date.now()-1,my:{},got:{}};
+  H.bld[def.id]={lvl:1,t0:now(),ready:now()-1,my:{},got:{}};
   const item=holdNews(s,def,"laid");
   ok(!!item&&item.sx===s.sx&&item.ru.indexOf(s.station.name)>=0&&/заложен/.test(item.ru),"новость назвала станцию и цех: "+item.ru);
   ok(G.market[s.key].pressure[main]>0,"входы цеха поднялись в цене (+"+G.market[s.key].pressure[main].toFixed(2)+")");
@@ -21,7 +21,7 @@ TEST_SUITES.push(()=>suite("холдинг: новость с причиной, 
   const why=bldLay(s,BLD.rebarshop.id);
   ok((why===""&&newsAll().length===n0+1)||why!=="","bldLay пишет новость ("+(why||"заложен")+")");
   /* уклад и слух */
-  H.bld.rollshop={lvl:1,t0:Date.now(),ready:Date.now()-1,my:{},got:{}};
+  H.bld.rollshop={lvl:1,t0:now(),ready:now()-1,my:{},got:{}};
   ok(holdUklad(s.key)==="заводская","две постройки передела — система заводская");
   const line=holdRumourLine(()=>0);
   ok(!!line&&/заводская|разработку|промысел|бурить|льда|пояс|гигант|зелень|зверьё|отвалы/.test(line),"эфир говорит о холдинге чужими словами: "+line);

@@ -5,13 +5,13 @@
 TEST_SUITES.push(()=>suite("маяк: ни строки без причины, сводка на смену, «Сорока» не названа",()=>{
   resetWorld();
   G.beacon=null;G.shiftLog=null;G.freedLog=[];G.scripLog=[];G.hold={};G.occ={};G.opts.voice={on:false};
-  const now0=Date.now;
+  const now0=now();
   try{
-    let T=WANDER_T0+100*HOLD_SHIFT+1000;Date.now=()=>T;
+    let T=WANDER_T0+100*HOLD_SHIFT+1000;clockSet(T);
     eq(mayakTick(),null,"первый кадр только запоминает смену");
     const s=holdShift();
     /* пустая смена — молчание */
-    T+=HOLD_SHIFT;eq(mayakTick(),null,"без перемен сводки нет");
+    T+=HOLD_SHIFT;clockSet(T);eq(mayakTick(),null,"без перемен сводки нет");
     /* смена с переменами: тоннаж, сдача игрока, очищенный сектор, курс бон, занятый сектор */
     const S=nearestStation(0,0);
     const s2=holdShift();
@@ -20,7 +20,7 @@ TEST_SUITES.push(()=>suite("маяк: ни строки без причины, �
     mayakFreed(S.sx,S.sy,S);
     G.scripLog=[{id:"kova",d:3,why:"тест",t:T+1000},{id:"kova",d:2,why:"тест",t:T+2000}];
     const O=nearestStation(3,3);if(O&&O.key!==S.key){G.occ[O.key]={lvl:1,kills:0,t:T+500};}
-    T+=HOLD_SHIFT;
+    T+=HOLD_SHIFT;clockSet(T);
     const bul=mayakTick();
     ok(!!bul&&bul.lines.length>=4,"сводка собрана: "+(bul?bul.lines.length:0)+" строк");
     ok(bul.lines.every(l=>l.cause&&l.cause.k),"у каждой строки причина");
@@ -38,7 +38,7 @@ TEST_SUITES.push(()=>suite("маяк: ни строки без причины, �
     eq(mayakLast().shift,bul.shift,"последняя сводка помнится");
     const snap=snapshot();G.beacon=null;applySave(snap);
     eq(mayakLast().shift,bul.shift,"и возвращается из сейва");
-  }finally{Date.now=now0;}
+  }finally{clockSet(now0);}
   G.beacon=null;G.shiftLog=null;G.freedLog=[];G.scripLog=[];G.hold={};G.occ={};G.opts.voice=null;
 }));
 

@@ -3,7 +3,7 @@
 function mkMerc(seed,spec,shipId){
   const c=genMerc(seed,[spec]);
   G.crew.push(Object.assign({},c,{cargo:{},order:{kind:"home",sx:0,sy:0},
-    tMs:Date.now(),paidMs:Date.now()}));
+    tMs:now(),paidMs:now()}));
   const m=G.crew[G.crew.length-1];
   if(shipId){G.owned[shipId]=true;crewAssignShip(m,shipId);
     crewOrder(m,spec==="fight"?"hunt":spec)||crewOrder(m,spec==="fight"?"hunt":spec);}
@@ -50,7 +50,7 @@ TEST_SUITES.push(()=>suite("удача скрыта, но различима",()
   const run=(proto)=>{
     resetWorld();G.credits=1000000;G.owned.obod=true;
     G.crew.push(Object.assign({},proto,{cargo:{},order:{kind:"mine",sx:0,sy:0},
-      shipId:"obod",hull:130,hullMax:130,tMs:Date.now()}));
+      shipId:"obod",hull:130,hullMax:130,tMs:now()}));
     const m=G.crew[0];const cr0=G.credits;let bad=0,good=0;
     for(let k=0;k<40;k++){m.state=null;m.gone=false;m.hull=m.hullMax;
       crewTrip(m,crewTripMinutes(m));}
@@ -95,7 +95,7 @@ TEST_SUITES.push(()=>suite("плен: выкуп и освобождение ш�
   ok(!crewOrder(m,"haul"),"пока он в плену, приказы не проходят");
   /* выкуп растёт, пока тянем */
   const r0=m.ransom;
-  m.ransomAt=Date.now()-3*3600000;m.tMs=Date.now()-1000;
+  m.ransomAt=now()-3*3600000;m.tMs=now()-1000;
   crewTick();
   ok(m.ransom>r0,"выкуп вырос за бездействие ("+r0+" → "+m.ransom+")");
   /* штурм в том же секторе освобождает даром */
@@ -145,14 +145,14 @@ TEST_SUITES.push(()=>suite("простой не загоняет в долг",()
   G.credits=0;
   const c=genMerc(777,["mine"]);
   G.crew.push(Object.assign({},c,{cargo:{},order:{kind:"home",sx:0,sy:0},
-    tMs:Date.now()-8*60*60*1000,paidMs:Date.now()}));
+    tMs:now()-8*60*60*1000,paidMs:now()}));
   const m=G.crew[0];
   crewTick();
   eq(Math.round(m.debt),0,"за восемь часов на приколе долг не накапал");
   ok(!m.gone,"человек не ушёл");
   eq(m.morale,1,"настрой не просел");
   /* и с приказом, но без корабля — тоже не платим: он физически не работает */
-  m.order={kind:"mine",sx:0,sy:0};m.shipId=null;m.tMs=Date.now()-8*60*60*1000;
+  m.order={kind:"mine",sx:0,sy:0};m.shipId=null;m.tMs=now()-8*60*60*1000;
   crewTick();
   eq(Math.round(m.debt),0,"без выданного корабля жалованье не начисляется");
 }));
@@ -164,7 +164,7 @@ TEST_SUITES.push(()=>suite("очередь рейсов ограничена",()
   ok(!!m.shipId,"корабль выдан");
   m.trips=0;m.hist=[];
   /* «ушёл на сутки» не должно превращаться в сутки выработки */
-  m.tMs=Date.now()-24*60*60*1000;
+  m.tMs=now()-24*60*60*1000;
   crewTick();
   ok((m.trips|0)<=CREW_TRIP_QUEUE,"за сутки отсутствия закрыто не больше "+
      CREW_TRIP_QUEUE+" рейсов (закрыто "+m.trips+")");
@@ -193,7 +193,7 @@ TEST_SUITES.push(()=>suite("приоритет материала и перед�
   G.credits=100000;G.owned.obod=true;
   const c=genMerc(4242,["mine"]);
   G.crew.push(Object.assign({},c,{cargo:{},order:{kind:"home",sx:0,sy:0},
-    tMs:Date.now(),paidMs:Date.now()}));
+    tMs:now(),paidMs:now()}));
   const m=G.crew[0];
   crewAssignShip(m,"obod");
   crewOrder(m,"mine")||crewOrder(m,"mine");
@@ -221,7 +221,7 @@ TEST_SUITES.push(()=>suite("наёмник виден в системе и за 
   G.credits=100000;G.owned.obod=true;
   const c=genMerc(999,["mine"]);
   G.crew.push(Object.assign({},c,{cargo:{},order:{kind:"home",sx:0,sy:0},
-    tMs:Date.now(),paidMs:Date.now()}));
+    tMs:now(),paidMs:now()}));
   const m=G.crew[0];
   crewAssignShip(m,"obod");
   crewOrder(m,"mine")||crewOrder(m,"mine");
@@ -249,7 +249,7 @@ TEST_SUITES.push(()=>suite("сохранение переживает новые
   const c=genMerc(31337,["mine"]);
   G.crew.push(Object.assign({},c,{cargo:{},order:{kind:"mine",sx:0,sy:0},
     shipId:"obod",pref:"iron",mods:{hold:2,armor:1,drill:0},earned:500,spent:100,
-    tMs:Date.now(),paidMs:Date.now()}));
+    tMs:now(),paidMs:now()}));
   const snap=snapshot();
   eq(snap.v,5,"версия записи — 5 (M227), и старые 4 читаются");
   const json=JSON.stringify(snap);

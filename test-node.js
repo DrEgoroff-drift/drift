@@ -143,7 +143,7 @@ document.scripts = []; document.exitFullscreen = () => Promise.resolve(); docume
 document.elementFromPoint = () => null; document.hasFocus = () => true; document.execCommand = () => false;
 
 class Storage { constructor() { this.m = new Map(); } getItem(k) { return this.m.has(k) ? this.m.get(k) : null; } setItem(k, v) { this.m.set(k, String(v)); } removeItem(k) { this.m.delete(k); } clear() { this.m.clear(); } key(i) { return [...this.m.keys()][i] || null; } get length() { return this.m.size; } }
-const search = (flag("full") ? "full=1&" : "") + (opt("only") ? "only=" + encodeURIComponent(opt("only")) + "&" : "") + (flag("verbose") ? "verbose=1" : "");
+const search = (flag("full") ? "full=1&" : "") + (opt("only") ? "only=" + encodeURIComponent(opt("only")) + "&" : "") + (opt("hour") ? "hour=" + encodeURIComponent(opt("hour")) + "&" : "") + (flag("verbose") ? "verbose=1" : "");
 const G0 = globalThis;
 G0.TEST_NODE = true; if (flag("trace")) G0.TEST_TRACE = true;
 const SHIM = {

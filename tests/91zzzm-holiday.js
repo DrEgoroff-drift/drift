@@ -25,14 +25,10 @@ TEST_SUITES.push(()=>suite("праздник: поздравляют те, кт�
   const stub=holNow;
   ok(typeof holDock==="function","радиограммы есть");
   /* подменяем дату: тест не может ждать декабря */
-  const realNow=Date.now;
-  const fake=HOL_D(12,31).getTime();
-  Date.now=()=>fake;
-  const RealDate=Date;
-  /* holNow берёт new Date() — подменяем и его */
-  window.Date=function(x){return x===undefined?new RealDate(fake):new RealDate(x);};
-  window.Date.now=()=>fake;
-  window.Date.prototype=RealDate.prototype;
+  /* подменяем дату: часы игры прибиваются к тридцать первому (M441) — и
+     holNow с его new Date(now()) видит тот же день, подменять Date незачем */
+  const t0=now();
+  clockSet(HOL_D(12,31).getTime());
   try{
     ok(holDock(),"праздник отмечен");
     ok((G.log||[]).some(x=>/поздравить вас пока некому/i.test(x.text||x.s||"")),
@@ -50,16 +46,14 @@ TEST_SUITES.push(()=>suite("праздник: поздравляют те, кт�
     ok(!L.some(t=>/медкомиссия/i.test(t.ru)),"а комиссия не поздравляет");
     ok(recordAll().e.some(x=>x.a==="Новый год"),"строка в книжке о празднике");
   }finally{
-    window.Date=RealDate;Date.now=realNow;
+    clockSet(t0);
   }
 }));
 TEST_SUITES.push(()=>suite("праздник: ничего не даёт, кроме ёлки и голосов",()=>{
   resetWorld();
   G.hol={};G.things=[];G.record=null;
   const cr=G.credits,dt=G.data;
-  const RealDate=Date;const fake=HOL_D(12,31).getTime();
-  window.Date=function(x){return x===undefined?new RealDate(fake):new RealDate(x);};
-  window.Date.now=()=>fake;window.Date.prototype=RealDate.prototype;
+  const t0=now();clockSet(HOL_D(12,31).getTime());
   try{
     recordAdd("Вега","характеристика");
     holDock();
@@ -69,7 +63,7 @@ TEST_SUITES.push(()=>suite("праздник: ничего не даёт, кро
     const line=holEtherLine();
     ok(line&&line.length>10,"и в эфире поздравляют: "+line);
     ok(HOL_ETHER.ny.indexOf(line)>=0,"строка из таблицы праздника");
-  }finally{window.Date=RealDate;}
+  }finally{clockSet(t0);}
   ok(!holTreeUp(),"а в обычный день ёлки нет");
   eq(holEtherLine(),"","и в эфире ничего праздничного");
 }));

@@ -45,10 +45,10 @@ function clkWorld(){
   if(typeof lockerRec==="function"){
     const L=lockerRec();
     L.res=L.res||{};L.res[RES_KEYS[0]]=40;
-    L.t=Date.now()-3*24*3600*1000;   /* трое суток хранения уже набежало */
+    L.t=clockNow()-3*24*3600*1000;   /* трое суток хранения уже набежало */
   }
   if(typeof droneNextId==="function"&&G.drones.length<2){
-    const now=Date.now();
+    const now=clockNow();
     G.drones.push({id:droneNextId(),sx:G.sx,sy:G.sy,pi:-1,res:RES_KEYS[0],rate:2,pool:-1,
       soldAtMs:now,t0:now,lastMs:now,bornMs:now,trips:0,down:0,sold:0,earned:0});
   }
@@ -56,9 +56,9 @@ function clkWorld(){
 }
 /* подмена часов на время опыта; возвращает функцию «вернуть как было» */
 function clkShift(ms){
-  const real=Date.now;
-  Date.now=function(){ return real.call(Date)+ms; };
-  return ()=>{ Date.now=real; };
+  const t0=now();
+  clockSet(t0+ms);
+  return ()=>{ clockSet(t0); };
 }
 function clkNaN(){ return (typeof e2eScan==="function")?e2eScan(G,v=>!Number.isFinite(v),20000):[]; }
 
@@ -104,7 +104,7 @@ TEST_SUITES.push(() => suite("часы: сейв из будущего — от�
   clkWorld();
   const s=JSON.parse(JSON.stringify(snapshot()));
   /* у того устройства часы спешат на год: двигаем КАЖДУЮ отметку времени в сейве */
-  const YEAR=365*24*3600*1000, NOW=Date.now();
+  const YEAR=365*24*3600*1000, NOW=now();
   const bump=(v,d)=>{
     if(d>7)return v;
     if(typeof v==="number")return (v>1.4e12&&v<4e12)?v+YEAR:v;

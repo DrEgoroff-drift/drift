@@ -685,7 +685,7 @@ TEST_SUITES.push(()=>suite("культура M388: свод, серия, гон�
     /* второй заход хуже — лучший не портится */
     G.sx=0;G.sy=0;
     cultRaceStart();
-    G.race.t0=Date.now()-60000;
+    G.race.t0=now()-60000;
     G.sx=CULT_RACE_FAR;G.sy=0;
     const s2=cultRaceFinish();
     ok(s2>=s,"второй ход дольше: "+s2);

@@ -53,7 +53,7 @@ TEST_SUITES.push(()=>suite("посёлок: под рукой всё лучше 
   const A=handTestSettle();A.stage=2;A.diet={iron:400};A.fed=SETTLE_STEP*3;
   const B=handTestSettle();B.stage=2;B.diet={iron:400};B.fed=SETTLE_STEP*3;
   B.mine=1;
-  A.last=Date.now()-1;B.last=Date.now()-1;
+  A.last=now()-1;B.last=now()-1;
   settleTick(A);settleTick(B);
   ok(B.built.length>A.built.length,
      "под рукой построек больше на ту же еду ("+B.built.length+" против "+A.built.length+")");

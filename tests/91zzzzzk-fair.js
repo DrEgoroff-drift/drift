@@ -91,19 +91,17 @@ TEST_SUITES.push(() => suite("касса: игра не берёт денег м
   if(typeof e2eLate==="function")e2eLate();else fuzzRich();
   if(typeof lockerRec==="function"){
     const L=lockerRec();L.res=L.res||{};L.res[RES_KEYS[0]]=60;
-    L.t=Date.now()-6*24*3600*1000;    /* шесть суток хранения набежало */
+    L.t=now()-6*24*3600*1000;    /* шесть суток хранения набежало */
   }
   const TICKS=(typeof CLK_TICKS!=="undefined")?CLK_TICKS:["tickDrones","crewTick","lockerTick","mgrTick"];
   const bad=[];let steps=0,charges=0;
-  const real=Date.now;
-  let skew=0;
-  Date.now=function(){ return real.call(Date)+skew; };
+  const t0=now();
   try{
     for(const name of TICKS){
       const f=window[name];
       if(typeof f!=="function")continue;
-      skew=0;try{ f(); }catch(e){ }            /* отметки на «сейчас» */
-      skew=4*24*3600*1000;                     /* четверо суток вперёд */
+      clockSet(t0);try{ f(); }catch(e){ }            /* отметки на «сейчас» */
+      clockSet(t0+4*24*3600*1000);                     /* четверо суток вперёд */
       /* курсор журнала — не длина, а последняя запись: журнал подрезается
          сверху, и на прожитом мире длина после дописи ТА ЖЕ (первая версия
          набора из-за этого объявила честную строку конторы пропавшей) */
@@ -125,7 +123,7 @@ TEST_SUITES.push(() => suite("касса: игра не берёт денег м
       if(!money.length)bad.push(name+" · списано "+spent+" кр и ни строки в журнале · новых строк "+said.length+
         " · хвост: "+(G.log||[]).slice(-3).map(r=>String(r.s||"").slice(0,40)).join(" | "));
     }
-  }finally{ Date.now=real; }
+  }finally{ clockSet(t0); }
   ok(steps>=8,"тактов прогнано: "+steps+", из них со списанием: "+charges);
   eq(bad.slice(0,4).join(" ;; "),"","каждое списание объяснено строкой");
   resetWorld();

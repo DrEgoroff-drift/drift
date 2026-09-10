@@ -11,7 +11,7 @@ TEST_SUITES.push(()=>suite("холдинг: 26 построек E–I — одн
   if(!s){ok(true,"пропущено");return;}
   siteTestOpen(s);
   const H=holdOf(s.key);H.bld={};
-  const stand=id=>{H.bld[id]={lvl:1,t0:Date.now(),ready:Date.now()-1,my:{},got:{}};};
+  const stand=id=>{H.bld[id]={lvl:1,t0:now(),ready:now()-1,my:{},got:{}};};
   G.sys=s;G.sx=s.sx;G.sy=s.sy;G.st=s.station;G.mode="dock";
   bldHas.asked={};
   /* E1 накопитель */
@@ -30,8 +30,8 @@ TEST_SUITES.push(()=>suite("холдинг: 26 построек E–I — одн
     stand(src.id);H.bld[src.id].got={};H.bld[src.id].got[k]=20;
     const eater=BLD_KEYS.map(id=>BLD[id]).find(d=>d.fam==="B"&&d.eats[k]);
     if(eater){
-      c.barge={legs:[s.key],cursor:0,t0:Date.now(),fed:0,name:"Тюк"};
-      H.bld[eater.id]={lvl:1,t0:Date.now(),ready:Date.now()-1,my:{},got:{}};
+      c.barge={legs:[s.key],cursor:0,t0:now(),fed:0,name:"Тюк"};
+      H.bld[eater.id]={lvl:1,t0:now(),ready:now()-1,my:{},got:{}};
       G.credits=100000;
       const n=bargeAutoLoad(c,s);
       ok(n>0&&(c.cargo[k]|0)===n,"причал: баржа сама взяла "+n+" "+RES[k].ru.toLowerCase()+" с промысла");
@@ -62,7 +62,7 @@ TEST_SUITES.push(()=>suite("холдинг: 26 построек E–I — одн
   /* G6 красный уголок */
   stand("redcorner");ok(holdLoyaltyHold()===true,"красный уголок: верность держится, пока стоим здесь");
   /* H1 батарея */
-  G.occ=G.occ||{};G.occ[s.key]={lvl:2,kills:0,t:Date.now()};stand("guns");
+  G.occ=G.occ||{};G.occ[s.key]={lvl:2,kills:0,t:now()};stand("guns");
   ok(holdGunsTick(s.sx,s.sy)===true&&occLvl(s.sx,s.sy)<2,"батарея: уровень блокады спал ("+occLvl(s.sx,s.sy)+")");
   delete G.occ[s.key];
   /* H2 дозор */

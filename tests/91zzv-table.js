@@ -211,7 +211,7 @@ TEST_SUITES.push(()=>suite("стол: огонёк гаснет от визит�
   resetWorld();
   tableToggle(false);
   const mb=document.getElementById("menubtn");
-  G.things=[];G.log=[];G.logNew=0;G.logNewBy={};G.tableSeen=Date.now();
+  G.things=[];G.log=[];G.logNew=0;G.logNewBy={};G.tableSeen=now();
   logBtnLabel();
   ok(!mb.classList.contains("on"),"на чистом столе огонёк не горит");
 

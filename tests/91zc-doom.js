@@ -16,7 +16,7 @@ TEST_SUITES.push(()=>suite("срок: вывозят трюмом, а не кн�
   const D=doomArm(S);
   ok(!!D,"со второй ступени срок назначен");
   ok(!doomArm(S),"и он один на прохождение");
-  ok(D.at>Date.now(),"час назначен в будущем");
+  ok(D.at>now(),"час назначен в будущем");
   ok(doomStanding()>0,"на земле стоят люди");
 
   /* узнают о сроке под тем самым небом, а не из меню */
@@ -54,7 +54,7 @@ TEST_SUITES.push(()=>suite("срок: вывозят трюмом, а не кн�
   }
 
   /* час вышел: старое место пустеет, наказания нет */
-  D.at=Date.now()-1;
+  D.at=now()-1;
   doomTick();
   ok(D.over,"срок вышел");
   ok(!settleAt(D.sx,D.sy),"на старом месте больше никого");
@@ -79,7 +79,7 @@ TEST_SUITES.push(()=>suite("срок: помогают только те, ког
   eq(doomHelp(),0,"без посланных наёмников помощи нет");
   /* наёмник, работающий в ДРУГОМ секторе, не считается */
   const c=Object.assign({},genMerc(31,["haul"]),
-    {cargo:{},order:{kind:"haul",sx:G.sx+5,sy:G.sy+5},tMs:Date.now(),paidMs:Date.now()});
+    {cargo:{},order:{kind:"haul",sx:G.sx+5,sy:G.sy+5},tMs:now(),paidMs:now()});
   c.shipId="strizh";
   G.crew.push(c);
   eq(doomHelp(),0,"чужой сектор — не помощь");

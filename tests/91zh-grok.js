@@ -43,7 +43,7 @@ TEST_SUITES.push(()=>suite("Грохотун: рейс, а не кресло",()
   eq(grokTake(),null,"пока копает, спрашивать нечего");
 
   /* ── вернулся: отвал, кусок и две расплаты ── */
-  G.grok.due=Date.now()-1;
+  G.grok.due=now()-1;
   grokTick();
   const tgt=G.grok.sx+","+G.grok.sy, occ0=occLvl(G.grok.sx,G.grok.sy);
   const res=grokTake();

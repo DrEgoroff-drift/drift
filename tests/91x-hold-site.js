@@ -73,13 +73,13 @@ TEST_SUITES.push(()=>suite("холдинг: ступень от дел, площ
   ok(bldLay(s,def.id)==="","заложен "+def.ru);
   ok(G.credits===cr-def.cost.credits&&G.cargo.alloy===al-def.cost.alloy,"цена списана: кредиты и сплавы");
   const B=bldEntry(s.key,def.id);
-  ok(B&&B.lvl===1&&B.ready>Date.now(),"стоит на ×1, монтаж идёт");
+  ok(B&&B.lvl===1&&B.ready>now(),"стоит на ×1, монтаж идёт");
   ok(bldFreeSites(s)===0&&/все площадки заняты|уже стоит/.test(bldLay(s,BLD_KEYS.map(id=>BLD[id]).find(d=>d.fam==="B"&&d.id!==def.id&&!bldWhy(s,d))?BLD_KEYS.map(id=>BLD[id]).find(d=>d.fam==="B"&&d.id!==def.id&&!bldWhy(s,d)).id:def.id)),"вторая на одну площадку не встаёт");
   ok(rungPoints(s.sx,s.sy)>=RUNG_T[11]+2,"постройка сама даёт очки ступени");
   /* до готовности бункер не ест */
   ok(bldWant(s,main)===0,"на монтаже цех ничего не берёт");
   /* готов: кормим продажей; давление двигает только остаток */
-  B.ready=Date.now()-HOLD_SHIFT*20;B.t0=Date.now();   /* монтаж давно кончился: смены считаются от t0 */
+  B.ready=now()-HOLD_SHIFT*20;B.t0=now();   /* монтаж давно кончился: смены считаются от t0 */
   const Q=bldQuota(def,1)[main],cap=Q*HOLD_CAP_SHIFTS;
   ok(bldWant(s,main)===cap,"готовый цех берёт три смены нормы ("+cap+")");
   G.cargo[main]=cap+5;
@@ -93,13 +93,13 @@ TEST_SUITES.push(()=>suite("холдинг: ступень от дел, площ
   const out=Object.keys(def.makes)[0],O=bldOut(def,1)[out];
   B.my={};B.my[main]=Q;   /* ровно одна норма главного входа */
   for(const k in def.eats)if(k!==main)B.my[k]=0;
-  B.got={};B.t0=Date.now()-HOLD_SHIFT-1;
+  B.got={};B.t0=now()-HOLD_SHIFT-1;
   bldTick(s.key,def.id);
   const tot=Object.keys(def.eats).reduce((a,k)=>a+def.eats[k],0);
   ok(Math.abs((B.got[out]||0)-O*Q/tot)<1e-9&&(B.my[main]|0)===0,"смена: съедено "+Q+", пай "+(B.got[out]||0).toFixed(2)+" из "+O);
   /* потолок: десять смен полного корма — не больше трёх смен выпуска */
   for(const k in def.eats)B.my[k]=def.eats[k]*10;
-  B.got={};B.t0=Date.now()-HOLD_SHIFT*10-1;
+  B.got={};B.t0=now()-HOLD_SHIFT*10-1;
   bldTick(s.key,def.id);
   ok(Math.abs(B.got[out]-O*HOLD_CAP_SHIFTS)<1e-9,"пай режется тремя сменами выпуска ("+B.got[out]+")");
   /* забрать в трюм */
@@ -129,7 +129,7 @@ TEST_SUITES.push(()=>suite("холдинг: промысел продаёт со
     const def=src.def,k=Object.keys(def.makes)[0],M=def.makes[k];
     G.credits=100000;for(const c in def.cost)if(c!=="credits")G.cargo[c]=def.cost[c];
     ok(bldLay(s,def.id)==="","заложен промысел "+def.ru);
-    const B=bldEntry(s.key,def.id);B.ready=Date.now()-HOLD_SHIFT*10-1;B.t0=Date.now()-HOLD_SHIFT*10-1;
+    const B=bldEntry(s.key,def.id);B.ready=now()-HOLD_SHIFT*10-1;B.t0=now()-HOLD_SHIFT*10-1;
     bldTick(s.key,def.id);
     ok(Math.abs(B.got[k]-M*HOLD_CAP_SHIFTS)<1e-9,"запас копится и режется тремя сменами ("+B.got[k]+")");
     const price=srcPrice(s,k),full=TRADE_KEYS.indexOf(k)>=0?marketFor(s)[k]:indPrice(k);
@@ -141,7 +141,7 @@ TEST_SUITES.push(()=>suite("холдинг: промысел продаёт со
   }else ok(true,"промысла для этой системы нет — часть пропущена");
   /* цех второго яруса ест промышленное: сдача по теневой цене */
   const H=holdOf(s.key);H.bld={};
-  H.bld.bearingshop={lvl:1,t0:Date.now(),ready:Date.now()-1,my:{},got:{}};
+  H.bld.bearingshop={lvl:1,t0:now(),ready:now()-1,my:{},got:{}};
   for(const c of RES_KEYS)G.cargo[c]=0;
   G.cargo.roll=30;const cr=G.credits;
   const want=bldWant(s,"roll");

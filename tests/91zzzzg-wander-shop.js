@@ -103,10 +103,10 @@ TEST_SUITES.push(()=>suite("сорока: прилавок сырья — цел
 TEST_SUITES.push(()=>suite("сорока: комната открывается у трапа, рисуется, свёрток берёт часть и отдаёт артефакт",()=>{
   resetWorld();
   G.wander=null;
-  const now0=Date.now;
+  const now0=now();
   try{
     const w=wanderAt(WANDER_T0+1000);
-    Date.now=()=>WANDER_T0+1000;
+    clockSet(WANDER_T0+1000);
     G.sys=getSystem(w.sx,w.sy);G.sx=w.sx;G.sy=w.sy;G.mode="system";
     ok(openWanderer(),"трап спущен");
     eq(G.mode,"wanderer","режим — на борту");
@@ -134,16 +134,16 @@ TEST_SUITES.push(()=>suite("сорока: комната открывается 
     ok(relicOwned().length===1,"пришёл артефакт");
     ok(wanLots()[wild.i].gone,"витрина свёртка пуста");
     /* стоянка кончилась — вас выводят */
-    Date.now=()=>WANDER_T0+3*86400e3+5000;
+    clockSet(WANDER_T0+3*86400e3+5000);
     updateWanderRoom(1);
     eq(G.mode,"system","борт ушёл — вы в системе");
     ok(!G.wan,"комнаты нет");
-    Date.now=()=>WANDER_T0+1000;
+    clockSet(WANDER_T0+1000);
     /* стенд: форс и эпоха 0 */
     ok(openWanderer({force:true,epoch:0})&&G.wan.epoch===0&&G.wan.w.forced,"стенд открывает комнату с полкой эпохи 0");
     exitWanderer();
     eq(G.mode,"system","вышли к трапу");
-  }finally{Date.now=now0;}
+  }finally{clockSet(now0);}
   G.relics={};G.rareFound=[];G.inv=[];G.wander=null;
   ok(lookScenes().some(s=>s.id==="сорока"),"сцена «сорока» — в общем списке прибора и фаззера");
 }));

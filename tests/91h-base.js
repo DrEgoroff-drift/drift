@@ -114,7 +114,7 @@ TEST_SUITES.push(()=>suite("буря: угроза месту, а не людя�
   const run=()=>{
     let hit=0;
     for(let i=0;i<600;i++){
-      B.tMs=Date.now()+i;
+      B.tMs=now()+i;
       baseStorm(B,4);
       if(B.cells[1].hp<1){hit++;B.cells[1].hp=1;}
     }

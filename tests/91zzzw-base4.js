@@ -22,7 +22,7 @@ TEST_SUITES.push(()=>suite("разбор: директор не отменяет
 }));
 
 TEST_SUITES.push(()=>suite("разбор: догон глубже суток ест, а не только копает",()=>{
-  const B=bLife();
+  const B=bLife();bCalm(B,24);
   B.cells[5]={k:"habitat",hp:1};B.cells[4]={k:"reactor",hp:1};
   bCrew(B,2);
   const L=baseLife(B);
@@ -30,18 +30,18 @@ TEST_SUITES.push(()=>suite("разбор: догон глубже суток е�
   B.pool={};
   /* сутки с лишним отсутствия: и добыча, и расход считаются за все смены */
   B.t0=baseShift()-60;
-  bNoDir(()=>baseResolve(B,Date.now()));
+  baseResolve(B,now());
   ok(bPool(B)>0,"за шестьдесят смен что-то добыто: "+bPool(B));
   ok(baseLife(B).air<LIFE_START,"и воздух за них потрачен: "+baseLife(B).air);
   ok(baseLife(B).food<LIFE_START,"и харч тоже");
   /* и запас кончается там же, где кончился бы посменно: база встаёт */
-  const B2=bLife();
+  const B2=bLife();bCalm(B2,24);
   B2.cells[5]={k:"habitat",hp:1};
   bCrew(B2,3);
   baseLife(B2).air=6;baseLife(B2).water=200;baseLife(B2).food=200;
   B2.pool={};
   B2.t0=baseShift()-40;
-  bNoDir(()=>baseResolve(B2,Date.now()));
+  baseResolve(B2,now());
   ok(baseParked(B2),"на догоне база встала так же, как встала бы посменно");
   eq(baseLife(B2).air,0,"и воздух в нуле, а не в минусе");
 }));

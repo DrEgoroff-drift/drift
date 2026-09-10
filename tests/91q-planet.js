@@ -25,7 +25,7 @@ TEST_SUITES.push(()=>suite("планета: только за полный на�
 
   /* ── кредитов узел не платит ── */
   const cr=G.credits,turn=G.home?G.home.turn:0;
-  N.last=Date.now()-60*60000;                 // час производства
+  N.last=now()-60*60000;                 // час производства
   planetTick();
   ok(planetStockSum()>0,"за час узел что-то родил");
   eq(G.credits,cr,"склад узла не превращается в кредиты");
@@ -53,7 +53,7 @@ TEST_SUITES.push(()=>suite("планета: только за полный на�
      "узел стоит в плечах маршрута наравне со станцией");
 
   /* ── баржа довозит ваш товар, а не покупает его ── */
-  N.last=Date.now()-60*60000;planetTick();
+  N.last=now()-60*60000;planetTick();
   const before=planetStockSum();
   const b={from:N.sx+","+N.sy,to:"0,0",capName:"Тук",seed:1};
   const loaded=planetBargeLoad(b);

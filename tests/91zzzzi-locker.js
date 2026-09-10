@@ -40,26 +40,26 @@ TEST_SUITES.push(()=>suite("ящик: положить и забрать — ч�
 TEST_SUITES.push(()=>suite("ящик: плата процентом в сутки, без долга; месяц — на блошинец",()=>{
   resetWorld();
   G.locker=null;G.flea=null;G.credits=10000;
-  const now0=Date.now;
+  const now0=now();
   try{
     const T=WANDER_T0+10*86400e3;
-    Date.now=()=>T;
+    clockSet(T);
     const p=addPart(genPart(5502,4,"engine"));lockerPutPart(p.id);
     lockerRec().t=T;
     const v=lockerValue();ok(v>0,"стоимость посчитана: "+v);
     eq(lockerTick(T+3600e3).fee,0,"за час — ничего");
-    Date.now=()=>T+5*86400e3+1000;
+    clockSet(T+5*86400e3+1000);
     const r=lockerTick();
     eq(r.days,5,"пять суток прошло");
     eq(r.fee,Math.round(v*.01*5),"пять процентов списано");
     eq(G.credits,10000-r.fee,"из кассы");
     eq(lockerTick().fee,0,"второй раз в тот же час — ничего: считано лениво, один раз");
     /* нет денег — списали что было, долга нет */
-    G.credits=3;Date.now=()=>T+7*86400e3+1000;
+    G.credits=3;clockSet(T+7*86400e3+1000);
     const r2=lockerTick();eq(r2.fee,3,"списали три — всё, что было");
     eq(G.credits,0,"и не в минус");
     /* тридцать суток — сдача на блошинец */
-    Date.now=()=>T+40*86400e3;
+    clockSet(T+40*86400e3);
     const r3=lockerTick();
     ok(r3.gone,"контора сдала ящик");
     eq(lockerUsed(),0,"ящик пуст");
@@ -76,7 +76,7 @@ TEST_SUITES.push(()=>suite("ящик: плата процентом в сутк�
       eq(fleaRec().pawn.length,0,"залог ушёл к новому хозяину");
       ok(!fleaLots(bz).some(l=>l.pawn!=null),"и на прилавке его больше нет");
     }else ok(true,"блошинца в 12 секторах не нашлось — лот не меряем");
-  }finally{Date.now=now0;}
+  }finally{clockSet(now0);}
   G.locker=null;G.flea=null;G.inv=[];
 }));
 

@@ -92,7 +92,7 @@ TEST_SUITES.push(() => suite("дела: срок, который вышел, н�
   /* «срок вышел» — это ответ. «-7 мин» — это протечка формулы в текст. */
   resetWorld();
   if(typeof questLeft!=="function"){ok(false,"сроков в этой сборке нет — пропуск");return;}
-  const now=Date.now();
+  const now=clockNow();
   eq(questLeft({until:0}),"","без срока строка пустая");
   eq(questLeft({until:now-60000}),"срок вышел","истёкший срок назван словами");
   eq(questLeft({until:now+30000}),"меньше минуты","полминуты — «меньше минуты»");

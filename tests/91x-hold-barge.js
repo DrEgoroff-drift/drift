@@ -11,7 +11,7 @@ TEST_SUITES.push(()=>suite("холдинг: баржа кормит, а не т�
   if(!good){ok(true,"в этой системе нечего заложить — пропущено");return;}
   const def=good.def,main=Object.keys(def.eats)[0];
   const H=holdOf(s.key);H.bld={};
-  H.bld[def.id]={lvl:1,t0:Date.now(),ready:Date.now()-HOLD_SHIFT*20,my:{},got:{}};
+  H.bld[def.id]={lvl:1,t0:now(),ready:now()-HOLD_SHIFT*20,my:{},got:{}};
   /* маршрут: s и ещё одна станция, прохоженный */
   G.seenPrices={};pricesSeen(s);pricesSeen(st[0]);
   G.trade=routeInit();routeToggle(s.sx,s.sy);routeToggle(st[0].sx,st[0].sy);
@@ -28,7 +28,7 @@ TEST_SUITES.push(()=>suite("холдинг: баржа кормит, а не т�
   ok(bargeStart(c)===""&&c.barge&&c.barge.legs.length===2,"баржа приняла маршрут из двух плеч");
   ok(BARGE_NAMES.indexOf(bargeName(c))>=0,"имя баржи из ряда Тюк/Куль: «"+bargeName(c)+"»");
   /* через приказ: crewOrder ставит barge */
-  c.order={kind:"home",sx:0,sy:0};c.tMs=Date.now();
+  c.order={kind:"home",sx:0,sy:0};c.tMs=now();
   ok(crewOrder(c,"barge")===true&&c.order.kind==="barge","приказ «баржа» отдан через crewOrder");
   /* погрузка у стойки: берёт то, что едят цеха на плечах */
   G.sys=s;
@@ -41,19 +41,19 @@ TEST_SUITES.push(()=>suite("холдинг: баржа кормит, а не т�
   /* смена прошла: пришла к s (плечо 1) и ссыпала в бункер */
   const B=H.bld[def.id],Q=bldQuota(def,1)[main],cap=Q*HOLD_CAP_SHIFTS;
   const idx=c.barge.legs.indexOf(s.key);
-  c.barge.cursor=idx;c.barge.t0=Date.now()-HOLD_SHIFT-1;
+  c.barge.cursor=idx;c.barge.t0=now()-HOLD_SHIFT-1;
   const before=c.cargo[main]|0;
   const fed=bargeTick(c);
   ok(fed===Math.min(cap,before)&&(B.my[main]|0)===fed&&(c.cargo[main]|0)===before-fed,"баржа ссыпала "+fed+" ед в бункер ("+cap+" — три смены нормы)");
   ok(c.barge.fed===fed&&c.barge.cursor===idx+1,"счёт скормленного и курсор идут");
   /* блокада: плечо пропущено, груз остался */
-  B.my={};c.barge.cursor=idx;c.barge.t0=Date.now()-HOLD_SHIFT-1;
-  G.occ=G.occ||{};G.occ[s.key]={lvl:2,kills:0,t:Date.now()};
+  B.my={};c.barge.cursor=idx;c.barge.t0=now()-HOLD_SHIFT-1;
+  G.occ=G.occ||{};G.occ[s.key]={lvl:2,kills:0,t:now()};
   const left=c.cargo[main]|0;
   ok(bargeTick(c)===0&&(c.cargo[main]|0)===left&&c.barge.stopped===1,"под блокадой баржа обходит плечо");
   delete G.occ[s.key];
   /* оклад — минусом, выручки нет: crewTick платит, но не зарабатывает */
-  c.tMs=Date.now()-10*60000;const cr=G.credits,earned=c.earned|0;
+  c.tMs=now()-10*60000;const cr=G.credits,earned=c.earned|0;
   crewTick();
   ok((c.earned|0)===earned,"баржа не приносит денег: earned не вырос");
   ok(c.order.kind==="barge"&&c.barge,"после тика приказ на месте");

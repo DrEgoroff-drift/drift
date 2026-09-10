@@ -90,24 +90,22 @@ TEST_SUITES.push(() => suite("договор: ящик конторы берёт
   G.credits=100000;
   const val=lockerValue(L);
   ok(val>0,"стоимость содержимого: "+val);
-  const real=Date.now,now0=real.call(Date);
-  let skew=0;
-  Date.now=function(){ return now0+skew; };
+  const now0=now();
   try{
     L.t=now0;
-    skew=5*LOCKER_DAY;                       /* пять суток хранения */
+    clockSet(now0+5*LOCKER_DAY);                       /* пять суток хранения */
     const c0=G.credits;
     const r=lockerTick();
     const want=Math.round(val*LOCKER_FEE*5);
     eq(r.days,5,"контора насчитала пять суток");
     eq(c0-G.credits,want,"списано ровно 1 % в сутки: "+(c0-G.credits)+" при ожидаемых "+want);
     /* и тридцать суток без визита — сдача, а не долг до небес */
-    L.t=now0;skew=31*LOCKER_DAY;
+    L.t=now0;clockSet(now0+31*LOCKER_DAY);
     const c1=G.credits;
     const r2=lockerTick();
     ok(r2.gone===true,"тридцать суток без визита — ящик сдан");
     eq(c1-G.credits,0,"и за сдачу денег не берут");
     eq(lockerUsed(L),0,"ящик после сдачи пуст");
-  }finally{ Date.now=real; }
+  }finally{ clockSet(now0); }
   resetWorld();
 }));

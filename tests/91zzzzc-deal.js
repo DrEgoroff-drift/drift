@@ -12,7 +12,7 @@ TEST_SUITES.push(()=>suite("дело: наёмник, управляющий, д
   const c=G.crew[0];
   eq(c.shipId,null,"корпуса ему не выдали");
   /* дрон в рейсе */
-  const now=Date.now();
+  const now=clockNow();
   G.drones=[{id:1,sx:G.sx,sy:G.sy,pi:0,res:"titan",rate:1,pool:100,soldAtMs:now,
              t0:now,lastMs:now,bornMs:now,trips:0,down:0,sold:0,earned:0}];
   openDeal();
@@ -59,7 +59,7 @@ TEST_SUITES.push(()=>suite("дело: кнопка появляется по п�
   const b=document.getElementById("dealbtn");
   eq(b.style.display,"none","пустое хозяйство — двери нет");
   eq(dealCount(),0,"и считать нечего");
-  const now=Date.now();
+  const now=clockNow();
   G.drones=[{id:1,sx:G.sx,sy:G.sy,pi:0,res:"titan",rate:1,pool:100,soldAtMs:now,
              t0:now,lastMs:now,bornMs:now,trips:0,down:0,sold:0,earned:0}];
   G.mode="system";dealBtnTick();

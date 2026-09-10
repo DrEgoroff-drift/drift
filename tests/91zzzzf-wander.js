@@ -48,10 +48,10 @@ TEST_SUITES.push(()=>suite("сорока: положение — функция 
 
 TEST_SUITES.push(()=>suite("сорока: слух, вахта, карта и подход в системе",()=>{
   resetWorld();
-  const now0=Date.now;
+  const now0=now();
   try{
     const w=wanderAt(WANDER_T0+1000);
-    Date.now=()=>WANDER_T0+1000;
+    clockSet(WANDER_T0+1000);
     /* слух — там, где стоянка: разброс 2–3, картинка про паруса */
     G.sys=getSystem(w.sx,w.sy);G.sx=w.sx;G.sy=w.sy;
     let got=null;
@@ -84,16 +84,16 @@ TEST_SUITES.push(()=>suite("сорока: слух, вахта, карта и п
     try{for(let i=0;i<4;i++){updateSystem(1);drawSystem();}}catch(e){err=e.message;}
     eq(err,"","система с парусником рисуется");
     /* и на переходе — блик из покинутой системы, тоже без исключений */
-    Date.now=()=>WANDER_T0+3*86400e3+3600e3;
+    clockSet(WANDER_T0+3*86400e3+3600e3);
     try{drawSystem();}catch(e){err=e.message;}
     eq(err,"","уходящий блик рисуется");
     /* карта: без артефакта глифа нет и падений нет */
     G.mode="map";
     try{drawWanderMap([{gx:w.sx,gy:w.sy,x:100,y:100}],40);}catch(e){err=e.message;}
     eq(err,"","карта без артефакта молчит и не падает");
-    Date.now=()=>WANDER_T0+1000;G.mode="system";
+    clockSet(WANDER_T0+1000);G.mode="system";
     ok(wanderDock()&&G.mode==="wanderer","трап спущен — комната открылась (M343)");
     exitWanderer();
-  }finally{Date.now=now0;}
+  }finally{clockSet(now0);}
   G.mode="system";
 }));

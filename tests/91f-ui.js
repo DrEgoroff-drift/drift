@@ -343,8 +343,8 @@ TEST_SUITES.push(()=>suite("интерфейс: нарисованное на к
    подсвеченной закладки — и не понимал, где он (замер 30.08.2026). */
 TEST_SUITES.push(()=>suite("интерфейс: выбранная закладка не стоит за краем",()=>{
   resetWorld();
-  G.drones=[{id:1,sx:G.sx,sy:G.sy,pi:0,res:"titan",rate:1,pool:100,t0:Date.now(),
-             lastMs:Date.now(),bornMs:Date.now(),trips:0,down:0,sold:0,earned:0}];
+  G.drones=[{id:1,sx:G.sx,sy:G.sy,pi:0,res:"titan",rate:1,pool:100,t0:now(),
+             lastMs:now(),bornMs:now(),trips:0,down:0,sold:0,earned:0}];
   /* берём самую дальнюю живую закладку: она заведомо за краем, если полоса
      длиннее окна, — иначе проверка проходит сама собой и ничего не сторожит */
   tableToggle(true,"ether");

@@ -53,7 +53,7 @@ TEST_SUITES.push(()=>suite("дом: по вещам можно ткнуть",()=
   drawHomeRoom(c2);                       // пустая жилая часть рисуется без ошибок
   ok(HOME_HIT.some(z=>z.id==="living"),"жилая часть — зона");
   G.crew.push(Object.assign(genMerc(hashi(1,2,3)),{order:null,morale:.2,
-    tMs:Date.now(),paidMs:Date.now()}));
+    tMs:now(),paidMs:now()}));
   const cr=G.crew[0];
   ok(!!cr,"наёмник дома есть");
   drawHomeRoom(c2);                       // поникший рисуется своей позой

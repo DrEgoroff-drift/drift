@@ -134,7 +134,7 @@ TEST_SUITES.push(()=>suite("M310: флот идёт по лестнице, тр�
   for(const k of ["post","tanker","tug"]){const a=fleetArtOf(Object.assign({},f,{k,seed:k.length}));ok(a.cn.width>0&&a.lights.length>=3,k+": спрайт запечён, огни есть");}
   /* позывной и норма: танкер рядом, баки пусты */
   G.mode="system";
-  const b=Math.floor(Date.now()/FLEET_PERIOD);
+  const b=Math.floor(now()/FLEET_PERIOD);
   const X=G.ship.x,Y=G.ship.y;
   sys.fleetCache={b,list:[{k:"tanker",seed:9,name:"ОКОЁМ",num:"Л-1426",line:4,x0:X+60,y0:Y,x1:X+60,y1:Y,bow:0,ph:0}]};
   G.fleetLog={};G.fuel=1;
@@ -154,7 +154,7 @@ TEST_SUITES.push(()=>suite("M311: шесть классов нарисованы
   ok(Object.values(FLEET_CLASSES).filter(c=>c.art).length>=6,"нарисованы не меньше шести классов");
   for(const k of ["patrol","ferry","base"]){const a=fleetArtOf({k,seed:k.length+7,name:"X",num:"Л-1",line:1});ok(a.cn.width>0,k+": спрайт запечён");}
   const sys=G.sys;G.mode="system";
-  const b=Math.floor(Date.now()/FLEET_PERIOD),X=G.ship.x,Y=G.ship.y;
+  const b=Math.floor(now()/FLEET_PERIOD),X=G.ship.x,Y=G.ship.y;
   const st=stat();
   const put=k=>{sys.fleetCache={b,list:[{k,seed:3,name:"ТЕСТ",num:"Л-1",line:1,x0:X+50,y0:Y,x1:X+50,y1:Y,bow:0,ph:0}]};};
   G.fleetLog={};
@@ -187,14 +187,14 @@ TEST_SUITES.push(()=>suite("M312: тринадцать классов запеч
   eq(Object.values(FLEET_CLASSES).filter(c=>c.art).length,13,"нарисованы все тринадцать");
   for(const k in FLEET_CLASSES){const a=fleetArtOf({k,seed:k.length*3+1,name:"X",num:"Л-1",line:1});ok(a.cn.width>0&&a.lights.some(l=>l.c==="eng"),k+": спрайт и сопло");}
   const sys=G.sys;G.mode="system";
-  const b=Math.floor(Date.now()/FLEET_PERIOD),X=G.ship.x,Y=G.ship.y;
+  const b=Math.floor(now()/FLEET_PERIOD),X=G.ship.x,Y=G.ship.y;
   const put=k=>{sys.fleetCache={b,list:[{k,seed:3,name:"ТЕСТ",num:"Л-1",line:1,x0:X+50,y0:Y,x1:X+50,y1:Y,bow:0,ph:0}]};};
   G.fleetLog={};
   /* почтовик без сети — только позывной */
   put("post");actEdge=false;fleetInteract(G.ship);
   ok(/ПОЗЫВНОЙ|КАРАВАНОМ/.test(G.prompt)&&G.prompt.indexOf("ПОЧТУ")<0,"без сети почту не сдать — позывной");
   /* госпитальное: заложник за полцены */
-  const h={id:"cH",seed:5,name:"Тест Заложник",spec:"pilot",traits:[],xp:10,state:"hostage",ransom:1000,ransomBase:1000,ransomAt:Date.now(),order:{kind:"home",sx:G.sx,sy:G.sy},shipId:null,trips:1};
+  const h={id:"cH",seed:5,name:"Тест Заложник",spec:"pilot",traits:[],xp:10,state:"hostage",ransom:1000,ransomBase:1000,ransomAt:now(),order:{kind:"home",sx:G.sx,sy:G.sy},shipId:null,trips:1};
   G.crew=[h];G.credits=5000;
   put("hosp");fleetInteract(G.ship);
   ok(G.prompt.indexOf("ВЫКУП ЧЕРЕЗ ГОСПИТАЛЬ")>=0&&G.prompt.indexOf("500")>=0,"госпиталь просит половину");
@@ -231,7 +231,7 @@ TEST_SUITES.push(()=>suite("M313: узловая с рунга 25, дерели�
   for(const k of ["node","derelict"]){const a=fleetArtOf({k,seed:2,name:"УЗ-1",num:"",line:0});ok(a.cn.width>0,k+": спрайт запечён");}
   /* караван */
   G.mode="system";const sys=G.sys;
-  const b=Math.floor(Date.now()/FLEET_PERIOD),X=G.ship.x,Y=G.ship.y;
+  const b=Math.floor(now()/FLEET_PERIOD),X=G.ship.x,Y=G.ship.y;
   sys.fleetCache={b,list:[{k:"ore",seed:3,name:"КОСОГОР",num:"Л-1",line:1,x0:X+60,y0:Y,x1:X+60,y1:Y,bow:0,ph:0}]};
   G.caravan=null;G.fleetLog={};G.fuel=stat().fuelMax;G.hull=stat().hullMax;
   actEdge=false;fleetInteract(G.ship);
@@ -254,7 +254,7 @@ TEST_SUITES.push(()=>suite("M314: трассы рисуются между си�
   ok(strokes>=2,"между двумя соседями со станцией легла трасса, к дикой — нет ("+strokes+")");
   window.rungOf=saveRung;
   G.mode="system";const sys=G.sys;
-  const b=Math.floor(Date.now()/FLEET_PERIOD),X=G.ship.x,Y=G.ship.y;
+  const b=Math.floor(now()/FLEET_PERIOD),X=G.ship.x,Y=G.ship.y;
   sys.fleetCache={b,list:[{k:"rescue",seed:3,name:"ПОЛЫНЬ",num:"Л-1",line:1,x0:X+50,y0:Y,x1:X+50,y1:Y,bow:0,ph:0}]};
   G.barges=[{seed:1,x:X+900,y:Y-300,vx:0,vy:0,a:0,distress:true,done:0,hp:50,hullMax:100,capName:"Тук",temper:"bold",good:"iron",qty:1,cap:1,budget:1,fac:"x"}];
   G.caravan=null;actEdge=false;fleetInteract(G.ship);
@@ -296,7 +296,7 @@ TEST_SUITES.push(()=>suite("M315: планеты крупнее корабля, 
   ok(hit===1,"обычный клик доходит");G.mode=modeWas;scr.classList.remove("open");
   /* Кольцо: на рунге 30 первый корабль линии окликает сам */
   const sys=G.sys;G.mode="system";
-  const b=Math.floor(Date.now()/FLEET_PERIOD),X=G.ship.x,Y=G.ship.y;
+  const b=Math.floor(now()/FLEET_PERIOD),X=G.ship.x,Y=G.ship.y;
   sys.fleetCache={b,list:[{k:"tanker",seed:3,name:"ОКОЁМ",num:"Л-1",line:1,x0:X+400,y0:Y,x1:X+400,y1:Y,bow:0,ph:0}]};
   G.fleetLog={};G.name="Егоров";
   const saveRung=window.rungOf;window.rungOf=()=>29;

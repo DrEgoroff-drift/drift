@@ -35,7 +35,7 @@ TEST_SUITES.push(()=>suite("ренегат: уходит с флагманом �
   for(let i=0;i<3;i++){
     const c=genMerc(hashi(i,5,7),null);
     G.crew.push(Object.assign({},c,{shipId:"igla",cargo:{},
-      order:{kind:"hunt",sx:G.sx,sy:G.sy},tMs:Date.now(),paidMs:Date.now(),fee:0}));
+      order:{kind:"hunt",sx:G.sx,sy:G.sy},tMs:now(),paidMs:now(),fee:0}));
   }
   m.loy=0;mgrDefect(m);
   eq(G.rogues.length,1,"ренегат записан");
@@ -67,7 +67,7 @@ TEST_SUITES.push(()=>suite("ренегат: уходит с флагманом �
 TEST_SUITES.push(()=>suite("изгнанник: возвращается дешевле и со своими перками",()=>{
   resetWorld();
   G.exiles=[{name:"Ковач",role:"cmd",seed:12345,lv:4,perks:["drill1","rota"],
-    traits:[MGR_TRAITS[0].id],fee:900,t:Date.now()}];
+    traits:[MGR_TRAITS[0].id],fee:900,t:now()}];
   let st=null;
   for(let sx=-4;sx<=4&&!st;sx++)for(let sy=-4;sy<=4&&!st;sy++){
     if(!starAt(sx,sy))continue;

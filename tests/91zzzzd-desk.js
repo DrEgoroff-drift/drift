@@ -51,7 +51,7 @@ TEST_SUITES.push(()=>suite("стол: внутри вещи только её з
 
 TEST_SUITES.push(()=>suite("стол: рейсы ушли в ДЕЛО, рисунки не падают",()=>{
   resetWorld();
-  const now=Date.now();
+  const now=clockNow();
   G.drones=[{id:1,sx:G.sx,sy:G.sy,pi:0,res:"titan",rate:1,pool:100,soldAtMs:now,
              t0:now,lastMs:now,bornMs:now,trips:0,down:0,sold:0,earned:0}];
   tableToggle(true);

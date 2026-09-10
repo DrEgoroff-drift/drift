@@ -46,12 +46,12 @@ TEST_SUITES.push(()=>suite("коробки: на блошинце и на бор
   if(bz){
     G.sys=bz;G.sx=bz.sx;G.sy=bz.sy;G.credits=100000;
     let lot=null;
-    const ep0=Date.now;
+    const ep0=now();
     try{
-      for(let k=0;k<60&&!lot;k++){Date.now=()=>ep0()+k*FLEA_EPOCH;lot=fleaLots(bz).find(l=>l.kind==="box");}
+      for(let k=0;k<60&&!lot;k++){clockSet(ep0+k*FLEA_EPOCH);lot=fleaLots(bz).find(l=>l.kind==="box");}
       ok(!!lot,"коробок на прилавке бывает");
       if(lot){fleaBuy(lot.id,"cr",bz);eq(boxCount(),1,"куплен — на полке");}
-    }finally{Date.now=ep0;}
+    }finally{clockSet(ep0);}
   }else ok(true,"блошинца рядом нет — не меряем");
   /* «Сорока»: коробок за одну спичку среди бумаг какой-нибудь эпохи */
   G.boxes=[];

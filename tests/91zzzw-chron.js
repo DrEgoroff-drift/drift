@@ -387,7 +387,7 @@ TEST_SUITES.push(()=>suite("выборы M378: вопрос от зерна ме
 TEST_SUITES.push(()=>suite("сбор M378: три поля и ни одного слова",()=>{
   chWorld();
   /* сигнал — это система, сводка и счётчик. Ничего больше в нём нет */
-  RALLY_CACHE={t:Date.now(),rows:[{sys:"3,4",at:700,n:698,yes:5,a:[]}]};
+  RALLY_CACHE={t:wallNow(),rows:[{sys:"3,4",at:700,n:698,yes:5,a:[]}]};
   const R=rallyAt(3,4);
   ok(!!R,"сигнал виден по адресу");
   eq(R.yes,5,"и счётчик при нём");

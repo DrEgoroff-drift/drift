@@ -34,7 +34,7 @@ TEST_SUITES.push(()=>suite("карточки: услышал — записал,
   const s=qslAll().sent[o.id];
   ok(s.due-s.t>=QSL_WAIT,"ответ идёт неделями ("+Math.round((s.due-s.t)/86400000)+" сут)");
   /* переводим часы вперёд */
-  s.due=Date.now()-1000;
+  s.due=now()-1000;
   eq(qslTick(),1,"пришла");
   ok(qslGot(o.id),"и легла на стену");
   ok(G.things.some(t=>t.qsl===o.id),"и в вещи");
@@ -44,7 +44,7 @@ TEST_SUITES.push(()=>suite("карточки: услышал — записал,
 TEST_SUITES.push(()=>suite("карточки: стена собирается целиком и переживает сохранение",()=>{
   resetWorld();
   G.qsl=null;G.things=[];G.record=null;
-  for(const o of QSL_OPS){qslHear(o.id);qslSend(o.id);qslAll().sent[o.id].due=Date.now()-1;}
+  for(const o of QSL_OPS){qslHear(o.id);qslSend(o.id);qslAll().sent[o.id].due=now()-1;}
   const n=qslTick();
   eq(n,QSL_OPS.length,"ответили все");
   eq(qslWall().length,QSL_OPS.length,"стена полна");

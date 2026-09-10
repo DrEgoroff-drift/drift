@@ -1,6 +1,6 @@
 /* ══════════════ база: наборы M396–M401 ══════════════
    Продолжение `91zzzw-base.js`: соседство и залы, директор, аврал, устав,
-   формуляр планеты и девять законов. Помощники (`bLife`, `bCrew`, `bNoDir`)
+   формуляр планеты и девять законов. Помощники (`bLife`, `bCrew`, `bCalm`)
    объявлены в первом файле — он и склеивается раньше по байтам. Разрезано на
    0.409.0: один файл дорос до ста килобайт, а такой уже не читают целиком. */
 /* ── соседство и залы (M396) ──
@@ -166,14 +166,14 @@ TEST_SUITES.push(()=>suite("база M397: беда ходит, а гермоз�
 }));
 
 TEST_SUITES.push(()=>suite("база M397: у каждой погоды своё последствие",()=>{
-  const B=bLife();
+  const B=bLife();bCalm(B,24);
   const n=bShift();
   /* занос: бур стоит, и это видно */
   baseEventApply(B,{k:"dust"},n);
   ok(baseDusty(B,n),"занос идёт");
   const ore0=bPool(B);
   B.t0=n-1;
-  bNoDir(()=>baseResolve(B,Date.now()));
+  baseResolve(B,now());
   eq(bPool(B),ore0,"в занос бур не добывает");
   B.dust=0;
   /* холодный удар: тепло вниз на своё */
@@ -361,7 +361,7 @@ TEST_SUITES.push(()=>suite("база M400: планета и есть сложн
 }));
 
 TEST_SUITES.push(()=>suite("база M400: ручки и правда крутят",()=>{
-  const B=bLife();
+  const B=bLife();bCalm(B,24);
   const key=B.sx+","+B.sy+":"+B.idx+":"+B.type;
   const set=o=>{G._dial[key]=Object.assign({heat:0,light:1,press:0,grav:1,wind:0,
     quake:0,ice:0,ore:2,type:B.type,key:"тест"},o);};
@@ -379,7 +379,7 @@ TEST_SUITES.push(()=>suite("база M400: ручки и правда крутя
   ok(dialLeak(B)>0,"с давлением уходит: "+dialLeak(B)+" за смену");
   baseLife(B).air=100;
   B.t0=baseShift()-1;
-  bNoDir(()=>baseResolve(B,Date.now()));
+  baseResolve(B,now());
   ok(baseLife(B).air<100-2*LIFE_AIR,"и это сверх того, что надышали");
   /* лёд: на ледяном мире ледоплавке нужно меньше */
   set({ice:2});

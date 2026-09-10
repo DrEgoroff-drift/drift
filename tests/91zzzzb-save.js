@@ -29,7 +29,7 @@ TEST_SUITES.push(()=>suite("запись: не бросает и называе�
 
   /* разбухание видно ДО того, как станет смертельным */
   const wasLog=G.log;
-  G.log=[{t:Date.now(),k:"",s:new Array(1100000).join("x")}];
+  G.log=[{t:now(),k:"",s:new Array(1100000).join("x")}];
   const t3=saveText();
   ok(typeof t3==="string"&&t3.length>1000000,"толстая запись всё равно пишется");
   const fat=(G.log||[]).map(e=>e.s).join(" | ");

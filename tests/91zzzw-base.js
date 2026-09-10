@@ -55,15 +55,29 @@ function bLife(){
   return B;
 }
 function bPool(B){let s=0;for(const k in B.pool)s+=B.pool[k]|0;return s;}
-/* ── замер без погоды ──
+/* ── замер в тихую погоду (M441) ──
    С M397 у базы есть директор, и он может в ту же смену прислать баржу с
-   грузом или жилу под бур. Набор, который меряет ДОБЫЧУ или консервацию,
-   обязан мерить их, а не удачу: на время замера погода выключается, и это
-   сказано вслух. Сам директор проверяется своим набором. */
-function bNoDir(fn){
-  const keep=baseEventAt;
-  baseEventAt=()=>null;
-  try{return fn();}finally{baseEventAt=keep;}
+   грузом, жилу под бур или выброс. Набор, который меряет ДОБЫЧУ, дыхание или
+   консервацию, обязан мерить их, а не удачу. До M441 директора на время
+   замера выключали подменой функции (bNoDir) — и мерилась не та игра, в
+   которую играют. С прибитыми часами (resetWorld → clockSet) погода — такое
+   же условие опыта, как тип планеты: набор ставит часы на смену, где директор
+   по СВОЕМУ прогнозу молчит k смен подряд, и дальше идёт настоящая игра со
+   всеми её системами. Молчать он обязан даже при самой большой угрозе, какая
+   у этой базы может стать за набор: пробник — та же база с «нажитым» до
+   потолка (угроза растёт с нажитым, людьми и отсеками — дальше некуда). Час
+   старта прогона (?hour=) на исход больше не влияет: окно ищется от него.
+   Сам директор проверяется своим набором. */
+function bCalm(B,k){
+  const probe=Object.assign({},B,{pool:{iron:1e9},park:0,fire:null});
+  let n=baseShift();
+  for(let i=0;i<20000;i++,n++){
+    let calm=true;
+    for(let j=0;j<k&&calm;j++)if(baseEventAt(probe,n-j))calm=false;
+    if(calm){clockSet(n*HOLD_SHIFT+(HOLD_SHIFT>>1));B.t0=baseShift();B.tMs=now();return n;}
+  }
+  ok(false,"тихих "+k+" смен подряд у директора не нашлось");
+  return n;
 }
 
 TEST_SUITES.push(()=>suite("база M390: смена одна на всех, повтор повторяется",()=>{
@@ -76,7 +90,7 @@ TEST_SUITES.push(()=>suite("база M390: смена одна на всех, п
   eq(BASE_CAP_SH,Math.floor(CREW_OFFLINE_CAP/HOLD_SHIFT),"потолок догона — сутки в сменах");
   /* ── догон считает СМЕНЫ, а не заходы ──
      Полсмены не даёт ничего: остаток не теряется, он дожидается своей смены. */
-  const now=Date.now();
+  const now=clockNow();
   B.t0=baseShift(now);
   eq(baseResolve(B,now),0,"в свою же смену считать нечего");
   eq(baseSince(B,now),0,"и смен не прошло");
@@ -111,7 +125,7 @@ TEST_SUITES.push(()=>suite("база M390: смена одна на всех, п
 
 TEST_SUITES.push(()=>suite("база M390: сутки потолок, глубже — одной строкой",()=>{
   const B=bLife();
-  const now=Date.now();
+  const now=clockNow();
   /* неделя отсутствия — это всё равно сутки: `CREW_OFFLINE_CAP` в сменах */
   B.t0=baseShift(now)-500;
   eq(baseSince(B,now),BASE_CAP_SH,"из пятисот смен догоняются семьдесят две");
@@ -170,7 +184,7 @@ TEST_SUITES.push(()=>suite("база M390: старое сохранение о�
   eq(typeof B2.t0,"number","смена ей проставлена");
   eq(B2.t0,baseShift(),"и это текущая: простой между сеансами не начисляется");
   ok(Array.isArray(B2.log),"журнал есть, пусть и пустой");
-  eq(baseResolve(B2,Date.now()),0,"и сразу после загрузки считать нечего");
+  eq(baseResolve(B2,now()),0,"и сразу после загрузки считать нечего");
   /* новая запись журнал переживает */
   B2.log=[{n:5,k:"quiet",t:"смена прошла тихо"}];
   applySave(JSON.parse(JSON.stringify(snapshot())));
@@ -190,11 +204,14 @@ function bCrew(B,n){
   return G.crew;
 }
 
-/* Замер идёт без погоды (bNoDir): директор M397 сеется номером РЕАЛЬНОЙ смены, и в
+/* Замер идёт в тихую погоду (bCalm): директор M397 сеется номером смены, и в
    иное время суток он устраивал выброс — набор краснел по часам (получено 52,
-   ждали 108; лаборатория, 10.09.2026). Здесь мерится арифметика дыхания, не удача. */
+   ждали 108; лаборатория, 10.09.2026). Раньше директора выключали (bNoDir);
+   с M441 часы прибиты, и набор просто выбирает смены, где погоды нет. Здесь
+   мерится арифметика дыхания, не удача. */
 TEST_SUITES.push(()=>suite("база M391: воздух и вода, и кто их тратит",()=>{
   const B=bLife();
+  bCalm(B,24);
   /* запас есть у всякой базы, и он целый */
   const L=baseLife(B);
   eq(L.air,LIFE_START,"воздух с чего-то начинается");
@@ -204,7 +221,7 @@ TEST_SUITES.push(()=>suite("база M391: воздух и вода, и кто �
      разу не согласившись на эту игру. */
   G.crew=[];
   B.t0=baseShift()-20;
-  bNoDir(()=>baseResolve(B,Date.now()));
+  baseResolve(B,now());
   eq(baseLife(B).air,LIFE_START,"за двадцать смен без людей воздух не тронут");
   eq(baseLife(B).water,LIFE_START,"и вода тоже");
   ok(!baseParked(B),"и вставать не с чего");
@@ -212,7 +229,7 @@ TEST_SUITES.push(()=>suite("база M391: воздух и вода, и кто �
   bCrew(B,2);
   eq(baseLifeNeed(B).air,2*LIFE_AIR,"двое дышат вдвое");
   B.t0=baseShift()-3;
-  bNoDir(()=>baseResolve(B,Date.now()));
+  baseResolve(B,now());
   eq(baseLife(B).air,LIFE_START-3*2*LIFE_AIR,"три смены на двоих — шесть заходов дыхания");
   eq(baseLife(B).water,LIFE_START-3*2*LIFE_WATER,"и столько же воды");
   /* ── машины делают запас изо льда ──
@@ -226,14 +243,14 @@ TEST_SUITES.push(()=>suite("база M391: воздух и вода, и кто �
   B.pool.ice=100;
   const a0=baseLife(B).air,i0=B.pool.ice;
   B.t0=baseShift()-1;
-  bNoDir(()=>baseResolve(B,Date.now()));
+  baseResolve(B,now());
   ok(baseLife(B).air>a0,"электролизёр прибавил воздуха: "+a0+" → "+baseLife(B).air);
   ok(B.pool.ice<i0,"и лёд на это ушёл: "+i0+" → "+B.pool.ice);
   /* лёд кончился — машина просто стоит, и это не поломка */
   B.pool.ice=0;
   const a1=baseLife(B).air;
   B.t0=baseShift()-1;
-  bNoDir(()=>baseResolve(B,Date.now()));
+  baseResolve(B,now());
   ok(baseLife(B).air<a1,"без льда машина не делает ничего, а люди дышат");
 }));
 
@@ -258,12 +275,13 @@ TEST_SUITES.push(()=>suite("база M391: выброс на пустой баз
 
 TEST_SUITES.push(()=>suite("база M391: встала, но не умерла",()=>{
   const B=bLife();
+  bCalm(B,24);
   bCrew(B,2);
   B.pool.ice=0;
   baseLife(B).air=2;baseLife(B).water=LIFE_START;
   const ore0=bPool(B);
   B.t0=baseShift()-1;
-  bNoDir(()=>baseResolve(B,Date.now()));
+  baseResolve(B,now());
   /* ── §13: перестаёт работать раньше, чем начнёт голодать ── */
   ok(baseParked(B),"запас кончился — база встала");
   eq(baseLife(B).air,0,"воздух в нуле, а не в минусе: долг не копится");
@@ -284,10 +302,10 @@ TEST_SUITES.push(()=>suite("база M391: встала, но не умерла"
   /* смена на раскочегарку: первая смена после подъёма ничего не даёт */
   const ore1=bPool(B);
   B.t0=baseShift()-1;
-  bNoDir(()=>baseResolve(B,Date.now()));
+  baseResolve(B,now());
   eq(bPool(B),ore1,"смена на раскочегарку не добывает");
   B.t0=baseShift()-1;
-  bNoDir(()=>baseResolve(B,Date.now()));
+  baseResolve(B,now());
   ok(bPool(B)>ore1,"а следующая — уже да");
   /* лёд идёт и в запас, и на склад: он и вода, и сырьё */
   G.cargo.ice=(G.cargo.ice|0)+5;
@@ -308,7 +326,7 @@ TEST_SUITES.push(()=>suite("база M391: консервация — это х�
   ok(B.park<0,"и стоит она НЕ из-за запаса");
   const ore0=bPool(B);
   B.t0=baseShift()-5;
-  baseResolve(B,Date.now());
+  baseResolve(B,now());
   eq(bPool(B),ore0,"пять смен консервации не добыли ничего");
   ok(baseParked(B),"и сама она не встанет: рукой поставили — рукой и снимать");
   ok(baseLife(B).air>0,"запас при этом цел");
@@ -382,7 +400,7 @@ TEST_SUITES.push(()=>suite("база M392: тепло с обеих сторон
   B.pool.ice=100;
   const w0=baseLife(B).water;
   B.t0=baseShift()-1;
-  baseResolve(B,Date.now());
+  baseResolve(B,now());
   eq(baseLife(B).water,w0,"в мороз ледоплавка не даёт воды");
   /* жара: техника изнашивается, и только настоящая жара */
   const B2=bLife();
@@ -391,7 +409,7 @@ TEST_SUITES.push(()=>suite("база M392: тепло с обеих сторон
   ok(baseHeat(B2)>HEAT_HARD,"база в печке: "+baseHeat(B2));
   const hp0=B2.cells.filter(c=>c).reduce((s,c)=>s+c.hp,0);
   B2.t0=baseShift()-20;
-  baseResolve(B2,Date.now());
+  baseResolve(B2,now());
   const hp1=B2.cells.filter(c=>c).reduce((s,c)=>s+c.hp,0);
   ok(hp1<hp0,"жара сточила технику: "+hp0.toFixed(2)+" → "+hp1.toFixed(2));
   /* ── и главная проверка вехи ──
@@ -399,7 +417,7 @@ TEST_SUITES.push(()=>suite("база M392: тепло с обеих сторон
      процентов выработки и не изнашивается, а лечится ОДНИМ радиатором за 900
      кр. Так и задумано: веха, которая молча уронила бы добычу вдвое всем, кто
      уже построил базу, — это не шкала, а отнятое. */
-  const B3=bLife();
+  const B3=bLife();bCalm(B3,24);
   ok(baseHeat(B3)>HEAT_OK,"обычная база тёплая: "+baseHeat(B3));
   ok(baseHeat(B3)<=HEAT_HARD,"но не печка");
   eq(baseHeatBand(B3),1,"первая ступень");
@@ -411,15 +429,15 @@ TEST_SUITES.push(()=>suite("база M392: тепло с обеих сторон
   eq(baseHeatMul(B3),1,"и выработка возвращается целиком");
   const hp2=B3.cells.filter(c=>c).reduce((s,c)=>s+c.hp,0);
   B3.t0=baseShift()-20;
-  bNoDir(()=>baseResolve(B3,Date.now()));
+  baseResolve(B3,now());
   const calm=hp2-B3.cells.filter(c=>c).reduce((s,c)=>s+c.hp,0);
   ok(calm>0&&calm<.3,"в норме износ есть, но он ровный: "+calm.toFixed(3));
-  const B4=bLife();
+  const B4=bLife();bCalm(B4,24);
   B4.type="volcanic";
   for(let i=0;i<4;i++)B4.cells[5+i]={k:"reactor",hp:1};
   const hp3=B4.cells.filter(c=>c).reduce((s,c)=>s+c.hp,0);
   B4.t0=baseShift()-20;
-  bNoDir(()=>baseResolve(B4,Date.now()));
+  baseResolve(B4,now());
   const hot2=hp3-B4.cells.filter(c=>c).reduce((s,c)=>s+c.hp,0);
   ok(hot2>calm,"а в печке точит заметно быстрее: "+hot2.toFixed(2)+" против "+calm.toFixed(3));
 }));
@@ -447,7 +465,7 @@ TEST_SUITES.push(()=>suite("база M392: криоген везут, криоц
   eq(baseHeat(B2),idle+HEAT_CELL.cryo,"с газом криоцех холодит");
   B2.cells[4]={k:"reactor",hp:1};B2.cells[9]={k:"reactor",hp:1};
   B2.t0=baseShift()-1;
-  baseResolve(B2,Date.now());
+  baseResolve(B2,now());
   eq(B2.pool.cryo|0,CRYO_RECIPE.cryo,"за смену дал криоген");
   eq(B2.pool.volatiles|0,9-CRYO_RECIPE.volatiles,"и съел газы");
   ok(B2.log.some(x=>x.k==="cryo"),"и это в журнале");
@@ -472,12 +490,12 @@ TEST_SUITES.push(()=>suite("база M393: харч, вкус и кто его �
   B.pool.organics=0;
   L.food=0;L.water=100;
   B.t0=baseShift()-1;
-  baseResolve(B,Date.now());
+  baseResolve(B,now());
   eq(baseLife(B).food,0,"без органики грядку не засеять");
   B.pool.organics=LIFE_GARDEN.seed;
   const w0=baseLife(B).water,a0=baseLife(B).air;
   B.t0=baseShift()-1;
-  baseResolve(B,Date.now());
+  baseResolve(B,now());
   ok(baseLife(B).food>0,"засеяли — и харч пошёл: "+baseLife(B).food);
   eq(B.pool.organics|0,0,"органика ушла на посадку");
   ok(baseLife(B).water<w0,"оранжерея пьёт воду");
@@ -486,7 +504,7 @@ TEST_SUITES.push(()=>suite("база M393: харч, вкус и кто его �
   /* второй раз сеять не надо */
   const org=B.pool.organics|0;
   B.t0=baseShift()-1;
-  baseResolve(B,Date.now());
+  baseResolve(B,now());
   eq(B.pool.organics|0,org,"грядку не пересевают каждую смену");
   /* белковый бак: сытнее и скверно */
   const B2=bLife();
@@ -494,7 +512,7 @@ TEST_SUITES.push(()=>suite("база M393: харч, вкус и кто его �
   B2.pool.organics=LIFE_VAT.organics*2;
   baseLife(B2).food=0;
   B2.t0=baseShift()-1;
-  baseResolve(B2,Date.now());
+  baseResolve(B2,now());
   ok(baseLife(B2).food>0,"бак кормит: "+baseLife(B2).food);
   eq(baseLife(B2).q,"poor","и кормит скверно");
   ok(LIFE_VAT.food>LIFE_GARDEN.food,"зато сытнее оранжереи");
@@ -543,7 +561,7 @@ TEST_SUITES.push(()=>suite("база M393: дух читает все шкалы
   ok(baseSpirit(B)<SPIRIT_LOW,"на такой базе жить нельзя: дух "+baseSpirit(B));
   const was=G.crew.length;
   B.t0=baseShift()-SPIRIT_HOLD;
-  baseResolve(B,Date.now());
+  baseResolve(B,clockNow());
   eq(G.crew.length,was-1,"через три смены один ушёл");
   ok(B.log.some(x=>x.k==="leave"),"и сказал об этом своими словами");
   const line=B.log.filter(x=>x.k==="leave")[0].t;
@@ -552,7 +570,7 @@ TEST_SUITES.push(()=>suite("база M393: дух читает все шкалы
   /* и второй уходит не сразу: счётчик терпения начинается заново */
   const now=G.crew.length;
   B.t0=baseShift()-1;
-  baseResolve(B,Date.now());
+  baseResolve(B,clockNow());
   eq(G.crew.length,now,"следующий уходит не в ту же смену");
 }));
 
@@ -670,14 +688,14 @@ TEST_SUITES.push(()=>suite("база M395: три новые роли и пра�
   B2.pool.organics=99;
   baseLife(B2).food=0;
   B2.t0=baseShift()-1;
-  baseResolve(B2,Date.now());
+  baseResolve(B2,now());
   eq(baseLife(B2).q,"poor","бак без садовода кормит скверно");
   G.crew=[];bCrew(B2,1);G.crew[0].role="gardener";
   ok(baseFoodBoost(B2)>1,"садовод прибавляет харча: ×"+baseFoodBoost(B2).toFixed(2));
   ok(baseFoodKeepsGood(B2),"и держит вкус");
   baseLife(B2).q="poor";
   B2.t0=baseShift()-1;
-  baseResolve(B2,Date.now());
+  baseResolve(B2,now());
   eq(baseLife(B2).q,"good","при садоводе даже бак кормит по-человечески");
   /* радист: слышно дальше */
   const B3=bLife();

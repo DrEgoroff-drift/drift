@@ -32,7 +32,7 @@ function hdSite() {
   const H = G.hold[key] = G.hold[key] || {};
   H.deeds = { drone: 6, drill: 4, cargo: 900 };
   H.bld = {};
-  G.drones = [{ id: 1, sx: s.sx, sy: s.sy, pi: p.idx, res: "iron", rate: .6, pool: 100, t0: Date.now(), lastMs: Date.now(), bornMs: Date.now() }];
+  G.drones = [{ id: 1, sx: s.sx, sy: s.sy, pi: p.idx, res: "iron", rate: .6, pool: 100, t0: now(), lastMs: now(), bornMs: now() }];
   return s;
 }
 /* заложить как игрок: стройка берёт не только кредиты, но и МАТЕРИАЛ из трюма
@@ -53,7 +53,7 @@ function hdAgeShifts(key, id, n) {
      конец монтажа окажется позже начала отсчёта, и смен не будет НИ ОДНОЙ.
      Первый заход этой проверки так и получил ложную зелень: «из пустого
      бункера ничего не вышло» было верно лишь потому, что не прошло ни смены. */
-  B.t0 = Date.now() - n * HOLD_SHIFT;
+  B.t0 = now() - n * HOLD_SHIFT;
   B.ready = Math.min(B.ready || 0, B.t0 - 1000);
   return true;
 }

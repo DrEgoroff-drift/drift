@@ -102,7 +102,7 @@ function fuzzRich(){
   }
   /* дроны в рейсе — и в этой системе, и в соседней */
   if(typeof droneNextId==="function"){
-    const now=Date.now();
+    const now=clockNow();
     G.droneInventory=2;
     G.drones=[0,1,2].map(i=>({id:i+1,sx:G.sx,sy:G.sy,pi:i%2,res:["iron","titan","crystal"][i],
       rate:.6,pool:150,soldAtMs:now,t0:now-9000*i,lastMs:now-9000*i,bornMs:now-3600000,

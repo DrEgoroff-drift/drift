@@ -37,7 +37,7 @@ TEST_SUITES.push(()=>suite("Кольцо: сдать у стойки — «от�
   const S=G.sys.station?G.sys:null;ok(!!S,"станция есть");
   G.ship.x=S.station.x+40;G.ship.y=S.station.y;openStation();
   const R=ringAll();
-  R.tapes.push({sx:G.sx,sy:G.sy,dir:1,q:.5,day:celDay(),t:Date.now(),handed:0});
+  R.tapes.push({sx:G.sx,sy:G.sy,dir:1,q:.5,day:celDay(),t:now(),handed:0});
   thingAdd("tape","Лента","т",{ring:1,dir:1,q:.5});
   ok(ringHandIn(0),"сдана");
   eq(R.tapes[0].handed,1,"отмечена сданной");

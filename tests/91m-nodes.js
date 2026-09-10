@@ -9,13 +9,13 @@ TEST_SUITES.push(()=>suite("журнал: принял, записалось, е
   const m=mgrOf("cmd");
   const J=MGR_JOBS.filter(j=>j.role==="cmd"&&!j.choice)[0];
   ok(J,"нашлось поручение без выбора");
-  m.job={id:J.id,offer:1,t0:Date.now(),mins:J.mins};
+  m.job={id:J.id,offer:1,t0:now(),mins:J.mins};
   ok(jobAccept(m),"взялись");
   const q=questFind("job:"+m.id+":"+J.id);
   ok(q,"дело в журнале");
   eq(q.state,"active","и оно открыто");
   eq(q.sx,G.sx,"адрес — сектор, где взяли");
-  ok(q.until>Date.now(),"срок записан");
+  ok(q.until>now(),"срок записан");
   ok(questLeft(q).length>0,"срок показывается словами: "+questLeft(q));
   /* курс по делу: ткнули — карта и выбранная система */
   q.sx=3;q.sy=4;
@@ -118,7 +118,7 @@ TEST_SUITES.push(()=>suite("кантина: дела с ответом и отл
     ok(questFind("deal:"+d.key),"отложенный исход записан в журнал");
     eq(G.dealsWait.length,1,"и ждёт своего часа");
     /* исход приходит сам, когда время вышло */
-    G.dealsWait[0].at=Date.now()-1;
+    G.dealsWait[0].at=now()-1;
     dealsTick();
     eq(G.dealsWait.length,0,"исход пришёл");
     ok(!questFind("deal:"+d.key),"дело в журнале закрыто");

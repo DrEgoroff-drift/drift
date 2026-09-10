@@ -397,7 +397,7 @@ TEST_SUITES.push(() => suite("сквозной: тычок во всё, что �
    то есть до сих пор не проверялась ничем. */
 function e2eLate() {
   fuzzRich();
-  const key = G.sx + "," + G.sy, now = Date.now();
+  const key = G.sx + "," + G.sy, now = clockNow();
   /* ворота ступени (12ad): садились, бурили, оставили дрона, отбили, назвали */
   G.place[key + "/0"] = { f: 1, l: 2, n: 3, take: 1, hurt: 0, care: 2 };
   G.occCalm[key] = 1; G.names[key] = "Отрадное"; G.rep[key] = 3;

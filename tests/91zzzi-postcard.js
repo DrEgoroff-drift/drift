@@ -406,7 +406,7 @@ TEST_SUITES.push(()=>suite("вымпел: уходит навсегда, мол�
   eq(probeDue(),null,"до срока зонда как будто нет");
   ok(p.due-p.t0>=PROBE_WAIT,"срок — недели, а не минуты");
   /* переводим часы вперёд, как это сделает жизнь */
-  p.due=Date.now()-1000;
+  p.due=now()-1000;
   ok(probeDue()===p,"срок вышел — зонд готов заговорить");
   const before=albumAll().length;
   const voice=probeSpeak(p);
