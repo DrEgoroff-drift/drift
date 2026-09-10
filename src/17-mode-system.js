@@ -517,13 +517,15 @@ function drawSystem(){
       ctx.beginPath();ctx.arc(mx,my,mr,0,TAU);ctx.fill();
       if(G.ap&&G.ap.kind==="planet"&&G.ap.p===m)reticle(mx,my,mr+10);
       if(G.found.has(m.key)&&mr>2.4){
-        ctx.fillStyle="rgba(154,168,178,.7)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
-        ctx.fillText(m.name.toUpperCase(),mx,my+mr+11);
+        ctx.fillStyle="rgba(154,168,178,.7)";ctx.font=uiFont(8);ctx.textAlign="center";
+        ctx.fillText(m.name.toUpperCase(),mx,my+mr+11*uiK());
       }
     }
+    /* имена тел — подписи к миру, но читает их игрок: кегль идёт по линейке
+       интерфейса (M443, как у станции в 17c) */
     if(G.found.has(p.key)){
-      ctx.fillStyle="rgba(127,230,216,.55)";ctx.font="9px ui-monospace,monospace";ctx.textAlign="center";
-      ctx.fillText(p.name.toUpperCase(),x,y+r+15);
+      ctx.fillStyle="rgba(127,230,216,.55)";ctx.font=uiFont(9);ctx.textAlign="center";
+      ctx.fillText(p.name.toUpperCase(),x,y+r+15*uiK());
     }
     if(G.ap&&G.ap.kind==="planet"&&G.ap.p===p)reticle(x,y,r+16);
   }
