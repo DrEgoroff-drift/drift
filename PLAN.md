@@ -232,138 +232,24 @@ cosmetics exist; the desk gets one table «ОПИСЬ»; a locker exists at stat
 
 ## Side passes of 2026-09-07 — the author's own asks, built in a worktree beside the base queue
 
+Bodies of the struck entries below moved to `docs/PLAN-archive.md` (2026-09-10, section «Side passes of 2026-09-07») — grep there by milestone.
 Numbered past the base queue so the two do not collide; versions are side versions of the last
 main release, as M360a/M369b were.
 
 - ~~**M422 the thumb anywhere**~~ — 0.418.0: the author, 07.09.2026 — «управление на мобилке
-  говно… из любого места на экране пальцем двигаешь и корабль туда летил… коротко назад он
-  тормозит… за пальцем идёт широкая полоска, чтобы понимать как оно». M410's intent was right;
-  five numbers and one boundary were wrong (`15a-helm` header has the five). The stick is now born
-  **anywhere** on the canvas — a finger becomes one by moving `HELM_TAKE` px or lying still past
-  `HELM_TAKE_MS`, which is outside the 400 ms tap window, so taps (autopilot, lock, chips) keep
-  both halves. Its centre **runs after the finger** (`helmDrag`), so the way back always costs the
-  same 82 px however far you dragged — that is «коротко назад» falling out of the geometry rather
-  than being a gesture of its own. Pulling back **is the brake** and takes the same road as the
-  dead zone and the ТОРМОЗ pad, at `HELM_STOP` and regardless of where the nose points: a full
-  stop in 1.4 s against 1.6 s to full speed, where before it was 4.1 s of maneuvering thrust — the
-  one correct guess about a phone, punished. The nose holds along the course while braking (it
-  used to swing 180° mid-stop, and the physics jumped from maneuvering to main halfway). A
-  released stick always coasts; the .55 rule stays with mouse and arrows, where releasing is
-  unambiguous. Two more concessions to the phone: the camera walks the ship out from under the
-  thumb (`helmCamOff`), and the drag draws a **ribbon** — its body is the wanted velocity, its
-  fill is the actual one, its colour says accelerating or braking, and its foot is a capsule along
-  the band, not the 93 px ring M360 was scolded for. Suites: `91zzzw-helm` (M422), `91zzx-mobile`.
 - ~~**M423 the log told the truth**~~ — 0.419.0: the author, 08.09.2026 — «а посмотри мои логи в
-  игре», then «чини все три, и сделай чтобы летопись не расходилась, как она ваще может
-  расходится». `crash.log` held 116 lines over four days, no crashes, and a hundred lines of
-  ordinary journal news: the `28-loop` hook posted every `warn` to the server. Replaced by
-  `logShip` (`01a-crashlog`) at the eight places that mean a defect — storage, save, cloud,
-  chronicle. Drone wear moved from lifetime `d.trips` to `d.wear` since the last repair: a day of
-  catch-up is a thousand circles, and after a week the break chance sat at 11–15% with the fleet
-  standing in the dock. And the chronicle diverged because `chronSave` never wrote its own lines,
-  which `chronGrudge` (24 сводки) and the fx families (up to 40) read: cache-borne clients and
-  first-time clients walked into different histories. Now the tail rides in the cache
-  (`CHRON_LINE_KEEP`), the server counts hashes per version under a quorum with `flock`
-  (`site/war.php`), and the open сводка's ledger is marked provisional so it is re-pulled once
-  closed (`14b-war-net`). Suites: `91zzzzzz-crashlog`, `91zzzy-drones`, `91zzzw-chron`. 0.419.1
-  finished it from the live page: the cache record became `v:2`, because a `v:1` record was
-  computed without the lines and is another history, not an older one.
 - ~~**M410 one thumb**~~ (0.401.1), ~~**M411 the war on the site**~~ (0.401.3) and ~~**M412 the
-  war runs by itself**~~ (0.401.2) — closed; bodies in `docs/PLAN-archive.md` under their numbers.
 
 
 - ~~**M431 the bulletin tells a story**~~ - 0.419.3: `src/12an-chron-news.js` (`newsOf`) writes a
-  three-part note per chronicle record - detail, the real consequence with its number and span,
-  and a closing line in the power's voice. Wired into the site feed (`war-map.js`, the headline
-  is now a rubric) and into the cantina's ether block (`12pa-beacon`). Suite `91zzzw-news` pins
-  the spans to `ECON_*`/`SOC_*`/`NAT_*`/`DIP_*`. Tail: the six waves still speak the old one-line
-  ether - whether a wave should retell the whole note in its own voice is an author's call.
 
 - ~~**M432 the ground is painted by its light**~~ - 0.420.0: P4 гризайль, the tenth and last
-  craft law, closed. `src/18a1-glaze.js` bakes the landing cross-section **in grey** and lays one
-  glaze per chunk - `dark + v·(light − dark)`, sky and star - so illumination reaches the whole
-  section instead of the slope ribbon it had since M242. Two `fillRect`s and a `destination-in`,
-  zero pixel readback. Nine hue events luminance cannot carry (veins, lava and ice seams, oxide,
-  dispersion, lichen) ride a third pass after the glaze: **grey means «paint me», colour means «I
-  know my own hue»**. The trade the author took on 09-07 («заливаем») is real and named in the
-  almanac: within one world the palette's hue ramp collapses to one hue lit from two sides, so
-  `tones` falls 5 → 4 at noon and 6 → 4 at night, while `mass` and `contrast` rise on every
-  daylight frame and ice goes 5 → 13 on mass, 6 → 39 on pair. Sheet of five frames across three
-  palettes: almanac issue VI. **The one frame worse than its numbers is the ice world:** it posts
-  the best row in the sheet and stopped looking like ice - this star is `[255,122,82]`, at noon its
-  term carries nearly the whole light stop, and every base hue arrives at the same clay. Left
-  standing (the author settled this fork), recorded with the frame in issue VI; if it is ever
-  reopened the lever is the illuminant, not the glaze - `starRGB()` is the disc, and the light that
-  reaches the ground through an atmosphere is whiter than the disc. Found on the way and fixed: a
-  flat shadow floor made the **night** a
-  black void with one lit island (§16, expose for the shadows) - the floor now walks with the day,
-  .28 at noon and 1 at midnight. Suite `91zzzw-glaze` holds the algebra, not the picture: the real
-  `litRGB` must land between the two stops, or the glaze is lighting the section with a different
-  sun than the strips. **Where the glaze stops, and why (corrected 2026-09-09 after a second
-  look):** the cave and the mine are both baked in tiles already (`drawTiles`, 18c) — what they
-  lack is not a cache but a *static illuminant*: underground there is no sky and no star, the
-  light is the lamp and the moss, drawn live over the tile (`drawCaveOwnLight`, the M304 §16
-  glazes). A per-tile glaze has no `light` stop to compute there, so P4 is complete where a sky
-  exists. ~~The one open consumer from the P4 row is `07-planet`'s disc~~ — **M435 (0.422.0)**: the
-  disc's day side is now lit in the star's colour and its limb glows in its own daylight sky
-  (`sky[0]` lifted toward white); airless worlds have no limb glow at all, a gas giant is rimmed
-  by its palette; the light bake is keyed by the star. The P4 row is closed end to end. Same
-  release: `19-mode-landing` (50 KB) cut at its seam into `19-mode-landing-ground` (the three-pass
-  section painters, crumbs, grass, boulders), and `07-planet` (40.6 KB after M435's own note) into
-  `07a-terrain` (`RELIEF_MIX`, `LAND_ARC`, `genTerrain`, `groundAt`).
 
 - ~~**M433 evening arrives: the ground shadows itself**~~ - 0.421.0: P5 of the combined plan,
-  built on the surface. `src/19c1-cast.js` marches a ray from every sample of the profile toward
-  `celSun`; relief or a boulder above the ray means sky and no star - in the slope strips, the
-  crust highlight, the движки, the boulder's body, and as a mask under the shadowed edge that fades
-  with depth. Grey, in the form pass, so the P4 glaze makes the shadow the sky's colour (§16 by
-  construction). Baked per chunk (the key already carried `sunAzQ`/`dayKq`), memoised on the
-  terrain, the frame pays nothing; no map at night or at the zenith. Sheet at a forced low sun in
-  almanac issue VII: `mass` +1…+3, `contrast` +.02…+.03, `pair` −3…−4 (a shadow is cold), and the
-  right flanks of the ridges finally fall into the evening. Geometry pinned in `91zzzw-cast`. The
-  row said «cave first» and «direction from `celSun`» - underground there is no sun, so the
-  surface went first; interiors are lamps that move, a live mask and another milestone. ~~**Tail:**
-  plants and deco are live and stay lit inside a cast shadow~~ - **M434 (0.421.1)**: the memo
-  became a small map keyed by chunk, `castLive(tr,x)` reads it by world x, and the deco (through
-  `dcol`), the plants (through `tone`) and the grass (a second, dimmer path) darken to `CAST_LIVE`
-  inside the shadow; the contact ellipse under a deco fades with it, since nothing casts it. The
-  walker keeps his own light on purpose - he carries a lamp and he is what the eye is for.
 - ~~**M436 one helm layout**~~ - 0.423.0: the author, 09.09.2026 - «сломал управление… продумай
-  логику, что на WASD, что на QE, мож стрелки нахер не нужны, посмотри как сделаны другие игры».
-  Two keyboard schemes (mouse: nose to cursor always, WASD in screen axes; arrows: from the nose)
-  switched by themselves on any mouse motion over the full-screen canvas, so W stopped meaning
-  «forward» and A/D stopped steering the moment the mouse was touched. Now one layout from the
-  nose (W throttle, S brake, A/D turn, Q/E strafe, Shift thrusters; arrows = the same keys), the
-  mouse leads the nose only while the right button is held (A/D strafe meanwhile), the missile is
-  G, and release = coast for every input - the .55 auto-brake is gone, the brake is one gesture
-  at `HELM_STOP` for keys, pad and stick alike. The phone helm (M422) is untouched. `15a-helm`
-  header, `docs/DESIGN-war.md` §1.2, the title table; suite `91zzzw-helm`.
 - ~~**M437 the map answers the hand**~~ - 0.424.0: the author, 09.09.2026 - «смотри шрифт как то
-  размывает, карта не увеличивается… перепридумай тесты, эти ничего не ловят». `+`/`−` were wired
-  to `setZoom` (the flight camera) while the map has had `G.mapZoom` since M299: on the map they
-  moved nothing and silently rescaled the system view behind the player's back. Now `zoomStep`
-  takes the scale of whatever is on screen, and the box leaves the rail where there is no scale
-  (`zoomModeHas`, shown by `hud`). The map was also the only screen ignoring the one ruler (M221):
-  in a 1920 window the DOM grows ×1.42 and its own rulers, header, footer, badge and card stayed
-  at 8-9 px - `mapU`/`mapFont` put the ruler into the type and the interface paddings, never into
-  the grid coordinates (the grid is the world). Auto-resolution now returns: down after three
-  heavy seconds as before, up after twenty seconds of a frame twice as light, at most twice a
-  session, and the first three seconds of a scene are not judged (they bake the raster once).
-  `15-input`, `27z-telemetry`, `28-loop`, `18-mode-map`, `18a-map-addr`, `18b-map-hold`;
-  new suite `tests/91zzzzzzz-hands`.
 
 - ~~**M438 the sky stands, the sheet slides**~~ - 0.425.0: the author, 09.09.2026 - «карта
-  двигается вместе с этой полосой и слоем звёзд… выглядит не очень» and «полосу чуть притуши».
-  The backdrop was nailed to the screen (band and rhumbs baked at 0,0; nebula and grit keyed to
-  the SHIP), so a drag slid the sheet over a dead sky and the two read as one plane. Law: the sky
-  stands in the world, the sheet slides in front of it - anchored to the ship, panned by a
-  fraction of the sheet's travel that shrinks with distance (grit ~.4, nebula ~.14, band ~.05),
-  saturating through `mapSkyShift` (tanh) because an infinitely distant sky cannot go anywhere.
-  The band layer is drawn with an SKM margin so the shift never opens a rim; its alpha dropped to
-  .62 - it is what addresses lie against, not a glow. The rhumb net went the other way: it belongs
-  to the sheet, so its knot sits on YOUR system and travels 1:1 (`mapRhumbPaint(c,W,H,cx,cy)`),
-  and that contrast is what makes the depth read. `18-mode-map`, `17z-map-backdrop`;
-  guard in `tests/91zzzzk-mapaddr`. `site/war.html` untouched (its own .38).
 - ~~**M440 the lab**~~ - 0.427.0: the author, 10.09.2026 - «на сервере штука, которая гоняет тесты и пишет в лог ошибки… не долбилась в одну ошибку». The suites run on the host at night (`lab/lab.sh`, `lab.yml`), one Chrome at a time under 500 MB, with a keyed error log that counts instead of repeating and a fuzz hunt that stops itself; page at https://drift-game.ru/lab/. Design and measurements: `docs/LAB.md`.
 
 ## Tests — the architecture and the queue (M441–M446, 2026-09-10)
@@ -459,19 +345,17 @@ reasons are structural - worth knowing before writing the next interface test.
 
 ## Loose ends (as of 2026-08-28, after the graphics run 0.237.0–0.244.0)
 
+Bodies of the struck entries below moved to `docs/PLAN-archive.md` (2026-09-10, section «Loose ends») — grep there by milestone.
 Everything left open, with the reason it is open. Nothing here is a bug report — bugs are fixed
 the day they are found; this is work that was deliberately not done, or that needs the author.
 
 ### Needs a decision from the author
 
 - ~~The cave, and the man's height~~ — author, 2026-09-03: «нормас, оставляем». One height in
-  every mode stays law; the cave is not an exception.
 - ~~Drones: choosing where they sell~~ — M324 (0.321.0): the keeper's «авто-сбыт» reads the
-  desk's prices within three sectors; nearest otherwise.
 - **Drone attrition.** Deliberately absent: a drone breaks and mends but is never lost. The author
   said leave the drones alone; this stays written down rather than done.
 - ~~`pair` as a target for natural light~~ — decided 2026-09-03, M308: daylight scenes
-  (`LOOK_DAYLIGHT`) print the pair as a reference, without a verdict.
 - **Craft plan remainder** (P0–P9, last section of `docs/DESIGN-story-craft.md`; M249–M270 paid
   eight laws of ten). P4 grisaille — a fork, see below. P7b the glyph notebook —
   understanding is a state of the head, not a flag; needs the author. ~~P8 the clocks engine~~ —
@@ -508,31 +392,14 @@ Left from the queue: nothing — the band's second step is M308, the station's c
 ### Graphics still open
 
 - ~~The cave is 83% empty~~ / ~~the cave's outline is a cell grid~~ — M305 (0.302.0): round rock,
-  a back wall, bones, ropes, tallies, a camp, branch-end finds. ~~Left: the lower lake hall is still
-  79% empty by the meter~~ — struck by the author 2026-09-05 («пещеру тоже нафиг»): the vault is
-  the vault; no second floor, no lake.
 - ~~The home's furniture is flat boxes~~ / ~~the house is a formula~~ — M307 (0.304.0). ~~The
-  interior is drawn per frame — measure before baking~~ — measured in M319 (0.316.0): `?g11` says
-  60 fps at dpr 2 with and without a bake, so nothing is baked; `prof()`'s 27 ms was the
-  software-raster artifact (see CLAUDE.md). ~~Left: the settlement's houses and the wintering hut
-  still draw their own and could take `homePlan`~~ — M322 (0.319.0), `housePlan` in 12tb.
 - ~~The system view is 66% empty~~ — M309 (0.306.0): nebula with a core and a soft edge,
-  shuttles by rung. Still ~80% empty by the meter, and that is space; the next step is the fleet.
 - ~~The approach frame is 80% empty and has two tones~~ — M304 gave it two masses and a light
-  corridor, M308 a warm horizon by day. Still 72% empty by the meter: sky is sky.
 - ~~Strata run parallel to the terrain~~ — was already paid by M267 (datum + relief cuts); the
-  line was stale, struck in M316.
 - ~~Straight lines where a hand belongs~~ — the mine cracks go by hand since M316 (0.313.0). The
-  reeds wait for water on the surface (none exists yet; see the effects list).
 - ~~Boulders are one silhouette scaled~~ — measured in M316: polygons were already individual, the
-  *family* was one; now blob / flat-based block / low slab, chosen by an already-drawn number.
 - ~~**Effects from the author's list**~~ — all taken: smoke (M320), and water, heat haze,
-  chromatic hits, the live flare (M325, 0.322.0). Left to judge by eye in play: the lake's
-  walker wades through it (no physics for water — by design, the lake is shallow).
 - ~~**Rectangular seams of the sky layer**~~ — hunted 2026-09-03 (M320): a column/row step
-  detector over the sky third of night and landing frames at two window sizes finds nothing but
-  the hint band and the chips; the one rectangle found was the `wallset` stand's own loupe. If it
-  returns, shoot the frame and run the detector (`docs/shot.py --eval`, PATCHNOTES 0.317.0).
 - ~~The plants as bodies~~ — M323 (0.320.0): two passes in `drawPlant`, the dark mass first.
 
 ### Systems
@@ -555,9 +422,6 @@ Left from the queue: nothing — the band's second step is M308, the station's c
   body goes to `docs/PLAN-archive.md` in the same commit — done 2026-08-28 (M232–M246) and
   2026-09-02 (M247–M298 and the old queues, 97 → ~40 KB).
 - ~~One order-dependent phone assertion~~ — chased and closed by M354 (0.352.0). It was two things
-  at once: the prompt's hardcoded `right:128px` against a rail that is 129 wide on the map (now off
-  the measured `--railw`), and `resetWorld` not leaving the road companion — after any click sweep
-  the whole page was invisible and every later layout guard measured nothing.
 - **Tests: three tiers since 0.359.3, and the run splits since 0.426.0** — `test.ps1` = Node logic
   (325 suites, ~5 s) + one Chrome smoke; `-Browser` picture/interface; `-Full` everything.
   `-Jobs N` runs the corpus in N Chromes at once, `-Times` prints the thirty slowest suites on a

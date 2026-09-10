@@ -8436,3 +8436,151 @@ The state-and-rules half of a two-session hunt (the picture half is M358).
   настоящего боя (система ищется, пока в ней не родятся пираты, иначе набор мерил бы пустое небо)
   — потолки держат все: пираты, выстрелы, дроны, новости, слухи, дела, обломки. И то, что
   принадлежало системе, уходит с ней: после прыжка ни один помеченный пират не летит следом.
+
+## From PLAN.md (moved 2026-09-10): Side passes of 2026-09-07 — the author's own asks, built in a worktree beside the base queue
+
+Struck entries' bodies as they stood in PLAN.md; the one-line heads stay there.
+
+  говно… из любого места на экране пальцем двигаешь и корабль туда летил… коротко назад он
+  тормозит… за пальцем идёт широкая полоска, чтобы понимать как оно». M410's intent was right;
+  five numbers and one boundary were wrong (`15a-helm` header has the five). The stick is now born
+  **anywhere** on the canvas — a finger becomes one by moving `HELM_TAKE` px or lying still past
+  `HELM_TAKE_MS`, which is outside the 400 ms tap window, so taps (autopilot, lock, chips) keep
+  both halves. Its centre **runs after the finger** (`helmDrag`), so the way back always costs the
+  same 82 px however far you dragged — that is «коротко назад» falling out of the geometry rather
+  than being a gesture of its own. Pulling back **is the brake** and takes the same road as the
+  dead zone and the ТОРМОЗ pad, at `HELM_STOP` and regardless of where the nose points: a full
+  stop in 1.4 s against 1.6 s to full speed, where before it was 4.1 s of maneuvering thrust — the
+  one correct guess about a phone, punished. The nose holds along the course while braking (it
+  used to swing 180° mid-stop, and the physics jumped from maneuvering to main halfway). A
+  released stick always coasts; the .55 rule stays with mouse and arrows, where releasing is
+  unambiguous. Two more concessions to the phone: the camera walks the ship out from under the
+  thumb (`helmCamOff`), and the drag draws a **ribbon** — its body is the wanted velocity, its
+  fill is the actual one, its colour says accelerating or braking, and its foot is a capsule along
+  the band, not the 93 px ring M360 was scolded for. Suites: `91zzzw-helm` (M422), `91zzx-mobile`.
+  игре», then «чини все три, и сделай чтобы летопись не расходилась, как она ваще может
+  расходится». `crash.log` held 116 lines over four days, no crashes, and a hundred lines of
+  ordinary journal news: the `28-loop` hook posted every `warn` to the server. Replaced by
+  `logShip` (`01a-crashlog`) at the eight places that mean a defect — storage, save, cloud,
+  chronicle. Drone wear moved from lifetime `d.trips` to `d.wear` since the last repair: a day of
+  catch-up is a thousand circles, and after a week the break chance sat at 11–15% with the fleet
+  standing in the dock. And the chronicle diverged because `chronSave` never wrote its own lines,
+  which `chronGrudge` (24 сводки) and the fx families (up to 40) read: cache-borne clients and
+  first-time clients walked into different histories. Now the tail rides in the cache
+  (`CHRON_LINE_KEEP`), the server counts hashes per version under a quorum with `flock`
+  (`site/war.php`), and the open сводка's ledger is marked provisional so it is re-pulled once
+  closed (`14b-war-net`). Suites: `91zzzzzz-crashlog`, `91zzzy-drones`, `91zzzw-chron`. 0.419.1
+  finished it from the live page: the cache record became `v:2`, because a `v:1` record was
+  computed without the lines and is another history, not an older one.
+  war runs by itself**~~ (0.401.2) — closed; bodies in `docs/PLAN-archive.md` under their numbers.
+  three-part note per chronicle record - detail, the real consequence with its number and span,
+  and a closing line in the power's voice. Wired into the site feed (`war-map.js`, the headline
+  is now a rubric) and into the cantina's ether block (`12pa-beacon`). Suite `91zzzw-news` pins
+  the spans to `ECON_*`/`SOC_*`/`NAT_*`/`DIP_*`. Tail: the six waves still speak the old one-line
+  ether - whether a wave should retell the whole note in its own voice is an author's call.
+  craft law, closed. `src/18a1-glaze.js` bakes the landing cross-section **in grey** and lays one
+  glaze per chunk - `dark + v·(light − dark)`, sky and star - so illumination reaches the whole
+  section instead of the slope ribbon it had since M242. Two `fillRect`s and a `destination-in`,
+  zero pixel readback. Nine hue events luminance cannot carry (veins, lava and ice seams, oxide,
+  dispersion, lichen) ride a third pass after the glaze: **grey means «paint me», colour means «I
+  know my own hue»**. The trade the author took on 09-07 («заливаем») is real and named in the
+  almanac: within one world the palette's hue ramp collapses to one hue lit from two sides, so
+  `tones` falls 5 → 4 at noon and 6 → 4 at night, while `mass` and `contrast` rise on every
+  daylight frame and ice goes 5 → 13 on mass, 6 → 39 on pair. Sheet of five frames across three
+  palettes: almanac issue VI. **The one frame worse than its numbers is the ice world:** it posts
+  the best row in the sheet and stopped looking like ice - this star is `[255,122,82]`, at noon its
+  term carries nearly the whole light stop, and every base hue arrives at the same clay. Left
+  standing (the author settled this fork), recorded with the frame in issue VI; if it is ever
+  reopened the lever is the illuminant, not the glaze - `starRGB()` is the disc, and the light that
+  reaches the ground through an atmosphere is whiter than the disc. Found on the way and fixed: a
+  flat shadow floor made the **night** a
+  black void with one lit island (§16, expose for the shadows) - the floor now walks with the day,
+  .28 at noon and 1 at midnight. Suite `91zzzw-glaze` holds the algebra, not the picture: the real
+  `litRGB` must land between the two stops, or the glaze is lighting the section with a different
+  sun than the strips. **Where the glaze stops, and why (corrected 2026-09-09 after a second
+  look):** the cave and the mine are both baked in tiles already (`drawTiles`, 18c) — what they
+  lack is not a cache but a *static illuminant*: underground there is no sky and no star, the
+  light is the lamp and the moss, drawn live over the tile (`drawCaveOwnLight`, the M304 §16
+  glazes). A per-tile glaze has no `light` stop to compute there, so P4 is complete where a sky
+  exists. ~~The one open consumer from the P4 row is `07-planet`'s disc~~ — **M435 (0.422.0)**: the
+  disc's day side is now lit in the star's colour and its limb glows in its own daylight sky
+  (`sky[0]` lifted toward white); airless worlds have no limb glow at all, a gas giant is rimmed
+  by its palette; the light bake is keyed by the star. The P4 row is closed end to end. Same
+  release: `19-mode-landing` (50 KB) cut at its seam into `19-mode-landing-ground` (the three-pass
+  section painters, crumbs, grass, boulders), and `07-planet` (40.6 KB after M435's own note) into
+  `07a-terrain` (`RELIEF_MIX`, `LAND_ARC`, `genTerrain`, `groundAt`).
+  built on the surface. `src/19c1-cast.js` marches a ray from every sample of the profile toward
+  `celSun`; relief or a boulder above the ray means sky and no star - in the slope strips, the
+  crust highlight, the движки, the boulder's body, and as a mask under the shadowed edge that fades
+  with depth. Grey, in the form pass, so the P4 glaze makes the shadow the sky's colour (§16 by
+  construction). Baked per chunk (the key already carried `sunAzQ`/`dayKq`), memoised on the
+  terrain, the frame pays nothing; no map at night or at the zenith. Sheet at a forced low sun in
+  almanac issue VII: `mass` +1…+3, `contrast` +.02…+.03, `pair` −3…−4 (a shadow is cold), and the
+  right flanks of the ridges finally fall into the evening. Geometry pinned in `91zzzw-cast`. The
+  row said «cave first» and «direction from `celSun`» - underground there is no sun, so the
+  surface went first; interiors are lamps that move, a live mask and another milestone. ~~**Tail:**
+  plants and deco are live and stay lit inside a cast shadow~~ - **M434 (0.421.1)**: the memo
+  became a small map keyed by chunk, `castLive(tr,x)` reads it by world x, and the deco (through
+  `dcol`), the plants (through `tone`) and the grass (a second, dimmer path) darken to `CAST_LIVE`
+  inside the shadow; the contact ellipse under a deco fades with it, since nothing casts it. The
+  walker keeps his own light on purpose - he carries a lamp and he is what the eye is for.
+  логику, что на WASD, что на QE, мож стрелки нахер не нужны, посмотри как сделаны другие игры».
+  Two keyboard schemes (mouse: nose to cursor always, WASD in screen axes; arrows: from the nose)
+  switched by themselves on any mouse motion over the full-screen canvas, so W stopped meaning
+  «forward» and A/D stopped steering the moment the mouse was touched. Now one layout from the
+  nose (W throttle, S brake, A/D turn, Q/E strafe, Shift thrusters; arrows = the same keys), the
+  mouse leads the nose only while the right button is held (A/D strafe meanwhile), the missile is
+  G, and release = coast for every input - the .55 auto-brake is gone, the brake is one gesture
+  at `HELM_STOP` for keys, pad and stick alike. The phone helm (M422) is untouched. `15a-helm`
+  header, `docs/DESIGN-war.md` §1.2, the title table; suite `91zzzw-helm`.
+  размывает, карта не увеличивается… перепридумай тесты, эти ничего не ловят». `+`/`−` were wired
+  to `setZoom` (the flight camera) while the map has had `G.mapZoom` since M299: on the map they
+  moved nothing and silently rescaled the system view behind the player's back. Now `zoomStep`
+  takes the scale of whatever is on screen, and the box leaves the rail where there is no scale
+  (`zoomModeHas`, shown by `hud`). The map was also the only screen ignoring the one ruler (M221):
+  in a 1920 window the DOM grows ×1.42 and its own rulers, header, footer, badge and card stayed
+  at 8-9 px - `mapU`/`mapFont` put the ruler into the type and the interface paddings, never into
+  the grid coordinates (the grid is the world). Auto-resolution now returns: down after three
+  heavy seconds as before, up after twenty seconds of a frame twice as light, at most twice a
+  session, and the first three seconds of a scene are not judged (they bake the raster once).
+  `15-input`, `27z-telemetry`, `28-loop`, `18-mode-map`, `18a-map-addr`, `18b-map-hold`;
+  new suite `tests/91zzzzzzz-hands`.
+  двигается вместе с этой полосой и слоем звёзд… выглядит не очень» and «полосу чуть притуши».
+  The backdrop was nailed to the screen (band and rhumbs baked at 0,0; nebula and grit keyed to
+  the SHIP), so a drag slid the sheet over a dead sky and the two read as one plane. Law: the sky
+  stands in the world, the sheet slides in front of it - anchored to the ship, panned by a
+  fraction of the sheet's travel that shrinks with distance (grit ~.4, nebula ~.14, band ~.05),
+  saturating through `mapSkyShift` (tanh) because an infinitely distant sky cannot go anywhere.
+  The band layer is drawn with an SKM margin so the shift never opens a rim; its alpha dropped to
+  .62 - it is what addresses lie against, not a glow. The rhumb net went the other way: it belongs
+  to the sheet, so its knot sits on YOUR system and travels 1:1 (`mapRhumbPaint(c,W,H,cx,cy)`),
+  and that contrast is what makes the depth read. `18-mode-map`, `17z-map-backdrop`;
+  guard in `tests/91zzzzk-mapaddr`. `site/war.html` untouched (its own .38).
+
+## From PLAN.md (moved 2026-09-10): Loose ends (as of 2026-08-28, after the graphics run 0.237.0–0.244.0)
+
+Struck entries' bodies as they stood in PLAN.md; the one-line heads stay there.
+
+  every mode stays law; the cave is not an exception.
+  desk's prices within three sectors; nearest otherwise.
+  (`LOOK_DAYLIGHT`) print the pair as a reference, without a verdict.
+  a back wall, bones, ropes, tallies, a camp, branch-end finds. ~~Left: the lower lake hall is still
+  79% empty by the meter~~ — struck by the author 2026-09-05 («пещеру тоже нафиг»): the vault is
+  the vault; no second floor, no lake.
+  interior is drawn per frame — measure before baking~~ — measured in M319 (0.316.0): `?g11` says
+  60 fps at dpr 2 with and without a bake, so nothing is baked; `prof()`'s 27 ms was the
+  software-raster artifact (see CLAUDE.md). ~~Left: the settlement's houses and the wintering hut
+  still draw their own and could take `homePlan`~~ — M322 (0.319.0), `housePlan` in 12tb.
+  shuttles by rung. Still ~80% empty by the meter, and that is space; the next step is the fleet.
+  corridor, M308 a warm horizon by day. Still 72% empty by the meter: sky is sky.
+  line was stale, struck in M316.
+  reeds wait for water on the surface (none exists yet; see the effects list).
+  *family* was one; now blob / flat-based block / low slab, chosen by an already-drawn number.
+  chromatic hits, the live flare (M325, 0.322.0). Left to judge by eye in play: the lake's
+  walker wades through it (no physics for water — by design, the lake is shallow).
+  detector over the sky third of night and landing frames at two window sizes finds nothing but
+  the hint band and the chips; the one rectangle found was the `wallset` stand's own loupe. If it
+  returns, shoot the frame and run the detector (`docs/shot.py --eval`, PATCHNOTES 0.317.0).
+  at once: the prompt's hardcoded `right:128px` against a rail that is 129 wide on the map (now off
+  the measured `--railw`), and `resetWorld` not leaving the road companion — after any click sweep
+  the whole page was invisible and every later layout guard measured nothing.
