@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 530 · символов верхнего уровня: 5006
+Файлов: 531 · символов верхнего уровня: 5008
 
 ## СИМВОЛЫ
 
@@ -4667,6 +4667,8 @@ traineeJump                  src/11ac-trainee.js:51
 traineeSeat                  src/11ac-trainee.js:34
 traineeTick                  src/11ac-trainee.js:59
 traitOf                      src/12a-crew.js:28
+TRIP_N                       tests/91zzzzzzzzc-trips.js:11
+tripWorlds                   tests/91zzzzzzzzc-trips.js:12
 tvHop                        tests/91zzzzzw-travel.js:36
 tvKeys                       tests/91zzzzzw-travel.js:15
 tvSizes                      tests/91zzzzzw-travel.js:17
@@ -6730,6 +6732,9 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzzzzzzzb-replay.js · 3 КБ
   · запись и повтор: запись игрока — это сценарий (M444, §3.3):1
+
+## tests/91zzzzzzzzc-trips.js · 4 КБ
+  · рейсы по мирам: один сценарий на дюжине систем (M446, §3.2 «дисбаланс»):1
 
 ## tests/91zzzzzzzzz-golden.js · 6 КБ
   · золотые кадры: пятый оракул (M443, DESIGN-tests §3.2):1

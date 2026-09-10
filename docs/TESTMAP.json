@@ -203,6 +203,7 @@
   "tests/91zzzzzzzz-detect.js": ["src/01-core.js", "src/02-world.js", "src/05-parts.js", "src/08-state.js", "src/14-save.js", "src/15-input.js", "src/15a-helm.js", "src/15b-helm-draw.js", "src/15c-rec.js", "src/17c-system-draw.js", "src/19d-weather.js", "src/26-ui-station.js", "src/27z-telemetry.js", "src/28-loop.js", "src/28y-look.js", "src/29g-winter-draw.js", "src/29i-spa-draw.js"],
   "tests/91zzzzzzzza-walks.js": ["src/01-core.js", "src/02-world.js", "src/06-galaxy.js", "src/08-state.js", "src/13-pirates.js", "src/14-save.js", "src/15-input.js", "src/18-mode-map.js", "src/21-mode-surface.js", "src/24c-mode-wanderer.js", "src/28-loop.js", "src/28y-look.js"],
   "tests/91zzzzzzzzb-replay.js": ["src/01-core.js", "src/02-world.js", "src/08-state.js", "src/15c-rec.js", "src/17c-system-draw.js"],
+  "tests/91zzzzzzzzc-trips.js": ["src/06-galaxy.js", "src/08-state.js", "src/21-mode-surface.js"],
   "tests/91zzzzzzzzz-golden.js": ["src/08-state.js", "src/14-save.js", "src/21a-mode-base.js", "src/28y-look.js"],
   "tests/91zzzzzzzzz-worlds.js": ["src/02-world.js", "src/06-galaxy.js", "src/08-state.js", "src/12-economy.js", "src/18-mode-map.js"],
   "tests/99-run.js": ["src/01-core.js", "src/01a-crashlog.js", "src/08-state.js", "src/28-loop.js"]

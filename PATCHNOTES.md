@@ -6,6 +6,16 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.436.0 - the same trip in twelve worlds, and the distribution it leaves (M446, first oracle)
+
+`tests/91zzzzzzzzc-trips.js` sends the bot on one round trip — to the planet, land, drill a
+deposit, back to the ship, launch, to the station, dock — in each of the first twelve station
+systems with a habitable planet, and judges the *distribution*: frames, fuel and ore per world.
+Red when a trip does not close, takes three times the median, drinks more than 80 % of the tank,
+or yields under a quarter of the median ore. Today: every trip closes, median 2 152 frames, 26
+fuel of 100, 12 ore; two seconds in Node, `?worlds=N` for the lab. Staged until 2026-09-18 —
+the thresholds are first guesses, the lab's history sets them.
+
 ## 0.435.0 - four more paths for the bot: a fight, the base, the home, the wanderer's shelf (M444)
 
 `T.bot("fight", frames)` turns the nose onto the nearest pirate, thrusts from afar and fires

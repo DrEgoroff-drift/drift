@@ -43,6 +43,11 @@ only after a neighbour — an isolation leak. `?pick=3,17` runs only those posit
 thin wrappers over it. Real windows and screenshots of the whole page: `python docs/stand.py`
 (one Chrome over CDP for all scenes and sizes, PNGs to TEMP).
 
+**Trips over worlds (M446).** `tests/91zzzzzzzzc-trips.js` runs the bot's round trip (planet →
+ore → station) in twelve station systems and prints the distribution of frames, fuel and ore;
+staged until 2026-09-18. `?worlds=N` widens it (the lab). A world where the trip does not close
+is named with the step it stuck on.
+
 **Recordings (M444, `?rec=1`).** Open the game with `?rec=1`, play, and when something goes wrong
 press **F8** (or call `recMark()` in the console): the last minute of input — key masks and steps
 by frame, in two thirty-second segments with a world snapshot at each head — lands in

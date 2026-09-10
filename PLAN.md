@@ -319,7 +319,11 @@ extract tools, do not extend). Order is strict: determinism first, everything af
   never returns» has no mutant — the sharpness detector compares the canvas with the DPR the game
   chose, not with the DPR it should have chosen; a mutant `DPR=.5` would survive (needs a rule
   for when `resAuto` may lower it under virtual time). Seeds ×100 on scenarios stay in M446.
-- **M446 the lab's own oracles** — previous-version diff, seeds ×100 on two scenarios, `look()`
+- **M446 the lab's own oracles** — **0.436.0: trips over worlds** (`91zzzzzzzzc-trips`, Node, 2 s,
+  staged to 2026-09-18): the bot's round trip planet → ore → station in twelve station systems,
+  the distribution of frames, fuel and ore (today: median 2 152 frames, 26 fuel of 100, 12 ore;
+  every trip closes), red on a world stuck, ×3 slower than the median, over 80 % of the tank or
+  under a quarter of the median ore; `?worlds=N` for the lab. Left: previous-version diff, `look()`
   telemetry from players into `log.php` and the lab page; and the lab's loose ends below.
 
 ### The lab, first night (session 20260909-235848, 0.427.0, 178 min, 127 runs)
