@@ -398,7 +398,9 @@ function drawMap(){
       ((typeof rungFootTxt==="function")?rungFootTxt(G.sel.x,G.sel.y):"")]);   /* пятилетка римской цифрой (M292) */
     if(typeof routeOf==="function"&&routeOf().legs.length>=1)
       L.push(["rgba(127,230,216,.75)",routeLine()]);
-    Rr.push(["rgba(93,115,130,.85)","ТЕЛ "+G.found.size+" · ВИДОВ "+G.species.size+" · "+
+    /* счёт открытий — второй ряд, но читаемый: на телефоне строка ложится ниже
+       плашки и серое .85 давало контраст 2.3 (M443, детектор текста) */
+    Rr.push(["rgba(128,152,168,.9)","ТЕЛ "+G.found.size+" · ВИДОВ "+G.species.size+" · "+
       Math.round(G.credits).toLocaleString("ru")+" кр"]);
     const occN=G.occ?Object.keys(G.occ).length:0;
     if(occN||(G.freed|0))

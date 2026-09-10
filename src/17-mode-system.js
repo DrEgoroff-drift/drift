@@ -612,7 +612,9 @@ function drawSysHud(zx,zy,sh,sys,U){
      ровно на эту строку; низ меряет 27z-telemetry, здесь его только читают */
   if(typeof HUD_FLOOR==="number"&&HUD_FLOOR>40)scaleY=Math.min(scaleY,HUD_FLOOR*H/innerHeight/U-10);
   for(const f of feet)if(f.side==="L")scaleY=Math.min(scaleY,(f.y-f.r)/U-10);
-  ctx.fillStyle="rgba(93,115,130,.75)";ctx.font="9px ui-monospace,monospace";ctx.textAlign="left";
+  /* прибор второго ряда, но прибор: на телефоне над туманностью серое .75
+     уходило в контраст 2.8 (M443, детектор текста) — тон светлее, ряд тот же */
+  ctx.fillStyle="rgba(128,152,168,.85)";ctx.font="9px ui-monospace,monospace";ctx.textAlign="left";
   ctx.fillText("МАСШТАБ ×"+G.zoom.toFixed(2),14,Math.max(96,scaleY));
   /* компас на край экрана: звезда, станция и текущая цель автопилота,
      если они за кадром — чтобы в бесконечном космосе нельзя было заблудиться */
