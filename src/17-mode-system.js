@@ -521,8 +521,6 @@ function drawSystem(){
         ctx.fillText(m.name.toUpperCase(),mx,my+mr+11*uiK());
       }
     }
-    /* имена тел — подписи к миру, но читает их игрок: кегль идёт по линейке
-       интерфейса (M443, как у станции в 17c) */
     if(G.found.has(p.key)){
       ctx.fillStyle="rgba(127,230,216,.55)";ctx.font=uiFont(9);ctx.textAlign="center";
       ctx.fillText(p.name.toUpperCase(),x,y+r+15*uiK());
@@ -612,8 +610,6 @@ function drawSysHud(zx,zy,sh,sys,U){
      ровно на эту строку; низ меряет 27z-telemetry, здесь его только читают */
   if(typeof HUD_FLOOR==="number"&&HUD_FLOOR>40)scaleY=Math.min(scaleY,HUD_FLOOR*H/innerHeight/U-10);
   for(const f of feet)if(f.side==="L")scaleY=Math.min(scaleY,(f.y-f.r)/U-10);
-  /* прибор второго ряда, но прибор: на телефоне над туманностью серое .75
-     уходило в контраст 2.8 (M443, детектор текста) — тон светлее, ряд тот же */
   ctx.fillStyle="rgba(128,152,168,.85)";ctx.font="9px ui-monospace,monospace";ctx.textAlign="left";
   ctx.fillText("МАСШТАБ ×"+G.zoom.toFixed(2),14,Math.max(96,scaleY));
   /* компас на край экрана: звезда, станция и текущая цель автопилота,

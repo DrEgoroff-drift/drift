@@ -118,6 +118,21 @@ per frame. This is Riot's executor/driver/scripts split; the page is the RPC end
    YIQ distance), the same Chrome build, `accept` promotes a new baseline; a human looks only at
    the diff sheet, which the lab publishes.
 
+**Built (M443):** 1–3 and the picture laws of 3 are pure functions `detX(ctx) → [{det, scene,
+what, where}]` in `tests/90b-detect.js` (ears, frame measures) and `90c-detect-laws.js` (the
+instrument table, exemptions, the detectors); the driver `tests/91zzzzzzzz-detect.js` runs every
+`lookScenes()` scene × five gestures (idle, W, A, drag, wheel/«+») plus the menu doors and calls
+all of them after each step. By-design exceptions are named with their reason (`DET_EXEMPT`,
+`DET_MUTE`). **4 and 5 plug in after the M441 merge, the same way:** imbalance is a run-level
+detector like `detHuman(run)` — the driver loops `SEEDS` with `rnd` seeded and `now` pinned,
+each seed appends its numbers (money per deal, fuel and time to goal) to `run`, and the detector
+judges the distribution (thresholds on median/p95, an outlier seed is a violation naming the
+seed). Golden frames are `detGolden(ctx)` on the idle step: the 320-px luma the step already
+grabs, compared per block with `docs/golden/<scene>@<window>.json` (quantised luma, kilobytes,
+no PNG in git) by a YIQ-style distance, `?accept=1` rewrites the baseline, the lab publishes the
+diff. Both need the pinned clock and the seeded generator — sky, weather, rain and chronicle
+change the frame and the economy by the hour today — which is why they wait for M441.
+
 ### 3.3 Scenarios — five lines each, readable by the author
 
 Three sources, every one passing through every detector, in three windows, on several seeds:
