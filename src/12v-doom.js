@@ -26,12 +26,12 @@ function doomGet(){return G.doom||null;}
    от Date.now() — тот же ленивый способ, каким живёт весь остальной мир */
 function doomArm(S){
   if(G.doom||!S||S.stage<2)return null;
-  G.doom={sx:S.sx,sy:S.sy,key:S.sx+","+S.sy,at:Date.now()+DOOM_LEAD,
+  G.doom={sx:S.sx,sy:S.sy,key:S.sx+","+S.sy,at:now()+DOOM_LEAD,
     known:false,folk:DOOM_FOLK+((S.built.length|0)*6),lifted:0,landed:0,
     to:null,over:false,warned:[]};
   return G.doom;
 }
-function doomLeft(){const D=doomGet();return D?Math.max(0,D.at-Date.now()):0;}
+function doomLeft(){const D=doomGet();return D?Math.max(0,D.at-now()):0;}
 function doomMins(){return Math.ceil(doomLeft()/60000);}
 function doomIsHere(){const D=doomGet();return !!D&&!D.over&&D.sx===G.sx&&D.sy===G.sy;}
 /* сколько людей ещё стоит на земле */
@@ -120,7 +120,7 @@ function doomLand(p){
       stage:1,mood:clamp(old?old.mood:50,0,100),fed:0,stock:{},diet:{},
       /* половина построек осталась там: начинают заново и хуже */
       built:old?old.built.slice(0,Math.floor(old.built.length/2)):[],
-      made:Date.now(),last:Date.now(),asked:0,paid:0,raided:0,
+      made:now(),last:now(),asked:0,paid:0,raided:0,
       moved:1,from:D.key};
     S.stage=S.built.length>=5?3:(S.built.length>=3?2:1);
   }
@@ -146,14 +146,14 @@ function doomTick(){
         logAdd("warn","До срока «"+D.sx+","+D.sy+"» осталось "+w+" мин · на земле "+doomStanding());
       }
   }
-  if(Date.now()<D.at)return;
+  if(now()<D.at)return;
   D.over=true;
   /* мир кончился: посёлок на этой земле перестаёт существовать, а система
      остаётся на карте — пустой. Это и есть разрешённый исход. */
   const S=settleMap()[D.key];
   if(S&&!S.moved)delete settleMap()[D.key];
   if(!G.doomDead)G.doomDead={};
-  G.doomDead[D.key]=Date.now();
+  G.doomDead[D.key]=now();
   if(typeof newsMark==="function")newsMark(D.key,"здесь больше никого","#7d8a95");
   const stayed=doomStanding();
   if(D.landed>0)

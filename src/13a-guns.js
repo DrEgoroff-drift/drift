@@ -108,10 +108,10 @@ function rayDamage(p,ang,g,dmg){
 }
 /* ── выстрел по повадке ──
    Возвращает true, если ствол действительно выстрелил (значит, пора считать
-   откат и списывать энергию). `rnd` — источник случайности, чтобы набор мог
+   откат и списывать энергию). `rf` — источник случайности, чтобы набор мог
    подставить свой и получить повторимый прогон. */
-function gunFireOnce(g,sh,tgt,ang,rnd){
-  const R=rnd||Math.random;
+function gunFireOnce(g,sh,tgt,ang,rf){
+  const R=rf||rnd;
   const fx=g.fx||"bullet";
   if(fx==="rail"){
     const hits=rayHits(sh.x,sh.y,ang,g.range,true);
@@ -225,7 +225,7 @@ function gunFireOnce(g,sh,tgt,ang,rnd){
       }else if(fx==="pulse"){
         /* поле гаснет на две секунды и может выбить узел: обратная сторона instrKnock */
         p.shieldOff=SHIELD_OFF;p.shield=0;p.shieldHit=SHIELD_DELAY;
-        if(Math.random()<.35)p.stunT=Math.max(p.stunT||0,STUN_TIME*.6);
+        if(rnd()<.35)p.stunT=Math.max(p.stunT||0,STUN_TIME*.6);
         if(g.dmg>0)rayDamage(p,ang,g,g.dmg);
       }else{
         /* буровому поле безразлично: он режет корпус напрямую */

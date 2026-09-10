@@ -18,7 +18,7 @@ function roadOpen(){
   for(const k in keys)keys[k]=false;
   RD={kmh:0,bank:0,bankT:0,shake:0,kick:0,acc:0,accT:0,phase:0,wob:0,watch:null,an:null,eq:null,
       g0:null,g0T:0,side:0,blind:false,turn:0,turnT:0,xOff:0,yOff:0,emit:0,cxPrev:null,vmax:0,
-      lastPos:null,lastT:0,lastFrame:0,t0:Date.now(),asked:0,raf:0,moveT:0,stopT:0,crFrac:0,
+      lastPos:null,lastT:0,lastFrame:0,t0:now(),asked:0,raf:0,moveT:0,stopT:0,crFrac:0,
       energy:.2,bright:.5,avg:.1,beat:0,beatT:0,wave:new Array(28).fill(.2),
       sparks:[],pulses:[],crShow:0,hintT:0,coins:[],crSeen:-1,
       pos0:null,far:0,back:0,turnPk:0,flash:"",flashT:0,crTrip:0,kmTrip:0,
@@ -196,8 +196,8 @@ function drawRoad(ts){
       for(let i=0;i<h.eng.length;i++){
         const e=h.eng[i];
         RD.trail.push({x:bx+(e.x*co-e.y*si)*sc,y:by+(e.x*si+e.y*co)*sc+back,e:i,b:RD.burst,cx0:bx,
-          vx:(Math.sin(t*2.3+i*2.1)*.7+(Math.random()-.5)*.6)*W*(.045+burn*.055),
-          r:e.r*rk*sc*(.92+burn*.30+Math.random()*.08),max:span,life:Math.max(.02,span-back/flow)});
+          vx:(Math.sin(t*2.3+i*2.1)*.7+(rndFx()-.5)*.6)*W*(.045+burn*.055),
+          r:e.r*rk*sc*(.92+burn*.30+rndFx()*.08),max:span,life:Math.max(.02,span-back/flow)});
       }
     }
   }

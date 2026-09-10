@@ -167,10 +167,10 @@ function coopGiveDayOff(){
   const C=coopRec();if(!C)return false;
   const hol=(typeof holNow==="function")?holNow():null;
   if(!hol){say("Выходной дают в праздник — по календарю");return false;}
-  C.dayoff=hol.id+":"+new Date().getFullYear();
+  C.dayoff=hol.id+":"+new Date(now()).getFullYear();
   return true;
 }
-function coopDayOff(){const C=coopRec();const hol=(typeof holNow==="function")?holNow():null;return !!(C&&hol&&C.dayoff===hol.id+":"+new Date().getFullYear());}
+function coopDayOff(){const C=coopRec();const hol=(typeof holNow==="function")?holNow():null;return !!(C&&hol&&C.dayoff===hol.id+":"+new Date(now()).getFullYear());}
 /* ── страница в ДЕЛАХ ── */
 function coopBlock(box){
   const C=coopRec();

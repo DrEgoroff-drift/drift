@@ -115,7 +115,7 @@ function spawnBarges(){
   /* баржи именно этой системы: те плечи, у которых текущий сектор — конец */
   const local=legs.filter(l=>l[0].key===hereKey||l[1].key===hereKey);
   if(!local.length)return;
-  const bucket=Math.floor(Date.now()/BARGE_PERIOD);
+  const bucket=Math.floor(now()/BARGE_PERIOD);
   const r=rng(hashi(G.sx,G.sy,bucket*131+0x0BA6));
   let made=0;
   for(const leg of local){
@@ -173,7 +173,7 @@ function updateBarges(dt){
       if(atk.length){
         b.hp-=(.05+.03*atk.length)*dt;
         /* пираты и правда стреляют по ней — видно, что бой настоящий */
-        for(const p of atk)if(Math.random()<.02*dt){
+        for(const p of atk)if(rnd()<.02*dt){
           const ang=Math.atan2(b.y-p.y,b.x-p.x);
           fireShot(p.x,p.y,ang,6,0,false);b._pshot=1;
         }
@@ -214,8 +214,8 @@ function bargeRescued(b){
   const dst=bargeSysAt(b.to)||bargeSysAt(b.from);
   if(dst&&typeof repAdd==="function")repAdd(2,dst);
   /* буксир берёт баржу на трос, а не просто отгоняет пиратов (03f-hull-role) */
-  const share=(typeof towShare==="function")?towShare(3+Math.floor(Math.random()*5))
-                                            :3+Math.floor(Math.random()*5);
+  const share=(typeof towShare==="function")?towShare(3+Math.floor(rnd()*5))
+                                            :3+Math.floor(rnd()*5);
   const got=addRes(b.good,share);
   if(b.escort)bargeEscortEnd(b,true);
   if(b.paxSeed)bargePaxDeliver(b);
@@ -247,7 +247,7 @@ function bargeSunk(b,cause){
     /* и у минуса появляется тело: за баржу приходит капитан с именем (12o) */
     if(dst&&typeof huntMark==="function")huntMark(dst,"разбитую баржу");
     /* груз ваш: часть добычи падает контейнерами, как с пирата */
-    if(typeof addRes==="function")addRes(b.good,4+Math.floor(Math.random()*6));
+    if(typeof addRes==="function")addRes(b.good,4+Math.floor(rnd()*6));
     say("Баржа «"+b.capName+"» разбита вами\nгруз ваш · вас запомнят");
     logAdd("warn","Вы разбили баржу «"+b.capName+"» · груз взят, репутация упала");
   }else{
@@ -611,7 +611,7 @@ function drawBargesMap(vis){
   if(!legs.length)return;
   const at=key=>{const[sx,sy]=key.split(",").map(Number);
     return vis.find(v=>v.gx===sx&&v.gy===sy)||null;};
-  const bucket=Math.floor(Date.now()/BARGE_PERIOD);
+  const bucket=Math.floor(now()/BARGE_PERIOD);
   for(let li=0;li<legs.length;li++){
     const a=at(legs[li][0].key),c=at(legs[li][1].key);
     if(!a||!c)continue;

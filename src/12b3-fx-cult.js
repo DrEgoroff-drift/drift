@@ -207,7 +207,7 @@ function cultRaceWindow(N){
 function cultRaceOn(){return cultRaceWindow()>=0;}
 function cultRaceStart(){
   if(!cultRaceOn())return false;
-  G.race={t0:Date.now(),sx:G.sx|0,sy:G.sy|0,n:cultRaceWindow()};
+  G.race={t0:now(),sx:G.sx|0,sy:G.sy|0,n:cultRaceWindow()};
   tell("tech","Олимпиада: время пошло",
     "ОЛИМПИАДА\nвремя пошло\nфиниш — на станции не ближе "+CULT_RACE_FAR+" секторов");
   return true;
@@ -224,7 +224,7 @@ function cultRaceDue(){
 }
 function cultRaceFinish(){
   if(!cultRaceDue())return 0;
-  const ms=Date.now()-G.race.t0;
+  const ms=now()-G.race.t0;
   G.race=null;
   const s=Math.max(1,Math.round(ms/1000));
   if(!G.raceBest||s<G.raceBest)G.raceBest=s;

@@ -190,7 +190,7 @@ function deployDrone(){
      На грунте это планета, в поясе — кольцо (pi=-1). Без адреса рейса нет. */
   const pi=(G.mode==="surface"&&G.surf&&G.surf.p)?(G.surf.p.idx|0):
            (G.mode==="dig"&&G.dig&&G.dig.p)?(G.dig.p.idx|0):-1;
-  const now=Date.now();
+  const now=clockNow();
   const d={id:droneNextId(),sx:G.sx,sy:G.sy,pi,res:droneTarget,
     rate:DRONES.miner.ratePerMin*stat().droneRate,
     pool:-1,   /* бездонная точка (M350): старые записи с конечным пулом дорабатывают своё и возвращаются */
@@ -210,7 +210,7 @@ function deployDrone(){
    пока не случится то, о чём стоит рассказать: точка кончилась, дрон встал,
    дрон починился. Догон офлайна — тот же ленивый расчёт по Date.now(). */
 function tickDrones(){
-  const now=Date.now(),cap=24*3600*1000;
+  const now=clockNow(),cap=24*3600*1000;
   /* ── блокада останавливает круги, и делала она это МОЛЧА ──
      Автор развернул в системе тринадцать машин, улетел, и потом сказал:
      «дроны никуда не летали, непонятно» (30.08.2026). Они и правда стояли —

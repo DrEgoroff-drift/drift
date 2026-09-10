@@ -21,7 +21,7 @@ function newsMarks(){return (G.newsMarks||(G.newsMarks={}));}
    а не строчкой, которую негде посмотреть */
 function newsMark(key,what,col){
   if(!key)return;
-  newsMarks()[key]={what,col:col||"#f2b25c",t:Date.now()};
+  newsMarks()[key]={what,col:col||"#f2b25c",t:now()};
 }
 function newsMarkAt(sx,sy){const m=G.newsMarks;return m?m[sx+","+sy]||null:null;}
 /* случайный сектор со станцией неподалёку: у слуха должен быть адрес */
@@ -128,7 +128,7 @@ const NEWS_KINDS=[
     const s=newsSomewhere(r);if(!s)return null;
     /* правим состояние тихо, без «tell»: это чужое дело, а не ваш поступок */
     if(!G.occCalm)G.occCalm={};
-    G.occCalm[occKey(s.sx,s.sy)]=Date.now();
+    G.occCalm[occKey(s.sx,s.sy)]=now();
     const had=typeof occLvl==="function"?occLvl(s.sx,s.sy):0;
     if(had&&typeof occSet==="function")occSet(s.sx,s.sy,had-1);
     newsMark(s.sx+","+s.sy,"стало тише","#8fd08a");
@@ -141,7 +141,7 @@ const NEWS_KINDS=[
     if(free.length<=1)return null;        /* последнюю не трогаем никогда */
     const R=free[Math.floor(r()*free.length)];
     const s=newsSomewhere(r);if(!s)return null;
-    newsRivals()[R.id]={who:pick(NEWS_RIVALS,r),sx:s.sx,sy:s.sy,t:Date.now()};
+    newsRivals()[R.id]={who:pick(NEWS_RIVALS,r),sx:s.sx,sy:s.sy,t:now()};
     newsMark(s.sx+","+s.sy,"он держит редкость","#c58ae0");
     return {ru:"«"+R.ru+"» унесли раньше вас: теперь она у "+G.rivals[R.id].who+
       " — искать не там, а у него",sx:s.sx,sy:s.sy};
@@ -151,7 +151,7 @@ const NEWS_KINDS=[
    Считается лениво по прошедшему времени, как склад узла: ни таймера, ни тика
    в кадре. Слышно это в кантине — там, где и так узнают новости. */
 function newsTick(){
-  const now=Date.now();
+  const now=clockNow();
   if(!G.newsT){G.newsT=now;return 0;}
   let turns=Math.floor((now-G.newsT)/NEWS_EVERY);
   if(turns<=0)return 0;
@@ -187,7 +187,7 @@ function newsRender(){
   if(!list.length)return;
   $body.appendChild(el("div","sec","ЧТО РАССКАЗЫВАЮТ · МИР ДВИГАЛСЯ БЕЗ ВАС"));
   for(const n of list.slice(-6).reverse()){
-    const mins=Math.max(1,Math.round((Date.now()-n.t)/60000));
+    const mins=Math.max(1,Math.round((now()-n.t)/60000));
     $body.appendChild(el("div","row","<div class='nm'><b>"+n.ru+"</b><s>сектор "+
       n.sx+", "+n.sy+" · слышно "+mins+" мин назад · на карте появилась метка</s></div>"));
   }

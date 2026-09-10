@@ -29,7 +29,7 @@ function spawnPirates(){
   G.pirates=[];G.shots=[];G.loot=[];
   G.shield=stat().shieldMax;G.energy=stat().energyMax;G.shieldHit=0;
   const danger=sysDanger(G.sx,G.sy);
-  const r=rng(hashi(G.sx,G.sy,Math.floor(Date.now()/900000)));
+  const r=rng(hashi(G.sx,G.sy,Math.floor(now()/900000)));
   /* под пиратами система держит патруль сверх обычного случайного налёта */
   let n=(r()<danger*.85?1+Math.floor(r()*(1+danger*2)):0)+occExtraPirates(G.sx,G.sy);
   if(typeof quietNoPirates==="function"&&quietNoPirates())n=0;   /* тихий уезд (11n): никто не грабит */
@@ -320,7 +320,7 @@ function killPirate(p){
   /* сбитый в занятой системе идёт в счёт её освобождения */
   occKill(G.sx,G.sy);
   /* узел с обломков: редкая находка, а не вторая валюта (05a-nodes) */
-  nodeDrop("с пиратов",sysDanger(G.sx,G.sy),hashi(p.seed,0x40DE,Date.now()&0xffff));
+  nodeDrop("с пиратов",sysDanger(G.sx,G.sy),hashi(p.seed,0x40DE,now()&0xffff));
   const loot=pick(TRADE_KEYS,r),   /* редкое с обломков не падает: у него свои способы добычи */got=addRes(loot,2+Math.floor(r()*7));
   const d=sysDanger(G.sx,G.sy);
   /* обломок с частью — не в трюм сразу, а контейнером: у боя своя петля «убил → собрал» */
@@ -329,12 +329,12 @@ function killPirate(p){
      оставленное кем-то, — цель для новичка, а не короткая дорога */
   if((p.rank|0)>=3&&r()<.5&&typeof gunNamedRoll==="function"){
     const N=gunNamedRoll(hashi(p.seed,0x4E41,7));
-    dropped=genPart(hashi(p.seed,0x4E41,Math.floor(Date.now()/1000)),5,"gun",2,N.id);
+    dropped=genPart(hashi(p.seed,0x4E41,Math.floor(now()/1000)),5,"gun",2,N.id);
     const a=r()*TAU,sp=.35+r()*.5;
     G.loot.push({x:p.x,y:p.y,vx:p.vx*.4+Math.cos(a)*sp,vy:p.vy*.4+Math.sin(a)*sp,
       spin:r()*TAU,life:5400,part:dropped});
   }else if(r()<.3+d*.45){
-    dropped=genPart(hashi(p.seed,3131,Math.floor(Date.now()/1000)),tierFromDanger(d,r));
+    dropped=genPart(hashi(p.seed,3131,Math.floor(now()/1000)),tierFromDanger(d,r));
     const a=r()*TAU,sp=.35+r()*.5;
     G.loot.push({x:p.x,y:p.y,vx:p.vx*.4+Math.cos(a)*sp,vy:p.vy*.4+Math.sin(a)*sp,
       spin:r()*TAU,life:5400,part:dropped});

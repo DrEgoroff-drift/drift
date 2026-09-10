@@ -68,7 +68,7 @@ function globusAim(){
 }
 /* Раз в секунду, а не в кадр: и дёшево, и по существу прибора. */
 function globusTick(){
-  const s=Math.floor((typeof performance!=="undefined"?performance.now():Date.now())/1000);
+  const s=Math.floor(now()/1000);
   if(s===GLOB.t)return GLOB.aim;
   GLOB.t=s;
   GLOB.turn=(GLOB.turn+.055)%(Math.PI*2);   // шар повернулся на волосок

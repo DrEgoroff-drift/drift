@@ -41,14 +41,14 @@ function bargeStart(c){
   if(R.loops<1)return"Баржа идёт по прохоженной дороге — пройдите круг сами";
   const legs=R.legs.filter(key=>{const H=G.hold&&G.hold[key];return H&&H.bld&&Object.keys(H.bld).length;});
   if(!legs.length)return"На маршруте нет ваших цехов — барже некого кормить";
-  c.barge={legs:R.legs.slice(),cursor:0,t0:Date.now(),fed:0,name:bargeName(c)};
+  c.barge={legs:R.legs.slice(),cursor:0,t0:now(),fed:0,name:bargeName(c)};
   c.cargo=c.cargo||{};
   return"";
 }
 /* смены прошли — баржа прошла плечи и ссыпала, что везла */
 function bargeTick(c,now){
   const B=c.barge;if(!B||!Array.isArray(B.legs)||!B.legs.length)return 0;
-  now=now||Date.now();
+  now=now||clockNow();
   let s=Math.floor((now-(B.t0||now))/HOLD_SHIFT);
   if(s<=0)return 0;
   s=Math.min(s,72);

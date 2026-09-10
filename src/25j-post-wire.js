@@ -37,7 +37,7 @@ function mailOn(){
   return typeof location!=="undefined"&&location.protocol.indexOf("http")===0&&
          typeof traceId==="function"&&!!traceId();
 }
-function mailToday(){const d=new Date();return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();}
+function mailToday(){const d=new Date(now());return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();}
 function mailLeft(){
   const M=mailAll(),t=mailToday();
   if(M.day!==t){M.day=t;M.sent=0;}
@@ -69,7 +69,7 @@ function mailStack(ch){
   const M=mailAll();
   let st=M.st.find(x=>x.ch===ch);
   if(!st){
-    st={ch:ch,c:[],t:Date.now(),mute:0};
+    st={ch:ch,c:[],t:now(),mute:0};
     M.st.unshift(st);
     while(M.st.length>MAIL_STACK_MAX)M.st.pop();
   }
@@ -77,10 +77,10 @@ function mailStack(ch){
 }
 function mailPush(ch,card,mine){
   const st=mailStack(ch);
-  card.mine=mine?1:0;card.at=Date.now();
+  card.mine=mine?1:0;card.at=now();
   st.c.push(card);
   while(st.c.length>MAIL_CARDS_MAX)st.c.shift();
-  st.t=Date.now();
+  st.t=now();
   if(!mine)st.fresh=1;
   return st;
 }
@@ -123,7 +123,7 @@ function mailSend(s,ch,mv){
    выдают в нагрузку к заправке, её дослушивают вечером. */
 function mailDock(){
   if(!mailOn())return;
-  const now=Date.now();
+  const now=wallNow();
   if(now-mailBusy<45000)return;
   mailBusy=now;
   mailCall("in").then(j=>{

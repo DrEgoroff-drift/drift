@@ -32,14 +32,14 @@ let ethCard=null,ethLine=0,ethHold=0,ethAsk=0;
 /* час можно подставить: иначе проверить окно можно было бы только вечером,
    то есть никогда — а окно тут вся веха */
 function mailNight(h){
-  h=(h==null)?new Date().getHours():h;
+  h=(h==null)?new Date(now()).getHours():h;
   return h>=ETH_H0||h<ETH_H1;
 }
 /* вечер считается по календарю ВЕЧЕРА, а не суток: час ночи принадлежит
    вчерашнему вечеру, иначе счёт «две за вечер» обнуляется в полночь и
    получается четыре */
 function mailEve(at){
-  const d=at?new Date(at.getTime()):new Date();
+  const d=at?new Date(at.getTime()):new Date(now());
   if(d.getHours()<ETH_H1)d.setDate(d.getDate()-1);
   return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();
 }
@@ -66,7 +66,7 @@ function ethTick(q){
     /* тишина между карточками: эфир не выдаёт их подряд без паузы */
     if(ethHold>0){ethHold--;return "…";}
     if(mailNightLeft()<=0)return "…на сегодня эфир пуст…";
-    const now=Date.now();
+    const now=wallNow();
     if(now-ethAsk<12000)return "…";
     ethAsk=now;
     mailCall("ask").then(j=>{

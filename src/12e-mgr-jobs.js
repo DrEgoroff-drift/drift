@@ -10,7 +10,7 @@
 function jobDef(id){return MGR_JOBS.find(j=>j.id===id)||null;}
 function jobLeft(m){
   if(!m.job)return 0;
-  return Math.max(0,m.job.mins-(Date.now()-m.job.t0)/60000);
+  return Math.max(0,m.job.mins-(now()-m.job.t0)/60000);
 }
 function jobGive(m,what,arg){
   if(what==="perk"){m.gift=(m.gift||0)+1;return "свободное очко перка";}
@@ -24,9 +24,9 @@ function jobGive(m,what,arg){
   }
   if(what==="merc"){
     if(G.crew.length>=crewCap())return "человека взять некуда — мест в экипаже нет";
-    const c=genMerc(hashi(m.seed,Date.now()&0xffff,0x3E1),null);
+    const c=genMerc(hashi(m.seed,now()&0xffff,0x3E1),null);
     G.crew.push(Object.assign({},c,{cargo:{},order:{kind:"home",sx:G.sx,sy:G.sy},
-      tMs:Date.now(),paidMs:Date.now(),fee:0}));
+      tMs:now(),paidMs:now(),fee:0}));
     return c.name+" пришёл в экипаж даром";
   }
   return "";
@@ -74,7 +74,7 @@ function jobChoose(m,i){
   if(opt.wait){
     /* решение принято, а последствие приходит позже — тем и отличается сцена
        от кнопки «получить награду» */
-    m.job={id:J.id,t0:Date.now(),mins:opt.wait,pick:i,armed:1};
+    m.job={id:J.id,t0:now(),mins:opt.wait,pick:i,armed:1};
     mgrSay(m,opt.said+(out.length?" · "+out.join(", "):""));
     return true;
   }
@@ -231,10 +231,10 @@ function jobOffer(m){
   const pool=MGR_JOBS.filter(J=>J.role===m.role&&past.indexOf(J.id)<0&&
     (!J.need||J.need(m)));
   if(!pool.length)return;
-  const r=rng(hashi(m.seed,Math.floor(Date.now()/60000),0x30B));
+  const r=rng(hashi(m.seed,Math.floor(now()/60000),0x30B));
   if(r()>.05)return;                     // примерно раз в двадцать минут работы
   const J=pool[Math.floor(r()*pool.length)];
-  m.job={id:J.id,t0:Date.now(),mins:J.mins||0,offer:1};
+  m.job={id:J.id,t0:now(),mins:J.mins||0,offer:1};
   mgrSay(m,"Есть разговор: «"+J.ru+"»");
   tell("","Поручение от "+m.name+": "+J.ru,m.name+" хочет поговорить\n«"+J.ru+"»\nэкран ШТАБ");
 }
@@ -243,7 +243,7 @@ function jobAccept(m){
   if(!m.job||!m.job.offer)return false;
   const J=jobDef(m.job.id);
   if(J.choice)return false;
-  m.job={id:J.id,t0:Date.now(),mins:J.mins,mark:0};
+  m.job={id:J.id,t0:now(),mins:J.mins,mark:0};
   if(J.start)J.start(m);
   mgrSay(m,"Взялись. Срок — "+J.mins+" минут");
   /* принятое поручение живёт в журнале, а не только во всплывающей строке:
@@ -251,7 +251,7 @@ function jobAccept(m){
   questAdd("job:"+m.id+":"+J.id,{ru:J.ru,kind:"job",from:m.name,
     note:(typeof J.text==="function"?J.text(m):J.text)||"",
     sx:G.sx,sy:G.sy,place:"домен «"+MGR_ROLES[m.role].dom+"»",
-    until:Date.now()+(J.mins||10)*60000,
+    until:now()+(J.mins||10)*60000,
     reward:J.win_ru||""});
   return true;
 }

@@ -217,11 +217,11 @@ function updateCaveDeco(C,dt){
     }
   }
   if(D.splash&&(D.splash.t-=dt)<=0)D.splash=null;
-  if(drops.length<12&&Math.random()<.03*dt){
+  if(drops.length<12&&rnd()<.03*dt){
     const cand=[];
     for(const t of D.tips)if(t.up&&!t.col&&Math.abs(t.x-C.x)<W*.6)cand.push(t);
     if(cand.length){
-      const t=cand[Math.floor(Math.random()*cand.length)];
+      const t=cand[Math.floor(rnd()*cand.length)];
       drops.push({x:t.x+t.lean*t.L,y:t.y0+t.L,vy:.02,fy:caveFloorOf(C,t.x,t.low)});
     }
   }

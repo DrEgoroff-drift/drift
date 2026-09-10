@@ -41,7 +41,7 @@ function fleaHere(sys){
   const S=(sys||G.sys)&&(sys||G.sys).station;
   return !!S&&S.stype==="bazaar";
 }
-function fleaEpoch(){return Math.floor(Date.now()/FLEA_EPOCH);}
+function fleaEpoch(){return Math.floor(now()/FLEA_EPOCH);}
 /* ── провенанс ──
    Место, а не настроение: идём спиралью от станции, пока не встретим звезду.
    Правило 1 держится здесь, и суите проверять именно это. */
@@ -188,7 +188,7 @@ function fleaRender(){
      При первом заходе за посадку — гул голосов, в шапке — сколько народу */
   if(G.sys&&G._fleaHum!==G.sys.key+":"+visitHere()){
     G._fleaHum=G.sys.key+":"+visitHere();
-    for(let i=0;i<3;i++)sfx("ui",{f:220+Math.random()*160,to:180,d:.25,v:.08});
+    for(let i=0;i<3;i++)sfx("ui",{f:220+rndFx()*160,to:180,d:.25,v:.08});
   }
   if(G.sys)$body.appendChild(el("div","sec","ТОЛКУЧКА · У ЛОТКОВ ЧЕЛОВЕК "+
     (8+Math.abs(hashi(G.sys.seed|0,fleaEpoch(),0xF1EA))%14)+" · ГОВОР, ТОЛКОТНЯ, КТО-ТО СПОРИТ О ЦЕНЕ"));

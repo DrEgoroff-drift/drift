@@ -55,7 +55,7 @@ const HUD_STEP=[.75,.75,.5,.5,1.5];
 let HUD_PREV=null, HUD_T=0;
 const $hudp=document.querySelector(".hud");
 function hudWake(vals,alarm){
-  const now=performance.now();
+  const now=clockNow();
   if(HUD_PREV){
     for(let i=0;i<vals.length;i++)
       if(Math.abs(vals[i]-HUD_PREV[i])>=HUD_STEP[i]){HUD_T=now;break;}

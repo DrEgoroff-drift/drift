@@ -99,7 +99,7 @@ function winTake(o){
     pw:{heat:3,air:3,light:2,ant:1},
     faults:[],diary:[],wall:0,cold:0,dark:0,
     home:{sx:G.sx,sy:G.sy},
-    t0:Date.now(),done:0};
+    t0:now(),done:0};
   thingAdd("paper","Наряд на зимовку · "+o.pname,
     "месяц один · держать баланс, вести дневник, дождаться баржи · оплата по возвращении");
   /* нанимают зимовщика у стойки, но запись не имеет права падать, если

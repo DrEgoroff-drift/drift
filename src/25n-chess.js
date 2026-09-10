@@ -205,7 +205,7 @@ function chessGame(ch){return chessAll().g[ch]||null;}
 function chessStart(ch,mine){
   const C=chessAll();
   if(C.g[ch])return C.g[ch];
-  C.g[ch]={mv:[],w:mine?1:0,t:Date.now()};
+  C.g[ch]={mv:[],w:mine?1:0,t:now()};
   return C.g[ch];
 }
 /* мой ли ход: белые ходят чётными номерами */
@@ -218,13 +218,13 @@ function chessMyTurn(ch){
 function chessCanMove(ch){
   const g=chessGame(ch);if(!g)return false;
   if(!chessMyTurn(ch))return false;
-  return (Date.now()-(g.sent||0))>=86400000||!g.sent;
+  return (now()-(g.sent||0))>=86400000||!g.sent;
 }
 function chessMove(ch,m){
   const g=chessGame(ch);if(!g)return false;
   if(!chessMyTurn(ch)||!chLegal(g.mv,m))return false;
   g.mv.push({f:m.f|0,t:m.t|0,p:m.p|0});
-  g.sent=Date.now();
+  g.sent=now();
   const s=chState(g.mv);
   if(s)logAdd("good","Ход послан · "+s);
   else logAdd("tech","Ход послан. Ответ придёт не скоро.");

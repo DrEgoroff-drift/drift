@@ -25,7 +25,7 @@ function questAdd(key,o){
   if(has)return has;
   const q={key,ru:o.ru,note:o.note||"",from:o.from||"",kind:o.kind||"job",
     sx:(o.sx===undefined?null:o.sx),sy:(o.sy===undefined?null:o.sy),
-    place:o.place||"",state:"active",t:Date.now(),until:o.until||0,
+    place:o.place||"",state:"active",t:now(),until:o.until||0,
     reward:o.reward||""};
   list.push(q);
   if(list.length>QUEST_MAX)list.splice(0,list.length-QUEST_MAX);
@@ -35,7 +35,7 @@ function questAdd(key,o){
 function questFind(key){return questAll().find(q=>q.key===key&&q.state==="active")||null;}
 function questClose(key,state,note){
   const q=questFind(key);if(!q)return null;
-  q.state=state;q.doneT=Date.now();
+  q.state=state;q.doneT=now();
   if(note)q.note=note;
   logAdd(state==="done"?"good":"warn",
     (state==="done"?"Дело закрыто: ":"Дело сорвано: ")+q.ru);
@@ -93,7 +93,7 @@ function questGoto(q){
 /* сколько осталось по сроку, словами: точное число секунд игроку не нужно */
 function questLeft(q){
   if(!q.until)return "";
-  const left=(q.until-Date.now())/60000;
+  const left=(q.until-now())/60000;
   if(left<=0)return "срок вышел";
   return left<1?"меньше минуты":(Math.ceil(left)+" мин");
 }

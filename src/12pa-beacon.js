@@ -53,7 +53,7 @@ function mayakSold(sys,k,qty,revenue){
 /* сектор очищен игроком (13b зовёт при освобождении) */
 function mayakFreed(sx,sy,sys){
   if(!Array.isArray(G.freedLog))G.freedLog=[];
-  G.freedLog.push({sx,sy,name:(sys&&sys.station)?sys.station.name:"",shift:holdShift(),t:Date.now()});
+  G.freedLog.push({sx,sy,name:(sys&&sys.station)?sys.station.name:"",shift:holdShift(),t:now()});
   while(G.freedLog.length>12)G.freedLog.shift();
 }
 /* адрес, как его говорит маяк: имя игрока в ходу (11u) */
@@ -129,7 +129,7 @@ function mayakTick(){
   const prev=B.shift;B.shift=s;
   const lines=mayakCompose(prev);
   if(!lines.length)return null;                      /* без перемен маяк молчит */
-  const bul={shift:prev,t:Date.now(),lines};
+  const bul={shift:prev,t:now(),lines};
   B.log.push(bul);while(B.log.length>MAYAK_KEEP)B.log.shift();
   const first=lines[0].t.replace(/ \/ /g," ");
   etherLine(mayakHead(prev)+" "+first+(lines.length>1?" …ещё "+(lines.length-1)+" "+pl3(lines.length-1,"строка","строки","строк")+" — на столе.":""),"Маяк ГЛАВТРАССЫ");

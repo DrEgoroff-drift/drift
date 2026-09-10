@@ -307,7 +307,7 @@ function sdRoof(x,y,w,h,kind,pal,seed){
     }
     ctx.restore();
     ctx.fillStyle=dark;                                    /* лохматый свес */
-    for(let xx=x-eave;xx<x+w+eave;xx+=3)ctx.fillRect(xx,y-1,2,2+Math.random()*1.5);
+    for(let xx=x-eave;xx<x+w+eave;xx+=3)ctx.fillRect(xx,y-1,2,2+rndFx()*1.5);
   }else if(kind==="tile"){
     sdBody(()=>{
       ctx.moveTo(x-eave,y);ctx.lineTo(x+w*.5,y-h);ctx.lineTo(x+w+eave,y);ctx.closePath();

@@ -184,7 +184,7 @@ function bldLay(sys,id){
   if(!bldCanPay(def.cost))return"не хватает: "+bldLack(def.cost).join(", ");
   bldPay(def.cost);
   const H=holdOf(sys.key);H.bld=H.bld||{};
-  const now=Date.now();
+  const now=clockNow();
   H.bld[id]={lvl:1,t0:now,ready:now+BLD_SHIFTS[def.tier]*HOLD_SHIFT,my:{},got:{}};
   if(typeof recordAdd==="function")recordAdd(sys.station.name,"заложен: "+def.ru);
   if(typeof holdNews==="function")holdNews(sys,def,"laid");   /* новость с причиной (M297) */
@@ -194,23 +194,23 @@ function bldUpgrade(sys,id){
   const def=BLD[id],B=bldEntry(sys.key,id);
   if(!def||!B)return"нечего поднимать";
   if(B.lvl>=3)return"выше ×3 не бывает";
-  if(Date.now()<(B.ready||0))return"сперва достроить";
+  if(now()<(B.ready||0))return"сперва достроить";
   const cost=bldUpgradeCost(def,B.lvl+1);
   if(!bldCanPay(cost))return"не хватает: "+bldLack(cost).join(", ");
   bldPay(cost);
   bldTick(sys.key,id);
-  B.lvl++;B.ready=Date.now()+BLD_SHIFTS[def.tier]*HOLD_SHIFT;
+  B.lvl++;B.ready=now()+BLD_SHIFTS[def.tier]*HOLD_SHIFT;
   if(typeof holdNews==="function")holdNews(sys,def,"up");
   return"";
 }
 function bldEntry(key,id){const H=G.hold&&G.hold[key];return H&&H.bld?H.bld[id]||null:null;}
-function bldReady(B,now){return !!B&&(now||Date.now())>=(B.ready||0);}
+function bldReady(B,now){return !!B&&(now||clockNow())>=(B.ready||0);}
 function holdCapMul(key){const[sx,sy]=String(key).split(",").map(Number);return (typeof bldHas==="function"&&bldHas(sx,sy,"nakop"))?2:1;}   /* Накопитель (E1) */
 /* ── бункер: догнать по сменам ── */
 function bldTick(key,id,now){
   const B=bldEntry(key,id),def=BLD[id];
   if(!B||!def)return;
-  now=now||Date.now();
+  now=now||clockNow();
   B.my=B.my||{};B.got=B.got||{};
   if(now<(B.ready||0))return;
   if(!Object.keys(def.makes).length){B.t0=now;return;}   /* семьи E–I ничего не копят */
@@ -241,7 +241,7 @@ function bldTick(key,id,now){
 }
 /* сколько бункеры здесь возьмут товара k прямо сейчас */
 function bldWant(sys,k){
-  const ids=bldBuiltHere(sys);let want=0;const now=Date.now();
+  const ids=bldBuiltHere(sys);let want=0;const now=clockNow();
   for(const id of ids){
     const def=BLD[id],B=bldEntry(sys.key,id);
     if(!def||!def.eats[k]||!bldReady(B,now))continue;
@@ -254,7 +254,7 @@ function bldWant(sys,k){
 /* положить в бункеры: возвращает, сколько взяли */
 function bldFeed(sys,k,qty){
   if(!sys||qty<=0)return 0;
-  const ids=bldBuiltHere(sys);let left=qty|0,fed=0;const now=Date.now();
+  const ids=bldBuiltHere(sys);let left=qty|0,fed=0;const now=clockNow();
   for(const id of ids){
     if(left<=0)break;
     const def=BLD[id],B=bldEntry(sys.key,id);
@@ -322,7 +322,7 @@ function holdNearestEater(k){
 }
 /* строки для ДЕЛО: каждая постройка — одна строка */
 function holdDealList(){
-  const H=G.hold||{},out=[];const now=Date.now();
+  const H=G.hold||{},out=[];const now=clockNow();
   for(const key in H){
     const b=H[key].bld;if(!b)continue;
     const[sx,sy]=key.split(",").map(Number);
@@ -349,7 +349,7 @@ function holdDealList(){
    штатные модули тоже рисуются векторно каждый кадр; проход по кодексу — шаг 8. */
 function holdMods(sys){
   const ids=bldBuiltHere(sys);if(!ids.length)return[];
-  const now=Date.now(),out=[];
+  const now=clockNow(),out=[];
   ids.forEach((id,i)=>{
     const def=BLD[id],B=bldEntry(sys.key,id);if(!def||!B)return;
     const r=rng(hashi(sys.seed,0x0B1D,i+1));

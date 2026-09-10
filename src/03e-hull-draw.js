@@ -22,11 +22,11 @@ function drawHull(id,thrusting,braking,lvl,bank){
     ctx.beginPath();ctx.arc(e.x+e.r*.1,e.y,e.r*.6,0,TAU);ctx.fill();
     ctx.strokeStyle=rgba(mixc(PAL.trim,[255,244,214],.3),.9);ctx.lineWidth=.4;
     ctx.beginPath();ctx.arc(e.x+e.r*.1,e.y,e.r*.6,0,TAU);ctx.stroke();
-    ctx.fillStyle="rgba(170,215,255,"+(.16+Math.random()*.1).toFixed(2)+")";
+    ctx.fillStyle="rgba(170,215,255,"+(.16+rndFx()*.1).toFixed(2)+")";
     ctx.beginPath();ctx.arc(e.x+e.r*.1,e.y,e.r*.3,0,TAU);ctx.fill();
   }
   else for(const e of h.eng){   // холостой ход — только тлеющее сопло
-    ctx.fillStyle="rgba(255,140,70,"+(.2+Math.random()*.12).toFixed(2)+")";
+    ctx.fillStyle="rgba(255,140,70,"+(.2+rndFx()*.12).toFixed(2)+")";
     ctx.beginPath();ctx.arc(e.x+e.r*.1,e.y,e.r*.42,0,TAU);ctx.fill();
   }
   /* ── двигатель как ЖЕЛЕЗО ──
@@ -55,7 +55,7 @@ function drawHull(id,thrusting,braking,lvl,bank){
     ctx.strokeStyle=rgba(mixc(h.iron,[255,255,255],.2),.8);ctx.lineWidth=.4;ctx.stroke();
   }
   if(braking){
-    const f=4+Math.random()*6;
+    const f=4+rndFx()*6;
     ctx.fillStyle="rgba(127,230,216,.7)";
     for(const s of [-1,1]){
       const y=h.bw*.5*s;

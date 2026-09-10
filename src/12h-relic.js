@@ -113,7 +113,7 @@ function relicRoll(seed,chance){
 function relicSynth(m){
   if(!mgrPerk(m,"synth"))return false;
   if(relicOwned().length<2)return false;
-  const id=relicRoll(hashi(m.seed,Math.floor(Date.now()/60000),0x5E7),.04);
+  const id=relicRoll(hashi(m.seed,Math.floor(now()/60000),0x5E7),.04);
   if(!id)return false;
   relicFind(id,"синтез в лаборатории");
   mgrSay(m,"Собрал третий из двух. Не спрашивайте как.","good");

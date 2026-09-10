@@ -212,10 +212,10 @@ function updateSurface(dt){
     if(d<520){
       S.setSnd=(S.setSnd||0)-dt;
       if(S.setSnd<=0){
-        S.setSnd=120+Math.random()*160;
+        S.setSnd=120+rnd()*160;
         const v=.12*(1-d/520);
-        if(Math.random()<.6)sfx("ui",{f:180+Math.random()*60,to:90,d:.09,v});
-        else sfx("ui",{f:300+Math.random()*120,to:240,d:.18,v:v*.7});
+        if(rndFx()<.6)sfx("ui",{f:180+rndFx()*60,to:90,d:.09,v});
+        else sfx("ui",{f:300+rndFx()*120,to:240,d:.18,v:v*.7});
       }
     }
   }
@@ -304,7 +304,7 @@ function updateSurface(dt){
     const away=S.x-b.x;
     if(Math.abs(away)<70*kitStat().noise*(typeof vegaAboard==="function"&&vegaAboard()?1.3:1)){if(typeof vegaBeastShout==="function"&&Math.abs(away)<50)vegaBeastShout();b.shy=Math.min(1,b.shy+.02*dt);b.vx=-Math.sign(away)*.16*b.shy;}
     else{b.shy=Math.max(0,b.shy-.01*dt);
-      if(Math.random()<.004*dt)b.vx=(Math.random()<.5?-1:1)*(.06+Math.random()*.12);}
+      if(rnd()<.004*dt)b.vx=(rnd()<.5?-1:1)*(.06+rnd()*.12);}
     b.x=clamp(b.x+b.vx*dt,40,tr.W-40);
     b.y=groundAt(tr,b.x);
     if(b.vx)b.face=b.vx>0?1:-1;

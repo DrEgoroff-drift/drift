@@ -113,7 +113,7 @@ function makeIR(c,secs,decay){
     const d=b.getChannelData(ch);
     let last=0;
     for(let i=0;i<n;i++){
-      last=(last+(Math.random()*2-1)*.35)*.9;
+      last=(last+(rndFx()*2-1)*.35)*.9;
       d[i]=last*Math.pow(1-i/n,decay);
     }
   }
@@ -130,13 +130,13 @@ function brownNoise(c){
     const d=brownBuf.getChannelData(0);
     let last=0;
     for(let i=0;i<n;i++){
-      last=(last+(Math.random()*2-1)*.06)/1.02;
+      last=(last+(rndFx()*2-1)*.06)/1.02;
       d[i]=clamp(last*7,-1,1);
     }
   }
   const s=c.createBufferSource();
   s.buffer=brownBuf;s.loop=true;
-  s.loopStart=Math.random()*3;s.loopEnd=4;      // разный кусок каждому голосу
+  s.loopStart=rndFx()*3;s.loopEnd=4;      // разный кусок каждому голосу
   return s;
 }
 function musicInit(){

@@ -14,7 +14,7 @@ function logPageOf(kind){return LOG_PAGE[kind]||"bort";}
 let logOpen=false;   /* совместимость: «журнал открыт» = стол открыт на тетради */
 function logAdd(kind,text){
   if(typeof quietMute==="function"&&quietMute())return;   /* тихий уезд (11n): журнал не пишет */
-  G.log.push({t:Date.now(),k:kind,s:text});
+  G.log.push({t:now(),k:kind,s:text});
   if(G.log.length>LOG_MAX)G.log.splice(0,G.log.length-LOG_MAX);
   const open=typeof tableIsOpen==="function"&&tableIsOpen();
   if(open&&typeof tableRender==="function")tableRender();

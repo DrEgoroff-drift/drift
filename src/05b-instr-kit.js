@@ -99,10 +99,10 @@ function instrWearRu(w){
 /* прибор можно потерять (хвост M127): попадание по корпусу изредка выбивает
    гнездо — экземпляр разбит до мёртвой шкалы, и панель это покажет сама */
 function instrKnock(){
-  if(!G.running||Math.random()>.06)return null;
+  if(!G.running||rnd()>.06)return null;
   const K=instrKit(),ids=Object.keys(K).filter(id=>(K[id].wear||0)<.85);
   if(!ids.length)return null;
-  const id=ids[Math.floor(Math.random()*ids.length)];
+  const id=ids[Math.floor(rnd()*ids.length)];
   K[id].wear=1;
   const I=(typeof INSTR_BY_ID!=="undefined"&&INSTR_BY_ID[id])?INSTR_BY_ID[id].ru:id;
   tell("warn","Попадание: выбито гнездо — "+I,"Прибор разбит\n"+I+"\nпанель слепа по этому каналу");
@@ -125,7 +125,7 @@ function instrFixCost(id){
    товар меняется. Ничего не персистится — предложение выводится. */
 function instrOffers(){
   if(!G.st)return [];
-  const slot=Math.floor(Date.now()/(1000*60*45));
+  const slot=Math.floor(now()/(1000*60*45));
   const r=rng(hashi(hashi(G.sx,G.sy,0x1A7),slot,(G.st.name||"").length));
   const n=2+Math.floor(r()*2);
   const out=[];

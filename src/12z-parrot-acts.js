@@ -59,14 +59,14 @@ const PAR_ACT=[
 /* ── осмотреться и переступить: из этого состоит покой ── */
 {ru:"осмотреться",w:9,d:2.6,m:"",f:(p,S)=>{PAR.look=Math.sin(p*6.283)*1.1;}},
 {ru:"наклон головы",w:9,d:2.2,m:"",f:(p,S)=>{
-  if(!S.s)S.s=Math.random()<.5?-1:1;
+  if(!S.s)S.s=rndFx()<.5?-1:1;
   PAR.roll=parBell(p)*S.s;}},
 {ru:"долгий наклон",w:5,d:3.4,m:"c",f:(p,S)=>{PAR.roll=parHold(p,.22,.3)*.9;PAR.look=.4;}},
 {ru:"переступить",w:8,d:1.9,m:"",f:(p,S)=>{
-  if(!S.d)S.d=(Math.random()<.5?-1:1)*(8+Math.random()*16);
+  if(!S.d)S.d=(rndFx()<.5?-1:1)*(8+rndFx()*16);
   PAR.step=parHold(p,.3,.3)*S.d;PAR.footUp=parBell(p)*.5;}},
 {ru:"пройтись по жёрдочке",w:4,d:3.6,m:"",f:(p,S)=>{
-  if(!S.d)S.d=(Math.random()<.5?-1:1)*(22+Math.random()*14);
+  if(!S.d)S.d=(rndFx()<.5?-1:1)*(22+rndFx()*14);
   PAR.step=Math.sin(p*3.14159)*S.d;
   PAR.footUp=Math.abs(Math.sin(p*12.5))*.45;PAR.lean=Math.sin(p*12.5)*.05;}},
 {ru:"переминаться",w:6,d:2.4,m:"",f:(p,S)=>{
@@ -86,19 +86,19 @@ const PAR_ACT=[
   PAR.shiver=h*.6+Math.sin(p*40)*h*.3;}},
 {ru:"чистить грудь",w:7,d:3.2,m:"",f:(p,S)=>{
   PAR.bow=parHold(p,.2,.2)*.7;PAR.roll=Math.sin(p*15.7)*.18;
-  if(Math.random()<.14)PAR.peck=.6;}},
+  if(rndFx()<.14)PAR.peck=.6;}},
 {ru:"чистить хвост",w:4,d:3.4,m:"",f:(p,S)=>{
   PAR.bow=parHold(p,.22,.22)*1.05;PAR.fan=parHold(p,.25,.25)*.7;
   PAR.roll=Math.sin(p*12)*.22;}},
 {ru:"перебрать перо",w:6,d:2.9,m:"",f:(p,S)=>{
-  PAR.preen=parHold(p,.25,.25);if(Math.random()<.10)PAR.peck=.5;}},
+  PAR.preen=parHold(p,.25,.25);if(rndFx()<.10)PAR.peck=.5;}},
 {ru:"распушиться",w:6,d:2.0,m:"",f:(p,S)=>{PAR.ruff+=parBell(p)*.06;PAR.tuck=parBell(p)*.5;}},
 {ru:"встряхнуться",w:6,d:1.5,m:"",f:(p,S)=>{
   PAR.shiver=parBell(p)*1.3;PAR.fan=parBell(p)*.5;
   if(!S.o&&p>.3){S.o=1;PAR.flapV+=6;PAR.crestV+=8;}}},
 {ru:"почистить клюв",w:5,d:2.6,m:"",f:(p,S)=>{
   PAR.bow=parHold(p,.2,.2)*.95;PAR.step=Math.sin(p*9)*3;
-  if(Math.random()<.22)PAR.peck=.8;}},
+  if(rndFx()<.22)PAR.peck=.8;}},
 {ru:"точить клюв",w:3,d:2.2,m:"",f:(p,S)=>{
   PAR.bow=parHold(p,.2,.2)*.8;PAR.beak=Math.abs(Math.sin(p*25))*.5;}},
 /* ── крылья и прыжки: то, что видно через всё окно ── */
@@ -139,7 +139,7 @@ const PAR_ACT=[
 {ru:"бормотать",w:6,d:2.8,m:"",f:(p,S)=>{
   PAR.beak=(1-Math.cos(p*25))*.22;PAR.tuck=parHold(p)*.2;
   if(!S.o&&p>.25){S.o=1;
-    if(Math.random()<.5&&typeof parrotLine==="function")parSay(parrotLine("body"));}}},
+    if(rndFx()<.5&&typeof parrotLine==="function")parSay(parrotLine("body"));}}},
 {ru:"повторить услышанное",w:4,d:2.4,m:"",f:(p,S)=>{
   if(!S.o){S.o=1;PAR.crestV+=6;
     if(typeof parrotLine==="function")parSay(parrotLine("beak"));}
@@ -170,10 +170,10 @@ const PAR_ACT=[
 /* ── сонная: копится сама, сбрасывается тычком ── */
 {ru:"моргать медленно",w:7,d:3.2,m:"s",f:(p,S)=>{
   PAR.tuck=parHold(p,.3,.3)*.4;
-  if(Math.random()<.05){PAR.blink=1;PAR.blinkAt=PAR.t+1.2;}}},
+  if(rndFx()<.05){PAR.blink=1;PAR.blinkAt=PAR.t+1.2;}}},
 {ru:"клевать носом",w:6,d:4.2,m:"s",f:(p,S)=>{
   PAR.bow=(1-Math.cos(p*9.4))*.30;PAR.tuck=parHold(p,.2,.2)*.6;
-  if(Math.random()<.08)PAR.blink=1;}},
+  if(rndFx()<.08)PAR.blink=1;}},
 {ru:"спрятать голову",w:5,d:6.5,m:"s",f:(p,S)=>{
   PAR.tuck=parHold(p,.14,.16);PAR.footUp=parHold(p,.2,.2)*.9;
   PAR.blink=Math.max(PAR.blink,parHold(p,.2,.2));}},
@@ -220,7 +220,7 @@ function parPickAct(){
     sum+=w;pool.push([a,w]);
   }
   if(!pool.length)return PAR_ACT[0];
-  let r=Math.random()*sum;
+  let r=rndFx()*sum;
   for(const e of pool){
     r-=e[1];
     if(r<=0){PAR_LAST.push(e[0]);if(PAR_LAST.length>2)PAR_LAST.shift();return e[0];}
@@ -254,11 +254,11 @@ function parActs(dt){
          открытое надолго, усыпляет птицу навсегда — за полчаса наблюдения
          девять повадок из полусотни не выпадали ни разу */
       if(PAR.act.m==="s")PAR.sleep=0;
-      PAR.act=null;PAR.actNext=PAR.t+.5+Math.random()*2.6;}
+      PAR.act=null;PAR.actNext=PAR.t+.5+rndFx()*2.6;}
     return;
   }
   if(PAR.t<PAR.actNext)return;
   const a=parPickAct();
   PAR.act=a;PAR.actT=0;PAR.st={};
-  PAR.actDur=a.d*(.85+Math.random()*.3);
+  PAR.actDur=a.d*(.85+rndFx()*.3);
 }

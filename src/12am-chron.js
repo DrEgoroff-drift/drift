@@ -211,7 +211,7 @@ function chronLineRu(L){
 }
 /* ── номер сводки от часов (§16.3) ── */
 function chronNow(){
-  const t=Date.now()+(CHRON.off|0)-CHRON_EPOCH;
+  const t=now()+(CHRON.off|0)-CHRON_EPOCH;
   return t>0?Math.floor(t/CHRON_SHIFT):0;
 }
 /* ── хэш состояния: FNV-1a по целым (D06) ── */

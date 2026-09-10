@@ -93,7 +93,7 @@ function bossActive(){
 /* окно щита: раз в десять минут поле само падает на двадцать секунд. Часы те
    же, что у сводки, значит окно у всех одно и то же */
 function bossWindow(){
-  const t=Math.floor((Date.now()+(CHRON.off|0))/1000);
+  const t=Math.floor((now()+(CHRON.off|0))/1000);
   return (t%BOSS_EVERY)<BOSS_WIN;
 }
 /* щит: пробит, если за прошлую сводку по нему били быстрее, чем он растёт */
@@ -121,7 +121,7 @@ function bossHit(dmg){
   const A=bossActive();
   if(!A||A.dead)return;
   BOSS_ACC+=Math.max(0,dmg|0);
-  const now=Date.now();
+  const now=clockNow();
   if(now-BOSS_SENT<60000||BOSS_ACC<=0)return;
   BOSS_SENT=now;
   const q=Math.min(60000,BOSS_ACC|0);

@@ -17,7 +17,7 @@
       кто их не строил. */
 const POI_FIND={
   wreck:  {ru:"остов корабля",note:"в разбитой рубке нашлась годная часть",
-           give:(r,d)=>{addPart(genPart(hashi(Date.now()&0xffffff,7,0x1E),tierFromDanger(d,r)));
+           give:(r,d)=>{addPart(genPart(hashi(now()&0xffffff,7,0x1E),tierFromDanger(d,r)));
              return "часть с обломков";}},
   temple: {ru:"храм",note:"на плитах вырезаны координаты",
            give:(r,d)=>{

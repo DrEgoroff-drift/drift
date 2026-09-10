@@ -49,7 +49,7 @@ function fleetRung(sys){return (typeof rungOf==="function")?rungOf(sys.sx,sys.sy
 /* кто идёт через систему в этом окне: чисто от семени и часов, ничего не хранится */
 function fleetHere(sys){
   sys=sys||G.sys;if(!sys)return [];
-  const bucket=Math.floor(Date.now()/FLEET_PERIOD);
+  const bucket=Math.floor(now()/FLEET_PERIOD);
   if(sys.fleetCache&&sys.fleetCache.b===bucket)return sys.fleetCache.list;
   const rung=fleetRung(sys), out=[];
   /* ── чёрный дерелик (§18.4, M313): в дальних секторах без станции ──
@@ -88,7 +88,7 @@ function fleetHere(sys){
 /* положение на линии сейчас: доля окна, дуга с прогибом */
 function fleetPos(f){
   if(f.still)return {x:f.x0,y:f.y0,a:0,u:0};
-  const u=((Date.now()/FLEET_PERIOD)+f.ph)%1;
+  const u=((now()/FLEET_PERIOD)+f.ph)%1;
   const dx=f.x1-f.x0,dy=f.y1-f.y0,L=Math.hypot(dx,dy)||1;
   const nx=-dy/L,ny=dx/L,bw=Math.sin(u*Math.PI)*f.bow;
   const x=f.x0+dx*u+nx*bw,y=f.y0+dy*u+ny*bw;
@@ -149,14 +149,14 @@ function drawFleet(zx,zy,Z){
 function fleetLogKey(){return G.sx+","+G.sy;}
 /* праздник по календарю (11am): норма флота двойная в этот день (M349) */
 function fleetNormTwice(){return !!(typeof holNow==="function"&&holNow());}
-function fleetNormKey(){return Math.floor(Date.now()/((typeof HOLD_SHIFT==="number")?HOLD_SHIFT:1800000))+(fleetNormTwice()?"h":"");}
+function fleetNormKey(){return Math.floor(now()/((typeof HOLD_SHIFT==="number")?HOLD_SHIFT:1800000))+(fleetNormTwice()?"h":"");}
 /* ── Кольцо (рунг 30): окликают первыми (§18.8, M315) ──
    До сих пор эфир отвечал только на ваш позывной. На последней ступени лестницы
    флот узнаёт борт сам: первый корабль линии, подошедший на семьсот, называет вас
    раньше, чем вы его. Раз в окно на систему; хранится одно число (`fleetLog`). */
 function fleetHailFirst(sh,F){
   if(fleetRung(G.sys)<30)return;
-  const bucket=Math.floor(Date.now()/FLEET_PERIOD),key="hail|"+fleetLogKey();
+  const bucket=Math.floor(now()/FLEET_PERIOD),key="hail|"+fleetLogKey();
   G.fleetLog=G.fleetLog||{};
   if(G.fleetLog[key]===bucket)return;
   for(const f of F){
@@ -220,7 +220,7 @@ function fleetInteract(sh){
   /* спасатель (п.11): идёт на чужой сигнал и зовёт с собой — если в системе есть баржа в беде */
   const dist=(near.k==="rescue"&&G.barges)?G.barges.find(b=>b.distress&&!b.done):null;
   const st=stat(), low=G.fuel<st.fuelMax*.6;
-  const shift=Math.floor(Date.now()/((typeof HOLD_SHIFT==="number")?HOLD_SHIFT:1800000));
+  const shift=Math.floor(now()/((typeof HOLD_SHIFT==="number")?HOLD_SHIFT:1800000));
   G.fleetLog=G.fleetLog||{};
   /* норма — одна на смену; в праздник (11am, маяк объявляет) — две (M349) */
   const fe=G.fleetLog[fleetLogKey()],feS=(fe&&typeof fe==="object")?fe.s:(fe|0),feN=(fe&&typeof fe==="object")?fe.n|0:(fe?1:0);

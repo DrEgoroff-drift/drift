@@ -16,13 +16,13 @@
    не родился: игра лежала, а журнал молчал. Теперь ловушки ставятся раньше
    любого кода, который может упасть, и не зависят ни от чего, кроме VER:
    G, logAdd, cloudHere — через typeof, если их ещё нет. */
-const CRASH_SHIP={n:0,last:{},t0:Date.now()};
+const CRASH_SHIP={n:0,last:{},t0:wallNow()};
 function crashShip(kind,msg,at,extra){
   try{
     if(!(location.protocol==="http:"||location.protocol==="https:")||typeof TEST!=="undefined")return;
     if(CRASH_SHIP.n>=80)return;
     msg=String(msg||"").slice(0,600);
-    const key=kind+"|"+msg,now=Date.now();
+    const key=kind+"|"+msg,now=wallNow();
     CRASH_SHIP.last[key]=CRASH_SHIP.last[key]||{t:0,n:0};
     const L=CRASH_SHIP.last[key];L.n++;
     if(now-L.t<60000)return;
@@ -68,7 +68,7 @@ function logShip(text,extra){
      существует — поэтому сброс идёт через окно и читается там же, где
      мерится. */
   try{addEventListener("visibilitychange",()=>{
-    if(!document.hidden)try{frameLastAt=0;BEAT.n=0;BEAT.ms=0;BEAT.t=Date.now();}catch(_){}
+    if(!document.hidden)try{frameLastAt=0;BEAT.n=0;BEAT.ms=0;BEAT.t=wallNow();}catch(_){}
   });}catch(_){}
   try{addEventListener("unhandledrejection",e=>{const x=e&&e.reason;crashShip("rejection",(x&&x.message)||String(x),crashStack(x));});}catch(_){}
   /* всё, что игра или браузер печатает как ошибку — тоже улика */

@@ -93,13 +93,13 @@ addEventListener("mousemove",padsFadeIn);
    Полсекунды после нажатия ДЕЙСТВИЯ клики по экранам не считаются. */
 let actPressT=-1e9;
 addEventListener("click",e=>{
-  if(performance.now()-actPressT<500&&e.target.closest&&e.target.closest(".scr")){
+  if(now()-actPressT<500&&e.target.closest&&e.target.closest(".scr")){
     e.stopPropagation();e.preventDefault();
   }
 },true);
 document.querySelectorAll("[data-k]").forEach(b=>{
   const k=b.dataset.k;
-  const on=e=>{e.preventDefault();keys[k]=true;if(k==="act")actPressT=performance.now();b.classList.add("on");padsFadeIn();
+  const on=e=>{e.preventDefault();keys[k]=true;if(k==="act")actPressT=now();b.classList.add("on");padsFadeIn();
     if(k!=="act"&&k!=="fire"&&k!=="msl")G.ap=null;};
   const off=e=>{e.preventDefault();keys[k]=false;b.classList.remove("on");};
   b.addEventListener("pointerdown",on);b.addEventListener("pointerup",off);
@@ -361,7 +361,7 @@ addEventListener("wheel",e=>{
 const ptr=new Map();
 let pinch0=0,zoom0=1,mzoom0=1;
 cvs.addEventListener("pointerdown",e=>{
-  ptr.set(e.pointerId,{x:e.clientX,y:e.clientY,x0:e.clientX,y0:e.clientY,t0:performance.now(),moved:false});
+  ptr.set(e.pointerId,{x:e.clientX,y:e.clientY,x0:e.clientX,y0:e.clientY,t0:now(),moved:false});
   if(ptr.size===2){
     const [a,b]=[...ptr.values()];
     pinch0=Math.hypot(a.x-b.x,a.y-b.y)||1;zoom0=G.zoom;mzoom0=(typeof mapZoomK==="function")?mapZoomK():1;
@@ -393,7 +393,7 @@ cvs.addEventListener("pointermove",e=>{
 });
 function endPtr(e){
   const p=ptr.get(e.pointerId);
-  if(p&&!p.moved&&performance.now()-p.t0<400)tap(p.x0,p.y0);
+  if(p&&!p.moved&&now()-p.t0<400)tap(p.x0,p.y0);
   ptr.delete(e.pointerId);
 }
 cvs.addEventListener("pointerup",endPtr);
@@ -455,7 +455,7 @@ function tap(sxp,syp){
       const d=Math.hypot(sxp-x,syp-y);
       if(d<bd){bd=d;best={gx,gy};}
     }
-    const now=Date.now();
+    const now=clockNow();
     if(best&&bd<cell*.6){
       /* тап по звезде — выбор; ещё раз по той же — подробнее (M298) */
       if(G.sel.x===best.gx&&G.sel.y===best.gy)G.mapMore=!G.mapMore;

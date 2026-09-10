@@ -42,7 +42,7 @@ function droneName(d){return "Д-"+(d&&d.id?d.id:"?");}
    загрузке и при первом же такте: круг начинается сейчас, номер выдаётся по
    порядку, планета неизвестна — тогда точка берётся по кругу орбиты. */
 function droneNormalize(d,now){
-  now=now||Date.now();
+  now=now||clockNow();
   if(d.id==null)d.id=droneNextId();
   if(typeof d.pi!=="number")d.pi=-1;
   if(!d.t0)d.t0=d.soldAtMs||now;
@@ -102,7 +102,7 @@ function droneTripMs(d,sys){
    0…1 по кругу: 0—.08 грузится на точке, .08—.46 идёт гружёным, .46—.54 стоит
    под разгрузкой, дальше идёт порожняком. Всё, что рисуется, берётся отсюда. */
 function dronePhase(d,now){
-  now=now||Date.now();
+  now=now||clockNow();
   if(d.down)return {leg:"fix",t:1};
   const T=droneTripMs(d);
   const ph=clamp(((now-(d.t0||now))%T)/T,0,1);
@@ -147,7 +147,7 @@ function droneBreakP(d){
   const dg=(typeof sysDanger==="function")?sysDanger(d.sx,d.sy):0;
   return clamp(DRONE_BREAK_P*(1+dg*1.6)+(d.wear|0)*DRONE_BREAK_WEAR,0,.2);
 }
-function droneBreaks(d){return Math.random()<droneBreakP(d);}
+function droneBreaks(d){return rnd()<droneBreakP(d);}
 function droneFixMs(d){
   const dg=(typeof sysDanger==="function")?sysDanger(d.sx,d.sy):0;
   let ms=DRONE_FIX_MS+dg*DRONE_FIX_FAR;
@@ -160,7 +160,7 @@ function droneFixMs(d){
 }
 /* ── строка состояния для списков ── */
 function droneStateRu(d,now){
-  now=now||Date.now();
+  now=now||clockNow();
   /* стоящая машина обязана сказать, ПОЧЕМУ она стоит: под блокадой круги не
      идут вовсе, и без этой строки список показывал бы «идёт гружёным» у
      дрона, который не двигался вторые сутки (12-economy, tickDrones) */
@@ -190,7 +190,7 @@ function droneRoutes(){
     R.drones.push(d);
     R.pool+=d.pool|0;
     if(d.stuck)R.stuck++;
-    else if(!d.down||d.down<=Date.now())R.perMin+=d.rate*(RES[d.res]?RES[d.res].price:10);
+    else if(!d.down||d.down<=now())R.perMin+=d.rate*(RES[d.res]?RES[d.res].price:10);
     else R.down++;
   }
   return Object.keys(by).map(k=>by[k]);
@@ -224,7 +224,7 @@ function droneGuestPos(d,now){
 function drawDronesSystem(zx,zy,Z){
   const list=G.drones||[];
   if(!list.length)return;
-  const now=Date.now();
+  const now=clockNow();
   ctx.lineCap="round";
   for(const d of list){
     if((d.sx!==G.sx||d.sy!==G.sy)&&d.mkt&&d.mkt.sx===G.sx&&d.mkt.sy===G.sy&&!d.down){

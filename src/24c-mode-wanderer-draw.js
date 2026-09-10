@@ -116,7 +116,7 @@ function wanKeeper(x,y,h){
 }
 function drawWanderRoom(){
   const S=wanAll();if(!S)return;
-  const g=wanGeom(),P=g.P,vp=g.vp,now=Date.now();
+  const g=wanGeom(),P=g.P,vp=g.vp,now=clockNow();
   const lots=wanLots();
   const sys=G.sys,pl=(sys&&sys.planets&&S.w.planetIx>=0)?sys.planets[S.w.planetIx]:null;
   const pal=(pl&&TYPES[pl.type])?TYPES[pl.type].pal:[[40,60,90],[60,90,120],[90,120,150],[120,150,180]];

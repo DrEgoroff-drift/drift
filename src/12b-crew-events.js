@@ -105,7 +105,7 @@ const CREW_EVENTS=[
     const S=shipData(c.shipId);
     c.state="hostage";
     c.ransomBase=Math.round(600+gross*3+(S?S.cargo:40)*22);
-    c.ransom=c.ransomBase;c.ransomAt=Date.now();
+    c.ransom=c.ransomBase;c.ransomAt=now();
     c.ransomSx=c.order.sx;c.ransomSy=c.order.sy;
     c.cargo={};
     return {tone:"warn",ru:"взят в заложники · выкуп "+c.ransom.toLocaleString("ru")+" кр"};
@@ -135,12 +135,12 @@ const CREW_EVENTS=[
   }},
   {id:"away",cat:"bad",run:(c,r)=>{
     const h=2+Math.floor(r()*7);
-    c.state="away";c.stateUntil=Date.now()+h*3600000;
+    c.state="away";c.stateUntil=now()+h*3600000;
     return {tone:"",ru:"загулял на "+h+" ч: "+crewTale(c)};
   }},
   {id:"breakdown",cat:"bad",when:c=>!!c.shipId,run:(c,r)=>{
     crewDamage(c,8+r()*16);
-    c.state="away";c.stateUntil=Date.now()+(1+Math.floor(r()*3))*3600000;
+    c.state="away";c.stateUntil=now()+(1+Math.floor(r()*3))*3600000;
     return {tone:"dim",ru:"встал на ремонт: сдох маршевый узел"};
   }},
   {id:"barvdebt",cat:"bad",run:(c,r,gross)=>{
@@ -206,7 +206,7 @@ const CREW_EVENTS=[
     const free=Object.keys(SHIPS).filter(id=>!G.owned[id]);
     const id=pick(free,r);G.owned[id]=true;
     /* хвост — на витрину (M152e): ставка видна, а не строка dim */
-    if(G.home){(G.home.trophies||(G.home.trophies=[])).push({k:"hull",id,who:c.name,t:Date.now()});}
+    if(G.home){(G.home.trophies||(G.home.trophies=[])).push({k:"hull",id,who:c.name,t:now()});}
     if(typeof thingAdd==="function")thingAdd("trophy",c.name+" пригнал корпус «"+SHIPS[id].ru+"»","трофей с рейса · корпус в ангаре · витрина дома помнит");
     return {tone:"tech",ru:"пригнал трофейный корпус «"+SHIPS[id].ru+"» — он в ангаре"};
   }}
@@ -224,7 +224,7 @@ function applyCrewEvent(c,ev,r,gross,danger){
 }
 function crewHistory(c,ev,ru){
   c.hist=c.hist||[];
-  c.hist.unshift({cat:ev.cat,id:ev.id,ru,t:Date.now()});
+  c.hist.unshift({cat:ev.cat,id:ev.id,ru,t:now()});
   if(c.hist.length>12)c.hist.length=12;
 }
 /* ── выкуп и освобождение ── */
@@ -237,7 +237,7 @@ function ransomPay(c){
 }
 function crewFreeHostage(c,why){
   const S=c.shipId?shipData(c.shipId):null;
-  c.state=null;c.ransom=0;c.tMs=Date.now();c.tripMin=0;
+  c.state=null;c.ransom=0;c.tMs=now();c.tripMin=0;
   /* корабль пираты оставляют себе примерно в половине случаев */
   const r=rng(hashi(c.seed,(c.trips|0)*17+3,0xF2EE));
   if(c.shipId&&r()<.5){

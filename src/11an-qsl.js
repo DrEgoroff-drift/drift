@@ -61,7 +61,7 @@ function qslHear(id){
   const o=QSL_BY[id];if(!o)return "";
   const Q=qslAll();
   const isNew=!Q.heard[id];
-  Q.heard[id]=Date.now();
+  Q.heard[id]=now();
   if(isNew){
     logAdd("ether",o.call+" · "+o.ru+" · позывной записан");
     tell("good","Дальний: "+o.call,"ДАЛЬНИЙ\n"+o.call+"\n"+o.ru+"\nкарточку можно послать со стола");
@@ -70,7 +70,7 @@ function qslHear(id){
 }
 /* строка дальнего для приёмника: возвращает текст или пусто */
 function qslEtherLine(){
-  const r=rng(hashi(Math.floor(Date.now()/40000),(G.sx|0)*31+(G.sy|0),0x0951));
+  const r=rng(hashi(Math.floor(now()/40000),(G.sx|0)*31+(G.sy|0),0x0951));
   if(r()>0.22)return "";
   const o=QSL_OPS[Math.floor(r()*QSL_OPS.length)];
   return qslHear(o.id);
@@ -79,8 +79,8 @@ function qslEtherLine(){
 function qslSend(id){
   const o=QSL_BY[id];const Q=qslAll();
   if(!o||!Q.heard[id]||Q.sent[id])return false;
-  const r=rng(hashi(id.length*17,Date.now()&0x7fffffff,0x0952));
-  Q.sent[id]={t:Date.now(),due:Date.now()+QSL_WAIT+Math.floor(r()*QSL_SPREAD)};
+  const r=rng(hashi(id.length*17,now()&0x7fffffff,0x0952));
+  Q.sent[id]={t:now(),due:now()+QSL_WAIT+Math.floor(r()*QSL_SPREAD)};
   logAdd("tech","Карточка послана: "+o.call+" · ответ идёт неделями");
   tell("good","Карточка послана: "+o.call,"КАРТОЧКА ПОСЛАНА\n"+o.call+"\nответ придёт не скоро");
   return true;
@@ -89,7 +89,7 @@ function qslSend(id){
    Считается лениво, при взгляде на стену или на стыковке. Ничего не тикает. */
 function qslTick(){
   const Q=qslAll();
-  const now=Date.now();
+  const now=clockNow();
   let n=0;
   for(const id in Q.sent){
     const s=Q.sent[id];

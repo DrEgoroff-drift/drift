@@ -35,11 +35,11 @@ function buildAi(role){
     ", кристаллы "+AI_COST.crystal+", изотопы "+AI_COST.isotopes);return false;}
   G.credits-=AI_COST.credits;
   G.cargo.iridium-=AI_COST.iridium;G.cargo.crystal-=AI_COST.crystal;G.cargo.isotopes-=AI_COST.isotopes;
-  const seed=hashi(Date.now()&0xffff,role.length*977,0xA11);
+  const seed=hashi(now()&0xffff,role.length*977,0xA11);
   const r=rng(seed);
   const m={id:"ai"+seed,seed,name:"«"+pick(AI_NAMES,r)+"»",role,ai:1,
     traits:[],lv0:1,xp:0,perks:[],rules:[],loy:100,drift:0,
-    tMs:Date.now(),earned:0,spent:0,tookCr:0,stole:0,shipId:null,route:[],log:[],fee:0};
+    tMs:now(),earned:0,spent:0,tookCr:0,stole:0,shipId:null,route:[],log:[],fee:0};
   G.mgrs.push(m);
   mgrSay(m,"Ядро запущено. Домен принят: "+MGR_ROLES[role].dom,"good");
   tell("","Собрано ИИ-ядро "+m.name+" · домен «"+MGR_ROLES[role].dom+"»",
@@ -60,7 +60,7 @@ function aiDrift(m,min,work){
     mgrSay(m,"Режим работы изменён: "+st.ru,st.at>=45?"warn":"");
     if(st.at>=45)logAdd("warn",m.name+": "+st.ru+" — "+st.note);
   }
-  const r=rng(hashi(m.seed,Math.floor(Date.now()/60000),0xD1F));
+  const r=rng(hashi(m.seed,Math.floor(now()/60000),0xD1F));
   /* 20+ : тратит ваши деньги на то, что считает выгодным. Иногда оно и правда
      выгодно — иначе это был бы просто штраф, а не характер. */
   if(m.drift>=20&&r()<.14*min){
@@ -95,7 +95,7 @@ function aiDrift(m,min,work){
      Куда именно оно ушло, видно на карте: туда можно прилететь. */
   if(m.drift>=100){
     m.gone=true;
-    G.aiRift={sx:G.sx+(m.seed%9)-4,sy:G.sy+((m.seed>>4)%9)-4,name:m.name,t:Date.now()};
+    G.aiRift={sx:G.sx+(m.seed%9)-4,sy:G.sy+((m.seed>>4)%9)-4,name:m.name,t:now()};
     logAdd("warn",m.name+" разошлось: домен «"+MGR_ROLES[m.role].dom+"» больше не ваш");
     tell("warn","Расхождение: "+m.name,
       m.name+" больше не отвечает\nоно ушло в сектор "+G.aiRift.sx+","+G.aiRift.sy+

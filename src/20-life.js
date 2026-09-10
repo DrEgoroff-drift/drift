@@ -15,7 +15,7 @@ function drawAstronaut(o){
   ctx.save();
   ctx.scale(o.face||1,1);
   if(o.jet){   // ранцевый импульс при прыжке
-    const f=5+Math.random()*7;
+    const f=5+rndFx()*7;
     const g=ctx.createLinearGradient(0,4,0,4+f);
     g.addColorStop(0,"rgba(255,220,150,.9)");g.addColorStop(1,"rgba(255,110,60,0)");
     ctx.fillStyle=g;

@@ -69,10 +69,10 @@ function voteCast(by,pick,N){
 let RALLY_CACHE=null;
 function rallyList(force){
   if(typeof warCall!=="function")return Promise.resolve([]);
-  if(!force&&RALLY_CACHE&&Date.now()-RALLY_CACHE.t<120000)return Promise.resolve(RALLY_CACHE.rows);
+  if(!force&&RALLY_CACHE&&wallNow()-RALLY_CACHE.t<120000)return Promise.resolve(RALLY_CACHE.rows);
   return warCall("rallies",{}).then(r=>{
     const rows=(r&&r.ok&&Array.isArray(r.rows))?r.rows:[];
-    RALLY_CACHE={t:Date.now(),rows};
+    RALLY_CACHE={t:wallNow(),rows};
     return rows;
   }).catch(()=>[]);
 }

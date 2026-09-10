@@ -188,7 +188,7 @@ function roadAll(){
 }
 /* день — календарный: игровые сутки идут 60 секунд, и на них «за поездку»
    обнулялось раз в минуту прямо посреди дороги (M168g) */
-function roadToday(){const d=new Date();return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();}
+function roadToday(){const d=new Date(now());return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();}
 /* приток в бак: чистая функция, её и гоняют автотесты. Ранг множит и приток,
    и потолок — иначе у ветерана ставка вдвое, а бак кончается вдвое быстрее */
 function roadBankAdd(bank,ms,k){
@@ -199,7 +199,7 @@ function roadDayReset(now){
   const R=roadAll(),d=roadToday();
   if(R.day!==d){R.day=d;R.km=0;R.cr=0;}
   /* бак: старым сохранениям наливаем полный — они его ни разу не тратили */
-  const t=now==null?Date.now():now,rk=roadRank(R.total).k;
+  const t=now==null?clockNow():now,rk=roadRank(R.total).k;
   if(R.bank==null){R.bank=ROAD_BANK_MAX*rk;R.bts=t;}
   /* именно `==null`, а не `||`: отметка времени в ноль — законное значение, а
      на `||` она подменялась текущим временем, и приток молча не начислялся */

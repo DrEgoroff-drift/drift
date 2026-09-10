@@ -109,7 +109,7 @@ function makerProfile(by,prof,r){
   if(N<2)return prof;
   const w0=prof.map(p=>p[1]);
   const wmax=Math.max.apply(null,w0);
-  const q=r||Math.random;
+  const q=r||rnd;
   if(M.prof==="step"){
     /* ступени: не кривая вовсе, а полки. Нос — две узкие, мидель — короб во
        всю ширину, корма — две пониже. Плавных переходов нет ни одного: борт

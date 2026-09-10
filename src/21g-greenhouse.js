@@ -36,7 +36,7 @@ function greenWatered(){
 function greenGrow(b){
   if(!b||!b.t)return 0;
   const k=greenWatered()?GREEN_VEGA:1;
-  return clamp((Date.now()-b.t)*k/GREEN_FULL,0,1);
+  return clamp((now()-b.t)*k/GREEN_FULL,0,1);
 }
 /* какие виды ещё не посеяны: реестр помнит порядок открытия, и сеется тот,
    что описан позже прочих — то есть тот, который ещё в руках */
@@ -54,7 +54,7 @@ function greenSow(){
   if(!greenCanSow())return null;
   const name=greenNext();
   G.bio=(G.bio|0)-1;                       /* уходит образец, как у управляющего */
-  const b={name,t:Date.now()};
+  const b={name,t:now()};
   greenAll().beds.push(b);
   logAdd("good","Посеяно у дома: "+name);
   tell("good","Посеяно: "+name,"ПОСЕЯНО\n"+name.toUpperCase()+

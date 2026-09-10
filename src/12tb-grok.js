@@ -69,12 +69,12 @@ function grokBusy(){const R=grokRec();return R.state==="out";}
 function grokLeftMs(){
   const R=grokRec();
   if(R.state!=="out")return 0;
-  return Math.max(0,R.due-Date.now());
+  return Math.max(0,R.due-now());
 }
 /* ── ход ── лениво: копка кончается сама, пока игрока нет рядом */
 function grokTick(){
   const R=grokRec();
-  if(R.state==="out"&&Date.now()>=R.due)R.state="back";
+  if(R.state==="out"&&now()>=R.due)R.state="back";
   return R;
 }
 /* ── отправить ──
@@ -86,7 +86,7 @@ function grokSend(sx,sy){
   if((G.cargo[k]|0)<price)return false;
   G.cargo[k]-=price;
   R.state="out";R.sx=sx|0;R.sy=sy|0;
-  R.due=Date.now()+GROK_MIN+Math.floor(rng(hashi(sx,sy,Date.now()&0xffff))()*(GROK_MAX-GROK_MIN));
+  R.due=now()+GROK_MIN+Math.floor(rng(hashi(sx,sy,now()&0xffff))()*(GROK_MAX-GROK_MIN));
   logAdd("",GROK_NAME+" ушёл копать: сектор "+R.sx+":"+R.sy+" · съел "+
     RES[k].ru.toLowerCase()+" ×"+price);
   say(GROK_NAME+" УШЁЛ КОПАТЬ\nсектор "+R.sx+":"+R.sy+

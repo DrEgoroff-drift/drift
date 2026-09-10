@@ -113,7 +113,7 @@ function hailTick(sh,dt,actEdge){
   if(!p)return false;
   G.hailLog=G.hailLog||{};
   const key=G.sx+","+G.sy+"|"+p.pw;
-  const bucket=Math.floor(Date.now()/1800000);
+  const bucket=Math.floor(now()/1800000);
   if(G.hailLog[key]===bucket)return false;
   G.hailLog[key]=bucket;
   G.hail={by:p.pw,t:HAIL_HOLD,warn:0,x:sh.x,y:sh.y,blk:hailBlockade()?1:0};

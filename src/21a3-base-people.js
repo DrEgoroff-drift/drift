@@ -104,7 +104,7 @@ function baseGuestTake(B){
   const m=(typeof genMerc==="function")?genMerc(g.seed,null):{name:g.name,spec:"mine"};
   m.name=g.name;m.fee=0;m.role=g.role;
   const p=Object.assign(m,{cargo:{},order:{kind:"base",sx:B.sx,sy:B.sy,idx:B.idx},
-    tMs:Date.now(),paidMs:Date.now()});
+    tMs:now(),paidMs:now()});
   G.crew.push(p);
   /* если это был тот самый один из шести — через двое суток на складе недосчёт */
   if(g.bad)B.thief=((typeof baseShift==="function")?baseShift():0)+8;

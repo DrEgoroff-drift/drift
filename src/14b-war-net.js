@@ -91,7 +91,7 @@ function warClock(serverN){
   if(!(serverN>=0))return;
   const mine=chronNow();
   if(mine===serverN)return;
-  const want=(serverN*CHRON_SHIFT)+CHRON_EPOCH-Date.now()+1;
+  const want=(serverN*CHRON_SHIFT)+CHRON_EPOCH-now()+1;
   CHRON.off=want;
   warStoreSet({off:want});
   /* состояние пересчитывается на новый номер: старое было посчитано по чужим часам */
@@ -105,7 +105,7 @@ function warCall(a,body){
 /* ── взять новое: закрытые сводки после последней известной ── */
 function warPull(force){
   if(!warHere()||WAR_BUSY)return Promise.resolve(false);
-  const now=Date.now();
+  const now=wallNow();
   if(!force&&now-WAR_LAST<WAR_PULL_MS)return Promise.resolve(false);
   WAR_BUSY=1;WAR_LAST=now;
   return warCall("pull",{since:warLedLast()}).then(r=>{

@@ -62,7 +62,7 @@ function kinoWatch(){
 /* какой кадр журнала идёт прямо сейчас: журнал крутится сам, по часам */
 function kinoFrame(K){
   if(!K)return null;
-  const i=Math.floor(Date.now()/4200)%KINO_REEL.length;
+  const i=Math.floor(now()/4200)%KINO_REEL.length;
   return Object.assign({i},KINO_REEL[i]);
 }
 /* ── экран на стене ──
@@ -151,7 +151,7 @@ function kinoScreen(c,x,y,w,h,K,seed){
     c.fillRect(cx-w*.04,cy+h*.02,w*.08,h*.14);
   }
   /* зерно и дрожание кадра: без них полотно — просто белый прямоугольник */
-  const rg=rng(hashi(seed|0,Math.floor(Date.now()/120),9));
+  const rg=rng(hashi(seed|0,Math.floor(now()/120),9));
   c.fillStyle="rgba(0,0,0,.10)";
   for(let i=0;i<Math.round(w*h/240);i++)c.fillRect(x+rg()*w,y+rg()*h,1,1);
   c.fillStyle="rgba(255,255,255,.10)";

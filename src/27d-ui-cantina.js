@@ -370,8 +370,8 @@ function cantRoomBody(c,W2,H2,list,sel,hover,deals,folk){
   if(typeof holTreeUp==="function"&&holTreeUp()&&typeof holTree==="function")
     holTree(c,W2*0.93,fy+H2*0.10,fy*0.72,rgba(acc,.5));
   /* пузырь бармена (M299) */
-  if(typeof cantBubble!=="undefined"&&cantBubble&&performance.now()-cantBubble.t<5200){
-    const age=(performance.now()-cantBubble.t)/1000,al=age<.2?age/.2:(age>4.4?Math.max(0,(5.2-age)/.8):1);
+  if(typeof cantBubble!=="undefined"&&cantBubble&&now()-cantBubble.t<5200){
+    const age=(now()-cantBubble.t)/1000,al=age<.2?age/.2:(age>4.4?Math.max(0,(5.2-age)/.8):1);
     c.save();c.globalAlpha=al;
     c.font="9px ui-monospace,monospace";c.textAlign="left";
     const words=cantBubble.line.split(" "),lines=[];let cur0="";

@@ -59,7 +59,7 @@ const HOL_GREET={
 function holMap(){if(!G.hol||typeof G.hol!=="object")G.hol={};return G.hol;}
 /* какой сегодня праздник по НАСТОЯЩЕМУ календарю игрока */
 function holNow(at){
-  const d=at?new Date(at.getTime()):new Date();
+  const d=at?new Date(at.getTime()):new Date(now());
   const m=d.getMonth()+1, day=d.getDate();
   for(const h of HOLIDAYS){
     const [fm,fd]=h.from,[tm,td]=h.to;
@@ -78,7 +78,7 @@ function holEtherLine(){
   const h=holNow();if(!h)return "";
   const L=HOL_ETHER[h.id]||[];
   if(!L.length)return "";
-  const r=rng(hashi(Math.floor(Date.now()/60000),h.id.length,0x0801));
+  const r=rng(hashi(Math.floor(now()/60000),h.id.length,0x0801));
   return L[Math.floor(r()*L.length)];
 }
 /* ── радиограммы ──
@@ -86,7 +86,7 @@ function holEtherLine(){
    книжке: их имена уже написаны, придумывать некого. */
 function holDock(){
   const h=holNow();if(!h)return false;
-  const d=new Date();
+  const d=new Date(now());
   const year=d.getMonth()+1>=7?d.getFullYear():d.getFullYear()-1;   /* год ПРАЗДНИКА, а не календаря */
   const key=(h.id==="ny"?year:d.getFullYear())+":"+h.id;
   const M=holMap();

@@ -262,7 +262,7 @@ function grokBlock(){
 /* реплика бармена над стойкой (M299): ответ на вещь произносится в зале,
    а не только меняет строку списка */
 let cantBubble=null;
-function cantSay(line){cantBubble={line:String(line||"").replace(/^—\s*/,""),t:performance.now()};}
+function cantSay(line){cantBubble={line:String(line||"").replace(/^—\s*/,""),t:now()};}
 /* Зал: канва во всю ширину панели, по сидящему тыкают. Перерисовывается своим
    rAF, пока канва жива и вкладка та же, — иначе цикл продолжал бы крутиться
    после ухода со вкладки и жёг бы кадр впустую. */

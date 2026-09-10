@@ -157,10 +157,10 @@ function opisPanels(){
   });
 }
 /* ── действия: те же ручки, что и у прежнего экрана ── */
-function opisArmed(key){return !!(OPIS.arm&&OPIS.arm.key===key&&Date.now()-OPIS.arm.t<3000);}
+function opisArmed(key){return !!(OPIS.arm&&OPIS.arm.key===key&&now()-OPIS.arm.t<3000);}
 function opisConfirm(key,run){
   if(opisArmed(key)){OPIS.arm=null;run();return;}
-  OPIS.arm={key,t:Date.now()};opisRerender();
+  OPIS.arm={key,t:now()};opisRerender();
   setTimeout(()=>{if(OPIS.arm&&OPIS.arm.key===key){OPIS.arm=null;opisRerender();}},3100);
 }
 function opisFit(p,slot){

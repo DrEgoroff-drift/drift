@@ -30,7 +30,7 @@ function planetGrant(p){
   const sxy=p.key.split(":")[0].split(",");
   const res=(p.res||[]).filter(k=>TRADE_KEYS.indexOf(k)>=0).slice(0,4);
   G.pnode={key:p.key,sx:+sxy[0]|0,sy:+sxy[1]|0,idx:p.idx|0,name:p.name,
-    res:res.length?res:["iron"],stock:{},made:Date.now(),last:Date.now(),
+    res:res.length?res:["iron"],stock:{},made:now(),last:now(),
     hauled:0,calls:0};
   logAdd("good","Сотня собрана. «"+p.name+"» — ваш узел: она родит товар, к ней пойдут баржи");
   say("УЗЕЛ\n«"+p.name+"» теперь ваша\nне доход, а точка на карте");
@@ -43,7 +43,7 @@ function planetGrant(p){
    смотрят, — по прошедшему времени, как рейсы наёмников. */
 function planetTick(){
   const N=G.pnode;if(!N)return null;
-  const now=Date.now();
+  const now=clockNow();
   const mins=(now-(N.last||now))/60000;
   if(mins>0){
     N.last=now;

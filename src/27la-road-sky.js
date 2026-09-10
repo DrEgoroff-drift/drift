@@ -116,7 +116,7 @@ function roadSky(c,W,H,t,dt,spd,tier,fast,hue,en){
     c.globalAlpha=1;c.restore();
   }
   if(RD.beat>.6&&RD.sparks.length<24)
-    RD.sparks.push({x:W*(.1+Math.random()*.8),y:-20,v:2+Math.random()*3+fast*6,life:1,big:Math.random()<.2});
+    RD.sparks.push({x:W*(.1+rndFx()*.8),y:-20,v:2+rndFx()*3+fast*6,life:1,big:rndFx()<.2});
   for(let i=RD.sparks.length-1;i>=0;i--){
     const s=RD.sparks[i];
     s.y+=s.v*(H/700)*60*dt;s.life-=.24*dt;

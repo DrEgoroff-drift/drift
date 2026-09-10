@@ -51,10 +51,10 @@ function probeCanBuild(){
 function probeBuild(){
   if(!probeCanBuild())return false;
   G.data-=PROBE_COST_DATA;G.credits-=PROBE_COST_CR;
-  const seed=hashi(G.sx,G.sy,(Date.now()&0x7fffffff))>>>0;
+  const seed=hashi(G.sx,G.sy,(now()&0x7fffffff))>>>0;
   const t=probeTarget(seed);
-  const p={seed,tsx:t.sx,tsy:t.sy,t0:Date.now(),
-           due:Date.now()+PROBE_WAIT+Math.floor((rng(seed^0x51A7)())*PROBE_SPREAD),
+  const p={seed,tsx:t.sx,tsy:t.sy,t0:now(),
+           due:now()+PROBE_WAIT+Math.floor((rng(seed^0x51A7)())*PROBE_SPREAD),
            done:0};
   probeAll().push(p);
   thingAdd("paper","Вымпел · расписка о запуске",
@@ -66,7 +66,7 @@ function probeBuild(){
 }
 /* готовый заговорить: первый по сроку, ещё не отзвучавший */
 function probeDue(){
-  const now=Date.now();
+  const now=clockNow();
   return probeAll().find(p=>!p.done&&now>=p.due)||null;
 }
 /* ── голос ──

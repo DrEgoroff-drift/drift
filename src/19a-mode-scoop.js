@@ -266,7 +266,7 @@ function scoopScrX(S,wx){return W*.34+(wx-S.x)*SCOOP_PX;}
 function drawScoop(){
   const S=G.scoop,p=S.p,[bt,bb]=scoopBandAt(S.x);
   const pal=p.T.pal;
-  const sh=(S.shake>0?(Math.random()-.5)*S.shake*7:0);
+  const sh=(S.shake>0?(rndFx()-.5)*S.shake*7:0);
   ctx.save();ctx.translate(0,sh);
   const T=giantTex(p);
   /* Два эшелона одной ленты: дальний крупный и медленный, ближний мельче и
@@ -370,8 +370,8 @@ function drawScoop(){
   }
   ctx.globalAlpha=1;
   /* гроза в нижних слоях: редкая вспышка снизу — там, куда лучше не опускаться */
-  if(Math.random()<.012){
-    const lx=Math.random()*W, ly=H*(.86+Math.random()*.1);
+  if(rndFx()<.012){
+    const lx=rndFx()*W, ly=H*(.86+rndFx()*.1);
     const fg=ctx.createRadialGradient(lx,ly,0,lx,ly,180);
     fg.addColorStop(0,"rgba(255,246,220,.5)");fg.addColorStop(1,"rgba(255,200,140,0)");
     ctx.fillStyle=fg;ctx.beginPath();ctx.arc(lx,ly,180,0,TAU);ctx.fill();

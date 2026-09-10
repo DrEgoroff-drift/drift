@@ -36,7 +36,7 @@ function modeRu(){return MODE_RU[G.mode]||"";}
 function thingsAll(){return (G.things||(G.things=[]));}
 function thingAdd(k,ru,note,extra){
   const L=thingsAll();
-  const th=Object.assign({k,ru,note:note||"",t:Date.now(),seen:0,sx:G.sx,sy:G.sy},extra||{});
+  const th=Object.assign({k,ru,note:note||"",t:now(),seen:0,sx:G.sx,sy:G.sy},extra||{});
   L.unshift(th);
   while(L.length>40)L.pop();
   if(tableOpenNow&&tableTab==="things")tableRender();else logBtnLabel();
@@ -68,7 +68,7 @@ function thingAdd(k,ru,note,extra){
 function tableNoticeAll(){
   thingsAll().forEach(t=>{t.noticed=1;});
   (G.strips||[]).forEach(t=>{t.noticed=1;});
-  G.tableSeen=Date.now();
+  G.tableSeen=now();
 }
 function tableNewThings(){return thingsAll().filter(t=>!t.noticed).length;}
 /* снимок «что было новым» на момент открытия — живёт, пока стол открыт */

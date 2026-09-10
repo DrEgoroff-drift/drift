@@ -143,7 +143,7 @@ function settleMake(p){
   M[key]={seed,sx:G.sx,sy:G.sy,idx:(p&&p.idx|0),name:(p&&p.name)||"",
     lean:SETTLE_BUILD[Math.floor(r()*SETTLE_BUILD.length)].k,   // своя склонность
     stage:1,mood:50,fed:0,stock:{},diet:{},built:[],
-    made:Date.now(),last:Date.now(),asked:0,paid:0,raided:0};
+    made:now(),last:now(),asked:0,paid:0,raided:0};
   return M[key];
 }
 /* ── рост, считаемый лениво ──
@@ -152,7 +152,7 @@ function settleMake(p){
    причина, по которой оно падает само. */
 function settleTick(S){
   if(!S)return null;
-  const now=Date.now();
+  const now=clockNow();
   const mins=Math.min(now-(S.last||now),SETTLE_CAP)/60000;
   if(mins<=0)return S;
   S.last=now;
@@ -263,7 +263,7 @@ function settleWords(S){
 function settleAsk(S,word){
   S=settleTick(S);
   if(!S)return 0;
-  const now=Date.now();
+  const now=clockNow();
   if(now-(S.asked||0)<SETTLE_WAIT)return 0;
   let makes=settleMakes(S);
   if(!makes.length)return 0;

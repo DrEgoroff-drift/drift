@@ -31,7 +31,7 @@ function parrotFind(seed,who){
   if(parrotHas())return null;
   const r=rng(hashi(seed|0,0xB1AD,7));
   G.parrot={seed:seed>>>0,name:pick(PARROT_NAMES,r),who:who||"неизвестного борта",
-    since:Date.now(),said:0};
+    since:now(),said:0};
   tell("tech","В вещах нашлось живое: трепло «"+G.parrot.name+"»",
     "ТРЕПЛО\n«"+G.parrot.name+"»\nиз вещей "+G.parrot.who+
     "\nоно повторяет всё, что слышало");
@@ -42,7 +42,7 @@ function parrotFind(seed,who){
 function heardAdd(kind,payload,words){
   if(!parrotHas()||!kind)return null;
   const L=heardAll();
-  const rec={t:Date.now(),kind,sx:payload&&payload.sx|0,sy:payload&&payload.sy|0,
+  const rec={t:now(),kind,sx:payload&&payload.sx|0,sy:payload&&payload.sy|0,
     note:(payload&&payload.note)||"",words:words||null,read:false,used:false};
   L.push(rec);
   while(L.length>HEARD_MAX)L.shift();
@@ -155,7 +155,7 @@ function heardBlurt(sys){
   /* бросок на КАЖДУЮ стыковку, а не на пару «фраза + станция»: детерминированный
      бросок здесь означал бы, что птица либо молчит у этой станции всегда, либо
      ляпает при первом же заходе, — а она просто иногда не вовремя */
-  if(Math.random()<.55)return null;
+  if(rnd()<.55)return null;
   h.used=true;
   if(typeof repAdd==="function")repAdd(-1,sys);
   tell("warn","«"+G.parrot.name+"» ляпнул лишнее: "+h.note,

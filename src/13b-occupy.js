@@ -67,8 +67,8 @@ function occSet(sx,sy,lvl){
   if(!G.occ)G.occ=occInit();
   const k=occKey(sx,sy);
   if(lvl<=0){delete G.occ[k];return;}
-  const o=G.occ[k]||(G.occ[k]={lvl:0,kills:0,t:Date.now()});
-  o.lvl=Math.min(OCC_MAX,lvl);o.kills=0;o.t=Date.now();
+  const o=G.occ[k]||(G.occ[k]={lvl:0,kills:0,t:now()});
+  o.lvl=Math.min(OCC_MAX,lvl);o.kills=0;o.t=now();
 }
 /* ── наступление ──
    Один бросок на такт: берём случайную занятую систему и пробуем расширить её
@@ -76,7 +76,7 @@ function occSet(sx,sy,lvl){
    ОТКУДА-ТО, и игрок видит фронт, а не сыпь по карте. */
 function occTick(){
   if(!G.occ)G.occ=occInit();
-  const now=Date.now();
+  const now=clockNow();
   if(!G.occT)G.occT=now;
   if(now-G.occT<OCC_PERIOD)return;
   G.occT=now;
@@ -246,7 +246,7 @@ function goalCard(){
 const OCC_CALM_MS=86400000;
 function occSuppress(sx,sy){
   if(!G.occCalm)G.occCalm={};
-  G.occCalm[occKey(sx,sy)]=Date.now();
+  G.occCalm[occKey(sx,sy)]=now();
   const had=occLvl(sx,sy);
   if(had)occSet(sx,sy,had-1);
   tell("kill","Очаг в этом секторе подавлен"+(had?" · система: "+occInfo(had-1).ru:""),
@@ -255,7 +255,7 @@ function occSuppress(sx,sy){
 }
 function occCalmNear(sx,sy){
   if(!G.occCalm)return false;
-  const now=Date.now();
+  const now=clockNow();
   for(const k in G.occCalm){
     if(now-G.occCalm[k]>OCC_CALM_MS){delete G.occCalm[k];continue;}
     const [cx,cy]=k.split(",").map(Number);

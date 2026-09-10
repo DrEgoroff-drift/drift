@@ -48,7 +48,7 @@ function planetSpin(p){
      про свет и ледгер кадра ловили «заход» то так, то этак (05.09.2026).
      Часы берём мировые всегда, когда мир есть; Date.now() остаётся там, где
      G ещё нет вовсе (заставка до заводки). */
-  const t=(typeof G!=="undefined"&&typeof G.t==="number")?G.t*16.7:Date.now();
+  const t=(typeof G!=="undefined"&&typeof G.t==="number")?G.t*16.7:now();
   return t/per*TAU*dir;
 }
 /* прежний номер кадра остаётся ради тех, кто просил у планеты именно его
@@ -167,14 +167,14 @@ function planetStripTick(){
     STRIP_JOB=planetStripStart(best,Math.min(best.stripWant|0,best.stripLvl+1));
   }
   const J=STRIP_JOB;
-  const t0=performance.now();
+  const t0=wallMs();
   for(;;){
     if(J.y<0||J.x>=J.SW){
       if(J.y+1>=J.SH)break;
       planetStripSeekRow(J,J.y+1);
     }
     planetStripChunk(J,STRIP_CHUNK);
-    if(performance.now()-t0>STRIP_MS)return;
+    if(wallMs()-t0>STRIP_MS)return;
   }
   J.cx.putImageData(J.img,0,0);
   J.p.strip=J.cn;J.p.stripLvl=J.lvl;

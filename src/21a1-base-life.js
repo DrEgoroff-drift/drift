@@ -30,7 +30,7 @@ function baseShift(t){return holdShift(t);}
    минутных часов, и это единственное место, где `tMs` ещё нужен */
 function baseT0(B){
   if(typeof B.t0==="number")return B.t0;
-  B.t0=baseShift(B.tMs||Date.now());
+  B.t0=baseShift(B.tMs||now());
   return B.t0;
 }
 function baseSince(B,now){
@@ -471,7 +471,7 @@ function baseLifeLine(B){
    есть `CREW_OFFLINE_CAP`, только в сменах. */
 function baseResolve(B,now){
   if(!B)return 0;
-  now=now||Date.now();
+  now=now||clockNow();
   /* развалина (M402) не работает: в ней некому и нечем. Часы ей всё равно
      двигаем — по ним считается, когда в неё въедут. И ПАЛАТА (M408) считает
      тоже: сбор идёт за нахождение В РЕЕСТРЕ, а брошенная база из него не
@@ -523,6 +523,6 @@ function baseResolve(B,now){
    Зовётся из тех же трёх мест, откуда звался `baseTick`: вход в базу, кадр
    сцены и домашний стол. */
 function baseResolveAll(){
-  const now=Date.now();
+  const now=clockNow();
   for(const key in G.bases)baseResolve(G.bases[key],now);
 }

@@ -111,7 +111,7 @@ function applySaveRest(s){
         cryo:(b.cryo&&typeof b.cryo==="object")?{until:b.cryo.until|0,q:b.cryo.q|0}:null,
         log:Array.isArray(b.log)?b.log.slice(-24).map(x=>({n:x.n|0,k:String(x.k||""),
           t:String(x.t||"").slice(0,160)})):[],
-        tMs:Date.now(),built:+b.built||Date.now()};
+        tMs:now(),built:+b.built||now()};
     }
   G.base=null;
   G.fuseGen=Math.max(0,s.fuseGen|0);
@@ -301,7 +301,7 @@ function applySaveRest(s){
   G.trace=(s.trace&&typeof s.trace==="object")?Object.assign({day:"",left:0,hands:{},seen:0},s.trace):null;
   if(G.trace&&typeof G.trace.hands!=="object")G.trace.hands={};
   G.log=Array.isArray(s.log)
-    ? s.log.filter(e=>e&&typeof e.s==="string").slice(-LOG_MAX).map(e=>({t:+e.t||Date.now(),k:String(e.k||""),s:e.s}))
+    ? s.log.filter(e=>e&&typeof e.s==="string").slice(-LOG_MAX).map(e=>({t:+e.t||now(),k:String(e.k||""),s:e.s}))
     : [];
   G.logNew=0;
   /* Отметка «стол видели» служит и признаком формата: если её в записи нет,

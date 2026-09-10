@@ -70,7 +70,7 @@ function noise(c){
     const d=noiseBuf.getChannelData(0);
     /* розоватый шум: чуть мягче белого, ближе к «железу», а не к шипению */
     let last=0;
-    for(let i=0;i<n;i++){const w=Math.random()*2-1;last=(last+w*.22)*.94;d[i]=clamp(last*3,-1,1);}
+    for(let i=0;i<n;i++){const w=rndFx()*2-1;last=(last+w*.22)*.94;d[i]=clamp(last*3,-1,1);}
   }
   const s=c.createBufferSource();
   s.buffer=noiseBuf;s.loop=true;
@@ -140,7 +140,7 @@ const SFX={
     const c=SND.ctx,t=c.currentTime;
     const n=noise(c),g=c.createGain(),bp=c.createBiquadFilter();
     /* узкая полоса съедала почти всю энергию — бур был не слышен, Q пришлось опустить */
-    bp.type="bandpass";bp.Q.value=1.8;bp.frequency.value=320+Math.random()*260;
+    bp.type="bandpass";bp.Q.value=1.8;bp.frequency.value=320+rndFx()*260;
     env(g,t,.004,.1,1.1);
     n.connect(bp);bp.connect(g);g.connect(SND.sfx);
     n.start(t);n.stop(t+.13);freeVoice(n);
@@ -160,8 +160,8 @@ const SFX={
     const c=SND.ctx,t=c.currentTime;
     const osc=c.createOscillator(),g=c.createGain(),bp=c.createBiquadFilter();
     osc.type="sawtooth";
-    osc.frequency.setValueAtTime(170+Math.random()*90,t);
-    osc.frequency.exponentialRampToValueAtTime(80+Math.random()*40,t+.34);
+    osc.frequency.setValueAtTime(170+rndFx()*90,t);
+    osc.frequency.exponentialRampToValueAtTime(80+rndFx()*40,t+.34);
     bp.type="bandpass";bp.frequency.value=340;bp.Q.value=4.5;
     env(g,t,.05,.34,.10);
     osc.connect(bp);bp.connect(g);g.connect(SND.sfx);

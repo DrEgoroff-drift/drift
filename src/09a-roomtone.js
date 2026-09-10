@@ -92,7 +92,7 @@ function roomToneTick(dt){
   if(G.mode==="homein"&&G.hin){
     RTONE.creak-=dt;
     if(RTONE.creak<=0){
-      RTONE.creak=900+Math.random()*2400;
+      RTONE.creak=900+rndFx()*2400;
       sfx("creak");
     }
   }

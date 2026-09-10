@@ -1,8 +1,8 @@
 /* ══════════════ фон ══════════════ */
 const STAR_COLS=[[255,206,158],[255,232,196],[228,240,252],[255,255,255],[176,206,255],[205,190,255]];
 const BG=[];
-for(let i=0;i<340;i++)BG.push({x:Math.random(),y:Math.random(),z:.2+Math.random()*.8,
-  ph:Math.random()*TAU, ci:Math.floor(Math.random()*STAR_COLS.length)});
+for(let i=0;i<340;i++)BG.push({x:rndFx(),y:rndFx(),z:.2+rndFx()*.8,
+  ph:rndFx()*TAU, ci:Math.floor(rndFx()*STAR_COLS.length)});
 /* Звёзды сгруппированы по цвету раз и навсегда. Мерцание — это прозрачность,
    а не цвет, поэтому оно уходит в `globalAlpha`: число, а не строка. Раньше
    каждая звезда собирала «rgba(…)» и заставляла холст разбирать CSS-цвет
@@ -15,8 +15,8 @@ const BG_GROUP=STAR_COLS.map((c,i)=>({css:"rgb("+c[0]+","+c[1]+","+c[2]+")",
    насыщенных — оранжевые гиганты и голубые горячие, по ним небо и перестаёт
    быть ровной крупой */
 const BG_BRIGHT=[];
-for(let i=0;i<14;i++)BG_BRIGHT.push({x:Math.random(),y:Math.random(),z:.86+Math.random()*.14,
-  ph:Math.random()*TAU,css:i%3?"rgb(255,150,92)":"rgb(130,176,255)"});
+for(let i=0;i<14;i++)BG_BRIGHT.push({x:rndFx(),y:rndFx(),z:.86+rndFx()*.14,
+  ph:rndFx()*TAU,css:i%3?"rgb(255,150,92)":"rgb(130,176,255)"});
 /* ── движение, а не мигание (П8; правило записано автором 27.08.2026) ──
    Звёзды всегда мерцали и никогда не тянулись: на полном ходу поле стояло и
    моргало, как на стоянке. Теперь звезда на ходу — прочерк вдоль вектора
@@ -320,7 +320,7 @@ function trailStep(dt,thrusting,turning,braking){
          выброшенный в пустоту, никуда не летит вместе с кораблём: он остаётся
          там, где выброшен. Отсюда и берётся дуга пройденного пути — лента
          просто висит на месте и гаснет. */
-      const spread=(Math.random()-.5)*.04, sp=(1.2+Math.random()*.3)*(.8+span*.4)*.4;
+      const spread=(rndFx()-.5)*.04, sp=(1.2+rndFx()*.3)*(.8+span*.4)*.4;
       /* лента живёт дольше, чем раньше (было 26): на глаз хвост читался обрубком
          сразу за соплом — видно, что двигатель работает, но не видно, откуда
          корабль пришёл. Дуга траектории — главное, что шлейф вообще сообщает */
@@ -332,10 +332,10 @@ function trailStep(dt,thrusting,turning,braking){
          струя. «Клинок» страдал сильнее всех: у него и скорость выше, и лента
          длиннее — обе величины растут от тяги. */
       const bx=ex-sh.vx*dt*.5, by=ey-sh.vy*dt*.5;
-      TRAIL.push({x:bx,y:by,hot:1,e:i,b:trailBurst,r:e.r*(.54+Math.random()*.08),
+      TRAIL.push({x:bx,y:by,hot:1,e:i,b:trailBurst,r:e.r*(.54+rndFx()*.08),
         max:40*span,life:40*span-.5,
         vx:-Math.cos(sh.a+spread)*sp, vy:-Math.sin(sh.a+spread)*sp});
-      TRAIL.push({x:ex,y:ey,hot:1,e:i,b:trailBurst,r:e.r*(.54+Math.random()*.08),
+      TRAIL.push({x:ex,y:ey,hot:1,e:i,b:trailBurst,r:e.r*(.54+rndFx()*.08),
         max:40*span,life:40*span,
         vx:-Math.cos(sh.a+spread)*sp, vy:-Math.sin(sh.a+spread)*sp});
     }
@@ -345,7 +345,7 @@ function trailStep(dt,thrusting,turning,braking){
      носовое сопло выбрасывает вправо, кормовое — влево. Пара струй крест-накрест
      и есть то, чем корабль разворачивают в пустоте. Раньше обе били туда же,
      куда шёл разворот, и картинка спорила с физикой. */
-  if(turning&&TRAIL.length<TRAIL_MAX-6&&Math.random()<.4){
+  if(turning&&TRAIL.length<TRAIL_MAX-6&&rndFx()<.4){
     const rr=G.ctl?G.ctl.out.rate:0;             // фактический поворот (M360); без него — по рулю
     const s=rr?(rr<0?-1:1):(keys.left?-1:1);     // -1 — разворот влево
     const jets=[[h.nose*.55, h.bw*.8*-s, -s],    // нос: газ наружу по борту -s
@@ -355,17 +355,17 @@ function trailStep(dt,thrusting,turning,braking){
       const pa=sh.a+Math.PI/2*j[2];
       /* струя короткая: это укол газа у борта, а не второй шлейф —
          длинная белая цепочка вдоль всего курса читалась как помеха */
-      TRAIL.push({x:ex,y:ey,hot:0,e:-1,r:1.4+Math.random(),max:9,life:6+Math.random()*3,
+      TRAIL.push({x:ex,y:ey,hot:0,e:-1,r:1.4+rndFx(),max:9,life:6+rndFx()*3,
         vx:sh.vx*.9+Math.cos(pa)*2.2, vy:sh.vy*.9+Math.sin(pa)*2.2});
     }
   }
   /* ── торможение: носовые маневровые бьют вперёд ── */
-  if(braking&&TRAIL.length<TRAIL_MAX-6&&Math.random()<.8){
+  if(braking&&TRAIL.length<TRAIL_MAX-6&&rndFx()<.8){
     for(const s of [-1,1]){
       const px=h.nose*.5, py=h.bw*.5*s;
       const ex=sh.x+(px*ca-py*sa)*eScale, ey=sh.y+(px*sa+py*ca)*eScale;
-      const pa=sh.a+(Math.random()-.5)*.5;       // газ вперёд по курсу
-      TRAIL.push({x:ex,y:ey,hot:0,e:-1,r:1.2+Math.random()*.9,max:11,life:7+Math.random()*4,
+      const pa=sh.a+(rndFx()-.5)*.5;       // газ вперёд по курсу
+      TRAIL.push({x:ex,y:ey,hot:0,e:-1,r:1.2+rndFx()*.9,max:11,life:7+rndFx()*4,
         vx:sh.vx*.85+Math.cos(pa)*2.4, vy:sh.vy*.85+Math.sin(pa)*2.4});
     }
   }

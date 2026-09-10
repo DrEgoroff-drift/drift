@@ -59,10 +59,10 @@ function foeArmFire(p,fam,d){
     /* игла тонкая и частая; часть игл проходит поле насквозь — та же доля,
        что у вашего игольника */
     for(let i=0;i<3;i++){
-      const a=ang+(Math.random()-.5)*g.spread*8;
+      const a=ang+(rnd()-.5)*g.spread*8;
       fireShot(p.x,p.y,a,g.speed,g.dmg,own,g.type,g.range);
       const s2=shot(G.shots[G.shots.length-1]);
-      if(s2){s2.needle=1;s2.pass=Math.random()<(GUN_FAMILY.needle.pass||.45)?1:0;}
+      if(s2){s2.needle=1;s2.pass=rnd()<(GUN_FAMILY.needle.pass||.45)?1:0;}
     }
     return true;
   }
@@ -166,7 +166,7 @@ function pirateArmTick(p,dt){
   const L=pirateLoadout(p);
   /* зенитка идёт своей петлёй: ей нужна цель в воздухе, а не откат */
   if(L.guns.indexOf("flak")>=0&&typeof foeFlak==="function")foeFlak(p,dt);
-  if(p.jamT>0&&Math.random()<.5)return;      /* сам под помехой: половина мимо */
+  if(p.jamT>0&&rnd()<.5)return;      /* сам под помехой: половина мимо */
   const d=Math.hypot(G.ship.x-p.x,G.ship.y-p.y);
   if(!p.armCool)p.armCool={};
   const C=p.armCool;

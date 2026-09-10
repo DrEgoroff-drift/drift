@@ -184,7 +184,7 @@ function assignToBase(c,B,role){
   crewTick();
   c.role=role;
   c.order={kind:"base",sx:B.sx,sy:B.sy,idx:B.idx};
-  c.tMs=Date.now();
+  c.tMs=now();
   logAdd("",c.name+" → "+BASE_ROLES[role].ru+" на базе «"+B.name+"»");
   return true;
 }
@@ -207,10 +207,10 @@ function crewGift(seed){
     say("Человек пришёл, а места нет\nнужна лицензия на флот");
     return false;
   }
-  const m=genMerc(seed||hashi(Date.now()&0xffffff,G.crew.length*7717,0xC1F),null);
+  const m=genMerc(seed||hashi(now()&0xffffff,G.crew.length*7717,0xC1F),null);
   m.fee=0;
   G.crew.push(Object.assign(m,{cargo:{},order:{kind:"home",sx:G.sx,sy:G.sy},
-    tMs:Date.now(),paidMs:Date.now()}));
+    tMs:now(),paidMs:now()}));
   tell("good","В звено даром: "+m.name+" · "+CREW_SPEC[m.spec].ru,
        "К вам пришёл "+m.name+"\n"+CREW_SPEC[m.spec].ru+"\nплаты не просит — выдайте корабль");
   return true;
@@ -224,7 +224,7 @@ function hireMerc(c){
   G.credits-=fee;
   c=Object.assign({},c,{fee});
   const m=Object.assign({},c,{cargo:{},order:{kind:"home",sx:G.sx,sy:G.sy},
-    tMs:Date.now(),paidMs:Date.now()});
+    tMs:now(),paidMs:now()});
   G.crew.push(m);
   /* спасённый с баржи, если это он: больше в кантине не мелькает */
   if(Array.isArray(G.bargePax))G.bargePax=G.bargePax.filter(p=>p.id!==m.id);
@@ -274,7 +274,7 @@ function crewOrder(c,kind,sx,sy){
   if(kind==="barge"&&typeof bargeStart==="function"){const why=bargeStart(c);if(why){say(why);return false;}}
   if(kind!=="barge")delete c.barge;
   c.order={kind,sx:sx!=null?sx:G.sx,sy:sy!=null?sy:G.sy};
-  c.tMs=Date.now();c.tripMin=0;                 // смена района начинает рейс заново
+  c.tMs=now();c.tripMin=0;                 // смена района начинает рейс заново
   G.orderStamp=(G.orderStamp|0)+1;    // «тишина в эфире» считает именно вмешательства
   logAdd("",c.name+" → "+ORDERS[kind].ru+" · сектор "+c.order.sx+","+c.order.sy);
   /* показываем его в небе сразу, а не только при следующем входе в систему —
@@ -363,13 +363,13 @@ function crewEff(c){
 function crewBusy(c){
   /* пока он в плену или в загуле, рейсы не идут и жалованье не капает */
   if(c.state==="hostage")return "hostage";
-  if(c.state==="away"&&(c.stateUntil||0)>Date.now())return "away";
+  if(c.state==="away"&&(c.stateUntil||0)>now())return "away";
   if(c.state==="away")c.state=null;
   return null;
 }
 function crewTick(){
   if(!G.crew.length)return;
-  const now=Date.now();
+  const now=clockNow();
   for(const c of G.crew){
     crewLuck(c);
     if(!c.tMs){c.tMs=now;continue;}
@@ -516,7 +516,7 @@ function crewDamage(c,amount){
     c.shipId=null;c.order={kind:"home",sx:c.order?c.order.sx:G.sx,sy:c.order?c.order.sy:G.sy};
     c.cargo={};
     /* корабль потерян всегда, человек — не всегда: ветеран чаще дотягивает до капсулы */
-    const survive=rng(hashi(c.seed,Math.floor(Date.now()/60000),0x5A7E))()<(.55/crewMul(c,"risk"));
+    const survive=rng(hashi(c.seed,Math.floor(now()/60000),0x5A7E))()<(.55/crewMul(c,"risk"));
     if(survive)logAdd("warn",c.name+" потерял «"+(S?S.ru:lost)+"», сам спасся — ждёт нового корабля");
     else{logAdd("warn",c.name+" не вернулся вместе с «"+(S?S.ru:lost)+"»");c.gone=true;}
   }

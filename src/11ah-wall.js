@@ -68,7 +68,7 @@ function wallAsk(kind){
   if(!key)return;
   const ck=wallCacheKey(kind,key);
   if(WALL_CACHE.has(ck))return;
-  const now=Date.now();
+  const now=clockNow();
   if(now-wallBusy<15000)return;
   wallBusy=now;
   /* заглушка на время ответа: без неё каждый кадр слал бы новый запрос */

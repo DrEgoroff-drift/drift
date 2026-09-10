@@ -15,6 +15,75 @@ const h01=(x,y,s)=>hashi(x,y,s)/4294967296;
 function rng(seed){let a=seed>>>0;return function(){a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);
   t=t+Math.imul(t^t>>>7,61|t)^t;return ((t^t>>>14)>>>0)/4294967296;};}
 const pick=(arr,r)=>arr[Math.floor(r()*arr.length)];
+/* ══════════════ случай и часы игры (M441) ══════════════
+   Игра обязана повторяться: одно семя и одни часы — один и тот же мир кадр в
+   кадр. На этом стоит всё остальное: повтор падения по семени, сравнение
+   кадров, запись прогона, облачная запись. Прятать подмену в тестах значило бы
+   сделать повторимыми ТЕСТЫ и оставить ИГРУ на песке (DESIGN-tests §3.5).
+   Поэтому сырые Math.random, Date.now, performance.now и new Date() без
+   аргумента в src/ запрещены везде, кроме этого места (закон в build.ps1), и
+   у каждого вызова есть хозяин:
+
+   rnd()          — случай МИРА, [0,1): всё, что ложится в G, — бой, дроны,
+                    баржи, эфир, таймеры режимов, даже если по смыслу это
+                    звук или вид. Поток один, с семенем.
+   rndFx()        — случай КАРТИНКИ: рисунок, звук, частицы вне G, речь птицы.
+                    Отдельный поток: нарисован кадр или нет, rnd() от этого не
+                    сдвигается. От rndFx не имеет права зависеть ничего в G, и
+                    rnd() в draw-функциях запрещён тем же законом.
+   rndSeed(s)     — пересеять оба потока (второй выводится из s).
+   rndState()     — [семя, положение мира, положение картинки]: для stateHash.
+   now()          — часы ИГРЫ, мс эпохи: метки в G, сроки, откаты, праздники по
+                    календарю, офлайн-догон, час суток, тайминг рук. По
+                    умолчанию — настоящие.
+   clockSet(ms)   — прибить часы к виртуальному времени; clockSet(null) —
+                    вернуть настоящие. clockAdvance(ms) двигает: прибитые —
+                    вперёд, настоящие — сдвигом. clockPinned() — прибиты ли.
+                    На прибитых часах кадр идёт постоянным шагом (28-loop):
+                    сколько кадров — столько и времени, и никакого rAF.
+   clockNow()     — то же, что now(), для мест, где имя now занято локальной
+                    переменной или параметром (`const now=…`, `f(B,now)`).
+   Настоящие часы там, где им и место, — под своими именами:
+   wallMs()       — монотонные мс (performance.now): бюджеты печи «по работе И
+                    по времени», prof(), look(), шаг кадра по rAF.
+   wallNow()      — настоящие мс эпохи: метки журнала сбоев и пульса,
+                    притормаживание сети, облака и почты, отметка записи для
+                    облака (её сравнивают между устройствами).
+   uidRand()      — [0,1) из crypto: то, что обязано быть единственным в мире
+                    (вкладка, устройство), а не повторяться по семени.
+
+   В игре оба потока сеются при загрузке от настоящих часов — игроку
+   распределение то же, что было с Math.random. Ни семя, ни часы в запись не
+   идут: это эфемерное (правило CLAUDE.md). Генератор тот же, что у rng()
+   (mulberry32), только с состоянием в переменной, а не в замыкании. */
+let RND_SEED=0,RND_S=0,RNDFX_S=0;
+function rnd(){RND_S=RND_S+0x6D2B79F5|0;let t=Math.imul(RND_S^RND_S>>>15,1|RND_S);
+  t=t+Math.imul(t^t>>>7,61|t)^t;return ((t^t>>>14)>>>0)/4294967296;}
+function rndFx(){RNDFX_S=RNDFX_S+0x6D2B79F5|0;let t=Math.imul(RNDFX_S^RNDFX_S>>>15,1|RNDFX_S);
+  t=t+Math.imul(t^t>>>7,61|t)^t;return ((t^t>>>14)>>>0)/4294967296;}
+function rndSeed(s){RND_SEED=(+s||0)>>>0;RND_S=RND_SEED|0;RNDFX_S=hashi(RND_SEED,0x0F1C,0x441)|0;}
+function rndState(){return [RND_SEED,RND_S>>>0,RNDFX_S>>>0];}
+/* Фаза кадра: счётчики «раз в N кадров» живут в своих модулях вне G (пульт
+   раз в секунду, редкий такт дронов), и если они переживают смену часов, то
+   второй прогон одной сцены начинал бы с фазы первого — и писал в журнал на
+   другом кадре. Модуль, чей счётчик трогает G, кладёт сюда свой сброс;
+   clockSet (через loopReset в 28-loop) зовёт их все. */
+const LOOP_PHASE=[];
+let CLOCK_PIN=null,CLOCK_OFF=0;
+function now(){return CLOCK_PIN===null?Date.now()+CLOCK_OFF:Math.floor(CLOCK_PIN);}
+function clockNow(){return now();}
+function clockPinned(){return CLOCK_PIN!==null;}
+/* смена часов рвёт фазу кадра: шаг и редкий такт считаются заново (28-loop) */
+function clockSet(ms){CLOCK_PIN=(ms==null)?null:+ms;CLOCK_OFF=0;
+  if(typeof loopReset==="function")loopReset();}
+function clockAdvance(ms){ms=+ms||0;if(CLOCK_PIN===null)CLOCK_OFF=Math.floor(CLOCK_OFF+ms);else CLOCK_PIN+=ms;}
+function wallMs(){return (typeof performance!=="undefined"&&performance.now)?performance.now():Date.now();}
+function wallNow(){return Date.now();}
+function uidRand(){
+  try{const a=new Uint32Array(1);crypto.getRandomValues(a);return a[0]/4294967296;}
+  catch(e){return Math.random();}
+}
+rndSeed(hashi(Date.now()%2147483647,Math.floor(Date.now()/2147483647),Math.floor(wallMs()*1000)));
 /* ── русское согласование числительных (полировочный круг) ──
    По коду жило четыре самодельных склонения, и три врали: «1 прыжка»,
    «1 станция получили», стаж «21 ЛЕТ». Одна честная функция на всех:

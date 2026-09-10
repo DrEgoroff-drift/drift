@@ -23,9 +23,9 @@
 const LOCKER_SLOTS=24, LOCKER_FEE=.01, LOCKER_DAY=86400e3, LOCKER_LAPSE=30;
 function lockerRec(){
   let L=G.locker;
-  if(!L||typeof L!=="object"||!Array.isArray(L.items)){L=G.locker={items:[],res:{},t:Date.now()};}
+  if(!L||typeof L!=="object"||!Array.isArray(L.items)){L=G.locker={items:[],res:{},t:now()};}
   if(!L.res||typeof L.res!=="object")L.res={};
-  if(typeof L.t!=="number")L.t=Date.now();
+  if(typeof L.t!=="number")L.t=now();
   return L;
 }
 function lockerSlots(){return LOCKER_SLOTS*((typeof wanderHas==="function"&&wanderHas("box2"))?2:1);}
@@ -49,7 +49,7 @@ function lockerValue(L){
 }
 /* плата за прошедшие сутки: списываем лениво; тридцать суток без визита — сдача на блошинец */
 function lockerTick(now){
-  now=now===undefined?Date.now():now;
+  now=now===undefined?clockNow():now;
   const L=lockerRec();
   if(!lockerUsed(L)){L.t=now;return {fee:0,days:0};}
   const days=Math.floor((now-L.t)/LOCKER_DAY);

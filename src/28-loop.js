@@ -3,7 +3,7 @@ function wreck(){
   sfx("boom",{v:1});stopEngine();
   const st=stat();
   G.hull=Math.round(st.hullMax*.45);G.fuel=Math.max(G.fuel,30);
-  const a=Math.random()*TAU;
+  const a=rnd()*TAU;
   G.ship.x=Math.cos(a)*1600;G.ship.y=Math.sin(a)*1600;
   G.ship.vx=0;G.ship.vy=0;G.mode="system";G.ap=null;G.belt=null;G.dig=null;G.cave=null;G.surf=null;G.land=null;
   G.pirates=[];G.shots=[];   /* без этого авария у пиратов превращается в петлю */
@@ -85,8 +85,22 @@ function audioTick(dt){
 }
 
 /* ══════════════ цикл ══════════════ */
-let last=performance.now();
+let last=wallMs();
 let lastDroneTick=0;
+/* ── шаг на прибитых часах (M441) ──
+   На настоящих часах шаг кадра меряется rAF: сколько прошло, столько и
+   прожито, — и потому два прогона одной сцены никогда не совпадали бы: у
+   каждого своя машина и свои паузы. На прибитых (`clockSet`, 01-core) шаг
+   постоянный: кадр — это ровно FRAME_MS игрового времени, часы двигает сам
+   кадр, потолок кадров и авторазрешение молчат (оба судят настоящую
+   развёртку). Сколько кадров — столько времени, и мир повторяется кадр в кадр.
+   `loopReset` зовётся из clockSet: смена часов рвёт фазу — редкий такт и
+   замер шага начинаются заново, иначе второй прогон унаследовал бы фазу
+   первого. */
+const FRAME_MS=16.667;
+function loopReset(){last=wallMs();lastDroneTick=0;capPrev=0;capN=0;
+  lastFuelWarn=0;lastHullWarn=0;sndWalk=0;
+  for(const f of LOOP_PHASE)f();}
 /* ── потолок кадров ──
    Единственный рычаг, который снимает нагрузку с ВИДЕОКАРТЫ, ничего не упрощая
    в картинке: тридцать кадров рисуют ровно вдвое меньше пикселей, чем
@@ -229,6 +243,12 @@ function frameBody(now){
   /* канва нулевого размера (страница поднялась скрытой) — чинится здесь же:
      иначе кадр падает на drawImage и игра стоит до первого resize */
   if(W<2||H<2){resize();if(W<2||H<2){return;}}
+  const tReal=now,pin=clockPinned();
+  let dt;
+  if(pin){
+    /* прибитые часы: шаг постоянный, часы двигает кадр (см. FRAME_MS) */
+    clockAdvance(FRAME_MS);now=clockNow();dt=1;
+  }else{
   if(capPrev){
     const d=now-capPrev;
     /* «самый короткий за последнее время»: медленно отпускаем оценку вверх,
@@ -244,7 +264,8 @@ function frameBody(now){
     capN=0;
   }else capN=0;
   resAuto(now-last);
-  const dt=clamp((now-last)/16.667,0,3);last=now;
+  dt=clamp((now-last)/16.667,0,3);last=now;
+  }
   /* второй рубеж против залипших клавиш: событие blur приходит не всегда —
      фокус, ушедший в DevTools того же окна, его может не поднять. Пока страница
      не в фокусе, нажатым не может быть ничего по определению, и кадр это
@@ -295,7 +316,7 @@ function frameBody(now){
     if(typeof rackDraw==="function")rackDraw();
   }else{
     ctx.fillStyle="#05070c";ctx.fillRect(0,0,W,H);
-    G.t=now*.06;drawNebula(now*.004,0,1);drawStars(now*.004,0,1);
+    G.t=tReal*.06;drawNebula(tReal*.004,0,1);drawStars(tReal*.004,0,1);
   }
 }
 /* ══════════════ кадр, который не убивает игру (M234) ══════════════
@@ -348,14 +369,14 @@ function crashSay(e,where){
        этой улики и не хватает в PLAN («у зависания автора причины нет»).
        Поэтому повтор считается молча, но раз в пятнадцать секунд напоминает
        о себе и называет счёт. */
-    const now=Date.now();
+    const now=wallNow();
     if(now-crashSaidAt<15000)return;
     crashSaidAt=now;
     try{say("СБОЙ · "+m+"\nповторяется · "+crashN+" раз\nигра идёт дальше — сохранитесь");}catch(_){}
     try{logAdd("warn","Сбой кадра повторяется: "+m+" · "+crashN+" раз");}catch(_){}
     return;
   }
-  crashLast=m;crashSaidAt=Date.now();
+  crashLast=m;crashSaidAt=wallNow();
   if(crashSaid++<3){try{console.error("DRIFT:",e);}catch(_){}}
   try{say("СБОЙ · "+m+"\nигра идёт дальше — сохранитесь");}catch(_){}
   try{logAdd("warn","Сбой кадра: "+m);}catch(_){}
@@ -435,13 +456,13 @@ function prof(N,mute){
   const names=Object.keys(window).filter(k=>typeof window[k]==="function"&&/^(draw[A-Z]|fill[A-Z]|b[A-Z][a-z]|hud$)/.test(k)&&k!=="drawChunks");
   const T={},orig={};
   for(const n of names){orig[n]=window[n];
-    window[n]=function(){const t=performance.now();try{return orig[n].apply(this,arguments);}finally{T[n]=(T[n]||0)+performance.now()-t;}};}
+    window[n]=function(){const t=wallMs();try{return orig[n].apply(this,arguments);}finally{T[n]=(T[n]||0)+wallMs()-t;}};}
   if(mute&&orig[mute])window[mute]=function(){};
   let js=0,ras=0;
   try{
     for(let i=0;i<N;i++){
-      const t0=performance.now();G.t+=1;M[0](1);M[1]();hud();
-      const t1=performance.now();ctx.getImageData(0,0,1,1);const t2=performance.now();
+      const t0=wallMs();G.t+=1;M[0](1);M[1]();hud();
+      const t1=wallMs();ctx.getImageData(0,0,1,1);const t2=wallMs();
       if(i>=3){js+=t1-t0;ras+=t2-t1;}
     }
   }finally{for(const n in orig)window[n]=orig[n];}
@@ -489,11 +510,11 @@ function dbg(){
      звучит и при тридцати кадрах, и при намертво удерживающем состоянии.
      Заодно следим за скоростью и топливом: «жжёт и не едет» — отдельная
      болезнь, и её надо называть отдельно от просадки кадров. */
-  let n=0,t0=performance.now(),lt=t0,mx=0,slow=0;
+  let n=0,t0=wallMs(),lt=t0,mx=0,slow=0;
   const v0=Math.hypot(sh.vx,sh.vy),f0=G.fuel;
   return new Promise(r=>{
     (function f(){
-      const t=performance.now(),d=t-lt;lt=t;
+      const t=wallMs(),d=t-lt;lt=t;
       if(n++){mx=Math.max(mx,d);if(d>25)slow++;}
       if(t-t0<1000)requestAnimationFrame(f);
       else{

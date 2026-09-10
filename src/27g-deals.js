@@ -186,10 +186,10 @@ function dealAnswer(d,i){
     const L=opt.later;
     if(!G.dealsWait)G.dealsWait=[];
     const key="deal:"+d.key;
-    G.dealsWait.push({key,at:Date.now()+L.mins*60000,odds:L.odds,
+    G.dealsWait.push({key,at:now()+L.mins*60000,odds:L.odds,
       good:L.good,bad:L.bad,ru:L.ru});
     questAdd(key,{ru:L.ru,kind:"deal",from:"кантина «"+G.st.name+"»",
-      note:L.note,sx:G.sx,sy:G.sy,until:Date.now()+L.mins*60000,
+      note:L.note,sx:G.sx,sy:G.sy,until:now()+L.mins*60000,
       reward:"как выйдет: договаривались на слово"});
   }
   return true;
@@ -200,7 +200,7 @@ function dealAnswer(d,i){
    когда игрок открыл журнал. */
 function dealsTick(){
   const w=G.dealsWait;if(!w||!w.length)return;
-  const now=Date.now();
+  const now=clockNow();
   for(let i=w.length-1;i>=0;i--){
     const d=w[i];
     if(now<d.at)continue;

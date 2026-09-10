@@ -15,7 +15,7 @@
    систему не крутит барабан, а вернувшись через сутки, вы застанете другое.
    Взятое помнится (`G.findsSeen`) и не возвращается никогда. */
 const FIND_BUCKET=6*3600*1000;      /* шесть часов: не автомат, но и не навсегда */
-function findBucket(){return Math.floor(Date.now()/FIND_BUCKET);}
+function findBucket(){return Math.floor(now()/FIND_BUCKET);}
 const FIND_KINDS={
   sos: {ru:"сигнал бедствия",  col:"#ff6b57",act:"ПРИНЯТЬ СИГНАЛ"},
   sat: {ru:"спутник",          col:"#f2b25c",act:"СНЯТЬ ЗАПИСЬ"},

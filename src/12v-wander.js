@@ -66,7 +66,7 @@ function wanderLoop(){
 }
 /* где «Сорока» в момент now: стоянка k, планета, фаза и остаток фазы */
 function wanderAt(now){
-  now=now===undefined?Date.now():now;
+  now=now===undefined?clockNow():now;
   const L=wanderLoop();
   const e=Math.floor((now-WANDER_T0)/WANDER_PERIOD);
   const t=now-WANDER_T0-e*WANDER_PERIOD;
@@ -174,7 +174,7 @@ function drawWanderMap(vis,cell){
 /* ── рисунок в системе ── */
 function drawWanderer(zx,zy,Z){
   const sys=G.sys;if(!sys)return;
-  const w=wanderAt(),now=Date.now();
+  const w=wanderAt(),now=clockNow();
   /* уходит: первые шесть часов перехода из покинутой системы виден блик, который уменьшается по прямой */
   if(w.phase==="hop"&&sys.sx===w.prev.sx&&sys.sy===w.prev.sy){
     const th=w.tIn-WANDER_STOP;if(th>6*3600e3)return;

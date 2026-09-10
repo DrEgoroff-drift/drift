@@ -71,7 +71,7 @@ function mapOwnHere(gx,gy){
 function mapTagAt(gx,gy,now){
   if(typeof newsMarkAt!=="function")return null;
   const m=newsMarkAt(gx,gy);if(!m||m.what!=="сменился хозяин"||!m.t)return null;
-  const days=(( now===undefined?Date.now():now)-m.t)/86400e3;
+  const days=(( now===undefined?clockNow():now)-m.t)/86400e3;
   if(days>=3)return null;
   const dn=Math.floor(days);
   return {ru:"сменился хозяин · "+(dn?dn+" "+pl3(dn,"день","дня","дней")+" назад":"сегодня"),a:clamp(1-days/3,.15,1)};
@@ -198,7 +198,7 @@ function mapHoldingsTop(vis,cell,V,st){
       ctx.restore();
     }
     /* бирки перемен */
-    const now=Date.now();
+    const now=clockNow();
     for(const v of vis){
       const tg=mapTagAt(v.gx,v.gy,now);if(!tg)continue;
       mapFont(7);ctx.textAlign="left";

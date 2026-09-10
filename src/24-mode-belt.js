@@ -151,7 +151,7 @@ function shatter(b,a,n,power,px,py,pz){
 function killRock(b,a,power){
   if(typeof groveOnKill==="function")groveOnKill(a,power);   /* роща помнит (11j) */
   if(b.grove&&a.grove){const gi=b.grove.indexOf(a);if(gi>=0)b.grove.splice(gi,1);}
-  shatter(b,a,9+Math.floor(Math.random()*6),power);
+  shatter(b,a,9+Math.floor(rnd()*6),power);
   const i=b.ast.indexOf(a);
   if(i>=0)b.ast.splice(i,1);       // выработанный камень не должен остаться невидимым препятствием
   if(b.lock===a){b.lock=null;b.prog=0;}
@@ -363,7 +363,7 @@ function updateBelt(dt){
       if(best.left<=0){
         /* выработанный камень иногда отдаёт узел: пояс — одно из мест,
            где они водятся (05a-nodes) */
-        nodeDrop("в поясе",sysDanger(G.sx,G.sy)+.2,hashi(best.seed||1,0xB7,Date.now()&0xffff));
+        nodeDrop("в поясе",sysDanger(G.sx,G.sy)+.2,hashi(best.seed||1,0xB7,now()&0xffff));
         /* редкость на адресе выработки (12m-rare): ключ — seed самого камня */
         if(typeof rareTake==="function")rareTake("belt",hashi(best.seed||1,0xB7,0xBEE7));
         say("Астероид выработан\n"+RES[best.res].ru);
@@ -699,13 +699,13 @@ function drawBelt(){
     if(t){
       const gx=W/2,gy=H*.86;
       for(const off of [-16,16]){
-        ctx.strokeStyle="rgba(242,178,92,"+(.45+Math.random()*.5).toFixed(2)+")";
+        ctx.strokeStyle="rgba(242,178,92,"+(.45+rndFx()*.5).toFixed(2)+")";
         ctx.lineWidth=2.2;
         ctx.beginPath();ctx.moveTo(gx+off,gy);ctx.lineTo(t.x,t.y);ctx.stroke();
       }
       ctx.fillStyle="rgba(255,220,150,.85)";
       for(let i=0;i<5;i++){
-        const u=Math.random();
+        const u=rndFx();
         ctx.fillRect(lerp(t.x,gx,u),lerp(t.y,gy,u),2,2);
       }
     }

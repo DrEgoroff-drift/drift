@@ -31,7 +31,7 @@ const APPETITE={
   outpost:{ice:6,organics:4},
   bazaar: {silicon:4}
 };
-function holdShift(t){return Math.floor((t===undefined?Date.now():t)/HOLD_SHIFT);}
+function holdShift(t){return Math.floor((t===undefined?now():t)/HOLD_SHIFT);}
 function holdAll(){return G.hold||(G.hold={});}
 function holdOf(key){const H=holdAll();return H[key]||(H[key]={});}
 /* нормы аппетита станции: {k:n} или null */

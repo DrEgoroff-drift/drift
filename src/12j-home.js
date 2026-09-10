@@ -52,7 +52,7 @@ function homeTurn(sum,why){
   while(H.tier<HOME_TIERS.length&&H.turn>=HOME_TIERS[H.tier].t){
     const T=HOME_TIERS[H.tier];
     H.tier++;
-    if(H.tier===1){H.sx=G.sx;H.sy=G.sy;H.made=Date.now();}
+    if(H.tier===1){H.sx=G.sx;H.sy=G.sy;H.made=now();}
     /* «Оборот» — слово из ведомости, а не из жизни (плейтест 03.09.2026):
        «напиши, что не оборот, а типа за то, что заработали, у вас появился
        дом». Число остаётся — по нему видно, как далеко зашёл, — но называется
@@ -126,7 +126,7 @@ function homeMateTake(){
     }
   }else{
     /* слух: тот же поворот мира, что в кантине, но услышанный дома */
-    if(typeof newsTick==="function"){G.newsT=Date.now()-NEWS_EVERY-1;newsTick();}
+    if(typeof newsTick==="function"){G.newsT=now()-NEWS_EVERY-1;newsTick();}
     const last=(G.news||[])[(G.news||[]).length-1];
     logAdd("dim",who+" пересказал новость"+(last?": "+last.ru:""));
     say(who+"\n"+(last?last.ru:"«говорят всякое»"));
@@ -236,7 +236,7 @@ function homeRebuild(id){
   if(i<0)return null;
   const p=G.inv[i];
   const tier=Math.max(1,(p.tier|0)-1);
-  const np=genPart(hashi(p.seed,Date.now()&0xffff,0x5EB),tier,p.kind);
+  const np=genPart(hashi(p.seed,now()&0xffff,0x5EB),tier,p.kind);
   np.id=p.id;
   G.inv[i]=np;
   invalidateParts();

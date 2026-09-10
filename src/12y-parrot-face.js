@@ -605,7 +605,7 @@ function parStep(dt){
   if(PAR.preenT>0){
     const p=(PAR.t-PAR.preenT)/2.2;
     PAR.preen=p>=1?(PAR.preenT=-9,0):(1-Math.cos(p*6.283))*.5;
-  }else if(Math.random()<dt*.06&&PAR.flap<.05){PAR.preenT=PAR.t;}
+  }else if(rndFx()<dt*.06&&PAR.flap<.05){PAR.preenT=PAR.t;}
   PAR.beak*=Math.pow(.90,dt*60);
   PAR.look*=Math.pow(.985,dt*60);
   /* злость держится секунд восемь, а не одну: птицу задели — она успевает
@@ -615,12 +615,12 @@ function parStep(dt){
   /* подскок идёт от крыла: птица машет всем телом, а не одним крылом */
   if(PAR.flapV>0)PAR.hopV+=PAR.flapV*.10*dt*60;
   if(PAR.blink>0)PAR.blink=Math.max(0,PAR.blink-dt*7);
-  if(PAR.t>PAR.blinkAt){PAR.blink=1;PAR.blinkAt=PAR.t+1.6+Math.random()*4.2;}
+  if(PAR.t>PAR.blinkAt){PAR.blink=1;PAR.blinkAt=PAR.t+1.6+rndFx()*4.2;}
 
   /* мелкая рябь: она идёт ВСЕГДА, поверх любой повадки, и это разные вещи.
      Повадка — то, что птица делает; рябь — то, что с ней происходит. */
-  if(Math.random()<dt*.14){PAR.ruffV+=(Math.random()-.5)*5;}
-  if(Math.random()<dt*.10){PAR.look=(Math.random()-.5)*2;}
+  if(rndFx()<dt*.14){PAR.ruffV+=(rndFx()-.5)*5;}
+  if(rndFx()<dt*.10){PAR.look=(rndFx()-.5)*2;}
   /* дрожь: частая мелкая тряска поверх воротника, живёт только по команде */
   if(PAR.shiver>.001)PAR.ruff+=Math.sin(PAR.t*47)*PAR.shiver*.32;
   /* степени свободы повадки сами оседают в ноль: пока повадка идёт, она
@@ -650,16 +650,16 @@ const PAR_IDLE=["…","кхх-кхх","чшшш","тк-тк-тк","кхе"];
 function parrotLine(zone){
   const L=(typeof heardAll==="function")?heardAll():[];
   const pool=L.filter(h=>h.kind==="pidgin"||h.kind==="yours");
-  if(pool.length&&Math.random()<(zone==="beak"?.9:.62)){
-    const h=pool[Math.floor(Math.random()*pool.length)];
+  if(pool.length&&rndFx()<(zone==="beak"?.9:.62)){
+    const h=pool[Math.floor(rndFx()*pool.length)];
     if(h.kind==="yours")return "«"+h.note+"»";
     return heardWordsRu(h).join(" ");
   }
-  if(L.length&&Math.random()<.3){
-    const h=L[Math.floor(Math.random()*L.length)];
+  if(L.length&&rndFx()<.3){
+    const h=L[Math.floor(rndFx()*L.length)];
     if(h.kind==="price")return "цены "+(h.note||"станции");
   }
-  return pick(PAR_IDLE,Math.random);
+  return pick(PAR_IDLE,rndFx);
 }
 /* пять зон — пять разных ответов: одинаковая реакция на любой клик
    превращает животное в кнопку */
@@ -716,7 +716,7 @@ function toggleParrotWin(open){
       if(!cv.width||!cv.height){parWin=false;w.classList.remove("open");return;}}
     const el=document.getElementById("parrotsay");
     if(el)el.textContent=G.parrot?("из вещей "+G.parrot.who):"";
-    parT0=performance.now();parRAF=requestAnimationFrame(parrotFrame);
+    parT0=wallMs();parRAF=requestAnimationFrame(parrotFrame);
   }else if(parRAF){cancelAnimationFrame(parRAF);parRAF=0;}
 }
 (function parrotWire(){

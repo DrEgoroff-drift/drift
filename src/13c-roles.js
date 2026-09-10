@@ -14,9 +14,9 @@ function roleFire(p,d,want,range,cool){
   if(p.stunT>0)return false;
   /* под помехой (M365) половина выстрелов уходит в пустоту: цель есть,
      наводка врёт */
-  if(p.jamT>0&&Math.random()<.5){p.cool=cool*.5;return false;}
+  if(p.jamT>0&&rnd()<.5){p.cool=cool*.5;return false;}
   /* близкий разрыв плазмы сбивает наводку на секунду (M366) */
-  if(p.leadBreak>0&&Math.random()<.6){p.cool=cool*.4;return false;}
+  if(p.leadBreak>0&&rnd()<.6){p.cool=cool*.4;return false;}
   if(d<range&&p.cool<=0&&Math.abs(angDiff(want,p.a))<.35){
     /* у ренегата свой урон: он бьёт вашими же перками */
     fireShot(p.x,p.y,p.a,7,p.dmg||3.5+sysDanger(G.sx,G.sy)*5,p.owner||"pirate");
@@ -34,7 +34,7 @@ function roleAllyNear(p){
 function roleFlee(p,dt,want){
   roleSteer(p,want+Math.PI,dt,.05);roleThrust(p,dt,.07);
   if(!p.jumpT){
-    p.jumpT=G.t+180+Math.random()*60;
+    p.jumpT=G.t+180+rnd()*60;
     say("«"+p.name+"» уходит",70);
   }else if(G.t>=p.jumpT){
     logAdd("kill","«"+p.name+"» ушёл в прыжок · награда потеряна");
@@ -93,7 +93,7 @@ function pirateRoleTick(p,dt,d,want){
       fireShot(p.x,p.y,p.a,9,(p.dmg||3.5+sysDanger(G.sx,G.sy)*5)*1.6,p.owner||"pirate");
       /* пусковая — по таблице §5 у капитана (M367/M368): раз в несколько
          залпов уходит ракета, и её сбивают зениткой или уводят ловушкой */
-      if(typeof mslFoeFire==="function"&&pirateHas(p,"msl")&&Math.random()<.3)mslFoeFire(p);
+      if(typeof mslFoeFire==="function"&&pirateHas(p,"msl")&&rnd()<.3)mslFoeFire(p);
       p.cool=95;helmShotAt(p);
     }
   }else{
@@ -111,7 +111,7 @@ function pirateRoleTick(p,dt,d,want){
       p.called=1;
       const n=Math.min(2,ARMED_CAP-armedCount());
       for(let i=0;i<n;i++){
-        const a=Math.random()*TAU,seed=hashi(p.seed,i+1,0xBA);
+        const a=rnd()*TAU,seed=hashi(p.seed,i+1,0xBA);
         const hp0=(26+sysDanger(G.sx,G.sy)*70);
         G.pirates.push({x:p.x+Math.cos(a)*900,y:p.y+Math.sin(a)*900,vx:0,vy:0,a:a+Math.PI,
           hull:hp0,hullMax:hp0,name:pick(PIRATE_NAMES,rng(seed)),rank:0,seed,shipId:pirateShipId(seed),

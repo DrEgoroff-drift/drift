@@ -142,7 +142,7 @@ function helmCanvasXY(e){const rc=cvs.getBoundingClientRect();return [(e.clientX
 cvs.addEventListener("pointermove",e=>{
   if(e.pointerType==="mouse"){
     const [x,y]=helmCanvasXY(e);
-    HELM.mouse.x=x;HELM.mouse.y=y;HELM.mouse.t=performance.now();HELM.mouse.on=true;
+    HELM.mouse.x=x;HELM.mouse.y=y;HELM.mouse.t=now();HELM.mouse.on=true;
     return;
   }
   const s=(HELM.S&&HELM.S.id===e.pointerId)?HELM.S:null;
@@ -185,7 +185,7 @@ cvs.addEventListener("pointerleave",e=>{if(e.pointerType==="mouse"){HELM.mouse.o
 cvs.addEventListener("pointerdown",e=>{
   if(G.mode!=="system")return;
   if(e.pointerType==="mouse"){
-    if(e.button===0)HELM.mouse.down=performance.now();
+    if(e.button===0)HELM.mouse.down=now();
     if(e.button===2)HELM.mouse.rmb=true;
     return;
   }
@@ -195,7 +195,7 @@ cvs.addEventListener("pointerdown",e=>{
      ждущий снимается, иначе зум на телефоне достался бы одному стику */
   const xy=helmCanvasXY(e);
   if(HELM.S||HELM.P){HELM.P=null;return;}
-  HELM.P={id:e.pointerId,x0:xy[0],y0:xy[1],x:xy[0],y:xy[1],t0:performance.now()};
+  HELM.P={id:e.pointerId,x0:xy[0],y0:xy[1],x:xy[0],y:xy[1],t0:now()};
 });
 function helmPtrEnd(e){
   if(e.pointerType==="mouse"){if(e.button===0)HELM.mouse.down=false;if(e.button===2)HELM.mouse.rmb=false;return;}
@@ -273,7 +273,7 @@ function helmShotAt(p){
 
 /* ── чтение трёх вводов в G.ctl: раз в кадр, до физики ── */
 function helmTick(dt){
-  const c=G.ctl||ctlReset(),sh=G.ship,K=HELM.key,now=performance.now();
+  const c=G.ctl||ctlReset(),sh=G.ship,K=HELM.key,now=clockNow();
   c.head=null;c.headK=1;c.turn=0;c.tx=0;c.ty=0;c.brake=false;c.thrOnly=false;c.fire=false;c.msl=false;
   c.assist=false;c.ax=0;c.ay=0;c.slow=false;
   let headBusy=false,input=false;

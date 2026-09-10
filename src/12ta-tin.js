@@ -110,7 +110,7 @@ function tinMake(p){
   if(M[key])return M[key];
   const seed=hashi(G.sx,G.sy,(p&&p.idx|0)+0x71DE);
   M[key]={seed,sx:G.sx,sy:G.sy,idx:(p&&p.idx|0),name:(p&&p.name)||"",
-    fed:0,run:0,bin:0,seen:0,read:0,last:Date.now(),made:Date.now()};
+    fed:0,run:0,bin:0,seen:0,read:0,last:now(),made:now()};
   return M[key];
 }
 /* ── ход, считаемый лениво ──
@@ -118,7 +118,7 @@ function tinMake(p){
 function tinTick(T){
   if(!T)return null;
   if(typeof planEndless==="function")planEndless(T);   /* комбинат не останавливается (11r) */
-  const now=Date.now();
+  const now=clockNow();
   const mins=Math.min(now-(T.last||now),TIN_CAP)/60000;
   T.last=now;
   if(mins<=0||!T.run)return T;
@@ -144,7 +144,7 @@ function tinFeed(T,n){
     /* наряд закрыт: смена началась. Работы ровно на то, что засыпали */
     T.run=A.need;
     T.fed=A.need;
-    T.last=Date.now();
+    T.last=now();
     logAdd("good","Жестянка приняла наряд и пошла: "+RES[A.made].ru.toLowerCase());
   }
   if(typeof saveGame==="function")saveGame(true);

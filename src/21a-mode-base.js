@@ -109,7 +109,7 @@ function foundBase(p){
   for(let i=0;i<BASE_COLS*BASE_ROWS;i++)cells.push(null);
   cells[Math.floor(BASE_COLS/2)]={k:"reactor",hp:1};   // без энергии база мертва, поэтому реактор в подарок
   G.bases[baseKey(G.sx,G.sy,p.idx)]={sx:G.sx,sy:G.sy,idx:p.idx,name:p.name,type:p.type,
-    res:p.res.slice(0,3),cells,pool:{},tMs:Date.now(),built:Date.now()};
+    res:p.res.slice(0,3),cells,pool:{},tMs:now(),built:now()};
   tell("money","Заложена база на "+p.name+" · −2500 кр, 10 сплавов","База заложена\n"+p.name);
   return true;
 }

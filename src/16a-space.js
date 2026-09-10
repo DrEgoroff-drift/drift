@@ -68,7 +68,7 @@ function sysNebulaTex(sys){
       sd:nsd,c1:st.neb[0],c2:st.neb[1],dirs,GN};
   }
   const J=NEB_JOB,S=J.S,d=J.img.data,sd=J.sd,c1=J.c1,c2=J.c2,dirs=J.dirs,GN=J.GN;
-  const t0=performance.now();
+  const t0=wallMs();
   while(J.y<S){
     const y=J.y++;
     for(let x=0;x<S;x++){
@@ -93,7 +93,7 @@ function sysNebulaTex(sys){
       d[o+2]=clamp(c1[2]*a+c2[2]*b*.9+f*120,0,255);
       d[o+3]=clamp((Math.pow(a,1.8)*.5+Math.pow(b,2.1)*.34+f*.16)*255,0,255);
     }
-    if(performance.now()-t0>NEB_MS)return null;
+    if(wallMs()-t0>NEB_MS)return null;
   }
   J.c.putImageData(J.img,0,0);
   sys.nebTex=J.cn;NEB_JOB=null;

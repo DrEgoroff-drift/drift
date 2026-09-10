@@ -69,7 +69,7 @@ function traceHashOf(s){
 function traceHand(id){const h=traceHashOf((id||traceId())+"|рука");return ("00000"+h.toString(16)).slice(-6);}
 function traceMarkOf(id){return traceHashOf((id||traceId())+"|знак")%TRACE_MARK.length;}
 function traceOn(){return typeof location!=="undefined"&&location.protocol.indexOf("http")===0&&!!traceId();}
-function traceToday(){const d=new Date();return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();}
+function traceToday(){const d=new Date(now());return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();}
 function traceLeftToday(){
   const T=traceAll(),t=traceToday();
   if(T.day!==t){T.day=t;T.left=0;}
@@ -89,7 +89,7 @@ function traceAsk(){
   const S=G.surf;if(!S||!traceOn())return;
   const key=(typeof placeKeyHere==="function")?placeKeyHere():null;
   if(!key)return;
-  const now=Date.now();
+  const now=clockNow();
   if(now-traceBusy<20000)return;
   traceBusy=now;
   traceCall("ask",{key:key}).then(j=>{

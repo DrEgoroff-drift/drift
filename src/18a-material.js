@@ -107,11 +107,11 @@ function planetMat(p){
 /* допекаем по кадрам — зовётся из planetDraw рядом с развёрткой */
 function matTick(){
   const J=MAT_JOB;if(!J)return;
-  const t0=performance.now();
+  const t0=wallMs();
   let rows=0;
   while(J.y<J.S){
     matJobRows(J,MAT_ROWS);rows+=MAT_ROWS;
-    if(rows>=MAT_CAP||performance.now()-t0>MAT_MS)return;
+    if(rows>=MAT_CAP||wallMs()-t0>MAT_MS)return;
   }
   matJobDone(J);MAT_JOB=null;
 }

@@ -111,7 +111,7 @@ function crewRender(){
       b.onclick=()=>{if(ransomPay(c))crewRender();};
       rh.appendChild(b);$cvBody.appendChild(rh);
     }else if(c.state==="away"){
-      const left=Math.max(0,Math.ceil(((c.stateUntil||0)-Date.now())/3600000));
+      const left=Math.max(0,Math.ceil(((c.stateUntil||0)-now())/3600000));
       $cvBody.appendChild(el("div","row","<div class='nm'><b>В ЗАГУЛЕ</b><s>вернётся примерно через "+
         left+" ч · жалованье за это время не идёт</s></div>"));
     }

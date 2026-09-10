@@ -172,9 +172,9 @@ function mapRulersDraw(V,cell,foot){
   ctx.fillStyle="#7fe6d8";ctx.fillText(L1,hx,hy);
   if(L2){ctx.fillStyle="#f2b25c";ctx.fillText(L2,hx,hy+12*U);}
   /* обводка найденной клетки — три секунды после поиска */
-  if(G.mapOutline&&Date.now()-G.mapOutline.t<3000){
+  if(G.mapOutline&&now()-G.mapOutline.t<3000){
     const c=mapCellXY(G.mapOutline.sx,G.mapOutline.sy,V,cell);
-    ctx.strokeStyle="rgba(242,178,92,"+(.9-(Date.now()-G.mapOutline.t)/3400).toFixed(2)+")";ctx.lineWidth=1.5;
+    ctx.strokeStyle="rgba(242,178,92,"+(.9-(now()-G.mapOutline.t)/3400).toFixed(2)+")";ctx.lineWidth=1.5;
     ctx.strokeRect(c.x-cell/2,c.y-cell/2,cell,cell);
   }
   /* выбранная пустая клетка — тонкий квадрат вместо прицела звезды */
@@ -213,7 +213,7 @@ function mapGoAddr(sx,sy){
   sx|=0;sy|=0;
   G.sel={x:sx,y:sy};
   if(typeof mapFit==="function")mapFit(sx,sy);else G.mapView={x:sx,y:sy};
-  G.mapMore=false;G.mapOutline={sx,sy,t:Date.now()};
+  G.mapMore=false;G.mapOutline={sx,sy,t:now()};
   if(typeof sfx==="function")sfx("ui");
   return true;
 }

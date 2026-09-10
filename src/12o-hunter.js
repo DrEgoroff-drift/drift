@@ -38,7 +38,7 @@ function huntMark(sys,why){
     const seed=hashi((sys?sys.sx:G.sx)*131+(sys?sys.sy:G.sy),0x4A17,7);
     const r=rng(seed);
     H=all[k]={cap:pick(HUNT_NAMES,r)+" "+pick(PIRATE_NAMES,r),seed,tier:0,
-      made:Date.now(),deeds:0,dead:0,paid:0,seen:0};
+      made:now(),deeds:0,dead:0,paid:0,seen:0};
     logAdd("warn","За «"+(why||"дело")+"» вами занялись: капитан "+H.cap+
       " ищет вас в секторе "+k);
     say("ЗА ВАМИ ПОШЛИ\nкапитан "+H.cap+"\nсектор "+k);

@@ -46,8 +46,8 @@ function etherTick(dt){
   if(typeof chartsTick==="function")chartsTick();       /* карта возвращается (11m) */
   if(typeof quietAfterLeave==="function")quietAfterLeave();   /* счёт суток после тихого уезда (11n) */
   if(G.etherT>0)return;
-  G.etherT=ETHER_EVERY*(.7+Math.random()*.8);
-  const r=rng(hashi(G.sx,G.sy,(Date.now()/60000)|0));
+  G.etherT=ETHER_EVERY*(.7+rnd()*.8);
+  const r=rng(hashi(G.sx,G.sy,(now()/60000)|0));
   /* строка истории (11c) — не чаще раза из трёх, остальное остаётся безликим шумом */
   const sl=(typeof storyEtherLine==="function")?storyEtherLine(r):null;
   const line=sl!=null?sl:pick(ETHER,r);
@@ -74,8 +74,8 @@ function etherTick(dt){
   if(typeof namesEtherLine==="function"){const h=namesEtherLine();if(h)out=h;}       /* ваше слово у диспетчера (11u) */
   if(out&&typeof regionAt==="function"){
     const R=regionAt(G.sx,G.sy);
-    if(R&&R.theme==="post"&&regionDepth(G.sx,G.sy)<.5&&Math.random()<.6)
-      out=out.replace(/[а-яёa-z]{3,}/gi,w=>Math.random()<.22?"…":w);
+    if(R&&R.theme==="post"&&regionDepth(G.sx,G.sy)<.5&&rnd()<.6)
+      out=out.replace(/[а-яёa-z]{3,}/gi,w=>rnd()<.22?"…":w);
   }
   etherLine(out);   /* на пульт и в ЭФИР (M151a) */
   if(typeof mirrorEchoArm==="function")mirrorEchoArm(out);    /* зеркало (11f): эхо повторяет то, что было слышно, а не исходник */
@@ -198,7 +198,7 @@ function tapeTear(){
   if(!T||T.n<24)return null;
   const s={sx:G.sx,sy:G.sy,
            mis:+((typeof instrMisclose==="function")?instrMisclose():0).toFixed(3),
-           span:T.n,t:Date.now()};
+           span:T.n,t:now()};
   if(typeof misMarkStrip==="function")misMarkStrip(s);   /* лента из уезда несёт метку (M155) */
   const L=stripsAll();
   L.unshift(s);

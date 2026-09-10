@@ -51,7 +51,7 @@ function leftPos(row,i){
    оставить сегодня; отказ — это не ошибка игры, а правило §11.3. */
 function leftLeave(kind,part){
   const k=leftKey();
-  const seed=part?(part.seed>>>0):(hashi(G.sx|0,G.sy|0,Date.now()&1023));
+  const seed=part?(part.seed>>>0):(hashi(G.sx|0,G.sy|0,now()&1023));
   const tier=part?(part.tier|0):1;
   return leftCall("left",{sys:k,kind,seed,tier}).then(r=>{
     if(!r||!r.ok){say((r&&r.error)?r.error.toUpperCase():"ОСТАВИТЬ НЕ ВЫШЛО",120);return false;}

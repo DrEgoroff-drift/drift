@@ -160,7 +160,7 @@ function crownOwned(fam){return !!(G.crowns&&G.crowns[fam]);}
 function crownForge(fam){
   if(!crownReady(fam)||crownOwned(fam))return false;
   if(!G.crowns)G.crowns={};
-  G.crowns[fam]=Date.now();
+  G.crowns[fam]=now();
   const F=NODE_FAMS.find(f=>f.id===fam);
   tell("tech","Собран венец: «"+F.crown+"»",
        "«"+F.crown+"»\n"+F.crownNote+"\n\nнабор «"+F.ru+"» закрыт целиком");

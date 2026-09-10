@@ -312,7 +312,7 @@ function drawLander(broken,fire,opt){
       ctx.fillStyle=rgba(h.dark,1);
       ctx.fillRect(bx-br*.9,by-br*.6,br*1.8,br*1.2);
       ctx.save();ctx.translate(bx,by);ctx.rotate(Math.PI/2);
-      drawFlame(0,0,br*.8,lvl*(.8+Math.random()*.25));
+      drawFlame(0,0,br*.8,lvl*(.8+rndFx()*.25));
       ctx.restore();
     }
   }

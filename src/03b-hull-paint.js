@@ -8,7 +8,7 @@ function tracePoly(pts,sy){
    Оранжевый костёр на корме читается работой и топливом; дорогая вещь
    уходит тихо, и это видно раньше, чем читается название класса. */
 function drawFlame(x,y,rad,pow,cool,tint){
-  const f=rad*(cool?1.5+Math.random()*.8:2.4+Math.random()*1.7)*pow;
+  const f=rad*(cool?1.5+rndFx()*.8:2.4+rndFx()*1.7)*pow;
   const gl=ctx.createRadialGradient(x-f*.25,y,0,x-f*.25,y,f*1.15);
   /* цвет факела — подпись изготовителя (M369, §19.4 измерение 7): у Орднунга
      короткая белая игла, у Коммуны длинный фиалковый шлейф, у Хай-Фронта

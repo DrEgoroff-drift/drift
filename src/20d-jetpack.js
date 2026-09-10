@@ -42,7 +42,7 @@ function jetTick(body,g,dt,air){
     body.vy=Math.max(vmax,body.vy-g*2.3*dt);
     fire=true;
     S.jetSfx=(S.jetSfx||0)-dt;
-    if(S.jetSfx<=0){S.jetSfx=9;sfx("ui",{f:140+Math.random()*40,to:90,d:.16,v:.05});}
+    if(S.jetSfx<=0){S.jetSfx=9;sfx("ui",{f:140+rndFx()*40,to:90,d:.16,v:.05});}
   }else if(!(keys.thrust&&!air)){
     /* на земле с зажатой тягой запас не копится: иначе игрок стоит на кнопке
        и качает шкалу быстрее, чем тратит её в воздухе */

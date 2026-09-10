@@ -65,7 +65,7 @@ function rxRecord(){
   const N=ringNow();if(!N||N.rec)return false;
   N.rec=1;
   const R=ringAll();
-  const tape={sx:N.sx,sy:N.sy,dir:+N.dir.toFixed(3),q:+N.q.toFixed(2),day:celDay(),t:Date.now(),handed:0};
+  const tape={sx:N.sx,sy:N.sy,dir:+N.dir.toFixed(3),q:+N.q.toFixed(2),day:celDay(),t:now(),handed:0};
   R.tapes.push(tape);while(R.tapes.length>12)R.tapes.shift();
   if(typeof thingAdd==="function")thingAdd("tape","Лента · сигнал вне диапазона · "+N.sx+":"+N.sy,"пульс записан · сила "+Math.round(N.q*100)+"% · направление "+Math.round(N.dir*180/Math.PI)+"° · сдать у стойки или оставить на столе",{ring:1,dir:tape.dir,q:tape.q});
   tell("tech","Лента записана: сигнал вне диапазона · "+N.sx+":"+N.sy,"ЗАПИСАНО\nлента на столе");

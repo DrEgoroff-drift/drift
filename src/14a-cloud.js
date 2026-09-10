@@ -17,7 +17,7 @@
    пропадает — она перестаёт записывать и говорит об этом прямо, чтобы человек
    понимал, в каком окне продолжать. Летать в ней по-прежнему можно. */
 let TAB_LIVE=true;
-const TAB_ID=Math.random().toString(36).slice(2)+Date.now().toString(36);
+const TAB_ID=uidRand().toString(36).slice(2)+wallNow().toString(36);
 let TAB_CH=null;
 try{
   TAB_CH=new BroadcastChannel("drift-tabs");
@@ -90,7 +90,7 @@ let cloudBusy=0,cloudLastTs=0;
    напоминание, а сообщение. */
 let CLOUD_ST={k:"",ts:0,said:""};
 function cloudMark(k){
-  CLOUD_ST.k=k;CLOUD_ST.ts=Date.now();
+  CLOUD_ST.k=k;CLOUD_ST.ts=wallNow();
   if(CLOUD_ST.said===k)return;                 /* об одном и том же — один раз */
   CLOUD_ST.said=k;
   if(k==="gone"){
@@ -131,7 +131,7 @@ if(typeof window!=="undefined"){
    часто, а сеть — единственное в игре, что умеет тормозить кадр. */
 function cloudPush(loud){
   if(!cloudOn()){if(loud)say("Вы не вошли в учётную запись");return;}
-  const now=Date.now();
+  const now=wallNow();
   if(!loud&&now-cloudBusy<20000)return;
   cloudBusy=now;
   /* та же охраняемая строка, что и у местной записи: голый snapshot() уходил

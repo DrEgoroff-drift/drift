@@ -39,7 +39,7 @@ function needOf(sys){
 function needClose(sys,k){
   const N=needOf(sys);
   if(!N||N.k!==k)return false;
-  needAll()[sys.key]={win:N.win,k,t:Date.now()};
+  needAll()[sys.key]={win:N.win,k,t:now()};
   if(typeof recordAdd==="function")recordAdd(sys.station.name,"благодарность: привёз "+N.ru+", когда не было");
   if(typeof repAdd==="function")repAdd(2,sys);
   if(typeof peopleLine==="function")peopleLine("привезли "+N.ru+", когда "+(RES[k].ru.endsWith("ы")?"их":"её")+" не было. Это помнят.",sys.station.name,true);

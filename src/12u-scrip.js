@@ -55,7 +55,7 @@ function scripMove(id,d,why){
   G.scripRate[id]=now;
   if(now===was)return 0;
   const L=G.scripLog||(G.scripLog=[]);
-  L.push({id,d:now-was,why,t:Date.now()});
+  L.push({id,d:now-was,why,t:clockNow()});
   while(L.length>SCRIP_LOG)L.shift();
   return now-was;
 }
@@ -158,7 +158,7 @@ function scripRender(){
   $body.appendChild(el("div","sec","ОТЧЕГО ДВИГАЛСЯ КУРС · СЛУЧАЙНО ОН НЕ ДВИГАЕТСЯ"));
   if(!L.length)$body.appendChild(el("div","row","<div class='nm'><s>пока ничего не случилось</s></div>"));
   for(const e of L){
-    const mins=Math.max(1,Math.round((Date.now()-e.t)/60000));
+    const mins=Math.max(1,Math.round((now()-e.t)/60000));
     const Ho=HOUSE_BY_ID[e.id];
     $body.appendChild(el("div","row","<div class='nm'><b>"+(Ho?Ho.ru:e.id)+" "+
       (e.d>0?"+":"")+e.d+"</b><s>"+e.why+" · "+mins+" мин назад</s></div>"));

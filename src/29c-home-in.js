@@ -151,7 +151,7 @@ function hinFolkTick(dt){
     }
     if(f.pose==="walk"){
       const d=f.tx-f.x;
-      if(Math.abs(d)<3){f.pose=Math.random()<.5?"stand":"work";f.t=200+Math.random()*300;}
+      if(Math.abs(d)<3){f.pose=rnd()<.5?"stand":"work";f.t=200+rnd()*300;}
       else{f.face=d>0?1:-1;f.x+=f.face*Math.min(1.05,Math.abs(d))*dt*.7;f.walk=(f.walk||0)+dt*.22;}
     }
   }

@@ -47,7 +47,7 @@ function rogueFrom(m,why){
     shipId:m.shipId||null,crew,fee:m.fee,why:why||"loy",
     hullMax:Math.round((S?S.hull:100)*grit+60*lv),
     dmg:+(5+lv*1.6+m.perks.length*.5).toFixed(2),
-    t:Date.now()};
+    t:now()};
   R.hull=R.hullMax;
   if(!G.rogues)G.rogues=[];
   G.rogues.push(R);
@@ -109,7 +109,7 @@ function rogueDefeated(p){
     if(relic)relicFind(relic,"трофей с "+R.name);
     if(!G.exiles)G.exiles=[];
     G.exiles.push({name:R.name,role:R.role,seed:R.seed,lv:R.lv,perks:R.perks.slice(),
-      traits:R.traits.slice(),fee:Math.round(R.fee*.35),t:Date.now()});
+      traits:R.traits.slice(),fee:Math.round(R.fee*.35),t:now()});
     while(G.exiles.length>ROGUE_CAP)G.exiles.shift();
     tell("kill",R.name+" разбит · +"+back.toLocaleString("ru")+" кр",
       R.name+" разбит\n"+(R.shipId?"корпус отбит\n":"")+

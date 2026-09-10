@@ -307,7 +307,7 @@ function hireMgr(cand){
   /* изгнанник возвращается со своими перками — вы за них уже платили однажды */
   const m=Object.assign({},cand,{traits:cand.traits.slice(),
     perks:cand.exile?cand.perks.slice():[],rules:[],
-    tMs:Date.now(),earned:0,spent:0,tookCr:0,stole:0,route:[],log:[]});
+    tMs:now(),earned:0,spent:0,tookCr:0,stole:0,route:[],log:[]});
   if(cand.exile&&G.exiles)G.exiles=G.exiles.filter(e=>e.seed!==cand.seed);
   G.mgrs.push(m);
   mgrSay(m,"Принял домен: "+MGR_ROLES[m.role].dom);
@@ -337,7 +337,7 @@ function mgrUltimatum(m){
   if(m.job)m.job=null;                   // разговоры кончились: это важнее любого поручения
   if(m.ultCount>=2){mgrDefect(m,"ult");return;}   // третий раз он не приходит
   m.ultCount=(m.ultCount||0)+1;
-  m.job={id:"ultimatum",t0:Date.now(),mins:12,offer:1,choice:1};
+  m.job={id:"ultimatum",t0:now(),mins:12,offer:1,choice:1};
   mgrSay(m,"Так больше нельзя. У меня есть условие.","warn");
   tell("warn","Ультиматум: "+m.name,
     m.name+" ставит условие\nэкран ШТАБ · "+MGR_ROLES[m.role].ru.toLowerCase());
@@ -367,7 +367,7 @@ function fireMgr(m){
 /* короткая личная лента: по ней читается и работа домена, и настроение */
 function mgrSay(m,s,k){
   m.log=m.log||[];
-  m.log.unshift({t:Date.now(),k:k||"",s});
+  m.log.unshift({t:now(),k:k||"",s});
   if(m.log.length>8)m.log.length=8;
 }
 /* ══════════════ стоящие приказы ══════════════ */
@@ -423,7 +423,7 @@ function mgrToggleRule(m,id){
    NPC, ничего не идёт при закрытой игре. */
 function mgrTick(){
   if(!G.mgrs||!G.mgrs.length)return;
-  const now=Date.now();
+  const now=clockNow();
   for(let i=G.mgrs.length-1;i>=0;i--){
     const m=G.mgrs[i];
     if(!m.tMs){m.tMs=now;continue;}
@@ -646,7 +646,7 @@ function mgrWorkFact(m,min){
   if(mk)mk.pressure[leg.k]=clamp((mk.pressure[leg.k]||0)-(cap/Math.max(1,leg.buy))*.004,-.35,0);
   /* без конвоя маршрут иногда грабят: домен не бесплатная рента */
   if(!mgrPerk(m,"convoy")&&!mgrRule(m,"safe")&&
-     rng(hashi(m.seed,Math.floor(Date.now()/300000),0x7A1))()<.06*min){
+     rng(hashi(m.seed,Math.floor(now()/300000),0x7A1))()<.06*min){
     gross=Math.round(gross*.35);
     mgrSay(m,"Плечо накрыли — часть груза ушла","warn");
   }
@@ -710,7 +710,7 @@ function mgrWorkSci(m,min){
     /* «Биология»: отсканированные твари и растения тоже идут в образцы —
        разведка перестаёт быть только строчкой в счётчике видов */
     if(!sample&&mgrPerk(m,"bio")&&(G.bio|0)>0){G.bio--;sample="bio";}
-    const r=rng(hashi(m.seed,Math.floor(Date.now()/60000)+done*17,0x5C1));
+    const r=rng(hashi(m.seed,Math.floor(now()/60000)+done*17,0x5C1));
     const mul=(sample?2.2:1)*mgrTraitMul(m,"sample")*(mgrPerk(m,"batch")?1.5:1);
     const data=Math.round((2+r()*3)*mul);
     G.data+=data;
@@ -745,7 +745,7 @@ function bpRecheck(k){
   const cost=mgrPerk(m,"redo")?30:60;
   if(G.data<cost){say("Нужно "+cost+" данных на пересборку");return false;}
   G.data-=cost;
-  const r=rng(hashi(m.seed,Date.now()&0xffff,0x9B2));
+  const r=rng(hashi(m.seed,now()&0xffff,0x9B2));
   const ok=r()<(mgrPerk(m,"safe")?.9:.7);
   G.blueprints[k]=ok?1:-1;
   logAdd(ok?"":"warn","Пересборка «"+BLUEPRINTS[k].ru+"»: "+(ok?"теперь верно":"снова мимо"));

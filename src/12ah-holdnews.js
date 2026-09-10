@@ -30,7 +30,7 @@ function holdNews(sys,def,what){
   for(const k of ins)if(TRADE_KEYS.indexOf(k)>=0)m.pressure[k]=clamp((m.pressure[k]||0)+.2,-.6,.8);
   const ru="«"+sys.station.name+"»: "+(what==="up"?def.ru+" поднят до ×"+(bldEntry(sys.key,def.id)||{lvl:2}).lvl:"заложен "+def.ru.toLowerCase())+
     (ins.length?" — "+ins.filter(k=>RES[k]).map(k=>RES[k].ru.toLowerCase()).join(" и ")+" здесь в цене":" — "+def.note);
-  const item={id:"hold",ru,sx:sys.sx,sy:sys.sy,t:Date.now()};
+  const item={id:"hold",ru,sx:sys.sx,sy:sys.sy,t:now()};
   newsAll().push(item);
   if(typeof newsMark==="function")newsMark(sys.key,"стройка","#7fe6d8");
   return item;

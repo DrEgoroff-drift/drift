@@ -29,7 +29,7 @@ function openWanderer(opts){
   const epoch=(opts.epoch!==undefined)?opts.epoch:w.epoch;
   const W2=(opts.epoch!==undefined)?Object.assign({},w,{epoch,dark:wanderLoop()[((epoch%WANDER_N)+WANDER_N)%WANDER_N].dark}):Object.assign({},w);
   if(opts.force)W2.forced=true;
-  G.wan={sx:G.sys.sx,sy:G.sys.sy,epoch,dark:!!W2.dark,cursor:0,t0:Date.now(),
+  G.wan={sx:G.sys.sx,sy:G.sys.sy,epoch,dark:!!W2.dark,cursor:0,t0:now(),
          from:G.mode==="wanderer"?"system":G.mode,seed:hashi(epoch|0,0x50A0,0xCA),
          said:0,flash:0,counter:false,w:W2};
   G.mode="wanderer";
@@ -68,7 +68,7 @@ function updateWanderRoom(dt){
     S.w=w;
     /* последний час: хранитель чиркает спичку — один раз, вспышка, «Туда.» */
     if(w.tLeft<3600e3&&!S.flash){
-      S.flash=1;S.flashT=Date.now();
+      S.flash=1;S.flashT=now();
       say(WANDER_LINES.leave1+"\n… "+WANDER_LINES.leave2,300);
       if(typeof peopleLine==="function")peopleLine(WANDER_LINES.leave1+" — "+WANDER_LINES.leave2,"хранитель «Сороки»",true);
     }

@@ -45,7 +45,7 @@ function fuseShips(idA,idB){
   const c=fuseCost();
   if(!fuseAffordable(c))return null;
   const g=fuseGen();
-  const seed=hashi(hashi(A.seed||1,B.seed||2,0xF05E),Date.now()&0xffff,g);
+  const seed=hashi(hashi(A.seed||1,B.seed||2,0xF05E),now()&0xffff,g);
   const base=genUniqueShip(seed);
   /* доля редкого сырья сверх обязательного минимума и есть «бонус за редкость» */
   const rich=clamp((G.cargo.volatiles+G.cargo.icecrys)/(c.volatiles+c.icecrys+24),0,1);
@@ -104,7 +104,7 @@ function craftPart(spec){
   if(!craftAffordable(spec.cost))return null;
   G.credits-=spec.cost.credits;
   for(const k in spec.cost)if(k!=="credits")G.cargo[k]-=spec.cost[k];
-  const part=genPart(hashi(Date.now()&0xffffff,partSeq*7717,0xC7AF),spec.tier);
+  const part=genPart(hashi(now()&0xffffff,partSeq*7717,0xC7AF),spec.tier);
   addPart(part);
   tell("tech","Собрана часть: "+part.name+" ("+TIER_RU[part.tier]+")",
        "Часть собрана\n"+part.name);
@@ -115,7 +115,7 @@ function craftPart(spec){
    (части, уникальный корпус, кантина), поэтому перк правится здесь, в одном месте. */
 function timeBucket(){
   const period=(typeof mgrPerkOf==="function"&&mgrPerkOf("fact","stock"))?57600000:172800000;
-  return Math.floor(Date.now()/period);
+  return Math.floor(now()/period);
 }
 /* ── эпизод как разрешение на покупку корпуса (M369b, §19.3, D14) ──
    Корпус — не деталь: чужой завод не продаёт его первому встречному. Нужен

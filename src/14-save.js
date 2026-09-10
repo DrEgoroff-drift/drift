@@ -100,7 +100,7 @@ function snapshot(){
        навсегда. Закрытая дверь не восстанавливается ни временем, ни загрузкой */
     offers:G.offers,folk:G.folk,ledger:G.ledger,folkSay:G.folkSay,late:G.late,toldOff:G.toldOff|0,   /* M225, M230 */
     told:G.told,lastDig:G.lastDig,
-    ts:Date.now()};
+    ts:wallNow()};
 }
 /* ══════════════ запись не имеет права убить полёт ══════════════
    30.08.2026 автор прислал журнал с поверхности: «Сбой кадра: Invalid string
@@ -315,7 +315,7 @@ function applySave(s){
       const v=s.rivals[id];
       if(!v||typeof v!=="object"||typeof v.who!=="string"||!RARE_BY_ID[id])continue;
       if(G.rareFound.indexOf(id)>=0)continue;   /* уже у вас — соперника нет */
-      G.rivals[id]={who:v.who,sx:v.sx|0,sy:v.sy|0,t:+v.t||Date.now()};
+      G.rivals[id]={who:v.who,sx:v.sx|0,sy:v.sy|0,t:+v.t||now()};
     }
   /* охотники (12o): счёт фракции к игроку — чистое следствие поступков, и
      мёртвый должен остаться мёртвым после перезагрузки */
@@ -325,7 +325,7 @@ function applySave(s){
       const h=s.hunted[k];
       if(!h||typeof h!=="object"||typeof h.cap!=="string")continue;
       G.hunted[k]={cap:h.cap,seed:h.seed|0,tier:clamp(h.tier|0,0,HUNT_TIERS.length-1),
-        made:+h.made||Date.now(),deeds:Math.max(0,h.deeds|0),
+        made:+h.made||now(),deeds:Math.max(0,h.deeds|0),
         dead:h.dead?1:0,paid:h.paid?1:0,seen:h.seen?1:0};
     }
   /* планета-узел (12n): решение игрока в ней есть — где он стоял, когда собрал
@@ -338,7 +338,7 @@ function applySave(s){
     const N={key:pn.key,sx:pn.sx|0,sy:pn.sy|0,idx:pn.idx|0,
       name:typeof pn.name==="string"?pn.name:"узел",
       res:res.length?res.slice(0,4):["iron"],stock:{},
-      made:+pn.made||Date.now(),last:+pn.last||Date.now(),
+      made:+pn.made||now(),last:+pn.last||now(),
       hauled:Math.max(0,pn.hauled|0),calls:Math.max(0,pn.calls|0)};
     if(pn.stock&&typeof pn.stock==="object")
       for(const k of N.res)N.stock[k]=clamp(+pn.stock[k]||0,0,PLANET_CAP);
@@ -360,7 +360,7 @@ function applySave(s){
       stage:built.length>=5?3:(built.length>=3?2:1),
       mood:clamp(+v.mood||0,0,100),fed:Math.max(0,+v.fed||0),
       stock:{},diet:{},built,
-      made:+v.made||Date.now(),last:+v.last||Date.now(),
+      made:+v.made||now(),last:+v.last||now(),
       asked:+v.asked||0,paid:Math.max(0,v.paid|0),raided:Math.max(0,v.raided|0),
       /* взят ли под руку (M198) — это РЕШЕНИЕ ИГРОКА, и оно необратимо, значит
          обязано пережить загрузку. Список полей здесь белый: не вписал — потерял
@@ -386,7 +386,7 @@ function applySave(s){
       fed:clamp(+v.fed||0,0,A.need),run:clamp(+v.run||0,0,A.need),
       bin:clamp(+v.bin||0,0,TIN_BIN),seen:v.seen|0,
       read:clamp(v.read|0,0,TIN_LOG),
-      last:+v.last||Date.now(),made:+v.made||Date.now()};
+      last:+v.last||now(),made:+v.made||now()};
   }
   /* Грохотун (12tb-grok): в экипаж он не входит, поэтому и хранится отдельно —
      что он ест, где копает, сколько площадок закрыл и объяснял ли он уже глифы.
@@ -401,7 +401,7 @@ function applySave(s){
     if(v.dug&&typeof v.dug==="object")
       for(const k in v.dug)if(/^-?\d+,-?\d+$/.test(k))dug[k]=1;
     G.grok={want:GROK_LIKE.indexOf(v.want)>=0?v.want:null,
-      state:st==="out"&&!(+v.due>Date.now())?"back":st,
+      state:st==="out"&&!(+v.due>now())?"back":st,
       sx:v.sx|0,sy:v.sy|0,due:+v.due||0,
       took:Math.max(0,v.took|0),taught:v.taught?1:0,dug};
   }
@@ -434,7 +434,7 @@ function applySave(s){
   G.doom=null;
   if(s.doom&&typeof s.doom==="object"&&s.doom.key){
     const d=s.doom;
-    G.doom={sx:d.sx|0,sy:d.sy|0,key:String(d.key),at:+d.at||Date.now(),
+    G.doom={sx:d.sx|0,sy:d.sy|0,key:String(d.key),at:+d.at||now(),
       known:!!d.known,folk:Math.max(0,d.folk|0),lifted:Math.max(0,d.lifted|0),
       landed:Math.max(0,d.landed|0),lost:Math.max(0,d.lost|0),
       to:(d.to&&typeof d.to==="object")?{sx:d.to.sx|0,sy:d.to.sy|0}:null,
@@ -447,10 +447,10 @@ function applySave(s){
   G.parrot=(s.parrot&&typeof s.parrot==="object"&&s.parrot.name)?{
     seed:s.parrot.seed>>>0,name:String(s.parrot.name).slice(0,24),
     who:String(s.parrot.who||"").slice(0,48),
-    since:+s.parrot.since||Date.now(),said:Math.max(0,s.parrot.said|0)}:null;
+    since:+s.parrot.since||now(),said:Math.max(0,s.parrot.said|0)}:null;
   G.heard=(Array.isArray(s.heard)?s.heard:[])
     .filter(h=>h&&(h.kind==="price"||h.kind==="pidgin"||h.kind==="yours"))
-    .map(h=>({t:+h.t||Date.now(),kind:h.kind,sx:h.sx|0,sy:h.sy|0,
+    .map(h=>({t:+h.t||now(),kind:h.kind,sx:h.sx|0,sy:h.sy|0,
       note:String(h.note||"").slice(0,64),
       words:Array.isArray(h.words)?h.words.map(x=>x|0):null,
       read:!!h.read,used:!!h.used}))
@@ -498,7 +498,7 @@ function applySave(s){
   /* ящик конторы (12ak, M345): части упакованы, кучи числом, час последнего визита */
   {const l=(s.locker&&typeof s.locker==="object")?s.locker:null;
    G.locker=l?{items:Array.isArray(l.items)?l.items.filter(it=>it&&(it.p||it.tool)):[],
-               res:(l.res&&typeof l.res==="object")?l.res:{},t:(typeof l.t==="number")?l.t:Date.now()}:null;}
+               res:(l.res&&typeof l.res==="object")?l.res:{},t:(typeof l.t==="number")?l.t:now()}:null;}
   G.wrecks={};
   if(s.wrecks&&typeof s.wrecks==="object")
     for(const k in s.wrecks){
@@ -521,7 +521,7 @@ function applySave(s){
      первая же покупка. */
   G.droneIds=Array.isArray(s.droneIds)?s.droneIds.map(n=>n|0):[];
   /* записи до M237 знают четыре поля: круг, номер и часы дописываются здесь */
-  if(typeof droneNormalize==="function"){const nw=Date.now();for(const d of G.drones)droneNormalize(d,nw);}
+  if(typeof droneNormalize==="function"){const nw=now();for(const d of G.drones)droneNormalize(d,nw);}
   /* новое поле с безопасным дефолтом: старые записи грузятся как «экипажа нет».
      Момент последнего начисления подтягиваем к текущему времени, иначе после
      долгого перерыва зарплата и добыча начислились бы задним числом дважды. */
@@ -557,9 +557,9 @@ function applySave(s){
     /* баржа (M294): плечи, курсор, отметка смены, скормлено, имя */
     barge:(c.barge&&Array.isArray(c.barge.legs))
       ?{legs:c.barge.legs.filter(k=>typeof k==="string").slice(0,ROUTE_MAX),cursor:c.barge.cursor|0,
-        t0:+c.barge.t0||Date.now(),fed:c.barge.fed|0,name:String(c.barge.name||"")}
+        t0:+c.barge.t0||now(),fed:c.barge.fed|0,name:String(c.barge.name||"")}
       :null,
-    tMs:Date.now(),paidMs:Date.now()
+    tMs:now(),paidMs:now()
   })).slice(0,8);
   G.allies=[];
   /* управляющие: новое поле с безопасным дефолтом, формат записи прежний.
@@ -589,11 +589,11 @@ function applySave(s){
     jobPast:(Array.isArray(m.jobPast)?m.jobPast:[]).filter(x=>jobDef(x)).slice(0,20),
     /* поручение переживает загрузку, но срок идёт заново: счётчики-маркеры
        (убитые пираты, выручка, вмешательства в приказы) живут только в сессии */
-    job:(m.job&&jobDef(m.job.id))?{id:m.job.id,t0:Date.now(),
+    job:(m.job&&jobDef(m.job.id))?{id:m.job.id,t0:now(),
       mins:Math.max(0,+m.job.mins||0),offer:m.job.offer?1:0,
       pick:m.job.pick|0,hold:m.job.hold?1:0,mark:0}:null,
     log:Array.isArray(m.log)?m.log.slice(0,8).map(e=>({t:+e.t||0,k:String(e.k||""),s:String(e.s||"")})):[],
-    tMs:Date.now()
+    tMs:now()
   })).slice(0,MGR_CAP);
   /* один домен — один управляющий: если запись пришла битой, лишних отбрасываем */
   const seen={};

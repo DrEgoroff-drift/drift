@@ -77,7 +77,7 @@ function shiftTalkTick(dt){
   G.shiftT=(G.shiftT||0)-dt;
   if(G.shiftT>0)return;
   /* пауза длинная и случайная: голос за спиной ценен тем, что редок */
-  G.shiftT=1800+Math.random()*2400;
+  G.shiftT=1800+rnd()*2400;
   const r=rng(hashi(G.sx,G.sy,(G.t|0)));
   logAdd("talk",pick(SHIFT_TALK,r));
 }
