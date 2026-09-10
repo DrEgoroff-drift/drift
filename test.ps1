@@ -18,7 +18,50 @@
 # declared {win:"phone"} and do not run in a desktop window at all, so without
 # this switch the phone half of the interface is never actually measured.
 #   powershell -ExecutionPolicy Bypass -File test.ps1 -Accept          # золотые кадры: снять эталон этого окна в docs/golden/ (с -Mobile/-Size — того окна)
-param([switch]$NoBuild, [string]$Only = "", [switch]$Mobile, [int]$Fuzz = 0, [int]$Seed = 0, [string]$Size = "", [switch]$Full, [switch]$Browser, [int]$Jobs = 0, [switch]$Times, [switch]$Probe, [string]$Shuffle = "", [switch]$Accept)
+#   powershell -ExecutionPolicy Bypass -File test.ps1 -Mutants         # зоопарк (M445): каждый мутант из tests/mutants.json обязан покраснеть
+param([switch]$NoBuild, [string]$Only = "", [switch]$Mobile, [int]$Fuzz = 0, [int]$Seed = 0, [string]$Size = "", [switch]$Full, [switch]$Browser, [int]$Jobs = 0, [switch]$Times, [switch]$Probe, [string]$Shuffle = "", [switch]$Accept, [switch]$Mutants)
+# ── зоопарк мутантов (M445, DESIGN-tests §5) ──
+# Мера тестов одна: долю авторских багов прогон нашёл бы первым. Каждый из
+# пятнадцати багов истории воспроизводится мутантом — правкой в одну строку
+# (tests/mutants.json: файл, что найти, чем заменить, кто обязан убить) — и
+# прогон его убийц ОБЯЗАН покраснеть. Выживший мутант — дыра в детекторах, а не
+# в игре. Файл правится на месте, собирается, гоняется, возвращается через git.
+if ($Mutants) {
+  $root0 = Split-Path -Parent $MyInvocation.MyCommand.Path
+  $mj = Join-Path $root0 "tests\mutants.json"
+  $zoo = [System.IO.File]::ReadAllText($mj, [System.Text.Encoding]::UTF8) | ConvertFrom-Json
+  $utf8 = New-Object System.Text.UTF8Encoding $false
+  $rows = @(); $alive = 0; $sw0 = [Diagnostics.Stopwatch]::StartNew()
+  foreach ($m in $zoo) {
+    $path = Join-Path $root0 $m.file
+    $src = [System.IO.File]::ReadAllText($path, [System.Text.Encoding]::UTF8)
+    $hits = [regex]::Matches($src, $m.find).Count
+    if ($hits -ne 1) { $rows += "  ?  {0,-22} нет места: «{1}» найдено {2} раз в {3}" -f $m.name, $m.find, $hits, $m.file; $alive++; continue }
+    [System.IO.File]::WriteAllText($path, [regex]::Replace($src, $m.find, $m.replace, 1), $utf8)
+    try {
+      $b = & powershell -ExecutionPolicy Bypass -File (Join-Path $root0 "build.ps1") 2>&1 | Out-String
+      if ($LASTEXITCODE -ne 0 -or $b -match "закон|нарушен") { $rows += "  ✓  {0,-22} убит сборкой: {1}" -f $m.name, (($b -split "`n") | Where-Object { $_ -match "закон|нарушен|throw" } | Select-Object -First 1); continue }
+      $args2 = @("-ExecutionPolicy", "Bypass", "-File", (Join-Path $root0 "test.ps1"), "-NoBuild")
+      if ($m.kill) { $args2 += @("-Only", $m.kill) } else { $args2 += "-Browser" }
+      if ($m.mobile) { $args2 += "-Mobile" }
+      $out = & powershell @args2 2>&1 | Out-String
+      $rc = $LASTEXITCODE
+      $who = (($out -split "`n") | Where-Object { $_ -match "^\s+[✗?]\s" } | Select-Object -First 1)
+      if ($null -eq $who) { $who = "" }
+      $who = ($who -replace "^\s+[✗?]\s+", "").Trim()
+      if ($who.Length -gt 110) { $who = $who.Substring(0, 110) + "…" }
+      if ($rc -ne 0) { $rows += "  ✓  {0,-22} убит: {1}" -f $m.name, $who }
+      else { $rows += "  ✗  {0,-22} ВЫЖИЛ — {1} ({2})" -f $m.name, $m.why, $(if ($m.kill) { $m.kill } else { "-Browser" }); $alive++ }
+    } finally {
+      & git -C $root0 checkout -q -- $m.file
+    }
+  }
+  # чистая сборка после зоопарка: tests.html не должен остаться мутантом
+  & powershell -ExecutionPolicy Bypass -File (Join-Path $root0 "build.ps1") | Out-Null
+  "зоопарк: мутантов {0}, выжило {1} · {2:N0} с" -f $zoo.Count, $alive, $sw0.Elapsed.TotalSeconds
+  $rows | ForEach-Object { $_ }
+  if ($alive) { exit 1 } else { exit 0 }
+}
 # ── три яруса (0.359.3; автор 06.09: «в разработке никто хром не запускает», «быстрый — 20 с») ──
 #   test.ps1            Node: формулы и данные (325 наборов, ~5 с) + дым в Хроме: игра сама
 #                       прожила кадр (~2 с). Итого под десять секунд. Это прогон на каждую правку.

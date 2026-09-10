@@ -43,6 +43,18 @@ only after a neighbour — an isolation leak. `?pick=3,17` runs only those posit
 thin wrappers over it. Real windows and screenshots of the whole page: `python docs/stand.py`
 (one Chrome over CDP for all scenes and sizes, PNGs to TEMP).
 
+**The mutant zoo (M445).** `tests/mutants.json` holds one-line breakages, each a bug from the
+project's history (a `zoomStep` that does nothing, map type without the ruler, the sky riding
+with the sheet, W without thrust, a lying fuel readout, a button without a word, a manager field
+off the save whitelist, a perk nobody reads, a mode drawing an empty frame, a bare label on a day
+sky, `resetWorld` leaving a field). Each names the suites that must kill it (`kill`, a
+`|`-list of name fragments — `?only=a|b` matches any). `test.ps1 -Mutants` applies them one by
+one (in place, restored with `git checkout`), builds, runs the killers and prints one line per
+mutant — killed by which failure, or ВЫЖИЛ. A survivor is a hole in the detectors, not in the
+game; the fix goes into a detector or a suite, never into the mutant list. A new mutant is added
+whenever a real bug reaches the author first: reproduce it in one line, name its killer, watch it
+die.
+
 **Walks and the bot (M444, 0.432.0).** `tests/91zzzzzzzza-walks.js` holds the player's paths as
 five-line lists of steps; a step is a `T.bot(goal)` call or a few tool calls, and every step is
 followed by all six detectors (`detStep` with `S.keep`, so the screens a step opened stay open).

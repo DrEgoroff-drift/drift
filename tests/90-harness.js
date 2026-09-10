@@ -12,6 +12,8 @@ let _suite="";
 /* ?only=текст — гонять только наборы, в имени которых есть текст (быстрая итерация;
    test.ps1 -Only делает то же самое) */
 const TEST_ONLY=(()=>{try{return new URLSearchParams(location.search).get("only")||"";}catch(e){return "";}})();
+/* «a|b» — любой из нескольких кусков имени (M445: зоопарк мутантов зовёт своих убийц одним прогоном) */
+const TEST_ONLY_ANY=TEST_ONLY?TEST_ONLY.split("|").filter(Boolean):[];
 /* ── прогон по частям (?shard=i/N) ──
    Наборы независимы по замыслу: каждый начинается с resetWorld(), и порядок
    им не указ. Значит их можно раздать НЕСКОЛЬКИМ Хромам сразу — машина
@@ -101,7 +103,7 @@ function suite(name,a,b){
   if(TEST_PICK&&!TEST_PICK.has(seq))return;
   if(TEST_NODE&&!sel&&tier!=="node"){SKIPPED_NODE++;return;}
   if(TEST_SKIP.length&&TEST_SKIP.some(x=>name===x)){SKIPPED_SKIP++;return;}
-  if(TEST_ONLY&&!name.includes(TEST_ONLY))return;
+  if(TEST_ONLY&&!TEST_ONLY_ANY.some(s=>name.includes(s)))return;
   if(!TEST_FULL&&!sel&&tier==="heavy"){SKIPPED_SLOW++;return;}
   if(tier==="probe"&&!TEST_PROBE&&!sel){SKIPPED_PROBE++;return;}
   if(TEST_SHARD&&!SHARD_FREE){const idx=tier==="heavy"?SHARD_H++:SHARD_L++;
