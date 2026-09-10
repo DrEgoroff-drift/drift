@@ -170,11 +170,17 @@ function Bulk($files, $tfiles) {
     "AudioContext","webkitAudioContext","ResizeObserver","IntersectionObserver",
     "structuredClone","queueMicrotask","OffscreenCanvas","createImageBitmap")
   $ghosts = @()
+  # объявленные имена — одним проходом по склейке, а не проходом на каждое имя:
+  # тысяча проходов по шести мегабайтам стоила сборке 111 секунд (замер
+  # 10.09.2026, M441), а ответ тот же
+  $declared = New-Object 'System.Collections.Generic.HashSet[string]'
+  foreach ($rx in 'function\s+([A-Za-z_$][\w$]*)\s*\(', '(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=', '\b([A-Za-z_$][\w$]*)\s*=\s*function') {
+    foreach ($m in [regex]::Matches($srcAll, $rx)) { [void]$declared.Add($m.Groups[1].Value) }
+  }
   foreach ($nm in ([regex]::Matches($srcAll, 'typeof\s+([A-Za-z_$][A-Za-z0-9_$]*)\s*===?\s*"function"') |
                    ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique)) {
     if ($HOST_GLOBALS -contains $nm) { continue }
-    $decl = "(function\s+$nm\s*\(|(const|let|var)\s+$nm\s*=|\b$nm\s*=\s*function)"
-    if (-not [regex]::IsMatch($srcAll, $decl)) { $ghosts += $nm }
+    if (-not $declared.Contains($nm)) { $ghosts += $nm }
   }
   if ($ghosts.Count) {
     "  ! typeof-проверка бережёт несуществующую функцию (вызов не сработает НИКОГДА): {0}" -f
@@ -200,16 +206,16 @@ function Bulk($files, $tfiles) {
   }
   $dd = Join-Path $root "docs"
   if (Test-Path $dd) { $docs += Get-ChildItem $dd -Filter *.md -File }
+  $ctrlRx = [regex]'[\x00-\x08\x0B\x0C\x0E-\x1F]'
+  $nlRx = [regex]'\n'
   foreach ($f in (@($files) + @($tfiles) + @($docs))) {
     if (-not $f) { continue }
     $txt = [IO.File]::ReadAllText($f.FullName, [Text.Encoding]::UTF8)
-    $ln = 1
-    foreach ($ch in $txt.ToCharArray()) {
-      $c = [int]$ch
-      if ($c -eq 10) { $ln++; continue }
-      if ($c -lt 32 -and $c -ne 9 -and $c -ne 13) {
-        $ctrl += ("{0}:{1} 0x{2:X2}" -f $f.Name, $ln, $c)
-      }
+    # регуляркой, а не циклом по символам: цикл PowerShell по десяти мегабайтам
+    # стоил сборке две минуты из двух с половиной (замер 10.09.2026, M441)
+    foreach ($m in $ctrlRx.Matches($txt)) {
+      $ln = 1 + $nlRx.Matches($txt.Substring(0, $m.Index)).Count
+      $ctrl += ("{0}:{1} 0x{2:X2}" -f $f.Name, $ln, [int][char]$m.Value)
     }
   }
   if ($ctrl.Count) {
