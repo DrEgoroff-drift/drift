@@ -164,27 +164,34 @@ function detPatchShift(p0,p1,R){
   return best;
 }
 /* поворот участка вокруг центра, в градусах экрана (y вниз): меньше нуля —
-   против часовой. Проба ±40° шагом 4° */
+   против часовой. Проба ±40° шагом 4°. Сравнивается СИЛУЭТ — пиксели заметно
+   ярче фона участка, — а не яркость целиком: зерно кадра (grainPass) и
+   туманность шумят в каждом пикселе, и по сумме разниц поворот корабля в них
+   тонул (в безголовом Хроме оценка «против/по» выходила 6.8 к 6.8) */
 function detRot(p0,p1){
   if(!p0||!p1)return null;
-  const n=p0.n,c=n/2,R=c-2;let best={th:0,e:1e9},e0=1e9,eNeg=1e9,ePos=1e9;
+  const n=p0.n,c=n/2,R=c-2;
+  const med=L=>{const v=Array.from(L).sort((a,b)=>a-b);return v[v.length>>1];};
+  const t0=med(p0.L)+40,t1=med(p1.L)+40;
+  let best={th:0,iou:-1},i0=0,iNeg=0,iPos=0;
   for(let th=-40;th<=40;th+=4){
-    const t=th*Math.PI/180,co=Math.cos(t),si=Math.sin(t);let s=0,k=0;
-    for(let y=0;y<n;y+=2)for(let x=0;x<n;x+=2){
+    const t=th*Math.PI/180,co=Math.cos(t),si=Math.sin(t);let both=0,any=0;
+    for(let y=0;y<n;y++)for(let x=0;x<n;x++){
       const u=x-c,v=y-c;if(u*u+v*v>R*R)continue;
       const X=Math.round(c+co*u+si*v),Y=Math.round(c-si*u+co*v);
-      if(X<0||Y<0||X>=n||Y>=n)continue;
-      s+=Math.abs(p1.L[y*n+x]-p0.L[Y*n+X]);k++;
+      const a=(X>=0&&Y>=0&&X<n&&Y<n)&&p0.L[Y*n+X]>t0,b=p1.L[y*n+x]>t1;
+      if(a&&b)both++;if(a||b)any++;
     }
-    const e=s/Math.max(1,k);if(th===0)e0=e;if(e<best.e)best={th,e};
-    if(th<0&&e<eNeg)eNeg=e;if(th>0&&e<ePos)ePos=e;
+    const iou=any?both/any:0;
+    if(th===0)i0=iou;if(th<0&&iou>iNeg)iNeg=iou;if(th>0&&iou>iPos)iPos=iou;
+    if(iou>best.iou)best={th,iou};
   }
-  best.e0=e0;best.eNeg=eNeg;best.ePos=ePos;return best;
+  best.i0=i0;best.iNeg=iNeg;best.iPos=iPos;return best;
 }
 /* масштаб от центра: во сколько раз содержимое выросло */
 function detScale(a,b,cx,cy){
   let best={s:1,e:1e9},e1=1e9;
-  for(const s of [.6,.7,.8,.87,.93,1,1.07,1.15,1.25,1.35,1.5,1.7]){
+  for(const s of [.6,.7,.8,.87,.93,1,1.07,1.15,1.25,1.35,1.5,1.7,1.9,2.1]){
     const e=detErr(a,b,(x,y)=>[cx+(x-cx)/s,cy+(y-cy)/s],2);
     if(s===1)e1=e;if(e<best.e)best={s,e};
   }
@@ -236,18 +243,21 @@ function detNewMotion(gB,idleB){
   let n=0;for(let i=0;i<gB.length;i++)if(gB[i]>=3&&idleB[i]<=1)n++;
   return n;
 }
-/* блоки 8×8 копии: мигание (A→B→A) и выскакивание (плоское ↔ фактурное) */
-function detBlink(f0,f1,f2){
+/* блоки 8×8 копии по четырём кадрам подряд.
+   Мигание — блок ходит туда-обратно ДВАЖДЫ подряд (A→B→A→B): пролетевшая
+   искра или капля меняет блок один раз и уходит в соседний, мерцание остаётся
+   на месте. Выскакивание — плоский блок стал фактурным и ОСТАЛСЯ таким (или
+   наоборот): летящая точка на следующем кадре уже в другом блоке */
+function detBlink(f0,f1,f2,f3){
   const SW=f0.w,SH=f0.h,B=8;let fl=0,pop=0,n=0;const where=[];
+  const tri=(a,b,c,i0)=>{let d01=0,d12=0,d02=0;for(const i of i0){d01+=Math.abs(b[i]-a[i]);d12+=Math.abs(c[i]-b[i]);d02+=Math.abs(c[i]-a[i]);}
+    const k=i0.length;d01/=k;d12/=k;d02/=k;return d01>6&&d12>6&&d02<Math.min(d01,d12)*.35;};
+  const rng=(f,i0)=>{let lo=1e9,hi=-1;for(const i of i0){if(f[i]<lo)lo=f[i];if(f[i]>hi)hi=f[i];}return hi-lo;};
   for(let by=0;by+B<=SH;by+=B)for(let bx=0;bx+B<=SW;bx+=B){
-    n++;let d01=0,d12=0,d02=0,a0=1e9,b0=-1,a1=1e9,b1=-1;
-    for(let y=by;y<by+B;y++)for(let x=bx;x<bx+B;x++){
-      const i=y*SW+x;d01+=Math.abs(f1[i]-f0[i]);d12+=Math.abs(f2[i]-f1[i]);d02+=Math.abs(f2[i]-f0[i]);
-      if(f0[i]<a0)a0=f0[i];if(f0[i]>b0)b0=f0[i];if(f1[i]<a1)a1=f1[i];if(f1[i]>b1)b1=f1[i];
-    }
-    d01/=B*B;d12/=B*B;d02/=B*B;
-    const blink=d01>6&&d12>6&&d02<Math.min(d01,d12)*.35;
-    const c0=b0-a0,c1=b1-a1,popped=(c0<6&&c1>40)||(c1<6&&c0>40);
+    n++;const I=[];for(let y=by;y<by+B;y++)for(let x=bx;x<bx+B;x++)I.push(y*SW+x);
+    const blink=tri(f0,f1,f2,I)&&(!f3||tri(f1,f2,f3,I));
+    const c0=rng(f0,I),c1=rng(f1,I),c2=f3?rng(f2,I):c1;
+    const popped=(c0<6&&c1>40&&c2>40)||(c0>40&&c1<6&&c2<6);
     if(blink)fl++;if(popped)pop++;
     if((blink||popped)&&where.length<3)where.push(Math.round((bx+B/2)*f0.k)+","+Math.round((by+B/2)*f0.k));
   }
@@ -414,7 +424,7 @@ const DET_EXEMPT=[
   {det:"картина",mode:"belt",what:/^текст «(СБЛИЖЕНИЕ|ТОПЛИВО|ТРЮМ ПОЛОН)» не читается/,why:"погашенная лампа табло"},
   /* капли и хлопья рисуются в каждом кадре на новом месте (19d-weather):
      это движение погоды, и на тёмном небе каждая капля — «выскочивший» блок */
-  {det:"картина",what:/^за один кадр выскакивает.*\(осадки: (rain|acid|snow|ash|dust|spore)\)/,why:"осадки — новые капли в каждом кадре"},
+  {det:"картина",what:/^(за один кадр выскакивает|кадр в покое мигает).*\(осадки: (rain|acid|snow|ash|dust|spore)\)/,why:"осадки — новые капли в каждом кадре"},
   /* рост человека: разрез базы меряется своим человеком (21aa-base-rooms:
      «ростом 26 px»), абордаж — проекцией с глубиной (24aa-raid-draw) */
   {det:"картина",what:/^рост человека · (база|рейд)/,why:"сцена со своим масштабом по замыслу"}
@@ -515,15 +525,15 @@ function detControls(c){
       why="W: корабль не пошёл по носу — сдвиг относительно фона "+rx.toFixed(0)+","+ry.toFixed(0)+" px, по носу "+along.toFixed(2);
     }else if(c.gesture==="A"&&c.mode0==="system"&&c.p0&&c.p1){
       const r=detRot(c.p0,c.p1);
-      cls=r.th<=-4&&r.eNeg<r.ePos*.95;
-      why="A: нос не повернул против часовой — лучший поворот кадра "+r.th+"° (против "+r.eNeg.toFixed(1)+", по "+r.ePos.toFixed(1)+")";
+      cls=r.th<=-4&&r.iNeg>r.iPos+.05&&r.iNeg>r.i0+.05;
+      why="A: нос не повернул против часовой — лучший поворот силуэта "+r.th+"° (совпадение против "+r.iNeg.toFixed(2)+", по "+r.iPos.toFixed(2)+", без поворота "+r.i0.toFixed(2)+")"+(c.diag?" · "+c.diag:"");
     }else if(c.gesture==="колесо"&&(c.mode0==="system"||c.mode0==="map")&&c.zc){
       const s=detScale(c.before,c.after,c.zc[0]/c.before.k,c.zc[1]/c.before.k);
-      cls=s.s>=1.07&&s.e<s.e1*.97;
+      cls=s.s>=1.07&&s.e<s.e1;   /* лучший масштаб крупнее, и он лучше «ничего не случилось» */
       why="«+» и колесо: кадр не укрупнился от центра (лучший масштаб ×"+s.s+")";
     }else if(c.gesture==="протяжка"&&c.mode0==="map"&&c.drag){
       const p=detParallax(c.before,c.after,c.drag[0],c.drag[1]);
-      cls=p.deep>=.15&&p.sheet>=.1;
+      cls=p.deep>=.2&&p.sheet>=.1;   /* живая карта ~33 %, небо прибито 12–15 %, едет с листом 3 % */
       why="протяжка карты: слои не идут по глубине — с листом "+Math.round(p.sheet*100)+"% блоков, с небом "+
         Math.round(p.deep*100)+"%, прибито к экрану "+Math.round(p.still*100)+"%";
     }
@@ -586,8 +596,9 @@ function detPicture(c){
     if(hot/f.length>.5)v.push(detV(c,"картина","кадр выжжен: белого "+Math.round(hot/f.length*100)+"%"));
   }
   if(c.f1&&c.f2&&f){
-    const b=detBlink(f,c.f1,c.f2);
-    if(b.blink>.01)v.push(detV(c,"картина","кадр в покое мигает: "+(b.blink*100).toFixed(1)+"% блоков",b.where.join(" ")));
+    const b=detBlink(f,c.f1,c.f2,c.f3);
+    if(b.blink>.01)v.push(detV(c,"картина","кадр в покое мигает: "+(b.blink*100).toFixed(1)+"% блоков"+
+      (c.precip?" (осадки: "+c.precip+")":""),b.where.join(" ")));
     if(b.pop>.005)v.push(detV(c,"картина","за один кадр выскакивает или пропадает "+(b.pop*100).toFixed(1)+"% блоков"+
       (c.precip?" (осадки: "+c.precip+")":""),b.where.join(" ")));
   }

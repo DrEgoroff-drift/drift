@@ -181,7 +181,8 @@ function detStep(S,gesture){
     try{c.full=cvs.getContext("2d").getImageData(0,0,cvs.width,cvs.height).data;c.fw=cvs.width;c.fh=cvs.height;}catch(e){}
     detCost("глаз",t1);
     detTick(c,1);detFrame(c,false);t1=performance.now();c.f2=detGrab();detCost("глаз",t1);
-    detTick(c,DET_N-2);detFrame(c,false);
+    detTick(c,1);detFrame(c,false);t1=performance.now();c.f3=detGrab();detCost("глаз",t1);
+    detTick(c,DET_N-3);detFrame(c,false);
     t1=performance.now();c.after=detGrab();detCost("глаз",t1);
     c.churn=S.churn=detDiff(c.before,c.after);
     S.idleB=detBlocks(c.before,c.after);
@@ -193,6 +194,7 @@ function detStep(S,gesture){
     const rc=cvs.getBoundingClientRect(),kx=cvs.width/Math.max(1,rc.width),ky=cvs.height/Math.max(1,rc.height);
     if(gesture==="W")keys.thrust=true;
     else if(gesture==="A")keys.left=true;
+    else if(gesture==="РАКЕТА")keys.msl=true;
     else if(gesture==="протяжка"){
       const x0=rc.left+rc.width*.5,y0=rc.top+rc.height*.55,DX=160,DY=80;
       const pe=(type,x,y)=>{try{cvs.dispatchEvent(new PointerEvent(type,{pointerId:43,clientX:x,clientY:y,bubbles:true,
@@ -200,10 +202,14 @@ function detStep(S,gesture){
       pe("pointerdown",x0,y0);for(let i=1;i<=4;i++)pe("pointermove",x0+DX*i/4,y0+DY*i/4);pe("pointerup",x0+DX,y0+DY);
       c.drag=[DX*kx,DY*ky];
     }else if(gesture==="колесо"){
-      c.zc=G.mode==="map"?[cvs.width/2,cvs.height/2]:detShipScr();
+      /* масштаб растёт от центра камеры, а не от корабля: на телефоне камера
+         уводит корабль из-под пальца (helmCamOff, M422) */
+      c.zc=[cvs.width/2,cvs.height/2];
       const z=document.getElementById("zin");
       if(z&&z.getClientRects().length&&getComputedStyle(z.closest(".zoom")||z).display!=="none"){try{z.click();}catch(e){c.threw.push("zin: "+e.message);}}
-      try{cvs.dispatchEvent(new WheelEvent("wheel",{deltaY:-120,bubbles:true,cancelable:true,clientX:rc.left+rc.width/2,clientY:rc.top+rc.height/2}));}catch(e){c.threw.push("wheel: "+e.message);}
+      /* два щелчка колеса: на телефоне коробки «+ −» нет, и один щелчок (×1.12)
+         тонет в собственном шевелении кадра */
+      for(let i=0;i<2;i++)try{cvs.dispatchEvent(new WheelEvent("wheel",{deltaY:-120,bubbles:true,cancelable:true,clientX:rc.left+rc.width/2,clientY:rc.top+rc.height/2}));}catch(e){c.threw.push("wheel: "+e.message);}
       /* где масштаба нет по договору игры, колесу отвечать нечем */
       if(typeof zoomModeHas==="function"&&!zoomModeHas(c.mode0))c.mute="масштаба в режиме нет (zoomModeHas)";
     }
@@ -219,7 +225,10 @@ function detStep(S,gesture){
     c.after=detGrab();
     /* W: участок на прежнем месте — видно, куда ушёл корабль; A: на новом —
        видно, как он повернулся */
-    if(c.p0){const at=gesture==="A"?detShipScr():c.ship0;c.p1=detPatch(at[0],at[1],gesture==="A"?40:48);}
+    if(c.p0){const at=gesture==="A"?detShipScr():c.ship0;c.p1=detPatch(at[0],at[1],gesture==="A"?40:48);
+      /* справка к провалу, не приговор: куда смотрел нос и где стоял участок */
+      c.diag="нос "+(c.nose0*57.3).toFixed(0)+"→"+(G.ship.a*57.3).toFixed(0)+"°, участок "+c.ship0.map(Math.round)+"→"+at.map(Math.round)+
+        ", холст "+cvs.width+"×"+cvs.height+", окно "+W+"×"+H+", ярко до "+(c.p1?Math.round(Math.max(...c.p0.L))+"/"+Math.round(Math.max(...c.p1.L)):"?");}
     detCost("глаз",t1);
     const why=DET_MUTE[c.mode0+" · "+gesture];if(why&&!c.mute)c.mute=why;
   }
@@ -273,7 +282,7 @@ TEST_SUITES.push(() => suite("сквозной: сцены × пять жест�
   if(DET_OPTS_BOOT){G.opts=JSON.parse(DET_OPTS_BOOT);if(typeof invalidateKeyMap==="function")invalidateKeyMap();}
   resetWorld();
   const snap=JSON.parse(JSON.stringify(snapshot()));
-  const V=[],run=[],skipped=[],seenV={},resets=[];let steps=0,scenes=0;const exempted={};
+  const V=[],run=[],skipped=[],seenV={},resets=[];let steps=0,scenes=0,armed=0;const exempted={};
   const judge=c=>{
     for(const D of DETECTORS){
       const t=performance.now();let got=[];
@@ -311,7 +320,9 @@ TEST_SUITES.push(() => suite("сквозной: сцены × пять жест�
       S.frame=detGrab();
       detCost("осадка",t0);
       let rec=null;
-      for(const g of ["покой","W","A","протяжка","колесо"]){
+      /* A раньше W: после газа за кораблём тянется след, он стоит в мире, пока нос
+         крутится, и поворот участка тонул в нём (оценка «против/по» 12.6 к 12.9) */
+      for(const g of ["покой","A","W","протяжка","колесо"]){
         const c=detStep(S,g);
         if(g==="покой")rec={scene:sc.id,mode:c.mode1,astro:c.astro};
         judge(c);
@@ -331,6 +342,26 @@ TEST_SUITES.push(() => suite("сквозной: сцены × пять жест�
       if(rec)run.push(rec);
       /* кегль в большом окне — последним: после него сцену больше не судят */
       {const t=performance.now();const r=detRuler(S);detCost("мерка",t);judge(r);}
+      /* ── вооружённый борт: «РАКЕТА 0» умирает здесь ──
+         В сценах пусковой нет ни у кого, и строка приборов «ракеты» не читалась
+         никогда. Ставим пусковую тем же путём, что игрок (часть, подвес), с
+         тремя ракетами — кнопка обязана показать остаток трюма; потом трюм
+         пуст, и тычок в РАКЕТУ обязан ответить голосом, а не молчать */
+      if(sc.id==="система"&&G.mode==="system"&&typeof genPart==="function"&&typeof fitPart==="function"){
+        const t=performance.now();
+        try{
+          const P=genPart(4242,3,"missile");addPart(P);fitPart(slotsOf(G.shipId).length-1,P.id);
+          G.cargo.missile=3;G.mslCool=0;
+          /* корабль стоит: после W он ещё катится, и его ход «отвечал» бы за
+             немую кнопку. Покой ниже меряет шевеление мира уже при нём */
+          G.ship.vx=0;G.ship.vy=0;G.ship.av=0;G.ap=null;G.orbit=null;
+          detSettle(3,3);S.frame=detGrab();   /* покой меряется от кадра уже вооружённого борта */
+          const c1=detStep(S,"покой");armed=(c1.inst||[]).filter(r=>r.ru==="ракеты").length;judge(c1);
+          G.cargo.missile=0;G.mslCool=0;
+          judge(detStep(S,"РАКЕТА"));
+        }catch(e){V.push({det:"сбой",scene:sc.id,gesture:"РАКЕТА",what:"вооружение не встало: "+e.message,n:1});}
+        detCost("вооружение",t);
+      }
       if(sc.id==="система"){const t=performance.now();const d=detDoors(S);doors=d.overlays.length;detCost("двери",t);judge(Object.assign(d,{names:null}));}
     }
     const t=performance.now();
@@ -355,6 +386,7 @@ TEST_SUITES.push(() => suite("сквозной: сцены × пять жест�
   ok(heard,"ловушка опечаток слышит: чтение поля, которого нет, легло в счёт");
   ok(DET_INST_N>=40,"приборы сверены с миром: "+DET_INST_N+" показаний");
   ok(doors>=4,"двери меню открыты и закрыты своей кнопкой: "+doors);
+  ok(armed>=1,"прибор «ракеты» сверен с трюмом на вооружённом борту: "+armed);
   const lines=V.map(v=>v.scene+" · "+v.gesture+" · ["+v.det+"] "+v.what+(v.where?" @"+v.where:"")+(v.n>1?" (×"+v.n+")":""));
   /* весь список — в отчёт страницы: в строке провала помещается дюжина */
   for(const L of lines)TEST.lines.push("    · "+L);
