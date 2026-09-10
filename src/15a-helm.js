@@ -137,6 +137,9 @@ addEventListener("keydown",e=>{
 });
 addEventListener("keyup",e=>{if(HELM_KEYS.has(e.code))HELM.key[e.code]=false;});
 addEventListener("blur",()=>{HELM.key={};HELM.S=null;HELM.P=null;HELM.trail=[];HELM.mouse.down=false;HELM.mouse.rmb=false;});
+/* смена часов игры (M441) — как потеря фокуса: метки пальца и мыши сняты с
+   прежних часов, и на новых «свежий палец» из прошлого прогона ничего не решает */
+LOOP_PHASE.push(()=>{HELM.key={};HELM.S=null;HELM.P=null;HELM.trail=[];HELM.mouse.down=false;HELM.mouse.rmb=false;HELM.mouse.t=-1e9;});
 /* ── мышь над холстом ── */
 function helmCanvasXY(e){const rc=cvs.getBoundingClientRect();return [(e.clientX-rc.left)*W/rc.width,(e.clientY-rc.top)*H/rc.height];}
 cvs.addEventListener("pointermove",e=>{

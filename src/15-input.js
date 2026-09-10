@@ -92,6 +92,9 @@ addEventListener("mousemove",padsFadeIn);
    — кнопке РАЗОЙТИСЬ в подвале экрана. Экран открылся и тут же закрылся.
    Полсекунды после нажатия ДЕЙСТВИЯ клики по экранам не считаются. */
 let actPressT=-1e9;
+/* метки нажатий идут по часам игры (M441): на новых часах старые метки
+   ничего не значат, и незаконченный жест снимается, как при потере фокуса */
+LOOP_PHASE.push(()=>{actPressT=-1e9;ptr.clear();});
 addEventListener("click",e=>{
   if(now()-actPressT<500&&e.target.closest&&e.target.closest(".scr")){
     e.stopPropagation();e.preventDefault();

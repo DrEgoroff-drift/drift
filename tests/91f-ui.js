@@ -102,14 +102,14 @@ TEST_SUITES.push(()=>suite("интерфейс: приборы не мигают
   hud();
   /* сто кадров плавного расхода: панель должна успокоиться и не просыпаться */
   for(let i=0;i<100;i++){G.fuel-=.02;hud();}
-  HUD_T=performance.now()-9e3;hud();
+  HUD_T=now()-9e3;hud();
   ok(!$h.classList.contains("live"),"плавный расход панель не будит");
   for(let i=0;i<50;i++){G.fuel-=.02;hud();}
   ok(!$h.classList.contains("live"),"и не будит дальше");
   /* а событие — будит */
   G.hull-=12;hud();
   ok($h.classList.contains("live"),"удар по корпусу будит");
-  HUD_T=performance.now()-9e3;hud();
+  HUD_T=now()-9e3;hud();
   ok(!$h.classList.contains("live"),"и панель снова гаснет");
   G.credits+=250;hud();
   ok($h.classList.contains("live"),"деньги будят");

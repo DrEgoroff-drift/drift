@@ -244,10 +244,10 @@ TEST_SUITES.push(()=>suite("штурвал M422: палец где угодно,
   helmShip();const st=stat();
   const maxSp=6.4+st.thr*1.6,LIM=HELM_DEAD+HELM_REACH;
   /* 1. тычок остаётся тычком, а полежавший палец становится стиком — и справа */
-  HELM.S=null;HELM.P={id:7,x0:W-40,y0:60,x:W-40,y:60,t0:performance.now()};
+  HELM.S=null;HELM.P={id:7,x0:W-40,y0:60,x:W-40,y:60,t0:now()};
   helmTick(1);
   ok(!HELM.S,"свежий палец — ещё тычок, а не стик");
-  HELM.P.t0=performance.now()-HELM_TAKE_MS-10;
+  HELM.P.t0=now()-HELM_TAKE_MS-10;
   helmTick(1);
   ok(HELM.S&&HELM.S.x0===W-40,"полежал дольше окна тапа — стик, и на ПРАВОЙ половине");
   ok(!HELM.P,"ждущий палец снят");

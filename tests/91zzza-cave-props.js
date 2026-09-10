@@ -287,7 +287,7 @@ TEST_SUITES.push(()=>suite("M315: планеты крупнее корабля, 
   /* призрачный клик: полсекунды после ДЕЙСТВИЯ клик по экрану гасится */
   const scr=document.getElementById("barge");let hit=0;
   const btn=document.getElementById("bLeaveBarge");
-  actPressT=performance.now();
+  actPressT=now();
   const h=e=>{hit++;};btn.addEventListener("click",h);
   const ev=new MouseEvent("click",{bubbles:true,cancelable:true});btn.dispatchEvent(ev);
   ok(ev.defaultPrevented&&hit===0,"клик под пальцем не дошёл до РАЗОЙТИСЬ");
