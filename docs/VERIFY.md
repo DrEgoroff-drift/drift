@@ -16,11 +16,32 @@ whole game still starts after a cross-cutting change.
 suites, ~5 s) plus one Chrome smoke (the page boots, a frame runs, the guard is silent, ~2 s).
 `-Browser` runs picture and interface suites in Chrome (~30 s); `-Full` runs everything
 including the heavy nets (~4 min) — on request, before a release. Node lives outside the repo at
-`C:\Claude	ools
-ode` (portable, no installer); `test.ps1` finds it there or on PATH. Under the
+`C:\Claude\tools\node` (portable, no installer); `test.ps1` finds it there or on PATH. Under the
 stubs any pixel or layout measure is zero, so a suite that belongs in the browser goes red in
-Node, not green: name it in `NODE_BROWSER` (90-harness) and it moves. `SLOW_SUITES` there is the
-heavy-net list `-Full` adds back.
+Node, not green: declare it `{tier:"browser"}` and it moves.
+
+**A suite declares its own tier (M442).** `suite(name, {tier, win, stage}, fn)` (the options may
+also come last). `tier`: `"node"` (default — Node, `-Browser`, `-Full`), `"browser"` (Chrome only),
+`"heavy"` (`-Full` and the lab only), `"probe"` (`-Probe` only; name starts «проба · »). `win`:
+`"phone"` / `"wide"` / `"ref"` (the 1280×800 look baseline) — out of its window the suite does not
+run and is counted, instead of skipping itself with a green line. `stage:"reason, until date"` is
+quarantine: the suite runs and prints, its failures go to a separate block and `test.ps1` prints
+them on their own line without touching the exit code. The three old lists (`SLOW_SUITES`,
+`NODE_BROWSER`, the `NODE_SKIP` regex) are gone; «ярусы: …» at the end of a run checks the options
+against the dictionary. Three harness rules: **a suite with zero assertions is red**; **`ok(true`
+and `typeof`-guards are banned in suites** (a names-net over the test sources, fast tier — the
+only allowed form is the assertion `ok(typeof f==="function",…)`); a stand prints with `note()`,
+which is not an assertion. **`?shuffle=seed`** (`test.ps1 -Shuffle N`, `test-node.js
+--shuffle=N`) runs the suites in a reproducible shuffled order; a suite red only there is green
+only after a neighbour — an isolation leak. `?pick=3,17` runs only those positions of the order
+(printed as `[#17]` in a shuffled report), which is how a leak is bisected to its culprit.
+
+**Tools, not helpers (M442).** `tests/90a-tools.js` is the test API: `T.go(scene, seed)`,
+`T.press`, `T.tap`, `T.drag`, `T.wheel`, `T.wait`, `T.advance`, `T.window`, `T.give`, `T.board`,
+`T.bot` (stub until M444); observers `T.frame`, `T.state`, `T.look`, `T.ledger`, `T.text`,
+`T.controls`, `T.clock`. The old helpers (`fuzzRich`, `prSpoke`, `e2eHands`, `clkShift`, …) are
+thin wrappers over it. Real windows and screenshots of the whole page: `python docs/stand.py`
+(one Chrome over CDP for all scenes and sizes, PNGs to TEMP).
 
 **Autotests first, headless.** `build.ps1` also builds `tests.html` — the same game plus
 `tests/*.js` at the end. Run it without the browser pane:
@@ -68,7 +89,7 @@ that both the meter's numbers and the fuzzer's «one seed, same failure» drift 
 tab has been open.
 
 **The phone layout is only measured if you ask for it.** The layout guards (`91f-ui`,
-`91zzx-mobile`) skip themselves when the window is not a phone, because in a desktop window the
+`91zzx-mobile`) are declared `{win:"phone"}` and do not run when the window is not a phone, because in a desktop window the
 phone rules are not applied at all:
 
 ```bash
