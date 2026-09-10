@@ -309,7 +309,10 @@ function drawHomeIn(){
     ctx.fillRect(lx-HIN_MAN*.16,ceil+HIN_MAN*.6,HIN_MAN*.32,2.2);
   }
   ctx.restore();
-  /* ── строка внимания ── */
+  /* ── строка внимания ──
+     и имя комнаты — интерфейс поверх дома: растут вместе с бортом (M221; в
+     окне 1920 «УГОЛ» стоял в 10 px рядом с раздутыми панелями — M443) */
+  withScale(uiK(),()=>{
   if(S.look){
     const a=clamp(S.lookT/120,0,1);
     ctx.fillStyle="rgba(6,8,12,"+(.72*a).toFixed(2)+")";
@@ -327,6 +330,7 @@ function drawHomeIn(){
     ctx.font="10px ui-monospace,monospace";ctx.textAlign="left";
     ctx.fillText(room.ru.toUpperCase(),12,26);
   }
+  });
 }
 /* ── передний план комнаты (M173) ──
    Одна-две вещи БЛИЖЕ человека, срезанные нижней кромкой. Их задача не быть
