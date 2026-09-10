@@ -377,10 +377,16 @@ function drawSurfaceWorld(){
     const near=clamp(1-Math.abs(d.x-S.x)/120,0,1);
     drawDeposit(x,y,d.res,d.left,near,d.x,p.T.pal[3]);
     if(Math.abs(d.x-S.x)<70){
-      ctx.fillStyle=col;ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+      ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
       /* соседние залежи разводим по высоте: рядом стоящие подписи наезжали друг
          на друга и читались как каша из двух названий */
-      ctx.fillText(RES[d.res].ru.toUpperCase()+" "+d.left,x,y-24-(Math.round(d.x/60)%2)*11);
+      const lbl=RES[d.res].ru.toUpperCase()+" "+d.left,ly=y-24-(Math.round(d.x/60)%2)*11;
+      /* подпись на тёмной плашке: цветом сырья по дневному небу она читалась
+         с контрастом 1.4 (M443, детектор текста) */
+      const tw=ctx.measureText(lbl).width;
+      ctx.fillStyle="rgba(5,7,12,.62)";ctx.fillRect(x-tw/2-5,ly-10,tw+10,14);
+      ctx.fillStyle=col;
+      ctx.fillText(lbl,x,ly);
     }
     if(S.mining===d){
       ctx.fillStyle="rgba(0,0,0,.5)";ctx.fillRect(x-18,y-20,36,4);
