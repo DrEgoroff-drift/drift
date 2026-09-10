@@ -45,6 +45,13 @@ function withScale(k,fn){
   W=W/k;H=H/k;SCK=pS*Math.min(k,Math.max(1,RAST_MAX/DPR));
   try{fn();}finally{ctx.restore();W=pW;H=pH;SCK=pS;}
 }
+/* ── линейка в начертании (M443) ──
+   Подпись, привязанная к миру (имя станции под корпусом, планеты под диском),
+   в withScale не заворачивается — её место считает мир, а не рамка. Растёт
+   тогда кегль и отступ от тела: тот же приём, что mapFont у карты (M437).
+   Детектор кегля (tests/90b-detect) меряет это в кадре 2560×1440. */
+function uiK(){return (typeof UIK==="number"&&UIK>1)?UIK:1;}
+function uiFont(px){return (px*uiK()).toFixed(1)+"px ui-monospace,monospace";}
 
 /* подмена холста: fn рисует так, будто экран размером w×h и начало — в
    мировой точке (ox,oy) */

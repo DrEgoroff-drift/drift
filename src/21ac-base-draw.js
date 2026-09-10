@@ -547,17 +547,18 @@ function drawBase(){
     ctx.moveTo(x2,y2-L);ctx.lineTo(x2,y2);ctx.lineTo(x2-L,y2);
     ctx.moveTo(x1+L,y2);ctx.lineTo(x1,y2);ctx.lineTo(x1,y2-L);
     ctx.stroke();
+    /* подпись под курсором — интерфейс: кегль по линейке борта (M443) */
     ctx.fillStyle="rgba(180,240,232,.9)";
-    ctx.font="9px ui-monospace,monospace";ctx.textAlign="center";
+    ctx.font=uiFont(9);ctx.textAlign="center";
     const nm=BUILD[selCell.k].ru.toUpperCase()+(selCell.hp<=0?" · РАЗБИТ":"");
-    ctx.fillText(nm,sx+BCELL_W/2,y1-5);
+    ctx.fillText(nm,sx+BCELL_W/2,y1-5*uiK());
   }
   else{
     ctx.setLineDash([7,7]);
     ctx.strokeRect(sx+10,sy+10,BCELL_W-20,BCELL_H-20);
     ctx.setLineDash([]);
-    ctx.fillStyle="rgba(127,230,216,.5)";ctx.font="9px ui-monospace,monospace";ctx.textAlign="center";
-    ctx.fillText("МЕСТО ПОД ЗАСТРОЙКУ",sx+BCELL_W/2,sy+BCELL_H/2+3);
+    ctx.fillStyle="rgba(127,230,216,.5)";ctx.font=uiFont(9);ctx.textAlign="center";
+    ctx.fillText("МЕСТО ПОД ЗАСТРОЙКУ",sx+BCELL_W/2,sy+BCELL_H/2+3*uiK());
   }
   /* ── патрубки соседства (M404, §7) ──
      Девять правил были числами в подсказке; здесь они становятся тем, что
@@ -642,7 +643,10 @@ function drawBase(){
      базы стояли не там. Хозяйство базы — это ПРИБОР, и место ему на доске у
      левого края; подсказка остаётся тем, чем должна быть, — что под курсором
      и что делает кнопка. Слова целиком, потому что место под них есть. */
-  if(typeof baseLife==="function"&&typeof baseSharp==="function"){
+  /* доска — прибор у левого края, и растёт вместе с бортом (M221): в окне
+     1920 её восьмипиксельные строки стояли рядом с раздутыми панелями
+     (M443, детектор кегля). Как у системы и грунта — withScale(UIK) */
+  if(typeof baseLife==="function"&&typeof baseSharp==="function")withScale(uiK(),()=>{
     const L=baseLife(B),bx=14,by=64;
     const rows=[["ВОЗДУХ",L.air,LIFE_CAP,[150,220,255]],
                 ["ВОДА",  L.water,LIFE_CAP,[120,190,255]],
@@ -678,13 +682,13 @@ function drawBase(){
       ctx.fillText(s.length>30?s.slice(0,30):s,bx,fy+11+i*11);
     });
     ctx.restore();
-  }
+  });
   /* ── что тут было без вас (M390 §12; кадр M413) ──
      Записи журнала встречали игрока через `say` — по центру, на четверти
      высоты, то есть ровно поверх верхнего ряда сетки. Здесь у них своё место:
      карточка в свободном небе справа, под шапкой сцены, шириной в текст и
      ничем не перекрытая. Гаснет сама, как гасло сообщение. */
-  if(S.note&&S.note.t>0&&W>=BASE_NOTE_W){
+  if(S.note&&S.note.t>0&&W>=BASE_NOTE_W)withScale(uiK(),()=>{
     const N=S.note,a=clamp(N.t/60,0,1);
     ctx.save();
     ctx.globalAlpha=a;
@@ -707,7 +711,7 @@ function drawBase(){
       ctx.fillText(s,cx+12,cy+29+i*13);
     });
     ctx.restore();
-  }
+  });
   /* аврал (M398): отсек, в котором беда, видно раньше всякого текста */
   if(typeof avrDraw==="function")avrDraw(S,X,Y,lit);
   /* ── переходящий вымпел (M206; переделка M413) ──

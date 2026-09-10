@@ -241,7 +241,7 @@ function drawWanderRoom(){
       ctx.save();ctx.translate(cx,cy);ctx.rotate(cs.left?.06:-.06);
       ctx.fillStyle="rgba(232,220,190,.10)";ctx.fillRect(-sz*.5,-sz*.18,sz,sz*.36);
       ctx.strokeStyle="rgba(232,220,190,.45)";ctx.lineWidth=1;ctx.strokeRect(-sz*.5,-sz*.18,sz,sz*.36);
-      ctx.fillStyle=wanRgba(WAN_C.chalk,.75);ctx.font=Math.max(7,sz*.16)+"px ui-monospace,monospace";ctx.textAlign="center";
+      ctx.fillStyle=wanRgba(WAN_C.chalk,.75);ctx.font=Math.max(8*uiK(),sz*.16)+"px ui-monospace,monospace";ctx.textAlign="center";
       ctx.fillText(lot.gone?"продано":"пусто",0,sz*.05);
       ctx.restore();
     }else{
@@ -249,7 +249,10 @@ function drawWanderRoom(){
       /* меловая цена под полкой: спички — та валюта, ради которой сюда пришли */
       if(lot.pay&&lot.pay.m){
         const ty=(sy+sy2)/2+(d.y-a.y)*.12,tx=(a.x+b.x)/2;
-        ctx.fillStyle=wanRgba(WAN_C.chalk,.55+lit*.35);ctx.font=Math.max(7,Math.min(13,sz*.12))+"px ui-monospace,monospace";ctx.textAlign="center";
+        /* цена — то, ради чего пришли, и читается с любой полки: пол восемь × линейка
+           интерфейса, потолок растёт с ней же. Было 7 px на дальней полке и
+           потолок 13 при любой мерке (M443, детектор кегля) */
+        ctx.fillStyle=wanRgba(WAN_C.chalk,.55+lit*.35);ctx.font=Math.max(8*uiK(),Math.min(13*uiK(),sz*.12))+"px ui-monospace,monospace";ctx.textAlign="center";
         ctx.fillText(lot.pay.m+" сп.",tx,ty);
       }
     }

@@ -495,6 +495,8 @@ function drawStation(x,y,Z){
   }
   /* подпись уходит НИЖЕ корпуса: сорок пикселей — это внутри станции, и имя
      читалось поверх её же переборок (M242) */
-  ctx.fillStyle="rgba(242,178,92,.6)";ctx.font="9px ui-monospace,monospace";ctx.textAlign="center";
-  ctx.fillText(S.name.toUpperCase(),x,y+42*s+12);
+  /* и растёт вместе с бортом (M443): девять пикселей при раздутом интерфейсе
+     читались так же, как подписи карты до M437 */
+  ctx.fillStyle="rgba(242,178,92,.6)";ctx.font=uiFont(9);ctx.textAlign="center";
+  ctx.fillText(S.name.toUpperCase(),x,y+42*s+12*uiK());
 }

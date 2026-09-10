@@ -102,7 +102,13 @@ function drawSurfaceHud(camx,camy,K){
       rowY+=13;
       ctx.fillRect(sx-1,rowY-5,2,10);
       /* у правой кромки подпись уходит влево от засечки, иначе обрезается */
-      const old=ctx.textAlign;ctx.textAlign=sx>W-RIGHT_PAD-120?"right":"left";
+      const old=ctx.textAlign,right=sx>W-RIGHT_PAD-120;ctx.textAlign=right?"right":"left";
+      /* и лежит на плашке, как фишка у кромки: голая подпись на дневном небе
+         читалась с контрастом 1.2 — оранжевое «КОРАБЛЬ» по светлой дымке
+         (M443, детектор текста) */
+      {const tw=ctx.measureText(m.ru).width;
+       ctx.fillStyle="rgba(5,7,12,.72)";ctx.fillRect(right?sx-tw-4:sx-4,rowY+7,tw+8,12);
+       ctx.fillStyle=m.col;}
       ctx.fillText(m.ru,sx,rowY+16);ctx.textAlign=old;
     }
   }

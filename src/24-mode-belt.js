@@ -716,6 +716,10 @@ function drawBelt(){
 /* ── символика на остеклении ── */
 function drawGlassHUD(b,proj,fwd,st){
   const D=6000;
+  /* символика на стекле — интерфейс, и у него одна линейка с бортом (M221):
+     в окне 1920 цифры лесенки и курсовой ленты оставались восьмипиксельными
+     рядом с выросшими в полтора раза панелями (M443, детектор кегля) */
+  const u=uiK();
   /* шкала тангажа: вторая точка по курсу задаёт наклон черты, поэтому
      лесенка кренится вместе с горизонтом */
   ctx.lineWidth=1;
@@ -725,7 +729,7 @@ function drawGlassHUD(b,proj,fwd,st){
     const q=proj(b.x+Math.sin(b.yaw+.14)*ct*D, b.y+st2*D, b.z+Math.cos(b.yaw+.14)*ct*D);
     if(!p||!q)continue;
     if(p.x<-W||p.x>W*2||p.y<-H||p.y>H*2)continue;
-    const zero=deg===0, w=zero?96:(deg%20===0?58:34);
+    const zero=deg===0, w=(zero?96:(deg%20===0?58:34))*u;
     const ang=Math.atan2(q.y-p.y,q.x-p.x);
     ctx.save();ctx.translate(p.x,p.y);ctx.rotate(ang);
     ctx.strokeStyle=zero?"rgba(127,230,216,.55)":"rgba(127,230,216,.25)";
@@ -735,8 +739,8 @@ function drawGlassHUD(b,proj,fwd,st){
               ctx.moveTo(w,0);ctx.lineTo(w,deg>0?5:-5);}
     ctx.stroke();
     if(deg%20===0&&!zero){
-      ctx.fillStyle="rgba(127,230,216,.4)";ctx.font="8px ui-monospace,monospace";
-      ctx.textAlign="right";ctx.fillText(deg>0?"+"+deg:deg,-w-4,3);
+      ctx.fillStyle="rgba(127,230,216,.4)";ctx.font=uiFont(8);
+      ctx.textAlign="right";ctx.fillText(deg>0?"+"+deg:deg,-w-4*u,3*u);
     }
     ctx.restore();
   }
@@ -766,10 +770,10 @@ function drawGlassHUD(b,proj,fwd,st){
         ctx.moveTo(t.x+ox*s-ox*c,t.y+oy*s);ctx.lineTo(t.x+ox*s,t.y+oy*s);
         ctx.lineTo(t.x+ox*s,t.y+oy*s-oy*c);ctx.stroke();
       }
-      ctx.fillStyle="rgba(242,178,92,.9)";ctx.font="9px ui-monospace,monospace";
+      ctx.fillStyle="rgba(242,178,92,.9)";ctx.font=uiFont(9);
       ctx.textAlign="center";
       ctx.fillText(RES[b.lock.res].ru.toUpperCase()+" ×"+b.lock.left+
-        "   "+Math.round(t.z)+" М",t.x,t.y-s-7);
+        "   "+Math.round(t.z)+" М",t.x,t.y-s-7*u);
     }
   }
   /* прицел */
@@ -781,14 +785,14 @@ function drawGlassHUD(b,proj,fwd,st){
   ctx.stroke();
   /* курсовая лента */
   const hd=((b.yaw*57.3)%360+360)%360;
-  ctx.fillStyle="rgba(127,230,216,.55)";ctx.font="9px ui-monospace,monospace";ctx.textAlign="center";
+  ctx.fillStyle="rgba(127,230,216,.55)";ctx.font=uiFont(9);ctx.textAlign="center";
   for(let i=-3;i<=3;i++){
     const v=Math.round(hd/10)*10+i*10;
-    const x=W/2+(v-hd)*3.4;
+    const x=W/2+(v-hd)*3.4*u;          /* шаг ленты растёт с цифрами, иначе они слипаются */
     if(Math.abs(x-W/2)>W*.22)continue;
     const vv=((v%360)+360)%360;
     ctx.fillText(String(vv).padStart(3,"0"),x,H*.155);
-    ctx.fillRect(x,H*.163,1,4);
+    ctx.fillRect(x,H*.163,1,4*u);
   }
   ctx.strokeStyle="rgba(242,178,92,.8)";ctx.lineWidth=1.2;
   ctx.beginPath();ctx.moveTo(W/2,H*.176);ctx.lineTo(W/2-4,H*.184);
