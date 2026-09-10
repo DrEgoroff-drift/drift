@@ -193,7 +193,9 @@ function drawSpa(){
     ctx.strokeStyle=sprgba(SPA_C.wood2,0.55);
     ctx.lineWidth=Math.max(2,H*0.004);
     ctx.strokeRect(b.x+1,b.y+1,b.w-2,b.h-2);
-    ctx.fillStyle="rgba(90,78,58,.85)";
+    /* щит стоит в углу, под виньеткой кадра и зерна: чернила гуще, иначе
+       заголовок уходил в контраст 2.8 (M443, детектор текста) */
+    ctx.fillStyle="rgba(62,52,38,.95)";
     ctx.font=Math.max(8,Math.round(H*0.016))+"px ui-monospace,monospace";
     ctx.textAlign="left";
     ctx.fillText("РАСПОРЯДОК · ДЕНЬ "+S.day+" ИЗ "+S.days,b.x+b.w*0.06,b.y+b.h*0.13);
@@ -206,8 +208,10 @@ function drawSpa(){
       ctx.fillStyle=took?"rgba(120,106,80,.55)":"rgba(66,58,44,.92)";
       ctx.font=Math.max(7,Math.round(H*0.0135))+"px ui-monospace,monospace";
       ctx.fillText(P.ru,b.x+b.w*0.08,y);
-      ctx.fillStyle="rgba(120,106,80,.55)";
-      ctx.font=Math.max(6,Math.round(H*0.0115))+"px ui-monospace,monospace";
+      /* час процедуры — сведение, а не узор: карандаш, но читаемый (было .55 и
+         шесть пикселей снизу — контраст 1.5, M443) */
+      ctx.fillStyle="rgba(78,68,50,.9)";
+      ctx.font=Math.max(8,Math.round(H*0.0115))+"px ui-monospace,monospace";
       ctx.fillText(P.at,b.x+b.w*0.08,y+H*0.016);
       if(took){
         /* черта идёт ПО СЛОВУ, а не над ним: над словом она читалась
