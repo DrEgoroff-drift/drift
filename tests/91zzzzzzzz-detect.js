@@ -208,7 +208,12 @@ function detStep(S,gesture){
       if(typeof zoomModeHas==="function"&&!zoomModeHas(c.mode0))c.mute="масштаба в режиме нет (zoomModeHas)";
     }
     detTick(c,DET_N);
+    /* и кадр отпущенных клавиш: у игрока между «отпустил W» и «нажал A» всегда
+       проходят кадры, и обработчики по фронту (клеть базы, коридор «Сороки»)
+       снимают свою защёлку только в таком кадре. Без него A после W молчала
+       на базе — по вине набора, а не игры */
     for(const k in keys)keys[k]=false;
+    detTick(c,1);
     detFrame(c,true);
     const t1=performance.now();
     c.after=detGrab();
@@ -246,7 +251,12 @@ function detDoors(S){
   try{mb.click();}catch(e){c.threw.push("menubtn: "+e.message);}
   c.overlays.push(...detCloseTry());
   for(const id of ids){
+    /* ошибка обработчика тычка не всплывает к click(), а уходит в window.onerror —
+       помечаем её дверью, в которую тыкали */
+    const e0=DET.errs.length,n0=crashN;
     try{if(typeof toggleMenu==="function")toggleMenu(true);document.getElementById(id).click();}catch(e){c.threw.push(id+": "+e.message);}
+    for(let i=e0;i<DET.errs.length;i++)DET.errs[i]="дверь «"+id+"»: "+DET.errs[i];
+    if(crashN>n0)c.threw.push("дверь «"+id+"» уронила сторожа кадра");
     for(const o of detCloseTry())c.overlays.push(Object.assign(o,{what:id+"→"+o.what}));
     if(document.body.classList.contains("road")&&typeof roadClose==="function")
       c.overlays.push({what:id+"→дорога",closed:false,tried:"road"});
@@ -258,6 +268,9 @@ function detDoors(S){
 
 TEST_SUITES.push(() => suite("сквозной: сцены × пять жестов под детекторами — сбой, застой, закон, картина", () => {
   const T0=performance.now();DET_INST_N=0;
+  /* настройки — с заводки страницы, на время прогона; после — как были */
+  const opts0=G.opts;
+  if(DET_OPTS_BOOT){G.opts=JSON.parse(DET_OPTS_BOOT);if(typeof invalidateKeyMap==="function")invalidateKeyMap();}
   resetWorld();
   const snap=JSON.parse(JSON.stringify(snapshot()));
   const V=[],run=[],skipped=[],seenV={},resets=[];let steps=0,scenes=0;const exempted={};
@@ -330,6 +343,7 @@ TEST_SUITES.push(() => suite("сквозной: сцены × пять жест�
     try{applySave(snap);}catch(e){}
     G.mode="system";G.land=null;G.surf=null;G.dig=null;G.cave=null;G.base=null;G.hin=null;
     resetWorld();
+    G.opts=opts0;if(typeof invalidateKeyMap==="function")invalidateKeyMap();
   }
   const cost=Object.keys(DET_COST).map(k=>k+" "+Math.round(DET_COST[k])+" мс").join(" · ");
   for(const k in DET_COST)delete DET_COST[k];

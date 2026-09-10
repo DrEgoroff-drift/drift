@@ -31,10 +31,17 @@
    Ставятся на загрузке страницы тестов и молчат, пока DET.on не поднят: весь
    прочий корпус идёт мимо них, как шёл. В игре (drift.html) этого файла нет. */
 const DET={on:false,errs:[],cons:[],said:0,texts:null,astro:null,hull:0,reads:null,writes:null};
+/* настройки игрока — какими они были при заводке страницы. resetWorld их не
+   трогает (G.opts — имя с заводки), и набор про порченый сейв оставлял
+   следующим «текст» в графике и строку в размере пэдов: драйвер мерил бы уже
+   не игру, а чужой мусор. Правило то же, что у G_BOOT_KEYS и UI_BOOT */
+const DET_OPTS_BOOT=(()=>{try{return JSON.stringify(G.opts);}catch(e){return null;}})();
 addEventListener("error",e=>{
   if(!DET.on)return;
   const x=e&&e.error;
-  DET.errs.push(String((x&&x.message)||(e&&e.message)||"?").slice(0,160));
+  /* где именно: два первых своих имени из стека, как у сторожа кадра (28-loop) */
+  let at="";try{at=(typeof crashAt==="function"&&x)?crashAt(x):"";}catch(_){}
+  DET.errs.push(String((x&&x.message)||(e&&e.message)||"?").slice(0,160)+(at?" · "+at:""));
 });
 addEventListener("unhandledrejection",e=>{
   if(!DET.on)return;
@@ -55,11 +62,14 @@ addEventListener("unhandledrejection",e=>{
   }
   /* текст с канвы: что, каким кеглем (в CSS-пикселях, с учётом преобразования)
      и где. Пишется, только пока шаг держит DET.texts открытым */
-  const P=CanvasRenderingContext2D.prototype,ft=P.fillText;
-  P.fillText=function(s,x,y){
-    if(DET.texts&&this.canvas===cvs)try{detInk(this,s,x,y);}catch(_){}
-    return ft.apply(this,arguments);
-  };
+  /* под Node (test-node.js) канвы нет вовсе — там детекторы не гоняются */
+  if(typeof CanvasRenderingContext2D!=="undefined"){
+    const P=CanvasRenderingContext2D.prototype,ft=P.fillText;
+    P.fillText=function(s,x,y){
+      if(DET.texts&&this.canvas===cvs)try{detInk(this,s,x,y);}catch(_){}
+      return ft.apply(this,arguments);
+    };
+  }
   /* надписи на корпусе — краска, а не текст для чтения: бортовой номер «ЧВ-94»
      в полтора пикселя на дальнем корабле — фактура обшивки (03d-hull-marks) */
   if(typeof drawHull==="function"){
