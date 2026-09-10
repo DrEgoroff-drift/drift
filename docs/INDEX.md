@@ -6075,7 +6075,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/90-harness.js · 43 КБ
   · автотесты: каркас:1
 
-## tests/90a-tools.js · 41 КБ
+## tests/90a-tools.js · 42 КБ
   · автотесты: инструменты (M442):1
 
 ## tests/90b-detect.js · 22 КБ
@@ -6725,7 +6725,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzzzzzzz-detect.js · 29 КБ
   · сквозной: каждая сцена × пять жестов под всеми детекторами (M443):1
 
-## tests/91zzzzzzzza-walks.js · 8 КБ
+## tests/91zzzzzzzza-walks.js · 11 КБ
   · прогоны: пути игрока под детекторами (M444, DESIGN-tests §3.3):1
 
 ## tests/91zzzzzzzzb-replay.js · 3 КБ

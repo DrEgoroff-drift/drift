@@ -24,7 +24,7 @@
      T.board(станция|"near")  /  T.leave()    причалить и открыть станцию / отчалить
      T.bot(цель, арг)         бот с целью (M444): star · station · planet · dock ·
                              undock · sell · land · mine · ship · launch · dig ·
-                             up · jump {sx,sy} · save — теми же клавишами и
+                             up · jump {sx,sy} · save · fight [кадров] — теми же клавишами и
                              кнопками, что игрок; ответ {ok, frames, why}
    Глаза — читают мир:
      T.frame() / T.diff(a,b)  подпись кадра (каждая восьмая проба яркости) и доля сдвига
@@ -389,6 +389,25 @@ const T=(()=>{
       case "save":{
         saveGame(true);
         return R(!!snapshot(),"записи нет");}
+      case "fight":{   /* до N кадров: нос на ближнего пирата, тяга издали, огонь в конусе */
+        if(G.mode!=="system")return R(false,"не в полёте: "+G.mode);
+        if(!G.pirates.length)return R(false,"пиратов в системе нет");
+        if(!stat().armed)return R(false,"борт не вооружён — сперва T.give(«module»,«weapon»)");
+        const hp=()=>G.pirates.reduce((a,p)=>a+p.hull,0),hp0=hp(),n0=G.pirates.length,max=(arg==null)?600:arg|0;
+        let shots=0;
+        try{
+          for(let i=0;i<max;i++){
+            const P=G.pirates;if(!P.length||G.hull<25)break;
+            let best=null,bd=1e9;
+            for(const p of P){const d=Math.hypot(p.x-G.ship.x,p.y-G.ship.y);if(d<bd){bd=d;best=p;}}
+            const want=Math.atan2(best.y-G.ship.y,best.x-G.ship.x);
+            let da=want-G.ship.a;da=Math.atan2(Math.sin(da),Math.cos(da));
+            keys.left=da<-.08;keys.right=da>.08;keys.thrust=bd>600&&Math.abs(da)<.5;keys.fire=Math.abs(da)<.35&&bd<1400;
+            step();if(G.shots.length)shots++;
+          }
+        }finally{for(const k in keys)keys[k]=false;}
+        return R(shots>0&&(hp()<hp0||G.pirates.length<n0),"выстрелов "+shots+", корпус врага "+hp0.toFixed(0)+"→"+hp().toFixed(0)+
+          ", пиратов "+n0+"→"+G.pirates.length+", свой корпус "+G.hull.toFixed(0));}
       default:return R(false,"цели «"+goal+"» у бота нет");
     }
   }

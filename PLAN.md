@@ -303,10 +303,12 @@ extract tools, do not extend). Order is strict: determinism first, everything af
   stamps `TEST_FILE` into `tests.html`; `?files=a|b` / `-Files` run the suites of those files.
   **Part three, 0.434.0:** `?rec=1` recordings by frame (`15c-rec`: key mask + step, heads with a
   copied snapshot, `rndState`, clock; autopilot targets as frame events; F8 «bug here» →
-  `drift.rec`), `T.replay(rec,{seed,hour,each})`, suite `91zzzzzzzzb-replay` (Node). **Left:** the
-  recorder does not see screen clicks (counter, tabs) — a tap on a screen is a boundary to lift
-  when a recording needs it; more walks (fight with pirates, base, home, the wanderer's shelf,
-  the cooperative); the map printed per window by the build, not per run.
+  `drift.rec`), `T.replay(rec,{seed,hour,each})`, suite `91zzzzzzzzb-replay` (Node). **0.435.0:**
+  four more walks — a fight with pirates in a far system (`T.bot("fight")` aims and fires), the
+  base's lift and compartments, the home's room and a thing to look at, the wanderer's shelf and
+  a lot bought for matches — twelve paths, ~22 s. **Left:** the recorder does not see screen
+  clicks (counter, tabs) — a tap on a screen is a boundary to lift when a recording needs it; a
+  cooperative walk; the map printed per window by the build, not per run.
 - ~~**M445 the mutant zoo**~~ — 0.433.0: eleven mutants in `tests/mutants.json` (`zoomStep`
   no-op, `mapFont` without the ruler, `mapSkyShift(d)=d`, W without thrust, a lying fuel readout,
   an icon button without `aria-label`, a manager field off `applySave`, a perk without a reader,

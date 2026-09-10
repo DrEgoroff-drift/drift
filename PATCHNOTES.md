@@ -6,6 +6,15 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.435.0 - four more paths for the bot: a fight, the base, the home, the wanderer's shelf (M444)
+
+`T.bot("fight", frames)` turns the nose onto the nearest pirate, thrusts from afar and fires
+inside a cone until the enemy is hurt or gone; the walk finds the first system on rings 18–27
+where a patrol spawns, arms the ship and fights for six hundred frames. Three more walks drive
+the base's lift and compartments, the home's room up to a thing worth looking at, and the
+wanderer's shelf with a lot bought for matches. Twelve paths under all six detectors, about
+twenty seconds in either window; nothing new to fix this time.
+
 ## 0.434.0 - the last minute of input, recorded by frame and replayed to the point (M444, part three)
 
 `?rec=1` turns on the recorder (`src/15c-rec.js`): every world frame stores the key mask and the

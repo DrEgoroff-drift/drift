@@ -51,6 +51,43 @@ const WALKS=[
   {id:"огонь в полёте",steps:[
     ["старт в системе",()=>T.go("система")],
     ["сто кадров огня",()=>{T.press("fire",100);return true;}]]},
+  {id:"бой",steps:[
+    ["дальняя система с пиратами",()=>{
+      T.go("старт");let found=null;
+      /* опасность растёт с расстоянием (sysDanger): кольца 18–27, первая система, где патруль вышел */
+      for(let r=18;r<28&&!found;r++)for(let x=-r;x<=r&&!found;x++)for(let y=-r;y<=r&&!found;y++){
+        if(Math.max(Math.abs(x),Math.abs(y))!==r||!starAt(x,y))continue;
+        const q=getSystem(x,y);G.sx=x;G.sy=y;G.sys=q;G.ap=null;G.orbit=null;spawnPirates();
+        if(G.pirates.length)found=q;
+      }
+      G.mode="system";
+      return {ok:!!found,why:"пиратов нет ни в одной системе на кольцах 18–27"};}],
+    ["оружие на борт",()=>{T.give("module","weapon",2);G.energy=stat().energyMax;return {ok:stat().armed,why:"борт так и не вооружён"};}],
+    ["бой до шестисот кадров",()=>T.bot("fight",600)]]},
+  {id:"база",steps:[
+    ["база",()=>T.go("база")],
+    ["ярусом ниже и на два отсека вправо",()=>{const S=G.base,r0=S.row,c0=S.cur;
+      T.press("brake",3);T.wait(2);T.press("right",3);T.wait(2);T.press("right",3);T.wait(2);
+      return {ok:S.cur!==c0||S.row!==r0,why:"ярус "+r0+"→"+S.row+", отсек "+c0+"→"+S.cur};}],
+    ["клетью наверх",()=>{const r0=G.base.row;T.press("thrust",3);T.wait(2);return {ok:G.base.row<=r0,why:"ярус "+r0+"→"+G.base.row};}]]},
+  {id:"дом",steps:[
+    ["дом",()=>T.go("дом")],
+    ["по комнате",()=>{const x0=G.hin.x;T.press("right",60);if(G.hin.x===x0)T.press("left",60);
+      return {ok:G.hin.x!==x0,why:"x "+x0.toFixed(0)+"→"+G.hin.x.toFixed(0)};}],
+    ["к вещи и рассмотреть",()=>{
+      /* идём по комнате, пока подсказка не позовёт РАССМОТРЕТЬ или ОКЛИКНУТЬ; у стены — обратно */
+      let dir="right",i=0;const S=G.hin;
+      while(i++<80&&!/РАССМОТРЕТЬ|ОКЛИКНУТЬ/.test(G.prompt)){const x0=S.x;T.press(dir,8);if(S.x===x0)dir=dir==="right"?"left":"right";}
+      if(!/РАССМОТРЕТЬ|ОКЛИКНУТЬ/.test(G.prompt))return {ok:false,why:"за восемьдесят шагов вещи не нашлось: «"+G.prompt+"»"};
+      const said=T.spoke(()=>{T.press("act",1);T.wait(3);});
+      return {ok:said||!!S.look,why:"ДЕЙСТВИЕ у вещи — ни голоса, ни взгляда: «"+G.prompt+"»"};}]]},
+  {id:"сорока",steps:[
+    ["сорока",()=>T.go("сорока")],
+    ["две полки вправо",()=>{const S=G.wan,c0=S.cursor;T.press("right",2);T.wait(2);T.press("right",2);T.wait(1);
+      return {ok:S.cursor>c0,why:"курсор "+c0+"→"+S.cursor+" из "+wanLots().length};}],
+    ["взять лот за спички",()=>{G.matches=99;const lot=wanCur();if(!lot)return {ok:false,why:"лота нет"};
+      const m=G.matches,said=T.spoke(()=>{T.press("act",1);T.wait(2);});
+      return {ok:G.matches<m||said||lot.gone||lot.empty,why:"спички "+m+"→"+G.matches+", голоса нет"};}]]},
   {id:"запись и возврат",steps:[
     ["грунт днём",()=>T.go("грунт день")],
     ["бурение",()=>T.bot("mine")],
@@ -61,7 +98,7 @@ const WALKS=[
       return {ok:G.credits===cr&&held()===hd&&G.mode===m,why:"после чтения записи: режим "+G.mode+", трюм "+held()+"/"+hd+", кредиты "+G.credits+"/"+cr};}]]}
 ];
 
-TEST_SUITES.push(()=>suite("прогоны: восемь путей игрока ботом под всеми детекторами, и карта покрытия",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("прогоны: двенадцать путей игрока ботом под всеми детекторами, и карта покрытия",{tier:"browser"},()=>{
   const T0=performance.now(),key=W+"x"+H;
   const opts0=G.opts;
   if(DET_OPTS_BOOT){G.opts=JSON.parse(DET_OPTS_BOOT);invalidateKeyMap();}
