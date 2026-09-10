@@ -16,7 +16,8 @@ Sources live in `src/` and are concatenated in filename order (numeric prefix = 
 powershell -ExecutionPolicy Bypass -File build.ps1
 ```
 
-`-Watch` rebuilds on save. Node is not installed on this machine, hence the PowerShell build.
+`-Watch` rebuilds on save. The build is PowerShell because it predates Node here; Node (v26,
+`tools\node` or PATH) now runs the fast test tier only, never the build.
 The built `drift.html` is committed alongside the sources: the game must open with a double
 click, no server and no dependencies.
 
@@ -219,8 +220,8 @@ before doing the thing, not after it bites.
   it goes to a `.py` in the scratchpad and runs by path.
 - **A heredoc through the Bash tool eats backslash escapes** (`\\n` → `\n`, `\b` → 0x08, into
   the source file, invisible everywhere). Build a backslash as `chr(92)` and grep the result.
-- **No `node` on this machine**; Python 3.12 is there. A `.ps1` must be rewritten **with**
-  `codecs.BOM_UTF8`.
+- **Node is for the test tier, not for tooling**: `node test-node.js` exists (v26), but scripts
+  are Python 3.12 or PowerShell. A `.ps1` must be rewritten **with** `codecs.BOM_UTF8`.
 - **`ssh drift`'s post-quantum warning is the old host,** not an error.
 
 ## How to verify

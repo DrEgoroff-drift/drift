@@ -40,6 +40,8 @@ if ($Mutants) {
     $src = [System.IO.File]::ReadAllText($path, [System.Text.Encoding]::UTF8)
     $hits = [regex]::Matches($src, $m.find).Count
     if ($hits -ne 1) { $rows += "  ?  {0,-22} нет места: «{1}» найдено {2} раз в {3}" -f $m.name, $m.find, $hits, $m.file; $alive++; continue }
+    # возвращаем ТЕКСТ, который прочли, а не `git checkout -- файл`: тот откатывал
+    # файл целиком, вместе с чужими несохранёнными правками в нём (0.438.0)
     [System.IO.File]::WriteAllText($path, [regex]::Replace($src, $m.find, $m.replace, 1), $utf8)
     try {
       $b = & powershell -ExecutionPolicy Bypass -File (Join-Path $root0 "build.ps1") 2>&1 | Out-String
@@ -56,7 +58,7 @@ if ($Mutants) {
       if ($rc -ne 0) { $rows += "  ✓  {0,-22} убит: {1}" -f $m.name, $who }
       else { $rows += "  ✗  {0,-22} ВЫЖИЛ — {1} ({2})" -f $m.name, $m.why, $(if ($m.kill) { $m.kill } else { "-Browser" }); $alive++ }
     } finally {
-      & git -C $root0 checkout -q -- $m.file
+      [System.IO.File]::WriteAllText($path, $src, $utf8)
     }
   }
   # чистая сборка после зоопарка: tests.html не должен остаться мутантом
@@ -98,13 +100,17 @@ if ($Changed) {
     foreach ($p in $map.PSObject.Properties) { foreach ($c in $chg) { if (@($p.Value) -contains $c) { [void]$pick.Add([System.IO.Path]::GetFileName($p.Name)) } } }
     $names = @($pick | Sort-Object | ForEach-Object { $_ -replace '\.js$', '' })
     "изменено: {0} → файлов наборов: {1}" -f ($chg -join ", "), $names.Count
-    if (-not $names.Count) { "ни один набор не называет изменённые модули"; exit 0 }
-    $Files = $names -join "|"; $Full = $true; $Jobs = 1
+    # правка обвязки (tests/90*) касается каждого набора — карта этого не знает,
+    # и «сам себя» тут был бы обманом: идёт полный прогон (0.438.0)
+    if (@($chg | Where-Object { $_ -like "tests/90*" }).Count) { "изменена обвязка тестов → полный прогон"; $names = @() ; $Full = $true }
+    elseif (-not $names.Count) { "ни один набор не называет изменённые модули → обычный быстрый ярус" }
+    else { $Files = $names -join "|"; $Full = $true; $Jobs = 1 }
     $nodeExe0 = (Get-Command node -ErrorAction SilentlyContinue).Source
     if (-not $nodeExe0 -and (Test-Path "C:\Claude\tools\node\node.exe")) { $nodeExe0 = "C:\Claude\tools\node\node.exe" }
-    if ($nodeExe0) {
+    if ($nodeExe0 -and ($Files -or $Full)) {
       [Console]::OutputEncoding = [Text.Encoding]::UTF8
-      & $nodeExe0 (Join-Path $root0 "test-node.js") "--files=$Files"
+      $narg = if ($Files) { "--files=$Files" } else { "--full" }
+      & $nodeExe0 (Join-Path $root0 "test-node.js") $narg
       if ($LASTEXITCODE -ne 0) { exit 1 }
     }
   } else { "ничего не менялось со времени HEAD — обычный быстрый ярус" }
@@ -233,7 +239,20 @@ for ($k = 0; $k -lt $Jobs; $k++) {
 # Секунды считаем ЗДЕСЬ: внутри страницы часы стоят (--virtual-time-budget), и
 # отчёт годами печатал «0 мс». Снаружи время настоящее, вместе со стартом Chrome.
 $sw = [Diagnostics.Stopwatch]::StartNew()
-foreach ($r in $runs) { $r.proc.WaitForExit() }
+# Потолок на часть (0.438.0): `--timeout` у нового headless не работает, и ночью
+# 10.09 один шард крутил GPU-процесс 33 минуты, пока его не убили руками. Часть,
+# не кончившая за $SHARD_SEC, убивается вместе со своими Chrome (только своего
+# профиля) и считается упавшей — отчёт назовёт её, а не промолчит.
+$SHARD_SEC = 900
+foreach ($r in $runs) {
+  $left = [math]::Max(1000, $SHARD_SEC * 1000 - [int]$sw.ElapsedMilliseconds)
+  if (-not $r.proc.WaitForExit($left)) {
+    "  ! часть {0}/{1} не кончилась за {2} с — ВИСИТ, убиваю Chrome профиля drift-tests-profile-{3}-{0}" -f $r.k, $Jobs, $SHARD_SEC, $tag
+    Get-CimInstance Win32_Process -Filter "Name='chrome.exe'" | Where-Object { $_.CommandLine -match "drift-tests-profile-$tag-$($r.k)\b" } |
+      ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
+    try { $r.proc.Kill() } catch {}
+  }
+}
 $sw.Stop()
 
 # Chrome выходит НЕ мгновенно: дочерний процесс (crashpad, utility) держит

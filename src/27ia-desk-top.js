@@ -355,7 +355,7 @@ function renderDeskTop(box){
     cv.style.width="100%";cv.style.height=h+"px";
     const c=cv.getContext("2d");
     c.setTransform(cv.width/w,0,0,cv.width/w,0,0);
-    try{DESK_DRAW[it.id](c,w,h);}catch(e){}
+    try{DESK_DRAW[it.id](c,w,h);}catch(e){crashShip("desk",it.id+": "+e.message,"");}   /* сломанная вещь на столе — в журнал сбоев, а не в тишину (0.438.0) */
     cell.appendChild(cv);
     const tx=document.createElement("em");tx.textContent=it.ru;
     const nt=document.createElement("s");nt.textContent=it.note;

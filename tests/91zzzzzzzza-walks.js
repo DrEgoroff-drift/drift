@@ -101,7 +101,6 @@ const WALKS=[
 TEST_SUITES.push(()=>suite("прогоны: двенадцать путей игрока ботом под всеми детекторами, и карта покрытия",{tier:"browser"},()=>{
   const T0=performance.now(),key=W+"x"+H;
   const opts0=G.opts;
-  if(DET_OPTS_BOOT){G.opts=JSON.parse(DET_OPTS_BOOT);invalidateKeyMap();}
   resetWorld();
   const snap=JSON.parse(JSON.stringify(snapshot()));
   const V=[],seenV={},exempted={},cov={},stuck=[];let steps=0;

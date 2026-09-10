@@ -20,7 +20,10 @@ half the tokens. The game itself, its UI and its code comments stay Russian.
 
 - **Save format: writes `v:5`, reads 4 and 5 (M227).** The feared `server.js`/`worker.js` do not
   exist; the cloud (`site/api.php`) checks only that `v` is present. New fields: `snapshot()` plus
-  a safe default in `applySave()` (`14-save`); shape changes ride an `s.v===5` branch.
+  a safe default in `applySave()` (`14-save`); shape changes ride an `s.v===5` branch. **Every
+  field on `G` is either in `snapshot()` or named in `SAVE_EPHEMERAL` (`14a2`) with a reason** —
+  the net `91zzzzzzzzz-savenet` (0.438.0) goes red otherwise, and the save→load→save fixpoint
+  must hold; numbers coming back from the PHP cloud as strings are numbers again (`optsNumify`).
 - **Never persist the ephemeral.** Whatever derives from a seed is regenerated. Only player
   decisions and carried loot persist.
 - **Sparse overlays** keyed `"sx,sy"`, like `G.market`. Bases and hired hands are stored the same way.
@@ -28,8 +31,8 @@ half the tokens. The game itself, its UI and its code comments stay Russian.
 - **Gradient from the start.** `sysDanger(sx,sy)` (`01-core`) sets part tier, base level, resource
   rarity, quality of hired hands and station type.
 - **A large new scene is a new `G.mode`** with its own `update*`/`draw*`, not a rework of an old one.
-- **Background activity is computed lazily** from `Date.now()-lastTick` with an offline cap. No
-  real-time simulation — the model is `tickDrones()` (`12-economy`).
+- **Background activity is computed lazily** from `now()-lastTick` (the game clock, M441 — never
+  `Date.now()`) with an offline cap. No real-time simulation — the model is `tickDrones()` (`12-economy`).
 - **After every milestone:** parse check, empty console, a manual scenario, loading an old save.
   Canvas screenshots are not trusted.
 - **Every drawn thing is held against the craft codex before it is called done** (author,
@@ -102,126 +105,9 @@ in this order (author, 2026-09-03: «сначала по плану, потом 
    ghost click on screens opened by a pad swallowed, §18.8 complete but for the заявка (rung 21).
    ~~Left: the ship keeps its `.55` floor at deep zoom-out~~ — `.35` since M319 (0.316.0).
 
-## «Сорока» — the wanderer queue (M340–M346 done — closed 2026-09-05; author 2026-09-04: «делай всё в соло»)
+## «Сорока» — the wanderer queue (M340–M346, 0.339.0–0.346.0, closed 2026-09-05) — body moved to `docs/PLAN-archive.md` (2026-09-11)
 
-Design is settled in `docs/DESIGN-wanderer.md` (§1–§13; §6 and §12–§13 are the revised, binding
-parts — §11's prices are indicative). Read that file first, then this queue. Every milestone below is
-one commit: bump `VER`, one PATCHNOTES entry, tests green (`test.ps1`), then push. Work order is
-fixed; each step is playable on its own. Decisions the author already took (do not re-ask): the ship
-is one wandering sail-ship named «Сорока»; the currency is **spички** (matches), never credits for
-rare raw; barter exists only as one wild-card lot per stop with a categorical ask, never a recipe;
-cosmetics exist; the desk gets one table «ОПИСЬ»; a locker exists at stations.
-
-- **M340** (0.337.0) — done: `12uc-matches` — `G.matches`, `matchesInPart` by tier (3→1, 4→3,
-  5→5 or a box of 8 by part seed), `scrapPart` returns `matches`, hold header shows «спичек: N»,
-  save round-trip, suite `91zzzze-matches`.
-
-- **M341** (0.340.0) — done: the table «ОПИСЬ» (`27j-ui-opis`) — one cloth, four zones, drag or tap,
-  ПРИБОРЫ panels that show the future, the hatch, matches in the corner; the ship screen and the desk paper
-  НАКЛАДНАЯ are gone; prices live under the piles, on the map card and in the map's ЦЕНЫ list.
-  Body in `docs/PLAN-archive.md`.
-
-- **M342** (0.341.0) — done: «Сорока» in the world (`12v-wander`) — a 24-stop loop from the clock, the
-  sail-ship parked at the lit limb, the approach, the rumour, the sky-watch line, the chart's sail glyph
-  (`relicOn("chart")` finally read); the room is M343. Body in `docs/PLAN-archive.md`.
-
-- **M343** (0.342.0) — done: the room and the shop — mode `wanderer` (`24c-mode-wanderer`, `-draw`,
-  `26d-ui-wanderer`), the catalogue `WANDER_CAT` (`12v-wander-shop`: 14 tools with hooks, two papers,
-  the wild card), counter B for raw and rarities, the cabin shelf on ОПИСЬ, the keeper's lines, «сорока»
-  in `lookScenes`. Left out on purpose (no hook yet): cosmetics (M344), unique hull parts, Медный шар,
-  Слепок печати, Вторая рука, Страница журнала, Список отказов. Body in `docs/PLAN-archive.md`.
-
-- **M344** (0.343.0) — done: cosmetics — `12v-wander-shop-cosm`: 27 things in seven slots (8 exhausts with
-  their own flames, 4 jump trails, 4 suit finishes, 3 visor tints, 3 hull marks, 3 light patterns, 2 docking
-  chimes), each read by its painter and guarded by a pixel test; the casket on ОПИСЬ opens with the first
-  purchase, wear by button or by dragging onto the hull/kit. Parrot accessories and the house crest wait for
-  their systems. Body in `docs/PLAN-archive.md`.
-
-- **M345** (0.344.0) — done: the locker (`12ak-locker`) — zone 5 ЯЩИК on ОПИСЬ while docked at rung ≥ 6,
-  24 places (48 with «Второй ящик»), parts, piles and «Сорока» tools; 1 %/day of value taken lazily from the
-  real clock, no debt; 30 days unvisited → parts resurface on any flea as «залог, за которым не пришли».
-  Body in `docs/PLAN-archive.md`.
-
-- **M346** (0.345.0) — done: matchboxes (`12ue-boxes`) — twenty hand-written labels, found in wrecks and
-  containers, on the flea (a lot) and aboard «Сорока» (one match); the shelf at home says «коробков: N из 20»
-  beside the books; no effect; the keeper mentions the full box of fifty and never sells it.
-  **The «Сорока» queue M340–M346 is closed.** Body in `docs/PLAN-archive.md`.
-
-- **M347** (0.346.0) — done: the map speaks in addresses (`18a-map-addr`) — the sector grid under the
-  darkness law, rulers on top and left with your and the selected coordinates underlined, the header «ВЫ ·
-  сектор x:y · «Имя»» / «сектор x:y · N секторов · J прыжков · d пк», empty cells selectable (no course into
-  emptiness), rumour areas as hatched squares from `G.rumours`, rings «2/3 прыжка», the address field with
-  the match button, every «сектор x:y» in game text tappable (`addrify`), the rose, and the wordless mark —
-  a match from the wallet (`G.mapMarks`, ≤10). Body in `docs/PLAN-archive.md`.
-
-- **M348** (0.347.0) — done: holdings on the map (`18b-map-hold`) — house patches (station ∪ 1-jump, two-colour
-  hatch where houses overlap, darkness law, seen/heard beyond the edge), ГЛАВТРАССА as a double line with
-  milestone ticks, a band under it and the name once along the longest leg, rusty hatch over occupied sectors
-  with a brighter front at house patches, own frames, «сменился хозяин» tags fading over three days, a СЛОИ
-  button (ВСЕ/ВЛАДЕНИЯ/ЦЕНЫ/СЛУХИ) in the map strip; pirates no longer hold or take sectors under the трасса.
-  Body in `docs/PLAN-archive.md`.
-
-- **M349 + M349a** (0.348.0) — done: «Маяк ГЛАВТРАССЫ» (`12pa-beacon`) — one bulletin per shift built only
-  from causes (appetite tonnage, the player's over-norm sales, freed and «особый режим» sectors, scrip moves,
-  holidays with a double fleet norm), poster head + dry lines, in ЭФИР, on the cantina wall and by the
-  receiver's voice: browser `speechSynthesis`, ru-RU, quiet (.35), system voices per role chosen by name,
-  crackle before and a two-tone after, ducked under combat, silent on desks and stations, settings in ЗВУК.
-  Body in `docs/PLAN-archive.md`.
-
-- **M350** (0.338.0) — done: the drone-miner (bottomless point, 9 000 cr by payback, one per yard/indust
-  station per two days, ВЕРНУТЬ, sells within two sectors, guest drawn in the market system). The
-  audit's trade «hole» was an artefact of open buying: in the game one buys only on a route leg
-  (`12r`, M289), and a 3-pair route pays ~17 000 cr in three laps then waits for pressure to decay —
-  the designed ~200 cr/min. Trade untouched. **Answered by M351:** counter buying opens with the cooperative, capped by rank, priced in slices.
-  «Сорока» raw→matches re-priced to 40:1 with a 200-unit cap per stop before M343 (audit §3 H3).
-
-- **M351** (0.349.0) — done: the cooperative (`12aj-coop`, `docs/DESIGN-coop.md`) — the exam by turnover
-  (12 000), the stamp at a house station for 1 500 with a player-typed name, ranks I/II/III by turnover since
-  registration and granted asks, the counter open to cooperatives only (sliced pricing per 10 units, caps
-  60/150/none per visit), hiring only for cooperatives with `crewCap` by rank, the ДЕЛА page (members,
-  per-shift ledger from `earn`, asks from composition pointing at family-G buildings, spirit 0…5 as words,
-  ±1 % per point). Re-measured 2026-09-05 (`docs/ECONOMY-AUDIT.md` §6): the cap binds only when the hold
-  exceeds it (Вьюк at rank I: 1 900 vs 2 400 cr/min on the opening laps); pressure, not the cap, is the brake
-  from lap four on every rank. Body in `docs/PLAN-archive.md`.
-
-- **M352 — one big thing per biome** (0.350.0, 2026-09-05) — done: `21b-surface-deco-biomes`, eighteen
-  new large-form painters registered through `DECO_FN`/`DECO_KINDS`, every land biome owns a family of
-  2–3 shapes at 5–12 astronaut heights, density raised to 2–4 per screen (cluster per ~1000 units plus a
-  top-up to the norm on rough worlds), neighbours kept apart by height, the pad zone kept clear; the
-  desk-side chips no longer overlap near-marks (`21e-surface-draw`). Judged by frames per biome. Not done,
-  by decision: the jungle crown stays one painter (twin variant added), no second trunk build in
-  `20-life`. Body in `docs/PLAN-archive.md`.
-
-- **M358 — what the frame bakes** (0.356.0, 2026-09-05) — done: `tests/91zzzzy-bake`, the fourth
-  suspect in the freeze hunt and the first one nobody had measured — the raster of the **live frame**
-  (chunks, tiles, screen layers), which hangs on `G` and so was never seen by the `SYS_CACHE` suite.
-  Two guards: the oven must not run every frame (a key catching the hour or the camera would bake a
-  full-screen canvas per frame, invisible to memory and console alike — standing still the game bakes
-  7 in 150 frames), and the level is pinned in **screenfuls** rather than megabytes (measured 26.7,
-  ~85 MB at DPR 1; each store holds about twice what the frame draws, which is the camera's margin
-  and is meant to be there). Nothing grows without bound: **the freeze is not in the raster.** What
-  is left for someone: that margin costs as the square of `DPR*SCK`, so trading it against re-baking
-  is a real decision, and an author's one.
-
-- **M356 — the sky in storeys** (0.353.0, 2026-09-05) — done: from the author's photograph of a
-  real sky («вот тебе облака, для планет, делай»). The frame there holds three cloud populations at
-  once and the game had one: `19e-clouds` gains the **deck** (`deckSprite` — the layer overhead, drawn
-  edge-on with a torn lower edge and no silhouette; per-world `cover`, raised by weather so rain no
-  longer falls out of clear blue, baked lazily); one condensation line per tier instead of scattered
-  heights; a rebuilt cumulus body (base row stepped by its own radii so metaballs merge, turrets over
-  the middle, 288×168 bake, a cut edge); volume by self-shadowing along the direction of the star
-  instead of the outline gradient; and the horizon chain. Three separate ways the sky outshone its
-  own star (rim above the ceiling, shadow lighter than light, body at full light over large areas)
-  were found by `91zzzzy-light` and closed by the same law — see PATCHNOTES 0.353.0. `test.ps1` also
-  learned to wait for Chrome to release its output file.
-
-- **M353** (0.339.0) — done: «Смена» on the desk (`12ud-smena`, text table generated by
-  `docs/mksmena.py` from `docs/SMENA.md`), 72 predicates from SAGA-BOOK's hooks, nine new scenes for
-  the post-0.163 mechanics. **Next (author 2026-09-04): the prose itself — «интересная, как игра, а
-  не заметки».** The book is to be re-read as a critic and rewritten chapter by chapter in one
-  livelier register (scene, want, obstacle, turn; dialogue over summary; the journal line as a refrain,
-  not a crutch), starting with a sample chapter for the author to judge before the rest.
-  The text stays in markdown; every rewrite runs `mksmena.py` and the suite.
+Design: `docs/DESIGN-wanderer.md`. The queue, its decisions and the M351 cooperative answer live in the archive — grep «Сорока» or M34x there.
 
 ## Closed milestones M354, M355, M357, M359 (0.352.0-0.357.0, 2026-09-05) — bodies moved to `docs/PLAN-archive.md` (2026-09-08)
 
@@ -356,6 +242,69 @@ findings, sorted by what they are:
   more canvas and they join the OOM list; a PHP «can the site run short Node jobs on player hits»
   probe was blocked by the classifier and is the author's call; `lab.ps1` holds the session only
   while the laptop is awake.
+
+## Refactor audit (0.438.0, 2026-09-11) — what the night's commits left, and the queue after them
+
+Four hostile reviews of 0.428.0–0.437.0 plus a survey of `src/` (322 modules, 88 k lines, 4 695
+symbols, none declared twice). Verdict on the night: M441–M446 stand; the defects were in the
+tooling around them, not in the game. **Done in 0.438.0:** `-Mutants` restores the file's text
+instead of `git checkout --` (that erased uncommitted work); `-Changed` runs the full corpus when
+`tests/90*` changed and the fast tier when nothing matches (was `exit 0`); a 900 s ceiling per
+shard with a kill of its own Chromes (the 33-minute GPU hang of 10.09); `G.opts` back to boot in
+`resetWorld` (`OPTS_BOOT`, the `DET_OPTS_BOOT` workaround gone); the clock law also refuses
+`Math["random"]`, `Date["now"]`, `new Date` without parens; `typeof`-ghosts fail the build instead
+of warning; the map jumps in `updateMap`, not inside `drawMap` (the world changed in drawing — no
+frame, no jump); `optsNumify` on the cloud boundary; the save net and fixpoint suite; `T.bot("undock")`
+can go red; `T.replay` refuses a recording from another `VER`; the trips oracle has absolute anchors
+(2 152 frames, 26 fuel, 12 ore ×1.5) beside its own-median thresholds; `detRuler` runs last;
+`INDEX.md` names where a symbol ends (`file:start-end` — `Read` by exact offset).
+
+**Queue, in order (each a commit; the safety net is the golden frames and `stateHash`):**
+- **Tiers by evidence, not by name** — 165 «browser» suites touch no canvas/DOM (they went to
+  Chrome for a word in the name), 12 «node» suites read DOM/`ctx` under stubs and are vacuously
+  green (`91a-flight`, `91f-ui`, `91q-planet`, `91zzza-cave-props`, `91zzzzy-time`, `91zzzzzl-gates`,
+  `91zzzzze-keys`). Mechanical: run each candidate under Node; move it if green and pixel-free.
+  Prize: the per-edit tier is 22 s today (CLAUDE.md still says ~5 s).
+- **Golden frames keyed by the requested window, not the measured `W×H`** — today the key is
+  the headless window's geometry, so on any other machine `base=null` and the suite passes on
+  `ok(n>=12)`; `deploy.yml` runs the fast tier only, so no browser suite runs in CI at all.
+- **The silence table** — 16 mode × gesture pairs are silenced in the detect driver; at least
+  `base · W`, `wanderer · A`, `base · drag` are scene-setup artefacts (cage on the top level, the
+  corridor's end): move the scene, un-silence the gesture. `detStuck`'s key law fires only on a
+  frame diff of exactly 0 — soften it together with that table, not alone (tried; map W/A went red).
+- **`stateHash` mixes `now()` in** (`08a:74`) and hashes `Set`s in insertion order — for the
+  cloud's «where did it diverge» it must not depend on the wall clock or on the order techs were
+  bought. `planetStripTick` cuts by `wallMs()` and writes `stripLvl` into hashed state.
+- **The source net over suites is line-based** — `ok(\n true`, `ok(1,…)`, `"function"===typeof f`
+  pass; the harness self-suites vanish under `?files=` (`_file`). And the clock law does not
+  cover `tests/` (41 raw calls in 13 files, mostly `performance.now` for cost — legitimate, but
+  unreviewed).
+- **Opts from the cloud, the rest of the class** — `gfx.res/fps`, `audio.*` were reset to defaults
+  when strings arrived; `optsNumify` fixes the number case, a hostile-save suite with every opt as
+  a string is still owed (`91zzzzzzzzz-savenet` has one).
+- **Seven «?» fields in `SAVE_EPHEMERAL`** need the author: `hailLog`, `baseVisit`, `radioF`,
+  `kills`, `orderStamp`, `quietGone`, `logNewBy` are lost on load today — loss or design?
+- **Long functions, on touch only** — 27 over 200 lines (`drawDigWorld` 569, `homeRoomBody` 550,
+  `drawRoad` 539, `drawPostcard` 457, `updateSurface` 452): split along layers, verify by golden
+  hash, never as a project of its own.
+- **Dead symbols (22)** — `BASE_STANDBY`, `chessCanMove`, `crewHostages`, `deltaHtml`, `drawHoldMods`,
+  `ethReset`, `mailDrop`, `namesBlock`, `recOn`, `rungDef`… nothing in `src/`, `tests/`, `site/` or
+  tools names them. Delete after one grep each for a string dispatch.
+- **Release hygiene** — 0.433/0.435/0.436 changed only `VER` in `src/` (test-only work released
+  as game versions, five minutes apart; the zoo could not have run). Author's call: test-only
+  work under one version, or the zoo before every bump.
+- **Tools zoo** — `shot.ps1`, `shot.py`, `pageshot.ps1`, `stand.ps1`, `stand.py`, `mkstand*.ps1`,
+  `mkview.ps1`, `mkshots.ps1`, `mksiteshots.ps1`: one way to take a frame, the rest deleted.
+- **PATCHNOTES.md is 847 KB and every session prepends to line 1** — one file per version under
+  `docs/notes/`, the big file assembled by `build.ps1` like `INDEX.md`. Author's call.
+- **The site sends no `Cache-Control`/`ETag`/`Last-Modified`** for a 2 MB gzip `play.html` — look
+  at how it is served before touching; needs the author's yes.
+
+**Rejected, with the reason:** a palette module for the 893 hex colours (would flatten the
+deliberate range — measure hue histograms instead); a mode table for the 258 `G.mode===` (stable,
+no bugs, all conflict); removing the 1 804 `typeof` guards (the ghost law covers the danger at
+zero churn); a schema-driven `applySave` (the net plus the fixpoint suite give the value without
+touching the v4/v5 branches); not committing `drift.html` (breaks «opens with a double click»).
 
 ## The frame is the judge for anything the player touches (M437)
 

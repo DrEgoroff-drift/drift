@@ -1761,7 +1761,7 @@ body.table u.addr{color:#7a4a20}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.437.0";
+const VER="0.438.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -8599,7 +8599,7 @@ function say(s,d){G.msg=s;G.msgT=d||150;}
 /* ══════════════ хэш состояния (M441) ══════════════
    Одно число на весь мир: два прогона одной сцены на одном семени и одних
    часах обязаны давать его одинаковым каждые сто кадров (тест Factorio,
-   tests/91zzzzzs-hash). Им же пользуется наблюдатель state() тестового API
+   tests/91zzzzzbb-samehash). Им же пользуется наблюдатель state() тестового API
    (M442) и будет пользоваться всё, что сравнивает миры: повтор по записи,
    облачная запись, «где разошлось».
 
@@ -39878,7 +39878,7 @@ function applySave(s){
      — со старого сохранения он обнуляется один раз, и дальше заполняется
      настоящими видами планет. Всё остальное в сохранении цело, формат прежний. */
   G.species=new Set(((s.bioV|0)>=2&&Array.isArray(s.species))?s.species:[]);
-  Object.assign(G.opts,s.opts||{});
+  Object.assign(G.opts,optsNumify(s.opts||{}));   /* облако на PHP отдаёт числа строками — назад в числа всем классом (14a2) */
   G.zoom=clamp(+s.zoom||1,.16,2.4);
   G.market=asMap(s.market);
   /* фронт пиратов: разреженный объект по ключу "sx,sy", как всё привязанное
@@ -40770,6 +40770,64 @@ function applySaveRest(s){
   invalidateKeyMap();applyPadMode();applyPadSize();applyVolumes();
   return true;
 }
+
+/* ══════════════ поля мира, которые НЕ сохраняются — и почему (0.438.0) ══════════════
+   snapshot() — белый список: поле на G, которого там нет, теряется при загрузке
+   молча. Так пропали relic, cutBonus, ultCount у менеджеров (CLAUDE.md), и ни
+   один тест этого не видел — сейв проверялся по механике, а не по составу.
+
+   Здесь второй список: всё, что на G живёт, но сохраняться НЕ должно, с причиной.
+   Сеть 91zzzzzzzzz-savenet сверяет три множества — G_FIELDS (каждое `G.имя=` в
+   src/, вшивает сборка), ключи snapshot() и эту таблицу: поле обязано быть ровно
+   в одном из двух списков. Новое поле на G без записи здесь и без строки в
+   snapshot() — красный набор, а не потеря через тридцать версий.
+
+   Причины — четыре, одним словом:
+     кадр   — живёт кадр или сцену: тяга, снаряды, тряска, подсказка на экране;
+     режим  — состояние открытого режима (полоса, пещера, рейд): режим начинается заново;
+     мир    — выводится из семени и часов (система, пираты, орбиты) — CLAUDE.md: «never persist the ephemeral»;
+     карта  — вид карты и другие ручки интерфейса: игрок ставит их заново, и это не потеря.
+   «?» впереди — не решено: поле сейчас НЕ сохраняется, и автору решить, потеря это или нет. */
+/* ── числа, вернувшиеся из облака строками ──
+   api.php отдаёт «1.25» вместо 1.25, и НАСТРОЙКИ не открывались (M443, 4ef69b3
+   чинил одно поле — padSize). Правило на весь класс: в опциях всё, что выглядит
+   числом, — число. Имена клавиш («KeyW», «Digit1») числами не выглядят и не
+   трогаются; булевы и слова — тоже. */
+function optsNumify(o){
+  if(Array.isArray(o))return o.map(optsNumify);
+  if(o&&typeof o==="object"){const r={};for(const k in o)r[k]=optsNumify(o[k]);return r;}
+  if(typeof o==="string"&&/^-?\d+(\.\d+)?$/.test(o))return +o;
+  return o;
+}
+const SAVE_EPHEMERAL={
+  /* корабль в полёте: x/y/a идут в сейв своими строками, остальное — кадр */
+  ship:"кадр",ap:"кадр",orbit:"мир",watch:"кадр",aim:"кадр",beams:"кадр",shots:"кадр",loot:"кадр",
+  energy:"кадр",heat:"кадр",burnT:"кадр",stunT:"кадр",shield:"кадр",shieldHit:"кадр",shieldPulse:"кадр",shieldOff:"кадр",
+  gunCool:"кадр",gunPin:"кадр",gmines:"кадр",tether:"кадр",foeTether:"кадр",msl:"кадр",mslCool:"кадр",mslFx:"кадр",
+  jamT:"кадр",ramOn:"кадр",engaged:"кадр",fcam:"кадр",fshake:"кадр",ctl:"кадр",marks:"кадр",range:"кадр",
+  battCool:"кадр",battFx:"кадр",shiftT:"кадр",etherT:"кадр",
+  /* мир: выводится из семени и часов */
+  sys:"мир",pirates:"мир",allies:"мир",barges:"мир",npcWrecks:"мир",cantina:"мир",st:"мир",sel:"карта",
+  escortT:"мир",escortDone:"мир",hail:"мир",ringNow:"мир",occT:"мир",
+  /* открытый режим: начинается заново после загрузки */
+  mode:"режим",land:"режим",surf:"режим",cave:"режим",dig:"режим",belt:"режим",base:"режим",raid:"режим",scoop:"режим",
+  wan:"режим",rack:"режим",hin:"режим",seat:"режим",running:"режим",t:"режим",
+  /* экран: подсказки, строки, вид карты */
+  msg:"кадр",msgT:"кадр",prompt:"кадр",logNew:"кадр",mirrorEcho:"кадр",
+  edgeWarned:"кадр",surfTipShown:"кадр",spLogged:"кадр",tableN:"кадр",tableUsed:"кадр",_yalta:"кадр",_yaltaSaid:"кадр",
+  _dial:"кадр",_fleaHum:"кадр",_probeAt:"кадр",
+  mapClean:"карта",mapLayer:"карта",mapMore:"карта",mapOutline:"карта",mapPeek:"карта",mapSearch:"карта",
+  mapTapT:"карта",mapView:"карта",mapZoom:"карта",
+  viewCX:"кадр",viewCY:"кадр",viewK:"кадр",viewX:"кадр",viewY:"кадр",
+  /* не решено — сейчас теряется при загрузке, автору сказать «потеря» или «так и надо» */
+  hailLog:"? журнал окликов за сеанс — кто уже здоровался",
+  baseVisit:"? счётчик заходов на базу — от него аврал",
+  radioF:"? частота приёмника — куда игрок крутил ручку",
+  kills:"? счёт побед за сеанс",
+  orderStamp:"? отметка приказа",
+  quietGone:"? тишина (11n): ушла ли",
+  logNewBy:"? непрочитанное в журнале по разделам",
+};
 
 /* ══════════════ провод войны (M376, §13, §16.4) ══════════════
    Летопись считается у каждого своя и совпадает у всех (12am-chron). По проводу
@@ -46105,9 +46163,7 @@ function drawMap(){
   /* сколько машин работает на тебя в этой системе (M237) */
   if(typeof drawDronesMap==="function")drawDronesMap(vis);
   /* погасший рукав смотрителей (11k): прокладка стоит больше топлива */
-  const cost=Math.round((9+dsel*13)*((typeof keepersJumpK==="function")?keepersJumpK():1));
-  /* в пустую клетку курса нет (M347): выбрать можно, прыгнуть — некуда */
-  const bad=dsel>st.jump+.02||cost>G.fuel||dsel===0||!starAt(G.sel.x,G.sel.y);
+  const {cost,bad}=mapJump();   /* один расклад на кадр и на шаг мира (updateMap) */
   /* ── подвал карты: сначала расклад, потом рисование ──
      Слева — про прыжок (цена, расстояние, маршрут), справа — итоги (тела,
      виды, деньги, фронт). На широком экране это две колонки в одну строку;
@@ -46270,8 +46326,26 @@ function drawMap(){
    /* линейки, шапка и роза (M347): интерфейс поверх листа, сообщает свои прямоугольники */
    if(typeof mapRulersDraw==="function"){mapRulersDraw(V,cell,foot);mapRoseDraw(foot);}
   }
+}
+/* ── расклад прыжка: расстояние, цена, можно ли ──
+   Один на кадр и на шаг мира: кадр рисует цену и красит курс, шаг мира по
+   ДЕЙСТВИЮ прыгает. Прежде прыжок жил внутри drawMap — мир менялся в
+   рисовании, и без кадра (свёрнутая вкладка, набор без картинки, бот) карта
+   не прыгала вовсе (0.438.0) */
+function mapJump(){
+  const st=stat();
+  const dsel=Math.hypot(G.sel.x-G.sx,G.sel.y-G.sy);
+  /* погасший рукав смотрителей (11k): прокладка стоит больше топлива */
+  const cost=Math.round((9+dsel*13)*((typeof keepersJumpK==="function")?keepersJumpK():1));
+  /* в пустую клетку курса нет (M347): выбрать можно, прыгнуть — некуда */
+  const bad=dsel>st.jump+.02||cost>G.fuel||dsel===0||!starAt(G.sel.x,G.sel.y);
+  return {dsel,cost,bad};
+}
+function updateMap(dt){
+  if(!G.sel)return;
   G.prompt=G.mapClean?"":(G.mapPeek?"ТАП — ВЫБОР · НАЗАД — НА СТАНЦИЮ":"ТАП — ВЫБОР · ЕЩЁ РАЗ — ПОДРОБНЕЕ · ДЕЙСТВИЕ — ПРЫЖОК");
   if(actEdge){
+    const {dsel,cost,bad}=mapJump();
     if(G.mapPeek)say("Сначала отстыкуйтесь");
     else if(!bad)jump(cost);
     else if(dsel>0)say("Прыжок невозможен");
@@ -82195,7 +82269,7 @@ function renderDeskTop(box){
     cv.style.width="100%";cv.style.height=h+"px";
     const c=cv.getContext("2d");
     c.setTransform(cv.width/w,0,0,cv.width/w,0,0);
-    try{DESK_DRAW[it.id](c,w,h);}catch(e){}
+    try{DESK_DRAW[it.id](c,w,h);}catch(e){crashShip("desk",it.id+": "+e.message,"");}   /* сломанная вещь на столе — в журнал сбоев, а не в тишину (0.438.0) */
     cell.appendChild(cv);
     const tx=document.createElement("em");tx.textContent=it.ru;
     const nt=document.createElement("s");nt.textContent=it.note;
@@ -86001,6 +86075,7 @@ function stepWorld(dt){
      только в тот кадр, когда игрок сменил систему */
   sysRasterTick();
   if(G.mode==="system"||G.mode==="dock"||G.mode==="barge")updateSystem(dt);
+  else if(G.mode==="map")updateMap(dt);   /* прыжок — шаг мира, не кадр (0.438.0) */
   else if(G.mode==="landing")updateLanding(dt);
   else if(G.mode==="surface"){updateSurface(dt);tickLaunchHold(dt);}
   else if(G.mode==="dig"&&G.dig)updateDig(dt);

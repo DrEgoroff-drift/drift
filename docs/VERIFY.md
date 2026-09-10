@@ -153,8 +153,8 @@ orbit inside `SYS_CACHE` all session, so a scene now rebuilds its system from th
 that both the meter's numbers and the fuzzer's «one seed, same failure» drift with how long the
 tab has been open.
 
-**The phone layout is only measured if you ask for it.** The layout guards (`91f-ui`,
-`91zzx-mobile`) are declared `{win:"phone"}` and do not run when the window is not a phone, because in a desktop window the
+**The phone layout is only measured if you ask for it.** The layout guards (`91zzx-mobile`;
+`91f-ui` runs in every window) are declared `{win:"phone"}` and do not run when the window is not a phone, because in a desktop window the
 phone rules are not applied at all:
 
 ```bash

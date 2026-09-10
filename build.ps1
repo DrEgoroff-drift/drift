@@ -42,7 +42,8 @@ function Sort-Ordinal($items) {
 $LAW_FREE = @("01-core.js")
 function ClockLaw($files) {
   $bad = New-Object System.Collections.Generic.List[string]
-  $raw = [regex]'Math\.random\b|Date\.now\b|performance\.now\b|new\s+Date\(\s*\)'
+  # и обходы закона тем же законом (0.438.0): Math["random"], Date["now"], `new Date` без скобок
+  $raw = [regex]'Math\.random\b|Math\s*\[\s*["'']random["'']\s*\]|Date\.now\b|Date\s*\[\s*["'']now["'']\s*\]|performance\.now\b|performance\s*\[\s*["'']now["'']\s*\]|new\s+Date\(\s*\)|new\s+Date\b(?!\s*\()'
   $top = [regex]'(?m)^(?:async\s+)?function\s*\*?\s*([A-Za-z0-9_$]+)|^(?:const|let|var)\s+([A-Za-z0-9_$]+)'
   $rndCall = [regex]'(?<![\w$.])rnd\s*\('
   $cm = [regex]'(?s)/\*.*?\*/|(?<![:\\])//[^\n]*'
@@ -114,7 +115,14 @@ function Build {
           $gold = "{" + ($gl -join ",") + "}"
         }
       }
-      $tjs = $js + "`nconst GOLDEN=" + $gold + ";`n" + ($tparts -join "`n")
+      # Поля мира (0.438.0): каждое имя, которому где-то в src/ присваивают `G.имя=`,
+      # вшивается списком G_FIELDS — сеть сейва (91zzzzzzzzz-savenet) сверяет его со
+      # snapshot() и SAVE_EPHEMERAL: поле либо сохраняется, либо названо эфемерным
+      # с причиной. Так пропадали relic, cutBonus, ultCount — и ни один тест не видел.
+      $gf = New-Object 'System.Collections.Generic.HashSet[string]'
+      foreach ($m in [regex]::Matches($js, '\bG\.([A-Za-z_$][\w$]*)\s*(?:=(?!=)|\|\|=|\?\?=|\+\+|--|[-+*/]=)')) { [void]$gf.Add($m.Groups[1].Value) }
+      $gfl = @($gf); [Array]::Sort($gfl, [System.StringComparer]::Ordinal)
+      $tjs = $js + "`nconst GOLDEN=" + $gold + ";`nconst G_FIELDS=[" + (($gfl | ForEach-Object { '"' + $_ + '"' }) -join ",") + "];`n" + ($tparts -join "`n")
       $thtml = $shell.Replace("/*{{STYLE}}*/", $css).Replace("//{{SCRIPT}}", $tjs)
       [System.IO.File]::WriteAllText((Join-Path $root "tests.html"), $thtml, $enc)
       $msg += " · tests.html из {0} наборов" -f $tfiles.Count
@@ -245,8 +253,10 @@ function Bulk($files, $tfiles) {
     if (-not $declared.Contains($nm)) { $ghosts += $nm }
   }
   if ($ghosts.Count) {
-    "  ! typeof-проверка бережёт несуществующую функцию (вызов не сработает НИКОГДА): {0}" -f
-      ($ghosts -join ", ")
+    # это закон, а не напоминание: такой вызов не сработает никогда, и предупреждение
+    # в хвосте сборки никто не читает — crewGift молчал тридцать версий именно так
+    throw ("typeof-проверка бережёт несуществующую функцию (вызов не сработает НИКОГДА): {0}" -f
+      ($ghosts -join ", "))
   }
   # ── байт, которого не видно ──
   # Heredoc через Bash съедает обратную косую: `\b` в исходнике превращается

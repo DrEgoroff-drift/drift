@@ -367,9 +367,7 @@ function drawMap(){
   /* сколько машин работает на тебя в этой системе (M237) */
   if(typeof drawDronesMap==="function")drawDronesMap(vis);
   /* погасший рукав смотрителей (11k): прокладка стоит больше топлива */
-  const cost=Math.round((9+dsel*13)*((typeof keepersJumpK==="function")?keepersJumpK():1));
-  /* в пустую клетку курса нет (M347): выбрать можно, прыгнуть — некуда */
-  const bad=dsel>st.jump+.02||cost>G.fuel||dsel===0||!starAt(G.sel.x,G.sel.y);
+  const {cost,bad}=mapJump();   /* один расклад на кадр и на шаг мира (updateMap) */
   /* ── подвал карты: сначала расклад, потом рисование ──
      Слева — про прыжок (цена, расстояние, маршрут), справа — итоги (тела,
      виды, деньги, фронт). На широком экране это две колонки в одну строку;
@@ -532,8 +530,26 @@ function drawMap(){
    /* линейки, шапка и роза (M347): интерфейс поверх листа, сообщает свои прямоугольники */
    if(typeof mapRulersDraw==="function"){mapRulersDraw(V,cell,foot);mapRoseDraw(foot);}
   }
+}
+/* ── расклад прыжка: расстояние, цена, можно ли ──
+   Один на кадр и на шаг мира: кадр рисует цену и красит курс, шаг мира по
+   ДЕЙСТВИЮ прыгает. Прежде прыжок жил внутри drawMap — мир менялся в
+   рисовании, и без кадра (свёрнутая вкладка, набор без картинки, бот) карта
+   не прыгала вовсе (0.438.0) */
+function mapJump(){
+  const st=stat();
+  const dsel=Math.hypot(G.sel.x-G.sx,G.sel.y-G.sy);
+  /* погасший рукав смотрителей (11k): прокладка стоит больше топлива */
+  const cost=Math.round((9+dsel*13)*((typeof keepersJumpK==="function")?keepersJumpK():1));
+  /* в пустую клетку курса нет (M347): выбрать можно, прыгнуть — некуда */
+  const bad=dsel>st.jump+.02||cost>G.fuel||dsel===0||!starAt(G.sel.x,G.sel.y);
+  return {dsel,cost,bad};
+}
+function updateMap(dt){
+  if(!G.sel)return;
   G.prompt=G.mapClean?"":(G.mapPeek?"ТАП — ВЫБОР · НАЗАД — НА СТАНЦИЮ":"ТАП — ВЫБОР · ЕЩЁ РАЗ — ПОДРОБНЕЕ · ДЕЙСТВИЕ — ПРЫЖОК");
   if(actEdge){
+    const {dsel,cost,bad}=mapJump();
     if(G.mapPeek)say("Сначала отстыкуйтесь");
     else if(!bad)jump(cost);
     else if(dsel>0)say("Прыжок невозможен");

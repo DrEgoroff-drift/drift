@@ -6,6 +6,34 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.438.0 - the audit of the night's tooling, and the save net
+
+Four hostile reviews of 0.428.0–0.437.0 and a survey of `src/`; the milestones stand, the
+tooling around them had holes. Fixed here:
+
+- **`test.ps1 -Mutants` no longer erases uncommitted work** — it restored a mutated file with
+  `git checkout --`, which rolled back the whole file; now it writes back the text it read.
+- **`-Changed` cannot pass by running nothing** — no matching suite means the fast tier, and a
+  change to `tests/90*` (harness, tools, detectors) means the full corpus, not «the file itself».
+- **A shard has a ceiling** — 900 s, then its own Chromes are killed and the part is reported as
+  hung; `--timeout` never worked under the new headless (the 33-minute GPU spin of 10.09).
+- **`resetWorld` restores the player's options** (`OPTS_BOOT`) — the two drivers' private
+  workaround is gone, and the hostile-save suite no longer leaks a text pad size into its neighbours.
+- **The clock law also refuses** `Math["random"]`, `Date["now"]`, `new Date` without parens; a
+  `typeof` check on a function that does not exist now fails the build instead of warning.
+- **The map jumps on the world step** (`updateMap`), not inside `drawMap` — the world changed in
+  drawing, so without a frame (hidden tab, a suite without pixels, the bot) there was no jump.
+- **The save net** (`91zzzzzzzzz-savenet`): every field on `G` is either in `snapshot()` or named in
+  `SAVE_EPHEMERAL` (`14a2`) with a reason — 260 fields checked, seven marked «?» for the author;
+  save→load→save is a fixpoint; numbers that the PHP cloud returns as strings are numbers again
+  for every option (`optsNumify`), not only the pad size.
+- `T.bot("undock")` can go red (no button was «leave()»), `T.replay` refuses a recording from
+  another version, the trips oracle has absolute anchors beside its own-median thresholds,
+  `detRuler` runs last, a broken desk item goes to the crash log instead of silence.
+- `docs/INDEX.md` names where a symbol ends (`file:start-end`), so a session reads a function by
+  exact offset; `PLAN.md` back to 52 KB (the closed «Сорока» queue archived); docs stopped saying
+  there is no `node` on this machine. The audit's queue and the rejected refactors: `PLAN.md`,
+  «Refactor audit».
 ## 0.437.0 - the recorder sees the screen's buttons too (M444)
 
 A click on any button while `?rec=1` is on becomes a frame event — the button's id and label

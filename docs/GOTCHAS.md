@@ -79,8 +79,9 @@ this file keeps the evidence and the fix.
   backslash, build it as `chr(92)` instead of typing it, and grep the result for control
   characters before trusting it:
   `any(ord(c)<9 or 10<ord(c)<32 for c in text)`.
-- There is **no `node`** on this machine — hence the PowerShell build. Python 3.12 **is**
-  there (the older "no python" note was wrong): `python -` with a heredoc is the cheapest
+- **`node` is here (v26, `tools\node` or PATH) but only runs the fast test tier** — the build
+  stays PowerShell, tooling is Python 3.12 (the older "no node"/"no python" notes were wrong):
+  `python -` with a heredoc is the cheapest
   way to patch a UTF-8 source file. A `.ps1` must be rewritten **with** its BOM
   (`codecs.BOM_UTF8`), or PowerShell 5.1 turns every Cyrillic literal to mojibake.
 - `ssh drift` prints a post-quantum key-exchange warning on every connection.

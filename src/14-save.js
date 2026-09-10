@@ -271,7 +271,7 @@ function applySave(s){
      — со старого сохранения он обнуляется один раз, и дальше заполняется
      настоящими видами планет. Всё остальное в сохранении цело, формат прежний. */
   G.species=new Set(((s.bioV|0)>=2&&Array.isArray(s.species))?s.species:[]);
-  Object.assign(G.opts,s.opts||{});
+  Object.assign(G.opts,optsNumify(s.opts||{}));   /* облако на PHP отдаёт числа строками — назад в числа всем классом (14a2) */
   G.zoom=clamp(+s.zoom||1,.16,2.4);
   G.market=asMap(s.market);
   /* фронт пиратов: разреженный объект по ключу "sx,sy", как всё привязанное

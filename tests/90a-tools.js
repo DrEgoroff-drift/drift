@@ -310,7 +310,9 @@ const T=(()=>{
       case "undock":{
         if(G.mode!=="dock")return R(false,"не на станции: "+G.mode);
         const c=tap("ОТСТЫКОВ")||tap("undock");
-        if(!c)leave();
+        /* кнопки нет — это провал, а не повод уйти leave() мимо экрана: иначе
+           цель не могла покраснеть никогда (0.438.0) */
+        if(!c)return R(false,"кнопки ОТСТЫКОВКИ нет на экране станции");
         return R(G.mode==="system","после отстыковки режим "+G.mode);}
       case "sell":{
         if(G.mode!=="dock")return R(false,"не на станции: "+G.mode);
@@ -381,10 +383,10 @@ const T=(()=>{
         if(G.mode!=="system")return R(false,"не в полёте: "+G.mode);
         if(!arg||arg.sx==null)return R(false,"куда прыгать — {sx,sy}");
         const from=G.sx+","+G.sy;
-        /* карту ведёт её же кадр (drawMap), а не stepWorld: прыжок — ДЕЙСТВИЕ по
-           фронту внутри кадра карты, как у игрока с выбранным сектором */
+        /* прыжок — ДЕЙСТВИЕ по фронту на шаге мира карты (updateMap, 0.438.0),
+           как у игрока с выбранным сектором; сюда — мимо экрана карты */
         G.mode="map";G.sel={x:arg.sx,y:arg.sy};
-        try{actEdge=true;drawMap();}finally{actEdge=false;}
+        try{actEdge=true;stepWorld(1);}finally{actEdge=false;}
         if(G.mode==="map")return R(false,"прыжок не состоялся: "+G.prompt.split("\n")[0]+" · топливо "+G.fuel.toFixed(0));
         return R(G.mode==="system"&&G.sx+","+G.sy!==from,"после прыжка "+G.mode+" в "+G.sx+","+G.sy);}
       case "save":{
@@ -423,6 +425,9 @@ const T=(()=>{
     o=o||{};let n=0;
     for(const sg of rec.segs){
       const h=sg.head;
+      /* запись с другой сборки воспроизводится молча и расходится — сверяем
+         версию; replay(rec,{anyVer:true}) — если расхождение и есть цель (0.438.0) */
+      if(h.ver&&h.ver!==VER&&!o.anyVer)throw new Error("запись с версии "+h.ver+", игра "+VER+" — воспроизведение недостоверно; replay(rec,{anyVer:true}), чтобы всё равно");
       resetWorld();
       applySave(JSON.parse(JSON.stringify(h.snap)));
       rndRestore(h.rnd);if(o.seed!=null)rndSeed(o.seed);

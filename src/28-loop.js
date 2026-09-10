@@ -191,6 +191,7 @@ function stepWorld(dt){
      только в тот кадр, когда игрок сменил систему */
   sysRasterTick();
   if(G.mode==="system"||G.mode==="dock"||G.mode==="barge")updateSystem(dt);
+  else if(G.mode==="map")updateMap(dt);   /* прыжок — шаг мира, не кадр (0.438.0) */
   else if(G.mode==="landing")updateLanding(dt);
   else if(G.mode==="surface"){updateSurface(dt);tickLaunchHold(dt);}
   else if(G.mode==="dig"&&G.dig)updateDig(dt);

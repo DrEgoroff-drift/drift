@@ -186,6 +186,11 @@ const UI_BOOT={};
 if(typeof tab!=="undefined")UI_BOOT.tab=tab;
 if(typeof stGroup!=="undefined")UI_BOOT.stGroup=stGroup;
 if(typeof tableTab!=="undefined")UI_BOOT.tableTab=tableTab;
+/* настройки игрока — тоже с заводки (0.438.0): G.opts — имя с заводки, снос полей
+   мира его не трогает, и набор про порченый сейв оставлял следующим «текст» в
+   графике и строку в размере пэдов. Драйверы детекторов и прогулок держали свой
+   обход (DET_OPTS_BOOT); теперь это часть сброса мира, как UI_BOOT. */
+const OPTS_BOOT=(()=>{try{return JSON.stringify(G.opts);}catch(e){return null;}})();
 
 /* ── мир начинается с одного семени и в одну минуту (M441) ──
    Семя и часы — не подмена в тестах, а те же rndSeed/clockSet, которыми игра
@@ -326,6 +331,7 @@ function resetWorld(){
   document.body.classList.remove("screen","table");
   try{ if("tab" in UI_BOOT)tab=UI_BOOT.tab; if("stGroup" in UI_BOOT)stGroup=UI_BOOT.stGroup;
        if("tableTab" in UI_BOOT)tableTab=UI_BOOT.tableTab; }catch(e){}
+  if(OPTS_BOOT){G.opts=JSON.parse(OPTS_BOOT);invalidateKeyMap();}
 }
 /* сажаем игрока на первую твёрдую планету стартовой системы — общая заготовка */
 function landOnTestPlanet(){

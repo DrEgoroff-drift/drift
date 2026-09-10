@@ -303,7 +303,6 @@ TEST_SUITES.push(() => suite("сквозной: сцены × пять жест�
   const T0=performance.now();DET_INST_N=0;
   /* настройки — с заводки страницы, на время прогона; после — как были */
   const opts0=G.opts;
-  if(DET_OPTS_BOOT){G.opts=JSON.parse(DET_OPTS_BOOT);invalidateKeyMap();}
   resetWorld();
   const snap=JSON.parse(JSON.stringify(snapshot()));
   const V=[],run=[],skipped=[],seenV={},resets=[];let steps=0,scenes=0,armed=0;const exempted={};
@@ -366,8 +365,6 @@ TEST_SUITES.push(() => suite("сквозной: сцены × пять жест�
         detHook(true);
       }
       if(rec)run.push(rec);
-      /* кегль в большом окне — последним: после него сцену больше не судят */
-      {const t=performance.now();const r=detRuler(S);detCost("мерка",t);judge(r);}
       /* ── вооружённый борт: «РАКЕТА 0» умирает здесь ──
          В сценах пусковой нет ни у кого, и строка приборов «ракеты» не читалась
          никогда. Ставим пусковую тем же путём, что игрок (часть, подвес), с
@@ -389,6 +386,11 @@ TEST_SUITES.push(() => suite("сквозной: сцены × пять жест�
         detCost("вооружение",t);
       }
       if(sc.id==="система"){const t=performance.now();const d=detDoors(S);doors=d.overlays.length;detCost("двери",t);judge(Object.assign(d,{names:null}));}
+      /* кегль в большом окне — ПОСЛЕДНИМ, уже после дверей и вооружения: кадр
+         2560×1440 рисуется в холст чужой мерки и оставляет растры не того
+         размера в кешах — после него сцену больше не судят (0.438.0: раньше он
+         стоял до дверей, и «система» мерилась после него ещё дважды) */
+      {const t=performance.now();const r=detRuler(S);detCost("мерка",t);judge(r);}
     }
     const t=performance.now();
     for(const v of detHuman(run)){const why=detExempt(v);if(why){exempted[why]=(exempted[why]||0)+1;continue;}V.push(Object.assign(v,{n:1}));}

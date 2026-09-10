@@ -32,11 +32,8 @@
    Ставятся на загрузке страницы тестов и молчат, пока DET.on не поднят: весь
    прочий корпус идёт мимо них, как шёл. В игре (drift.html) этого файла нет. */
 const DET={on:false,errs:[],cons:[],said:0,texts:null,astro:null,hull:0,reads:null,writes:null};
-/* настройки игрока — какими они были при заводке страницы. resetWorld их не
-   трогает (G.opts — имя с заводки), и набор про порченый сейв оставлял
-   следующим «текст» в графике и строку в размере пэдов: драйвер мерил бы уже
-   не игру, а чужой мусор. Правило то же, что у G_BOOT_KEYS и UI_BOOT */
-const DET_OPTS_BOOT=(()=>{try{return JSON.stringify(G.opts);}catch(e){return null;}})();
+/* настройки игрока с заводки возвращает сам resetWorld (OPTS_BOOT, 90-harness,
+   0.438.0) — прежний обход DET_OPTS_BOOT здесь и в драйверах снят */
 addEventListener("error",e=>{
   if(!DET.on)return;
   const x=e&&e.error;
