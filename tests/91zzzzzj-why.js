@@ -36,7 +36,7 @@ function whyScene(){
 function whyDial(id){const e=document.getElementById(id);return e?String(e.textContent||"").trim():null;}
 function whyBar(id){const e=document.querySelector("#"+id+" i");return e?e.style.width:null;}
 
-TEST_SUITES.push(() => suite("приборы: цифра и полоса показывают мир, а не что-то своё", () => {
+TEST_SUITES.push(() => suite("приборы: цифра и полоса показывают мир, а не что-то своё",{tier:"browser"}, () => {
   resetWorld();
   const bad=[];
   const check=(ru)=>{
@@ -68,7 +68,7 @@ TEST_SUITES.push(() => suite("приборы: цифра и полоса пок�
   check("на нуле");
   /* и на грунте: там состав приборов другой, а правда та же */
   resetWorld();
-  if(typeof landOnTestPlanet==="function"){
+  {
     landOnTestPlanet();
     G.fuel=11.2;G.hull=63.7;
     check("на грунте");
@@ -116,7 +116,7 @@ TEST_SUITES.push(() => suite("наука: ни одной технологии, 
      и это единственный способ проверить, что за них не берут данные впустую:
      игра читает собственный исходник, как в наборе про имена (91zzzzy). */
   resetWorld();
-  const src=(typeof nmSource==="function")?nmSource():"";
+  const src=nmSource();
   ok(src.length>100000,"исходник игры доступен набору");
   const bad=[],mute=[],paid=[];
   const nums=()=>{const s=stat(),o={};for(const k in s)if(typeof s[k]==="number")o[k]=s[k];return o;};
@@ -149,7 +149,7 @@ TEST_SUITES.push(() => suite("наука: ни одной технологии, 
   eq(bad.slice(0,4).join(" ;; "),"","за каждую технологию платят не зря");
 }));
 
-TEST_SUITES.push(() => suite("подсказка: если она обещает ДЕЙСТВИЕ, ДЕЙСТВИЕ что-то делает", () => {
+TEST_SUITES.push(() => suite("подсказка: если она обещает ДЕЙСТВИЕ, ДЕЙСТВИЕ что-то делает",{tier:"heavy"}, () => {
   /* Подсказка внизу экрана — это и есть ответ на «что тут можно». Она пишется
      кадром под то, что сейчас под рукой: «ДЕЙСТВИЕ — СТЫКОВКА», «ДЕЙСТВИЕ —
      БУРЕНИЕ». Проверяем самое прямое: если обещание есть, нажатие обязано
@@ -166,7 +166,7 @@ TEST_SUITES.push(() => suite("подсказка: если она обещает
     const p=String(G.prompt||"");
     if(!/ДЕЙСТВ/.test(p))continue;
     saw.push(sc.id);
-    const a=prState(),sig0=whyScene(),said0=(typeof PR_SAID==="number")?PR_SAID:0;
+    const a=prState(),sig0=whyScene(),said0=T.said();
     /* «УДЕРЖИВАЙТЕ ДЕЙСТВИЕ» — это другое действие, и мерить его одним кадром
        нечестно: бурение и взлёт нарочно сделаны удержанием (M20). Держим
        столько, сколько просит подсказка, иначе — один кадр, как у игрока. */
@@ -181,7 +181,7 @@ TEST_SUITES.push(() => suite("подсказка: если она обещает
     if(died){ bad.push(sc.id+" · ДЕЙСТВИЕ уронило кадр: "+died); continue; }
     const d=prDelta(a,prState());
     const moved=Object.keys(d).some(k=>k!=="mode"&&k!=="t"&&d[k])||d.mode||whyScene()!==sig0;
-    const spoke=((typeof PR_SAID==="number")?PR_SAID:0)>said0;
+    const spoke=T.said()>said0;
     if(!moved&&!spoke)
       bad.push(sc.id+" · подсказка обещает «"+p.split("\n")[0].slice(0,34)+"», а ДЕЙСТВИЕ не сделало ничего");
   }
@@ -195,9 +195,7 @@ TEST_SUITES.push(() => suite("черпак: в него идут за газом
      взять. Если в коридоре сбора трюм не растёт, вся сцена — красивый риск
      без награды. Ставим корабль в коридор и ждём. */
   resetWorld();
-  const sys=(typeof e2eFind==="function")
-    ? e2eFind(q=>(q.planets||[]).some(p=>p.type==="gas"))
-    : null;
+  const sys=e2eFind(q=>(q.planets||[]).some(p=>p.type==="gas"));
   if(!sys){ok(false,"газового гиганта поблизости нет — пропуск");return;}
   G.sx=sys.sx;G.sy=sys.sy;G.sys=sys;
   const p=sys.planets.find(q=>q.type==="gas");

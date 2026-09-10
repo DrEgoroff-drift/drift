@@ -58,17 +58,7 @@ const E2E_CRASHES = [];
    не находит НИЧЕГО — и «тычок в каждую кнопку стола» (91zzzz) годами жал
    только станцию, сам того не говоря. Обработчик, поставленный свойством
    `el.onclick`, не виден селектору `[onclick]`, так что перебираем узлы. */
-function e2eClickables(root, limit) {
-  const box = (typeof root === "string") ? document.querySelector(root) : root;
-  if (!box) return [];
-  const out = [];
-  for (const el of box.querySelectorAll("*")) {
-    if (el.tagName === "BUTTON" ? el.disabled : !el.onclick) continue;
-    out.push(el);
-    if (out.length >= (limit || 40)) break;
-  }
-  return out;
-}
+function e2eClickables(root, limit) { return T.controls(root, { all: true, cap: limit || 40 }).map(c => c.el); }
 
 /* обход состояния: путь до первого нездорового числа. Циклы, DOM и
    типизированные массивы учтены, узлы считаны — обход не должен стоить
@@ -85,7 +75,7 @@ function e2eScan(root, test, cap) {
     if (t !== "object") return;
     if (seen.has(v)) return;
     seen.add(v);
-    if (typeof Node !== "undefined" && v instanceof Node) return;
+    if (v instanceof Node) return;
     if (v instanceof Set || v instanceof Map) return;   /* там ключи и метки, чисел нет */
     if (ArrayBuffer.isView(v)) {
       for (let i = 0; i < v.length && i < 4000; i++)
@@ -102,21 +92,10 @@ function e2eScan(root, test, cap) {
   return bad;
 }
 /* случайные руки: те же клавиши, что у фуззера, но короткими сеансами */
-function e2eHands(seed, n, each) {
-  const r = rng(hashi(0xE2E, seed, 17));
-  const KS = ["left", "right", "thrust", "brake", "act", "fire"];
-  for (let i = 0; i < n; i++) {
-    if (i % 4 === 0) { for (const k of KS) keys[k] = r() < .3; actEdge = keys.act && r() < .5; }
-    else actEdge = false;
-    each(i);
-    G.t += 1;
-  }
-  for (const k in keys) keys[k] = false;
-  actEdge = false;
-}
+function e2eHands(seed, n, each) { return T.hands(n, each, seed); }
 
 /* ── 1. числа остаются числами ── */
-TEST_SUITES.push(() => suite("сквозной: за прогон по сценам в состоянии не заводится NaN", () => {
+TEST_SUITES.push(() => suite("сквозной: за прогон по сценам в состоянии не заводится NaN",{tier:"heavy"}, () => {
   const bad = [];
   let ran = 0, scenes = 0;
   for (const sc of lookScenes()) {
@@ -140,7 +119,7 @@ TEST_SUITES.push(() => suite("сквозной: за прогон по сцен�
    Игрок жмёт «выход» из пещеры, с грунта, из базы — и в каждой из этих точек
    сейв должен уйти целиком и вернуться. Проверяем полный круг:
    snapshot → строка → разбор → applySave → мир снова живой. */
-TEST_SUITES.push(() => suite("сквозной: из любой сцены сейв пишется, читается и полёт продолжается", () => {
+TEST_SUITES.push(() => suite("сквозной: из любой сцены сейв пишется, читается и полёт продолжается",{tier:"browser"}, () => {
   const bad = [];
   let n = 0;
   for (const sc of lookScenes()) {
@@ -193,7 +172,7 @@ function e2eLost(a, b, path, out) {
   if (dead(b)) out.push(path + ": " + JSON.stringify(a) + " → " + JSON.stringify(b));
   return out;
 }
-TEST_SUITES.push(() => suite("сквозной: круг сейва не теряет ни одного поля", () => {
+TEST_SUITES.push(() => suite("сквозной: круг сейва не теряет ни одного поля",{tier:"browser"}, () => {
   resetWorld(); fuzzRich();
   /* полю положена разница: ts — час записи, log — загрузка пишет в тетрадь строку */
   const FREE = ["ts", "log"];
@@ -216,8 +195,14 @@ TEST_SUITES.push(() => suite("сквозной: круг сейва не тер�
    «требует» ничего не стоит, пока никто не проверил: снимаем поле за полем
    и грузимся. То же со значением null — облако возвращает его вместо
    пустой карты (та самая ошибка `{}` → `[]`, M286). */
-TEST_SUITES.push(() => suite("сквозной: сейв без поля и с пустым полем грузится — старая версия не за дверью", () => {
-  resetWorld(); fuzzRich();
+TEST_SUITES.push(() => suite("сквозной: сейв без поля и с пустым полем грузится — старая версия не за дверью",{tier:"heavy"}, () => {
+  resetWorld();
+  /* свежий мир — с собой: увечный сейв пишет и поля, которые resetWorld не
+     возвращает (настройки G.opts и прочие поля с заводки). Без этого набор
+     оставлял последнее увечье следующим — в перемешке (?shuffle=7) «печь:
+     стоя на месте» пекла в системе 108 холстов на 150 кадров (M442) */
+  const fresh = JSON.parse(JSON.stringify(snapshot()));
+  fuzzRich();
   const base = JSON.parse(JSON.stringify(snapshot()));
   const bad = [];
   let n = 0;
@@ -253,6 +238,7 @@ TEST_SUITES.push(() => suite("сквозной: сейв без поля и с �
   }
   tableTab = "ether"; tab = "market";
   document.querySelectorAll(".scr.open").forEach(e => e.classList.remove("open"));
+  applySave(fresh);
   resetWorld();
   ok(n > 100, "проверок сейва: " + n);
   eq(bad.slice(0, 4).join(" ;; "), "", "сейв без любого поля грузится, рисуется и открывает экраны");
@@ -263,7 +249,7 @@ TEST_SUITES.push(() => suite("сквозной: сейв без поля и с �
    набор до сих пор не видел ни одного, потому что смотрел на числа. Смотрим на
    строки: тетрадь, подсказка, сообщение и всё, что нарисовали закладки стола и
    вкладки станции на прожитом мире. */
-TEST_SUITES.push(() => suite("сквозной: в тексте игры нет «undefined», «NaN» и «[object Object]»", () => {
+TEST_SUITES.push(() => suite("сквозной: в тексте игры нет «undefined», «NaN» и «[object Object]»",{tier:"browser"}, () => {
   const DIRT = /undefined|\bNaN\b|\[object |\bnull\b/;
   const bad = [];
   /* набираем текст жизнью: прогон по сценам пишет в тетрадь сам */
@@ -312,7 +298,7 @@ TEST_SUITES.push(() => suite("сквозной: в тексте игры нет 
    который никто не подрезает, и вместе с ним растёт сейв (а раздутый сейв
    уже однажды убил запись: «Invalid string length», 30.08). Меряем не
    скорость, а рост: снимок длин на 600-м кадре и на 3600-м. */
-TEST_SUITES.push(() => suite("сквозной: долгий полёт не раздувает ни списки, ни сейв", () => {
+TEST_SUITES.push(() => suite("сквозной: долгий полёт не раздувает ни списки, ни сейв",{tier:"heavy"}, () => {
   resetWorld(); fuzzRich();
   G.mode = "system";
   const lens = () => {
@@ -353,7 +339,7 @@ TEST_SUITES.push(() => suite("сквозной: долгий полёт не р�
    «жмут кнопки» и молчат, могли молчать зря. Сторож кадра (28-loop) такие
    исключения ловит и считает — этот файл склеивается последним, и спрашивает
    счётчик за ВЕСЬ прогон, а не за свой набор. */
-TEST_SUITES.push(() => suite("сквозной: тычок во всё, что нажимается, и сторож кадра за весь прогон", () => {
+TEST_SUITES.push(() => suite("сквозной: тычок во всё, что нажимается, и сторож кадра за весь прогон",{tier:"heavy"}, () => {
   resetWorld(); fuzzRich();
   let clicks = 0;
   const n0 = E2E_CRASHES.length;
@@ -395,26 +381,10 @@ TEST_SUITES.push(() => suite("сквозной: тычок во всё, что �
    стройкой, наёмные руки, отбитый сектор, имя у звезды. Половина интерфейса
    (СТРОЙКА, ладдер, службы флота, экипаж) в чистом мире просто не рисуется,
    то есть до сих пор не проверялась ничем. */
-function e2eLate() {
-  fuzzRich();
-  const key = G.sx + "," + G.sy, now = Date.now();
-  /* ворота ступени (12ad): садились, бурили, оставили дрона, отбили, назвали */
-  G.place[key + "/0"] = { f: 1, l: 2, n: 3, take: 1, hurt: 0, care: 2 };
-  G.occCalm[key] = 1; G.names[key] = "Отрадное"; G.rep[key] = 3;
-  const H = G.hold[key] = G.hold[key] || {};
-  H.deeds = { drone: 6, drill: 4, cargo: 900 };
-  H.bld = {};
-  let n = 0;
-  for (const id in BLD) { H.bld[id] = { lvl: 3, t0: now - 2e6, ready: now - 1e6, my: {}, got: {} }; if (++n >= 6) break; }
-  /* руки — настоящие, из генератора станции, а не выдуманные объекты */
-  if (typeof coopStamp === "function") coopStamp("Сквозной");   /* найм — кооперативу (M351) */
-  if (typeof stationMercs === "function" && typeof hireMerc === "function")
-    for (const c of stationMercs(G.sys).slice(0, 3)) { try { hireMerc(c); } catch (e) { } }
-  if (typeof bldTick === "function") { try { bldTick(); } catch (e) { } }
-}
-TEST_SUITES.push(() => suite("сквозной: поздний мир — ступень, стройка, экипаж — рисуется и жмётся", () => {
+function e2eLate() { T.give("late"); }   /* тело — в инструментах (90a-tools, M442) */
+TEST_SUITES.push(() => suite("сквозной: поздний мир — ступень, стройка, экипаж — рисуется и жмётся",{tier:"heavy"}, () => {
   resetWorld(); e2eLate();
-  const r = (typeof rungOf === "function") ? rungOf(G.sx, G.sy) : 0;
+  const r = rungOf(G.sx, G.sy);
   ok(r >= 15, "ступень позднего мира: " + r);
   ok(G.crew.length > 0, "руки наняты: " + G.crew.length);
   const n0 = E2E_CRASHES.length, bad = [];
@@ -444,7 +414,7 @@ TEST_SUITES.push(() => suite("сквозной: поздний мир — сту
     (E2E_CRASHES.length > n0 ? ": " + [...new Set(E2E_CRASHES.slice(n0))].slice(0, 3).join(" ;; ") : ""));
   resetWorld();
 }));
-TEST_SUITES.push(() => suite("сквозной: сейв позднего мира ходит по кругу без потерь", () => {
+TEST_SUITES.push(() => suite("сквозной: сейв позднего мира ходит по кругу без потерь",{tier:"browser"}, () => {
   resetWorld(); e2eLate();
   let js = "";
   try { js = JSON.stringify(snapshot()); } catch (e) { ok(false, "поздний сейв пишется: " + e.message); return; }
@@ -467,16 +437,8 @@ TEST_SUITES.push(() => suite("сквозной: сейв позднего мир
    автор ловит зависание, и именно эти переходы никем не пройдены подряд.
    Здесь один непрерывный вечер: три системы, полный круг в каждой, с записью
    и чтением сейва на каждом привале. */
-function e2eFind(pred) {
-  for (let r = 0; r < 12; r++)for (let x = -r; x <= r; x++)for (let y = -r; y <= r; y++) {
-    if (Math.max(Math.abs(x), Math.abs(y)) !== r) continue;
-    if (!starAt(x, y)) continue;
-    const s = getSystem(x, y);
-    if (pred(s)) return s;
-  }
-  return null;
-}
-TEST_SUITES.push(() => suite("сквозной: вечер за игрой — три системы, посадка, шахта, пещера, взлёт, прыжок", () => {
+function e2eFind(pred) { return T.find(pred); }
+TEST_SUITES.push(() => suite("сквозной: вечер за игрой — три системы, посадка, шахта, пещера, взлёт, прыжок",{tier:"heavy"}, () => {
   resetWorld(); fuzzRich();
   const bad = [], seenSys = {}, n0 = E2E_CRASHES.length;
   let legs = 0, frames = 0, sizes = [];
@@ -526,7 +488,7 @@ TEST_SUITES.push(() => suite("сквозной: вечер за игрой — �
 
    Сравниваем не с идеей, а с фактом: снимок мира, снятый на склейке, до
    первого набора. Всё, что после `resetWorld()` не совпало, — грязь. */
-TEST_SUITES.push(() => suite("сквозной: resetWorld возвращает мир к тому, каким его завела игра", () => {
+TEST_SUITES.push(() => suite("сквозной: resetWorld возвращает мир к тому, каким его завела игра",{tier:"browser"}, () => {
   if (!E2E_FRESH) { ok(false, "снимок чистого мира не снялся"); return; }
   resetWorld();
   let now = null;

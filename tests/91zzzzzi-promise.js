@@ -20,17 +20,9 @@
    Отказ вслух — законный исход всюду: не хватило денег, места, ранга. Он
    отличим от нарушения тем, что игре есть что сказать. */
 
-/* мерка мира: всё, чем кнопка может расплатиться или наградить */
-function prState(){
-  let cargo=0;for(const k of RES_KEYS)cargo+=G.cargo[k]|0;
-  const W=(typeof wanderStore==="function")?wanderStore():null;
-  return {cr:G.credits|0,matches:G.matches|0,fuel:+G.fuel,hull:+G.hull,data:G.data|0,
-    crew:(G.crew||[]).length,inv:(G.inv||[]).length,cargo,
-    mods:Object.values(G.mods).reduce((a,b)=>a+b,0),
-    tech:G.tech?G.tech.size:0,drones:(G.drones||[]).length,
-    tools:W?((W.shelf||[]).length+(W.hold||[]).length):0,
-    log:(G.log||[]).length,mode:G.mode,t:G.t};
-}
+/* мерка мира: всё, чем кнопка может расплатиться или наградить — T.purse()
+   (90a-tools, M442); здесь осталось старое имя */
+function prState(){return T.purse();}
 function prDelta(a,b){
   const d={};for(const k in a)if(typeof a[k]==="number")d[k]=b[k]-a[k];
   d.mode=(a.mode!==b.mode);
@@ -53,34 +45,12 @@ const PR_VERBS=[
 /* ── «игра что-то сказала» считается по вызовам, а не по тексту ──
    Сравнение G.msg с прежним врёт дважды: одинаковый отказ подряд оставляет
    строку прежней (и тычок выглядит немым, хотя игра ответила), а строка,
-   поставленная кем-то ещё в том же кадре, выглядит ответом. Считаем сами
-   вызовы `say`/`tell`/`logAdd` — это и есть голос игры. */
-let PR_SAID=0;
-(function(){
-  for(const nm of ["say","tell","logAdd"]){
-    const f=window[nm];
-    if(typeof f!=="function")continue;
-    window[nm]=function(){PR_SAID++;return f.apply(this,arguments);};
-  }
-})();
-function prSpoke(fn){const n=PR_SAID;fn();return PR_SAID>n;}
+   поставленная кем-то ещё в том же кадре, выглядит ответом. Считаются сами
+   вызовы `say`/`tell`/`logAdd` — счётчик живёт в инструментах: T.spoke(fn). */
+function prSpoke(fn){return T.spoke(fn);}
 
-/* видимые кнопки экрана вместе с их надписью */
-function prButtons(sel,cap,onlyBtn){
-  const box=document.querySelector(sel);if(!box)return [];
-  const out=[];
-  for(const el of box.querySelectorAll("*")){
-    if(el.tagName==="BUTTON"?el.disabled:(onlyBtn||!el.onclick))continue;
-    const cs=getComputedStyle(el);
-    if(cs.display==="none"||cs.visibility==="hidden"||cs.pointerEvents==="none")continue;
-    const r=el.getBoundingClientRect();if(r.width<8||r.height<8)continue;
-    const lbl=String(el.textContent||"").replace(/\s+/g," ").trim();
-    if(!lbl)continue;
-    out.push({el,lbl});
-    if(out.length>=(cap||30))break;
-  }
-  return out;
-}
+/* видимые кнопки экрана вместе с их надписью — T.controls(…,{text:true}) */
+function prButtons(sel,cap,onlyBtn){return T.controls(sel,{text:true,btn:!!onlyBtn,cap:cap||30});}
 /* обход всех экранов игры: стол и станция, открытые так, как их открывает игра.
    Восстановление после каждого тычка обязано быть НАСТОЙЧИВЫМ: тычок умеет
    открыть поверх другой экран или закрыть станцию совсем, а спрятанный ящик
@@ -98,7 +68,7 @@ function prRestore(kind,t){
     }
     try{ tab=t;renderTab(); }catch(e){ }
   }else{
-    if(typeof tableOpenNow!=="undefined"&&!tableOpenNow)try{tableToggle(true);}catch(e){}
+    if(!tableOpenNow)try{tableToggle(true);}catch(e){}
     try{ tableSetTab(t); }catch(e){ }
   }
 }
@@ -121,16 +91,16 @@ function prWalk(body,redraw,cap,onlyBtn,fn){
   redraw();
 }
 function prSweep(each){
-  if(typeof tableToggle==="function"){
+  {
     tableToggle(true);
     for(const b of [...document.querySelectorAll("#tableTabs button")]){
       const t=b.dataset.tab;
       prRestore("стол",t);
       each("стол/"+t,"#tableBody",()=>prRestore("стол",t));
     }
-    if(typeof tableOpenNow!=="undefined"&&tableOpenNow)tableToggle(false);
+    if(tableOpenNow)tableToggle(false);
   }
-  if(G.sys.station&&typeof openStation==="function"){
+  if(G.sys.station){
     G.st=G.sys.station;G.mode="dock";
     try{ openStation(); }catch(e){ }
     for(const b of [...document.querySelectorAll("#stTabs button")]){
@@ -138,16 +108,16 @@ function prSweep(each){
       prRestore("станция",t);
       each("станция/"+t,"#stBody",()=>prRestore("станция",t));
     }
-    if(typeof closeStation==="function")try{closeStation();}catch(e){}
+    try{closeStation();}catch(e){}
     tab="market";G.mode="system";G.st=null;
   }
   document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
   document.body.classList.remove("table","screen");
 }
 
-TEST_SUITES.push(() => suite("обещание: кнопка делает то, что написано на ней", () => {
+TEST_SUITES.push(() => suite("обещание: кнопка делает то, что написано на ней",{tier:"heavy"}, () => {
   resetWorld();
-  if(typeof e2eLate==="function")e2eLate();else fuzzRich();
+  e2eLate();
   G.credits=900000;G.matches=400;G.fuel=10;G.hull=40;G.data=9000;
   for(const k of RES_KEYS)G.cargo[k]=6;   /* есть что продать: иначе «ПРОДАТЬ» просто не рисуется */
   const bad=[],seen={};let tried=0,refused=0;
@@ -175,14 +145,14 @@ TEST_SUITES.push(() => suite("обещание: кнопка делает то, 
     (bad.length?" (всего "+bad.length+")":""));
 }));
 
-TEST_SUITES.push(() => suite("обещание: цена на кнопке — та, что списали", () => {
+TEST_SUITES.push(() => suite("обещание: цена на кнопке — та, что списали",{tier:"heavy"}, () => {
   /* Половина покупок в игре подписана одной ценой и ничем больше: на верфи и
      в оснастке кнопка называется «6 016 кр», в лаборатории — «30 дан», у
      наёмника — «НАНЯТЬ · 2 534 кр». Это самое прямое обещание, какое умеет
      дать интерфейс, и до сих пор никто не сверял его с тем, что списывают.
      Кошелёк набит нарочно: отказ по бедности здесь не проверяется. */
   resetWorld();
-  if(typeof e2eLate==="function")e2eLate();else fuzzRich();
+  e2eLate();
   G.credits=2000000;G.data=90000;
   for(const k of RES_KEYS)G.cargo[k]=40;
   const bad=[];let checked=0,spokeN=0;
@@ -213,13 +183,13 @@ TEST_SUITES.push(() => suite("обещание: цена на кнопке — �
     (bad.length?" (всего "+bad.length+")":""));
 }));
 
-TEST_SUITES.push(() => suite("обещание: у отказа есть голос — молчаливых тычков нет", () => {
+TEST_SUITES.push(() => suite("обещание: у отказа есть голос — молчаливых тычков нет",{tier:"heavy"}, () => {
   /* Нищий жмёт всё подряд. Каждый тычок обязан оставить след: мир двинулся,
      экран перерисовался или игра что-то сказала. Тычок без следа — это
      «нажал и ничего», самый обидный ответ интерфейса и единственный, который
      никакой набор до сих пор не замечал. */
   resetWorld();
-  if(typeof e2eLate==="function")e2eLate();else fuzzRich();
+  e2eLate();
   G.credits=0;G.matches=0;
   for(const k of RES_KEYS)G.cargo[k]=0;
   const bad=[];let tried=0,quiet=0;

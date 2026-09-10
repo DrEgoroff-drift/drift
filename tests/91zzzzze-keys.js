@@ -27,9 +27,12 @@ function keyStateOK(){
   if(need&&!G[need])return "режим "+G.mode+" без состояния G."+need;
   return "";
 }
-const KEY_ALL=["left","right","thrust","brake","act","fire","up","down"];
+/* «up»/«down» в этом списке жили с M354, а таких клавиш в `keys` нет: набор
+   молча пропускал их (`if(!(k in keys))continue`) и ни разу не держал тангаж.
+   T.press на незнакомую клавишу бросает — и список стал настоящим (M442) */
+const KEY_ALL=["left","right","thrust","brake","act","fire","pup","pdown"];
 
-TEST_SUITES.push(() => suite("клавиши: каждая поодиночке и подолгу — в каждой сцене", () => {
+TEST_SUITES.push(() => suite("клавиши: каждая поодиночке и подолгу — в каждой сцене",{tier:"heavy"}, () => {
   const bad=[],seen=[];
   for(const sc of lookScenes()){
     let set=true;
@@ -38,16 +41,8 @@ TEST_SUITES.push(() => suite("клавиши: каждая поодиночке 
     const mode0=G.mode;
     seen.push(sc.id);
     for(const k of KEY_ALL){
-      for(const kk in keys)keys[kk]=false;
-      if(!(k in keys))continue;
-      keys[k]=true;
       let died="";
-      for(let i=0;i<70;i++){
-        actEdge=(k==="act"&&i%17===0);
-        try{ stepWorld(1); }catch(e){ died=e.message+" | "+String(e.stack||"").split("\n")[1]; break; }
-        G.t+=1;
-      }
-      actEdge=false;
+      try{ T.press(k,70,{edge:17}); }catch(e){ died=e.message+" | "+String(e.stack||"").split("\n")[1]; }
       if(died){ bad.push(sc.id+" · "+k+": "+died); break; }
       const sick=keyStateOK();
       if(sick){ bad.push(sc.id+"("+mode0+") · "+k+" → "+sick); break; }
@@ -62,13 +57,10 @@ TEST_SUITES.push(() => suite("клавиши: каждая поодиночке 
     (bad.length?" (всего "+bad.length+")":""));
 }));
 
-TEST_SUITES.push(() => suite("клавиши: тяга, зажатая на тысячу кадров, не уносит числа", () => {
+TEST_SUITES.push(() => suite("клавиши: тяга, зажатая на тысячу кадров, не уносит числа",{tier:"browser"}, () => {
   resetWorld();
   G.mode="system";G.fuel=100;
-  for(const kk in keys)keys[kk]=false;
-  keys.thrust=true;
-  for(let i=0;i<1200;i++){ stepWorld(1); G.t+=1; }
-  keys.thrust=false;
+  T.press("thrust",1200);
   const sp=Math.hypot(G.ship.vx,G.ship.vy),d=Math.hypot(G.ship.x,G.ship.y);
   ok(Number.isFinite(sp)&&Number.isFinite(d),"скорость и удаление — числа: "+sp+" / "+d);
   ok(sp<200,"скорость упирается в потолок, а не растёт вечно: "+sp.toFixed(2));
@@ -79,9 +71,7 @@ TEST_SUITES.push(() => suite("клавиши: тяга, зажатая на ты
   let js="";try{ js=JSON.stringify(snapshot()); }catch(e){ ok(false,"снимок после тяги: "+e.message); }
   ok(js.length>500,"снимок после тысячи кадров пишется");
   /* и назад: тормоз гасит, а не разгоняет в другую сторону навсегда */
-  keys.brake=true;
-  for(let i=0;i<600;i++){ stepWorld(1); G.t+=1; }
-  keys.brake=false;
+  T.press("brake",600);
   const sp2=Math.hypot(G.ship.vx,G.ship.vy);
   ok(sp2<=sp+.01,"тормоз гасит скорость: "+sp.toFixed(2)+" → "+sp2.toFixed(2));
   resetWorld();

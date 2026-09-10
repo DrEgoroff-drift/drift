@@ -1,0 +1,493 @@
+/* ══════════════ автотесты: инструменты (M442) ══════════════
+   docs/DESIGN-tests.md §3.1. Проверка — это договор «сделай вот это, и мир
+   должен ответить вот так». До M442 руки и глаза каждый набор писал себе сам:
+   `hands` (91zzzzzzz) снимал подпись кадра, `promise` (91zzzzzi) считал голос
+   игры и собирал кнопки, фуззер (91zzzz) ставил сцены и прожитый мир, `keys`
+   (91zzzzze) держал клавишу, e2e (91zzzzz) жал всё подряд. Здесь они собраны
+   в одно место и зовутся одинаково — детекторам (M443) и сценариям (M444)
+   нечего писать заново. Старые имена (`fuzzRich`, `prSpoke`, `e2eHands` …)
+   остались тонкими обёртками в своих файлах: наборы, которые их зовут, не
+   менялись.
+
+   Руки — меняют мир:
+     T.go(сцена, зерно)      свежий мир (resetWorld) и сцена из lookScenes() —
+                             по-русски («шахта») или латиницей ("dig"); зерно — рукам
+     T.press(клавиша, кадров, {edge, draw})   держать клавишу (или массив) N кадров
+     T.hands(кадров, each, зерно)             случайные руки, сеяные (e2eHands)
+     T.tap(надпись|id)  или  T.tap(x, y)      кнопка на экране / тычок в канву
+     T.drag(dx, dy, {x, y})                   протяжка пальцем по канве
+     T.wheel(n)                               колесо над канвой: n>0 — крупнее
+     T.wait(кадров)                           мир живёт без рук, последний кадр рисуется
+     T.advance(суток)                         часы вперёд, ленивые такты догоняют
+     T.window(w, h)  /  T.window()            подменить кадр (W, H, мерка UIK) / вернуть
+     T.give("credits"|"cargo"|"module"|"rich"|"late", …)
+     T.board(станция|"near")  /  T.leave()    причалить и открыть станцию / отчалить
+     T.bot(цель)                              заглушка: бот с целью — M444
+   Глаза — читают мир:
+     T.frame() / T.diff(a,b)  подпись кадра (каждая восьмая проба яркости) и доля сдвига
+     T.state()                {hash, snap, purse}: хэш и снимок сейва, кошелёк мира
+     T.look()                 числа кадра прибора (lookFrame, 28y-look)
+     T.ledger(fn)             что кадр сделал с канвой: вызовы по именам, тексты с кеглем
+     T.text()                 {dom, canvas}: видимый текст вёрстки и то, что кадр написал
+     T.controls(где, {…})     видимые нажимаемые узлы с именем (надпись, aria-label, id)
+     T.clock()                {now, shiftMs, days, t}
+   Прочее: T.dom() ответ вёрстки строкой · T.calm() закрыть открытое · T.spoke(fn)
+   сказала ли игра что-то · T.said() счётчик голоса · T.find(pred) ближняя
+   система · T.landWhere(pred) полоса по условию · T.scenes() · T.ticks()
+   ленивые такты · T.urlSeed() зерно из ?fseed.
+
+   Всё, что инструмент меняет вне G (подмена кадра, сдвиг часов), он
+   возвращает сам: `suite()` зовёт T._undo() после каждого набора.
+
+   Каркас вправе проверять окружение; наборы — нет (сеть в 90-harness). */
+
+/* ленивые такты: всё, что считается по часам, а не по кадрам (M354). Список
+   переехал из 91zzzzzb-clock: им пользуются и часы, и T.advance */
+const CLK_TICKS=["tickDrones","crewTick","mgrTick","newsTick","offerTick","qslTick","skyTick",
+  "mayakTick","orderTick","instTick","zooTick","traineeTick","recordTick","chartsTick","ringTick",
+  "expDayTick","expDepartTick","vegaDayTick","vegaAmbientTick","lastRunTick","planetTick",
+  "mirrorEchoTick","firstTick","lockerTick"];
+
+const T=(()=>{
+  /* латинские имена сцен — для скриптов снаружи (docs/stand.py знает те же) */
+  const SCENE_ALIAS={system:"система",map:"карта",landing:"заход",surface:"грунт день",day:"грунт день",
+    night:"грунт ночь",dig:"шахта",cave:"пещера",belt:"пояс",wanderer:"сорока",raid:"рейд",
+    winter:"зимовка",spa:"санаторий",scoop:"черпак",base:"база",home:"дом"};
+  let seed=0,said=0,clockMs=0,realNow=null,winSaved=null;
+
+  /* ── голос игры (из 91zzzzzi-promise, M355) ──
+     «Игра что-то сказала» считается по вызовам say/tell/logAdd, а не по
+     тексту: одинаковый отказ подряд оставляет строку прежней. */
+  for(const nm of ["say","tell","logAdd"]){
+    const f=window[nm];
+    window[nm]=function(){said++;return f.apply(this,arguments);};
+  }
+  function spoke(fn){const n=said;fn();return said>n;}
+
+  /* ── зерно (из 91zzzz-fuzz, M339) ── ?fseed=N даёт другую тропу целиком */
+  function urlSeed(){const m=/[?&]fseed=(\d+)/.exec(location.search);return m?(+m[1]>>>0):0;}
+  function scenes(){return lookScenes().map(x=>x.id);}
+  /* M441: при слиянии зерно пойдёт и в игровой rnd() — сейчас оно сеет руки */
+  function go(scene,s){
+    seed=(s==null)?urlSeed():(s>>>0);
+    resetWorld();
+    if(scene==null||scene==="старт"||scene==="start")return true;
+    const id=SCENE_ALIAS[scene]||scene;
+    const sc=lookScenes().find(x=>x.id===id);
+    if(!sc)throw new Error("T.go: сцены «"+scene+"» нет (есть: "+scenes().join(", ")+")");
+    return sc.set()!==false;
+  }
+
+  /* ── клавиши (из 91zzzzze-keys) ── шаг кадра тот же, что у фуззера */
+  function step(){stepWorld(1);G.t+=1;}
+  function press(k,n,o){
+    n=(n==null)?1:n;o=o||{};
+    const ks=(k==null)?[]:[].concat(k);
+    for(const q of ks)if(!(q in keys))throw new Error("T.press: клавиши «"+q+"» нет (есть: "+Object.keys(keys).join(",")+")");
+    for(const q in keys)keys[q]=false;
+    for(const q of ks)keys[q]=true;
+    const act=ks.indexOf("act")>=0,every=o.edge|0;
+    try{
+      for(let i=0;i<n;i++){
+        actEdge=act&&(i===0||(every>0&&i%every===0));
+        step();
+        if(o.draw&&i%o.draw===0)drawWorld();
+      }
+    }finally{for(const q in keys)keys[q]=false;actEdge=false;}
+    return n;
+  }
+  /* случайные руки: те же клавиши, что у фуззера, короткими сеансами (e2eHands) */
+  function hands(n,each,s){
+    const r=rng(hashi(0xE2E,(s==null)?seed:s,17));
+    const KS=["left","right","thrust","brake","act","fire"];
+    try{
+      for(let i=0;i<n;i++){
+        if(i%4===0){for(const k of KS)keys[k]=r()<.3;actEdge=keys.act&&r()<.5;}
+        else actEdge=false;
+        if(each)each(i);else stepWorld(1);
+        G.t+=1;
+      }
+    }finally{for(const k in keys)keys[k]=false;actEdge=false;}
+  }
+  function wait(n,o){
+    n=(n==null)?1:n;
+    for(let i=0;i<n;i++)step();
+    if(!o||o.draw!==false)drawWorld();
+    return n;
+  }
+
+  /* ── указатель по канве: координаты кадра (W×H), а не страницы ── */
+  function ptr(type,x,y){
+    const rc=cvs.getBoundingClientRect(),kx=(rc.width||W)/W,ky=(rc.height||H)/H;
+    const E=window.PointerEvent||window.MouseEvent;
+    cvs.dispatchEvent(new E(type,{pointerId:7,isPrimary:true,button:0,bubbles:true,cancelable:true,
+      clientX:(rc.left||0)+x*kx,clientY:(rc.top||0)+y*ky}));
+  }
+  function tap(a,b){
+    if(typeof a==="number"){ptr("pointerdown",a,b);ptr("pointerup",a,b);return true;}
+    const all=controls();
+    const c=all.find(c=>c.id===a)||all.find(c=>c.lbl===a)||all.find(c=>c.lbl.indexOf(a)===0);
+    if(!c)return null;
+    const n=said;c.el.click();
+    return {el:c.el,id:c.id,lbl:c.lbl,spoke:said>n};
+  }
+  function drag(dx,dy,o){
+    o=o||{};const x0=(o.x==null)?W/2:o.x,y0=(o.y==null)?H/2:o.y,N=o.steps||6;
+    ptr("pointerdown",x0,y0);
+    for(let i=1;i<=N;i++)ptr("pointermove",x0+dx*i/N,y0+dy*i/N);
+    ptr("pointerup",x0+dx,y0+dy);
+  }
+  function wheel(n){
+    n=(n==null)?1:n;const E=window.WheelEvent||window.MouseEvent,k=n<0?1:-1;
+    for(let i=0;i<Math.abs(n);i++)cvs.dispatchEvent(new E("wheel",{deltaY:120*k,bubbles:true,cancelable:true}));
+  }
+
+  /* ── часы (из 91zzzzzb-clock, M354) ──
+     M441: при слиянии сдвиг пойдёт через игровой now(); сейчас подменяется Date.now */
+  function clockShift(ms){
+    const real=Date.now;
+    Date.now=function(){return real.call(Date)+ms;};
+    return ()=>{Date.now=real;};
+  }
+  function ticks(n){
+    const bad={};
+    for(let i=0;i<(n||1);i++)for(const name of CLK_TICKS){
+      try{window[name]();}catch(e){bad[name]=(e&&e.message)||String(e);}
+    }
+    return bad;
+  }
+  function advance(days){
+    if(!realNow)realNow=Date.now;
+    clockMs+=days*864e5;
+    const real=realNow,ms=clockMs;
+    Date.now=function(){return real.call(Date)+ms;};
+    return ticks(1);
+  }
+  function clock(){return {now:Date.now(),shiftMs:clockMs,days:clockMs/864e5,t:G.t};}
+
+  /* ── окно: подменяется КАДР целиком (из 91zzzzzzz-hands, «мерка») ──
+     Мерка интерфейса выводится из размеров кадра, «×1.75 в окне 800» — кадр,
+     которого в жизни нет. Холст и вёрстка остаются от настоящего окна: здесь
+     судят то, что канва раскладывает по своей раме. Настоящее окно — docs/stand.py. */
+  function win(w,h){
+    if(w==null){if(winSaved){W=winSaved.W;H=winSaved.H;UIK=winSaved.U;winSaved=null;}return {W,H,UIK};}
+    if(!winSaved)winSaved={W,H,U:UIK};
+    W=w;H=h;UIK=uiScale(W,H);
+    return {W,H,UIK};
+  }
+
+  /* ── подарки ── */
+  function rich(){   /* прожитый мир (из 91zzzz-fuzz, fuzzRich) */
+    G.credits=500000;G.data=4000;
+    G.mods={engine:3,tank:3,hold:3,armor:2,drill:3,hyper:2,weapon:2};
+    G.modsOwned={engine:3,tank:3,hold:3,armor:2,drill:3,hyper:2,weapon:2};
+    G.tech=new Set(["synth","beacon","radar"]);
+    G.home=homeInit();G.home.tier=6;G.home.sx=G.sx;G.home.sy=G.sy;
+    /* собранное: редкости, куски отчёта, узлы — каждое со своим экраном */
+    for(let i=0;i<40;i++)rareTake("poi",(i*7919)>>>0);
+    for(let i=0;i<30;i++)loreTake((i*104729)>>>0);
+    for(let i=0;i<12;i++)nodeDrop("в аномалии",1,(i*31+7)>>>0);
+    /* осмотренные памятники: та самая ветка, на которой автор поймал зависание */
+    for(const k of Object.keys(POI_FIND))poiInspect({k,seed:(k.length*2654435761)>>>0,ru:POI_FIND[k].ru});
+    const m=genMgr(12345,["fact"]);if(m)try{hireMgr(m);}catch(e){}
+    /* дроны в рейсе — и в этой системе, и в соседней */
+    const now=Date.now();
+    G.droneInventory=2;
+    G.drones=[0,1,2].map(i=>({id:i+1,sx:G.sx,sy:G.sy,pi:i%2,res:["iron","titan","crystal"][i],
+      rate:.6,pool:150,soldAtMs:now,t0:now-9000*i,lastMs:now-9000*i,bornMs:now-3600000,
+      trips:3+i,down:i===2?now+300000:0,sold:20,earned:900,carry:.4}));
+    tickDrones();
+  }
+  function late(){   /* поздний мир (из 91zzzzz-e2e-life, e2eLate) */
+    rich();
+    const key=G.sx+","+G.sy,now=Date.now();
+    G.place[key+"/0"]={f:1,l:2,n:3,take:1,hurt:0,care:2};
+    G.occCalm[key]=1;G.names[key]="Отрадное";G.rep[key]=3;
+    const Hd=G.hold[key]=G.hold[key]||{};
+    Hd.deeds={drone:6,drill:4,cargo:900};
+    Hd.bld={};
+    let n=0;
+    for(const id in BLD){Hd.bld[id]={lvl:3,t0:now-2e6,ready:now-1e6,my:{},got:{}};if(++n>=6)break;}
+    coopStamp("Сквозной");   /* найм — кооперативу (M351) */
+    for(const c of stationMercs(G.sys).slice(0,3)){try{hireMerc(c);}catch(e){}}
+    try{bldTick();}catch(e){}
+  }
+  function give(what,a,b){
+    if(what==="credits"){G.credits=(+G.credits||0)+(+a||0);return G.credits;}
+    if(what==="cargo"){
+      if(RES_KEYS.indexOf(a)<0)throw new Error("T.give: груза «"+a+"» нет (есть: "+RES_KEYS.join(",")+")");
+      G.cargo[a]=(G.cargo[a]|0)+((b==null)?1:b);return G.cargo[a];
+    }
+    if(what==="module"){
+      if(!(a in G.mods))throw new Error("T.give: модуля «"+a+"» нет (есть: "+Object.keys(G.mods).join(",")+")");
+      const lv=(b==null)?1:b;G.mods[a]=lv;G.modsOwned[a]=Math.max(G.modsOwned[a]|0,lv);return lv;
+    }
+    if(what==="rich"){rich();return true;}
+    if(what==="late"){late();return true;}
+    throw new Error("T.give: не знаю «"+what+"» (credits|cargo|module|rich|late)");
+  }
+
+  /* ── станция ── */
+  function find(pred){   /* ближняя система по кольцам (из e2eFind) */
+    for(let r=0;r<12;r++)for(let x=-r;x<=r;x++)for(let y=-r;y<=r;y++){
+      if(Math.max(Math.abs(x),Math.abs(y))!==r)continue;
+      if(!starAt(x,y))continue;
+      const s=getSystem(x,y);if(pred(s))return s;
+    }
+    return null;
+  }
+  /* полоса по условию: первая твёрдая планета по кольцам, где pred(G.surf) —
+     правда (свежий мир на каждой). Для наборов, которым тестовой планеты мало:
+     памятника или стаи на ней может не быть вовсе */
+  function landWhere(pred,rings){
+    for(let r=0;r<(rings||5);r++)for(let x=-r;x<=r;x++)for(let y=-r;y<=r;y++){
+      if(Math.max(Math.abs(x),Math.abs(y))!==r||!starAt(x,y))continue;
+      const n=(getSystem(x,y).planets||[]).length;
+      for(let i=0;i<n;i++){
+        resetWorld();G.sx=x;G.sy=y;G.sys=getSystem(x,y);
+        const p=G.sys.planets[i];if(p.type==="gas")continue;
+        /* садимся той же дверью, что игрок: памятники вписывает startLanding
+           (genPOI), и полоса без захода их не знает вовсе */
+        startLanding(p);enterSurface();
+        if(pred(G.surf))return G.surf;
+      }
+    }
+    resetWorld();return null;
+  }
+  function board(s){
+    if(s==="near"||s==="ближняя"){s=find(q=>!!q.station);if(!s)return false;}
+    if(s&&s.sx!=null){SYS_CACHE.delete(s.key);const q=getSystem(s.sx,s.sy);
+      G.sx=q.sx;G.sy=q.sy;G.sys=q;G.ap=null;G.orbit=null;}
+    if(!G.sys.station)return false;
+    G.st=G.sys.station;G.mode="dock";openStation();
+    return true;
+  }
+  function leave(){try{closeStation();}catch(e){}G.mode="system";G.st=null;}
+  function bot(goal){
+    throw new Error("T.bot(«"+goal+"»): бота с целью ещё нет — это M444 (docs/DESIGN-tests.md §3.3)");
+  }
+
+  /* ── глаза ── */
+  /* подпись кадра: каждая восьмая проба яркости с настоящего холста (hFrame) */
+  function frame(){
+    const cx=cvs.getContext("2d"),w=cvs.width,h=cvs.height;
+    const d=cx.getImageData(0,0,w,h).data,out=[];
+    for(let y=0;y<h;y+=8)for(let x=0;x<w;x+=8){const i=(y*w+x)*4;out.push((d[i]+d[i+1]+d[i+2])/3);}
+    return out;
+  }
+  /* доля проб, которые сдвинулись заметно для глаза (hDiff) */
+  function diff(a,b){
+    if(!a||!b||a.length!==b.length)return 1;
+    let n=0;for(let i=0;i<a.length;i++)if(Math.abs(a[i]-b[i])>6)n++;
+    return n/(a.length||1);
+  }
+  /* кошелёк мира: всё, чем кнопка может расплатиться или наградить (prState) */
+  function purse(){
+    let cargo=0;for(const k of RES_KEYS)cargo+=G.cargo[k]|0;
+    /* полка «Сороки» читается как лежит: wanderStore() завёл бы запись лениво,
+       и сам замер менял бы мир (и хэш T.state) */
+    const Ws=G.wander||{};
+    return {cr:G.credits|0,matches:G.matches|0,fuel:+G.fuel,hull:+G.hull,data:G.data|0,
+      crew:(G.crew||[]).length,inv:(G.inv||[]).length,cargo,
+      mods:Object.values(G.mods).reduce((a,b)=>a+b,0),
+      tech:G.tech?G.tech.size:0,drones:(G.drones||[]).length,
+      tools:(Ws.shelf||[]).length+(Ws.hold||[]).length,
+      log:(G.log||[]).length,mode:G.mode,t:G.t};
+  }
+  function fnv(s){let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,0x01000193);}return (h>>>0).toString(16).padStart(8,"0");}
+  /* M441: при слиянии hash станет stateHash() — один хэш на игру и на тесты */
+  /* `ts` — когда сейв записан, а не каков мир: в хэш он не идёт, иначе два
+     снимка одного мира подряд расходятся на миллисекунду */
+  function state(){
+    const s=snapshot(),ts=s.ts;delete s.ts;
+    const j=JSON.stringify(s);
+    return {hash:fnv(j),snap:Object.assign(JSON.parse(j),{ts}),purse:purse()};
+  }
+  function look(){return lookFrame();}
+  /* ── бухгалтерия кадра ──
+     Сколько вызовов канвы сделал кадр и каким кеглем он пишет. Кегль берётся
+     из ctx.font и умножается на масштаб текущей матрицы, делённый на DPR, —
+     то есть это пиксели экрана, которые видит игрок (закон M221: подпись,
+     нарисованная мимо withScale(UIK), остаётся мелкой на большом окне). В Хроме
+     перехватывается прототип (видны и запечённые слои, `main:false`), под
+     Node — главный ctx игры. */
+  const LEDGER_OPS=["fillRect","strokeRect","clearRect","fillText","strokeText","drawImage","fill","stroke","putImageData"];
+  function ledger(fn){
+    const L={calls:0,by:{},texts:[]};
+    const wrap=(P,keep,ops)=>{
+      for(const op of (ops||LEDGER_OPS)){
+        const f=P[op];if(keep)keep[op]=f;
+        P[op]=function(){
+          L.calls++;L.by[op]=(L.by[op]|0)+1;
+          if(op==="fillText"||op==="strokeText"){
+            const m=/(\d+(?:\.\d+)?)px/.exec(this.font||"")||[0,0];
+            const t=this.getTransform?this.getTransform():null;
+            const k=t?Math.sqrt(Math.abs(t.a*t.d-t.b*t.c)):1;
+            L.texts.push({s:String(arguments[0]),px:+m[1],css:+m[1]*k/(DPR||1),main:this.canvas===cvs});
+          }
+          return f.apply(this,arguments);
+        };
+      }
+    };
+    if(window.CanvasRenderingContext2D){   /* Хром: один прототип на все канвы */
+      const P=CanvasRenderingContext2D.prototype,orig={};
+      wrap(P,orig);
+      /* …но свойство на самом ctx заслоняет прототип: набор, который подменял
+         `ctx.fill` и «вернул» его присваиванием, оставил на ctx СОБСТВЕННОЕ
+         свойство, и счёт главной канвы молча уходил в ноль (нашла перемешка,
+         M442). Такие свойства оборачиваются отдельно и возвращаются как были */
+      const own={};
+      for(const op of LEDGER_OPS)if(Object.prototype.hasOwnProperty.call(ctx,op))own[op]=ctx[op];
+      wrap(ctx,null,Object.keys(own));
+      try{(fn||drawWorld)();}
+      finally{
+        for(const op of LEDGER_OPS)P[op]=orig[op];
+        for(const op of LEDGER_OPS){if(op in own)ctx[op]=own[op];else if(Object.prototype.hasOwnProperty.call(ctx,op))delete ctx[op];}
+      }
+      return L;
+    }
+    /* Node: у заглушки канвы прототипа нет — оборачиваем главный ctx и каждый
+       контекст, который кадр возьмёт через getContext (запечённые слои) */
+    const seen=new Set(),EP=HTMLCanvasElement.prototype,gc=EP.getContext;
+    const own=c=>{if(c&&!seen.has(c)){seen.add(c);wrap(c,null);}return c;};
+    own(ctx);
+    EP.getContext=function(){return own(gc.apply(this,arguments));};
+    try{(fn||drawWorld)();}
+    finally{EP.getContext=gc;for(const c of seen)for(const op of LEDGER_OPS)delete c[op];}
+    return L;
+  }
+  function text(){
+    const dom=String(document.body.innerText||"").split("\n").map(s=>s.trim()).filter(Boolean);
+    const canvas=ledger().texts.filter(t=>t.main).map(t=>t.s);
+    return {dom,canvas};
+  }
+  /* видимые нажимаемые узлы (из hRail, prButtons, e2eClickables): кнопка —
+     не отключённая, прочее — с обработчиком. {all:true} — без проверки на
+     видимость (жать и в закрытых экранах), {text:true} — только с надписью,
+     {btn:true} — только кнопки */
+  function controls(where,o){
+    o=o||{};
+    const box=(where==null)?document.body:((typeof where==="string")?document.querySelector(where):where);
+    if(!box)return [];
+    const out=[];
+    for(const el of box.querySelectorAll("*")){
+      if(el.tagName==="BUTTON"?el.disabled:(o.btn||!el.onclick))continue;
+      if(!o.all){
+        const cs=getComputedStyle(el);
+        if(cs.display==="none"||cs.visibility==="hidden"||cs.pointerEvents==="none"||(cs.opacity!==""&&+cs.opacity<.2))continue;
+        const r=el.getBoundingClientRect();if(r.width<8||r.height<8)continue;
+      }
+      const txt=String(el.textContent||"").replace(/\s+/g," ").trim();
+      if(o.text&&!txt)continue;
+      out.push({el,id:el.id||"",lbl:txt||el.getAttribute("aria-label")||el.title||el.id||""});
+      if(out.length>=(o.cap||400))break;
+    }
+    return out;
+  }
+  /* ответ вёрстки: окно, меню, строка события — всё, что игрок тоже видит (hDom) */
+  function dom(){
+    const m=document.getElementById("msg"),p=document.getElementById("prompt"),mn=document.getElementById("menu");
+    return [document.body.className,
+            document.querySelectorAll(".scr.open").length,
+            document.querySelectorAll(".askbox").length,
+            mn?getComputedStyle(mn).display:"",
+            m?m.textContent:"",p?p.textContent:""].join("|");
+  }
+  /* закрыть всё, что тычок мог открыть — ЕЁ ЖЕ дверью (hCalm). Окно ввода
+     (#askwin) — такой же `.scr`: закрывается снятием «open». hCalm его
+     ВЫРЕЗАЛ (`.askbox` → remove), а игра заводит окно один раз и потом
+     ищет в нём строку: после руки́ каждый следующий askText падал на null.
+     В обычном порядке руки шли последними и этого не было видно — нашла
+     перемешка (?shuffle=7, M442) */
+  function calm(){
+    toggleMenu(false);
+    for(const e of document.querySelectorAll(".scr.open"))e.classList.remove("open");
+    document.body.classList.remove("screen","table");
+  }
+  function _undo(){
+    if(winSaved)win();
+    if(realNow){Date.now=realNow;realNow=null;clockMs=0;}
+  }
+  return {go,press,hands,tap,drag,wheel,wait,advance,window:win,give,board,leave,bot,
+    frame,diff,state,purse,look,ledger,text,controls,clock,
+    dom,calm,spoke,said:()=>said,find,landWhere,scenes,ticks,clockShift,urlSeed,
+    get seed(){return seed;},_undo};
+})();
+/* ══ конец инструментов ══ */
+
+TEST_SUITES.push(()=>suite("инструменты: руки и глаза отвечают тем, что обещают",{tier:"browser"},()=>{
+  /* сцена ставится, и мир свежий */
+  G.credits=12345;
+  ok(T.go("шахта",3)===true&&G.mode==="dig","T.go ставит сцену по-русски: "+G.mode);
+  eq(G.credits,600,"и из свежего мира (resetWorld)");
+  eq(T.seed,3,"зерно запомнено");
+  ok(T.go("system")===true&&G.mode==="system","и латиницей");
+  let threw="";try{T.go("нет такой");}catch(e){threw=e.message;}
+  ok(/сцены/.test(threw),"незнакомая сцена — исключение, а не тишина");
+  /* клавиша двигает корабль, и её отпускают */
+  T.go("старт");G.mode="system";G.fuel=100;
+  const v0=Math.hypot(G.ship.vx,G.ship.vy),t0=G.t;
+  eq(T.press("thrust",30),30,"T.press отработал тридцать кадров");
+  ok(Math.hypot(G.ship.vx,G.ship.vy)>v0+.01,"тяга разогнала корабль");
+  eq(G.t,t0+30,"время шло по кадру");
+  ok(Object.keys(keys).every(k=>!keys[k]),"после T.press ни одна клавиша не зажата");
+  threw="";try{T.press("нетклавиши",1);}catch(e){threw=e.message;}
+  ok(/клавиши/.test(threw),"незнакомая клавиша — исключение");
+  /* хэш состояния: тот же мир — тот же хэш, другой — другой */
+  const a=T.state(),b=T.state();
+  const moved=Object.keys(b.snap).filter(k=>k!=="ts"&&JSON.stringify(a.snap[k])!==JSON.stringify(b.snap[k]));
+  eq(a.hash,b.hash,"один мир — один хэш"+(moved.length?" (сдвинулось: "+moved.join(", ")+")":""));
+  T.give("credits",500);
+  ok(T.state().hash!==a.hash,"деньги поменяли хэш");
+  eq(T.state().purse.cr,a.purse.cr+500,"и кошелёк видит подарок");
+  eq(T.give("cargo","iron",4),4,"груз кладётся");
+  threw="";try{T.give("cargo","пыль",1);}catch(e){threw=e.message;}
+  ok(/груза/.test(threw),"незнакомый груз — исключение");
+  /* часы: сутки вперёд и назад в конце набора */
+  const c0=T.clock().now;
+  T.advance(1);
+  near(T.clock().now-c0,864e5,2000,"T.advance(1) двинул часы на сутки");
+  eq(T.clock().days,1,"и помнит сдвиг");
+  T._undo();
+  ok(Math.abs(T.clock().now-c0)<2000,"_undo вернул часы");
+  /* кадр подменяется и возвращается */
+  const W0=W,U0=UIK;
+  const f=T.window(2560,1440);
+  ok(f.UIK>U0&&W===2560,"T.window подменил кадр и мерку: ×"+f.UIK.toFixed(2));
+  T.window();
+  eq(W,W0,"T.window() вернул кадр");
+  /* кадр, бухгалтерия и прибор */
+  T.go("система");
+  T.wait(2);
+  const s1=T.frame();
+  ok(s1.length>1000&&s1.some(v=>v>10),"подпись кадра снята и не чёрная: "+s1.length+" проб");
+  eq(T.diff(s1,s1),0,"кадр с самим собой не расходится");
+  const L=T.ledger();
+  ok(L.calls>50&&L.by.fillText>0,"кадр системы: вызовов канвы "+L.calls+", текстов "+(L.by.fillText|0));
+  ok(L.texts.some(t=>t.main&&t.css>=6),"кегль текста на главной канве читается: до "+Math.max(...L.texts.map(t=>t.css)).toFixed(1)+" px");
+  ok(T.look().tones>=0,"прибор кадра меряет");
+  const X=T.text();
+  ok(X.dom.length>0&&X.canvas.length>0,"видимый текст: вёрстка "+X.dom.length+" строк, канва "+X.canvas.length);
+  /* кнопки: плюс на борту приближает камеру, колесо — тоже */
+  hud();
+  const rail=T.controls(".rail",{btn:true});
+  ok(rail.length>=3&&rail.every(c=>c.lbl),"на борту видны кнопки, и у каждой есть имя: "+rail.map(c=>c.lbl).slice(0,6).join(", "));
+  const z0=G.zoom;
+  ok(!!T.tap("zin")&&G.zoom>z0,"T.tap(«zin») приблизил камеру: "+z0.toFixed(2)+" → "+G.zoom.toFixed(2));
+  const z1=G.zoom;T.wheel(1);
+  ok(G.zoom>z1,"T.wheel(1) — тоже крупнее");
+  /* протяжка по карте двигает лист */
+  G.mode="map";drawMap();
+  const V0=JSON.stringify(mapViewC());
+  T.drag(-120,0);
+  ok(JSON.stringify(mapViewC())!==V0,"T.drag сдвинул лист карты");
+  G.mode="system";
+  /* станция открывается и закрывается своими дверями */
+  ok(T.board("near")===true&&G.mode==="dock","T.board причалил к ближней станции");
+  ok(document.getElementById("station").classList.contains("open"),"и экран станции открыт");
+  T.leave();
+  ok(!document.getElementById("station").classList.contains("open")&&G.mode==="system","T.leave отчалил");
+  threw="";try{T.bot("sell");}catch(e){threw=e.message;}
+  ok(/M444/.test(threw),"бот с целью — честная заглушка, а не молчание");
+  resetWorld();
+}));
