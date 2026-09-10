@@ -1761,7 +1761,7 @@ body.table u.addr{color:#7a4a20}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.431.0";
+const VER="0.432.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -44139,8 +44139,15 @@ function drawSysHud(zx,zy,sh,sys,U){
      ровно на эту строку; низ меряет 27z-telemetry, здесь его только читают */
   if(typeof HUD_FLOOR==="number"&&HUD_FLOOR>40)scaleY=Math.min(scaleY,HUD_FLOOR*H/innerHeight/U-10);
   for(const f of feet)if(f.side==="L")scaleY=Math.min(scaleY,(f.y-f.r)/U-10);
-  ctx.fillStyle="rgba(128,152,168,.85)";ctx.font="9px ui-monospace,monospace";ctx.textAlign="left";
-  ctx.fillText("МАСШТАБ ×"+G.zoom.toFixed(2),14,Math.max(96,scaleY));
+  ctx.font="9px ui-monospace,monospace";ctx.textAlign="left";
+  /* на плашке, как фишки у кромки: на орбите за строкой стоит диск планеты, и
+     серая строка по нему читалась с контрастом 2.1 (M444, прогон «посадка и
+     залежь» под детектором текста) */
+  {const sl="МАСШТАБ ×"+G.zoom.toFixed(2),sy=Math.max(96,scaleY),tw=ctx.measureText(sl).width;
+   /* плашка плотная и строка светлее прежней серой: над диском планеты
+      (телефон, после взлёта) полупрозрачная плашка давала контраст 2.4 */
+   ctx.fillStyle="rgba(5,7,12,.85)";ctx.fillRect(10,sy-10,tw+8,15);
+   ctx.fillStyle="rgba(160,182,196,.92)";ctx.fillText(sl,14,sy);}
   /* компас на край экрана: звезда, станция и текущая цель автопилота,
      если они за кадром — чтобы в бесконечном космосе нельзя было заблудиться */
   /* ── у метки есть цель, и по метке можно ткнуть (плейтест, 26.08.2026) ──
@@ -63169,8 +63176,13 @@ function drawSurfaceWorld(){
         ctx.fillStyle=rock(.5,.95);ctx.beginPath();ctx.ellipse(sx,sy,r0*1.3,r0,rr()-.5,0,TAU);ctx.fill();
         ctx.fillStyle="rgba(255,255,255,.12)";ctx.beginPath();ctx.ellipse(sx-r0*.3,sy-r0*.5,r0*.7,r0*.35,0,0,TAU);ctx.fill();
       }
-      ctx.fillStyle="rgba(93,115,130,.85)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
-      ctx.fillText("ПЕЩЕРА",cx,cy-hh-14);
+      ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+      /* подпись входа на плашке, как у устья и залежей: стальная строка по
+         дневному небу читалась с контрастом 2.2 (M444, прогон «посадка и
+         залежь» под детектором текста) */
+      {const tw=ctx.measureText("ПЕЩЕРА").width;
+       ctx.fillStyle="rgba(5,7,12,.72)";ctx.fillRect(cx-tw/2-5,cy-hh-24,tw+10,14);
+       ctx.fillStyle="rgba(176,196,208,.95)";ctx.fillText("ПЕЩЕРА",cx,cy-hh-14);}
     }
   }
   /* ── устье своей шахты (M234) ──
@@ -63251,8 +63263,13 @@ function drawSurfaceWorld(){
       }
       vStep(S.vMine,1);
       vDrawRope(S.vMine,sx,sy-22,iron(.8,.85),1.4);
-      ctx.fillStyle="rgba(93,115,130,.85)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
-      ctx.fillText("ШАХТА",sx,sy-32);
+      ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+      /* подпись устья на плашке, как у залежей: стальная строка по дневному
+         небу читалась с контрастом 1.9 (M444, прогон «шахта» под детектором
+         текста) */
+      {const tw=ctx.measureText("ШАХТА").width;
+       ctx.fillStyle="rgba(5,7,12,.72)";ctx.fillRect(sx-tw/2-5,sy-42,tw+10,14);
+       ctx.fillStyle="rgba(176,196,208,.95)";ctx.fillText("ШАХТА",sx,sy-32);}
     }
   }
   const WT=(typeof waterOf==="function")?waterOf(tr,p):null;   /* в зеркале озера ничего не растёт (M325) */

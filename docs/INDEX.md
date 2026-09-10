@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 527 · символов верхнего уровня: 4987
+Файлов: 528 · символов верхнего уровня: 4988
 
 ## СИМВОЛЫ
 
@@ -777,7 +777,7 @@ CLEARANCE                    src/05e-clearance.js:22
 clearanceEarned              src/05e-clearance.js:32
 clearanceNow                 src/05e-clearance.js:45
 clearanceRaise               src/05e-clearance.js:50
-CLK_TICKS                    tests/90a-tools.js:46
+CLK_TICKS                    tests/90a-tools.js:49
 clkMissing                   tests/91zzzzzb-clock.js:26
 clkNaN                       tests/91zzzzzb-clock.js:49
 clkRun                       tests/91zzzzzb-clock.js:30
@@ -1112,7 +1112,7 @@ detControls                  tests/90c-detect-laws.js:154
 detCost                      tests/91zzzzzzzz-detect.js:170
 detCrash                     tests/90c-detect-laws.js:95
 detDiff                      tests/90b-detect.js:126
-detDoors                     tests/91zzzzzzzz-detect.js:255
+detDoors                     tests/91zzzzzzzz-detect.js:261
 DETECTORS                    tests/90c-detect-laws.js:280
 detErr                       tests/90b-detect.js:138
 detExempt                    tests/90c-detect-laws.js:79
@@ -4473,7 +4473,7 @@ sysRasterDrop                src/06-galaxy.js:23
 sysRasterTick                src/06-galaxy.js:37
 sysStyle                     src/16a-space.js:21
 sysTraffic                   src/17f-sys-traffic.js:11
-T                            tests/90a-tools.js:51
+T                            tests/90a-tools.js:54
 tab                          src/26-ui-station.js:3
 TAB_CH                       src/14a-cloud.js:21
 TAB_ID                       src/14a-cloud.js:20
@@ -4771,6 +4771,7 @@ vStep                        src/18d-verlet.js:53
 W                            src/08-state.js:5
 WALK_PARA                    tests/91zzy-walk.js:8
 walkParas                    tests/91zzy-walk.js:9
+WALKS                        tests/91zzzzzzzza-walks.js:19
 WALL_CACHE                   src/11ah-wall.js:44
 WALL_COLS                    src/11ah-wall.js:131
 WALL_KIND_RU                 src/11ah-wall.js:42
@@ -5586,7 +5587,7 @@ zooTick                      src/11ad-zoo.js:41
   · ракеты: боеприпас — это груз:1
   · пять видов боеприпаса (M367, §4):21
 
-## src/17-mode-system.js · 47 КБ
+## src/17-mode-system.js · 48 КБ
   · режим: система:1
 
 ## src/17a-station-mod.js · 13 КБ
@@ -5799,7 +5800,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/21e-surface-draw.js · 18 КБ
   · поверхность: подсказка, HUD и кадр:1
 
-## src/21e1-surface-world.js · 43 КБ
+## src/21e1-surface-world.js · 44 КБ
   · поверхность: сам мир (выделено из 21e, M415):1
 
 ## src/21f-home-out.js · 21 КБ
@@ -6053,7 +6054,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/90-harness.js · 41 КБ
   · автотесты: каркас:1
 
-## tests/90a-tools.js · 29 КБ
+## tests/90a-tools.js · 39 КБ
   · автотесты: инструменты (M442):1
 
 ## tests/90b-detect.js · 22 КБ
@@ -6702,6 +6703,9 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzzzzzzz-detect.js · 28 КБ
   · сквозной: каждая сцена × пять жестов под всеми детекторами (M443):1
+
+## tests/91zzzzzzzza-walks.js · 8 КБ
+  · прогоны: пути игрока под детекторами (M444, DESIGN-tests §3.3):1
 
 ## tests/91zzzzzzzzz-golden.js · 6 КБ
   · золотые кадры: пятый оракул (M443, DESIGN-tests §3.2):1

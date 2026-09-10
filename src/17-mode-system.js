@@ -610,8 +610,15 @@ function drawSysHud(zx,zy,sh,sys,U){
      ровно на эту строку; низ меряет 27z-telemetry, здесь его только читают */
   if(typeof HUD_FLOOR==="number"&&HUD_FLOOR>40)scaleY=Math.min(scaleY,HUD_FLOOR*H/innerHeight/U-10);
   for(const f of feet)if(f.side==="L")scaleY=Math.min(scaleY,(f.y-f.r)/U-10);
-  ctx.fillStyle="rgba(128,152,168,.85)";ctx.font="9px ui-monospace,monospace";ctx.textAlign="left";
-  ctx.fillText("МАСШТАБ ×"+G.zoom.toFixed(2),14,Math.max(96,scaleY));
+  ctx.font="9px ui-monospace,monospace";ctx.textAlign="left";
+  /* на плашке, как фишки у кромки: на орбите за строкой стоит диск планеты, и
+     серая строка по нему читалась с контрастом 2.1 (M444, прогон «посадка и
+     залежь» под детектором текста) */
+  {const sl="МАСШТАБ ×"+G.zoom.toFixed(2),sy=Math.max(96,scaleY),tw=ctx.measureText(sl).width;
+   /* плашка плотная и строка светлее прежней серой: над диском планеты
+      (телефон, после взлёта) полупрозрачная плашка давала контраст 2.4 */
+   ctx.fillStyle="rgba(5,7,12,.85)";ctx.fillRect(10,sy-10,tw+8,15);
+   ctx.fillStyle="rgba(160,182,196,.92)";ctx.fillText(sl,14,sy);}
   /* компас на край экрана: звезда, станция и текущая цель автопилота,
      если они за кадром — чтобы в бесконечном космосе нельзя было заблудиться */
   /* ── у метки есть цель, и по метке можно ткнуть (плейтест, 26.08.2026) ──

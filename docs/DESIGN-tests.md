@@ -160,6 +160,10 @@ the same keys and taps: reach, sell, land, mine, return, save). The fuzzer stays
 The build prints a **coverage map**: mode × gesture × window × detector, a tick where at least
 one scenario drove it. Empty cells are the work list; nobody has to guess.
 
+**Built (0.432.0, part one):** the goal bot (`T.bot`, fourteen goals, `90a-tools`) and eight walks
+(`91zzzzzzzza-walks`) under all detectors, the map printed by the run per window. Recordings,
+perturbation, `-Changed` and more walks are part two.
+
 ### 3.4 Oracles where the model writes no assertion
 
 The **previous version** from git (same scenario on `HEAD~1` and the working tree; print only

@@ -242,7 +242,7 @@ function detPicture(c){
     if(sd<3)v.push(detV(c,"картина","кадр пуст: разброс яркости "+sd.toFixed(1)));
     if(hot/f.length>.5)v.push(detV(c,"картина","кадр выжжен: белого "+Math.round(hot/f.length*100)+"%"));
   }
-  if(c.f1&&c.f2&&f){
+  if(c.f1&&c.f2&&f&&!c.camMove){   /* под едущей камерой блоки у кромки — панорама, не мигание */
     const b=detBlink(f,c.f1,c.f2,c.f3);
     if(b.blink>.01)v.push(detV(c,"картина","кадр в покое мигает: "+(b.blink*100).toFixed(1)+"% блоков"+
       (c.precip?" (осадки: "+c.precip+")":""),b.where.join(" ")));

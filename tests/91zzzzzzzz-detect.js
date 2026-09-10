@@ -236,12 +236,18 @@ function detStep(S,gesture){
     const why=DET_MUTE[c.mode0+" · "+gesture];if(why&&!c.mute)c.mute=why;
   }
   c.mode1=G.mode;c.spoke=DET.said>said0;c.dom1=T.dom();c.sig1=detSig();
+  /* камера едет за кораблём: у кромки кадра тела входят и выходят, и блок
+     «выскочил» честно — это не мигание, а панорама. Сцены прибора стоят;
+     прогоны (M444) после взлёта или прыжка летят, и там покой судится без
+     блоков (detPicture) */
+  c.camMove=G.mode==="system"&&Math.hypot(G.ship.vx,G.ship.vy)>.3;
   c.fieldMoved=JSON.stringify([G.credits,G.fuel,G.zoom,G.mapZoom,G.mapView||0])!==g0||c.sig1!==c.sig0;
   c.crash=crashN-crash0;
   try{c.sick=keyStateOK();}catch(e){c.sick="keyStateOK: "+e.message;}
   if(!c.inst){c.hudText=detHudText();c.inst=detInstrRead(c.texts);}
   DET_INST_N+=c.inst.length;
-  c.overlays=detCloseTry();
+  /* прогоны (M444) держат свои экраны открытыми между шагами: там двери не пробуют */
+  c.overlays=S.keep?[]:detCloseTry();
   let t1=performance.now();
   c.walk=detWalk();c.prevTypes=S.types;S.types=c.walk.types;
   detCost("обход G",t1);

@@ -43,6 +43,15 @@ only after a neighbour — an isolation leak. `?pick=3,17` runs only those posit
 thin wrappers over it. Real windows and screenshots of the whole page: `python docs/stand.py`
 (one Chrome over CDP for all scenes and sizes, PNGs to TEMP).
 
+**Walks and the bot (M444, 0.432.0).** `tests/91zzzzzzzza-walks.js` holds the player's paths as
+five-line lists of steps; a step is a `T.bot(goal)` call or a few tool calls, and every step is
+followed by all six detectors (`detStep` with `S.keep`, so the screens a step opened stay open).
+`T.bot` goals: `star`, `station`, `planet [p]`, `dock`, `undock`, `sell`, `land`, `mine`, `ship`,
+`launch`, `dig [rows]`, `up`, `jump {sx,sy}`, `save`; the answer is `{ok, frames, why}` — a failed
+goal is a named stuck step, never an exception. To add a path: one entry in `WALKS`, steps as
+`["имя", ()=>T.bot("…")]`; the run prints the coverage map (mode × step) as a note, so an empty
+cell is visible in the report.
+
 **Golden frames (M443, 0.431.0).** `tests/91zzzzzzzzz-golden.js` compares every `lookScenes`
 scene with `docs/golden/<W>x<H>.json` — a block signature (one byte of mean luma per 8×8 block of
 the quarter-size copy), not a PNG. Red when more than 3 % of the blocks moved beyond 18/255; the

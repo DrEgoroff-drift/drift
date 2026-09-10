@@ -22,7 +22,10 @@
      T.window(w, h)  /  T.window()            подменить кадр (W, H, мерка UIK) / вернуть
      T.give("credits"|"cargo"|"module"|"rich"|"late", …)
      T.board(станция|"near")  /  T.leave()    причалить и открыть станцию / отчалить
-     T.bot(цель)                              заглушка: бот с целью — M444
+     T.bot(цель, арг)         бот с целью (M444): star · station · planet · dock ·
+                             undock · sell · land · mine · ship · launch · dig ·
+                             up · jump {sx,sy} · save — теми же клавишами и
+                             кнопками, что игрок; ответ {ok, frames, why}
    Глаза — читают мир:
      T.frame() / T.diff(a,b)  подпись кадра (каждая восьмая проба яркости) и доля сдвига
      T.state()                {hash, snap, purse}: stateHash() мира (08a), снимок сейва, кошелёк
@@ -264,8 +267,130 @@ const T=(()=>{
     return true;
   }
   function leave(){try{closeStation();}catch(e){}G.mode="system";G.st=null;}
-  function bot(goal){
-    throw new Error("T.bot(«"+goal+"»): бота с целью ещё нет — это M444 (docs/DESIGN-tests.md §3.3)");
+  /* ── бот с целью (M444, DESIGN-tests §3.3) ──
+     Идёт теми же путями, что игрок: автопилот — тот же G.ap, что ставит тычок по
+     планете или кнопка «К ЗВЕЗДЕ» (15-input); стыковка, посадка, спуск в шахту —
+     ДЕЙСТВИЕ по фронту, как у штурвала; ходьба и бурение — клавиши; взлёт —
+     удержание кнопки ВЗЛЁТ; продажа — кнопка ПРОДАТЬ ВСЁ на прилавке. Мир
+     шагает без картинки (stepWorld), потолок кадров у каждой цели свой.
+     Ответ всегда {ok, frames, why}: провал цели — не исключение, а слово,
+     чтобы сценарий сказал, ГДЕ застрял. Цели:
+       star · station · planet [p] · dock · undock · sell · land · mine ·
+       ship · launch · dig [rows] · jump {sx,sy} · save */
+  function until(pred,max){for(let i=0;i<max;i++){if(pred())return i;step();}return pred()?max:-1;}
+  function hold(ks,pred,max){
+    for(const q of ks)keys[q]=true;
+    try{return until(pred,max);}finally{for(const q of ks)keys[q]=false;}
+  }
+  function bot(goal,arg){
+    const t0=G.t,R=(ok,why)=>({ok:!!ok,frames:G.t-t0,why:ok?"":(why||"")});
+    const fly=(ap,max)=>{G.ap=Object.assign({phase:"fly"},ap);G.orbit=null;const n=until(()=>!G.ap||!!G.orbit,max||4000);return n>=0;};
+    switch(goal){
+      case "star":{
+        if(G.mode!=="system")return R(false,"не в полёте: "+G.mode);
+        return R(fly({kind:"star"}),"до звезды не долетел за "+(G.t-t0)+" кадров, топливо "+G.fuel.toFixed(0));}
+      case "station":{
+        if(G.mode!=="system")return R(false,"не в полёте: "+G.mode);
+        if(!G.sys.station)return R(false,"в системе нет станции");
+        return R(fly({kind:"station"}),"до станции не долетел, топливо "+G.fuel.toFixed(0));}
+      case "planet":{
+        if(G.mode!=="system")return R(false,"не в полёте: "+G.mode);
+        const p=arg||(G.sys.planets||[]).find(q=>q.type!=="gas");
+        if(!p)return R(false,"твёрдой планеты нет");
+        return R(fly({kind:"planet",p}),"до планеты не долетел, топливо "+G.fuel.toFixed(0));}
+      case "dock":{
+        if(G.mode==="dock")return R(true);   /* автостыковка (G.opts.autoDock): автопилот уже открыл станцию */
+        if(G.mode!=="system")return R(false,"не в полёте: "+G.mode);
+        const S=G.sys.station;if(!S)return R(false,"в системе нет станции");
+        const sh=G.ship,ds=()=>Math.hypot(sh.x-S.x,sh.y-S.y),sp=()=>Math.hypot(sh.vx-S.vx,sh.vy-S.vy);
+        if(ds()>=95)return R(false,"до станции "+Math.round(ds())+" ед. — сперва bot(«station»)");
+        if(hold(["brake"],()=>sp()<2.4,120)<0)return R(false,"скорость не гасится: "+sp().toFixed(1));
+        press("act",1);
+        return R(G.mode==="dock","ДЕЙСТВИЕ у причала не открыло станцию: "+G.mode+" · "+G.prompt.split("\n")[0]);}
+      case "undock":{
+        if(G.mode!=="dock")return R(false,"не на станции: "+G.mode);
+        const c=tap("ОТСТЫКОВ")||tap("undock");
+        if(!c)leave();
+        return R(G.mode==="system","после отстыковки режим "+G.mode);}
+      case "sell":{
+        if(G.mode!=="dock")return R(false,"не на станции: "+G.mode);
+        if(!TRADE_KEYS.some(k=>G.cargo[k]>0))return R(false,"трюм пуст — продавать нечего");
+        const cr=G.credits;
+        tab="market";syncTabs();renderTab();
+        const c=tap("ПРОДАТЬ ВСЁ");
+        if(!c)return R(false,"кнопки ПРОДАТЬ ВСЁ нет на прилавке");
+        return R(G.credits>cr,"кнопка нажата, а кредиты те же: "+cr);}
+      case "land":{
+        if(G.mode!=="system")return R(false,"не в полёте: "+G.mode);
+        const easy=G.opts.easyLand;G.opts.easyLand=true;   /* бот садится автоматом — это настройка игрока */
+        try{
+          step();   /* подсказка «ДЕЙСТВИЕ — ПОСАДКА» ставится кадром у планеты */
+          if(!/ПОСАДКА/.test(G.prompt))return R(false,"у планеты нет подсказки посадки: «"+G.prompt.split("\n")[0]+"»");
+          press("act",1);
+          if(G.mode!=="landing")return R(false,"ДЕЙСТВИЕ не начало заход: "+G.mode);
+          const n=until(()=>G.mode!=="landing",6000);
+          return R(G.mode==="surface","заход кончился режимом "+G.mode+(n<0?" (не сел за 6000 кадров)":""));
+        }finally{G.opts.easyLand=easy;}}
+      case "mine":{
+        if(G.mode!=="surface")return R(false,"не на грунте: "+G.mode);
+        const S=G.surf,st=stat();
+        const dep=(S.deposits||[]).filter(d=>d.left>0).sort((a,b)=>Math.abs(a.x-S.x)-Math.abs(b.x-S.x))[0];
+        if(!dep)return R(false,"залежей на полосе нет");
+        if(held()>=st.cargoMax)return R(false,"трюм полон до начала");
+        const dir=dep.x>S.x?"right":"left";
+        if(hold([dir],()=>Math.abs(dep.x-S.x)<16,4000)<0)return R(false,"до залежи не дошёл: "+Math.round(Math.abs(dep.x-S.x))+" м");
+        const h0=held();
+        hold(["act"],()=>held()>=st.cargoMax||dep.left<=0,3000);
+        return R(held()>h0,"бурение не дало ни единицы: "+RES[dep.res].ru+" · "+G.prompt.split("\n")[0]);}
+      case "ship":{
+        if(G.mode!=="surface")return R(false,"не на грунте: "+G.mode);
+        const S=G.surf;const dir=S.shipX>S.x?"right":"left";
+        if(Math.abs(S.x-S.shipX)<shipZoneR())return R(true);
+        return R(hold([dir],()=>Math.abs(S.x-S.shipX)<shipZoneR()*.8,4000)>=0,"до корабля не дошёл: "+Math.round(Math.abs(S.x-S.shipX))+" м");}
+      case "launch":{
+        if(G.mode!=="surface")return R(false,"не на грунте: "+G.mode);
+        if(!("launch" in keys))return R(false,"клавиши launch нет");
+        const S=G.surf;if(Math.abs(S.x-S.shipX)>=shipZoneR())return R(false,"не у корабля — сперва bot(«ship»)");
+        hold(["launch"],()=>G.mode!=="surface",120);
+        return R(G.mode==="system","удержание ВЗЛЁТ не подняло корабль: "+G.mode+" · "+G.prompt.split("\n")[0]);}
+      case "dig":{
+        if(G.mode!=="surface")return R(false,"не на грунте: "+G.mode);
+        const S=G.surf,mx=mineSpotX(S.p);
+        if(mx!=null){   /* устье есть — к нему и вниз */
+          const dir=mx>S.x?"right":"left";
+          if(hold([dir],()=>Math.abs(mx-S.x)<MINE_MOUTH_R*.7,4000)<0)return R(false,"до устья не дошёл");
+          step();press("act",1);
+        }else{          /* устья нет — заложить: ДЕЙСТВИЕ на грунте вдали от корабля и залежей */
+          const dir=S.x<S.shipX?"left":"right";let tries=0;
+          while(G.mode==="surface"&&tries++<5){
+            const x0=S.x;
+            if(hold([dir],()=>Math.abs(S.x-x0)>=90||S.x<=32||S.x>=S.tr.W-32,600)<0)break;
+            step();if(/ЗАЛОЖИТЬ ШАХТУ|СПУСТИТЬСЯ/.test(G.prompt))press("act",1);
+          }
+        }
+        if(G.mode!=="dig")return R(false,"ДЕЙСТВИЕ не спустило в шахту: "+G.mode+" · "+G.prompt.split("\n")[0]);
+        const rows=(arg==null)?3:arg|0,D=G.dig;
+        hold(["brake"],()=>D.row>=rows||G.mode!=="dig",3000);
+        return R(G.mode==="dig"&&D.row>=rows,"копал вниз, а ярус "+D.row+" из "+rows+" · "+G.prompt.split("\n")[0]);}
+      case "up":{
+        if(G.mode!=="dig")return R(false,"не в шахте: "+G.mode);
+        hold(["thrust"],()=>G.mode!=="dig",4000);
+        return R(G.mode==="surface","подъём кончился режимом "+G.mode);}
+      case "jump":{
+        if(G.mode!=="system")return R(false,"не в полёте: "+G.mode);
+        if(!arg||arg.sx==null)return R(false,"куда прыгать — {sx,sy}");
+        const from=G.sx+","+G.sy;
+        /* карту ведёт её же кадр (drawMap), а не stepWorld: прыжок — ДЕЙСТВИЕ по
+           фронту внутри кадра карты, как у игрока с выбранным сектором */
+        G.mode="map";G.sel={x:arg.sx,y:arg.sy};
+        try{actEdge=true;drawMap();}finally{actEdge=false;}
+        if(G.mode==="map")return R(false,"прыжок не состоялся: "+G.prompt.split("\n")[0]+" · топливо "+G.fuel.toFixed(0));
+        return R(G.mode==="system"&&G.sx+","+G.sy!==from,"после прыжка "+G.mode+" в "+G.sx+","+G.sy);}
+      case "save":{
+        saveGame(true);
+        return R(!!snapshot(),"записи нет");}
+      default:return R(false,"цели «"+goal+"» у бота нет");
+    }
   }
 
   /* ── глаза ── */
@@ -489,7 +614,10 @@ TEST_SUITES.push(()=>suite("инструменты: руки и глаза от�
   ok(document.getElementById("station").classList.contains("open"),"и экран станции открыт");
   T.leave();
   ok(!document.getElementById("station").classList.contains("open")&&G.mode==="system","T.leave отчалил");
-  threw="";try{T.bot("sell");}catch(e){threw=e.message;}
-  ok(/M444/.test(threw),"бот с целью — честная заглушка, а не молчание");
+  /* бот отвечает словом, а не исключением: не на станции — так и говорит */
+  const bt=T.bot("sell");
+  ok(bt&&bt.ok===false&&/не на станции/.test(bt.why),"T.bot(«sell») в полёте: «"+(bt&&bt.why)+"»");
+  const b2=T.bot("нет такой цели");
+  ok(b2&&!b2.ok&&/нет/.test(b2.why),"незнакомая цель — тоже словом");
   resetWorld();
 }));

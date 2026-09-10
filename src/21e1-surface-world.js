@@ -252,8 +252,13 @@ function drawSurfaceWorld(){
         ctx.fillStyle=rock(.5,.95);ctx.beginPath();ctx.ellipse(sx,sy,r0*1.3,r0,rr()-.5,0,TAU);ctx.fill();
         ctx.fillStyle="rgba(255,255,255,.12)";ctx.beginPath();ctx.ellipse(sx-r0*.3,sy-r0*.5,r0*.7,r0*.35,0,0,TAU);ctx.fill();
       }
-      ctx.fillStyle="rgba(93,115,130,.85)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
-      ctx.fillText("ПЕЩЕРА",cx,cy-hh-14);
+      ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+      /* подпись входа на плашке, как у устья и залежей: стальная строка по
+         дневному небу читалась с контрастом 2.2 (M444, прогон «посадка и
+         залежь» под детектором текста) */
+      {const tw=ctx.measureText("ПЕЩЕРА").width;
+       ctx.fillStyle="rgba(5,7,12,.72)";ctx.fillRect(cx-tw/2-5,cy-hh-24,tw+10,14);
+       ctx.fillStyle="rgba(176,196,208,.95)";ctx.fillText("ПЕЩЕРА",cx,cy-hh-14);}
     }
   }
   /* ── устье своей шахты (M234) ──
@@ -334,8 +339,13 @@ function drawSurfaceWorld(){
       }
       vStep(S.vMine,1);
       vDrawRope(S.vMine,sx,sy-22,iron(.8,.85),1.4);
-      ctx.fillStyle="rgba(93,115,130,.85)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
-      ctx.fillText("ШАХТА",sx,sy-32);
+      ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+      /* подпись устья на плашке, как у залежей: стальная строка по дневному
+         небу читалась с контрастом 1.9 (M444, прогон «шахта» под детектором
+         текста) */
+      {const tw=ctx.measureText("ШАХТА").width;
+       ctx.fillStyle="rgba(5,7,12,.72)";ctx.fillRect(sx-tw/2-5,sy-42,tw+10,14);
+       ctx.fillStyle="rgba(176,196,208,.95)";ctx.fillText("ШАХТА",sx,sy-32);}
     }
   }
   const WT=(typeof waterOf==="function")?waterOf(tr,p):null;   /* в зеркале озера ничего не растёт (M325) */

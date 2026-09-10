@@ -6,6 +6,27 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.432.0 - a bot walks the player's paths, and the detectors judge every step (M444, part one)
+
+`T.bot(goal)` in `tests/90a-tools.js` is no longer a stub: `star`, `station`, `planet`, `dock`,
+`undock`, `sell`, `land`, `mine`, `ship`, `launch`, `dig`, `up`, `jump`, `save` — each through
+the player's own controls (the autopilot a tap sets, ДЕЙСТВИЕ by edge at the pier and the mine
+mouth, keys to walk and drill, the held ВЗЛЁТ button, ПРОДАТЬ ВСЁ on the counter), each
+answering `{ok, frames, why}` so a scenario says *where* it stuck rather than throwing.
+`tests/91zzzzzzzza-walks.js` writes eight paths in five lines each — first minutes (К ЗВЕЗДЕ,
+the station, dock, undock), landing and a deposit to a full hold and back into orbit, the mine
+three tiers down and up, trade, a jump to a neighbour, the belt under random hands, fire in
+flight, save and reload — and runs all six detectors after every step, keeping the screens a
+step opened. The run prints a coverage map (mode × step in this window). The first pass found
+three labels the scene runs never saw: «МАСШТАБ ×0.70» over a planet disc in orbit (contrast
+2.1, and still 2.4 on the phone behind a half-transparent plaque), «ШАХТА» at the mine mouth and
+«ПЕЩЕРА» at the cave entrance on a day sky (1.9 and 2.2) — all three on a plaque now. The
+blink/pop detector no longer judges a frame whose camera is moving (after launch or a jump the
+ship is under way, and bodies entering at the frame's edge are a pan, not a flicker). Left for
+part two:
+`?rec=1` recordings with a «bug here» key, replay under perturbation, `test.ps1 -Changed` from
+`docs/TESTMAP.json`.
+
 ## 0.431.0 - the fifth and fourth oracles: golden frames and a hundred worlds (M443 closed)
 
 Two oracles that judge no case and no law, only *difference*. **Golden frames**
