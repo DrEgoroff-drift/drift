@@ -93,7 +93,9 @@ function detSig(){
 function detOverlays(){
   const out=[];
   for(const e of document.querySelectorAll(".scr.open"))out.push({el:e,what:e.id||"экран"});
-  for(const e of document.querySelectorAll(".askbox"))out.push({el:e,what:"askbox"});
+  /* окно имени (#askwin) — обычный .scr: живёт в вёрстке и закрытым, его
+     считает строка выше по классу open; отдельно — только askbox вне экрана */
+  for(const e of document.querySelectorAll(".askbox"))if(!e.closest(".scr"))out.push({el:e,what:"askbox"});
   const mn=document.getElementById("menu");if(mn&&mn.classList.contains("open"))out.push({el:mn,what:"menu"});
   return out;
 }

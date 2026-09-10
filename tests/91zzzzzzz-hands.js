@@ -76,7 +76,9 @@ function hRail(){
 function hCalm(){
   if(typeof toggleMenu==="function")toggleMenu(false);
   for(const e of document.querySelectorAll(".scr.open"))e.classList.remove("open");
-  for(const e of document.querySelectorAll(".askbox"))e.remove();
+  /* окно имени закрывается своей дверью: вырванная .askbox оставляла пустой
+     #askwin, и следующий askText падал на поле, которого нет */
+  const aw=document.getElementById("askwin");if(aw&&aw._close)aw._close(null);
   document.body.classList.remove("screen","table");
 }
 function hSpoke(fn){return (typeof prSpoke==="function")?prSpoke(fn):(fn(),false);}

@@ -6,6 +6,22 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.429.0 - the tests judge laws, not cases: four detectors and the ten bugs they found first (M443)
+
+After every step of every `lookScenes` scene × five gestures (idle, W, A, drag, wheel/«+»), plus the menu
+doors and an armed ship, detectors now check: **crash** (frame guard, `onerror`, console, with the stack's
+place); **stuck** (a mode without its state, a screen its own close control cannot shut, a frame that did
+not move under a key); **law** (NaN/∞ and type changes in `G`, a `Proxy` prototype counting reads of fields
+nobody writes, 291 on-screen readings checked against their fields — «РАКЕТА 0» with missiles aboard dies
+here — and what W, A, «+» and a map drag must *do* on screen); **picture** (empty or burnt frame, idle
+blink and pop, contrast ≥ 3, text ≥ 8 px × the UI ruler in a 2560×1440 frame, canvas sharpness, one human
+height on foot). The whole pass costs 8–12 s. Its first run found, and this version fixes: type that
+ignored the UI ruler at 1920 and up in six places (system names, the belt cockpit and glass HUD, the scoop
+heat gauge, the base board and note card, the home room name, «Сорока»'s chalk prices at 7 px); unreadable
+ground labels on a day sky (contrast 1.2), the sanatorium schedule, «ПОЛОСА СБОРА» on the gas, the map's
+scale and stats line on a phone; and НАСТРОЙКИ, which would not open once a cloud save had brought the pad
+size back as text («1.25») — the loader now turns it back into a number.
+
 ## 0.428.0 - the game owns its chance and its clock (M441)
 
 `rnd()`/`rndFx()`/`rndSeed()` and `now()`/`clockSet()`/`clockAdvance()` live in `01-core`, with named

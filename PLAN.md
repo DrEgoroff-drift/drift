@@ -279,6 +279,13 @@ extract tools, do not extend). Order is strict: determinism first, everything af
   human height), imbalance over seeds, picture (golden frame per scene × three windows, perceptual
   threshold, `accept`). Run over `lookScenes` × five gestures first; every red here is a real bug
   and gets its own commit.
+  **0.429.0: four of five done** — `tests/90b-detect.js` (measures), `90c-detect-laws.js` (laws),
+  driver `91zzzzzzzz-detect` (15 scenes × 5 gestures + menu doors + armed ship, 93 steps, 8–12 s);
+  ten bug commits (type off the ruler in six modes, four unreadable labels, НАСТРОЙКИ dead on a
+  text pad size from the cloud). **Open:** imbalance over seeds and `detGolden` (plan in
+  DESIGN-tests §3.2, now possible on M441); not caught yet — the .55 auto-brake, the money-printing
+  counter, idle drones; partial — the helm switching itself, sharpness/perch at DPR 1; the contrast
+  check reads low under a vignette drawn after text; A/W judged in the system view only.
 - **M444 scenarios and coverage** — fifteen walks from the briefs and `91zzy-walk`; `?rec=1`
   recordings in `15-input` with a «bug here» key, replayed under perturbation; a six-goal bot;
   three windows; the build prints the coverage map mode × gesture × window × detector;

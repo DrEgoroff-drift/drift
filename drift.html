@@ -1761,7 +1761,7 @@ body.table u.addr{color:#7a4a20}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.428.0";
+const VER="0.429.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -40748,7 +40748,13 @@ function applySaveRest(s){
   G.mode="system";G.ap=null;G.land=null;G.surf=null;G.belt=null;G.st=null;G.dig=null;G.cave=null;
   if(!G.opts.keys||typeof G.opts.keys!=="object")G.opts.keys={main:{},belt:{}};
   if(!G.opts.keys.main)G.opts.keys.main={};if(!G.opts.keys.belt)G.opts.keys.belt={};
-  if(!G.opts.pads)G.opts.pads="auto";if(!G.opts.padSize)G.opts.padSize=1;
+  /* пэды — значение из таблицы экрана НАСТРОЙКИ, а не «что-нибудь истинное»:
+     облако на PHP возвращает числа строками («1.25»), и строгое сравнение в
+     renderOpts падало на `find(...)[1]` — экран настроек не открывался вовсе
+     (M443, детектор сбоя: дверь НАСТРОЙКИ после порченого сейва). Число
+     возвращаем числом, чужое — к умолчанию */
+  if(["auto","always","hide"].indexOf(G.opts.pads)<0)G.opts.pads="auto";
+  {const ps=+G.opts.padSize;G.opts.padSize=[.8,1,1.25].indexOf(ps)>=0?ps:1;}
   if(!G.opts.gfx||typeof G.opts.gfx!=="object")G.opts.gfx={draw:1,detail:1,particles:1,plants:1,fps:0};
   for(const k of["draw","detail","particles","plants"])if(!G.opts.gfx[k])G.opts.gfx[k]=1;
   /* потолок кадров: 0 — без потолка. Ноль тут законное значение, поэтому
@@ -44040,13 +44046,13 @@ function drawSystem(){
       ctx.beginPath();ctx.arc(mx,my,mr,0,TAU);ctx.fill();
       if(G.ap&&G.ap.kind==="planet"&&G.ap.p===m)reticle(mx,my,mr+10);
       if(G.found.has(m.key)&&mr>2.4){
-        ctx.fillStyle="rgba(154,168,178,.7)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
-        ctx.fillText(m.name.toUpperCase(),mx,my+mr+11);
+        ctx.fillStyle="rgba(154,168,178,.7)";ctx.font=uiFont(8);ctx.textAlign="center";
+        ctx.fillText(m.name.toUpperCase(),mx,my+mr+11*uiK());
       }
     }
     if(G.found.has(p.key)){
-      ctx.fillStyle="rgba(127,230,216,.55)";ctx.font="9px ui-monospace,monospace";ctx.textAlign="center";
-      ctx.fillText(p.name.toUpperCase(),x,y+r+15);
+      ctx.fillStyle="rgba(127,230,216,.55)";ctx.font=uiFont(9);ctx.textAlign="center";
+      ctx.fillText(p.name.toUpperCase(),x,y+r+15*uiK());
     }
     if(G.ap&&G.ap.kind==="planet"&&G.ap.p===p)reticle(x,y,r+16);
   }
@@ -44133,7 +44139,7 @@ function drawSysHud(zx,zy,sh,sys,U){
      ровно на эту строку; низ меряет 27z-telemetry, здесь его только читают */
   if(typeof HUD_FLOOR==="number"&&HUD_FLOOR>40)scaleY=Math.min(scaleY,HUD_FLOOR*H/innerHeight/U-10);
   for(const f of feet)if(f.side==="L")scaleY=Math.min(scaleY,(f.y-f.r)/U-10);
-  ctx.fillStyle="rgba(93,115,130,.75)";ctx.font="9px ui-monospace,monospace";ctx.textAlign="left";
+  ctx.fillStyle="rgba(128,152,168,.85)";ctx.font="9px ui-monospace,monospace";ctx.textAlign="left";
   ctx.fillText("МАСШТАБ ×"+G.zoom.toFixed(2),14,Math.max(96,scaleY));
   /* компас на край экрана: звезда, станция и текущая цель автопилота,
      если они за кадром — чтобы в бесконечном космосе нельзя было заблудиться */
@@ -45197,8 +45203,10 @@ function drawStation(x,y,Z){
   }
   /* подпись уходит НИЖЕ корпуса: сорок пикселей — это внутри станции, и имя
      читалось поверх её же переборок (M242) */
-  ctx.fillStyle="rgba(242,178,92,.6)";ctx.font="9px ui-monospace,monospace";ctx.textAlign="center";
-  ctx.fillText(S.name.toUpperCase(),x,y+42*s+12);
+  /* и растёт вместе с бортом (M443): девять пикселей при раздутом интерфейсе
+     читались так же, как подписи карты до M437 */
+  ctx.fillStyle="rgba(242,178,92,.6)";ctx.font=uiFont(9);ctx.textAlign="center";
+  ctx.fillText(S.name.toUpperCase(),x,y+42*s+12*uiK());
 }
 
 /* ══════════════ дома как язык форм ══════════════
@@ -46042,7 +46050,9 @@ function drawMap(){
       ((typeof rungFootTxt==="function")?rungFootTxt(G.sel.x,G.sel.y):"")]);   /* пятилетка римской цифрой (M292) */
     if(typeof routeOf==="function"&&routeOf().legs.length>=1)
       L.push(["rgba(127,230,216,.75)",routeLine()]);
-    Rr.push(["rgba(93,115,130,.85)","ТЕЛ "+G.found.size+" · ВИДОВ "+G.species.size+" · "+
+    /* счёт открытий — второй ряд, но читаемый: на телефоне строка ложится ниже
+       плашки и серое .85 давало контраст 2.3 (M443, детектор текста) */
+    Rr.push(["rgba(128,152,168,.9)","ТЕЛ "+G.found.size+" · ВИДОВ "+G.species.size+" · "+
       Math.round(G.credits).toLocaleString("ru")+" кр"]);
     const occN=G.occ?Object.keys(G.occ).length:0;
     if(occN||(G.freed|0))
@@ -47583,6 +47593,13 @@ function withScale(k,fn){
   W=W/k;H=H/k;SCK=pS*Math.min(k,Math.max(1,RAST_MAX/DPR));
   try{fn();}finally{ctx.restore();W=pW;H=pH;SCK=pS;}
 }
+/* ── линейка в начертании (M443) ──
+   Подпись, привязанная к миру (имя станции под корпусом, планеты под диском),
+   в withScale не заворачивается — её место считает мир, а не рамка. Растёт
+   тогда кегль и отступ от тела: тот же приём, что mapFont у карты (M437).
+   Детектор кегля (tests/90b-detect) меряет это в кадре 2560×1440. */
+function uiK(){return (typeof UIK==="number"&&UIK>1)?UIK:1;}
+function uiFont(px){return (px*uiK()).toFixed(1)+"px ui-monospace,monospace";}
 
 /* подмена холста: fn рисует так, будто экран размером w×h и начало — в
    мировой точке (ox,oy) */
@@ -49095,8 +49112,17 @@ function drawScoop(){
     ctx.strokeStyle="rgba(150,240,214,.34)";ctx.lineWidth=1;
     bandPath(off);ctx.stroke();ctx.restore();
   }
-  ctx.fillStyle="rgba(127,224,200,.55)";ctx.font="9px ui-monospace,monospace";ctx.textAlign="left";
-  ctx.fillText("ПОЛОСА СБОРА",14,cols[1][1]-hband*.5-6);
+  /* подпись полосы читается поверх газа: плашка под ней, как у фишек, и
+     кегль по линейке интерфейса. На .55 без подложки лиловый газ съедал её
+     до контраста 2.6 (M443, детектор текста) */
+  {
+    const u=uiK(),ly=cols[1][1]-hband*.5-6*u;
+    ctx.font=uiFont(9);ctx.textAlign="left";
+    const lw=ctx.measureText("ПОЛОСА СБОРА").width;
+    ctx.fillStyle="rgba(5,7,12,.62)";ctx.fillRect(10,ly-10*u,lw+8*u,13*u);
+    ctx.fillStyle="rgba(127,224,200,.92)";
+    ctx.fillText("ПОЛОСА СБОРА",14,ly);
+  }
   /* ── помехи ──
      Ядро — тело с глазом и завихрением, плюмаж — восходящая струя, град —
      россыпь колючих кристаллов. Все три рисуются одним светом (§ свод правил):
@@ -49235,24 +49261,28 @@ function drawScoop(){
      весь прибор читался пустым прямоугольником с приблудной строкой. У шкалы
      обязан быть жёлоб (видно, что это шкала, даже когда пусто) и порог, за
      которым горит корпус, — тогда ноль означает «холодно», а не «сломано». */
-  const bw=Math.min(W-40,300),bx=W/2-bw/2,by=H*.145;   /* ниже угловых панелей: на 26 полоса налезала на них */
-  ctx.fillStyle="rgba(6,10,16,.72)";ctx.fillRect(bx-8,by-7,bw+16,30);
-  ctx.strokeStyle="rgba(242,178,92,.5)";ctx.lineWidth=1;ctx.strokeRect(bx-8.5,by-7.5,bw+17,31);
-  const hk=clamp(S.heat/100,0,1);
-  ctx.fillStyle="rgba(0,0,0,.45)";ctx.fillRect(bx,by,bw,8);          // жёлоб шкалы
-  ctx.fillStyle="rgba(242,178,92,.16)";ctx.fillRect(bx,by,bw,1);
-  ctx.fillStyle="rgba(255,80,60,.18)";ctx.fillRect(bx+bw*.8,by,bw*.2,8);  // порог пожара
-  ctx.fillStyle=hk>.8?"rgba(255,80,60,.95)":(hk>.5?"rgba(255,180,80,.9)":"rgba(127,224,200,.85)");
-  ctx.fillRect(bx,by,bw*hk,8);
-  ctx.fillStyle="rgba(242,178,92,.35)";                              // деления по четвертям
-  for(let i=1;i<4;i++)ctx.fillRect(bx+bw*i/4,by,1,8);
-  ctx.fillStyle="rgba(242,178,92,.85)";ctx.font="9px ui-monospace,monospace";ctx.textAlign="center";
-  ctx.fillText("НАГРЕВ КОРПУСА "+Math.round(S.heat)+"%",W/2,by+19);
-  if(S.heat>=100){
-    ctx.fillStyle=(Math.sin(G.t*.3)>0)?"rgba(255,70,50,.9)":"rgba(255,70,50,.3)";
-    ctx.textAlign="center";ctx.font="12px ui-monospace,monospace";
-    ctx.fillText("ПЕРЕГРЕВ · КОРПУС ГОРИТ",W/2,by+42);   /* под выросшей плашкой */
-  }
+  /* прибор — интерфейс и растёт с бортом (M221): в окне 1920 плашка и её
+     подпись стояли в 9 px рядом с раздутыми панелями (M443, детектор кегля) */
+  withScale(uiK(),()=>{
+    const bw=Math.min(W-40,300),bx=W/2-bw/2,by=H*.145;   /* ниже угловых панелей: на 26 полоса налезала на них */
+    ctx.fillStyle="rgba(6,10,16,.72)";ctx.fillRect(bx-8,by-7,bw+16,30);
+    ctx.strokeStyle="rgba(242,178,92,.5)";ctx.lineWidth=1;ctx.strokeRect(bx-8.5,by-7.5,bw+17,31);
+    const hk=clamp(S.heat/100,0,1);
+    ctx.fillStyle="rgba(0,0,0,.45)";ctx.fillRect(bx,by,bw,8);          // жёлоб шкалы
+    ctx.fillStyle="rgba(242,178,92,.16)";ctx.fillRect(bx,by,bw,1);
+    ctx.fillStyle="rgba(255,80,60,.18)";ctx.fillRect(bx+bw*.8,by,bw*.2,8);  // порог пожара
+    ctx.fillStyle=hk>.8?"rgba(255,80,60,.95)":(hk>.5?"rgba(255,180,80,.9)":"rgba(127,224,200,.85)");
+    ctx.fillRect(bx,by,bw*hk,8);
+    ctx.fillStyle="rgba(242,178,92,.35)";                              // деления по четвертям
+    for(let i=1;i<4;i++)ctx.fillRect(bx+bw*i/4,by,1,8);
+    ctx.fillStyle="rgba(242,178,92,.85)";ctx.font="9px ui-monospace,monospace";ctx.textAlign="center";
+    ctx.fillText("НАГРЕВ КОРПУСА "+Math.round(S.heat)+"%",W/2,by+19);
+    if(S.heat>=100){
+      ctx.fillStyle=(Math.sin(G.t*.3)>0)?"rgba(255,70,50,.9)":"rgba(255,70,50,.3)";
+      ctx.textAlign="center";ctx.font="12px ui-monospace,monospace";
+      ctx.fillText("ПЕРЕГРЕВ · КОРПУС ГОРИТ",W/2,by+42);   /* под выросшей плашкой */
+    }
+  });
 }
 
 /* ══════════════ небо ══════════════ */
@@ -59843,17 +59873,18 @@ function drawBase(){
     ctx.moveTo(x2,y2-L);ctx.lineTo(x2,y2);ctx.lineTo(x2-L,y2);
     ctx.moveTo(x1+L,y2);ctx.lineTo(x1,y2);ctx.lineTo(x1,y2-L);
     ctx.stroke();
+    /* подпись под курсором — интерфейс: кегль по линейке борта (M443) */
     ctx.fillStyle="rgba(180,240,232,.9)";
-    ctx.font="9px ui-monospace,monospace";ctx.textAlign="center";
+    ctx.font=uiFont(9);ctx.textAlign="center";
     const nm=BUILD[selCell.k].ru.toUpperCase()+(selCell.hp<=0?" · РАЗБИТ":"");
-    ctx.fillText(nm,sx+BCELL_W/2,y1-5);
+    ctx.fillText(nm,sx+BCELL_W/2,y1-5*uiK());
   }
   else{
     ctx.setLineDash([7,7]);
     ctx.strokeRect(sx+10,sy+10,BCELL_W-20,BCELL_H-20);
     ctx.setLineDash([]);
-    ctx.fillStyle="rgba(127,230,216,.5)";ctx.font="9px ui-monospace,monospace";ctx.textAlign="center";
-    ctx.fillText("МЕСТО ПОД ЗАСТРОЙКУ",sx+BCELL_W/2,sy+BCELL_H/2+3);
+    ctx.fillStyle="rgba(127,230,216,.5)";ctx.font=uiFont(9);ctx.textAlign="center";
+    ctx.fillText("МЕСТО ПОД ЗАСТРОЙКУ",sx+BCELL_W/2,sy+BCELL_H/2+3*uiK());
   }
   /* ── патрубки соседства (M404, §7) ──
      Девять правил были числами в подсказке; здесь они становятся тем, что
@@ -59938,7 +59969,10 @@ function drawBase(){
      базы стояли не там. Хозяйство базы — это ПРИБОР, и место ему на доске у
      левого края; подсказка остаётся тем, чем должна быть, — что под курсором
      и что делает кнопка. Слова целиком, потому что место под них есть. */
-  if(typeof baseLife==="function"&&typeof baseSharp==="function"){
+  /* доска — прибор у левого края, и растёт вместе с бортом (M221): в окне
+     1920 её восьмипиксельные строки стояли рядом с раздутыми панелями
+     (M443, детектор кегля). Как у системы и грунта — withScale(UIK) */
+  if(typeof baseLife==="function"&&typeof baseSharp==="function")withScale(uiK(),()=>{
     const L=baseLife(B),bx=14,by=64;
     const rows=[["ВОЗДУХ",L.air,LIFE_CAP,[150,220,255]],
                 ["ВОДА",  L.water,LIFE_CAP,[120,190,255]],
@@ -59974,13 +60008,13 @@ function drawBase(){
       ctx.fillText(s.length>30?s.slice(0,30):s,bx,fy+11+i*11);
     });
     ctx.restore();
-  }
+  });
   /* ── что тут было без вас (M390 §12; кадр M413) ──
      Записи журнала встречали игрока через `say` — по центру, на четверти
      высоты, то есть ровно поверх верхнего ряда сетки. Здесь у них своё место:
      карточка в свободном небе справа, под шапкой сцены, шириной в текст и
      ничем не перекрытая. Гаснет сама, как гасло сообщение. */
-  if(S.note&&S.note.t>0&&W>=BASE_NOTE_W){
+  if(S.note&&S.note.t>0&&W>=BASE_NOTE_W)withScale(uiK(),()=>{
     const N=S.note,a=clamp(N.t/60,0,1);
     ctx.save();
     ctx.globalAlpha=a;
@@ -60003,7 +60037,7 @@ function drawBase(){
       ctx.fillText(s,cx+12,cy+29+i*13);
     });
     ctx.restore();
-  }
+  });
   /* аврал (M398): отсек, в котором беда, видно раньше всякого текста */
   if(typeof avrDraw==="function")avrDraw(S,X,Y,lit);
   /* ── переходящий вымпел (M206; переделка M413) ──
@@ -62693,7 +62727,13 @@ function drawSurfaceHud(camx,camy,K){
       rowY+=13;
       ctx.fillRect(sx-1,rowY-5,2,10);
       /* у правой кромки подпись уходит влево от засечки, иначе обрезается */
-      const old=ctx.textAlign;ctx.textAlign=sx>W-RIGHT_PAD-120?"right":"left";
+      const old=ctx.textAlign,right=sx>W-RIGHT_PAD-120;ctx.textAlign=right?"right":"left";
+      /* и лежит на плашке, как фишка у кромки: голая подпись на дневном небе
+         читалась с контрастом 1.2 — оранжевое «КОРАБЛЬ» по светлой дымке
+         (M443, детектор текста) */
+      {const tw=ctx.measureText(m.ru).width;
+       ctx.fillStyle="rgba(5,7,12,.72)";ctx.fillRect(right?sx-tw-4:sx-4,rowY+7,tw+8,12);
+       ctx.fillStyle=m.col;}
       ctx.fillText(m.ru,sx,rowY+16);ctx.textAlign=old;
     }
   }
@@ -63254,10 +63294,16 @@ function drawSurfaceWorld(){
     const near=clamp(1-Math.abs(d.x-S.x)/120,0,1);
     drawDeposit(x,y,d.res,d.left,near,d.x,p.T.pal[3]);
     if(Math.abs(d.x-S.x)<70){
-      ctx.fillStyle=col;ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+      ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
       /* соседние залежи разводим по высоте: рядом стоящие подписи наезжали друг
          на друга и читались как каша из двух названий */
-      ctx.fillText(RES[d.res].ru.toUpperCase()+" "+d.left,x,y-24-(Math.round(d.x/60)%2)*11);
+      const lbl=RES[d.res].ru.toUpperCase()+" "+d.left,ly=y-24-(Math.round(d.x/60)%2)*11;
+      /* подпись на тёмной плашке: цветом сырья по дневному небу она читалась
+         с контрастом 1.4 (M443, детектор текста) */
+      const tw=ctx.measureText(lbl).width;
+      ctx.fillStyle="rgba(5,7,12,.62)";ctx.fillRect(x-tw/2-5,ly-10,tw+10,14);
+      ctx.fillStyle=col;
+      ctx.fillText(lbl,x,ly);
     }
     if(S.mining===d){
       ctx.fillStyle="rgba(0,0,0,.5)";ctx.fillRect(x-18,y-20,36,4);
@@ -68168,6 +68214,10 @@ function drawBelt(){
 /* ── символика на остеклении ── */
 function drawGlassHUD(b,proj,fwd,st){
   const D=6000;
+  /* символика на стекле — интерфейс, и у него одна линейка с бортом (M221):
+     в окне 1920 цифры лесенки и курсовой ленты оставались восьмипиксельными
+     рядом с выросшими в полтора раза панелями (M443, детектор кегля) */
+  const u=uiK();
   /* шкала тангажа: вторая точка по курсу задаёт наклон черты, поэтому
      лесенка кренится вместе с горизонтом */
   ctx.lineWidth=1;
@@ -68177,7 +68227,7 @@ function drawGlassHUD(b,proj,fwd,st){
     const q=proj(b.x+Math.sin(b.yaw+.14)*ct*D, b.y+st2*D, b.z+Math.cos(b.yaw+.14)*ct*D);
     if(!p||!q)continue;
     if(p.x<-W||p.x>W*2||p.y<-H||p.y>H*2)continue;
-    const zero=deg===0, w=zero?96:(deg%20===0?58:34);
+    const zero=deg===0, w=(zero?96:(deg%20===0?58:34))*u;
     const ang=Math.atan2(q.y-p.y,q.x-p.x);
     ctx.save();ctx.translate(p.x,p.y);ctx.rotate(ang);
     ctx.strokeStyle=zero?"rgba(127,230,216,.55)":"rgba(127,230,216,.25)";
@@ -68187,8 +68237,8 @@ function drawGlassHUD(b,proj,fwd,st){
               ctx.moveTo(w,0);ctx.lineTo(w,deg>0?5:-5);}
     ctx.stroke();
     if(deg%20===0&&!zero){
-      ctx.fillStyle="rgba(127,230,216,.4)";ctx.font="8px ui-monospace,monospace";
-      ctx.textAlign="right";ctx.fillText(deg>0?"+"+deg:deg,-w-4,3);
+      ctx.fillStyle="rgba(127,230,216,.4)";ctx.font=uiFont(8);
+      ctx.textAlign="right";ctx.fillText(deg>0?"+"+deg:deg,-w-4*u,3*u);
     }
     ctx.restore();
   }
@@ -68218,10 +68268,10 @@ function drawGlassHUD(b,proj,fwd,st){
         ctx.moveTo(t.x+ox*s-ox*c,t.y+oy*s);ctx.lineTo(t.x+ox*s,t.y+oy*s);
         ctx.lineTo(t.x+ox*s,t.y+oy*s-oy*c);ctx.stroke();
       }
-      ctx.fillStyle="rgba(242,178,92,.9)";ctx.font="9px ui-monospace,monospace";
+      ctx.fillStyle="rgba(242,178,92,.9)";ctx.font=uiFont(9);
       ctx.textAlign="center";
       ctx.fillText(RES[b.lock.res].ru.toUpperCase()+" ×"+b.lock.left+
-        "   "+Math.round(t.z)+" М",t.x,t.y-s-7);
+        "   "+Math.round(t.z)+" М",t.x,t.y-s-7*u);
     }
   }
   /* прицел */
@@ -68233,14 +68283,14 @@ function drawGlassHUD(b,proj,fwd,st){
   ctx.stroke();
   /* курсовая лента */
   const hd=((b.yaw*57.3)%360+360)%360;
-  ctx.fillStyle="rgba(127,230,216,.55)";ctx.font="9px ui-monospace,monospace";ctx.textAlign="center";
+  ctx.fillStyle="rgba(127,230,216,.55)";ctx.font=uiFont(9);ctx.textAlign="center";
   for(let i=-3;i<=3;i++){
     const v=Math.round(hd/10)*10+i*10;
-    const x=W/2+(v-hd)*3.4;
+    const x=W/2+(v-hd)*3.4*u;          /* шаг ленты растёт с цифрами, иначе они слипаются */
     if(Math.abs(x-W/2)>W*.22)continue;
     const vv=((v%360)+360)%360;
     ctx.fillText(String(vv).padStart(3,"0"),x,H*.155);
-    ctx.fillRect(x,H*.163,1,4);
+    ctx.fillRect(x,H*.163,1,4*u);
   }
   ctx.strokeStyle="rgba(242,178,92,.8)";ctx.lineWidth=1.2;
   ctx.beginPath();ctx.moveTo(W/2,H*.176);ctx.lineTo(W/2-4,H*.184);
@@ -69828,7 +69878,7 @@ function drawWanderRoom(){
       ctx.save();ctx.translate(cx,cy);ctx.rotate(cs.left?.06:-.06);
       ctx.fillStyle="rgba(232,220,190,.10)";ctx.fillRect(-sz*.5,-sz*.18,sz,sz*.36);
       ctx.strokeStyle="rgba(232,220,190,.45)";ctx.lineWidth=1;ctx.strokeRect(-sz*.5,-sz*.18,sz,sz*.36);
-      ctx.fillStyle=wanRgba(WAN_C.chalk,.75);ctx.font=Math.max(7,sz*.16)+"px ui-monospace,monospace";ctx.textAlign="center";
+      ctx.fillStyle=wanRgba(WAN_C.chalk,.75);ctx.font=Math.max(8*uiK(),sz*.16)+"px ui-monospace,monospace";ctx.textAlign="center";
       ctx.fillText(lot.gone?"продано":"пусто",0,sz*.05);
       ctx.restore();
     }else{
@@ -69836,7 +69886,10 @@ function drawWanderRoom(){
       /* меловая цена под полкой: спички — та валюта, ради которой сюда пришли */
       if(lot.pay&&lot.pay.m){
         const ty=(sy+sy2)/2+(d.y-a.y)*.12,tx=(a.x+b.x)/2;
-        ctx.fillStyle=wanRgba(WAN_C.chalk,.55+lit*.35);ctx.font=Math.max(7,Math.min(13,sz*.12))+"px ui-monospace,monospace";ctx.textAlign="center";
+        /* цена — то, ради чего пришли, и читается с любой полки: пол восемь × линейка
+           интерфейса, потолок растёт с ней же. Было 7 px на дальней полке и
+           потолок 13 при любой мерке (M443, детектор кегля) */
+        ctx.fillStyle=wanRgba(WAN_C.chalk,.55+lit*.35);ctx.font=Math.max(8*uiK(),Math.min(13*uiK(),sz*.12))+"px ui-monospace,monospace";ctx.textAlign="center";
         ctx.fillText(lot.pay.m+" сп.",tx,ty);
       }
     }
@@ -70494,7 +70547,10 @@ function drawCockpit(b,st){
      экране доска растягивается, а надписи в 8 px остаются теми же — показания
      приходится разбирать. Множитель ограничен снизу единицей: на узком экране
      мельчить дальше уже некуда. */
-  const FS=clamp(UH/70,1,1.75);
+  /* И не меньше линейки интерфейса (M221): доска ограничена сверху (dashH до
+     168), и в окне 1920 её кегль стоял на единице, пока борт и панели рядом
+     выросли в полтора раза — надписи доски выглядели чужими (M443) */
+  const FS=Math.max(clamp(UH/70,1,1.75),uiK());
   const fnt=s=>Math.round(s*FS)+"px ui-monospace,monospace";
 
   /* ── стекло: тонировка, блик и отражение приборов ──
@@ -70918,7 +70974,7 @@ function instrPanel(P,FS){
        работает в обе стороны: то, что должно читаться, обязано быть крупным
        достаточно, а не только не слишком крупным. */
     ctx.fillStyle=col+".62)";
-    ctx.font=Math.max(9,Math.round(7.2*FS))+"px ui-monospace,monospace";
+    ctx.font=Math.max(9*uiK(),Math.round(7.2*FS))+"px ui-monospace,monospace";   /* пол растёт с линейкой (M443) */
     /* и СОКРАЩАЕТСЯ, а не мельчает. Полное имя влезает в ячейку широкой
        панели и не влезает в узкую («МАСС-ДЕТЕКТОР» это 64 px при 9-м кегле,
        а ячейка бывает и в сорок). Уменьшать кегль до нечитаемого — ровно та
@@ -70931,7 +70987,8 @@ function instrPanel(P,FS){
   {
     const mv=instrMisclose();
     const mt="НЕВЯЗКА "+mv.toFixed(3);
-    ctx.font=Math.round(7*FS)+"px ui-monospace,monospace";
+    /* семь пикселей на узком окне — ниже пола читаемого (M443): пол восемь × линейка */
+    ctx.font=Math.max(8*uiK(),Math.round(7*FS))+"px ui-monospace,monospace";
     const mw=Math.ceil(ctx.measureText(mt).width)+14, mx=x0+w+14, my=y-h-2, mh=h+8;
     ctx.fillStyle="rgba(6,9,13,.55)";ctx.fillRect(mx,my,mw,mh);
     ctx.strokeStyle=col+".18)";ctx.lineWidth=1;ctx.strokeRect(mx+.5,my+.5,mw-1,mh-1);
@@ -77283,14 +77340,15 @@ function renderOpts(){
   const rp=el("div","row");
   rp.appendChild(el("div","nm","<b>Показывать пэды</b><s>«авто» — прячутся при вводе с клавиатуры/мыши, "+
     "возвращаются от касания</s>"));
-  const bp=el("button","act gold",PADS.find(p=>p[0]===G.opts.pads)[1]);
+  /* чужое значение (порченая запись) не роняет экран: показываем первое (M443) */
+  const bp=el("button","act gold",(PADS.find(p=>p[0]===G.opts.pads)||PADS[0])[1]);
   bp.onclick=()=>{const i=PADS.findIndex(p=>p[0]===G.opts.pads);G.opts.pads=PADS[(i+1)%PADS.length][0];
     applyPadMode();renderOpts();};
   rp.appendChild(bp);$optBody.appendChild(rp);
   const rps=el("div","row");
   rps.appendChild(el("div","nm","<b>Размер кнопок</b><s>мельче — меньше загораживают экран</s>"));
   const SZ=[[.8,"МЕЛКИЕ"],[1,"ОБЫЧНЫЕ"],[1.25,"КРУПНЫЕ"]];
-  const bsz=el("button","act gold",SZ.find(s=>s[0]===G.opts.padSize)[1]);
+  const bsz=el("button","act gold",(SZ.find(s=>s[0]===G.opts.padSize)||SZ[1])[1]);
   bsz.onclick=()=>{const i=SZ.findIndex(s=>s[0]===G.opts.padSize);G.opts.padSize=SZ[(i+1)%SZ.length][0];
     applyPadSize();renderOpts();};
   rps.appendChild(bsz);$optBody.appendChild(rps);
@@ -87402,7 +87460,8 @@ function drawHomeIn(){
     ctx.fillRect(lx-HIN_MAN*.16,ceil+HIN_MAN*.6,HIN_MAN*.32,2.2);
   }
   ctx.restore();
-  /* ── строка внимания ── */
+  /* ── строка внимания и имя комнаты: по линейке борта (M443) ── */
+  withScale(uiK(),()=>{
   if(S.look){
     const a=clamp(S.lookT/120,0,1);
     ctx.fillStyle="rgba(6,8,12,"+(.72*a).toFixed(2)+")";
@@ -87420,6 +87479,7 @@ function drawHomeIn(){
     ctx.font="10px ui-monospace,monospace";ctx.textAlign="left";
     ctx.fillText(room.ru.toUpperCase(),12,26);
   }
+  });
 }
 /* ── передний план комнаты (M173) ──
    Одна-две вещи БЛИЖЕ человека, срезанные нижней кромкой. Их задача не быть
@@ -89721,7 +89781,9 @@ function drawSpa(){
     ctx.strokeStyle=sprgba(SPA_C.wood2,0.55);
     ctx.lineWidth=Math.max(2,H*0.004);
     ctx.strokeRect(b.x+1,b.y+1,b.w-2,b.h-2);
-    ctx.fillStyle="rgba(90,78,58,.85)";
+    /* щит стоит в углу, под виньеткой кадра и зерна: чернила гуще, иначе
+       заголовок уходил в контраст 2.8 (M443, детектор текста) */
+    ctx.fillStyle="rgba(62,52,38,.95)";
     ctx.font=Math.max(8,Math.round(H*0.016))+"px ui-monospace,monospace";
     ctx.textAlign="left";
     ctx.fillText("РАСПОРЯДОК · ДЕНЬ "+S.day+" ИЗ "+S.days,b.x+b.w*0.06,b.y+b.h*0.13);
@@ -89734,8 +89796,10 @@ function drawSpa(){
       ctx.fillStyle=took?"rgba(120,106,80,.55)":"rgba(66,58,44,.92)";
       ctx.font=Math.max(7,Math.round(H*0.0135))+"px ui-monospace,monospace";
       ctx.fillText(P.ru,b.x+b.w*0.08,y);
-      ctx.fillStyle="rgba(120,106,80,.55)";
-      ctx.font=Math.max(6,Math.round(H*0.0115))+"px ui-monospace,monospace";
+      /* час процедуры — сведение, а не узор: карандаш, но читаемый (было .55 и
+         шесть пикселей снизу — контраст 1.5, M443) */
+      ctx.fillStyle="rgba(78,68,50,.9)";
+      ctx.font=Math.max(8,Math.round(H*0.0115))+"px ui-monospace,monospace";
       ctx.fillText(P.at,b.x+b.w*0.08,y+H*0.016);
       if(took){
         /* черта идёт ПО СЛОВУ, а не над ним: над словом она читалась
