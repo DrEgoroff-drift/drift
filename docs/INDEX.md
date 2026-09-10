@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 519 · символов верхнего уровня: 4879
+Файлов: 519 · символов верхнего уровня: 4880
 
 ## СИМВОЛЫ
 
@@ -813,6 +813,7 @@ cloudOn                      src/14a-cloud.js:71
 cloudPull                    src/14a-cloud.js:154
 cloudPush                    src/14a-cloud.js:132
 cloudRetry                   src/14a-cloud.js:120
+CLOUDS_OFF                   src/19e-clouds.js:385
 cloudsOf                     src/19e-clouds.js:331
 cloudSprite                  src/19e-clouds.js:75
 cloudTok                     src/14a-cloud.js:68
@@ -1231,7 +1232,7 @@ drawCaveWater                src/22a-cave-deco.js:300
 drawCaveWorld                src/22-mode-cave.js:647
 drawCelest                   src/06a-celest.js:167
 drawChunks                   src/18c-chunks.js:83
-drawClouds                   src/19e-clouds.js:382
+drawClouds                   src/19e-clouds.js:386
 drawCockpit                  src/25-cockpit.js:400
 drawCombat                   src/13-pirates.js:348
 drawCosmMark                 src/12va-wander-cosm.js:112
@@ -4109,27 +4110,27 @@ SKY_OFF                      src/11ak-skywatch.js:123
 SKY_QUIET                    src/19b-sky.js:14
 SKY_WORLD_KINDS              src/19b-sky.js:136
 skyAll                       src/11ak-skywatch.js:34
-skyAurora                    src/19b-sky.js:436
+skyAurora                    src/19b-sky.js:445
 skyBlock                     src/11ak-skywatch.js:236
 skyCanReport                 src/11ak-skywatch.js:204
-skyComet                     src/19b-sky.js:499
+skyComet                     src/19b-sky.js:508
 skyCometName                 src/11ak-skywatch.js:200
 skyDay                       src/19c-light.js:78
 skyDrop                      src/11ak-skywatch.js:148
-skyField                     src/19b-sky.js:542
+skyField                     src/19b-sky.js:551
 skyFind                      src/11ak-skywatch.js:47
-skyGalaxy                    src/19b-sky.js:373
+skyGalaxy                    src/19b-sky.js:382
 skyGiant                     src/19b-sky.js:222
 skyGrad                      src/19-mode-landing.js:134
-skyHole                      src/19b-sky.js:396
-skyMoon                      src/19b-sky.js:462
+skyHole                      src/19b-sky.js:405
+skyMoon                      src/19b-sky.js:471
 skyNameComet                 src/11ak-skywatch.js:186
-skyNeb                       src/19b-sky.js:485
+skyNeb                       src/19b-sky.js:494
 skyNebula                    src/19b-sky.js:66
 skyOfferHere                 src/11ak-skywatch.js:124
 skyOn                        src/11ak-skywatch.js:59
 skyPick                      src/11ak-skywatch.js:81
-skyPulsar                    src/19b-sky.js:520
+skyPulsar                    src/19b-sky.js:529
 skyReport                    src/11ak-skywatch.js:208
 skyScene                     src/19b-sky.js:15
 skyTake                      src/11ak-skywatch.js:138
@@ -4334,7 +4335,7 @@ stripSell                    src/11b-speech.js:231
 stripValue                   src/11b-speech.js:193
 stSet                        src/14-save.js:14
 stTabBoard                   src/26e-ui-station-trade.js:11
-stTabFuse                    src/26b-ui-station-work.js:262
+stTabFuse                    src/26b-ui-station-work.js:265
 stTabInstr                   src/26b-ui-station-work.js:169
 stTabLab                     src/26b-ui-station-work.js:236
 stTabMarket                  src/26e-ui-station-trade.js:139
@@ -5536,7 +5537,7 @@ zooTick                      src/11ad-zoo.js:41
   · сбор летучих газов: заход в атмосферу гиганта:1
   · небо гиганта: полосы, а не лепёшки:172
 
-## src/19b-sky.js · 33 КБ
+## src/19b-sky.js · 34 КБ
   · небо:1
 
 ## src/19c-light.js · 28 КБ
@@ -5550,7 +5551,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/19d-weather.js · 14 КБ
   · погода:1
 
-## src/19e-clouds.js · 40 КБ
+## src/19e-clouds.js · 41 КБ
   · облака:1
 
 ## src/19f-lander.js · 22 КБ
@@ -5818,7 +5819,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/26a-ui-station-home.js · 21 КБ
   · станция: вкладка «дом и базы»:1
 
-## src/26b-ui-station-work.js · 19 КБ
+## src/26b-ui-station-work.js · 20 КБ
   · станция: мастерская и наука:1
 
 ## src/26c-ui-station-site.js · 9 КБ
@@ -6460,7 +6461,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzzzy-hold.js · 9 КБ
   · холдинг: круг стройки числами (M339):1
 
-## tests/91zzzzy-light.js · 20 КБ
+## tests/91zzzzy-light.js · 21 КБ
   · свет и свечения (M330):1
 
 ## tests/91zzzzy-look.js · 7 КБ

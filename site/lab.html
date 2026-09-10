@@ -20,7 +20,7 @@ section.lab{padding-top:34px;padding-bottom:60px}
 .live{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--good);margin-right:6px;
   box-shadow:0 0 8px var(--good);animation:pulse 1.6s ease-in-out infinite}
 @keyframes pulse{50%{opacity:.35}}
-.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:22px 0 30px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:22px 0 30px}
 .tile{padding:12px 14px;border:1px solid var(--line);background:var(--panel)}
 .tile .k{font-size:10.5px;letter-spacing:.18em;color:var(--dim);text-transform:uppercase}
 .tile .v{font-size:24px;line-height:1.2;margin-top:4px;color:var(--text)}
@@ -139,7 +139,8 @@ tr.det td{background:rgba(8,13,22,.8);color:var(--dim);font-size:11px;white-spac
     ["прогонов за сессию",last.units||0,"",(last.secs?Math.round(last.secs/60)+" мин работы":"")],
     ["зелёных",last.green||0,"ok",""],
     ["красных и без отчёта",red,red?"bad":"ok",""],
-    ["открытых ошибок",D.totals.errors_open,D.totals.errors_open?"warn":"ok","новых за сутки: "+newDay],
+    ["ошибок игры",D.totals.errors_game|0,(D.totals.errors_game|0)?"bad":"ok","новых за сутки: "+newDay],
+    ["упёрлось в хост",D.totals.errors_host|0,(D.totals.errors_host|0)?"warn":"ok","память и таймауты"],
     ["пик памяти",(last.rss||0)+" МБ",(last.rss||0)>450?"bad":"","лимит хоста 500"],
     ["зёрен фуззера",Object.values(D.fuzz||{}).reduce((a,f)=>a+(f.seeds||0),0),"","по всем версиям"]];
   $("#tiles").innerHTML=tiles.map(t=>'<div class="tile"><div class="k">'+t[0]+'</div><div class="v '+t[2]+'">'+t[1]+'</div><div class="s">'+t[3]+'</div></div>').join("");
@@ -192,15 +193,16 @@ tr.det td{background:rgba(8,13,22,.8);color:var(--dim);font-size:11px;white-spac
       if(!b||bd>14)return "";return "<b>"+b[2].replace(/^heavy:/,"")+"</b><br>"+b[3][2]+" МБ · "+b[3][1]+" с · "+b[3][3];});}
 
   // ── ошибки ──
-  const kinds=[["all","все"],["day","за сутки"],["fuzz","фуззер"],["heavy","тяжёлые"],["light","лёгкие"],["node","node"]];let ef="all";
+  const kinds=[["game","игра"],["host","хост: память и время"],["all","все"],["day","за сутки"],["fuzz","фуззер"],["heavy","тяжёлые"],["light","лёгкие"],["node","node"]];let ef="game";
   function drawErrors(){
     $("#ef").innerHTML=kinds.map(k=>'<button class="'+(ef===k[0]?"on":"")+'" data-k="'+k[0]+'">'+k[1]+'</button>').join("");
     $("#ef").querySelectorAll("button").forEach(b=>b.onclick=()=>{ef=b.dataset.k;drawErrors();});
-    const list=errs.filter(e=>ef==="all"||(ef==="day"?Date.parse(e.last.replace(" ","T")+"Z")>day:e.unit.startsWith(ef)));
-    if(!list.length){$("#errors").innerHTML='<div class="empty">ни одной — либо всё зелёное, либо лаборатория ещё не ходила</div>';return;}
+    const cls=e=>e.cls||"game";
+    const list=errs.filter(e=>ef==="all"||(ef==="game"?cls(e)==="game":ef==="host"?cls(e)==="host":ef==="day"?Date.parse(e.last.replace(" ","T")+"Z")>day:e.unit.startsWith(ef)));
+    if(!list.length){$("#errors").innerHTML='<div class="empty">'+(ef==="game"?"ошибок игры нет: всё, что открыто, — лимиты хоста":"ни одной — либо всё зелёное, либо лаборатория ещё не ходила")+'</div>';return;}
     $("#errors").innerHTML='<table><tr><th>ошибка</th><th class="hide">где</th><th>раз</th><th class="hide">версии</th><th>впервые</th><th>последний раз</th></tr>'+
       list.map(e=>'<tr class="err" data-k="'+e.key+'"><td>'+(Date.parse(e.first.replace(" ","T")+"Z")>day?'<span class="tag new">новая</span>':"")+'<span class="suite">'+esc(e.suite)+'</span><span class="msg">'+esc(e.msg)+'</span></td>'+
-        '<td class="hide"><span class="tag">'+esc(e.unit.replace(/^heavy:.*/,"heavy"))+'</span>'+(e.seeds&&e.seeds.length?'<div class="msg">зёрна '+e.seeds.join(" ")+'</div>':"")+'</td>'+
+        '<td class="hide"><span class="tag">'+esc(e.unit.replace(/^heavy:.*/,"heavy"))+'</span>'+(cls(e)==="host"?'<span class="tag noreport">хост</span>':"")+(e.seeds&&e.seeds.length?'<div class="msg">зёрна '+e.seeds.join(" ")+'</div>':"")+'</td>'+
         '<td class="n">×'+e.count+'</td><td class="n hide">'+Object.keys(e.versions).sort().join(", ")+'</td><td class="n">'+fmt(e.first)+'</td><td class="n">'+fmt(e.last)+'</td></tr>'+
         '<tr class="det" hidden><td colspan="6">'+esc(e.detail||"подробностей нет: сообщение выше — всё, что сказал отчёт")+'</td></tr>').join("")+'</table>';
     $("#errors").querySelectorAll("tr.err").forEach(r=>r.onclick=()=>{r.nextElementSibling.hidden=!r.nextElementSibling.hidden;});

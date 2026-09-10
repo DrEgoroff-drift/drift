@@ -1761,7 +1761,7 @@ body.table u.addr{color:#7a4a20}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.427.1";
+const VER="0.427.2";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -49374,6 +49374,15 @@ function skyGiant(p,e,x,y,dim,ringy){
     const dLS=(lit[0]+lit[1]+lit[2])/3-(shd[0]+shd[1]+shd[2])/3;
     if(dLS<72){const add=72-dLS;lit=lit.map(v=>clamp(v+add,0,255)|0);}
   }
+  /* ── закон 7: тело светит не ярче своей звезды (лаборатория, 10.09.2026) ──
+     У красной звезды диск на экране тусклый, а гигант, которого она освещает,
+     красился той же палитрой, что под жёлтой: кромка и кольца выходили ярче
+     светила («Нейэль I: пятно заметно ярче звезды, 0.69 против 0.52»). Свет и
+     тень, кольца и кромка гасятся яркостью звезды относительно жёлтой; для
+     жёлтой множитель — единица, картинка прежняя. */
+  const sk=(()=>{const c=(typeof starRGB==="function")?starRGB():[255,224,138];
+    return clamp((.299*c[0]+.587*c[1]+.114*c[2])/(.299*255+.587*224+.114*138),.3,1);})();
+  if(sk<1){lit=lit.map(v=>v*sk|0);shd=shd.map(v=>v*sk|0);}
   const SS=(typeof sunSpot==="function")?sunSpot(p):{x:x-R,y:y-R};
   let ux=SS.x-x, uy=SS.y-y;
   const ul=Math.hypot(ux,uy)||1; ux/=ul; uy/=ul;
@@ -49452,7 +49461,7 @@ function skyGiant(p,e,x,y,dim,ringy){
     ctx.beginPath();ctx.arc(x,y,R*1.3,0,TAU);ctx.fill();
   }
   /* кромочный свет со стороны звезды — дуга вокруг направления на неё */
-  ctx.strokeStyle="rgba(255,240,215,"+(.34*dim).toFixed(2)+")";
+  ctx.strokeStyle="rgba(255,240,215,"+(.34*dim*sk).toFixed(2)+")";
   ctx.lineWidth=1.8;
   ctx.beginPath();ctx.arc(x,y,R,ua-1.05,ua+1.05);ctx.stroke();
   /* кольца перед диском: ярче задних, и на самом диске чуть прозрачнее —
@@ -50803,8 +50812,12 @@ const CLOUD_TIER=[
 ];
 /* доля высоты спрайта, на которой лежит его плоский низ (см. `base` в cloudSprite) */
 const CLOUD_BASE=.80;
+/* дверь для замеров (тесты, стенды): облака снимаются целиком, как гроза через
+   `p.wx`. Набор «ничто не спорит со звездой» мерил диск сквозь наплывшее кучевое
+   и краснел по ветру и часу (лаборатория, 10.09.2026) */
+let CLOUDS_OFF=false;
 function drawClouds(p,camx,camy){
-  if(p.T.atm==="отсутствует")return;
+  if(p.T.atm==="отсутствует"||CLOUDS_OFF)return;
   const C=cloudsOf(p), K=C.K;
   const wp=weatherPower(p);
   const yH=H*SURF_HOR-camy*.03;            // горизонт облачного слоя
@@ -76388,7 +76401,10 @@ function stTabLab(){
       b.onclick=()=>{
         G.data-=cost;
         if(T.max)G.techLvl[k]=(G.techLvl[k]|0)+1; else G.tech.add(k);
-        if(k==="cera")G.hull+=30;
+        /* керамика даёт +30 корпуса, но не сверх предела: у изношенного корпуса (12s-wear)
+           потолок ниже расчётного, и подарок вылезал за него — «корпус 280 из 250»
+           (лаборатория, первая ночь). Потолок читаем ПОСЛЕ того, как техника записана */
+        if(k==="cera")G.hull=Math.min(stat().hullMax,G.hull+30);
         tell("tech","Изучено: "+T.ru+(T.max?" (ур."+techLv(k)+")":"")+" · −"+cost+" данных",
              "Изучено:\n"+T.ru+(T.max?"\nуровень "+techLv(k):""));
         renderTab();

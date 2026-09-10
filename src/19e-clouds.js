@@ -379,8 +379,12 @@ const CLOUD_TIER=[
 ];
 /* доля высоты спрайта, на которой лежит его плоский низ (см. `base` в cloudSprite) */
 const CLOUD_BASE=.80;
+/* дверь для замеров (тесты, стенды): облака снимаются целиком, как гроза через
+   `p.wx`. Набор «ничто не спорит со звездой» мерил диск сквозь наплывшее кучевое
+   и краснел по ветру и часу (лаборатория, 10.09.2026) */
+let CLOUDS_OFF=false;
 function drawClouds(p,camx,camy){
-  if(p.T.atm==="отсутствует")return;
+  if(p.T.atm==="отсутствует"||CLOUDS_OFF)return;
   const C=cloudsOf(p), K=C.K;
   const wp=weatherPower(p);
   const yH=H*SURF_HOR-camy*.03;            // горизонт облачного слоя

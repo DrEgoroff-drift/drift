@@ -83,11 +83,13 @@ $PY plan "$VER" "$SID" | while IFS=$'\t' read -r kind arg; do
 done
 
 # ── охота: фуззер по зёрнам, пока есть бюджет и пока находится новое ──
+# Зелёное зерно идёт ~105 с; 300 с ожидания на зерне, убитом по памяти, стоили
+# первой ночи девять раз по пять минут. 150 с: живое успевает, мёртвое не ждётся.
 if [ $QUICK = 0 ]; then
   while [ $(left) -gt 120 ]; do
     seed=$($PY fuzz-next "$VER")
     [ "$seed" = "stop" ] && { echo "lab: охота на $VER исчерпана — пять зёрен подряд без нового"; break; }
-    run fuzz "$seed" 300 $(chrome 1280,800 "$PAGE?only=$(urlenc "фуззер")&fuzz=1500&fseed=$seed")
+    run fuzz "$seed" 150 $(chrome 1280,800 "$PAGE?only=$(urlenc "фуззер")&fuzz=1500&fseed=$seed")
     $PY publish >/dev/null
   done
 fi

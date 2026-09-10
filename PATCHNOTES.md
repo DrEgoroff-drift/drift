@@ -6,6 +6,32 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.427.2 - the lab's first night, answered: two reds, one law, and the log learns to tell host from game
+
+The three-hour session of 10.09 (127 runs, 65 fuzz seeds) left eleven open keys. Two were the game's:
+
+- **Ceramic armour overshot the hull.** Buying «Керамическая броня» did `G.hull+=30` flat; a worn
+  hull (12s-wear) has a lower ceiling than the formula, and the gift climbed over it - «корпус 280
+  из 250» under the full-hold sweep. The gift is clamped to `stat().hullMax`, read after the tech
+  is written.
+- **«Ничто не спорит со звездой» went red by the wind.** The suite cleared the storm but not the
+  clouds: a cumulus drifting over the disc dimmed it to 0.52 while its lit neighbour read 0.69
+  (Нейэль I). Bisected on the host by switching painters off one at a time - not the giant, not
+  the shafts, not the haze; the clouds. The game gets a door, `CLOUDS_OFF` in `19e-clouds`, the
+  same kind as `CHRON_FREEZE`, and the suite measures the sky through it. Clouds keep their own
+  paint law in the suite above.
+- **And a law the bisect found on the way:** a gas giant lit by a red star was painted with the
+  yellow-star palette, so its rim and rings read brighter than the disc that lights them (law 7).
+  `skyGiant` now scales lit side, shadow, rings and rim by the star's luminance against the
+  yellow default - unity for a yellow star, the picture unchanged there.
+
+The rest were the host's 768 MB, not the game's, and the log now says so: an OOM or a timeout
+carries class `host`, the page opens on «игра» and keeps «хост: память и время» a click away.
+`lab.py fix <key>` closes a key by hand; a key not seen for three finished sessions goes quiet by
+itself and reopens the moment it is seen again. The fuzz timeout drops to 150 s - a live seed
+takes ~105, and nine dead ones cost the first night forty-five minutes.
+
+---
 ## 0.427.1 - the lab's first catch: a base suite that went red by the hour
 
 The lab's first session on the host (Node 16, 23:50 UTC) and the deploy of 0.427.0 both failed

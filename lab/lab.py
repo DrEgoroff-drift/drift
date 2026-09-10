@@ -9,7 +9,9 @@
                                            appends runs.jsonl, dedups errors, prints a verdict line
   lab.py fuzz-next <ver>                 → next fuzz seed, or "stop" when the hunt is exhausted
   lab.py session <start|end> <session> <ver> <budget_min>
-  lab.py publish                         → data.json + index.html + errors.txt into the web dir
+  lab.py fix <key> [<key>…]              → mark errors fixed (they reopen by themselves if seen again)
+  lab.py publish                         → data.json + index.html + errors.txt into the web dir;
+                                           an error not seen for three finished sessions goes quiet
 
 Всё на стандартной библиотеке: на хосте Python 3.6 без pip.
 """
@@ -141,20 +143,23 @@ def report(kind, arg, path, secs, mem, rc, ver, session, errfile="", oom=0):
         hung = last_suite(errfile) if errfile else ""
         why = {"timeout": "повис", "noreport": "не дал отчёта", "oom": "убит по памяти"}[verdict]
         if hung:
-            rows.append((hung, "%s в прогоне %s за %d с (%d МБ)" % (why, uid, secs, mem), "последний набор по трассе; дальше идёт отдельно (solo)"))
+            rows.append((hung, "%s в прогоне %s за %d с (%d МБ)" % (why, uid, secs, mem), "последний набор по трассе; дальше идёт отдельно (solo)", "host"))
         else:
-            rows.append((uid, "%s за %d с (%d МБ), трассы нет" % (why, secs, mem), (text[-600:] if kind == "node" else "")))
-    for suite, msg, det in rows:
+            rows.append((uid, "%s за %d с (%d МБ), трассы нет" % (why, secs, mem), (text[-600:] if kind == "node" else ""), "host"))
+    for row in rows:
+        suite, msg, det = row[0], row[1], row[2]
+        cls = row[3] if len(row) > 3 else "game"   # host: память и таймауты хоста, не баги игры
         key = hashlib.sha1((suite + "|" + norm(msg)).encode("utf-8")).hexdigest()[:12]
         e = errs.get(key)
         if not e:
             e = errs[key] = {"suite": suite, "msg": msg, "detail": det, "unit": uid, "first": t, "last": t,
-                             "count": 0, "versions": {}, "seeds": [], "status": "open"}
+                             "count": 0, "versions": {}, "seeds": [], "status": "open", "cls": cls}
             new.append(key)
         else:
             known.append(key)
-            if e.get("status") == "fixed" and ver not in e["versions"]:
-                e["status"] = "open"; e["reopened"] = t   # вернулась в новой версии
+            if e.get("status") in ("fixed", "quiet"):
+                e["status"] = "open"; e["reopened"] = t   # вернулась: починенная или затихшая
+        e["session"] = session
         e["count"] += 1; e["last"] = t
         e["versions"][ver] = e["versions"].get(ver, 0) + 1
         if kind == "fuzz" and len(e["seeds"]) < 8 and arg not in e["seeds"]: e["seeds"].append(arg)
@@ -183,6 +188,13 @@ def fuzz_next(ver):
     if f.get("exhausted"): print("stop"); return
     base = int(time.strftime("%j")) * 100  # день года: разные ночи начинают с разных зёрен
     print(str(base + f.get("seeds", 0) + 1))
+
+def fix(keys):
+    errs = jload(ERRS, {})
+    for k in keys:
+        if k in errs: errs[k]["status"] = "fixed"; errs[k]["fixed"] = now(); print("fixed", k, errs[k]["suite"])
+        else: print("no such key", k)
+    jsave(ERRS, errs)
 
 def session(op, sid, ver, budget):
     append(SESS, {"op": op, "s": sid, "t": now(), "ver": ver, "budget": int(budget)})
@@ -214,11 +226,22 @@ def publish():
     for r in runs:
         if r["s"] not in ids: continue
         hist.setdefault(r["unit"], []).append([ids.index(r["s"]), r["secs"], r.get("rss", 0), r["v"]])
-    open_errs = [dict(e, key=k) for k, e in errs.items() if e.get("status") != "fixed"]
+    # затихание: ошибку не видели три законченные сессии подряд — она уходит из
+    # открытых сама (вернётся, как только её увидят снова: report() открывает заново)
+    done = [d["id"] for d in order if d.get("t1")]
+    changed = False
+    for k, e in errs.items():
+        if e.get("status") != "open" or not e.get("session"): continue
+        if e["session"] in done and len(done) - done.index(e["session"]) - 1 >= 3:
+            e["status"] = "quiet"; e["quiet"] = now(); changed = True
+    if changed: jsave(ERRS, errs)
+    open_errs = [dict(e, key=k) for k, e in errs.items() if e.get("status") == "open"]
     open_errs.sort(key=lambda e: e["last"], reverse=True)
     data = {"generated": now(), "sessions": order, "runs": runs[-400:], "errors": open_errs[:300],
             "hist": hist, "fuzz": st.get("fuzz", {}), "skip": st.get("skip", {}), "solo": st.get("solo", {}),
-            "totals": {"runs": len(runs), "errors_open": len(open_errs), "errors_all": len(errs)}}
+            "totals": {"runs": len(runs), "errors_open": len(open_errs), "errors_all": len(errs),
+                       "errors_game": sum(1 for e in open_errs if e.get("cls", "game") == "game"),
+                       "errors_host": sum(1 for e in open_errs if e.get("cls") == "host")}}
     os.makedirs(WEB, exist_ok=True)
     jsave(os.path.join(WEB, "data.json"), data)
     page = os.path.join(BUILD, "lab.html")
@@ -228,7 +251,7 @@ def publish():
     with open(os.path.join(WEB, "errors.txt"), "w", encoding="utf-8") as f:
         f.write("# Drift lab — open errors, newest last seen first · %s\n\n" % now())
         for e in open_errs:
-            f.write("[%s] ×%d · %s … %s · %s · %s\n  %s · %s\n" % (e["key"], e["count"], e["first"], e["last"],
+            f.write("[%s] %s ×%d · %s … %s · %s · %s\n  %s · %s\n" % (e["key"], e.get("cls", "game").upper(), e["count"], e["first"], e["last"],
                     ",".join(sorted(e["versions"])), e["unit"], e["suite"], e["msg"]))
             if e.get("seeds"): f.write("  seeds: %s\n" % " ".join(e["seeds"]))
             if e.get("detail"): f.write("  " + e["detail"].replace("\n", "\n  ") + "\n")
@@ -244,6 +267,7 @@ if __name__ == "__main__":
     elif cmd == "skip": skip_list(a[1])
     elif cmd == "report": report(a[1], a[2], a[3], int(float(a[4])), int(float(a[5])), int(a[6]), a[7], a[8],
                                  a[9] if len(a) > 9 else "", int(a[10]) if len(a) > 10 else 0)
+    elif cmd == "fix": fix(a[1:])
     elif cmd == "fuzz-next": fuzz_next(a[1])
     elif cmd == "session": session(a[1], a[2], a[3], a[4])
     elif cmd == "publish": publish()

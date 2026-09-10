@@ -411,16 +411,15 @@ https://drift-game.ru/lab/, raw `runs.jsonl`/`errors.json`/`state.json` in `~/dr
 on the host (`ssh drift`), the laptop's copy of the session log in `lab/session.log`. The
 findings, sorted by what they are:
 
-- **Real reds, to fix** — «база M391: воздух и вода» (fixed in 0.427.1: measured with the weather
-  on); «полный трюм: при полном трюме ни одна кнопка не переполнила» (heavy, red alone on the
-  host — reproduce with `test.ps1 -Only "полный трюм"` on the laptop first; if green there it is
-  order- or host-dependent, which is a finding of its own); «свет: звезда — самое светлое
-  (Нейэль…)» — the window-dependent loose end already listed under «Tests: two tiers»; the lab
-  reproduces it on 1280×800 headless, so it is not window-dependent after all.
+- **Real reds — all three fixed by 0.427.2.** «база M391: воздух и вода» measured with the weather on
+  (0.427.1); «полный трюм» was the ceramic-armour gift climbing over a worn hull's ceiling; «свет:
+  звезда — самое светлое» was a cumulus over the disc — the suite now measures through the new
+  `CLOUDS_OFF` door, and the bisect found a gas giant painted brighter than its red star on the way.
 - **OOM at the host's 768 MB, not game bugs** — the phone window dies inside «сквозной: в тексте
   игры нет undefined», the tall window inside «шахта: та же мерка»; heavy «двери» and «устаревшая
   кнопка» die alone; the fuzzer dies on 9 of 65 seeds (each green seed ~103 s and 700–768 MB).
-  All are `getImageData`-heavy. Solo runs of the first three are automatic now; the fuzzer's OOMs
+  All are `getImageData`-heavy. Solo runs of the first three are automatic now; done in 0.427.2: the fuzz
+  timeout is 150 s and OOM/timeouts carry class `host`. Still open: the fuzzer's OOMs
   cost 300 s each — M446 lowers its timeout to 150 s, tries `--renderer-process-limit=1` /
   `--disable-dev-shm-usage`, and classes OOM/timeout as `host` so they do not sit in the table
   with game bugs. Whether the raster these suites hold is *needed* is a question for the oven
@@ -428,8 +427,7 @@ findings, sorted by what they are:
 - **The hunt** — 65 seeds, 0 game failures, streak 3 of 5; every seed is a new path (M339), so
   the fuzzer as it stands finds nothing on 0.427.0 — the detectors of M443 are what will make the
   same seeds informative.
-- **The lab's own loose ends (into M446)** — no `fix` command and no auto-close (a key stays open
-  until nobody sees it; rule: not seen in three sessions → closed, reopened if it returns);
+- **The lab's own loose ends (into M446)** — `fix` and auto-quiet done in 0.427.2;
   `lab.yml` has not had its first scheduled run yet (02:00 Moscow, same `DRIFT_SSH_KEY` as the
   deploy) — check the page on the morning of 11.09; light shards run at 550–770 MB of 768, one
   more canvas and they join the OOM list; a PHP «can the site run short Node jobs on player hits»

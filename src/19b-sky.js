@@ -276,6 +276,15 @@ function skyGiant(p,e,x,y,dim,ringy){
     const dLS=(lit[0]+lit[1]+lit[2])/3-(shd[0]+shd[1]+shd[2])/3;
     if(dLS<72){const add=72-dLS;lit=lit.map(v=>clamp(v+add,0,255)|0);}
   }
+  /* ── закон 7: тело светит не ярче своей звезды (лаборатория, 10.09.2026) ──
+     У красной звезды диск на экране тусклый, а гигант, которого она освещает,
+     красился той же палитрой, что под жёлтой: кромка и кольца выходили ярче
+     светила («Нейэль I: пятно заметно ярче звезды, 0.69 против 0.52»). Свет и
+     тень, кольца и кромка гасятся яркостью звезды относительно жёлтой; для
+     жёлтой множитель — единица, картинка прежняя. */
+  const sk=(()=>{const c=(typeof starRGB==="function")?starRGB():[255,224,138];
+    return clamp((.299*c[0]+.587*c[1]+.114*c[2])/(.299*255+.587*224+.114*138),.3,1);})();
+  if(sk<1){lit=lit.map(v=>v*sk|0);shd=shd.map(v=>v*sk|0);}
   const SS=(typeof sunSpot==="function")?sunSpot(p):{x:x-R,y:y-R};
   let ux=SS.x-x, uy=SS.y-y;
   const ul=Math.hypot(ux,uy)||1; ux/=ul; uy/=ul;
@@ -354,7 +363,7 @@ function skyGiant(p,e,x,y,dim,ringy){
     ctx.beginPath();ctx.arc(x,y,R*1.3,0,TAU);ctx.fill();
   }
   /* кромочный свет со стороны звезды — дуга вокруг направления на неё */
-  ctx.strokeStyle="rgba(255,240,215,"+(.34*dim).toFixed(2)+")";
+  ctx.strokeStyle="rgba(255,240,215,"+(.34*dim*sk).toFixed(2)+")";
   ctx.lineWidth=1.8;
   ctx.beginPath();ctx.arc(x,y,R,ua-1.05,ua+1.05);ctx.stroke();
   /* кольца перед диском: ярче задних, и на самом диске чуть прозрачнее —

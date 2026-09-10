@@ -251,7 +251,10 @@ function stTabLab(){
       b.onclick=()=>{
         G.data-=cost;
         if(T.max)G.techLvl[k]=(G.techLvl[k]|0)+1; else G.tech.add(k);
-        if(k==="cera")G.hull+=30;
+        /* керамика даёт +30 корпуса, но не сверх предела: у изношенного корпуса (12s-wear)
+           потолок ниже расчётного, и подарок вылезал за него — «корпус 280 из 250»
+           (лаборатория, первая ночь). Потолок читаем ПОСЛЕ того, как техника записана */
+        if(k==="cera")G.hull=Math.min(stat().hullMax,G.hull+30);
         tell("tech","Изучено: "+T.ru+(T.max?" (ур."+techLv(k)+")":"")+" · −"+cost+" данных",
              "Изучено:\n"+T.ru+(T.max?"\nуровень "+techLv(k):""));
         renderTab();
