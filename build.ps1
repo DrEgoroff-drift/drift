@@ -337,7 +337,15 @@ function Index($files, $tfiles) {
     for ($i = 0; $i -lt $rows.Count; $i++) {
       if ($rows[$i] -match '^\s*/\*\s*[═=]{3,}\s*(.+?)\s*[═=]{3,}') { $secs += ("{0}:{1}" -f $matches[1], ($i + 1)) }
       if ($rows[$i] -match '^(?:function\s*\*?|const|let|var|class)\s+([A-Za-z_$][\w$]*)') {
-        [void]$sym.Add(("{0,-28} {1}:{2}" -f $matches[1], $rel, ($i + 1)))
+        # где символ кончается: тело закрывается скобкой в первой колонке — так
+        # написан весь src/. Зная конец, сессия читает функцию Read-ом с точным
+        # offset+limit, а не «200 строк наугад». Однострочные — без хвоста.
+        $name = $matches[1]; $end = $i
+        if ($rows[$i] -match '[\{\[\(]\s*(?://.*|/\*.*)?$') {
+          for ($j = $i + 1; $j -lt $rows.Count; $j++) { if ($rows[$j] -match '^[\}\]\)]') { $end = $j; break } }
+        }
+        $at = if ($end -gt $i) { "{0}:{1}-{2}" -f $rel, ($i + 1), ($end + 1) } else { "{0}:{1}" -f $rel, ($i + 1) }
+        [void]$sym.Add(("{0,-28} {1}" -f $name, $at))
         $n++
       }
     }
@@ -351,7 +359,7 @@ function Index($files, $tfiles) {
     "Адресная книга исходников: где что лежит, с точностью до строки.",
     "Читать целиком не надо — искать grep-ом:",
     "",
-    '    grep -n "^rareTake " docs/INDEX.md      # где объявлен символ',
+    '    grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец',
     '    grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера',
     "",
     ("Файлов: {0} · символов верхнего уровня: {1}" -f $all.Count, $n),
