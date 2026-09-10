@@ -6,6 +6,16 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.427.1 - the lab's first catch: a base suite that went red by the hour
+
+The lab's first session on the host (Node 16, 23:50 UTC) and the deploy of 0.427.0 both failed
+on «база M391: воздух и вода» - «получено 52, ждали 108» - while the same build was green at
+22:03. The suite measured three shifts of breathing with the director (M397) switched on, and
+the director is seeded by the number of the *real* shift: at some hours of the day he vents the
+air. The file's own rule since M418 is that a measurement of arithmetic runs without weather
+(`bNoDir`); the four `baseResolve` calls of that suite now do. Nothing in the game changed.
+
+---
 ## 0.427.0 (M440) - the lab: the tests run on the server at night and keep a log that does not fill up
 
 The author, 10.09.2026: «надо сделать на сервере какую-то штуку, которая будет гонять тесты и
