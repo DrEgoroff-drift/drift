@@ -15,9 +15,9 @@
       в журнале — правило «доля всегда показана строкой» (CLAUDE.md), только
       применённое ко всем тихим тратам сразу. */
 
-TEST_SUITES.push(() => suite("верфь: в рейс уходит тот корпус, на который ткнули", () => {
+TEST_SUITES.push(() => suite("верфь: в рейс уходит тот корпус, на который ткнули",{tier:"browser"}, () => {
   resetWorld();
-  if(typeof e2eLate==="function")e2eLate();else fuzzRich();
+  e2eLate();
   G.credits=3000000;
   const bad=[];let bought=0;
   if(!G.sys.station){ok(false,"станции нет — пропуск");return;}
@@ -49,7 +49,7 @@ TEST_SUITES.push(() => suite("верфь: в рейс уходит тот кор
     }
     if(!done)break;
   }
-  if(typeof closeStation==="function")try{closeStation();}catch(e){}
+  try{closeStation();}catch(e){}
   tab="market";G.mode="system";G.st=null;
   document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
   ok(bought>=3,"корпусов куплено: "+bought);
@@ -57,7 +57,7 @@ TEST_SUITES.push(() => suite("верфь: в рейс уходит тот кор
   resetWorld();
 }));
 
-TEST_SUITES.push(() => suite("верфь: нет корпуса, который дороже другого и хуже во всём", () => {
+TEST_SUITES.push(() => suite("верфь: нет корпуса, который дороже другого и хуже во всём",{tier:"browser"}, () => {
   /* Специализация — это когда одно лучше, другое хуже. Ловушка — это когда
      дороже и хуже ПО ВСЕМ числам сразу: такой корпус никому не нужен, а
      новичок читает цену как качество и покупает именно его. */
@@ -88,18 +88,17 @@ TEST_SUITES.push(() => suite("касса: игра не берёт денег м
      Гоняем ленивые такты с прыжком часов на несколько суток вперёд: именно
      так и списывают — пачкой, за пропущенное время. */
   resetWorld();
-  if(typeof e2eLate==="function")e2eLate();else fuzzRich();
-  if(typeof lockerRec==="function"){
+  e2eLate();
+  {
     const L=lockerRec();L.res=L.res||{};L.res[RES_KEYS[0]]=60;
     L.t=now()-6*24*3600*1000;    /* шесть суток хранения набежало */
   }
-  const TICKS=(typeof CLK_TICKS!=="undefined")?CLK_TICKS:["tickDrones","crewTick","lockerTick","mgrTick"];
+  const TICKS=CLK_TICKS;
   const bad=[];let steps=0,charges=0;
   const t0=now();
   try{
     for(const name of TICKS){
       const f=window[name];
-      if(typeof f!=="function")continue;
       clockSet(t0);try{ f(); }catch(e){ }            /* отметки на «сейчас» */
       clockSet(t0+4*24*3600*1000);                     /* четверо суток вперёд */
       /* курсор журнала — не длина, а последняя запись: журнал подрезается
@@ -141,7 +140,7 @@ TEST_SUITES.push(() => suite("правило: граница слова посл
      либо мёртвая проверка, либо ловушка для следующего. Лечится отрицательным
      просмотром вида (?![а-яё]). Обратный слэш здесь ни разу не написан
      буквой — он строится из кода символа, иначе его съедает уже сам патч. */
-  const src=(typeof nmSource==="function")?nmSource():"";
+  const src=nmSource();
   ok(src.length>100000,"исходник игры доступен набору");
   if(!ok(src,"нашлось: src"))return;
   const BS=String.fromCharCode(92);

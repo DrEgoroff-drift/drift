@@ -6,7 +6,7 @@
 TEST_SUITES.push(()=>suite("Стрелки: невязка — это склон, а не порог",()=>{
   resetWorld();
   eq(INSTR.length,5,"приборов пять");
-  ok(INSTR.every(I=>I.ru&&typeof I.base==="function"),"у каждого есть имя и рабочая база");
+  ok(INSTR.every(I=>I.ru&&I.base instanceof Function),"у каждого есть имя и рабочая база");
   ok(!INSTR.some(I=>I.col||I.alarm||I.sound),"ни у одного нет тревожного цвета или звука");
 
   /* ── у области один прибор, и он из этих пяти ── */

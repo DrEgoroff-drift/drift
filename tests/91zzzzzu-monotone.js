@@ -15,7 +15,6 @@
 
 TEST_SUITES.push(() => suite("вспять: ступень не падает от того, что игрок сделал больше", () => {
   resetWorld();
-  if(typeof rungOf!=="function"){ok(false,"ступени в этой сборке нет — пропуск");return;}
   const key=G.sx+","+G.sy;
   /* ворота открыты: садились, бурили, оставили дрона — иначе ступень заперта
      потолком и рост не виден вовсе */
@@ -76,7 +75,7 @@ TEST_SUITES.push(() => suite("вспять: цена под давлением �
      товар навсегда. И давление отпускает со временем: рынок помнит часами, а
      не вечно (12-economy). */
   resetWorld();
-  const sys=(typeof mkSystems==="function")?mkSystems(6)[0]:null;
+  const sys=mkSystems(6)[0];
   if(!sys){ok(false,"станции нет — пропуск");return;}
   G.sx=sys.sx;G.sy=sys.sy;G.sys=sys;G.st=sys.station;
   const k=TRADE_KEYS[0];

@@ -1,5 +1,5 @@
 /* ══════════════ перевал: корабль на поклон, свет, развилка без правильного ответа ══════════════ */
-TEST_SUITES.push(()=>suite("перевал: свет в корабле, объяснить или уйти — без награды",()=>{
+TEST_SUITES.push(()=>suite("перевал: свет в корабле, объяснить или уйти — без награды",{tier:"heavy"},()=>{
   resetWorld();
   const at=regionOfTheme("pass");ok(!!at,"область расставлена");
   const R=regionAt(at.rx*REGION_SPAN,at.ry*REGION_SPAN);

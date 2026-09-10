@@ -86,13 +86,13 @@ TEST_SUITES.push(()=>suite("маршрут: плечи, счёт и сохран
 TEST_SUITES.push(()=>suite("маршрут: круги, цена сведений, передача",()=>{
   resetWorld();
   const st=routeTestStations(2);
-  if(st.length<2){ok(true,"мира без двух станций не бывает — тест пропущен");return;}
+  if(!ok(st.length>=2,"в мире нашлись две станции для маршрута"))return;
   routeTestSee(st[0]);routeTestSee(st[1]);
   routeToggle(st[0].sx,st[0].sy);
   routeToggle(st[1].sx,st[1].sy);
   ok(routeOf().loops===0,"кругов ещё нет");
   ok(routeValue()===0&&/двух плеч|два круга/.test(routeWhyNoPrice()),"непрохоженный маршрут не стоит ничего, и сказано почему");
-  const F=typeof mgrOf==="function"?mgrOf("fact"):null;
+  const F=mgrOf("fact");
   if(F){F.stalled=false;ok(routeToFactor()===0,"фактор непрохоженный маршрут не берёт");}
   routeVisit(st[0]);routeVisit(st[1]);
   ok(routeOf().loops===1,"обход по порядку засчитан кругом");
@@ -141,7 +141,7 @@ TEST_SUITES.push(()=>suite("маршрут: круги, цена сведени�
 TEST_SUITES.push(()=>suite("маршрут: взять с прилавка",()=>{
   resetWorld();
   const st=routeTestStations(1);
-  if(!st.length){ok(true,"станций нет — пропущено");return;}
+  if(!ok(st.length>0,"станция для запроса нашлась"))return;
   /* самый дорогой товар станции: на шести кредитах рост запроса тонет в округлении */
   const s=st[0],k=TRADE_KEYS.filter(k=>s.station.prices[k]).sort((a,b)=>marketFor(s)[b]-marketFor(s)[a])[0]||"iron";
   const sell=marketFor(s)[k],ask=buyPriceFor(s,k);

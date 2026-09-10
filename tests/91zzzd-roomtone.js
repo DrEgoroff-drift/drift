@@ -2,7 +2,7 @@
    у каждого места свой запрос, вакуум молчит совсем, буря слышна раньше, чем
    видна, дом слышит погоду глухо, и tick не создаёт узлов на каждый кадр. */
 
-TEST_SUITES.push(()=>suite("тон места: у каждого экрана свой, вакуум молчит",()=>{
+TEST_SUITES.push(()=>suite("тон места: у каждого экрана свой, вакуум молчит",{tier:"browser"},()=>{
   resetWorld();
   /* поверхность с атмосферой */
   const p=landOnTestPlanet();
@@ -37,13 +37,13 @@ TEST_SUITES.push(()=>suite("тон места: у каждого экрана с
   eq(rtWant()[0],0,"в системном виде тона нет");
 }));
 
-TEST_SUITES.push(()=>suite("тон места: бурю слышно раньше, чем видно",()=>{
+TEST_SUITES.push(()=>suite("тон места: бурю слышно раньше, чем видно",{tier:"browser"},()=>{
   resetWorld();
   const p=landOnTestPlanet();
-  if(p.T.atm==="отсутствует"){ok(true,"мир безвоздушный — проверка не о нём");return;}
+  if(!ok(p.T.atm!=="отсутствует","у тестовой планеты есть воздух"))return;
   G.mode="surface";
   const w=weatherOf(p);
-  if(!w.kind){ok(true,"на этом мире погоды не бывает");return;}
+  if(!ok(w.kind,"на тестовой планете бывает погода"))return;
   /* ставим время так, чтобы сила была под порогом видимости (.14), но не ноль */
   let tFaint=null,tLoud=null;
   for(let t=0;t<w.per*2;t+=w.per/160){
@@ -53,7 +53,7 @@ TEST_SUITES.push(()=>suite("тон места: бурю слышно раньш�
     if(tLoud===null&&k>.5)tLoud=t;
     if(tFaint!==null&&tLoud!==null)break;
   }
-  if(tFaint===null||tLoud===null){ok(true,"цикл этой планеты не даёт нужных фаз");return;}
+  if(!ok(tFaint!==null&&tLoud!==null,"цикл погоды даёт и затишье, и бурю"))return;
   G.t=tFaint;
   const faint=rtWant();
   eq(weatherName(p),null,"погода ещё не видна и не названа");
@@ -64,10 +64,10 @@ TEST_SUITES.push(()=>suite("тон места: бурю слышно раньш�
   ok(faint[0]>.012,"и даже затишье не мёртвая тишина");
 }));
 
-TEST_SUITES.push(()=>suite("тон места: дом слышит погоду сквозь стену",()=>{
+TEST_SUITES.push(()=>suite("тон места: дом слышит погоду сквозь стену",{tier:"browser"},()=>{
   resetWorld();
   const p=landOnTestPlanet();
-  if(p.T.atm==="отсутствует"||!weatherOf(p).kind){ok(true,"миру нечем шуметь");return;}
+  if(!ok(p.T.atm!=="отсутствует"&&weatherOf(p).kind,"тестовому миру есть чем шуметь"))return;
   /* ловим сильную погоду */
   const w=weatherOf(p);
   for(let t=0;t<w.per*2;t+=w.per/120){G.t=t;if(weatherPower(p)>.5)break;}
@@ -82,7 +82,7 @@ TEST_SUITES.push(()=>suite("тон места: дом слышит погоду 
   exitHomeIn();
 }));
 
-TEST_SUITES.push(()=>suite("тон места: узлы не плодятся",()=>{
+TEST_SUITES.push(()=>suite("тон места: узлы не плодятся",{tier:"browser"},()=>{
   resetWorld();
   /* без запущенного AudioContext tick обязан выйти молча и ничего не создать */
   const was=RTONE.on;
@@ -93,5 +93,5 @@ TEST_SUITES.push(()=>suite("тон места: узлы не плодятся",(
     const bp=RTONE.bp;
     rtInit();
     ok(RTONE.bp===bp,"повторный init не пересоздаёт цепь");
-  }else ok(true,"звук в headless не поднят — и не должен был");
+  }else ok(!audioOn()||!SND.ready||SND.ctx.state!=="running","цепи тона нет, потому что звук не бежит, а не потому, что тик сломан");
 }));

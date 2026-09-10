@@ -42,7 +42,7 @@ TEST_SUITES.push(()=>suite("Вега: выгнать нельзя ни на од
   for(const st of [2,3,4]){G.vega.stage=st;vegaEvict();ok(vegaHas(),"стадия "+st+": всё ещё тут");}
 }));
 
-TEST_SUITES.push(()=>suite("Вега: дни вне дома — звонки, эфир, разбитое; дома — чинит",()=>{
+TEST_SUITES.push(()=>suite("Вега: дни вне дома — звонки, эфир, разбитое; дома — чинит",{tier:"browser"},()=>{
   resetWorld();vegaTestHome();G.wishDevice=1;vegaWish("alone");
   const V=G.vega;
   /* улетели: другой сектор */
@@ -98,7 +98,7 @@ TEST_SUITES.push(()=>suite("Вега: на борту — кресло, чемо
   eq(stat().cargoMax,cargo0,"слот вернулся");
 }));
 
-TEST_SUITES.push(()=>suite("Вега: семь дней дома — свободна, живёт дальше, второй попугай",()=>{
+TEST_SUITES.push(()=>suite("Вега: семь дней дома — свободна, живёт дальше, второй попугай",{tier:"browser"},()=>{
   resetWorld();vegaTestHome();G.wishDevice=1;vegaWish("wait");
   const V=G.vega;V.stage=2;V.att=12;V.broken=["кружка в кабинете"];
   G.sx=G.home.sx;G.sy=G.home.sy;G.mode="dock";

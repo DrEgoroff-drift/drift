@@ -59,7 +59,7 @@ TEST_SUITES.push(()=>suite("орудия M364: у каждого семейст�
     if(F.fx==="ram"){foe.x=12;foe.y=0;G.ship.vx=3;G.ramOn=true;}
     const n0=mark();
     gunFireOnce(g,G.ship,foe,0,()=>.5);
-    if(F.fx==="ram"&&typeof ramTick==="function")ramTick(1);
+    if(F.fx==="ram")ramTick(1);
     if(mark()<=n0)noFire.push(k);
     G.msl=[];G.ship.vx=0;G.ramOn=false;
   }

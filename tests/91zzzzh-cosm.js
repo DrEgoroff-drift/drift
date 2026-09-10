@@ -10,7 +10,7 @@ function cosmPix(draw){
   return c.getImageData(0,0,160,120).data;
 }
 function cosmDiff(a,b){let n=0;for(let i=0;i<a.length;i+=4)if(a[i]!==b[i]||a[i+1]!==b[i+1]||a[i+2]!==b[i+2])n++;return n;}
-TEST_SUITES.push(()=>suite("косметика: каждая вещь меняет пиксели своего художника",()=>{
+TEST_SUITES.push(()=>suite("косметика: каждая вещь меняет пиксели своего художника",{tier:"browser"},()=>{
   resetWorld();
   G.cosm=null;
   const all=[];for(const s of COSM_SLOTS)for(const id in COSM_TABLES[s])all.push(id);
@@ -52,7 +52,7 @@ TEST_SUITES.push(()=>suite("косметика: каждая вещь меняе
   G.cosm=null;G.kit=null;
 }));
 
-TEST_SUITES.push(()=>suite("косметика: шкатулка, слоты, сейв и полка «Сороки»",()=>{
+TEST_SUITES.push(()=>suite("косметика: шкатулка, слоты, сейв и полка «Сороки»",{tier:"browser"},()=>{
   resetWorld();
   G.cosm=null;G.wander=null;
   ok(!cosmWear("ex_blue"),"чужое не надевается");

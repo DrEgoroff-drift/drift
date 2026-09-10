@@ -74,12 +74,12 @@ TEST_SUITES.push(()=>suite("Самописец: перо считает врем
 /* ══ M124: приборы там, где принимаются решения ══
    Колодка в строке приборов — тот же прибор, а не второй: она читает
    `instrRead`, рисует ту же ленту и так же ничего не объявляет. */
-TEST_SUITES.push(()=>suite("Колодка: приборы под рукой в любом режиме",()=>{
+TEST_SUITES.push(()=>suite("Колодка: приборы под рукой в любом режиме",{tier:"browser"},()=>{
   resetWorld();
   const pod=document.getElementById("ipod");
   ok(!!pod,"колодка есть в разметке");
-  ok(typeof instrPodDraw==="function"&&typeof instrPodTick==="function",
-     "у неё свой отрисовщик и свой такт");
+  ok(typeof instrPodDraw==="function","у неё свой отрисовщик");
+  ok(typeof instrPodTick==="function","и свой такт");
   /* одна лента на игру: колодка рисует ту же бумагу, что и потолочный блок */
   ok(typeof tapePaper==="function","бумага рисуется общей функцией");
 

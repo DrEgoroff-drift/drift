@@ -171,7 +171,7 @@ function detStep(S,gesture){
   const t0=performance.now();
   const c={scene:S.id,gesture,mode0:G.mode,before:S.frame,churn:S.churn,idleB:S.idleB,UIK,W,H,DPR,threw:[],names:detNames()};
   DET.errs=[];DET.cons=[];DET.on=true;
-  const said0=DET.said,crash0=crashN,dom0=hDom();c.dom0=dom0;c.sig0=detSig();
+  const said0=DET.said,crash0=crashN,dom0=T.dom();c.dom0=dom0;c.sig0=detSig();
   const g0=JSON.stringify([G.credits,G.fuel,G.zoom,G.mapZoom,G.mapView||0]);
   for(const k in keys)keys[k]=false;
   if(gesture==="покой"){
@@ -189,7 +189,7 @@ function detStep(S,gesture){
     c.churn=S.churn=detDiff(c.before,c.after);
     S.idleB=detBlocks(c.before,c.after);
     /* осадки над грунтом: капли — законно новые в каждом кадре */
-    try{if(G.surf&&G.surf.p&&typeof weatherOf==="function"&&weatherName(G.surf.p)){const w=weatherOf(G.surf.p);if(w&&w.kind&&w.kind!=="fog")c.precip=w.kind;}}catch(e){}
+    try{if(G.surf&&G.surf.p&&weatherName(G.surf.p)){const w=weatherOf(G.surf.p);if(w&&w.kind&&w.kind!=="fog")c.precip=w.kind;}}catch(e){}
     c.canv=detCanvases();c.cvsW=cvs.width;
   }else{
     if(G.mode==="system"){c.ship0=detShipScr();c.nose0=G.ship.a;const t1=performance.now();c.p0=detPatch(c.ship0[0],c.ship0[1],gesture==="A"?40:48);detCost("глаз",t1);}
@@ -213,7 +213,7 @@ function detStep(S,gesture){
          тонет в собственном шевелении кадра */
       for(let i=0;i<2;i++)try{cvs.dispatchEvent(new WheelEvent("wheel",{deltaY:-120,bubbles:true,cancelable:true,clientX:rc.left+rc.width/2,clientY:rc.top+rc.height/2}));}catch(e){c.threw.push("wheel: "+e.message);}
       /* где масштаба нет по договору игры, колесу отвечать нечем */
-      if(typeof zoomModeHas==="function"&&!zoomModeHas(c.mode0))c.mute="масштаба в режиме нет (zoomModeHas)";
+      if(!zoomModeHas(c.mode0))c.mute="масштаба в режиме нет (zoomModeHas)";
     }
     detTick(c,DET_N);
     /* и кадр отпущенных клавиш: у игрока между «отпустил W» и «нажал A» всегда
@@ -234,7 +234,7 @@ function detStep(S,gesture){
     detCost("глаз",t1);
     const why=DET_MUTE[c.mode0+" · "+gesture];if(why&&!c.mute)c.mute=why;
   }
-  c.mode1=G.mode;c.spoke=DET.said>said0;c.dom1=hDom();c.sig1=detSig();
+  c.mode1=G.mode;c.spoke=DET.said>said0;c.dom1=T.dom();c.sig1=detSig();
   c.fieldMoved=JSON.stringify([G.credits,G.fuel,G.zoom,G.mapZoom,G.mapView||0])!==g0||c.sig1!==c.sig0;
   c.crash=crashN-crash0;
   try{c.sick=keyStateOK();}catch(e){c.sick="keyStateOK: "+e.message;}
@@ -265,23 +265,23 @@ function detDoors(S){
     /* ошибка обработчика тычка не всплывает к click(), а уходит в window.onerror —
        помечаем её дверью, в которую тыкали */
     const e0=DET.errs.length,n0=crashN;
-    try{if(typeof toggleMenu==="function")toggleMenu(true);document.getElementById(id).click();}catch(e){c.threw.push(id+": "+e.message);}
+    try{toggleMenu(true);document.getElementById(id).click();}catch(e){c.threw.push(id+": "+e.message);}
     for(let i=e0;i<DET.errs.length;i++)DET.errs[i]="дверь «"+id+"»: "+DET.errs[i];
     if(crashN>n0)c.threw.push("дверь «"+id+"» уронила сторожа кадра");
     for(const o of detCloseTry())c.overlays.push(Object.assign(o,{what:id+"→"+o.what}));
-    if(document.body.classList.contains("road")&&typeof roadClose==="function")
+    if(document.body.classList.contains("road"))
       c.overlays.push({what:id+"→дорога",closed:false,tried:"road"});
-    hCalm();
+    T.calm();
   }
   c.mode1=G.mode;c.crash=crashN-crash0;DET.on=false;
   return c;
 }
 
-TEST_SUITES.push(() => suite("сквозной: сцены × пять жестов под детекторами — сбой, застой, закон, картина", () => {
+TEST_SUITES.push(() => suite("сквозной: сцены × пять жестов под детекторами — сбой, застой, закон, картина",{tier:"browser"}, () => {
   const T0=performance.now();DET_INST_N=0;
   /* настройки — с заводки страницы, на время прогона; после — как были */
   const opts0=G.opts;
-  if(DET_OPTS_BOOT){G.opts=JSON.parse(DET_OPTS_BOOT);if(typeof invalidateKeyMap==="function")invalidateKeyMap();}
+  if(DET_OPTS_BOOT){G.opts=JSON.parse(DET_OPTS_BOOT);invalidateKeyMap();}
   resetWorld();
   const snap=JSON.parse(JSON.stringify(snapshot()));
   const V=[],run=[],skipped=[],seenV={},resets=[];let steps=0,scenes=0,armed=0;const exempted={};
@@ -331,7 +331,7 @@ TEST_SUITES.push(() => suite("сквозной: сцены × пять жест�
         /* жест увёл из сцены — поставить заново: следующему жесту нужна она же */
         if(G.mode!==c.mode0||detOverlays().length){
           const t1=performance.now();resets.push(sc.id+"/"+g+"→"+G.mode);
-          hCalm();resetWorld();
+          T.calm();resetWorld();
           let back=true;try{back=sc.set()!==false;}catch(e){back=false;}
           if(!back)break;
           detHook(true);
@@ -349,7 +349,7 @@ TEST_SUITES.push(() => suite("сквозной: сцены × пять жест�
          никогда. Ставим пусковую тем же путём, что игрок (часть, подвес), с
          тремя ракетами — кнопка обязана показать остаток трюма; потом трюм
          пуст, и тычок в РАКЕТУ обязан ответить голосом, а не молчать */
-      if(sc.id==="система"&&G.mode==="system"&&typeof genPart==="function"&&typeof fitPart==="function"){
+      if(sc.id==="система"&&G.mode==="system"){
         const t=performance.now();
         try{
           const P=genPart(4242,3,"missile");addPart(P);fitPart(slotsOf(G.shipId).length-1,P.id);
@@ -372,11 +372,11 @@ TEST_SUITES.push(() => suite("сквозной: сцены × пять жест�
   }finally{
     detHook(false);DET.on=false;DET.texts=null;DET.astro=null;
     for(const k in keys)keys[k]=false;
-    hCalm();
+    T.calm();
     try{applySave(snap);}catch(e){}
     G.mode="system";G.land=null;G.surf=null;G.dig=null;G.cave=null;G.base=null;G.hin=null;
     resetWorld();
-    G.opts=opts0;if(typeof invalidateKeyMap==="function")invalidateKeyMap();
+    G.opts=opts0;invalidateKeyMap();
   }
   const cost=Object.keys(DET_COST).map(k=>k+" "+Math.round(DET_COST[k])+" мс").join(" · ");
   for(const k in DET_COST)delete DET_COST[k];

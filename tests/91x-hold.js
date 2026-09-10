@@ -7,12 +7,12 @@ function holdTestStation(){
   }
   return null;
 }
-TEST_SUITES.push(()=>suite("холдинг: аппетит станции — первые N в смену с надбавкой",()=>{
+TEST_SUITES.push(()=>suite("холдинг: аппетит станции — первые N в смену с надбавкой",{tier:"browser"},()=>{
   resetWorld();
   ok(HOLD_SHIFT===20*60*1000,"смена слоя — двадцать минут реального времени");
   ok(holdShift(HOLD_SHIFT*5+1)===5,"номер смены считается от now()");
   const s=holdTestStation();
-  if(!s){ok(true,"в радиусе нет станции с аппетитом — пропущено");return;}
+  if(!ok(s,"станция с аппетитом в радиусе девяти нашлась"))return;
   const A=appetiteOf(s),k=Object.keys(A)[0],N=A[k];
   ok(N>0&&s.station.prices[k]>0,"станция «"+s.station.name+"» ("+s.station.stype+") ест "+RES[k].ru.toLowerCase()+" ×"+N+" в смену");
   for(const kk in A)ok(TRADE_KEYS.indexOf(kk)>=0&&!!s.station.prices[kk],"аппетит только на то, что в прейскуранте: "+kk);

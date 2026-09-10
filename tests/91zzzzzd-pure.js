@@ -57,7 +57,7 @@ TEST_SUITES.push(() => suite("семя: порядок обхода и чужи�
   for(const c of rev){
     for(let i=0;i<3;i++)genPart(hashi(c[0]*31+c[1],i*7717,0x9E3),1+(i%4));
     const s0=getSystem(c[0],c[1]);
-    if(s0.station&&typeof marketFor==="function")marketFor(s0);
+    if(s0.station)marketFor(s0);
     if(s0.planets[0])genTerrain(s0.planets[0]);
     got[c[0]+","+c[1]]=puFinger(c[0],c[1]);
   }

@@ -171,7 +171,7 @@ TEST_SUITES.push(()=>suite("очередь рейсов ограничена",()
   ok((m.trips|0)>0,"но очередь не пустая");
 }));
 
-TEST_SUITES.push(()=>suite("корпус решает длину рейса, а не выгоду",()=>{
+TEST_SUITES.push(()=>suite("корпус решает длину рейса, а не выгоду",{tier:"browser"},()=>{
   resetWorld();
   G.credits=1000000;G.owned.igla=true;G.owned.mamont=true;
   const small=mkMerc(11,"mine","igla");
@@ -237,8 +237,8 @@ TEST_SUITES.push(()=>suite("наёмник виден в системе и за 
   const d1=Math.hypot(A.x-allyWork(A).x,A.y-allyWork(A).y);
   ok(d1<d0,"за 400 кадров он приблизился к месту работы ("+Math.round(d0)+" → "+Math.round(d1)+")");
   G.watch=m.id;
-  drawSystem();
-  ok(true,"кадр с наблюдением рисуется без исключений");
+  const lg=T.ledger(drawSystem);
+  ok(lg.calls>20,"кадр с наблюдением рисуется: вызовов канвы "+lg.calls);
   G.watch=null;
 }));
 
@@ -268,7 +268,7 @@ TEST_SUITES.push(()=>suite("сохранение переживает новые
 }));
 
 /* ── общий смок: все режимы рисуются без исключений ── */
-TEST_SUITES.push(()=>suite("все режимы рисуются",()=>{
+TEST_SUITES.push(()=>suite("все режимы рисуются",{tier:"heavy"},()=>{
   resetWorld();
   const draws=[];
   drawSystem();draws.push("system");
@@ -341,14 +341,12 @@ TEST_SUITES.push(()=>suite("наём: репутация меняет, КТО п
   };
   chk("без репутации");
   /* там, где знают хорошо */
-  if(typeof repAdd==="function"){
+  {
     for(let i=0;i<40;i++)repAdd(1,sys);
     ok(repAt(sys)>=4,"репутация и правда поднялась: "+repAt(sys));
     chk("где знают хорошо");
     for(let i=0;i<120;i++)repAdd(-1,sys);
     ok(repAt(sys)<=-4,"и опустилась: "+repAt(sys));
     chk("где помнят нехорошо");
-  }else{
-    ok(true,"repAdd не заведён — проверена только нулевая репутация");
   }
 }));

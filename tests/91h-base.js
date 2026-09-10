@@ -12,8 +12,7 @@ TEST_SUITES.push(()=>suite("база: ленивое время не падае�
   ok(foundBase(p),"база заложена");
   const B=baseAt(G.sx,G.sy,p.idx);
   B.t0=baseShift()-2;
-  baseResolveAll();
-  ok(true,"второй тик базы не падает");
+  baseResolveAll();   /* второй тик базы не падает: исключение краснит набор само */
   G.mode="surface";
   enterBase(p);
   eq(G.mode,"base","в базу можно войти");
@@ -76,7 +75,7 @@ TEST_SUITES.push(()=>suite("смотритель: энергия, стройка
   G.credits=1000;B.t0=baseShift()-1;baseResolveAll();
   const alive=B.cells[0]&&B.cells[0].hp>0&&B.cells[2]&&B.cells[2].hp>0;
   const gain=G.credits-1000;
-  if(!alive)ok(true,"налёт разбил базу за эти минуты — доход не про этот прогон");
+  if(!alive)ok(gain>=0,"налёт разбил отсек за эти минуты — доход не про этот прогон, но касса не в минусе: "+gain);
   else{
     ok(gain>0,"с «излишками» работающая база даёт в кассу: +"+gain);
     /* и не больше, чем она съедает сама: смена × min(surplus,cons) × 1.4 */
@@ -179,8 +178,8 @@ TEST_SUITES.push(()=>suite("фактор и командир: остальные
   /* «охота» рисуется на карте, не роняя её */
   cmd.perks=["hunt"];
   G.mode="map";G.sel={x:G.sx,y:G.sy};
-  drawMap();
-  ok(true,"карта с метками пиратских баз рисуется");
+  const lg=T.ledger(drawMap);
+  ok(lg.calls>20,"карта с метками пиратских баз рисуется: вызовов канвы "+lg.calls);
   G.mode="system";
 }));
 
@@ -231,6 +230,6 @@ TEST_SUITES.push(()=>suite("батарея: срезает шум, а не де�
   /* мёртвая батарея на грунте — место, которое отвечает куском отчёта */
   ok(POI_KINDS.some(k=>k.k==="battery"),"мёртвая батарея есть среди находок");
   ok(typeof drawDeadBattery==="function","и её есть чем нарисовать");
-  ok(!!POI_FIND.battery&&typeof POI_FIND.battery.give==="function",
+  ok(!!POI_FIND.battery&&POI_FIND.battery.give instanceof Function,
      "и есть чем ответить подошедшему");
 }));

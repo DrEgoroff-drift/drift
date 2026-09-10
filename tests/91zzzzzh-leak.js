@@ -13,9 +13,9 @@
 
 function lkNodes(sel){const e=document.querySelector(sel);return e?e.querySelectorAll("*").length:-1;}
 
-TEST_SUITES.push(() => suite("утечки: тридцать перерисовок доски не растят страницу", () => {
+TEST_SUITES.push(() => suite("утечки: тридцать перерисовок доски не растят страницу",{tier:"heavy"}, () => {
   resetWorld();
-  if(typeof e2eLate==="function")e2eLate();else fuzzRich();
+  e2eLate();
   const bad=[];let checked=0;
   const grow=(tabsSel,bodySel,setTab,render,ru)=>{
     for(const t of [...document.querySelectorAll(tabsSel)].map(b=>b.dataset.tab)){
@@ -42,7 +42,7 @@ TEST_SUITES.push(() => suite("утечки: тридцать перерисов�
   resetWorld();
 }));
 
-TEST_SUITES.push(() => suite("утечки: двадцать входов в режим не растят ни страницу, ни мир", () => {
+TEST_SUITES.push(() => suite("утечки: двадцать входов в режим не растят ни страницу, ни мир",{tier:"heavy"}, () => {
   const bad=[];
   const scenes=lookScenes();
   /* прогрев: первый вход в сцену честно заводит узлы и поля — меряем со второго */
@@ -64,9 +64,9 @@ TEST_SUITES.push(() => suite("утечки: двадцать входов в р�
   eq(bad.slice(0,4).join(" ;; "),"","вход в режим не оставляет за собой мусора");
 }));
 
-TEST_SUITES.push(() => suite("утечки: полсотни открытий каждого экрана не растят страницу", () => {
+TEST_SUITES.push(() => suite("утечки: полсотни открытий каждого экрана не растят страницу",{tier:"browser"}, () => {
   resetWorld();
-  if(typeof e2eLate==="function")e2eLate();else fuzzRich();
+  e2eLate();
   const scrs=[...document.querySelectorAll(".scr")].map(e=>e.id).filter(Boolean);
   ok(scrs.length>=8,"экранов на странице: "+scrs.length);
   const n0=document.querySelectorAll("*").length;
@@ -81,7 +81,7 @@ TEST_SUITES.push(() => suite("утечки: полсотни открытий к
   resetWorld();
 }));
 
-TEST_SUITES.push(() => suite("утечки: страница не остаётся в чужом режиме после сброса мира", () => {
+TEST_SUITES.push(() => suite("утечки: страница не остаётся в чужом режиме после сброса мира",{tier:"browser"}, () => {
   /* Сторож ровно того случая, что стоил этой правки: тычок в «В ДОРОГУ»
      переводил страницу в дорожный спутник (`body.road` прячет всё, кроме
      его окна), и все следующие наборы мерили невидимую страницу — молча,
@@ -93,7 +93,7 @@ TEST_SUITES.push(() => suite("утечки: страница не остаётс
   eq(bad.join(","),"","на теле нет чужих режимов после сброса (классы: "+cls.join(" ")+")");
   eq(document.querySelectorAll(".scr.open").length,0,"и ни один экран не остался открытым");
   /* и сам выход отрабатывает: войти в дорогу и сбросить мир */
-  if(typeof roadOpen==="function"){
+  {
     try{ roadOpen(); }catch(e){ ok(false,"дорога не открылась: "+e.message); }
     ok(document.body.classList.contains("road"),"дорога открыта");
     resetWorld();

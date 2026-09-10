@@ -18,7 +18,7 @@ function psSnap(F,m,over){
   return Object.assign({v:POST_V,m,sx:F.s.sx,sy:F.s.sy,pi:F.p.idx,mi:-1,
     lon:null,cx:0,cy:0,t:CEL_DAY*7+123,ver:VER},over||{});
 }
-TEST_SUITES.push(()=>suite("открытка: восемь мест, и в каждом свой кадр",()=>{
+TEST_SUITES.push(()=>suite("открытка: восемь мест, и в каждом свой кадр",{tier:"browser"},()=>{
   resetWorld();
   const F=psPlanet("rock"), Gg=psPlanet("gas");
   ok(!!F,"нашлась планета с грунтом");
@@ -48,7 +48,7 @@ TEST_SUITES.push(()=>suite("открытка: восемь мест, и в ка�
   for(let i=0;i<seen.length;i++)for(let j=i+1;j<seen.length;j++)
     ok(!pcSame(seen[i].d,seen[j].d),"«"+seen[i].m+"» не равно «"+seen[j].m+"»");
 }));
-TEST_SUITES.push(()=>suite("открытка: художник места не трогает живой мир",()=>{
+TEST_SUITES.push(()=>suite("открытка: художник места не трогает живой мир",{tier:"browser"},()=>{
   resetWorld();
   const F=psPlanet("rock");
   const snaps=["c","d","b","y","g"].map(m=>psSnap(F,m,{cx:20,cy:30}));
@@ -68,7 +68,7 @@ TEST_SUITES.push(()=>suite("открытка: художник места не �
   pcTestPixels(snaps[0],60,40);
   eq(JSON.stringify({mode:G.mode,sx:G.sx,sy:G.sy,t:G.t}),snap,"после рисования G не изменился");
 }));
-TEST_SUITES.push(()=>suite("камера: пять новых мест снимают, стол и станция — нет",()=>{
+TEST_SUITES.push(()=>suite("камера: пять новых мест снимают, стол и станция — нет",{tier:"browser"},()=>{
   resetWorld();
   G.album=[];G.log=[];G.running=true;
   const F=psPlanet("rock"), Gg=psPlanet("gas");
@@ -132,7 +132,7 @@ TEST_SUITES.push(()=>suite("подпись: под землёй нет часа,
   for(const m of ["s","l","c","d","b","y","g"])
     ok(!/\d/.test(cap(m).replace(F.p.name,"")),"«"+m+"»: в подписи нет цифр");
 }));
-TEST_SUITES.push(()=>suite("камера: над открытым экраном ФОТО не висит",()=>{
+TEST_SUITES.push(()=>suite("камера: над открытым экраном ФОТО не висит",{tier:"browser"},()=>{
   resetWorld();
   G.running=true;
   const F=psPlanet("rock");

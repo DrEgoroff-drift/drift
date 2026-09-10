@@ -81,11 +81,11 @@ TEST_SUITES.push(() => suite("холдинг: площадка открывае�
 
 TEST_SUITES.push(() => suite("холдинг: цех не делает товар из пустого бункера", () => {
   const s = hdSite();
-  if (!s) { ok(true, "нет системы под проверку"); return; }
+  if (!ok(s, "система под проверку нашлась")) return;
   /* нужен цех, который ЕСТ: семья A копает сама, её здесь не судим */
   const id = Object.keys(BLD).find(k => !bldWhy(s, BLD[k]) && BLD[k].fam !== "A" &&
     Object.keys(BLD[k].eats || {}).length && Object.keys(BLD[k].makes || {}).length);
-  if (!id) { ok(true, "перерабатывающего цеха на этой ступени нет — проверять нечего"); resetWorld(); return; }
+  if (!ok(id, "перерабатывающий цех на этой ступени есть")) { resetWorld(); return; }
   eq(hdLay(s, id), "", "цех «" + BLD[id].ru + "» заложен");
   const B = bldEntry(s.key, id);
   ok(!!B, "запись цеха есть");
@@ -110,9 +110,11 @@ TEST_SUITES.push(() => suite("холдинг: цех не делает това�
 
 TEST_SUITES.push(() => suite("холдинг: пай не переполняет бункер и не теряется по дороге в трюм", () => {
   const s = hdSite();
-  if (!s) { ok(true, "нет системы под проверку"); return; }
-  const id = Object.keys(BLD).find(k => !bldWhy(s, BLD[k]) && Object.keys(BLD[k].makes || {}).length);
-  if (!id) { ok(true, "накопительного цеха на этой ступени нет"); resetWorld(); return; }
+  if (!ok(s, "система под проверку нашлась")) return;
+  /* семья A (добыча) не дарит пай, а продаёт: с ней вторая половина набора
+     годами уходила в молчаливый пропуск — берём цех, который копит пай (M442) */
+  const id = Object.keys(BLD).find(k => !bldWhy(s, BLD[k]) && BLD[k].fam !== "A" && Object.keys(BLD[k].makes || {}).length);
+  if (!ok(id, "накопительный цех на этой ступени есть")) { resetWorld(); return; }
   eq(hdLay(s, id), "", "цех заложен");
   const B = bldEntry(s.key, id), def = BLD[id];
   const O = bldOut(def, B.lvl), cap = HOLD_CAP_SHIFTS * holdCapMul(s.key);
@@ -124,7 +126,6 @@ TEST_SUITES.push(() => suite("холдинг: пай не переполняет
   for (const k in O) if ((B.got[k] || 0) > O[k] * cap + 1e-6) over.push(k + ": " + B.got[k].toFixed(2) + " при потолке " + (O[k] * cap));
   eq(over.join(", "), "", "запас цеха стоит под потолком (" + cap + " смены)");
   /* забрать в трюм: сколько ушло из запаса, столько и пришло в трюм */
-  if (def.fam === "A") { ok(true, "добыча не дарит пай — она продаёт (bldBuySrc)"); resetWorld(); return; }
   const got0 = Object.keys(B.got).reduce((a, k) => a + Math.floor(B.got[k]), 0);
   const held0 = held();
   const took = bldCollect(s, id);

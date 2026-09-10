@@ -3,6 +3,8 @@
    договора, на которых всё держится: доход за час не изменился, положение
    выводится из времени и нигде не хранится, а поломка чинится сама — временем,
    и офлайн тоже. */
+/* настоящая поломка: наборы ниже подменяют её на время и возвращают ЭТУ, а не копию */
+const DRONE_BREAKS=droneBreaks;
 TEST_SUITES.push(()=>suite("дроны: круг вместо ручейка",()=>{
   resetWorld();
   /* система со станцией и планетами: маршрут должен иметь оба конца */
@@ -25,7 +27,7 @@ TEST_SUITES.push(()=>suite("дроны: круг вместо ручейка",()
   ok(dronePhase(d,d.t0+T*.8).leg==="back","во второй — порожняком");
 }));
 
-TEST_SUITES.push(()=>suite("дроны: за час зарабатывают столько же",()=>{
+TEST_SUITES.push(()=>suite("дроны: за час зарабатывают столько же",{tier:"browser"},()=>{
   resetWorld();
   G.droneInventory=1;droneTarget="iron";G.mode="system";
   deployDrone();
@@ -44,6 +46,7 @@ TEST_SUITES.push(()=>suite("дроны: за час зарабатывают с�
      "за час сдано "+soldUnits+" при ожидаемых "+Math.round(want));
   ok(G.credits>c0,"деньги пришли: +"+Math.round(G.credits-c0));
   ok(d.trips>0,"и это были круги, а не ручеёк: "+d.trips);
+  droneBreaks=DRONE_BREAKS;
 }));
 
 TEST_SUITES.push(()=>suite("дроны: ломаются и чинятся сами, временем",()=>{
@@ -72,6 +75,7 @@ TEST_SUITES.push(()=>suite("дроны: ломаются и чинятся са�
   d.t0=now()-T*1.1;d.lastMs=d.t0;
   tickDrones();
   ok(d.trips>tripsWhileDown,"и вернулся на маршрут");
+  droneBreaks=DRONE_BREAKS;
 }));
 
 TEST_SUITES.push(()=>suite("дроны: маршруты и старые записи",()=>{
@@ -98,7 +102,7 @@ TEST_SUITES.push(()=>suite("дроны: маршруты и старые зап�
 }));
 
 /* ── второй проход: то, что нашлось глазами ── */
-TEST_SUITES.push(()=>suite("дроны: без станции в системе — не в звезду",()=>{
+TEST_SUITES.push(()=>suite("дроны: без станции в системе — не в звезду",{tier:"browser"},()=>{
   resetWorld();
   /* система без своей станции: раньше droneHome возвращал (0,0), а в нуле
      стоит ЗВЕЗДА — дрон возил руду прямо в неё */
@@ -107,7 +111,7 @@ TEST_SUITES.push(()=>suite("дроны: без станции в системе 
     if(!starAt(x,y))continue;const S=getSystem(x,y);
     if(!S.station&&(S.planets||[]).length)ns=S;
   }
-  if(!ns){ok(true,"поблизости нет системы без станции — проверку пропускаем");return;}
+  if(!ok(ns,"поблизости нашлась система без станции"))return;
   const now=clockNow();
   const d={id:1,sx:ns.sx,sy:ns.sy,pi:0,res:"iron",rate:.6,pool:100,t0:now,lastMs:now,
            bornMs:now,trips:0,down:0,sold:0,earned:0,carry:0};
@@ -195,8 +199,8 @@ TEST_SUITES.push(()=>suite("дроны: после суток догона фл�
   for(let i=0;i<13;i++)deployDrone();
   const fleet=G.drones.slice();
   ok(fleet.length>=6,"флот развёрнут: "+fleet.length);
-  /* поломка здесь настоящая: набор выше подменял её заглушкой на весь прогон */
-  droneBreaks=d=>Math.random()<droneBreakP(d);
+  /* поломка здесь настоящая — та самая функция игры, а не копия (M442) */
+  droneBreaks=DRONE_BREAKS;
   /* пять заходов через сутки — ровно так и играют: каждый раз цикл догоняет
      сутки, и за неделю у машины набегают тысячи кругов */
   const day=24*3600*1000;

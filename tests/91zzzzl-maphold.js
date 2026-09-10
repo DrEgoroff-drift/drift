@@ -2,7 +2,7 @@
    Пятно дома — станция и соседи в один прыжок; под трассой пираты не держатся;
    бирка перемены появляется только на настоящей перемене и гаснет за трое суток;
    слои ходят по кругу; карта со всем этим рисуется. */
-TEST_SUITES.push(()=>suite("владения: пятно дома = станция и соседи в прыжок; слои по кругу; кадр рисуется",()=>{
+TEST_SUITES.push(()=>suite("владения: пятно дома = станция и соседи в прыжок; слои по кругу; кадр рисуется",{tier:"browser"},()=>{
   resetWorld();
   document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
   G.mode="map";G.sel={x:G.sx,y:G.sy};G.mapView=null;G.mapZoom=1;G.mapLayer=null;
@@ -56,12 +56,12 @@ TEST_SUITES.push(()=>suite("владения: под трассой пираты
     rungOf=r0;
     G.occ={};
     let nb=null;for(let dx=-1;dx<=1&&!nb;dx++)for(let dy=-1;dy<=1&&!nb;dy++){if(!dx&&!dy)continue;if(starAt(S.sx+dx,S.sy+dy))nb=[S.sx+dx,S.sy+dy];}
-    if(nb){
+    if(ok(nb,"у станции есть соседняя звезда")){
       rungOf=(sx,sy)=>(sx===S.sx&&sy===S.sy)?6:0;
       occSet(nb[0],nb[1],OCC_MAX);G.occT=T;
       for(let i=0;i<30;i++){T+=OCC_PERIOD+1;clockSet(T);occTick();}
       eq(occLvl(S.sx,S.sy),0,"тридцать тактов — трасса не занята");
-    }else ok(true,"у станции нет соседей — расползание не меряем");
+    }
     rungOf=r0;
     /* бирка: только где записана перемена, гаснет за трое суток */
     G.newsMarks={};

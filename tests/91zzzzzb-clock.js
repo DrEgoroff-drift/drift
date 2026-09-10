@@ -18,36 +18,26 @@
    Проверка разностная: список тактов, которые роняют мир ДО сдвига, снимается
    заранее — краснеет только то, что сломалось ИМЕННО от часов. */
 
-const CLK_TICKS=["tickDrones","crewTick","mgrTick","newsTick","offerTick","qslTick","skyTick",
-  "mayakTick","orderTick","instTick","zooTick","traineeTick","recordTick","chartsTick","ringTick",
-  "expDayTick","expDepartTick","vegaDayTick","vegaAmbientTick","lastRunTick","planetTick",
-  "mirrorEchoTick","firstTick","lockerTick"];
+/* список ленивых тактов CLK_TICKS живёт в инструментах (90a-tools, M442):
+   им пользуется и T.advance */
 /* сколько имён из списка вправду существует. Без этой проверки набор был бы
    тем самым «typeof-сторожем»: опечатка в имени — и он молча гоняет пустоту
    и зеленеет (CLAUDE.md, урок про mkview). */
 function clkMissing(){
-  return CLK_TICKS.filter(n=>typeof ((typeof window!=="undefined")?window[n]:null)!=="function");
+  return CLK_TICKS.filter(n=>!(window[n] instanceof Function));
 }
-/* прогон всех тактов: возвращает карту «имя → сообщение об исключении» */
-function clkRun(n){
-  const bad={};
-  for(let i=0;i<(n||1);i++)for(const name of CLK_TICKS){
-    const f=(typeof window!=="undefined")?window[name]:null;
-    if(typeof f!=="function")continue;
-    try{ f(); }catch(e){ bad[name]=(e&&e.message)||String(e); }
-  }
-  return bad;
-}
+/* прогон всех тактов: карта «имя → сообщение об исключении» — T.ticks() */
+function clkRun(n){return T.ticks(n);}
 /* мир, в котором есть чему тикать: руки, дроны, ящик, стройка, кооператив */
 function clkWorld(){
   resetWorld();
-  if(typeof e2eLate==="function")e2eLate();else fuzzRich();
-  if(typeof lockerRec==="function"){
+  e2eLate();
+  {
     const L=lockerRec();
     L.res=L.res||{};L.res[RES_KEYS[0]]=40;
     L.t=clockNow()-3*24*3600*1000;   /* трое суток хранения уже набежало */
   }
-  if(typeof droneNextId==="function"&&G.drones.length<2){
+  if(G.drones.length<2){
     const now=clockNow();
     G.drones.push({id:droneNextId(),sx:G.sx,sy:G.sy,pi:-1,res:RES_KEYS[0],rate:2,pool:-1,
       soldAtMs:now,t0:now,lastMs:now,bornMs:now,trips:0,down:0,sold:0,earned:0});
@@ -55,12 +45,8 @@ function clkWorld(){
   clkRun(1);   /* один раз по-честному, чтобы отметки встали на «сейчас» */
 }
 /* подмена часов на время опыта; возвращает функцию «вернуть как было» */
-function clkShift(ms){
-  const t0=now();
-  clockSet(t0+ms);
-  return ()=>{ clockSet(t0); };
-}
-function clkNaN(){ return (typeof e2eScan==="function")?e2eScan(G,v=>!Number.isFinite(v),20000):[]; }
+function clkShift(ms){return T.clockShift(ms);}
+function clkNaN(){ return e2eScan(G,v=>!Number.isFinite(v),20000); }
 
 TEST_SUITES.push(() => suite("часы: время ушло назад — никто не платит и никто не богатеет", () => {
   clkWorld();
@@ -96,11 +82,11 @@ TEST_SUITES.push(() => suite("часы: прыжок на пять лет впе
   /* и мир после этого ещё рисуется */
   let drew=true;
   try{ tableTab="ether"; tableRender(); }catch(e){ drew=false; ok(false,"стол после пяти лет: "+e.message); }
-  if(drew)ok(true,"стол после пяти лет рисуется");
+  if(drew)ok(document.getElementById("tableBody").textContent.length>0,"стол после пяти лет рисуется и не пуст");
   resetWorld();
 }));
 
-TEST_SUITES.push(() => suite("часы: сейв из будущего — отметки впереди наших часов не ломают мир", () => {
+TEST_SUITES.push(() => suite("часы: сейв из будущего — отметки впереди наших часов не ломают мир",{tier:"browser"}, () => {
   clkWorld();
   const s=JSON.parse(JSON.stringify(snapshot()));
   /* у того устройства часы спешат на год: двигаем КАЖДУЮ отметку времени в сейве */

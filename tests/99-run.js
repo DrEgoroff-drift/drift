@@ -16,13 +16,17 @@
    одного набора — того самого, который спрашивает, шёл ли цикл кадров: в
    замере кадров нет вовсе. Замер меряет, судит обычный прогон. */
 const TEST_TIMES=(()=>{try{return /[?&]times=1/.test(location.search);}catch(e){return false;}})();
-if(!TEST_TIMES&&!(typeof globalThis.TEST_NODE!=="undefined"&&globalThis.TEST_NODE))TEST_SUITES.unshift(() => suite("игра запустилась сама: живой кадр без сбоя", () => {
+/* перемешка (?shuffle) его не трогает (pin): он спрашивает про запуск страницы,
+   а не про прогон, и после чужих наборов его вопрос теряет смысл */
+const BOOT_SUITE=() => suite("игра запустилась сама: живой кадр без сбоя",{tier:"browser"}, () => {
   const alive=document.documentElement.getAttribute("data-alive")||"";
   eq(alive,VER,"на корне data-alive с версией сборки (кадров прошло "+frameN+")");
   ok(frameN>=1,"цикл кадров шёл сам, по rAF: "+frameN);
   eq(crashN,0,"сторож кадра ни разу не сработал до тестов");
   ok(typeof CRASH_SHIP==="object"&&CRASH_SHIP.n===0,"на сервер с этой страницы ничего не ушло (стенд молчит)");
-}));
+});
+BOOT_SUITE.pin="first";
+if(!TEST_TIMES&&!(typeof globalThis.TEST_NODE!=="undefined"&&globalThis.TEST_NODE))TEST_SUITES.unshift(BOOT_SUITE);
 (function boot(t0){
   /* под Node кадров нет: цикл выключается сразу, набор про запуск — дело Хрома */
   if(typeof TEST_NODE!=="undefined"&&TEST_NODE&&frameN<1){LOOP_OFF=true;runTests();return;}

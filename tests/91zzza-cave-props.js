@@ -23,14 +23,16 @@ TEST_SUITES.push(()=>suite("пещера M305: обвод без углов, к�
   ok(pr.filter(p=>p.k!=="rope").every(p=>p.y<CAVE_Y1-5),"ничего не лежит за дном поля");
   ok(caveProps(C)===pr,"второй вызов — тот же список");
   /* рисование не падает ни в одной точке */
-  for(const x of [200,700,1200,1800]){C.x=x;C.y=caveFloor(C,x)-1;C.cy=null;drawCave();}
-  C.x=1200;C.y=caveFloorLow(C,1200)-1;C.cy=null;drawCave();
-  ok(true,"кадры пещеры в пяти точках нарисованы");
+  const lg=T.ledger(()=>{
+    for(const x of [200,700,1200,1800]){C.x=x;C.y=caveFloor(C,x)-1;C.cy=null;drawCave();}
+    C.x=1200;C.y=caveFloorLow(C,1200)-1;C.cy=null;drawCave();
+  });
+  ok(lg.calls>100,"кадры пещеры в пяти точках нарисованы: вызовов канвы "+lg.calls);
   exitCave();
 }));
 
 /* ══════════════ станция и планета M306: знаки на дневной стороне ══════════════ */
-TEST_SUITES.push(()=>suite("M306: отвал, купол и полоса на планете не падают и не рисуются без построек",()=>{
+TEST_SUITES.push(()=>suite("M306: отвал, купол и полоса на планете не падают и не рисуются без построек",{tier:"browser"},()=>{
   resetWorld();
   G.mode="system";G.running=true;
   const sys=G.sys,p=(sys.planets||[]).find(q=>q.type!=="gas");
@@ -43,15 +45,18 @@ TEST_SUITES.push(()=>suite("M306: отвал, купол и полоса на п
   ctx.fill=f0;
   eq(n0,0,"без построек и рунга на диске ничего не кладётся");
   G.hold={[sys.key]:{bld:{regolith:{ok:1},greenhouse:{ok:1}}}};
-  const rd=(typeof bldReady==="function")?bldReady:null;
-  if(rd)window.bldReady=()=>true;
+  const rd=bldReady;
+  window.bldReady=()=>true;
   let n1=0;ctx.fill=function(){n1++;return f0.apply(ctx,arguments);};
   drawPlanetWorks(sys,p,W/2,H/2,80);
   ctx.fill=f0;
-  if(rd)window.bldReady=rd;
-  ok(n1>=4,"с шахтой и оранжереей на диске лежат отвал и купол ("+n1+" заливок)");
+  /* малый диск (r<12): те же постройки, но знаки не кладутся */
+  let n2=0;ctx.fill=function(){n2++;return f0.apply(ctx,arguments);};
   drawPlanetWorks(sys,p,W/2,H/2,8);
-  ok(true,"на малом диске (r<12) знаки не рисуются и не падают");
+  ctx.fill=f0;
+  window.bldReady=rd;
+  ok(n1>=4,"с шахтой и оранжереей на диске лежат отвал и купол ("+n1+" заливок)");
+  eq(n2,0,"на малом диске (r<12) знаки не рисуются");
   G.hold=save;
 }));
 
@@ -71,19 +76,19 @@ TEST_SUITES.push(()=>suite("M307: обёртка мебели возвращае
   eq(JSON.stringify(a),JSON.stringify(b),"один и тот же дом при каждом приходе");
   ok(["plank","tile","thatch","plate"].indexOf(a.roofKind)>=0,"кровля из тех, что умеет sdRoof");
   eq(a.roofKind,sdMat(p).roof,"кровля дома — из той же таблицы, что у посёлка (M322)");
-  for(const t of [0,1,2,3,4])homeSigns(300,300,60,{wood:[96,72,50],metal:[104,112,120],stone:[90,90,100]},t,a);
-  ok(true,"признаки жизни рисуются на всех ступенях");
+  const lg=T.ledger(()=>{for(const t of [0,1,2,3,4])homeSigns(300,300,60,{wood:[96,72,50],metal:[104,112,120],stone:[90,90,100]},t,a);});
+  ok(lg.calls>0,"признаки жизни рисуются на ступенях: вызовов канвы "+lg.calls);
 }));
 
 /* ══════════════ M308: дневной свет без приговора, карта и заход рисуются ══════════════ */
-TEST_SUITES.push(()=>suite("M308: пара без приговора для дневных сцен, полоса карты и зарево захода",()=>{
+TEST_SUITES.push(()=>suite("M308: пара без приговора для дневных сцен, полоса карты и зарево захода",{tier:"browser"},()=>{
   resetWorld();
   const m={pair:3,warm:97,mass:20,edge:5,contrast:.4,tones:5,empty:50};
   ok(lookVerdict(m,"грунт день").indexOf("без приговора")>=0,"грунт день: пара справкой");
   ok(lookVerdict(m,"пещера").indexOf("×пара")>=0,"пещера: пара судится");
   ok(lookVerdict(m).indexOf("×пара")>=0,"без сцены — старое поведение");
-  G.mode="map";drawMap();drawMap();
-  ok(true,"карта с полосой в две ступени нарисована");
+  G.mode="map";drawMap();
+  ok(T.ledger(drawMap).calls>20,"карта с полосой в две ступени нарисована");
   const p=G.sys.planets.find(q=>q.type!=="gas")||G.sys.planets[0];
   startLanding(p);G.land.y=groundAt(G.land.tr,G.land.x)-560;
   for(let i=0;i<3;i++){updateLanding(1);drawLanding();}
@@ -91,7 +96,7 @@ TEST_SUITES.push(()=>suite("M308: пара без приговора для дн
 }));
 
 /* ══════════════ M309: трафик системы и туманность с кромкой ══════════════ */
-TEST_SUITES.push(()=>suite("M309: челноки по ступени, ни одного в дикой системе, ход по дуге в кадре",()=>{
+TEST_SUITES.push(()=>suite("M309: челноки по ступени, ни одного в дикой системе, ход по дуге в кадре",{tier:"browser"},()=>{
   resetWorld();
   const sys=G.sys;
   delete sys.traffic;
@@ -105,7 +110,7 @@ TEST_SUITES.push(()=>suite("M309: челноки по ступени, ни од�
   const zx=x=>W/2+(x-G.ship.x)*.7,zy=y=>H/2+(y-G.ship.y)*.7;
   G.t=1000;drawSysTraffic(zx,zy,.7);
   ctx.translate=o;
-  ok(true,"челноки рисуются без ошибок (в кадре: "+tr+")");
+  note("челноки нарисованы, сдвигов в кадре: "+tr);
   for(const t of T){
     let u=(G.t*t.spd+t.ph/TAU)%1;u=u<.5?u*2:2-u*2;
     ok(u>=0&&u<=1,"параметр хода в [0,1]");
@@ -113,7 +118,7 @@ TEST_SUITES.push(()=>suite("M309: челноки по ступени, ни од�
 }));
 
 /* ══════════════ M310: флот ГЛАВТРАССЫ ══════════════ */
-TEST_SUITES.push(()=>suite("M310: флот идёт по лестнице, три класса нарисованы, позывной и норма",()=>{
+TEST_SUITES.push(()=>suite("M310: флот идёт по лестнице, три класса нарисованы, позывной и норма",{tier:"browser"},()=>{
   resetWorld();
   const sys=G.sys;
   ok(Object.keys(FLEET_CLASSES).length===13,"тринадцать классов в таблице");
@@ -149,7 +154,7 @@ TEST_SUITES.push(()=>suite("M310: флот идёт по лестнице, тр�
 }));
 
 /* ══════════════ M311: второй проход флота — три класса, буксир, плавбаза, конвой ══════════════ */
-TEST_SUITES.push(()=>suite("M311: шесть классов нарисованы, буксир латает, плавбаза чинит, конвой прячет от пиратов",()=>{
+TEST_SUITES.push(()=>suite("M311: шесть классов нарисованы, буксир латает, плавбаза чинит, конвой прячет от пиратов",{tier:"browser"},()=>{
   resetWorld();
   ok(Object.values(FLEET_CLASSES).filter(c=>c.art).length>=6,"нарисованы не меньше шести классов");
   for(const k of ["patrol","ferry","base"]){const a=fleetArtOf({k,seed:k.length+7,name:"X",num:"Л-1",line:1});ok(a.cn.width>0,k+": спрайт запечён");}
@@ -245,7 +250,7 @@ TEST_SUITES.push(()=>suite("M313: узловая с рунга 25, дерели�
 }));
 
 /* ══════════════ M314: трассы на карте, спасатель зовёт на сигнал ══════════════ */
-TEST_SUITES.push(()=>suite("M314: трассы рисуются между системами флота, спасатель ведёт на баржу в беде",()=>{
+TEST_SUITES.push(()=>suite("M314: трассы рисуются между системами флота, спасатель ведёт на баржу в беде",{tier:"browser"},()=>{
   resetWorld();
   const saveRung=window.rungOf;window.rungOf=()=>25;
   const vis=[{gx:0,gy:0,s:{sx:0,sy:0,station:{x:1,y:0}},x:100,y:100},{gx:1,gy:0,s:{sx:1,sy:0,station:{x:1,y:0}},x:160,y:100},{gx:5,gy:5,s:{sx:5,sy:5,station:null},x:400,y:400}];
@@ -266,7 +271,7 @@ TEST_SUITES.push(()=>suite("M314: трассы рисуются между си�
 }));
 
 /* ══════════════ M315: пропорции системы, призрачный клик, оклик на рунге 30 ══════════════ */
-TEST_SUITES.push(()=>suite("M315: планеты крупнее корабля, спутник под палец, экран не закрывается тем же пальцем, Кольцо окликает первым",()=>{
+TEST_SUITES.push(()=>suite("M315: планеты крупнее корабля, спутник под палец, экран не закрывается тем же пальцем, Кольцо окликает первым",{tier:"browser"},()=>{
   resetWorld();
   /* пропорции: каменистый мир не меньше 34, спутник не меньше 6, орбиты шире 310 */
   let rockMin=1e9,moonMin=1e9,gapMin=1e9,n=0;
@@ -319,7 +324,7 @@ TEST_SUITES.push(()=>suite("M316: в системе все тела крутят
 }));
 
 /* ══════════════ M317: флот на расстоянии встречи — шесть пунктов альманаха III ══════════════ */
-TEST_SUITES.push(()=>suite("M317: подпись от габарита и мимо фишек, спрайт растёт до потолка зума, эмблемы одной конструкции, учебное целиком в спрайте",()=>{
+TEST_SUITES.push(()=>suite("M317: подпись от габарита и мимо фишек, спрайт растёт до потолка зума, эмблемы одной конструкции, учебное целиком в спрайте",{tier:"browser"},()=>{
   resetWorld();
   /* §8: масштаб спрайта идёт до потолка setZoom, а не упирается в 1.5 */
   ok(fleetScale(2.4)>fleetScale(1.5)*1.4,"на зуме 2.4 флот крупнее, чем на 1.5: "+fleetScale(2.4).toFixed(2)+" против "+fleetScale(1.5).toFixed(2));
@@ -351,7 +356,7 @@ TEST_SUITES.push(()=>suite("M317: подпись от габарита и мим
 }));
 
 /* ══════════════ M318: навесное отделяется тенью, рёбра гофром, трасса на карте — цепочка ══════════════ */
-TEST_SUITES.push(()=>suite("M318: под баком тень на теле, рёбра в два тона, трассы к двум ближайшим",()=>{
+TEST_SUITES.push(()=>suite("M318: под баком тень на теле, рёбра в два тона, трассы к двум ближайшим",{tier:"browser"},()=>{
   resetWorld();
   const lum=(a,x,y)=>{const S=FLEET_SS,g=a.cn.getContext("2d"),d=g.getImageData(Math.round((a.rad+x)*S),Math.round((a.rad+y)*S),2,2).data;
     let s=0;for(let i=0;i<16;i+=4)s+=(d[i]*.299+d[i+1]*.587+d[i+2]*.114)/255;return s/4;};

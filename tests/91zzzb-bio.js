@@ -30,7 +30,7 @@ TEST_SUITES.push(()=>suite("био: у планеты есть список ви
   ok(n1!==n2,"на другой планете другие виды");
 }));
 
-TEST_SUITES.push(()=>suite("био: два экземпляра одного вида — одно растение",()=>{
+TEST_SUITES.push(()=>suite("био: два экземпляра одного вида — одно растение",{tier:"browser"},()=>{
   resetWorld();
   const p=bioPlanet(7);
   const sp=floraOf(p)[0];
@@ -82,7 +82,7 @@ TEST_SUITES.push(()=>suite("био: имя не может соврать",()=>{
   }
 }));
 
-TEST_SUITES.push(()=>suite("био: возраст — это тело, а не масштаб",()=>{
+TEST_SUITES.push(()=>suite("био: возраст — это тело, а не масштаб",{tier:"browser"},()=>{
   resetWorld();
   const p=bioPlanet(9);
   const sp=floraOf(p).find(s=>plantStemForm(s.kind)&&s.nb>0)||floraOf(p)[0];
@@ -141,7 +141,7 @@ TEST_SUITES.push(()=>suite("био: реестр считает виды, а н�
   eq(A.scanned,true,"экземпляр помечен просканированным");
 }));
 
-TEST_SUITES.push(()=>suite("био: пещерная флора светится по виду",()=>{
+TEST_SUITES.push(()=>suite("био: пещерная флора светится по виду",{tier:"browser"},()=>{
   resetWorld();
   for(let s=0;s<8;s++){
     const p=bioPlanet(s*7+3);
@@ -156,7 +156,7 @@ TEST_SUITES.push(()=>suite("био: пещерная флора светится
 
 /* Свет планеты (M175): терминатор — прямая через центр диска, перпендикулярная
    направлению на звезду. Накладка печётся один раз и поворачивается. */
-TEST_SUITES.push(()=>suite("свет планеты приходит от звезды",()=>{
+TEST_SUITES.push(()=>suite("свет планеты приходит от звезды",{tier:"browser"},()=>{
   resetWorld();
   const p=G.sys.planets[0];
   const norm=a=>{let v=a;while(v>Math.PI)v-=TAU;while(v<-Math.PI)v+=TAU;return v;};
@@ -210,14 +210,16 @@ TEST_SUITES.push(()=>suite("био: на полосе растут виды пл
   /* одиночки среди стайных бывают: пятачок у пещеры и у дома расчищается уже
      после расстановки, и оттуда соседа могло вымести. Проверяем правило, а не
      каждый случай */
+  /* на тестовой полосе стайных нет вовсе — правило годами не проверялось
+     (M442); стаю ищем на первой полосе по кольцам, где их больше двух */
+  const Fs=T.landWhere(s=>s.fauna.filter(b=>b.sp&&b.sp.herd).length>2);
   let herd=0,withMate=0;
-  for(const b of S.fauna){
+  for(const b of (Fs?Fs.fauna:[])){
     if(!b.sp||!b.sp.herd)continue;
     herd++;
-    if(S.fauna.some(o=>o!==b&&o.name===b.name&&Math.abs(o.x-b.x)<220))withMate++;
+    if(Fs.fauna.some(o=>o!==b&&o.name===b.name&&Math.abs(o.x-b.x)<220))withMate++;
   }
-  if(herd>2)ok(withMate>=herd*.6,"стайные звери стоят группами ("+withMate+" из "+herd+")");
-  else ok(true,"стайных на полосе нет — проверять нечего");
+  if(ok(herd>2,"полоса со стаей нашлась: стайных "+herd))ok(withMate>=herd*.6,"стайные звери стоят группами ("+withMate+" из "+herd+")");
   /* и возраст на полосе разный — не одна взрослая волна */
   const ages=S.plants.map(pl=>pl.age);
   if(ages.length>6)ok(Math.max.apply(null,ages)-Math.min.apply(null,ages)>.3,

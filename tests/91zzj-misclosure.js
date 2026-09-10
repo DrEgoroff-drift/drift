@@ -9,7 +9,7 @@ function misTestRegion(){
   }
   return {R,list};
 }
-TEST_SUITES.push(()=>suite("невязка: в уезде часы станций не сходятся, вне уезда — сходятся",()=>{
+TEST_SUITES.push(()=>suite("невязка: в уезде часы станций не сходятся, вне уезда — сходятся",{tier:"browser"},()=>{
   resetWorld();
   const M=misTestRegion();ok(!!M&&M.list.length>=2,"в уезде «Расхождение времён» есть станции: "+(M?M.list.length:0));
   const offs=M.list.map(misStationOffset);
@@ -23,7 +23,7 @@ TEST_SUITES.push(()=>suite("невязка: в уезде часы станци�
   ok(C&&C.st!==C.sky,"строка доски: станция "+C.st+", по небу "+C.sky);
 }));
 
-TEST_SUITES.push(()=>suite("невязка: лента из уезда несёт метку, три ленты — фигура, ось по Кольцу",()=>{
+TEST_SUITES.push(()=>suite("невязка: лента из уезда несёт метку, три ленты — фигура, ось по Кольцу",{tier:"browser"},()=>{
   resetWorld();
   const M=misTestRegion();ok(!!M,"уезд есть");
   G.strips=[];

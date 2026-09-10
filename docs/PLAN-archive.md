@@ -8606,3 +8606,22 @@ the map backdrop and `G.prompt`; `stateHashParts()` hashes per top-level key. Th
 because every tier, the deploy and the lab pass through the build; a violation deletes the old `tests.html`
 so no tier can go green on yesterday's build. The M391 suites now call `bCalm` (the clock moved to a stretch
 where the base director's own forecast is calm) instead of `bNoDir`; red at 03:00 and 13:00 without it.
+
+## M442 — the test API and the harness rules (0.430.0, 11.09.2026)
+
+The brief: `tests/90a-tools.js` (actuators and observers) extracted, not rewritten, from `hands`, `promise`,
+`look`, `fuzz`, `keys`; `docs/stand.py` over CDP; a zero-assertion suite is red; `ok(true` and `typeof`-guards
+in tests to zero by a net over the test sources; `suite(name, fn, {tier, win, stage})` replacing the three
+lists; `?shuffle=seed`; `stage` as quarantine.
+
+How it went: written by an Opus session in parallel with M441 and M443 (same base, 0.427.2). Its last full
+run hung in one shard for 33 minutes (the GPU process at ~115% CPU) and the session was stopped; the work
+was taken over at the merge — WIP (the per-suite tier options) committed, then merged over 0.429.0. The
+twelve conflicts were all M442's structure against M441's clock: the tools' clock (`clockShift`, `advance`)
+still patched `Date.now` and was moved onto `clockSet`; `T.go(scene, seed)` now calls `rndSeed`; `T.state()`
+returns `stateHash()`. M443's driver called the removed `hDom`/`hCalm` (now `T.dom`/`T.calm`) and relied on
+the old name-based Node skip (now `{tier:"browser"}`); the net found 16 guards in M443's files — the end-of-
+tools marker moved behind the detectors (`90c`), which are tools by §3.2 and may test the environment, and
+the thirteen guards around functions that must exist were removed. On the merged tree the hang did not
+reproduce: `-Full -Jobs 2` green in 128 s, and shuffled (`-Shuffle 7`) as well. Suspect, unproven: a suite
+on the pre-M441 tree waiting on a real-clock condition under `--virtual-time-budget`.

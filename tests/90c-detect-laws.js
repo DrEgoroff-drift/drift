@@ -20,7 +20,7 @@ const DET_INSTR=[
   {ru:"щит",dom:"snum",want:()=>Math.round(G.shield||0)+"/"+Math.round(stat().shieldMax)},
   {ru:"энергия",dom:"enum",want:()=>Math.round(clamp(G.energy||0,0,stat().energyMax))+"/"+stat().energyMax},
   {ru:"скафандр",dom:"unum",want:()=>{const s=detSuitSrc();return s?Math.round(clamp(s.suit,0,100))+"%":null;}},
-  {ru:"ранец",dom:"jnum",want:()=>(typeof jetFuel==="function"&&G.surf)?Math.round(clamp(jetFuel(),0,1)*100)+"%":null},
+  {ru:"ранец",dom:"jnum",want:()=>(G.surf)?Math.round(clamp(jetFuel(),0,1)*100)+"%":null},
   {ru:"кошелёк",dom:"purse",re:/^([\d\s  ]+) кр · (\d+) дан/,want:m=>[String(Math.round(G.credits)),String(G.data)],
     got:m=>[m[1].replace(/[\s  ]/g,""),m[2]]},
   /* ракеты: остаток в трюме, а не счётчик кнопки; «…» — перезарядка */
@@ -278,3 +278,6 @@ function detHuman(run){
   return v;
 }
 const DETECTORS=[detCrash,detStuck,detLaw,detInstr,detControls,detPicture];
+/* ══ конец инструментов ══ */
+/* детекторы (90b/90c) — тоже инструменты (DESIGN-tests §3.2): им можно спрашивать окружение;
+   сеть над наборами (90-harness, testNetHits) начинается отсюда */

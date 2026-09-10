@@ -1,5 +1,5 @@
 /* ══════════════ автотесты: телефонный вид (M167) ══════════════ */
-TEST_SUITES.push(()=>suite("телефон: опись одной лентой, кукла из вещей, тормоза на поверхности нет",()=>{
+TEST_SUITES.push(()=>suite("телефон: опись одной лентой, кукла из вещей, тормоза на поверхности нет",{tier:"browser"},()=>{
   resetWorld();
   document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
   /* ОПИСЬ (M341) вместо экрана КОРАБЛЬ|СКАФАНДР: одна лента, люк — полосой снизу */
@@ -17,7 +17,7 @@ TEST_SUITES.push(()=>suite("телефон: опись одной лентой, 
     ok(box.scrollWidth<=box.clientWidth+1,"лента не шире экрана ("+box.scrollWidth+"/"+box.clientWidth+")");
     const bar=document.getElementById("opisBar");
     ok(!!bar&&getComputedStyle(bar).display==="none","полоса люка спрятана, пока ничего не поднято");
-  }else ok(true,"широкий экран — порядок ленты не меряем");
+  }
   tableToggle(false);
   /* палитра комплекта читается и семейства различимы */
   G.kit=null;
@@ -77,9 +77,8 @@ TEST_SUITES.push(()=>suite("телефон: опись одной лентой, 
 
 /* Ряд не выпихивает кнопки за кромку: чем больше их в строю, тем они меньше,
    но никогда меньше 44 px — правило пальца сильнее желания показать всё. */
-TEST_SUITES.push(()=>suite("телефон: ряд пэдов помещается в экран",()=>{
+TEST_SUITES.push(()=>suite("телефон: ряд пэдов помещается в экран",{tier:"browser",win:"phone"},()=>{
   resetWorld();
-  if(innerWidth>760){TEST.lines.push("  · не телефон — набор только для test.ps1 -Mobile");return;}
   const check=nm=>{
     padsFit();
     const bs=[...document.querySelectorAll(".pads button")]
@@ -120,7 +119,7 @@ TEST_SUITES.push(()=>suite("телефон: ряд пэдов помещаетс
 /* Пэды на телефоне не гаснут сами (автор, 25.08.2026): касание холста браузер
    дублирует совместимым mousemove, и весь ряд уходил в .14 — палец жмёт туда,
    где кнопок почти нет. */
-TEST_SUITES.push(()=>suite("телефон: пэды не гаснут сами",()=>{
+TEST_SUITES.push(()=>suite("телефон: пэды не гаснут сами",{tier:"browser"},()=>{
   resetWorld();
   const wasMob=document.body.classList.contains("mobile");
   const $p=document.querySelector(".pads");
@@ -147,7 +146,7 @@ TEST_SUITES.push(()=>suite("телефон: пэды не гаснут сами"
    друг на друга и не заходят под правый борт — на телефоне это стоило бы
    игроку кнопки, а не вида. Класс .mobile ставится по ширине окна, поэтому в
    узком окне проверка идёт по-настоящему, а в широком честно пропускается. */
-TEST_SUITES.push(()=>suite("телефон: этажи внизу не налезают друг на друга",()=>{
+TEST_SUITES.push(()=>suite("телефон: этажи внизу не налезают друг на друга",{tier:"browser",win:"phone"},()=>{
   resetWorld();
   document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
   G.mode="surface";
@@ -155,9 +154,7 @@ TEST_SUITES.push(()=>suite("телефон: этажи внизу не нале�
           suit:100,x:0,y:0,shipX:0,fauna:[],plants:[]};
   G.prompt="ДЕЙСТВИЕ — СКАНИРОВАТЬ ОРГАНИЗМ";
   hud();
-  if(!document.body.classList.contains("mobile")){
-    ok(true,"окно не телефонное — проверку пропускаем");
-  }else{
+  if(ok(document.body.classList.contains("mobile"),"вёрстка в телефонном режиме (body.mobile)")){
     const box=s=>{const e=document.querySelector(s);if(!e)return null;
       const r=e.getBoundingClientRect();return r.width?{s,x:r.x,y:r.y,w:r.width,h:r.height}:null;};
     /* ВЗЛЁТ — та же обязанность, что у остальных этажей (M234). Он появляется
@@ -185,8 +182,7 @@ TEST_SUITES.push(()=>suite("телефон: этажи внизу не нале�
    переставала помещаться дорога — оставалось меньше трёхсот единиц мира в
    ширину. Проверка живёт в телефонном наборе, потому что только там это и
    видно (`test.ps1 -Mobile`). */
-TEST_SUITES.push(()=>suite("телефон: мир не зажимают в щель",()=>{
-  if(innerWidth>760){TEST.lines.push("  · не телефон — набор только для test.ps1 -Mobile");return;}
+TEST_SUITES.push(()=>suite("телефон: мир не зажимают в щель",{tier:"browser",win:"phone"},()=>{
   resetWorld();
   const k=surfScale();
   ok(k>=1,"мерка не ужимает мир никогда");
@@ -203,10 +199,8 @@ TEST_SUITES.push(()=>suite("телефон: мир не зажимают в ще
    третьи), и ВЗЛЁТ, который автор не мог нажать, висел на пульте именно потому,
    что никто не смотрел на нижние этажи в других режимах. Сцены берём из
    фуззера (91zzzz): один список сцен на всю проверку — второй бы разошёлся. */
-TEST_SUITES.push(()=>suite("телефон: этажи не налезают ни в одном режиме",()=>{
-  if(!document.body.classList.contains("mobile")){
-    resetWorld();ok(true,"окно не телефонное — проверку пропускаем");return;
-  }
+TEST_SUITES.push(()=>suite("телефон: этажи не налезают ни в одном режиме",{tier:"browser",win:"phone"},()=>{
+  if(!ok(document.body.classList.contains("mobile"),"вёрстка в телефонном режиме (body.mobile)")){resetWorld();return;}
   document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
   const box=s=>{const e=document.querySelector(s);if(!e)return null;
     const r=e.getBoundingClientRect();
@@ -249,10 +243,8 @@ TEST_SUITES.push(()=>suite("телефон: этажи не налезают н�
    как готовый. Здесь мерится ровно то, что глаз тогда увидел, а рука прошла
    мимо: рисунок стика умещается в свой след, а всё читаемое из-под следа
    уходит само. Набор телефонный: на мониторе стиков не бывает. */
-TEST_SUITES.push(()=>suite("телефон: стик не ложится на приборы и подсказку",()=>{
-  if(!document.body.classList.contains("mobile")){
-    resetWorld();ok(true,"окно не телефонное — проверку пропускаем");return;
-  }
+TEST_SUITES.push(()=>suite("телефон: стик не ложится на приборы и подсказку",{tier:"browser",win:"phone"},()=>{
+  if(!ok(document.body.classList.contains("mobile"),"вёрстка в телефонном режиме (body.mobile)")){resetWorld();return;}
   resetWorld();
   document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
   G.mode="system";
@@ -320,10 +312,8 @@ TEST_SUITES.push(()=>suite("телефон: стик не ложится на п
    `say("ГРАВИТАЦИОННЫЙ ЯКОРЬ\nдальше корабль не уходит\nкурс к звезде свободен")`
    на телефоне выходил одной строкой от края до края с многоточием: у #msg и
    #prompt в узком окне стоял white-space:nowrap. */
-TEST_SUITES.push(()=>suite("телефон: перевод строки в сообщении и подсказке жив",()=>{
-  if(!document.body.classList.contains("mobile")){
-    resetWorld();ok(true,"окно не телефонное — проверку пропускаем");return;
-  }
+TEST_SUITES.push(()=>suite("телефон: перевод строки в сообщении и подсказке жив",{tier:"browser",win:"phone"},()=>{
+  if(!ok(document.body.classList.contains("mobile"),"вёрстка в телефонном режиме (body.mobile)")){resetWorld();return;}
   resetWorld();
   const m=document.getElementById("msg"),p=document.getElementById("prompt");
   say("ГРАВИТАЦИОННЫЙ ЯКОРЬ\nдальше корабль не уходит\nкурс к звезде свободен");
@@ -343,10 +333,8 @@ TEST_SUITES.push(()=>suite("телефон: перевод строки в со�
    Остальные наборы кладут `HELM.S` руками и меряют физику. Здесь проверяется
    то, что между пальцем и `HELM.S`: настоящие PointerEvent на холсте, обе
    половины экрана, и главное — что стик не отнял тычок. Набор телефонный. */
-TEST_SUITES.push(()=>suite("телефон: стик рождается под пальцем, а тычок остаётся тычком",()=>{
-  if(!document.body.classList.contains("mobile")){
-    resetWorld();ok(true,"окно не телефонное — проверку пропускаем");return;
-  }
+TEST_SUITES.push(()=>suite("телефон: стик рождается под пальцем, а тычок остаётся тычком",{tier:"browser",win:"phone"},()=>{
+  if(!ok(document.body.classList.contains("mobile"),"вёрстка в телефонном режиме (body.mobile)")){resetWorld();return;}
   resetWorld();
   document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
   G.mode="system";G.ap=null;G.orbit=null;G.marks=[];

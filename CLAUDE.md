@@ -235,7 +235,7 @@ powershell -ExecutionPolicy Bypass -File test.ps1
 formula-and-data suites, ~5 s) plus one Chrome smoke (~2 s). `-Browser` adds the picture and
 interface suites; `-Full` runs everything including the heavy nets — on request, before a
 release. `-Only текст` narrows, `-NoBuild` skips the build, `-Mobile` is the only way the
-phone-layout guards run at all (they skip themselves in a desktop window).
+phone-layout guards run at all (they are declared `win:"phone"`).
 
 **The full run is split across Chromes (0.426.0).** `-Full` deals the corpus to four headless
 Chromes (`?shard=i/N`, heavy and light dealt round-robin apart) and adds up their reports;
@@ -255,8 +255,10 @@ the project. `test.ps1` prints one head line plus the failures block, ~30 tokens
 Suites are split by topic: `tests/91a-flight` … `91n-barge`, harness in `90-harness`. A new
 mechanic goes into the suite it belongs to; if no topic fits, add `91x-name.js`. Each suite
 starts with `resetWorld()` and drives the real `G` — nothing is mocked. A suite that needs
-pixels or layout goes red under the Node stubs: name it in `NODE_BROWSER` (`90-harness`) and
-it moves to Chrome.
+pixels or layout goes red under the Node stubs: declare it `suite(name,{tier:"browser"},fn)` and
+it moves to Chrome (tiers, `win`, `stage`, `?shuffle` and the tools `T.*` of `tests/90a-tools.js`:
+`docs/VERIFY.md`). A suite with zero assertions is red, and `ok(true` / `typeof`-guards in suites
+are refused by a net.
 
 ```bash
 powershell -ExecutionPolicy Bypass -File build.ps1

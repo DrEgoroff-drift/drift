@@ -8,7 +8,7 @@ function celTestPlanet(){
   }
   return null;
 }
-TEST_SUITES.push(()=>suite("календарь: небо считается, а не бросается",()=>{
+TEST_SUITES.push(()=>suite("календарь: небо считается, а не бросается",{tier:"browser"},()=>{
   resetWorld();
   const F=celTestPlanet();
   ok(!!F,"нашлась планета со спутником");
@@ -42,10 +42,10 @@ TEST_SUITES.push(()=>suite("календарь: небо считается, а 
 }));
 
 /* ── небо не трогает ни цен, ни выработки ── */
-TEST_SUITES.push(()=>suite("календарь: небо не вмешивается в числа",()=>{
+TEST_SUITES.push(()=>suite("календарь: небо не вмешивается в числа",{tier:"browser"},()=>{
   resetWorld();
   const F=celTestPlanet();
-  if(!F){ok(true,"без планеты со спутником проверять нечего");return;}
+  if(!ok(F,"планета со спутником нашлась"))return;
   const sys=(function(){for(let dx=-8;dx<=8;dx++)for(let dy=-8;dy<=8;dy++){
     if(!starAt(dx,dy))continue;const s=getSystem(dx,dy);if(s.station)return s;}return null;})();
   /* ставим игрока на планету с затмением и находим время, когда оно идёт */
@@ -91,7 +91,7 @@ function skyTestRuns(o){
   }
   return false;
 }
-TEST_SUITES.push(()=>suite("вахта: институт называет сутки, в которые небо и правда занято",()=>{
+TEST_SUITES.push(()=>suite("вахта: институт называет сутки, в которые небо и правда занято",{tier:"browser"},()=>{
   resetWorld();
   G.duty=null;G.things=[];G.log=[];G.record=null;
   /* перебираем несколько семян: наряд должен находиться, а не выпадать раз в час */
@@ -139,7 +139,7 @@ TEST_SUITES.push(()=>suite("вахта: лента пишется на мест�
   ok(!G.things.some(x=>x.sky),"бумаги вахты со стола убраны");
   G.st=null;G.surf=null;
 }));
-TEST_SUITES.push(()=>suite("вахта: бюллетень института выходит сам — опоздал, половина платы",()=>{
+TEST_SUITES.push(()=>suite("вахта: бюллетень института выходит сам — опоздал, половина платы",{tier:"browser"},()=>{
   resetWorld();
   G.duty=null;G.things=[];G.log=[];G.record=null;
   const S=skyTestSci();

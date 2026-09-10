@@ -14,13 +14,13 @@ TEST_SUITES.push(()=>suite("дом: стоит на своей планете и
   landOnTestPlanet();
   const S=G.surf,tr=S.tr;
   const spot=homeSpotX(S.p,tr);
-  if(homeHereP(S.p)){
+  if(ok(homeHereP(S.p),"тестовая планета — та, где стоит дом")){
     ok(spot!=null,"место дома посчитано");
     ok(Math.abs(spot-tr.padX)>=500,"дом не на посадочной площадке");
     eq(Math.round(spot),Math.round(homeSpotX(S.p,tr)),"место не дрожит между вызовами");
     const dx=homeDoorX(tr,S.p);
     ok(dx!=null&&Math.abs(dx-spot)<60,"дверь у дома, а не в стороне");
-  }else ok(true,"тестовая планета не та (дом на другой) — проверка пропущена");
+  }
 }));
 
 TEST_SUITES.push(()=>suite("дом изнутри: ход, комнаты, вещи, жильцы",()=>{

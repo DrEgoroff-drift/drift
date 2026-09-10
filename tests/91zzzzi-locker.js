@@ -67,7 +67,7 @@ TEST_SUITES.push(()=>suite("ящик: плата процентом в сутк�
     /* на любом блошинце она лежит лотом первой, с честным провенансом */
     let bz=null;
     for(let dx=-12;dx<=12&&!bz;dx++)for(let dy=-12;dy<=12&&!bz;dy++){if(!starAt(dx,dy))continue;const s=getSystem(dx,dy);if(s.station&&s.station.stype==="bazaar")bz=s;}
-    if(bz){
+    if(ok(bz,"блошинец в двенадцати секторах нашёлся")){
       const L=fleaLots(bz);
       const pw=L.find(l=>l.pawn!=null);
       ok(!!pw&&/залог/.test(pw.why)&&pw.tier===4,"лот «залог, за которым не пришли», тир тот же");
@@ -75,12 +75,12 @@ TEST_SUITES.push(()=>suite("ящик: плата процентом в сутк�
       ok(!!fleaBuy(pw.id,"cr",bz),"куплен за кредиты");
       eq(fleaRec().pawn.length,0,"залог ушёл к новому хозяину");
       ok(!fleaLots(bz).some(l=>l.pawn!=null),"и на прилавке его больше нет");
-    }else ok(true,"блошинца в 12 секторах не нашлось — лот не меряем");
+    }
   }finally{clockSet(now0);}
   G.locker=null;G.flea=null;G.inv=[];
 }));
 
-TEST_SUITES.push(()=>suite("ящик: зона на ОПИСИ только у станции шестой ступени",()=>{
+TEST_SUITES.push(()=>suite("ящик: зона на ОПИСИ только у станции шестой ступени",{tier:"browser"},()=>{
   resetWorld();
   G.locker=null;
   document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));

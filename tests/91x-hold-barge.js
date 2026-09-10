@@ -4,11 +4,11 @@ TEST_SUITES.push(()=>suite("холдинг: баржа кормит, а не т�
   ok(!!ORDERS.barge&&ORDERS.barge.spec===null,"приказ «баржа» есть и не требует специальности");
   const s=siteTestStation();
   const st=routeTestStations(4).filter(x=>x.key!==(s&&s.key));
-  if(!s||!st.length){ok(true,"станций мало — пропущено");return;}
+  if(!ok(s&&st.length,"станция с площадкой и соседние станции нашлись"))return;
   siteTestOpen(s);
   /* цех на станции s, давно готовый */
   const good=bldAvailable(s).ok.find(x=>x.def.fam==="B");
-  if(!good){ok(true,"в этой системе нечего заложить — пропущено");return;}
+  if(!ok(good,"в этой системе есть что заложить (семья B)"))return;
   const def=good.def,main=Object.keys(def.eats)[0];
   const H=holdOf(s.key);H.bld={};
   H.bld[def.id]={lvl:1,t0:now(),ready:now()-HOLD_SHIFT*20,my:{},got:{}};

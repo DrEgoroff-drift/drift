@@ -87,7 +87,7 @@ TEST_SUITES.push(()=>suite("комплект: полка, надеть, почи
   G.kit=null;G.kitShelf=[];
 }));
 
-TEST_SUITES.push(()=>suite("комплект: склад института выдаёт по обороту, раз в окно",()=>{
+TEST_SUITES.push(()=>suite("комплект: склад института выдаёт по обороту, раз в окно",{tier:"browser"},()=>{
   resetWorld();
   G.kit=null;G.kitShelf=[];G.kitDepot={};G.home=homeInit();G.home.turn=0;
   let S=null;

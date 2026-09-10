@@ -10,7 +10,7 @@ TEST_SUITES.push(()=>suite("план: комбинат не останавлив
   hit=0;for(let i=0;i<40;i++){const r=rng(hashi(i,1,2));if(planEtherLine(r))hit++;}
   ok(hit>10,"в ядре эфир набит накладными ("+hit+"/40)");
   const pc=planCorePlanet(G.sys);
-  if(!pc){ok(true,"у ядра нет планеты под комбинат — проверяем только эфир");return;}
+  if(!ok(pc,"у ядра есть планета под комбинат"))return;
   ok(tinCanLive(pc),"комбинат стоит на планете ядра");
   const T=tinMake(pc);
   /* Часы настоящие: tinTick списывает смену по РЕАЛЬНОМУ времени с прошлого

@@ -2,7 +2,7 @@
 """Drift lab — server-side helpers (docs/LAB.md).
 
   lab.py plan <ver> <session>            → unit lines "kind<TAB>arg" in run order
-  lab.py heavy                           → the SLOW_SUITES names read from build/tests.html
+  lab.py heavy                           → the {tier:"heavy"} suite names read from build/tests.html
   lab.py skip <ver>                      → suites that hung in a shard this version, "a|b|c" (for ?skip=)
   lab.py report <kind> <arg> <file> <secs> <mem_mb> <rc> <ver> <session> [errfile] [oom_delta]
                                          → parses a report (Chrome DOM or node stdout),
@@ -48,9 +48,10 @@ def heavy_names():
     p = os.path.join(BUILD, "tests.html")
     try: src = open(p, encoding="utf-8").read()
     except Exception: return []
-    m = re.search(r"const SLOW_SUITES=new Set\(\[(.*?)\]\);", src, re.S)
-    if not m: return []
-    return re.findall(r'"((?:[^"\\]|\\.)*)"', m.group(1))
+    # M442: ярус объявляет сам набор литералом за именем — suite("имя",{tier:"heavy"},…);
+    # набор «ярусы: …» в 90-harness сверяет, что эта регулярка видит каждый тяжёлый
+    names = re.findall(r'suite\(\s*"((?:[^"\\]|\\.)*)"\s*,\s*\{[^{}]*?\btier\s*:\s*"heavy"', src)
+    return [json.loads('"' + n + '"') for n in names]
 
 def unit_id(kind, arg): return kind + (":" + arg if arg else "")
 

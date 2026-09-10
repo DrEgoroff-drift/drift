@@ -322,7 +322,7 @@ TEST_SUITES.push(()=>suite("база M406: пеленг без дальност�
 
 TEST_SUITES.push(()=>suite("база M406: у прилавка его нет, а в его системе — есть",()=>{
   resetWorld();
-  const n=(typeof baseShift==="function")?baseShift():0;
+  const n=baseShift();
   const W=mgrWhere(n);
   const sysHere=getSystem(W.sx,W.sy);
   const here=mgrCandidatesHere(sysHere);

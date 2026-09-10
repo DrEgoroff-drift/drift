@@ -24,19 +24,16 @@ function fuzzN(){
    тропу, а не новые. Ручка `?fseed=N` (в PowerShell `test.ps1 -Fuzz N -Seed M`)
    даёт другую тропу целиком; по умолчанию зерно прежнее, чтобы обычный прогон
    на сборке оставался тем же самым и повторялся точь-в-точь. */
-function fuzzSeed(){
-  const m=/[?&]fseed=(\d+)/.exec(location.search);
-  return m?(+m[1]>>>0):0;
-}
+function fuzzSeed(){return T.urlSeed();}
 /* ── сцены берём у прибора кадра (28y-look) ──
    Список сцен один на всех: им пользуется и `lookAll`, и фуззер. Свой список
    здесь уже был и уже разошёлся бы — правило то же, что у развилки режимов:
    у вещи один хозяин. Изоляция у каждого своя: прибор снимает и возвращает
    сохранение, тесты чистят мир `resetWorld`. */
 function fuzzScenes(){
-  return lookScenes().map(sc=>({id:sc.id,set:()=>{resetWorld();return sc.set();}}));
+  return T.scenes().map(id=>({id,set:()=>T.go(id)}));
 }
-TEST_SUITES.push(()=>suite("фуззер: режимы под случайными руками",()=>{
+TEST_SUITES.push(()=>suite("фуззер: режимы под случайными руками",{tier:"heavy"},()=>{
   const N=fuzzN(),bad=[];
   let ran=0,skipped=[];
   for(const sc of fuzzScenes()){
@@ -81,36 +78,8 @@ TEST_SUITES.push(()=>suite("фуззер: режимы под случайным
    есть половина кода в нём просто не выполняется. Автор же играет вечерами, и
    его зависание пришло именно оттуда: в сочетании состояний, которого руками
    не набрать. Ставим «прожитое» состояние и гоняем по нему то же самое. */
-function fuzzRich(){
-  G.credits=500000;G.data=4000;
-  G.mods={engine:3,tank:3,hold:3,armor:2,drill:3,hyper:2,weapon:2};
-  G.modsOwned={engine:3,tank:3,hold:3,armor:2,drill:3,hyper:2,weapon:2};
-  G.tech=new Set(["synth","beacon","radar"]);
-  G.home=homeInit();G.home.tier=6;G.home.sx=G.sx;G.home.sy=G.sy;
-  /* собранное: редкости, куски отчёта, узлы — каждое со своим экраном и своей
-     строкой в интерфейсе */
-  for(let i=0;i<40;i++)if(typeof rareTake==="function")rareTake("poi",(i*7919)>>>0);
-  for(let i=0;i<30;i++)if(typeof loreTake==="function")loreTake((i*104729)>>>0);
-  for(let i=0;i<12;i++)if(typeof nodeDrop==="function")nodeDrop("в аномалии",1,(i*31+7)>>>0);
-  /* осмотренные памятники: та самая ветка, на которой автор поймал зависание */
-  if(typeof poiInspect==="function")
-    for(const k of Object.keys(typeof POI_FIND==="object"?POI_FIND:{}))
-      poiInspect({k,seed:(k.length*2654435761)>>>0,ru:POI_FIND[k].ru});
-  /* люди и управляющий */
-  if(typeof genMgr==="function"&&typeof hireMgr==="function"){
-    const m=genMgr(12345,["fact"]);if(m)try{hireMgr(m);}catch(e){}
-  }
-  /* дроны в рейсе — и в этой системе, и в соседней */
-  if(typeof droneNextId==="function"){
-    const now=clockNow();
-    G.droneInventory=2;
-    G.drones=[0,1,2].map(i=>({id:i+1,sx:G.sx,sy:G.sy,pi:i%2,res:["iron","titan","crystal"][i],
-      rate:.6,pool:150,soldAtMs:now,t0:now-9000*i,lastMs:now-9000*i,bornMs:now-3600000,
-      trips:3+i,down:i===2?now+300000:0,sold:20,earned:900,carry:.4}));
-  }
-  if(typeof tickDrones==="function")tickDrones();
-}
-TEST_SUITES.push(()=>suite("фуззер: прожитый мир",()=>{
+function fuzzRich(){T.give("rich");}   /* тело — в инструментах (90a-tools, M442) */
+TEST_SUITES.push(()=>suite("фуззер: прожитый мир",{tier:"browser"},()=>{
   const N=Math.min(fuzzN(),600),bad=[];let ran=0;
   const scenes=fuzzScenes().filter(s=>["system","surface","dig","cave","map"].indexOf(s.id)>=0);
   for(const sc of scenes){
@@ -146,7 +115,7 @@ TEST_SUITES.push(()=>suite("фуззер: прожитый мир",()=>{
    РЕЙСЫ — строка маршрута падала на неизвестном ключе груза и уносила весь
    стол. Проверка дешёвая: пройти по всем закладкам стола и по всем вкладкам
    станции на прожитом мире и убедиться, что каждая нарисовалась. */
-TEST_SUITES.push(()=>suite("вкладки стола и станции рисуются на прожитом мире",()=>{
+TEST_SUITES.push(()=>suite("вкладки стола и станции рисуются на прожитом мире",{tier:"browser"},()=>{
   resetWorld();fuzzRich();
   const bad=[];
   const box=document.getElementById("loglist");
@@ -179,7 +148,7 @@ TEST_SUITES.push(()=>suite("вкладки стола и станции рису
    как зависание кадра, а обработчик нажатия живёт вне кадра, и до M234 его
    исключение не ловил никто. Проходим по кнопкам стола и станции на прожитом
    мире и жмём каждую. Проверяется не результат, а то, что нажатие не бросает. */
-TEST_SUITES.push(()=>suite("тычок в каждую кнопку стола и станции",()=>{
+TEST_SUITES.push(()=>suite("тычок в каждую кнопку стола и станции",{tier:"heavy"},()=>{
   resetWorld();fuzzRich();
   const bad=[];let clicks=0;
   const press=(sel,label,limit)=>{
@@ -219,7 +188,7 @@ TEST_SUITES.push(()=>suite("тычок в каждую кнопку стола �
    `look()` — то же для картинки, что `prof()` для скорости: он не судит, он
    меряет. Тест проверяет не красоту (её числа сейчас и не сходятся), а что
    прибор считает и что прогон по всем сценам возвращает мир на место. */
-TEST_SUITES.push(()=>suite("look(): прибор кадра меряет и не портит мир",()=>{
+TEST_SUITES.push(()=>suite("look(): прибор кадра меряет и не портит мир",{tier:"heavy"},()=>{
   resetWorld();
   const scenes=lookScenes();
   ok(scenes.length>=8,"сцен в списке: "+scenes.length);

@@ -9,7 +9,7 @@ function fxWorld(){
      оставляет борт там, где его положил мир, и в двух ярусах это разные места */
   G.sx=0;G.sy=0;
   try{localStorage.removeItem(CHRON_KEY);}catch(e){}
-  if(typeof WAR_LED_CACHE!=="undefined")WAR_LED_CACHE=null;
+  WAR_LED_CACHE=null;
   /* летопись — тихая и замороженная из resetWorld (M412): происшествия
      наборы ставят сами через fxInc, а не берут из календаря */
   return G;
@@ -83,7 +83,7 @@ TEST_SUITES.push(()=>suite("общество M383: забастовка, пра�
   eq(socWageMul(),1,"труд по обычной цене");
   eq(socPirateMul(0,0),1,"и грабят как обычно");
   const own=chronOwner(0,0);
-  if(own<0){ok(true,"мы вне круга летописи — правила проверены ниже на числах");return;}
+  if(!ok(own>=0,"стартовая система в круге летописи"))return;
   /* забастовка закрывает всё, кроме заправки */
   fxInc("strike",own);
   /* Директор объявляет забастовки и сам: наша строка идёт последней и потому
@@ -122,7 +122,7 @@ TEST_SUITES.push(()=>suite("общество M383: забастовка, пра�
 TEST_SUITES.push(()=>suite("природа M384: буря, рой, истощение, находка",()=>{
   fxWorld();
   const own=chronOwner(0,0);
-  if(own<0){ok(true,"вне круга летописи");return;}
+  if(!ok(own>=0,"стартовая система в круге летописи"))return;
   /* без происшествий ничего не идёт */
   eq(natStormHere(0,0),false,"бури нет");
   eq(natSwarmHere(0,0),false,"роя нет");
@@ -161,7 +161,7 @@ TEST_SUITES.push(()=>suite("природа M384: буря, рой, истоще�
 TEST_SUITES.push(()=>suite("власть M385: переворот, чистка, преемник и молчание",()=>{
   fxWorld();
   const own=chronOwner(0,0);
-  if(own<0){ok(true,"вне круга летописи");return;}
+  if(!ok(own>=0,"стартовая система в круге летописи"))return;
   /* чистка и наследник меняют САМО состояние, поэтому живут в повторе */
   const st=chronFresh();
   st.powers[0].str=900;
@@ -182,7 +182,7 @@ TEST_SUITES.push(()=>suite("власть M385: переворот, чистка,
   /* переворот переворачивает курс — и только он это может */
   fxWorld();
   try{localStorage.removeItem(CHRON_KEY);}catch(e){}
-  if(typeof WAR_LED_CACHE!=="undefined")WAR_LED_CACHE=null;
+  WAR_LED_CACHE=null;
   const N=chronNow();
   const Q=voteQuestion(MAKER_KEYS[own],N);
   const v={};v[Q.key]={p:{}};v[Q.key].p[Q.picks[0][0]]=9;
@@ -199,7 +199,7 @@ TEST_SUITES.push(()=>suite("власть M385: переворот, чистка,
   eq(chronWaveLines(undefined,MAKER_KEYS[own],3).length,0,"и волна молчит");
   ok(chronWaveLines(undefined,MAKER_KEYS[(own+1)%6],3).length>=0,"а соседняя говорит как обычно");
   try{localStorage.removeItem(CHRON_KEY);}catch(e){}
-  if(typeof WAR_LED_CACHE!=="undefined")WAR_LED_CACHE=null;
+  WAR_LED_CACHE=null;
 }));
 
 TEST_SUITES.push(()=>suite("летопись M385: повтор не зовёт сам себя",()=>{
@@ -208,9 +208,9 @@ TEST_SUITES.push(()=>suite("летопись M385: повтор не зовёт 
      состояние передаётся параметром. Ниже — и правило, и предохранитель. */
   fxWorld();
   const own=chronOwner(0,0);
-  if(own<0){ok(true,"вне круга летописи");return;}
+  if(!ok(own>=0,"стартовая система в круге летописи"))return;
   try{localStorage.removeItem(CHRON_KEY);}catch(e){}
-  if(typeof WAR_LED_CACHE!=="undefined")WAR_LED_CACHE=null;
+  WAR_LED_CACHE=null;
   const N=chronNow();
   const Q=voteQuestion(MAKER_KEYS[own],N);
   const v={};v[Q.key]={p:{}};v[Q.key].p[Q.picks[0][0]]=9;
@@ -236,7 +236,7 @@ TEST_SUITES.push(()=>suite("летопись M385: повтор не зовёт 
   const before=chronState();
   ok(!!before&&before.powers,"состояние на руках");
   try{localStorage.removeItem(CHRON_KEY);}catch(e){}
-  if(typeof WAR_LED_CACHE!=="undefined")WAR_LED_CACHE=null;
+  WAR_LED_CACHE=null;
 }));
 
 TEST_SUITES.push(()=>suite("дипломатия M386: ультиматум, посольство и письмо",()=>{
@@ -441,7 +441,7 @@ TEST_SUITES.push(()=>suite("дипломатия M386: ультиматум, п�
     eq(dipSwapDue(),null,"один обмен на одно перемирие");
   }
   try{localStorage.removeItem(CHRON_KEY);}catch(e){}
-  if(typeof WAR_LED_CACHE!=="undefined")WAR_LED_CACHE=null;
+  WAR_LED_CACHE=null;
 }));
 /* нота в ДАННОМ состоянии, без пересчёта: тесты шагают своим состоянием */
 function chronUltBetweenIn(st,a,b){
@@ -477,19 +477,19 @@ TEST_SUITES.push(()=>suite("безопасность M387: король, шпи�
     ok(secNoPickets(A.x,A.y),"а пикетов державы нет вовсе");
     eq(secPirateMul(A.x+20,A.y+20),1,"по соседству всё как обычно");
     /* толпа снимает его расчисткой: счётчик из ведомостей, как у обряда */
-    if(typeof WAR_LED_CACHE!=="undefined")WAR_LED_CACHE=null;
+    WAR_LED_CACHE=null;
     const body={};body[A.x+","+A.y]={clear:{q:SEC_KING_GOAL,a:["a","b"]}};
     warLedPut(n0+1,body);
     eq(secKingCount(A),SEC_KING_GOAL,"расчистка сосчитана");
     ok(!secKingHere(A.x,A.y),"счётчик добран — короля нет");
     /* чужая расчистка вне области не считается */
-    if(typeof WAR_LED_CACHE!=="undefined")WAR_LED_CACHE=null;
+    WAR_LED_CACHE=null;
     const far={};far[(A.x+20)+","+(A.y+20)]={clear:{q:SEC_KING_GOAL,a:["a"]}};
     warLedPut(n0+1,far);
     eq(secKingCount(A),0,"из соседней области не считается");
   }finally{chronNow=savedNow;}
   try{localStorage.removeItem(CHRON_KEY);}catch(e){}
-  if(typeof WAR_LED_CACHE!=="undefined")WAR_LED_CACHE=null;
+  WAR_LED_CACHE=null;
   /* ── шпион ──
      Цены врут по каждому товару в свою сторону и не больше чем на двенадцать
      сотых. Главное: обе стороны прилавка двигаются вместе. */
@@ -536,7 +536,7 @@ TEST_SUITES.push(()=>suite("безопасность M387: король, шпи�
     ok(powScandalOn(by),"утечка: волна молчит");
     ok(powWaveSilent(by),"и молчание слышно");
     eq(secRelayCount(by),0,"чинить ещё не начинали");
-    if(typeof WAR_LED_CACHE!=="undefined")WAR_LED_CACHE=null;
+    WAR_LED_CACHE=null;
     const N=chronNow(),body={};
     body["0,0"]={scan:{q:SEC_RELAY_GOAL,a:["a","b","c"]}};
     warLedPut(N,body);
@@ -544,7 +544,7 @@ TEST_SUITES.push(()=>suite("безопасность M387: король, шпи�
     ok(secRelayFixed(by),"ретранслятор починен");
     ok(!powWaveSilent(by),"и волна заговорила");
     ok(chronWaveLines(undefined,by,3).length>=0,"строки снова берутся");
-    if(typeof WAR_LED_CACHE!=="undefined")WAR_LED_CACHE=null;
+    WAR_LED_CACHE=null;
   }
   /* ── досмотр ── */
   fxWorld();
@@ -568,7 +568,7 @@ TEST_SUITES.push(()=>suite("безопасность M387: король, шпи�
   ok(!hailContraband("gt"),"и досмотру больше нечего сказать");
   G.smugBy=undefined;G.smugN=undefined;
   try{localStorage.removeItem(CHRON_KEY);}catch(e){}
-  if(typeof WAR_LED_CACHE!=="undefined")WAR_LED_CACHE=null;
+  WAR_LED_CACHE=null;
 }));
 
 TEST_SUITES.push(()=>suite("культура M388: свод, серия, гонка и сериал",()=>{
@@ -603,7 +603,7 @@ TEST_SUITES.push(()=>suite("культура M388: свод, серия, гон�
   const own=chronOwner(0,0);
   if(own>=0){
     fxInc("spy",own);
-    if(typeof SEC_SPY_CACHE!=="undefined")SEC_SPY_CACHE={k:"",v:false};
+    SEC_SPY_CACHE={k:"",v:false};
     const by=MAKER_KEYS[own];
     if(powWaveSilent(by))eq(cultPlayLine(by,0),"","на молчащей волне спектакля нет");
   }
@@ -634,7 +634,7 @@ TEST_SUITES.push(()=>suite("культура M388: свод, серия, гон�
     eq(cultExpCount(A),0,"сканирований пока нет");
     ok(!cultExpFound(),"и находки нет");
     eq(cultLongDue(),null,"и обрывок не всплыл");
-    if(typeof WAR_LED_CACHE!=="undefined")WAR_LED_CACHE=null;
+    WAR_LED_CACHE=null;
     const body={};body["0,0"]={scan:{q:CULT_EXP_GOAL,a:["a","b"]}};
     warLedPut(chronNow(),body);
     eq(cultExpCount(A),CULT_EXP_GOAL,"сканирования сосчитаны");
@@ -648,7 +648,7 @@ TEST_SUITES.push(()=>suite("культура M388: свод, серия, гон�
       eq(G.longHod.length,1,"на полке ровно один");
     }
     G.longHod=[];
-    if(typeof WAR_LED_CACHE!=="undefined")WAR_LED_CACHE=null;
+    WAR_LED_CACHE=null;
   }
   /* ── новая серия ──
      Месяц у ОДНОЙ державы, и имя у серии одно на весь месяц. */
@@ -699,5 +699,5 @@ TEST_SUITES.push(()=>suite("культура M388: свод, серия, гон�
   }finally{chronNow=savedNow;}
   G.race=null;G.raceBest=undefined;
   try{localStorage.removeItem(CHRON_KEY);}catch(e){}
-  if(typeof WAR_LED_CACHE!=="undefined")WAR_LED_CACHE=null;
+  WAR_LED_CACHE=null;
 }));

@@ -1,11 +1,11 @@
 /* ══════════════ автотесты: стенгазета и концерт (M165) ══════════════ */
-TEST_SUITES.push(()=>suite("стенгазета: лист рисуется из фактов, карикатура при худой репутации — на вас",()=>{
+TEST_SUITES.push(()=>suite("стенгазета: лист рисуется из фактов, карикатура при худой репутации — на вас",{tier:"browser"},()=>{
   resetWorld();
   const S=G.sys.station?G.sys:null;ok(!!S,"станция есть");
   G.sx=S.sx;G.sy=S.sy;G.st=S.station;
   G.rep={};
   ok(!wallHero().you,"с обычной репутацией карикатура не на вас");
-  if(typeof repAdd==="function"){repAdd(-5,S);ok(wallHero().you===1,"с худой — на вас");G.rep={};}
+  repAdd(-5,S);ok(wallHero().you===1,"с худой — на вас");G.rep={};
   const cv=document.createElement("canvas");cv.width=460;cv.height=150;
   drawWallPaper(cv.getContext("2d"),460,150);
   const px=cv.getContext("2d").getImageData(230,15,1,1).data;
@@ -13,7 +13,7 @@ TEST_SUITES.push(()=>suite("стенгазета: лист рисуется из
   ok(WALL_POEMS.length>=4,"стихи смотрителя есть");
 }));
 
-TEST_SUITES.push(()=>suite("концерт: привет раз в день, три ноты позывного, строка в ЭФИР, Вега слышит",()=>{
+TEST_SUITES.push(()=>suite("концерт: привет раз в день, три ноты позывного, строка в ЭФИР, Вега слышит",{tier:"browser"},()=>{
   resetWorld();
   G.concert=null;G.log=[];G.credits=100;
   G.home=homeInit();G.home.tier=7;G.home.sx=G.sx;G.home.sy=G.sy;

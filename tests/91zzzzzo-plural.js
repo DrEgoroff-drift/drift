@@ -50,7 +50,7 @@ TEST_SUITES.push(() => suite("число: правило склонения де
   eq(pl3(102,"метр","метра","метров"),"метра","102 — метра");
 }));
 
-TEST_SUITES.push(() => suite("число: в тексте игры одна форма слова не стоит после разных числительных", () => {
+TEST_SUITES.push(() => suite("число: в тексте игры одна форма слова не стоит после разных числительных",{tier:"heavy"}, () => {
   /* собираем корпус жизнью: журнал за прогон по сценам и все доски экранов */
   const texts=[];
   for(const sc of lookScenes()){
@@ -58,14 +58,14 @@ TEST_SUITES.push(() => suite("число: в тексте игры одна фо
     let set=true;
     try{ set=sc.set()!==false; }catch(e){ continue; }
     if(!set||G.mode==="none")continue;
-    try{ if(typeof e2eHands==="function")e2eHands(sc.id.length+5,50,()=>stepWorld(1)); }catch(e){ }
+    try{ e2eHands(sc.id.length+5,50,()=>stepWorld(1)); }catch(e){ }
     for(const row of (G.log||[]))texts.push(String(row.s||""));
     texts.push(String(G.prompt||""),String(G.msg||""));
   }
   resetWorld();
-  if(typeof e2eLate==="function")e2eLate();else fuzzRich();
+  e2eLate();
   const grab=(sel)=>{const b=document.querySelector(sel);if(b)texts.push(String(b.textContent||""));};
-  if(typeof tableToggle==="function"){
+  {
     tableToggle(true);
     for(const t of [...document.querySelectorAll("#tableTabs button")].map(x=>x.dataset.tab)){
       try{ tableSetTab(t); }catch(e){ continue; }
@@ -73,14 +73,14 @@ TEST_SUITES.push(() => suite("число: в тексте игры одна фо
     }
     tableToggle(false);
   }
-  if(G.sys.station&&typeof openStation==="function"){
+  if(G.sys.station){
     G.st=G.sys.station;G.mode="dock";
     try{ openStation(); }catch(e){ }
     for(const t of [...document.querySelectorAll("#stTabs button")].map(x=>x.dataset.tab)){
       try{ tab=t;renderTab(); }catch(e){ continue; }
       grab("#stBody");
     }
-    if(typeof closeStation==="function")try{closeStation();}catch(e){}
+    try{closeStation();}catch(e){}
     tab="market";G.mode="system";G.st=null;
   }
   document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
@@ -110,6 +110,10 @@ TEST_SUITES.push(() => suite("число: в тексте игры одна фо
     const head=corpus.slice(Math.max(0,m.index-24),m.index);
     const sign=head.slice(-1);
     if(sign==="+"||sign==="-"||sign==="−")continue;               /* прибавка, не счёт */
+    /* дробная часть — тоже не счёт: в «+0.32 регенерация» регулярка видела
+       «32 регенерация», а в «+0.77» — «77», и одна форма «разъезжалась» по
+       разрядам (перемешка ?shuffle=7 вывела на экран станцию с щитом, M442) */
+    if((sign==="."||sign===",")&&/\d$/.test(head.slice(0,-1)))continue;
     const words=head.toLowerCase().match(/[а-яё]+/g);
     if(words&&PREP.has(words[words.length-1])&&/[а-яё]\s*$/i.test(head))continue;
     pairs++;

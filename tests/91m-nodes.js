@@ -135,7 +135,7 @@ TEST_SUITES.push(()=>suite("кантина: дела с ответом и отл
 }));
 
 /* ── репутация и хвост набора ── */
-TEST_SUITES.push(()=>suite("репутация станции и последние узлы",()=>{
+TEST_SUITES.push(()=>suite("репутация станции и последние узлы",{tier:"browser"},()=>{
   resetWorld();
   G.rep={};G.credits=1e6;
   const sys=(function(){for(let dx=-8;dx<=8;dx++)for(let dy=-8;dy<=8;dy++){
@@ -214,10 +214,13 @@ TEST_SUITES.push(()=>suite("узлы: каждое место падения ж�
 
 /* ── памятники стали местом, а не декорацией ── */
 TEST_SUITES.push(()=>suite("достопримечательности осматриваются",()=>{
-  resetWorld();landOnTestPlanet();
-  const S=G.surf,tr=S.tr;
-  const list=(tr.poi||[]);
-  if(!list.length){ok(true,"на этой планете памятников нет — проверять нечего");return;}
+  /* памятники вписывает заход (startLanding → genPOI), а landOnTestPlanet
+     садится мимо него: на полосе их не было вовсе, и весь набор годами молча
+     уходил в пропуск (M442) — садимся по-настоящему, где памятник есть */
+  const S=T.landWhere(s=>(s.tr.poi||[]).length>0);
+  if(!ok(S,"полоса с памятником нашлась по кольцам"))return;
+  const tr=S.tr;
+  const list=tr.poi;
   const q=list[0];
   eq(poiNear({x:q.x+4000},tr),null,"издалека ничего не найдено");
   ok(poiNear({x:q.x},tr),"вплотную — найдено");

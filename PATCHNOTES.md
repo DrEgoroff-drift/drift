@@ -6,6 +6,21 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.430.0 - one set of hands and eyes for every test, and rules the harness enforces itself (M442)
+
+`tests/90a-tools.js` gathers what five suites each wrote for themselves: actuators `T.go(scene, seed)`,
+`press`, `hands`, `tap`, `drag`, `wheel`, `wait`, `advance`, `window`, `give`, `board`/`leave`, and
+observers `T.frame`/`diff`, `state` (the game's `stateHash()`), `look`, `ledger`, `text`, `controls`,
+`clock`; the old names (`fuzzRich`, `prSpoke`, `e2eHands`, `clkShift` …) stay as one-line wrappers, and
+the clock tools move the game's own clock instead of patching `Date.now`. `docs/stand.py` drives one
+headless Chrome over CDP (stdlib websocket) through every scene and window size. A suite now declares
+its tier in place — `suite(name, {tier, win, stage}, fn)` — and `SLOW_SUITES`/`NODE_BROWSER`/`NODE_SKIP`
+are gone; `stage` is quarantine (reported on its own line, never the verdict). A suite with no assertion
+is red, and a net over the test sources keeps `ok(true` and `typeof`-guards at zero (there were 126 and
+190). `?shuffle=seed` (`test.ps1 -Shuffle N`) runs the suites in a reproducible order and `?pick=i,j`
+bisects it; the shuffle found page state outside `G` leaking between suites (a picked hull, a stuck
+«ghost click» mark that swallowed every button for the rest of the page) — restored after every suite now.
+
 ## 0.429.0 - the tests judge laws, not cases: four detectors and the ten bugs they found first (M443)
 
 After every step of every `lookScenes` scene × five gestures (idle, W, A, drag, wheel/«+»), plus the menu

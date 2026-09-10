@@ -35,7 +35,9 @@ costs about what `--disable-gpu` costs on the laptop.
 2. **`light i/6`** — the browser tier in six shards, one Chrome each (~10 s a shard).
 3. **`mobile`** and **`tall`** — the same browser tier in a 390×844 and a 1440×1440 window:
    the phone guards and the UI-zoom ceiling that the laptop never runs by default.
-4. **`heavy <name>`** — every name in `SLOW_SUITES`, one Chrome per suite.
+4. **`heavy <name>`** — every suite declared `{tier:"heavy"}` (M442: `lab.py heavy` reads them
+   from `tests.html` with a regex; the suite «ярусы: …» in `90-harness` fails if a heavy suite is
+   written in a form that regex cannot see), one Chrome per suite.
 5. **`fuzz <seed>`** — the rest of the budget: the fuzzer on fresh seeds (`day-of-year × 100 +
    n`, so every night starts elsewhere), until the hunt is exhausted (below).
 

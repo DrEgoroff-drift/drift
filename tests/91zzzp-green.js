@@ -52,7 +52,7 @@ TEST_SUITES.push(()=>suite("грядка: растёт настоящими су
   eq(G.credits,cr,"денег не приносит");
   eq(G.data,dt,"данных тоже");
 }));
-TEST_SUITES.push(()=>suite("грядка: форма от имени, и сохранение её помнит",()=>{
+TEST_SUITES.push(()=>suite("грядка: форма от имени, и сохранение её помнит",{tier:"browser"},()=>{
   resetWorld();
   G.green=null;
   const p={T:TYPES.terran,type:"terran"};

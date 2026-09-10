@@ -3,7 +3,7 @@
    безопасна: оффлайн молчит, платят грузом, людей не оставляют, знак и рука
    выводятся из метки и не дрожат, поднятое попадает в трюм и в тетрадь. */
 
-TEST_SUITES.push(()=>suite("след: рука и знак выводятся, а не выбираются",()=>{
+TEST_SUITES.push(()=>suite("след: рука и знак выводятся, а не выбираются",{tier:"browser"},()=>{
   resetWorld();
   const id="a1b2c3d4e5f6";
   const m1=traceMarkOf(id),m2=traceMarkOf(id);
@@ -14,21 +14,21 @@ TEST_SUITES.push(()=>suite("след: рука и знак выводятся, �
   eq(traceHand(id),h,"рука не дрожит");
   ok(traceMarkOf("0badf00d")!==m1||traceHand("0badf00d")!==h,"другая метка — другой след");
   eq(TRACE_MARK.length,12,"двенадцать фигур");
-  let named=0;for(const M of TRACE_MARK)if(M.ru&&typeof M.d==="function")named++;
+  let named=0;for(const M of TRACE_MARK)if(M.ru&&M.d instanceof Function)named++;
   eq(named,TRACE_MARK.length,"у каждой фигуры имя и штрихи");
 }));
 
-TEST_SUITES.push(()=>suite("след: оффлайн его нет вовсе",()=>{
+TEST_SUITES.push(()=>suite("след: оффлайн его нет вовсе",{tier:"browser"},()=>{
   resetWorld();
   /* file:// — ни следов, ни действия; это норма, а не урезанный режим */
-  if(location.protocol.indexOf("http")!==0){
+  if(ok(location.protocol.indexOf("http")!==0,"прогон со страницы на диске (file://)")){
     eq(traceOn(),false,"на file:// след выключен");
     eq(traceCanLeave(),null,"и оставить нечего");
-  }else ok(true,"страница по http — проверка оффлайна пропущена");
+  }
   eq(traceHere(),null,"без ответа сервера на земле ничего не лежит");
 }));
 
-TEST_SUITES.push(()=>suite("след: платят грузом, и не людьми",()=>{
+TEST_SUITES.push(()=>suite("след: платят грузом, и не людьми",{tier:"browser"},()=>{
   resetWorld();
   for(const k of RES_KEYS)G.cargo[k]=0;
   eq(traceBigRes(),null,"пустой трюм платить не может");
@@ -42,7 +42,7 @@ TEST_SUITES.push(()=>suite("след: платят грузом, и не люд�
   eq(traceBigRes().n,TRACE_MAX_UNITS,"больше пяти единиц за раз не оставляют");
 }));
 
-TEST_SUITES.push(()=>suite("след: три в сутки",()=>{
+TEST_SUITES.push(()=>suite("след: три в сутки",{tier:"browser"},()=>{
   resetWorld();
   const T=traceAll();
   T.day=traceToday();T.left=0;
@@ -53,7 +53,7 @@ TEST_SUITES.push(()=>suite("след: три в сутки",()=>{
   eq(traceLeftToday(),TRACE_CAP_DAY,"новый день обнуляет счёт");
 }));
 
-TEST_SUITES.push(()=>suite("след: поднятое ложится в трюм и в тетрадь",()=>{
+TEST_SUITES.push(()=>suite("след: поднятое ложится в трюм и в тетрадь",{tier:"browser"},()=>{
   resetWorld();
   landOnTestPlanet();
   const S=G.surf,tr=S.tr;
@@ -81,7 +81,7 @@ TEST_SUITES.push(()=>suite("след: поднятое ложится в трю�
   eq(T.seen,2,"счёт поднятых следов идёт");
 }));
 
-TEST_SUITES.push(()=>suite("след: переживает сохранение",()=>{
+TEST_SUITES.push(()=>suite("след: переживает сохранение",{tier:"browser"},()=>{
   resetWorld();
   const T=traceAll();
   T.day="2026-1-1";T.left=2;T.hands={"beefed":3};T.seen=5;

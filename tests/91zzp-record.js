@@ -1,5 +1,5 @@
 /* ══════════════ автотесты: трудовая книжка (M161) ══════════════ */
-TEST_SUITES.push(()=>suite("книжка: записи делают другие, доска почёта с трёх записей, стаж в годах",()=>{
+TEST_SUITES.push(()=>suite("книжка: записи делают другие, доска почёта с трёх записей, стаж в годах",{tier:"browser"},()=>{
   resetWorld();
   G.record=null;G.things=[];
   const R=recordAll();
@@ -19,7 +19,7 @@ TEST_SUITES.push(()=>suite("книжка: записи делают другие
   eq(recordAll().e.length,3,"книжка пережила сохранение");
 }));
 
-TEST_SUITES.push(()=>suite("книжка: медкомиссия через 12 лет на стойке ядра — пенсия, последняя запись попугая",()=>{
+TEST_SUITES.push(()=>suite("книжка: медкомиссия через 12 лет на стойке ядра — пенсия, последняя запись попугая",{tier:"browser"},()=>{
   resetWorld();
   G.record=null;G.things=[];G.vega={stage:4,parrot2:1,broken:[],out:{},aboard:0,att:0,away:0,homeDays:0,evict:0,mood:1,offend:-1,lastDay:celDay(),calls:0,said:0};
   const at=regionOfTheme("hours");const R=regionAt(at.rx*REGION_SPAN,at.ry*REGION_SPAN);

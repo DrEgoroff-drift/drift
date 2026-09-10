@@ -1,5 +1,5 @@
 /* ══════════════ автотесты: QSL-карточки (M203) ══════════════ */
-TEST_SUITES.push(()=>suite("карточки: на том конце только люди игры, ни одного живого",()=>{
+TEST_SUITES.push(()=>suite("карточки: на том конце только люди игры, ни одного живого",{tier:"browser"},()=>{
   resetWorld();
   ok(QSL_OPS.length>=18,"корреспондентов не меньше восемнадцати ("+QSL_OPS.length+")");
   const ids={},calls={};
@@ -16,7 +16,7 @@ TEST_SUITES.push(()=>suite("карточки: на том конце тольк�
   ok(QSL_OPS.some(o=>/экспедиц/.test(o.ru)),"экспедиция есть");
   ok(QSL_OPS.some(o=>/посёлок/.test(o.ru)),"посёлки есть");
 }));
-TEST_SUITES.push(()=>suite("карточки: услышал — записал, послал — ждёшь неделями",()=>{
+TEST_SUITES.push(()=>suite("карточки: услышал — записал, послал — ждёшь неделями",{tier:"browser"},()=>{
   resetWorld();
   G.qsl=null;G.things=[];G.log=[];G.record=null;
   eq(Object.keys(qslAll().heard).length,0,"позывных не записано");
@@ -41,7 +41,7 @@ TEST_SUITES.push(()=>suite("карточки: услышал — записал,
   eq(qslTick(),0,"дважды не приходит");
   eq(qslWall().length,1,"на стене одна");
 }));
-TEST_SUITES.push(()=>suite("карточки: стена собирается целиком и переживает сохранение",()=>{
+TEST_SUITES.push(()=>suite("карточки: стена собирается целиком и переживает сохранение",{tier:"browser"},()=>{
   resetWorld();
   G.qsl=null;G.things=[];G.record=null;
   for(const o of QSL_OPS){qslHear(o.id);qslSend(o.id);qslAll().sent[o.id].due=now()-1;}

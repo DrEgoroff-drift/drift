@@ -52,8 +52,8 @@ TEST_SUITES.push(() => suite("время: сейв с чужими часами 
     /* живём: кадры, ленивые круги дронов, новости */
     try {
       for (let i = 0; i < 200; i++) { stepWorld(1); G.t += 1; }
-      if (typeof tickDrones === "function") tickDrones();
-      if (typeof newsTick === "function") newsTick();
+      tickDrones();
+      newsTick();
       for (let i = 0; i < 100; i++) { stepWorld(1); G.t += 1; }
       drawWorld();
     } catch (e) { bad.push(R.ru + " · жизнь после загрузки: " + e.message + " | " + String(e.stack || "").split("\n")[1]); continue; }
@@ -78,10 +78,10 @@ TEST_SUITES.push(() => suite("время: сейв с чужими часами 
    часов; если часы уехали назад, смена уедет назад тоже — и всё, что «уже
    сдано в эту смену», внезапно окажется несданным. Это не падение, это тихая
    выдача второй нормы с надбавкой: та же печать денег, только через часы. */
-TEST_SUITES.push(() => suite("время: смена станции не отматывается назад вместе с часами", () => {
+TEST_SUITES.push(() => suite("время: смена станции не отматывается назад вместе с часами",{tier:"browser"}, () => {
   resetWorld(); e2eLate();
   const sys = G.sys;
-  if (!sys.station || typeof appetiteOf !== "function" || !appetiteOf(sys)) { ok(true, "у стартовой станции нет аппетита — проверять нечего"); resetWorld(); return; }
+  if (!ok(sys.station && appetiteOf(sys), "у стартовой станции есть аппетит")) { resetWorld(); return; }
   const A = appetiteOf(sys), k = Object.keys(A)[0];
   const left0 = appetiteLeft(sys, k);
   ok(left0 > 0, "норма смены есть: " + left0 + " ед. " + k);

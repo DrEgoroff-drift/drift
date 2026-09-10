@@ -1,5 +1,5 @@
 /* ══════════════ автотесты: интерфейс: 44 px, непересечение, кнопка называет действие, разделы ══════════════ */
-TEST_SUITES.push(()=>suite("интерфейс: во что тыкают пальцем — не меньше 44 px",()=>{
+TEST_SUITES.push(()=>suite("интерфейс: во что тыкают пальцем — не меньше 44 px",{tier:"browser"},()=>{
   resetWorld();
   /* Прежний правый борт был столбиком 27-пиксельных кнопок: на ходу по ним
      промахиваешься. Порог в 44 px — общий для сенсорных интерфейсов, и он
@@ -24,7 +24,7 @@ TEST_SUITES.push(()=>suite("интерфейс: во что тыкают пал�
    СЕРЕДИНЫ и держит состояние в верхней полосе, а органы управления — в
    нижней. Правило, которое он охраняет: верх кадра отвечает на «кто я и
    где я», низ — на «что я могу», между ними мир. */
-TEST_SUITES.push(()=>suite("интерфейс: приборы и кнопки не наезжают друг на друга",()=>{
+TEST_SUITES.push(()=>suite("интерфейс: приборы и кнопки не наезжают друг на друга",{tier:"browser"},()=>{
   resetWorld();
   document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
   G.mode="system";
@@ -49,16 +49,16 @@ TEST_SUITES.push(()=>suite("интерфейс: приборы и кнопки �
   eq(clash.join(", "),"","ничто не наезжает друг на друга");
   /* ширину экрана проверяем только когда он вообще разложен: в свёрнутой
      вкладке innerWidth бывает нулём, и тогда «за краем» оказывается всё */
-  if(innerWidth>=280){
+  if(ok(innerWidth>=280,"экран разложен по ширине: "+innerWidth+" px")){
     const out=items.filter(i=>i.x<-1||i.x+i.w>innerWidth+1);
     eq(out.map(i=>i.s).join(", "),"","и ничто не уехало за край экрана");
-  }else ok(true,"экран не разложен — проверку ширины пропускаем");
+  }
   /* И главное, ради чего всё двигали. Две зоны и чистая середина:
      состояние (шкалы, место, колодка) держится верхней полосы, органы
      управления (подсказка, пульт) — нижней, а между ними мир. Правый борт
      и пэды в счёт не идут: это кнопки у кромки, правило интерфейса держит
      их там нарочно («две постоянные кнопки на правом краю»). */
-  if(innerHeight>=400){
+  if(ok(innerHeight>=400,"экран разложен по высоте: "+innerHeight+" px")){
     const H=innerHeight;
     const state=[".vitals",".locus",".ipod"], hands=["#prompt","#console"];
     const low=items.filter(i=>state.indexOf(i.s)>=0&&i.y+i.h>H*.30);
@@ -69,7 +69,7 @@ TEST_SUITES.push(()=>suite("интерфейс: приборы и кнопки �
     const mid=items.filter(i=>(state.indexOf(i.s)>=0||hands.indexOf(i.s)>=0)&&
       i.y<H*.55&&i.y+i.h>H*.30);
     eq(mid.map(i=>i.s).join(", "),"","середина кадра свободна");
-  }else ok(true,"экран не разложен — проверку зон пропускаем");
+  }
   /* Читаемость — тоже правило, а не вкус. Панель, которая в покое гаснет до
      трети, автор увидел как «очень плохо не видно»; сторож не даёт вернуть
      это молча. */
@@ -118,7 +118,7 @@ TEST_SUITES.push(()=>suite("интерфейс: приборы не мигают
   G.fuel=st.fuelMax;G.hull=st.hullMax;hud();
 }));
 
-TEST_SUITES.push(()=>suite("интерфейс: кнопка называет действие, а не себя",()=>{
+TEST_SUITES.push(()=>suite("интерфейс: кнопка называет действие, а не себя",{tier:"browser"},()=>{
   resetWorld();
   /* «ДЕЙСТВИЕ» не отвечает ни на один вопрос игрока, «СТЫКОВКА» отвечает
      на все. Глагол берётся из подсказки, чтобы не завести второй источник
@@ -169,7 +169,7 @@ TEST_SUITES.push(()=>suite("язык: числительные согласов�
   eq(pl3(114,"год","года","лет"),"лет","114 лет");
 }));
 
-TEST_SUITES.push(()=>suite("станция: разделы вместо десяти вкладок в ряд",()=>{
+TEST_SUITES.push(()=>suite("станция: разделы вместо десяти вкладок в ряд",{tier:"browser"},()=>{
   resetWorld();
   const S=G.sys.station;
   ok(!!S,"станция есть");
@@ -210,7 +210,7 @@ TEST_SUITES.push(()=>suite("станция: разделы вместо деся
    Что разрешено: номер версии, единицы вроде «кг», римские цифры в именах
    планет (НЕЙЭЛЬ I) и всё, что игрок и должен видеть латиницей. Список
    короткий нарочно — если он начнёт расти, значит правило перестало работать. */
-TEST_SUITES.push(()=>suite("интерфейс: на экранах нет ключей из кода",()=>{
+TEST_SUITES.push(()=>suite("интерфейс: на экранах нет ключей из кода",{tier:"browser"},()=>{
   resetWorld();
   const OK=/^(v?\d[\d.]*|[IVXLC]+|kb|KB|px|fps|GPS|km|QSL)$/;
   const leaks=[];
@@ -253,10 +253,10 @@ TEST_SUITES.push(()=>suite("интерфейс: на экранах нет кл�
    ещё нет (плейтест 26.08.2026). Такое глазами не ловится: элемент выглядит
    как часть игры. Сторож проверяет каждый прямой блок под <body>: на чистом
    старте видно только то, что и должно быть видно. */
-TEST_SUITES.push(()=>suite("интерфейс: на чистом старте в кадре нет лишнего",()=>{
+TEST_SUITES.push(()=>suite("интерфейс: на чистом старте в кадре нет лишнего",{tier:"browser"},()=>{
   resetWorld();
   document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
-  if(typeof tableToggle==="function")tableToggle(false);
+  tableToggle(false);
   G.mode="system";G.parrot=null;hud();
   /* что имеет право висеть над миром с первой секунды */
   const OK=["c","slope","hud","msg","prompt","console","rail","pads","menu"];
@@ -280,7 +280,7 @@ TEST_SUITES.push(()=>suite("интерфейс: на чистом старте �
 /* ══════════════ M236: колесо крутит мир только над миром ══════════════
    Обработчик колеса висит на окне и спрашивал один G.mode: игрок листал колесом
    тетрадь на столе, а карта за спиной уезжала в зум. */
-TEST_SUITES.push(()=>suite("колесо: зум берётся только с канвы",()=>{
+TEST_SUITES.push(()=>suite("колесо: зум берётся только с канвы",{tier:"browser"},()=>{
   resetWorld();
   G.mode="system";
   const wheel=(target)=>target.dispatchEvent(new WheelEvent("wheel",{deltaY:-120,bubbles:true}));
@@ -310,7 +310,7 @@ TEST_SUITES.push(()=>suite("колесо: зум берётся только с 
    прислал этот кадр со словами «всё сбилось и наезжает» (30.08.2026).
    Карта теперь СООБЩАЕТ свои прямоугольники (MAP_BOX), и сторож сравнивает
    их с вёрсткой так же, как панели между собой. */
-TEST_SUITES.push(()=>suite("интерфейс: нарисованное на канве не лезет в вёрстку",()=>{
+TEST_SUITES.push(()=>suite("интерфейс: нарисованное на канве не лезет в вёрстку",{tier:"browser"},()=>{
   resetWorld();
   document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
   G.running=true;G.mode="map";G.sel={x:G.sx,y:G.sy};
@@ -318,8 +318,7 @@ TEST_SUITES.push(()=>suite("интерфейс: нарисованное на к
      чтобы не зависеть от того, как кадр решает, что ему рисовать */
   hud();
   drawMap();
-  ok(typeof MAP_BOX!=="undefined"&&MAP_BOX.length>0,"карта сообщила свои прямоугольники ("+
-    (typeof MAP_BOX!=="undefined"?MAP_BOX.length:0)+")");
+  ok(MAP_BOX.length>0,"карта сообщила свои прямоугольники ("+MAP_BOX.length+")");
   const dom=[];
   for(const sel of ["#prompt","#console",".pads",".rail",".vitals",".locus","#mapaddr"]){   /* поле адреса — тоже вёрстка (M347) */
     const e=document.querySelector(sel);if(!e)continue;
@@ -341,19 +340,27 @@ TEST_SUITES.push(()=>suite("интерфейс: нарисованное на к
    У стола тринадцать закладок, полоса — 777 px, окно телефона — 393. РЕЙСЫ
    стоят восьмыми, то есть за краем: игрок видел содержимое вкладки и ни одной
    подсвеченной закладки — и не понимал, где он (замер 30.08.2026). */
-TEST_SUITES.push(()=>suite("интерфейс: выбранная закладка не стоит за краем",()=>{
+TEST_SUITES.push(()=>suite("интерфейс: выбранная закладка не стоит за краем",{tier:"browser"},()=>{
   resetWorld();
   G.drones=[{id:1,sx:G.sx,sy:G.sy,pi:0,res:"titan",rate:1,pool:100,t0:now(),
              lastMs:now(),bornMs:now(),trips:0,down:0,sold:0,earned:0}];
   /* берём самую дальнюю живую закладку: она заведомо за краем, если полоса
-     длиннее окна, — иначе проверка проходит сама собой и ничего не сторожит */
+     длиннее окна, — иначе проверка проходит сама собой и ничего не сторожит.
+     С M299 лента показывает только закладки открытой вещи — две-три, и
+     длиннее окна не бывает ни в 1280, ни на телефоне (998 из 998, 548 из 548
+     px): набор годами зеленел пропуском (M442). Полосу сужаем руками до одной
+     закладки с полями — тогда подводить есть что в любом окне */
   tableToggle(true,"ether");
   const strip=document.getElementById("tableTabs");
   const live=[...strip.querySelectorAll("button")].filter(b=>b.style.display!=="none");
   const last=live[live.length-1];
-  ok(!!last,"закладки есть ("+live.length+")");
+  ok(live.length>=2,"у открытой вещи закладок больше одной ("+live.length+")");
+  const st0=strip.style.cssText;
+  /* поле подводки tabsSync — по 16 px с боков: уже этого закладке не встать */
+  const bw=Math.round(last.getBoundingClientRect().width)+40;
+  strip.style.width=bw+"px";strip.style.maxWidth=bw+"px";strip.style.flex="none";
   const wide=strip.scrollWidth>strip.clientWidth+2;
-  if(wide&&last){
+  if(ok(wide,"полоса закладок длиннее окна — есть что подводить ("+strip.scrollWidth+" > "+strip.clientWidth+" px)")&&last){
     tableSetTab(last.dataset.tab);
     const on=strip.querySelector("button.on");
     eq(on&&on.dataset.tab,last.dataset.tab,"выбранная закладка помечена");
@@ -361,7 +368,8 @@ TEST_SUITES.push(()=>suite("интерфейс: выбранная заклад�
     ok(r.left>=s.left-2&&r.right<=s.right+2,
       "и подведена под глаз ("+Math.round(r.left)+".."+Math.round(r.right)+
       " в "+Math.round(s.left)+".."+Math.round(s.right)+")");
-  }else ok(true,"полоса влезает целиком — подводить нечего");
+  }
+  strip.style.cssText=st0;
   tableToggle(false);
   G.drones=[];
 }));
@@ -369,7 +377,7 @@ TEST_SUITES.push(()=>suite("интерфейс: выбранная заклад�
 /* жёрдочка на пульте (05.09.2026, телефон автора: «попугай криво») — птица
    рисовалась углом окна трепла: голова за верхним краем, тело вправо. Иконка
    обязана вмещать птицу целиком, по центру, и ростом не меньше половины поля. */
-TEST_SUITES.push(() => suite("жёрдочка: птица в иконке целиком", () => {
+TEST_SUITES.push(() => suite("жёрдочка: птица в иконке целиком",{tier:"browser"}, () => {
   resetWorld();
   G.parrot=null;parrotFind(7,"чужого борта");
   conT=0;consoleTick(1);
@@ -387,7 +395,7 @@ TEST_SUITES.push(() => suite("жёрдочка: птица в иконке це�
   resetWorld();
 }));
 
-TEST_SUITES.push(() => suite("жёрдочка: птицу не рисуют каждую секунду", () => {
+TEST_SUITES.push(() => suite("жёрдочка: птицу не рисуют каждую секунду",{tier:"browser"}, () => {
   /* Пульт обновляется раз в секунду, и всё это время сюда рисовался ВЕСЬ
      процедурный попугай ради сорока четырёх пикселей: 4.9 мс на разогретой
      машине в живом браузере, то есть около двадцати на телефоне — раз в

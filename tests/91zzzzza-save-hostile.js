@@ -67,7 +67,7 @@ TEST_SUITES.push(() => suite("порченый сейв: любое поле н�
     (bad.length?" (всего "+bad.length+")":""));
 }));
 
-TEST_SUITES.push(() => suite("порченый сейв: числа строками из облака остаются числами", () => {
+TEST_SUITES.push(() => suite("порченый сейв: числа строками из облака остаются числами",{tier:"browser"}, () => {
   resetWorld(); fuzzRich();
   const base=JSON.parse(JSON.stringify(snapshot()));
   /* PHP умеет вернуть 600 как «600»: проходим по всему снимку и делаем это нарочно */
@@ -98,7 +98,7 @@ TEST_SUITES.push(() => suite("порченый сейв: числа строка
   resetWorld();
 }));
 
-TEST_SUITES.push(() => suite("порченый сейв: круг сейв→загрузка→сейв со второго раза неподвижен", () => {
+TEST_SUITES.push(() => suite("порченый сейв: круг сейв→загрузка→сейв со второго раза неподвижен",{tier:"browser"}, () => {
   resetWorld(); fuzzRich();
   /* Часы, которые applySave ПЕРЕСТАВЛЯЕТ намеренно, из сравнения убираем.
      `tMs`/`paidMs`/`job.t0` — это отсчёт начислений управляющему и наёмнику:
@@ -126,14 +126,15 @@ TEST_SUITES.push(() => suite("порченый сейв: круг сейв→з�
   /* первый круг вправе что-то нормализовать (Set в список, старое поле в новое);
      дальше снимок обязан стоять на месте — иначе он растёт с каждой загрузкой */
   const same=a[1]===a[2]&&a[2]===a[3];
+  const moved=[];
   if(!same){
     /* назвать поле, а не «не совпало»: иначе это ребус */
-    const b=JSON.parse(a[1]),c=JSON.parse(a[2]),moved=[];
+    const b=JSON.parse(a[1]),c=JSON.parse(a[2]);
     for(const k in b)if(JSON.stringify(b[k])!==JSON.stringify(c[k]))
       moved.push(k+": "+JSON.stringify(b[k]).slice(0,40)+" → "+JSON.stringify(c[k]).slice(0,40));
     for(const k in c)if(!(k in b))moved.push(k+": появилось");
-    ok(false,"снимок неподвижен со второго круга, а сдвинулось: "+moved.slice(0,4).join(" ;; "));
-  }else ok(true,"снимок неподвижен со второго круга ("+Math.round(a[1].length/1024)+" КБ)");
+  }
+  ok(same,"снимок неподвижен со второго круга"+(same?" ("+Math.round(a[1].length/1024)+" КБ)":", а сдвинулось: "+moved.slice(0,4).join(" ;; ")));
   /* и не растёт: четвёртый круг не тяжелее второго */
   ok(a[3].length<=a[1].length+64,"сейв не пухнет за круги: "+a[1].length+" → "+a[3].length+" б");
   resetWorld();

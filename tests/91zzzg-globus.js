@@ -29,7 +29,7 @@ TEST_SUITES.push(()=>suite("глобус: показывает место, а н
   const names=[];
   for(const q of G.sys.planets){names.push(q.name);for(const m of q.moons)names.push(m.name);}
   if(G.sys.station)names.push(G.sys.station.name);
-  names.push(typeof nameOf==="function"?nameOf(G.sys):G.sys.name);
+  names.push(nameOf(G.sys));
   let hits=0,bad=0;
   for(let k=0;k<24;k++){
     const ang=k/24*Math.PI*2;
@@ -43,7 +43,7 @@ TEST_SUITES.push(()=>suite("глобус: показывает место, а н
   eq(bad,0,"и всё названное — настоящие тела этой системы");
 }));
 
-TEST_SUITES.push(()=>suite("глобус: считает раз в секунду, а не в кадр",()=>{
+TEST_SUITES.push(()=>suite("глобус: считает раз в секунду, а не в кадр",{tier:"browser"},()=>{
   globusSys();
   G.ship.x=0;G.ship.y=-1200;G.ship.vx=0;G.ship.vy=3;
   GLOB.t=-1;

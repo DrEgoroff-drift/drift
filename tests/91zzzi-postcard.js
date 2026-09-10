@@ -25,7 +25,7 @@ function pcSame(a,b){
   for(let i=0;i<a.length;i++)if(a[i]!==b[i])return false;
   return true;
 }
-TEST_SUITES.push(()=>suite("открытка: один снимок — один кадр, и художник не знает про G",()=>{
+TEST_SUITES.push(()=>suite("открытка: один снимок — один кадр, и художник не знает про G",{tier:"browser"},()=>{
   resetWorld();
   const F=pcTestPlanet();
   ok(!!F,"нашлась планета с грунтом");
@@ -58,7 +58,7 @@ TEST_SUITES.push(()=>suite("открытка: один снимок — один
   ok(drawPostcard(cc,null,40,25)===false,"без снимка — false, а не исключение");
   ok(drawPostcard(cc,{v:1,sx:0,sy:0,pi:999,mi:-1,t:0},40,25)!==undefined,"чужой индекс не роняет");
 }));
-TEST_SUITES.push(()=>suite("открытка: камера снимает только там, где есть что снять",()=>{
+TEST_SUITES.push(()=>suite("открытка: камера снимает только там, где есть что снять",{tier:"browser"},()=>{
   resetWorld();
   G.album=[];G.log=[];
   const F=pcTestPlanet();
@@ -85,7 +85,7 @@ TEST_SUITES.push(()=>suite("открытка: камера снимает тол
   eq(albumAll().length,2,"альбом растёт");
   G.mode="system";G.land=null;
 }));
-TEST_SUITES.push(()=>suite("открытка: альбом — двенадцать мест, и он переживает сохранение",()=>{
+TEST_SUITES.push(()=>suite("открытка: альбом — двенадцать мест, и он переживает сохранение",{tier:"browser"},()=>{
   resetWorld();
   G.album=[];G.log=[];
   const F=pcTestPlanet();
@@ -111,7 +111,7 @@ TEST_SUITES.push(()=>suite("открытка: альбом — двенадца�
   G.mode="system";G.surf=null;
 }));
 /* ══════════════ бланки открытки (M189) ══════════════ */
-TEST_SUITES.push(()=>suite("бланк: сотня штук, у каждой строки значение по умолчанию",()=>{
+TEST_SUITES.push(()=>suite("бланк: сотня штук, у каждой строки значение по умолчанию",{tier:"browser"},()=>{
   resetWorld();
   /* M189 положил тридцать и записал в план сотню; M209 её дописал */
   ok(POST_FORMS.length>=100,"бланков не меньше сотни ("+POST_FORMS.length+")");
@@ -148,7 +148,7 @@ TEST_SUITES.push(()=>suite("бланк: сотня штук, у каждой с�
     heads[F.ru]=1;
   }
 }));
-TEST_SUITES.push(()=>suite("бланк: предлагается по МЕСТУ СНИМКА, а не по тому, где сидишь",()=>{
+TEST_SUITES.push(()=>suite("бланк: предлагается по МЕСТУ СНИМКА, а не по тому, где сидишь",{tier:"browser"},()=>{
   resetWorld();
   const F=pcTestPlanet();
   const snap=(m)=>({v:POST_V,m,sx:F.s.sx,sy:F.s.sy,pi:F.p.idx,mi:-1,
@@ -179,7 +179,7 @@ TEST_SUITES.push(()=>suite("бланк: предлагается по МЕСТУ
   ok(!!postForm(postFormFor(null)),"без снимка бланк всё равно есть");
   ok(!!postForm(postFormFor({m:"такого режима нет"})),"и с незнакомым местом тоже");
 }));
-TEST_SUITES.push(()=>suite("бланк: подписывается сам, вычёркивание меняет только свою строку",()=>{
+TEST_SUITES.push(()=>suite("бланк: подписывается сам, вычёркивание меняет только свою строку",{tier:"browser"},()=>{
   resetWorld();
   G.album=[];
   const F=pcTestPlanet();
@@ -213,7 +213,7 @@ TEST_SUITES.push(()=>suite("бланк: подписывается сам, вы�
   eq(back,s.f,"листание ходит по кругу в обе стороны");
   G.mode="system";G.surf=null;
 }));
-TEST_SUITES.push(()=>suite("бланк: приписка — до трёх глифов, и ничего написанного не уезжает",()=>{
+TEST_SUITES.push(()=>suite("бланк: приписка — до трёх глифов, и ничего написанного не уезжает",{tier:"browser"},()=>{
   resetWorld();
   G.album=[];
   const F=pcTestPlanet();
@@ -329,7 +329,7 @@ TEST_SUITES.push(()=>suite("почта: два семейства с прист�
   ok(Array.isArray(albumAll()),"а альбом — свой (G.album)");
 }));
 /* ══════════════ ночной эфир (M191) ══════════════ */
-TEST_SUITES.push(()=>suite("эфир: диапазон есть только вечером, и вечер считается вечером",()=>{
+TEST_SUITES.push(()=>suite("эфир: диапазон есть только вечером, и вечер считается вечером",{tier:"browser"},()=>{
   resetWorld();
   /* окно с девяти вечера до двух ночи, по местным часам человека */
   for(const h of [21,22,23,0,1])ok(mailNight(h),"в "+h+" — ночь");
@@ -354,7 +354,7 @@ TEST_SUITES.push(()=>suite("эфир: диапазон есть только в�
     eq(R.k,"noise","приёмник честно шумит");
   }
 }));
-TEST_SUITES.push(()=>suite("эфир: карточка читается по строке, и в строках нет ни одного имени",()=>{
+TEST_SUITES.push(()=>suite("эфир: карточка читается по строке, и в строках нет ни одного имени",{tier:"browser"},()=>{
   resetWorld();
   G.album=[];G.mail=null;
   const F=pcTestPlanet();

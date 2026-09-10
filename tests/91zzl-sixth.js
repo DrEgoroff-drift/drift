@@ -1,5 +1,5 @@
 /* ══════════════ автотесты: шестой (M157) ══════════════ */
-TEST_SUITES.push(()=>suite("шестой: пять следов эстафеты — связи, маршрут кончается в ядре уезда",()=>{
+TEST_SUITES.push(()=>suite("шестой: пять следов эстафеты — связи, маршрут кончается в ядре уезда",{tier:"browser"},()=>{
   resetWorld();
   eq(storyLint().filter(b=>/relay_|sixth_/.test(b)).join("; "),"","истории эстафеты проходят линт");
   const ids=["relay_baker","relay_krapiva","relay_kim","relay_shtof","relay_sovenya","sixth_report"];
@@ -23,8 +23,7 @@ TEST_SUITES.push(()=>suite("шестой: адрес hours:core совпадае
   const core=getSystem(R.core.sx,R.core.sy);
   const S=storyAll().find(s=>s.id==="sixth_report");
   const c={key:core.key,sys:core,st:core.station||{stype:"x"},p:null};
-  if(core.station)ok(storyAddrMatch(S,c)===core.key,"ядро подходит адресу hours:core");
-  else ok(true,"в ядре нет станции — адрес проверен по типу");
+  ok(storyAddrMatch(S,c)===core.key,"ядро подходит адресу hours:core"+(core.station?"":" (станции нет — по типу)"));
   const other=getSystem(0,0);
   eq(storyAddrMatch(S,{key:other.key,sys:other,st:other.station||{},p:null}),null,"не ядро — не подходит");
   ok(!sixthGone(),"пока не ушла");

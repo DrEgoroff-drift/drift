@@ -63,7 +63,7 @@ TEST_SUITES.push(()=>suite("зимовка: реактор слабеет, и в
   winShift();
   ok(!W.noDiary,"назавтра снова есть время писать");
 }));
-TEST_SUITES.push(()=>suite("зимовка: стена говорит, дневник пишется бланками",()=>{
+TEST_SUITES.push(()=>suite("зимовка: стена говорит, дневник пишется бланками",{tier:"browser"},()=>{
   const W=winTestStart();
   const l1=winWall();
   ok(l1&&l1.length>10,"стена сказала: "+l1);

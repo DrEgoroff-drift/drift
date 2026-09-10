@@ -1,5 +1,5 @@
 /* ══════════════ автотесты: стажёр (M163) ══════════════ */
-TEST_SUITES.push(()=>suite("стажёр: заяц после блошинца, кресло, ступени по прыжкам, диплом, голос через год",()=>{
+TEST_SUITES.push(()=>suite("стажёр: заяц после блошинца, кресло, ступени по прыжкам, диплом, голос через год",{tier:"browser"},()=>{
   resetWorld();
   G.trainee=null;G.seat=null;G.things=[];G.log=[];G.record=null;G.vega=null;
   let B=null;for(let x=-14;x<=14&&!B;x++)for(let y=-14;y<=14&&!B;y++){if(starAt(x,y)){const S=getSystem(x,y);if(S&&S.station&&S.station.stype==="bazaar")B=S;}}
@@ -8,7 +8,7 @@ TEST_SUITES.push(()=>suite("стажёр: заяц после блошинца, 
   /* находка детерминирована местом: перебираем до первой, где он есть */
   let found=traineeFind();
   if(!found){for(let x=-20;x<=20&&!found;x++)for(let y=-20;y<=20&&!found;y++){if(!starAt(x,y))continue;const S=getSystem(x,y);if(S&&S.station&&S.station.stype==="bazaar"){G.sx=x;G.sy=y;G.sys=S;G.st=S.station;found=traineeFind();}}}
-  if(!found){ok(true,"ни на одном блошинце в радиусе 20 зайца нет — пропущено");return;}
+  if(!ok(found,"заяц на блошинце в радиусе двадцати нашёлся"))return;
   ok(traineeAboard(),"заяц на борту");
   ok(!!G.seat&&G.seat.name.indexOf("СТАЖЁР")===0,"кресло занято стажёром");
   eq(G.trainee.st,1,"первая ступень: трогает приборы");

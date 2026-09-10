@@ -30,65 +30,17 @@
    Список сцен — общий с прибором кадра (`lookScenes`, 28y-look): одна таблица
    режимов на прибор, на фуззер и на эти наборы, иначе они разъедутся. */
 
-/* подпись кадра: каждая восьмая проба яркости с настоящего холста */
-function hFrame(){
-  const cx=cvs.getContext("2d"),w=cvs.width,h=cvs.height;
-  const d=cx.getImageData(0,0,w,h).data,out=[];
-  for(let y=0;y<h;y+=8)for(let x=0;x<w;x+=8){
-    const i=(y*w+x)*4;out.push((d[i]+d[i+1]+d[i+2])/3);
-  }
-  return out;
-}
-/* доля проб, которые сдвинулись заметно для глаза */
-function hDiff(a,b){
-  if(!a||!b||a.length!==b.length)return 1;
-  let n=0;for(let i=0;i<a.length;i++)if(Math.abs(a[i]-b[i])>6)n++;
-  return n/(a.length||1);
-}
-function hDraw(){G.t++;stepWorld(1);drawWorld();return hFrame();}
-/* ответ вёрстки: окно, меню, строка события — всё, что игрок тоже видит */
-function hDom(){
-  const m=document.getElementById("msg"),p=document.getElementById("prompt"),mn=document.getElementById("menu");
-  return [document.body.className,
-          document.querySelectorAll(".scr.open").length,
-          document.querySelectorAll(".askbox").length,
-          mn?getComputedStyle(mn).display:"",
-          m?m.textContent:"",p?p.textContent:""].join("|");
-}
-/* видимые и нажимаемые кнопки правого борта */
-function hRail(){
-  const out=[];
-  for(const el of document.querySelectorAll(".rail button")){
-    if(el.disabled)continue;
-    const cs=getComputedStyle(el);
-    if(cs.display==="none"||cs.visibility==="hidden"||cs.pointerEvents==="none"||(+cs.opacity||1)<.2)continue;
-    const r=el.getBoundingClientRect();if(r.width<8||r.height<8)continue;
-    const lbl=String(el.textContent||"").replace(/\s+/g," ").trim()||el.getAttribute("aria-label")||el.id;
-    out.push({el,id:el.id||"",lbl});
-  }
-  return out;
-}
-/* закрыть всё, что тычок мог открыть — ЕЁ ЖЕ дверью, а не руками по вёрстке.
-   Первый заход снимал класс с `body` и гасил `#menu` стилем: игра при этом
-   считала меню открытым, следующий тычок в МЕНЮ его ЗАКРЫВАЛ, и набор
-   объявлял живую кнопку мёртвой. Прибирать за собой чужими руками — то же
-   самое, что мокать: проверяется уже не игра. */
-function hCalm(){
-  if(typeof toggleMenu==="function")toggleMenu(false);
-  for(const e of document.querySelectorAll(".scr.open"))e.classList.remove("open");
-  /* окно имени закрывается своей дверью: вырванная .askbox оставляла пустой
-     #askwin, и следующий askText падал на поле, которого нет */
-  const aw=document.getElementById("askwin");if(aw&&aw._close)aw._close(null);
-  document.body.classList.remove("screen","table");
-}
-function hSpoke(fn){return (typeof prSpoke==="function")?prSpoke(fn):(fn(),false);}
+/* руки и глаза этого файла — в инструментах (90a-tools, M442): подпись кадра
+   T.frame()/T.diff(), ответ вёрстки T.dom(), кнопки борта T.controls(".rail"),
+   уборка T.calm(), голос игры T.spoke(). Здесь остался только договор. */
+function hDraw(){T.wait(1);return T.frame();}
 
 /* ── молчаливые по праву: у каждой причина, а не «ну она такая» ── */
 const H_SILENT={
   camBtn:"снимок уходит файлом, кадр остаётся прежним"
 };
 
-TEST_SUITES.push(() => suite("руки: кнопка над миром отвечает кадром, а не молчанием", () => {
+TEST_SUITES.push(() => suite("руки: кнопка над миром отвечает кадром, а не молчанием",{tier:"browser"}, () => {
   resetWorld();
   const snap=JSON.parse(JSON.stringify(snapshot()));
   const dead=[],seen={};let tried=0;
@@ -98,27 +50,27 @@ TEST_SUITES.push(() => suite("руки: кнопка над миром отве�
     let mode0=G.mode;
     try{hud();}catch(e){}
     let prev=hDraw();
-    const churn=hDiff(prev,prev=hDraw());          /* сколько мир шевелится сам */
-    for(const c of hRail()){
+    const churn=T.diff(prev,prev=hDraw());          /* сколько мир шевелится сам */
+    for(const c of T.controls(".rail",{btn:true})){
       if(H_SILENT[c.id])continue;
-      const dom0=hDom();
+      const dom0=T.dom();
       let threw="";
-      const spoke=hSpoke(()=>{try{c.el.click();}catch(e){threw=e.message;}});
+      const spoke=T.spoke(()=>{try{c.el.click();}catch(e){threw=e.message;}});
       if(threw){dead.push(sc.id+" · «"+c.lbl+"» бросила: "+threw);continue;}
       let cur;
       try{cur=hDraw();}catch(e){dead.push(sc.id+" · «"+c.lbl+"» уронила кадр: "+e.message);cur=prev;}
-      const d=hDiff(prev,cur);prev=cur;
+      const d=T.diff(prev,cur);prev=cur;
       tried++;seen[c.id||c.lbl]=1;
-      const answered=d>Math.max(churn*2,.004)||spoke||hDom()!==dom0||G.mode!==mode0;
+      const answered=d>Math.max(churn*2,.004)||spoke||T.dom()!==dom0||G.mode!==mode0;
       if(!answered)dead.push(sc.id+" · «"+c.lbl+"» ("+(c.id||"?")+"): кадр не дрогнул ("+
         (d*100).toFixed(1)+"% при собственном шевелении "+(churn*100).toFixed(1)+"%), и никто ничего не сказал");
       if(G.mode!==mode0){                           /* тычок увёл из сцены — вернуть */
-        hCalm();
+        T.calm();
         let back=true;try{back=sc.set()!==false;}catch(e){back=false;}
         if(!back)break;
         mode0=G.mode;try{hud();}catch(e){}
         prev=hDraw();
-      }else hCalm();
+      }else T.calm();
     }
   }
   try{applySave(snap);}catch(e){}
@@ -128,7 +80,7 @@ TEST_SUITES.push(() => suite("руки: кнопка над миром отве�
   eq(dead.slice(0,6).join(" ;; "),"","на каждый тычок отвечает экран"+(dead.length?" (всего "+dead.length+")":""));
 }));
 
-TEST_SUITES.push(() => suite("масштаб: плюс и минус двигают тот масштаб, который сейчас на экране", () => {
+TEST_SUITES.push(() => suite("масштаб: плюс и минус двигают тот масштаб, который сейчас на экране",{tier:"browser"}, () => {
   resetWorld();
   /* в системе — камера */
   G.mode="system";const z0=G.zoom;
@@ -205,7 +157,7 @@ TEST_SUITES.push(() => suite("мерка: подписи карты растут
   G.mode="system";G.mapMore=false;resetWorld();
 }));
 
-TEST_SUITES.push(() => suite("разрешение кадра: холст равен окну, а сниженное само возвращается", () => {
+TEST_SUITES.push(() => suite("разрешение кадра: холст равен окну, а сниженное само возвращается",{tier:"browser"}, () => {
   /* Мыло — это не вкус, это число: сколько у холста своих пикселей против
      тех, что показывает экран. Растянутый холст видно по подписям первым. */
   eq(cvs.width,Math.round(W*DPR),"холст шире окна ровно во столько, во сколько плотнее экран");

@@ -66,7 +66,7 @@ function hitCovered(list,where,bad){
   return asked;
 }
 
-TEST_SUITES.push(() => suite("накрытые кнопки: в каждой сцене пульт и борт получают свой тычок", () => {
+TEST_SUITES.push(() => suite("накрытые кнопки: в каждой сцене пульт и борт получают свой тычок",{tier:"heavy"}, () => {
   const bad=[],seen=[];
   document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
   for(const sc of lookScenes()){
@@ -84,9 +84,9 @@ TEST_SUITES.push(() => suite("накрытые кнопки: в каждой с�
     (bad.length?" (всего "+bad.length+")":""));
 }));
 
-TEST_SUITES.push(() => suite("накрытые кнопки: на столе и на станции тычок доходит до строки", () => {
+TEST_SUITES.push(() => suite("накрытые кнопки: на столе и на станции тычок доходит до строки",{tier:"browser"}, () => {
   resetWorld();
-  if(typeof e2eLate==="function")e2eLate();else fuzzRich();
+  e2eLate();
   const bad=[];let n=0;
   /* Экран открывается ИГРОЙ, а не рукой: `tableToggle`/`openStation` ставят
      ещё и классы тела (`table`, `screen`), а от них зависит вся раскладка.
@@ -101,16 +101,16 @@ TEST_SUITES.push(() => suite("накрытые кнопки: на столе и 
       n+=hitCovered(hitCandidates(tabsSel.replace(" button",""),16),ru+"/закладки",bad);
     }
   };
-  if(typeof tableToggle==="function"){
+  {
     tableToggle(true);
     sweep("#tableTabs button","#tableBody",t=>{tableSetTab(t);},"стол");
     tableToggle(false);
   }
-  if(G.sys.station&&typeof openStation==="function"){
+  if(G.sys.station){
     G.st=G.sys.station;G.mode="dock";
     openStation();
     sweep("#stTabs button","#stBody",t=>{tab=t;renderTab();},"станция");
-    if(typeof closeStation==="function")closeStation();
+    closeStation();
     tab="market";G.mode="system";G.st=null;
   }
   document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));

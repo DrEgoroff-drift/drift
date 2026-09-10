@@ -27,14 +27,14 @@ TEST_SUITES.push(()=>suite("зоо: поймать отсканированно�
   G.zoo=null;G.surf=null;
 }));
 
-TEST_SUITES.push(()=>suite("зоо: зоостанция — стойка ядра «Рощи», принимает и платит",()=>{
+TEST_SUITES.push(()=>suite("зоо: зоостанция — стойка ядра «Рощи», принимает и платит",{tier:"browser"},()=>{
   resetWorld();
   G.zoo=null;G.record=null;
   const at=regionOfTheme("grove");ok(!!at,"область «Роща» есть");
   const R=regionAt(at.rx*REGION_SPAN,at.ry*REGION_SPAN);
   const core=getSystem(R.core.sx,R.core.sy);
   G.sx=core.sx;G.sy=core.sy;G.sys=core;G.st=core.station||null;
-  if(!G.st){ok(true,"в ядре «Рощи» нет станции — пропущено");return;}
+  if(!ok(G.st,"в ядре «Рощи» есть станция"))return;
   ok(zooStationHere(),"зоостанция здесь");
   zooAll().carry.push({ru:"Тест круглыш, стайный",seed:5,from:"Т",fed:1});
   const c0=G.credits;

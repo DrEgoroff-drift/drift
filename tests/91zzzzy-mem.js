@@ -20,8 +20,8 @@ function memPixels(root, maxDepth) {
     nodes++;
     if (seen.has(v)) return;
     seen.add(v);
-    if (typeof HTMLCanvasElement !== "undefined" && v instanceof HTMLCanvasElement) { px += v.width * v.height; n++; return; }
-    if (typeof Node !== "undefined" && v instanceof Node) return;
+    if (v instanceof HTMLCanvasElement) { px += v.width * v.height; n++; return; }
+    if (v instanceof Node) return;
     if (v instanceof Map) { for (const x of v.values()) walk(x, d + 1); return; }
     if (v instanceof Set) return;
     if (ArrayBuffer.isView(v)) return;
@@ -51,7 +51,7 @@ function memTour(n, frames) {
   return seen;
 }
 
-TEST_SUITES.push(() => suite("память: вечер прыжков не копит растр без предела", () => {
+TEST_SUITES.push(() => suite("память: вечер прыжков не копит растр без предела",{tier:"heavy"}, () => {
   resetWorld();
   const a = memPixels(SYS_CACHE);
   const tour = memTour(24, 8);
@@ -90,7 +90,7 @@ TEST_SUITES.push(() => suite("память: вечер прыжков не ко�
    Экраны строят свои строки заново на каждый показ. Если старые не убирать,
    документ растёт молча: сначала подтормаживает поиск по селектору, потом
    всё остальное. Открываем и закрываем каждый экран сотню раз и считаем узлы. */
-TEST_SUITES.push(() => suite("память: сотня открытий экранов не растит документ", () => {
+TEST_SUITES.push(() => suite("память: сотня открытий экранов не растит документ",{tier:"heavy"}, () => {
   resetWorld(); fuzzRich();
   const count = () => document.getElementsByTagName("*").length;
   /* один прогрев: первый показ имеет право построить то, чего ещё нет */

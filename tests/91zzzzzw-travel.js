@@ -47,7 +47,7 @@ function tvHop(r){
   return "";
 }
 
-TEST_SUITES.push(() => suite("дорога: сто прыжков не раздувают ни сейв, ни карты состояния", () => {
+TEST_SUITES.push(() => suite("дорога: сто прыжков не раздувают ни сейв, ни карты состояния",{tier:"browser"}, () => {
   resetWorld();
   const r=rng(hashi(0xD0F0,11,3));
   const before=tvSizes();
@@ -69,7 +69,7 @@ TEST_SUITES.push(() => suite("дорога: сто прыжков не разд�
         G.credits=Math.max(G.credits,20000);
         buyCargo(G.sys,k,5);
         sellCargo(G.sys,k,5);
-        if(typeof pricesSeen==="function")pricesSeen(G.sys);
+        pricesSeen(G.sys);
       }catch(e){ bad.push("торговля на прыжке "+i+": "+e.message); }
       G.mode="system";G.st=null;
     }
@@ -98,13 +98,12 @@ TEST_SUITES.push(() => suite("дорога: сто прыжков не разд�
   resetWorld();
 }));
 
-TEST_SUITES.push(() => suite("дорога: растр покинутых систем не копится в памяти", () => {
+TEST_SUITES.push(() => suite("дорога: растр покинутых систем не копится в памяти",{tier:"browser"}, () => {
   /* Соседний сеанс мерил печь и живой растр (M358); здесь — другая половина
      того же вопроса, со стороны состояния: сколько систем держит SYS_CACHE
      после долгой дороги. Он не сохраняется и обязан отпускать покинутое —
      иначе за вечер прыжков вырастет ровно то, что ищут как зависание. */
   resetWorld();
-  if(typeof SYS_CACHE==="undefined"){ok(false,"кэша систем в этой сборке нет — пропуск");return;}
   SYS_CACHE.clear();
   const r=rng(hashi(0xCAC,5,9));
   let hops=0;

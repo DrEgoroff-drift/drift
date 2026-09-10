@@ -9,7 +9,7 @@ function swimTestLand(needWater){
   resetWorld();
   const cand=[[G.sx,G.sy]];
   for(let r0=1;r0<7;r0++)for(let x=-r0;x<=r0;x++)for(let y=-r0;y<=r0;y++)
-    if(Math.max(Math.abs(x),Math.abs(y))===r0&&(typeof starAt!=="function"||starAt(x,y)))cand.push([x,y]);
+    if(Math.max(Math.abs(x),Math.abs(y))===r0&&starAt(x,y))cand.push([x,y]);
   for(const [sx,sy] of cand){
     const sys=getSystem(sx,sy);if(!sys||!sys.planets||!sys.planets.length)continue;
     const p=sys.planets.find(q=>q.type!=="gas");if(!p)continue;
@@ -25,7 +25,7 @@ function swimTestLand(needWater){
   }
   return null;
 }
-TEST_SUITES.push(()=>suite("сквозной: в озере плывём с кругом и снимаем водоросли",()=>{
+TEST_SUITES.push(()=>suite("сквозной: в озере плывём с кругом и снимаем водоросли",{tier:"browser"},()=>{
   const S=swimTestLand(true);
   ok(!!S,"нашлась землеподобная с озером");
   if(!ok(S,"нашлось: S"))return;
@@ -65,7 +65,7 @@ TEST_SUITES.push(()=>suite("сквозной: в озере плывём с кр
   ok(!S.on||S.vy<0,"▲ из воды: оторвались");
   keys.thrust=false;resetWorld();
 }));
-TEST_SUITES.push(()=>suite("сквозной: у пещеры подсказка про пещеру, а не про шахту",()=>{
+TEST_SUITES.push(()=>suite("сквозной: у пещеры подсказка про пещеру, а не про шахту",{tier:"browser"},()=>{
   const S=swimTestLand(false);
   ok(!!(S&&S.cave),"устье пещеры есть");
   if(!S||!S.cave)return;

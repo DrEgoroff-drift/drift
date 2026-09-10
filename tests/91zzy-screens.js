@@ -2,7 +2,7 @@
    docs/DESIGN-screens.md. Проверяется то, что плейтест 02.09 назвал словами:
    «НА КАРТУ ничего не делает», «имя назвал — поле осталось», «что за Рыба»,
    «лонгрид», «не видно, где я». */
-TEST_SUITES.push(()=>suite("экраны M299: заголовок называет, а не объясняет — на каждой вкладке станции",()=>{
+TEST_SUITES.push(()=>suite("экраны M299: заголовок называет, а не объясняет — на каждой вкладке станции",{tier:"browser"},()=>{
   resetWorld();
   const S=G.sys.station;
   ok(!!S,"станция есть");
@@ -40,7 +40,7 @@ TEST_SUITES.push(()=>suite("экраны M299: заголовок называе
   closeStation();
 }));
 
-TEST_SUITES.push(()=>suite("экраны M299: НА КАРТУ со станции — подгляд, НАЗАД возвращает на ту же вкладку",()=>{
+TEST_SUITES.push(()=>suite("экраны M299: НА КАРТУ со станции — подгляд, НАЗАД возвращает на ту же вкладку",{tier:"browser"},()=>{
   resetWorld();
   const S=G.sys.station;
   G.ship.x=S.x+40;G.ship.y=S.y;
@@ -64,7 +64,7 @@ TEST_SUITES.push(()=>suite("экраны M299: НА КАРТУ со станци
   closeStation();
 }));
 
-TEST_SUITES.push(()=>suite("экраны M299: карта — «вы» в кадре, протяжка пальцем, масштаб",()=>{
+TEST_SUITES.push(()=>suite("экраны M299: карта — «вы» в кадре, протяжка пальцем, масштаб",{tier:"browser"},()=>{
   resetWorld();
   G.mode="map";mapReset();G.sel={x:G.sx,y:G.sy};
   /* дальний слух: лист отдаляется, а не уезжает */
@@ -95,7 +95,7 @@ TEST_SUITES.push(()=>suite("экраны M299: карта — «вы» в кад
   mapReset();G.mode="system";
 }));
 
-TEST_SUITES.push(()=>suite("экраны M299: зал — ввод; стол без пустых рядов; имя капитана; завсегдатай подписан",()=>{
+TEST_SUITES.push(()=>suite("экраны M299: зал — ввод; стол без пустых рядов; имя капитана; завсегдатай подписан",{tier:"browser"},()=>{
   resetWorld();
   /* станция с кантиной */
   const cand=routeTestStations(8).find(s=>s.station&&stTypeOf(s.station.stype).tabs.indexOf("cantina")>=0)||null;
@@ -152,7 +152,7 @@ TEST_SUITES.push(()=>suite("экраны M299: зал — ввод; стол б�
       двух наборах. Здесь — обход всех экранов: каждая видимая кнопка не меньше 44.
    2. Метки целей у края системного вида (SYS_CHIPS) никогда не мерялись против
       эфирной строки и пэдов — последний шов «канва против вёрстки». */
-TEST_SUITES.push(()=>suite("экраны M302: 44 px на каждом экране, а не только на пульте",()=>{
+TEST_SUITES.push(()=>suite("экраны M302: 44 px на каждом экране, а не только на пульте",{tier:"browser"},()=>{
   resetWorld();
   document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
   const small=[];let seen=0;
@@ -188,7 +188,7 @@ TEST_SUITES.push(()=>suite("экраны M302: 44 px на каждом экра�
   G.mode="system";
 }));
 
-TEST_SUITES.push(()=>suite("экраны M302: метки целей у края не наезжают на эфирную строку и пульт",()=>{
+TEST_SUITES.push(()=>suite("экраны M302: метки целей у края не наезжают на эфирную строку и пульт",{tier:"browser"},()=>{
   resetWorld();
   document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
   G.mode="system";

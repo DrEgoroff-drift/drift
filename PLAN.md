@@ -266,13 +266,14 @@ extract tools, do not extend). Order is strict: determinism first, everything af
   pins seed and clock (`?hour=`), `bNoDir` gone. Open: the fuzz seed into `rndSeed`; `TEST_T0` is
   12:00 *local* (green in UTC, LA, Auckland); a drawn run's full hash differs from an undrawn one
   (draw fills lazy caches in `G`) — only the `rnd()` position is compared, a detector for M443.
-- **M442 the test API and the harness rules** — `tests/90a-tools.js` (actuators `go/press/tap/
-  drag/wheel/wait/advance/window/give/board/bot`, observers `frame/state/look/ledger/text/
-  controls/clock`) extracted from `hands`, `promise`, `look`, `fuzz`, `keys`; `docs/stand.py` over
-  CDP, one Chrome for all scenes; zero-assertion suite is red; `ok(true` and `typeof`-guards in
-  tests down to zero by a names-net over the test sources; `suite(name, fn, {tier, win, stage})`
-  replaces `SLOW_SUITES`/`NODE_BROWSER`/`NODE_SKIP`; `?shuffle=seed`; `stage` = quarantine (report,
-  not verdict, for a week).
+- ~~**M442 the test API and the harness rules**~~ — 0.430.0: `T.*` in `tests/90a-tools.js`
+  (old helper names are one-line wrappers; `T.state()` = `stateHash()`, `T.go(scene, seed)` seeds
+  `rnd()`, `T.advance/clockShift` move the game clock), `docs/stand.py` (stdlib CDP, one Chrome),
+  `suite(name, {tier, win, stage}, fn)` instead of the three lists, zero-assertion rule, the net
+  over `ok(true`/`typeof`-guards (from the end of the detectors `90c` to `99-run`), `?shuffle`/`?pick`,
+  UI selections outside `G` restored after every suite. Open: `T.bot` is a stub until M444; the
+  tools' self-test sits before the net; `G.opts` is still not reset by `resetWorld` (the detector
+  driver keeps `DET_OPTS_BOOT`).
 - **M443 the five oracles as detectors** — crash, stuck, law (NaN/type/unknown field, a `Proxy`
   over `G` counting reads of missing fields, instruments → fields table, control answer classes,
   picture laws: legible text × ruler, parallax by depth, sharpness, no flicker, no popping, one

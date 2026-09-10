@@ -49,7 +49,7 @@ TEST_SUITES.push(()=>suite("праздник: поздравляют те, кт�
     clockSet(t0);
   }
 }));
-TEST_SUITES.push(()=>suite("праздник: ничего не даёт, кроме ёлки и голосов",()=>{
+TEST_SUITES.push(()=>suite("праздник: ничего не даёт, кроме ёлки и голосов",{tier:"browser"},()=>{
   resetWorld();
   G.hol={};G.things=[];G.record=null;
   const cr=G.credits,dt=G.data;

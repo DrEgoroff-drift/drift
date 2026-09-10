@@ -1,5 +1,5 @@
 /* ══════════════ автотесты: пульт и стол (M151a) ══════════════ */
-TEST_SUITES.push(()=>suite("стол: открывается поверх любого режима и возвращает туда же",()=>{
+TEST_SUITES.push(()=>suite("стол: открывается поверх любого режима и возвращает туда же",{tier:"browser"},()=>{
   resetWorld();
   document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
   tableToggle(false);
@@ -16,7 +16,7 @@ TEST_SUITES.push(()=>suite("стол: открывается поверх люб
   G.mode="system";
 }));
 
-TEST_SUITES.push(()=>suite("тетрадь: у каждого голоса своя страница",()=>{
+TEST_SUITES.push(()=>suite("тетрадь: у каждого голоса своя страница",{tier:"browser"},()=>{
   resetWorld();
   G.log=[];G.logNew=0;G.logNewBy={};
   tableToggle(false);
@@ -46,7 +46,7 @@ TEST_SUITES.push(()=>suite("тетрадь: у каждого голоса св�
   tableToggle(false);
 }));
 
-TEST_SUITES.push(()=>suite("пульт: приёмник на каждом экране, строка эфира попадает на него",()=>{
+TEST_SUITES.push(()=>suite("пульт: приёмник на каждом экране, строка эфира попадает на него",{tier:"browser"},()=>{
   resetWorld();
   document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
   tableToggle(false);
@@ -82,7 +82,7 @@ TEST_SUITES.push(()=>suite("пульт: приёмник на каждом эк�
   G.seat=null;conT=0;consoleTick(1000);
 }));
 
-TEST_SUITES.push(()=>suite("меню: пять дверей, журнал/отчёт/трепло ушли на стол и на пульт",()=>{
+TEST_SUITES.push(()=>suite("меню: пять дверей, журнал/отчёт/трепло ушли на стол и на пульт",{tier:"browser"},()=>{
   resetWorld();
   const ids=[...document.querySelectorAll("#menu button")].map(b=>b.id);
   ok(ids.indexOf("tablebtn")>=0,"СТОЛ в меню");
@@ -99,7 +99,7 @@ TEST_SUITES.push(()=>suite("меню: пять дверей, журнал/отч
   ok(!!document.getElementById("perch"),"жёрдочка для трепла на пульте");
 }));
 
-TEST_SUITES.push(()=>suite("вещи: полка на столе, новое светится до первого взгляда",()=>{
+TEST_SUITES.push(()=>suite("вещи: полка на столе, новое светится до первого взгляда",{tier:"browser"},()=>{
   resetWorld();
   G.things=[];tableToggle(false);
   const t=thingAdd("letter","Письмо на Урнейур","конверт, не читан");
@@ -113,7 +113,7 @@ TEST_SUITES.push(()=>suite("вещи: полка на столе, новое с�
   G.things=[];
 }));
 
-TEST_SUITES.push(()=>suite("станция: ДОСКА у всех, очередь у стойки пишется в ЛЮДИ",()=>{
+TEST_SUITES.push(()=>suite("станция: ДОСКА у всех, очередь у стойки пишется в ЛЮДИ",{tier:"browser"},()=>{
   resetWorld();
   const S=G.sys.station;ok(!!S,"станция есть");
   G.ship.x=S.x+40;G.ship.y=S.y;
@@ -144,7 +144,7 @@ TEST_SUITES.push(()=>suite("станция: ДОСКА у всех, очеред
    на которых держится замысел: лист — это страница, а не полоска под текстом;
    на бумаге чернила, а не фосфор; вещи и ленты лежат на дереве, а не на листе
    (бумага на бумаге не читается). */
-TEST_SUITES.push(()=>suite("стол: бумага, а не окно списков",()=>{
+TEST_SUITES.push(()=>suite("стол: бумага, а не окно списков",{tier:"browser"},()=>{
   resetWorld();
   document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
   tableToggle(true,"ether");
@@ -176,7 +176,7 @@ TEST_SUITES.push(()=>suite("стол: бумага, а не окно списк�
 /* Трюм как раскладка (M179): кучи вместо строк. С M341 кучи — зона 1 описи:
    куча растёт с числом единиц, пустые ресурсы не рисуются, у каждой карточки
    канва с кучей и подпись; комплект — своя зона, он не груз. */
-TEST_SUITES.push(()=>suite("стол: трюм разложен кучами",()=>{
+TEST_SUITES.push(()=>suite("стол: трюм разложен кучами",{tier:"browser"},()=>{
   resetWorld();
   document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
   ok(holdPileN(1)===1,"одна единица — один предмет");
@@ -207,7 +207,7 @@ TEST_SUITES.push(()=>suite("стол: трюм разложен кучами",()
    то есть всё, что не открыто поштучно, — и потому горел всегда. Сторож
    держит разведённые понятия: огонёк гаснет от ВИЗИТА, сургучная точка на
    предмете — только от чтения самого предмета. */
-TEST_SUITES.push(()=>suite("стол: огонёк гаснет от визита, а не от чтения",()=>{
+TEST_SUITES.push(()=>suite("стол: огонёк гаснет от визита, а не от чтения",{tier:"browser"},()=>{
   resetWorld();
   tableToggle(false);
   const mb=document.getElementById("menubtn");
@@ -264,7 +264,7 @@ TEST_SUITES.push(()=>suite("стол: огонёк гаснет от визит�
    печаталось `G.mode` как есть, и игрок читал «Нейэль · system» — английское
    слово из кода в русской игре. Сторож проверяет все режимы разом: появится
    новый и его забудут вписать — шапка обязана промолчать, а не выдать ключ. */
-TEST_SUITES.push(()=>suite("стол: в шапке нет ключей из кода",()=>{
+TEST_SUITES.push(()=>suite("стол: в шапке нет ключей из кода",{tier:"browser"},()=>{
   resetWorld();
   const modes=["system","map","landing","surface","cave","dig","belt","scoop",
                "base","homein","raid","dock","road"];
@@ -283,7 +283,7 @@ TEST_SUITES.push(()=>suite("стол: в шапке нет ключей из к�
   G.mode=was;
   eq(leaks.join(", "),"","ни одно имя не содержит латиницы");
 }));
-TEST_SUITES.push(()=>suite("стол: по бумаге с адресом штурман кладёт курс",()=>{
+TEST_SUITES.push(()=>suite("стол: по бумаге с адресом штурман кладёт курс",{tier:"browser"},()=>{
   resetWorld();
   document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
   /* внешний плейтест, пункт 5: «зачем лететь» жило внутри станции. Стол помнит

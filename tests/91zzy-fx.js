@@ -3,7 +3,7 @@
    озеро ложится в ложбину только на сырой полосе живого мира и всегда одно и
    то же; в его зеркале не растут растения; хроматика разводит кромку на красный
    и синий и гаснет сама; марево и факел рисуются без исключений. */
-TEST_SUITES.push(()=>suite("эффекты M325: озеро — в ложбине сырой полосы, одно и то же, без растений в зеркале",()=>{
+TEST_SUITES.push(()=>suite("эффекты M325: озеро — в ложбине сырой полосы, одно и то же, без растений в зеркале",{tier:"browser"},()=>{
   resetWorld();
   const p=G.sys.planets.find(q=>q.type==="terran"||q.type==="jungle")||G.sys.planets.find(q=>q.type!=="gas");
   ok(!!p,"есть планета");if(!p)return;
@@ -13,14 +13,14 @@ TEST_SUITES.push(()=>suite("эффекты M325: озеро — в ложбин�
   eq(waterOf(tr,p),null,"сухая полоса — без озера");
   tr.wet=.9;tr.water=undefined;
   const Wt=waterOf(tr,p);
-  if(Wt){
+  if(ok(Wt,"на сырой полосе есть озеро")){
     ok(Wt.x1-Wt.x0>=WATER_MIN_SPAN,"зеркало не короче "+WATER_MIN_SPAN+": "+Math.round(Wt.x1-Wt.x0));
     ok(Math.abs(Wt.cx-tr.padX)>200,"не под посадочной площадкой");
     ok(groundAt(tr,Wt.cx)>Wt.y,"уровень выше дна ложбины");
     ok(groundAt(tr,Wt.x0-8)<=Wt.y+2&&groundAt(tr,Wt.x1+8)<=Wt.y+2,"берега выше уреза");
     tr.water=undefined;
     eq(JSON.stringify(waterOf(tr,p)),JSON.stringify(Wt),"то же озеро при каждом расчёте");
-  }else ok(true,"на этой полосе ложбина мельче лужи — озера нет, и это честно");
+  }
   /* безвоздушный мир — воды нет при любой сырости */
   const dead=Object.assign({},p,{type:"rocky",T:Object.assign({},p.T,{atm:"отсутствует"})});
   const tr2=genTerrain(p);tr2.wet=.9;tr2.water=undefined;
@@ -36,7 +36,7 @@ TEST_SUITES.push(()=>suite("эффекты M325: озеро — в ложбин�
   G.surf=null;
 }));
 
-TEST_SUITES.push(()=>suite("эффекты M325: хроматика разводит кромку на красный и синий и гаснет сама",()=>{
+TEST_SUITES.push(()=>suite("эффекты M325: хроматика разводит кромку на красный и синий и гаснет сама",{tier:"browser"},()=>{
   resetWorld();
   ctx.save();ctx.setTransform(DPR,0,0,DPR,0,0);
   ctx.fillStyle="#000";ctx.fillRect(0,0,W,H);
@@ -57,7 +57,7 @@ TEST_SUITES.push(()=>suite("эффекты M325: хроматика развод
   ok(okH,"марево рисуется на краю и на нулевом куске");
 }));
 
-TEST_SUITES.push(()=>suite("эффекты M325: факел завода пляшет поверх выпечки; марево за соплами при тяге",()=>{
+TEST_SUITES.push(()=>suite("эффекты M325: факел завода пляшет поверх выпечки; марево за соплами при тяге",{tier:"browser"},()=>{
   resetWorld();
   const S=G.sys.station;ok(!!S,"станция есть");if(!S)return;
   const was=S.stype;S.stype="indust";
