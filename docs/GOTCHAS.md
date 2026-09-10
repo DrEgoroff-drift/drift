@@ -47,6 +47,12 @@ this file keeps the evidence and the fix.
   exercises a code path no player ever runs. Pace such code by a work cap *as well as* a clock
   (`MAT_CAP` beside `MAT_MS` in `18a-material`), and let the net assert the work, not the time.
   `test.ps1:90` already counted its seconds outside the page for the same reason.
+  **Since M441 the game clock is pinned in every suite** (`resetWorld` → `clockSet(TEST_T0)`,
+  12:00 10.09.2026 local; `?hour=N` / `test-node.js --hour=N` moves the hour): `now()` moves
+  only when the suite moves it (`clockAdvance`, `clockSet`) or a `frameBody` step does. So a
+  suite that stamps game state must use `now()`, never `Date.now()`/`performance.now()` — a
+  stamp on the real clock is hours away from the pinned one (the helm, HUD and ghost-click
+  suites broke exactly that way). `wallMs()` stays the real, frozen-in-a-block clock.
 - **Never measure the frame with `--virtual-time-budget`.** It fast-forwards
   timers, so the probe measures the fast-forward. `docs/g11.ps1` runs `?g11`
   correctly; it also leaves the GPU on, because `--disable-gpu` reads ~10 fps in

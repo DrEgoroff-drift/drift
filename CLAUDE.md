@@ -86,7 +86,8 @@ One phrase per module; the module's own header says the rest. Grep `docs/INDEX.m
 
 | File | What's inside |
 |---|---|
-| `01-core` | math, seeded RNG (`hashi`/`rng`/`fbm`), names, `sysDanger`, `VER` |
+| `01-core` | math, seeded RNG (`hashi`/`rng`/`fbm`), names, `sysDanger`, `VER`; the game's chance and clock (M441): `rnd`/`rndFx`/`rndSeed`, `now`/`clockSet`/`clockAdvance`, real-clock escapes `wallMs`/`wallNow`/`uidRand` — raw `Math.random`/`Date.now`/`performance.now`/`new Date()` anywhere else in `src/` is a build error |
+| `08a-statehash` | `stateHash()` — one hash of the world (G + the `rnd` position + the clock); the same-hash test `91zzzzzbb-samehash` |
 | `02-world` `06-galaxy` `06a-celest` `07-planet` | resources, world types, `starAt`/`getSystem`, the sky calendar `celestAt`, planet textures |
 | `03-ships` `04-mods` `05-parts` | hulls (`hullOf`/`drawHull`), modules and science, parts and slots |
 | `03a-hull-maker` `12al-powers` | the maker grammar (M369): eight dimensions per maker read by `hullOf` and the paint conveyor, `makerRead()` measures whether it reads; the six powers of §7.1 with hails, emblems and the flag, and «Ялта» with its three prohibitions |
@@ -209,6 +210,7 @@ before doing the thing, not after it bites.
   canvas to software raster. For the verdict, `docs/g11.ps1` and nothing else.
 - **The test harness has no clock.** Any «took under N ms» assertion there is vacuous, and
   clock-paced production code degenerates to doing everything at once. Cap by work *and* time.
+  The *game* clock there is pinned (M441): stamp game state with `now()`, never `Date.now()`.
 - **Never measure the frame with `--virtual-time-budget`** — it fast-forwards the timers.
 - **`docs/pageshot.ps1` crops instead of narrowing.** Use it for how things look, never for
   whether they fit; for edges measure `getBoundingClientRect()` or run `test.ps1 -Mobile`.
