@@ -156,7 +156,7 @@ function instrPanel(P,FS){
        работает в обе стороны: то, что должно читаться, обязано быть крупным
        достаточно, а не только не слишком крупным. */
     ctx.fillStyle=col+".62)";
-    ctx.font=Math.max(9,Math.round(7.2*FS))+"px ui-monospace,monospace";
+    ctx.font=Math.max(9*uiK(),Math.round(7.2*FS))+"px ui-monospace,monospace";   /* пол растёт с линейкой (M443) */
     /* и СОКРАЩАЕТСЯ, а не мельчает. Полное имя влезает в ячейку широкой
        панели и не влезает в узкую («МАСС-ДЕТЕКТОР» это 64 px при 9-м кегле,
        а ячейка бывает и в сорок). Уменьшать кегль до нечитаемого — ровно та
@@ -169,7 +169,8 @@ function instrPanel(P,FS){
   {
     const mv=instrMisclose();
     const mt="НЕВЯЗКА "+mv.toFixed(3);
-    ctx.font=Math.round(7*FS)+"px ui-monospace,monospace";
+    /* семь пикселей на узком окне — ниже пола читаемого (M443): пол восемь × линейка */
+    ctx.font=Math.max(8*uiK(),Math.round(7*FS))+"px ui-monospace,monospace";
     const mw=Math.ceil(ctx.measureText(mt).width)+14, mx=x0+w+14, my=y-h-2, mh=h+8;
     ctx.fillStyle="rgba(6,9,13,.55)";ctx.fillRect(mx,my,mw,mh);
     ctx.strokeStyle=col+".18)";ctx.lineWidth=1;ctx.strokeRect(mx+.5,my+.5,mw-1,mh-1);
