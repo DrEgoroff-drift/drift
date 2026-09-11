@@ -69,6 +69,50 @@ TEST_SUITES.push(()=>suite("R0 пэды: на оклике ДЕЙСТВИЕ — 
   G.hail=null;hailTick(G.ship,1,false);hud();
 }));
 
+/* R1: действие делает то, что написано, когда в кадре два предложения */
+TEST_SUITES.push(()=>suite("R1 пояс рядом с планетой: подсказка и ДЕЙСТВИЕ совпадают",{tier:"browser"},()=>{
+  resetWorld();
+  let S=null;
+  for(let r=0;r<8&&!S;r++)for(let x=-r;x<=r&&!S;x++)for(let y=-r;y<=r&&!S;y++){
+    const s=getSystem(x,y);if(s.belt&&s.planets.some(p=>p.type!=="gas"))S=s;
+  }
+  ok(!!S,"нашлась система с поясом");
+  G.mode="system";G.sx=S.sx;G.sy=S.sy;G.sys=S;
+  const p=S.planets.find(q=>q.type!=="gas"),B=S.belt;
+  T.wait(1,{draw:false});
+  /* кольцо пояса — через точку в 50 ед. от поверхности планеты: два предложения в одном кадре */
+  const u=Math.hypot(p.x,p.y)||1;
+  G.ship.x=p.x+p.x/u*(p.radius+50);G.ship.y=p.y+p.y/u*(p.radius+50);
+  B.orbit=Math.hypot(G.ship.x,G.ship.y);
+  G.ship.vx=0;G.ship.vy=0;G.ap=null;G.orbit=null;G.hail=null;G.pirates=[];
+  T.wait(1,{draw:false});
+  const said=G.prompt;
+  const nd=Math.hypot(G.ship.x-p.x,G.ship.y-p.y)-p.radius,rr=Math.abs(Math.hypot(G.ship.x,G.ship.y)-B.orbit);
+  ok(nd<110&&rr<90,"в кадре оба предложения: до планеты "+Math.round(nd)+", от кольца "+Math.round(rr));
+  ok(/ДЕЙСТВИЕ —/.test(said),"в кадре есть предложение: "+said.split("\n")[0]);
+  T.press("act",1);
+  const belt=/ВОЙТИ В/.test(said),land=/ПОСАДКА/.test(said);
+  ok((belt&&G.mode==="belt")||(land&&(G.mode==="landing"||G.mode==="surface")),
+    "нажатие сделало написанное: «"+said.split("\n")[0]+"» → режим "+G.mode);
+  if(G.mode==="belt")try{exitBelt();}catch(e){}
+  G.mode="system";
+}));
+
+TEST_SUITES.push(()=>suite("R1 оклик у причала: подсказка — оклик, ДЕЙСТВИЕ отвечает, а не стыкует",{tier:"browser"},()=>{
+  T.go("система");
+  const S=G.sys.station;
+  ok(!!S,"станция в системе");
+  G.pirates=[];T.wait(1,{draw:false});   /* станция встала на орбиту */
+  G.ship.x=S.x+40;G.ship.y=S.y;G.ship.vx=0;G.ship.vy=0;G.ap=null;G.orbit=null;
+  const by=MAKER_KEYS.find(k=>k!==playerFlag());
+  G.hail={by,t:HAIL_HOLD,warn:0,x:G.ship.x,y:G.ship.y,blk:0};
+  T.wait(1,{draw:false});
+  ok(/ОКЛИК/.test(G.prompt),"подсказка — оклик: "+G.prompt);
+  T.press("act",1);
+  eq(G.hail,null,"ДЕЙСТВИЕ ответило на оклик");
+  ok(G.mode==="system","и не пристыковало");
+}));
+
 TEST_SUITES.push(()=>suite("подсказка: старший уровень бьёт младший в любом порядке",()=>{
   resetWorld();
   cueReset();
@@ -176,7 +220,7 @@ TEST_SUITES.push(()=>suite("станция: модуль — карточка с
   eq(G.credits,cr-cost,"касса списана один раз");
   G.modsOwned[k]=4;G.mods[k]=4;modWork=null;renderTab();
   eq(document.querySelector(".modcard .macts .act").textContent,"МАКСИМУМ","на четвёртом — МАКСИМУМ");
-  T.leave();
+  modWork=null;T.leave();
 }));
 
 TEST_SUITES.push(()=>suite("сплав: карточка обещает ровно то, что выйдет",()=>{

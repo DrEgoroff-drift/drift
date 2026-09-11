@@ -59,7 +59,8 @@ function modCard(k,cap){
   /* одна кнопка — по состоянию; снять уровень — вторая, тихая */
   const acts=el("div","macts");
   let label,go=null,off=false,gold=true;
-  if(W){label=W.done?"УСТАНОВЛЕНО":"МОНТАЖ…";off=true;}
+  /* серая на время монтажа — и говорит почему (сеть порога: «док занят») */
+  if(W){label=W.done?"УСТАНОВЛЕНО · УР. "+lvl:"ДОК ЗАНЯТ · МОНТАЖ…";off=true;}
   else if(lvl<own){
     label=room?"ПОСТАВИТЬ УР. "+(lvl+1):"НЕТ МЕСТА В ОСНАСТКЕ";off=!room;
     go=()=>{if(capUsed()+1>cap){say("Не хватает места в оснастке");return;}
@@ -332,7 +333,7 @@ function fuseCard(c){
   card.appendChild(el("div","mf",h));
   const short=need.filter(x=>x[1]<x[2]).map(x=>x[0]);
   const acts=el("div","macts");
-  const label=W?(W.done?"ГОТОВО":"ПЛАВКА…"):!two?"НУЖНЫ ДВА КОРАБЛЯ":
+  const label=W?(W.done?"ГОТОВО · УЖЕ В АНГАРЕ":"ПЕЧЬ ЗАНЯТА · ПЛАВКА…"):!two?"НУЖНЫ ДВА КОРАБЛЯ":
     short.length?"НЕ ХВАТАЕТ: "+short.join(", ").toUpperCase():"СПЛАВИТЬ · "+c.credits.toLocaleString("ru")+" КР";
   const bf=el("button","act"+(!W&&two&&!short.length?" gold":""),label);
   bf.disabled=!!W||!two||!!short.length;

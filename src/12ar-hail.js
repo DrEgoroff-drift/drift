@@ -121,8 +121,8 @@ function hailTick(sh,dt,actEdge){
     H.t-=dt;
     /* вопрос и отсчёт — в окне (hailWinSync); подсказка несёт только ответы,
        короткие, чтобы на 390 px она не резалась, а пэды взяли глаголы */
-    cue(H.hold?"ВЕЛЕНО СТОЯТЬ · ЖДИТЕ":"ОКЛИК · ДЕЙСТВИЕ — ПРОХОДОМ · ЦЕЛЬ — ПО ДЕЛУ",CUE_ACT);
-    if(actEdge&&!H.hold){hailAnswer("pass");hailWinSync();return true;}
+    const won=cue(H.hold?"ВЕЛЕНО СТОЯТЬ · ЖДИТЕ":"ОКЛИК · ДЕЙСТВИЕ — ПРОХОДОМ · ЦЕЛЬ — ПО ДЕЛУ",CUE_ACT);
+    if(won&&actEdge&&!H.hold){hailAnswer("pass");hailWinSync();return true;}
     if(H.t<=0){
       /* блокада: велели стоять, и он простоял срок (дальше 1400 — hailRunCheck) —
          отпускают. Прежде таймаут после «стоять» шёл в злость «не ответил», хотя

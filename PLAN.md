@@ -209,7 +209,14 @@ before a push.
   fix, a WIP commit, dev, one line to both reviewers). Sources: the tester's `review.json` and
   `botverify.json` (scratchpad 3d6318e9…), the designer's letters. Scale stays as built until the
   author says otherwise (the reviewers disagree; a peer cannot decide for the author).
-  - [ ] **R0 picket «Коммуна»**: the hail is a window with ПРОХОДОМ / ПО ДЕЛУ and a countdown, no fire
+  - **Handoff 12.09 ~02:30:** R0 done (ee24e4b). R1 committed WIP: the equal ACT keeps the first
+    writer unless the first line names the same object (`cueSameOffer`), the hail runs before the
+    station/belt/base, `if(cue(..)&&actEdge)` in 17-mode-system, `_probeAt` lives one frame (B1).
+    **Red now: M311 «плавбаза чинит», «чистому борту — конвой»; M312 «госпиталь», «учебное»** — the
+    fleet suites call `fleetInteract` for different ships in a row without a frame; start each call
+    with `cueReset()` in those tests (a new frame) or refine the rule. Then R1's module interactors
+    (12ai, 12l, 17b, 11ap, 12as, 13d) to `if(cue(..)&&actEdge)`, then R2.
+  - [x] **R0 picket «Коммуна»**: the hail is a window with ПРОХОДОМ / ПО ДЕЛУ and a countdown, no fire
     while it is open; in the start system the picket never wrecks (a warning volley, then escort);
     both pads relabel; B2 — the hail takes ЦЕЛЬ before the probe, `hailAnswer("pass")` no H.warn;
     first rungs tank 500 / hold 900 (Контроль); test «start, 120 s silent → hull > 50 %».

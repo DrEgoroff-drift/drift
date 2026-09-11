@@ -645,6 +645,7 @@ TEST_SUITES.push(()=>suite("правила M373: оклик, три ответа
   /* молчание: первое — предупреждение, второе — огонь */
   cbWorld();
   G.hail=null;G.hailLog={};G.cargo.missile=0;
+  G.sx=5;G.sy=3;   /* не система старта: там молчание стоит только предупреждения (R0, 12.09) */
   const q=hlFoe("km");
   hailTick(G.ship,1,false);
   ok(!!G.hail,"окликнули");
@@ -683,6 +684,7 @@ TEST_SUITES.push(()=>suite("правила M373: выстрел, клеймо и
   /* четвёртое правило: блокада — «проходом» не ответ, уход считается уходом */
   cbWorld();
   G.hail=null;G.hailLog={};G.cargo.missile=0;
+  G.sx=5;G.sy=3;   /* блокада вне системы старта (R0, 12.09) */
   const c=hlFoe("ra");
   G.hail={by:"ra",t:HAIL_HOLD,warn:0,x:0,y:0,blk:1};
   hailAnswer("pass");

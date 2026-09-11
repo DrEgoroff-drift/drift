@@ -51,7 +51,7 @@ function updateSystem(dt){
   /* штурвал (M360): три ввода пишут G.ctl, физика ниже читает только его.
      Орбиту и автопилот он снимает сам при любом рулении */
   helmTick(dt);
-  cueReset();   /* одна подсказка на кадр (08-state): дальше пишут только через cue() */
+  cueReset();G._probeAt=null;   /* одна подсказка на кадр (08-state); адрес зонда — только в кадре своей строки (B1) */
   /* буксир (16c): пока баржа ведёт корабль, штурвал и физика молчат */
   if(G.haul&&typeof haulTick==="function"&&haulTick(dt,sh))return;
   /* захват принадлежит телу, а тело — системе. Прыжок, стыковка, посадка, пояс,
@@ -196,6 +196,10 @@ function updateSystem(dt){
     /* чужой бой: подсказка говорит ровно то, что происходит */
     cue("ЗДЕСЬ ИДЁТ ЧУЖОЙ БОЙ · "+bystand+" БОРТОВ"+"\nВАС НЕ ТРОГАЮТ, ПОКА ВЫ НЕ СТРЕЛЯЕТЕ",CUE_WARN);
   }
+  /* оклик пикета (M373, §6.1): пока на него не ответили, остальное ждёт — и
+     ждёт по-настоящему, ДО причала, пояса и базы (R1, 12.09): прежде он стоял
+     после них, и у причала подсказка звала стыковаться, пока пикет ждал ответа */
+  if(typeof hailTick==="function"&&hailTick(sh,dt,actEdge))return;
 
   if(sys.station){
     const S=sys.station,ds=Math.hypot(sh.x-S.x,sh.y-S.y);
@@ -204,10 +208,7 @@ function updateSystem(dt){
     if(ds<300||keyOn){
       if(ds<95||keyOn){
         if(sp>2.6)cue("СБРОСЬТЕ СКОРОСТЬ · "+sp.toFixed(1)+"\nТОРМОЗ — ГАШЕНИЕ",CUE_ACT);
-        else{
-          cue("ДЕЙСТВИЕ — СТЫКОВКА · "+S.kind.toUpperCase(),CUE_ACT);
-          if(actEdge)openStation();
-        }
+        else if(cue("ДЕЙСТВИЕ — СТЫКОВКА · "+S.kind.toUpperCase(),CUE_ACT)&&actEdge)openStation();
         return;
       }
       cue(S.name.toUpperCase()+" · "+Math.round(ds)+" ед.",CUE_INFO);
@@ -219,7 +220,7 @@ function updateSystem(dt){
     if(wn){
       if(wn.close){
         if(sp>2.6)cue("СБРОСЬТЕ СКОРОСТЬ · "+sp.toFixed(1)+"\nТОРМОЗ — ГАШЕНИЕ",CUE_ACT);
-        else{cue("ДЕЙСТВИЕ — К ТРАПУ «СОРОКИ»",CUE_ACT);if(actEdge)wanderDock();}
+        else if(cue("ДЕЙСТВИЕ — К ТРАПУ «СОРОКИ»",CUE_ACT)&&actEdge)wanderDock();
         return;
       }
       cue("«СОРОКА» · "+Math.round(wn.ds)+" ед.",CUE_INFO);
@@ -229,8 +230,7 @@ function updateSystem(dt){
   if(B){
     const rr=Math.hypot(sh.x,sh.y);
     if(Math.abs(rr-B.orbit)<90){
-      cue("ДЕЙСТВИЕ — ВОЙТИ В "+B.name.toUpperCase()+"\nРУДА: "+B.res.map(k=>RES[k].ru).join(", "),CUE_ACT);
-      if(actEdge){enterBelt();return;}
+      if(cue("ДЕЙСТВИЕ — ВОЙТИ В "+B.name.toUpperCase()+"\nРУДА: "+B.res.map(k=>RES[k].ru).join(", "),CUE_ACT)&&actEdge){enterBelt();return;}
     }
   }
   /* пиратская база — точка входа в абордаж; есть только в опасных секторах */
@@ -241,14 +241,12 @@ function updateSystem(dt){
       if(d<160){
         /* письмо на Остров (M160): с письмом подходят без боя — вторая дверь */
         const withLetter=typeof islandHeld==="function"&&islandHeld().length>0;
-        cue("ПИРАТСКАЯ БАЗА · "+PB.name.toUpperCase()+
-          (withLetter?"\nДЕЙСТВИЕ — СЕСТЬ С ПИСЬМОМ · без оружия":"\nДЕЙСТВИЕ — АБОРДАЖ"+(st.armed?"":" (ОРУЖИЯ НЕТ)")),CUE_ACT);
-        if(actEdge){if(withLetter)islandLand(PB);else enterRaid(PB);return;}
+        if(cue("ПИРАТСКАЯ БАЗА · "+PB.name.toUpperCase()+
+          (withLetter?"\nДЕЙСТВИЕ — СЕСТЬ С ПИСЬМОМ · без оружия":"\nДЕЙСТВИЕ — АБОРДАЖ"+(st.armed?"":" (ОРУЖИЯ НЕТ)")),CUE_ACT)&&actEdge){
+          if(withLetter)islandLand(PB);else enterRaid(PB);return;}
       }
     }
   }
-  /* оклик пикета (M373, §6.1): пока на него не ответили, остальное ждёт */
-  if(typeof hailTick==="function"&&hailTick(sh,dt,actEdge))return;
   /* оставленное (M377, §11.3): чужая вещь в пустоте, копия и благодарность */
   if(typeof leftInteract==="function"&&leftInteract(sh,actEdge))return;
   /* спасатель (M375, §6.4): подбитым — топливо, обломкам — трос и экипаж.
@@ -298,8 +296,7 @@ function updateSystem(dt){
     if(nd<110){
       if(near.type==="gas"){
         /* сесть по-прежнему некуда, но в верхние слои можно зайти за газами */
-        cue("ГАЗОВЫЙ ГИГАНТ · ПОСАДКИ НЕТ\nДЕЙСТВИЕ — ЗАХОД ЗА ЛЕТУЧИМИ ГАЗАМИ",CUE_ACT);
-        if(actEdge){startScoop(near);return;}
+        if(cue("ГАЗОВЫЙ ГИГАНТ · ПОСАДКИ НЕТ\nДЕЙСТВИЕ — ЗАХОД ЗА ЛЕТУЧИМИ ГАЗАМИ",CUE_ACT)&&actEdge){startScoop(near);return;}
       }
       else if(!G.opts.easyLand&&sp>3.2)cue("СЛИШКОМ БЫСТРО · "+sp.toFixed(1)+"\nТОРМОЗ — ГАШЕНИЕ",CUE_ACT);
       else{
@@ -314,11 +311,13 @@ function updateSystem(dt){
           if(typeof probeHas==="function"&&!probeHas(G.sx,G.sy,near.idx))
             ln+="\nЦЕЛЬ — ЗОНД ЗА "+PROBE_COST+" КР";
         }
-        cue(ln,CUE_ACT);
+        const won=cue(ln,CUE_ACT);
         /* адрес для зонда: само нажатие ловит штурвал одним фронтом на клавишу
-           и пэд, а `probeClaim` (21a8) его забирает (разбор 0.409.1) */
-        G._probeAt=(near.type!=="gas")?{sx:G.sx|0,sy:G.sy|0,idx:near.idx|0}:null;
-        if(actEdge){startLanding(near);return;}
+           и пэд, а `probeClaim` (21a8) его забирает (разбор 0.409.1). Живёт
+           ровно кадр, в котором строка с ценой на экране (B1 ботов, 12.09):
+           сбрасывается рядом с cueReset, ставится только победившей строкой */
+        if(won&&near.type!=="gas")G._probeAt={sx:G.sx|0,sy:G.sy|0,idx:near.idx|0};
+        if(won&&actEdge){startLanding(near);return;}
       }
       return;
     }
@@ -344,12 +343,10 @@ function updateSystem(dt){
   if(cueLvl()<CUE_ACT&&G.fuel<=0&&!(G.tech.has("synth")&&G.cargo.ice>0)&&!document.body.classList.contains("sosopen")){   /* окно открыто — подсказка не повторяет его */
     /* подсказка называет только те выходы, что есть: без дома в системе старта ДОМОЙ нет */
     const H=rescueHomeAt(),home=!(G.sx===H.sx&&G.sy===H.sy);
-    cue("ХОДА НЕТ · БАК ПУСТ\nДЕЙСТВИЕ — "+(home?"ДОМОЙ, БУКСИР ИЛИ СБРОС":"БУКСИР ИЛИ СБРОС"),CUE_TROUBLE);
-    if(actEdge){toggleSos(true);return;}
+    if(cue("ХОДА НЕТ · БАК ПУСТ\nДЕЙСТВИЕ — "+(home?"ДОМОЙ, БУКСИР ИЛИ СБРОС":"БУКСИР ИЛИ СБРОС"),CUE_TROUBLE)&&actEdge){toggleSos(true);return;}
   }
   if(cueLvl()<CUE_ACT&&G.tech.has("synth")&&G.cargo.ice>0&&G.fuel<st.fuelMax){
-    cue("ДЕЙСТВИЕ — СИНТЕЗ ТОПЛИВА ИЗО ЛЬДА ("+G.cargo.ice+")",CUE_ACT);
-    if(actEdge){
+    if(cue("ДЕЙСТВИЕ — СИНТЕЗ ТОПЛИВА ИЗО ЛЬДА ("+G.cargo.ice+")",CUE_ACT)&&actEdge){
       const ratio=st.synthRatio;
       const n=Math.min(G.cargo.ice,Math.ceil((st.fuelMax-G.fuel)/ratio));
       G.cargo.ice-=n;G.fuel=Math.min(st.fuelMax,G.fuel+n*ratio);

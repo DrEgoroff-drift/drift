@@ -236,5 +236,18 @@ function cueLvl(){
   return !G.prompt?0:(/ДЕЙСТВИЕ/.test(G.prompt)?CUE_ACT:CUE_INFO);
 }
 function cueReset(){CUE_LVL=0;CUE_TXT="";G.prompt="";}
-function cue(t,lvl){lvl=lvl||CUE_INFO;if(lvl<cueLvl())return false;CUE_LVL=lvl;G.prompt=CUE_TXT=t;return true;}
+/* действие — первое (R1, надзор 12.09): у ДЕЙСТВИЯ равный уровень слот не
+   отдаёт. Цепочка кадра идёт по порядку, и первый предложивший первым же ловит
+   нажатие; «равный — последний» показывал ПОСАДКУ, а жал пояс, стоявший раньше.
+   Правило для писателя: `if(cue(строка,CUE_ACT)&&actEdge){…}` — действует только
+   тот, чья строка на экране */
+/* «тот же предложивший» — по первой строке: она называет объект («ТАНКЕР
+   ГЛАВТРАССЫ «ОКОЁМ»»). Свой объект строку обновляет, чужой её не забирает */
+function cueSameOffer(a,b){return String(a).split("\n")[0]===String(b).split("\n")[0];}
+function cue(t,lvl){
+  lvl=lvl||CUE_INFO;
+  const cur=cueLvl();
+  if(lvl<cur||(lvl===CUE_ACT&&cur===CUE_ACT&&!cueSameOffer(G.prompt,t)))return false;
+  CUE_LVL=lvl;G.prompt=CUE_TXT=t;return true;
+}
 function msgHeld(){const b=typeof document!=="undefined"&&document.body;return MSG_WORLD&&!!(b&&b.classList&&b.classList.contains("screen"));}
