@@ -1080,66 +1080,66 @@ deskItemNew                  src/27ia-desk-top.js:337-341
 deskItemOf                   src/27ia-desk-top.js:331-335
 DET                          tests/90b-detect.js:34
 DET_ASTRO_H                  tests/90c-detect-laws.js:269
-DET_CLOSE                    tests/91zzzzzzzz-detect.js:109
-DET_COST                     tests/91zzzzzzzz-detect.js:190
+DET_CLOSE                    tests/91zzzzzzzz-detect.js:107
+DET_COST                     tests/91zzzzzzzz-detect.js:188
 DET_DIRTY                    tests/90c-detect-laws.js:142
 DET_EXEMPT                   tests/90c-detect-laws.js:64-78
 DET_HOOKED                   tests/90b-detect.js:338
 DET_INSTR                    tests/90c-detect-laws.js:16-38
-DET_MUTE                     tests/91zzzzzzzz-detect.js:21-59
+DET_MUTE                     tests/91zzzzzzzz-detect.js:21-57
 DET_N                        tests/91zzzzzzzz-detect.js:16
 DET_NAMES                    tests/90b-detect.js:304
 DET_PROTOS                   tests/90b-detect.js:320
-DET_SETTLE_ERRS              tests/91zzzzzzzz-detect.js:64
+DET_SETTLE_ERRS              tests/91zzzzzzzz-detect.js:62
 DET_SM                       tests/90b-detect.js:102
 DET_STATE_OF                 tests/90b-detect.js:355
 DET_TEXT_MIN                 tests/90c-detect-laws.js:202
 detBgShift                   tests/90b-detect.js:145-152
 detBlink                     tests/90b-detect.js:249-263
 detBlocks                    tests/90b-detect.js:226-233
-detCanvases                  tests/91zzzzzzzz-detect.js:163-174
-detCloseTry                  tests/91zzzzzzzz-detect.js:114-138
+detCanvases                  tests/91zzzzzzzz-detect.js:161-172
+detCloseTry                  tests/91zzzzzzzz-detect.js:112-136
 detColor                     tests/90c-detect-laws.js:204-209
 detContrast                  tests/90c-detect-laws.js:213-224
 detControls                  tests/90c-detect-laws.js:158-200
-detCost                      tests/91zzzzzzzz-detect.js:191
+detCost                      tests/91zzzzzzzz-detect.js:189
 detCrash                     tests/90c-detect-laws.js:95-102
 detDiff                      tests/90b-detect.js:123-127
-detDoors                     tests/91zzzzzzzz-detect.js:282-306
+detDoors                     tests/91zzzzzzzz-detect.js:280-304
 DETECTORS                    tests/90c-detect-laws.js:284
 detErr                       tests/90b-detect.js:135-143
 detExempt                    tests/90c-detect-laws.js:79-89
-detFrame                     tests/91zzzzzzzz-detect.js:176-181
+detFrame                     tests/91zzzzzzzz-detect.js:174-179
 detGrab                      tests/90b-detect.js:103-111
 detHook                      tests/90b-detect.js:339-352
-detHudText                   tests/91zzzzzzzz-detect.js:140-147
+detHudText                   tests/91zzzzzzzz-detect.js:138-145
 detHuman                     tests/90c-detect-laws.js:270-283
 detInk                       tests/90b-detect.js:86-96
 detInstr                     tests/90c-detect-laws.js:143-156
 detInstrRead                 tests/90c-detect-laws.js:40-59
-detIsOpen                    tests/91zzzzzzzz-detect.js:110-113
+detIsOpen                    tests/91zzzzzzzz-detect.js:108-111
 detLaw                       tests/90c-detect-laws.js:118-140
 detLum                       tests/90c-detect-laws.js:203
-detNameless                  tests/91zzzzzzzz-detect.js:151-162
+detNameless                  tests/91zzzzzzzz-detect.js:149-160
 detNames                     tests/90b-detect.js:305-319
 detNewMotion                 tests/90b-detect.js:239-243
-detOverlays                  tests/91zzzzzzzz-detect.js:100-108
+detOverlays                  tests/91zzzzzzzz-detect.js:98-106
 detParallax                  tests/90b-detect.js:204-224
 detPatch                     tests/90b-detect.js:113-119
 detPatchShift                tests/90b-detect.js:154-163
 detPicture                   tests/90c-detect-laws.js:225-267
 detProtoOf                   tests/90b-detect.js:321-337
 detRot                       tests/90b-detect.js:169-188
-detRuler                     tests/91zzzzzzzz-detect.js:77-86
+detRuler                     tests/91zzzzzzzz-detect.js:75-84
 detSamp                      tests/90b-detect.js:128-133
 detScale                     tests/90b-detect.js:190-197
-detSettle                    tests/91zzzzzzzz-detect.js:65-71
-detShipScr                   tests/91zzzzzzzz-detect.js:88-91
-detSig                       tests/91zzzzzzzz-detect.js:93-98
-detStep                      tests/91zzzzzzzz-detect.js:192-280
+detSettle                    tests/91zzzzzzzz-detect.js:63-69
+detShipScr                   tests/91zzzzzzzz-detect.js:86-89
+detSig                       tests/91zzzzzzzz-detect.js:91-96
+detStep                      tests/91zzzzzzzz-detect.js:190-278
 detStuck                     tests/90c-detect-laws.js:104-116
 detSuitSrc                   tests/90c-detect-laws.js:13-15
-detTick                      tests/91zzzzzzzz-detect.js:182-188
+detTick                      tests/91zzzzzzzz-detect.js:180-186
 detV                         tests/90c-detect-laws.js:92
 detWalk                      tests/90b-detect.js:269-292
 DEV_CAP                      src/21b4-base-build.js:26
@@ -2307,7 +2307,7 @@ jobOffer                     src/12e-mgr-jobs.js:228-240
 jobPick                      src/12e-mgr-jobs.js:259-282
 jobRefuse                    src/12e-mgr-jobs.js:57-66
 jobTick                      src/12e-mgr-jobs.js:287-296
-jump                         src/18-mode-map.js:558-590
+jump                         src/18-mode-map.js:562-594
 jumpToBase                   src/21a-mode-base.js:384-401
 KEEP_DARK_AFTER              src/11k-keepers.js:48
 KEEP_HABIT                   src/11k-keepers.js:35-45
@@ -2520,14 +2520,14 @@ logPageOf                    src/11-log.js:13
 logShip                      src/01a-crashlog.js:50-53
 logTime                      src/11-log.js:54-57
 LONG_HOD                     src/12b3-fx-cult.js:32-45
-look                         src/28y-look.js:270-274
+look                         src/28y-look.js:273-277
 LOOK_BASE                    tests/91zzzzy-look.js:21-37
 LOOK_DAYLIGHT                src/28y-look.js:113
 LOOK_TARGET                  src/28y-look.js:41
-lookAll                      src/28y-look.js:249-268
+lookAll                      src/28y-look.js:252-271
 lookFrame                    src/28y-look.js:46-108
 lookoutSees                  src/12ag-holdfx.js:104-111
-lookScenes                   src/28y-look.js:129-245
+lookScenes                   src/28y-look.js:129-248
 lookVerdict                  src/28y-look.js:114-124
 LOOP_OFF                     src/28-loop.js:174
 LOOP_PHASE                   src/01-core.js:72
@@ -2586,14 +2586,14 @@ MAIN_CTX                     src/08-state.js:4
 makeIR                       src/10-music.js:109-121
 makePhrase                   src/10-music.js:344-367
 MAKER_ASSEMBLY               src/03a-hull-maker.js:454
-MAKER_CV                     src/28y-look.js:308
+MAKER_CV                     src/28y-look.js:311
 MAKER_KEYS                   src/03a-hull-maker.js:73
-MAKER_PX                     src/28y-look.js:307
+MAKER_PX                     src/28y-look.js:310
 makerAssembly                src/03a-hull-maker.js:455
 makerBank                    src/03a-hull-maker.js:408
 makerBySeed                  src/03a-hull-maker.js:89
 makerDraw                    src/03a-hull-maker.js:231-353
-makerFeat                    src/28y-look.js:309-382
+makerFeat                    src/28y-look.js:312-385
 makerFlame                   src/03a-hull-maker.js:407
 makerForms                   src/03a-hull-maker.js:93-101
 makerGround                  src/03a-hull-maker.js:443
@@ -2605,10 +2605,10 @@ makeRock                     src/24-mode-belt.js:54-80
 makerOf                      src/03a-hull-maker.js:80-86
 makerOuts                    src/03a-hull-maker.js:176-194
 makerProfile                 src/03a-hull-maker.js:107-172
-makerRead                    src/28y-look.js:390-454
+makerRead                    src/28y-look.js:393-457
 makerRow                     src/03a-hull-maker.js:87
 makerRu                      src/03a-hull-maker.js:90
-makerStand                   src/28y-look.js:383-389
+makerStand                   src/28y-look.js:386-392
 makerWear                    src/03a-hull-maker.js:444
 makerWidth                   src/03a-hull-maker.js:414-441
 makeWorld                    src/02a-worldmix.js:47-64
@@ -4675,7 +4675,7 @@ updateCombat                 src/13-pirates.js:115-300
 updateDig                    src/23-mode-dig.js:128-236
 updateHomeIn                 src/29c-home-in.js:160-200
 updateLanding                src/19-mode-landing.js:68-133
-updateMap                    src/18-mode-map.js:548-557
+updateMap                    src/18-mode-map.js:548-561
 updateRaid                   src/24a-mode-raid.js:215-345
 updateScoop                  src/19a-mode-scoop.js:75-171
 updateSpa                    src/29i-spa-draw.js:514-519
@@ -4911,9 +4911,9 @@ weatherName                  src/19d-weather.js:76-88
 weatherOf                    src/19d-weather.js:53-67
 weatherPower                 src/19d-weather.js:69-75
 WHY_TIGHT                    tests/91zzzzzj-why.js:21
-whyBar                       tests/91zzzzzj-why.js:37
-whyDial                      tests/91zzzzzj-why.js:36
-whyScene                     tests/91zzzzzj-why.js:29-34
+whyBar                       tests/91zzzzzj-why.js:40
+whyDial                      tests/91zzzzzj-why.js:39
+whyScene                     tests/91zzzzzj-why.js:29-37
 whyTight                     tests/91zzzzzj-why.js:22-25
 WIN_BAD                      src/29f-winter.js:32
 WIN_C                        src/29g-winter-draw.js:19-24
@@ -6026,9 +6026,9 @@ zooTick                      src/11ad-zoo.js:41-54
   · prof() — на что уходит кадр:438
   · dbg() — что держит корабль:479
 
-## src/28y-look.js · 29 КБ
+## src/28y-look.js · 30 КБ
   · look() — прибор кадра:1
-  · читается ли изготовитель (M369, §19.4):293
+  · читается ли изготовитель (M369, §19.4):296
 
 ## src/28z-fps-probe.js · 9 КБ
   · пробник G11: ?g11:1
@@ -6647,7 +6647,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzzzzi-promise.js · 14 КБ
   · обещание кнопки (M355):1
 
-## tests/91zzzzzj-why.js · 14 КБ
+## tests/91zzzzzj-why.js · 15 КБ
   · зачем оно всё (M355):1
 
 ## tests/91zzzzzk-fair.js · 11 КБ

@@ -181,7 +181,7 @@
   "tests/91zzzzzg-hit.js": ["src/08-state.js", "src/17c-system-draw.js", "src/26-ui-station.js", "src/27i-ui-table.js", "src/27z-telemetry.js", "src/28y-look.js"],
   "tests/91zzzzzh-leak.js": ["src/08-state.js", "src/11b-speech.js", "src/26-ui-station.js", "src/27i-ui-table.js", "src/27l-road-draw.js", "src/27z-telemetry.js", "src/28y-look.js"],
   "tests/91zzzzzi-promise.js": ["src/02-world.js", "src/04-mods.js", "src/08-state.js", "src/11-log.js", "src/17c-system-draw.js", "src/26-ui-station.js", "src/27i-ui-table.js"],
-  "tests/91zzzzzj-why.js": ["src/01-core.js", "src/02-world.js", "src/04-mods.js", "src/08-state.js", "src/17c-system-draw.js", "src/18-mode-map.js", "src/19a-mode-scoop.js", "src/27z-telemetry.js", "src/28-loop.js", "src/28y-look.js"],
+  "tests/91zzzzzj-why.js": ["src/01-core.js", "src/02-world.js", "src/04-mods.js", "src/08-state.js", "src/08a-statehash.js", "src/17c-system-draw.js", "src/18-mode-map.js", "src/19a-mode-scoop.js", "src/27z-telemetry.js", "src/28-loop.js", "src/28y-look.js"],
   "tests/91zzzzzk-fair.js": ["src/01-core.js", "src/02-world.js", "src/03-ships.js", "src/04-mods.js", "src/08-state.js", "src/11-log.js", "src/12ak-locker.js", "src/17c-system-draw.js", "src/26-ui-station.js"],
   "tests/91zzzzzl-gates.js": ["src/02-world.js", "src/08-state.js", "src/12a-crew.js", "src/12k-rep.js", "src/17c-system-draw.js", "src/21-mode-surface.js", "src/26-ui-station.js", "src/27i-ui-table.js", "src/28y-look.js"],
   "tests/91zzzzzm-exploit.js": ["src/01-core.js", "src/02-world.js", "src/05-parts.js", "src/08-state.js", "src/12-economy.js", "src/12ak-locker.js", "src/12k-rep.js"],

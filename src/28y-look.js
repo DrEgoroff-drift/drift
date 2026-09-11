@@ -235,7 +235,10 @@ function lookScenes(){
          право писать одна функция earn() — её сторожит отдельный тест */
       G.credits=Math.max(G.credits|0,99999);G.cargo.alloy=Math.max(G.cargo.alloy|0,20);
       if(!baseAt(G.sx,G.sy,p.idx)&&!foundBase(p))return false;
-      enterBase(p);return G.mode==="base";}},
+      enterBase(p);if(G.mode!=="base")return false;
+      /* клеть — на второй ярус: на верхнем W упиралась в потолок ствола, и
+         детекторам приходилось глушить её «по праву» (0.441.0) */
+      G.base.row=1;G.base.y=cellY(1);return true;}},
     {id:"дом",set:()=>{if(!G.home)G.home=homeInit();
       G.home.tier=Math.max(4,G.home.tier|0);
       if(!jump(find(q=>(q.planets||[]).some(day))))return false;

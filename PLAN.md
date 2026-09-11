@@ -272,14 +272,14 @@ can go red; `T.replay` refuses a recording from another `VER`; the trips oracle 
   (files renamed 1248x641 → 1280x800, 548x685 → 390x844, 1408x1281 → 1440x1440), and a window
   without a golden is red, not a note. Still true: `deploy.yml` runs the fast tier only, so no
   browser suite runs in CI; the lab's SwiftShader will say whether the block mean is coarse enough.
-- **The silence table** — 16 mode × gesture pairs; `base · W` and `wanderer · A` are scene-setup
-  artefacts (cage on the top level, the corridor's left end). **Tried 11.09, reverted — both
-  moves found something else:** the cage on the second level makes the hint promise «ПОРОДА ·
-  ДЕЙСТВИЕ — ПРОКОПАТЬ» while one ДЕЙСТВИЕ does nothing (a hold the suite does not know, or a
-  bug — `91zzzzzz-prompt`); the «Сорока» scene two steps from the ladder fails the same-hash
-  suite under seeded hands (something in the corridor's buy path reads real chance or real
-  time). Fix those two, then move the scenes and un-silence. `detStuck`'s key law fires only on a
-  frame diff of exactly 0 — soften it together with that table, not alone (tried; map W/A went red).
+- **The silence table** — 15 mode × gesture pairs left. 0.441.0: `base · W` gone (the base scene
+  puts the cage on the second level; the promise suite that blocked the first try hashed only the
+  first 4 000 chars of the mode's JSON and never saw the menu open — fixed to `stateHash`). Still
+  silenced: `wanderer · A` — two steps from the ladder the same-hash suite goes red under seeded
+  hands: **something on the corridor's buy path (`wanderBuy`/`wanStep`, 24c) reads real chance
+  or real time** — find it, then move the scene. `detStuck`'s key law fires only on a frame diff
+  of exactly 0 — soften it together with that table, not alone (tried; map W/A went red).
+  Found on the way: the map was silent on ДЕЙСТВИЕ with your own sector selected — now it speaks.
 - **`stateHash` mixes `now()` in** (`08a:74`) — for the cloud's «where did it diverge» it must
   not depend on the wall clock (author's call: the clock as a separate field, or out). Done in
   0.440.0: `Set`/`Map` with primitive members are hashed sorted, so the order techs were bought

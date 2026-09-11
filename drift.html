@@ -1761,7 +1761,7 @@ body.table u.addr{color:#7a4a20}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.440.0";
+const VER="0.441.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -46296,6 +46296,10 @@ function updateMap(dt){
     if(G.mapPeek)say("Сначала отстыкуйтесь");
     else if(!bad)jump(cost);
     else if(dsel>0)say("Прыжок невозможен");
+    /* выбран свой же сектор: подсказка обещает ПРЫЖОК, и молчать в ответ нельзя —
+       у отказа есть голос (нашёл набор подсказки, когда карта стала шагать
+       в updateMap, 0.441.0) */
+    else say("Вы уже здесь — выберите другой сектор");
   }
 }
 function jump(cost){
@@ -86594,7 +86598,10 @@ function lookScenes(){
          право писать одна функция earn() — её сторожит отдельный тест */
       G.credits=Math.max(G.credits|0,99999);G.cargo.alloy=Math.max(G.cargo.alloy|0,20);
       if(!baseAt(G.sx,G.sy,p.idx)&&!foundBase(p))return false;
-      enterBase(p);return G.mode==="base";}},
+      enterBase(p);if(G.mode!=="base")return false;
+      /* клеть — на второй ярус: на верхнем W упиралась в потолок ствола, и
+         детекторам приходилось глушить её «по праву» (0.441.0) */
+      G.base.row=1;G.base.y=cellY(1);return true;}},
     {id:"дом",set:()=>{if(!G.home)G.home=homeInit();
       G.home.tier=Math.max(4,G.home.tier|0);
       if(!jump(find(q=>(q.planets||[]).some(day))))return false;

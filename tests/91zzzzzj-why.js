@@ -30,7 +30,10 @@ function whyScene(){
   const k={surface:"surf",landing:"land",dig:"dig",cave:"cave",belt:"belt",scoop:"scoop",
     base:"base",raid:"raid",homein:"hin",winter:"win",spa:"spa",wanderer:"wan"}[G.mode];
   if(!k||!G[k])return "";
-  try{ return JSON.stringify(G[k]).slice(0,4000); }catch(e){ return ""; }
+  /* хэш всего состояния режима, а не первые 4000 знаков его JSON: у базы впереди
+     лежит сама база (B), и открывшееся меню (menu:true) в срез не влезало —
+     набор считал, что ДЕЙСТВИЕ «ничего не сделало» (0.441.0) */
+  try{ return stateHash(G[k]); }catch(e){ return ""; }
 }
 /* показания приборов: то, что игрок читает глазами */
 function whyDial(id){const e=document.getElementById(id);return e?String(e.textContent||"").trim():null;}

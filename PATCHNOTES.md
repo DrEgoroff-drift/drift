@@ -6,6 +6,20 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.441.0 - the map answers on your own sector, and one silence less
+
+- **On the map, ДЕЙСТВИЕ with your own sector selected now says «Вы уже здесь — выберите
+  другой сектор»** instead of nothing. The prompt promised ПРЫЖОК and the game stayed silent;
+  the promise suite saw it the moment the map started stepping in `updateMap` (0.438.0)
+  rather than inside its frame.
+- **The base scene puts the cage on the second level**, so W is judged there — the detectors'
+  «base · W is silent by right» is gone (the cage stood on the top level with nowhere to go).
+  The first attempt was blocked by the promise suite, and that was the suite's fault: it hashed
+  the first 4 000 characters of the mode's JSON, and the base object comes first, so an opening
+  menu never fit. It hashes the whole mode state now (`stateHash`).
+- The «Сорока» scene stays at the ladder for now: two steps in, the same-hash suite goes red
+  under seeded hands — something on the corridor's buy path reads real chance or real time.
+  Named in `PLAN.md`. The three goldens were re-shot for the moved base scene.
 ## 0.440.0 - golden frames keyed by the window you asked for
 
 - **A golden frame is looked up by the window `test.ps1` requested** (`?win=1280,800`), not by
