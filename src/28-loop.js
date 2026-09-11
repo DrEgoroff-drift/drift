@@ -231,6 +231,7 @@ function drawWorld(){
     grainPass(!(G.mode==="surface"||G.mode==="landing"));
 }
 function frameBody(now){
+  FRAME_IN=true;   /* всё, что скажет кадр, — голос мира (say, 08-state); снимается в конце и на событиях */
   if(LOOP_OFF)return;
   /* Скрытая страница не рисует. Обычно её и так не будят — rAF стоит, — но в
      headless с виртуальным временем кадры идут как из пулемёта, и полная
@@ -291,7 +292,7 @@ function frameBody(now){
       if(typeof offerTick==="function")offerTick();
       /* и однажды рассказанное возвращается чужим голосом (11aj) */
       if(typeof toldEther==="function")toldEther();}
-    if(G.msgT>0)G.msgT-=dt;
+    if(G.msgT>0&&!msgHeld())G.msgT-=dt;   /* голос мира ждёт, пока открыт экран (08-state) */
     /* запись и в доке, и на земле: полчаса торговли или бурения, закрытые
        крестиком браузера, откатывались к последнему полёту — деньги со сделок
        и руда исчезали молча (плейтест 30.08.2026). Оба режима стабильны, их
@@ -427,6 +428,7 @@ function frame(now){
       BEAT.sent++;BEAT.t=now;BEAT.n=0;BEAT.ms=0;}}}
   if(!STORAGE_OK&&!CRASH_SHIP.st){CRASH_SHIP.st=1;crashShip("storage","localStorage недоступен","");}
   try{frameBody(now);}catch(e){crashSay(e,G&&G.mode);}
+  FRAME_IN=false;   /* дальше до следующего кадра говорят нажатия — это отклик, а не голос мира */
   requestAnimationFrame(frame);
 }
 /* то же для ошибок вне кадра: обработчик нажатия, ответ сервера, таймер.

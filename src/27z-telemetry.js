@@ -301,8 +301,9 @@ function hud(){
   /* пол и правый борт — тем же одним чтением на кадр. Пустая подсказка в счёт
      не идёт: у неё нет текста, а место она занимать не должна. */
   hudFloorMeasure();
-  setTx($msg,G.msgT>0?G.msg:"");
-  setSt($msg,"opacity",G.msgT>0?clamp(G.msgT/40,0,1):0);
+  const msgOn=G.msgT>0&&!msgHeld();
+  setTx($msg,msgOn?G.msg:"");
+  setSt($msg,"opacity",msgOn?clamp(G.msgT/40,0,1):0);
   setTx($prompt,G.mode==="dock"?"":G.prompt);
   setTx($bThr,G.mode==="surface"?"ПРЫЖОК":(G.mode==="dig"?"ВВЕРХ":"▲"));
   /* Кнопка называет то, что сделает, а не то, как она называется. «ДЕЙСТВИЕ»
