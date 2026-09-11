@@ -156,6 +156,9 @@ before a push.
     one column; the header «людям платите 156 кр/мин» does not add up with the rows.
   - СТОЛ: the sheet title should be where you are (ПРИЁМНИКИ), «← СТОЛ» only on the back button;
     empty sheets say where to get the thing; the last row of desk objects needs bottom padding.
+  - Haul light (designer's numbers): now flame core 151 px ≥250/240/215, sun side median 94 / p90
+    164, shade median 54 — sun/shade 1.74, target ≥2 (plates 150–200, hull 100–140, shade 50–70);
+    measure with the expo script pattern (canvas getImageData around the barge, split by star side).
   - Haul: the planet pass must let the planet dominate (disc ≥ .35 H, planet in the leading half,
     barge not over it); shuttles passing; a pirate turning away from a ГЛАВТРАССА barge; a route bar.
   - Economy (item 6): crew (`12a-crew` crewTick, cap 24 h) and managers (`12c-mgr-core` mgrTick, 240

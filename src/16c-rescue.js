@@ -366,9 +366,6 @@ function drawHaul(zx,zy,Z){
       ctx.fillStyle=g;ctx.beginPath();
       ctx.moveTo(-1,-w);ctx.quadraticCurveTo(-len*.45,-w*1.2,-len,0);
       ctx.quadraticCurveTo(-len*.45,w*1.2,-1,w);ctx.closePath();ctx.fill();
-      /* бело-горячее ядро у сопла: источник обязан быть светлее освещённого */
-      ctx.fillStyle="rgba(255,250,236,.95)";ctx.beginPath();
-      ctx.ellipse(-len*.12,0,len*.14,w*.45,0,0,TAU);ctx.fill();
       ctx.restore();
     }
     ctx.globalCompositeOperation="source-over";
@@ -393,16 +390,28 @@ function drawHaul(zx,zy,Z){
     const o=off.getContext("2d");
     const mask=fill=>{o.globalCompositeOperation="source-over";o.clearRect(0,0,sz,sz);
       o.drawImage(art.cn,0,0,sz,sz);o.globalCompositeOperation="source-in";o.fillStyle=fill;o.fillRect(0,0,sz,sz);};
-    mask("rgb(209,206,200)");
-    ctx.globalCompositeOperation="multiply";
-    ctx.drawImage(off,-art.rad,-art.rad,art.rad*2,art.rad*2);
-    const rg=o.createLinearGradient(sz/2-cx*sz*.35,sz/2-cy*sz*.35,sz/2+cx*sz*.35,sz/2+cy*sz*.35);
-    rg.addColorStop(0,"rgba(255,190,120,0)");rg.addColorStop(.5,"rgba(255,190,120,0)");
-    rg.addColorStop(1,"rgba(255,200,146,.36)");
-    mask(rg);
-    ctx.globalCompositeOperation="screen";
-    ctx.drawImage(off,-art.rad,-art.rad,art.rad*2,art.rad*2);
+    /* второй замер: ×.82 + screen .36 дали серую трубу (медиана 71, p90 116).
+       Цель: солнечная сторона — плиты 150–200, корпус 100–140; теневая — 50–70;
+       ядро факела ≥250. Тон сжат (×.78), тень глушится ещё градиентом, солнце
+       поднимается широким screen — плиты, а не проволока по ребру */
+    const draw=()=>ctx.drawImage(off,-art.rad,-art.rad,art.rad*2,art.rad*2);
+    const ax=sz/2-cx*sz*.4,ay=sz/2-cy*sz*.4,bx2=sz/2+cx*sz*.4,by2=sz/2+cy*sz*.4;
+    mask("rgb(214,212,206)");ctx.globalCompositeOperation="multiply";draw();
+    const sg=o.createLinearGradient(ax,ay,bx2,by2);
+    sg.addColorStop(0,"rgb(170,170,182)");sg.addColorStop(.5,"rgb(255,255,255)");sg.addColorStop(1,"rgb(255,255,255)");
+    mask(sg);draw();
+    const rg=o.createLinearGradient(ax,ay,bx2,by2);
+    rg.addColorStop(0,"rgba(255,205,150,0)");rg.addColorStop(.34,"rgba(255,205,150,0)");
+    rg.addColorStop(1,"rgba(255,208,156,.6)");
+    mask(rg);ctx.globalCompositeOperation="screen";draw();
     ctx.globalCompositeOperation="lighter";
+    /* бело-горячее ядро у зева каждого сопла — поверх корпуса, иначе его закрывала корма */
+    if(T._fire)for(const li of art.lights){
+      if(li.c!=="eng"||(T.ph==="haul"&&Math.abs(li.y)<art.hw*.25))continue;
+      const cg=ctx.createRadialGradient(li.x-li.r*.5,li.y,0,li.x-li.r*.5,li.y,li.r*.95);
+      cg.addColorStop(0,"rgba(255,252,240,1)");cg.addColorStop(.55,"rgba(255,236,200,.85)");cg.addColorStop(1,"rgba(255,200,140,0)");
+      ctx.fillStyle=cg;ctx.beginPath();ctx.arc(li.x-li.r*.5,li.y,li.r*.95,0,TAU);ctx.fill();
+    }
     if(T._fire){
       const tx=-art.L*.48,gr=ctx.createRadialGradient(tx,0,0,tx,0,art.hw*1.6);
       gr.addColorStop(0,"rgba(255,170,90,.45)");gr.addColorStop(1,"rgba(255,120,60,0)");
