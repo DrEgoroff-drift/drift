@@ -332,7 +332,7 @@ function updateSystem(dt){
      или станция, у игрока и так есть что нажать. */
   /* 11.09: подсказка больше не единственный вход — газ на пустом баке сам
      открывает окно выходов (16c); ДЕЙСТВИЕ открывает его же */
-  if(!G.prompt&&G.fuel<=0&&!(G.tech.has("synth")&&G.cargo.ice>0)){
+  if(!G.prompt&&G.fuel<=0&&!(G.tech.has("synth")&&G.cargo.ice>0)&&!document.body.classList.contains("sosopen")){   /* окно открыто — подсказка не повторяет его */
     /* подсказка называет только те выходы, что есть: без дома в системе старта ДОМОЙ нет */
     const H=rescueHomeAt(),home=!(G.sx===H.sx&&G.sy===H.sy);
     G.prompt="ХОДА НЕТ · БАК ПУСТ\nДЕЙСТВИЕ — "+(home?"ДОМОЙ, БУКСИР ИЛИ СБРОС":"БУКСИР ИЛИ СБРОС");
@@ -377,7 +377,14 @@ function drawSystem(){
      уводит корабль в сторону от него (M422). Тычок пересчитывается через ту же
      G.viewCX ниже, так что автопилот и захват целятся туда же, куда смотришь */
   const co=(!wA&&typeof helmCamOff==="function")?helmCamOff(Z):null;
-  const cx0=fc.x+(co?co.x:0), cy0=fc.y+(co?co.y:0);
+  /* на тросе камера смотрит вперёд, туда, куда тащат: корабль ближе к задней
+     кромке, баржа и трос целиком в кадре (дизайн-ревью 11.09) */
+  let hx=0,hy=0;
+  if(G.haul&&!wA&&typeof haulReach==="function"){
+    const T=G.haul,dx=T.bx-sh.x,dy=T.by-sh.y,d=Math.hypot(dx,dy)||1,k=Math.min(.5,haulReach()*.5/d);
+    hx=dx*k;hy=dy*k;
+  }
+  const cx0=fc.x+(co?co.x:0)+hx, cy0=fc.y+(co?co.y:0)+hy;
   const zx=x=>W/2+(x-cx0)*Z, zy=y=>H/2+(y-cy0)*Z;
   /* ввод пересчитывает тычок через ту же камеру */
   G.viewCX=cx0;G.viewCY=cy0;

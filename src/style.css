@@ -399,7 +399,9 @@ body.menuopen .rail{opacity:.12;pointer-events:none;transition:opacity .15s}
 #sos button .tx{flex:1;min-width:0}
 #sos button em{font-style:normal;font-size:11px;letter-spacing:.13em;display:block}
 #sos button s{text-decoration:none;display:block;color:var(--dim);font-size:9px;margin-top:3px;letter-spacing:.02em}
-#sos button.lose{color:#ff8a78}
+#sos button.main{background:rgba(242,178,92,.16);color:#ffd59a}
+#sos button.main em{font-size:12px}
+#sos button.lose{color:#ff7a66;margin-top:10px;border-top:1px solid rgba(255,110,90,.45)}
 .sosnone{color:var(--dim);font-size:10px;padding:12px;line-height:1.5}
 body.sosopen .rail{opacity:.12;pointer-events:none}
 
@@ -430,6 +432,11 @@ body.screen #msg,body.screen #launchbtn,body.screen .slope{opacity:0;pointer-eve
    скреплённые скрепкой») переносились, шапка росла с 70 до 85 px, и всё под ней
    дёргалось при каждом переключении (плейтест 11.09, «экран прыгает на столе») */
 #tableSub{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* чип раскрытия шапки станции: видно, что это кнопка (дизайн-ревью 11.09) */
+#stKind{cursor:pointer}
+#stKind .stmore{display:inline-block;margin-left:8px;padding:6px 10px;min-height:28px;box-sizing:border-box;
+  border:1px solid var(--edge2);border-radius:14px;color:var(--phos);font-size:9px;letter-spacing:.14em;
+  line-height:14px;vertical-align:middle}
 .wallet{margin-left:auto;text-align:right;font-size:11px;line-height:1.6;white-space:nowrap;
   font-variant-numeric:tabular-nums}
 .wallet em{font-style:normal;color:var(--amber);display:block}
@@ -1001,6 +1008,14 @@ body.screen #console{top:26px;bottom:auto;z-index:21;
 body.screen #rx{background:none;border:0;box-shadow:none;backdrop-filter:none;padding:0 8px}
 body.screen #seat{background:none;border:0;box-shadow:none;backdrop-filter:none}
 body.table #console{display:none}
+/* телефон: правило выше (translateX(-50%) scale(.78)) стоит в файле ПОЗЖЕ
+   телефонного (@media ≤760, «во всю ширину, transform:none») и перебивало его:
+   при left:8px пульт уезжал на полширины за левую кромку, и строка эфира висела
+   обрезком над именем станции (плейтест 11.09, дизайн-ревью п. 12). Каскад
+   решает порядок — телефонное повторено здесь, после */
+@media (max-width:760px){
+  body.screen #console{left:8px;right:8px;top:calc(env(safe-area-inset-top) + 6px);transform:none}
+}
 /* в дороге не существует ничего, кроме заставки (M168k).
    Не гашением, а `display:none`: гашение — переход по прозрачности, он держится
    на кадрах, и стоит циклу споткнуться — сквозь заставку просвечивают пэды и

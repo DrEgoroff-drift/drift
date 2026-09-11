@@ -92,6 +92,11 @@ as a placeholder:
 
 ## PLAYABLE ON A PHONE — the author's playtest of 2026-09-11 (first, before everything below)
 
+**Oversight:** session «Контроль и критика соседней беседы» (local_a2ba9fa0) reviews code, «Анализ сессии и
+рекомендации дизайна» (local_f3f054cd) reviews frames; a one-line report to them after each item. **Rules:**
+answer every author message in text before code; nothing to main without dev and the author's «да»;
+commits on branch `playable-11-09`, release as one commit with drift.html/INDEX/TESTMAP and md5 check.
+
 The author could not play fifteen minutes on a phone with 800 suites green. Everything else
 (galaxy M447–M451, the test queue, the refactor) waits. **Policy (author, 11.09):** fix without
 tests, local commits, look with eyes on `dev.html` at 390×844; the whole test run only right
@@ -105,15 +110,30 @@ before a push.
   reset takes only fitted levels (`mods`), not bought (`modsOwned`) [done]; the world does NOT
   freeze during the haul (measured: planets, station, barges move) [checked]. Left: the author's «да»
   on dev, then tests + main as 0.446.0.
-- [x] **1. Station header half a screen** — one line + «ещё ▾» (wip); the clipped ether line above
-  it and the «Полёт восстановлен» toast over the counter are still open.
+- [x] **1. Station header half a screen** — one line + an «ЕЩЁ» chip; the clipped ether line was the
+  receiver (#console) pushed off the left edge — a later `body.screen #console` rule beat the phone
+  one; the phone rule is repeated after it. Open: the «Полёт восстановлен» toast over the counter;
+  design review 13–15 (СТОЛ button out of the masthead, two tab rows = 110 px, prices before the
+  cooperative form; Director news belong on ДОСКА, not under «ЕЩЁ»).
+- **Haul scene** (author: «говно, не большой, нет огня») — done: barge ×3 ship, engines + retro/turn
+  puffs, sagging swinging rope, bits breaking off, crew talk, camera lead, ship floor .7 on the rope,
+  warm star rim on the hull, nozzle glow. Design review open: plan the route past visible bodies
+  (a planet at 1.3 r, the belt, the station growing in the last minute); shuttles passing, a pirate
+  that turns away from a ГЛАВТРАССА barge; a route bar instead of a countdown; the target chip = the
+  destination station. Window: icons per exit (home glyph, barge thumb, «Стриж» thumb), big price
+  right; the header should say the distance to the station, not repeat the HUD.
 - [ ] **2. Scale** — far zoom: ship ×2 (floor .35 → .7); near: the ship stops growing (~.8) and the
   zoom goes to ×4, so a planet is 5–6 ships wide. Proposed to the author with numbers; a before/after
   frame at ×0.16 and ×2.4 before code. Seamless atmosphere entry — a milestone after the pass.
-- [ ] **3. Buttons that do not press; screens that jump** — СТОЛ, ДЕЛО, ОПИСЬ (play at 390×844);
+- [ ] **3. Buttons that do not press; screens that jump** — СТОЛ, ДЕЛО, ОПИСЬ (play at 390×844). Found:
+  the СТОЛ header jumped 70↔85 px (long tab subtitles wrapped) → one line [done]. Needs a late world:
+  the author's cloud save (asked, no «да» yet — do not touch without it) or a `veteranWorld()` fixture
+  from `e2eLate()` (1.5 M, a big hull with modules, 10 drones, crew, home tier 3–4, desk full);
   ОПИСЬ: the bottom strips become tabs with words.
-- [ ] **4. Modules** — one path: pick → ПОСТАВИТЬ → see it fitted. «Прогрев» — not a word in code;
-  find by meaning (a timer on an engine/hyper?) before asking.
+- [ ] **4. Modules** — «прогрев» is КОРАБЛЬ → ОСНАСТКА (`26b-ui-station-work` stTabMods; maybe СПЛАВ).
+  Proposed: an upgrade card (ship thumb with the slot lit, dots big, «now → becomes» from stat(), the
+  fitting budget bar, ONE button «УЛУЧШИТЬ ДО УР. N · X КР», a second of dock work, «УСТАНОВЛЕНО»).
+  Asked the author; code after his «да».
 - [ ] **5. After a boss** — a «what you got» card with НАДЕТЬ in it.
 - [ ] **6. Economy** — drones: price a function of how many you own, `9000·1.6ⁿ`; tiers later. Close
   offline income of pilots/mercs if it drips. Where to spend 1.5 M — a list to the author, no code.

@@ -130,7 +130,7 @@ function haulStart(){
     x0:0,y0:0,dsx:dest.sx,dsy:dest.sy,dname:dest.name};
   G.ap=null;G.orbit=null;G.pirates=[];G.shots=[];HAUL_FX=[];
   logAdd("warn","Буксир вызван к "+evacFrom()+" · баржа идёт");
-  say("Буксир вызван\nбаржа идёт к вам",150);
+  /* тоста нет: подсказка и так говорит «баржа подходит» (дизайн-ревью 11.09) */
   haulSay("вижу вас, идём. стойте где стоите — всё равно больше негде");
 }
 
@@ -155,7 +155,11 @@ const HAUL_TALK=["держись, не дёргай","на тросе не ку�
   "за буксир денег не берём. за разговоры тоже","видишь станцию? и я не вижу. скоро",
   "руль не трогай, он у тебя сейчас для красоты","у нас тут чай. тебе не передать, извини"];
 let HAUL_FX=[];
-function shipScaleAt(Z){return clamp(Z,.35,1.6);}      /* масштаб корабля в drawSystem — один на двоих */
+const haulRim={cv:null};              /* холст-маска кромки: один на сцену, не в G */
+/* масштаб корабля в drawSystem — один на двоих с буксиром. На тросе пол .7:
+   пять минут игрок смотрит на СВОЙ корабль, а в .35 он был серым пятном в 12 px
+   (дизайн-ревью 11.09, закон «себя находят с одного взгляда») */
+function shipScaleAt(Z){return clamp(Z,G.haul?.7:.35,1.6);}
 function haulBarge(){const T=G.haul;return T._b||(T._b={seed:T.seed,by:"gt"});}
 function haulName(){return "буксир «"+HAUL_NAMES[((G.haul?G.haul.seed:0)>>>0)%HAUL_NAMES.length]+"»";}
 function haulSay(t){if(typeof etherLine==="function")etherLine(t,haulName());}
@@ -209,15 +213,15 @@ function haulTick(dt,sh){
      корабль уже не мельчает (shipScaleAt), и отъезжать дальше незачем */
   {
     const need=haulReach()+bargeArtOf(haulBarge()).L*.52*HAUL_BARGE_K;
-    const fit=Math.max(.35,.38*Math.min(W,H)/need);
+    const fit=Math.max(.7,.46*Math.min(W,H)/need);   /* камера с упреждением (drawSystem): сцене хватает почти всего кадра */
     if(G.zoom>fit)G.zoom=Math.max(fit,G.zoom-(G.zoom-fit)*Math.min(1,.03*dt));
   }
   /* трос — мировая константа (ревью 11.09: от зума баржа ползла, пока едет
-     камера). Между .35 и 1.6 корабль и баржа рисуются ровно в масштабе мира
-     (shipScaleAt=Z), и мировой трос там же постоянен на экране; ниже .35 они
+     камера). Между полом и 1.6 корабль и баржа рисуются ровно в масштабе мира
+     (shipScaleAt=Z), и мировой трос там же постоянен на экране; ниже пола они
      перестают мельчать, и трос вышел бы короче полубаржи — поэтому на время
-     буксира дальше .35 не отъезжаем */
-  if(G.zoom<.35)G.zoom=.35;
+     буксира ниже пола (.7) не отъезжаем */
+  if(G.zoom<.7)G.zoom=.7;   /* пол масштаба корабля на тросе (shipScaleAt) — трос и спрайты в одном масштабе */
   const reachW=haulReach();
   /* своя система со станцией — тащит к ней по-настоящему; чужая — уводит
      от звезды к краю, и в конце прыжок, как у любой баржи */
@@ -339,6 +343,33 @@ function drawHaul(zx,zy,Z){
     ctx.globalCompositeOperation="source-over";
   }
   drawBarge(b);
+  /* свет (дизайн-ревью 11.09, §13 «тело-обвод-один свет»): у источника есть
+     освещённое. Звезда кладёт тёплую кромку на свою сторону корпуса, факелы —
+     ореол на кормовые плиты. Один объект, считается на кадр */
+  {
+    /* кромка по самому силуэту: рисунок баржи как маска, тёплый градиент со
+       стороны звезды только по корпусу (обводка эллипсом читалась кольцом) */
+    const sa=Math.atan2(-T.by,-T.bx)-T.ba,cx=Math.cos(sa),cy=Math.sin(sa);
+    const sz=Math.ceil(art.rad*2);
+    const off=haulRim.cv||(haulRim.cv=document.createElement("canvas"));
+    if(off.width!==sz){off.width=sz;off.height=sz;}
+    const o=off.getContext("2d");
+    o.globalCompositeOperation="source-over";o.clearRect(0,0,sz,sz);
+    o.drawImage(art.cn,0,0,sz,sz);
+    o.globalCompositeOperation="source-in";
+    const rg=o.createLinearGradient(sz/2-cx*sz*.35,sz/2-cy*sz*.35,sz/2+cx*sz*.35,sz/2+cy*sz*.35);
+    rg.addColorStop(0,"rgba(255,190,120,0)");rg.addColorStop(.55,"rgba(255,190,120,0)");
+    rg.addColorStop(1,"rgba(255,204,150,.5)");
+    o.fillStyle=rg;o.fillRect(0,0,sz,sz);
+    ctx.globalCompositeOperation="lighter";
+    ctx.drawImage(off,-art.rad,-art.rad,art.rad*2,art.rad*2);
+    if(T._fire){
+      const tx=-art.L*.48,gr=ctx.createRadialGradient(tx,0,0,tx,0,art.hw*1.6);
+      gr.addColorStop(0,"rgba(255,170,90,.45)");gr.addColorStop(1,"rgba(255,120,60,0)");
+      ctx.fillStyle=gr;ctx.beginPath();ctx.arc(tx,0,art.hw*1.6,0,TAU);ctx.fill();
+    }
+    ctx.globalCompositeOperation="source-over";
+  }
   /* носовые (гасят ход) и маневровые (разворот): короткие белые выхлопы */
   if(T._retro||T._turn){
     ctx.globalCompositeOperation="lighter";
@@ -393,6 +424,10 @@ function rescueRender(){
     b.querySelector("em").textContent=o.ru+(o.cost?" · "+o.cost.toLocaleString("ru")+" КР":(o.id==="tow"?" · ДАРОМ":""));
     b.querySelector("s").textContent=poor?"не хватает "+(o.cost-G.credits).toLocaleString("ru")+" кр":o.sub;
     b.dataset.id=o.id;
+    /* иерархия (дизайн-ревью 11.09): разумный выход — главная кнопка, как
+       ОТСТЫКОВКА на станции; по карману ДОМОЙ — он, иначе буксир. СБРОС отделён */
+    const main=offers.some(x=>x.id==="home"&&x.cost<=G.credits)?"home":"tow";
+    if(o.id===main)b.className="main";
     if(o.id==="reset")b.className="lose";
     b.addEventListener("click",()=>{
       /* СБРОС отнимает корабль — одним касанием его не отдают (ревью 11.09):

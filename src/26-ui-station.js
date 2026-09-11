@@ -89,14 +89,20 @@ function openStation(){
     const short=G.st.kind+" · система "+G.sys.name+flag;
     k.dataset.short=short;k.dataset.full=short+"\n"+stMore;
     k.classList.remove("more");
-    k.textContent=short+(stMore.trim()?"  ещё ▾":"");
+    /* раскрытие — чип, а не слово: «ещё ▾» тусклым 9 px читалось частью
+       строки, а треугольник в моно-шрифте вырождался в точку (дизайн-ревью 11.09) */
+    const paint=open=>{
+      k.textContent=open?k.dataset.full:k.dataset.short;
+      if(!stMore.trim())return;
+      const c=document.createElement("span");c.className="stmore";c.textContent=open?"СВЕРНУТЬ":"ЕЩЁ";
+      k.appendChild(c);
+    };
+    paint(false);
     if(!k.__moreWired){
       k.__moreWired=true;
-      k.addEventListener("click",()=>{
-        const open=k.classList.toggle("more");
-        k.textContent=open?k.dataset.full+"  свернуть ▴":k.dataset.short+"  ещё ▾";
-      });
+      k.addEventListener("click",()=>{k.__paint(k.classList.toggle("more"));});
     }
+    k.__paint=paint;
   }
   if(stP)document.getElementById("stName").style.color=stP.col;
   syncTabs();
