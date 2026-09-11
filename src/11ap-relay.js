@@ -344,11 +344,11 @@ function relayInteract(sh){
   if(Math.hypot(sh.x-P.x,sh.y-P.y)>250)return false;
   const rec=relayAll()[R.key],day=(typeof celDay==="function"?celDay():0);
   const fresh=!!(rec&&rec.paid!=null&&day-rec.paid<RELAY_PAY_WIN);
-  cue(R.call+" · "+R.ru.toUpperCase()+" «"+R.name.toUpperCase()+"»"+
+  const shown=cue(R.call+" · "+R.ru.toUpperCase()+" «"+R.name.toUpperCase()+"»"+
     (R.give==="pay"
       ?(fresh?"\nновости здесь уже слышали":"\nДЕЙСТВИЕ — ПРИВЕЗТИ НОВОСТИ")
       :"\nДЕЙСТВИЕ — ПОСЛУШАТЬ"),(R.give==="pay"&&fresh)?CUE_INFO:CUE_ACT);
-  if(actEdge)relayServe(R);
+  if(shown&&actEdge)relayServe(R);
   return true;
 }
 /* ── силуэт ──

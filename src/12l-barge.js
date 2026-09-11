@@ -286,9 +286,8 @@ function bargeInteract(sh){
       "ОТГОНИТЕ ПИРАТОВ — ИЛИ ДОБЕЙТЕ САМИ",CUE_WARN);
     return false;
   }
-  cue("ТОРГОВАЯ БАРЖА «"+near.capName.toUpperCase()+"» · "+T.ru.toUpperCase()+
-    "\nДЕЙСТВИЕ — ТОРГ БЕЗ СТЫКОВКИ",CUE_ACT);
-  if(actEdge)openBarge(near);
+  if(cue("ТОРГОВАЯ БАРЖА «"+near.capName.toUpperCase()+"» · "+T.ru.toUpperCase()+
+    "\nДЕЙСТВИЕ — ТОРГ БЕЗ СТЫКОВКИ",CUE_ACT)&&actEdge)openBarge(near);
   return true;
 }
 
@@ -345,8 +344,7 @@ function wreckInteract(sh){
     if(cueLvl()<CUE_INFO)cue("ОСТОВ БАРЖИ «"+String(near.name).toUpperCase()+"» · УЖЕ ОБЫСКАН",CUE_INFO);
     return false;
   }
-  cue("ОСТОВ БАРЖИ «"+String(near.name).toUpperCase()+"»\nДЕЙСТВИЕ — ОБЫСКАТЬ ОБЛОМКИ",CUE_ACT);
-  if(actEdge){
+  if(cue("ОСТОВ БАРЖИ «"+String(near.name).toUpperCase()+"»\nДЕЙСТВИЕ — ОБЫСКАТЬ ОБЛОМКИ",CUE_ACT)&&actEdge){
     near.seen=1;
     const F=(typeof POI_FIND!=="undefined"&&POI_FIND.wreck)?POI_FIND.wreck:null;
     const r=rng(hashi(near.seed,0xF17D,3));

@@ -168,9 +168,8 @@ function npcRescue(sh,actEdge,cel){
   }
   if(hurt){
     const P=(typeof powerOf==="function")?powerOf(hurt.pw):null;
-    cue("ПОДБИТЫЙ БОРТ · "+(P?P.ru.toUpperCase():"")+"\n"+
-      "ДЕЙСТВИЕ — ПОДЕЛИТЬСЯ ТОПЛИВОМ",CUE_ACT);
-    if(actEdge){
+    if(cue("ПОДБИТЫЙ БОРТ · "+(P?P.ru.toUpperCase():"")+"\n"+
+      "ДЕЙСТВИЕ — ПОДЕЛИТЬСЯ ТОПЛИВОМ",CUE_ACT)&&actEdge){
       const st=stat();
       const give=Math.min(G.fuel,st.fuelMax*.15);
       if(give<=1){say("НЕЧЕМ ДЕЛИТЬСЯ",90);return true;}
@@ -185,10 +184,10 @@ function npcRescue(sh,actEdge,cel){
   const wk=npcWreckNear(sh);
   if(!wk)return false;
   const P=(typeof powerOf==="function")?powerOf(wk.by):null;
-  cue("КОРПУС ПОСЛЕ БОЯ · "+(P?P.ru.toUpperCase():"")+"\n"+
+  const shown=cue("КОРПУС ПОСЛЕ БОЯ · "+(P?P.ru.toUpperCase():"")+"\n"+
     (G.tow?"У ВАС УЖЕ ЕСТЬ БУКСИР · ":"ДЕЙСТВИЕ — ВЗЯТЬ НА БУКСИР · ")+
     (wk.crew?"ЦЕЛЬ — СНЯТЬ ЭКИПАЖ":"ЭКИПАЖ СНЯТ"),CUE_ACT);
-  if(actEdge&&!G.tow){
+  if(shown&&actEdge&&!G.tow){
     G.tow={seed:wk.seed,by:wk.by,sx:G.sx,sy:G.sy};
     G.npcWrecks=G.npcWrecks.filter(w=>w!==wk);
     say("КОРПУС НА ТРОСЕ · В ДОК",120);

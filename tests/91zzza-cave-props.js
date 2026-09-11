@@ -162,21 +162,23 @@ TEST_SUITES.push(()=>suite("M311: шесть классов нарисованы
   const b=Math.floor(now()/FLEET_PERIOD),X=G.ship.x,Y=G.ship.y;
   const st=stat();
   const put=k=>{sys.fleetCache={b,list:[{k,seed:3,name:"ТЕСТ",num:"Л-1",line:1,x0:X+50,y0:Y,x1:X+50,y1:Y,bow:0,ph:0}]};};
+  /* один вызов — один кадр: полёт начинает кадр с cueReset(), иначе первое предложение держит слот (R1) */
+  const fi=()=>{cueReset();fleetInteract(G.ship);};
   G.fleetLog={};
   /* буксир: корпус на 10 % — тянут, латают до 40 % */
-  put("tug");G.hull=Math.round(st.hullMax*.1);actEdge=false;fleetInteract(G.ship);
+  put("tug");G.hull=Math.round(st.hullMax*.1);actEdge=false;fi();
   ok(G.prompt.indexOf("БУКСИР НА ВЕРФЬ")>=0,"битому корпусу — буксир");
-  actEdge=true;fleetInteract(G.ship);actEdge=false;
+  actEdge=true;fi();actEdge=false;
   eq(G.hull,Math.round(st.hullMax*.4),"подлатан до 40 %");
-  fleetInteract(G.ship);ok(/ПОЗЫВНОЙ|КАРАВАНОМ/.test(G.prompt),"второй раз в смену — только позывной");
+  fi();ok(/ПОЗЫВНОЙ|КАРАВАНОМ/.test(G.prompt),"второй раз в смену — только позывной");
   /* плавбаза: ремонт по норме до полного */
-  put("base");G.hull=Math.round(st.hullMax*.5);fleetInteract(G.ship);
+  put("base");G.hull=Math.round(st.hullMax*.5);fi();
   ok(G.prompt.indexOf("РЕМОНТ ПО НОРМЕ")>=0,"плавбаза чинит");
-  actEdge=true;fleetInteract(G.ship);actEdge=false;eq(G.hull,st.hullMax,"корпус закрыт");
+  actEdge=true;fi();actEdge=false;eq(G.hull,st.hullMax,"корпус закрыт");
   /* сторожевик: с доброй репутацией — конвой, пираты не видят */
-  put("patrol");G.rep=G.rep||{};G.rep[G.sx+","+G.sy]=3;G.fleetEscort=0;fleetInteract(G.ship);
+  put("patrol");G.rep=G.rep||{};G.rep[G.sx+","+G.sy]=3;G.fleetEscort=0;fi();
   ok(G.prompt.indexOf("ПРОСИТЬ КОНВОЙ")>=0,"чистому борту — конвой");
-  actEdge=true;fleetInteract(G.ship);actEdge=false;
+  actEdge=true;fi();actEdge=false;
   ok(fleetEscortActive(),"конвой действует");
   G.pirates=[{x:X+100,y:Y,vx:0,vy:0,a:0,aware:true,cool:0,hp:10,hull:10,seed:1}];
   try{updateCombat(1);}catch(e){}
@@ -194,26 +196,28 @@ TEST_SUITES.push(()=>suite("M312: тринадцать классов запеч
   const sys=G.sys;G.mode="system";
   const b=Math.floor(now()/FLEET_PERIOD),X=G.ship.x,Y=G.ship.y;
   const put=k=>{sys.fleetCache={b,list:[{k,seed:3,name:"ТЕСТ",num:"Л-1",line:1,x0:X+50,y0:Y,x1:X+50,y1:Y,bow:0,ph:0}]};};
+  /* один вызов — один кадр: полёт начинает кадр с cueReset(), иначе первое предложение держит слот (R1) */
+  const fi=()=>{cueReset();fleetInteract(G.ship);};
   G.fleetLog={};
   /* почтовик без сети — только позывной */
-  put("post");actEdge=false;fleetInteract(G.ship);
+  put("post");actEdge=false;fi();
   ok(/ПОЗЫВНОЙ|КАРАВАНОМ/.test(G.prompt)&&G.prompt.indexOf("ПОЧТУ")<0,"без сети почту не сдать — позывной");
   /* госпитальное: заложник за полцены */
   const h={id:"cH",seed:5,name:"Тест Заложник",spec:"pilot",traits:[],xp:10,state:"hostage",ransom:1000,ransomBase:1000,ransomAt:now(),order:{kind:"home",sx:G.sx,sy:G.sy},shipId:null,trips:1};
   G.crew=[h];G.credits=5000;
-  put("hosp");fleetInteract(G.ship);
+  put("hosp");fi();
   ok(G.prompt.indexOf("ВЫКУП ЧЕРЕЗ ГОСПИТАЛЬ")>=0&&G.prompt.indexOf("500")>=0,"госпиталь просит половину");
-  actEdge=true;fleetInteract(G.ship);actEdge=false;
+  actEdge=true;fi();actEdge=false;
   eq(G.credits,4500,"списано 500, не 1000");
   ok(h.state!=="hostage","заложник свободен");
   /* учебное: свободный наёмник растёт, второй раз в смену — нет */
   const p={id:"cP",seed:6,name:"Тест Ученик",spec:"pilot",traits:[],xp:10,state:null,order:null,shipId:null,trips:0};
   G.crew=[p];
-  put("school");fleetInteract(G.ship);
+  put("school");fi();
   ok(G.prompt.indexOf("ОТДАТЬ В УЧЁБУ")>=0,"учебное берёт свободного");
-  actEdge=true;fleetInteract(G.ship);actEdge=false;
+  actEdge=true;fi();actEdge=false;
   eq(p.xp,45,"опыт +35");
-  fleetInteract(G.ship);ok(/ПОЗЫВНОЙ|КАРАВАНОМ/.test(G.prompt),"в ту же смену второй раз не берут");
+  fi();ok(/ПОЗЫВНОЙ|КАРАВАНОМ/.test(G.prompt),"в ту же смену второй раз не берут");
   G.crew=[];delete sys.fleetCache;
 }));
 

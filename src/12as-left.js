@@ -178,10 +178,9 @@ function leftInteract(sh,actEdge){
     cue("СЛЕД ЧУЖОГО КОРПУСА\nЗДЕСЬ КТО-ТО НЕ ДОШЁЛ",CUE_INFO);
     return false;
   }
-  cue("ОСТАВЛЕНО: "+(LEFT_RU[row.k]||row.k).toUpperCase()+
+  if(cue("ОСТАВЛЕНО: "+(LEFT_RU[row.k]||row.k).toUpperCase()+
     (row.ty?" · БЛАГОДАРНОСТЕЙ "+row.ty:"")+
-    "\nДЕЙСТВИЕ — ВЗЯТЬ КОПИЮ · ЦЕЛЬ — БЛАГОДАРНОСТЬ",CUE_ACT);
-  if(actEdge)leftTake(i);
+    "\nДЕЙСТВИЕ — ВЗЯТЬ КОПИЮ · ЦЕЛЬ — БЛАГОДАРНОСТЬ",CUE_ACT)&&actEdge)leftTake(i);
   return true;
 }
 function leftThankNear(){

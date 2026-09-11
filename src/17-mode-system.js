@@ -256,9 +256,8 @@ function updateSystem(dt){
   if(typeof npcWreckNear==="function"&&typeof npcRescue!=="function"){
     const wk=npcWreckNear(sh);
     if(wk){
-      cue(G.tow?("КОРПУС ПОСЛЕ БОЯ · У ВАС УЖЕ ЕСТЬ БУКСИР")
-        :("КОРПУС ПОСЛЕ БОЯ\nДЕЙСТВИЕ — ВЗЯТЬ НА БУКСИР"),G.tow?CUE_INFO:CUE_ACT);
-      if(actEdge&&!G.tow){
+      if(cue(G.tow?("КОРПУС ПОСЛЕ БОЯ · У ВАС УЖЕ ЕСТЬ БУКСИР")
+        :("КОРПУС ПОСЛЕ БОЯ\nДЕЙСТВИЕ — ВЗЯТЬ НА БУКСИР"),G.tow?CUE_INFO:CUE_ACT)&&actEdge&&!G.tow){
         G.tow={seed:wk.seed,by:wk.by,sx:G.sx,sy:G.sy};
         G.npcWrecks=G.npcWrecks.filter(w=>w!==wk);
         say("КОРПУС НА ТРОСЕ · В ДОК",120);

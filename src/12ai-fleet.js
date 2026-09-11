@@ -188,10 +188,10 @@ function fleetInteract(sh){
        эпизодов не существует, и он честный: тащить долго, платить дорого. */
     const towed=!!G.tow;
     const dby=(typeof makerBySeed==="function")?makerBySeed(near.seed):"gt";
-    cue(towed
+    const shown=cue(towed
       ?"ЧЁРНЫЙ КОРПУС · У ВАС УЖЕ ЕСТЬ БУКСИР\nДЕЙСТВИЕ — ПОЗЫВНОЙ"
       :"ЧЁРНЫЙ КОРПУС · БЕЗ ИМЕНИ\nДЕЙСТВИЕ — ВЗЯТЬ НА БУКСИР",CUE_ACT);
-    if(actEdge&&!towed){
+    if(shown&&actEdge&&!towed){
       G.tow={seed:near.seed>>>0,by:dby,sx:G.sx,sy:G.sy};
       G.fleetLog=G.fleetLog||{};
       G.fleetLog["towed|"+fleetLogKey()]=1;
@@ -201,7 +201,7 @@ function fleetInteract(sh){
       if(typeof recordAdd==="function")recordAdd("эфир","взял на буксир чёрный корпус в секторе "+G.sx+":"+G.sy);
       return true;
     }
-    if(actEdge){
+    if(shown&&actEdge){
       etherLine("…тишина. Ни позывного, ни огня. Только корпус, и он чёрный.","эфир");
       G.fleetLog=G.fleetLog||{};
       if(!G.fleetLog["derelict|"+fleetLogKey()]){G.fleetLog["derelict|"+fleetLogKey()]=1;
@@ -210,8 +210,7 @@ function fleetInteract(sh){
     return true;
   }
   if(near.k==="node"){
-    cue("УЗЛОВАЯ «"+near.name+"» · УЗЕЛ ТРАСС\nДЕЙСТВИЕ — ПОЗЫВНОЙ",CUE_ACT);
-    if(actEdge)etherLine("«"+near.name+"»: …узел трасс. Стоянка есть, торга нет: Короб полон, Кубрик спит, Воротник открыт. Держитесь линии.","узловая");
+    if(cue("УЗЛОВАЯ «"+near.name+"» · УЗЕЛ ТРАСС\nДЕЙСТВИЕ — ПОЗЫВНОЙ",CUE_ACT)&&actEdge)etherLine("«"+near.name+"»: …узел трасс. Стоянка есть, торга нет: Короб полон, Кубрик спит, Воротник открыт. Держитесь линии.","узловая");
     return true;
   }
   const C=FLEET_CLASSES[near.k];
@@ -246,9 +245,8 @@ function fleetInteract(sh){
   const canSchool=near.k==="school"&&!!pupil&&(G.fleetLog[schoolKey]||0)<shift;
   const verb=canFuel?"ЗАПРАВКА ПО НОРМЕ":canTow?"БУКСИР НА ВЕРФЬ":canFix?"РЕМОНТ ПО НОРМЕ":canEscort?"ПРОСИТЬ КОНВОЙ":
     canMail?"СДАТЬ ПОЧТУ":canRansom?"ВЫКУП ЧЕРЕЗ ГОСПИТАЛЬ · "+Math.round(hostage.ransom*.5).toLocaleString("ru")+" КР":canSchool?"ОТДАТЬ В УЧЁБУ · "+pupil.name.toUpperCase():dist?"ИДТИ НА СИГНАЛ · «"+dist.capName.toUpperCase()+"»":canCaravan?"ИДТИ КАРАВАНОМ":"ПОЗЫВНОЙ";
-  cue(C.ru.toUpperCase()+" ГЛАВТРАССЫ «"+near.name+"»"+
-    "\nДЕЙСТВИЕ — "+verb,CUE_ACT);
-  if(actEdge){
+  if(cue(C.ru.toUpperCase()+" ГЛАВТРАССЫ «"+near.name+"»"+
+    "\nДЕЙСТВИЕ — "+verb,CUE_ACT)&&actEdge){
     if(dist){
       const ang=Math.atan2(dist.y-sh.y,dist.x-sh.x),deg=Math.round(((ang/TAU)*360+360)%360);
       const dd=Math.round(Math.hypot(dist.x-sh.x,dist.y-sh.y));

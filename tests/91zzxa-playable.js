@@ -113,6 +113,28 @@ TEST_SUITES.push(()=>suite("R1 оклик у причала: подсказка 
   ok(G.mode==="system","и не пристыковало");
 }));
 
+/* R1: модуль действует, только если на экране его строка — чужое ДЕЙСТВИЕ нажатие не отдаёт */
+TEST_SUITES.push(()=>suite("R1 на экране чужое ДЕЙСТВИЕ: танкер и подбитый борт рядом нажатие не забирают",()=>{
+  resetWorld();
+  const sys=G.sys,st=stat(),X=G.ship.x,Y=G.ship.y;G.mode="system";
+  const other=()=>{cueReset();cue("ДЕЙСТВИЕ — ВОЙТИ В ПОЯС",CUE_ACT);};
+  sys.fleetCache={b:Math.floor(now()/FLEET_PERIOD),list:[{k:"tanker",seed:3,name:"ТЕСТ",num:"Л-1",line:1,x0:X+50,y0:Y,x1:X+50,y1:Y,bow:0,ph:0}]};
+  G.fleetLog={};G.hail=null;G.fuel=Math.round(st.fuelMax*.2);const f0=G.fuel;
+  other();actEdge=true;fleetInteract(G.ship);actEdge=false;
+  ok(/ПОЯС/.test(G.prompt),"на экране осталась строка пояса: "+G.prompt);
+  eq(G.fuel,f0,"танкер не заправил — его строки на экране не было");
+  cueReset();actEdge=true;fleetInteract(G.ship);actEdge=false;
+  ok(G.fuel>f0,"своя строка на экране — заправка по норме");
+  delete sys.fleetCache;
+  G.pirates=[{x:X+60,y:Y,vx:0,vy:0,a:0,hull:1,hullMax:10,hp:1,pw:MAKER_KEYS[0],seed:1}];
+  const f1=G.fuel;
+  other();npcRescue(G.ship,true);
+  eq(G.fuel,f1,"подбитому борту топливо не ушло — на экране пояс");
+  cueReset();npcRescue(G.ship,true);
+  ok(G.fuel<f1,"своя строка — поделились топливом");
+  G.pirates=[];
+}));
+
 TEST_SUITES.push(()=>suite("подсказка: старший уровень бьёт младший в любом порядке",()=>{
   resetWorld();
   cueReset();

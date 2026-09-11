@@ -162,8 +162,7 @@ function findInteract(sh){
     if(cueLvl()<CUE_INFO)cue(K.ru.toUpperCase()+" РЯДОМ",CUE_INFO);
     return false;
   }
-  cue(K.ru.toUpperCase()+"\nДЕЙСТВИЕ — "+K.act,CUE_ACT);
-  if(actEdge){
+  if(cue(K.ru.toUpperCase()+"\nДЕЙСТВИЕ — "+K.act,CUE_ACT)&&actEdge){
     const got=findTake(near);
     if(got)tell("tech",K.ru[0].toUpperCase()+K.ru.slice(1)+": "+got,
                 K.ru[0].toUpperCase()+K.ru.slice(1)+"\n"+got);

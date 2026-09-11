@@ -209,13 +209,7 @@ before a push.
   fix, a WIP commit, dev, one line to both reviewers). Sources: the tester's `review.json` and
   `botverify.json` (scratchpad 3d6318e9…), the designer's letters. Scale stays as built until the
   author says otherwise (the reviewers disagree; a peer cannot decide for the author).
-  - **Handoff 12.09 ~02:30:** R0 done (ee24e4b). R1 committed WIP: the equal ACT keeps the first
-    writer unless the first line names the same object (`cueSameOffer`), the hail runs before the
-    station/belt/base, `if(cue(..)&&actEdge)` in 17-mode-system, `_probeAt` lives one frame (B1).
-    **Red now: M311 «плавбаза чинит», «чистому борту — конвой»; M312 «госпиталь», «учебное»** — the
-    fleet suites call `fleetInteract` for different ships in a row without a frame; start each call
-    with `cueReset()` in those tests (a new frame) or refine the rule. Then R1's module interactors
-    (12ai, 12l, 17b, 11ap, 12as, 13d) to `if(cue(..)&&actEdge)`, then R2.
+  - **Handoff:** R1 done; next the R0 holes below (red test first), then R2.
     **R0 open (tester on dev, both reviewers):** (1) behind СТОЛ/ОПИСЬ/station the hail window hides
     (`hailWinSync`) while `H.t-=dt` keeps running (`hailTick`) — «read the log, got a volley» outside
     the start system. Fix: the hail window sits above `.scr`/#tablewin and shows over any screen; while
@@ -229,8 +223,12 @@ before a push.
     while it is open; in the start system the picket never wrecks (a warning volley, then escort);
     both pads relabel; B2 — the hail takes ЦЕЛЬ before the probe, `hailAnswer("pass")` no H.warn;
     first rungs tank 500 / hold 900 (Контроль); test «start, 120 s silent → hull > 50 %».
-  - [ ] **R1 cue and ДЕЙСТВИЕ**: an equal ACT keeps the first writer; `if(cue(..)&&actEdge)`; the hail
-    before the station/belt/base checks; test «belt ring 100 from a planet: prompt = action».
+  - [x] **R1 cue and ДЕЙСТВИЕ**: an equal ACT keeps the first writer unless the first line names the
+    same object (`cueSameOffer`); the hail before the station/belt/base; `_probeAt` lives one frame
+    (B1); every interactor (17-mode-system, 12ai, 12l, 17b, 11ap, 12as, 13d) acts only through
+    `if(cue(..)&&actEdge)`. Tests: «belt ring by a planet: prompt = action», «hail at the pad», «a
+    foreign ACT on screen: tanker and hurt ship do not take the tap»; the M311/M312 fleet suites
+    now start each call with `cueReset()` (one call = one frame).
   - [ ] **R2 empty tank**: no nose turn on fuel 0; any flight input asks for the window; stick and move
     pads dim, «БАК ПУСТ» over the stick; test «fuel 0, turn → angle unchanged, window open».
   - [ ] **R3 the rescue window**: tester 1 (window/БУКСИР/ДОМОЙ/СБРОС during a haul), 2 (a wreck on the
