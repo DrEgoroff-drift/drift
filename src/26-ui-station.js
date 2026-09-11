@@ -62,8 +62,13 @@ function openStation(){
      строка и один цвет, как и договорено в §19.1. */
   const stBy=(G.sys.station&&G.sys.station.by)||"gt";
   const stP=(typeof powerOf==="function")?powerOf(stBy):null;
-  document.getElementById("stKind").textContent=
-    G.st.kind+" · система "+G.sys.name+"\n"+stationModsLine(G.sys)+
+  /* ── шапка в одну строку (плейтест 11.09, «пол экрана») ──
+     Сюда за год приросли модули, приветствие державы и семь строк новостей
+     Директора, и на телефоне шапка съедала половину экрана раньше, чем игрок
+     доходил до прилавка. Видна одна строка — что это и где; остальное лежит
+     под «ещё ▾» и раскрывается тычком. Смена флага остаётся на виду: по ней
+     понятно, почему цены другие. */
+  const stMore=stationModsLine(G.sys)+
     (stP?"\n"+stP.ru+" · "+stP.hail:"")+
     /* флаг сменился (M372): пока хозяин свежий, станция говорит об этом
        первой строкой — и по ней же понятно, почему цены другие */
@@ -78,6 +83,21 @@ function openStation(){
     ((typeof occPowerHere==="function"&&occPowerHere())
       ?"\nФЛАГ СМЕНИЛСЯ · "+powerOf(occPowerHere().by).ru.toUpperCase()+
         " · треть выработки в реквизицию":"");
+  {
+    const k=document.getElementById("stKind");
+    const flag=(typeof occPowerHere==="function"&&occPowerHere())?" · ФЛАГ СМЕНИЛСЯ":"";
+    const short=G.st.kind+" · система "+G.sys.name+flag;
+    k.dataset.short=short;k.dataset.full=short+"\n"+stMore;
+    k.classList.remove("more");
+    k.textContent=short+(stMore.trim()?"  ещё ▾":"");
+    if(!k.__moreWired){
+      k.__moreWired=true;
+      k.addEventListener("click",()=>{
+        const open=k.classList.toggle("more");
+        k.textContent=open?k.dataset.full+"  свернуть ▴":k.dataset.short+"  ещё ▾";
+      });
+    }
+  }
   if(stP)document.getElementById("stName").style.color=stP.col;
   syncTabs();
   /* новая стыковка — новый экран: высоту прошлого захода не помним */

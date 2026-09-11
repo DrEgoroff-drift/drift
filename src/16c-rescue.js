@@ -9,13 +9,13 @@
    варианты с кнопками. Домой — сумму считать динамически; буксир — реально
    прилетает баржа и ты пять минут летишь до станции; сброс — теряешь корпус,
    тебе выдают Стриж». Так и сделано:
-     ДОМОЙ  — сразу, за деньги: расстояние × масса корабля (rescueHomeCost);
+     ДОМОЙ  — сразу, за деньги: цена растёт от прыжков (rescueHomeCost, ниже);
      БУКСИР — даром, но временем: баржа идёт к вам TOW_COME, тащит TOW_HAUL;
      СБРОС  — корпус, всё, что на нём стоит, и груз потеряны; «Стриж» у станции.
    Правило дрифта: игра берёт плату — деньгами, временем или кораблём, — но
    выхода «начинай сначала» больше нет.
 
-   Против абуза: ДОМОЙ платный и растёт с расстоянием и кораблём; БУКСИР
+   Против абуза: ДОМОЙ платный и дорожает от каждого прыжка; БУКСИР
    бесплатный, но пять минут без руля и с RESCUE_FUEL в баке — как такси он
    хуже своего хода; СБРОС только отнимает. В меню ДОМОЙ есть в любом полёте
    (маяк раньше был только на станции), буксир и сброс — только на пустом баке. */
@@ -153,7 +153,7 @@ function towTick(dt,sh){
     const S=same?G.sys.station:null;
     const tx=S?S.x+Math.cos(S.ang)*120:T.x0+Math.cos(Math.atan2(T.y0,T.x0))*3000;
     const ty=S?S.y+Math.sin(S.ang)*120:T.y0+Math.sin(Math.atan2(T.y0,T.x0))*3000;
-    const k=clamp(T.t/TOW_HAUL,0,1),e=k*k*(3-2*k);
+    const k=clamp(T.t/TOW_HAUL,0,1),e=k;   /* ровно: плавный разгон стоял на месте первые полминуты */
     const nx=T.x0+(tx-T.x0)*e,ny=T.y0+(ty-T.y0)*e;
     const hd=Math.atan2(ny-sh.y,nx-sh.x);
     if(Math.hypot(nx-sh.x,ny-sh.y)>.01){T.ba=hd;sh.a=hd;}
@@ -223,7 +223,7 @@ function rescueRender(){
     const poor=o.cost>G.credits;
     b.disabled=poor;
     b.innerHTML='<span class="tx"><em></em><s></s></span>';
-    b.querySelector("em").textContent=o.ru+(o.cost?" · "+o.cost.toLocaleString("ru")+" КР":" · ДАРОМ");
+    b.querySelector("em").textContent=o.ru+(o.cost?" · "+o.cost.toLocaleString("ru")+" КР":(o.id==="tow"?" · ДАРОМ":""));
     b.querySelector("s").textContent=poor?"не хватает "+(o.cost-G.credits).toLocaleString("ru")+" кр":o.sub;
     b.dataset.id=o.id;
     if(o.id==="reset")b.className="lose";
@@ -244,6 +244,11 @@ if($sos){
   document.getElementById("callbtn").addEventListener("click",()=>toggleSos(true));
 }
 addEventListener("pointerdown",()=>{rescueInputT=wallMs();},true);
-addEventListener("keydown",()=>{rescueInputT=wallMs();},true);
+addEventListener("keydown",e=>{
+  rescueInputT=wallMs();
+  /* короткий тап газа проходил между кадрами и окна не открывал: газ и тормоз
+     на пустом баке открывают его прямо по нажатию */
+  if(/^(KeyW|KeyS|ArrowUp|ArrowDown|Space)$/.test(e.code||"")&&(G.mode==="system")&&rescueEmpty())rescueAsk();
+},true);
 /* такт активности зовёт кадр (28-loop, раз в 600 кадров): у скрытой вкладки rAF
    стоит — и её время не засчитывается само собой */
