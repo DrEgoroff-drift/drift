@@ -106,6 +106,10 @@ decided on the author's behalf (author: «по вопросам реши за м
    rule; one commit each, in any gap.
 5. **Test tails** — M443–M446 «Open»/«Left» and the refactor queue; each a commit. The staged
    oracles (goldens, worlds, trips) wait for the lab's week to 2026-09-18.
+   **Lab stopped 11.09:** the host warned of CPU over the plan (57.27% of a day against 50%);
+   the `lab.yml` schedule is removed, the running session killed. Before any restart: a CPU
+   budget per session that fits the plan (short manual runs, `nice`, fewer Chrome minutes);
+   the 2026-09-18 week moves until then.
 6. **Before the release** — the 60 fps check in all modes.
 
 ## Next — after M321 — closed (the queue of 2026-09-03 and §18.8); body moved to `docs/PLAN-archive.md` (2026-09-11)
