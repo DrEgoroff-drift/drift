@@ -336,10 +336,14 @@ function stTabYard(st){
     rd.appendChild(el("div","nm","<b>"+dr.ru+"</b><s>"+dr.note+
       "<br>окупится: "+(pb||"—")+"<br>в запасе: "+G.droneInventory+" · развёрнуто: "+G.drones.length+
       (sells?(shop?"":"<br>здесь уже брали — следующая машина через двое суток"):"<br>продают только верфь и завод")+"</s>"));
-    const bd=el("button","act"+(shop?" gold":""),dr.price.toLocaleString("ru")+" кр");
-    bd.disabled=G.credits<dr.price||!shop;
-    bd.onclick=()=>{if(!droneShopTake(G.sys))return;G.credits-=dr.price;G.droneInventory++;
-      tell("money","Куплен "+dr.ru.toLowerCase()+" за "+dr.price.toLocaleString("ru")+" кр",
+    /* цена — от парка (12-economy dronePrice): каждая следующая ×1.6 */
+    const dp=dronePrice();
+    const bd=el("button","act"+(shop?" gold":""),"КУПИТЬ · "+dp.toLocaleString("ru")+" КР");
+    bd.disabled=G.credits<dp||!shop;
+    /* касса и цена — в момент нажатия, как у модулей */
+    bd.onclick=()=>{const p=dronePrice();if(G.credits<p){say("НЕ ХВАТАЕТ КРЕДИТОВ",60);return;}
+      if(!droneShopTake(G.sys))return;G.credits-=p;G.droneInventory++;
+      tell("money","Куплен "+dr.ru.toLowerCase()+" за "+p.toLocaleString("ru")+" кр",
            "Дрон куплен\nв запасе: "+G.droneInventory);
       renderTab();};
     rd.appendChild(bd);$body.appendChild(rd);

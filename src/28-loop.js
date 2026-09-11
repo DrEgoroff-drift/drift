@@ -282,7 +282,8 @@ function frameBody(now){
     /* налёт для допуска (M363, 05e): настоящими миллисекундами и только в
        полётных режимах — на станции и за столом время не идёт */
     if(typeof clrTick==="function")clrTick(dt*16.667);
-    if(now-lastDroneTick>3000){lastDroneTick=now;tickDrones();crewTick();mgrTick();occTick();dealsTick();
+    if(now-lastDroneTick>3000){if(lastDroneTick&&now-lastDroneTick>PEOPLE_GAP_MS)peopleOffline();   /* спящая вкладка — не игра (12a) */
+      lastDroneTick=now;tickDrones();crewTick();mgrTick();occTick();dealsTick();
       /* срок (12v): считается лениво по часам, тем же редким тактом, что и всё
          остальное фоновое. Узнают о нём, оказавшись под тем самым небом. */
       if(G.doom){doomLearn();doomTick();}

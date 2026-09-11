@@ -109,7 +109,16 @@ function droneRecall(d){
   return true;
 }
 /* окупаемость на этой руде, часов: цена машины против выработки в минуту по цене станции */
-function dronePaybackH(price,rate){return rate>0?Math.round(DRONES.miner.price/(rate*price*60)*10)/10:0;}
+/* цена машины растёт с парком (автор, 11.09: «прогрессивная шкала»):
+   9000·1.6ⁿ, n — машин во владении, развёрнутых и в запасе. Дрон не пропадает,
+   он только возвращается в запас, — значит это и есть число купленных, и поля в
+   сейве не нужно. Базовая цена в DRONES — цена первой машины */
+function dronePrice(){
+  const n=(G.drones?G.drones.length:0)+(G.droneInventory|0);
+  return Math.round(DRONES.miner.price*Math.pow(1.6,n)/50)*50;
+}
+/* окупаемость — следующей машины, по её цене, а не по цене первой */
+function dronePaybackH(price,rate){return rate>0?Math.round(dronePrice()/(rate*price*60)*10)/10:0;}
 /* прилавок (M350): дроны продают верфь и завод, по одной машине в двое суток на станцию */
 function droneShopHas(sys){
   if(!sys||!sys.station)return false;

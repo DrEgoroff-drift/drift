@@ -375,6 +375,18 @@ function crewBusy(c){
   if(c.state==="away")c.state=null;
   return null;
 }
+/* только онлайн (автор, 11.09: «лётчики и наёмники — только онлайн»).
+   Загрузка сейва и так ставит часы людей на «сейчас» (14-save). Второй канал
+   офлайна — спящая вкладка: телефон заблокирован, страница жива, тики стоят, а
+   по возвращении crewTick догонял до суток, mgrTick — до четырёх часов. Разрыв
+   тиков больше минуты — не игра: часы людей переставляются, догона нет (28-loop).
+   Дроны свой суточный догон сохраняют: про них решение другое — цена от парка */
+const PEOPLE_GAP_MS=60000;
+function peopleOffline(){
+  const t=clockNow();
+  for(const c of G.crew||[])c.tMs=t;
+  for(const m of G.mgrs||[])m.tMs=t;
+}
 function crewTick(){
   if(!G.crew.length)return;
   const now=clockNow();

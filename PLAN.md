@@ -191,9 +191,20 @@ before a push.
   Proposed: an upgrade card (ship thumb with the slot lit, dots big, «now → becomes» from stat(), the
   fitting budget bar, ONE button «УЛУЧШИТЬ ДО УР. N · X КР», a second of dock work, «УСТАНОВЛЕНО»).
   Asked the author; code after his «да».
-- [ ] **5. After a boss** — a «what you got» card with НАДЕТЬ in it.
+  **Built 12.09 (95d5177):** `modCard` in 26b — dots, now → becomes in the ПРИБОРЫ rows, the fitting
+  line, one verb button, «МОНТАЖ… → УСТАНОВЛЕНО» (view only, state changes on the tap); СПЛАВ on the same
+  card with `fusePreview` (one formula for the card and `fuseShips`).
+- [ ] **5. After a boss** — a «what you got» card with НАДЕТЬ in it. **Built 12.09 (1265cdd):** the
+  author's «boss» was a fight at a planet with loot, not «Ревизия»; `27jb-ui-got` queues container and
+  boarding parts and shows a card when the fight is over (НАДЕТЬ through `opisFit`).
 - [ ] **6. Economy** — drones: price a function of how many you own, `9000·1.6ⁿ`; tiers later. Close
   offline income of pilots/mercs if it drips. Where to spend 1.5 M — a list to the author, no code.
+  **Built 12.09:** `dronePrice()` (12-economy) = 9000·1.6ⁿ, n = drones owned (deployed + in stock; a
+  drone never vanishes, so no save field); on the author's world the 14th costs 4 053 250. Offline:
+  the load already reset crew/manager clocks; the real channel was a sleeping tab (catch-up up to
+  24 h / 240 min on return) — a tick gap over `PEOPLE_GAP_MS` (60 s) now calls `peopleOffline()`.
+  Drones keep their 24 h catch-up (not asked). Tests to add before the push: price by fleet size; a
+  60 s+ loop gap pays nobody.
 - [ ] **Start system picket** — «Коммуна» at 0:0 hails a new player and opens fire ~15 s in.
 - [ ] **Market for a newcomer** — «only cooperatives may buy»: check a newcomer can trade at all.
 - [ ] **Home-price activity perks** — a fuel coupon per 2 h of active play a week (proposed).
