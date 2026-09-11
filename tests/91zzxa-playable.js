@@ -3,6 +3,72 @@
    лист стола называет себя, ОПИСЬ на телефоне, карточка улучшения и сплава,
    карточка после боя, цена дрона от парка, люди только онлайн, масштаб тел. */
 
+/* ══ блок ревью 12.09 (R0–R6): сперва красный тест, потом правка ══ */
+
+/* R0: новичок в системе старта молчит — его не разбивают, окно оклика было */
+TEST_SUITES.push(()=>suite("R0 пикет: новичок молчит две минуты в системе старта — корпус цел, окно оклика было",{tier:"browser",win:"phone"},()=>{
+  resetWorld();
+  G.mode="system";G.sx=0;G.sy=0;SYS_CACHE.delete("0,0");G.sys=getSystem(0,0);G.hailLog={};G.hail=null;
+  G.pirates=[];npcSpawn();
+  const pk=G.pirates.find(p=>p.pw&&p.hull>0);
+  ok(!!pk,"в системе старта стоит пикет");
+  G.ship.x=pk.x+300;G.ship.y=pk.y;G.ship.vx=0;G.ship.vy=0;G.ap=null;G.orbit=null;G.fuel=60;
+  const hull0=G.hull;let seen=false;
+  for(let i=0;i<7200;i++){
+    stepWorld(1);G.t+=1;
+    if(i%30===0){const w=document.getElementById("hailwin");if(w&&w.classList.contains("open"))seen=true;}
+  }
+  ok(seen,"окно оклика с двумя ответами было на экране");
+  ok(G.hull>stat().hullMax*.5,"корпус больше половины: "+Math.round(G.hull)+" из "+stat().hullMax+" (был "+Math.round(hull0)+")");
+  ok(G.mode==="system","корабль не разбит");
+}));
+
+TEST_SUITES.push(()=>suite("R0 стена новичка: первые баки и трюм по карману, дальше прежняя степень",()=>{
+  resetWorld();
+  ok(modCost("tank",0)<=G.credits,"первые баки — на стартовые: "+modCost("tank",0)+" из "+G.credits);
+  eq(modCost("hold",0),900,"первый трюм — 900");
+  eq(modCost("tank",1),Math.round(MODS.tank.base*Math.pow(2,1.55)),"вторая ступень баков — прежняя");
+}));
+
+TEST_SUITES.push(()=>suite("R0 оклик: ЦЕЛЬ отвечает «ПО ДЕЛУ», даже если рядом был непрозондированный мир",{tier:"browser"},()=>{
+  resetWorld();
+  G.mode="system";
+  const by=MAKER_KEYS.find(k=>k!==playerFlag());
+  G.hail={by,t:HAIL_HOLD,warn:0,x:G.ship.x,y:G.ship.y,blk:0};
+  G._probeAt={sx:G.sx|0,sy:G.sy|0,idx:0};
+  G.credits=1000;
+  HELM.lockEdge=true;helmTick(1);
+  eq(G.hail,null,"оклик получил ответ");
+  eq(G.credits,1000,"зонд не куплен");
+  G._probeAt=null;
+}));
+
+TEST_SUITES.push(()=>suite("R0 блокада: велено стоять — тот, кто стоит, пропущен, а не обстрелян",{tier:"browser"},()=>{
+  resetWorld();
+  G.mode="system";
+  const by=MAKER_KEYS.find(k=>k!==playerFlag());
+  const p=npcShip(by,0,1,G.ship.x+500,G.ship.y,1);p.aware=false;G.pirates=[p];
+  G.hail={by,t:HAIL_HOLD,warn:0,x:G.ship.x,y:G.ship.y,blk:1};
+  G.hailLog={};G.hailLog[G.sx+","+G.sy+"|"+by]=Math.floor(now()/1800000);   /* второго оклика в эту смену нет */
+  hailAnswer("pass");
+  ok(!!G.hail&&G.hail.hold,"«проходом» в блокаде — велено стоять");
+  for(let i=0;i<HAIL_HOLD+10;i++)hailTick(G.ship,1,false);
+  eq(G.hail,null,"простоял срок — отпустили");
+  eq(p.iff,1,"пикет не открыл огонь");
+}));
+
+TEST_SUITES.push(()=>suite("R0 пэды: на оклике ДЕЙСТВИЕ — «ПРОХОДОМ», ЦЕЛЬ — «ПО ДЕЛУ»",{tier:"browser",win:"phone"},()=>{
+  resetWorld();
+  G.mode="system";
+  const by=MAKER_KEYS.find(k=>k!==playerFlag());
+  const p=npcShip(by,0,1,G.ship.x+500,G.ship.y,1);p.aware=false;G.pirates=[p];
+  G.hail={by,t:HAIL_HOLD,warn:0,x:G.ship.x,y:G.ship.y,blk:0};
+  hailTick(G.ship,1,false);hud();
+  eq(document.querySelector("[data-k=act]").textContent.trim(),"ПРОХОДОМ","ДЕЙСТВИЕ называет ответ");
+  eq(document.getElementById("lockbtn").textContent.trim(),"ПО ДЕЛУ","ЦЕЛЬ называет второй ответ");
+  G.hail=null;hailTick(G.ship,1,false);hud();
+}));
+
 TEST_SUITES.push(()=>suite("подсказка: старший уровень бьёт младший в любом порядке",()=>{
   resetWorld();
   cueReset();

@@ -137,7 +137,10 @@ function toggleLog(open){
   if(open===false){tableToggle(false);return;}
   tableToggle(open===undefined?undefined:true);
 }
-function modCost(k,lvl){return Math.round(MODS[k].base*Math.pow(lvl+1,1.55));}
+function modCost(k,lvl){
+  if(!lvl&&MODS[k].first)return MODS[k].first;   /* первая ступень новичку по карману (04-mods) */
+  return Math.round(MODS[k].base*Math.pow(lvl+1,1.55));
+}
 function addRes(k,n){
   /* истощение (M384, §15.1): в поясах этой державы руды нет вовсе, и это
      событие, а не цифра — поэтому ноль, а не «меньше» */

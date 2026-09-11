@@ -290,7 +290,12 @@ function helmTick(dt){
   /* зонд у планеты (M400) забирает это нажатие себе — иначе на телефоне один
      тычок звал и зонд, и цели разом, а Tab не звал зонд никогда */
   const lockHit=(lockPad&&!HELM.lockWas)||HELM.lockEdge;
-  if(lockHit&&!(typeof probeClaim==="function"&&probeClaim()))helmLockNext();
+  /* оклик забирает ЦЕЛЬ раньше зонда (B2 ботов, 12.09): прежде зонд по старому
+     адресу планеты глотал «ПО ДЕЛУ», и пикет стрелял за «молчание» */
+  if(lockHit){
+    if(G.hail)hailAnswer("busy");
+    else if(!(typeof probeClaim==="function"&&probeClaim()))helmLockNext();
+  }
   HELM.lockWas=lockPad;HELM.lockEdge=false;
   /* 1. стик (M410): один, под левым пальцем. Его вектор — КУДА лететь и
      НАСКОЛЬКО быстро, в осях экрана; тягу до этой скорости подбирает

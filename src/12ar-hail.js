@@ -57,8 +57,37 @@ function hailBlockade(){
 /* ── злость: одна на державу и на систему, не на галактику ──
    Нарушил — стреляют здесь и сейчас те, кто это видел. Летопись про это не
    знает: эпизоды и та память, которая ездит по трассам, приходят с M374. */
+/* ── система старта (блокер надзора 12.09) ──
+   Замер тестировщика: новичок на «лёгком старте» молчит — пикет «Коммуны»
+   окликает на ~45 с, стреляет на ~75 с, к 93 с корабль разбит. Первая встреча
+   не может быть смертельной: в системе старта молчание получает предупредительный
+   залп по щиту и «уходите», а огонь пикета не опускает корпус ниже половины —
+   на пол он замолкает сам (playerHit, 13-combat). Правила те же, цена другая */
+function hailStartSys(){return (G.sx|0)===0&&(G.sy|0)===0;}
+const HAIL_START_FLOOR=.5;
+function hailCalm(by,line){
+  let n=0;
+  for(const p of (G.pirates||[]))if(p.hull>0&&p.pw===by&&!p.iff){p.iff=1;p.aware=false;n++;}
+  G.marks=(G.marks||[]).filter(p=>p.pw!==by);
+  if(!n)return;
+  const P=(typeof powerOf==="function")?powerOf(by):null;
+  say((P?P.ru.toUpperCase():"ПИКЕТ")+": "+(line||"ХВАТИТ С ВАС · УХОДИТЕ"),140);
+  if(typeof etherLine==="function")etherLine("…"+(P?P.ru:"пикет")+": хватит. Уходите своей линией.",P?P.ru:"пикет");
+}
+function hailWarnVolley(by,why){
+  G.hail=null;
+  const P=(typeof powerOf==="function")?powerOf(by):null;
+  G.shield=0;G.shieldHit=typeof SHIELD_DELAY!=="undefined"?SHIELD_DELAY:60;
+  sfx("hit",{v:.35});if(typeof hitFx==="function")hitFx(.35);
+  say((P?P.ru.toUpperCase():"ПИКЕТ")+" · ПРЕДУПРЕДИТЕЛЬНЫЙ ПО ЩИТУ\nуходите — следующий по корпусу",160);
+  if(typeof etherLine==="function")
+    etherLine("…"+(P?P.ru:"пикет")+": борт молчит. Предупредительный. Уходите.",P?P.ru:"пикет");
+  logAdd("warn","Пикет "+(P?P.ru:"")+" дал предупредительный по щиту: "+(why||"нарушение"));
+}
 function hailAnger(by,why){
   if(!by)return;
+  /* в системе старта молчание и блокада — не повод разбивать новичка */
+  if(hailStartSys()&&!/первое/.test(why||"")){hailWarnVolley(by,why);return;}
   let n=0;
   for(const p of (G.pirates||[])){
     if(p.hull<=0||p.pw!==by)continue;
@@ -86,17 +115,27 @@ function hailShotAt(p){
 }
 /* ── такт оклика ── */
 function hailTick(sh,dt,actEdge){
-  if(G.mode!=="system")return false;
+  if(G.mode!=="system"){hailWinSync();return false;}
   const H=G.hail;
   if(H){
     H.t-=dt;
-    const P=(typeof powerOf==="function")?powerOf(H.by):null;
-    const who=P?P.ru.toUpperCase():"ПИКЕТ";
-    const deed=(typeof epiHailLine==="function")?epiHailLine(H.by):"";
-    cue(who+" · «"+(deed||(P?P.hail:"Кто такой"))+"»\n"+
-      "ДЕЙСТВИЕ — «ПРОХОДОМ» · ЦЕЛЬ — «ПО ДЕЛУ»"+(H.warn?" · ВАС УЖЕ ПРЕДУПРЕДИЛИ":""),CUE_ACT);
-    if(actEdge){hailAnswer("pass");return true;}
+    /* вопрос и отсчёт — в окне (hailWinSync); подсказка несёт только ответы,
+       короткие, чтобы на 390 px она не резалась, а пэды взяли глаголы */
+    cue(H.hold?"ВЕЛЕНО СТОЯТЬ · ЖДИТЕ":"ОКЛИК · ДЕЙСТВИЕ — ПРОХОДОМ · ЦЕЛЬ — ПО ДЕЛУ",CUE_ACT);
+    if(actEdge&&!H.hold){hailAnswer("pass");hailWinSync();return true;}
     if(H.t<=0){
+      /* блокада: велели стоять, и он простоял срок (дальше 1400 — hailRunCheck) —
+         отпускают. Прежде таймаут после «стоять» шёл в злость «не ответил», хотя
+         борт стоял как велено (тестировщик, 12.09) */
+      if(H.hold){
+        G.hail=null;
+        const P=(typeof powerOf==="function")?powerOf(H.by):null;
+        say("ПРОПУСКАЮТ · ИДИТЕ",90);
+        if(typeof etherLine==="function")etherLine("…стояли — видим. Проходите.",P?P.ru:"пикет");
+        hailWinSync();return true;
+      }
+      const P=(typeof powerOf==="function")?powerOf(H.by):null;
+      const who=P?P.ru.toUpperCase():"ПИКЕТ";
       /* молчание. Первое — предупреждение, второе — они правы */
       if(!H.warn){
         H.warn=1;H.t=HAIL_HOLD;
@@ -106,8 +145,10 @@ function hailTick(sh,dt,actEdge){
         hailAnger(H.by,"четвёртое правило: не ответил и пошёл дальше");
       }
     }
+    hailWinSync();
     return true;
   }
+  hailWinSync();
   /* оклик: раз на систему и на смену волны, и только если рядом чужой пикет */
   const p=hailPicket(sh);
   if(!p)return false;
@@ -152,6 +193,37 @@ function hailAnswer(kind){
       etherLine("…записано. По делу так по делу.",P?P.ru:"пикет");
   }
   return true;
+}
+/* ── окно оклика (блокер надзора 12.09) ──
+   На телефоне вопрос не читался: подсказка с ответами резалась многоточием,
+   «ЦЕЛЬ — ПО ДЕЛУ» не было видно нигде. Теперь оклик — окно того же терминала,
+   что выходы бака, над падами: кто спрашивает, что спрашивает, отсчёт до
+   предупреждения и два больших ответа. Те же ответы остаются на пэдах */
+function hailWinSync(){
+  if(typeof document==="undefined"||!document.body||!document.createElement)return;   /* узловой ярус тестов: DOM нет */
+  let e=document.getElementById("hailwin");
+  const H=G.hail,b=document.body;
+  const show=!!H&&G.mode==="system"&&!(b&&b.classList.contains("screen"));
+  if(!show){if(e&&e.classList.contains("open")){e.classList.remove("open");b.classList.remove("hailopen");}return;}
+  if(!e){
+    e=document.createElement("div");e.id="hailwin";
+    e.innerHTML="<b><em></em></b><div class='hq'></div><div class='hbar'><i></i></div><s class='hw'></s>"+
+      "<div class='ha'><button class='act gold' data-a='pass'>ПРОХОДОМ<small>ДЕЙСТВИЕ</small></button>"+
+      "<button class='act' data-a='busy'>ПО ДЕЛУ<small>ЦЕЛЬ</small></button></div>";
+    for(const bt of e.querySelectorAll(".ha button"))
+      bt.onclick=ev=>{ev.stopPropagation();sfx("ui");hailAnswer(bt.dataset.a);hailWinSync();};
+    b.appendChild(e);
+  }
+  const P=(typeof powerOf==="function")?powerOf(H.by):null;
+  const deed=(typeof epiHailLine==="function")?epiHailLine(H.by):"";
+  e.querySelector("b em").textContent=(P?P.ru.toUpperCase():"ПИКЕТ")+" · ОКЛИК";
+  e.querySelector(".hq").textContent="«"+(deed||(P?P.hail:"Кто такой"))+"»";
+  e.querySelector(".hbar i").style.width=Math.max(0,Math.min(100,H.t/HAIL_HOLD*100)).toFixed(1)+"%";
+  e.querySelector(".hw").textContent=H.hold?"велено стоять · стойте, пока не отпустят":
+    (H.warn?"ВАС УЖЕ ПРЕДУПРЕДИЛИ · молчание дальше — огонь":"молчание — тоже ответ: сперва предупреждение");
+  e.classList.toggle("warn",!!H.warn&&!H.hold);
+  e.querySelector(".ha").style.display=H.hold?"none":"";
+  e.classList.add("open");b.classList.add("hailopen");
 }
 /* пошёл сквозь блокаду: расстояние от точки оклика растёт — значит идёт */
 function hailRunCheck(sh){

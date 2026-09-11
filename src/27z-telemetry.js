@@ -394,7 +394,14 @@ function hud(){
       setSt(b,"display",helmRow?"none":"");
     if(helmRow)setSt($fire,"display","none");
     const $lock=document.getElementById("lockbtn");
-    if($lock)setSt($lock,"display",helmRow?"":"none");
+    if($lock){
+      setSt($lock,"display",helmRow?"":"none");
+      /* ЦЕЛЬ называет свой глагол тем же законом, что ДЕЙСТВИЕ (M355, блокер
+         надзора 12.09): на оклике — «ПО ДЕЛУ», у обломка — «СНЯТЬ ЭКИПАЖ» */
+      const mt=G.mode==="system"?/ЦЕЛЬ\s*—\s*([^·\n]+)/.exec(G.prompt||""):null;
+      const lv=mt?mt[1].trim():"";
+      setTx($lock,(lv&&lv.length<=14)?lv:"ЦЕЛЬ");
+    }
   }
   document.body.classList.toggle("inbelt",G.mode==="belt");
   document.body.classList.toggle("aboard",G.mode==="wanderer");   /* на борту «Сороки» (M343): приёмник и тяга ни к чему */

@@ -66,7 +66,9 @@ function modCard(k,cap){
       const cur=stat(),nx=modStatWith(k,1);G.mods[k]++;afterFitChange();sfx("ui");modWorkRun(k,cur,nx);};
   }else if(own>=4){label="МАКСИМУМ";off=true;gold=false;}
   else{
-    label=(room?"УЛУЧШИТЬ ДО УР. ":"КУПИТЬ УР. ")+(own+1)+" · "+cost.toLocaleString("ru")+" КР";off=G.credits<cost;
+    /* серая кнопка говорит, чего не хватает, а не молчит ценой (дизайн, п. 29) */
+    label=G.credits<cost?"НЕ ХВАТАЕТ "+Math.ceil(cost-G.credits).toLocaleString("ru")+" КР · УР. "+(own+1):
+      (room?"УЛУЧШИТЬ ДО УР. ":"КУПИТЬ УР. ")+(own+1)+" · "+cost.toLocaleString("ru")+" КР";off=G.credits<cost;
     /* касса — в момент нажатия: между отрисовкой и тычком её мог опустошить
        другой тычок, и счёт уходил в минус (сеть «полный трюм», 0.360.0) */
     go=()=>{if(G.credits<cost){say("НЕ ХВАТАЕТ КРЕДИТОВ",60);return;}

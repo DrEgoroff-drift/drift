@@ -54,6 +54,12 @@ function playerHit(s){
     }
   }
   d*=dmgMul(s.type,false);
+  /* система старта: огонь державы не опускает корпус ниже половины — на полу
+     пикет замолкает и велит уходить (12ar, блокер надзора 12.09) */
+  if(d>0&&hailStartSys()&&s.owner&&MAKER_KEYS.indexOf(s.owner)>=0){
+    const floor=st.hullMax*HAIL_START_FLOOR;
+    if(G.hull-d<floor){d=Math.max(0,G.hull-floor);hailCalm(s.owner);}
+  }
   if(d>0){
     sfx("hit",{v:.55});
     G.hull=Math.max(0,G.hull-d);

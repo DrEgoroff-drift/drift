@@ -404,6 +404,27 @@ body.menuopen .rail{opacity:.12;pointer-events:none;transition:opacity .15s}
 #sos button.lose{color:#ff7a66;margin-top:10px;border-top:1px solid rgba(255,110,90,.45)}
 .sosnone{color:var(--dim);font-size:10px;padding:12px;line-height:1.5}
 body.sosopen .rail{opacity:.12;pointer-events:none}
+/* окно оклика (блокер надзора 12.09): над падами, в нижней трети — корабль и
+   пикет видны; вопрос, отсчёт, два больших ответа. Подсказка под ним молчит */
+#hailwin{position:fixed;left:50%;transform:translateX(-50%);z-index:9;
+  bottom:calc(env(safe-area-inset-bottom) + var(--padsh,86px) + 12px);width:min(360px,92vw);
+  background:var(--glass);border:1px solid rgba(242,178,92,.55);border-radius:var(--rad-p);
+  backdrop-filter:blur(18px) saturate(1.2);box-shadow:0 18px 54px rgba(0,0,0,.62),var(--glass-hi);
+  display:none;flex-direction:column;overflow:hidden}
+#hailwin.open{display:flex}
+#hailwin>b{font-weight:400;color:var(--amber);letter-spacing:.18em;font-size:11px;padding:10px 12px 4px}
+#hailwin>b em{font-style:normal}
+#hailwin .hq{padding:2px 12px 8px;font-size:15px;color:var(--text);line-height:1.35}
+#hailwin .hbar{margin:0 12px;height:4px;border-radius:2px;background:rgba(255,255,255,.08);overflow:hidden}
+#hailwin .hbar i{display:block;height:100%;background:var(--amber);transition:width .1s linear}
+#hailwin.warn .hbar i{background:#ff6b57}
+#hailwin .hw{display:block;text-decoration:none;padding:6px 12px 0;font-size:11px;color:#c8d3dc;letter-spacing:.02em}
+#hailwin.warn .hw{color:#ff9d7a}
+#hailwin .ha{display:flex;gap:8px;padding:10px 12px 12px}
+#hailwin .ha .act{flex:1 1 0;min-height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
+#hailwin .ha .act small{font-size:9px;letter-spacing:.12em;opacity:.7}
+body.hailopen #prompt{visibility:hidden}
+body.hailopen .rail{opacity:.12;pointer-events:none}   /* как у окна бака: на 7 секунд оклика борт не нужен */
 /* «что получил» (п. 5, 12.09): добыча боя карточкой — стекло окна выходов,
    бумага карточки описи внутри, кнопка НАДЕТЬ у пальца */
 #gotwin{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:9;
