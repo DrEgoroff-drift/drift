@@ -51,6 +51,8 @@ function updateSystem(dt){
   /* штурвал (M360): три ввода пишут G.ctl, физика ниже читает только его.
      Орбиту и автопилот он снимает сам при любом рулении */
   helmTick(dt);
+  /* буксир (16c): пока баржа ведёт корабль, штурвал и физика молчат */
+  if(G.tow&&typeof towTick==="function"&&towTick(dt,sh))return;
   /* захват принадлежит телу, а тело — системе. Прыжок, стыковка, посадка, пояс,
      абордаж и авария сбрасывали автопилот, но не захват: корабль оставался
      привязан к планете из прежней системы. Её координаты больше никто не
@@ -328,11 +330,11 @@ function updateSystem(dt){
      новый «Стриж»). Дешевле заправки он не бывает, поэтому «быстрым
      перелётом» его не сделать. Подсказку берём последней — если рядом планета
      или станция, у игрока и так есть что нажать. */
+  /* 11.09: подсказка больше не единственный вход — газ на пустом баке сам
+     открывает окно выходов (16c); ДЕЙСТВИЕ открывает его же */
   if(!G.prompt&&G.fuel<=0&&!(G.tech.has("synth")&&G.cargo.ice>0)){
-    const cost=evacCost();
-    G.prompt="ХОДА НЕТ · БАК ПУСТ\nДЕЙСТВИЕ — СИГНАЛ БЕДСТВИЯ · "+
-      (G.credits>=cost?"БУКСИР "+cost+" КР":"ПЛАТИТЬ НЕЧЕМ");
-    if(actEdge){evacuate();return;}
+    G.prompt="ХОДА НЕТ · БАК ПУСТ\nДЕЙСТВИЕ — ДОМОЙ, БУКСИР ИЛИ СБРОС";
+    if(actEdge){toggleSos(true);return;}
   }
   if(!G.prompt&&G.tech.has("synth")&&G.cargo.ice>0&&G.fuel<st.fuelMax){
     G.prompt="ДЕЙСТВИЕ — СИНТЕЗ ТОПЛИВА ИЗО ЛЬДА ("+G.cargo.ice+")";
@@ -543,6 +545,7 @@ function drawSystem(){
   if(typeof drawFindsSystem==="function")drawFindsSystem(zx,zy,Z);
   if(typeof relayDrawSystem==="function")relayDrawSystem(zx,zy,Z);
   if(typeof drawBarges==="function")drawBarges(zx,zy,Z);
+  if(G.tow&&typeof drawTow==="function")drawTow(zx,zy,Z);   /* буксир (16c) */
   if(typeof drawSysTraffic==="function")drawSysTraffic(zx,zy,Z);   /* челноки станции (M309) */
   if(typeof drawWanderer==="function")drawWanderer(zx,zy,Z);        /* «Сорока» у планеты (M342) */
   if(typeof drawFleet==="function")drawFleet(zx,zy,Z);               /* флот ГЛАВТРАССЫ (M310) */

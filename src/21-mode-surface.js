@@ -649,7 +649,7 @@ function tickLaunchHold(dt){
     launchHold+=dt;
     const lbar=document.getElementById("launchbar");
     if(lbar)lbar.style.width=clamp(launchHold/36*100,0,100)+"%";
-    if(launchHold>=36){launchHold=0;if(G.fuel<8)evacuate();else launch();}
+    if(launchHold>=36){launchHold=0;if(G.fuel<8)rescueNoLaunch();else launch();}   /* мало топлива — окно выходов (16c) */
   }else{
     launchHold=Math.max(0,launchHold-dt*2);
     const lbar=document.getElementById("launchbar");
@@ -666,18 +666,23 @@ function evacFrom(){return (G.surf&&G.surf.p&&G.surf.p.name)||(G.sys&&G.sys.name
 function evacuate(){
   const from=evacFrom();
   const cost=evacCost();
-  if(G.credits<cost){totalLoss();return;}
-  G.credits-=cost;
+  /* нечем платить — не потеря корабля, а расплата натурой: обшивка, потом
+     трюм (16c-rescue, плейтест 11.09: «игра должна ебать игрока, но выход
+     есть всегда»). totalLoss остался для гибели в бою, не для пустого бака */
+  let paid;
+  if(G.credits>=cost){G.credits-=cost;paid="−"+cost.toLocaleString("ru")+" кр";}
+  else paid="без денег · даром";
   const dest=nearestStation(G.sx,G.sy);
   G.sx=dest.sx;G.sy=dest.sy;G.sys=dest;
-  G.fuel=Math.max(G.fuel,30);
+  G.fuel=Math.max(G.fuel,Math.min(stat().fuelMax,RESCUE_FUEL));
   G.ship.x=Math.cos(0)*(dest.station?dest.station.orbit+120:900);
   G.ship.y=Math.sin(0)*(dest.station?dest.station.orbit+120:900);
   G.ship.vx=0;G.ship.vy=0;
   G.mode="system";G.land=null;G.surf=null;
   saveGame(true);
-  logAdd("warn","Эвакуация с "+from+" за "+cost+" кр · переброшены к "+dest.name);
-  say("Эвакуация\n-"+cost+" кр · вы в системе "+dest.name);
+  G.ap=null;
+  logAdd("warn","Эвакуация с "+from+" · "+paid+" · переброшены к "+dest.name);
+  say("Буксир\n"+paid+"\nвы в системе "+dest.name+" · станция рядом",180);
 }
 function totalLoss(){
   const pname=evacFrom();
@@ -703,7 +708,7 @@ function totalLoss(){
 }
 function launch(){
   const S=G.surf,p=S.p;
-  if(G.fuel<8){evacuate();return;}
+  if(G.fuel<8){rescueNoLaunch();return;}
   G.fuel-=8;G.mode="system";
   G.ship.x=p.x+Math.cos(p.ang)*(p.radius+150);
   G.ship.y=p.y+Math.sin(p.ang)*(p.radius+150);

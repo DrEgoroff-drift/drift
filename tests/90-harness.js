@@ -295,6 +295,8 @@ function resetWorld(){
   G.parrot=null;G.heard=[];G.trade=routeInit();G.market={};G.wear={};G.findsSeen={};
   G.mgrs=[];G.blueprints={};G.cantina=null;G.aiRift=null;
   G.orderStamp=0;G.kills=0;G.soldTotal=0;
+  G.tow=null;G.homeJumps=0;G.homeActMs=0;   /* буксир и счётчик прыжков домой (16c, 11.09) */
+  if(typeof toggleSos==="function")toggleSos(false);
   G.pirates=[];G.barges=[];G.shots=[];   /* баржи (12l) ездили из набора в набор — нашла сеть эфемерных списков (0.443.0) */G.log=[];G.logNew=0;G.prompt="";G.msg="";G.msgT=0;   /* logNew и msgT ехали из набора в набор (нашёл тест хэша, M441) */
   G.t=0;G.running=true;
   for(const k in keys)keys[k]=false;

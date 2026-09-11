@@ -59,14 +59,16 @@ TEST_SUITES.push(()=>suite("дом растёт сам от оборота",()=>
   resetWorld();
   earn(1200,"test");
   G.sx=3;G.sy=4;G.sys=getSystem(3,4);G.mode="system";
+  /* 11.09: цена одна с прыжком ДОМОЙ (16c) — растёт от прыжков, не от расстояния */
   const cost=homeBeaconCost();
-  ok(cost>600,"маяк домой стоит тем дороже, чем дальше забрались: "+cost);
+  eq(cost,rescueHomeCost(),"у маяка цена прыжка домой");
   G.credits=cost-1;
   ok(!homeBeacon(),"без денег маяк не срабатывает");
   G.credits=cost+10;
   ok(homeBeacon(),"с деньгами — срабатывает");
   eq(G.sx,G.home.sx,"и приводит домой");
   eq(G.credits,10,"деньги списаны ровно по цене");
+  ok(homeBeaconCost()>cost,"следующий прыжок дороже ("+cost+" → "+homeBeaconCost()+")");
 }));
 /* весь доход в игре идёт через одну воронку: иначе дом видит не то, что игрок */
 TEST_SUITES.push(()=>suite("доход идёт одной воронкой",()=>{

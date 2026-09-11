@@ -411,6 +411,9 @@ function helmApply(dt,st,sh,maxSp){
      нуля, `slow` снимается сам (стоящий корабль не идёт «против»), и помощь
      разгоняет уже в новую сторону. */
   o.slow=!!(c.assist&&c.slow);
+  /* газ или тормоз на пустом баке — окно выходов (16c, плейтест 11.09):
+     раньше корабль молча не слушался, и подсказку перебивала любая другая */
+  if((mag>0||c.brake)&&G.fuel<=0&&typeof rescueAsk==="function")rescueAsk();
   if(mag>0&&G.fuel>0&&!o.slow){
     let fwd=0,tx=0,ty=0;
     if(c.thrOnly||along<0){tx=c.tx*HELM_THR;ty=c.ty*HELM_THR;o.thr=true;}

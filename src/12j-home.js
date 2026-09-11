@@ -173,16 +173,15 @@ function homeRevive(pname){
 }
 /* маяк домой платный, а ОТ дома летят своим ходом: иначе дом превращается в
    бесплатное такси по галактике */
-function homeBeaconCost(){
-  const d=Math.hypot(G.sx-(G.home?G.home.sx:0),G.sy-(G.home?G.home.sy:0));
-  return Math.round(600+180*d);
-}
+/* 11.09: у маяка одна цена с прыжком ДОМОЙ из меню и из окна пустого бака —
+   растёт от каждого прыжка и остывает от игры (16c-rescue) */
+function homeBeaconCost(){return rescueHomeCost();}
 function homeBeacon(){
   if(!homeCanRevive())return false;
   const cost=homeBeaconCost();
   if(G.credits<cost){say("Маяк домой\nнужно "+cost.toLocaleString("ru")+" кр");return false;}
   if(G.mode!=="system"){say("Маяк домой\nтолько из полёта по системе — сперва отстыкуйтесь");return false;}
-  G.credits-=cost;
+  G.credits-=cost;homeJumpCount();
   G.sx=G.home.sx;G.sy=G.home.sy;G.sys=getSystem(G.sx,G.sy);
   G.ship.x=900;G.ship.y=0;G.ship.vx=0;G.ship.vy=0;
   G.ap=null;G.pirates=[];G.shots=[];

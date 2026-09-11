@@ -243,6 +243,9 @@ function hud(){
   /* небо говорит само за себя, но событие обязано быть НАЗВАНО: без имени
      затмение читается как «что-то с картинкой» (06a-celest) */
   if(typeof celLine==="function"){const cl=celLine();if(cl)b+=" · "+cl;}
+  /* ДОМОЙ в меню — в любом полёте, не только на станции (16c, плейтест 11.09) */
+  const cbtn=document.getElementById("callbtn");
+  if(cbtn)setSt(cbtn,"display",(G.mode==="system"||G.mode==="map")?"":"none");
   const sbtn=document.getElementById("starbtn");
   setSt(sbtn,"display",(G.mode==="system"&&Math.hypot(G.ship.x,G.ship.y)>1400)?"":"none");
   /* «К ЦЕЛИ» (M321, §9 шаг 6): курс поставлен с доски или из тетради — в полёте

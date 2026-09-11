@@ -63,7 +63,7 @@ html,body{height:100%;overflow:hidden;background:var(--void);
    оставляет раскладку и попадание пальцем в прежних координатах — кнопка
    выглядела бы крупной, а нажималась бы по старому месту. zoom меняет
    используемые длины, поэтому и правило «не меньше 44 px» остаётся верным. */
-.hud,#msg,#prompt,#console,.rail,#menu,.pads,.scr,#parrotwin,#intro{zoom:var(--ui,1)}
+.hud,#msg,#prompt,#console,.rail,#menu,#sos,.pads,.scr,#parrotwin,#intro{zoom:var(--ui,1)}
 
 /* подпись: то, что опознают, а не читают */
 .lbl{font-size:8px;letter-spacing:.18em;color:var(--dim);text-transform:uppercase}
@@ -376,6 +376,32 @@ body.menuopen .rail{opacity:.12;pointer-events:none;transition:opacity .15s}
   letter-spacing:.02em}
 #menu button i{font-style:normal;color:var(--void);background:var(--amber);
   padding:1px 5px;border-radius:8px;font-size:9px;margin-left:6px}
+/* ── окно пустого бака (16c) ── посреди кадра: газ нажат, ответ должен быть там,
+   куда смотрят. Тот же терминал, что меню, но янтарный: это не дверь, а беда */
+#sos{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:9;
+  width:min(320px,88vw);background:var(--glass);border:1px solid rgba(242,178,92,.5);
+  border-radius:var(--rad-p);backdrop-filter:blur(18px) saturate(1.2);
+  box-shadow:0 18px 54px rgba(0,0,0,.62),var(--glass-hi);
+  display:none;flex-direction:column;overflow:hidden}
+#sos.open{display:flex}
+#sos>b{font-weight:400;color:var(--amber);letter-spacing:.18em;font-size:11px;
+  padding:12px;border-bottom:1px solid var(--edge);display:flex;align-items:center}
+#sos>b em{font-style:normal}
+#sos>b span{margin-left:auto;color:var(--phos);font-size:17px;line-height:.7;padding:0 4px;cursor:pointer}
+#sosHead{color:var(--dim);font-size:9px;letter-spacing:.04em;padding:8px 12px;
+  border-bottom:1px solid rgba(127,230,216,.08)}
+#sos button{position:relative;-webkit-appearance:none;background:none;border:0;
+  border-bottom:1px solid rgba(127,230,216,.08);color:var(--amber);font-family:inherit;
+  text-align:left;padding:11px 12px;min-height:48px;width:100%;display:flex;align-items:center}
+#sos button:last-child{border-bottom:0}
+#sos button:active{background:rgba(242,178,92,.12)}
+#sos button:disabled{color:var(--dim);opacity:.6}
+#sos button .tx{flex:1;min-width:0}
+#sos button em{font-style:normal;font-size:11px;letter-spacing:.13em;display:block}
+#sos button s{text-decoration:none;display:block;color:var(--dim);font-size:9px;margin-top:3px;letter-spacing:.02em}
+#sos button.lose{color:#ff8a78}
+.sosnone{color:var(--dim);font-size:10px;padding:12px;line-height:1.5}
+body.sosopen .rail{opacity:.12;pointer-events:none}
 
 /* журнал и отчёт переехали на стол (M151a): см. #tablewin ниже */
 /* ══════════════ экраны ══════════════

@@ -394,6 +394,7 @@ function frame(now){
      выкладки, и человек в консоли. 0.359.0 уехал мёртвым при зелёных тестах —
      потому что никто не спрашивал сам файл, что уехал, живёт ли он */
   if(++frameN===1&&!crashN){try{document.documentElement.setAttribute("data-alive",VER);}catch(_){}}
+  if(frameN%600===0&&typeof rescueActivityBeat==="function")rescueActivityBeat();   /* остывание прыжков домой (16c) */
   /* ── провал кадра: только настоящий (M417) ──
      Проверка `!document.hidden` стояла на месте, но спрашивала не в тот
      момент: rAF просыпается уже ПОСЛЕ того, как вкладку вернули, — вкладка к

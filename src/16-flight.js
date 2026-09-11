@@ -155,7 +155,7 @@ function runAutopilot(dt,st){
     sh.vx=T.vx;sh.vy=T.vy;
     return arrive();
   }
-  if(G.fuel<=0){G.ap=null;say("Топливо кончилось\nавтопилот отключён");return false;}
+  if(G.fuel<=0){G.ap=null;say("Топливо кончилось\nавтопилот отключён");if(typeof rescueAsk==="function")rescueAsk();return false;}
   /* тормозной профиль: скорость подхода ограничена тем, что реально успеешь
      погасить оставшейся тягой. Линейное gap/22 разрешало 8 ед/кадр уже за 176
      единиц до цели, а гасить их с ускорением .088 нужно ~360 — автопилот
