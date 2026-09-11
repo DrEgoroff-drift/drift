@@ -236,6 +236,28 @@ findings, sorted by what they are:
 - **The hunt** — 65 seeds, 0 game failures, streak 3 of 5; every seed is a new path (M339), so
   the fuzzer as it stands finds nothing on 0.427.0 — the detectors of M443 are what will make the
   same seeds informative.
+### The lab, second night (session 20260911-003934, 0.440.0, 123 of 300 min, 92 runs)
+
+Read on 2026-09-11 morning from `runs.jsonl`/`errors.txt`. Verdicts: 78 green, 12 OOM, 2 red;
+29 268 passes; the previous night's four reds (node ×2, «полный трюм», «свет») are gone.
+- **Two GAME reds, both already answered.** «подсказка … ДЕЙСТВИЕ не сделало ничего» on the
+  map — the silent refusal on your own sector, fixed in 0.441.0 (the lab found it on its own the
+  same night). «золотые кадры … сетка 40×20 против 40×25» — the server's headless has no window
+  frame, so the requested 1280,800 *is* the canvas there (40×25 blocks) while the laptop's is
+  1248×641 (40×20): **goldens are per platform**, and the suite is staged anyway — but
+  `lab.py` counted a staged failure as GAME red; fixed (it now skips the КАРАНТИН block and
+  `[карантин: …]` suites). Open: a per-platform baseline (`docs/golden/<W>x<H>@<host>.json`, the
+  lab accepting its own on first run), or the block mean coarse enough to cross platforms — the
+  week's history decides.
+- **The hunt stopped itself at 123 min of 300**: five fuzz OOMs in a row hit the same known key
+  (`de3ea33cb07a`) and the streak rule read that as «five seeds without anything new» — a host
+  failure counted as a game verdict. Fixed in `lab.py` (host-class units no longer feed the
+  streak). Fuzz: 39 seeds, 34 green, 5 OOM (13 %, same as night one), 0 game failures.
+- **OOM at 768 MB, 12 units** (13 the night before): «руки» light:0/6 and «двери», «устаревшая
+  кнопка» (known); new this night — «детерминизм: рисованный кадр не сдвигает случай мира»
+  (light:3/6, an M441 suite), «сквозной: сейв позднего мира» (mobile), «M314: трассы» (tall),
+  «полный трюм» (heavy, was red, now OOM). All auto-solo next time. Median rss 683 MB, fuzz at
+  the ceiling (767). Heavy suite times unchanged (top «печь» 65 → 68 s).
 - **The lab's own loose ends (into M446)** — `fix` and auto-quiet done in 0.427.2;
   `lab.yml` has not had its first scheduled run yet (02:00 Moscow, same `DRIFT_SSH_KEY` as the
   deploy) — check the page on the morning of 11.09; light shards run at 550–770 MB of 768, one

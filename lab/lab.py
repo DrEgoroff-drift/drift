@@ -88,11 +88,14 @@ def parse(kind, text):
     suites = int((re.search(r"наборов (\d+)", head) or [0, 0])[1] or 0)
     fails = []
     cur = ""
+    staged = False   # карантин (stage, M442): провалы печатаются, но вердикт не решают — и в лог ошибок не идут (0.441.0)
     for i, l in enumerate(ls):
         s = l.strip()
         if s.startswith("ПО ГРУППАМ") or s.startswith("САМЫЕ ДОЛГИЕ"): break   # сводки, не провалы
-        if s.startswith("── "): cur = s[3:].strip(); continue
-        if not s.startswith("✗"): continue
+        if s.startswith("КАРАНТИН"): staged = True; continue
+        if staged and not s: staged = False; continue
+        if s.startswith("── "): cur = s[3:].strip(); staged = "[карантин:" in cur; continue
+        if staged or not s.startswith("✗"): continue
         msg = s[1:].strip()
         if cur and msg.startswith(cur + " · "): msg = msg[len(cur) + 3:]
         suite = cur
@@ -175,7 +178,9 @@ def report(kind, arg, path, secs, mem, rc, ver, session, errfile="", oom=0):
         f["seeds"] += 1
         if verdict != "green": f["red"] += 1
         if new: f["streak"] = 0; f["new"] += len(new)
-        elif known: f["streak"] += 1
+        # «пять зёрен подряд без нового» — про игру, не про хост: пять OOM подряд по одному
+        # известному ключу остановили охоту на 123-й минуте из 300 (ночь 11.09) — не считаются
+        elif known and verdict not in ("oom", "timeout", "noreport"): f["streak"] += 1
         if f["streak"] >= 5: f["exhausted"] = True
     jsave(STATE, st); jsave(ERRS, errs)
     append(RUNS, {"t": t, "s": session, "ver": ver, "kind": kind, "arg": arg, "unit": uid, "v": verdict,
