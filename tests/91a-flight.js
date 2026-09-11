@@ -265,6 +265,22 @@ TEST_SUITES.push(()=>suite("система: по метке можно ткну�
   const cp=SYS_CHIPS.find(c=>c.t&&c.t.kind==="planet");
   tap(cp.x+cp.w/2,cp.y+cp.h/2);
   ok(G.ap&&G.ap.kind==="planet","тычок в фишку планеты ставит автопилот");
+  /* каждая фишка по своему центру — своя цель. На 390×844 без рамки окна
+     (лаборатория, 11.09) фишки легли у боковой кромки через 20 px, зоны в 44
+     перекрылись, и центр нижней отдавал автопилот верхней */
+  for(const c of SYS_CHIPS){
+    G.ap=null;tap(c.x+c.w/2,c.y+c.h/2);
+    ok(G.ap&&G.ap.kind===c.t.kind,"тычок в центр фишки «"+c.t.kind+"» — её цель (получено "+(G.ap&&G.ap.kind)+")");
+  }
+  /* то же перекрытие в любом окне: две зоны ростом 44 через 20 px */
+  {
+    const keep=SYS_CHIPS.slice();SYS_CHIPS.length=0;
+    SYS_CHIPS.push({x:4,y:600,w:100,h:44,t:{kind:"star"}},{x:4,y:620,w:100,h:44,t:{kind:"station"}});
+    G.ap=null;tap(54,642);ok(G.ap&&G.ap.kind==="station","перекрытые зоны: центр нижней — нижняя");
+    G.ap=null;tap(54,622);ok(G.ap&&G.ap.kind==="star","перекрытые зоны: центр верхней — верхняя");
+    SYS_CHIPS.length=0;SYS_CHIPS.push(...keep);
+  }
+  G.ap=null;tap(cp.x+cp.w/2,cp.y+cp.h/2);
   const was=G.ap;
 
   /* промах по пустоте: цель обязана остаться */

@@ -487,15 +487,23 @@ function tap(sxp,syp){
      пустоты за ней. Тестировщик 26.08.2026: «Метка выглядит как кнопка
      (рамка, стрелка), но не нажимается» — и это был единственный видимый
      объект на экране в первые минуты. */
+  /* Зоны нажатия выращены до 44 px, а плашки у боковой кромки стоят через
+     20: соседние зоны перекрываются. Первая в списке забирала тычок, и на
+     телефоне 390×844 палец в центре нижней плашки ставил автопилот на
+     верхнюю (нашла лаборатория, 11.09). Берём ту, чей центр ближе к пальцу. */
   if(typeof SYS_CHIPS!=="undefined"){
-    for(const ch of SYS_CHIPS){
-      if(sxp>=ch.x&&sxp<=ch.x+ch.w&&syp>=ch.y&&syp<=ch.y+ch.h){
-        G.ap=Object.assign({},ch.t);G.ap.phase="fly";
-        const nm=ch.t.kind==="planet"?ch.t.p.name
-              :(ch.t.kind==="station"?(G.sys.station?G.sys.station.name:"станция"):"звезда");
-        say("Автопилот → "+nm,90);
-        return;
-      }
+    let ch=null,bd=1e9;
+    for(const c of SYS_CHIPS){
+      if(!(sxp>=c.x&&sxp<=c.x+c.w&&syp>=c.y&&syp<=c.y+c.h))continue;
+      const d=Math.hypot(sxp-(c.x+c.w/2),syp-(c.y+c.h/2));
+      if(d<bd){bd=d;ch=c;}
+    }
+    if(ch){
+      G.ap=Object.assign({},ch.t);G.ap.phase="fly";
+      const nm=ch.t.kind==="planet"?ch.t.p.name
+            :(ch.t.kind==="station"?(G.sys.station?G.sys.station.name:"станция"):"звезда");
+      say("Автопилот → "+nm,90);
+      return;
     }
   }
   /* в режиме наблюдения камера стоит на наёмнике — тычок должен считаться от

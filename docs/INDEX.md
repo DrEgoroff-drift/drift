@@ -4327,7 +4327,7 @@ STAR_COLS                    src/16-flight.js:2
 STAR_LX                      src/16-flight.js:27
 starAt                       src/06-galaxy.js:2
 starRGB                      src/19c-light.js:49-59
-start                        src/15-input.js:580-588
+start                        src/15-input.js:588-596
 startLanding                 src/19-mode-landing.js:2-33
 startScoop                   src/19a-mode-scoop.js:51-61
 stat                         src/08-state.js:146-211
@@ -4492,7 +4492,7 @@ tabLive                      src/14a-cloud.js:36
 tabsSync                     src/15-input.js:222-237
 TALE_DRINK                   src/12b-crew-events.js:13
 TALE_JOB                     src/12b-crew-events.js:15
-tap                          src/15-input.js:439-552
+tap                          src/15-input.js:439-560
 TAPE_ADAPT                   src/25b-tape.js:26
 TAPE_DT                      src/25b-tape.js:24
 TAPE_GAIN                    src/25b-tape.js:25
@@ -6072,12 +6072,12 @@ zooTick                      src/11ad-zoo.js:41-54
   · детекторы, часть вторая: законы (M443):1
   · сами детекторы: ctx → нарушения:91
 
-## tests/91a-flight.js · 20 КБ
+## tests/91a-flight.js · 21 КБ
   · автотесты: наборы:1
   · первая минута: цель, которую нельзя потерять:244
-  · M234: ранец — запас, а не декорация:292
-  · M234: сбой кадра не убивает игру:323
-  · M234: ВЗЛЁТ гаснет вместе с поверхностью:341
+  · M234: ранец — запас, а не декорация:308
+  · M234: сбой кадра не убивает игру:339
+  · M234: ВЗЛЁТ гаснет вместе с поверхностью:357
 
 ## tests/91b-crew.js · 18 КБ
   · автотесты: наёмники: убыток по кредитам, удача, плен, рейсы, сохранение:1

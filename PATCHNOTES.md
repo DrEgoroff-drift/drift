@@ -6,6 +6,17 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.445.0 - the nearest compass chip takes the tap
+
+- The compass chips at the screen edge are 16 px plates set 20 px apart, and each one's tap
+  zone is grown to 44 px for a finger — so neighbours' zones overlap by 24. The first chip in
+  the list took the tap: on a 390×844 phone (no window frame) the three chips stacked on the
+  left edge and a finger on the planet plate's centre set the autopilot to the station.
+  Of the zones hit, the chip whose centre is nearest now wins.
+- «система: по метке можно ткнуть…» taps every chip at its centre and checks two synthetic
+  overlapping zones, so the laptop's 1280×800 run catches it too. Found by the server lab
+  (11.09); the laptop's phone window loses ~160 px to the frame and laid the chips in a row.
+
 ## 0.444.0 - the phone stick draws again
 
 - 0.439.0 deleted «twenty-two dead names» from `src/`; four of them were alive. `HELM_BAND`,
