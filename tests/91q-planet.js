@@ -202,7 +202,7 @@ TEST_SUITES.push(()=>suite("поверхность: рост человека �
 }));
 
 /* ── M217: под землёй та же мерка ── */
-TEST_SUITES.push(()=>suite("шахта: та же мерка, и клетка от неё только крупнее",()=>{
+TEST_SUITES.push(()=>suite("шахта: та же мерка, и клетка от неё только крупнее",{tier:"browser"},()=>{
   resetWorld();
   landOnTestPlanet();
   drawSurface();
@@ -224,7 +224,7 @@ TEST_SUITES.push(()=>suite("шахта: та же мерка, и клетка о
   G.dig=null;G.mode="surface";
 }));
 
-TEST_SUITES.push(()=>suite("пещера: человек не сжимается при спуске",()=>{
+TEST_SUITES.push(()=>suite("пещера: человек не сжимается при спуске",{tier:"browser"},()=>{
   resetWorld();
   landOnTestPlanet();
   drawSurface();
@@ -321,7 +321,7 @@ TEST_SUITES.push(()=>suite("дом не на посадочной площадк
 }));
 
 /* ── 0.414: материал печётся по кадрам (M418) ── */
-TEST_SUITES.push(()=>suite("растр: материал грунта печётся по кадрам, а не одним куском",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("растр: материал грунта печётся по кадрам, а не одним куском",{tier:"node"},()=>{
   resetWorld();
   const p=landOnTestPlanet();
   delete p.mat;delete p.matCn;

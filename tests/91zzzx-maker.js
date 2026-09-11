@@ -43,7 +43,7 @@ TEST_SUITES.push(()=>suite("изготовитель M369: восемь изме
   eq(stat().thr,th0,"тяга тоже");
 }));
 
-TEST_SUITES.push(()=>suite("изготовитель M369: чей корпус и что от этого меняется",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("изготовитель M369: чей корпус и что от этого меняется",{tier:"node"},()=>{
   mkWorld();
   /* каталог ГЛАВТРАССЫ — нулевой изготовитель */
   for(const id of SHIP_KEYS)eq(makerOf(id,SHIPS[id]),"gt",id+": из каталога, значит ГЛАВТРАССА");
@@ -175,7 +175,7 @@ TEST_SUITES.push(()=>suite("изготовитель M369a: баржа собр�
   ok(levels("co")>=8,"а у Компании обвод идёт плавно: "+levels("co"));
 }));
 
-TEST_SUITES.push(()=>suite("изготовитель M369a: станция собрана по своему закону",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("изготовитель M369a: станция собрана по своему закону",{tier:"node"},()=>{
   mkWorld();
   const modsFor=(by)=>{
     const sys={sx:3,sy:4,seed:hashi(3,4,77),name:"Т",station:{name:"Т",stype:"trade",by}};
@@ -241,7 +241,7 @@ TEST_SUITES.push(()=>suite("изготовитель M369b: у части ест
   ok(partMakerRu(b).length>2,"чужое подписано: "+partMakerRu(b));
 }));
 
-TEST_SUITES.push(()=>suite("изготовитель M369b: корпус достаётся тросом, а не прилавком",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("изготовитель M369b: корпус достаётся тросом, а не прилавком",{tier:"node"},()=>{
   mkWorld();
   /* эпизодов ещё нет — значит чужой корпус на прилавке не появляется */
   eq(hasEpisode("or"),false,"эпизодов до M374 не бывает");

@@ -30,7 +30,7 @@ TEST_SUITES.push(()=>suite("био: у планеты есть список ви
   ok(n1!==n2,"на другой планете другие виды");
 }));
 
-TEST_SUITES.push(()=>suite("био: два экземпляра одного вида — одно растение",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("био: два экземпляра одного вида — одно растение",{tier:"node"},()=>{
   resetWorld();
   const p=bioPlanet(7);
   const sp=floraOf(p)[0];
@@ -82,7 +82,7 @@ TEST_SUITES.push(()=>suite("био: имя не может соврать",()=>{
   }
 }));
 
-TEST_SUITES.push(()=>suite("био: возраст — это тело, а не масштаб",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("био: возраст — это тело, а не масштаб",{tier:"node"},()=>{
   resetWorld();
   const p=bioPlanet(9);
   const sp=floraOf(p).find(s=>plantStemForm(s.kind)&&s.nb>0)||floraOf(p)[0];
@@ -141,7 +141,7 @@ TEST_SUITES.push(()=>suite("био: реестр считает виды, а н�
   eq(A.scanned,true,"экземпляр помечен просканированным");
 }));
 
-TEST_SUITES.push(()=>suite("био: пещерная флора светится по виду",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("био: пещерная флора светится по виду",{tier:"node"},()=>{
   resetWorld();
   for(let s=0;s<8;s++){
     const p=bioPlanet(s*7+3);
@@ -156,7 +156,7 @@ TEST_SUITES.push(()=>suite("био: пещерная флора светится
 
 /* Свет планеты (M175): терминатор — прямая через центр диска, перпендикулярная
    направлению на звезду. Накладка печётся один раз и поворачивается. */
-TEST_SUITES.push(()=>suite("свет планеты приходит от звезды",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("свет планеты приходит от звезды",{tier:"node"},()=>{
   resetWorld();
   const p=G.sys.planets[0];
   const norm=a=>{let v=a;while(v>Math.PI)v-=TAU;while(v<-Math.PI)v+=TAU;return v;};

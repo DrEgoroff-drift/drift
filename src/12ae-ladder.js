@@ -43,7 +43,6 @@ const RUNGS=[null,
   {id:"ring",    ru:"Кольцо",       star:1,note:"вошла в кольцо: здесь окликают первыми, по имени"}
 ];
 const RUNG_STARS=RUNGS.filter(x=>x&&x.star).map(x=>x.id);
-function rungDef(r){return RUNGS[r]||null;}
 function rungPlanOf(r){return r>0?Math.min(6,Math.ceil(r/5)):0;}
 function rungRoman(n){return["","I","II","III","IV","V","VI"][n]||"";}
 function rungIndex(id){for(let i=1;i<RUNGS.length;i++)if(RUNGS[i].id===id)return i;return-1;}

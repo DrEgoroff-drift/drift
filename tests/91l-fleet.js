@@ -1,6 +1,6 @@
 /* ══════════════ автотесты: флот и фронт: сто корпусов, занятые системы, ранги, следы на земле ══════════════ */
 /* ── номенклатура: сотня корпусов и их редкость ── */
-TEST_SUITES.push(()=>suite("флот: сто корпусов, тиры и ряд дока",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("флот: сто корпусов, тиры и ряд дока",{tier:"node"},()=>{
   eq(SHIP_KEYS.length+FLEET_KEYS.length,100,"корпусов ровно сто");
   const names={};let dup=0;
   for(const id of FLEET_KEYS){const n=FLEET[id].ru;if(names[n])dup++;names[n]=1;}

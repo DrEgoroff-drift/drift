@@ -148,9 +148,4 @@ function mailMute(st){
   logAdd("dim","Стопка закрыта: больше с этого конца ничего не придёт");
   if(tableOpenNow)tableRender();
 }
-function mailDrop(st){
-  const M=mailAll(),i=M.st.indexOf(st);
-  if(i>=0)M.st.splice(i,1);
-  if(tableOpenNow)tableRender();
-}
 function mailFresh(){return mailAll().st.filter(s=>s.fresh).length;}

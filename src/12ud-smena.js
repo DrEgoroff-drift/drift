@@ -21,7 +21,6 @@ const SMENA_PARTS=[
   {n:5,ru:"Прибой", lore:"priboy"}, {n:6,ru:"Раскол", lore:"raskol"},
   {n:7,ru:"Тишина", lore:"tishina"},{n:8,ru:"Тихоня", lore:"tihonya"}
 ];
-function smenaPartOf(ch){return Math.min(8,Math.floor((ch-1)/9)+1);}
 const smK=o=>!!o&&typeof o==="object"&&Object.keys(o).length>0;
 const smL=id=>(typeof loreChapter==="function")?loreChapter(id).read:false;
 const smArr=a=>Array.isArray(a)&&a.length>0;

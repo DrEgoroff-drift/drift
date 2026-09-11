@@ -2,7 +2,7 @@
    Ни строки без причины; маяк не называет «Сороку»; праздник удваивает норму
    ровно в тот день; голос — только в полёте и в дороге, без голосов молчит без
    ошибки, текст доходит до очереди синтеза. */
-TEST_SUITES.push(()=>suite("маяк: ни строки без причины, сводка на смену, «Сорока» не названа",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("маяк: ни строки без причины, сводка на смену, «Сорока» не названа",{tier:"node"},()=>{
   resetWorld();
   G.beacon=null;G.shiftLog=null;G.freedLog=[];G.scripLog=[];G.hold={};G.occ={};G.opts.voice={on:false};
   const now0=now();
@@ -42,7 +42,7 @@ TEST_SUITES.push(()=>suite("маяк: ни строки без причины, �
   G.beacon=null;G.shiftLog=null;G.freedLog=[];G.scripLog=[];G.hold={};G.occ={};G.opts.voice=null;
 }));
 
-TEST_SUITES.push(()=>suite("маяк: продажа пишет смену, праздник удваивает норму флота",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("маяк: продажа пишет смену, праздник удваивает норму флота",{tier:"node"},()=>{
   resetWorld();
   G.shiftLog=null;
   const S=nearestStation(0,0);G.sys=S;G.sx=S.sx;G.sy=S.sy;G.st=S.station;G.mode="dock";

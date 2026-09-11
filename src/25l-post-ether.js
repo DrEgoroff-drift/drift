@@ -102,5 +102,3 @@ function ethTick(q){
   }
   return line;
 }
-/* оборвалась ночь или сеть — оборвалась и передача */
-function ethReset(){ethCard=null;ethLine=0;ethHold=0;}

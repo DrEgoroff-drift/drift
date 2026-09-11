@@ -7,7 +7,7 @@ function holdTestStation(){
   }
   return null;
 }
-TEST_SUITES.push(()=>suite("холдинг: аппетит станции — первые N в смену с надбавкой",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("холдинг: аппетит станции — первые N в смену с надбавкой",{tier:"node"},()=>{
   resetWorld();
   ok(HOLD_SHIFT===20*60*1000,"смена слоя — двадцать минут реального времени");
   ok(holdShift(HOLD_SHIFT*5+1)===5,"номер смены считается от now()");

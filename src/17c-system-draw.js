@@ -114,10 +114,6 @@ function stationViz(S){
   S.viz={a:.75+r()*.55,b:.8+r()*.5,n:3+Math.floor(r()*3),ph:r()*TAU,f:r()};
   return S.viz;
 }
-/* ── золото опущено до шва (M304) ──
-   Обвод в .75 был ярче всего, что он обводил: станция читалась проволочной
-   схемой. Тон корпуса теперь несут заливки, золоту оставлен стык. */
-const ST_GOLD="rgba(242,178,92,.22)";
 function stPanels(len,wid){        /* солнечные панели — неподвижны относительно звезды */
   ctx.fillStyle="rgba(52,88,128,.95)";ctx.strokeStyle="rgba(130,190,230,.4)";ctx.lineWidth=1;
   for(const s of [-1,1]){

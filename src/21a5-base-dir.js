@@ -239,16 +239,3 @@ function baseDirStep(B,n){
   if(f){baseLog(B,"warn",n,{warn:f.warn});said=1;}
   return said;
 }
-/* строка для сцены: что обещает завтра */
-function baseDirLine(B){
-  const f=baseForecast(B);
-  const out=[];
-  /* закон 3 (M401): со сведениями прогноз называет событие и срок, без них —
-     только примету */
-  if(f)out.push("ПРОГНОЗ: "+((typeof baseWarnLine==="function")?baseWarnLine(B):f.warn.toUpperCase()));
-  if(B.fire)out.push("ГОРИТ · ОТСЕК "+((B.fire.c|0)+1)+":"+((B.fire.r|0)+1));
-  if(baseDusty(B))out.push("ЗАНОС · БУР СТОИТ");
-  if(baseColdHit(B))out.push("ХОЛОДНЫЙ УДАР");
-  if(baseVein(B)>1)out.push("ЖИЛА · БУР ИДЁТ ЛЕГЧЕ");
-  return out.join(" · ");
-}

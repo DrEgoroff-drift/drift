@@ -61,7 +61,7 @@ TEST_SUITES.push(()=>suite("M306: отвал, купол и полоса на п
 }));
 
 /* ══════════════ дом M307: мебель из материала, план сеян ══════════════ */
-TEST_SUITES.push(()=>suite("M307: обёртка мебели возвращает fillRect, план дома сеян и повторяем",()=>{
+TEST_SUITES.push(()=>suite("M307: обёртка мебели возвращает fillRect, план дома сеян и повторяем",{tier:"browser"},()=>{
   resetWorld();
   const orig=ctx.fillRect;
   let inner=0;
@@ -154,7 +154,7 @@ TEST_SUITES.push(()=>suite("M310: флот идёт по лестнице, тр�
 }));
 
 /* ══════════════ M311: второй проход флота — три класса, буксир, плавбаза, конвой ══════════════ */
-TEST_SUITES.push(()=>suite("M311: шесть классов нарисованы, буксир латает, плавбаза чинит, конвой прячет от пиратов",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("M311: шесть классов нарисованы, буксир латает, плавбаза чинит, конвой прячет от пиратов",{tier:"node"},()=>{
   resetWorld();
   ok(Object.values(FLEET_CLASSES).filter(c=>c.art).length>=6,"нарисованы не меньше шести классов");
   for(const k of ["patrol","ferry","base"]){const a=fleetArtOf({k,seed:k.length+7,name:"X",num:"Л-1",line:1});ok(a.cn.width>0,k+": спрайт запечён");}

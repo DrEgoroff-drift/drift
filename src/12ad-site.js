@@ -359,7 +359,3 @@ function holdMods(sys){
   });
   return out;
 }
-function drawHoldMods(sys){
-  if(typeof drawStModule!=="function")return;
-  for(const q of holdMods(sys))drawStModule(q,sys.station);
-}

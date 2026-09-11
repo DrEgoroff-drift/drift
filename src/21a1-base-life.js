@@ -276,9 +276,6 @@ const LIFE_MELT={ice:8,water:8};  /* ледоплавка:  лёд → вода 
 const LIFE_SUPPLY={oxygen:{k:"air",q:8},ice:{k:"water",q:1}};
 /* криоген — не запас, а срок: единица держит холод двенадцать смен (§16) */
 const LIFE_COOL={cryo:1};
-/* порядок отключения (§13): сперва то, ради чего база стоит, потом то, чем она
-   живёт. Жизнеобеспечение гасят последним и в этой вехе не гасят вовсе */
-const BASE_STANDBY=[["drill","добыча"],["refinery","передел"],["lab","свет"]];
 function baseLife(B){
   if(!B.life||typeof B.life!=="object")B.life={air:LIFE_START,water:LIFE_START};
   if(typeof B.life.air!=="number")B.life.air=LIFE_START;

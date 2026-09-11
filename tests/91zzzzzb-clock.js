@@ -86,7 +86,7 @@ TEST_SUITES.push(() => suite("часы: прыжок на пять лет впе
   resetWorld();
 }));
 
-TEST_SUITES.push(() => suite("часы: сейв из будущего — отметки впереди наших часов не ломают мир",{tier:"browser"}, () => {
+TEST_SUITES.push(() => suite("часы: сейв из будущего — отметки впереди наших часов не ломают мир",{tier:"node"}, () => {
   clkWorld();
   const s=JSON.parse(JSON.stringify(snapshot()));
   /* у того устройства часы спешат на год: двигаем КАЖДУЮ отметку времени в сейве */

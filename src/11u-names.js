@@ -85,16 +85,3 @@ function nameAskSystem(sys){
     sfx("ui");
   });
 }
-/* блок в кантине: поле и две кнопки. Подсказки нет — поле пустое */
-function namesBlock(){
-  if(!G.sys)return;
-  const key=G.sys.key,cur=namesFor(key);
-  $body.appendChild(el("div","sec","ИМЯ СИСТЕМЫ"));
-  const r=el("div","row");
-  r.appendChild(el("div","nm","<b>"+(cur||G.sys.name)+"</b><s>"+(cur?"ваше имя. На карте — оно":"код карты. Своё имя — если есть что сказать")+"</s>"));
-  const inp=document.createElement("input");inp.type="text";inp.maxLength=NAME_MAX;inp.value=cur||"";inp.style.cssText="width:9em;background:#0b1016;color:#cfe3ea;border:1px solid #2a3a44;padding:6px 8px";
-  r.appendChild(inp);
-  const b=el("button","act sm","НАЗВАТЬ");b.onclick=()=>{nameSet(G.sys,inp.value);renderTab();};r.appendChild(b);
-  if(cur&&namesToldAll()[key]==null){const t=el("button","act sm","РАССКАЗАТЬ");t.onclick=()=>{nameTell(G.sys);renderTab();};r.appendChild(t);}
-  $body.appendChild(r);
-}

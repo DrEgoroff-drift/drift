@@ -85,7 +85,7 @@ TEST_SUITES.push(()=>suite("истории: якорь при первой вс�
 }));
 
 /* ── M131: связи как данные и птица-переносчик ── */
-TEST_SUITES.push(()=>suite("истории: связи через seenOf и след, который уносит птица",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("истории: связи через seenOf и след, который уносит птица",{tier:"node"},()=>{
   resetWorld();
   ok(STORIES.length>=100,"историй не меньше ста (есть "+STORIES.length+")");
   for(const S of STORIES)for(const t of S.traces)if(t.when&&t.when.seenOf){

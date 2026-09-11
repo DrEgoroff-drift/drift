@@ -12,10 +12,6 @@
    пока он не выстрелит сам, но это уже четыре правила (M373). */
 const NPC_PICKET=2;                 /* сколько стоит в тылу */
 const NPC_BATTLE=8;                 /* потолок вооружённых в системе */
-function npcPowerHere(){
-  if(typeof chronOwnerKey!=="function")return null;
-  return chronOwnerKey(G.sx,G.sy);
-}
 /* ── один корабль державы ──
    Корпус берётся тем же генератором, что у всех: запись в `NPC_SHIPS` с `by`
    державы, значит порода читается силуэтом (M369). Роль и ранг — пиратские:

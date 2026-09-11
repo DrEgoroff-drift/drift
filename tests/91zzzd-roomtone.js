@@ -2,7 +2,7 @@
    у каждого места свой запрос, вакуум молчит совсем, буря слышна раньше, чем
    видна, дом слышит погоду глухо, и tick не создаёт узлов на каждый кадр. */
 
-TEST_SUITES.push(()=>suite("тон места: у каждого экрана свой, вакуум молчит",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("тон места: у каждого экрана свой, вакуум молчит",{tier:"node"},()=>{
   resetWorld();
   /* поверхность с атмосферой */
   const p=landOnTestPlanet();
@@ -37,7 +37,7 @@ TEST_SUITES.push(()=>suite("тон места: у каждого экрана с
   eq(rtWant()[0],0,"в системном виде тона нет");
 }));
 
-TEST_SUITES.push(()=>suite("тон места: бурю слышно раньше, чем видно",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("тон места: бурю слышно раньше, чем видно",{tier:"node"},()=>{
   resetWorld();
   const p=landOnTestPlanet();
   if(!ok(p.T.atm!=="отсутствует","у тестовой планеты есть воздух"))return;
@@ -64,7 +64,7 @@ TEST_SUITES.push(()=>suite("тон места: бурю слышно раньш�
   ok(faint[0]>.012,"и даже затишье не мёртвая тишина");
 }));
 
-TEST_SUITES.push(()=>suite("тон места: дом слышит погоду сквозь стену",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("тон места: дом слышит погоду сквозь стену",{tier:"node"},()=>{
   resetWorld();
   const p=landOnTestPlanet();
   if(!ok(p.T.atm!=="отсутствует"&&weatherOf(p).kind,"тестовому миру есть чем шуметь"))return;

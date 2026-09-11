@@ -178,7 +178,7 @@ TEST_SUITES.push(()=>suite("кусачие в шахте",()=>{
 }));
 
 /* ── подсказки на поверхности ── */
-TEST_SUITES.push(()=>suite("подсказки на планете",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("подсказки на планете",{tier:"node"},()=>{
   resetWorld();
   landOnTestPlanet();
   G.surf.x=G.surf.shipX;
@@ -341,7 +341,7 @@ TEST_SUITES.push(()=>suite("кадр переживает исключение",
 /* ══════════════ M234: ВЗЛЁТ гаснет вместе с поверхностью ══════════════
    Кнопку показывала и прятала поверхность — то есть код, который в других
    режимах не работает: взлетел, и кнопка осталась висеть над космосом. */
-TEST_SUITES.push(()=>suite("ВЗЛЁТ живёт только на поверхности",()=>{
+TEST_SUITES.push(()=>suite("ВЗЛЁТ живёт только на поверхности",{tier:"browser"},()=>{
   resetWorld();
   landOnTestPlanet();
   const lb=document.getElementById("launchbtn");

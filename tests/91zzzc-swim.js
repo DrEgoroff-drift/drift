@@ -25,7 +25,7 @@ function swimTestLand(needWater){
   }
   return null;
 }
-TEST_SUITES.push(()=>suite("сквозной: в озере плывём с кругом и снимаем водоросли",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("сквозной: в озере плывём с кругом и снимаем водоросли",{tier:"node"},()=>{
   const S=swimTestLand(true);
   ok(!!S,"нашлась землеподобная с озером");
   if(!ok(S,"нашлось: S"))return;
@@ -65,7 +65,7 @@ TEST_SUITES.push(()=>suite("сквозной: в озере плывём с кр
   ok(!S.on||S.vy<0,"▲ из воды: оторвались");
   keys.thrust=false;resetWorld();
 }));
-TEST_SUITES.push(()=>suite("сквозной: у пещеры подсказка про пещеру, а не про шахту",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("сквозной: у пещеры подсказка про пещеру, а не про шахту",{tier:"node"},()=>{
   const S=swimTestLand(false);
   ok(!!(S&&S.cave),"устье пещеры есть");
   if(!S||!S.cave)return;

@@ -8,7 +8,7 @@ function celTestPlanet(){
   }
   return null;
 }
-TEST_SUITES.push(()=>suite("календарь: небо считается, а не бросается",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("календарь: небо считается, а не бросается",{tier:"node"},()=>{
   resetWorld();
   const F=celTestPlanet();
   ok(!!F,"нашлась планета со спутником");
@@ -42,7 +42,7 @@ TEST_SUITES.push(()=>suite("календарь: небо считается, а 
 }));
 
 /* ── небо не трогает ни цен, ни выработки ── */
-TEST_SUITES.push(()=>suite("календарь: небо не вмешивается в числа",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("календарь: небо не вмешивается в числа",{tier:"node"},()=>{
   resetWorld();
   const F=celTestPlanet();
   if(!ok(F,"планета со спутником нашлась"))return;
@@ -91,7 +91,7 @@ function skyTestRuns(o){
   }
   return false;
 }
-TEST_SUITES.push(()=>suite("вахта: институт называет сутки, в которые небо и правда занято",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("вахта: институт называет сутки, в которые небо и правда занято",{tier:"node"},()=>{
   resetWorld();
   G.duty=null;G.things=[];G.log=[];G.record=null;
   /* перебираем несколько семян: наряд должен находиться, а не выпадать раз в час */
@@ -139,7 +139,7 @@ TEST_SUITES.push(()=>suite("вахта: лента пишется на мест�
   ok(!G.things.some(x=>x.sky),"бумаги вахты со стола убраны");
   G.st=null;G.surf=null;
 }));
-TEST_SUITES.push(()=>suite("вахта: бюллетень института выходит сам — опоздал, половина платы",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("вахта: бюллетень института выходит сам — опоздал, половина платы",{tier:"node"},()=>{
   resetWorld();
   G.duty=null;G.things=[];G.log=[];G.record=null;
   const S=skyTestSci();

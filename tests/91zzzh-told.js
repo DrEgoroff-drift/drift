@@ -20,7 +20,7 @@ TEST_SUITES.push(()=>suite("рассказал: покупает имя сейч
   ok(!toldWorked(1,2,0),"в тот же день туда никто не прилетел");
 }));
 
-TEST_SUITES.push(()=>suite("рассказал: возвращается чужим голосом, один раз",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("рассказал: возвращается чужим голосом, один раз",{tier:"node"},()=>{
   resetWorld();
   G.told=[];G.lastDig={sx:4,sy:5,pi:1,res:"iron",n:12};G.folk={};
   toldDo();

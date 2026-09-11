@@ -135,7 +135,7 @@ TEST_SUITES.push(()=>suite("кантина: дела с ответом и отл
 }));
 
 /* ── репутация и хвост набора ── */
-TEST_SUITES.push(()=>suite("репутация станции и последние узлы",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("репутация станции и последние узлы",{tier:"node"},()=>{
   resetWorld();
   G.rep={};G.credits=1e6;
   const sys=(function(){for(let dx=-8;dx<=8;dx++)for(let dy=-8;dy<=8;dy++){

@@ -42,7 +42,7 @@ function clWith(answer,fn){
   }
 }
 
-TEST_SUITES.push(() => suite("облако: старая запись не ложится поверх свежей",{tier:"browser"}, () => {
+TEST_SUITES.push(() => suite("облако: старая запись не ложится поверх свежей",{tier:"node"}, () => {
   resetWorld();
   const bad=[];
   /* свежая местная запись: вечер игры */
@@ -73,7 +73,7 @@ TEST_SUITES.push(() => suite("облако: старая запись не ло�
   resetWorld();
 }));
 
-TEST_SUITES.push(() => suite("облако: испорченный ответ не портит того, что лежит",{tier:"browser"}, () => {
+TEST_SUITES.push(() => suite("облако: испорченный ответ не портит того, что лежит",{tier:"node"}, () => {
   resetWorld();
   const mine=clSave(20000,424242);
   stSet(SAVE_KEY,JSON.stringify(mine));

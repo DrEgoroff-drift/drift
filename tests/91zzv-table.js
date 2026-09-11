@@ -264,7 +264,7 @@ TEST_SUITES.push(()=>suite("стол: огонёк гаснет от визит�
    печаталось `G.mode` как есть, и игрок читал «Нейэль · system» — английское
    слово из кода в русской игре. Сторож проверяет все режимы разом: появится
    новый и его забудут вписать — шапка обязана промолчать, а не выдать ключ. */
-TEST_SUITES.push(()=>suite("стол: в шапке нет ключей из кода",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("стол: в шапке нет ключей из кода",{tier:"node"},()=>{
   resetWorld();
   const modes=["system","map","landing","surface","cave","dig","belt","scoop",
                "base","homein","raid","dock","road"];

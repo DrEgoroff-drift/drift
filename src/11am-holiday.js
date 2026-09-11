@@ -71,7 +71,6 @@ function holNow(at){
   }
   return null;
 }
-function holIs(id){const h=holNow();return !!(h&&h.id===id);}
 function holTreeUp(){const h=holNow();return !!(h&&h.tree);}
 /* строка в эфир: приёмник подмешивает её к обычным голосам (25e) */
 function holEtherLine(){

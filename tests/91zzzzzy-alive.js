@@ -21,7 +21,7 @@ function alCount(){
     wrecks:Object.keys(G.wrecks||{}).length};
 }
 
-TEST_SUITES.push(() => suite("живые: пять тысяч кадров боя не оставляют хвостов",{tier:"browser"}, () => {
+TEST_SUITES.push(() => suite("живые: пять тысяч кадров боя не оставляют хвостов",{tier:"node"}, () => {
   resetWorld();
   /* уходим туда, где опасно: пираты заводятся от sysDanger */
   let far=null;

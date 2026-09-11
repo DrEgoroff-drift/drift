@@ -118,7 +118,7 @@ TEST_SUITES.push(()=>suite("штурвал: вектор тяги и прави�
   eq(Math.hypot(G.ship.vx,G.ship.vy),0,"↓ на месте — стоит, реверса нет");
 }));
 
-TEST_SUITES.push(()=>suite("штурвал: метки, автозахват, ракета к метке",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("штурвал: метки, автозахват, ракета к метке",{tier:"node"},()=>{
   helmShip();
   const a=helmPirate(300,-760,true),b=helmPirate(600,-760,true),c=helmPirate(900,-760,true),d=helmPirate(1200,-760,true);
   ok(helmLockNext(),"Tab берёт ближайшего");

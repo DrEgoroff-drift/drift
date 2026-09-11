@@ -174,8 +174,3 @@ function gunNameOf(seed,fam){
   const F=GUN_FAMILY[fam];
   return F.ab+"-"+(11+((seed>>>3)%89))+" "+GUN_NICK[(seed>>>23)%GUN_NICK.length];
 }
-/* полная строка для карточки: имя, завод, серия */
-function gunTitleOf(p){
-  if(!p||!p.fam)return p?p.name:"";
-  return p.name+" · завод "+GUN_FACTORY[p.fact].ru+" · серия "+p.ser;
-}

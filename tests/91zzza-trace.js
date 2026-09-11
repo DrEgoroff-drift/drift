@@ -3,7 +3,7 @@
    безопасна: оффлайн молчит, платят грузом, людей не оставляют, знак и рука
    выводятся из метки и не дрожат, поднятое попадает в трюм и в тетрадь. */
 
-TEST_SUITES.push(()=>suite("след: рука и знак выводятся, а не выбираются",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("след: рука и знак выводятся, а не выбираются",{tier:"node"},()=>{
   resetWorld();
   const id="a1b2c3d4e5f6";
   const m1=traceMarkOf(id),m2=traceMarkOf(id);
@@ -18,7 +18,7 @@ TEST_SUITES.push(()=>suite("след: рука и знак выводятся, �
   eq(named,TRACE_MARK.length,"у каждой фигуры имя и штрихи");
 }));
 
-TEST_SUITES.push(()=>suite("след: оффлайн его нет вовсе",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("след: оффлайн его нет вовсе",{tier:"node"},()=>{
   resetWorld();
   /* file:// — ни следов, ни действия; это норма, а не урезанный режим */
   if(ok(location.protocol.indexOf("http")!==0,"прогон со страницы на диске (file://)")){
@@ -28,7 +28,7 @@ TEST_SUITES.push(()=>suite("след: оффлайн его нет вовсе",{
   eq(traceHere(),null,"без ответа сервера на земле ничего не лежит");
 }));
 
-TEST_SUITES.push(()=>suite("след: платят грузом, и не людьми",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("след: платят грузом, и не людьми",{tier:"node"},()=>{
   resetWorld();
   for(const k of RES_KEYS)G.cargo[k]=0;
   eq(traceBigRes(),null,"пустой трюм платить не может");
@@ -42,7 +42,7 @@ TEST_SUITES.push(()=>suite("след: платят грузом, и не люд�
   eq(traceBigRes().n,TRACE_MAX_UNITS,"больше пяти единиц за раз не оставляют");
 }));
 
-TEST_SUITES.push(()=>suite("след: три в сутки",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("след: три в сутки",{tier:"node"},()=>{
   resetWorld();
   const T=traceAll();
   T.day=traceToday();T.left=0;

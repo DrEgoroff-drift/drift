@@ -48,7 +48,7 @@ TEST_SUITES.push(()=>suite("открытка: восемь мест, и в ка�
   for(let i=0;i<seen.length;i++)for(let j=i+1;j<seen.length;j++)
     ok(!pcSame(seen[i].d,seen[j].d),"«"+seen[i].m+"» не равно «"+seen[j].m+"»");
 }));
-TEST_SUITES.push(()=>suite("открытка: художник места не трогает живой мир",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("открытка: художник места не трогает живой мир",{tier:"node"},()=>{
   resetWorld();
   const F=psPlanet("rock");
   const snaps=["c","d","b","y","g"].map(m=>psSnap(F,m,{cx:20,cy:30}));

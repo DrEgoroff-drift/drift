@@ -16,7 +16,7 @@ function wallFake(kind,n,mine){
   WALL_CACHE.set(wallCacheKey(kind,key),{list,mine:!!mine,pending:false});
   return list;
 }
-TEST_SUITES.push(()=>suite("стена: не ложится в сохранение и не переживает вкладку",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("стена: не ложится в сохранение и не переживает вкладку",{tier:"node"},()=>{
   resetWorld();
   wallReset();
   const F=pcTestPlanet();
@@ -53,7 +53,7 @@ TEST_SUITES.push(()=>suite("стена: офлайн её не существу�
   eq(wallDraw(WALL_S,0,80,0,60),0,"рисовать нечего");
   G.cloud=was;
 }));
-TEST_SUITES.push(()=>suite("стена: один знак от одного человека, и он не переезжает",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("стена: один знак от одного человека, и он не переезжает",{tier:"node"},()=>{
   resetWorld();
   wallReset();
   const F=pcTestPlanet();
@@ -75,7 +75,7 @@ TEST_SUITES.push(()=>suite("стена: один знак от одного че
   ok(!wallCanSign(WALL_S),"со своим знаком на стене второй раз не расписаться");
   ok(wallHere(WALL_S).mine,"и стена это помнит");
 }));
-TEST_SUITES.push(()=>suite("стена: по проводу — знак и рука, и больше ничего",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("стена: по проводу — знак и рука, и больше ничего",{tier:"node"},()=>{
   resetWorld();
   wallReset();
   const F=pcTestPlanet();

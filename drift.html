@@ -1761,7 +1761,7 @@ body.table u.addr{color:#7a4a20}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.438.0";
+const VER="0.439.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -5880,17 +5880,6 @@ const STAT_SHOW=[
   {k:"cool",    ru:"откат",  fix:0, less:1},   // меньше — лучше
   {k:"see",     ru:"обзор",  fix:0}
 ];
-function deltaHtml(a,b){
-  const parts=[];
-  for(const d of STAT_SHOW){
-    const x=+a[d.k]||0,y=+b[d.k]||0;
-    if(Math.abs(x-y)<(d.fix?0.005:0.5))continue;
-    const better=d.less?y<x:y>x;
-    parts.push("<u>"+d.ru+" "+x.toFixed(d.fix)+"→<span class='"+(better?"up":"dn")+"'>"+
-      y.toFixed(d.fix)+"</span></u>");
-  }
-  return parts.length?"<span class='delta'>"+parts.join("")+"</span>":"";
-}
 /* разбор: часть возвращается материалом. Пока обычные ресурсы —
    редкие появятся вместе с M39, тогда сюда добавится их доля. */
 function scrapYield(p){
@@ -6523,11 +6512,6 @@ function gunFactoryOf(seed){return GUN_FACTORY[(seed>>>19)%GUN_FACTORY.length];}
 function gunNameOf(seed,fam){
   const F=GUN_FAMILY[fam];
   return F.ab+"-"+(11+((seed>>>3)%89))+" "+GUN_NICK[(seed>>>23)%GUN_NICK.length];
-}
-/* полная строка для карточки: имя, завод, серия */
-function gunTitleOf(p){
-  if(!p||!p.fam)return p?p.name:"";
-  return p.name+" · завод "+GUN_FACTORY[p.fact].ru+" · серия "+p.ser;
 }
 
 /* ══════════════ приборы — это товар ══════════════
@@ -11902,7 +11886,6 @@ function holNow(at){
   }
   return null;
 }
-function holIs(id){const h=holNow();return !!(h&&h.id===id);}
 function holTreeUp(){const h=holNow();return !!(h&&h.tree);}
 /* строка в эфир: приёмник подмешивает её к обычным голосам (25e) */
 function holEtherLine(){
@@ -15794,19 +15777,6 @@ function nameAskSystem(sys){
     sfx("ui");
   });
 }
-/* блок в кантине: поле и две кнопки. Подсказки нет — поле пустое */
-function namesBlock(){
-  if(!G.sys)return;
-  const key=G.sys.key,cur=namesFor(key);
-  $body.appendChild(el("div","sec","ИМЯ СИСТЕМЫ"));
-  const r=el("div","row");
-  r.appendChild(el("div","nm","<b>"+(cur||G.sys.name)+"</b><s>"+(cur?"ваше имя. На карте — оно":"код карты. Своё имя — если есть что сказать")+"</s>"));
-  const inp=document.createElement("input");inp.type="text";inp.maxLength=NAME_MAX;inp.value=cur||"";inp.style.cssText="width:9em;background:#0b1016;color:#cfe3ea;border:1px solid #2a3a44;padding:6px 8px";
-  r.appendChild(inp);
-  const b=el("button","act sm","НАЗВАТЬ");b.onclick=()=>{nameSet(G.sys,inp.value);renderTab();};r.appendChild(b);
-  if(cur&&namesToldAll()[key]==null){const t=el("button","act sm","РАССКАЗАТЬ");t.onclick=()=>{nameTell(G.sys);renderTab();};r.appendChild(t);}
-  $body.appendChild(r);
-}
 
 /* ══════════════ и что это, собственно, было ══════════════
    M151. Единичные места вне всяких областей, поставленные рукой — по одному
@@ -18711,10 +18681,6 @@ function holdMods(sys){
   });
   return out;
 }
-function drawHoldMods(sys){
-  if(typeof drawStModule!=="function")return;
-  for(const q of holdMods(sys))drawStModule(q,sys.station);
-}
 
 /* ══════════════ холдинг · лестница видимая ══════════════
    M292, шаг 4 (DESIGN-holding §8, §13). Число ступени считает 12ad-site
@@ -18761,7 +18727,6 @@ const RUNGS=[null,
   {id:"ring",    ru:"Кольцо",       star:1,note:"вошла в кольцо: здесь окликают первыми, по имени"}
 ];
 const RUNG_STARS=RUNGS.filter(x=>x&&x.star).map(x=>x.id);
-function rungDef(r){return RUNGS[r]||null;}
 function rungPlanOf(r){return r>0?Math.min(6,Math.ceil(r/5)):0;}
 function rungRoman(n){return["","I","II","III","IV","V","VI"][n]||"";}
 function rungIndex(id){for(let i=1;i<RUNGS.length;i++)if(RUNGS[i].id===id)return i;return-1;}
@@ -22527,7 +22492,6 @@ function hailRunCheck(sh){
    сводку, десять сводок жизни. Считает их сервер (`site/war.php`), клиент их
    только показывает — иначе они были бы пожеланием, а не правилом. */
 const LEFT_RU={gun:"ствол",ammo:"кассета",fuel:"канистра",sign:"знак",tow:"трос",ghost:"след"};
-const LEFT_SIGNS=["здесь пираты","здесь безопасно","здесь дерелик"];
 let LEFT_CACHE=null,LEFT_BUSY=0;
 function leftKey(){return (G.sx|0)+","+(G.sy|0);}
 function leftCall(a,body){
@@ -22625,9 +22589,6 @@ function leftThank(i){
     if(r&&r.ok){say("ОБЪЯВЛЕНА БЛАГОДАРНОСТЬ",120);LEFT_CACHE=null;return true;}
     return false;
   });
-}
-function leftThanksMine(){
-  return leftCall("thanks",{}).then(r=>(r&&r.ok)?(r.n|0):0);
 }
 /* ── призрак ──
    Там, где кто-то не дошёл, остаётся след его корпуса. Оставляется он один раз
@@ -23883,8 +23844,6 @@ function crewFreeHostagesAt(sx,sy){
     if(c.state==="hostage"&&c.ransomSx===sx&&c.ransomSy===sy){crewFreeHostage(c,"освобождён при штурме базы");n++;}
   return n;
 }
-/* сколько всего просят за пленных — для подсказки на экране экипажа */
-function crewHostages(){return G.crew.filter(c=>c.state==="hostage");}
 
 /* ══════════════ семья механик: ВЛАСТЬ (M385, §15.1) ══════════════
    Держава — не пейзаж: у неё меняются правители, её чистят, от неё откалываются
@@ -34789,7 +34748,6 @@ const SMENA_PARTS=[
   {n:5,ru:"Прибой", lore:"priboy"}, {n:6,ru:"Раскол", lore:"raskol"},
   {n:7,ru:"Тишина", lore:"tishina"},{n:8,ru:"Тихоня", lore:"tihonya"}
 ];
-function smenaPartOf(ch){return Math.min(8,Math.floor((ch-1)/9)+1);}
 const smK=o=>!!o&&typeof o==="object"&&Object.keys(o).length>0;
 const smL=id=>(typeof loreChapter==="function")?loreChapter(id).read:false;
 const smArr=a=>Array.isArray(a)&&a.length>0;
@@ -39380,10 +39338,6 @@ function pirateArmTick(p,dt){
    пока он не выстрелит сам, но это уже четыре правила (M373). */
 const NPC_PICKET=2;                 /* сколько стоит в тылу */
 const NPC_BATTLE=8;                 /* потолок вооружённых в системе */
-function npcPowerHere(){
-  if(typeof chronOwnerKey!=="function")return null;
-  return chronOwnerKey(G.sx,G.sy);
-}
 /* ── один корабль державы ──
    Корпус берётся тем же генератором, что у всех: запись в `NPC_SHIPS` с `by`
    державы, значит порода читается силуэтом (M369). Роль и ранг — пиратские:
@@ -41714,15 +41668,6 @@ const HELM_ARC0=20;          /* радиус кольца «СТОП» в мёр
    выкладывает вдоль ленты кружки этого радиуса, и приборы уходят из-под них.
    Кольцо в 93 px, на которое жаловался автор в M360, так не возвращается. */
 const HELM_FOOT=34;
-/* лента (M422): она идёт от центра стика к пальцу и говорит две вещи разом —
-   тело ленты это ЗАДАННЫЙ ход (длина и ширина), заливка внутри это
-   ФАКТИЧЕСКИЙ (докуда корабль уже разогнался вдоль него). Голова обрывается
-   за HELM_GAP до пальца: под подушечкой всё равно ничего не видно. */
-const HELM_BAND=26;          /* ширина ленты у пальца на полном ходе, px */
-const HELM_BAND0=10;         /* ширина у центра стика: лента, а не клин */
-const HELM_GAP=24;           /* лента не доходит до пальца на столько px */
-const HELM_TRAIL=7;          /* сколько следов пальца тянется за ним */
-const HELM_CONE=.35;         /* ±20° — временный конус автоогня (M362 заменит) */
 const HELM_RANGE=760;
 const HELM={src:"keys",     /* кто вёл последним: keys | stick */
   mouse:{x:0,y:0,t:-1e9,on:false,down:false,rmb:false},
@@ -42310,7 +42255,6 @@ function recHead(){
 function recSeg(){return {head:recHead(),f:[],ev:[],ap:G.ap};}
 function recStart(){REC=recSeg();REC_PREV=null;}
 function recStop(){REC=null;REC_PREV=null;}
-function recOn(){return REC!==null;}
 /* цель автопилота ставится тычком, а не клавишей: она записывается как
    событие кадра — [номер кадра, вид, номер планеты]. Экранные кнопки
    (прилавок, вкладки) запись не видит: это её граница, а не забывчивость */
@@ -44966,10 +44910,6 @@ function stationViz(S){
   S.viz={a:.75+r()*.55,b:.8+r()*.5,n:3+Math.floor(r()*3),ph:r()*TAU,f:r()};
   return S.viz;
 }
-/* ── золото опущено до шва (M304) ──
-   Обвод в .75 был ярче всего, что он обводил: станция читалась проволочной
-   схемой. Тон корпуса теперь несут заливки, золоту оставлен стык. */
-const ST_GOLD="rgba(242,178,92,.22)";
 function stPanels(len,wid){        /* солнечные панели — неподвижны относительно звезды */
   ctx.fillStyle="rgba(52,88,128,.95)";ctx.strokeStyle="rgba(130,190,230,.4)";ctx.lineWidth=1;
   for(const s of [-1,1]){
@@ -55747,9 +55687,6 @@ const LIFE_MELT={ice:8,water:8};  /* ледоплавка:  лёд → вода 
 const LIFE_SUPPLY={oxygen:{k:"air",q:8},ice:{k:"water",q:1}};
 /* криоген — не запас, а срок: единица держит холод двенадцать смен (§16) */
 const LIFE_COOL={cryo:1};
-/* порядок отключения (§13): сперва то, ради чего база стоит, потом то, чем она
-   живёт. Жизнеобеспечение гасят последним и в этой вехе не гасят вовсе */
-const BASE_STANDBY=[["drill","добыча"],["refinery","передел"],["lab","свет"]];
 function baseLife(B){
   if(!B.life||typeof B.life!=="object")B.life={air:LIFE_START,water:LIFE_START};
   if(typeof B.life.air!=="number")B.life.air=LIFE_START;
@@ -56968,19 +56905,6 @@ function baseDirStep(B,n){
   if(f){baseLog(B,"warn",n,{warn:f.warn});said=1;}
   return said;
 }
-/* строка для сцены: что обещает завтра */
-function baseDirLine(B){
-  const f=baseForecast(B);
-  const out=[];
-  /* закон 3 (M401): со сведениями прогноз называет событие и срок, без них —
-     только примету */
-  if(f)out.push("ПРОГНОЗ: "+((typeof baseWarnLine==="function")?baseWarnLine(B):f.warn.toUpperCase()));
-  if(B.fire)out.push("ГОРИТ · ОТСЕК "+((B.fire.c|0)+1)+":"+((B.fire.r|0)+1));
-  if(baseDusty(B))out.push("ЗАНОС · БУР СТОИТ");
-  if(baseColdHit(B))out.push("ХОЛОДНЫЙ УДАР");
-  if(baseVein(B)>1)out.push("ЖИЛА · БУР ИДЁТ ЛЕГЧЕ");
-  return out.join(" · ");
-}
 
 /* ══════════════ аврал (M398, DESIGN-base §11) ══════════════
    Единственное место всего слоя, где время идёт по-настоящему, — и единственный
@@ -57424,7 +57348,6 @@ function baseSharp(B){
   }
   return s;
 }
-const SHARP_WORD=["нет","мало","впритык","хватает"];
 function sharpWord(v,need){
   if(!need)return v>0?"хватает":"нет";
   const k=v/need;
@@ -62584,7 +62507,6 @@ DECO_KINDS.push(
       Место на поверхности выводится из seed планеты, как и всё остальное в мире.
    3. Масштаб держится человеком: ангар базы вдвое выше астронавта. Постройка,
       которую видно от горизонта, врёт о размере мира. */
-function builtKey(sx,sy){return sx+","+sy;}
 /* что стоит в этой системе на этой планете */
 function builtHere(){
   const S=G.surf;if(!S)return [];
@@ -74908,11 +74830,6 @@ function mailMute(st){
   logAdd("dim","Стопка закрыта: больше с этого конца ничего не придёт");
   if(tableOpenNow)tableRender();
 }
-function mailDrop(st){
-  const M=mailAll(),i=M.st.indexOf(st);
-  if(i>=0)M.st.splice(i,1);
-  if(tableOpenNow)tableRender();
-}
 function mailFresh(){return mailAll().st.filter(s=>s.fresh).length;}
 
 /* ══════════════ почта на столе ══════════════
@@ -75129,8 +75046,6 @@ function ethTick(q){
   }
   return line;
 }
-/* оборвалась ночь или сеть — оборвалась и передача */
-function ethReset(){ethCard=null;ethLine=0;ethHold=0;}
 
 /* ══════════════ вымпел: зонд, который уходит навсегда ══════════════
    M196. В лаборатории собирается автоматический зонд и запускается к звезде,
@@ -75486,12 +75401,6 @@ function chessMyTurn(ch){
   const g=chessGame(ch);if(!g)return false;
   const white=(g.mv.length%2===0);
   return white===!!g.w;
-}
-/* ход в сутки на партию: темп переписки, а не ограничение */
-function chessCanMove(ch){
-  const g=chessGame(ch);if(!g)return false;
-  if(!chessMyTurn(ch))return false;
-  return (now()-(g.sent||0))>=86400000||!g.sent;
 }
 function chessMove(ch,m){
   const g=chessGame(ch);if(!g)return false;
@@ -85239,7 +85148,6 @@ function roadBloom(c,W,H,t,dt,hue,en,bd){
 
    РАБОТАЕТ ВЕЗДЕ, где есть `.body`: станция, корабль, стол, дом, кантина.
    Список, который продолжается за кромкой, — беда не одной доски. */
-const CUE_PAD=30;                 /* сколько снизу уходит в туман */
 const CUE_EPS=4;                  /* у самого конца тумана уже нет */
 function scrollCue(el){
   if(!el)return;

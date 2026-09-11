@@ -256,5 +256,3 @@ function crewFreeHostagesAt(sx,sy){
     if(c.state==="hostage"&&c.ransomSx===sx&&c.ransomSy===sy){crewFreeHostage(c,"освобождён при штурме базы");n++;}
   return n;
 }
-/* сколько всего просят за пленных — для подсказки на экране экипажа */
-function crewHostages(){return G.crew.filter(c=>c.state==="hostage");}

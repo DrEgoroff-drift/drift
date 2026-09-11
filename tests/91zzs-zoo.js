@@ -27,7 +27,7 @@ TEST_SUITES.push(()=>suite("зоо: поймать отсканированно�
   G.zoo=null;G.surf=null;
 }));
 
-TEST_SUITES.push(()=>suite("зоо: зоостанция — стойка ядра «Рощи», принимает и платит",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("зоо: зоостанция — стойка ядра «Рощи», принимает и платит",{tier:"node"},()=>{
   resetWorld();
   G.zoo=null;G.record=null;
   const at=regionOfTheme("grove");ok(!!at,"область «Роща» есть");

@@ -214,12 +214,6 @@ function chessMyTurn(ch){
   const white=(g.mv.length%2===0);
   return white===!!g.w;
 }
-/* ход в сутки на партию: темп переписки, а не ограничение */
-function chessCanMove(ch){
-  const g=chessGame(ch);if(!g)return false;
-  if(!chessMyTurn(ch))return false;
-  return (now()-(g.sent||0))>=86400000||!g.sent;
-}
 function chessMove(ch,m){
   const g=chessGame(ch);if(!g)return false;
   if(!chessMyTurn(ch)||!chLegal(g.mv,m))return false;

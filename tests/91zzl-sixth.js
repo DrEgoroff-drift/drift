@@ -1,5 +1,5 @@
 /* ══════════════ автотесты: шестой (M157) ══════════════ */
-TEST_SUITES.push(()=>suite("шестой: пять следов эстафеты — связи, маршрут кончается в ядре уезда",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("шестой: пять следов эстафеты — связи, маршрут кончается в ядре уезда",{tier:"node"},()=>{
   resetWorld();
   eq(storyLint().filter(b=>/relay_|sixth_/.test(b)).join("; "),"","истории эстафеты проходят линт");
   const ids=["relay_baker","relay_krapiva","relay_kim","relay_shtof","relay_sovenya","sixth_report"];

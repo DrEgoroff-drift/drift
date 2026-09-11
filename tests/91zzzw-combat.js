@@ -254,7 +254,7 @@ TEST_SUITES.push(()=>suite("бой M362: тип урона и три повад�
   eq(q.shield,q.shieldMax,"…а возвращается целиком");
 }));
 
-TEST_SUITES.push(()=>suite("бой M362: у орудия семь чисел, и они на карточке",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("бой M362: у орудия семь чисел, и они на карточке",{tier:"node"},()=>{
   cbWorld();
   const g=stat().gun;
   for(const k of ["dmg","type","cool","range","speed","cone","lead","spread"])
@@ -598,7 +598,7 @@ TEST_SUITES.push(()=>suite("снаряжение M368: поле от ранга 
   ok(seen>0,"пираты в наборе нашлись: "+seen);
 }));
 
-TEST_SUITES.push(()=>suite("снаряжение M368: ранг читается по стволам, силуэт разный",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("снаряжение M368: ранг читается по стволам, силуэт разный",{tier:"node"},()=>{
   cbWorld();
   const seed=hashi(7,11,3);
   const B0=pirateBuild(seed,"raid",0),B3=pirateBuild(seed,"raid",3);
@@ -630,7 +630,7 @@ function hlFoe(by,x){
   p.pw=by;p.owner=by;p.iff=1;p.aware=false;
   return p;
 }
-TEST_SUITES.push(()=>suite("правила M373: оклик, три ответа и молчание",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("правила M373: оклик, три ответа и молчание",{tier:"node"},()=>{
   cbWorld();
   G.hail=null;G.hailLog={};G.mslBy="gt";G.cargo.missile=0;
   const p=hlFoe("or");

@@ -27,7 +27,7 @@ TEST_SUITES.push(()=>suite("дроны: круг вместо ручейка",()
   ok(dronePhase(d,d.t0+T*.8).leg==="back","во второй — порожняком");
 }));
 
-TEST_SUITES.push(()=>suite("дроны: за час зарабатывают столько же",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("дроны: за час зарабатывают столько же",{tier:"node"},()=>{
   resetWorld();
   G.droneInventory=1;droneTarget="iron";G.mode="system";
   deployDrone();
@@ -102,7 +102,7 @@ TEST_SUITES.push(()=>suite("дроны: маршруты и старые зап�
 }));
 
 /* ── второй проход: то, что нашлось глазами ── */
-TEST_SUITES.push(()=>suite("дроны: без станции в системе — не в звезду",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("дроны: без станции в системе — не в звезду",{tier:"node"},()=>{
   resetWorld();
   /* система без своей станции: раньше droneHome возвращал (0,0), а в нуле
      стоит ЗВЕЗДА — дрон возил руду прямо в неё */

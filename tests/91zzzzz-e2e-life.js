@@ -172,7 +172,7 @@ function e2eLost(a, b, path, out) {
   if (dead(b)) out.push(path + ": " + JSON.stringify(a) + " → " + JSON.stringify(b));
   return out;
 }
-TEST_SUITES.push(() => suite("сквозной: круг сейва не теряет ни одного поля",{tier:"browser"}, () => {
+TEST_SUITES.push(() => suite("сквозной: круг сейва не теряет ни одного поля",{tier:"node"}, () => {
   resetWorld(); fuzzRich();
   /* полю положена разница: ts — час записи, log — загрузка пишет в тетрадь строку */
   const FREE = ["ts", "log"];
@@ -414,7 +414,7 @@ TEST_SUITES.push(() => suite("сквозной: поздний мир — сту
     (E2E_CRASHES.length > n0 ? ": " + [...new Set(E2E_CRASHES.slice(n0))].slice(0, 3).join(" ;; ") : ""));
   resetWorld();
 }));
-TEST_SUITES.push(() => suite("сквозной: сейв позднего мира ходит по кругу без потерь",{tier:"browser"}, () => {
+TEST_SUITES.push(() => suite("сквозной: сейв позднего мира ходит по кругу без потерь",{tier:"node"}, () => {
   resetWorld(); e2eLate();
   let js = "";
   try { js = JSON.stringify(snapshot()); } catch (e) { ok(false, "поздний сейв пишется: " + e.message); return; }
@@ -488,7 +488,7 @@ TEST_SUITES.push(() => suite("сквозной: вечер за игрой — �
 
    Сравниваем не с идеей, а с фактом: снимок мира, снятый на склейке, до
    первого набора. Всё, что после `resetWorld()` не совпало, — грязь. */
-TEST_SUITES.push(() => suite("сквозной: resetWorld возвращает мир к тому, каким его завела игра",{tier:"browser"}, () => {
+TEST_SUITES.push(() => suite("сквозной: resetWorld возвращает мир к тому, каким его завела игра",{tier:"node"}, () => {
   if (!E2E_FRESH) { ok(false, "снимок чистого мира не снялся"); return; }
   resetWorld();
   let now = null;

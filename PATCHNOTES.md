@@ -6,6 +6,16 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.439.0 - tiers by evidence, and twenty-two dead names
+
+- **A suite's tier is decided by what its body touches, not by a word in its name.** 132 suites
+  that never read a pixel, the DOM, audio or the network moved from Chrome to Node (137 were
+  tried; five went red under the stubs and stayed where they were); five Node suites that read
+  `getBoundingClientRect`, `ctx.`, `drawWorld` or an element's style moved to Chrome, where their
+  numbers are real. Node tier 481 → 616 suites (22 → 25 s), Chrome tier 295 → 168.
+- **Twenty-two top-level names nothing called** are gone from `src/` — `BASE_STANDBY`,
+  `chessCanMove`, `crewHostages`, `deltaHtml`, `drawHoldMods`, `ethReset`, `mailDrop`, `namesBlock`,
+  `recOn`, `rungDef` and twelve more — after one grep each across sources, tests, site, tools and docs.
 ## 0.438.0 - the audit of the night's tooling, and the save net
 
 Four hostile reviews of 0.428.0–0.437.0 and a survey of `src/`; the milestones stand, the

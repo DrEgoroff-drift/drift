@@ -9,7 +9,7 @@ function misTestRegion(){
   }
   return {R,list};
 }
-TEST_SUITES.push(()=>suite("невязка: в уезде часы станций не сходятся, вне уезда — сходятся",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("невязка: в уезде часы станций не сходятся, вне уезда — сходятся",{tier:"node"},()=>{
   resetWorld();
   const M=misTestRegion();ok(!!M&&M.list.length>=2,"в уезде «Расхождение времён» есть станции: "+(M?M.list.length:0));
   const offs=M.list.map(misStationOffset);

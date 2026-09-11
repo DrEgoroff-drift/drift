@@ -260,11 +260,13 @@ can go red; `T.replay` refuses a recording from another `VER`; the trips oracle 
 `INDEX.md` names where a symbol ends (`file:start-end` — `Read` by exact offset).
 
 **Queue, in order (each a commit; the safety net is the golden frames and `stateHash`):**
-- **Tiers by evidence, not by name** — 165 «browser» suites touch no canvas/DOM (they went to
-  Chrome for a word in the name), 12 «node» suites read DOM/`ctx` under stubs and are vacuously
-  green (`91a-flight`, `91f-ui`, `91q-planet`, `91zzza-cave-props`, `91zzzzy-time`, `91zzzzzl-gates`,
-  `91zzzzze-keys`). Mechanical: run each candidate under Node; move it if green and pixel-free.
-  Prize: the per-edit tier is 22 s today (CLAUDE.md still says ~5 s).
+- ~~**Tiers by evidence, not by name**~~ — 0.439.0: 132 «browser» suites whose body names no
+  browser API moved to Node (137 tried, five went red under the stubs and stayed in Chrome —
+  the lander's scale, the maker's breed, the postcard's eight places, the beggar's taps, the
+  engine hum); five Node suites that read `getBoundingClientRect`/`ctx.`/`drawWorld`/`style`
+  moved to Chrome. Node tier 481 → 616 suites, 22 → 25 s; Chrome tier 295 → 168 suites. Left:
+  the per-edit tier is 25 s, not the ~5 s of 0.359.3 — `-Times` for Node is owed; a suite that
+  is green under stubs is not proven honest, only not proven vacuous.
 - **Golden frames keyed by the requested window, not the measured `W×H`** — today the key is
   the headless window's geometry, so on any other machine `base=null` and the suite passes on
   `ok(n>=12)`; `deploy.yml` runs the fast tier only, so no browser suite runs in CI at all.
@@ -287,9 +289,9 @@ can go red; `T.replay` refuses a recording from another `VER`; the trips oracle 
 - **Long functions, on touch only** — 27 over 200 lines (`drawDigWorld` 569, `homeRoomBody` 550,
   `drawRoad` 539, `drawPostcard` 457, `updateSurface` 452): split along layers, verify by golden
   hash, never as a project of its own.
-- **Dead symbols (22)** — `BASE_STANDBY`, `chessCanMove`, `crewHostages`, `deltaHtml`, `drawHoldMods`,
-  `ethReset`, `mailDrop`, `namesBlock`, `recOn`, `rungDef`… nothing in `src/`, `tests/`, `site/` or
-  tools names them. Delete after one grep each for a string dispatch.
+- ~~**Dead symbols (22)**~~ — 0.439.0: deleted with their comment blocks (`BASE_STANDBY`,
+  `chessCanMove`, `crewHostages`, `deltaHtml`, `drawHoldMods`, `ethReset`, `mailDrop`, `namesBlock`,
+  `recOn`, `rungDef`…) after a grep of `src/`, `tests/`, `site/`, tools and docs each.
 - **Release hygiene** — 0.433/0.435/0.436 changed only `VER` in `src/` (test-only work released
   as game versions, five minutes apart; the zoo could not have run). Author's call: test-only
   work under one version, or the zoo before every bump.

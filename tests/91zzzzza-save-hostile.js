@@ -67,7 +67,7 @@ TEST_SUITES.push(() => suite("порченый сейв: любое поле н�
     (bad.length?" (всего "+bad.length+")":""));
 }));
 
-TEST_SUITES.push(() => suite("порченый сейв: числа строками из облака остаются числами",{tier:"browser"}, () => {
+TEST_SUITES.push(() => suite("порченый сейв: числа строками из облака остаются числами",{tier:"node"}, () => {
   resetWorld(); fuzzRich();
   const base=JSON.parse(JSON.stringify(snapshot()));
   /* PHP умеет вернуть 600 как «600»: проходим по всему снимку и делаем это нарочно */
@@ -98,7 +98,7 @@ TEST_SUITES.push(() => suite("порченый сейв: числа строка
   resetWorld();
 }));
 
-TEST_SUITES.push(() => suite("порченый сейв: круг сейв→загрузка→сейв со второго раза неподвижен",{tier:"browser"}, () => {
+TEST_SUITES.push(() => suite("порченый сейв: круг сейв→загрузка→сейв со второго раза неподвижен",{tier:"node"}, () => {
   resetWorld(); fuzzRich();
   /* Часы, которые applySave ПЕРЕСТАВЛЯЕТ намеренно, из сравнения убираем.
      `tMs`/`paidMs`/`job.t0` — это отсчёт начислений управляющему и наёмнику:

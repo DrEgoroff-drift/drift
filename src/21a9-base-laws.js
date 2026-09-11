@@ -38,7 +38,6 @@ function baseSharp(B){
   }
   return s;
 }
-const SHARP_WORD=["нет","мало","впритык","хватает"];
 function sharpWord(v,need){
   if(!need)return v>0?"хватает":"нет";
   const k=v/need;

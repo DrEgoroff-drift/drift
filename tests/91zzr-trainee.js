@@ -1,5 +1,5 @@
 /* ══════════════ автотесты: стажёр (M163) ══════════════ */
-TEST_SUITES.push(()=>suite("стажёр: заяц после блошинца, кресло, ступени по прыжкам, диплом, голос через год",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("стажёр: заяц после блошинца, кресло, ступени по прыжкам, диплом, голос через год",{tier:"node"},()=>{
   resetWorld();
   G.trainee=null;G.seat=null;G.things=[];G.log=[];G.record=null;G.vega=null;
   let B=null;for(let x=-14;x<=14&&!B;x++)for(let y=-14;y<=14&&!B;y++){if(starAt(x,y)){const S=getSystem(x,y);if(S&&S.station&&S.station.stype==="bazaar")B=S;}}

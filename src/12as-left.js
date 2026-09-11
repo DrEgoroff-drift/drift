@@ -16,7 +16,6 @@
    сводку, десять сводок жизни. Считает их сервер (`site/war.php`), клиент их
    только показывает — иначе они были бы пожеланием, а не правилом. */
 const LEFT_RU={gun:"ствол",ammo:"кассета",fuel:"канистра",sign:"знак",tow:"трос",ghost:"след"};
-const LEFT_SIGNS=["здесь пираты","здесь безопасно","здесь дерелик"];
 let LEFT_CACHE=null,LEFT_BUSY=0;
 function leftKey(){return (G.sx|0)+","+(G.sy|0);}
 function leftCall(a,body){
@@ -114,9 +113,6 @@ function leftThank(i){
     if(r&&r.ok){say("ОБЪЯВЛЕНА БЛАГОДАРНОСТЬ",120);LEFT_CACHE=null;return true;}
     return false;
   });
-}
-function leftThanksMine(){
-  return leftCall("thanks",{}).then(r=>(r&&r.ok)?(r.n|0):0);
 }
 /* ── призрак ──
    Там, где кто-то не дошёл, остаётся след его корпуса. Оставляется он один раз

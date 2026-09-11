@@ -36,7 +36,7 @@ TEST_SUITES.push(()=>suite("циркуляр: доска собирает оди
   G.crew=[];
 }));
 
-TEST_SUITES.push(()=>suite("циркуляр: попутчик занимает кресло, фраза за прыжок, сходит у своей станции",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("циркуляр: попутчик занимает кресло, фраза за прыжок, сходит у своей станции",{tier:"node"},()=>{
   resetWorld();
   G.exp={phase:1,day0:celDay(),coll:{},gone:[],gave:0,pax:null,lastDay:celDay()};G.seat=null;
   let S=null,P=null;

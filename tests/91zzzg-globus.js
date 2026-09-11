@@ -43,7 +43,7 @@ TEST_SUITES.push(()=>suite("глобус: показывает место, а н
   eq(bad,0,"и всё названное — настоящие тела этой системы");
 }));
 
-TEST_SUITES.push(()=>suite("глобус: считает раз в секунду, а не в кадр",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("глобус: считает раз в секунду, а не в кадр",{tier:"node"},()=>{
   globusSys();
   G.ship.x=0;G.ship.y=-1200;G.ship.vx=0;G.ship.vy=3;
   GLOB.t=-1;

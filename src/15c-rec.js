@@ -27,7 +27,6 @@ function recHead(){
 function recSeg(){return {head:recHead(),f:[],ev:[],ap:G.ap};}
 function recStart(){REC=recSeg();REC_PREV=null;}
 function recStop(){REC=null;REC_PREV=null;}
-function recOn(){return REC!==null;}
 /* цель автопилота ставится тычком, а не клавишей: она записывается как
    событие кадра — [номер кадра, вид, номер планеты]. Экранные кнопки
    (прилавок, вкладки) запись не видит: это её граница, а не забывчивость */

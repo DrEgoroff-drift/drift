@@ -63,7 +63,7 @@ TEST_SUITES.push(()=>suite("управляющий: не платят — ухо
   ok(!G.owned.obod,"и забрал флагман");
 }));
 
-TEST_SUITES.push(()=>suite("исследователь: образцы, наука и ошибочный чертёж",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("исследователь: образцы, наука и ошибочный чертёж",{tier:"node"},()=>{
   resetWorld();
   G.credits=200000;
   hireMgr(genMgr(31,["sci"]));

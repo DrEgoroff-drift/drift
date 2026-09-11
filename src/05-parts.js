@@ -435,17 +435,6 @@ const STAT_SHOW=[
   {k:"cool",    ru:"откат",  fix:0, less:1},   // меньше — лучше
   {k:"see",     ru:"обзор",  fix:0}
 ];
-function deltaHtml(a,b){
-  const parts=[];
-  for(const d of STAT_SHOW){
-    const x=+a[d.k]||0,y=+b[d.k]||0;
-    if(Math.abs(x-y)<(d.fix?0.005:0.5))continue;
-    const better=d.less?y<x:y>x;
-    parts.push("<u>"+d.ru+" "+x.toFixed(d.fix)+"→<span class='"+(better?"up":"dn")+"'>"+
-      y.toFixed(d.fix)+"</span></u>");
-  }
-  return parts.length?"<span class='delta'>"+parts.join("")+"</span>":"";
-}
 /* разбор: часть возвращается материалом. Пока обычные ресурсы —
    редкие появятся вместе с M39, тогда сюда добавится их доля. */
 function scrapYield(p){

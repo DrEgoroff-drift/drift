@@ -1,5 +1,5 @@
 /* ══════════════ автотесты: последний рейс и письма (M158) ══════════════ */
-TEST_SUITES.push(()=>suite("последний рейс: объявлен на 40-й день циркуляра, после него Жестянка закрыта",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("последний рейс: объявлен на 40-й день циркуляра, после него Жестянка закрыта",{tier:"node"},()=>{
   resetWorld();
   G.exp={phase:1,day0:celDay(),coll:{},gone:[],gave:0,pax:null,lastDay:celDay()};G.things=[];G.log=[];
   eq(lastRunDay(),celDay()+LAST_RUN_DAY,"день последнего рейса");

@@ -1,5 +1,5 @@
 /* ══════════════ автотесты: дорожный спутник (M168, M168b) ══════════════ */
-TEST_SUITES.push(()=>suite("дорога: километры — в кредиты живым счётчиком, комбо растёт и сгорает",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("дорога: километры — в кредиты живым счётчиком, комбо растёт и сгорает",{tier:"node"},()=>{
   resetWorld();
   G.road=null;G.credits=600;
   RD={crFrac:0};
@@ -83,7 +83,7 @@ TEST_SUITES.push(()=>suite("дорога: экран, разгон и тормо
   G.road=null;
 }));
 
-TEST_SUITES.push(()=>suite("дорога: кривой держатель снят автонулём, поворот меряется рысканием",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("дорога: кривой держатель снят автонулём, поворот меряется рысканием",{tier:"node"},()=>{
   resetWorld();
   G.road=null;
   const G0=9.80665;
@@ -249,7 +249,7 @@ TEST_SUITES.push(()=>suite("дорога: сияние «моей волны» �
 }));
 
 /* ══════════════ девятый проход (M168k) ══════════════ */
-TEST_SUITES.push(()=>suite("дорога: тон по кругу — палитра не сползает в зелень",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("дорога: тон по кругу — палитра не сползает в зелень",{tier:"node"},()=>{
   resetWorld();
   /* смешивание по короткой дуге, а не по числовой прямой */
   ok(Math.abs(roadHueMix(350,10,.5)-0)<.01||Math.abs(roadHueMix(350,10,.5)-360)<.01,
@@ -305,7 +305,7 @@ TEST_SUITES.push(()=>suite("дорога: шкала хода взята от н
   ok(G.opts.audio.on===true,"и сама настройка осталась как была");
 }));
 
-TEST_SUITES.push(()=>suite("дорога: три полосы звука разведены по делу",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("дорога: три полосы звука разведены по делу",{tier:"node"},()=>{
   resetWorld();
   const w=new Array(28).fill(0);
   for(let i=0;i<6;i++)w[i]=1;                      /* один бас */
@@ -321,7 +321,7 @@ TEST_SUITES.push(()=>suite("дорога: три полосы звука раз�
   ok(ROAD_BAND[3]===28,"полосы покрывают всю волну");
 }));
 
-TEST_SUITES.push(()=>suite("дорога: платят за то, что делаешь — повороты и обратный курс",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("дорога: платят за то, что делаешь — повороты и обратный курс",{tier:"node"},()=>{
   resetWorld();
   G.road=null;G.credits=600;
   RD={crFrac:0,moveT:0,back:0,turn:0,turnPk:0};
@@ -391,7 +391,7 @@ TEST_SUITES.push(()=>suite("дорога: поездка и сутки — ра�
   G.road=null;
 }));
 
-TEST_SUITES.push(()=>suite("дорога: не потолок, а запас — будни копят, дача тратит",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("дорога: не потолок, а запас — будни копят, дача тратит",{tier:"node"},()=>{
   resetWorld();
   G.road=null;
   /* приток: сутки дают ровно суточную норму, и не больше потолка бака */
@@ -427,7 +427,7 @@ TEST_SUITES.push(()=>suite("дорога: не потолок, а запас —
   RD=null;G.road=null;
 }));
 
-TEST_SUITES.push(()=>suite("дорога: прогрессия — кто больше наездил, больше зарабатывает",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("дорога: прогрессия — кто больше наездил, больше зарабатывает",{tier:"node"},()=>{
   resetWorld();
   G.road=null;
   /* ранги идут по НАСТОЯЩЕМУ пробегу за всё время */

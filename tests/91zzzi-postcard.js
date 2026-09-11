@@ -111,7 +111,7 @@ TEST_SUITES.push(()=>suite("открытка: альбом — двенадца�
   G.mode="system";G.surf=null;
 }));
 /* ══════════════ бланки открытки (M189) ══════════════ */
-TEST_SUITES.push(()=>suite("бланк: сотня штук, у каждой строки значение по умолчанию",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("бланк: сотня штук, у каждой строки значение по умолчанию",{tier:"node"},()=>{
   resetWorld();
   /* M189 положил тридцать и записал в план сотню; M209 её дописал */
   ok(POST_FORMS.length>=100,"бланков не меньше сотни ("+POST_FORMS.length+")");
@@ -148,7 +148,7 @@ TEST_SUITES.push(()=>suite("бланк: сотня штук, у каждой с�
     heads[F.ru]=1;
   }
 }));
-TEST_SUITES.push(()=>suite("бланк: предлагается по МЕСТУ СНИМКА, а не по тому, где сидишь",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("бланк: предлагается по МЕСТУ СНИМКА, а не по тому, где сидишь",{tier:"node"},()=>{
   resetWorld();
   const F=pcTestPlanet();
   const snap=(m)=>({v:POST_V,m,sx:F.s.sx,sy:F.s.sy,pi:F.p.idx,mi:-1,
@@ -329,7 +329,7 @@ TEST_SUITES.push(()=>suite("почта: два семейства с прист�
   ok(Array.isArray(albumAll()),"а альбом — свой (G.album)");
 }));
 /* ══════════════ ночной эфир (M191) ══════════════ */
-TEST_SUITES.push(()=>suite("эфир: диапазон есть только вечером, и вечер считается вечером",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("эфир: диапазон есть только вечером, и вечер считается вечером",{tier:"node"},()=>{
   resetWorld();
   /* окно с девяти вечера до двух ночи, по местным часам человека */
   for(const h of [21,22,23,0,1])ok(mailNight(h),"в "+h+" — ночь");

@@ -171,7 +171,7 @@ TEST_SUITES.push(()=>suite("очередь рейсов ограничена",()
   ok((m.trips|0)>0,"но очередь не пустая");
 }));
 
-TEST_SUITES.push(()=>suite("корпус решает длину рейса, а не выгоду",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("корпус решает длину рейса, а не выгоду",{tier:"node"},()=>{
   resetWorld();
   G.credits=1000000;G.owned.igla=true;G.owned.mamont=true;
   const small=mkMerc(11,"mine","igla");

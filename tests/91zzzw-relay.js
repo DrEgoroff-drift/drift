@@ -11,7 +11,7 @@ function relayFind(pred,rad){
   }
   return null;
 }
-TEST_SUITES.push(()=>suite("приёмники: мачты стоят от посева и лежат в щелях шкалы",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("приёмники: мачты стоят от посева и лежат в щелях шкалы",{tier:"node"},()=>{
   resetWorld();
   const R=relayFind(null);
   ok(!!R,"мачты в мире есть");
@@ -34,7 +34,7 @@ TEST_SUITES.push(()=>suite("приёмники: мачты стоят от по�
   ok(cnt(30,30,6)>=cnt(0,0,6),"на краю мачт не меньше, чем в середине");
 }));
 
-TEST_SUITES.push(()=>suite("приёмники: поймал разборчиво — записал, и только тогда",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("приёмники: поймал разборчиво — записал, и только тогда",{tier:"node"},()=>{
   resetWorld();
   const R=relayFind(null);
   G.sx=R.sx;G.sy=R.sy;G.sys=getSystem(G.sx,G.sy);
@@ -61,7 +61,7 @@ TEST_SUITES.push(()=>suite("приёмники: поймал разборчив�
   eq(radioTune(q).k,"noise","пустая щель по-прежнему шумит");
 }));
 
-TEST_SUITES.push(()=>suite("приёмники: что они дают — доход, приём или ничего",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("приёмники: что они дают — доход, приём или ничего",{tier:"node"},()=>{
   resetWorld();
   /* платит тот, кто там живёт */
   const P=relayFind(r=>r.give==="pay",20);

@@ -13,7 +13,7 @@ TEST_SUITES.push(()=>suite("стенгазета: лист рисуется из
   ok(WALL_POEMS.length>=4,"стихи смотрителя есть");
 }));
 
-TEST_SUITES.push(()=>suite("концерт: привет раз в день, три ноты позывного, строка в ЭФИР, Вега слышит",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("концерт: привет раз в день, три ноты позывного, строка в ЭФИР, Вега слышит",{tier:"node"},()=>{
   resetWorld();
   G.concert=null;G.log=[];G.credits=100;
   G.home=homeInit();G.home.tier=7;G.home.sx=G.sx;G.home.sy=G.sy;

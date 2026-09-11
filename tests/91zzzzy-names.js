@@ -32,7 +32,7 @@ function nmCalls(src, fn) {
   return [...out];
 }
 
-TEST_SUITES.push(() => suite("имена: каждый звук, который зовут, есть в таблице звуков",{tier:"browser"}, () => {
+TEST_SUITES.push(() => suite("имена: каждый звук, который зовут, есть в таблице звуков",{tier:"node"}, () => {
   const src = nmSource();
   ok(src.length > 100000, "исходник игры доступен набору: " + Math.round(src.length / 1024) + " КБ");
   if (!src) return;
