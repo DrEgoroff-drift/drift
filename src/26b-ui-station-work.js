@@ -9,53 +9,97 @@
    Каждая рисует в общий `$body` теми же кистями (`el`) и перерисовывает экран
    через `renderTab` — состояние станции остаётся в `26`, здесь только вид. */
 
+/* ── карточка улучшения (п. 4 плейтеста 11.09) ──
+   Автор искал «прогрев» и не нашёл, как поднять модуль: строка с «−», «+» и
+   ценой без глагола не говорила, что станет. Теперь у модуля карточка: крупные
+   точки уровней, «сейчас → станет» теми же строками и единицами, что ПРИБОРЫ в
+   описи (OPIS_SHIP), полоса оснастки с местом, которое займёт уровень, и ОДНА
+   кнопка с глаголом. После нажатия — секунда работы дока и «УСТАНОВЛЕНО».
+   Деньги и уровень меняются в миг нажатия (тесты и фаззер живут без часов);
+   секунда — только вид, и мимо сейва. */
+let modWork=null;   /* {k,done,cur,nx} — идущий монтаж: что было и что стало */
+function modStatWith(k,d){
+  G.mods[k]+=d;invalidateParts();
+  try{return stat();}finally{G.mods[k]-=d;invalidateParts();}
+}
+function modDiffHtml(cur,nx){
+  let h="";
+  for(const d of OPIS_SHIP){
+    const x=+(d.get?d.get(cur):cur[d.k])||0,y=+(d.get?d.get(nx):nx[d.k])||0;
+    if(Math.abs(x-y)<(d.fix?Math.pow(10,-d.fix)*.5:.5))continue;
+    const n=v=>(d.p||"")+v.toFixed(d.fix)+(d.u||"");
+    h+="<div class='ln'><em>"+d.ru+"</em><b>"+n(x)+"</b><u class='"+((d.less?y<x:y>x)?"up":"dn")+"'>→ "+n(y)+"</u></div>";
+  }
+  return h;
+}
+function modWorkRun(k,cur,nx){
+  const t0=tab;   /* перерисовываем, только если игрок всё ещё на той же вкладке */
+  modWork={k,done:false,cur,nx};renderTab();
+  setTimeout(()=>{
+    if(!modWork||modWork.k!==k)return;
+    modWork.done=true;if(tab===t0)renderTab();
+    setTimeout(()=>{if(modWork&&modWork.k===k){modWork=null;if(tab===t0)renderTab();}},900);
+  },850);
+}
+function modCard(k,cap){
+  const M=MODS[k],own=G.modsOwned[k]|0,lvl=G.mods[k]|0,cost=modCost(k,own),used=capUsed();
+  const W=modWork&&modWork.k===k?modWork:null;
+  const room=used+1<=cap;
+  const card=el("div","modcard"+(W?" work":"")+(W&&W.done?" done":""));
+  /* точка залита — уровень стоит на корабле, обведена — куплен, но снят */
+  let dots="";for(let i=0;i<4;i++)dots+="<i class='"+(i<lvl?"f":(i<own?"o":""))+"'></i>";
+  card.appendChild(el("div","mh","<b>"+M.ru+"<s>"+M.note+(own>lvl?" · снято "+(own-lvl):"")+"</s></b><span class='dots big'>"+dots+"</span>"));
+  /* сейчас → станет: во время монтажа — сделанный шаг, иначе — следующий */
+  let diff="";
+  if(W)diff=modDiffHtml(W.cur,W.nx);
+  else if(lvl<4)diff=modDiffHtml(stat(),modStatWith(k,1));
+  /* место в оснастке — строкой в том же списке; сама полоса одна, над карточками */
+  if(diff&&!W)diff+="<div class='ln cap'><em>оснастка</em><b>"+used+"</b><u class='"+(room?"":"dn")+"'>→ "+(used+1)+" из "+cap+"</u></div>";
+  card.appendChild(el("div","mf",diff||("<s>"+(lvl>=4?"все четыре уровня стоят":M.note)+"</s>")));
+  /* одна кнопка — по состоянию; снять уровень — вторая, тихая */
+  const acts=el("div","macts");
+  let label,go=null,off=false,gold=true;
+  if(W){label=W.done?"УСТАНОВЛЕНО":"МОНТАЖ…";off=true;}
+  else if(lvl<own){
+    label=room?"ПОСТАВИТЬ УР. "+(lvl+1):"НЕТ МЕСТА В ОСНАСТКЕ";off=!room;
+    go=()=>{if(capUsed()+1>cap){say("Не хватает места в оснастке");return;}
+      const cur=stat(),nx=modStatWith(k,1);G.mods[k]++;afterFitChange();sfx("ui");modWorkRun(k,cur,nx);};
+  }else if(own>=4){label="МАКСИМУМ";off=true;gold=false;}
+  else{
+    label=(room?"УЛУЧШИТЬ ДО УР. ":"КУПИТЬ УР. ")+(own+1)+" · "+cost.toLocaleString("ru")+" КР";off=G.credits<cost;
+    /* касса — в момент нажатия: между отрисовкой и тычком её мог опустошить
+       другой тычок, и счёт уходил в минус (сеть «полный трюм», 0.360.0) */
+    go=()=>{if(G.credits<cost){say("НЕ ХВАТАЕТ КРЕДИТОВ",60);return;}
+      const fits=capUsed()+1<=cap,cur=stat(),nx=fits?modStatWith(k,1):cur;
+      G.credits-=cost;G.modsOwned[k]++;
+      if(fits)G.mods[k]++;
+      else say("Куплено, но места в оснастке нет\nснимите что-нибудь");
+      afterFitChange();
+      tell("money",M.ru+" → ур."+G.modsOwned[k]+" · −"+cost.toLocaleString("ru")+" кр",
+           M.ru+"\nуровень "+G.modsOwned[k]);
+      if(fits)modWorkRun(k,cur,nx);else renderTab();};
+  }
+  const b=el("button","act"+(gold&&!off?" gold":""),label);
+  b.disabled=off;if(go)b.onclick=go;
+  acts.appendChild(b);
+  if(lvl>0&&!W){
+    const bm=el("button","act sm","СНЯТЬ УР.");
+    bm.onclick=()=>{G.mods[k]--;afterFitChange();renderTab();};
+    acts.appendChild(bm);
+  }
+  card.appendChild(acts);
+  return card;
+}
 function stTabMods(){
     const cap=capOf(G.shipId);
-    const capBar=()=>{
-      const used=capUsed();
-      $body.appendChild(el("div","sec","ОСНАСТКА: "+used+" / "+cap+
-        " · МОДУЛИ И ЧАСТИ ДЕЛЯТ ОДИН БЮДЖЕТ"+(used>cap?" · ПЕРЕГРУЗ":"")));
-    };
-    capBar();
-    $body.appendChild(el("div","sec","МОДУЛИ — ДО 4 УРОВНЕЙ · КАЖДЫЙ УРОВЕНЬ ЗАНИМАЕТ 1 МЕСТО"));
-    for(const k in MODS){
-      const M=MODS[k],own=G.modsOwned[k],lvl=G.mods[k],cost=modCost(k,own),max=own>=4;
-      const r=el("div","row");
-      /* точка залита — уровень стоит на корабле, обведена — куплен, но снят */
-      let dots="";for(let i=0;i<4;i++)dots+="<i class='"+(i<lvl?"f":(i<own?"o":""))+"'></i>";
-      r.appendChild(el("div","nm","<b>"+M.ru+"</b><s>"+M.note+
-        (own>lvl?" · снято "+(own-lvl):"")+"</s><div class='dots'>"+dots+"</div>"));
-      const box=el("div","modbtns");
-      if(lvl>0){
-        const bm=el("button","act sm","−");
-        bm.title="снять уровень";
-        bm.onclick=()=>{G.mods[k]--;afterFitChange();renderTab();};
-        box.appendChild(bm);
-      }
-      if(lvl<own){
-        const bp=el("button","act sm","+");
-        bp.title="поставить уровень";
-        bp.disabled=capUsed()+1>cap;
-        bp.onclick=()=>{
-          if(capUsed()+1>cap){say("Не хватает места в оснастке");return;}
-          G.mods[k]++;afterFitChange();renderTab();};
-        box.appendChild(bp);
-      }
-      const b=el("button","act"+(max?"":" gold"),max?"МАКСИМУМ":cost.toLocaleString("ru")+" кр");
-      b.disabled=max||G.credits<cost;
-      /* касса — в момент нажатия: между отрисовкой и тычком её мог опустошить
-         другой тычок, и счёт уходил в минус (сеть «полный трюм», 0.360.0) */
-      b.onclick=()=>{if(G.credits<cost){say("НЕ ХВАТАЕТ КРЕДИТОВ",60);return;}
-        G.credits-=cost;G.modsOwned[k]++;
-        if(capUsed()+1<=cap)G.mods[k]++;
-        else say("Куплено, но места в оснастке нет\nснимите что-нибудь");
-        afterFitChange();
-        tell("money",M.ru+" → ур."+G.modsOwned[k]+" · −"+cost.toLocaleString("ru")+" кр",
-             M.ru+"\nуровень "+G.modsOwned[k]);
-        renderTab();};
-      box.appendChild(b);
-      r.appendChild(box);$body.appendChild(r);
-    }
+    $body.appendChild(el("div","sec","МОДУЛИ · ДО 4 УРОВНЕЙ · УРОВЕНЬ ЗАНИМАЕТ МЕСТО В ОСНАСТКЕ"));
+    /* оснастка — одна полоса на всю вкладку: модули и части делят один бюджет */
+    {const used=capUsed(),pw=Math.min(100,used/cap*100);
+     $body.appendChild(el("div","mcap top","<div class='bar'><i style='width:"+pw.toFixed(1)+"%'></i></div>"+
+       "<s>оснастка "+used+" из "+cap+" · модули и части делят одно место"+(used>cap?" · перегруз":"")+"</s>"));}
+    const grid=el("div","modgrid");
+    for(const k in MODS)grid.appendChild(modCard(k,cap));
+    $body.appendChild(grid);
 
     /* сборка живёт на столе ОПИСЬ — здесь только вход в неё */
     {
@@ -262,6 +306,43 @@ function stTabLab(){
       r.appendChild(b);$body.appendChild(r);
     }
   }
+function fuseCard(c){
+  const W=modWork&&modWork.k==="fuse"?modWork:null;
+  const card=el("div","modcard fuse"+(W?" work":"")+(W&&W.done?" done":""));
+  const two=fuseSel.length===2,A=two?shipData(fuseSel[0]):null,B=two?shipData(fuseSel[1]):null;
+  const P=two?fusePreview(fuseSel[0],fuseSel[1]):null;
+  card.appendChild(el("div","mh","<b>"+(W?"Плавка":two?"«"+A.ru+"» + «"+B.ru+"»":"Плавка корпусов")+
+    "<s>поколение "+(fuseGen()+(W?0:1))+(P?" · прибавка +"+Math.round(P.gain*100)+"% от сырья в трюме":"")+"</s></b>"));
+  let h="";
+  if(W)h="<s>"+(W.done?"сплав готов — «"+W.name+"» стоит в ангаре":"корпуса идут в печь…")+"</s>";
+  else if(P){
+    const rows=[["тяга","thr",2],["поворот","turn",2],["корпус","hull",0],["бак","fuel",0],["трюм","cargo",0]];
+    for(const [ru,k,f] of rows){
+      const best=Math.max(A[k],B[k]);
+      h+="<div class='ln'><em>"+ru+"</em><b>"+(+A[k]).toFixed(f)+" · "+(+B[k]).toFixed(f)+"</b><u class='"+(P[k]>=best?"up":"")+"'>→ "+(+P[k]).toFixed(f)+"</u></div>";
+    }
+  }else h="<s>выберите два корабля из ангара — ВЗЯТЬ у строки выше; исходные уйдут в печь безвозвратно</s>";
+  /* цена: есть / надо */
+  const need=[["кредиты",G.credits,c.credits],["сплавы",G.cargo.alloy|0,c.alloy],
+    ["летучие газы",G.cargo.volatiles|0,c.volatiles],["кристаллы льда",G.cargo.icecrys|0,c.icecrys]];
+  if(!W)for(const [ru,have,n] of need)
+    h+="<div class='ln cap'><em>"+ru+"</em><b>"+Math.floor(have).toLocaleString("ru")+"</b><u class='"+(have>=n?"":"dn")+"'>надо "+n.toLocaleString("ru")+"</u></div>";
+  card.appendChild(el("div","mf",h));
+  const short=need.filter(x=>x[1]<x[2]).map(x=>x[0]);
+  const acts=el("div","macts");
+  const label=W?(W.done?"ГОТОВО":"ПЛАВКА…"):!two?"ВЫБЕРИТЕ ДВА КОРАБЛЯ":
+    short.length?"НЕ ХВАТАЕТ: "+short.join(", ").toUpperCase():"СПЛАВИТЬ · "+c.credits.toLocaleString("ru")+" КР";
+  const bf=el("button","act"+(!W&&two&&!short.length?" gold":""),label);
+  bf.disabled=!!W||!two||!!short.length;
+  bf.onclick=()=>{
+    const id=fuseShips(fuseSel[0],fuseSel[1]);
+    if(!id)return;
+    fuseSel=[];sfx("ui");
+    modWorkRun("fuse",null,null);modWork.name=(shipData(id)||{}).ru||"сплав";
+  };
+  acts.appendChild(bf);card.appendChild(acts);
+  return card;
+}
 function stTabFuse(){
     /* сплав корпусов: два корабля из ангара и редкое сырьё — на выходе один
        новый, исходные расходуются. Прибавка тает с каждым поколением. */
@@ -288,16 +369,10 @@ function stTabFuse(){
       };
       r.appendChild(b);$body.appendChild(r);
     }
-    const need=el("div","row");
-    need.appendChild(el("div","nm","<b>Стоимость плавки</b><s>"+
-      c.credits.toLocaleString("ru")+" кр · сплавы "+G.cargo.alloy+"/"+c.alloy+
-      " · летучие газы "+G.cargo.volatiles+"/"+c.volatiles+
-      " · кристаллы льда "+G.cargo.icecrys+"/"+c.icecrys+
-      "<br>лишнее редкое сырьё в трюме идёт в прибавку, но каждое поколение прибавляет меньше</s>"));
-    const bf=el("button","act gold","СПЛАВИТЬ");
-    bf.disabled=fuseSel.length!==2||!fuseAffordable(c);
-    bf.onclick=()=>{if(fuseShips(fuseSel[0],fuseSel[1])){fuseSel=[];renderTab();}};
-    need.appendChild(bf);$body.appendChild(need);
+    /* карточка плавки — тот же шаблон, что у модулей (п. 4, 12.09): что выйдет
+       против родителей, чем платят (есть / надо, недостающее красным) и одна
+       кнопка, которая называет, чего не хватает, а не молча гаснет */
+    $body.appendChild(fuseCard(c));
     $body.appendChild(el("div","sec","СБОРКА ЧАСТЕЙ ИЗ РЕДКОГО СЫРЬЯ · СТОК ДЛЯ ИЗЛИШКОВ"));
     for(const spec of CRAFT_TIERS){
       const r=el("div","row");

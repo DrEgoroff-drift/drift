@@ -39,6 +39,28 @@ function fuseAffordable(c){
   return G.credits>=c.credits&&G.cargo.alloy>=c.alloy&&
     G.cargo.volatiles>=c.volatiles&&G.cargo.icecrys>=c.icecrys;
 }
+/* числа будущего сплава — до плавки (карточка СПЛАВА, п. 4 плейтеста 11.09):
+   случайны у сплава только имя и облик, статы — смесь родителей и прибавка от
+   сырья в трюме, поэтому их можно показать честно. Один расчёт на карточку и
+   на саму плавку — два расходятся при первой же правке */
+function fusePreview(idA,idB){
+  const A=shipData(idA),B=shipData(idB);
+  if(!A||!B||idA===idB)return null;
+  const c=fuseCost(),g=fuseGen();
+  /* доля редкого сырья сверх обязательного минимума и есть «бонус за редкость» */
+  const rich=clamp((G.cargo.volatiles+G.cargo.icecrys)/(c.volatiles+c.icecrys+24),0,1);
+  const gain=(.06+rich*.09)*Math.pow(.55,g);   // затухание: второе поколение даёт втрое меньше
+  const mix=(a,b)=>{
+    const w=a>=b?.62:.38;
+    return a*w+b*(1-w);
+  };
+  return {gain,
+    thr:+(mix(A.thr,B.thr)*(1+gain)).toFixed(2),
+    turn:+(mix(A.turn,B.turn)*(1+gain)).toFixed(2),
+    fuel:Math.round(mix(A.fuel,B.fuel)*(1+gain)),
+    cargo:Math.round(mix(A.cargo,B.cargo)*(1+gain)),
+    hull:Math.round(mix(A.hull,B.hull)*(1+gain))};
+}
 function fuseShips(idA,idB){
   const A=shipData(idA),B=shipData(idB);
   if(!A||!B||idA===idB)return null;
@@ -47,18 +69,8 @@ function fuseShips(idA,idB){
   const g=fuseGen();
   const seed=hashi(hashi(A.seed||1,B.seed||2,0xF05E),now()&0xffff,g);
   const base=genUniqueShip(seed);
-  /* доля редкого сырья сверх обязательного минимума и есть «бонус за редкость» */
-  const rich=clamp((G.cargo.volatiles+G.cargo.icecrys)/(c.volatiles+c.icecrys+24),0,1);
-  const gain=(.06+rich*.09)*Math.pow(.55,g);   // затухание: второе поколение даёт втрое меньше
-  const mix=(a,b)=>{
-    const w=a>=b?.62:.38;
-    return a*w+b*(1-w);
-  };
-  base.thr=+(mix(A.thr,B.thr)*(1+gain)).toFixed(2);
-  base.turn=+(mix(A.turn,B.turn)*(1+gain)).toFixed(2);
-  base.fuel=Math.round(mix(A.fuel,B.fuel)*(1+gain));
-  base.cargo=Math.round(mix(A.cargo,B.cargo)*(1+gain));
-  base.hull=Math.round(mix(A.hull,B.hull)*(1+gain));
+  const P=fusePreview(idA,idB);
+  base.thr=P.thr;base.turn=P.turn;base.fuel=P.fuel;base.cargo=P.cargo;base.hull=P.hull;
   base.cls="лабораторный сплав";
   /* единственное место, где две породы встречаются на одном корпусе (§19.3):
      сплав берёт грамматику того родителя, чей вклад тяжелее, и помнит второго */

@@ -554,6 +554,39 @@ nav.tabs.solo{display:none}
 .dots i.f{background:var(--phos)}
 .dots i.o{background:rgba(127,230,216,.28)}
 .modbtns{display:flex;gap:8px;align-items:center;flex-shrink:0}
+/* карточка улучшения (п. 4, 12.09): точки крупно, «сейчас → станет», полоса
+   оснастки, одна кнопка с глаголом; монтаж — секунда заливки по кнопке */
+.modgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px;padding:4px var(--pad) 14px}
+.modcard{display:flex;flex-direction:column;gap:8px;padding:12px;border:1px solid rgba(127,230,216,.14);border-radius:6px;background:rgba(127,230,216,.035)}
+.modcard.fuse{margin:6px var(--pad) 14px}
+.modcard .mh{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.modcard .mh b{font-weight:400;font-size:13px;color:var(--text);letter-spacing:.02em}
+.modcard .mh b s{display:block;text-decoration:none;color:var(--dim);font-size:10px;margin-top:3px;letter-spacing:.02em}
+.dots.big{margin-top:2px;gap:5px;flex:0 0 auto}
+.dots.big i{width:12px;height:12px;border-radius:50%;background:none;border:1.5px solid rgba(255,255,255,.18)}
+.dots.big i.f{background:var(--phos);border-color:var(--phos)}
+.dots.big i.o{border-color:rgba(127,230,216,.6)}
+.modcard .mf{min-height:34px}
+.modcard .mf .ln{display:flex;align-items:baseline;gap:8px;font-size:11px;line-height:1.7;font-variant-numeric:tabular-nums}
+.modcard .mf .ln em{flex:1;font-style:normal;color:var(--dim)}
+.modcard .mf .ln b{font-weight:400;color:var(--text)}
+.modcard .mf .ln u{text-decoration:none;min-width:64px;text-align:right}
+.modcard .mf .up{color:var(--good)}.modcard .mf .dn{color:#ff9d7a}
+.modcard .mf>s{text-decoration:none;color:var(--dim);font-size:10px}
+.mcap.top{padding:0 var(--pad) 10px}
+.mcap .bar{position:relative;height:6px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden}
+.mcap .bar i{position:absolute;left:0;top:0;bottom:0;background:rgba(127,230,216,.45)}
+.mcap s{display:block;text-decoration:none;color:var(--dim);font-size:9px;letter-spacing:.06em;margin-top:4px}
+.modcard .mf .ln.cap{margin-top:2px;padding-top:2px;border-top:1px solid rgba(255,255,255,.05)}
+.modcard .mf .ln.cap u{color:var(--dim)}.modcard .mf .ln.cap u.dn{color:#ff9d7a}
+.modcard .macts{display:flex;gap:8px}
+.modcard .macts .act:first-child{flex:1 1 auto}
+.modcard.work .macts .act:first-child{position:relative;overflow:hidden;opacity:1}
+.modcard.work .macts .act:first-child::before{content:"";position:absolute;left:0;top:0;bottom:0;width:100%;
+  background:rgba(127,230,216,.22);transform-origin:left;animation:modfill .85s linear both}
+.modcard.done .macts .act:first-child{color:var(--good);border-color:rgba(143,208,138,.6)}
+.modcard.done .macts .act:first-child::before{animation:none;background:rgba(143,208,138,.16)}
+@keyframes modfill{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 input.vol{-webkit-appearance:none;appearance:none;flex:0 0 118px;height:3px;
   background:rgba(255,255,255,.14);outline:none;margin:0;border-radius:2px}
 input.vol::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;
