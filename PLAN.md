@@ -216,7 +216,16 @@ before a push.
     fleet suites call `fleetInteract` for different ships in a row without a frame; start each call
     with `cueReset()` in those tests (a new frame) or refine the rule. Then R1's module interactors
     (12ai, 12l, 17b, 11ap, 12as, 13d) to `if(cue(..)&&actEdge)`, then R2.
-  - [x] **R0 picket «Коммуна»**: the hail is a window with ПРОХОДОМ / ПО ДЕЛУ and a countdown, no fire
+    **R0 open (tester on dev, both reviewers):** (1) behind СТОЛ/ОПИСЬ/station the hail window hides
+    (`hailWinSync`) while `H.t-=dt` keeps running (`hailTick`) — «read the log, got a volley» outside
+    the start system. Fix: the hail window sits above `.scr`/#tablewin and shows over any screen; while
+    it cannot be shown, no new hail starts (`hailPicket`) and `H.t` stands; hostile fire at the player
+    pauses while a screen is open; the «МОЛЧИТЕ» toast is trouble and shows over screens. (2)
+    `HAIL_HOLD` 420 → 900 on a phone. (3) Chips dim under the hail window like the rail. Red test
+    first: «СТОЛ open, a hail comes, 20 s → G.hail alive, hull intact; СТОЛ closed → ДЕЙСТВИЕ
+    answers». Scale stays with the author (reviewers split: the designer accepted the formula,
+    Контроль wants the world zoom ×4.5) — do not change it without the author's word.
+  - [ ] **R0 picket «Коммуна»** (built ee24e4b, two holes above): the hail is a window with ПРОХОДОМ / ПО ДЕЛУ and a countdown, no fire
     while it is open; in the start system the picket never wrecks (a warning volley, then escort);
     both pads relabel; B2 — the hail takes ЦЕЛЬ before the probe, `hailAnswer("pass")` no H.warn;
     first rungs tank 500 / hold 900 (Контроль); test «start, 120 s silent → hull > 50 %».
