@@ -97,23 +97,31 @@ The author could not play fifteen minutes on a phone with 800 suites green. Ever
 tests, local commits, look with eyes on `dev.html` at 390×844; the whole test run only right
 before a push.
 
-- [x] **Empty tank** — thrust opens a window: ДОМОЙ (price 10·2ⁿ by jumps, cools only with
-  active play: −1 per 45 active min; taxi jump +2, tow −0.5), БУКСИР (a real barge, 5 min haul,
-  free), СБРОС (ship lost → «Стриж»). ДОМОЙ in the menu anywhere. `16c-rescue` (wip, local).
-- [x] **Station header half a screen** — one line + «ещё ▾» (wip, local).
-- [ ] **Drones** — the price is a function of how many you own: `9000·1.6ⁿ` (agreed); tiers later.
-  Check whether pilots/mercs earn offline (they must be online-only).
-- [ ] **Buttons that do not press; screens that jump** — СТОЛ, ДЕЛО, ОПИСЬ (play at 390×844).
-- [ ] **Modules** — one path: pick → поставить → see it fitted. «Прогрев» — word not in code; ask where.
-- [ ] **After a boss** — a «what you got» card with НАДЕТЬ in it.
-- [ ] **ОПИСЬ** — no table scroll; the bottom strips become tabs with words.
-- [ ] **Start system picket** — «Коммуна» at 0:0 hails a new player and opens fire ~15 s in
-  («не ответил и пошёл дальше»): a newcomer is shot for a hail he never noticed.
-- [ ] **Station screen** — a clipped ether line above the header; the «Полёт восстановлен» toast
-  lies over the counter; the market says only cooperatives may buy — check a newcomer can trade.
-- [ ] **Scale** — far zoom: ship ×2 (floor .35 → .7); near zoom: ship half a planet — the author
-  wants to fly around a planet. Seamless atmosphere entry — asked, after the pass.
+- [ ] **0. Empty tank** — thrust opens a window: ДОМОЙ (10·2ⁿ by jumps; cools only with active
+  play −1/45 min, taxi +2, tow −0.5), БУКСИР (a real barge, 5 min, free), СБРОС (→ «Стриж»).
+  ДОМОЙ in the menu anywhere; the station beacon goes the same path. `16c-rescue`, branch
+  `playable-11-09`. Review 11.09: `G.tow` was M369b's towed hull → the rescue is `G.haul` [done];
+  the haul is saved [done]; СБРОС needs a second tap [done]; pirates off during the haul [done];
+  reset takes only fitted levels (`mods`), not bought (`modsOwned`) [done]; the world does NOT
+  freeze during the haul (measured: planets, station, barges move) [checked]. Left: the author's «да»
+  on dev, then tests + main as 0.446.0.
+- [x] **1. Station header half a screen** — one line + «ещё ▾» (wip); the clipped ether line above
+  it and the «Полёт восстановлен» toast over the counter are still open.
+- [ ] **2. Scale** — far zoom: ship ×2 (floor .35 → .7); near: the ship stops growing (~.8) and the
+  zoom goes to ×4, so a planet is 5–6 ships wide. Proposed to the author with numbers; a before/after
+  frame at ×0.16 and ×2.4 before code. Seamless atmosphere entry — a milestone after the pass.
+- [ ] **3. Buttons that do not press; screens that jump** — СТОЛ, ДЕЛО, ОПИСЬ (play at 390×844);
+  ОПИСЬ: the bottom strips become tabs with words.
+- [ ] **4. Modules** — one path: pick → ПОСТАВИТЬ → see it fitted. «Прогрев» — not a word in code;
+  find by meaning (a timer on an engine/hyper?) before asking.
+- [ ] **5. After a boss** — a «what you got» card with НАДЕТЬ in it.
+- [ ] **6. Economy** — drones: price a function of how many you own, `9000·1.6ⁿ`; tiers later. Close
+  offline income of pilots/mercs if it drips. Where to spend 1.5 M — a list to the author, no code.
+- [ ] **Start system picket** — «Коммуна» at 0:0 hails a new player and opens fire ~15 s in.
+- [ ] **Market for a newcomer** — «only cooperatives may buy»: check a newcomer can trade at all.
 - [ ] **Home-price activity perks** — a fuel coupon per 2 h of active play a week (proposed).
+- Tests: none between edits; before the push one full run (-Full, -Mobile, -Mutants) plus scenario
+  suites on the phone viewport «player does X → sees Y». The lab stays stopped.
 
 ## What is left, in order (reviewed 2026-09-11, 0.443.0)
 

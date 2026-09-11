@@ -42,10 +42,10 @@ TEST_SUITES.push(()=>suite("пустой бак: буксир — настоящ
   G.fuel=0;G.credits=0;
   const dest=nearestStation(5,3),ship0=G.shipId;
   ok(rescueTake("tow"),"буксир берётся даром");
-  ok(G.tow&&G.tow.ph==="come","баржа идёт к нам");
-  const d0=Math.hypot(G.tow.bx-G.ship.x,G.tow.by-G.ship.y);
-  for(let i=0;i<60;i++)towTick(10,G.ship);
-  ok(Math.hypot(G.tow.bx-G.ship.x,G.tow.by-G.ship.y)<d0,"баржа приближается");
+  ok(G.haul&&G.haul.ph==="come","баржа идёт к нам");
+  const d0=Math.hypot(G.haul.bx-G.ship.x,G.haul.by-G.ship.y);
+  for(let i=0;i<60;i++)haulTick(10,G.ship);
+  ok(Math.hypot(G.haul.bx-G.ship.x,G.haul.by-G.ship.y)<d0,"баржа приближается");
   /* штурвал молчит: газ не двигает корабль, пока тащат */
   G.fuel=50;
   dispatchEvent(new KeyboardEvent("keydown",{key:"w",code:"KeyW"}));
@@ -54,9 +54,9 @@ TEST_SUITES.push(()=>suite("пустой бак: буксир — настоящ
   ok(G.ship.vx===0&&G.ship.vy===0,"пока тащат, газ корабль не разгоняет");
   ok(/БУКСИР/.test(G.prompt)&&/\d+:\d\d/.test(G.prompt),"подсказка говорит, что идёт и сколько осталось: "+G.prompt);
   G.fuel=0;
-  let n=0;while(G.tow&&n<2000){towTick(60,G.ship);n++;}
-  ok(!G.tow,"буксир кончается сам");
-  ok(n*60>=TOW_COME+TOW_HAUL-600,"и не раньше пяти минут: "+Math.round(n*60/60)+" с");
+  let n=0;while(G.haul&&n<2000){haulTick(60,G.ship);n++;}
+  ok(!G.haul,"буксир кончается сам");
+  ok(n*60>=HAUL_COME+HAUL_TIME-600,"и не раньше пяти минут: "+Math.round(n*60/60)+" с");
   eq(G.sx+","+G.sy,dest.sx+","+dest.sy,"дотащил в систему со станцией");
   ok(G.fuel>=Math.min(stat().fuelMax,RESCUE_FUEL),"в баке хватает дойти до причала: "+G.fuel);
   eq(G.shipId,ship0,"корабль свой, ничего не потеряно");
@@ -105,4 +105,59 @@ TEST_SUITES.push(()=>suite("домой: цена растёт от прыжко�
   applySave(s);
   eq(G.homeJumps,4.5,"счётчик прыжков сохранился");
   eq(G.homeActMs,1234,"и накопленная игра тоже");
+}));
+
+/* ── ревью надзорного сеанса 11.09 ── */
+TEST_SUITES.push(()=>suite("пустой бак: корпус на тросе не мешает спасению и не путается с баржей",{tier:"browser"},()=>{
+  resetWorld();
+  G.mode="system";G.sx=5;G.sy=3;G.sys=getSystem(5,3);G.ship.x=4000;G.ship.y=0;G.ship.vx=0;G.ship.vy=0;
+  G.fuel=0;G.credits=0;
+  G.tow={seed:12345,by:"gt",sx:5,sy:3};   /* M369b: трофейный корпус на тросе */
+  const sos=document.getElementById("sos");
+  dispatchEvent(new KeyboardEvent("keydown",{key:"w",code:"KeyW"}));
+  updateSystem(1);
+  dispatchEvent(new KeyboardEvent("keyup",{key:"w",code:"KeyW"}));
+  ok(sos.classList.contains("open"),"с корпусом на тросе газ всё равно открывает окно");
+  toggleSos(false);
+  ok(rescueTake("tow"),"буксир берётся");
+  eq(G.tow&&G.tow.seed,12345,"трофейный корпус на тросе не подменён баржей буксира");
+  let n=0;while(G.haul&&n<2000){haulTick(60,G.ship);n++;}
+  ok(!G.haul&&G.fuel>0,"буксир дотащил");
+  eq(G.tow&&G.tow.seed,12345,"и корпус на тросе приехал с нами");
+  G.tow=null;
+}));
+TEST_SUITES.push(()=>suite("пустой бак: буксир переживает перезагрузку",{tier:"browser"},()=>{
+  resetWorld();
+  G.mode="system";G.sx=5;G.sy=3;G.sys=getSystem(5,3);G.ship.x=4000;G.ship.y=0;
+  G.fuel=0;G.credits=0;
+  const dest=nearestStation(5,3);
+  rescueTake("tow");
+  for(let i=0;i<40;i++)haulTick(60,G.ship);
+  ok(G.haul&&G.haul.ph==="haul","посреди буксировки");
+  const s=JSON.parse(JSON.stringify(snapshot()));
+  G.haul=null;
+  applySave(s);
+  ok(G.haul&&G.haul.ph==="haul","после загрузки баржа всё ещё тащит");
+  let n=0;while(G.haul&&n<2000){haulTick(60,G.ship);n++;}
+  eq(G.sx+","+G.sy,dest.sx+","+dest.sy,"и дотаскивает до станции");
+  /* битый буксир в сейве не замораживает корабль */
+  s.haul={ph:"haul",t:"x"};applySave(s);
+  ok(!G.haul,"битый объект в сейве отброшен");
+}));
+TEST_SUITES.push(()=>suite("пустой бак: сброс одним касанием не случается",{tier:"browser"},()=>{
+  resetWorld();
+  const big=Object.keys(SHIPS).find(k=>k!=="strizh");
+  G.owned[big]=true;G.shipId=big;
+  G.mode="system";G.sx=5;G.sy=3;G.sys=getSystem(5,3);G.fuel=0;
+  G.modsOwned.engine=3;G.mods.engine=2;
+  toggleSos(true);
+  let b=document.querySelector('#sosList button[data-id="reset"]');
+  b.click();
+  eq(G.shipId,big,"первый тычок корабль не отнял");
+  ok(/ТОЧНО/.test(b.textContent),"кнопка спрашивает и называет, что пропадёт: "+b.textContent);
+  b.click();
+  eq(G.shipId,"strizh","второй тычок — сброс");
+  eq(G.mods.engine,0,"поставленные ступени ушли с корпусом");
+  eq(G.modsOwned.engine,1,"а купленная сверх поставленных осталась");
+  toggleSos(false);
 }));

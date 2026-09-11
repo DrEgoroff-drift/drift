@@ -44,8 +44,8 @@ TEST_SUITES.push(() => suite("сценарий: с пустым баком на 
   land(); G.fuel = 0; G.credits = 0;
   ok(rescueTake("tow"), "БУКСИР без денег берётся");
   eq(G.mode, "system", "баржа подняла на орбиту");
-  let n = 0; while (G.tow && n < 2000) { towTick(60, G.ship); n++; }
-  ok(!G.tow && G.fuel > 0, "дотащил, в баке есть ход: " + G.fuel);
+  let n = 0; while (G.haul && n < 2000) { haulTick(60, G.ship); n++; }
+  ok(!G.haul && G.fuel > 0, "дотащил, в баке есть ход: " + G.fuel);
   /* без денег и без терпения: сброс на «Стриж», игра продолжается */
   land(); G.fuel = 0; G.credits = 0;
   ok(rescueTake("reset"), "СБРОС берётся");
@@ -86,7 +86,7 @@ TEST_SUITES.push(() => suite("сценарий: без топлива и без 
     const tow = rescueOffers().find(o => o.id === "tow");
     ok(tow && tow.cost === 0, "из мёртвого штиля есть ход: буксир даром (" + (tow ? tow.sub : "нет") + ")");
     rescueTake("tow");
-    let n = 0; while (G.tow && n < 2000) { towTick(60, G.ship); n++; }
+    let n = 0; while (G.haul && n < 2000) { haulTick(60, G.ship); n++; }
     fuelled = G.fuel > 0;
   }
   ok(moved || fuelled || left,

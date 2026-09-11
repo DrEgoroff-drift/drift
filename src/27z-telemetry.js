@@ -247,7 +247,7 @@ function hud(){
   const cbtn=document.getElementById("callbtn");
   if(cbtn)setSt(cbtn,"display",(G.mode==="system"||G.mode==="map")?"":"none");
   const sbtn=document.getElementById("starbtn");
-  setSt(sbtn,"display",(G.mode==="system"&&!G.tow&&Math.hypot(G.ship.x,G.ship.y)>1400)?"":"none");   /* под буксиром курс не наш (16c) */
+  setSt(sbtn,"display",(G.mode==="system"&&!G.haul&&Math.hypot(G.ship.x,G.ship.y)>1400)?"":"none");   /* под буксиром курс не наш (16c) */
   /* «К ЦЕЛИ» (M321, §9 шаг 6): курс поставлен с доски или из тетради — в полёте
      он назван, и одним тапом карта открывается на нём. Только в системе и только
      пока адрес не достигнут; на самой карте выбранный сектор и так виден */

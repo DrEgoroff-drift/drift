@@ -10,7 +10,7 @@
    прилетает баржа и ты пять минут летишь до станции; сброс — теряешь корпус,
    тебе выдают Стриж». Так и сделано:
      ДОМОЙ  — сразу, за деньги: цена растёт от прыжков (rescueHomeCost, ниже);
-     БУКСИР — даром, но временем: баржа идёт к вам TOW_COME, тащит TOW_HAUL;
+     БУКСИР — даром, но временем: баржа идёт к вам HAUL_COME, тащит HAUL_TIME;
      СБРОС  — корпус, всё, что на нём стоит, и груз потеряны; «Стриж» у станции.
    Правило дрифта: игра берёт плату — деньгами, временем или кораблём, — но
    выхода «начинай сначала» больше нет.
@@ -20,8 +20,8 @@
    хуже своего хода; СБРОС только отнимает. В меню ДОМОЙ есть в любом полёте
    (маяк раньше был только на станции), буксир и сброс — только на пустом баке. */
 const RESCUE_FUEL=40;       /* бак после буксира и прыжка: хватает дойти до причала */
-const TOW_COME=20*60;       /* кадров, пока баржа подходит */
-const TOW_HAUL=300*60;      /* кадров буксировки: пять минут, как сказал автор */
+const HAUL_COME=20*60;       /* кадров, пока баржа подходит */
+const HAUL_TIME=300*60;      /* кадров буксировки: пять минут, как сказал автор */
 const RESCUE_ASK_GAP=90;    /* кадров после закрытия окна, пока газ не открывает его снова */
 
 function rescueEmpty(){
@@ -102,13 +102,14 @@ function rescueTake(id){
       G.ship.x=p.x+Math.cos(p.ang)*(p.radius+150);G.ship.y=p.y+Math.sin(p.ang)*(p.radius+150);
       G.ship.vx=0;G.ship.vy=0;G.mode="system";G.surf=null;G.land=null;
     }
-    towStart();
+    haulStart();
   }else if(id==="reset"){
     const was=(shipData(G.shipId)||{}).ru||"корабль";
     if(G.shipId!=="strizh")delete G.owned[G.shipId];
     G.shipId="strizh";G.owned.strizh=true;
-    G.mods={engine:0,tank:0,hold:0,armor:0,drill:0,hyper:0,weapon:0};
-    G.modsOwned={engine:0,tank:0,hold:0,armor:0,drill:0,hyper:0,weapon:0};
+    /* уходит то, что НА корабле: поставленные ступени модулей (mods) и части
+       (fit). Купленное, но не поставленное (modsOwned сверх mods) остаётся */
+    for(const k in G.mods){G.modsOwned[k]=Math.max(0,(G.modsOwned[k]|0)-(G.mods[k]|0));G.mods[k]=0;}
     G.fit={};invalidateParts();
     for(const k of RES_KEYS)G.cargo[k]=0;
     rescuePark(nearestStation(G.sx,G.sy));
@@ -121,31 +122,46 @@ function rescueTake(id){
 }
 
 /* ── буксир: баржа настоящая, путь настоящий ── */
-function towStart(){
+function haulStart(){
   const sh=G.ship,dest=nearestStation(G.sx,G.sy);
   const a=rnd()*TAU;
-  G.tow={ph:"come",t:0,seed:hashi(G.sx*977+G.sy,clockNow()|0,31)>>>0,
+  G.haul={ph:"come",t:0,seed:hashi(G.sx*977+G.sy,clockNow()|0,31)>>>0,
     bx:sh.x+Math.cos(a)*1600,by:sh.y+Math.sin(a)*1600,ba:a+Math.PI,
     x0:0,y0:0,dsx:dest.sx,dsy:dest.sy,dname:dest.name};
   G.ap=null;G.orbit=null;G.pirates=[];G.shots=[];
   logAdd("warn","Буксир вызван к "+evacFrom()+" · баржа идёт");
   say("Буксир вызван\nбаржа идёт к вам",150);
 }
-function towLeft(){
-  const T=G.tow;if(!T)return 0;
-  return Math.ceil(((T.ph==="come"?TOW_COME-T.t+TOW_HAUL:TOW_HAUL-T.t))/60);
+/* буксир переживает перезагрузку (ревью 11.09): закрыл вкладку на третьей
+   минуте — открыл, и баржа тащит дальше. Форма проверяется строго: битый
+   объект в сейве не должен заморозить корабль */
+function haulRestore(h){
+  if(!h||typeof h!=="object"||(h.ph!=="come"&&h.ph!=="haul"))return null;
+  const num=k=>isFinite(+h[k]);
+  if(!["t","bx","by","ba","x0","y0","dsx","dsy","seed"].every(num))return null;
+  return {ph:h.ph,t:+h.t,seed:(+h.seed)>>>0,bx:+h.bx,by:+h.by,ba:+h.ba,x0:+h.x0,y0:+h.y0,
+    dsx:h.dsx|0,dsy:h.dsy|0,dname:String(h.dname||"")};
+}
+function haulLeft(){
+  const T=G.haul;if(!T)return 0;
+  return Math.ceil(((T.ph==="come"?HAUL_COME-T.t+HAUL_TIME:HAUL_TIME-T.t))/60);
 }
 /* кадр буксира: true — корабль ведёт баржа, штурвал и физика молчат */
-function towTick(dt,sh){
-  const T=G.tow;if(!T)return false;
+function haulTick(dt,sh){
+  const T=G.haul;if(!T)return false;
   T.t+=dt;
   sh.vx=0;sh.vy=0;sh.av=0;
+  /* баржа ГЛАВТРАССЫ под охраной: пока тащат, чужие не подходят. Спавн пиратов
+     глушится в spawnPirates, а пришедших из других мест (охотник, новость,
+     отступник) снимаем здесь — корабль без руля не должен быть мишенью */
+  if(G.pirates.length)G.pirates=G.pirates.filter(p=>p.iff);
+  if(G.shots.length)G.shots=[];
   if(T.ph==="come"){
-    const k=clamp(T.t/TOW_COME,0,1),e=1-(1-k)*(1-k);
+    const k=clamp(T.t/HAUL_COME,0,1),e=1-(1-k)*(1-k);
     const tx=sh.x-Math.cos(T.ba)*70,ty=sh.y-Math.sin(T.ba)*70;
     T.bx+=(tx-T.bx)*Math.min(1,e*.08*dt+.002*dt);T.by+=(ty-T.by)*Math.min(1,e*.08*dt+.002*dt);
     T.ba=Math.atan2(sh.y-T.by,sh.x-T.bx);
-    if(T.t>=TOW_COME){T.ph="haul";T.t=0;T.x0=sh.x;T.y0=sh.y;}
+    if(T.t>=HAUL_COME){T.ph="haul";T.t=0;T.x0=sh.x;T.y0=sh.y;}
   }else{
     /* своя система со станцией — тащит к ней по-настоящему; чужая — уводит
        от звезды к краю, и в конце прыжок, как у любой баржи */
@@ -153,15 +169,15 @@ function towTick(dt,sh){
     const S=same?G.sys.station:null;
     const tx=S?S.x+Math.cos(S.ang)*120:T.x0+Math.cos(Math.atan2(T.y0,T.x0))*3000;
     const ty=S?S.y+Math.sin(S.ang)*120:T.y0+Math.sin(Math.atan2(T.y0,T.x0))*3000;
-    const k=clamp(T.t/TOW_HAUL,0,1),e=k;   /* ровно: плавный разгон стоял на месте первые полминуты */
+    const k=clamp(T.t/HAUL_TIME,0,1),e=k;   /* ровно: плавный разгон стоял на месте первые полминуты */
     const nx=T.x0+(tx-T.x0)*e,ny=T.y0+(ty-T.y0)*e;
     const hd=Math.atan2(ny-sh.y,nx-sh.x);
     if(Math.hypot(nx-sh.x,ny-sh.y)>.01){T.ba=hd;sh.a=hd;}
     sh.x=nx;sh.y=ny;
     T.bx=sh.x+Math.cos(T.ba)*70;T.by=sh.y+Math.sin(T.ba)*70;
-    if(T.t>=TOW_HAUL){
+    if(T.t>=HAUL_TIME){
       const dest=getSystem(T.dsx,T.dsy);
-      G.tow=null;homeCool(HOME_TOW_COOL);
+      G.haul=null;homeCool(HOME_TOW_COOL);
       if(!same)rescuePark(dest);
       G.fuel=Math.max(G.fuel,Math.min(stat().fuelMax,RESCUE_FUEL));
       logAdd("warn","Буксир дотащил до станции · система "+dest.name);
@@ -170,13 +186,13 @@ function towTick(dt,sh){
       return true;
     }
   }
-  const s=towLeft();
+  const s=haulLeft();
   G.prompt="БУКСИР · "+(T.ph==="come"?"баржа подходит":"тащит к станции ("+T.dname+")")+
     " · "+Math.floor(s/60)+":"+String(s%60).padStart(2,"0");
   return true;
 }
-function drawTow(zx,zy,Z){
-  const T=G.tow;if(!T||typeof drawBarge!=="function")return;
+function drawHaul(zx,zy,Z){
+  const T=G.haul;if(!T||typeof drawBarge!=="function")return;
   const x=zx(T.bx),y=zy(T.by),sx=zx(G.ship.x),sy=zy(G.ship.y);
   if(T.ph==="haul"){
     ctx.strokeStyle="rgba(210,200,170,.55)";ctx.lineWidth=1;
@@ -198,7 +214,7 @@ function rescueNoLaunch(){
 const $sos=document.getElementById("sos");
 let rescueShutT=-1e9;
 function rescueAsk(){
-  if(!$sos||$sos.classList.contains("open")||G.tow)return;
+  if(!$sos||$sos.classList.contains("open")||G.haul)return;
   if(G.mode!=="system"&&G.mode!=="surface")return;
   if(G.t-rescueShutT<RESCUE_ASK_GAP)return;
   toggleSos(true);
@@ -227,7 +243,18 @@ function rescueRender(){
     b.querySelector("s").textContent=poor?"не хватает "+(o.cost-G.credits).toLocaleString("ru")+" кр":o.sub;
     b.dataset.id=o.id;
     if(o.id==="reset")b.className="lose";
-    b.addEventListener("click",()=>{if(rescueTake(o.id))toggleSos(false);else rescueRender();});
+    b.addEventListener("click",()=>{
+      /* СБРОС отнимает корабль — одним касанием его не отдают (ревью 11.09):
+         первый тычок взводит кнопку и говорит, что пропадёт, второй в течение
+         четырёх секунд — делает. Телефон промахивается, это мы уже знаем */
+      if(o.id==="reset"&&!(b.dataset.armed&&wallMs()-(+b.dataset.armed)<4000)){
+        b.dataset.armed=String(wallMs());
+        b.querySelector("em").textContent="ТОЧНО? ТКНИТЕ ЕЩЁ РАЗ";
+        b.querySelector("s").textContent="«"+((shipData(G.shipId)||{}).ru||"корабль")+"», всё, что на нём стоит, и груз пропадут";
+        return;
+      }
+      if(rescueTake(o.id))toggleSos(false);else rescueRender();
+    });
     box.appendChild(b);
   }
 }

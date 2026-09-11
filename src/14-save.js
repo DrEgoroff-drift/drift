@@ -62,7 +62,7 @@ function snapshot(){
     letter:G.letter||null,dipSwapN:G.dipSwapN,smugN:G.smugN,smugBy:G.smugBy,
     probed:G.probed,
     longHod:G.longHod,race:G.race||null,raceBest:G.raceBest,
-    drones:G.drones,droneInventory:G.droneInventory,droneIds:G.droneIds,droneSold:G.droneSold||{},homeJumps:+(G.homeJumps||0).toFixed(3),homeActMs:G.homeActMs|0,crew:G.crew,bases:G.bases,
+    drones:G.drones,droneInventory:G.droneInventory,droneIds:G.droneIds,droneSold:G.droneSold||{},homeJumps:+(G.homeJumps||0).toFixed(3),homeActMs:G.homeActMs|0,haul:G.haul||null,crew:G.crew,bases:G.bases,
     mgrs:G.mgrs,blueprints:G.blueprints,aiRift:G.aiRift,rogues:G.rogues,exiles:G.exiles,
     relics:G.relics,relicHint:G.relicHint,bio:G.bio,home:G.home,course:G.course||null,
     occ:G.occ,freed:G.freed,occCalm:G.occCalm,trade:G.trade,wear:G.wear,seams:G.seams,
@@ -522,7 +522,7 @@ function applySave(s){
   G.droneInventory=Math.max(0,s.droneInventory|0);
   G.droneSold={};if(s.droneSold&&typeof s.droneSold==='object')for(const k in s.droneSold)if(/^-?\d+,-?\d+$/.test(k))G.droneSold[k]=s.droneSold[k]|0;   /* M350 */
   /* прыжки домой и активная игра, которая их остужает (16c, 11.09) */
-  G.homeJumps=Math.max(0,+s.homeJumps||0);G.homeActMs=Math.max(0,s.homeActMs|0);
+  G.homeJumps=Math.max(0,+s.homeJumps||0);G.homeActMs=Math.max(0,s.homeActMs|0); G.haul=haulRestore(s.haul);   /* спасательный буксир посреди пути (16c) */
   /* номера бортов живут отдельно от самих машин: дрон в трюме своего номера
      не теряет (M237). Старая запись их не знает — список пуст, номера выдаст
      первая же покупка. */

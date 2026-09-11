@@ -178,16 +178,10 @@ function homeRevive(pname){
 function homeBeaconCost(){return rescueHomeCost();}
 function homeBeacon(){
   if(!homeCanRevive())return false;
-  const cost=homeBeaconCost();
-  if(G.credits<cost){say("Маяк домой\nнужно "+cost.toLocaleString("ru")+" кр");return false;}
   if(G.mode!=="system"){say("Маяк домой\nтолько из полёта по системе — сперва отстыкуйтесь");return false;}
-  G.credits-=cost;homeJumpCount();
-  G.sx=G.home.sx;G.sy=G.home.sy;G.sys=getSystem(G.sx,G.sy);
-  G.ship.x=900;G.ship.y=0;G.ship.vx=0;G.ship.vy=0;
-  G.ap=null;G.pirates=[];G.shots=[];
-  logAdd("dim","Маяк домой · −"+cost.toLocaleString("ru")+" кр");
-  say("Вы дома");
-  return true;
+  /* один путь с ДОМОЙ из меню и из окна пустого бака (16c): та же цена, тот же
+     счётчик прыжков, тот же бак по прилёте */
+  return rescueTake("home");
 }
 /* витрина и гараж: выставленное домой не продаётся и не летает — это память о
    рейсах, а не склад */

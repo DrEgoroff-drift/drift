@@ -26,6 +26,7 @@ function pirateShipId(seed){
   return id;
 }
 function spawnPirates(){
+  if(G.haul)return;   /* спасательный буксир под охраной (16c) */
   G.pirates=[];G.shots=[];G.loot=[];
   G.shield=stat().shieldMax;G.energy=stat().energyMax;G.shieldHit=0;
   const danger=sysDanger(G.sx,G.sy);
