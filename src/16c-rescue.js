@@ -398,7 +398,10 @@ function drawHaul(zx,zy,Z){
     const ax=sz/2-cx*sz*.4,ay=sz/2-cy*sz*.4,bx2=sz/2+cx*sz*.4,by2=sz/2+cy*sz*.4;
     mask("rgb(214,212,206)");ctx.globalCompositeOperation="multiply";draw();
     const sg=o.createLinearGradient(ax,ay,bx2,by2);
-    sg.addColorStop(0,"rgb(170,170,182)");sg.addColorStop(.5,"rgb(255,255,255)");sg.addColorStop(1,"rgb(255,255,255)");
+    /* третий замер (12.09, мир автора): солнце 118 / тень 69 = 1.71 — тень
+       светлее цели (50–70 медианой, отношение ≥2). Теневой край глушится
+       глубже и холоднее; солнечная половина не тронута */
+    sg.addColorStop(0,"rgb(122,124,142)");sg.addColorStop(.5,"rgb(255,255,255)");sg.addColorStop(1,"rgb(255,255,255)");
     mask(sg);draw();
     const rg=o.createLinearGradient(ax,ay,bx2,by2);
     rg.addColorStop(0,"rgba(255,205,150,0)");rg.addColorStop(.34,"rgba(255,205,150,0)");
