@@ -63,6 +63,9 @@ half the tokens. The game itself, its UI and its code comments stay Russian.
   saying the name; the beacon → its own channel (ЭФИР, voice in flight, a sheet on the cantina
   wall); holdings → retelling already writes them, the map shows them in place; biome landmarks →
   the organism scanner, a КНИЖКА entry via the institute, a pilot-book of biomes on ПОЛКА.
+- **No parallax on the map (M447, author 11.09.2026).** A map layer is either in the world -
+  moves 1:1 with the sheet and scales with the zoom - or it is paper - does not move and carries
+  no recognisable object. Map stars do not twinkle. Why and how: `docs/DESIGN-galaxy.md` §1-2.
 
 ## How a frame is judged (M241) — the meter, and the rules under it
 
@@ -135,8 +138,31 @@ main release, as M360a/M369b were.
 - ~~**M436 one helm layout**~~ - 0.423.0: the author, 09.09.2026 - «сломал управление… продумай
 - ~~**M437 the map answers the hand**~~ - 0.424.0: the author, 09.09.2026 - «смотри шрифт как то
 
-- ~~**M438 the sky stands, the sheet slides**~~ - 0.425.0: the author, 09.09.2026 - «карта
+- ~~**M438 the sky stands, the sheet slides**~~ - 0.425.0: rhumbs knotted on your system, 1:1 with the sheet (stays); the band dimmed to .62. Its parallax sky was rejected by the author on 11.09 («к экрану они приклеены») - superseded by the world galaxy, M447.
 - ~~**M440 the lab**~~ - 0.427.0: the author, 10.09.2026 - «на сервере штука, которая гоняет тесты и пишет в лог ошибки… не долбилась в одну ошибку». The suites run on the host at night (`lab/lab.sh`, `lab.yml`), one Chrome at a time under 500 MB, with a keyed error log that counts instead of repeating and a fuzz hunt that stops itself; page at https://drift-game.ru/lab/. Design and measurements: `docs/LAB.md`.
+
+## The world galaxy — the queue (M447–M451, 2026-09-11)
+
+The author, 11.09.2026: «карта двигается… к экрану они приклеены», and, of four options offered:
+«мировая галактика, у нас в игре должно быть всё круто». The map's band, nebula and grit were
+screen layers; the world has a core at 0:0 (the rose, `CHRON_R`, `sysDanger`), so the map is a
+view from above onto a barred spiral. Design, model, budgets, acceptance, decisions and risks:
+**`docs/DESIGN-galaxy.md`**. Picture and names only - no system moves, nothing persists.
+
+- **M447 the model and the glow in the world** - `galaxyAt(x,y)` (disk, bulge+bar, two arms and
+  spurs, dust lanes, knots); world tiles in two levels with a 4 ms bake budget and a fade-in
+  fallback; band and nebula leave the game map; M438's sky block and suite retired. Node suite for
+  the model, a detector for "the galaxy moves with the sheet"; golden frames accepted; g11 verdict.
+  Acceptance frame: home, 0:0, zoom 1, inside the bulge - addresses keep their contrast.
+- **M448 the resolved stars** - faint stars per sector, constant screen density across the zoom,
+  no cross, no halo, no twinkle; the map's `drawStars` call goes.
+- **M449 named places** - two arms and ~10 nebulae named in the game's voice; a word in the map
+  header and the system card; labels at far zoom; the war page moves to the same galaxy and
+  `mapBandPaint`/`mapNebula` are deleted.
+- **M450 the overview** - pinch past zoom 5 to ~14: the sheet fades, the whole disk with «вы
+  здесь», the settled circle, the danger rim, marks and rumours; the sheet fades back on the way in.
+- **M451 one galaxy, two views** - the flight/system/landing/title sky integrates the same model
+  from the player's position: brightest towards the core, nearly empty at the rim.
 
 ## Tests — the architecture and the queue (M441–M446, 2026-09-10)
 
