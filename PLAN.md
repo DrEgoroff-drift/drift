@@ -90,23 +90,25 @@ of *things*), not a target about light.
 **Five passes for a THING.** A thing is finished only with all five; three or fewer and it reads
 as a placeholder:
 
-## Next — after M321 (0.318.0, 2026-09-03)
+## What is left, in order (reviewed 2026-09-11, 0.443.0)
 
-M299/M300 built the screens pass (`docs/DESIGN-screens.md`); M301 (0.298.0) the person cards;
-M321 the §9 walkthrough as `tests/91zzy-walk` (both windows, 200-character block cap after every
-step) and the course as a state with «К ЦЕЛИ» in flight. The screens pass is closed. Left here,
-in this order (author, 2026-09-03: «сначала по плану, потом это»):
+Checked against the code, `PATCHNOTES.md`, the lab and `crash.log` on 11.09. Found already done
+and struck below: the seven «?» save fields (0.442.0), the hostile-opts suite, the dead names
+(0.439.0), the lab's first scheduled run, the road companion (built). Every author question was
+decided on the author's behalf (author: «по вопросам реши за меня как лучше») — see the end.
 
-1. ~~The settlement's houses and the wintering hut on `homePlan`~~ — M322 (0.319.0): one
-   `housePlan` for both; the wintering has no exterior, nothing to unify there.
-2. ~~The plants as bodies (M173 #2)~~ — M323 (0.320.0): the dark mass under every form.
-3. ~~Drones choosing where they sell~~ — M324 (0.321.0): the keeper, from the desk's prices.
-4. ~~Effects, all of them~~ — M325 (0.322.0): water with reflections, heat haze, chromatic
-   aberration on hits, the flare flame live over the bake. **The queue of 2026-09-03 is closed.**
+1. **The DPR 2.5 stalls** — «Loose ends → Systems». Small, real, on a player's machine, and it
+   comes before a new bake.
+2. **The world galaxy M447–M451** — the author's latest ask; `docs/DESIGN-galaxy.md`.
+3. **Determinism tails** — `wanderer · A` (real chance or real time on the corridor's buy path),
+   the clock out of `stateHash`, `planetStripTick` by `wallMs()`.
+4. **Cheap decided housekeeping** — the `.gz` cache headers, the PATCHNOTES trim, the patch-bump
+   rule; one commit each, in any gap.
+5. **Test tails** — M443–M446 «Open»/«Left» and the refactor queue; each a commit. The staged
+   oracles (goldens, worlds, trips) wait for the lab's week to 2026-09-18.
+6. **Before the release** — the 60 fps check in all modes.
 
-3. ~~System proportions~~ — M315 (0.312.0): bodies and orbits scaled (`SYS_K_*` in `06-galaxy`), the
-   ghost click on screens opened by a pad swallowed, §18.8 complete but for the заявка (rung 21).
-   ~~Left: the ship keeps its `.55` floor at deep zoom-out~~ — `.35` since M319 (0.316.0).
+## Next — after M321 — closed (the queue of 2026-09-03 and §18.8); body moved to `docs/PLAN-archive.md` (2026-09-11)
 
 ## «Сорока» — the wanderer queue (M340–M346, 0.339.0–0.346.0, closed 2026-09-05) — body moved to `docs/PLAN-archive.md` (2026-09-11)
 
@@ -119,27 +121,7 @@ Design: `docs/DESIGN-wanderer.md`. The queue, its decisions and the M351 coopera
 - **M357 hunting by search** — the game reads its own source and checks every name called by string.
 - **M359 the evidence, the hands, the things** — the ledger, the players' hand, the objects that stay.
 
-## Side passes of 2026-09-07 — the author's own asks, built in a worktree beside the base queue
-
-Bodies of the struck entries below moved to `docs/PLAN-archive.md` (2026-09-10, section «Side passes of 2026-09-07») — grep there by milestone.
-Numbered past the base queue so the two do not collide; versions are side versions of the last
-main release, as M360a/M369b were.
-
-- ~~**M422 the thumb anywhere**~~ — 0.418.0: the author, 07.09.2026 — «управление на мобилке
-- ~~**M423 the log told the truth**~~ — 0.419.0: the author, 08.09.2026 — «а посмотри мои логи в
-- ~~**M410 one thumb**~~ (0.401.1), ~~**M411 the war on the site**~~ (0.401.3) and ~~**M412 the
-
-
-- ~~**M431 the bulletin tells a story**~~ - 0.419.3: `src/12an-chron-news.js` (`newsOf`) writes a
-
-- ~~**M432 the ground is painted by its light**~~ - 0.420.0: P4 гризайль, the tenth and last
-
-- ~~**M433 evening arrives: the ground shadows itself**~~ - 0.421.0: P5 of the combined plan,
-- ~~**M436 one helm layout**~~ - 0.423.0: the author, 09.09.2026 - «сломал управление… продумай
-- ~~**M437 the map answers the hand**~~ - 0.424.0: the author, 09.09.2026 - «смотри шрифт как то
-
-- ~~**M438 the sky stands, the sheet slides**~~ - 0.425.0: rhumbs knotted on your system, 1:1 with the sheet (stays); the band dimmed to .62. Its parallax sky was rejected by the author on 11.09 («к экрану они приклеены») - superseded by the world galaxy, M447.
-- ~~**M440 the lab**~~ - 0.427.0: the author, 10.09.2026 - «на сервере штука, которая гоняет тесты и пишет в лог ошибки… не долбилась в одну ошибку». The suites run on the host at night (`lab/lab.sh`, `lab.yml`), one Chrome at a time under 500 MB, with a keyed error log that counts instead of repeating and a fuzz hunt that stops itself; page at https://drift-game.ru/lab/. Design and measurements: `docs/LAB.md`.
+## Side passes of 2026-09-07 — all built; bodies in `docs/PLAN-archive.md` (sections of 2026-09-10 and 2026-09-11)
 
 ## The world galaxy — the queue (M447–M451, 2026-09-11)
 
@@ -231,7 +213,7 @@ extract tools, do not extend). Order is strict: determinism first, everything af
   the host), so the zoo runs on the laptop before a release, not nightly. **Open:** «resolution
   never returns» has no mutant — the sharpness detector compares the canvas with the DPR the game
   chose, not with the DPR it should have chosen; a mutant `DPR=.5` would survive (needs a rule
-  for when `resAuto` may lower it under virtual time). Seeds ×100 on scenarios stay in M446.
+  for when `resAuto` may lower it under virtual time — decided 11.09, see Decisions). Seeds ×100 on scenarios stay in M446.
 - **M446 the lab's own oracles** — **0.436.0: trips over worlds** (`91zzzzzzzzc-trips`, Node, 2 s,
   staged to 2026-09-18): the bot's round trip planet → ore → station in twelve station systems,
   the distribution of frames, fuel and ore (today: median 2 152 frames, 26 fuel of 100, 12 ore;
@@ -239,29 +221,8 @@ extract tools, do not extend). Order is strict: determinism first, everything af
   under a quarter of the median ore; `?worlds=N` for the lab. Left: previous-version diff, `look()`
   telemetry from players into `log.php` and the lab page; and the lab's loose ends below.
 
-### The lab, first night (session 20260909-235848, 0.427.0, 178 min, 127 runs)
+### The lab, first night (20260909-235848, 0.427.0) — its three reds fixed by 0.427.2, the OOM class and the fuzz timeout done; body in `docs/PLAN-archive.md` (2026-09-11)
 
-What lies where: the log at https://drift-game.ru/lab/errors.txt (11 open keys), the page at
-https://drift-game.ru/lab/, raw `runs.jsonl`/`errors.json`/`state.json` in `~/drift-data/lab/`
-on the host (`ssh drift`), the laptop's copy of the session log in `lab/session.log`. The
-findings, sorted by what they are:
-
-- **Real reds — all three fixed by 0.427.2.** «база M391: воздух и вода» measured with the weather on
-  (0.427.1); «полный трюм» was the ceramic-armour gift climbing over a worn hull's ceiling; «свет:
-  звезда — самое светлое» was a cumulus over the disc — the suite now measures through the new
-  `CLOUDS_OFF` door, and the bisect found a gas giant painted brighter than its red star on the way.
-- **OOM at the host's 768 MB, not game bugs** — the phone window dies inside «сквозной: в тексте
-  игры нет undefined», the tall window inside «шахта: та же мерка»; heavy «двери» and «устаревшая
-  кнопка» die alone; the fuzzer dies on 9 of 65 seeds (each green seed ~103 s and 700–768 MB).
-  All are `getImageData`-heavy. Solo runs of the first three are automatic now; done in 0.427.2: the fuzz
-  timeout is 150 s and OOM/timeouts carry class `host`. Still open: the fuzzer's OOMs
-  cost 300 s each — M446 lowers its timeout to 150 s, tries `--renderer-process-limit=1` /
-  `--disable-dev-shm-usage`, and classes OOM/timeout as `host` so they do not sit in the table
-  with game bugs. Whether the raster these suites hold is *needed* is a question for the oven
-  net (`91zzzzy-bake`), not for the lab.
-- **The hunt** — 65 seeds, 0 game failures, streak 3 of 5; every seed is a new path (M339), so
-  the fuzzer as it stands finds nothing on 0.427.0 — the detectors of M443 are what will make the
-  same seeds informative.
 ### The lab, second night (session 20260911-003934, 0.440.0, 123 of 300 min, 92 runs)
 
 Read on 2026-09-11 morning from `runs.jsonl`/`errors.txt`. Verdicts: 78 green, 12 OOM, 2 red;
@@ -274,7 +235,7 @@ Read on 2026-09-11 morning from `runs.jsonl`/`errors.txt`. Verdicts: 78 green, 1
   `lab.py` counted a staged failure as GAME red; fixed (it now skips the КАРАНТИН block and
   `[карантин: …]` suites). Open: a per-platform baseline (`docs/golden/<W>x<H>@<host>.json`, the
   lab accepting its own on first run), or the block mean coarse enough to cross platforms — the
-  week's history decides.
+  week's history decides. **Decided 11.09: per platform** (see Decisions).
 - **The hunt stopped itself at 123 min of 300**: five fuzz OOMs in a row hit the same known key
   (`de3ea33cb07a`) and the streak rule read that as «five seeds without anything new» — a host
   failure counted as a game verdict. Fixed in `lab.py` (host-class units no longer feed the
@@ -293,12 +254,12 @@ Read on 2026-09-11 morning from `runs.jsonl`/`errors.txt`. Verdicts: 78 green, 1
   night, 685 MB and green alone); `--js-flags=--max-old-space-size` measured on «двери» — green
   at 32 s with no cgroup kill. The page: four tiles, the bugs with their fate (`fixed`/`gone`/
   `dropped`/`quiet`), the host folded, one row per session. `docs/LAB.md`.
-- **The lab's own loose ends (into M446)** — `fix` and auto-quiet done in 0.427.2;
-  `lab.yml` has not had its first scheduled run yet (02:00 Moscow, same `DRIFT_SSH_KEY` as the
-  deploy) — check the page on the morning of 11.09; light shards run at 550–770 MB of 768, one
-  more canvas and they join the OOM list; a PHP «can the site run short Node jobs on player hits»
-  probe was blocked by the classifier and is the author's call; `lab.ps1` holds the session only
-  while the laptop is awake.
+- **The lab's own loose ends (into M446)** — `fix` and auto-quiet done in 0.427.2. The first
+  scheduled `lab.yml` run came at 00:38 UTC 11.09 (38 min late) and is the second night above;
+  the first run on the new `0 */6` had not started by 07:08 UTC — GitHub delays schedules under
+  load, read `sessions.jsonl` before calling the lab dead. Light shards run at 550–770 MB of 768:
+  one more canvas and they join the OOM list. `lab.ps1` holds a session only while the laptop is
+  awake. The PHP «short Node jobs on player hits» probe — decided no (see Decisions).
 
 ## Refactor audit (0.438.0, 2026-09-11) — what the night's commits left, and the queue after them
 
@@ -337,10 +298,9 @@ can go red; `T.replay` refuses a recording from another `VER`; the trips oracle 
   or real time** — find it, then move the scene. `detStuck`'s key law fires only on a frame diff
   of exactly 0 — soften it together with that table, not alone (tried; map W/A went red).
   Found on the way: the map was silent on ДЕЙСТВИЕ with your own sector selected — now it speaks.
-- **`stateHash` mixes `now()` in** (`08a:74`) — for the cloud's «where did it diverge» it must
-  not depend on the wall clock (author's call: the clock as a separate field, or out). Done in
-  0.440.0: `Set`/`Map` with primitive members are hashed sorted, so the order techs were bought
-  no longer changes the hash. Still open: `planetStripTick` cuts by `wallMs()` and writes
+- **`stateHash` mixes `now()` in** (`08a-statehash`) — decided 11.09: the clock leaves the hash
+  and becomes its own field (see Decisions); to build. Done in 0.440.0: `Set`/`Map` with
+  primitive members hash sorted. Still open: `planetStripTick` cuts by `wallMs()` and writes
   `stripLvl` into hashed state — machine-dependent under load.
 - **A shard hangs now and then** — 10.09 a GPU process spun 33 min; 11.09 shard 1/6 of a
   `-Full` sat 900 s and was killed by the new ceiling, the rerun was green in 139 s. Not
@@ -351,26 +311,27 @@ can go red; `T.replay` refuses a recording from another `VER`; the trips oracle 
   pass; the harness self-suites vanish under `?files=` (`_file`). And the clock law does not
   cover `tests/` (41 raw calls in 13 files, mostly `performance.now` for cost — legitimate, but
   unreviewed).
-- **Opts from the cloud, the rest of the class** — `gfx.res/fps`, `audio.*` were reset to defaults
-  when strings arrived; `optsNumify` fixes the number case, a hostile-save suite with every opt as
-  a string is still owed (`91zzzzzzzzz-savenet` has one).
-- **Seven «?» fields in `SAVE_EPHEMERAL`** need the author: `hailLog`, `baseVisit`, `radioF`,
-  `kills`, `orderStamp`, `quietGone`, `logNewBy` are lost on load today — loss or design?
+- ~~**Opts from the cloud, the rest of the class**~~ — done: `91zzzzzzzzz-savenet` «сейв: числа
+  опций из облака возвращаются числами» holds the whole class, not only `padSize`.
+- ~~**Seven «?» fields in `SAVE_EPHEMERAL`**~~ — 0.442.0: `kills`, `orderStamp`, `baseVisit`,
+  `radioF` persist; `hailLog`, `quietGone`, `logNewBy` stay per session, reasons beside them.
 - **Long functions, on touch only** — 27 over 200 lines (`drawDigWorld` 569, `homeRoomBody` 550,
   `drawRoad` 539, `drawPostcard` 457, `updateSurface` 452): split along layers, verify by golden
   hash, never as a project of its own.
 - ~~**Dead symbols (22)**~~ — 0.439.0: deleted with their comment blocks (`BASE_STANDBY`,
   `chessCanMove`, `crewHostages`, `deltaHtml`, `drawHoldMods`, `ethReset`, `mailDrop`, `namesBlock`,
   `recOn`, `rungDef`…) after a grep of `src/`, `tests/`, `site/`, tools and docs each.
-- **Release hygiene** — 0.433/0.435/0.436 changed only `VER` in `src/` (test-only work released
-  as game versions, five minutes apart; the zoo could not have run). Author's call: test-only
-  work under one version, or the zoo before every bump.
+- **Release hygiene** — decided 11.09 (see Decisions): work that touches only tests, tools or
+  docs bumps the patch; a minor bump means `src/` changed and `-Mutants` ran green first.
 - **Tools zoo** — `shot.ps1`, `shot.py`, `pageshot.ps1`, `stand.ps1`, `stand.py`, `mkstand*.ps1`,
   `mkview.ps1`, `mkshots.ps1`, `mksiteshots.ps1`: one way to take a frame, the rest deleted.
-- **PATCHNOTES.md is 847 KB and every session prepends to line 1** — one file per version under
-  `docs/notes/`, the big file assembled by `build.ps1` like `INDEX.md`. Author's call.
-- **The site sends no `Cache-Control`/`ETag`/`Last-Modified`** for a 2 MB gzip `play.html` — look
-  at how it is served before touching; needs the author's yes.
+- **PATCHNOTES.md is 847 KB** — decided 11.09: trim, not split. Versions before 0.400.0 move to
+  `docs/PATCHNOTES-archive.md` (grep only, like `PLAN-archive`); one commit, no build change.
+- **`play.html` goes out uncached** — checked 11.09: `.htaccess` gives `\.html$` `max-age=60,
+  must-revalidate`, but a gzip-capable browser is rewritten to `play.html.gz`, whose block sets
+  only the encoding, and no `ETag`/`Last-Modified` come through openresty — every visit pays
+  1.97 MB. Decided: the same `Cache-Control` on the three `.gz` blocks plus `FileETag MTime
+  Size`; `curl -I` after the deploy; `api.php` untouched.
 
 **The full run is 4 minutes on a real clock (`-Times`, 11.09: 230 s single page, 128 s in six
 shards), and the author asks what is duplicated.** The thirty slowest suites are 190 of the 230 s;
@@ -437,302 +398,82 @@ the day they are found; this is work that was deliberately not done, or that nee
 
 ### Needs a decision from the author
 
-- ~~The cave, and the man's height~~ — author, 2026-09-03: «нормас, оставляем». One height in
-- ~~Drones: choosing where they sell~~ — M324 (0.321.0): the keeper's «авто-сбыт» reads the
-- **Drone attrition.** Deliberately absent: a drone breaks and mends but is never lost. The author
-  said leave the drones alone; this stays written down rather than done.
-- ~~`pair` as a target for natural light~~ — decided 2026-09-03, M308: daylight scenes
-- **Craft plan remainder** (P0–P9, last section of `docs/DESIGN-story-craft.md`; M249–M270 paid
-  eight laws of ten). P4 grisaille — a fork, see below. P7b the glyph notebook —
-  understanding is a state of the head, not a flag; needs the author. ~~P8 the clocks engine~~ —
-  **built, M416 (0.412.0)**: `11d-clocks` is the doorman its contract describes, and wiring it
-  found that part VI's «Вы просто не тянете» had no window at all — three shut doors and nothing
-  else, i.e. it could arrive in a first evening. Page in `docs/DESIGN-arc.md`. С5 fatigue — the author's fork: hired
-  hands have no figure, so either portraits (the `mgr-face` brushes) or an axis on managers. P9b
-  settlement recursion (Eglash) — by eye over many settlements.
-  **P4 grisaille — spelled out by the author 2026-09-05, built and measured 2026-09-07, then
-  reverted: it is a fork of intent, not a refactor.** The glaze gives the whole cross-section
-  real light (sky-coloured shadow, star-coloured light) instead of today's constants, and in
-  exchange the ground takes its hue from the light rather than from the world's palette ramp —
-  a terran world goes olive → terracotta. That is the author's call, so nothing was committed.
-  The spec, the nine irreducible hue events, why composites and not a LUT on this engine, the
-  numbers, the hour-long path to redo it and **the measuring trap that cost half the session**
-  (the sky calendar runs on the wall clock — pin it before any A/B of a daylight scene) are all
-  in `docs/DESIGN-craft.md` § «P4 гризайль».
-
-### Picture queue — built as M304 (0.301.0, 2026-09-03)
-
-All seven items of the 2026-09-02 order shipped in one release; bodies in `PATCHNOTES.md` 0.301.0.
-What the meter still says after it (lookAll, 1280×800, 10 frames):
-
-| scene | tones | pair | contrast | mass | note |
-|---|---|---|---|---|---|
-| пещера | 3 | 6 | .35 | 21 | mass and contrast pass; pair/tones are the honest shortfall of a cave |
-| грунт день | — | <10 | — | — | pair still short: the disc is the only second hue |
-| заход | 3 | 0 | .27–.31 | 42–49 | two masses now; a terran world at altitude has no warm source |
-| дом | 3 | 4 | — | — | one cold pool per window is not yet a pair |
-| система | 8 | 25 | .20 | 4 | the station body is measured against a nebula; see «Open by design» |
-
-Left from the queue: nothing — the band's second step is M308, the station's codex pass M306.
-
-### Graphics still open
-
-- ~~The cave is 83% empty~~ / ~~the cave's outline is a cell grid~~ — M305 (0.302.0): round rock,
-- ~~The home's furniture is flat boxes~~ / ~~the house is a formula~~ — M307 (0.304.0). ~~The
-- ~~The system view is 66% empty~~ — M309 (0.306.0): nebula with a core and a soft edge,
-- ~~The approach frame is 80% empty and has two tones~~ — M304 gave it two masses and a light
-- ~~Strata run parallel to the terrain~~ — was already paid by M267 (datum + relief cuts); the
-- ~~Straight lines where a hand belongs~~ — the mine cracks go by hand since M316 (0.313.0). The
-- ~~Boulders are one silhouette scaled~~ — measured in M316: polygons were already individual, the
-- ~~**Effects from the author's list**~~ — all taken: smoke (M320), and water, heat haze,
-- ~~**Rectangular seams of the sky layer**~~ — hunted 2026-09-03 (M320): a column/row step
-- ~~The plants as bodies~~ — M323 (0.320.0): two passes in `drawPlant`, the dark mass first.
+Nothing (2026-09-11). Every fork that stood here — drone attrition, the craft plan remainder
+(P4 grisaille, P7b the glyph notebook, С5 fatigue), the save fields, the clock in the hash, the
+release and notes hygiene — was decided on the author's behalf; see «Decisions taken on the
+author's behalf» at the end. Old bodies, with P4's spec and its measuring trap: `docs/PLAN-archive.md`,
+«Moved from PLAN.md on 2026-09-11 (review)»; P4's spec also stays in `docs/DESIGN-craft.md`.
 
 ### Systems
 
-- **The author's freeze has no cause yet.** The frame guard (M234) survives it and names it on
-  screen; the fuzzer (M238) drives eleven modes with random input and finds nothing. **0.359.1: the logger is born first** (`01a-crashlog`, right after `VER`), so a build that dies on load reports itself — 0.359.0 did not, and the site lay for 25 minutes with an empty log. **Since
-  0.359.0 the evidence ships itself:** every error of any kind, and every frame stall over two
-  seconds, lands in `~/drift-data/crash.log` (`site/log.php`, PATCHNOTES 0.359.0).
-  **Read 2026-09-07 (M417): 70 of 78 entries were the log's own noise** — a consensus alarm
-  false by construction (PHP int/string key cast in `site/war.php`, reported with proof to its
-  owner), a hidden tab filed as an 11.7-minute freeze, and an fps pulse sending `Infinity` since
-  the day it shipped. All fixed or reported. **Lead chased and closed the same night (M418,
-  0.414.0):** the bake is `planetMat` — **383 ms in one block**, measured in a real browser, i.e.
-  two to three seconds on a phone. Now sliced across frames, worst slice 6.2 ms. **The freeze item
-  is closed until the log shows a new one**.
+- **Stalls on a player's machine (new, found 11.09 in `crash.log`).** 09.09, 0.425.0, window
+  1536×791 at DPR 2.5 (ip hash `6ce8b33c` — the same hash sent the phone journals of 07–08.09):
+  five frames stood 2.0–3.4 s in the first 30 s of the system view; the fps beat says 38 in the
+  system (0.422.0) and 43–54 on the map. M418's slicing (worst slice 6.2 ms) was measured at
+  DPR 2; at 2.5 the canvas is 3840×1978 and something is not sliced, or `resAuto` does not step
+  down. Reproduce on a cold start in the system with `docs/g11.ps1` and
+  `--force-device-scale-factor=2.5`. First in the order: the galaxy adds a bake of its own.
+- **`journal` entries in `crash.log`** — 27 in two days, all «Дрон Д-… встал · чинится сам» plus
+  one «Летопись разошлась…» from a 400×400 headless: check whether a journal line is meant to
+  reach the error log at all (the M417 kind of noise).
+- The freeze item itself (M234/M238/M417/M418) stays closed until the log shows a stall that is
+  not the bake; body in the archive.
 
 ### Housekeeping
 
-- **PLAN.md stays under 60 KB** (`build.ps1` warns). A closed milestone leaves one line here and its
-  body goes to `docs/PLAN-archive.md` in the same commit — done 2026-08-28 (M232–M246) and
-  2026-09-02 (M247–M298 and the old queues, 97 → ~40 KB).
-- ~~One order-dependent phone assertion~~ — chased and closed by M354 (0.352.0). It was two things
-- **Tests: three tiers since 0.359.3, and the run splits since 0.426.0** — `test.ps1` = Node logic
-  (325 suites, ~5 s) + one Chrome smoke; `-Browser` picture/interface; `-Full` everything.
-  `-Jobs N` runs the corpus in N Chromes at once, `-Times` prints the thirty slowest suites on a
-  real clock, `-Probe` calls the four «проба · …» stands (they print economy numbers and assert
-  nothing, so an ordinary run leaves them alone). Runner: Node + smoke, then the live-site check.
-  Loose end: a pixel-fidelity net for the browser tier (reference scenes, three sizes) is the one
-  thing that would have caught the perch and «РАКЕТА 0» — not built.
-- **Running in parts is also a test of the tests.** The first `-Jobs 8` run turned three suites red
-  that a single run had shown green for months: the isolation net cleaned `G` but not the page
-  (an open `.scr`, a body mode class) nor the station's own globals (`tab`, `stGroup`, `tableTab`),
-  and one station assertion had been passing only because the previous suite happened to leave the
-  station on the ДОСКА tab. All four are fixed in 0.426.0. Loose end: nothing yet names the suite
-  that leaves the page dirty — the failure still surfaces on its neighbour. A per-suite check
-  after `fn()` («no screen left open, no mode class, no key held») would name the culprit; not
-  built, and it will find work when it is.
-- **Tests: two tiers since 0.359.3** — `test.ps1` fast (~25 s), `-Full` everything; the runner runs full
-  and then asks the live site (`data-alive`). Loose end: in the pane at 1280×800 «свет: звезда самое светлое»
-  went red on Нейэль I (0.694 vs 0.536) while headless is green — window-dependent, worth one look.
-- **The run costs what it draws, and the top ten suites are three quarters of it.** Measured
-  2026-09-09 with the switch that now exists — `test.ps1 -Full -Times` (real clock; under
-  `--virtual-time-budget` every suite reports 0 ms, which is why the tier list had been kept from
-  memory for a year). 280 s over 807 suites: the ten dearest are 205 s of it, the five dearest
-  are 139 s, and 400 suites do not reach a millisecond. **The cost is `drawWorld()`, not scene
-  set-up** — the older note here guessed set-up and guessed wrong. The doors matrix is 221 cells
-  × 3 draws, the oven family 1 760 draws, the fuzzer 544, the reference-frame suite 680: some
-  3 600 full frames at ~40 ms each in software rasterisation. Hence the three levers, in the
-  order they pay: (1) `--disable-gpu` dropped from `test.ps1` — headless Chrome takes the real
-  card and the dearest suite goes 49 s → 17 s; (2) `-Jobs N` splits the corpus across N Chromes
-  (`?shard=i/N`, heavy and light dealt round-robin apart); (3) cutting waste inside suites —
-  `settle()` asks the oven whether it is done instead of spending forty frames on hope.
-- **Push only after a green run.** One push in this session (0.238.0) went out while the base suite
-  was flaking once in three runs; caught and fixed immediately after, but the lesson is to keep the
-  test run and the push in separate commands.
+- **PLAN.md stays under 60 KB** (`build.ps1` warns). A closed milestone leaves one line here and
+  its body goes to `docs/PLAN-archive.md` in the same commit (done 2026-08-28, 09-02, 09-04,
+  09-10, 09-11).
+- **Push only after a green run**, and keep the run and the push in separate commands (0.238.0
+  went out while a suite flaked one run in three).
+- **A dirty page still surfaces on its neighbour.** Running in parts turned three long-green
+  suites red (0.426.0); nothing yet names the suite that leaves a `.scr` open, a body mode class
+  or a key held. A per-suite check after `fn()` would name the culprit — not built.
+- **«свет: звезда — самое светлое» went red once in the pane at 1280×800** (Нейэль I, .694 vs
+  .536) while headless stayed green; the cumulus over the disc (0.427.1, `CLOUDS_OFF`) is the
+  likely cause — one look in the pane, then strike.
+- Tiers, switches and what the run costs: `CLAUDE.md` «How to verify» and `docs/VERIFY.md`; the
+  2026-09-09 cost measurement (`drawWorld` is the bill, three levers) is in the archive.
 
 ## Closed 2026-08-28 → 2026-09-02 — one line each, moved to `docs/PLAN-archive.md` (2026-09-04)
 
 ## Done — struck items moved to `docs/PLAN-archive.md` (2026-09-04)
 
-## Open by design (not defects; each needs the author or a pass of its own)
+## Open by design (not defects; no pass planned)
 
-- **The fleet — ГЛАВТРАССА** (author, 2026-09-02: «флот запиши в беклог»). Ships that cannot be
-  bought: a directorate on the model of Главсевморпуть, thirteen classes off real Soviet donors
-  (Союз, Прогресс, Протон, the nuclear tug, Энергия, the seven, Буран as the ferry, Спираль+Алмаз,
-  Луна-9, ТКС, Восток×6, Салют, Мир), a truss node station at Узел трасс (25), a silent black
-  derelict, twelve interactions none of which is a shop, the fleet as the visible reward of the
-  ladder. All of it is in [`docs/DESIGN-holding.md`](docs/DESIGN-holding.md) §18, held against
-  the craft codex in §18.6. **Open before a line is drawn:** fork 4 of
-  [`docs/CRITIQUE-holding.md`](docs/CRITIQUE-holding.md) — the names (the 08-31 text uses real
-  ISS/«Мир» module names, «МКС» and «Полюс»; the critique asks for our own: Короб, Кубрик,
-  Воротник…, a call-sign for the node, no name for the derelict); the refuelling «под расписку»
-  rewritten without a book of debt; «груз в попутную» struck. Estimate from the critique: one
-  class plus the paint pipeline 2–3 sessions, each next class 1–1.5, the interactions 6–10; the
-  order of drawing is §18.9, the first meeting the почтовик. **Opened as M310 (0.307.0)**: names
-  settled, three classes drawn, the line, позывной and the norm. **M311 (0.308.0)**: joints, whiter
-  hulls, сторожевик/паром/плавбаза, services 4/7/10. **M312 (0.309.0)**: the last seven classes,
-  почта, госпитальное, учебное. **M313 (0.310.0)**: «УЗ-1», the derelict, the caravan. **M314
-  (0.311.0)**: трассы on the map, the rescuer's call, the drawing tails. ~~Left: 12 заявка (lend a
-  hull for one run)~~ — struck by the author 2026-09-05: in play it is two buttons and a
-  journal line; §18 closes on eleven interactions.
-  **The in-play look is done** — almanac issue III, addendum 0.313.0: fourteen frames
-  (`docs/shots/f_*.png`, hold scene), measured off the baked sprite and the canvas, held against
-  the craft codex law by law. **Palette settled by the author 2026-09-03** («цвет да пусть будут
-  светло серые с красными полосами эмблемами, норм»): light grey hulls, red bands and emblems,
-  nothing else — so a class is never told apart by tinting it, and §11/§16 are paid inside the
-  greys. The work the issue ordered, cheapest first — **all six paid by M317 (0.314.0)**: the
-  label from the body's radius and off the chips, the scale to the zoom ceiling, the учебное's
-  spine, the паром's wing, the greys a step down with the light reaching the body, and the emblem
-  grammar (`fleetGlyph`, thirteen roundels in one construction). Numbers in the 0.314.0 addendum
-  of almanac III. **M318 (0.315.0)** paid the last two: §5 (shadow strips under strap-on parts,
-  the рефрижератор's corrugation) and §14 (the трасса as a chain to two nearest neighbours,
-  judged on a staged chart). Issue III has no open law; the fleet has no remainder (the заявка struck 2026-09-05).
-  §14 (трассы on the map) judged 2026-09-05 (0.350.2) on a staged chart with every station at rung 6:
-  chain, ticks and band hold; beyond the jump edge they now dim to a third (the darkness law).
+Reviewed 2026-09-11. Closed and moved to the archive: the fleet (eleven interactions, the заявка
+struck), the road companion (built, `27k-road`; its answers are on the record in `DESIGN-road.md`),
+factions as shapes, the split debt, the star disc, G11, M112, M124, M135–M151. «Base like
+Fallout Shelter» — it is one; closed. What stays open on purpose:
 
-- **The road companion** (author, 2026-08-23): phone mode where a real car trip flies your ship —
-  GPS speed extrapolated to cosmic, accelerometer banks the hull, mic-driven equalizer, real
-  distance → a capped in-game bonus synced through the site accounts. Captured in
-  [`docs/DESIGN-road.md`](docs/DESIGN-road.md); needs its own pass and the author's answers
-  (reward resource, cap, in-game vs separate page).
-- **Factions as a language of shapes**: closed (0.109.0) — `17d-house-shapes`: a mark per house on the station and the settlement wall, pennant in the house colour.
-- **Base "like Fallout Shelter"**: it is one; what differs is a question for the author.
-- **Yacht railing below 3×, fully flat-on view** (archive, ships): the fleet is drawn flat-on by
-  design; the hull now has a top light and one asymmetric boom, the rest is the reference-sheet
-  richness a rotation pass would give.
-- **M124 spec remainder — CLOSED whole (author, 2026-08-27: «сейчас того что есть достаточно»).**
-  Receiver with a knob — 0.110.0; "pause is the engine off" — closed by fact. The two held-back
-  halves are now decided, not deferred: **the removal of the overlay HUD is superseded** by the
-  author's own M187 (0.160.0, «приборы сверху, сейчас очень плохо не видно» — instruments must be
-  visible and readable, the opposite of removing them); **the paper language stops at the desk** —
-  A3 (0.144.0) made the table paper and things objects, the station screens stay glass by the
-  author's call. Do not re-open either without him.
-- **M125**: rack as a surface inside the cockpit (it is an overlay), re-bake on resize, CH5
-  saturation — cosmetic; the rack is not persisted by rule.
-- **M126**: the vanilla `SHIPS` ladder stays under the professions; passenger talk is one table
-  (the hundred owns per-person talk).
-- **M127**: a pirate hit can now knock a socket; instruments as loot beyond that waits for the
-  spec's "lost" pass.
-- **M132**: edge generator and hand-built cores per region, surface layer masks — each region's
-  own milestone (M135+).
-- **M131**: barge passenger as a channel, settlement glyph overrides, per-region colouring — left
-  open in the hundred's design.
-- **Split debt**: paid (0.108.1) — `17c-system-draw`, `19f-lander`, `21e-surface-draw`, `23a-dig-draw`, `24aa-raid-draw`. Paid again (0.153.0, the audit) — `12tc-settle-crafts`, `23aa-dig-rock`, `20f-fauna`, `21ba-deco-shapes`, `26b-ui-station-work`; `26-ui-station` and `23-mode-dig` left the guard's concession list entirely. **Still on the list, with their seams named** (2026-08-25): `27d-ui-cantina` 45 KB (the hall's own drawing vs the counter/patrons UI), `12tb-settle-draw` 44 (brushes + `sdDwell` vs the street pass), `27e-ui-home` 44 (the cards vs the estate's own tables), `28-loop` 42 (`hud()` is half the file and is not the loop), `12y-parrot-face` 42 and `21ab-base-interiors` 42 (both one `const` table — do not split a table, leave them), `14-save` 42 (`snapshot`/`applySave` are one pair — leave). **Paid again — M415 (0.411.0):** `12ai-fleet` 58 → 27 + `12ai1-fleet-art`, `26-ui-station` 67 → 41 + `26e-ui-station-trade`, `21e-surface-draw` 60 → 18 + `21e1-surface-world`, `14-save` 70 → 44 + `14a1-save-rest` (`applySave` splits in exactly one place, where no local crosses). The size table in `build.ps1` was retaken the same day — it had drifted to shouting thirteen names a build, which is the same as shouting none. Left: `21e1-surface-world` 43 KB is one 590-line function and its own seams are named in the table; `12y-parrot-face` and `12ud-smena-text` are single tables and stay.
-- **Star disc on the surface**: closed (0.102.0) — was the dark sky tone since before the split; now the star colour.
-- **G11**: **closed by measurement (2026-08-24, 0.133.0).** The game now carries its own probe:
-  `?g11` runs the mode tour and measures rAF fps in a visible tab (`28z-fps-probe`), `?g11=deep`
-  noops draw passes one at a time with paired baselines. Clean run (single fresh-profile Chrome,
-  `--force-device-scale-factor=2`, anti-throttling flags, dpr 2, warm cruise after 4 s settle):
-  system 56, belt 60, surface(jungle) 55, dig 60, cave 60, landing 52, scoop 47–60 across runs.
-  No mode is solidly <50, so the 20-life sprite bake is not justified — matching the earlier JS
-  read. The scary first read (system 46, surface 44) was the **cold start while chunks bake**,
-  not cruise. Deep pass: no single pass dominates (paired deltas ≤+2, only `drawBuilt` +8 ≈ 2 ms).
-  Measurement discipline learned: leftover probe windows with anti-throttling flags keep rendering
-  when occluded and sink every later run to ~22 fps flat — kill them before measuring.
-- **M112**: nothing else — belt missiles and the hull mark closed it.
-- **M135 "three lights"**: built (0.101.0). **M136-hours**: built (0.102.0). **M137-glow**: built (0.103.0). **M138-grove**: built (0.104.0). **M139-keepers**: built (0.105.0). **M140–M142**: built (0.106.0). **M143–M151**: built (0.107.0–0.108.0) — the thirteenth pass is closed. Next: the tails ledger (factions as a language of shapes; M124 remainder), then the split debt, then G11.
-
----
+- **M125** — the rack as a surface inside the cockpit (it is an overlay), re-bake on resize, CH5
+  saturation; cosmetic, and the rack is not persisted by rule.
+- **M126** — the vanilla `SHIPS` ladder stays under the professions; passenger talk is one table.
+- **M127** — instruments as loot beyond a knocked socket wait for the spec's «lost» pass.
+- **M131** — the barge passenger as a channel, settlement glyph overrides, per-region colouring.
+- **M132** — edge generator, hand-built cores per region, surface masks — each region's own milestone.
+- **The yacht railing below 3×, flat-on view** — the richness a rotation pass would give.
+- **P9b settlement recursion (Eglash)** — by eye over many settlements; a pass, not a fork.
+- **The holding's deeds with no counter yet** (pirate bases boarded, monuments, nodes) join the
+  rung score when their hooks are written.
 
 ## To the release
 
-- **The newcomer's first hour** — **first pass done (0.185.0, M207).** The walkthrough is
-  `docs/DESIGN-first-hour.md`, measured in the running game. Worst finding: the suit and the fuel
-  are countdowns that kill and **neither was ever named** — the bars are drawn and silent. Fixed by
-  `11ao-firsthour` (suite `91zzzs-first`): four lines in the ether, each once per save and tied to
-  an occasion, said by people and never by the game. No arrows, no modals, no tutorial flag.
-
-  **Second pass done (0.192.0, M212)** — the hour AFTER the opening, walked; findings and
-  non-findings in [`docs/DESIGN-hours.md`](docs/DESIGN-hours.md). Three fixes: every
-  overflowing list now shows that it continues (`27m-scroll-cue` — measured: the board is 1229 px in
-  a 407 px window, the cantina 2086 in 408, and nothing said so); the hire screen stopped arguing
-  with itself (`xp` was `Math.floor(r()*40)`, bound to nothing, so «неопытен · опыт 22» stood beside
-  «ветеран · опыт 7» — it now follows the traits it is printed next to); and ФОТО stopped hanging
-  over open screens, a one-day-old regression from M208 widening the camera to flight.
-
-  **Closed by M299 (0.296.0):** the board's sections on a first dock are now three lanes with a
-  fold at seven per lane, and every heading is capped at 24 characters (`boardLanes`, `secTidy`). The landing prompt
-  offering «СКАНИРОВАТЬ ОРГАНИЗМ» beside twenty-two deposits was checked and is **not** a priority
-  bug — `dep` is tested before `plant`; it only happens when no deposit is within reach and a plant
-  is. The station's group row can fall out of step with its tab if future code sets `tab` without
-  calling `syncTabs()` — reached by the map peek's way back (M299) and closed in M302: `mapBack` syncs.
-  The third hour was walked in M215 (0.197.0): the same contradiction came back through
-  `stationMercs` (reputation stamped `xp` over the traits), and a newcomer paid for a hand before
-  learning he needs a hull of his own. **Its back half was walked too and is healthy:** a trip closes
-  in ~9 min of real time, the journal names every event as it happens, and the *"he loses money, is
-  he broken?"* reading does not survive contact — the journal shows where the profit lives (a
-  salvaged part, a trophy hull) while it happens. Caution for the next walker: `crewTick` runs on the
-  **wall clock**, not `G.t`; stub `Date.now` and set `c.tMs` to the fake now, or the hand silently
-  stops and it looks exactly like "crew events never reach the journal" (they do, all sixteen).
-  **The fourth hour was walked too, 27.08.2026, and the screen is healthy:** two managers at their
-  consoles with their domain boards («ЗВЕНО 0/0», «ПЛЕЧ 0/2 — маршрут не собран»), a portrait card
-  with level, loyalty, cut and salary, and a header that answers the newcomer's fear outright —
-  «оклады 134 кр/мин — из долей доменов, не из вашей кассы». What was broken was the STAND: `hqfull`
-  called `mgrHire(mgrRoll(…))`, neither of which exists, wrapped in a `typeof` guard that swallowed
-  it — so it had been rendering the empty HQ, the same picture as `?s=hq`. Two more of the same were
-  found and fixed (`crewPool`/`crewHire` in `?s=hire`, `cockpitOn` in `?s=cockpit`); the lesson is
-  in CLAUDE.md.
-- ~~**v:5**~~ — **done without burning anyone (M227, 0.212.0).** The game writes `v:5` and reads
-  4 and 5; not one save is lost, local or cloud. Investigating the feared gate found it was a
-  ghost: `server.js:95`/`worker.js:66` do not exist — the cloud is `site/api.php` and it checks
-  only that `v` is present. The `v:4` legacy branches stay alive under their number; future
-  release-look changes to the SHAPE of persisted fields ride `s.v===5` branches. **The last of
-  the overlay** — closed with the release look itself (author, 2026-08-27): see the M124 note
-  above. What exists is the release look.
-- ~~**A clean performance measurement**~~ — passing at 0.213.0 (27.08.2026, machine quiet, one
-  window, dpr 2): **60 fps in all nine modes** with every change of the day in — the world scale,
-  the UI zoom, the soil profile, the relays, the splits. Earlier same-day dips were the busy
-  machine, proven by measuring the committed build. Re-run once more at the actual release as the
-  release check. Author, 2026-09-05: «60 — хрен с ним, потом»; not before the release itself.
+The newcomer's first four hours were walked (M207, M212, M215, 27.08) and fixed; bodies in the
+archive. Left: **the 60 fps check in all modes, re-run at the actual release** (author,
+2026-09-05: «60 — хрен с ним, потом»).
 
 **Standing rule:** the Ring (M154) is never explained. An answer to it would kill it.
-
----
 
 ## «Зачем лететь» — moved to `docs/PLAN-archive.md` (2026-09-04); its answer is Act I
 
 ## First three — built; body moved to `docs/PLAN-archive.md` (2026-09-04)
 
-## After those, in order
+## The arc and the holding — built; bodies moved to `docs/PLAN-archive.md` (2026-09-11)
 
-Act II (the first real loss, by his own hand, everyone kind about it) → the offers deepening
-through the expedition → Act IV (doors closed, the world still offering, nobody left to vouch) →
-the yacht last, because an ending cannot be built before the middle.
-
-**The first move into Act II is made (M225, 0.210.0): the three squanders now all exist.**
-«Ляпнул лишнего» was built as M194; `11aq-late` adds the other two. Staying at the counter is a
-real choice that buys something real — a line that exists nowhere else, occasionally a *named*
-offer («некоторые вещи говорят только поздно и только там») — and it costs real hours: `G.t`
-jumps, and every window in the game (offers, shifts, needs, the sky's calendar) ages silently.
-The wrong person costs an hour and ten and gives exactly nothing but the conversation itself,
-and nobody is ever angry. Three sits per shift, then the counter empties — the only refusal the
-place ever makes. Guards in `91zzzx-late`: the hours are real, the offer windows narrow, the
-journal contains no reproach, and a save does not refill the counter.
-
-**And the loss arrives by the human line (M226, 0.211.0).** When a named offer dies untaken the
-door already closed silently; now, one visit later, the person who used to name you says one kind
-line at the counter — ahead of the queue, ahead of story, once per door, ever — and never names
-you again. The truth is not in the line; the world keeps offering cold. «Никто не сердится — вот
-что тяжелее всего.» **And the offers deepen through the expedition (M229, 0.214.0):** for the
-circular's sixty days the counter lives for the column («плечо в колонну», paying half again and
-feeding the station's collection), naming runs at .70 instead of .45 — closed doors stay closed —
-and the deepest access of the act is «имя в список», paying nothing and turning the departure's
-greeting into «ЕСТЬ МЕСТО · ВАС НАЗЫВАЛИ». **Act IV is audible (M230, 0.215.0):** at three shut
-doors the queue sometimes names somebody who is not you, and once per game one man says «Вы просто
-не тянете» to your face — and the game confirms him with nothing, because he is wrong. **And the
-yacht is built (M231, 0.216.0): the arc is complete end to end.** After a year of this life, with
-a home to have a pier at and the invisible ledger full of what nobody counted, «Тихоня» stands at
-your pier — key in the lock, no note, no price, no sale path, no word ever about why. The truth
-is not spoken anywhere, and `91zzzf-offer` guards exactly that.
-
-# The holding — built (M289–M298, 2026-09-02)
-
-Design in `docs/DESIGN-holding.md` (§19 is the queue; numbers in §4, §9, §10, §16); why in
-`docs/CRITIQUE-holding.md` (37 findings). Forks settled by the author on 2026-09-02: **1(б)** the
-+X% surcharge stays and the share is never paid for surcharged units; **2(б)** the ПЕРЕПЛАВКА
-recipes go; **3(б)** all 82 buildings and 48 materials designed at once with numbers; **4** the
-fleet later (see "Open by design"). All nine steps shipped, one version each: the route as an
-order (`12r-route`), «БЕРЁТ» (`12ab-hold`), site/hopper/`BLD` A–D (`12ac-bld`, `12ad-site`,
-`26c-ui-station-site`), the ladder (`12ae-ladder`), the `91zzw` measurement, the own barge
-(`12af-barge`), families E–I through `bldHas` (`12ag-holdfx`), the station body's first pass
-(`17e-station-body`), news/rumours/rival barges (`12ah-holdnews`).
-
-**Still open:** ~~the codex pass over the station body~~ — M306 (0.303.0): verdict holds, the
-planet's dump/dome/strip drawn. Deeds with no counter yet (pirate bases boarded,
-monuments, nodes) join the rung score when their hooks are written.
-
+Act II → the expedition → Act IV → the yacht (M225–M231, 0.210.0–0.216.0; `91zzzf-offer` guards
+that the truth is never spoken). The holding M289–M298 (2026-09-02), design in
+`docs/DESIGN-holding.md`.
 
 # ~~The war — M360–M388~~ — closed 0.388.0 (2026-09-06); body in `docs/PLAN-archive.md`
 
@@ -743,14 +484,35 @@ and what it deferred, and «Deferred» there is the only remaining war work; the
 queue any more. Measured from M360 on: `prof()` with eight armed ships on the phone layout; the
 pad row on the 44 px sweep (`91zzy-screens`); `91zzzw-chron` replay hashes browser vs Node.
 
-## Small tails from almanac issue II
-
-- ~~Target chips against the ether bar~~ — measured since M302 (`91zzy-screens`).
-- ~~The 44 px sweep over every screen~~ — written in M302 (`91zzy-screens`), both layouts.
-- ~~«В ДОРОГУ» in the five doors~~ — argued on the record 2026-09-03 (`DESIGN-road.md`, Built §4);
-  the door stays.
-
 ## Decisions taken on the author's behalf, so they are not re-litigated
+
+- **2026-09-11, the author: «по вопросам реши за меня как лучше».**
+  - **The clock leaves `stateHash`.** `stateHash()` is the world and the `rnd` position; the clock
+    is a separate field (`T.state()` returns both). Two saves of one world at different hours
+    must hash alike; «where did it diverge» compares worlds and prints the clocks beside.
+  - **Versions:** a commit touching only tests, tools or docs bumps the patch (0.443.1); a minor
+    bump means `src/` changed and `test.ps1 -Mutants` ran green before it.
+  - **PATCHNOTES: trim, not split** — versions before 0.400.0 go to `docs/PATCHNOTES-archive.md`.
+    Splitting per file would add a build step and a habit for a conflict that resolves itself
+    (both sides prepend).
+  - **`play.html` caching:** `Cache-Control: max-age=60, must-revalidate` on the `.gz` answers
+    too, plus validators; never a long max-age on the game — a stale build after a push costs
+    more than 2 MB.
+  - **No Node jobs on the PHP host** triggered by players: 768 MB that already kills the lab's
+    Chromes, and the live site shares it. The lab stays on the GitHub schedule.
+  - **Goldens per platform:** `docs/golden/<W>x<H>@lab.json`, accepted by the lab itself on its
+    first run after the laptop's goldens changed; the laptop's stay the reference.
+  - **`resAuto` never lowers the resolution while the clock is pinned**; the sharpness detector
+    then holds the canvas to the DPR the settings ask for, and `DPR=.5` gets a killer.
+  - **P4 grisaille — no.** The world's palette ramp stays the ground's hue: worlds are told apart
+    by it (the rich-palette rule). What may be taken from the glaze later is the sky-coloured
+    shadow alone, measured per scene.
+  - **P7b glyph notebook** — a record of glyphs seen: where, when, drawn as seen. No meaning is
+    ever filled in and there is no «understood» state; understanding stays in the player's head.
+  - **С5 fatigue** — an axis on managers (they already have faces, a card and loyalty); hired
+    hands stay faceless bets.
+  - **Drone attrition** stays out (decided 2026-09-03: never lost); **the base** is «like
+    Fallout Shelter» already — closed.
 
 - **2026-09-03, the author: «по остальным реши сам».** The cave keeps M217 (one height for the man
   everywhere; the camera stays); the drones keep selling at the nearest station and are never
