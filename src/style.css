@@ -1421,9 +1421,11 @@ body.op-ask #opisBar>s{display:none}
 @media (min-width:761px){#opisBar{display:none!important}}
 @media (max-width:760px){
   body.table #loglist.opis{display:flex;flex-direction:column;gap:12px;padding:10px;border-width:4px;margin:10px auto 84px}
-  .opis .op-top{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch}
-  .opis .op-shelf{flex:0 0 78%;min-width:240px}
-  .opis .op-box{flex:0 0 40%;min-width:150px}
+  /* верх описи столбиком: карусель вбок (полка 78% + коробка 40%) на телефоне
+     не читалась — «стол с инвентарём надо скролить», косметика уезжала за
+     кромку, и ничто не говорило, что ряд листается (плейтест 11.09) */
+  .opis .op-top{display:flex;flex-direction:column;gap:10px}
+  .opis .op-shelf,.opis .op-box{flex:none;min-width:0;width:auto}
   .opis .op-parts{order:1}.opis .op-kit{order:2}.opis .op-hold{order:3}.opis .op-foot{order:4}
   .opis .op-hatch{display:none}
   .opis .op-parts-grid{grid-template-columns:1fr;grid-template-areas:"hull" "panel" "slots" "spare"}
