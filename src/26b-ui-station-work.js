@@ -330,7 +330,7 @@ function fuseCard(c){
   card.appendChild(el("div","mf",h));
   const short=need.filter(x=>x[1]<x[2]).map(x=>x[0]);
   const acts=el("div","macts");
-  const label=W?(W.done?"ГОТОВО":"ПЛАВКА…"):!two?"ВЫБЕРИТЕ ДВА КОРАБЛЯ":
+  const label=W?(W.done?"ГОТОВО":"ПЛАВКА…"):!two?"НУЖНЫ ДВА КОРАБЛЯ":
     short.length?"НЕ ХВАТАЕТ: "+short.join(", ").toUpperCase():"СПЛАВИТЬ · "+c.credits.toLocaleString("ru")+" КР";
   const bf=el("button","act"+(!W&&two&&!short.length?" gold":""),label);
   bf.disabled=!!W||!two||!!short.length;

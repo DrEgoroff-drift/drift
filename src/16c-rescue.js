@@ -174,7 +174,7 @@ function bodyScaleAt(Z){return Z>1?1+BODY_NEAR_K*(Z-1):1;}
    меняются. Возвращает [потолок планеты, потолки лун по индексу] */
 function bodyNearCaps(p){
   if(p._bkCap)return p._bkCap;
-  let pc=Infinity;const mc=[];
+  let pc=99;const mc=[];   /* без лун — потолка нет; число конечное: детектор «не число в мире» */
   for(const m of p.moons){
     const gap=Math.max(0,(m.orbit||0)-p.radius-m.radius);
     pc=Math.min(pc,1+.6*gap/p.radius);
@@ -474,7 +474,9 @@ let rescueShutT=-1e9;
 function rescueAsk(){
   if(!$sos||$sos.classList.contains("open")||G.haul)return;
   if(G.mode!=="system"&&G.mode!=="surface")return;
-  if(G.t-rescueShutT<RESCUE_ASK_GAP)return;
+  /* время мира пошло назад (новый мир, загрузка) — пауза прошлого мира не держит
+     (прогон 12.09: метка ехала из набора в набор, и газ не открывал окно) */
+  if(G.t>=rescueShutT&&G.t-rescueShutT<RESCUE_ASK_GAP)return;
   toggleSos(true);
 }
 function rescueRender(){

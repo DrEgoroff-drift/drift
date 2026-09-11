@@ -155,11 +155,11 @@ function findInteract(sh){
      ради чего сюда летели, и отгонять корабль от планеты ради разрешения
      сесть игрок не обязан. */
   if(findSeen(near)){
-    if(CUE_LVL<CUE_INFO)cue(K.ru.toUpperCase()+" · УЖЕ ОСМОТРЕН",CUE_INFO);
+    if(cueLvl()<CUE_INFO)cue(K.ru.toUpperCase()+" · УЖЕ ОСМОТРЕН",CUE_INFO);
     return false;
   }
   if(findLandingNear(sh)){
-    if(CUE_LVL<CUE_INFO)cue(K.ru.toUpperCase()+" РЯДОМ",CUE_INFO);
+    if(cueLvl()<CUE_INFO)cue(K.ru.toUpperCase()+" РЯДОМ",CUE_INFO);
     return false;
   }
   cue(K.ru.toUpperCase()+"\nДЕЙСТВИЕ — "+K.act,CUE_ACT);

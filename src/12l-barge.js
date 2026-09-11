@@ -342,7 +342,7 @@ function wreckInteract(sh){
      что у находок (17b) — он перехватывал подсказку у планеты, рядом с которой
      оказался, и садиться было нельзя */
   if(near.seen){
-    if(CUE_LVL<CUE_INFO)cue("ОСТОВ БАРЖИ «"+String(near.name).toUpperCase()+"» · УЖЕ ОБЫСКАН",CUE_INFO);
+    if(cueLvl()<CUE_INFO)cue("ОСТОВ БАРЖИ «"+String(near.name).toUpperCase()+"» · УЖЕ ОБЫСКАН",CUE_INFO);
     return false;
   }
   cue("ОСТОВ БАРЖИ «"+String(near.name).toUpperCase()+"»\nДЕЙСТВИЕ — ОБЫСКАТЬ ОБЛОМКИ",CUE_ACT);

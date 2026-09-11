@@ -225,7 +225,16 @@ try{["pointerdown","keydown","click"].forEach(t=>addEventListener(t,()=>{FRAME_I
    глагол из подсказки (M355). Кадр полёта начинается с cueReset(); режимы с
    одним писателем (поверхность, база, пещера…) пишут G.prompt сами. */
 const CUE_INFO=1,CUE_WARN=2,CUE_ACT=3,CUE_TROUBLE=4;
-let CUE_LVL=0;
-function cueReset(){CUE_LVL=0;G.prompt="";}
-function cue(t,lvl){lvl=lvl||CUE_INFO;if(lvl<CUE_LVL)return false;CUE_LVL=lvl;G.prompt=t;return true;}
+let CUE_LVL=0,CUE_TXT="";
+/* уровень живёт, пока в слоте лежит то, что написал сам слот: сменил текст
+   кто-то другой (новый мир, прямой писатель другого режима) — старый уровень
+   не в счёт, иначе «беда» прошлого кадра молча глушила всё следующее (прогон
+   12.09). Чужой непустой текст — не пустота: он весит как сведения, а если
+   называет ДЕЙСТВИЕ — как действие */
+function cueLvl(){
+  if(G.prompt===CUE_TXT)return CUE_LVL;
+  return !G.prompt?0:(/ДЕЙСТВИЕ/.test(G.prompt)?CUE_ACT:CUE_INFO);
+}
+function cueReset(){CUE_LVL=0;CUE_TXT="";G.prompt="";}
+function cue(t,lvl){lvl=lvl||CUE_INFO;if(lvl<cueLvl())return false;CUE_LVL=lvl;G.prompt=CUE_TXT=t;return true;}
 function msgHeld(){const b=typeof document!=="undefined"&&document.body;return MSG_WORLD&&!!(b&&b.classList&&b.classList.contains("screen"));}

@@ -325,7 +325,7 @@ function updateSystem(dt){
     /* имя планеты — сведения: кадр идёт дальше, к пустому баку и синтезу.
        Прежде здесь стоял return, и сухой корабль, дрейфующий мимо планеты,
        видел только её имя — ДЕЙСТВИЕ молчало */
-    if(CUE_LVL<CUE_INFO)cue(near.name+" · "+Math.round(nd)+" ед.",CUE_INFO);
+    if(cueLvl()<CUE_INFO)cue(near.name+" · "+Math.round(nd)+" ед.",CUE_INFO);
   }
   /* ── мёртвый штиль: сигнал бедствия (M331) ──
      Топливо тратится только на тягу и тормоз, а тормоз доводит до полной
@@ -341,13 +341,13 @@ function updateSystem(dt){
      открывает окно выходов (16c); ДЕЙСТВИЕ открывает его же */
   /* сюда доходит кадр, где ни один обработчик не взял ДЕЙСТВИЕ: сведения
      (имя планеты, край системы, погоня) пустой бак перебивает, действие — нет */
-  if(CUE_LVL<CUE_ACT&&G.fuel<=0&&!(G.tech.has("synth")&&G.cargo.ice>0)&&!document.body.classList.contains("sosopen")){   /* окно открыто — подсказка не повторяет его */
+  if(cueLvl()<CUE_ACT&&G.fuel<=0&&!(G.tech.has("synth")&&G.cargo.ice>0)&&!document.body.classList.contains("sosopen")){   /* окно открыто — подсказка не повторяет его */
     /* подсказка называет только те выходы, что есть: без дома в системе старта ДОМОЙ нет */
     const H=rescueHomeAt(),home=!(G.sx===H.sx&&G.sy===H.sy);
     cue("ХОДА НЕТ · БАК ПУСТ\nДЕЙСТВИЕ — "+(home?"ДОМОЙ, БУКСИР ИЛИ СБРОС":"БУКСИР ИЛИ СБРОС"),CUE_TROUBLE);
     if(actEdge){toggleSos(true);return;}
   }
-  if(CUE_LVL<CUE_ACT&&G.tech.has("synth")&&G.cargo.ice>0&&G.fuel<st.fuelMax){
+  if(cueLvl()<CUE_ACT&&G.tech.has("synth")&&G.cargo.ice>0&&G.fuel<st.fuelMax){
     cue("ДЕЙСТВИЕ — СИНТЕЗ ТОПЛИВА ИЗО ЛЬДА ("+G.cargo.ice+")",CUE_ACT);
     if(actEdge){
       const ratio=st.synthRatio;
