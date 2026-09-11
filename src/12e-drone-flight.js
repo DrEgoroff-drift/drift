@@ -184,11 +184,13 @@ function droneRoutes(){
       const P=(sys.planets||[])[d.pi];
       by[k]={key:k,res:d.res,sx:d.sx,sy:d.sy,pi:d.pi,
              from:P?P.name:(sys.name+", пояс"),to:droneHome(d,sys).name,
-             sys:sys.name,drones:[],pool:0,perMin:0,down:0,stuck:0};
+             sys:sys.name,drones:[],pool:0,deep:false,perMin:0,down:0,stuck:0};
     }
     const R=by[k];
     R.drones.push(d);
-    R.pool+=d.pool|0;
+    /* pool −1 — метка бездонной точки (M350), не число: сложенные метки
+       тринадцати машин давали в ДЕЛЕ «в точке осталось −13» (сейв автора 11.09) */
+    if(d.pool<0)R.deep=true;else R.pool+=d.pool|0;
     if(d.stuck)R.stuck++;
     else if(!d.down||d.down<=now())R.perMin+=d.rate*(RES[d.res]?RES[d.res].price:10);
     else R.down++;

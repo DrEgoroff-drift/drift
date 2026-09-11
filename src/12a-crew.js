@@ -360,6 +360,14 @@ function crewEff(c){
   if(typeof coopDayOff==="function"&&coopDayOff())return 0;
   return crewMul(c,"yield")*(c.morale<.5?.5:1)*(1+crewModLv(c,"drill")*.2)*mgrCrewYield()*((typeof coopMul==="function")?coopMul():1);
 }
+/* сколько человек стоит в минуту прямо сейчас (ДЕЛО, 11.09) — по тем же
+   условиям, что у crewTick: простой, база, разбитый корпус, плен и загул не
+   оплачиваются. Шапка ДЕЛА складывала полный оклад всех и не сходилась со строками */
+function crewPayNow(c){
+  if(!c.order||c.order.kind==="home"||c.order.kind==="base"||!c.shipId||c.hull<=0)return 0;
+  if(crewBusy(c))return 0;
+  return crewPay(c);
+}
 function crewBusy(c){
   /* пока он в плену или в загуле, рейсы не идут и жалованье не капает */
   if(c.state==="hostage")return "hostage";

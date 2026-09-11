@@ -225,9 +225,13 @@ function tableRender(){
              qsl:"карточки · кого слышал и кто ответил",
              relay:"приёмники · мачты, пойманные в шуме между диапазонами",
              chess:"партия · ход в сутки, доска считается из ходов",
-             lore:"отчёт «Долгого хода»"};
-  if(sub)sub.textContent=SUB[tableTab]||"";
-  {const ttl=document.getElementById("tableTtl");if(ttl)ttl.textContent=tableTab==="hold"?"ОПИСЬ":"СТОЛ";}
+             lore:"отчёт · «Долгого хода»"};
+  /* заголовок листа — где ты (ревью 11.09): голова подписи до « · »
+     («ПРИЁМНИКИ»), под ней — хвост. «СТОЛ» остаётся только на кнопке назад */
+  {const S0=SUB[tableTab]||"",cut=S0.indexOf(" · ");
+   if(sub)sub.textContent=cut>0?S0.slice(cut+3):S0;
+   const ttl=document.getElementById("tableTtl");
+   if(ttl)ttl.textContent=cut>0?S0.slice(0,cut).toLocaleUpperCase("ru"):"СТОЛ";}
   if(cr)cr.textContent=Math.round(G.credits).toLocaleString("ru")+" кр";
   /* у описи два настоящих счётчика — кредиты и спички; больше не выдумываем */
   if(wh){const mr=modeRu();
@@ -270,7 +274,19 @@ function tableRow(box,cls,em,text){
 function renderStrips(box){
   box.textContent="";
   const L=(typeof stripsAll==="function")?stripsAll():[];
-  if(!L.length){tableRow(box,"dim","","лент нет. Оторвать полосу — клавиша T в полёте, когда на бумаге уже что-то записано");return;}
+  /* оторвать — здесь же (11.09): прежде только клавишей T, а на телефоне
+     клавиатуры нет и самописец (.ipod) скрыт — лист оставался пустым навсегда */
+  const T=(typeof tapeInit==="function")?tapeInit():null,n=T?(T.n|0):0;
+  const can=n>=24&&typeof tapeTear==="function";
+  const row=tableRow(box,can?"tear":"dim","",(L.length?"":"лент нет. ")+
+    (can?"на бумаге самописца "+n+" "+pl3(n,"деление","деления","делений"):
+         "самописец пишет в полёте; с 24 делений полосу отрывают здесь (на бумаге "+n+")"));
+  if(can){
+    const b=document.createElement("button");b.className="act sm";b.textContent="ОТОРВАТЬ ЛЕНТУ";
+    b.onclick=()=>{sfx("ui");tapeTear();tableRender();};
+    row.appendChild(b);
+  }
+  if(!L.length)return;
   tableRow(box,"head","","ЛЕНТ "+L.length+(L.length>=3?" · ТРИ И БОЛЬШЕ ЛЕЖАТ РЯДОМ":""));
   /* фигура (M155): три и больше лент уезда — одна форма, без подписи */
   const F=(typeof misFigureStrips==="function")?misFigureStrips():[];

@@ -41,14 +41,25 @@ function dealBtnTick(){
   if(G.watch&&typeof allyOf==="function"&&!allyOf(G.watch))G.watch=null;
   b.classList.toggle("on",!!G.watch||dealIdle()>0);
 }
-/* ── строка ── имя, состояние, деньги; вся строка и есть кнопка */
-function dealRow(nm,state,money,col,go){
-  const r=el("div","row");
+/* ── строка ── имя, состояние, деньги; вся строка и есть кнопка.
+   Столбец денег справа — одна единица, кр/мин со знаком (ревью 11.09: «+2 051
+   итог» и «−83 кр/мин» стояли в одном столбце). Нажимаемая строка говорит об
+   этом шевроном: › ведёт в другой экран, ▾/▴ раскрывает здесь же */
+function dealRow(nm,state,money,col,go,chev){
+  const r=el("div","row deal");
   r.appendChild(el("div","nm","<b"+(col?" style='color:"+col+"'":"")+">"+nm+"</b><s>"+state+"</s>"));
-  if(money)r.appendChild(el("div","qt",money[0]+"<s>"+money[1]+"</s>"));
-  if(go){r.style.cursor="pointer";r.onclick=()=>{sfx("ui");go();};}
+  if(money)r.appendChild(el("div","qt"+(money[2]?" "+money[2]:""),money[0]+"<s>"+money[1]+"</s>"));
+  if(go){
+    r.classList.add("go");r.onclick=()=>{sfx("ui");go();};
+    r.appendChild(el("i","chev",chev||"›"));
+  }
   $dlBody.appendChild(r);
   return r;
+}
+/* кр/мин со знаком: доход плюсом, расход минусом, ноль — тире */
+function dealRate(v){
+  v=Math.round(v);
+  return v===0?"—":(v>0?"+":"−")+Math.abs(v).toLocaleString("ru");
 }
 function dealRender(){
   if(typeof crewTick==="function")crewTick();
@@ -63,15 +74,20 @@ function dealRender(){
      Она и есть ответ. Считаем только то, что игра считает сама: рейсы дронов —
      по маршрутам, жалованье — по людям. База копит руду, а не кредиты, и
      приписывать ей кр/мин было бы враньём. */
-  let perMin=0,pay=0;
+  /* Шапка — сумма строк ниже, ни кредитом больше (ревью 11.09: «людям платите
+     156» не сходилось со строками). Наёмнику платят только за работу
+     (crewPayNow), управляющий живёт с доли дохода своего домена — из кассы ему
+     не платят, поэтому в минутный счёт он не входит; ядро берёт обслуживание
+     из кассы и входит */
+  let perMin=0,crewM=0,coreM=0;
   const runs=(typeof droneRoutes==="function")?droneRoutes():[];
   for(const r of runs)perMin+=r.perMin;
-  for(const c of (G.crew||[]))if(typeof crewPay==="function")pay+=crewPay(c);
-  for(const m of (G.mgrs||[]))if(typeof mgrPay==="function")pay+=mgrPay(m);
-  if(perMin||pay)
-    $dlBody.appendChild(el("div","sec",
-      "МАШИНЫ ПРИНОСЯТ ≈ "+Math.round(perMin).toLocaleString("ru")+" КР/МИН · "+
-      "ЛЮДЯМ ПЛАТИТЕ "+Math.round(pay).toLocaleString("ru")+" КР/МИН"));
+  for(const c of (G.crew||[]))crewM+=crewPayNow(c);
+  for(const m of (G.mgrs||[]))if(m.ai&&typeof mgrPay==="function")coreM+=mgrPay(m);
+  if(perMin||crewM||coreM)
+    $dlBody.appendChild(el("div","sec note","В минуту: машины "+dealRate(perMin)+
+      (crewM?" · наёмники "+dealRate(-crewM):"")+(coreM?" · ядро "+dealRate(-coreM):"")+
+      " · <b>итого "+dealRate(perMin-crewM-coreM)+" кр</b>"));
 
   /* ── люди ── */
   const crew=G.crew||[],mgrs=G.mgrs||[];
@@ -88,18 +104,22 @@ function dealRender(){
       else if(c.hull<=0){st="корпус разбит — стоит";col="#ff9d7a";}
       else st=ORDERS[c.order.kind].ru.toLowerCase()+" · сектор "+c.order.sx+","+c.order.sy+
               " · «"+(S?S.ru:"—")+"» "+Math.round(c.hull)+"/"+Math.round(c.hullMax);
-      dealRow(c.name+" · "+CREW_SPEC[c.spec].ru,st,
-        [(bal>=0?"+":"")+bal.toLocaleString("ru"),"кр итог"],col,
+      /* итог за всё время — не минутный счёт: он во второй строке, словами */
+      dealRow(c.name+" · "+CREW_SPEC[c.spec].ru,st+" · итог "+(bal>=0?"+":"−")+Math.abs(bal).toLocaleString("ru")+" кр",
+        [dealRate(-crewPayNow(c)),"кр/мин"],col,
         ()=>{closeDeal();openCrewView(c);});
     }
     for(const m of mgrs){
       const R=(typeof MGR_ROLES!=="undefined")?MGR_ROLES[m.role]:null;
       const loy=m.loy|0;
+      const cut=(!m.ai&&typeof mgrCut==="function")?Math.round(mgrCut(m)*100):0;
       const st=(R?R.ru:"управляющий")+" · верность "+loy+
+        (cut?" · берёт "+cut+"% с дохода домена":"")+
         ((typeof mgrPoints==="function"&&mgrPoints(m)>0)?" · есть невыбранное очко":"")+
         (loy<35?" · мрачнеет":"");
+      /* доля — не кр/мин, её столбец не показывает: она названа в строке */
       dealRow(m.name,st,
-        [(typeof mgrPay==="function")?("−"+mgrPay(m)):"—","кр/мин"],
+        (m.ai&&typeof mgrPay==="function")?[dealRate(-mgrPay(m)),"кр/мин"]:null,
         loy<35?"#ff9d7a":"",
         ()=>{closeDeal();if(typeof openHq==="function")openHq();});
     }
@@ -112,20 +132,20 @@ function dealRender(){
     runs.sort((a,b)=>b.perMin-a.perMin);
     for(const r of runs){
       const res=RES[r.res]||{ru:String(r.res||"груз")};
-      const st=res.ru.toLowerCase()+" · в точке осталось "+Math.max(0,r.pool|0)+   /* на сейве автора было «−13»: учёт залежи уходит в минус — вывод зажат, причина в PLAN */
+      const st=res.ru.toLowerCase()+(r.deep?" · точка бездонная":" · в точке осталось "+(r.pool|0))+
         (r.stuck?(" · "+r.stuck+" стоит: систему закрыли пираты"):"")+
         (r.down?(" · "+r.down+" в ремонте"):"");
       const open=(dealRun===r.key);
       dealRow(r.from+" → «"+r.to+"» · "+r.drones.length+" "+
         pl3(r.drones.length,"дрон","дрона","дронов"),st,
-        ["≈"+Math.round(r.perMin).toLocaleString("ru"),"кр/мин"],
+        ["≈"+dealRate(r.perMin),"кр/мин"],
         r.stuck?"#ff9d7a":"",
-        ()=>{dealRun=open?null:r.key;dealRender();});
+        ()=>{dealRun=open?null:r.key;dealRender();},open?"▴":"▾");
       /* машины маршрута — здесь же, а не на столе: раньше строка уводила в
          СТОЛ → РЕЙСЫ, то есть ровно в то разбегание по экранам, ради которого
          ДЕЛО и заводили (M286). Стол — для того, что читают. */
       if(open)for(const d of r.drones)
-        $dlBody.appendChild(el("div","row","<div class='nm'><s>"+droneName(d)+" · "+
+        $dlBody.appendChild(el("div","row sub","<div class='nm'><s>"+droneName(d)+" · "+
           droneStateRu(d)+" · кругов "+(d.trips|0)+" · заработал "+
           (d.earned|0).toLocaleString("ru")+" кр</s></div>"));
     }

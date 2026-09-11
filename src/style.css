@@ -507,6 +507,18 @@ nav.tabs.solo{display:none}
 .row .qt s{text-decoration:none;display:block;color:var(--dim);font-size:9px;margin-top:3px}
 .row canvas{flex:0 0 auto}
 .row.on{background:rgba(127,230,216,.08)}
+/* ДЕЛО (11.09): строка-кнопка говорит об этом шевроном справа — ›  ведёт в
+   экран, ▾/▴ раскрывает здесь; в ряд без переноса, чтобы шеврон не падал вниз */
+.row.deal{flex-wrap:nowrap}
+.row.go{cursor:pointer}
+.row.go:active{background:rgba(127,230,216,.08)}
+/* машины раскрытого маршрута — подстроки: их не жмут, и тринадцать строк по
+   56 px растягивали ДЕЛО на три экрана */
+.row.sub{min-height:0;padding-top:6px;padding-bottom:6px;padding-left:calc(var(--pad) + 12px);border-bottom-color:rgba(127,230,216,.04)}
+.row.sub .nm s{margin-top:0}
+#dealview .sec.note{padding-top:12px}
+#dealview .sec.note b{font-weight:400;color:var(--amber)}
+.row .chev{flex:0 0 16px;font-style:normal;color:var(--dim);font-size:17px;line-height:1;text-align:center;margin-left:-2px}
 /* заголовок группы внутри списка: воздух и подпись вместо сплошной ленты */
 .sec{padding:20px var(--pad) 8px;color:var(--dim);font-size:9px;letter-spacing:.18em;line-height:1.7;
   text-transform:uppercase}
@@ -878,6 +890,7 @@ body.table #loglist .li.tech span{color:#39505e}
 body.table #loglist .li.kill span,body.table #loglist .li.warn span{color:#8a3226}
 body.table #loglist .li.dim span{color:#8b7d61}
 body.table #loglist .li.head span,body.table #loglist .li.sec span{color:#8a7350}
+body.table #loglist .li.tear{align-items:center}
 body.table #lorelist .li span{color:#2f2718}
 body.table #lorelist .li.gap span{color:#b5a888}
 body.table #lorelist .li.chap span{color:#7a4a20}
@@ -920,7 +933,7 @@ body.table #loglist.desk .thing.new::after{content:"";position:absolute;right:9p
    Фона у ячейки нет нарочно — доски и есть фон, и вещь лежит на них, а не на
    вырезанном прямоугольнике. */
 body.table #loglist.top{background:none;box-shadow:none;max-width:940px;
-  padding:14px 8px 24px;display:flex;flex-wrap:wrap;gap:6px 4px;
+  padding:14px 8px 44px;display:flex;flex-wrap:wrap;gap:6px 4px;   /* низ — под палец: последний ряд не упирается в подвал (ревью 11.09) */
   justify-content:center;align-items:flex-start}
 body.table #loglist.top::before{display:none}
 body.table #loglist.top .item{flex:0 0 auto;width:46%;max-width:196px;
