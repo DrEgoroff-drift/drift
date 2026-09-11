@@ -142,7 +142,10 @@ before a push.
 - **Open from the reviews of 11.09 (do in item 3 unless noted):**
   - One prompt slot: `G.prompt` is written in 25 files and the first writer wins — that is how the
     tow got lost. A `prompt(text, level)` with levels «trouble > action nearby > info».
-  - Toasts over reading screens: one rule for all `.scr` — hold `say()` from flight until the screen
+  - Toasts: DONE as a rule — a frame-born `say()` waits while a screen is open (≤20 s, then it burns);
+    a tap-born one shows at once. Left: `say()` from timers/network callbacks (cloud push, setInterval
+    ether) is neither — mark those as world explicitly (a `sayWorld`) or set FRAME_IN there.
+  - (was) Toasts over reading screens: one rule for all `.scr` — hold `say()` from flight until the screen
     closes (the anchor warning is already off open screens; «Полёт восстановлен» over the counter).
   - CSS cascade: 18 `@media ≤760` blocks; a later rule already beat a phone one (#console). Walk
     them all; phone media go to the end of the file. #console still clips over ДЕЛО.

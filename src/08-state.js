@@ -214,7 +214,7 @@ const held=()=>RES_KEYS.reduce((a,k)=>a+G.cargo[k],0);
    нажатия — отклик экрана («Не хватает»). Поверх открытого экрана первый ждёт:
    не рисуется и не тикает, и показывает остаток срока, когда экран закрыт
    (дизайн-ревью 11.09: правило, а не заплатка по месту). Флаг ставит frameBody */
-let FRAME_IN=false,MSG_WORLD=false;
-function say(s,d){G.msg=s;G.msgT=d||150;MSG_WORLD=FRAME_IN;}
+let FRAME_IN=false,MSG_WORLD=false,MSG_HOLD=0;   /* MSG_HOLD — сколько кадров голос мира ждал за экраном */
+function say(s,d){G.msg=s;G.msgT=d||150;MSG_WORLD=FRAME_IN;MSG_HOLD=0;}
 try{["pointerdown","keydown","click"].forEach(t=>addEventListener(t,()=>{FRAME_IN=false;},true));}catch(e){}
 function msgHeld(){const b=typeof document!=="undefined"&&document.body;return MSG_WORLD&&!!(b&&b.classList&&b.classList.contains("screen"));}
