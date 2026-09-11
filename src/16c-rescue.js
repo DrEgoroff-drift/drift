@@ -166,6 +166,17 @@ function haulSay(t){if(typeof etherLine==="function")etherLine(t,haulName());}
 /* от центра корабля до центра баржи, px масштаба корабля */
 function haulReach(){return HAUL_SHIP_HALF+HAUL_ROPE+bargeArtOf(haulBarge()).L*.48*HAUL_BARGE_K;}
 function haulGap(g){return g[0]+rndFx()*(g[1]-g[0]);}
+/* планета для облёта: ближняя к отрезку пути и не дальше 2500 от него —
+   чтобы крюк был по дороге, а не экспедицией. -1 — лететь прямо */
+function haulPickWaypoint(x0,y0,tx,ty){
+  const dx=tx-x0,dy=ty-y0,L2=dx*dx+dy*dy||1;let best=-1,bd=2500;
+  (G.sys.planets||[]).forEach((p,i)=>{
+    const u=clamp(((p.x-x0)*dx+(p.y-y0)*dy)/L2,.15,.85);
+    const d=Math.hypot(x0+dx*u-p.x,y0+dy*u-p.y);
+    if(d<bd){bd=d;best=i;}
+  });
+  return best;
+}
 /* кусок отвалился: косметика, мир не трогаем */
 function haulBit(){
   const sh=G.ship,T=G.haul,hd=T.ba,px=-Math.sin(hd),py=Math.cos(hd),side=rndFx()<.5?-1:1;
@@ -252,8 +263,25 @@ function haulTick(dt,sh){
     }
   }else{
     const k=clamp(T.t/HAUL_TIME,0,1),e=k;   /* ровно: плавный разгон стоял на месте первые полминуты */
-    const nx=T.x0+(tx-T.x0)*e,ny=T.y0+(ty-T.y0)*e;
-    const hd=Math.atan2(ty-T.y0,tx-T.x0);
+    /* путь — ломаная через видимое (дизайн-ревью 11.09: «кадр стоит пять минут»):
+       сперва мимо ближней к трассе планеты на 1.3 её радиуса, потом к станции.
+       Точка облёта считается от планеты каждый кадр — она на орбите, а путь
+       остаётся непрерывным. Выбор планеты — однажды, мимо сейва (_wp) */
+    if(T._wp==null)T._wp=haulPickWaypoint(T.x0,T.y0,tx,ty);
+    let nx,ny;
+    const P=T._wp>=0?G.sys.planets[T._wp]:null;
+    if(P){
+      const sx0=T.x0,sy0=T.y0,dx=tx-sx0,dy=ty-sy0,L2=dx*dx+dy*dy||1;
+      const u=clamp(((P.x-sx0)*dx+(P.y-sy0)*dy)/L2,0,1),qx=sx0+dx*u,qy=sy0+dy*u;
+      let ox=qx-P.x,oy=qy-P.y;const ol=Math.hypot(ox,oy)||1;ox/=ol;oy/=ol;
+      /* крюк считается от корабля, а баржа впереди на длину троса: без этого
+         запаса она ложилась поверх планеты и закрывала её (кадр 2:31) */
+      const R=P.radius*1.3+haulReach()*1.2,wx=P.x+ox*R,wy=P.y+oy*R;
+      if(e<.5){nx=sx0+(wx-sx0)*e*2;ny=sy0+(wy-sy0)*e*2;}
+      else{nx=wx+(tx-wx)*(e-.5)*2;ny=wy+(ty-wy)*(e-.5)*2;}
+    }else{nx=T.x0+(tx-T.x0)*e;ny=T.y0+(ty-T.y0)*e;}
+    const mv=Math.hypot(nx-sh.x,ny-sh.y);
+    const hd=mv>.01?T.ba+angDiff(Math.atan2(ny-sh.y,nx-sh.x),T.ba)*Math.min(1,.04*dt):T.ba;
     T.ba=hd;sh.x=nx;sh.y=ny;
     /* качание на тросе: пружина с затуханием и мелкий ветер */
     T._sw=(T._sw||0)+(T._sv||0)*dt;
