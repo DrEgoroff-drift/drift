@@ -684,6 +684,9 @@ function drawSysHud(zx,zy,sh,sys,U){
   const inset={x0:10,x1:W-10,y0:76,y1:Math.max(140,inY1)};
   const placed=[];
   ctx.font="8px ui-monospace,monospace";
+  /* под окном оклика и окном бака фишки гаснут, как борт (R0, дев 12.09): на
+     них не жмут, пока окно ждёт ответа, и они не спорят с ним глазами */
+  const bc=document.body.classList,CA=(bc.contains("hailopen")||bc.contains("sosopen"))?.12:1;
   for(const m of marks){
     const x=zx(m.x),y=zy(m.y);
     if(x>-20&&x<W+20&&y>-20&&y<H+20)continue;
@@ -706,18 +709,18 @@ function drawSysHud(zx,zy,sh,sys,U){
     placed.push({x:rx,y:ry,w:cw,h:ch});
     /* Зона нажатия шире плашки: правило интерфейса требует 44 px на палец, а
        фишка ростом 16. Растим её вокруг центра, не трогая рисунок. */
-    if(m.t){
+    if(m.t&&CA===1){
       const PAD=Math.max(0,(44-ch)/2);
       SYS_CHIPS.push({x:(rx-6)*U,y:(ry-PAD)*U,w:(cw+12)*U,h:(ch+PAD*2)*U,t:m.t});
     }
-    ctx.fillStyle="rgba(5,7,12,.72)";ctx.fillRect(rx,ry,cw,ch);
-    ctx.strokeStyle=m.c;ctx.globalAlpha=.5;ctx.lineWidth=1;ctx.strokeRect(rx+.5,ry+.5,cw-1,ch-1);ctx.globalAlpha=1;
+    ctx.globalAlpha=CA;ctx.fillStyle="rgba(5,7,12,.72)";ctx.fillRect(rx,ry,cw,ch);
+    ctx.strokeStyle=m.c;ctx.globalAlpha=.5*CA;ctx.lineWidth=1;ctx.strokeRect(rx+.5,ry+.5,cw-1,ch-1);ctx.globalAlpha=CA;
     ctx.save();ctx.translate(cx>W/2?rx+cw-8:rx+8,ry+ch/2);ctx.rotate(ang);
     ctx.fillStyle=m.c;ctx.beginPath();ctx.moveTo(6,0);ctx.lineTo(-4,4);ctx.lineTo(-4,-4);ctx.closePath();ctx.fill();
     ctx.restore();
     ctx.fillStyle=m.c;ctx.textAlign=cx>W/2?"right":"left";
     ctx.fillText(label,cx>W/2?rx+cw-18:rx+18,ry+12);
-    ctx.textAlign="center";
+    ctx.textAlign="center";ctx.globalAlpha=1;
   }
 }
 /* кольцо: half=-1 — дальняя дуга под планетой, half=1 — ближняя поверх неё */

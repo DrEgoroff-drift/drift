@@ -163,6 +163,7 @@ function foeTetherTick(dt){
 function pirateArmTick(p,dt){
   if(!p||p.hull<=0||p.dummy||p.iff||!p.aware)return;
   if(p.stunT>0)return;                       /* перегретый молчит целиком */
+  if(worldCovered())return;                  /* за экраном по игроку не бьют (R0) */
   const L=pirateLoadout(p);
   /* зенитка идёт своей петлёй: ей нужна цель в воздухе, а не откат */
   if(L.guns.indexOf("flak")>=0&&typeof foeFlak==="function")foeFlak(p,dt);

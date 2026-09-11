@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 537 · символов верхнего уровня: 5075
+Файлов: 537 · символов верхнего уровня: 5078
 
 ## СИМВОЛЫ
 
@@ -90,8 +90,8 @@ AMMO_COST                    src/16b-missile.js:58
 AMMO_KEYS                    src/02-world.js:90
 ammoBatch                    src/16b-missile.js:60
 ammoRow                      src/16b-missile.js:74-95
-ammoStamp                    src/12ar-hail.js:38
-ammoStampSet                 src/12ar-hail.js:39
+ammoStamp                    src/12ar-hail.js:42
+ammoStampSet                 src/12ar-hail.js:43
 ANCHOR_CACHE                 src/05-parts.js:253
 angDiff                      src/01-core.js:163
 angWrap                      src/01-core.js:162
@@ -1404,7 +1404,7 @@ drawSurface                  src/21e-surface-draw.js:277-291
 drawSurfaceHud               src/21e-surface-draw.js:21-115
 drawSurfaceWorld             src/21e1-surface-world.js:10-615
 drawSurvey                   src/12w-survey.js:63-89
-drawSysHud                   src/17-mode-system.js:623-722
+drawSysHud                   src/17-mode-system.js:623-725
 drawSysNebula                src/16a-space.js:208-236
 drawSystem                   src/17-mode-system.js:370-622
 drawSysTraffic               src/17f-sys-traffic.js:29-33
@@ -1931,20 +1931,22 @@ gunTotals                    src/05c-arms.js:288-302
 H_SILENT                     tests/91zzzzzzz-hands.js:39-41
 h01                          src/01-core.js:14
 HAIL_HOLD                    src/12ar-hail.js:20
-HAIL_RANGE                   src/12ar-hail.js:21
-HAIL_START_FLOOR             src/12ar-hail.js:67
-hailAnger                    src/12ar-hail.js:87-110
-hailAnswer                   src/12ar-hail.js:169-196
-hailBlockade                 src/12ar-hail.js:54-56
-hailCalm                     src/12ar-hail.js:68-76
-hailContraband               src/12ar-hail.js:40-49
-hailPicket                   src/12ar-hail.js:22-33
-hailRunCheck                 src/12ar-hail.js:229-233
-hailShotAt                   src/12ar-hail.js:112-115
-hailStartSys                 src/12ar-hail.js:66
-hailTick                     src/12ar-hail.js:117-165
-hailWarnVolley               src/12ar-hail.js:77-86
-hailWinSync                  src/12ar-hail.js:202-227
+HAIL_HOLD_PHONE              src/12ar-hail.js:23
+HAIL_RANGE                   src/12ar-hail.js:25
+HAIL_START_FLOOR             src/12ar-hail.js:71
+hailAnger                    src/12ar-hail.js:91-114
+hailAnswer                   src/12ar-hail.js:176-203
+hailBlockade                 src/12ar-hail.js:58-60
+hailCalm                     src/12ar-hail.js:72-80
+hailContraband               src/12ar-hail.js:44-53
+hailHold                     src/12ar-hail.js:24
+hailPicket                   src/12ar-hail.js:26-37
+hailRunCheck                 src/12ar-hail.js:237-241
+hailShotAt                   src/12ar-hail.js:116-119
+hailStartSys                 src/12ar-hail.js:70
+hailTick                     src/12ar-hail.js:121-172
+hailWarnVolley               src/12ar-hail.js:81-90
+hailWinSync                  src/12ar-hail.js:209-235
 HALL_N                       src/21a4-base-adj.js:28
 HALL_POWER                   src/21a4-base-adj.js:29
 HAND_LINE                    src/12td-settle-hand.js:31-34
@@ -3354,7 +3356,7 @@ PIRATE_COLS                  src/13-pirates.js:4
 PIRATE_LOADOUT               src/13d-loadout.js:23-28
 PIRATE_NAMES                 src/13-pirates.js:3
 PIRATE_RANKS                 src/13-pirates.js:13-18
-pirateArmTick                src/13d-loadout.js:163-180
+pirateArmTick                src/13d-loadout.js:163-181
 pirateArtOf                  src/12i-pirate-hull.js:238-424
 pirateBaseOf                 src/24a-mode-raid.js:87-96
 pirateBuild                  src/12i-pirate-hull.js:54-231
@@ -3362,7 +3364,7 @@ pirateClass                  src/12i-pirate-hull.js:47-52
 pirateFellTo                 src/13-combat.js:74-82
 pirateHas                    src/13d-loadout.js:34-37
 pirateLoadout                src/13d-loadout.js:33
-pirateRoleTick               src/13c-roles.js:48-124
+pirateRoleTick               src/13c-roles.js:51-127
 pirateShipId                 src/13-pirates.js:20-27
 PL_SKIP                      tests/91zzzzzo-plural.js:31
 pl3                          src/01-core.js:92-98
@@ -3981,10 +3983,10 @@ rogueTakesCrew               src/12g-mgr-rogue.js:25-35
 ROLE_BY_HULL                 src/03f-hull-role.js:33
 ROLE_KEYS                    src/12a-crew.js:169
 ROLE_LIM                     src/13c-roles.js:7
-roleAllyNear                 src/13c-roles.js:29-32
+roleAllyNear                 src/13c-roles.js:32-35
 roleDamp                     src/13c-roles.js:10
-roleFire                     src/13c-roles.js:11-28
-roleFlee                     src/13c-roles.js:34-46
+roleFire                     src/13c-roles.js:11-31
+roleFlee                     src/13c-roles.js:37-49
 roleForce                    src/12a-crew.js:170
 roleFromStats                src/03f-hull-role.js:37-45
 roleOf                       src/03f-hull-role.js:46-50
@@ -5050,6 +5052,7 @@ WORLD_MOOD                   src/10-music.js:39-52
 WORLD_SPREAD                 src/10-music.js:99
 WORLD_VIB                    src/10-music.js:98
 WORLD_VOICE                  src/10-music.js:57-73
+worldCovered                 src/08-state.js:257
 worldQuiet                   src/11ar-doors.js:32
 worldRes                     src/02a-worldmix.js:119-126
 worldTables                  src/02a-worldmix.js:86-117
@@ -6429,7 +6432,7 @@ zooTick                      src/11ad-zoo.js:41-54
   · M360a: след стика и то, что под ним:239
   · M422: палец где угодно — настоящими событиями:332
 
-## tests/91zzxa-playable.js · 20 КБ
+## tests/91zzxa-playable.js · 23 КБ
   · плейтест автора 11.09: «игрок делает X → видит Y»:1
 
 ## tests/91zzy-fx.js · 5 КБ

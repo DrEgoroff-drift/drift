@@ -18,6 +18,10 @@
    «проходом», ЦЕЛЬ — «по делу». Третьего пальца на телефоне не бывает, и
    третья кнопка тут не появится: молчание нажимать не надо. */
 const HAIL_HOLD=420;        /* сколько кадров ждут ответа — семь секунд */
+/* на телефоне семи секунд не хватает: вопрос надо прочесть и дотянуться до
+   ответа большим пальцем (тестировщик на деве, 12.09) — пятнадцать */
+const HAIL_HOLD_PHONE=900;
+function hailHold(){return (typeof innerWidth==="number"&&innerWidth<=760)?HAIL_HOLD_PHONE:HAIL_HOLD;}
 const HAIL_RANGE=900;       /* с какого расстояния окликают */
 function hailPicket(sh){
   /* ближайший чужой борт державы, который может окликнуть */
@@ -118,7 +122,8 @@ function hailTick(sh,dt,actEdge){
   if(G.mode!=="system"){hailWinSync();return false;}
   const H=G.hail;
   if(H){
-    H.t-=dt;
+    /* за экраном отсчёт стоит: окно оклика видно поверх, но читающего не торопят */
+    if(!worldCovered())H.t-=dt;
     /* вопрос и отсчёт — в окне (hailWinSync); подсказка несёт только ответы,
        короткие, чтобы на 390 px она не резалась, а пэды взяли глаголы */
     const won=cue(H.hold?"ВЕЛЕНО СТОЯТЬ · ЖДИТЕ":"ОКЛИК · ДЕЙСТВИЕ — ПРОХОДОМ · ЦЕЛЬ — ПО ДЕЛУ",CUE_ACT);
@@ -138,7 +143,7 @@ function hailTick(sh,dt,actEdge){
       const who=P?P.ru.toUpperCase():"ПИКЕТ";
       /* молчание. Первое — предупреждение, второе — они правы */
       if(!H.warn){
-        H.warn=1;H.t=HAIL_HOLD;
+        H.warn=1;H.t=hailHold();
         say("МОЛЧИТЕ · ЭТО ЗАПИСЫВАЮТ",100);
         if(typeof etherLine==="function")etherLine("…борт не отвечает. Повторяю запрос.",who);
       }else{
@@ -149,6 +154,8 @@ function hailTick(sh,dt,actEdge){
     return true;
   }
   hailWinSync();
+  /* под экраном новый оклик не начинается: пикет дождётся, пока борт снова в полёте */
+  if(worldCovered())return false;
   /* оклик: раз на систему и на смену волны, и только если рядом чужой пикет */
   const p=hailPicket(sh);
   if(!p)return false;
@@ -157,7 +164,7 @@ function hailTick(sh,dt,actEdge){
   const bucket=Math.floor(now()/1800000);
   if(G.hailLog[key]===bucket)return false;
   G.hailLog[key]=bucket;
-  G.hail={by:p.pw,t:HAIL_HOLD,warn:0,x:sh.x,y:sh.y,blk:hailBlockade()?1:0};
+  G.hail={by:p.pw,t:hailHold(),warn:0,x:sh.x,y:sh.y,blk:hailBlockade()?1:0};
   const P=(typeof powerOf==="function")?powerOf(p.pw):null;
   if(typeof etherLine==="function")etherLine("…"+(P?P.hail:"кто такой"),P?P.ru:"пикет");
   sfx("ui",{f:520,to:380,d:.2,v:.25});
@@ -177,7 +184,7 @@ function hailAnswer(kind){
   }
   if(H.blk&&kind==="pass"){
     /* блокада: «проходом» здесь не ответ — велено стоять */
-    H.warn=1;H.t=HAIL_HOLD;H.hold=1;
+    H.warn=1;H.t=hailHold();H.hold=1;
     say("ВЕЛЕНО СТОЯТЬ · ЗДЕСЬ БЛОКАДА",120);
     if(typeof etherLine==="function")
       etherLine("…борт, стоять. Здесь закрыто. Повторяю: стоять.",P?P.ru:"пикет");
@@ -203,7 +210,8 @@ function hailWinSync(){
   if(typeof document==="undefined"||!document.body||!document.createElement)return;   /* узловой ярус тестов: DOM нет */
   let e=document.getElementById("hailwin");
   const H=G.hail,b=document.body;
-  const show=!!H&&G.mode==="system"&&!(b&&b.classList.contains("screen"));
+  /* поверх любого экрана (R0, дев 12.09): прежде окно пряталось за СТОЛОМ, а отсчёт шёл */
+  const show=!!H&&G.mode==="system";
   if(!show){if(e&&e.classList.contains("open")){e.classList.remove("open");b.classList.remove("hailopen");}return;}
   if(!e){
     e=document.createElement("div");e.id="hailwin";
@@ -218,7 +226,7 @@ function hailWinSync(){
   const deed=(typeof epiHailLine==="function")?epiHailLine(H.by):"";
   e.querySelector("b em").textContent=(P?P.ru.toUpperCase():"ПИКЕТ")+" · ОКЛИК";
   e.querySelector(".hq").textContent="«"+(deed||(P?P.hail:"Кто такой"))+"»";
-  e.querySelector(".hbar i").style.width=Math.max(0,Math.min(100,H.t/HAIL_HOLD*100)).toFixed(1)+"%";
+  e.querySelector(".hbar i").style.width=Math.max(0,Math.min(100,H.t/hailHold()*100)).toFixed(1)+"%";
   e.querySelector(".hw").textContent=H.hold?"велено стоять · стойте, пока не отпустят":
     (H.warn?"ВАС УЖЕ ПРЕДУПРЕДИЛИ · молчание дальше — огонь":"молчание — тоже ответ: сперва предупреждение");
   e.classList.toggle("warn",!!H.warn&&!H.hold);

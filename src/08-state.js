@@ -251,3 +251,7 @@ function cue(t,lvl){
   CUE_LVL=lvl;G.prompt=CUE_TXT=t;return true;
 }
 function msgHeld(){const b=typeof document!=="undefined"&&document.body;return MSG_WORLD&&!!(b&&b.classList&&b.classList.contains("screen"));}
+/* мир закрыт экраном — СТОЛ, ОПИСЬ, станция: игрок читает, а не летит. Угрозы
+   мира ждут вместе с ним — оклик не тикает, по нему не стреляют (R0, дев 12.09:
+   «читал журнал — получил залп») */
+function worldCovered(){const b=typeof document!=="undefined"&&document.body;return !!(b&&b.classList&&(b.classList.contains("screen")||b.classList.contains("table")));}

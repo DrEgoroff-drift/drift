@@ -52,7 +52,7 @@ TEST_SUITES.push(()=>suite("R0 блокада: велено стоять — т�
   G.hailLog={};G.hailLog[G.sx+","+G.sy+"|"+by]=Math.floor(now()/1800000);   /* второго оклика в эту смену нет */
   hailAnswer("pass");
   ok(!!G.hail&&G.hail.hold,"«проходом» в блокаде — велено стоять");
-  for(let i=0;i<HAIL_HOLD+10;i++)hailTick(G.ship,1,false);
+  for(let i=0;i<hailHold()+10;i++)hailTick(G.ship,1,false);   /* срок у телефона свой */
   eq(G.hail,null,"простоял срок — отпустили");
   eq(p.iff,1,"пикет не открыл огонь");
 }));
@@ -67,6 +67,56 @@ TEST_SUITES.push(()=>suite("R0 пэды: на оклике ДЕЙСТВИЕ — 
   eq(document.querySelector("[data-k=act]").textContent.trim(),"ПРОХОДОМ","ДЕЙСТВИЕ называет ответ");
   eq(document.getElementById("lockbtn").textContent.trim(),"ПО ДЕЛУ","ЦЕЛЬ называет второй ответ");
   G.hail=null;hailTick(G.ship,1,false);hud();
+}));
+
+/* R0, дыры с дева (143d6f1): «читал журнал — получил залп». За открытым экраном оклик
+   ждёт и пикет молчит, окно оклика — поверх экрана; на телефоне на ответ 15 с; под окном
+   фишки компаса гаснут, как борт */
+TEST_SUITES.push(()=>suite("R0 оклик за СТОЛОМ: двадцать секунд за столом — оклик ждёт, корпус цел; стол закрыт — ДЕЙСТВИЕ отвечает",{tier:"browser",win:"phone"},()=>{
+  resetWorld();
+  G.mode="system";G.sx=5;G.sy=5;G.sys=getSystem(5,5);G.hailLog={};G.hail=null;G.pirates=[];
+  ok(!hailStartSys(),"не система старта: там свой пол корпуса");
+  G.ship.x=4000;G.ship.y=0;G.ship.vx=0;G.ship.vy=0;G.ap=null;G.orbit=null;
+  T.wait(1);
+  ok(SYS_CHIPS.length>0,"без оклика фишка у кромки ловит тычок");
+  const by=MAKER_KEYS.find(k=>k!==playerFlag());
+  const p=npcShip(by,0,1,G.ship.x+300,G.ship.y,1);p.aware=false;G.pirates=[p];
+  T.wait(2);
+  ok(!!G.hail,"пикет окликнул сам");
+  G.hail.blk=0;   /* не блокада: там «проходом» — не ответ */
+  ok(G.hail.t>=880,"на телефоне на ответ 15 секунд: осталось "+Math.round(G.hail.t)+" кадров");
+  eq(SYS_CHIPS.length,0,"под окном оклика фишки не ловят тычок");
+  const hull0=G.hull;
+  tableToggle(true);
+  for(let i=0;i<1200;i++){stepWorld(1);G.t+=1;}
+  ok(!!G.hail&&!G.hail.warn,"двадцать секунд за столом — оклик ждёт, предупреждения не было");
+  eq(G.hull,hull0,"корпус цел");
+  eq(p.iff,1,"пикет не открыл огонь");
+  const w=document.getElementById("hailwin");
+  ok(!!w&&w.classList.contains("open"),"окно оклика открыто и за столом");
+  const r=w.getBoundingClientRect(),top=document.elementFromPoint(r.left+r.width/2,r.top+r.height/2);
+  ok(!!top&&w.contains(top),"поверх стола виден оклик, а не лист: "+(top&&(top.id||top.className||top.tagName)));
+  tableToggle(false);
+  T.press("act",1);
+  eq(G.hail,null,"стол закрыт — ДЕЙСТВИЕ ответило на оклик");
+  G.pirates=[];
+}));
+
+TEST_SUITES.push(()=>suite("R0 за экраном по вам не стреляют: злой борт рядом, стол открыт — корпус цел; стол закрыт — бой идёт",{tier:"browser",win:"phone"},()=>{
+  resetWorld();
+  G.mode="system";G.sx=5;G.sy=5;G.sys=getSystem(5,5);G.hailLog={};G.hail=null;
+  G.ship.x=4000;G.ship.y=0;G.ship.vx=0;G.ship.vy=0;G.ap=null;G.orbit=null;G.shield=0;
+  const by=MAKER_KEYS.find(k=>k!==playerFlag());
+  const p=npcShip(by,0,1,G.ship.x+200,G.ship.y,1);p.iff=0;p.aware=true;G.pirates=[p];
+  G.hailLog[G.sx+","+G.sy+"|"+by]=Math.floor(now()/1800000);   /* оклика нет — сразу бой */
+  const hull0=G.hull;
+  tableToggle(true);
+  for(let i=0;i<300;i++){stepWorld(1);G.t+=1;}
+  eq(G.hull,hull0,"пять секунд за столом — ни одного попадания");
+  tableToggle(false);
+  for(let i=0;i<600&&G.hull>=hull0;i++){stepWorld(1);G.t+=1;}
+  ok(G.hull<hull0,"стол закрыт — злой борт снова стреляет: "+Math.round(G.hull)+" из "+Math.round(hull0));
+  G.pirates=[];
 }));
 
 /* R1: действие делает то, что написано, когда в кадре два предложения */

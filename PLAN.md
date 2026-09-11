@@ -209,7 +209,11 @@ before a push.
   fix, a WIP commit, dev, one line to both reviewers). Sources: the tester's `review.json` and
   `botverify.json` (scratchpad 3d6318e9…), the designer's letters. Scale stays as built until the
   author says otherwise (the reviewers disagree; a peer cannot decide for the author).
-  - **Handoff:** R1 done; next the R0 holes below (red test first), then R2.
+  - **Handoff (paused by the author 12.09):** R1 done. R0 holes (1)-(3) fixed in the last WIP: the
+    hail window is over every screen (z 24), `H.t` stands and no new hail starts under a screen
+    (`worldCovered()`, 08-state), fire at the player pauses there (`roleFire` for `!p.iff`,
+    `pirateArmTick`), `hailHold()` = 900 on a phone, chips dim and stop taking taps under the hail
+    and SOS windows. Missiles already in flight still land. Next: dev look at R0, then R2.
     **R0 open (tester on dev, both reviewers):** (1) behind СТОЛ/ОПИСЬ/station the hail window hides
     (`hailWinSync`) while `H.t-=dt` keeps running (`hailTick`) — «read the log, got a volley» outside
     the start system. Fix: the hail window sits above `.scr`/#tablewin and shows over any screen; while
