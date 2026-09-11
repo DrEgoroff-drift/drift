@@ -267,16 +267,20 @@ can go red; `T.replay` refuses a recording from another `VER`; the trips oracle 
   moved to Chrome. Node tier 481 → 616 suites, 22 → 25 s; Chrome tier 295 → 168 suites. Left:
   the per-edit tier is 25 s, not the ~5 s of 0.359.3 — `-Times` for Node is owed; a suite that
   is green under stubs is not proven honest, only not proven vacuous.
-- **Golden frames keyed by the requested window, not the measured `W×H`** — today the key is
-  the headless window's geometry, so on any other machine `base=null` and the suite passes on
-  `ok(n>=12)`; `deploy.yml` runs the fast tier only, so no browser suite runs in CI at all.
+- ~~**Golden frames keyed by the requested window, not the measured `W×H`**~~ — 0.440.0:
+  `test.ps1` puts `?win=W,H` in the address, the suite keys `docs/golden/<W>x<H>.json` by it
+  (files renamed 1248x641 → 1280x800, 548x685 → 390x844, 1408x1281 → 1440x1440), and a window
+  without a golden is red, not a note. Still true: `deploy.yml` runs the fast tier only, so no
+  browser suite runs in CI; the lab's SwiftShader will say whether the block mean is coarse enough.
 - **The silence table** — 16 mode × gesture pairs are silenced in the detect driver; at least
   `base · W`, `wanderer · A`, `base · drag` are scene-setup artefacts (cage on the top level, the
   corridor's end): move the scene, un-silence the gesture. `detStuck`'s key law fires only on a
   frame diff of exactly 0 — soften it together with that table, not alone (tried; map W/A went red).
-- **`stateHash` mixes `now()` in** (`08a:74`) and hashes `Set`s in insertion order — for the
-  cloud's «where did it diverge» it must not depend on the wall clock or on the order techs were
-  bought. `planetStripTick` cuts by `wallMs()` and writes `stripLvl` into hashed state.
+- **`stateHash` mixes `now()` in** (`08a:74`) — for the cloud's «where did it diverge» it must
+  not depend on the wall clock (author's call: the clock as a separate field, or out). Done in
+  0.440.0: `Set`/`Map` with primitive members are hashed sorted, so the order techs were bought
+  no longer changes the hash. Still open: `planetStripTick` cuts by `wallMs()` and writes
+  `stripLvl` into hashed state — machine-dependent under load.
 - **The source net over suites is line-based** — `ok(\n true`, `ok(1,…)`, `"function"===typeof f`
   pass; the harness self-suites vanish under `?files=` (`_file`). And the clock law does not
   cover `tests/` (41 raw calls in 13 files, mostly `performance.now` for cost — legitimate, but

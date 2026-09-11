@@ -55,8 +55,15 @@ function stateHash(root,skip){
       return;
     }
     if(Array.isArray(v)){seen.set(v,++ids);mix(10);mix(v.length);for(let i=0;i<v.length;i++)walk(v[i]);return;}
-    if(v instanceof Map){seen.set(v,++ids);mix(11);mix(v.size);for(const [k,x] of v){walk(k);walk(x);}return;}
-    if(v instanceof Set){seen.set(v,++ids);mix(12);mix(v.size);for(const x of v)walk(x);return;}
+    /* Map и Set — по порядку вставки, а два одинаковых мира могли получить техи
+       в разном порядке: примитивные ключи сортируем, чтобы хэш был хэшем
+       состояния, а не истории (0.440.0) */
+    if(v instanceof Map){seen.set(v,++ids);mix(11);mix(v.size);
+      const es=[...v];if(es.every(e=>typeof e[0]!=="object"))es.sort((a,b)=>String(a[0])<String(b[0])?-1:1);
+      for(const [k,x] of es){walk(k);walk(x);}return;}
+    if(v instanceof Set){seen.set(v,++ids);mix(12);mix(v.size);
+      const xs=[...v];if(xs.every(x=>typeof x!=="object"))xs.sort((a,b)=>String(a)<String(b)?-1:1);
+      for(const x of xs)walk(x);return;}
     const pr=Object.getPrototypeOf(v);
     if(pr!==Object.prototype&&pr!==null)return; /* канва, DOM, класс — кэш, не мир */
     seen.set(v,++ids);mix(13);

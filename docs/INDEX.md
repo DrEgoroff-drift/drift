@@ -4329,8 +4329,8 @@ startScoop                   src/19a-mode-scoop.js:51-61
 stat                         src/08-state.js:146-211
 STAT_SHOW                    src/05-parts.js:425-437
 STATE_HASH_SKIP              src/08a-statehash.js:24-29
-stateHash                    src/08a-statehash.js:30-74
-stateHashParts               src/08a-statehash.js:75-83
+stateHash                    src/08a-statehash.js:30-81
+stateHashParts               src/08a-statehash.js:82-90
 stationArt                   src/17c-system-draw.js:404-433
 stationDeals                 src/27g-deals.js:141-158
 stationFleet                 src/04b-fleet.js:163-191
@@ -5093,7 +5093,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/08-state.js · 17 КБ
   · состояние:1
 
-## src/08a-statehash.js · 5 КБ
+## src/08a-statehash.js · 6 КБ
   · хэш состояния (M441):1
 
 ## src/09-audio.js · 16 КБ

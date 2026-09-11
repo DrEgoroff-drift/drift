@@ -98,11 +98,13 @@ change, re-shoot the window(s) you changed and commit the JSON:
 powershell -ExecutionPolicy Bypass -File test.ps1 -Accept
 ```
 
-The file is named by the *canvas frame*, not the window: `1248x641.json` is the 1280×800 run,
-`548x685.json` the phone, `1408x1281.json` the tall one.
+The file is named by the window `test.ps1` *requested* (`?win=` in the address, 0.440.0):
+`1280x800.json` is the default run, `390x844.json` the phone, `1440x1440.json` the tall one.
+Until 0.440.0 it was named by the measured canvas frame (`1248x641` …), which every headless
+build measures differently — on another machine no golden matched and the suite passed on a count.
 `-Accept -Mobile` and `-Accept -Size 1440,1440` do the phone and the tall window; then
 `build.ps1`, because the baselines are embedded into `tests.html` as `GOLDEN`. A window without a
-baseline is not red — the suite says so and `-Accept` creates it. The suite is staged until
+baseline is red (0.440.0) and names the `-Accept` command that creates it. The suite is staged until
 2026-09-18 (its failures print but do not decide), as is the worlds oracle
 (`91zzzzzzzzz-worlds.js`, Node: every station in six rings — a neighbour within one jump, no
 counter paying ×4.5, fuel within ×3 of the median, and the printed distribution of the best

@@ -46,7 +46,11 @@ function goldCmp(g,s){
 }
 
 TEST_SUITES.push(()=>suite("золотые кадры: каждая сцена против своего эталона в этом окне",{tier:"browser",stage:"новый оракул, порог по истории лаборатории, до 2026-09-18"},()=>{
-  const key=W+"x"+H,base=GOLDEN[key]||null;
+  /* ключ — окно, которое просил test.ps1 (?win=), а не измеренное W×H: то у
+     каждого headless своё (1280,800 давало 1248×641), и на чужой машине эталон
+     «не находился» — набор молча проходил (0.440.0). Без ?win= — по W×H, как раньше */
+  const wm=/[?&]win=(\d+),(\d+)/.exec(location.search||"");
+  const key=wm?wm[1]+"x"+wm[2]:W+"x"+H,base=GOLDEN[key]||null;
   const accept=/[?&]accept=1/.test(location.search);
   const snap=JSON.parse(JSON.stringify(snapshot()));
   const fresh={},bad=[],missing=[];let n=0;
@@ -68,7 +72,10 @@ TEST_SUITES.push(()=>suite("золотые кадры: каждая сцена �
     G.mode="system";G.land=null;G.surf=null;G.dig=null;G.cave=null;G.base=null;G.hin=null;
     resetWorld();
   }
-  ok(n>=12,"сцен снято "+n+" в окне "+key+(base?"":" — эталона для этого окна нет: test.ps1 -Accept снимет его"));
+  ok(n>=12,"сцен снято "+n+" в окне "+key);
+  /* нет эталона — это красное, а не заметка: иначе оракул «существует» только там,
+     где его сняли, и проходит везде, где не снимали (0.440.0) */
+  ok(!!base,"эталона для окна "+key+" нет: test.ps1 -Accept"+(key==="390x844"?" -Mobile":key!=="1280x800"?" -Size "+key.replace("x",","):"")+" снимет его");
   /* снятое — в разметку: -Accept забирает отсюда; без эталона кладём всегда */
   if(accept||!base){
     const pre=document.createElement("pre");pre.id="golden";pre.hidden=true;pre.setAttribute("data-key",key);

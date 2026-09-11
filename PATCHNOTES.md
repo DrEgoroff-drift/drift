@@ -6,6 +6,15 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.440.0 - golden frames keyed by the window you asked for
+
+- **A golden frame is looked up by the window `test.ps1` requested** (`?win=1280,800`), not by
+  the `W×H` the page measured — that number was the headless window's own (1280,800 came out as
+  1248×641; on another machine it differs, the golden «was not found», and the suite passed on
+  a count). The three files in `docs/golden/` are renamed to the requested sizes, and a window
+  without a golden is now red with the exact `-Accept` command to take one.
+- **`stateHash` no longer depends on the order techs were bought**: `Set` and `Map` members that
+  are primitives are hashed sorted. Two identical worlds with different histories hash alike.
 ## 0.439.0 - tiers by evidence, and twenty-two dead names
 
 - **A suite's tier is decided by what its body touches, not by a word in its name.** 132 suites

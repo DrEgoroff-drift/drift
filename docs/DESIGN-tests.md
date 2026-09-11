@@ -142,7 +142,8 @@ lab's Chrome renders fonts and antialiasing differently from the laptop's GPU, a
 per-pixel YIQ distance would be red every night on text alone; the week of staging says whether
 block means are coarse enough. Baselines are embedded by `build.ps1` as `GOLDEN` (a `file://`
 page cannot fetch them); `?accept=1` puts the fresh signatures in `<pre id="golden">`, and
-`test.ps1 -Accept` writes `docs/golden/<W>x<H>.json`. Imbalance is over *worlds*, not seeds:
+`test.ps1 -Accept` writes `docs/golden/<W>x<H>.json`, keyed by the window it requested (`?win=`),
+not by the frame the page measured. Imbalance is over *worlds*, not seeds:
 the galaxy is a function of coordinates, `rnd()` only touches roles, speech, cave décor and the
 belt, so «seeds ×100» would measure nothing — `tests/91zzzzzzzzz-worlds.js` asks every station in
 six rings the same three questions and prints the distribution of the best one-hop deal. Seeds
