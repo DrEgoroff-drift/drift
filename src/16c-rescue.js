@@ -366,6 +366,9 @@ function drawHaul(zx,zy,Z){
       ctx.fillStyle=g;ctx.beginPath();
       ctx.moveTo(-1,-w);ctx.quadraticCurveTo(-len*.45,-w*1.2,-len,0);
       ctx.quadraticCurveTo(-len*.45,w*1.2,-1,w);ctx.closePath();ctx.fill();
+      /* бело-горячее ядро у сопла: источник обязан быть светлее освещённого */
+      ctx.fillStyle="rgba(255,250,236,.95)";ctx.beginPath();
+      ctx.ellipse(-len*.12,0,len*.14,w*.45,0,0,TAU);ctx.fill();
       ctx.restore();
     }
     ctx.globalCompositeOperation="source-over";
@@ -381,16 +384,25 @@ function drawHaul(zx,zy,Z){
     const sz=Math.ceil(art.rad*2);
     const off=haulRim.cv||(haulRim.cv=document.createElement("canvas"));
     if(off.width!==sz){off.width=sz;off.height=sz;}
+    /* экспозиция (дизайн-ревью 11.09, замер): кромка через «lighter» выжигала
+       кремовые модули в 255 — отражённое ярче факела, и корпус 66 рядом с белыми
+       ящиками читался двумя предметами. Теперь: тело целиком ×.82 умножением
+       (модули уходят с ~220 к ~180), кромка — «screen», он поднимает тёмное
+       сильнее светлого (корпус со стороны звезды ~120–130, модули ≤ ~205),
+       а ядро факела ниже — белое, самое светлое в кадре */
     const o=off.getContext("2d");
-    o.globalCompositeOperation="source-over";o.clearRect(0,0,sz,sz);
-    o.drawImage(art.cn,0,0,sz,sz);
-    o.globalCompositeOperation="source-in";
-    const rg=o.createLinearGradient(sz/2-cx*sz*.35,sz/2-cy*sz*.35,sz/2+cx*sz*.35,sz/2+cy*sz*.35);
-    rg.addColorStop(0,"rgba(255,190,120,0)");rg.addColorStop(.55,"rgba(255,190,120,0)");
-    rg.addColorStop(1,"rgba(255,204,150,.5)");
-    o.fillStyle=rg;o.fillRect(0,0,sz,sz);
-    ctx.globalCompositeOperation="lighter";
+    const mask=fill=>{o.globalCompositeOperation="source-over";o.clearRect(0,0,sz,sz);
+      o.drawImage(art.cn,0,0,sz,sz);o.globalCompositeOperation="source-in";o.fillStyle=fill;o.fillRect(0,0,sz,sz);};
+    mask("rgb(209,206,200)");
+    ctx.globalCompositeOperation="multiply";
     ctx.drawImage(off,-art.rad,-art.rad,art.rad*2,art.rad*2);
+    const rg=o.createLinearGradient(sz/2-cx*sz*.35,sz/2-cy*sz*.35,sz/2+cx*sz*.35,sz/2+cy*sz*.35);
+    rg.addColorStop(0,"rgba(255,190,120,0)");rg.addColorStop(.5,"rgba(255,190,120,0)");
+    rg.addColorStop(1,"rgba(255,200,146,.36)");
+    mask(rg);
+    ctx.globalCompositeOperation="screen";
+    ctx.drawImage(off,-art.rad,-art.rad,art.rad*2,art.rad*2);
+    ctx.globalCompositeOperation="lighter";
     if(T._fire){
       const tx=-art.L*.48,gr=ctx.createRadialGradient(tx,0,0,tx,0,art.hw*1.6);
       gr.addColorStop(0,"rgba(255,170,90,.45)");gr.addColorStop(1,"rgba(255,120,60,0)");
@@ -454,7 +466,7 @@ function rescueRender(){
     b.dataset.id=o.id;
     /* иерархия (дизайн-ревью 11.09): разумный выход — главная кнопка, как
        ОТСТЫКОВКА на станции; по карману ДОМОЙ — он, иначе буксир. СБРОС отделён */
-    const main=offers.some(x=>x.id==="home"&&x.cost<=G.credits)?"home":"tow";
+    const main="tow";   /* всегда буксир: игра подталкивает к бесплатному и остужающему, ДОМОЙ платный и копит счётчик (дизайн-ревью) */
     if(o.id===main)b.className="main";
     if(o.id==="reset")b.className="lose";
     b.addEventListener("click",()=>{

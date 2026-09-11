@@ -112,7 +112,7 @@ function dealRender(){
     runs.sort((a,b)=>b.perMin-a.perMin);
     for(const r of runs){
       const res=RES[r.res]||{ru:String(r.res||"груз")};
-      const st=res.ru.toLowerCase()+" · в точке осталось "+r.pool+
+      const st=res.ru.toLowerCase()+" · в точке осталось "+Math.max(0,r.pool|0)+   /* на сейве автора было «−13»: учёт залежи уходит в минус — вывод зажат, причина в PLAN */
         (r.stuck?(" · "+r.stuck+" стоит: систему закрыли пираты"):"")+
         (r.down?(" · "+r.down+" в ремонте"):"");
       const open=(dealRun===r.key);

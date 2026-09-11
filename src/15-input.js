@@ -210,8 +210,8 @@ function releaseAllKeys(){
   document.querySelectorAll("[data-k].on").forEach(b=>b.classList.remove("on"));
 }
 addEventListener("blur",releaseAllKeys);
-addEventListener("pagehide",releaseAllKeys);
-document.addEventListener("visibilitychange",()=>{if(document.hidden)releaseAllKeys();});
+addEventListener("pagehide",()=>{releaseAllKeys();try{if(G.running)saveGame(true);}catch(e){}});   /* свернул — не потерял (надзор 11.09: автосейв раз в 600 кадров) */
+document.addEventListener("visibilitychange",()=>{if(document.hidden){releaseAllKeys();try{if(G.running)saveGame(true);}catch(e){}}});
 
 /* ══════════════ полоса вкладок шире экрана ══════════════
    У стола тринадцать закладок, а в телефон влезает шесть. Полоса
