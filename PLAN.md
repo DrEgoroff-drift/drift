@@ -125,6 +125,16 @@ before a push.
 - [ ] **2. Scale** — far zoom: ship ×2 (floor .35 → .7); near: the ship stops growing (~.8) and the
   zoom goes to ×4, so a planet is 5–6 ships wide. Proposed to the author with numbers; a before/after
   frame at ×0.16 and ×2.4 before code. Seamless atmosphere entry — a milestone after the pass.
+  **Built 12.09 (the decided form):** `shipScaleAt` = clamp(Z, .7, 1.6) everywhere (hull, exhaust and
+  trail share it — `shipZ` had its own .55); bodies at Z>1 drawn ×(1+0.8·(Z−1)) (`bodyScaleAt`, 16c);
+  the haul clamps zoom to [.7, 1.6] (the world rope outgrew the sprites above 1.6). **Price found on the
+  frames:** a moon on a near orbit (r 39, orbit 76) fell onto its planet's drawn disc (83 at ×2.4) — so a
+  planet grows at most 0.6 of the gap to its nearest moon, a moon 0.15 (`bodyNearCaps`); planets with a
+  close moon grow only ~×1.35. Also, the drawn disc outgrows the physical one: at ×2.4 the landing and
+  scoop zones (110 from the physical surface) sit on or inside a big body's disc. For the author: keep,
+  or the alternative with no drawn/physical split — world zoom to ×4–5 with the ship capped (~.8).
+- [ ] **2a. Seamless atmosphere entry** (milestone, after item 2 is accepted): flying into a drawn disc
+  becomes the descent instead of a prompt; design first.
 - [ ] **3. Buttons that do not press; screens that jump** — СТОЛ, ДЕЛО, ОПИСЬ (play at 390×844). Found:
   the СТОЛ header jumped 70↔85 px (long tab subtitles wrapped) → one line [done]. Needs a late world:
   the author's cloud save (asked, no «да» yet — do not touch without it) or a `veteranWorld()` fixture

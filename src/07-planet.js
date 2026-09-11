@@ -283,7 +283,9 @@ function planetPaint(p,x,y,r,S,L,turn){
       const over=u+c.su-sw;
       if(over>0){
         const part=(c.su-over)/c.su;
-        ctx.drawImage(S,u,0,c.su-over,sh, x+c.dx,y-r,c.dw*part,d);
+        /* первый кусок на 0.6 px шире: на дробных координатах между кусками
+           оставался просвет, и на крупном диске (п. 2, ×2.4) шов читался ниткой */
+        ctx.drawImage(S,u,0,c.su-over,sh, x+c.dx,y-r,c.dw*part+.6,d);
         ctx.drawImage(S,0,0,over,sh, x+c.dx+c.dw*part,y-r,c.dw*(1-part),d);
       }else{
         ctx.drawImage(S,u,0,c.su,sh, x+c.dx,y-r,c.dw,d);

@@ -496,8 +496,10 @@ function drawSystem(){
          g.addColorStop(t,"rgba("+c.join(",")+","+a.toFixed(4)+")");}
        ctx.fillStyle=g;ctx.fillRect(-1,-1,2,2);});
      ctx.save();ctx.globalCompositeOperation="lighter";glowBlit(BL,ox,oy,reach);ctx.restore();}}
+  const BK=bodyScaleAt(Z);   /* тела на приближении крупнее мира (16c, п. 2) */
   for(const p of sys.planets){
-    const x=zx(p.x),y=zy(p.y),r=p.radius*Z;
+    const cap=BK>1?bodyNearCaps(p):null;
+    const x=zx(p.x),y=zy(p.y),r=p.radius*Z*(cap?Math.min(BK,cap[0]):1);
     if(x<-r-60||x>W+r+60||y<-r-60||y>H+r+60)continue;
     if(p.ring===undefined){
       const rr=rng(p.seed^0x21A9);
@@ -531,8 +533,9 @@ function drawSystem(){
     }
     if(p.type!=="rocky"&&r>4){ctx.strokeStyle="rgba(150,220,255,.18)";ctx.lineWidth=2;
       ctx.beginPath();ctx.arc(x,y,r+2.5,0,TAU);ctx.stroke();}
-    for(const m of p.moons){
-      const mx=zx(m.x),my=zy(m.y),mr=Math.max(1,m.radius*Z);
+    for(let mi=0;mi<p.moons.length;mi++){
+      const m=p.moons[mi];
+      const mx=zx(m.x),my=zy(m.y),mr=Math.max(1,m.radius*Z*(cap?Math.min(BK,cap[1][mi]):1));
       ctx.fillStyle="#9aa8b2";
       ctx.beginPath();ctx.arc(mx,my,mr,0,TAU);ctx.fill();
       if(G.ap&&G.ap.kind==="planet"&&G.ap.p===m)reticle(mx,my,mr+10);

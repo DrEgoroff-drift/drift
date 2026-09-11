@@ -159,7 +159,29 @@ const haulRim={cv:null};              /* холст-маска кромки: о�
 /* масштаб корабля в drawSystem — один на двоих с буксиром. На тросе пол .7:
    пять минут игрок смотрит на СВОЙ корабль, а в .35 он был серым пятном в 12 px
    (дизайн-ревью 11.09, закон «себя находят с одного взгляда») */
-function shipScaleAt(Z){return clamp(Z,G.haul?.7:.35,1.6);}
+/* масштаб (п. 2 плейтеста 11.09, решено автором): пол .7 и в полёте — на
+   отъезде корабль в .35 был пятном в 12 px («далеко — мелко»); сверху 1.6, а
+   тела на приближении растут быстрее мира — «близко — полпланеты» было про то,
+   что корабль рос вместе с ними. BODY_NEAR_K=0 возвращает прежний вид (кадры
+   до/после) */
+const SHIP_SCALE_MIN=.7,SHIP_SCALE_MAX=1.6,BODY_NEAR_K=.8;
+function shipScaleAt(Z){return clamp(Z,SHIP_SCALE_MIN,SHIP_SCALE_MAX);}
+function bodyScaleAt(Z){return Z>1?1+BODY_NEAR_K*(Z-1):1;}
+/* Потолок роста у планеты с лунами (первые кадры 12.09): на 2.4 диск в 2.12
+   раза шире физического накрывал луну ближней орбиты (r 39, орбита 76, диск 83).
+   Планета растёт не дальше 0.6 зазора до ближней луны, луна — не дальше 0.15:
+   между ними всегда остаётся четверть пустого. Считается раз — орбиты не
+   меняются. Возвращает [потолок планеты, потолки лун по индексу] */
+function bodyNearCaps(p){
+  if(p._bkCap)return p._bkCap;
+  let pc=Infinity;const mc=[];
+  for(const m of p.moons){
+    const gap=Math.max(0,(m.orbit||0)-p.radius-m.radius);
+    pc=Math.min(pc,1+.6*gap/p.radius);
+    mc.push(1+.15*gap/Math.max(1,m.radius));
+  }
+  return (p._bkCap=[pc,mc]);
+}
 function haulBarge(){const T=G.haul;return T._b||(T._b={seed:T.seed,by:"gt"});}
 function haulName(){return "буксир «"+HAUL_NAMES[((G.haul?G.haul.seed:0)>>>0)%HAUL_NAMES.length]+"»";}
 function haulSay(t){if(typeof etherLine==="function")etherLine(t,haulName());}
@@ -220,7 +242,7 @@ function haulTick(dt,sh){
   if(G.pirates.length)G.pirates=G.pirates.filter(p=>p.iff);
   if(G.shots.length)G.shots=[];
   haulFxTick(dt);
-  /* камера отъезжает, пока баржа, трос и корабль не влезут в кадр; ниже .35
+  /* камера отъезжает, пока баржа, трос и корабль не влезут в кадр; ниже .7
      корабль уже не мельчает (shipScaleAt), и отъезжать дальше незачем */
   {
     const need=haulReach()+bargeArtOf(haulBarge()).L*.52*HAUL_BARGE_K;
@@ -232,7 +254,9 @@ function haulTick(dt,sh){
      (shipScaleAt=Z), и мировой трос там же постоянен на экране; ниже пола они
      перестают мельчать, и трос вышел бы короче полубаржи — поэтому на время
      буксира ниже пола (.7) не отъезжаем */
-  if(G.zoom<.7)G.zoom=.7;   /* пол масштаба корабля на тросе (shipScaleAt) — трос и спрайты в одном масштабе */
+  /* и сверху так же (п. 2, 12.09): выше 1.6 спрайты не растут, а мировой трос
+     растёт — баржа отрывалась бы от троса на щипке */
+  G.zoom=clamp(G.zoom,SHIP_SCALE_MIN,SHIP_SCALE_MAX);   /* трос и спрайты в одном масштабе (shipScaleAt) */
   const reachW=haulReach();
   /* своя система со станцией — тащит к ней по-настоящему; чужая — уводит
      от звезды к краю, и в конце прыжок, как у любой баржи */
