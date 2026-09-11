@@ -428,10 +428,13 @@ body.screen #msg,body.screen #launchbtn,body.screen .slope{opacity:0;pointer-eve
    pre-line, и мягче цветом, чтобы не спорить с названием */
 .scr header s{text-decoration:none;color:var(--dim);font-size:10px;letter-spacing:.04em;display:block;
   margin-top:5px;white-space:pre-line;line-height:1.5}
-/* подпись закладки на столе — в одну строку: длинные («почта · стопки карточек,
-   скреплённые скрепкой») переносились, шапка росла с 70 до 85 px, и всё под ней
-   дёргалось при каждом переключении (плейтест 11.09, «экран прыгает на столе») */
-#tableSub{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* подпись закладки на столе: длинные («почта · стопки карточек, скреплённые
+   скрепкой») переносились, шапка росла с 70 до 85 px, и всё под ней дёргалось
+   при каждом переключении (плейтест 11.09, «экран прыгает на столе»). Место под
+   две строки держится всегда — шапка одной высоты при любой подписи; обрезка
+   многоточием — только страховка на третью строку (дизайн-ревью: хвост подписи
+   и есть то, ради чего она написана, резать его нельзя) */
+#tableSub{min-height:30px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 /* чип раскрытия шапки станции: видно, что это кнопка (дизайн-ревью 11.09) */
 #stKind{cursor:pointer}
 #stKind .stmore{display:inline-block;margin-left:8px;padding:6px 10px;min-height:28px;box-sizing:border-box;
