@@ -63,7 +63,7 @@ chrome(){ # <win> <url>
   local win="$1" url="$2"
   rm -rf "$LAB/profile"
   echo "$CHROME" --headless=new --no-sandbox --disable-gpu --window-size="$win" \
-    --user-data-dir="$LAB/profile" --virtual-time-budget=20000 --enable-logging=stderr --v=0 --dump-dom "$url"
+    --user-data-dir="$LAB/profile" --virtual-time-budget=20000 --enable-logging=stderr --v=0 --js-flags=--max-old-space-size=350 --renderer-process-limit=1 --disable-dev-shm-usage --dump-dom "$url"
 }
 skipq(){ # наборы, ушедшие в «соло» на этой версии, лёгкие прогоны обходят
   local s; s=$($PY skip "$VER"); [ -n "$s" ] && echo "&skip=$(urlenc "$s")"
