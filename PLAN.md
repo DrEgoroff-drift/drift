@@ -90,6 +90,31 @@ of *things*), not a target about light.
 **Five passes for a THING.** A thing is finished only with all five; three or fewer and it reads
 as a placeholder:
 
+## PLAYABLE ON A PHONE — the author's playtest of 2026-09-11 (first, before everything below)
+
+The author could not play fifteen minutes on a phone with 800 suites green. Everything else
+(galaxy M447–M451, the test queue, the refactor) waits. **Policy (author, 11.09):** fix without
+tests, local commits, look with eyes on `dev.html` at 390×844; the whole test run only right
+before a push.
+
+- [x] **Empty tank** — thrust opens a window: ДОМОЙ (price 10·2ⁿ by jumps, cools only with
+  active play: −1 per 45 active min; taxi jump +2, tow −0.5), БУКСИР (a real barge, 5 min haul,
+  free), СБРОС (ship lost → «Стриж»). ДОМОЙ in the menu anywhere. `16c-rescue` (wip, local).
+- [x] **Station header half a screen** — one line + «ещё ▾» (wip, local).
+- [ ] **Drones** — the price is a function of how many you own: `9000·1.6ⁿ` (agreed); tiers later.
+  Check whether pilots/mercs earn offline (they must be online-only).
+- [ ] **Buttons that do not press; screens that jump** — СТОЛ, ДЕЛО, ОПИСЬ (play at 390×844).
+- [ ] **Modules** — one path: pick → поставить → see it fitted. «Прогрев» — word not in code; ask where.
+- [ ] **After a boss** — a «what you got» card with НАДЕТЬ in it.
+- [ ] **ОПИСЬ** — no table scroll; the bottom strips become tabs with words.
+- [ ] **Start system picket** — «Коммуна» at 0:0 hails a new player and opens fire ~15 s in
+  («не ответил и пошёл дальше»): a newcomer is shot for a hail he never noticed.
+- [ ] **Station screen** — a clipped ether line above the header; the «Полёт восстановлен» toast
+  lies over the counter; the market says only cooperatives may buy — check a newcomer can trade.
+- [ ] **Scale** — far zoom: ship ×2 (floor .35 → .7); near zoom: ship half a planet — the author
+  wants to fly around a planet. Seamless atmosphere entry — asked, after the pass.
+- [ ] **Home-price activity perks** — a fuel coupon per 2 h of active play a week (proposed).
+
 ## What is left, in order (reviewed 2026-09-11, 0.443.0)
 
 Checked against the code, `PATCHNOTES.md`, the lab and `crash.log` on 11.09. Found already done
