@@ -32,23 +32,27 @@
 const OPIS={box:null,sel:null,hover:null,arm:null,drag:null,ask:null,hit:[],panels:{}};
 /* восемь строк автора плюс корпус, бур и урон: часть с одним аффиксом к корпусу
    иначе не сдвинула бы на панели ни одного числа, и «будущее» врало бы молчанием */
+/* Группы по 3–4 строки, нули не печатаются (ревью 11.09: семнадцать строк
+   подряд, из них три «0.0» у безоружного). Единицы — только те, что игра уже
+   пишет в других местах: бур ×, прыжок в пк, радар в ед. (как расстояния в
+   подсказках полёта); у тяги и щита честной единицы нет, и выдумывать её не надо */
 const OPIS_SHIP=[
-  {k:"thr",      ru:"тяга",       fix:2},
-  {k:"turn",     ru:"поворот",    fix:2},
-  {k:"hullMax",  ru:"корпус",     fix:0},
-  {k:"shieldMax",ru:"щит",        fix:0},
-  {k:"fuelMax",  ru:"бак",        fix:0},
-  {k:"cargoMax", ru:"трюм",       fix:0},
-  {k:"drill",    ru:"бур",        fix:2},
-  {k:"see",      ru:"радар",      fix:0},
-  {k:"jump",     ru:"прыжок",     fix:1},
-  {k:"dmg",      ru:"урон",       fix:1},
-  {k:"cool",     ru:"охлаждение", fix:0, less:1},
+  {k:"thr",      ru:"тяга",       fix:2, g:"ход"},
+  {k:"turn",     ru:"поворот",    fix:2, g:"ход"},
+  {k:"jump",     ru:"прыжок",     fix:1, g:"ход", u:" пк"},
+  {k:"see",      ru:"радар",      fix:0, g:"ход", u:" ед."},
+  {k:"hullMax",  ru:"корпус",     fix:0, g:"борт"},
+  {k:"shieldMax",ru:"щит",        fix:0, g:"борт"},
+  {k:"fuelMax",  ru:"бак",        fix:0, g:"борт"},
+  {k:"cargoMax", ru:"трюм",       fix:0, g:"борт"},
+  {k:"drill",    ru:"бур",        fix:2, g:"работа", p:"×"},
+  {k:"energyMax",ru:"энергия",    fix:0, g:"работа"},
+  {k:"cool",     ru:"охлаждение", fix:0, g:"работа", less:1},
+  {k:"dmg",      ru:"урон",       fix:1, g:"огонь"},
   /* три итога сборки (M363, §3.2): по ним и сравнивают карточку с карточкой */
-  {k:"energyMax",ru:"энергия",    fix:0},
-  {k:"gunHull",  ru:"урон/с корпус", fix:1, get:st=>st.gunTot?st.gunTot.hull:0},
-  {k:"gunShield",ru:"урон/с щит",    fix:1, get:st=>st.gunTot?st.gunTot.shield:0},
-  {k:"gunPerEn", ru:"урон на энергию",fix:2, get:st=>st.gunTot?st.gunTot.perEnergy:0}
+  {k:"gunHull",  ru:"по корпусу в с", fix:1, g:"огонь", get:st=>st.gunTot?st.gunTot.hull:0},
+  {k:"gunShield",ru:"по щиту в с",    fix:1, g:"огонь", get:st=>st.gunTot?st.gunTot.shield:0},
+  {k:"gunPerEn", ru:"на единицу энергии",fix:2, g:"огонь", get:st=>st.gunTot?st.gunTot.perEnergy:0}
 ];
 const OPIS_KIT=[
   {k:"weight",ru:"вес",      fix:1, less:1},
@@ -118,16 +122,22 @@ function opisPanel(id,title,rows,cur,fut,extra){
   /* строка может читать не поле, а свою мерку по всей сборке (M363: три
      итога) — тогда у неё есть get(st) вместо ключа */
   const val=(d,st)=>+(d.get?d.get(st):st[d.k])||0;
+  const num=(d,v)=>(d.p||"")+v.toFixed(d.fix)+(d.u||"");
+  let grp=null;
   for(const d of rows){
-    const x=val(d,cur);let cell="";
+    const x=val(d,cur);let cell="",y=x;
     if(fut&&fut.st){
-      const y=val(d,fut.st);
+      y=val(d,fut.st);
       if(Math.abs(x-y)>=(d.fix?Math.pow(10,-d.fix)*.5:.5)){
         const better=d.less?y<x:y>x;
-        cell="<u class='"+(better?"up":"dn")+"'>→ "+y.toFixed(d.fix)+"</u>";
+        cell="<u class='"+(better?"up":"dn")+"'>→ "+num(d,y)+"</u>";
       }
     }
-    h+="<div class='ln'><em>"+d.ru+"</em><b>"+x.toFixed(d.fix)+"</b>"+cell+"</div>";
+    /* ноль сейчас и ноль в будущем — строки нет; если будущее его сдвинет
+       (поставить первый ствол), строка появляется вместе со стрелкой */
+    if(!x&&!y)continue;
+    if(d.g&&d.g!==grp){grp=d.g;h+="<div class='grp'>"+grp+"</div>";}
+    h+="<div class='ln'><em>"+d.ru+"</em><b>"+num(d,x)+"</b>"+cell+"</div>";
   }
   if(fut&&fut.why)h+="<div class='why"+(fut.cap?" dn":"")+"'>"+fut.why+
     (fut.cap?" · оснастка: не хватает "+fut.cap:"")+"</div>";
@@ -576,6 +586,41 @@ function opisKitCard(x,i){
   opisActs(card,[{ru:"НАДЕТЬ",gold:true,go:()=>opisWear(i)}]);
   return card;
 }
+/* пустое и запертое на телефоне — одной строкой и под корабль (ревью 11.09:
+   шесть пустых ячеек «Сороки» и запертая шкатулка стояли первыми, 210 px до
+   корпуса, ради которого стол и открывают) */
+function opisFold(ru,note){
+  const e=document.createElement("div");e.className="op-fold";
+  e.innerHTML="<b>"+ru+"</b><s>"+note+"</s>";
+  return e;
+}
+/* подпись под силуэтом (телефон): без выбора — легенда цветов родов, с
+   выбранным слотом — что в нём и кнопка рядом с пальцем, а не тремя экранами
+   ниже в списке слотов. Метки 14 px сами не говорили, что они такое */
+function opisHullCap(slots,fm,inv,spare){
+  const cap=document.createElement("div");cap.className="op-hullcap";
+  const s=OPIS.sel;
+  if(s&&s.t==="slot"&&slots[s.i]){
+    const K=PART_KINDS[slots[s.i]],p=fm[s.i]!=null?partById(fm[s.i]):null;
+    const M=(typeof mountAt==="function")?mountAt(G.shipId,s.i):null;
+    const takes=q=>q.kind===slots[s.i]&&(!M||typeof mountTakes!=="function"||mountTakes(M,q));
+    const n=p?0:inv.filter(takes).length,kin=p?0:inv.filter(q=>q.kind===slots[s.i]).length;
+    /* род есть, размер не тот — так и сказать: «такого нет» было бы неправдой */
+    const why=n?"подойдёт снятых: "+n+", они отмечены":
+      (kin&&M&&typeof MOUNT_SIZE_RU!=="undefined"?"снятые есть, но в "+MOUNT_SIZE_RU[M.size]+" подвес не встанут":"снятых такого рода нет");
+    cap.innerHTML="<b style='color:"+K.col+"'>СЛОТ "+(s.i+1)+" · "+K.sh+"</b><s>"+
+      (p?"«"+p.name+"»":"пусто · "+why)+"</s>";
+    const acts=[];
+    if(p)acts.push({ru:"СНЯТЬ",go:()=>opisUnfit(s.i)});
+    else if(n)acts.push({ru:"К СНЯТЫМ",gold:true,go:()=>{if(spare&&spare.scrollIntoView)spare.scrollIntoView({block:"start",behavior:"smooth"});}});
+    if(acts.length)opisActs(cap,acts);
+    return cap;
+  }
+  const seen=[];for(const k of slots)if(PART_KINDS[k]&&seen.indexOf(k)<0)seen.push(k);
+  cap.innerHTML="<span class='lg'>"+seen.map(k=>"<i style='background:"+PART_KINDS[k].col+"'></i>"+PART_KINDS[k].sh).join("")+
+    "</span><s>точки на корпусе — слоты: залитая занята, с плюсом свободна. Тап по точке — выбрать</s>";
+  return cap;
+}
 function opisHead(n,ru,sub){
   const h=document.createElement("h3");
   h.innerHTML="<i>"+n+"</i>"+ru+(sub?"<s>"+sub+"</s>":"");
@@ -613,7 +658,8 @@ function opisBar(){
   const cv=document.createElement("canvas");cv.width=64;cv.height=64;
   opisDrawHatch(cv.getContext("2d"),64,64,false);
   bar.appendChild(cv);
-  const t=document.createElement("s");t.textContent="отпустите здесь — за борт";bar.appendChild(t);
+  /* полоса называет себя словами (ревью 11.09: «полоски внизу» не читались) */
+  const t=document.createElement("s");t.innerHTML="<b>ЛЮК · ЗА БОРТ</b>отпустите вещь здесь, чтобы выбросить";bar.appendChild(t);
   const ask=opisAskForm();if(ask)bar.appendChild(ask);
   bar.classList.toggle("ask",!!OPIS.ask);
   return bar;
@@ -685,8 +731,16 @@ function opisRender(box){
     }
     bx.appendChild(list);
   }
-  top.appendChild(shelf);top.appendChild(bx);
-  box.appendChild(top);
+  const shelfEmpty=!WS.shelf.length&&!WS.hold.length,boxLocked=!CO.owned.length;
+  let folds=null;
+  if(phone&&(shelfEmpty||boxLocked)){
+    folds=document.createElement("div");folds.className="op-folds";
+    if(shelfEmpty)folds.appendChild(opisFold("ИНСТРУМЕНТЫ «СОРОКИ»","шесть мест пусты · говорят, есть борт, где платят спичками"));
+    if(boxLocked)folds.appendChild(opisFold("КОСМЕТИКА","шкатулка заперта · откроется с первой покупкой"));
+  }
+  if(!(phone&&shelfEmpty))top.appendChild(shelf);
+  if(!(phone&&boxLocked))top.appendChild(bx);
+  if(top.childNodes.length)box.appendChild(top);
   /* ── зона 1: трюм кучами, память о ценах, коробок ── */
   const z1=document.createElement("section");z1.className="op-z op-hold";
   const keys2=RES_KEYS.filter(k=>(G.cargo[k]|0)>0);
@@ -717,7 +771,9 @@ function opisRender(box){
   mb.insertAdjacentHTML("beforeend","<b>спичек: "+mN+"</b><s>из-под кожухов разобранных частей</s>");
   if(atLocker)z1.appendChild(mb);
   else{
-    const zs=document.createElement("section");zs.className="op-z op-side";
+    /* ноль спичек на телефоне — заголовок и строка без коробка: пустое не
+       занимает экран (то же правило, что у полки и шкатулки выше) */
+    const zs=document.createElement("section");zs.className="op-z op-side"+(phone&&!mN?" op-empty":"");
     zs.appendChild(opisHead(5,"СПИЧКИ",mN?"валюта «Сороки»":"пока ни одной"));
     mb.classList.add("big");zs.appendChild(mb);
     const note=document.createElement("s");note.className="chalk";
@@ -754,7 +810,9 @@ function opisRender(box){
   hcv.addEventListener("click",e=>{
     const i=opisHullSlotAt(hcv,e.clientX,e.clientY,null);
     if(i<0)return;
-    OPIS.sel=(OPIS.sel&&OPIS.sel.t==="slot"&&OPIS.sel.i===i)?null:{t:"slot",i};opisRerender();
+    /* с id занятой части — тогда и её карточка в списке слотов выбрана и
+       показывает кнопки (без id выбор слота с неё не совпадал) */
+    OPIS.sel=(OPIS.sel&&OPIS.sel.t==="slot"&&OPIS.sel.i===i)?null:(fm[i]!=null?{t:"slot",i,id:fm[i]}:{t:"slot",i});opisRerender();
   });
   const ps=opisPanel("ship","ПРИБОРЫ",OPIS_SHIP,st,opisShipFuture(opisFocus()),"оснастка "+capUsed()+"/"+capOf(G.shipId));
   OPIS.panels.ship=ps;
@@ -765,7 +823,9 @@ function opisRender(box){
   for(const p of inv)sp.appendChild(opisPartCard(p,"spare"));
   /* корпус — герой зоны: силуэт сверху во всю левую половину, приборы рядом,
      под ними слоты и снятые двумя колонками */
-  pg.appendChild(hcv);pg.appendChild(ps);pg.appendChild(sc);pg.appendChild(sp);
+  pg.appendChild(hcv);
+  if(phone)pg.appendChild(opisHullCap(slots,fm,inv,sp));
+  pg.appendChild(ps);pg.appendChild(sc);pg.appendChild(sp);
   z3.appendChild(pg);
   /* ── зона 2: кукла, раскладка, шесть мест, приборы комплекта, запас ── */
   const z2=document.createElement("section");z2.className="op-z op-kit";z2.dataset.drop="kit";
@@ -843,8 +903,12 @@ function opisRender(box){
   }
   /* порядок в разметке — порядок ленты на телефоне; на широком экране расставит сетка */
   box.appendChild(z3);box.appendChild(z2);box.appendChild(z1);if(z5)box.appendChild(z5);box.appendChild(z4);
+  if(folds)box.appendChild(folds);
+  /* подсказка называет то, что видно: кнопки. Долгое нажатие по-прежнему
+     поднимает для переноса, но всё, что умеет перенос, есть и кнопкой — прятать
+     в подсказке жест, без которого можно обойтись, незачем (ревью 11.09) */
   const foot=document.createElement("div");foot.className="op-foot";
-  foot.textContent=phone?"тап — выбрать · долгое нажатие — поднять · кнопки под вещью":
+  foot.textContent=phone?"тап по вещи — кнопки под ней · тап по точке на корпусе — слот":
     "перетащи предмет на нужное место · перетащи на люк, чтобы выбросить · части выше добротной требуют подтверждения";
   box.appendChild(foot);
   opisHullRedraw();

@@ -1392,6 +1392,8 @@ body.table #loglist.opis::before{display:none}
 .opis .op-panel .ln b{font-weight:400;color:#f4ecd6;min-width:44px;text-align:right}
 .opis .op-panel .ln u{text-decoration:none;min-width:58px;text-align:right}
 .opis .op-panel .up{color:var(--good)}.opis .op-panel .dn{color:#ff9d7a}
+.opis .op-panel .grp{margin-top:6px;padding-top:4px;border-top:1px solid rgba(232,220,190,.10);font-size:9px;letter-spacing:.14em;color:rgba(232,220,190,.45)}
+.opis .op-panel h4+.grp{margin-top:0;border-top:0;padding-top:0}
 .opis .op-panel .why{margin-top:4px;font-size:9px;color:rgba(232,220,190,.6);letter-spacing:.04em}
 .opis .op-panel .why.dn{color:#ff9d7a}
 /* зона 2: кукла, раскладка, места, запас */
@@ -1441,10 +1443,28 @@ body.op-ask #opisBar>s{display:none}
   .opis .op-parts{order:1}.opis .op-kit{order:2}.opis .op-hold{order:3}
   .opis .op-locker,.opis .op-side{order:4}.opis .op-foot{order:5}
   .opis .op-hatch{display:none}
-  .opis .op-parts-grid{grid-template-columns:1fr;grid-template-areas:"hull" "panel" "slots" "spare"}
+  .opis .op-parts-grid{grid-template-columns:1fr;grid-template-areas:"hull" "cap" "panel" "slots" "spare"}
   .opis .op-parts-grid canvas.op-hull{height:auto}
   .opis .op-piles{grid-template-columns:repeat(2,minmax(0,1fr))}
+  /* подпись под силуэтом: легенда родов или выбранный слот с кнопкой (11.09) */
+  .opis .op-hullcap{grid-area:cap;padding:6px 10px 8px;background:rgba(0,0,0,.22);border-radius:4px;border:1px solid rgba(232,220,190,.10)}
+  .opis .op-hullcap b{display:block;font-weight:400;font-size:11px;letter-spacing:.12em}
+  .opis .op-hullcap>s{display:block;text-decoration:none;color:rgba(232,220,190,.62);font-size:10px;line-height:1.55;margin-top:2px}
+  .opis .op-hullcap .lg{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:9px;letter-spacing:.12em;color:#efe4c8}
+  .opis .op-hullcap .lg i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+  .opis .op-hullcap .acts{display:flex;gap:6px;margin-top:6px}
+  .opis .op-hullcap .acts .act{flex:1 1 auto}
+  /* пустой слот — одной строкой: подпись и «пусто» рядом, а не столбиком */
+  .opis .op-slot:not(:has(.op-card)){display:flex;align-items:center;gap:10px}
+  .opis .op-slot:not(:has(.op-card)) em{margin-bottom:0;flex:1 1 auto}
+  /* свёрнутое пустое и запертое — под кораблём, строкой каждое */
+  .opis .op-folds{order:4;display:flex;flex-direction:column;gap:6px}
+  .opis .op-side.op-empty .op-matchbox{display:none}
+  .opis .op-fold{padding:8px 12px;border:1px dashed rgba(232,220,190,.22);border-radius:4px;background:rgba(0,0,0,.14)}
+  .opis .op-fold b{display:block;font-weight:400;font-size:9px;letter-spacing:.16em;color:rgba(239,228,200,.75)}
+  .opis .op-fold s{display:block;text-decoration:none;color:rgba(232,220,190,.5);font-size:10px;line-height:1.5;margin-top:2px}
 }
+.op-hatchbar>s b{display:block;font-weight:400;font-size:12px;letter-spacing:.18em;color:#f2b25c;margin-bottom:2px}
 /* виденные цены на карте: то, что в трюме, — светлым */
 #pricewin .row .nm s .hot{color:var(--amber)}
 

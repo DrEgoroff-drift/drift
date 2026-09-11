@@ -25,15 +25,17 @@ function hullSilhouette(c,cw,ch,id,sel,fm){
     const sx=px(a.x), sy=py(a.y);
     const K=PART_KINDS[a.kind],on=fm[a.i]!=null,isSel=sel===a.i;
     hit.push({x:sx,y:sy,i:a.i,kind:a.kind});
-    c.beginPath();c.arc(sx,sy,isSel?9:7,0,TAU);
+    /* 18 px, выбранный 22 (ревью 11.09: кружки по 14 px на телефоне не
+       читались метками). Зона касания шире рисунка — 30 px от центра (27j) */
+    c.beginPath();c.arc(sx,sy,isSel?11:9,0,TAU);
     c.fillStyle=on?K.col:"rgba(10,14,20,.85)";
     c.globalAlpha=on?.9:1;c.fill();c.globalAlpha=1;
-    c.lineWidth=isSel?2.2:1.3;
+    c.lineWidth=isSel?2.4:1.6;
     c.strokeStyle=isSel?"#fff":K.col;c.stroke();
-    if(!on){c.fillStyle=K.col;c.font="9px ui-monospace,monospace";c.textAlign="center";
+    if(!on){c.fillStyle=K.col;c.font="bold 13px ui-monospace,monospace";c.textAlign="center";
       c.textBaseline="middle";c.fillText("+",sx,sy+.5);c.textBaseline="alphabetic";}
     if(isSel){
-      c.beginPath();c.arc(sx,sy,13,0,TAU);
+      c.beginPath();c.arc(sx,sy,16,0,TAU);
       c.strokeStyle="rgba(255,255,255,.35)";c.lineWidth=1;c.stroke();
     }
   });
