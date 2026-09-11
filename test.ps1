@@ -126,6 +126,16 @@ if ($nodeTier) {
   # и дым: страница в Хроме открылась, цикл прожил кадр, сторож молчит — то, чего Node не видит
   $NoBuild = $true; $Only = "игра запустилась сама"
 }
+# -Times, ярус Node особо (queue «Refactor audit», 0.438.0: «-Times для Node — долг»):
+# у Node часы всегда настоящие, а Хром под --virtual-time-budget их держит на нуле,
+# так что тридцать самых долгих наборов быстрого яруса (~25 с на правку) видны только
+# отсюда. Печатает и не решает исход — исход даёт основной прогон ниже (Node или Хром).
+if ($Times -and -not $nodeTier -and $nodeExe) {
+  [Console]::OutputEncoding = [Text.Encoding]::UTF8
+  if (-not $NoBuild) { & powershell -ExecutionPolicy Bypass -File (Join-Path $root0 "build.ps1") | Out-Null; $NoBuild = $true }
+  $targs = @((Join-Path $root0 "test-node.js"), "--times"); if ($Full) { $targs += "--full" }
+  & $nodeExe @targs
+}
 
 $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path

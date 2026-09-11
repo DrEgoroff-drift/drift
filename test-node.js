@@ -203,6 +203,15 @@ const tick = setInterval(() => {
   /* карантин (опция stage у набора, M442): печатается, но код выхода не решает */
   if ((TEST.staged || []).length) { console.log("КАРАНТИН (в вердикт не идёт):"); for (const f of TEST.staged) console.log("  ✗ " + f); }
   for (const l of TEST.lines) if (l.startsWith("ПО ГРУППАМ")) console.log(l);
+  /* --times (test.ps1 -Times): у Node часы всегда настоящие — нет виртуального
+     бюджета, который под Хромом держит все замеры на нуле, — так что самые
+     долгие наборы видны без единого лишнего флага. На зелёном прогоне без
+     --times ничего не печатается: харнесс сам считает список (90-harness.js),
+     здесь только решение — показать тридцать строк или промолчать. */
+  if (flag("times")) {
+    const slowBlock = TEST.lines.find(l => l.startsWith("САМЫЕ ДОЛГИЕ"));
+    if (slowBlock) { const rows = slowBlock.split("\n").slice(1).filter(Boolean); console.log("САМЫЕ ДОЛГИЕ (мс) · node:"); for (const r of rows.slice(0, 30)) console.log(r); }
+  }
   if (flag("verbose")) console.log(TEST.lines.join("\n"));
   process.exit(TEST.fail ? 1 : 0);
 }, 20);
