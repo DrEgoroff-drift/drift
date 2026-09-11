@@ -205,6 +205,42 @@ before a push.
   24 h / 240 min on return) — a tick gap over `PEOPLE_GAP_MS` (60 s) now calls `peopleOffline()`.
   Drones keep their 24 h catch-up (not asked). Tests to add before the push: price by fleet size; a
   60 s+ loop gap pays nobody.
+- **Review block of 12.09 — before the push** (Контроль's order; each item: red test first, then the
+  fix, a WIP commit, dev, one line to both reviewers). Sources: the tester's `review.json` and
+  `botverify.json` (scratchpad 3d6318e9…), the designer's letters. Scale stays as built until the
+  author says otherwise (the reviewers disagree; a peer cannot decide for the author).
+  - [ ] **R0 picket «Коммуна»**: the hail is a window with ПРОХОДОМ / ПО ДЕЛУ and a countdown, no fire
+    while it is open; in the start system the picket never wrecks (a warning volley, then escort);
+    both pads relabel; B2 — the hail takes ЦЕЛЬ before the probe, `hailAnswer("pass")` no H.warn;
+    first rungs tank 500 / hold 900 (Контроль); test «start, 120 s silent → hull > 50 %».
+  - [ ] **R1 cue and ДЕЙСТВИЕ**: an equal ACT keeps the first writer; `if(cue(..)&&actEdge)`; the hail
+    before the station/belt/base checks; test «belt ring 100 from a planet: prompt = action».
+  - [ ] **R2 empty tank**: no nose turn on fuel 0; any flight input asks for the window; stick and move
+    pads dim, «БАК ПУСТ» over the stick; test «fuel 0, turn → angle unchanged, window open».
+  - [ ] **R3 the rescue window**: tester 1 (window/БУКСИР/ДОМОЙ/СБРОС during a haul), 2 (a wreck on the
+    rope loops), 3 (СБРОС clears every fit, keeps the lost parts), 6 (dock greetings burn behind the
+    screen; the crash toast hides), 7 (stale window, Space at the dock), 9 (× 44 px, tap outside,
+    Escape), 10 («в баке будет» = max), 12 (the armed СБРОС label returns), 13 (СБРОС on a bare
+    «Стриж» is free), 16 (a chip tap on the rope sets G.ap); HOME_DOCK_COOL applied; surface fuel 1–7
+    is not «ноль» and not a taxi jump. Designer: the window in the lower third, pursuit in its head,
+    the armed СБРОС red with a 4 s bar, sub-lines 11 px ≥4.5:1, head «до станции <name> · <dist>»,
+    icons per exit, ДОМОЙ alone is the main button, the menu shows its price.
+  - [ ] **R4 the haul scene**: the rope from a stern boom to the ship's nose, drawn after the flames;
+    the barge comes from behind and overtakes; the end at the station by `S.ang`, a 3–4 s unhook and
+    departure; camera eased; lines and debris as a deck; `rndFx` out of haul state (M441).
+  - [ ] **R5 bots**: B1 `_probeAt` reset every frame, price on the pad, second tap; B3 the surface sign
+    only last in the chain and by hold; B4 no jump arrival into the corona, `wreck(reason)` logged;
+    B5 wreck hull = min(45 %, before). First hour (Контроль): the first probe free, repair two
+    buttons and ≤ half the cash, a hard landing −20 % not a wreck, the first goal frozen, board cargo
+    ≥ 15 min with a timer in ДЕЛО.
+  - [ ] **R6 design tails**: pads name the action always (ЦЕЛЬ → ЗАХВАТ / ЗОНД · 300 КР / ПО ДЕЛУ,
+    ДЕЙСТВИЕ → ВЫХОДЫ …), prompts ≤ 2 lines and no keys on touch, compass chips only for off-screen
+    things and never under windows or the prompt, МАСШТАБ to the HUD top; ОПИСЬ sub-tabs (КОРАБЛЬ ·
+    СНЯТОЕ · КОМПЛЕКТ · ТРЮМ), slots before ПРИБОРЫ, the empty slot says where to buy, СНЯТЬ in one
+    place; ДЕЛО the manager's share in the column, the drones as a table; ЛЕНТЫ no gap, no «T» on
+    touch; СПЛАВ «В ПЛАВКУ»; a maxed module on one line; the got card: «/с», red minuses, lower third.
+  - Later (after the release): deposits refill on landing, the rebind button sticks on a phone, «ТРЮМ
+    ПУСТ» with rare cargo, the pronoun in 12aa-need, the station header two fixed lines.
 - [ ] **Start system picket** — «Коммуна» at 0:0 hails a new player and opens fire ~15 s in.
 - [ ] **Market for a newcomer** — «only cooperatives may buy»: check a newcomer can trade at all.
 - [ ] **Home-price activity perks** — a fuel coupon per 2 h of active play a week (proposed).
