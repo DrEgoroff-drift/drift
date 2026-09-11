@@ -213,7 +213,8 @@ before a push.
     hail window is over every screen (z 24), `H.t` stands and no new hail starts under a screen
     (`worldCovered()`, 08-state), fire at the player pauses there (`roleFire` for `!p.iff`,
     `pirateArmTick`), `hailHold()` = 900 on a phone, chips dim and stop taking taps under the hail
-    and SOS windows. Missiles already in flight still land. Next: dev look at R0, then R2.
+    and SOS windows. Missiles already in flight still land. Open: Контроль wants the hail to wait
+    under the SOS window too (`sosopen` in `worldCovered` or in `hailTick`). Next: dev look at R0, then R2.
     **R0 open (tester on dev, both reviewers):** (1) behind СТОЛ/ОПИСЬ/station the hail window hides
     (`hailWinSync`) while `H.t-=dt` keeps running (`hailTick`) — «read the log, got a volley» outside
     the start system. Fix: the hail window sits above `.scr`/#tablewin and shows over any screen; while
@@ -257,6 +258,9 @@ before a push.
     СНЯТОЕ · КОМПЛЕКТ · ТРЮМ), slots before ПРИБОРЫ, the empty slot says where to buy, СНЯТЬ in one
     place; ДЕЛО the manager's share in the column, the drones as a table; ЛЕНТЫ no gap, no «T» on
     touch; СПЛАВ «В ПЛАВКУ»; a maxed module on one line; the got card: «/с», red minuses, lower third.
+    Designer 12.09: a pad label is ≤2 words + a number («ЗОНД · 300», not «ЗОНД ЗА 300 КР»); a
+    moon/planet name yields to the player's ship (moves to the far side of the disc); «КОМПАНИЯ» by
+    the ship never crosses a planet chip.
   - Later (after the release): deposits refill on landing, the rebind button sticks on a phone, «ТРЮМ
     ПУСТ» with rare cargo, the pronoun in 12aa-need, the station header two fixed lines.
 - [ ] **Start system picket** — «Коммуна» at 0:0 hails a new player and opens fire ~15 s in.
