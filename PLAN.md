@@ -129,7 +129,7 @@ before a push.
   the СТОЛ header jumped 70↔85 px (long tab subtitles wrapped) → one line [done]. Needs a late world:
   the author's cloud save (asked, no «да» yet — do not touch without it) or a `veteranWorld()` fixture
   from `e2eLate()` (1.5 M, a big hull with modules, 10 drones, crew, home tier 3–4, desk full);
-  **The author's save is taken (his «да», 11.09):** `C:\Claude\drift-privateuthor-save.json`, outside
+  **The author's save is taken (his «да», 11.09):** `C:\Claude\drift-private\author-save.json`, outside
   git — never copy it into the repo. `python docs/vetshot.py OUT.png "<js>" "<eval>"` shoots the game
   on it at 500×1080. Found on it: the flight toast «ГРАВИТАЦИОННЫЙ ЯКОРЬ» covered the bottom row of
   every open screen (he sits past the system edge) [fixed: not over open screens]; ОПИСЬ top was a
