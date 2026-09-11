@@ -129,6 +129,15 @@ before a push.
   the СТОЛ header jumped 70↔85 px (long tab subtitles wrapped) → one line [done]. Needs a late world:
   the author's cloud save (asked, no «да» yet — do not touch without it) or a `veteranWorld()` fixture
   from `e2eLate()` (1.5 M, a big hull with modules, 10 drones, crew, home tier 3–4, desk full);
+  **The author's save is taken (his «да», 11.09):** `C:\Claude\drift-privateuthor-save.json`, outside
+  git — never copy it into the repo. `python docs/vetshot.py OUT.png "<js>" "<eval>"` shoots the game
+  on it at 500×1080. Found on it: the flight toast «ГРАВИТАЦИОННЫЙ ЯКОРЬ» covered the bottom row of
+  every open screen (he sits past the system edge) [fixed: not over open screens]; ОПИСЬ top was a
+  sideways carousel (shelf 78% + box 40%), КОСМЕТИКА cut at the right edge [fixed: stacked]. Open:
+  the slot «+» markers on the hull silhouette are ~12 px — the likely «модули не понятно как выбрать»;
+  «долгое нажатие — поднять» is a hidden gesture; the «полоски внизу» are probably #opisBar (the
+  hatch strip on lift) — verify by tapping; ДЕЛО reads fine on his world. Offline drones paid him
+  +7 000 кр on load — item 6.
   ОПИСЬ: the bottom strips become tabs with words.
 - [ ] **4. Modules** — «прогрев» is КОРАБЛЬ → ОСНАСТКА (`26b-ui-station-work` stTabMods; maybe СПЛАВ).
   Proposed: an upgrade card (ship thumb with the slot lit, dots big, «now → becomes» from stat(), the
