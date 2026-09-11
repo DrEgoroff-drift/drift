@@ -126,11 +126,59 @@ function haulStart(){
   const sh=G.ship,dest=nearestStation(G.sx,G.sy);
   const a=rnd()*TAU;
   G.haul={ph:"come",t:0,seed:hashi(G.sx*977+G.sy,clockNow()|0,31)>>>0,
-    bx:sh.x+Math.cos(a)*1600,by:sh.y+Math.sin(a)*1600,ba:a+Math.PI,
+    bx:sh.x+Math.cos(a)*2200,by:sh.y+Math.sin(a)*2200,ba:a+Math.PI,
     x0:0,y0:0,dsx:dest.sx,dsy:dest.sy,dname:dest.name};
-  G.ap=null;G.orbit=null;G.pirates=[];G.shots=[];
+  G.ap=null;G.orbit=null;G.pirates=[];G.shots=[];HAUL_FX=[];
   logAdd("warn","Буксир вызван к "+evacFrom()+" · баржа идёт");
   say("Буксир вызван\nбаржа идёт к вам",150);
+  haulSay("вижу вас, идём. стойте где стоите — всё равно больше негде");
+}
+
+/* ── сцена буксира (автор 11.09: «выглядит как говно, не большой, нет огня;
+   пусть на тросе болтается, что-то отваливается — развлекать пять минут») ──
+   Баржа — грузовая махина в три корпуса, у неё горят маршевые. Корабль висит
+   на тросе и качается: рывок на старте, затухание, новый толчок, когда от него
+   что-то отваливается. Раз в 40–60 с отламывается кусок (обшивка, антенна,
+   бочка) — искры, кусок уплывает назад и гаснет; состояние корабля не трогаем,
+   это шутка, а не урон. Экипаж переговаривается в эфире. Всё, что не игра, —
+   в HAUL_FX и в полях с подчёркиванием, мимо сейва. Размеры — от масштаба
+   корабля (shipScaleAt), а не от зума мира: иначе на дальнем отъезде трос
+   короче баржи. */
+const HAUL_BARGE_K=1.35;              /* баржа против масштаба корабля */
+const HAUL_ROPE=95;                   /* трос, px масштаба корабля */
+const HAUL_SHIP_HALF=22;              /* от центра корабля до носа, px масштаба */
+const HAUL_BIT_GAP=[40*60,60*60];     /* кадров между отвалившимися кусками */
+const HAUL_TALK_GAP=[30*60,40*60];    /* кадров между репликами экипажа */
+const HAUL_NAMES=["Бурлак","Упрямый","Тягач-7","Старый Ёж","Трудяга"];
+const HAUL_TALK=["держись, не дёргай","на тросе не курить","трос новый, не бойся. почти новый",
+  "это не мы трясём, это ты болтаешься","бак пустой — голова пустая, говорил мне отец",
+  "за буксир денег не берём. за разговоры тоже","видишь станцию? и я не вижу. скоро",
+  "руль не трогай, он у тебя сейчас для красоты","у нас тут чай. тебе не передать, извини"];
+let HAUL_FX=[];
+function shipScaleAt(Z){return clamp(Z,.35,1.6);}      /* масштаб корабля в drawSystem — один на двоих */
+function haulBarge(){const T=G.haul;return T._b||(T._b={seed:T.seed,by:"gt"});}
+function haulName(){return "буксир «"+HAUL_NAMES[((G.haul?G.haul.seed:0)>>>0)%HAUL_NAMES.length]+"»";}
+function haulSay(t){if(typeof etherLine==="function")etherLine(t,haulName());}
+/* от центра корабля до центра баржи, px масштаба корабля */
+function haulReach(){return HAUL_SHIP_HALF+HAUL_ROPE+bargeArtOf(haulBarge()).L*.48*HAUL_BARGE_K;}
+function haulGap(g){return g[0]+rndFx()*(g[1]-g[0]);}
+/* кусок отвалился: косметика, мир не трогаем */
+function haulBit(){
+  const sh=G.ship,T=G.haul,hd=T.ba,px=-Math.sin(hd),py=Math.cos(hd),side=rndFx()<.5?-1:1;
+  const kind=["plate","antenna","barrel"][Math.floor(rndFx()*3)];
+  const x=sh.x+px*side*8,y=sh.y+py*side*8;
+  HAUL_FX.push({k:kind,x,y,vx:-Math.cos(hd)*(.5+rndFx()*.5)+px*side*(.3+rndFx()*.4),
+    vy:-Math.sin(hd)*(.5+rndFx()*.5)+py*side*(.3+rndFx()*.4),a:rndFx()*TAU,va:(rndFx()-.5)*.2,life:1,dec:1/(8*60)});
+  for(let i=0;i<14;i++){const a=rndFx()*TAU,v=1+rndFx()*2.5;
+    HAUL_FX.push({k:"spark",x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:1,dec:1/(18+rndFx()*20)});}
+  T._sv=(T._sv||0)+side*.012;          /* толчок на тросе */
+  if(rndFx()<.7)haulSay(["у тебя там что-то отвалилось","ого. это было важное?",
+    "не страшно, на станции приварят","считай, облегчились"][Math.floor(rndFx()*4)]);
+}
+function haulFxTick(dt){
+  for(const f of HAUL_FX){f.x+=f.vx*dt;f.y+=f.vy*dt;if(f.va)f.a+=f.va*dt;
+    if(f.k==="spark"){f.vx*=.94;f.vy*=.94;}f.life-=f.dec*dt;}
+  if(HAUL_FX.length)HAUL_FX=HAUL_FX.filter(f=>f.life>0);
 }
 /* буксир переживает перезагрузку (ревью 11.09): закрыл вкладку на третьей
    минуте — открыл, и баржа тащит дальше. Форма проверяется строго: битый
@@ -156,26 +204,64 @@ function haulTick(dt,sh){
      отступник) снимаем здесь — корабль без руля не должен быть мишенью */
   if(G.pirates.length)G.pirates=G.pirates.filter(p=>p.iff);
   if(G.shots.length)G.shots=[];
+  haulFxTick(dt);
+  /* камера отъезжает, пока баржа, трос и корабль не влезут в кадр; ниже .35
+     корабль уже не мельчает (shipScaleAt), и отъезжать дальше незачем */
+  {
+    const need=haulReach()+bargeArtOf(haulBarge()).L*.52*HAUL_BARGE_K;
+    const fit=Math.max(.35,.38*Math.min(W,H)/need);
+    if(G.zoom>fit)G.zoom=Math.max(fit,G.zoom-(G.zoom-fit)*Math.min(1,.03*dt));
+  }
+  const reachW=haulReach()*shipScaleAt(G.zoom)/Math.max(.05,G.zoom);   /* трос в мировых единицах */
+  /* своя система со станцией — тащит к ней по-настоящему; чужая — уводит
+     от звезды к краю, и в конце прыжок, как у любой баржи */
+  const same=T.dsx===G.sx&&T.dsy===G.sy&&G.sys.station;
+  const S=same?G.sys.station:null;
+  const ox=T.ph==="haul"?T.x0:sh.x,oy=T.ph==="haul"?T.y0:sh.y;
+  const tx=S?S.x+Math.cos(S.ang)*120:ox+Math.cos(Math.atan2(oy,ox))*3000;
+  const ty=S?S.y+Math.sin(S.ang)*120:oy+Math.sin(Math.atan2(oy,ox))*3000;
   if(T.ph==="come"){
-    const k=clamp(T.t/HAUL_COME,0,1),e=1-(1-k)*(1-k);
-    const tx=sh.x-Math.cos(T.ba)*70,ty=sh.y-Math.sin(T.ba)*70;
-    T.bx+=(tx-T.bx)*Math.min(1,e*.08*dt+.002*dt);T.by+=(ty-T.by)*Math.min(1,e*.08*dt+.002*dt);
-    T.ba=Math.atan2(sh.y-T.by,sh.x-T.bx);
-    if(T.t>=HAUL_COME){T.ph="haul";T.t=0;T.x0=sh.x;T.y0=sh.y;}
+    /* баржа идёт со стороны станции, гасит ход носовыми, разворачивается на
+       месте маневровыми и подаёт корму под трос */
+    const k=clamp(T.t/HAUL_COME,0,1),hd0=Math.atan2(ty-sh.y,tx-sh.x);
+    const ax=sh.x+Math.cos(hd0)*reachW,ay=sh.y+Math.sin(hd0)*reachW;
+    T._fire=k<.5?1:0;T._retro=k>=.5&&k<.72;T._turn=k>=.72;
+    if(k<.72){
+      T.bx+=(ax-T.bx)*Math.min(1,(.003+.03*k*k)*dt);T.by+=(ay-T.by)*Math.min(1,(.003+.03*k*k)*dt);
+      T.ba=Math.atan2(sh.y-T.by,sh.x-T.bx);
+    }else{
+      T.bx=ax;T.by=ay;
+      const face=Math.atan2(sh.y-ay,sh.x-ax),q=(k-.72)/.28,e=q*q*(3-2*q);
+      T.ba=face+angDiff(hd0,face)*e;
+    }
+    sh.a=Math.atan2(T.by-sh.y,T.bx-sh.x);
+    if(T.t>=HAUL_COME){
+      T.ph="haul";T.t=0;T.x0=sh.x;T.y0=sh.y;T._sw=0;T._sv=.02;   /* рывок: трос взяли */
+      T._nb=25*60;T._nt=12*60;
+      haulSay("трос взяли, пошли. держись");
+    }
   }else{
-    /* своя система со станцией — тащит к ней по-настоящему; чужая — уводит
-       от звезды к краю, и в конце прыжок, как у любой баржи */
-    const same=T.dsx===G.sx&&T.dsy===G.sy&&G.sys.station;
-    const S=same?G.sys.station:null;
-    const tx=S?S.x+Math.cos(S.ang)*120:T.x0+Math.cos(Math.atan2(T.y0,T.x0))*3000;
-    const ty=S?S.y+Math.sin(S.ang)*120:T.y0+Math.sin(Math.atan2(T.y0,T.x0))*3000;
     const k=clamp(T.t/HAUL_TIME,0,1),e=k;   /* ровно: плавный разгон стоял на месте первые полминуты */
     const nx=T.x0+(tx-T.x0)*e,ny=T.y0+(ty-T.y0)*e;
-    const hd=Math.atan2(ny-sh.y,nx-sh.x);
-    if(Math.hypot(nx-sh.x,ny-sh.y)>.01){T.ba=hd;sh.a=hd;}
-    sh.x=nx;sh.y=ny;
-    T.bx=sh.x+Math.cos(T.ba)*70;T.by=sh.y+Math.sin(T.ba)*70;
+    const hd=Math.atan2(ty-T.y0,tx-T.x0);
+    T.ba=hd;sh.x=nx;sh.y=ny;
+    /* качание на тросе: пружина с затуханием и мелкий ветер */
+    T._sw=(T._sw||0)+(T._sv||0)*dt;
+    T._sv=(T._sv||0)+(-.0022*T._sw-.012*(T._sv||0))*dt+(rndFx()-.5)*.00035*dt;
+    T._sw=clamp(T._sw,-.3,.3);
+    sh.a=hd+T._sw;
+    T.bx=sh.x+Math.cos(hd+T._sw)*reachW;T.by=sh.y+Math.sin(hd+T._sw)*reachW;
+    T._fire=1;T._retro=false;T._turn=false;
+    if(T._nb==null)T._nb=haulGap(HAUL_BIT_GAP);
+    if(T._nt==null)T._nt=haulGap(HAUL_TALK_GAP);
+    T._nb-=dt;if(T._nb<=0){haulBit();T._nb=haulGap(HAUL_BIT_GAP);}
+    T._nt-=dt;if(T._nt<=0){
+      const m=Math.ceil(haulLeft()/60);
+      haulSay(rndFx()<.3&&m>1?"до причала ещё "+m+" "+pl3(m,"минута","минуты","минут"):HAUL_TALK[Math.floor(rndFx()*HAUL_TALK.length)]);
+      T._nt=haulGap(HAUL_TALK_GAP);
+    }
     if(T.t>=HAUL_TIME){
+      haulSay("приехали. отцепляем. бак не забудь");
       const dest=getSystem(T.dsx,T.dsy);
       G.haul=null;homeCool(HOME_TOW_COOL);
       if(!same)rescuePark(dest);
@@ -193,14 +279,73 @@ function haulTick(dt,sh){
 }
 function drawHaul(zx,zy,Z){
   const T=G.haul;if(!T||typeof drawBarge!=="function")return;
+  const b=haulBarge(),art=bargeArtOf(b);
+  const sS=shipScaleAt(Z),sB=sS*HAUL_BARGE_K;
   const x=zx(T.bx),y=zy(T.by),sx=zx(G.ship.x),sy=zy(G.ship.y);
-  if(T.ph==="haul"){
-    ctx.strokeStyle="rgba(210,200,170,.55)";ctx.lineWidth=1;
-    ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(x,y);ctx.stroke();
+  /* отвалившееся и искры — под баржей и тросом */
+  for(const f of HAUL_FX){
+    const fx=zx(f.x),fy=zy(f.y),a=clamp(f.life,0,1);
+    if(f.k==="spark"){
+      ctx.fillStyle="rgba(255,"+(170+Math.round(80*a))+",90,"+a.toFixed(2)+")";
+      ctx.fillRect(fx-1,fy-1,2,2);continue;
+    }
+    ctx.save();ctx.translate(fx,fy);ctx.rotate(f.a);ctx.scale(sS,sS);ctx.globalAlpha=a;
+    ctx.fillStyle="#6d7480";ctx.strokeStyle="#20242b";ctx.lineWidth=1;
+    if(f.k==="plate"){ctx.fillRect(-7,-4,14,8);ctx.strokeRect(-7,-4,14,8);}
+    else if(f.k==="antenna"){ctx.strokeStyle="#9aa3ad";ctx.beginPath();ctx.moveTo(-9,0);ctx.lineTo(9,0);ctx.stroke();
+      ctx.fillStyle="#ff6b57";ctx.fillRect(8,-1.5,3,3);}
+    else{ctx.fillStyle="#b0703a";ctx.fillRect(-4,-6,8,12);ctx.strokeRect(-4,-6,8,12);}
+    ctx.restore();ctx.globalAlpha=1;
   }
-  ctx.save();ctx.translate(x,y);ctx.rotate(T.ba);
-  const s=clamp(Z,.5,1.5)*.8;ctx.scale(s,s);
-  drawBarge({seed:T.seed,by:"gt"});
+  /* трос: от носа корабля к корме баржи, с провисом; рывок выбирает провис */
+  if(T.ph==="haul"){
+    const na=G.ship.a,nx=sx+Math.cos(na)*HAUL_SHIP_HALF*sS,ny=sy+Math.sin(na)*HAUL_SHIP_HALF*sS;
+    const bx=x-Math.cos(T.ba)*art.L*.48*sB,by=y-Math.sin(T.ba)*art.L*.48*sB;
+    const tens=clamp(Math.abs(T._sv||0)*70,0,1);
+    const sag=(1-tens)*(10+3*Math.sin(G.t*.03))*sS;
+    const mx=(nx+bx)/2,my=(ny+by)/2,dl=Math.hypot(bx-nx,by-ny)||1;
+    const cx=mx-(by-ny)/dl*sag,cy=my+(bx-nx)/dl*sag;
+    ctx.strokeStyle="rgba(40,36,30,.9)";ctx.lineWidth=Math.max(1.5,2.6*sS);
+    ctx.beginPath();ctx.moveTo(nx,ny);ctx.quadraticCurveTo(cx,cy,bx,by);ctx.stroke();
+    ctx.strokeStyle="rgba(214,200,168,.75)";ctx.lineWidth=Math.max(.8,1.2*sS);
+    ctx.beginPath();ctx.moveTo(nx,ny);ctx.quadraticCurveTo(cx,cy,bx,by);ctx.stroke();
+  }
+  ctx.save();ctx.translate(x,y);ctx.rotate(T.ba);ctx.scale(sB,sB);
+  /* маршевые: факел из каждого сопла, дышит; на гашении хода и развороте — молчат */
+  if(T._fire){
+    ctx.globalCompositeOperation="lighter";
+    /* на тросе сопла разведены в стороны: факел в корабль на тросе читался
+       как «баржа толкает», а центральное сопло и вовсе било по тросу — глушим */
+    const haul=T.ph==="haul";
+    for(const li of art.lights){
+      if(li.c!=="eng")continue;
+      if(haul&&Math.abs(li.y)<art.hw*.25)continue;
+      const fl=.8+.2*Math.sin(G.t*.5+li.y)+.1*rndFx(),len=(26+li.r*3)*fl*(haul?.8:1),w=li.r*1.1;
+      ctx.save();ctx.translate(li.x,li.y);if(haul)ctx.rotate(-Math.sign(li.y)*.5);
+      const g=ctx.createLinearGradient(0,0,-len,0);
+      g.addColorStop(0,"rgba(255,236,190,.95)");g.addColorStop(.25,"rgba(255,170,90,.7)");
+      g.addColorStop(1,"rgba(255,90,40,0)");
+      ctx.fillStyle=g;ctx.beginPath();
+      ctx.moveTo(-1,-w);ctx.quadraticCurveTo(-len*.45,-w*1.2,-len,0);
+      ctx.quadraticCurveTo(-len*.45,w*1.2,-1,w);ctx.closePath();ctx.fill();
+      ctx.restore();
+    }
+    ctx.globalCompositeOperation="source-over";
+  }
+  drawBarge(b);
+  /* носовые (гасят ход) и маневровые (разворот): короткие белые выхлопы */
+  if(T._retro||T._turn){
+    ctx.globalCompositeOperation="lighter";
+    const nose=art.L*.52,hw=art.hw;
+    const puff=(px,py,dx,dy)=>{
+      const n=.6+.4*rndFx(),g=ctx.createRadialGradient(px,py,0,px+dx*8*n,py+dy*8*n,10*n);
+      g.addColorStop(0,"rgba(230,240,255,.85)");g.addColorStop(1,"rgba(200,220,255,0)");
+      ctx.fillStyle=g;ctx.beginPath();ctx.arc(px+dx*6*n,py+dy*6*n,10*n,0,TAU);ctx.fill();
+    };
+    if(T._retro){puff(nose,-hw*.5,1,0);puff(nose,hw*.5,1,0);}
+    if(T._turn&&Math.floor(G.t/6)%2===0){puff(nose*.8,-hw,0,-1);puff(-nose*.8,hw,0,1);}
+    ctx.globalCompositeOperation="source-over";
+  }
   ctx.restore();
 }
 

@@ -62,7 +62,7 @@ function snapshot(){
     letter:G.letter||null,dipSwapN:G.dipSwapN,smugN:G.smugN,smugBy:G.smugBy,
     probed:G.probed,
     longHod:G.longHod,race:G.race||null,raceBest:G.raceBest,
-    drones:G.drones,droneInventory:G.droneInventory,droneIds:G.droneIds,droneSold:G.droneSold||{},homeJumps:+(G.homeJumps||0).toFixed(3),homeActMs:G.homeActMs|0,haul:G.haul||null,crew:G.crew,bases:G.bases,
+    drones:G.drones,droneInventory:G.droneInventory,droneIds:G.droneIds,droneSold:G.droneSold||{},homeJumps:+(G.homeJumps||0).toFixed(3),homeActMs:G.homeActMs|0,haul:G.haul?haulRestore(G.haul):null,crew:G.crew,bases:G.bases,
     mgrs:G.mgrs,blueprints:G.blueprints,aiRift:G.aiRift,rogues:G.rogues,exiles:G.exiles,
     relics:G.relics,relicHint:G.relicHint,bio:G.bio,home:G.home,course:G.course||null,
     occ:G.occ,freed:G.freed,occCalm:G.occCalm,trade:G.trade,wear:G.wear,seams:G.seams,

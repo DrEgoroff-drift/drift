@@ -559,7 +559,7 @@ function drawSystem(){
   ctx.save();ctx.translate(zx(sh.x),zy(sh.y));ctx.rotate(sh.a);
   /* пол масштаба .35, не .55 (M319): на дальнем отъезде корабль в .55 читался
      крупнее малой луны; ниже .35 он уже не находится глазом */
-  ctx.scale(clamp(Z,.35,1.6),clamp(Z,.35,1.6));
+  ctx.scale(shipScaleAt(Z),shipScaleAt(Z));   /* один масштаб с буксиром (16c) */
   drawHull(G.shipId,thrusting,!!(G.ctl&&G.ctl.out.thr&&G.fuel>0),G.mods.engine,sh.bank);
   /* стволы на подвесах, повёрнутые по наводке (M363): сборка читается
      силуэтом раньше первого выстрела */
