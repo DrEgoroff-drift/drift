@@ -626,10 +626,10 @@ body.inbelt .pads button[data-k=act],
 body.inbelt .pads button[data-k=brake],
 body.inbelt .pads button[data-k=fire]{font-size:8px}
 
-/* узкий экран: приборы сжимаются, но не пропадают */
+/* узкий экран: поля панелей уже. Строки приборов (.v, .locus u) отсюда ушли
+   (проход по каскаду 11.09): телефонный блок ≤760 стоит в файле ниже и
+   перебивал их всегда — здесь они не действовали ни на одном телефоне */
 @media (max-width:420px){
-  .v{grid-template-columns:52px 64px 40px;gap:6px}
-  .locus u{font-size:12px}
   :root{--pad:12px}
 }
 
@@ -739,14 +739,6 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
 body:has(.scr.open) .hud,body:has(.scr.open) #instrpod,body:has(#askwin.open) .hud{visibility:hidden}
 /* и подсказка say() под открытым экраном — не поперёк его шапки, а плашкой
    над нижними кнопками: «ПРИШЁЛ ОТВЕТ» шла по имени станции */
-/* приёмник над экраном на телефоне (плейтест 02.09): правило «сверху по
-   центру, в .78» складывалось с телефонным left:8px и уезжало в левый угол
-   поперёк имени станции. На телефоне — во всю ширину поверх экрана, а экран
-   отступает под него на строку */
-@media (max-width:760px){
-  body.screen #console{left:8px;right:8px;top:calc(env(safe-area-inset-top) + 6px);bottom:auto;transform:none;justify-content:center}
-  body.screen .scr.open{padding-top:26px}
-}
 body:has(.scr.open) #msg{top:auto;bottom:calc(env(safe-area-inset-bottom) + 96px);left:12px;right:12px;transform:none;
   background:rgba(8,12,18,.94);border:1px solid rgba(127,230,216,.22);border-radius:8px;padding:8px 12px;z-index:26;
   white-space:normal;text-transform:none;letter-spacing:.04em;font-size:12px;text-align:left;overflow:hidden}
@@ -1015,9 +1007,16 @@ body.table #console{display:none}
    телефонного (@media ≤760, «во всю ширину, transform:none») и перебивало его:
    при left:8px пульт уезжал на полширины за левую кромку, и строка эфира висела
    обрезком над именем станции (плейтест 11.09, дизайн-ревью п. 12). Каскад
-   решает порядок — телефонное повторено здесь, после */
+   решает порядок — телефонное правило живёт здесь, после, одно (прежде оно
+   было дважды: у тостов и тут). На телефоне приёмник во всю ширину над
+   экраном, экран отступает под него на строку. Молчащий приёмник («ШУМ ▁▂▃
+   ···») над экраном не виден: полоса без слов читалась мусором над ДЕЛОМ.
+   Прячет его visibility, а не display — строка держит место, и свежая строка
+   эфира встаёт в неё без скачка вёрстки */
 @media (max-width:760px){
-  body.screen #console{left:8px;right:8px;top:calc(env(safe-area-inset-top) + 6px);transform:none}
+  body.screen #console{left:8px;right:8px;top:calc(env(safe-area-inset-top) + 6px);bottom:auto;transform:none;justify-content:center}
+  body.screen #console:not(:has(#rx.fresh,#rx.sheet)){visibility:hidden}
+  body.screen .scr.open{padding-top:26px}
 }
 /* в дороге не существует ничего, кроме заставки (M168k).
    Не гашением, а `display:none`: гашение — переход по прозрачности, он держится
@@ -1426,7 +1425,8 @@ body.op-ask #opisBar>s{display:none}
      кромку, и ничто не говорило, что ряд листается (плейтест 11.09) */
   .opis .op-top{display:flex;flex-direction:column;gap:10px}
   .opis .op-shelf,.opis .op-box{flex:none;min-width:0;width:auto}
-  .opis .op-parts{order:1}.opis .op-kit{order:2}.opis .op-hold{order:3}.opis .op-foot{order:4}
+  .opis .op-parts{order:1}.opis .op-kit{order:2}.opis .op-hold{order:3}
+  .opis .op-locker,.opis .op-side{order:4}.opis .op-foot{order:5}
   .opis .op-hatch{display:none}
   .opis .op-parts-grid{grid-template-columns:1fr;grid-template-areas:"hull" "panel" "slots" "spare"}
   .opis .op-parts-grid canvas.op-hull{height:auto}
@@ -1487,7 +1487,6 @@ body.aboard #console{display:none!important}
 .opis .op-lockgrid .empty{display:block;height:24px;border:1px dashed rgba(232,220,190,.25);border-radius:4px}
 .opis .op-card.lock{padding:6px 8px}
 .opis .op-card.lock.on{transform:none;box-shadow:0 5px 12px rgba(0,0,0,.4)}
-@media (max-width:760px){.opis .op-locker,.opis .op-side{order:4}.opis .op-foot{order:5}}
 /* коробки на полке дома (M346): ряд этикеток рядом с книгами */
 body.table #loglist .boxes{display:flex;flex-wrap:wrap;gap:8px;padding:6px 18px 12px 60px}
 body.table #loglist .matchbox{flex:0 0 auto;width:118px;padding:6px 8px 7px;border-radius:2px;
