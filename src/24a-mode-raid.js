@@ -198,7 +198,7 @@ function raidLeave(msg,lostShare){
   }
   if(bag.tech>0)addRes("techcomp",bag.tech);
   if(bag.data>0)G.data+=bag.data;
-  for(const p of bag.parts)addPart(p);
+  for(const p of bag.parts){addPart(p);gotAdd(p);}   /* мешок абордажа — карточкой (27jb) */
   G.raid=null;G.mode="system";
   G.hull=Math.max(1,G.hull);
   /* если в этом секторе пираты держат ваших людей — штурм освобождает их даром.

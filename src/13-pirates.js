@@ -161,7 +161,7 @@ function updateCombat(dt){
     const L=G.loot[i];
     L.x+=L.vx*dt;L.y+=L.vy*dt;L.vx*=.996;L.vy*=.996;L.spin+=.02*dt;L.life-=dt;
     if(Math.hypot(L.x-sh.x,L.y-sh.y)<40){
-      addPart(L.part);
+      addPart(L.part);gotAdd(L.part);   /* карточка «что получил» после боя (27jb) */
       sfx("ui",{f:520,to:1040,d:.16,v:.34});
       tell("kill","Подобрана часть: "+L.part.name+" ("+TIER_RU[L.part.tier]+")",
            "Контейнер вскрыт\n"+L.part.name+"\n"+L.part.aff.map(affLabel).join("\n"));
