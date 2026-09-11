@@ -426,6 +426,10 @@ body.screen #msg,body.screen #launchbtn,body.screen .slope{opacity:0;pointer-eve
    pre-line, и мягче цветом, чтобы не спорить с названием */
 .scr header s{text-decoration:none;color:var(--dim);font-size:10px;letter-spacing:.04em;display:block;
   margin-top:5px;white-space:pre-line;line-height:1.5}
+/* подпись закладки на столе — в одну строку: длинные («почта · стопки карточек,
+   скреплённые скрепкой») переносились, шапка росла с 70 до 85 px, и всё под ней
+   дёргалось при каждом переключении (плейтест 11.09, «экран прыгает на столе») */
+#tableSub{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .wallet{margin-left:auto;text-align:right;font-size:11px;line-height:1.6;white-space:nowrap;
   font-variant-numeric:tabular-nums}
 .wallet em{font-style:normal;color:var(--amber);display:block}
