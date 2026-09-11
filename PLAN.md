@@ -139,6 +139,15 @@ before a push.
   hatch strip on lift) — verify by tapping; ДЕЛО reads fine on his world. Offline drones paid him
   +7 000 кр on load — item 6.
   ОПИСЬ: the bottom strips become tabs with words.
+- **Item 3 pass of 12.09 (commits bc030a6..a595e24):** one prompt slot `cue(text,lvl)` in `08-state`
+  (INFO < WARN < ACT < TROUBLE; flight writers converted; the empty tank is heard past the edge anchor
+  and beside a planet); phone cascade walked (the ≤420 block was dead, one phone `#console` rule, an idle
+  receiver hidden over screens by visibility); ДЕЛО adds up (one unit, `crewPayNow`, managers live on the
+  cut; «−13» = thirteen `pool:-1` bottomless marks summed); СТОЛ sheet title = the sheet, ЛЕНТЫ torn on
+  the sheet (a phone had no way); ОПИСЬ phone: ship first, folds, hull caption, groups with units; haul
+  light 1.97 → 2.21 on the barge mask (`expo2.js` pattern: mask the barge art, split by star side).
+  Still open from the list below: the haul scene (planet dominance, shuttles, pirate, route bar) and the
+  СТОЛ empty sheets beyond ЛЕНТЫ.
 - **Open from the reviews of 11.09 (do in item 3 unless noted):**
   - One prompt slot: `G.prompt` is written in 25 files and the first writer wins — that is how the
     tow got lost. A `prompt(text, level)` with levels «trouble > action nearby > info».
