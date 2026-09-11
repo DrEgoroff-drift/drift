@@ -6,6 +6,17 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.444.0 - the phone stick draws again
+
+- 0.439.0 deleted «twenty-two dead names» from `src/`; four of them were alive. `HELM_BAND`,
+  `HELM_BAND0`, `HELM_GAP` and `HELM_TRAIL` are read by the stick's band (`15b-helm-draw`) and
+  by `helmTrail`, so on a phone every touch move threw `ReferenceError` after steering, and
+  every frame with a live stick threw into the frame guard («СБОЙ») at the band. The four
+  constants are back in `15a-helm.js`. No player report in `crash.log` since 0.439.0.
+- Found by the server lab (session 11.09, «телефон: стик не ложится на приборы и подсказку ·
+  HELM_GAP is not defined»). The laptop's default run is the 1280×800 window and never met
+  it; `test.ps1 -Mobile` does.
+
 ## 0.443.0 - one picture oracle instead of two
 
 - The old net «картина: ни одна сцена не уехала от эталона кадра» (M336: tones, masses,
