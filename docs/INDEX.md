@@ -1080,66 +1080,66 @@ deskItemNew                  src/27ia-desk-top.js:337-341
 deskItemOf                   src/27ia-desk-top.js:331-335
 DET                          tests/90b-detect.js:34
 DET_ASTRO_H                  tests/90c-detect-laws.js:269
-DET_CLOSE                    tests/91zzzzzzzz-detect.js:103
-DET_COST                     tests/91zzzzzzzz-detect.js:184
+DET_CLOSE                    tests/91zzzzzzzz-detect.js:109
+DET_COST                     tests/91zzzzzzzz-detect.js:190
 DET_DIRTY                    tests/90c-detect-laws.js:142
 DET_EXEMPT                   tests/90c-detect-laws.js:64-78
 DET_HOOKED                   tests/90b-detect.js:338
 DET_INSTR                    tests/90c-detect-laws.js:16-38
-DET_MUTE                     tests/91zzzzzzzz-detect.js:21-53
+DET_MUTE                     tests/91zzzzzzzz-detect.js:21-59
 DET_N                        tests/91zzzzzzzz-detect.js:16
 DET_NAMES                    tests/90b-detect.js:304
 DET_PROTOS                   tests/90b-detect.js:320
-DET_SETTLE_ERRS              tests/91zzzzzzzz-detect.js:58
+DET_SETTLE_ERRS              tests/91zzzzzzzz-detect.js:64
 DET_SM                       tests/90b-detect.js:102
 DET_STATE_OF                 tests/90b-detect.js:355
 DET_TEXT_MIN                 tests/90c-detect-laws.js:202
 detBgShift                   tests/90b-detect.js:145-152
 detBlink                     tests/90b-detect.js:249-263
 detBlocks                    tests/90b-detect.js:226-233
-detCanvases                  tests/91zzzzzzzz-detect.js:157-168
-detCloseTry                  tests/91zzzzzzzz-detect.js:108-132
+detCanvases                  tests/91zzzzzzzz-detect.js:163-174
+detCloseTry                  tests/91zzzzzzzz-detect.js:114-138
 detColor                     tests/90c-detect-laws.js:204-209
 detContrast                  tests/90c-detect-laws.js:213-224
 detControls                  tests/90c-detect-laws.js:158-200
-detCost                      tests/91zzzzzzzz-detect.js:185
+detCost                      tests/91zzzzzzzz-detect.js:191
 detCrash                     tests/90c-detect-laws.js:95-102
 detDiff                      tests/90b-detect.js:123-127
-detDoors                     tests/91zzzzzzzz-detect.js:276-300
+detDoors                     tests/91zzzzzzzz-detect.js:282-306
 DETECTORS                    tests/90c-detect-laws.js:284
 detErr                       tests/90b-detect.js:135-143
 detExempt                    tests/90c-detect-laws.js:79-89
-detFrame                     tests/91zzzzzzzz-detect.js:170-175
+detFrame                     tests/91zzzzzzzz-detect.js:176-181
 detGrab                      tests/90b-detect.js:103-111
 detHook                      tests/90b-detect.js:339-352
-detHudText                   tests/91zzzzzzzz-detect.js:134-141
+detHudText                   tests/91zzzzzzzz-detect.js:140-147
 detHuman                     tests/90c-detect-laws.js:270-283
 detInk                       tests/90b-detect.js:86-96
 detInstr                     tests/90c-detect-laws.js:143-156
 detInstrRead                 tests/90c-detect-laws.js:40-59
-detIsOpen                    tests/91zzzzzzzz-detect.js:104-107
+detIsOpen                    tests/91zzzzzzzz-detect.js:110-113
 detLaw                       tests/90c-detect-laws.js:118-140
 detLum                       tests/90c-detect-laws.js:203
-detNameless                  tests/91zzzzzzzz-detect.js:145-156
+detNameless                  tests/91zzzzzzzz-detect.js:151-162
 detNames                     tests/90b-detect.js:305-319
 detNewMotion                 tests/90b-detect.js:239-243
-detOverlays                  tests/91zzzzzzzz-detect.js:94-102
+detOverlays                  tests/91zzzzzzzz-detect.js:100-108
 detParallax                  tests/90b-detect.js:204-224
 detPatch                     tests/90b-detect.js:113-119
 detPatchShift                tests/90b-detect.js:154-163
 detPicture                   tests/90c-detect-laws.js:225-267
 detProtoOf                   tests/90b-detect.js:321-337
 detRot                       tests/90b-detect.js:169-188
-detRuler                     tests/91zzzzzzzz-detect.js:71-80
+detRuler                     tests/91zzzzzzzz-detect.js:77-86
 detSamp                      tests/90b-detect.js:128-133
 detScale                     tests/90b-detect.js:190-197
-detSettle                    tests/91zzzzzzzz-detect.js:59-65
-detShipScr                   tests/91zzzzzzzz-detect.js:82-85
-detSig                       tests/91zzzzzzzz-detect.js:87-92
-detStep                      tests/91zzzzzzzz-detect.js:186-274
+detSettle                    tests/91zzzzzzzz-detect.js:65-71
+detShipScr                   tests/91zzzzzzzz-detect.js:88-91
+detSig                       tests/91zzzzzzzz-detect.js:93-98
+detStep                      tests/91zzzzzzzz-detect.js:192-280
 detStuck                     tests/90c-detect-laws.js:104-116
 detSuitSrc                   tests/90c-detect-laws.js:13-15
-detTick                      tests/91zzzzzzzz-detect.js:176-182
+detTick                      tests/91zzzzzzzz-detect.js:182-188
 detV                         tests/90c-detect-laws.js:92
 detWalk                      tests/90b-detect.js:269-292
 DEV_CAP                      src/21b4-base-build.js:26
@@ -6705,7 +6705,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzzzzzz-hands.js · 14 КБ
   · руки игрока: судья — кадр:1
 
-## tests/91zzzzzzzz-detect.js · 29 КБ
+## tests/91zzzzzzzz-detect.js · 30 КБ
   · сквозной: каждая сцена × пять жестов под всеми детекторами (M443):1
 
 ## tests/91zzzzzzzza-walks.js · 11 КБ
