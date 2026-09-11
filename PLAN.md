@@ -258,6 +258,15 @@ Read on 2026-09-11 morning from `runs.jsonl`/`errors.txt`. Verdicts: 78 green, 1
   (light:3/6, an M441 suite), «сквозной: сейв позднего мира» (mobile), «M314: трассы» (tall),
   «полный трюм» (heavy, was red, now OOM). All auto-solo next time. Median rss 683 MB, fuzz at
   the ceiling (767). Heavy suite times unchanged (top «печь» 65 → 68 s).
+- **The lab after the second night (11.09, the author: «пусть постоянно что-то гоняет», «на
+  сайте много лишнего, не видно, что починено»)** — four sessions a day (`0 */6`), light
+  shards 6 → 12, phone and tall windows in four shards each, the hunt never stops itself, host
+  kills do not feed the streak; Chrome leftovers are killed after every unit (a `timeout`
+  killed only the parent — the renderer stayed in the cgroup and the next unit paid for it:
+  the likely cause of the OOM runs; measured 11.09: the same fuzz seed 767 MB and killed at
+  night, 685 MB and green alone); `--js-flags=--max-old-space-size` measured on «двери» — green
+  at 32 s with no cgroup kill. The page: four tiles, the bugs with their fate (`fixed`/`gone`/
+  `dropped`/`quiet`), the host folded, one row per session. `docs/LAB.md`.
 - **The lab's own loose ends (into M446)** — `fix` and auto-quiet done in 0.427.2;
   `lab.yml` has not had its first scheduled run yet (02:00 Moscow, same `DRIFT_SSH_KEY` as the
   deploy) — check the page on the morning of 11.09; light shards run at 550–770 MB of 768, one
@@ -331,6 +340,27 @@ can go red; `T.replay` refuses a recording from another `VER`; the trips oracle 
   `docs/notes/`, the big file assembled by `build.ps1` like `INDEX.md`. Author's call.
 - **The site sends no `Cache-Control`/`ETag`/`Last-Modified`** for a 2 MB gzip `play.html` — look
   at how it is served before touching; needs the author's yes.
+
+**The full run is 4 minutes on a real clock (`-Times`, 11.09: 230 s single page, 128 s in six
+shards), and the author asks what is duplicated.** The thirty slowest suites are 190 of the 230 s;
+the candidates, each with what would replace it:
+- «картина: ни одна сцена не уехала от эталона кадра» (11 s, `91zzzzy-look`, lookFrame numbers
+  per scene against a pinned table) re-renders every scene the golden suite (5 s) already grabs
+  — fold the numbers into the golden loop, one settle per scene: −11 s.
+- «двери: из каждой сцены в каждую дверь» (18.5 s, the host's OOM suite) vs `detDoors` in the
+  detect driver (menu doors, «система» only): widen `detDoors` to every scene's doors and retire
+  the old net, or keep the old one and drop `detDoors` — not both.
+- «руки: кнопка над миром отвечает кадром» (8 s) · «обещание: кнопка делает то, что написано»
+  (2.4 s) · «инструменты: руки и глаза» (1.9 s) · the controls law in `detect` — four suites
+  press buttons and ask the frame to answer; one table of buttons × expected answer, one pass.
+- «сквозной: каждая сцена рисуется не пустой, кнопки в кадре нажимаются» (2.4 s) is the picture
+  law «empty or burnt frame» plus the button press above — retire once the two absorb it.
+- «детерминизм: рисованный кадр не сдвигает случай мира» (22 s) and «прогоны: двенадцать путей»
+  (22.6 s) are the two biggest and not duplicates; the bot walks could settle scenes once and
+  reuse the detect driver's grabs (both stand on `lookScenes`).
+Rule from `DESIGN-tests.md`: the corpus is frozen — fix reds, extract tools, do not extend — and
+retiring a duplicate is extraction, not extension. Each retirement: one commit, the replacing
+suite named in the patchnote, the mutant that the old suite killed re-checked in the zoo.
 
 **Rejected, with the reason:** a palette module for the 893 hex colours (would flatten the
 deliberate range — measure hue histograms instead); a mode table for the 258 `G.mode===` (stable,

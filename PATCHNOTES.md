@@ -6,6 +6,25 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.442.0 - four fields that were lost on load, and a lab that runs all day
+
+- **Four fields now survive a save:** the kill count (the clearance exam and a manager's
+  «six kills» job counted from it and restarted from zero after every load), the order stamp
+  (the «silence on the air» job compared against it and failed at once after a load), the
+  base-visit counter (the seed of the next аврал), and the receiver's frequency — the one
+  thing the console said it kept. An old save without them loads with zeros and an untuned
+  dial. The save net's seven «?» fields are settled: these four persist, `hailLog`,
+  `quietGone` and `logNewBy` stay per session, with reasons beside them.
+- **The lab runs four sessions a day** instead of one a night, in smaller units — twelve
+  light shards, the phone and the tall window in four each, one heavy suite per Chrome — and
+  the fuzz hunt no longer stops itself; a seed the host killed does not count as «nothing
+  new». After every unit the leftover Chrome processes are killed and the memory counter is
+  waited down: `timeout` killed only the parent, and the renderer it left behind was the
+  likely reason one OOM followed another.
+- **The lab page shows what became of each bug:** open, «починено в 0.441.0», «не повторяется
+  с …» (set by the lab itself when the same run goes green in a newer build), «не баг: …».
+  Tiles, the bugs, what ran into the host, one row per session — the charts and the raw
+  run list are gone. Staged suites no longer land in the error log.
 ## 0.441.0 - the map answers on your own sector, and one silence less
 
 - **On the map, ДЕЙСТВИЕ with your own sector selected now says «Вы уже здесь — выберите

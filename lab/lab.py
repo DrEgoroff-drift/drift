@@ -41,7 +41,8 @@ def lines(p):
     except Exception: return []
 
 RUNS, ERRS, STATE, SESS = (os.path.join(DATA, n) for n in ("runs.jsonl", "errors.json", "state.json", "sessions.jsonl"))
-LIGHT_N = 6
+LIGHT_N = 12   # лёгкие шарды помельче: один Chrome живёт в 768 МБ, шесть частей упирались в потолок (11.09)
+WIN_N = 4      # телефон и высокое окно — тоже частями, целиком они умирали по памяти за 420 с
 
 # ── план сессии ──
 def heavy_names():
@@ -60,7 +61,8 @@ def solo_names(st, ver): return list(st.get("solo", {}).get(ver, {}).keys())
 def plan(ver, session):
     st = jload(STATE, {})
     skip = st.get("skip", {}).get(ver, {})
-    out = [("node", ""), *[("light", "%d/%d" % (i, LIGHT_N)) for i in range(LIGHT_N)], ("mobile", ""), ("tall", "")]
+    out = [("node", ""), *[("light", "%d/%d" % (i, LIGHT_N)) for i in range(LIGHT_N)],
+           *[("mobile", "%d/%d" % (i, WIN_N)) for i in range(WIN_N)], *[("tall", "%d/%d" % (i, WIN_N)) for i in range(WIN_N)]]
     out += [("heavy", n) for n in heavy_names()]
     out += [("solo", n) for n in solo_names(st, ver)]
     for k, a in out:
@@ -168,7 +170,7 @@ def report(kind, arg, path, secs, mem, rc, ver, session, errfile="", oom=0):
         e["versions"][ver] = e["versions"].get(ver, 0) + 1
         if kind == "fuzz" and len(e["seeds"]) < 8 and arg not in e["seeds"]: e["seeds"].append(arg)
     # не долбиться: тяжёлый или соло-набор, упавший или не давший отчёта, в этой версии больше не гоняется
-    if kind in ("heavy", "solo", "mobile", "tall") and verdict != "green":
+    if kind in ("heavy", "solo") and verdict != "green":   # шарды окон (mobile/tall i/N) не выкидываются целиком — повисший набор уходит в соло, шард идёт без него
         st.setdefault("skip", {}).setdefault(ver, {})[uid] = verdict
     # повисший в шарде набор уходит в «соло»: шарды идут без него, он — один и с большим запасом
     if hung and kind in ("light", "mobile", "tall"):
@@ -191,16 +193,37 @@ def report(kind, arg, path, secs, mem, rc, ver, session, errfile="", oom=0):
 def fuzz_next(ver):
     st = jload(STATE, {})
     f = st.get("fuzz", {}).get(ver, {})
-    if f.get("exhausted"): print("stop"); return
+    # «исчерпана» — справка на странице, не стоп: пока есть бюджет, зёрна идут дальше —
+    # каждое зерно новая тропа (M339), а найденное дедуплицируется ключом (11.09)
     base = int(time.strftime("%j")) * 100  # день года: разные ночи начинают с разных зёрен
     print(str(base + f.get("seeds", 0) + 1))
 
 def fix(keys):
+    """lab.py fix <key> [<key>…] [<ver>] — починено (в версии, если названа): страница покажет
+    «починено в 0.441.0», и та же ошибка, увиденная снова, откроется заново"""
+    ver = ""
+    if keys and re.match(r"^\d+\.\d+\.\d+$", keys[-1]): ver = keys[-1]; keys = keys[:-1]
     errs = jload(ERRS, {})
     for k in keys:
-        if k in errs: errs[k]["status"] = "fixed"; errs[k]["fixed"] = now(); print("fixed", k, errs[k]["suite"])
+        if k in errs:
+            errs[k]["status"] = "fixed"; errs[k]["fixed"] = now()
+            if ver: errs[k]["fixedIn"] = ver
+            print("fixed", k, errs[k]["suite"], ver)
         else: print("no such key", k)
     jsave(ERRS, errs)
+
+def drop(keys, why):
+    """lab.py drop <key> [<key>…] -- <почему> — не баг игры (карантин, платформа, ложная тревога):
+    страница покажет «не баг: почему»; увидят снова — откроется заново"""
+    errs = jload(ERRS, {})
+    for k in keys:
+        if k in errs: errs[k]["status"] = "dropped"; errs[k]["dropped"] = now(); errs[k]["why"] = why; print("dropped", k, errs[k]["suite"])
+        else: print("no such key", k)
+    jsave(ERRS, errs)
+
+def vkey(v):
+    try: return tuple(int(x) for x in v.split("."))
+    except Exception: return (0,)
 
 def session(op, sid, ver, budget):
     append(SESS, {"op": op, "s": sid, "t": now(), "ver": ver, "budget": int(budget)})
@@ -241,13 +264,35 @@ def publish():
         if e["session"] in done and len(done) - done.index(e["session"]) - 1 >= 3:
             e["status"] = "quiet"; e["quiet"] = now(); changed = True
     if changed: jsave(ERRS, errs)
+    # «не повторяется»: открытая ошибка игры, чей прогон (unit) после неё прошёл зелёным в БОЛЕЕ
+    # НОВОЙ версии, закрывается сама с именем этой версии — так автор видит, что починено,
+    # не спрашивая; увидят снова — report() откроет заново (11.09)
+    for k, e in errs.items():
+        if e.get("status") != "open" or e.get("cls", "game") != "game": continue
+        seen = max((vkey(v) for v in e.get("versions", {})), default=(0,))
+        later = [r for r in runs if r["unit"] == e.get("unit") and r["v"] == "green" and r["t"] > e["last"] and vkey(r["ver"]) > seen]
+        if later:
+            e["status"] = "gone"; e["goneIn"] = later[0]["ver"]; e["gone"] = later[0]["t"]; changed = True
+    if changed: jsave(ERRS, errs)
     open_errs = [dict(e, key=k) for k, e in errs.items() if e.get("status") == "open"]
     open_errs.sort(key=lambda e: e["last"], reverse=True)
-    data = {"generated": now(), "sessions": order, "runs": runs[-400:], "errors": open_errs[:300],
-            "hist": hist, "fuzz": st.get("fuzz", {}), "skip": st.get("skip", {}), "solo": st.get("solo", {}),
+    # страница: все ошибки игры с их судьбой (открыта / починена в … / не повторяется с … / затихла),
+    # а хост — одной строкой на набор: сколько раз и когда последний
+    game = [dict(e, key=k) for k, e in errs.items() if e.get("cls", "game") == "game"]
+    game.sort(key=lambda e: e["last"], reverse=True)
+    game.sort(key=lambda e: 0 if e.get("status") == "open" else 1)   # открытые сверху, внутри — свежие первыми
+    hostsum = {}
+    for k, e in errs.items():
+        if e.get("cls") != "host" or e.get("status") != "open": continue
+        h = hostsum.setdefault(e["suite"], {"suite": e["suite"], "count": 0, "last": "", "units": set(), "why": ""})
+        h["count"] += e["count"]; h["last"] = max(h["last"], e["last"]); h["units"].add(e["unit"].split(":")[0]); h["why"] = e["msg"].split(" в прогоне")[0]
+    host = sorted([dict(h, units=sorted(h["units"])) for h in hostsum.values()], key=lambda h: h["last"], reverse=True)
+    data = {"generated": now(), "sessions": order, "errors": open_errs[:300], "game": game[:300], "host": host[:100],
+            "fuzz": st.get("fuzz", {}), "skip": st.get("skip", {}), "solo": st.get("solo", {}),
             "totals": {"runs": len(runs), "errors_open": len(open_errs), "errors_all": len(errs),
-                       "errors_game": sum(1 for e in open_errs if e.get("cls", "game") == "game"),
-                       "errors_host": sum(1 for e in open_errs if e.get("cls") == "host")}}
+                       "errors_game": sum(1 for e in game if e.get("status") == "open"),
+                       "errors_fixed": sum(1 for e in game if e.get("status") in ("fixed", "gone")),
+                       "errors_host": len(host)}}
     os.makedirs(WEB, exist_ok=True)
     jsave(os.path.join(WEB, "data.json"), data)
     page = os.path.join(BUILD, "lab.html")
@@ -262,6 +307,12 @@ def publish():
             if e.get("seeds"): f.write("  seeds: %s\n" % " ".join(e["seeds"]))
             if e.get("detail"): f.write("  " + e["detail"].replace("\n", "\n  ") + "\n")
             f.write("\n")
+        f.write("# closed game errors\n")
+        for e in game:
+            if e.get("status") == "open": continue
+            tag = {"fixed": "починено" + (" в " + e["fixedIn"] if e.get("fixedIn") else ""), "gone": "не повторяется с " + str(e.get("goneIn", "?")),
+                   "dropped": "не баг: " + str(e.get("why", "")), "quiet": "затихла"}.get(e.get("status"), e.get("status"))
+            f.write("[%s] %s · %s · %s\n" % (e["key"], tag, e["suite"], e["msg"][:120]))
     print("published: sessions %d · runs %d · open errors %d" % (len(order), len(runs), len(open_errs)))
 
 if __name__ == "__main__":
@@ -274,6 +325,10 @@ if __name__ == "__main__":
     elif cmd == "report": report(a[1], a[2], a[3], int(float(a[4])), int(float(a[5])), int(a[6]), a[7], a[8],
                                  a[9] if len(a) > 9 else "", int(a[10]) if len(a) > 10 else 0)
     elif cmd == "fix": fix(a[1:])
+    elif cmd == "drop":
+        ks = a[1:]; why = ""
+        if "--" in ks: i = ks.index("--"); why = " ".join(ks[i + 1:]); ks = ks[:i]
+        drop(ks, why)
     elif cmd == "fuzz-next": fuzz_next(a[1])
     elif cmd == "session": session(a[1], a[2], a[3], a[4])
     elif cmd == "publish": publish()

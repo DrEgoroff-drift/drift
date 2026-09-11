@@ -32,14 +32,18 @@ costs about what `--disable-gpu` costs on the laptop.
 `lab/lab.sh --budget N` (minutes), under a lock so two sessions cannot overlap:
 
 1. **`node`** — `test-node.js --full`, the formula tier (~18 s on the host).
-2. **`light i/6`** — the browser tier in six shards, one Chrome each (~10 s a shard).
-3. **`mobile`** and **`tall`** — the same browser tier in a 390×844 and a 1440×1440 window:
-   the phone guards and the UI-zoom ceiling that the laptop never runs by default.
+2. **`light i/12`** — the browser tier in twelve shards, one Chrome each (six shards leaned on
+   the 768 MB ceiling; since 11.09 twelve).
+3. **`mobile i/4`** and **`tall i/4`** — the same browser tier in a 390×844 and a 1440×1440
+   window, four shards each (whole-corpus pages died at 420 s): the phone guards and the UI-zoom
+   ceiling that the laptop never runs by default.
 4. **`heavy <name>`** — every suite declared `{tier:"heavy"}` (M442: `lab.py heavy` reads them
    from `tests.html` with a regex; the suite «ярусы: …» in `90-harness` fails if a heavy suite is
    written in a form that regex cannot see), one Chrome per suite.
 5. **`fuzz <seed>`** — the rest of the budget: the fuzzer on fresh seeds (`day-of-year × 100 +
-   n`, so every night starts elsewhere), until the hunt is exhausted (below).
+   n`, so every session starts elsewhere). Since 11.09 the hunt does not stop itself: every seed
+   is a new path (M339) and a found error is written once whatever it costs to repeat; the
+   «exhausted» mark is information on the page, not a brake.
 
 Before each unit the script checks the budget; after each unit it republishes the page, so
 the site shows a session while it runs (a pulsing dot in the header).
@@ -56,10 +60,18 @@ key is the unit of counting, not the line:
 - **A heavy suite that went red, gave no report or timed out is not run again in that
   version** (`state.json → skip`). The next version clears the skip. That is the rule
   against hammering one failure for four hours.
-- **The fuzz hunt stops itself.** A seed that finds a *new* key resets a streak; a seed that
-  only hits known keys advances it; five in a row and the version is marked *exhausted* — more
-  seeds would only walk into the same hole. A new version starts a new hunt.
-- **A fixed error that comes back is reopened**, with the version it came back in.
+- **The streak is a game measure, not a host one.** A seed that finds a *new* key resets it; a
+  seed that only hits known keys advances it; a seed the host killed (OOM, timeout, no report)
+  leaves it alone — on 11.09 five host kills in a row read as «exhausted» and ended a session at
+  123 of 300 minutes. «Exhausted» is shown, not acted on.
+- **An error's fate is written on it.** `open`; `fixed` (`lab.py fix <key> [<ver>]`, by hand,
+  «починено в 0.441.0»); `gone` — set by `publish` itself when the error's own unit later ran
+  green in a *newer* version («не повторяется с …»), so the author sees a fix without asking;
+  `dropped` (`lab.py drop <key> -- <why>`, «не баг: карантин»); `quiet` — not seen for three
+  finished sessions. Any of them reopens the moment the key is seen again, with the version.
+- **Staged suites (`stage:`) are not errors.** `publish` skips the КАРАНТИН block and
+  `[карантин: …]` suites when it parses a report — the golden suite's per-platform grid
+  mismatch is the case that taught this.
 - **No report is an error too**, with its own key, so a suite that kills the renderer shows
   up in the same table as a suite that fails.
 
@@ -69,11 +81,12 @@ first, with the detail lines. That file is what the next fixing session reads.
 ## The page
 
 `site/lab.html`, served at `/lab/` from `~/drift-game.ru/docs/lab/` together with
-`data.json` and `errors.txt`. It draws three canvases in the site's palette — sessions as
-stacked bars with new-error ticks, the eight slowest heavy suites as lines over sessions,
-memory peaks as dots against the 500 MB line — then the error table (click a row for the
-detail, filter by unit kind or by «за сутки»), the fuzz hunt per version, and the last sixty
-runs. Nothing is fetched but `/lab/data.json`; the page has no build step.
+`data.json` and `errors.txt`. Since 11.09 (the author: «много лишнего, не видно, что
+починено») it shows four things and nothing else: the tiles — game bugs open, fixed, the last
+session's score, the hunt; the game bugs with their fate (open first, then «починено в …»,
+«не повторяется с …», «не баг: …»; click a row for the detail); what ran into the host, one
+line per suite, folded; and one row per session. No charts, no raw runs. Nothing is fetched
+but `/lab/data.json`; the page has no build step.
 
 ## Running it
 
@@ -85,9 +98,15 @@ ssh drift "python3 drift-lab/lab.py publish"                           # rebuild
 ssh drift "cat drift-game.ru/docs/lab/errors.txt"                      # the log
 ```
 
-The nightly run is `lab.yml`: 02:00 Moscow, budget 300 minutes, `workflow_dispatch` with a
-budget and a `quick` switch for a manual start. It uses the same `DRIFT_SSH_KEY` as the
-deploy and nothing else from it.
+The scheduled run is `lab.yml`: every six hours (`0 */6 * * *` UTC — four sessions a day,
+the author 11.09: «пусть постоянно что-то гоняет»), budget 330 minutes under a 350-minute job
+limit, `workflow_dispatch` with a budget and a `quick` switch for a manual start; the
+`concurrency` group queues a session behind a running one. It uses the same `DRIFT_SSH_KEY`
+as the deploy and nothing else from it. After fixing a bug the lab found:
+
+```bash
+ssh drift "python3 drift-lab/lab.py fix <key> 0.442.0; python3 drift-lab/lab.py publish"
+```
 
 ## What it is not (yet)
 

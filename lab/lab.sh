@@ -51,6 +51,12 @@ run(){
     sleep 1; m=$(memnow); [ "$m" -gt "$max" ] && max=$m
   done
   rc=$(cat "$LAB/out/$kind.rc" 2>/dev/null || echo 1)
+  # хвосты: timeout убивает только главный процесс, а рендерер и утилиты Chrome
+  # остаются в cgroup и едят память следующего прогона — отсюда серии OOM подряд
+  # (ночь 11.09: пять зёрен фуззера одно за другим). Добиваем всё со своим профилем
+  # и ждём, пока счётчик памяти опустится
+  pkill -9 -f "user-data-dir=$LAB/profile" 2>/dev/null
+  for i in 1 2 3 4 5 6 7 8 9 10; do [ "$(memnow)" -lt 150000000 ] && break; sleep 1; done
   $PY report "$kind" "$arg" "$out" $(( $(date +%s) - s )) $(( max / 1048576 )) "$rc" "$VER" "$SID" "$err" $(( $(oomnow) - oom0 ))
 }
 chrome(){ # <win> <url>
@@ -70,10 +76,10 @@ $PY plan "$VER" "$SID" | while IFS=$'\t' read -r kind arg; do
            ( cd "$BUILD" && run node "" 240 node test-node.js ) ;;
     light) est=90;  [ $(left) -lt $est ] && continue
            run light "$arg" 240 $(chrome 1280,800 "$PAGE?shard=$arg$(skipq)") ;;
-    mobile) [ $QUICK = 1 ] && continue; est=150; [ $(left) -lt $est ] && continue
-           run mobile "" 420 $(chrome 390,844 "$PAGE?x=1$(skipq)") ;;
-    tall)  [ $QUICK = 1 ] && continue; est=150; [ $(left) -lt $est ] && continue
-           run tall "" 420 $(chrome 1440,1440 "$PAGE?x=1$(skipq)") ;;
+    mobile) [ $QUICK = 1 ] && continue; est=120; [ $(left) -lt $est ] && continue
+           run mobile "$arg" 300 $(chrome 390,844 "$PAGE?shard=$arg$(skipq)") ;;
+    tall)  [ $QUICK = 1 ] && continue; est=120; [ $(left) -lt $est ] && continue
+           run tall "$arg" 300 $(chrome 1440,1440 "$PAGE?shard=$arg$(skipq)") ;;
     heavy) [ $QUICK = 1 ] && continue; est=150; [ $(left) -lt $est ] && continue
            run heavy "$arg" 420 $(chrome 1280,800 "$PAGE?full=1&only=$(urlenc "$arg")") ;;
     solo)  [ $QUICK = 1 ] && continue; est=200; [ $(left) -lt $est ] && continue
@@ -82,13 +88,13 @@ $PY plan "$VER" "$SID" | while IFS=$'\t' read -r kind arg; do
   $PY publish >/dev/null
 done
 
-# ── охота: фуззер по зёрнам, пока есть бюджет и пока находится новое ──
+# ── охота: фуззер по зёрнам, пока есть бюджет (11.09: «исчерпана» больше не стоп —
+#    каждое зерно новая тропа, а найденное не повторяется в логе благодаря ключам) ──
 # Зелёное зерно идёт ~105 с; 300 с ожидания на зерне, убитом по памяти, стоили
 # первой ночи девять раз по пять минут. 150 с: живое успевает, мёртвое не ждётся.
 if [ $QUICK = 0 ]; then
   while [ $(left) -gt 120 ]; do
     seed=$($PY fuzz-next "$VER")
-    [ "$seed" = "stop" ] && { echo "lab: охота на $VER исчерпана — пять зёрен подряд без нового"; break; }
     run fuzz "$seed" 150 $(chrome 1280,800 "$PAGE?only=$(urlenc "фуззер")&fuzz=1500&fseed=$seed")
     $PY publish >/dev/null
   done

@@ -329,7 +329,10 @@ function applySaveRest(s){
   G.told=Array.isArray(s.told)?s.told.slice(-24):[];
   G.lastDig=(s.lastDig&&typeof s.lastDig==="object")?s.lastDig:null;
   G.credits=Math.max(0,s.credits|0);G.data=Math.max(0,s.data|0);
-  G.soldTotal=Math.max(0,s.soldTotal|0);   /* оборот для экзамена кооператива (12aj) — раньше терялся при каждой загрузке */
+  G.soldTotal=Math.max(0,s.soldTotal|0);
+  /* терялись при каждой загрузке до 0.442.0: старый сейв без них — нули и пустая ручка */
+  G.kills=Math.max(0,s.kills|0);G.orderStamp=Math.max(0,s.orderStamp|0);G.baseVisit=Math.max(0,s.baseVisit|0);
+  G.radioF=(typeof s.radioF==="number"&&isFinite(s.radioF))?clamp(s.radioF,0,1):null;   /* оборот для экзамена кооператива (12aj) — раньше терялся при каждой загрузке */
   /* безопасные значения по умолчанию: старый сейв не знает этих полей (M363) */
   G.clearance=Math.max(1,s.clearance|0);
   G.flownMs=Math.max(0,s.flownMs|0);

@@ -100,6 +100,11 @@ function snapshot(){
        навсегда. Закрытая дверь не восстанавливается ни временем, ни загрузкой */
     offers:G.offers,folk:G.folk,ledger:G.ledger,folkSay:G.folkSay,late:G.late,toldOff:G.toldOff|0,   /* M225, M230 */
     told:G.told,lastDig:G.lastDig,
+    /* четыре поля, которые терялись при загрузке (0.442.0, сеть сейва): счёт побед
+       (допуск и задания управляющих считают от него), отметка приказов (задание
+       «тишина в эфире» сравнивает с ней), заходы на базу (от них зерно аврала),
+       частота приёмника — «единственное, что хранит пульт» */
+    kills:G.kills|0,orderStamp:G.orderStamp|0,baseVisit:G.baseVisit|0,radioF:(G.radioF==null?null:+G.radioF),
     ts:wallNow()};
 }
 /* ══════════════ запись не имеет права убить полёт ══════════════

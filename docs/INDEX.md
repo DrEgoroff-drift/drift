@@ -109,8 +109,8 @@ appetitePrice                src/12ab-hold.js:84
 applyCrewEvent               src/12b-crew-events.js:215-224
 applyPadMode                 src/15-input.js:72-75
 applyPadSize                 src/15-input.js:8
-applySave                    src/14-save.js:211-610
-applySaveRest                src/14a1-save-rest.js:15-369
+applySave                    src/14-save.js:216-615
+applySaveRest                src/14a1-save-rest.js:15-372
 applyVolumes                 src/09-audio.js:40-47
 apVel                        src/16-flight.js:132
 ARC_JUMP                     src/13a-guns.js:39
@@ -120,7 +120,7 @@ armedCount                   src/13-combat.js:229
 arrive                       src/16-flight.js:178-216
 ARTIFACTS                    src/12h-relic.js:48-63
 askText                      src/11u-names.js:59-77
-asMap                        src/14-save.js:204-210
+asMap                        src/14-save.js:209-215
 assignToBase                 src/12a-crew.js:181-190
 AST_N                        src/24-mode-belt.js:86
 audioHush                    src/09-audio.js:12-18
@@ -3980,14 +3980,14 @@ S2                           src/01-core.js:167
 SAME_FRAMES                  tests/91zzzzzbb-samehash.js:21
 sameRun                      tests/91zzzzzbb-samehash.js:22-39
 sameRunHands                 tests/91zzzzzbb-samehash.js:77-95
-SAVE_BUDGET                  src/14-save.js:121
-SAVE_EPHEMERAL               src/14a2-save-ephemeral.js:29-57
+SAVE_BUDGET                  src/14-save.js:126
+SAVE_EPHEMERAL               src/14a2-save-ephemeral.js:29-55
 SAVE_KEY                     src/14-save.js:6
-saveFatSaid                  src/14-save.js:122
+saveFatSaid                  src/14-save.js:127
 saveGame                     src/14a-cloud.js:38-51
-saveText                     src/14-save.js:143-181
-saveTop                      src/14-save.js:137-140
-saveWeigh                    src/14-save.js:124-136
+saveText                     src/14-save.js:148-186
+saveTop                      src/14-save.js:142-145
+saveWeigh                    src/14-save.js:129-141
 say                          src/08-state.js:213
 SCALE_KEYS                   src/10-music.js:25
 SCALES                       src/10-music.js:5-24
@@ -4253,7 +4253,7 @@ SMOKE_N                      src/17c-system-draw.js:383
 SMOKE_PATHS                  src/12tb-settle-draw2.js:246
 smokePath                    src/12tb-settle-draw2.js:247-262
 smP                          src/12ud-smena.js:28
-snapshot                     src/14-save.js:42-104
+snapshot                     src/14-save.js:42-109
 SND                          src/09-audio.js:4
 sndWalk                      src/28-loop.js:32
 snStand                      tests/91zzzzzx-sound.js:22-57
@@ -5545,10 +5545,10 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/13d-npc.js · 13 КБ
   · война, которую видно (M372, §7.4):1
 
-## src/14-save.js · 45 КБ
+## src/14-save.js · 46 КБ
   · сохранение:1
-  · запись не имеет права убить полёт:105
-  · пустая карта возвращается из облака СПИСКОМ:182
+  · запись не имеет права убить полёт:110
+  · пустая карта возвращается из облака СПИСКОМ:187
 
 ## src/14a-cloud.js · 12 КБ
   · облако, вкладки и обмен:1
@@ -5559,7 +5559,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/14a1-save-rest.js · 28 КБ
   · загрузка: вторая половина (выделено из 14, M415):1
 
-## src/14a2-save-ephemeral.js · 5 КБ
+## src/14a2-save-ephemeral.js · 6 КБ
   · поля мира, которые НЕ сохраняются — и почему (0.438.0):1
 
 ## src/14b-war-net.js · 12 КБ
