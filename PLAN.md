@@ -139,6 +139,29 @@ before a push.
   hatch strip on lift) — verify by tapping; ДЕЛО reads fine on his world. Offline drones paid him
   +7 000 кр on load — item 6.
   ОПИСЬ: the bottom strips become tabs with words.
+- **Open from the reviews of 11.09 (do in item 3 unless noted):**
+  - One prompt slot: `G.prompt` is written in 25 files and the first writer wins — that is how the
+    tow got lost. A `prompt(text, level)` with levels «trouble > action nearby > info».
+  - Toasts over reading screens: one rule for all `.scr` — hold `say()` from flight until the screen
+    closes (the anchor warning is already off open screens; «Полёт восстановлен» over the counter).
+  - CSS cascade: 18 `@media ≤760` blocks; a later rule already beat a phone one (#console). Walk
+    them all; phone media go to the end of the file. #console still clips over ДЕЛО.
+  - ОПИСЬ: empty/locked blocks (six empty «Сорока» slots, locked cosmetics) fold to one line each and
+    go UNDER the ship; hull slot «+» markers ~12 px → a 44 px tap zone (nearest centre wins, like
+    compass chips), a label on tap, a colour legend under the ship; «+» only on a free slot; the
+    hidden long-press gets explicit buttons (ПОДНЯТЬ / НАДЕТЬ / В ЯЩИК); #opisBar says «ЛЮК · ЗА
+    БОРТ»; ПРИБОРЫ: no zero rows, units, groups of 4–5.
+  - ДЕЛО: «−13 left at the point» is an accounting bug (display clamped only); rows need a chevron or
+    a button (ОТОЗВАТЬ / ДОПЛАТИТЬ / К ТОЧКЕ); «+2 051 итог» and «−83 кр/мин» are different units in
+    one column; the header «людям платите 156 кр/мин» does not add up with the rows.
+  - СТОЛ: the sheet title should be where you are (ПРИЁМНИКИ), «← СТОЛ» only on the back button;
+    empty sheets say where to get the thing; the last row of desk objects needs bottom padding.
+  - Haul: the planet pass must let the planet dominate (disc ≥ .35 H, planet in the leading half,
+    barge not over it); shuttles passing; a pirate turning away from a ГЛАВТРАССА barge; a route bar.
+  - Economy (item 6): crew (`12a-crew` crewTick, cap 24 h) and managers (`12c-mgr-core` mgrTick, 240
+    min) earn OFFLINE — the author: pilots and mercs only online; drones 9000·1.6ⁿ.
+  - Privacy: to find the author's save I scanned `credits` in every cloud save — next time ask the
+    account name and take one file. The save sits outside git; never commit it.
 - [ ] **4. Modules** — «прогрев» is КОРАБЛЬ → ОСНАСТКА (`26b-ui-station-work` stTabMods; maybe СПЛАВ).
   Proposed: an upgrade card (ship thumb with the slot lit, dots big, «now → becomes» from stat(), the
   fitting budget bar, ONE button «УЛУЧШИТЬ ДО УР. N · X КР», a second of dock work, «УСТАНОВЛЕНО»).
