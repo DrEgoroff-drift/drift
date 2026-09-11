@@ -168,8 +168,8 @@ function npcRescue(sh,actEdge,cel){
   }
   if(hurt){
     const P=(typeof powerOf==="function")?powerOf(hurt.pw):null;
-    G.prompt="ПОДБИТЫЙ БОРТ · "+(P?P.ru.toUpperCase():"")+"\n"+
-      "ДЕЙСТВИЕ — ПОДЕЛИТЬСЯ ТОПЛИВОМ";
+    cue("ПОДБИТЫЙ БОРТ · "+(P?P.ru.toUpperCase():"")+"\n"+
+      "ДЕЙСТВИЕ — ПОДЕЛИТЬСЯ ТОПЛИВОМ",CUE_ACT);
     if(actEdge){
       const st=stat();
       const give=Math.min(G.fuel,st.fuelMax*.15);
@@ -185,9 +185,9 @@ function npcRescue(sh,actEdge,cel){
   const wk=npcWreckNear(sh);
   if(!wk)return false;
   const P=(typeof powerOf==="function")?powerOf(wk.by):null;
-  G.prompt="КОРПУС ПОСЛЕ БОЯ · "+(P?P.ru.toUpperCase():"")+"\n"+
+  cue("КОРПУС ПОСЛЕ БОЯ · "+(P?P.ru.toUpperCase():"")+"\n"+
     (G.tow?"У ВАС УЖЕ ЕСТЬ БУКСИР · ":"ДЕЙСТВИЕ — ВЗЯТЬ НА БУКСИР · ")+
-    (wk.crew?"ЦЕЛЬ — СНЯТЬ ЭКИПАЖ":"ЭКИПАЖ СНЯТ");
+    (wk.crew?"ЦЕЛЬ — СНЯТЬ ЭКИПАЖ":"ЭКИПАЖ СНЯТ"),CUE_ACT);
   if(actEdge&&!G.tow){
     G.tow={seed:wk.seed,by:wk.by,sx:G.sx,sy:G.sy};
     G.npcWrecks=G.npcWrecks.filter(w=>w!==wk);

@@ -93,8 +93,8 @@ function hailTick(sh,dt,actEdge){
     const P=(typeof powerOf==="function")?powerOf(H.by):null;
     const who=P?P.ru.toUpperCase():"ПИКЕТ";
     const deed=(typeof epiHailLine==="function")?epiHailLine(H.by):"";
-    G.prompt=who+" · «"+(deed||(P?P.hail:"Кто такой"))+"»\n"+
-      "ДЕЙСТВИЕ — «ПРОХОДОМ» · ЦЕЛЬ — «ПО ДЕЛУ»"+(H.warn?" · ВАС УЖЕ ПРЕДУПРЕДИЛИ":"");
+    cue(who+" · «"+(deed||(P?P.hail:"Кто такой"))+"»\n"+
+      "ДЕЙСТВИЕ — «ПРОХОДОМ» · ЦЕЛЬ — «ПО ДЕЛУ»"+(H.warn?" · ВАС УЖЕ ПРЕДУПРЕДИЛИ":""),CUE_ACT);
     if(actEdge){hailAnswer("pass");return true;}
     if(H.t<=0){
       /* молчание. Первое — предупреждение, второе — они правы */

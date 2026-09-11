@@ -51,6 +51,7 @@ function updateSystem(dt){
   /* штурвал (M360): три ввода пишут G.ctl, физика ниже читает только его.
      Орбиту и автопилот он снимает сам при любом рулении */
   helmTick(dt);
+  cueReset();   /* одна подсказка на кадр (08-state): дальше пишут только через cue() */
   /* буксир (16c): пока баржа ведёт корабль, штурвал и физика молчат */
   if(G.haul&&typeof haulTick==="function"&&haulTick(dt,sh))return;
   /* захват принадлежит телу, а тело — системе. Прыжок, стыковка, посадка, пояс,
@@ -170,14 +171,14 @@ function updateSystem(dt){
        «дёргается у звезды» */
     const corona=.22*clamp((sys.radius+30-d0)/40,0,1);
     sh.vx+=sh.x/d0*corona*dt;sh.vy+=sh.y/d0*corona*dt;
-    G.prompt="ПЕРЕГРЕВ КОРПУСА";
+    cue("ПЕРЕГРЕВ КОРПУСА",CUE_TROUBLE);
     if(G.hull<=0)wreck();
     return;
   }
   if(apOn)return;
   /* стрельбище (24d): пока идёт минута, подсказку держит оно */
   if(typeof rangeOn==="function"&&rangeOn()){rangeTick(dt);return;}
-  G.prompt=atEdge?"ГРАВИТАЦИОННЫЙ ЯКОРЬ · КРАЙ СИСТЕМЫ\nКУРС К ЗВЕЗДЕ СВОБОДЕН":"";
+  if(atEdge)cue("ГРАВИТАЦИОННЫЙ ЯКОРЬ · КРАЙ СИСТЕМЫ\nКУРС К ЗВЕЗДЕ СВОБОДЕН",CUE_INFO);
   /* «преследуют» — это те, кто идёт ЗА ВАМИ. Чужой бой на фронте (M372) идёт
      мимо: его корабли помечены iff и в счёт не входят, иначе строка пугала бы
      игрока восемью преследователями, которые о нём даже не знают */
@@ -190,10 +191,10 @@ function updateSystem(dt){
     const stick=G.ctl&&G.ctl.src==="stick",got=G.marks&&G.marks.length;
     const how=got?"ЦЕЛЬ ВЗЯТА · ОГОНЬ САМ"
       :(stick?"ЦЕЛЬ ИЛИ ТЫЧОК ПО КОРПУСУ — ЗАХВАТ":"TAB ИЛИ ЩЕЛЧОК ПО КОРПУСУ — ЗАХВАТ");
-    G.prompt=(st.armed?how:"ОРУДИЯ НЕТ")+"\nПРЕСЛЕДУЮТ: "+hostile+" · МОЖНО УЙТИ ИЛИ ПРЫГНУТЬ";
+    cue((st.armed?how:"ОРУДИЯ НЕТ")+"\nПРЕСЛЕДУЮТ: "+hostile+" · МОЖНО УЙТИ ИЛИ ПРЫГНУТЬ",CUE_WARN);
   }else if(bystand>=4&&typeof chronFront==="function"&&chronFront(G.sx,G.sy)){
     /* чужой бой: подсказка говорит ровно то, что происходит */
-    G.prompt="ЗДЕСЬ ИДЁТ ЧУЖОЙ БОЙ · "+bystand+" БОРТОВ"+"\nВАС НЕ ТРОГАЮТ, ПОКА ВЫ НЕ СТРЕЛЯЕТЕ";
+    cue("ЗДЕСЬ ИДЁТ ЧУЖОЙ БОЙ · "+bystand+" БОРТОВ"+"\nВАС НЕ ТРОГАЮТ, ПОКА ВЫ НЕ СТРЕЛЯЕТЕ",CUE_WARN);
   }
 
   if(sys.station){
@@ -202,14 +203,14 @@ function updateSystem(dt){
     const keyOn=(typeof wanderHas==="function")&&wanderHas("key")&&ds<2600;
     if(ds<300||keyOn){
       if(ds<95||keyOn){
-        if(sp>2.6)G.prompt="СБРОСЬТЕ СКОРОСТЬ · "+sp.toFixed(1)+"\nТОРМОЗ — ГАШЕНИЕ";
+        if(sp>2.6)cue("СБРОСЬТЕ СКОРОСТЬ · "+sp.toFixed(1)+"\nТОРМОЗ — ГАШЕНИЕ",CUE_ACT);
         else{
-          G.prompt="ДЕЙСТВИЕ — СТЫКОВКА · "+S.kind.toUpperCase();
+          cue("ДЕЙСТВИЕ — СТЫКОВКА · "+S.kind.toUpperCase(),CUE_ACT);
           if(actEdge)openStation();
         }
         return;
       }
-      G.prompt=S.name.toUpperCase()+" · "+Math.round(ds)+" ед.";
+      cue(S.name.toUpperCase()+" · "+Math.round(ds)+" ед.",CUE_INFO);
     }
   }
   /* «Сорока» у освещённого края планеты (12v, M342): подход как к станции */
@@ -217,18 +218,18 @@ function updateSystem(dt){
     const wn=wanderNear(sh);
     if(wn){
       if(wn.close){
-        if(sp>2.6)G.prompt="СБРОСЬТЕ СКОРОСТЬ · "+sp.toFixed(1)+"\nТОРМОЗ — ГАШЕНИЕ";
-        else{G.prompt="ДЕЙСТВИЕ — К ТРАПУ «СОРОКИ»";if(actEdge)wanderDock();}
+        if(sp>2.6)cue("СБРОСЬТЕ СКОРОСТЬ · "+sp.toFixed(1)+"\nТОРМОЗ — ГАШЕНИЕ",CUE_ACT);
+        else{cue("ДЕЙСТВИЕ — К ТРАПУ «СОРОКИ»",CUE_ACT);if(actEdge)wanderDock();}
         return;
       }
-      G.prompt="«СОРОКА» · "+Math.round(wn.ds)+" ед.";
+      cue("«СОРОКА» · "+Math.round(wn.ds)+" ед.",CUE_INFO);
     }
   }
   const B=sys.belt;
   if(B){
     const rr=Math.hypot(sh.x,sh.y);
     if(Math.abs(rr-B.orbit)<90){
-      G.prompt="ДЕЙСТВИЕ — ВОЙТИ В "+B.name.toUpperCase()+"\nРУДА: "+B.res.map(k=>RES[k].ru).join(", ");
+      cue("ДЕЙСТВИЕ — ВОЙТИ В "+B.name.toUpperCase()+"\nРУДА: "+B.res.map(k=>RES[k].ru).join(", "),CUE_ACT);
       if(actEdge){enterBelt();return;}
     }
   }
@@ -240,8 +241,8 @@ function updateSystem(dt){
       if(d<160){
         /* письмо на Остров (M160): с письмом подходят без боя — вторая дверь */
         const withLetter=typeof islandHeld==="function"&&islandHeld().length>0;
-        G.prompt="ПИРАТСКАЯ БАЗА · "+PB.name.toUpperCase()+
-          (withLetter?"\nДЕЙСТВИЕ — СЕСТЬ С ПИСЬМОМ · без оружия":"\nДЕЙСТВИЕ — АБОРДАЖ"+(st.armed?"":" (ОРУЖИЯ НЕТ)"));
+        cue("ПИРАТСКАЯ БАЗА · "+PB.name.toUpperCase()+
+          (withLetter?"\nДЕЙСТВИЕ — СЕСТЬ С ПИСЬМОМ · без оружия":"\nДЕЙСТВИЕ — АБОРДАЖ"+(st.armed?"":" (ОРУЖИЯ НЕТ)")),CUE_ACT);
         if(actEdge){if(withLetter)islandLand(PB);else enterRaid(PB);return;}
       }
     }
@@ -257,8 +258,8 @@ function updateSystem(dt){
   if(typeof npcWreckNear==="function"&&typeof npcRescue!=="function"){
     const wk=npcWreckNear(sh);
     if(wk){
-      G.prompt=G.tow?("КОРПУС ПОСЛЕ БОЯ · У ВАС УЖЕ ЕСТЬ БУКСИР")
-        :("КОРПУС ПОСЛЕ БОЯ\nДЕЙСТВИЕ — ВЗЯТЬ НА БУКСИР");
+      cue(G.tow?("КОРПУС ПОСЛЕ БОЯ · У ВАС УЖЕ ЕСТЬ БУКСИР")
+        :("КОРПУС ПОСЛЕ БОЯ\nДЕЙСТВИЕ — ВЗЯТЬ НА БУКСИР"),G.tow?CUE_INFO:CUE_ACT);
       if(actEdge&&!G.tow){
         G.tow={seed:wk.seed,by:wk.by,sx:G.sx,sy:G.sy};
         G.npcWrecks=G.npcWrecks.filter(w=>w!==wk);
@@ -297,10 +298,10 @@ function updateSystem(dt){
     if(nd<110){
       if(near.type==="gas"){
         /* сесть по-прежнему некуда, но в верхние слои можно зайти за газами */
-        G.prompt="ГАЗОВЫЙ ГИГАНТ · ПОСАДКИ НЕТ\nДЕЙСТВИЕ — ЗАХОД ЗА ЛЕТУЧИМИ ГАЗАМИ";
+        cue("ГАЗОВЫЙ ГИГАНТ · ПОСАДКИ НЕТ\nДЕЙСТВИЕ — ЗАХОД ЗА ЛЕТУЧИМИ ГАЗАМИ",CUE_ACT);
         if(actEdge){startScoop(near);return;}
       }
-      else if(!G.opts.easyLand&&sp>3.2)G.prompt="СЛИШКОМ БЫСТРО · "+sp.toFixed(1)+"\nТОРМОЗ — ГАШЕНИЕ";
+      else if(!G.opts.easyLand&&sp>3.2)cue("СЛИШКОМ БЫСТРО · "+sp.toFixed(1)+"\nТОРМОЗ — ГАШЕНИЕ",CUE_ACT);
       else{
         let ln="ДЕЙСТВИЕ — "+(G.opts.easyLand?"АВТО-ПОСАДКА":"ПОСАДКА")+" · "+near.name;
         if(G.tech.has("deep")&&near.res.length)
@@ -313,14 +314,18 @@ function updateSystem(dt){
           if(typeof probeHas==="function"&&!probeHas(G.sx,G.sy,near.idx))
             ln+="\nЦЕЛЬ — ЗОНД ЗА "+PROBE_COST+" КР";
         }
-        G.prompt=ln;
+        cue(ln,CUE_ACT);
         /* адрес для зонда: само нажатие ловит штурвал одним фронтом на клавишу
            и пэд, а `probeClaim` (21a8) его забирает (разбор 0.409.1) */
         G._probeAt=(near.type!=="gas")?{sx:G.sx|0,sy:G.sy|0,idx:near.idx|0}:null;
         if(actEdge){startLanding(near);return;}
       }
-    }else if(!G.prompt)G.prompt=near.name+" · "+Math.round(nd)+" ед.";
-    return;
+      return;
+    }
+    /* имя планеты — сведения: кадр идёт дальше, к пустому баку и синтезу.
+       Прежде здесь стоял return, и сухой корабль, дрейфующий мимо планеты,
+       видел только её имя — ДЕЙСТВИЕ молчало */
+    if(CUE_LVL<CUE_INFO)cue(near.name+" · "+Math.round(nd)+" ед.",CUE_INFO);
   }
   /* ── мёртвый штиль: сигнал бедствия (M331) ──
      Топливо тратится только на тягу и тормоз, а тормоз доводит до полной
@@ -334,14 +339,16 @@ function updateSystem(dt){
      или станция, у игрока и так есть что нажать. */
   /* 11.09: подсказка больше не единственный вход — газ на пустом баке сам
      открывает окно выходов (16c); ДЕЙСТВИЕ открывает его же */
-  if(!G.prompt&&G.fuel<=0&&!(G.tech.has("synth")&&G.cargo.ice>0)&&!document.body.classList.contains("sosopen")){   /* окно открыто — подсказка не повторяет его */
+  /* сюда доходит кадр, где ни один обработчик не взял ДЕЙСТВИЕ: сведения
+     (имя планеты, край системы, погоня) пустой бак перебивает, действие — нет */
+  if(CUE_LVL<CUE_ACT&&G.fuel<=0&&!(G.tech.has("synth")&&G.cargo.ice>0)&&!document.body.classList.contains("sosopen")){   /* окно открыто — подсказка не повторяет его */
     /* подсказка называет только те выходы, что есть: без дома в системе старта ДОМОЙ нет */
     const H=rescueHomeAt(),home=!(G.sx===H.sx&&G.sy===H.sy);
-    G.prompt="ХОДА НЕТ · БАК ПУСТ\nДЕЙСТВИЕ — "+(home?"ДОМОЙ, БУКСИР ИЛИ СБРОС":"БУКСИР ИЛИ СБРОС");
+    cue("ХОДА НЕТ · БАК ПУСТ\nДЕЙСТВИЕ — "+(home?"ДОМОЙ, БУКСИР ИЛИ СБРОС":"БУКСИР ИЛИ СБРОС"),CUE_TROUBLE);
     if(actEdge){toggleSos(true);return;}
   }
-  if(!G.prompt&&G.tech.has("synth")&&G.cargo.ice>0&&G.fuel<st.fuelMax){
-    G.prompt="ДЕЙСТВИЕ — СИНТЕЗ ТОПЛИВА ИЗО ЛЬДА ("+G.cargo.ice+")";
+  if(CUE_LVL<CUE_ACT&&G.tech.has("synth")&&G.cargo.ice>0&&G.fuel<st.fuelMax){
+    cue("ДЕЙСТВИЕ — СИНТЕЗ ТОПЛИВА ИЗО ЛЬДА ("+G.cargo.ice+")",CUE_ACT);
     if(actEdge){
       const ratio=st.synthRatio;
       const n=Math.min(G.cargo.ice,Math.ceil((st.fuelMax-G.fuel)/ratio));

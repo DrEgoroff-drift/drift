@@ -279,13 +279,15 @@ function bargeInteract(sh){
   /* под обстрелом не торгуют: баржу надо сперва отбить у пиратов. Прилавок
      закрыт, зато видно, что помочь можно огнём — или добить самому. */
   if(near.distress){
-    G.prompt="БАРЖА «"+near.capName.toUpperCase()+"» ПОД ОБСТРЕЛОМ · "+
+    /* тревога, а не действие: кадр идёт дальше — сесть на планету рядом с
+       чужим боем можно, и пустой бак под ним тоже слышно (ревью 11.09) */
+    cue("БАРЖА «"+near.capName.toUpperCase()+"» ПОД ОБСТРЕЛОМ · "+
       Math.round(clamp(near.hp/near.hullMax,0,1)*100)+"%\n"+
-      "ОТГОНИТЕ ПИРАТОВ — ИЛИ ДОБЕЙТЕ САМИ";
-    return true;
+      "ОТГОНИТЕ ПИРАТОВ — ИЛИ ДОБЕЙТЕ САМИ",CUE_WARN);
+    return false;
   }
-  G.prompt="ТОРГОВАЯ БАРЖА «"+near.capName.toUpperCase()+"» · "+T.ru.toUpperCase()+
-    "\nДЕЙСТВИЕ — ТОРГ БЕЗ СТЫКОВКИ";
+  cue("ТОРГОВАЯ БАРЖА «"+near.capName.toUpperCase()+"» · "+T.ru.toUpperCase()+
+    "\nДЕЙСТВИЕ — ТОРГ БЕЗ СТЫКОВКИ",CUE_ACT);
   if(actEdge)openBarge(near);
   return true;
 }
@@ -340,10 +342,10 @@ function wreckInteract(sh){
      что у находок (17b) — он перехватывал подсказку у планеты, рядом с которой
      оказался, и садиться было нельзя */
   if(near.seen){
-    if(!G.prompt)G.prompt="ОСТОВ БАРЖИ «"+String(near.name).toUpperCase()+"» · УЖЕ ОБЫСКАН";
+    if(CUE_LVL<CUE_INFO)cue("ОСТОВ БАРЖИ «"+String(near.name).toUpperCase()+"» · УЖЕ ОБЫСКАН",CUE_INFO);
     return false;
   }
-  G.prompt="ОСТОВ БАРЖИ «"+String(near.name).toUpperCase()+"»\nДЕЙСТВИЕ — ОБЫСКАТЬ ОБЛОМКИ";
+  cue("ОСТОВ БАРЖИ «"+String(near.name).toUpperCase()+"»\nДЕЙСТВИЕ — ОБЫСКАТЬ ОБЛОМКИ",CUE_ACT);
   if(actEdge){
     near.seen=1;
     const F=(typeof POI_FIND!=="undefined"&&POI_FIND.wreck)?POI_FIND.wreck:null;

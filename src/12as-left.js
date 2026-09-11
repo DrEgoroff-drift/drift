@@ -174,12 +174,13 @@ function leftInteract(sh,actEdge){
   if(i<0)return false;
   const row=leftRows()[i];
   if(row.k==="ghost"){
-    G.prompt="СЛЕД ЧУЖОГО КОРПУСА\nЗДЕСЬ КТО-ТО НЕ ДОШЁЛ";
-    return true;
+    /* след — сведения: ДЕЙСТВИЕ он не берёт, кадр идёт дальше */
+    cue("СЛЕД ЧУЖОГО КОРПУСА\nЗДЕСЬ КТО-ТО НЕ ДОШЁЛ",CUE_INFO);
+    return false;
   }
-  G.prompt="ОСТАВЛЕНО: "+(LEFT_RU[row.k]||row.k).toUpperCase()+
+  cue("ОСТАВЛЕНО: "+(LEFT_RU[row.k]||row.k).toUpperCase()+
     (row.ty?" · БЛАГОДАРНОСТЕЙ "+row.ty:"")+
-    "\nДЕЙСТВИЕ — ВЗЯТЬ КОПИЮ · ЦЕЛЬ — БЛАГОДАРНОСТЬ";
+    "\nДЕЙСТВИЕ — ВЗЯТЬ КОПИЮ · ЦЕЛЬ — БЛАГОДАРНОСТЬ",CUE_ACT);
   if(actEdge)leftTake(i);
   return true;
 }

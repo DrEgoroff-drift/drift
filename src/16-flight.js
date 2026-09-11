@@ -172,7 +172,7 @@ function runAutopilot(dt,st){
      направление скачет туда-сюда, и корабль начинал вертеться на месте */
   const face=Math.atan2(ldy,ldx);
   sh.a+=clamp(angDiff(face,sh.a),-.055,.055)*dt;
-  G.prompt="АВТОПИЛОТ · "+Math.round(gap)+" ед · "+Math.hypot(rvx,rvy).toFixed(1);
+  cue("АВТОПИЛОТ · "+Math.round(gap)+" ед · "+Math.hypot(rvx,rvy).toFixed(1),CUE_INFO);
   return true;
 }
 function arrive(){

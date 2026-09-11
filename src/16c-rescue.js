@@ -311,8 +311,8 @@ function haulTick(dt,sh){
     }
   }
   const s=haulLeft();
-  G.prompt="БУКСИР · "+(T.ph==="come"?"баржа подходит":"тащит к станции ("+T.dname+")")+
-    " · "+Math.floor(s/60)+":"+String(s%60).padStart(2,"0");
+  cue("БУКСИР · "+(T.ph==="come"?"баржа подходит":"тащит к станции ("+T.dname+")")+
+    " · "+Math.floor(s/60)+":"+String(s%60).padStart(2,"0"),CUE_TROUBLE);
   return true;
 }
 function drawHaul(zx,zy,Z){

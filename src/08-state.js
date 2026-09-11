@@ -217,4 +217,15 @@ const held=()=>RES_KEYS.reduce((a,k)=>a+G.cargo[k],0);
 let FRAME_IN=false,MSG_WORLD=false,MSG_HOLD=0;   /* MSG_HOLD — сколько кадров голос мира ждал за экраном */
 function say(s,d){G.msg=s;G.msgT=d||150;MSG_WORLD=FRAME_IN;MSG_HOLD=0;}
 try{["pointerdown","keydown","click"].forEach(t=>addEventListener(t,()=>{FRAME_IN=false;},true));}catch(e){}
+/* подсказка кадра — одна (ревью 11.09). Её пишут два десятка модулей, и прежде
+   побеждал тот, кто успел первым («if(!G.prompt)»): край системы глушил «БАК
+   ПУСТ», и выход к буксиру пропадал. Уровни: сведения < тревога < действие
+   рядом < беда. Старший бьёт младшего в любом порядке вызова, равный — последний.
+   ДЕЙСТВИЕ пишет уровнем ACT тот, чей обработчик ловит нажатие: кнопка берёт
+   глагол из подсказки (M355). Кадр полёта начинается с cueReset(); режимы с
+   одним писателем (поверхность, база, пещера…) пишут G.prompt сами. */
+const CUE_INFO=1,CUE_WARN=2,CUE_ACT=3,CUE_TROUBLE=4;
+let CUE_LVL=0;
+function cueReset(){CUE_LVL=0;G.prompt="";}
+function cue(t,lvl){lvl=lvl||CUE_INFO;if(lvl<CUE_LVL)return false;CUE_LVL=lvl;G.prompt=t;return true;}
 function msgHeld(){const b=typeof document!=="undefined"&&document.body;return MSG_WORLD&&!!(b&&b.classList&&b.classList.contains("screen"));}
