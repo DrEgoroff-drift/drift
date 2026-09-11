@@ -6590,7 +6590,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzzzy-light.js · 21 КБ
   · свет и свечения (M330):1
 
-## tests/91zzzzy-look.js · 7 КБ
+## tests/91zzzzy-look.js · 3 КБ
   · картина не портится молча (M336):1
 
 ## tests/91zzzzy-mem.js · 8 КБ
@@ -6611,7 +6611,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzzzy-time.js · 7 КБ
   · чужие часы (M334):1
 
-## tests/91zzzzz-e2e-life.js · 35 КБ
+## tests/91zzzzz-e2e-life.js · 36 КБ
   · сквозной прогон II: сейв, числа, текст, долгий полёт (M329):1
   · поздний вечер:378
   · вечер за игрой:433
@@ -6717,7 +6717,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzzzzzzzc-trips.js · 5 КБ
   · рейсы по мирам: один сценарий на дюжине систем (M446, §3.2 «дисбаланс»):1
 
-## tests/91zzzzzzzzz-golden.js · 6 КБ
+## tests/91zzzzzzzzz-golden.js · 8 КБ
   · золотые кадры: пятый оракул (M443, DESIGN-tests §3.2):1
 
 ## tests/91zzzzzzzzz-savenet.js · 4 КБ

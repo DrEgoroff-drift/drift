@@ -40,7 +40,7 @@
    "kill":"прогоны",
    "why":"подпись устья без плашки по дневному небу (найдено прогоном M444: контраст 1.9)"},
   {"name":"reset-leaks","file":"tests/90-harness.js",
-   "find":"G\\.pirates=\\[\\];G\\.shots=\\[\\];","replace":"G.shots=[];",
-   "kill":"",
+   "find":"G\\.pirates=\\[\\];G\\.barges=\\[\\];","replace":"G.barges=[];",
+   "kill":"resetWorld возвращает мир",
    "why":"resetWorld оставляет поле предыдущему набору (история M329: половинчатая Вега доехала до чужого набора)"}
 ]

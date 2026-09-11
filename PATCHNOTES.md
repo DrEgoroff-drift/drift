@@ -6,6 +6,20 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.443.0 - one picture oracle instead of two
+
+- The old net «картина: ни одна сцена не уехала от эталона кадра» (M336: tones, masses,
+  contrast and emptiness per scene against a pinned table) re-rendered every scene the golden
+  suite had just settled — 11 s of a 230 s run. Its numbers are now taken inside the golden
+  loop from the same settled frame, in the same 1280×800 window, with the same tolerances.
+- For that the golden suite left quarantine: it judges now. A golden shot on another platform
+  (the block grid differs — the server's headless has no window frame) is reported as «no
+  golden here», not as a failure; a missing golden stays red.
+- The zoo's «resetWorld оставляет поле» mutant had no named killer and died only when the leaked
+  field happened to land on a sensitive neighbour — after «картина» left the order, it survived.
+  The resetWorld suite now marks every ephemeral list (pirates, shots, loot, barges…) before the
+  reset and demands them empty after; the mutant names it. The net's first catch: `G.barges`
+  was never reset and rode from suite to suite.
 ## 0.442.0 - four fields that were lost on load, and a lab that runs all day
 
 - **Four fields now survive a save:** the kill count (the clearance exam and a manager's

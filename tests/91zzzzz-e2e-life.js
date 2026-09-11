@@ -521,4 +521,14 @@ TEST_SUITES.push(() => suite("сквозной: resetWorld возвращает 
     if (a !== b) dirt.push(k + ": было " + a.slice(0, 26) + ", стало " + b.slice(0, 26));
   }
   eq(dirt.slice(0, 20).join(" ;; "), "", "после resetWorld в мире нет чужого (" + Object.keys(now).length + " полей)");
+  /* и эфемерное тоже (0.443.0): пираты, снаряды, лут — в сейве их нет, и сравнение
+     выше их не видело; мутант «resetWorld оставляет поле» (зоопарк) умирал только
+     от удачного соседа. Пачкаем каждый списочный эфемерный поле меткой — после
+     сброса метки быть не должно ни в одном */
+  const MARK = { mark: "чужое" }, dirtyE = [];
+  for (const k of Object.keys(SAVE_EPHEMERAL)) if (Array.isArray(G[k])) { G[k].push(MARK); dirtyE.push(k); }
+  resetWorld();
+  const kept = dirtyE.filter(k => Array.isArray(G[k]) && G[k].indexOf(MARK) >= 0);
+  ok(dirtyE.length >= 5, "эфемерных списков помечено: " + dirtyE.length);
+  eq(kept.join(" "), "", "resetWorld опустошил каждый эфемерный список");
 }));

@@ -316,6 +316,11 @@ can go red; `T.replay` refuses a recording from another `VER`; the trips oracle 
   0.440.0: `Set`/`Map` with primitive members are hashed sorted, so the order techs were bought
   no longer changes the hash. Still open: `planetStripTick` cuts by `wallMs()` and writes
   `stripLvl` into hashed state — machine-dependent under load.
+- **A shard hangs now and then** — 10.09 a GPU process spun 33 min; 11.09 shard 1/6 of a
+  `-Full` sat 900 s and was killed by the new ceiling, the rerun was green in 139 s. Not
+  reproducible on demand yet; the ceiling turns it from a lost night into a lost fifteen
+  minutes. Next: `--enable-logging=stderr` on the laptop runs too, so the hung shard leaves
+  the name of the suite it was in (the lab already does this with `tests-trace.html`).
 - **The source net over suites is line-based** — `ok(\n true`, `ok(1,…)`, `"function"===typeof f`
   pass; the harness self-suites vanish under `?files=` (`_file`). And the clock law does not
   cover `tests/` (41 raw calls in 13 files, mostly `performance.now` for cost — legitimate, but
@@ -344,17 +349,24 @@ can go red; `T.replay` refuses a recording from another `VER`; the trips oracle 
 **The full run is 4 minutes on a real clock (`-Times`, 11.09: 230 s single page, 128 s in six
 shards), and the author asks what is duplicated.** The thirty slowest suites are 190 of the 230 s;
 the candidates, each with what would replace it:
-- «картина: ни одна сцена не уехала от эталона кадра» (11 s, `91zzzzy-look`, lookFrame numbers
-  per scene against a pinned table) re-renders every scene the golden suite (5 s) already grabs
-  — fold the numbers into the golden loop, one settle per scene: −11 s.
-- «двери: из каждой сцены в каждую дверь» (18.5 s, the host's OOM suite) vs `detDoors` in the
-  detect driver (menu doors, «система» only): widen `detDoors` to every scene's doors and retire
-  the old net, or keep the old one and drop `detDoors` — not both.
+- ~~«картина: ни одна сцена не уехала от эталона кадра»~~ — 0.443.0: folded into the golden loop
+  (same scenes, same settle, `LOOK_BASE` kept in `91zzzzy-look`); the golden suite left
+  quarantine for it — a golden of another platform (block grid differs) is a note, not a red.
+- «двери: из каждой сцены в каждую дверь» (18.5 s, the host's OOM suite) is **not** a duplicate
+  of `detDoors` (checked 11.09): the old net is the mode-transition matrix — every scene into
+  every mode entry and back, «mode without its state» —, `detDoors` closes DOM screens. Both
+  stay; the old one is the one to run in the lab under the capped heap.
 - «руки: кнопка над миром отвечает кадром» (8 s) · «обещание: кнопка делает то, что написано»
   (2.4 s) · «инструменты: руки и глаза» (1.9 s) · the controls law in `detect` — four suites
   press buttons and ask the frame to answer; one table of buttons × expected answer, one pass.
-- «сквозной: каждая сцена рисуется не пустой, кнопки в кадре нажимаются» (2.4 s) is the picture
-  law «empty or burnt frame» plus the button press above — retire once the two absorb it.
+- «сквозной: каждая сцена рисуется не пустой, кнопки в кадре нажимаются» (2.4 s) — checked
+  11.09: it clicks every visible button in every scene (up to 40), which no detector does; keep,
+  it is cheap.
+- **Verdict after the first pass (11.09):** the four minutes are mostly unique nets. The two
+  biggest (22 s each) are the bot walks and the draw-does-not-consume-rnd check; the only
+  true duplicate was «картина» (−11 s, done). The button family (~12 s) is the last real merge;
+  after it the time comes from coverage, and the fast tier (25 s Node + 3 s smoke) is what a
+  per-edit loop pays — the four minutes are for a release.
 - «детерминизм: рисованный кадр не сдвигает случай мира» (22 s) and «прогоны: двенадцать путей»
   (22.6 s) are the two biggest and not duplicates; the bot walks could settle scenes once and
   reuse the detect driver's grabs (both stand on `lookScenes`).
