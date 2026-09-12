@@ -379,7 +379,8 @@ body.menuopen .rail{opacity:.12;pointer-events:none;transition:opacity .15s}
   padding:1px 5px;border-radius:8px;font-size:9px;margin-left:6px}
 /* ── окно пустого бака (16c) ── посреди кадра: газ нажат, ответ должен быть там,
    куда смотрят. Тот же терминал, что меню, но янтарный: это не дверь, а беда */
-#sos{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:9;
+#sos{position:fixed;left:50%;transform:translateX(-50%);z-index:9;   /* нижняя треть, над падами (дизайнер 12.09) */
+  bottom:calc(env(safe-area-inset-bottom) + var(--padsh,86px) + 12px);max-height:72vh;overflow-y:auto;
   width:min(320px,88vw);background:var(--glass);border:1px solid rgba(242,178,92,.5);
   border-radius:var(--rad-p);backdrop-filter:blur(18px) saturate(1.2);
   box-shadow:0 18px 54px rgba(0,0,0,.62),var(--glass-hi);
@@ -388,8 +389,9 @@ body.menuopen .rail{opacity:.12;pointer-events:none;transition:opacity .15s}
 #sos>b{font-weight:400;color:var(--amber);letter-spacing:.18em;font-size:11px;
   padding:12px;border-bottom:1px solid var(--edge);display:flex;align-items:center}
 #sos>b em{font-style:normal}
-#sos>b span{margin-left:auto;color:var(--phos);font-size:17px;line-height:.7;padding:0 4px;cursor:pointer}
-#sosHead{color:var(--dim);font-size:9px;letter-spacing:.04em;padding:8px 12px;
+#sos>b span{margin:-12px -12px -12px auto;color:var(--phos);font-size:20px;line-height:1;cursor:pointer;
+  min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center}   /* 44 под палец */
+#sosHead{color:#c8d3dc;font-size:11px;letter-spacing:.03em;padding:8px 12px;white-space:pre-line;line-height:1.4;
   border-bottom:1px solid rgba(127,230,216,.08)}
 #sos button{position:relative;-webkit-appearance:none;background:none;border:0;
   border-bottom:1px solid rgba(127,230,216,.08);color:var(--amber);font-family:inherit;
@@ -399,12 +401,18 @@ body.menuopen .rail{opacity:.12;pointer-events:none;transition:opacity .15s}
 #sos button:disabled{color:var(--dim);opacity:.6}
 #sos button .tx{flex:1;min-width:0}
 #sos button em{font-style:normal;font-size:11px;letter-spacing:.13em;display:block}
-#sos button s{text-decoration:none;display:block;color:var(--dim);font-size:9px;margin-top:3px;letter-spacing:.02em}
+#sos button s{text-decoration:none;display:block;color:#b9c6d0;font-size:11px;margin-top:3px;letter-spacing:.01em;line-height:1.35}
+#sos .ic{flex:0 0 auto;width:22px;height:22px;margin-right:10px;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round}
+#sos button.lose.armed{background:rgba(255,90,70,.26);color:#ffd8cf}
+#sos button .arm{position:absolute;left:0;bottom:0;height:3px;width:100%;background:#ff6b57;animation:sosArm 4s linear forwards}
+@keyframes sosArm{from{width:100%}to{width:0}}
+body.sosopen #hailwin{bottom:auto;top:calc(env(safe-area-inset-top) + 96px)}   /* низ держит окно бака — оклик уходит наверх */
 #sos button.main{background:rgba(242,178,92,.16);color:#ffd59a}
 #sos button.main em{font-size:12px}
 #sos button.lose{color:#ff7a66;margin-top:10px;border-top:1px solid rgba(255,110,90,.45)}
 .sosnone{color:var(--dim);font-size:10px;padding:12px;line-height:1.5}
 body.sosopen .rail{opacity:.12;pointer-events:none}
+body.sosopen #console,body.sosopen #camBtn,body.hailopen #console,body.hailopen #camBtn{opacity:.12;pointer-events:none}   /* под окном — только окно */
 /* окно оклика (блокер надзора 12.09): над падами, в нижней трети — корабль и
    пикет видны; вопрос, отсчёт, два больших ответа. Подсказка под ним молчит */
 #hailwin{position:fixed;left:50%;transform:translateX(-50%);z-index:24;   /* поверх экранов (.scr 20) и стола (22): R0 */

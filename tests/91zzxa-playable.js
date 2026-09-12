@@ -246,6 +246,62 @@ TEST_SUITES.push(()=>suite("R3 у причала: пробел стыкует и
   closeStation();
 }));
 
+/* R3b: окно выходов — вид (дизайнер 12.09 и тестировщик: крестик 18 px, взведённый
+   СБРОС не возвращался, «в баке будет 40» при полном баке, шапка дублировала HUD) */
+TEST_SUITES.push(()=>suite("R3b окно выходов: пад «ВЫХОДЫ», нижняя треть, крестик 44, Escape и тап мимо, подстроки читаются, шапка про станцию и погоню",{tier:"browser",win:"phone"},()=>{
+  resetWorld();
+  const S=r3Sys();
+  G.mode="system";G.sx=S.sx;G.sy=S.sy;G.sys=S;G.ship.x=S.station.orbit+3000;G.ship.y=0;G.ship.vx=0;G.ship.vy=0;
+  G.fuel=0;G.cargo.ice=0;G.cargo.iron=3;G.credits=1e6;G.pirates=[];G.hail=null;G.hailLog={};toggleSos(false);
+  T.wait(1);hud();
+  eq(document.querySelector("[data-k=act]").textContent.trim(),"ВЫХОДЫ","на пустом баке пад ДЕЙСТВИЕ зовётся «ВЫХОДЫ»");
+  ok(!/БУКСИР ИЛИ СБРОС/.test(G.prompt),"подсказка не пересказывает окно: "+G.prompt.replace(/\n/g," / "));
+  const cb=document.getElementById("callbtn");
+  ok(cb.textContent.indexOf(rescueHomeCost().toLocaleString("ru"))>=0,"в меню ДОМОЙ со своей ценой: "+cb.textContent);
+  toggleSos(true);
+  const sos=document.getElementById("sos"),r=sos.getBoundingClientRect();
+  ok(r.top>=innerHeight/3,"окно в нижней части экрана, над падами: верх "+Math.round(r.top)+" из "+innerHeight);
+  const x=document.getElementById("sosclose").getBoundingClientRect();
+  ok(x.width>=44&&x.height>=44,"крестик под палец: "+Math.round(x.width)+"×"+Math.round(x.height));
+  const hd=()=>document.getElementById("sosHead").textContent;
+  ok(/до станции .+ · \d/.test(hd()),"шапка — куда тащат и сколько: "+hd());
+  const lum=c=>{const m=c.match(/[\d.]+/g).map(Number),f=v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4);};return .2126*f(m[0])+.7152*f(m[1])+.0722*f(m[2]);};
+  for(const s of sos.querySelectorAll("#sosList button s,#sosHead")){
+    const cs=getComputedStyle(s),cr=(lum(cs.color)+.05)/(.02+.05);
+    ok(parseFloat(cs.fontSize)>=11&&cr>=4.5,"подстрока читается: "+cs.fontSize+", контраст "+cr.toFixed(1)+" · «"+s.textContent.slice(0,24)+"»");
+  }
+  ok([...sos.querySelectorAll("#sosList button")].every(b=>!!b.querySelector(".ic")),"у каждого выхода свой значок");
+  const home=sos.querySelector('#sosList button[data-id="home"]');
+  const want=Math.min(stat().fuelMax,Math.max(G.fuel,RESCUE_FUEL));
+  ok(home.textContent.indexOf("в баке будет "+want)>=0,"ДОМОЙ обещает ровно то, что будет в баке ("+want+"): "+home.textContent);
+  const rs=()=>sos.querySelector('#sosList button[data-id="reset"]');
+  rs().click();
+  ok(rs().classList.contains("armed")&&!!rs().querySelector(".arm"),"взведённый СБРОС красный и с полосой срока");
+  rs().querySelector(".arm").dispatchEvent(new Event("animationend",{bubbles:true}));
+  ok(!rs().classList.contains("armed")&&/^СБРОС/.test(rs().querySelector("em").textContent),"срок вышел — кнопка вернулась: "+rs().querySelector("em").textContent);
+  dispatchEvent(new KeyboardEvent("keydown",{key:"Escape",code:"Escape"}));
+  ok(!document.body.classList.contains("sosopen"),"Escape закрывает окно");
+  G.t+=200;toggleSos(true);
+  T.tap(W/2,80);
+  ok(!document.body.classList.contains("sosopen"),"тап мимо окна закрывает его");
+  G.t+=200;
+  const by=MAKER_KEYS.find(k=>k!==playerFlag());
+  const p=npcShip(by,0,1,G.ship.x+300,G.ship.y,1);p.iff=0;p.aware=true;G.pirates=[p];
+  toggleSos(true);
+  ok(/ПОГОНЯ/.test(hd()),"погоня — в шапке окна: "+hd());
+  toggleSos(false);G.pirates=[];
+  /* окно живое: состояние сменилось, пока оно открыто, — оно перерисовалось само
+     (Контроль 12.09: окно рисовалось только при открытии) */
+  G.t+=200;G.credits=0;toggleSos(true);
+  const hb=()=>sos.querySelector('#sosList button[data-id="home"]');
+  ok(hb().disabled,"без денег ДОМОЙ серый");
+  G.credits=1e6;T.wait(1);hud();
+  ok(!hb().disabled,"пришли деньги — ДОМОЙ ожил, не закрывая окна");
+  G.pirates=[p];p.hull=10;T.wait(1);hud();
+  ok(/ПОГОНЯ/.test(hd()),"погоня появилась при открытом окне — шапка сказала: "+hd());
+  toggleSos(false);G.pirates=[];
+}));
+
 /* R1: действие делает то, что написано, когда в кадре два предложения */
 TEST_SUITES.push(()=>suite("R1 пояс рядом с планетой: подсказка и ДЕЙСТВИЕ совпадают",{tier:"browser"},()=>{
   resetWorld();

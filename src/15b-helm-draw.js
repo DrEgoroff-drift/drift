@@ -140,6 +140,8 @@ function helmDryLabel(x,y,a){
 }
 function helmDrawSticks(){
   const dry=helmDry();
+  /* окно выходов открыто — оно и есть ответ; подпись под ним лишняя */
+  const sosUp=typeof document!=="undefined"&&!!document.body&&!!document.body.classList&&document.body.classList.contains("sosopen");
   const one=(s,fade)=>{
     const q=helmStickShape(s),a=(fade?s.f:1)*(dry?.35:1),c=G.ctl;
     const slow=!!(c&&c.slow)&&!fade;
@@ -210,7 +212,7 @@ function helmDrawSticks(){
     ctx.beginPath();ctx.arc(q.x0,q.y0,1.8,0,TAU);ctx.fill();
     ctx.globalAlpha=.28*a;
     ctx.beginPath();ctx.arc(s.x,s.y,3.2,0,TAU);ctx.fill();
-    if(dry)helmDryLabel(q.x0,q.y0,fade?s.f:1);
+    if(dry&&!sosUp)helmDryLabel(q.x0,q.y0,fade?s.f:1);
     ctx.restore();
   };
   const live=HELM.S,fade=HELM.fade;
@@ -224,7 +226,7 @@ function helmDrawSticks(){
     ctx.save();ctx.strokeStyle="#cfe6ea";ctx.fillStyle="#cfe6ea";ctx.lineWidth=1;
     ctx.globalAlpha=.16;ctx.beginPath();ctx.arc(h.x,h.y,HELM_ARC0,0,TAU);ctx.stroke();
     ctx.globalAlpha=.3;ctx.beginPath();ctx.arc(h.x,h.y,2.2,0,TAU);ctx.fill();
-    if(dry)helmDryLabel(h.x,h.y,1);
+    if(dry&&!sosUp)helmDryLabel(h.x,h.y,1);
     ctx.restore();
   }
 }

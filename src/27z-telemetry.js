@@ -197,6 +197,7 @@ function hud(){
   document.body.classList.toggle("screen",!!document.querySelector(".scr.open"));
   /* пустой бак (R2): газ и повороты гаснут — ими не сдвинуться, выход в окне */
   document.body.classList.toggle("tankdry",G.mode==="system"&&rescueEmpty());
+  rescueSync();   /* открытое окно выходов сверяет себя с миром (16c) */
   let a="—",b="—";
   /* кошелёк вынесен отдельной строкой ниже — здесь он был бы вторым разом */
   if(G.mode==="system"){a=((typeof nameOf==="function")?nameOf(G.sys):G.sys.name).toUpperCase();b="«"+st.S.ru+"» · сектор "+G.sx+":"+G.sy;
@@ -247,7 +248,14 @@ function hud(){
   if(typeof celLine==="function"){const cl=celLine();if(cl)b+=" · "+cl;}
   /* ДОМОЙ в меню — в любом полёте, не только на станции (16c, плейтест 11.09) */
   const cbtn=document.getElementById("callbtn");
-  if(cbtn)setSt(cbtn,"display",(G.mode==="system"||G.mode==="map")?"":"none");
+  if(cbtn){
+    const on=(G.mode==="system"||G.mode==="map")&&!G.haul;   /* на тросе выход уже выбран (16c) */
+    setSt(cbtn,"display",on?"":"none");
+    /* меню называет цену (дизайнер 12.09): решать, не открывая окна */
+    const cs=on&&cbtn.querySelector("s");
+    if(cs){const H=rescueHomeAt(),at=G.sx===H.sx&&G.sy===H.sy;
+      setTx(cs,at?"вы и так дома":"прыжок "+H.ru+" · "+rescueHomeCost().toLocaleString("ru")+" кр");}
+  }
   const sbtn=document.getElementById("starbtn");
   setSt(sbtn,"display",(G.mode==="system"&&!G.haul&&Math.hypot(G.ship.x,G.ship.y)>1400)?"":"none");   /* под буксиром курс не наш (16c) */
   /* «К ЦЕЛИ» (M321, §9 шаг 6): курс поставлен с доски или из тетради — в полёте

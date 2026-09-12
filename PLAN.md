@@ -221,7 +221,13 @@ before a push.
     only the lost hull's parts and is not offered on a bare «Стриж», an own-power dock in a foreign
     system cools the jumps once per system (`rescueDockCool`, `G.homeDockAt` saved), surface 1–7 is a
     jump «без хода» and the head says the real fuel, Space no longer opens the window, docking closes
-    it; four «R3 …» tests). **R3b the look** is next: tester 1 (window/БУКСИР/ДОМОЙ/СБРОС during a haul), 2 (a wreck on the
+    it; four «R3 …» tests). **R3b the look done**: the window in the lower third over the pads (the hail
+    moves up while it is open), × 44, Escape and a tap outside close it, sub-lines 11 px ≥4.5:1, the
+    head says «до станции «X» · N ед.» and a pursuit first, icons per exit, «в баке будет» is what
+    `rescueTake` gives, the armed СБРОС is red with a 4 s bar and comes back, the window re-renders
+    itself while open (`rescueSync`), the pad reads ВЫХОДЫ, the menu shows the jump price; under the
+    window the ether strip, МАСШТАБ and the stick label step back. **Open: R3c** — the dock greetings
+    burn behind the station screen (tester critic 1). Was: tester 1 (window/БУКСИР/ДОМОЙ/СБРОС during a haul), 2 (a wreck on the
     rope loops), 3 (СБРОС clears every fit, keeps the lost parts), 6 (dock greetings burn behind the
     screen; the crash toast hides), 7 (stale window, Space at the dock), 9 (× 44 px, tap outside,
     Escape), 10 («в баке будет» = max), 12 (the armed СБРОС label returns), 13 (СБРОС on a bare

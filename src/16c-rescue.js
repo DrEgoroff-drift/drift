@@ -78,7 +78,7 @@ function rescueOffers(){
   const out=[],H=rescueHomeAt();
   const atHome=G.sx===H.sx&&G.sy===H.sy;
   if(!atHome)out.push({id:"home",ru:"ДОМОЙ",cost:rescueHomeCost(),
-    sub:"прыжок "+H.ru+" · сразу · в баке будет "+RESCUE_FUEL});
+    sub:"прыжок "+H.ru+" · сразу · в баке будет "+Math.max(Math.floor(G.fuel),Math.min(stat().fuelMax,RESCUE_FUEL))});   /* ровно то, что даст rescueTake */
   if(rescueEmpty()){
     const dest=nearestStation(G.sx,G.sy);
     /* терять нечего — голый «Стриж» без модулей, частей и груза: СБРОС был бы
@@ -86,7 +86,7 @@ function rescueOffers(){
     const lose=G.shipId!=="strizh"||Object.keys(G.mods).some(k=>(G.mods[k]|0)>0)||
       Object.keys(G.fit[G.shipId]||{}).length>0||RES_KEYS.some(k=>G.cargo[k]>0);
     out.push({id:"tow",ru:"БУКСИР",cost:0,
-      sub:"баржа придёт и дотащит до станции ("+dest.name+") · около 5 минут без руля"});
+      sub:"баржа придёт и дотащит · 5 минут без руля"});   /* куда — сказано в шапке окна */
     if(lose)out.push({id:"reset",ru:"СБРОС",cost:0,
       sub:"корабль, всё, что на нём стоит, и груз потеряны · «Стриж» у станции"});
   }
@@ -500,17 +500,47 @@ function rescueAsk(){
   if(G.t>=rescueShutT&&G.t-rescueShutT<RESCUE_ASK_GAP)return;
   toggleSos(true);
 }
+/* шапка — отдельно: её сверяет каждый кадр rescueSync (расстояние, погоня) */
+function rescueHead(){
+  const empty=rescueEmpty();
+  const head=document.getElementById("sosHead");
+  /* с грунта в баке бывает 1–7: взлёт стоит 8 — это не «ноль» (ревью 12.09) */
+  const fl=Math.max(0,Math.floor(G.fuel));
+  /* шапка говорит то, чего нет в HUD (дизайнер 12.09): куда тащат и сколько до
+     туда, а если на хвосте кто-то есть — это первой строкой */
+  const dest=nearestStation(G.sx,G.sy);
+  const here=dest.sx===G.sx&&dest.sy===G.sy&&dest.station;
+  const far=here?Math.round(Math.hypot(G.ship.x-dest.station.x,G.ship.y-dest.station.y))+" ед.":"сектор "+dest.sx+":"+dest.sy;
+  const chase=(G.pirates||[]).filter(p=>p.hull>0&&p.aware&&!p.iff).length;
+  const t=(chase?"ПОГОНЯ · "+chase+" "+(chase===1?"борт":chase<5?"борта":"бортов")+" на хвосте\n":"")+
+    (empty&&fl>0?"Топлива "+fl+", на взлёт нужно 8\n":"")+"до станции «"+dest.name+"» · "+far;
+  if(head&&head.textContent!==t)head.textContent=t;
+}
+/* окно живое (Контроль 12.09: рисовалось только при открытии — пришли деньги,
+   а ДОМОЙ серый). Кнопки перестраиваются, когда меняется то, от чего они
+   зависят, и никогда — пока СБРОС взведён: второй тап не срывается */
+let rescueSigNow="";
+function rescueSig(){return rescueOffers().map(o=>o.id+":"+o.cost+":"+(o.cost>G.credits?0:1)).join(",")+"|"+G.mode+"|"+rescueEmpty();}
+function rescueSync(){
+  if(!$sos||!$sos.classList.contains("open"))return;
+  if(G.haul){toggleSos(false);return;}
+  if(rescueSig()!==rescueSigNow&&!$sos.querySelector("button.armed"))rescueRender();
+  else rescueHead();
+}
+/* значки выходов (дизайнер 12.09): дом, баржа с тросом, «Стриж» — выход читается
+   раньше слова */
+const RESCUE_ICON={
+  home:'<svg class="ic" viewBox="0 0 16 16"><path d="M2 8l6-5 6 5"/><path d="M4 7v6h8V7"/></svg>',
+  tow:'<svg class="ic" viewBox="0 0 16 16"><rect x="1" y="5" width="8" height="5" rx="1"/><path d="M9 7.5h3"/><path d="M12 5.5l3 2-3 2z"/></svg>',
+  reset:'<svg class="ic" viewBox="0 0 16 16"><path d="M8 2l5 11-5-3-5 3z"/></svg>'
+};
 function rescueRender(){
   const box=document.getElementById("sosList");if(!box)return;
   box.textContent="";
   const empty=rescueEmpty();
   const ttl=document.getElementById("sosTtl");
   if(ttl)ttl.textContent=empty?"ХОДА НЕТ · БАК ПУСТ":"ДОМОЙ";
-  const head=document.getElementById("sosHead");
-  /* с грунта в баке бывает 1–7: взлёт стоит 8 — это не «ноль» (ревью 12.09) */
-  const fl=Math.max(0,Math.floor(G.fuel));
-  if(head)head.textContent=(empty?(fl>0?"Топлива "+fl+", на взлёт нужно 8. ":"Топлива ноль. "):"")+"На счету "+
-    Math.floor(G.credits).toLocaleString("ru")+" кр · корабль «"+((shipData(G.shipId)||{}).ru||"—")+"»";
+  rescueHead();rescueSigNow=rescueSig();
   const offers=rescueOffers();
   if(!offers.length){
     const s=document.createElement("div");s.className="sosnone";
@@ -521,7 +551,7 @@ function rescueRender(){
     const b=document.createElement("button");
     const poor=o.cost>G.credits;
     b.disabled=poor;
-    b.innerHTML='<span class="tx"><em></em><s></s></span>';
+    b.innerHTML=RESCUE_ICON[o.id]+'<span class="tx"><em></em><s></s></span>';
     b.querySelector("em").textContent=o.ru+(o.cost?" · "+o.cost.toLocaleString("ru")+" КР":(o.id==="tow"?" · ДАРОМ":""));
     b.querySelector("s").textContent=poor?"не хватает "+(o.cost-G.credits).toLocaleString("ru")+" кр":o.sub;
     b.dataset.id=o.id;
@@ -534,10 +564,15 @@ function rescueRender(){
       /* СБРОС отнимает корабль — одним касанием его не отдают (ревью 11.09):
          первый тычок взводит кнопку и говорит, что пропадёт, второй в течение
          четырёх секунд — делает. Телефон промахивается, это мы уже знаем */
-      if(o.id==="reset"&&!(b.dataset.armed&&wallMs()-(+b.dataset.armed)<4000)){
-        b.dataset.armed=String(wallMs());
+      /* взведённая — красная, с полосой срока; срок вышел — кнопка возвращается
+         сама (ревью 12.09: надпись «ТОЧНО?» висела, а второй тап лишь взводил снова) */
+      if(o.id==="reset"&&!(b.classList.contains("armed")&&wallMs()-(+b.dataset.armed)<4000)){
+        b.dataset.armed=String(wallMs());b.classList.add("armed");
         b.querySelector("em").textContent="ТОЧНО? ТКНИТЕ ЕЩЁ РАЗ";
         b.querySelector("s").textContent="«"+((shipData(G.shipId)||{}).ru||"корабль")+"», всё, что на нём стоит, и груз пропадут";
+        const bar=document.createElement("i");bar.className="arm";
+        bar.addEventListener("animationend",()=>{if(b.isConnected)rescueRender();});
+        b.appendChild(bar);
         return;
       }
       if(rescueTake(o.id))toggleSos(false);else rescueRender();
@@ -559,9 +594,15 @@ if($sos){
   document.getElementById("sosclose").addEventListener("click",()=>toggleSos(false));
   document.getElementById("callbtn").addEventListener("click",()=>toggleSos(true));
 }
-addEventListener("pointerdown",()=>{rescueInputT=wallMs();},true);
+/* тап мимо окна закрывает его (дизайнер 12.09) — кроме кнопки, что его и открывает */
+addEventListener("pointerdown",e=>{
+  rescueInputT=wallMs();
+  const t=e.target;
+  if($sos&&$sos.classList.contains("open")&&!(t&&t.nodeType===1&&($sos.contains(t)||(t.closest&&t.closest("#callbtn")))))toggleSos(false);
+},true);
 addEventListener("keydown",e=>{
   rescueInputT=wallMs();
+  if(e.key==="Escape"&&$sos&&$sos.classList.contains("open")){toggleSos(false);return;}
   /* короткий тап газа проходил между кадрами и окна не открывал: газ и тормоз
      на пустом баке открывают его прямо по нажатию */
   /* пробела здесь нет: он — ДЕЙСТВИЕ, и у причала стыкует; на пустом баке без

@@ -341,8 +341,9 @@ function updateSystem(dt){
      (имя планеты, край системы, погоня) пустой бак перебивает, действие — нет */
   if(cueLvl()<CUE_ACT&&G.fuel<=0&&!(G.tech.has("synth")&&G.cargo.ice>0)&&!document.body.classList.contains("sosopen")){   /* окно открыто — подсказка не повторяет его */
     /* подсказка называет только те выходы, что есть: без дома в системе старта ДОМОЙ нет */
-    const H=rescueHomeAt(),home=!(G.sx===H.sx&&G.sy===H.sy);
-    if(cue("ХОДА НЕТ · БАК ПУСТ\nДЕЙСТВИЕ — "+(home?"ДОМОЙ, БУКСИР ИЛИ СБРОС":"БУКСИР ИЛИ СБРОС"),CUE_TROUBLE)&&actEdge){toggleSos(true);return;}
+    /* глагол короткий — пад берёт его сам: «ВЫХОДЫ» (дизайнер 12.09); что за
+       выходы, говорит окно, подсказка его не пересказывает */
+    if(cue("ХОДА НЕТ · БАК ПУСТ\nДЕЙСТВИЕ — ВЫХОДЫ",CUE_TROUBLE)&&actEdge){toggleSos(true);return;}
   }
   if(cueLvl()<CUE_ACT&&G.tech.has("synth")&&G.cargo.ice>0&&G.fuel<st.fuelMax){
     if(cue("ДЕЙСТВИЕ — СИНТЕЗ ТОПЛИВА ИЗО ЛЬДА ("+G.cargo.ice+")",CUE_ACT)&&actEdge){
@@ -635,7 +636,9 @@ function drawSysHud(zx,zy,sh,sys,U){
      серая строка по нему читалась с контрастом 2.1 (M444, прогон «посадка и
      залежь» под детектором текста) */
   /* на буксире камера ведёт сама — служебную цифру масштаба не показываем (дизайн-ревью 11.09) */
-  if(!G.haul){const sl="МАСШТАБ ×"+G.zoom.toFixed(2),sy=Math.max(96,scaleY),tw=ctx.measureText(sl).width;
+  /* под окном оклика и бака служебной цифры нет: над миром висит только нужное сейчас */
+  const mdl=document.body.classList.contains("hailopen")||document.body.classList.contains("sosopen");
+  if(!G.haul&&!mdl){const sl="МАСШТАБ ×"+G.zoom.toFixed(2),sy=Math.max(96,scaleY),tw=ctx.measureText(sl).width;
    /* плашка плотная и строка светлее прежней серой: над диском планеты
       (телефон, после взлёта) полупрозрачная плашка давала контраст 2.4 */
    ctx.fillStyle="rgba(5,7,12,.85)";ctx.fillRect(10,sy-10,tw+8,15);
