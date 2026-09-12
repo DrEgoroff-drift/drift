@@ -32,7 +32,7 @@ function crashShip(kind,msg,at,extra){
     const b=Object.assign({ver:VER,kind,msg,at:String(at||"").slice(0,800),n:L.n,
       mode,up:((now-CRASH_SHIP.t0)/1000)|0,win:innerWidth+"x"+innerHeight+"@"+(window.devicePixelRatio||1),
       ua:navigator.userAgent.slice(0,200),log:tail.slice(0,800)},extra||{});
-    fetch("/log.php",{method:"POST",keepalive:true,body:JSON.stringify(b)}).catch(()=>{});
+    fetch("/log.php",{method:"POST",keepalive:true,body:JSON.stringify(typeof netBody==="function"?netBody(b):b)}).catch(()=>{});
   }catch(_){}
 }
 /* стек — только наши кадры, до восьми строк */

@@ -23,7 +23,8 @@ let dealRun=null;
 function dealCount(){
   return (G.crew?G.crew.length:0)+(G.mgrs?G.mgrs.length:0)+
          (G.drones?G.drones.length:0)+
-         ((typeof baseList==="function")?baseList().length:0);
+         ((typeof baseList==="function")?baseList().length:0)+
+         ((typeof offerCarried==="function")?offerCarried().length:0);
 }
 /* ── кто простаивает ── ради точки на кнопке: хозяйство, которое встало,
    обязано быть видно из полёта, а не только из открытого экрана */
@@ -88,6 +89,16 @@ function dealRender(){
     $dlBody.appendChild(el("div","sec note","В минуту: машины "+dealRate(perMin)+
       (crewM?" · наёмники "+dealRate(-crewM):"")+(coreM?" · ядро "+dealRate(-coreM):"")+
       " · <b>итого "+dealRate(perMin-crewM-coreM)+" кр</b>"));
+
+  /* ── дела с доски (R5b) ── взятая работа живёт не меньше четверти часа, и
+     её срок виден здесь, а не только на бумаге в ВЕЩАХ */
+  const carried=(typeof offerCarried==="function")?offerCarried():[];
+  if(carried.length){
+    $dlBody.appendChild(el("div","sec","ДЕЛА С ДОСКИ · "+carried.length));
+    for(const c of carried)
+      dealRow(c.name,"на «"+c.dest+"» · "+(c.named?"вас назвали":"взято на доске"),
+        [c.left+" мин","осталось"],c.left<5?"#f2b25c":"");
+  }
 
   /* ── люди ── */
   const crew=G.crew||[],mgrs=G.mgrs||[];

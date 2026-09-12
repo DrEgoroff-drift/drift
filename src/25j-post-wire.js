@@ -47,7 +47,7 @@ let mailBusy=0;
 function mailCall(op,body){
   if(!mailOn())return Promise.resolve(null);
   const b=Object.assign({op:op,id:traceId()},body||{});
-  return fetch(CLOUD.api+"?a=post",{method:"POST",body:JSON.stringify(b)})
+  return fetch(CLOUD.api+"?a=post",{method:"POST",body:JSON.stringify(netBody(b))})
     .then(r=>r.json()).catch(()=>null);
 }
 /* карточка на провод: только те поля, которые сервер и так проверит. Лишнее

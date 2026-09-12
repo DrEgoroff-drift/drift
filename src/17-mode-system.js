@@ -315,7 +315,7 @@ function updateSystem(dt){
             /* цена — на паде, покупка — вторым тапом (боты 12.09): взведённый зонд
                переспрашивает «ТОЧНО?» три секунды игры (probeClaim, 21a8) */
             const pa=G._probeArm,arm=!!pa&&pa.sx===(G.sx|0)&&pa.sy===(G.sy|0)&&pa.idx===(near.idx|0)&&G.t-pa.t<180;
-            ln+="\nЦЕЛЬ — "+(arm?"ТОЧНО? "+PROBE_COST+" КР":"ЗОНД "+PROBE_COST+" КР");
+            ln+="\nЦЕЛЬ — "+(arm?"ТОЧНО? "+probePriceRu():"ЗОНД "+probePriceRu());
           }
         }
         const won=cue(ln,CUE_ACT);

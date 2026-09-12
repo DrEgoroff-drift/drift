@@ -2,6 +2,14 @@
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
 const VER="0.447.0";
+/* ── стенд не пишет в живой мир (Контроль 12.09) ──
+   dev.html и ?test=1 помечают каждый POST полем test:1; api.php, war.php и
+   log.php такую запись в общие пулы (знаки, вещи, открытки, дорога, война,
+   сбои) не кладут, а отвечают как обычно. Боты 11.09 насорили знаками именно
+   со стенда. Свой сейв по учётной записи стенд пишет по-прежнему */
+const NET_TEST=(typeof location!=="undefined")&&!!location&&
+  (/\/dev\.html$/i.test(location.pathname||"")||/[?&]test=1(&|$)/.test(location.search||""));
+function netBody(b){b=b||{};if(NET_TEST)b.test=1;return b;}
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);

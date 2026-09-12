@@ -124,10 +124,14 @@ function updateLanding(dt){
     L.gear=1;L.sq=Math.min(1,.3+sp*.3);L.sqv=0;L.hot=1;
     if(ok)say("Посадка выполнена");
     else{
-      const dmg=(18+Math.min(42,sp*11))/tol;
+      let dmg=(18+Math.min(42,sp*11))/tol;
+      /* первый час (R5b): жёсткая посадка, а не крушение — не больше пятой
+         части корпуса и никогда до нуля; груз цел, корабль остаётся у планеты */
+      const soft=typeof firstHour==="function"&&firstHour();
+      if(soft)dmg=Math.min(dmg,st.hullMax*.2,Math.max(0,G.hull-1));
       G.hull=Math.max(0,G.hull-dmg);
       if(typeof hitFx==="function")hitFx(1);
-      say("Крушение\nкорпус −"+Math.round(dmg));
+      say((soft?"Жёсткая посадка":"Крушение")+"\nкорпус −"+Math.round(dmg));
     }
   }
 }

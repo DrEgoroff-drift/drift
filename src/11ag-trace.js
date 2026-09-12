@@ -81,7 +81,7 @@ let traceBusy=0;
 function traceCall(op,body){
   if(!traceOn())return Promise.resolve(null);
   const b=Object.assign({op:op,id:traceId()},body||{});
-  return fetch(CLOUD.api+"?a=trace",{method:"POST",body:JSON.stringify(b)})
+  return fetch(CLOUD.api+"?a=trace",{method:"POST",body:JSON.stringify(netBody(b))})
     .then(r=>r.json()).catch(()=>null);
 }
 /* спросить место при посадке. Ответ кладётся в S.trace — эфемерно, не в сейв */

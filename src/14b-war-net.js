@@ -100,7 +100,7 @@ function warClock(serverN){
 function warCall(a,body){
   return fetch(WAR_API+"?a="+a,{method:"POST",
     headers:{"Content-Type":"application/json","X-Drift-Token":warTok()},
-    body:JSON.stringify(body||{})}).then(r=>r.json());
+    body:JSON.stringify(netBody(body))}).then(r=>r.json());
 }
 /* ── взять новое: закрытые сводки после последней известной ── */
 function warPull(force){

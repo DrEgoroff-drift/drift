@@ -62,6 +62,12 @@ const OFFER_TTL=[Math.round(CEL_DAY*.8),CEL_DAY*3];
 /* Взятая работа живёт втрое дольше предложения на доске: одно дело не взять,
    другое — взять и не довезти, и на дорогу нужно время. */
 const OFFER_CARRY_K=3;
+/* и не меньше четверти часа настоящего времени (R5b, автор 12.09): срок
+   считается по игровым часам `now()`, а не по `G.t` — кадры не сохраняются, и
+   после загрузки бумага то жила вечно, то сгорала сразу */
+const OFFER_CARRY_MIN=15*CEL_DAY;
+function offerAge(o){if(o.ms==null)o.ms=now();return (now()-o.ms)*.06;}   /* в кадрах: 60 за секунду */
+function offerTtl(o){return o.carry?Math.max(o.ttl*OFFER_CARRY_K,OFFER_CARRY_MIN):o.ttl;}
 /* Смена на станции — сутки. Пока она не сменилась, здесь предлагают то же
    самое, что уже предложили. */
 const OFFER_SHIFT=CEL_DAY;
@@ -114,7 +120,7 @@ function offerAdd(kind,who,named){
   const seed=hashi(Math.floor(G.t*7),offersAll().length,0x0FFE)>>>0;
   const ttl=OFFER_TTL[0]+Math.floor(rng(seed)()*(OFFER_TTL[1]-OFFER_TTL[0]));
   const o={id:seed,kind,who,named:nm?1:0,sx:G.sx,sy:G.sy,
-           t0:G.t,ttl,seed,taken:0};
+           t0:G.t,ms:now(),ttl,seed,taken:0};
   offersAll().push(o);
   if(nm)f.named=1;
   return o;
@@ -156,8 +162,18 @@ function offerVisit(){
     offerAdd("list",who,true);
 }
 function offerLive(){
-  const t=G.t;
-  return offersAll().filter(o=>!o.taken&&t-o.t0<o.ttl);
+  return offersAll().filter(o=>!o.taken&&offerAge(o)<o.ttl);
+}
+/* взятая работа для ДЕЛА (R5b): что, куда и сколько минут осталось */
+function offerCarried(){
+  const out=[];
+  for(const o of offersAll()){
+    if(!o.carry||o.done)continue;
+    const K=OFFER_KIND[o.kind];if(!K)continue;
+    const left=Math.max(0,Math.ceil((offerTtl(o)-offerAge(o))/CEL_DAY));
+    out.push({o,name:K.ru[0].toUpperCase()+K.ru.slice(1),dest:o.to&&o.to.name||"—",named:!!o.named,left});
+  }
+  return out;
 }
 function offerHere(){
   return offerLive().filter(o=>o.sx===G.sx&&o.sy===G.sy);
@@ -170,16 +186,15 @@ function offerHere(){
 function offerTick(){
   const L=offersAll();
   if(!L.length)return;
-  const t=G.t;
   for(let i=L.length-1;i>=0;i--){
     const o=L[i];
     if(o.done){L.splice(i,1);continue;}
     /* Везомая работа живёт своим окном — втрое длиннее, чем предложение на
        доске: одно дело не взять, другое взять и не довезти, и на дорогу
        нужно время. */
-    const ttl=o.carry?o.ttl*OFFER_CARRY_K:o.ttl;
+    const ttl=offerTtl(o);
     if(o.taken&&!o.carry){L.splice(i,1);continue;}
-    if(t-o.t0<ttl)continue;
+    if(offerAge(o)<ttl)continue;
     /* Не довёз. Именное — дверь закрылась; холодное — просто пропало.
        Ни сообщения, ни звука: бумага на столе так и останется лежать, и это
        единственный след. */
@@ -221,7 +236,7 @@ function offerTake(o){
     if(typeof offerListTaken==="function")offerListTaken(o);
     return 0;
   }
-  o.to=dest;o.carry=1;o.t0=G.t;
+  o.to=dest;o.carry=1;o.t0=G.t;o.ms=now();
   if(typeof thingAdd==="function")
     thingAdd("paper",K.ru[0].toUpperCase()+K.ru.slice(1),
       "на «"+dest.name+"» · "+(o.named?"вас назвали":"взято на доске"));

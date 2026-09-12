@@ -465,7 +465,7 @@ function roadPing(){
     id=localStorage.drift_road||"";
     if(!id){id=Array.from(crypto.getRandomValues(new Uint8Array(8))).map(b=>b.toString(16).padStart(2,"0")).join("");localStorage.drift_road=id;}
   }catch(e){return;}
-  fetch(CLOUD.api+"?a=road",{method:"POST",body:JSON.stringify({sec:RD.sys.cx+":"+RD.sys.cy,id})})
+  fetch(CLOUD.api+"?a=road",{method:"POST",body:JSON.stringify(netBody({sec:RD.sys.cx+":"+RD.sys.cy,id}))})
     .then(r=>r.json()).then(j=>{if(RD&&j&&j.ok)RD.mates=j.n|0;}).catch(()=>{});
 }
 const roadPilotRu=n=>{const d=n%10,h=n%100;return h>=11&&h<=14?"пилотов":d===1?"пилот":d>=2&&d<=4?"пилота":"пилотов";};

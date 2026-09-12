@@ -79,6 +79,7 @@ function wread($f) {
   return is_array($v) ? $v : null;
 }
 function wwrite($f, $d) {
+  if (!empty($GLOBALS['NET_TEST'])) return true;   /* стенд: как будто записали */
   $tmp = $f . '.' . getmypid() . '.tmp';
   if (@file_put_contents($tmp, json_encode($d, JSON_UNESCAPED_UNICODE)) === false) return false;
   @chmod($tmp, 0600);
@@ -159,6 +160,8 @@ $in = [];
 if (PHP_SAPI !== 'cli') {
   $raw = file_get_contents('php://input');
   if ($raw !== false && $raw !== '') { $j = json_decode($raw, true); if (is_array($j)) $in = $j; }
+  /* стенд (dev.html, test:1) в войну не пишет: ответ обычный, файлы не трогаем */
+  if (!empty($in['test'])) $GLOBALS['NET_TEST'] = true;
 }
 
 /* pull: закрытые сводки после `since`, открытая и циркуляры. Ответ ограничен

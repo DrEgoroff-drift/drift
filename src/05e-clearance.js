@@ -28,6 +28,13 @@ const CLEARANCE=[
 const CLR_KILLS=10;
 const CLR_HOURS=100;
 function clrHours(){return (G.flownMs||0)/3600000;}
+/* ── первый час (R5b, автор 12.09: «делать всё») ──
+   `G.flownMs` — единственный сохранённый счётчик игры (только полётные режимы).
+   Пока он меньше часа, игра мягче: ремонт по карману, жёсткая посадка вместо
+   крушения, первый зонд даром, взятая работа ждёт четверть часа. Час налёта —
+   и всё это кончается само, без флага в сейве */
+const FIRST_HOUR_MS=3600000;
+function firstHour(){return (G.flownMs||0)<FIRST_HOUR_MS;}
 /* что заработано ПРЯМО СЕЙЧАС; G.clearance помнит максимум за всё время */
 function clearanceEarned(){
   let n=1;

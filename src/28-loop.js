@@ -1,9 +1,25 @@
 /* ══════════════ авария ══════════════ */
+/* ── корпус до беды (R5b, автор 12.09: «корпус не выше, чем был») ──
+   Последний уровень корпуса, продержавшийся десять секунд без урона. После
+   аварии корпус собирают не выше него: 45 % или удержанное, что меньше, и
+   никогда ниже 10 %. Кадр, а не сейв: после загрузки отсчёт идёт заново от
+   загруженного корпуса; часы игры (`now`), чтобы стенд мог их подкрутить */
+const HULL_HELD_MS=10000;
+const HULL_HELD={v:-1,last:-1,at:0};
+function hullHeldTick(){
+  const h=G.hull,t=now();
+  if(HULL_HELD.last<0||h<HULL_HELD.last)HULL_HELD.at=t;      /* урон — отсчёт заново */
+  else if(t-HULL_HELD.at>=HULL_HELD_MS)HULL_HELD.v=h;
+  HULL_HELD.last=h;
+}
 function wreck(why){   /* why — причина словами: журнал её называет (боты 12.09: «разбит» без причины) */
   toggleSos(false);   /* окно выходов не висит над собранным наспех кораблём с 30 в баке */
   sfx("boom",{v:1});stopEngine();
   const st=stat();
-  G.hull=Math.round(st.hullMax*.45);G.fuel=Math.max(G.fuel,30);
+  const before=HULL_HELD.v>=0?HULL_HELD.v:st.hullMax*.45;
+  G.hull=Math.round(clamp(Math.min(st.hullMax*.45,before),st.hullMax*.1,st.hullMax*.45));
+  HULL_HELD.v=G.hull;HULL_HELD.last=G.hull;HULL_HELD.at=now();   /* собранное наспех — и есть «что было» */
+  G.fuel=Math.max(G.fuel,30);
   const a=rnd()*TAU;
   G.ship.x=Math.cos(a)*1600;G.ship.y=Math.sin(a)*1600;
   G.ship.vx=0;G.ship.vy=0;G.mode="system";G.ap=null;G.belt=null;G.dig=null;G.cave=null;G.surf=null;G.land=null;
@@ -326,6 +342,7 @@ function frameBody(now){
        снимок честен: восстановление ставит корабль в свободный полёт там же. */
     if(G.mode==="system"||G.mode==="dock"||G.mode==="surface")autosave();
     stepWorld(dt);
+    hullHeldTick();   /* корпус до беды (R5b) */
     if(typeof tapeTick==="function")tapeTick(dt);
     if(typeof shiftTalkTick==="function")shiftTalkTick(dt);
     if(typeof instrAgeTick==="function")instrAgeTick(dt);

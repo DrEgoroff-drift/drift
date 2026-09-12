@@ -312,7 +312,16 @@ function body() {
   $raw = file_get_contents('php://input');
   if (strlen($raw) > MAX_SAVE) fail('слишком большая запись', 413);
   $v = json_decode($raw, true);
+  if (is_array($v) && !empty($v['test'])) $GLOBALS['NET_TEST'] = true;
   return is_array($v) ? $v : [];
+}
+/* ── стенд не пишет в общие пулы ──
+   dev.html шлёт test:1 (01-core netBody). Дорога, следы и открытки тогда
+   считаются как обычно, но на диск не ложатся: ответ тот же, следа нет.
+   Учётные записи и сейвы это не касается — они не пул, а своё */
+function poolWrite($file, $data) {
+  if (!empty($GLOBALS['NET_TEST'])) return true;
+  return writeJson($file, $data);
 }
 
 $a = $_GET['a'] ?? '';
@@ -527,7 +536,7 @@ if ($a === 'road') {
   foreach ($p as $k => $ts) if (!is_int($ts) || $now - $ts > 180) unset($p[$k]);
   $p[$id] = $now;
   if (count($p) > 200) $p = array_slice($p, -200, null, true);
-  writeJson($f, $p);
+  poolWrite($f, $p);
   sweepDir($dir, 600, 60);                 /* сектора живут 10 минут, метла раз в минуту */
   sweepDir(root() . '/rate', TRY_WIN * 2, 3600);   /* счётчики попыток дольше окна не нужны */
   out(['ok' => true, 'n' => count($p) - 1]);
@@ -595,9 +604,9 @@ if ($a === 'trace') {
       foreach ($wall as $t) if (($t['o'] ?? '') === $id) out(['ok' => false, 'reason' => 'ваш знак тут уже есть']);
       $wall[] = ['m' => $m, 'h' => $h, 't' => $now, 'o' => $id];
       if (count($wall) > 12) $wall = array_slice($wall, -12);
-      writeJson($wf, $wall);
+      poolWrite($wf, $wall);
     } elseif ($wstale) {
-      writeJson($wf, $wall);
+      poolWrite($wf, $wall);
     }
     sweepDir("$dir/w", 7776000, 86400);
     $outw = [];
@@ -627,7 +636,7 @@ if ($a === 'trace') {
                't' => $now, 'o' => $id];
     if (count($list) > 8) $list = array_slice($list, -8);   /* место помнит восьмерых */
     $me['n'] = (int)($me['n'] ?? 0) + 1;
-    writeJson($pf, $list); writeJson($uf, $me);
+    poolWrite($pf, $list); poolWrite($uf, $me);
     out(['ok' => true]);
   }
 
@@ -636,10 +645,10 @@ if ($a === 'trace') {
     $t = null;
     foreach ($list as $c) if (($c['o'] ?? '') !== $id) { $t = $c; break; }
     $took = (int)($me['took'] ?? 0);
-    if ($took > 0) { $me['took'] = 0; writeJson($uf, $me); }
+    if ($took > 0) { $me['took'] = 0; poolWrite($uf, $me); }
     /* Пишем ТОЛЬКО если что-то протухло. Иначе каждая посадка в пустом месте
        заводила бы пустой файл — а посадок за игру тысячи. */
-    if ($stale) writeJson($pf, $list);
+    if ($stale) poolWrite($pf, $list);
     sweepDir("$dir/p", 2592000, 3600);     /* место помнит след тридцать дней */
     /* А `u/<метка>.json` не подметался вовсе: файл на каждую метку пилота,
        навсегда, при том что метки бесплатны. Полгода без единого следа — и
@@ -658,13 +667,13 @@ if ($a === 'trace') {
       $out[] = $c;
     }
     if ($owner === '') out(['ok' => false, 'reason' => 'этого следа уже нет']);
-    writeJson($pf, $out);
+    poolWrite($pf, $out);
     /* оставившему — только счёт: кто и где, не сообщается никогда */
     if (preg_match('/^[a-f0-9]{8,32}$/', $owner)) {
       $of = "$dir/u/$owner.json";
       $o  = readJson($of); if (!is_array($o)) $o = [];
       $o['took'] = (int)($o['took'] ?? 0) + 1;
-      writeJson($of, $o);
+      poolWrite($of, $o);
     }
     out(['ok' => true]);
   }
@@ -795,24 +804,24 @@ if ($a === 'post') {
       $in[] = $one;
       if (count($in) > 8) $in = array_slice($in, -8);
       $T['in'] = $in;
-      writeJson($tf, $T);
+      poolWrite($tf, $T);
       $C['t'] = $now;
-      writeJson($cf, $C);
+      poolWrite($cf, $C);
       $me['put'] = (int)($me['put'] ?? 0) + 1;
-      writeJson($uf, $me);
+      poolWrite($uf, $me);
       out(['ok' => true]);
     }
 
     /* положить в общую кучу */
     if (count(glob("$dir/pool/*.json") ?: []) > 4000) out(['ok' => false, 'reason' => 'почта переполнена']);
     $chId = bin2hex(random_bytes(6));
-    writeJson("$dir/ch/$chId.json", ['a' => $id, 'b' => '', 't' => $now]);
+    poolWrite("$dir/ch/$chId.json", ['a' => $id, 'b' => '', 't' => $now]);
     $cid  = $now . substr(sha1($id . $chId), 0, 8);
     $entry = ['i' => $cid, 'ch' => $chId, 'o' => $id, 't' => $now, 'card' => $c];
     if ($mv) $entry['mv'] = $mv;                      /* партия по переписке (M192) */
-    writeJson("$dir/pool/$cid.json", $entry);
+    poolWrite("$dir/pool/$cid.json", $entry);
     $me['put'] = (int)($me['put'] ?? 0) + 1;
-    writeJson($uf, $me);
+    poolWrite($uf, $me);
     out(['ok' => true, 'ch' => $chId]);
   }
 
@@ -828,7 +837,7 @@ if ($a === 'post') {
       if (!is_array($P) || ($P['o'] ?? '') === $id) continue;
       @unlink($g);
       $me['got'] = (int)($me['got'] ?? 0) + 1;
-      writeJson($uf, $me);
+      poolWrite($uf, $me);
       /* наружу — карточка и номер цепочки. Метка отправителя остаётся здесь */
       $res = ['ok' => true, 'card' => $P['card'], 'ch' => (string)$P['ch']];
       if (!empty($P['mv'])) $res['mv'] = $P['mv'];    /* партия по переписке (M192) */
@@ -840,7 +849,7 @@ if ($a === 'post') {
   if ($op === 'in') {
     /* забрать ответы и очистить ящик: одно чтение на стыковку (правило M171) */
     $in = (array)($me['in'] ?? []);
-    if ($in) { $me['in'] = []; writeJson($uf, $me); }
+    if ($in) { $me['in'] = []; poolWrite($uf, $me); }
     $outL = [];
     foreach ($in as $r) {
       if (is_array($r) && isset($r['card'])) {
@@ -862,7 +871,7 @@ if ($a === 'post') {
     $C  = readJson($cf);
     if (is_array($C) && (($C['a'] ?? '') === $id || ($C['b'] ?? '') === $id)) {
       $C['dead'] = 1; $C['t'] = $now;
-      writeJson($cf, $C);
+      poolWrite($cf, $C);
     }
     out(['ok' => true]);
   }

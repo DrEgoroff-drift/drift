@@ -65,13 +65,20 @@ function probeKey(sx,sy,idx){return (sx|0)+","+(sy|0)+":"+(idx|0);}
 function probeHas(sx,sy,idx){
   return !!(G.probed&&G.probed[probeKey(sx,sy,idx)]);
 }
+/* первый зонд в первый час — даром (R5b, автор 12.09): урок про три слова
+   с орбиты стоит новичку одного нажатия, а не трети кассы */
+function probeFree(){
+  return typeof firstHour==="function"&&firstHour()&&!(G.probed&&Object.keys(G.probed).length);
+}
+function probePriceRu(){return probeFree()?"ДАРОМ":PROBE_COST+" КР";}
 function probeBuy(sx,sy,idx){
   if(probeHas(sx,sy,idx))return true;
-  if(G.credits<PROBE_COST){say("Зонд стоит "+PROBE_COST+" кр");return false;}
-  G.credits-=PROBE_COST;
+  const cost=probeFree()?0:PROBE_COST;
+  if(G.credits<cost){say("Зонд стоит "+PROBE_COST+" кр");return false;}
+  G.credits-=cost;
   if(!G.probed)G.probed={};
   G.probed[probeKey(sx,sy,idx)]=1;
-  tell("tech","Зонд ушёл к планете","ЗОНД\n"+PROBE_COST+" кр\nпять ручек из восьми — на месте будут все");
+  tell("tech","Зонд ушёл к планете","ЗОНД\n"+(cost?cost+" кр":"даром — первый в первый час")+"\nпять ручек из восьми — на месте будут все");
   return true;
 }
 /* ── одно нажатие ЦЕЛИ на всех (разбор 0.409.1) ──
@@ -97,7 +104,7 @@ function probeClaim(){
   const pa=G._probeArm;
   if(!(pa&&pa.sx===(A.sx|0)&&pa.sy===(A.sy|0)&&pa.idx===(A.idx|0)&&G.t-pa.t<180)){
     G._probeArm={sx:A.sx|0,sy:A.sy|0,idx:A.idx|0,t:G.t};
-    say("Зонд · "+PROBE_COST+" кр\nЦЕЛЬ ещё раз — купить",120);
+    say("Зонд · "+(probeFree()?"даром":PROBE_COST+" кр")+"\nЦЕЛЬ ещё раз — "+(probeFree()?"пустить":"купить"),120);
     return true;
   }
   G._probeArm=null;

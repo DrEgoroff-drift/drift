@@ -17,6 +17,9 @@ $raw = file_get_contents('php://input');
 if (strlen($raw) > 8192) { http_response_code(413); echo '{"ok":false}'; exit; }
 $b = json_decode($raw, true);
 if (!is_array($b)) { http_response_code(400); echo '{"ok":false}'; exit; }
+/* стенд (dev.html шлёт test:1) в общий журнал сбоев не пишет: смотреть его
+   надо в консоли стенда, а не среди сбоев игроков */
+if (!empty($b['test'])) { echo '{"ok":true,"test":1}'; exit; }
 
 $root = dirname(dirname(__DIR__)) . '/drift-data';
 if (!is_dir($root)) @mkdir($root, 0700, true);

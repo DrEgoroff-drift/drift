@@ -219,15 +219,44 @@ document.getElementById("bRefuel").addEventListener("click",()=>{
   if(typeof riteFuelMul==="function"&&riteFuelMul()<1&&typeof riteFuelUsed==="function")riteFuelUsed();
   renderTab();
 });
-document.getElementById("bRepair").addEventListener("click",()=>{
-  const st=stat(),need=Math.ceil(st.hullMax-G.hull);
-  if(need<=0){say("Корпус цел");return;}
-  const per=repairCost(),can=Math.min(need,Math.floor(G.credits/per));
-  if(can<=0){say("Не хватает кредитов");return;}
-  G.credits-=can*per;G.hull+=can;renderTab();
+/* ── ремонт двумя кнопками (R5b, автор 12.09: «делать всё») ──
+   «ДО 50% · N» и «ПОЛНОСТЬЮ · N»: цена стоит на кнопке, а не в шапке вкладки.
+   В первый час (firstHour) полный ремонт стоит не больше половины кассы —
+   новичок не выбирает между баком и корпусом. Денег меньше цены — чинят на
+   то, что есть, как и раньше */
+function repairQuote(frac){
+  const st=stat(),units=Math.max(0,Math.ceil(st.hullMax*frac)-Math.ceil(G.hull));
+  let cost=units*repairCost();
+  if(units&&typeof firstHour==="function"&&firstHour())cost=Math.min(cost,Math.floor(G.credits/2));
+  return {units,cost,per:repairCost()};
+}
+function repairDo(frac){
+  const q=repairQuote(frac);
+  if(!q.units){say("Корпус цел");return;}
+  let units=q.units,cost=q.cost;
+  if(G.credits<cost){
+    units=Math.min(units,Math.floor(G.credits/q.per));cost=units*q.per;
+    if(units<=0){say("Не хватает кредитов");return;}
+  }
+  G.credits-=cost;G.hull+=units;
+  if(units<q.units)say("Починили на что хватило · +"+units);
+  else if(cost<q.units*q.per)say("Первый час: чинят по карману");
+  renderTab();
   if(typeof placeNote==="function")placeNote("care",1);   // починка здесь — забота о месте (11d)
   if(typeof seamAdd==="function")seamAdd();               // заплатка остаётся швом (12s, M256)
-});
+}
+/* подписи кнопок: половина прячется, когда корпус уже выше неё; одна кнопка —
+   «РЕМОНТ · N», две — «ДО 50% · N» и «ПОЛНОСТЬЮ · N» */
+function repairBtns(){
+  const bh=document.getElementById("bRepairHalf"),bf=document.getElementById("bRepair");
+  if(!bh||!bf)return;
+  const h=repairQuote(.5),f=repairQuote(1);
+  bh.style.display=h.units?"":"none";
+  bh.textContent="ДО 50% · "+h.cost.toLocaleString("ru");
+  bf.textContent=!f.units?"КОРПУС ЦЕЛ":(h.units?"ПОЛНОСТЬЮ · ":"РЕМОНТ · ")+f.cost.toLocaleString("ru");
+}
+document.getElementById("bRepairHalf").addEventListener("click",()=>repairDo(.5));
+document.getElementById("bRepair").addEventListener("click",()=>repairDo(1));
 function el(tag,cls,html){const e=document.createElement(tag);if(cls)e.className=cls;
   /* правило 1 оформления: капслок — подписям, а не тексту. Длинный заголовок
      секции — это фраза, которую читают, и она набирается обычным текстом */
@@ -429,6 +458,7 @@ function renderTab(){
   const keep=same?$body.scrollTop:0;
   renderTab._tab=tab;
   renderTabBody();
+  repairBtns();   /* цена ремонта на кнопках (R5b) */
   secTidy($body);   /* заголовки по закону §1a (M299) */
   if(typeof addrify==="function")addrify($body);   /* всякий адрес — на карту (M347) */
   if(keep>0){
