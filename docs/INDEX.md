@@ -1941,12 +1941,12 @@ hailCalm                     src/12ar-hail.js:72-80
 hailContraband               src/12ar-hail.js:44-53
 hailHold                     src/12ar-hail.js:24
 hailPicket                   src/12ar-hail.js:26-37
-hailRunCheck                 src/12ar-hail.js:237-241
+hailRunCheck                 src/12ar-hail.js:241-245
 hailShotAt                   src/12ar-hail.js:116-119
 hailStartSys                 src/12ar-hail.js:70
 hailTick                     src/12ar-hail.js:121-172
 hailWarnVolley               src/12ar-hail.js:81-90
-hailWinSync                  src/12ar-hail.js:209-235
+hailWinSync                  src/12ar-hail.js:209-239
 HALL_N                       src/21a4-base-adj.js:28
 HALL_POWER                   src/21a4-base-adj.js:29
 HAND_LINE                    src/12td-settle-hand.js:31-34
@@ -5415,7 +5415,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/12ap-notebook.js · 12 КБ
   · эпизоды и записная книжка (M374, §6.2–6.3):1
 
-## src/12ar-hail.js · 15 КБ
+## src/12ar-hail.js · 16 КБ
   · четыре правила и позывной (M373, §6.1):1
 
 ## src/12as-left.js · 9 КБ

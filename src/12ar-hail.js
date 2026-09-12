@@ -222,15 +222,19 @@ function hailWinSync(){
       bt.onclick=ev=>{ev.stopPropagation();sfx("ui");hailAnswer(bt.dataset.a);hailWinSync();};
     b.appendChild(e);
   }
+  const em=e.querySelector("b em"),hq=e.querySelector(".hq"),bar=e.querySelector(".hbar i"),hw=e.querySelector(".hw"),ha=e.querySelector(".ha");
+  /* узловой ярус: заглушка DOM не разбирает составные селекторы — окна там нет,
+     логика оклика от него не зависит (0.446.0 упал на деплое именно здесь) */
+  if(!em||!hq||!bar||!hw||!ha)return;
   const P=(typeof powerOf==="function")?powerOf(H.by):null;
   const deed=(typeof epiHailLine==="function")?epiHailLine(H.by):"";
-  e.querySelector("b em").textContent=(P?P.ru.toUpperCase():"ПИКЕТ")+" · ОКЛИК";
-  e.querySelector(".hq").textContent="«"+(deed||(P?P.hail:"Кто такой"))+"»";
-  e.querySelector(".hbar i").style.width=Math.max(0,Math.min(100,H.t/hailHold()*100)).toFixed(1)+"%";
-  e.querySelector(".hw").textContent=H.hold?"велено стоять · стойте, пока не отпустят":
+  em.textContent=(P?P.ru.toUpperCase():"ПИКЕТ")+" · ОКЛИК";
+  hq.textContent="«"+(deed||(P?P.hail:"Кто такой"))+"»";
+  bar.style.width=Math.max(0,Math.min(100,H.t/hailHold()*100)).toFixed(1)+"%";
+  hw.textContent=H.hold?"велено стоять · стойте, пока не отпустят":
     (H.warn?"ВАС УЖЕ ПРЕДУПРЕДИЛИ · молчание дальше — огонь":"молчание — тоже ответ: сперва предупреждение");
   e.classList.toggle("warn",!!H.warn&&!H.hold);
-  e.querySelector(".ha").style.display=H.hold?"none":"";
+  ha.style.display=H.hold?"none":"";
   e.classList.add("open");b.classList.add("hailopen");
 }
 /* пошёл сквозь блокаду: расстояние от точки оклика растёт — значит идёт */

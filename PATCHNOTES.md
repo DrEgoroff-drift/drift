@@ -33,6 +33,10 @@ could ever save.
 - Tests: `91zzxa-playable` — «the player does X → sees Y» suites, the phone ones in the phone
   window, each bug of the review block red first. The picture detector no longer judges text
   dimmed below .2 on purpose (chips under a modal window).
+- The first push of 0.446.0 failed the deploy at the Node tier: the hail window reached into the
+  test DOM stub, which cannot resolve `b em`. `hailWinSync` now leaves when its parts are missing;
+  the site stayed on 0.445.0 until the fix. Lesson for the release list: `-Full` runs Chrome
+  only — the default `test.ps1` (Node + smoke) is what the deploy runs, and it goes too.
 
 ## 0.445.0 - the nearest compass chip takes the tap
 
