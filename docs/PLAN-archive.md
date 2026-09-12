@@ -9113,3 +9113,71 @@ monuments, nodes) join the rung score when their hooks are written.
 - ~~The 44 px sweep over every screen~~ — written in M302 (`91zzy-screens`), both layouts.
 - ~~«В ДОРОГУ» in the five doors~~ — argued on the record 2026-09-03 (`DESIGN-road.md`, Built §4);
   the door stays.
+
+## Moved from PLAN.md on 2026-09-12 (release 0.446.0)
+
+### Review block of 12.09 — R0 picket «Коммуна» and R1 cue and ДЕЙСТВИЕ (ee24e4b, ab71cfb, dff8f77, 2c63e9f)
+
+  - **Handoff (paused by the author 12.09):** R1 done. R0 holes (1)-(3) fixed in the last WIP: the
+    hail window is over every screen (z 24), `H.t` stands and no new hail starts under a screen
+    (`worldCovered()`, 08-state), fire at the player pauses there (`roleFire` for `!p.iff`,
+    `pirateArmTick`), `hailHold()` = 900 on a phone, chips dim and stop taking taps under the hail
+    and SOS windows. Missiles already in flight still land. Open: Контроль wants the hail to wait
+    under the SOS window too (`sosopen` in `worldCovered` or in `hailTick`). Next: dev look at R0, then R2.
+    **R0 open (tester on dev, both reviewers):** (1) behind СТОЛ/ОПИСЬ/station the hail window hides
+    (`hailWinSync`) while `H.t-=dt` keeps running (`hailTick`) — «read the log, got a volley» outside
+    the start system. Fix: the hail window sits above `.scr`/#tablewin and shows over any screen; while
+    it cannot be shown, no new hail starts (`hailPicket`) and `H.t` stands; hostile fire at the player
+    pauses while a screen is open; the «МОЛЧИТЕ» toast is trouble and shows over screens. (2)
+    `HAIL_HOLD` 420 → 900 on a phone. (3) Chips dim under the hail window like the rail. Red test
+    first: «СТОЛ open, a hail comes, 20 s → G.hail alive, hull intact; СТОЛ closed → ДЕЙСТВИЕ
+    answers». Scale stays with the author (reviewers split: the designer accepted the formula,
+    Контроль wants the world zoom ×4.5) — do not change it without the author's word.
+  - [ ] **R0 picket «Коммуна»** (built ee24e4b, two holes above): the hail is a window with ПРОХОДОМ / ПО ДЕЛУ and a countdown, no fire
+    while it is open; in the start system the picket never wrecks (a warning volley, then escort);
+    both pads relabel; B2 — the hail takes ЦЕЛЬ before the probe, `hailAnswer("pass")` no H.warn;
+    first rungs tank 500 / hold 900 (Контроль); test «start, 120 s silent → hull > 50 %».
+  - [x] **R1 cue and ДЕЙСТВИЕ**: an equal ACT keeps the first writer unless the first line names the
+    same object (`cueSameOffer`); the hail before the station/belt/base; `_probeAt` lives one frame
+    (B1); every interactor (17-mode-system, 12ai, 12l, 17b, 11ap, 12as, 13d) acts only through
+    `if(cue(..)&&actEdge)`. Tests: «belt ring by a planet: prompt = action», «hail at the pad», «a
+    foreign ACT on screen: tanker and hurt ship do not take the tap»; the M311/M312 fleet suites
+    now start each call with `cueReset()` (one call = one frame).
+
+### The lab, second night (session 20260911-003934, 0.440.0, 123 of 300 min, 92 runs)
+
+Read on 2026-09-11 morning from `runs.jsonl`/`errors.txt`. Verdicts: 78 green, 12 OOM, 2 red;
+29 268 passes; the previous night's four reds (node ×2, «полный трюм», «свет») are gone.
+- **Two GAME reds, both already answered.** «подсказка … ДЕЙСТВИЕ не сделало ничего» on the
+  map — the silent refusal on your own sector, fixed in 0.441.0 (the lab found it on its own the
+  same night). «золотые кадры … сетка 40×20 против 40×25» — the server's headless has no window
+  frame, so the requested 1280,800 *is* the canvas there (40×25 blocks) while the laptop's is
+  1248×641 (40×20): **goldens are per platform**, and the suite is staged anyway — but
+  `lab.py` counted a staged failure as GAME red; fixed (it now skips the КАРАНТИН block and
+  `[карантин: …]` suites). Open: a per-platform baseline (`docs/golden/<W>x<H>@<host>.json`, the
+  lab accepting its own on first run), or the block mean coarse enough to cross platforms — the
+  week's history decides. **Decided 11.09: per platform** (see Decisions).
+- **The hunt stopped itself at 123 min of 300**: five fuzz OOMs in a row hit the same known key
+  (`de3ea33cb07a`) and the streak rule read that as «five seeds without anything new» — a host
+  failure counted as a game verdict. Fixed in `lab.py` (host-class units no longer feed the
+  streak). Fuzz: 39 seeds, 34 green, 5 OOM (13 %, same as night one), 0 game failures.
+- **OOM at 768 MB, 12 units** (13 the night before): «руки» light:0/6 and «двери», «устаревшая
+  кнопка» (known); new this night — «детерминизм: рисованный кадр не сдвигает случай мира»
+  (light:3/6, an M441 suite), «сквозной: сейв позднего мира» (mobile), «M314: трассы» (tall),
+  «полный трюм» (heavy, was red, now OOM). All auto-solo next time. Median rss 683 MB, fuzz at
+  the ceiling (767). Heavy suite times unchanged (top «печь» 65 → 68 s).
+- **The lab after the second night (11.09, the author: «пусть постоянно что-то гоняет», «на
+  сайте много лишнего, не видно, что починено»)** — four sessions a day (`0 */6`), light
+  shards 6 → 12, phone and tall windows in four shards each, the hunt never stops itself, host
+  kills do not feed the streak; Chrome leftovers are killed after every unit (a `timeout`
+  killed only the parent — the renderer stayed in the cgroup and the next unit paid for it:
+  the likely cause of the OOM runs; measured 11.09: the same fuzz seed 767 MB and killed at
+  night, 685 MB and green alone); `--js-flags=--max-old-space-size` measured on «двери» — green
+  at 32 s with no cgroup kill. The page: four tiles, the bugs with their fate (`fixed`/`gone`/
+  `dropped`/`quiet`), the host folded, one row per session. `docs/LAB.md`.
+- **The lab's own loose ends (into M446)** — `fix` and auto-quiet done in 0.427.2. The first
+  scheduled `lab.yml` run came at 00:38 UTC 11.09 (38 min late) and is the second night above;
+  the first run on the new `0 */6` had not started by 07:08 UTC — GitHub delays schedules under
+  load, read `sessions.jsonl` before calling the lab dead. Light shards run at 550–770 MB of 768:
+  one more canvas and they join the OOM list. `lab.ps1` holds a session only while the laptop is
+  awake. The PHP «short Node jobs on player hits» probe — decided no (see Decisions).

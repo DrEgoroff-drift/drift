@@ -256,6 +256,9 @@ function detPicture(c){
   /* текст: контраст в настоящем кадре (кегль — в кадре «мерка» выше) */
   for(const t of c.texts||[]){
     if(t.hull||!t.s.trim())continue;
+    /* погашенное нарочно читаться не обязано: под окном оклика и бака фишки
+       компаса гаснут до .12, как борт (R0, дизайн 12.09) — это знак «не сейчас» */
+    if(t.al!=null&&t.al<.2)continue;
     const cr=detContrast(t,c.full,c.fw,c.fh);
     if(cr!=null&&cr<3)v.push(detV(c,"картина","текст «"+t.s.slice(0,28)+"» не читается: контраст "+cr.toFixed(1)+" (нужно 3)"));
   }

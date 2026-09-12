@@ -6,6 +6,34 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.446.0 - playable on a phone (the author's playtest of 11.09 and the review block of 12.09)
+
+- **Empty tank** is one window: ДОМОЙ (priced by jumps), БУКСИР, СБРОС — thrust or ДЕЙСТВИЕ opens
+  it. The tow is a scene: a big barge with burning engines, a sagging rope, bits breaking off, crew
+  talk, the camera easing out; the haul is saved and the route passes a planet before the station.
+- **One prompt, one action.** Flight writes the prompt through `cue(text, level)` — info < warning
+  < action < trouble — so the empty tank is heard past the system edge and beside a planet. An
+  equal action keeps the first offer, and every interactor acts only when its own line is on
+  screen: ДЕЙСТВИЕ does exactly what the prompt says (belt by a planet, a hail at the pad, a
+  tanker next to someone else's offer). World toasts wait behind an open screen.
+- **The start picket «Коммуна»** hails in a window with the question, a countdown and two answers
+  (ПРОХОДОМ / ПО ДЕЛУ, the same verbs on the pads); 15 s to answer on a phone. In the start
+  system silence earns a warning volley on the shield and fire never takes the hull below half.
+  While СТОЛ, ОПИСЬ or a station is open the hail waits, no new hail starts and nobody fires at
+  the player; the window stands over every screen. Compass chips dim and take no taps under the
+  hail and empty-tank windows. First tank rung 500, first hold 900.
+- **Scale**: the ship never draws smaller than .7, bodies grow ×(1+0.8·(Z−1)) on the near zoom,
+  a planet never grows onto its nearest moon.
+- **Screens on a phone**: the station header is one line plus ЕЩЁ; ОПИСЬ puts the ship first with
+  a legend and instruments in groups; ДЕЛО adds up (one unit, the header is the sum of the rows);
+  the СТОЛ sheet names itself and ЛЕНТЫ tear on the sheet; a module is a card with one verb button
+  and СПЛАВ promises exactly what the fuse gives; after a fight the loot is a card with НАДЕТЬ.
+- **Economy**: a drone costs 9000·1.6ⁿ by the fleet you own; hired people earn only while the game
+  runs (a sleeping tab pays nobody).
+- Tests: `91zzxa-playable` — «the player does X → sees Y» suites, the phone ones in the phone
+  window, each bug of the review block red first. The picture detector no longer judges text
+  dimmed below .2 on purpose (chips under a modal window).
+
 ## 0.445.0 - the nearest compass chip takes the tap
 
 - The compass chips at the screen edge are 16 px plates set 20 px apart, and each one's tap

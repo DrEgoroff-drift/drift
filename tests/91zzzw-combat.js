@@ -649,10 +649,10 @@ TEST_SUITES.push(()=>suite("правила M373: оклик, три ответа
   const q=hlFoe("km");
   hailTick(G.ship,1,false);
   ok(!!G.hail,"окликнули");
-  hailTick(G.ship,HAIL_HOLD+1,false);
+  hailTick(G.ship,hailHold()+1,false);
   ok(G.hail&&G.hail.warn===1,"первое молчание — предупреждение");
   ok(q.iff===1,"но ещё не стреляют");
-  hailTick(G.ship,HAIL_HOLD+1,false);
+  hailTick(G.ship,hailHold()+1,false);
   eq(q.iff,0,"второе молчание — и пикет больше не мимо проходящий");
   ok(q.aware,"он вас видит");
 }));

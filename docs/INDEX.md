@@ -1090,7 +1090,7 @@ DESK_ITEMS                   src/27ia-desk-top.js:298-330
 deskItemNew                  src/27ia-desk-top.js:337-341
 deskItemOf                   src/27ia-desk-top.js:331-335
 DET                          tests/90b-detect.js:34
-DET_ASTRO_H                  tests/90c-detect-laws.js:269
+DET_ASTRO_H                  tests/90c-detect-laws.js:272
 DET_CLOSE                    tests/91zzzzzzzz-detect.js:107
 DET_COST                     tests/91zzzzzzzz-detect.js:188
 DET_DIRTY                    tests/90c-detect-laws.js:142
@@ -1117,14 +1117,14 @@ detCost                      tests/91zzzzzzzz-detect.js:189
 detCrash                     tests/90c-detect-laws.js:95-102
 detDiff                      tests/90b-detect.js:123-127
 detDoors                     tests/91zzzzzzzz-detect.js:280-304
-DETECTORS                    tests/90c-detect-laws.js:284
+DETECTORS                    tests/90c-detect-laws.js:287
 detErr                       tests/90b-detect.js:135-143
 detExempt                    tests/90c-detect-laws.js:79-89
 detFrame                     tests/91zzzzzzzz-detect.js:174-179
 detGrab                      tests/90b-detect.js:103-111
 detHook                      tests/90b-detect.js:339-352
 detHudText                   tests/91zzzzzzzz-detect.js:138-145
-detHuman                     tests/90c-detect-laws.js:270-283
+detHuman                     tests/90c-detect-laws.js:273-286
 detInk                       tests/90b-detect.js:86-96
 detInstr                     tests/90c-detect-laws.js:143-156
 detInstrRead                 tests/90c-detect-laws.js:40-59
@@ -1138,7 +1138,7 @@ detOverlays                  tests/91zzzzzzzz-detect.js:98-106
 detParallax                  tests/90b-detect.js:204-224
 detPatch                     tests/90b-detect.js:113-119
 detPatchShift                tests/90b-detect.js:154-163
-detPicture                   tests/90c-detect-laws.js:225-267
+detPicture                   tests/90c-detect-laws.js:225-270
 detProtoOf                   tests/90b-detect.js:321-337
 detRot                       tests/90b-detect.js:169-188
 detRuler                     tests/91zzzzzzzz-detect.js:75-84
