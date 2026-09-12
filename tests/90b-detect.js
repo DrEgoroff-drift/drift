@@ -92,6 +92,8 @@ function detInk(c,s,x,y){
   const asc=mt.actualBoundingBoxAscent||0,dsc=mt.actualBoundingBoxDescent||0;
   const P=[[x0,y-asc],[x0+mt.width,y-asc],[x0,y+dsc],[x0+mt.width,y+dsc]].map(q=>[t.a*q[0]+t.c*q[1]+t.e,t.b*q[0]+t.d*q[1]+t.f]);
   DET.texts.push({s,px,col:typeof c.fillStyle==="string"?c.fillStyle:"",al:c.globalAlpha,hull:DET.hull>0,
+    /* над миром открыто модальное окно (оклик, бак): под ним гасят нарочно */
+    modal:!!(document.body&&(document.body.classList.contains("hailopen")||document.body.classList.contains("sosopen"))),
     x0:Math.min(...P.map(p=>p[0])),y0:Math.min(...P.map(p=>p[1])),x1:Math.max(...P.map(p=>p[0])),y1:Math.max(...P.map(p=>p[1]))});
 }
 

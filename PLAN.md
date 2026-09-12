@@ -240,6 +240,10 @@ before a push.
     Designer 12.09: a pad label is ≤2 words + a number («ЗОНД · 300», not «ЗОНД ЗА 300 КР»); a
     moon/planet name yields to the player's ship (moves to the far side of the disc); «КОМПАНИЯ» by
     the ship never crosses a planet chip.
+  - **dev.html must not write into the live world (Контроль, 12.09).** The tester's bots played
+    dev.html against the live `/api.php` and left test signs (a=trace, Нейэль III, 0:0, ~00:08 and
+    00:25 MSK 12.09). Either a `test` flag the api drops, or dev/bots on a local copy. Removing
+    the signs from the live pool is the author's call, done by the author (no deletion from here).
   - Later (after the release): deposits refill on landing, the rebind button sticks on a phone, «ТРЮМ
     ПУСТ» with rare cargo, the pronoun in 12aa-need, the station header two fixed lines.
 - [ ] **Start system picket** — «Коммуна» at 0:0 hails a new player and opens fire ~15 s in.

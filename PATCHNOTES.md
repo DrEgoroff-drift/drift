@@ -37,6 +37,15 @@ could ever save.
   test DOM stub, which cannot resolve `b em`. `hailWinSync` now leaves when its parts are missing;
   the site stayed on 0.445.0 until the fix. Lesson for the release list: `-Full` runs Chrome
   only — the default `test.ps1` (Node + smoke) is what the deploy runs, and it goes too.
+- **Still open in 0.446.0** (known — no need to report): R2 — the nose still turns on an empty
+  tank, the stick and move pads do not dim; R3 — the rescue window opens on the rope and breaks
+  the haul, does not redraw when the state changes, its × is 19 px, СБРОС on a bare «Стриж»
+  costs as if it took something, «в баке будет 40» instead of the maximum; R4 — the rope leaves
+  from the nozzle, the barge comes through the ship, the haul does not end at the station; R5 —
+  the probe is bought with one tap, a surface sign goes silently, a wreck works as a free repair,
+  a jump can arrive in the corona; R6 — pad labels, chips under windows, ОПИСЬ sub-tabs. Scale
+  (as built or a world zoom ×4–5) waits for the author. Since 0.446.0 (dev only): the hail also
+  waits under the empty-tank window.
 
 ## 0.445.0 - the nearest compass chip takes the tap
 
