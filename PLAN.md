@@ -155,6 +155,17 @@ decided on the author's behalf (author: «по вопросам реши за м
    budget per session that fits the plan (short manual runs, `nice`, fewer Chrome minutes);
    the 2026-09-18 week moves until then.
 6. **Before the release** — the 60 fps check in all modes.
+7. **The anchor and the stick (phone video of 12.09, 0.449.0 widened the edge; the mechanism
+   stays)** — past the edge the anchor turns the velocity toward the star every frame while the
+   stick's assist thrusts outward to reach the wanted velocity; the turn IS a force against
+   thrust, so an equilibrium exists (the comment in `17-mode-system` denies it): the ship crawls
+   along the edge at a tenth of cruise with the nose 90° off, burning fuel — measured in a 20-line
+   sim, matched the video to the second. Two fixes, one commit: (a) the anchor strips the outward
+   radial part from the INPUT (`c.ax/c.ay` of the stick, `c.tx/c.ty` of the keys) instead of
+   rotating the state, so there is nothing to fight and fuel does not burn; (b) `c.slow` (the
+   120° brake rule) reads the player's input against the last wanted vector, not the velocity the
+   anchor has bent — the anchor's turn is not a request to brake. Test: at the edge under an
+   outward stick the speed never drops below .5 cruise and fuel per second equals coasting.
 
 ## Next — after M321 — closed (the queue of 2026-09-03 and §18.8); body moved to `docs/PLAN-archive.md` (2026-09-11)
 
