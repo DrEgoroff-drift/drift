@@ -376,3 +376,32 @@ TEST_SUITES.push(()=>suite("ВЗЛЁТ живёт только на поверх
   eq(lb.style.display,"none","в шахте кнопки нет");
   exitDig();
 }));
+
+/* ══════════════ кильватер: хвосты от скорости (12.09) ══════════════
+   Шлейф — от сопла, кильватер — от хода: на крейсерской без тяги корабль
+   не идёт голым, а длина нитей растёт со скоростью. Меряем протяжённость —
+   расстояние от самой старой точки до корабля — на малом и на полном ходу. */
+TEST_SUITES.push(()=>suite("кильватер: длина от скорости, нити с кромок корпуса",()=>{
+  resetWorld();
+  G.fuel=1e6;G.pirates=[];G.zoom=1;
+  const sh=G.ship;
+  const run=(sp,n)=>{
+    WAKE.length=0;sh.x=0;sh.y=0;sh.a=0;sh.vx=sp;sh.vy=0;
+    for(let i=0;i<n;i++){sh.x+=sh.vx;trailStep(1,false,false,false);}
+    let far=0;for(const t of WAKE)far=Math.max(far,Math.hypot(t.x-sh.x,t.y-sh.y));
+    return far;
+  };
+  ok(run(0,60)===0&&WAKE.length===0,"на месте кильватера нет");
+  const slow=run(2,400),fast=run(8,400);
+  ok(fast>1500,"на крейсерской хвост длинный ("+Math.round(fast)+" ед.)");
+  ok(fast>slow*3,"и растёт со скоростью: "+Math.round(slow)+" → "+Math.round(fast));
+  ok(WAKE.length<=WAKE_MAX,"потолок точек держится ("+WAKE.length+")");
+  const tips=wakeTips(hullOf(G.shipId));
+  ok(tips.length>=2&&tips.length<=WAKE_TIPS+1,"кромок от двух (борт и корма) до "+(WAKE_TIPS+1)+" ("+tips.length+")");
+  const lanes=new Set(WAKE.map(t=>t.s+"/"+t.t.x));
+  ok(lanes.size>=3,"нити по обоим бортам и с кормы ("+lanes.size+")");
+  /* нити расходятся: старые точки дальше от линии хода, чем свежие */
+  const old=WAKE.slice(0,2),fresh=WAKE.slice(-2);
+  ok(Math.abs(old[0].y)>Math.abs(fresh[0].y),"V раскрывается с возрастом");
+  WAKE.length=0;sh.vx=0;
+}));

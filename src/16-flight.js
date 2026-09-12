@@ -281,7 +281,121 @@ function trailTint(id,lvl){
            edge:c};
   TRAIL_TINT[key]=T;return T;
 }
+/* ══════════════ кильватер: хвосты от скорости, а не от сопла ══════════════
+   Автор (12.09.2026): «хвост… который просто зависит от скорости, по физике,
+   пусть длинный будет… можно даже несколько, в зависимости от конфигурации,
+   как от крыльев у самолётов». Шлейф выше — газ из дюз: он есть, пока горит
+   двигатель, и на крейсерской, когда помощник стика снимает тягу, корабль
+   идёт голым силуэтом — «скучно». Кильватер — не выхлоп, а среда: корпус на
+   ходу режет разреженный газ системы, и с каждой выступающей кромки — концов
+   крыльев, гондол, боксов — срывается нить, как вихрь с крыла. Нити расходятся
+   V-образно тем шире, чем дольше висят и чем дальше кромка от оси. Длина — от
+   скорости: на крейсерской точки живут вчетверо дольше, чем на малом ходу, и
+   хвост уходит за экран. Цвет холодный (ключ кадра), плюс шёпот акцента
+   корпуса; тёплый акцент остаётся за факелом. Ничего не мигает: нити только
+   расходятся и гаснут, случая тут нет вовсе. Рисуется до шлейфа и до корпуса.
+   Кромки считаются один раз и кэшируются на корпусе (`h.wakeTips`). */
+const WAKE=[],WAKE_MAX=2000,WAKE_TIPS=3;
+let wakeBurst=0,wakeOn=false;
+function wakeTips(h){
+  if(h.wakeTips)return h.wakeTips;
+  const tips=[];
+  /* крыло: самая дальняя от оси точка плоскости; крылья зеркальны, борт — s */
+  for(const w of (h.wings||[])){
+    let best=null;
+    for(const p of w)if(!best||Math.abs(p[1])>Math.abs(best[1]))best=p;
+    if(best)tips.push({x:best[0],y:Math.abs(best[1]),w:1,s:0});
+  }
+  for(const n of (h.nacs||[]))tips.push({x:n.x,y:n.y+n.r,w:.7,s:0});
+  for(const p of (h.pods||[]))tips.push({x:p[0],y:p[1]+p[3],w:.5,s:p[4]|0});
+  /* гладкий корпус без выступов: скулы носа, где обвод шире всего к носу */
+  if(!tips.length)tips.push({x:h.nose*.35,y:h.bw*.62,w:.6,s:0});
+  tips.sort((a,b)=>b.y-a.y);
+  const hw=tips[0].y||1;
+  /* кромки, стоящие в одной точке, — одна кромка: у «Клинка» крыло, гондола и
+     бокс сходятся на y 8/7/7, и три нити легли бы в одну; берём самую широкую */
+  const kept=[];
+  for(const t of tips){
+    if(kept.some(q=>Math.abs(q.y-t.y)<hw*.2&&Math.abs(q.x-t.x)<8))continue;
+    t.k=t.y/hw;   /* доля размаха: внешние расходятся шире */
+    kept.push(t);if(kept.length>=WAKE_TIPS)break;
+  }
+  /* и осевая нить с кормы — срыв с самого корпуса, слабее и без разлёта:
+     у гладкого корпуса хвостов всё равно три, а не два */
+  kept.push({x:h.tail,y:0,w:.45,s:1,k:0});
+  return h.wakeTips=kept;
+}
+function wakeStep(dt){
+  const sh=G.ship,h=hullOf(G.shipId),st=stat();
+  for(let i=WAKE.length-1;i>=0;i--){
+    const t=WAKE[i];
+    t.x+=t.vx*dt;t.y+=t.vy*dt;t.life-=dt;
+    if(t.life<=0)WAKE.splice(i,1);
+  }
+  const sp=Math.hypot(sh.vx,sh.vy),k=clamp(sp/(6.4+st.thr*1.6),0,1.2);
+  /* ниже восьмой хода среды не слышно; очередь — как у шлейфа: разные проходы
+     не сшиваются нитью поперёк пустоты */
+  const on=k>.12;
+  if(on&&!wakeOn)wakeBurst++;
+  wakeOn=on;
+  if(!on||WAKE.length>=WAKE_MAX)return;
+  if(G.opts.gfx.particles<1&&(G.t|0)%2)return;
+  const ca=Math.cos(sh.a),sa=Math.sin(sh.a),va=Math.atan2(sh.vy,sh.vx);
+  const eScale=shipZ(G.zoom)/G.zoom;
+  /* жизнь точки — и есть длина: 60 кадров на малом ходу, 260 на крейсерской */
+  const life=60+200*Math.min(1,k);
+  for(const tp of wakeTips(h))for(const s of [-1,1]){
+    if(tp.s&&tp.s!==s)continue;
+    const px=tp.x,py=tp.y*s;
+    const ex=sh.x+(px*ca-py*sa)*eScale,ey=sh.y+(px*sa+py*ca)*eScale;
+    /* среду сносит вбок от линии хода, медленно: V раскрывается с возрастом,
+       а не с расстоянием — как за лодкой; с внешней кромки — шире */
+    const na=va+Math.PI/2*s,push=tp.y?(.05+.14*k)*(.4+.6*tp.k)*eScale:0;
+    WAKE.push({x:ex,y:ey,s,t:tp,b:wakeBurst,k:k*tp.w,max:life,life,ph:(rndFx()-.5)*2,vx:Math.cos(na)*push,vy:Math.sin(na)*push});
+  }
+}
+function drawWake(zx,zy,Z){
+  if(!WAKE.length)return;
+  const SZ=shipZ(Z);
+  const col=mixc([196,222,255],hex2rgb(shipData(G.shipId).col),.25);
+  const lanes={};
+  for(const t of WAKE){const k=t.s+"/"+t.b+"/"+t.t.x;(lanes[k]||(lanes[k]=[])).push(t);}
+  ctx.save();
+  ctx.globalCompositeOperation="lighter";
+  ctx.lineCap="butt";ctx.lineJoin="round";
+  /* Первый проход был карандашной линией: волосок, при отъезде неотличимый
+     от колец орбит. Теперь нить — ТЕЛО в два слоя: тонкое ясное ядро у кромки
+     и ореол, который ширится с возрастом (среда расплывается); плюс зерно —
+     моты, у каждой точки своя доля разброса, положенная при рождении: они
+     уходят от нити тем дальше, чем старше, и не мигают. Спад квадратичный. */
+  for(const k in lanes){
+    const arr=lanes[k];
+    for(let i=1;i<arr.length;i++){
+      const a=arr[i-1],b2=arr[i];
+      const x0=zx(a.x),y0=zy(a.y),x1=zx(b2.x),y1=zy(b2.y);
+      if((x0<-60&&x1<-60)||(x0>W+60&&x1>W+60)||(y0<-60&&y1<-60)||(y0>H+60&&y1>H+60))continue;
+      const u=clamp((a.life/a.max+b2.life/b2.max)*.5,0,1),kk=(a.k+b2.k)*.5;
+      ctx.strokeStyle=rgba(col,(kk*(u*u*.08+u*u*u*u*.10)).toFixed(3));
+      ctx.lineWidth=(2.2+(1-u)*4.5)*SZ;
+      ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.stroke();
+      /* ядро гаснет кубом: у кромки ясное, на полпути уже вполсилы — иначе
+         на ×1 две нити читались ровными канатами до края экрана */
+      ctx.strokeStyle=rgba(col,(kk*(u*u*u*.26+u*u*u*u*u*u*.30)).toFixed(3));
+      ctx.lineWidth=Math.max(.8,(1+(1-u)*.6)*SZ);
+      ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.stroke();
+      if(b2.ph&&i%3===0){
+        const dx=x1-x0,dy=y1-y0,d=Math.hypot(dx,dy)||1;
+        const off=(1-u)*7*SZ*b2.ph;
+        const mx=x1-dy/d*off,my=y1+dx/d*off;
+        ctx.fillStyle=rgba(col,(kk*u*.34).toFixed(3));
+        ctx.beginPath();ctx.arc(mx,my,Math.max(.6,1.1*SZ),0,TAU);ctx.fill();
+      }
+    }
+  }
+  ctx.restore();
+}
 function trailStep(dt,thrusting,turning,braking){
+  wakeStep(dt);   /* кильватер живёт в том же кадре, что и шлейф */
   const sh=G.ship,h=hullOf(G.shipId),st=stat();
   for(let i=TRAIL.length-1;i>=0;i--){
     const t=TRAIL[i];
@@ -374,6 +488,7 @@ function trailStep(dt,thrusting,turning,braking){
   }
 }
 function drawTrail(zx,zy,Z){
+  drawWake(zx,zy,Z);   /* кильватер под шлейфом и под корпусом */
   const T0=trailTint(G.shipId,G.mods.engine|0),T=(typeof cosmTrail==="function")?cosmTrail(T0):T0,SZ=shipZ(Z),CW=trailChar(G.shipId).w;   /* след — косметика «Сороки» */
   /* ленты по соплам: массив хронологичен, поэтому в каждой корзине точки
      идут от самой старой к свежей — ровно порядок отрисовки полосы */
