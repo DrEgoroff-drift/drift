@@ -198,6 +198,8 @@ body:not(.inflight) .ipod{display:none}
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .locus em{display:block;font-style:normal;color:var(--text);font-size:12px;margin-top:4px;
   font-variant-numeric:tabular-nums}
+/* масштаб — служебная цифра под кассой (R6): тусклее и мельче, чтобы не спорить с деньгами */
+#zoomlbl{color:var(--dim);font-size:10px;margin-top:2px;letter-spacing:.06em}
 
 /* ══════════════ сообщения ══════════════ */
 /* Событие проходит под приборами, а не сквозь них: приборы вернулись наверх,

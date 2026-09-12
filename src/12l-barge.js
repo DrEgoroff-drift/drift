@@ -526,8 +526,10 @@ function bargeArtOf(b){
     /* люк или перемычки — короб не должен быть пустой заливкой */
     ctx.strokeStyle="rgba(0,0,0,.3)";ctx.lineWidth=.4;
     ctx.beginPath();ctx.moveTo(k.x,k.y1);ctx.lineTo(k.x,k.y0);ctx.stroke();
-    ctx.strokeStyle="rgba(255,240,220,.25)";
-    ctx.beginPath();ctx.moveTo(k.x-k.w,k.y1);ctx.lineTo(k.x+k.w,k.y1);ctx.stroke();
+    /* шов на стыке короба и корпуса темнее обшивки (дизайнер 12.09): светлая
+       кромка сверху читалась щелью света между блоками, а не сваркой */
+    ctx.strokeStyle="rgba(0,0,0,.55)";ctx.lineWidth=.8;
+    ctx.beginPath();ctx.moveTo(k.x-k.w,k.y0);ctx.lineTo(k.x+k.w,k.y0);ctx.stroke();
   }
   for(const l of lines){
     ctx.strokeStyle="rgba(0,0,0,"+(l[4]*.6).toFixed(2)+")";ctx.lineWidth=l[4];

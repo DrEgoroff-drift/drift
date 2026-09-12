@@ -31,7 +31,7 @@ let HUD_BAND=72;
 let HUD_FLOOR=0, HUD_RAIL=0;
 const $vitals=document.querySelector(".vitals"),$locusEl=document.querySelector(".locus");
 const $vf=document.getElementById("vFuel"),$vh=document.getElementById("vHull");
-const $vc=document.getElementById("vHold"),$purse=document.getElementById("purse");
+const $vc=document.getElementById("vHold"),$purse=document.getElementById("purse"),$zl=document.getElementById("zoomlbl");
 const $vs=document.getElementById("vSuit"),$ub=document.querySelector("#ubar i");
 const $un=document.getElementById("unum");
 const $vj=document.getElementById("vJet"),$jb=document.querySelector("#jbar i");
@@ -180,6 +180,14 @@ function hud(){
      обмен места в кадре не занимает (docs/DESIGN-online-risks.md, A1). */
   const cl=(typeof cloudLine==="function")?cloudLine():"";
   setTx($purse,Math.round(G.credits).toLocaleString("ru")+" кр · "+G.data+" дан"+(cl?" · "+cl:""));
+  /* масштаб — служебная цифра, и место ей в шапке под кассой (R6, 12.09), а не
+     плашкой посреди мира; на буксире и под окнами её нет, как и было */
+  if($zl){
+    const bc=document.body.classList;
+    const zs=G.mode==="system"&&!G.haul&&!bc.contains("hailopen")&&!bc.contains("sosopen");
+    $zl.style.display=zs?"":"none";
+    if(zs)setTx($zl,"МАСШТАБ ×"+G.zoom.toFixed(2));
+  }
   /* Приборы проявляются, когда есть о чём сказать, и гаснут, когда всё ровно.
      Повод — изменившееся показание, тревога или открытый режим, где приборы
      и есть содержание кадра. Панель, которая горит всегда, перестаёт читаться
