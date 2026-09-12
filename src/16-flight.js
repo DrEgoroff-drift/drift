@@ -351,7 +351,7 @@ function wakeStep(dt){
     /* среду сносит вбок от линии хода, медленно: V раскрывается с возрастом,
        а не с расстоянием — как за лодкой; с внешней кромки — шире */
     const na=va+Math.PI/2*s,push=tp.y?(.05+.14*k)*(.4+.6*tp.k)*eScale:0;
-    WAKE.push({x:ex,y:ey,s,t:tp,b:wakeBurst,k:k*tp.w,max:life,life,ph:(rndFx()-.5)*2,vx:Math.cos(na)*push,vy:Math.sin(na)*push});
+    WAKE.push({x:ex,y:ey,s,t:tp,b:wakeBurst,k:k*tp.w,max:life,life,vx:Math.cos(na)*push,vy:Math.sin(na)*push});
   }
 }
 function drawWake(zx,zy,Z){
@@ -365,31 +365,29 @@ function drawWake(zx,zy,Z){
   ctx.lineCap="butt";ctx.lineJoin="round";
   /* Первый проход был карандашной линией: волосок, при отъезде неотличимый
      от колец орбит. Теперь нить — ТЕЛО в два слоя: тонкое ясное ядро у кромки
-     и ореол, который ширится с возрастом (среда расплывается); плюс зерно —
-     моты, у каждой точки своя доля разброса, положенная при рождении: они
-     уходят от нити тем дальше, чем старше, и не мигают. Спад квадратичный. */
+     и ореол, который ширится с возрастом (среда расплывается). Спад квадратичный. */
+  /* Автор (12.09): «без точечек, давай плавно». Моты сняты: на увеличении они
+     читались бусинами на нити. Нить идёт квадратичными дугами через середины
+     отрезков — стык двух дуг касательный, углов на повороте нет; каждый кусок
+     красится своей долей жизни, так что спад к хвосту остаётся. */
+  const mid=(p,q)=>[(zx(p.x)+zx(q.x))*.5,(zy(p.y)+zy(q.y))*.5];
   for(const k in lanes){
     const arr=lanes[k];
     for(let i=1;i<arr.length;i++){
-      const a=arr[i-1],b2=arr[i];
-      const x0=zx(a.x),y0=zy(a.y),x1=zx(b2.x),y1=zy(b2.y);
+      const a=arr[i-1],b2=arr[i],c=arr[i+1];
+      const p0=i===1?[zx(a.x),zy(a.y)]:mid(a,b2),p1=c?mid(b2,c):[zx(b2.x),zy(b2.y)];
+      const cx=i===1?p0[0]:zx(b2.x),cy=i===1?p0[1]:zy(b2.y);
+      const x0=p0[0],y0=p0[1],x1=p1[0],y1=p1[1];
       if((x0<-60&&x1<-60)||(x0>W+60&&x1>W+60)||(y0<-60&&y1<-60)||(y0>H+60&&y1>H+60))continue;
       const u=clamp((a.life/a.max+b2.life/b2.max)*.5,0,1),kk=(a.k+b2.k)*.5;
       ctx.strokeStyle=rgba(col,(kk*(u*u*.08+u*u*u*u*.10)).toFixed(3));
       ctx.lineWidth=(2.2+(1-u)*4.5)*SZ;
-      ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(x0,y0);ctx.quadraticCurveTo(cx,cy,x1,y1);ctx.stroke();
       /* ядро гаснет кубом: у кромки ясное, на полпути уже вполсилы — иначе
-         на ×1 две нити читались ровными канатами до края экрана */
+         на ×1 нити читались ровными канатами до края экрана */
       ctx.strokeStyle=rgba(col,(kk*(u*u*u*.26+u*u*u*u*u*u*.30)).toFixed(3));
       ctx.lineWidth=Math.max(.8,(1+(1-u)*.6)*SZ);
-      ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.stroke();
-      if(b2.ph&&i%3===0){
-        const dx=x1-x0,dy=y1-y0,d=Math.hypot(dx,dy)||1;
-        const off=(1-u)*7*SZ*b2.ph;
-        const mx=x1-dy/d*off,my=y1+dx/d*off;
-        ctx.fillStyle=rgba(col,(kk*u*.34).toFixed(3));
-        ctx.beginPath();ctx.arc(mx,my,Math.max(.6,1.1*SZ),0,TAU);ctx.fill();
-      }
+      ctx.beginPath();ctx.moveTo(x0,y0);ctx.quadraticCurveTo(cx,cy,x1,y1);ctx.stroke();
     }
   }
   ctx.restore();
