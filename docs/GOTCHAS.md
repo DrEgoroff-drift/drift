@@ -89,3 +89,8 @@ this file keeps the evidence and the fix.
   `client_global_hostkeys_prove_confirm` line was silenced with
   `UpdateHostKeys no` in `~/.ssh/config`.
 - **`snapshot()` shares references with `G`.** The object it returns holds the live `G.cargo`, `G.mods` and the like, not copies; `saveGame` stringifies at once so the game never notices, but anything that *keeps* the object (a recording head, a «before» snapshot in a suite) sees the world drift under it — the replay suite started with 13 ice it had not mined yet. Keep `JSON.parse(JSON.stringify(snapshot()))`, never the bare object (2026-09-11).
+- **Pushing the branch right after main cancels main's deploy.** `.github/workflows/deploy.yml` has one
+  `concurrency: group: deploy` with `cancel-in-progress: true` for every branch, so a branch push of
+  the same commit started the dev.html run and cancelled the play.html one — 0.447.0 sat on the site
+  as 0.446.0 (2026-09-12). Push main, wait for its run (`api.github.com/.../actions/runs`), then the
+  branch; or make the group per ref.
