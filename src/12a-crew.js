@@ -680,7 +680,7 @@ function drawAllies(zx,zy,Z){
   for(const A of G.allies){
     const x=zx(A.x),y=zy(A.y);
     if(x<-80||x>W+80||y<-80||y>H+80)continue;
-    ctx.save();ctx.translate(x,y);ctx.scale(clamp(Z,.3,1.4),clamp(Z,.3,1.4));ctx.rotate(A.a);
+    ctx.save();ctx.translate(x,y);ctx.scale(shipScaleAt(Z),shipScaleAt(Z));ctx.rotate(A.a);   /* один потолок с кораблём (16c) */
     drawHull(A.c.shipId,A.thrust,false,0);
     ctx.restore();
     /* имя И дело (M299): плейтест 02.09 — «чувак у станции не летает, просто

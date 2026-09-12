@@ -332,7 +332,7 @@ document.getElementById("routebtn").addEventListener("click",()=>{
   say(routeToggle(G.sel.x,G.sel.y));
   sfx("ui",{f:520,to:820,d:.12,v:.28});
 });
-function setZoom(z){G.zoom=clamp(z,.16,2.4);}
+function setZoom(z){G.zoom=clamp(z,ZOOM_MIN,ZOOM_MAX);}
 /* ── колесо крутит мир только НАД миром (M236) ──
    Обработчик висит на окне и спрашивал один G.mode: пока игрок листал колесом
    тетрадь на столе, карта за спиной уезжала в зум — список прокручен, мир

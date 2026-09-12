@@ -586,7 +586,7 @@ function drawBarges(zx,zy,Z){
     const x=zx(b.x),y=zy(b.y);
     if(x>-80&&x<W+80&&y>-80&&y<H+80){
       ctx.save();ctx.translate(x,y);ctx.rotate(b.a);
-      const s=clamp(Z,.5,1.5)*.8;ctx.scale(s,s);
+      const s=shipScaleAt(Z)*.8;ctx.scale(s,s);   /* один потолок с кораблём (16c, п. 2) */
       drawBarge(b);
       ctx.restore();
       const hp=clamp(b.hp/b.hullMax,0,1);

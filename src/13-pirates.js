@@ -387,7 +387,7 @@ function drawCombat(zx,zy,Z){
     const x=zx(p.x),y=zy(p.y);
     if(x>-60&&x<W+60&&y>-60&&y<H+60){
       ctx.save();ctx.translate(x,y);ctx.rotate(p.a);
-      const s=clamp(Z,.55,1.6)*.82;
+      const s=shipScaleAt(Z)*.82;   /* один потолок с кораблём (16c, п. 2) */
       ctx.scale(s,s);
       /* пират рисуется своим сварным корпусом (12i), а не вашим кораблём в
          чужой раскраске: у него шесть-восемь десятков полигонов, выпеченных

@@ -277,7 +277,7 @@ function applySave(s){
      настоящими видами планет. Всё остальное в сохранении цело, формат прежний. */
   G.species=new Set(((s.bioV|0)>=2&&Array.isArray(s.species))?s.species:[]);
   Object.assign(G.opts,optsNumify(s.opts||{}));   /* облако на PHP отдаёт числа строками — назад в числа всем классом (14a2) */
-  G.zoom=clamp(+s.zoom||1,.16,2.4);
+  G.zoom=clamp(+s.zoom||1,ZOOM_MIN,ZOOM_MAX);
   G.market=asMap(s.market);
   /* фронт пиратов: разреженный объект по ключу "sx,sy", как всё привязанное
      к системе. Старые записи грузятся с пустым фронтом — он нарастёт сам */
