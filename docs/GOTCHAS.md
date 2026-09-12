@@ -93,4 +93,6 @@ this file keeps the evidence and the fix.
   `concurrency: group: deploy` with `cancel-in-progress: true` for every branch, so a branch push of
   the same commit started the dev.html run and cancelled the play.html one — 0.447.0 sat on the site
   as 0.446.0 (2026-09-12). Push main, wait for its run (`api.github.com/.../actions/runs`), then the
-  branch; or make the group per ref.
+  branch; or make the group per ref. A docs-only commit does not re-run it (the workflow watches
+  `src/`, `site/`, `tests/`, `build.ps1`): republish with `deploy.ps1 -SkipBuild` after checking that
+  `md5sum drift.html` equals the committed one.
