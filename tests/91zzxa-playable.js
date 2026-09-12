@@ -119,6 +119,25 @@ TEST_SUITES.push(()=>suite("R0 за экраном по вам не стреля
   G.pirates=[];
 }));
 
+TEST_SUITES.push(()=>suite("R0 оклик под окном бака: пока выбираешь выход, пикет ждёт и не стреляет",{tier:"browser",win:"phone"},()=>{
+  resetWorld();
+  G.mode="system";G.sx=5;G.sy=5;G.sys=getSystem(5,5);G.hailLog={};G.hail=null;G.pirates=[];
+  G.ship.x=4000;G.ship.y=0;G.ship.vx=0;G.ship.vy=0;G.ap=null;G.orbit=null;
+  const by=MAKER_KEYS.find(k=>k!==playerFlag());
+  const p=npcShip(by,0,1,G.ship.x+300,G.ship.y,1);p.aware=false;G.pirates=[p];
+  T.wait(2);
+  ok(!!G.hail,"пикет окликнул");
+  G.hail.blk=0;G.fuel=0;
+  toggleSos(true);
+  ok(document.body.classList.contains("sosopen"),"окно бака открыто");
+  const t0=G.hail.t,hull0=G.hull;
+  for(let i=0;i<1200;i++){stepWorld(1);G.t+=1;}
+  ok(!!G.hail&&!G.hail.warn&&G.hail.t===t0,"двадцать секунд над окном бака — отсчёт стоит: "+(G.hail&&Math.round(G.hail.t))+" из "+Math.round(t0));
+  eq(G.hull,hull0,"корпус цел");
+  eq(p.iff,1,"пикет не открыл огонь");
+  toggleSos(false);G.pirates=[];
+}));
+
 /* R1: действие делает то, что написано, когда в кадре два предложения */
 TEST_SUITES.push(()=>suite("R1 пояс рядом с планетой: подсказка и ДЕЙСТВИЕ совпадают",{tier:"browser"},()=>{
   resetWorld();

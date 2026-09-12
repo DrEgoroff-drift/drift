@@ -209,7 +209,8 @@ before a push.
   fix, a WIP commit, dev, one line to both reviewers). Sources: the tester's `review.json` and
   `botverify.json` (scratchpad 3d6318e9…), the designer's letters. Scale stays as built until the
   author says otherwise (the reviewers disagree; a peer cannot decide for the author).
-  - **Next:** R2. Open from R0: the hail should wait under the SOS window too (`sosopen`, Контроль).
+  - **Next:** R2. 0.446.0 is live (7ca9ce1, md5 checked); after it the hail waits under the SOS
+    window too (`sosopen` in `worldCovered`, test «оклик под окном бака»).
   - [x] **R0 picket «Коммуна»** and [x] **R1 cue and ДЕЙСТВИЕ** — shipped in 0.446.0; bodies in
     `docs/PLAN-archive.md` (2026-09-12).
   - [ ] **R2 empty tank**: no nose turn on fuel 0; any flight input asks for the window; stick and move
