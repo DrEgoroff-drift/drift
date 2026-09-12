@@ -31,7 +31,8 @@ TEST_SUITES.push(() => suite("сценарий: с пустым баком на 
   eq(G.mode, "surface", "без топлива взлёт не случается сам");
   ok(/нужно 8/.test(String(G.msg)), "и говорит почему: " + String(G.msg).replace(/\n/g, " "));
   const ids = rescueOffers().map(o => o.id).join(",");
-  ok(/tow/.test(ids) && /reset/.test(ids), "выходы есть и без денег: " + ids);
+  ok(/tow/.test(ids), "выход есть и без денег: " + ids);
+  ok(!/reset/.test(ids), "на голом «Стриже» СБРОСА нет — терять нечего (R3, 12.09)");
   /* с деньгами: прыжок домой сразу (дом в другой системе — из дома «домой» не прыгают) */
   land(); G.fuel = 0; G.credits = 50000;
   G.home = homeInit(); G.home.tier = 1; G.home.sx = G.sx + 2; G.home.sy = G.sy;
@@ -46,8 +47,8 @@ TEST_SUITES.push(() => suite("сценарий: с пустым баком на 
   eq(G.mode, "system", "баржа подняла на орбиту");
   let n = 0; while (G.haul && n < 2000) { haulTick(60, G.ship); n++; }
   ok(!G.haul && G.fuel > 0, "дотащил, в баке есть ход: " + G.fuel);
-  /* без денег и без терпения: сброс на «Стриж», игра продолжается */
-  land(); G.fuel = 0; G.credits = 0;
+  /* без денег и без терпения: сброс на «Стриж», игра продолжается — когда есть что терять */
+  land(); G.fuel = 0; G.credits = 0; G.cargo.iron = 3;
   ok(rescueTake("reset"), "СБРОС берётся");
   eq(G.mode, "system", "сброс: игра не встала");
   eq(G.shipId, "strizh", "и это «Стриж»");

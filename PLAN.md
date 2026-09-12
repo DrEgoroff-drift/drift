@@ -216,14 +216,20 @@ before a push.
   - [x] **R2 empty tank**: no nose turn on fuel 0 (`helmApply`), a turn asks for the window too (and
     A/D/←/→ by key), `body.tankdry` dims thrust and turn pads, the stick dims to .35 and says «БАК
     ПУСТ» (live and at rest); test «R2 пустой бак» (phone).
-  - [ ] **R3 the rescue window**: tester 1 (window/БУКСИР/ДОМОЙ/СБРОС during a haul), 2 (a wreck on the
+  - [ ] **R3 the rescue window** — **R3a logic done** (the window and `rescueTake` refuse on the rope, a
+    tap on the rope sets no autopilot and the tow end clears `G.ap`, a wreck drops the rope, СБРОС takes
+    only the lost hull's parts and is not offered on a bare «Стриж», an own-power dock in a foreign
+    system cools the jumps once per system (`rescueDockCool`, `G.homeDockAt` saved), surface 1–7 is a
+    jump «без хода» and the head says the real fuel, Space no longer opens the window, docking closes
+    it; four «R3 …» tests). **R3b the look** is next: tester 1 (window/БУКСИР/ДОМОЙ/СБРОС during a haul), 2 (a wreck on the
     rope loops), 3 (СБРОС clears every fit, keeps the lost parts), 6 (dock greetings burn behind the
     screen; the crash toast hides), 7 (stale window, Space at the dock), 9 (× 44 px, tap outside,
     Escape), 10 («в баке будет» = max), 12 (the armed СБРОС label returns), 13 (СБРОС on a bare
     «Стриж» is free), 16 (a chip tap on the rope sets G.ap); HOME_DOCK_COOL applied; surface fuel 1–7
     is not «ноль» and not a taxi jump. Designer: the window in the lower third, pursuit in its head,
     the armed СБРОС red with a 4 s bar, sub-lines 11 px ≥4.5:1, head «до станции <name> · <dist>»,
-    icons per exit, ДОМОЙ alone is the main button, the menu shows its price.
+    icons per exit, БУКСИР is the main button, the menu shows its price; on an empty tank the ДЕЙСТВИЕ
+    pad reads «ВЫХОДЫ» and the prompt drops «ДЕЙСТВИЕ — БУКСИР ИЛИ СБРОС» (designer 12.09).
   - [ ] **R4 the haul scene**: the rope from a stern boom to the ship's nose, drawn after the flames;
     the barge comes from behind and overtakes; the end at the station by `S.ang`, a 3–4 s unhook and
     departure; camera eased; lines and debris as a deck; `rndFx` out of haul state (M441).
@@ -241,6 +247,14 @@ before a push.
     Designer 12.09: a pad label is ≤2 words + a number («ЗОНД · 300», not «ЗОНД ЗА 300 КР»); a
     moon/planet name yields to the player's ship (moves to the far side of the disc); «КОМПАНИЯ» by
     the ship never crosses a planet chip.
+    Bots on the 0.446.0 copy (tester P2–P5) and the designer's calls 31–35: the ether names the
+    speaker once, in the line prefix, one case («Коммуна: …», capitals only in titles); agreement
+    in the story lines («Женщина в платке рассказывал», «кто везёт органика»); a cargo paper in
+    ВЕЩИ shows the DESTINATION sector, and every board card reads «куда · сколько · до когда · за
+    сколько» (deadline numbers — Контроль); the СТОЛ button is fixed wide for «99+» with the badge
+    over its corner, not in the flow (with the two fixed station-header lines); while the hail
+    window is open, one undimmed edge arrow names the hailing ship. The hail window over КАРТА/
+    МЕНЮ stays (decided).
   - **dev.html must not write into the live world (Контроль, 12.09).** The tester's bots played
     dev.html against the live `/api.php` and left test signs (a=trace, Нейэль III, 0:0, ~00:08 and
     00:25 MSK 12.09). Either a `test` flag the api drops, or dev/bots on a local copy. Removing

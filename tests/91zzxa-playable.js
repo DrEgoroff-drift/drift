@@ -168,6 +168,84 @@ TEST_SUITES.push(()=>suite("R2 пустой бак: руль не крутит �
   ok(!document.body.classList.contains("sosopen"),"и окно не открылось");
 }));
 
+/* R3a: окно выходов — логика (review.json тестировщика: 1/10/15 трос, 2/11 СБРОС,
+   3/12 причал, 4/5/13 грунт, 8 пробел у причала, 9 голый «Стриж», 16 крушение, 26 фишка) */
+function r3Sys(){
+  for(let r=1;r<9;r++)for(let x=-r;x<=r;x++)for(let y=-r;y<=r;y++){
+    if(Math.max(Math.abs(x),Math.abs(y))!==r)continue;
+    const s=getSystem(x,y);if(s.station)return s;
+  }
+  return null;
+}
+TEST_SUITES.push(()=>suite("R3 на тросе: окна выходов нет, фишка не заводит автопилот, крушение снимает трос",{tier:"browser",win:"phone"},()=>{
+  resetWorld();
+  G.mode="system";G.sx=5;G.sy=5;G.sys=getSystem(5,5);G.pirates=[];G.hail=null;G.fuel=0;G.cargo.ice=0;G.credits=1e5;
+  G.ship.x=4000;G.ship.y=0;G.ship.vx=0;G.ship.vy=0;toggleSos(false);
+  T.wait(1);   /* кадр до троса: фишки у кромки нарисованы, их зоны живут до следующего кадра */
+  ok(SYS_CHIPS.length>0,"у кромки есть фишка");
+  const c=SYS_CHIPS[0];
+  haulStart();
+  const h0=G.haul,cr0=G.credits;
+  toggleSos(true);
+  ok(!document.body.classList.contains("sosopen"),"на тросе меню ДОМОЙ окна не открывает");
+  eq(rescueTake("home"),false,"на тросе ДОМОЙ не берётся");
+  eq(G.credits,cr0,"деньги целы");
+  ok(G.haul===h0,"трос прежний, прогресс не сброшен");
+  tap(c.x+c.w/2,c.y+c.h/2);
+  eq(G.ap,null,"тычок по фишке на тросе не заводит автопилот — руль у баржи");
+  wreck();
+  eq(G.haul,null,"корабль разбит на тросе — трос снят, корабль уже не там");
+}));
+
+TEST_SUITES.push(()=>suite("R3 СБРОС берёт только потерянное; на голом «Стриже» его нет",{tier:"browser",win:"phone"},()=>{
+  resetWorld();
+  const hulls=Object.keys(SHIPS).filter(k=>k!=="strizh"),big=hulls[0],other=hulls[1];
+  G.owned[big]=true;G.owned[other]=true;G.shipId=big;
+  G.mode="system";G.sx=5;G.sy=5;G.sys=getSystem(5,5);G.fuel=0;G.cargo.ice=0;
+  const p1=addPart(genPart(5501,1,slotsOf(big)[0])),p3=addPart(genPart(5503,1,slotsOf(other)[0]));
+  G.fit={};G.fit[big]={0:p1.id};G.fit[other]={0:p3.id};invalidateParts();
+  ok(rescueTake("reset"),"сброс берётся");
+  ok(!partById(p1.id),"часть с потерянного корпуса ушла вместе с ним");
+  ok(!!G.fit[other]&&G.fit[other][0]===p3.id&&!!partById(p3.id),"у второго корпуса обвес на месте");
+  /* голый «Стриж»: ни модулей, ни частей, ни груза — СБРОС был бесплатной доставкой с полным баком */
+  for(const k in G.mods)G.mods[k]=0;G.fit={};for(const k of RES_KEYS)G.cargo[k]=0;invalidateParts();
+  G.fuel=0;
+  ok(!rescueOffers().some(o=>o.id==="reset"),"на голом «Стриже» СБРОСА нет — терять нечего");
+  ok(rescueOffers().some(o=>o.id==="tow"),"буксир на месте");
+}));
+
+TEST_SUITES.push(()=>suite("R3 счётчик и грунт: честный причал остужает раз на систему, с грунта на 1–7 прыжок — без хода",{tier:"browser",win:"phone"},()=>{
+  resetWorld();
+  const S=r3Sys();
+  ok(!!S,"нашлась чужая система со станцией");
+  G.mode="system";G.sx=S.sx;G.sy=S.sy;G.sys=S;G.haul=null;G.homeJumps=10;G.fuel=50;
+  openStation();
+  ok(G.homeJumps<10,"причал своим ходом в чужой системе остужает счётчик: "+G.homeJumps);
+  const j=G.homeJumps;closeStation();openStation();
+  eq(G.homeJumps,j,"второй заход на тот же причал — не остужает");
+  closeStation();
+  /* грунт: в баке 5, взлёт стоит 8 — окно говорит правду, прыжок считается «без хода» */
+  G.mode="surface";G.fuel=5;G.cargo.ice=0;
+  const j0=G.homeJumps;homeJumpCount();
+  eq(G.homeJumps,j0+HOME_EMPTY,"с грунта на 5 топлива прыжок — без хода, не такси");
+  toggleSos(true);
+  const hd=document.getElementById("sosHead").textContent;
+  ok(!/Топлива ноль/.test(hd)&&/5/.test(hd),"шапка не врёт про ноль: "+hd);
+  toggleSos(false);G.mode="system";
+}));
+
+TEST_SUITES.push(()=>suite("R3 у причала: пробел стыкует и окна не открывает, стыковка закрывает окно",{tier:"browser",win:"phone"},()=>{
+  resetWorld();
+  const S=r3Sys();
+  G.mode="system";G.sx=S.sx;G.sy=S.sy;G.sys=S;G.fuel=0;G.cargo.ice=0;toggleSos(false);
+  dispatchEvent(new KeyboardEvent("keydown",{code:"Space",bubbles:true}));
+  ok(!document.body.classList.contains("sosopen"),"пробел на пустом баке окна сам не открывает — ДЕЙСТВИЕ идёт по подсказке");
+  dispatchEvent(new KeyboardEvent("keyup",{code:"Space",bubbles:true}));
+  toggleSos(true);openStation();
+  ok(!document.body.classList.contains("sosopen"),"стыковка закрывает окно выходов — после отстыковки оно не висит устаревшим");
+  closeStation();
+}));
+
 /* R1: действие делает то, что написано, когда в кадре два предложения */
 TEST_SUITES.push(()=>suite("R1 пояс рядом с планетой: подсказка и ДЕЙСТВИЕ совпадают",{tier:"browser"},()=>{
   resetWorld();

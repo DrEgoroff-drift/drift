@@ -7,7 +7,7 @@
 TEST_SUITES.push(()=>suite("пустой бак: газ открывает окно, в нём домой, буксир и сброс",{tier:"browser"},()=>{
   resetWorld();
   G.mode="system";G.sx=5;G.sy=3;G.sys=getSystem(5,3);G.ship.x=4000;G.ship.y=0;G.ship.vx=0;G.ship.vy=0;
-  G.fuel=0;G.credits=0;
+  G.fuel=0;G.credits=0;G.cargo.iron=3;   /* есть что терять — иначе СБРОСА нет (R3, 12.09) */
   const sos=document.getElementById("sos");
   ok(!sos.classList.contains("open"),"до газа окна нет");
   dispatchEvent(new KeyboardEvent("keydown",{key:"w",code:"KeyW"}));

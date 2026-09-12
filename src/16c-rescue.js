@@ -49,8 +49,20 @@ function rescueHomeCost(){
   const n=Math.max(0,G.homeJumps||0);
   return Math.max(HOME_JUMP_BASE,Math.round(HOME_JUMP_BASE*Math.pow(2,n)/10)*10);
 }
-function homeJumpCount(){G.homeJumps=(G.homeJumps||0)+(G.fuel>0?HOME_TAXI:HOME_EMPTY);}
+/* такси — прыжок, когда было чем лететь. С грунта на 1–7 топлива взлёт не выйдет
+   (нужно 8), и окно зовёт бак пустым — значит, и прыжок без хода (ревью 12.09) */
+function homeJumpCount(){G.homeJumps=(G.homeJumps||0)+(rescueEmpty()?HOME_EMPTY:HOME_TAXI);}
 function homeCool(k){G.homeJumps=Math.max(0,(G.homeJumps||0)-k);}
+/* честный причал своим ходом в чужой системе (ревью 12.09: HOME_DOCK_COOL был
+   объявлен и не применялся). Раз на систему: зайти-выйти у одной станции
+   счётчик не студит — надо долететь до другой. Буксир свою систему уже
+   остудил сам (haulTick ставит ту же метку) */
+function rescueDockCool(){
+  if(G.haul)return;
+  const H=rescueHomeAt(),key=G.sx+","+G.sy;
+  if((G.sx===H.sx&&G.sy===H.sy)||G.homeDockAt===key)return;
+  G.homeDockAt=key;homeCool(HOME_DOCK_COOL);
+}
 /* активная минута: вкладка на экране и за последнюю минуту был ввод. Считаем
    реальным временем (wallMs) — игровое стоит на паузе и в фоне */
 let rescueInputT=-1e12,rescueBeatT=-1;
@@ -69,9 +81,13 @@ function rescueOffers(){
     sub:"прыжок "+H.ru+" · сразу · в баке будет "+RESCUE_FUEL});
   if(rescueEmpty()){
     const dest=nearestStation(G.sx,G.sy);
+    /* терять нечего — голый «Стриж» без модулей, частей и груза: СБРОС был бы
+       бесплатной доставкой к станции с полным баком, лучше буксира и ДОМОЙ */
+    const lose=G.shipId!=="strizh"||Object.keys(G.mods).some(k=>(G.mods[k]|0)>0)||
+      Object.keys(G.fit[G.shipId]||{}).length>0||RES_KEYS.some(k=>G.cargo[k]>0);
     out.push({id:"tow",ru:"БУКСИР",cost:0,
       sub:"баржа придёт и дотащит до станции ("+dest.name+") · около 5 минут без руля"});
-    out.push({id:"reset",ru:"СБРОС",cost:0,
+    if(lose)out.push({id:"reset",ru:"СБРОС",cost:0,
       sub:"корабль, всё, что на нём стоит, и груз потеряны · «Стриж» у станции"});
   }
   return out;
@@ -84,6 +100,7 @@ function rescuePark(dest){
   G.mode="system";G.ap=null;G.orbit=null;G.land=null;G.surf=null;G.pirates=[];G.shots=[];
 }
 function rescueTake(id){
+  if(G.haul)return false;   /* на тросе выход уже выбран: ни второго буксира, ни прыжка из-под троса */
   const o=rescueOffers().find(x=>x.id===id);
   if(!o)return false;
   if(o.cost>G.credits){say("Не хватает\nнужно "+o.cost.toLocaleString("ru")+" кр",120);return false;}
@@ -106,11 +123,15 @@ function rescueTake(id){
   }else if(id==="reset"){
     const was=(shipData(G.shipId)||{}).ru||"корабль";
     if(G.shipId!=="strizh")delete G.owned[G.shipId];
-    G.shipId="strizh";G.owned.strizh=true;
     /* уходит то, что НА корабле: поставленные ступени модулей (mods) и части
        (fit). Купленное, но не поставленное (modsOwned сверх mods) остаётся */
     for(const k in G.mods){G.modsOwned[k]=Math.max(0,(G.modsOwned[k]|0)-(G.mods[k]|0));G.mods[k]=0;}
-    G.fit={};invalidateParts();
+    /* части уходят только с потерянного корпуса и вместе с ним — из описи тоже;
+       обвес других корпусов в ангаре не трогаем (ревью 12.09) */
+    const lostFit=G.fit[G.shipId]||{};
+    for(const k in lostFit){const p=partById(lostFit[k]);if(p)G.inv.splice(G.inv.indexOf(p),1);}
+    delete G.fit[G.shipId];
+    G.shipId="strizh";G.owned.strizh=true;invalidateParts();
     for(const k of RES_KEYS)G.cargo[k]=0;
     rescuePark(nearestStation(G.sx,G.sy));
     const st0=stat();G.fuel=st0.fuelMax;G.hull=st0.hullMax;
@@ -325,7 +346,7 @@ function haulTick(dt,sh){
     if(T.t>=HAUL_TIME){
       haulSay("приехали. отцепляем. бак не забудь");
       const dest=getSystem(T.dsx,T.dsy);
-      G.haul=null;homeCool(HOME_TOW_COOL);
+      G.haul=null;homeCool(HOME_TOW_COOL);G.ap=null;G.homeDockAt=T.dsx+","+T.dsy;   /* тычок на тросе автопилот не копит */
       if(!same)rescuePark(dest);
       G.fuel=Math.max(G.fuel,Math.min(stat().fuelMax,RESCUE_FUEL));
       logAdd("warn","Буксир дотащил до станции · система "+dest.name);
@@ -486,7 +507,9 @@ function rescueRender(){
   const ttl=document.getElementById("sosTtl");
   if(ttl)ttl.textContent=empty?"ХОДА НЕТ · БАК ПУСТ":"ДОМОЙ";
   const head=document.getElementById("sosHead");
-  if(head)head.textContent=(empty?"Топлива ноль. ":"")+"На счету "+
+  /* с грунта в баке бывает 1–7: взлёт стоит 8 — это не «ноль» (ревью 12.09) */
+  const fl=Math.max(0,Math.floor(G.fuel));
+  if(head)head.textContent=(empty?(fl>0?"Топлива "+fl+", на взлёт нужно 8. ":"Топлива ноль. "):"")+"На счету "+
     Math.floor(G.credits).toLocaleString("ru")+" кр · корабль «"+((shipData(G.shipId)||{}).ru||"—")+"»";
   const offers=rescueOffers();
   if(!offers.length){
@@ -524,7 +547,9 @@ function rescueRender(){
 }
 function toggleSos(on){
   if(!$sos)return;
-  const open=on===undefined?!$sos.classList.contains("open"):on;
+  let open=on===undefined?!$sos.classList.contains("open"):on;
+  /* на тросе выход уже выбран (ревью 12.09): меню ДОМОЙ окна не открывает */
+  if(open&&G.haul){say("НА ТРОСЕ\nбаржа дотащит до «"+G.haul.dname+"»",120);open=false;}
   if(open){if(typeof toggleMenu==="function")toggleMenu(false);rescueRender();}
   else if($sos.classList.contains("open"))rescueShutT=G.t;
   $sos.classList.toggle("open",open);
@@ -539,7 +564,9 @@ addEventListener("keydown",e=>{
   rescueInputT=wallMs();
   /* короткий тап газа проходил между кадрами и окна не открывал: газ и тормоз
      на пустом баке открывают его прямо по нажатию */
-  if(/^(KeyW|KeyS|KeyA|KeyD|ArrowUp|ArrowDown|ArrowLeft|ArrowRight|Space)$/.test(e.code||"")&&(G.mode==="system")&&rescueEmpty())rescueAsk();
+  /* пробела здесь нет: он — ДЕЙСТВИЕ, и у причала стыкует; на пустом баке без
+     другого дела его ведёт подсказка (17-mode-system) — ревью 12.09 */
+  if(/^(KeyW|KeyS|KeyA|KeyD|ArrowUp|ArrowDown|ArrowLeft|ArrowRight)$/.test(e.code||"")&&(G.mode==="system")&&rescueEmpty())rescueAsk();
 },true);
 /* такт активности зовёт кадр (28-loop, раз в 600 кадров): у скрытой вкладки rAF
    стоит — и её время не засчитывается само собой */
