@@ -429,6 +429,12 @@ author's behalf» at the end. Old bodies, with P4's spec and its measuring trap:
    canvas is 3072×1582, not 3840×1978, and every bake caps `devicePixelRatio` at 2 except the
    station home canvas (`26a`, not the system view). The canvas-size theory is wrong; the five
    2–3 s frames in the first 30 s are a bake — reproduce at 1536×791 before touching M418.
+   **Measured 12.09 (g11 on this laptop):** 1280×800@2 → system 47 · landing 48 · surface 33 fps;
+   1536×791@2.5 (canvas capped at ×2, 3072×1582) → 38 · 32 · 24. The frame is raster-bound and the
+   extra 19 % of pixels cost ~20 % — nothing 2.5-specific. Open: why `resAuto` did not step that
+   player down to ×1.5 after 3 s over 24 ms (a fixed `gfx.res` in his options, or the 24 ms
+   threshold against a ~26 ms EMA). The stall report now names who held the frame (`stallWho`,
+   0.448.0) — wait for the next one before touching M418.
 - **`journal` entries in `crash.log`** — 27 in two days, all «Дрон Д-… встал · чинится сам» plus
   one «Летопись разошлась…» from a 400×400 headless: check whether a journal line is meant to
   reach the error log at all (the M417 kind of noise).
