@@ -365,7 +365,11 @@ function helmApply(dt,st,sh,maxSp){
   const a0=sh.a;
   /* курс сворачиваем всегда: за долгий полёт он копится оборотами */
   sh.a=angWrap(sh.a);
-  if(c.turn)sh.a=angWrap(sh.a+c.turn*RATE*dt);
+  /* пустой бак (R2): нос ворочают те же маневровые, что и тягу, — без топлива
+     он стоит. Прежде руль крутил корабль на нуле, и игрок не понимал, что застрял */
+  const dry=G.fuel<=0;
+  if(dry){}
+  else if(c.turn)sh.a=angWrap(sh.a+c.turn*RATE*dt);
   else if(c.head!=null){
     const k=c.headK||1;
     sh.a=angWrap(sh.a+clamp(angDiff(c.head,sh.a),-RATE*k*dt,RATE*k*dt));
@@ -418,7 +422,7 @@ function helmApply(dt,st,sh,maxSp){
   o.slow=!!(c.assist&&c.slow);
   /* газ или тормоз на пустом баке — окно выходов (16c, плейтест 11.09):
      раньше корабль молча не слушался, и подсказку перебивала любая другая */
-  if((mag>0||c.brake)&&G.fuel<=0&&typeof rescueAsk==="function")rescueAsk();
+  if((mag>0||c.brake||c.turn)&&dry&&typeof rescueAsk==="function")rescueAsk();   /* и руль (R2) */
   if(mag>0&&G.fuel>0&&!o.slow){
     let fwd=0,tx=0,ty=0;
     if(c.thrOnly||along<0){tx=c.tx*HELM_THR;ty=c.ty*HELM_THR;o.thr=true;}

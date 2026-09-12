@@ -138,6 +138,36 @@ TEST_SUITES.push(()=>suite("R0 оклик под окном бака: пока �
   toggleSos(false);G.pirates=[];
 }));
 
+/* R2: пустой бак — руль молчит честно: нос стоит, любой ввод зовёт окно выходов,
+   пады движения и стик гаснут, над стиком «БАК ПУСТ» (тестировщик 12.09: нос
+   крутился без топлива, стик горел как живой) */
+TEST_SUITES.push(()=>suite("R2 пустой бак: руль не крутит нос, поворот открывает окно, газ и стик гаснут",{tier:"browser",win:"phone"},()=>{
+  resetWorld();
+  G.mode="system";G.sx=5;G.sy=5;G.sys=getSystem(5,5);G.hail=null;G.pirates=[];G.hailLog={};
+  G.ship.x=4000;G.ship.y=0;G.ship.vx=0;G.ship.vy=0;G.ap=null;G.orbit=null;G.marks=[];G.ship.a=0;
+  G.fuel=0;G.cargo.ice=0;toggleSos(false);
+  T.wait(2);
+  const a0=G.ship.a;
+  T.press("left",30);
+  ok(Math.abs(angDiff(G.ship.a,a0))<1e-6,"нос не повернулся: "+angDiff(G.ship.a,a0).toFixed(3)+" рад");
+  ok(document.body.classList.contains("sosopen"),"поворот на пустом баке открыл окно выходов");
+  toggleSos(false);T.wait(1);hud();   /* T.wait рисует мир, приборы и пады — hud() */
+  const th=document.querySelector(".pads [data-k=thrust]");
+  ok(+getComputedStyle(th).opacity<.5,"пад газа погас: "+getComputedStyle(th).opacity);
+  /* стик под пальцем: тусклый, и над ним сказано почему */
+  HELM.S={x0:80,y0:H-120,x:140,y:H-120,f:1};
+  const said=[],f0=ctx.fillText;
+  ctx.fillText=function(s,...r){said.push(String(s));return f0.call(this,s,...r);};
+  try{helmDrawSticks();}finally{ctx.fillText=f0;HELM.S=null;}
+  ok(said.indexOf("БАК ПУСТ")>=0,"над стиком «БАК ПУСТ»: "+said.join(" | "));
+  /* топливо есть — всё как было */
+  G.fuel=50;T.wait(1);hud();
+  ok(+getComputedStyle(th).opacity>.9,"с топливом пад газа горит");
+  const a1=G.ship.a;T.press("left",30);
+  ok(Math.abs(angDiff(G.ship.a,a1))>.1,"с топливом нос поворачивает");
+  ok(!document.body.classList.contains("sosopen"),"и окно не открылось");
+}));
+
 /* R1: действие делает то, что написано, когда в кадре два предложения */
 TEST_SUITES.push(()=>suite("R1 пояс рядом с планетой: подсказка и ДЕЙСТВИЕ совпадают",{tier:"browser"},()=>{
   resetWorld();

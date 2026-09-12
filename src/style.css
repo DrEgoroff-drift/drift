@@ -228,6 +228,7 @@ body:not(.inflight) .ipod{display:none}
    унаследованное, и настройка «Размер кнопок» не делала ничего. Здесь только
    запасные значения в местах использования, никаких объявлений на `.pads`. */
 .pads.faded{opacity:.14}
+body.tankdry .pads button[data-k=thrust],body.tankdry .pads button[data-k=left],body.tankdry .pads button[data-k=right]{opacity:.3}   /* пустой бак: ими не сдвинуться (R2) */
 .pads>div>button,.pads>div{transform:scale(var(--padscale,1));transform-origin:bottom}
 .pads>div{display:flex;gap:var(--padgap,10px);align-items:flex-end;pointer-events:auto}
 /* Пэд — не круг с обводкой, а шайба под стеклом: внутрь уходит мягкий свет,

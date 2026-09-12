@@ -539,7 +539,7 @@ addEventListener("keydown",e=>{
   rescueInputT=wallMs();
   /* короткий тап газа проходил между кадрами и окна не открывал: газ и тормоз
      на пустом баке открывают его прямо по нажатию */
-  if(/^(KeyW|KeyS|ArrowUp|ArrowDown|Space)$/.test(e.code||"")&&(G.mode==="system")&&rescueEmpty())rescueAsk();
+  if(/^(KeyW|KeyS|KeyA|KeyD|ArrowUp|ArrowDown|ArrowLeft|ArrowRight|Space)$/.test(e.code||"")&&(G.mode==="system")&&rescueEmpty())rescueAsk();
 },true);
 /* такт активности зовёт кадр (28-loop, раз в 600 кадров): у скрытой вкладки rAF
    стоит — и её время не засчитывается само собой */

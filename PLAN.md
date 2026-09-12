@@ -209,12 +209,13 @@ before a push.
   fix, a WIP commit, dev, one line to both reviewers). Sources: the tester's `review.json` and
   `botverify.json` (scratchpad 3d6318e9…), the designer's letters. Scale stays as built until the
   author says otherwise (the reviewers disagree; a peer cannot decide for the author).
-  - **Next:** R2. 0.446.0 is live (7ca9ce1, md5 checked); after it the hail waits under the SOS
+  - **Next:** R3. 0.446.0 is live (7ca9ce1, md5 checked); after it the hail waits under the SOS
     window too (`sosopen` in `worldCovered`, test «оклик под окном бака»).
   - [x] **R0 picket «Коммуна»** and [x] **R1 cue and ДЕЙСТВИЕ** — shipped in 0.446.0; bodies in
     `docs/PLAN-archive.md` (2026-09-12).
-  - [ ] **R2 empty tank**: no nose turn on fuel 0; any flight input asks for the window; stick and move
-    pads dim, «БАК ПУСТ» over the stick; test «fuel 0, turn → angle unchanged, window open».
+  - [x] **R2 empty tank**: no nose turn on fuel 0 (`helmApply`), a turn asks for the window too (and
+    A/D/←/→ by key), `body.tankdry` dims thrust and turn pads, the stick dims to .35 and says «БАК
+    ПУСТ» (live and at rest); test «R2 пустой бак» (phone).
   - [ ] **R3 the rescue window**: tester 1 (window/БУКСИР/ДОМОЙ/СБРОС during a haul), 2 (a wreck on the
     rope loops), 3 (СБРОС clears every fit, keeps the lost parts), 6 (dock greetings burn behind the
     screen; the crash toast hides), 7 (stale window, Space at the dock), 9 (× 44 px, tap outside,

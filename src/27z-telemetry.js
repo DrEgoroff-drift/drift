@@ -195,6 +195,8 @@ function hud(){
   /* пока открыт любой экран, приборы и кнопки полёта не нужны: они просвечивали
      сквозь экран и читались как брак */
   document.body.classList.toggle("screen",!!document.querySelector(".scr.open"));
+  /* пустой бак (R2): газ и повороты гаснут — ими не сдвинуться, выход в окне */
+  document.body.classList.toggle("tankdry",G.mode==="system"&&rescueEmpty());
   let a="—",b="—";
   /* кошелёк вынесен отдельной строкой ниже — здесь он был бы вторым разом */
   if(G.mode==="system"){a=((typeof nameOf==="function")?nameOf(G.sys):G.sys.name).toUpperCase();b="«"+st.S.ru+"» · сектор "+G.sx+":"+G.sy;

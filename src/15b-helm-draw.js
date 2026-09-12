@@ -131,9 +131,17 @@ function helmBandPath(x0,y0,x1,y1,w0,w1){
   ctx.lineTo(x0-nx*w0*.5,y0-ny*w0*.5);
   ctx.closePath();
 }
+/* пустой бак (R2): стик гаснет и говорит почему — руль без топлива не работает */
+function helmDry(){return G.mode==="system"&&typeof rescueEmpty==="function"&&rescueEmpty();}
+function helmDryLabel(x,y,a){
+  ctx.globalAlpha=.9*a;ctx.fillStyle="rgb(255,178,122)";
+  ctx.font="10px ui-monospace,monospace";ctx.textAlign="center";
+  ctx.fillText("БАК ПУСТ",x,y-HELM_ARC0-8);ctx.textAlign="left";
+}
 function helmDrawSticks(){
+  const dry=helmDry();
   const one=(s,fade)=>{
-    const q=helmStickShape(s),a=fade?s.f:1,c=G.ctl;
+    const q=helmStickShape(s),a=(fade?s.f:1)*(dry?.35:1),c=G.ctl;
     const slow=!!(c&&c.slow)&&!fade;
     /* бирюза приборов на ходу, янтарь на торможении — те же два тона, что у
        фишек компаса и у скобок захвата: лента не заводит третьего цвета */
@@ -176,7 +184,7 @@ function helmDrawSticks(){
       }
       ctx.globalAlpha=.5*a;ctx.fillStyle="rgb(255,178,122)";
       ctx.font="9px ui-monospace,monospace";ctx.textAlign="center";
-      ctx.fillText("СТОП",q.x0,q.y0-HELM_ARC0-6);
+      if(!dry)ctx.fillText("СТОП",q.x0,q.y0-HELM_ARC0-6);
       ctx.textAlign="left";
     }
     /* тот же вектор — у самого корабля (M422): связь «палец → корабль» должна
@@ -202,6 +210,7 @@ function helmDrawSticks(){
     ctx.beginPath();ctx.arc(q.x0,q.y0,1.8,0,TAU);ctx.fill();
     ctx.globalAlpha=.28*a;
     ctx.beginPath();ctx.arc(s.x,s.y,3.2,0,TAU);ctx.fill();
+    if(dry)helmDryLabel(q.x0,q.y0,fade?s.f:1);
     ctx.restore();
   };
   const live=HELM.S,fade=HELM.fade;
@@ -215,6 +224,7 @@ function helmDrawSticks(){
     ctx.save();ctx.strokeStyle="#cfe6ea";ctx.fillStyle="#cfe6ea";ctx.lineWidth=1;
     ctx.globalAlpha=.16;ctx.beginPath();ctx.arc(h.x,h.y,HELM_ARC0,0,TAU);ctx.stroke();
     ctx.globalAlpha=.3;ctx.beginPath();ctx.arc(h.x,h.y,2.2,0,TAU);ctx.fill();
+    if(dry)helmDryLabel(h.x,h.y,1);
     ctx.restore();
   }
 }
