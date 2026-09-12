@@ -407,6 +407,7 @@ TEST_SUITES.push(()=>suite("R4 буксир в чужую систему: кон
 /* R5a: находки ботов (botverify.json): зонд одним тапом, знак молча, корона молча */
 TEST_SUITES.push(()=>suite("R5 зонд: цена на паде, покупка только вторым тапом",{tier:"browser",win:"phone"},()=>{
   resetWorld();
+  G.flownMs=FIRST_HOUR_MS;   /* за первым часом: первый зонд там даром (R5b, 0.448.0) */
   let S=null,p=null;
   for(let r=1;r<8&&!S;r++)for(let x=-r;x<=r&&!S;x++)for(let y=-r;y<=r&&!S;y++){
     const s=getSystem(x,y),q=s.planets.find(q=>q.type!=="gas"&&!probeHas(x,y,q.idx));if(q){S=s;p=q;}
@@ -655,7 +656,9 @@ TEST_SUITES.push(()=>suite("станция: модуль — карточка с
   eq(G.mods[k],1,"и поставлен");
   eq(G.credits,cr-cost,"касса списана один раз");
   G.modsOwned[k]=4;G.mods[k]=4;modWork=null;renderTab();
-  eq(document.querySelector(".modcard .macts .act").textContent,"МАКСИМУМ","на четвёртом — МАКСИМУМ");
+  /* всё стоит — одна строка (R6, 0.448.0): «максимум» в подписи, кнопка одна — снять уровень */
+  ok(/максимум/.test(document.querySelector(".modcard.maxed .mh s").textContent),"на четвёртом — «максимум» в подписи");
+  eq(document.querySelectorAll(".modcard.maxed .macts .act").length,1,"и одна кнопка — СНЯТЬ УР.");
   modWork=null;T.leave();
 }));
 

@@ -90,163 +90,49 @@ of *things*), not a target about light.
 **Five passes for a THING.** A thing is finished only with all five; three or fewer and it reads
 as a placeholder:
 
-## PLAYABLE ON A PHONE — the author's playtest of 2026-09-11 (first, before everything below)
+## PLAYABLE ON A PHONE — the author's playtest of 2026-09-11 — items 0–6 and R0–R6 built (0.446.0–0.448.0); bodies in `docs/PLAN-archive.md` (2026-09-12)
 
-**Oversight:** session «Контроль и критика соседней беседы» (local_a2ba9fa0) reviews code, «Анализ сессии и
-рекомендации дизайна» (local_f3f054cd) reviews frames; a one-line report to them after each item. **Rules:**
-answer every author message in text before code; nothing to main without dev and the author's «да»;
-commits on branch `playable-11-09`, release as one commit with drift.html/INDEX/TESTMAP and md5 check.
+**Policy (author, 11.09):** fix without tests, local commits, look with eyes on `dev.html` at
+390×844; the whole test run (-Full, -Mobile, -Mutants) only right before a push. The lab stays stopped.
 
-The author could not play fifteen minutes on a phone with 800 suites green. Everything else
-(galaxy M447–M451, the test queue, the refactor) waits. **Policy (author, 11.09):** fix without
-tests, local commits, look with eyes on `dev.html` at 390×844; the whole test run only right
-before a push.
-
-- [ ] **0. Empty tank** — thrust opens a window: ДОМОЙ (10·2ⁿ by jumps; cools only with active
-  play −1/45 min, taxi +2, tow −0.5), БУКСИР (a real barge, 5 min, free), СБРОС (→ «Стриж»).
-  ДОМОЙ in the menu anywhere; the station beacon goes the same path. `16c-rescue`, branch
-  `playable-11-09`. Review 11.09: `G.tow` was M369b's towed hull → the rescue is `G.haul` [done];
-  the haul is saved [done]; СБРОС needs a second tap [done]; pirates off during the haul [done];
-  reset takes only fitted levels (`mods`), not bought (`modsOwned`) [done]; the world does NOT
-  freeze during the haul (measured: planets, station, barges move) [checked]. Left: the author's «да»
-  on dev, then tests + main as 0.446.0.
-- [x] **1. Station header half a screen** — one line + an «ЕЩЁ» chip; the clipped ether line was the
-  receiver (#console) pushed off the left edge — a later `body.screen #console` rule beat the phone
-  one; the phone rule is repeated after it. Open: the «Полёт восстановлен» toast over the counter;
-  design review 13–15 (СТОЛ button out of the masthead, two tab rows = 110 px, prices before the
-  cooperative form; Director news belong on ДОСКА, not under «ЕЩЁ»).
-- **Haul scene** (author: «говно, не большой, нет огня») — done: barge ×3 ship, engines + retro/turn
-  puffs, sagging swinging rope, bits breaking off, crew talk, camera lead, ship floor .7 on the rope,
-  warm star rim on the hull, nozzle glow. Design review open: plan the route past visible bodies
-  (a planet at 1.3 r, the belt, the station growing in the last minute); shuttles passing, a pirate
-  that turns away from a ГЛАВТРАССА barge; a route bar instead of a countdown; the target chip = the
-  destination station. Window: icons per exit (home glyph, barge thumb, «Стриж» thumb), big price
-  right; the header should say the distance to the station, not repeat the HUD.
-- [ ] **2. Scale** — far zoom: ship ×2 (floor .35 → .7); near: the ship stops growing (~.8) and the
-  zoom goes to ×4, so a planet is 5–6 ships wide. Proposed to the author with numbers; a before/after
-  frame at ×0.16 and ×2.4 before code. Seamless atmosphere entry — a milestone after the pass.
-  **Built 12.09 (the decided form):** `shipScaleAt` = clamp(Z, .7, 1.6) everywhere (hull, exhaust and
-  trail share it — `shipZ` had its own .55); bodies at Z>1 drawn ×(1+0.8·(Z−1)) (`bodyScaleAt`, 16c);
-  the haul clamps zoom to [.7, 1.6] (the world rope outgrew the sprites above 1.6). **Price found on the
-  frames:** a moon on a near orbit (r 39, orbit 76) fell onto its planet's drawn disc (83 at ×2.4) — so a
-  planet grows at most 0.6 of the gap to its nearest moon, a moon 0.15 (`bodyNearCaps`); planets with a
-  close moon grow only ~×1.35. Also, the drawn disc outgrows the physical one: at ×2.4 the landing and
-  scoop zones (110 from the physical surface) sit on or inside a big body's disc. For the author: keep,
-  or the alternative with no drawn/physical split — world zoom to ×4–5 with the ship capped (~.8).
-- [ ] **2a. Seamless atmosphere entry** (milestone, after item 2 is accepted): flying into a drawn disc
-  becomes the descent instead of a prompt; design first.
-- [ ] **3. Buttons that do not press; screens that jump** — СТОЛ, ДЕЛО, ОПИСЬ (play at 390×844). Found:
-  the СТОЛ header jumped 70↔85 px (long tab subtitles wrapped) → one line [done]. Needs a late world:
-  the author's cloud save (asked, no «да» yet — do not touch without it) or a `veteranWorld()` fixture
-  from `e2eLate()` (1.5 M, a big hull with modules, 10 drones, crew, home tier 3–4, desk full);
-  **The author's save is taken (his «да», 11.09):** `C:\Claude\drift-private\author-save.json`, outside
-  git — never copy it into the repo. `python docs/vetshot.py OUT.png "<js>" "<eval>"` shoots the game
-  on it at 500×1080. Found on it: the flight toast «ГРАВИТАЦИОННЫЙ ЯКОРЬ» covered the bottom row of
-  every open screen (he sits past the system edge) [fixed: not over open screens]; ОПИСЬ top was a
-  sideways carousel (shelf 78% + box 40%), КОСМЕТИКА cut at the right edge [fixed: stacked]. Open:
-  the slot «+» markers on the hull silhouette are ~12 px — the likely «модули не понятно как выбрать»;
-  «долгое нажатие — поднять» is a hidden gesture; the «полоски внизу» are probably #opisBar (the
-  hatch strip on lift) — verify by tapping; ДЕЛО reads fine on his world. Offline drones paid him
-  +7 000 кр on load — item 6.
-  ОПИСЬ: the bottom strips become tabs with words.
-- **Item 3 pass of 12.09 (commits bc030a6..a595e24):** one prompt slot `cue(text,lvl)` in `08-state`
-  (INFO < WARN < ACT < TROUBLE; flight writers converted; the empty tank is heard past the edge anchor
-  and beside a planet); phone cascade walked (the ≤420 block was dead, one phone `#console` rule, an idle
-  receiver hidden over screens by visibility); ДЕЛО adds up (one unit, `crewPayNow`, managers live on the
-  cut; «−13» = thirteen `pool:-1` bottomless marks summed); СТОЛ sheet title = the sheet, ЛЕНТЫ torn on
-  the sheet (a phone had no way); ОПИСЬ phone: ship first, folds, hull caption, groups with units; haul
-  light 1.97 → 2.21 on the barge mask (`expo2.js` pattern: mask the barge art, split by star side).
-  Still open from the list below: the haul scene (planet dominance, shuttles, pirate, route bar) and the
-  СТОЛ empty sheets beyond ЛЕНТЫ.
-- **Open from the reviews of 11.09 (do in item 3 unless noted):**
-  - One prompt slot: `G.prompt` is written in 25 files and the first writer wins — that is how the
-    tow got lost. A `prompt(text, level)` with levels «trouble > action nearby > info».
-  - Toasts: DONE as a rule — a frame-born `say()` waits while a screen is open (≤20 s, then it burns);
-    a tap-born one shows at once. Left: `say()` from timers/network callbacks (cloud push, setInterval
-    ether) is neither — mark those as world explicitly (a `sayWorld`) or set FRAME_IN there.
-  - (was) Toasts over reading screens: one rule for all `.scr` — hold `say()` from flight until the screen
-    closes (the anchor warning is already off open screens; «Полёт восстановлен» over the counter).
-  - CSS cascade: 18 `@media ≤760` blocks; a later rule already beat a phone one (#console). Walk
-    them all; phone media go to the end of the file. #console still clips over ДЕЛО.
-  - ОПИСЬ: empty/locked blocks (six empty «Сорока» slots, locked cosmetics) fold to one line each and
-    go UNDER the ship; hull slot «+» markers ~12 px → a 44 px tap zone (nearest centre wins, like
-    compass chips), a label on tap, a colour legend under the ship; «+» only on a free slot; the
-    hidden long-press gets explicit buttons (ПОДНЯТЬ / НАДЕТЬ / В ЯЩИК); #opisBar says «ЛЮК · ЗА
-    БОРТ»; ПРИБОРЫ: no zero rows, units, groups of 4–5.
-  - ДЕЛО: «−13 left at the point» is an accounting bug (display clamped only); rows need a chevron or
-    a button (ОТОЗВАТЬ / ДОПЛАТИТЬ / К ТОЧКЕ); «+2 051 итог» and «−83 кр/мин» are different units in
-    one column; the header «людям платите 156 кр/мин» does not add up with the rows.
-  - СТОЛ: the sheet title should be where you are (ПРИЁМНИКИ), «← СТОЛ» only on the back button;
-    empty sheets say where to get the thing; the last row of desk objects needs bottom padding.
-  - Haul light (designer's numbers): now flame core 151 px ≥250/240/215, sun side median 94 / p90
-    164, shade median 54 — sun/shade 1.74, target ≥2 (plates 150–200, hull 100–140, shade 50–70);
-    measure with the expo script pattern (canvas getImageData around the barge, split by star side).
-  - Haul: the planet pass must let the planet dominate (disc ≥ .35 H, planet in the leading half,
-    barge not over it); shuttles passing; a pirate turning away from a ГЛАВТРАССА barge; a route bar.
-  - Economy (item 6): crew (`12a-crew` crewTick, cap 24 h) and managers (`12c-mgr-core` mgrTick, 240
-    min) earn OFFLINE — the author: pilots and mercs only online; drones 9000·1.6ⁿ.
-  - Privacy: to find the author's save I scanned `credits` in every cloud save — next time ask the
-    account name and take one file. The save sits outside git; never commit it.
-- [ ] **4. Modules** — «прогрев» is КОРАБЛЬ → ОСНАСТКА (`26b-ui-station-work` stTabMods; maybe СПЛАВ).
-  Proposed: an upgrade card (ship thumb with the slot lit, dots big, «now → becomes» from stat(), the
-  fitting budget bar, ONE button «УЛУЧШИТЬ ДО УР. N · X КР», a second of dock work, «УСТАНОВЛЕНО»).
-  Asked the author; code after his «да».
-  **Built 12.09 (95d5177):** `modCard` in 26b — dots, now → becomes in the ПРИБОРЫ rows, the fitting
-  line, one verb button, «МОНТАЖ… → УСТАНОВЛЕНО» (view only, state changes on the tap); СПЛАВ on the same
-  card with `fusePreview` (one formula for the card and `fuseShips`).
-- [ ] **5. After a boss** — a «what you got» card with НАДЕТЬ in it. **Built 12.09 (1265cdd):** the
-  author's «boss» was a fight at a planet with loot, not «Ревизия»; `27jb-ui-got` queues container and
-  boarding parts and shows a card when the fight is over (НАДЕТЬ through `opisFit`).
-- [ ] **6. Economy** — drones: price a function of how many you own, `9000·1.6ⁿ`; tiers later. Close
-  offline income of pilots/mercs if it drips. Where to spend 1.5 M — a list to the author, no code.
-  **Built 12.09:** `dronePrice()` (12-economy) = 9000·1.6ⁿ, n = drones owned (deployed + in stock; a
-  drone never vanishes, so no save field); on the author's world the 14th costs 4 053 250. Offline:
-  the load already reset crew/manager clocks; the real channel was a sleeping tab (catch-up up to
-  24 h / 240 min on return) — a tick gap over `PEOPLE_GAP_MS` (60 s) now calls `peopleOffline()`.
-  Drones keep their 24 h catch-up (not asked). Tests to add before the push: price by fleet size; a
-  60 s+ loop gap pays nobody.
-- **Review block of 12.09** — R0–R5a and the ether prefix shipped in 0.446.0/0.447.0 (bodies in
-  `docs/PLAN-archive.md`, 2026-09-12). Each item: red test first (`tests/91zzxa-playable.js`), then
-  the fix, a WIP commit, dev, a line to both reviewers. **Open, with the author's decisions of 12.09:**
-  - [ ] **R5b first hour — decided «делать всё» by Контроль's numbers.** «First hour» = `G.flownMs` <
-    60 min (the only saved play clock; flight modes only). Repair: two buttons «ДО 50% · N» and
-    «ПОЛНОСТЬЮ · N» (`#bRepair`, `repairCost`, 26-ui-station:168-230), in the first hour the price ≤
-    half the cash. A failed landing in the first hour is a hard landing: −20 % hull, no wreck, cargo
-    kept (19-mode-landing:119-130). The galaxy goal (`goalCard`, 13b-occupy, `G.freed`/`G.occ`) does
-    not grow until the first liberation. A taken board job lives ≥ 15 real minutes (`OFFER_CARRY_K`,
-    11ah-offer:61-64, 180-187) with a timer row in ДЕЛО (`dealRender`, `dealCount`); note `o.t0` is
-    compared to `G.t`, which is not saved — use the game clock. The first probe in the first hour is
-    free (`probeBuy`, 21a8:68-76; the pad says «ЗОНД ДАРОМ»).
-  - [ ] **Wreck price — decided «корпус не выше, чем был»:** after `wreck()` the hull is
-    min(45 %, the hull before the trouble), never below 10 % (28-loop:6); «before» = the last hull held
-    for ~10 s without damage.
-  - [ ] **Scale — decided «мировой зум ×4–5»** (Контроль's form: the world zoom ×4–5 with the ship
-    ~.8, replacing the ship floor .7 / body growth ×(1+0.8·(Z−1)) / moon caps). A milestone of its own,
-    with frames 390×844 before/after for the designer.
-  - [ ] **R6 design and bot tails** (no author call needed): pads name the action always (≤ 2 words +
-    a number); prompts ≤ 2 lines, no keys on touch; compass chips only for off-screen things, never
-    under windows or the prompt; МАСШТАБ to the HUD top; while the hail is open one undimmed edge arrow
-    names the hailing ship; ОПИСЬ sub-tabs (КОРАБЛЬ · СНЯТОЕ · КОМПЛЕКТ · ТРЮМ), slots before ПРИБОРЫ,
-    the empty slot says where to buy, СНЯТЬ in one place; ДЕЛО the manager's share in the column,
-    drones as a table; ЛЕНТЫ no gap, no «T» on touch; СПЛАВ «В ПЛАВКУ»; a maxed module on one line;
-    the got card «/с», red minuses, lower third; a moon/planet name yields to the ship (far side of the
-    disc); «КОМПАНИЯ» never crosses a planet chip; agreement in story lines («Женщина в платке
-    рассказывал», «кто везёт органика»); a cargo paper in ВЕЩИ shows the destination sector and every
-    board card reads «куда · сколько · до когда · за сколько»; the СТОЛ button fixed wide for «99+»
-    with the badge over its corner (with the two fixed station-header lines); the barge's seam at the
-    hull/module border darker than the plates, not a light line (12l `bargeArtOf`); the haul's planet
-    pass at 1.15 r on the side away from the buttons; the prompt «ДЕЙСТВИЕ — ВЫХОДЫ» repeats the pad,
-    but the pad reads its verb from the prompt — dropping it needs another source (decide).
-  - [ ] **dev.html must not write into the live world** (Контроль): a `test` flag the api drops, or
-    bots on a local copy. The two bot signs in `~/drift-data/trace/p/0_0.json` (ids 1789161868db37,
-    1789161871db37, 11.09 21:24 UTC) — the author removes them by hand (command given in chat 12.09).
-  - Later: deposits refill on landing, the rebind button sticks on a phone, «ТРЮМ ПУСТ» with rare
-    cargo, the pronoun in 12aa-need.
-- [ ] **Start system picket** — «Коммуна» at 0:0 hails a new player and opens fire ~15 s in.
-- [ ] **Market for a newcomer** — «only cooperatives may buy»: check a newcomer can trade at all.
-- [ ] **Home-price activity perks** — a fuel coupon per 2 h of active play a week (proposed).
-- Tests: none between edits; before the push one full run (-Full, -Mobile, -Mutants) plus scenario
-  suites on the phone viewport «player does X → sees Y». The lab stays stopped.
+- [x] 0 the empty tank (exits window, ДОМОЙ/БУКСИР/СБРОС), 1 the station header, the haul scene,
+  2 scale, 3 the screens (one prompt slot, the phone cascade, ДЕЛО/СТОЛ/ОПИСЬ), 4 the module card,
+  5 the got card, 6 economy (drone price 9000·1.6ⁿ, no offline pay), R0–R5a — 0.446.0/0.447.0.
+- [x] **0.448.0 (12.09, solo, the author's decisions of 12.09):** R5b the first hour (`firstHour`,
+  05e: repair by two buttons ДО 50 % / ПОЛНОСТЬЮ priced on the button and ≤ half the cash, a hard
+  landing instead of a wreck, the front stands until the first liberation, a taken job lives ≥ 15
+  real minutes by the game clock with rows in ДЕЛО, the first probe free); the wreck rebuilds no
+  higher than the hull held 10 s (`G._hullHeld`, 45 % cap, 10 % floor); the world zoom ×4.5 with the
+  ship capped at .8 (`ZOOM_MAX`, `SHIP_SCALE_MAX`; body growth and moon caps removed; fleet,
+  pirates, barges, own ships share the cap); R6 tails (the pad always names the action, prompts fold
+  to two lines on touch, the hailing ship's undimmed arrow, body names yield to the ship and NPC
+  names dodge them, ОПИСЬ phone tabs КОРАБЛЬ · СНЯТОЕ · КОМПЛЕКТ · ТРЮМ, ДЕЛО columns, ЛЕНТЫ without
+  a gap, the СТОЛ badge over the corner, the board card «куда · до когда», the cargo paper's sector,
+  В ПЛАВКУ, a maxed module on one line, the got card «/с» in the lower third, МАСШТАБ in the
+  masthead, the haul's planet at 1.15 r on the left, the barge's dark seam); dev.html and `?test=1`
+  mark every POST `test:1` and `api.php`/`war.php`/`log.php` drop the pool writes (`NET_TEST`,
+  01-core); later tails (deposits remembered in `G.mined`, the rebind button toggles, ТРЮМ ПУСТ only
+  when empty, the pronoun by the goods, a half-price fuel coupon per 2 h of active flight a week in
+  `G.actWk`).
+- **Open after 0.448.0:**
+  - [ ] **2a. Seamless atmosphere entry** — at ×4.5 the frame is 87×188 world units, so the landing
+    zone (110 from the surface) lies outside it and the disc you are landing on is off-screen: a
+    camera lead toward the body, or the descent starting from the drawn disc. Design first.
+  - [ ] Haul scene design review: shuttles passing, a pirate turning away from a ГЛАВТРАССА barge, a
+    route bar instead of the countdown, the target chip = the destination station; the window's
+    icons per exit and a header with the distance to the station.
+  - [ ] СТОЛ: empty sheets say where to get the thing; the last row of desk objects needs bottom
+    padding. Station header design review 13–15 (СТОЛ out of the masthead, two tab rows = 110 px,
+    prices before the cooperative form, Director news on ДОСКА).
+  - [ ] `say()` from timers/network callbacks is neither frame-born nor tap-born — mark those as
+    world (`sayWorld`) or set FRAME_IN there.
+  - Decided 12.09: the prompt «ДЕЙСТВИЕ — ВЫХОДЫ» stays — the pad reads its verb from the prompt.
+    The two bot signs in `~/drift-data/trace/p/0_0.json` (ids 1789161868db37, 1789161871db37) — the
+    author removes them by hand. Struck as already true: the start-system picket is mitigated
+    (`hailStartSys`, 12ar; the hull floor .5 in 13-combat); selling is open and counter-buying is
+    cooperative-only by design (`docs/DESIGN-coop.md` §0.1); `11t-rumours` derives the detail's
+    gender from the source's `f` flag, so «Женщина в платке рассказывал» is not reproduced there.
+  - Privacy: the author's save sits outside git (`C:\Claude\drift-private`); never commit it.
 
 ## What is left, in order (reviewed 2026-09-11, 0.443.0)
 
@@ -539,6 +425,10 @@ author's behalf» at the end. Old bodies, with P4's spec and its measuring trap:
   DPR 2; at 2.5 the canvas is 3840×1978 and something is not sliced, or `resAuto` does not step
   down. Reproduce on a cold start in the system with `docs/g11.ps1` and
   `--force-device-scale-factor=2.5`. First in the order: the galaxy adds a bake of its own.
+   **Checked 12.09:** `DPR=min(RES_AUTO=2, devicePixelRatio)` (`resize`, 08-state), so at 2.5 the
+   canvas is 3072×1582, not 3840×1978, and every bake caps `devicePixelRatio` at 2 except the
+   station home canvas (`26a`, not the system view). The canvas-size theory is wrong; the five
+   2–3 s frames in the first 30 s are a bake — reproduce at 1536×791 before touching M418.
 - **`journal` entries in `crash.log`** — 27 in two days, all «Дрон Д-… встал · чинится сам» plus
   one «Летопись разошлась…» from a 400×400 headless: check whether a journal line is meant to
   reach the error log at all (the M417 kind of noise).

@@ -522,7 +522,7 @@ function opisPartCard(p,where){
   if(!fitted&&f&&f.t==="slot"&&slotsOf(G.shipId)[f.i]===p.kind)card.classList.add("fit");
   const scrapKey="scrap:"+p.id;
   const acts=[];
-  if(fitted&&!(kind==="slot"&&opisPhone()))acts.push({ru:"СНЯТЬ",go:()=>opisUnfit(slot)});   /* на телефоне СНЯТЬ — в одном месте, под корпусом (R6) */
+  if(fitted&&!(where==="slot"&&opisPhone()))acts.push({ru:"СНЯТЬ",go:()=>opisUnfit(slot)});   /* на телефоне СНЯТЬ — в одном месте, под корпусом (R6) */
   else{
     const t=opisTarget(p),fm=G.fit[G.shipId]||{};
     const fits=t>=0&&capUsed()-(fm[t]!=null?partById(fm[t]).cap:0)+p.cap<=capOf(G.shipId);
@@ -908,6 +908,10 @@ function opisRender(box){
     z5.appendChild(grid);
   }
   /* порядок в разметке — порядок ленты на телефоне; на широком экране расставит сетка */
+  /* вкладки на телефоне (R6): все зоны остаются в разметке — цели переноса,
+     тесты и широкий экран видят их как прежде; какая видна, решает класс
+     op-tab-* на сукне (style.css, ≤760) */
+  for(const c of Array.from(box.classList))if(c.indexOf("op-tab-")===0)box.classList.remove(c);
   if(phone){
     const nav=document.createElement("nav");nav.className="tabs op-tabs";
     for(const [k,ru] of OPIS_TABS){
@@ -917,18 +921,9 @@ function opisRender(box){
       nav.appendChild(b);
     }
     box.insertBefore(nav,box.firstChild);
-    top.style.display=OPIS.tab==="kit"?"":"none";
-    if(OPIS.tab==="ship"){pg.removeChild(sp);box.appendChild(z3);}
-    else if(OPIS.tab==="spare"){
-      pg.removeChild(sp);
-      const zs=document.createElement("section");zs.className="op-z op-parts";
-      zs.appendChild(opisHead(3,"СНЯТЫЕ ЧАСТИ","частей "+G.inv.length+"/"+PART_MAX+" · тап по части — кнопки под ней"));
-      zs.appendChild(sp);box.appendChild(zs);if(z5)box.appendChild(z5);
-    }
-    else if(OPIS.tab==="kit")box.appendChild(z2);
-    else{box.appendChild(z1);if(z5)box.appendChild(z5);}
-    box.appendChild(z4);
-  }else{box.appendChild(z3);box.appendChild(z2);box.appendChild(z1);if(z5)box.appendChild(z5);box.appendChild(z4);}
+    box.classList.add("op-tab-"+OPIS.tab);
+  }
+  box.appendChild(z3);box.appendChild(z2);box.appendChild(z1);if(z5)box.appendChild(z5);box.appendChild(z4);
   if(folds)box.appendChild(folds);
   /* подсказка называет то, что видно: кнопки. Долгое нажатие по-прежнему
      поднимает для переноса, но всё, что умеет перенос, есть и кнопкой — прятать

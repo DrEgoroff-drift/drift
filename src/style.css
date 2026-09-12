@@ -1540,6 +1540,11 @@ body.op-ask #opisBar>s{display:none}
   /* слоты раньше приборов (R6, 12.09): сперва что стоит, потом что это даёт */
   .opis .op-parts-grid{grid-template-columns:1fr;grid-template-areas:"hull" "cap" "slots" "panel" "spare"}
   .opis nav.op-tabs{position:sticky;top:0;z-index:2;background:rgba(12,10,8,.92)}
+  /* вкладки описи (R6): зоны остаются в разметке, видна одна */
+  .opis.op-tab-ship .op-top,.opis.op-tab-ship .op-kit,.opis.op-tab-ship .op-hold,.opis.op-tab-ship .op-locker,.opis.op-tab-ship .op-spare{display:none}
+  .opis.op-tab-spare .op-top,.opis.op-tab-spare .op-kit,.opis.op-tab-spare .op-hold,.opis.op-tab-spare .op-hull,.opis.op-tab-spare .op-hullcap,.opis.op-tab-spare .op-slots,.opis.op-tab-spare .op-parts .op-panel{display:none}
+  .opis.op-tab-kit .op-parts,.opis.op-tab-kit .op-hold,.opis.op-tab-kit .op-locker{display:none}
+  .opis.op-tab-hold .op-top,.opis.op-tab-hold .op-parts,.opis.op-tab-hold .op-kit{display:none}
   .opis .op-parts-grid canvas.op-hull{height:auto}
   .opis .op-piles{grid-template-columns:repeat(2,minmax(0,1fr))}
   /* подпись под силуэтом: легенда родов или выбранный слот с кнопкой (11.09) */

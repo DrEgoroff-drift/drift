@@ -212,6 +212,8 @@ body:not(.inflight) .ipod{display:none}
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .locus em{display:block;font-style:normal;color:var(--text);font-size:12px;margin-top:4px;
   font-variant-numeric:tabular-nums}
+/* масштаб — служебная цифра под кассой (R6): тусклее и мельче, чтобы не спорить с деньгами */
+#zoomlbl{color:var(--dim);font-size:10px;margin-top:2px;letter-spacing:.06em}
 
 /* ══════════════ сообщения ══════════════ */
 /* Событие проходит под приборами, а не сквозь них: приборы вернулись наверх,
@@ -450,7 +452,8 @@ body.hailopen #prompt{visibility:hidden}
 body.hailopen .rail{opacity:.12;pointer-events:none}   /* как у окна бака: на 7 секунд оклика борт не нужен */
 /* «что получил» (п. 5, 12.09): добыча боя карточкой — стекло окна выходов,
    бумага карточки описи внутри, кнопка НАДЕТЬ у пальца */
-#gotwin{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:9;
+/* нижняя треть (R6, 12.09): карточка добычи не закрывает бой и мир по центру */
+#gotwin{position:fixed;left:50%;top:auto;bottom:calc(env(safe-area-inset-bottom) + var(--padsh,86px) + 12px);transform:translateX(-50%);z-index:9;
   width:min(340px,90vw);background:var(--glass);border:1px solid rgba(143,208,138,.5);
   border-radius:var(--rad-p);backdrop-filter:blur(18px) saturate(1.2);
   box-shadow:0 18px 54px rgba(0,0,0,.62),var(--glass-hi);display:none;flex-direction:column;overflow:hidden}
@@ -901,9 +904,11 @@ body.screen #console{opacity:1}
 body.screen #perch{display:none}
 /* СТОЛ в шапке станции: тетрадь открывается поверх станции, без отстыковки;
    фишка — как в меню, «сколько пришло» */
-.scr header #stDesk{flex:0 0 auto;margin-left:12px;align-self:center}
+/* ширина не зависит от счётчика (R6, 12.09): «99+» сидит над углом, и две строки
+   шапки станции не перетекают от того, есть ли на столе бумага */
+.scr header #stDesk{flex:0 0 auto;margin-left:12px;align-self:center;position:relative;min-width:76px}
 .scr header #stDesk i{font-style:normal;color:var(--void);background:var(--amber);
-  margin-left:7px;padding:1px 5px;border-radius:8px;font-size:9px}
+  position:absolute;top:-6px;right:-6px;margin:0;padding:1px 5px;border-radius:8px;font-size:9px;line-height:1.4}
 
 /* ── окно трепла ──
    M151a убрала три плавающих окна (журнал, отчёт, трепло) и вычистила их
@@ -1002,6 +1007,8 @@ body.table #lorelist .li.head span{color:#8a7350}
 /* ── предметы на дереве ── */
 body.table #loglist.desk{background:none;box-shadow:none;max-width:940px;padding:20px 10px 24px;
   display:flex;flex-wrap:wrap;gap:18px;justify-content:center;align-items:flex-start}
+/* ленты на телефоне идут стопкой без зазора (R6, 12.09): полоса к полосе, как на столе */
+body.mobile.table #loglist.desk.strips{gap:0 8px}
 body.table #loglist.desk::before{display:none}
 body.table #loglist.desk .li{flex:0 0 100%;border:0;padding:0 6px 4px 6px}
 body.table #loglist.desk .li em{position:static;width:auto}
@@ -1544,7 +1551,14 @@ body.op-ask #opisBar>s{display:none}
   .opis .op-parts{order:1}.opis .op-kit{order:2}.opis .op-hold{order:3}
   .opis .op-locker,.opis .op-side{order:4}.opis .op-foot{order:5}
   .opis .op-hatch{display:none}
-  .opis .op-parts-grid{grid-template-columns:1fr;grid-template-areas:"hull" "cap" "panel" "slots" "spare"}
+  /* слоты раньше приборов (R6, 12.09): сперва что стоит, потом что это даёт */
+  .opis .op-parts-grid{grid-template-columns:1fr;grid-template-areas:"hull" "cap" "slots" "panel" "spare"}
+  .opis nav.op-tabs{position:sticky;top:0;z-index:2;background:rgba(12,10,8,.92)}
+  /* вкладки описи (R6): зоны остаются в разметке, видна одна */
+  .opis.op-tab-ship .op-top,.opis.op-tab-ship .op-kit,.opis.op-tab-ship .op-hold,.opis.op-tab-ship .op-locker,.opis.op-tab-ship .op-spare{display:none}
+  .opis.op-tab-spare .op-top,.opis.op-tab-spare .op-kit,.opis.op-tab-spare .op-hold,.opis.op-tab-spare .op-hull,.opis.op-tab-spare .op-hullcap,.opis.op-tab-spare .op-slots,.opis.op-tab-spare .op-parts .op-panel{display:none}
+  .opis.op-tab-kit .op-parts,.opis.op-tab-kit .op-hold,.opis.op-tab-kit .op-locker{display:none}
+  .opis.op-tab-hold .op-top,.opis.op-tab-hold .op-parts,.opis.op-tab-hold .op-kit{display:none}
   .opis .op-parts-grid canvas.op-hull{height:auto}
   .opis .op-piles{grid-template-columns:repeat(2,minmax(0,1fr))}
   /* подпись под силуэтом: легенда родов или выбранный слот с кнопкой (11.09) */
@@ -1681,6 +1695,7 @@ body.table u.addr{color:#7a4a20}
     <u id="place">—</u>
     <s id="sub">—</s>
     <em id="purse">—</em>
+    <em id="zoomlbl" style="display:none">МАСШТАБ ×1.00</em>
   </div>
 </div>
 
@@ -1828,6 +1843,7 @@ body.table u.addr{color:#7a4a20}
   <div class="body" id="stBody"></div>
   <footer>
     <button class="act" id="bRefuel">ЗАПРАВКА</button>
+    <button class="act" id="bRepairHalf">ДО 50%</button>
     <button class="act" id="bRepair">РЕМОНТ</button>
     <button class="act gold" id="bUndock">ОТСТЫКОВКА</button>
   </footer>
@@ -1938,10 +1954,23 @@ body.table u.addr{color:#7a4a20}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.447.0";
+const VER="0.448.0";
+/* ── стенд не пишет в живой мир (Контроль 12.09) ──
+   dev.html и ?test=1 помечают каждый POST полем test:1; api.php, war.php и
+   log.php такую запись в общие пулы (знаки, вещи, открытки, дорога, война,
+   сбои) не кладут, а отвечают как обычно. Боты 11.09 насорили знаками именно
+   со стенда. Свой сейв по учётной записи стенд пишет по-прежнему */
+const NET_TEST=(typeof location!=="undefined")&&!!location&&
+  (/\/dev\.html$/i.test(location.pathname||"")||/[?&]test=1(&|$)/.test(location.search||""));
+function netBody(b){b=b||{};if(NET_TEST)b.test=1;return b;}
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
+/* пределы полётного зума (п. 2 плейтеста 11.09, решено автором 12.09: «мировой
+   зум ×4–5»): мир приближается до ×4.5, а корабль и прочие корабли-спрайты
+   выше SHIP_SCALE_MAX (16c) не растут — «близко» значит полпланеты в кадре,
+   а не корабль во весь экран. Один зум для setZoom и для загрузки сейва */
+const ZOOM_MIN=.16,ZOOM_MAX=4.5;
 const lerp=(a,b,t)=>a+(b-a)*t;
 function hashi(x,y,s){
   let h=Math.imul(x|0,374761393)^Math.imul(y|0,668265263)^Math.imul(s|0,1442695041);
@@ -2179,7 +2208,7 @@ function crashShip(kind,msg,at,extra){
     const b=Object.assign({ver:VER,kind,msg,at:String(at||"").slice(0,800),n:L.n,
       mode,up:((now-CRASH_SHIP.t0)/1000)|0,win:innerWidth+"x"+innerHeight+"@"+(window.devicePixelRatio||1),
       ua:navigator.userAgent.slice(0,200),log:tail.slice(0,800)},extra||{});
-    fetch("/log.php",{method:"POST",keepalive:true,body:JSON.stringify(b)}).catch(()=>{});
+    fetch("/log.php",{method:"POST",keepalive:true,body:JSON.stringify(typeof netBody==="function"?netBody(b):b)}).catch(()=>{});
   }catch(_){}
 }
 /* стек — только наши кадры, до восьми строк */
@@ -7300,6 +7329,16 @@ const CLEARANCE=[
 const CLR_KILLS=10;
 const CLR_HOURS=100;
 function clrHours(){return (G.flownMs||0)/3600000;}
+/* ── первый час (R5b, автор 12.09: «делать всё») ──
+   `G.flownMs` — единственный сохранённый счётчик игры (только полётные режимы).
+   Пока он меньше часа, игра мягче: ремонт по карману, жёсткая посадка вместо
+   крушения, первый зонд даром, взятая работа ждёт четверть часа. Час налёта —
+   и всё это кончается само, без флага в сейве */
+const ACT_WEEK_MS=604800000,ACT_COUPON_MS=7200000;
+function actCoupons(){const A=G.actWk;return A?Math.max(0,Math.floor((A.ms||0)/ACT_COUPON_MS)-(A.used|0)):0;}
+function actCouponUse(){if(G.actWk)G.actWk.used=(G.actWk.used|0)+1;}
+const FIRST_HOUR_MS=3600000;
+function firstHour(){return (G.flownMs||0)<FIRST_HOUR_MS;}
 /* что заработано ПРЯМО СЕЙЧАС; G.clearance помнит максимум за всё время */
 function clearanceEarned(){
   let n=1;
@@ -7360,6 +7399,11 @@ function clrTick(ms){
   if(!G.running)return;
   if(G.mode!=="system"&&G.mode!=="belt"&&G.mode!=="landing"&&G.mode!=="scoop")return;
   G.flownMs=(G.flownMs||0)+Math.min(2000,Math.max(0,ms||0));
+  /* талон за налёт (перк дома, решено 12.09): каждые два часа активного полёта
+     в неделю — один бак за полцены. Неделя по часам игры; счёт в сейве */
+  const A=G.actWk||(G.actWk={wk:0,ms:0,used:0}),wk=Math.floor(now()/ACT_WEEK_MS);
+  if(A.wk!==wk){A.wk=wk;A.ms=0;A.used=0;}
+  A.ms+=Math.min(2000,Math.max(0,ms||0));
 }
 
 /* ══════════════ галактика ══════════════ */
@@ -8632,6 +8676,7 @@ const G={
   inv:[],fit:{},shield:0,shieldHit:0,energy:0,loot:[],partsBought:{},
   /* допуск и налёт (M363, §11.4): допуск не падает, налёт копится только в полёте */
   clearance:1,flownMs:0,gunGroup:0,
+  mined:{},actWk:null,   /* выработанные залежи по планетам; неделя налёта и талоны (05e) */
   tech:new Set(),techLvl:{},barter:new Set(),
   found:new Set(),species:new Set(),
   ap:null,          // автопилот
@@ -8810,7 +8855,15 @@ function cue(t,lvl){
   lvl=lvl||CUE_INFO;
   const cur=cueLvl();
   if(lvl<cur||(lvl===CUE_ACT&&cur===CUE_ACT&&!cueSameOffer(G.prompt,t)))return false;
-  CUE_LVL=lvl;G.prompt=CUE_TXT=t;return true;
+  CUE_LVL=lvl;G.prompt=CUE_TXT=cueFold(t);return true;
+}
+/* на телефоне подсказка — две строки (R6, 12.09): третью и дальше сшиваем во
+   вторую через « · ». Клавиши там не называют — это дело пишущего (body.mobile) */
+function cueFold(t){
+  const b=typeof document!=="undefined"&&document.body;
+  if(!(b&&b.classList&&b.classList.contains("mobile")))return t;
+  const L=String(t).split("\n");
+  return L.length<=2?t:L[0]+"\n"+L.slice(1).join(" · ");
 }
 function msgHeld(){const b=typeof document!=="undefined"&&document.body;return MSG_WORLD&&!!(b&&b.classList&&b.classList.contains("screen"));}
 /* мир закрыт экраном — СТОЛ, ОПИСЬ, станция: игрок читает, а не летит. Угрозы
@@ -10896,7 +10949,7 @@ let traceBusy=0;
 function traceCall(op,body){
   if(!traceOn())return Promise.resolve(null);
   const b=Object.assign({op:op,id:traceId()},body||{});
-  return fetch(CLOUD.api+"?a=trace",{method:"POST",body:JSON.stringify(b)})
+  return fetch(CLOUD.api+"?a=trace",{method:"POST",body:JSON.stringify(netBody(b))})
     .then(r=>r.json()).catch(()=>null);
 }
 /* спросить место при посадке. Ответ кладётся в S.trace — эфемерно, не в сейв */
@@ -11156,6 +11209,12 @@ const OFFER_TTL=[Math.round(CEL_DAY*.8),CEL_DAY*3];
 /* Взятая работа живёт втрое дольше предложения на доске: одно дело не взять,
    другое — взять и не довезти, и на дорогу нужно время. */
 const OFFER_CARRY_K=3;
+/* и не меньше четверти часа настоящего времени (R5b, автор 12.09): срок
+   считается по игровым часам `now()`, а не по `G.t` — кадры не сохраняются, и
+   после загрузки бумага то жила вечно, то сгорала сразу */
+const OFFER_CARRY_MIN=15*CEL_DAY;
+function offerAge(o){if(o.ms==null)o.ms=now();return (now()-o.ms)*.06;}   /* в кадрах: 60 за секунду */
+function offerTtl(o){return o.carry?Math.max(o.ttl*OFFER_CARRY_K,OFFER_CARRY_MIN):o.ttl;}
 /* Смена на станции — сутки. Пока она не сменилась, здесь предлагают то же
    самое, что уже предложили. */
 const OFFER_SHIFT=CEL_DAY;
@@ -11208,7 +11267,7 @@ function offerAdd(kind,who,named){
   const seed=hashi(Math.floor(G.t*7),offersAll().length,0x0FFE)>>>0;
   const ttl=OFFER_TTL[0]+Math.floor(rng(seed)()*(OFFER_TTL[1]-OFFER_TTL[0]));
   const o={id:seed,kind,who,named:nm?1:0,sx:G.sx,sy:G.sy,
-           t0:G.t,ttl,seed,taken:0};
+           t0:G.t,ms:now(),ttl,seed,taken:0};
   offersAll().push(o);
   if(nm)f.named=1;
   return o;
@@ -11250,8 +11309,18 @@ function offerVisit(){
     offerAdd("list",who,true);
 }
 function offerLive(){
-  const t=G.t;
-  return offersAll().filter(o=>!o.taken&&t-o.t0<o.ttl);
+  return offersAll().filter(o=>!o.taken&&offerAge(o)<o.ttl);
+}
+/* взятая работа для ДЕЛА (R5b): что, куда и сколько минут осталось */
+function offerCarried(){
+  const out=[];
+  for(const o of offersAll()){
+    if(!o.carry||o.done)continue;
+    const K=OFFER_KIND[o.kind];if(!K)continue;
+    const left=Math.max(0,Math.ceil((offerTtl(o)-offerAge(o))/CEL_DAY));
+    out.push({o,name:K.ru[0].toUpperCase()+K.ru.slice(1),dest:o.to&&o.to.name||"—",named:!!o.named,left});
+  }
+  return out;
 }
 function offerHere(){
   return offerLive().filter(o=>o.sx===G.sx&&o.sy===G.sy);
@@ -11264,16 +11333,15 @@ function offerHere(){
 function offerTick(){
   const L=offersAll();
   if(!L.length)return;
-  const t=G.t;
   for(let i=L.length-1;i>=0;i--){
     const o=L[i];
     if(o.done){L.splice(i,1);continue;}
     /* Везомая работа живёт своим окном — втрое длиннее, чем предложение на
        доске: одно дело не взять, другое взять и не довезти, и на дорогу
        нужно время. */
-    const ttl=o.carry?o.ttl*OFFER_CARRY_K:o.ttl;
+    const ttl=offerTtl(o);
     if(o.taken&&!o.carry){L.splice(i,1);continue;}
-    if(t-o.t0<ttl)continue;
+    if(offerAge(o)<ttl)continue;
     /* Не довёз. Именное — дверь закрылась; холодное — просто пропало.
        Ни сообщения, ни звука: бумага на столе так и останется лежать, и это
        единственный след. */
@@ -11299,6 +11367,14 @@ function offerDest(o){
   }
   return null;
 }
+/* хвост карточки на доске (R6, 12.09: «куда · сколько · до когда · за сколько»):
+   адрес виден до взятия — offerDest считается от зерна и ничего не пишет;
+   срок — в сутках мира по тем же часам, что и у взятой работы. Цена стоит в
+   столбце, и «сколько» у возможности нет — она не груз, а место */
+function offerCardTail(o){
+  const d=offerDest(o),left=Math.max(1,Math.ceil((offerTtl(o)-offerAge(o))/CEL_DAY));
+  return (d?" · на «"+d.name+"» "+d.sx+":"+d.sy:"")+" · ещё "+left+" "+pl3(left,"день","дня","дней");
+}
 /* ── взятие: это только начало ──
    Раньше здесь сразу платили, и возможность была кнопкой. Теперь взятая работа
    ложится бумагой на стол (27i) и ждёт доставки. Журнала заданий в этой игре
@@ -11315,10 +11391,10 @@ function offerTake(o){
     if(typeof offerListTaken==="function")offerListTaken(o);
     return 0;
   }
-  o.to=dest;o.carry=1;o.t0=G.t;
+  o.to=dest;o.carry=1;o.t0=G.t;o.ms=now();
   if(typeof thingAdd==="function")
     thingAdd("paper",K.ru[0].toUpperCase()+K.ru.slice(1),
-      "на «"+dest.name+"» · "+(o.named?"вас назвали":"взято на доске"));
+      "на «"+dest.name+"» "+dest.sx+":"+dest.sy+" · "+(o.named?"вас назвали":"взято на доске"));
   return 0;
 }
 /* ── сдача ──
@@ -17926,7 +18002,7 @@ function drawAllies(zx,zy,Z){
   for(const A of G.allies){
     const x=zx(A.x),y=zy(A.y);
     if(x<-80||x>W+80||y<-80||y>H+80)continue;
-    ctx.save();ctx.translate(x,y);ctx.scale(clamp(Z,.3,1.4),clamp(Z,.3,1.4));ctx.rotate(A.a);
+    ctx.save();ctx.translate(x,y);ctx.scale(shipScaleAt(Z),shipScaleAt(Z));ctx.rotate(A.a);   /* один потолок с кораблём (16c) */
     drawHull(A.c.shipId,A.thrust,false,0);
     ctx.restore();
     /* имя И дело (M299): плейтест 02.09 — «чувак у станции не летает, просто
@@ -17984,7 +18060,9 @@ function needClose(sys,k){
   needAll()[sys.key]={win:N.win,k,t:now()};
   if(typeof recordAdd==="function")recordAdd(sys.station.name,"благодарность: привёз "+N.ru+", когда не было");
   if(typeof repAdd==="function")repAdd(2,sys);
-  if(typeof peopleLine==="function")peopleLine("привезли "+N.ru+", когда "+(RES[k].ru.endsWith("ы")?"их":"её")+" не было. Это помнят.",sys.station.name,true);
+  /* род по товару, а не по окончанию (хвост R6, 12.09): «лёд… когда её не было» */
+  const pron={ice:"его",iron:"его",silicon:"его",organics:"её",titan:"его",isotopes:"их",iridium:"его",crystal:"их",carbon:"его",xeno:"его"}[k]||(RES[k].ru.endsWith("ы")?"их":"его");
+  if(typeof peopleLine==="function")peopleLine("привезли "+N.ru+", когда "+pron+" не было. Это помнят.",sys.station.name,true);
   sfx("ok",{v:.4});
   return true;
 }
@@ -19603,11 +19681,10 @@ function fleetPos(f){
 
 /* окраска флота — отдельным слоем (12ai1, M415) */
 
-/* масштаб спрайта в системе (§8, альманах III): упирался в 1.5, пока setZoom
-   идёт до 2.4 — последняя треть зума растила мир, а флот нет, и на сближении
-   почтовик оказывался меньше баржи. Спрайт печётся в ×3: до потолка зума
-   разрешение уже оплачено. */
-function fleetScale(Z){return clamp(Z,.5,2.4)*.85;}
+/* масштаб спрайта в системе (§8, альманах III; п. 2, 12.09): корабли-спрайты
+   выше потолка корабля (16c SHIP_SCALE_MAX) не растут — растёт мир. Флот на
+   .85 от своего корабля, как и был. Спрайт печётся в ×3: разрешение оплачено */
+function fleetScale(Z){return clamp(Z,.5,SHIP_SCALE_MAX)*.85;}
 /* строка подсказки — живой DOM, меряем его (27z); null, когда её нет */
 function fleetPromptRect(){
   const pe=document.getElementById("prompt");if(!pe||!pe.textContent)return null;
@@ -22767,6 +22844,9 @@ function hailTick(sh,dt,actEdge){
   if(G.hailLog[key]===bucket)return false;
   G.hailLog[key]=bucket;
   G.hail={by:p.pw,t:hailHold(),warn:0,x:sh.x,y:sh.y,blk:hailBlockade()?1:0};
+  /* кто окликнул — метка на самом корабле, мимо сейва (R6: у кромки одна
+     негашёная стрелка называет окликнувшего, пока окно открыто) */
+  for(const q of G.pirates)q._hail=0;p._hail=1;
   const P=(typeof powerOf==="function")?powerOf(p.pw):null;
   if(typeof etherLine==="function")etherLine("…"+(P?P.hail:"кто такой"),P?P.ru:"пикет");
   sfx("ui",{f:520,to:380,d:.2,v:.25});
@@ -27989,7 +28069,8 @@ function repLine(sys){
 function fuelPriceHere(){
   /* талоны (M379, §14 обряд 4): бак по талону стоит четверть — один на борт за
      сводку. Это единственное место, где обряд трогает кошелёк напрямую */
-  const coup=(typeof riteFuelMul==="function")?riteFuelMul():1;
+  let coup=(typeof riteFuelMul==="function")?riteFuelMul():1;
+  if(coup>=1&&typeof actCoupons==="function"&&actCoupons()>0)coup=.5;   /* талон за налёт (05e) */
   return Math.max(1,Math.round((G.st?G.st.fuelPrice:10)*repFuelMul()*
     (typeof holdFuelMul==="function"?holdFuelMul():1)*coup));   /* Заправочный узел (F2) */
 }
@@ -29743,8 +29824,10 @@ function bargeArtOf(b){
     /* люк или перемычки — короб не должен быть пустой заливкой */
     ctx.strokeStyle="rgba(0,0,0,.3)";ctx.lineWidth=.4;
     ctx.beginPath();ctx.moveTo(k.x,k.y1);ctx.lineTo(k.x,k.y0);ctx.stroke();
-    ctx.strokeStyle="rgba(255,240,220,.25)";
-    ctx.beginPath();ctx.moveTo(k.x-k.w,k.y1);ctx.lineTo(k.x+k.w,k.y1);ctx.stroke();
+    /* шов на стыке короба и корпуса темнее обшивки (дизайнер 12.09): светлая
+       кромка сверху читалась щелью света между блоками, а не сваркой */
+    ctx.strokeStyle="rgba(0,0,0,.55)";ctx.lineWidth=.8;
+    ctx.beginPath();ctx.moveTo(k.x-k.w,k.y0);ctx.lineTo(k.x+k.w,k.y0);ctx.stroke();
   }
   for(const l of lines){
     ctx.strokeStyle="rgba(0,0,0,"+(l[4]*.6).toFixed(2)+")";ctx.lineWidth=l[4];
@@ -29803,7 +29886,7 @@ function drawBarges(zx,zy,Z){
     const x=zx(b.x),y=zy(b.y);
     if(x>-80&&x<W+80&&y>-80&&y<H+80){
       ctx.save();ctx.translate(x,y);ctx.rotate(b.a);
-      const s=clamp(Z,.5,1.5)*.8;ctx.scale(s,s);
+      const s=shipScaleAt(Z)*.8;ctx.scale(s,s);   /* один потолок с кораблём (16c, п. 2) */
       drawBarge(b);
       ctx.restore();
       const hp=clamp(b.hp/b.hullMax,0,1);
@@ -38494,7 +38577,7 @@ function drawCombat(zx,zy,Z){
     const x=zx(p.x),y=zy(p.y);
     if(x>-60&&x<W+60&&y>-60&&y<H+60){
       ctx.save();ctx.translate(x,y);ctx.rotate(p.a);
-      const s=clamp(Z,.55,1.6)*.82;
+      const s=shipScaleAt(Z)*.82;   /* один потолок с кораблём (16c, п. 2) */
       ctx.scale(s,s);
       /* пират рисуется своим сварным корпусом (12i), а не вашим кораблём в
          чужой раскраске: у него шесть-восемь десятков полигонов, выпеченных
@@ -38529,7 +38612,14 @@ function drawCombat(zx,zy,Z){
       const hot=p.stunT>0;
       ctx.fillStyle=hot?"rgba(255,178,92,.95)":(p.rogue?"rgba(197,138,224,.95)":"rgba(255,107,87,.75)");
       ctx.font=(p.rogue?"9px":"8px")+" ui-monospace,monospace";ctx.textAlign="center";
-      ctx.fillText(hot?"ПЕРЕГРЕВ":p.name.toUpperCase(),x,y+26);
+      /* имя не ложится на подпись планеты и на фишку у кромки (R6, 12.09):
+         пересеклось — уходит над корабль. Фишки в настоящих пикселях (15-input) */
+      const lbl=hot?"ПЕРЕГРЕВ":p.name.toUpperCase();let ly=y+26;
+      {const lw=ctx.measureText(lbl).width,bx0=x-lw/2,bx1=x+lw/2,by0=ly-8,by1=ly+2,U2=uiK();
+       const hit=BODY_LABELS.some(b=>!(bx1<b.x0||b.x1<bx0||by1<b.y0||b.y1<by0))||
+         SYS_CHIPS.some(c=>!(bx1*U2<c.x||c.x+c.w<bx0*U2||by1*U2<c.y||c.y+c.h<by0*U2));
+       if(hit)ly=y-22;}
+      ctx.fillText(lbl,x,ly);
       if(p.rogue){
         ctx.fillStyle="rgba(197,138,224,.6)";ctx.font="8px ui-monospace,monospace";
         ctx.fillText("БЫВШИЙ УПРАВЛЯЮЩИЙ",x,y+37);
@@ -39165,6 +39255,10 @@ function occTick(){
     if(!occLvl(from[0],from[1]))logAdd("good","Трасса: пираты ушли из сектора "+from[0]+":"+from[1]);
     return;
   }
+  /* до первого отбитого сектора фронт стоит (R5b, автор 12.09): один очаг —
+     цель, которую видно на карте; наступление начинается с первого боя за
+     систему, а не с первого часа новичка. Таять под трассой очаг может и до */
+  if(!(G.freed|0))return;
   /* сперва укрепляются там, где уже стоят, и только потом ползут дальше:
      иначе фронт расплывался пятном в один уровень на всю галактику */
   if(o.lvl<OCC_MAX&&r()<.45){
@@ -40037,7 +40131,7 @@ function snapshot(){
     /* главный квест: возможности живут недолго, а память людей и тетрадь —
        навсегда. Закрытая дверь не восстанавливается ни временем, ни загрузкой */
     offers:G.offers,folk:G.folk,ledger:G.ledger,folkSay:G.folkSay,late:G.late,toldOff:G.toldOff|0,   /* M225, M230 */
-    told:G.told,lastDig:G.lastDig,
+    told:G.told,lastDig:G.lastDig,mined:G.mined||{},actWk:G.actWk||null,
     /* четыре поля, которые терялись при загрузке (0.442.0, сеть сейва): счёт побед
        (допуск и задания управляющих считают от него), отметка приказов (задание
        «тишина в эфире» сравнивает с ней), заходы на базу (от них зерно аврала),
@@ -40215,7 +40309,7 @@ function applySave(s){
      настоящими видами планет. Всё остальное в сохранении цело, формат прежний. */
   G.species=new Set(((s.bioV|0)>=2&&Array.isArray(s.species))?s.species:[]);
   Object.assign(G.opts,optsNumify(s.opts||{}));   /* облако на PHP отдаёт числа строками — назад в числа всем классом (14a2) */
-  G.zoom=clamp(+s.zoom||1,.16,2.4);
+  G.zoom=clamp(+s.zoom||1,ZOOM_MIN,ZOOM_MAX);
   G.market=asMap(s.market);
   /* фронт пиратов: разреженный объект по ключу "sx,sy", как всё привязанное
      к системе. Старые записи грузятся с пустым фронтом — он нарастёт сам */
@@ -40628,7 +40722,7 @@ function cloudOn(){return cloudHere()&&!!cloudTok();}
 function cloudCall(a,body){
   return fetch(CLOUD.api+"?a="+a,{method:"POST",
     headers:{"Content-Type":"application/json","X-Drift-Token":cloudTok()},
-    body:JSON.stringify(body||{})}).then(r=>r.json()).catch(e=>{try{crashShip("net","облако "+a+": "+(e&&e.message||e),"");}catch(_){}throw e;});
+    body:JSON.stringify(netBody(body))}).then(r=>r.json()).catch(e=>{try{crashShip("net","облако "+a+": "+(e&&e.message||e),"");}catch(_){}throw e;});
 }
 function cloudForget(){stDel(CLOUD.tkey);stDel(CLOUD.lkey);}
 
@@ -41068,6 +41162,9 @@ function applySaveRest(s){
   /* рассказанное не забывается: место, про которое он проговорился, выработают
      и без него, сколько бы раз он ни перезагрузился (11aj) */
   G.told=Array.isArray(s.told)?s.told.slice(-24):[];
+  G.mined=asMap(s.mined);   /* выработанные залежи (21-mode-surface) */
+  G._hullHeld=null;         /* корпус до беды считается заново от загруженного (28-loop) */
+  G.actWk=(s.actWk&&typeof s.actWk==="object"&&!Array.isArray(s.actWk))?{wk:s.actWk.wk|0,ms:Math.max(0,+s.actWk.ms||0),used:s.actWk.used|0}:null;
   G.lastDig=(s.lastDig&&typeof s.lastDig==="object")?s.lastDig:null;
   G.credits=Math.max(0,s.credits|0);G.data=Math.max(0,s.data|0);
   G.soldTotal=Math.max(0,s.soldTotal|0);
@@ -41156,7 +41253,7 @@ const SAVE_EPHEMERAL={
   /* экран: подсказки, строки, вид карты */
   msg:"кадр",msgT:"кадр",prompt:"кадр",logNew:"кадр",mirrorEcho:"кадр",
   edgeWarned:"кадр",surfTipShown:"кадр",spLogged:"кадр",tableN:"кадр",tableUsed:"кадр",_yalta:"кадр",_yaltaSaid:"кадр",
-  _dial:"кадр",_fleaHum:"кадр",_probeAt:"кадр",_probeArm:"кадр",
+  _dial:"кадр",_fleaHum:"кадр",_probeAt:"кадр",_probeArm:"кадр",_hullHeld:"кадр",
   mapClean:"карта",mapLayer:"карта",mapMore:"карта",mapOutline:"карта",mapPeek:"карта",mapSearch:"карта",
   mapTapT:"карта",mapView:"карта",mapZoom:"карта",
   viewCX:"кадр",viewCY:"кадр",viewK:"кадр",viewX:"кадр",viewY:"кадр",
@@ -41270,7 +41367,7 @@ function warClock(serverN){
 function warCall(a,body){
   return fetch(WAR_API+"?a="+a,{method:"POST",
     headers:{"Content-Type":"application/json","X-Drift-Token":warTok()},
-    body:JSON.stringify(body||{})}).then(r=>r.json());
+    body:JSON.stringify(netBody(body))}).then(r=>r.json());
 }
 /* ── взять новое: закрытые сводки после последней известной ── */
 function warPull(force){
@@ -41700,7 +41797,7 @@ document.getElementById("routebtn").addEventListener("click",()=>{
   say(routeToggle(G.sel.x,G.sel.y));
   sfx("ui",{f:520,to:820,d:.12,v:.28});
 });
-function setZoom(z){G.zoom=clamp(z,.16,2.4);}
+function setZoom(z){G.zoom=clamp(z,ZOOM_MIN,ZOOM_MAX);}
 /* ── колесо крутит мир только НАД миром (M236) ──
    Обработчик висит на окне и спрашивал один G.mode: пока игрок листал колесом
    тетрадь на столе, карта за спиной уезжала в зум — список прокручен, мир
@@ -44234,29 +44331,15 @@ const haulRim={cv:null};              /* холст-маска кромки: о�
 /* масштаб корабля в drawSystem — один на двоих с буксиром. На тросе пол .7:
    пять минут игрок смотрит на СВОЙ корабль, а в .35 он был серым пятном в 12 px
    (дизайн-ревью 11.09, закон «себя находят с одного взгляда») */
-/* масштаб (п. 2 плейтеста 11.09, решено автором): пол .7 и в полёте — на
-   отъезде корабль в .35 был пятном в 12 px («далеко — мелко»); сверху 1.6, а
-   тела на приближении растут быстрее мира — «близко — полпланеты» было про то,
-   что корабль рос вместе с ними. BODY_NEAR_K=0 возвращает прежний вид (кадры
-   до/после) */
-const SHIP_SCALE_MIN=.7,SHIP_SCALE_MAX=1.6,BODY_NEAR_K=.8;
+/* масштаб (п. 2 плейтеста 11.09; форма Контроля, решено автором 12.09): пол .7
+   и в полёте — на отъезде корабль в .35 был пятном в 12 px («далеко — мелко»);
+   потолок .8 — выше корабль не растёт, растёт мир (ZOOM_MAX 4.5, 01-core):
+   «близко — полпланеты» было про то, что корабль рос вместе с планетами.
+   Прежняя форма (1.6 сверху, тела ×(1+0.8·(Z−1)) и потолки у лун) снята: диск
+   рисуется ровно физическим, зоны посадки и черпака лежат там, где нарисовано.
+   Тем же числом рисуются флот, пираты, баржи и свои корабли */
+const SHIP_SCALE_MIN=.7,SHIP_SCALE_MAX=.8;
 function shipScaleAt(Z){return clamp(Z,SHIP_SCALE_MIN,SHIP_SCALE_MAX);}
-function bodyScaleAt(Z){return Z>1?1+BODY_NEAR_K*(Z-1):1;}
-/* Потолок роста у планеты с лунами (первые кадры 12.09): на 2.4 диск в 2.12
-   раза шире физического накрывал луну ближней орбиты (r 39, орбита 76, диск 83).
-   Планета растёт не дальше 0.6 зазора до ближней луны, луна — не дальше 0.15:
-   между ними всегда остаётся четверть пустого. Считается раз — орбиты не
-   меняются. Возвращает [потолок планеты, потолки лун по индексу] */
-function bodyNearCaps(p){
-  if(p._bkCap)return p._bkCap;
-  let pc=99;const mc=[];   /* без лун — потолка нет; число конечное: детектор «не число в мире» */
-  for(const m of p.moons){
-    const gap=Math.max(0,(m.orbit||0)-p.radius-m.radius);
-    pc=Math.min(pc,1+.6*gap/p.radius);
-    mc.push(1+.15*gap/Math.max(1,m.radius));
-  }
-  return (p._bkCap=[pc,mc]);
-}
 function haulBarge(){const T=G.haul;return T._b||(T._b={seed:T.seed,by:"gt"});}
 function haulName(){return "буксир «"+HAUL_NAMES[((G.haul?G.haul.seed:0)>>>0)%HAUL_NAMES.length]+"»";}
 function haulSay(t){if(typeof etherLine==="function")etherLine(t,haulName());}
@@ -44399,7 +44482,7 @@ function haulTick(dt,sh){
   }else{
     const k=clamp(T.t/HAUL_TIME,0,1),e=k;   /* ровно: плавный разгон стоял на месте первые полминуты */
     /* путь — ломаная через видимое (дизайн-ревью 11.09: «кадр стоит пять минут»):
-       сперва мимо ближней к трассе планеты на 1.3 её радиуса, потом к станции.
+       сперва мимо ближней к трассе планеты на 1.15 её радиуса, потом к станции.
        Точка облёта считается от планеты каждый кадр — она на орбите, а путь
        остаётся непрерывным. Выбор планеты — однажды, мимо сейва (_wp) */
     if(T._wp==null)T._wp=haulPickWaypoint(T.x0,T.y0,tx,ty);
@@ -44409,9 +44492,12 @@ function haulTick(dt,sh){
       const sx0=T.x0,sy0=T.y0,dx=tx-sx0,dy=ty-sy0,L2=dx*dx+dy*dy||1;
       const u=clamp(((P.x-sx0)*dx+(P.y-sy0)*dy)/L2,0,1),qx=sx0+dx*u,qy=sy0+dy*u;
       let ox=qx-P.x,oy=qy-P.y;const ol=Math.hypot(ox,oy)||1;ox/=ol;oy/=ol;
+      /* планета слева от корабля (R6, 12.09): кнопки стоят у правого края, и диск
+         не должен уходить под них — крюк всегда берётся с правой стороны планеты */
+      if(ox<0){ox=-ox;oy=-oy;}
       /* крюк считается от корабля, а баржа впереди на длину троса: без этого
          запаса она ложилась поверх планеты и закрывала её (кадр 2:31) */
-      const R=P.radius*1.3+haulReach()*1.2,wx=P.x+ox*R,wy=P.y+oy*R;
+      const R=P.radius*1.15+haulReach()*1.2,wx=P.x+ox*R,wy=P.y+oy*R;   /* 1.15 r: планета главенствует (R6) */
       if(e<.5){nx=sx0+(wx-sx0)*e*2;ny=sy0+(wy-sy0)*e*2;}
       else{nx=wx+(tx-wx)*(e-.5)*2;ny=wy+(ty-wy)*(e-.5)*2;}
     }else{nx=T.x0+(tx-T.x0)*e;ny=T.y0+(ty-T.y0)*e;}
@@ -44750,6 +44836,9 @@ addEventListener("keydown",e=>{
    метка, которая выглядит кнопкой, обязана быть кнопкой. Один массив на кадр,
    перезаписывается на месте — мусора не создаёт. */
 const SYS_CHIPS=[];
+/* подписи тел этого кадра (R6): по ним имя чужого корабля («КОМПАНИЯ 743»)
+   уходит вверх, чтобы не лечь на имя планеты. Канва, не сейв */
+const BODY_LABELS=[];
 let CORONA_IN=false;   /* корабль в короне — строка журнала раз на вход */
 function updateSystem(dt){
   const sh=G.ship,sys=G.sys,st=stat();
@@ -45061,7 +45150,7 @@ function updateSystem(dt){
             /* цена — на паде, покупка — вторым тапом (боты 12.09): взведённый зонд
                переспрашивает «ТОЧНО?» три секунды игры (probeClaim, 21a8) */
             const pa=G._probeArm,arm=!!pa&&pa.sx===(G.sx|0)&&pa.sy===(G.sy|0)&&pa.idx===(near.idx|0)&&G.t-pa.t<180;
-            ln+="\nЦЕЛЬ — "+(arm?"ТОЧНО? "+PROBE_COST+" КР":"ЗОНД "+PROBE_COST+" КР");
+            ln+="\nЦЕЛЬ — "+(arm?"ТОЧНО? "+probePriceRu():"ЗОНД "+probePriceRu());
           }
         }
         const won=cue(ln,CUE_ACT);
@@ -45251,10 +45340,9 @@ function drawSystem(){
          g.addColorStop(t,"rgba("+c.join(",")+","+a.toFixed(4)+")");}
        ctx.fillStyle=g;ctx.fillRect(-1,-1,2,2);});
      ctx.save();ctx.globalCompositeOperation="lighter";glowBlit(BL,ox,oy,reach);ctx.restore();}}
-  const BK=bodyScaleAt(Z);   /* тела на приближении крупнее мира (16c, п. 2) */
+  BODY_LABELS.length=0;
   for(const p of sys.planets){
-    const cap=BK>1?bodyNearCaps(p):null;
-    const x=zx(p.x),y=zy(p.y),r=p.radius*Z*(cap?Math.min(BK,cap[0]):1);
+    const x=zx(p.x),y=zy(p.y),r=p.radius*Z;   /* диск — физический (16c, п. 2): зум делает планету большой, не корабль */
     if(x<-r-60||x>W+r+60||y<-r-60||y>H+r+60)continue;
     if(p.ring===undefined){
       const rr=rng(p.seed^0x21A9);
@@ -45290,18 +45378,21 @@ function drawSystem(){
       ctx.beginPath();ctx.arc(x,y,r+2.5,0,TAU);ctx.stroke();}
     for(let mi=0;mi<p.moons.length;mi++){
       const m=p.moons[mi];
-      const mx=zx(m.x),my=zy(m.y),mr=Math.max(1,m.radius*Z*(cap?Math.min(BK,cap[1][mi]):1));
+      const mx=zx(m.x),my=zy(m.y),mr=Math.max(1,m.radius*Z);
       ctx.fillStyle="#9aa8b2";
       ctx.beginPath();ctx.arc(mx,my,mr,0,TAU);ctx.fill();
       if(G.ap&&G.ap.kind==="planet"&&G.ap.p===m)reticle(mx,my,mr+10);
       if(G.found.has(m.key)&&mr>2.4){
         ctx.fillStyle="rgba(154,168,178,.7)";ctx.font=uiFont(8);ctx.textAlign="center";
-        ctx.fillText(m.name.toUpperCase(),mx,my+mr+11*uiK());
+        /* имя уступает кораблю (R6): на дальней от него стороне диска */
+        const ly=(m.y>=sh.y)?my+mr+11*uiK():my-mr-5*uiK(),lw=ctx.measureText(m.name).width;
+        ctx.fillText(m.name.toUpperCase(),mx,ly);BODY_LABELS.push({x0:mx-lw/2,x1:mx+lw/2,y0:ly-8,y1:ly+2});
       }
     }
     if(G.found.has(p.key)){
       ctx.fillStyle="rgba(127,230,216,.55)";ctx.font=uiFont(9);ctx.textAlign="center";
-      ctx.fillText(p.name.toUpperCase(),x,y+r+15*uiK());
+      const ly=(p.y>=sh.y)?y+r+15*uiK():y-r-7*uiK(),lw=ctx.measureText(p.name).width;   /* имя уступает кораблю (R6) */
+      ctx.fillText(p.name.toUpperCase(),x,ly);BODY_LABELS.push({x0:x-lw/2,x1:x+lw/2,y0:ly-9,y1:ly+2});
     }
     if(G.ap&&G.ap.kind==="planet"&&G.ap.p===p)reticle(x,y,r+16);
   }
@@ -45384,23 +45475,7 @@ function drawSysHud(zx,zy,sh,sys,U){
      А с M360a — ещё и выше следа левого стика: палец рождается где угодно
      в нижней половине, и приборная мелочь уходит из-под него сама. */
   const feet=(typeof helmStickFoot==="function")?helmStickFoot():[];
-  let scaleY=H-108;
-  /* и выше пульта (M410): на телефоне приёмник стоит над рядом пэдов и ложился
-     ровно на эту строку; низ меряет 27z-telemetry, здесь его только читают */
-  if(typeof HUD_FLOOR==="number"&&HUD_FLOOR>40)scaleY=Math.min(scaleY,HUD_FLOOR*H/innerHeight/U-10);
-  for(const f of feet)if(f.side==="L")scaleY=Math.min(scaleY,(f.y-f.r)/U-10);
-  ctx.font="9px ui-monospace,monospace";ctx.textAlign="left";
-  /* на плашке, как фишки у кромки: на орбите за строкой стоит диск планеты, и
-     серая строка по нему читалась с контрастом 2.1 (M444, прогон «посадка и
-     залежь» под детектором текста) */
-  /* на буксире камера ведёт сама — служебную цифру масштаба не показываем (дизайн-ревью 11.09) */
-  /* под окном оклика и бака служебной цифры нет: над миром висит только нужное сейчас */
-  const mdl=document.body.classList.contains("hailopen")||document.body.classList.contains("sosopen");
-  if(!G.haul&&!mdl){const sl="МАСШТАБ ×"+G.zoom.toFixed(2),sy=Math.max(96,scaleY),tw=ctx.measureText(sl).width;
-   /* плашка плотная и строка светлее прежней серой: над диском планеты
-      (телефон, после взлёта) полупрозрачная плашка давала контраст 2.4 */
-   ctx.fillStyle="rgba(5,7,12,.85)";ctx.fillRect(10,sy-10,tw+8,15);
-   ctx.fillStyle="rgba(160,182,196,.92)";ctx.fillText(sl,14,sy);}
+  /* цифра масштаба живёт в шапке (#zoomlbl, 27z hud): над миром висит только нужное сейчас */
   /* компас на край экрана: звезда, станция и текущая цель автопилота,
      если они за кадром — чтобы в бесконечном космосе нельзя было заблудиться */
   /* ── у метки есть цель, и по метке можно ткнуть (плейтест, 26.08.2026) ──
@@ -45425,6 +45500,8 @@ function drawSysHud(zx,zy,sh,sys,U){
     if(np)marks.push({x:np.x,y:np.y,c:"#9fd8ff",l:np.name.toUpperCase(),t:{kind:"planet",p:np}});
   }
   if(G.ap){const T=targetPos();if(T)marks.push({x:T.x,y:T.y,c:"#ff6b57",l:"ЦЕЛЬ",t:null});}
+  /* окликнувший: одна негашёная стрелка под окном оклика (R6, 12.09) */
+  if(G.hail){const hp=G.pirates.find(q=>q._hail);if(hp)marks.push({x:hp.x,y:hp.y,c:"#ffd27a",l:(hp.name||"ОКЛИК").toUpperCase(),t:null,hail:1});}
   SYS_CHIPS.length=0;
   /* фишки у кромки (M167): раньше метки стояли на круге и на телефоне висели
      посреди сцены, наезжая друг на друга и на солнце. Теперь метка — плашка,
@@ -45451,6 +45528,7 @@ function drawSysHud(zx,zy,sh,sys,U){
   for(const m of marks){
     const x=zx(m.x),y=zy(m.y);
     if(x>-20&&x<W+20&&y>-20&&y<H+20)continue;
+    const A=m.hail?1:CA;   /* окликнувший не гаснет */
     const ang=Math.atan2(y-H/2,x-W/2),dx=Math.cos(ang),dy=Math.sin(ang);
     /* пересечение луча из центра с прямоугольником кромки */
     let t=1e9;
@@ -45470,12 +45548,12 @@ function drawSysHud(zx,zy,sh,sys,U){
     placed.push({x:rx,y:ry,w:cw,h:ch});
     /* Зона нажатия шире плашки: правило интерфейса требует 44 px на палец, а
        фишка ростом 16. Растим её вокруг центра, не трогая рисунок. */
-    if(m.t&&CA===1){
+    if(m.t&&A===1){
       const PAD=Math.max(0,(44-ch)/2);
       SYS_CHIPS.push({x:(rx-6)*U,y:(ry-PAD)*U,w:(cw+12)*U,h:(ch+PAD*2)*U,t:m.t});
     }
-    ctx.globalAlpha=CA;ctx.fillStyle="rgba(5,7,12,.72)";ctx.fillRect(rx,ry,cw,ch);
-    ctx.strokeStyle=m.c;ctx.globalAlpha=.5*CA;ctx.lineWidth=1;ctx.strokeRect(rx+.5,ry+.5,cw-1,ch-1);ctx.globalAlpha=CA;
+    ctx.globalAlpha=A;ctx.fillStyle="rgba(5,7,12,.72)";ctx.fillRect(rx,ry,cw,ch);
+    ctx.strokeStyle=m.c;ctx.globalAlpha=.5*A;ctx.lineWidth=1;ctx.strokeRect(rx+.5,ry+.5,cw-1,ch-1);ctx.globalAlpha=A;
     ctx.save();ctx.translate(cx>W/2?rx+cw-8:rx+8,ry+ch/2);ctx.rotate(ang);
     ctx.fillStyle=m.c;ctx.beginPath();ctx.moveTo(6,0);ctx.lineTo(-4,4);ctx.lineTo(-4,-4);ctx.closePath();ctx.fill();
     ctx.restore();
@@ -49688,10 +49766,14 @@ function updateLanding(dt){
     L.gear=1;L.sq=Math.min(1,.3+sp*.3);L.sqv=0;L.hot=1;
     if(ok)say("Посадка выполнена");
     else{
-      const dmg=(18+Math.min(42,sp*11))/tol;
+      let dmg=(18+Math.min(42,sp*11))/tol;
+      /* первый час (R5b): жёсткая посадка, а не крушение — не больше пятой
+         части корпуса и никогда до нуля; груз цел, корабль остаётся у планеты */
+      const soft=typeof firstHour==="function"&&firstHour();
+      if(soft)dmg=Math.min(dmg,st.hullMax*.2,Math.max(0,G.hull-1));
       G.hull=Math.max(0,G.hull-dmg);
       if(typeof hitFx==="function")hitFx(1);
-      say("Крушение\nкорпус −"+Math.round(dmg));
+      say((soft?"Жёсткая посадка":"Крушение")+"\nкорпус −"+Math.round(dmg));
     }
   }
 }
@@ -55320,14 +55402,20 @@ function enterSurface(){
      таблицы типа: иначе на «ледяной, с вулканами» лежало бы то же, что на
      чистой ледяной, и смесь осталась бы одной раскраской */
   const deposits=[],plants=[],prof=p.res||PROFILE[p.type]||[];
+  /* выработанное помнится (хвост R6, 12.09): залежи рождаются от зерна, но то,
+     что игрок выбрал сам, не отрастает к следующей посадке — G.mined хранит
+     остаток по номеру залежи, ключ «sx,sy:планета» (как told, 11aj) */
+  const dkey=(G.sx|0)+","+(G.sy|0)+":"+(p.idx|0),mk=(G.mined&&G.mined[dkey])||null;
   if(prof.length)for(let i=0;i<22;i++){
     const x=120+r()*(tr.W-240),k=prof[Math.floor(r()*prof.length)];
     /* Место, про которое он рассказал, к этому дню уже выработали: залежей
        меньше и они беднее. Ни строки объяснения — просто беднее (11aj). */
     const worked=(typeof toldWorked==="function")&&toldWorked(G.sx,G.sy,p.idx);
     if(worked&&r()<.45)continue;
-    deposits.push({x,y:groundAt(tr,x)-6,res:k,
-      left:(worked?2:6)+Math.floor(r()*(worked?4:11)),prog:0});
+    let left=(worked?2:6)+Math.floor(r()*(worked?4:11));
+    if(mk&&mk[i]!=null)left=Math.min(left,mk[i]|0);
+    if(left<=0)continue;   /* выбрана до дна — её тут больше нет */
+    deposits.push({x,y:groundAt(tr,x)-6,res:k,left,prog:0,i});
   }
   /* флора растёт куртинами, а не поштучно по всей планете */
   const flora=p.T.atm.indexOf("пригодна")>=0||p.type==="toxic"||p.type==="jungle"||
@@ -55873,6 +55961,7 @@ function updateSurface(dt){
         S.mining=dep;dep.prog+=.026*st.drill*dt;
         while(dep.prog>=1&&dep.left>0&&held()<st.cargoMax){
           dep.prog-=1;dep.left--;minedUnit(dep.res);
+          if(dep.i!=null){const dk=(G.sx|0)+","+(G.sy|0)+":"+(S.p.idx|0);(G.mined||(G.mined={}))[dk]=G.mined[dk]||{};G.mined[dk][dep.i]=dep.left;}
         }
         /* что взял своими руками — то и можно разболтать у стойки (11aj) */
         if(!G.lastDig||G.lastDig.sx!==G.sx||G.lastDig.sy!==G.sy||
@@ -58424,13 +58513,20 @@ function probeKey(sx,sy,idx){return (sx|0)+","+(sy|0)+":"+(idx|0);}
 function probeHas(sx,sy,idx){
   return !!(G.probed&&G.probed[probeKey(sx,sy,idx)]);
 }
+/* первый зонд в первый час — даром (R5b, автор 12.09): урок про три слова
+   с орбиты стоит новичку одного нажатия, а не трети кассы */
+function probeFree(){
+  return typeof firstHour==="function"&&firstHour()&&!(G.probed&&Object.keys(G.probed).length);
+}
+function probePriceRu(){return probeFree()?"ДАРОМ":PROBE_COST+" КР";}
 function probeBuy(sx,sy,idx){
   if(probeHas(sx,sy,idx))return true;
-  if(G.credits<PROBE_COST){say("Зонд стоит "+PROBE_COST+" кр");return false;}
-  G.credits-=PROBE_COST;
+  const cost=probeFree()?0:PROBE_COST;
+  if(G.credits<cost){say("Зонд стоит "+PROBE_COST+" кр");return false;}
+  G.credits-=cost;
   if(!G.probed)G.probed={};
   G.probed[probeKey(sx,sy,idx)]=1;
-  tell("tech","Зонд ушёл к планете","ЗОНД\n"+PROBE_COST+" кр\nпять ручек из восьми — на месте будут все");
+  tell("tech","Зонд ушёл к планете","ЗОНД\n"+(cost?cost+" кр":"даром — первый в первый час")+"\nпять ручек из восьми — на месте будут все");
   return true;
 }
 /* ── одно нажатие ЦЕЛИ на всех (разбор 0.409.1) ──
@@ -58456,7 +58552,7 @@ function probeClaim(){
   const pa=G._probeArm;
   if(!(pa&&pa.sx===(A.sx|0)&&pa.sy===(A.sy|0)&&pa.idx===(A.idx|0)&&G.t-pa.t<180)){
     G._probeArm={sx:A.sx|0,sy:A.sy|0,idx:A.idx|0,t:G.t};
-    say("Зонд · "+PROBE_COST+" кр\nЦЕЛЬ ещё раз — купить",120);
+    say("Зонд · "+(probeFree()?"даром":PROBE_COST+" кр")+"\nЦЕЛЬ ещё раз — "+(probeFree()?"пустить":"купить"),120);
     return true;
   }
   G._probeArm=null;
@@ -68922,7 +69018,8 @@ function enterBelt(){
   document.querySelectorAll(".pads button").forEach(bb=>bb.classList.remove("on"));
   say("Вход в "+B.name+"\nруда: "+B.res.map(k=>RES[k].ru).join(", ")+
     (beltIcy(B)?"\nкольцо дальнее — попадаются кристаллы льда":"")+
-    "\n◀ ▶ курс · ▲ ▼ тангаж · Q E крен\nПРОБЕЛ тяга · тяните по стеклу — обзор");
+    (document.body.classList.contains("mobile")?"\nтяните по стеклу — обзор"   /* на касании клавиш нет (R6) */
+      :"\n◀ ▶ курс · ▲ ▼ тангаж · Q E крен\nПРОБЕЛ тяга · тяните по стеклу — обзор"));
 }
 /* обломки: разлетаются, тают и ничего не задевают */
 function shatter(b,a,n,power,px,py,pz){
@@ -75931,7 +76028,7 @@ let mailBusy=0;
 function mailCall(op,body){
   if(!mailOn())return Promise.resolve(null);
   const b=Object.assign({op:op,id:traceId()},body||{});
-  return fetch(CLOUD.api+"?a=post",{method:"POST",body:JSON.stringify(b)})
+  return fetch(CLOUD.api+"?a=post",{method:"POST",body:JSON.stringify(netBody(b))})
     .then(r=>r.json()).catch(()=>null);
 }
 /* карточка на провод: только те поля, которые сервер и так проверит. Лишнее
@@ -76934,17 +77031,47 @@ document.getElementById("bRefuel").addEventListener("click",()=>{
   G.credits-=can*per;G.fuel+=can;
   /* талон отоварен: следующий бак в эту сводку уже по обычной цене (M379) */
   if(typeof riteFuelMul==="function"&&riteFuelMul()<1&&typeof riteFuelUsed==="function")riteFuelUsed();
+  else if(typeof actCoupons==="function"&&actCoupons()>0){actCouponUse();say("Талон за налёт отоварен");}
   renderTab();
 });
-document.getElementById("bRepair").addEventListener("click",()=>{
-  const st=stat(),need=Math.ceil(st.hullMax-G.hull);
-  if(need<=0){say("Корпус цел");return;}
-  const per=repairCost(),can=Math.min(need,Math.floor(G.credits/per));
-  if(can<=0){say("Не хватает кредитов");return;}
-  G.credits-=can*per;G.hull+=can;renderTab();
+/* ── ремонт двумя кнопками (R5b, автор 12.09: «делать всё») ──
+   «ДО 50% · N» и «ПОЛНОСТЬЮ · N»: цена стоит на кнопке, а не в шапке вкладки.
+   В первый час (firstHour) полный ремонт стоит не больше половины кассы —
+   новичок не выбирает между баком и корпусом. Денег меньше цены — чинят на
+   то, что есть, как и раньше */
+function repairQuote(frac){
+  const st=stat(),units=Math.max(0,Math.ceil(st.hullMax*frac)-Math.ceil(G.hull));
+  let cost=units*repairCost();
+  if(units&&typeof firstHour==="function"&&firstHour())cost=Math.min(cost,Math.floor(G.credits/2));
+  return {units,cost,per:repairCost()};
+}
+function repairDo(frac){
+  const q=repairQuote(frac);
+  if(!q.units){say("Корпус цел");return;}
+  let units=q.units,cost=q.cost;
+  if(G.credits<cost){
+    units=Math.min(units,Math.floor(G.credits/q.per));cost=units*q.per;
+    if(units<=0){say("Не хватает кредитов");return;}
+  }
+  G.credits-=cost;G.hull+=units;
+  if(units<q.units)say("Починили на что хватило · +"+units);
+  else if(cost<q.units*q.per)say("Первый час: чинят по карману");
+  renderTab();
   if(typeof placeNote==="function")placeNote("care",1);   // починка здесь — забота о месте (11d)
   if(typeof seamAdd==="function")seamAdd();               // заплатка остаётся швом (12s, M256)
-});
+}
+/* подписи кнопок: половина прячется, когда корпус уже выше неё; одна кнопка —
+   «РЕМОНТ · N», две — «ДО 50% · N» и «ПОЛНОСТЬЮ · N» */
+function repairBtns(){
+  const bh=document.getElementById("bRepairHalf"),bf=document.getElementById("bRepair");
+  if(!bh||!bf)return;
+  const h=repairQuote(.5),f=repairQuote(1);
+  bh.style.display=h.units?"":"none";
+  bh.textContent="ДО 50% · "+h.cost.toLocaleString("ru");
+  bf.textContent=!f.units?"КОРПУС ЦЕЛ":(h.units?"ПОЛНОСТЬЮ · ":"РЕМОНТ · ")+f.cost.toLocaleString("ru");
+}
+document.getElementById("bRepairHalf").addEventListener("click",()=>repairDo(.5));
+document.getElementById("bRepair").addEventListener("click",()=>repairDo(1));
 function el(tag,cls,html){const e=document.createElement(tag);if(cls)e.className=cls;
   /* правило 1 оформления: капслок — подписям, а не тексту. Длинный заголовок
      секции — это фраза, которую читают, и она набирается обычным текстом */
@@ -77146,6 +77273,7 @@ function renderTab(){
   const keep=same?$body.scrollTop:0;
   renderTab._tab=tab;
   renderTabBody();
+  repairBtns();   /* цена ремонта на кнопках (R5b) */
   secTidy($body);   /* заголовки по закону §1a (M299) */
   if(typeof addrify==="function")addrify($body);   /* всякий адрес — на карту (M347) */
   if(keep>0){
@@ -77160,7 +77288,9 @@ function renderTabBody(){
   $body.innerHTML="";
   if(tab==="none"){
     /* заправочная: вкладок нет вовсе, но экран не должен выглядеть сломанным */
-    $body.appendChild(el("div","sec","ТОПЛИВО "+fuelPriceHere()+" кр/ед · РЕМОНТ "+repairCost()+" кр/ед · "+repLine(G.sys).toUpperCase()));
+    $body.appendChild(el("div","sec","ТОПЛИВО "+fuelPriceHere()+" кр/ед"+
+      ((typeof actCoupons==="function"&&actCoupons()>0)?" · ТАЛОН ЗА НАЛЁТ ×"+actCoupons():"")+
+      " · РЕМОНТ "+repairCost()+" кр/ед · "+repLine(G.sys).toUpperCase()));
     $body.appendChild(el("div","row","<div class='nm'><b>Только заправка и ремонт</b>"+
       "<s>перевалочный узел на отшибе: ни рынка, ни верфи, ни лаборатории —<br>"+
       "зато баки полны и корпус залатан</s></div>"));
@@ -77728,6 +77858,15 @@ function modCard(k,cap){
   const card=el("div","modcard"+(W?" work":"")+(W&&W.done?" done":""));
   /* точка залита — уровень стоит на корабле, обведена — куплен, но снят */
   let dots="";for(let i=0;i<4;i++)dots+="<i class='"+(i<lvl?"f":(i<own?"o":""))+"'></i>";
+  /* всё стоит — одна строка (R6, 12.09): точки, «установлено · ур. 4 · максимум»
+     и тихая СНЯТЬ УР.; карточке «сейчас → станет» показать нечего */
+  if(own>=4&&lvl>=4&&!W){
+    card.classList.add("maxed");
+    card.appendChild(el("div","mh","<b>"+M.ru+"<s>установлено · ур. 4 · максимум</s></b><span class='dots big'>"+dots+"</span>"));
+    const macts=el("div","macts"),bm=el("button","act sm","СНЯТЬ УР.");
+    bm.onclick=()=>{G.mods[k]--;afterFitChange();renderTab();};macts.appendChild(bm);card.appendChild(macts);
+    return card;
+  }
   card.appendChild(el("div","mh","<b>"+M.ru+"<s>"+M.note+(own>lvl?" · снято "+(own-lvl):"")+"</s></b><span class='dots big'>"+dots+"</span>"));
   /* сейчас → станет: во время монтажа — сделанный шаг, иначе — следующий */
   let diff="";
@@ -78014,7 +78153,7 @@ function fuseCard(c){
   const short=need.filter(x=>x[1]<x[2]).map(x=>x[0]);
   const acts=el("div","macts");
   const label=W?(W.done?"ГОТОВО · УЖЕ В АНГАРЕ":"ПЕЧЬ ЗАНЯТА · ПЛАВКА…"):!two?"НУЖНЫ ДВА КОРАБЛЯ":
-    short.length?"НЕ ХВАТАЕТ: "+short.join(", ").toUpperCase():"СПЛАВИТЬ · "+c.credits.toLocaleString("ru")+" КР";
+    short.length?"НЕ ХВАТАЕТ: "+short.join(", ").toUpperCase():"В ПЛАВКУ · "+c.credits.toLocaleString("ru")+" КР";   /* глагол (R6, 12.09) */
   const bf=el("button","act"+(!W&&two&&!short.length?" gold":""),label);
   bf.disabled=!!W||!two||!!short.length;
   bf.onclick=()=>{
@@ -78367,7 +78506,7 @@ function stTabBoard(){
           const K=OFFER_KIND[o.kind];
           const r=el("div","row");
           r.appendChild(el("div","nm","<b>"+(o.named?"Вам":K.ru[0].toUpperCase()+K.ru.slice(1))+
-            (o.named?" — "+K.ru:"")+"</b><s>"+K.note+"</s>"));
+            (o.named?" — "+K.ru:"")+"</b><s>"+K.note+offerCardTail(o)+"</s>"));
           const pay=offerPay(o);
           if(pay>0)r.appendChild(el("div","qt",pay+"<s>кр</s>"));
           const b=el("button","act"+(o.named?" gold":""),"ВЗЯТЬ");
@@ -78468,7 +78607,8 @@ function stTabMarket(st){
              "Груз реализован\n+"+sum.toLocaleString("ru")+" кр");
         renderTab();};
       r.appendChild(b);$body.appendChild(r);
-    }else $body.appendChild(el("div","sec","ТРЮМ ПУСТ — САДИТЕСЬ НА ПЛАНЕТУ ИЛИ ИДИТЕ В ПОЯС"));
+    }else $body.appendChild(el("div","sec",held()>0?"НА ПРОДАЖУ НЕЧЕГО — В ТРЮМЕ ТОЛЬКО РЕДКОЕ И СВОЁ"   /* редкое — тоже груз (хвост R6) */
+      :"ТРЮМ ПУСТ — САДИТЕСЬ НА ПЛАНЕТУ ИЛИ ИДИТЕ В ПОЯС"));
     /* прилавок ВЗЯТЬ — кооперативу, запись — на станции дома (12aj, M351) */
     if(typeof coopCounterBlock==="function")coopCounterBlock();
     if(typeof coopRegBlock==="function")coopRegBlock();
@@ -78700,8 +78840,10 @@ function keyRow(section,action){
   r.appendChild(el("div","nm","<b>"+ACTION_RU[action]+"</b>"));
   const cur=actionKey(section,action);
   const isRebinding=rebinding&&rebinding.section===section&&rebinding.action===action;
-  const b=el("button","act"+(isRebinding?" gold":""),isRebinding?"…НАЖМИТЕ КЛАВИШУ":keyLabel(cur));
-  b.onclick=()=>{rebinding={section,action};renderOpts();};
+  const b=el("button","act"+(isRebinding?" gold":""),isRebinding?"…НАЖМИТЕ КЛАВИШУ · ОТМЕНА":keyLabel(cur));
+  /* на телефоне клавиши не придёт, и кнопка залипала во «…НАЖМИТЕ» навсегда
+     (хвост R6, 12.09): второй тап снимает ожидание */
+  b.onclick=()=>{rebinding=isRebinding?null:{section,action};renderOpts();};
   r.appendChild(b);
   return r;
 }
@@ -83003,6 +83145,7 @@ function tableRender(){
      вещи — предметы: письмо, накладная, вырезка, полоса самописца, — и лист
      под ними был бы ошибкой: бумага на бумаге не читается. */
   box.classList.toggle("opis",tableTab==="hold");
+  box.classList.toggle("strips",tableTab==="strips");   /* ленты без зазора на телефоне (R6) */
   box.classList.toggle("desk",tableTab==="things"||tableTab==="strips"||
     tableTab==="album"||tableTab==="mail"||tableTab==="diary");
   if(tableTab==="ether"||tableTab==="bort"||tableTab==="folk")renderLog(tableTab);
@@ -84050,7 +84193,12 @@ function kitLayDraw(c,w,h){
    3. Людей за борт не выбрасывают: у кучи пассажиров нет ни люка, ни кнопки.
    4. Часть выше добротной разбирается через «ТОЧНО?» — кнопка меняет слово на
       три секунды, никаких confirm(). */
-const OPIS={box:null,sel:null,hover:null,arm:null,drag:null,ask:null,hit:[],panels:{}};
+const OPIS={box:null,sel:null,hover:null,arm:null,drag:null,ask:null,hit:[],panels:{},tab:"ship"};
+/* вкладки описи на телефоне (R6, 12.09): одна лента из четырёх зон не читалась —
+   КОРАБЛЬ (корпус, слоты, приборы) · СНЯТОЕ (снятые части, ящик) · КОМПЛЕКТ
+   (скафандр, полка «Сороки», косметика) · ТРЮМ (кучи, коробок). Широкий экран
+   держит прежнюю сетку */
+const OPIS_TABS=[["ship","КОРАБЛЬ"],["spare","СНЯТОЕ"],["kit","КОМПЛЕКТ"],["hold","ТРЮМ"]];
 /* восемь строк автора плюс корпус, бур и урон: часть с одним аффиксом к корпусу
    иначе не сдвинула бы на панели ни одного числа, и «будущее» врало бы молчанием */
 /* Группы по 3–4 строки, нули не печатаются (ревью 11.09: семнадцать строк
@@ -84071,8 +84219,8 @@ const OPIS_SHIP=[
   {k:"cool",     ru:"охлаждение", fix:0, g:"работа", less:1},
   {k:"dmg",      ru:"урон",       fix:1, g:"огонь"},
   /* три итога сборки (M363, §3.2): по ним и сравнивают карточку с карточкой */
-  {k:"gunHull",  ru:"по корпусу в с", fix:1, g:"огонь", get:st=>st.gunTot?st.gunTot.hull:0},
-  {k:"gunShield",ru:"по щиту в с",    fix:1, g:"огонь", get:st=>st.gunTot?st.gunTot.shield:0},
+  {k:"gunHull",  ru:"по корпусу/с",   fix:1, g:"огонь", get:st=>st.gunTot?st.gunTot.hull:0},
+  {k:"gunShield",ru:"по щиту/с",      fix:1, g:"огонь", get:st=>st.gunTot?st.gunTot.shield:0},
   {k:"gunPerEn", ru:"на единицу энергии",fix:2, g:"огонь", get:st=>st.gunTot?st.gunTot.perEnergy:0}
 ];
 const OPIS_KIT=[
@@ -84538,7 +84686,7 @@ function opisPartCard(p,where){
   if(!fitted&&f&&f.t==="slot"&&slotsOf(G.shipId)[f.i]===p.kind)card.classList.add("fit");
   const scrapKey="scrap:"+p.id;
   const acts=[];
-  if(fitted)acts.push({ru:"СНЯТЬ",go:()=>opisUnfit(slot)});
+  if(fitted&&!(where==="slot"&&opisPhone()))acts.push({ru:"СНЯТЬ",go:()=>opisUnfit(slot)});   /* на телефоне СНЯТЬ — в одном месте, под корпусом (R6) */
   else{
     const t=opisTarget(p),fm=G.fit[G.shipId]||{};
     const fits=t>=0&&capUsed()-(fm[t]!=null?partById(fm[t]).cap:0)+p.cap<=capOf(G.shipId);
@@ -84633,7 +84781,7 @@ function opisHullCap(slots,fm,inv,spare){
       (p?"«"+p.name+"»":"пусто · "+why)+"</s>";
     const acts=[];
     if(p)acts.push({ru:"СНЯТЬ",go:()=>opisUnfit(s.i)});
-    else if(n)acts.push({ru:"К СНЯТЫМ",gold:true,go:()=>{if(spare&&spare.scrollIntoView)spare.scrollIntoView({block:"start",behavior:"smooth"});}});
+    else if(n)acts.push({ru:"К СНЯТЫМ",gold:true,go:()=>{OPIS.tab="spare";opisRerender();}});   /* вкладка СНЯТОЕ (R6) */
     if(acts.length)opisActs(cap,acts);
     return cap;
   }
@@ -84820,7 +84968,8 @@ function opisRender(box){
     chip.innerHTML="<em style='color:"+K.col+"'>"+K.sh+" · слот "+(i+1)+mru+"</em>";
     if(fm[i]!=null)chip.appendChild(opisPartCard(partById(fm[i]),"slot"));
     else{
-      const e=document.createElement("s");e.className="chalk";e.textContent="пусто";
+      /* пустой слот говорит, где взять (R6): части продают на станции, вкладка МОДУЛИ */
+      const e=document.createElement("s");e.className="chalk";e.textContent="пусто · продают на станции: КОРАБЛЬ → МОДУЛИ";
       chip.appendChild(e);
       chip.addEventListener("click",ev=>{if(ev.target.closest("button"))return;
         OPIS.sel=(OPIS.sel&&OPIS.sel.t==="slot"&&OPIS.sel.i===i)?null:{t:"slot",i};opisRerender();});
@@ -84923,6 +85072,21 @@ function opisRender(box){
     z5.appendChild(grid);
   }
   /* порядок в разметке — порядок ленты на телефоне; на широком экране расставит сетка */
+  /* вкладки на телефоне (R6): все зоны остаются в разметке — цели переноса,
+     тесты и широкий экран видят их как прежде; какая видна, решает класс
+     op-tab-* на сукне (style.css, ≤760) */
+  for(const c of Array.from(box.classList))if(c.indexOf("op-tab-")===0)box.classList.remove(c);
+  if(phone){
+    const nav=document.createElement("nav");nav.className="tabs op-tabs";
+    for(const [k,ru] of OPIS_TABS){
+      const b=document.createElement("button");b.dataset.tab=k;b.textContent=ru;
+      if(OPIS.tab===k)b.classList.add("on");
+      b.onclick=()=>{OPIS.tab=k;OPIS.sel=null;sfx("ui");opisRerender();};
+      nav.appendChild(b);
+    }
+    box.insertBefore(nav,box.firstChild);
+    box.classList.add("op-tab-"+OPIS.tab);
+  }
   box.appendChild(z3);box.appendChild(z2);box.appendChild(z1);if(z5)box.appendChild(z5);box.appendChild(z4);
   if(folds)box.appendChild(folds);
   /* подсказка называет то, что видно: кнопки. Долгое нажатие по-прежнему
@@ -85472,7 +85636,7 @@ function roadPing(){
     id=localStorage.drift_road||"";
     if(!id){id=Array.from(crypto.getRandomValues(new Uint8Array(8))).map(b=>b.toString(16).padStart(2,"0")).join("");localStorage.drift_road=id;}
   }catch(e){return;}
-  fetch(CLOUD.api+"?a=road",{method:"POST",body:JSON.stringify({sec:RD.sys.cx+":"+RD.sys.cy,id})})
+  fetch(CLOUD.api+"?a=road",{method:"POST",body:JSON.stringify(netBody({sec:RD.sys.cx+":"+RD.sys.cy,id}))})
     .then(r=>r.json()).then(j=>{if(RD&&j&&j.ok)RD.mates=j.n|0;}).catch(()=>{});
 }
 const roadPilotRu=n=>{const d=n%10,h=n%100;return h>=11&&h<=14?"пилотов":d===1?"пилот":d>=2&&d<=4?"пилота":"пилотов";};
@@ -86669,7 +86833,8 @@ let dealRun=null;
 function dealCount(){
   return (G.crew?G.crew.length:0)+(G.mgrs?G.mgrs.length:0)+
          (G.drones?G.drones.length:0)+
-         ((typeof baseList==="function")?baseList().length:0);
+         ((typeof baseList==="function")?baseList().length:0)+
+         ((typeof offerCarried==="function")?offerCarried().length:0);
 }
 /* ── кто простаивает ── ради точки на кнопке: хозяйство, которое встало,
    обязано быть видно из полёта, а не только из открытого экрана */
@@ -86735,6 +86900,16 @@ function dealRender(){
       (crewM?" · наёмники "+dealRate(-crewM):"")+(coreM?" · ядро "+dealRate(-coreM):"")+
       " · <b>итого "+dealRate(perMin-crewM-coreM)+" кр</b>"));
 
+  /* ── дела с доски (R5b) ── взятая работа живёт не меньше четверти часа, и
+     её срок виден здесь, а не только на бумаге в ВЕЩАХ */
+  const carried=(typeof offerCarried==="function")?offerCarried():[];
+  if(carried.length){
+    $dlBody.appendChild(el("div","sec","ДЕЛА С ДОСКИ · "+carried.length));
+    for(const c of carried)
+      dealRow(c.name,"на «"+c.dest+"» · "+(c.named?"вас назвали":"взято на доске"),
+        [c.left+" мин","осталось"],c.left<5?"#f2b25c":"");
+  }
+
   /* ── люди ── */
   const crew=G.crew||[],mgrs=G.mgrs||[];
   if(crew.length||mgrs.length){
@@ -86760,12 +86935,12 @@ function dealRender(){
       const loy=m.loy|0;
       const cut=(!m.ai&&typeof mgrCut==="function")?Math.round(mgrCut(m)*100):0;
       const st=(R?R.ru:"управляющий")+" · верность "+loy+
-        (cut?" · берёт "+cut+"% с дохода домена":"")+
         ((typeof mgrPoints==="function"&&mgrPoints(m)>0)?" · есть невыбранное очко":"")+
         (loy<35?" · мрачнеет":"");
-      /* доля — не кр/мин, её столбец не показывает: она названа в строке */
+      /* доля — в столбце денег (R6, 12.09): у живого управляющего там «N % с
+         дохода», у ядра — кр/мин из кассы; одно из двух, столбец не двоится */
       dealRow(m.name,st,
-        (m.ai&&typeof mgrPay==="function")?[dealRate(-mgrPay(m)),"кр/мин"]:null,
+        (m.ai&&typeof mgrPay==="function")?[dealRate(-mgrPay(m)),"кр/мин"]:(cut?[cut+" %","с дохода"]:null),
         loy<35?"#ff9d7a":"",
         ()=>{closeDeal();if(typeof openHq==="function")openHq();});
     }
@@ -86790,10 +86965,14 @@ function dealRender(){
       /* машины маршрута — здесь же, а не на столе: раньше строка уводила в
          СТОЛ → РЕЙСЫ, то есть ровно в то разбегание по экранам, ради которого
          ДЕЛО и заводили (M286). Стол — для того, что читают. */
-      if(open)for(const d of r.drones)
-        $dlBody.appendChild(el("div","row sub","<div class='nm'><s>"+droneName(d)+" · "+
-          droneStateRu(d)+" · кругов "+(d.trips|0)+" · заработал "+
-          (d.earned|0).toLocaleString("ru")+" кр</s></div>"));
+      /* дроны таблицей (R6, 12.09): имя и состояние слева, заработок в столбце
+         денег — как у людей, а не прозой через точки */
+      if(open)for(const d of r.drones){
+        const rr=el("div","row deal sub");
+        rr.appendChild(el("div","nm","<b>"+droneName(d)+"</b><s>"+droneStateRu(d)+" · кругов "+(d.trips|0)+"</s>"));
+        rr.appendChild(el("div","qt",(d.earned|0).toLocaleString("ru")+"<s>кр всего</s>"));
+        $dlBody.appendChild(rr);
+      }
     }
     if(!runs.length)
       $dlBody.appendChild(el("div","row","<div class='nm'><s>в рейсе никого: дрон ставят "+
@@ -86878,7 +87057,7 @@ let HUD_BAND=72;
 let HUD_FLOOR=0, HUD_RAIL=0;
 const $vitals=document.querySelector(".vitals"),$locusEl=document.querySelector(".locus");
 const $vf=document.getElementById("vFuel"),$vh=document.getElementById("vHull");
-const $vc=document.getElementById("vHold"),$purse=document.getElementById("purse");
+const $vc=document.getElementById("vHold"),$purse=document.getElementById("purse"),$zl=document.getElementById("zoomlbl");
 const $vs=document.getElementById("vSuit"),$ub=document.querySelector("#ubar i");
 const $un=document.getElementById("unum");
 const $vj=document.getElementById("vJet"),$jb=document.querySelector("#jbar i");
@@ -87027,6 +87206,14 @@ function hud(){
      обмен места в кадре не занимает (docs/DESIGN-online-risks.md, A1). */
   const cl=(typeof cloudLine==="function")?cloudLine():"";
   setTx($purse,Math.round(G.credits).toLocaleString("ru")+" кр · "+G.data+" дан"+(cl?" · "+cl:""));
+  /* масштаб — служебная цифра, и место ей в шапке под кассой (R6, 12.09), а не
+     плашкой посреди мира; на буксире и под окнами её нет, как и было */
+  if($zl){
+    const bc=document.body.classList;
+    const zs=G.mode==="system"&&!G.haul&&!bc.contains("hailopen")&&!bc.contains("sosopen");
+    $zl.style.display=zs?"":"none";
+    if(zs)setTx($zl,"МАСШТАБ ×"+G.zoom.toFixed(2));
+  }
   /* Приборы проявляются, когда есть о чём сказать, и гаснут, когда всё ровно.
      Повод — изменившееся показание, тревога или открытый режим, где приборы
      и есть содержание кадра. Панель, которая горит всегда, перестаёт читаться
@@ -87187,8 +87374,13 @@ function hud(){
     const m=/(?:УДЕРЖИВАЙТЕ\s+)?ДЕЙСТВИЕ\s*—\s*([^·\n]+)/.exec(G.prompt||"");
     if(m){
       hasAct=true;
-      const v=m[1].trim();
-      if(v.length<=14)actLbl=v;
+      /* пад называет действие всегда (R6, 12.09): не «влезло — показали, не
+         влезло — безымянное ДЕЙСТВИЕ», а два первых слова и число, если оно
+         есть: «ВЗЯТЬ НА БУКСИР» → «ВЗЯТЬ НА», «СИНТЕЗ ТОПЛИВА ИЗО ЛЬДА (94)» →
+         «СИНТЕЗ ТОПЛИВА 94» */
+      const v=m[1].trim(),nm=/\(?(\d+)\)?\s*$/.exec(v);
+      const words=v.replace(/\s*\(?\d+\)?\s*$/,"").trim().split(/\s+/).filter(Boolean).slice(0,2).join(" ");
+      actLbl=(words||"ДЕЙСТВИЕ")+(nm?" "+nm[1]:"");
     }
   }
   setTx($act,actLbl);
@@ -87292,11 +87484,28 @@ function hud(){
 }
 
 /* ══════════════ авария ══════════════ */
+/* ── корпус до беды (R5b, автор 12.09: «корпус не выше, чем был») ──
+   Последний уровень корпуса, продержавшийся десять секунд без урона. После
+   аварии корпус собирают не выше него: 45 % или удержанное, что меньше, и
+   никогда ниже 10 %. Живёт на G как кадр (`_hullHeld`, мимо сейва — 14a2):
+   после загрузки отсчёт идёт заново от загруженного корпуса; часы игры
+   (`now`), чтобы стенд мог их подкрутить */
+const HULL_HELD_MS=10000;
+function hullHeld(){return G._hullHeld||(G._hullHeld={v:-1,last:-1,at:0});}
+function hullHeldTick(){
+  const H=hullHeld(),h=G.hull,t=now();
+  if(H.last<0||h<H.last)H.at=t;      /* урон — отсчёт заново */
+  else if(t-H.at>=HULL_HELD_MS)H.v=h;
+  H.last=h;
+}
 function wreck(why){   /* why — причина словами: журнал её называет (боты 12.09: «разбит» без причины) */
   toggleSos(false);   /* окно выходов не висит над собранным наспех кораблём с 30 в баке */
   sfx("boom",{v:1});stopEngine();
   const st=stat();
-  G.hull=Math.round(st.hullMax*.45);G.fuel=Math.max(G.fuel,30);
+  const HH=hullHeld(),before=HH.v>=0?HH.v:st.hullMax*.45;
+  G.hull=Math.round(clamp(Math.min(st.hullMax*.45,before),st.hullMax*.1,st.hullMax*.45));
+  HH.v=G.hull;HH.last=G.hull;HH.at=now();   /* собранное наспех — и есть «что было» */
+  G.fuel=Math.max(G.fuel,30);
   const a=rnd()*TAU;
   G.ship.x=Math.cos(a)*1600;G.ship.y=Math.sin(a)*1600;
   G.ship.vx=0;G.ship.vy=0;G.mode="system";G.ap=null;G.belt=null;G.dig=null;G.cave=null;G.surf=null;G.land=null;
@@ -87619,6 +87828,7 @@ function frameBody(now){
        снимок честен: восстановление ставит корабль в свободный полёт там же. */
     if(G.mode==="system"||G.mode==="dock"||G.mode==="surface")autosave();
     stepWorld(dt);
+    hullHeldTick();   /* корпус до беды (R5b) */
     if(typeof tapeTick==="function")tapeTick(dt);
     if(typeof shiftTalkTick==="function")shiftTalkTick(dt);
     if(typeof instrAgeTick==="function")instrAgeTick(dt);

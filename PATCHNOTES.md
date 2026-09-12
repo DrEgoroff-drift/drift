@@ -6,6 +6,41 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.448.0 - the first hour, the world zoom, and the design tails of the phone playtest
+
+- **The first hour** (`firstHour`, `G.flownMs` < 60 min): repair is two buttons — «ДО 50% · N» and
+  «ПОЛНОСТЬЮ · N», the price on the button, and in the first hour the full repair costs no more than
+  half the cash; a failed landing is a hard landing (−20 % of the hull at most, never to zero, the
+  cargo kept) instead of a wreck; the pirate front does not grow until your first liberation; a job
+  taken from the board lives at least fifteen real minutes by the game clock (offers no longer count
+  frames) and ДЕЛО lists it with the minutes left; the first probe is free («ЗОНД ДАРОМ» on the pad).
+- **A wreck rebuilds the hull no higher than it was**: 45 % or the level held for ten seconds
+  before the trouble, whichever is lower, never below 10 %.
+- **Scale**: the world zooms to ×4.5 while the ship stops at .8 (floor .7) — «close» is half a
+  planet in the frame, not the ship across the screen; the disc is the physical one again (the body
+  growth and moon caps of 0.447.0 are gone); fleet, pirates, barges and your own ships share the cap.
+  МАСШТАБ moved from a plate over the world to the masthead under the purse.
+- **Design tails**: the ДЕЙСТВИЕ pad always names the action (two words and a number); prompts fold
+  to two lines on touch and the belt hint names no keys there; while a hail is open one undimmed
+  edge arrow names the hailing ship; a planet's or moon's name sits on the far side of the disc
+  from the ship, and an NPC's name moves above the hull when it would cross a body name or a chip;
+  ОПИСЬ on a phone has four tabs (КОРАБЛЬ · СНЯТОЕ · КОМПЛЕКТ · ТРЮМ), the slots come before
+  ПРИБОРЫ, an empty slot says where to buy, СНЯТЬ lives under the hull only; ДЕЛО shows a manager's
+  share in the money column and drones as a table; tape strips stack without a gap; the СТОЛ button
+  keeps one width and wears «99+» over its corner; a board card reads where and until when, the
+  cargo paper names the destination sector; the fusion button says «В ПЛАВКУ»; a maxed module is one
+  line; the got card reads «/с» and sits in the lower third; the haul passes its planet at 1.15 r on
+  the ship's left; a barge box meets the hull with a dark seam.
+- **The stand does not write into the live world**: `dev.html` (and `?test=1`) marks every POST
+  `test:1`; `api.php` (road, traces, postcards), `war.php` and `log.php` answer as usual and write
+  nothing. Account saves are unaffected.
+- **Later tails**: what you dug does not grow back on the next landing (`G.mined`, saved); the key
+  rebind button cancels on a second tap; «ТРЮМ ПУСТ» only when the hold is empty (rare stock is
+  cargo); «привезли лёд, когда его не было» agrees with the goods; a half-price fuel coupon per two
+  hours of active flight a week (`G.actWk`, shown on the station's fuel line).
+- Tests follow: offers expire by the game clock, the scale suite states the decided form, probe
+  suites run past the first hour, `resetWorld` knows the new fields.
+
 ## 0.447.0 - the exits window, the tow as a scene, and what the bots found
 
 - **Empty tank**: the nose no longer turns without fuel; a turn (pad or A/D/arrows) opens the

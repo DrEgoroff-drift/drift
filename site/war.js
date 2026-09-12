@@ -27,10 +27,23 @@ function earn(){}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.447.0";
+const VER="0.448.0";
+/* ── стенд не пишет в живой мир (Контроль 12.09) ──
+   dev.html и ?test=1 помечают каждый POST полем test:1; api.php, war.php и
+   log.php такую запись в общие пулы (знаки, вещи, открытки, дорога, война,
+   сбои) не кладут, а отвечают как обычно. Боты 11.09 насорили знаками именно
+   со стенда. Свой сейв по учётной записи стенд пишет по-прежнему */
+const NET_TEST=(typeof location!=="undefined")&&!!location&&
+  (/\/dev\.html$/i.test(location.pathname||"")||/[?&]test=1(&|$)/.test(location.search||""));
+function netBody(b){b=b||{};if(NET_TEST)b.test=1;return b;}
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
+/* пределы полётного зума (п. 2 плейтеста 11.09, решено автором 12.09: «мировой
+   зум ×4–5»): мир приближается до ×4.5, а корабль и прочие корабли-спрайты
+   выше SHIP_SCALE_MAX (16c) не растут — «близко» значит полпланеты в кадре,
+   а не корабль во весь экран. Один зум для setZoom и для загрузки сейва */
+const ZOOM_MIN=.16,ZOOM_MAX=4.5;
 const lerp=(a,b,t)=>a+(b-a)*t;
 function hashi(x,y,s){
   let h=Math.imul(x|0,374761393)^Math.imul(y|0,668265263)^Math.imul(s|0,1442695041);
@@ -3408,7 +3421,7 @@ function warClock(serverN){
 function warCall(a,body){
   return fetch(WAR_API+"?a="+a,{method:"POST",
     headers:{"Content-Type":"application/json","X-Drift-Token":warTok()},
-    body:JSON.stringify(body||{})}).then(r=>r.json());
+    body:JSON.stringify(netBody(body))}).then(r=>r.json());
 }
 /* ── взять новое: закрытые сводки после последней известной ── */
 function warPull(force){

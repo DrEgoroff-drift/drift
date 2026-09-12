@@ -115,8 +115,9 @@ TEST_SUITES.push(()=>suite("опись: четыре зоны, части ста
   ok(!!box.querySelector(".op-panel[data-p=ship] u"),"панель напечатала стрелку → к новому числу");
   OPIS.hover=null;opisPanels();
   ok(!box.querySelector(".op-panel[data-p=ship] u"),"без наведения стрелок нет");
-  /* снять кнопкой */
-  btn(card(p1.id),/СНЯТЬ/).click();
+  /* снять кнопкой; на телефоне СНЯТЬ живёт в одном месте — под корпусом (R6, 0.448.0) */
+  if(opisPhone()){OPIS.sel={t:"slot",i:slotI,id:p1.id};opisRerender();btn(box.querySelector(".op-hullcap"),/СНЯТЬ/).click();}
+  else btn(card(p1.id),/СНЯТЬ/).click();
   ok(!isFitted(p1.id),"часть снята");
   /* разобрать отменную: сперва «ТОЧНО?», потом спички */
   const c4=card(p4.id);ok(!!c4,"отменная часть на сукне");
