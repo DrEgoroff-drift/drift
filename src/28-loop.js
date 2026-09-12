@@ -89,6 +89,28 @@ function audioTick(dt){
 /* ══════════════ цикл ══════════════ */
 let last=wallMs();
 let lastDroneTick=0;
+/* ── кто держал кадр (12.09, DPR 2.5 stalls — PLAN.md item 1) ──
+   09.09 с окна 1536×791 при DPR 2.5 пришло пять стопов по 2–3,4 с в первые
+   полминуты в системе — и ни слова о том, чей это стоп. На стенде похожие
+   провалы вышли такими: главный поток в разрыве простаивает, а GPU-процесс
+   сотни миллисекунд растрит одну команду. Три разные болезни — наш JS в
+   кадре, чужая длинная задача между кадрами (таймер, ответ сети, разбор
+   сейва) и GPU — лечатся по-разному, поэтому письмо о стопе несёт все три
+   числа: js — сколько шёл последний кадр, lt — сколько из разрыва заняли
+   длинные задачи главного потока (PerformanceObserver «longtask»), остаток —
+   то, чего поток не делал, то есть растр и композитор. */
+let FRAME_JS=0;const LONGTASKS=[];
+try{new PerformanceObserver(l=>{for(const e of l.getEntries()){LONGTASKS.push([e.startTime,e.duration]);
+  if(LONGTASKS.length>40)LONGTASKS.shift();}}).observe({type:"longtask",buffered:true});}catch(_){}
+function stallWho(a,b){
+  let lt=0;
+  for(const [s,d] of LONGTASKS)lt+=Math.max(0,Math.min(b,s+d)-Math.max(a,s));
+  const bake=[typeof STRIP_JOB!=="undefined"&&STRIP_JOB?"strip":"",typeof MAT_JOB!=="undefined"&&MAT_JOB?"mat":"",
+    typeof NEB_JOB!=="undefined"&&NEB_JOB?"neb":""].filter(Boolean).join(",");
+  const gap=b-a;
+  return {gap:gap|0,js:FRAME_JS|0,lt:lt|0,gpu:Math.max(0,gap-Math.max(lt,FRAME_JS))|0,bake,
+    cv:(typeof cvs!=="undefined"&&cvs?cvs.width+"x"+cvs.height:"")};
+}
 /* ── шаг на прибитых часах (M441) ──
    На настоящих часах шаг кадра меряется rAF: сколько прошло, столько и
    прожито, — и потому два прогона одной сцены никогда не совпадали бы: у
@@ -414,7 +436,7 @@ function frame(now){
      `frameLastAt=0` на возврате, и первый кадр после возврата не мерится. */
   const framePrev=frameLastAt;
   frameLastAt=now;
-  if(framePrev&&now-framePrev>2000)crashShip("stall","кадр стоял "+((now-framePrev)|0)+" мс","",{gap:(now-framePrev)|0});
+  if(framePrev&&now-framePrev>2000)crashShip("stall","кадр стоял "+((now-framePrev)|0)+" мс","",stallWho(framePrev,now));
   /* пульс: раз в три минуты, потом раз в десять — версия, режим, средний fps,
      окно. Не ошибка, а мерка с настоящих телефонов: «60 fps в девяти режимах»
      мерились дома; здесь — то, что видят игроки. Ничего личного: ни текста,
@@ -434,7 +456,7 @@ function frame(now){
       if(isFinite(fps)&&fps>0&&fps<1000)crashShip("beat","fps "+fps,"",{fps});
       BEAT.sent++;BEAT.t=now;BEAT.n=0;BEAT.ms=0;}}}
   if(!STORAGE_OK&&!CRASH_SHIP.st){CRASH_SHIP.st=1;crashShip("storage","localStorage недоступен","");}
-  const fb0=wallMs();   /* stallWho ниже читает FRAME_JS — до сих пор он объявлялся и никогда не считался (всегда 0) */
+  const fb0=wallMs();   /* stallWho (выше) читает FRAME_JS — засекаем реальным временем, как остальной цикл */
   try{frameBody(now);}catch(e){crashSay(e,G&&G.mode);}
   FRAME_JS=wallMs()-fb0;
   FRAME_IN=false;   /* дальше до следующего кадра говорят нажатия — это отклик, а не голос мира */
