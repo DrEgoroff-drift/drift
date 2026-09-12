@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 537 · символов верхнего уровня: 5125
+Файлов: 537 · символов верхнего уровня: 5131
 
 ## СИМВОЛЫ
 
@@ -1408,15 +1408,16 @@ drawSurface                  src/21e-surface-draw.js:277-291
 drawSurfaceHud               src/21e-surface-draw.js:21-115
 drawSurfaceWorld             src/21e1-surface-world.js:10-615
 drawSurvey                   src/12w-survey.js:63-89
-drawSysHud                   src/17-mode-system.js:641-732
+drawSysHud                   src/17-mode-system.js:655-746
 drawSysNebula                src/16a-space.js:208-236
-drawSystem                   src/17-mode-system.js:382-640
+drawSystem                   src/17-mode-system.js:396-654
 drawSysTraffic               src/17f-sys-traffic.js:29-33
 drawTemple                   src/20aa-poi-shapes.js:50-89
 drawThingIcon                src/27i-ui-table.js:347-383
 drawTierTrim                 src/03b-hull-paint.js:73-166
 drawTiles                    src/18c-chunks.js:144-151
-drawTrail                    src/16-flight.js:376-433
+drawTrail                    src/16-flight.js:488-546
+drawWake                     src/16-flight.js:357-394
 drawWallPaper                src/11ae-concert.js:39-71
 drawWanderer                 src/12v-wander.js:175-318
 drawWanderMap                src/12v-wander.js:159-173
@@ -3211,7 +3212,7 @@ optGroups                    src/27-ui-ship.js:338-355
 OPTS_BOOT                    tests/90-harness.js:203
 optsNumify                   src/14a2-save-ephemeral.js:23-28
 optTab                       src/27-ui-ship.js:337
-orbPathOf                    src/17-mode-system.js:371-381
+orbPathOf                    src/17-mode-system.js:385-395
 ORDER_WIN                    src/12aa-need.js:76
 orderDeliver                 src/12aa-need.js:116-127
 orderHere                    src/12aa-need.js:112-115
@@ -4593,6 +4594,7 @@ SYS_HOME_KEY                 src/06-galaxy.js:22
 SYS_K_ORBIT                  src/06-galaxy.js:98
 SYS_LRU                      src/06-galaxy.js:21
 sysDanger                    src/01-core.js:186
+sysEdge                      src/17-mode-system.js:18-24
 sysHasFauna                  src/12ad-site.js:114-117
 sysJitter                    src/01-core.js:187-191
 sysMakes                     src/12ad-site.js:134-140
@@ -4766,7 +4768,7 @@ TRAIL_CHAR                   src/16-flight.js:247-254
 TRAIL_TINT                   src/16-flight.js:262
 trailBurst                   src/16-flight.js:240
 trailChar                    src/16-flight.js:255-261
-trailStep                    src/16-flight.js:284-375
+trailStep                    src/16-flight.js:395-487
 trailTint                    src/16-flight.js:267-283
 TRAINEE_LINES                src/11ac-trainee.js:14-18
 TRAINEE_NAMES                src/11ac-trainee.js:13
@@ -4817,7 +4819,7 @@ updateRaid                   src/24a-mode-raid.js:215-345
 updateScoop                  src/19a-mode-scoop.js:75-171
 updateSpa                    src/29i-spa-draw.js:514-519
 updateSurface                src/21-mode-surface.js:199-656
-updateSystem                 src/17-mode-system.js:11-367
+updateSystem                 src/17-mode-system.js:25-381
 updateWanderRoom             src/24c-mode-wanderer.js:58-88
 updateWinter                 src/29g-winter-draw.js:808-817
 useBeacon                    src/23-mode-dig.js:87-100
@@ -4904,6 +4906,10 @@ vRope                        src/18d-verlet.js:27-37
 vRopeAt                      src/18d-verlet.js:125-131
 vStep                        src/18d-verlet.js:53-77
 W                            src/08-state.js:5
+WAKE                         src/16-flight.js:298
+wakeBurst                    src/16-flight.js:299
+wakeStep                     src/16-flight.js:328-356
+wakeTips                     src/16-flight.js:300-327
 WALK_PARA                    tests/91zzy-walk.js:8
 walkParas                    tests/91zzy-walk.js:9-20
 WALKS                        tests/91zzzzzzzza-walks.js:19-99
@@ -5718,10 +5724,11 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/15c-rec.js · 6 КБ
   · запись ввода: последние полминуты по кадрам (M444):1
 
-## src/16-flight.js · 29 КБ
+## src/16-flight.js · 37 КБ
   · фон:1
   · автопилот:120
   · шлейф двигателей и струи ориентации:218
+  · кильватер: хвосты от скорости, а не от сопла:284
 
 ## src/16a-space.js · 37 КБ
   · облик системы:1
@@ -5733,7 +5740,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/16c-rescue.js · 50 КБ
   · пустой бак: хода нет, но выход есть всегда (11.09):1
 
-## src/17-mode-system.js · 53 КБ
+## src/17-mode-system.js · 54 КБ
   · режим: система:1
 
 ## src/17a-station-mod.js · 13 КБ
@@ -6213,12 +6220,13 @@ zooTick                      src/11ad-zoo.js:41-54
   · детекторы, часть вторая: законы (M443):1
   · сами детекторы: ctx → нарушения:91
 
-## tests/91a-flight.js · 21 КБ
+## tests/91a-flight.js · 23 КБ
   · автотесты: наборы:1
   · первая минута: цель, которую нельзя потерять:244
   · M234: ранец — запас, а не декорация:308
   · M234: сбой кадра не убивает игру:339
   · M234: ВЗЛЁТ гаснет вместе с поверхностью:357
+  · кильватер: хвосты от скорости (12.09):380
 
 ## tests/91b-crew.js · 18 КБ
   · автотесты: наёмники: убыток по кредитам, удача, плен, рейсы, сохранение:1

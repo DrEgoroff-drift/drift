@@ -6,6 +6,29 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.449.0 - the wake and the system edge
+
+- **The wake** (`16-flight` `wakeStep`/`drawWake`): a second tail that comes from speed, not from
+  the nozzle. At cruise the stick's assist cuts the engine and the plume dies with it — the ship
+  flew as a bare silhouette. Now the hull cuts the thin gas of the system: threads peel off its
+  edges — wing tips, nacelles, pods (edges that sit in one spot count once) and one from the
+  stern — and open in a V with age, wider from the outer edges. A point lives 60 frames at low
+  speed and 260 at cruise, so the tail runs past the screen. Cold key with a whisper of the hull
+  accent (the warm accent stays with the plume), a two-layer body — a core that fades by the cube
+  and a halo that widens — drawn as quadratic arcs through segment midpoints, so a turn leaves no
+  corners; nothing twinkles. Drawn under the plume and under the hull. «Стриж», «Топор», «Обод»,
+  «Мамонт» trail five threads, «Клинок», «Игла», «Вьюк» three.
+- **The system edge** (`sysEdge` in `17-mode-system`): the gravity anchor stands at 1.6 of the
+  outermost body — planet, belt or station — floor 3840. It used to be the belt or a fixed 2400,
+  so without a belt the edge ignored the layout: home had 822 units of room past its outer planet
+  (the phone video of 12.09: the stick pushed outward, the anchor bent the course back, the helm
+  read the bent course as a brake and the ship crawled at a tenth of cruise burning fuel), and in
+  29 systems of 625 the outer planet sat at or beyond the anchor. Home now has 1811 of room; no
+  system got tighter.
+- **Tests**: the wake suite in 91a-flight (empty at rest, longer than 1500 units at cruise and three
+  times the low-speed length, threads on both sides and from the stern, the V opens with age); the
+  anchor suite measures against `sysEdge` and aims the reverse course at the star, not at −X.
+
 ## 0.448.0 - the first hour, the world zoom, and the design tails of the phone playtest
 
 - **The first hour** (`firstHour`, `G.flownMs` < 60 min): repair is two buttons — «ДО 50% · N» and
