@@ -386,11 +386,15 @@ function drawSystem(){
   /* на тросе камера смотрит вперёд, туда, куда тащат: корабль ближе к задней
      кромке, баржа и трос целиком в кадре (дизайн-ревью 11.09) */
   let hx=0,hy=0;
-  if(G.haul&&!wA&&typeof haulReach==="function"){
+  if(G.haul&&G.haul.ph!=="free"&&!wA){
     const T=G.haul,dx=T.bx-sh.x,dy=T.by-sh.y,d=Math.hypot(dx,dy)||1,k=Math.min(.5,haulReach()*.5/d);
     hx=dx*k;hy=dy*k;
   }
-  const cx0=fc.x+(co?co.x:0)+hx, cy0=fc.y+(co?co.y:0)+hy;
+  /* сдвиг догоняет цель, а не встаёт в неё (тестировщик 12.09: на старте и в
+     конце буксира кадр прыгал на полтроса) — это вид, не мир */
+  HAUL_CAM.x+=(hx-HAUL_CAM.x)*.05;HAUL_CAM.y+=(hy-HAUL_CAM.y)*.05;
+  if(Math.abs(HAUL_CAM.x)<.01&&Math.abs(HAUL_CAM.y)<.01&&!hx&&!hy){HAUL_CAM.x=0;HAUL_CAM.y=0;}
+  const cx0=fc.x+(co?co.x:0)+HAUL_CAM.x, cy0=fc.y+(co?co.y:0)+HAUL_CAM.y;
   const zx=x=>W/2+(x-cx0)*Z, zy=y=>H/2+(y-cy0)*Z;
   /* ввод пересчитывает тычок через ту же камеру */
   G.viewCX=cx0;G.viewCY=cy0;

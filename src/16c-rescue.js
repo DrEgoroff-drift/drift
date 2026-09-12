@@ -145,10 +145,13 @@ function rescueTake(id){
 /* ── буксир: баржа настоящая, путь настоящий ── */
 function haulStart(){
   const sh=G.ship,dest=nearestStation(G.sx,G.sy);
-  const a=rnd()*TAU;
   G.haul={ph:"come",t:0,seed:hashi(G.sx*977+G.sy,clockNow()|0,31)>>>0,
-    bx:sh.x+Math.cos(a)*2200,by:sh.y+Math.sin(a)*2200,ba:a+Math.PI,
-    x0:0,y0:0,dsx:dest.sx,dsy:dest.sy,dname:dest.name};
+    bx:sh.x,by:sh.y,ba:0,x0:0,y0:0,dsx:dest.sx,dsy:dest.sy,dname:dest.name};
+  /* заходит сзади, со своего борта (R4): 2200 за кормой по линии буксира */
+  const A=haulAim(sh),hd0=Math.atan2(A.ty-sh.y,A.tx-sh.x),sd=haulSide();
+  G.haul.bx=sh.x-Math.cos(hd0)*2200-Math.sin(hd0)*sd*haulReach()*1.1;
+  G.haul.by=sh.y-Math.sin(hd0)*2200+Math.cos(hd0)*sd*haulReach()*1.1;
+  G.haul.ba=hd0;
   G.ap=null;G.orbit=null;G.pirates=[];G.shots=[];HAUL_FX=[];
   logAdd("warn","Буксир вызван к "+evacFrom()+" · баржа идёт");
   /* тоста нет: подсказка и так говорит «баржа подходит» (дизайн-ревью 11.09) */
@@ -175,6 +178,11 @@ const HAUL_TALK=["держись, не дёргай","на тросе не ку�
   "это не мы трясём, это ты болтаешься","бак пустой — голова пустая, говорил мне отец",
   "за буксир денег не берём. за разговоры тоже","видишь станцию? и я не вижу. скоро",
   "руль не трогай, он у тебя сейчас для красоты","у нас тут чай. тебе не передать, извини"];
+const HAUL_BIT_TALK=["у тебя там что-то отвалилось","ого. это было важное?",
+  "не страшно, на станции приварят","считай, облегчились"];
+const HAUL_FREE=210;                  /* кадров отцепки: трос отдан, баржа уходит (R4) */
+const HAUL_BOOM=18;                   /* стрела за соплами, px рисунка баржи: трос не из огня */
+const HAUL_CAM={x:0,y:0};             /* сдвиг камеры вперёд по тросу — догоняет плавно (вид, не мир) */
 let HAUL_FX=[];
 const haulRim={cv:null};              /* холст-маска кромки: один на сцену, не в G */
 /* масштаб корабля в drawSystem — один на двоих с буксиром. На тросе пол .7:
@@ -208,7 +216,33 @@ function haulName(){return "буксир «"+HAUL_NAMES[((G.haul?G.haul.seed:0)>
 function haulSay(t){if(typeof etherLine==="function")etherLine(t,haulName());}
 /* от центра корабля до центра баржи, px масштаба корабля */
 function haulReach(){return HAUL_SHIP_HALF+HAUL_ROPE+bargeArtOf(haulBarge()).L*.48*HAUL_BARGE_K;}
-function haulGap(g){return g[0]+rndFx()*(g[1]-g[0]);}
+/* случай буксира — от его зерна, не от рисунка (M441; тестировщик 12.09: rndFx
+   решал угол корабля, место баржи в сейве и реплики в журнале, и прогон с
+   кадрами расходился с прогоном без них). Счётчик потока — в поле с
+   подчёркиванием, мимо сейва: после загрузки поток идёт заново, одинаково */
+function haulR(){const T=G.haul;T._k=(T._k|0)+1;return (hashi(T.seed|0,T._k,0x4A17)>>>0)/4294967296;}
+function haulGap(g){return g[0]+haulR()*(g[1]-g[0]);}
+/* реплики колодой (тестировщик 12.09: наугад с возвратом — повтор за рейс почти
+   наверняка). Колода тасуется от зерна; кончилась — тасуется новая */
+function haulDeal(list,key){
+  const T=G.haul,d=T[key]||(T[key]={i:0,o:null});
+  if(!d.o||d.i>=d.o.length){
+    d.o=list.map((_,i)=>i);
+    for(let i=d.o.length-1;i>0;i--){const j=Math.floor(haulR()*(i+1)),t=d.o[i];d.o[i]=d.o[j];d.o[j]=t;}
+    d.i=0;
+  }
+  return list[d.o[d.i++]];
+}
+/* с какого борта баржа обгоняет — от зерна */
+function haulSide(){return (G.haul.seed&1)?1:-1;}
+/* куда тащат: своя система со станцией — к ней (у станции по S.ang), чужая —
+   от звезды к краю, и в конце прыжок */
+function haulAim(sh){
+  const T=G.haul,same=T.dsx===G.sx&&T.dsy===G.sy&&G.sys.station,S=same?G.sys.station:null;
+  const ox=T.ph==="haul"?T.x0:sh.x,oy=T.ph==="haul"?T.y0:sh.y;
+  return {same,S,tx:S?S.x+Math.cos(S.ang)*120:ox+Math.cos(Math.atan2(oy,ox))*3000,
+    ty:S?S.y+Math.sin(S.ang)*120:oy+Math.sin(Math.atan2(oy,ox))*3000};
+}
 /* планета для облёта: ближняя к отрезку пути и не дальше 2500 от него —
    чтобы крюк был по дороге, а не экспедицией. -1 — лететь прямо */
 function haulPickWaypoint(x0,y0,tx,ty){
@@ -222,7 +256,7 @@ function haulPickWaypoint(x0,y0,tx,ty){
 }
 /* кусок отвалился: косметика, мир не трогаем */
 function haulBit(){
-  const sh=G.ship,T=G.haul,hd=T.ba,px=-Math.sin(hd),py=Math.cos(hd),side=rndFx()<.5?-1:1;
+  const sh=G.ship,T=G.haul,hd=T.ba,px=-Math.sin(hd),py=Math.cos(hd),side=haulR()<.5?-1:1;   /* толчок — мир: от зерна */
   const kind=["plate","antenna","barrel"][Math.floor(rndFx()*3)];
   const x=sh.x+px*side*8,y=sh.y+py*side*8;
   HAUL_FX.push({k:kind,x,y,vx:-Math.cos(hd)*(.5+rndFx()*.5)+px*side*(.3+rndFx()*.4),
@@ -230,8 +264,7 @@ function haulBit(){
   for(let i=0;i<14;i++){const a=rndFx()*TAU,v=1+rndFx()*2.5;
     HAUL_FX.push({k:"spark",x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:1,dec:1/(18+rndFx()*20)});}
   T._sv=(T._sv||0)+side*.012;          /* толчок на тросе */
-  if(rndFx()<.7)haulSay(["у тебя там что-то отвалилось","ого. это было важное?",
-    "не страшно, на станции приварят","считай, облегчились"][Math.floor(rndFx()*4)]);
+  if(haulR()<.7)haulSay(haulDeal(HAUL_BIT_TALK,"_db"));
 }
 function haulFxTick(dt){
   for(const f of HAUL_FX){f.x+=f.vx*dt;f.y+=f.vy*dt;if(f.va)f.a+=f.va*dt;
@@ -249,8 +282,17 @@ function haulRestore(h){
     dsx:h.dsx|0,dsy:h.dsy|0,dname:String(h.dname||"")};
 }
 function haulLeft(){
-  const T=G.haul;if(!T)return 0;
+  const T=G.haul;if(!T||T.ph==="free")return 0;
   return Math.ceil(((T.ph==="come"?HAUL_COME-T.t+HAUL_TIME:HAUL_TIME-T.t))/60);
+}
+/* отцепка: HAUL_FREE кадров баржа уходит с огнём, потом её нет */
+function haulFree(dt,sh){
+  const T=G.haul;
+  T._bv=(T._bv||0)+.06*dt;
+  T.bx+=Math.cos(T.ba)*T._bv*dt;T.by+=Math.sin(T.ba)*T._bv*dt;
+  if(T.t>=HAUL_FREE){G.haul=null;return true;}
+  cue("БУКСИР ОТЦЕПИЛСЯ · станция рядом",CUE_INFO);
+  return true;
 }
 /* кадр буксира: true — корабль ведёт баржа, штурвал и физика молчат */
 function haulTick(dt,sh){
@@ -277,32 +319,34 @@ function haulTick(dt,sh){
      буксира ниже пола (.7) не отъезжаем */
   /* и сверху так же (п. 2, 12.09): выше 1.6 спрайты не растут, а мировой трос
      растёт — баржа отрывалась бы от троса на щипке */
-  G.zoom=clamp(G.zoom,SHIP_SCALE_MIN,SHIP_SCALE_MAX);   /* трос и спрайты в одном масштабе (shipScaleAt) */
+  /* и не рывком (тестировщик 12.09: с .3 камера прыгала к .7 за кадр) — пока
+     баржа подходит, она далеко, и расхождение троса со спрайтом не видно */
+  if(G.zoom<SHIP_SCALE_MIN)G.zoom=Math.min(SHIP_SCALE_MIN,G.zoom+(SHIP_SCALE_MIN-G.zoom)*Math.min(1,.04*dt)+.0005*dt);
+  if(G.zoom>SHIP_SCALE_MAX)G.zoom=Math.max(SHIP_SCALE_MAX,G.zoom-(G.zoom-SHIP_SCALE_MAX)*Math.min(1,.04*dt)-.0005*dt);
   const reachW=haulReach();
   /* своя система со станцией — тащит к ней по-настоящему; чужая — уводит
      от звезды к краю, и в конце прыжок, как у любой баржи */
-  const same=T.dsx===G.sx&&T.dsy===G.sy&&G.sys.station;
-  const S=same?G.sys.station:null;
-  const ox=T.ph==="haul"?T.x0:sh.x,oy=T.ph==="haul"?T.y0:sh.y;
-  const tx=S?S.x+Math.cos(S.ang)*120:ox+Math.cos(Math.atan2(oy,ox))*3000;
-  const ty=S?S.y+Math.sin(S.ang)*120:oy+Math.sin(Math.atan2(oy,ox))*3000;
+  if(T.ph==="free")return haulFree(dt,sh);
+  const A=haulAim(sh),same=A.same,tx=A.tx,ty=A.ty;
   if(T.ph==="come"){
-    /* баржа идёт со стороны станции, гасит ход носовыми, разворачивается на
-       месте маневровыми и подаёт корму под трос */
+    /* баржа заходит сзади и обгоняет борт о борт (R4; тестировщик 12.09: шла со
+       случайной стороны, раз в десять рейсов пролетала сквозь корабль и дальше
+       шла кормой вперёд). Нос у неё по ходу: разгон — маршевые, у борта носовые
+       гасят ход, последние метры маневровые подают корму под трос. Корабль без
+       топлива носом не крутит (R2) — его развернёт трос, когда его возьмут */
     const k=clamp(T.t/HAUL_COME,0,1),hd0=Math.atan2(ty-sh.y,tx-sh.x);
-    const ax=sh.x+Math.cos(hd0)*reachW,ay=sh.y+Math.sin(hd0)*reachW;
-    T._fire=k<.5?1:0;T._retro=k>=.5&&k<.72;T._turn=k>=.72;
-    if(k<.72){
-      T.bx+=(ax-T.bx)*Math.min(1,(.003+.03*k*k)*dt);T.by+=(ay-T.by)*Math.min(1,(.003+.03*k*k)*dt);
-      T.ba=Math.atan2(sh.y-T.by,sh.x-T.bx);
-    }else{
-      T.bx=ax;T.by=ay;
-      const face=Math.atan2(sh.y-ay,sh.x-ax),q=(k-.72)/.28,e=q*q*(3-2*q);
-      T.ba=face+angDiff(hd0,face)*e;
-    }
-    sh.a=Math.atan2(T.by-sh.y,T.bx-sh.x);
+    const ux=Math.cos(hd0),uy=Math.sin(hd0),sd=haulSide();
+    const ax=sh.x+ux*reachW,ay=sh.y+uy*reachW;                                   /* под трос: впереди на длину троса */
+    const wx=sh.x-uy*sd*reachW*1.1+ux*reachW*.2,wy=sh.y+ux*sd*reachW*1.1+uy*reachW*.2;   /* борт о борт */
+    const gx=k<.55?wx:ax,gy=k<.55?wy:ay,px=T.bx,py=T.by,r=Math.min(1,(.004+.02*k)*dt);
+    T.bx+=(gx-T.bx)*r;T.by+=(gy-T.by)*r;
+    const mv=Math.hypot(T.bx-px,T.by-py);
+    T.ba+=angDiff(mv>.05?Math.atan2(T.by-py,T.bx-px):hd0,T.ba)*Math.min(1,(mv>.05?.12:.05)*dt);
+    T._fire=k<.55?1:0;T._retro=k>=.55&&k<.8;T._turn=k>=.8;
     if(T.t>=HAUL_COME){
-      T.ph="haul";T.t=0;T.x0=sh.x;T.y0=sh.y;T._sw=0;T._sv=.02;   /* рывок: трос взяли */
+      /* рывок: трос взяли — корабль разворачивает тросом из того, куда он смотрел */
+      T._off=angDiff(sh.a,hd0);
+      T.ph="haul";T.t=0;T.x0=sh.x;T.y0=sh.y;T._sw=0;T._sv=.02;
       T._nb=25*60;T._nt=12*60;
       haulSay("трос взяли, пошли. держись");
     }
@@ -330,9 +374,10 @@ function haulTick(dt,sh){
     T.ba=hd;sh.x=nx;sh.y=ny;
     /* качание на тросе: пружина с затуханием и мелкий ветер */
     T._sw=(T._sw||0)+(T._sv||0)*dt;
-    T._sv=(T._sv||0)+(-.0022*T._sw-.012*(T._sv||0))*dt+(rndFx()-.5)*.00035*dt;
+    T._sv=(T._sv||0)+(-.0022*T._sw-.012*(T._sv||0))*dt+(haulR()-.5)*.00035*dt;
     T._sw=clamp(T._sw,-.3,.3);
-    sh.a=hd+T._sw;
+    T._off=(T._off||0)*Math.pow(.985,dt);
+    sh.a=angWrap(hd+T._sw+T._off);
     T.bx=sh.x+Math.cos(hd+T._sw)*reachW;T.by=sh.y+Math.sin(hd+T._sw)*reachW;
     T._fire=1;T._retro=false;T._turn=false;
     if(T._nb==null)T._nb=haulGap(HAUL_BIT_GAP);
@@ -340,14 +385,18 @@ function haulTick(dt,sh){
     T._nb-=dt;if(T._nb<=0){haulBit();T._nb=haulGap(HAUL_BIT_GAP);}
     T._nt-=dt;if(T._nt<=0){
       const m=Math.ceil(haulLeft()/60);
-      haulSay(rndFx()<.3&&m>1?"до причала ещё "+m+" "+pl3(m,"минута","минуты","минут"):HAUL_TALK[Math.floor(rndFx()*HAUL_TALK.length)]);
+      haulSay(haulR()<.3&&m>1?"до причала ещё "+m+" "+pl3(m,"минута","минуты","минут"):haulDeal(HAUL_TALK,"_dt"));
       T._nt=haulGap(HAUL_TALK_GAP);
     }
     if(T.t>=HAUL_TIME){
       haulSay("приехали. отцепляем. бак не забудь");
       const dest=getSystem(T.dsx,T.dsy);
-      G.haul=null;homeCool(HOME_TOW_COOL);G.ap=null;G.homeDockAt=T.dsx+","+T.dsy;   /* тычок на тросе автопилот не копит */
-      if(!same)rescuePark(dest);
+      homeCool(HOME_TOW_COOL);G.ap=null;G.homeDockAt=T.dsx+","+T.dsy;   /* тычок на тросе автопилот не копит */
+      /* прыжок в систему станции — вместе с баржей: отцепка там, на месте */
+      if(!same){const rx=T.bx-sh.x,ry=T.by-sh.y;rescuePark(dest);T.bx=sh.x+rx;T.by=sh.y+ry;}
+      /* отцепка (R4; тестировщик 12.09: баржа, трос и обломки пропадали в один
+         кадр): трос отдан, баржа прибавляет ход и уходит своим курсом */
+      T.ph="free";T.t=0;T._bv=0;T._fire=1;T._retro=false;T._turn=false;
       G.fuel=Math.max(G.fuel,Math.min(stat().fuelMax,RESCUE_FUEL));
       logAdd("warn","Буксир дотащил до станции · система "+dest.name);
       say("Буксир дотащил\nстанция рядом · в баке "+Math.floor(G.fuel),180);
@@ -379,19 +428,6 @@ function drawHaul(zx,zy,Z){
       ctx.fillStyle="#ff6b57";ctx.fillRect(8,-1.5,3,3);}
     else{ctx.fillStyle="#b0703a";ctx.fillRect(-4,-6,8,12);ctx.strokeRect(-4,-6,8,12);}
     ctx.restore();ctx.globalAlpha=1;
-  }
-  /* трос: от носа корабля к корме баржи, с провисом; рывок выбирает провис */
-  if(T.ph==="haul"){
-    const na=G.ship.a,nx=sx+Math.cos(na)*HAUL_SHIP_HALF*sS,ny=sy+Math.sin(na)*HAUL_SHIP_HALF*sS;
-    const bx=x-Math.cos(T.ba)*art.L*.48*sB,by=y-Math.sin(T.ba)*art.L*.48*sB;
-    const tens=clamp(Math.abs(T._sv||0)*70,0,1);
-    const sag=(1-tens)*(10+3*Math.sin(G.t*.03))*sS;
-    const mx=(nx+bx)/2,my=(ny+by)/2,dl=Math.hypot(bx-nx,by-ny)||1;
-    const cx=mx-(by-ny)/dl*sag,cy=my+(bx-nx)/dl*sag;
-    ctx.strokeStyle="rgba(40,36,30,.9)";ctx.lineWidth=Math.max(1.5,2.6*sS);
-    ctx.beginPath();ctx.moveTo(nx,ny);ctx.quadraticCurveTo(cx,cy,bx,by);ctx.stroke();
-    ctx.strokeStyle="rgba(214,200,168,.75)";ctx.lineWidth=Math.max(.8,1.2*sS);
-    ctx.beginPath();ctx.moveTo(nx,ny);ctx.quadraticCurveTo(cx,cy,bx,by);ctx.stroke();
   }
   ctx.save();ctx.translate(x,y);ctx.rotate(T.ba);ctx.scale(sB,sB);
   /* маршевые: факел из каждого сопла, дышит; на гашении хода и развороте — молчат */
@@ -481,6 +517,39 @@ function drawHaul(zx,zy,Z){
     ctx.globalCompositeOperation="source-over";
   }
   ctx.restore();
+  /* стрела и трос — поверх факелов (R4, дизайнер 12.09: трос выходил из сопла и
+     горел в факеле). Стрела выносит крепление за сопла; трос от носа корабля к
+     её концу, с провисом, рывок выбирает провис. На отцепке трос отдан: висит
+     со стрелы, укорачивается и гаснет, уходя вместе с баржей */
+  {
+    const dx=Math.cos(T.ba),dy=Math.sin(T.ba),sL=art.L*.48*sB,bL=(art.L*.48+HAUL_BOOM)*sB;
+    const s0x=x-dx*sL,s0y=y-dy*sL,tx=x-dx*bL,ty=y-dy*bL;
+    if(T.ph!=="come"){
+      ctx.strokeStyle="rgba(28,30,34,.95)";ctx.lineWidth=Math.max(2,3.2*sS);
+      ctx.beginPath();ctx.moveTo(s0x,s0y);ctx.lineTo(tx,ty);ctx.stroke();
+      ctx.strokeStyle="rgba(150,156,164,.8)";ctx.lineWidth=Math.max(.8,1.2*sS);
+      ctx.beginPath();ctx.moveTo(s0x,s0y);ctx.lineTo(tx,ty);ctx.stroke();
+    }
+    let nx=null,ny=null,al=1,tens=0;
+    if(T.ph==="haul"){
+      const na=G.ship.a;nx=sx+Math.cos(na)*HAUL_SHIP_HALF*sS;ny=sy+Math.sin(na)*HAUL_SHIP_HALF*sS;
+      tens=clamp(Math.abs(T._sv||0)*70,0,1);
+    }else if(T.ph==="free"){
+      const q=clamp(T.t/HAUL_FREE,0,1),Lr=HAUL_ROPE*sS*(1-.6*q);
+      nx=tx-dx*Lr;ny=ty-dy*Lr;al=1-q;
+    }
+    if(nx!=null){
+      const sag=(1-tens)*(10+3*Math.sin(G.t*.03))*sS*(T.ph==="free"?2:1);
+      const mx=(nx+tx)/2,my=(ny+ty)/2,dl=Math.hypot(tx-nx,ty-ny)||1;
+      const cx=mx-(ty-ny)/dl*sag,cy=my+(tx-nx)/dl*sag;
+      ctx.globalAlpha=al;
+      ctx.strokeStyle="rgba(40,36,30,.9)";ctx.lineWidth=Math.max(1.5,2.6*sS);
+      ctx.beginPath();ctx.moveTo(nx,ny);ctx.quadraticCurveTo(cx,cy,tx,ty);ctx.stroke();
+      ctx.strokeStyle="rgba(214,200,168,.75)";ctx.lineWidth=Math.max(.8,1.2*sS);
+      ctx.beginPath();ctx.moveTo(nx,ny);ctx.quadraticCurveTo(cx,cy,tx,ty);ctx.stroke();
+      ctx.globalAlpha=1;
+    }
+  }
 }
 
 /* взлёт с грунта без топлива: отказ называет причину (порог 91zzzzzl) и

@@ -209,7 +209,7 @@ before a push.
   fix, a WIP commit, dev, one line to both reviewers). Sources: the tester's `review.json` and
   `botverify.json` (scratchpad 3d6318e9…), the designer's letters. Scale stays as built until the
   author says otherwise (the reviewers disagree; a peer cannot decide for the author).
-  - **Next:** R4. 0.446.0 is live (7ca9ce1, md5 checked); after it the hail waits under the SOS
+  - **Next:** R5. 0.446.0 is live (7ca9ce1, md5 checked); after it the hail waits under the SOS
     window too (`sosopen` in `worldCovered`, test «оклик под окном бака»).
   - [x] **R0 picket «Коммуна»** and [x] **R1 cue and ДЕЙСТВИЕ** — shipped in 0.446.0; bodies in
     `docs/PLAN-archive.md` (2026-09-12).
@@ -237,7 +237,12 @@ before a push.
     the armed СБРОС red with a 4 s bar, sub-lines 11 px ≥4.5:1, head «до станции <name> · <dist>»,
     icons per exit, БУКСИР is the main button, the menu shows its price; on an empty tank the ДЕЙСТВИЕ
     pad reads «ВЫХОДЫ» and the prompt drops «ДЕЙСТВИЕ — БУКСИР ИЛИ СБРОС» (designer 12.09).
-  - [ ] **R4 the haul scene**: the rope from a stern boom to the ship's nose, drawn after the flames;
+  - [x] **R4 the haul scene** — done: the tow state runs on its own seeded stream (`haulR`, M441: with
+    frames or without, one world), the barge comes from behind and overtakes beside the ship nose
+    first, the dry ship keeps its nose until the rope turns it (`_off` eases), crew lines and debris
+    quips are dealt as decks, the zoom eases to the floor, the look-ahead camera eases (`HAUL_CAM`),
+    the end is a 3.5 s unhook (`ph:"free"`, the barge burns away, the rope drops from the boom), the
+    rope runs from a stern boom over the flames; four «R4 …» tests. Was: the rope from a stern boom to the ship's nose, drawn after the flames;
     the barge comes from behind and overtakes; the end at the station by `S.ang`, a 3–4 s unhook and
     departure; camera eased; lines and debris as a deck; `rndFx` out of haul state (M441).
   - [ ] **R5 bots**: B1 `_probeAt` reset every frame, price on the pad, second tap; B3 the surface sign

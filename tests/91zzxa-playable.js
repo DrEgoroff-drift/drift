@@ -322,6 +322,72 @@ TEST_SUITES.push(()=>suite("R3c голос экрана: реплика при �
   tableToggle(false);
 }));
 
+/* R4: сцена буксира (тестировщик 17–21, дизайнер): рисунок не двигает мир, баржа
+   заходит сзади и обгоняет, в конце отцепка, камера без рывков, экипаж без повторов */
+function r4Haul(){
+  resetWorld();
+  const S=r3Sys();
+  G.mode="system";G.sx=S.sx;G.sy=S.sy;G.sys=S;G.pirates=[];G.hail=null;
+  G.ship.x=S.station.orbit+4000;G.ship.y=900;G.ship.vx=0;G.ship.vy=0;G.ship.a=2;G.fuel=0;G.cargo.ice=0;
+  return S;
+}
+TEST_SUITES.push(()=>suite("R4 буксир: рисунок не двигает мир — с кадрами и без один исход",{tier:"browser"},()=>{
+  const run=extra=>{
+    r4Haul();haulStart();G.haul.seed=777;
+    const n0=G.log.length;
+    for(let i=0;i<HAUL_COME+90*60;i++){haulTick(1,G.ship);for(let j=0;j<extra;j++)rndFx();}
+    return [G.ship.a.toFixed(6),G.haul.bx.toFixed(3),G.haul.by.toFixed(3),JSON.stringify(G.log.slice(n0))];
+  };
+  const a=run(0),b=run(7);
+  eq(a[0],b[0],"угол корабля на тросе не зависит от того, рисовали ли кадры");
+  eq(a[1]+","+a[2],b[1]+","+b[2],"баржа там же");
+  eq(a[3],b[3],"журнал тот же — реплики и их порядок от зерна буксира, не от рисунка");
+}));
+
+TEST_SUITES.push(()=>suite("R4 буксир: баржа заходит сзади и обгоняет, сквозь корабль не летит, пустой корабль носом не крутит, зум без рывка",{tier:"browser"},()=>{
+  r4Haul();G.zoom=.3;
+  haulStart();
+  const T=G.haul,reach=haulReach(),a0=G.ship.a;
+  haulTick(1,G.ship);
+  ok(G.zoom<.5,"зум не прыгает к полу за кадр: "+G.zoom.toFixed(2));
+  let dmin=1e9,back=0,turn=0;
+  for(let i=1;i<HAUL_COME;i++){
+    const px=T.bx,py=T.by;
+    haulTick(1,G.ship);
+    if(!G.haul||G.haul.ph!=="come")break;
+    dmin=Math.min(dmin,Math.hypot(T.bx-G.ship.x,T.by-G.ship.y));
+    turn=Math.max(turn,Math.abs(angDiff(G.ship.a,a0)));
+    if(Math.hypot(T.bx-px,T.by-py)>.5&&Math.abs(angDiff(Math.atan2(T.by-py,T.bx-px),T.ba))>Math.PI/2)back++;
+  }
+  ok(G.zoom>.68,"за подход зум дошёл до пола: "+G.zoom.toFixed(2));
+  ok(dmin>=reach*.6,"ближе "+Math.round(dmin)+" баржа к кораблю не подходит (трос "+Math.round(reach)+")");
+  eq(back,0,"баржа ни кадра не шла кормой вперёд — факелы за ней, а не по ходу");
+  ok(turn<1e-6,"пока баржа подходит, корабль без топлива носом не крутит: "+turn.toFixed(3));
+}));
+
+TEST_SUITES.push(()=>suite("R4 буксир: в конце отцепка — баржа уходит с огнём за 3–5 с, а не пропадает в кадр",{tier:"browser"},()=>{
+  r4Haul();haulStart();
+  const T=G.haul;T.ph="haul";T.t=HAUL_TIME-1;T.x0=G.ship.x;T.y0=G.ship.y;T.ba=0;
+  haulTick(1,G.ship);
+  ok(!!G.haul&&G.haul.ph==="free","дотащил — баржа ещё здесь и отцепляется");
+  ok(G.fuel>=Math.min(stat().fuelMax,RESCUE_FUEL),"бак уже выдан: "+G.fuel);
+  const d0=Math.hypot(G.haul.bx-G.ship.x,G.haul.by-G.ship.y);let n=0,d=d0;
+  while(G.haul&&n<600){d=Math.hypot(G.haul.bx-G.ship.x,G.haul.by-G.ship.y);haulTick(1,G.ship);n++;}
+  ok(n>=180&&n<=300,"отцепка длится 3–5 с: "+(n/60).toFixed(1)+" с");
+  ok(d>d0*1.5,"баржа уходила: "+Math.round(d0)+" → "+Math.round(d));
+  eq(G.haul,null,"потом её нет");
+}));
+
+TEST_SUITES.push(()=>suite("R4 буксир: экипаж за рейс не повторяется",{tier:"browser"},()=>{
+  r4Haul();haulStart();
+  const said=[],el=window.etherLine;
+  window.etherLine=t=>{said.push(String(t));};
+  try{let n=0;while(G.haul&&n<(HAUL_COME+HAUL_TIME)/10+200){haulTick(10,G.ship);n++;}}finally{window.etherLine=el;}
+  const talk=said.filter(t=>!/до причала|трос взяли|приехали|вижу вас/.test(t));
+  ok(talk.length>=5,"экипаж говорит: "+talk.length+" реплик");
+  eq(talk.length,new Set(talk).size,"ни одной реплики дважды: "+talk.join(" | "));
+}));
+
 /* R1: действие делает то, что написано, когда в кадре два предложения */
 TEST_SUITES.push(()=>suite("R1 пояс рядом с планетой: подсказка и ДЕЙСТВИЕ совпадают",{tier:"browser"},()=>{
   resetWorld();
