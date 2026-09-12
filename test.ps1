@@ -242,12 +242,34 @@ for ($k = 0; $k -lt $Jobs; $k++) {
   $dom = Join-Path $env:TEMP "drift-tests-dom-$tag-$k.html"
   Remove-Item $dom -Force -ErrorAction SilentlyContinue
   $errf = Join-Path $env:TEMP "drift-tests-err-$tag-$k.txt"
+  Remove-Item $errf -Force -ErrorAction SilentlyContinue
+  # --enable-logging=stderr --v=0: зеркалит console.* страницы в этот файл, не
+  # в терминал (--dump-dom всё равно уходит в $dom). Харнесс (90-harness.js)
+  # печатает «→ имя» перед КАЖДЫМ набором — на зелёном прогоне файл просто
+  # никто не читает; висящая часть называется им ниже (тот же приём, что
+  # lab/lab.sh делает для сервера через sed в tests-trace.html).
   $argv = @("--headless=new", "--no-sandbox", "--window-size=$win",
             "--user-data-dir=$($env:TEMP)\drift-tests-profile-$tag-$k",
-            "--no-first-run", "--no-default-browser-check", "--timeout=900000") +
+            "--no-first-run", "--no-default-browser-check", "--timeout=900000",
+            "--enable-logging=stderr", "--v=1") +
           $vt + @("--dump-dom", $u)
   $proc = Start-Process -FilePath $chrome -ArgumentList $argv -NoNewWindow -PassThru -RedirectStandardOutput $dom -RedirectStandardError $errf
-  $runs += [pscustomobject]@{ proc = $proc; dom = $dom; k = $k }
+  $runs += [pscustomobject]@{ proc = $proc; dom = $dom; k = $k; err = $errf }
+}
+# последняя «→ имя» в stderr части — набор, в котором её застали (host-лог
+# Хрома вперемешку, но эта строка выводится через CONSOLE и её видно рядом
+# с ней в кавычках); пусто, если часть не успела начать ни одного набора
+function Last-Suite($errf) {
+  if (-not (Test-Path $errf)) { return "" }
+  # сразу после Kill() файл секунду-другую ещё держит дочерний процесс Хрома
+  # (та же гонка, что у Read-Dump ниже про $dom) — несколько попыток вместо одной
+  $t = ""
+  for ($i = 0; $i -lt 8; $i++) {
+    try { $t = [System.IO.File]::ReadAllText($errf, [System.Text.Encoding]::UTF8); break } catch { Start-Sleep -Milliseconds 250 }
+  }
+  $ms = [regex]::Matches($t, '"→ ([^"]*)"')
+  if ($ms.Count -eq 0) { return "" }
+  return $ms[$ms.Count - 1].Groups[1].Value
 }
 # Секунды считаем ЗДЕСЬ: внутри страницы часы стоят (--virtual-time-budget), и
 # отчёт годами печатал «0 мс». Снаружи время настоящее, вместе со стартом Chrome.
@@ -260,7 +282,9 @@ $SHARD_SEC = 900
 foreach ($r in $runs) {
   $left = [math]::Max(1000, $SHARD_SEC * 1000 - [int]$sw.ElapsedMilliseconds)
   if (-not $r.proc.WaitForExit($left)) {
-    "  ! часть {0}/{1} не кончилась за {2} с — ВИСИТ, убиваю Chrome профиля drift-tests-profile-{3}-{0}" -f $r.k, $Jobs, $SHARD_SEC, $tag
+    $hung = Last-Suite $r.err
+    if ($hung) { "  ! часть {0}/{1} не кончилась за {2} с — ВИСИТ в наборе «{3}», убиваю Chrome профиля drift-tests-profile-{4}-{0}" -f $r.k, $Jobs, $SHARD_SEC, $hung, $tag }
+    else { "  ! часть {0}/{1} не кончилась за {2} с — ВИСИТ (имя набора не поймано), убиваю Chrome профиля drift-tests-profile-{3}-{0}" -f $r.k, $Jobs, $SHARD_SEC, $tag }
     Get-CimInstance Win32_Process -Filter "Name='chrome.exe'" | Where-Object { $_.CommandLine -match "drift-tests-profile-$tag-$($r.k)\b" } |
       ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
     try { $r.proc.Kill() } catch {}
@@ -297,11 +321,11 @@ $stRan = 0; $stFail = 0; $staged = @(); $offWin = 0
 foreach ($r in $runs) {
   $text = Read-Dump $r.dom
   if ($null -eq $text) {
-    Write-Host "chrome wrote no DOM at all: the headless run did not start (stale profile?) — retry"
+    Write-Host ("chrome wrote no DOM at all: the headless run did not start (stale profile?) — retry" + $(if (Last-Suite $r.err) { " (last suite seen: " + (Last-Suite $r.err) + ")" } else { "" }))
     exit 2
   }
   if ($text -eq "") {
-    Write-Host "no test report in DOM: the page crashed before runTests (open tests.html in a browser)"
+    Write-Host ("no test report in DOM: the page crashed before runTests (open tests.html in a browser)" + $(if (Last-Suite $r.err) { " (last suite seen: " + (Last-Suite $r.err) + ")" } else { "" }))
     exit 2
   }
   $lines = $text -split "`n"

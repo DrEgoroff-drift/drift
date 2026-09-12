@@ -118,7 +118,17 @@ function suite(name,a,b){
   if(o.win&&!suiteWin(o.win)){SKIPPED_WIN++;return;}
   TEST.ran=(TEST.ran|0)+1;
   _suite=name;
-  if(TEST_NODE&&globalThis.TEST_TRACE)console.error("→ "+name);   /* test-node.js --trace: где завис */
+  /* ── след повисшего прогона (queue «Refactor audit», 11.09) ──
+     Под Node печать идёт в консоль напрямую — спам на каждый зелёный прогон,
+     поэтому там она по-прежнему за --trace. Под Хромом тот же console.log не
+     уходит в терминал сам по себе: test.ps1 запускает страницу с
+     --enable-logging=stderr, и Хром зеркалит его в файл drift-tests-err-…,
+     который никто не читает, пока часть не повиснет. Тогда test.ps1 берёт из
+     него последнюю строку «→ имя» и называет виновника вместо немого «ВИСИТ» —
+     тем же приёмом, что и lab/lab.sh (sed) делает для сервера, только теперь
+     без правки файла: тонкий след живёт в самом харнессе. */
+  if(TEST_NODE){if(globalThis.TEST_TRACE)console.error("→ "+name);}
+  else console.log("→ "+name);
   TEST.lines.push("── "+name+(o.stage?"  [карантин: "+o.stage+"]":"")+((TEST_SHUFFLE!==null||TEST_PICK)?"  [#"+seq+"]":""));
   const p0=TEST.pass,f0=TEST.fail,n0=TEST.failed.length;
   const ts=performance.now();
