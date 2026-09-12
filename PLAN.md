@@ -209,14 +209,14 @@ before a push.
   fix, a WIP commit, dev, one line to both reviewers). Sources: the tester's `review.json` and
   `botverify.json` (scratchpad 3d6318e9…), the designer's letters. Scale stays as built until the
   author says otherwise (the reviewers disagree; a peer cannot decide for the author).
-  - **Next:** R3. 0.446.0 is live (7ca9ce1, md5 checked); after it the hail waits under the SOS
+  - **Next:** R4. 0.446.0 is live (7ca9ce1, md5 checked); after it the hail waits under the SOS
     window too (`sosopen` in `worldCovered`, test «оклик под окном бака»).
   - [x] **R0 picket «Коммуна»** and [x] **R1 cue and ДЕЙСТВИЕ** — shipped in 0.446.0; bodies in
     `docs/PLAN-archive.md` (2026-09-12).
   - [x] **R2 empty tank**: no nose turn on fuel 0 (`helmApply`), a turn asks for the window too (and
     A/D/←/→ by key), `body.tankdry` dims thrust and turn pads, the stick dims to .35 and says «БАК
     ПУСТ» (live and at rest); test «R2 пустой бак» (phone).
-  - [ ] **R3 the rescue window** — **R3a logic done** (the window and `rescueTake` refuse on the rope, a
+  - [x] **R3 the rescue window** — **R3a logic done** (the window and `rescueTake` refuse on the rope, a
     tap on the rope sets no autopilot and the tow end clears `G.ap`, a wreck drops the rope, СБРОС takes
     only the lost hull's parts and is not offered on a bare «Стриж», an own-power dock in a foreign
     system cools the jumps once per system (`rescueDockCool`, `G.homeDockAt` saved), surface 1–7 is a
@@ -226,8 +226,9 @@ before a push.
     head says «до станции «X» · N ед.» and a pursuit first, icons per exit, «в баке будет» is what
     `rescueTake` gives, the armed СБРОС is red with a 4 s bar and comes back, the window re-renders
     itself while open (`rescueSync`), the pad reads ВЫХОДЫ, the menu shows the jump price; under the
-    window the ether strip, МАСШТАБ and the stick label step back. **Open: R3c** — the dock greetings
-    burn behind the station screen (tester critic 1). Was: tester 1 (window/БУКСИР/ДОМОЙ/СБРОС during a haul), 2 (a wreck on the
+    window the ether strip, МАСШТАБ and the stick label step back. **R3c done**: what the station says
+    on docking and the «СБОЙ» toast are screen voice and show over any screen (`openStation` runs
+    with FRAME_IN off, `crashSay` clears MSG_WORLD). Was: tester 1 (window/БУКСИР/ДОМОЙ/СБРОС during a haul), 2 (a wreck on the
     rope loops), 3 (СБРОС clears every fit, keeps the lost parts), 6 (dock greetings burn behind the
     screen; the crash toast hides), 7 (stale window, Space at the dock), 9 (× 44 px, tap outside,
     Escape), 10 («в баке будет» = max), 12 (the armed СБРОС label returns), 13 (СБРОС on a bare
@@ -261,6 +262,8 @@ before a push.
     over its corner, not in the flow (with the two fixed station-header lines); while the hail
     window is open, one undimmed edge arrow names the hailing ship. The hail window over КАРТА/
     МЕНЮ stays (decided).
+    Designer: the prompt «ДЕЙСТВИЕ — ВЫХОДЫ» repeats the pad — but the pad takes its verb from the
+    prompt (interface rule); dropping the line needs the pad to read the verb elsewhere (decide).
   - **dev.html must not write into the live world (Контроль, 12.09).** The tester's bots played
     dev.html against the live `/api.php` and left test signs (a=trace, Нейэль III, 0:0, ~00:08 and
     00:25 MSK 12.09). Either a `test` flag the api drops, or dev/bots on a local copy. Removing

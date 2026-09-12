@@ -358,6 +358,8 @@ function crashAt(e){
    не подменяется: «warn» судового журнала — это новости игры, а не беда, и на
    сервер их больше не шлют (0.419, см. `logShip` в 01a-crashlog). Сбой кадра
    уходит отдельно, из `crashSay` ниже. */
+/* «СБОЙ» — единственный видимый сигнал сторожа кадра: он не ждёт за экраном
+   (MSG_WORLD=false), иначе молчал бы ровно тогда, когда открыт СТОЛ (критик 12.09) */
 function crashSay(e,where){
   crashN++;
   try{document.documentElement.removeAttribute("data-alive");}catch(_){}   /* метка живости снимается: сайт со сбоем — не живой */
@@ -379,13 +381,13 @@ function crashSay(e,where){
     const now=wallNow();
     if(now-crashSaidAt<15000)return;
     crashSaidAt=now;
-    try{say("СБОЙ · "+m+"\nповторяется · "+crashN+" раз\nигра идёт дальше — сохранитесь");}catch(_){}
+    try{say("СБОЙ · "+m+"\nповторяется · "+crashN+" раз\nигра идёт дальше — сохранитесь");MSG_WORLD=false;}catch(_){}
     try{logAdd("warn","Сбой кадра повторяется: "+m+" · "+crashN+" раз");}catch(_){}
     return;
   }
   crashLast=m;crashSaidAt=wallNow();
   if(crashSaid++<3){try{console.error("DRIFT:",e);}catch(_){}}
-  try{say("СБОЙ · "+m+"\nигра идёт дальше — сохранитесь");}catch(_){}
+  try{say("СБОЙ · "+m+"\nигра идёт дальше — сохранитесь");MSG_WORLD=false;}catch(_){}
   try{logAdd("warn","Сбой кадра: "+m);}catch(_){}
 }
 /* стоп кадра: больше двух секунд между кадрами — свёрнутая вкладка или то

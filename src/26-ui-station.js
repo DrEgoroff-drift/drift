@@ -2,7 +2,13 @@
 const $st=document.getElementById("station"),$body=document.getElementById("stBody");
 let tab="market";
 let fuseSel=[];   // два корпуса, выбранных под сплав в лаборатории
-function openStation(){
+/* стыковка — ответ на нажатие игрока, и всё, что станция говорит при входе
+   («Работа сдана», смотритель, местные, колония), — голос экрана, а не мира:
+   он виден сразу, поверх экрана. Кадр, внутри которого случилась стыковка,
+   записывал эти строки «голосом мира», и они сгорали за экраном станции,
+   ни разу не показавшись (критик тестировщика 12.09) */
+function openStation(){const fi=FRAME_IN;FRAME_IN=false;try{openStationBody();}finally{FRAME_IN=fi;}}
+function openStationBody(){
   G.st=G.sys.station;G.mode="dock";G.ap=null;toggleLog(false);
   toggleSos(false);rescueDockCool();   /* окно выходов не висит устаревшим за станцией; причал остужает (16c) */
   if(typeof cosmChimePlay==="function")cosmChimePlay();   /* свой сигнал стыковки (M344) */

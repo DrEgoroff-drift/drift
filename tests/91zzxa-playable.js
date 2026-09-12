@@ -302,6 +302,26 @@ TEST_SUITES.push(()=>suite("R3b окно выходов: пад «ВЫХОДЫ»
   toggleSos(false);G.pirates=[];
 }));
 
+/* R3c: голос экрана не ждёт за экраном (критик тестировщика 1 и 2): стыковка — ответ
+   на нажатие, и что станция говорит при входе, видно сразу; «СБОЙ» — единственный
+   сигнал сторожа кадра, он виден поверх любого экрана */
+TEST_SUITES.push(()=>suite("R3c голос экрана: реплика при стыковке и «СБОЙ» видны поверх открытого экрана",{tier:"browser",win:"phone"},()=>{
+  resetWorld();
+  const S=r3Sys();G.mode="system";G.sx=S.sx;G.sy=S.sy;G.sys=S;
+  const kd=window.keepersDock;
+  window.keepersDock=()=>({line:"чайник горячий, садитесь"});
+  FRAME_IN=true;   /* стыковка случилась внутри кадра — по ДЕЙСТВИЮ или автопилотом */
+  try{openStation();}finally{window.keepersDock=kd;}
+  FRAME_IN=false;hud();
+  ok(/чайник горячий/.test(String(G.msg)),"смотритель сказал: "+String(G.msg).replace(/\n/g," "));
+  ok(!msgHeld(),"реплика при стыковке не ждёт за экраном станции — она видна сразу");
+  closeStation();
+  tableToggle(true);hud();
+  FRAME_IN=true;crashSay(new Error("проба сторожа"),"тест");FRAME_IN=false;hud();
+  ok(/СБОЙ/.test(String(G.msg))&&!msgHeld(),"«СБОЙ» виден поверх стола: "+String(G.msg).split("\n")[0]);
+  tableToggle(false);
+}));
+
 /* R1: действие делает то, что написано, когда в кадре два предложения */
 TEST_SUITES.push(()=>suite("R1 пояс рядом с планетой: подсказка и ДЕЙСТВИЕ совпадают",{tier:"browser"},()=>{
   resetWorld();
