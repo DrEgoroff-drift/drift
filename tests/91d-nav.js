@@ -73,7 +73,7 @@ TEST_SUITES.push(()=>suite("гравитационный якорь возвра
     if(i>1200)vMin=Math.min(vMin,Math.hypot(G.ship.vx,G.ship.vy));
     dEnd=Math.hypot(G.ship.x,G.ship.y)||1;
   }
-  ok(dEnd<5200,"дальше края корабль не уходит");
+  ok(dEnd<sysEdge(G.sys)+700,"дальше края корабль не уходит ("+Math.round(dEnd)+" при кромке "+Math.round(sysEdge(G.sys))+")");
   ok(vMin>.5,"под тягой наружу корабль ни на кадр не замирает — мёртвой точки нет ("+
      vMin.toFixed(2)+")");
   /* и он не висит на одном радиусе, а ходит дугой: курс заворачивает */
@@ -87,7 +87,8 @@ TEST_SUITES.push(()=>suite("гравитационный якорь возвра
   ok(Math.hypot(G.ship.x,G.ship.y)<=dPause+400,"отпустил тягу — дальше края не уносит");
   keys.thrust=true;
   /* и это не ловушка: к звезде и вдоль края ход остаётся свободным */
-  G.ship.a=Math.PI;
+  /* нос на звезду, а не на −X: за 2500 кадров дуги корабль сходит с оси X */
+  G.ship.a=Math.atan2(-G.ship.y,-G.ship.x);
   for(let i=0;i<400;i++)updateSystem(1);
   keys.thrust=false;
   ok(Math.hypot(G.ship.x,G.ship.y)<dEnd-200,"обратный курс свободен");

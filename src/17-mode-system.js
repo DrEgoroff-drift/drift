@@ -8,6 +8,20 @@ const SYS_CHIPS=[];
    уходит вверх, чтобы не лечь на имя планеты. Канва, не сейв */
 const BODY_LABELS=[];
 let CORONA_IN=false;   /* корабль в короне — строка журнала раз на вход */
+/* кромка системы — где встаёт гравитационный якорь. Считается от самого
+   дальнего тела (планета, пояс, станция), а не от пояса-или-2400: без пояса
+   кромка стояла на 3840 при любой раскладке, и в 29 системах из 625 внешняя
+   планета сидела впритык к ней или вовсе за ней (−2,−6: планета 4687). Дома
+   (пояса нет, внешняя на 3018) запас был 822 — три секунды хода, и игрок
+   упирался в якорь, облетая внешнюю планету (ролик 12.09). Пол 3840 — чтобы
+   ни одна система не стала теснее, чем была */
+function sysEdge(sys){
+  let outer=0;
+  for(const p of (sys.planets||[]))outer=Math.max(outer,p.orbit||0);
+  if(sys.belt)outer=Math.max(outer,sys.belt.orbit||0);
+  if(sys.station)outer=Math.max(outer,sys.station.orbit||0);
+  return Math.max(outer*1.6,3840);
+}
 function updateSystem(dt){
   const sh=G.ship,sys=G.sys,st=stat();
   document.getElementById("dronebtn").style.display="none";
@@ -124,7 +138,7 @@ function updateSystem(dt){
      негде, потому что равновесия нет: сил, направленных против тяги, тут не
      осталось ни одной. */
   {
-    const rEdge=(sys.belt?sys.belt.orbit:2400)*1.6;
+    const rEdge=sysEdge(sys);
     const d=Math.hypot(sh.x,sh.y)||1;
     if(d>rEdge){
       const k=clamp((d-rEdge)/700,0,1);
