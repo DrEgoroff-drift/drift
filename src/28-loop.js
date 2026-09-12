@@ -434,7 +434,9 @@ function frame(now){
       if(isFinite(fps)&&fps>0&&fps<1000)crashShip("beat","fps "+fps,"",{fps});
       BEAT.sent++;BEAT.t=now;BEAT.n=0;BEAT.ms=0;}}}
   if(!STORAGE_OK&&!CRASH_SHIP.st){CRASH_SHIP.st=1;crashShip("storage","localStorage недоступен","");}
+  const fb0=wallMs();   /* stallWho ниже читает FRAME_JS — до сих пор он объявлялся и никогда не считался (всегда 0) */
   try{frameBody(now);}catch(e){crashSay(e,G&&G.mode);}
+  FRAME_JS=wallMs()-fb0;
   FRAME_IN=false;   /* дальше до следующего кадра говорят нажатия — это отклик, а не голос мира */
   requestAnimationFrame(frame);
 }
