@@ -6,6 +6,37 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.447.0 - the exits window, the tow as a scene, and what the bots found
+
+- **Empty tank**: the nose no longer turns without fuel; a turn (pad or A/D/arrows) opens the
+  exits window like thrust and brake; the thrust and turn pads and the stick dim, and the stick
+  says «БАК ПУСТ». The ДЕЙСТВИЕ pad reads «ВЫХОДЫ».
+- **The exits window** stands in the lower third over the pads; × is 44 px, Escape and a tap outside
+  close it; the head says where the tow goes and how far (a foreign station in jumps), a pursuit
+  first; icons per exit; «в баке будет» is what the jump gives; the armed СБРОС is red with a 4 s bar
+  and comes back; the window follows the world while open and closes itself with «Ход есть» once the
+  tank is not empty. On the rope it does not open at all, and a tap there sets no autopilot. СБРОС
+  takes only the lost hull's parts and is not offered on a bare «Стриж»; a dock under your own power
+  in a foreign system cools the jump counter once per system; 1–7 fuel on the ground is not «ноль».
+  Tow, ДОМОЙ and СБРОС put the ship by the station, not 2000 away. What the station says on docking
+  and the «СБОЙ» toast show over any screen. The hail waits under this window too.
+- **The tow**: the barge comes from behind and overtakes beside the ship, nose first; the rope runs
+  from a boom behind the nozzles; the dry ship keeps its nose until the rope turns it; the crew never
+  repeats a line; the camera and the zoom ease; at the end the barge unhooks and burns away. The tow
+  runs on its own seeded stream: a run with frames and one without end in the same world.
+- **Bots' findings**: the probe takes a second tap and the ЦЕЛЬ pad names its price («ЗОНД 300 КР» →
+  «ТОЧНО? 300 КР»); the surface sign is offered only where nothing else takes ДЕЙСТВИЕ and is left by
+  holding; a jump arrives at rest (an idle ship drifted into the corona); a wreck names its cause in
+  the journal and the corona says «Корпус горит» once per entry. The ether names the speaker once, in
+  one case.
+- Tests: the «R2–R6» suites in `91zzxa-playable`; the picture detector skips dimmed text only under
+  an open modal window.
+- **Still open** (known — no need to report): the first hour (repair in two buttons, a soft first-hour
+  landing, the galaxy goal frozen until the first liberation, board cargo ≥ 15 min with a timer in
+  ДЕЛО, the first probe free), a wreck no longer repairing above the hull before the trouble, the world
+  zoom ×4–5, and the design tails of R6 (pad labels, ОПИСЬ sub-tabs, the barge seam, story-line
+  agreement, the cargo paper's destination sector).
+
 ## 0.446.0 - playable on a phone (the author's playtest of 11.09 and the review block of 12.09)
 
 - **Empty tank** is one window: ДОМОЙ (priced by jumps), БУКСИР, СБРОС — thrust or ДЕЙСТВИЕ opens

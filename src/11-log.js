@@ -30,8 +30,21 @@ function logAdd(kind,text){
   }
 }
 /* услышанное: приёмник на пульте показывает строку, тетрадь её помнит */
+/* говорящий — один раз, в префиксе, одним регистром (боты 12.09: «Коммуна: …Коммуна:
+   борт молчит», а в соседней строке «КОММУНА:»). Текст, где имя уже вписано после
+   многоточия, отдаёт его префиксу; имя капителью — только в заголовках */
+function etherWho(w){
+  w=String(w||"");
+  return (/[А-ЯЁA-Z]/.test(w)&&w===w.toUpperCase())?w.charAt(0)+w.slice(1).toLowerCase():w;
+}
 function etherLine(text,who){
   if(!text)return;
+  if(who){
+    who=etherWho(who);
+    const low=String(text).toLowerCase(),wl=who.toLowerCase();
+    for(const pre of ["…"+wl+": ",wl+": "])
+      if(low.indexOf(pre)===0){text=(pre.charAt(0)==="…"?"…":"")+String(text).slice(pre.length);break;}
+  }
   const s=who?who+": "+text:text;
   logAdd("ether",s);
   if(typeof consoleHeard==="function")consoleHeard(text,who);

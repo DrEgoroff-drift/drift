@@ -205,89 +205,43 @@ before a push.
   24 h / 240 min on return) — a tick gap over `PEOPLE_GAP_MS` (60 s) now calls `peopleOffline()`.
   Drones keep their 24 h catch-up (not asked). Tests to add before the push: price by fleet size; a
   60 s+ loop gap pays nobody.
-- **Review block of 12.09 — before the push** (Контроль's order; each item: red test first, then the
-  fix, a WIP commit, dev, one line to both reviewers). Sources: the tester's `review.json` and
-  `botverify.json` (scratchpad 3d6318e9…), the designer's letters. Scale stays as built until the
-  author says otherwise (the reviewers disagree; a peer cannot decide for the author).
-  - **Next:** R5. 0.446.0 is live (7ca9ce1, md5 checked); after it the hail waits under the SOS
-    window too (`sosopen` in `worldCovered`, test «оклик под окном бака»).
-  - [x] **R0 picket «Коммуна»** and [x] **R1 cue and ДЕЙСТВИЕ** — shipped in 0.446.0; bodies in
-    `docs/PLAN-archive.md` (2026-09-12).
-  - [x] **R2 empty tank**: no nose turn on fuel 0 (`helmApply`), a turn asks for the window too (and
-    A/D/←/→ by key), `body.tankdry` dims thrust and turn pads, the stick dims to .35 and says «БАК
-    ПУСТ» (live and at rest); test «R2 пустой бак» (phone).
-  - [x] **R3 the rescue window** — **R3a logic done** (the window and `rescueTake` refuse on the rope, a
-    tap on the rope sets no autopilot and the tow end clears `G.ap`, a wreck drops the rope, СБРОС takes
-    only the lost hull's parts and is not offered on a bare «Стриж», an own-power dock in a foreign
-    system cools the jumps once per system (`rescueDockCool`, `G.homeDockAt` saved), surface 1–7 is a
-    jump «без хода» and the head says the real fuel, Space no longer opens the window, docking closes
-    it; four «R3 …» tests). **R3b the look done**: the window in the lower third over the pads (the hail
-    moves up while it is open), × 44, Escape and a tap outside close it, sub-lines 11 px ≥4.5:1, the
-    head says «до станции «X» · N ед.» and a pursuit first, icons per exit, «в баке будет» is what
-    `rescueTake` gives, the armed СБРОС is red with a 4 s bar and comes back, the window re-renders
-    itself while open (`rescueSync`), the pad reads ВЫХОДЫ, the menu shows the jump price; under the
-    window the ether strip, МАСШТАБ and the stick label step back. **R3c done**: what the station says
-    on docking and the «СБОЙ» toast are screen voice and show over any screen (`openStation` runs
-    with FRAME_IN off, `crashSay` clears MSG_WORLD). Was: tester 1 (window/БУКСИР/ДОМОЙ/СБРОС during a haul), 2 (a wreck on the
-    rope loops), 3 (СБРОС clears every fit, keeps the lost parts), 6 (dock greetings burn behind the
-    screen; the crash toast hides), 7 (stale window, Space at the dock), 9 (× 44 px, tap outside,
-    Escape), 10 («в баке будет» = max), 12 (the armed СБРОС label returns), 13 (СБРОС on a bare
-    «Стриж» is free), 16 (a chip tap on the rope sets G.ap); HOME_DOCK_COOL applied; surface fuel 1–7
-    is not «ноль» and not a taxi jump. Designer: the window in the lower third, pursuit in its head,
-    the armed СБРОС red with a 4 s bar, sub-lines 11 px ≥4.5:1, head «до станции <name> · <dist>»,
-    icons per exit, БУКСИР is the main button, the menu shows its price; on an empty tank the ДЕЙСТВИЕ
-    pad reads «ВЫХОДЫ» and the prompt drops «ДЕЙСТВИЕ — БУКСИР ИЛИ СБРОС» (designer 12.09).
-  - [x] **R4 the haul scene** — done: the tow state runs on its own seeded stream (`haulR`, M441: with
-    frames or without, one world), the barge comes from behind and overtakes beside the ship nose
-    first, the dry ship keeps its nose until the rope turns it (`_off` eases), crew lines and debris
-    quips are dealt as decks, the zoom eases to the floor, the look-ahead camera eases (`HAUL_CAM`),
-    the end is a 3.5 s unhook (`ph:"free"`, the barge burns away, the rope drops from the boom), the
-    rope runs from a stern boom over the flames; four «R4 …» tests. Was: the rope from a stern boom to the ship's nose, drawn after the flames;
-    the barge comes from behind and overtakes; the end at the station by `S.ang`, a 3–4 s unhook and
-    departure; camera eased; lines and debris as a deck; `rndFx` out of haul state (M441).
-  - [ ] **R5 bots** — **R5a done**: the probe asks a second tap and the ЦЕЛЬ pad names the price
-    («ЗОНД 300 КР» → «ТОЧНО? 300 КР», `G._probeArm` three game seconds); the surface sign is last in
-    the chain, by hold, where nothing else takes ДЕЙСТВИЕ (steps from the ship); a jump arrives at
-    rest; `wreck(why)` names the cause in the log and the corona says «Корпус горит» once per entry;
-    the empty-tank window closes by itself once the tank is not empty («Ход есть»), a wreck closes it;
-    the head counts a foreign station in jumps; `rescuePark` puts the ship by the station at its
-    angle (tow, ДОМОЙ, СБРОС were 2000+ away); the tow countdown never repeats a number; the boom is a
-    beam. **R5b waits for the author** — Контроль's first-hour numbers (repair two buttons and ≤ half
-    the cash, a first-hour landing −20 % without a wreck, the galaxy goal frozen until the first done,
-    board cargo ≥ 15 real minutes with a timer in ДЕЛО, a wreck hull min(45 %, before) with repair on
-    debt, the first probe free) are design calls, not bugs. Was: B1 `_probeAt` reset every frame, price on the pad, second tap; B3 the surface sign
-    only last in the chain and by hold; B4 no jump arrival into the corona, `wreck(reason)` logged;
-    B5 wreck hull = min(45 %, before). First hour (Контроль): the first probe free, repair two
-    buttons and ≤ half the cash, a hard landing −20 % not a wreck, the first goal frozen, board cargo
-    ≥ 15 min with a timer in ДЕЛО.
-  - [ ] **R6 design tails**: pads name the action always (ЦЕЛЬ → ЗАХВАТ / ЗОНД · 300 КР / ПО ДЕЛУ,
-    ДЕЙСТВИЕ → ВЫХОДЫ …), prompts ≤ 2 lines and no keys on touch, compass chips only for off-screen
-    things and never under windows or the prompt, МАСШТАБ to the HUD top; ОПИСЬ sub-tabs (КОРАБЛЬ ·
-    СНЯТОЕ · КОМПЛЕКТ · ТРЮМ), slots before ПРИБОРЫ, the empty slot says where to buy, СНЯТЬ in one
-    place; ДЕЛО the manager's share in the column, the drones as a table; ЛЕНТЫ no gap, no «T» on
-    touch; СПЛАВ «В ПЛАВКУ»; a maxed module on one line; the got card: «/с», red minuses, lower third.
-    Designer 12.09: a pad label is ≤2 words + a number («ЗОНД · 300», not «ЗОНД ЗА 300 КР»); a
-    moon/planet name yields to the player's ship (moves to the far side of the disc); «КОМПАНИЯ» by
-    the ship never crosses a planet chip.
-    Bots on the 0.446.0 copy (tester P2–P5) and the designer's calls 31–35: the ether names the
-    speaker once, in the line prefix, one case («Коммуна: …», capitals only in titles); agreement
-    in the story lines («Женщина в платке рассказывал», «кто везёт органика»); a cargo paper in
-    ВЕЩИ shows the DESTINATION sector, and every board card reads «куда · сколько · до когда · за
-    сколько» (deadline numbers — Контроль); the СТОЛ button is fixed wide for «99+» with the badge
-    over its corner, not in the flow (with the two fixed station-header lines); while the hail
-    window is open, one undimmed edge arrow names the hailing ship. The hail window over КАРТА/
-    МЕНЮ stays (decided).
-    Designer: the prompt «ДЕЙСТВИЕ — ВЫХОДЫ» repeats the pad — but the pad takes its verb from the
-    prompt (interface rule); dropping the line needs the pad to read the verb elsewhere (decide).
-    Designer: the barge's light seam along the hull/module border reads as a crack — a soft band
-    (~15 % of the hull width), no line at the seam (it is in the barge art, not the rim mask); the
-    planet pass of the haul could zoom toward 1.6 so the disc is ≥ .3·H, back 10 s before the station.
-  - **dev.html must not write into the live world (Контроль, 12.09).** The tester's bots played
-    dev.html against the live `/api.php` and left test signs (a=trace, Нейэль III, 0:0, ~00:08 and
-    00:25 MSK 12.09). Either a `test` flag the api drops, or dev/bots on a local copy. Removing
-    the signs from the live pool is the author's call, done by the author (no deletion from here).
-  - Later (after the release): deposits refill on landing, the rebind button sticks on a phone, «ТРЮМ
-    ПУСТ» with rare cargo, the pronoun in 12aa-need, the station header two fixed lines.
+- **Review block of 12.09** — R0–R5a and the ether prefix shipped in 0.446.0/0.447.0 (bodies in
+  `docs/PLAN-archive.md`, 2026-09-12). Each item: red test first (`tests/91zzxa-playable.js`), then
+  the fix, a WIP commit, dev, a line to both reviewers. **Open, with the author's decisions of 12.09:**
+  - [ ] **R5b first hour — decided «делать всё» by Контроль's numbers.** «First hour» = `G.flownMs` <
+    60 min (the only saved play clock; flight modes only). Repair: two buttons «ДО 50% · N» and
+    «ПОЛНОСТЬЮ · N» (`#bRepair`, `repairCost`, 26-ui-station:168-230), in the first hour the price ≤
+    half the cash. A failed landing in the first hour is a hard landing: −20 % hull, no wreck, cargo
+    kept (19-mode-landing:119-130). The galaxy goal (`goalCard`, 13b-occupy, `G.freed`/`G.occ`) does
+    not grow until the first liberation. A taken board job lives ≥ 15 real minutes (`OFFER_CARRY_K`,
+    11ah-offer:61-64, 180-187) with a timer row in ДЕЛО (`dealRender`, `dealCount`); note `o.t0` is
+    compared to `G.t`, which is not saved — use the game clock. The first probe in the first hour is
+    free (`probeBuy`, 21a8:68-76; the pad says «ЗОНД ДАРОМ»).
+  - [ ] **Wreck price — decided «корпус не выше, чем был»:** after `wreck()` the hull is
+    min(45 %, the hull before the trouble), never below 10 % (28-loop:6); «before» = the last hull held
+    for ~10 s without damage.
+  - [ ] **Scale — decided «мировой зум ×4–5»** (Контроль's form: the world zoom ×4–5 with the ship
+    ~.8, replacing the ship floor .7 / body growth ×(1+0.8·(Z−1)) / moon caps). A milestone of its own,
+    with frames 390×844 before/after for the designer.
+  - [ ] **R6 design and bot tails** (no author call needed): pads name the action always (≤ 2 words +
+    a number); prompts ≤ 2 lines, no keys on touch; compass chips only for off-screen things, never
+    under windows or the prompt; МАСШТАБ to the HUD top; while the hail is open one undimmed edge arrow
+    names the hailing ship; ОПИСЬ sub-tabs (КОРАБЛЬ · СНЯТОЕ · КОМПЛЕКТ · ТРЮМ), slots before ПРИБОРЫ,
+    the empty slot says where to buy, СНЯТЬ in one place; ДЕЛО the manager's share in the column,
+    drones as a table; ЛЕНТЫ no gap, no «T» on touch; СПЛАВ «В ПЛАВКУ»; a maxed module on one line;
+    the got card «/с», red minuses, lower third; a moon/planet name yields to the ship (far side of the
+    disc); «КОМПАНИЯ» never crosses a planet chip; agreement in story lines («Женщина в платке
+    рассказывал», «кто везёт органика»); a cargo paper in ВЕЩИ shows the destination sector and every
+    board card reads «куда · сколько · до когда · за сколько»; the СТОЛ button fixed wide for «99+»
+    with the badge over its corner (with the two fixed station-header lines); the barge's seam at the
+    hull/module border darker than the plates, not a light line (12l `bargeArtOf`); the haul's planet
+    pass at 1.15 r on the side away from the buttons; the prompt «ДЕЙСТВИЕ — ВЫХОДЫ» repeats the pad,
+    but the pad reads its verb from the prompt — dropping it needs another source (decide).
+  - [ ] **dev.html must not write into the live world** (Контроль): a `test` flag the api drops, or
+    bots on a local copy. The two bot signs in `~/drift-data/trace/p/0_0.json` (ids 1789161868db37,
+    1789161871db37, 11.09 21:24 UTC) — the author removes them by hand (command given in chat 12.09).
+  - Later: deposits refill on landing, the rebind button sticks on a phone, «ТРЮМ ПУСТ» with rare
+    cargo, the pronoun in 12aa-need.
 - [ ] **Start system picket** — «Коммуна» at 0:0 hails a new player and opens fire ~15 s in.
 - [ ] **Market for a newcomer** — «only cooperatives may buy»: check a newcomer can trade at all.
 - [ ] **Home-price activity perks** — a fuel coupon per 2 h of active play a week (proposed).

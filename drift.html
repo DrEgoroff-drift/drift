@@ -242,6 +242,7 @@ body:not(.inflight) .ipod{display:none}
    унаследованное, и настройка «Размер кнопок» не делала ничего. Здесь только
    запасные значения в местах использования, никаких объявлений на `.pads`. */
 .pads.faded{opacity:.14}
+body.tankdry .pads button[data-k=thrust],body.tankdry .pads button[data-k=left],body.tankdry .pads button[data-k=right]{opacity:.3}   /* пустой бак: ими не сдвинуться (R2) */
 .pads>div>button,.pads>div{transform:scale(var(--padscale,1));transform-origin:bottom}
 .pads>div{display:flex;gap:var(--padgap,10px);align-items:flex-end;pointer-events:auto}
 /* Пэд — не круг с обводкой, а шайба под стеклом: внутрь уходит мягкий свет,
@@ -392,7 +393,8 @@ body.menuopen .rail{opacity:.12;pointer-events:none;transition:opacity .15s}
   padding:1px 5px;border-radius:8px;font-size:9px;margin-left:6px}
 /* ── окно пустого бака (16c) ── посреди кадра: газ нажат, ответ должен быть там,
    куда смотрят. Тот же терминал, что меню, но янтарный: это не дверь, а беда */
-#sos{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:9;
+#sos{position:fixed;left:50%;transform:translateX(-50%);z-index:9;   /* нижняя треть, над падами (дизайнер 12.09) */
+  bottom:calc(env(safe-area-inset-bottom) + var(--padsh,86px) + 12px);max-height:72vh;overflow-y:auto;
   width:min(320px,88vw);background:var(--glass);border:1px solid rgba(242,178,92,.5);
   border-radius:var(--rad-p);backdrop-filter:blur(18px) saturate(1.2);
   box-shadow:0 18px 54px rgba(0,0,0,.62),var(--glass-hi);
@@ -401,8 +403,9 @@ body.menuopen .rail{opacity:.12;pointer-events:none;transition:opacity .15s}
 #sos>b{font-weight:400;color:var(--amber);letter-spacing:.18em;font-size:11px;
   padding:12px;border-bottom:1px solid var(--edge);display:flex;align-items:center}
 #sos>b em{font-style:normal}
-#sos>b span{margin-left:auto;color:var(--phos);font-size:17px;line-height:.7;padding:0 4px;cursor:pointer}
-#sosHead{color:var(--dim);font-size:9px;letter-spacing:.04em;padding:8px 12px;
+#sos>b span{margin:-12px -12px -12px auto;color:var(--phos);font-size:20px;line-height:1;cursor:pointer;
+  min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center}   /* 44 под палец */
+#sosHead{color:#c8d3dc;font-size:11px;letter-spacing:.03em;padding:8px 12px;white-space:pre-line;line-height:1.4;
   border-bottom:1px solid rgba(127,230,216,.08)}
 #sos button{position:relative;-webkit-appearance:none;background:none;border:0;
   border-bottom:1px solid rgba(127,230,216,.08);color:var(--amber);font-family:inherit;
@@ -412,12 +415,18 @@ body.menuopen .rail{opacity:.12;pointer-events:none;transition:opacity .15s}
 #sos button:disabled{color:var(--dim);opacity:.6}
 #sos button .tx{flex:1;min-width:0}
 #sos button em{font-style:normal;font-size:11px;letter-spacing:.13em;display:block}
-#sos button s{text-decoration:none;display:block;color:var(--dim);font-size:9px;margin-top:3px;letter-spacing:.02em}
+#sos button s{text-decoration:none;display:block;color:#b9c6d0;font-size:11px;margin-top:3px;letter-spacing:.01em;line-height:1.35}
+#sos .ic{flex:0 0 auto;width:22px;height:22px;margin-right:10px;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round}
+#sos button.lose.armed{background:rgba(255,90,70,.26);color:#ffd8cf}
+#sos button .arm{position:absolute;left:0;bottom:0;height:3px;width:100%;background:#ff6b57;animation:sosArm 4s linear forwards}
+@keyframes sosArm{from{width:100%}to{width:0}}
+body.sosopen #hailwin{bottom:auto;top:calc(env(safe-area-inset-top) + 96px)}   /* низ держит окно бака — оклик уходит наверх */
 #sos button.main{background:rgba(242,178,92,.16);color:#ffd59a}
 #sos button.main em{font-size:12px}
 #sos button.lose{color:#ff7a66;margin-top:10px;border-top:1px solid rgba(255,110,90,.45)}
 .sosnone{color:var(--dim);font-size:10px;padding:12px;line-height:1.5}
 body.sosopen .rail{opacity:.12;pointer-events:none}
+body.sosopen #console,body.sosopen #camBtn,body.hailopen #console,body.hailopen #camBtn{opacity:.12;pointer-events:none}   /* под окном — только окно */
 /* окно оклика (блокер надзора 12.09): над падами, в нижней трети — корабль и
    пикет видны; вопрос, отсчёт, два больших ответа. Подсказка под ним молчит */
 #hailwin{position:fixed;left:50%;transform:translateX(-50%);z-index:24;   /* поверх экранов (.scr 20) и стола (22): R0 */
@@ -1929,7 +1938,7 @@ body.table u.addr{color:#7a4a20}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.446.0";
+const VER="0.447.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -8806,8 +8815,8 @@ function cue(t,lvl){
 function msgHeld(){const b=typeof document!=="undefined"&&document.body;return MSG_WORLD&&!!(b&&b.classList&&b.classList.contains("screen"));}
 /* мир закрыт экраном — СТОЛ, ОПИСЬ, станция: игрок читает, а не летит. Угрозы
    мира ждут вместе с ним — оклик не тикает, по нему не стреляют (R0, дев 12.09:
-   «читал журнал — получил залп») */
-function worldCovered(){const b=typeof document!=="undefined"&&document.body;return !!(b&&b.classList&&(b.classList.contains("screen")||b.classList.contains("table")));}
+   «читал журнал — получил залп»). Окно бака — тоже: игрок выбирает выход (надзор 12.09) */
+function worldCovered(){const b=typeof document!=="undefined"&&document.body;return !!(b&&b.classList&&(b.classList.contains("screen")||b.classList.contains("table")||b.classList.contains("sosopen")));}
 
 /* ══════════════ хэш состояния (M441) ══════════════
    Одно число на весь мир: два прогона одной сцены на одном семени и одних
@@ -9868,8 +9877,21 @@ function logAdd(kind,text){
   }
 }
 /* услышанное: приёмник на пульте показывает строку, тетрадь её помнит */
+/* говорящий — один раз, в префиксе, одним регистром (боты 12.09: «Коммуна: …Коммуна:
+   борт молчит», а в соседней строке «КОММУНА:»). Текст, где имя уже вписано после
+   многоточия, отдаёт его префиксу; имя капителью — только в заголовках */
+function etherWho(w){
+  w=String(w||"");
+  return (/[А-ЯЁA-Z]/.test(w)&&w===w.toUpperCase())?w.charAt(0)+w.slice(1).toLowerCase():w;
+}
 function etherLine(text,who){
   if(!text)return;
+  if(who){
+    who=etherWho(who);
+    const low=String(text).toLowerCase(),wl=who.toLowerCase();
+    for(const pre of ["…"+wl+": ",wl+": "])
+      if(low.indexOf(pre)===0){text=(pre.charAt(0)==="…"?"…":"")+String(text).slice(pre.length);break;}
+  }
   const s=who?who+": "+text:text;
   logAdd("ether",s);
   if(typeof consoleHeard==="function")consoleHeard(text,who);
@@ -23910,7 +23932,7 @@ function natSwarmTick(dt){
   if(sp>=(6.4+st.thr*1.6)*NAT_SWARM_SP)return false;
   G.hull=Math.max(0,G.hull-NAT_SWARM_DMG*dt);
   if((G.t|0)%90===0)say("РОЙ · НЕ СТОЙТЕ НА МЕСТЕ",90);
-  if(G.hull<=0&&typeof wreck==="function")wreck();
+  if(G.hull<=0&&typeof wreck==="function")wreck("стихия");
   return true;
 }
 /* ── истощение ──
@@ -37913,7 +37935,7 @@ function playerHit(s){
     sfx("hit",{v:.55});
     G.hull=Math.max(0,G.hull-d);
     if(typeof hitFx==="function")hitFx(Math.min(1,.5+d/40));   /* объектив разъезжается (M325) */
-    if(G.hull<=0){wreck();return true;}
+    if(G.hull<=0){wreck("сбит в бою");return true;}
     if(typeof instrKnock==="function")instrKnock();   // попадание может выбить гнездо прибора (хвост M127)
   }
   return false;
@@ -39023,7 +39045,7 @@ function ramTick(dt){
     p.ramCool=45;
     p.vx+=Math.cos(a)*rv*.5;p.vy+=Math.sin(a)*rv*.5;
     sfx("boom",{v:.45});
-    if(G.hull<=0){wreck();return;}
+    if(G.hull<=0){wreck("сбит в бою");return;}
   }
 }
 function homingStep(s,dt){
@@ -39978,7 +40000,7 @@ function snapshot(){
     letter:G.letter||null,dipSwapN:G.dipSwapN,smugN:G.smugN,smugBy:G.smugBy,
     probed:G.probed,
     longHod:G.longHod,race:G.race||null,raceBest:G.raceBest,
-    drones:G.drones,droneInventory:G.droneInventory,droneIds:G.droneIds,droneSold:G.droneSold||{},homeJumps:+(G.homeJumps||0).toFixed(3),homeActMs:G.homeActMs|0,haul:G.haul?haulRestore(G.haul):null,crew:G.crew,bases:G.bases,
+    drones:G.drones,droneInventory:G.droneInventory,droneIds:G.droneIds,droneSold:G.droneSold||{},homeJumps:+(G.homeJumps||0).toFixed(3),homeActMs:G.homeActMs|0,homeDockAt:G.homeDockAt||"",haul:G.haul?haulRestore(G.haul):null,crew:G.crew,bases:G.bases,
     mgrs:G.mgrs,blueprints:G.blueprints,aiRift:G.aiRift,rogues:G.rogues,exiles:G.exiles,
     relics:G.relics,relicHint:G.relicHint,bio:G.bio,home:G.home,course:G.course||null,
     occ:G.occ,freed:G.freed,occCalm:G.occCalm,trade:G.trade,wear:G.wear,seams:G.seams,
@@ -40438,7 +40460,7 @@ function applySave(s){
   G.droneInventory=Math.max(0,s.droneInventory|0);
   G.droneSold={};if(s.droneSold&&typeof s.droneSold==='object')for(const k in s.droneSold)if(/^-?\d+,-?\d+$/.test(k))G.droneSold[k]=s.droneSold[k]|0;   /* M350 */
   /* прыжки домой и активная игра, которая их остужает (16c, 11.09) */
-  G.homeJumps=Math.max(0,+s.homeJumps||0);G.homeActMs=Math.max(0,s.homeActMs|0); G.haul=haulRestore(s.haul);   /* спасательный буксир посреди пути (16c) */
+  G.homeJumps=Math.max(0,+s.homeJumps||0);G.homeActMs=Math.max(0,s.homeActMs|0);G.homeDockAt=typeof s.homeDockAt==="string"?s.homeDockAt:""; G.haul=haulRestore(s.haul);   /* спасательный буксир посреди пути (16c) */
   /* номера бортов живут отдельно от самих машин: дрон в трюме своего номера
      не теряет (M237). Старая запись их не знает — список пуст, номера выдаст
      первая же покупка. */
@@ -41134,7 +41156,7 @@ const SAVE_EPHEMERAL={
   /* экран: подсказки, строки, вид карты */
   msg:"кадр",msgT:"кадр",prompt:"кадр",logNew:"кадр",mirrorEcho:"кадр",
   edgeWarned:"кадр",surfTipShown:"кадр",spLogged:"кадр",tableN:"кадр",tableUsed:"кадр",_yalta:"кадр",_yaltaSaid:"кадр",
-  _dial:"кадр",_fleaHum:"кадр",_probeAt:"кадр",
+  _dial:"кадр",_fleaHum:"кадр",_probeAt:"кадр",_probeArm:"кадр",
   mapClean:"карта",mapLayer:"карта",mapMore:"карта",mapOutline:"карта",mapPeek:"карта",mapSearch:"карта",
   mapTapT:"карта",mapView:"карта",mapZoom:"карта",
   viewCX:"кадр",viewCY:"кадр",viewK:"кадр",viewX:"кадр",viewY:"кадр",
@@ -41783,6 +41805,9 @@ function mouseWalkAt(clientX,clientY){
 }
 
 function tap(sxp,syp){
+  /* на тросе руль у баржи: тычок не заводит автопилот, который сорвался бы
+     с места по прибытии (ревью 12.09) */
+  if(G.haul&&G.mode==="system"){say("НА ТРОСЕ · руль у баржи",90);return;}
   /* зимовка (M197): в комнате трогают вещи — рычаг, дневник, трубы, койку.
      Экранные координаты, а не мировые: комната не ездит */
   if(G.mode==="winter"&&typeof winTap==="function"){
@@ -42308,7 +42333,11 @@ function helmApply(dt,st,sh,maxSp){
   const a0=sh.a;
   /* курс сворачиваем всегда: за долгий полёт он копится оборотами */
   sh.a=angWrap(sh.a);
-  if(c.turn)sh.a=angWrap(sh.a+c.turn*RATE*dt);
+  /* пустой бак (R2): нос ворочают те же маневровые, что и тягу, — без топлива
+     он стоит. Прежде руль крутил корабль на нуле, и игрок не понимал, что застрял */
+  const dry=G.fuel<=0;
+  if(dry){}
+  else if(c.turn)sh.a=angWrap(sh.a+c.turn*RATE*dt);
   else if(c.head!=null){
     const k=c.headK||1;
     sh.a=angWrap(sh.a+clamp(angDiff(c.head,sh.a),-RATE*k*dt,RATE*k*dt));
@@ -42361,7 +42390,7 @@ function helmApply(dt,st,sh,maxSp){
   o.slow=!!(c.assist&&c.slow);
   /* газ или тормоз на пустом баке — окно выходов (16c, плейтест 11.09):
      раньше корабль молча не слушался, и подсказку перебивала любая другая */
-  if((mag>0||c.brake)&&G.fuel<=0&&typeof rescueAsk==="function")rescueAsk();
+  if((mag>0||c.brake||c.turn)&&dry&&typeof rescueAsk==="function")rescueAsk();   /* и руль (R2) */
   if(mag>0&&G.fuel>0&&!o.slow){
     let fwd=0,tx=0,ty=0;
     if(c.thrOnly||along<0){tx=c.tx*HELM_THR;ty=c.ty*HELM_THR;o.thr=true;}
@@ -42527,9 +42556,19 @@ function helmBandPath(x0,y0,x1,y1,w0,w1){
   ctx.lineTo(x0-nx*w0*.5,y0-ny*w0*.5);
   ctx.closePath();
 }
+/* пустой бак (R2): стик гаснет и говорит почему — руль без топлива не работает */
+function helmDry(){return G.mode==="system"&&typeof rescueEmpty==="function"&&rescueEmpty();}
+function helmDryLabel(x,y,a){
+  ctx.globalAlpha=.9*a;ctx.fillStyle="rgb(255,178,122)";
+  ctx.font="10px ui-monospace,monospace";ctx.textAlign="center";
+  ctx.fillText("БАК ПУСТ",x,y-HELM_ARC0-8);ctx.textAlign="left";
+}
 function helmDrawSticks(){
+  const dry=helmDry();
+  /* окно выходов открыто — оно и есть ответ; подпись под ним лишняя */
+  const sosUp=typeof document!=="undefined"&&!!document.body&&!!document.body.classList&&document.body.classList.contains("sosopen");
   const one=(s,fade)=>{
-    const q=helmStickShape(s),a=fade?s.f:1,c=G.ctl;
+    const q=helmStickShape(s),a=(fade?s.f:1)*(dry?.35:1),c=G.ctl;
     const slow=!!(c&&c.slow)&&!fade;
     /* бирюза приборов на ходу, янтарь на торможении — те же два тона, что у
        фишек компаса и у скобок захвата: лента не заводит третьего цвета */
@@ -42572,7 +42611,7 @@ function helmDrawSticks(){
       }
       ctx.globalAlpha=.5*a;ctx.fillStyle="rgb(255,178,122)";
       ctx.font="9px ui-monospace,monospace";ctx.textAlign="center";
-      ctx.fillText("СТОП",q.x0,q.y0-HELM_ARC0-6);
+      if(!dry)ctx.fillText("СТОП",q.x0,q.y0-HELM_ARC0-6);
       ctx.textAlign="left";
     }
     /* тот же вектор — у самого корабля (M422): связь «палец → корабль» должна
@@ -42598,6 +42637,7 @@ function helmDrawSticks(){
     ctx.beginPath();ctx.arc(q.x0,q.y0,1.8,0,TAU);ctx.fill();
     ctx.globalAlpha=.28*a;
     ctx.beginPath();ctx.arc(s.x,s.y,3.2,0,TAU);ctx.fill();
+    if(dry&&!sosUp)helmDryLabel(q.x0,q.y0,fade?s.f:1);
     ctx.restore();
   };
   const live=HELM.S,fade=HELM.fade;
@@ -42611,6 +42651,7 @@ function helmDrawSticks(){
     ctx.save();ctx.strokeStyle="#cfe6ea";ctx.fillStyle="#cfe6ea";ctx.lineWidth=1;
     ctx.globalAlpha=.16;ctx.beginPath();ctx.arc(h.x,h.y,HELM_ARC0,0,TAU);ctx.stroke();
     ctx.globalAlpha=.3;ctx.beginPath();ctx.arc(h.x,h.y,2.2,0,TAU);ctx.fill();
+    if(dry&&!sosUp)helmDryLabel(h.x,h.y,1);
     ctx.restore();
   }
 }
@@ -44051,8 +44092,20 @@ function rescueHomeCost(){
   const n=Math.max(0,G.homeJumps||0);
   return Math.max(HOME_JUMP_BASE,Math.round(HOME_JUMP_BASE*Math.pow(2,n)/10)*10);
 }
-function homeJumpCount(){G.homeJumps=(G.homeJumps||0)+(G.fuel>0?HOME_TAXI:HOME_EMPTY);}
+/* такси — прыжок, когда было чем лететь. С грунта на 1–7 топлива взлёт не выйдет
+   (нужно 8), и окно зовёт бак пустым — значит, и прыжок без хода (ревью 12.09) */
+function homeJumpCount(){G.homeJumps=(G.homeJumps||0)+(rescueEmpty()?HOME_EMPTY:HOME_TAXI);}
 function homeCool(k){G.homeJumps=Math.max(0,(G.homeJumps||0)-k);}
+/* честный причал своим ходом в чужой системе (ревью 12.09: HOME_DOCK_COOL был
+   объявлен и не применялся). Раз на систему: зайти-выйти у одной станции
+   счётчик не студит — надо долететь до другой. Буксир свою систему уже
+   остудил сам (haulTick ставит ту же метку) */
+function rescueDockCool(){
+  if(G.haul)return;
+  const H=rescueHomeAt(),key=G.sx+","+G.sy;
+  if((G.sx===H.sx&&G.sy===H.sy)||G.homeDockAt===key)return;
+  G.homeDockAt=key;homeCool(HOME_DOCK_COOL);
+}
 /* активная минута: вкладка на экране и за последнюю минуту был ввод. Считаем
    реальным временем (wallMs) — игровое стоит на паузе и в фоне */
 let rescueInputT=-1e12,rescueBeatT=-1;
@@ -44068,12 +44121,16 @@ function rescueOffers(){
   const out=[],H=rescueHomeAt();
   const atHome=G.sx===H.sx&&G.sy===H.sy;
   if(!atHome)out.push({id:"home",ru:"ДОМОЙ",cost:rescueHomeCost(),
-    sub:"прыжок "+H.ru+" · сразу · в баке будет "+RESCUE_FUEL});
+    sub:"прыжок "+H.ru+" · сразу · в баке будет "+Math.max(Math.floor(G.fuel),Math.min(stat().fuelMax,RESCUE_FUEL))});   /* ровно то, что даст rescueTake */
   if(rescueEmpty()){
     const dest=nearestStation(G.sx,G.sy);
+    /* терять нечего — голый «Стриж» без модулей, частей и груза: СБРОС был бы
+       бесплатной доставкой к станции с полным баком, лучше буксира и ДОМОЙ */
+    const lose=G.shipId!=="strizh"||Object.keys(G.mods).some(k=>(G.mods[k]|0)>0)||
+      Object.keys(G.fit[G.shipId]||{}).length>0||RES_KEYS.some(k=>G.cargo[k]>0);
     out.push({id:"tow",ru:"БУКСИР",cost:0,
-      sub:"баржа придёт и дотащит до станции ("+dest.name+") · около 5 минут без руля"});
-    out.push({id:"reset",ru:"СБРОС",cost:0,
+      sub:"баржа придёт и дотащит · 5 минут без руля"});   /* куда — сказано в шапке окна */
+    if(lose)out.push({id:"reset",ru:"СБРОС",cost:0,
       sub:"корабль, всё, что на нём стоит, и груз потеряны · «Стриж» у станции"});
   }
   return out;
@@ -44081,11 +44138,15 @@ function rescueOffers(){
 /* поставить корабль у станции системы (как буксир M331) */
 function rescuePark(dest){
   G.sx=dest.sx;G.sy=dest.sy;G.sys=dest;
-  G.ship.x=dest.station?dest.station.orbit+120:900;G.ship.y=0;
+  /* у станции по её углу на орбите (тестировщик 12.09: ставил в (orbit+120, 0),
+     и после буксира, ДОМОЙ и СБРОСА корабль стоял в двух тысячах от причала) */
+  const S=dest.station,sa=S?(S.ang||0):0;
+  G.ship.x=S?Math.cos(sa)*(S.orbit+120):900;G.ship.y=S?Math.sin(sa)*(S.orbit+120):0;
   G.ship.vx=0;G.ship.vy=0;
   G.mode="system";G.ap=null;G.orbit=null;G.land=null;G.surf=null;G.pirates=[];G.shots=[];
 }
 function rescueTake(id){
+  if(G.haul)return false;   /* на тросе выход уже выбран: ни второго буксира, ни прыжка из-под троса */
   const o=rescueOffers().find(x=>x.id===id);
   if(!o)return false;
   if(o.cost>G.credits){say("Не хватает\nнужно "+o.cost.toLocaleString("ru")+" кр",120);return false;}
@@ -44108,11 +44169,15 @@ function rescueTake(id){
   }else if(id==="reset"){
     const was=(shipData(G.shipId)||{}).ru||"корабль";
     if(G.shipId!=="strizh")delete G.owned[G.shipId];
-    G.shipId="strizh";G.owned.strizh=true;
     /* уходит то, что НА корабле: поставленные ступени модулей (mods) и части
        (fit). Купленное, но не поставленное (modsOwned сверх mods) остаётся */
     for(const k in G.mods){G.modsOwned[k]=Math.max(0,(G.modsOwned[k]|0)-(G.mods[k]|0));G.mods[k]=0;}
-    G.fit={};invalidateParts();
+    /* части уходят только с потерянного корпуса и вместе с ним — из описи тоже;
+       обвес других корпусов в ангаре не трогаем (ревью 12.09) */
+    const lostFit=G.fit[G.shipId]||{};
+    for(const k in lostFit){const p=partById(lostFit[k]);if(p)G.inv.splice(G.inv.indexOf(p),1);}
+    delete G.fit[G.shipId];
+    G.shipId="strizh";G.owned.strizh=true;invalidateParts();
     for(const k of RES_KEYS)G.cargo[k]=0;
     rescuePark(nearestStation(G.sx,G.sy));
     const st0=stat();G.fuel=st0.fuelMax;G.hull=st0.hullMax;
@@ -44126,10 +44191,13 @@ function rescueTake(id){
 /* ── буксир: баржа настоящая, путь настоящий ── */
 function haulStart(){
   const sh=G.ship,dest=nearestStation(G.sx,G.sy);
-  const a=rnd()*TAU;
   G.haul={ph:"come",t:0,seed:hashi(G.sx*977+G.sy,clockNow()|0,31)>>>0,
-    bx:sh.x+Math.cos(a)*2200,by:sh.y+Math.sin(a)*2200,ba:a+Math.PI,
-    x0:0,y0:0,dsx:dest.sx,dsy:dest.sy,dname:dest.name};
+    bx:sh.x,by:sh.y,ba:0,x0:0,y0:0,dsx:dest.sx,dsy:dest.sy,dname:dest.name};
+  /* заходит сзади, со своего борта (R4): 2200 за кормой по линии буксира */
+  const A=haulAim(sh),hd0=Math.atan2(A.ty-sh.y,A.tx-sh.x),sd=haulSide();
+  G.haul.bx=sh.x-Math.cos(hd0)*2200-Math.sin(hd0)*sd*haulReach()*1.1;
+  G.haul.by=sh.y-Math.sin(hd0)*2200+Math.cos(hd0)*sd*haulReach()*1.1;
+  G.haul.ba=hd0;
   G.ap=null;G.orbit=null;G.pirates=[];G.shots=[];HAUL_FX=[];
   logAdd("warn","Буксир вызван к "+evacFrom()+" · баржа идёт");
   /* тоста нет: подсказка и так говорит «баржа подходит» (дизайн-ревью 11.09) */
@@ -44156,6 +44224,11 @@ const HAUL_TALK=["держись, не дёргай","на тросе не ку�
   "это не мы трясём, это ты болтаешься","бак пустой — голова пустая, говорил мне отец",
   "за буксир денег не берём. за разговоры тоже","видишь станцию? и я не вижу. скоро",
   "руль не трогай, он у тебя сейчас для красоты","у нас тут чай. тебе не передать, извини"];
+const HAUL_BIT_TALK=["у тебя там что-то отвалилось","ого. это было важное?",
+  "не страшно, на станции приварят","считай, облегчились"];
+const HAUL_FREE=210;                  /* кадров отцепки: трос отдан, баржа уходит (R4) */
+const HAUL_BOOM_K=.2;                 /* стрела за соплами, доля длины баржи: трос не из огня (дизайнер 12.09) */
+const HAUL_CAM={x:0,y:0};             /* сдвиг камеры вперёд по тросу — догоняет плавно (вид, не мир) */
 let HAUL_FX=[];
 const haulRim={cv:null};              /* холст-маска кромки: один на сцену, не в G */
 /* масштаб корабля в drawSystem — один на двоих с буксиром. На тросе пол .7:
@@ -44189,7 +44262,33 @@ function haulName(){return "буксир «"+HAUL_NAMES[((G.haul?G.haul.seed:0)>
 function haulSay(t){if(typeof etherLine==="function")etherLine(t,haulName());}
 /* от центра корабля до центра баржи, px масштаба корабля */
 function haulReach(){return HAUL_SHIP_HALF+HAUL_ROPE+bargeArtOf(haulBarge()).L*.48*HAUL_BARGE_K;}
-function haulGap(g){return g[0]+rndFx()*(g[1]-g[0]);}
+/* случай буксира — от его зерна, не от рисунка (M441; тестировщик 12.09: rndFx
+   решал угол корабля, место баржи в сейве и реплики в журнале, и прогон с
+   кадрами расходился с прогоном без них). Счётчик потока — в поле с
+   подчёркиванием, мимо сейва: после загрузки поток идёт заново, одинаково */
+function haulR(){const T=G.haul;T._k=(T._k|0)+1;return (hashi(T.seed|0,T._k,0x4A17)>>>0)/4294967296;}
+function haulGap(g){return g[0]+haulR()*(g[1]-g[0]);}
+/* реплики колодой (тестировщик 12.09: наугад с возвратом — повтор за рейс почти
+   наверняка). Колода тасуется от зерна; кончилась — тасуется новая */
+function haulDeal(list,key){
+  const T=G.haul,d=T[key]||(T[key]={i:0,o:null});
+  if(!d.o||d.i>=d.o.length){
+    d.o=list.map((_,i)=>i);
+    for(let i=d.o.length-1;i>0;i--){const j=Math.floor(haulR()*(i+1)),t=d.o[i];d.o[i]=d.o[j];d.o[j]=t;}
+    d.i=0;
+  }
+  return list[d.o[d.i++]];
+}
+/* с какого борта баржа обгоняет — от зерна */
+function haulSide(){return (G.haul.seed&1)?1:-1;}
+/* куда тащат: своя система со станцией — к ней (у станции по S.ang), чужая —
+   от звезды к краю, и в конце прыжок */
+function haulAim(sh){
+  const T=G.haul,same=T.dsx===G.sx&&T.dsy===G.sy&&G.sys.station,S=same?G.sys.station:null;
+  const ox=T.ph==="haul"?T.x0:sh.x,oy=T.ph==="haul"?T.y0:sh.y;
+  return {same,S,tx:S?S.x+Math.cos(S.ang)*120:ox+Math.cos(Math.atan2(oy,ox))*3000,
+    ty:S?S.y+Math.sin(S.ang)*120:oy+Math.sin(Math.atan2(oy,ox))*3000};
+}
 /* планета для облёта: ближняя к отрезку пути и не дальше 2500 от него —
    чтобы крюк был по дороге, а не экспедицией. -1 — лететь прямо */
 function haulPickWaypoint(x0,y0,tx,ty){
@@ -44203,7 +44302,7 @@ function haulPickWaypoint(x0,y0,tx,ty){
 }
 /* кусок отвалился: косметика, мир не трогаем */
 function haulBit(){
-  const sh=G.ship,T=G.haul,hd=T.ba,px=-Math.sin(hd),py=Math.cos(hd),side=rndFx()<.5?-1:1;
+  const sh=G.ship,T=G.haul,hd=T.ba,px=-Math.sin(hd),py=Math.cos(hd),side=haulR()<.5?-1:1;   /* толчок — мир: от зерна */
   const kind=["plate","antenna","barrel"][Math.floor(rndFx()*3)];
   const x=sh.x+px*side*8,y=sh.y+py*side*8;
   HAUL_FX.push({k:kind,x,y,vx:-Math.cos(hd)*(.5+rndFx()*.5)+px*side*(.3+rndFx()*.4),
@@ -44211,8 +44310,7 @@ function haulBit(){
   for(let i=0;i<14;i++){const a=rndFx()*TAU,v=1+rndFx()*2.5;
     HAUL_FX.push({k:"spark",x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:1,dec:1/(18+rndFx()*20)});}
   T._sv=(T._sv||0)+side*.012;          /* толчок на тросе */
-  if(rndFx()<.7)haulSay(["у тебя там что-то отвалилось","ого. это было важное?",
-    "не страшно, на станции приварят","считай, облегчились"][Math.floor(rndFx()*4)]);
+  if(haulR()<.7)haulSay(haulDeal(HAUL_BIT_TALK,"_db"));
 }
 function haulFxTick(dt){
   for(const f of HAUL_FX){f.x+=f.vx*dt;f.y+=f.vy*dt;if(f.va)f.a+=f.va*dt;
@@ -44230,8 +44328,17 @@ function haulRestore(h){
     dsx:h.dsx|0,dsy:h.dsy|0,dname:String(h.dname||"")};
 }
 function haulLeft(){
-  const T=G.haul;if(!T)return 0;
+  const T=G.haul;if(!T||T.ph==="free")return 0;
   return Math.ceil(((T.ph==="come"?HAUL_COME-T.t+HAUL_TIME:HAUL_TIME-T.t))/60);
+}
+/* отцепка: HAUL_FREE кадров баржа уходит с огнём, потом её нет */
+function haulFree(dt,sh){
+  const T=G.haul;
+  T._bv=(T._bv||0)+.06*dt;
+  T.bx+=Math.cos(T.ba)*T._bv*dt;T.by+=Math.sin(T.ba)*T._bv*dt;
+  if(T.t>=HAUL_FREE){G.haul=null;return true;}
+  cue("БУКСИР ОТЦЕПИЛСЯ · станция рядом",CUE_INFO);
+  return true;
 }
 /* кадр буксира: true — корабль ведёт баржа, штурвал и физика молчат */
 function haulTick(dt,sh){
@@ -44258,32 +44365,34 @@ function haulTick(dt,sh){
      буксира ниже пола (.7) не отъезжаем */
   /* и сверху так же (п. 2, 12.09): выше 1.6 спрайты не растут, а мировой трос
      растёт — баржа отрывалась бы от троса на щипке */
-  G.zoom=clamp(G.zoom,SHIP_SCALE_MIN,SHIP_SCALE_MAX);   /* трос и спрайты в одном масштабе (shipScaleAt) */
+  /* и не рывком (тестировщик 12.09: с .3 камера прыгала к .7 за кадр) — пока
+     баржа подходит, она далеко, и расхождение троса со спрайтом не видно */
+  if(G.zoom<SHIP_SCALE_MIN)G.zoom=Math.min(SHIP_SCALE_MIN,G.zoom+(SHIP_SCALE_MIN-G.zoom)*Math.min(1,.04*dt)+.0005*dt);
+  if(G.zoom>SHIP_SCALE_MAX)G.zoom=Math.max(SHIP_SCALE_MAX,G.zoom-(G.zoom-SHIP_SCALE_MAX)*Math.min(1,.04*dt)-.0005*dt);
   const reachW=haulReach();
   /* своя система со станцией — тащит к ней по-настоящему; чужая — уводит
      от звезды к краю, и в конце прыжок, как у любой баржи */
-  const same=T.dsx===G.sx&&T.dsy===G.sy&&G.sys.station;
-  const S=same?G.sys.station:null;
-  const ox=T.ph==="haul"?T.x0:sh.x,oy=T.ph==="haul"?T.y0:sh.y;
-  const tx=S?S.x+Math.cos(S.ang)*120:ox+Math.cos(Math.atan2(oy,ox))*3000;
-  const ty=S?S.y+Math.sin(S.ang)*120:oy+Math.sin(Math.atan2(oy,ox))*3000;
+  if(T.ph==="free")return haulFree(dt,sh);
+  const A=haulAim(sh),same=A.same,tx=A.tx,ty=A.ty;
   if(T.ph==="come"){
-    /* баржа идёт со стороны станции, гасит ход носовыми, разворачивается на
-       месте маневровыми и подаёт корму под трос */
+    /* баржа заходит сзади и обгоняет борт о борт (R4; тестировщик 12.09: шла со
+       случайной стороны, раз в десять рейсов пролетала сквозь корабль и дальше
+       шла кормой вперёд). Нос у неё по ходу: разгон — маршевые, у борта носовые
+       гасят ход, последние метры маневровые подают корму под трос. Корабль без
+       топлива носом не крутит (R2) — его развернёт трос, когда его возьмут */
     const k=clamp(T.t/HAUL_COME,0,1),hd0=Math.atan2(ty-sh.y,tx-sh.x);
-    const ax=sh.x+Math.cos(hd0)*reachW,ay=sh.y+Math.sin(hd0)*reachW;
-    T._fire=k<.5?1:0;T._retro=k>=.5&&k<.72;T._turn=k>=.72;
-    if(k<.72){
-      T.bx+=(ax-T.bx)*Math.min(1,(.003+.03*k*k)*dt);T.by+=(ay-T.by)*Math.min(1,(.003+.03*k*k)*dt);
-      T.ba=Math.atan2(sh.y-T.by,sh.x-T.bx);
-    }else{
-      T.bx=ax;T.by=ay;
-      const face=Math.atan2(sh.y-ay,sh.x-ax),q=(k-.72)/.28,e=q*q*(3-2*q);
-      T.ba=face+angDiff(hd0,face)*e;
-    }
-    sh.a=Math.atan2(T.by-sh.y,T.bx-sh.x);
+    const ux=Math.cos(hd0),uy=Math.sin(hd0),sd=haulSide();
+    const ax=sh.x+ux*reachW,ay=sh.y+uy*reachW;                                   /* под трос: впереди на длину троса */
+    const wx=sh.x-uy*sd*reachW*1.1+ux*reachW*.2,wy=sh.y+ux*sd*reachW*1.1+uy*reachW*.2;   /* борт о борт */
+    const gx=k<.55?wx:ax,gy=k<.55?wy:ay,px=T.bx,py=T.by,r=Math.min(1,(.004+.02*k)*dt);
+    T.bx+=(gx-T.bx)*r;T.by+=(gy-T.by)*r;
+    const mv=Math.hypot(T.bx-px,T.by-py);
+    T.ba+=angDiff(mv>.05?Math.atan2(T.by-py,T.bx-px):hd0,T.ba)*Math.min(1,(mv>.05?.12:.05)*dt);
+    T._fire=k<.55?1:0;T._retro=k>=.55&&k<.8;T._turn=k>=.8;
     if(T.t>=HAUL_COME){
-      T.ph="haul";T.t=0;T.x0=sh.x;T.y0=sh.y;T._sw=0;T._sv=.02;   /* рывок: трос взяли */
+      /* рывок: трос взяли — корабль разворачивает тросом из того, куда он смотрел */
+      T._off=angDiff(sh.a,hd0);
+      T.ph="haul";T.t=0;T.x0=sh.x;T.y0=sh.y;T._sw=0;T._sv=.02;
       T._nb=25*60;T._nt=12*60;
       haulSay("трос взяли, пошли. держись");
     }
@@ -44311,9 +44420,10 @@ function haulTick(dt,sh){
     T.ba=hd;sh.x=nx;sh.y=ny;
     /* качание на тросе: пружина с затуханием и мелкий ветер */
     T._sw=(T._sw||0)+(T._sv||0)*dt;
-    T._sv=(T._sv||0)+(-.0022*T._sw-.012*(T._sv||0))*dt+(rndFx()-.5)*.00035*dt;
+    T._sv=(T._sv||0)+(-.0022*T._sw-.012*(T._sv||0))*dt+(haulR()-.5)*.00035*dt;
     T._sw=clamp(T._sw,-.3,.3);
-    sh.a=hd+T._sw;
+    T._off=(T._off||0)*Math.pow(.985,dt);
+    sh.a=angWrap(hd+T._sw+T._off);
     T.bx=sh.x+Math.cos(hd+T._sw)*reachW;T.by=sh.y+Math.sin(hd+T._sw)*reachW;
     T._fire=1;T._retro=false;T._turn=false;
     if(T._nb==null)T._nb=haulGap(HAUL_BIT_GAP);
@@ -44321,14 +44431,20 @@ function haulTick(dt,sh){
     T._nb-=dt;if(T._nb<=0){haulBit();T._nb=haulGap(HAUL_BIT_GAP);}
     T._nt-=dt;if(T._nt<=0){
       const m=Math.ceil(haulLeft()/60);
-      haulSay(rndFx()<.3&&m>1?"до причала ещё "+m+" "+pl3(m,"минута","минуты","минут"):HAUL_TALK[Math.floor(rndFx()*HAUL_TALK.length)]);
+      /* отсчёт — только когда число сменилось (тестировщик 12.09: «ещё 2 минуты» дважды) */
+      const cd=haulR()<.3&&m>1&&m!==T._lm;if(cd)T._lm=m;
+      haulSay(cd?"до причала ещё "+m+" "+pl3(m,"минута","минуты","минут"):haulDeal(HAUL_TALK,"_dt"));
       T._nt=haulGap(HAUL_TALK_GAP);
     }
     if(T.t>=HAUL_TIME){
       haulSay("приехали. отцепляем. бак не забудь");
       const dest=getSystem(T.dsx,T.dsy);
-      G.haul=null;homeCool(HOME_TOW_COOL);
-      if(!same)rescuePark(dest);
+      homeCool(HOME_TOW_COOL);G.ap=null;G.homeDockAt=T.dsx+","+T.dsy;   /* тычок на тросе автопилот не копит */
+      /* прыжок в систему станции — вместе с баржей: отцепка там, на месте */
+      if(!same){const rx=T.bx-sh.x,ry=T.by-sh.y;rescuePark(dest);T.bx=sh.x+rx;T.by=sh.y+ry;}
+      /* отцепка (R4; тестировщик 12.09: баржа, трос и обломки пропадали в один
+         кадр): трос отдан, баржа прибавляет ход и уходит своим курсом */
+      T.ph="free";T.t=0;T._bv=0;T._fire=1;T._retro=false;T._turn=false;
       G.fuel=Math.max(G.fuel,Math.min(stat().fuelMax,RESCUE_FUEL));
       logAdd("warn","Буксир дотащил до станции · система "+dest.name);
       say("Буксир дотащил\nстанция рядом · в баке "+Math.floor(G.fuel),180);
@@ -44360,19 +44476,6 @@ function drawHaul(zx,zy,Z){
       ctx.fillStyle="#ff6b57";ctx.fillRect(8,-1.5,3,3);}
     else{ctx.fillStyle="#b0703a";ctx.fillRect(-4,-6,8,12);ctx.strokeRect(-4,-6,8,12);}
     ctx.restore();ctx.globalAlpha=1;
-  }
-  /* трос: от носа корабля к корме баржи, с провисом; рывок выбирает провис */
-  if(T.ph==="haul"){
-    const na=G.ship.a,nx=sx+Math.cos(na)*HAUL_SHIP_HALF*sS,ny=sy+Math.sin(na)*HAUL_SHIP_HALF*sS;
-    const bx=x-Math.cos(T.ba)*art.L*.48*sB,by=y-Math.sin(T.ba)*art.L*.48*sB;
-    const tens=clamp(Math.abs(T._sv||0)*70,0,1);
-    const sag=(1-tens)*(10+3*Math.sin(G.t*.03))*sS;
-    const mx=(nx+bx)/2,my=(ny+by)/2,dl=Math.hypot(bx-nx,by-ny)||1;
-    const cx=mx-(by-ny)/dl*sag,cy=my+(bx-nx)/dl*sag;
-    ctx.strokeStyle="rgba(40,36,30,.9)";ctx.lineWidth=Math.max(1.5,2.6*sS);
-    ctx.beginPath();ctx.moveTo(nx,ny);ctx.quadraticCurveTo(cx,cy,bx,by);ctx.stroke();
-    ctx.strokeStyle="rgba(214,200,168,.75)";ctx.lineWidth=Math.max(.8,1.2*sS);
-    ctx.beginPath();ctx.moveTo(nx,ny);ctx.quadraticCurveTo(cx,cy,bx,by);ctx.stroke();
   }
   ctx.save();ctx.translate(x,y);ctx.rotate(T.ba);ctx.scale(sB,sB);
   /* маршевые: факел из каждого сопла, дышит; на гашении хода и развороте — молчат */
@@ -44461,7 +44564,43 @@ function drawHaul(zx,zy,Z){
     if(T._turn&&Math.floor(G.t/6)%2===0){puff(nose*.8,-hw,0,-1);puff(-nose*.8,hw,0,1);}
     ctx.globalCompositeOperation="source-over";
   }
+  /* стрела — железо (дизайнер 12.09: «огрызок в пару пикселей», трос выходил из
+     огня): брус за соплами, 0.2 длины и 0.25 полуширины корпуса, светлая грань
+     по одной стороне, гак на конце. Рисуется поверх факелов, трос — с гака */
+  if(T.ph!=="come"){
+    const bx0=-art.L*.48,bl=art.L*HAUL_BOOM_K,bh=Math.max(2,art.hw*.25),root=art.L*.06;
+    ctx.fillStyle="#4a4f57";ctx.fillRect(bx0-bl,-bh/2,bl+root,bh);
+    ctx.fillStyle="#aab2bb";ctx.fillRect(bx0-bl,-bh/2,bl+root,Math.max(1,bh*.24));
+    ctx.fillStyle="#2a2d33";ctx.fillRect(bx0-bl-2,-bh*.75,3.5,bh*1.5);
+  }
   ctx.restore();
+  /* стрела и трос — поверх факелов (R4, дизайнер 12.09: трос выходил из сопла и
+     горел в факеле). Стрела выносит крепление за сопла; трос от носа корабля к
+     её концу, с провисом, рывок выбирает провис. На отцепке трос отдан: висит
+     со стрелы, укорачивается и гаснет, уходя вместе с баржей */
+  {
+    const dx=Math.cos(T.ba),dy=Math.sin(T.ba),bL=art.L*(.48+HAUL_BOOM_K)*sB;
+    const tx=x-dx*bL,ty=y-dy*bL;   /* конец стрелы: гак */
+    let nx=null,ny=null,al=1,tens=0;
+    if(T.ph==="haul"){
+      const na=G.ship.a;nx=sx+Math.cos(na)*HAUL_SHIP_HALF*sS;ny=sy+Math.sin(na)*HAUL_SHIP_HALF*sS;
+      tens=clamp(Math.abs(T._sv||0)*70,0,1);
+    }else if(T.ph==="free"){
+      const q=clamp(T.t/HAUL_FREE,0,1),Lr=HAUL_ROPE*sS*(1-.6*q);
+      nx=tx-dx*Lr;ny=ty-dy*Lr;al=1-q;
+    }
+    if(nx!=null){
+      const sag=(1-tens)*(10+3*Math.sin(G.t*.03))*sS*(T.ph==="free"?2:1);
+      const mx=(nx+tx)/2,my=(ny+ty)/2,dl=Math.hypot(tx-nx,ty-ny)||1;
+      const cx=mx-(ty-ny)/dl*sag,cy=my+(tx-nx)/dl*sag;
+      ctx.globalAlpha=al;
+      ctx.strokeStyle="rgba(40,36,30,.9)";ctx.lineWidth=Math.max(1.5,2.6*sS);
+      ctx.beginPath();ctx.moveTo(nx,ny);ctx.quadraticCurveTo(cx,cy,tx,ty);ctx.stroke();
+      ctx.strokeStyle="rgba(214,200,168,.75)";ctx.lineWidth=Math.max(.8,1.2*sS);
+      ctx.beginPath();ctx.moveTo(nx,ny);ctx.quadraticCurveTo(cx,cy,tx,ty);ctx.stroke();
+      ctx.globalAlpha=1;
+    }
+  }
 }
 
 /* взлёт с грунта без топлива: отказ называет причину (порог 91zzzzzl) и
@@ -44481,15 +44620,59 @@ function rescueAsk(){
   if(G.t>=rescueShutT&&G.t-rescueShutT<RESCUE_ASK_GAP)return;
   toggleSos(true);
 }
+/* шапка — отдельно: её сверяет каждый кадр rescueSync (расстояние, погоня) */
+function rescueHead(){
+  const empty=rescueEmpty();
+  const head=document.getElementById("sosHead");
+  /* с грунта в баке бывает 1–7: взлёт стоит 8 — это не «ноль» (ревью 12.09) */
+  const fl=Math.max(0,Math.floor(G.fuel));
+  /* шапка говорит то, чего нет в HUD (дизайнер 12.09): куда тащат и сколько до
+     туда, а если на хвосте кто-то есть — это первой строкой */
+  const dest=nearestStation(G.sx,G.sy);
+  const here=dest.sx===G.sx&&dest.sy===G.sy&&dest.station;
+  /* чужая система — в прыжках и времени буксира, а не координатами сектора:
+     «сектор 3:1» игроку ни о чём (дизайнер 12.09) */
+  const jn=Math.max(Math.abs(dest.sx-G.sx),Math.abs(dest.sy-G.sy));
+  const far=here?Math.round(Math.hypot(G.ship.x-dest.station.x,G.ship.y-dest.station.y))+" ед."
+    :jn+" "+pl3(jn,"прыжок","прыжка","прыжков")+" · буксир ≈"+Math.round(HAUL_TIME/3600)+" мин";
+  const chase=(G.pirates||[]).filter(p=>p.hull>0&&p.aware&&!p.iff).length;
+  const t=(chase?"ПОГОНЯ · "+chase+" "+(chase===1?"борт":chase<5?"борта":"бортов")+" на хвосте\n":"")+
+    (empty&&fl>0?"Топлива "+fl+", на взлёт нужно 8\n":"")+"до станции «"+dest.name+"» · "+far;
+  if(head&&head.textContent!==t)head.textContent=t;
+}
+/* окно живое (Контроль 12.09: рисовалось только при открытии — пришли деньги,
+   а ДОМОЙ серый). Кнопки перестраиваются, когда меняется то, от чего они
+   зависят, и никогда — пока СБРОС взведён: второй тап не срывается */
+let rescueSigNow="";
+function rescueSig(){return rescueOffers().map(o=>o.id+":"+o.cost+":"+(o.cost>G.credits?0:1)).join(",")+"|"+G.mode+"|"+rescueEmpty();}
+function rescueSync(){
+  if(!$sos||!$sos.classList.contains("open"))return;
+  if(G.haul){toggleSos(false);return;}
+  /* окно «бак пуст», а бак уже не пуст (крушение дало 30, синтез, заправка):
+     без погони закрывается само и говорит «ход есть»; с погоней — остаётся
+     окном ДОМОЙ и перерисовывается целиком (тестировщик, дизайнер 12.09) */
+  if($sos.dataset.empty==="1"&&!rescueEmpty()){
+    $sos.dataset.empty="";
+    if(!(G.pirates||[]).some(p=>p.hull>0&&p.aware&&!p.iff)){toggleSos(false);say("Ход есть\nв баке "+Math.floor(G.fuel),120);return;}
+    rescueRender();return;
+  }
+  if(rescueSig()!==rescueSigNow&&!$sos.querySelector("button.armed"))rescueRender();
+  else rescueHead();
+}
+/* значки выходов (дизайнер 12.09): дом, баржа с тросом, «Стриж» — выход читается
+   раньше слова */
+const RESCUE_ICON={
+  home:'<svg class="ic" viewBox="0 0 16 16"><path d="M2 8l6-5 6 5"/><path d="M4 7v6h8V7"/></svg>',
+  tow:'<svg class="ic" viewBox="0 0 16 16"><rect x="1" y="5" width="8" height="5" rx="1"/><path d="M9 7.5h3"/><path d="M12 5.5l3 2-3 2z"/></svg>',
+  reset:'<svg class="ic" viewBox="0 0 16 16"><path d="M8 2l5 11-5-3-5 3z"/></svg>'
+};
 function rescueRender(){
   const box=document.getElementById("sosList");if(!box)return;
   box.textContent="";
   const empty=rescueEmpty();
   const ttl=document.getElementById("sosTtl");
   if(ttl)ttl.textContent=empty?"ХОДА НЕТ · БАК ПУСТ":"ДОМОЙ";
-  const head=document.getElementById("sosHead");
-  if(head)head.textContent=(empty?"Топлива ноль. ":"")+"На счету "+
-    Math.floor(G.credits).toLocaleString("ru")+" кр · корабль «"+((shipData(G.shipId)||{}).ru||"—")+"»";
+  rescueHead();rescueSigNow=rescueSig();
   const offers=rescueOffers();
   if(!offers.length){
     const s=document.createElement("div");s.className="sosnone";
@@ -44500,7 +44683,7 @@ function rescueRender(){
     const b=document.createElement("button");
     const poor=o.cost>G.credits;
     b.disabled=poor;
-    b.innerHTML='<span class="tx"><em></em><s></s></span>';
+    b.innerHTML=RESCUE_ICON[o.id]+'<span class="tx"><em></em><s></s></span>';
     b.querySelector("em").textContent=o.ru+(o.cost?" · "+o.cost.toLocaleString("ru")+" КР":(o.id==="tow"?" · ДАРОМ":""));
     b.querySelector("s").textContent=poor?"не хватает "+(o.cost-G.credits).toLocaleString("ru")+" кр":o.sub;
     b.dataset.id=o.id;
@@ -44513,10 +44696,15 @@ function rescueRender(){
       /* СБРОС отнимает корабль — одним касанием его не отдают (ревью 11.09):
          первый тычок взводит кнопку и говорит, что пропадёт, второй в течение
          четырёх секунд — делает. Телефон промахивается, это мы уже знаем */
-      if(o.id==="reset"&&!(b.dataset.armed&&wallMs()-(+b.dataset.armed)<4000)){
-        b.dataset.armed=String(wallMs());
+      /* взведённая — красная, с полосой срока; срок вышел — кнопка возвращается
+         сама (ревью 12.09: надпись «ТОЧНО?» висела, а второй тап лишь взводил снова) */
+      if(o.id==="reset"&&!(b.classList.contains("armed")&&wallMs()-(+b.dataset.armed)<4000)){
+        b.dataset.armed=String(wallMs());b.classList.add("armed");
         b.querySelector("em").textContent="ТОЧНО? ТКНИТЕ ЕЩЁ РАЗ";
         b.querySelector("s").textContent="«"+((shipData(G.shipId)||{}).ru||"корабль")+"», всё, что на нём стоит, и груз пропадут";
+        const bar=document.createElement("i");bar.className="arm";
+        bar.addEventListener("animationend",()=>{if(b.isConnected)rescueRender();});
+        b.appendChild(bar);
         return;
       }
       if(rescueTake(o.id))toggleSos(false);else rescueRender();
@@ -44526,8 +44714,10 @@ function rescueRender(){
 }
 function toggleSos(on){
   if(!$sos)return;
-  const open=on===undefined?!$sos.classList.contains("open"):on;
-  if(open){if(typeof toggleMenu==="function")toggleMenu(false);rescueRender();}
+  let open=on===undefined?!$sos.classList.contains("open"):on;
+  /* на тросе выход уже выбран (ревью 12.09): меню ДОМОЙ окна не открывает */
+  if(open&&G.haul){say("НА ТРОСЕ\nбаржа дотащит до «"+G.haul.dname+"»",120);open=false;}
+  if(open){if(typeof toggleMenu==="function")toggleMenu(false);$sos.dataset.empty=rescueEmpty()?"1":"";rescueRender();}
   else if($sos.classList.contains("open"))rescueShutT=G.t;
   $sos.classList.toggle("open",open);
   document.body.classList.toggle("sosopen",open);
@@ -44536,12 +44726,20 @@ if($sos){
   document.getElementById("sosclose").addEventListener("click",()=>toggleSos(false));
   document.getElementById("callbtn").addEventListener("click",()=>toggleSos(true));
 }
-addEventListener("pointerdown",()=>{rescueInputT=wallMs();},true);
+/* тап мимо окна закрывает его (дизайнер 12.09) — кроме кнопки, что его и открывает */
+addEventListener("pointerdown",e=>{
+  rescueInputT=wallMs();
+  const t=e.target;
+  if($sos&&$sos.classList.contains("open")&&!(t&&t.nodeType===1&&($sos.contains(t)||(t.closest&&t.closest("#callbtn")))))toggleSos(false);
+},true);
 addEventListener("keydown",e=>{
   rescueInputT=wallMs();
+  if(e.key==="Escape"&&$sos&&$sos.classList.contains("open")){toggleSos(false);return;}
   /* короткий тап газа проходил между кадрами и окна не открывал: газ и тормоз
      на пустом баке открывают его прямо по нажатию */
-  if(/^(KeyW|KeyS|ArrowUp|ArrowDown|Space)$/.test(e.code||"")&&(G.mode==="system")&&rescueEmpty())rescueAsk();
+  /* пробела здесь нет: он — ДЕЙСТВИЕ, и у причала стыкует; на пустом баке без
+     другого дела его ведёт подсказка (17-mode-system) — ревью 12.09 */
+  if(/^(KeyW|KeyS|KeyA|KeyD|ArrowUp|ArrowDown|ArrowLeft|ArrowRight)$/.test(e.code||"")&&(G.mode==="system")&&rescueEmpty())rescueAsk();
 },true);
 /* такт активности зовёт кадр (28-loop, раз в 600 кадров): у скрытой вкладки rAF
    стоит — и её время не засчитывается само собой */
@@ -44552,6 +44750,7 @@ addEventListener("keydown",e=>{
    метка, которая выглядит кнопкой, обязана быть кнопкой. Один массив на кадр,
    перезаписывается на месте — мусора не создаёт. */
 const SYS_CHIPS=[];
+let CORONA_IN=false;   /* корабль в короне — строка журнала раз на вход */
 function updateSystem(dt){
   const sh=G.ship,sys=G.sys,st=stat();
   document.getElementById("dronebtn").style.display="none";
@@ -44720,9 +44919,12 @@ function updateSystem(dt){
     const corona=.22*clamp((sys.radius+30-d0)/40,0,1);
     sh.vx+=sh.x/d0*corona*dt;sh.vy+=sh.y/d0*corona*dt;
     cue("ПЕРЕГРЕВ КОРПУСА",CUE_TROUBLE);
-    if(G.hull<=0)wreck();
+    /* корпус горит — это пишется сразу, раз на вход в корону (боты 12.09) */
+    if(!CORONA_IN){CORONA_IN=true;logAdd("warn","Корпус горит: корона звезды");sfx("hit",{v:.3});}
+    if(G.hull<=0)wreck("перегрев у звезды");
     return;
   }
+  CORONA_IN=false;
   if(apOn)return;
   /* стрельбище (24d): пока идёт минута, подсказку держит оно */
   if(typeof rangeOn==="function"&&rangeOn()){rangeTick(dt);return;}
@@ -44855,8 +45057,12 @@ function updateSystem(dt){
            базу вслепую по-прежнему можно, и это самая дорогая экономия в игре */
         if(typeof dialLine==="function"&&near.type!=="gas"){
           ln+="\n"+dialLine(G.sx,G.sy,near.idx);
-          if(typeof probeHas==="function"&&!probeHas(G.sx,G.sy,near.idx))
-            ln+="\nЦЕЛЬ — ЗОНД ЗА "+PROBE_COST+" КР";
+          if(typeof probeHas==="function"&&!probeHas(G.sx,G.sy,near.idx)){
+            /* цена — на паде, покупка — вторым тапом (боты 12.09): взведённый зонд
+               переспрашивает «ТОЧНО?» три секунды игры (probeClaim, 21a8) */
+            const pa=G._probeArm,arm=!!pa&&pa.sx===(G.sx|0)&&pa.sy===(G.sy|0)&&pa.idx===(near.idx|0)&&G.t-pa.t<180;
+            ln+="\nЦЕЛЬ — "+(arm?"ТОЧНО? "+PROBE_COST+" КР":"ЗОНД "+PROBE_COST+" КР");
+          }
         }
         const won=cue(ln,CUE_ACT);
         /* адрес для зонда: само нажатие ловит штурвал одним фронтом на клавишу
@@ -44889,8 +45095,9 @@ function updateSystem(dt){
      (имя планеты, край системы, погоня) пустой бак перебивает, действие — нет */
   if(cueLvl()<CUE_ACT&&G.fuel<=0&&!(G.tech.has("synth")&&G.cargo.ice>0)&&!document.body.classList.contains("sosopen")){   /* окно открыто — подсказка не повторяет его */
     /* подсказка называет только те выходы, что есть: без дома в системе старта ДОМОЙ нет */
-    const H=rescueHomeAt(),home=!(G.sx===H.sx&&G.sy===H.sy);
-    if(cue("ХОДА НЕТ · БАК ПУСТ\nДЕЙСТВИЕ — "+(home?"ДОМОЙ, БУКСИР ИЛИ СБРОС":"БУКСИР ИЛИ СБРОС"),CUE_TROUBLE)&&actEdge){toggleSos(true);return;}
+    /* глагол короткий — пад берёт его сам: «ВЫХОДЫ» (дизайнер 12.09); что за
+       выходы, говорит окно, подсказка его не пересказывает */
+    if(cue("ХОДА НЕТ · БАК ПУСТ\nДЕЙСТВИЕ — ВЫХОДЫ",CUE_TROUBLE)&&actEdge){toggleSos(true);return;}
   }
   if(cueLvl()<CUE_ACT&&G.tech.has("synth")&&G.cargo.ice>0&&G.fuel<st.fuelMax){
     if(cue("ДЕЙСТВИЕ — СИНТЕЗ ТОПЛИВА ИЗО ЛЬДА ("+G.cargo.ice+")",CUE_ACT)&&actEdge){
@@ -44933,11 +45140,15 @@ function drawSystem(){
   /* на тросе камера смотрит вперёд, туда, куда тащат: корабль ближе к задней
      кромке, баржа и трос целиком в кадре (дизайн-ревью 11.09) */
   let hx=0,hy=0;
-  if(G.haul&&!wA&&typeof haulReach==="function"){
+  if(G.haul&&G.haul.ph!=="free"&&!wA){
     const T=G.haul,dx=T.bx-sh.x,dy=T.by-sh.y,d=Math.hypot(dx,dy)||1,k=Math.min(.5,haulReach()*.5/d);
     hx=dx*k;hy=dy*k;
   }
-  const cx0=fc.x+(co?co.x:0)+hx, cy0=fc.y+(co?co.y:0)+hy;
+  /* сдвиг догоняет цель, а не встаёт в неё (тестировщик 12.09: на старте и в
+     конце буксира кадр прыгал на полтроса) — это вид, не мир */
+  HAUL_CAM.x+=(hx-HAUL_CAM.x)*.05;HAUL_CAM.y+=(hy-HAUL_CAM.y)*.05;
+  if(Math.abs(HAUL_CAM.x)<.01&&Math.abs(HAUL_CAM.y)<.01&&!hx&&!hy){HAUL_CAM.x=0;HAUL_CAM.y=0;}
+  const cx0=fc.x+(co?co.x:0)+HAUL_CAM.x, cy0=fc.y+(co?co.y:0)+HAUL_CAM.y;
   const zx=x=>W/2+(x-cx0)*Z, zy=y=>H/2+(y-cy0)*Z;
   /* ввод пересчитывает тычок через ту же камеру */
   G.viewCX=cx0;G.viewCY=cy0;
@@ -45183,7 +45394,9 @@ function drawSysHud(zx,zy,sh,sys,U){
      серая строка по нему читалась с контрастом 2.1 (M444, прогон «посадка и
      залежь» под детектором текста) */
   /* на буксире камера ведёт сама — служебную цифру масштаба не показываем (дизайн-ревью 11.09) */
-  if(!G.haul){const sl="МАСШТАБ ×"+G.zoom.toFixed(2),sy=Math.max(96,scaleY),tw=ctx.measureText(sl).width;
+  /* под окном оклика и бака служебной цифры нет: над миром висит только нужное сейчас */
+  const mdl=document.body.classList.contains("hailopen")||document.body.classList.contains("sosopen");
+  if(!G.haul&&!mdl){const sl="МАСШТАБ ×"+G.zoom.toFixed(2),sy=Math.max(96,scaleY),tw=ctx.measureText(sl).width;
    /* плашка плотная и строка светлее прежней серой: над диском планеты
       (телефон, после взлёта) полупрозрачная плашка давала контраст 2.4 */
    ctx.fillStyle="rgba(5,7,12,.85)";ctx.fillRect(10,sy-10,tw+8,15);
@@ -47270,7 +47483,10 @@ function jump(cost){
   if(typeof traineeJump==="function")traineeJump();  // стажёр растёт по прыжкам (M163)
   const a=rnd()*TAU,r=1500;
   G.ship.x=Math.cos(a)*r;G.ship.y=Math.sin(a)*r;
-  G.ship.vx=-Math.cos(a)*.7;G.ship.vy=-Math.sin(a)*.7;G.ship.a=a+Math.PI;
+  /* прибытие без хода (боты 12.09): с .7 прямо на звезду брошенный корабль за
+     полминуты входил в корону и разбивался почти молча — отпущенный руль теперь
+     накат, и тормозить было некому. Нос по-прежнему к звезде */
+  G.ship.vx=0;G.ship.vy=0;G.ship.a=a+Math.PI;
   G.mode="system";
   spawnPirates();spawnAllies();
   sfx("jump");
@@ -49429,7 +49645,7 @@ function updateLanding(dt){
         G.ship.x=L.p.x+Math.cos(L.p.ang)*(L.p.radius+140);
         G.ship.y=L.p.y+Math.sin(L.p.ang)*(L.p.radius+140);
         G.ship.vx=0;G.ship.vy=0;
-        if(G.hull<=0)wreck();
+        if(G.hull<=0)wreck("жёсткая посадка");
       }
     }
     return;
@@ -49873,7 +50089,7 @@ function updateScoop(dt){
       S.shake=Math.min(1,S.shake+(heavy?.75:.22));
       S.bump=1;
       sfx("hit",{v:heavy?.7:.35});
-      if(G.hull<=0){G.scoop=null;G.mode="system";wreck();return;}
+      if(G.hull<=0){G.scoop=null;G.mode="system";wreck("атмосфера гиганта");return;}
     }
   }
   S.knock=Math.max(0,(S.knock||0)-dt*.08);
@@ -49890,7 +50106,7 @@ function updateScoop(dt){
        30.08.2026). Ожог до пятой части корпуса остаётся уроком, аварийный
        ремонт приберегается для настоящих аварий. */
     if(G.hull<=st.hullMax*.18){exitScoop("Автомат прервал заход\nкорпус на пределе");return;}
-    if(G.hull<=0){G.scoop=null;G.mode="system";wreck();return;}
+    if(G.hull<=0){G.scoop=null;G.mode="system";wreck("атмосфера гиганта");return;}
   }
   /* сбор идёт только в коридоре и только пока есть место в трюме */
   const inBand=S.y>=bt&&S.y<=bb;
@@ -55283,6 +55499,7 @@ function enterSurface(){
      одно и то же. Сообщение говорит только то, чего в сводке нет. */
   say("залежей: "+deposits.length+(sl?"\n"+sl:""),sl?320:150);
 }
+let SIGN_HOLD=0;   /* удержание ДЕЙСТВИЯ над знаком, кадров (вид ввода, мимо сейва) */
 function updateSurface(dt){
   const S=G.surf,tr=S.tr,st=stat();
   const mv=.62*dt*(typeof kitStat==="function"?kitStat().walk:1)*(S.swim>0?1-.45*S.swim:1);   /* ботинки и вес (M152); в воде — вполсилы (M327) */
@@ -55426,13 +55643,11 @@ function updateSurface(dt){
   }
   /* оставить свой (11ag): у корабля, где ничего другого не просят, и только
      если в трюме есть чем платить — след без цены превращается в доску объявлений */
-  if(typeof traceCanLeave==="function"&&dShip<shipZoneR()&&!dep&&!poiNear(S,tr)&&!traceHere()){
-    const g=traceCanLeave();
-    if(g){
-      G.prompt="ДЕЙСТВИЕ — ОСТАВИТЬ ЗНАК · "+RES[g.k].ru.toUpperCase()+" ×"+g.n;
-      if(actEdge){traceLeave();return;}
-    }
-  }
+  /* …но предложение — последним в цепочке и удержанием (боты 12.09: стоял раньше
+     всех, и у корабля ДЕЙСТВИЕ молча тратило груз на знак, пока подсказка звала
+     ЗАЛОЖИТЬ БАЗУ). Здесь только решаем, можно ли; у места посадки, а не
+     вплотную к кораблю — вплотную ДЕЙСТВИЕ почти всегда занято */
+  const signG=(typeof traceCanLeave==="function"&&dShip<shipZoneR()*2.5&&!dep&&!poiNear(S,tr)&&!traceHere())?traceCanLeave():null;
   /* вход в пещеру проверяется раньше залежей и организмов: он редкий и разовый,
      а бурить и сканировать можно где угодно ещё */
   const atCave=!!(S.cave&&Math.abs(S.cave.x-S.x)<34);
@@ -55717,6 +55932,13 @@ function updateSurface(dt){
     G.prompt=(G.fuel<8?"НЕТ ТОПЛИВА · КНОПКА ВЗЛЁТА — ЭВАКУАЦИЯ":"КНОПКА ВЗЛЁТА — УДЕРЖАТЬ")+
       "\nТРЮМ "+held()+"/"+st.cargoMax+" · СКАФАНДР "+Math.round(S.suit)+"/"+suitMax()+(S.suit<suitMax()?" · ЗАРЯДКА":" · ГОТОВ");
   }else if(!atCave)G.prompt="▲ — ПРЫЖОК · ИЩИТЕ ЗАЛЕЖИ";
+  /* знак: только если ДЕЙСТВИЕ здесь никто не взял, и удержанием — он тратит груз */
+  const synthHere=dShip<shipZoneR()&&G.tech.has("synth")&&G.cargo.ice>0&&G.fuel<st.fuelMax;
+  if(signG&&!synthHere&&!/ДЕЙСТВИЕ/.test(G.prompt||"")){
+    G.prompt="УДЕРЖИВАЙТЕ ДЕЙСТВИЕ — ОСТАВИТЬ ЗНАК\n"+RES[signG.k].ru.toUpperCase()+" ×"+signG.n+" · найдут те, кто сядет здесь после";
+    SIGN_HOLD=keys.act?SIGN_HOLD+dt:0;
+    if(SIGN_HOLD>=60){SIGN_HOLD=0;traceLeave();return;}
+  }else SIGN_HOLD=0;
   /* синтез топлива изо льда доступен и на поверхности, не только в полёте */
   if(dShip<shipZoneR()&&G.tech.has("synth")&&G.cargo.ice>0&&G.fuel<st.fuelMax&&keys.act&&!S.mining){
     const ratio=st.synthRatio,n=Math.min(G.cargo.ice,Math.ceil((st.fuelMax-G.fuel)/ratio));
@@ -58228,6 +58450,16 @@ function probeClaim(){
      нажатие уходит дальше, целям. На бедном борту в одном кадре приходили
      «Зонд стоит 900 кр» и «ЦЕЛЕЙ НЕТ», одно поверх другого. Забирает нажатие
      сам ФАКТ предложения, а не удача покупки. */
+  /* покупка — вторым тапом (боты 12.09: 300 кр уходили одним касанием, а цена на
+     телефоне резалась третьей строкой подсказки). Первый тап взводит на три
+     секунды игры, пад переспрашивает «ТОЧНО?», второй покупает */
+  const pa=G._probeArm;
+  if(!(pa&&pa.sx===(A.sx|0)&&pa.sy===(A.sy|0)&&pa.idx===(A.idx|0)&&G.t-pa.t<180)){
+    G._probeArm={sx:A.sx|0,sy:A.sy|0,idx:A.idx|0,t:G.t};
+    say("Зонд · "+PROBE_COST+" кр\nЦЕЛЬ ещё раз — купить",120);
+    return true;
+  }
+  G._probeArm=null;
   probeBuy(A.sx,A.sy,A.idx);
   return true;
 }
@@ -68808,7 +69040,7 @@ function updateBelt(dt){
       /* касание слышно: вспышка на .22 альфы — единственный сигнал, и корпус
          стирался о камень молча, 45→28 мелкими тычками (плейтест 30.08.2026) */
       if(G.t-(b.hitWarn||0)>45){b.hitWarn=G.t;sfx("hit");}
-      if(G.hull<=0){wreck();G.belt=null;return;}
+      if(G.hull<=0){wreck("камни пояса");G.belt=null;return;}
     }
   }
   for(const p of b.dust){
@@ -76487,8 +76719,15 @@ function renderChess(box){
 const $st=document.getElementById("station"),$body=document.getElementById("stBody");
 let tab="market";
 let fuseSel=[];   // два корпуса, выбранных под сплав в лаборатории
-function openStation(){
+/* стыковка — ответ на нажатие игрока, и всё, что станция говорит при входе
+   («Работа сдана», смотритель, местные, колония), — голос экрана, а не мира:
+   он виден сразу, поверх экрана. Кадр, внутри которого случилась стыковка,
+   записывал эти строки «голосом мира», и они сгорали за экраном станции,
+   ни разу не показавшись (критик тестировщика 12.09) */
+function openStation(){const fi=FRAME_IN;FRAME_IN=false;try{openStationBody();}finally{FRAME_IN=fi;}}
+function openStationBody(){
   G.st=G.sys.station;G.mode="dock";G.ap=null;toggleLog(false);
+  toggleSos(false);rescueDockCool();   /* окно выходов не висит устаревшим за станцией; причал остужает (16c) */
   if(typeof cosmChimePlay==="function")cosmChimePlay();   /* свой сигнал стыковки (M344) */
   mgrTick();mgrRouteVisit(G.sys);routeVisit(G.sys);
   if(typeof holdDock==="function")holdDock(G.sys);   /* груз, с которым пристыковались, и бункеры (M291) */
@@ -86803,6 +87042,9 @@ function hud(){
   /* пока открыт любой экран, приборы и кнопки полёта не нужны: они просвечивали
      сквозь экран и читались как брак */
   document.body.classList.toggle("screen",!!document.querySelector(".scr.open"));
+  /* пустой бак (R2): газ и повороты гаснут — ими не сдвинуться, выход в окне */
+  document.body.classList.toggle("tankdry",G.mode==="system"&&rescueEmpty());
+  rescueSync();   /* открытое окно выходов сверяет себя с миром (16c) */
   let a="—",b="—";
   /* кошелёк вынесен отдельной строкой ниже — здесь он был бы вторым разом */
   if(G.mode==="system"){a=((typeof nameOf==="function")?nameOf(G.sys):G.sys.name).toUpperCase();b="«"+st.S.ru+"» · сектор "+G.sx+":"+G.sy;
@@ -86853,7 +87095,14 @@ function hud(){
   if(typeof celLine==="function"){const cl=celLine();if(cl)b+=" · "+cl;}
   /* ДОМОЙ в меню — в любом полёте, не только на станции (16c, плейтест 11.09) */
   const cbtn=document.getElementById("callbtn");
-  if(cbtn)setSt(cbtn,"display",(G.mode==="system"||G.mode==="map")?"":"none");
+  if(cbtn){
+    const on=(G.mode==="system"||G.mode==="map")&&!G.haul;   /* на тросе выход уже выбран (16c) */
+    setSt(cbtn,"display",on?"":"none");
+    /* меню называет цену (дизайнер 12.09): решать, не открывая окна */
+    const cs=on&&cbtn.querySelector("s");
+    if(cs){const H=rescueHomeAt(),at=G.sx===H.sx&&G.sy===H.sy;
+      setTx(cs,at?"вы и так дома":"прыжок "+H.ru+" · "+rescueHomeCost().toLocaleString("ru")+" кр");}
+  }
   const sbtn=document.getElementById("starbtn");
   setSt(sbtn,"display",(G.mode==="system"&&!G.haul&&Math.hypot(G.ship.x,G.ship.y)>1400)?"":"none");   /* под буксиром курс не наш (16c) */
   /* «К ЦЕЛИ» (M321, §9 шаг 6): курс поставлен с доски или из тетради — в полёте
@@ -87043,7 +87292,8 @@ function hud(){
 }
 
 /* ══════════════ авария ══════════════ */
-function wreck(){
+function wreck(why){   /* why — причина словами: журнал её называет (боты 12.09: «разбит» без причины) */
+  toggleSos(false);   /* окно выходов не висит над собранным наспех кораблём с 30 в баке */
   sfx("boom",{v:1});stopEngine();
   const st=stat();
   G.hull=Math.round(st.hullMax*.45);G.fuel=Math.max(G.fuel,30);
@@ -87051,6 +87301,7 @@ function wreck(){
   G.ship.x=Math.cos(a)*1600;G.ship.y=Math.sin(a)*1600;
   G.ship.vx=0;G.ship.vy=0;G.mode="system";G.ap=null;G.belt=null;G.dig=null;G.cave=null;G.surf=null;G.land=null;
   G.pirates=[];G.shots=[];   /* без этого авария у пиратов превращается в петлю */
+  G.haul=null;   /* разбит на тросе — корабль уже не там, иначе трос держит его и бьёт снова (ревью 12.09) */
   /* след для тех, кто придёт сюда после (M377, §11.3): не сообщение и не
      подарок — просто корпус, которого больше нет */
   if(typeof leftGhost==="function")leftGhost();
@@ -87061,7 +87312,7 @@ function wreck(){
   let lost=0;for(const k of RES_KEYS){lost+=G.cargo[k];G.cargo[k]=0;}
   saveGame(true);
   if(pax)logAdd("warn","С кораблём погибли вывезенные · "+pax+" человек");
-  logAdd("warn","Корабль разбит · аварийный ремонт"+(lost?" · груз потерян ("+lost+" ед)":""));
+  logAdd("warn","Корабль разбит"+(why?": "+why:"")+" · аварийный ремонт"+(lost?" · груз потерян ("+lost+" ед)":""));
   /* «трюм был пуст» без глагола читался загадкой: ремонт оплачивается грузом,
      и когда груза нет — надо сказать, что расплачиваться было нечем */
   say("Аварийный ремонт\nкорпус собран наспех"+
@@ -87401,6 +87652,8 @@ function crashAt(e){
    не подменяется: «warn» судового журнала — это новости игры, а не беда, и на
    сервер их больше не шлют (0.419, см. `logShip` в 01a-crashlog). Сбой кадра
    уходит отдельно, из `crashSay` ниже. */
+/* «СБОЙ» — единственный видимый сигнал сторожа кадра: он не ждёт за экраном
+   (MSG_WORLD=false), иначе молчал бы ровно тогда, когда открыт СТОЛ (критик 12.09) */
 function crashSay(e,where){
   crashN++;
   try{document.documentElement.removeAttribute("data-alive");}catch(_){}   /* метка живости снимается: сайт со сбоем — не живой */
@@ -87422,13 +87675,13 @@ function crashSay(e,where){
     const now=wallNow();
     if(now-crashSaidAt<15000)return;
     crashSaidAt=now;
-    try{say("СБОЙ · "+m+"\nповторяется · "+crashN+" раз\nигра идёт дальше — сохранитесь");}catch(_){}
+    try{say("СБОЙ · "+m+"\nповторяется · "+crashN+" раз\nигра идёт дальше — сохранитесь");MSG_WORLD=false;}catch(_){}
     try{logAdd("warn","Сбой кадра повторяется: "+m+" · "+crashN+" раз");}catch(_){}
     return;
   }
   crashLast=m;crashSaidAt=wallNow();
   if(crashSaid++<3){try{console.error("DRIFT:",e);}catch(_){}}
-  try{say("СБОЙ · "+m+"\nигра идёт дальше — сохранитесь");}catch(_){}
+  try{say("СБОЙ · "+m+"\nигра идёт дальше — сохранитесь");MSG_WORLD=false;}catch(_){}
   try{logAdd("warn","Сбой кадра: "+m);}catch(_){}
 }
 /* стоп кадра: больше двух секунд между кадрами — свёрнутая вкладка или то
