@@ -130,7 +130,8 @@ function enterBelt(){
   document.querySelectorAll(".pads button").forEach(bb=>bb.classList.remove("on"));
   say("Вход в "+B.name+"\nруда: "+B.res.map(k=>RES[k].ru).join(", ")+
     (beltIcy(B)?"\nкольцо дальнее — попадаются кристаллы льда":"")+
-    "\n◀ ▶ курс · ▲ ▼ тангаж · Q E крен\nПРОБЕЛ тяга · тяните по стеклу — обзор");
+    (document.body.classList.contains("mobile")?"\nтяните по стеклу — обзор"   /* на касании клавиш нет (R6) */
+      :"\n◀ ▶ курс · ▲ ▼ тангаж · Q E крен\nПРОБЕЛ тяга · тяните по стеклу — обзор"));
 }
 /* обломки: разлетаются, тают и ничего не задевают */
 function shatter(b,a,n,power,px,py,pz){

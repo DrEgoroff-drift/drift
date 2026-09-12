@@ -348,8 +348,13 @@ function hud(){
     const m=/(?:УДЕРЖИВАЙТЕ\s+)?ДЕЙСТВИЕ\s*—\s*([^·\n]+)/.exec(G.prompt||"");
     if(m){
       hasAct=true;
-      const v=m[1].trim();
-      if(v.length<=14)actLbl=v;
+      /* пад называет действие всегда (R6, 12.09): не «влезло — показали, не
+         влезло — безымянное ДЕЙСТВИЕ», а два первых слова и число, если оно
+         есть: «ВЗЯТЬ НА БУКСИР» → «ВЗЯТЬ НА», «СИНТЕЗ ТОПЛИВА ИЗО ЛЬДА (94)» →
+         «СИНТЕЗ ТОПЛИВА 94» */
+      const v=m[1].trim(),nm=/\(?(\d+)\)?\s*$/.exec(v);
+      const words=v.replace(/\s*\(?\d+\)?\s*$/,"").trim().split(/\s+/).filter(Boolean).slice(0,2).join(" ");
+      actLbl=(words||"ДЕЙСТВИЕ")+(nm?" "+nm[1]:"");
     }
   }
   setTx($act,actLbl);

@@ -220,6 +220,14 @@ function offerDest(o){
   }
   return null;
 }
+/* хвост карточки на доске (R6, 12.09: «куда · сколько · до когда · за сколько»):
+   адрес виден до взятия — offerDest считается от зерна и ничего не пишет;
+   срок — в сутках мира по тем же часам, что и у взятой работы. Цена стоит в
+   столбце, и «сколько» у возможности нет — она не груз, а место */
+function offerCardTail(o){
+  const d=offerDest(o),left=Math.max(1,Math.ceil((offerTtl(o)-offerAge(o))/CEL_DAY));
+  return (d?" · на «"+d.name+"» "+d.sx+":"+d.sy:"")+" · ещё "+left+" "+pl3(left,"день","дня","дней");
+}
 /* ── взятие: это только начало ──
    Раньше здесь сразу платили, и возможность была кнопкой. Теперь взятая работа
    ложится бумагой на стол (27i) и ждёт доставки. Журнала заданий в этой игре
@@ -239,7 +247,7 @@ function offerTake(o){
   o.to=dest;o.carry=1;o.t0=G.t;o.ms=now();
   if(typeof thingAdd==="function")
     thingAdd("paper",K.ru[0].toUpperCase()+K.ru.slice(1),
-      "на «"+dest.name+"» · "+(o.named?"вас назвали":"взято на доске"));
+      "на «"+dest.name+"» "+dest.sx+":"+dest.sy+" · "+(o.named?"вас назвали":"взято на доске"));
   return 0;
 }
 /* ── сдача ──

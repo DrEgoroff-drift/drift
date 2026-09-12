@@ -165,6 +165,9 @@ function hailTick(sh,dt,actEdge){
   if(G.hailLog[key]===bucket)return false;
   G.hailLog[key]=bucket;
   G.hail={by:p.pw,t:hailHold(),warn:0,x:sh.x,y:sh.y,blk:hailBlockade()?1:0};
+  /* кто окликнул — метка на самом корабле, мимо сейва (R6: у кромки одна
+     негашёная стрелка называет окликнувшего, пока окно открыто) */
+  for(const q of G.pirates)q._hail=0;p._hail=1;
   const P=(typeof powerOf==="function")?powerOf(p.pw):null;
   if(typeof etherLine==="function")etherLine("…"+(P?P.hail:"кто такой"),P?P.ru:"пикет");
   sfx("ui",{f:520,to:380,d:.2,v:.25});

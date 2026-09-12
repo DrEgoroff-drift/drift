@@ -422,7 +422,14 @@ function drawCombat(zx,zy,Z){
       const hot=p.stunT>0;
       ctx.fillStyle=hot?"rgba(255,178,92,.95)":(p.rogue?"rgba(197,138,224,.95)":"rgba(255,107,87,.75)");
       ctx.font=(p.rogue?"9px":"8px")+" ui-monospace,monospace";ctx.textAlign="center";
-      ctx.fillText(hot?"ПЕРЕГРЕВ":p.name.toUpperCase(),x,y+26);
+      /* имя не ложится на подпись планеты и на фишку у кромки (R6, 12.09):
+         пересеклось — уходит над корабль. Фишки в настоящих пикселях (15-input) */
+      const lbl=hot?"ПЕРЕГРЕВ":p.name.toUpperCase();let ly=y+26;
+      {const lw=ctx.measureText(lbl).width,bx0=x-lw/2,bx1=x+lw/2,by0=ly-8,by1=ly+2,U2=uiK();
+       const hit=BODY_LABELS.some(b=>!(bx1<b.x0||b.x1<bx0||by1<b.y0||b.y1<by0))||
+         SYS_CHIPS.some(c=>!(bx1*U2<c.x||c.x+c.w<bx0*U2||by1*U2<c.y||c.y+c.h<by0*U2));
+       if(hit)ly=y-22;}
+      ctx.fillText(lbl,x,ly);
       if(p.rogue){
         ctx.fillStyle="rgba(197,138,224,.6)";ctx.font="8px ui-monospace,monospace";
         ctx.fillText("БЫВШИЙ УПРАВЛЯЮЩИЙ",x,y+37);

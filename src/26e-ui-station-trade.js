@@ -84,7 +84,7 @@ function stTabBoard(){
           const K=OFFER_KIND[o.kind];
           const r=el("div","row");
           r.appendChild(el("div","nm","<b>"+(o.named?"Вам":K.ru[0].toUpperCase()+K.ru.slice(1))+
-            (o.named?" — "+K.ru:"")+"</b><s>"+K.note+"</s>"));
+            (o.named?" — "+K.ru:"")+"</b><s>"+K.note+offerCardTail(o)+"</s>"));
           const pay=offerPay(o);
           if(pay>0)r.appendChild(el("div","qt",pay+"<s>кр</s>"));
           const b=el("button","act"+(o.named?" gold":""),"ВЗЯТЬ");

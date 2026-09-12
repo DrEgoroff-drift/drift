@@ -48,6 +48,15 @@ function modCard(k,cap){
   const card=el("div","modcard"+(W?" work":"")+(W&&W.done?" done":""));
   /* точка залита — уровень стоит на корабле, обведена — куплен, но снят */
   let dots="";for(let i=0;i<4;i++)dots+="<i class='"+(i<lvl?"f":(i<own?"o":""))+"'></i>";
+  /* всё стоит — одна строка (R6, 12.09): точки, «установлено · ур. 4 · максимум»
+     и тихая СНЯТЬ УР.; карточке «сейчас → станет» показать нечего */
+  if(own>=4&&lvl>=4&&!W){
+    card.classList.add("maxed");
+    card.appendChild(el("div","mh","<b>"+M.ru+"<s>установлено · ур. 4 · максимум</s></b><span class='dots big'>"+dots+"</span>"));
+    const macts=el("div","macts"),bm=el("button","act sm","СНЯТЬ УР.");
+    bm.onclick=()=>{G.mods[k]--;afterFitChange();renderTab();};macts.appendChild(bm);card.appendChild(macts);
+    return card;
+  }
   card.appendChild(el("div","mh","<b>"+M.ru+"<s>"+M.note+(own>lvl?" · снято "+(own-lvl):"")+"</s></b><span class='dots big'>"+dots+"</span>"));
   /* сейчас → станет: во время монтажа — сделанный шаг, иначе — следующий */
   let diff="";
@@ -334,7 +343,7 @@ function fuseCard(c){
   const short=need.filter(x=>x[1]<x[2]).map(x=>x[0]);
   const acts=el("div","macts");
   const label=W?(W.done?"ГОТОВО · УЖЕ В АНГАРЕ":"ПЕЧЬ ЗАНЯТА · ПЛАВКА…"):!two?"НУЖНЫ ДВА КОРАБЛЯ":
-    short.length?"НЕ ХВАТАЕТ: "+short.join(", ").toUpperCase():"СПЛАВИТЬ · "+c.credits.toLocaleString("ru")+" КР";
+    short.length?"НЕ ХВАТАЕТ: "+short.join(", ").toUpperCase():"В ПЛАВКУ · "+c.credits.toLocaleString("ru")+" КР";   /* глагол (R6, 12.09) */
   const bf=el("button","act"+(!W&&two&&!short.length?" gold":""),label);
   bf.disabled=!!W||!two||!!short.length;
   bf.onclick=()=>{

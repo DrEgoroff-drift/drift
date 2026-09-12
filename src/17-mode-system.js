@@ -4,6 +4,9 @@
    метка, которая выглядит кнопкой, обязана быть кнопкой. Один массив на кадр,
    перезаписывается на месте — мусора не создаёт. */
 const SYS_CHIPS=[];
+/* подписи тел этого кадра (R6): по ним имя чужого корабля («КОМПАНИЯ 743»)
+   уходит вверх, чтобы не лечь на имя планеты. Канва, не сейв */
+const BODY_LABELS=[];
 let CORONA_IN=false;   /* корабль в короне — строка журнала раз на вход */
 function updateSystem(dt){
   const sh=G.ship,sys=G.sys,st=stat();
@@ -505,6 +508,7 @@ function drawSystem(){
          g.addColorStop(t,"rgba("+c.join(",")+","+a.toFixed(4)+")");}
        ctx.fillStyle=g;ctx.fillRect(-1,-1,2,2);});
      ctx.save();ctx.globalCompositeOperation="lighter";glowBlit(BL,ox,oy,reach);ctx.restore();}}
+  BODY_LABELS.length=0;
   for(const p of sys.planets){
     const x=zx(p.x),y=zy(p.y),r=p.radius*Z;   /* диск — физический (16c, п. 2): зум делает планету большой, не корабль */
     if(x<-r-60||x>W+r+60||y<-r-60||y>H+r+60)continue;
@@ -548,12 +552,15 @@ function drawSystem(){
       if(G.ap&&G.ap.kind==="planet"&&G.ap.p===m)reticle(mx,my,mr+10);
       if(G.found.has(m.key)&&mr>2.4){
         ctx.fillStyle="rgba(154,168,178,.7)";ctx.font=uiFont(8);ctx.textAlign="center";
-        ctx.fillText(m.name.toUpperCase(),mx,my+mr+11*uiK());
+        /* имя уступает кораблю (R6): на дальней от него стороне диска */
+        const ly=(m.y>=sh.y)?my+mr+11*uiK():my-mr-5*uiK(),lw=ctx.measureText(m.name).width;
+        ctx.fillText(m.name.toUpperCase(),mx,ly);BODY_LABELS.push({x0:mx-lw/2,x1:mx+lw/2,y0:ly-8,y1:ly+2});
       }
     }
     if(G.found.has(p.key)){
       ctx.fillStyle="rgba(127,230,216,.55)";ctx.font=uiFont(9);ctx.textAlign="center";
-      ctx.fillText(p.name.toUpperCase(),x,y+r+15*uiK());
+      const ly=(p.y>=sh.y)?y+r+15*uiK():y-r-7*uiK(),lw=ctx.measureText(p.name).width;   /* имя уступает кораблю (R6) */
+      ctx.fillText(p.name.toUpperCase(),x,ly);BODY_LABELS.push({x0:x-lw/2,x1:x+lw/2,y0:ly-9,y1:ly+2});
     }
     if(G.ap&&G.ap.kind==="planet"&&G.ap.p===p)reticle(x,y,r+16);
   }
@@ -661,6 +668,8 @@ function drawSysHud(zx,zy,sh,sys,U){
     if(np)marks.push({x:np.x,y:np.y,c:"#9fd8ff",l:np.name.toUpperCase(),t:{kind:"planet",p:np}});
   }
   if(G.ap){const T=targetPos();if(T)marks.push({x:T.x,y:T.y,c:"#ff6b57",l:"ЦЕЛЬ",t:null});}
+  /* окликнувший: одна негашёная стрелка под окном оклика (R6, 12.09) */
+  if(G.hail){const hp=G.pirates.find(q=>q._hail);if(hp)marks.push({x:hp.x,y:hp.y,c:"#ffd27a",l:(hp.name||"ОКЛИК").toUpperCase(),t:null,hail:1});}
   SYS_CHIPS.length=0;
   /* фишки у кромки (M167): раньше метки стояли на круге и на телефоне висели
      посреди сцены, наезжая друг на друга и на солнце. Теперь метка — плашка,
@@ -687,6 +696,7 @@ function drawSysHud(zx,zy,sh,sys,U){
   for(const m of marks){
     const x=zx(m.x),y=zy(m.y);
     if(x>-20&&x<W+20&&y>-20&&y<H+20)continue;
+    const A=m.hail?1:CA;   /* окликнувший не гаснет */
     const ang=Math.atan2(y-H/2,x-W/2),dx=Math.cos(ang),dy=Math.sin(ang);
     /* пересечение луча из центра с прямоугольником кромки */
     let t=1e9;
@@ -706,12 +716,12 @@ function drawSysHud(zx,zy,sh,sys,U){
     placed.push({x:rx,y:ry,w:cw,h:ch});
     /* Зона нажатия шире плашки: правило интерфейса требует 44 px на палец, а
        фишка ростом 16. Растим её вокруг центра, не трогая рисунок. */
-    if(m.t&&CA===1){
+    if(m.t&&A===1){
       const PAD=Math.max(0,(44-ch)/2);
       SYS_CHIPS.push({x:(rx-6)*U,y:(ry-PAD)*U,w:(cw+12)*U,h:(ch+PAD*2)*U,t:m.t});
     }
-    ctx.globalAlpha=CA;ctx.fillStyle="rgba(5,7,12,.72)";ctx.fillRect(rx,ry,cw,ch);
-    ctx.strokeStyle=m.c;ctx.globalAlpha=.5*CA;ctx.lineWidth=1;ctx.strokeRect(rx+.5,ry+.5,cw-1,ch-1);ctx.globalAlpha=CA;
+    ctx.globalAlpha=A;ctx.fillStyle="rgba(5,7,12,.72)";ctx.fillRect(rx,ry,cw,ch);
+    ctx.strokeStyle=m.c;ctx.globalAlpha=.5*A;ctx.lineWidth=1;ctx.strokeRect(rx+.5,ry+.5,cw-1,ch-1);ctx.globalAlpha=A;
     ctx.save();ctx.translate(cx>W/2?rx+cw-8:rx+8,ry+ch/2);ctx.rotate(ang);
     ctx.fillStyle=m.c;ctx.beginPath();ctx.moveTo(6,0);ctx.lineTo(-4,4);ctx.lineTo(-4,-4);ctx.closePath();ctx.fill();
     ctx.restore();

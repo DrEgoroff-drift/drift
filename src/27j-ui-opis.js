@@ -29,7 +29,12 @@
    3. Людей за борт не выбрасывают: у кучи пассажиров нет ни люка, ни кнопки.
    4. Часть выше добротной разбирается через «ТОЧНО?» — кнопка меняет слово на
       три секунды, никаких confirm(). */
-const OPIS={box:null,sel:null,hover:null,arm:null,drag:null,ask:null,hit:[],panels:{}};
+const OPIS={box:null,sel:null,hover:null,arm:null,drag:null,ask:null,hit:[],panels:{},tab:"ship"};
+/* вкладки описи на телефоне (R6, 12.09): одна лента из четырёх зон не читалась —
+   КОРАБЛЬ (корпус, слоты, приборы) · СНЯТОЕ (снятые части, ящик) · КОМПЛЕКТ
+   (скафандр, полка «Сороки», косметика) · ТРЮМ (кучи, коробок). Широкий экран
+   держит прежнюю сетку */
+const OPIS_TABS=[["ship","КОРАБЛЬ"],["spare","СНЯТОЕ"],["kit","КОМПЛЕКТ"],["hold","ТРЮМ"]];
 /* восемь строк автора плюс корпус, бур и урон: часть с одним аффиксом к корпусу
    иначе не сдвинула бы на панели ни одного числа, и «будущее» врало бы молчанием */
 /* Группы по 3–4 строки, нули не печатаются (ревью 11.09: семнадцать строк
@@ -50,8 +55,8 @@ const OPIS_SHIP=[
   {k:"cool",     ru:"охлаждение", fix:0, g:"работа", less:1},
   {k:"dmg",      ru:"урон",       fix:1, g:"огонь"},
   /* три итога сборки (M363, §3.2): по ним и сравнивают карточку с карточкой */
-  {k:"gunHull",  ru:"по корпусу в с", fix:1, g:"огонь", get:st=>st.gunTot?st.gunTot.hull:0},
-  {k:"gunShield",ru:"по щиту в с",    fix:1, g:"огонь", get:st=>st.gunTot?st.gunTot.shield:0},
+  {k:"gunHull",  ru:"по корпусу/с",   fix:1, g:"огонь", get:st=>st.gunTot?st.gunTot.hull:0},
+  {k:"gunShield",ru:"по щиту/с",      fix:1, g:"огонь", get:st=>st.gunTot?st.gunTot.shield:0},
   {k:"gunPerEn", ru:"на единицу энергии",fix:2, g:"огонь", get:st=>st.gunTot?st.gunTot.perEnergy:0}
 ];
 const OPIS_KIT=[
@@ -517,7 +522,7 @@ function opisPartCard(p,where){
   if(!fitted&&f&&f.t==="slot"&&slotsOf(G.shipId)[f.i]===p.kind)card.classList.add("fit");
   const scrapKey="scrap:"+p.id;
   const acts=[];
-  if(fitted)acts.push({ru:"СНЯТЬ",go:()=>opisUnfit(slot)});
+  if(fitted&&!(kind==="slot"&&opisPhone()))acts.push({ru:"СНЯТЬ",go:()=>opisUnfit(slot)});   /* на телефоне СНЯТЬ — в одном месте, под корпусом (R6) */
   else{
     const t=opisTarget(p),fm=G.fit[G.shipId]||{};
     const fits=t>=0&&capUsed()-(fm[t]!=null?partById(fm[t]).cap:0)+p.cap<=capOf(G.shipId);
@@ -612,7 +617,7 @@ function opisHullCap(slots,fm,inv,spare){
       (p?"«"+p.name+"»":"пусто · "+why)+"</s>";
     const acts=[];
     if(p)acts.push({ru:"СНЯТЬ",go:()=>opisUnfit(s.i)});
-    else if(n)acts.push({ru:"К СНЯТЫМ",gold:true,go:()=>{if(spare&&spare.scrollIntoView)spare.scrollIntoView({block:"start",behavior:"smooth"});}});
+    else if(n)acts.push({ru:"К СНЯТЫМ",gold:true,go:()=>{OPIS.tab="spare";opisRerender();}});   /* вкладка СНЯТОЕ (R6) */
     if(acts.length)opisActs(cap,acts);
     return cap;
   }
@@ -799,7 +804,8 @@ function opisRender(box){
     chip.innerHTML="<em style='color:"+K.col+"'>"+K.sh+" · слот "+(i+1)+mru+"</em>";
     if(fm[i]!=null)chip.appendChild(opisPartCard(partById(fm[i]),"slot"));
     else{
-      const e=document.createElement("s");e.className="chalk";e.textContent="пусто";
+      /* пустой слот говорит, где взять (R6): части продают на станции, вкладка МОДУЛИ */
+      const e=document.createElement("s");e.className="chalk";e.textContent="пусто · продают на станции: КОРАБЛЬ → МОДУЛИ";
       chip.appendChild(e);
       chip.addEventListener("click",ev=>{if(ev.target.closest("button"))return;
         OPIS.sel=(OPIS.sel&&OPIS.sel.t==="slot"&&OPIS.sel.i===i)?null:{t:"slot",i};opisRerender();});
@@ -902,7 +908,27 @@ function opisRender(box){
     z5.appendChild(grid);
   }
   /* порядок в разметке — порядок ленты на телефоне; на широком экране расставит сетка */
-  box.appendChild(z3);box.appendChild(z2);box.appendChild(z1);if(z5)box.appendChild(z5);box.appendChild(z4);
+  if(phone){
+    const nav=document.createElement("nav");nav.className="tabs op-tabs";
+    for(const [k,ru] of OPIS_TABS){
+      const b=document.createElement("button");b.dataset.tab=k;b.textContent=ru;
+      if(OPIS.tab===k)b.classList.add("on");
+      b.onclick=()=>{OPIS.tab=k;OPIS.sel=null;sfx("ui");opisRerender();};
+      nav.appendChild(b);
+    }
+    box.insertBefore(nav,box.firstChild);
+    top.style.display=OPIS.tab==="kit"?"":"none";
+    if(OPIS.tab==="ship"){pg.removeChild(sp);box.appendChild(z3);}
+    else if(OPIS.tab==="spare"){
+      pg.removeChild(sp);
+      const zs=document.createElement("section");zs.className="op-z op-parts";
+      zs.appendChild(opisHead(3,"СНЯТЫЕ ЧАСТИ","частей "+G.inv.length+"/"+PART_MAX+" · тап по части — кнопки под ней"));
+      zs.appendChild(sp);box.appendChild(zs);if(z5)box.appendChild(z5);
+    }
+    else if(OPIS.tab==="kit")box.appendChild(z2);
+    else{box.appendChild(z1);if(z5)box.appendChild(z5);}
+    box.appendChild(z4);
+  }else{box.appendChild(z3);box.appendChild(z2);box.appendChild(z1);if(z5)box.appendChild(z5);box.appendChild(z4);}
   if(folds)box.appendChild(folds);
   /* подсказка называет то, что видно: кнопки. Долгое нажатие по-прежнему
      поднимает для переноса, но всё, что умеет перенос, есть и кнопкой — прятать

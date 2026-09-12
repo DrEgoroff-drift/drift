@@ -244,6 +244,7 @@ function tableRender(){
      вещи — предметы: письмо, накладная, вырезка, полоса самописца, — и лист
      под ними был бы ошибкой: бумага на бумаге не читается. */
   box.classList.toggle("opis",tableTab==="hold");
+  box.classList.toggle("strips",tableTab==="strips");   /* ленты без зазора на телефоне (R6) */
   box.classList.toggle("desk",tableTab==="things"||tableTab==="strips"||
     tableTab==="album"||tableTab==="mail"||tableTab==="diary");
   if(tableTab==="ether"||tableTab==="bort"||tableTab==="folk")renderLog(tableTab);

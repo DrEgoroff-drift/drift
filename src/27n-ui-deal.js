@@ -125,12 +125,12 @@ function dealRender(){
       const loy=m.loy|0;
       const cut=(!m.ai&&typeof mgrCut==="function")?Math.round(mgrCut(m)*100):0;
       const st=(R?R.ru:"управляющий")+" · верность "+loy+
-        (cut?" · берёт "+cut+"% с дохода домена":"")+
         ((typeof mgrPoints==="function"&&mgrPoints(m)>0)?" · есть невыбранное очко":"")+
         (loy<35?" · мрачнеет":"");
-      /* доля — не кр/мин, её столбец не показывает: она названа в строке */
+      /* доля — в столбце денег (R6, 12.09): у живого управляющего там «N % с
+         дохода», у ядра — кр/мин из кассы; одно из двух, столбец не двоится */
       dealRow(m.name,st,
-        (m.ai&&typeof mgrPay==="function")?[dealRate(-mgrPay(m)),"кр/мин"]:null,
+        (m.ai&&typeof mgrPay==="function")?[dealRate(-mgrPay(m)),"кр/мин"]:(cut?[cut+" %","с дохода"]:null),
         loy<35?"#ff9d7a":"",
         ()=>{closeDeal();if(typeof openHq==="function")openHq();});
     }
@@ -155,10 +155,14 @@ function dealRender(){
       /* машины маршрута — здесь же, а не на столе: раньше строка уводила в
          СТОЛ → РЕЙСЫ, то есть ровно в то разбегание по экранам, ради которого
          ДЕЛО и заводили (M286). Стол — для того, что читают. */
-      if(open)for(const d of r.drones)
-        $dlBody.appendChild(el("div","row sub","<div class='nm'><s>"+droneName(d)+" · "+
-          droneStateRu(d)+" · кругов "+(d.trips|0)+" · заработал "+
-          (d.earned|0).toLocaleString("ru")+" кр</s></div>"));
+      /* дроны таблицей (R6, 12.09): имя и состояние слева, заработок в столбце
+         денег — как у людей, а не прозой через точки */
+      if(open)for(const d of r.drones){
+        const rr=el("div","row deal sub");
+        rr.appendChild(el("div","nm","<b>"+droneName(d)+"</b><s>"+droneStateRu(d)+" · кругов "+(d.trips|0)+"</s>"));
+        rr.appendChild(el("div","qt",(d.earned|0).toLocaleString("ru")+"<s>кр всего</s>"));
+        $dlBody.appendChild(rr);
+      }
     }
     if(!runs.length)
       $dlBody.appendChild(el("div","row","<div class='nm'><s>в рейсе никого: дрон ставят "+

@@ -248,7 +248,15 @@ function cue(t,lvl){
   lvl=lvl||CUE_INFO;
   const cur=cueLvl();
   if(lvl<cur||(lvl===CUE_ACT&&cur===CUE_ACT&&!cueSameOffer(G.prompt,t)))return false;
-  CUE_LVL=lvl;G.prompt=CUE_TXT=t;return true;
+  CUE_LVL=lvl;G.prompt=CUE_TXT=cueFold(t);return true;
+}
+/* на телефоне подсказка — две строки (R6, 12.09): третью и дальше сшиваем во
+   вторую через « · ». Клавиши там не называют — это дело пишущего (body.mobile) */
+function cueFold(t){
+  const b=typeof document!=="undefined"&&document.body;
+  if(!(b&&b.classList&&b.classList.contains("mobile")))return t;
+  const L=String(t).split("\n");
+  return L.length<=2?t:L[0]+"\n"+L.slice(1).join(" · ");
 }
 function msgHeld(){const b=typeof document!=="undefined"&&document.body;return MSG_WORLD&&!!(b&&b.classList&&b.classList.contains("screen"));}
 /* мир закрыт экраном — СТОЛ, ОПИСЬ, станция: игрок читает, а не летит. Угрозы
