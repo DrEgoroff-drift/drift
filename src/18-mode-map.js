@@ -573,7 +573,10 @@ function jump(cost){
   if(typeof traineeJump==="function")traineeJump();  // стажёр растёт по прыжкам (M163)
   const a=rnd()*TAU,r=1500;
   G.ship.x=Math.cos(a)*r;G.ship.y=Math.sin(a)*r;
-  G.ship.vx=-Math.cos(a)*.7;G.ship.vy=-Math.sin(a)*.7;G.ship.a=a+Math.PI;
+  /* прибытие без хода (боты 12.09): с .7 прямо на звезду брошенный корабль за
+     полминуты входил в корону и разбивался почти молча — отпущенный руль теперь
+     накат, и тормозить было некому. Нос по-прежнему к звезде */
+  G.ship.vx=0;G.ship.vy=0;G.ship.a=a+Math.PI;
   G.mode="system";
   spawnPirates();spawnAllies();
   sfx("jump");

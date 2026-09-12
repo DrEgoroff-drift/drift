@@ -386,6 +386,90 @@ TEST_SUITES.push(()=>suite("R4 буксир: экипаж за рейс не п�
   const talk=said.filter(t=>!/до причала|трос взяли|приехали|вижу вас/.test(t));
   ok(talk.length>=5,"экипаж говорит: "+talk.length+" реплик");
   eq(talk.length,new Set(talk).size,"ни одной реплики дважды: "+talk.join(" | "));
+  const cd=said.filter(t=>/до причала/.test(t));
+  eq(cd.length,new Set(cd).size,"отсчёт минут не повторяет одно число: "+cd.join(" | "));
+}));
+
+TEST_SUITES.push(()=>suite("R4 буксир в чужую систему: конец — у станции, а не в двух тысячах от неё",{tier:"browser"},()=>{
+  resetWorld();
+  let far=null;for(let r=1;r<9&&!far;r++)for(let x=-r;x<=r&&!far;x++)for(let y=-r;y<=r&&!far;y++){const s=getSystem(x,y);if(!s.station)far=s;}
+  G.mode="system";G.sx=far.sx;G.sy=far.sy;G.sys=far;G.pirates=[];G.hail=null;G.fuel=0;G.cargo.ice=0;
+  G.ship.x=3000;G.ship.y=0;G.ship.vx=0;G.ship.vy=0;
+  haulStart();
+  const T=G.haul;T.ph="haul";T.t=HAUL_TIME-1;T.x0=G.ship.x;T.y0=G.ship.y;
+  haulTick(1,G.ship);
+  const S=G.sys.station;
+  ok(!!S,"дотащил в систему со станцией");
+  const d=Math.hypot(G.ship.x-Math.cos(S.ang)*S.orbit,G.ship.y-Math.sin(S.ang)*S.orbit);
+  ok(d<300,"корабль у станции: "+Math.round(d)+" ед.");
+}));
+
+/* R5a: находки ботов (botverify.json): зонд одним тапом, знак молча, корона молча */
+TEST_SUITES.push(()=>suite("R5 зонд: цена на паде, покупка только вторым тапом",{tier:"browser",win:"phone"},()=>{
+  resetWorld();
+  let S=null,p=null;
+  for(let r=1;r<8&&!S;r++)for(let x=-r;x<=r&&!S;x++)for(let y=-r;y<=r&&!S;y++){
+    const s=getSystem(x,y),q=s.planets.find(q=>q.type!=="gas"&&!probeHas(x,y,q.idx));if(q){S=s;p=q;}
+  }
+  G.mode="system";G.sx=S.sx;G.sy=S.sy;G.sys=S;G.pirates=[];G.hail=null;G.hailLog={};G.credits=5000;G.fuel=50;
+  T.wait(1,{draw:false});
+  const u=Math.hypot(p.x,p.y)||1;
+  G.ship.x=p.x+p.x/u*(p.radius+50);G.ship.y=p.y+p.y/u*(p.radius+50);G.ship.vx=0;G.ship.vy=0;G.ap=null;G.orbit=null;
+  T.wait(1,{draw:false});hud();
+  const lk=()=>document.getElementById("lockbtn").textContent.trim();
+  eq(lk(),"ЗОНД "+PROBE_COST+" КР","пад ЦЕЛЬ называет цену");
+  const c0=G.credits;
+  HELM.lockEdge=true;helmTick(1);
+  eq(G.credits,c0,"первый тап не покупает — 300 кр одним касанием не уходят");
+  T.wait(1,{draw:false});hud();
+  ok(/ТОЧНО/.test(lk()),"пад переспрашивает: "+lk());
+  HELM.lockEdge=true;helmTick(1);
+  eq(G.credits,c0-PROBE_COST,"второй тап купил");
+  ok(probeHas(S.sx,S.sy,p.idx),"формуляр открыт");
+}));
+
+TEST_SUITES.push(()=>suite("R5 знак на грунте: у корабля ДЕЙСТВИЕ не тратит груз на знак, пока подсказка зовёт другое",{tier:"browser",win:"phone"},()=>{
+  T.go("грунт день");
+  const S=G.surf,sv={c:window.traceCanLeave,l:window.traceLeave,h:window.traceHere};
+  let left=0;
+  window.traceCanLeave=()=>({k:"iron",n:5});window.traceLeave=()=>{left++;};window.traceHere=()=>false;
+  try{
+    S.x=S.shipX;G.cargo.iron=10;
+    T.wait(1,{draw:false});
+    const said=G.prompt;
+    T.press("act",1);
+    ok(!(left&&!/ЗНАК/.test(said)),"нажатие ДЕЙСТВИЯ не оставило знак, пока подсказка звала «"+said.split("\n").pop()+"»");
+  }finally{window.traceCanLeave=sv.c;window.traceLeave=sv.l;window.traceHere=sv.h;}
+}));
+
+TEST_SUITES.push(()=>suite("R5 окно бака закрывается само, когда бак уже не пуст (крушение дало 30)",{tier:"browser",win:"phone"},()=>{
+  resetWorld();
+  G.mode="system";G.sx=5;G.sy=5;G.sys=getSystem(5,5);G.fuel=0;G.cargo.ice=0;G.cargo.iron=3;G.pirates=[];G.hail=null;
+  G.t+=500;toggleSos(true);
+  ok(document.body.classList.contains("sosopen"),"пустой бак — окно выходов открыто");
+  G.hull=0;wreck("проба");hud();
+  ok(!document.body.classList.contains("sosopen"),"после крушения с топливом в баке окно «БАК ПУСТ» не висит");
+  G.fuel=0;G.t+=500;toggleSos(true);G.fuel=30;hud();
+  ok(!document.body.classList.contains("sosopen"),"бак перестал быть пустым — окно закрылось само");
+  /* станция в чужой системе: шапка в прыжках и времени, не координатами */
+  let far=null;for(let r=0;r<9&&!far;r++)for(let x=-r;x<=r&&!far;x++)for(let y=-r;y<=r&&!far;y++){const s=getSystem(x,y);if(!s.station)far=s;}
+  G.sx=far.sx;G.sy=far.sy;G.sys=far;G.fuel=0;G.t+=500;toggleSos(true);
+  const hd=document.getElementById("sosHead").textContent;
+  ok(/прыж/.test(hd)&&!/сектор \d/.test(hd),"до чужой станции — прыжками: "+hd);
+  toggleSos(false);
+}));
+
+TEST_SUITES.push(()=>suite("R5 прыжок и корона: после прыжка корабль не несёт в звезду, крушение называет причину",{tier:"browser"},()=>{
+  resetWorld();
+  G.mode="system";G.fuel=200;G.credits=1e5;
+  const n0=Math.hypot(G.sx,G.sy);
+  jump(0);
+  eq(Math.hypot(G.ship.vx,G.ship.vy),0,"после прыжка корабль стоит — брошенный, он не влетит в корону сам");
+  const sys=G.sys;G.ship.x=sys.radius+10;G.ship.y=0;G.ship.vx=0;G.ship.vy=0;G.hull=.5;G.ap=null;
+  const L0=G.log.length;
+  updateSystem(1);
+  const lines=G.log.slice(L0).map(l=>l.s||"").join(" | ");
+  ok(/звезд|корон/i.test(lines),"журнал называет причину: "+lines);
 }));
 
 /* R1: действие делает то, что написано, когда в кадре два предложения */

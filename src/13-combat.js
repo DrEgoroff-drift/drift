@@ -64,7 +64,7 @@ function playerHit(s){
     sfx("hit",{v:.55});
     G.hull=Math.max(0,G.hull-d);
     if(typeof hitFx==="function")hitFx(Math.min(1,.5+d/40));   /* объектив разъезжается (M325) */
-    if(G.hull<=0){wreck();return true;}
+    if(G.hull<=0){wreck("сбит в бою");return true;}
     if(typeof instrKnock==="function")instrKnock();   // попадание может выбить гнездо прибора (хвост M127)
   }
   return false;

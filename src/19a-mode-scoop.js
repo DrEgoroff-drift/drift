@@ -115,7 +115,7 @@ function updateScoop(dt){
       S.shake=Math.min(1,S.shake+(heavy?.75:.22));
       S.bump=1;
       sfx("hit",{v:heavy?.7:.35});
-      if(G.hull<=0){G.scoop=null;G.mode="system";wreck();return;}
+      if(G.hull<=0){G.scoop=null;G.mode="system";wreck("атмосфера гиганта");return;}
     }
   }
   S.knock=Math.max(0,(S.knock||0)-dt*.08);
@@ -132,7 +132,7 @@ function updateScoop(dt){
        30.08.2026). Ожог до пятой части корпуса остаётся уроком, аварийный
        ремонт приберегается для настоящих аварий. */
     if(G.hull<=st.hullMax*.18){exitScoop("Автомат прервал заход\nкорпус на пределе");return;}
-    if(G.hull<=0){G.scoop=null;G.mode="system";wreck();return;}
+    if(G.hull<=0){G.scoop=null;G.mode="system";wreck("атмосфера гиганта");return;}
   }
   /* сбор идёт только в коридоре и только пока есть место в трюме */
   const inBand=S.y>=bt&&S.y<=bb;

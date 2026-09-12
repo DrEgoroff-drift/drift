@@ -4,6 +4,7 @@
    метка, которая выглядит кнопкой, обязана быть кнопкой. Один массив на кадр,
    перезаписывается на месте — мусора не создаёт. */
 const SYS_CHIPS=[];
+let CORONA_IN=false;   /* корабль в короне — строка журнала раз на вход */
 function updateSystem(dt){
   const sh=G.ship,sys=G.sys,st=stat();
   document.getElementById("dronebtn").style.display="none";
@@ -172,9 +173,12 @@ function updateSystem(dt){
     const corona=.22*clamp((sys.radius+30-d0)/40,0,1);
     sh.vx+=sh.x/d0*corona*dt;sh.vy+=sh.y/d0*corona*dt;
     cue("ПЕРЕГРЕВ КОРПУСА",CUE_TROUBLE);
-    if(G.hull<=0)wreck();
+    /* корпус горит — это пишется сразу, раз на вход в корону (боты 12.09) */
+    if(!CORONA_IN){CORONA_IN=true;logAdd("warn","Корпус горит: корона звезды");sfx("hit",{v:.3});}
+    if(G.hull<=0)wreck("перегрев у звезды");
     return;
   }
+  CORONA_IN=false;
   if(apOn)return;
   /* стрельбище (24d): пока идёт минута, подсказку держит оно */
   if(typeof rangeOn==="function"&&rangeOn()){rangeTick(dt);return;}
@@ -307,8 +311,12 @@ function updateSystem(dt){
            базу вслепую по-прежнему можно, и это самая дорогая экономия в игре */
         if(typeof dialLine==="function"&&near.type!=="gas"){
           ln+="\n"+dialLine(G.sx,G.sy,near.idx);
-          if(typeof probeHas==="function"&&!probeHas(G.sx,G.sy,near.idx))
-            ln+="\nЦЕЛЬ — ЗОНД ЗА "+PROBE_COST+" КР";
+          if(typeof probeHas==="function"&&!probeHas(G.sx,G.sy,near.idx)){
+            /* цена — на паде, покупка — вторым тапом (боты 12.09): взведённый зонд
+               переспрашивает «ТОЧНО?» три секунды игры (probeClaim, 21a8) */
+            const pa=G._probeArm,arm=!!pa&&pa.sx===(G.sx|0)&&pa.sy===(G.sy|0)&&pa.idx===(near.idx|0)&&G.t-pa.t<180;
+            ln+="\nЦЕЛЬ — "+(arm?"ТОЧНО? "+PROBE_COST+" КР":"ЗОНД "+PROBE_COST+" КР");
+          }
         }
         const won=cue(ln,CUE_ACT);
         /* адрес для зонда: само нажатие ловит штурвал одним фронтом на клавишу

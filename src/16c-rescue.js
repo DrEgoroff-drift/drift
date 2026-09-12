@@ -95,7 +95,10 @@ function rescueOffers(){
 /* поставить корабль у станции системы (как буксир M331) */
 function rescuePark(dest){
   G.sx=dest.sx;G.sy=dest.sy;G.sys=dest;
-  G.ship.x=dest.station?dest.station.orbit+120:900;G.ship.y=0;
+  /* у станции по её углу на орбите (тестировщик 12.09: ставил в (orbit+120, 0),
+     и после буксира, ДОМОЙ и СБРОСА корабль стоял в двух тысячах от причала) */
+  const S=dest.station,sa=S?(S.ang||0):0;
+  G.ship.x=S?Math.cos(sa)*(S.orbit+120):900;G.ship.y=S?Math.sin(sa)*(S.orbit+120):0;
   G.ship.vx=0;G.ship.vy=0;
   G.mode="system";G.ap=null;G.orbit=null;G.land=null;G.surf=null;G.pirates=[];G.shots=[];
 }
@@ -181,7 +184,7 @@ const HAUL_TALK=["держись, не дёргай","на тросе не ку�
 const HAUL_BIT_TALK=["у тебя там что-то отвалилось","ого. это было важное?",
   "не страшно, на станции приварят","считай, облегчились"];
 const HAUL_FREE=210;                  /* кадров отцепки: трос отдан, баржа уходит (R4) */
-const HAUL_BOOM=18;                   /* стрела за соплами, px рисунка баржи: трос не из огня */
+const HAUL_BOOM_K=.2;                 /* стрела за соплами, доля длины баржи: трос не из огня (дизайнер 12.09) */
 const HAUL_CAM={x:0,y:0};             /* сдвиг камеры вперёд по тросу — догоняет плавно (вид, не мир) */
 let HAUL_FX=[];
 const haulRim={cv:null};              /* холст-маска кромки: один на сцену, не в G */
@@ -385,7 +388,9 @@ function haulTick(dt,sh){
     T._nb-=dt;if(T._nb<=0){haulBit();T._nb=haulGap(HAUL_BIT_GAP);}
     T._nt-=dt;if(T._nt<=0){
       const m=Math.ceil(haulLeft()/60);
-      haulSay(haulR()<.3&&m>1?"до причала ещё "+m+" "+pl3(m,"минута","минуты","минут"):haulDeal(HAUL_TALK,"_dt"));
+      /* отсчёт — только когда число сменилось (тестировщик 12.09: «ещё 2 минуты» дважды) */
+      const cd=haulR()<.3&&m>1&&m!==T._lm;if(cd)T._lm=m;
+      haulSay(cd?"до причала ещё "+m+" "+pl3(m,"минута","минуты","минут"):haulDeal(HAUL_TALK,"_dt"));
       T._nt=haulGap(HAUL_TALK_GAP);
     }
     if(T.t>=HAUL_TIME){
@@ -516,20 +521,23 @@ function drawHaul(zx,zy,Z){
     if(T._turn&&Math.floor(G.t/6)%2===0){puff(nose*.8,-hw,0,-1);puff(-nose*.8,hw,0,1);}
     ctx.globalCompositeOperation="source-over";
   }
+  /* стрела — железо (дизайнер 12.09: «огрызок в пару пикселей», трос выходил из
+     огня): брус за соплами, 0.2 длины и 0.25 полуширины корпуса, светлая грань
+     по одной стороне, гак на конце. Рисуется поверх факелов, трос — с гака */
+  if(T.ph!=="come"){
+    const bx0=-art.L*.48,bl=art.L*HAUL_BOOM_K,bh=Math.max(2,art.hw*.25),root=art.L*.06;
+    ctx.fillStyle="#4a4f57";ctx.fillRect(bx0-bl,-bh/2,bl+root,bh);
+    ctx.fillStyle="#aab2bb";ctx.fillRect(bx0-bl,-bh/2,bl+root,Math.max(1,bh*.24));
+    ctx.fillStyle="#2a2d33";ctx.fillRect(bx0-bl-2,-bh*.75,3.5,bh*1.5);
+  }
   ctx.restore();
   /* стрела и трос — поверх факелов (R4, дизайнер 12.09: трос выходил из сопла и
      горел в факеле). Стрела выносит крепление за сопла; трос от носа корабля к
      её концу, с провисом, рывок выбирает провис. На отцепке трос отдан: висит
      со стрелы, укорачивается и гаснет, уходя вместе с баржей */
   {
-    const dx=Math.cos(T.ba),dy=Math.sin(T.ba),sL=art.L*.48*sB,bL=(art.L*.48+HAUL_BOOM)*sB;
-    const s0x=x-dx*sL,s0y=y-dy*sL,tx=x-dx*bL,ty=y-dy*bL;
-    if(T.ph!=="come"){
-      ctx.strokeStyle="rgba(28,30,34,.95)";ctx.lineWidth=Math.max(2,3.2*sS);
-      ctx.beginPath();ctx.moveTo(s0x,s0y);ctx.lineTo(tx,ty);ctx.stroke();
-      ctx.strokeStyle="rgba(150,156,164,.8)";ctx.lineWidth=Math.max(.8,1.2*sS);
-      ctx.beginPath();ctx.moveTo(s0x,s0y);ctx.lineTo(tx,ty);ctx.stroke();
-    }
+    const dx=Math.cos(T.ba),dy=Math.sin(T.ba),bL=art.L*(.48+HAUL_BOOM_K)*sB;
+    const tx=x-dx*bL,ty=y-dy*bL;   /* конец стрелы: гак */
     let nx=null,ny=null,al=1,tens=0;
     if(T.ph==="haul"){
       const na=G.ship.a;nx=sx+Math.cos(na)*HAUL_SHIP_HALF*sS;ny=sy+Math.sin(na)*HAUL_SHIP_HALF*sS;
@@ -579,7 +587,11 @@ function rescueHead(){
      туда, а если на хвосте кто-то есть — это первой строкой */
   const dest=nearestStation(G.sx,G.sy);
   const here=dest.sx===G.sx&&dest.sy===G.sy&&dest.station;
-  const far=here?Math.round(Math.hypot(G.ship.x-dest.station.x,G.ship.y-dest.station.y))+" ед.":"сектор "+dest.sx+":"+dest.sy;
+  /* чужая система — в прыжках и времени буксира, а не координатами сектора:
+     «сектор 3:1» игроку ни о чём (дизайнер 12.09) */
+  const jn=Math.max(Math.abs(dest.sx-G.sx),Math.abs(dest.sy-G.sy));
+  const far=here?Math.round(Math.hypot(G.ship.x-dest.station.x,G.ship.y-dest.station.y))+" ед."
+    :jn+" "+pl3(jn,"прыжок","прыжка","прыжков")+" · буксир ≈"+Math.round(HAUL_TIME/3600)+" мин";
   const chase=(G.pirates||[]).filter(p=>p.hull>0&&p.aware&&!p.iff).length;
   const t=(chase?"ПОГОНЯ · "+chase+" "+(chase===1?"борт":chase<5?"борта":"бортов")+" на хвосте\n":"")+
     (empty&&fl>0?"Топлива "+fl+", на взлёт нужно 8\n":"")+"до станции «"+dest.name+"» · "+far;
@@ -593,6 +605,14 @@ function rescueSig(){return rescueOffers().map(o=>o.id+":"+o.cost+":"+(o.cost>G.
 function rescueSync(){
   if(!$sos||!$sos.classList.contains("open"))return;
   if(G.haul){toggleSos(false);return;}
+  /* окно «бак пуст», а бак уже не пуст (крушение дало 30, синтез, заправка):
+     без погони закрывается само и говорит «ход есть»; с погоней — остаётся
+     окном ДОМОЙ и перерисовывается целиком (тестировщик, дизайнер 12.09) */
+  if($sos.dataset.empty==="1"&&!rescueEmpty()){
+    $sos.dataset.empty="";
+    if(!(G.pirates||[]).some(p=>p.hull>0&&p.aware&&!p.iff)){toggleSos(false);say("Ход есть\nв баке "+Math.floor(G.fuel),120);return;}
+    rescueRender();return;
+  }
   if(rescueSig()!==rescueSigNow&&!$sos.querySelector("button.armed"))rescueRender();
   else rescueHead();
 }
@@ -654,7 +674,7 @@ function toggleSos(on){
   let open=on===undefined?!$sos.classList.contains("open"):on;
   /* на тросе выход уже выбран (ревью 12.09): меню ДОМОЙ окна не открывает */
   if(open&&G.haul){say("НА ТРОСЕ\nбаржа дотащит до «"+G.haul.dname+"»",120);open=false;}
-  if(open){if(typeof toggleMenu==="function")toggleMenu(false);rescueRender();}
+  if(open){if(typeof toggleMenu==="function")toggleMenu(false);$sos.dataset.empty=rescueEmpty()?"1":"";rescueRender();}
   else if($sos.classList.contains("open"))rescueShutT=G.t;
   $sos.classList.toggle("open",open);
   document.body.classList.toggle("sosopen",open);

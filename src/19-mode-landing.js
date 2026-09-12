@@ -81,7 +81,7 @@ function updateLanding(dt){
         G.ship.x=L.p.x+Math.cos(L.p.ang)*(L.p.radius+140);
         G.ship.y=L.p.y+Math.sin(L.p.ang)*(L.p.radius+140);
         G.ship.vx=0;G.ship.vy=0;
-        if(G.hull<=0)wreck();
+        if(G.hull<=0)wreck("жёсткая посадка");
       }
     }
     return;

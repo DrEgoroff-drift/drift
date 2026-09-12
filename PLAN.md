@@ -245,7 +245,17 @@ before a push.
     rope runs from a stern boom over the flames; four «R4 …» tests. Was: the rope from a stern boom to the ship's nose, drawn after the flames;
     the barge comes from behind and overtakes; the end at the station by `S.ang`, a 3–4 s unhook and
     departure; camera eased; lines and debris as a deck; `rndFx` out of haul state (M441).
-  - [ ] **R5 bots**: B1 `_probeAt` reset every frame, price on the pad, second tap; B3 the surface sign
+  - [ ] **R5 bots** — **R5a done**: the probe asks a second tap and the ЦЕЛЬ pad names the price
+    («ЗОНД 300 КР» → «ТОЧНО? 300 КР», `G._probeArm` three game seconds); the surface sign is last in
+    the chain, by hold, where nothing else takes ДЕЙСТВИЕ (steps from the ship); a jump arrives at
+    rest; `wreck(why)` names the cause in the log and the corona says «Корпус горит» once per entry;
+    the empty-tank window closes by itself once the tank is not empty («Ход есть»), a wreck closes it;
+    the head counts a foreign station in jumps; `rescuePark` puts the ship by the station at its
+    angle (tow, ДОМОЙ, СБРОС were 2000+ away); the tow countdown never repeats a number; the boom is a
+    beam. **R5b waits for the author** — Контроль's first-hour numbers (repair two buttons and ≤ half
+    the cash, a first-hour landing −20 % without a wreck, the galaxy goal frozen until the first done,
+    board cargo ≥ 15 real minutes with a timer in ДЕЛО, a wreck hull min(45 %, before) with repair on
+    debt, the first probe free) are design calls, not bugs. Was: B1 `_probeAt` reset every frame, price on the pad, second tap; B3 the surface sign
     only last in the chain and by hold; B4 no jump arrival into the corona, `wreck(reason)` logged;
     B5 wreck hull = min(45 %, before). First hour (Контроль): the first probe free, repair two
     buttons and ≤ half the cash, a hard landing −20 % not a wreck, the first goal frozen, board cargo
@@ -269,6 +279,9 @@ before a push.
     МЕНЮ stays (decided).
     Designer: the prompt «ДЕЙСТВИЕ — ВЫХОДЫ» repeats the pad — but the pad takes its verb from the
     prompt (interface rule); dropping the line needs the pad to read the verb elsewhere (decide).
+    Designer: the barge's light seam along the hull/module border reads as a crack — a soft band
+    (~15 % of the hull width), no line at the seam (it is in the barge art, not the rim mask); the
+    planet pass of the haul could zoom toward 1.6 so the disc is ≥ .3·H, back 10 s before the station.
   - **dev.html must not write into the live world (Контроль, 12.09).** The tester's bots played
     dev.html against the live `/api.php` and left test signs (a=trace, Нейэль III, 0:0, ~00:08 and
     00:25 MSK 12.09). Either a `test` flag the api drops, or dev/bots on a local copy. Removing

@@ -46,7 +46,7 @@ function natSwarmTick(dt){
   if(sp>=(6.4+st.thr*1.6)*NAT_SWARM_SP)return false;
   G.hull=Math.max(0,G.hull-NAT_SWARM_DMG*dt);
   if((G.t|0)%90===0)say("РОЙ · НЕ СТОЙТЕ НА МЕСТЕ",90);
-  if(G.hull<=0&&typeof wreck==="function")wreck();
+  if(G.hull<=0&&typeof wreck==="function")wreck("стихия");
   return true;
 }
 /* ── истощение ──

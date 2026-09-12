@@ -495,7 +495,7 @@ function ramTick(dt){
     p.ramCool=45;
     p.vx+=Math.cos(a)*rv*.5;p.vy+=Math.sin(a)*rv*.5;
     sfx("boom",{v:.45});
-    if(G.hull<=0){wreck();return;}
+    if(G.hull<=0){wreck("сбит в бою");return;}
   }
 }
 function homingStep(s,dt){

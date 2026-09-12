@@ -189,6 +189,7 @@ function enterSurface(){
      одно и то же. Сообщение говорит только то, чего в сводке нет. */
   say("залежей: "+deposits.length+(sl?"\n"+sl:""),sl?320:150);
 }
+let SIGN_HOLD=0;   /* удержание ДЕЙСТВИЯ над знаком, кадров (вид ввода, мимо сейва) */
 function updateSurface(dt){
   const S=G.surf,tr=S.tr,st=stat();
   const mv=.62*dt*(typeof kitStat==="function"?kitStat().walk:1)*(S.swim>0?1-.45*S.swim:1);   /* ботинки и вес (M152); в воде — вполсилы (M327) */
@@ -332,13 +333,11 @@ function updateSurface(dt){
   }
   /* оставить свой (11ag): у корабля, где ничего другого не просят, и только
      если в трюме есть чем платить — след без цены превращается в доску объявлений */
-  if(typeof traceCanLeave==="function"&&dShip<shipZoneR()&&!dep&&!poiNear(S,tr)&&!traceHere()){
-    const g=traceCanLeave();
-    if(g){
-      G.prompt="ДЕЙСТВИЕ — ОСТАВИТЬ ЗНАК · "+RES[g.k].ru.toUpperCase()+" ×"+g.n;
-      if(actEdge){traceLeave();return;}
-    }
-  }
+  /* …но предложение — последним в цепочке и удержанием (боты 12.09: стоял раньше
+     всех, и у корабля ДЕЙСТВИЕ молча тратило груз на знак, пока подсказка звала
+     ЗАЛОЖИТЬ БАЗУ). Здесь только решаем, можно ли; у места посадки, а не
+     вплотную к кораблю — вплотную ДЕЙСТВИЕ почти всегда занято */
+  const signG=(typeof traceCanLeave==="function"&&dShip<shipZoneR()*2.5&&!dep&&!poiNear(S,tr)&&!traceHere())?traceCanLeave():null;
   /* вход в пещеру проверяется раньше залежей и организмов: он редкий и разовый,
      а бурить и сканировать можно где угодно ещё */
   const atCave=!!(S.cave&&Math.abs(S.cave.x-S.x)<34);
@@ -623,6 +622,13 @@ function updateSurface(dt){
     G.prompt=(G.fuel<8?"НЕТ ТОПЛИВА · КНОПКА ВЗЛЁТА — ЭВАКУАЦИЯ":"КНОПКА ВЗЛЁТА — УДЕРЖАТЬ")+
       "\nТРЮМ "+held()+"/"+st.cargoMax+" · СКАФАНДР "+Math.round(S.suit)+"/"+suitMax()+(S.suit<suitMax()?" · ЗАРЯДКА":" · ГОТОВ");
   }else if(!atCave)G.prompt="▲ — ПРЫЖОК · ИЩИТЕ ЗАЛЕЖИ";
+  /* знак: только если ДЕЙСТВИЕ здесь никто не взял, и удержанием — он тратит груз */
+  const synthHere=dShip<shipZoneR()&&G.tech.has("synth")&&G.cargo.ice>0&&G.fuel<st.fuelMax;
+  if(signG&&!synthHere&&!/ДЕЙСТВИЕ/.test(G.prompt||"")){
+    G.prompt="УДЕРЖИВАЙТЕ ДЕЙСТВИЕ — ОСТАВИТЬ ЗНАК\n"+RES[signG.k].ru.toUpperCase()+" ×"+signG.n+" · найдут те, кто сядет здесь после";
+    SIGN_HOLD=keys.act?SIGN_HOLD+dt:0;
+    if(SIGN_HOLD>=60){SIGN_HOLD=0;traceLeave();return;}
+  }else SIGN_HOLD=0;
   /* синтез топлива изо льда доступен и на поверхности, не только в полёте */
   if(dShip<shipZoneR()&&G.tech.has("synth")&&G.cargo.ice>0&&G.fuel<st.fuelMax&&keys.act&&!S.mining){
     const ratio=st.synthRatio,n=Math.min(G.cargo.ice,Math.ceil((st.fuelMax-G.fuel)/ratio));

@@ -248,7 +248,7 @@ function updateBelt(dt){
       /* касание слышно: вспышка на .22 альфы — единственный сигнал, и корпус
          стирался о камень молча, 45→28 мелкими тычками (плейтест 30.08.2026) */
       if(G.t-(b.hitWarn||0)>45){b.hitWarn=G.t;sfx("hit");}
-      if(G.hull<=0){wreck();G.belt=null;return;}
+      if(G.hull<=0){wreck("камни пояса");G.belt=null;return;}
     }
   }
   for(const p of b.dust){
