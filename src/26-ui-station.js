@@ -217,6 +217,7 @@ document.getElementById("bRefuel").addEventListener("click",()=>{
   G.credits-=can*per;G.fuel+=can;
   /* талон отоварен: следующий бак в эту сводку уже по обычной цене (M379) */
   if(typeof riteFuelMul==="function"&&riteFuelMul()<1&&typeof riteFuelUsed==="function")riteFuelUsed();
+  else if(typeof actCoupons==="function"&&actCoupons()>0){actCouponUse();say("Талон за налёт отоварен");}
   renderTab();
 });
 /* ── ремонт двумя кнопками (R5b, автор 12.09: «делать всё») ──
@@ -473,7 +474,9 @@ function renderTabBody(){
   $body.innerHTML="";
   if(tab==="none"){
     /* заправочная: вкладок нет вовсе, но экран не должен выглядеть сломанным */
-    $body.appendChild(el("div","sec","ТОПЛИВО "+fuelPriceHere()+" кр/ед · РЕМОНТ "+repairCost()+" кр/ед · "+repLine(G.sys).toUpperCase()));
+    $body.appendChild(el("div","sec","ТОПЛИВО "+fuelPriceHere()+" кр/ед"+
+      ((typeof actCoupons==="function"&&actCoupons()>0)?" · ТАЛОН ЗА НАЛЁТ ×"+actCoupons():"")+
+      " · РЕМОНТ "+repairCost()+" кр/ед · "+repLine(G.sys).toUpperCase()));
     $body.appendChild(el("div","row","<div class='nm'><b>Только заправка и ремонт</b>"+
       "<s>перевалочный узел на отшибе: ни рынка, ни верфи, ни лаборатории —<br>"+
       "зато баки полны и корпус залатан</s></div>"));

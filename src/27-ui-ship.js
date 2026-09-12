@@ -48,8 +48,10 @@ function keyRow(section,action){
   r.appendChild(el("div","nm","<b>"+ACTION_RU[action]+"</b>"));
   const cur=actionKey(section,action);
   const isRebinding=rebinding&&rebinding.section===section&&rebinding.action===action;
-  const b=el("button","act"+(isRebinding?" gold":""),isRebinding?"…НАЖМИТЕ КЛАВИШУ":keyLabel(cur));
-  b.onclick=()=>{rebinding={section,action};renderOpts();};
+  const b=el("button","act"+(isRebinding?" gold":""),isRebinding?"…НАЖМИТЕ КЛАВИШУ · ОТМЕНА":keyLabel(cur));
+  /* на телефоне клавиши не придёт, и кнопка залипала во «…НАЖМИТЕ» навсегда
+     (хвост R6, 12.09): второй тап снимает ожидание */
+  b.onclick=()=>{rebinding=isRebinding?null:{section,action};renderOpts();};
   r.appendChild(b);
   return r;
 }

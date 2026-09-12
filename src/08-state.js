@@ -70,6 +70,7 @@ const G={
   inv:[],fit:{},shield:0,shieldHit:0,energy:0,loot:[],partsBought:{},
   /* допуск и налёт (M363, §11.4): допуск не падает, налёт копится только в полёте */
   clearance:1,flownMs:0,gunGroup:0,
+  mined:{},actWk:null,   /* выработанные залежи по планетам; неделя налёта и талоны (05e) */
   tech:new Set(),techLvl:{},barter:new Set(),
   found:new Set(),species:new Set(),
   ap:null,          // автопилот

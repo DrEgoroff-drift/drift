@@ -63,7 +63,8 @@ function repLine(sys){
 function fuelPriceHere(){
   /* талоны (M379, §14 обряд 4): бак по талону стоит четверть — один на борт за
      сводку. Это единственное место, где обряд трогает кошелёк напрямую */
-  const coup=(typeof riteFuelMul==="function")?riteFuelMul():1;
+  let coup=(typeof riteFuelMul==="function")?riteFuelMul():1;
+  if(coup>=1&&typeof actCoupons==="function"&&actCoupons()>0)coup=.5;   /* талон за налёт (05e) */
   return Math.max(1,Math.round((G.st?G.st.fuelPrice:10)*repFuelMul()*
     (typeof holdFuelMul==="function"?holdFuelMul():1)*coup));   /* Заправочный узел (F2) */
 }

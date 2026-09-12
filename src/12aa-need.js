@@ -42,7 +42,9 @@ function needClose(sys,k){
   needAll()[sys.key]={win:N.win,k,t:now()};
   if(typeof recordAdd==="function")recordAdd(sys.station.name,"благодарность: привёз "+N.ru+", когда не было");
   if(typeof repAdd==="function")repAdd(2,sys);
-  if(typeof peopleLine==="function")peopleLine("привезли "+N.ru+", когда "+(RES[k].ru.endsWith("ы")?"их":"её")+" не было. Это помнят.",sys.station.name,true);
+  /* род по товару, а не по окончанию (хвост R6, 12.09): «лёд… когда её не было» */
+  const pron={ice:"его",iron:"его",silicon:"его",organics:"её",titan:"его",isotopes:"их",iridium:"его",crystal:"их",carbon:"его",xeno:"его"}[k]||(RES[k].ru.endsWith("ы")?"их":"его");
+  if(typeof peopleLine==="function")peopleLine("привезли "+N.ru+", когда "+pron+" не было. Это помнят.",sys.station.name,true);
   sfx("ok",{v:.4});
   return true;
 }

@@ -185,7 +185,8 @@ function stTabMarket(st){
              "Груз реализован\n+"+sum.toLocaleString("ru")+" кр");
         renderTab();};
       r.appendChild(b);$body.appendChild(r);
-    }else $body.appendChild(el("div","sec","ТРЮМ ПУСТ — САДИТЕСЬ НА ПЛАНЕТУ ИЛИ ИДИТЕ В ПОЯС"));
+    }else $body.appendChild(el("div","sec",held()>0?"НА ПРОДАЖУ НЕЧЕГО — В ТРЮМЕ ТОЛЬКО РЕДКОЕ И СВОЁ"   /* редкое — тоже груз (хвост R6) */
+      :"ТРЮМ ПУСТ — САДИТЕСЬ НА ПЛАНЕТУ ИЛИ ИДИТЕ В ПОЯС"));
     /* прилавок ВЗЯТЬ — кооперативу, запись — на станции дома (12aj, M351) */
     if(typeof coopCounterBlock==="function")coopCounterBlock();
     if(typeof coopRegBlock==="function")coopRegBlock();

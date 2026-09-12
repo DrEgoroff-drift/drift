@@ -10,14 +10,20 @@ function enterSurface(){
      таблицы типа: иначе на «ледяной, с вулканами» лежало бы то же, что на
      чистой ледяной, и смесь осталась бы одной раскраской */
   const deposits=[],plants=[],prof=p.res||PROFILE[p.type]||[];
+  /* выработанное помнится (хвост R6, 12.09): залежи рождаются от зерна, но то,
+     что игрок выбрал сам, не отрастает к следующей посадке — G.mined хранит
+     остаток по номеру залежи, ключ «sx,sy:планета» (как told, 11aj) */
+  const dkey=(G.sx|0)+","+(G.sy|0)+":"+(p.idx|0),mk=(G.mined&&G.mined[dkey])||null;
   if(prof.length)for(let i=0;i<22;i++){
     const x=120+r()*(tr.W-240),k=prof[Math.floor(r()*prof.length)];
     /* Место, про которое он рассказал, к этому дню уже выработали: залежей
        меньше и они беднее. Ни строки объяснения — просто беднее (11aj). */
     const worked=(typeof toldWorked==="function")&&toldWorked(G.sx,G.sy,p.idx);
     if(worked&&r()<.45)continue;
-    deposits.push({x,y:groundAt(tr,x)-6,res:k,
-      left:(worked?2:6)+Math.floor(r()*(worked?4:11)),prog:0});
+    let left=(worked?2:6)+Math.floor(r()*(worked?4:11));
+    if(mk&&mk[i]!=null)left=Math.min(left,mk[i]|0);
+    if(left<=0)continue;   /* выбрана до дна — её тут больше нет */
+    deposits.push({x,y:groundAt(tr,x)-6,res:k,left,prog:0,i});
   }
   /* флора растёт куртинами, а не поштучно по всей планете */
   const flora=p.T.atm.indexOf("пригодна")>=0||p.type==="toxic"||p.type==="jungle"||
@@ -563,6 +569,7 @@ function updateSurface(dt){
         S.mining=dep;dep.prog+=.026*st.drill*dt;
         while(dep.prog>=1&&dep.left>0&&held()<st.cargoMax){
           dep.prog-=1;dep.left--;minedUnit(dep.res);
+          if(dep.i!=null){const dk=(G.sx|0)+","+(G.sy|0)+":"+(S.p.idx|0);(G.mined||(G.mined={}))[dk]=G.mined[dk]||{};G.mined[dk][dep.i]=dep.left;}
         }
         /* что взял своими руками — то и можно разболтать у стойки (11aj) */
         if(!G.lastDig||G.lastDig.sx!==G.sx||G.lastDig.sy!==G.sy||

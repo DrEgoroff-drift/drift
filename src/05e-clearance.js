@@ -33,6 +33,9 @@ function clrHours(){return (G.flownMs||0)/3600000;}
    Пока он меньше часа, игра мягче: ремонт по карману, жёсткая посадка вместо
    крушения, первый зонд даром, взятая работа ждёт четверть часа. Час налёта —
    и всё это кончается само, без флага в сейве */
+const ACT_WEEK_MS=604800000,ACT_COUPON_MS=7200000;
+function actCoupons(){const A=G.actWk;return A?Math.max(0,Math.floor((A.ms||0)/ACT_COUPON_MS)-(A.used|0)):0;}
+function actCouponUse(){if(G.actWk)G.actWk.used=(G.actWk.used|0)+1;}
 const FIRST_HOUR_MS=3600000;
 function firstHour(){return (G.flownMs||0)<FIRST_HOUR_MS;}
 /* что заработано ПРЯМО СЕЙЧАС; G.clearance помнит максимум за всё время */
@@ -95,4 +98,9 @@ function clrTick(ms){
   if(!G.running)return;
   if(G.mode!=="system"&&G.mode!=="belt"&&G.mode!=="landing"&&G.mode!=="scoop")return;
   G.flownMs=(G.flownMs||0)+Math.min(2000,Math.max(0,ms||0));
+  /* талон за налёт (перк дома, решено 12.09): каждые два часа активного полёта
+     в неделю — один бак за полцены. Неделя по часам игры; счёт в сейве */
+  const A=G.actWk||(G.actWk={wk:0,ms:0,used:0}),wk=Math.floor(now()/ACT_WEEK_MS);
+  if(A.wk!==wk){A.wk=wk;A.ms=0;A.used=0;}
+  A.ms+=Math.min(2000,Math.max(0,ms||0));
 }
