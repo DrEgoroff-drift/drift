@@ -214,6 +214,7 @@ TEST_SUITES.push(()=>suite("M413: шкалы названы словами",()=>
 /* ══════════════ по письму соседнего захода (0.415.1) ══════════════ */
 TEST_SUITES.push(()=>suite("зонд: нажатие забрано, даже когда денег нет",()=>{
   resetWorld();
+  G.flownMs=FIRST_HOUR_MS;   /* за первым часом: первый зонд там даром (R5b, 0.448.0) */
   G.mode="system";
   const p=G.sys.planets.find(x=>x.type!=="gas");
   ok(p,"есть планета");

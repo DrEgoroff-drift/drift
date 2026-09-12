@@ -328,6 +328,7 @@ function applySaveRest(s){
      и без него, сколько бы раз он ни перезагрузился (11aj) */
   G.told=Array.isArray(s.told)?s.told.slice(-24):[];
   G.mined=asMap(s.mined);   /* выработанные залежи (21-mode-surface) */
+  G._hullHeld=null;         /* корпус до беды считается заново от загруженного (28-loop) */
   G.actWk=(s.actWk&&typeof s.actWk==="object"&&!Array.isArray(s.actWk))?{wk:s.actWk.wk|0,ms:Math.max(0,+s.actWk.ms||0),used:s.actWk.used|0}:null;
   G.lastDig=(s.lastDig&&typeof s.lastDig==="object")?s.lastDig:null;
   G.credits=Math.max(0,s.credits|0);G.data=Math.max(0,s.data|0);

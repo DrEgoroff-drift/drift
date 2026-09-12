@@ -50,8 +50,8 @@ TEST_SUITES.push(()=>suite("просёр именного: дверь закры
   const who="st:"+G.sys.key;
   const o=offerAdd("run",who,true);
   ok(o.named===1,"предложение именное");
-  /* не взял; окно вышло */
-  G.t+=o.ttl+1;
+  /* не взял; окно вышло — по часам игры (R5b, 0.448.0) */
+  clockAdvance((o.ttl+1)*1000/60);
   offerTick();
   const f=folkAll()[who];
   eq(f.good,0,"дверь закрыта");

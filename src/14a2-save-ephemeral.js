@@ -42,7 +42,7 @@ const SAVE_EPHEMERAL={
   /* экран: подсказки, строки, вид карты */
   msg:"кадр",msgT:"кадр",prompt:"кадр",logNew:"кадр",mirrorEcho:"кадр",
   edgeWarned:"кадр",surfTipShown:"кадр",spLogged:"кадр",tableN:"кадр",tableUsed:"кадр",_yalta:"кадр",_yaltaSaid:"кадр",
-  _dial:"кадр",_fleaHum:"кадр",_probeAt:"кадр",_probeArm:"кадр",
+  _dial:"кадр",_fleaHum:"кадр",_probeAt:"кадр",_probeArm:"кадр",_hullHeld:"кадр",
   mapClean:"карта",mapLayer:"карта",mapMore:"карта",mapOutline:"карта",mapPeek:"карта",mapSearch:"карта",
   mapTapT:"карта",mapView:"карта",mapZoom:"карта",
   viewCX:"кадр",viewCY:"кадр",viewK:"кадр",viewX:"кадр",viewY:"кадр",

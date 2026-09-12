@@ -28,7 +28,7 @@ TEST_SUITES.push(()=>suite("возможность: упущенное имен�
   ok(folkOf("гриневич").good,"и помнит хорошо");
   /* окно закрылось: ни сообщения, ни записи в журнал — просто прошло время */
   const logWas=G.log.length;
-  G.t+=o.ttl+1;
+  clockAdvance((o.ttl+1)*1000/60);   /* срок — по часам игры (R5b, 0.448.0) */
   offerTick();
   eq(G.log.length,logWas,"истечение не пишет ни строки в журнал");
   ok(!folkOf("гриневич").good,"дверь закрылась");
@@ -40,7 +40,7 @@ TEST_SUITES.push(()=>suite("возможность: упущенное имен�
   /* холодное упустить ничего не стоит: за тебя никто не просил */
   G.offers=[];G.folk={};
   const c=offerAdd("haul","стойка",false);
-  G.t+=c.ttl+1;offerTick();
+  clockAdvance((c.ttl+1)*1000/60);offerTick();
   ok(folkOf("стойка").good,"упущенное холодное дверь не закрывает");
   /* и переживает загрузку */
   G.folk={};folkShut("хрулёв");
@@ -188,9 +188,12 @@ TEST_SUITES.push(()=>suite("возможность: не довёз именно
   offerTake(o);
   const logWas=G.log.length;
   /* окно везомой работы втрое длиннее, чем у предложения на доске */
-  G.t+=o.ttl*2+1;offerTick();
+  /* срок везомой — по часам игры и не меньше четверти часа (R5b, 0.448.0) */
+  const T=offerTtl(o);
+  ok(T>=15*CEL_DAY,"взятая работа живёт не меньше четверти часа: "+(T/CEL_DAY).toFixed(1)+" мин");
+  clockAdvance(Math.floor(T*2/3)*1000/60);offerTick();
   ok(folkOf("гуся").good,"две трети срока прошло — дверь ещё открыта");
-  G.t+=o.ttl+1;offerTick();
+  clockAdvance((T/3+2)*1000/60);offerTick();
   ok(!folkOf("гуся").good,"не довёз — и дверь закрылась");
   eq(G.log.length,logWas,"и об этом нигде ни строки");
   /* и сроки эти — в сутках мира, а не в кадрах: сборка, где окно жило две
@@ -210,14 +213,14 @@ TEST_SUITES.push(()=>suite("экспедиция: стойка живёт кол
   G.exp=null;
   const who="st:"+G.sys.key;
   folkOf(who);
-  for(let i=0;i<8;i++){G.t+=OFFER_SHIFT;offerVisit();}
+  for(let i=0;i<8;i++){G.t+=OFFER_SHIFT;clockAdvance(OFFER_SHIFT*1000/60);offerVisit();}
   ok(!offersAll().some(o=>o.kind==="carav"||o.kind==="list"),"в мирный день колонны на доске нет");
   /* циркуляр звучит — и стойка меняется */
   G.offers=[];G.folk={};folkOf(who);
   G.exp={phase:1,day0:celDay(),coll:{},gone:[],gave:0,pax:null};
   let sawCarav=false,sawList=false;
   for(let i=0;i<40&&!(sawCarav&&sawList);i++){
-    G.t+=OFFER_SHIFT;offerVisit();
+    G.t+=OFFER_SHIFT;clockAdvance(OFFER_SHIFT*1000/60);offerVisit();
     sawCarav=sawCarav||offersAll().some(o=>o.kind==="carav");
     sawList=sawList||offersAll().some(o=>o.kind==="list");
   }

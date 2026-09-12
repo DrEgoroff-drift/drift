@@ -707,21 +707,15 @@ TEST_SUITES.push(()=>suite("экономика: дрон дорожает с п�
   G.crew=[];
 }));
 
-TEST_SUITES.push(()=>suite("масштаб: корабль не мельче .7, тела растут на приближении, планета не накрывает свою луну",()=>{
+TEST_SUITES.push(()=>suite("масштаб: корабль не мельче .7 и не крупнее .8, мир зумится до ×4.5, диск — физический",()=>{
   resetWorld();
   eq(shipScaleAt(.16),.7,"пол корабля .7");
-  eq(shipScaleAt(2.4),1.6,"потолок 1.6");
-  ok(Math.abs(bodyScaleAt(2.4)-2.12)<1e-9,"тела на 2.4 — ×2.12");
-  eq(bodyScaleAt(.5),1,"на отдалении тела в масштабе мира");
-  let n=0;
-  for(let sx=-3;sx<=3;sx++)for(let sy=-3;sy<=3;sy++){
-    const s=getSystem(sx,sy);
-    for(const p of s.planets)p.moons.forEach((m,i)=>{
-      const cap=bodyNearCaps(p),K=bodyScaleAt(2.4);
-      const rp=p.radius*Math.min(K,cap[0]),rm=m.radius*Math.min(K,cap[1][i]);
-      n++;
-      if(rp+rm>=m.orbit)ok(false,"луна "+m.name+" легла на диск: "+rp.toFixed(0)+"+"+rm.toFixed(0)+" ≥ "+m.orbit.toFixed(0));
-    });
-  }
-  ok(n>0,"лун проверено: "+n);
+  eq(shipScaleAt(4.5),.8,"потолок корабля .8: растёт мир, а не корабль (решено автором 12.09)");
+  eq(ZOOM_MAX,4.5,"мировой зум до ×4.5");
+  setZoom(99);eq(G.zoom,ZOOM_MAX,"setZoom упирается в потолок");
+  setZoom(.01);eq(G.zoom,ZOOM_MIN,"и в пол");setZoom(1);
+  eq(fleetScale(4.5),fleetScale(SHIP_SCALE_MAX),"флот растёт до потолка корабля и не дальше");
+  ok(fleetScale(.8)>fleetScale(.5)*1.4,"а до потолка растёт вместе с миром");
+  /* сейв с зумом старого потолка грузится в новые пределы */
+  const sv=snapshot();sv.zoom=9;applySave(sv);eq(G.zoom,ZOOM_MAX,"зум из сейва — в пределах");
 }));

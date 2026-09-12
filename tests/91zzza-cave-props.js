@@ -331,8 +331,8 @@ TEST_SUITES.push(()=>suite("M316: в системе все тела крутят
 TEST_SUITES.push(()=>suite("M317: подпись от габарита и мимо фишек, спрайт растёт до потолка зума, эмблемы одной конструкции, учебное целиком в спрайте",{tier:"browser"},()=>{
   resetWorld();
   /* §8: масштаб спрайта идёт до потолка setZoom, а не упирается в 1.5 */
-  ok(fleetScale(2.4)>fleetScale(1.5)*1.4,"на зуме 2.4 флот крупнее, чем на 1.5: "+fleetScale(2.4).toFixed(2)+" против "+fleetScale(1.5).toFixed(2));
-  setZoom(9);eq(fleetScale(G.zoom),fleetScale(2.4),"потолок зума и потолок спрайта — одно число");setZoom(1);
+  ok(fleetScale(.8)>fleetScale(.5)*1.4,"на зуме .8 флот крупнее, чем на .5: "+fleetScale(.8).toFixed(2)+" против "+fleetScale(.5).toFixed(2));
+  setZoom(9);eq(fleetScale(G.zoom),fleetScale(SHIP_SCALE_MAX),"потолок корабля и потолок спрайта — одно число (0.448.0)");setZoom(1);
   /* §3: подпись считается от габарита тела; у каждого класса габарит внутри запечённого круга */
   for(const k in FLEET_CLASSES){const a=fleetArtOf({k,seed:k.length*5+2,name:"X",num:"Л-1",line:1});
     ok(a.bx>0&&a.by>0&&a.bx<=a.rad&&a.by<=a.rad,k+": габарит "+a.bx.toFixed(0)+"×"+a.by.toFixed(0)+" внутри радиуса "+a.rad.toFixed(0));}
