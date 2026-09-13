@@ -212,6 +212,18 @@ power's character reaches the player's hands through the hull it builds.
   plan (mass clamped .8–1.1) · БАШНЯ on the spine (360°, through the decks), exposure, sight · six
   yards' built-in/limit/habit · СТАПЕЛЬ hull orders in a power's territory · scars and доводка ·
   ТИПОВОЙ and ПРОЕКТЫ, NPCs built by the same packer.
+- **A living space Ж1–Ж6** (`docs/DESIGN-life.md`, author 14.09: «неоновые билборды, отели в
+  космосе, как в кино»): a fixed entry point per system and the approach — «подъезд» (entry post →
+  lane with chasing buoy lights and a holding queue → station → gate) · billboards whose crawling
+  line is prices/news/circulars · six hotels that are the world's door to the spa, cinema, cantina ·
+  the food barge «Чебуречная» (a meal comes with a rumour) · the bazaar of hulks · one giant per arm.
+- **The galactic metro М1–М7** (`docs/DESIGN-metro.md`, author: «метро своё галактическое, выйти на
+  3-й станции»): Кольцевая at Ялта's radius + six radial lines by power, ~40 stations by seed ·
+  the gate at the end of the approach, жетон 5 кр for forty years, baggage, «крупногабарит» · the
+  ride as `G.mode="metro"` (tunnel, windows onto the galaxy, the состав on ropes, the announcer,
+  ВЫЙТИ at any stop, ПЕРЕСАДКА, «Конечная») · halls like palaces with a mosaic from the chronicle
+  and the player's deeds · six ways to run a line (Express™, punctual, strikes, Рассвет's маршрутка
+  stopping on request, driverless updates) · extensions only by the player's holding.
 - **Decided by the author 14.09** (shipyard §9): the hold and the tanks ARE cells — strip the guns,
   carry more; strip the hold, arm heavier (cargo capped ×1.4 nominal). «Пока только в план пиши» —
   both queues wait; nothing is built until the author says to start.
