@@ -217,13 +217,14 @@ power's character reaches the player's hands through the hull it builds.
   lane with chasing buoy lights and a holding queue → station → gate) · billboards whose crawling
   line is prices/news/circulars · six hotels that are the world's door to the spa, cinema, cantina ·
   the food barge «Чебуречная» (a meal comes with a rumour) · the bazaar of hulks · one giant per arm.
-- **The galactic metro М1–М7** (`docs/DESIGN-metro.md`, author: «метро своё галактическое, выйти на
-  3-й станции»): Кольцевая at Ялта's radius + six radial lines by power, ~40 stations by seed ·
-  the gate at the end of the approach, жетон 5 кр for forty years, baggage, «крупногабарит» · the
-  ride as `G.mode="metro"` (tunnel, windows onto the galaxy, the состав on ropes, the announcer,
-  ВЫЙТИ at any stop, ПЕРЕСАДКА, «Конечная») · halls like palaces with a mosaic from the chronicle
-  and the player's deeds · six ways to run a line (Express™, punctual, strikes, Рассвет's маршрутка
-  stopping on request, driverless updates) · extensions only by the player's holding.
+- **The galactic metro М1–М5** (`docs/DESIGN-metro.md`, author: «метро своё галактическое, выйти на
+  3-й станции»; cut the same day: «станции не делать — абстрактно, карта куда вам, показывать просто
+  космос, за секунды, чтобы не бесило»): Кольцевая at Ялта's radius + six radial lines by power,
+  ~40 stops by seed · one ring per stop at the end of the approach · «КУДА ВАМ?» — the scheme is
+  the whole interface, the pad says «ДО «НЕЙЭЛЬ» · 3 ОСТАНОВКИ · 5 кр» · the ride ≤ 6 s of plain
+  space (coupling to an «ЭР-2» tried and removable, stops ticking by, one announcement) · six ways on
+  the scheme (Express™, declaration, strikes, Рассвет's маршрутка stopping between ticks, updates) ·
+  baggage, «крупногабарит», extensions only by the player's holding. No halls, no tunnel walls.
 - **Decided by the author 14.09** (shipyard §9): the hold and the tanks ARE cells — strip the guns,
   carry more; strip the hold, arm heavier (cargo capped ×1.4 nominal). «Пока только в план пиши» —
   both queues wait; nothing is built until the author says to start.
