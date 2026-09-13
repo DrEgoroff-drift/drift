@@ -193,48 +193,39 @@ Redesigns — each passes «чтобы что?» first:
   screen (reference: No Man's Sky's main storyline); a real book view with plates from the
   player's own flight; the book's text may be edited to fit.
 
-## The shipyard and the borders — two queues (author, 2026-09-14; designed, nothing built)
+## Six designs of 2026-09-14 — the author: «пока только в план пиши» (nothing built)
 
-The author, after Remember Tomorrow (1998, SoftWarWare) and Starsector: «конструктор кораблей там
-+ конструктор Starsector — исследовать и добавить нам»; and «у нас фракции, добавим характер —
-сейчас в мире нет ничего, чтобы было понятно, что ты у другой фракции». Research, laws, design:
-**`docs/DESIGN-shipyard.md`** and **`docs/DESIGN-borders.md`**. The two meet at the yard: a
-power's character reaches the player's hands through the hull it builds.
-
-- **Borders Б1–Б7** (first — Б1–Б3 answer the complaint in the first five seconds of a jump): the
-  post at the jump point per power (шлагбаум, billboard, customs gantry, the empty arch, the welded
-  buoy, the camera mast) with its light's motion and occupation states · the stamp across the
-  screen and the КНИЖКА page ОТМЕТКИ О ПРОЕЗДЕ · station body by builder, traffic by owner · the
-  peacetime fleet of war §7.3 in flight · one law of the land each · ether and music on entry ·
-  border lines by pattern on the map.
-- **Shipyard К1–К8**: the plan read from `hullOf` (cells, ОБШИВКА + 1–3 decks) with a packer and a
-  fixpoint (old saves keep every number) · the КБ editor and `G.plan` · the ship's numbers from the
-  plan (mass clamped .8–1.1) · БАШНЯ on the spine (360°, through the decks), exposure, sight · six
-  yards' built-in/limit/habit · СТАПЕЛЬ hull orders in a power's territory · scars and доводка ·
-  ТИПОВОЙ and ПРОЕКТЫ, NPCs built by the same packer.
-- **A living space Ж1–Ж6** (`docs/DESIGN-life.md`, author 14.09: «неоновые билборды, отели в
-  космосе, как в кино»): a fixed entry point per system and the approach — «подъезд» (entry post →
-  lane with chasing buoy lights and a holding queue → station → gate) · billboards whose crawling
-  line is prices/news/circulars · six hotels that are the world's door to the spa, cinema, cantina ·
-  the food barge «Чебуречная» (a meal comes with a rumour) · the bazaar of hulks · one giant per arm.
-- **The galactic metro М1–М5** (`docs/DESIGN-metro.md`, author: «метро своё галактическое, выйти на
-  3-й станции»; cut the same day: «станции не делать — абстрактно, карта куда вам, показывать просто
-  космос, за секунды, чтобы не бесило»): Кольцевая at Ялта's radius + six radial lines by power,
-  ~40 stops by seed · one ring per stop at the end of the approach · «КУДА ВАМ?» — the scheme is
-  the whole interface, the pad says «ДО «НЕЙЭЛЬ» · 3 ОСТАНОВКИ · 5 кр» · the ride ≤ 6 s of plain
-  space (coupling to an «ЭР-2» tried and removable, stops ticking by, one announcement) · six ways on
-  the scheme (Express™, declaration, strikes, Рассвет's маршрутка stopping between ticks, updates) ·
-  baggage, «крупногабарит», extensions only by the player's holding. No halls, no tunnel walls.
-- **Берёзопанк Д1–Д10** (`docs/DESIGN-birchpunk.md`, author: «Кибердеревня — нам нужен такой же
-  стёб и механики»): machines with names and quirks («Митя встал. Чинится сам. Ругается.») · изолента
-  — field repair to 50 % that leaves tape on the hull, the «кулибин» trait · subscriptions at
-  Компания/Хай-Фронт with «экстренное продление ×3» · the AI core seat as a Хай-Фронт product on
-  tariffs · «Рязань Каунти» names by owner's suffix · the newscast that contradicts the player's
-  own deed (with P12) · Космопочта by hours with извещения · дачники on weekends paying in jam ·
-  the warmth rule: every satirical system ships one earnest beat. Cheapest first: Д1, Д2, Д5.
-- **Decided by the author 14.09** (shipyard §9): the hold and the tanks ARE cells — strip the guns,
-  carry more; strip the hold, arm heavier (cargo capped ×1.4 nominal). «Пока только в план пиши» —
-  both queues wait; nothing is built until the author says to start.
+Each document holds the research, the laws, the design and its queue; this is the index.
+- **Borders Б1–Б7** `docs/DESIGN-borders.md` («нет ничего, чтобы было понятно, что ты у другой
+  фракции»): the post at the jump point per power · the entry stamp and КНИЖКА «ОТМЕТКИ О ПРОЕЗДЕ» ·
+  station and traffic by owner · the peacetime fleet in flight · one law of the land each · sound ·
+  border lines by pattern. Б1–Б3 first.
+- **Shipyard К1–К8** `docs/DESIGN-shipyard.md` (Remember Tomorrow + Starsector): the plan from
+  `hullOf` (ОБШИВКА + 1–3 decks, cells), packer and fixpoint · КБ editor, `G.plan` · numbers from the
+  plan · БАШНЯ on the spine · six yards' built-in/limit/habit · СТАПЕЛЬ · scars, доводка · ТИПОВОЙ.
+  **Decided by the author:** the hold and tanks ARE cells (cargo capped ×1.4 nominal).
+- **Living space Ж1–Ж6** `docs/DESIGN-life.md` (neon, hotels, «как в кино»): a fixed entry point
+  and the approach («подъезд») · billboards carrying prices/news · six hotels as doors to spa,
+  cinema, cantina · «Чебуречная» · the bazaar of hulks · one giant per arm.
+- **Metro and mainline М1–М6** `docs/DESIGN-metro.md` (third draft, the author's: «прям станция —
+  стыкуешься, колу покупаешь… круглые врата как посадочная полоса… карта звёздного неба… опутывать
+  галактику процедурно»): jumps for near, rails for far · метро (r ≤ 12, жетон) + электричка and
+  скорый on a procedural net of forking radials, rings and arm трассы to the rim and past it
+  (полустанки, «Край») · a station object: hail, glide-path alignment, vestibule with ТАБЛО / КУДА
+  ВАМ / КАССА / БУФЕТ (a drink comes with a rumour) · departure on the hyperdrive into the ring ·
+  the ride as `G.mode="rail"` on the galaxy map, 6–60 s, stops ~2 s with ВЫЙТИ, ПЕРЕСАДКА.
+- **Resources Р1–Р5** `docs/DESIGN-resources.md` («с десяток, чем дальше, тем ценнее, но как
+  повезёт»): ten goods in three bands (гелий-3, палладий, янтарь, осмий, звёздный чернозём,
+  магнитная пыль, жемчуг пустоты, тёмное стекло, антивещество в ловушке, нейтронная крошка) on a
+  new random salt (no old deposit moves) · lognormal richness, 0.5 % ЖИЛА · readings by instrument
+  resolution · ½ / 1 / 1.3 price by distance · one property each (heavy, fragile, perishable).
+- **Берёзопанк Д1–Д14** `docs/DESIGN-birchpunk.md` («Кибердеревня — такой же стёб и механики,
+  адаптируй и продумывай»): named machines · изолента · subscriptions (10 % + 4 %/сводка) · the AI
+  core on tariffs · «Рязань Каунти» names · the contradicting newscast · Космопочта · дачники · the
+  warmth rule · the triangle изолента/гарантия/техподдержка · the farm of domesticated fauna · баня
+  softens the ПАЛАТА · «чайный гриб» · blockades · «Буханка». Cheapest first: Д1, Д2, Д5.
+- Suggested order when the author says go: Б1–Б3 with Ж1 (one entry point) → Р1–Р3 → М1–М4 →
+  К1–К3 → the rest; Д1/Д2/Д5 in any gap.
 
 ## What is left, in order (reviewed 2026-09-11, 0.443.0)
 

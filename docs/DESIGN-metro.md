@@ -1,124 +1,171 @@
-# The galactic metro — «куда вам?», seconds, off at the third (2026-09-14)
+# The metro and the mainline — a railway that wraps the galaxy (2026-09-14, third draft)
 
-The author, 14.09.2026: «хочу ещё врата, чтобы туннели были и можно туда прилететь — они тебя
-как по трассе везут. Ну телепорт. Типа метро своё галактическое, ахаха, выйти на 3-й станции».
-Then, the same day, on the first draft: **«станции можно не делать, не сделаем красиво — абстрактно
-давай, типа карта куда вам, прицепляться можно попробовать, показывать просто космос, поехали —
-там за секунды должно, чтобы не бесило»**. This is the second draft, cut to that. Nothing is built.
-Companions: `docs/DESIGN-life.md` (the approach — the ring stands at its end), `docs/DESIGN-borders.md`.
+The author, 14.09.2026, three times the same day. First: «хочу врата, туннели… метро своё
+галактическое, выйти на 3-й станции». Then: «станции можно не делать… абстрактно, карта куда вам…
+за секунды». Then, which this draft follows: **«это прям станция — стыкуешься, покупаешь колу,
+сидишь, быстро; да, 6 секунд, но можно долго, как в реальном метро, до минуты. Если есть топливо
+— херачишь, но так далеко за 1-2-3 прыжка не сделать, легче на метро сесть. В системах как
+посадочная полоса — круглые врата: подлетаешь, тебя спрашивают «стыковка?», медленно ровняешь
+курс и на гипердрайве уезжаешь. Потом другой интерфейс: карту показывают, можно раньше выйти,
+летим с остановками, как поезд в метро, на пару секунд. Карта звёздного неба. Эта штука должна
+опутывать галактику, процедурно, чтобы прям в жопу улететь можно было. Как линии метро в Москве
+или как поезда по стране»**. Nothing is built. Companions: `DESIGN-life.md` (the approach),
+`DESIGN-borders.md`, `DESIGN-resources.md` (why go far — the rim pays).
 
-## 0. What others did, and the gap
+## 0. Research, kept short
 
-| where | how it works | what we take |
-|---|---|---|
-| Freelancer | trade lanes: rings you ride at speed; pirates can cut a lane | the ride is a line; a line can be shut |
-| X Rebirth / X4 | highways; large ships may not enter | «крупногабарит» |
-| EVE | stargates are the political map; live gate status | a line's status on the scheme |
-| Mass Effect | relays point to point | pick a destination, go |
-| Cowboy Bebop | gates charge a toll and announce the destination | the fare, one announcement |
-| Stellaris | ordinary lanes plus an express through a hub | the ordinary line and an express |
-| Moscow Metro | the scheme on the wall; the ring and radials; the жетон; «Следующая станция…», «Поезд дальше не идёт» | the scheme, the ring, the voice |
-
-**The gap** nobody fills: a line with stops you can get off at. Here it is a **choice on the
-scheme**, not a stop you sit through — you pick the third station and you are there.
-
-**The author's cut, as laws:** the scheme is the whole interface; the ride is seconds of plain
-space; no station halls (they would not be beautiful — then they are not made).
+Freelancer's lanes (a ride you enter at a ring), X4's highways (big hulls may not enter), EVE's
+gates as the political map, Mass Effect's relays, Bebop's toll and announcement, Stellaris'
+ordinary lanes plus an express, the Moscow Metro (the scheme, the ring and radials, the жетон, «Следующая
+станция…», «Поезд дальше не идёт») and the country's railway (the электричка that stops
+everywhere, the скорый that stops at junctions, the полустанок with one lamp). **The gap nobody
+fills:** a line with stops you may leave at. That is ours.
 
 ## 1. Laws
 
-1. **«Куда вам?» is the whole interface.** One paper scheme; tap a station; the button says where,
-   how many stops and the fare. No platform scene, no waiting room, no timetable.
-2. **Seconds, never a wait.** Boarding to arrival ≤ 6 s, whatever the distance. Nothing to sit
-   through, nothing to skip.
-3. **Plain space while you ride.** No tunnel walls, no halls: the stars stream past, the station
-   names tick by at the top. The only drawn novelty is the coupling (§4).
-4. **The metro is ГЛАВТРАССА's in spirit** — the жетон that has not changed in forty years, the
-   announcer's voice, the scheme. «Метро» stays an earthly word on purpose (the naming register).
-5. **Only the player builds**: the network exists by seed; beyond the settled circle it grows only
-   by the player's holding.
-6. **Nothing derived persists.** Lines come from the galaxy's seed; the save keeps tokens and the
-   stations the player's holdings added.
-7. **Jumping stays.** The metro trades fuel and range for a fare and a fixed network; systems off it
-   are reached as today.
+1. **Jumps are for near, the rails are for far.** A jump reaches 3–7 sectors (`stat().jump`) for
+   9 + 13·d fuel. The rim is 40 sectors out: ten jumps and three refuellings. The rails make it one
+   ride of under a minute — and they only go where there is a station.
+2. **A real station in the system, and a real gate.** You dock, you buy a drink, you wait a little,
+   you go. Nothing is a menu that pretends to be a place.
+3. **The ride is the star map.** While you travel, the interface is the galaxy with your train on
+   its line, the stops ticking, ВЫЙТИ at every stop.
+4. **Seconds to a minute, as in a real metro.** A hop is ~6 s; across the galaxy ≤ 60 s. Never a
+   loading screen, never a wait you cannot leave.
+5. **It wraps the whole galaxy, by procedure.** Dense in the heart, sparse at the rim, and it goes
+   on past the rim for as far as anyone flies.
+6. **Only the player builds** (the standing decision): the network exists by seed; the player's
+   holding may add a station, nothing else does.
+7. **Nothing derived persists.** Lines and stations come from the seed; the save keeps tokens,
+   tickets, a ride in progress and holding-built stations.
 
-## 2. The network — Moscow on a galaxy
+## 2. The network — Moscow in the heart, the country's railway beyond
 
-- **Кольцевая** — the ring line around the core at Ялта's radius; 12–16 stops. **Ялта** is the
-  great interchange — «Площадь Шести Держав».
-- **Six radial lines**, one per power, from the ring out through its home cluster to the edge of the
-  settled circle; 3–5 stops each.
-- **A stop is a system with a station**, the nearest to each ideal point of the curve, chosen by
-  seed. Nothing is built in it for the metro except the ring (§3).
-- **Extensions** beyond the settled circle only by a player's holding («продление линии», a late
-  holding deed; the name from the game's name generator — no free text, the online rule).
+Two services on one track net:
 
-About forty stops: a scheme with character, few enough to read on a phone.
+| service | where | stops | interval | fare |
+|---|---|---|---|---|
+| **МЕТРО** | inside the settled circle (r ≤ 12) | every 1.5–2.5 sectors | a train every ~10 s | **жетон**, 5 кр flat, for forty years |
+| **ЭЛЕКТРИЧКА** | the mainline, all stops | every 4–8 sectors | every 30–90 s, rarer outward | **билет** by distance, 2 кр/sector |
+| **СКОРЫЙ** | the mainline, junctions only | junctions (узловые) | every 1–3 min, rarer outward | ×2 the электричка; half the ride time |
 
-## 3. The ring in the system
+**The procedure (lazy, deterministic, infinite):**
+- **Radials.** Six from the core, one per power, at the angles of their home clusters. A radial
+  **forks** outward whenever the gap between it and its neighbour exceeds a spacing that grows with
+  r — a river network turned inside out — so the density of lines stays even as the circle widens:
+  6 radials at r=6, ~12 at r=15, ~24 at r=35, and so on without end.
+- **Rings.** The **Кольцевая** at Ялта's radius (r≈6; Ялта is its great interchange, «Площадь
+  Шести Держав»); the **Большое кольцо** at r≈18; the **Дальнее кольцо** at r≈35; further rings
+  every ×1.9 of radius. A ring's stations are its crossings with the radials.
+- **Arms.** Along each of the galaxy's two arms (`galaxyAt`, M447) runs a spiral **трасса** —
+  the country's great line, crossing rings and radials alike.
+- **Stations.** On each line, at every spacing step, the nearest system *with a station* within a
+  tolerance becomes a stop; a step with none is skipped (a long run with no stop is a feature — the
+  «перегон»). Stations where lines cross are **junctions**.
+- **Past the rim** (r > 40): the lines go on as single tracks with **полустанки** — one lamp, a
+  bench, a train every few minutes. The last station of every line that anyone has reached is
+  called **«Край»** on the scheme until someone rides further.
+- Computed per region on demand (a cell of the plane → the line segments and stations in it);
+  one Node suite for determinism, reachability and «no two stops in one system».
 
-One drawn thing per stop: **a ring** at the end of the approach, past the station — a hoop of the
-line's metal with its lights chasing round (motion, not blinking) and the line's number on a plate.
-Six finishes by the line's power, one construction (the post's rule in borders §3). No platform,
-no hall, no queue. Fly into the ring → «КУДА ВАМ?».
+**Names.** Inside a power's land a line and its stops follow the owner's naming rule (birchpunk
+Д5: «Горловина Каунти», «Бецирк Нейэль № 4»…); lines carry numbers and the arm's or region's name
+(M449): «Линия 7, Рукав Лебедя». Beyond the powers, the old railway names: «разъезд 214-й
+сектор», «полустанок Сухой», «платформа Дальняя».
 
-## 4. «Куда вам?» and the ride
+## 3. The station in the system
 
-**The scheme** (Beck's logic, not geography) opens on the ring: the circle, six straight
-radials at 60°, stops as evenly spaced ticks, interchanges as circles, «вы здесь», shut stretches
-hatched. Tap a stop — the pad says **«ДО «НЕЙЭЛЬ» · 3 ОСТАНОВКИ · 5 кр»**. Tap it again (or the
-pad) — you go. A change of line is not a separate act: pick any stop on any line and the route
-goes through the interchange by itself («с пересадкой на Кольцевой»).
+A stop is a system object of its own at the end of the approach (life §2), past the ordinary
+station:
 
-**The coupling — tried, and cheap to drop.** For the first second an электровоз (a ГЛАВТРАССА tug,
-«ЭР-2») slides in ahead of your nose and a coupler line (`18d-verlet`'s rope) snaps taut between
-you; two or three other ships hang behind on their own ropes — a трейдер, a вахтовка. If it reads
-as clutter in the frame, the ride keeps working without it (Law 3).
+- **The gate** — a round ring lying like a runway threshold, a line of lights leading into it (the
+  glide path), lit chasing inward (motion, not blinking); the line's number on a plate.
+- **The vestibule** — a small block beside the ring where ships moor (one drawing, six finishes by
+  the owner, as the post in borders §3; at the rim a bare platform with one lamp).
 
-**The ride** — `G.mode="metro"` (a new mode by the rule, but a small one): plain space; the stars
-stretch into streaks and stream past (the starfield exists, `16-flight`); the galaxy's glow turns
-slowly as the heading changes (M451's model). At the top, the stops tick by — «Горловина ·
-Нейэль · …» — one tick per 0.6 s; the announcer (the beacon's voice, `12pa-beacon`) speaks once, at
-arrival: «Станция «Нейэль»». At a terminus: «Конечная. Поезд дальше не идёт». Timing: 1 s
-coupling + 0.6 s per stop, capped at 6 s total — a long ride just ticks faster.
+**Docking — the runway.** Within ~300 of the ring the hail comes: «Станция «Нейэль». Стыковка?»
+— ДА on the pad. Then the only piloting in the whole thing: **align slowly** — the glide path draws
+a cone of lights and a speed mark; hold speed under the mark and the nose inside the cone for two
+seconds (assisted: the helm damps the turn, as `ap` does; a wide cone on a phone). Too fast —
+«Сбросьте скорость», the approach restarts, no penalty. On «ПРИНЯТО» the ship slides into its berth.
 
-**Arrival** puts the ship at the destination's ring, on its approach — the post, the lane and the
-station ahead (borders Б1, life Ж1): the metro arrives by the front door.
+**The vestibule screen** (DOM, one page, the station screens' paper):
+- **ТАБЛО** — the next trains: «ЭЛЕКТРИЧКА до «Край» · через 0:14», «СКОРЫЙ · через 1:40»,
+  «МЕТРО · прибывает».
+- **КУДА ВАМ** — the scheme / star map to pick a stop (§4); the pad says «ДО «НЕЙЭЛЬ» · 3 ОСТАНОВКИ ·
+  5 кр» or «ДО «СУХОЙ» · 11 ОСТАНОВОК · 38 кр + багаж 12 кр».
+- **КАССА** — жетоны, билеты, the baggage by ton, «крупногабаритный» ×3.
+- **БУФЕТ** — a drink and a bite by the owner: ГЛАВТРАССА «лимонад «Звёздный»», the Компания's
+  «Кола Партнёр™», Орднунг «вода минеральная, 0,33 л, № 2», the Коммуна's «кофе с круассаном (закрыто)»,
+  Рассвет «чай из общего котла», Хай-Фронт «энергетик v4». **A drink comes with a rumour** (`11t`)
+  and a line in ДНЕВНИК — the useful output — and costs a few кр. Nobody has to buy it.
+- The wait is the train's interval: a few seconds in the heart, a minute at the rim — enough to
+  drink the lemonade. The pad shows the countdown; nothing to do but wait or buy.
 
-## 5. Six lines, six ways — all on the scheme
+**Departure.** «Поезд прибывает» — the ship unmoors, the ring's lights run faster, and in the
+system view the ship **goes into the ring on the hyperdrive**: a second of stretched streaks and a
+flash, the ship gone — then the ride interface. (The coupling to an электровоз from the second
+draft is dropped: the hyperdrive into the ring says the same thing with one drawing.)
 
-The character lives where the player looks — the scheme and the pad — not in drawn halls:
+## 4. The ride — on the star map
 
-| line | on the scheme / in the ride |
+A new small mode, `G.mode="rail"`, drawn **on the galaxy map** (M447's world galaxy and the
+sheet — the map already exists, so the ride is almost free to draw):
+
+- the camera frames the line ahead; **your train is a bright mark moving along it**; the stops
+  are ticks with names; junctions are circles; the other lines are faint (Beck's clarity on top of
+  the real sky — the lines are drawn as smooth curves between stations, not straightened);
+- between stops the mark accelerates and slows like a train; **a stop is ~2 s**: the name
+  («Станция «Горловина»»), the announcer's voice once (`12pa-beacon`), and **ВЫЙТИ** on the pad;
+- at a junction **ПЕРЕСАДКА** — the other line's next train is shown with its wait;
+- the announcer: «Следующая станция — «Нейэль»» after each stop; at the end «Конечная. Поезд
+  дальше не идёт, просьба освободить вагоны»;
+- the desk stays open (ДЕЛО, ПОЧТА, ЭФИР) — a long ride is time to read.
+
+**Timing** — segment = 0.8 s + 0.35 s per sector, a stop 2 s (the скорый skips small stops, so a
+long run stays under a minute): a metro hop of three stops ≈ 6–8 s; the mainline from the heart to
+the rim ≈ 45–60 s. Held pad = ×2, never a skip.
+
+**Arrival** — the destination's ring throws the ship out onto its approach, slow, facing the
+station: the post, the lane, the station ahead (borders Б1, life Ж1).
+
+**A save during a ride** keeps `{line, from, to, t}`; loading resumes at the next stop.
+
+## 5. Economy and danger
+
+- **Why ride:** the rim pays (`DESIGN-resources.md`: the far resources, found by luck, sell dearest
+  in the heart). The rails carry you out and your hold back — for the baggage fee per ton. **Why
+  still jump:** the rails stop only at station systems; a deposit two sectors off the line is a
+  jump from the platform, and a jump home is instant.
+- **Oracle line** (`91zzzzzzzzz-worlds`): the best round trip by rail may not beat the best by jumps
+  by more than ×1.3 in credits per minute of play; the baggage fee is the lever.
+- **Danger lives at the ends, not in the ride.** Rim stations sit in dangerous sectors (`sysDanger`)
+  — pirates wait on the approach to a полустанок. A station at the front is closed: «Поезд проследует
+  без остановки» (the mark passes the tick). No ambush in transit.
+
+## 6. Six powers, six railways (on the scheme and the табло)
+
+| owner | how it runs its lines |
 |---|---|
-| **Кольцевая** + ГЛАВТРАССА's radial | the жетон, 5 кр; a shut stretch is hatched with «временные трудности на отдельных участках», and nothing more is said |
-| **Компания** | **Express™**: a second, dashed line beside the radial that skips small stops, ten times the fare; its ride is 3 s flat, and the pad shows an ad under the fare |
-| **Орднунг** | the fare in three copies on the pad; boards only if your hold is declared (one tap «ДЕКЛАРИРУЮ») |
-| **Коммуна** | greyed on strike days (`12ay-fx-soc`) and at lunch: «сегодня мы не работаем» |
-| **Рассвет** | **the маршрутка**: every system the line passes is a stop — «остановите у пояса!» — the only line where you may get off *between* the ticks |
-| **Хай-Фронт** | now and then «обновление установлено» — the line greyed for a minute of game time; the fastest ordinary line |
+| ГЛАВТРАССА | the жетон, the tannoy, «временные трудности на отдельных участках» (a hatched stretch, nothing more said); the cheapest |
+| Компания | **Express™** — a dashed twin line skipping small stops, ×10 fare, an advert on the pad under the fare |
+| Орднунг | punctual to the second; late for the doors — the next one; boards only with the hold declared («ДЕКЛАРИРУЮ») |
+| Коммуна | the most beautiful vestibules; greyed on strike days (`12ay-fx-soc`) and at lunch |
+| Рассвет | **маршрутка** — stops on request at any system along the line («остановите у пояса!»), the only service that leaves you *between* stations |
+| Хай-Фронт | driverless and fastest; now and then «обновление установлено» and the line stands a minute |
 
-## 6. Economy and danger
+## 7. The queue — М1–М6, each playable on /dev
 
-- The fare is flat; the cost is the fare, **baggage** per ton of cargo («провоз багажа») and the
-  network's shape. Heavy hulls pay ×3 («крупногабаритный»); the largest may not board some lines.
-- The worlds oracle (`91zzzzzzzzz-worlds`) gets a line: the best metro round trip may not beat the
-  best by jumps by more than ×1.3 in credits per minute of play.
-- No danger in the ride. A stop at the front is closed («поезд проследует без остановки» on the
-  pad; the route goes past it); an occupied stop is under the new owner's line finish.
+- **М1 the net** — radials with forks, rings, arm трассы, stations by spacing, junctions, the rim's
+  полустанки and «Край»; lazy per region; the Node suite; names by the owner's rule.
+- **М2 the station** — ring and vestibule at the end of the approach, six finishes and the bare rim
+  platform; the hail, the glide-path alignment, the berth.
+- **М3 the vestibule** — ТАБЛО, КУДА ВАМ, КАССА, БУФЕТ with the rumour; the interval wait.
+- **М4 the ride** — `G.mode="rail"` on the galaxy map: the moving mark, stops, the announcer,
+  ВЫЙТИ, ПЕРЕСАДКА, timing, «Конечная»; the ring's hyperdrive departure and arrival; the save.
+- **М5 services and powers** — метро/электричка/скорый, Express™, declaration, strikes, маршрутка,
+  updates; closed front stations.
+- **М6 economy** — fares, baggage, the size rule; the oracle line; a holding-built station.
 
-## 7. The queue — М1–М5, each playable on /dev
-
-- **М1 the network and the scheme** — ring, six radials, stops by seed, Ялта; a Node suite (every
-  stop reachable, one stop per system, stable across seeds); the «куда вам» scheme page; the lines
-  as faint marks on the galaxy map, 1:1 (no parallax, M447).
-- **М2 the ring** — at the end of the approach, six finishes, chasing lights, the plate; flying in
-  opens the scheme.
-- **М3 the ride** — `G.mode="metro"`, ≤ 6 s: coupling (tried, removable), streaming stars, the
-  ticking stops, one announcement, arrival at the ring; routing through interchanges.
-- **М4 six ways** — Express™, the declaration, strikes and lunch, the маршрутка's request stops,
-  the update; shut stretches and closed front stops on the scheme.
-- **М5 economy and growth** — fare, baggage, size rule; the oracle line; extensions as a holding deed.
-
-Struck from the first draft by the author's cut: the tunnel with walls, the station halls and their
-mosaics, the stop you sit through, the events in the tunnel (контролёр, musician, window vendor).
+Struck from earlier drafts: tunnel walls, drawn station halls and mosaics, events inside the
+tunnel, the couple-to-an-электровоз scene (the hyperdrive into the ring replaces it).

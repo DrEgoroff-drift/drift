@@ -156,3 +156,100 @@ burning. The satire is aimed at the state and the firm; the people are decent �
 
 Cheapest first and most in the show's spirit: **Д1, Д2, Д5** (tables and lines, a day each), then
 Д7 and Д8 (they ride the news and the desk), then the systems Д3/Д4.
+
+## 4. Thought through — the author, the same day: «механики берём из Кибердеревни, адаптируем на
+наш лад — это придумывай и продумывай»
+
+The show's jokes are funny because they **interlock**: the rented fridge, the tape, the support
+line and the neighbour who fixes everything are one economy. Ours must interlock the same way —
+each device feeds another, so the comedy comes from the system, not from a line of text.
+
+### 4.1 The triangle — изолента, гарантия, техподдержка
+
+A part bought or rented from the Компания or Хай-Фронт comes with a **гарантия** (a card in ОПИСЬ:
+«гарантия 12 сводок»). When it breaks, three ways out, each priced on its button:
+
+| way | what happens | cost |
+|---|---|---|
+| **ТЕХПОДДЕРЖКА** | a call on the эфир: «ваш звонок очень важен для нас», one bar of hold music (`10-music`), a queue number that counts down in game time; then the part is repaired to 100 % by a remote update or a courier at the next station | free, and slow: 1–3 сводки, the part dead meanwhile |
+| **ИЗОЛЕНТА** | fixed now, in the field, to 50 % (Д2) | kopecks — and **«гарантия аннулирована: обнаружены следы изоленты»**; the tape shows on the hull |
+| **ЯРД** | a yard repairs it properly | money and a dock |
+
+The joke is the choice, and it is a real one: a courier out at the rim cannot wait three сводки; a
+trader in the heart can. The **«кулибин»** hand (Д2) tapes without voiding the warranty, because
+«он так заматывает, что не видно» — the one warm cheat, earned by hiring the right person.
+
+### 4.2 Subscriptions — the numbers that make them fair and funny
+
+Rent = **10 % of the price up front + 4 % per сводка** (6 real hours). Owning wins after ~23 сводок
+— about six days. So renting is the right call for a short job and a slow trap for a long habit,
+and the game says the arithmetic on the card («к 23-й сводке вы заплатите полную цену»). A lapse
+lands only at a сводка boundary, announced a shift before in ПОЧТА (§22 guard). In a fight the pad
+offers **ЭКСТРЕННОЕ ПРОДЛЕНИЕ · ×3** for one сводка. The subscription's own gag: at renewal the
+tariff is «обновлён» — the same price, one feature fewer, and the feature is available as an add-on.
+
+### 4.3 The farm — одомашнивание (the show's cows, on our worlds)
+
+The show's village milks robot-tagged cows on Mars. Ours **domesticates the local fauna**
+(`20f-fauna`): a beast of a planet, calmed (a new use of the probe or a net), is taken to a base
+with a **ферма** module. It gets a name from the machines' table's cousin (Зорька, Пеструшка,
+Бурка…) and a QR-plate the ПАЛАТА requires (the клеймо of base §28, on a beast). It gives a slow
+trickle of its world's good — organics, carbon, xeno, and on deep worlds a little **чернозём**
+(`DESIGN-resources.md` #5) — and it gives it **only while someone talks to it**: a base with a
+hand on the farm, or the player landing. A beast from a far world gives a far good; that is the
+reason to bring one home. Beasts are never lost (the drones' rule), they get homesick instead
+(half yield for a while after a move).
+
+### 4.4 The bath — баня and the ПАЛАТА
+
+A base module **баня**. For the crew: the fatigue axis resets on a bath night (С5's axis on
+managers, decided 11.09). For the ПАЛАТА: **an inspection at a base with a баня goes one finding
+softer** — the inspector (base §40, the one who is promoted twice and asks after your попугай)
+«заодно попарится». Satire on the institution, warmth in the man: he is honest, he only likes a
+bath. This is the warmth rule (Д10) built into a mechanic.
+
+### 4.5 The kombucha — «чайный гриб» (a weather of the base)
+
+The show's genetically modified kombucha becomes the base director's event (base §10 — weather,
+not dice): a greenhouse culture overgrows — the greenhouse's yield doubles for three shifts, then
+it starts eating the base's organics, and someone has to cut it back (an аврал, base §11). The
+cut is sold as «чайный гриб» to Рассвет, who brew it. A good thing that becomes a problem that
+becomes a good — the show's arc in one event.
+
+### 4.6 The blockade — «у нас всё хорошо»
+
+The show's sanctioned planet, on our war (war §7.4): a power under a blockade in a system says, on
+its wave, that its shelves are full and it is the others who suffer; its market is empty and pays
+**×2 for food, fuel and parts**. Running the blockade is legal for a neutral and illegal for the
+blockader's pickets — a hail you answer by speed. Satire on the two states' broadcasts; the
+people at the counter are glad to see you.
+
+### 4.7 The flying van — «Буханка» and the ПАЗ
+
+The base's shuttle between the surface and the ship or the station is a named machine (Д1),
+drawn as a boxy old van with engines (the life document's traffic uses it too). It is slow, it is
+always a bit broken, and **it is the one machine the player can rename** — from the name table,
+no free text (the online rule). The show's lesson: the hero's vehicle is janky and loved; the
+player's own «Стриж» should wear its tape (Д2) as honourably.
+
+### 4.8 How one evening goes — the interlock, played
+
+A rim run on the mainline (metro М4): the ticket and a lemonade with a rumour at the vestibule. At
+the rim a good reading of osmium (resources §3); on the way down a pirate hits the rented shield —
+it breaks. Support says three сводки; the player tapes it (warranty void, tape on the hull). The
+dig pays; on the way back the subscription lapses at the сводка — the notice came, the player
+forgot; ×3 to renew for the fight at the полустанок. Home: Митя the drone is on the pad («стоял,
+чинился, ждал»); the ПАЛАТА's inspector is due, the баня is warm; the news says «на трассе
+спокойно». Every beat is a system the game already has or this document adds, and every one of
+them is either a joke on an institution or a kindness from a person.
+
+## 5. The queue, extended
+
+- **Д11 the triangle** — гарантия on firm parts, ТЕХПОДДЕРЖКА with hold music and a queue in game
+  time, the voided warranty on tape, the «кулибин» exception.
+- **Д12 the farm** — calming a beast, the ферма module, names and QR-plates, the trickle while
+  talked to, homesickness.
+- **Д13 the bath and the kombucha** — баня (fatigue, the softer inspection), «чайный гриб» as a
+  director event with its аврал and its sale.
+- **Д14 the blockade and the van** — blockade systems with ×2 prices and the broadcast that denies
+  it; «Буханка» as the base's named, renameable shuttle.
