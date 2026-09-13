@@ -225,6 +225,13 @@ power's character reaches the player's hands through the hull it builds.
   space (coupling to an «ЭР-2» tried and removable, stops ticking by, one announcement) · six ways on
   the scheme (Express™, declaration, strikes, Рассвет's маршрутка stopping between ticks, updates) ·
   baggage, «крупногабарит», extensions only by the player's holding. No halls, no tunnel walls.
+- **Берёзопанк Д1–Д10** (`docs/DESIGN-birchpunk.md`, author: «Кибердеревня — нам нужен такой же
+  стёб и механики»): machines with names and quirks («Митя встал. Чинится сам. Ругается.») · изолента
+  — field repair to 50 % that leaves tape on the hull, the «кулибин» trait · subscriptions at
+  Компания/Хай-Фронт with «экстренное продление ×3» · the AI core seat as a Хай-Фронт product on
+  tariffs · «Рязань Каунти» names by owner's suffix · the newscast that contradicts the player's
+  own deed (with P12) · Космопочта by hours with извещения · дачники on weekends paying in jam ·
+  the warmth rule: every satirical system ships one earnest beat. Cheapest first: Д1, Д2, Д5.
 - **Decided by the author 14.09** (shipyard §9): the hold and the tanks ARE cells — strip the guns,
   carry more; strip the hold, arm heavier (cargo capped ×1.4 nominal). «Пока только в план пиши» —
   both queues wait; nothing is built until the author says to start.
