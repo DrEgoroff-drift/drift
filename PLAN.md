@@ -134,6 +134,65 @@ as a placeholder:
     gender from the source's `f` flag, so «Женщина в платке рассказывал» is not reproduced there.
   - Privacy: the author's save sits outside git (`C:\Claude\drift-private`); never commit it.
 
+## Phone playtest 2026-09-13 — the queue (0.449.0, S23 Ultra, 411×742 at DPR 2.625, 120 Hz)
+
+The author played the live game on his phone for an hour, Claude measured over adb + CDP (state,
+screen, rAF recorders, a Chrome trace). Every item, with the numbers and the causes found:
+**`docs/PLAYTEST-2026-09-13.md`** (§ numbers below). Nothing fixed yet.
+
+**Rules the author set (they bind the whole queue):** (1) a screen never loses its scroll —
+nothing re-rendering may knock it off; (2) every tab/screen answers «чтобы что?» — why is it here
+for me, what will I do here — before it is redesigned; (3) optimise without losing quality, only
+improve; (4) the ship stays under the finger. Umbrella: rework all the interfaces for convenience
+— actions, buttons, hints.
+
+Bugs — cheap, one commit each:
+- [ ] P1 **Scroll, globally** (§1.1): table pages rebuild with `textContent=""`/`innerHTML=""`
+  (`27j-ui-opis`, `12ud-smena`, `25g-postcard`, `11ap-relay`) and `logAdd`/`recordAdd` re-render
+  the table on every line whatever page is open — measured 448 → 0 on a journal line. Keep the
+  position through any rebuild; re-render only the page a change touches. Net: a suite that
+  scrolls each table page, fires `logAdd`, and demands the same `scrollTop`.
+- [ ] P2 ОПИСЬ: an opened card is `touch-action:none` — a 150 px dead zone for scrolling; let
+  vertical pans through and keep the long-press lift (§1.2). Guard the lift against a re-render.
+- [ ] P3 ОПИСЬ tab strip: stretch it; its fade mask never clears because it skips `tabsSync` (§1.3).
+- [ ] P4 Compass chips follow the stick footprint (`helmStickFoot` in `drawSystem`) up to
+  mid-screen, onto the ship — keep them on the frame's edge (§1.4).
+- [ ] P5 «Смена» text is light-on-cream, contrast ≈ 1.1 : 1; styles never moved to the paper; no
+  right margin (§5.1).
+- [ ] P6 Small: hints cut at 411 px, МАСШТАБ under a chip (recheck on 0.449), the beacon offered
+  at the ship and wasted at 0 m, КНИЖКА «хулк» and «командировочные за 0 км», the «день» column
+  (`celDay`) out of order (§1.5, §1.6, §4.4).
+
+Flight and camera — design first, then build:
+- [ ] P7 **Frame cadence and resolution** (§2.1, §6): intervals scatter over 1–3 vsyncs on
+  120 Hz with a variable `dt` → judder; `RES_AUTO` stuck at ×1 (1/7 of the native pixels); the GPU
+  raster is the bottleneck; dearest own functions `drawWake`, `hud`, `drawTrail`, plus
+  `getBoundingClientRect`/`querySelectorAll` every frame; the reverb holds a quarter core. Rule 3:
+  same look, cheaper work. Measure again on a cool phone with `raw/phone-tools/trace.py`.
+- [ ] P8 **The ship under the finger** (§2.2–2.4): `flightCam` lag grows with zoom (350–536 px off
+  centre at ×2.4); «stop here» fired 15 frames of 3 177; the hull capped at .8 never grows on zoom.
+- [ ] P9 **Zoom** (§2.5, §2.6): pinch jumps across 28× (217 frames > 6 %/frame) — easing and
+  resting steps; in orbit at ×4.5 the orbited planet leaves the frame — one design with «2a.
+  Seamless atmosphere entry» above: keep the body you orbit or land on in view.
+- [ ] P10 **ЦЕЛЬ and the hail** (§3): one pad with five meanings (hail answer, probe, crew-off,
+  thanks, lock); pickets are not lockable; the hail's fight answer red and named «БОЙ».
+
+Redesigns — each passes «чтобы что?» first:
+- [ ] P11 ПРИЁМНИКИ (§4.1): the dial does nothing; announce tap-to-map on the row; back from that
+  map returns to ПРИЁМНИКИ; explain what receivers give and why to hunt them.
+- [ ] P12 ЭФИР (§4.2): 92 rows, 50 distinct, events drowned in chatter — rethink, enrich.
+- [ ] P13 АЛЬБОМ (§4.3): tap to enlarge; keep repaint-from-snapshot (~99 B each, the server is
+  safe) but paint far better — photo filters; postcards become collectibles found at stations and
+  personal postcards that go into the book; a captioned screenshot saved to the device gallery.
+- [ ] P14 ТРУДОВАЯ КНИЖКА (§4.4): a real document built from real трудовые книжки — stamps,
+  seals, signatures, savings for the vacation; say what it is for (доска почёта, the grounding
+  ending — all designed in M161, none of it on the page).
+- [ ] P15 **«Смена» — the main quest** (§5.2–5.3): hard; chapters are milestones opened in
+  sequence by deeds in beautiful places (not by buying drones — 25/72 opened on the author's save
+  without a landing, the ending before chapter 6); closing a chapter is an «АКТ» moment across the
+  screen (reference: No Man's Sky's main storyline); a real book view with plates from the
+  player's own flight; the book's text may be edited to fit.
+
 ## What is left, in order (reviewed 2026-09-11, 0.443.0)
 
 Checked against the code, `PATCHNOTES.md`, the lab and `crash.log` on 11.09. Found already done
@@ -283,6 +342,8 @@ extract tools, do not extend). Order is strict: determinism first, everything af
 ### The lab, first night (20260909-235848, 0.427.0) — its three reds fixed by 0.427.2, the OOM class and the fuzz timeout done; body in `docs/PLAN-archive.md` (2026-09-11)
 
 ### The lab, second night (0.440.0, 2026-09-11) — read, its fixes in `lab.py`; body in `docs/PLAN-archive.md` (2026-09-12)
+
+### Local lab + Node soak, night of 2026-09-12/13 (0.447.0) — report only, nothing fixed: `docs/night-2026-09-13/README.md`
 
 ## Refactor audit (0.438.0, 2026-09-11) — what the night's commits left, and the queue after them
 
