@@ -195,7 +195,7 @@ The drawing of the plan is a new visual system and gets its own almanac issue: t
 blueprint on paper (the КНИЖКА/ОПИСЬ cloth), cells as a pencil grid under the silhouette ink,
 things as inked stamps of their kind — a «Техника — молодёжи» centrefold, not a spreadsheet.
 
-## 9. The fork (for the author)
+## 9. The fork — decided by the author, 14.09.2026: **yes, cells**
 
 **Do the hold and the tanks become cells?** — i.e. can the player strip the guns off a hauler to
 carry more, or strip the hold off a warship to arm it.

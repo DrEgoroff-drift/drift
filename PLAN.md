@@ -212,8 +212,9 @@ power's character reaches the player's hands through the hull it builds.
   plan (mass clamped .8–1.1) · БАШНЯ on the spine (360°, through the decks), exposure, sight · six
   yards' built-in/limit/habit · СТАПЕЛЬ hull orders in a power's territory · scars and доводка ·
   ТИПОВОЙ and ПРОЕКТЫ, NPCs built by the same packer.
-- [ ] **Fork for the author** (shipyard §9): do the hold and tanks become cells — strip the guns,
-  carry more? Recommended yes; К1–К2 do not depend on the answer.
+- **Decided by the author 14.09** (shipyard §9): the hold and the tanks ARE cells — strip the guns,
+  carry more; strip the hold, arm heavier (cargo capped ×1.4 nominal). «Пока только в план пиши» —
+  both queues wait; nothing is built until the author says to start.
 
 ## What is left, in order (reviewed 2026-09-11, 0.443.0)
 
