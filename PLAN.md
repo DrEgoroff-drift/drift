@@ -193,6 +193,28 @@ Redesigns — each passes «чтобы что?» first:
   screen (reference: No Man's Sky's main storyline); a real book view with plates from the
   player's own flight; the book's text may be edited to fit.
 
+## The shipyard and the borders — two queues (author, 2026-09-14; designed, nothing built)
+
+The author, after Remember Tomorrow (1998, SoftWarWare) and Starsector: «конструктор кораблей там
++ конструктор Starsector — исследовать и добавить нам»; and «у нас фракции, добавим характер —
+сейчас в мире нет ничего, чтобы было понятно, что ты у другой фракции». Research, laws, design:
+**`docs/DESIGN-shipyard.md`** and **`docs/DESIGN-borders.md`**. The two meet at the yard: a
+power's character reaches the player's hands through the hull it builds.
+
+- **Borders Б1–Б7** (first — Б1–Б3 answer the complaint in the first five seconds of a jump): the
+  post at the jump point per power (шлагбаум, billboard, customs gantry, the empty arch, the welded
+  buoy, the camera mast) with its light's motion and occupation states · the stamp across the
+  screen and the КНИЖКА page ОТМЕТКИ О ПРОЕЗДЕ · station body by builder, traffic by owner · the
+  peacetime fleet of war §7.3 in flight · one law of the land each · ether and music on entry ·
+  border lines by pattern on the map.
+- **Shipyard К1–К8**: the plan read from `hullOf` (cells, ОБШИВКА + 1–3 decks) with a packer and a
+  fixpoint (old saves keep every number) · the КБ editor and `G.plan` · the ship's numbers from the
+  plan (mass clamped .8–1.1) · БАШНЯ on the spine (360°, through the decks), exposure, sight · six
+  yards' built-in/limit/habit · СТАПЕЛЬ hull orders in a power's territory · scars and доводка ·
+  ТИПОВОЙ and ПРОЕКТЫ, NPCs built by the same packer.
+- [ ] **Fork for the author** (shipyard §9): do the hold and tanks become cells — strip the guns,
+  carry more? Recommended yes; К1–К2 do not depend on the answer.
+
 ## What is left, in order (reviewed 2026-09-11, 0.443.0)
 
 Checked against the code, `PATCHNOTES.md`, the lab and `crash.log` on 11.09. Found already done
