@@ -101,3 +101,16 @@ this file keeps the evidence and the fix.
   writes the Cyrillic in the OEM code page and `grep "✗"` finds nothing in a red run. Capture it as
   `powershell -Command "& { .	est.ps1 -Full -NoBuild 2>&1 | Out-File -Encoding utf8 F }"` and read
   the file with `PYTHONIOENCODING=utf-8 python`, selecting the «✗»/«ИСКЛЮЧЕНИЕ» lines.
+
+- **Claude Desktop updates itself at night and restarts** (14.09.2026, 04:00). The Microsoft Store
+  serviced the package `Claude_1.52386.6.0` over the running app: the Claude VM Service was stopped
+  and restarted (04:00:28–37, `Application` log, CoworkVMService), a dialog «Файл занят другой
+  программой» popped at 04:00:46, and every `claude` process relaunched at 04:03:53. The session
+  resumed, the background agents did not; the package was serviced twice that night (02:50, 04:00).
+  No Store policy is set, so auto-updates are on by default. **Before a night run the author turns
+  them off** — Store → profile → Settings → «App updates» off, or from an admin PowerShell:
+  `New-Item HKLM:\SOFTWARE\Policies\Microsoft\WindowsStore -Force | Out-Null; Set-ItemProperty HKLM:\SOFTWARE\Policies\Microsoft\WindowsStore AutoDownload 2 -Type DWord`
+  (2 = off, 4 = on; delete the value to restore the default) — and updates by hand in the morning.
+  Claude does not change system settings itself, with or without permission. Check the state:
+  `Get-ItemProperty HKLM:\SOFTWARE\Policies\Microsoft\WindowsStore` and the registrations
+  `Get-WinEvent -FilterHashtable @{LogName='Microsoft-Windows-AppXDeploymentServer/Operational';Id=400}`.
