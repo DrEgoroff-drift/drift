@@ -623,7 +623,7 @@ palette module, a `G.mode` table, removing `typeof` guards, a schema-driven `app
 **Needs a decision from the author:** nothing — every fork was decided on his behalf (below).
 **Systems:** the DPR-2.5 stalls are stage 0.4; the freeze item (M234/M238/M417/M418) stays closed
 until a stall that is not a bake shows in `crash.log` (`stallWho`, 0.448.0). **Housekeeping:**
-PLAN.md stays under 72 KB (60 → 72 on 14.09: the one working plan; ~1.5k tokens a session) (`build.ps1` warns; a closed item leaves one line, its body goes to the
+PLAN.md stays under 100 KB (60 → 100 on 14.09, the author's exception: one working plan for everything) (`build.ps1` warns; a closed item leaves one line, its body goes to the
 archive in the same commit) · push only after a green run, run and push in separate commands · a
 dirty page still surfaces on its neighbour (a per-suite check after `fn()` would name it — not
 built) · tiers, switches and cost: `CLAUDE.md` «How to verify», `docs/VERIFY.md`.
