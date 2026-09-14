@@ -521,33 +521,7 @@ can go red; `T.replay` refuses a recording from another `VER`; the trips oracle 
   1.97 MB. Decided: the same `Cache-Control` on the three `.gz` blocks plus `FileETag MTime
   Size`; `curl -I` after the deploy; `api.php` untouched.
 
-**The full run is 4 minutes on a real clock (`-Times`, 11.09: 230 s single page, 128 s in six
-shards), and the author asks what is duplicated.** The thirty slowest suites are 190 of the 230 s;
-the candidates, each with what would replace it:
-- ~~«картина: ни одна сцена не уехала от эталона кадра»~~ — 0.443.0: folded into the golden loop
-  (same scenes, same settle, `LOOK_BASE` kept in `91zzzzy-look`); the golden suite left
-  quarantine for it — a golden of another platform (block grid differs) is a note, not a red.
-- «двери: из каждой сцены в каждую дверь» (18.5 s, the host's OOM suite) is **not** a duplicate
-  of `detDoors` (checked 11.09): the old net is the mode-transition matrix — every scene into
-  every mode entry and back, «mode without its state» —, `detDoors` closes DOM screens. Both
-  stay; the old one is the one to run in the lab under the capped heap.
-- «руки: кнопка над миром отвечает кадром» (8 s) · «обещание: кнопка делает то, что написано»
-  (2.4 s) · «инструменты: руки и глаза» (1.9 s) · the controls law in `detect` — four suites
-  press buttons and ask the frame to answer; one table of buttons × expected answer, one pass.
-- «сквозной: каждая сцена рисуется не пустой, кнопки в кадре нажимаются» (2.4 s) — checked
-  11.09: it clicks every visible button in every scene (up to 40), which no detector does; keep,
-  it is cheap.
-- **Verdict after the first pass (11.09):** the four minutes are mostly unique nets. The two
-  biggest (22 s each) are the bot walks and the draw-does-not-consume-rnd check; the only
-  true duplicate was «картина» (−11 s, done). The button family (~12 s) is the last real merge;
-  after it the time comes from coverage, and the fast tier (25 s Node + 3 s smoke) is what a
-  per-edit loop pays — the four minutes are for a release.
-- «детерминизм: рисованный кадр не сдвигает случай мира» (22 s) and «прогоны: двенадцать путей»
-  (22.6 s) are the two biggest and not duplicates; the bot walks could settle scenes once and
-  reuse the detect driver's grabs (both stand on `lookScenes`).
-Rule from `DESIGN-tests.md`: the corpus is frozen — fix reds, extract tools, do not extend — and
-retiring a duplicate is extraction, not extension. Each retirement: one commit, the replacing
-suite named in the patchnote, the mutant that the old suite killed re-checked in the zoo.
+**The full run is 4 minutes** — verdict 11.09: mostly unique nets; «картина» folded (0.443.0); the last real merge is the button family (~12 s: «руки», «обещание», «инструменты», the controls law → one table of buttons × expected answer). Body: docs/PLAN-archive.md, «Moved from PLAN.md on 2026-09-14».
 
 **Rejected, with the reason:** a palette module for the 893 hex colours (would flatten the
 deliberate range — measure hue histograms instead); a mode table for the 258 `G.mode===` (stable,
