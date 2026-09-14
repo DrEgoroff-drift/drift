@@ -483,6 +483,16 @@ stage 2 («чья земля»), after stage 3 («дорога»), then per stag
   a passport: free rides for a week, and the Орднунг form asks one question fewer.
 - **Н8 Покупки за рубежом** (st. 4, К5): a part bought in a power's land carries that yard's habit
   (an Орднунг shield is front-heavy, a Коммуна turret turns wider) — shopping abroad matters.
+- **Н15 Постановка на учёт — утильсбор** (st. 6, with К6/Н8/Б1/Д11; the author 14.09: «купил корабль
+  — тебя останавливают, надо на учёт поставить»). A hull bought or ordered in another power's land
+  flies on **транзитные номера** — a paper plate stencilled on the flank, valid 3 сводки. On the first
+  arrival under your own flag the picket stops you: «постановка на учёт» — **утильсбор** («сбор за
+  будущую утилизацию», by hull mass, the dearest for a dreadnought that will never be scrapped),
+  form 2-ТС in three copies, a queue number at the ПАЛАТА, one сводка of waiting; until then no
+  home yard buys or re-plans it, the foreign гарантия is void, and every picket stops you again
+  («транзит просрочен» — a fine, and the plate is drawn crooked). Registered: your flag's number
+  replaces the paper plate — the slogan of a ГЛАВТРАССА yard is never touched. Kindness: the
+  inspector waves you through once, «до понедельника», and writes nothing down.
 - **Н9 «Успеваете скорым»** (st. 3): ДЕЛО reads the timetable — a job with a deadline says which
   train makes it and when it leaves.
 - **Н10 Пломба** (st. 3, М5 Орднунг): a declared hold is sealed at boarding — nothing sells from it
@@ -613,7 +623,7 @@ palette module, a `G.mode` table, removing `typeof` guards, a schema-driven `app
 **Needs a decision from the author:** nothing — every fork was decided on his behalf (below).
 **Systems:** the DPR-2.5 stalls are stage 0.4; the freeze item (M234/M238/M417/M418) stays closed
 until a stall that is not a bake shows in `crash.log` (`stallWho`, 0.448.0). **Housekeeping:**
-PLAN.md stays under 64 KB (60 → 64 on 14.09, the one working plan) (`build.ps1` warns; a closed item leaves one line, its body goes to the
+PLAN.md stays under 72 KB (60 → 72 on 14.09: the one working plan; ~1.5k tokens a session) (`build.ps1` warns; a closed item leaves one line, its body goes to the
 archive in the same commit) · push only after a green run, run and push in separate commands · a
 dirty page still surfaces on its neighbour (a per-suite check after `fn()` would name it — not
 built) · tiers, switches and cost: `CLAUDE.md` «How to verify», `docs/VERIFY.md`.

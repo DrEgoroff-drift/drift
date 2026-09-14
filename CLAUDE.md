@@ -43,7 +43,7 @@ Documents work the same way — in parts, not whole:
 
 | What you need | Where to go |
 |---|---|
-| what to do next | `PLAN.md` (≤64 KB, guarded by `build.ps1`) — rules, loose ends, open queues; safe to read whole |
+| what to do next | `PLAN.md` (≤72 KB, guarded by `build.ps1`) — rules, loose ends, open queues; safe to read whole |
 | why something was done this way | `docs/PLAN-archive.md` (~600 KB) — **grep by milestone only** |
 | what changed in a version | `PATCHNOTES.md` — newest first, the first 40 lines usually suffice |
 | where a symbol is declared | `docs/INDEX.md` — grep only |
@@ -59,7 +59,7 @@ Never read whole: `docs/PLAN-archive.md`, `docs/INDEX.md`, `drift.html`, `tests.
 ## Size guard
 
 `build.ps1` warns when a module in `src/` or a suite in `tests/` passes **40 KB**, and when
-`PLAN.md` passes **64 KB** — a reminder, not an error: past that a file can no longer be read
+`PLAN.md` passes **72 KB** — a reminder, not an error: past that a file can no longer be read
 whole cheaply. The rule looks forward. Modules already over the line for good reason are listed
 in `build.ps1` (`$BULK_OLD`) and stay silent until they **grow**; a new one crossing it is
 flagged at once. When splitting: cut along an existing seam, keep the concatenation order, never
@@ -294,4 +294,4 @@ The live plan is [`PLAN.md`](PLAN.md): cross-cutting rules, the loose ends and t
 [`docs/PLAN-archive.md`](docs/PLAN-archive.md) as documentation of decisions — grep it for a
 specific milestone, don't read it through. New work is written into `PLAN.md`, one milestone per
 commit; when a milestone closes, its body moves to the archive **in the same commit** and one
-line stays — the live plan must stay under 64 KB, or every session pays for the history.
+line stays — the live plan must stay under 72 KB, or every session pays for the history.
