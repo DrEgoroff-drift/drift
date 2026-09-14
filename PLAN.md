@@ -75,7 +75,12 @@ document differ, **`docs/DESIGN-review-2026-09-14.md` wins** — the items below
 after that critique. The author's
 rules from the phone playtest bind every item: a screen never loses its scroll; every screen
 answers «чтобы что?» before it is redesigned; optimise without losing quality; the ship stays under
-the finger.
+the finger. **Verified against the code of 0.449.0 on 14.09** (four scans, the doubtful ones read by
+hand): every item below is absent or partial in `src/`; found already done and struck — the `.gz` cache
+headers (`site/.htaccess`: `FileETag MTime Size` + `Cache-Control` on all three `.gz` blocks) and the
+PATCHNOTES trim (oldest entry 0.400.0, `docs/PATCHNOTES-archive.md` exists); found partly built and
+rewritten — Д4 (the ИИ-ядро exists), Д14 (the blockade exists); a name collision fixed — `G.plan` is the
+industrial plan (`11r-plan`), the blueprint is `G.draft`.
 
 ### Stage 0 — THE FRAME FIRST (author 14.09: «разрыв кадров, дёрганье — это первым»)
 
@@ -94,14 +99,17 @@ Rule 3: same look, cheaper work.
   `drawSystem` 6–10. Each cheaper at the same look; any repeated full-screen fill or gradient →
   `screenLayer`. `prof()` per function before/after.
 - [ ] **0.3 Layout in the frame.** `getBoundingClientRect` 10–15 ms/s, `querySelectorAll` 4–5 ms/s
-  inside `frame()`; 2 096 `UpdateLayoutTree` (937 ms); the finger doubles style/layout (27 → 52
-  ms/s). Cache rects on `resize()` and tab change; zero DOM reads per frame (a detector counts them).
+  — the reads sit in the pointer handlers (`15-input` ~226, 388, 409, 446), which fire at 120 Hz under a
+  finger, so they are per frame in effect; 2 096 `UpdateLayoutTree` (937 ms); the finger doubles
+  style/layout (27 → 52 ms/s). Cache rects on `resize()` and tab change; zero DOM reads per frame or
+  per pointer event (a detector counts them).
 - [ ] **0.4 Resolution that comes back.** `resAuto` fell to `RES_AUTO=1` (411×742 — 1/7 of the
-  pixels) and never climbed: the way up needs 20 s under 13 ms. Climb in halves on a 5 s window,
-  descend on a real EMA with the 24 ms threshold checked against the ~26 ms EMA; the same lever
+  pixels) and never climbed: the way up needs 20 s under 13 ms. The climb exists (`resEma<13` for 20 s, and at most twice — `resUps<2`, `28-loop` ~201) and never
+  fires on the phone: a 5 s window, no cap, and the descent's 24 ms threshold checked against the ~26 ms EMA; the same lever
   answers the player's DPR-2.5 stalls (`stallWho`, 0.448.0). Accept: `RES_AUTO ≥ 2` held for 10 min.
 - [ ] **0.5 Sound.** The convolution reverb («Reverb convolution background») holds ~250 ms of every
-  second — a feedback-delay reverb of the same room, or off on `W<=760`. `09a-roomtone`, `09-audio`.
+  second — it is `createConvolver` with a synthesized 5.5 s impulse in `10-music` (~154): a shorter
+  impulse or a feedback-delay reverb of the same room, and off on `W<=760`.
 - [ ] **0.6 GC.** Major GCs of 14–28 ms inside the longest gaps — hoist per-frame allocations
   (arrays, closures, strings in `hud`/`drawSystem`); the trace's allocation sampler names them.
 - [ ] **0.7 Heat.** 75 min → thermal MODERATE, 37 fps at ×1. The sum above is the fix; the check is
@@ -116,7 +124,7 @@ Rule 3: same look, cheaper work.
   the table on every line whatever page is open — 448 → 0 measured. Keep `scrollTop` through any
   rebuild; re-render only the page a change touches. Net: scroll each page, fire `logAdd`, demand
   the same `scrollTop`.
-- [ ] **P2** ОПИСЬ: an opened card is `touch-action:none` — a 150 px dead zone; let vertical pans
+- [ ] **P2** ОПИСЬ: an opened card is `touch-action:none` (`style.css` `.opis .op-card.on`, ~1434) — a 150 px dead zone; let vertical pans
   through, keep the long-press lift, guard the lift against a re-render (§1.2).
 - [ ] **P3** ОПИСЬ tab strip: stretch it; its fade mask never clears — it skips `tabsSync` (§1.3).
 - [ ] **P4** Compass chips follow `helmStickFoot` (in `drawSystem`) up to mid-screen — keep them on
@@ -296,7 +304,7 @@ Rule 3: same look, cheaper work.
   не предусмотрен формуляром» (Орднунг). **The hold is what is left** (author's decision 14.09):
   free interior cells paint as ТРЮМ by tap. Numbers strip: **ЯЧЕЙКИ 34/40 · ТРЮМ 90 · БАК 140 ·
   ЭНЕРГИЯ «в бою 12 с» · РАЗГОН ×0.94**, coloured by delta. **ТИПОВОЙ = «КАК У ВСЕХ»**; three
-  **ПРОЕКТЫ** per hull. Save `G.plan[shipId]` = `[[thing, cx, cy, turn]…]`, the packer as the
+  **ПРОЕКТЫ** per hull. Save **`G.draft[shipId]`** (`G.plan` is the industrial plan, `11r-plan`) = `[[thing, cx, cy, turn]…]`, the packer as the
   `applySave` default. ОСНАСТКА's hull section becomes КБ; a foreign yard bills by cells moved
   (Компания: «перемещение ячейки — 1 кр, итого 14 кр, спасибо за выбор»).
 - [ ] **К3 Numbers from the plan.** cargo = hold cells × hold-module density; fuel/jump = tank cells ×
@@ -424,10 +432,13 @@ Rule 3: same look, cheaper work.
   ~23 сводок; the card says so); a lapse only at a сводка boundary, announced a shift before in
   ПОЧТА; in a fight **ЭКСТРЕННОЕ ПРОДЛЕНИЕ · ×3** for one сводка; at renewal the tariff «обновлён» —
   same price, one feature fewer, sold as an add-on; a lapsed base cold store stops giving, never
-  takes. **Д4 The AI core as a Хай-Фронт product** — the fourth manager seat on tariffs: БАЗОВЫЙ
-  (free, an advert in every third report), ПРЕМИУМ (route prices, a real forecast), СЕМЕЙНЫЙ
-  (opinions on how you live); unpaid it downgrades itself and apologises; the four-seat rule holds.
-  Kindness: on the free tariff it skips the advert once when your base is burning.
+  takes. **Д4 A second core — rented** (the ИИ-ядро already exists: `12f-mgr-ai` — built for
+  `AI_COST`, takes a human's seat, no cut, and a hidden drift that ends in decisions you never gave). Хай-Фронт
+  offers the other way: **a rented core on a tariff** — БАЗОВЫЙ (free, an advert in every third report),
+  ПРЕМИУМ (route prices, a real forecast), СЕМЕЙНЫЙ (opinions on how you live); it does not drift, it
+  downgrades itself when unpaid and apologises; the four-seat rule holds for both. The choice is the joke:
+  your own machine that slowly stops asking, or theirs that never stops selling. Kindness: on the free
+  tariff it skips the advert once when your base is burning.
 
 ### Second pass over the whole plan (14.09) — seams, the standing checklist, new mechanics
 
@@ -457,7 +468,7 @@ Rule 3: same look, cheaper work.
 
 **Standing checklist for closing any item of stages 2–7:** new `G` fields in `snapshot()` or
 `SAVE_EPHEMERAL` with a reason (the savenet goes red otherwise) — the batch introduces `G.stamps`,
-`G.plan`, `G.thrown`, the ride `{line,from,to,t}`, tokens/tickets, hull orders, scars, warranties and
+`G.draft`, `G.thrown`, the ride `{line,from,to,t}`, tokens/tickets, hull orders, scars, warranties and
 subscriptions, parcels · goldens re-shot for the scenes touched (`-Accept`, `-Mobile`, 1440) · a new
 visual system gets its almanac issue (neon, the blueprint, the ring) · the oracle lines green · the
 stage-0 gate · one running gag and one kindness named in the patchnote (the humour law) · old save
@@ -542,11 +553,9 @@ stage 2 («чья земля»), after stage 3 («дорога»), then per stag
 ### Release tails — any gap, all before a push
 
 Determinism: `wanderer · A` reads real chance or time on the corridor's buy path
-(`wanderBuy`/`wanStep`, 24c) — find it, move the scene; the clock out of `stateHash` (decided
-11.09: a separate field, `T.state()` returns both); `planetStripTick` by `wallMs()` writes `stripLvl`
-into hashed state. Housekeeping: the `.gz` cache headers (`Cache-Control: max-age=60,
-must-revalidate` + `FileETag MTime Size`, `curl -I` after deploy); PATCHNOTES trim (< 0.400.0 to
-`docs/PATCHNOTES-archive.md`); the patch-bump rule (tests/tools/docs → patch; `src/` → minor after
+(`wanderBuy`/`wanStep`, 24c) — find it, move the scene; the clock out of `stateHash` (still mixed in: `08a-statehash` ~79 `mixN(now())`; decided
+11.09: a separate field, `T.state()` returns both — today it returns `{hash,snap,purse}` and `T.clock()` apart); `planetStripTick` by `wallMs()` writes `stripLvl`
+into hashed state. Housekeeping: ~~the `.gz` cache headers~~ and ~~the PATCHNOTES trim~~ — both found done 14.09; the patch-bump rule (tests/tools/docs → patch; `src/` → minor after
 `-Mutants` green). Tests M443–M446 open items (below). The refactor queue (below). M451 the sky
 from the galaxy model. The 60 fps check re-run at the release. «свет: звезда — самое светлое» red
 once in the pane (the cumulus, `CLOUDS_OFF`) — one look, then strike. A per-suite dirty-page check
@@ -564,9 +573,10 @@ after `fn()` — not built.
   «заодно попарится» (honest man, likes a bath). **Чайный гриб** — a director event (base §10): the
   greenhouse culture overgrows, yield ×2 for three shifts, then it eats the base's organics; an
   аврал cuts it back; the cut sells to Рассвет as «чайный гриб».
-- [ ] **Д14 The blockade and «Буханка».** A blockaded power's system says on its wave the shelves
-  are full and the others suffer; its market is empty and pays ×2 for food, fuel, parts; running it
-  is legal for a neutral, the blockader's pickets hail you — answered by speed. **«Буханка»** — the
+- [ ] **Д14 The blockade's voice, and «Буханка».** The blockade exists (`occLvl≥2`, `12-economy` ~223:
+  drone circles stop, barges stand, the H1 battery lifts it); what it lacks is the voice — the occupier's
+  wave says the shelves are full and the others suffer, the counter is empty and pays **×2** for food, fuel
+  and parts; running it is legal for a neutral, the pickets hail you and you answer by speed. **«Буханка»** — the
   base's surface–ship shuttle as a named machine (Д1), a boxy old van with engines, always a bit
   broken, **the one machine the player may rename** (from the name table, no free text).
 - [ ] **Ж6 One giant per arm.** Each arm and the core get one colossal structure 20–50× a ship,

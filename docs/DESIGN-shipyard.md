@@ -218,7 +218,7 @@ flight feel under the finger does not drift (the phone playtest's P8); one energ
   packer; the fixpoint suite (every hull in `SHIPS`, a fleet sample, unique, fused: numbers equal
   today's ±1); ОПИСЬ shows the plan. No new save field yet.
 - **К2 the КБ editor.** Tray, place/move/turn, hold paint, the rules of place with their refusal
-  lines, the numbers strip; the save field `G.plan[shipId]` (list of `[thing, deck, cx, cy, turn]`)
+  lines, the numbers strip; the save field `G.draft[shipId]` (`G.plan` is taken by the industrial plan, `11r-plan`) (list of `[thing, deck, cx, cy, turn]`)
   in `snapshot()` with the packer as `applySave` default; ОСНАСТКА's hull section becomes КБ.
 - **К3 the numbers from the plan.** Cargo, fuel, energy, mass → thrust/turn; module tiers become
   densities; the bounds; the worlds oracle line.
