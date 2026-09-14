@@ -476,6 +476,13 @@ loads.
 
 **Release checkpoints (a push after the whole run):** after stage 0 («кадр»), after 0b, after
 stage 2 («чья земля»), after stage 3 («дорога»), then per stage.
+**Two laws over every stage (14.09, after an outside read of the plan):** (1) **causality is real** — a
+mechanic is accepted only if it changes a decision the player makes later (transit plates → the route
+you choose; the stamp → the passport → the cheaper road); a gag with no consequence is cut, however
+funny; (2) **the twenty-minute exam** at every checkpoint — the author plays twenty minutes and answers
+one question, «захотелось самому сделать ещё рейс?»; «нет» leaves the stage open whatever the tests say.
+The game today carries its world in text (the hundred stories, rumours, the cantina, the books); the
+material consequences are the part that does not exist yet — that is what stages 2–3 are for.
 
 **New mechanics — grown out of the seams (Н1–Н13; each names its stage):**
 - **Н1 Попутная посылка** (st. 3, with Д8): at a vestibule Космопочта asks you to carry a parcel to
