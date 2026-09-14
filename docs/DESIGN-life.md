@@ -1,5 +1,9 @@
 # A living space — neon, hotels, traffic (2026-09-14)
 
+> **Reviewed the same day — `docs/DESIGN-review-2026-09-14.md` wins where it differs:** one hotel
+> body with six dressings; the bazaar sells back what you threw away (`G.thrown`); the giants Ж6
+> are deferred; the neon rules (three strokes, no flicker) are in the review §4.
+
 The author, 14.09.2026: «как в фильмах космических — неоновые билборды, отели в космосе, как в
 Стражах Галактики и во всех остальных. Надо наполнить космос жизнью, исследуй, как в кино
 показывают». The research, the laws, the places and the queue Ж1–Ж6; nothing is built yet.

@@ -1,5 +1,9 @@
 # The metro and the mainline — a railway that wraps the galaxy (2026-09-14, third draft)
 
+> **Reviewed the same day — `docs/DESIGN-review-2026-09-14.md` wins where it differs:** the train
+> is the batch on the glide path; auto-docking after 5 s of failed alignment; the rim's wait capped
+> at 40 s; one vestibule body; the announcements and the look are in the review §3–4.
+
 The author, 14.09.2026, three times the same day. First: «хочу врата, туннели… метро своё
 галактическое, выйти на 3-й станции». Then: «станции можно не делать… абстрактно, карта куда вам…
 за секунды». Then, which this draft follows: **«это прям станция — стыкуешься, покупаешь колу,

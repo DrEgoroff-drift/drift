@@ -1,5 +1,9 @@
 # Whose land is this — the powers you can feel (2026-09-14)
 
+> **Reviewed the same day — `docs/DESIGN-review-2026-09-14.md` wins where it differs:** Б1 is the
+> first ship's gesture, the post is one body with six dressings in the background; the six musical
+> modes become a motif each; the trust rating and the law-of-the-land table as a system are cut.
+
 The author, 14.09.2026: «нравятся расы [Remember Tomorrow], у нас фракции, добавим характер —
 сейчас в мире нет ничего, чтобы было понятно, что ты у другой фракции, надо придумать». The design
 and the queue Б1–Б7; nothing is built yet. The powers themselves (who they are, what they want,

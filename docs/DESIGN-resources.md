@@ -1,5 +1,9 @@
 # Ten new resources — the farther, the dearer, as luck will have it (2026-09-14)
 
+> **Reviewed the same day — `docs/DESIGN-review-2026-09-14.md` wins where it differs:** гелий-3 →
+> «солнечный газ», палладий → «белая руда», антивещество → «ловушки» on the hold row; every eater
+> speaks at its counter (review §3); glyphs and hues in the review §4.4.
+
 The author, 14.09.2026: «ещё про ресурсы надо подумать, добавить с десяток. Чем дальше, тем
 ценнее, но как повезёт». The model, the ten, the luck, the prices, the eaters and the queue Р1–Р5;
 nothing is built. This is the reason to ride the mainline out (`DESIGN-metro.md`): the rim pays.

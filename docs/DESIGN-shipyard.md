@@ -1,5 +1,9 @@
 # The shipyard — «КБ», the ship as a plan (2026-09-14)
 
+> **Reviewed the same day — `docs/DESIGN-review-2026-09-14.md` wins where it differs:** the deck
+> tabs are cut (one blueprint view, depth = rim/interior/spine), ГЛАВТРАССА's limit is the slogan
+> you cannot remove, Хай-Фронт's firmware moves a part per сводка, «согласовано» and «КАК У ВСЕХ».
+
 The author, 14.09.2026, after a look at Remember Tomorrow: «мне нравится конструктор кораблей там +
 конструктор кораблей Starsector, надо всё исследовать и добавить нам». This is the research, what
 we already have, the laws, the design, one fork and the queue К1–К8. Nothing is built yet.

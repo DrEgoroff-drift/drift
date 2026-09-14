@@ -1,5 +1,9 @@
 # Берёзопанк — the satire and the mechanics of «Кибердеревня» (2026-09-14)
 
+> **Reviewed the same day — `docs/DESIGN-review-2026-09-14.md` wins where it differs:** the centre
+> is Д1, Д2, Д5, Д7, Д8, Д11; the farm, bath, kombucha, blockade and van (Д12–Д14) are deferred to
+> the base's own queue.
+
 The author, 14.09.2026: «Кибердеревня — изучи всё, нам нужен такой же стёб и механики». The
 research, what fits our tone law, ten devices turned into mechanics, and the queue Д1–Д10; nothing
 is built yet.

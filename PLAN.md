@@ -90,6 +90,94 @@ of *things*), not a target about light.
 **Five passes for a THING.** A thing is finished only with all five; three or fewer and it reads
 as a placeholder:
 
+## WORKING PLAN — one order for everything open (2026-09-14)
+
+Merges the phone playtest queue (P1–P15 below), the «what is left» of 0.443.0, the galaxy
+M447–M451, the test and refactor tails, and the six designs of 14.09 — reviewed in
+**`docs/DESIGN-review-2026-09-14.md`** (the critique, the humour ledger, the art direction; where
+it differs from a design document, the review wins). Policy stays the author's of 11.09: fix
+without tests, local commits, eyes on `dev.html` at 390×844, the whole run only before a push.
+The author, 14.09: «пока только в план пиши» — stages 2–6 start on his word; stages 0–1 are the
+bug and feel work the 13.09 playtest already authorised.
+
+**Stage 0 — cheap and decided** (one commit each, ~2 days): P1 scroll · P2–P3 ОПИСЬ · P4 compass
+chips · P5 «Смена» contrast · P6 small · the anchor and the stick (item 7 below) · `say()` from
+timers · СТОЛ padding and empty sheets.
+
+**Stage 1 — the frame under the finger:** P7 cadence and resolution · P8 the ship under the
+finger · **P9 zoom + 2a seamless atmosphere + the fixed entry point of Ж1 as one camera design**
+(arrival, orbit and landing all keep the body in view) · P10 ЦЕЛЬ and the hail. Gate: `g11` on the
+phone before and after.
+
+**Stage 2 — whose land, in five seconds:** **Ж1 the approach** (entry → lane → queue → station →
+gate; absorbs the haul-scene review — shuttles passing, the route bar) · **Б1 the first ship's
+gesture** (review §2.1) · **Б2 the stamp** (absorbs **P14 ТРУДОВАЯ КНИЖКА**: the document is
+rebuilt as a real book with ОТМЕТКИ О ПРОЕЗДЕ as its first real page) · Б3 station body and traffic
+by builder · **M447 the world galaxy** and M448 the stars (the ride and the scheme stand on them) ·
+the `-Accept` pass for the moved `rnd()` of the entry angle.
+
+**Stage 3 — far, and back with a hold:** **Р1–Р3** the ten resources (table, roll, readings, ЖИЛА,
+prices by distance) · **М1–М4** metro and mainline (net, station with glide path and the batch,
+vestibule paper, the ride on the star map) — **M449 named places rides along** (lines and nebulae
+named in one pass) and **M450 the overview becomes the scheme's zoomed-out sibling** · the two
+oracle lines (rail vs jumps ×1.3; the stripped hauler's best deal).
+
+**Stage 4 — the ship:** **К1–К4** (single-view blueprint, packer and fixpoint, КБ editor, numbers
+from the plan with the mass clamp tied to P8's feel, БАШНЯ) · Р4–Р5 properties and eaters.
+
+**Stage 5 — the voice and the joke:** Д1 names · Д2 изолента · Д11 the triangle · Д5 naming ·
+Д8 Космопочта · **Ж2 billboards + Д7 the contradicting newscast + P12 ЭФИР in one pass** · Ж3
+hotels · Ж4 the food barge · Б4 the peacetime fleet · Б5 the one law each (the voiced ones only) ·
+P11 ПРИЁМНИКИ · P13 АЛЬБОМ.
+
+**Stage 6 — the story and the rest:** P15 «Смена» · Б6 sound (a motif per power, not modes) · Б7
+map borders · К5–К8 · М5–М6 · Ж5 the bazaar that remembers · Д3–Д4 subscriptions and the core.
+
+**Release tails** (any gap; all before a push): determinism (`wanderer · A`, the clock out of
+`stateHash`, `planetStripTick`) · housekeeping (`.gz` headers, PATCHNOTES trim, the patch-bump
+rule) · test tails M443–M446 · the refactor queue · the DPR-stall watch · M451 the sky · the 60 fps
+check. **Deferred out of this plan:** the giants Ж6, base-side birchpunk Д12–Д14, six musical
+modes, the lab restart (a CPU budget first).
+
+**Dependencies in one line:** 1 before 2 (the entry point is camera work) · 2 before 3 (the ride
+draws on the galaxy; the gate stands on the approach) · Р1–Р3 before М4 is worth riding · К3's mass
+clamp after P8 · Ж2 after Б2 · everything after 0 (a screen that loses its scroll poisons every
+new page).
+
+### The six designs of 2026-09-14 — the index (reviewed in docs/DESIGN-review-2026-09-14.md)
+
+Each document holds the research, the laws, the design and its queue; this is the index.
+- **Borders Б1–Б7** `docs/DESIGN-borders.md` («нет ничего, чтобы было понятно, что ты у другой
+  фракции»): the post at the jump point per power · the entry stamp and КНИЖКА «ОТМЕТКИ О ПРОЕЗДЕ» ·
+  station and traffic by owner · the peacetime fleet in flight · one law of the land each · sound ·
+  border lines by pattern. Б1–Б3 first.
+- **Shipyard К1–К8** `docs/DESIGN-shipyard.md` (Remember Tomorrow + Starsector): the plan from
+  `hullOf` (ОБШИВКА + 1–3 decks, cells), packer and fixpoint · КБ editor, `G.plan` · numbers from the
+  plan · БАШНЯ on the spine · six yards' built-in/limit/habit · СТАПЕЛЬ · scars, доводка · ТИПОВОЙ.
+  **Decided by the author:** the hold and tanks ARE cells (cargo capped ×1.4 nominal).
+- **Living space Ж1–Ж6** `docs/DESIGN-life.md` (neon, hotels, «как в кино»): a fixed entry point
+  and the approach («подъезд») · billboards carrying prices/news · six hotels as doors to spa,
+  cinema, cantina · «Чебуречная» · the bazaar of hulks · one giant per arm.
+- **Metro and mainline М1–М6** `docs/DESIGN-metro.md` (third draft, the author's: «прям станция —
+  стыкуешься, колу покупаешь… круглые врата как посадочная полоса… карта звёздного неба… опутывать
+  галактику процедурно»): jumps for near, rails for far · метро (r ≤ 12, жетон) + электричка and
+  скорый on a procedural net of forking radials, rings and arm трассы to the rim and past it
+  (полустанки, «Край») · a station object: hail, glide-path alignment, vestibule with ТАБЛО / КУДА
+  ВАМ / КАССА / БУФЕТ (a drink comes with a rumour) · departure on the hyperdrive into the ring ·
+  the ride as `G.mode="rail"` on the galaxy map, 6–60 s, stops ~2 s with ВЫЙТИ, ПЕРЕСАДКА.
+- **Resources Р1–Р5** `docs/DESIGN-resources.md` («с десяток, чем дальше, тем ценнее, но как
+  повезёт»): ten goods in three bands (гелий-3, палладий, янтарь, осмий, звёздный чернозём,
+  магнитная пыль, жемчуг пустоты, тёмное стекло, антивещество в ловушке, нейтронная крошка) on a
+  new random salt (no old deposit moves) · lognormal richness, 0.5 % ЖИЛА · readings by instrument
+  resolution · ½ / 1 / 1.3 price by distance · one property each (heavy, fragile, perishable).
+- **Берёзопанк Д1–Д14** `docs/DESIGN-birchpunk.md` («Кибердеревня — такой же стёб и механики,
+  адаптируй и продумывай»): named machines · изолента · subscriptions (10 % + 4 %/сводка) · the AI
+  core on tariffs · «Рязань Каунти» names · the contradicting newscast · Космопочта · дачники · the
+  warmth rule · the triangle изолента/гарантия/техподдержка · the farm of domesticated fauna · баня
+  softens the ПАЛАТА · «чайный гриб» · blockades · «Буханка». Cheapest first: Д1, Д2, Д5.
+- Suggested order when the author says go: Б1–Б3 with Ж1 (one entry point) → Р1–Р3 → М1–М4 →
+  К1–К3 → the rest; Д1/Д2/Д5 in any gap.
+
 ## PLAYABLE ON A PHONE — the author's playtest of 2026-09-11 — items 0–6 and R0–R6 built (0.446.0–0.448.0); bodies in `docs/PLAN-archive.md` (2026-09-12)
 
 **Policy (author, 11.09):** fix without tests, local commits, look with eyes on `dev.html` at
@@ -193,62 +281,16 @@ Redesigns — each passes «чтобы что?» first:
   screen (reference: No Man's Sky's main storyline); a real book view with plates from the
   player's own flight; the book's text may be edited to fit.
 
-## Six designs of 2026-09-14 — the author: «пока только в план пиши» (nothing built)
-
-Each document holds the research, the laws, the design and its queue; this is the index.
-- **Borders Б1–Б7** `docs/DESIGN-borders.md` («нет ничего, чтобы было понятно, что ты у другой
-  фракции»): the post at the jump point per power · the entry stamp and КНИЖКА «ОТМЕТКИ О ПРОЕЗДЕ» ·
-  station and traffic by owner · the peacetime fleet in flight · one law of the land each · sound ·
-  border lines by pattern. Б1–Б3 first.
-- **Shipyard К1–К8** `docs/DESIGN-shipyard.md` (Remember Tomorrow + Starsector): the plan from
-  `hullOf` (ОБШИВКА + 1–3 decks, cells), packer and fixpoint · КБ editor, `G.plan` · numbers from the
-  plan · БАШНЯ on the spine · six yards' built-in/limit/habit · СТАПЕЛЬ · scars, доводка · ТИПОВОЙ.
-  **Decided by the author:** the hold and tanks ARE cells (cargo capped ×1.4 nominal).
-- **Living space Ж1–Ж6** `docs/DESIGN-life.md` (neon, hotels, «как в кино»): a fixed entry point
-  and the approach («подъезд») · billboards carrying prices/news · six hotels as doors to spa,
-  cinema, cantina · «Чебуречная» · the bazaar of hulks · one giant per arm.
-- **Metro and mainline М1–М6** `docs/DESIGN-metro.md` (third draft, the author's: «прям станция —
-  стыкуешься, колу покупаешь… круглые врата как посадочная полоса… карта звёздного неба… опутывать
-  галактику процедурно»): jumps for near, rails for far · метро (r ≤ 12, жетон) + электричка and
-  скорый on a procedural net of forking radials, rings and arm трассы to the rim and past it
-  (полустанки, «Край») · a station object: hail, glide-path alignment, vestibule with ТАБЛО / КУДА
-  ВАМ / КАССА / БУФЕТ (a drink comes with a rumour) · departure on the hyperdrive into the ring ·
-  the ride as `G.mode="rail"` on the galaxy map, 6–60 s, stops ~2 s with ВЫЙТИ, ПЕРЕСАДКА.
-- **Resources Р1–Р5** `docs/DESIGN-resources.md` («с десяток, чем дальше, тем ценнее, но как
-  повезёт»): ten goods in three bands (гелий-3, палладий, янтарь, осмий, звёздный чернозём,
-  магнитная пыль, жемчуг пустоты, тёмное стекло, антивещество в ловушке, нейтронная крошка) on a
-  new random salt (no old deposit moves) · lognormal richness, 0.5 % ЖИЛА · readings by instrument
-  resolution · ½ / 1 / 1.3 price by distance · one property each (heavy, fragile, perishable).
-- **Берёзопанк Д1–Д14** `docs/DESIGN-birchpunk.md` («Кибердеревня — такой же стёб и механики,
-  адаптируй и продумывай»): named machines · изолента · subscriptions (10 % + 4 %/сводка) · the AI
-  core on tariffs · «Рязань Каунти» names · the contradicting newscast · Космопочта · дачники · the
-  warmth rule · the triangle изолента/гарантия/техподдержка · the farm of domesticated fauna · баня
-  softens the ПАЛАТА · «чайный гриб» · blockades · «Буханка». Cheapest first: Д1, Д2, Д5.
-- Suggested order when the author says go: Б1–Б3 with Ж1 (one entry point) → Р1–Р3 → М1–М4 →
-  К1–К3 → the rest; Д1/Д2/Д5 in any gap.
-
-## What is left, in order (reviewed 2026-09-11, 0.443.0)
+## What is left, in order (reviewed 2026-09-11, 0.443.0) — folded into the WORKING PLAN above; kept for the bodies
 
 Checked against the code, `PATCHNOTES.md`, the lab and `crash.log` on 11.09. Found already done
 and struck below: the seven «?» save fields (0.442.0), the hostile-opts suite, the dead names
 (0.439.0), the lab's first scheduled run, the road companion (built). Every author question was
 decided on the author's behalf (author: «по вопросам реши за меня как лучше») — see the end.
 
-1. **The DPR 2.5 stalls** — «Loose ends → Systems». Small, real, on a player's machine, and it
-   comes before a new bake.
-2. **The world galaxy M447–M451** — the author's latest ask; `docs/DESIGN-galaxy.md`.
-3. **Determinism tails** — `wanderer · A` (real chance or real time on the corridor's buy path),
-   the clock out of `stateHash`, `planetStripTick` by `wallMs()`.
-4. **Cheap decided housekeeping** — the `.gz` cache headers, the PATCHNOTES trim, the patch-bump
-   rule; one commit each, in any gap.
-5. **Test tails** — M443–M446 «Open»/«Left» and the refactor queue; each a commit. The staged
-   oracles (goldens, worlds, trips) wait for the lab's week to 2026-09-18.
-   **Lab stopped 11.09:** the host warned of CPU over the plan (57.27% of a day against 50%);
-   the `lab.yml` schedule is removed, the running session killed. Before any restart: a CPU
-   budget per session that fits the plan (short manual runs, `nice`, fewer Chrome minutes);
-   the 2026-09-18 week moves until then.
-6. **Before the release** — the 60 fps check in all modes.
-7. **The anchor and the stick (phone video of 12.09, 0.449.0 widened the edge; the mechanism
+Items 1–6 of this list (stalls, galaxy, determinism, housekeeping, test tails, 60 fps) live in the WORKING PLAN's stages and release tails; only the anchor body stays here.
+
+- **The anchor and the stick (phone video of 12.09, 0.449.0 widened the edge; the mechanism
    stays)** — past the edge the anchor turns the velocity toward the star every frame while the
    stick's assist thrusts outward to reach the wanted velocity; the turn IS a force against
    thrust, so an equilibrium exists (the comment in `17-mode-system` denies it): the ship crawls
