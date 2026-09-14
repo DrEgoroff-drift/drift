@@ -491,8 +491,20 @@ stage 2 («чья земля»), after stage 3 («дорога»), then per stag
   replacement at their yard; kept, the old one becomes a scar.
 - **Н12 Компенсационная маршрутка** (st. 6, М5): on a shut stretch («временные трудности») Рассвет's
   bus runs along it stop by stop — slower, and the driver knows why the line is shut.
-- **Н13 Справка на животное** (st. 7, Д12): a farm beast rides the train only with a form from the
-  ПАЛАТА; the form is free and takes one сводка; the beast is homesick either way.
+- **Н13 Волокита — the paper chain** (st. 7, Д12; the author 14.09: «надо прям заебать игрока
+  бюрократией»). Any animal — the farm beast, **the parrot the player already has** — rides the train
+  or crosses a border only with papers. The ПАЛАТА needs **N documents, N rolled 2–10** per animal
+  and never told: справка о прививках · акт о некусаемости · выписка из реестра фауны · согласие
+  соседей по ангару · форма 7-ЗВ «о намерении перевозить» · заключение о совместимости с
+  грузом · характеристика от участкового · копия копии. Each is signed by **a different official at a
+  different station** (by seed, across powers — the Орднунг one wants the form in three copies, the
+  Коммуна one is at lunch). You arrive with the pile — «вам документа не хватает» — one more, until
+  N. **The hope of a shortcut**: the clerk hints «можно ускорить» → a side job (jam for the inspector,
+  a parcel to his cousin) that ends in a stamp «ПРИНЯТО К СВЕДЕНИЮ» and changes nothing. The loop is
+  the joke and it is honest (§22): the desk shows the pile and «ещё документов: неизвестно».
+  Kindness: the last official signs without reading — «ну сколько ж можно, летай уже» — and that
+  signature is the only one with a name. **Animals to invent later** (the author): a table of
+  species per world with a quirk each, in Д12's row.
 
 ### Release tails — any gap, all before a push
 
