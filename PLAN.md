@@ -491,6 +491,29 @@ stage 2 («чья земля»), after stage 3 («дорога»), then per stag
   replacement at their yard; kept, the old one becomes a scar.
 - **Н12 Компенсационная маршрутка** (st. 6, М5): on a shut stretch («временные трудности») Рассвет's
   bus runs along it stop by stop — slower, and the driver knows why the line is shut.
+- **Н14 Общества и льготы — membership** (st. 5; the author 14.09 on the маршрутка's driver who
+  knows why the line is shut: «это КГБ прям, можно примкнуть к гильдии — какие могут быть и какие
+  льготы»). A society is joined by a deed, not a fee; a **членский билет** goes to ВЕЩИ; dues are
+  always a shown line (the manager-cut rule); leaving is free, rejoining costs; each has one duty
+  and one joke. **Профсоюз водителей** (ГЛАВТРАССА; 100 jumps): dues 2 % of earnings; льготы — a
+  путёвка to the sanatorium once a season, the проездной at half, «тринадцатая» from the pool at
+  year's end; duty — a субботник each сводка or a line of shame in КНИЖКА; the union paper on ПОЛКА.
+  **«Знающие»** — the маршрутка drivers' society (Рассвет; ride ten times and answer «до куда?» with
+  «а куда все»): they know everything and say it only over tea — льготы: the reason behind every shut
+  stretch, ЖИЛА rumours a сводка early, the bus stops for you anywhere; duty — carry one parcel a
+  week without asking what is inside (it is always jam). **ДОСО, добровольное общество стрелков**
+  (a score on the стрельбище): free ammo on the range, guns cheaper at ГЛАВТРАССА yards, a named
+  target barge; duty — shoot the range monthly. **Товарищество кулибиных** (ten taped repairs): tape
+  holds 60 %, the master's seam free, «сделаем из ваших» everywhere; duty — fix one stranger's ship
+  per сводка. **Общество спасателей на трассе** (three tows given): your own БУКСИР free for ever,
+  the rescuer's word (war §6.4); duty — answer a distress call when near. **Клуб дачников** (a
+  greenhouse): a plot with a hut on a greenhouse world, jam as currency at the canteen; duty —
+  bring seedlings. **Клуб филателистов ОТМЕТОК** (four stamps): trade rare stamps, the pirate scratch
+  as the prize; no duty — meetings at the hotel. **Общество читателей** (ten books on ПОЛКА): a
+  Коммуна station lends a book per ride. **Партнёрская программа™** (Компания; free to join, the
+  only one that advertises): «льготы» are coupons that expire and points that convert into points;
+  the cashier whispers «не вступайте». Several at once are allowed — the dues add up, the duties
+  collide, and the desk shows the arithmetic.
 - **Н13 Волокита — the paper chain** (st. 7, Д12; the author 14.09: «надо прям заебать игрока
   бюрократией»). Any animal — the farm beast, **the parrot the player already has** — rides the train
   or crosses a border only with papers. The ПАЛАТА needs **N documents, N rolled 2–10** per animal
@@ -567,35 +590,21 @@ Design: `docs/DESIGN-wanderer.md`. The queue, its decisions and the M351 coopera
 
 ## Tests — M441–M446 built (0.428.0–0.437.0); bodies in `docs/PLAN-archive.md` («Moved 2026-09-14»)
 
-Design and the rule of place: `docs/DESIGN-tests.md` (a law → a detector, a path → a scenario, a
-formula → a Node suite; the 809 old suites are frozen). **Open, each a commit in a gap:** `TEST_T0`
-is 12:00 *local*; a drawn run's hash differs from an undrawn one (only the `rnd` position is
-compared — a detector owed); the tools' self-test sits before the net; not caught yet — the .55
-auto-brake, the money-printing counter, idle drones; partial — the helm switching itself,
-sharpness at DPR 1, contrast under a vignette, A/W judged in the system view only; goldens are the
-laptop's GPU (`<W>x<H>@lab.json` when the lab runs again); M444 left — a cooperative walk, drags
-and the wheel not recorded, the map per window by the build; M445 — a `DPR=.5` mutant once
-`resAuto` never lowers under a pinned clock; M446 left — previous-version diff, `look()` telemetry
-from players into `log.php`. The staged oracles (goldens, worlds, trips) wait for the lab's week.
-
-### The lab — nights 1–2 read and fixed (0.427.2, 0.440.0); night of 12/13.09 report only: `docs/night-2026-09-13/README.md`. **Stopped 11.09** (CPU 57 % of a day against the plan's 50 %): before any restart a CPU budget per session.
+`docs/DESIGN-tests.md` holds the rule of place; the 809 old suites are frozen. **Open, each a commit in a gap:**
+`TEST_T0` is local noon · drawn-vs-undrawn hash (a detector owed) · tools' self-test before the net · not
+caught yet: the .55 auto-brake, the money-printing counter, idle drones · partial: helm switching, sharpness at
+DPR 1, contrast under a vignette · goldens per platform when the lab runs (`@lab.json`) · M444: cooperative
+walk, drags/wheel, map per window · M445: a `DPR=.5` mutant · M446: previous-version diff, `look()` telemetry.
+The lab is **stopped since 11.09** (CPU 57 % of a day vs 50 %): a CPU budget per session before any restart.
 
 ## Refactor audit (0.438.0) — done items in `docs/PLAN-archive.md` («Moved 2026-09-14»)
 
-Verdict of the four hostile reviews: M441–M446 stand; the defects were in the tooling. **Open
-queue, each a commit:** the silence table — `wanderer · A` (see tails) and `detStuck`'s key law
-(fires only on a frame diff of exactly 0; soften with the table, not alone) · a shard hangs now and
-then (10.09 a GPU process 33 min; 11.09 shard 1/6 killed at 900 s, green on rerun) —
-`--enable-logging=stderr` on laptop runs too, so the hung shard names its suite · the source net over
-suites is line-based (`ok(\n true`, `ok(1,…)`, `"function"===typeof f` pass; harness self-suites
-vanish under `?files=`; the clock law does not cover `tests/` — 41 raw calls in 13 files) · long
-functions on touch only (27 over 200 lines; split along layers, verify by golden hash) · tools zoo
-(`shot.ps1`, `shot.py`, `pageshot.ps1`, `stand.*`, `mkstand*`, `mkview`, `mkshots`, `mksiteshots`:
-one way to take a frame) · the button family merge (~12 s: «руки», «обещание», «инструменты», the
-controls law → one table of buttons × expected answer) · `-Times` for the Node tier (25 s, not ~5).
-
-**Rejected:** a palette module (flattens the range); a `G.mode` table (stable); removing `typeof`
-guards (the ghost law covers it); a schema-driven `applySave`; not committing `drift.html`.
+M441–M446 stand; the defects were in the tooling. **Open queue, each a commit:** `detStuck`'s key law (fires
+only on a diff of exactly 0; soften with the silence table) · a shard hangs now and then (900 s ceiling kills
+it; `--enable-logging=stderr` on laptop runs so it names its suite) · the source net is line-based and the clock
+law skips `tests/` (41 raw calls) · long functions on touch only (27 over 200 lines) · tools zoo → one way to
+take a frame · the button family merge (~12 s → one table) · `-Times` for the Node tier. **Rejected:** a
+palette module, a `G.mode` table, removing `typeof` guards, a schema-driven `applySave`, uncommitted `drift.html`.
 
 ## The frame is the judge for anything the player touches (M437) — the four lessons live in `docs/DESIGN-tests.md` («The frame is the judge», moved 2026-09-14)
 
