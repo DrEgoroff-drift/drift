@@ -609,3 +609,26 @@ demands elsewhere) and only then trusts a before/after. This applies to every da
 4. The chunk paint callback runs form → glaze → hue; `GLAZE_PASS` gates the drawers the way
    `GROUND_BAKING` already gates the chunk.
 5. Then `23a/23aa` (dig, cave) as the plan's second session, and the parity sheet on `/dev`.
+
+## Appendix — How a frame is judged (M241) — the meter, and the rules under it
+
+"I don't like the look of it" is not something anyone can act on. Since M241 the frame is
+measured, the way speed is: `look()` in the console reads the canvas that is actually on screen
+and prints four numbers; `lookAll()` walks every scene and prints the table. The scene list lives
+in `28y-look` and is shared with the fuzzer — one list, or the two drift apart.
+
+**Five numbers for a FRAME** (`LOOK_TARGET`, updated M249):
+
+| number | target | what it catches |
+|---|---|---|
+| pair % (minority of warm vs cold) | ≥ 15 | a single-temperature frame; warm % stays as reference. For natural daylight this is arguable — see loose ends |
+| mass % (second-largest of three value steps) | ≥ 14 | no counter-mass: one value doing the whole frame. Measured 0.245.0: 6–43; fails map/belt/cave, passes the empty-but-shaped |
+| edge % (step transitions between samples) | ≤ 18 | crumble — a guard, not a goal; today 3–11 everywhere |
+| contrast (p95 − p5 of value) | ≥ 0.30 | everything sitting in one narrow band. Measured: 0.07–0.77 |
+| tones (hue buckets holding ≥5%) | ≥ 5 | one hue doing all the work. Measured: 2–8 of 36 |
+
+`empty %` stays in the table as a **reference column about content** (M248: the cave is empty
+of *things*), not a target about light.
+
+**Five passes for a THING.** A thing is finished only with all five; three or fewer and it reads
+as a placeholder:

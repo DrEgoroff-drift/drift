@@ -9832,3 +9832,38 @@ archive. Left: **the 60 fps check in all modes, re-run at the actual release** (
 2026-09-05: «60 — хрен с ним, потом»).
 
 **Standing rule:** the Ring (M154) is never explained. An answer to it would kill it.
+
+## Moved from PLAN.md on 2026-09-14 (second pass — closed sections to one line)
+
+## Open by design (not defects; no pass planned)
+
+Reviewed 2026-09-11. Closed and moved to the archive: the fleet (eleven interactions, the заявка
+struck), the road companion (built, `27k-road`; its answers are on the record in `DESIGN-road.md`),
+factions as shapes, the split debt, the star disc, G11, M112, M124, M135–M151. «Base like
+Fallout Shelter» — it is one; closed. What stays open on purpose:
+
+- **M125** — the rack as a surface inside the cockpit (it is an overlay), re-bake on resize, CH5
+  saturation; cosmetic, and the rack is not persisted by rule.
+- **M126** — the vanilla `SHIPS` ladder stays under the professions; passenger talk is one table.
+- **M127** — instruments as loot beyond a knocked socket wait for the spec's «lost» pass.
+- **M131** — the barge passenger as a channel, settlement glyph overrides, per-region colouring.
+- **M132** — edge generator, hand-built cores per region, surface masks — each region's own milestone.
+- **The yacht railing below 3×, flat-on view** — the richness a rotation pass would give.
+- **P9b settlement recursion (Eglash)** — by eye over many settlements; a pass, not a fork.
+- **The holding's deeds with no counter yet** (pirate bases boarded, monuments, nodes) join the
+  rung score when their hooks are written.
+
+## The arc and the holding — built; bodies moved to `docs/PLAN-archive.md` (2026-09-11)
+
+Act II → the expedition → Act IV → the yacht (M225–M231, 0.210.0–0.216.0; `91zzzf-offer` guards
+that the truth is never spoken). The holding M289–M298 (2026-09-02), design in
+`docs/DESIGN-holding.md`.
+
+# ~~The war — M360–M388~~ — closed 0.388.0 (2026-09-06); body in `docs/PLAN-archive.md`
+
+Twenty-nine passes, all closed: the fight (M360–M363), the world (M364–M375), everyone
+(M376–M381) and the Director's seven families of mechanics (M382–M388). Design stays in
+[`docs/DESIGN-war.md`](docs/DESIGN-war.md) — §18 is the struck queue with what each pass measured
+and what it deferred, and «Deferred» there is the only remaining war work; there is no separate
+queue any more. Measured from M360 on: `prof()` with eight armed ships on the phone layout; the
+pad row on the 44 px sweep (`91zzy-screens`); `91zzzw-chron` replay hashes browser vs Node.

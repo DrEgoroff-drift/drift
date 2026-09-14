@@ -51,44 +51,17 @@ half the tokens. The game itself, its UI and its code comments stay Russian.
   pass finds nothing. Optimisation is part of every pass, not an afterthought — check the
   raster/JS budget (`prof()`, the "painted once" rule) before calling a pass clean.
 
-- **New lore rides existing channels (author 2026-09-04).** There is no encyclopedia and there will
-  be none: «куска лора не существует, у каждого есть полезная выдача» (`12q`). A milestone that
-  brings lore names its channel in this table before it is built — desk (ТЕТРАДЬ, КНИЖКА, ПОЛКА,
-  ОТЧЁТ, ВЕЩИ, ДНЕВНИК, ПОЧТА/QSL/АЛЬБОМ), world (rumours `11t`, speech queues `11b`, retelling
-  `12p`, the wall, the ledger, the trace, the first hour, the flea's provenance, the hundred
-  stories). Mapping for the open queue: «Сорока» → a rumour image, the keeper's speech queue, one
-  book on ПОЛКА («Судовой журнал без порта»), one ОТЧЁТ piece; matches → the hold's dismantle line,
-  a new paragraph in the station charter book, matchbox labels beside the books; the cooperative →
-  the house clerk's speech, the stamp in КНИЖКА, one line from the first-hour relief, the beacon
-  saying the name; the beacon → its own channel (ЭФИР, voice in flight, a sheet on the cantina
-  wall); holdings → retelling already writes them, the map shows them in place; biome landmarks →
-  the organism scanner, a КНИЖКА entry via the institute, a pilot-book of biomes on ПОЛКА.
+- **New lore rides existing channels (author 2026-09-04).** No encyclopedia, ever: «куска лора не
+  существует, у каждого есть полезная выдача» (`12q`). A milestone that brings lore names its channel
+  first — desk (ТЕТРАДЬ, КНИЖКА, ПОЛКА, ОТЧЁТ, ВЕЩИ, ДНЕВНИК, ПОЧТА/QSL/АЛЬБОМ) or world (rumours `11t`,
+  speech `11b`, retelling `12p`, the wall, the ledger, the trace, the first hour, the hundred stories).
 - **No parallax on the map (M447, author 11.09.2026).** A map layer is either in the world -
   moves 1:1 with the sheet and scales with the zoom - or it is paper - does not move and carries
   no recognisable object. Map stars do not twinkle. Why and how: `docs/DESIGN-galaxy.md` §1-2.
 
-## How a frame is judged (M241) — the meter, and the rules under it
-
-"I don't like the look of it" is not something anyone can act on. Since M241 the frame is
-measured, the way speed is: `look()` in the console reads the canvas that is actually on screen
-and prints four numbers; `lookAll()` walks every scene and prints the table. The scene list lives
-in `28y-look` and is shared with the fuzzer — one list, or the two drift apart.
-
-**Five numbers for a FRAME** (`LOOK_TARGET`, updated M249):
-
-| number | target | what it catches |
-|---|---|---|
-| pair % (minority of warm vs cold) | ≥ 15 | a single-temperature frame; warm % stays as reference. For natural daylight this is arguable — see loose ends |
-| mass % (second-largest of three value steps) | ≥ 14 | no counter-mass: one value doing the whole frame. Measured 0.245.0: 6–43; fails map/belt/cave, passes the empty-but-shaped |
-| edge % (step transitions between samples) | ≤ 18 | crumble — a guard, not a goal; today 3–11 everywhere |
-| contrast (p95 − p5 of value) | ≥ 0.30 | everything sitting in one narrow band. Measured: 0.07–0.77 |
-| tones (hue buckets holding ≥5%) | ≥ 5 | one hue doing all the work. Measured: 2–8 of 36 |
-
-`empty %` stays in the table as a **reference column about content** (M248: the cave is empty
-of *things*), not a target about light.
-
-**Five passes for a THING.** A thing is finished only with all five; three or fewer and it reads
-as a placeholder:
+## How a frame is judged (M241) — `look()`/`lookAll()` print five numbers per frame against
+`LOOK_TARGET` (pair ≥ 15, mass ≥ 14, edge ≤ 18, contrast ≥ .30, tones ≥ 5); the table and the five passes
+for a thing: `docs/DESIGN-craft.md`, «How a frame is judged» (moved 2026-09-14).
 
 ## WORKING PLAN — everything open, in the order it is done (2026-09-14)
 
@@ -456,6 +429,71 @@ Rule 3: same look, cheaper work.
   (opinions on how you live); unpaid it downgrades itself and apologises; the four-seat rule holds.
   Kindness: on the free tariff it skips the advert once when your base is burning.
 
+### Second pass over the whole plan (14.09) — seams, the standing checklist, new mechanics
+
+**Seams found between systems (each is a line in the item it belongs to; listed here so they are not lost):**
+- **MODS → the plan (К3).** Today `capOf` is shared by modules and parts; when tiers become
+  densities, `hold`/`tank`/`weapon`(reactor)/`armor` are densities per cell, `engine`/`hyper`/`drill`
+  stay station upgrades on the hull's constants — one mapping table in К3, and the fixpoint suite
+  covers both halves. Densities are per hull size (nominal ÷ typical cells), never shown as a number.
+- **Drones and the far goods (Р1).** Drones never mine band-2/3 goods and sell band-1 goods at the
+  band price (½) — otherwise a drone on a rim жила prints money offline.
+- **The stamp and the metro (Б2, М4).** A stamp lands only on arrival by jump or on ВЫЙТИ, never on
+  a stop passed through; the gesture fires on both kinds of arrival; the ring's «Стыковка?» hail
+  fires only when heading into the ring, not when thrown out of it.
+- **The first hour (Б1, М3).** In the home system the gesture *is* ГЛАВТРАССА's and is the first
+  hour's first line; the замполит hands the newcomer one жетон («первый — за счёт трассы») — the
+  metro is met in the first hour, not found.
+- **Rescue and rails (`16c-rescue`).** A dry ship at a rail stop gets a third exit beside ДОМОЙ /
+  БУКСИР: **НА МЕТРО** (a ticket home for its fare).
+- **The scheme's scope (М1).** The paper shows your line, the rings it meets and their neighbours;
+  pinch/scroll for more — never the whole infinite net. «Край» is per player (no shared state).
+- **К9's place on the pad.** The two permanent buttons stay; the special system is the ДЕЙСТВИЕ pad's
+  **long-press** with its cooldown drawn as the pad's rim — no third button over the world.
+- **Replays (0.1, P9).** The fixed step and the seeded entry angle each move every recording and
+  same-hash suite once: one `-Accept` per change, named in the patchnote, `91zzzzzzzzb-replay` re-based.
+- **The stage-0 gate is re-run after every stage** — each stage adds raster (the galaxy bake, the
+  lane, neon, the ride); a stage that breaks the gate is not closed.
+
+**Standing checklist for closing any item of stages 2–7:** new `G` fields in `snapshot()` or
+`SAVE_EPHEMERAL` with a reason (the savenet goes red otherwise) — the batch introduces `G.stamps`,
+`G.plan`, `G.thrown`, the ride `{line,from,to,t}`, tokens/tickets, hull orders, scars, warranties and
+subscriptions, parcels · goldens re-shot for the scenes touched (`-Accept`, `-Mobile`, 1440) · a new
+visual system gets its almanac issue (neon, the blueprint, the ring) · the oracle lines green · the
+stage-0 gate · one running gag and one kindness named in the patchnote (the humour law) · old save
+loads.
+
+**Release checkpoints (a push after the whole run):** after stage 0 («кадр»), after 0b, after
+stage 2 («чья земля»), after stage 3 («дорога»), then per stage.
+
+**New mechanics — grown out of the seams (Н1–Н13; each names its stage):**
+- **Н1 Попутная посылка** (st. 3, with Д8): at a vestibule Космопочта asks you to carry a parcel to
+  a stop on your line; delivered by ВЫЙТИ there — a few кр and a rumour; the parcel is a hold row.
+- **Н2 Проездной** (st. 3): ГЛАВТРАССА's monthly pass — the one subscription in the game that is
+  fair (pays off at 12 rides, the card says so); stamped in КНИЖКА each ride.
+- **Н3 Попутчик** (st. 3): a passenger at the vestibule asks to ride with you — pays their fare,
+  talks during the ride (the passenger table, M156), leaves a rumour.
+- **Н4 Проводник** (st. 3): on the скорый the one human of the railway brings tea in a
+  подстаканник — crew fatigue eased, one rumour; the kindness of the whole railway.
+- **Н5 Госзаказ на билборде** (st. 5, Ж2 + Р3): «ПЛАН: 40 ед. осмия до сводки 118» — a fixed
+  price for whoever delivers, a КНИЖКА stamp «УДАРНИК», the сводка reports «план выполнен на 103 %».
+- **Н6 Ажиотаж** (st. 3, Р2 + М5): after a ЖИЛА rumour the line adds a train to that stop «по
+  многочисленным просьбам трудящихся», the полустанок's prices spike, the approach fills.
+- **Н7 Дипломатический паспорт** (st. 5, Б2): all six border stamps + Ялта's → the замполит issues
+  a passport: free rides for a week, and the Орднунг form asks one question fewer.
+- **Н8 Покупки за рубежом** (st. 4, К5): a part bought in a power's land carries that yard's habit
+  (an Орднунг shield is front-heavy, a Коммуна turret turns wider) — shopping abroad matters.
+- **Н9 «Успеваете скорым»** (st. 3): ДЕЛО reads the timetable — a job with a deadline says which
+  train makes it and when it leaves.
+- **Н10 Пломба** (st. 3, М5 Орднунг): a declared hold is sealed at boarding — nothing sells from it
+  until arrival, and pirates at rim stations do not touch a sealed hold (they fear the form).
+- **Н11 Отзыв партии** (st. 6, Д3): Хай-Фронт recalls a part model — «партия отозвана», a free
+  replacement at their yard; kept, the old one becomes a scar.
+- **Н12 Компенсационная маршрутка** (st. 6, М5): on a shut stretch («временные трудности») Рассвет's
+  bus runs along it stop by stop — slower, and the driver knows why the line is shut.
+- **Н13 Справка на животное** (st. 7, Д12): a farm beast rides the train only with a form from the
+  ПАЛАТА; the form is free and takes one сводка; the beast is homesick either way.
+
 ### Release tails — any gap, all before a push
 
 Determinism: `wanderer · A` reads real chance or time on the corridor's buy path
@@ -554,7 +592,7 @@ guards (the ghost law covers it); a schema-driven `applySave`; not committing `d
 **Needs a decision from the author:** nothing — every fork was decided on his behalf (below).
 **Systems:** the DPR-2.5 stalls are stage 0.4; the freeze item (M234/M238/M417/M418) stays closed
 until a stall that is not a bake shows in `crash.log` (`stallWho`, 0.448.0). **Housekeeping:**
-PLAN.md stays under 60 KB (`build.ps1` warns; a closed item leaves one line, its body goes to the
+PLAN.md stays under 64 KB (60 → 64 on 14.09, the one working plan) (`build.ps1` warns; a closed item leaves one line, its body goes to the
 archive in the same commit) · push only after a green run, run and push in separate commands · a
 dirty page still surfaces on its neighbour (a per-suite check after `fn()` would name it — not
 built) · tiers, switches and cost: `CLAUDE.md` «How to verify», `docs/VERIFY.md`.
@@ -563,42 +601,15 @@ built) · tiers, switches and cost: `CLAUDE.md` «How to verify», `docs/VERIFY.
 
 ## Done — struck items moved to `docs/PLAN-archive.md` (2026-09-04)
 
-## Open by design (not defects; no pass planned)
-
-Reviewed 2026-09-11. Closed and moved to the archive: the fleet (eleven interactions, the заявка
-struck), the road companion (built, `27k-road`; its answers are on the record in `DESIGN-road.md`),
-factions as shapes, the split debt, the star disc, G11, M112, M124, M135–M151. «Base like
-Fallout Shelter» — it is one; closed. What stays open on purpose:
-
-- **M125** — the rack as a surface inside the cockpit (it is an overlay), re-bake on resize, CH5
-  saturation; cosmetic, and the rack is not persisted by rule.
-- **M126** — the vanilla `SHIPS` ladder stays under the professions; passenger talk is one table.
-- **M127** — instruments as loot beyond a knocked socket wait for the spec's «lost» pass.
-- **M131** — the barge passenger as a channel, settlement glyph overrides, per-region colouring.
-- **M132** — edge generator, hand-built cores per region, surface masks — each region's own milestone.
-- **The yacht railing below 3×, flat-on view** — the richness a rotation pass would give.
-- **P9b settlement recursion (Eglash)** — by eye over many settlements; a pass, not a fork.
-- **The holding's deeds with no counter yet** (pirate bases boarded, monuments, nodes) join the
-  rung score when their hooks are written.
+## Open by design — M125–M127, M131–M132, the yacht railing, P9b settlement recursion, holding deeds without counters; body in `docs/PLAN-archive.md` (2026-09-14)
 
 ## «Зачем лететь» — moved to `docs/PLAN-archive.md` (2026-09-04); its answer is Act I
 
 ## First three — built; body moved to `docs/PLAN-archive.md` (2026-09-04)
 
-## The arc and the holding — built; bodies moved to `docs/PLAN-archive.md` (2026-09-11)
+## The arc and the holding — built (M225–M231, M289–M298); `docs/DESIGN-holding.md`; bodies in the archive
 
-Act II → the expedition → Act IV → the yacht (M225–M231, 0.210.0–0.216.0; `91zzzf-offer` guards
-that the truth is never spoken). The holding M289–M298 (2026-09-02), design in
-`docs/DESIGN-holding.md`.
-
-# ~~The war — M360–M388~~ — closed 0.388.0 (2026-09-06); body in `docs/PLAN-archive.md`
-
-Twenty-nine passes, all closed: the fight (M360–M363), the world (M364–M375), everyone
-(M376–M381) and the Director's seven families of mechanics (M382–M388). Design stays in
-[`docs/DESIGN-war.md`](docs/DESIGN-war.md) — §18 is the struck queue with what each pass measured
-and what it deferred, and «Deferred» there is the only remaining war work; there is no separate
-queue any more. Measured from M360 on: `prof()` with eight armed ships on the phone layout; the
-pad row on the 44 px sweep (`91zzy-screens`); `91zzzw-chron` replay hashes browser vs Node.
+# ~~The war — M360–M388~~ — closed 0.388.0; `docs/DESIGN-war.md` §18 holds the struck queue and «Deferred»; body in the archive
 
 ## Decisions taken on the author's behalf, so they are not re-litigated
 
