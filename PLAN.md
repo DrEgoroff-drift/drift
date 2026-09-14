@@ -98,16 +98,44 @@ M447–M451, the test and refactor tails, and the six designs of 14.09 — revie
 it differs from a design document, the review wins). Policy stays the author's of 11.09: fix
 without tests, local commits, eyes on `dev.html` at 390×844, the whole run only before a push.
 The author, 14.09: «пока только в план пиши» — stages 2–6 start on his word; stages 0–1 are the
-bug and feel work the 13.09 playtest already authorised.
+bug and feel work the 13.09 playtest already authorised — **and stage 0, the frame, comes before
+everything, by the author's word of 14.09.**
 
-**Stage 0 — cheap and decided** (one commit each, ~2 days): P1 scroll · P2–P3 ОПИСЬ · P4 compass
+**Stage 0 — THE FRAME FIRST** (the author, 14.09: «оптимизация — разрыв кадров, дёрганье — это
+первым»; the numbers are `docs/PLAYTEST-2026-09-13.md` §2.1 and §6; rule 3 binds: same look,
+cheaper work). Measure on the phone with `raw/phone-tools/trace.py` before, after each item, and
+at the end; nothing else starts until the ship stops juddering under the finger.
+- **0.1 Cadence.** Intervals scatter over 1–3 vsyncs on 120 Hz (313/503/496/235… in 4.17 ms bins,
+  long and short alternating) and the world is stepped by a variable `dt` — that *is* the judder.
+  Pace the world to a vsync multiple (a fixed step, the leftover carried; render interpolated or
+  snapped to the step), and turn the nose by the same step — 160 frames a minute jumped > 4.6°.
+- **0.2 Raster, the dearest functions.** GPU raster is the bottleneck (p90 5.4 ms, max 17 ms per
+  raster); own JS by self time: `drawWake` 31–56 ms/s (the 0.449 wake — bake its static part,
+  fewer strokes), `hud` 18–25, `drawTrail` 19–22, `drawHull` 9–11, `stroke` 21–32 — each drawn
+  cheaper at the same look; «painted once» wherever a full-screen fill or gradient repeats.
+- **0.3 Layout reads and DOM per frame.** `getBoundingClientRect` 10–15 ms/s and
+  `querySelectorAll` 4–5 ms/s inside the frame; 2 096 `UpdateLayoutTree` events (937 ms) and the
+  finger doubles style/layout (27 → 52 ms/s). Cache rects on `resize`/tab change, never in `frame()`.
+- **0.4 Resolution that comes back.** `resAuto` fell to `RES_AUTO=1` (411×742 on a DPR 2.625 screen,
+  1/7 of the pixels) and never climbed (the way back needs 20 s under 13 ms — never reached).
+  Step up in halves on a shorter window, step down on a real EMA; the player's DPR 2.5 stall case
+  (`stallWho`, «Loose ends → Systems») is the same lever.
+- **0.5 Sound.** The convolution reverb holds a quarter of a core all the time — a cheaper reverb
+  (feedback delay network or a shorter impulse) at the same room, or off on the phone layout.
+- **0.6 GC.** Major GCs of 14–28 ms inside the longest gaps — find the per-frame allocators
+  (arrays, closures, strings in `hud`) and hoist them.
+- **0.7 Heat.** After 75 min the phone at 37 fps even at ×1 — the sum of the above is the fix;
+  the check is a 30-min run with the thermal status logged.
+- **Gate to stage 1:** on the S23 a 120 Hz cadence at one interval ≥ 95 % of frames, no frame
+  > 24 ms in 60 s of steering, `RES_AUTO` ≥ 2 held, `g11` in all modes ≥ 55 fps on the laptop.
+
+**Stage 0b — cheap and decided** (one commit each, ~2 days): P1 scroll · P2–P3 ОПИСЬ · P4 compass
 chips · P5 «Смена» contrast · P6 small · the anchor and the stick (item 7 below) · `say()` from
 timers · СТОЛ padding and empty sheets.
 
-**Stage 1 — the frame under the finger:** P7 cadence and resolution · P8 the ship under the
-finger · **P9 zoom + 2a seamless atmosphere + the fixed entry point of Ж1 as one camera design**
-(arrival, orbit and landing all keep the body in view) · P10 ЦЕЛЬ and the hail. Gate: `g11` on the
-phone before and after.
+**Stage 1 — the ship under the finger:** P8 the ship under the finger · **P9 zoom + 2a seamless
+atmosphere + the fixed entry point of Ж1 as one camera design** (arrival, orbit and landing all
+keep the body in view) · P10 ЦЕЛЬ and the hail. Gate: `g11` on the phone before and after.
 
 **Stage 2 — whose land, in five seconds:** **Ж1 the approach** (entry → lane → queue → station →
 gate; absorbs the haul-scene review — shuttles passing, the route bar) · **Б1 the first ship's
@@ -135,8 +163,8 @@ map borders · К5–К8 · М5–М6 · Ж5 the bazaar that remembers · Д3–
 
 **Release tails** (any gap; all before a push): determinism (`wanderer · A`, the clock out of
 `stateHash`, `planetStripTick`) · housekeeping (`.gz` headers, PATCHNOTES trim, the patch-bump
-rule) · test tails M443–M446 · the refactor queue · the DPR-stall watch · M451 the sky · the 60 fps
-check. **Deferred out of this plan:** the giants Ж6, base-side birchpunk Д12–Д14, six musical
+rule) · test tails M443–M446 · the refactor queue · M451 the sky · the 60 fps check re-run at the
+release (stage 0 is the first run). **Deferred out of this plan:** the giants Ж6, base-side birchpunk Д12–Д14, six musical
 modes, the lab restart (a CPU budget first).
 
 **Dependencies in one line:** 1 before 2 (the entry point is camera work) · 2 before 3 (the ride
