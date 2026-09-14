@@ -47,6 +47,7 @@ Documents work the same way — in parts, not whole:
 | why something was done this way | `docs/PLAN-archive.md` (~600 KB) — **grep by milestone only** |
 | what changed in a version | `PATCHNOTES.md` — newest first, the first 40 lines usually suffice |
 | where a symbol is declared | `docs/INDEX.md` — grep only |
+| the designs behind the working plan's stages 2–6 | `docs/DESIGN-review-2026-09-14.md` first (it overrides the six), then `DESIGN-borders`, `-life`, `-metro`, `-resources`, `-shipyard`, `-birchpunk`; background reading in `docs/RESEARCH-2026-09-14.md` — never cited in `PLAN.md` |
 | how the tests are meant to be organised, and why | `docs/DESIGN-tests.md` — the four layers, the five oracles, the lab, the queue M441–M446 |
 | craft laws behind the visual queue | `docs/DESIGN-craft.md` — rules taken from painting traditions, each tied to a module |
 | narrative research + the combined craft plan | `docs/DESIGN-story-craft.md` — deed turns, glyph grammar, pacing clocks; its last section orders all craft work |

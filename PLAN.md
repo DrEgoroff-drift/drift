@@ -90,245 +90,389 @@ of *things*), not a target about light.
 **Five passes for a THING.** A thing is finished only with all five; three or fewer and it reads
 as a placeholder:
 
-## WORKING PLAN — one order for everything open (2026-09-14)
+## WORKING PLAN — everything open, in the order it is done (2026-09-14)
 
-Merges the phone playtest queue (P1–P15 below), the «what is left» of 0.443.0, the galaxy
-M447–M451, the test and refactor tails, and the six designs of 14.09 — reviewed in
-**`docs/DESIGN-review-2026-09-14.md`** (the critique, the humour ledger, the art direction; where
-it differs from a design document, the review wins). Policy stays the author's of 11.09: fix
-without tests, local commits, eyes on `dev.html` at 390×844, the whole run only before a push.
-The author, 14.09: «пока только в план пиши» — stages 2–6 start on his word; stages 0–1 are the
-bug and feel work the 13.09 playtest already authorised — **and stage 0, the frame, comes before
-everything, by the author's word of 14.09.**
+**How a session starts:** read this file whole; open the section named at the item you are on
+(`docs/DESIGN-*.md §n`); measure before touching (the item names its meter); build; look on
+`dev.html` at 390×844; commit locally; strike the item here and move its body to the archive in the
+same commit. Policy of 11.09 holds: fix without tests, local commits, the whole run (-Full,
+-Mobile, -Mutants) only before a push. Stages 0–1 are authorised by the 13.09 playtest; **stages
+2–6 start on the author's word** («пока только в план пиши», 14.09). Where an item and a design
+document differ, **`docs/DESIGN-review-2026-09-14.md` wins** — the items below are already written
+after that critique. The author's
+rules from the phone playtest bind every item: a screen never loses its scroll; every screen
+answers «чтобы что?» before it is redesigned; optimise without losing quality; the ship stays under
+the finger.
 
-**Stage 0 — THE FRAME FIRST** (the author, 14.09: «оптимизация — разрыв кадров, дёрганье — это
-первым»; the numbers are `docs/PLAYTEST-2026-09-13.md` §2.1 and §6; rule 3 binds: same look,
-cheaper work). Measure on the phone with `raw/phone-tools/trace.py` before, after each item, and
-at the end; nothing else starts until the ship stops juddering under the finger.
-- **0.1 Cadence.** Intervals scatter over 1–3 vsyncs on 120 Hz (313/503/496/235… in 4.17 ms bins,
-  long and short alternating) and the world is stepped by a variable `dt` — that *is* the judder.
-  Pace the world to a vsync multiple (a fixed step, the leftover carried; render interpolated or
-  snapped to the step), and turn the nose by the same step — 160 frames a minute jumped > 4.6°.
-- **0.2 Raster, the dearest functions.** GPU raster is the bottleneck (p90 5.4 ms, max 17 ms per
-  raster); own JS by self time: `drawWake` 31–56 ms/s (the 0.449 wake — bake its static part,
-  fewer strokes), `hud` 18–25, `drawTrail` 19–22, `drawHull` 9–11, `stroke` 21–32 — each drawn
-  cheaper at the same look; «painted once» wherever a full-screen fill or gradient repeats.
-- **0.3 Layout reads and DOM per frame.** `getBoundingClientRect` 10–15 ms/s and
-  `querySelectorAll` 4–5 ms/s inside the frame; 2 096 `UpdateLayoutTree` events (937 ms) and the
-  finger doubles style/layout (27 → 52 ms/s). Cache rects on `resize`/tab change, never in `frame()`.
-- **0.4 Resolution that comes back.** `resAuto` fell to `RES_AUTO=1` (411×742 on a DPR 2.625 screen,
-  1/7 of the pixels) and never climbed (the way back needs 20 s under 13 ms — never reached).
-  Step up in halves on a shorter window, step down on a real EMA; the player's DPR 2.5 stall case
-  (`stallWho`, «Loose ends → Systems») is the same lever.
-- **0.5 Sound.** The convolution reverb holds a quarter of a core all the time — a cheaper reverb
-  (feedback delay network or a shorter impulse) at the same room, or off on the phone layout.
-- **0.6 GC.** Major GCs of 14–28 ms inside the longest gaps — find the per-frame allocators
-  (arrays, closures, strings in `hud`) and hoist them.
-- **0.7 Heat.** After 75 min the phone at 37 fps even at ×1 — the sum of the above is the fix;
-  the check is a 30-min run with the thermal status logged.
-- **Gate to stage 1:** on the S23 a 120 Hz cadence at one interval ≥ 95 % of frames, no frame
-  > 24 ms in 60 s of steering, `RES_AUTO` ≥ 2 held, `g11` in all modes ≥ 55 fps on the laptop.
+### Stage 0 — THE FRAME FIRST (author 14.09: «разрыв кадров, дёрганье — это первым»)
 
-**Stage 0b — cheap and decided** (one commit each, ~2 days): P1 scroll · P2–P3 ОПИСЬ · P4 compass
-chips · P5 «Смена» contrast · P6 small · the anchor and the stick (item 7 below) · `say()` from
-timers · СТОЛ padding and empty sheets.
+Numbers: `docs/PLAYTEST-2026-09-13.md` §2.1, §6. Meter: `docs/night-2026-09-13/raw/phone-tools/trace.py`
+on the S23 (390×844, DPR 2.625, 120 Hz) before, after every item, at the end; `g11` on the laptop.
+Rule 3: same look, cheaper work.
+- [ ] **0.1 Cadence.** Frame intervals scatter over 1–3 vsyncs (4.17 ms bins: 313/503/496/235/168…;
+  long and short alternate) and `frameBody` (`28-loop`) steps the world by the rAF `dt` — that *is*
+  the judder; the camera is steady (p95 1.8 px). Step the world by a fixed quantum (1/120 s ×
+  n, the leftover carried), render at the step; the nose turns by the same quantum (0.08 rad per
+  60 Hz step today, 0.16 on long frames, 160 jumps > 4.6° a minute). Accept: one interval ≥ 95 % of
+  frames in 60 s of steering.
+- [ ] **0.2 Raster.** GPU raster is the bottleneck (`DoEndRasterCHROMIUM` p90 5.4 ms, max 17). Own
+  JS by self time per second: `drawWake` 31–56 (the 0.449 wake — bake its static part, fewer
+  strokes, same look), `stroke` 21–32, `hud` 18–25, `drawTrail` 19–22, `drawHull` 9–11,
+  `drawSystem` 6–10. Each cheaper at the same look; any repeated full-screen fill or gradient →
+  `screenLayer`. `prof()` per function before/after.
+- [ ] **0.3 Layout in the frame.** `getBoundingClientRect` 10–15 ms/s, `querySelectorAll` 4–5 ms/s
+  inside `frame()`; 2 096 `UpdateLayoutTree` (937 ms); the finger doubles style/layout (27 → 52
+  ms/s). Cache rects on `resize()` and tab change; zero DOM reads per frame (a detector counts them).
+- [ ] **0.4 Resolution that comes back.** `resAuto` fell to `RES_AUTO=1` (411×742 — 1/7 of the
+  pixels) and never climbed: the way up needs 20 s under 13 ms. Climb in halves on a 5 s window,
+  descend on a real EMA with the 24 ms threshold checked against the ~26 ms EMA; the same lever
+  answers the player's DPR-2.5 stalls (`stallWho`, 0.448.0). Accept: `RES_AUTO ≥ 2` held for 10 min.
+- [ ] **0.5 Sound.** The convolution reverb («Reverb convolution background») holds ~250 ms of every
+  second — a feedback-delay reverb of the same room, or off on `W<=760`. `09a-roomtone`, `09-audio`.
+- [ ] **0.6 GC.** Major GCs of 14–28 ms inside the longest gaps — hoist per-frame allocations
+  (arrays, closures, strings in `hud`/`drawSystem`); the trace's allocation sampler names them.
+- [ ] **0.7 Heat.** 75 min → thermal MODERATE, 37 fps at ×1. The sum above is the fix; the check is
+  a 30-min run with `dumpsys thermalservice` logged every minute.
+- **Gate to stage 0b:** cadence ≥ 95 %, no frame > 24 ms in 60 s of steering, `RES_AUTO ≥ 2`,
+  `g11` ≥ 55 fps in every mode on the laptop.
 
-**Stage 1 — the ship under the finger:** P8 the ship under the finger · **P9 zoom + 2a seamless
-atmosphere + the fixed entry point of Ж1 as one camera design** (arrival, orbit and landing all
-keep the body in view) · P10 ЦЕЛЬ and the hail. Gate: `g11` on the phone before and after.
+### Stage 0b — cheap and decided (one commit each)
 
-**Stage 2 — whose land, in five seconds:** **Ж1 the approach** (entry → lane → queue → station →
-gate; absorbs the haul-scene review — shuttles passing, the route bar) · **Б1 the first ship's
-gesture** (review §2.1) · **Б2 the stamp** (absorbs **P14 ТРУДОВАЯ КНИЖКА**: the document is
-rebuilt as a real book with ОТМЕТКИ О ПРОЕЗДЕ as its first real page) · Б3 station body and traffic
-by builder · **M447 the world galaxy** and M448 the stars (the ride and the scheme stand on them) ·
-the `-Accept` pass for the moved `rnd()` of the entry angle.
-
-**Stage 3 — far, and back with a hold:** **Р1–Р3** the ten resources (table, roll, readings, ЖИЛА,
-prices by distance) · **М1–М4** metro and mainline (net, station with glide path and the batch,
-vestibule paper, the ride on the star map) — **M449 named places rides along** (lines and nebulae
-named in one pass) and **M450 the overview becomes the scheme's zoomed-out sibling** · the two
-oracle lines (rail vs jumps ×1.3; the stripped hauler's best deal).
-
-**Stage 4 — the ship:** **К1–К4** (single-view blueprint, packer and fixpoint, КБ editor, numbers
-from the plan with the mass clamp tied to P8's feel, БАШНЯ) · Р4–Р5 properties and eaters.
-
-**Stage 5 — the voice and the joke:** Д1 names · Д2 изолента · Д11 the triangle · Д5 naming ·
-Д8 Космопочта · **Ж2 billboards + Д7 the contradicting newscast + P12 ЭФИР in one pass** · Ж3
-hotels · Ж4 the food barge · Б4 the peacetime fleet · Б5 the one law each (the voiced ones only) ·
-P11 ПРИЁМНИКИ · P13 АЛЬБОМ.
-
-**Stage 6 — the story and the rest:** P15 «Смена» · Б6 sound (a motif per power, not modes) · Б7
-map borders · К5–К8 · М5–М6 · Ж5 the bazaar that remembers · Д3–Д4 subscriptions and the core.
-
-**Release tails** (any gap; all before a push): determinism (`wanderer · A`, the clock out of
-`stateHash`, `planetStripTick`) · housekeeping (`.gz` headers, PATCHNOTES trim, the patch-bump
-rule) · test tails M443–M446 · the refactor queue · M451 the sky · the 60 fps check re-run at the
-release (stage 0 is the first run). **Deferred out of this plan:** the giants Ж6, base-side birchpunk Д12–Д14, six musical
-modes, the lab restart (a CPU budget first).
-
-**Dependencies in one line:** 1 before 2 (the entry point is camera work) · 2 before 3 (the ride
-draws on the galaxy; the gate stands on the approach) · Р1–Р3 before М4 is worth riding · К3's mass
-clamp after P8 · Ж2 after Б2 · everything after 0 (a screen that loses its scroll poisons every
-new page).
-
-### The six designs of 2026-09-14 — the index (reviewed in docs/DESIGN-review-2026-09-14.md)
-
-Each document holds the research, the laws, the design and its queue; this is the index.
-- **Borders Б1–Б7** `docs/DESIGN-borders.md` («нет ничего, чтобы было понятно, что ты у другой
-  фракции»): the post at the jump point per power · the entry stamp and КНИЖКА «ОТМЕТКИ О ПРОЕЗДЕ» ·
-  station and traffic by owner · the peacetime fleet in flight · one law of the land each · sound ·
-  border lines by pattern. Б1–Б3 first.
-- **Shipyard К1–К8** `docs/DESIGN-shipyard.md` (Remember Tomorrow + Starsector): the plan from
-  `hullOf` (ОБШИВКА + 1–3 decks, cells), packer and fixpoint · КБ editor, `G.plan` · numbers from the
-  plan · БАШНЯ on the spine · six yards' built-in/limit/habit · СТАПЕЛЬ · scars, доводка · ТИПОВОЙ.
-  **Decided by the author:** the hold and tanks ARE cells (cargo capped ×1.4 nominal).
-- **Living space Ж1–Ж6** `docs/DESIGN-life.md` (neon, hotels, «как в кино»): a fixed entry point
-  and the approach («подъезд») · billboards carrying prices/news · six hotels as doors to spa,
-  cinema, cantina · «Чебуречная» · the bazaar of hulks · one giant per arm.
-- **Metro and mainline М1–М6** `docs/DESIGN-metro.md` (third draft, the author's: «прям станция —
-  стыкуешься, колу покупаешь… круглые врата как посадочная полоса… карта звёздного неба… опутывать
-  галактику процедурно»): jumps for near, rails for far · метро (r ≤ 12, жетон) + электричка and
-  скорый on a procedural net of forking radials, rings and arm трассы to the rim and past it
-  (полустанки, «Край») · a station object: hail, glide-path alignment, vestibule with ТАБЛО / КУДА
-  ВАМ / КАССА / БУФЕТ (a drink comes with a rumour) · departure on the hyperdrive into the ring ·
-  the ride as `G.mode="rail"` on the galaxy map, 6–60 s, stops ~2 s with ВЫЙТИ, ПЕРЕСАДКА.
-- **Resources Р1–Р5** `docs/DESIGN-resources.md` («с десяток, чем дальше, тем ценнее, но как
-  повезёт»): ten goods in three bands (гелий-3, палладий, янтарь, осмий, звёздный чернозём,
-  магнитная пыль, жемчуг пустоты, тёмное стекло, антивещество в ловушке, нейтронная крошка) on a
-  new random salt (no old deposit moves) · lognormal richness, 0.5 % ЖИЛА · readings by instrument
-  resolution · ½ / 1 / 1.3 price by distance · one property each (heavy, fragile, perishable).
-- **Берёзопанк Д1–Д14** `docs/DESIGN-birchpunk.md` («Кибердеревня — такой же стёб и механики,
-  адаптируй и продумывай»): named machines · изолента · subscriptions (10 % + 4 %/сводка) · the AI
-  core on tariffs · «Рязань Каунти» names · the contradicting newscast · Космопочта · дачники · the
-  warmth rule · the triangle изолента/гарантия/техподдержка · the farm of domesticated fauna · баня
-  softens the ПАЛАТА · «чайный гриб» · blockades · «Буханка». Cheapest first: Д1, Д2, Д5.
-- Suggested order when the author says go: Б1–Б3 with Ж1 (one entry point) → Р1–Р3 → М1–М4 →
-  К1–К3 → the rest; Д1/Д2/Д5 in any gap.
-
-## PLAYABLE ON A PHONE — the author's playtest of 2026-09-11 — items 0–6 and R0–R6 built (0.446.0–0.448.0); bodies in `docs/PLAN-archive.md` (2026-09-12)
-
-**Policy (author, 11.09):** fix without tests, local commits, look with eyes on `dev.html` at
-390×844; the whole test run (-Full, -Mobile, -Mutants) only right before a push. The lab stays stopped.
-
-- [x] 0 the empty tank (exits window, ДОМОЙ/БУКСИР/СБРОС), 1 the station header, the haul scene,
-  2 scale, 3 the screens (one prompt slot, the phone cascade, ДЕЛО/СТОЛ/ОПИСЬ), 4 the module card,
-  5 the got card, 6 economy (drone price 9000·1.6ⁿ, no offline pay), R0–R5a — 0.446.0/0.447.0.
-- [x] **0.448.0 (12.09, solo, the author's decisions of 12.09):** R5b the first hour (`firstHour`,
-  05e: repair by two buttons ДО 50 % / ПОЛНОСТЬЮ priced on the button and ≤ half the cash, a hard
-  landing instead of a wreck, the front stands until the first liberation, a taken job lives ≥ 15
-  real minutes by the game clock with rows in ДЕЛО, the first probe free); the wreck rebuilds no
-  higher than the hull held 10 s (`G._hullHeld`, 45 % cap, 10 % floor); the world zoom ×4.5 with the
-  ship capped at .8 (`ZOOM_MAX`, `SHIP_SCALE_MAX`; body growth and moon caps removed; fleet,
-  pirates, barges, own ships share the cap); R6 tails (the pad always names the action, prompts fold
-  to two lines on touch, the hailing ship's undimmed arrow, body names yield to the ship and NPC
-  names dodge them, ОПИСЬ phone tabs КОРАБЛЬ · СНЯТОЕ · КОМПЛЕКТ · ТРЮМ, ДЕЛО columns, ЛЕНТЫ without
-  a gap, the СТОЛ badge over the corner, the board card «куда · до когда», the cargo paper's sector,
-  В ПЛАВКУ, a maxed module on one line, the got card «/с» in the lower third, МАСШТАБ in the
-  masthead, the haul's planet at 1.15 r on the left, the barge's dark seam); dev.html and `?test=1`
-  mark every POST `test:1` and `api.php`/`war.php`/`log.php` drop the pool writes (`NET_TEST`,
-  01-core); later tails (deposits remembered in `G.mined`, the rebind button toggles, ТРЮМ ПУСТ only
-  when empty, the pronoun by the goods, a half-price fuel coupon per 2 h of active flight a week in
-  `G.actWk`).
-- **Open after 0.448.0:**
-  - [ ] **2a. Seamless atmosphere entry** — at ×4.5 the frame is 87×188 world units, so the landing
-    zone (110 from the surface) lies outside it and the disc you are landing on is off-screen: a
-    camera lead toward the body, or the descent starting from the drawn disc. Design first.
-  - [ ] Haul scene design review: shuttles passing, a pirate turning away from a ГЛАВТРАССА barge, a
-    route bar instead of the countdown, the target chip = the destination station; the window's
-    icons per exit and a header with the distance to the station.
-  - [ ] СТОЛ: empty sheets say where to get the thing; the last row of desk objects needs bottom
-    padding. Station header design review 13–15 (СТОЛ out of the masthead, two tab rows = 110 px,
-    prices before the cooperative form, Director news on ДОСКА).
-  - [ ] `say()` from timers/network callbacks is neither frame-born nor tap-born — mark those as
-    world (`sayWorld`) or set FRAME_IN there.
-  - Decided 12.09: the prompt «ДЕЙСТВИЕ — ВЫХОДЫ» stays — the pad reads its verb from the prompt.
-    The two bot signs in `~/drift-data/trace/p/0_0.json` (ids 1789161868db37, 1789161871db37) — the
-    author removes them by hand. Struck as already true: the start-system picket is mitigated
-    (`hailStartSys`, 12ar; the hull floor .5 in 13-combat); selling is open and counter-buying is
-    cooperative-only by design (`docs/DESIGN-coop.md` §0.1); `11t-rumours` derives the detail's
-    gender from the source's `f` flag, so «Женщина в платке рассказывал» is not reproduced there.
-  - Privacy: the author's save sits outside git (`C:\Claude\drift-private`); never commit it.
-
-## Phone playtest 2026-09-13 — the queue (0.449.0, S23 Ultra, 411×742 at DPR 2.625, 120 Hz)
-
-The author played the live game on his phone for an hour, Claude measured over adb + CDP (state,
-screen, rAF recorders, a Chrome trace). Every item, with the numbers and the causes found:
-**`docs/PLAYTEST-2026-09-13.md`** (§ numbers below). Nothing fixed yet.
-
-**Rules the author set (they bind the whole queue):** (1) a screen never loses its scroll —
-nothing re-rendering may knock it off; (2) every tab/screen answers «чтобы что?» — why is it here
-for me, what will I do here — before it is redesigned; (3) optimise without losing quality, only
-improve; (4) the ship stays under the finger. Umbrella: rework all the interfaces for convenience
-— actions, buttons, hints.
-
-Bugs — cheap, one commit each:
-- [ ] P1 **Scroll, globally** (§1.1): table pages rebuild with `textContent=""`/`innerHTML=""`
+- [ ] **P1 Scroll, globally** (§1.1): table pages rebuild with `textContent=""`/`innerHTML=""`
   (`27j-ui-opis`, `12ud-smena`, `25g-postcard`, `11ap-relay`) and `logAdd`/`recordAdd` re-render
-  the table on every line whatever page is open — measured 448 → 0 on a journal line. Keep the
-  position through any rebuild; re-render only the page a change touches. Net: a suite that
-  scrolls each table page, fires `logAdd`, and demands the same `scrollTop`.
-- [ ] P2 ОПИСЬ: an opened card is `touch-action:none` — a 150 px dead zone for scrolling; let
-  vertical pans through and keep the long-press lift (§1.2). Guard the lift against a re-render.
-- [ ] P3 ОПИСЬ tab strip: stretch it; its fade mask never clears because it skips `tabsSync` (§1.3).
-- [ ] P4 Compass chips follow the stick footprint (`helmStickFoot` in `drawSystem`) up to
-  mid-screen, onto the ship — keep them on the frame's edge (§1.4).
-- [ ] P5 «Смена» text is light-on-cream, contrast ≈ 1.1 : 1; styles never moved to the paper; no
+  the table on every line whatever page is open — 448 → 0 measured. Keep `scrollTop` through any
+  rebuild; re-render only the page a change touches. Net: scroll each page, fire `logAdd`, demand
+  the same `scrollTop`.
+- [ ] **P2** ОПИСЬ: an opened card is `touch-action:none` — a 150 px dead zone; let vertical pans
+  through, keep the long-press lift, guard the lift against a re-render (§1.2).
+- [ ] **P3** ОПИСЬ tab strip: stretch it; its fade mask never clears — it skips `tabsSync` (§1.3).
+- [ ] **P4** Compass chips follow `helmStickFoot` (in `drawSystem`) up to mid-screen — keep them on
+  the frame's edge (§1.4).
+- [ ] **P5** «Смена» text light-on-cream, contrast ≈ 1.1:1; styles never moved to the paper; no
   right margin (§5.1).
-- [ ] P6 Small: hints cut at 411 px, МАСШТАБ under a chip (recheck on 0.449), the beacon offered
-  at the ship and wasted at 0 m, КНИЖКА «хулк» and «командировочные за 0 км», the «день» column
-  (`celDay`) out of order (§1.5, §1.6, §4.4).
+- [ ] **P6** Hints cut at 411 px, МАСШТАБ under a chip, the beacon offered at the ship and wasted at
+  0 m, КНИЖКА «хулк» and «командировочные за 0 км», the `celDay` column out of order (§1.5, §1.6, §4.4).
+- [ ] **The anchor and the stick** (phone video 12.09; 0.449.0 widened the edge, the mechanism
+  stays): past the edge the anchor turns the velocity toward the star every frame while the stick's
+  assist thrusts outward — the turn is a force against thrust, an equilibrium exists (the comment in
+  `17-mode-system` denies it): the ship crawls along the edge at a tenth of cruise, nose 90° off,
+  burning fuel (20-line sim matched the video). Fix, one commit: (a) the anchor strips the outward
+  radial part from the INPUT (`c.ax/c.ay`, `c.tx/c.ty`), not the state; (b) `c.slow` (the 120°
+  brake rule) reads input against the last wanted vector, not the bent velocity. Test: under an
+  outward stick at the edge speed ≥ .5 cruise and fuel/s = coasting.
+- [ ] `say()` from timers/network callbacks is neither frame-born nor tap-born — mark as world
+  (`sayWorld`) or set FRAME_IN there.
+- [ ] СТОЛ: empty sheets say where to get the thing; bottom padding under the last row of desk
+  objects. `journal` lines («Дрон … встал») should not reach `crash.log` (M417 noise).
 
-Flight and camera — design first, then build:
-- [ ] P7 **Frame cadence and resolution** (§2.1, §6): intervals scatter over 1–3 vsyncs on
-  120 Hz with a variable `dt` → judder; `RES_AUTO` stuck at ×1 (1/7 of the native pixels); the GPU
-  raster is the bottleneck; dearest own functions `drawWake`, `hud`, `drawTrail`, plus
-  `getBoundingClientRect`/`querySelectorAll` every frame; the reverb holds a quarter core. Rule 3:
-  same look, cheaper work. Measure again on a cool phone with `raw/phone-tools/trace.py`.
-- [ ] P8 **The ship under the finger** (§2.2–2.4): `flightCam` lag grows with zoom (350–536 px off
-  centre at ×2.4); «stop here» fired 15 frames of 3 177; the hull capped at .8 never grows on zoom.
-- [ ] P9 **Zoom** (§2.5, §2.6): pinch jumps across 28× (217 frames > 6 %/frame) — easing and
-  resting steps; in orbit at ×4.5 the orbited planet leaves the frame — one design with «2a.
-  Seamless atmosphere entry» above: keep the body you orbit or land on in view.
-- [ ] P10 **ЦЕЛЬ and the hail** (§3): one pad with five meanings (hail answer, probe, crew-off,
-  thanks, lock); pickets are not lockable; the hail's fight answer red and named «БОЙ».
+### Stage 1 — the ship under the finger (`docs/PLAYTEST-2026-09-13.md` §2.2–2.6, §3)
 
-Redesigns — each passes «чтобы что?» first:
-- [ ] P11 ПРИЁМНИКИ (§4.1): the dial does nothing; announce tap-to-map on the row; back from that
-  map returns to ПРИЁМНИКИ; explain what receivers give and why to hunt them.
-- [ ] P12 ЭФИР (§4.2): 92 rows, 50 distinct, events drowned in chatter — rethink, enrich.
-- [ ] P13 АЛЬБОМ (§4.3): tap to enlarge; keep repaint-from-snapshot (~99 B each, the server is
-  safe) but paint far better — photo filters; postcards become collectibles found at stations and
-  personal postcards that go into the book; a captioned screenshot saved to the device gallery.
-- [ ] P14 ТРУДОВАЯ КНИЖКА (§4.4): a real document built from real трудовые книжки — stamps,
-  seals, signatures, savings for the vacation; say what it is for (доска почёта, the grounding
-  ending — all designed in M161, none of it on the page).
-- [ ] P15 **«Смена» — the main quest** (§5.2–5.3): hard; chapters are milestones opened in
-  sequence by deeds in beautiful places (not by buying drones — 25/72 opened on the author's save
-  without a landing, the ending before chapter 6); closing a chapter is an «АКТ» moment across the
-  screen (reference: No Man's Sky's main storyline); a real book view with plates from the
-  player's own flight; the book's text may be edited to fit.
+- [ ] **P8 Under the finger.** `flightCam` lag grows with zoom (350–536 px off centre at ×2.4);
+  «stop here» fired 15 frames of 3 177; the hull capped at .8 never grows on zoom. Camera lead
+  proportional to zoom, the stop gesture on a real threshold, `SHIP_SCALE_MAX` by zoom. Meter: the
+  camera-vs-ship offset p95 in the in-page recorder ≤ 60 px at ×2.4.
+- [ ] **P9 Zoom + 2a atmosphere + the entry point — one camera design.** Pinch jumps across 28× (217
+  frames > 6 %/frame): easing and resting steps. At ×4.5 the frame is 87×188 world units, the
+  landing zone (110 from the surface) is off-screen, in orbit the orbited body leaves the frame:
+  **the body you orbit or land on stays in view** (camera lead toward the body / descent from the
+  drawn disc). And the arrival point: `jump()` (`18-mode-map`) places the ship at 1 500 from the
+  star at `rnd()*TAU` — replace with **a seeded angle per system** (`hashi(sx,sy,salt)`), the ship
+  facing the station; that removes one `rnd()` call → every replay and same-hash suite moves once:
+  a deliberate `test.ps1 -Accept` pass, named in the patchnote. Ж1 (stage 2) builds its lane on
+  this point.
+- [ ] **P10 ЦЕЛЬ and the hail** (§3): one pad with five meanings (hail answer, probe, crew-off,
+  thanks, lock); pickets not lockable; the hail's fight answer red and named «БОЙ». One meaning per
+  pad state, the verb from the prompt (M355).
+- Gate: `g11` on the phone before/after; the frame gate of stage 0 still holds.
 
-## What is left, in order (reviewed 2026-09-11, 0.443.0) — folded into the WORKING PLAN above; kept for the bodies
+### Stage 2 — whose land, in five seconds (borders + life Ж1 + the galaxy)
 
-Checked against the code, `PATCHNOTES.md`, the lab and `crash.log` on 11.09. Found already done
-and struck below: the seven «?» save fields (0.442.0), the hostile-opts suite, the dead names
-(0.439.0), the lab's first scheduled run, the road companion (built). Every author question was
-decided on the author's behalf (author: «по вопросам реши за меня как лучше») — see the end.
+- [ ] **Ж1 The approach — «подъезд»** (`DESIGN-life.md` §2–3.1, review §4.4). From the entry point
+  (P9) to the station: buoys every few hundred units, one lamp each, **lamps chasing toward the
+  dock** at ~2 buoys/s (a phase, not blinking); a **holding queue** at busy stations — 2–6 ships on a
+  slow ellipse, one docking, one leaving; density = rung × heartland gradient (`sysDanger`); tugs
+  and the shuttles of `17f-sys-traffic` re-routed onto the lane. Absorbs the haul-scene review
+  (shuttles passing, a route bar instead of the countdown, the destination chip = the station).
+  Buoys baked per system; only phases and ships per frame. Meter: `prof()` on the phone layout —
+  the approach adds ≤ 1 ms raster; `look()` on the heartland scene keeps pair % ≥ 15.
+- [ ] **Б1 The first ship's gesture** (review §2.1). Within 5 s of arrival one ship of the owner
+  (`chronOwner`) does one thing: ГЛАВТРАССА picket alongside, a spotlight cone sweeps you,
+  «Записываю», a КНИЖКА line «Проследовал. Замечаний нет.» (monthly: «Замечание: нет замечаний»);
+  Компания drone with a screen before your nose, ПОЧТА «Пролёт — 0 кр (акция). Сбор за оформление
+  акции — 40 кр»; Орднунг scan plane tail to nose, a pad form «цель визита» with three answers, all
+  «служебная»; Коммуна — nobody, a buoy «ОБЕД. ВЕРНУСЬ»; Рассвет tug «чинить есть что?» / at 100 %
+  «ну хоть покрась» (one panel painted, 5 кр); Хай-Фронт camera drone at a fixed offset to the dock,
+  «ваш рейтинг доверия рассчитан» (never shown anywhere). Rear/front/fresh-occupation states as in
+  borders §2.1; Ялта: all six, weapons sealed. The gesture ship is the fleet art in the maker's
+  dressing. The **post** is background: one truss + board + lamp + the dressing's prop, baked, at
+  the entry point (borders §2.1 table for the six dressings).
+- [ ] **Б2 The stamp + P14 ТРУДОВАЯ КНИЖКА** (borders §2.2, review §4.4, playtest §4.4). Border
+  crossing = owner change (or wild → owned) on arrival: a stamp across the screen 1.2 s (DOM on the
+  КНИЖКА paper, tilt 5–12° by seed, ink grain, scale 1.3 → 1 in 120 ms, hold 900, fade); six papers
+  (violet stencil «ОТМЕТКА О ПРОЕЗДЕ · ПОСТ № n» + signature; Компания's till slip scrolling up
+  «ВЪЕЗД — 0 кр (акция) · спасибо за выбор»; Орднунг black numbered «Экз. 1 из 3», time to the
+  minute; Коммуна blue italic with a poem line and the date slightly wrong; Рассвет ochre hand, a
+  sun, a thumbprint; Хай-Фронт dot matrix «v4.1» + a trust number). **The КНИЖКА becomes a real
+  document** (P14): stamps, seals, signatures, the vacation savings, the доска почёта and the
+  grounding ending (all designed in M161, none on the page) — with **ОТМЕТКИ О ПРОЕЗДЕ** as its first
+  real page (six + Ялта + the pirates' scratch to collect). Save: which stamps, when (`G.stamps`).
+- [ ] **Б3 Station body and traffic by builder** (borders §2.3). `17e-station-body` applies the
+  maker grammar (`HULL_MAKER` dimensions: profile law, seams, marks, ground) to the station by
+  `station.by`; `17f-sys-traffic` draws 7 of 10 ships from the owner's maker, 3 from neighbours; a
+  border system mixes, a heartland is uniform.
+- [ ] **M447 The world galaxy + M448 the stars** (`docs/DESIGN-galaxy.md`): `galaxyAt(x,y)` (disk,
+  bulge + bar, two arms and spurs, dust, knots); world tiles in two levels, 4 ms bake budget,
+  fade-in fallback; band and nebula leave the map; M438's sky block retired; Node suite, a detector
+  for «the galaxy moves with the sheet»; goldens accepted; faint stars per sector at constant
+  screen density, no cross/halo/twinkle. Acceptance frame: home, 0:0, zoom 1, inside the bulge.
+  **The metro's ride and scheme (stage 3) draw on this.**
+- **Gate:** on any jump in the settled circle the tester names the owner within 5 s without
+  reading a label (three testers, six powers); the stamp lands once per crossing; `-Accept` done.
 
-Items 1–6 of this list (stalls, galaxy, determinism, housekeeping, test tails, 60 fps) live in the WORKING PLAN's stages and release tails; only the anchor body stays here.
+### Stage 3 — far, and back with a hold (resources + the railway)
 
-- **The anchor and the stick (phone video of 12.09, 0.449.0 widened the edge; the mechanism
-   stays)** — past the edge the anchor turns the velocity toward the star every frame while the
-   stick's assist thrusts outward to reach the wanted velocity; the turn IS a force against
-   thrust, so an equilibrium exists (the comment in `17-mode-system` denies it): the ship crawls
-   along the edge at a tenth of cruise with the nose 90° off, burning fuel — measured in a 20-line
-   sim, matched the video to the second. Two fixes, one commit: (a) the anchor strips the outward
-   radial part from the INPUT (`c.ax/c.ay` of the stick, `c.tx/c.ty` of the keys) instead of
-   rotating the state, so there is nothing to fight and fuel does not burn; (b) `c.slow` (the
-   120° brake rule) reads the player's input against the last wanted vector, not the velocity the
-   anchor has bent — the anchor's turn is not a request to brake. Test: at the edge under an
-   outward stick the speed never drops below .5 cruise and fuel per second equals coasting.
+- [ ] **Р1 Ten goods — table and roll** (`DESIGN-resources.md` §2–3, review §2.5). Rows in `RES`
+  with band, verb, property, price, eater line: **солнечный газ** (frontier, scoop, 85, reactors) ·
+  **белая руда** (frontier, belt, 95, instruments) · **космический янтарь** (frontier, cave, 130,
+  fragile → «крошка» at ⅓, Коммуна ×1.5) · **осмий** (deep, mine, 190, heavy ×2 hold, armour) ·
+  **звёздный чернозём** (deep, drill, 170, greenhouses/дачники ×1.5) · **магнитная пыль** (deep,
+  belts by star class, 260, shields) · **жемчуг пустоты** (deep, fauna, 320, Компания ×1.5) ·
+  **тёмное стекло** (rim, drill, 600, optics, Хай-Фронт ×1.5) · **ловушки** (antimatter, rim
+  scoop, 900, perishable 1 %/min without reactor feed, detonates below 20 % hull) · **нейтронная
+  крошка** (beyond r 50, drill, 1 500, heavy ×5, доводка). **New random salt** — a Node suite proves
+  no existing deposit, price or station moved (old-salt hashes before/after). Presence by band;
+  richness `exp(N(μ(r),1))`: ~70 % бедная, 25 % хорошая, 5 % богатая, 0.5 % **ЖИЛА** ×20.
+- [ ] **Р2 Reading and ЖИЛА.** The scanner shows a range («осмий: 40–160») narrowed by the
+  instrument's resolution (изыскатель ±10 %, рудовоз ±60 %; тёмное стекло in the instruments halves
+  every range) — the professions' honesty rule. ЖИЛА: the word across the screen (ГЛАВТРАССА
+  stencil, warm, 1.2 s — the only time the game shouts), a ДНЕВНИК line, a rumour at the nearest
+  stations after one сводка, company on that approach afterwards («трое, все говорят, что первыми»).
+- [ ] **Р3 Prices by distance.** ½ base in its own band, 1× at r≈10, 1.3× in the heart, the eater's
+  ×1.5 in its land; the live market's flood-and-recover holds; far goods rarely on sale in the heart.
+  Eaters speak at their counters (review §3: «весы наши, тара ваша», «принимаем по весу, вес — наш»).
+- [ ] **М1 The net and the scheme** (`DESIGN-metro.md` §2, §4, review §4.4). Six radials from the
+  core at the powers' home angles, **forking** outward so line density stays even (6 at r 6, ~12 at
+  15, ~24 at 35, on without end); rings at Ялта's radius (Кольцевая; **Ялта = «Площадь Шести
+  Держав»**), r≈18 (Большое), r≈35 (Дальнее), then ×1.9; two spiral трассы along the arms
+  (`galaxyAt`); a stop = the nearest station system to each spacing step (метро 1.5–2.5 sectors
+  inside r 12; электричка 4–8; a step with none is a перегон); junctions where lines cross; past
+  r 40 single tracks with **полустанки** and «Край». Lazy per region; Node suite (reachability,
+  one stop per system, determinism). Names by owner (Д5 rule; beyond the powers: «разъезд 214-й
+  сектор», «полустанок Сухой»). **M449 named places rides along**: arms and ~10 nebulae named in
+  the game's voice, lines carry the arm's name («Линия 7, Рукав Лебедя»), labels at far zoom.
+  **The scheme** (our own, on paper): thick coloured lines on paper, white circles black-rimmed,
+  double circles for interchanges, «ВЫ ЗДЕСЬ» red, shut stretches hatched; on the galaxy map the
+  lines as faint smooth curves 1:1 with the sheet (no parallax). **M450 the overview** (pinch past
+  zoom 5) becomes the scheme's zoomed-out sibling: the disk, «вы здесь», the settled circle, the
+  danger rim, marks, rumours — and the lines.
+- [ ] **М2 The station in the system.** At the end of the approach, past the ordinary station: **the
+  ring** (a torus flat, inner disc a shade lighter with a slow faint spiral, the line's plate) and
+  **the glide path** (two converging dotted lamp lines chasing inward); a small vestibule block (one
+  body, six dressings; at the rim a bare platform with one lamp). Within ~300: «Станция «Нейэль».
+  Стыковка?» — ДА. **Align**: speed under the mark, nose in the cone 2 s, helm-assisted, wide cone on
+  the phone; too fast → «Сбросьте скорость», restart, no penalty; **after 5 s of failing the ring
+  takes you** — «Автостыковка. Просьба не мешать», КНИЖКА «стыковка выполнена автоматикой».
+  Berth: the ship slides in. **The train is the batch**: ships arrived since the last opening stand
+  in a row on the lamps — a вахтовка, a barge, a yacht; at the rim you and a drone.
+- [ ] **М3 The vestibule** — the metro's only new screen, one page on the station paper: **ТАБЛО**
+  split-flap («ЭЛЕКТРИЧКА до «Край» · через 0:14», «СКОРЫЙ · 1:40», «МЕТРО · прибывает»; flaps turn
+  on change), **КУДА ВАМ** unfolds the scheme on the same paper — tap a stop → pad «ДО «НЕЙЭЛЬ» · 3
+  ОСТАНОВКИ · 5 кр» / «ДО «СУХОЙ» · 11 ОСТАНОВОК · 38 кр + багаж 12 кр»; routes through
+  interchanges by themselves; **КАССА** — жетон (brass disc, 5 кр flat «сорок лет»), билет 2
+  кр/sector, скорый ×2, baggage per ton, «крупногабаритный» ×3 (the tape measure always finds «плюс
+  десять»); **БУФЕТ** three items by the owner (лимонад «Звёздный», «Кола Партнёр™», «вода
+  минеральная 0,33 № 2», «кофе с круассаном (закрыто)», «чай из общего котла», «энергетик v4») — a
+  drink comes with a rumour (`11t`) and a ДНЕВНИК line. Wait = the interval: ~6 s in the heart,
+  **≤ 40 s real at the rim** (табло «следующий поезд — завтра», forty seconds later «поезд подан»).
+- [ ] **М4 The ride** — `G.mode="rail"` on the galaxy map. Departure: «поезд подан», the batch goes
+  in 0.3 s apart, your stars stretch to the ring's centre 0.6 s, a white-cyan flash. The ride: the
+  camera frames the line ahead drawn thick in the scheme's colour; the train a rounded glyph with a
+  headlight wedge; stops as ticks; segment 0.8 s + 0.35 s/sector, **a stop ~2 s** with the name, the
+  announcer once (`12pa-beacon`) and **ВЫЙТИ** on the pad; **ПЕРЕСАДКА** at junctions with the other
+  line's wait; a paper strip at the top carries the announcements («Осторожно, двери закрываются» —
+  said anyway; «Уступайте места пассажирам с детьми и крупногабаритным грузом»; «Поезд следует до
+  станции «Край» со всеми остановками. Остановок: сто четырнадцать»; «Конечная. Поезд дальше не
+  идёт, просьба освободить вагоны»; front stops «Поезд проследует без остановки»). Metro hop ≈ 6–8 s,
+  heart to rim ≤ 60 s; held pad ×2, never a skip; desk open during the ride. Arrival: thrown out of
+  the destination's ring onto its approach, slow, facing the station. Save `{line,from,to,t}`,
+  resumes at the next stop. Kindness: the полустанок's lamp comes on as you approach — «ждали».
+- [ ] **Oracle lines** (`91zzzzzzzzz-worlds`): best rail round trip ≤ ×1.3 of best jumps in credits
+  per minute of play (baggage is the lever); the stripped hauler's best one-hop deal (for К3).
+- **Gate:** from home to a rim полустанок and back with a hold of deep goods in under 4 minutes of
+  play, paying its ticket on an average roll; the ride never shows a loading screen.
+
+### Stage 4 — the ship (`DESIGN-shipyard.md`, review §1.3, §2.2, §4.4)
+
+- [ ] **К1 The plan, read-only.** `hullOf` → cells (side = length/N, N 8…14 by size; ≥ 48 px on
+  390 px), **one view, nose up**: rim cells = ОБШИВКА (mounts: нос → жёсткая, борт → турель with an
+  outward arc, as `mountsOf` today), axis cells behind the nose third = the spine (БАШНЯ), interior =
+  ПАЛУБА. **No deck tabs.** The **packer** turns every existing fit (`SHIPS`, `FLEET`, unique, fused,
+  NPC, pirates) into a plan by the maker's habit; **fixpoint suite**: every number equals today's ±1
+  for an untouched save, nothing that fits unfits, «a fully upgraded module set fits any hull».
+  ОПИСЬ shows the plan (swap same-footprint on the same cell only). No new save field.
+- [ ] **К2 The КБ editor** — the second and last new screen: **синька** (Prussian blue, silhouette
+  and grid in light line, parts as warm ochre ink stamps by kind, БАШНЯ a circle with a cross, scars
+  brown, tape grey, «СОГЛАСОВАНО» violet in the corner — landing by itself after a fake queue «ваш
+  чертёж 4-й в очереди»). Footprints 1 / 2 (turns) / 4. Tray under the plan: things from the hold
+  that fit the selected cell glow. Tap-tap places, long-press lifts; a refusal is one line: «реактор
+  у борта не ставят», «двигатели — только в кормовой ряд», «приборы видят из носовой трети», «поворот
+  не предусмотрен формуляром» (Орднунг). **The hold is what is left** (author's decision 14.09):
+  free interior cells paint as ТРЮМ by tap. Numbers strip: **ЯЧЕЙКИ 34/40 · ТРЮМ 90 · БАК 140 ·
+  ЭНЕРГИЯ «в бою 12 с» · РАЗГОН ×0.94**, coloured by delta. **ТИПОВОЙ = «КАК У ВСЕХ»**; three
+  **ПРОЕКТЫ** per hull. Save `G.plan[shipId]` = `[[thing, cx, cy, turn]…]`, the packer as the
+  `applySave` default. ОСНАСТКА's hull section becomes КБ; a foreign yard bills by cells moved
+  (Компания: «перемещение ячейки — 1 кр, итого 14 кр, спасибо за выбор»).
+- [ ] **К3 Numbers from the plan.** cargo = hold cells × hold-module density; fuel/jump = tank cells ×
+  density; energy = reactor cells × output (`weapon` module = the reactor level, war §4); hull
+  points = the hull's + armour parts; thrust/turn = the hull's × mass factor **clamped .8–1.1**
+  (tied to P8's feel); sight = instruments in the nose third. Module tiers become densities.
+  Bounds: cargo ≤ ×1.4 nominal; the oracle line from stage 3.
+- [ ] **К4 БАШНЯ, exposure, sight.** The spine mount: 360°, costs its cell (no decks now, so one
+  cell), drawn in flight as a round turret on the back — the loadout read by silhouette; rim parts
+  take their side's wear (`12s-wear`) when hit from that side (war §4's ×1.6 from behind now also
+  means «engines take it»); instruments count only forward.
+- [ ] **Р4 Properties** — heavy (×2, ×5 hold), fragile (крошка on a hit), perishable/dangerous (the
+  trap's energy draw, the countdown spoken in the hold, detonation below 20 %). **Р5 Eaters** —
+  reactor/armour/shield/instrument densities, доводка by нейтронная крошка, greenhouses and дачники,
+  jewellers, the luxury counter, the navies' buy.
+- **Gate:** an old save loads with every number unchanged; a hauler stripped to the hold and a
+  warship stripped of hold both fly under the finger the same (P8 meter); the blueprint passes the
+  craft codex and gets its almanac issue.
+
+### Stage 5 — the voice and the joke (`DESIGN-birchpunk.md` §2, §4; life Ж2–Ж4; borders Б4–Б5)
+
+- [ ] **Д1 Machines with names.** Drones, the base crawler, the tug, the barge autopilot: a name
+  (Митя, Глаша, Буля, Кузя, Жучка, Громобой…) and **one quirk** = one number off the norm both ways
+  («работает только днём — днём быстрее», «возит лишнее», «поёт при бурении»). Journal lines in the
+  name: «Митя встал. Чинится сам. Ругается.» Drones never die (2026-09-03). Hands stay faceless.
+- [ ] **Д2 Изолента.** A consumable for kopecks: field repair of any part or the hull to 50 %
+  (the first hour's ДО 50 % button, anywhere); leaves a grey **tape strip drawn on the hull** where
+  used (a scar until a yard repair); the trait **«кулибин»** on a hand/manager: tapes free from scrap,
+  holds 60 %, «заматывает так, что не видно». Рассвет's yard treats tape as a finish.
+- [ ] **Д11 The triangle — гарантия / техподдержка / изолента** (§4.1). Firm parts (Компания,
+  Хай-Фронт) carry «гарантия 12 сводок» in ОПИСЬ. Broken: **ТЕХПОДДЕРЖКА** — an эфир call, «ваш
+  звонок очень важен для нас», one bar of hold music (`10-music`), a queue number counting down in
+  game time (37 → … and once back to 41), repair to 100 % in 1–3 сводки, free, the part dead
+  meanwhile; **ИЗОЛЕНТА** — now, 50 %, «гарантия аннулирована: обнаружены следы изоленты»; **ЯРД** —
+  proper, for money. Kindness: the old master at any yard welds one seam free for a taped hull:
+  «сынок, ну кто ж так».
+- [ ] **Д5 Names by owner** («Рязань Каунти»): settlements, holdings, metro stops = homely toponym +
+  the owner's administrative suffix (ГЛАВТРАССА «пгт Верхний Пояс», Компания «Горловина Каунти»,
+  «Нейэль-Сити», Орднунг «Бецирк Нейэль № 4», Коммуна «Сен-Горловина», Рассвет «кооператив
+  «Горловина»», Хай-Фронт «Горловина-2 v3.1»); a flag change repaints the sign. Firms = provincial
+  city + foreign tech word, invented («Кострома Роботикс», «Урюпинск Орбитал»); never a real one.
+- [ ] **Д8 Космопочта.** ГЛАВТРАССА's post at stations open by the game clock (hours on the door);
+  извещения in ПОЧТА for a hull from СТАПЕЛЬ, a rare part, cooperative goods; collect at the counter
+  in hours; a parcel waits 30 days then returns; a queue number. Kindness: the clerk keeps it a day
+  longer, «не по правилам».
+- [ ] **Ж2 Billboards + Д7 the contradicting newscast + P12 ЭФИР — one pass.** Billboards: a truss,
+  a panel, three-stroke neon lettering (glow / core / white-hot centre), one crawling line; **the
+  line is useful** — real prices from `G.market` («ТИТАН 41 У ПАРТНЁРА В 2 ПРЫЖКАХ — ВЫГОДНО КАК
+  НИКОГДА», stale ones as a fork), the сводка in the owner's voice, the Director's циркуляры, a
+  holding's own station («ТОПЛИВО ЕСТЬ»), «до конца акции 00:00:03» for ever; six letterings (review
+  §4.2); a ГЛАВТРАССА sign always has a dead letter, one *buzzes* once a minute (200 ms dip) — the only
+  permitted flicker besides Хай-Фронт's honeycomb cell; within R the hull takes the panel's colour
+  as an additive stamp on the facing side. **Д7:** `12p-news` answers the player's own last deed
+  within one сводка in each power's doublespeak (a barge pulled out of a fight → Маяк «на трассе
+  спокойно», Компания «партнёр обеспечил безопасность перевозок™», Хай-Фронт «инцидент не
+  зафиксирован»); the player alone knows. **P12:** ЭФИР (92 rows, 50 distinct, events drowned) —
+  events first, chatter folded, the six waves' contradictions as its spine.
+- [ ] **Ж3 Hotels** — one slab-of-windows body, six dressings (which windows are lit, the sign):
+  «ГОС ИНИЦА «КОСМОС»» (two letters dead, «МЕСТ НЕТ» on the board, «для вас найдём» at the desk),
+  «ДЖЕКПОТ-СИТИ™», «Пансион № 4» (lights out 22:00), «Ля Люн», the door in the rock, the honeycomb.
+  Docking opens the doors that exist: sanatorium (`29h/29i-spa`), cinema (`27da-kino`), cantina
+  rumours. Kindness: under 30 % hull the clerk lets you sleep off the fatigue free, «потом заплатите».
+- [ ] **Ж4 «Чебуречная»** — a junk boat on the lane hailing «Чебуреки! Горячие!» whatever the hour;
+  sells the owner's `POWERS[k].food`; a meal comes with a rumour and a ДНЕВНИК line.
+- [ ] **Б4 The peacetime fleet in flight** (borders §2.4, from war §7.3's table): ГЛАВТРАССА
+  субботник tugs pushing belt debris; Компания ad hulls and hired «contractors»; Орднунг an
+  inspection pair holding a trader; Коммуна's fleet in a neat line, lights low, on strike days;
+  Рассвет's repair tug that comes to any damaged ship, yours too; Хай-Фронт's reboot line. Driven by
+  the chronicle's states where they exist (`12au-rites`, `12ay-fx-soc`).
+- [ ] **Б5 One law each — the voiced ones only** (review §1.5): ГЛАВТРАССА норма (a fuel norm per
+  visit for kopecks); Компания пошлина (docking 40 кр, free with a sponsor on board); Орднунг
+  скоростной режим in the numbered ring (a ticket in ПОЧТА with a paragraph number); Коммуна обед
+  (yard and one counter shut an hour, fuel always sold); Рассвет «сделаем из ваших» (two parts → one
+  better, no deadline on jobs). The trust rating is cut.
+- [ ] **P11 ПРИЁМНИКИ** (§4.1): the dial does nothing; announce tap-to-map on the row; back returns
+  here; say what receivers give. **P13 АЛЬБОМ** (§4.3): tap to enlarge; keep repaint-from-snapshot
+  (~99 B) but paint far better — photo filters; postcards as collectibles at stations; a captioned
+  screenshot saved to the device gallery.
+- **Gate:** a tester laughs once in the first ten minutes at something inside the world, and can
+  say afterwards which institution the joke was on — never a person.
+
+### Stage 6 — the story and the rest
+
+- [ ] **P15 «Смена» — the main quest** (§5.2–5.3): chapters as milestones opened in sequence by deeds
+  in beautiful places (not by buying drones — 25/72 opened on the author's save without a landing);
+  closing a chapter is an «АКТ» moment across the screen; a real book
+  with plates from the player's own flight; the text may be edited to fit.
+- [ ] **Б6 Sound** — a three-note motif per power on the radio at entry (not six musical modes); the
+  receiver speaks the owner's `air` line once. **Б7 Map borders** — territory edges as lines in the
+  owner's pattern (dotted stars, ring marks, numbered dashes, a wave, uneven dashes with suns,
+  dots), 1:1 with the sheet; the emblem chip readable (14–18 px) at near zoom; the glyph on the
+  compass label and the header.
+- [ ] **К5 Six yards' character** (shipyard §4, review §2.2): built-in / limit / habit — ГЛАВТРАССА
+  бронепояс +25 % hull, +8 % mass, **a slogan along the flank that cannot be removed** («ПЛАН —
+  ЗАКОН»); Компания −15 % price, a running line on your hull, billed per cell; Орднунг a free front
+  shield cell, footprints do not turn; Коммуна turrets +30° arc, −15 % cells, shut at lunch/strike,
+  adds a curve you did not order «так красивее»; Рассвет hull points back from debris in a fight,
+  the only yard that welds a pod (+2–4 cells) onto any hull, no башня above medium; Хай-Фронт a
+  free instrument cell, −15 % hull, **firmware moves one part a cell per сводка «оптимизировано»**
+  («отложить обновление» 3 сводки), stock turns every сводка. Calibrated by the worlds oracle and
+  the стрельбище. **К6 СТАПЕЛЬ** — order a hull at a power's yard in its land: class × size × two
+  sliders inside the maker grammar, live preview, price on the button, ready after one сводка
+  (ПОЧТА/Космопочта), persisted as the order only `{by,cls,size,l,w,seed}`. **К7 The hull
+  remembers** — 1–3 шрамы on wrecked/towed/captured hulls (a burnt cell, a bent mount −30 % arc, a
+  leaky tank cell) drawn where they are, repaired for money, cheaper to buy; **доводка** — a yard
+  welds one thing in (+1 tier, immovable, a seam drawn), two per hull, paid with money and a node
+  (or нейтронная крошка). **К8 The fast path** — NPC and pirate ships built by the packer; the
+  new-part mark on the plan. **К9 Особая система корпуса** (the one thing the designer still
+  lacked): one active ability per `HULL_CLASS` on a cooldown, drawn on the pad
+  as a fourth verb — scout **форсаж** (3 s ×1.6 thrust), courier **сброс** (dump one hold cell as a
+  decoy), hauler **балласт** (turn ×1.5 for 4 s at the cost of 1 % cargo), miner **резак** (the drill
+  as a short-range beam), warship **залп** (all groups at once, 8 s reload), yacht **сирена** (a hail
+  every ship answers), survey **прожектор** (reveals every deposit range in view for 10 s).
+- [ ] **М5 Six railways** (metro §6): Компания **Express™** (dashed twin line skipping small stops,
+  ×10, an ad under the fare — «на три секунды быстрее!», and it is); Орднунг boards only with the
+  hold declared («ДЕКЛАРИРУЮ»), doors on the second; Коммуна greyed on strike days and at lunch;
+  Рассвет **маршрутка** — «до куда?» — tap the map — «ну поехали», stops at any system on the line;
+  Хай-Фронт «обновление установлено», the line stands a minute. Closed front stops on the scheme.
+  **М6 Economy and growth** — fares, baggage, the size rule tuned; a holding-built station
+  («продление линии», a late holding deed, named by the generator).
+- [ ] **Ж5 The bazaar that remembers** — in heartland belt systems a knot of moored hulks (fleet
+  art), awnings, lights on strings; odd lots; scarred hulls cheap; **`G.thrown`** (12 entries) —
+  what you discarded in ОПИСЬ returns to a stall at ×3, «ношеная, один хозяин».
+- [ ] **Д3 Подписка** — firm parts and base modules: 10 % up front + 4 %/сводка (owning wins after
+  ~23 сводок; the card says so); a lapse only at a сводка boundary, announced a shift before in
+  ПОЧТА; in a fight **ЭКСТРЕННОЕ ПРОДЛЕНИЕ · ×3** for one сводка; at renewal the tariff «обновлён» —
+  same price, one feature fewer, sold as an add-on; a lapsed base cold store stops giving, never
+  takes. **Д4 The AI core as a Хай-Фронт product** — the fourth manager seat on tariffs: БАЗОВЫЙ
+  (free, an advert in every third report), ПРЕМИУМ (route prices, a real forecast), СЕМЕЙНЫЙ
+  (opinions on how you live); unpaid it downgrades itself and apologises; the four-seat rule holds.
+  Kindness: on the free tariff it skips the advert once when your base is burning.
+
+### Release tails — any gap, all before a push
+
+Determinism: `wanderer · A` reads real chance or time on the corridor's buy path
+(`wanderBuy`/`wanStep`, 24c) — find it, move the scene; the clock out of `stateHash` (decided
+11.09: a separate field, `T.state()` returns both); `planetStripTick` by `wallMs()` writes `stripLvl`
+into hashed state. Housekeeping: the `.gz` cache headers (`Cache-Control: max-age=60,
+must-revalidate` + `FileETag MTime Size`, `curl -I` after deploy); PATCHNOTES trim (< 0.400.0 to
+`docs/PATCHNOTES-archive.md`); the patch-bump rule (tests/tools/docs → patch; `src/` → minor after
+`-Mutants` green). Tests M443–M446 open items (below). The refactor queue (below). M451 the sky
+from the galaxy model. The 60 fps check re-run at the release. «свет: звезда — самое светлое» red
+once in the pane (the cumulus, `CLOUDS_OFF`) — one look, then strike. A per-suite dirty-page check
+after `fn()` — not built.
+
+**Deferred out of this plan (named so they are not re-invented):** the giants Ж6; base-side
+birchpunk Д12–Д14 (farm, баня, чайный гриб, blockade, «Буханка») → the base's own queue; six
+musical modes; the tunnel with walls and station halls (metro drafts 1–2); the trust rating; the
+lab restart (a CPU budget per session first; the 2026-09-18 week moves with it).
+
+**Decisions of 14.09 (the author's, not re-litigated):** the hold and tanks are cells · the metro
+is a real station in the system, not an abstract ring · rides are seconds to a minute · the net is
+procedural and infinite · jumps stay for near · «пока только в план пиши».
 
 ## Next — after M321 — closed (the queue of 2026-09-03 and §18.8); body moved to `docs/PLAN-archive.md` (2026-09-11)
 
@@ -345,189 +489,40 @@ Design: `docs/DESIGN-wanderer.md`. The queue, its decisions and the M351 coopera
 
 ## Side passes of 2026-09-07 — all built; bodies in `docs/PLAN-archive.md` (sections of 2026-09-10 and 2026-09-11)
 
-## The world galaxy — the queue (M447–M451, 2026-09-11)
+## Tests — M441–M446 built (0.428.0–0.437.0); bodies in `docs/PLAN-archive.md` («Moved 2026-09-14»)
 
-The author, 11.09.2026: «карта двигается… к экрану они приклеены», and, of four options offered:
-«мировая галактика, у нас в игре должно быть всё круто». The map's band, nebula and grit were
-screen layers; the world has a core at 0:0 (the rose, `CHRON_R`, `sysDanger`), so the map is a
-view from above onto a barred spiral. Design, model, budgets, acceptance, decisions and risks:
-**`docs/DESIGN-galaxy.md`**. Picture and names only - no system moves, nothing persists.
+Design and the rule of place: `docs/DESIGN-tests.md` (a law → a detector, a path → a scenario, a
+formula → a Node suite; the 809 old suites are frozen). **Open, each a commit in a gap:** `TEST_T0`
+is 12:00 *local*; a drawn run's hash differs from an undrawn one (only the `rnd` position is
+compared — a detector owed); the tools' self-test sits before the net; not caught yet — the .55
+auto-brake, the money-printing counter, idle drones; partial — the helm switching itself,
+sharpness at DPR 1, contrast under a vignette, A/W judged in the system view only; goldens are the
+laptop's GPU (`<W>x<H>@lab.json` when the lab runs again); M444 left — a cooperative walk, drags
+and the wheel not recorded, the map per window by the build; M445 — a `DPR=.5` mutant once
+`resAuto` never lowers under a pinned clock; M446 left — previous-version diff, `look()` telemetry
+from players into `log.php`. The staged oracles (goldens, worlds, trips) wait for the lab's week.
 
-- **M447 the model and the glow in the world** - `galaxyAt(x,y)` (disk, bulge+bar, two arms and
-  spurs, dust lanes, knots); world tiles in two levels with a 4 ms bake budget and a fade-in
-  fallback; band and nebula leave the game map; M438's sky block and suite retired. Node suite for
-  the model, a detector for "the galaxy moves with the sheet"; golden frames accepted; g11 verdict.
-  Acceptance frame: home, 0:0, zoom 1, inside the bulge - addresses keep their contrast.
-- **M448 the resolved stars** - faint stars per sector, constant screen density across the zoom,
-  no cross, no halo, no twinkle; the map's `drawStars` call goes.
-- **M449 named places** - two arms and ~10 nebulae named in the game's voice; a word in the map
-  header and the system card; labels at far zoom; the war page moves to the same galaxy and
-  `mapBandPaint`/`mapNebula` are deleted.
-- **M450 the overview** - pinch past zoom 5 to ~14: the sheet fades, the whole disk with «вы
-  здесь», the settled circle, the danger rim, marks and rumours; the sheet fades back on the way in.
-- **M451 one galaxy, two views** - the flight/system/landing/title sky integrates the same model
-  from the player's position: brightest towards the core, nearly empty at the rim.
+### The lab — nights 1–2 read and fixed (0.427.2, 0.440.0); night of 12/13.09 report only: `docs/night-2026-09-13/README.md`. **Stopped 11.09** (CPU 57 % of a day against the plan's 50 %): before any restart a CPU budget per session.
 
-## Tests — the architecture and the queue (M441–M446, 2026-09-10)
+## Refactor audit (0.438.0) — done items in `docs/PLAN-archive.md` («Moved 2026-09-14»)
 
-The author, 10.09.2026: «тесты должны проходить быстро, должны предсказывать, должны ловить
-баги, которые есть, но их не заметили… должны заменять ручное тестирование». The reasoning, the
-industry comparison and the skeleton are in **`docs/DESIGN-tests.md`**; this is the queue. Rule
-of place from §3 there: a law becomes a detector, a player's path becomes a scenario, a formula
-becomes a Node suite — nothing else becomes a suite, and the existing 809 are frozen (fix reds,
-extract tools, do not extend). Order is strict: determinism first, everything after stands on it.
-
-- ~~**M441 determinism in the game**~~ — 0.428.0: `rnd`/`rndFx`/`now`/`clockSet` in `01-core`, ~400
-  calls migrated, the build law, `stateHash` + the same-hash suite over `lookScenes`, `resetWorld`
-  pins seed and clock (`?hour=`), `bNoDir` gone. Open: ~~the fuzz seed into `rndSeed`~~ (`T.go`
-  seeds it since M442); `TEST_T0` is
-  12:00 *local* (green in UTC, LA, Auckland); a drawn run's full hash differs from an undrawn one
-  (draw fills lazy caches in `G`) — only the `rnd()` position is compared, a detector for M443.
-- ~~**M442 the test API and the harness rules**~~ — 0.430.0: `T.*` in `tests/90a-tools.js`
-  (old helper names are one-line wrappers; `T.state()` = `stateHash()`, `T.go(scene, seed)` seeds
-  `rnd()`, `T.advance/clockShift` move the game clock), `docs/stand.py` (stdlib CDP, one Chrome),
-  `suite(name, {tier, win, stage}, fn)` instead of the three lists, zero-assertion rule, the net
-  over `ok(true`/`typeof`-guards (from the end of the detectors `90c` to `99-run`), `?shuffle`/`?pick`,
-  UI selections outside `G` restored after every suite. Open: `T.bot` is a stub until M444; the
-  tools' self-test sits before the net; `G.opts` is still not reset by `resetWorld` (the detector
-  driver keeps `DET_OPTS_BOOT`).
-- ~~**M443 the five oracles as detectors**~~ — 0.429.0 + 0.431.0. Crash, stuck, law (NaN/type/unknown field, a `Proxy`
-  over `G` counting reads of missing fields, instruments → fields table, control answer classes,
-  picture laws: legible text × ruler, parallax by depth, sharpness, no flicker, no popping, one
-  human height), imbalance over seeds, picture (golden frame per scene × three windows, perceptual
-  threshold, `accept`). Run over `lookScenes` × five gestures first; every red here is a real bug
-  and gets its own commit.
-  **0.429.0: four of five done** — `tests/90b-detect.js` (measures), `90c-detect-laws.js` (laws),
-  driver `91zzzzzzzz-detect` (15 scenes × 5 gestures + menu doors + armed ship, 93 steps, 8–12 s);
-  ten bug commits (type off the ruler in six modes, four unreadable labels, НАСТРОЙКИ dead on a
-  text pad size from the cloud). **0.431.0: five of five** — golden frames
-  (`91zzzzzzzzz-golden`, block signatures in `docs/golden/<W>x<H>.json` for the three harness
-  windows, `test.ps1 -Accept` re-shoots one) and the worlds oracle (`91zzzzzzzzz-worlds`, Node:
-  every station in six rings — a neighbour in reach, no ×4.5 counter, fuel ≤ ×3 median, the
-  distribution of the best one-hop deal); both staged to 2026-09-18 (§3.6), the lab's history
-  sets the thresholds. The same-hash suite also runs under seeded hands now. **Open:** not caught
-  yet — the .55 auto-brake, the money-printing counter, idle drones; partial — the helm switching
-  itself, sharpness/perch at DPR 1; the contrast check reads low under a vignette drawn after
-  text; A/W judged in the system view only; golden baselines are the laptop's GPU — the lab's
-  SwiftShader will say whether the block mean is coarse enough (that is what the week is for).
-- **M444 scenarios and coverage** — **part one, 0.432.0:** `T.bot` with fourteen goals through
-  the player's controls (`90a-tools`), eight walks under all detectors with the screens kept open
-  (`91zzzzzzzza-walks`, ~15 s, every harness window), the coverage map mode × step printed by the
-  run; the first pass found three unreadable labels the scene runs never saw (МАСШТАБ over a
-  planet disc, ШАХТА and ПЕЩЕРА on a day sky). **Part two, 0.433.0:** `test.ps1 -Changed` —
-  `build.ps1` writes `docs/TESTMAP.json` (test file → `src/` modules whose symbols it names) and
-  stamps `TEST_FILE` into `tests.html`; `?files=a|b` / `-Files` run the suites of those files.
-  **Part three, 0.434.0:** `?rec=1` recordings by frame (`15c-rec`: key mask + step, heads with a
-  copied snapshot, `rndState`, clock; autopilot targets as frame events; F8 «bug here» →
-  `drift.rec`), `T.replay(rec,{seed,hour,each})`, suite `91zzzzzzzzb-replay` (Node). **0.435.0:**
-  four more walks — a fight with pirates in a far system (`T.bot("fight")` aims and fires), the
-  base's lift and compartments, the home's room and a thing to look at, the wanderer's shelf and
-  a lot bought for matches — twelve paths, ~22 s. **0.437.0:** the recorder keeps screen clicks
-  as frame events (button id and label) and the replay presses them on the screen open at that
-  frame; the bot opens the trade section by its button, as a player does. **Left:** a cooperative
-  walk; drags and the wheel are not recorded; the map printed per window by the build, not per run.
-- ~~**M445 the mutant zoo**~~ — 0.433.0: eleven mutants in `tests/mutants.json` (`zoomStep`
-  no-op, `mapFont` without the ruler, `mapSkyShift(d)=d`, W without thrust, a lying fuel readout,
-  an icon button without `aria-label`, a manager field off `applySave`, a perk without a reader,
-  `drawBelt` empty, a bare label on a day sky, `resetWorld` leaving a field); `test.ps1 -Mutants`
-  (all, ~4.5 min) or `-Mutants -Only name`; ten of eleven died on the first run, the eleventh
-  after the «кнопка без слова» law joined the detectors. The lab cannot build (no PowerShell on
-  the host), so the zoo runs on the laptop before a release, not nightly. **Open:** «resolution
-  never returns» has no mutant — the sharpness detector compares the canvas with the DPR the game
-  chose, not with the DPR it should have chosen; a mutant `DPR=.5` would survive (needs a rule
-  for when `resAuto` may lower it under virtual time — decided 11.09, see Decisions). Seeds ×100 on scenarios stay in M446.
-- **M446 the lab's own oracles** — **0.436.0: trips over worlds** (`91zzzzzzzzc-trips`, Node, 2 s,
-  staged to 2026-09-18): the bot's round trip planet → ore → station in twelve station systems,
-  the distribution of frames, fuel and ore (today: median 2 152 frames, 26 fuel of 100, 12 ore;
-  every trip closes), red on a world stuck, ×3 slower than the median, over 80 % of the tank or
-  under a quarter of the median ore; `?worlds=N` for the lab. Left: previous-version diff, `look()`
-  telemetry from players into `log.php` and the lab page; and the lab's loose ends below.
-
-### The lab, first night (20260909-235848, 0.427.0) — its three reds fixed by 0.427.2, the OOM class and the fuzz timeout done; body in `docs/PLAN-archive.md` (2026-09-11)
-
-### The lab, second night (0.440.0, 2026-09-11) — read, its fixes in `lab.py`; body in `docs/PLAN-archive.md` (2026-09-12)
-
-### Local lab + Node soak, night of 2026-09-12/13 (0.447.0) — report only, nothing fixed: `docs/night-2026-09-13/README.md`
-
-## Refactor audit (0.438.0, 2026-09-11) — what the night's commits left, and the queue after them
-
-Four hostile reviews of 0.428.0–0.437.0 plus a survey of `src/` (322 modules, 88 k lines, 4 695
-symbols, none declared twice). Verdict on the night: M441–M446 stand; the defects were in the
-tooling around them, not in the game. **Done in 0.438.0:** `-Mutants` restores the file's text
-instead of `git checkout --` (that erased uncommitted work); `-Changed` runs the full corpus when
-`tests/90*` changed and the fast tier when nothing matches (was `exit 0`); a 900 s ceiling per
-shard with a kill of its own Chromes (the 33-minute GPU hang of 10.09); `G.opts` back to boot in
-`resetWorld` (`OPTS_BOOT`, the `DET_OPTS_BOOT` workaround gone); the clock law also refuses
-`Math["random"]`, `Date["now"]`, `new Date` without parens; `typeof`-ghosts fail the build instead
-of warning; the map jumps in `updateMap`, not inside `drawMap` (the world changed in drawing — no
-frame, no jump); `optsNumify` on the cloud boundary; the save net and fixpoint suite; `T.bot("undock")`
-can go red; `T.replay` refuses a recording from another `VER`; the trips oracle has absolute anchors
-(2 152 frames, 26 fuel, 12 ore ×1.5) beside its own-median thresholds; `detRuler` runs last;
-`INDEX.md` names where a symbol ends (`file:start-end` — `Read` by exact offset).
-
-**Queue, in order (each a commit; the safety net is the golden frames and `stateHash`):**
-- ~~**Tiers by evidence, not by name**~~ — 0.439.0: 132 «browser» suites whose body names no
-  browser API moved to Node (137 tried, five went red under the stubs and stayed in Chrome —
-  the lander's scale, the maker's breed, the postcard's eight places, the beggar's taps, the
-  engine hum); five Node suites that read `getBoundingClientRect`/`ctx.`/`drawWorld`/`style`
-  moved to Chrome. Node tier 481 → 616 suites, 22 → 25 s; Chrome tier 295 → 168 suites. Left:
-  the per-edit tier is 25 s, not the ~5 s of 0.359.3 — `-Times` for Node is owed; a suite that
-  is green under stubs is not proven honest, only not proven vacuous.
-- ~~**Golden frames keyed by the requested window, not the measured `W×H`**~~ — 0.440.0:
-  `test.ps1` puts `?win=W,H` in the address, the suite keys `docs/golden/<W>x<H>.json` by it
-  (files renamed 1248x641 → 1280x800, 548x685 → 390x844, 1408x1281 → 1440x1440), and a window
-  without a golden is red, not a note. Still true: `deploy.yml` runs the fast tier only, so no
-  browser suite runs in CI; the lab's SwiftShader will say whether the block mean is coarse enough.
-- **The silence table** — 15 mode × gesture pairs left. 0.441.0: `base · W` gone (the base scene
-  puts the cage on the second level; the promise suite that blocked the first try hashed only the
-  first 4 000 chars of the mode's JSON and never saw the menu open — fixed to `stateHash`). Still
-  silenced: `wanderer · A` — two steps from the ladder the same-hash suite goes red under seeded
-  hands: **something on the corridor's buy path (`wanderBuy`/`wanStep`, 24c) reads real chance
-  or real time** — find it, then move the scene. `detStuck`'s key law fires only on a frame diff
-  of exactly 0 — soften it together with that table, not alone (tried; map W/A went red).
-  Found on the way: the map was silent on ДЕЙСТВИЕ with your own sector selected — now it speaks.
-- **`stateHash` mixes `now()` in** (`08a-statehash`) — decided 11.09: the clock leaves the hash
-  and becomes its own field (see Decisions); to build. Done in 0.440.0: `Set`/`Map` with
-  primitive members hash sorted. Still open: `planetStripTick` cuts by `wallMs()` and writes
-  `stripLvl` into hashed state — machine-dependent under load.
-- **A shard hangs now and then** — 10.09 a GPU process spun 33 min; 11.09 shard 1/6 of a
-  `-Full` sat 900 s and was killed by the new ceiling, the rerun was green in 139 s. Not
-  reproducible on demand yet; the ceiling turns it from a lost night into a lost fifteen
-  minutes. Next: `--enable-logging=stderr` on the laptop runs too, so the hung shard leaves
-  the name of the suite it was in (the lab already does this with `tests-trace.html`).
-- **The source net over suites is line-based** — `ok(\n true`, `ok(1,…)`, `"function"===typeof f`
-  pass; the harness self-suites vanish under `?files=` (`_file`). And the clock law does not
-  cover `tests/` (41 raw calls in 13 files, mostly `performance.now` for cost — legitimate, but
-  unreviewed).
-- ~~**Opts from the cloud, the rest of the class**~~ — done: `91zzzzzzzzz-savenet` «сейв: числа
-  опций из облака возвращаются числами» holds the whole class, not only `padSize`.
-- ~~**Seven «?» fields in `SAVE_EPHEMERAL`**~~ — 0.442.0: `kills`, `orderStamp`, `baseVisit`,
-  `radioF` persist; `hailLog`, `quietGone`, `logNewBy` stay per session, reasons beside them.
-- **Long functions, on touch only** — 27 over 200 lines (`drawDigWorld` 569, `homeRoomBody` 550,
-  `drawRoad` 539, `drawPostcard` 457, `updateSurface` 452): split along layers, verify by golden
-  hash, never as a project of its own.
-- ~~**Dead symbols (22)**~~ — 0.439.0: deleted with their comment blocks (`BASE_STANDBY`,
-  `chessCanMove`, `crewHostages`, `deltaHtml`, `drawHoldMods`, `ethReset`, `mailDrop`, `namesBlock`,
-  `recOn`, `rungDef`…) after a grep of `src/`, `tests/`, `site/`, tools and docs each.
-- **Release hygiene** — decided 11.09 (see Decisions): work that touches only tests, tools or
-  docs bumps the patch; a minor bump means `src/` changed and `-Mutants` ran green first.
-- **Tools zoo** — `shot.ps1`, `shot.py`, `pageshot.ps1`, `stand.ps1`, `stand.py`, `mkstand*.ps1`,
-  `mkview.ps1`, `mkshots.ps1`, `mksiteshots.ps1`: one way to take a frame, the rest deleted.
-- **PATCHNOTES.md is 847 KB** — decided 11.09: trim, not split. Versions before 0.400.0 move to
-  `docs/PATCHNOTES-archive.md` (grep only, like `PLAN-archive`); one commit, no build change.
-- **`play.html` goes out uncached** — checked 11.09: `.htaccess` gives `\.html$` `max-age=60,
-  must-revalidate`, but a gzip-capable browser is rewritten to `play.html.gz`, whose block sets
-  only the encoding, and no `ETag`/`Last-Modified` come through openresty — every visit pays
-  1.97 MB. Decided: the same `Cache-Control` on the three `.gz` blocks plus `FileETag MTime
-  Size`; `curl -I` after the deploy; `api.php` untouched.
-
-**The full run is 4 minutes** — verdict 11.09: mostly unique nets; «картина» folded (0.443.0); the last real merge is the button family (~12 s: «руки», «обещание», «инструменты», the controls law → one table of buttons × expected answer). Body: docs/PLAN-archive.md, «Moved from PLAN.md on 2026-09-14».
+Verdict of the four hostile reviews: M441–M446 stand; the defects were in the tooling. **Open
+queue, each a commit:** the silence table — `wanderer · A` (see tails) and `detStuck`'s key law
+(fires only on a frame diff of exactly 0; soften with the table, not alone) · a shard hangs now and
+then (10.09 a GPU process 33 min; 11.09 shard 1/6 killed at 900 s, green on rerun) —
+`--enable-logging=stderr` on laptop runs too, so the hung shard names its suite · the source net over
+suites is line-based (`ok(\n true`, `ok(1,…)`, `"function"===typeof f` pass; harness self-suites
+vanish under `?files=`; the clock law does not cover `tests/` — 41 raw calls in 13 files) · long
+functions on touch only (27 over 200 lines; split along layers, verify by golden hash) · tools zoo
+(`shot.ps1`, `shot.py`, `pageshot.ps1`, `stand.*`, `mkstand*`, `mkview`, `mkshots`, `mksiteshots`:
+one way to take a frame) · the button family merge (~12 s: «руки», «обещание», «инструменты», the
+controls law → one table of buttons × expected answer) · `-Times` for the Node tier (25 s, not ~5).
 
 **Rejected, with the reason:** a palette module for the 893 hex colours (would flatten the
 deliberate range — measure hue histograms instead); a mode table for the 258 `G.mode===` (stable,
-no bugs, all conflict); removing the 1 804 `typeof` guards (the ghost law covers the danger at
-zero churn); a schema-driven `applySave` (the net plus the fixpoint suite give the value without
-touching the v4/v5 branches); not committing `drift.html` (breaks «opens with a double click»).
+no bugs); removing the 1 804 `typeof` guards (the ghost law covers it at zero churn); a
+schema-driven `applySave` (the net plus the fixpoint suite give the value); not committing
+`drift.html` (breaks «opens with a double click»).
 
 ## The frame is the judge for anything the player touches (M437)
 
@@ -552,60 +547,15 @@ reasons are structural - worth knowing before writing the next interface test.
   *closed* it, and a live button was reported dead. Cleaning up with your own hands is mocking by
   another name.
 
-## Loose ends (as of 2026-08-28, after the graphics run 0.237.0–0.244.0)
+## Loose ends — housekeeping (bodies in the archive, 2026-09-14)
 
-Bodies of the struck entries below moved to `docs/PLAN-archive.md` (2026-09-10, section «Loose ends») — grep there by milestone.
-Everything left open, with the reason it is open. Nothing here is a bug report — bugs are fixed
-the day they are found; this is work that was deliberately not done, or that needs the author.
-
-### Needs a decision from the author
-
-Nothing (2026-09-11). Every fork that stood here — drone attrition, the craft plan remainder
-(P4 grisaille, P7b the glyph notebook, С5 fatigue), the save fields, the clock in the hash, the
-release and notes hygiene — was decided on the author's behalf; see «Decisions taken on the
-author's behalf» at the end. Old bodies, with P4's spec and its measuring trap: `docs/PLAN-archive.md`,
-«Moved from PLAN.md on 2026-09-11 (review)»; P4's spec also stays in `docs/DESIGN-craft.md`.
-
-### Systems
-
-- **Stalls on a player's machine (new, found 11.09 in `crash.log`).** 09.09, 0.425.0, window
-  1536×791 at DPR 2.5 (ip hash `6ce8b33c` — the same hash sent the phone journals of 07–08.09):
-  five frames stood 2.0–3.4 s in the first 30 s of the system view; the fps beat says 38 in the
-  system (0.422.0) and 43–54 on the map. M418's slicing (worst slice 6.2 ms) was measured at
-  DPR 2; at 2.5 the canvas is 3840×1978 and something is not sliced, or `resAuto` does not step
-  down. Reproduce on a cold start in the system with `docs/g11.ps1` and
-  `--force-device-scale-factor=2.5`. First in the order: the galaxy adds a bake of its own.
-   **Checked 12.09:** `DPR=min(RES_AUTO=2, devicePixelRatio)` (`resize`, 08-state), so at 2.5 the
-   canvas is 3072×1582, not 3840×1978, and every bake caps `devicePixelRatio` at 2 except the
-   station home canvas (`26a`, not the system view). The canvas-size theory is wrong; the five
-   2–3 s frames in the first 30 s are a bake — reproduce at 1536×791 before touching M418.
-   **Measured 12.09 (g11 on this laptop):** 1280×800@2 → system 47 · landing 48 · surface 33 fps;
-   1536×791@2.5 (canvas capped at ×2, 3072×1582) → 38 · 32 · 24. The frame is raster-bound and the
-   extra 19 % of pixels cost ~20 % — nothing 2.5-specific. Open: why `resAuto` did not step that
-   player down to ×1.5 after 3 s over 24 ms (a fixed `gfx.res` in his options, or the 24 ms
-   threshold against a ~26 ms EMA). The stall report now names who held the frame (`stallWho`,
-   0.448.0) — wait for the next one before touching M418.
-- **`journal` entries in `crash.log`** — 27 in two days, all «Дрон Д-… встал · чинится сам» plus
-  one «Летопись разошлась…» from a 400×400 headless: check whether a journal line is meant to
-  reach the error log at all (the M417 kind of noise).
-- The freeze item itself (M234/M238/M417/M418) stays closed until the log shows a stall that is
-  not the bake; body in the archive.
-
-### Housekeeping
-
-- **PLAN.md stays under 60 KB** (`build.ps1` warns). A closed milestone leaves one line here and
-  its body goes to `docs/PLAN-archive.md` in the same commit (done 2026-08-28, 09-02, 09-04,
-  09-10, 09-11).
-- **Push only after a green run**, and keep the run and the push in separate commands (0.238.0
-  went out while a suite flaked one run in three).
-- **A dirty page still surfaces on its neighbour.** Running in parts turned three long-green
-  suites red (0.426.0); nothing yet names the suite that leaves a `.scr` open, a body mode class
-  or a key held. A per-suite check after `fn()` would name the culprit — not built.
-- **«свет: звезда — самое светлое» went red once in the pane at 1280×800** (Нейэль I, .694 vs
-  .536) while headless stayed green; the cumulus over the disc (0.427.1, `CLOUDS_OFF`) is the
-  likely cause — one look in the pane, then strike.
-- Tiers, switches and what the run costs: `CLAUDE.md` «How to verify» and `docs/VERIFY.md`; the
-  2026-09-09 cost measurement (`drawWorld` is the bill, three levers) is in the archive.
+**Needs a decision from the author:** nothing — every fork was decided on his behalf (below).
+**Systems:** the DPR-2.5 stalls are stage 0.4; the freeze item (M234/M238/M417/M418) stays closed
+until a stall that is not a bake shows in `crash.log` (`stallWho`, 0.448.0). **Housekeeping:**
+PLAN.md stays under 60 KB (`build.ps1` warns; a closed item leaves one line, its body goes to the
+archive in the same commit) · push only after a green run, run and push in separate commands · a
+dirty page still surfaces on its neighbour (a per-suite check after `fn()` would name it — not
+built) · tiers, switches and cost: `CLAUDE.md` «How to verify», `docs/VERIFY.md`.
 
 ## Closed 2026-08-28 → 2026-09-02 — one line each, moved to `docs/PLAN-archive.md` (2026-09-04)
 
@@ -629,14 +579,6 @@ Fallout Shelter» — it is one; closed. What stays open on purpose:
 - **The holding's deeds with no counter yet** (pirate bases boarded, monuments, nodes) join the
   rung score when their hooks are written.
 
-## To the release
-
-The newcomer's first four hours were walked (M207, M212, M215, 27.08) and fixed; bodies in the
-archive. Left: **the 60 fps check in all modes, re-run at the actual release** (author,
-2026-09-05: «60 — хрен с ним, потом»).
-
-**Standing rule:** the Ring (M154) is never explained. An answer to it would kill it.
-
 ## «Зачем лететь» — moved to `docs/PLAN-archive.md` (2026-09-04); its answer is Act I
 
 ## First three — built; body moved to `docs/PLAN-archive.md` (2026-09-04)
@@ -657,6 +599,12 @@ queue any more. Measured from M360 on: `prof()` with eight armed ships on the ph
 pad row on the 44 px sweep (`91zzy-screens`); `91zzzw-chron` replay hashes browser vs Node.
 
 ## Decisions taken on the author's behalf, so they are not re-litigated
+
+- **2026-09-14, the author.** The hold and tanks are cells of the plan · the metro is a real
+  station in the system with a real gate, not an abstract ring · a ride is seconds to a minute ·
+  the rail net is procedural and infinite · jumps stay for near · «пока только в план пиши» ·
+  optimisation first · the plan names no games and no films — this is ours.
+- **Standing rule:** the Ring (M154) is never explained. An answer to it would kill it.
 
 - **2026-09-11, the author: «по вопросам реши за меня как лучше».**
   - **The clock leaves `stateHash`.** `stateHash()` is the world and the `rnd` position; the clock
@@ -704,7 +652,6 @@ pad row on the 44 px sweep (`91zzy-screens`); `91zzzw-chron` replay hashes brows
 - **Naming register Б+А** (2026-08-31). Two earthly words stay on purpose — «Красный уголок» and
   «Столовая», with «Дружина» beside them: in a module at the edge of the galaxy they read as home,
   and that seam is what Soviet science fiction was made of.
-
 
 # ~~The base — M390–M409~~ — closed 0.409.0 (2026-09-07); body in `docs/PLAN-archive.md`
 
