@@ -245,3 +245,26 @@ oracles, the first bug found at night or in the players' numbers before any huma
   sessions»), `lab.py fix <key>`, a `host` class for OOM/timeouts so host limits do not mix with
   game bugs, fuzz timeout 150 s, Chrome memory flags. Acceptance: the first bug found at night
   before a human.
+
+## Appendix — The frame is the judge for anything the player touches (M437)
+
+Eight hundred suites missed a dead button on the map for as long as it existed, and the three
+reasons are structural - worth knowing before writing the next interface test.
+
+- **A control is found by what it *is*, not by what it says.** Every sweep collected elements
+  with text and matched the text against a verb, so an icon button (`+`, `−`: an SVG and an
+  aria-label) belonged to no list at all. Enumerate what is visible and enabled; take the caption
+  from `textContent` *or* `aria-label` *or* the id.
+- **A changed field is not an answer.** `prDelta` compares `G`, and the dead `+` did change a
+  field - `G.zoom`, invisible on the map. Anything the player reaches over the world is judged by
+  the frame: sample the canvas before and after, measure the world's own motion first (a scene
+  moves by itself), and require the press to beat it. A spoken refusal, a window, or a mode change
+  count too; a field does not.
+- **The rail was never swept, because it is not a screen.** Sweeps open `.scr`. The two or three
+  buttons that hang over the world in every mode are the ones the player sees most and the ones
+  nobody tested. Drive them per *mode*, over `lookScenes()` - the same list the frame meter and
+  the fuzzer use.
+- **Clean up after a press through the game's own door.** The first draft closed the menu by hand
+  (a class off `body`, `display:none` on `#menu`); the game still thought it open, the next press
+  *closed* it, and a live button was reported dead. Cleaning up with your own hands is mocking by
+  another name.

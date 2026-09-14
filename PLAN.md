@@ -164,6 +164,10 @@ Rule 3: same look, cheaper work.
   (`sayWorld`) or set FRAME_IN there.
 - [ ] СТОЛ: empty sheets say where to get the thing; bottom padding under the last row of desk
   objects. `journal` lines («Дрон … встал») should not reach `crash.log` (M417 noise).
+- [ ] Station header review 13–15: СТОЛ out of the masthead; two tab rows = 110 px — fold to one;
+  prices before the cooperative form; the Director's news on ДОСКА. Each passes «чтобы что?».
+- **Privacy, standing:** the author's save sits outside git (`C:\Claude\drift-private`) — never
+  commit it; the two bot signs in `~/drift-data/trace/p/0_0.json` the author removes by hand.
 
 ### Stage 1 — the ship under the finger (`docs/PLAYTEST-2026-09-13.md` §2.2–2.6, §3)
 
@@ -465,10 +469,32 @@ from the galaxy model. The 60 fps check re-run at the release. «свет: зв�
 once in the pane (the cumulus, `CLOUDS_OFF`) — one look, then strike. A per-suite dirty-page check
 after `fn()` — not built.
 
-**Deferred out of this plan (named so they are not re-invented):** the giants Ж6; base-side
-birchpunk Д12–Д14 (farm, баня, чайный гриб, blockade, «Буханка») → the base's own queue; six
-musical modes; the tunnel with walls and station halls (metro drafts 1–2); the trust rating; the
-lab restart (a CPU budget per session first; the 2026-09-18 week moves with it).
+### Stage 7 — the base and the giants (`DESIGN-birchpunk.md` §4.3–4.7, `DESIGN-life.md` §3.6)
+
+- [ ] **Д12 The farm — одомашнивание.** A beast of a planet (`20f-fauna`), calmed by the probe or
+  a net, taken to a base with a **ферма** module; a name (Зорька, Пеструшка, Бурка…) and the
+  ПАЛАТА's QR-plate (the клеймо on a beast); a slow trickle of its world's good — organics, carbon,
+  xeno, on deep worlds чернозём — **only while someone talks to it** (a hand on the farm or the
+  player landed); a far beast gives a far good; never lost, homesick after a move (half yield).
+- [ ] **Д13 Баня and чайный гриб.** A base module **баня**: fatigue resets on a bath night (the С5
+  axis on managers); an inspection at a base with a баня finds one thing fewer — the inspector
+  «заодно попарится» (honest man, likes a bath). **Чайный гриб** — a director event (base §10): the
+  greenhouse culture overgrows, yield ×2 for three shifts, then it eats the base's organics; an
+  аврал cuts it back; the cut sells to Рассвет as «чайный гриб».
+- [ ] **Д14 The blockade and «Буханка».** A blockaded power's system says on its wave the shelves
+  are full and the others suffer; its market is empty and pays ×2 for food, fuel, parts; running it
+  is legal for a neutral, the blockader's pickets hail you — answered by speed. **«Буханка»** — the
+  base's surface–ship shuttle as a named machine (Д1), a boxy old van with engines, always a bit
+  broken, **the one machine the player may rename** (from the name table, no free text).
+- [ ] **Ж6 One giant per arm.** Each arm and the core get one colossal structure 20–50× a ship,
+  named in the galaxy's voice: a hollow moon with a mining town lit in rings; the Коммуна's dry dock
+  where one hull has been built for three hundred years; the Компания's cylinder with its logo
+  along its length; ГЛАВТРАССА's «Дом водителя» the size of a station; Орднунг's customs city where
+  every building is a form; Хай-Фронт's relay garden; Рассвет's belt town in the rocks. A landmark
+  on the map and a ruler in the frame. (The Ring, M154, is not one of these.)
+
+**Cut for good, so they are not re-invented:** six musical modes (→ a motif each, Б6); the tunnel
+with walls and station halls; the trust rating; the lab restart until a CPU budget per session.
 
 **Decisions of 14.09 (the author's, not re-litigated):** the hold and tanks are cells · the metro
 is a real station in the system, not an abstract ring · rides are seconds to a minute · the net is
@@ -518,34 +544,10 @@ functions on touch only (27 over 200 lines; split along layers, verify by golden
 one way to take a frame) · the button family merge (~12 s: «руки», «обещание», «инструменты», the
 controls law → one table of buttons × expected answer) · `-Times` for the Node tier (25 s, not ~5).
 
-**Rejected, with the reason:** a palette module for the 893 hex colours (would flatten the
-deliberate range — measure hue histograms instead); a mode table for the 258 `G.mode===` (stable,
-no bugs); removing the 1 804 `typeof` guards (the ghost law covers it at zero churn); a
-schema-driven `applySave` (the net plus the fixpoint suite give the value); not committing
-`drift.html` (breaks «opens with a double click»).
+**Rejected:** a palette module (flattens the range); a `G.mode` table (stable); removing `typeof`
+guards (the ghost law covers it); a schema-driven `applySave`; not committing `drift.html`.
 
-## The frame is the judge for anything the player touches (M437)
-
-Eight hundred suites missed a dead button on the map for as long as it existed, and the three
-reasons are structural - worth knowing before writing the next interface test.
-
-- **A control is found by what it *is*, not by what it says.** Every sweep collected elements
-  with text and matched the text against a verb, so an icon button (`+`, `−`: an SVG and an
-  aria-label) belonged to no list at all. Enumerate what is visible and enabled; take the caption
-  from `textContent` *or* `aria-label` *or* the id.
-- **A changed field is not an answer.** `prDelta` compares `G`, and the dead `+` did change a
-  field - `G.zoom`, invisible on the map. Anything the player reaches over the world is judged by
-  the frame: sample the canvas before and after, measure the world's own motion first (a scene
-  moves by itself), and require the press to beat it. A spoken refusal, a window, or a mode change
-  count too; a field does not.
-- **The rail was never swept, because it is not a screen.** Sweeps open `.scr`. The two or three
-  buttons that hang over the world in every mode are the ones the player sees most and the ones
-  nobody tested. Drive them per *mode*, over `lookScenes()` - the same list the frame meter and
-  the fuzzer use.
-- **Clean up after a press through the game's own door.** The first draft closed the menu by hand
-  (a class off `body`, `display:none` on `#menu`); the game still thought it open, the next press
-  *closed* it, and a live button was reported dead. Cleaning up with your own hands is mocking by
-  another name.
+## The frame is the judge for anything the player touches (M437) — the four lessons live in `docs/DESIGN-tests.md` («The frame is the judge», moved 2026-09-14)
 
 ## Loose ends — housekeeping (bodies in the archive, 2026-09-14)
 
