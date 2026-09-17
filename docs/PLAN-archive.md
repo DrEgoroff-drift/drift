@@ -10062,3 +10062,24 @@ unchanged (six). A whole-frame pixel diff between the two builds is *not* a vali
 was discarded: the two runs drift apart in world state (the ship sits a few pixels off) and the
 starfield is regenerated per load, so 2 % of pixels differ over the whole frame, corners included.
 The paired-frame verdict belongs to the designer's own method.
+
+**Determinism of the ship's path after the quantum (checked 2026-09-17).** The designer saw 240
+straight `stepWorld(1)` calls end on a different heading than on `main`, and that would move every
+same-hash suite and every replay. Checked with `stateHash()` and the ship's own numbers rather
+than by eye: with `WORLD_SUB=1` our build gives exactly `main`'s figures (heading −2.83681,
+x 92.4268, y −382.5588, vx −5.48957, vy −5.81933 — every printed digit), because `sdt = dt/1` is
+`dt` and the order of operations inside the loop is unchanged. One run in four drifts by about
+3·10⁻² in x, and it drifts on repeated runs of *one* build too, so that is the harness, not the
+code: `docs/shot.py` runs the scene on the real clock and `stateHash` here includes parts that
+move between loads. In play, where a frame is worth two or three quanta, the path does differ from
+`main` slightly — that is what quantising means — but every suite and replay runs on the pinned
+clock, where `frameBody` takes its single-step branch and `WORLD_SUB` stays 1, so the hash corpus
+is untouched.
+
+**The compass chip that «went missing».** A chip is drawn only when its target is *off* screen
+(`if(x>-20&&x<W+20&&y>-20&&y<H+20)continue;` in `drawSystem`), so a probe that ends with the star
+inside the frame legitimately shows no «ЗВЕЗДА» chip. Not a defect — a different ship position.
+Found while checking it, though: `drawSystem` read `#prompt`'s rectangle *in the frame* whenever
+the hint line had text, so the chips would not overlap it. The 0.3 measurement missed it because
+the probe's scene had no hint text. It now goes through a cached `promptRect()` (and a cached
+element), invalidated with the rest.

@@ -104,7 +104,10 @@ Rule 3: same look, cheaper work.
   own: 60 by default, i.e. every second vsync on a 120 Hz phone, so the intervals land on an even
   16.7 instead of swinging 16.7/33.3. 120 is allowed only while the EMA of frame *work* stays under
   6 ms for 5 s and drops back over 7 ms within a second (the hysteresis of 0.4); the work EMA
-  counts drawn frames only. The player's own frame cap always wins. A bug found while measuring:
+  counts drawn frames only, and — because the raster is not in `FRAME_JS` at all — the climb also
+  requires the *interval* of drawn frames to sit under 1.2 of the current tact period, while the
+  fall also triggers on intervals over 1.5 of it (a phone can show 3 ms of JS under 20 ms of
+  raster). The player's own frame cap always wins. A bug found while measuring:
   the stride was `ceil`, and the display-period estimate takes the *shortest* interval, so on a
   jittery 120 Hz it slid to 7.6 ms and `ceil` asked for every **third** vsync — 40 fps instead of
   60 (traced intervals of 24–27 ms). The tact is a target, so its stride rounds to the nearest,

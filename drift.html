@@ -8678,10 +8678,25 @@ function resize(){
    трогает вовсе. Сторож нарочно не ищет все двадцать мест, где открываются
    экраны: список таких мест устаревает, наблюдатель — нет. */
 let CVS_RECT=null,PADS_RECT=null,SCR_OPEN=null,LAYOUT_DIRTY=true;
-function rectsDirty(){CVS_RECT=null;PADS_RECT=null;LAYOUT_DIRTY=true;}
+function rectsDirty(){CVS_RECT=null;PADS_RECT=null;PROMPT_RECT=null;LAYOUT_DIRTY=true;}
 function cvsRect(){
   if(!CVS_RECT)CVS_RECT=cvs.getBoundingClientRect();
   return CVS_RECT;
+}
+/* так же кэшируется строка подсказки: её прямоугольник читал drawSystem,
+   чтобы фишки целей не лезли на неё, — то есть в кадре и только тогда, когда
+   в подсказке есть текст (потому замер 0.3 его и не увидел: сцена была без строки) */
+let PROMPT_RECT=null,PROMPT_EL;
+function promptEl(){
+  if(PROMPT_EL===undefined)PROMPT_EL=document.getElementById("prompt")||null;
+  return PROMPT_EL;
+}
+function promptRect(){
+  if(PROMPT_RECT===null){
+    const el=promptEl();
+    PROMPT_RECT=el&&el.getBoundingClientRect?el.getBoundingClientRect():false;
+  }
+  return PROMPT_RECT||null;
 }
 function padsRect(){
   if(PADS_RECT===null){
@@ -45870,11 +45885,11 @@ function drawSysHud(zx,zy,sh,sys,U){
   let inY1=H-(innerWidth<=760?150:120);
   for(const f of feet)inY1=Math.min(inY1,(f.y-f.r)/U-10);
   {
-    const pe=document.getElementById("prompt");
-    if(pe&&pe.textContent){
-      const r=pe.getBoundingClientRect();
-      if(r.height>0)inY1=Math.min(inY1,r.top/U-8);
-    }
+    /* прямоугольник подсказки — из кэша (0.3): читать его здесь значило
+       читать вёрстку в каждом кадре, где в подсказке есть строка */
+    const pe=(typeof promptEl==="function")?promptEl():null;
+    const r=(pe&&pe.textContent)?promptRect():null;
+    if(r&&r.height>0)inY1=Math.min(inY1,r.top/U-8);
   }
   const inset={x0:10,x1:W-10,y0:76,y1:Math.max(140,inY1)};
   const placed=[];
@@ -88196,18 +88211,28 @@ let capIv=16.667, capPrev=0, capN=0;
    Игроцкий потолок всегда главнее: такт его не повышает. */
 const TACT_LOW=6, TACT_HIGH=7;          /* мс работы кадра: пороги вверх и вниз */
 const TACT_UP_WIN=5000, TACT_DOWN_WIN=1000;
-let tactHz=60, tactGood=0, tactBad=0, workEma=10, FRAME_DREW=false;
+let tactHz=60, tactGood=0, tactBad=0, workEma=10, ivEma=16.667, FRAME_DREW=false;
 /* средняя работа кадра — только по НАРИСОВАННЫМ кадрам: пропущенные
    стоят копейки и тянули бы оценку вниз, повышая такт на пустом месте */
 function tactWork(js){if(FRAME_DREW)workEma=workEma*.9+js*.1;}
+/* Две меры, а не одна (замечание Контроля): работа кадра считается по FRAME_JS, а
+   растр в неё не входит вовсе. На телефоне кадр именно растровый: JS может
+   быть 3 мс при растре 20, и такт поднялся бы на 120, вернув ровно то метание, от
+   которого уходим. Поэтому вторая мера — САМ ИНТЕРВАЛ нарисованных кадров: вверх
+   пускаем только того, кто УЖЕ держит свой такт с запасом (интервал ниже 1.2
+   периода), а вниз снимаем и по пропускам развёртки (выше 1.5 периода секунду). */
 function tactTick(d){
   if(!G.running||d<=0||d>250)return;
+  ivEma=ivEma*.9+d*.1;
+  const per=Math.max(capIv,1000/tactHz);
   if(tactHz<120){
-    if(workEma<TACT_LOW)tactGood+=d;else tactGood=Math.max(0,tactGood-d*2);
-    if(tactGood>TACT_UP_WIN){tactGood=0;tactBad=0;tactHz=120;}
+    const light=workEma<TACT_LOW&&ivEma<per*1.2;
+    if(light)tactGood+=d;else tactGood=Math.max(0,tactGood-d*2);
+    if(tactGood>TACT_UP_WIN){tactGood=0;tactBad=0;tactHz=120;ivEma=capIv;}
   }else{
-    if(workEma>TACT_HIGH)tactBad+=d;else tactBad=Math.max(0,tactBad-d*.5);
-    if(tactBad>TACT_DOWN_WIN){tactBad=0;tactGood=0;tactHz=60;}
+    const heavy=workEma>TACT_HIGH||ivEma>per*1.5;
+    if(heavy)tactBad+=d;else tactBad=Math.max(0,tactBad-d*.5);
+    if(tactBad>TACT_DOWN_WIN){tactBad=0;tactGood=0;tactHz=60;ivEma=capIv*2;}
   }
 }
 /* Выключатель цикла. Прогон тестов гоняет мир сам и в кадрах не нуждается:

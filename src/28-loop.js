@@ -299,18 +299,28 @@ let capIv=16.667, capPrev=0, capN=0;
    Игроцкий потолок всегда главнее: такт его не повышает. */
 const TACT_LOW=6, TACT_HIGH=7;          /* мс работы кадра: пороги вверх и вниз */
 const TACT_UP_WIN=5000, TACT_DOWN_WIN=1000;
-let tactHz=60, tactGood=0, tactBad=0, workEma=10, FRAME_DREW=false;
+let tactHz=60, tactGood=0, tactBad=0, workEma=10, ivEma=16.667, FRAME_DREW=false;
 /* средняя работа кадра — только по НАРИСОВАННЫМ кадрам: пропущенные
    стоят копейки и тянули бы оценку вниз, повышая такт на пустом месте */
 function tactWork(js){if(FRAME_DREW)workEma=workEma*.9+js*.1;}
+/* Две меры, а не одна (замечание Контроля): работа кадра считается по FRAME_JS, а
+   растр в неё не входит вовсе. На телефоне кадр именно растровый: JS может
+   быть 3 мс при растре 20, и такт поднялся бы на 120, вернув ровно то метание, от
+   которого уходим. Поэтому вторая мера — САМ ИНТЕРВАЛ нарисованных кадров: вверх
+   пускаем только того, кто УЖЕ держит свой такт с запасом (интервал ниже 1.2
+   периода), а вниз снимаем и по пропускам развёртки (выше 1.5 периода секунду). */
 function tactTick(d){
   if(!G.running||d<=0||d>250)return;
+  ivEma=ivEma*.9+d*.1;
+  const per=Math.max(capIv,1000/tactHz);
   if(tactHz<120){
-    if(workEma<TACT_LOW)tactGood+=d;else tactGood=Math.max(0,tactGood-d*2);
-    if(tactGood>TACT_UP_WIN){tactGood=0;tactBad=0;tactHz=120;}
+    const light=workEma<TACT_LOW&&ivEma<per*1.2;
+    if(light)tactGood+=d;else tactGood=Math.max(0,tactGood-d*2);
+    if(tactGood>TACT_UP_WIN){tactGood=0;tactBad=0;tactHz=120;ivEma=capIv;}
   }else{
-    if(workEma>TACT_HIGH)tactBad+=d;else tactBad=Math.max(0,tactBad-d*.5);
-    if(tactBad>TACT_DOWN_WIN){tactBad=0;tactGood=0;tactHz=60;}
+    const heavy=workEma>TACT_HIGH||ivEma>per*1.5;
+    if(heavy)tactBad+=d;else tactBad=Math.max(0,tactBad-d*.5);
+    if(tactBad>TACT_DOWN_WIN){tactBad=0;tactGood=0;tactHz=60;ivEma=capIv*2;}
   }
 }
 /* Выключатель цикла. Прогон тестов гоняет мир сам и в кадрах не нуждается:

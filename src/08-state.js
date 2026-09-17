@@ -72,10 +72,25 @@ function resize(){
    трогает вовсе. Сторож нарочно не ищет все двадцать мест, где открываются
    экраны: список таких мест устаревает, наблюдатель — нет. */
 let CVS_RECT=null,PADS_RECT=null,SCR_OPEN=null,LAYOUT_DIRTY=true;
-function rectsDirty(){CVS_RECT=null;PADS_RECT=null;LAYOUT_DIRTY=true;}
+function rectsDirty(){CVS_RECT=null;PADS_RECT=null;PROMPT_RECT=null;LAYOUT_DIRTY=true;}
 function cvsRect(){
   if(!CVS_RECT)CVS_RECT=cvs.getBoundingClientRect();
   return CVS_RECT;
+}
+/* так же кэшируется строка подсказки: её прямоугольник читал drawSystem,
+   чтобы фишки целей не лезли на неё, — то есть в кадре и только тогда, когда
+   в подсказке есть текст (потому замер 0.3 его и не увидел: сцена была без строки) */
+let PROMPT_RECT=null,PROMPT_EL;
+function promptEl(){
+  if(PROMPT_EL===undefined)PROMPT_EL=document.getElementById("prompt")||null;
+  return PROMPT_EL;
+}
+function promptRect(){
+  if(PROMPT_RECT===null){
+    const el=promptEl();
+    PROMPT_RECT=el&&el.getBoundingClientRect?el.getBoundingClientRect():false;
+  }
+  return PROMPT_RECT||null;
 }
 function padsRect(){
   if(PADS_RECT===null){

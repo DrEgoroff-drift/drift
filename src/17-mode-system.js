@@ -705,11 +705,11 @@ function drawSysHud(zx,zy,sh,sys,U){
   let inY1=H-(innerWidth<=760?150:120);
   for(const f of feet)inY1=Math.min(inY1,(f.y-f.r)/U-10);
   {
-    const pe=document.getElementById("prompt");
-    if(pe&&pe.textContent){
-      const r=pe.getBoundingClientRect();
-      if(r.height>0)inY1=Math.min(inY1,r.top/U-8);
-    }
+    /* прямоугольник подсказки — из кэша (0.3): читать его здесь значило
+       читать вёрстку в каждом кадре, где в подсказке есть строка */
+    const pe=(typeof promptEl==="function")?promptEl():null;
+    const r=(pe&&pe.textContent)?promptRect():null;
+    if(r&&r.height>0)inY1=Math.min(inY1,r.top/U-8);
   }
   const inset={x0:10,x1:W-10,y0:76,y1:Math.max(140,inY1)};
   const placed=[];
