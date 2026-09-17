@@ -87,18 +87,8 @@ industrial plan (`11r-plan`), the blueprint is `G.draft`.
 Numbers: `docs/PLAYTEST-2026-09-13.md` §2.1, §6. Meter: `docs/night-2026-09-13/raw/phone-tools/trace.py`
 on the S23 (390×844, DPR 2.625, 120 Hz) before, after every item, at the end; `g11` on the laptop.
 Rule 3: same look, cheaper work.
-- [x] **0.1 Cadence** — the world's *ship* steps in whole 1/120 s quanta (`WORLD_SUB`, the loop
-  in `updateSystem`), the leftover carried and allowed half a quantum negative, the count by
-  `Math.round`. Everything else in `stepWorld` keeps one call a frame with the summed `dt`, which
-  also keeps `recTick` at one entry per frame. The first cut stepped the *whole* world n times and
-  was a regression on the phone; the tester's numbers and the fix are in `docs/PLAN-archive.md`.
-  Emission back at base (6/32 against 6/30); nose-step spread 9.5× → 2.9× → one step almost
-  everywhere.
-- [x] **0.1b An even tact** — 60 by default, i.e. every second vsync on a 120 Hz phone; 120 only
-  while frame work stays under 6 ms **and** the interval of drawn frames sits under 1.2 of the tact
-  period, dropping back over 7 ms or 1.5 of the period. The player's cap always wins. A latent bug
-  fell out: the stride was `ceil` against a display-period estimate that tracks the *shortest*
-  interval, so a jittery 120 Hz asked for every third vsync — 40 fps instead of 60.
+- [x] **0.1 Cadence** — done; body in `docs/PLAN-archive.md` («Moved 2026-09-18»).
+- [x] **0.1b An even tact** — done; body in `docs/PLAN-archive.md` («Moved 2026-09-18»).
 - **Gate, honestly: half taken.** On the author's S23, `RES_AUTO` now holds at 2 for ten minutes
   straight (it used to fall to 1 in thirty seconds) and the haze is no longer the bottleneck —
   muting it changes nothing. But the cadence gate is **not** met: the first minute read 58.2 fps
@@ -298,85 +288,11 @@ Rule 3: same look, cheaper work.
   for all three. So if the author still finds the tails stubby, the number to change is the LIFE, not
   the way it is measured. The Designer is preparing one frame for the author: three bands at equal
   speed — finger trail, wake, ribbon — each captioned with how long it lives.
-- [x] **0.2 Raster** — the wake and the thrust ribbon were a stroke per segment (two for the
-  wake: halo and core). They now go in steps of fade per lane, one path per step, the halo and the
-  core sharing that path. The step is chosen by the *mean of age and brightness*, 32 steps on the
-  wake and 24 on the ribbon: steps even in age banded the bright end (the designer measured a saw
-  with a dip every 30 px along the tail), steps even in brightness lumped the whole dim half of a
-  lane into one step and left a seam where it began. Quantisation error of the drawn alpha against
-  the exact one: ≤ 2.4 % of peak on the wake core, 2.1 % on its halo, 2.3 % on the ribbon — about
-  three units of 255 where the designer allows eight. Strokes per frame on a filled wake (1 560
-  wake points, 156 trail): 3 391 → 565, paths 3 476 → 458. Each step averages the finished alpha
-  and width, not the age. Body in `docs/PLAN-archive.md`. Frame acceptance is the designer's paired
-  `straight_cmp` shot; `hud`, `drawHull` and `drawSystem` were left alone (laptop `g11` drifts
-  10–20 fps between runs of the same build, so their 6–25 ms/s cannot be told from the noise —
-  the S23 is the meter for them).
-- [x] **0.2a The haze over the nozzles — the frame's real bill.** The tester found it on the S23
-  with one tab and mute-one-function passes: with `exhaustHaze` the game ran 33.5 fps at 67 %
-  cadence with 492 frames over 24 ms; **without it, 59.8 fps at 99.6 % with five** — one function
-  held the whole Stage 0 gate, and everything done in 0.1–0.4 is worth about 7 fps beside it.
-  `heatHaze` drew the canvas into itself up to nine times per nozzle (eighteen on a two-engine
-  hull), and each read of the freshly drawn canvas stalls the GPU pipeline. The author's condition
-  was to optimise, not to cut («это красиво»), so the look is untouched: the union rect of all
-  nozzles is copied **once** into a small offscreen and the strips are drawn from there, with the
-  same strip count, the same alpha and the same sine of `G.t`. Self-copies of the main canvas per
-  frame: 6 → 0 (one grab into the offscreen instead), strips unchanged. Accept: the tester on the
-  S23 (fps ≥ 55, cadence ≥ 95 %) and the designer's paired haze frame.
-- [x] **0.3 Layout in the frame** — zero DOM reads per frame and per pointer event, measured:
-  `system`, thirty steady frames and thirty pointer moves in flight and on foot, all counters 0
-  (before: 5 `getBoundingClientRect` + 5 selector queries **per frame**). The canvas and pad rects
-  live in a cache invalidated by `resize()`, orientation, scroll, tab change and a narrow
-  MutationObserver; «is a screen open» is a cached flag behind an observer instead of three
-  `querySelector(".scr.open")` calls a frame; the floor/band measurement runs only on a dirty
-  layout. The counter itself is in the game (`15d-domread`, `?domread`, asleep otherwise) so a
-  detector can assert it. Body in `docs/PLAN-archive.md`.
-  Follow-up (Tester + Control, 18.09): 0.3 held for STATIC layout reads, but new code since
-  (fleet labels, P4's ship/pads guards, the anchor hint) added fresh ones, and the real cost turned
-  out to be per-POINTER-EVENT, not per-frame: `helmCanvasXY()` called `cvsRect()` on every
-  `pointermove`, and a touch sensor sends those at up to 120 Hz against a 60 Hz frame — a still
-  finger was free (100% cadence), moving one wasn't (82.6% at 83 events/s, worse the faster it
-  moved). `fleetPromptRect()`/`helmLift()`'s own uncached reads (8a3f6ff) and the pointer handler
-  are now both fixed: two dead-cache duplicates route through 08-state's cache, and the pointer
-  handler stores raw coordinates only — conversion, `helmDrag`, `helmTrail` and the `--helmlift`
-  write all run once per frame (`helmSyncPointer`), not once per event. `helmLift`'s written value
-  is now rounded before the change-check too, closing a sub-pixel-jitter path to the same style
-  write. Verified structurally (real touchscreen numbers are the Tester's): firing 8 synthetic
-  `pointermove` events between two `helmTick()` calls still produces at most one `getBoundingClientRect`
-  and one style write, not eight.
-  Two follow-ups from code review, both checked by the numbers Control asked for, not assumed.
-  Trail length: `helmTrail` samples by distance (push a point once ≥3px from the last one), not by
-  a fixed step, so halving the call rate (once/frame vs up to twice) does not halve the trail —
-  each call now carries the *whole* frame's movement instead of half of it, so the points are
-  farther apart, not fewer. Measured with a synthetic 240px drag at the same real speed: old-style
-  (60 sub-frame calls, 4px each) → 7 points spanning 24px; new-style (30 per-frame calls, 8px each)
-  → 7 points spanning 48px — *longer*, not shorter, at a fast drag; at a slow one neither style
-  pushes fast enough for the difference to matter. The a-priori worry (halve the call rate, halve
-  the trail) didn't account for each surviving call also carrying twice the distance. Second: the
-  first trail point used to wait one frame after a stick was born (`helmTake()` never pushed one
-  itself, in either the old or new code) — `helmSyncPointer()` now pushes it immediately on take,
-  zero delay.
-- [x] **0.4 Resolution that comes back** — the climb window is 5 s (was 20), the two-climbs-a-session
-  cap is gone, and both thresholds are now fractions of the *target* frame rather than fixed
-  milliseconds: down above 1.45× (24 ms at sixty, as before), up below 1.05× (17.5 ms, i.e. 57 fps
-  — the old 13 ms is unreachable on the phone even at ×1). Dither is held by a penalty, not a cap:
-  a climb that survives less than 30 s counts as a mistake and the next attempt waits a minute,
-  then two, up to a quarter hour; a climb that lives resets the penalty. The voice speaks of a
-  change at most once a minute. A latent bug fell out with it: with the player's 30 fps cap the
-  steady 33 ms interval read as a stall and the game kept dropping its own resolution. Checked by
-  driving `resAuto` with synthetic intervals: 12 s heavy → ×1, 14 s light → ×2, a climb knocked
-  down inside 30 s arms a 60 s wait and then doubles it, steady 18 ms moves nothing, 33 ms under a
-  30 fps cap moves nothing. **Not verified:** «`RES_AUTO ≥ 2` held for 10 min» needs the S23.
-- [x] **0.5 Sound** — the convolution reverb held about 250 ms of every second on the S23. Its
-  cost is linear in the impulse, and the impulse was 5.5 s in stereo (528 000 samples against every
-  input sample), while past the third second there is silence under the engine anyway. On a large
-  screen the impulse is now 2.2 s at the same decay (211 200 samples, 2.5× less work) and the long
-  tail is still written by the feedback delay that already lives on that bus. On a phone
-  (`W<=760`) there is **no convolver at all**: the room is two independent short delay loops
-  (137 and 211 ms, each with its own lowpass and its own feedback under 1), six nodes instead of
-  half a million multiplications. Measured with an analyser on the room's output: the first
-  version, with both delays through one shared filter, had a loop gain of 1.1 and **diverged** —
-  1.9·10²² a tenth of a second after one click, 3·10²³ after a second and a half. Decoupled, one
-  click peaks at 0.11 and decays to 0.003 by 2.4 s. Body in `docs/PLAN-archive.md`.
+- [x] **0.2 Raster** — done; body in `docs/PLAN-archive.md` («Moved 2026-09-18»).
+- [x] **0.2a The haze over the nozzles — the frame's real bill.** — done; body in `docs/PLAN-archive.md` («Moved 2026-09-18»).
+- [x] **0.3 Layout in the frame** — done; body in `docs/PLAN-archive.md` («Moved 2026-09-18»).
+- [x] **0.4 Resolution that comes back** — done; body in `docs/PLAN-archive.md` («Moved 2026-09-18»).
+- [x] **0.5 Sound** — done; body in `docs/PLAN-archive.md` («Moved 2026-09-18»).
 - [ ] **0.6 GC — hoisted, unverified.** Major GCs of 14–28 ms sat inside the longest gaps. Three
   sources are gone from the frame: the instruments built a string for every gauge every frame just
   to compare it (`setSt`/`setTx` do not write an unchanged value, but the string was glued anyway,
@@ -396,129 +312,14 @@ Rule 3: same look, cheaper work.
 
 ### Stage 0b — cheap and decided (one commit each)
 
-- [x] **P1 Scroll, globally** (§1.1) — every rebuild of a desk page now goes through one door
-  (`keepScroll`, `27i-ui-table`) that remembers the scroll before the rebuild and puts it back
-  after, clamped to the new height; and a journal line only rebuilds **the page it touches**
-  (`tableShowsLog`/`tableShowsRecord`), instead of rebuilding the desk whatever was open. The
-  direct re-renders keep it too: ОПИСЬ (`opisRerender`, 29 call sites), «Смена» when a channel
-  opens, the relay list after parking. Measured in the browser at 375×812: reading the middle of
-  the notebook at `scrollTop` 3823, a line on the same page, a line on another page and a record
-  entry all leave it at 3823, and the other page's line no longer rebuilds this one at all; in
-  ОПИСЬ, `scrollTop` 447 survives `opisRerender()` and an unrelated journal line. Caught on the
-  way: the scroller is `#tableBody`, not `#loglist` — the first version held the scroll of a node
-  that does not scroll, so `keepScroll` now keeps the ancestors as well.
-- [x] **P2** ОПИСЬ — an opened card no longer swallows the scroll (§1.2). It carried
-  `touch-action:none`, so the card plus its row of actions was about 150 px of dead zone in the
-  middle of the list: a finger landing there panned nothing. Vertical pans now go to the browser,
-  exactly as on a closed card (`pan-y`), and the lift survives because it waits 380 ms **without
-  movement** — more than 14 px cancels it anyway. While an item is actually in hand, panning is
-  suppressed across the whole list (`body.op-lift`), so the browser and the drag do not fight. And
-  the lift is guarded against a rebuild: `opisRerender()` during a drag only sets a pending flag
-  and runs after the drop, because replacing the card's node would drop the pointer capture and
-  leave the item hanging as a ghost. Measured in the browser: `touch-action` reads `pan-y` closed,
-  `pan-y` open (was `none`), `none` while carrying.
-  Live on the S23 (Tester, 17.09): scroll holds 300→300 on open, pan over the open card
-  131 px, no dead zone, lift survives an ether line. Two notes handed to the worker: the lift
-  is silent when the finger lands on a button inside the card; the item drops after ~24 px.
-- [x] **P3** ОПИСЬ tab strip (§1.3) — it took its width from its content, so four words sat in
-  277 px of a 396 px cloth with a hundred pixels of emptiness beside them; it now stretches across
-  the cloth (`align-self:stretch`, buttons `flex:1 0 auto` — grow, never shrink, so a fifth tab
-  would scroll rather than squeeze below the finger rule). At 375 px the strip went 277 → 321 px
-  with buttons of 85/79/90/67 and a height of 44; at 430 px, 277 → 368. And it now goes through
-  `tabsSync` like the desk's and the station's strips: without that its right-edge fade never
-  cleared, so the last tab stayed pale even with nothing left to scroll, and a selected tab could
-  sit off the edge. `tail` now reads true with the mask off.
-  Live on the S23 (Tester, 17.09): strip 360 of 387 cloth (was 288), ТРЮМ out of the shade, 13/14 px margins.
-- [x] **P4** Compass chips stay on the frame's edge (§1.4). The bottom edge itself used to move:
-  every stick foot pulled it up, and since a finger is born anywhere in the lower half, the chips
-  crawled to mid-screen — where a chip no longer says «the target is out there, past the edge».
-  Rule (Control, 17.09): the edge stays the edge, moving inward no more than 12 px beyond its
-  normal inset; the stick foot and the live hint line are now *obstacles in the same list as the
-  chips*, so a chip dodges them **along** the edge, in both directions from its ideal spot; and if
-  the whole edge is taken, it jumps to the neighbouring edge toward the target. Measured in the
-  browser at 375×812: clean, three chips sit on the top edge at y = 76 (the inset itself); with a
-  blocker on the left of that edge they slide along it (x 104 → 114, 188 → 198) and y stays 76;
-  with the whole top edge blocked all three jump to the side edges (y 466–486, x on the left and
-  right insets); and with a foot in the middle of the lower half the chips are free to stand at
-  y = 556 and 576 — the bottom edge no longer follows the finger. The sweep covers the whole edge
-  now: a shorter one left a chip sitting inside a large obstacle instead of jumping.
-  Control's review (17.09) asked for three more things, done in the same milestone: the chip's
-  own place now *eases* toward its target at up to 200 px/s instead of snapping along its own
-  edge, and fades out/in over 0.15 s whenever its edge changes (see the follow-up below — the rule
-  moved from "the path is long" to "the edge is different" after a shorter-path bug); the ship's
-  own nose is now a taken
-  rectangle, so a side-edge chip cannot sit on top of it; and the stick pads at rest (`padsRect`),
-  not only their finger-drawn trace, are taken too.
-  One more report from the phone (Tester, S23) landed mid-review: the chip order along an edge
-  reshuffled from frame to frame even though nothing moved but a stick foot. Chips used to search
-  their own free spot independently, so displacing one could flip another to the opposite side of
-  it for no reason visible on screen. Fixed by processing chips in one fixed order (nearest target
-  first) and having every chip after the first stack flush against the one before it, growing the
-  row in a single direction rather than re-searching both ways each frame; only the front chip of
-  a row, and a chip whose whole row ran out of edge, still searches both ways from its ideal spot.
-  Follow-up (Designer's frame-by-frame headless probe, 18.09): the (x,y) ease above moved in a
-  straight line, so a SHORT cross-edge move (target crosses from the right edge to the bottom one,
-  say) cut across the frame's interior instead of following the edge — 0.8 s hanging 47-93 px
-  inside the frame in her probe, which a phone turn at ×2.4 would trigger constantly. Control's
-  fix, simpler than tracking the edge as a path: a chip's cached place now remembers which of the
-  four edges it's drawn on; easing only happens when the new slot shares that edge, and ANY edge
-  change fades regardless of distance (`dist>edgeLen*.5` replaced by `st.edge!==targetEdge`).
-  Verified in the browser: a right-edge chip retargeted to the bottom edge 285 px away (under the
-  old half-edge threshold of ~304, so it would NOT have faded before) now fades immediately; a
-  same-edge retarget still eases as before.
-- [x] **P5** «Смена» text is ink now, not screen-glow (§5.1). `.smena` was written (M353) before
-  the desk became paper (M151a) and kept `var(--text)`/`var(--dim)` — colours meant for a dark
-  glass panel — on the new cream sheet, giving a body-text contrast of about 1.1:1 (unreadable) and
-  no right margin at all (`margin:6px 0 14px 28px`, the `0` is the right side). Both are page
-  styling the M151a pass never touched because `.smena` lives in its own stylesheet block, not in
-  the `#loglist .li` rules that pass rewrote. Fixed with the same ink already used for the journal
-  on the same sheet (`#loglist .li span`'s `#2f2718`, and `#8b7d61`/`#6a5c44` for the scene-break
-  mark and italic captions), and a matching 28px right margin. Measured in the browser: body text
-  contrast 1.09:1 → 12.06:1 against the sheet's top tone (9.99:1 against the bottom, the gradient's
-  darker end); margins now 28px both sides (were 28/0).
-  Follow-up (Control's code review, 18.09): `.smena .journal` survived the pass — gold text on a
-  near-black `rgba(20,15,9,.3)` plate, the same dark-glass sin one rule up, just hiding inside a
-  single selector. Repainted with the journal's own ink (`#4a3a24`, matching `.li.talk span`) and a
-  light warm tint (`rgba(120,96,56,.10)`) instead of a dark overlay — contrast 7.86:1 / 6.59:1
-  against the sheet's two gradient ends.
-- [x] **RELEASE BLOCKER closed: the four «штурвал» failures were a `test-node.js` stub bug, not
-  pollution, not caching.** Neither the Tester's async-observer theory nor Control's "0.3 cached the
-  wrong thing" theory was it, though both were reasonable reads of the symptom (confirmed by testing
-  each: removing the `scrOpen()` cache alone did not fix it). The real bug was in `qs()`, the DOM-stub
-  selector matcher: for a compound class selector like `.scr.open`, it checked only the FIRST class
-  fragment (`.scr`) and silently ignored the rest — any element with class `scr` matched `.scr.open`
-  whether or not it also had `open`. Worse, `document.querySelector`'s "nothing matched, fabricate a
-  stand-in" fallback (meant for always-present singletons like `.pads`) fired on `.scr.open` every
-  time nothing was genuinely open — which is the normal case — permanently planting a fresh
-  `scr open` element after every `resetWorld()` cleanup undid the last one. Confirmed by instrumenting
-  `helmShip()` to print `scrOpen()`/element counts: `openCount` stayed pinned at exactly 1 forever,
-  immune to `resetWorld()`'s own `classList.remove("open")` cleanup, which fired but matched (and
-  fixed) nothing else. Fixed both in `test-node.js`: `qs()`'s matcher now ANDs every class/id/tag
-  fragment in a compound selector; the fabrication fallback now only fires for a single simple
-  selector (one `#id` or one `.class`), never a compound one — "nothing open" is a real answer, not
-  missing markup. `test.ps1`: 16336/16336, was 16332 with 4 red.
-- [x] **P6** Five items. Hints cut at 411 px: `#prompt`'s 2-line clamp cut text carrying its own
-  line break when either half alone wrapped — raised to 3, matching `#msg`. МАСШТАБ: already fixed
-  (0.448), structurally apart from the chips — nothing to do. The beacon: no distance check at all
-  — gated on the surface (not dig/cave) by the same `dShip<shipZoneR()` used everywhere else there.
-  КНИЖКА: «хулк» is deliberate jargon, left alone; «командировочные … за 0 км» was a precision
-  mismatch, toast `.toFixed(1)` vs record `.toFixed(0)` — matched. `celDay` column: hard-capped at
-  34 px by the sheet's own margin rule, so shortened the label (`"день "+x.d` → bare number,
-  matching sibling pages in the same column) instead of widening. Body in the archive.
-- [x] **P7** One voice for the gravity anchor. Control offered a choice — drop the ship-side toast
-  or cut it to two words — and dropping it was the cleaner fix: the bottom `cue()` line already
-  says the whole thing («ГРАВИТАЦИОННЫЙ ЯКОРЬ · КРАЙ СИСТЕМЫ · КУРС К ЗВЕЗДЕ СВОБОДЕН») every frame
-  the ship is past the edge, while the `say()` toast fired once per throttle window with its own
-  wording — one event, two voices. Removed the `say()` call and its now-pointless `G.edgeWarned`
-  throttle (one field, one read site, both gone) rather than repositioning the toast to the edge:
-  the generic `#msg` toast is used by many unrelated events, so moving *it* would have reached far
-  past this one bug. With the toast gone, the "text on the edge, not on the ship" and "register it
-  in `placed`" parts of the review no longer apply — there is nothing left near the ship to place.
-  The "chips must keep a stable order" note was already closed by the P4 order-follow-up above.
-  Accepted on the live phone (Designer on the Tester's S23 frame, 18.09): no teal toast at the
-  hull, one bottom line about the anchor, the field around the ship clear and the trail not crossed.
-  Verified in the browser: crossing the edge now only ever sets `G.prompt` (the bottom line);
-  `G.msg`/`G.edgeWarned` are untouched by it.
+- [x] **P1 Scroll, globally** — done; body in `docs/PLAN-archive.md` («Moved 2026-09-18»).
+- [x] **P2** — done; body in `docs/PLAN-archive.md` («Moved 2026-09-18»).
+- [x] **P3** — done; body in `docs/PLAN-archive.md` («Moved 2026-09-18»).
+- [x] **P4** — done; body in `docs/PLAN-archive.md` («Moved 2026-09-18»).
+- [x] **P5** — done; body in `docs/PLAN-archive.md` («Moved 2026-09-18»).
+- [x] **RELEASE BLOCKER closed: the four «штурвал» failures  — done; body in `docs/PLAN-archive.md` («Moved 2026-09-18»).
+- [x] **P6** — done; body in `docs/PLAN-archive.md` («Moved 2026-09-18»).
+- [x] **P7** — done; body in `docs/PLAN-archive.md` («Moved 2026-09-18»).
 - [ ] **The anchor and the stick** (phone video 12.09; 0.449.0 widened the edge, the mechanism
   stays): past the edge the anchor turns the velocity toward the star every frame while the stick's
   assist thrusts outward — the turn is a force against thrust, an equilibrium exists (the comment in
