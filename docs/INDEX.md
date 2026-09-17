@@ -2190,7 +2190,7 @@ holdSkyMul                   src/12ag-holdfx.js:117
 holdTechMul                  src/12ag-holdfx.js:119
 holdTestStation              tests/91x-hold.js:2-9
 holdUklad                    src/12ah-holdnews.js:19-24
-holdWorth                    src/27j-ui-opis.js:567-575
+holdWorth                    src/27j-ui-opis.js:576-584
 holEtherLine                 src/11am-holiday.js:76-82
 HOLIDAYS                     src/11am-holiday.js:22-25
 holMap                       src/11am-holiday.js:59
@@ -3179,44 +3179,44 @@ OPIS_HW                      src/27j-ui-opis.js:70
 OPIS_KIT                     src/27j-ui-opis.js:62-69
 OPIS_SHIP                    src/27j-ui-opis.js:44-61
 OPIS_TABS                    src/27j-ui-opis.js:37
-opisActs                     src/27j-ui-opis.js:495-505
+opisActs                     src/27j-ui-opis.js:504-514
 opisArmed                    src/27j-ui-opis.js:186
 opisAsk                      src/27j-ui-opis.js:221-224
-opisAskForm                  src/27j-ui-opis.js:648-666
-opisBar                      src/27j-ui-opis.js:668-684
+opisAskForm                  src/27j-ui-opis.js:657-675
+opisBar                      src/27j-ui-opis.js:677-693
 opisCanDump                  src/27j-ui-opis.js:220
-opisCard                     src/27j-ui-opis.js:481-494
+opisCard                     src/27j-ui-opis.js:490-503
 opisConfirm                  src/27j-ui-opis.js:187-191
 opisDragWire                 src/27j-ui-opis.js:244-265
-opisDrawBox                  src/27j-ui-opis.js:427-455
-opisDrawHatch                src/27j-ui-opis.js:456-479
-opisDrawMatchbox             src/27j-ui-opis.js:405-426
-opisDrop                     src/27j-ui-opis.js:335-373
-opisDropAt                   src/27j-ui-opis.js:318-323
-opisDropEnd                  src/27j-ui-opis.js:324-334
+opisDrawBox                  src/27j-ui-opis.js:436-464
+opisDrawHatch                src/27j-ui-opis.js:465-488
+opisDrawMatchbox             src/27j-ui-opis.js:414-435
+opisDrop                     src/27j-ui-opis.js:344-382
+opisDropAt                   src/27j-ui-opis.js:327-332
+opisDropEnd                  src/27j-ui-opis.js:333-343
 opisDump                     src/27j-ui-opis.js:225-234
 opisFit                      src/27j-ui-opis.js:192-206
 opisFocus                    src/27j-ui-opis.js:85
-opisFold                     src/27j-ui-opis.js:610-614
-opisGhostMove                src/27j-ui-opis.js:292-295
-opisHead                     src/27j-ui-opis.js:642-646
-opisHullCap                  src/27j-ui-opis.js:618-641
-opisHullRedraw               src/27j-ui-opis.js:375-391
-opisHullSlotAt               src/27j-ui-opis.js:392-403
-opisKitCard                  src/27j-ui-opis.js:598-606
+opisFold                     src/27j-ui-opis.js:619-623
+opisGhostMove                src/27j-ui-opis.js:301-304
+opisHead                     src/27j-ui-opis.js:651-655
+opisHullCap                  src/27j-ui-opis.js:627-650
+opisHullRedraw               src/27j-ui-opis.js:384-400
+opisHullSlotAt               src/27j-ui-opis.js:401-412
+opisKitCard                  src/27j-ui-opis.js:607-615
 opisKitFuture                src/27j-ui-opis.js:127-134
-opisLeave                    src/27j-ui-opis.js:958-963
-opisLift                     src/27j-ui-opis.js:266-291
-opisMarkCan                  src/27j-ui-opis.js:297-312
-opisMarkOver                 src/27j-ui-opis.js:313-317
+opisLeave                    src/27j-ui-opis.js:967-972
+opisLift                     src/27j-ui-opis.js:266-300
+opisMarkCan                  src/27j-ui-opis.js:306-321
+opisMarkOver                 src/27j-ui-opis.js:322-326
 opisPanel                    src/27j-ui-opis.js:135-162
 opisPanels                   src/27j-ui-opis.js:165-184
-opisPartCard                 src/27j-ui-opis.js:528-555
-opisPartHtml                 src/27j-ui-opis.js:506-527
+opisPartCard                 src/27j-ui-opis.js:537-564
+opisPartHtml                 src/27j-ui-opis.js:515-536
 opisPhone                    src/27j-ui-opis.js:71
-opisPileCard                 src/27j-ui-opis.js:576-597
-opisPriceCue                 src/27j-ui-opis.js:557-566
-opisRender                   src/27j-ui-opis.js:686-956
+opisPileCard                 src/27j-ui-opis.js:585-606
+opisPriceCue                 src/27j-ui-opis.js:566-575
+opisRender                   src/27j-ui-opis.js:695-965
 opisRerender                 src/27j-ui-opis.js:74-83
 opisSame                     src/27j-ui-opis.js:84
 opisScrap                    src/27j-ui-opis.js:208-219
@@ -6203,7 +6203,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/27j-ui-kitlay.js · 9 КБ
   · комплект, разложенный на столе:1
 
-## src/27j-ui-opis.js · 58 КБ
+## src/27j-ui-opis.js · 59 КБ
   · ОПИСЬ: один стол для всего, что на тебе и в трюме (M341):1
 
 ## src/27jb-ui-got.js · 4 КБ
