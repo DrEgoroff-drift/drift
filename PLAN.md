@@ -119,6 +119,14 @@ Rule 3: same look, cheaper work.
   earlier disagreement in the numbers: a first minute always beat the shelf because the finger had
   been on the glass for less of it. (Earlier "no finger" figures are withdrawn — the Tester's driver
   left the touch held between runs, so the stick counted as active.)
+  **Found and fixed by stack trace (8a3f6ff):** two callers duplicated 08-state's cache with their
+  own raw read — `fleetPromptRect()` measured `#prompt` once per visible fleet ship every frame (the
+  finger-independent baseline, which is why the count drifted with traffic and why 0.3's own
+  measurement missed it), and `helmLift()` did the same only while the stick is live (the touch-only
+  delta). Both route through `promptRect()` now: 120 synthetic frames with three fleet ships, a live
+  stick and a prompt line give 2 real reads total, both cold. Control's own P4 conditions had added
+  two more reads (padsRect and a second promptRect in `drawSysHud`) — 8.17 a frame on a629378;
+  folded into the same cleanup. Phone re-measurement pending.
 - [ ] **Four milliseconds, by the function.** `frameBody` averages 10.58 ms against a 16.7 ms
   vsync, max 28.7 — no headroom, and muting *any* single draw function now gives 59.7 fps at
   99.5 %, so there is no one culprit left: the frame is simply full. The task is to take ≥ 4 ms of
