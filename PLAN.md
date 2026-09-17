@@ -344,6 +344,8 @@ Rule 3: same look, cheaper work.
   past this one bug. With the toast gone, the "text on the edge, not on the ship" and "register it
   in `placed`" parts of the review no longer apply — there is nothing left near the ship to place.
   The "chips must keep a stable order" note was already closed by the P4 order-follow-up above.
+  Accepted on the live phone (Designer on the Tester's S23 frame, 18.09): no teal toast at the
+  hull, one bottom line about the anchor, the field around the ship clear and the trail not crossed.
   Verified in the browser: crossing the edge now only ever sets `G.prompt` (the bottom line);
   `G.msg`/`G.edgeWarned` are untouched by it.
 - [ ] **The anchor and the stick** (phone video 12.09; 0.449.0 widened the edge, the mechanism
