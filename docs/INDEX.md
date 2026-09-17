@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 538 · символов верхнего уровня: 5163
+Файлов: 538 · символов верхнего уровня: 5165
 
 ## СИМВОЛЫ
 
@@ -1425,8 +1425,8 @@ drawTemple                   src/20aa-poi-shapes.js:50-89
 drawThingIcon                src/27i-ui-table.js:347-383
 drawTierTrim                 src/03b-hull-paint.js:73-166
 drawTiles                    src/18c-chunks.js:144-151
-drawTrail                    src/16-flight.js:536-613
-drawWake                     src/16-flight.js:378-442
+drawTrail                    src/16-flight.js:549-627
+drawWake                     src/16-flight.js:388-455
 drawWallPaper                src/11ae-concert.js:39-71
 drawWanderer                 src/12v-wander.js:175-318
 drawWanderMap                src/12v-wander.js:159-173
@@ -4759,7 +4759,7 @@ toldWorked                   src/11aj-told.js:41-45
 toldWorth                    src/11aj-told.js:49-54
 totalLoss                    src/21-mode-surface.js:700-721
 towShare                     src/03f-hull-role.js:87-89
-trAcc                        src/16-flight.js:374
+trAcc                        src/16-flight.js:384
 TRACE_CAP_DAY                src/11ag-trace.js:46
 TRACE_MARK                   src/11ag-trace.js:32-45
 TRACE_SC                     src/11ag-trace.js:191
@@ -4789,12 +4789,13 @@ traceToday                   src/11ag-trace.js:72
 TRACK_LIFE                   src/21-mode-surface.js:6
 TRADE_KEYS                   src/02-world.js:100
 TRAIL                        src/16-flight.js:239
-TRAIL_BUCK                   src/16-flight.js:372
+TRAIL_AMAX                   src/16-flight.js:382
+TRAIL_BUCK                   src/16-flight.js:381
 TRAIL_CHAR                   src/16-flight.js:247-254
 TRAIL_TINT                   src/16-flight.js:262
 trailBurst                   src/16-flight.js:240
 trailChar                    src/16-flight.js:255-261
-trailStep                    src/16-flight.js:443-535
+trailStep                    src/16-flight.js:456-548
 trailTint                    src/16-flight.js:267-283
 TRAINEE_LINES                src/11ac-trainee.js:14-18
 TRAINEE_NAMES                src/11ac-trainee.js:13
@@ -4811,7 +4812,7 @@ traineeTick                  src/11ac-trainee.js:59-70
 traitOf                      src/12a-crew.js:28
 TRIP_N                       tests/91zzzzzzzzc-trips.js:11
 tripWorlds                   tests/91zzzzzzzzc-trips.js:12-20
-trX0                         src/16-flight.js:373
+trX0                         src/16-flight.js:383
 tvHop                        tests/91zzzzzw-travel.js:36-48
 tvKeys                       tests/91zzzzzw-travel.js:15
 tvSizes                      tests/91zzzzzw-travel.js:17-34
@@ -4934,9 +4935,10 @@ vRopeAt                      src/18d-verlet.js:125-131
 vStep                        src/18d-verlet.js:53-77
 W                            src/08-state.js:5
 WAKE                         src/16-flight.js:298
-WAKE_BUCK                    src/16-flight.js:371
+WAKE_A1MAX                   src/16-flight.js:380
+WAKE_BUCK                    src/16-flight.js:379
 wakeBurst                    src/16-flight.js:299
-wakeLanes                    src/16-flight.js:377
+wakeLanes                    src/16-flight.js:387
 wakeStep                     src/16-flight.js:328-356
 wakeTips                     src/16-flight.js:300-327
 WALK_PARA                    tests/91zzy-walk.js:8
@@ -5125,8 +5127,8 @@ winTone                      src/29g-winter-draw.js:89-94
 winWall                      src/29f-winter.js:162-172
 withCtx                      src/18c-chunks.js:58-65
 withScale                    src/18c-chunks.js:41-47
-wkAcc                        src/16-flight.js:376
-wkX0                         src/16-flight.js:375
+wkAcc                        src/16-flight.js:386
+wkX0                         src/16-flight.js:385
 WLD_RINGS                    tests/91zzzzzzzzz-worlds.js:28
 wldMedian                    tests/91zzzzzzzzz-worlds.js:37
 wldNear                      tests/91zzzzzzzzz-worlds.js:29-36
@@ -5760,7 +5762,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/15d-domread.js · 3 КБ
   · сторож чтений вёрстки: ?domread:1
 
-## src/16-flight.js · 41 КБ
+## src/16-flight.js · 42 КБ
   · фон:1
   · автопилот:120
   · шлейф двигателей и струи ориентации:218

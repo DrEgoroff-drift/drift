@@ -368,8 +368,18 @@ function wakeStep(dt){
    Геометрия кладётся в постоянные плоские массивы (растут один раз и живут):
    прежний проход рождал на каждый отрезок по две строки rgba и по паре массивов
    на середины — именно они стояли в самых длинных провалах сборщика мусора. */
-const WAKE_BUCK=8;
-const TRAIL_BUCK=8;
+/* Шаг ступени — по ЯРКОСТИ, а не по возрасту (0.2 fix, Дизайнер 17.09).
+   Альфа — четвёртая степень возраста, поэтому ровные ведра по возрасту давали
+   у сопла шаг в десятки единиц яркости, а на хвосте — почти ничего: лента
+   читалась плиткой (профиль вдоль хвоста — пила с провалами через 30 px), а
+   дальний конец держался ярче, чем на main: средняя по широкому ведру возраста
+   выше яркости самого хвоста. Теперь ведро берётся по доле от пиковой альфы,
+   шаг один на всю нить — шестнадцатая пика, то есть стык соседей не выше
+   шести процентов яркости — ниже порога глаза (допуск Дизайнера ±8 единиц). */
+const WAKE_BUCK=32;
+const WAKE_A1MAX=.18, WAKE_A2MAX=.56;   /* пики ореола и ядра при u=1, kk=1 */
+const TRAIL_BUCK=24;
+const TRAIL_AMAX=.8;   /* пик альфы ленты при u=1 */
 const trX0=[],trY0=[],trX1=[],trY1=[],trB=[];
 const trAcc=new Float64Array(TRAIL_BUCK*4);   /* на ступень: sum u, sum a, sum w, n */
 const wkX0=[],wkY0=[],wkCX=[],wkCY=[],wkX1=[],wkY1=[],wkB=[];
@@ -408,13 +418,16 @@ function drawWake(zx,zy,Z){
       if(c){x1=(bx+zx(c.x))*.5;y1=(by+zy(c.y))*.5;}else{x1=bx;y1=by;}
       if((x0<-60&&x1<-60)||(x0>W+60&&x1>W+60)||(y0<-60&&y1<-60)||(y0>H+60&&y1>H+60))continue;
       const u=clamp((a.life/a.max+b2.life/b2.max)*.5,0,1),kk=(a.k+b2.k)*.5;
-      let b=(u*WAKE_BUCK)|0;if(b>=WAKE_BUCK)b=WAKE_BUCK-1;
+      const f1=u*u*.08+u*u*u*u*.10, f2=u*u*u*.26+u*u*u*u*u*u*.30;
+      /* ведро — по ядру: именно оно читается как рисунок нити, ореол широк
+         и мягок. Доля kk сокращается — она одна на всю дорожку */
+      let b=((u+f2/WAKE_A2MAX)*.5*WAKE_BUCK)|0;if(b>=WAKE_BUCK)b=WAKE_BUCK-1;if(b<0)b=0;
       wkX0[n]=x0;wkY0[n]=y0;wkCX[n]=i===1?x0:bx;wkCY[n]=i===1?y0:by;wkX1[n]=x1;wkY1[n]=y1;wkB[n]=b;n++;
       /* в ступень складываем ГОТОВЫЕ яркость и толщину, а не возраст: средняя
          от возраста и возраст от средней — разные числа, и на самой яркой
          ступени вторая гасила ядро у кромки почти на треть */
-      wkAcc[b*5]+=kk*(u*u*.08+u*u*u*u*.10);
-      wkAcc[b*5+1]+=kk*(u*u*u*.26+u*u*u*u*u*u*.30);
+      wkAcc[b*5]+=kk*f1;
+      wkAcc[b*5+1]+=kk*f2;
       wkAcc[b*5+2]+=(2.2+(1-u)*4.5)*SZ;
       wkAcc[b*5+3]+=Math.max(.8,(1+(1-u)*.6)*SZ);
       wkAcc[b*5+4]++;
@@ -565,10 +578,11 @@ function drawTrail(zx,zy,Z){
       const x0=zx(a.x),y0=zy(a.y),x1=zx(b2.x),y1=zy(b2.y);
       if((x0<-60&&x1<-60)||(x0>W+60&&x1>W+60)||(y0<-60&&y1<-60)||(y0>H+60&&y1>H+60))continue;
       const u=clamp((a.life/a.max+b2.life/b2.max)*.5,0,1);
-      let b=(u*TRAIL_BUCK)|0;if(b>=TRAIL_BUCK)b=TRAIL_BUCK-1;
+      const fa=u*u*.30+u*u*u*u*.5;
+      let b=((u+fa/TRAIL_AMAX)*.5*TRAIL_BUCK)|0;if(b>=TRAIL_BUCK)b=TRAIL_BUCK-1;if(b<0)b=0;
       trX0[n]=x0;trY0[n]=y0;trX1[n]=x1;trY1[n]=y1;trB[n]=b;n++;
       trAcc[b*4]+=u;
-      trAcc[b*4+1]+=u*u*.30+u*u*u*u*.5;
+      trAcc[b*4+1]+=fa;
       trAcc[b*4+2]+=Math.max(1,b2.r*SZ*(2.4-u*1.3)*CW*1.35);
       trAcc[b*4+3]++;
     }

@@ -9987,3 +9987,27 @@ Also in this commit, from the designer's verdict on 0.4: the resolution's climb 
 picture getting better is the message; a toast about a thing the player never touched is noise),
 and the descent speaks once a session rather than once a minute — under the new penalty a
 descent-climb-descent would otherwise put three toasts on screen inside two minutes of steering.
+
+**0.2 fix — where the step of fade belongs (2026-09-17).** The first cut put the steps at even
+intervals of *age*. Alpha is a quartic of age, so that packed the bright end of a lane into a few
+huge brightness jumps and spread the dim end over almost none: on a straight run the designer read
+the ribbon as tiles, with a dip every 30 px along the tail, and the far end held brighter than on
+`main` (the mean over a wide age bucket is above the brightness of the tail itself). The obvious
+correction — even intervals of *brightness* — is wrong the other way: alpha at the dim end changes
+so slowly that the lowest bucket swallowed everything below about half the life, which flattened
+the tail and put a visible seam where that bucket began (the one the designer caught at 110 px).
+What works is the mean of the two: the bucket key is `(u + alpha/alphaPeak)/2`, so neither age nor
+brightness can step more than twice the bucket width, with 32 steps on the wake and 24 on the
+ribbon. Empty buckets cost nothing, so a short ribbon lane ends up nearly one step per segment,
+exactly as `main` drew it.
+
+Measured, and not by the picture: the drawn alpha against the exact alpha per segment, over 240
+frames of straight thrust — max error 0.0133 absolute (2.4 % of peak) on the wake core, 0.0038
+(2.1 %) on the halo, 0.0182 (2.3 %) on the ribbon. The ribbon's peak reads about 120 of 255, so
+that is roughly three units against the designer's tolerance of eight. Strokes per frame 3 391 →
+565 and paths 3 476 → 458 (the 8-step version was 245 strokes — the smoothness costs about 320
+strokes a frame and is worth it). A note on measurement: a profile of the second-brightest pixel
+per column, sampled every 10 px behind the stern, does **not** judge this — it oscillates with a
+30 px period on `main` too, because it samples three thin threads at sub-pixel positions. The
+paired frames of the two builds look identical at ×0.5, and the verdict on the look stays with the
+designer's own narrow-screen shot.

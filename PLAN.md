@@ -108,13 +108,17 @@ Rule 3: same look, cheaper work.
   7, with the hysteresis of 0.4. Needs the world back at ~1 ms first. Accept (tester, S23):
   cadence ≥ 95 %, no frame > 24 ms in 60 s of steering.
 - [x] **0.2 Raster** — the wake and the thrust ribbon were a stroke per segment (two for the
-  wake: halo and core). They now go in eight steps of fade per lane, one path per step, and the
-  halo and the core share that path. Measured on a filled wake (1 560 wake points, 156 trail
-  points, `system`): strokes per frame 3 391 → 245, paths 3 476 → 287, the same picture side by
-  side. Each step averages the finished alpha and width, not the age — the mean of the age had
-  dimmed the bright end by a third. Body in `docs/PLAN-archive.md`. Golden frames may need
-  `-Accept` for the wake blocks; `hud`, `drawHull` and `drawSystem` were left alone (`g11` on this
-  laptop drifts 10–20 fps between runs, so their 6–25 ms/s could not be told from the noise —
+  wake: halo and core). They now go in steps of fade per lane, one path per step, the halo and the
+  core sharing that path. The step is chosen by the *mean of age and brightness*, 32 steps on the
+  wake and 24 on the ribbon: steps even in age banded the bright end (the designer measured a saw
+  with a dip every 30 px along the tail), steps even in brightness lumped the whole dim half of a
+  lane into one step and left a seam where it began. Quantisation error of the drawn alpha against
+  the exact one: ≤ 2.4 % of peak on the wake core, 2.1 % on its halo, 2.3 % on the ribbon — about
+  three units of 255 where the designer allows eight. Strokes per frame on a filled wake (1 560
+  wake points, 156 trail): 3 391 → 565, paths 3 476 → 458. Each step averages the finished alpha
+  and width, not the age. Body in `docs/PLAN-archive.md`. Frame acceptance is the designer's paired
+  `straight_cmp` shot; `hud`, `drawHull` and `drawSystem` were left alone (laptop `g11` drifts
+  10–20 fps between runs of the same build, so their 6–25 ms/s cannot be told from the noise —
   the S23 is the meter for them).
 - [x] **0.3 Layout in the frame** — zero DOM reads per frame and per pointer event, measured:
   `system`, thirty steady frames and thirty pointer moves in flight and on foot, all counters 0
