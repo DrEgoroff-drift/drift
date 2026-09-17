@@ -168,6 +168,18 @@ Rule 3: same look, cheaper work.
   (two periods lost at once — a rare heavy job, not general weight); a true sawtooth every N frames
   (scheduling after all, and the stride-of-one correction is wrong); or double steps in clusters with
   clean stretches between (an EVENT causes the drop — chase the event, not the percentage).
+  **And that fourth reading is the one that came true, on the good run itself (Designer, 18.09).**
+  Skips per second across the 10 s: 1, 0, 0, 0, 0, 0, 0, 0, 0, 2 — eight clean seconds, everything
+  at the edges. Looking at WHAT is on screen in those frames: frame 3, the hail window «КОММУНА ·
+  ОКЛИК» is open and the recording starts on it; frame 548, that window is still open and the
+  gravity-anchor hint appears; frame 588, the window has just CLOSED, «ПРЕДУПРЕДИТЕЛЬНЫЙ ПО ЩИТУ»
+  replaces it and the three compass chips re-laid out. So in steady flight there are no skips at
+  all, and the ones there are fall on EVENTS: a window opening or closing, a hint appearing, chips
+  re-laying out. Her own caveat, which is why she is trusted: an event changes the picture too, so a
+  big movement step there may be an honest jump rather than a skip — frame 588 she calls doubtful,
+  so the firm count is one or two, not three. **Direction for the work: measure the cost of an
+  EVENT, not the average weight of a frame.** Every skip measurement must now also say what was on
+  screen at that frame; her instrument already prints the frame list with a picture of each.
 
 - [ ] **Four milliseconds, by the function.** `frameBody` averages 10.58 ms against a 16.7 ms
   vsync, max 28.7 — no headroom, and muting *any* single draw function now gives 59.7 fps at
