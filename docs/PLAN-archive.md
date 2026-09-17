@@ -9902,3 +9902,32 @@ Measured by counting canvas calls, not by the clock: `docs/shot.py system` with 
 trail populations identical. `g11` on this laptop could not judge it: repeat runs of the *same*
 build read 24–37 fps on `surface` and 33–58 on `belt`, so a control build of the previous commit
 was measured back to back and read the same as the new one.
+
+**0.3 Layout in the frame.** The S23 trace showed `getBoundingClientRect` 10–15 ms/s,
+`querySelectorAll` 4–5 ms/s and 2 096 `UpdateLayoutTree` (937 ms), with the finger doubling
+style+layout from 27 to 52 ms/s — because the reads sat in `hud()` and in the pointer handlers,
+which under a finger fire 120 times a second. A rect read after any style write forces the
+browser to recompute layout there and then; that, not the call, is the bill.
+
+What was done. `08-state` gained `cvsRect()`/`padsRect()` (cached rects), `scrOpen()` (cached
+«a screen is open») and `rectsDirty()`; invalidation comes from `resize()`, `orientationchange`,
+capture-phase `scroll`, `visibilitychange` and two MutationObservers. The observers are split on
+purpose: classes and added nodes are watched over the whole body (that is how a screen opening is
+noticed), but the `style` attribute only on the six nodes that actually set the floor, rail and
+top band (`#prompt`, `#console`, `.pads`, `.rail`, `.vitals`, `.locus`). The first version watched
+`style` across the body and was no better than no cache at all: the fuel bar writes its own width
+every frame, so the layout was dirty every frame. `hudFloorMeasure()` now runs only on a dirty
+layout and took the top-band measurement (`--hudband`) in with it; `padsFit()` forces it. The last
+five per-frame reads were found by wrapping the DOM methods and printing the stack, not by
+reading code: `cbtn.querySelector("s")`, rects on `.vitals`/`.locus`, `[data-k=act]` and the four
+`.pads` buttons — all now looked up once and kept.
+
+The meter is in the game: `15d-domread` wraps `getBoundingClientRect`, `getClientRects`,
+`getComputedStyle` and the four `querySelector*` and counts them in three buckets, asleep unless
+`?domread` or `domReadWatch(true)`; `domReadZero()`/`domReadCount()` are what a detector should
+assert around a frame. Measured with `docs/shot.py system`: before 5 rect + 5 selector calls per
+frame; after, thirty steady frames give 0/0/0, and thirty pointer moves give 0/0/0 both in flight
+and on foot. Warm-up frames still measure once — that is the point of the flag, not a leak.
+Gotcha found on the way: a probe must call `frameBody()`, never `frame()`, because every `frame()`
+schedules another rAF and under `--virtual-time-budget` the page then never drains (the shot hung
+at 120 s twice before this was understood).

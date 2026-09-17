@@ -8654,8 +8654,66 @@ function resize(){
     if((resize.tries=(resize.tries||0)+1)<12)setTimeout(resize,150);
   }else resize.tries=0;
   cvs.width=Math.round(W*DPR);cvs.height=Math.round(H*DPR);
+  rectsDirty();   /* окно поехало — прежние прямоугольники больше не те (0.3) */
   ctx.setTransform(DPR,0,0,DPR,0,0);
 }
+/* ══════════════ DOM не читается в кадре (0.3) ══════════════
+   Замер на S23 (плейтест 13.09): `getBoundingClientRect` 10–15 мс в секунду,
+   `querySelectorAll` 4–5, 2 096 пересчётов вёрстки за прогон — и палец
+   удваивал счёт, потому что чтения сидели в обработчиках движения, а те под
+   пальцем приходят 120 раз в секунду. Чтение прямоугольника после ЛЮБОЙ записи
+   в стиль заставляет браузер пересчитать вёрстку немедленно — это и есть
+   главная цена, а не сам вызов.
+
+   Поэтому прямоугольник канвы и ряда пэдов держатся в кэше: меняются они
+   только когда меняется окно — `resize()`, поворот экрана, возврат на вкладку,
+   прокрутка страницы. Всё остальное время это одни и те же четыре числа.
+   Сбросить кэш руками — `rectsDirty()`; кто перестроил вёрстку сам, тот и
+   зовёт (`padsFit`).
+
+   Открыт ли поверх мира экран — то же самое: `document.querySelector(".scr.open")`
+   стоял в кадре трижды и ещё в каждом обработчике колеса. Ответ меняется
+   только когда кто-то ставит или снимает класс, а об этом рассказывает
+   MutationObserver — он приходит ПОСЛЕ кадра, своим микротаском, и вёрстку не
+   трогает вовсе. Сторож нарочно не ищет все двадцать мест, где открываются
+   экраны: список таких мест устаревает, наблюдатель — нет. */
+let CVS_RECT=null,PADS_RECT=null,SCR_OPEN=null,LAYOUT_DIRTY=true;
+function rectsDirty(){CVS_RECT=null;PADS_RECT=null;LAYOUT_DIRTY=true;}
+function cvsRect(){
+  if(!CVS_RECT)CVS_RECT=cvs.getBoundingClientRect();
+  return CVS_RECT;
+}
+function padsRect(){
+  if(PADS_RECT===null){
+    const el=document.querySelector(".pads");
+    PADS_RECT=el&&el.getBoundingClientRect?el.getBoundingClientRect():false;
+  }
+  return PADS_RECT||null;
+}
+function scrOpen(){
+  if(SCR_OPEN===null)SCR_OPEN=!!document.querySelector(".scr.open");
+  return SCR_OPEN;
+}
+function scrDirty(){SCR_OPEN=null;}
+addEventListener("orientationchange",()=>{rectsDirty();scrDirty();});
+addEventListener("scroll",rectsDirty,true);
+document.addEventListener("visibilitychange",()=>{rectsDirty();scrDirty();});
+/* Два наблюдателя, а не один, и это не аккуратность, а цена кадра. Общий
+   наблюдатель за атрибутом style грязнил вёрстку КАЖДЫЙ кадр: шкала топлива
+   пишет себе width на каждом кадре, и мерка пола пересчитывалась так же часто,
+   как до кэша. Теперь: классы и появление узлов — по всему телу (оттуда узнаём об
+   открытом экране), а style — только у тех шести узлов, которые и задают пол,
+   борт и верхнюю полосу. */
+try{
+  new MutationObserver(()=>{scrDirty();})
+    .observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:["class"]});
+  const watch=new MutationObserver(()=>{rectsDirty();});
+  for(const sel of ["#prompt","#console",".pads",".rail",".vitals",".locus"]){
+    const el=document.querySelector(sel);
+    if(el)watch.observe(el,{childList:true,characterData:true,subtree:true,attributes:true,attributeFilter:["class","style"]});
+  }
+}catch(e){}
+
 /* текущий потолок автоматического режима: полный, пока кадр держится */
 let RES_AUTO=2;
 addEventListener("resize",resize);resize();
@@ -13571,7 +13629,7 @@ function tapeTear(){
   return s;
 }
 addEventListener("keydown",e=>{
-  if(e.code==="KeyT"&&G.running&&!document.querySelector(".scr.open")){
+  if(e.code==="KeyT"&&G.running&&!scrOpen()){
     tapeTear();e.preventDefault();
   }
 });
@@ -41814,12 +41872,12 @@ addEventListener("wheel",e=>{
      скроллиться. Отсюда passive:false — иначе preventDefault не работает. */
   if(e.ctrlKey){
     e.preventDefault();
-    if(G.mode==="system"&&!document.querySelector(".scr.open"))
+    if(G.mode==="system"&&!scrOpen())
       setZoom(G.zoom*(e.deltaY<0?1.12:.89));
     return;
   }
   if(e.target!==cvs)return;
-  if(document.querySelector(".scr.open"))return;
+  if(scrOpen())return;
   /* колесо над картой — её масштаб (M299) */
   if(G.mode==="map"&&typeof mapZoomSet==="function"){mapZoomSet(mapZoomK()*(e.deltaY<0?.89:1.12));return;}
   if(G.mode!=="system")return;
@@ -41850,7 +41908,7 @@ cvs.addEventListener("pointermove",e=>{
   }else if(ptr.size===1&&G.mode==="map"&&p.moved&&typeof mapCell==="function"){
     /* протяжка листа (M299): карту двигают пальцем, как любую карту.
        Окно становится дробным — сектора остаются целыми (drawMap округляет) */
-    const rc=cvs.getBoundingClientRect(),k=W/rc.width,cell=mapCell();
+    const rc=cvsRect(),k=W/rc.width,cell=mapCell();
     const V=mapViewC();G.mapView={x:V.x-dx*k/cell,y:V.y-dy*k/cell};
   }else if(ptr.size===1&&G.mode==="belt"&&G.belt){
     const k=.0036*G.opts.lookSens;
@@ -41871,7 +41929,7 @@ cvs.addEventListener("pointercancel",e=>ptr.delete(e.pointerId));
    на поверхности задаёт мировую точку, куда шагает астронавт; в шахте —
    клетку, к которой прокладывается ход (по пути буря непройденное) */
 function mouseWalkAt(clientX,clientY){
-  const rc=cvs.getBoundingClientRect();
+  const rc=cvsRect();
   const sx=(clientX-rc.left)*W/rc.width, sy=(clientY-rc.top)*H/rc.height;
   if(G.mode==="surface"&&G.surf){
     /* камера больше не приклеена к персонажу (инерция, взгляд вперёд, тряска),
@@ -41908,11 +41966,11 @@ function tap(sxp,syp){
   /* зимовка (M197): в комнате трогают вещи — рычаг, дневник, трубы, койку.
      Экранные координаты, а не мировые: комната не ездит */
   if(G.mode==="winter"&&typeof winTap==="function"){
-    const rc=cvs.getBoundingClientRect();
+    const rc=cvsRect();
     if(winTap((sxp-rc.left)*W/rc.width,(syp-rc.top)*H/rc.height))return;
   }
   if(G.mode==="spa"&&typeof spaTap==="function"){
-    const rc=cvs.getBoundingClientRect();
+    const rc=cvsRect();
     if(spaTap((sxp-rc.left)*W/rc.width,(syp-rc.top)*H/rc.height))return;
   }
   if(G.mode==="map"){
@@ -42207,7 +42265,7 @@ addEventListener("blur",()=>{HELM.key={};HELM.S=null;HELM.P=null;HELM.trail=[];H
    прежних часов, и на новых «свежий палец» из прошлого прогона ничего не решает */
 LOOP_PHASE.push(()=>{HELM.key={};HELM.S=null;HELM.P=null;HELM.trail=[];HELM.mouse.down=false;HELM.mouse.rmb=false;HELM.mouse.t=-1e9;});
 /* ── мышь над холстом ── */
-function helmCanvasXY(e){const rc=cvs.getBoundingClientRect();return [(e.clientX-rc.left)*W/rc.width,(e.clientY-rc.top)*H/rc.height];}
+function helmCanvasXY(e){const rc=cvsRect();return [(e.clientX-rc.left)*W/rc.width,(e.clientY-rc.top)*H/rc.height];}
 cvs.addEventListener("pointermove",e=>{
   if(e.pointerType==="mouse"){
     const [x,y]=helmCanvasXY(e);
@@ -42276,7 +42334,7 @@ cvs.addEventListener("pointerup",helmPtrEnd);
 cvs.addEventListener("pointercancel",helmPtrEnd);
 cvs.addEventListener("contextmenu",e=>{if(G.mode==="system")e.preventDefault();});
 /* открытый экран над холстом: в Node любой селектор «находит» заглушку, поэтому спрашиваем класс */
-function helmScreenOpen(){const el=document.querySelector(".scr.open");return !!(el&&el.classList&&el.classList.contains&&el.classList.contains("open"));}
+function helmScreenOpen(){return scrOpen();}
 /* щипок в системе (M410): пока живёт стик, второй палец — тап, а не зум;
    без стика два пальца справа — зум, как на карте */
 function helmPinchBlocked(){return G.mode==="system"&&!!HELM.S;}
@@ -42574,9 +42632,9 @@ function helmStickFoot(){
 function helmHome(){
   if(HELM.home)return HELM.home;
   let x=64,y=H-60;
-  const pads=(typeof document!=="undefined")&&document.querySelector&&document.querySelector(".pads");
-  if(pads&&pads.getBoundingClientRect){
-    const r=pads.getBoundingClientRect(),rc=cvs.getBoundingClientRect();
+  const pads=(typeof padsRect==="function")?padsRect():null;   /* кэш, не чтение в кадре (0.3) */
+  if(pads){
+    const r=pads,rc=cvsRect();
     if(r.height>0&&rc.height>0){
       const kx=W/rc.width,ky=H/rc.height;
       x=(r.left-rc.left+14+28)*kx;
@@ -42828,6 +42886,64 @@ try{
   },true);
 }catch(e){}
 try{if(/[?&]rec=1/.test(location.search))recStart();}catch(e){}
+
+/* ══════════════ сторож чтений вёрстки: ?domread ══════════════
+   Правило 0.3 — «ноль чтений DOM в кадре и в обработчике пальца» — нельзя
+   держать уговором: чтение прямоугольника добавляется одной строкой, стоит
+   пересчёта всей вёрстки и ничем себя не выдаёт, кроме дёрганья на телефоне.
+   Поэтому чтения считаются.
+
+   Сторож по умолчанию СПИТ и в игре не стоит ничего: подмена методов живёт
+   только после domReadWatch(true) — её поднимает `?domread` в адресе или
+   детектор в прогоне. Счётчики раздельные, потому что цена разная: rect и
+   getComputedStyle заставляют браузер пересчитать вёрстку немедленно, поиск
+   по селектору — «всего лишь» обход дерева.
+
+   Как мерить: domReadZero() перед кадром, кадр, domReadCount() после —
+   в кадре должны быть нули. Замер 13.09 на S23 давал 10–15 мс/с на rect и
+   4–5 на querySelectorAll, и палец удваивал счёт. */
+let DOMR_ON=false;
+const DOMR={rect:0,style:0,sel:0};
+let DOMR_SAVE=null;
+function domReadCount(){return {rect:DOMR.rect,style:DOMR.style,sel:DOMR.sel};}
+function domReadZero(){DOMR.rect=0;DOMR.style=0;DOMR.sel=0;}
+function domReadWatch(on){
+  if(!!on===DOMR_ON)return DOMR_ON;
+  if(on){
+    DOMR_SAVE={
+      rect:Element.prototype.getBoundingClientRect,
+      rects:Element.prototype.getClientRects,
+      style:window.getComputedStyle,
+      dq:Document.prototype.querySelector,
+      dqa:Document.prototype.querySelectorAll,
+      eq:Element.prototype.querySelector,
+      eqa:Element.prototype.querySelectorAll
+    };
+    const S=DOMR_SAVE;
+    Element.prototype.getBoundingClientRect=function(){DOMR.rect++;return S.rect.apply(this,arguments);};
+    Element.prototype.getClientRects=function(){DOMR.rect++;return S.rects.apply(this,arguments);};
+    window.getComputedStyle=function(){DOMR.style++;return S.style.apply(window,arguments);};
+    Document.prototype.querySelector=function(){DOMR.sel++;return S.dq.apply(this,arguments);};
+    Document.prototype.querySelectorAll=function(){DOMR.sel++;return S.dqa.apply(this,arguments);};
+    Element.prototype.querySelector=function(){DOMR.sel++;return S.eq.apply(this,arguments);};
+    Element.prototype.querySelectorAll=function(){DOMR.sel++;return S.eqa.apply(this,arguments);};
+    DOMR_ON=true;
+  }else{
+    const S=DOMR_SAVE;
+    if(S){
+      Element.prototype.getBoundingClientRect=S.rect;
+      Element.prototype.getClientRects=S.rects;
+      window.getComputedStyle=S.style;
+      Document.prototype.querySelector=S.dq;
+      Document.prototype.querySelectorAll=S.dqa;
+      Element.prototype.querySelector=S.eq;
+      Element.prototype.querySelectorAll=S.eqa;
+    }
+    DOMR_ON=false;
+  }
+  return DOMR_ON;
+}
+try{if(location.search.indexOf("domread")>=0)domReadWatch(true);}catch(e){}
 
 /* ══════════════ фон ══════════════ */
 const STAR_COLS=[[255,206,158],[255,232,196],[228,240,252],[255,255,255],[176,206,255],[205,190,255]];
@@ -45168,7 +45284,7 @@ function updateSystem(dt){
          десяток одинаковых сообщений в секунду */
       /* полётное предупреждение не лезет поверх открытого экрана: на СТОЛЕ и в
          ОПИСИ оно накрывало нижний ряд (плейтест 11.09, сейв автора) */
-      if((!G.edgeWarned||G.t-G.edgeWarned>900)&&!document.querySelector(".scr.open")){G.edgeWarned=G.t;
+      if((!G.edgeWarned||G.t-G.edgeWarned>900)&&!scrOpen()){G.edgeWarned=G.t;
         say("ГРАВИТАЦИОННЫЙ ЯКОРЬ\nдальше корабль не уходит\nкурс к звезде свободен");}
     }
   }
@@ -72950,7 +73066,7 @@ function rackToggle(){
   G.rack.on=!G.rack.on;
 }
 addEventListener("keydown",e=>{
-  if(e.code==="KeyI"&&G.running&&!document.querySelector(".scr.open")){
+  if(e.code==="KeyI"&&G.running&&!scrOpen()){
     rackToggle();e.preventDefault();
   }
 });
@@ -73214,7 +73330,7 @@ function rackRoller(c,cx,cy,r,h,kind){
    готовым в полотне. */
 function rackDraw(){
   if(!rackOpen()||!G.running)return;
-  if(document.querySelector(".scr.open"))return;
+  if(scrOpen())return;
   const T=rackTex(), g0=RACK.geo;
   const R=instrRead();
   ctx.save();
@@ -86040,7 +86156,7 @@ function roadClose(){
   if(document.fullscreenElement&&document.exitFullscreen)document.exitFullscreen().catch(()=>{});
   document.getElementById("roadwin").classList.remove("open");
   document.body.classList.remove("road");
-  document.body.classList.toggle("screen",!!document.querySelector(".scr.open"));
+  document.body.classList.toggle("screen",scrOpen());
   if(typeof saveGame==="function")saveGame(true);
 }
 function roadFrame(ts){
@@ -87250,6 +87366,9 @@ let HUD_BAND=72;
    правого борта. Обе величины в CSS-пикселях, как и координаты рисования. */
 let HUD_FLOOR=0, HUD_RAIL=0;
 const $vitals=document.querySelector(".vitals"),$locusEl=document.querySelector(".locus");
+/* узлы, которые hud() искал заново каждый кадр (0.3): в index.html они стоят
+   всегда, и поиск по селектору под пальцем набирал 4–5 мс в секунду на пустом месте */
+let $actBtn=null,$helmHidePads=null;
 const $vf=document.getElementById("vFuel"),$vh=document.getElementById("vHull");
 const $vc=document.getElementById("vHold"),$purse=document.getElementById("purse"),$zl=document.getElementById("zoomlbl");
 const $vs=document.getElementById("vSuit"),$ub=document.querySelector("#ubar i");
@@ -87313,7 +87432,23 @@ function setSt(el,k,v){v=""+v;if(el&&el.style[k]!==v)el.style[k]=v;}
    неё нет текста, а место она занимать не должна. Вынесено в функцию (M360): ряд
    пэдов перестраивается в hud() ПОЗЖЕ замера, и карта на тот же кадр читала
    старый пол — после padsFit() меряем ещё раз. */
-function hudFloorMeasure(){
+/* Мерится НЕ каждый кадр (0.3): пять прямоугольников и поиск по селектору
+   стояли в hud(), то есть 120 раз в секунду под пальцем, а меняются они только
+   когда меняется вёрстка — окно, ряд пэдов, появившаяся строка подсказки,
+   открытый экран. Обо всех таких переменах говорит наблюдатель из 08-state
+   (LAYOUT_DIRTY); кто перестроил вёрстку сам, зовёт с force. */
+function hudFloorMeasure(force){
+   if(!force&&!LAYOUT_DIRTY)return;
+   LAYOUT_DIRTY=false;
+   /* Верхнюю полосу меряем тем же заходом: состав строк задаёт таблица
+      стилей (body.afoot прячет топливо и корпус, узкий экран кладёт шкалы в ряд),
+      и второй источник правды однажды с ней разойдётся — поэтому мерим DOM, а не
+      пересчитываем CSS в JS. Но мерим только после перемен в самих узлах. */
+   if($vitals&&$locusEl){
+     const vb=$vitals.getBoundingClientRect().bottom,lb=$locusEl.getBoundingClientRect().bottom;
+     const band=Math.max(vb,lb);
+     if(band>0){if(HUD_BAND!==Math.round(band))document.documentElement.style.setProperty("--hudband",Math.round(band)+"px");HUD_BAND=Math.round(band);}
+   }
    let fl=innerHeight,rl=innerWidth;
    /* видимость проверяем по прямоугольнику, а не по offsetParent: пульт,
       подсказка и правый борт стоят position:fixed, а у таких offsetParent
@@ -87422,7 +87557,7 @@ function hud(){
     fr<.2||hr<.3||cr>=1||suit<25);
   /* пока открыт любой экран, приборы и кнопки полёта не нужны: они просвечивали
      сквозь экран и читались как брак */
-  document.body.classList.toggle("screen",!!document.querySelector(".scr.open"));
+  document.body.classList.toggle("screen",scrOpen());
   /* пустой бак (R2): газ и повороты гаснут — ими не сдвинуться, выход в окне */
   document.body.classList.toggle("tankdry",G.mode==="system"&&rescueEmpty());
   rescueSync();   /* открытое окно выходов сверяет себя с миром (16c) */
@@ -87480,7 +87615,7 @@ function hud(){
     const on=(G.mode==="system"||G.mode==="map")&&!G.haul;   /* на тросе выход уже выбран (16c) */
     setSt(cbtn,"display",on?"":"none");
     /* меню называет цену (дизайнер 12.09): решать, не открывая окна */
-    const cs=on&&cbtn.querySelector("s");
+    const cs=on&&(cbtn.__s||(cbtn.__s=cbtn.querySelector("s")));
     if(cs){const H=rescueHomeAt(),at=G.sx===H.sx&&G.sy===H.sy;
       setTx(cs,at?"вы и так дома":"прыжок "+H.ru+" · "+rescueHomeCost().toLocaleString("ru")+" кр");}
   }
@@ -87531,13 +87666,7 @@ function hud(){
      разойдётся. Чтение — одно на кадр и почти всегда бесплатное: setTx/setSt
      не пишут в DOM, пока показания не менялись, поэтому вёрстка чаще всего
      не грязная и пересчитывать её браузеру не приходится. */
-  if($vitals&&$locusEl){
-    const vb=$vitals.getBoundingClientRect().bottom,lb=$locusEl.getBoundingClientRect().bottom;
-    const band=Math.max(vb,lb);
-    if(band>0){if(HUD_BAND!==Math.round(band))document.documentElement.style.setProperty("--hudband",Math.round(band)+"px");HUD_BAND=Math.round(band);}
-  }
-  /* пол и правый борт — тем же одним чтением на кадр. Пустая подсказка в счёт
-     не идёт: у неё нет текста, а место она занимать не должна. */
+  /* полоса, пол и правый борт — одной меркой и только по грязной вёрстке (0.3) */
   hudFloorMeasure();
   const msgOn=G.msgT>0&&!msgHeld();
   setTx($msg,msgOn?G.msg:"");
@@ -87548,7 +87677,7 @@ function hud(){
      не отвечает ни на один вопрос игрока; «СТЫКОВКА» отвечает на все.
      Глагол уже есть в подсказке — берём оттуда, чтобы не заводить второй
      источник правды, который однажды разойдётся с первым. */
-  const $act=document.querySelector("[data-k=act]");
+  const $act=$actBtn||($actBtn=document.querySelector("[data-k=act]"));
   let actLbl="ДЕЙСТВИЕ", hasAct=false;
   if(G.mode==="belt"){actLbl="РЕЗАК";hasAct=true;}
   else if(G.mode==="dig"){actLbl="ВНИЗ";hasAct=true;}   // в шахте копают в четыре стороны, вниз — на большой кнопке
@@ -87633,7 +87762,7 @@ function hud(){
      режимы держат свои ряды как были. */
   {
     const helmRow=G.mode==="system";
-    for(const b of document.querySelectorAll(".pads [data-k=left],.pads [data-k=right],.pads [data-k=thrust],.pads [data-k=brake]"))
+    for(const b of ($helmHidePads||($helmHidePads=document.querySelectorAll(".pads [data-k=left],.pads [data-k=right],.pads [data-k=thrust],.pads [data-k=brake]"))))
       setSt(b,"display",helmRow?"none":"");
     if(helmRow)setSt($fire,"display","none");
     const $lock=document.getElementById("lockbtn");
@@ -87652,7 +87781,7 @@ function hud(){
      ширину кнопок только тогда, а не каждый кадр */
   {
     const key=(fireHas?"f":"")+((st.launcher)?"m":"")+(G.mode==="belt"?"b":"")+(G.mode==="system"?"s":"");   /* «s»: ряд штурвала (M360) */
-    if(key!==PAD_KEY){PAD_KEY=key;padsFit();hudFloorMeasure();}
+    if(key!==PAD_KEY){PAD_KEY=key;padsFit();rectsDirty();hudFloorMeasure(true);}
   }
   /* ── на ногах (релизный вид, проход 1) ──
      Приборы корабля висели над КАЖДЫМ экраном. Правило стиля говорит «над
@@ -88059,10 +88188,10 @@ function frameBody(now){
     beaconTick(dt);crewBtnTick();if(typeof dealBtnTick==="function")dealBtnTick();gotTick();if(typeof handBtnTick==="function")handBtnTick();if(typeof firstTick==="function")firstTick();hqBtnTick();loreBtnTick();parrotBtnTick();consoleTick(dt);orderTick();if(typeof vegaTick==="function")vegaTick(dt);if(typeof ringTick==="function")ringTick();if(typeof expDayTick==="function")expDayTick();if(typeof expDepartTick==="function")expDepartTick();if(typeof lastRunTick==="function")lastRunTick();if(typeof recordTick==="function")recordTick();if(typeof instTick==="function")instTick();if(typeof skyTick==="function")skyTick();if(typeof traineeTick==="function")traineeTick();if(typeof zooTick==="function")zooTick();wearTick(dt);if(typeof wanderTick==="function")wanderTick(dt);if(typeof mayakTick==="function"){mayakTick();voiceTick();}
     /* страховка от «зависания на стыковке»: режим dock без единой открытой панели
        означал бы, что игрок смотрит на космос и не может двигаться */
-    if(G.mode==="dock"&&!document.querySelector(".scr.open")){
+    if(G.mode==="dock"&&!scrOpen()){
       if(G.st)openStation();else G.mode="system";
     }
-    if(G.mode==="barge"&&!document.querySelector(".scr.open"))G.mode="system";
+    if(G.mode==="barge"&&!scrOpen())G.mode="system";
     audioTick(dt);
     drawWorld();
     if(typeof drawHitFx==="function")drawHitFx(dt);   /* хроматика после попадания (M325) */

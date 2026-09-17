@@ -349,12 +349,12 @@ addEventListener("wheel",e=>{
      скроллиться. Отсюда passive:false — иначе preventDefault не работает. */
   if(e.ctrlKey){
     e.preventDefault();
-    if(G.mode==="system"&&!document.querySelector(".scr.open"))
+    if(G.mode==="system"&&!scrOpen())
       setZoom(G.zoom*(e.deltaY<0?1.12:.89));
     return;
   }
   if(e.target!==cvs)return;
-  if(document.querySelector(".scr.open"))return;
+  if(scrOpen())return;
   /* колесо над картой — её масштаб (M299) */
   if(G.mode==="map"&&typeof mapZoomSet==="function"){mapZoomSet(mapZoomK()*(e.deltaY<0?.89:1.12));return;}
   if(G.mode!=="system")return;
@@ -385,7 +385,7 @@ cvs.addEventListener("pointermove",e=>{
   }else if(ptr.size===1&&G.mode==="map"&&p.moved&&typeof mapCell==="function"){
     /* протяжка листа (M299): карту двигают пальцем, как любую карту.
        Окно становится дробным — сектора остаются целыми (drawMap округляет) */
-    const rc=cvs.getBoundingClientRect(),k=W/rc.width,cell=mapCell();
+    const rc=cvsRect(),k=W/rc.width,cell=mapCell();
     const V=mapViewC();G.mapView={x:V.x-dx*k/cell,y:V.y-dy*k/cell};
   }else if(ptr.size===1&&G.mode==="belt"&&G.belt){
     const k=.0036*G.opts.lookSens;
@@ -406,7 +406,7 @@ cvs.addEventListener("pointercancel",e=>ptr.delete(e.pointerId));
    на поверхности задаёт мировую точку, куда шагает астронавт; в шахте —
    клетку, к которой прокладывается ход (по пути буря непройденное) */
 function mouseWalkAt(clientX,clientY){
-  const rc=cvs.getBoundingClientRect();
+  const rc=cvsRect();
   const sx=(clientX-rc.left)*W/rc.width, sy=(clientY-rc.top)*H/rc.height;
   if(G.mode==="surface"&&G.surf){
     /* камера больше не приклеена к персонажу (инерция, взгляд вперёд, тряска),
@@ -443,11 +443,11 @@ function tap(sxp,syp){
   /* зимовка (M197): в комнате трогают вещи — рычаг, дневник, трубы, койку.
      Экранные координаты, а не мировые: комната не ездит */
   if(G.mode==="winter"&&typeof winTap==="function"){
-    const rc=cvs.getBoundingClientRect();
+    const rc=cvsRect();
     if(winTap((sxp-rc.left)*W/rc.width,(syp-rc.top)*H/rc.height))return;
   }
   if(G.mode==="spa"&&typeof spaTap==="function"){
-    const rc=cvs.getBoundingClientRect();
+    const rc=cvsRect();
     if(spaTap((sxp-rc.left)*W/rc.width,(syp-rc.top)*H/rc.height))return;
   }
   if(G.mode==="map"){

@@ -52,9 +52,9 @@ function helmStickFoot(){
 function helmHome(){
   if(HELM.home)return HELM.home;
   let x=64,y=H-60;
-  const pads=(typeof document!=="undefined")&&document.querySelector&&document.querySelector(".pads");
-  if(pads&&pads.getBoundingClientRect){
-    const r=pads.getBoundingClientRect(),rc=cvs.getBoundingClientRect();
+  const pads=(typeof padsRect==="function")?padsRect():null;   /* кэш, не чтение в кадре (0.3) */
+  if(pads){
+    const r=pads,rc=cvsRect();
     if(r.height>0&&rc.height>0){
       const kx=W/rc.width,ky=H/rc.height;
       x=(r.left-rc.left+14+28)*kx;

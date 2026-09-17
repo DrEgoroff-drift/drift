@@ -58,7 +58,7 @@ function rackToggle(){
   G.rack.on=!G.rack.on;
 }
 addEventListener("keydown",e=>{
-  if(e.code==="KeyI"&&G.running&&!document.querySelector(".scr.open")){
+  if(e.code==="KeyI"&&G.running&&!scrOpen()){
     rackToggle();e.preventDefault();
   }
 });
@@ -322,7 +322,7 @@ function rackRoller(c,cx,cy,r,h,kind){
    готовым в полотне. */
 function rackDraw(){
   if(!rackOpen()||!G.running)return;
-  if(document.querySelector(".scr.open"))return;
+  if(scrOpen())return;
   const T=rackTex(), g0=RACK.geo;
   const R=instrRead();
   ctx.save();

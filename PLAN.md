@@ -101,11 +101,14 @@ Rule 3: same look, cheaper work.
   `-Accept` for the wake blocks; `hud`, `drawHull` and `drawSystem` were left alone (`g11` on this
   laptop drifts 10–20 fps between runs, so their 6–25 ms/s could not be told from the noise —
   the S23 is the meter for them).
-- [ ] **0.3 Layout in the frame.** `getBoundingClientRect` 10–15 ms/s, `querySelectorAll` 4–5 ms/s
-  — the reads sit in the pointer handlers (`15-input` ~226, 388, 409, 446), which fire at 120 Hz under a
-  finger, so they are per frame in effect; 2 096 `UpdateLayoutTree` (937 ms); the finger doubles
-  style/layout (27 → 52 ms/s). Cache rects on `resize()` and tab change; zero DOM reads per frame or
-  per pointer event (a detector counts them).
+- [x] **0.3 Layout in the frame** — zero DOM reads per frame and per pointer event, measured:
+  `system`, thirty steady frames and thirty pointer moves in flight and on foot, all counters 0
+  (before: 5 `getBoundingClientRect` + 5 selector queries **per frame**). The canvas and pad rects
+  live in a cache invalidated by `resize()`, orientation, scroll, tab change and a narrow
+  MutationObserver; «is a screen open» is a cached flag behind an observer instead of three
+  `querySelector(".scr.open")` calls a frame; the floor/band measurement runs only on a dirty
+  layout. The counter itself is in the game (`15d-domread`, `?domread`, asleep otherwise) so a
+  detector can assert it. Body in `docs/PLAN-archive.md`.
 - [ ] **0.4 Resolution that comes back.** `resAuto` fell to `RES_AUTO=1` (411×742 — 1/7 of the
   pixels) and never climbed: the way up needs 20 s under 13 ms. The climb exists (`resEma<13` for 20 s, and at most twice — `resUps<2`, `28-loop` ~201) and never
   fires on the phone: a 5 s window, no cap, and the descent's 24 ms threshold checked against the ~26 ms EMA; the same lever

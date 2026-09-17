@@ -211,7 +211,7 @@ function tapeTear(){
   return s;
 }
 addEventListener("keydown",e=>{
-  if(e.code==="KeyT"&&G.running&&!document.querySelector(".scr.open")){
+  if(e.code==="KeyT"&&G.running&&!scrOpen()){
     tapeTear();e.preventDefault();
   }
 });

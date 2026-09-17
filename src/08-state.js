@@ -48,8 +48,66 @@ function resize(){
     if((resize.tries=(resize.tries||0)+1)<12)setTimeout(resize,150);
   }else resize.tries=0;
   cvs.width=Math.round(W*DPR);cvs.height=Math.round(H*DPR);
+  rectsDirty();   /* окно поехало — прежние прямоугольники больше не те (0.3) */
   ctx.setTransform(DPR,0,0,DPR,0,0);
 }
+/* ══════════════ DOM не читается в кадре (0.3) ══════════════
+   Замер на S23 (плейтест 13.09): `getBoundingClientRect` 10–15 мс в секунду,
+   `querySelectorAll` 4–5, 2 096 пересчётов вёрстки за прогон — и палец
+   удваивал счёт, потому что чтения сидели в обработчиках движения, а те под
+   пальцем приходят 120 раз в секунду. Чтение прямоугольника после ЛЮБОЙ записи
+   в стиль заставляет браузер пересчитать вёрстку немедленно — это и есть
+   главная цена, а не сам вызов.
+
+   Поэтому прямоугольник канвы и ряда пэдов держатся в кэше: меняются они
+   только когда меняется окно — `resize()`, поворот экрана, возврат на вкладку,
+   прокрутка страницы. Всё остальное время это одни и те же четыре числа.
+   Сбросить кэш руками — `rectsDirty()`; кто перестроил вёрстку сам, тот и
+   зовёт (`padsFit`).
+
+   Открыт ли поверх мира экран — то же самое: `document.querySelector(".scr.open")`
+   стоял в кадре трижды и ещё в каждом обработчике колеса. Ответ меняется
+   только когда кто-то ставит или снимает класс, а об этом рассказывает
+   MutationObserver — он приходит ПОСЛЕ кадра, своим микротаском, и вёрстку не
+   трогает вовсе. Сторож нарочно не ищет все двадцать мест, где открываются
+   экраны: список таких мест устаревает, наблюдатель — нет. */
+let CVS_RECT=null,PADS_RECT=null,SCR_OPEN=null,LAYOUT_DIRTY=true;
+function rectsDirty(){CVS_RECT=null;PADS_RECT=null;LAYOUT_DIRTY=true;}
+function cvsRect(){
+  if(!CVS_RECT)CVS_RECT=cvs.getBoundingClientRect();
+  return CVS_RECT;
+}
+function padsRect(){
+  if(PADS_RECT===null){
+    const el=document.querySelector(".pads");
+    PADS_RECT=el&&el.getBoundingClientRect?el.getBoundingClientRect():false;
+  }
+  return PADS_RECT||null;
+}
+function scrOpen(){
+  if(SCR_OPEN===null)SCR_OPEN=!!document.querySelector(".scr.open");
+  return SCR_OPEN;
+}
+function scrDirty(){SCR_OPEN=null;}
+addEventListener("orientationchange",()=>{rectsDirty();scrDirty();});
+addEventListener("scroll",rectsDirty,true);
+document.addEventListener("visibilitychange",()=>{rectsDirty();scrDirty();});
+/* Два наблюдателя, а не один, и это не аккуратность, а цена кадра. Общий
+   наблюдатель за атрибутом style грязнил вёрстку КАЖДЫЙ кадр: шкала топлива
+   пишет себе width на каждом кадре, и мерка пола пересчитывалась так же часто,
+   как до кэша. Теперь: классы и появление узлов — по всему телу (оттуда узнаём об
+   открытом экране), а style — только у тех шести узлов, которые и задают пол,
+   борт и верхнюю полосу. */
+try{
+  new MutationObserver(()=>{scrDirty();})
+    .observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:["class"]});
+  const watch=new MutationObserver(()=>{rectsDirty();});
+  for(const sel of ["#prompt","#console",".pads",".rail",".vitals",".locus"]){
+    const el=document.querySelector(sel);
+    if(el)watch.observe(el,{childList:true,characterData:true,subtree:true,attributes:true,attributeFilter:["class","style"]});
+  }
+}catch(e){}
+
 /* текущий потолок автоматического режима: полный, пока кадр держится */
 let RES_AUTO=2;
 addEventListener("resize",resize);resize();

@@ -156,7 +156,7 @@ function updateSystem(dt){
          десяток одинаковых сообщений в секунду */
       /* полётное предупреждение не лезет поверх открытого экрана: на СТОЛЕ и в
          ОПИСИ оно накрывало нижний ряд (плейтест 11.09, сейв автора) */
-      if((!G.edgeWarned||G.t-G.edgeWarned>900)&&!document.querySelector(".scr.open")){G.edgeWarned=G.t;
+      if((!G.edgeWarned||G.t-G.edgeWarned>900)&&!scrOpen()){G.edgeWarned=G.t;
         say("ГРАВИТАЦИОННЫЙ ЯКОРЬ\nдальше корабль не уходит\nкурс к звезде свободен");}
     }
   }

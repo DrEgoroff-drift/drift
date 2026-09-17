@@ -30,6 +30,9 @@ let HUD_BAND=72;
    правого борта. Обе величины в CSS-пикселях, как и координаты рисования. */
 let HUD_FLOOR=0, HUD_RAIL=0;
 const $vitals=document.querySelector(".vitals"),$locusEl=document.querySelector(".locus");
+/* узлы, которые hud() искал заново каждый кадр (0.3): в index.html они стоят
+   всегда, и поиск по селектору под пальцем набирал 4–5 мс в секунду на пустом месте */
+let $actBtn=null,$helmHidePads=null;
 const $vf=document.getElementById("vFuel"),$vh=document.getElementById("vHull");
 const $vc=document.getElementById("vHold"),$purse=document.getElementById("purse"),$zl=document.getElementById("zoomlbl");
 const $vs=document.getElementById("vSuit"),$ub=document.querySelector("#ubar i");
@@ -93,7 +96,23 @@ function setSt(el,k,v){v=""+v;if(el&&el.style[k]!==v)el.style[k]=v;}
    неё нет текста, а место она занимать не должна. Вынесено в функцию (M360): ряд
    пэдов перестраивается в hud() ПОЗЖЕ замера, и карта на тот же кадр читала
    старый пол — после padsFit() меряем ещё раз. */
-function hudFloorMeasure(){
+/* Мерится НЕ каждый кадр (0.3): пять прямоугольников и поиск по селектору
+   стояли в hud(), то есть 120 раз в секунду под пальцем, а меняются они только
+   когда меняется вёрстка — окно, ряд пэдов, появившаяся строка подсказки,
+   открытый экран. Обо всех таких переменах говорит наблюдатель из 08-state
+   (LAYOUT_DIRTY); кто перестроил вёрстку сам, зовёт с force. */
+function hudFloorMeasure(force){
+   if(!force&&!LAYOUT_DIRTY)return;
+   LAYOUT_DIRTY=false;
+   /* Верхнюю полосу меряем тем же заходом: состав строк задаёт таблица
+      стилей (body.afoot прячет топливо и корпус, узкий экран кладёт шкалы в ряд),
+      и второй источник правды однажды с ней разойдётся — поэтому мерим DOM, а не
+      пересчитываем CSS в JS. Но мерим только после перемен в самих узлах. */
+   if($vitals&&$locusEl){
+     const vb=$vitals.getBoundingClientRect().bottom,lb=$locusEl.getBoundingClientRect().bottom;
+     const band=Math.max(vb,lb);
+     if(band>0){if(HUD_BAND!==Math.round(band))document.documentElement.style.setProperty("--hudband",Math.round(band)+"px");HUD_BAND=Math.round(band);}
+   }
    let fl=innerHeight,rl=innerWidth;
    /* видимость проверяем по прямоугольнику, а не по offsetParent: пульт,
       подсказка и правый борт стоят position:fixed, а у таких offsetParent
@@ -202,7 +221,7 @@ function hud(){
     fr<.2||hr<.3||cr>=1||suit<25);
   /* пока открыт любой экран, приборы и кнопки полёта не нужны: они просвечивали
      сквозь экран и читались как брак */
-  document.body.classList.toggle("screen",!!document.querySelector(".scr.open"));
+  document.body.classList.toggle("screen",scrOpen());
   /* пустой бак (R2): газ и повороты гаснут — ими не сдвинуться, выход в окне */
   document.body.classList.toggle("tankdry",G.mode==="system"&&rescueEmpty());
   rescueSync();   /* открытое окно выходов сверяет себя с миром (16c) */
@@ -260,7 +279,7 @@ function hud(){
     const on=(G.mode==="system"||G.mode==="map")&&!G.haul;   /* на тросе выход уже выбран (16c) */
     setSt(cbtn,"display",on?"":"none");
     /* меню называет цену (дизайнер 12.09): решать, не открывая окна */
-    const cs=on&&cbtn.querySelector("s");
+    const cs=on&&(cbtn.__s||(cbtn.__s=cbtn.querySelector("s")));
     if(cs){const H=rescueHomeAt(),at=G.sx===H.sx&&G.sy===H.sy;
       setTx(cs,at?"вы и так дома":"прыжок "+H.ru+" · "+rescueHomeCost().toLocaleString("ru")+" кр");}
   }
@@ -311,13 +330,7 @@ function hud(){
      разойдётся. Чтение — одно на кадр и почти всегда бесплатное: setTx/setSt
      не пишут в DOM, пока показания не менялись, поэтому вёрстка чаще всего
      не грязная и пересчитывать её браузеру не приходится. */
-  if($vitals&&$locusEl){
-    const vb=$vitals.getBoundingClientRect().bottom,lb=$locusEl.getBoundingClientRect().bottom;
-    const band=Math.max(vb,lb);
-    if(band>0){if(HUD_BAND!==Math.round(band))document.documentElement.style.setProperty("--hudband",Math.round(band)+"px");HUD_BAND=Math.round(band);}
-  }
-  /* пол и правый борт — тем же одним чтением на кадр. Пустая подсказка в счёт
-     не идёт: у неё нет текста, а место она занимать не должна. */
+  /* полоса, пол и правый борт — одной меркой и только по грязной вёрстке (0.3) */
   hudFloorMeasure();
   const msgOn=G.msgT>0&&!msgHeld();
   setTx($msg,msgOn?G.msg:"");
@@ -328,7 +341,7 @@ function hud(){
      не отвечает ни на один вопрос игрока; «СТЫКОВКА» отвечает на все.
      Глагол уже есть в подсказке — берём оттуда, чтобы не заводить второй
      источник правды, который однажды разойдётся с первым. */
-  const $act=document.querySelector("[data-k=act]");
+  const $act=$actBtn||($actBtn=document.querySelector("[data-k=act]"));
   let actLbl="ДЕЙСТВИЕ", hasAct=false;
   if(G.mode==="belt"){actLbl="РЕЗАК";hasAct=true;}
   else if(G.mode==="dig"){actLbl="ВНИЗ";hasAct=true;}   // в шахте копают в четыре стороны, вниз — на большой кнопке
@@ -413,7 +426,7 @@ function hud(){
      режимы держат свои ряды как были. */
   {
     const helmRow=G.mode==="system";
-    for(const b of document.querySelectorAll(".pads [data-k=left],.pads [data-k=right],.pads [data-k=thrust],.pads [data-k=brake]"))
+    for(const b of ($helmHidePads||($helmHidePads=document.querySelectorAll(".pads [data-k=left],.pads [data-k=right],.pads [data-k=thrust],.pads [data-k=brake]"))))
       setSt(b,"display",helmRow?"none":"");
     if(helmRow)setSt($fire,"display","none");
     const $lock=document.getElementById("lockbtn");
@@ -432,7 +445,7 @@ function hud(){
      ширину кнопок только тогда, а не каждый кадр */
   {
     const key=(fireHas?"f":"")+((st.launcher)?"m":"")+(G.mode==="belt"?"b":"")+(G.mode==="system"?"s":"");   /* «s»: ряд штурвала (M360) */
-    if(key!==PAD_KEY){PAD_KEY=key;padsFit();hudFloorMeasure();}
+    if(key!==PAD_KEY){PAD_KEY=key;padsFit();rectsDirty();hudFloorMeasure(true);}
   }
   /* ── на ногах (релизный вид, проход 1) ──
      Приборы корабля висели над КАЖДЫМ экраном. Правило стиля говорит «над

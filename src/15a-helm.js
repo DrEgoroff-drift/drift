@@ -142,7 +142,7 @@ addEventListener("blur",()=>{HELM.key={};HELM.S=null;HELM.P=null;HELM.trail=[];H
    прежних часов, и на новых «свежий палец» из прошлого прогона ничего не решает */
 LOOP_PHASE.push(()=>{HELM.key={};HELM.S=null;HELM.P=null;HELM.trail=[];HELM.mouse.down=false;HELM.mouse.rmb=false;HELM.mouse.t=-1e9;});
 /* ── мышь над холстом ── */
-function helmCanvasXY(e){const rc=cvs.getBoundingClientRect();return [(e.clientX-rc.left)*W/rc.width,(e.clientY-rc.top)*H/rc.height];}
+function helmCanvasXY(e){const rc=cvsRect();return [(e.clientX-rc.left)*W/rc.width,(e.clientY-rc.top)*H/rc.height];}
 cvs.addEventListener("pointermove",e=>{
   if(e.pointerType==="mouse"){
     const [x,y]=helmCanvasXY(e);
@@ -211,7 +211,7 @@ cvs.addEventListener("pointerup",helmPtrEnd);
 cvs.addEventListener("pointercancel",helmPtrEnd);
 cvs.addEventListener("contextmenu",e=>{if(G.mode==="system")e.preventDefault();});
 /* открытый экран над холстом: в Node любой селектор «находит» заглушку, поэтому спрашиваем класс */
-function helmScreenOpen(){const el=document.querySelector(".scr.open");return !!(el&&el.classList&&el.classList.contains&&el.classList.contains("open"));}
+function helmScreenOpen(){return scrOpen();}
 /* щипок в системе (M410): пока живёт стик, второй палец — тап, а не зум;
    без стика два пальца справа — зум, как на карте */
 function helmPinchBlocked(){return G.mode==="system"&&!!HELM.S;}

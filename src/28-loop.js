@@ -380,10 +380,10 @@ function frameBody(now){
     beaconTick(dt);crewBtnTick();if(typeof dealBtnTick==="function")dealBtnTick();gotTick();if(typeof handBtnTick==="function")handBtnTick();if(typeof firstTick==="function")firstTick();hqBtnTick();loreBtnTick();parrotBtnTick();consoleTick(dt);orderTick();if(typeof vegaTick==="function")vegaTick(dt);if(typeof ringTick==="function")ringTick();if(typeof expDayTick==="function")expDayTick();if(typeof expDepartTick==="function")expDepartTick();if(typeof lastRunTick==="function")lastRunTick();if(typeof recordTick==="function")recordTick();if(typeof instTick==="function")instTick();if(typeof skyTick==="function")skyTick();if(typeof traineeTick==="function")traineeTick();if(typeof zooTick==="function")zooTick();wearTick(dt);if(typeof wanderTick==="function")wanderTick(dt);if(typeof mayakTick==="function"){mayakTick();voiceTick();}
     /* страховка от «зависания на стыковке»: режим dock без единой открытой панели
        означал бы, что игрок смотрит на космос и не может двигаться */
-    if(G.mode==="dock"&&!document.querySelector(".scr.open")){
+    if(G.mode==="dock"&&!scrOpen()){
       if(G.st)openStation();else G.mode="system";
     }
-    if(G.mode==="barge"&&!document.querySelector(".scr.open"))G.mode="system";
+    if(G.mode==="barge"&&!scrOpen())G.mode="system";
     audioTick(dt);
     drawWorld();
     if(typeof drawHitFx==="function")drawHitFx(dt);   /* хроматика после попадания (M325) */

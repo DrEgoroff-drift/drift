@@ -55,7 +55,7 @@ function roadClose(){
   if(document.fullscreenElement&&document.exitFullscreen)document.exitFullscreen().catch(()=>{});
   document.getElementById("roadwin").classList.remove("open");
   document.body.classList.remove("road");
-  document.body.classList.toggle("screen",!!document.querySelector(".scr.open"));
+  document.body.classList.toggle("screen",scrOpen());
   if(typeof saveGame==="function")saveGame(true);
 }
 function roadFrame(ts){
