@@ -125,3 +125,12 @@ this file keeps the evidence and the fix.
   fade timed in real seconds, the true length of a tail. Those go on the phone. A frame that shows
   «the same» where the numbers say «twice as long» is worse than no frame: the author will answer the
   picture, and the decision gets made on a lie.
+
+- **Measure ink on the paper only through the path the player opens** (Designer, 18.09.2026).
+  «Смена» must be opened the way the game opens it (`tableToggle` plus `tableRender`); calling
+  `renderSmena` straight into `#tableBody` draws the text with no paper under it, so the letters sit
+  on the dark screen instead of the cream sheet. The mistake is a quiet one: the frame looks
+  plausible and only the background lies — it cost us a contrast reading of 3.48 where the real
+  figure was 6.3, and a follow-up commit that had to be reverted. The same caution applies to any
+  colour measured on a surface: check what is actually under the pixels, because almost everywhere in
+  this game a translucent layer lies between the text and the material.
