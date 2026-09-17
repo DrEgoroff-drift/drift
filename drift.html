@@ -8770,16 +8770,31 @@ function scrOpen(){return !!document.querySelector(".scr.open");}
 addEventListener("orientationchange",rectsDirty);
 addEventListener("scroll",rectsDirty,true);
 document.addEventListener("visibilitychange",rectsDirty);
-/* Наблюдатель за стилем — только у тех шести узлов, которые задают пол, борт
-   и верхнюю полосу: общий сторож за атрибутом style грязнил бы вёрстку КАЖДЫЙ
-   кадр (шкала топлива пишет себе width на каждом кадре), а мерка пола должна
-   пересчитываться только когда меняются именно эти узлы. */
+/* Наблюдатель за КЛАССОМ и составом — у тех шести узлов, которые задают пол,
+   борт и верхнюю полосу, и обязательно с subtree: строка подсказки меняет
+   вложенный текст, экран появляется вложенным узлом, кнопка беспроводного
+   ряда меняет class — всё это настоящие перемены раскладки. */
 try{
-  const watch=new MutationObserver(()=>{rectsDirty();});
+  const watchStruct=new MutationObserver(()=>{rectsDirty();});
   for(const sel of ["#prompt","#console",".pads",".rail",".vitals",".locus"]){
     const el=document.querySelector(sel);
-    if(el)watch.observe(el,{childList:true,characterData:true,subtree:true,attributes:true,attributeFilter:["class","style"]});
+    if(el)watchStruct.observe(el,{childList:true,characterData:true,subtree:true,attributes:true,attributeFilter:["class"]});
   }
+  /* Наблюдатель за СТИЛЕМ — отдельно, БЕЗ subtree, и только у `.pads`: это
+     единственный из шести узлов, который сам (не через потомка) пишет себе
+     style — `padsFit`/`applyPadSize` кладут `--padw/--padgap/--padscale` при
+     повороте экрана и смене настройки размера кнопок, не каждый кадр.
+     Раньше style следили с subtree заодно с классом — и это ловило не только
+     шесть узлов, а КАЖДОГО их потомка: шкала топлива внутри `.vitals` честно
+     пишет себе width каждый кадр (это её работа, не дефект), а с этой правкой
+     кнопки того же `.pads` дважды за кадр спорили о своей видимости через
+     style (36bae22) — оба случая грязнили пол-кэш на пустом месте. Найдено
+     по стеку самой записи в style, а не чтением кода (Тестировщик,
+     Контроль, 18.09): 62 сброса кэша из 600 синтетических кадров шли
+     отсюда, и ни один не был настоящей переменой раскладки шести узлов. */
+  const watchPadsStyle=new MutationObserver(()=>{rectsDirty();});
+  const $pads=document.querySelector(".pads");
+  if($pads)watchPadsStyle.observe($pads,{attributes:true,attributeFilter:["style"]});
 }catch(e){}
 
 /* текущий потолок автоматического режима: полный, пока кадр держится */
