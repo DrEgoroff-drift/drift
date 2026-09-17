@@ -73,6 +73,11 @@ function opisPhone(){return innerWidth<=760;}
    на месте (P1): иначе каждое «надеть/снять» бросало читателя в начало описи */
 function opisRerender(){
   if(!OPIS.box)return;
+  /* вещь в руке — не перестраиваем (P2): перерисовка меняет сам узел карточки,
+     а на нём висит захват указателя — движение пальца после этого не приходит
+     никуда, и вещь зависает призраком до тычка в пустоту. Отложенная перестройка
+     случится сразу после как вещь положат. */
+  if(OPIS.drag){OPIS.rerenderPending=true;return;}
   if(typeof keepScroll==="function")keepScroll(OPIS.box,()=>opisRender(OPIS.box));
   else opisRender(OPIS.box);
 }
@@ -324,6 +329,8 @@ function opisDropEnd(){
   document.body.classList.remove("op-lift");
   document.querySelectorAll("[data-drop].can,[data-drop].over").forEach(e=>{e.classList.remove("can");e.classList.remove("over");});
   OPIS.drag=null;
+  /* отложенная перестройка, если пока несли вещь что-то поменялось (P2) */
+  if(OPIS.rerenderPending){OPIS.rerenderPending=false;opisRerender();}
 }
 function opisDrop(tgt,pl){
   if(tgt.kind==="hatch"){

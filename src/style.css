@@ -1431,7 +1431,14 @@ body.table #loglist.opis::before{display:none}
 .opis .op-card s{display:block;text-decoration:none;color:#6a5a3e;font-size:10px;line-height:1.5}
 .opis .op-card i{display:block;font-style:normal;font-size:10px;line-height:1.5;color:#3d3222}
 .opis .op-card .up{color:#2f6b3a}.opis .op-card .dn{color:#9a3a2a}
-.opis .op-card.on{box-shadow:0 0 0 2px #f2b25c,0 8px 18px rgba(0,0,0,.5);transform:translateY(-2px);touch-action:none}
+/* Раскрытая карточка не забирает прокрутку (P2). Здесь стояло touch-action:none —
+   и вместе с раскрытыми действиями это давало полтораста пикселей мёртвой зоны посередине
+   описи: палец на ней не прокручивал ничего (плейтест 13.09, §1.2). Вертикаль теперь
+   отдана браузеру, как и у закрытой карточки; подъём вещи от этого не страдает —
+   он ждёт 380 мс БЕЗ движения (больше 14 px его отменяют), а пока вещь несут,
+   прокрутка глушится на всёй описи классом body.op-lift (ниже). */
+.opis .op-card.on{box-shadow:0 0 0 2px #f2b25c,0 8px 18px rgba(0,0,0,.5);transform:translateY(-2px);touch-action:pan-y}
+body.op-lift .opis .op-card,body.op-lift .opis{touch-action:none}
 .opis .op-card.fit{box-shadow:0 0 0 1px rgba(127,230,216,.7),0 5px 12px rgba(0,0,0,.4)}
 .opis .op-card.lifted{opacity:.35}
 /* кнопки — вторая дорога: показываются у выбранной бирки (тап) и под мышью;

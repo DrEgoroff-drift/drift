@@ -10158,3 +10158,20 @@ after the build, not before the push** — the browser pane showed it in one cal
 Measured after the fix, at 375×812: `scrollTop` 3823 in the notebook survives a same-page line, an
 other-page line and a record entry; ОПИСЬ keeps 447 through `opisRerender()` and an unrelated
 journal line.
+
+**P2 ОПИСЬ — the opened card's dead zone (2026-09-17).** `.opis .op-card.on` set
+`touch-action:none`, which is the right thing for a node you drag and the wrong thing for a node
+that fills the middle of a scrolling list: the opened card with its row of actions is about 150 px
+tall, and a finger that started there panned nothing at all (phone playtest, §1.2). The card is
+now `pan-y`, the same as when closed, so vertical pans belong to the browser. The lift does not
+suffer, because it is a long press: 380 ms with the finger still, and more than 14 px of movement
+cancels it — so a pan and a lift can never both be meant. Once an item is genuinely in hand,
+`body.op-lift` sets `touch-action:none` across the list, so the drag is not fought by the
+scroller.
+
+One more thing the drag needed: `opisRerender()` is called from 29 places, and any of them firing
+mid-drag replaced the card's DOM node — the node holding the pointer capture — after which finger
+movement arrived nowhere and the item hung as a ghost until a tap into empty space. During a drag
+the rebuild now only raises `OPIS.rerenderPending`, and `opisDropEnd()` runs it once the item is
+put down. Verified in the browser pane: `touch-action` is `pan-y` closed, `pan-y` open (it was
+`none`), `none` while carrying; a rebuild during a fake drag defers and then happens.

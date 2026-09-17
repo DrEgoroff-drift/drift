@@ -199,8 +199,16 @@ Rule 3: same look, cheaper work.
   ОПИСЬ, `scrollTop` 447 survives `opisRerender()` and an unrelated journal line. Caught on the
   way: the scroller is `#tableBody`, not `#loglist` — the first version held the scroll of a node
   that does not scroll, so `keepScroll` now keeps the ancestors as well.
-- [ ] **P2** ОПИСЬ: an opened card is `touch-action:none` (`style.css` `.opis .op-card.on`, ~1434) — a 150 px dead zone; let vertical pans
-  through, keep the long-press lift, guard the lift against a re-render (§1.2).
+- [x] **P2** ОПИСЬ — an opened card no longer swallows the scroll (§1.2). It carried
+  `touch-action:none`, so the card plus its row of actions was about 150 px of dead zone in the
+  middle of the list: a finger landing there panned nothing. Vertical pans now go to the browser,
+  exactly as on a closed card (`pan-y`), and the lift survives because it waits 380 ms **without
+  movement** — more than 14 px cancels it anyway. While an item is actually in hand, panning is
+  suppressed across the whole list (`body.op-lift`), so the browser and the drag do not fight. And
+  the lift is guarded against a rebuild: `opisRerender()` during a drag only sets a pending flag
+  and runs after the drop, because replacing the card's node would drop the pointer capture and
+  leave the item hanging as a ghost. Measured in the browser: `touch-action` reads `pan-y` closed,
+  `pan-y` open (was `none`), `none` while carrying.
 - [ ] **P3** ОПИСЬ tab strip: stretch it; its fade mask never clears — it skips `tabsSync` (§1.3).
 - [ ] **P4** Compass chips follow `helmStickFoot` (in `drawSystem`) up to mid-screen — keep them on
   the frame's edge (§1.4).
