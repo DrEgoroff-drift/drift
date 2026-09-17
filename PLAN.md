@@ -184,6 +184,19 @@ Rule 3: same look, cheaper work.
   three-band comparison (2.6 / 2.0 / 1.5) beside the Tester's numbers, and he chooses knowing what he
   pays with. Her third option — keep the raster, win the frame back on the cost of events — is
   already spent: the worker's fix cut events fifty-fold and the skips stayed, evenly spread.
+  **The Designer's case against ×1.5 is WITHDRAWN by her own measurement of real frames (18.09).**
+  Her simulation squeezed a finished frame and put it back by nearest neighbour, which turns an
+  already-drawn thin line into a dotted one. The game at a smaller canvas draws the line AGAIN: it
+  stays solid, its pixel is simply bigger. Measured on the Tester's two real phone frames of one
+  scene: the ribbon's rails do NOT break — the teal rail covers 99 % of columns at ×2 and 100 % at
+  ×1.5, longest gap 4 px against 1, and there are MORE rail pixels (2634 against 2280). Stars are
+  almost all there: 193 against 188 in the band above the ship, a 3 % loss and not a third, each
+  blob grown from 18 to 20 px. What actually changes, and nobody predicted it: **the sky gets
+  darker** — the band's mean brightness 19.0 against 14.2, a quarter down, with the nebula and the
+  faint glow sagging most. So the price of ×1.5 is not the line and not the stars: it is the
+  subtlety of the background. She withdraws «a bad bargain» and calls ×1.5 decent on real frames,
+  with 59 fps against 51 a serious argument. Her method stands only for «what if we stretch a
+  picture», never for «what if we draw it smaller».
   **If the author keeps the sharpness, here is the Designer's map of what may be given up (18.09).**
   Draw calls a frame in the system view, calm flight: the ribbon 126, the wake 126, the star dust 103,
   the compass chips and canvas HUD 10, the nebula 1 (baked into a texture and laid down in one piece),
