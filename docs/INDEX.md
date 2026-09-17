@@ -1406,10 +1406,10 @@ drawSkyLayer                 src/19-mode-landing.js:171-269
 drawSpa                      src/29i-spa-draw.js:41-486
 drawSpaceDust                src/16a-space.js:275-308
 drawStarBody                 src/16a-space.js:475-491
-drawStarHole                 src/16a-space.js:612-642
-drawStarNeutron              src/16a-space.js:585-609
+drawStarHole                 src/16a-space.js:595-625
+drawStarNeutron              src/16a-space.js:568-592
 drawStars                    src/16-flight.js:28-72
-drawStarSingle               src/16a-space.js:492-583
+drawStarSingle               src/16a-space.js:492-566
 drawStation                  src/17c-system-draw.js:434-498
 drawStationBody              src/17c-system-draw.js:174-376
 drawStationMods              src/17a-station-mod.js:214-217
@@ -5796,7 +5796,7 @@ zooTick                      src/11ad-zoo.js:41-54
   · кильватер: хвосты от скорости, а не от сопла:284
   · нить кильватера — ступенями спада, а не отрезками (0.2):357
 
-## src/16a-space.js · 41 КБ
+## src/16a-space.js · 40 КБ
   · облик системы:1
 
 ## src/16b-missile.js · 17 КБ

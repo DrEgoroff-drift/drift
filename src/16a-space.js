@@ -531,42 +531,25 @@ function drawStarSingle(ox,oy,R,col,heat){
   ctx.globalAlpha=1;
   /* блик-звезда: четыре луча и слабое кольцо. Настоящего bloom в canvas 2D нет,
      но глаз читает как «очень ярко» именно эти два признака.
-     Один луч — тоже спрайт, единичной длины вдоль +X: рисунок градиента
-     постоянен, у каждого из четырёх лучей меняется только длина (и она у
-     каждого своя, они дышат не в такт — это и держит «живое», а не мигание).
-     Растягиваем готовый рисунок на нужную длину поворотом и масштабом вместо
-     четырёх новых градиентов на кадр. */
-  const RAY_INNER=.4/4.2;   // среднее отношение внутреннего радиуса к длине луча
-  const RAY=glowSprite("ray|"+col,()=>{
-    const gg=ctx.createLinearGradient(0,0,1,0);
-    gg.addColorStop(0,"rgba("+c.join(",")+",.22)");
-    gg.addColorStop(1,"rgba("+c.join(",")+",0)");
-    ctx.fillStyle=gg;
-    ctx.beginPath();
-    ctx.moveTo(Math.cos(.045)*RAY_INNER,Math.sin(.045)*RAY_INNER);
-    ctx.lineTo(1,0);
-    ctx.lineTo(Math.cos(-.045)*RAY_INNER,Math.sin(-.045)*RAY_INNER);
-    ctx.closePath();ctx.fill();
-  });
-  /* луч — щель толщиной в сотые доли своей длины: если класть его в кадр тем
-     же квадратом, каким он испечён (сторона в две длины луча — так устроен
-     glowSprite для круглых фигур), под прозрачным запасом полотна пропадает
-     весь выигрыш растра. Кладём только тот прямоугольник спрайта, где вообще
-     есть краска. */
-  const RAY_HALF=GLOW_SP/2;
-  const raySX=RAY_HALF*(1+RAY_INNER*Math.cos(.045));
-  const raySY0=RAY_HALF*(1-RAY_INNER*Math.sin(.045));
-  const raySW=GLOW_SP-raySX;
-  const raySH=RAY_HALF*2*RAY_INNER*Math.sin(.045);
+     Луч НЕ печём (Контроль, печь звезду, 18.09): у клина 2.19 px источника
+     на всё сужение к острию, готовый рисунок растягивается до ×11 на крайнем
+     зуме, а вынесенный в спрайт внутренний радиус завязался на долю длины —
+     основание задышало вместе с длиной там, где четыре луча сходятся на
+     диске. Цена за это — четверть процента площади кадра, ниже цены печки. */
   ctx.save();
   ctx.globalCompositeOperation="lighter";
   ctx.translate(ox,oy);
   for(let i=0;i<4;i++){
     const a=i*Math.PI/2+.2, len=R*(4.2+1.2*Math.sin(G.t*.02+i))*heat;
-    ctx.save();ctx.rotate(a);
-    ctx.drawImage(RAY,raySX,raySY0,raySW,raySH,
-      RAY_INNER*len,-RAY_INNER*Math.sin(.045)*len,(1-RAY_INNER)*len,2*RAY_INNER*Math.sin(.045)*len);
-    ctx.restore();
+    const gg=ctx.createLinearGradient(0,0,Math.cos(a)*len,Math.sin(a)*len);
+    gg.addColorStop(0,"rgba("+c.join(",")+",.22)");
+    gg.addColorStop(1,"rgba("+c.join(",")+",0)");
+    ctx.fillStyle=gg;
+    ctx.beginPath();
+    ctx.moveTo(Math.cos(a+.045)*R*.4,Math.sin(a+.045)*R*.4);
+    ctx.lineTo(Math.cos(a)*len,Math.sin(a)*len);
+    ctx.lineTo(Math.cos(a-.045)*R*.4,Math.sin(a-.045)*R*.4);
+    ctx.closePath();ctx.fill();
   }
   /* ореол вокруг ядра: тонкое кольцо читалось резкой окружностью, поэтому оно
      широкое и почти прозрачное — так это гало, а не обруч.
