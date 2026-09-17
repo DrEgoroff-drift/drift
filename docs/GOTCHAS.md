@@ -179,3 +179,14 @@ an evening. The harness must now assert the helm is alive on every counted frame
 otherwise; report the frames-with-stick count as the first line of any cadence measurement, before
 the percentage. The same caution applies to any comparison of a "good state" against a bad one:
 check that the good state still contains the thing being measured.
+
+## Baking a sparse shape makes the raster more expensive, not cheaper
+
+Pre-rendering a shape into a sprite pays off only when the shape fills its bounding box. A thin
+wedge — a star's ray, a trail, a needle — occupies a fraction of a per cent of its square, and
+`drawImage` pushes the WHOLE square through the raster, transparent pixels included. So the bake
+trades a cheap triangle fill for an expensive full-square blit and loses twice: area up, sharpness
+down, because the sprite is baked at one size and stretched. Before baking anything, ask two
+questions: what share of the bounding box does the ink cover, and how far will the finished picture
+be stretched at the largest zoom (the sprite gives `GLOW_SP/2` pixels per unit radius — compare that
+against the shape's biggest on-screen size). Bake discs, glows and bodies; leave slivers alone.
