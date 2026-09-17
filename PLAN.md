@@ -99,12 +99,22 @@ Rule 3: same look, cheaper work.
   period, dropping back over 7 ms or 1.5 of the period. The player's cap always wins. A latent bug
   fell out: the stride was `ceil` against a display-period estimate that tracks the *shortest*
   interval, so a jittery 120 Hz asked for every third vsync — 40 fps instead of 60.
-- **Gate taken on the author's S23** (tester, 60 s of steering on 3d0c384): fps 34.3 → **58.2**,
-  cadence 68 % → **97 %**, p95 frame 16.8 ms, `RES_AUTO` holds at 2 (it used to fall to 1 in thirty
-  seconds). The haze is no longer the bottleneck — muting it changes nothing now.
-- [ ] **The last 3 %:** 106 frames over 24 ms in that minute. The tester is looking for their
-  source; the first candidate is GC (0.6), the second a once-a-second bake. Not a cadence problem —
-  the cadence is even now, these are rare long frames.
+- **Gate, honestly: half taken.** On the author's S23, `RES_AUTO` now holds at 2 for ten minutes
+  straight (it used to fall to 1 in thirty seconds) and the haze is no longer the bottleneck —
+  muting it changes nothing. But the cadence gate is **not** met: the first minute read 58.2 fps
+  at 97 %, and over ten minutes the shelf is 76–83 % with 475–619 frames over 24 ms a minute and
+  p95 33.4 ms. The first minute was luck, and striking the gate on it was my mistake.
+- [ ] **Four milliseconds, by the function.** `frameBody` averages 10.58 ms against a 16.7 ms
+  vsync, max 28.7 — no headroom, and muting *any* single draw function now gives 59.7 fps at
+  99.5 %, so there is no one culprit left: the frame is simply full. The task is to take ≥ 4 ms of
+  JS off it at the same look, one function per commit: draw only the wake and trail points that
+  are actually visible and merge segments shorter than a pixel; let `hud`/`drawSysHud` touch only
+  what changed; cache the hull's outline in a layer per scale and blit it rotated. Meter:
+  `FRAME_JS` EMA before/after, then the tester's phone.
+- [ ] **Longer tails** (author: «хвосты от корабля побольше надо, а то сейчас куцие»). `WAKE` sits
+  at 642 points of 2 000 and `TRAIL` at 0 of 560 — the buffers are two thirds empty, and on `main`
+  the wake held 750 at the same speed. Lengthen life/length **after** the milliseconds are found,
+  or the budget goes straight back; the look is the designer's call.
 - [x] **0.2 Raster** — the wake and the thrust ribbon were a stroke per segment (two for the
   wake: halo and core). They now go in steps of fade per lane, one path per step, the halo and the
   core sharing that path. The step is chosen by the *mean of age and brightness*, 32 steps on the
