@@ -97,6 +97,14 @@ Rule 3: same look, cheaper work.
   JS, which measures 6–8 ms against 16.7. The evening's other lesson is in GOTCHAS: the phone's first
   minute is inflated (92.8 % rested, 83.7 % after a minute idle, 78.5 % on a fresh reload, thermal 1
   throughout), so throw the first run away and judge by the last two of three.
+  **Final number of the evening, rig fixed (8a6d001, real S23, three counted 30 s runs, the helm
+  alive in all three):** cadence 83.0 / 81.0 / 80.3 %, frames over 24 ms 262 / 288 / 296, fps 51.2 /
+  50.4 / 50.1 — a spread of one and a half points. Reference points from the same rig: no helm
+  99–100 %, ×1.5 with the helm 94–97 %, RES_AUTO holds 2 even after ten minutes, thermal never above
+  2. **Rig rule now enforced in the harness:** a run in which the helm never got born is rejected and
+  re-shot automatically — such runs used to report a glorious 99 % and mislead everyone, including
+  the Tester. Stage 0's gate at full resolution is not taken and did not come closer all evening; the
+  only thing that takes it is the author's call on ×1.5.
 - [x] **0.1 Cadence** — done; body in `docs/PLAN-archive.md` («Moved 2026-09-18»).
 - [x] **0.1b An even tact** — done; body in `docs/PLAN-archive.md` («Moved 2026-09-18»).
 - **Gate, honestly: half taken.** On the author's S23, `RES_AUTO` now holds at 2 for ten minutes
