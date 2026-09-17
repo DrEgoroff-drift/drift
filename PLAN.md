@@ -239,6 +239,14 @@ Rule 3: same look, cheaper work.
   and bake the hull — 823 strokes draw the same body every frame, with rotation and tilt applied to
   a finished picture. Caveat from her: these are counts and areas, not milliseconds (no clock in
   headless) — the orders of magnitude hold, the true cost is the phone's to say.
+  **Star baked, 9dc0a3f + dbc06ea (Worker, reviewed by Control).** The core's radial gradient is now
+  a sprite breathed by `globalAlpha`; the protuberances stay live on purpose (flat fills, 11 k px,
+  and baking them would kill the flicker the rulebook asks to keep). The bloom rays were baked and
+  the bake was **reverted**: four rays are 5.8 k px a frame — a quarter of a per cent of the star we
+  came hunting — while the sprite cost a change of LOOK (the ray's base moved from a fixed `R*.4` to
+  a share of the breathing length, so it pulsed where four rays meet the disc), 2.19 px of source
+  across the whole taper, and a stretch of up to ×11 at full zoom. The rule that came out of it is in
+  GOTCHAS (c1cd737): bake what fills its bounding box — discs, glows, bodies — never slivers.
 
 - [ ] **A second, independent instrument for the frame: the screen recording** (Designer, 18.09).
   Counting skips from *outside* the game, so it cannot be fooled by our own counters: a skipped vsync
