@@ -189,6 +189,17 @@ Rule 3: same look, cheaper work.
   so the firm count is one or two, not three. **Direction for the work: measure the cost of an
   EVENT, not the average weight of a frame.** Every skip measurement must now also say what was on
   screen at that frame; her instrument already prints the frame list with a picture of each.
+  **The good-state reference is withdrawn too (Designer, 18.09): there was no steering in it.** She
+  checked the recording itself — no stick pad on any frame of the lower half (the hail window
+  «КОММУНА · ОКЛИК» occupies it), and the course does not change for eight seconds (the ribbon's
+  angle reads −30.8 / −31.8 / −32.3 / −31.9 / −31.5, a degree and a half of drift). The recording is
+  not flight under a finger, it is waiting for an answer in a dialogue. So her «eight clean seconds»
+  meant eight seconds without steering, and «the headroom comes and goes» is withdrawn.
+  **What survives, and it matters: those three skips landed on a window opening, a hint appearing,
+  and a window closing with the chips re-laying out — with no steering at all.** Events cost even
+  in the lightest frame. So there are TWO separate bills, to be fixed separately: a steady 14 %
+  from live steering, and spikes on events. Next: a real reference — same scene, stick confirmed
+  born, no windows open, 10 s of continuous steering, so steering is compared against steering.
 
 - [ ] **Four milliseconds, by the function.** `frameBody` averages 10.58 ms against a 16.7 ms
   vsync, max 28.7 — no headroom, and muting *any* single draw function now gives 59.7 fps at
