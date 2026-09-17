@@ -1222,10 +1222,14 @@ body.road .scr footer .act.gold{background:linear-gradient(180deg,rgba(242,178,9
      него ровно на пиксель (найдено телефонным набором 05.09.2026). 128 остаётся
      запасным значением на первый кадр, до первой мерки. */
   /* две строки вместо одной во всю ширину (M360a); --helmlift поднимает
-     подсказку выше следа живого стика (helmLift в 15a-helm) */
+     подсказку выше следа живого стика (helmLift в 15a-helm).
+     Три строки, не две (П6, §1.5): часть подсказок сама несёт перевод строки
+     (`cue("...\n...")`) — с обеих её половин, если хоть одна не влезает в
+     ширину узкого экрана, потолок в 2 срезал вторую половину знаком «…».
+     У #msg (тремя строками выше) потолок уже 3 — берём тот же. */
   #prompt{bottom:calc(env(safe-area-inset-bottom) + var(--padsh,86px) + 118px + var(--helmlift,0px));
     white-space:pre-line;overflow:hidden;
-    display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;
+    display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;
     left:10px;right:calc(var(--railw,128px) + 4px);transform:none;
     text-overflow:ellipsis;max-width:none;line-height:1.4}
 }

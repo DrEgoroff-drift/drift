@@ -93,7 +93,12 @@ function renderRecord(box){
   for(let i=R.e.length-1;i>=0;i--){
     const x=R.e[i];
     const row=document.createElement("div");row.className="li talk";
-    const em=document.createElement("em");em.textContent="день "+x.d;
+    /* просто число, не «день N» (П6, §4.4): колонка встроена в 34px, до самой
+       красной линии поля (left:48px, #loglist::before) — тот же приём, что и
+       у соседних страниц (logTime, координаты сектора), а не отдельное слово.
+       Через время суток растут (скачки часов — 11ab-institute и другие), и
+       «день 11» уже не помещался; голое число помещается всегда */
+    const em=document.createElement("em");em.textContent=String(x.d);
     const sp=document.createElement("span");sp.innerHTML="<b>"+x.a+"</b> — "+x.s;
     row.appendChild(em);row.appendChild(sp);box.appendChild(row);
   }

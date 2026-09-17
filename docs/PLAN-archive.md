@@ -10516,3 +10516,65 @@ Full suite: `16332` passed with 4 red → `16336` passed, 0 red. The lesson for 
 specifically: a DOM stub built to make "the element always exists" true for structural singletons
 is the wrong tool for "is anything currently in state X" — those need either a real (if partial)
 selector engine or an honest `null`, never an invented match.
+
+**P6 — five loose ends from the interface bug list (2026-09-18).** §1.5, §1.6, §4.4 of the
+playtest report, bundled as one milestone; each item stood alone, one commit apiece.
+
+*Hints cut at 411 px (§1.5).* `#prompt`'s phone rule (`src/style.css`, the `@media (max-width:760px)`
+block) clamped to `-webkit-line-clamp:2`. Several of the cited strings carry their own line break
+already (`cue("ГАЗОВЫЙ ГИГАНТ · ПОСАДКИ НЕТ\nДЕЙСТВИЕ — ЗАХОД ЗА ЛЕТУЧИМИ ГАЗАМИ",CUE_ACT)` in
+`17-mode-system.js`, similar composed strings in `21a8-base-world.js` and `21e-surface-draw.js`) —
+the clamp counts *visual* lines after wrapping, not the author's `\n` count, so if either half of
+a two-line message alone wrapped past one line at a narrow width, the second half vanished behind
+`text-overflow:ellipsis`. Raised to 3, matching the sibling `#msg` toast's clamp three rules
+earlier in the same file (that element hit the identical problem once, back in M360a, and was
+fixed the same way then). Verified in the browser pane at 411×823: all four strings quoted in the
+playtest report now render with `scrollHeight === clientHeight` (no clipping) — one of them didn't
+even need the third line, it turned out to only need room to *try* wrapping to 3 without being cut
+off if it did; a synthetic 15-word forced-long string confirmed the ceiling itself still works
+(clamps at 3, doesn't grow unbounded).
+
+*МАСШТАБ under a chip (§1.5).* Already fixed before this session, in 0.448 per the plan's own
+note. Confirmed rather than assumed: `#zoomlbl` lives in the top masthead (`.locus`), its
+`getBoundingClientRect()` reads y 36–48 in a 411-wide phone frame; the compass chips drawn by
+`drawSysHud` never sit above `inset.y0 = 76`. The two can't overlap by construction. Nothing to do.
+
+*The beacon offered and wasted at the ship (§1.6).* `useBeacon()`/`beaconTick()`
+(`src/23-mode-dig.js`) had no distance gate at all — the button read "→ КОРАБЛЬ" and, on tap,
+teleported the player from wherever they stood straight to `S.shipX`, burning the full cooldown
+(38 s at base, less with the tech) even when already standing on the ship's own tile, logging the
+self-evidently useless «Маяк: возврат к кораблю с 0 м». Every other "close enough to act" check on
+the surface (`21-mode-surface.js`, half a dozen call sites) already uses
+`Math.abs(S.x - S.shipX) < shipZoneR()`, a ship-length-scaled radius — reused it here, but *only*
+when `G.mode==="surface"`: in `dig`/`cave` mode `S.x`/`S.shipX` describe the surface entry point,
+not where the player physically is underground, and being "near the ship" has no meaning down
+there — the beacon should always be offered underground, which is its entire point. Verified with
+a synthetic `G.surf`: the button is `display:none` standing on the ship on the surface, shown when
+far away on the surface, and shown unconditionally in `dig` mode regardless of `S.x`; a direct
+`useBeacon()` call while standing on the ship leaves `S.beacon` at 0 (no cooldown spent, confirming
+the function-level guard, not just the button's visibility, blocks the no-op case).
+
+*КНИЖКА: «хулк» and «командировочные … за 0 км» (§4.4).* «Хулк» turned out to be deliberate
+jargon, not a typo — `12x-suit.js` and `17b-finds.js` both use it as the name for a class of salvaged
+gear, consistently. Left alone. «Командировочные … за 0 км» was real: `roadFinish()`
+(`27k-road.js`) shows the trip's distance with `.toFixed(1)` in the toast the player sees at the
+moment (`tell("money","Дорога: +"+cr+" кр за поездку · "+km.toFixed(1)+" км"...)`) but with
+`.toFixed(0)` in the permanent record line two statements later — a short trip that still earned
+credit (`cr>0`, since credit accrues from a separate fractional accumulator, `RD.crFrac`, not
+directly from displayed km) could round to a literal "0 км" in the book while the toast the player
+had just read said something like "0.3 км". Matched the record's precision to the toast's.
+
+*`celDay` column out of order (§4.4).* `celDay()` (`06a-celest.js`) returns an *absolute* sky-day
+count since the game's epoch, not a per-record running index, and several systems advance it in
+bulk (`11ab-institute.js`, `29f-winter.js`, `29h-spa.js`, `11n-quiet.js`, all `G.t += CEL_DAY*n`).
+`renderRecord()` (`11aa-record.js`) labelled its `em` column `"день "+x.d` — the word plus a number
+that only grows over a long career. The column itself is hard-capped at 34 px
+(`body.table #loglist .li em`, `style.css`) by a real design constraint six pixels further right:
+the sheet's own red margin rule sits at `left:48px`, "по нему лист опознают раньше, чем прочтут" —
+moving it wasn't an option without disturbing that identity mark. Every sibling page sharing the
+same column convention (the journal's `logTime()`, sector coordinates elsewhere) already uses a
+bare, compact label rather than a labelled word+number; matched that convention here too — dropped
+"день ", kept the bare number, which fits the 34 px column at any digit count this career will
+plausibly reach.
+
+`test.ps1`: 16336/16336 across all five, no regressions.

@@ -87,6 +87,11 @@ function beaconCool(){return G.tech.has("beacon")?BEACON_COOL/4:BEACON_COOL;}
 function useBeacon(){
   const S=G.surf;
   if(!S||S.beacon>0)return;
+  /* на поверхности рядом с кораблём маяк телепортирует «с 0 м» — жжёт
+     перезарядку без всякой цели (П6, §1.6). В стволе и пещере рядом с
+     кораблём не бывает вовсе: S.x/S.shipX — координата поверхности, там,
+     где стоял вход, а не то место под землёй, где сейчас игрок */
+  if(G.mode==="surface"&&Math.abs(S.x-S.shipX)<shipZoneR())return;
   const deep=G.dig?G.dig.row:0;
   S.beacon=beaconCool();
   /* маяк выдёргивает из ствола, но выработка остаётся выработкой */
@@ -101,6 +106,9 @@ function useBeacon(){
 function beaconTick(dt){
   const S=G.surf,b=document.getElementById("beaconbtn");
   if(!S||(G.mode!=="surface"&&G.mode!=="dig"&&G.mode!=="cave")){b.style.display="none";return;}
+  /* тот же случай, что в useBeacon(): на поверхности рядом с кораблём кнопка
+     не предлагается вовсе, а не просто написана без толку */
+  if(G.mode==="surface"&&Math.abs(S.x-S.shipX)<shipZoneR()){b.style.display="none";return;}
   if(S.beacon>0)S.beacon=Math.max(0,S.beacon-dt);
   b.style.display="";
   const ready=S.beacon<=0;

@@ -1236,10 +1236,14 @@ body.road .scr footer .act.gold{background:linear-gradient(180deg,rgba(242,178,9
      него ровно на пиксель (найдено телефонным набором 05.09.2026). 128 остаётся
      запасным значением на первый кадр, до первой мерки. */
   /* две строки вместо одной во всю ширину (M360a); --helmlift поднимает
-     подсказку выше следа живого стика (helmLift в 15a-helm) */
+     подсказку выше следа живого стика (helmLift в 15a-helm).
+     Три строки, не две (П6, §1.5): часть подсказок сама несёт перевод строки
+     (`cue("...\n...")`) — с обеих её половин, если хоть одна не влезает в
+     ширину узкого экрана, потолок в 2 срезал вторую половину знаком «…».
+     У #msg (тремя строками выше) потолок уже 3 — берём тот же. */
   #prompt{bottom:calc(env(safe-area-inset-bottom) + var(--padsh,86px) + 118px + var(--helmlift,0px));
     white-space:pre-line;overflow:hidden;
-    display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;
+    display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;
     left:10px;right:calc(var(--railw,128px) + 4px);transform:none;
     text-overflow:ellipsis;max-width:none;line-height:1.4}
 }
@@ -10471,7 +10475,12 @@ function renderRecord(box){
   for(let i=R.e.length-1;i>=0;i--){
     const x=R.e[i];
     const row=document.createElement("div");row.className="li talk";
-    const em=document.createElement("em");em.textContent="день "+x.d;
+    /* просто число, не «день N» (П6, §4.4): колонка встроена в 34px, до самой
+       красной линии поля (left:48px, #loglist::before) — тот же приём, что и
+       у соседних страниц (logTime, координаты сектора), а не отдельное слово.
+       Через время суток растут (скачки часов — 11ab-institute и другие), и
+       «день 11» уже не помещался; голое число помещается всегда */
+    const em=document.createElement("em");em.textContent=String(x.d);
     const sp=document.createElement("span");sp.innerHTML="<b>"+x.a+"</b> — "+x.s;
     row.appendChild(em);row.appendChild(sp);box.appendChild(row);
   }
@@ -68069,6 +68078,11 @@ function beaconCool(){return G.tech.has("beacon")?BEACON_COOL/4:BEACON_COOL;}
 function useBeacon(){
   const S=G.surf;
   if(!S||S.beacon>0)return;
+  /* на поверхности рядом с кораблём маяк телепортирует «с 0 м» — жжёт
+     перезарядку без всякой цели (П6, §1.6). В стволе и пещере рядом с
+     кораблём не бывает вовсе: S.x/S.shipX — координата поверхности, там,
+     где стоял вход, а не то место под землёй, где сейчас игрок */
+  if(G.mode==="surface"&&Math.abs(S.x-S.shipX)<shipZoneR())return;
   const deep=G.dig?G.dig.row:0;
   S.beacon=beaconCool();
   /* маяк выдёргивает из ствола, но выработка остаётся выработкой */
@@ -68083,6 +68097,9 @@ function useBeacon(){
 function beaconTick(dt){
   const S=G.surf,b=document.getElementById("beaconbtn");
   if(!S||(G.mode!=="surface"&&G.mode!=="dig"&&G.mode!=="cave")){b.style.display="none";return;}
+  /* тот же случай, что в useBeacon(): на поверхности рядом с кораблём кнопка
+     не предлагается вовсе, а не просто написана без толку */
+  if(G.mode==="surface"&&Math.abs(S.x-S.shipX)<shipZoneR()){b.style.display="none";return;}
   if(S.beacon>0)S.beacon=Math.max(0,S.beacon-dt);
   b.style.display="";
   const ready=S.beacon<=0;
@@ -86239,7 +86256,10 @@ function roadFinish(){
     tell("money","Дорога: +"+cr+" кр за поездку · "+km.toFixed(1)+" км"+
       (R.cr>cr?" · за сутки "+R.cr:"")+" · запас "+Math.floor(R.bank),"ДОРОГА\n+"+cr+" кр");
     if(typeof recordAdd==="function")
-      recordAdd("дорога","командировочные: "+cr+" кр за "+km.toFixed(0)+" км"+
+      /* .toFixed(0), а не .toFixed(1) как у той же цифры строкой выше (П6,
+         §4.4): короткая поездка честно заработала cr>0, но округлялась до
+         «0 км» — читалось как деньги из ниоткуда */
+      recordAdd("дорога","командировочные: "+cr+" кр за "+km.toFixed(1)+" км"+
         (R.cr>cr?" (за сутки "+R.cr+")":""));
   }
 }

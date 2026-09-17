@@ -431,8 +431,14 @@ Rule 3: same look, cheaper work.
   fragment in a compound selector; the fabrication fallback now only fires for a single simple
   selector (one `#id` or one `.class`), never a compound one — "nothing open" is a real answer, not
   missing markup. `test.ps1`: 16336/16336, was 16332 with 4 red.
-- [ ] **P6** Hints cut at 411 px, МАСШТАБ under a chip, the beacon offered at the ship and wasted at
-  0 m, КНИЖКА «хулк» and «командировочные за 0 км», the `celDay` column out of order (§1.5, §1.6, §4.4).
+- [x] **P6** Five items. Hints cut at 411 px: `#prompt`'s 2-line clamp cut text carrying its own
+  line break when either half alone wrapped — raised to 3, matching `#msg`. МАСШТАБ: already fixed
+  (0.448), structurally apart from the chips — nothing to do. The beacon: no distance check at all
+  — gated on the surface (not dig/cave) by the same `dShip<shipZoneR()` used everywhere else there.
+  КНИЖКА: «хулк» is deliberate jargon, left alone; «командировочные … за 0 км» was a precision
+  mismatch, toast `.toFixed(1)` vs record `.toFixed(0)` — matched. `celDay` column: hard-capped at
+  34 px by the sheet's own margin rule, so shortened the label (`"день "+x.d` → bare number,
+  matching sibling pages in the same column) instead of widening. Body in the archive.
 - [x] **P7** One voice for the gravity anchor. Control offered a choice — drop the ship-side toast
   or cut it to two words — and dropping it was the cleaner fix: the bottom `cue()` line already
   says the whole thing («ГРАВИТАЦИОННЫЙ ЯКОРЬ · КРАЙ СИСТЕМЫ · КУРС К ЗВЕЗДЕ СВОБОДЕН») every frame

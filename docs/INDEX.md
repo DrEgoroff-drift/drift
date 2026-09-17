@@ -345,7 +345,7 @@ bCrew                        tests/91zzzw-base.js:199-205
 bDress                       src/21aa-base-rooms.js:122-183
 BEACON_COOL                  src/23-mode-dig.js:85
 beaconCool                   src/23-mode-dig.js:86
-beaconTick                   src/23-mode-dig.js:101-109
+beaconTick                   src/23-mode-dig.js:106-117
 BEAM_LIFE                    src/13a-guns.js:28
 beamAdd                      src/13a-guns.js:79-83
 beamsDraw                    src/13a-guns.js:91-102
@@ -1201,7 +1201,7 @@ DIG_TURF                     src/23aa-dig-rock.js:463
 digBedding                   src/23aa-dig-rock.js:118-145
 digCell                      src/23-mode-dig.js:29-49
 digCun                       src/23aa-dig-rock.js:158-182
-digFauna                     src/23-mode-dig.js:239-312
+digFauna                     src/23-mode-dig.js:247-320
 digRGB                       src/23aa-dig-rock.js:465
 digRockMass                  src/23aa-dig-rock.js:183-446
 digRockPass                  src/23aa-dig-rock.js:26-101
@@ -1335,7 +1335,7 @@ drawDeadBattery              src/20aa-poi-shapes.js:221-275
 drawDeco                     src/21b-surface-deco.js:166-225
 drawDeposit                  src/21b-surface-deco.js:406-560
 drawDig                      src/23a-dig-draw.js:655-659
-drawDigFauna                 src/23-mode-dig.js:313-322
+drawDigFauna                 src/23-mode-dig.js:321-330
 drawDigWorld                 src/23a-dig-draw.js:45-607
 drawDronesMap                src/12e-drone-flight.js:312-330
 drawDronesSystem             src/12e-drone-flight.js:226-299
@@ -3854,7 +3854,7 @@ renderMail                   src/25k-post-mail.js:36-109
 renderOpts                   src/27-ui-ship.js:58-330
 renderPrices                 src/12aa-need.js:258-285
 renderQsl                    src/11an-qsl.js:160-201
-renderRecord                 src/11aa-record.js:86-100
+renderRecord                 src/11aa-record.js:86-105
 renderRelays                 src/11ap-relay.js:243-283
 renderRoute                  src/12r-route.js:349-448
 renderSiteTab                src/26c-ui-station-site.js:7-130
@@ -3971,7 +3971,7 @@ rndSeed                      src/01-core.js:77
 rndState                     src/01-core.js:78
 rng                          src/01-core.js:28
 ROAD_BACK_FAR                src/27k-road.js:104
-ROAD_BAND                    src/27k-road.js:583
+ROAD_BAND                    src/27k-road.js:586
 ROAD_BLOOM_H                 src/27k-road.js:181
 ROAD_BURN_LO                 src/27k-road.js:163
 ROAD_C                       src/27k-road.js:33
@@ -4011,8 +4011,8 @@ ROAD_YAW_MAX                 src/27k-road.js:125
 ROAD_ZERO_HOLD_A             src/27k-road.js:127
 ROAD_ZERO_TAU                src/27k-road.js:126
 roadAll                      src/27k-road.js:184-188
-roadAudio                    src/27k-road.js:543-577
-roadBands                    src/27k-road.js:584-587
+roadAudio                    src/27k-road.js:546-580
+roadBands                    src/27k-road.js:587-590
 roadBankAdd                  src/27k-road.js:194-197
 roadBloom                    src/27lb-road-bloom.js:65-140
 roadBloomLut                 src/27lb-road-bloom.js:57-64
@@ -4023,37 +4023,37 @@ roadCosmic                   src/27k-road.js:226
 roadDayReset                 src/27k-road.js:198-208
 roadEarnKm                   src/27k-road.js:237-255
 roadFast                     src/27k-road.js:223
-roadFinish                   src/27k-road.js:256-268
+roadFinish                   src/27k-road.js:256-271
 roadFrame                    src/27l-road-draw.js:61-65
 roadFullscreen               src/27l-road-draw.js:626-632
 roadHav                      src/27k-road.js:108-114
 roadHomeward                 src/27k-road.js:116
 roadHsl                      src/27lb-road-bloom.js:47-55
-roadHueMix                   src/27k-road.js:594
+roadHueMix                   src/27k-road.js:597
 roadHullHalf                 src/27l-road-draw.js:72-86
 roadLightFrac                src/27k-road.js:225
-roadMicOff                   src/27k-road.js:348-355
-roadMicOn                    src/27k-road.js:317-347
-roadMicPick                  src/27k-road.js:310-316
-roadMoodHue                  src/27k-road.js:608-612
-roadMoodPath                 src/27k-road.js:603-607
-roadOnPos                    src/27k-road.js:472-518
-roadOnShake                  src/27k-road.js:388-441
+roadMicOff                   src/27k-road.js:351-358
+roadMicOn                    src/27k-road.js:320-350
+roadMicPick                  src/27k-road.js:313-319
+roadMoodHue                  src/27k-road.js:611-615
+roadMoodPath                 src/27k-road.js:606-610
+roadOnPos                    src/27k-road.js:475-521
+roadOnShake                  src/27k-road.js:391-444
 roadOpen                     src/27l-road-draw.js:17-42
-roadPilotRu                  src/27k-road.js:471
-roadPing                     src/27k-road.js:455-470
+roadPilotRu                  src/27k-road.js:474
+roadPing                     src/27k-road.js:458-473
 roadRank                     src/27k-road.js:95-102
-roadRgbHue                   src/27k-road.js:613-619
-roadSenseBtn                 src/27k-road.js:357-363
-roadSensorsOn                src/27k-road.js:270-285
+roadRgbHue                   src/27k-road.js:616-622
+roadSenseBtn                 src/27k-road.js:360-366
+roadSensorsOn                src/27k-road.js:273-288
 roadSky                      src/27la-road-sky.js:9-150
 roadSpeedOk                  src/27k-road.js:209
-roadSys                      src/27k-road.js:447-450
+roadSys                      src/27k-road.js:450-453
 roadTier                     src/27k-road.js:211-215
 roadToday                    src/27k-road.js:191
 roadTripRu                   src/27k-road.js:227
 roadTurnPay                  src/27k-road.js:106
-roadTurnTick                 src/27k-road.js:524-537
+roadTurnTick                 src/27k-road.js:527-540
 ROCK_CELL                    src/17c-system-draw.js:40
 ROCK_SHAPES                  src/17c-system-draw.js:26-37
 ROGUE_CAP                    src/12g-mgr-rogue.js:11
@@ -4607,8 +4607,8 @@ SUITE_WINS                   tests/90-harness.js:89
 suiteGroup                   tests/90-harness.js:79-83
 suiteOrder                   tests/90-harness.js:392-399
 suiteWin                     tests/90-harness.js:94-99
-suitFailure                  src/23-mode-dig.js:119-127
-suitHit                      src/23-mode-dig.js:112-118
+suitFailure                  src/23-mode-dig.js:127-135
+suitHit                      src/23-mode-dig.js:120-126
 suitMax                      src/12x-suit.js:89
 SUN_DIR                      src/19c-light.js:22
 SUN_DIR_FLAT                 src/19c-light.js:23
@@ -4865,7 +4865,7 @@ updateBelt                   src/24-mode-belt.js:186-375
 updateCave                   src/22-mode-cave.js:251-433
 updateCaveDeco               src/22a-cave-deco.js:205-228
 updateCombat                 src/13-pirates.js:116-301
-updateDig                    src/23-mode-dig.js:128-236
+updateDig                    src/23-mode-dig.js:136-244
 updateHomeIn                 src/29c-home-in.js:160-200
 updateLanding                src/19-mode-landing.js:68-137
 updateMap                    src/18-mode-map.js:548-561
@@ -4876,7 +4876,7 @@ updateSurface                src/21-mode-surface.js:199-656
 updateSystem                 src/17-mode-system.js:40-407
 updateWanderRoom             src/24c-mode-wanderer.js:58-88
 updateWinter                 src/29g-winter-draw.js:808-817
-useBeacon                    src/23-mode-dig.js:87-100
+useBeacon                    src/23-mode-dig.js:87-105
 vCloth                       src/18d-verlet.js:41-50
 vDrawCloth                   src/18d-verlet.js:104-121
 vDrawRope                    src/18d-verlet.js:90-100
@@ -5184,7 +5184,7 @@ yaltaHere                    src/12al-powers.js:172
 yaltaIs                      src/12al-powers.js:168-171
 yaltaSealed                  src/12al-powers.js:175-179
 YARD_CHANCE                  src/04b-fleet.js:162
-ZAP_COOL                     src/23-mode-dig.js:238
+ZAP_COOL                     src/23-mode-dig.js:246
 ZOO_PEN_CAP                  src/11ad-zoo.js:14
 zooAll                       src/11ad-zoo.js:15
 zooBlock                     src/11ad-zoo.js:72-82
@@ -6040,7 +6040,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/22b-cave-props.js · 13 КБ
   · пещера: гладкий обвод и то, что в ней лежит (M305):1
 
-## src/23-mode-dig.js · 17 КБ
+## src/23-mode-dig.js · 18 КБ
   · шахта: спуск вглубь планеты:1
 
 ## src/23a-dig-draw.js · 41 КБ
@@ -6213,7 +6213,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/27jb-ui-got.js · 4 КБ
   · «ЧТО ПОЛУЧИЛ» — добыча боя карточкой (п. 5 плейтеста 11.09):1
 
-## src/27k-road.js · 47 КБ
+## src/27k-road.js · 48 КБ
   · дорожный спутник:1
 
 ## src/27l-road-draw.js · 44 КБ
