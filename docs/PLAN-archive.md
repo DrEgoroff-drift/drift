@@ -10411,3 +10411,59 @@ to the bottom edge 285 px away — under the old ~304 px half-edge threshold, so
 would have kept lerping it straight through the interior — and confirmed `fading` flips true on
 the very next frame. A same-edge retarget at a much smaller distance still eases with `fading`
 staying false, unchanged from before.
+
+**0.3 follow-up — the cost was per pointer event, not per frame (2026-09-18).** 0.3 closed on a
+measurement that held at the time: thirty frames, thirty pointer moves, zero `getBoundingClientRect`
+calls. Two things happened since. New code added its own uncached duplicates of the same read
+(`fleetPromptRect()` in 12ai-fleet.js, once per visible fleet ship; `helmLift()` in 15b-helm-draw.js,
+while the stick is live) — found by wrapping `Element.prototype.getBoundingClientRect` with a
+stack-capturing proxy per Control's standing rule ("ask the page for stacks, don't guess"), fixed
+by routing both through 08-state's `promptEl()`/`promptRect()` cache (8a3f6ff).
+
+That fix alone didn't close the gap the Tester kept measuring on the S23 (still 6-8 reads/frame
+under a finger). His own isolation nailed the actual shape of it: a stick held perfectly still,
+fully live, thrust and haze running, cost *nothing* — 100% cadence, zero long frames. Moving it
+cost everything, and the cost scaled linearly with how often it moved: 83 events/s gave 82.6%
+cadence and 178 long frames in 20s, 17 events/s gave 88.6%. A frame-scoped cache cannot explain a
+cost that scales with sub-frame event frequency — the bug had to be *inside* the event handler
+itself, firing on every event rather than every frame.
+
+It was. `helmCanvasXY(e)` — called from `pointermove` on every touch move, not once per frame —
+calls `cvsRect()` on each invocation. A touch sensor reports at up to 120 Hz against a 60 Hz
+render, so a single rendered frame could see two or more of these calls. Individually cheap
+(cached) most of the time, but `helmLift()` writes `document.body.style.setProperty("--helmlift",…)`
+once a frame whenever the computed lift changes — and a live, moving stick changes it often. A
+style write anywhere dirties the browser's own internal layout state for the whole page,
+independent of whatever our own JS-level `CVS_RECT`/`PROMPT_RECT` cache thinks; the next
+`getBoundingClientRect` call the engine actually executes after that write is a forced synchronous
+layout recompute, not a free cache hit, regardless of how many synthetic caching layers sit above
+it in `src/`. With multiple such calls firing per frame during active steering, multiple forced
+recomputes could stack up inside a single frame's budget.
+
+The fix follows Control's diagnosis exactly: the `pointermove` handler no longer computes or reads
+anything — it only records the touch's raw `clientX`/`clientY` onto `HELM.S`/`HELM.P`. A new
+`helmSyncPointer()`, called once at the top of `helmTick()` (itself already once-per-frame),
+performs the one conversion the frame needs: `helmCanvasXY()` (one `cvsRect()` call), then
+`helmDrag()`/`helmTrail()` for a live stick, or the `HELM_TAKE` distance check for a pending press.
+However many `pointermove` events arrive between two frames, only the *last* one's coordinates
+survive to be processed — earlier ones in the same frame are silently superseded, which is exactly
+right: only the final position matters for where the stick actually is when the frame renders.
+`helmLift()`'s written value is now rounded (`Math.round`) before the change-comparison too, so a
+sub-pixel jitter in the foot's position — which the old unrounded comparison would have treated as
+"changed" — can no longer trigger a spurious style write on its own; only a real, whole-pixel
+change does.
+
+Manually-constructed `HELM.S`/`HELM.P` objects (the way `tests/91zzzw-helm.js` drives `helmTick()`
+directly, bypassing real pointer events) never get a `rawX`/`rawY` field, so `helmSyncPointer()`
+correctly leaves them untouched — the test suite's calling convention (already-converted canvas
+coordinates) needed no changes, verified green (`test.ps1 -Only штурвал`, 108/7 both before and
+after).
+
+Verified structurally in the browser pane (real wall-clock cadence needs the Tester's S23 — the
+pane was hidden this session, which pauses `requestAnimationFrame` entirely, `document.hidden`
+already guards the game's own loop against exactly this): armed a synthetic touch into a live
+stick, then fired 8 synthetic `pointermove` events before each of six manual `helmTick()` calls —
+every call produced at most one `getBoundingClientRect` (often zero, cache still warm) and at most
+one `--helmlift` style write, never eight. `HELM.lift`/the style value tracked the touch position
+correctly throughout (0 → 85 → 0 → 89 → 0 → 99 as the synthetic foot moved on and off the prompt's
+rect), confirming the consolidation didn't change *what* gets computed, only *how often*.

@@ -174,6 +174,19 @@ Rule 3: same look, cheaper work.
   `querySelector(".scr.open")` calls a frame; the floor/band measurement runs only on a dirty
   layout. The counter itself is in the game (`15d-domread`, `?domread`, asleep otherwise) so a
   detector can assert it. Body in `docs/PLAN-archive.md`.
+  Follow-up (Tester + Control, 18.09): 0.3 held for STATIC layout reads, but new code since
+  (fleet labels, P4's ship/pads guards, the anchor hint) added fresh ones, and the real cost turned
+  out to be per-POINTER-EVENT, not per-frame: `helmCanvasXY()` called `cvsRect()` on every
+  `pointermove`, and a touch sensor sends those at up to 120 Hz against a 60 Hz frame — a still
+  finger was free (100% cadence), moving one wasn't (82.6% at 83 events/s, worse the faster it
+  moved). `fleetPromptRect()`/`helmLift()`'s own uncached reads (8a3f6ff) and the pointer handler
+  are now both fixed: two dead-cache duplicates route through 08-state's cache, and the pointer
+  handler stores raw coordinates only — conversion, `helmDrag`, `helmTrail` and the `--helmlift`
+  write all run once per frame (`helmSyncPointer`), not once per event. `helmLift`'s written value
+  is now rounded before the change-check too, closing a sub-pixel-jitter path to the same style
+  write. Verified structurally (real touchscreen numbers are the Tester's): firing 8 synthetic
+  `pointermove` events between two `helmTick()` calls still produces at most one `getBoundingClientRect`
+  and one style write, not eight.
 - [x] **0.4 Resolution that comes back** — the climb window is 5 s (was 20), the two-climbs-a-session
   cap is gone, and both thresholds are now fractions of the *target* frame rather than fixed
   milliseconds: down above 1.45× (24 ms at sixty, as before), up below 1.05× (17.5 ms, i.e. 57 fps
