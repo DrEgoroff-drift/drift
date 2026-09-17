@@ -127,7 +127,16 @@ Rule 3: same look, cheaper work.
   stick and a prompt line give 2 real reads total, both cold. Control's own P4 conditions had added
   two more reads (padsRect and a second promptRect in `drawSysHud`) — 8.17 a frame on a629378;
   folded into the same cleanup. Phone re-measurement pending.
-- [ ] **THE FRAME IS BISTABLE — read this before measuring anything (Tester, 18.09, S23).** Six
+- [ ] **~~THE FRAME IS BISTABLE~~ — WITHDRAWN by its own author the same evening (Tester, 18.09):
+  it was a fault in his rig, not in the game.** In part of the runs his synthetic touch never
+  reached the game, so the finger «lay» there with no stick alive — and those runs are the 99–100 %
+  he took for a second state. With a check that the stick is really born (and the touch repeated
+  when it is not), four 30 s runs in a row read 81.3 / 81.4 / 80.0 / 80.5 % at 50.0–50.6 fps: the
+  spread is gone. **Every number from this evening with a zero stick must be read as «measured with
+  no steering».** The dull, correct picture: with no steering the frame is perfect, with live
+  steering 14 % of frames miss 16.7 ms, and that share holds steady across builds and across time.
+  The reasoning kept below is kept only so nobody walks the same path again. Six
+
   30 s runs on one build with the same steering: 79.9 / 99.7 / 82.3 / 80.1 / 82.2 / 81.2 % cadence
   at 50.0 / 59.8 / 50.9 / 50.0 / 51.0 / 50.5 fps. **There are no intermediate values** in any of the
   evening's twenty-odd runs: the game either runs 60 frames at ~100 %, or 50 at ~81 %, and once it
