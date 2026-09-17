@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 538 · символов верхнего уровня: 5187
+Файлов: 538 · символов верхнего уровня: 5191
 
 ## СИМВОЛЫ
 
@@ -446,7 +446,7 @@ bmgrSilent                   src/21b2-base-mgr.js:182-185
 bmgrStep                     src/21b2-base-mgr.js:138-176
 bmgrWorkMul                  src/21b2-base-mgr.js:128-131
 boardLanes                   src/26-ui-station.js:362-388
-BODY_LABELS                  src/17-mode-system.js:15
+BODY_LABELS                  src/17-mode-system.js:24
 bodyInSystem                 src/16-flight.js:109-118
 bookAll                      src/12ub-books.js:122
 bookCount                    src/12ub-books.js:124
@@ -666,8 +666,11 @@ chessMyTurn                  src/25n-chess.js:212-216
 chessStart                   src/25n-chess.js:205-210
 chessTake                    src/25n-chess.js:228-237
 chFrom                       tests/91zzzt-chess.js:4-6
-CHIP_POS                     src/17-mode-system.js:11
-CHIP_T                       src/17-mode-system.js:12
+CHIP_FADE                    src/17-mode-system.js:21
+CHIP_IN                      src/17-mode-system.js:18
+CHIP_POS                     src/17-mode-system.js:14
+CHIP_SPEED                   src/17-mode-system.js:20
+CHIP_T                       src/17-mode-system.js:15
 chKing                       src/25n-chess.js:112-116
 chLegal                      src/25n-chess.js:191-195
 chMine                       src/25n-chess.js:38
@@ -878,7 +881,7 @@ coopSpiritRu                 src/12aj-coop.js:118
 coopSpread                   src/12aj-coop.js:70
 coopStamp                    tests/90-harness.js:514-517
 coopVisitReset               src/12aj-coop.js:62
-CORONA_IN                    src/17-mode-system.js:16
+CORONA_IN                    src/17-mode-system.js:25
 COSM_CHIME                   src/12va-wander-cosm.js:59-62
 COSM_EXH                     src/12va-wander-cosm.js:22-31
 COSM_LIGHTS                  src/12va-wander-cosm.js:54-58
@@ -1419,9 +1422,9 @@ drawSurface                  src/21e-surface-draw.js:277-291
 drawSurfaceHud               src/21e-surface-draw.js:21-115
 drawSurfaceWorld             src/21e1-surface-world.js:10-615
 drawSurvey                   src/12w-survey.js:63-89
-drawSysHud                   src/17-mode-system.js:672-929
+drawSysHud                   src/17-mode-system.js:681-928
 drawSysNebula                src/16a-space.js:208-236
-drawSystem                   src/17-mode-system.js:413-671
+drawSystem                   src/17-mode-system.js:422-680
 drawSysTraffic               src/17f-sys-traffic.js:29-33
 drawTemple                   src/20aa-poi-shapes.js:50-89
 drawThingIcon                src/27i-ui-table.js:390-426
@@ -3230,7 +3233,7 @@ optGroups                    src/27-ui-ship.js:338-355
 OPTS_BOOT                    tests/90-harness.js:203
 optsNumify                   src/14a2-save-ephemeral.js:23-28
 optTab                       src/27-ui-ship.js:337
-orbPathOf                    src/17-mode-system.js:402-412
+orbPathOf                    src/17-mode-system.js:411-421
 ORDER_WIN                    src/12aa-need.js:76
 orderDeliver                 src/12aa-need.js:116-127
 orderHere                    src/12aa-need.js:112-115
@@ -4327,6 +4330,7 @@ shieldTypeOf                 src/05c-arms.js:59-62
 SHIFT_TALK                   src/03f-hull-role.js:63-72
 shiftLogRec                  src/12pa-beacon.js:43-47
 shiftTalkTick                src/03f-hull-role.js:73-83
+SHIP_GUARD                   src/17-mode-system.js:19
 SHIP_KEYS                    src/03-ships.js:12
 SHIP_SCALE_MIN               src/16c-rescue.js:201
 shipData                     src/03-ships.js:13
@@ -4632,7 +4636,7 @@ SYS_HOME_KEY                 src/06-galaxy.js:22
 SYS_K_ORBIT                  src/06-galaxy.js:98
 SYS_LRU                      src/06-galaxy.js:21
 sysDanger                    src/01-core.js:186
-sysEdge                      src/17-mode-system.js:24-30
+sysEdge                      src/17-mode-system.js:33-39
 sysHasFauna                  src/12ad-site.js:114-117
 sysJitter                    src/01-core.js:187-191
 sysMakes                     src/12ad-site.js:134-140
@@ -4869,7 +4873,7 @@ updateRaid                   src/24a-mode-raid.js:215-345
 updateScoop                  src/19a-mode-scoop.js:75-171
 updateSpa                    src/29i-spa-draw.js:514-519
 updateSurface                src/21-mode-surface.js:199-656
-updateSystem                 src/17-mode-system.js:31-398
+updateSystem                 src/17-mode-system.js:40-407
 updateWanderRoom             src/24c-mode-wanderer.js:58-88
 updateWinter                 src/29g-winter-draw.js:808-817
 useBeacon                    src/23-mode-dig.js:87-100
@@ -5801,7 +5805,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/16c-rescue.js · 50 КБ
   · пустой бак: хода нет, но выход есть всегда (11.09):1
 
-## src/17-mode-system.js · 68 КБ
+## src/17-mode-system.js · 69 КБ
   · режим: система:1
 
 ## src/17a-station-mod.js · 13 КБ
