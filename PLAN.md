@@ -142,6 +142,13 @@ Rule 3: same look, cheaper work.
   two even rails the full height of the screen, same on `main` and on the branch. That is the
   language from before Stage 0, not a regression, and it belongs with this item: when the tails are
   lengthened, the rails are what has to stop looking drawn with a straightedge. Show the author a frame first.
+  Same item, the stick's finger trail (Designer, 18.09, measured): its length is set in POINTS
+  (`HELM_TRAIL` = 7), so the tail's length in time depends on the sampling rate and on the frame
+  rate — at one point a frame the arc is 208 px long, at two a frame 105, at four 52. Control read
+  this backwards and asked for the trail to be lengthened after ec9f3fc; the Designer's numbers show
+  ec9f3fc made it two to four times LONGER, and she accepts it as it stands. What is worth fixing,
+  with the engine tails and not before: measure a tail in TIME (keep points younger than ~0.2 s)
+  rather than in count, so it looks the same at 60 and 120 Hz.
 - [x] **0.2 Raster** — the wake and the thrust ribbon were a stroke per segment (two for the
   wake: halo and core). They now go in steps of fade per lane, one path per step, the halo and the
   core sharing that path. The step is chosen by the *mean of age and brightness*, 32 steps on the
