@@ -8670,7 +8670,11 @@ function resize(){
      (gfx.res), а «авто» стартует с полного и само спускается, когда кадр
      не укладывается — см. resAuto() в 28-loop. */
   let want=0;try{want=(G.opts.gfx.res)||0;}catch(e){}   // первый вызов идёт до объявления G
-  DPR=want?Math.min(want,window.devicePixelRatio||1):Math.min(RES_AUTO,window.devicePixelRatio||1);
+  /* потолок по режиму (resModeCap, 28-loop) — тем же способом мимо ранней
+     TDZ: до объявления G он недоступен, а 2 — это же самое «не ограничен»,
+     что и выключенное правило даёт после */
+  let modeCap=2;try{modeCap=resModeCap();}catch(e){}
+  DPR=want?Math.min(want,window.devicePixelRatio||1):Math.min(RES_AUTO,modeCap,window.devicePixelRatio||1);
   W=window.innerWidth;H=window.innerHeight;
   /* телефон не трогаем: там своя вёрстка, вымеренная под узкий экран */
   UIK=uiScale(W,H);
@@ -8832,7 +8836,11 @@ const G={
   land:null,surf:null,st:null,belt:null,dig:null,cave:null,
   opts:{easyLand:true,autoDock:true,invX:false,invY:false,invYaw:false,lookSens:1,
     keys:{main:{},belt:{}},pads:"auto",padSize:1,
-    gfx:{draw:1,detail:1,particles:1,plants:1,fps:0,res:0},
+    /* resByMode: ВЫКЛЮЧЕНО по умолчанию (0) — готовое, но не включённое
+       правило чёткости по режиму (Контроль, 18.09, см. resModeCap в 28-loop).
+       Резкость-против-плавности — выбор автора, не наш; коммит просто ждёт
+       его слова, а не гадает вместо него. */
+    gfx:{draw:1,detail:1,particles:1,plants:1,fps:0,res:0,resByMode:0},
     audio:{on:true,music:.6,sfx:.6,engine:.4}},
   sel:{x:0,y:0},msg:"",msgT:0,prompt:"",running:false,t:0,
   market:{},uniqueShips:{},drones:[],droneInventory:0,droneIds:[],droneSold:{},homeJumps:0,homeActMs:0,   /* droneSold (M350): станция|срок, где машину уже брали */
@@ -88617,12 +88625,32 @@ function resSay(t){
   if(resSaid)return;
   resSaid=true;say(t);
 }
+/* Потолок чёткости ПО РЕЖИМУ — готов, но молчит, пока автор не включит
+   gfx.resByMode (0 по умолчанию, 08-state). Растр — не JS, и снимать с него
+   миллисекунды в кадре нечем; но тестировщик на S23 замерил принудительное
+   ×1.5 против ×2 на одной и той же сцене под тягой: 59.0 кадра/сек и 98.3%
+   каденции против 51.3/83.1% и 519 длинных кадров — разница ровно в числе
+   пикселей, не в работе. Резкость-против-плавности — решение автора, не
+   наше: это правило просто ждёт его слова наготове, вместо того чтобы
+   начинать разработку заново, когда он скажет «включай». Под тягой — там,
+   где растр и марево двигателя дороже всего; в доке, за столом и на карте
+   мир либо не движется, либо мир не рисуется вовсе, и чёткость там дешева. */
+function resModeCap(){
+  if(!G.opts.gfx.resByMode)return 2;
+  if(G.mode==="system")return 1.5;
+  if(G.mode==="landing"&&G.land&&G.land.thrOn)return 1.5;
+  return 2;
+}
 function resAuto(d){
   if(!G.running||d<=0||d>250)return;
   resEma=resEma*.9+d*.1;
   /* печь новой сцены не судим (M437): смена режима один раз пересчитывает
-     растр, и раньше именно эти кадры роняли разрешение на весь вечер */
-  if(G.mode!==resMode){resMode=G.mode;resFresh=3000;resBad=0;resGood=0;}
+     растр, и раньше именно эти кадры роняли разрешение на весь вечер.
+     Пока сцена свежая — заодно и потолок по режиму сразу берёт своё
+     значение (переключение по смене режима, без слежения за тягой кадр к
+     кадру — это и есть отсутствие дрожания). */
+  if(G.mode!==resMode){resMode=G.mode;resFresh=3000;resBad=0;resGood=0;
+    if(G.opts.gfx.resByMode)resize();}
   if(resFresh>0){resFresh-=d;return;}
   if(G.opts.gfx.res||document.hidden){resBad=resGood=0;return;}
   if(resWait>0)resWait=Math.max(0,resWait-d);

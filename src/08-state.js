@@ -25,7 +25,11 @@ function resize(){
      (gfx.res), а «авто» стартует с полного и само спускается, когда кадр
      не укладывается — см. resAuto() в 28-loop. */
   let want=0;try{want=(G.opts.gfx.res)||0;}catch(e){}   // первый вызов идёт до объявления G
-  DPR=want?Math.min(want,window.devicePixelRatio||1):Math.min(RES_AUTO,window.devicePixelRatio||1);
+  /* потолок по режиму (resModeCap, 28-loop) — тем же способом мимо ранней
+     TDZ: до объявления G он недоступен, а 2 — это же самое «не ограничен»,
+     что и выключенное правило даёт после */
+  let modeCap=2;try{modeCap=resModeCap();}catch(e){}
+  DPR=want?Math.min(want,window.devicePixelRatio||1):Math.min(RES_AUTO,modeCap,window.devicePixelRatio||1);
   W=window.innerWidth;H=window.innerHeight;
   /* телефон не трогаем: там своя вёрстка, вымеренная под узкий экран */
   UIK=uiScale(W,H);
@@ -187,7 +191,11 @@ const G={
   land:null,surf:null,st:null,belt:null,dig:null,cave:null,
   opts:{easyLand:true,autoDock:true,invX:false,invY:false,invYaw:false,lookSens:1,
     keys:{main:{},belt:{}},pads:"auto",padSize:1,
-    gfx:{draw:1,detail:1,particles:1,plants:1,fps:0,res:0},
+    /* resByMode: ВЫКЛЮЧЕНО по умолчанию (0) — готовое, но не включённое
+       правило чёткости по режиму (Контроль, 18.09, см. resModeCap в 28-loop).
+       Резкость-против-плавности — выбор автора, не наш; коммит просто ждёт
+       его слова, а не гадает вместо него. */
+    gfx:{draw:1,detail:1,particles:1,plants:1,fps:0,res:0,resByMode:0},
     audio:{on:true,music:.6,sfx:.6,engine:.4}},
   sel:{x:0,y:0},msg:"",msgT:0,prompt:"",running:false,t:0,
   market:{},uniqueShips:{},drones:[],droneInventory:0,droneIds:[],droneSold:{},homeJumps:0,homeActMs:0,   /* droneSold (M350): станция|срок, где машину уже брали */
