@@ -138,6 +138,10 @@ Rule 3: same look, cheaper work.
   at 642 points of 2 000 and `TRAIL` at 0 of 560 — the buffers are two thirds empty, and on `main`
   the wake held 750 at the same speed. Lengthen life/length **after** the milliseconds are found,
   or the budget goes straight back; the look is the designer's call.
+  Designer's note from the ×2.4 comparison (18.09): at that zoom the trail reads as a *ruler* —
+  two even rails the full height of the screen, same on `main` and on the branch. That is the
+  language from before Stage 0, not a regression, and it belongs with this item: when the tails are
+  lengthened, the rails are what has to stop looking drawn with a straightedge. Show the author a frame first.
 - [x] **0.2 Raster** — the wake and the thrust ribbon were a stroke per segment (two for the
   wake: halo and core). They now go in steps of fade per lane, one path per step, the halo and the
   core sharing that path. The step is chosen by the *mean of age and brightness*, 32 steps on the
