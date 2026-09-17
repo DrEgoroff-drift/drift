@@ -10083,3 +10083,28 @@ Found while checking it, though: `drawSystem` read `#prompt`'s rectangle *in the
 the hint line had text, so the chips would not overlap it. The 0.3 measurement missed it because
 the probe's scene had no hint text. It now goes through a cached `promptRect()` (and a cached
 element), invalidated with the rest.
+
+**0.5 Sound (2026-09-17).** The phone trace named «Reverb convolution background» at roughly
+250 ms of every second — a quarter of a core for one echo. Convolution costs in proportion to the
+impulse, and `makeIR(c,5.5,2.4)` built a 5.5-second stereo impulse: about 528 000 samples weighed
+against every input sample, while past the third second the tail is under the engine noise and
+nobody can hear it. On a large screen the impulse is now 2.2 s with the same decay curve (211 200
+samples, two and a half times less work); the long wash is not lost, because the feedback delay on
+the same bus (0.66 s at 0.44 through a lowpass) already writes a tail of several seconds.
+
+On a phone (`W<=760`) the convolver is gone altogether. The room is built from two *independent*
+delay loops — 137 ms and 211 ms, incommensurable so the pattern does not beat — each with its own
+lowpass and its own feedback gain below one, both summed into one wet mix: six nodes instead of
+half a million multiplications per sample. It is not the same hall down to the sample, but it is
+the same diffuse tail without rhythm, and on a phone speaker the difference drowns in the first
+engine noise.
+
+The first version of that room was **broken in a way no screenshot would show**: both delays fed
+back through one shared lowpass, so the loops coupled and the round-trip gain became .58 + .52 —
+above unity. An analyser on the room's output, with the music layers muted and a single 20 ms
+click sent in, read 1.9·10²² a tenth of a second later and 3·10²³ after a second and a half: a
+howling runaway into the compressor for the rest of the session. Giving each loop its own filter
+fixed it; the same measurement then reads a peak of 0.11 around 0.9 s and 0.003 by 2.4 s. Method
+worth keeping: the browser pane, `initAudio()`/`musicInit()`, an `AnalyserNode` on the wet output
+and `setInterval` writing the tail into an array — `docs/shot.py --eval` cannot do it, because
+rendering audio is asynchronous and its `--eval` runs in the same tick.

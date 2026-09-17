@@ -159,9 +159,17 @@ Rule 3: same look, cheaper work.
   driving `resAuto` with synthetic intervals: 12 s heavy → ×1, 14 s light → ×2, a climb knocked
   down inside 30 s arms a 60 s wait and then doubles it, steady 18 ms moves nothing, 33 ms under a
   30 fps cap moves nothing. **Not verified:** «`RES_AUTO ≥ 2` held for 10 min» needs the S23.
-- [ ] **0.5 Sound.** The convolution reverb («Reverb convolution background») holds ~250 ms of every
-  second — it is `createConvolver` with a synthesized 5.5 s impulse in `10-music` (~154): a shorter
-  impulse or a feedback-delay reverb of the same room, and off on `W<=760`.
+- [x] **0.5 Sound** — the convolution reverb held about 250 ms of every second on the S23. Its
+  cost is linear in the impulse, and the impulse was 5.5 s in stereo (528 000 samples against every
+  input sample), while past the third second there is silence under the engine anyway. On a large
+  screen the impulse is now 2.2 s at the same decay (211 200 samples, 2.5× less work) and the long
+  tail is still written by the feedback delay that already lives on that bus. On a phone
+  (`W<=760`) there is **no convolver at all**: the room is two independent short delay loops
+  (137 and 211 ms, each with its own lowpass and its own feedback under 1), six nodes instead of
+  half a million multiplications. Measured with an analyser on the room's output: the first
+  version, with both delays through one shared filter, had a loop gain of 1.1 and **diverged** —
+  1.9·10²² a tenth of a second after one click, 3·10²³ after a second and a half. Decoupled, one
+  click peaks at 0.11 and decays to 0.003 by 2.4 s. Body in `docs/PLAN-archive.md`.
 - [ ] **0.6 GC.** Major GCs of 14–28 ms inside the longest gaps — hoist per-frame allocations
   (arrays, closures, strings in `hud`/`drawSystem`); the trace's allocation sampler names them.
 - [ ] **0.7 Heat.** 75 min → thermal MODERATE, 37 fps at ×1. The sum above is the fix; the check is

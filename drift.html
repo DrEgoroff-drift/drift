@@ -9636,15 +9636,51 @@ function musicInit(){
   const dl=c.createDelay(3),fb=c.createGain(),dlp=c.createBiquadFilter();
   dl.delayTime.value=.66;fb.gain.value=.44;
   dlp.type="lowpass";dlp.frequency.value=1700;
-  const conv=c.createConvolver();conv.buffer=makeIR(c,5.5,2.4);
+  /* ── зал: на большом экране свёртка, на телефоне задержки (0.5) ──
+     Трасса S23 отдавала «Reverb convolution background» около 250 мс каждой
+     секунды — четверть ядра на одно эхо. Стоимость свёртки линейна по длине
+     импульса, а импульс был 5.5 с стерео — полмиллиона отсчётов на каждый
+     семпл входа. За третьей секундой там тишина под шумом двигателя, поэтому
+     на большом экране импульс укорочен до 2.2 с при том же спаде: тот же зал,
+     втрое дешевле, а длинный хвост всё равно дописывает задержка с обратной
+     связью (она живёт здесь же и стоит копейки).
+     На телефоне (W<=760) свёртки нет вовсе: зал собирается из двух коротких
+     задержек с несоизмеримыми временами (137 и 211 мс) и своей обратной связью
+     через верхний срез — шесть узлов вместо полмиллиона умножений. Это не та
+     же самая комната с точностью до семпла, но тот же размытый хвост без
+     ритма — а на телефонном динамике разница тонет в первом же шуме. */
+  const phone=(typeof W!=="undefined")&&W<=760;
+  let room=null,roomOut=null,conv=null;
+  if(phone){
+    /* Две НЕЗАВИСИМЫЕ петли, у каждой свой срез и своя обратная связь. Первая
+       версия вела обе задержки через ОДИН фильтр — и петли связались: круговое
+       усиление стало .58+.52 > 1, и зал РАЗНЁсся. Замер анализатором на выходе
+       зала после одного щелчка: 1.9e22 через десятую секунды и 3e23 через полторы.
+       На слух это был бы воющий срыв в компрессор на всю игру. Развязали: у каждой
+       петли свой lowpass, и её усиление само по себе меньше единицы. */
+    room=c.createGain();room.gain.value=1;
+    const mix=c.createGain();
+    const TAPS=[[.137,.55,2400],[.211,.5,1900]];
+    for(const [tm,g,hz] of TAPS){
+      const dlr=c.createDelay(1),gr=c.createGain(),lp=c.createBiquadFilter();
+      dlr.delayTime.value=tm;gr.gain.value=g;
+      lp.type="lowpass";lp.frequency.value=hz;
+      room.connect(dlr);dlr.connect(lp);lp.connect(gr);gr.connect(dlr);
+      lp.connect(mix);
+    }
+    roomOut=mix;
+  }else{
+    conv=c.createConvolver();conv.buffer=makeIR(c,2.2,2.4);
+    room=conv;roomOut=conv;
+  }
   const wRev=c.createGain(),wDly=c.createGain();
   wRev.gain.value=.58;wDly.gain.value=.3;
   send.connect(pre);
   pre.connect(dl);dl.connect(dlp);dlp.connect(fb);fb.connect(dl);   // обратная связь
-  pre.connect(conv);dl.connect(conv);                               // эхо тоже в зал
-  dl.connect(wDly);conv.connect(wRev);
+  pre.connect(room);dl.connect(room);                               // эхо тоже в зал
+  dl.connect(wDly);roomOut.connect(wRev);
   wRev.connect(SND.music);wDly.connect(SND.music);
-  MUS.fx={send,dl,fb,conv,wRev,wDly};
+  MUS.fx={send,dl,fb,conv,room,roomOut,wRev,wDly};
   for(const k of MUS_LAYERS){
     const g=c.createGain();g.gain.value=0;g.connect(SND.music);
     const w=c.createGain();w.gain.value=MUS_WET[k]||.3;

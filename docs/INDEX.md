@@ -2517,7 +2517,7 @@ lateLeft                     src/11aq-late.js:57-61
 lateSit                      src/11aq-late.js:65-113
 launch                       src/21-mode-surface.js:722-737
 launchHold                   src/21-mode-surface.js:657
-layerLevel                   src/10-music.js:326-340
+layerLevel                   src/10-music.js:362-376
 ldFoe                        tests/91zzzw-combat.js:472-476
 LEADBREAK                    src/13a-guns.js:42
 ledgerAll                    src/11ai-ledger.js:36-39
@@ -2684,7 +2684,7 @@ mailToday                    src/25j-post-wire.js:40
 mailWire                     src/25j-post-wire.js:55-63
 MAIN_CTX                     src/08-state.js:4
 makeIR                       src/10-music.js:109-121
-makePhrase                   src/10-music.js:344-367
+makePhrase                   src/10-music.js:380-403
 MAKER_ASSEMBLY               src/03a-hull-maker.js:454
 MAKER_CV                     src/28y-look.js:311
 MAKER_KEYS                   src/03a-hull-maker.js:73
@@ -2955,15 +2955,15 @@ mslTick                      src/16b-missile.js:182-239
 MUS                          src/10-music.js:100
 MUS_LAYERS                   src/10-music.js:102
 MUS_WET                      src/10-music.js:105
-musBeacon                    src/10-music.js:239-264
+musBeacon                    src/10-music.js:275-300
 MUSIC_SCENES                 src/10-music.js:27-36
-musicInit                    src/10-music.js:142-187
-musicSceneNow                src/10-music.js:453-488
-musicSetScene                src/10-music.js:290-325
-musicStop                    src/10-music.js:489-494
-musicTick                    src/10-music.js:370-451
-musNote                      src/10-music.js:193-233
-musPerc                      src/10-music.js:265-289
+musicInit                    src/10-music.js:142-223
+musicSceneNow                src/10-music.js:489-524
+musicSetScene                src/10-music.js:326-361
+musicStop                    src/10-music.js:525-530
+musicTick                    src/10-music.js:406-487
+musNote                      src/10-music.js:229-269
+musPerc                      src/10-music.js:301-325
 NAME_MAX                     src/11u-names.js:14
 nameAskSystem                src/11u-names.js:79-87
 nameOf                       src/11u-names.js:19-22
@@ -5294,7 +5294,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/09a-roomtone.js · 6 КБ
   · мир слышен: тон места (M178-10):1
 
-## src/10-music.js · 30 КБ
+## src/10-music.js · 33 КБ
   · музыка: слои, а не треки:1
 
 ## src/11-log.js · 10 КБ
