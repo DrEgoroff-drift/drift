@@ -218,7 +218,7 @@ Rule 3: same look, cheaper work.
   cleared, so the last tab stayed pale even with nothing left to scroll, and a selected tab could
   sit off the edge. `tail` now reads true with the mask off.
 - [ ] **P4** Compass chips follow `helmStickFoot` (in `drawSystem`) up to mid-screen — keep them on
-  the frame's edge (§1.4).
+  the frame's edge (§1.4). **Decided (Control, 17.09):** a chip always sits on the frame's edge; it dodges UI nodes (stick foot, pads, windows) only ALONG the edge, and inward no more than 12 px past its usual margin; with no room along the edge it jumps to the neighbouring edge toward the target. The Designer accepts by the frame.
 - [ ] **P5** «Смена» text light-on-cream, contrast ≈ 1.1:1; styles never moved to the paper; no
   right margin (§5.1).
 - [ ] **P6** Hints cut at 411 px, МАСШТАБ under a chip, the beacon offered at the ship and wasted at
