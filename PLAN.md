@@ -87,12 +87,11 @@ industrial plan (`11r-plan`), the blueprint is `G.draft`.
 Numbers: `docs/PLAYTEST-2026-09-13.md` §2.1, §6. Meter: `docs/night-2026-09-13/raw/phone-tools/trace.py`
 on the S23 (390×844, DPR 2.625, 120 Hz) before, after every item, at the end; `g11` on the laptop.
 Rule 3: same look, cheaper work.
-- [ ] **0.1 Cadence.** Frame intervals scatter over 1–3 vsyncs (4.17 ms bins: 313/503/496/235/168…;
-  long and short alternate) and `frameBody` (`28-loop`) steps the world by the rAF `dt` — that *is*
-  the judder; the camera is steady (p95 1.8 px). Step the world by a fixed quantum (1/120 s ×
-  n, the leftover carried), render at the step; the nose turns by the same quantum (0.08 rad per
-  60 Hz step today, 0.16 on long frames, 160 jumps > 4.6° a minute). Accept: one interval ≥ 95 % of
-  frames in 60 s of steering.
+- [x] **0.1 Cadence** — the world steps in whole 1/120 s quanta, the leftover carried, the tick
+  chain that does not move the ship still runs once per frame; a frame that earns no quantum is not
+  drawn. Laptop `g11` before → after: system 30 → 39, belt 28 → 33, landing 36 → 40, surface 30 → 37,
+  scoop 51 → 60, raid 57 → 60, homein 50 → 59, road 29 → 35 fps. Body in `docs/PLAN-archive.md`
+  («Stage 0, moved 2026-09-17»). Not yet measured on the S23 — the phone was not attached.
 - [ ] **0.2 Raster.** GPU raster is the bottleneck (`DoEndRasterCHROMIUM` p90 5.4 ms, max 17). Own
   JS by self time per second: `drawWake` 31–56 (the 0.449 wake — bake its static part, fewer
   strokes, same look), `stroke` 21–32, `hud` 18–25, `drawTrail` 19–22, `drawHull` 9–11,

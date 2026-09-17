@@ -9867,3 +9867,19 @@ Twenty-nine passes, all closed: the fight (M360–M363), the world (M364–M375)
 and what it deferred, and «Deferred» there is the only remaining war work; there is no separate
 queue any more. Measured from M360 on: `prof()` with eight armed ships on the phone layout; the
 pad row on the 44 px sweep (`91zzy-screens`); `91zzzw-chron` replay hashes browser vs Node.
+
+
+## Stage 0 — THE FRAME FIRST (moved 2026-09-17)
+
+**0.1 Cadence.** Frame intervals scattered over 1–3 vsyncs (4.17 ms bins: 313/503/496/235/168…,
+long and short alternating) while the camera itself was steady (p95 1.8 px) — the judder was the
+world, not the view: `frameBody` (`28-loop`) stepped it by the raw rAF `dt`, so the nose turned
+0.08 rad on a short frame and 0.16 on a long one (160 jumps > 4.6° a minute on manual helm).
+Fix: `QUANT_MS = 1000/120`, an accumulator (`quantAcc`) that carries the leftover, and
+`stepWorld` called n times with the identical `QUANT_DT` step. What is deliberately *not*
+quantised: sound, the interface `*Tick` chain and autosave run once per frame with the summed
+`dt` — they never juddered, and a second call of that chain costs real milliseconds on a phone.
+A frame worth zero quanta returns before drawing (the picture would be identical, the raster
+full price); a gap longer than six quanta is not chased at all, because catching up costs a
+frame and the spiral does not end. The pinned-clock path (tests, `clockPinned()`) keeps its
+single `dt=1` step, so replay and same-hash suites are untouched.
