@@ -109,10 +109,17 @@ Rule 3: same look, cheaper work.
   `querySelector(".scr.open")` calls a frame; the floor/band measurement runs only on a dirty
   layout. The counter itself is in the game (`15d-domread`, `?domread`, asleep otherwise) so a
   detector can assert it. Body in `docs/PLAN-archive.md`.
-- [ ] **0.4 Resolution that comes back.** `resAuto` fell to `RES_AUTO=1` (411×742 — 1/7 of the
-  pixels) and never climbed: the way up needs 20 s under 13 ms. The climb exists (`resEma<13` for 20 s, and at most twice — `resUps<2`, `28-loop` ~201) and never
-  fires on the phone: a 5 s window, no cap, and the descent's 24 ms threshold checked against the ~26 ms EMA; the same lever
-  answers the player's DPR-2.5 stalls (`stallWho`, 0.448.0). Accept: `RES_AUTO ≥ 2` held for 10 min.
+- [x] **0.4 Resolution that comes back** — the climb window is 5 s (was 20), the two-climbs-a-session
+  cap is gone, and both thresholds are now fractions of the *target* frame rather than fixed
+  milliseconds: down above 1.45× (24 ms at sixty, as before), up below 1.05× (17.5 ms, i.e. 57 fps
+  — the old 13 ms is unreachable on the phone even at ×1). Dither is held by a penalty, not a cap:
+  a climb that survives less than 30 s counts as a mistake and the next attempt waits a minute,
+  then two, up to a quarter hour; a climb that lives resets the penalty. The voice speaks of a
+  change at most once a minute. A latent bug fell out with it: with the player's 30 fps cap the
+  steady 33 ms interval read as a stall and the game kept dropping its own resolution. Checked by
+  driving `resAuto` with synthetic intervals: 12 s heavy → ×1, 14 s light → ×2, a climb knocked
+  down inside 30 s arms a 60 s wait and then doubles it, steady 18 ms moves nothing, 33 ms under a
+  30 fps cap moves nothing. **Not verified:** «`RES_AUTO ≥ 2` held for 10 min» needs the S23.
 - [ ] **0.5 Sound.** The convolution reverb («Reverb convolution background») holds ~250 ms of every
   second — it is `createConvolver` with a synthesized 5.5 s impulse in `10-music` (~154): a shorter
   impulse or a feedback-delay reverb of the same room, and off on `W<=760`.

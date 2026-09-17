@@ -9931,3 +9931,26 @@ and on foot. Warm-up frames still measure once — that is the point of the flag
 Gotcha found on the way: a probe must call `frameBody()`, never `frame()`, because every `frame()`
 schedules another rAF and under `--virtual-time-budget` the page then never drains (the shot hung
 at 120 s twice before this was understood).
+
+**0.4 Resolution that comes back.** On the S23 `resAuto` fell to `RES_AUTO=1` (411×742, a seventh
+of the pixels) and stayed there for good. Three reasons, all three fixed: the climb threshold of
+13 ms is unreachable on a phone even at ×1 (the cheapest raster there still costs about twenty
+milliseconds); twenty consecutive seconds of a light frame never happen in play, because in twenty
+seconds the player turns and one heavy frame zeroes the count; and `resUps<2` means «never again»
+in a long session. Now: thresholds are fractions of the target frame (`resTarget()` — 60 Hz, or
+the player's own frame cap when lower), down above 1.45× and up below 1.05×, so the descent keeps
+its old 24 ms at sixty hertz while the climb relaxes from 13 to 17.5 ms; the climb window is 5 s;
+the cap on climbs is gone. Dither is held by a penalty instead: a climb that survives less than
+`RES_HOLD_MS` (30 s) is treated as a mistake, the next attempt waits `RES_WAIT0` (60 s) and the
+wait doubles up to a quarter of an hour, while a climb that lives past 30 s clears the penalty. So
+an expensive scene takes the sharpness once instead of for the evening, and a pendulum every eight
+seconds cannot happen. After any change the EMA is set to the neutral 1.25× and a 1.5 s grace runs,
+so neither direction starts primed. The voice announces a change at most once a minute — the change
+itself is visible, and a line over the world in every scene would be worse than the softness.
+Tying the thresholds to the target frame also fixed a bug nobody had reported: with the player's
+30 fps cap the steady 33 ms interval sat above the fixed 24 ms threshold, so the game read its own
+frame cap as a stall and kept lowering the resolution. Checked by feeding `resAuto` synthetic
+intervals in the page (12 s at 40 ms → ×1; 14 s at 10 ms → ×2; climb, knock it down inside 30 s,
+see a 60 s wait and the next penalty at 120 s, then a climb after the wait; 40 s of steady 18 ms
+moves nothing; 30 s of 33 ms under a 30 fps cap moves nothing). The accept line of the item —
+`RES_AUTO ≥ 2` held for ten minutes — is a phone measurement and is still open.

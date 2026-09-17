@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 538 · символов верхнего уровня: 5155
+Файлов: 538 · символов верхнего уровня: 5163
 
 ## СИМВОЛЫ
 
@@ -531,7 +531,7 @@ cantSel                      src/27c-ui-hq.js:269
 cantStyle                    src/27d-ui-cantina.js:27-30
 cantTables                   src/27d-ui-cantina-props.js:241-296
 cantView                     src/27d-ui-cantina-props.js:82-151
-capIv                        src/28-loop.js:233
+capIv                        src/28-loop.js:278
 capLum                       src/19e-clouds.js:55-60
 capOf                        src/05-parts.js:221-225
 capRu                        src/11t-rumours.js:58
@@ -922,9 +922,9 @@ craftAffordable              src/03-ships.js:110-114
 craftAmmo                    src/16b-missile.js:61-71
 craftPart                    src/03-ships.js:115-124
 CRASH_SHIP                   src/01a-crashlog.js:19
-crashAt                      src/28-loop.js:412-426
-crashN                       src/28-loop.js:407
-crashSay                     src/28-loop.js:433-462
+crashAt                      src/28-loop.js:457-471
+crashN                       src/28-loop.js:452
+crashSay                     src/28-loop.js:478-507
 crashShip                    src/01a-crashlog.js:20-37
 crashStack                   src/01a-crashlog.js:39-41
 CREW_BASE_TRAITS             src/21a9-base-laws.js:92-97
@@ -1039,7 +1039,7 @@ CVS_RECT                     src/08-state.js:74
 cvsRect                      src/08-state.js:76-79
 dayK                         src/19c-light.js:68-73
 dayKq                        src/19c-light.js:74
-dbg                          src/28-loop.js:569-639
+dbg                          src/28-loop.js:614-684
 dcol                         src/21b-surface-deco.js:155-160
 DEAL_KINDS                   src/27g-deals.js:17-137
 dealAnswer                   src/27g-deals.js:163-196
@@ -1435,7 +1435,7 @@ drawWater                    src/21e-surface-draw.js:194-275
 drawWear                     src/12s-wear.js:102-171
 drawWeather                  src/19d-weather.js:96-233
 drawWinter                   src/29g-winter-draw.js:334-765
-drawWorld                    src/28-loop.js:272-296
+drawWorld                    src/28-loop.js:317-341
 drawWreck                    src/20aa-poi-shapes.js:8-48
 drawWrecksSystem             src/12l-barge.js:362-388
 drDoors                      tests/91zzzzzn-doors.js:26-43
@@ -1722,12 +1722,12 @@ folkState                    src/12u-folk.js:83-86
 folkVisit                    src/12u-folk.js:104-113
 FOOD_SUPPLY                  src/21a1b-base-food.js:16
 foundBase                    src/21a-mode-base.js:101-115
-frame                        src/28-loop.js:466-511
+frame                        src/28-loop.js:511-556
 FRAME_IN                     src/08-state.js:276
 FRAME_JS                     src/28-loop.js:119
 FRAME_MS                     src/28-loop.js:141
-frameBody                    src/28-loop.js:297-398
-frameLastAt                  src/28-loop.js:465
+frameBody                    src/28-loop.js:342-443
+frameLastAt                  src/28-loop.js:510
 freeVoice                    src/09-audio.js:91-95
 FUEL_PER_ICE                 src/21b1-base-pay.js:100
 fuelPriceHere                src/12k-rep.js:63-70
@@ -2625,7 +2625,7 @@ lookFrame                    src/28y-look.js:46-108
 lookoutSees                  src/12ag-holdfx.js:104-111
 lookScenes                   src/28y-look.js:129-248
 lookVerdict                  src/28y-look.js:114-124
-LOOP_OFF                     src/28-loop.js:238
+LOOP_OFF                     src/28-loop.js:283
 LOOP_PHASE                   src/01-core.js:85
 loopReset                    src/28-loop.js:165
 LORE                         src/12q-lore.js:67
@@ -3603,7 +3603,7 @@ probeShot                    src/25m-probe.js:85-97
 probeSpeak                   src/25m-probe.js:100-121
 probeTarget                  src/25m-probe.js:38-46
 probeVoice                   src/25m-probe.js:75-83
-prof                         src/28-loop.js:531-558
+prof                         src/28-loop.js:576-603
 PROFILE                      src/02-world.js:103-116
 profW                        src/03-ships.js:205-214
 prRestore                    tests/91zzzzzi-promise.js:59-74
@@ -3865,8 +3865,13 @@ repShipMul                   src/12k-rep.js:74
 repWord                      src/12k-rep.js:31-35
 RES                          src/02-world.js:2-86
 RES_AUTO                     src/08-state.js:112
+RES_DOWN_K                   src/28-loop.js:226
+RES_DOWN_WIN                 src/28-loop.js:227
+RES_HOLD_MS                  src/28-loop.js:228
 RES_KEYS                     src/02-world.js:87
-resAuto                      src/28-loop.js:206-232
+RES_SAY_MS                   src/28-loop.js:230
+RES_WAIT0                    src/28-loop.js:229
+resAuto                      src/28-loop.js:245-277
 RESCUE_ASK_GAP               src/16c-rescue.js:25
 RESCUE_FUEL                  src/16c-rescue.js:22
 RESCUE_ICON                  src/16c-rescue.js:610-614
@@ -3887,10 +3892,13 @@ rescueSig                    src/16c-rescue.js:593
 rescueSigNow                 src/16c-rescue.js:592
 rescueSync                   src/16c-rescue.js:594-607
 rescueTake                   src/16c-rescue.js:105-146
-resEma                       src/28-loop.js:205
+resEma                       src/28-loop.js:231
 resetArm                     src/26-ui-station.js:663
 resetWorld                   tests/90-harness.js:235-348
 resize                       src/08-state.js:22-53
+resSay                       src/28-loop.js:240-244
+resTarget                    src/28-loop.js:236-239
+resWait                      src/28-loop.js:232
 RET_BOARD                    src/11s-returners.js:29
 RET_ETHER                    src/11s-returners.js:19-23
 retAll                       src/11s-returners.js:32
@@ -4316,7 +4324,7 @@ shipThumb                    src/26-ui-station.js:389-401
 shipTier                     src/04b-fleet.js:156
 shipZ                        src/16-flight.js:238
 shipZoneR                    src/19f-lander.js:14
-SHOT_CLEAN                   src/28-loop.js:244
+SHOT_CLEAN                   src/28-loop.js:289
 SHOVE_V                      src/13a-guns.js:36
 SHUT_LINES                   src/11ah-offer.js:299-304
 SIGN_HOLD                    src/21-mode-surface.js:198
@@ -4499,7 +4507,7 @@ statPreview                  src/05-parts.js:416-424
 stCore                       src/17c-system-draw.js:127-142
 stDel                        src/14-save.js:26
 steps                        tests/90-harness.js:385
-stepWorld                    src/28-loop.js:252-271
+stepWorld                    src/28-loop.js:297-316
 stGet                        src/14-save.js:8
 stGroup                      src/26-ui-station.js:134
 stGroupOf                    src/26-ui-station.js:133
@@ -6197,16 +6205,16 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/27z-telemetry.js · 38 КБ
   · телеметрия: приборы пишут в DOM:1
 
-## src/28-loop.js · 50 КБ
+## src/28-loop.js · 54 КБ
   · авария:1
   · звук по кадрам:48
   · цикл:106
   · каденсия: мир шагает квантом (0.1):142
   · авторазрешение:188
-  · развилка режимов — одна на всех (M238):245
-  · кадр, который не убивает игру (M234):399
-  · prof() — на что уходит кадр:519
-  · dbg() — что держит корабль:560
+  · развилка режимов — одна на всех (M238):290
+  · кадр, который не убивает игру (M234):444
+  · prof() — на что уходит кадр:564
+  · dbg() — что держит корабль:605
 
 ## src/28y-look.js · 30 КБ
   · look() — прибор кадра:1
