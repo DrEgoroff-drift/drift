@@ -230,6 +230,18 @@ Rule 3: same look, cheaper work.
   write. Verified structurally (real touchscreen numbers are the Tester's): firing 8 synthetic
   `pointermove` events between two `helmTick()` calls still produces at most one `getBoundingClientRect`
   and one style write, not eight.
+  Two follow-ups from code review, both checked by the numbers Control asked for, not assumed.
+  Trail length: `helmTrail` samples by distance (push a point once ≥3px from the last one), not by
+  a fixed step, so halving the call rate (once/frame vs up to twice) does not halve the trail —
+  each call now carries the *whole* frame's movement instead of half of it, so the points are
+  farther apart, not fewer. Measured with a synthetic 240px drag at the same real speed: old-style
+  (60 sub-frame calls, 4px each) → 7 points spanning 24px; new-style (30 per-frame calls, 8px each)
+  → 7 points spanning 48px — *longer*, not shorter, at a fast drag; at a slow one neither style
+  pushes fast enough for the difference to matter. The a-priori worry (halve the call rate, halve
+  the trail) didn't account for each surviving call also carrying twice the distance. Second: the
+  first trail point used to wait one frame after a stick was born (`helmTake()` never pushed one
+  itself, in either the old or new code) — `helmSyncPointer()` now pushes it immediately on take,
+  zero delay.
 - [x] **0.4 Resolution that comes back** — the climb window is 5 s (was 20), the two-climbs-a-session
   cap is gone, and both thresholds are now fractions of the *target* frame rather than fixed
   milliseconds: down above 1.45× (24 ms at sixty, as before), up below 1.05× (17.5 ms, i.e. 57 fps

@@ -173,7 +173,14 @@ function helmSyncPointer(){
   if(p&&p.rawX!==undefined){
     const xy=helmCanvasXY({clientX:p.rawX,clientY:p.rawY});
     p.x=xy[0];p.y=xy[1];
-    if(Math.hypot(p.x-p.x0,p.y-p.y0)>HELM_TAKE)helmTake();
+    if(Math.hypot(p.x-p.x0,p.y-p.y0)>HELM_TAKE){
+      helmTake();
+      /* первая точка следа сразу при взятии, кадром раньше, чем без этой
+         строки (Контроль, 18.09): у свежего HELM.S ещё нет rawX/rawY, и
+         ветка ниже его в этом же вызове не тронет — без явного толчка лента
+         стартовала бы с задержкой в один кадр от уже отклонённого стика */
+      if(HELM.S)helmTrail(HELM.S);
+    }
   }
   const s=HELM.S;
   if(s&&s.rawX!==undefined){

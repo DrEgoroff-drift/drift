@@ -2074,36 +2074,36 @@ HELM_TAKE                    src/15a-helm.js:78
 HELM_TAKE_MS                 src/15a-helm.js:81
 HELM_THR                     src/15a-helm.js:74
 HELM_TRAIL                   src/15a-helm.js:108
-helmApply                    src/15a-helm.js:389-483
+helmApply                    src/15a-helm.js:396-490
 helmBandPath                 src/15b-helm-draw.js:135-143
 helmCamOff                   src/15b-helm-draw.js:120-133
 helmCanvasXY                 src/15a-helm.js:145
-helmDrag                     src/15a-helm.js:190-193
+helmDrag                     src/15a-helm.js:197-200
 helmDrawMarks                src/15b-helm-draw.js:8-21
 helmDrawSticks               src/15b-helm-draw.js:151-242
 helmDry                      src/15b-helm-draw.js:145
 helmDryLabel                 src/15b-helm-draw.js:146-150
 helmHome                     src/15b-helm-draw.js:52-65
 helmLift                     src/15b-helm-draw.js:69-106
-helmLock                     src/15a-helm.js:254-262
-helmLockNext                 src/15a-helm.js:264-281
-helmMarksClean               src/15a-helm.js:245-253
+helmLock                     src/15a-helm.js:261-269
+helmLockNext                 src/15a-helm.js:271-288
+helmMarksClean               src/15a-helm.js:252-260
 helmMarkTop                  src/15b-helm-draw.js:109-114
-helmPinchBlocked             src/15a-helm.js:241
+helmPinchBlocked             src/15a-helm.js:248
 helmPirate                   tests/91zzzw-helm.js:17-20
-helmPtrEnd                   src/15a-helm.js:228-233
+helmPtrEnd                   src/15a-helm.js:235-240
 helmRun                      tests/91zzzw-helm.js:16
-helmScreenOpen               src/15a-helm.js:238
+helmScreenOpen               src/15a-helm.js:245
 helmShip                     tests/91zzzw-helm.js:6-15
-helmShotAt                   src/15a-helm.js:297-300
+helmShotAt                   src/15a-helm.js:304-307
 helmStickFoot                src/15b-helm-draw.js:38-46
 helmStickShape               src/15b-helm-draw.js:29-35
-helmSyncPointer              src/15a-helm.js:171-184
-helmTake                     src/15a-helm.js:203-211
-helmTap                      src/15a-helm.js:283-295
-helmTargets                  src/15a-helm.js:244
-helmTick                     src/15a-helm.js:303-386
-helmTrail                    src/15a-helm.js:194-200
+helmSyncPointer              src/15a-helm.js:171-191
+helmTake                     src/15a-helm.js:210-218
+helmTap                      src/15a-helm.js:290-302
+helmTargets                  src/15a-helm.js:251
+helmTick                     src/15a-helm.js:310-393
+helmTrail                    src/15a-helm.js:201-207
 hex2rgb                      src/01-core.js:217-220
 hexA                         src/12e-drone-flight.js:302-308
 hexa                         src/12w-survey.js:91-94
@@ -5776,7 +5776,7 @@ zooTick                      src/11ad-zoo.js:41-54
   · ввод:87
   · полоса вкладок шире экрана:216
 
-## src/15a-helm.js · 35 КБ
+## src/15a-helm.js · 36 КБ
   · штурвал (M360):1
 
 ## src/15b-helm-draw.js · 14 КБ
