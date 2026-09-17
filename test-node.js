@@ -79,14 +79,25 @@ class El {
   get isConnected() { return true; } get ownerDocument() { return document; }
 }
 function qs(root, sel) {
-  /* только то, что игра реально спрашивает: #id, .class, tag, и их запятые */
+  /* только то, что игра реально спрашивает: #id, .class (и их сочетание,
+     ".scr.open"), tag, и их запятые. До этой правки (18.09) составной класс
+     ".scr.open" сверялся только по ПЕРВОМУ классу ("scr") — split() резал
+     строку и по точке, и по остальным разделителям разом, так что ".open"
+     терялся молча. Любой узел с классом "scr" читался как открытый экран
+     навсегда, что бы ни делал classList.remove("open") — отсюда штурвальные
+     тесты видели курсор «занятым чужим экраном» без единого реального экрана
+     (найдено тестировщиком по регрессии, диагноз уточнён: не гонка с
+     наблюдателем, а этот разбор селектора). */
   const out = [];
   const parts = String(sel).split(",").map(s => s.trim()).filter(Boolean);
   const walk = (e) => { for (const c of e.children) { if (!c || !c.children) continue; for (const p of parts) if (match(c, p)) { out.push(c); break; } walk(c); } };
   const match = (e, p) => {
-    if (p.startsWith("#")) return e.id === p.slice(1).split(/[\s.:\[>]/)[0];
-    if (p.startsWith(".")) return e.classList.contains(p.slice(1).split(/[\s.:\[>]/)[0]);
-    const tag = p.split(/[\s.:\[>#]/)[0]; return tag === "*" || e.tagName === tag.toUpperCase();
+    const id = p.match(/#([-\w]+)/); if (id && e.id !== id[1]) return false;
+    const classes = p.match(/\.[-\w]+/g) || [];
+    if (!classes.every(c => e.classList.contains(c.slice(1)))) return false;
+    const tag = p.match(/^[a-zA-Z*][-\w]*/);
+    if (tag && tag[0] !== "*" && e.tagName !== tag[0].toUpperCase()) return false;
+    return true;
   };
   walk(root); return out;
 }
@@ -123,9 +134,21 @@ document.createTextNode = (s) => ({ nodeType: 3, textContent: String(s), nodeVal
 document.querySelector = (sel) => {
   if (sel.startsWith("#") && !/[\s.:\[>]/.test(sel)) return document.getElementById(sel.slice(1));
   const f = qs(document.documentElement, sel)[0]; if (f) return f;
-  /* чего нет в разметке — заводим: модули при загрузке хватают .pads, .rail и
-     прочее без проверки; пустой элемент лучше, чем null и мёртвый модуль */
-  const first = sel.split(",")[0].trim().split(/\s+/).pop(); const e = new El(first.replace(/^[.#]/, "").split(/[.#:\[]/)[0] || "div");
+  /* чего нет в разметке — заводим, но только для ПРОСТОГО адреса (одна метка:
+     #id или .class): модули при загрузке хватают .pads, .rail и подобное без
+     проверки, и для них пустой узел лучше, чем null и мёртвый модуль — такой
+     узел один, обязан существовать и потому безопасно завести раз навсегда.
+     Составной селектор вроде ".scr.open" — не адрес узла, а запрос СОСТОЯНИЯ
+     (открыт ли хоть один экран), и «не нашли» для него — нормальный, самый
+     частый ответ, а не дыра в разметке. Заводить под него постоянный узел
+     значит намертво закрепить «открыто» после первого же вопроса, когда на
+     самом деле не открыто ничего — resetWorld() честно снимает класс open,
+     а следующий же scrOpen() заново его заводит; найдено по регрессии
+     штурвальных тестов (Тестировщик, Контроль, 18.09): мышь намертво теряла
+     курс, потому что «экран открыт» стало неснимаемой ложью. */
+  const first = sel.split(",")[0].trim().split(/\s+/).pop();
+  if ((first.match(/[.#]/g) || []).length > 1) return null;
+  const e = new El(first.replace(/^[.#]/, "").split(/[.#:\[]/)[0] || "div");
   first.split(/(?=[.#])/).forEach(pc => { if (pc.startsWith(".")) e.classList.add(pc.slice(1).split(/[:\[]/)[0]); else if (pc.startsWith("#")) { e.id = pc.slice(1).split(/[:\[]/)[0]; byId.set(e.id, e); } });
   document.body.appendChild(e); return e;
 };

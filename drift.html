@@ -8697,13 +8697,18 @@ function resize(){
    Сбросить кэш руками — `rectsDirty()`; кто перестроил вёрстку сам, тот и
    зовёт (`padsFit`).
 
-   Открыт ли поверх мира экран — то же самое: `document.querySelector(".scr.open")`
-   стоял в кадре трижды и ещё в каждом обработчике колеса. Ответ меняется
-   только когда кто-то ставит или снимает класс, а об этом рассказывает
-   MutationObserver — он приходит ПОСЛЕ кадра, своим микротаском, и вёрстку не
-   трогает вовсе. Сторож нарочно не ищет все двадцать мест, где открываются
-   экраны: список таких мест устаревает, наблюдатель — нет. */
-let CVS_RECT=null,PADS_RECT=null,SCR_OPEN=null,LAYOUT_DIRTY=true;
+   Открыт ли поверх мира экран — `document.querySelector(".scr.open")` — раньше
+   тоже кэшировался, со сбросом через MutationObserver (микротаск, приходит
+   ПОСЛЕ кадра). Это была ошибка адреса (Контроль, ревью 18.09): кэш нужен
+   там, где ответ стоит ПЕРЕСЧЁТА ВЁРСТКИ (getBoundingClientRect и подобное) —
+   поиск узла по классу раскладку не считает вовсе и кадра не стоил никогда.
+   А асинхронный сброс тем временем лгал ровно тогда, когда счёт шёл на кадры:
+   синхронный код (тесты с застывшими часами, и — тестировщик поймал это же
+   на телефоне — кадр сразу после открытия стола) видел кэш ДО того, как
+   наблюдатель успевал его сбросить, и штурвал переставал слушать курсор.
+   Кэш, который сбрасывается асинхронным наблюдателем, врёт не только в
+   тестах — они просто поймали это первыми, потому что там часы заморожены. */
+let CVS_RECT=null,PADS_RECT=null,LAYOUT_DIRTY=true;
 /* Показанные приборами числа (0.6, значения кладёт 27z): строка не склеивается,
    пока число не поменялось. Стоит здесь, а не в 27z, и это не вкус: `resize()`
    зовётся ниже в этом же файле и через rectsDirty() трогает эту таблицу — а
@@ -8744,23 +8749,19 @@ function padsRect(){
   }
   return PADS_RECT||null;
 }
-function scrOpen(){
-  if(SCR_OPEN===null)SCR_OPEN=!!document.querySelector(".scr.open");
-  return SCR_OPEN;
-}
-function scrDirty(){SCR_OPEN=null;}
-addEventListener("orientationchange",()=>{rectsDirty();scrDirty();});
+/* Не кэшируется: querySelector по классу не пересчитывает раскладку и не
+   стоит кадра (см. разбор выше). Настоящих чтений вёрстки в src/ нет, кроме
+   cvsRect/promptRect/padsRect ниже — те кэшируются, потому что каждое из них
+   и есть тот самый пересчёт. */
+function scrOpen(){return !!document.querySelector(".scr.open");}
+addEventListener("orientationchange",rectsDirty);
 addEventListener("scroll",rectsDirty,true);
-document.addEventListener("visibilitychange",()=>{rectsDirty();scrDirty();});
-/* Два наблюдателя, а не один, и это не аккуратность, а цена кадра. Общий
-   наблюдатель за атрибутом style грязнил вёрстку КАЖДЫЙ кадр: шкала топлива
-   пишет себе width на каждом кадре, и мерка пола пересчитывалась так же часто,
-   как до кэша. Теперь: классы и появление узлов — по всему телу (оттуда узнаём об
-   открытом экране), а style — только у тех шести узлов, которые и задают пол,
-   борт и верхнюю полосу. */
+document.addEventListener("visibilitychange",rectsDirty);
+/* Наблюдатель за стилем — только у тех шести узлов, которые задают пол, борт
+   и верхнюю полосу: общий сторож за атрибутом style грязнил бы вёрстку КАЖДЫЙ
+   кадр (шкала топлива пишет себе width на каждом кадре), а мерка пола должна
+   пересчитываться только когда меняются именно эти узлы. */
 try{
-  new MutationObserver(()=>{scrDirty();})
-    .observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:["class"]});
   const watch=new MutationObserver(()=>{rectsDirty();});
   for(const sel of ["#prompt","#console",".pads",".rail",".vitals",".locus"]){
     const el=document.querySelector(sel);

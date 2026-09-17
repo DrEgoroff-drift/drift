@@ -329,18 +329,22 @@ Rule 3: same look, cheaper work.
   single selector. Repainted with the journal's own ink (`#4a3a24`, matching `.li.talk span`) and a
   light warm tint (`rgba(120,96,56,.10)`) instead of a dark overlay — contrast 7.86:1 / 6.59:1
   against the sheet's two gradient ends.
-- [ ] **RELEASE BLOCKER: four «штурвал» tests fail only in the full suite** (found by the worker
-  on HEAD, 18.09, not caused by any of this evening's commits; they pass in isolation). Classic
-  test-order pollution: something earlier in the run leaves state behind. Control gates the release
-  on a green full run, so "only in the suite" is not milder than "always" — the suite is what gets
-  run. Owner: the Tester (tests are his). Find the polluting test, not a workaround in the victim.
-  File: `tests/91zzzw-helm.js`, set «штурвал: каждый ввод пишет те же каналы» plus one in «штурвал:
-  курс без инерции и без выбега». The four: RMB held with the cursor over the ship gives `null` for
-  an expected -1.5708; «руль занят курсором» gives 1 for 0; «D стал боком вправо от носа» gives 0
-  for 1; «нос доходит до курсора и останавливается» gives 1 for 0. Reproduce: `test.ps1` fails all
-  four, `test.ps1 -Only штурвал` is green (108/7). Confirmed on clean HEAD 9ef06ef. Likely something
-  earlier in alphabetical order leaves `HELM.mouse`/`G.ctl` set and `helmShip()` in the test does not
-  clear it.
+- [x] **RELEASE BLOCKER closed: the four «штурвал» failures were a `test-node.js` stub bug, not
+  pollution, not caching.** Neither the Tester's async-observer theory nor Control's "0.3 cached the
+  wrong thing" theory was it, though both were reasonable reads of the symptom (confirmed by testing
+  each: removing the `scrOpen()` cache alone did not fix it). The real bug was in `qs()`, the DOM-stub
+  selector matcher: for a compound class selector like `.scr.open`, it checked only the FIRST class
+  fragment (`.scr`) and silently ignored the rest — any element with class `scr` matched `.scr.open`
+  whether or not it also had `open`. Worse, `document.querySelector`'s "nothing matched, fabricate a
+  stand-in" fallback (meant for always-present singletons like `.pads`) fired on `.scr.open` every
+  time nothing was genuinely open — which is the normal case — permanently planting a fresh
+  `scr open` element after every `resetWorld()` cleanup undid the last one. Confirmed by instrumenting
+  `helmShip()` to print `scrOpen()`/element counts: `openCount` stayed pinned at exactly 1 forever,
+  immune to `resetWorld()`'s own `classList.remove("open")` cleanup, which fired but matched (and
+  fixed) nothing else. Fixed both in `test-node.js`: `qs()`'s matcher now ANDs every class/id/tag
+  fragment in a compound selector; the fabrication fallback now only fires for a single simple
+  selector (one `#id` or one `.class`), never a compound one — "nothing open" is a real answer, not
+  missing markup. `test.ps1`: 16336/16336, was 16332 with 4 red.
 - [ ] **P6** Hints cut at 411 px, МАСШТАБ under a chip, the beacon offered at the ship and wasted at
   0 m, КНИЖКА «хулк» and «командировочные за 0 км», the `celDay` column out of order (§1.5, §1.6, §4.4).
 - [x] **P7** One voice for the gravity anchor. Control offered a choice — drop the ship-side toast

@@ -10467,3 +10467,52 @@ every call produced at most one `getBoundingClientRect` (often zero, cache still
 one `--helmlift` style write, never eight. `HELM.lift`/the style value tracked the touch position
 correctly throughout (0 → 85 → 0 → 89 → 0 → 99 as the synthetic foot moved on and off the prompt's
 rect), confirming the consolidation didn't change *what* gets computed, only *how often*.
+
+**Release blocker closed — the DOM stub, not test order or caching (2026-09-18).** Three plausible
+theories chased this in sequence, each testing the wrong layer.
+
+The Tester's first read: an async `MutationObserver` resetting `scrOpen()`'s cache too late for
+synchronous, clock-frozen tests. Control's read, after his own code review: the cache was wrong to
+exist at all — a class-selector query isn't a layout cost, so drop `SCR_OPEN` and query fresh every
+call. Both diagnoses are sound engineering in general and the second is a real, kept improvement
+(`scrOpen()` in `08-state.js` no longer caches — a plain `document.querySelector(".scr.open")` per
+call, since a selector match costs nothing a forced-layout read does). Neither fixed the failure:
+verified by removing the cache alone and re-running the full suite — same four red, unchanged down
+to the exact assertion values.
+
+The actual bug lived one layer down, in the Node test harness's DOM stub (`test-node.js`), not in
+game code at all. Two compounding mistakes in `qs()`, the stub's `querySelector`/`querySelectorAll`
+backing function:
+
+1. Its selector matcher split a compound class selector on EVERY delimiter including `.` itself, so
+   `.scr.open` reduced to checking for class `scr` only — `.open` was parsed off and discarded.
+   Any element carrying class `scr`, with or without `open`, satisfied `.scr.open`.
+2. `document.querySelector`'s fallback — "nothing matched this selector in the markup, fabricate a
+   stand-in element and remember it" — exists so modules that grab `.pads`/`.rail` unconditionally
+   at load time get an inert element instead of a crashing `null`. It does not distinguish a
+   *structural singleton* (exactly one, should always exist) from a *state query* (normally absent,
+   and rightly so): `.scr.open` asks "is any screen currently open", and "no" is the common, correct
+   answer, not a hole in the markup. Every time nothing was genuinely open, this fallback minted a
+   fresh permanent element with classes `scr open` anyway.
+
+Combined, these two bugs made `scrOpen()` return `true` forever after the first call in a process,
+regardless of caching, regardless of `resetWorld()`'s existing cleanup line
+(`document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"))`) — that cleanup
+fired correctly and found real matches under the fixed matcher, but had no way to stop the very next
+`scrOpen()` call from fabricating a brand new one. `helmScreenOpen()` in `15a-helm.js` reading
+`scrOpen()===true` when nothing was open blocked `G.ctl.head` from ever being set from the cursor —
+exactly the four assertions that failed.
+
+Confirmed with a throwaway probe in `helmShip()` (`tests/91zzzw-helm.js`, removed after use):
+printed `scrOpen()`, the live count of `.scr` elements, and the live count of `.scr.open` elements
+on every call. Before the fix: `openCount` pinned at exactly 1 across dozens of prints, immune to
+`resetWorld()`'s cleanup running immediately beforehand — proof the match itself was wrong, not its
+timing. After fixing `qs()`'s matcher alone: unchanged, still stuck at `openCount=1` — proof there
+were two independent bugs, not one. After also restricting the fabrication fallback to simple
+(single `#id` or single `.class`) selectors: `scrOpen()` reads `false` consistently, `scrCount`
+stops climbing.
+
+Full suite: `16332` passed with 4 red → `16336` passed, 0 red. The lesson for `test-node.js`
+specifically: a DOM stub built to make "the element always exists" true for structural singletons
+is the wrong tool for "is anything currently in state X" — those need either a real (if partial)
+selector engine or an honest `null`, never an invented match.
