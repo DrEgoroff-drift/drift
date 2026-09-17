@@ -681,19 +681,21 @@ function drawSysHud(zx,zy,sh,sys,U){
      только звезда, станция и текущая цель, и вылетевший на отшиб игрок видел
      у кромки одну звезду. Теперь из пустоты всегда видно, куда лететь. */
   const marks=[{x:0,y:0,c:"#f2b25c",l:"ЗВЕЗДА",t:{kind:"star"}}];
+  /* имя в верхнем регистре кладётся рядом с телом ОДИН раз (0.6): только
+     toUpperCase в кадре рождал до трёх строк на каждый кадр на пустом месте */
   if(sys.station)marks.push({x:sys.station.x,y:sys.station.y,c:"#7fe6d8",
-    l:sys.station.name.toUpperCase(),t:{kind:"station"}});
+    l:sys.station._up||(sys.station._up=sys.station.name.toUpperCase()),t:{kind:"station"}});
   {
     let np=null,nd=1e18;
     for(const p of sys.planets){
       const d=Math.hypot(p.x-sh.x,p.y-sh.y);
       if(d<nd){nd=d;np=p;}
     }
-    if(np)marks.push({x:np.x,y:np.y,c:"#9fd8ff",l:np.name.toUpperCase(),t:{kind:"planet",p:np}});
+    if(np)marks.push({x:np.x,y:np.y,c:"#9fd8ff",l:np._up||(np._up=np.name.toUpperCase()),t:{kind:"planet",p:np}});
   }
   if(G.ap){const T=targetPos();if(T)marks.push({x:T.x,y:T.y,c:"#ff6b57",l:"ЦЕЛЬ",t:null});}
   /* окликнувший: одна негашёная стрелка под окном оклика (R6, 12.09) */
-  if(G.hail){const hp=G.pirates.find(q=>q._hail);if(hp)marks.push({x:hp.x,y:hp.y,c:"#ffd27a",l:(hp.name||"ОКЛИК").toUpperCase(),t:null,hail:1});}
+  if(G.hail){const hp=G.pirates.find(q=>q._hail);if(hp)marks.push({x:hp.x,y:hp.y,c:"#ffd27a",l:hp._up||(hp._up=(hp.name||"ОКЛИК").toUpperCase()),t:null,hail:1});}
   SYS_CHIPS.length=0;
   /* фишки у кромки (M167): раньше метки стояли на круге и на телефоне висели
      посреди сцены, наезжая друг на друга и на солнце. Теперь метка — плашка,

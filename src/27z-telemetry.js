@@ -92,6 +92,26 @@ function setTx(el,v){
   }
 }
 function setSt(el,k,v){v=""+v;if(el&&el.style[k]!==v)el.style[k]=v;}
+/* ── строка не строится, пока число не менялось (0.6) ──
+   setSt/setTx не пишут в DOM при том же значении — но СТРОКУ для сравнения
+   всё равно приходилось склеить, и приборы рождали по два десятка мёртвых
+   строк в каждом кадре — шестьдесят раз в секунду при полном топливе и целом
+   корпусе, когда меняться нечему. Здесь сравниваются ЧИСЛА, и строка
+   рождается только когда её и всамом деле покажут. Гранулярность та же, что у
+   вывода: десятые процента для шкалы, целые для подписей. */
+const HUD_NUM={};
+function setPct(el,key,v){
+  const q=Math.round(clamp(v,0,100)*10);
+  if(HUD_NUM[key]===q)return;
+  HUD_NUM[key]=q;
+  setSt(el,"width",(q/10).toFixed(1)+"%");
+}
+function setPair(el,key,a,b){
+  const ka=key+"|a",kb=key+"|b";
+  if(HUD_NUM[ka]===a&&HUD_NUM[kb]===b)return;
+  HUD_NUM[ka]=a;HUD_NUM[kb]=b;
+  setTx(el,b===null?String(a):a+"/"+b);
+}
 /* пол и правый борт — одним чтением на кадр. Пустая подсказка в счёт не идёт: у
    неё нет текста, а место она занимать не должна. Вынесено в функцию (M360): ряд
    пэдов перестраивается в hud() ПОЗЖЕ замера, и карта на тот же кадр читала
@@ -136,12 +156,12 @@ function hudFloorMeasure(force){
 function hud(){
   const st=stat();
   const fr=G.fuel/st.fuelMax, hr=G.hull/st.hullMax, cr=held()/st.cargoMax;
-  setSt($f,"width",clamp(fr*100,0,100).toFixed(1)+"%");
-  setSt($h,"width",clamp(hr*100,0,100).toFixed(1)+"%");
-  setSt($cg,"width",clamp(cr*100,0,100).toFixed(1)+"%");
-  setTx($fn,Math.round(G.fuel)+"/"+Math.round(st.fuelMax));
-  setTx($hn,Math.round(G.hull)+"/"+Math.round(st.hullMax));
-  setTx($cn,held()+"/"+st.cargoMax);
+  setPct($f,"f",fr*100);
+  setPct($h,"h",hr*100);
+  setPct($cg,"cg",cr*100);
+  setPair($fn,"fn",Math.round(G.fuel),Math.round(st.fuelMax));
+  setPair($hn,"hn",Math.round(G.hull),Math.round(st.hullMax));
+  setPair($cn,"cn",held(),st.cargoMax);
   setSt($sg,"display",st.shieldMax>0?"":"none");
   /* энергия (M362): шкала есть у всех — она кормит и маневровые, — но в
      кабине корабля, а не на ногах и не за столом */
@@ -150,13 +170,13 @@ function hud(){
     setSt($eg,"display",on?"":"none");
     if(on){
       const e=clamp(G.energy||0,0,st.energyMax);
-      setSt($en,"width",(e/st.energyMax*100).toFixed(1)+"%");
-      setTx($enn,Math.round(e)+"/"+st.energyMax);
+      setPct($en,"en",e/st.energyMax*100);
+      setPair($enn,"enn",Math.round(e),st.energyMax);
     }
   }
   if(st.shieldMax>0){
-    setSt($sh,"width",clamp(G.shield/st.shieldMax*100,0,100).toFixed(1)+"%");
-    setTx($sn,Math.round(G.shield)+"/"+Math.round(st.shieldMax));
+    setPct($sh,"sh",G.shield/st.shieldMax*100);
+    setPair($sn,"sn",Math.round(G.shield),Math.round(st.shieldMax));
   }
   $fb.classList.toggle("low",fr<.2);
   $hb.classList.toggle("low",hr<.3);
@@ -179,8 +199,8 @@ function hud(){
   setSt($vs,"display",suitOn?"":"none");
   if(suitOn){
     const su=clamp(suitSrc.suit,0,100);
-    setSt($ub,"width",su.toFixed(1)+"%");
-    setTx($un,Math.round(su)+"%");
+    setPct($ub,"ub",su);
+    if(HUD_NUM.un!==Math.round(su)){HUD_NUM.un=Math.round(su);setTx($un,HUD_NUM.un+"%");}
     $vs.classList.toggle("low",su<35);$vs.classList.toggle("crit",su<18);
   }
   /* ранец — там же, где остальные шкалы. Прежде он рисовался на канве в левом
@@ -191,8 +211,8 @@ function hud(){
   setSt($vj,"display",jetOn?"":"none");
   if(jetOn){
     const jf=clamp(jetFuel(),0,1);
-    setSt($jb,"width",(jf*100).toFixed(1)+"%");
-    setTx($jn,Math.round(jf*100)+"%");
+    setPct($jb,"jb",jf*100);
+    if(HUD_NUM.jn!==Math.round(jf*100)){HUD_NUM.jn=Math.round(jf*100);setTx($jn,HUD_NUM.jn+"%");}
     $vj.classList.toggle("low",jf<.2);
   }
   /* Кошелёк, а под ним — облако, но только когда с ним что-то не так. Молчащий

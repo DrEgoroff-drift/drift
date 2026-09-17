@@ -10108,3 +10108,23 @@ fixed it; the same measurement then reads a peak of 0.11 around 0.9 s and 0.003 
 worth keeping: the browser pane, `initAudio()`/`musicInit()`, an `AnalyserNode` on the wet output
 and `setInterval` writing the tail into an array — `docs/shot.py --eval` cannot do it, because
 rendering audio is asynchronous and its `--eval` runs in the same tick.
+
+**0.6 GC — what was hoisted, and why the number is missing (2026-09-17).** The phone trace showed
+major collections of 14–28 ms inside the longest frame gaps, so the frame was asked to stop making
+garbage. Three sources were removed. First and largest: the instruments. `setSt`/`setTx` refuse to
+write an unchanged value, which reads as frugal, but the *string* was glued before the comparison —
+`clamp(fr*100,0,100).toFixed(1)+"%"` and `Math.round(G.fuel)+"/"+Math.round(st.fuelMax)` for every
+gauge, every frame, sixty times a second on a full tank with nothing to report. The comparison now
+happens on numbers (`setPct`, `setPair`, the `HUD_NUM` table) at the same granularity the display
+has — tenths of a percent for a bar, whole units for a label — and a string is created only when
+it is about to be shown. Second: `toUpperCase()` for the compass chips ran per frame per chip; the
+uppercase name is now memoised on the body as `_up`, which is safe because `stateHash` skips keys
+beginning with an underscore and the objects it lives on are regenerated from the seed anyway.
+Third, already landed in 0.2: two `rgba` strings and two mid-point arrays per wake segment.
+
+No local number, deliberately. `performance.memory.usedJSHeapSize` is frozen in this build — 900
+frames of steering report a zero heap delta and zero GC drops, so it cannot even see the garbage
+that certainly exists; and the allocating helpers (`mixc`, `rgba`, `hex2rgb`) are `const`, so they
+cannot be wrapped with counters from a probe. The honest meter is the allocation sampler in the
+phone trace, which is the tester's instrument, so the item stays open until his before/after on GC
+pauses arrives.

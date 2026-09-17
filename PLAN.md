@@ -170,8 +170,18 @@ Rule 3: same look, cheaper work.
   version, with both delays through one shared filter, had a loop gain of 1.1 and **diverged** —
   1.9·10²² a tenth of a second after one click, 3·10²³ after a second and a half. Decoupled, one
   click peaks at 0.11 and decays to 0.003 by 2.4 s. Body in `docs/PLAN-archive.md`.
-- [ ] **0.6 GC.** Major GCs of 14–28 ms inside the longest gaps — hoist per-frame allocations
-  (arrays, closures, strings in `hud`/`drawSystem`); the trace's allocation sampler names them.
+- [ ] **0.6 GC — hoisted, unverified.** Major GCs of 14–28 ms sat inside the longest gaps. Three
+  sources are gone from the frame: the instruments built a string for every gauge every frame just
+  to compare it (`setSt`/`setTx` do not write an unchanged value, but the string was glued anyway,
+  so a full tank and an intact hull still made a couple of dozen dead strings a frame) — the
+  comparison is now on **numbers** (`setPct`/`setPair`, `HUD_NUM`) and a string is born only when
+  it will be shown; `toUpperCase()` for the compass chips is memoised on the body (`_up`, a key the
+  hash and the save both skip by its underscore); the wake and ribbon rewrite of 0.2 already took
+  two `rgba` strings and two mid-point arrays per segment out of the frame. **Not measured
+  locally, and that is the whole point of leaving it open:** `performance.memory` is frozen in this
+  build (900 frames of steering report a 0-byte heap delta), and `mixc`/`rgba` are `const`, so they
+  cannot be wrapped to count. The meter is the phone trace's allocation sampler — the tester's
+  before/after on GC pauses decides this item.
 - [ ] **0.7 Heat.** 75 min → thermal MODERATE, 37 fps at ×1. The sum above is the fix; the check is
   a 30-min run with `dumpsys thermalservice` logged every minute.
 - **Gate to stage 0b:** cadence ≥ 95 %, no frame > 24 ms in 60 s of steering, `RES_AUTO ≥ 2`,

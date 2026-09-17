@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 538 · символов верхнего уровня: 5177
+Файлов: 538 · символов верхнего уровня: 5180
 
 ## СИМВОЛЫ
 
@@ -1417,7 +1417,7 @@ drawSurface                  src/21e-surface-draw.js:277-291
 drawSurfaceHud               src/21e-surface-draw.js:21-115
 drawSurfaceWorld             src/21e1-surface-world.js:10-615
 drawSurvey                   src/12w-survey.js:63-89
-drawSysHud                   src/17-mode-system.js:665-756
+drawSysHud                   src/17-mode-system.js:665-758
 drawSysNebula                src/16a-space.js:208-236
 drawSystem                   src/17-mode-system.js:406-664
 drawSysTraffic               src/17f-sys-traffic.js:29-33
@@ -2286,12 +2286,13 @@ hqWallProps                  src/27f-hq-room.js:170-216
 hqWindowView                 src/27f-hq-room.js:616-640
 hsAlive                      tests/91zzzzza-save-hostile.js:29-37
 hsMut                        tests/91zzzzza-save-hostile.js:20-27
-hud                          src/27z-telemetry.js:136-471
+hud                          src/27z-telemetry.js:156-491
 HUD_BAND                     src/27z-telemetry.js:21
 HUD_FLOOR                    src/27z-telemetry.js:31
+HUD_NUM                      src/27z-telemetry.js:102
 HUD_PREV                     src/27z-telemetry.js:58
 HUD_STEP                     src/27z-telemetry.js:57
-hudFloorMeasure              src/27z-telemetry.js:104-135
+hudFloorMeasure              src/27z-telemetry.js:124-155
 hudWake                      src/27z-telemetry.js:60-69
 hueToward                    src/19b-sky.js:53-64
 HULL_CACHE                   src/03-ships.js:199
@@ -4258,6 +4259,8 @@ secTidy                      src/26-ui-station.js:332-351
 sellCargo                    src/12-economy.js:71-92
 sellDroneYield               src/12-economy.js:93-98
 sellQuote                    src/12ab-hold.js:101-110
+setPair                      src/27z-telemetry.js:109-114
+setPct                       src/27z-telemetry.js:103-108
 setSt                        src/27z-telemetry.js:94
 settle                       tests/90-harness.js:372-383
 SETTLE_BUILD                 src/12t-settle.js:31-38
@@ -6216,7 +6219,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/27n-ui-deal.js · 14 КБ
   · ДЕЛО — одно место для всего, что на вас работает:1
 
-## src/27z-telemetry.js · 38 КБ
+## src/27z-telemetry.js · 39 КБ
   · телеметрия: приборы пишут в DOM:1
 
 ## src/28-loop.js · 60 КБ
