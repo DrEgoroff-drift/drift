@@ -1343,8 +1343,8 @@ drawFactory                  src/20aa-poi-shapes.js:378-462
 drawFactRoute                src/13b-occupy.js:285-338
 drawFindsSystem              src/17b-finds.js:181-263
 drawFlame                    src/03b-hull-paint.js:10-56
-drawFleet                    src/12ai-fleet.js:127-146
-drawFleetMap                 src/12ai-fleet.js:316-351
+drawFleet                    src/12ai-fleet.js:132-151
+drawFleetMap                 src/12ai-fleet.js:321-356
 drawFleetShip                src/12ai1-fleet-art.js:375-400
 drawFoeBody                  src/24ab-raid-foe.js:10-130
 drawForeground               src/21b-surface-deco.js:278-383
@@ -1668,7 +1668,7 @@ FLEET_COOL                   src/13-combat.js:211
 FLEET_EPITH                  src/04b-fleet.js:57
 FLEET_KEYS                   src/04b-fleet.js:148
 FLEET_LUXE                   src/04b-fleet.js:59
-FLEET_MAP_LEGS               src/12ai-fleet.js:315
+FLEET_MAP_LEGS               src/12ai-fleet.js:320
 FLEET_MARK                   src/04b-fleet.js:56
 FLEET_N                      src/04b-fleet.js:106
 FLEET_NAMES                  src/12ai-fleet.js:41
@@ -1683,20 +1683,20 @@ FLEET_TIER_CLS               src/04b-fleet.js:46-53
 FLEET_TIER_KEYS              src/04b-fleet.js:30
 FLEET_TIERS                  src/04b-fleet.js:16-29
 fleetArtOf                   src/12ai1-fleet-art.js:13-339
-fleetCaravanActive           src/12ai-fleet.js:302-308
+fleetCaravanActive           src/12ai-fleet.js:307-313
 fleetColor                   src/04b-fleet.js:95
-fleetEscortActive            src/12ai-fleet.js:300
+fleetEscortActive            src/12ai-fleet.js:305
 fleetFire                    src/13-combat.js:212-233
 fleetGlyph                   src/12ai1-fleet-art.js:342-374
-fleetHailFirst               src/12ai-fleet.js:156-176
+fleetHailFirst               src/12ai-fleet.js:161-181
 fleetHere                    src/12ai-fleet.js:50-87
-fleetInteract                src/12ai-fleet.js:177-297
-fleetLabelY                  src/12ai-fleet.js:116-126
-fleetLogKey                  src/12ai-fleet.js:148
-fleetNormKey                 src/12ai-fleet.js:151
-fleetNormTwice               src/12ai-fleet.js:150
+fleetInteract                src/12ai-fleet.js:182-302
+fleetLabelY                  src/12ai-fleet.js:121-131
+fleetLogKey                  src/12ai-fleet.js:153
+fleetNormKey                 src/12ai-fleet.js:156
+fleetNormTwice               src/12ai-fleet.js:155
 fleetPos                     src/12ai-fleet.js:89-98
-fleetPromptRect              src/12ai-fleet.js:107-110
+fleetPromptRect              src/12ai-fleet.js:112-115
 fleetRung                    src/12ai-fleet.js:48
 fleetScale                   src/12ai-fleet.js:105
 fleetUniqueName              src/04b-fleet.js:100-105
@@ -2072,20 +2072,20 @@ HELM_TAKE_MS                 src/15a-helm.js:81
 HELM_THR                     src/15a-helm.js:74
 HELM_TRAIL                   src/15a-helm.js:108
 helmApply                    src/15a-helm.js:362-456
-helmBandPath                 src/15b-helm-draw.js:125-133
-helmCamOff                   src/15b-helm-draw.js:110-123
+helmBandPath                 src/15b-helm-draw.js:131-139
+helmCamOff                   src/15b-helm-draw.js:116-129
 helmCanvasXY                 src/15a-helm.js:145
 helmDrag                     src/15a-helm.js:166-169
 helmDrawMarks                src/15b-helm-draw.js:8-21
-helmDrawSticks               src/15b-helm-draw.js:141-232
-helmDry                      src/15b-helm-draw.js:135
-helmDryLabel                 src/15b-helm-draw.js:136-140
+helmDrawSticks               src/15b-helm-draw.js:147-238
+helmDry                      src/15b-helm-draw.js:141
+helmDryLabel                 src/15b-helm-draw.js:142-146
 helmHome                     src/15b-helm-draw.js:52-65
-helmLift                     src/15b-helm-draw.js:69-96
+helmLift                     src/15b-helm-draw.js:69-102
 helmLock                     src/15a-helm.js:230-238
 helmLockNext                 src/15a-helm.js:240-257
 helmMarksClean               src/15a-helm.js:221-229
-helmMarkTop                  src/15b-helm-draw.js:99-104
+helmMarkTop                  src/15b-helm-draw.js:105-110
 helmPinchBlocked             src/15a-helm.js:217
 helmPirate                   tests/91zzzw-helm.js:17-20
 helmPtrEnd                   src/15a-helm.js:204-209
@@ -5775,7 +5775,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/15a-helm.js · 33 КБ
   · штурвал (M360):1
 
-## src/15b-helm-draw.js · 13 КБ
+## src/15b-helm-draw.js · 14 КБ
   · штурвал: рисунок (M422):1
 
 ## src/15c-rec.js · 6 КБ

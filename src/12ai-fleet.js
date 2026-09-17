@@ -103,10 +103,15 @@ function fleetPos(f){
    выше потолка корабля (16c SHIP_SCALE_MAX) не растут — растёт мир. Флот на
    .85 от своего корабля, как и был. Спрайт печётся в ×3: разрешение оплачено */
 function fleetScale(Z){return clamp(Z,.5,SHIP_SCALE_MAX)*.85;}
-/* строка подсказки — живой DOM, меряем его (27z); null, когда её нет */
+/* строка подсказки — живой DOM, меряем его (27z); null, когда её нет.
+   Свой getElementById+getBoundingClientRect был ВТОРЫМ, необрезанным чтением
+   вёрстки в кадре: 08-state уже держит ровно этот прямоугольник в кэше
+   (promptEl/promptRect) — здесь и звался он, за каждый видимый корабль флота
+   отдельно (Тестировщик, S23: 5-6 чтений rect в кадре при обещанном нуле,
+   найдено по стеку вызова 18.09). */
 function fleetPromptRect(){
-  const pe=document.getElementById("prompt");if(!pe||!pe.textContent)return null;
-  const r=pe.getBoundingClientRect();return r.height>0?r:null;
+  const pe=promptEl();if(!pe||!pe.textContent)return null;
+  const r=promptRect();return r&&r.height>0?r:null;
 }
 /* подпись под кораблём (§3): не по константе (+30/+40 ложились на корпус
    высоких классов и на фишки планет), а от видимой полувысоты тела под текущим

@@ -67,21 +67,27 @@ function helmHome(){
    строку, #prompt поднимается ровно на высоту следа. Меряем DOM, а не считаем
    CSS (правило 27z); пишем в стиль только на изменение. */
 function helmLift(){
-  const el=(typeof document!=="undefined")&&document.getElementById&&document.getElementById("prompt");
+  /* Свой getElementById+getBoundingClientRect был вторым, необрезанным чтением
+     вёрстки в кадре, и как раз тем, что срабатывает ИМЕННО под пальцем (только
+     когда стик живой) — ровно та надбавка, которую тестировщик увидел поверх
+     фонового чтения (18.09). 08-state уже держит этот прямоугольник в кэше. */
+  const el=promptEl();
   let lift=0;
   const foot=helmStickFoot();
-  if(el&&el.getBoundingClientRect&&foot.length){
-    const r=el.getBoundingClientRect();
-    /* мерим ОТ НЕПОДНЯТОГО места: подсказка уже поднята на прошлый lift, и
-       без этой поправки следующий кадр увидел бы её чистой и уронил обратно —
-       строка бы дрожала под пальцем */
-    const base=Math.max(0,HELM.lift),top=r.top+base,bot=r.bottom+base;
-    if(r.height>0)for(const f of foot)
-      if(f.x+f.r>r.left&&f.x-f.r<r.right&&f.y-f.r<bot&&f.y+f.r>top)
-        lift=Math.max(lift,bot-(f.y-f.r)+8);
-    /* потолок: подсказка поднимается ровно настолько, чтобы разойтись с
-       пальцем, и никогда не уезжает на середину экрана */
-    lift=Math.min(lift,Math.round(innerHeight*.22));
+  if(el&&el.textContent&&foot.length){
+    const r=promptRect();
+    if(r&&r.height>0){
+      /* мерим ОТ НЕПОДНЯТОГО места: подсказка уже поднята на прошлый lift, и
+         без этой поправки следующий кадр увидел бы её чистой и уронил обратно —
+         строка бы дрожала под пальцем */
+      const base=Math.max(0,HELM.lift),top=r.top+base,bot=r.bottom+base;
+      for(const f of foot)
+        if(f.x+f.r>r.left&&f.x-f.r<r.right&&f.y-f.r<bot&&f.y+f.r>top)
+          lift=Math.max(lift,bot-(f.y-f.r)+8);
+      /* потолок: подсказка поднимается ровно настолько, чтобы разойтись с
+         пальцем, и никогда не уезжает на середину экрана */
+      lift=Math.min(lift,Math.round(innerHeight*.22));
+    }
   }
   if(lift!==HELM.lift){
     HELM.lift=lift;
