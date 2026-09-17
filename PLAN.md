@@ -173,6 +173,17 @@ Rule 3: same look, cheaper work.
   Control's recommendation, still awaiting the author's word: ×1.5 in the system and landing views
   under thrust, ×2 in the dock, the desk and the map, switching on mode change, no dithering. The
   look is his call — his game's sharpness against his own complaint about the judder.
+  **The Designer argues against it, with frames (18.09).** She took a real phone frame at DPR 2.6,
+  squeezed it to 2.0 and to 1.5 and back by nearest neighbour — what the eye would actually get. At
+  ×1.5 the trail's one-pixel neon rails break into a dotted staircase (the very staircase she first
+  took for a haze defect), and the star field loses about a third of its stars while the survivors
+  double in size: exactly the two things this game's language rests on, and exactly the field the
+  author asked to «stretch, not twinkle». HUD and chip text are unaffected, they live in the DOM
+  layer. Her verdict: ×1.5 in flight is a bad bargain for THIS game, and the recommendation hits the
+  very views where the trail and the stars *are* the picture. So the author gets both sides: her
+  three-band comparison (2.6 / 2.0 / 1.5) beside the Tester's numbers, and he chooses knowing what he
+  pays with. Her third option — keep the raster, win the frame back on the cost of events — is
+  already spent: the worker's fix cut events fifty-fold and the skips stayed, evenly spread.
 
 - [ ] **A second, independent instrument for the frame: the screen recording** (Designer, 18.09).
   Counting skips from *outside* the game, so it cannot be fooled by our own counters: a skipped vsync
