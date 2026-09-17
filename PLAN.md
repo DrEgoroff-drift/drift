@@ -144,6 +144,15 @@ Rule 3: same look, cheaper work.
   startup and never revised, so a phone that hands out its first frames at 60 fixes the stride
   against the wrong period for the rest of the session. Also still unverified by anyone: the g11
   part of the gate (≥55 fps on the laptop) — the Tester never ran it.
+  **Corrected the same evening by histograms (Tester, 1e1c505, S23, 25 s under the finger): 1119
+  intervals of 16.7 ms and 189 of 33.3, no third value.** 33.3 is exactly twice 16.7, so the period
+  we aim at is 16.7 and the stride is one — we draw every callback. That kills Control's arithmetic
+  above (a mix of 16.67 and 25 from drawing every second callback): the measurement holds clean 16.7
+  and its double, no mix. The true picture: the frame sometimes does not fit in 16.7 ms and every
+  miss costs a whole period, since a skipped vsync is never caught up; the miss rate is 14 % and
+  holds steady all run, and releasing the finger does not restore the good state (89.4 %). Not a
+  stuck schedule — a frame on the edge, so taking milliseconds off DOES help (the Tester withdrew
+  his «pointless» too). Judge by the share of skipped frames over three runs, never by one average.
 
 - [ ] **Four milliseconds, by the function.** `frameBody` averages 10.58 ms against a 16.7 ms
   vsync, max 28.7 — no headroom, and muting *any* single draw function now gives 59.7 fps at
