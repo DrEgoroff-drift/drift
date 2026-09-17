@@ -93,6 +93,13 @@ function useBeacon(){
      где стоял вход, а не то место под землёй, где сейчас игрок */
   if(G.mode==="surface"&&Math.abs(S.x-S.shipX)<shipZoneR())return;
   const deep=G.dig?G.dig.row:0;
+  /* расстояние — ДО перемещения, не после (Тестировщик, живой S23, 18.09):
+     честный возврат с 2 км по земле (deep=0, ствола нет) писал в журнал «с
+     0 м», потому что S.x==S.shipX уже стало правдой к моменту, когда строка
+     складывается. Автор в плейтесте цитировал именно эту ложь как признак
+     бессмысленного возврата — теперь бессмысленный запрещён отдельно (выше),
+     а честный обязан называть настоящее число. */
+  const fromM=deep>0?deep*3:Math.round(Math.abs(S.x-S.shipX));
   S.beacon=beaconCool();
   /* маяк выдёргивает из ствола, но выработка остаётся выработкой */
   if(G.dig)mineSave(G.dig,G.dig.p);
@@ -101,7 +108,7 @@ function useBeacon(){
   S.walkTarget=null;
   sfx("ui",{f:220,to:1400,d:.35,v:.5});
   say("Телепорт к кораблю\nмаяк заряжается");
-  logAdd("tech","Маяк: возврат к кораблю с "+(deep*3)+" м");
+  logAdd("tech","Маяк: возврат к кораблю с "+fromM+" м");
 }
 function beaconTick(dt){
   const S=G.surf,b=document.getElementById("beaconbtn");

@@ -345,7 +345,7 @@ bCrew                        tests/91zzzw-base.js:199-205
 bDress                       src/21aa-base-rooms.js:122-183
 BEACON_COOL                  src/23-mode-dig.js:85
 beaconCool                   src/23-mode-dig.js:86
-beaconTick                   src/23-mode-dig.js:106-117
+beaconTick                   src/23-mode-dig.js:113-124
 BEAM_LIFE                    src/13a-guns.js:28
 beamAdd                      src/13a-guns.js:79-83
 beamsDraw                    src/13a-guns.js:91-102
@@ -1201,7 +1201,7 @@ DIG_TURF                     src/23aa-dig-rock.js:463
 digBedding                   src/23aa-dig-rock.js:118-145
 digCell                      src/23-mode-dig.js:29-49
 digCun                       src/23aa-dig-rock.js:158-182
-digFauna                     src/23-mode-dig.js:247-320
+digFauna                     src/23-mode-dig.js:254-327
 digRGB                       src/23aa-dig-rock.js:465
 digRockMass                  src/23aa-dig-rock.js:183-446
 digRockPass                  src/23aa-dig-rock.js:26-101
@@ -1335,7 +1335,7 @@ drawDeadBattery              src/20aa-poi-shapes.js:221-275
 drawDeco                     src/21b-surface-deco.js:166-225
 drawDeposit                  src/21b-surface-deco.js:406-560
 drawDig                      src/23a-dig-draw.js:655-659
-drawDigFauna                 src/23-mode-dig.js:321-330
+drawDigFauna                 src/23-mode-dig.js:328-337
 drawDigWorld                 src/23a-dig-draw.js:45-607
 drawDronesMap                src/12e-drone-flight.js:312-330
 drawDronesSystem             src/12e-drone-flight.js:226-299
@@ -4607,8 +4607,8 @@ SUITE_WINS                   tests/90-harness.js:89
 suiteGroup                   tests/90-harness.js:79-83
 suiteOrder                   tests/90-harness.js:392-399
 suiteWin                     tests/90-harness.js:94-99
-suitFailure                  src/23-mode-dig.js:127-135
-suitHit                      src/23-mode-dig.js:120-126
+suitFailure                  src/23-mode-dig.js:134-142
+suitHit                      src/23-mode-dig.js:127-133
 suitMax                      src/12x-suit.js:89
 SUN_DIR                      src/19c-light.js:22
 SUN_DIR_FLAT                 src/19c-light.js:23
@@ -4865,7 +4865,7 @@ updateBelt                   src/24-mode-belt.js:186-375
 updateCave                   src/22-mode-cave.js:251-433
 updateCaveDeco               src/22a-cave-deco.js:205-228
 updateCombat                 src/13-pirates.js:116-301
-updateDig                    src/23-mode-dig.js:136-244
+updateDig                    src/23-mode-dig.js:143-251
 updateHomeIn                 src/29c-home-in.js:160-200
 updateLanding                src/19-mode-landing.js:68-137
 updateMap                    src/18-mode-map.js:548-561
@@ -4876,7 +4876,7 @@ updateSurface                src/21-mode-surface.js:199-656
 updateSystem                 src/17-mode-system.js:40-407
 updateWanderRoom             src/24c-mode-wanderer.js:58-88
 updateWinter                 src/29g-winter-draw.js:808-817
-useBeacon                    src/23-mode-dig.js:87-105
+useBeacon                    src/23-mode-dig.js:87-112
 vCloth                       src/18d-verlet.js:41-50
 vDrawCloth                   src/18d-verlet.js:104-121
 vDrawRope                    src/18d-verlet.js:90-100
@@ -5184,7 +5184,7 @@ yaltaHere                    src/12al-powers.js:172
 yaltaIs                      src/12al-powers.js:168-171
 yaltaSealed                  src/12al-powers.js:175-179
 YARD_CHANCE                  src/04b-fleet.js:162
-ZAP_COOL                     src/23-mode-dig.js:246
+ZAP_COOL                     src/23-mode-dig.js:253
 ZOO_PEN_CAP                  src/11ad-zoo.js:14
 zooAll                       src/11ad-zoo.js:15
 zooBlock                     src/11ad-zoo.js:72-82
@@ -6040,7 +6040,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/22b-cave-props.js · 13 КБ
   · пещера: гладкий обвод и то, что в ней лежит (M305):1
 
-## src/23-mode-dig.js · 18 КБ
+## src/23-mode-dig.js · 19 КБ
   · шахта: спуск вглубь планеты:1
 
 ## src/23a-dig-draw.js · 41 КБ
