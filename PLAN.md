@@ -305,6 +305,13 @@ Rule 3: same look, cheaper work.
   test-order pollution: something earlier in the run leaves state behind. Control gates the release
   on a green full run, so "only in the suite" is not milder than "always" — the suite is what gets
   run. Owner: the Tester (tests are his). Find the polluting test, not a workaround in the victim.
+  File: `tests/91zzzw-helm.js`, set «штурвал: каждый ввод пишет те же каналы» plus one in «штурвал:
+  курс без инерции и без выбега». The four: RMB held with the cursor over the ship gives `null` for
+  an expected -1.5708; «руль занят курсором» gives 1 for 0; «D стал боком вправо от носа» gives 0
+  for 1; «нос доходит до курсора и останавливается» gives 1 for 0. Reproduce: `test.ps1` fails all
+  four, `test.ps1 -Only штурвал` is green (108/7). Confirmed on clean HEAD 9ef06ef. Likely something
+  earlier in alphabetical order leaves `HELM.mouse`/`G.ctl` set and `helmShip()` in the test does not
+  clear it.
 - [ ] **P6** Hints cut at 411 px, МАСШТАБ under a chip, the beacon offered at the ship and wasted at
   0 m, КНИЖКА «хулк» and «командировочные за 0 км», the `celDay` column out of order (§1.5, §1.6, §4.4).
 - [x] **P7** One voice for the gravity anchor. Control offered a choice — drop the ship-side toast
