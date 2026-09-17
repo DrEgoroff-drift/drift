@@ -238,6 +238,11 @@ Rule 3: same look, cheaper work.
   right margin (§5.1).
 - [ ] **P6** Hints cut at 411 px, МАСШТАБ under a chip, the beacon offered at the ship and wasted at
   0 m, КНИЖКА «хулк» and «командировочные за 0 км», the `celDay` column out of order (§1.5, §1.6, §4.4).
+- [ ] **P7** One voice for the gravity anchor (Designer, S23 frames 17.09): two hints of one event
+  at once, teal at the ship and orange at the bottom, in different words; keep the bottom line.
+  The hint at the ship lies across the trail 20 px from the hull and is not in the chips' taken
+  list (a chip's number touched «ДАЛЬШЕ КОРАБЛЬ» with zero gap): text on the edge, not on the ship.
+  Also from the frames: chips must keep a stable order along the edge (no swapping for 10 px).
 - [ ] **The anchor and the stick** (phone video 12.09; 0.449.0 widened the edge, the mechanism
   stays): past the edge the anchor turns the velocity toward the star every frame while the stick's
   assist thrusts outward — the turn is a force against thrust, an equilibrium exists (the comment in
