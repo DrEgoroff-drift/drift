@@ -184,6 +184,18 @@ Rule 3: same look, cheaper work.
   three-band comparison (2.6 / 2.0 / 1.5) beside the Tester's numbers, and he chooses knowing what he
   pays with. Her third option — keep the raster, win the frame back on the cost of events — is
   already spent: the worker's fix cut events fifty-fold and the skips stayed, evenly spread.
+  **If the author keeps the sharpness, here is the Designer's map of what may be given up (18.09).**
+  Draw calls a frame in the system view, calm flight: the ribbon 126, the wake 126, the star dust 103,
+  the compass chips and canvas HUD 10, the nebula 1 (baked into a texture and laid down in one piece),
+  the torch 0 with no thrust. Safe to give: the star dust's 103 — depth comes from the layers moving at
+  DIFFERENT rates, not from the number of specks (the density was already cut once), so a third can go
+  and nobody sees it, herself included; and the wake below about a quarter speed, where it is hidden
+  behind the hull anyway, can emit half as often. Only with a frame in hand: the ribbon's 126 — it is
+  the game's face in motion, and the particle count must NOT be cut because the author complained the
+  tails were stubby; cut thickness and the number of strands instead, never length. Never: the
+  one-pixel line itself (the very thing ×1.5 breaks) and the single-pixel stars, which are literally
+  the author's «movement, not twinkle» rule. In one sentence: the cheapest thing to sell is the
+  emptiness's depth, the dearest are the line and the stars, and the ribbon sits between them.
 
 - [ ] **A second, independent instrument for the frame: the screen recording** (Designer, 18.09).
   Counting skips from *outside* the game, so it cannot be fooled by our own counters: a skipped vsync
