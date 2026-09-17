@@ -262,9 +262,10 @@ Rule 3: same look, cheaper work.
   y = 556 and 576 — the bottom edge no longer follows the finger. The sweep covers the whole edge
   now: a shorter one left a chip sitting inside a large obstacle instead of jumping.
   Control's review (17.09) asked for three more things, done in the same milestone: the chip's
-  own place now *eases* toward its target at up to 200 px/s instead of snapping (a same-edge slide
-  fades to a cross-edge jump over 0.15 s when the straight path is longer than half the edge, so a
-  finger never sends a chip skating across the whole screen); the ship's own nose is now a taken
+  own place now *eases* toward its target at up to 200 px/s instead of snapping along its own
+  edge, and fades out/in over 0.15 s whenever its edge changes (see the follow-up below — the rule
+  moved from "the path is long" to "the edge is different" after a shorter-path bug); the ship's
+  own nose is now a taken
   rectangle, so a side-edge chip cannot sit on top of it; and the stick pads at rest (`padsRect`),
   not only their finger-drawn trace, are taken too.
   One more report from the phone (Tester, S23) landed mid-review: the chip order along an edge
@@ -274,6 +275,16 @@ Rule 3: same look, cheaper work.
   first) and having every chip after the first stack flush against the one before it, growing the
   row in a single direction rather than re-searching both ways each frame; only the front chip of
   a row, and a chip whose whole row ran out of edge, still searches both ways from its ideal spot.
+  Follow-up (Designer's frame-by-frame headless probe, 18.09): the (x,y) ease above moved in a
+  straight line, so a SHORT cross-edge move (target crosses from the right edge to the bottom one,
+  say) cut across the frame's interior instead of following the edge — 0.8 s hanging 47-93 px
+  inside the frame in her probe, which a phone turn at ×2.4 would trigger constantly. Control's
+  fix, simpler than tracking the edge as a path: a chip's cached place now remembers which of the
+  four edges it's drawn on; easing only happens when the new slot shares that edge, and ANY edge
+  change fades regardless of distance (`dist>edgeLen*.5` replaced by `st.edge!==targetEdge`).
+  Verified in the browser: a right-edge chip retargeted to the bottom edge 285 px away (under the
+  old half-edge threshold of ~304, so it would NOT have faded before) now fades immediately; a
+  same-edge retarget still eases as before.
 - [x] **P5** «Смена» text is ink now, not screen-glow (§5.1). `.smena` was written (M353) before
   the desk became paper (M151a) and kept `var(--text)`/`var(--dim)` — colours meant for a dark
   glass panel — on the new cream sheet, giving a body-text contrast of about 1.1:1 (unreadable) and

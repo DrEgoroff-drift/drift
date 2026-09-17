@@ -800,6 +800,15 @@ function drawSysHud(zx,zy,sh,sys,U){
   cands.sort((a,b)=>a.dist-b.dist);   // ближняя цель первая — фиксированный порядок кадр к кадру
   const fits=(x,y,cw,ch)=>!placed.some(p=>!(x+cw<=p.x||p.x+p.w<=x||y+ch<=p.y||p.y+p.h<=y));
   const cX=(v,cw)=>clamp(v,inset.x0,inset.x1-cw),cY=(v,ch)=>clamp(v,inset.y0,inset.y1-ch);
+  /* кромка слота — по тому, какая сторона плашки прижата к inset (P4, Контроль
+     18.09): левая/правая/верхняя/нижняя. Нужна для правила «вдоль своей кромки
+     едет, между кромками перемигивает» ниже. */
+  const chipEdge=(x,y,cw,ch)=>{
+    if(Math.abs(x-inset.x0)<1)return 0;
+    if(Math.abs(x-(inset.x1-cw))<1)return 1;
+    if(Math.abs(y-inset.y0)<1)return 2;
+    return 3;
+  };
   const slide=(vert,x0,y0,cw,ch,dirOnly)=>{
     /* шагов столько, сколько нужно, чтобы обойти кромку целиком: с коротким
        обходом большое препятствие (окно во всю кромку) оставляло фишку на месте
@@ -858,36 +867,38 @@ function drawSysHud(zx,zy,sh,sys,U){
     usedKeys[m.k]=true;
     /* Плавный ход к месту, а не телепорт (P4, Контроль 17.09): рисуем в
        CHIP_POS[m.k], которое движется к логическому (rx,ry) не быстрее
-       CHIP_SPEED px/с. Дальний перескок (соседняя кромка от пальца через
-       весь экран) едет НЕ лерпом — тухнет на старом месте и загорается на
-       новом за CHIP_FADE секунд, иначе плашка «проезжает» через весь кадр. */
+       CHIP_SPEED px/с. Смена кромки едет НЕ лерпом — тухнет на старом месте и
+       загорается на новом за CHIP_FADE секунд. Дизайнер нашла кадром: лерп по
+       прямой (x,y) при смене кромки на КОРОТКОЙ дистанции резал угол насквозь
+       через кадр (0,8 с внутри кадра при повороте). Правило Контроля проще, чем
+       мерить путь: перескок — это не «далеко», а «кромка слота другая, чем у
+       нарисованного места» — сравниваем кромку, не расстояние. Вдоль ОДНОЙ
+       кромки дистанция неважна, лерп как был. */
     const CHIP_SPEED=200,CHIP_FADE=.15;
     let dcx=rx,dcy=ry,dcA=1;
     {
       let st=CHIP_POS[m.k];
+      const targetEdge=chipEdge(rx,ry,cw,ch);
       /* не только «нет записи», но и «запись сломана» — испорченный кадр
        (NaN от чужого кода) иначе застревает в NaN навсегда: расстояние до
        NaN само NaN, а любое сравнение с NaN ложно, так что ни один из веток
        ниже никогда не выбирает «доехали» и лерп не сходится в принципе */
-      if(!st||!isFinite(st.x)||!isFinite(st.y)){st=CHIP_POS[m.k]={x:rx,y:ry,fading:false,fadeT:0,fx:rx,fy:ry};}
+      if(!st||!isFinite(st.x)||!isFinite(st.y)){st=CHIP_POS[m.k]={x:rx,y:ry,edge:targetEdge,fading:false,fadeT:0,fx:rx,fy:ry};}
       else if(st.fading){
         st.fadeT+=chipDt;
         const half=CHIP_FADE/2;
-        if(st.fadeT>=CHIP_FADE){st.fading=false;st.x=rx;st.y=ry;dcx=rx;dcy=ry;dcA=1;}
+        if(st.fadeT>=CHIP_FADE){st.fading=false;st.x=rx;st.y=ry;st.edge=targetEdge;dcx=rx;dcy=ry;dcA=1;}
         else if(st.fadeT<half){dcx=st.fx;dcy=st.fy;dcA=1-st.fadeT/half;}
         else{dcx=rx;dcy=ry;dcA=(st.fadeT-half)/half;}
+      }else if(st.edge!==targetEdge){
+        st.fading=true;st.fadeT=0;st.fx=st.x;st.fy=st.y;
+        dcx=st.fx;dcy=st.fy;dcA=1;
       }else{
         const dist=Math.hypot(rx-st.x,ry-st.y);
-        const edgeLen=Math.max(inset.x1-inset.x0,inset.y1-inset.y0);
-        if(dist>edgeLen*.5){
-          st.fading=true;st.fadeT=0;st.fx=st.x;st.fy=st.y;
-          dcx=st.fx;dcy=st.fy;dcA=1;
-        }else{
-          const maxStep=CHIP_SPEED*chipDt;
-          if(dist<=maxStep||dist<.01){st.x=rx;st.y=ry;}
-          else{st.x+=(rx-st.x)/dist*maxStep;st.y+=(ry-st.y)/dist*maxStep;}
-          dcx=st.x;dcy=st.y;dcA=1;
-        }
+        const maxStep=CHIP_SPEED*chipDt;
+        if(dist<=maxStep||dist<.01){st.x=rx;st.y=ry;}
+        else{st.x+=(rx-st.x)/dist*maxStep;st.y+=(ry-st.y)/dist*maxStep;}
+        dcx=st.x;dcy=st.y;dcA=1;
       }
     }
     rx=dcx;ry=dcy;

@@ -10377,3 +10377,37 @@ earlier in the file, just at higher opacity, so the excerpt reads as *slightly s
 a hole in it. Verified in the browser: opened chapter 2 (the first with a journal excerpt),
 computed contrast against both ends of the sheet gradient (composited with the 10% tint) — 7.86:1
 top, 6.59:1 bottom, both comfortably past WCAG AA. Screenshot confirms it by eye.
+
+**P4 follow-up — a chip's ease follows its edge, not a straight line (2026-09-18).** The Designer
+froze the ship in a headless probe and stepped the clock by hand, screenshotting `fillRect` calls
+frame by frame. Same-edge motion and the fade-on-far-jump both held up exactly as built. But a
+short cross-edge move didn't: when the logical slot crossed from one edge to an adjacent one at a
+distance under the old fade threshold (half an edge's length), the (x,y) lerp is still a straight
+line between two points that don't share an edge, so the drawn chip cut through the middle of the
+frame — her probe measured a path from (402,342) to (308,486) sitting at (355,414) on frame 62,
+47 px in from the right edge and 93 px above the bottom one, for roughly 0.8 s. A chip hanging in
+open space contradicts the entire point of P4: it's supposed to always read as "on the edge."
+
+Two fixes were on the table. The Designer's own suggestion was to ease along the rectangle's
+*perimeter* — reparametrize position as a single arc-length coordinate around the loop, so motion
+through a corner is two edge-segments joined, never a chord through the middle. Control chose the
+simpler rule instead: stop asking "how far" and ask "which edge." A chip's cached place
+(`CHIP_POS[key]`) now carries a fourth field, `edge` (0-3 for left/right/top/bottom, read off which
+side of `inset` the box is pinned to — `chipEdge(x,y,cw,ch)`); easing along a shared edge is
+unchanged, but the fade trigger changed from `dist>edgeLen*.5` to `st.edge!==targetEdge`, so *any*
+edge change fades, however short the on-screen distance, and a same-edge move never fades however
+far it travels. One phrase covers the whole rule: rides along its edge, blinks between edges.
+
+This is a smaller change than perimeter reparametrization (no arc-length math, no piecewise
+inverse to convert back to `x,y` for drawing) and reads as one sentence, which was the deciding
+factor — the perimeter version is more precise about *where* a mid-transition chip sits, but this
+codebase's own rule already lives with occasional cosmetic overlap during a transition (noted
+separately: `placed` uses the logical slot, drawing uses the eased one, so two chips can touch
+for an instant — accepted, since the *placement* stays collision-free by construction, only the
+transient visual does not, and that is what a stable layout requires in the first place).
+
+Verified in the browser pane: forced a chip's drawn state onto the right edge, then retargeted it
+to the bottom edge 285 px away — under the old ~304 px half-edge threshold, so the previous rule
+would have kept lerping it straight through the interior — and confirmed `fading` flips true on
+the very next frame. A same-edge retarget at a much smaller distance still eases with `fading`
+staying false, unchanged from before.
