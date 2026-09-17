@@ -134,3 +134,14 @@ this file keeps the evidence and the fix.
   figure was 6.3, and a follow-up commit that had to be reverted. The same caution applies to any
   colour measured on a surface: check what is actually under the pixels, because almost everywhere in
   this game a translucent layer lies between the text and the material.
+
+- **Milliseconds cannot be measured in headless at all — the clock does not move** (Designer,
+  18.09.2026). Under virtual time `performance.now()` does not advance inside synchronous code:
+  twenty frame measurements came back median 0.00, min 0.00, max 0.00. So no timing of any kind can
+  be taken there, by anyone. What headless *can* do is count work in pieces, and that is a real
+  instrument: a calm frame in the system view at 390×844 draws 1541 canvas calls, a frame with the
+  stick's trail moving 1613 (plus 5 %), and `measureText` is called exactly once a frame in every
+  case, including a fully occupied frame edge and a blinking hint. Use counts in headless and a
+  stopwatch on the phone — and note the consequence: work that only *computes* (the chips' walk along
+  the edge, any search or sort) is invisible to a count of draw calls, so a count clearing it proves
+  nothing about its cost.
