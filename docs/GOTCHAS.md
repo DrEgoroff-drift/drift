@@ -156,3 +156,16 @@ this file keeps the evidence and the fix.
   the last two, and never compare a rested phone against a worked one.** Every «97.5 %», «99.9 %» and
   «95.5 %» measured over the evening of 18.09 falls into the inflated category and must be read as a
   warm handset rather than as an achievement of the fix under test.
+
+- **Squeezing a finished frame predicts stretching, never drawing smaller** (Designer, 18.09.2026).
+  To guess what a lower render scale would cost, she took a real phone frame, squeezed it and put it
+  back by nearest neighbour — and got a dotted, broken version of the trail's one-pixel rails, which
+  became an argument against ×1.5. Real frames from the phone at ×1.5 disproved it: the rails hold
+  (100 % of columns covered against 99 %, more rail pixels than before), the stars stay (193 against
+  188, a 3 % loss), and what actually changes is the sky, a quarter darker, with the nebula and the
+  faint glow sagging most. The reason is simple: the method degrades a line that is already drawn,
+  while the game at a smaller canvas draws the line AGAIN — it stays solid, its pixel is merely
+  bigger. Use the squeeze only to answer «what if we stretch a picture», and take real frames for
+  «what if we draw it smaller». Instruments worth keeping, in the designer's scratchpad: `skips.py`
+  (share of double movement steps, per-second profile, a screenshot at each skip) and `layers.js`
+  (the frame's breakdown by caller, calls and filled area).
