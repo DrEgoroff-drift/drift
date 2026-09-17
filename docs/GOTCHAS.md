@@ -169,3 +169,13 @@ this file keeps the evidence and the fix.
   «what if we draw it smaller». Instruments worth keeping, in the designer's scratchpad: `skips.py`
   (share of double movement steps, per-second profile, a screenshot at each skip) and `layers.js`
   (the frame's breakdown by caller, calls and filled area).
+
+## A run in which the helm never got born is not a good run
+
+Cadence on the phone splits in two by one condition: with the stick under a finger it is 80–83 %,
+without it 99–100 %. So a rig that occasionally fails to create the stick does not produce noise —
+it produces a second, brilliant population of runs that look like a breakthrough. We chased one for
+an evening. The harness must now assert the helm is alive on every counted frame and re-shoot the run
+otherwise; report the frames-with-stick count as the first line of any cadence measurement, before
+the percentage. The same caution applies to any comparison of a "good state" against a bad one:
+check that the good state still contains the thing being measured.
