@@ -17,7 +17,9 @@ function logAdd(kind,text){
   G.log.push({t:now(),k:kind,s:text});
   if(G.log.length>LOG_MAX)G.log.splice(0,G.log.length-LOG_MAX);
   const open=typeof tableIsOpen==="function"&&tableIsOpen();
-  if(open&&typeof tableRender==="function")tableRender();
+  /* только та страница, которую строка касается (P1) */
+  if(open&&typeof tableRender==="function"
+    &&(typeof tableShowsLog!=="function"||tableShowsLog()))tableRender();
   /* огонёк и счётчики закладок считают новости, а не всё подряд: серые строки
      (стыковка, сближение, маяк) и эфир — не новость. Эфир и есть уведомление,
      он идёт на приёмник живьём; тетрадь его только помнит. Иначе стол горел

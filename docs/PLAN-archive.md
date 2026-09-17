@@ -10128,3 +10128,33 @@ that certainly exists; and the allocating helpers (`mixc`, `rgba`, `hex2rgb`) ar
 cannot be wrapped with counters from a probe. The honest meter is the allocation sampler in the
 phone trace, which is the tester's instrument, so the item stays open until his before/after on GC
 pauses arrives.
+
+**P1 Scroll, globally (2026-09-17).** The author's rule from the phone playtest is that no screen
+may lose its scroll, and the desk lost it 448 times in one session. Two separate causes. The
+pages rebuild themselves whole (`textContent=""`), and a journal line can arrive at any moment —
+so a reader halfway down the notebook was thrown to the top. And `logAdd`/`recordAdd` rebuilt the
+**entire** desk regardless of which thing was open: a line about a drone in one notebook rebuilt
+ОПИСЬ under the reader's finger.
+
+Both are fixed at the single door. `keepScroll(el,paint)` in `27i-ui-table` remembers the scroll
+of the element *and its scrolling ancestors*, runs the rebuild, then restores each one clamped to
+the new height; `tableRender` is now a thin wrapper that calls the old body through it, so every
+page — journal, ОПИСЬ, strips, things, album, «Смена», relays, record — is covered by one change.
+The three direct re-renders that bypass `tableRender` (`opisRerender` with its 29 call sites,
+«Смена» opening a channel, the relay list after parking) call `keepScroll` themselves. And the
+journal only re-renders the page its line belongs to (`tableShowsLog()` for ether/bort/folk,
+`tableShowsRecord()` for the report) — otherwise nothing is rebuilt at all.
+
+Two things the measurement taught, both invisible in code review. First, the scrolling element is
+`#tableBody`, not `#loglist`: the list has `overflow:auto` but its `scrollHeight` equals its
+`clientHeight`, so the first version dutifully preserved the scroll of a node that never scrolls.
+Walking up the ancestors fixed it. Second, and worse: the previous commit shipped a build that
+**crashed at load** — `resize()` runs at the bottom of `08-state`, my `rectsDirty()` called
+`hudNumDirty()`, and `HUD_NUM` was a `const` in the later `27z-telemetry`, so the whole game died
+with «Cannot access 'HUD_NUM' before initialization». The guard `typeof hudNumDirty==="function"`
+passed, because a function declaration hoists while the `const` it touches does not. The table now
+lives in `08-state` above `rectsDirty`. The lesson is the cheap one: **look at the console right
+after the build, not before the push** — the browser pane showed it in one call.
+Measured after the fix, at 375×812: `scrollTop` 3823 in the notebook survives a same-page line, an
+other-page line and a record entry; ОПИСЬ keeps 447 through `opisRerender()` and an unrelated
+journal line.

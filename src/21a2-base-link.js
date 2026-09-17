@@ -154,7 +154,9 @@ function renderBaseLink(box){
       const b=document.createElement("button");
       b.className="act";
       b.textContent=baseParked(B)?"ПОДНЯТЬ":"НА КОНСЕРВАЦИЮ";
-      b.onclick=(e)=>{e.stopPropagation();baseLinkPark(B);renderRelays(box);};
+      /* то же с ретрансляторами: страница остаётся там, где её читали (P1) */
+      b.onclick=(e)=>{e.stopPropagation();baseLinkPark(B);
+        if(typeof keepScroll==="function")keepScroll(box,()=>renderRelays(box));else renderRelays(box);};
       row.appendChild(b);
     }
   }

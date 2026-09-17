@@ -134,7 +134,9 @@ function renderSmena(box){
       row.appendChild(em);row.appendChild(sp);
       if(open){
         row.style.cursor="pointer";
-        row.onclick=()=>{smenaOpenCh=(smenaOpenCh===n)?0:n;renderSmena(box);};
+        /* раскрытие канала не сбрасывает прокрутку страницы (P1) */
+        row.onclick=()=>{smenaOpenCh=(smenaOpenCh===n)?0:n;
+          if(typeof keepScroll==="function")keepScroll(box,()=>renderSmena(box));else renderSmena(box);};
         box.appendChild(row);
         if(smenaOpenCh===n){
           const txt=document.createElement("div");txt.className="smena";

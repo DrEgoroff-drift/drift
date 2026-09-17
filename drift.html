@@ -8678,10 +8678,19 @@ function resize(){
    трогает вовсе. Сторож нарочно не ищет все двадцать мест, где открываются
    экраны: список таких мест устаревает, наблюдатель — нет. */
 let CVS_RECT=null,PADS_RECT=null,SCR_OPEN=null,LAYOUT_DIRTY=true;
+/* Показанные приборами числа (0.6, значения кладёт 27z): строка не склеивается,
+   пока число не поменялось. Стоит здесь, а не в 27z, и это не вкус: `resize()`
+   зовётся ниже в этом же файле и через rectsDirty() трогает эту таблицу — а
+   `const` из позднего модуля в этот момент ещё в TDZ, и вся игра падала на
+   загрузке с «Cannot access 'HUD_NUM' before initialization» (поймано в консоли
+   браузерной панели сразу после сборки — именно поэтому консоль смотрят
+   ПОСЛЕ КАЖДОЙ сборки, а не перед пушем). */
+const HUD_NUM={};
+function hudNumDirty(){for(const k in HUD_NUM)delete HUD_NUM[k];}
 function rectsDirty(){
   CVS_RECT=null;PADS_RECT=null;PROMPT_RECT=null;LAYOUT_DIRTY=true;
   /* узлы приборов могли смениться вместе с вёрсткой — числа переписать заново (0.6) */
-  if(typeof hudNumDirty==="function")hudNumDirty();
+  hudNumDirty();   /* узлы приборов могли смениться вместе с вёрсткой (0.6) */
 }
 function cvsRect(){
   if(!CVS_RECT)CVS_RECT=cvs.getBoundingClientRect();
@@ -10037,7 +10046,9 @@ function logAdd(kind,text){
   G.log.push({t:now(),k:kind,s:text});
   if(G.log.length>LOG_MAX)G.log.splice(0,G.log.length-LOG_MAX);
   const open=typeof tableIsOpen==="function"&&tableIsOpen();
-  if(open&&typeof tableRender==="function")tableRender();
+  /* только та страница, которую строка касается (P1) */
+  if(open&&typeof tableRender==="function"
+    &&(typeof tableShowsLog!=="function"||tableShowsLog()))tableRender();
   /* огонёк и счётчики закладок считают новости, а не всё подряд: серые строки
      (стыковка, сближение, маяк) и эфир — не новость. Эфир и есть уведомление,
      он идёт на приёмник живьём; тетрадь его только помнит. Иначе стол горел
@@ -10359,7 +10370,9 @@ function recordAdd(author,text){
   /* одна и та же запись в один день не дублируется */
   if(R.e.some(x=>x.a===e.a&&x.s===e.s&&x.d===e.d))return null;
   R.e.push(e);while(R.e.length>120)R.e.shift();
-  if(typeof tableIsOpen==="function"&&tableIsOpen())tableRender();else logBtnLabel();
+  /* и запись в ОТЧЁТ трогает только свою страницу (P1) */
+  if(typeof tableIsOpen==="function"&&tableIsOpen()
+    &&(typeof tableShowsRecord!=="function"||tableShowsRecord()))tableRender();else logBtnLabel();
   return e;
 }
 function recordYears(){const R=recordAll();return Math.floor((celDay()-R.t0)/365);}
@@ -35431,7 +35444,9 @@ function renderSmena(box){
       row.appendChild(em);row.appendChild(sp);
       if(open){
         row.style.cursor="pointer";
-        row.onclick=()=>{smenaOpenCh=(smenaOpenCh===n)?0:n;renderSmena(box);};
+        /* раскрытие канала не сбрасывает прокрутку страницы (P1) */
+        row.onclick=()=>{smenaOpenCh=(smenaOpenCh===n)?0:n;
+          if(typeof keepScroll==="function")keepScroll(box,()=>renderSmena(box));else renderSmena(box);};
         box.appendChild(row);
         if(smenaOpenCh===n){
           const txt=document.createElement("div");txt.className="smena";
@@ -58129,7 +58144,9 @@ function renderBaseLink(box){
       const b=document.createElement("button");
       b.className="act";
       b.textContent=baseParked(B)?"ПОДНЯТЬ":"НА КОНСЕРВАЦИЮ";
-      b.onclick=(e)=>{e.stopPropagation();baseLinkPark(B);renderRelays(box);};
+      /* то же с ретрансляторами: страница остаётся там, где её читали (P1) */
+      b.onclick=(e)=>{e.stopPropagation();baseLinkPark(B);
+        if(typeof keepScroll==="function")keepScroll(box,()=>renderRelays(box));else renderRelays(box);};
       row.appendChild(b);
     }
   }
@@ -83380,6 +83397,41 @@ function toggleLoreBoard(open){
       списки того же каркаса, что у всех экранов. */
 let tableTab="ether",tableOpenNow=false,tableBaked=null;
 function tableIsOpen(){return tableOpenNow;}
+/* ══════ страница никогда не теряет прокрутку (P1) ══════
+   Правило автора с телефонного плейтеста: ни один экран не имеет права
+   сбросить прокрутку. Страницы стола строятся заново целиком
+   (`textContent=""`), а строка журнала может прийти в любой момент — и читатель,
+   ушёдший на середину тетради, оказывался наверху. Замер плейтеста:
+   448 сбросов за сеанс.
+   Здесь сама прокрутка запоминается до перестройки и возвращается после, а если
+   страница стала короче — зажимается по новой высоте. Чтение scrollTop —
+   это чтение вёрстки, но оно здесь не в кадре (правило 0.3), а на событии:
+   строка журнала, смена закладки, тычок. */
+/* Запоминается не только сам список, но и его родители: у стола прокручивается
+   #tableBody, а не #loglist — первая версия держала прокрутку того узла, который не
+   прокручивается вовсе (видно в браузере: scrollHeight === clientHeight у списка и
+   15900 против экрана у родителя). Потому собираем цепочку до четырёх узлов
+   вверх и возвращаем каждый, зажатый по новой высоте. */
+function keepScroll(el,paint){
+  if(!el||typeof el.scrollTop!=="number"){paint();return;}
+  const list=[];
+  for(let e=el,i=0;e&&i<5;e=e.parentElement,i++){
+    if(typeof e.scrollTop!=="number")break;
+    list.push([e,e.scrollTop,e.scrollLeft]);
+  }
+  paint();
+  for(const [e,top,left] of list){
+    const max=Math.max(0,e.scrollHeight-e.clientHeight);
+    const want=Math.min(top,max);
+    if(e.scrollTop!==want)e.scrollTop=want;
+    if(left&&e.scrollLeft!==left)e.scrollLeft=left;
+  }
+}
+/* Страницы, на которых видны строки журнала. Новая строка перестраивала
+   стол ЦЕЛИКОМ, какая бы вещь ни была открыта: читаешь ОПИСЬ — а её
+   строит заново из-за строки про дрона в другой тетради (P1). */
+function tableShowsLog(){return tableTab==="ether"||tableTab==="bort"||tableTab==="folk";}
+function tableShowsRecord(){return tableTab==="record";}
 /* ── где мы, по-русски ──
    В шапке стола печаталось `G.mode` как есть, и игрок читал «Нейэль · system»:
    внутренний ключ режима, английским словом, в русской игре. Таблица держит
@@ -83503,7 +83555,15 @@ function tableBake(){
   c.fillStyle=g;c.fillRect(0,0,W,H);
   tableBaked={W,H};
 }
+/* Всё, что перестраивает стол, идёт через одну дверь — и дверь держит прокрутку (P1).
+   Оба списка сразу: обычный и лорный, — потому что заметно именно то, что
+   читал человек, а не то, что перерисовали. */
 function tableRender(){
+  const box=document.getElementById("loglist"),lore=document.getElementById("lorelist");
+  if(!box){tableRenderBody();return;}
+  keepScroll(box,()=>keepScroll(lore,tableRenderBody));
+}
+function tableRenderBody(){
   const box=document.getElementById("loglist"),lore=document.getElementById("lorelist");
   if(!box)return;
   /* ── верхний уровень: сам стол ──
@@ -84691,7 +84751,13 @@ const OPIS_KIT=[
 ];
 const OPIS_HW=420,OPIS_HH=190;   /* логический размер канвы силуэта */
 function opisPhone(){return innerWidth<=760;}
-function opisRerender(){if(OPIS.box)opisRender(OPIS.box);}
+/* ОПИСЬ перестраивается на любое действие с вещью — и прокрутка при этом остаётся
+   на месте (P1): иначе каждое «надеть/снять» бросало читателя в начало описи */
+function opisRerender(){
+  if(!OPIS.box)return;
+  if(typeof keepScroll==="function")keepScroll(OPIS.box,()=>opisRender(OPIS.box));
+  else opisRender(OPIS.box);
+}
 function opisSame(a,b){return !!a&&!!b&&a.t===b.t&&a.id===b.id&&a.i===b.i&&a.k===b.k;}
 function opisFocus(){return OPIS.hover||OPIS.sel;}
 /* куда встанет запасная часть: выбранный слот, если он её рода, иначе первый
@@ -87583,11 +87649,6 @@ function setSt(el,k,v){v=""+v;if(el&&el.style[k]!==v)el.style[k]=v;}
    корпусе, когда меняться нечему. Здесь сравниваются ЧИСЛА, и строка
    рождается только когда её и всамом деле покажут. Гранулярность та же, что у
    вывода: десятые процента для шкалы, целые для подписей. */
-/* Кэш сбрасывается вместе с кэшами вёрстки и при загрузке сейва (замечание Контроля):
-   кэш по ЗНАЧЕНИЮ врёт, если сам узел подменили — перестройка шапки, смена
-   сцены, загрузка сейва — и полоса осталась бы пустой навсегда. */
-const HUD_NUM={};
-function hudNumDirty(){for(const k in HUD_NUM)delete HUD_NUM[k];}
 function setPct(el,key,v){
   const q=Math.round(clamp(v,0,100)*10);
   if(HUD_NUM[key]===q)return;

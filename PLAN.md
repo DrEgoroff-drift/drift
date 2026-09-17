@@ -178,11 +178,17 @@ Rule 3: same look, cheaper work.
 
 ### Stage 0b — cheap and decided (one commit each)
 
-- [ ] **P1 Scroll, globally** (§1.1): table pages rebuild with `textContent=""`/`innerHTML=""`
-  (`27j-ui-opis`, `12ud-smena`, `25g-postcard`, `11ap-relay`) and `logAdd`/`recordAdd` re-render
-  the table on every line whatever page is open — 448 → 0 measured. Keep `scrollTop` through any
-  rebuild; re-render only the page a change touches. Net: scroll each page, fire `logAdd`, demand
-  the same `scrollTop`.
+- [x] **P1 Scroll, globally** (§1.1) — every rebuild of a desk page now goes through one door
+  (`keepScroll`, `27i-ui-table`) that remembers the scroll before the rebuild and puts it back
+  after, clamped to the new height; and a journal line only rebuilds **the page it touches**
+  (`tableShowsLog`/`tableShowsRecord`), instead of rebuilding the desk whatever was open. The
+  direct re-renders keep it too: ОПИСЬ (`opisRerender`, 29 call sites), «Смена» when a channel
+  opens, the relay list after parking. Measured in the browser at 375×812: reading the middle of
+  the notebook at `scrollTop` 3823, a line on the same page, a line on another page and a record
+  entry all leave it at 3823, and the other page's line no longer rebuilds this one at all; in
+  ОПИСЬ, `scrollTop` 447 survives `opisRerender()` and an unrelated journal line. Caught on the
+  way: the scroller is `#tableBody`, not `#loglist` — the first version held the scroll of a node
+  that does not scroll, so `keepScroll` now keeps the ancestors as well.
 - [ ] **P2** ОПИСЬ: an opened card is `touch-action:none` (`style.css` `.opis .op-card.on`, ~1434) — a 150 px dead zone; let vertical pans
   through, keep the long-press lift, guard the lift against a re-render (§1.2).
 - [ ] **P3** ОПИСЬ tab strip: stretch it; its fade mask never clears — it skips `tabsSync` (§1.3).

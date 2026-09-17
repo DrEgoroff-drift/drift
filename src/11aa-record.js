@@ -26,7 +26,9 @@ function recordAdd(author,text){
   /* одна и та же запись в один день не дублируется */
   if(R.e.some(x=>x.a===e.a&&x.s===e.s&&x.d===e.d))return null;
   R.e.push(e);while(R.e.length>120)R.e.shift();
-  if(typeof tableIsOpen==="function"&&tableIsOpen())tableRender();else logBtnLabel();
+  /* и запись в ОТЧЁТ трогает только свою страницу (P1) */
+  if(typeof tableIsOpen==="function"&&tableIsOpen()
+    &&(typeof tableShowsRecord!=="function"||tableShowsRecord()))tableRender();else logBtnLabel();
   return e;
 }
 function recordYears(){const R=recordAll();return Math.floor((celDay()-R.t0)/365);}

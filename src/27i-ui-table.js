@@ -21,6 +21,41 @@
       списки того же каркаса, что у всех экранов. */
 let tableTab="ether",tableOpenNow=false,tableBaked=null;
 function tableIsOpen(){return tableOpenNow;}
+/* ══════ страница никогда не теряет прокрутку (P1) ══════
+   Правило автора с телефонного плейтеста: ни один экран не имеет права
+   сбросить прокрутку. Страницы стола строятся заново целиком
+   (`textContent=""`), а строка журнала может прийти в любой момент — и читатель,
+   ушёдший на середину тетради, оказывался наверху. Замер плейтеста:
+   448 сбросов за сеанс.
+   Здесь сама прокрутка запоминается до перестройки и возвращается после, а если
+   страница стала короче — зажимается по новой высоте. Чтение scrollTop —
+   это чтение вёрстки, но оно здесь не в кадре (правило 0.3), а на событии:
+   строка журнала, смена закладки, тычок. */
+/* Запоминается не только сам список, но и его родители: у стола прокручивается
+   #tableBody, а не #loglist — первая версия держала прокрутку того узла, который не
+   прокручивается вовсе (видно в браузере: scrollHeight === clientHeight у списка и
+   15900 против экрана у родителя). Потому собираем цепочку до четырёх узлов
+   вверх и возвращаем каждый, зажатый по новой высоте. */
+function keepScroll(el,paint){
+  if(!el||typeof el.scrollTop!=="number"){paint();return;}
+  const list=[];
+  for(let e=el,i=0;e&&i<5;e=e.parentElement,i++){
+    if(typeof e.scrollTop!=="number")break;
+    list.push([e,e.scrollTop,e.scrollLeft]);
+  }
+  paint();
+  for(const [e,top,left] of list){
+    const max=Math.max(0,e.scrollHeight-e.clientHeight);
+    const want=Math.min(top,max);
+    if(e.scrollTop!==want)e.scrollTop=want;
+    if(left&&e.scrollLeft!==left)e.scrollLeft=left;
+  }
+}
+/* Страницы, на которых видны строки журнала. Новая строка перестраивала
+   стол ЦЕЛИКОМ, какая бы вещь ни была открыта: читаешь ОПИСЬ — а её
+   строит заново из-за строки про дрона в другой тетради (P1). */
+function tableShowsLog(){return tableTab==="ether"||tableTab==="bort"||tableTab==="folk";}
+function tableShowsRecord(){return tableTab==="record";}
 /* ── где мы, по-русски ──
    В шапке стола печаталось `G.mode` как есть, и игрок читал «Нейэль · system»:
    внутренний ключ режима, английским словом, в русской игре. Таблица держит
@@ -144,7 +179,15 @@ function tableBake(){
   c.fillStyle=g;c.fillRect(0,0,W,H);
   tableBaked={W,H};
 }
+/* Всё, что перестраивает стол, идёт через одну дверь — и дверь держит прокрутку (P1).
+   Оба списка сразу: обычный и лорный, — потому что заметно именно то, что
+   читал человек, а не то, что перерисовали. */
 function tableRender(){
+  const box=document.getElementById("loglist"),lore=document.getElementById("lorelist");
+  if(!box){tableRenderBody();return;}
+  keepScroll(box,()=>keepScroll(lore,tableRenderBody));
+}
+function tableRenderBody(){
   const box=document.getElementById("loglist"),lore=document.getElementById("lorelist");
   if(!box)return;
   /* ── верхний уровень: сам стол ──

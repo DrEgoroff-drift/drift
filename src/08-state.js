@@ -72,10 +72,19 @@ function resize(){
    трогает вовсе. Сторож нарочно не ищет все двадцать мест, где открываются
    экраны: список таких мест устаревает, наблюдатель — нет. */
 let CVS_RECT=null,PADS_RECT=null,SCR_OPEN=null,LAYOUT_DIRTY=true;
+/* Показанные приборами числа (0.6, значения кладёт 27z): строка не склеивается,
+   пока число не поменялось. Стоит здесь, а не в 27z, и это не вкус: `resize()`
+   зовётся ниже в этом же файле и через rectsDirty() трогает эту таблицу — а
+   `const` из позднего модуля в этот момент ещё в TDZ, и вся игра падала на
+   загрузке с «Cannot access 'HUD_NUM' before initialization» (поймано в консоли
+   браузерной панели сразу после сборки — именно поэтому консоль смотрят
+   ПОСЛЕ КАЖДОЙ сборки, а не перед пушем). */
+const HUD_NUM={};
+function hudNumDirty(){for(const k in HUD_NUM)delete HUD_NUM[k];}
 function rectsDirty(){
   CVS_RECT=null;PADS_RECT=null;PROMPT_RECT=null;LAYOUT_DIRTY=true;
   /* узлы приборов могли смениться вместе с вёрсткой — числа переписать заново (0.6) */
-  if(typeof hudNumDirty==="function")hudNumDirty();
+  hudNumDirty();   /* узлы приборов могли смениться вместе с вёрсткой (0.6) */
 }
 function cvsRect(){
   if(!CVS_RECT)CVS_RECT=cvs.getBoundingClientRect();

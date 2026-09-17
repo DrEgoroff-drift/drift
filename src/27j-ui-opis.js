@@ -69,7 +69,13 @@ const OPIS_KIT=[
 ];
 const OPIS_HW=420,OPIS_HH=190;   /* логический размер канвы силуэта */
 function opisPhone(){return innerWidth<=760;}
-function opisRerender(){if(OPIS.box)opisRender(OPIS.box);}
+/* ОПИСЬ перестраивается на любое действие с вещью — и прокрутка при этом остаётся
+   на месте (P1): иначе каждое «надеть/снять» бросало читателя в начало описи */
+function opisRerender(){
+  if(!OPIS.box)return;
+  if(typeof keepScroll==="function")keepScroll(OPIS.box,()=>opisRender(OPIS.box));
+  else opisRender(OPIS.box);
+}
 function opisSame(a,b){return !!a&&!!b&&a.t===b.t&&a.id===b.id&&a.i===b.i&&a.k===b.k;}
 function opisFocus(){return OPIS.hover||OPIS.sel;}
 /* куда встанет запасная часть: выбранный слот, если он её рода, иначе первый
