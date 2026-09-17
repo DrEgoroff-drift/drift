@@ -1394,7 +1394,14 @@ body.mapclean .hud,body.mapclean .pads,body.mapclean #console,body.mapclean #pro
 .smena p:first-child::first-letter{font-size:2.4em;line-height:.85;float:left;margin:.05em .1em 0 0;color:#c9a05b}
 .smena hr.scene{border:0;margin:14px 0;text-align:center}
 .smena hr.scene::before{content:"· · ·";letter-spacing:.6em;color:#8b7d61;font-size:12px}
-.smena .journal{font-family:ui-monospace,monospace;font-size:13px;color:#c9a05b;border-left:2px solid #6a5a3a;padding:4px 10px;margin:8px 0 12px;background:rgba(20,15,9,.3)}
+/* дефект P5, переживший саму правку (Контроль, 18.09): вставка бортового
+   журнала внутри главы осталась тёмным стеклом — золотой текст на почти
+   чёрном фоне — притом что тело абзаца вокруг неё уже перекрашено в чернила.
+   Тот же грех, только спрятанный внутри одного правила. Фон — чуть темнее
+   самого листа (тонировка тем же тёплым тоном, что и штрих бумаги выше в
+   файле), не rgba(тёмный); текст — те же чернила, что у реплик в журнале
+   (`body.table #loglist .li.talk span`). */
+.smena .journal{font-family:ui-monospace,monospace;font-size:13px;color:#4a3a24;border-left:2px solid #6a5a3a;padding:4px 10px;margin:8px 0 12px;background:rgba(120,96,56,.10)}
 .smena .cap{font-size:12px;color:#6a5c44;font-style:italic}
 #loglist .li.dim span{color:var(--dim)}
 

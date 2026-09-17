@@ -284,6 +284,11 @@ Rule 3: same look, cheaper work.
   mark and italic captions), and a matching 28px right margin. Measured in the browser: body text
   contrast 1.09:1 → 12.06:1 against the sheet's top tone (9.99:1 against the bottom, the gradient's
   darker end); margins now 28px both sides (were 28/0).
+  Follow-up (Control's code review, 18.09): `.smena .journal` survived the pass — gold text on a
+  near-black `rgba(20,15,9,.3)` plate, the same dark-glass sin one rule up, just hiding inside a
+  single selector. Repainted with the journal's own ink (`#4a3a24`, matching `.li.talk span`) and a
+  light warm tint (`rgba(120,96,56,.10)`) instead of a dark overlay — contrast 7.86:1 / 6.59:1
+  against the sheet's two gradient ends.
 - [ ] **P6** Hints cut at 411 px, МАСШТАБ under a chip, the beacon offered at the ship and wasted at
   0 m, КНИЖКА «хулк» and «командировочные за 0 км», the `celDay` column out of order (§1.5, §1.6, §4.4).
 - [x] **P7** One voice for the gravity anchor. Control offered a choice — drop the ship-side toast

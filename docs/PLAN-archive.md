@@ -10360,3 +10360,20 @@ Verified in the browser pane: parked the ship past `sysEdge()` and ran `stepWorl
 СВОБОДЕН») every time; `G.msg` is left exactly as some unrelated system last set it (untouched by
 the edge branch) and `"edgeWarned" in G` is `false` — the field is never created any more. Grepped
 `src/`, `tests/`, `docs/` for `edgeWarned` afterward: no remaining reference anywhere.
+
+**P5 follow-up — the journal excerpt was dark glass in disguise (2026-09-18).** Control's line-by-
+line review of the P5 diff caught what the contrast measurement missed: `.smena .journal` (the
+block-quoted log excerpts inside a chapter, e.g. «Сдал 40 ед. Цена 0,82 от справочной...») kept
+`color:#c9a05b` on `background:rgba(20,15,9,.3)` — gold text on a near-black plate, unchanged by
+the pass that repainted everything around it. It read fine on its own (gold on near-black has
+plenty of contrast), which is exactly why the body-text contrast check didn't flag it — the bug
+wasn't illegible text, it was a rectangle of the dark glass panel sitting on the cream page, the
+same "screen colours on paper" mistake one selector further in.
+
+Repainted to match the journal's own convention for a quoted line (`body.table #loglist
+.li.talk span`, `#4a3a24`) and given a light warm tint instead of a dark one —
+`background:rgba(120,96,56,.10)`, the same brown used for the sheet's own paper-grain texture
+earlier in the file, just at higher opacity, so the excerpt reads as *slightly shaded paper*, not
+a hole in it. Verified in the browser: opened chapter 2 (the first with a journal excerpt),
+computed contrast against both ends of the sheet gradient (composited with the 10% tint) — 7.86:1
+top, 6.59:1 bottom, both comfortably past WCAG AA. Screenshot confirms it by eye.
