@@ -1384,13 +1384,18 @@ body.afoot .ipod{display:none}
 body.mapclean .hud,body.mapclean .pads,body.mapclean #console,body.mapclean #prompt{opacity:0;pointer-events:none}
 
 /* ── «Смена»: текст главы на столе (M353) ── */
-.smena{margin:6px 0 14px 28px;max-width:62ch;font-family:Georgia,"Times New Roman",serif;font-size:15px;line-height:1.6;color:var(--text)}
+/* Написано до стола-бумаги (M151a, релизный вид, A3, п.5.1): var(--text)/var(--dim) —
+   это цвета для тёмного стекла, на кремовом листе они дают контраст ~1.1:1, почти
+   невидимы. Стол теперь бумага — берём те же чернила, что и у строк журнала на том
+   же листе (#loglist .li span и .li.dim span), а не свечение экрана. Правого поля
+   не было вовсе (margin: … 0 … 28px) — строка шла до самого края листа. */
+.smena{margin:6px 28px 14px 28px;max-width:62ch;font-family:Georgia,"Times New Roman",serif;font-size:15px;line-height:1.6;color:#2f2718}
 .smena p{margin:0 0 .9em}
 .smena p:first-child::first-letter{font-size:2.4em;line-height:.85;float:left;margin:.05em .1em 0 0;color:#c9a05b}
 .smena hr.scene{border:0;margin:14px 0;text-align:center}
-.smena hr.scene::before{content:"· · ·";letter-spacing:.6em;color:var(--dim);font-size:12px}
+.smena hr.scene::before{content:"· · ·";letter-spacing:.6em;color:#8b7d61;font-size:12px}
 .smena .journal{font-family:ui-monospace,monospace;font-size:13px;color:#c9a05b;border-left:2px solid #6a5a3a;padding:4px 10px;margin:8px 0 12px;background:rgba(20,15,9,.3)}
-.smena .cap{font-size:12px;color:var(--dim);font-style:italic}
+.smena .cap{font-size:12px;color:#6a5c44;font-style:italic}
 #loglist .li.dim span{color:var(--dim)}
 
 /* ══════════════ ОПИСЬ (M341): сукно с четырьмя зонами ══════════════

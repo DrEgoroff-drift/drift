@@ -10299,3 +10299,28 @@ occupy overlapping rectangles at any point (`fits()` makes that structurally imp
 checked against everything already in `placed` before a spot is accepted) and the reported
 "НЕЙЭЛЬ II / 3056 / 40" overlap and the general chip-order reshuffle are the same bug, closed by
 the same fix.
+
+**P5 «Смена» reads on paper, not on glass (2026-09-18).** `.smena` (M353, `12ud-smena.js`'s
+chapter reader) was written against the desk of its day — a dark list window — and coloured itself
+with `var(--text)`/`var(--dim)`, the palette for text glowing on black glass. M151a later turned
+the whole desk into a paper sheet (`#loglist`/`#lorelist` got a warm cream gradient background and
+every other piece of text on it — the journal's `.li span` — was repainted as ink), but `.smena`
+sits in its own block further down `style.css` and that pass never touched it, so its body text
+kept shining pale cyan on cream: measured contrast about 1.1:1, functionally invisible except for
+the gold drop-cap, which was already a fixed hex colour and unaffected.
+
+Fixed by pointing `.smena`, `.smena hr.scene::before` and `.smena .cap` at the same inks the
+journal already uses on this exact paper: `#2f2718` for body text (matches `#loglist .li span`),
+`#8b7d61` for the "· · ·" scene-break mark (matches `.li.dim span`), `#6a5c44` for italic captions
+(matches `.lorelist .li.note span`). `.journal` (the in-text quoted log excerpts) was left alone —
+it already carries its own dark background box, so gold-on-black there was never the bug.
+
+The margin was a plainer slip: `margin:6px 0 14px 28px` is top/right/bottom/left, and the `0` is
+the right side — there never was one, so a line ran flush to the sheet's own edge. Set to 28px to
+match the left, the same figure §5.1 already measured as the margin's usual width.
+
+Verified in the browser pane: opened chapter 1 live (`tableToggle(true,"smena")`, `smenaOpenCh=1`),
+read the rendered `color` off a `<p>` and computed WCAG contrast against both ends of the sheet's
+gradient — 1.09:1 before the fix (matches §5.1's field measurement exactly) to 12.06:1 / 9.99:1
+after; measured the `.smena` block's actual left/right gap to `#loglist`'s edge — 28px both sides,
+was 28/0. Screenshot confirms it by eye: dark serif body text, gold drop-cap, on the cream sheet.

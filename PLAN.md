@@ -251,8 +251,16 @@ Rule 3: same look, cheaper work.
   first) and having every chip after the first stack flush against the one before it, growing the
   row in a single direction rather than re-searching both ways each frame; only the front chip of
   a row, and a chip whose whole row ran out of edge, still searches both ways from its ideal spot.
-- [ ] **P5** «Смена» text light-on-cream, contrast ≈ 1.1:1; styles never moved to the paper; no
-  right margin (§5.1).
+- [x] **P5** «Смена» text is ink now, not screen-glow (§5.1). `.smena` was written (M353) before
+  the desk became paper (M151a) and kept `var(--text)`/`var(--dim)` — colours meant for a dark
+  glass panel — on the new cream sheet, giving a body-text contrast of about 1.1:1 (unreadable) and
+  no right margin at all (`margin:6px 0 14px 28px`, the `0` is the right side). Both are page
+  styling the M151a pass never touched because `.smena` lives in its own stylesheet block, not in
+  the `#loglist .li` rules that pass rewrote. Fixed with the same ink already used for the journal
+  on the same sheet (`#loglist .li span`'s `#2f2718`, and `#8b7d61`/`#6a5c44` for the scene-break
+  mark and italic captions), and a matching 28px right margin. Measured in the browser: body text
+  contrast 1.09:1 → 12.06:1 against the sheet's top tone (9.99:1 against the bottom, the gradient's
+  darker end); margins now 28px both sides (were 28/0).
 - [ ] **P6** Hints cut at 411 px, МАСШТАБ under a chip, the beacon offered at the ship and wasted at
   0 m, КНИЖКА «хулк» and «командировочные за 0 км», the `celDay` column out of order (§1.5, §1.6, §4.4).
 - [ ] **P7** One voice for the gravity anchor (Designer, S23 frames 17.09): two hints of one event
