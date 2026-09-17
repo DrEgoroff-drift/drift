@@ -704,7 +704,19 @@ function drawSysHud(zx,zy,sh,sys,U){
   /* нижняя кромка — над живой строкой подсказки, а не по константе: чип
      «ЗВЕЗДА» ложился ровно на «МОЖНО ПРОСТО УЙТИ ИЛИ ПРЫГНУТЬ» (полировочный
      круг). Меряем сам DOM (правило 27z: не пересчитывать CSS в JS). */
-  let inY1=H-(innerWidth<=760?150:120);
+  /* ── фишка живёт НА КРОМКЕ (P4) ──
+     Прежде нижняя кромка САМА ехала вверх от каждого следа стика: палец
+     рождается где угодно в нижней половине, и фишки уползали до середины
+     экрана (плейтест 13.09, §1.4) — а фишка посреди кадра больше не говорит
+     «цель там, за краем», она просто висит. Решение (Контроль, 17.09): кромка
+     остаётся кромкой — внутрь от своего обычного отступа она уезжает не дальше
+     CHIP_IN, а от узлов интерфейса фишка уворачивается ВДОЛЬ кромки, а если вдоль
+     места нет вовсе — перескакивает на соседнюю кромку в сторону цели.
+     След стика и строка подсказки теперь не двигают кромку, а лежат в том же
+     списке занятых мест, что и сами фишки. */
+  const CHIP_IN=12;
+  const y1base=H-(innerWidth<=760?150:120);
+  let inY1=y1base;
   for(const f of feet)inY1=Math.min(inY1,(f.y-f.r)/U-10);
   {
     /* прямоугольник подсказки — из кэша (0.3): читать его здесь значило
@@ -713,8 +725,16 @@ function drawSysHud(zx,zy,sh,sys,U){
     const r=(pe&&pe.textContent)?promptRect():null;
     if(r&&r.height>0)inY1=Math.min(inY1,r.top/U-8);
   }
+  inY1=Math.max(inY1,y1base-CHIP_IN);   /* внутрь — не дальше двенадцати пикселей */
   const inset={x0:10,x1:W-10,y0:76,y1:Math.max(140,inY1)};
   const placed=[];
+  /* узлы, мимо которых фишка скользит: следы стиков и живая строка подсказки */
+  for(const f of feet)placed.push({x:(f.x-f.r)/U,y:(f.y-f.r)/U,w:2*f.r/U,h:2*f.r/U});
+  {
+    const pe=(typeof promptEl==="function")?promptEl():null;
+    const r=(pe&&pe.textContent)?promptRect():null;
+    if(r&&r.height>0)placed.push({x:r.left/U,y:r.top/U,w:r.width/U,h:r.height/U});
+  }
   ctx.font="8px ui-monospace,monospace";
   /* под окном оклика и окном бака фишки гаснут, как борт (R0, дев 12.09): на
      них не жмут, пока окно ждёт ответа, и они не спорят с ним глазами */
@@ -733,12 +753,32 @@ function drawSysHud(zx,zy,sh,sys,U){
     const tw=ctx.measureText(label).width,cw=tw+26,ch=16;
     const onSide=Math.abs(cx-inset.x0)<1||Math.abs(cx-inset.x1)<1;   // боковая кромка → двигаем по y
     let rx=clamp(cx-(cx>W/2?cw-6:6),inset.x0,inset.x1-cw),ry=clamp(cy-ch/2,inset.y0,inset.y1-ch);
-    /* авторазвод: пока пересекается с уже поставленной — шаг вдоль кромки */
-    for(let g=0;g<12;g++){
-      const hit=placed.find(p=>!(rx+cw<=p.x||p.x+p.w<=rx||ry+ch<=p.y||p.y+p.h<=ry));
-      if(!hit)break;
-      if(onSide)ry=ry+ch+4<=inset.y1-ch?ry+ch+4:inset.y0;else rx=rx+cw+4<=inset.x1-cw?rx+cw+4:inset.x0;
+    /* Скольжение ВДОЛЬ кромки, в обе стороны от желаемого места (P4).
+       В обе, а не только вниз: прежний проход шагал в одну сторону и при
+       занятом хвосте кромки уезжал в её начало — то есть фишка прыгала через
+       весь экран от одного шага пальца. */
+    const fits=(x,y)=>!placed.some(p=>!(x+cw<=p.x||p.x+p.w<=x||y+ch<=p.y||p.y+p.h<=y));
+    const cX=v=>clamp(v,inset.x0,inset.x1-cw),cY=v=>clamp(v,inset.y0,inset.y1-ch);
+    const slide=(vert,x0,y0)=>{
+      /* шагов столько, сколько нужно, чтобы обойти кромку целиком: с коротким
+         обходом большое препятствие (окно во всю кромку) оставляло фишку на месте
+         вместо перескока на соседнюю — поймано замером в браузере */
+      const len=vert?(inset.y1-inset.y0):(inset.x1-inset.x0);
+      const N=Math.min(160,Math.ceil(len/10)+2);
+      for(let st=0;st<=N;st++)for(const sg of (st?[-1,1]:[1])){
+        const off=st*10*sg;
+        const x=vert?x0:cX(x0+off),y=vert?cY(y0+off):y0;
+        if(fits(x,y))return [x,y];
+      }
+      return null;
+    };
+    let spot=slide(onSide,rx,ry);
+    if(!spot){
+      /* вдоль своей кромки места нет — перескок на соседнюю, в сторону цели */
+      spot=onSide?slide(false,cX(cx-cw/2),dy>0?inset.y1-ch:inset.y0)
+                 :slide(true,dx>0?inset.x1-cw:inset.x0,cY(cy-ch/2));
     }
+    if(spot){rx=spot[0];ry=spot[1];}
     placed.push({x:rx,y:ry,w:cw,h:ch});
     /* Зона нажатия шире плашки: правило интерфейса требует 44 px на палец, а
        фишка ростом 16. Растим её вокруг центра, не трогая рисунок. */
@@ -748,11 +788,14 @@ function drawSysHud(zx,zy,sh,sys,U){
     }
     ctx.globalAlpha=A;ctx.fillStyle="rgba(5,7,12,.72)";ctx.fillRect(rx,ry,cw,ch);
     ctx.strokeStyle=m.c;ctx.globalAlpha=.5*A;ctx.lineWidth=1;ctx.strokeRect(rx+.5,ry+.5,cw-1,ch-1);ctx.globalAlpha=A;
-    ctx.save();ctx.translate(cx>W/2?rx+cw-8:rx+8,ry+ch/2);ctx.rotate(ang);
+    /* после перескока на соседнюю кромку точка луча и сама фишка расходятся:
+       сторона надписи берётся по МЕСТУ фишки (P4) */
+    const onRight=rx+cw/2>W/2;
+    ctx.save();ctx.translate(onRight?rx+cw-8:rx+8,ry+ch/2);ctx.rotate(ang);
     ctx.fillStyle=m.c;ctx.beginPath();ctx.moveTo(6,0);ctx.lineTo(-4,4);ctx.lineTo(-4,-4);ctx.closePath();ctx.fill();
     ctx.restore();
-    ctx.fillStyle=m.c;ctx.textAlign=cx>W/2?"right":"left";
-    ctx.fillText(label,cx>W/2?rx+cw-18:rx+18,ry+12);
+    ctx.fillStyle=m.c;ctx.textAlign=onRight?"right":"left";
+    ctx.fillText(label,onRight?rx+cw-18:rx+18,ry+12);
     ctx.textAlign="center";ctx.globalAlpha=1;
   }
 }

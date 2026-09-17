@@ -217,8 +217,19 @@ Rule 3: same look, cheaper work.
   `tabsSync` like the desk's and the station's strips: without that its right-edge fade never
   cleared, so the last tab stayed pale even with nothing left to scroll, and a selected tab could
   sit off the edge. `tail` now reads true with the mask off.
-- [ ] **P4** Compass chips follow `helmStickFoot` (in `drawSystem`) up to mid-screen — keep them on
-  the frame's edge (§1.4). **Decided (Control, 17.09):** a chip always sits on the frame's edge; it dodges UI nodes (stick foot, pads, windows) only ALONG the edge, and inward no more than 12 px past its usual margin; with no room along the edge it jumps to the neighbouring edge toward the target. The Designer accepts by the frame. Designer's three conditions (rulebook): (a) the chip slides along the edge smoothly (lerp, ≤ ~200 px/s) and the jump to the neighbouring edge is a slide round the corner, not a teleport — motion, not twinkle; (b) the edge is the frame minus what is taken — under the HUD band, above the pads' floor and the hint line, left of ЦЕЛЬ/ДЕЙСТВИЕ — read from CVS_RECT/PADS_RECT of 0.3, no new measurements; (c) chips never overlap each other or the ship: stacked along the edge at ≥ one chip height, and a target's chip stays on the edge even when its bearing passes through the ship.
+- [x] **P4** Compass chips stay on the frame's edge (§1.4). The bottom edge itself used to move:
+  every stick foot pulled it up, and since a finger is born anywhere in the lower half, the chips
+  crawled to mid-screen — where a chip no longer says «the target is out there, past the edge».
+  Rule (Control, 17.09): the edge stays the edge, moving inward no more than 12 px beyond its
+  normal inset; the stick foot and the live hint line are now *obstacles in the same list as the
+  chips*, so a chip dodges them **along** the edge, in both directions from its ideal spot; and if
+  the whole edge is taken, it jumps to the neighbouring edge toward the target. Measured in the
+  browser at 375×812: clean, three chips sit on the top edge at y = 76 (the inset itself); with a
+  blocker on the left of that edge they slide along it (x 104 → 114, 188 → 198) and y stays 76;
+  with the whole top edge blocked all three jump to the side edges (y 466–486, x on the left and
+  right insets); and with a foot in the middle of the lower half the chips are free to stand at
+  y = 556 and 576 — the bottom edge no longer follows the finger. The sweep covers the whole edge
+  now: a shorter one left a chip sitting inside a large obstacle instead of jumping.
 - [ ] **P5** «Смена» text light-on-cream, contrast ≈ 1.1:1; styles never moved to the paper; no
   right margin (§5.1).
 - [ ] **P6** Hints cut at 411 px, МАСШТАБ under a chip, the beacon offered at the ship and wasted at

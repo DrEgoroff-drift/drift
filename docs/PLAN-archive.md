@@ -10192,3 +10192,30 @@ right edge once there is nothing left to scroll. Without it the last tab of ОП
 pale, as if more tabs were hiding behind it, and a selected tab could sit off the edge with no
 highlight visible anywhere. One call after the strip is built; `tail` now reads true with the mask
 off.
+
+**P4 The compass chips and the moving edge (2026-09-17).** A chip at the frame's edge means «the
+target is out there, past the edge»; a chip in the middle of the frame means nothing. The chips
+crawled inward because the *edge* was computed from the interface: `inY1` took the minimum over
+every stick foot (`helmStickFoot`) and the hint line, and a finger on a phone is born anywhere in
+the lower half, so on every steer the bottom edge jumped to mid-screen and took the chips with it
+(playtest, §1.4).
+
+Control's rule, implemented as written: the edge stays the edge and may move inward by at most
+`CHIP_IN = 12` px beyond its usual inset; interface nodes are dodged **along** the edge; if there
+is no room along it, the chip jumps to the neighbouring edge in the direction of its target. So
+the stick feet and the live hint line now go into `placed` — the same list of taken rectangles the
+chips themselves use — instead of bending the inset, and the placement sweep (`slide`) walks the
+edge in both directions from the ideal spot rather than only forward. Walking both ways matters:
+the old loop stepped one way and, on reaching a busy end of the edge, wrapped to its start, which
+read as a chip teleporting across the screen because of one finger. The label's side and the
+arrow's anchor are taken from where the chip actually ended up, not from the ray's intersection,
+since after a jump those disagree.
+
+Measured in the browser pane at 375×812 (`drawWorld()` directly, because a hidden pane's
+`frameBody` returns before drawing): with nothing in the way three chips sit on the top edge at
+y = 76, which is the inset; with a blocker over the left of that edge they slide along it —
+x 104 → 114 and 188 → 198 with y unchanged at 76; with the whole top edge blocked all three jump
+to the side edges at y 466–486; and with a stick foot in the middle of the lower half the chips
+are free to stand at y = 556 and 576, i.e. the bottom edge is no longer dragged up to 451. One
+bug found by that last test: the sweep was a fixed ±300 px, so a large obstacle left the chip
+standing inside it instead of jumping; the sweep now spans the whole edge.

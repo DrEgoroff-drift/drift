@@ -1417,7 +1417,7 @@ drawSurface                  src/21e-surface-draw.js:277-291
 drawSurfaceHud               src/21e-surface-draw.js:21-115
 drawSurfaceWorld             src/21e1-surface-world.js:10-615
 drawSurvey                   src/12w-survey.js:63-89
-drawSysHud                   src/17-mode-system.js:665-758
+drawSysHud                   src/17-mode-system.js:665-801
 drawSysNebula                src/16a-space.js:208-236
 drawSystem                   src/17-mode-system.js:406-664
 drawSysTraffic               src/17f-sys-traffic.js:29-33
@@ -5799,7 +5799,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/16c-rescue.js · 50 КБ
   · пустой бак: хода нет, но выход есть всегда (11.09):1
 
-## src/17-mode-system.js · 55 КБ
+## src/17-mode-system.js · 59 КБ
   · режим: система:1
 
 ## src/17a-station-mod.js · 13 КБ
