@@ -263,11 +263,18 @@ Rule 3: same look, cheaper work.
   darker end); margins now 28px both sides (were 28/0).
 - [ ] **P6** Hints cut at 411 px, МАСШТАБ under a chip, the beacon offered at the ship and wasted at
   0 m, КНИЖКА «хулк» and «командировочные за 0 км», the `celDay` column out of order (§1.5, §1.6, §4.4).
-- [ ] **P7** One voice for the gravity anchor (Designer, S23 frames 17.09): two hints of one event
-  at once, teal at the ship and orange at the bottom, in different words; keep the bottom line.
-  The hint at the ship lies across the trail 20 px from the hull and is not in the chips' taken
-  list (a chip's number touched «ДАЛЬШЕ КОРАБЛЬ» with zero gap): text on the edge, not on the ship.
-  Also from the frames: chips must keep a stable order along the edge (no swapping for 10 px).
+- [x] **P7** One voice for the gravity anchor. Control offered a choice — drop the ship-side toast
+  or cut it to two words — and dropping it was the cleaner fix: the bottom `cue()` line already
+  says the whole thing («ГРАВИТАЦИОННЫЙ ЯКОРЬ · КРАЙ СИСТЕМЫ · КУРС К ЗВЕЗДЕ СВОБОДЕН») every frame
+  the ship is past the edge, while the `say()` toast fired once per throttle window with its own
+  wording — one event, two voices. Removed the `say()` call and its now-pointless `G.edgeWarned`
+  throttle (one field, one read site, both gone) rather than repositioning the toast to the edge:
+  the generic `#msg` toast is used by many unrelated events, so moving *it* would have reached far
+  past this one bug. With the toast gone, the "text on the edge, not on the ship" and "register it
+  in `placed`" parts of the review no longer apply — there is nothing left near the ship to place.
+  The "chips must keep a stable order" note was already closed by the P4 order-follow-up above.
+  Verified in the browser: crossing the edge now only ever sets `G.prompt` (the bottom line);
+  `G.msg`/`G.edgeWarned` are untouched by it.
 - [ ] **The anchor and the stick** (phone video 12.09; 0.449.0 widened the edge, the mechanism
   stays): past the edge the anchor turns the velocity toward the star every frame while the stick's
   assist thrusts outward — the turn is a force against thrust, an equilibrium exists (the comment in

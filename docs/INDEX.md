@@ -1419,9 +1419,9 @@ drawSurface                  src/21e-surface-draw.js:277-291
 drawSurfaceHud               src/21e-surface-draw.js:21-115
 drawSurfaceWorld             src/21e1-surface-world.js:10-615
 drawSurvey                   src/12w-survey.js:63-89
-drawSysHud                   src/17-mode-system.js:671-917
+drawSysHud                   src/17-mode-system.js:672-918
 drawSysNebula                src/16a-space.js:208-236
-drawSystem                   src/17-mode-system.js:412-670
+drawSystem                   src/17-mode-system.js:413-671
 drawSysTraffic               src/17f-sys-traffic.js:29-33
 drawTemple                   src/20aa-poi-shapes.js:50-89
 drawThingIcon                src/27i-ui-table.js:390-426
@@ -3230,7 +3230,7 @@ optGroups                    src/27-ui-ship.js:338-355
 OPTS_BOOT                    tests/90-harness.js:203
 optsNumify                   src/14a2-save-ephemeral.js:23-28
 optTab                       src/27-ui-ship.js:337
-orbPathOf                    src/17-mode-system.js:401-411
+orbPathOf                    src/17-mode-system.js:402-412
 ORDER_WIN                    src/12aa-need.js:76
 orderDeliver                 src/12aa-need.js:116-127
 orderHere                    src/12aa-need.js:112-115
@@ -4869,7 +4869,7 @@ updateRaid                   src/24a-mode-raid.js:215-345
 updateScoop                  src/19a-mode-scoop.js:75-171
 updateSpa                    src/29i-spa-draw.js:514-519
 updateSurface                src/21-mode-surface.js:199-656
-updateSystem                 src/17-mode-system.js:31-397
+updateSystem                 src/17-mode-system.js:31-398
 updateWanderRoom             src/24c-mode-wanderer.js:58-88
 updateWinter                 src/29g-winter-draw.js:808-817
 useBeacon                    src/23-mode-dig.js:87-100

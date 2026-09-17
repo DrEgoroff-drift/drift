@@ -10324,3 +10324,39 @@ read the rendered `color` off a `<p>` and computed WCAG contrast against both en
 gradient — 1.09:1 before the fix (matches §5.1's field measurement exactly) to 12.06:1 / 9.99:1
 after; measured the `.smena` block's actual left/right gap to `#loglist`'s edge — 28px both sides,
 was 28/0. Screenshot confirms it by eye: dark serif body text, gold drop-cap, on the cream sheet.
+
+**P7 The gravity anchor keeps one voice (2026-09-18).** The Designer's S23 frames caught the edge
+warning speaking twice at once: a teal toast at the ship (`say()`, `17-mode-system.js`, throttled
+to once per 900 game-ticks on entry) and an orange line at the bottom of the screen (`cue()`,
+fired every frame the ship is past the edge) — different wording for the same event, and the toast
+sat wherever `#msg`'s fixed `top:25%` position happened to land relative to the ship and its trail,
+sometimes across the hull, sometimes overlapping a compass chip's own label with a zero-px gap.
+
+Control's review offered two ways to close it: drop the ship-side voice, or cut it to two words.
+Dropping it was the better fit here specifically because the bottom line already carries the full
+sentence continuously for as long as the condition holds, where the toast only fired once on entry
+and then faded — the toast was not adding information, only a second rendering of the same one.
+Cutting it to two words would still have left a second, differently-worded announcement of the
+same fact, and would have required the edge-case work the review also flagged: repositioning a
+*generic* toast mechanism (`say()`/`#msg`, used across the whole game for unrelated messages, most
+recently for crash reports in `28-loop.js`) to sit at the frame's edge and registering it as a
+taken rectangle for the compass chips — machinery built for one caller among many, and one that
+would need re-justifying every time some other `say()` call also happened to fire near an edge.
+
+The fix is a subtraction: the `say()` call and the `if(!G.edgeWarned||...)` throttle that gated it
+are gone, along with `G.edgeWarned`'s one line in the ephemeral-fields whitelist
+(`14a2-save-ephemeral.js`) — a field with no remaining reader is dead weight, not a future hook.
+Nothing else in `updateSystem`'s edge branch changes: the turn-toward-star behaviour, `atEdge`, and
+the `cue()` call three lines later are untouched.
+
+The review's other two conditions — keep the text off the ship, register what remains in `placed`
+— talk about what to do with the ship-side text *if it survives*; with it removed outright, both
+are vacuously satisfied, there is nothing left to place. The review's closing note, that chips must
+hold a stable order along the edge, was a restatement of the same bug the P4 order-follow-up above
+already closed (same milestone, same review pass) — nothing further needed here.
+
+Verified in the browser pane: parked the ship past `sysEdge()` and ran `stepWorld()` for ten ticks.
+`G.prompt` reads the full bottom line («ГРАВИТАЦИОННЫЙ ЯКОРЬ · КРАЙ СИСТЕМЫ / КУРС К ЗВЕЗДЕ
+СВОБОДЕН») every time; `G.msg` is left exactly as some unrelated system last set it (untouched by
+the edge branch) and `"edgeWarned" in G` is `false` — the field is never created any more. Grepped
+`src/`, `tests/`, `docs/` for `edgeWarned` afterward: no remaining reference anywhere.
