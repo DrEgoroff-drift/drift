@@ -108,6 +108,17 @@ Rule 3: same look, cheaper work.
   frames in 9.99 s, median 16.7 ms, p95 17.0, two frames over 24 ms. So the idle frame is already
   smooth; the shelf comes from **active steering** — a minute with the finger on the stick reads
   83–90 %, ten minutes 79–80 %. The next measurement is prof() with the finger held vs. without.
+  **Answered (Tester, 18.09, S23, three 20 s runs in a row, thermal 1): the remainder is the
+  finger, not the drawing.** No finger 60.0 fps / 99.9 %; finger on the stick 50.9 / 81.9 % with 184
+  frames over 24 ms; finger off again 59.8 / 99.5 %. Same scene throughout. Ruled out by test: ship
+  speed (81.3 % standing vs 81.8 % at speed) and the accumulated wake (clearing WAKE+TRAIL moved
+  80.0 → 81.2 %). Under the finger frameBody is 7.74 ms against 5.91 at rest, pointermove fires only
+  0.54 times a frame — and **getBoundingClientRect is called 6.08 times a frame under the finger and
+  5.33 at rest, where item 0.3 promised zero.** So 0.3 regressed or never covered these callers:
+  find the five-to-six layout reads still in the frame and cache them. This also explains every
+  earlier disagreement in the numbers: a first minute always beat the shelf because the finger had
+  been on the glass for less of it. (Earlier "no finger" figures are withdrawn — the Tester's driver
+  left the touch held between runs, so the stick counted as active.)
 - [ ] **Four milliseconds, by the function.** `frameBody` averages 10.58 ms against a 16.7 ms
   vsync, max 28.7 — no headroom, and muting *any* single draw function now gives 59.7 fps at
   99.5 %, so there is no one culprit left: the frame is simply full. The task is to take ≥ 4 ms of
