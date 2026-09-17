@@ -127,6 +127,24 @@ Rule 3: same look, cheaper work.
   stick and a prompt line give 2 real reads total, both cold. Control's own P4 conditions had added
   two more reads (padsRect and a second promptRect in `drawSysHud`) — 8.17 a frame on a629378;
   folded into the same cleanup. Phone re-measurement pending.
+- [ ] **THE FRAME IS BISTABLE — read this before measuring anything (Tester, 18.09, S23).** Six
+  30 s runs on one build with the same steering: 79.9 / 99.7 / 82.3 / 80.1 / 82.2 / 81.2 % cadence
+  at 50.0 / 59.8 / 50.9 / 50.0 / 51.0 / 50.5 fps. **There are no intermediate values** in any of the
+  evening's twenty-odd runs: the game either runs 60 frames at ~100 %, or 50 at ~81 %, and once it
+  is in the bad state it stays there until the page reloads. The arithmetic says scheduling, not
+  weight: on a 120 Hz panel a vsync is 8.33 ms, the good state is every second one (16.67), and 50
+  fps averages 20 ms — which no whole number of vsyncs gives. It is a mix of 16.67 and 25, i.e. we
+  aim at every second vsync and miss onto the third on some frames. So the frame sits ON THE EDGE
+  and which side it lands on sticks from the first seconds. **Everything measured this evening as
+  «the cost of a function» may have been measuring which state the run started in** — including
+  Control's forced-layout reasoning, which was a real mechanism but not the cause of the shelf; the
+  Tester muted hudFloorMeasure entirely and the cadence did not move. Measure `capIv` and the vsync
+  stride, `tactHz` and the period it aims at, and FRAME_JS in both states before taking any more
+  milliseconds off anything. First suspect: `capIv` is estimated from the shortest interval seen at
+  startup and never revised, so a phone that hands out its first frames at 60 fixes the stride
+  against the wrong period for the rest of the session. Also still unverified by anyone: the g11
+  part of the gate (≥55 fps on the laptop) — the Tester never ran it.
+
 - [ ] **Four milliseconds, by the function.** `frameBody` averages 10.58 ms against a 16.7 ms
   vsync, max 28.7 — no headroom, and muting *any* single draw function now gives 59.7 fps at
   99.5 %, so there is no one culprit left: the frame is simply full. The task is to take ≥ 4 ms of
