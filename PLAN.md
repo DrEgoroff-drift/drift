@@ -163,6 +163,17 @@ Rule 3: same look, cheaper work.
   stuck schedule — a frame on the edge, so taking milliseconds off DOES help (the Tester withdrew
   his «pointless» too). Judge by the share of skipped frames over three runs, never by one average.
 
+- [ ] **AUTHOR'S CALL, and the numbers now point at it: the raster, not the JS — ×1.5 in flight on
+  the phone.** Two measurements say the frame's JS is not what misses the deadline. Forcing the
+  phone's render scale to ×1.5 gave 59.0 fps / 98.3 % cadence / 59 frames over 24 ms, against ×2 at
+  51.3 / 83.1 % / 519 — same build, same scene, only the pixel count changed. And the frame's own
+  work measures 6–8 ms against a 16.7 ms deadline (worker's synthetic run: 6.1 ms background, 7.9 ms
+  in the frame right after a cache reset — a third dearer, not the 30–40 ms a real culprit would
+  cost). So we have been hunting milliseconds in the JS while the deadline is missed in the raster.
+  Control's recommendation, still awaiting the author's word: ×1.5 in the system and landing views
+  under thrust, ×2 in the dock, the desk and the map, switching on mode change, no dithering. The
+  look is his call — his game's sharpness against his own complaint about the judder.
+
 - [ ] **A second, independent instrument for the frame: the screen recording** (Designer, 18.09).
   Counting skips from *outside* the game, so it cannot be fooled by our own counters: a skipped vsync
   is never caught up, so the movement across that gap must be DOUBLE. `scratchpad/skips.py` crops the
