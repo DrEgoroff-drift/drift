@@ -154,6 +154,21 @@ Rule 3: same look, cheaper work.
   stuck schedule — a frame on the edge, so taking milliseconds off DOES help (the Tester withdrew
   his «pointless» too). Judge by the share of skipped frames over three runs, never by one average.
 
+- [ ] **A second, independent instrument for the frame: the screen recording** (Designer, 18.09).
+  Counting skips from *outside* the game, so it cannot be fooled by our own counters: a skipped vsync
+  is never caught up, so the movement across that gap must be DOUBLE. `scratchpad/skips.py` crops the
+  ship, measures the step between frames, divides by a rolling median to remove real changes of speed,
+  and prints the share of double steps, the frozen frames and the gaps between skips. On the good-state
+  reference (600 frames, 59.94 fps, finger steering): ratio spread 0.89–1.12 over nine tenths of the
+  sample, 3 double steps out of 599 = 0.5 %, scattered, not periodic — against 14 % on the Tester's bad
+  run. The two instruments agree, and **the good state exists and holds for ten seconds under an active
+  finger**, so the frame does not simply fail to fit in 16.7 ms: the headroom comes and goes. What the
+  Designer will call a *third* answer, named in advance so it is not decided after the fact: frozen
+  frames instead of double steps (the compositor repeats a buffer, not our arithmetic); triple steps
+  (two periods lost at once — a rare heavy job, not general weight); a true sawtooth every N frames
+  (scheduling after all, and the stride-of-one correction is wrong); or double steps in clusters with
+  clean stretches between (an EVENT causes the drop — chase the event, not the percentage).
+
 - [ ] **Four milliseconds, by the function.** `frameBody` averages 10.58 ms against a 16.7 ms
   vsync, max 28.7 — no headroom, and muting *any* single draw function now gives 59.7 fps at
   99.5 %, so there is no one culprit left: the frame is simply full. The task is to take ≥ 4 ms of
