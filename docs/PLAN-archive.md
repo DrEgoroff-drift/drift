@@ -10219,3 +10219,45 @@ to the side edges at y 466–486; and with a stick foot in the middle of the low
 are free to stand at y = 556 and 576, i.e. the bottom edge is no longer dragged up to 451. One
 bug found by that last test: the sweep was a fixed ±300 px, so a large obstacle left the chip
 standing inside it instead of jumping; the sweep now spans the whole edge.
+
+**P4 follow-up — the chip eases instead of snapping (2026-09-17/18).** Control's review of P4
+(c2f73a3, the Designer's three conditions) found the first version correct in its logic but wrong
+on the phone: a chip's slot could change by 10-100 px in a single frame whenever a stick foot
+moved, and a place that changes without moving reads as a jerk, not a slide.
+
+The fix keys each chip by its target (`star`, `station`, `planet:<name>`, `target`, `hail`) and
+keeps its last *drawn* place in `CHIP_POS`, separate from the logical slot the placement sweep
+computes every frame. A same-edge move eases toward the logical slot at up to 200 px/s (real time,
+`wallNow()` — this is a draw effect, not world simulation, so a paused world must not freeze it
+mid-slide and a resumed one must not jump). A cross-edge jump is the case the Designer called out
+by name: sliding a chip in a straight line across the frame when its target moves from one side of
+the ship to the other would cut through the middle of the screen, past the ship and every other
+chip. When the straight-line distance exceeds half the edge span — the signal that this is a jump,
+not a slide — the chip instead fades out at the old spot and back in at the new one over 0.15 s.
+
+A first appearance (a target chip born off-screen with no prior frame) still snaps straight to its
+slot, as asked — there is nothing to ease from.
+
+Two more taken rectangles went into `placed`, both read from Control's review: the ship's own hull
+(a fixed screen-space guard around its projected point, since computing its actual on-screen
+silhouette needs `hullOf`/`shipScaleAt` machinery this function has no reason to duplicate for one
+avoidance box) and the stick pads at rest via the cached `padsRect()` — before this only a
+finger's *trace* on a pad counted as taken, so a chip could sit on an idle pad in the instant
+before a finger arrived.
+
+One bug the browser pane caught that had nothing to do with the three conditions: a chip's cached
+position is only ever moved by the "ease toward" arithmetic, and arithmetic on `NaN` never
+converges — `Math.hypot(NaN, …)` is `NaN`, and every comparison against `NaN` is false, so a chip
+that ever received one bad frame (an autopilot target briefly missing its `kind`, say) would stay
+invisibly stuck at `NaN` forever, never fading and never easing back. Reproduced by feeding
+`G.ap={x:100,y:100}` (no `kind`) for one frame and watching `CHIP_POS` stay `{x:null,y:null,…}`
+(JSON's spelling of `NaN`) for eighty subsequent good frames. Fixed by treating a non-finite cached
+position the same as "no record yet" — it snaps to the current slot and resumes easing normally
+next frame, so one bad frame can only ever cost one bad frame.
+
+Verified in the browser pane (`drawWorld()` called directly, since a hidden pane's `frameBody`
+never draws): a chip that moves 60 px along its edge in 0.1 s of simulated time covers ~20 px, the
+200 px/s cap; a target thrown to the opposite side of the ship starts fading rather than sliding
+and completes to the new slot once enough time has passed; and a synthetic 140-frame run with the
+station and a fake autopilot target sweeping in circles, plus the one poisoned frame above, threw
+no exception and healed within one frame.

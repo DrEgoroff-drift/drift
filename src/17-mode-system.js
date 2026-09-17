@@ -4,6 +4,12 @@
    метка, которая выглядит кнопкой, обязана быть кнопкой. Один массив на кадр,
    перезаписывается на месте — мусора не создаёт. */
 const SYS_CHIPS=[];
+/* последнее нарисованное место каждой фишки компаса, по ключу цели (P4,
+   Контроль 17.09): без этого фишка телепортируется на новое место в тот же
+   кадр, где палец лёг на след стика — на телефоне это читается как дёрганье.
+   Канва, не сейв; чистится сам, когда цель пропадает из кадра (drawSysHud) */
+let CHIP_POS={};
+let CHIP_T=0;   /* wallNow() метки предыдущего кадра фишек — для их плавного шага */
 /* подписи тел этого кадра (R6): по ним имя чужого корабля («КОМПАНИЯ 743»)
    уходит вверх, чтобы не лечь на имя планеты. Канва, не сейв */
 const BODY_LABELS=[];
@@ -680,22 +686,22 @@ function drawSysHud(zx,zy,sh,sys,U){
      Заодно в список добавлена БЛИЖАЙШАЯ планета: раньше в компасе были
      только звезда, станция и текущая цель, и вылетевший на отшиб игрок видел
      у кромки одну звезду. Теперь из пустоты всегда видно, куда лететь. */
-  const marks=[{x:0,y:0,c:"#f2b25c",l:"ЗВЕЗДА",t:{kind:"star"}}];
+  const marks=[{x:0,y:0,c:"#f2b25c",l:"ЗВЕЗДА",t:{kind:"star"},k:"star"}];
   /* имя в верхнем регистре кладётся рядом с телом ОДИН раз (0.6): только
      toUpperCase в кадре рождал до трёх строк на каждый кадр на пустом месте */
   if(sys.station)marks.push({x:sys.station.x,y:sys.station.y,c:"#7fe6d8",
-    l:sys.station._up||(sys.station._up=sys.station.name.toUpperCase()),t:{kind:"station"}});
+    l:sys.station._up||(sys.station._up=sys.station.name.toUpperCase()),t:{kind:"station"},k:"station"});
   {
     let np=null,nd=1e18;
     for(const p of sys.planets){
       const d=Math.hypot(p.x-sh.x,p.y-sh.y);
       if(d<nd){nd=d;np=p;}
     }
-    if(np)marks.push({x:np.x,y:np.y,c:"#9fd8ff",l:np._up||(np._up=np.name.toUpperCase()),t:{kind:"planet",p:np}});
+    if(np)marks.push({x:np.x,y:np.y,c:"#9fd8ff",l:np._up||(np._up=np.name.toUpperCase()),t:{kind:"planet",p:np},k:"planet:"+np.name});
   }
-  if(G.ap){const T=targetPos();if(T)marks.push({x:T.x,y:T.y,c:"#ff6b57",l:"ЦЕЛЬ",t:null});}
+  if(G.ap){const T=targetPos();if(T)marks.push({x:T.x,y:T.y,c:"#ff6b57",l:"ЦЕЛЬ",t:null,k:"target"});}
   /* окликнувший: одна негашёная стрелка под окном оклика (R6, 12.09) */
-  if(G.hail){const hp=G.pirates.find(q=>q._hail);if(hp)marks.push({x:hp.x,y:hp.y,c:"#ffd27a",l:hp._up||(hp._up=(hp.name||"ОКЛИК").toUpperCase()),t:null,hail:1});}
+  if(G.hail){const hp=G.pirates.find(q=>q._hail);if(hp)marks.push({x:hp.x,y:hp.y,c:"#ffd27a",l:hp._up||(hp._up=(hp.name||"ОКЛИК").toUpperCase()),t:null,hail:1,k:"hail"});}
   SYS_CHIPS.length=0;
   /* фишки у кромки (M167): раньше метки стояли на круге и на телефоне висели
      посреди сцены, наезжая друг на друга и на солнце. Теперь метка — плашка,
@@ -728,17 +734,41 @@ function drawSysHud(zx,zy,sh,sys,U){
   inY1=Math.max(inY1,y1base-CHIP_IN);   /* внутрь — не дальше двенадцати пикселей */
   const inset={x0:10,x1:W-10,y0:76,y1:Math.max(140,inY1)};
   const placed=[];
-  /* узлы, мимо которых фишка скользит: следы стиков и живая строка подсказки */
+  /* узлы, мимо которых фишка скользит: следы стиков, живая строка подсказки,
+     нос корабля и подушки стика в покое (Контроль, 17.09) */
   for(const f of feet)placed.push({x:(f.x-f.r)/U,y:(f.y-f.r)/U,w:2*f.r/U,h:2*f.r/U});
   {
     const pe=(typeof promptEl==="function")?promptEl():null;
     const r=(pe&&pe.textContent)?promptRect():null;
     if(r&&r.height>0)placed.push({x:r.left/U,y:r.top/U,w:r.width/U,h:r.height/U});
   }
+  {
+    /* сам корабль: на узком экране боковая кромка проходит рядом с носом —
+       фишка не имеет права лечь поверх него (Контроль, 17.09). Настоящий
+       силуэт красится потом, своим масштабом (shipScaleAt) и своим корпусом
+       (hullOf), которых здесь нет и ради одной плашки заводить не стоит —
+       берём щедрый запас вокруг точки корабля на экране, с которым нос
+       кораблей всех типов (от катера до тяжёлого рудовоза) не дотянется
+       до фишки. zx/zy здесь уже в UI-мерке (делены на U снаружи). */
+    const zsx=zx(sh.x),zsy=zy(sh.y),SHIP_GUARD=36;
+    placed.push({x:zsx-SHIP_GUARD,y:zsy-SHIP_GUARD,w:2*SHIP_GUARD,h:2*SHIP_GUARD});
+  }
+  {
+    const pr=(typeof padsRect==="function")?padsRect():null;
+    if(pr&&pr.height>0)placed.push({x:pr.left/U,y:pr.top/U,w:pr.width/U,h:pr.height/U});
+  }
   ctx.font="8px ui-monospace,monospace";
   /* под окном оклика и окном бака фишки гаснут, как борт (R0, дев 12.09): на
      них не жмут, пока окно ждёт ответа, и они не спорят с ним глазами */
   const bc=document.body.classList,CA=(bc.contains("hailopen")||bc.contains("sosopen"))?.12:1;
+  /* плавное место фишки (P4, Контроль 17.09): без него смена следа стика
+     телепортирует плашку в тот же кадр — на телефоне это дёрганье. Шаг кадра
+     берём по настоящим часам (wallNow), а не по игровому dt: это чисто
+     рисовальный эффект, мировой останов его не должен трогать */
+  const CHIP_TNOW=wallNow();
+  const chipDt=CHIP_T?Math.min(.2,(CHIP_TNOW-CHIP_T)/1000):1/60;
+  CHIP_T=CHIP_TNOW;
+  const usedKeys={};
   for(const m of marks){
     const x=zx(m.x),y=zy(m.y);
     if(x>-20&&x<W+20&&y>-20&&y<H+20)continue;
@@ -780,14 +810,53 @@ function drawSysHud(zx,zy,sh,sys,U){
     }
     if(spot){rx=spot[0];ry=spot[1];}
     placed.push({x:rx,y:ry,w:cw,h:ch});
+    usedKeys[m.k]=true;
+    /* Плавный ход к месту, а не телепорт (P4, Контроль 17.09): рисуем в
+       CHIP_POS[m.k], которое движется к логическому (rx,ry) не быстрее
+       CHIP_SPEED px/с. Дальний перескок (соседняя кромка от пальца через
+       весь экран) едет НЕ лерпом — тухнет на старом месте и загорается на
+       новом за CHIP_FADE секунд, иначе плашка «проезжает» через весь кадр. */
+    const CHIP_SPEED=200,CHIP_FADE=.15;
+    let dcx=rx,dcy=ry,dcA=1;
+    {
+      let st=CHIP_POS[m.k];
+      /* не только «нет записи», но и «запись сломана» — испорченный кадр
+       (NaN от чужого кода) иначе застревает в NaN навсегда: расстояние до
+       NaN само NaN, а любое сравнение с NaN ложно, так что ни один из веток
+       ниже никогда не выбирает «доехали» и лерп не сходится в принципе */
+      if(!st||!isFinite(st.x)||!isFinite(st.y)){st=CHIP_POS[m.k]={x:rx,y:ry,fading:false,fadeT:0,fx:rx,fy:ry};}
+      else if(st.fading){
+        st.fadeT+=chipDt;
+        const half=CHIP_FADE/2;
+        if(st.fadeT>=CHIP_FADE){st.fading=false;st.x=rx;st.y=ry;dcx=rx;dcy=ry;dcA=1;}
+        else if(st.fadeT<half){dcx=st.fx;dcy=st.fy;dcA=1-st.fadeT/half;}
+        else{dcx=rx;dcy=ry;dcA=(st.fadeT-half)/half;}
+      }else{
+        const dist=Math.hypot(rx-st.x,ry-st.y);
+        const edgeLen=Math.max(inset.x1-inset.x0,inset.y1-inset.y0);
+        if(dist>edgeLen*.5){
+          st.fading=true;st.fadeT=0;st.fx=st.x;st.fy=st.y;
+          dcx=st.fx;dcy=st.fy;dcA=1;
+        }else{
+          const maxStep=CHIP_SPEED*chipDt;
+          if(dist<=maxStep||dist<.01){st.x=rx;st.y=ry;}
+          else{st.x+=(rx-st.x)/dist*maxStep;st.y+=(ry-st.y)/dist*maxStep;}
+          dcx=st.x;dcy=st.y;dcA=1;
+        }
+      }
+    }
+    rx=dcx;ry=dcy;
+    const AA=A*dcA;
     /* Зона нажатия шире плашки: правило интерфейса требует 44 px на палец, а
-       фишка ростом 16. Растим её вокруг центра, не трогая рисунок. */
-    if(m.t&&A===1){
+       фишка ростом 16. Растим её вокруг центра, не трогая рисунок. Зона идёт
+       за видимым местом (rx,ry уже сглажены), а не за логическим слотом —
+       иначе палец бил бы мимо плашки во время подъезда или затухания. */
+    if(m.t&&A===1&&dcA>.5){
       const PAD=Math.max(0,(44-ch)/2);
       SYS_CHIPS.push({x:(rx-6)*U,y:(ry-PAD)*U,w:(cw+12)*U,h:(ch+PAD*2)*U,t:m.t});
     }
-    ctx.globalAlpha=A;ctx.fillStyle="rgba(5,7,12,.72)";ctx.fillRect(rx,ry,cw,ch);
-    ctx.strokeStyle=m.c;ctx.globalAlpha=.5*A;ctx.lineWidth=1;ctx.strokeRect(rx+.5,ry+.5,cw-1,ch-1);ctx.globalAlpha=A;
+    ctx.globalAlpha=AA;ctx.fillStyle="rgba(5,7,12,.72)";ctx.fillRect(rx,ry,cw,ch);
+    ctx.strokeStyle=m.c;ctx.globalAlpha=.5*AA;ctx.lineWidth=1;ctx.strokeRect(rx+.5,ry+.5,cw-1,ch-1);ctx.globalAlpha=AA;
     /* после перескока на соседнюю кромку точка луча и сама фишка расходятся:
        сторона надписи берётся по МЕСТУ фишки (P4) */
     const onRight=rx+cw/2>W/2;
@@ -798,5 +867,8 @@ function drawSysHud(zx,zy,sh,sys,U){
     ctx.fillText(label,onRight?rx+cw-18:rx+18,ry+12);
     ctx.textAlign="center";ctx.globalAlpha=1;
   }
+  /* цель пропала из кадра (тело за спиной, автопилот снят) — забыть её место,
+     иначе через минуту чья-то новая фишка того же типа въедет с чужого края */
+  for(const k in CHIP_POS)if(!usedKeys[k])delete CHIP_POS[k];
 }
 /* кольцо: half=-1 — дальняя дуга под планетой, half=1 — ближняя поверх неё */

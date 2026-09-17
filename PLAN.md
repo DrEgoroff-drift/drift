@@ -238,6 +238,12 @@ Rule 3: same look, cheaper work.
   right insets); and with a foot in the middle of the lower half the chips are free to stand at
   y = 556 and 576 — the bottom edge no longer follows the finger. The sweep covers the whole edge
   now: a shorter one left a chip sitting inside a large obstacle instead of jumping.
+  Control's review (17.09) asked for three more things, done in the same milestone: the chip's
+  own place now *eases* toward its target at up to 200 px/s instead of snapping (a same-edge slide
+  fades to a cross-edge jump over 0.15 s when the straight path is longer than half the edge, so a
+  finger never sends a chip skating across the whole screen); the ship's own nose is now a taken
+  rectangle, so a side-edge chip cannot sit on top of it; and the stick pads at rest (`padsRect`),
+  not only their finger-drawn trace, are taken too.
 - [ ] **P5** «Смена» text light-on-cream, contrast ≈ 1.1:1; styles never moved to the paper; no
   right margin (§5.1).
 - [ ] **P6** Hints cut at 411 px, МАСШТАБ under a chip, the beacon offered at the ship and wasted at
