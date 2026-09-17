@@ -87,6 +87,16 @@ industrial plan (`11r-plan`), the blueprint is `G.draft`.
 Numbers: `docs/PLAYTEST-2026-09-13.md` §2.1, §6. Meter: `docs/night-2026-09-13/raw/phone-tools/trace.py`
 on the S23 (390×844, DPR 2.625, 120 Hz) before, after every item, at the end; `g11` on the laptop.
 Rule 3: same look, cheaper work.
+- [x] **0.3 Layout reads — DONE by its own meter, and it did not move the cadence.** Reads in the
+  frame went from 6.3 a frame to 0.31 after three fixes (the fleet label and the helm lift reading
+  raw, the brake button fighting the helm-hide row every frame, and the six-node observer watching
+  style with subtree so every gauge's own width dirtied the cache). Mutations fell fifty-fold,
+  rectsDirty 62 → 11 per 600 frames. **And the cadence under steering did not budge: 80–84 % on every
+  build of the last ten commits.** Said plainly so nobody re-litigates it: the item is a clean win on
+  its own measure and pure code hygiene in effect — the deadline is missed in the raster, not in our
+  JS, which measures 6–8 ms against 16.7. The evening's other lesson is in GOTCHAS: the phone's first
+  minute is inflated (92.8 % rested, 83.7 % after a minute idle, 78.5 % on a fresh reload, thermal 1
+  throughout), so throw the first run away and judge by the last two of three.
 - [x] **0.1 Cadence** — done; body in `docs/PLAN-archive.md` («Moved 2026-09-18»).
 - [x] **0.1b An even tact** — done; body in `docs/PLAN-archive.md` («Moved 2026-09-18»).
 - **Gate, honestly: half taken.** On the author's S23, `RES_AUTO` now holds at 2 for ten minutes
