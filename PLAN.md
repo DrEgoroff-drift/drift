@@ -300,6 +300,11 @@ Rule 3: same look, cheaper work.
   single selector. Repainted with the journal's own ink (`#4a3a24`, matching `.li.talk span`) and a
   light warm tint (`rgba(120,96,56,.10)`) instead of a dark overlay — contrast 7.86:1 / 6.59:1
   against the sheet's two gradient ends.
+- [ ] **RELEASE BLOCKER: four «штурвал» tests fail only in the full suite** (found by the worker
+  on HEAD, 18.09, not caused by any of this evening's commits; they pass in isolation). Classic
+  test-order pollution: something earlier in the run leaves state behind. Control gates the release
+  on a green full run, so "only in the suite" is not milder than "always" — the suite is what gets
+  run. Owner: the Tester (tests are his). Find the polluting test, not a workaround in the victim.
 - [ ] **P6** Hints cut at 411 px, МАСШТАБ under a chip, the beacon offered at the ship and wasted at
   0 m, КНИЖКА «хулк» and «командировочные за 0 км», the `celDay` column out of order (§1.5, §1.6, §4.4).
 - [x] **P7** One voice for the gravity anchor. Control offered a choice — drop the ship-side toast
