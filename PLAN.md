@@ -104,6 +104,10 @@ Rule 3: same look, cheaper work.
   muting it changes nothing. But the cadence gate is **not** met: the first minute read 58.2 fps
   at 97 %, and over ten minutes the shelf is 76–83 % with 475–619 frames over 24 ms a minute and
   p95 33.4 ms. The first minute was luck, and striking the gate on it was my mistake.
+  Screen recording of the S23 itself on 05128a9 (Tester, 17.09, screenrecord, calm flight): 600
+  frames in 9.99 s, median 16.7 ms, p95 17.0, two frames over 24 ms. So the idle frame is already
+  smooth; the shelf comes from **active steering** — a minute with the finger on the stick reads
+  83–90 %, ten minutes 79–80 %. The next measurement is prof() with the finger held vs. without.
 - [ ] **Four milliseconds, by the function.** `frameBody` averages 10.58 ms against a 16.7 ms
   vsync, max 28.7 — no headroom, and muting *any* single draw function now gives 59.7 fps at
   99.5 %, so there is no one culprit left: the frame is simply full. The task is to take ≥ 4 ms of
