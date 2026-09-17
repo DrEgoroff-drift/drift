@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 538 · символов верхнего уровня: 5170
+Файлов: 538 · символов верхнего уровня: 5174
 
 ## СИМВОЛЫ
 
@@ -1336,7 +1336,7 @@ drawDronesMap                src/12e-drone-flight.js:312-330
 drawDronesSystem             src/12e-drone-flight.js:226-299
 drawDustMotes                src/19-mode-landing.js:271-284
 drawElevator                 src/20aa-poi-shapes.js:91-113
-drawExhaust                  src/16a-space.js:360-420
+drawExhaust                  src/16a-space.js:376-436
 drawFactory                  src/20aa-poi-shapes.js:378-462
 drawFactRoute                src/13b-occupy.js:285-338
 drawFindsSystem              src/17b-finds.js:181-263
@@ -1352,7 +1352,7 @@ drawGround                   src/19-mode-landing-ground.js:11-239
 drawGroundCrumbs             src/19-mode-landing-ground.js:242-252
 drawGroundGrass              src/19-mode-landing-ground.js:255-292
 drawHaul                     src/16c-rescue.js:406-550
-drawHitFx                    src/18d-postfx.js:45-63
+drawHitFx                    src/18d-postfx.js:87-105
 drawHomeIn                   src/29d-home-draw.js:9-332
 drawHomeOut                  src/21f-home-out.js:73-312
 drawHomeRoom                 src/27e-ui-home.js:42-62
@@ -1400,11 +1400,11 @@ drawSkyBodies                src/19b-sky.js:96-128
 drawSkyLayer                 src/19-mode-landing.js:171-269
 drawSpa                      src/29i-spa-draw.js:41-486
 drawSpaceDust                src/16a-space.js:275-308
-drawStarBody                 src/16a-space.js:459-475
-drawStarHole                 src/16a-space.js:562-592
-drawStarNeutron              src/16a-space.js:535-559
+drawStarBody                 src/16a-space.js:475-491
+drawStarHole                 src/16a-space.js:578-608
+drawStarNeutron              src/16a-space.js:551-575
 drawStars                    src/16-flight.js:28-72
-drawStarSingle               src/16a-space.js:476-533
+drawStarSingle               src/16a-space.js:492-549
 drawStation                  src/17c-system-draw.js:434-498
 drawStationBody              src/17c-system-draw.js:174-376
 drawStationMods              src/17a-station-mod.js:214-217
@@ -1550,7 +1550,7 @@ ethTick                      src/25l-post-ether.js:59-104
 evacCost                     src/21-mode-surface.js:677
 evacFrom                     src/21-mode-surface.js:678
 evacuate                     src/21-mode-surface.js:679-699
-exhaustHaze                  src/16a-space.js:347-359
+exhaustHaze                  src/16a-space.js:351-375
 exileCandidates              src/12g-mgr-rogue.js:123-130
 exitBase                     src/21a-mode-base.js:153-156
 exitBelt                     src/24-mode-belt.js:176-184
@@ -1811,10 +1811,10 @@ globusAim                    src/25f-globus.js:49-68
 globusDraw                   src/25f-globus.js:81-140
 globusSys                    tests/91zzzg-globus.js:7-11
 globusTick                   src/25f-globus.js:70-77
-GLOW_CACHE                   src/16a-space.js:440
-GLOW_SP                      src/16a-space.js:439
+GLOW_CACHE                   src/16a-space.js:456
+GLOW_SP                      src/16a-space.js:455
 GLOW_TIERS                   src/11i-glow.js:121
-glowBlit                     src/16a-space.js:455
+glowBlit                     src/16a-space.js:471
 glowCaveX                    src/11i-glow.js:139-142
 glowCorePlanet               src/11i-glow.js:33-37
 glowDepthAt                  src/11i-glow.js:24-29
@@ -1827,7 +1827,7 @@ glowGroundLine               src/11i-glow.js:110-115
 glowIsCore                   src/11i-glow.js:38
 glowPatches                  src/11i-glow.js:73-82
 glowScan                     src/11i-glow.js:64-68
-glowSprite                   src/16a-space.js:441-453
+glowSprite                   src/16a-space.js:457-469
 glowTier                     src/11i-glow.js:122-128
 glyphEl                      src/12t-settle.js:79-90
 glyphHasRunes                src/12t-settle.js:52-56
@@ -2010,7 +2010,9 @@ haulStart                    src/16c-rescue.js:149-162
 haulTick                     src/16c-rescue.js:287-405
 hazardBand                   src/25-cockpit.js:166-177
 hazeBand                     src/19c-light.js:191-198
+hazeDone                     src/18d-postfx.js:74
 hazeFar                      src/19c-light.js:167-188
+hazeGrab                     src/18d-postfx.js:39-56
 hdAgeShifts                  tests/91zzzzy-hold.js:48-59
 hdLay                        tests/91zzzzy-hold.js:41-46
 hDraw                        tests/91zzzzzzz-hands.js:36
@@ -2040,7 +2042,8 @@ HEAT_STUN                    src/13a-guns.js:22
 HEAT_WORLD                   src/21a1a-base-heat.js:17
 HEAT_WORST                   src/21a1a-base-heat.js:23
 heatAdd                      src/13a-guns.js:47-52
-heatHaze                     src/18d-postfx.js:23-38
+heatHaze                     src/18d-postfx.js:76-80
+heatHazeFrom                 src/18d-postfx.js:58-73
 heatTick                     src/13a-guns.js:54-62
 held                         src/08-state.js:278
 HELM                         src/15a-helm.js:110
@@ -2317,6 +2320,7 @@ huntMark                     src/12o-hunter.js:32-53
 huntQuest                    src/12o-hunter.js:55-63
 huntSpawn                    src/12o-hunter.js:90-105
 huntTierOf                   src/12o-hunter.js:28
+HZ_CN                        src/18d-postfx.js:37
 ICO_F                        src/24-mode-belt.js:28
 ICO_V                        src/24-mode-belt.js:22-27
 importCode                   src/14a-cloud.js:62-64
@@ -5774,7 +5778,7 @@ zooTick                      src/11ad-zoo.js:41-54
   · кильватер: хвосты от скорости, а не от сопла:284
   · нить кильватера — ступенями спада, а не отрезками (0.2):357
 
-## src/16a-space.js · 37 КБ
+## src/16a-space.js · 38 КБ
   · облик системы:1
 
 ## src/16b-missile.js · 17 КБ
@@ -5830,7 +5834,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/18c-chunks.js · 9 КБ
   · кэш статичного: чанки и слои:1
 
-## src/18d-postfx.js · 4 КБ
+## src/18d-postfx.js · 7 КБ
   · эффекты кадра: марево, хроматика (M325):1
 
 ## src/18d-verlet.js · 7 КБ

@@ -126,6 +126,17 @@ Rule 3: same look, cheaper work.
   `straight_cmp` shot; `hud`, `drawHull` and `drawSystem` were left alone (laptop `g11` drifts
   10–20 fps between runs of the same build, so their 6–25 ms/s cannot be told from the noise —
   the S23 is the meter for them).
+- [x] **0.2a The haze over the nozzles — the frame's real bill.** The tester found it on the S23
+  with one tab and mute-one-function passes: with `exhaustHaze` the game ran 33.5 fps at 67 %
+  cadence with 492 frames over 24 ms; **without it, 59.8 fps at 99.6 % with five** — one function
+  held the whole Stage 0 gate, and everything done in 0.1–0.4 is worth about 7 fps beside it.
+  `heatHaze` drew the canvas into itself up to nine times per nozzle (eighteen on a two-engine
+  hull), and each read of the freshly drawn canvas stalls the GPU pipeline. The author's condition
+  was to optimise, not to cut («это красиво»), so the look is untouched: the union rect of all
+  nozzles is copied **once** into a small offscreen and the strips are drawn from there, with the
+  same strip count, the same alpha and the same sine of `G.t`. Self-copies of the main canvas per
+  frame: 6 → 0 (one grab into the offscreen instead), strips unchanged. Accept: the tester on the
+  S23 (fps ≥ 55, cadence ≥ 95 %) and the designer's paired haze frame.
 - [x] **0.3 Layout in the frame** — zero DOM reads per frame and per pointer event, measured:
   `system`, thirty steady frames and thirty pointer moves in flight and on foot, all counters 0
   (before: 5 `getBoundingClientRect` + 5 selector queries **per frame**). The canvas and pad rects

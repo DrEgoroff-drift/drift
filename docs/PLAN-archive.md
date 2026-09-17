@@ -10033,3 +10033,32 @@ vsync — 40 fps. A cap is a promise and keeps rounding up; a tact is an aim and
 nearest, and the two strides are combined by taking the larger, because a cap may not be exceeded.
 After the fix every drawn frame is 15–18 ms apart and worth exactly two quanta, 2 steps in 89 % of
 frames under a synthetic ±1 ms vsync jitter (which is harsher than the real one).
+
+**0.2a The haze over the nozzles (2026-09-17).** The author kept saying the ship judders in every
+mode, and he named the place himself: «не от хвоста, а от огня двигателя и марева». The tester
+confirmed it on a real S23 with a single tab, muting one draw function at a time over 20 s of
+steering: with the haze, 33.5 fps / 67 % cadence / 492 frames over 24 ms and `RES_AUTO` sliding
+2 → 1; without the haze, 59.8 fps / 99.6 % / five such frames and the resolution holding. Muting
+the flame, the wake or the trail changed almost nothing by comparison. So one function held the
+whole Stage 0 gate, and the cadence and raster work of 0.1–0.4 is worth about 7 fps beside it.
+
+Why it cost that much: `heatHaze` sliced the rect behind each nozzle into up to nine strips and
+drew each strip with `ctx.drawImage(cvs, …)` — the canvas into itself. Every such read of the
+canvas Chrome has just drawn into forces the raster to finish and the frame to land in memory
+first; nine times per nozzle, eighteen on a two-engine hull. On a laptop this hides in the noise;
+on a phone it is a third of the frame.
+
+The author's condition was to optimise, not to cut, so nothing about the look changed: the union
+rectangle of all nozzles is grabbed **once** per frame into a small offscreen (`hazeGrab`, growing
+canvas, `globalCompositeOperation="copy"`, no per-frame allocation), and every nozzle's strips are
+then blitted out of that offscreen (`heatHazeFrom`) with the same strip count, alpha and sine
+phase. `heatHaze` stays as a one-rect wrapper for any other caller. One consequence is arguably an
+improvement: the strips now read the *untouched* frame instead of one another's output, so a
+second nozzle no longer distorts the first nozzle's distortion.
+
+Measured by counting `ctx.drawImage` calls whose source is the canvas itself, one frame under
+thrust: 6 → 0, with the single grab going into the offscreen instead and the number of strips
+unchanged (six). A whole-frame pixel diff between the two builds is *not* a valid check here and
+was discarded: the two runs drift apart in world state (the ship sits a few pixels off) and the
+starfield is regenerated per load, so 2 % of pixels differ over the whole frame, corners included.
+The paired-frame verdict belongs to the designer's own method.

@@ -344,18 +344,34 @@ function flightCam(dt,tx,ty,thrusting,speed){
    парой полупрозрачных дуг переменного радиуса — настоящего искажения в
    canvas 2D нет, а глаз читает именно колебание кромки */
 /* марево (M325): прямоугольник кадра за каждым соплом, вдоль факела, дрожит */
+/* Одна самокопия на все сопла (0.2, 17.09): сначала считаем общий кусок
+   кадра, кладём его в офскрин ОДИН раз, и только потом кладём полоски
+   каждого сопла из него. Было: до девяти самокопий холста на СОПЛО — именно
+   это забирало на S23 половину кадров (см. 18d-postfx). */
 function exhaustHaze(zx,zy,Z){
   const sh=G.ship,h=hullOf(G.shipId);
   const ca=Math.cos(sh.a),sa=Math.sin(sh.a);
   const SZ=shipZ(Z),cx0=zx(sh.x),cy0=zy(sh.y);
-  let i=0;
+  const box=[];
+  let ux0=1e9,uy0=1e9,ux1=-1e9,uy1=-1e9;
   for(const e of h.eng){
     const px=cx0+(e.x*ca-e.y*sa)*SZ, py=cy0+(e.x*sa+e.y*ca)*SZ;
     const R=Math.max(2.5,e.r*SZ*2.2),L=R*5.5;
     const fx=px-ca*L,fy=py-sa*L;
     const x0=Math.min(px,fx)-R,y0=Math.min(py,fy)-R,w=Math.abs(fx-px)+2*R,hh=Math.abs(fy-py)+2*R;
-    heatHaze(x0,y0,w,hh,.8,i++*2.3);
+    box.push([x0,y0,w,hh]);
+    if(x0<ux0)ux0=x0;if(y0<uy0)uy0=y0;
+    if(x0+w>ux1)ux1=x0+w;if(y0+hh>uy1)uy1=y0+hh;
   }
+  if(!box.length)return;
+  if(typeof hazeGrab!=="function"){   /* старый путь, если постэффектов нет */
+    let i=0;for(const b of box)heatHaze(b[0],b[1],b[2],b[3],.8,i++*2.3);
+    return;
+  }
+  if(!hazeGrab(ux0,uy0,ux1-ux0,uy1-uy0))return;
+  let i=0;
+  for(const b of box)heatHazeFrom(b[0],b[1],b[2],b[3],.8,i++*2.3);
+  hazeDone();
 }
 function drawExhaust(zx,zy,Z,thr){
   if(thr<=0)return;
