@@ -105,6 +105,9 @@ Rule 3: same look, cheaper work.
   re-shot automatically — such runs used to report a glorious 99 % and mislead everyone, including
   the Tester. Stage 0's gate at full resolution is not taken and did not come closer all evening; the
   only thing that takes it is the author's call on ×1.5.
+- [ ] **0.4 `src/16a-space.js` crossed the 40 KB build guard (41 KB) on 9dc0a3f.** Not a blocker and
+  not to be fixed on the run. When it is split, split it by meaning: the sprite oven with its cache
+  (`GLOW_SP`, `GLOW_CACHE`, `glowSprite`, `glowBlit`) apart from the things it bakes.
 - [x] **0.1 Cadence** — done; body in `docs/PLAN-archive.md` («Moved 2026-09-18»).
 - [x] **0.1b An even tact** — done; body in `docs/PLAN-archive.md` («Moved 2026-09-18»).
 - **Gate, honestly: half taken.** On the author's S23, `RES_AUTO` now holds at 2 for ten minutes
