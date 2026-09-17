@@ -227,9 +227,12 @@ const RES_DOWN_K=1.45, RES_UP_K=1.05;        /* пороги в долях це�
 const RES_DOWN_WIN=3000, RES_UP_WIN=5000;    /* сколько держаться, чтобы сдвинуть */
 const RES_HOLD_MS=30000;                     /* возврат короче этого — ошибка */
 const RES_WAIT0=60000, RES_WAIT_MAX=900000;  /* наказание за ошибку, с удвоением */
-const RES_SAY_MS=60000;                      /* и голос не чаще раза в минуту */
+/* Голос (Дизайнер, 17.09): подъём — МОЛЧА. Картинка стала лучше, и это само
+   себя сообщение; тост про вещь, которой игрок не касался, только мешает. Спуск
+   говорит ОДИН раз за сеанс — иначе спуск-подъём-спуск даёт три тоста за две
+   минуты руления. Где вернуть чёткость руками, сказано в самом сообщении. */
 let resEma=16,resBad=0,resGood=0,resUps=0,resMode="",resFresh=0;
-let resWait=0,resHeld=0,resWaitNext=RES_WAIT0,resSaid=0;
+let resWait=0,resHeld=0,resWaitNext=RES_WAIT0,resSaid=false;
 /* целевой кадр: шестьдесят герц, но если игрок поставил потолок ниже — его.
    Без этого потолок в тридцать кадров сам же ронял разрешение: ровные 33 мс
    стояли выше порога спуска, и игра считала свой же потолок просадкой. */
@@ -238,9 +241,8 @@ function resTarget(){
   return cap>0?Math.max(FRAME_MS,1000/cap):FRAME_MS;
 }
 function resSay(t){
-  const w=wallMs();
-  if(w-resSaid<RES_SAY_MS)return;
-  resSaid=w;say(t);
+  if(resSaid)return;
+  resSaid=true;say(t);
 }
 function resAuto(d){
   if(!G.running||d<=0||d>250)return;
@@ -271,7 +273,7 @@ function resAuto(d){
     if(resGood>RES_UP_WIN){
       resGood=0;resBad=0;resEma=per*1.25;resFresh=1500;resUps++;resHeld=RES_HOLD_MS;
       RES_AUTO=RES_AUTO<1.5?1.5:2;
-      if(Math.min(RES_AUTO,window.devicePixelRatio||1)>DPR){resize();resSay("Разрешение вернулось на ×"+RES_AUTO);}
+      if(Math.min(RES_AUTO,window.devicePixelRatio||1)>DPR)resize();   /* молча */
     }
   }
 }
@@ -378,9 +380,16 @@ function frameBody(now){
   resAuto(now-last);
   /* мир шагает квантами, остаток ждёт следующего кадра (см. QUANT_MS) */
   quantAcc+=clamp(now-last,0,250);last=now;
-  steps=Math.floor(quantAcc/QUANT_MS);
-  if(steps>QUANT_MAX){steps=QUANT_MAX;quantAcc=0;}else quantAcc-=steps*QUANT_MS;
-  if(!steps)return;
+  /* БЛИЖАЙШЕЕ число квантов, а не пол — и остаток может быть ОТРИЦАТЕЛЬНЫМ
+     (взяли вперёд и отдадим следующим кадром). С полом на 120 Гц возвращалось
+     то же чередование, только в мире: интервал дрожит вокруг 8.33, и 8.1 давал ноль
+     шагов, а 8.5 — два. Округление даёт 8.33±1 → шаг, 16.6 → два, 25 → три. */
+  steps=Math.round(quantAcc/QUANT_MS);
+  if(steps>QUANT_MAX){steps=QUANT_MAX;quantAcc=0;}
+  else quantAcc=clamp(quantAcc-steps*QUANT_MS,-QUANT_MS*.5,QUANT_MS*QUANT_MAX);
+  /* кадр короче половины кванта не рисуем — но флаг голоса снимаем сами:
+     frameBody зовут не только из frame() (стенды, пробники), и там его никто не чистит */
+  if(!steps){FRAME_IN=false;return;}
   dt=steps*QUANT_DT;
   }
   /* второй рубеж против залипших клавиш: событие blur приходит не всегда —
@@ -415,8 +424,10 @@ function frameBody(now){
        и руда исчезали молча (плейтест 30.08.2026). Оба режима стабильны, их
        снимок честен: восстановление ставит корабль в свободный полёт там же. */
     if(G.mode==="system"||G.mode==="dock"||G.mode==="surface")autosave();
-    /* шаги одинаковые: именно в этом вся ровность руля (см. QUANT_MS) */
-    {const sdt=dt/steps;for(let i=0;i<steps;i++)stepWorld(sdt);}
+    /* мир шагает ОДИН раз за кадр, как и до 0.1; квантуется внутри только
+       корабль — см. WORLD_SUB (08-state) и updateSystem */
+    WORLD_SUB=steps;
+    try{stepWorld(dt);}finally{WORLD_SUB=1;}
     hullHeldTick();   /* корпус до беды (R5b) */
     if(typeof tapeTick==="function")tapeTick(dt);
     if(typeof shiftTalkTick==="function")shiftTalkTick(dt);

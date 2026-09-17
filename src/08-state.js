@@ -112,6 +112,13 @@ try{
 let RES_AUTO=2;
 addEventListener("resize",resize);resize();
 
+/* Сколько квантов корабля в этом кадре (0.1 fixes). Квантуется ТОЛЬКО
+   интегрирование корабля — то, что дёргалось: нос, скорость, положение. Весь
+   остальной мир шагает как раньше — один раз за кадр суммой dt. Первая версия 0.1
+   звала весь stepWorld n раз, и на S23 это вышло регрессией: мир с 0.71 мс на
+   кадр вырос до 9.8–14.7, эмиттеры сеяли точку НА ВЫЗОВ (WAKE 492 → 1938), растр
+   дорожал, кадр длиннел, квантов становилось больше — спираль. */
+let WORLD_SUB=1;
 const keys={left:false,right:false,thrust:false,brake:false,act:false,fire:false,msl:false,lock:false,
   pup:false,pdown:false,rollL:false,rollR:false,launch:false};
 let prevAct=false,actEdge=false;

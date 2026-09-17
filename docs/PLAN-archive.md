@@ -9954,3 +9954,36 @@ intervals in the page (12 s at 40 ms → ×1; 14 s at 10 ms → ×2; climb, knoc
 see a 60 s wait and the next penalty at 120 s, then a climb after the wait; 40 s of steady 18 ms
 moves nothing; 30 s of 33 ms under a 30 fps cap moves nothing). The accept line of the item —
 `RES_AUTO ≥ 2` held for ten minutes — is a phone measurement and is still open.
+
+**0.1 fixes (2026-09-17).** The first cut of 0.1 called the whole `stepWorld` n times a frame.
+On the author's S23 that was a regression, not an improvement: `stepWorld` went from 0.71 ms a
+frame to 9.77 (c70a745) and 14.68 (f350b0f), `WAKE` from 492 points to 1938, cadence from 68 % to
+50–63 %, and `RES_AUTO` fell to 1 within thirty seconds. The mechanism is a spiral: emitters seed
+one point *per call*, so two calls a frame double the particles, the raster grows, the frame gets
+longer, a longer frame buys more quanta, and round it goes. On the laptop all of this hid inside
+the measurement noise (0.67 → 2.9 ms) — which is why the verdict on a frame now comes from the
+phone. What the phone also showed is that the idea was right where it was aimed: the spread of the
+nose step per frame fell from 9.5× to 2.9×.
+
+So the quantum now wraps *only* the ship's integration — helm, speed, the velocity-toward-nose
+easing, the gravitational anchor's turn, position — inside `updateSystem`, driven by `WORLD_SUB`
+(declared in `08-state`, set by `frameBody` for the duration of one `stepWorld` call). Everything
+else keeps its single call with the summed `dt`, which also puts `recTick` back to one entry per
+frame, so `15c-rec` recordings and replays keep their shape. Two more corrections from the review:
+the step count is `Math.round` and the carried remainder may go down to half a quantum negative
+(with `floor`, a 120 Hz interval jittering around 8.33 ms alternated 0 and 2 steps — the same
+judder moved from the frame into the world), and the early return for a frame worth no quantum now
+clears `FRAME_IN` itself, because `frameBody` is also called from stands and probes where nobody
+clears it after.
+
+Measured: the six-frame emission probe (`shot.py system --js "keys.thrust=true;keys.left=true"`,
+`WAKE.length/TRAIL.length`) reads 6/32 against 6/30 on `main` and 60/74 before the fix; the step
+histogram over 2 400 frames at 120 Hz with ±1 ms jitter is one step in 92.6 % of frames, zero in
+3.7 %, two in 3.7 %, and at 60 Hz with ±2 ms jitter two steps in 90.2 %. The remaining unevenness
+is what an integer number of quanta per frame costs; the even-tact item (0.1b) removes the reason
+for it by aiming at every second vsync instead of every one.
+
+Also in this commit, from the designer's verdict on 0.4: the resolution's climb is **silent** (the
+picture getting better is the message; a toast about a thing the player never touched is noise),
+and the descent speaks once a session rather than once a minute — under the new penalty a
+descent-climb-descent would otherwise put three toasts on screen inside two minutes of steering.

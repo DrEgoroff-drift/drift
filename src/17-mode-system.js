@@ -98,7 +98,16 @@ function updateSystem(dt){
   const maxSp=(6.4+st.thr*1.6)*((typeof fleetCaravanActive==="function"&&fleetCaravanActive())?.6:1);   /* караван идёт ходом флота (M313) */
   /* курс и тяга — штурвалом (15a-helm): без угловой инерции, тяга вектором,
      отпущенная тяга ниже крейсерской тормозит сама */
-  const helm=apOn?null:helmApply(dt,st,sh,maxSp);
+  /* ── руль и ход — равными квантами (0.1) ──
+     Дёргался именно этот кусок: поворот носа шёл на сырой dt кадра, и на
+     длинном кадре шаг был вдвое крупнее (замер на S23: 0.46° / 2.17° / 4.34° за
+     кадр при ровном ведении пальца). Квантуется ТОЛЬКО он: эмиттеры,
+     частицы, соседи и таймеры остаются один раз за кадр суммой dt — они не
+     дёргались, а второй вызов стоит кадра и сеет вдвое больше точек. */
+  const subN=Math.max(1,WORLD_SUB|0),sdt=dt/subN;
+  let helm=null;
+  for(let sub=0;sub<subN;sub++){
+  helm=apOn?null:helmApply(sdt,st,sh,maxSp);
   sp=Math.hypot(sh.vx,sh.vy);
   if(sp>maxSp){sh.vx*=maxSp/sp;sh.vy*=maxSp/sp;sp=maxSp;}
   /* вектор скорости мягко доворачивается к носу — за счёт этого разворот
@@ -107,7 +116,7 @@ function updateSystem(dt){
      затягиваться под нос */
   if(sp>.08&&!apOn&&!(helm&&(helm.thr||helm.hold))){
     const cur=Math.atan2(sh.vy,sh.vx);
-    const na=cur+angDiff(sh.a,cur)*Math.min(1,.06*dt);
+    const na=cur+angDiff(sh.a,cur)*Math.min(1,.06*sdt);
     sh.vx=Math.cos(na)*sp;sh.vy=Math.sin(na)*sp;
   }
   /* гравитационный якорь: за краем системы уход от звезды сходит на нет,
@@ -143,7 +152,7 @@ function updateSystem(dt){
     if(d>rEdge){
       const k=clamp((d-rEdge)/700,0,1);
       const inward=Math.atan2(-sh.y,-sh.x);
-      const turn=Math.min(1,.05*k*dt);
+      const turn=Math.min(1,.05*k*sdt);
       sh.a+=angDiff(inward,sh.a)*turn;
       const vsp=Math.hypot(sh.vx,sh.vy);
       if(vsp>.001){
@@ -162,7 +171,8 @@ function updateSystem(dt){
   }
   /* якорь режет скорость до шага, а не после — иначе корабль всё равно
      уползал бы за край по чуть-чуть каждый кадр */
-  sh.x+=sh.vx*dt;sh.y+=sh.vy*dt;
+  sh.x+=sh.vx*sdt;sh.y+=sh.vy*sdt;
+  }   /* конец квантов корабля: дальше снова один раз за кадр, полным dt */
   /* крен считаем по фактической скорости поворота — работает и на автопилоте */
   const rate=angDiff(sh.a,a0)/Math.max(dt,.0001);
   /* насколько корабль ложится в поворот — подпись изготовителя (M369, §19.4

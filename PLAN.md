@@ -87,11 +87,26 @@ industrial plan (`11r-plan`), the blueprint is `G.draft`.
 Numbers: `docs/PLAYTEST-2026-09-13.md` §2.1, §6. Meter: `docs/night-2026-09-13/raw/phone-tools/trace.py`
 on the S23 (390×844, DPR 2.625, 120 Hz) before, after every item, at the end; `g11` on the laptop.
 Rule 3: same look, cheaper work.
-- [x] **0.1 Cadence** — the world steps in whole 1/120 s quanta, the leftover carried, the tick
-  chain that does not move the ship still runs once per frame; a frame that earns no quantum is not
-  drawn. Laptop `g11` before → after: system 30 → 39, belt 28 → 33, landing 36 → 40, surface 30 → 37,
-  scoop 51 → 60, raid 57 → 60, homein 50 → 59, road 29 → 35 fps. Body in `docs/PLAN-archive.md`
-  («Stage 0, moved 2026-09-17»). Not yet measured on the S23 — the phone was not attached.
+- [ ] **0.1 Cadence — built, open until the S23 says so.** The world's *ship* steps in whole
+  1/120 s quanta (`WORLD_SUB`, `08-state`; the loop lives in `updateSystem`), the leftover is
+  carried and may go half a quantum negative, and the step count is `Math.round`, not `floor`.
+  Everything else in `stepWorld` — emitters, particles, neighbours, timers — still runs once per
+  frame with the summed `dt`. The first version stepped the *whole* world n times and was a
+  regression on the phone (tester, 17.09: `stepWorld` 0.71 → 9.77 → 14.68 ms/frame, `WAKE`
+  492 → 1938 points, cadence 68 % → 50–63 %) because emitters seeded per call and the raster grew,
+  which made the frame longer, which bought more quanta. Good news from the same run: the nose
+  step spread fell from 9.5× to 2.9×, so quantising the ship is the right lever. After the fix, the
+  six-frame emission probe reads 6/32 against 6/30 on `main`; the step histogram (2 400 frames at
+  120 Hz with ±1 ms jitter) is 1 step in 92.6 % of frames, 0 in 3.7 %, 2 in 3.7 %; at 60 Hz with
+  ±2 ms it is 2 steps in 90.2 %. **Accept on the S23** (tester): `stepWorld` ≤ 1.1 ms/frame,
+  `WAKE` ±20 % of base, cadence ≥ base. Body in `docs/PLAN-archive.md`.
+- [ ] **0.1b An even tact** (Control, from the author: «на тел дергается все прогоны, плавный полёт
+  нужен»). A 120 Hz display asks for an 8.3 ms frame we cannot pay; the swing between 16.7 and
+  33.3 ms *is* the judder. Target tact (`28-loop`): 60 by default, i.e. every second vsync — a
+  frame that arrives sooner than ~0.75 of the target returns without work (and clears `FRAME_IN`);
+  120 is allowed only while the EMA of frame *work* stays under 6 ms for 5 s, and drops back over
+  7, with the hysteresis of 0.4. Needs the world back at ~1 ms first. Accept (tester, S23):
+  cadence ≥ 95 %, no frame > 24 ms in 60 s of steering.
 - [x] **0.2 Raster** — the wake and the thrust ribbon were a stroke per segment (two for the
   wake: halo and core). They now go in eight steps of fade per lane, one path per step, and the
   halo and the core share that path. Measured on a filled wake (1 560 wake points, 156 trail
