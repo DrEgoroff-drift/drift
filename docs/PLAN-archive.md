@@ -10175,3 +10175,20 @@ movement arrived nowhere and the item hung as a ghost until a tap into empty spa
 the rebuild now only raises `OPIS.rerenderPending`, and `opisDropEnd()` runs it once the item is
 put down. Verified in the browser pane: `touch-action` is `pan-y` closed, `pan-y` open (it was
 `none`), `none` while carrying; a rebuild during a fake drag defers and then happens.
+
+**P3 ОПИСЬ tab strip (2026-09-17).** Two defects in one strip. It was built as a flex row inside
+the cloth but took its width from its content: measured at 430 px of screen, the strip was 277 px
+inside a 396 px cloth, four words pushed left with a hundred pixels of nothing to their right, and
+each target narrower than it could have been. `align-self:stretch` plus `width:100%` on the nav
+and `flex:1 0 auto` on the buttons fixes it — grow but never shrink, so if a fifth tab ever
+appears the strip scrolls instead of squeezing the words under the 44 px finger rule. After:
+277 → 321 px at 375 px of screen (buttons 85/79/90/67, height 44) and 277 → 368 px at 430.
+The first attempt only touched the buttons and changed nothing at all, because the nav itself was
+the narrow box — worth remembering: stretch the container before stretching what is inside it.
+
+Second, the strip skipped `tabsSync`, which the desk's and the station's strips both call. That
+function does two things: it scrolls the selected tab into view, and it drops the fade mask on the
+right edge once there is nothing left to scroll. Without it the last tab of ОПИСЬ was permanently
+pale, as if more tabs were hiding behind it, and a selected tab could sit off the edge with no
+highlight visible anywhere. One call after the strip is built; `tail` now reads true with the mask
+off.

@@ -3203,7 +3203,7 @@ opisHullRedraw               src/27j-ui-opis.js:375-391
 opisHullSlotAt               src/27j-ui-opis.js:392-403
 opisKitCard                  src/27j-ui-opis.js:598-606
 opisKitFuture                src/27j-ui-opis.js:127-134
-opisLeave                    src/27j-ui-opis.js:953-958
+opisLeave                    src/27j-ui-opis.js:958-963
 opisLift                     src/27j-ui-opis.js:266-291
 opisMarkCan                  src/27j-ui-opis.js:297-312
 opisMarkOver                 src/27j-ui-opis.js:313-317
@@ -3214,7 +3214,7 @@ opisPartHtml                 src/27j-ui-opis.js:506-527
 opisPhone                    src/27j-ui-opis.js:71
 opisPileCard                 src/27j-ui-opis.js:576-597
 opisPriceCue                 src/27j-ui-opis.js:557-566
-opisRender                   src/27j-ui-opis.js:686-951
+opisRender                   src/27j-ui-opis.js:686-956
 opisRerender                 src/27j-ui-opis.js:74-83
 opisSame                     src/27j-ui-opis.js:84
 opisScrap                    src/27j-ui-opis.js:208-219
@@ -6201,7 +6201,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/27j-ui-kitlay.js · 9 КБ
   · комплект, разложенный на столе:1
 
-## src/27j-ui-opis.js · 57 КБ
+## src/27j-ui-opis.js · 58 КБ
   · ОПИСЬ: один стол для всего, что на тебе и в трюме (M341):1
 
 ## src/27jb-ui-got.js · 4 КБ

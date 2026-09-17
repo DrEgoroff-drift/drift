@@ -935,6 +935,11 @@ function opisRender(box){
     }
     box.insertBefore(nav,box.firstChild);
     box.classList.add("op-tab-"+OPIS.tab);
+    /* лента описи живёт по тем же правилам, что лента стола и станции (P3):
+       без tabsSync её затенённый правый край не снимался никогда — последняя
+       закладка вечно бледная, даже когда прокрутить больше некуда, а выбранная
+       закладка может стоять за краем */
+    if(typeof tabsSync==="function")tabsSync(nav);
   }
   box.appendChild(z3);box.appendChild(z2);box.appendChild(z1);if(z5)box.appendChild(z5);box.appendChild(z4);
   if(folds)box.appendChild(folds);

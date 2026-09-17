@@ -1546,7 +1546,14 @@ body.op-ask #opisBar>s{display:none}
   .opis .op-hatch{display:none}
   /* слоты раньше приборов (R6, 12.09): сперва что стоит, потом что это даёт */
   .opis .op-parts-grid{grid-template-columns:1fr;grid-template-areas:"hull" "cap" "slots" "panel" "spare"}
-  .opis nav.op-tabs{position:sticky;top:0;z-index:2;background:rgba(12,10,8,.92)}
+  .opis nav.op-tabs{position:sticky;top:0;z-index:2;background:rgba(12,10,8,.92);
+    align-self:stretch;width:100%;box-sizing:border-box}
+  /* Четыре закладки на ширину телефона — лента растягивается во всю строку (P3):
+     прижатые влево четыре слова и полоса пустоты справа читались недоделанной
+     вёрсткой, а мишень была вдвое уже, чем можно. grow без shrink: если
+     закладок станет больше и они перестанут влезать, лента снова прокрутится,
+     а не сожмёт слова под порог пальца. */
+  .opis nav.op-tabs button{flex:1 0 auto;text-align:center}
   /* вкладки описи (R6): зоны остаются в разметке, видна одна */
   .opis.op-tab-ship .op-top,.opis.op-tab-ship .op-kit,.opis.op-tab-ship .op-hold,.opis.op-tab-ship .op-locker,.opis.op-tab-ship .op-spare{display:none}
   .opis.op-tab-spare .op-top,.opis.op-tab-spare .op-kit,.opis.op-tab-spare .op-hold,.opis.op-tab-spare .op-hull,.opis.op-tab-spare .op-hullcap,.opis.op-tab-spare .op-slots,.opis.op-tab-spare .op-parts .op-panel{display:none}

@@ -209,7 +209,14 @@ Rule 3: same look, cheaper work.
   and runs after the drop, because replacing the card's node would drop the pointer capture and
   leave the item hanging as a ghost. Measured in the browser: `touch-action` reads `pan-y` closed,
   `pan-y` open (was `none`), `none` while carrying.
-- [ ] **P3** ОПИСЬ tab strip: stretch it; its fade mask never clears — it skips `tabsSync` (§1.3).
+- [x] **P3** ОПИСЬ tab strip (§1.3) — it took its width from its content, so four words sat in
+  277 px of a 396 px cloth with a hundred pixels of emptiness beside them; it now stretches across
+  the cloth (`align-self:stretch`, buttons `flex:1 0 auto` — grow, never shrink, so a fifth tab
+  would scroll rather than squeeze below the finger rule). At 375 px the strip went 277 → 321 px
+  with buttons of 85/79/90/67 and a height of 44; at 430 px, 277 → 368. And it now goes through
+  `tabsSync` like the desk's and the station's strips: without that its right-edge fade never
+  cleared, so the last tab stayed pale even with nothing left to scroll, and a selected tab could
+  sit off the edge. `tail` now reads true with the mask off.
 - [ ] **P4** Compass chips follow `helmStickFoot` (in `drawSystem`) up to mid-screen — keep them on
   the frame's edge (§1.4).
 - [ ] **P5** «Смена» text light-on-cream, contrast ≈ 1.1:1; styles never moved to the paper; no
