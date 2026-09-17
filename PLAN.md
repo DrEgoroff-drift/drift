@@ -92,11 +92,15 @@ Rule 3: same look, cheaper work.
   drawn. Laptop `g11` before → after: system 30 → 39, belt 28 → 33, landing 36 → 40, surface 30 → 37,
   scoop 51 → 60, raid 57 → 60, homein 50 → 59, road 29 → 35 fps. Body in `docs/PLAN-archive.md`
   («Stage 0, moved 2026-09-17»). Not yet measured on the S23 — the phone was not attached.
-- [ ] **0.2 Raster.** GPU raster is the bottleneck (`DoEndRasterCHROMIUM` p90 5.4 ms, max 17). Own
-  JS by self time per second: `drawWake` 31–56 (the 0.449 wake — bake its static part, fewer
-  strokes, same look), `stroke` 21–32, `hud` 18–25, `drawTrail` 19–22, `drawHull` 9–11,
-  `drawSystem` 6–10. Each cheaper at the same look; any repeated full-screen fill or gradient →
-  `screenLayer`. `prof()` per function before/after.
+- [x] **0.2 Raster** — the wake and the thrust ribbon were a stroke per segment (two for the
+  wake: halo and core). They now go in eight steps of fade per lane, one path per step, and the
+  halo and the core share that path. Measured on a filled wake (1 560 wake points, 156 trail
+  points, `system`): strokes per frame 3 391 → 245, paths 3 476 → 287, the same picture side by
+  side. Each step averages the finished alpha and width, not the age — the mean of the age had
+  dimmed the bright end by a third. Body in `docs/PLAN-archive.md`. Golden frames may need
+  `-Accept` for the wake blocks; `hud`, `drawHull` and `drawSystem` were left alone (`g11` on this
+  laptop drifts 10–20 fps between runs, so their 6–25 ms/s could not be told from the noise —
+  the S23 is the meter for them).
 - [ ] **0.3 Layout in the frame.** `getBoundingClientRect` 10–15 ms/s, `querySelectorAll` 4–5 ms/s
   — the reads sit in the pointer handlers (`15-input` ~226, 388, 409, 446), which fire at 120 Hz under a
   finger, so they are per frame in effect; 2 096 `UpdateLayoutTree` (937 ms); the finger doubles

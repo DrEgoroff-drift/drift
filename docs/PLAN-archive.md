@@ -9883,3 +9883,22 @@ A frame worth zero quanta returns before drawing (the picture would be identical
 full price); a gap longer than six quanta is not chased at all, because catching up costs a
 frame and the spiral does not end. The pinned-clock path (tests, `clockPinned()`) keeps its
 single `dt=1` step, so replay and same-hash suites are untouched.
+
+**0.2 Raster.** GPU raster was the bottleneck (`DoEndRasterCHROMIUM` p90 5.4 ms, max 17) and
+`drawWake` owned the JS too (31–56 ms/s on the S23). The reason was one stroke per segment: a
+cruising wake holds up to 2 000 points in nine lanes, each segment stroked twice (halo, core), so
+a frame issued about 3 400 strokes. Brightness and width change *slowly* along a lane — the whole
+difference inside one eighth of a life is half a pixel of width and a couple of units of alpha —
+so segments are now collected into eight steps by age and each step is a single path; `stroke()`
+does not clear the path, so the halo and the core reuse it. The thrust ribbon (`drawTrail`) got
+the same treatment in eight steps, which also stopped `mixc` allocating a colour per segment.
+Each step averages the *finished* alpha and width rather than the age: alpha is a quartic of age,
+so the alpha of a mean age was a third dimmer than the mean alpha at the bright end, and the
+white-hot root at the nozzle visibly lost its peak (caught on the side-by-side shot, fixed before
+the commit). Geometry goes into module-level flat arrays that grow once, which also removes two
+`rgba` strings and two mid-point arrays per segment from the frame's allocation load (item 0.6).
+Measured by counting canvas calls, not by the clock: `docs/shot.py system` with a filled wake,
+`ctx.stroke`/`beginPath` wrapped — 3 391 → 245 strokes and 3 476 → 287 paths per frame, wake and
+trail populations identical. `g11` on this laptop could not judge it: repeat runs of the *same*
+build read 24–37 fps on `surface` and 33–58 on `belt`, so a control build of the previous commit
+was measured back to back and read the same as the new one.

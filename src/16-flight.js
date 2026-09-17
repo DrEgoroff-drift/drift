@@ -354,12 +354,38 @@ function wakeStep(dt){
     WAKE.push({x:ex,y:ey,s,t:tp,b:wakeBurst,k:k*tp.w,max:life,life,vx:Math.cos(na)*push,vy:Math.sin(na)*push});
   }
 }
+/* ══════════ нить кильватера — ступенями спада, а не отрезками (0.2) ══════════
+   Каждый отрезок нити ставился СВОЕЙ обводкой — две на штуку, ядро и ореол.
+   На крейсерской в очереди до двух с половиной тысяч точек, то есть порядка пяти
+   тысяч обводок за кадр: замер на S23 отдавал drawWake 31–56 мс на секунду — больше
+   всего в игре. При этом яркость и толщина меняются вдоль нити МЕДЛЕННО: вся
+   разница внутри одной восьмой жизни — полпикселя толщины и пара единиц альфы,
+   глаз такого не видит. Поэтому отрезки собираются в ВОСЕМЬ ступеней по возрасту,
+   и каждая ступень — ОДИН путь: до шестнадцати обводок на нить вместо двух на
+   отрезок. Путь после stroke() не сбрасывается — ореол и ядро идут по одному
+   и тому же, второй раз его не строим.
+
+   Геометрия кладётся в постоянные плоские массивы (растут один раз и живут):
+   прежний проход рождал на каждый отрезок по две строки rgba и по паре массивов
+   на середины — именно они стояли в самых длинных провалах сборщика мусора. */
+const WAKE_BUCK=8;
+const TRAIL_BUCK=8;
+const trX0=[],trY0=[],trX1=[],trY1=[],trB=[];
+const trAcc=new Float64Array(TRAIL_BUCK*4);   /* на ступень: sum u, sum a, sum w, n */
+const wkX0=[],wkY0=[],wkCX=[],wkCY=[],wkX1=[],wkY1=[],wkB=[];
+const wkAcc=new Float64Array(WAKE_BUCK*5);   /* на ступень: sum a1, a2, w1, w2, n */
+const wakeLanes=new Map();
 function drawWake(zx,zy,Z){
   if(!WAKE.length)return;
   const SZ=shipZ(Z);
   const col=mixc([196,222,255],hex2rgb(shipData(G.shipId).col),.25);
-  const lanes={};
-  for(const t of WAKE){const k=t.s+"/"+t.b+"/"+t.t.x;(lanes[k]||(lanes[k]=[])).push(t);}
+  for(const a of wakeLanes.values())a.length=0;
+  for(const t of WAKE){
+    const k=t.s+"/"+t.b+"/"+t.t.x;
+    let a=wakeLanes.get(k);
+    if(!a)wakeLanes.set(k,a=[]);
+    a.push(t);
+  }
   ctx.save();
   ctx.globalCompositeOperation="lighter";
   ctx.lineCap="butt";ctx.lineJoin="round";
@@ -368,26 +394,48 @@ function drawWake(zx,zy,Z){
      и ореол, который ширится с возрастом (среда расплывается). Спад квадратичный. */
   /* Автор (12.09): «без точечек, давай плавно». Моты сняты: на увеличении они
      читались бусинами на нити. Нить идёт квадратичными дугами через середины
-     отрезков — стык двух дуг касательный, углов на повороте нет; каждый кусок
+     отрезков — стык двух дуг касательный, углов на повороте нет; каждая ступень
      красится своей долей жизни, так что спад к хвосту остаётся. */
-  const mid=(p,q)=>[(zx(p.x)+zx(q.x))*.5,(zy(p.y)+zy(q.y))*.5];
-  for(const k in lanes){
-    const arr=lanes[k];
+  for(const arr of wakeLanes.values()){
+    if(arr.length<2)continue;
+    let n=0;
+    wkAcc.fill(0);
     for(let i=1;i<arr.length;i++){
       const a=arr[i-1],b2=arr[i],c=arr[i+1];
-      const p0=i===1?[zx(a.x),zy(a.y)]:mid(a,b2),p1=c?mid(b2,c):[zx(b2.x),zy(b2.y)];
-      const cx=i===1?p0[0]:zx(b2.x),cy=i===1?p0[1]:zy(b2.y);
-      const x0=p0[0],y0=p0[1],x1=p1[0],y1=p1[1];
+      const ax=zx(a.x),ay=zy(a.y),bx=zx(b2.x),by=zy(b2.y);
+      const x0=i===1?ax:(ax+bx)*.5,y0=i===1?ay:(ay+by)*.5;
+      let x1,y1;
+      if(c){x1=(bx+zx(c.x))*.5;y1=(by+zy(c.y))*.5;}else{x1=bx;y1=by;}
       if((x0<-60&&x1<-60)||(x0>W+60&&x1>W+60)||(y0<-60&&y1<-60)||(y0>H+60&&y1>H+60))continue;
       const u=clamp((a.life/a.max+b2.life/b2.max)*.5,0,1),kk=(a.k+b2.k)*.5;
-      ctx.strokeStyle=rgba(col,(kk*(u*u*.08+u*u*u*u*.10)).toFixed(3));
-      ctx.lineWidth=(2.2+(1-u)*4.5)*SZ;
-      ctx.beginPath();ctx.moveTo(x0,y0);ctx.quadraticCurveTo(cx,cy,x1,y1);ctx.stroke();
+      let b=(u*WAKE_BUCK)|0;if(b>=WAKE_BUCK)b=WAKE_BUCK-1;
+      wkX0[n]=x0;wkY0[n]=y0;wkCX[n]=i===1?x0:bx;wkCY[n]=i===1?y0:by;wkX1[n]=x1;wkY1[n]=y1;wkB[n]=b;n++;
+      /* в ступень складываем ГОТОВЫЕ яркость и толщину, а не возраст: средняя
+         от возраста и возраст от средней — разные числа, и на самой яркой
+         ступени вторая гасила ядро у кромки почти на треть */
+      wkAcc[b*5]+=kk*(u*u*.08+u*u*u*u*.10);
+      wkAcc[b*5+1]+=kk*(u*u*u*.26+u*u*u*u*u*u*.30);
+      wkAcc[b*5+2]+=(2.2+(1-u)*4.5)*SZ;
+      wkAcc[b*5+3]+=Math.max(.8,(1+(1-u)*.6)*SZ);
+      wkAcc[b*5+4]++;
+    }
+    for(let b=0;b<WAKE_BUCK;b++){
+      const cnt=wkAcc[b*5+4];
+      if(!cnt)continue;
+      const a1=wkAcc[b*5]/cnt,a2=wkAcc[b*5+1]/cnt,w1=wkAcc[b*5+2]/cnt,w2=wkAcc[b*5+3]/cnt;
+      ctx.beginPath();
+      for(let i=0;i<n;i++){
+        if(wkB[i]!==b)continue;
+        ctx.moveTo(wkX0[i],wkY0[i]);ctx.quadraticCurveTo(wkCX[i],wkCY[i],wkX1[i],wkY1[i]);
+      }
+      ctx.strokeStyle=rgba(col,a1);
+      ctx.lineWidth=w1;
+      ctx.stroke();
       /* ядро гаснет кубом: у кромки ясное, на полпути уже вполсилы — иначе
-         на ×1 нити читались ровными канатами до края экрана */
-      ctx.strokeStyle=rgba(col,(kk*(u*u*u*.26+u*u*u*u*u*u*.30)).toFixed(3));
-      ctx.lineWidth=Math.max(.8,(1+(1-u)*.6)*SZ);
-      ctx.beginPath();ctx.moveTo(x0,y0);ctx.quadraticCurveTo(cx,cy,x1,y1);ctx.stroke();
+         на ×1 нити читались ровными канатами до края экрана. Путь тот же */
+      ctx.strokeStyle=rgba(col,a2);
+      ctx.lineWidth=w2;
+      ctx.stroke();
     }
   }
   ctx.restore();
@@ -503,24 +551,43 @@ function drawTrail(zx,zy,Z){
   /* стык встык, а не скруглённый: у быстрого корабля соседние точки далеко,
      и круглые торцы превращали ленту в цепочку бусин */
   ctx.lineCap="butt";ctx.lineJoin="round";
+  /* Лента тоже идёт ступенями спада, а не отрезками (0.2, см. drawWake):
+     цвет, альфа и толщина зависят только от возраста, значит на ступень их нужно
+     посчитать один раз — вместе с mixc, который на каждом отрезке рождал массив.
+     Толщина ещё зависит от радиуса точки — берём средний по ступени: радиусы
+     соседних точек одной ленты отличаются на доли пикселя. */
   for(const k in lanes){
     const arr=lanes[k];
+    let n=0;
+    trAcc.fill(0);
     for(let i=1;i<arr.length;i++){
       const a=arr[i-1],b2=arr[i];
       const x0=zx(a.x),y0=zy(a.y),x1=zx(b2.x),y1=zy(b2.y);
       if((x0<-60&&x1<-60)||(x0>W+60&&x1>W+60)||(y0<-60&&y1<-60)||(y0>H+60&&y1>H+60))continue;
       const u=clamp((a.life/a.max+b2.life/b2.max)*.5,0,1);
+      let b=(u*TRAIL_BUCK)|0;if(b>=TRAIL_BUCK)b=TRAIL_BUCK-1;
+      trX0[n]=x0;trY0[n]=y0;trX1[n]=x1;trY1[n]=y1;trB[n]=b;n++;
+      trAcc[b*4]+=u;
+      trAcc[b*4+1]+=u*u*.30+u*u*u*u*.5;
+      trAcc[b*4+2]+=Math.max(1,b2.r*SZ*(2.4-u*1.3)*CW*1.35);
+      trAcc[b*4+3]++;
+    }
+    for(let b=0;b<TRAIL_BUCK;b++){
+      const cnt=trAcc[b*4+3];
+      if(!cnt)continue;
+      const u=trAcc[b*4]/cnt,al=trAcc[b*4+1]/cnt,lw=trAcc[b*4+2]/cnt;
+      ctx.beginPath();
+      for(let i=0;i<n;i++){
+        if(trB[i]!==b)continue;
+        ctx.moveTo(trX0[i],trY0[i]);ctx.lineTo(trX1[i],trY1[i]);
+      }
       /* у сопла — белое ядро, к хвосту цвет уходит в акцент корпуса */
       const col=u>.78?mixc(T.mid,T.core,(u-.78)/.22):mixc(T.edge,T.mid,u/.78);
-      /* яркость и толщина подняты примерно вдвое: прежние .13/.30 при толщине
-         в пиксель давали ленту на пороге видимости — на тёмном фоне её просто
-         не было. Профиль тот же, лента по-прежнему ширится и гаснет к хвосту */
-      /* Спад квадратичный, а не линейный: с линейным хвост держал яркость почти
-         до конца и выглядел начерченной линией. Газ должен рассеиваться —
-         половина пути и половина яркости не одно и то же. */
-      ctx.strokeStyle=rgba(col,(u*u*.30+u*u*u*u*.5).toFixed(3));
-      ctx.lineWidth=Math.max(1,b2.r*SZ*(2.4-u*1.3)*CW*1.35);
-      ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.stroke();
+      /* Спад квадратичный, а не линейный: с линейным хвост держал яркость
+         почти до конца и выглядел начерченной линией. Газ должен рассеиваться. */
+      ctx.strokeStyle=rgba(col,al);
+      ctx.lineWidth=lw;
+      ctx.stroke();
     }
     /* добела раскалённый корешок у самого сопла */
     const f=arr[arr.length-1];
