@@ -149,6 +149,15 @@ Rule 3: same look, cheaper work.
   ec9f3fc made it two to four times LONGER, and she accepts it as it stands. What is worth fixing,
   with the engine tails and not before: measure a tail in TIME (keep points younger than ~0.2 s)
   rather than in count, so it looks the same at 60 and 120 Hz.
+  Designer's audit of what is measured how (18.09), so the tails conversation argues about taste
+  and not about facts: the wake (life 60–260 by speed) and the ribbon (40×span hot, 6–11 sparks) are
+  already measured in TIME, and their count ceilings (2000, 560) are overflow guards never reached in
+  normal flight — leave both alone. Measured in COUNT: the finger trail (7 points) — the only real
+  case, fix by keeping points younger than ~0.2 s; the wake tips (3) are how many jets we draw, the
+  helm marks (3) and the map's rum trail (12) are a memory of the player's actions — count is honest
+  for all three. So if the author still finds the tails stubby, the number to change is the LIFE, not
+  the way it is measured. The Designer is preparing one frame for the author: three bands at equal
+  speed — finger trail, wake, ribbon — each captioned with how long it lives.
 - [x] **0.2 Raster** — the wake and the thrust ribbon were a stroke per segment (two for the
   wake: halo and core). They now go in steps of fade per lane, one path per step, the halo and the
   core sharing that path. The step is chosen by the *mean of age and brightness*, 32 steps on the
