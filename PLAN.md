@@ -209,6 +209,9 @@ Rule 3: same look, cheaper work.
   and runs after the drop, because replacing the card's node would drop the pointer capture and
   leave the item hanging as a ghost. Measured in the browser: `touch-action` reads `pan-y` closed,
   `pan-y` open (was `none`), `none` while carrying.
+  Live on the S23 (Tester, 17.09): scroll holds 300→300 on open, pan over the open card
+  131 px, no dead zone, lift survives an ether line. Two notes handed to the worker: the lift
+  is silent when the finger lands on a button inside the card; the item drops after ~24 px.
 - [x] **P3** ОПИСЬ tab strip (§1.3) — it took its width from its content, so four words sat in
   277 px of a 396 px cloth with a hundred pixels of emptiness beside them; it now stretches across
   the cloth (`align-self:stretch`, buttons `flex:1 0 auto` — grow, never shrink, so a fifth tab
@@ -217,6 +220,7 @@ Rule 3: same look, cheaper work.
   `tabsSync` like the desk's and the station's strips: without that its right-edge fade never
   cleared, so the last tab stayed pale even with nothing left to scroll, and a selected tab could
   sit off the edge. `tail` now reads true with the mask off.
+  Live on the S23 (Tester, 17.09): strip 360 of 387 cloth (was 288), ТРЮМ out of the shade, 13/14 px margins.
 - [x] **P4** Compass chips stay on the frame's edge (§1.4). The bottom edge itself used to move:
   every stick foot pulled it up, and since a finger is born anywhere in the lower half, the chips
   crawled to mid-screen — where a chip no longer says «the target is out there, past the edge».
