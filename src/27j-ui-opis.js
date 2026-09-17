@@ -277,15 +277,23 @@ function opisLift(card,payload,pid,x,y){
   opisGhostMove(x,y);
   if(navigator.vibrate)try{navigator.vibrate(12);}catch(e){}
   /* touch-action кромки фиксируется браузером в момент touchstart и потом не
-     пересматривается (Контроль, оговорка по ОПИСИ 18.09): палец лёг на ОТКРЫТУЮ
-     карточку, у которой в этот миг touch-action:pan-y (P2 — список должен катать
-     ПОД карточкой), и это разрешение на панораму живёт весь жест — класс
-     body.op-lift с touch-action:none, который мы ставим тут же в opisLift(),
-     на уже идущий тач не действует. Без preventDefault на каждом ходе браузер
-     сам решает, что это прокрутка, и присылает pointercancel — вещь падает с
-     пальца около порога срыва тача (замер тестировщика: держится до ~16 px,
-     гаснет к ~24 px). Явный preventDefault на pointermove здесь этого не ждёт. */
-  const mv=ev=>{if(ev.cancelable)ev.preventDefault();opisGhostMove(ev.clientX,ev.clientY);opisMarkOver(ev.clientX,ev.clientY);};
+     пересматривается (Контроль, оговорка по ОПИСИ 18.09): палец лёг на карточку
+     с touch-action:pan-y (P2 — список должен катать ПОД ней), и это разрешение
+     на панораму живёт весь жест — класс body.op-lift с touch-action:none,
+     который ставится тут же в opisLift(), на уже идущий тач не действует.
+     Диагноз верный, а первая правка (preventDefault на каждом ходе, f04f78a) —
+     нет: тестировщик на настоящем S23 замерил порог срыва НИЖЕ прежнего (~12 px
+     вместо ~16–24), не выше. Похоже на известный эффект: preventDefault на
+     pointermove ПОСЛЕ того, как браузер уже допустил и, возможно, начал
+     прокрутку по touch-action:pan-y с первых, неотменённых касаний фазы
+     ожидания (opisDragWire.mv там preventDefault не зовёт нарочно, чтобы не
+     мешать настоящей прокрутке), читается движком как борьба с уже идущим
+     жестом — и решается обрывом (pointercancel) раньше, а не позже. Правка
+     отменена (revert), порог возвращён к прежнему поведению; правильный фикс —
+     не бороться преждевременным preventDefault, а не отдавать браузеру
+     разрешение на панораму вовсе, пока подъём не решён (архитектурная правка,
+     отдельным пунктом — Контролю решать, брать ли её). */
+  const mv=ev=>{opisGhostMove(ev.clientX,ev.clientY);opisMarkOver(ev.clientX,ev.clientY);};
   const up=ev=>{
     card.removeEventListener("pointermove",mv);card.removeEventListener("pointerup",up);
     card.removeEventListener("pointercancel",cancel);
@@ -295,7 +303,7 @@ function opisLift(card,payload,pid,x,y){
   };
   const cancel=()=>{card.removeEventListener("pointermove",mv);card.removeEventListener("pointerup",up);
     card.removeEventListener("pointercancel",cancel);opisDropEnd();};
-  card.addEventListener("pointermove",mv,{passive:false});card.addEventListener("pointerup",up);
+  card.addEventListener("pointermove",mv);card.addEventListener("pointerup",up);
   card.addEventListener("pointercancel",cancel);
 }
 function opisGhostMove(x,y){
