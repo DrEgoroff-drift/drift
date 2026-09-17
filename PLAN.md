@@ -210,6 +210,25 @@ Rule 3: same look, cheaper work.
   the author's «movement, not twinkle» rule. In one sentence: the cheapest thing to sell is the
   emptiness's depth, the dearest are the line and the stars, and the ribbon sits between them.
 
+- [ ] **THE FRAME'S REAL EATERS, found by breaking down the whole count (Designer, 18.09).** Control
+  spotted that her first map named only 366 draw calls out of 1541, and the breakdown of the rest
+  moved the target. Calm frame, system view at 390×844, median of five, as calls / filled pixels:
+  **the ship's hull (`drawHull`) 823 calls / 4 k px — over half the work of the whole frame**, the
+  stars 374 / 1 k, the ribbon 152, the dust 103, **the system's star (`drawStarBody`) 80 calls but
+  2 203 k px**, **the nebula 1 call / 421 k px**, chips and canvas HUD 17 / 3 k, the station 5 / 24 k;
+  planets, fleet, pirates, finds, drones, combat, tow and torch all zero — absent from this scene.
+  1556 of 1971 named, the ~400 remainder being small unwrapped things (outlines, labels, frames).
+  Two conclusions, both against the earlier map: cutting the star dust is pointless (5 % of calls,
+  no area — she withdraws her own first item), and there are two eaters of different kinds. By CALL
+  COUNT it is the hull: 823 strokes on an object the size of a fingernail, four times the rest of
+  the frame. By AREA it is the star and the nebula: 2.6 M pixels together, the screen filled over
+  several times — **and area is exactly what quadruples from ×1.5 to ×2.6, which is why the raster
+  decides and our JS milliseconds did not.** So the third path, the one that keeps the sharpness:
+  stop redrawing what barely changes. Bake the system's star the way the nebula is already baked,
+  and bake the hull — 823 strokes draw the same body every frame, with rotation and tilt applied to
+  a finished picture. Caveat from her: these are counts and areas, not milliseconds (no clock in
+  headless) — the orders of magnitude hold, the true cost is the phone's to say.
+
 - [ ] **A second, independent instrument for the frame: the screen recording** (Designer, 18.09).
   Counting skips from *outside* the game, so it cannot be fooled by our own counters: a skipped vsync
   is never caught up, so the movement across that gap must be DOUBLE. `scratchpad/skips.py` crops the
