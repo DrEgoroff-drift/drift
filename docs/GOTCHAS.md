@@ -114,3 +114,14 @@ this file keeps the evidence and the fix.
   Claude does not change system settings itself, with or without permission. Check the state:
   `Get-ItemProperty HKLM:\SOFTWARE\Policies\Microsoft\WindowsStore` and the registrations
   `Get-WinEvent -FilterHashtable @{LogName='Microsoft-Windows-AppXDeploymentServer/Operational';Id=400}`.
+
+- **Headless hangs after a few dozen thrust frames, so it cannot film anything that has to outlive
+  that window** (Designer, 18.09.2026, measured). At ×1.00, 45 frames of thrust come back and 80 or
+  more hang, leaving a Chrome to be killed by its `user-data-dir`; the ceiling falls with zoom — at
+  ×2.40, 12 frames pass and 30 already hang. `main` behaves the same, so this is not a branch
+  regression. The rule for the next person: **staging** a scene in headless is fine and costs about a
+  dozen frames (a held stick, a forced chip layout, a frozen ship), but do not measure or film
+  anything that must survive longer than that window — particle die-off, a settled cruising speed, a
+  fade timed in real seconds, the true length of a tail. Those go on the phone. A frame that shows
+  «the same» where the numbers say «twice as long» is worse than no frame: the author will answer the
+  picture, and the decision gets made on a lie.
