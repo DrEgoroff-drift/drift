@@ -145,3 +145,14 @@ this file keeps the evidence and the fix.
   stopwatch on the phone — and note the consequence: work that only *computes* (the chips' walk along
   the edge, any search or sort) is invisible to a count of draw calls, so a count clearing it proves
   nothing about its cost.
+
+- **The phone's first minute lies: every measurement taken on a rested S23 is inflated** (Tester,
+  18.09.2026). Same build, same confirmed steering, thermal status 1 throughout: straight after a page
+  load 92.8 % cadence, then sixty idle seconds and 83.7 %, then a fresh reload measured at once gave
+  78.5 % — a new page does NOT bring the good number back. So the «good first run» belongs to the
+  handset, not to the game: Android holds high clocks for the first tens of seconds and then steps
+  down, without ever reaching thermal throttling, so `dumpsys thermalservice` stays clean and tells
+  you nothing. **Protocol: three 30 s runs back to back, throw the first away as the warm-up, judge by
+  the last two, and never compare a rested phone against a worked one.** Every «97.5 %», «99.9 %» and
+  «95.5 %» measured over the evening of 18.09 falls into the inflated category and must be read as a
+  warm handset rather than as an achievement of the fix under test.
