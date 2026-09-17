@@ -215,6 +215,8 @@ function asMap(v){
 }
 function applySave(s){
   if(!s||(s.v!==4&&s.v!==5))return false;
+  /* приборы помнят показанные числа (0.6): чужой сейв — другие числа */
+  if(typeof hudNumDirty==="function")hudNumDirty();
   G.sx=s.sx|0;G.sy=s.sy|0;G.sys=getSystem(G.sx,G.sy);
   G.uniqueShips=asMap(s.uniqueShips);
   G.tow=(s.tow&&typeof s.tow==="object")?s.tow:null;   /* корпус на тросе (M369b) */

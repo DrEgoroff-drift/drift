@@ -87,35 +87,24 @@ industrial plan (`11r-plan`), the blueprint is `G.draft`.
 Numbers: `docs/PLAYTEST-2026-09-13.md` §2.1, §6. Meter: `docs/night-2026-09-13/raw/phone-tools/trace.py`
 on the S23 (390×844, DPR 2.625, 120 Hz) before, after every item, at the end; `g11` on the laptop.
 Rule 3: same look, cheaper work.
-- [ ] **0.1 Cadence — built, open until the S23 says so.** The world's *ship* steps in whole
-  1/120 s quanta (`WORLD_SUB`, `08-state`; the loop lives in `updateSystem`), the leftover is
-  carried and may go half a quantum negative, and the step count is `Math.round`, not `floor`.
-  Everything else in `stepWorld` — emitters, particles, neighbours, timers — still runs once per
-  frame with the summed `dt`. The first version stepped the *whole* world n times and was a
-  regression on the phone (tester, 17.09: `stepWorld` 0.71 → 9.77 → 14.68 ms/frame, `WAKE`
-  492 → 1938 points, cadence 68 % → 50–63 %) because emitters seeded per call and the raster grew,
-  which made the frame longer, which bought more quanta. Good news from the same run: the nose
-  step spread fell from 9.5× to 2.9×, so quantising the ship is the right lever. After the fix, the
-  six-frame emission probe reads 6/32 against 6/30 on `main`; the step histogram (2 400 frames at
-  120 Hz with ±1 ms jitter) is 1 step in 92.6 % of frames, 0 in 3.7 %, 2 in 3.7 %; at 60 Hz with
-  ±2 ms it is 2 steps in 90.2 %. **Accept on the S23** (tester): `stepWorld` ≤ 1.1 ms/frame,
-  `WAKE` ±20 % of base, cadence ≥ base. Body in `docs/PLAN-archive.md`.
-- [ ] **0.1b An even tact — built, open until the S23 says so.** The game aims at a tact of its
-  own: 60 by default, i.e. every second vsync on a 120 Hz phone, so the intervals land on an even
-  16.7 instead of swinging 16.7/33.3. 120 is allowed only while the EMA of frame *work* stays under
-  6 ms for 5 s and drops back over 7 ms within a second (the hysteresis of 0.4); the work EMA
-  counts drawn frames only, and — because the raster is not in `FRAME_JS` at all — the climb also
-  requires the *interval* of drawn frames to sit under 1.2 of the current tact period, while the
-  fall also triggers on intervals over 1.5 of it (a phone can show 3 ms of JS under 20 ms of
-  raster). The player's own frame cap always wins. A bug found while measuring:
-  the stride was `ceil`, and the display-period estimate takes the *shortest* interval, so on a
-  jittery 120 Hz it slid to 7.6 ms and `ceil` asked for every **third** vsync — 40 fps instead of
-  60 (traced intervals of 24–27 ms). The tact is a target, so its stride rounds to the nearest,
-  while the player's cap keeps `ceil` because a cap is a promise. Checked in the page: an expensive
-  frame on a 120 Hz display draws 300 of 600 and stays at 60; a cheap one promotes to 120 after 5 s
-  (899 of 1200); an expensive frame again drops back inside a second; a 30 fps cap draws every
-  fourth vsync. Traced drawn frames are 15–18 ms apart, two quanta each, 2 steps in 89 % of frames.
-  **Accept on the S23** (tester): cadence ≥ 95 %, no frame > 24 ms in 60 s of steering.
+- [x] **0.1 Cadence** — the world's *ship* steps in whole 1/120 s quanta (`WORLD_SUB`, the loop
+  in `updateSystem`), the leftover carried and allowed half a quantum negative, the count by
+  `Math.round`. Everything else in `stepWorld` keeps one call a frame with the summed `dt`, which
+  also keeps `recTick` at one entry per frame. The first cut stepped the *whole* world n times and
+  was a regression on the phone; the tester's numbers and the fix are in `docs/PLAN-archive.md`.
+  Emission back at base (6/32 against 6/30); nose-step spread 9.5× → 2.9× → one step almost
+  everywhere.
+- [x] **0.1b An even tact** — 60 by default, i.e. every second vsync on a 120 Hz phone; 120 only
+  while frame work stays under 6 ms **and** the interval of drawn frames sits under 1.2 of the tact
+  period, dropping back over 7 ms or 1.5 of the period. The player's cap always wins. A latent bug
+  fell out: the stride was `ceil` against a display-period estimate that tracks the *shortest*
+  interval, so a jittery 120 Hz asked for every third vsync — 40 fps instead of 60.
+- **Gate taken on the author's S23** (tester, 60 s of steering on 3d0c384): fps 34.3 → **58.2**,
+  cadence 68 % → **97 %**, p95 frame 16.8 ms, `RES_AUTO` holds at 2 (it used to fall to 1 in thirty
+  seconds). The haze is no longer the bottleneck — muting it changes nothing now.
+- [ ] **The last 3 %:** 106 frames over 24 ms in that minute. The tester is looking for their
+  source; the first candidate is GC (0.6), the second a once-a-second bake. Not a cadence problem —
+  the cadence is even now, these are rare long frames.
 - [x] **0.2 Raster** — the wake and the thrust ribbon were a stroke per segment (two for the
   wake: halo and core). They now go in steps of fade per lane, one path per step, the halo and the
   core sharing that path. The step is chosen by the *mean of age and brightness*, 32 steps on the

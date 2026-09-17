@@ -72,7 +72,11 @@ function resize(){
    трогает вовсе. Сторож нарочно не ищет все двадцать мест, где открываются
    экраны: список таких мест устаревает, наблюдатель — нет. */
 let CVS_RECT=null,PADS_RECT=null,SCR_OPEN=null,LAYOUT_DIRTY=true;
-function rectsDirty(){CVS_RECT=null;PADS_RECT=null;PROMPT_RECT=null;LAYOUT_DIRTY=true;}
+function rectsDirty(){
+  CVS_RECT=null;PADS_RECT=null;PROMPT_RECT=null;LAYOUT_DIRTY=true;
+  /* узлы приборов могли смениться вместе с вёрсткой — числа переписать заново (0.6) */
+  if(typeof hudNumDirty==="function")hudNumDirty();
+}
 function cvsRect(){
   if(!CVS_RECT)CVS_RECT=cvs.getBoundingClientRect();
   return CVS_RECT;
