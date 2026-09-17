@@ -1386,8 +1386,15 @@ body.mapclean .hud,body.mapclean .pads,body.mapclean #console,body.mapclean #pro
    Тот же грех, только спрятанный внутри одного правила. Фон — чуть темнее
    самого листа (тонировка тем же тёплым тоном, что и штрих бумаги выше в
    файле), не rgba(тёмный); текст — те же чернила, что у реплик в журнале
-   (`body.table #loglist .li.talk span`). */
-.smena .journal{font-family:ui-monospace,monospace;font-size:13px;color:#4a3a24;border-left:2px solid #6a5a3a;padding:4px 10px;margin:8px 0 12px;background:rgba(120,96,56,.10)}
+   (`body.table #loglist .li.talk span`).
+   Доделка (Дизайнер и Контроль, 18.09 живым замером на кадре): первая правка
+   дала контраст 3.48 — мало для моноширинного 13px на бумаге (нужно 5–6),
+   хотя цитате и положено читаться тише абзаца (~8). #4a3a24 был тем же тоном,
+   что и `.li.talk` в журнале-СПИСКЕ, но там строка лежит на самом листе без
+   собственной подложки — здесь под ней ЕЩЁ и тонировка фона, которая тоже
+   поднимает светлоту под буквами и садит контраст вдвойне. Взял чернила
+   темнее (#3a2f1d), фон и левую кромку не тронул. */
+.smena .journal{font-family:ui-monospace,monospace;font-size:13px;color:#3a2f1d;border-left:2px solid #6a5a3a;padding:4px 10px;margin:8px 0 12px;background:rgba(120,96,56,.10)}
 .smena .cap{font-size:12px;color:#6a5c44;font-style:italic}
 #loglist .li.dim span{color:var(--dim)}
 
