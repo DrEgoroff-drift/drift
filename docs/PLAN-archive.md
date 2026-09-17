@@ -10261,3 +10261,41 @@ never draws): a chip that moves 60 px along its edge in 0.1 s of simulated time 
 and completes to the new slot once enough time has passed; and a synthetic 140-frame run with the
 station and a fake autopilot target sweeping in circles, plus the one poisoned frame above, threw
 no exception and healed within one frame.
+
+**P4 follow-up — a stable order along the edge (2026-09-18).** The lerp fix above made a chip's
+*own* motion smooth, but the Tester's phone still showed the compass reshuffling: three chips read
+432/457/321 on one frame and a visibly different order on the next, with nothing steering except a
+stick foot moving under a still finger. The cause was structural, not a missing ease: each chip
+independently called `slide()` from its own ideal ray position, searching both directions for a
+free spot — so when chip A's obstacle changed, chip B (whose own ideal spot never moved) could
+still end up on the opposite side of A, because A's new position changed which side had room.
+Two chips that never asked to swap places would swap, and the eased motion just made the swap
+slower, not honest.
+
+The fix treats a row of chips on one edge as one object with a direction, not N independent
+searches. `cands` collects every off-screen mark with its ray-cast edge point and distance to the
+ship, then sorts by that distance once (`cands.sort((a,b)=>a.dist-b.dist)`) — nearest target
+first, and that order does not depend on where anything is currently drawn, so it cannot flip
+frame to frame on its own. The first chip of a new row still searches both directions from its
+ideal spot, same as before (`slide(onSide,rx,ry,cw,ch,0)`) — it has no row to defer to. Every chip
+after it first tries to sit flush against the current front of the row, continuing in the row's
+established direction (`slide(onSide,x0,y0,cw,ch,stack.dir)`, where `x0,y0` is the front's edge
+plus the new chip's own half-width/height plus a 4px gap); if that direction has run out of edge,
+it tries the *other* side of the row's own anchor — the first chip placed, not the current front —
+before falling back to the old edge-jump. `slide()` gained a `dirOnly` argument for this: `0`
+still means "search both ways" for the first-chip and edge-jump cases, ±1 restricts the walk to
+one direction for a chip extending a row.
+
+One consequence worth stating plainly: when the sort order itself changes — the autopilot target
+gets closer than the station, say — the chip that becomes "first" *does* relocate to the front of
+the row, and the others slide down to make room. This is still correct: it is a real change in
+which target is nearest, not a rendering glitch, and the existing per-chip ease (P4's other
+follow-up, same milestone) makes that transition a slide rather than a cut. Verified in the
+browser pane: three synthetic targets (station, nearest planet, autopilot target) settle into a
+column with an exact 20px pitch (chip height 16 + 4px gap) in a fixed order; walking the autopilot
+target's distance down past the other two over 30 frames produces a continuous re-sort — every
+step stays under the 200px/s cap and the 20px pitch never breaks, confirming two chips never
+occupy overlapping rectangles at any point (`fits()` makes that structurally impossible — it is
+checked against everything already in `placed` before a spot is accepted) and the reported
+"НЕЙЭЛЬ II / 3056 / 40" overlap and the general chip-order reshuffle are the same bug, closed by
+the same fix.

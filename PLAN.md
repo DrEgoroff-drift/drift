@@ -244,6 +244,13 @@ Rule 3: same look, cheaper work.
   finger never sends a chip skating across the whole screen); the ship's own nose is now a taken
   rectangle, so a side-edge chip cannot sit on top of it; and the stick pads at rest (`padsRect`),
   not only their finger-drawn trace, are taken too.
+  One more report from the phone (Tester, S23) landed mid-review: the chip order along an edge
+  reshuffled from frame to frame even though nothing moved but a stick foot. Chips used to search
+  their own free spot independently, so displacing one could flip another to the opposite side of
+  it for no reason visible on screen. Fixed by processing chips in one fixed order (nearest target
+  first) and having every chip after the first stack flush against the one before it, growing the
+  row in a single direction rather than re-searching both ways each frame; only the front chip of
+  a row, and a chip whose whole row ran out of edge, still searches both ways from its ideal spot.
 - [ ] **P5** «Смена» text light-on-cream, contrast ≈ 1.1:1; styles never moved to the paper; no
   right margin (§5.1).
 - [ ] **P6** Hints cut at 411 px, МАСШТАБ under a chip, the beacon offered at the ship and wasted at

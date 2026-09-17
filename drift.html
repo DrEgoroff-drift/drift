@@ -46020,47 +46020,91 @@ function drawSysHud(zx,zy,sh,sys,U){
   const chipDt=CHIP_T?Math.min(.2,(CHIP_TNOW-CHIP_T)/1000):1/60;
   CHIP_T=CHIP_TNOW;
   const usedKeys={};
+  /* Порядок и уворот, читаемые глазом (Контроль, 17.09, по замеру тестировщика
+     на S23: «432/457/321 — список на глаз переставляется»). Раньше каждая
+     фишка искала свободное место от СВОЕЙ идеальной точки независимо — стоило
+     ближней сдвинуться, и дальняя перескакивала на другую сторону от неё, хотя
+     сама не двигалась. Теперь: обработка идёт в ОДНОМ порядке (ближняя цель
+     первая, он же порядок марок — звезда/станция/планета/цель/оклик, они уже
+     отсортированы по важности, а не по случайному кадру), и только первая
+     фишка своей кромки ищет место в обе стороны от идеала; каждая следующая
+     встаёт вплотную к уже поставленной, продолжая стопку в ту же сторону —
+     она растёт, а не тасуется. Кончился хвост в эту сторону — пробуем другую
+     сторону от самой первой фишки этой кромки, и только если некуда вовсе —
+     старый перескок на соседнюю кромку. */
+  const cands=[];
   for(const m of marks){
     const x=zx(m.x),y=zy(m.y);
     if(x>-20&&x<W+20&&y>-20&&y<H+20)continue;
-    const A=m.hail?1:CA;   /* окликнувший не гаснет */
     const ang=Math.atan2(y-H/2,x-W/2),dx=Math.cos(ang),dy=Math.sin(ang);
     /* пересечение луча из центра с прямоугольником кромки */
     let t=1e9;
     if(dx>1e-6)t=Math.min(t,(inset.x1-W/2)/dx);if(dx<-1e-6)t=Math.min(t,(inset.x0-W/2)/dx);
     if(dy>1e-6)t=Math.min(t,(inset.y1-H/2)/dy);if(dy<-1e-6)t=Math.min(t,(inset.y0-H/2)/dy);
-    let cx=W/2+dx*t,cy=H/2+dy*t;
+    const cx=W/2+dx*t,cy=H/2+dy*t;
     const label=m.l+" · "+Math.round(Math.hypot(m.x-sh.x,m.y-sh.y));
     const tw=ctx.measureText(label).width,cw=tw+26,ch=16;
     const onSide=Math.abs(cx-inset.x0)<1||Math.abs(cx-inset.x1)<1;   // боковая кромка → двигаем по y
+    cands.push({m,ang,dx,dy,cx,cy,label,cw,ch,onSide,dist:Math.hypot(m.x-sh.x,m.y-sh.y)});
+  }
+  cands.sort((a,b)=>a.dist-b.dist);   // ближняя цель первая — фиксированный порядок кадр к кадру
+  const fits=(x,y,cw,ch)=>!placed.some(p=>!(x+cw<=p.x||p.x+p.w<=x||y+ch<=p.y||p.y+p.h<=y));
+  const cX=(v,cw)=>clamp(v,inset.x0,inset.x1-cw),cY=(v,ch)=>clamp(v,inset.y0,inset.y1-ch);
+  const slide=(vert,x0,y0,cw,ch,dirOnly)=>{
+    /* шагов столько, сколько нужно, чтобы обойти кромку целиком: с коротким
+       обходом большое препятствие (окно во всю кромку) оставляло фишку на месте
+       вместо перескока на соседнюю — поймано замером в браузере. dirOnly — расти
+       только в одну сторону (продолжение стопки), без него — искать в обе. */
+    const len=vert?(inset.y1-inset.y0):(inset.x1-inset.x0);
+    const N=Math.min(160,Math.ceil(len/10)+2);
+    for(let st=0;st<=N;st++)for(const sg of (st?(dirOnly?[dirOnly]:[-1,1]):[1])){
+      const off=st*10*sg;
+      const x=vert?x0:cX(x0+off,cw),y=vert?cY(y0+off,ch):y0;
+      if(fits(x,y,cw,ch))return [x,y];
+    }
+    return null;
+  };
+  let firstAnchor=null,stack=null;   // якорь и растущий фронт текущей стопки на кромке
+  for(const c of cands){
+    const m=c.m,ang=c.ang,dx=c.dx,dy=c.dy,cx=c.cx,cy=c.cy,label=c.label,cw=c.cw,ch=c.ch,onSide=c.onSide;
+    const A=m.hail?1:CA;   /* окликнувший не гаснет */
     let rx=clamp(cx-(cx>W/2?cw-6:6),inset.x0,inset.x1-cw),ry=clamp(cy-ch/2,inset.y0,inset.y1-ch);
-    /* Скольжение ВДОЛЬ кромки, в обе стороны от желаемого места (P4).
-       В обе, а не только вниз: прежний проход шагал в одну сторону и при
-       занятом хвосте кромки уезжал в её начало — то есть фишка прыгала через
-       весь экран от одного шага пальца. */
-    const fits=(x,y)=>!placed.some(p=>!(x+cw<=p.x||p.x+p.w<=x||y+ch<=p.y||p.y+p.h<=y));
-    const cX=v=>clamp(v,inset.x0,inset.x1-cw),cY=v=>clamp(v,inset.y0,inset.y1-ch);
-    const slide=(vert,x0,y0)=>{
-      /* шагов столько, сколько нужно, чтобы обойти кромку целиком: с коротким
-         обходом большое препятствие (окно во всю кромку) оставляло фишку на месте
-         вместо перескока на соседнюю — поймано замером в браузере */
-      const len=vert?(inset.y1-inset.y0):(inset.x1-inset.x0);
-      const N=Math.min(160,Math.ceil(len/10)+2);
-      for(let st=0;st<=N;st++)for(const sg of (st?[-1,1]:[1])){
-        const off=st*10*sg;
-        const x=vert?x0:cX(x0+off),y=vert?cY(y0+off):y0;
-        if(fits(x,y))return [x,y];
-      }
-      return null;
-    };
-    let spot=slide(onSide,rx,ry);
+    let spot=null,usedVert=onSide,usedDir=0;
+    const gap=4;
+    if(stack&&stack.onSide===onSide){
+      const x0=onSide?stack.x:stack.x+stack.dir*(stack.cw/2+gap+cw/2);
+      const y0=onSide?stack.y+stack.dir*(stack.ch/2+gap+ch/2):stack.y;
+      const r=slide(onSide,x0,y0,cw,ch,stack.dir);
+      if(r){spot=r;usedDir=stack.dir;}
+    }
+    if(!spot&&firstAnchor&&firstAnchor.onSide===onSide){
+      const dir=-((stack&&stack.onSide===onSide&&stack.dir)||1);
+      const x0=onSide?firstAnchor.x:firstAnchor.x+dir*(firstAnchor.cw/2+gap+cw/2);
+      const y0=onSide?firstAnchor.y+dir*(firstAnchor.ch/2+gap+ch/2):firstAnchor.y;
+      const r=slide(onSide,x0,y0,cw,ch,dir);
+      if(r){spot=r;usedDir=dir;}
+    }
     if(!spot){
-      /* вдоль своей кромки места нет — перескок на соседнюю, в сторону цели */
-      spot=onSide?slide(false,cX(cx-cw/2),dy>0?inset.y1-ch:inset.y0)
-                 :slide(true,dx>0?inset.x1-cw:inset.x0,cY(cy-ch/2));
+      /* первая фишка своей кромки — ищем от идеала в обе стороны, как раньше */
+      const r=slide(onSide,rx,ry,cw,ch,0);
+      if(r){
+        spot=r;
+        const moved=onSide?(r[1]-ry):(r[0]-rx);
+        usedDir=moved>0?1:(moved<0?-1:1);
+      }
+    }
+    if(!spot){
+      /* вдоль своей кромки места нет вовсе — перескок на соседнюю, в сторону цели */
+      const r=onSide?slide(false,cX(cx-cw/2,cw),dy>0?inset.y1-ch:inset.y0,cw,ch,0)
+                    :slide(true,dx>0?inset.x1-cw:inset.x0,cY(cy-ch/2,ch),cw,ch,0);
+      if(r){spot=r;usedVert=!onSide;usedDir=1;}
     }
     if(spot){rx=spot[0];ry=spot[1];}
     placed.push({x:rx,y:ry,w:cw,h:ch});
+    if(spot){
+      if(!firstAnchor)firstAnchor={onSide:usedVert,x:rx,y:ry,cw,ch};
+      stack={onSide:usedVert,dir:usedDir,x:rx,y:ry,cw,ch};
+    }
     usedKeys[m.k]=true;
     /* Плавный ход к месту, а не телепорт (P4, Контроль 17.09): рисуем в
        CHIP_POS[m.k], которое движется к логическому (rx,ry) не быстрее
