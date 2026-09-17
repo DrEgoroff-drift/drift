@@ -88001,7 +88001,7 @@ const QUANT_MS=1000/120;               /* квант мира — половин
 const QUANT_DT=QUANT_MS/FRAME_MS;      /* тот же квант в единицах dt (= .5) */
 const QUANT_MAX=6;                     /* дальше не догоняем */
 let quantAcc=0;                        /* недошаганный остаток, мс */
-function loopReset(){last=wallMs();lastDroneTick=0;capPrev=0;capN=0;quantAcc=0;
+function loopReset(){last=wallMs();lastDroneTick=0;capPrev=0;capN=0;quantAcc=0;tactGood=0;tactBad=0;
   lastFuelWarn=0;lastHullWarn=0;sndWalk=0;
   for(const f of LOOP_PHASE)f();}
 /* ── потолок кадров ──
@@ -88117,6 +88117,41 @@ function resAuto(d){
   }
 }
 let capIv=16.667, capPrev=0, capN=0;
+/* ══════════════ РОВНЫЙ ТАКТ (0.1b) ══════════════
+   Автор после двух заходов: «на тел дергается все прогоны, плавный полет нужен».
+   Замеры Со 23 объясняют, почему ровного полёта не было ни до квантования, ни
+   после: экран там 120 Гц, то есть вся работа должна уложиться в 8.3 мс, а она не
+   укладывается — и кадры приходят то через 16.7, то через 33.3. Именно это
+   метание глаз и видит как дёрганье: честные шестьдесят ровных кадров плавнее,
+   чем семьдесят пять рваных.
+
+   Поэтому игра сама ставит себе такт: по умолчанию шестьдесят, то есть на сто
+   двадцати герцах — каждый второй кадр развёртки, и промежутки ложатся на ровные
+   16.7. Сто двадцать разрешаются только там, где кадр и впрямь дешёвый: средняя
+   работа кадра ниже шести миллисекунд пять секунд подряд; выше семи — возврат на
+   шестьдесят за секунду. Между шестью и семью — мёртвая зона, чтобы такт сам не
+   дребезжал (та же схема, что у авторазрешения в 0.4).
+
+   Пропуск считается КАДРАМИ развёртки, а не временем — по той же причине, что и
+   игроцкий потолок ниже (см. «потолок кадров»): порог по времени, попавший между
+   двумя кадрами развёртки, округляется вниз и превращает шестьдесят в тридцать.
+   Игроцкий потолок всегда главнее: такт его не повышает. */
+const TACT_LOW=6, TACT_HIGH=7;          /* мс работы кадра: пороги вверх и вниз */
+const TACT_UP_WIN=5000, TACT_DOWN_WIN=1000;
+let tactHz=60, tactGood=0, tactBad=0, workEma=10, FRAME_DREW=false;
+/* средняя работа кадра — только по НАРИСОВАННЫМ кадрам: пропущенные
+   стоят копейки и тянули бы оценку вниз, повышая такт на пустом месте */
+function tactWork(js){if(FRAME_DREW)workEma=workEma*.9+js*.1;}
+function tactTick(d){
+  if(!G.running||d<=0||d>250)return;
+  if(tactHz<120){
+    if(workEma<TACT_LOW)tactGood+=d;else tactGood=Math.max(0,tactGood-d*2);
+    if(tactGood>TACT_UP_WIN){tactGood=0;tactBad=0;tactHz=120;}
+  }else{
+    if(workEma>TACT_HIGH)tactBad+=d;else tactBad=Math.max(0,tactBad-d*.5);
+    if(tactBad>TACT_DOWN_WIN){tactBad=0;tactGood=0;tactHz=60;}
+  }
+}
 /* Выключатель цикла. Прогон тестов гоняет мир сам и в кадрах не нуждается:
    пока они шли, фоновые кадры двигали G под тестами и жгли время впустую —
    а в headless с виртуальным временем непрерывный rAF не давал странице
@@ -88187,7 +88222,7 @@ function frameBody(now){
      headless с виртуальным временем кадры идут как из пулемёта, и полная
      отрисовка в невидимую канву съедала весь бюджет: прогон тестов вставал
      намертво (M170). Стенды рисуют своими вызовами и этой ветки не касаются. */
-  if(document.hidden){return;}
+  if(document.hidden){FRAME_DREW=false;return;}
   /* дорожный спутник рисует свой кадр сам и занимает весь экран: мир под ним
      не виден, а батарею ест вдвое — а именно батарея и есть заявленная цена
      режима. Плюс это единственный путь, которым мировой холст мог просочиться
@@ -88210,13 +88245,23 @@ function frameBody(now){
     if(d>1&&d<capIv)capIv=capIv*.7+d*.3; else capIv=Math.min(capIv*1.002,50);
   }
   capPrev=now;
-  const cap=G.opts.gfx.fps;
-  if(cap){
-    const stride=Math.max(1,Math.ceil(1000/cap/capIv-.15));
-    if(++capN%stride){return;}
+  /* Два разных обещания — два разных округления (0.1b). Игроцкий потолок —
+     потолок: округляется ВВЕРХ, лучше отдать 48 кадров под обещание «не выше
+     шестидесяти», чем 72. Свой такт — ПРИЦЕЛ: округляется к ближайшему. Разница
+     не теоретическая: оценка периода развёртки берёт САМЫЙ КОРОТКИЙ промежуток и
+     на дрожащем 120 Гц съезжает на 7.6 мс вместо 8.33 — и ceil давал шаг в ТРИ
+     кадра развёртки, то есть 40 кадров вместо шестидесяти (замер: промежутки 24–27 мс
+     вместо 16.7). Из двух шагов берём БОЛЬШИЙ: потолок нельзя превышать. */
+  const capOpt=G.opts.gfx.fps|0;
+  {
+    let stride=Math.max(1,Math.round(1000/tactHz/capIv));
+    if(capOpt)stride=Math.max(stride,Math.ceil(1000/capOpt/capIv-.15));
+    if(++capN%stride){FRAME_DREW=false;FRAME_IN=false;return;}
     capN=0;
-  }else capN=0;
+  }
+  FRAME_DREW=true;
   resAuto(now-last);
+  tactTick(now-last);
   /* мир шагает квантами, остаток ждёт следующего кадра (см. QUANT_MS) */
   quantAcc+=clamp(now-last,0,250);last=now;
   /* БЛИЖАЙШЕЕ число квантов, а не пол — и остаток может быть ОТРИЦАТЕЛЬНЫМ
@@ -88228,7 +88273,7 @@ function frameBody(now){
   else quantAcc=clamp(quantAcc-steps*QUANT_MS,-QUANT_MS*.5,QUANT_MS*QUANT_MAX);
   /* кадр короче половины кванта не рисуем — но флаг голоса снимаем сами:
      frameBody зовут не только из frame() (стенды, пробники), и там его никто не чистит */
-  if(!steps){FRAME_IN=false;return;}
+  if(!steps){FRAME_DREW=false;FRAME_IN=false;return;}
   dt=steps*QUANT_DT;
   }
   /* второй рубеж против залипших клавиш: событие blur приходит не всегда —
@@ -88401,6 +88446,7 @@ function frame(now){
   const fb0=wallMs();   /* stallWho (выше) читает FRAME_JS — засекаем реальным временем, как остальной цикл */
   try{frameBody(now);}catch(e){crashSay(e,G&&G.mode);}
   FRAME_JS=wallMs()-fb0;
+  tactWork(FRAME_JS);   /* средняя работа кадра решает, можно ли 120 (0.1b) */
   FRAME_IN=false;   /* дальше до следующего кадра говорят нажатия — это отклик, а не голос мира */
   requestAnimationFrame(frame);
 }

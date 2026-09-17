@@ -10011,3 +10011,25 @@ per column, sampled every 10 px behind the stern, does **not** judge this — it
 30 px period on `main` too, because it samples three thin threads at sub-pixel positions. The
 paired frames of the two builds look identical at ×0.5, and the verdict on the look stays with the
 designer's own narrow-screen shot.
+
+**0.1b An even tact (2026-09-17).** The author, after two passes: «на тел дергается все прогоны,
+плавный полет нужен». The phone's screen is 120 Hz, which asks the whole frame to fit in 8.3 ms;
+it does not, so frames arrive at 16.7 or 33.3 ms, and that swing is what the eye reads as judder.
+Sixty even frames are smoother than seventy-five ragged ones, so the game now sets its own tact:
+`tactHz` 60 by default — every second vsync on a 120 Hz display — promoted to 120 only while the
+EMA of frame *work* (`FRAME_JS`, drawn frames only, skipped ones cost pennies and would drag the
+estimate down) stays under 6 ms for five seconds, and dropped back when it passes 7 ms for a
+second. Between 6 and 7 is the dead band that keeps the tact itself from dithering, the same shape
+as the resolution's in 0.4. The player's own frame cap is never raised by this.
+
+The measurement earned its keep twice. First it showed the tact working (an expensive frame on a
+120 Hz display draws 300 of 600 and holds 60; a cheap one promotes after five seconds; an expensive
+one again drops back inside a second; a 30 fps cap takes every fourth vsync). Then, tracing the
+interval and the quantum count of every drawn frame, it showed the tact overshooting: intervals of
+24–27 ms instead of 16.7, three quanta instead of two. The cause is the pair of `ceil` and the
+display-period estimate: that estimate deliberately tracks the *shortest* recent interval, so with
+jitter it slides below the true period (7.6 ms against 8.33), and `ceil` then asks for every third
+vsync — 40 fps. A cap is a promise and keeps rounding up; a tact is an aim and now rounds to the
+nearest, and the two strides are combined by taking the larger, because a cap may not be exceeded.
+After the fix every drawn frame is 15–18 ms apart and worth exactly two quanta, 2 steps in 89 % of
+frames under a synthetic ±1 ms vsync jitter (which is harsher than the real one).

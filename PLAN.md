@@ -100,13 +100,19 @@ Rule 3: same look, cheaper work.
   120 Hz with ±1 ms jitter) is 1 step in 92.6 % of frames, 0 in 3.7 %, 2 in 3.7 %; at 60 Hz with
   ±2 ms it is 2 steps in 90.2 %. **Accept on the S23** (tester): `stepWorld` ≤ 1.1 ms/frame,
   `WAKE` ±20 % of base, cadence ≥ base. Body in `docs/PLAN-archive.md`.
-- [ ] **0.1b An even tact** (Control, from the author: «на тел дергается все прогоны, плавный полёт
-  нужен»). A 120 Hz display asks for an 8.3 ms frame we cannot pay; the swing between 16.7 and
-  33.3 ms *is* the judder. Target tact (`28-loop`): 60 by default, i.e. every second vsync — a
-  frame that arrives sooner than ~0.75 of the target returns without work (and clears `FRAME_IN`);
-  120 is allowed only while the EMA of frame *work* stays under 6 ms for 5 s, and drops back over
-  7, with the hysteresis of 0.4. Needs the world back at ~1 ms first. Accept (tester, S23):
-  cadence ≥ 95 %, no frame > 24 ms in 60 s of steering.
+- [ ] **0.1b An even tact — built, open until the S23 says so.** The game aims at a tact of its
+  own: 60 by default, i.e. every second vsync on a 120 Hz phone, so the intervals land on an even
+  16.7 instead of swinging 16.7/33.3. 120 is allowed only while the EMA of frame *work* stays under
+  6 ms for 5 s and drops back over 7 ms within a second (the hysteresis of 0.4); the work EMA
+  counts drawn frames only. The player's own frame cap always wins. A bug found while measuring:
+  the stride was `ceil`, and the display-period estimate takes the *shortest* interval, so on a
+  jittery 120 Hz it slid to 7.6 ms and `ceil` asked for every **third** vsync — 40 fps instead of
+  60 (traced intervals of 24–27 ms). The tact is a target, so its stride rounds to the nearest,
+  while the player's cap keeps `ceil` because a cap is a promise. Checked in the page: an expensive
+  frame on a 120 Hz display draws 300 of 600 and stays at 60; a cheap one promotes to 120 after 5 s
+  (899 of 1200); an expensive frame again drops back inside a second; a 30 fps cap draws every
+  fourth vsync. Traced drawn frames are 15–18 ms apart, two quanta each, 2 steps in 89 % of frames.
+  **Accept on the S23** (tester): cadence ≥ 95 %, no frame > 24 ms in 60 s of steering.
 - [x] **0.2 Raster** — the wake and the thrust ribbon were a stroke per segment (two for the
   wake: halo and core). They now go in steps of fade per lane, one path per step, the halo and the
   core sharing that path. The step is chosen by the *mean of age and brightness*, 32 steps on the

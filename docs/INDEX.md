@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 538 · символов верхнего уровня: 5165
+Файлов: 538 · символов верхнего уровня: 5170
 
 ## СИМВОЛЫ
 
@@ -922,9 +922,9 @@ craftAffordable              src/03-ships.js:110-114
 craftAmmo                    src/16b-missile.js:61-71
 craftPart                    src/03-ships.js:115-124
 CRASH_SHIP                   src/01a-crashlog.js:19
-crashAt                      src/28-loop.js:468-482
-crashN                       src/28-loop.js:463
-crashSay                     src/28-loop.js:489-518
+crashAt                      src/28-loop.js:513-527
+crashN                       src/28-loop.js:508
+crashSay                     src/28-loop.js:534-563
 crashShip                    src/01a-crashlog.js:20-37
 crashStack                   src/01a-crashlog.js:39-41
 CREW_BASE_TRAITS             src/21a9-base-laws.js:92-97
@@ -1039,7 +1039,7 @@ CVS_RECT                     src/08-state.js:74
 cvsRect                      src/08-state.js:76-79
 dayK                         src/19c-light.js:68-73
 dayKq                        src/19c-light.js:74
-dbg                          src/28-loop.js:625-695
+dbg                          src/28-loop.js:671-741
 dcol                         src/21b-surface-deco.js:155-160
 DEAL_KINDS                   src/27g-deals.js:17-137
 dealAnswer                   src/27g-deals.js:163-196
@@ -1435,7 +1435,7 @@ drawWater                    src/21e-surface-draw.js:194-275
 drawWear                     src/12s-wear.js:102-171
 drawWeather                  src/19d-weather.js:96-233
 drawWinter                   src/29g-winter-draw.js:334-765
-drawWorld                    src/28-loop.js:319-343
+drawWorld                    src/28-loop.js:354-378
 drawWreck                    src/20aa-poi-shapes.js:8-48
 drawWrecksSystem             src/12l-barge.js:362-388
 drDoors                      tests/91zzzzzn-doors.js:26-43
@@ -1722,12 +1722,12 @@ folkState                    src/12u-folk.js:83-86
 folkVisit                    src/12u-folk.js:104-113
 FOOD_SUPPLY                  src/21a1b-base-food.js:16
 foundBase                    src/21a-mode-base.js:101-115
-frame                        src/28-loop.js:522-567
+frame                        src/28-loop.js:567-613
 FRAME_IN                     src/08-state.js:283
 FRAME_JS                     src/28-loop.js:119
 FRAME_MS                     src/28-loop.js:141
-frameBody                    src/28-loop.js:344-454
-frameLastAt                  src/28-loop.js:521
+frameBody                    src/28-loop.js:379-499
+frameLastAt                  src/28-loop.js:566
 freeVoice                    src/09-audio.js:91-95
 FUEL_PER_ICE                 src/21b1-base-pay.js:100
 fuelPriceHere                src/12k-rep.js:63-70
@@ -2625,7 +2625,7 @@ lookFrame                    src/28y-look.js:46-108
 lookoutSees                  src/12ag-holdfx.js:104-111
 lookScenes                   src/28y-look.js:129-248
 lookVerdict                  src/28y-look.js:114-124
-LOOP_OFF                     src/28-loop.js:285
+LOOP_OFF                     src/28-loop.js:320
 LOOP_PHASE                   src/01-core.js:85
 loopReset                    src/28-loop.js:165
 LORE                         src/12q-lore.js:67
@@ -3603,7 +3603,7 @@ probeShot                    src/25m-probe.js:85-97
 probeSpeak                   src/25m-probe.js:100-121
 probeTarget                  src/25m-probe.js:38-46
 probeVoice                   src/25m-probe.js:75-83
-prof                         src/28-loop.js:587-614
+prof                         src/28-loop.js:633-660
 PROFILE                      src/02-world.js:103-116
 profW                        src/03-ships.js:205-214
 prRestore                    tests/91zzzzzi-promise.js:59-74
@@ -4323,7 +4323,7 @@ shipThumb                    src/26-ui-station.js:389-401
 shipTier                     src/04b-fleet.js:156
 shipZ                        src/16-flight.js:238
 shipZoneR                    src/19f-lander.js:14
-SHOT_CLEAN                   src/28-loop.js:291
+SHOT_CLEAN                   src/28-loop.js:326
 SHOVE_V                      src/13a-guns.js:36
 SHUT_LINES                   src/11ah-offer.js:299-304
 SIGN_HOLD                    src/21-mode-surface.js:198
@@ -4506,7 +4506,7 @@ statPreview                  src/05-parts.js:416-424
 stCore                       src/17c-system-draw.js:127-142
 stDel                        src/14-save.js:26
 steps                        tests/90-harness.js:385
-stepWorld                    src/28-loop.js:299-318
+stepWorld                    src/28-loop.js:334-353
 stGet                        src/14-save.js:8
 stGroup                      src/26-ui-station.js:134
 stGroupOf                    src/26-ui-station.js:133
@@ -4648,6 +4648,11 @@ tableToggle                  src/27i-ui-table.js:84-104
 tableWasNew                  src/27i-ui-table.js:75
 tabLive                      src/14a-cloud.js:36
 tabsSync                     src/15-input.js:222-237
+TACT_LOW                     src/28-loop.js:300
+TACT_UP_WIN                  src/28-loop.js:301
+tactHz                       src/28-loop.js:302
+tactTick                     src/28-loop.js:306-315
+tactWork                     src/28-loop.js:305
 TALE_DRINK                   src/12b-crew-events.js:13
 TALE_JOB                     src/12b-crew-events.js:15
 tap                          src/15-input.js:439-563
@@ -6207,16 +6212,17 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/27z-telemetry.js · 38 КБ
   · телеметрия: приборы пишут в DOM:1
 
-## src/28-loop.js · 55 КБ
+## src/28-loop.js · 59 КБ
   · авария:1
   · звук по кадрам:48
   · цикл:106
   · каденсия: мир шагает квантом (0.1):142
   · авторазрешение:188
-  · развилка режимов — одна на всех (M238):292
-  · кадр, который не убивает игру (M234):455
-  · prof() — на что уходит кадр:575
-  · dbg() — что держит корабль:616
+  · РОВНЫЙ ТАКТ (0.1b):281
+  · развилка режимов — одна на всех (M238):327
+  · кадр, который не убивает игру (M234):500
+  · prof() — на что уходит кадр:621
+  · dbg() — что держит корабль:662
 
 ## src/28y-look.js · 30 КБ
   · look() — прибор кадра:1
