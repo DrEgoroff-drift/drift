@@ -750,7 +750,9 @@ function radioBellVoice(t,fr,len,dst,peak){
    тише и глуше предыдущего; сухого сигнала почти нет, всё уходит в зал и задержку */
 function radioBeacon(t,key,cd){
   const r=RADIO.r,c=SND.ctx;
-  const midi=key+24+radioDeg([0,2,4,7][Math.floor(r()*4)]);   // октавой ниже: середина, не верх
+  /* нота из текущего АККОРДА (корень, терция, квинта, октава, нона), не просто из лада —
+     маяк ложится в гармонию такта, а от такта к такту высота другая */
+  const midi=key+24+radioDeg(cd+[0,2,4,7,9][Math.floor(r()*5)]);
   const fr=midiHz(midi),gap=1+r()*.4;
   const wob=c.createOscillator(),wg=c.createGain();wob.frequency.value=.25+r()*.2;wg.gain.value=fr*.004;wob.connect(wg);
   const dry=c.createGain();dry.gain.value=.25;dry.connect(RADIO.bus);

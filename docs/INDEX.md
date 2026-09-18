@@ -4035,8 +4035,8 @@ radioBar                     src/10a-radio.js:275
 radioBass                    src/10a-radio.js:517-543
 radioBassPick                src/10a-radio.js:512-516
 radioBassVoice               src/10a-radio.js:545-588
-radioBeacon                  src/10a-radio.js:751-769
-radioBell                    src/10a-radio.js:770-772
+radioBeacon                  src/10a-radio.js:751-771
+radioBell                    src/10a-radio.js:772-774
 radioBellVoice               src/10a-radio.js:738-746
 radioBpm                     src/10a-radio.js:276
 radioBuild                   src/10a-radio.js:131-168
@@ -4062,16 +4062,16 @@ radioS16                     src/10a-radio.js:277
 radioScale                   src/10a-radio.js:278-281
 radioSkip                    src/10a-radio.js:242-246
 radioSnare                   src/10a-radio.js:715-724
-radioSpectral                src/10a-radio.js:780-796
+radioSpectral                src/10a-radio.js:782-798
 radioSrc                     src/10a-radio.js:124
 radioStep                    src/10a-radio.js:307-350
-radioStop                    src/10a-radio.js:820-825
+radioStop                    src/10a-radio.js:822-827
 radioTabla                   src/10a-radio.js:693-698
 radioTick                    src/10a-radio.js:285-301
 radioTimp                    src/10a-radio.js:699-707
-radioTune                    src/10a-radio.js:807-819
+radioTune                    src/10a-radio.js:809-821
 radioTune                    src/25e-receiver.js:29-85
-radioWave                    src/10a-radio.js:798-805
+radioWave                    src/10a-radio.js:800-807
 radioWhere                   src/10a-radio.js:302-306
 RAID_N                       src/24a-mode-raid.js:6
 RAID_ROOMS                   src/24a-mode-raid.js:7-13
@@ -5953,7 +5953,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/10-music.js · 33 КБ
   · музыка: слои, а не треки:1
 
-## src/10a-radio.js · 58 КБ
+## src/10a-radio.js · 59 КБ
   · радио: треки и генератор:1
 
 ## src/11-log.js · 10 КБ
