@@ -332,3 +332,14 @@ TEST_SUITES.push(()=>suite("кнопки масштаба снова масшт�
   zoomStep(1.35);ok(Math.abs((G.zoomT||G.zoom)/z0-1.35)<.02||G.zoom>z0,"«+» увеличивает: "+z0+" → "+(G.zoomT||G.zoom));
   eq(typeof zoomEase,"function","плавный щипок — своя функция");
 }));
+TEST_SUITES.push(()=>suite("компенсационная маршрутка: медленнее, без декларации (M510)",()=>{
+  resetWorld();
+  const N=railNet(),k=Object.keys(N.at).find(k=>{const p=k.split(",").map(Number);return getSystem(p[0],p[1]).station;});
+  const [sx,sy]=k.split(",").map(Number);G.sx=sx;G.sy=sy;G.sys=getSystem(sx,sy);G.mode="system";G.credits=1e4;
+  const t=railDestinations()[0];
+  railBuy(t,false,true);ok(RAIL_WAIT&&RAIL_WAIT.bus,"маршрутка взята");
+  const d0=railSegDur(t.l,[t.i0,t.i0+t.dir],0);
+  railRideStart(RAIL_WAIT);RAIL_WAIT=null;
+  ok(Math.abs(RAIL_RIDE.dur/railSegDur(RAIL_RIDE.l,RAIL_RIDE.seq,0)-1.6)<1e-6,"перегон в 1.6 раза дольше");
+  RAIL_RIDE=null;G.mode="system";void d0;
+}));

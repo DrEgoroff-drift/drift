@@ -140,7 +140,12 @@ function railWinRender(){
   }else{
     h+="<div class='rw-sec'>КУДА ВАМ · КАССА</div>";
     const why=(typeof railClosedWhy==="function")?railClosedWhy():null;   /* Коммуна: обед, забастовка (M474) */
-    if(why)h+="<div class='rw-row'><span>"+why+"</span><em>приходите позже</em></div>";
+    if(why){h+="<div class='rw-row'><span>"+why+"</span><em>приходите позже</em></div>";
+      /* компенсационная маршрутка Рассвета (M510): по той же линии, остановка за остановкой */
+      h+="<div class='rw-sec'>КОМПЕНСАЦИОННАЯ МАРШРУТКА · РАССВЕТ</div>";
+      railDestinations().slice(0,6).forEach((t,i)=>{const F=railFare(t);
+        h+="<button class='act rw-go' data-i='"+i+"' data-b='1'>МАРШРУТКА ДО «"+railStopName(t.to).toUpperCase()+"» · "+F.fare+" КР<s>медленнее · водитель в курсе</s></button>";});
+    }
     else railDestinations().slice(0,14).forEach((t,i)=>{
       const F=railFare(t);
       h+="<button class='act rw-go' data-i='"+i+"'>ДО «"+railStopName(t.to).toUpperCase()+"» · "+t.k+" ОСТ. · "+F.fare+" КР"+(F.bag?" + БАГАЖ "+F.bag:"")+"<s>"+t.l.ru+"</s></button>";
@@ -155,20 +160,20 @@ function railWinRender(){
   w.innerHTML=h;
   if(typeof railLifeBind==="function")railLifeBind(w);
   const D=railDestinations();
-  w.querySelectorAll(".rw-go").forEach(b=>b.onclick=()=>railBuy(D[+b.dataset.i],!!b.dataset.x));
+  w.querySelectorAll(".rw-go").forEach(b=>b.onclick=()=>railBuy(D[+b.dataset.i],!!b.dataset.x,!!b.dataset.b));
   w.querySelector(".rw-buf").onclick=railBuffet;
   w.querySelector(".rw-out").onclick=railWinClose;
 }
-function railBuy(t,express){
+function railBuy(t,express,bus){
   if(!t||RAIL_WAIT)return;
-  if(typeof railDeclare==="function"&&!railDeclare(t))return;   /* Орднунг: сначала декларация (M474) */
+  if(!bus&&typeof railDeclare==="function"&&!railDeclare(t))return;   /* Орднунг: сначала декларация (M474) */
   const F=railFare(t);
   if(express){F.fare*=RAIL_EXPRESS_MUL;F.sum=F.fare+F.bag;}
   if(G.credits<F.sum){say("Не хватает на билет\nнужно "+F.sum+" кр",90);return;}
   G.credits-=F.sum;
   if(typeof railLifeBoard==="function")railLifeBoard(t,F);
   logAdd("money",(F.metro?"Жетон":"Билет")+" до «"+railStopName(t.to)+"» · −"+F.sum+" кр"+(F.bag?" (багаж "+F.bag+")":""));
-  RAIL_WAIT={...t,express:!!express,t:railWaitNow(G.sx,G.sy)};
+  RAIL_WAIT={...t,express:!!express,bus:!!bus,t:bus?3:railWaitNow(G.sx,G.sy)};
   railWinRender();
 }
 function railBuffet(){

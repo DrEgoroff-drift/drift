@@ -53325,7 +53325,12 @@ function railWinRender(){
   }else{
     h+="<div class='rw-sec'>КУДА ВАМ · КАССА</div>";
     const why=(typeof railClosedWhy==="function")?railClosedWhy():null;   /* Коммуна: обед, забастовка (M474) */
-    if(why)h+="<div class='rw-row'><span>"+why+"</span><em>приходите позже</em></div>";
+    if(why){h+="<div class='rw-row'><span>"+why+"</span><em>приходите позже</em></div>";
+      /* компенсационная маршрутка Рассвета (M510): по той же линии, остановка за остановкой */
+      h+="<div class='rw-sec'>КОМПЕНСАЦИОННАЯ МАРШРУТКА · РАССВЕТ</div>";
+      railDestinations().slice(0,6).forEach((t,i)=>{const F=railFare(t);
+        h+="<button class='act rw-go' data-i='"+i+"' data-b='1'>МАРШРУТКА ДО «"+railStopName(t.to).toUpperCase()+"» · "+F.fare+" КР<s>медленнее · водитель в курсе</s></button>";});
+    }
     else railDestinations().slice(0,14).forEach((t,i)=>{
       const F=railFare(t);
       h+="<button class='act rw-go' data-i='"+i+"'>ДО «"+railStopName(t.to).toUpperCase()+"» · "+t.k+" ОСТ. · "+F.fare+" КР"+(F.bag?" + БАГАЖ "+F.bag:"")+"<s>"+t.l.ru+"</s></button>";
@@ -53340,20 +53345,20 @@ function railWinRender(){
   w.innerHTML=h;
   if(typeof railLifeBind==="function")railLifeBind(w);
   const D=railDestinations();
-  w.querySelectorAll(".rw-go").forEach(b=>b.onclick=()=>railBuy(D[+b.dataset.i],!!b.dataset.x));
+  w.querySelectorAll(".rw-go").forEach(b=>b.onclick=()=>railBuy(D[+b.dataset.i],!!b.dataset.x,!!b.dataset.b));
   w.querySelector(".rw-buf").onclick=railBuffet;
   w.querySelector(".rw-out").onclick=railWinClose;
 }
-function railBuy(t,express){
+function railBuy(t,express,bus){
   if(!t||RAIL_WAIT)return;
-  if(typeof railDeclare==="function"&&!railDeclare(t))return;   /* Орднунг: сначала декларация (M474) */
+  if(!bus&&typeof railDeclare==="function"&&!railDeclare(t))return;   /* Орднунг: сначала декларация (M474) */
   const F=railFare(t);
   if(express){F.fare*=RAIL_EXPRESS_MUL;F.sum=F.fare+F.bag;}
   if(G.credits<F.sum){say("Не хватает на билет\nнужно "+F.sum+" кр",90);return;}
   G.credits-=F.sum;
   if(typeof railLifeBoard==="function")railLifeBoard(t,F);
   logAdd("money",(F.metro?"Жетон":"Билет")+" до «"+railStopName(t.to)+"» · −"+F.sum+" кр"+(F.bag?" (багаж "+F.bag+")":""));
-  RAIL_WAIT={...t,express:!!express,t:railWaitNow(G.sx,G.sy)};
+  RAIL_WAIT={...t,express:!!express,bus:!!bus,t:bus?3:railWaitNow(G.sx,G.sy)};
   railWinRender();
 }
 function railBuffet(){
@@ -53386,7 +53391,8 @@ let RAIL_RIDE=null;
 function railRideStart(t){
   const l=t.l,n=l.stops.length,seq=[];
   for(let m=0;m<=t.k;m++){let i=t.i0+t.dir*m;if(l.loop)i=((i%n)+n)%n;seq.push(i);}
-  RAIL_RIDE={l,seq,seg:0,phase:"go",t:0,dur:railSegDur(l,seq,0),pause:0,express:!!t.express,t0:G.t};
+  RAIL_RIDE={l,seq,seg:0,phase:"go",t:0,dur:railSegDur(l,seq,0)*(t.bus?1.6:1),pause:0,express:!!t.express,bus:!!t.bus,t0:G.t};
+  if(t.bus&&typeof railBusTalk==="function")railBusTalk();   /* водитель маршрутки знает, почему (M510) */
   G.mode="rail";G.ap=null;
   if(typeof cueReset==="function")cueReset();   /* оклик кольца остался в системе — в вагоне его нет */
   sfx("jump");
@@ -53437,7 +53443,7 @@ function updateRail(dt){
   }
   if(R.pause>=(R.hold||2)){
     if(last){railExit();return;}
-    R.phase="go";R.t=0;R.dur=railSegDur(R.l,R.seq,R.seg);
+    R.phase="go";R.t=0;R.dur=railSegDur(R.l,R.seq,R.seg)*(R.bus?1.6:1);
   }
 }
 /* выйти на текущей остановке: кольцо выбрасывает корабль на подъезд */
@@ -53666,6 +53672,15 @@ function railCatch(sx,sy,leftMin){
   const wait=railWaitNow(G.sx,G.sy),ride=t.k*25;
   const ok=leftMin==null||wait+ride<leftMin*60;
   return (ok?"успеваете":"не успеваете")+" электричкой «"+t.l.ru+"» · отправление через "+railFmt(wait)+" · "+t.k+" ост.";
+}
+/* ══════════════ компенсационная маршрутка (M510) ══════════════
+   Касса Коммуны закрыта (обед, забастовка) — Рассвет пускает маршрутку по
+   той же линии: медленнее в 1.6 раза, и водитель знает, почему линия стоит. */
+function railBusTalk(){
+  const why=(typeof railClosedWhy==="function")?railClosedWhy():null;
+  const line=why&&/ЗАБАСТОВКА/.test(why)?"«Бастуют, брат. И правильно делают — им полгода не платили. Садись, довезу.»":
+    why?"«Обед у них. У них всегда обед. А у нас — маршрутка.»":"«Временные трудности, брат. Они всегда временные.»";
+  if(typeof peopleLine==="function")peopleLine(line,"водитель маршрутки",true);
 }
 
 /* ══════════════ посадка: разрез грунта ══════════════

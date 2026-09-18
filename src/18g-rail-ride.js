@@ -13,7 +13,8 @@ let RAIL_RIDE=null;
 function railRideStart(t){
   const l=t.l,n=l.stops.length,seq=[];
   for(let m=0;m<=t.k;m++){let i=t.i0+t.dir*m;if(l.loop)i=((i%n)+n)%n;seq.push(i);}
-  RAIL_RIDE={l,seq,seg:0,phase:"go",t:0,dur:railSegDur(l,seq,0),pause:0,express:!!t.express,t0:G.t};
+  RAIL_RIDE={l,seq,seg:0,phase:"go",t:0,dur:railSegDur(l,seq,0)*(t.bus?1.6:1),pause:0,express:!!t.express,bus:!!t.bus,t0:G.t};
+  if(t.bus&&typeof railBusTalk==="function")railBusTalk();   /* водитель маршрутки знает, почему (M510) */
   G.mode="rail";G.ap=null;
   if(typeof cueReset==="function")cueReset();   /* оклик кольца остался в системе — в вагоне его нет */
   sfx("jump");
@@ -64,7 +65,7 @@ function updateRail(dt){
   }
   if(R.pause>=(R.hold||2)){
     if(last){railExit();return;}
-    R.phase="go";R.t=0;R.dur=railSegDur(R.l,R.seq,R.seg);
+    R.phase="go";R.t=0;R.dur=railSegDur(R.l,R.seq,R.seg)*(R.bus?1.6:1);
   }
 }
 /* выйти на текущей остановке: кольцо выбрасывает корабль на подъезд */

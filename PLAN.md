@@ -566,7 +566,7 @@ material consequences are the part that does not exist yet — that is what stag
   until arrival, and pirates at rim stations do not touch a sealed hold (they fear the form).
 - **M509 Отзыв партии** — BUILT 18.09 `05b4-recall` [design owed]: each week (7 смен) about one in six of your Хай-Фронт parts is recalled (`G.recalled` by seed), a ПОЧТА line; kept, its affixes work at 85 % (`partBonus`); ЗАМЕНИТЬ ДАРОМ in any Хай-Фронт land station's trade tab reseeds it in place, same kind and tier. (st. 6, M487): Хай-Фронт recalls a part model — «партия отозвана», a free
   replacement at their yard; kept, the old one becomes a scar.
-- **M510 Компенсационная маршрутка** (st. 6, M474): on a shut stretch («временные трудности») Рассвет's
+- **M510 Компенсационная маршрутка** — BUILT 18.09 [design owed]: when `railClosedWhy` shuts a Коммуна counter the vestibule offers МАРШРУТКА to the first six stops (same fare, no declaration, leaves in 3 s, segments ×1.6), the driver's line says why (`railBusTalk`). **Open:** shut stretches of the front (the line itself cut), the bus drawn. (st. 6, M474): on a shut stretch («временные трудности») Рассвет's
   bus runs along it stop by stop — slower, and the driver knows why the line is shut.
 - **M512 Общества и льготы — membership** (st. 5; the author 14.09 on the маршрутка's driver who
   knows why the line is shut: «это КГБ прям, можно примкнуть к гильдии — какие могут быть и какие
