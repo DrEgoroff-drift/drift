@@ -395,6 +395,17 @@ Rule 3: same look, cheaper work.
   are actually visible and merge segments shorter than a pixel; let `hud`/`drawSysHud` touch only
   what changed; cache the hull's outline in a layer per scale and blit it rotated. Meter:
   `FRAME_JS` EMA before/after, then the tester's phone.
+- [ ] **Longer tails — built as knobs, waiting for the author's pick (18.09, Control).** The finger
+  trail is now measured in TIME (`HELM_TRAIL`=.2 s, guard `HELM_TRAIL_MAX`=48; a still finger's
+  trail catches up and goes out). The wake already runs off the screen at cruise (frame at ×1: the
+  rails reach the bottom edge), so «куцые» is the nozzle RIBBON: it lives only while thrusting,
+  `TRAIL_LIFE.k`=40 frames per span, and its brightness falls as u² — the visible hot part is the
+  first half of its life. Knobs: `TRAIL_LIFE={k,fall}`, `WAKE_LIFE={lo,hi}`; `TRAIL_MAX` 560 → 1200
+  (a guard; ×3 life reaches ~330 points). Frame sent to the author: A now (40, u²), B 40→80,
+  C 80 + fall u^1.2, D 120 + u^1.2, at ×1 and ×2.4. Defaults unchanged until the author picks;
+  after the pick — phone cadence check in the phone milestone (the ribbon's draw calls scale with
+  the number of live segments per bucket-path, not per segment, so the cost is path length).
+  Older notes below.
 - [ ] **Longer tails** (author: «хвосты от корабля побольше надо, а то сейчас куцие»). `WAKE` sits
   at 642 points of 2 000 and `TRAIL` at 0 of 560 — the buffers are two thirds empty, and on `main`
   the wake held 750 at the same speed. Lengthen life/length **after** the milliseconds are found,

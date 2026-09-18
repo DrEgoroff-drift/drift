@@ -110,7 +110,9 @@ const HELM_FOOT=34;
 const HELM_BAND=26;          /* ширина ленты у пальца на полном ходе, px */
 const HELM_BAND0=10;         /* ширина у центра стика: лента, а не клин */
 const HELM_GAP=24;           /* лента не доходит до пальца на столько px */
-const HELM_TRAIL=7;          /* сколько следов пальца тянется за ним */
+const HELM_TRAIL=.2;         /* сколько секунд след пальца тянется за ним: во времени, не в точках —
+                                иначе на 120 Гц он вдвое короче, чем на 60 */
+const HELM_TRAIL_MAX=48;     /* страж переполнения, в полёте не достаётся */
 const HELM_RANGE=760;
 const HELM={src:"keys",     /* кто вёл последним: keys | stick */
   mouse:{x:0,y:0,t:-1e9,on:false,down:false,rmb:false},
@@ -207,8 +209,12 @@ function helmTrail(s){
   const t=HELM.trail;
   const last=t[t.length-1];
   if(last&&Math.hypot(last.x-s.x,last.y-s.y)<3)return;
-  t.push({x:s.x,y:s.y});
-  while(t.length>HELM_TRAIL)t.shift();
+  t.push({x:s.x,y:s.y,t:now()});
+  helmTrailAge(t);
+}
+function helmTrailAge(t){
+  const old=now()-HELM_TRAIL*1000;
+  while(t.length>HELM_TRAIL_MAX||(t.length&&t[0].t<old))t.shift();
 }
 /* палец становится стиком: центр там, где он лёг, а не там, где он сейчас —
    иначе первый же кадр отдал бы полный ход */

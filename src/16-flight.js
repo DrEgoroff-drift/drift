@@ -236,7 +236,7 @@ function arrive(){
    с M319 рисовался в .35 — факел был шире сопла; с полом .7 (п. 2, 12.09) он
    вышел бы уже его */
 const shipZ=Z=>shipScaleAt(Z);
-const TRAIL=[],TRAIL_MAX=560;
+const TRAIL=[],TRAIL_MAX=1200;
 let trailBurst=0,trailOn=false;   // см. «номер очереди» в trailStep
 /* ── характер хвоста по классу корпуса ──
    Класс уже сказан игроку словами на экране корабля: курьер, тягач, буровик.
@@ -296,6 +296,10 @@ function trailTint(id,lvl){
    расходятся и гаснут, случая тут нет вовсе. Рисуется до шлейфа и до корпуса.
    Кромки считаются один раз и кэшируются на корпусе (`h.wakeTips`). */
 const WAKE=[],WAKE_MAX=2000,WAKE_TIPS=3;
+/* жизнь точки кильватера в кадрах: на малом ходу и прибавка к крейсерской — это и есть длина хвоста */
+const WAKE_LIFE={lo:60,hi:200};
+/* жизнь точки шлейфа из сопел в кадрах на единицу его длины (span) — длина горячего хвоста */
+const TRAIL_LIFE={k:40,fall:2};   /* fall — степень спада яркости к хвосту */
 let wakeBurst=0,wakeOn=false;
 function wakeTips(h){
   if(h.wakeTips)return h.wakeTips;
@@ -343,7 +347,7 @@ function wakeStep(dt){
   const ca=Math.cos(sh.a),sa=Math.sin(sh.a),va=Math.atan2(sh.vy,sh.vx);
   const eScale=shipZ(G.zoom)/G.zoom;
   /* жизнь точки — и есть длина: 60 кадров на малом ходу, 260 на крейсерской */
-  const life=60+200*Math.min(1,k);
+  const life=WAKE_LIFE.lo+WAKE_LIFE.hi*Math.min(1,k);
   for(const tp of wakeTips(h))for(const s of [-1,1]){
     if(tp.s&&tp.s!==s)continue;
     const px=tp.x,py=tp.y*s;
@@ -509,10 +513,10 @@ function trailStep(dt,thrusting,turning,braking){
          длиннее — обе величины растут от тяги. */
       const bx=ex-sh.vx*dt*.5, by=ey-sh.vy*dt*.5;
       TRAIL.push({x:bx,y:by,hot:1,e:i,b:trailBurst,r:e.r*(.54+rndFx()*.08),
-        max:40*span,life:40*span-.5,
+        max:TRAIL_LIFE.k*span,life:TRAIL_LIFE.k*span-.5,
         vx:-Math.cos(sh.a+spread)*sp, vy:-Math.sin(sh.a+spread)*sp});
       TRAIL.push({x:ex,y:ey,hot:1,e:i,b:trailBurst,r:e.r*(.54+rndFx()*.08),
-        max:40*span,life:40*span,
+        max:TRAIL_LIFE.k*span,life:TRAIL_LIFE.k*span,
         vx:-Math.cos(sh.a+spread)*sp, vy:-Math.sin(sh.a+spread)*sp});
     }
   }
@@ -578,7 +582,7 @@ function drawTrail(zx,zy,Z){
       const x0=zx(a.x),y0=zy(a.y),x1=zx(b2.x),y1=zy(b2.y);
       if((x0<-60&&x1<-60)||(x0>W+60&&x1>W+60)||(y0<-60&&y1<-60)||(y0>H+60&&y1>H+60))continue;
       const u=clamp((a.life/a.max+b2.life/b2.max)*.5,0,1);
-      const fa=u*u*.30+u*u*u*u*.5;
+      const fa=Math.pow(u,TRAIL_LIFE.fall)*.30+u*u*u*u*.5;
       let b=((u+fa/TRAIL_AMAX)*.5*TRAIL_BUCK)|0;if(b>=TRAIL_BUCK)b=TRAIL_BUCK-1;if(b<0)b=0;
       trX0[n]=x0;trY0[n]=y0;trX1[n]=x1;trY1[n]=y1;trB[n]=b;n++;
       trAcc[b*4]+=u;

@@ -209,6 +209,7 @@ function helmDrawSticks(){
       ctx.lineTo(sx+c.ax/am*L2,sy+c.ay/am*L2);ctx.stroke();
     }
     /* хвост за пальцем: полоска не появляется из ниоткуда, она пришла оттуда */
+    if(!fade)helmTrailAge(HELM.trail);  /* палец замер — след догоняет его и гаснет */
     if(!fade&&HELM.trail.length>1){
       ctx.strokeStyle="rgb("+col+")";
       for(let i=1;i<HELM.trail.length;i++){
