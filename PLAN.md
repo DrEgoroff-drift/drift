@@ -451,14 +451,18 @@ Rule 3: same look, cheaper work.
 - [x] **RELEASE BLOCKER closed: the four «штурвал» failures  — done; body in `docs/PLAN-archive.md` («Moved 2026-09-18»).
 - [x] **P6** — done; body in `docs/PLAN-archive.md` («Moved 2026-09-18»).
 - [x] **P7** — done; body in `docs/PLAN-archive.md` («Moved 2026-09-18»).
-- [ ] **The anchor and the stick** (phone video 12.09; 0.449.0 widened the edge, the mechanism
-  stays): past the edge the anchor turns the velocity toward the star every frame while the stick's
-  assist thrusts outward — the turn is a force against thrust, an equilibrium exists (the comment in
-  `17-mode-system` denies it): the ship crawls along the edge at a tenth of cruise, nose 90° off,
-  burning fuel (20-line sim matched the video). Fix, one commit: (a) the anchor strips the outward
-  radial part from the INPUT (`c.ax/c.ay`, `c.tx/c.ty`), not the state; (b) `c.slow` (the 120°
-  brake rule) reads input against the last wanted vector, not the bent velocity. Test: under an
-  outward stick at the edge speed ≥ .5 cruise and fuel/s = coasting.
+- [x] **The anchor and the stick** — done 18.09 (Control), **phone owed**. The edge is a WALL now,
+  argued with the INPUT, not the state (`15a-helm` `helmEdgeInput`, `17-mode-system` anchor block):
+  past the edge (and in a 240 px band before it) the outward part of the stick's wish is removed,
+  the tangential part stays; a soft pull to the edge line keeps the ship ON it; the braking rule no
+  longer reads the anchor's bend as «pulling against the motion»; while the stick holds the wall the
+  anchor's course-bend is silent (`c.edge`) — two rudders on one edge were the crawl. Coasting
+  without a stick, the anchor arcs home as before. Test `tests/91a2-edge.js`: straight out from
+  cruise — no sideways crawl (old 0.59 of cruise), rests at the wall, ~0 fuel there (old 5.16 per
+  300 frames); diagonal — slides along; no stick — arcs home fuel-free. Two models rejected by the
+  test's trace are written in the code comment (coast-and-arc gave a pendulum through the brake
+  rule; turning the push into a slide flipped direction as the fixed stick gained a backward
+  tangential part around the curve).
 - [ ] `say()` from timers/network callbacks is neither frame-born nor tap-born — mark as world
   (`sayWorld`) or set FRAME_IN there.
 - [ ] СТОЛ: empty sheets say where to get the thing; bottom padding under the last row of desk
