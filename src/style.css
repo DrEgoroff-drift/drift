@@ -1975,3 +1975,9 @@ body.table u.addr{color:#7a4a20}
 #bazWin .bz-row:nth-child(2n+1){background:rgba(0,0,0,.18)}
 #bazWin .bz-row b{grid-area:nm;font-size:12px}#bazWin .bz-row s{grid-area:nt;text-decoration:none;font-size:10px;opacity:.7}#bazWin .bz-row button{grid-area:pr}
 #bazWin .bz-row.sold b{text-decoration:line-through;opacity:.5}
+
+/* окошко Космопочты (D17) и печать подписки (D19) */
+.post .kp-win{display:block;margin:6px auto 2px;border-radius:2px;box-shadow:0 2px 6px rgba(0,0,0,.35)}
+.row.sub-off{position:relative}
+.row.sub-off::after{content:"ЗАБЛОКИРОВАНО";position:absolute;right:14px;top:8px;padding:2px 6px;border:2px solid rgba(200,40,40,.75);border-radius:3px;
+  color:rgba(200,40,40,.85);font:700 9px ui-monospace,monospace;letter-spacing:.14em;transform:rotate(-8deg);pointer-events:none}

@@ -244,7 +244,7 @@ function stTabInstr(){
       /* в строке описывается САМ прибор: профессия корпуса умножает все пять
          одинаково, и в лавке ей не место (03f учитывается на панели) */
       const q=T.res*(1-clamp(u.wear||0,0,1)*.45), fix=instrFixCost(id);
-      const r=el("div","row");
+      const r=el("div","row"+((typeof subOff==="function"&&subOff(u))?" sub-off":""));   /* печать «ЗАБЛОКИРОВАНО» (D19) */
       r.appendChild(el("div","nm","<b>"+I.ru+"</b><s>"+T.ru+" · "+instrWearRu(u.wear||0)+
         " · "+T.note+"</s><s>различает "+(q>=1.25?"тонко":q>=.95?"как положено":
         q>=.75?"грубовато":"едва")+" · стрелка "+(T.jit>=1.6?"нервная":T.jit>=1?"живая":"спокойная")+

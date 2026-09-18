@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 593 · символов верхнего уровня: 5743
+Файлов: 593 · символов верхнего уровня: 5744
 
 ## СИМВОЛЫ
 
@@ -1511,7 +1511,7 @@ drawSystem                   src/17-mode-system.js:481-771
 drawSysTraffic               src/17f-sys-traffic.js:36-40
 drawTapes                    src/12s1-tape.js:37-52
 drawTemple                   src/20aa-poi-shapes.js:50-89
-drawThingIcon                src/27i-ui-table.js:400-445
+drawThingIcon                src/27i-ui-table.js:400-454
 drawTierTrim                 src/03b-hull-paint.js:73-166
 drawTiles                    src/18c-chunks.js:144-151
 drawTrail                    src/16-flight.js:562-650
@@ -2752,7 +2752,7 @@ kitWearPiece                 src/12x-suit.js:139-145
 KMAP                         src/15-input.js:112
 KMAP_BELT                    src/15-input.js:116
 KP_DAY                       src/26e2-post.js:11
-kpBlock                      src/26e2-post.js:43-66
+kpBlock                      src/26e2-post.js:93-117
 kpDoor                       src/26e2-post.js:25
 kpDue                        src/26e2-post.js:27
 kpHolds                      src/26e2-post.js:29
@@ -2763,6 +2763,7 @@ kpOpen                       src/26e2-post.js:18
 kpOpenAt                     src/26e2-post.js:14-17
 kpTake                       src/26e2-post.js:32-42
 kpTicket                     src/26e2-post.js:30
+kpWindow                     src/26e2-post.js:47-92
 labCount                     src/12h-relic.js:16-24
 labStaffed                   src/12h-relic.js:27-31
 labWorking                   src/12h-relic.js:32-42
@@ -5088,13 +5089,13 @@ SUB_UP                       src/05b3-sub.js:10
 subAllowed                   src/05b3-sub.js:16-18
 subBreakEven                 src/05b3-sub.js:20
 subBuy                       src/05b3-sub.js:21-32
-subCharge                    src/05b3-sub.js:35-47
+subCharge                    src/05b3-sub.js:35-49
 subdivide                    src/24-mode-belt.js:34-49
 subFee                       src/05b3-sub.js:19
 subHereBy                    src/05b3-sub.js:12-15
 subOff                       src/05b3-sub.js:33
-subRush                      src/05b3-sub.js:62-68
-subTick                      src/05b3-sub.js:48-60
+subRush                      src/05b3-sub.js:64-70
+subTick                      src/05b3-sub.js:50-62
 suite                        tests/90-harness.js:103-164
 SUITE_KEYS                   tests/90-harness.js:90
 SUITE_OPTS                   tests/90-harness.js:92
@@ -6856,7 +6857,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/26e1-stapel.js · 11 КБ
   · СТАПЕЛЬ — заказ корпуса у державы (M481, DESIGN-shipyard §5):1
 
-## src/26e2-post.js · 4 КБ
+## src/26e2-post.js · 8 КБ
   · Космопочта — учреждение как погода (M492, DESIGN-birchpunk):1
 
 ## src/27-ui-ship.js · 24 КБ
@@ -6889,7 +6890,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/27h-ui-lore.js · 6 КБ
   · доска отчёта: место, где собранное можно прочесть:1
 
-## src/27i-ui-table.js · 33 КБ
+## src/27i-ui-table.js · 34 КБ
   · стол: одно место для всего, что читают:1
   · страница никогда не теряет прокрутку (P1):24
 

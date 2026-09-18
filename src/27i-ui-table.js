@@ -404,6 +404,15 @@ function drawThingIcon(c,k,W,H){
     c.fillStyle="#e6dcc2";c.fillRect(-40,-22,80,44);
     c.strokeStyle="rgba(90,70,40,.6)";c.lineWidth=1.5;c.strokeRect(-40,-22,80,44);
     c.beginPath();c.moveTo(-40,-22);c.lineTo(0,6);c.lineTo(40,-22);c.stroke();
+  }else if(k==="subletter"){
+    /* письмо подписки (D19): белый глянец, синяя шапка с «улыбкой», мелкий шрифт внизу */
+    c.fillStyle="#ffffff";c.fillRect(-28,-34,56,68);
+    c.fillStyle="#1e4fb8";c.fillRect(-28,-34,56,14);
+    c.strokeStyle="#fff";c.lineWidth=1.6;c.beginPath();c.arc(-18,-28,4,.2,Math.PI-.2);c.stroke();
+    c.fillStyle="#1e4fb8";c.fillRect(-20,-14,40,4);
+    c.strokeStyle="rgba(60,70,90,.35)";c.lineWidth=1;
+    for(let y=-4;y<24;y+=6){c.beginPath();c.moveTo(-20,y);c.lineTo(20,y);c.stroke();}
+    c.fillStyle="rgba(60,70,90,.5)";for(let i=0;i<8;i++)c.fillRect(-20+i*5,27,4,1);
   }else if(k==="recall"){
     /* письмо об отзыве (D25): тёмная шапка Хай-Фронта, строки, красный штамп наискось */
     c.fillStyle="#f4f4f6";c.fillRect(-28,-34,56,68);

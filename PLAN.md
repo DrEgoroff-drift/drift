@@ -204,9 +204,9 @@ job (the phone milestone), but no fix may add raster cost without a number.
   cutter beam and the searchlight cone were already drawn. Left: the salvo flash (ЗАЛП fires the
   guns, which flash themselves) — judged enough; БАЛЛАСТ has no picture (it is a number).
 - [x] **D20 Барахолка** (M463) — done 18.09 on the S23: the hulks are real hulls from the table, dead under a dark film, moored at their angles; each carries a sagging canvas on two poles; the lamp strings swing lamp by lamp; the stall window is a table with a header and alternating rows, sold struck through.
-- [ ] **D19 Подписка** (M487): the second button and the honest line are plain text; a «ЗАБЛОКИРОВАНО» seal on the instrument face, the tariff-updated letter.
+- [x] **D19 Подписка** (M487) — done 18.09: a red «ЗАБЛОКИРОВАНО» seal stamped across the locked instrument's row in the shop, the «тариф обновлён» mail as a glossy white-and-blue letter in ВЕЩИ.
 - [ ] **D18 Scars** (M482): drawn where they are on the silhouette — a soot patch over a burnt cell, a skewed mount, a drip trail from the tank; the КОРПУС ПОМНИТ rows.
-- [ ] **D17 Космопочта** (M492): a text row today — the post window (the grille, the clock over it, the talon printed), the hours plate on the door, the «распишитесь» moment.
+- [x] **D17 Космопочта** (M492) — done 18.09: the notice paper carries a drawn window — grille, the clerk under a warm lamp when open, a lowered shutter with «ЗАКРЫТО» when not, the clock above on post time, the hours plate on the wall, the printed talon when a notice waits; «распишитесь» stays the collection line.
 - [ ] **D16 СТАПЕЛЬ** (M481): the order panel is plain chips and bare sliders — a slipway drawing (the hull on a cradle, the power's ground colour, the maker's mark), sliders as a draughtsman's scales, the stats as a delta strip; the «ГОТОВ» moment at collection.
 
 ### NEXT — the order after 18.09 (Control's handover; the team of three was closed by the author)

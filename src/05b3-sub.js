@@ -38,7 +38,9 @@ function subCharge(u,nm){
     G.credits-=fee;S.paid++;S.warn=0;
     if(S.off){S.off=0;logAdd("tech","«"+nm+"» разблокирован · подписка продлена");}
     if(S.paid%5===0){S.feat++;
-      logAdd("dim","ПОЧТА · «"+nm+"»: тариф обновлён! Цена прежняя. «"+SUB_FEATS[(S.feat-1)%SUB_FEATS.length]+"» теперь — дополнение.");}
+      logAdd("dim","ПОЧТА · «"+nm+"»: тариф обновлён! Цена прежняя. «"+SUB_FEATS[(S.feat-1)%SUB_FEATS.length]+"» теперь — дополнение.");
+      /* письмо в ВЕЩАХ (D19): глянцевый бланк подписки */
+      if(typeof thingAdd==="function")thingAdd("subletter","Тариф обновлён · «"+nm+"»","«Мы улучшили ваш опыт.» Цена прежняя. «"+SUB_FEATS[(S.feat-1)%SUB_FEATS.length]+"» теперь — дополнение. Отписаться: см. п. 14.3.");}
     return;
   }
   if(!S.warn){S.warn=1;

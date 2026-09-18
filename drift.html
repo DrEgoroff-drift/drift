@@ -1990,6 +1990,12 @@ body.table u.addr{color:#7a4a20}
 #bazWin .bz-row b{grid-area:nm;font-size:12px}#bazWin .bz-row s{grid-area:nt;text-decoration:none;font-size:10px;opacity:.7}#bazWin .bz-row button{grid-area:pr}
 #bazWin .bz-row.sold b{text-decoration:line-through;opacity:.5}
 
+/* окошко Космопочты (D17) и печать подписки (D19) */
+.post .kp-win{display:block;margin:6px auto 2px;border-radius:2px;box-shadow:0 2px 6px rgba(0,0,0,.35)}
+.row.sub-off{position:relative}
+.row.sub-off::after{content:"ЗАБЛОКИРОВАНО";position:absolute;right:14px;top:8px;padding:2px 6px;border:2px solid rgba(200,40,40,.75);border-radius:3px;
+  color:rgba(200,40,40,.85);font:700 9px ui-monospace,monospace;letter-spacing:.14em;transform:rotate(-8deg);pointer-events:none}
+
 </style>
 </head>
 <body>
@@ -7665,7 +7671,9 @@ function subCharge(u,nm){
     G.credits-=fee;S.paid++;S.warn=0;
     if(S.off){S.off=0;logAdd("tech","«"+nm+"» разблокирован · подписка продлена");}
     if(S.paid%5===0){S.feat++;
-      logAdd("dim","ПОЧТА · «"+nm+"»: тариф обновлён! Цена прежняя. «"+SUB_FEATS[(S.feat-1)%SUB_FEATS.length]+"» теперь — дополнение.");}
+      logAdd("dim","ПОЧТА · «"+nm+"»: тариф обновлён! Цена прежняя. «"+SUB_FEATS[(S.feat-1)%SUB_FEATS.length]+"» теперь — дополнение.");
+      /* письмо в ВЕЩАХ (D19): глянцевый бланк подписки */
+      if(typeof thingAdd==="function")thingAdd("subletter","Тариф обновлён · «"+nm+"»","«Мы улучшили ваш опыт.» Цена прежняя. «"+SUB_FEATS[(S.feat-1)%SUB_FEATS.length]+"» теперь — дополнение. Отписаться: см. п. 14.3.");}
     return;
   }
   if(!S.warn){S.warn=1;
@@ -84292,7 +84300,7 @@ function stTabInstr(){
       /* в строке описывается САМ прибор: профессия корпуса умножает все пять
          одинаково, и в лавке ей не место (03f учитывается на панели) */
       const q=T.res*(1-clamp(u.wear||0,0,1)*.45), fix=instrFixCost(id);
-      const r=el("div","row");
+      const r=el("div","row"+((typeof subOff==="function"&&subOff(u))?" sub-off":""));   /* печать «ЗАБЛОКИРОВАНО» (D19) */
       r.appendChild(el("div","nm","<b>"+I.ru+"</b><s>"+T.ru+" · "+instrWearRu(u.wear||0)+
         " · "+T.note+"</s><s>различает "+(q>=1.25?"тонко":q>=.95?"как положено":
         q>=.75?"грубовато":"едва")+" · стрелка "+(T.jit>=1.6?"нервная":T.jit>=1?"живая":"спокойная")+
@@ -85302,11 +85310,62 @@ function kpTake(){
   }
   return stapelCollect(true);
 }
+/* ── окошко (D17, 18.09) ──
+   Строка текста стала местом: окно с решёткой, часы над ним по времени
+   почты, табличка часов на двери, талон с номером, если извещение ждёт.
+   Закрыто — шторка опущена и часы показывают, сколько до открытия. */
+function kpWindow(open,ticket){
+  const w=240,h=96,k=Math.min(2,(typeof DPR==="number"?DPR:1)*((typeof UIK==="number")?UIK:1));
+  const cv=document.createElement("canvas");cv.width=w*k;cv.height=h*k;cv.style.width=w+"px";cv.style.height=h+"px";cv.className="kp-win";
+  const c=cv.getContext("2d");if(!c)return cv;c.setTransform(k,0,0,k,0,0);
+  /* стена и окно */
+  c.fillStyle="#d9cfb4";c.fillRect(0,0,w,h);
+  c.fillStyle="rgba(120,100,70,.18)";for(let y=0;y<h;y+=12)c.fillRect(0,y,w,1);
+  const wx=70,wy=22,ww=100,wh=62;
+  c.fillStyle="#4a3f2c";c.fillRect(wx-4,wy-4,ww+8,wh+8);
+  c.fillStyle=open?"#2b3038":"#8a7a5a";c.fillRect(wx,wy,ww,wh);
+  if(open){
+    /* за стеклом — тёплая лампа и силуэт клерка */
+    const g=c.createRadialGradient(wx+ww*.6,wy+18,4,wx+ww*.6,wy+18,60);g.addColorStop(0,"rgba(255,220,160,.8)");g.addColorStop(1,"rgba(255,220,160,0)");
+    c.fillStyle=g;c.fillRect(wx,wy,ww,wh);
+    c.fillStyle="rgba(40,36,34,.95)";c.beginPath();c.arc(wx+ww*.55,wy+34,9,0,TAU);c.fill();c.fillRect(wx+ww*.55-14,wy+42,28,20);
+    c.fillStyle="rgba(230,220,200,.9)";c.fillRect(wx+8,wy+wh-14,ww-16,8);           /* прилавок */
+  }else{
+    c.fillStyle="rgba(0,0,0,.25)";for(let y=wy+4;y<wy+wh;y+=6)c.fillRect(wx,y,ww,2);   /* шторка */
+    c.fillStyle="#2a2418";c.font="bold 9px ui-monospace,monospace";c.textAlign="center";c.textBaseline="middle";
+    c.fillText("ЗАКРЫТО",wx+ww/2,wy+wh/2);
+  }
+  /* решётка */
+  c.strokeStyle="rgba(200,190,170,.85)";c.lineWidth=2;
+  for(let i=1;i<5;i++){c.beginPath();c.moveTo(wx+i*ww/5,wy);c.lineTo(wx+i*ww/5,wy+wh);c.stroke();}
+  c.beginPath();c.moveTo(wx,wy+wh*.5);c.lineTo(wx+ww,wy+wh*.5);c.stroke();
+  /* часы над окном: почтовое время */
+  const hr=kpHour(),mn=Math.floor(((now()%KP_DAY)/KP_DAY)*24*60)%60;
+  c.fillStyle="#f4efe2";c.beginPath();c.arc(wx+ww/2,12,9,0,TAU);c.fill();
+  c.strokeStyle="#2a2418";c.lineWidth=1;c.stroke();
+  c.beginPath();c.moveTo(wx+ww/2,12);c.lineTo(wx+ww/2+Math.cos((hr%12)/12*TAU-Math.PI/2)*5,12+Math.sin((hr%12)/12*TAU-Math.PI/2)*5);c.stroke();
+  c.beginPath();c.moveTo(wx+ww/2,12);c.lineTo(wx+ww/2+Math.cos(mn/60*TAU-Math.PI/2)*7.5,12+Math.sin(mn/60*TAU-Math.PI/2)*7.5);c.stroke();
+  /* табличка часов на стене слева */
+  const H=kpHours(G.sx,G.sy);
+  c.fillStyle="#f4efe2";c.fillRect(8,30,52,30);c.strokeStyle="#2a2418";c.strokeRect(8.5,30.5,51,29);
+  c.fillStyle="#2a2418";c.font="7px ui-monospace,monospace";c.textAlign="center";c.textBaseline="middle";
+  c.fillText("ЧАСЫ РАБОТЫ",34,38);c.fillText(H[0]+":00–"+H[1]+":00",34,47);c.fillText("обед 13–14",34,55);
+  /* талон справа */
+  if(ticket){
+    c.save();c.translate(206,52);c.rotate(-.12);
+    c.fillStyle="#fbf7ec";c.fillRect(-20,-16,40,32);c.strokeStyle="#3b5a8a";c.lineWidth=1;c.strokeRect(-20,-16,40,32);
+    c.fillStyle="#3b5a8a";c.font="6px ui-monospace,monospace";c.fillText("ТАЛОН",0,-8);
+    c.font="bold 13px ui-monospace,monospace";c.fillText(String(ticket),0,5);
+    c.restore();
+  }
+  return cv;
+}
 function kpBlock(){
   const o=(typeof stapelAll==="function")?stapelAll().o:null;
   const box=document.createElement("div");box.className="post";
   box.appendChild(el("div","sec","КОСМОПОЧТА · "+kpDoor()));
   const open=kpOpen();
+  box.appendChild(kpWindow(open,o&&now()>=o.ready?kpTicket(o):0));
   if(!o||now()<o.ready){
     box.appendChild(el("div","row","<div class='nm'><s>"+(open?"окно открыто · извещений на ваше имя нет":
       "ЗАКРЫТО · откроется через "+kpMinsToOpen()+" мин")+"</s></div>"));
@@ -89843,6 +89902,15 @@ function drawThingIcon(c,k,W,H){
     c.fillStyle="#e6dcc2";c.fillRect(-40,-22,80,44);
     c.strokeStyle="rgba(90,70,40,.6)";c.lineWidth=1.5;c.strokeRect(-40,-22,80,44);
     c.beginPath();c.moveTo(-40,-22);c.lineTo(0,6);c.lineTo(40,-22);c.stroke();
+  }else if(k==="subletter"){
+    /* письмо подписки (D19): белый глянец, синяя шапка с «улыбкой», мелкий шрифт внизу */
+    c.fillStyle="#ffffff";c.fillRect(-28,-34,56,68);
+    c.fillStyle="#1e4fb8";c.fillRect(-28,-34,56,14);
+    c.strokeStyle="#fff";c.lineWidth=1.6;c.beginPath();c.arc(-18,-28,4,.2,Math.PI-.2);c.stroke();
+    c.fillStyle="#1e4fb8";c.fillRect(-20,-14,40,4);
+    c.strokeStyle="rgba(60,70,90,.35)";c.lineWidth=1;
+    for(let y=-4;y<24;y+=6){c.beginPath();c.moveTo(-20,y);c.lineTo(20,y);c.stroke();}
+    c.fillStyle="rgba(60,70,90,.5)";for(let i=0;i<8;i++)c.fillRect(-20+i*5,27,4,1);
   }else if(k==="recall"){
     /* письмо об отзыве (D25): тёмная шапка Хай-Фронта, строки, красный штамп наискось */
     c.fillStyle="#f4f4f6";c.fillRect(-28,-34,56,68);
