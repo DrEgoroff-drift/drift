@@ -409,10 +409,12 @@ function hud(){
      display:"" каждый кадр, а ряд ниже тут же писал display:"none" —
      тормоз мигал видимый→скрытый внутри ОДНОГО hud() каждый кадр, реальная
      запись в стиль дважды за кадр, найдено по стеку мутаций (18.09). */
+  /* Погашенность — не видимость: класс off снимается и в системе, иначе тормоз,
+     погашенный на поверхности, так и возвращался погашенным в полёт (тест
+     «в полёте живой», 18.09). toggle в то же состояние записи не даёт. */
+  $bBrk.classList.toggle("off",G.mode==="surface"||G.mode==="dig");
   if(G.mode!=="system"){
-    const brkOff=G.mode==="surface"||G.mode==="dig";
     setSt($bBrk,"display","");
-    $bBrk.classList.toggle("off",brkOff);
     setTx($bBrk,"ТОРМОЗ");
     setSt($bBrk,"opacity","");
   }

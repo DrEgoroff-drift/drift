@@ -6,18 +6,23 @@
    кладём одним drawImage; поворот и сжатие крена даёт текущая матрица.
 
    Чем платим и почему это та же картинка:
-   • масштаб — ступенями в четверть октавы, печём на верхнем краю ступени и
-     кладём с уменьшением не больше ×1.19: растяжения нет никогда;
+   • масштаб — ступенями в 1/16 октавы, печём на верхнем краю ступени и
+     кладём с уменьшением не больше 4 %: растяжения нет никогда. Первая
+     версия шла четвертями октавы (сжатие до ×1.19), и прибор породы
+     (makerRead, тест M369) поймал мягкость мелкого плана: 89.9 % при
+     пороге 90 — читаемость на маленьком корабле держится резкостью;
    • крен двигает по корпусу блик хребта (hullPart1) — он в ключе, шагом
      .05 рад: сдвиг блика за шаг меньше пикселя, а блик мягкий;
    • налёт в ключе шагом 1/64, швы и метка «Сороки» — как есть.
    Корпус плотный (закрашено больше половины квадрата), поэтому печь его
    выгодно — в отличие от лучей звезды (GOTCHAS: bake what fills its box).
-   Слишком крупный план (карточки, экраны) печётся тоже, пока сторона
-   картинки не больше HB_MAX; дальше — рисуем по-старому. */
-const HB_MAX=1600, HB_PER_HULL=48;
+   Печём только то, ради чего печка: корабль в полёте, сторона пробы не больше
+   HB_PROBE. Крупный план (карточки, экраны, ангар) рисуется по-старому — он
+   не в бюджете кадра, а проба рамки на нём стоила бы десятки мегабайт
+   getImageData (первая версия с потолком 3200 px вешала браузерный ярус). */
+const HB_PROBE=768, HB_PER_HULL=48;
 const HULL_BAKES=new WeakMap();     // h → Map(ключ → запечённый слой)
-const HULL_BOX=new WeakMap();       // h → Map(масштаб|слои → рамка в мировых)
+const HULL_BOX=new WeakMap();       // h → Map(слои → рамка краски в мировых, одна на все масштабы)
 let HB_STATS={hit:0,bake:0,skip:0};
 function hullBakeScale(){
   const m=ctx.getTransform();
@@ -27,7 +32,7 @@ function hullBakeDraw(h,id,bank){
   if(G.opts&&G.opts.gfx&&G.opts.gfx.hullBake===0)return false;
   const s=hullBakeScale();
   if(!(s>0))return false;
-  const sb=Math.pow(2,Math.ceil(Math.log2(s)*4)/4);
+  const sb=Math.pow(2,Math.ceil(Math.log2(s)*16)/16);
   const ticks=(h.outs||[]).some(o=>o.k==="runline");
   const crowns=(typeof drawCrowns==="function")&&id===G.shipId&&G.crowns&&
     NODE_FAMS.some(f=>G.crowns[f.id]);
@@ -64,24 +69,27 @@ function hullBakeGet(h,id,bank,L,sb,key){
   if(!M){M=new Map();HULL_BAKES.set(h,M);}
   let b=M.get(key);
   if(b){HB_STATS.hit++;return b;}
-  const boxKey=sb+"|"+L.join("");
+  /* рамку краски ищем ОДИН раз на корпус и набор слоёв — в мировых единицах,
+     на пробе в 4 px на единицу; на любом масштабе к ней добавляется поле в
+     два пикселя под сглаживание. Отказ помним: не пробовать каждый кадр. */
+  const boxKey=L.join("");
   let BM=HULL_BOX.get(h);
   if(!BM){BM=new Map();HULL_BOX.set(h,BM);}
   let box=BM.get(boxKey);
+  if(box===false)return null;
   if(!box){
-    /* рамку ищем один раз на масштаб: печём с запасом и смотрим, где краска */
-    const E=Math.max(h.nose,-h.tail,h.bw*3)*1.6+8;
-    const side=Math.ceil(E*2*sb);
-    if(side>HB_MAX*2)return null;
-    const probe=hullBakeRender(h,id,bank,L,sb,-E,-E,side,side);
-    box=hullInkBox(probe,sb,-E,-E);
-    if(!box)return null;
+    const E=Math.max(h.nose,-h.tail,h.bw*3)*1.6+8, PS=4;
+    const side=Math.ceil(E*2*PS);
+    if(side>HB_PROBE){BM.set(boxKey,false);return null;}
+    box=hullInkBox(hullBakeRender(h,id,bank,L,PS,-E,-E,side,side),PS,-E,-E);
+    if(!box){BM.set(boxKey,false);return null;}
     BM.set(boxKey,box);
   }
-  const W=Math.ceil(box.w*sb),H=Math.ceil(box.h*sb);
-  if(W>HB_MAX||H>HB_MAX)return null;
-  const cv=hullBakeRender(h,id,bank,L,sb,box.x,box.y,W,H);
-  b={cv,x:box.x,y:box.y,w:W/sb,h:H/sb};
+  const m=2/sb, x0=Math.floor((box.x-m)*sb)/sb, y0=Math.floor((box.y-m)*sb)/sb;
+  const W=Math.ceil((box.x+box.w+m-x0)*sb), H=Math.ceil((box.y+box.h+m-y0)*sb);
+  if(W>HB_PROBE||H>HB_PROBE){HB_STATS.skip++;return null;}
+  const cv=hullBakeRender(h,id,bank,L,sb,x0,y0,W,H);
+  b={cv,x:x0,y:y0,w:W/sb,h:H/sb};
   if(M.size>=HB_PER_HULL)M.clear();
   M.set(key,b);HB_STATS.bake++;
   return b;

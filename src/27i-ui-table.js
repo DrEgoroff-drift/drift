@@ -182,6 +182,19 @@ function tableBake(){
 /* Всё, что перестраивает стол, идёт через одну дверь — и дверь держит прокрутку (P1).
    Оба списка сразу: обычный и лорный, — потому что заметно именно то, что
    читал человек, а не то, что перерисовали. */
+/* шапка листа: кредиты и где ты (у описи — спички). Отдельно от перестройки
+   тела, потому что после P1 строка журнала больше не перестраивает весь стол,
+   а на этом побочном эффекте шапка и держалась: разобрал часть в ОПИСИ —
+   спички легли, а в шапке старое число (тест «счётчик в шапке обновился»,
+   18.09). Кто меняет счётчик, не перестраивая стол, зовёт её сам. */
+function tableHead(cr,wh){
+  cr=cr||document.getElementById("tableCr");wh=wh||document.getElementById("tableWhere");
+  if(cr)setTx(cr,Math.round(G.credits).toLocaleString("ru")+" кр");
+  /* у описи два настоящих счётчика — кредиты и спички; больше не выдумываем */
+  if(wh){const mr=modeRu();
+    setTx(wh,(tableTab==="hold"&&typeof matchesLine==="function")?matchesLine():
+      (G.sys&&G.sys.name?G.sys.name:"—")+(mr?" · "+mr:""));}
+}
 function tableRender(){
   const box=document.getElementById("loglist"),lore=document.getElementById("lorelist");
   if(!box){tableRenderBody();return;}
@@ -275,11 +288,7 @@ function tableRenderBody(){
    if(sub)sub.textContent=cut>0?S0.slice(cut+3):S0;
    const ttl=document.getElementById("tableTtl");
    if(ttl)ttl.textContent=cut>0?S0.slice(0,cut).toLocaleUpperCase("ru"):"СТОЛ";}
-  if(cr)cr.textContent=Math.round(G.credits).toLocaleString("ru")+" кр";
-  /* у описи два настоящих счётчика — кредиты и спички; больше не выдумываем */
-  if(wh){const mr=modeRu();
-    wh.textContent=(tableTab==="hold"&&typeof matchesLine==="function")?matchesLine():
-      (G.sys&&G.sys.name?G.sys.name:"—")+(mr?" · "+mr:"");}
+  tableHead(cr,wh);
   box.style.display=tableTab==="lore"?"none":"";
   if(lore)lore.style.display=tableTab==="lore"?"":"none";
   /* Что читают — лежит на ЛИСТЕ; что держат в руках — лежит на СТОЛЕ (A3).

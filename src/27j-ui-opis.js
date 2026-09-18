@@ -80,6 +80,7 @@ function opisRerender(){
   if(OPIS.drag){OPIS.rerenderPending=true;return;}
   if(typeof keepScroll==="function")keepScroll(OPIS.box,()=>opisRender(OPIS.box));
   else opisRender(OPIS.box);
+  if(typeof tableHead==="function")tableHead();   /* спички и кредиты в шапке — вместе с описью */
 }
 function opisSame(a,b){return !!a&&!!b&&a.t===b.t&&a.id===b.id&&a.i===b.i&&a.k===b.k;}
 function opisFocus(){return OPIS.hover||OPIS.sel;}
