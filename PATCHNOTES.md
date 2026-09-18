@@ -6,6 +6,20 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.452.0 - a flat 60, and the lane that stopped shouting from afar
+
+- **Fix** (`28-loop`): the frame cap estimated the display period from the *shortest* recent
+  interval; under a saturated GPU a late frame is followed by a catch-up 6-9 ms later, the estimate
+  slid to 120 Hz and the game skipped every other vsync itself - locked 30 fps in stretches on the
+  phone and the desktop (simulated: 5% late frames -> 23 of 60). Now a flat 60 by schedule (author:
+  «принудительно просто 60»): a frame goes when its slot is due (4 ms slack), the grid is not moved
+  by a late frame, 120 Hz tact is off.
+- **Fix** (`17k`, `17l`, `17g`): at far zoom the billboard is an unlettered plate and the hotel name
+  is gone (letters fade in towards x0.5); the hotel and the lane queue shrink with the world instead
+  of stacking at a size floor.
+- **Fix** (`09-audio`): a hidden tab suspends its audio - six music layers kept playing in the
+  background and ate 40-60% of a core.
+
 ## 0.451.0 - red suites closed, the phone stick and the signs that shrank
 
 - **Fix** (`16c-abil`): the special system's cooldown lived in `G.t` across a new game, so the ability

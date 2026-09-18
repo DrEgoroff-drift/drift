@@ -297,7 +297,21 @@ function resAuto(d){
     }
   }
 }
-let capIv=16.667, capPrev=0, capN=0;
+let capIv=16.667, capPrev=0, capN=0, capDue=0;
+/* Период развёртки — МЕДИАНА последних промежутков, а не самый короткий (19.09).
+   Минимум ломался от первой же загрузки: при 100% ГПУ кадр опаздывает, следующий
+   приходит «вдогонку» через 6–9 мс, оценка съезжала к 120 Гц — и игра сама
+   пропускала каждый второй кадр развёртки: ровные 30 кусками на S23 автора и
+   на десктопе. Симуляция: 5% опозданий давали 23 кадра из 60, 30% — 14.
+   Догоняющие кадры — меньшинство, медиана их не видит; на настоящих 120 Гц
+   медиана и есть 8.3. Ошибка в другую сторону безопасна: шаг 1 — просто все кадры. */
+const CAP_RING=new Float32Array(48);let capRingN=0;
+function capSample(d){
+  CAP_RING[capRingN++%48]=d;
+  if(capRingN%12)return;
+  const a=Array.from(CAP_RING.subarray(0,Math.min(capRingN,48))).sort((x,y)=>x-y);
+  capIv=Math.min(50,a[a.length>>1]);
+}
 /* ══════════════ РОВНЫЙ ТАКТ (0.1b) ══════════════
    Автор после двух заходов: «на тел дергается все прогоны, плавный полет нужен».
    Замеры Со 23 объясняют, почему ровного полёта не было ни до квантования, ни
@@ -336,7 +350,7 @@ function tactTick(d){
   if(tactHz<120){
     const light=workEma<TACT_LOW&&ivEma<per*1.2;
     if(light)tactGood+=d;else tactGood=Math.max(0,tactGood-d*2);
-    if(tactGood>TACT_UP_WIN){tactGood=0;tactBad=0;tactHz=120;ivEma=capIv;}
+    /* полка 60 (19.09): на 120 такт больше не поднимается */
   }else{
     const heavy=workEma>TACT_HIGH||ivEma>per*1.5;
     if(heavy)tactBad+=d;else tactBad=Math.max(0,tactBad-d*.5);
@@ -435,7 +449,7 @@ function frameBody(now){
     /* «самый короткий за последнее время»: медленно отпускаем оценку вверх,
        чтобы смена монитора или переезд окна на другой экран не остались
        незамеченными навсегда */
-    if(d>1&&d<capIv)capIv=capIv*.7+d*.3; else capIv=Math.min(capIv*1.002,50);
+    if(d>1&&d<250)capSample(d);
   }
   capPrev=now;
   /* Два разных обещания — два разных округления (0.1b). Игроцкий потолок —
@@ -446,11 +460,16 @@ function frameBody(now){
      кадра развёртки, то есть 40 кадров вместо шестидесяти (замер: промежутки 24–27 мс
      вместо 16.7). Из двух шагов берём БОЛЬШИЙ: потолок нельзя превышать. */
   const capOpt=G.opts.gfx.fps|0;
+  /* ПОЛКА 60 (автор 19.09: «оставь принудительно просто 60 кадров и все, не считай»).
+     Не оценка развёртки, а расписание: кадр идёт, когда подошёл его срок (раз в
+     1000/60 мс, допуск 4 мс на дрожание). Опоздавший кадр не сдвигает сетку —
+     следующий «вдогонку» рисуется; отстали больше чем на кадр — сетка встаёт на now.
+     На 60 Гц проходит каждый кадр, на 120/144 — через раз, на ГПУ под 100% не
+     проваливается в 30, как проваливалась оценка по кратчайшему промежутку. */
   {
-    let stride=Math.max(1,Math.round(1000/tactHz/capIv));
-    if(capOpt)stride=Math.max(stride,Math.ceil(1000/capOpt/capIv-.15));
-    if(++capN%stride){FRAME_DREW=false;FRAME_IN=false;return;}
-    capN=0;
+    const per=1000/Math.min(60,capOpt||60);
+    if(capDue&&now<capDue-4){FRAME_DREW=false;FRAME_IN=false;return;}
+    capDue=(!capDue||now-capDue>per)?now+per:capDue+per;
   }
   FRAME_DREW=true;
   resAuto(now-last);
