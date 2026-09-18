@@ -540,6 +540,20 @@ nav.tabs button.on::after{content:"";position:absolute;left:10px;right:10px;bott
   background:var(--phos);box-shadow:0 0 12px var(--phos)}
 /* когда в разделе одна вкладка, вторая ступень не нужна */
 nav.tabs.solo{display:none}
+/* ── станция: один ряд (ревью шапки 13–15, выбор автора 18.09) ──
+   Вкладки раздела стоят в ряду разделов, сразу за именем раскрытого, на
+   своей подложке и мельче — видно, чьи они. Ряд шире экрана, поэтому у
+   него та же тень незаконченного края, что у полосы вкладок стола. */
+#stGroups{-webkit-mask-image:linear-gradient(90deg,#000 0,#000 calc(100% - 26px),transparent 100%);
+  mask-image:linear-gradient(90deg,#000 0,#000 calc(100% - 26px),transparent 100%)}
+#stGroups.tail{-webkit-mask-image:none;mask-image:none}
+#stGroups button.open{color:var(--phos);flex:0 0 auto}
+#stGroups #stTabs{flex:0 0 auto;display:flex;overflow:visible;border:0;padding:0;margin:0;
+  background:rgba(127,230,216,.05);border-left:1px solid rgba(127,230,216,.14);
+  -webkit-mask-image:none;mask-image:none}
+#stGroups #stTabs.solo{display:none}
+#stGroups #stTabs button{min-height:46px;font-size:9px;padding:0 13px;border-right:0}
+#stGroups #stTabs button:last-child{border-right:1px solid rgba(127,230,216,.14)}
 
 .body{flex:1;overflow-y:auto;padding:0 0 10px;-webkit-overflow-scrolling:touch}
 /* «внизу ещё есть» (M212): список, который продолжается за кромкой, уходит в
@@ -892,9 +906,18 @@ body.screen #perch{display:none}
    фишка — как в меню, «сколько пришло» */
 /* ширина не зависит от счётчика (R6, 12.09): «99+» сидит над углом, и две строки
    шапки станции не перетекают от того, есть ли на столе бумага */
-.scr header #stDesk{flex:0 0 auto;margin-left:12px;align-self:center;position:relative;min-width:76px}
-.scr header #stDesk i{font-style:normal;color:var(--void);background:var(--amber);
-  position:absolute;top:-6px;right:-6px;margin:0;padding:1px 5px;border-radius:8px;font-size:9px;line-height:1.4}
+/* СТОЛ — не кнопка станции, а твоё: бумажная бирка в колонке кошелька, под
+   кредитами и данными (выбор автора 18.09: «в шапку аккуратно впишем»).
+   Большая бирюзовая плашка посреди шапки читалась услугой станции и спорила
+   с её именем. Нажимать по-прежнему удобно: зона 44 px, рисунок — строка */
+.scr header .wallet #stDesk{display:block;margin:2px -8px -12px auto;padding:13px 8px 12px;min-height:44px;
+  -webkit-appearance:none;background:none;border:0;font-family:inherit;cursor:pointer;position:relative;
+  color:#d8c8a4;font-size:10px;letter-spacing:.18em;line-height:1}
+.scr header .wallet #stDesk em{display:inline;color:inherit;font-style:normal;padding:3px 6px 2px;
+  border:1px solid rgba(216,200,164,.45);border-radius:2px;background:rgba(216,200,164,.07)}
+.scr header .wallet #stDesk:active em{background:rgba(216,200,164,.18)}
+.scr header .wallet #stDesk i{display:inline;font-style:normal;color:var(--void);background:var(--amber);
+  margin-left:5px;padding:1px 5px;border-radius:8px;font-size:9px;line-height:1.4}
 
 /* ── окно трепла ──
    M151a убрала три плавающих окна (журнал, отчёт, трепло) и вычистила их

@@ -132,7 +132,7 @@ TEST_SUITES.push(()=>suite("станция: ДОСКА у всех, очеред
      она покраснела, ничего не сломав в игре. Спрашиваем то, что и значит
      «доска у всех»: раздел на ПЕРВОЙ полосе есть у любой станции, и он
      открывает доску. */
-  const grp=[...document.querySelectorAll("#stGroups button")].find(b=>b.textContent==="ДОСКА");
+  const grp=[...document.querySelectorAll("#stGroups > button")].find(b=>b.textContent==="ДОСКА");
   ok(!!grp,"раздел ДОСКА показан у любой станции");
   if(!grp)return;
   grp.click();

@@ -144,19 +144,30 @@ function syncTabs(){
   const live=ST_GROUPS.filter(g=>g.tabs.some(t=>has.indexOf(t)>=0));
   if(has.indexOf(tab)<0)tab=(live[0]&&live[0].tabs.filter(t=>has.indexOf(t)>=0)[0])||"none";
   stGroup=stGroupOf(tab);
-  const $g=document.getElementById("stGroups");
+  const $g=document.getElementById("stGroups"),$t=document.getElementById("stTabs");
+  /* ── один ряд (ревью шапки 13–15, выбор автора 18.09) ──
+     Было две полосы: разделы, под ними вкладки раздела — 90 px шапки до
+     первой строки товара. Теперь вкладки раздела стоят в том же ряду, сразу
+     за его именем: «ДОСКА · ТОРГОВЛЯ РЫНОК БАРТЕР БОНЫ · КОРАБЛЬ …». Узел
+     #stTabs тот же — его только переставляют внутрь ряда (на него смотрят
+     код и тесты); textContent ниже его не трогает, он вынут заранее. */
+  if($t.parentNode)$t.parentNode.removeChild($t);
   $g.textContent="";
   for(const g of live){
     const b=document.createElement("button");
     b.textContent=g.ru;
-    if(g.id===stGroup)b.classList.add("on");
+    const nTabs=g.tabs.filter(t=>has.indexOf(t)>=0).length;
+    /* раздел с вкладками раскрыт, а подчёркнута выбранная вкладка, не он */
+    if(g.id===stGroup)b.classList.add(nTabs>1?"open":"on");
     b.addEventListener("click",()=>{
       const first=g.tabs.filter(t=>has.indexOf(t)>=0)[0];
       if(!first)return;
       tab=first;syncTabs();renderTab();
     });
     $g.appendChild(b);
+    if(g.id===stGroup)$g.appendChild($t);
   }
+  if(!$t.parentNode)$g.appendChild($t);
   const grp=ST_GROUPS.find(g=>g.id===stGroup);
   let shown=0;
   document.querySelectorAll("#stTabs button").forEach(b=>{
@@ -167,8 +178,8 @@ function syncTabs(){
   });
   /* одна вкладка в разделе — вторая ступень только мешает */
   document.getElementById("stTabs").classList.toggle("solo",shown<2);
-  /* и обе полосы подводят выбранное под глаз (15-input) */
-  if(typeof tabsSync==="function"){tabsSync($g);tabsSync(document.getElementById("stTabs"));}
+  /* ряд подводит выбранное под глаз (15-input): первая «on» в нём — вкладка */
+  if(typeof tabsSync==="function")tabsSync($g);
 }
 function repairCost(){
   /* репутация станции идёт в цену работы: чинят руки, а не рынок (12k-rep).

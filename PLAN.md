@@ -475,16 +475,14 @@ Rule 3: same look, cheaper work.
   Bottom padding: closed by a frame — 57 px of air under the last card at 390×844, nothing fixed
   over it (P1–P3 already fixed it). `crash.log` noise: closed since 0.419 — only `logShip` sends, and
   all nine callers are real evidence (save, cloud, chronicle).
-- [ ] Station header review 13–15 — **half done 18.09 (Control):** prices before the cooperative
-  form ✓; the Director's news moved from ЕЩЁ to the board as «СЕГОДНЯ В СИСТЕМЕ» in the ЗДЕСЬ lane ✓.
-  **Open, a design fork for the author** (the Designer who would have decided it is gone):
-  - *СТОЛ out of the masthead* — it cannot simply go: in dock the station screen covers МЕНЮ, so
-    that button is the ONLY way to the desk. Proposal: into the tab row as its last item, drawn as
-    paper (the player's own things, not the station's), so it reads as «your desk» and not a
-    station service. Alternative: a fourth button in the bottom row (cramped at 390: ~85 px each).
-  - *Two tab rows (≈90 px measured) → one* — proposal: one horizontally scrolling row where the
-    active group opens its sub-tabs inline («ДОСКА · ТОРГОВЛЯ: РЫНОК БАРТЕР БОНЫ · КОРАБЛЬ …»),
-    45 px; the groups survive, the second row goes. Alternative: one flat row of all 13 tabs.
+- [x] Station header review 13–15 — done 18.09 (Control, the author chose the forms). Prices before
+  the cooperative form; the Director's news from ЕЩЁ to the board («СЕГОДНЯ В СИСТЕМЕ», lane
+  ЗДЕСЬ); **one tab row**: the open group's tabs stand inline right after its name on their own
+  band (`#stTabs` is moved inside `#stGroups`, the node and its selectors unchanged), the row fades
+  at the right edge like the desk's — the list starts at 148 px instead of ~215 at 390×844;
+  **СТОЛ stays in the masthead, redrawn** («в шапку аккуратно впишем»): a paper tag under the
+  wallet — your money, your data, your desk on the right, the station on the left — 59×44 hit
+  area. Tests that listed groups with `#stGroups button` now say `#stGroups > button`.
 - **Privacy, standing:** the author's save sits outside git (`C:\Claude\drift-private`) — never
   commit it; the two bot signs in `~/drift-data/trace/p/0_0.json` the author removes by hand.
 

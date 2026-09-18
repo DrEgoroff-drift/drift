@@ -178,7 +178,7 @@ TEST_SUITES.push(()=>suite("станция: разделы вместо деся
   ok(!!S,"станция есть");
   G.ship.x=S.x+40;G.ship.y=S.y;
   openStation();
-  const groups=[...document.querySelectorAll("#stGroups button")];
+  const groups=[...document.querySelectorAll("#stGroups > button")];
   ok(groups.length>0,"разделы построены");
   ok(groups.length<ST_GROUPS.length+1,"их не больше, чем заведено");
   /* раздел показывается, только если у него есть вкладка на этой станции */
