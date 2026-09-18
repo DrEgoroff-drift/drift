@@ -159,7 +159,7 @@ function dealRender(){
          денег — как у людей, а не прозой через точки */
       if(open)for(const d of r.drones){
         const rr=el("div","row deal sub");
-        rr.appendChild(el("div","nm","<b>"+droneName(d)+"</b><s>"+droneStateRu(d)+" · кругов "+(d.trips|0)+"</s>"));
+        rr.appendChild(el("div","nm","<b>"+droneName(d)+"</b><s><i>"+((typeof droneQuirk==="function")?droneQuirk(d).ru:"")+"</i> · "+droneStateRu(d)+" · кругов "+(d.trips|0)+"</s>"));
         rr.appendChild(el("div","qt",(d.earned|0).toLocaleString("ru")+"<s>кр всего</s>"));
         $dlBody.appendChild(rr);
       }
