@@ -159,7 +159,11 @@ job (the phone milestone), but no fix may add raster cost without a number.
   obsidian shard with one cold glint (dark glass), trap ring with a spark (antimatter), lead capsule
   with a yellow mark (neutron), amber chips. NOT done: the wheel spread (§4.4), the belt entry's
   reading line, ЖИЛА across the screen.
-- [ ] **D14 The blueprint** (M476–M479): the ОПИСЬ ЧЕРТЁЖ now a plain grid — the синька of M477 (Prussian blue, ochre stamps by kind, «СОГЛАСОВАНО»), the hold readable, the turret on the back in flight (M479).
+- [~] **D14 The blueprint — the ОПИСЬ view done 18.09 on the S23.** `drawPlan` is now a синька:
+  Prussian blue with millimetre grid, white-ink cell lines, the hull outline thick along the
+  edges with no neighbour, the hold hatched, parts as ochre stamps with a kind letter
+  (О Щ Д К Р У П М), «СОГЛАСОВАНО» double-boxed in the corner. Same brush serves the КБ. Left:
+  the turret on the back in flight (M479) — not judged.
 - [ ] **D15 Stage 5 voice** (M485–M486 …): the drone's name and quirk in the list, the tape strip on the hull (grey on grey — barely reads at ×4.5).
 - [ ] **D13 The railway**: the faint lines and station circles on the map (M470); the ring, glide
   path, vestibule block and the vestibule page (M471–M472); the ride on the map (M473: the flight
@@ -174,12 +178,21 @@ job (the phone milestone), but no fix may add raster cost without a number.
   garden's blink, the moon's beacon, the hotel's red «МЕСТА ЕСТЬ», the cylinder's running light.
   The map mark is a glyph per giant (moon, slab, pill, grid, dock bracket, peaks, masts). Left:
   the ruler in the frame, docking/visiting — those are M464's open tails, not design.
-- [ ] **D25 Paper and stamps** (M503/M505/M509/M513): the ПЛАН on the sign, the passport page in КНИЖКА, the recall letter, the transit plate stencilled on the flank.
+- [~] **D25 Paper and stamps — the passport done 18.09 on the S23.** The passport was not on
+  any page at all (only in fares); now a bordeaux cover with gold lettering under the stamp grid
+  in КНИЖКА while it runs, with «до N смен». Left: the ПЛАН on the sign (it is a text line on the
+  billboard already), the recall letter, the transit plate stencilled on the flank.
 - [~] **D24 Railway life — rows done 18.09 on the S23.** The parcel is a paper tag with a hole
   (dashed edge, ochre), the pass a card with a punched row, the passenger a phosphor silhouette
   before the line. Left: the подстаканник for the tea row, the seal drawn on the hold in flight.
-- [ ] **D23 Album** (P13): the lightbox is a dark sheet with chips — a real photo-album page (corners, paper), filter previews as thumbnails, the saved PNG's caption band typeset properly.
-- [ ] **D22 Rented core** (M488): the HQ rows are plain — the Хай-Фронт core as a glossy card with the tariff table, the advert lines styled as adverts in the manager log.
+- [~] **D23 Album — the page done 18.09 on the S23.** The lightbox is a black album page with
+  paper grain, the card sits in four corner mounts, the caption is white-pencil italic serif under
+  the photo. Left: filter previews as thumbnails (five extra canvases — a phone-cost question),
+  the saved PNG's caption band.
+- [~] **D22 Rented core — the card done 18.09 on the S23.** The three tiers are one glossy
+  Хай-Фронт card (`.rent-card`): cyan-edged, head with the ◉ mark, tariff rows name / price /
+  note, role buttons under each, the «спасибо, что остаётесь с нами» foot. Left: the advert
+  lines in the manager log styled as adverts.
 - [~] **D21 Special systems — done 18.09 on the S23 except two effects.** The charge ring is 4 px
   with a bright head at the arc's end; when charged the pad carries «ДОЛГОЕ · ФОРСАЖ» above it (it
   dims with the pad's own `.off` opacity — acceptable, reads on a dark sky). Effects: ФОРСАЖ

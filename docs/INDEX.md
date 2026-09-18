@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 587 · символов верхнего уровня: 5664
+Файлов: 587 · символов верхнего уровня: 5665
 
 ## СИМВОЛЫ
 
@@ -1447,7 +1447,7 @@ drawPeaceFleet               src/17m-peace-fleet.js:26-69
 drawPirate                   src/12i-pirate-hull.js:428-478
 drawPirateBase               src/24a-mode-raid.js:103-133
 drawPirateSkin               src/03d-hull-marks.js:99-126
-drawPlan                     src/05e-plan.js:133-151
+drawPlan                     src/05e-plan.js:137-172
 drawPlanetLights             src/17e-station-body.js:45-64
 drawPlanetWorks              src/17e-station-body.js:74-123
 drawPlant                    src/20-life.js:394-403
@@ -2472,7 +2472,7 @@ hqHover                      src/27f-hq-room.js:687
 hqJobCard                    src/27c-ui-hq.js:538-576
 hqRelicSlot                  src/27c-ui-hq.js:504-534
 hqRender                     src/27c-ui-hq.js:322-473
-hqRentOffer                  src/12f1-mgr-rent.js:59-71
+hqRentOffer                  src/12f1-mgr-rent.js:59-77
 hqRoomBody                   src/27f-hq-room.js:32-167
 hqScene                      src/27f-hq-room.js:644-686
 hqScreenData                 src/27f-hq-room.js:316-373
@@ -3465,8 +3465,8 @@ opisPartCard                 src/27j-ui-opis.js:547-574
 opisPartHtml                 src/27j-ui-opis.js:525-546
 opisPhone                    src/27j-ui-opis.js:71
 opisPileCard                 src/27j-ui-opis.js:595-616
-opisPlanBlock                src/05e-plan.js:153-167
-opisPlanOnly                 src/05e-plan.js:168-186
+opisPlanBlock                src/05e-plan.js:174-188
+opisPlanOnly                 src/05e-plan.js:189-207
 opisPriceCue                 src/27j-ui-opis.js:576-585
 opisRender                   src/27j-ui-opis.js:705-976
 opisRerender                 src/27j-ui-opis.js:74-84
@@ -3702,6 +3702,7 @@ PLAN_COL                     src/05e-plan.js:131
 PLAN_ETHER                   src/11r-plan.js:20-26
 PLAN_F                       src/27jb-kb.js:171
 PLAN_ITEM_COL                src/05e-plan.js:132
+PLAN_LETTER                  src/05e-plan.js:136
 PLAN_WANT                    src/05e-plan.js:78
 planAll                      src/11r-plan.js:27
 planCorePlanet               src/11r-plan.js:36-40
@@ -4907,7 +4908,7 @@ STAMP_RU                     src/17i-stamp.js:12
 stampArrive                  src/17i-stamp.js:37-49
 stampBook                    src/17i-stamp.js:22
 stampOwnerAt                 src/17i-stamp.js:16-21
-stampPage                    src/17i-stamp.js:63-84
+stampPage                    src/17i-stamp.js:63-90
 stampShow                    src/17i-stamp.js:51-61
 stampText                    src/17i-stamp.js:24-35
 STAPEL_PV                    src/26e1-stapel.js:124
@@ -5760,7 +5761,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/05e-clearance.js · 7 КБ
   · допуск вместо уровней (M363, §11.4):1
 
-## src/05e-plan.js · 13 КБ
+## src/05e-plan.js · 15 КБ
   · чертёж корабля: клетки из корпуса и упаковщик (M476, DESIGN-shipyard §3, review §2.2):1
 
 ## src/06-galaxy.js · 14 КБ
@@ -6368,7 +6369,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/17h-sys-gesture.js · 14 КБ
   · чья земля — за пять секунд: жест первого корабля и пост (M452, DESIGN-review §2.1):1
 
-## src/17i-stamp.js · 5 КБ
+## src/17i-stamp.js · 6 КБ
   · отметка о проезде: штамп на границе (M453, DESIGN-borders §2.2):1
 
 ## src/17i1-passport.js · 2 КБ

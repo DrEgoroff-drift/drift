@@ -57,15 +57,21 @@ function rentSay(m){
 }
 /* ШТАБ: предложение аренды — рядом со своим ядром */
 function hqRentOffer(free){
-  $hqBody.appendChild(el("div","sec","ЯДРО ХАЙ-ФРОНТА · В АРЕНДУ · ЗАНИМАЕТ МЕСТО ЧЕЛОВЕКА"));
+  /* глянцевая карточка Хай-Фронта с таблицей тарифов (D22, телефон 18.09):
+     три ровных ряда читались ещё тремя управляющими, а это одна вещь — реклама */
+  const card=el("div","rent-card");
+  card.appendChild(el("div","rent-head","<b>ЯДРО ХАЙ-ФРОНТА</b><s>в аренду · занимает место человека · не дрейфует</s><i>◉</i>"));
   for(const t in RENT_TIERS){
-    const T=RENT_TIERS[t],r=el("div","row");
-    r.appendChild(el("div","nm","<b>"+T.ru+(T.fee?" · "+T.fee+" кр/мин":" · даром")+"</b><s>"+T.note+" · не дрейфует</s>"));
+    const T=RENT_TIERS[t],r=el("div","row rent-row");
+    r.appendChild(el("div","nm","<b>"+T.ru+"</b><em>"+(T.fee?T.fee+" кр/мин":"даром")+"</em><s>"+T.note+"</s>"));
+    const bs=el("div","rent-btns");
     for(const k of free){
       const b=el("button","act sm",MGR_ROLES[k].ru.toUpperCase());
       b.onclick=()=>{if(rentAi(k,t)){hqSel=null;hqRender();}};
-      r.appendChild(b);
+      bs.appendChild(b);
     }
-    $hqBody.appendChild(r);
+    r.appendChild(bs);card.appendChild(r);
   }
+  card.appendChild(el("div","rent-foot","«Спасибо, что остаётесь с нами» · Хай-Фронт™"));
+  $hqBody.appendChild(card);
 }

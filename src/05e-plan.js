@@ -130,24 +130,45 @@ function planNow(){
 /* ── нарисовать чертёж (вид ОПИСИ, синька в M477): нос вверх ── */
 const PLAN_COL={nose:"#e8b35a",side:"#c9924a",spine:"#9ab6d6",stern:"#e07a50",deck:"#3a5068"};
 const PLAN_ITEM_COL={gun:"#f2b25c",shield:"#7fe6d8",engine:"#ff8f6a",hull:"#b9a58a",core:"#c58ae0",util:"#8fd08a",missile:"#ff6a6a",mod:"#d9dde3"};
+/* синька (D14, телефон 18.09): была ровная сетка цветных квадратиков. Чертёж —
+   белая тушь на прусской сини: тонкие клетки, обвод корпуса толще, трюм
+   штрихом, вещи — охряные штампы с буквой рода, в углу «СОГЛАСОВАНО» */
+const PLAN_LETTER={gun:"О",shield:"Щ",engine:"Д",hull:"К",core:"Р",util:"У",missile:"П",mod:"М"};
 function drawPlan(cx,W0,H0,pk){
   const P=pk.P,s=Math.min(W0/P.cols,H0/P.N);
   const ox=(W0-s*P.cols)/2,oy=(H0-s*P.N)/2;
   cx.clearRect(0,0,W0,H0);
+  cx.fillStyle="#0d2238";cx.fillRect(0,0,W0,H0);
+  cx.strokeStyle="rgba(220,234,255,.10)";cx.lineWidth=1;cx.beginPath();          /* миллиметровка под всем */
+  for(let x=ox%s;x<W0;x+=s){cx.moveTo(x,0);cx.lineTo(x,H0);}for(let y=oy%s;y<H0;y+=s){cx.moveTo(0,y);cx.lineTo(W0,y);}cx.stroke();
+  const has=new Set(P.cells.map(q=>q.i+","+q.j));
   for(const q of P.cells){
-    cx.fillStyle=q.kind==="deck"||q.kind==="spine"?"rgba(58,80,104,.35)":"rgba(201,146,74,.18)";
-    cx.fillRect(ox+q.j*s+1,oy+q.i*s+1,s-2,s-2);
-    cx.strokeStyle=PLAN_COL[q.kind];cx.globalAlpha=.55;cx.lineWidth=1;
-    cx.strokeRect(ox+q.j*s+1.5,oy+q.i*s+1.5,s-3,s-3);cx.globalAlpha=1;
+    cx.fillStyle=q.kind==="deck"||q.kind==="spine"?"rgba(220,234,255,.06)":"rgba(220,234,255,.11)";
+    cx.fillRect(ox+q.j*s,oy+q.i*s,s,s);
+    cx.strokeStyle="rgba(220,234,255,.3)";cx.lineWidth=1;cx.strokeRect(ox+q.j*s+.5,oy+q.i*s+.5,s-1,s-1);
   }
-  for(const q of pk.hold){cx.fillStyle="rgba(143,208,138,.14)";cx.fillRect(ox+q.j*s+3,oy+q.i*s+3,s-6,s-6);}
+  cx.strokeStyle="rgba(235,242,255,.9)";cx.lineWidth=Math.max(1.5,s*.12);cx.beginPath();   /* обвод корпуса — по кромкам клеток без соседа */
+  for(const q of P.cells){const x=ox+q.j*s,y=oy+q.i*s;
+    if(!has.has((q.i-1)+","+q.j)){cx.moveTo(x,y);cx.lineTo(x+s,y);}
+    if(!has.has((q.i+1)+","+q.j)){cx.moveTo(x,y+s);cx.lineTo(x+s,y+s);}
+    if(!has.has(q.i+","+(q.j-1))){cx.moveTo(x,y);cx.lineTo(x,y+s);}
+    if(!has.has(q.i+","+(q.j+1))){cx.moveTo(x+s,y);cx.lineTo(x+s,y+s);}}
+  cx.stroke();
+  cx.save();cx.strokeStyle="rgba(220,234,255,.35)";cx.lineWidth=1;                  /* трюм — штриховка */
+  for(const q of pk.hold){const x=ox+q.j*s,y=oy+q.i*s;cx.save();cx.beginPath();cx.rect(x,y,s,s);cx.clip();cx.beginPath();
+    for(let d=-s;d<s*2;d+=s/3){cx.moveTo(x+d,y);cx.lineTo(x+d+s,y+s);}cx.stroke();cx.restore();}
+  cx.restore();
   for(const it of pk.items){
-    const col=it.what==="mod"?PLAN_ITEM_COL.mod:(PLAN_ITEM_COL[it.kind]||"#fff");
-    for(const q of it.cells){
-      cx.fillStyle=col;cx.globalAlpha=.85;
-      cx.fillRect(ox+q.j*s+4,oy+q.i*s+4,s-8,s-8);cx.globalAlpha=1;
-    }
+    const L=it.what==="mod"?PLAN_LETTER.mod:(PLAN_LETTER[it.kind]||"·");
+    for(const q of it.cells){const x=ox+q.j*s,y=oy+q.i*s;
+      cx.fillStyle="rgba(214,160,74,.85)";cx.fillRect(x+2,y+2,s-4,s-4);                 /* охряный штамп */
+      cx.strokeStyle="rgba(120,80,30,.8)";cx.lineWidth=1;cx.strokeRect(x+2.5,y+2.5,s-5,s-5);
+      cx.fillStyle="#2a1c08";cx.font="bold "+Math.max(6,s*.6)+"px ui-monospace,monospace";cx.textAlign="center";cx.textBaseline="middle";cx.fillText(L,x+s/2,y+s/2+.5);}
   }
+  cx.save();cx.translate(W0-46,H0-16);cx.rotate(-.2);                                  /* согласовано */
+  cx.strokeStyle="rgba(210,70,60,.85)";cx.lineWidth=1.2;cx.strokeRect(-40,-9,80,18);cx.strokeRect(-37,-6,74,12);
+  cx.fillStyle="rgba(210,70,60,.9)";cx.font="bold 8px ui-monospace,monospace";cx.textAlign="center";cx.textBaseline="middle";cx.fillText("СОГЛАСОВАНО",0,.5);
+  cx.restore();
 }
 /* ── блок ЧЕРТЁЖ в ОПИСИ (M476): только вид, правка — КБ (M477) ── */
 function opisPlanBlock(){

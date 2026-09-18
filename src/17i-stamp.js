@@ -81,4 +81,10 @@ function stampPage(box){
     g.appendChild(c);
   }
   box.appendChild(g);
+  /* паспорт (M505, D25): бордовая корочка на той же странице, пока действует */
+  if(typeof passportOn==="function"&&passportOn()){
+    const p=document.createElement("div");p.className="stp-pass";
+    p.innerHTML="<b>ДИПЛОМАТИЧЕСКИЙ ПАСПОРТ</b><s>семь отметок · дорога даром · вопросов меньше</s><i>до "+Math.ceil((R.pass.until-now())/HOLD_SHIFT)+" смен</i>";
+    box.appendChild(p);
+  }
 }

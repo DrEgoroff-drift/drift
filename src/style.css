@@ -1755,6 +1755,28 @@ body.table u.addr{color:#7a4a20}
 .stp-cell{position:relative;min-height:62px;padding:6px 8px;border:2px solid currentColor;border-radius:5px;
   font:700 11px/1.3 ui-monospace,monospace;text-align:center;transform:rotate(var(--tilt,0deg));opacity:.85}
 .stp-cell i{position:absolute;right:4px;bottom:2px;font-style:normal;font-size:10px;opacity:.7}
+/* ядро Хай-Фронта в аренду — глянцевая карточка (M488, D22) */
+.rent-card{margin:14px 12px;border-radius:10px;overflow:hidden;color:#dbe8f0;
+  background:linear-gradient(160deg,#243642,#111a20 55%,#0d1418);border:1px solid rgba(140,220,255,.45);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 8px 24px rgba(0,0,0,.45)}
+.rent-head{position:relative;padding:12px 14px 8px;border-bottom:1px solid rgba(140,220,255,.25)}
+.rent-head b{display:block;font-size:12px;letter-spacing:.2em;color:#8ee6ff}
+.rent-head s{display:block;text-decoration:none;font-size:10px;color:rgba(219,232,240,.65);margin-top:3px}
+.rent-head i{position:absolute;right:14px;top:10px;font-style:normal;color:#8ee6ff;font-size:16px}
+.rent-card .rent-row{display:block;padding:10px 14px;border-bottom:1px solid rgba(140,220,255,.12);background:none}
+.rent-card .rent-row .nm{display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:baseline}
+.rent-card .rent-row .nm b{font-size:12px;letter-spacing:.06em;color:#eaf4f8}
+.rent-card .rent-row .nm em{font-style:normal;font-variant-numeric:tabular-nums;color:#8ee6ff;font-size:12px}
+.rent-card .rent-row .nm s{grid-column:1/3;font-size:10px;color:rgba(219,232,240,.6)}
+.rent-btns{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.rent-foot{padding:8px 14px 10px;font-size:9px;letter-spacing:.08em;color:rgba(142,230,255,.6);text-align:right}
+/* паспорт — бордовая корочка с золотом (M505, D25) */
+.stp-pass{position:relative;margin:4px 12px 12px 48px;padding:12px 14px 12px 18px;border-radius:4px;color:#e9c987;
+  background:linear-gradient(90deg,#4a1418,#6b1d22 40%,#5a181d);box-shadow:inset 0 0 0 1px rgba(233,201,135,.45),0 3px 10px rgba(0,0,0,.4)}
+.stp-pass::before{content:"";position:absolute;left:8px;top:8px;bottom:8px;width:2px;background:rgba(233,201,135,.35)}
+.stp-pass b{display:block;font-size:11px;letter-spacing:.2em}
+.stp-pass s{display:block;text-decoration:none;font-size:10px;color:rgba(233,201,135,.75);margin-top:3px}
+.stp-pass i{position:absolute;right:12px;top:12px;font-style:normal;font-size:10px}
 .stp-cell.stp-co{border:0;background:#efe8da;color:#2b2622;font-weight:400;border-radius:0}
 .stp-cell.stp-or{color:#2a2622}
 .stp-cell.stp-hf{color:#56606a}
@@ -1854,9 +1876,20 @@ body.table u.addr{color:#7a4a20}
 .rl-go{display:inline-block;margin-top:3px;font:600 10px ui-monospace,monospace;letter-spacing:.12em;color:#1f5f57}
 
 /* ── АЛЬБОМ во весь экран (P13) [design owed] ── */
-#albumLb{position:fixed;inset:0;z-index:70;background:rgba(8,7,6,.94);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:12px 16px;overflow:auto}
-#albumLb .lb-card canvas{display:block;border:8px solid #f3ecdc;box-shadow:0 6px 28px rgba(0,0,0,.6)}
-#albumLb .lb-cap{color:#d9ccb0;font-size:12px;text-align:center}
+/* страница альбома, а не тёмный лист (D23, телефон 18.09): чёрная бумага
+   с зерном, карточка в четырёх уголках, подпись — белым карандашом под фото */
+#albumLb{position:fixed;inset:0;z-index:70;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:12px 16px;overflow:auto;
+  background:radial-gradient(ellipse at 50% 30%,#2a231c,#15110d 70%),#15110d}
+#albumLb::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.35;
+  background:repeating-linear-gradient(0deg,transparent 0 3px,rgba(255,255,255,.025) 3px 4px),repeating-linear-gradient(90deg,transparent 0 5px,rgba(0,0,0,.18) 5px 6px)}
+#albumLb .lb-card{position:relative}
+#albumLb .lb-card::before{content:"";position:absolute;inset:-7px;pointer-events:none;z-index:1;
+  background:linear-gradient(135deg,#3b2f22 15px,transparent 15.5px) 0 0/30px 30px no-repeat,
+    linear-gradient(225deg,#3b2f22 15px,transparent 15.5px) 100% 0/30px 30px no-repeat,
+    linear-gradient(45deg,#3b2f22 15px,transparent 15.5px) 0 100%/30px 30px no-repeat,
+    linear-gradient(315deg,#3b2f22 15px,transparent 15.5px) 100% 100%/30px 30px no-repeat}
+#albumLb .lb-card canvas{display:block;border:8px solid #f3ecdc;box-shadow:0 6px 28px rgba(0,0,0,.7)}
+#albumLb .lb-cap{color:#e6dcc4;font:italic 13px Georgia,"Times New Roman",serif;letter-spacing:.04em;text-align:center}
 #albumLb .lb-fx,#albumLb .lb-acts{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
 #albumLb .chip{font:600 11px ui-monospace,monospace;letter-spacing:.1em;padding:8px 10px;min-height:44px;border:1px solid #6a5a44;background:none;color:#d9ccb0;border-radius:3px}
 #albumLb .chip.on{border-color:#f2b25c;color:#f2b25c}

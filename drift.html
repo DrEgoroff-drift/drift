@@ -1769,6 +1769,28 @@ body.table u.addr{color:#7a4a20}
 .stp-cell{position:relative;min-height:62px;padding:6px 8px;border:2px solid currentColor;border-radius:5px;
   font:700 11px/1.3 ui-monospace,monospace;text-align:center;transform:rotate(var(--tilt,0deg));opacity:.85}
 .stp-cell i{position:absolute;right:4px;bottom:2px;font-style:normal;font-size:10px;opacity:.7}
+/* ядро Хай-Фронта в аренду — глянцевая карточка (M488, D22) */
+.rent-card{margin:14px 12px;border-radius:10px;overflow:hidden;color:#dbe8f0;
+  background:linear-gradient(160deg,#243642,#111a20 55%,#0d1418);border:1px solid rgba(140,220,255,.45);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 8px 24px rgba(0,0,0,.45)}
+.rent-head{position:relative;padding:12px 14px 8px;border-bottom:1px solid rgba(140,220,255,.25)}
+.rent-head b{display:block;font-size:12px;letter-spacing:.2em;color:#8ee6ff}
+.rent-head s{display:block;text-decoration:none;font-size:10px;color:rgba(219,232,240,.65);margin-top:3px}
+.rent-head i{position:absolute;right:14px;top:10px;font-style:normal;color:#8ee6ff;font-size:16px}
+.rent-card .rent-row{display:block;padding:10px 14px;border-bottom:1px solid rgba(140,220,255,.12);background:none}
+.rent-card .rent-row .nm{display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:baseline}
+.rent-card .rent-row .nm b{font-size:12px;letter-spacing:.06em;color:#eaf4f8}
+.rent-card .rent-row .nm em{font-style:normal;font-variant-numeric:tabular-nums;color:#8ee6ff;font-size:12px}
+.rent-card .rent-row .nm s{grid-column:1/3;font-size:10px;color:rgba(219,232,240,.6)}
+.rent-btns{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.rent-foot{padding:8px 14px 10px;font-size:9px;letter-spacing:.08em;color:rgba(142,230,255,.6);text-align:right}
+/* паспорт — бордовая корочка с золотом (M505, D25) */
+.stp-pass{position:relative;margin:4px 12px 12px 48px;padding:12px 14px 12px 18px;border-radius:4px;color:#e9c987;
+  background:linear-gradient(90deg,#4a1418,#6b1d22 40%,#5a181d);box-shadow:inset 0 0 0 1px rgba(233,201,135,.45),0 3px 10px rgba(0,0,0,.4)}
+.stp-pass::before{content:"";position:absolute;left:8px;top:8px;bottom:8px;width:2px;background:rgba(233,201,135,.35)}
+.stp-pass b{display:block;font-size:11px;letter-spacing:.2em}
+.stp-pass s{display:block;text-decoration:none;font-size:10px;color:rgba(233,201,135,.75);margin-top:3px}
+.stp-pass i{position:absolute;right:12px;top:12px;font-style:normal;font-size:10px}
 .stp-cell.stp-co{border:0;background:#efe8da;color:#2b2622;font-weight:400;border-radius:0}
 .stp-cell.stp-or{color:#2a2622}
 .stp-cell.stp-hf{color:#56606a}
@@ -1868,9 +1890,20 @@ body.table u.addr{color:#7a4a20}
 .rl-go{display:inline-block;margin-top:3px;font:600 10px ui-monospace,monospace;letter-spacing:.12em;color:#1f5f57}
 
 /* ── АЛЬБОМ во весь экран (P13) [design owed] ── */
-#albumLb{position:fixed;inset:0;z-index:70;background:rgba(8,7,6,.94);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:12px 16px;overflow:auto}
-#albumLb .lb-card canvas{display:block;border:8px solid #f3ecdc;box-shadow:0 6px 28px rgba(0,0,0,.6)}
-#albumLb .lb-cap{color:#d9ccb0;font-size:12px;text-align:center}
+/* страница альбома, а не тёмный лист (D23, телефон 18.09): чёрная бумага
+   с зерном, карточка в четырёх уголках, подпись — белым карандашом под фото */
+#albumLb{position:fixed;inset:0;z-index:70;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:12px 16px;overflow:auto;
+  background:radial-gradient(ellipse at 50% 30%,#2a231c,#15110d 70%),#15110d}
+#albumLb::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.35;
+  background:repeating-linear-gradient(0deg,transparent 0 3px,rgba(255,255,255,.025) 3px 4px),repeating-linear-gradient(90deg,transparent 0 5px,rgba(0,0,0,.18) 5px 6px)}
+#albumLb .lb-card{position:relative}
+#albumLb .lb-card::before{content:"";position:absolute;inset:-7px;pointer-events:none;z-index:1;
+  background:linear-gradient(135deg,#3b2f22 15px,transparent 15.5px) 0 0/30px 30px no-repeat,
+    linear-gradient(225deg,#3b2f22 15px,transparent 15.5px) 100% 0/30px 30px no-repeat,
+    linear-gradient(45deg,#3b2f22 15px,transparent 15.5px) 0 100%/30px 30px no-repeat,
+    linear-gradient(315deg,#3b2f22 15px,transparent 15.5px) 100% 100%/30px 30px no-repeat}
+#albumLb .lb-card canvas{display:block;border:8px solid #f3ecdc;box-shadow:0 6px 28px rgba(0,0,0,.7)}
+#albumLb .lb-cap{color:#e6dcc4;font:italic 13px Georgia,"Times New Roman",serif;letter-spacing:.04em;text-align:center}
 #albumLb .lb-fx,#albumLb .lb-acts{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
 #albumLb .chip{font:600 11px ui-monospace,monospace;letter-spacing:.1em;padding:8px 10px;min-height:44px;border:1px solid #6a5a44;background:none;color:#d9ccb0;border-radius:3px}
 #albumLb .chip.on{border-color:#f2b25c;color:#f2b25c}
@@ -8205,24 +8238,45 @@ function planNow(){
 /* ── нарисовать чертёж (вид ОПИСИ, синька в M477): нос вверх ── */
 const PLAN_COL={nose:"#e8b35a",side:"#c9924a",spine:"#9ab6d6",stern:"#e07a50",deck:"#3a5068"};
 const PLAN_ITEM_COL={gun:"#f2b25c",shield:"#7fe6d8",engine:"#ff8f6a",hull:"#b9a58a",core:"#c58ae0",util:"#8fd08a",missile:"#ff6a6a",mod:"#d9dde3"};
+/* синька (D14, телефон 18.09): была ровная сетка цветных квадратиков. Чертёж —
+   белая тушь на прусской сини: тонкие клетки, обвод корпуса толще, трюм
+   штрихом, вещи — охряные штампы с буквой рода, в углу «СОГЛАСОВАНО» */
+const PLAN_LETTER={gun:"О",shield:"Щ",engine:"Д",hull:"К",core:"Р",util:"У",missile:"П",mod:"М"};
 function drawPlan(cx,W0,H0,pk){
   const P=pk.P,s=Math.min(W0/P.cols,H0/P.N);
   const ox=(W0-s*P.cols)/2,oy=(H0-s*P.N)/2;
   cx.clearRect(0,0,W0,H0);
+  cx.fillStyle="#0d2238";cx.fillRect(0,0,W0,H0);
+  cx.strokeStyle="rgba(220,234,255,.10)";cx.lineWidth=1;cx.beginPath();          /* миллиметровка под всем */
+  for(let x=ox%s;x<W0;x+=s){cx.moveTo(x,0);cx.lineTo(x,H0);}for(let y=oy%s;y<H0;y+=s){cx.moveTo(0,y);cx.lineTo(W0,y);}cx.stroke();
+  const has=new Set(P.cells.map(q=>q.i+","+q.j));
   for(const q of P.cells){
-    cx.fillStyle=q.kind==="deck"||q.kind==="spine"?"rgba(58,80,104,.35)":"rgba(201,146,74,.18)";
-    cx.fillRect(ox+q.j*s+1,oy+q.i*s+1,s-2,s-2);
-    cx.strokeStyle=PLAN_COL[q.kind];cx.globalAlpha=.55;cx.lineWidth=1;
-    cx.strokeRect(ox+q.j*s+1.5,oy+q.i*s+1.5,s-3,s-3);cx.globalAlpha=1;
+    cx.fillStyle=q.kind==="deck"||q.kind==="spine"?"rgba(220,234,255,.06)":"rgba(220,234,255,.11)";
+    cx.fillRect(ox+q.j*s,oy+q.i*s,s,s);
+    cx.strokeStyle="rgba(220,234,255,.3)";cx.lineWidth=1;cx.strokeRect(ox+q.j*s+.5,oy+q.i*s+.5,s-1,s-1);
   }
-  for(const q of pk.hold){cx.fillStyle="rgba(143,208,138,.14)";cx.fillRect(ox+q.j*s+3,oy+q.i*s+3,s-6,s-6);}
+  cx.strokeStyle="rgba(235,242,255,.9)";cx.lineWidth=Math.max(1.5,s*.12);cx.beginPath();   /* обвод корпуса — по кромкам клеток без соседа */
+  for(const q of P.cells){const x=ox+q.j*s,y=oy+q.i*s;
+    if(!has.has((q.i-1)+","+q.j)){cx.moveTo(x,y);cx.lineTo(x+s,y);}
+    if(!has.has((q.i+1)+","+q.j)){cx.moveTo(x,y+s);cx.lineTo(x+s,y+s);}
+    if(!has.has(q.i+","+(q.j-1))){cx.moveTo(x,y);cx.lineTo(x,y+s);}
+    if(!has.has(q.i+","+(q.j+1))){cx.moveTo(x+s,y);cx.lineTo(x+s,y+s);}}
+  cx.stroke();
+  cx.save();cx.strokeStyle="rgba(220,234,255,.35)";cx.lineWidth=1;                  /* трюм — штриховка */
+  for(const q of pk.hold){const x=ox+q.j*s,y=oy+q.i*s;cx.save();cx.beginPath();cx.rect(x,y,s,s);cx.clip();cx.beginPath();
+    for(let d=-s;d<s*2;d+=s/3){cx.moveTo(x+d,y);cx.lineTo(x+d+s,y+s);}cx.stroke();cx.restore();}
+  cx.restore();
   for(const it of pk.items){
-    const col=it.what==="mod"?PLAN_ITEM_COL.mod:(PLAN_ITEM_COL[it.kind]||"#fff");
-    for(const q of it.cells){
-      cx.fillStyle=col;cx.globalAlpha=.85;
-      cx.fillRect(ox+q.j*s+4,oy+q.i*s+4,s-8,s-8);cx.globalAlpha=1;
-    }
+    const L=it.what==="mod"?PLAN_LETTER.mod:(PLAN_LETTER[it.kind]||"·");
+    for(const q of it.cells){const x=ox+q.j*s,y=oy+q.i*s;
+      cx.fillStyle="rgba(214,160,74,.85)";cx.fillRect(x+2,y+2,s-4,s-4);                 /* охряный штамп */
+      cx.strokeStyle="rgba(120,80,30,.8)";cx.lineWidth=1;cx.strokeRect(x+2.5,y+2.5,s-5,s-5);
+      cx.fillStyle="#2a1c08";cx.font="bold "+Math.max(6,s*.6)+"px ui-monospace,monospace";cx.textAlign="center";cx.textBaseline="middle";cx.fillText(L,x+s/2,y+s/2+.5);}
   }
+  cx.save();cx.translate(W0-46,H0-16);cx.rotate(-.2);                                  /* согласовано */
+  cx.strokeStyle="rgba(210,70,60,.85)";cx.lineWidth=1.2;cx.strokeRect(-40,-9,80,18);cx.strokeRect(-37,-6,74,12);
+  cx.fillStyle="rgba(210,70,60,.9)";cx.font="bold 8px ui-monospace,monospace";cx.textAlign="center";cx.textBaseline="middle";cx.fillText("СОГЛАСОВАНО",0,.5);
+  cx.restore();
 }
 /* ── блок ЧЕРТЁЖ в ОПИСИ (M476): только вид, правка — КБ (M477) ── */
 function opisPlanBlock(){
@@ -28530,17 +28584,23 @@ function rentSay(m){
 }
 /* ШТАБ: предложение аренды — рядом со своим ядром */
 function hqRentOffer(free){
-  $hqBody.appendChild(el("div","sec","ЯДРО ХАЙ-ФРОНТА · В АРЕНДУ · ЗАНИМАЕТ МЕСТО ЧЕЛОВЕКА"));
+  /* глянцевая карточка Хай-Фронта с таблицей тарифов (D22, телефон 18.09):
+     три ровных ряда читались ещё тремя управляющими, а это одна вещь — реклама */
+  const card=el("div","rent-card");
+  card.appendChild(el("div","rent-head","<b>ЯДРО ХАЙ-ФРОНТА</b><s>в аренду · занимает место человека · не дрейфует</s><i>◉</i>"));
   for(const t in RENT_TIERS){
-    const T=RENT_TIERS[t],r=el("div","row");
-    r.appendChild(el("div","nm","<b>"+T.ru+(T.fee?" · "+T.fee+" кр/мин":" · даром")+"</b><s>"+T.note+" · не дрейфует</s>"));
+    const T=RENT_TIERS[t],r=el("div","row rent-row");
+    r.appendChild(el("div","nm","<b>"+T.ru+"</b><em>"+(T.fee?T.fee+" кр/мин":"даром")+"</em><s>"+T.note+"</s>"));
+    const bs=el("div","rent-btns");
     for(const k of free){
       const b=el("button","act sm",MGR_ROLES[k].ru.toUpperCase());
       b.onclick=()=>{if(rentAi(k,t)){hqSel=null;hqRender();}};
-      r.appendChild(b);
+      bs.appendChild(b);
     }
-    $hqBody.appendChild(r);
+    r.appendChild(bs);card.appendChild(r);
   }
+  card.appendChild(el("div","rent-foot","«Спасибо, что остаётесь с нами» · Хай-Фронт™"));
+  $hqBody.appendChild(card);
 }
 
 /* ══════════════ ушедший управляющий: ренегат ══════════════ */
@@ -50068,6 +50128,12 @@ function stampPage(box){
     g.appendChild(c);
   }
   box.appendChild(g);
+  /* паспорт (M505, D25): бордовая корочка на той же странице, пока действует */
+  if(typeof passportOn==="function"&&passportOn()){
+    const p=document.createElement("div");p.className="stp-pass";
+    p.innerHTML="<b>ДИПЛОМАТИЧЕСКИЙ ПАСПОРТ</b><s>семь отметок · дорога даром · вопросов меньше</s><i>до "+Math.ceil((R.pass.until-now())/HOLD_SHIFT)+" смен</i>";
+    box.appendChild(p);
+  }
 }
 
 /* ══════════════ дипломатический паспорт (M505, PLAN «new mechanics», st. 5) ══════════════
