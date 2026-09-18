@@ -531,6 +531,11 @@ body.screen #msg,body.screen #launchbtn,body.screen .slope{opacity:0;pointer-eve
 nav.groups{display:flex;gap:0;border-bottom:1px solid var(--edge);overflow-x:auto;
   -webkit-overflow-scrolling:touch;scrollbar-width:none}
 nav.groups::-webkit-scrollbar{display:none}
+/* один ряд (D4, телефон 18.09): на ТОРГОВЛЕ ряд обрывался на «КОРАБЛ» ровным
+   срезом — та же тень у правого края, что у nav.tabs; докрутили — маски нет */
+nav.groups{-webkit-mask-image:linear-gradient(90deg,#000 0,#000 calc(100% - 28px),transparent 100%);
+  mask-image:linear-gradient(90deg,#000 0,#000 calc(100% - 28px),transparent 100%)}
+nav.groups.tail{-webkit-mask-image:none;mask-image:none}
 nav.groups button{flex:1 0 auto;-webkit-appearance:none;background:none;border:0;
   color:var(--dim);font-family:inherit;font-size:10px;letter-spacing:.13em;padding:14px 18px;
   min-height:46px;position:relative;white-space:nowrap}
@@ -83394,7 +83399,11 @@ function stTabMarket(st){
     const prices=marketFor(G.sys),mkt=G.market[G.sys.key];
     if(typeof gosRow==="function"){const gr=gosRow();if(gr)$body.appendChild(gr);}
     if(typeof recallRows==="function"){const rr=recallRows();if(rr)$body.appendChild(rr);}   /* отзыв партии (M509) */   /* госзаказ со щита (M503) */
-    $body.appendChild(el("div","sec","ТРЮМ "+held()+" / "+st.cargoMax+
+    /* пустой трюм говорит об этом в той же строке (D4, телефон 18.09): четыре
+       серых строки подряд до первой цены — полэкрана объяснений; «откуда
+       берётся» — одна строка, не блок */
+    const empty=held()===0;
+    $body.appendChild(el("div","sec","ТРЮМ "+held()+" / "+st.cargoMax+(empty?" · ПУСТ — ПЛАНЕТА ИЛИ ПОЯС":"")+
       " · ТОПЛИВО "+fuelPriceHere()+" кр/ед · РЕМОНТ "+repairCost()+" кр/ед"));
     /* Маршрут переехал в конец вкладки (проход «дорога»). Он стоял вторым
        блоком сверху, и у игрока без маршрута — то есть у всякого, кто открыл
@@ -83444,8 +83453,7 @@ function stTabMarket(st){
              "Груз реализован\n+"+sum.toLocaleString("ru")+" кр");
         renderTab();};
       r.appendChild(b);$body.appendChild(r);
-    }else $body.appendChild(el("div","sec",held()>0?"НА ПРОДАЖУ НЕЧЕГО — В ТРЮМЕ ТОЛЬКО РЕДКОЕ И СВОЁ"   /* редкое — тоже груз (хвост R6) */
-      :"ТРЮМ ПУСТ — САДИТЕСЬ НА ПЛАНЕТУ ИЛИ ИДИТЕ В ПОЯС"));
+    }else if(!empty)$body.appendChild(el("div","sec","НА ПРОДАЖУ НЕЧЕГО — В ТРЮМЕ ТОЛЬКО РЕДКОЕ И СВОЁ"));   /* редкое — тоже груз (хвост R6) */
     /* прилавок ВЗЯТЬ — кооперативу, запись — на станции дома (12aj, M351) */
     if(typeof coopCounterBlock==="function")coopCounterBlock();
     /* редкое лежит в том же трюме, но купить его никто не возьмётся:

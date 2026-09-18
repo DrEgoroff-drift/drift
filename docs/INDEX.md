@@ -5022,10 +5022,10 @@ stTabBoard                   src/26e-ui-station-trade.js:11-147
 stTabFuse                    src/26b-ui-station-work.js:373
 stTabInstr                   src/26b-ui-station-work.js:225-372
 stTabLab                     src/26b-ui-station-work.js:307-372
-stTabMarket                  src/26e-ui-station-trade.js:148-246
+stTabMarket                  src/26e-ui-station-trade.js:148-249
 stTabMods                    src/26b-ui-station-work.js:105-372
 stTabsHere                   src/26-ui-station.js:141
-stTabYard                    src/26e-ui-station-trade.js:247-392
+stTabYard                    src/26e-ui-station-trade.js:250-395
 stTypeOf                     src/06-galaxy.js:73
 STUN_TIME                    src/13a-guns.js:27
 SUB_FEATS                    src/05b3-sub.js:11

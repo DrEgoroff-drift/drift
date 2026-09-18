@@ -149,7 +149,11 @@ function stTabMarket(st){
     const prices=marketFor(G.sys),mkt=G.market[G.sys.key];
     if(typeof gosRow==="function"){const gr=gosRow();if(gr)$body.appendChild(gr);}
     if(typeof recallRows==="function"){const rr=recallRows();if(rr)$body.appendChild(rr);}   /* отзыв партии (M509) */   /* госзаказ со щита (M503) */
-    $body.appendChild(el("div","sec","ТРЮМ "+held()+" / "+st.cargoMax+
+    /* пустой трюм говорит об этом в той же строке (D4, телефон 18.09): четыре
+       серых строки подряд до первой цены — полэкрана объяснений; «откуда
+       берётся» — одна строка, не блок */
+    const empty=held()===0;
+    $body.appendChild(el("div","sec","ТРЮМ "+held()+" / "+st.cargoMax+(empty?" · ПУСТ — ПЛАНЕТА ИЛИ ПОЯС":"")+
       " · ТОПЛИВО "+fuelPriceHere()+" кр/ед · РЕМОНТ "+repairCost()+" кр/ед"));
     /* Маршрут переехал в конец вкладки (проход «дорога»). Он стоял вторым
        блоком сверху, и у игрока без маршрута — то есть у всякого, кто открыл
@@ -199,8 +203,7 @@ function stTabMarket(st){
              "Груз реализован\n+"+sum.toLocaleString("ru")+" кр");
         renderTab();};
       r.appendChild(b);$body.appendChild(r);
-    }else $body.appendChild(el("div","sec",held()>0?"НА ПРОДАЖУ НЕЧЕГО — В ТРЮМЕ ТОЛЬКО РЕДКОЕ И СВОЁ"   /* редкое — тоже груз (хвост R6) */
-      :"ТРЮМ ПУСТ — САДИТЕСЬ НА ПЛАНЕТУ ИЛИ ИДИТЕ В ПОЯС"));
+    }else if(!empty)$body.appendChild(el("div","sec","НА ПРОДАЖУ НЕЧЕГО — В ТРЮМЕ ТОЛЬКО РЕДКОЕ И СВОЁ"));   /* редкое — тоже груз (хвост R6) */
     /* прилавок ВЗЯТЬ — кооперативу, запись — на станции дома (12aj, M351) */
     if(typeof coopCounterBlock==="function")coopCounterBlock();
     /* редкое лежит в том же трюме, но купить его никто не возьмётся:

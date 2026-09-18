@@ -517,6 +517,11 @@ body.screen #msg,body.screen #launchbtn,body.screen .slope{opacity:0;pointer-eve
 nav.groups{display:flex;gap:0;border-bottom:1px solid var(--edge);overflow-x:auto;
   -webkit-overflow-scrolling:touch;scrollbar-width:none}
 nav.groups::-webkit-scrollbar{display:none}
+/* один ряд (D4, телефон 18.09): на ТОРГОВЛЕ ряд обрывался на «КОРАБЛ» ровным
+   срезом — та же тень у правого края, что у nav.tabs; докрутили — маски нет */
+nav.groups{-webkit-mask-image:linear-gradient(90deg,#000 0,#000 calc(100% - 28px),transparent 100%);
+  mask-image:linear-gradient(90deg,#000 0,#000 calc(100% - 28px),transparent 100%)}
+nav.groups.tail{-webkit-mask-image:none;mask-image:none}
 nav.groups button{flex:1 0 auto;-webkit-appearance:none;background:none;border:0;
   color:var(--dim);font-family:inherit;font-size:10px;letter-spacing:.13em;padding:14px 18px;
   min-height:46px;position:relative;white-space:nowrap}

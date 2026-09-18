@@ -112,8 +112,11 @@ job (the phone milestone), but no fix may add raster cost without a number.
   for the author's call.
 
 **Stage 0b / 1 — the interface and the finger**
-- [ ] **D4 The station header**: tabs in one row, СТОЛ as a paper tag under the wallet, the
-  «СЕГОДНЯ В СИСТЕМЕ» board; the empty sheets' «where it comes from» lines.
+- [x] **D4 The station header — checked on the S23 18.09.** One row and the paper СТОЛ tag were
+  already in; what the phone showed: the row cut off at «КОРАБЛ» with a flat edge (the fade mask
+  lived on `nav.tabs` only — now on `nav.groups` too, off when scrolled to the tail), and on an
+  empty hold the market opened with four grey caps blocks before the first price — the empty
+  hint now sits in the ТРЮМ line («ПУСТ — ПЛАНЕТА ИЛИ ПОЯС»), one block fewer. The board reads.
 - [ ] **D5 The hail**: safe green / risk red buttons and pad; picket lock brackets.
 - [ ] **D6 Under the finger**: ship scale growing with zoom (.8 → 1.4) against the station and the
   fleet; the stick's dead-zone ring (22 px); the edge-wall feedback; the orbit body kept in frame.
