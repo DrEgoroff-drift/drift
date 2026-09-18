@@ -39,7 +39,7 @@ function initAudio(){
 }
 function applyVolumes(){
   if(!SND.ready)return;
-  const a=G.opts.audio||{music:.6,sfx:.6,engine:.4,on:true};
+  const a=G.opts.audio||{music:.2,sfx:.6,engine:.4,on:true};
   const on=(a.on!==false&&!SND.hush)?1:0;
   SND.music.gain.value=(a.music==null?.6:a.music)*on;
   SND.sfx.gain.value=(a.sfx==null?.6:a.sfx)*on;

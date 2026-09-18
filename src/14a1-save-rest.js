@@ -378,12 +378,12 @@ function applySaveRest(s){
   if(![0,30,60].includes(G.opts.gfx.fps))G.opts.gfx.fps=0;
   if(![0,1,1.5,2].includes(G.opts.gfx.res))G.opts.gfx.res=0;
   resize();
-  if(!G.opts.audio||typeof G.opts.audio!=="object")G.opts.audio={on:true,music:.6,sfx:.6,engine:.4};
-  if(typeof G.opts.audio.music!=="number")G.opts.audio.music=.6;
+  if(!G.opts.audio||typeof G.opts.audio!=="object")G.opts.audio={on:true,music:.2,sfx:.6,engine:.4};
+  if(typeof G.opts.audio.music!=="number")G.opts.audio.music=.2;   /* 20 %: радио — фон, не концерт */
   if(typeof G.opts.audio.sfx!=="number")G.opts.audio.sfx=.6;
   if(typeof G.opts.audio.engine!=="number")G.opts.audio.engine=.4;
   /* радио (10a): источник, номер трека, счётчик генератора */
-  if(!["tracks","gen","ambient"].includes(G.opts.audio.src))G.opts.audio.src="tracks";
+  if(!["tracks","gen","ambient"].includes(G.opts.audio.src))G.opts.audio.src="gen";
   if(!(G.opts.audio.track>=0&&G.opts.audio.track<RADIO_TRACKS.length))G.opts.audio.track=0;
   G.opts.audio.track|=0;
   if(!(G.opts.audio.genN>=0))G.opts.audio.genN=0;

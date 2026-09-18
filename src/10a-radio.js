@@ -121,7 +121,7 @@ const RADIO={ctx:null,bus:null,layers:null,step:0,next:0,trk:null,form:null,bars
   mel:{},prevLead:0,bassPrev:0,mood:"travel",moodT:"travel",title:"",sec:"intro"};
 const RADIO_LAYERS=["pad","bass","lead","harm","arp","kick","snare","hat","bell","fx"];
 
-function radioSrc(){const a=G.opts.audio||{};return a.src==="gen"||a.src==="ambient"?a.src:"tracks";}
+function radioSrc(){const a=G.opts.audio||{};return a.src==="tracks"||a.src==="ambient"?a.src:"gen";}   // по умолчанию — генератор
 function radioOn(){return radioSrc()!=="ambient";}
 function radioNow(){return RADIO.title||"";}
 /* свойство пьесы: своё у трека, иначе у архетипа */

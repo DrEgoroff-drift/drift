@@ -10445,7 +10445,7 @@ function initAudio(){
 }
 function applyVolumes(){
   if(!SND.ready)return;
-  const a=G.opts.audio||{music:.6,sfx:.6,engine:.4,on:true};
+  const a=G.opts.audio||{music:.2,sfx:.6,engine:.4,on:true};
   const on=(a.on!==false&&!SND.hush)?1:0;
   SND.music.gain.value=(a.music==null?.6:a.music)*on;
   SND.sfx.gain.value=(a.sfx==null?.6:a.sfx)*on;
@@ -11524,7 +11524,7 @@ const RADIO={ctx:null,bus:null,layers:null,step:0,next:0,trk:null,form:null,bars
   mel:{},prevLead:0,bassPrev:0,mood:"travel",moodT:"travel",title:"",sec:"intro"};
 const RADIO_LAYERS=["pad","bass","lead","harm","arp","kick","snare","hat","bell","fx"];
 
-function radioSrc(){const a=G.opts.audio||{};return a.src==="gen"||a.src==="ambient"?a.src:"tracks";}
+function radioSrc(){const a=G.opts.audio||{};return a.src==="tracks"||a.src==="ambient"?a.src:"gen";}   // по умолчанию — генератор
 function radioOn(){return radioSrc()!=="ambient";}
 function radioNow(){return RADIO.title||"";}
 /* свойство пьесы: своё у трека, иначе у архетипа */
@@ -44326,12 +44326,12 @@ function applySaveRest(s){
   if(![0,30,60].includes(G.opts.gfx.fps))G.opts.gfx.fps=0;
   if(![0,1,1.5,2].includes(G.opts.gfx.res))G.opts.gfx.res=0;
   resize();
-  if(!G.opts.audio||typeof G.opts.audio!=="object")G.opts.audio={on:true,music:.6,sfx:.6,engine:.4};
-  if(typeof G.opts.audio.music!=="number")G.opts.audio.music=.6;
+  if(!G.opts.audio||typeof G.opts.audio!=="object")G.opts.audio={on:true,music:.2,sfx:.6,engine:.4};
+  if(typeof G.opts.audio.music!=="number")G.opts.audio.music=.2;   /* 20 %: радио — фон, не концерт */
   if(typeof G.opts.audio.sfx!=="number")G.opts.audio.sfx=.6;
   if(typeof G.opts.audio.engine!=="number")G.opts.audio.engine=.4;
   /* радио (10a): источник, номер трека, счётчик генератора */
-  if(!["tracks","gen","ambient"].includes(G.opts.audio.src))G.opts.audio.src="tracks";
+  if(!["tracks","gen","ambient"].includes(G.opts.audio.src))G.opts.audio.src="gen";
   if(!(G.opts.audio.track>=0&&G.opts.audio.track<RADIO_TRACKS.length))G.opts.audio.track=0;
   G.opts.audio.track|=0;
   if(!(G.opts.audio.genN>=0))G.opts.audio.genN=0;
