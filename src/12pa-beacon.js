@@ -205,7 +205,7 @@ function voicePick(role){
   return L[0];
 }
 let VOICE_Q=[],VOICE_BUSY=false,VOICE_MODE="";
-function voiceCan(){return !!(voiceOpts().on&&typeof speechSynthesis!=="undefined"&&typeof SpeechSynthesisUtterance!=="undefined"&&(G.mode==="system"||G.mode==="road"));}
+function voiceCan(){return !!(voiceOpts().on&&typeof speechSynthesis!=="undefined"&&typeof SpeechSynthesisUtterance!=="undefined"&&(G.mode==="system"||G.mode==="road"||G.mode==="rail"));}
 /* cancel() — вызов в процесс браузера: зовём только когда есть что глушить, иначе
    каждая смена режима в тестах стоила десятки миллисекунд (прогон удвоился) */
 function voiceCancel(){
@@ -251,5 +251,5 @@ function voiceNext(){
 }
 /* смена режима — очередь сбрасывается: голос только в полёте и в дороге */
 function voiceTick(){
-  if(VOICE_MODE!==G.mode){VOICE_MODE=G.mode;if(!(G.mode==="system"||G.mode==="road"))voiceCancel();}
+  if(VOICE_MODE!==G.mode){VOICE_MODE=G.mode;if(!(G.mode==="system"||G.mode==="road"||G.mode==="rail"))voiceCancel();}
 }

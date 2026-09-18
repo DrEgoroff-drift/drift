@@ -9,11 +9,33 @@
    Время: перегон 0.8 с + 0.35 с на сектор, остановка 2 с — три остановки
    метро за 6–8 секунд. Состояние поездки — кадр: сейв посреди поездки
    просыпается в системе отправления (записано в плане). */
-let RAIL_RIDE=null;
+let RAIL_RIDE=null,RAIL_ARRIVE=-1e9;
+/* ── вспышка гипера (M473 хвост, 18.09) ──
+   Поезд не едет по рельсам — он прыгает: уход и приход — белая вспышка с
+   бирюзовым лучом вдоль линии, 0.6 с, гаснет квадратом. На экране поездки —
+   в точке поезда; в системе после выхода — на корабле. */
+function railFlash(x,y,age,ang,k){
+  const u=clamp(1-age/36,0,1);if(u<=0)return;
+  const a=u*u*(k||1);
+  ctx.save();ctx.globalCompositeOperation="lighter";
+  const g=ctx.createRadialGradient(x,y,0,x,y,90*(1.2-u*.6));
+  g.addColorStop(0,"rgba(255,255,255,"+(a*.9).toFixed(3)+")");
+  g.addColorStop(.25,"rgba(180,240,255,"+(a*.45).toFixed(3)+")");
+  g.addColorStop(1,"rgba(120,220,255,0)");
+  ctx.fillStyle=g;ctx.fillRect(x-120,y-120,240,240);
+  ctx.strokeStyle="rgba(200,250,255,"+(a*.8).toFixed(3)+")";ctx.lineWidth=2*u+.5;
+  const L=60+140*(1-u);
+  ctx.beginPath();ctx.moveTo(x-Math.cos(ang)*L,y-Math.sin(ang)*L);ctx.lineTo(x+Math.cos(ang)*L,y+Math.sin(ang)*L);ctx.stroke();
+  ctx.restore();
+}
+function drawRailArrive(zx,zy){
+  const age=G.t-RAIL_ARRIVE;if(age>40)return;
+  railFlash(zx(G.ship.x),zy(G.ship.y),age,G.ship.a,1.2);
+}
 function railRideStart(t){
   const l=t.l,n=l.stops.length,seq=[];
   for(let m=0;m<=t.k;m++){let i=t.i0+t.dir*m;if(l.loop)i=((i%n)+n)%n;seq.push(i);}
-  RAIL_RIDE={l,seq,seg:0,phase:"go",t:0,dur:railSegDur(l,seq,0)*(t.bus?1.6:1),pause:0,express:!!t.express,bus:!!t.bus,t0:G.t};
+  RAIL_RIDE={l,seq,seg:0,phase:"go",t:0,dur:railSegDur(l,seq,0)*(t.bus?1.6:1),pause:0,express:!!t.express,bus:!!t.bus,t0:G.t,flash:G.t};
   if(t.bus&&typeof railBusTalk==="function")railBusTalk();   /* водитель маршрутки знает, почему (M510) */
   G.mode="rail";G.ap=null;
   if(typeof socCount==="function")socCount("rides");   /* «Знающие» считают поездки (M512) */
@@ -55,6 +77,9 @@ function updateRail(dt){
       if(typeof railLifeStop==="function")railLifeStop(R);   /* чай, попутчик (M501–M502) */
       if(last)say("Конечная. «"+railStopName(s)+"»\nпоезд дальше не идёт, просьба освободить вагоны",150);
       else say("Станция «"+railStopName(s)+"»\nследующая — «"+railStopName(R.l.stops[R.seq[R.seg+1]])+"»",110);
+      /* объявитель (M473 хвост): голос диспетчера, если голос включён в ЗВУКЕ */
+      if(typeof voiceSay==="function")voiceSay(last?["Конечная, "+railStopName(s)+".","Поезд дальше не идёт."]:["Станция "+railStopName(s)+".","Следующая — "+railStopName(R.l.stops[R.seq[R.seg+1]])+"."],"disp");
+      R.flash=G.t;   /* прибытие на остановку — вспышка выхода из гипера */
     }
     return;
   }
@@ -66,7 +91,7 @@ function updateRail(dt){
   }
   if(R.pause>=(R.hold||2)){
     if(last){railExit();return;}
-    R.phase="go";R.t=0;R.dur=railSegDur(R.l,R.seq,R.seg)*(R.bus?1.6:1);
+    R.phase="go";R.t=0;R.dur=railSegDur(R.l,R.seq,R.seg)*(R.bus?1.6:1);R.flash=G.t;   /* уход в гипер */
   }
 }
 /* выйти на текущей остановке: кольцо выбрасывает корабль на подъезд */
@@ -80,6 +105,7 @@ function railExit(){
   }
   if(typeof railLifeExit==="function")railLifeExit(s);   /* посылка, попутчик, пломба (M499–M508) */
   arriveSystem(s.sx,s.sy,{rail:true,at});
+  RAIL_ARRIVE=G.t;   /* вспышка выхода в системе (M473 хвост) */
   G.ship.vx=(at?Math.cos(at.a):0)*.5;G.ship.vy=(at?Math.sin(at.a):0)*.5;
 }
 function drawRail(){
@@ -115,6 +141,7 @@ function drawRail(){
   ctx.fillStyle="#f5efe0";ctx.strokeStyle="#0b0d12";ctx.lineWidth=2;
   ctx.beginPath();ctx.moveTo(-12,-6);ctx.lineTo(8,-6);ctx.arc(8,0,6,-Math.PI/2,Math.PI/2);ctx.lineTo(-12,6);ctx.closePath();ctx.fill();ctx.stroke();
   ctx.restore();
+  if(R.flash!==undefined)railFlash(tx,ty,G.t-R.flash,a,1);   /* уход/приход — вспышка гипера */
   /* строка сверху: линия и следующая */
   const nxt=R.seg<R.seq.length-1?"следующая — «"+railStopName(l.stops[R.seq[R.seg+1]])+"»":"конечная";
   ctx.fillStyle="rgba(242,178,92,.9)";ctx.font=uiFont(11);ctx.textAlign="center";

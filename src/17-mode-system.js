@@ -688,6 +688,7 @@ function drawSystem(){
   if(typeof drawHotel==="function")drawHotel(zx,zy,Z);
   if(typeof drawBazaar==="function")drawBazaar(zx,zy,Z);
   if(typeof drawGiant==="function")drawGiant(zx,zy,Z);   /* великан рукава (M464) */
+  if(typeof drawRailArrive==="function")drawRailArrive(zx,zy);   /* вспышка выхода из поезда (M473) */
   drawEdgeWall(zx,zy,Z);   /* кромка системы видна, когда к ней подошли (D6, 18.09) */   /* барахолка (M463) */   /* гостиница (M461) */
   if(typeof drawPeaceFleet==="function")drawPeaceFleet(zx,zy,Z);   /* мирный флот державы (M455) */
   if(sys.station){

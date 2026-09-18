@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 592 · символов верхнего уровня: 5732
+Файлов: 592 · символов верхнего уровня: 5734
 
 ## СИМВОЛЫ
 
@@ -1465,7 +1465,8 @@ drawPOI                      src/20a-poi.js:173-234
 drawPortal                   src/20aa-poi-shapes.js:464-489
 drawPostcard                 src/25g-postcard.js:170-611
 drawRaid                     src/24aa-raid-draw.js:14-655
-drawRail                     src/18g-rail-ride.js:85-122
+drawRail                     src/18g-rail-ride.js:111-149
+drawRailArrive               src/18g-rail-ride.js:31-34
 drawRailMap                  src/18e-rail-net.js:181-204
 drawRing                     src/17c-system-draw.js:4-15
 drawRingTape                 src/11x-ring.js:107-118
@@ -1499,12 +1500,12 @@ drawSurface                  src/21e-surface-draw.js:277-291
 drawSurfaceHud               src/21e-surface-draw.js:21-115
 drawSurfaceWorld             src/21e1-surface-world.js:10-615
 drawSurvey                   src/12w-survey.js:63-89
-drawSysHud                   src/17-mode-system.js:771-1018
+drawSysHud                   src/17-mode-system.js:772-1019
 drawSysLane                  src/17g-sys-lane.js:84-112
 drawSysLaneShips             src/17g-sys-lane.js:121-147
 drawSysNebula                src/16a-space.js:208-236
 drawSysRail                  src/18f-rail-station.js:32-65
-drawSystem                   src/17-mode-system.js:481-770
+drawSystem                   src/17-mode-system.js:481-771
 drawSysTraffic               src/17f-sys-traffic.js:36-40
 drawTapes                    src/12s1-tape.js:37-52
 drawTemple                   src/20aa-poi-shapes.js:50-89
@@ -4052,8 +4053,9 @@ railClosedWhy                src/18h-rail-powers.js:16-21
 railDeclare                  src/18h-rail-powers.js:23-33
 railDestinations             src/18f-rail-station.js:102-115
 railDocked                   src/18f-rail-station.js:86-93
-railExit                     src/18g-rail-ride.js:73-84
+railExit                     src/18g-rail-ride.js:98-110
 railFare                     src/18f-rail-station.js:116-122
+railFlash                    src/18g-rail-ride.js:17-30
 railFmt                      src/18f-rail-station.js:98
 railHere                     src/18f-rail-station.js:24-30
 railHfPauseAt                src/18h-rail-powers.js:35-38
@@ -4079,14 +4081,14 @@ railPassPrice                src/18i-rail-life.js:19-23
 railPaxOffer                 src/18i-rail-life.js:50-54
 railPolar                    src/18e-rail-net.js:45-48
 railReady                    src/18f-rail-station.js:23
-railRideStart                src/18g-rail-ride.js:13-23
-railSegDur                   src/18g-rail-ride.js:24-27
+railRideStart                src/18g-rail-ride.js:35-45
+railSegDur                   src/18g-rail-ride.js:46-49
 railStation                  src/18e-rail-net.js:158-163
 railStep                     src/18e-rail-net.js:43
 railStopName                 src/18f-rail-station.js:99
 railStopsOf                  src/18e-rail-net.js:122-146
 railTick                     src/18f-rail-station.js:189-194
-railTrainPos                 src/18g-rail-ride.js:29-41
+railTrainPos                 src/18g-rail-ride.js:51-63
 railUAt                      src/18e-rail-net.js:105-110
 railWaitNow                  src/18f-rail-station.js:97
 railWinClose                 src/18f-rail-station.js:124
@@ -5372,7 +5374,7 @@ updateHomeIn                 src/29c-home-in.js:160-200
 updateLanding                src/19-mode-landing.js:68-137
 updateMap                    src/18-mode-map.js:520-533
 updateRaid                   src/24a-mode-raid.js:215-345
-updateRail                   src/18g-rail-ride.js:42-71
+updateRail                   src/18g-rail-ride.js:64-96
 updateScoop                  src/19a-mode-scoop.js:75-176
 updateSpa                    src/29i-spa-draw.js:514-519
 updateSurface                src/21-mode-surface.js:200-657
@@ -6409,7 +6411,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/16c-rescue.js · 51 КБ
   · пустой бак: хода нет, но выход есть всегда (11.09):1
 
-## src/17-mode-system.js · 76 КБ
+## src/17-mode-system.js · 77 КБ
   · режим: система:1
 
 ## src/17a-station-mod.js · 13 КБ
@@ -6509,7 +6511,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/18f-rail-station.js · 14 КБ
   · станция железной дороги в системе и вестибюль (M471–M472, DESIGN-metro §3):1
 
-## src/18g-rail-ride.js · 8 КБ
+## src/18g-rail-ride.js · 10 КБ
   · поездка: режим rail на карте галактики (M473, DESIGN-metro §4):1
 
 ## src/18h-rail-powers.js · 3 КБ
