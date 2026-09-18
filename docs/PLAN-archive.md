@@ -11060,3 +11060,52 @@ plausibly reach.
   lines as faint smooth curves 1:1 with the sheet (no parallax). **M450 the overview** (pinch past
   zoom 5) becomes the scheme's zoomed-out sibling: the disk, В«РІС‹ Р·РґРµСЃСЊВ», the settled circle, the
   danger rim, marks, rumours вЂ” and the lines.
+
+## Moved 2026-09-18, fourth batch
+
+- [ ] **AUTHOR'S CALL, and the numbers now point at it: the raster, not the JS — ×1.5 in flight on
+  the phone.** Two measurements say the frame's JS is not what misses the deadline. Forcing the
+  phone's render scale to ×1.5 gave 59.0 fps / 98.3 % cadence / 59 frames over 24 ms, against ×2 at
+  51.3 / 83.1 % / 519 — same build, same scene, only the pixel count changed. And the frame's own
+  work measures 6–8 ms against a 16.7 ms deadline (worker's synthetic run: 6.1 ms background, 7.9 ms
+  in the frame right after a cache reset — a third dearer, not the 30–40 ms a real culprit would
+  cost). So we have been hunting milliseconds in the JS while the deadline is missed in the raster.
+  Control's recommendation, still awaiting the author's word: ×1.5 in the system and landing views
+  under thrust, ×2 in the dock, the desk and the map, switching on mode change, no dithering. The
+  look is his call — his game's sharpness against his own complaint about the judder.
+  **The Designer argues against it, with frames (18.09).** She took a real phone frame at DPR 2.6,
+  squeezed it to 2.0 and to 1.5 and back by nearest neighbour — what the eye would actually get. At
+  ×1.5 the trail's one-pixel neon rails break into a dotted staircase (the very staircase she first
+  took for a haze defect), and the star field loses about a third of its stars while the survivors
+  double in size: exactly the two things this game's language rests on, and exactly the field the
+  author asked to «stretch, not twinkle». HUD and chip text are unaffected, they live in the DOM
+  layer. Her verdict: ×1.5 in flight is a bad bargain for THIS game, and the recommendation hits the
+  very views where the trail and the stars *are* the picture. So the author gets both sides: her
+  three-band comparison (2.6 / 2.0 / 1.5) beside the Tester's numbers, and he chooses knowing what he
+  pays with. Her third option — keep the raster, win the frame back on the cost of events — is
+  already spent: the worker's fix cut events fifty-fold and the skips stayed, evenly spread.
+  **The Designer's case against ×1.5 is WITHDRAWN by her own measurement of real frames (18.09).**
+  Her simulation squeezed a finished frame and put it back by nearest neighbour, which turns an
+  already-drawn thin line into a dotted one. The game at a smaller canvas draws the line AGAIN: it
+  stays solid, its pixel is simply bigger. Measured on the Tester's two real phone frames of one
+  scene: the ribbon's rails do NOT break — the teal rail covers 99 % of columns at ×2 and 100 % at
+  ×1.5, longest gap 4 px against 1, and there are MORE rail pixels (2634 against 2280). Stars are
+  almost all there: 193 against 188 in the band above the ship, a 3 % loss and not a third, each
+  blob grown from 18 to 20 px. What actually changes, and nobody predicted it: **the sky gets
+  darker** — the band's mean brightness 19.0 against 14.2, a quarter down, with the nebula and the
+  faint glow sagging most. So the price of ×1.5 is not the line and not the stars: it is the
+  subtlety of the background. She withdraws «a bad bargain» and calls ×1.5 decent on real frames,
+  with 59 fps against 51 a serious argument. Her method stands only for «what if we stretch a
+  picture», never for «what if we draw it smaller».
+  **If the author keeps the sharpness, here is the Designer's map of what may be given up (18.09).**
+  Draw calls a frame in the system view, calm flight: the ribbon 126, the wake 126, the star dust 103,
+  the compass chips and canvas HUD 10, the nebula 1 (baked into a texture and laid down in one piece),
+  the torch 0 with no thrust. Safe to give: the star dust's 103 — depth comes from the layers moving at
+  DIFFERENT rates, not from the number of specks (the density was already cut once), so a third can go
+  and nobody sees it, herself included; and the wake below about a quarter speed, where it is hidden
+  behind the hull anyway, can emit half as often. Only with a frame in hand: the ribbon's 126 — it is
+  the game's face in motion, and the particle count must NOT be cut because the author complained the
+  tails were stubby; cut thickness and the number of strands instead, never length. Never: the
+  one-pixel line itself (the very thing ×1.5 breaks) and the single-pixel stars, which are literally
+  the author's «movement, not twinkle» rule. In one sentence: the cheapest thing to sell is the
+  emptiness's depth, the dearest are the line and the stars, and the ribbon sits between them.
