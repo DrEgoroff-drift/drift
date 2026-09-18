@@ -500,7 +500,8 @@ patchnote of each version names the M-numbers it closes.
   крошка** (beyond r 50, drill, 1 500, heavy ×5, доводка). **New random salt** — a Node suite proves
   no existing deposit, price or station moved (old-salt hashes before/after). Presence by band;
   richness `exp(N(μ(r),1))`: ~70 % бедная, 25 % хорошая, 5 % богатая, 0.5 % **ЖИЛА** ×20.
-- [ ] **[design owed] M466 Reading and ЖИЛА.** The scanner shows a range («осмий: 40–160») narrowed by the
+- [x] **[design owed] M466 Reading and ЖИЛА — BUILT 18.09 (Control), `src/06e-far-take.js`.** The far goods are now in play through the verbs that exist, each from its own stream (0xFA13): the belt turns up to 35 % of its rocks into the belt deposit's good; the shaft turns 30 % of the ore bodies of a deposit planet into its mine/drill good; the scoop gives every third unit as гелий-3/антивещество while the giant's deposit lasts. Taken units live in `G.farTaken` (saved). The reading: the belt entry says «прибор: палладий: 40–160», spread by hull role — изыскатель ±10 %, рудовоз ±60 %, others ±35 % — the truth always inside, the middle shifted by seed. ЖИЛА: on the first unit taken, the word across the screen (the stamp DOM, amber stencil) + a БОРТ line. **Open:** the cave (янтарь) and the hunt (жемчуг) verbs give nothing yet; the rumour a сводка later and the company on the approach; the reading on the planet card / dig entry (belt only now); тёмное стекло narrowing the reading. Original text:
+  **M466 Reading and ЖИЛА.** The scanner shows a range («осмий: 40–160») narrowed by the
   instrument's resolution (изыскатель ±10 %, рудовоз ±60 %; тёмное стекло in the instruments halves
   every range) — the professions' honesty rule. ЖИЛА: the word across the screen (ГЛАВТРАССА
   stencil, warm, 1.2 s — the only time the game shouts), a ДНЕВНИК line, a rumour at the nearest

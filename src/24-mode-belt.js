@@ -106,6 +106,7 @@ function enterBelt(){
       left:8+Math.floor(r()*16),
       rx:r()*TAU,ry:r()*TAU,sx:(r()-.5)*.011,sy:(r()-.5)*.011});
   }
+  if(typeof farBeltDress==="function")farBeltDress(ast,B);   /* дальние залежи — своим потоком (M466) */
   const dust=[];
   for(let i=0;i<240;i++)
     dust.push({x:(r()-.5)*2*DUST_HALF,y:(r()-.5)*2*DUST_HALF,z:(r()-.5)*2*DUST_HALF});
@@ -130,6 +131,7 @@ function enterBelt(){
   document.querySelectorAll(".pads button").forEach(bb=>bb.classList.remove("on"));
   say("Вход в "+B.name+"\nруда: "+B.res.map(k=>RES[k].ru).join(", ")+
     (beltIcy(B)?"\nкольцо дальнее — попадаются кристаллы льда":"")+
+    ((typeof farReadLine==="function"&&farReadLine(farHere("belt")))?"\nприбор: "+farReadLine(farHere("belt")):"")+
     (document.body.classList.contains("mobile")?"\nтяните по стеклу — обзор"   /* на касании клавиш нет (R6) */
       :"\n◀ ▶ курс · ▲ ▼ тангаж · Q E крен\nПРОБЕЛ тяга · тяните по стеклу — обзор"));
 }

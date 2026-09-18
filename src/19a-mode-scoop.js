@@ -139,7 +139,12 @@ function updateScoop(dt){
   const full=held()>=st.cargoMax;
   if(inBand&&!full){
     S.got+=(.008+st.drill*.004)*dt;
-    while(S.got>=1){S.got-=1;if(addRes("volatiles",1)){S.gain++;sfx("drill");}}
+    while(S.got>=1){
+      S.got-=1;
+      /* гелий-3 и антивещество — каждая третья единица, пока залежь есть (M466) */
+      const fk=(typeof farScoopPick==="function")?farScoopPick(S):null;
+      if(addRes(fk||"volatiles",1)){S.gain++;sfx("drill");if(fk)farTake(fk,1);}
+    }
   }
   if(keys.left)S.vy-=.006*dt;      // мелкая доводка рулями, чтобы удержание было точнее
   if(keys.right)S.vy+=.006*dt;

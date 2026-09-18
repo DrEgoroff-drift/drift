@@ -46,3 +46,34 @@ TEST_SUITES.push(()=>suite("дальние товары: полосы и тяж�
   for(const k of FAR_KEYS)ok((band[k]|0)>0,k+": встречается где-то в мире");
   eq(JSON.stringify(farDeposits(31,-17)),JSON.stringify((FAR_CACHE.clear(),farDeposits(31,-17))),"один сектор — одни залежи");
 }));
+TEST_SUITES.push(()=>suite("дальние товары: выемка, честный прибор, ЖИЛА",()=>{
+  resetWorld();
+  /* найти пояс с дальней залежью */
+  let at=null;
+  for(let sx=12;sx<60&&!at;sx++)for(let sy=-30;sy<30&&!at;sy++){
+    const d=farDeposits(sx,sy).find(x=>x.place.kind==="belt");
+    if(d)at={sx,sy,d};
+  }
+  ok(!!at,"пояс с дальней залежью нашёлся");
+  G.sx=at.sx;G.sy=at.sy;G.sys=getSystem(at.sx,at.sy);G.farTaken={};
+  /* прибор честен: правда всегда внутри диапазона, у любого корпуса */
+  for(const id of ["strizh","vyuk","topor"]){
+    G.shipId=id;const R=farReading(at.d);
+    ok(R.lo<=R.left&&R.left<=R.hi,id+": правда внутри «"+R.lo+"–"+R.hi+"» (есть "+R.left+")");
+  }
+  G.shipId="strizh";const a=farReading(at.d);G.shipId="vyuk";const b=farReading(at.d);
+  ok(a.hi-a.lo<b.hi-b.lo,"изыскатель видит уже, чем рудовоз");
+  /* пояс: часть камней — дальнего товара, и выемка убавляет залежь */
+  const B=G.sys.belt,ast=[];for(let i=0;i<40;i++)ast.push({res:B.res[0],left:12});
+  farBeltDress(ast,B);
+  const fr=ast.filter(x=>x.res===at.d.k);
+  ok(fr.length>0,"в поясе появились камни «"+RES[at.d.k].ru+"»");
+  const left0=farLeft(G.sx,G.sy,at.d);
+  G.cargo[at.d.k]=0;const got=addRes(at.d.k,3);farTake(at.d.k,got);
+  eq(farLeft(G.sx,G.sy,at.d),left0-got,"взятое вычтено из залежи");
+  /* ЖИЛА: первая выемка объявляет, строка на борту */
+  const v={k:at.d.k,grade:3,units:900,place:at.d.place};
+  const n0=G.log.length;farVein(v);
+  ok(G.log.length>n0&&/ЖИЛА/.test(G.log[G.log.length-1].s),"жила записана на борту");
+  G.cargo[at.d.k]=0;G.farTaken={};
+}));

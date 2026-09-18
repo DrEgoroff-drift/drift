@@ -24,7 +24,8 @@ function oreNode(D,nc,nr){
     rad:1.2+r()*1.2,
     res:pool[Math.floor(r()*pool.length)]
   }:null;
-  cache[key]=node;return node;
+  cache[key]=(typeof farDigNode==="function")?farDigNode(D,nc,nr,node):node;   /* дальние тела — своим потоком (M466) */
+  return cache[key];
 }
 function digCell(D,col,row){
   const key=col+","+row;
@@ -226,6 +227,7 @@ function updateDig(dt){
       hashi(D.col,D.row,0x0DE7));
     if(cell.res){
       const got=addRes(cell.res,Math.round(cell.amount*st.refine));
+      if(got&&RES[cell.res].far&&typeof farTake==="function")farTake(cell.res,got);
       if(got)say("Добыто: "+RES[cell.res].ru+" ×"+got);
     }
     /* Артефакты лежат в глубине и нигде не продаются. Шанс растёт с глубиной,

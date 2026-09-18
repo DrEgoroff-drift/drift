@@ -172,5 +172,7 @@ function minedUnit(k){
   refineBank+=stat().refine;
   const n=Math.floor(refineBank);refineBank-=n;
   if(n>0&&typeof placeNote==="function")placeNote("take",n);   // место помнит, что вырыли (11d)
-  return addRes(k,n);
+  const got=addRes(k,n);
+  if(got&&RES[k].far&&typeof farTake==="function")farTake(k,got);   /* дальняя залежь убывает (M466) */
+  return got;
 }

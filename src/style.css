@@ -1746,3 +1746,7 @@ body.table u.addr{color:#7a4a20}
 .stp-cell.stp-hf{color:#56606a}
 .stp-cell.stp-gt{color:#6a4fc8}
 .stp-cell.stp-none{color:var(--dim);border-style:dashed;border-width:1px;opacity:.55;font-weight:400}
+.stp-fx.stp-vein{color:#ffb347;font-size:22px;letter-spacing:.3em;border-width:4px}
+.stp-fx.stp-vein .l0{font-size:44px;line-height:1.05}
+.stp-fx.stp-vein{color:#ffb347;font-size:22px;letter-spacing:.3em;border-width:4px}
+.stp-fx.stp-vein .l0{font-size:44px;line-height:1.05}
