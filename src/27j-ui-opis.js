@@ -210,6 +210,7 @@ function opisScrap(p){
   const go=()=>{
     if(isFitted(p.id)){const i=opisSlotOf(p.id);if(i>=0)unfitPart(i);}
     const res=scrapPart(p.id);if(!res)return;
+    if(typeof bazThrow==="function")bazThrow(res.part);   /* барахолка помнит (M463) */
     const list=Object.keys(res.got).map(k=>RES[k].ru.toLowerCase()+" ×"+res.got[k]).join(", ");
     const mn=(typeof matchesScrapNote==="function")?matchesScrapNote(res.matches):"";
     tell("money","Разобрано: "+res.part.name+(list?" → "+list:" → трюм полон")+(mn?" · "+mn:""),

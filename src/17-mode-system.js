@@ -349,7 +349,8 @@ function updateSystem(dt){
   /* кольцо железной дороги: стыковка и вестибюль (M471–M472) */
   if(typeof railInteract==="function"&&railInteract(sh))return;
   if(typeof chebInteract==="function"&&chebInteract(sh))return;   /* «Чебуречная» на подъезде (M462) */
-  if(typeof hotelInteract==="function"&&hotelInteract(sh))return;   /* гостиница у станции (M461) */
+  if(typeof hotelInteract==="function"&&hotelInteract(sh))return;
+  if(typeof bazInteract==="function"&&bazInteract(sh))return;   /* барахолка у пояса (M463) */   /* гостиница у станции (M461) */
   if(typeof fleetInteract==="function"&&fleetInteract(sh))return;
   /* торговая баржа — к ней можно подойти и сторговаться без стыковки (12l) */
   if(typeof bargeInteract==="function"&&bargeInteract(sh))return;
@@ -661,7 +662,8 @@ function drawSystem(){
   if(typeof drawGestPost==="function")drawGestPost(zx,zy,Z);   /* пост у входа (M452, 17h) */
   if(typeof drawSysRail==="function")drawSysRail(zx,zy,Z);   /* кольцо станции железной дороги (M471) */
   if(typeof drawBillboard==="function")drawBillboard(zx,zy,Z);   /* щит с бегущей строкой (M460) */
-  if(typeof drawHotel==="function")drawHotel(zx,zy,Z);   /* гостиница (M461) */
+  if(typeof drawHotel==="function")drawHotel(zx,zy,Z);
+  if(typeof drawBazaar==="function")drawBazaar(zx,zy,Z);   /* барахолка (M463) */   /* гостиница (M461) */
   if(typeof drawPeaceFleet==="function")drawPeaceFleet(zx,zy,Z);   /* мирный флот державы (M455) */
   if(sys.station){
     const x=zx(sys.station.x),y=zy(sys.station.y);

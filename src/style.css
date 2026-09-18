@@ -1807,3 +1807,12 @@ body.table u.addr{color:#7a4a20}
 .stapel .stp-n{font-size:11px;opacity:.8;margin:4px 0}
 .stapel>.stp-ch,.stapel>.stp-sl,.stapel>.stp-n,.stapel>button.act{margin-left:14px;margin-right:14px}
 .stapel .chip{font-family:inherit}.stapel input[type=range]{accent-color:#f2b25c}
+
+/* ── барахолка (M463) [design owed] ── */
+#bazWin{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:60;width:min(420px,calc(100vw - 32px));max-height:80vh;overflow:auto;
+  background:#1b1814;border:1px solid #6a5a44;color:#eadbc0;padding:12px 14px;box-shadow:0 8px 30px rgba(0,0,0,.6)}
+#bazWin .bz-h{font:600 15px ui-monospace,monospace;letter-spacing:.2em}#bazWin .bz-h s{display:block;text-decoration:none;font-size:11px;opacity:.6;letter-spacing:0}
+#bazWin .bz-sec{margin:10px 0 4px;font-size:11px;letter-spacing:.15em;opacity:.7}
+#bazWin .bz-row{display:grid;grid-template-columns:1fr auto;gap:2px 8px;align-items:center;padding:4px 0;border-top:1px solid rgba(255,255,255,.06)}
+#bazWin .bz-row s{text-decoration:none;font-size:11px;opacity:.6;grid-column:1}#bazWin .bz-row button{grid-row:1/3;grid-column:2}
+#bazWin .bz-x{margin-top:10px;width:100%}

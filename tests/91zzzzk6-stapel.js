@@ -135,3 +135,22 @@ TEST_SUITES.push(()=>suite("подписка: 10 % сразу, 4 % за смен
   ok(u.sub.feat>=1,"каждый пятый взнос — «тариф обновлён»");
   clockSet(t0);G.instrKit=null;
 }));
+TEST_SUITES.push(()=>suite("барахолка: разобранное возвращается втрое, остовы со шрамами",()=>{
+  resetWorld();
+  let B=null;
+  for(let sx=-14;sx<=14&&!B;sx++)for(let sy=-14;sy<=14&&!B;sy++){G.sx=sx;G.sy=sy;G.sys=getSystem(sx,sy);B=bazHere();}
+  ok(!!B,"барахолка есть в тихой системе державы с поясом: "+G.sx+":"+G.sy);
+  const p=genPart(9191,2);addPart(p);
+  const res=scrapPart(p.id);bazThrow(res.part);
+  eq(G.thrown.length,1,"разобранное запомнено");
+  const L=bazLots(B),t=L.find(x=>x.kind==="thrown");
+  ok(!!t&&t.price===Math.round(bazPartBase(p)*3/10)*10,"ваша вещь — втрое: "+(t&&t.price));
+  const h=L.filter(x=>x.kind==="hull");
+  ok(h.length===2&&h.every(x=>x.ship.scars.length>=1),"два остова, у каждого шрамы");
+  G.credits=1e6;const n0=G.inv.length;
+  ok(bazBuy(t)&&G.inv.length===n0+1&&!G.thrown.length,"выкупили своё");
+  ok(bazBuy(h[0])&&G.owned["bz"+h[0].seed],"остов в ангаре");
+  ok(!bazBuy(h[0]),"второй раз тот же остов не продают");
+  eq(JSON.stringify(bazLots(B).map(x=>x.k)),JSON.stringify(bazLots(B).map(x=>x.k)),"ряд — функция места и смены");
+  const snap=snapshot();ok(Array.isArray(snap.thrown),"разобранное в сейве");
+}));
