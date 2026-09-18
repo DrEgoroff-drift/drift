@@ -495,7 +495,7 @@ patchnote of each version names the M-numbers it closes.
   meanwhile; **ИЗОЛЕНТА** — now, 50 %, «гарантия аннулирована: обнаружены следы изоленты»; **ЯРД** —
   proper, for money. Kindness: the old master at any yard welds one seam free for a taped hull:
   «сынок, ну кто ж так».
-- [ ] **[design owed] M489 Names by owner** («Рязань Каунти»): settlements, holdings, metro stops = homely toponym +
+- [ ] **[design owed] M489 Names by owner — the rule BUILT 18.09 (Control), `src/12al1-toponym.js`.** `ownerName(base,sx,sy)` from the land's owner now (a flag change repaints): пгт …, … Каунти / …-Сити, Бецирк … № n, Сен-…, кооператив «…», …-n vX.Y; `firmName(seed)` = provincial town + foreign tech word. Applied to rail stops (полустанок … past r 40). **Open:** settlements, holdings, the station header; firms where they appear. Original: («Рязань Каунти»): settlements, holdings, metro stops = homely toponym +
   the owner's administrative suffix (ГЛАВТРАССА «пгт Верхний Пояс», Компания «Горловина Каунти»,
   «Нейэль-Сити», Орднунг «Бецирк Нейэль № 4», Коммуна «Сен-Горловина», Рассвет «кооператив
   «Горловина»», Хай-Фронт «Горловина-2 v3.1»); a flag change repaints the sign. Firms = provincial

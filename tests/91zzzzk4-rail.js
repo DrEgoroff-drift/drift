@@ -58,3 +58,11 @@ TEST_SUITES.push(()=>suite("рельсы: стыковка, касса, поез
   const R2=railHere();ok(R2&&Math.hypot(G.ship.x-R2.x,G.ship.y-R2.y)<120,"корабль у кольца станции назначения");
   railWinClose();
 }));
+TEST_SUITES.push(()=>suite("названия по хозяину (M489)",()=>{
+  resetWorld();
+  const seen={};
+  for(let sx=-9;sx<=9;sx++)for(let sy=-9;sy<=9;sy++){const by=stampOwnerAt(sx,sy);if(by)seen[by]=ownerName("Горловина",sx,sy);}
+  ok(Object.keys(seen).length>=3,"хозяев в сердце несколько: "+Object.values(seen).join(" · "));
+  for(const k in seen)ok(seen[k].indexOf("Горловина")>=0&&seen[k]!=="Горловина","«"+seen[k]+"» — топоним с суффиксом");
+  ok(/ [А-Я]/.test(firmName(5)),"фирма — город и чужое слово: "+firmName(5));
+}));

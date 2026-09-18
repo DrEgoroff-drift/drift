@@ -95,7 +95,8 @@ function railDocked(auto){
 function railInterval(sx,sy){const r=Math.hypot(sx,sy);return r<=RAIL_METRO_R?10:Math.round(30+60*clamp((r-12)/28,0,1));}
 function railWaitNow(sx,sy){const I=railInterval(sx,sy);return Math.ceil(I-((G.t/60)%I));}
 function railFmt(s){return Math.floor(s/60)+":"+String(s%60).padStart(2,"0");}
-function railStopName(st){const s=getSystem(st.sx,st.sy);return (s.station?s.station.name:s.name)+(st.halt?" (полустанок)":"");}
+function railStopName(st){const s=getSystem(st.sx,st.sy),base=s.station?s.station.name:s.name;
+  return (st.halt?"полустанок "+base:(typeof ownerName==="function"?ownerName(base,st.sx,st.sy):base));}   /* по хозяину земли (M489) */
 /* куда можно доехать отсюда: по каждой линии до шести остановок в обе стороны */
 function railDestinations(){
   const out=[],me=G.sx+","+G.sy;
