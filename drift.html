@@ -12207,7 +12207,7 @@ function radioBeacon(t,key,cd){
   const wob=c.createOscillator(),wg=c.createGain();wob.frequency.value=.25+r()*.2;wg.gain.value=fr*.004;wob.connect(wg);
   const dry=c.createGain();dry.gain.value=.4;dry.connect(RADIO.bus);
   for(let k=0;k<K;k++){
-    const tk=t+k*gap,v=[.07,.04,.024,.014,.008,.005][k];
+    const tk=t+k*gap,v=[.056,.032,.019,.011,.006,.004][k];
     const o=c.createOscillator(),g=c.createGain(),f=c.createBiquadFilter(),p=c.createStereoPanner();
     o.type="sine";o.frequency.value=fr;wg.connect(o.frequency);
     f.type="lowpass";f.frequency.value=[900,700,560,450,380,320][k];f.Q.value=.8;
@@ -12220,7 +12220,7 @@ function radioBeacon(t,key,cd){
   wob.start(t);wob.stop(t+6*gap+3);
 }
 function radioBell(t,key,cd){
-  radioBellVoice(t,midiHz(key+48+radioDeg(cd+[0,2,4][Math.floor(RADIO.r()*3)])),2.2,RADIO.layers.bell,.04);
+  radioBellVoice(t,midiHz(key+48+radioDeg(cd+[0,2,4][Math.floor(RADIO.r()*3)])),2.2,RADIO.layers.bell,.032);
 }
 /* ── обертоновое облако ──
    Самый «космический» приём — спектральный: не аккорд из нот, а натуральный ряд одного
