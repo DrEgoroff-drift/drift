@@ -133,6 +133,12 @@ our JS is 6–8 ms, the deadline is lost in the RASTER. In this order:
    `-Full`, `-Mobile`, `-Mutants`, the Node tier, PATCHNOTES lines, push, md5 of the three site files
    after deploy.
 
+**Author's decision 18.09:** «давай по порядку, да делай без тел, потом пройдемся все померяем,
+отдельно веха тесты на тел». Work goes on WITHOUT the phone, in plan order: Stage 0b item by item,
+then Stage 1 (P8, P9, P10). Every phone measurement above (steps 1, 5, 6, and each item's own phone
+check) is collected into **one separate milestone — «phone tests»** — run after, in one sitting, by
+the Tester's protocol below. Items whose only proof is the phone are built and marked «phone owed».
+
 Findings of 17–18.09 not recorded elsewhere:
 - **Law of the frame for any cut or bake (Designer):** protect the thin trail line, the one-pixel
   stars and the depth of the void (the nebula's glow). The ribbon only with a frame in hand — cut the
