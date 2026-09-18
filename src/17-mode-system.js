@@ -52,7 +52,7 @@ function camBody(sh,sys){
 }
 function updateSystem(dt){
   const sh=G.ship,sys=G.sys,st=stat();
-  if(typeof zoomStep==="function")zoomStep(dt);   /* щипок едет к цели (P9) */
+  if(typeof zoomEase==="function")zoomEase(dt);   /* щипок едет к цели (P9) */
   document.getElementById("dronebtn").style.display="none";
   /* Догонять приходится линейную скорость, а не угловую: у станции на радиусе 700
      касательная ω·r доходила почти до крейсерской, и корабль вечно подлетал туда,

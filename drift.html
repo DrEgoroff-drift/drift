@@ -43530,7 +43530,9 @@ function zoomRest(){
   for(const s of ZOOM_STEPS){const d=Math.abs(Math.log(G.zoomT/s));if(d<bd){bd=d;best=s;}}
   if(best!=null)G.zoomT=best;
 }
-function zoomStep(dt){
+/* своё имя (18.09): «zoomStep» был занят кнопками +/− выше, и это тело их
+   перекрывало — кнопки масштаба молчали */
+function zoomEase(dt){
   if(G.zoomT==null)return;
   const lz=Math.log(G.zoom),lt=Math.log(G.zoomT),d=lt-lz;
   if(Math.abs(d)<.002){G.zoom=G.zoomT;G.zoomT=null;return;}
@@ -47157,7 +47159,7 @@ function camBody(sh,sys){
 }
 function updateSystem(dt){
   const sh=G.ship,sys=G.sys,st=stat();
-  if(typeof zoomStep==="function")zoomStep(dt);   /* щипок едет к цели (P9) */
+  if(typeof zoomEase==="function")zoomEase(dt);   /* щипок едет к цели (P9) */
   document.getElementById("dronebtn").style.display="none";
   /* Догонять приходится линейную скорость, а не угловую: у станции на радиусе 700
      касательная ω·r доходила почти до крейсерской, и корабль вечно подлетал туда,

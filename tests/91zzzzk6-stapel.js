@@ -326,3 +326,9 @@ TEST_SUITES.push(()=>suite("ДЕЛО: взятая работа с именем 
   const rows=offerCarriedRows();ok(Array.isArray(rows),"строки ДЕЛА собираются");
   ok(typeof offerCarried==="function"&&offerCarried()!==rows,"доска и ДЕЛО — разные функции");
 }));
+TEST_SUITES.push(()=>suite("кнопки масштаба снова масштабируют (zoomStep был перекрыт)",()=>{
+  resetWorld();
+  G.mode="system";G.zoomT=null;setZoom(2);const z0=G.zoom;
+  zoomStep(1.35);ok(Math.abs((G.zoomT||G.zoom)/z0-1.35)<.02||G.zoom>z0,"«+» увеличивает: "+z0+" → "+(G.zoomT||G.zoom));
+  eq(typeof zoomEase,"function","плавный щипок — своя функция");
+}));

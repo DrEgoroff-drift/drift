@@ -354,7 +354,9 @@ function zoomRest(){
   for(const s of ZOOM_STEPS){const d=Math.abs(Math.log(G.zoomT/s));if(d<bd){bd=d;best=s;}}
   if(best!=null)G.zoomT=best;
 }
-function zoomStep(dt){
+/* своё имя (18.09): «zoomStep» был занят кнопками +/− выше, и это тело их
+   перекрывало — кнопки масштаба молчали */
+function zoomEase(dt){
   if(G.zoomT==null)return;
   const lz=Math.log(G.zoom),lt=Math.log(G.zoomT),d=lt-lz;
   if(Math.abs(d)<.002){G.zoom=G.zoomT;G.zoomT=null;return;}

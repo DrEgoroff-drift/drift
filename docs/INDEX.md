@@ -1583,7 +1583,7 @@ el                           src/26-ui-station.js:289
 EN_SHIELD                    src/05c-arms.js:162
 EN_SHOT                      src/05c-arms.js:161
 EN_THR                       src/05c-arms.js:163
-endPtr                       src/15-input.js:426-431
+endPtr                       src/15-input.js:428-433
 energyCap                    src/05c-arms.js:166
 energyRegen                  src/05c-arms.js:167
 engineLoop                   src/09-audio.js:329-355
@@ -3165,7 +3165,7 @@ mountAt                      src/05d-mounts.js:46-54
 mountsOf                     src/05d-mounts.js:29-45
 mountTakes                   src/05d-mounts.js:71-76
 mountWhyNot                  src/05d-mounts.js:78-84
-mouseWalkAt                  src/15-input.js:437-466
+mouseWalkAt                  src/15-input.js:439-468
 msgHeld                      src/08-state.js:388
 MSL_ARM                      src/16b-missile.js:20
 MSL_COOL                     src/16b-missile.js:16
@@ -3640,7 +3640,7 @@ pickKindByBias               src/20-life.js:180-184
 pickShare                    src/20e-species.js:125-130
 pickStType                   src/06-galaxy.js:76-82
 PICKUPS                      src/24a-mode-raid.js:24-28
-pinch0                       src/15-input.js:394
+pinch0                       src/15-input.js:396
 PIR_ART                      src/12i-pirate-hull.js:18
 PIR_CLASS                    src/12i-pirate-hull.js:20-25
 PIR_GUNART                   src/12i-pirate-hull.js:33-46
@@ -3880,7 +3880,7 @@ prunePartsBought             src/14-save.js:33-41
 prWalk                       tests/91zzzzzi-promise.js:82-92
 psPlanet                     tests/91zzzu-post-scenes.js:6-16
 psSnap                       tests/91zzzu-post-scenes.js:17-20
-ptr                          src/15-input.js:393
+ptr                          src/15-input.js:395
 PU_CELLS                     tests/91zzzzzd-pure.js:28
 puFinger                     tests/91zzzzzd-pure.js:19-27
 putOnTable                   src/11b-speech.js:220-230
@@ -4903,7 +4903,7 @@ STAR_COLS                    src/16-flight.js:2
 STAR_LX                      src/16-flight.js:27
 starAt                       src/06-galaxy.js:2
 starRGB                      src/19c-light.js:49-59
-start                        src/15-input.js:620-628
+start                        src/15-input.js:622-630
 startLanding                 src/19-mode-landing.js:2-33
 startScoop                   src/19a-mode-scoop.js:51-61
 stat                         src/08-state.js:264-332
@@ -5096,7 +5096,7 @@ tactTick                     src/28-loop.js:332-345
 tactWork                     src/28-loop.js:325
 TALE_DRINK                   src/12b-crew-events.js:13
 TALE_JOB                     src/12b-crew-events.js:15
-tap                          src/15-input.js:468-592
+tap                          src/15-input.js:470-594
 TAPE_ADAPT                   src/25b-tape.js:26
 TAPE_DT                      src/25b-tape.js:24
 TAPE_GAIN                    src/25b-tape.js:25
@@ -5632,10 +5632,10 @@ zooDrawPen                   src/11ad-zoo.js:97-109
 zooHomeBlock                 src/11ad-zoo.js:84-95
 ZOOM_MIN                     src/01-core.js:21
 ZOOM_RATE                    src/15-input.js:349
+zoomEase                     src/15-input.js:359-365
 zoomModeHas                  src/15-input.js:308
 zoomRest                     src/15-input.js:351-356
 zoomStep                     src/15-input.js:303-306
-zoomStep                     src/15-input.js:357-363
 zoomTo                       src/15-input.js:350
 zooPen                       src/11ad-zoo.js:17
 zooSell                      src/11ad-zoo.js:61-70
