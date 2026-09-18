@@ -42193,7 +42193,30 @@ document.getElementById("routebtn").addEventListener("click",()=>{
   say(routeToggle(G.sel.x,G.sel.y));
   sfx("ui",{f:520,to:820,d:.12,v:.28});
 });
-function setZoom(z){G.zoom=clamp(z,ZOOM_MIN,ZOOM_MAX);}
+function setZoom(z){G.zoom=clamp(z,ZOOM_MIN,ZOOM_MAX);G.zoomT=null;}
+/* ── щипок: цель и ступеньки (P9, плейтест 13.09 §2.5) ──
+   Щипок клал расстояние между пальцами прямо в зум: 217 кадров меняли его
+   больше чем на 6 % за кадр, весь диапазон ×28 пролетал за 0.3 с, и автор
+   двадцать секунд ловил удобный вид с перелётами. Теперь щипок задаёт ЦЕЛЬ,
+   а зум едет к ней сам, не быстрее ZOOM_RATE за кадр. Отпустил — цель мягко
+   садится на ближайшую ступеньку, если та ближе 15 %: вид, к которому
+   возвращаются, находится сам, и после отпускания ничего не плывёт.
+   Колесо остаётся мгновенным — у него щелчок, перелётов нет. */
+const ZOOM_RATE=Math.log(1.06), ZOOM_STEPS=[.16,.25,.4,.6,1,1.5,2.4,3.4,4.5];
+function zoomTo(z){G.zoomT=clamp(z,ZOOM_MIN,ZOOM_MAX);}
+function zoomRest(){
+  if(G.zoomT==null)return;
+  let best=null,bd=Math.log(1.15);
+  for(const s of ZOOM_STEPS){const d=Math.abs(Math.log(G.zoomT/s));if(d<bd){bd=d;best=s;}}
+  if(best!=null)G.zoomT=best;
+}
+function zoomStep(dt){
+  if(G.zoomT==null)return;
+  const lz=Math.log(G.zoom),lt=Math.log(G.zoomT),d=lt-lz;
+  if(Math.abs(d)<.002){G.zoom=G.zoomT;G.zoomT=null;return;}
+  const st=clamp(d*Math.min(1,.3*dt),-ZOOM_RATE*dt,ZOOM_RATE*dt);
+  G.zoom=clamp(Math.exp(lz+st),ZOOM_MIN,ZOOM_MAX);
+}
 /* ── колесо крутит мир только НАД миром (M236) ──
    Обработчик висит на окне и спрашивал один G.mode: пока игрок листал колесом
    тетрадь на столе, карта за спиной уезжала в зум — список прокручен, мир
@@ -42241,7 +42264,7 @@ cvs.addEventListener("pointermove",e=>{
   if(ptr.size===2&&(G.mode==="system"||G.mode==="map")&&!(typeof helmPinchBlocked==="function"&&helmPinchBlocked())){
     const [a,b]=[...ptr.values()];
     const d=Math.hypot(a.x-b.x,a.y-b.y)||1;
-    if(G.mode==="system")setZoom(zoom0*d/pinch0);
+    if(G.mode==="system")zoomTo(zoom0*d/pinch0);
     else if(typeof mapZoomSet==="function")mapZoomSet(mzoom0*pinch0/d);   /* щипок на карте (M299) */
   }else if(ptr.size===1&&G.mode==="map"&&p.moved&&typeof mapCell==="function"){
     /* протяжка листа (M299): карту двигают пальцем, как любую карту.
@@ -42259,6 +42282,7 @@ cvs.addEventListener("pointermove",e=>{
 function endPtr(e){
   const p=ptr.get(e.pointerId);
   if(p&&!p.moved&&now()-p.t0<400)tap(p.x0,p.y0);
+  if(ptr.size===2&&G.mode==="system")zoomRest();   /* щипок кончился — на ступеньку */
   ptr.delete(e.pointerId);
 }
 cvs.addEventListener("pointerup",endPtr);
@@ -45652,8 +45676,22 @@ function sysEdge(sys){
   if(sys.station)outer=Math.max(outer,sys.station.orbit||0);
   return Math.max(outer*1.6,3840);
 }
+const BODY_CAM={x:0,y:0};   /* сдвиг кадра к телу орбиты или посадки (P9) — вид, не мир */
+/* тело, которое обязано оставаться в кадре: то, вокруг которого орбита, иначе
+   ближайшее, если корабль у самой поверхности (ближе 250 — там же зона посадки) */
+function camBody(sh,sys){
+  if(G.orbit&&G.orbit.p)return G.orbit.p;
+  if(!sys||!sys.planets)return null;
+  let near=null,nd=250;
+  for(const p of sys.planets){
+    const d=Math.hypot(sh.x-p.x,sh.y-p.y)-p.radius;if(d<nd){nd=d;near=p;}
+    for(const m of (p.moons||[])){const dm=Math.hypot(sh.x-m.x,sh.y-m.y)-m.radius;if(dm<nd){nd=dm;near=m;}}
+  }
+  return near;
+}
 function updateSystem(dt){
   const sh=G.ship,sys=G.sys,st=stat();
+  if(typeof zoomStep==="function")zoomStep(dt);   /* щипок едет к цели (P9) */
   document.getElementById("dronebtn").style.display="none";
   /* Догонять приходится линейную скорость, а не угловую: у станции на радиусе 700
      касательная ω·r доходила почти до крейсерской, и корабль вечно подлетал туда,
@@ -46067,7 +46105,25 @@ function drawSystem(){
      конце буксира кадр прыгал на полтроса) — это вид, не мир */
   HAUL_CAM.x+=(hx-HAUL_CAM.x)*.05;HAUL_CAM.y+=(hy-HAUL_CAM.y)*.05;
   if(Math.abs(HAUL_CAM.x)<.01&&Math.abs(HAUL_CAM.y)<.01&&!hx&&!hy){HAUL_CAM.x=0;HAUL_CAM.y=0;}
-  const cx0=fc.x+(co?co.x:0)+HAUL_CAM.x, cy0=fc.y+(co?co.y:0)+HAUL_CAM.y;
+  /* ── тело в кадре (P9, плейтест 13.09 §2.6) ──
+     «при приближении на орбите планета исчезает»: камера держала в середине
+     корабль, и на ×4.5 планета, вокруг которой он идёт, уходила за край
+     целиком. Теперь, когда корабль на орбите или у поверхности (ближе 250),
+     кадр уводится к телу ровно настолько, чтобы его ближняя кромка осталась
+     на экране — а корабль тоже; если оба не влезают, середина между ними.
+     Догоняет плавно, как сдвиг троса: это вид, не мир */
+  let bx=0,by=0;
+  if(!wA&&!(G.haul&&G.haul.ph!=="free")){
+    const B=camBody(sh,sys);
+    if(B){
+      const dx=B.x-sh.x,dy=B.y-sh.y,d=Math.hypot(dx,dy)||1,surf=Math.max(0,d-B.radius);
+      const room=Math.max(40,Math.min(W,H)*.5-48)/Z;
+      const shift=Math.min(surf-room,surf*.5);
+      if(shift>0){bx=dx/d*shift;by=dy/d*shift;}
+    }
+  }
+  BODY_CAM.x+=(bx-BODY_CAM.x)*.06;BODY_CAM.y+=(by-BODY_CAM.y)*.06;
+  const cx0=fc.x+(co?co.x:0)+HAUL_CAM.x+BODY_CAM.x, cy0=fc.y+(co?co.y:0)+HAUL_CAM.y+BODY_CAM.y;
   const zx=x=>W/2+(x-cx0)*Z, zy=y=>H/2+(y-cy0)*Z;
   /* ввод пересчитывает тычок через ту же камеру */
   G.viewCX=cx0;G.viewCY=cy0;
@@ -48545,12 +48601,21 @@ function jump(cost){
   if(typeof ringJump==="function")ringJump();        // Кольцо считает прыжки (M154)
   if(typeof expPaxJump==="function")expPaxJump();    // попутчик говорит по фразе за прыжок (M156)
   if(typeof traineeJump==="function")traineeJump();  // стажёр растёт по прыжкам (M163)
-  const a=rnd()*TAU,r=1500;
+  /* ── точка прибытия — у системы своя (P9) ──
+     Был rnd()*TAU: в одну систему прилетаешь всякий раз с новой стороны, и у
+     места нет «входа». Теперь угол от зерна системы — вход один и тот же, на
+     нём строит свою полосу жизнь Ж1 (этап 2). Заодно из потока rnd() ушёл один
+     вызов: сдвинулись все реплеи и наборы с одинаковым хешем — перед
+     релизом сознательный test.ps1 -Accept, строкой в патчноуте. */
+  const a=((hashi(G.sx,G.sy,0x51A7)>>>0)%3600)/3600*TAU,r=1500;
   G.ship.x=Math.cos(a)*r;G.ship.y=Math.sin(a)*r;
   /* прибытие без хода (боты 12.09): с .7 прямо на звезду брошенный корабль за
      полминуты входил в корону и разбивался почти молча — отпущенный руль теперь
-     накат, и тормозить было некому. Нос по-прежнему к звезде */
-  G.ship.vx=0;G.ship.vy=0;G.ship.a=a+Math.PI;
+     накат, и тормозить было некому. Нос — к станции: прилетел, и видно, куда
+     идти; станции нет — к звезде, как было */
+  const st0=G.sys&&G.sys.station;
+  G.ship.vx=0;G.ship.vy=0;
+  G.ship.a=st0?Math.atan2(st0.y-G.ship.y,st0.x-G.ship.x):a+Math.PI;
   G.mode="system";
   spawnPirates();spawnAllies();
   sfx("jump");

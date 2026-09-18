@@ -504,15 +504,19 @@ Rule 3: same look, cheaper work.
     keeps its own zoom clamp on the constant. Two browser-tier tests restated as the new law
     (`91zzxa-playable`, `91zzza-cave-props`) — run at release.
   - Side effect: `16a-space.js` crossed 40 KB again; the sprite oven moved to `16a0-glow.js`.
-- [ ] **P9 Zoom + 2a atmosphere + the entry point — one camera design.** Pinch jumps across 28× (217
-  frames > 6 %/frame): easing and resting steps. At ×4.5 the frame is 87×188 world units, the
-  landing zone (110 from the surface) is off-screen, in orbit the orbited body leaves the frame:
-  **the body you orbit or land on stays in view** (camera lead toward the body / descent from the
-  drawn disc). And the arrival point: `jump()` (`18-mode-map`) places the ship at 1 500 from the
-  star at `rnd()*TAU` — replace with **a seeded angle per system** (`hashi(sx,sy,salt)`), the ship
-  facing the station; that removes one `rnd()` call → every replay and same-hash suite moves once:
-  a deliberate `test.ps1 -Accept` pass, named in the patchnote. Ж1 (stage 2) builds its lane on
-  this point.
+- [x] **P9 Zoom + the body in view + the entry point — done 18.09 (Control), phone owed.**
+  - **Pinch** (15-input): it sets a TARGET (`zoomTo`), the zoom travels there at most 6 %/frame
+    (`zoomStep`, called from `updateSystem`); on release the target settles on the nearest resting
+    step within 15 % (`ZOOM_STEPS` .16 .25 .4 .6 1 1.5 2.4 3.4 4.5). The wheel stays instant (a
+    notch, no overshoot; tests rely on it). Seamless atmosphere entry is still its own milestone.
+  - **The body stays in view** (17-mode-system `camBody` + `BODY_CAM`): in orbit, or within 250 of a
+    surface, the frame shifts toward the body just enough to keep its near edge on screen, and the
+    ship too (the midpoint if both cannot fit), eased like the haul camera. Checked at ×4.5 in
+    orbit of the biggest planet: the edge at (42,333), the ship at (309,508) on a 390×844 screen.
+  - **The arrival point is the system's own:** `jump()` takes the angle from
+    `hashi(sx,sy,0x51A7)` instead of `rnd()*TAU`, the nose toward the station (to the star if none).
+    **Release note:** one `rnd()` call left the stream, so every replay and same-hash suite moves —
+    a deliberate `test.ps1 -Accept` pass, named in the patchnote.
 - [ ] **P10 ЦЕЛЬ and the hail** (§3): one pad with five meanings (hail answer, probe, crew-off,
   thanks, lock); pickets not lockable; the hail's fight answer red and named «БОЙ». One meaning per
   pad state, the verb from the prompt (M355).

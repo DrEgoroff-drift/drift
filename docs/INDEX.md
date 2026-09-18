@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 542 · символов верхнего уровня: 5212
+Файлов: 542 · символов верхнего уровня: 5218
 
 ## СИМВОЛЫ
 
@@ -446,6 +446,7 @@ bmgrSilent                   src/21b2-base-mgr.js:182-185
 bmgrStep                     src/21b2-base-mgr.js:138-176
 bmgrWorkMul                  src/21b2-base-mgr.js:128-131
 boardLanes                   src/26-ui-station.js:378-404
+BODY_CAM                     src/17-mode-system.js:40
 BODY_LABELS                  src/17-mode-system.js:24
 bodyInSystem                 src/16-flight.js:109-118
 bookAll                      src/12ub-books.js:122
@@ -510,6 +511,7 @@ buyPriceFor                  src/12-economy.js:52-56
 bWall                        src/21aa-base-rooms.js:187-242
 bWorker                      src/21aa-base-rooms.js:322-382
 CAM_LAG_PX                   src/16a-space.js:316
+camBody                      src/17-mode-system.js:43-52
 camBtnTick                   src/25g-postcard.js:666-670
 camOffset                    src/19c-light.js:155-162
 camStep                      src/19c-light.js:141-153
@@ -1423,9 +1425,9 @@ drawSurface                  src/21e-surface-draw.js:277-291
 drawSurfaceHud               src/21e-surface-draw.js:21-115
 drawSurfaceWorld             src/21e1-surface-world.js:10-615
 drawSurvey                   src/12w-survey.js:63-89
-drawSysHud                   src/17-mode-system.js:688-935
+drawSysHud                   src/17-mode-system.js:720-967
 drawSysNebula                src/16a-space.js:208-236
-drawSystem                   src/17-mode-system.js:429-687
+drawSystem                   src/17-mode-system.js:443-719
 drawSysTraffic               src/17f-sys-traffic.js:29-33
 drawTemple                   src/20aa-poi-shapes.js:50-89
 drawThingIcon                src/27i-ui-table.js:399-435
@@ -1510,7 +1512,7 @@ el                           src/26-ui-station.js:277
 EN_SHIELD                    src/05c-arms.js:162
 EN_SHOT                      src/05c-arms.js:161
 EN_THR                       src/05c-arms.js:163
-endPtr                       src/15-input.js:398-402
+endPtr                       src/15-input.js:421-426
 energyCap                    src/05c-arms.js:166
 energyRegen                  src/05c-arms.js:167
 engineLoop                   src/09-audio.js:309-335
@@ -2430,7 +2432,7 @@ jobOffer                     src/12e-mgr-jobs.js:228-240
 jobPick                      src/12e-mgr-jobs.js:259-282
 jobRefuse                    src/12e-mgr-jobs.js:57-66
 jobTick                      src/12e-mgr-jobs.js:287-296
-jump                         src/18-mode-map.js:562-597
+jump                         src/18-mode-map.js:562-606
 jumpToBase                   src/21a-mode-base.js:384-401
 KEEP_DARK_AFTER              src/11k-keepers.js:48
 KEEP_HABIT                   src/11k-keepers.js:35-45
@@ -2956,7 +2958,7 @@ mountAt                      src/05d-mounts.js:43-47
 mountsOf                     src/05d-mounts.js:26-42
 mountTakes                   src/05d-mounts.js:64-69
 mountWhyNot                  src/05d-mounts.js:71-77
-mouseWalkAt                  src/15-input.js:408-437
+mouseWalkAt                  src/15-input.js:432-461
 msgHeld                      src/08-state.js:385
 MSL_ARM                      src/16b-missile.js:20
 MSL_COOL                     src/16b-missile.js:16
@@ -3251,7 +3253,7 @@ optGroups                    src/27-ui-ship.js:338-355
 OPTS_BOOT                    tests/90-harness.js:203
 optsNumify                   src/14a2-save-ephemeral.js:23-28
 optTab                       src/27-ui-ship.js:337
-orbPathOf                    src/17-mode-system.js:418-428
+orbPathOf                    src/17-mode-system.js:432-442
 ORDER_WIN                    src/12aa-need.js:76
 orderDeliver                 src/12aa-need.js:116-127
 orderHere                    src/12aa-need.js:112-115
@@ -3419,7 +3421,7 @@ pickKindByBias               src/20-life.js:180-184
 pickShare                    src/20e-species.js:125-130
 pickStType                   src/06-galaxy.js:76-82
 PICKUPS                      src/24a-mode-raid.js:24-28
-pinch0                       src/15-input.js:366
+pinch0                       src/15-input.js:389
 PIR_ART                      src/12i-pirate-hull.js:18
 PIR_CLASS                    src/12i-pirate-hull.js:20-25
 PIR_GUNART                   src/12i-pirate-hull.js:33-46
@@ -3647,7 +3649,7 @@ prunePartsBought             src/14-save.js:33-41
 prWalk                       tests/91zzzzzi-promise.js:82-92
 psPlanet                     tests/91zzzu-post-scenes.js:6-16
 psSnap                       tests/91zzzu-post-scenes.js:17-20
-ptr                          src/15-input.js:365
+ptr                          src/15-input.js:388
 PU_CELLS                     tests/91zzzzzd-pure.js:28
 puFinger                     tests/91zzzzzd-pure.js:19-27
 putOnTable                   src/11b-speech.js:220-230
@@ -4521,7 +4523,7 @@ STAR_COLS                    src/16-flight.js:2
 STAR_LX                      src/16-flight.js:27
 starAt                       src/06-galaxy.js:2
 starRGB                      src/19c-light.js:49-59
-start                        src/15-input.js:591-599
+start                        src/15-input.js:615-623
 startLanding                 src/19-mode-landing.js:2-33
 startScoop                   src/19a-mode-scoop.js:51-61
 stat                         src/08-state.js:264-329
@@ -4697,7 +4699,7 @@ tactTick                     src/28-loop.js:332-345
 tactWork                     src/28-loop.js:325
 TALE_DRINK                   src/12b-crew-events.js:13
 TALE_JOB                     src/12b-crew-events.js:15
-tap                          src/15-input.js:439-563
+tap                          src/15-input.js:463-587
 TAPE_ADAPT                   src/25b-tape.js:26
 TAPE_DT                      src/25b-tape.js:24
 TAPE_GAIN                    src/25b-tape.js:25
@@ -4894,7 +4896,7 @@ updateRaid                   src/24a-mode-raid.js:215-345
 updateScoop                  src/19a-mode-scoop.js:75-171
 updateSpa                    src/29i-spa-draw.js:514-519
 updateSurface                src/21-mode-surface.js:199-656
-updateSystem                 src/17-mode-system.js:40-414
+updateSystem                 src/17-mode-system.js:53-428
 updateWanderRoom             src/24c-mode-wanderer.js:58-88
 updateWinter                 src/29g-winter-draw.js:808-817
 useBeacon                    src/23-mode-dig.js:87-112
@@ -5215,8 +5217,12 @@ zooCatch                     src/11ad-zoo.js:19-29
 zooDrawPen                   src/11ad-zoo.js:97-109
 zooHomeBlock                 src/11ad-zoo.js:84-95
 ZOOM_MIN                     src/01-core.js:21
+ZOOM_RATE                    src/15-input.js:344
 zoomModeHas                  src/15-input.js:303
+zoomRest                     src/15-input.js:346-351
 zoomStep                     src/15-input.js:298-301
+zoomStep                     src/15-input.js:352-358
+zoomTo                       src/15-input.js:345
 zooPen                       src/11ad-zoo.js:17
 zooSell                      src/11ad-zoo.js:61-70
 zooSettle                    src/11ad-zoo.js:33-39
@@ -5795,7 +5801,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/14b-war-net.js · 12 КБ
   · провод войны (M376, §13, §16.4):1
 
-## src/15-input.js · 38 КБ
+## src/15-input.js · 40 КБ
   · экранные кнопки: авто-скрытие и размер:1
   · ввод:87
   · полоса вкладок шире экрана:216
@@ -5832,7 +5838,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/16c-rescue.js · 51 КБ
   · пустой бак: хода нет, но выход есть всегда (11.09):1
 
-## src/17-mode-system.js · 69 КБ
+## src/17-mode-system.js · 72 КБ
   · режим: система:1
 
 ## src/17a-station-mod.js · 13 КБ
@@ -5855,7 +5861,7 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## src/17z-map-backdrop.js · 8 КБ
 
-## src/18-mode-map.js · 43 КБ
+## src/18-mode-map.js · 44 КБ
   · карта:1
   · где у карты пол и где правый борт:3
   · карта: ночное небо, а не схема молекулы:65

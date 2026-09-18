@@ -332,7 +332,30 @@ document.getElementById("routebtn").addEventListener("click",()=>{
   say(routeToggle(G.sel.x,G.sel.y));
   sfx("ui",{f:520,to:820,d:.12,v:.28});
 });
-function setZoom(z){G.zoom=clamp(z,ZOOM_MIN,ZOOM_MAX);}
+function setZoom(z){G.zoom=clamp(z,ZOOM_MIN,ZOOM_MAX);G.zoomT=null;}
+/* ── щипок: цель и ступеньки (P9, плейтест 13.09 §2.5) ──
+   Щипок клал расстояние между пальцами прямо в зум: 217 кадров меняли его
+   больше чем на 6 % за кадр, весь диапазон ×28 пролетал за 0.3 с, и автор
+   двадцать секунд ловил удобный вид с перелётами. Теперь щипок задаёт ЦЕЛЬ,
+   а зум едет к ней сам, не быстрее ZOOM_RATE за кадр. Отпустил — цель мягко
+   садится на ближайшую ступеньку, если та ближе 15 %: вид, к которому
+   возвращаются, находится сам, и после отпускания ничего не плывёт.
+   Колесо остаётся мгновенным — у него щелчок, перелётов нет. */
+const ZOOM_RATE=Math.log(1.06), ZOOM_STEPS=[.16,.25,.4,.6,1,1.5,2.4,3.4,4.5];
+function zoomTo(z){G.zoomT=clamp(z,ZOOM_MIN,ZOOM_MAX);}
+function zoomRest(){
+  if(G.zoomT==null)return;
+  let best=null,bd=Math.log(1.15);
+  for(const s of ZOOM_STEPS){const d=Math.abs(Math.log(G.zoomT/s));if(d<bd){bd=d;best=s;}}
+  if(best!=null)G.zoomT=best;
+}
+function zoomStep(dt){
+  if(G.zoomT==null)return;
+  const lz=Math.log(G.zoom),lt=Math.log(G.zoomT),d=lt-lz;
+  if(Math.abs(d)<.002){G.zoom=G.zoomT;G.zoomT=null;return;}
+  const st=clamp(d*Math.min(1,.3*dt),-ZOOM_RATE*dt,ZOOM_RATE*dt);
+  G.zoom=clamp(Math.exp(lz+st),ZOOM_MIN,ZOOM_MAX);
+}
 /* ── колесо крутит мир только НАД миром (M236) ──
    Обработчик висит на окне и спрашивал один G.mode: пока игрок листал колесом
    тетрадь на столе, карта за спиной уезжала в зум — список прокручен, мир
@@ -380,7 +403,7 @@ cvs.addEventListener("pointermove",e=>{
   if(ptr.size===2&&(G.mode==="system"||G.mode==="map")&&!(typeof helmPinchBlocked==="function"&&helmPinchBlocked())){
     const [a,b]=[...ptr.values()];
     const d=Math.hypot(a.x-b.x,a.y-b.y)||1;
-    if(G.mode==="system")setZoom(zoom0*d/pinch0);
+    if(G.mode==="system")zoomTo(zoom0*d/pinch0);
     else if(typeof mapZoomSet==="function")mapZoomSet(mzoom0*pinch0/d);   /* щипок на карте (M299) */
   }else if(ptr.size===1&&G.mode==="map"&&p.moved&&typeof mapCell==="function"){
     /* протяжка листа (M299): карту двигают пальцем, как любую карту.
@@ -398,6 +421,7 @@ cvs.addEventListener("pointermove",e=>{
 function endPtr(e){
   const p=ptr.get(e.pointerId);
   if(p&&!p.moved&&now()-p.t0<400)tap(p.x0,p.y0);
+  if(ptr.size===2&&G.mode==="system")zoomRest();   /* щипок кончился — на ступеньку */
   ptr.delete(e.pointerId);
 }
 cvs.addEventListener("pointerup",endPtr);

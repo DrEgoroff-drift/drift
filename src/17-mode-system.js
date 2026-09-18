@@ -37,8 +37,22 @@ function sysEdge(sys){
   if(sys.station)outer=Math.max(outer,sys.station.orbit||0);
   return Math.max(outer*1.6,3840);
 }
+const BODY_CAM={x:0,y:0};   /* сдвиг кадра к телу орбиты или посадки (P9) — вид, не мир */
+/* тело, которое обязано оставаться в кадре: то, вокруг которого орбита, иначе
+   ближайшее, если корабль у самой поверхности (ближе 250 — там же зона посадки) */
+function camBody(sh,sys){
+  if(G.orbit&&G.orbit.p)return G.orbit.p;
+  if(!sys||!sys.planets)return null;
+  let near=null,nd=250;
+  for(const p of sys.planets){
+    const d=Math.hypot(sh.x-p.x,sh.y-p.y)-p.radius;if(d<nd){nd=d;near=p;}
+    for(const m of (p.moons||[])){const dm=Math.hypot(sh.x-m.x,sh.y-m.y)-m.radius;if(dm<nd){nd=dm;near=m;}}
+  }
+  return near;
+}
 function updateSystem(dt){
   const sh=G.ship,sys=G.sys,st=stat();
+  if(typeof zoomStep==="function")zoomStep(dt);   /* щипок едет к цели (P9) */
   document.getElementById("dronebtn").style.display="none";
   /* Догонять приходится линейную скорость, а не угловую: у станции на радиусе 700
      касательная ω·r доходила почти до крейсерской, и корабль вечно подлетал туда,
@@ -452,7 +466,25 @@ function drawSystem(){
      конце буксира кадр прыгал на полтроса) — это вид, не мир */
   HAUL_CAM.x+=(hx-HAUL_CAM.x)*.05;HAUL_CAM.y+=(hy-HAUL_CAM.y)*.05;
   if(Math.abs(HAUL_CAM.x)<.01&&Math.abs(HAUL_CAM.y)<.01&&!hx&&!hy){HAUL_CAM.x=0;HAUL_CAM.y=0;}
-  const cx0=fc.x+(co?co.x:0)+HAUL_CAM.x, cy0=fc.y+(co?co.y:0)+HAUL_CAM.y;
+  /* ── тело в кадре (P9, плейтест 13.09 §2.6) ──
+     «при приближении на орбите планета исчезает»: камера держала в середине
+     корабль, и на ×4.5 планета, вокруг которой он идёт, уходила за край
+     целиком. Теперь, когда корабль на орбите или у поверхности (ближе 250),
+     кадр уводится к телу ровно настолько, чтобы его ближняя кромка осталась
+     на экране — а корабль тоже; если оба не влезают, середина между ними.
+     Догоняет плавно, как сдвиг троса: это вид, не мир */
+  let bx=0,by=0;
+  if(!wA&&!(G.haul&&G.haul.ph!=="free")){
+    const B=camBody(sh,sys);
+    if(B){
+      const dx=B.x-sh.x,dy=B.y-sh.y,d=Math.hypot(dx,dy)||1,surf=Math.max(0,d-B.radius);
+      const room=Math.max(40,Math.min(W,H)*.5-48)/Z;
+      const shift=Math.min(surf-room,surf*.5);
+      if(shift>0){bx=dx/d*shift;by=dy/d*shift;}
+    }
+  }
+  BODY_CAM.x+=(bx-BODY_CAM.x)*.06;BODY_CAM.y+=(by-BODY_CAM.y)*.06;
+  const cx0=fc.x+(co?co.x:0)+HAUL_CAM.x+BODY_CAM.x, cy0=fc.y+(co?co.y:0)+HAUL_CAM.y+BODY_CAM.y;
   const zx=x=>W/2+(x-cx0)*Z, zy=y=>H/2+(y-cy0)*Z;
   /* ввод пересчитывает тычок через ту же камеру */
   G.viewCX=cx0;G.viewCY=cy0;
