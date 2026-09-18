@@ -48,6 +48,7 @@ function abilFire(){
     G.cargo[K[0]]-=n;
     for(const p of G.pirates||[])if(Math.hypot(p.x-sh.x,p.y-sh.y)<700)p.jamT=Math.max(p.jamT||0,A.dur);
     line="СБРОС · "+RES[K[0]].ru.toLowerCase()+" ×"+n+" за борт — приманка";
+    ABIL_ST.crate={x:sh.x-Math.cos(sh.a)*40,y:sh.y-Math.sin(sh.a)*40,a:sh.a};
   }else if(k==="hauler"){
     for(const x of RES_KEYS){if(RES[x].pax||x==="folk")continue;const c=G.cargo[x]|0;if(c>0)G.cargo[x]=c-Math.max(0,Math.round(c*.01));}
     line="БАЛЛАСТ · корма облегчена — разворот живее";
@@ -98,10 +99,27 @@ function abilPadRim(){
   const b=ABIL_BTN;
   if(!b)return;
   const f=abilReady01(),deg=Math.round(f*360);
-  const v=f>=1?"":"conic-gradient(rgba(242,178,92,.8) "+deg+"deg, transparent 0)";
-  if(b.dataset.rim!==v){b.dataset.rim=v;b.style.setProperty("--abil",v||"none");b.classList.toggle("abil-cd",f<1);}
+  /* D21: кольцо толще и с яркой головкой у конца дуги; готово — имя над кнопкой */
+  const v=f>=1?"":"conic-gradient(rgba(242,178,92,.75) "+Math.max(0,deg-8)+"deg, #ffd9a0 "+deg+"deg, transparent 0)";
+  if(b.dataset.rim!==v){b.dataset.rim=v;b.style.setProperty("--abil",v||"none");b.classList.toggle("abil-cd",f<1);
+    const ok=f>=1&&G.mode==="system";b.classList.toggle("abil-ok",ok);if(ok)b.dataset.abil="ДОЛГОЕ · "+abilOf().ru;}
 }
 function drawAbil(zx,zy){
+  /* D21: у каждой системы своё видимое (ФОРСАЖ — факел в trailStep) */
+  if(abilOn("yacht")){   /* СИРЕНА: два расходящихся кольца */
+    const x=zx(G.ship.x),y=zy(G.ship.y),u=1-(ABIL_ST.on-G.t)/(ABIL.yacht.dur*60);
+    ctx.save();ctx.globalCompositeOperation="lighter";
+    for(const k of [0,.5]){const uu=(u+k)%1;ctx.strokeStyle="rgba(255,190,110,"+(.6*(1-uu)).toFixed(2)+")";ctx.lineWidth=2;
+      ctx.beginPath();ctx.arc(x,y,20+uu*260,0,TAU);ctx.stroke();}
+    ctx.restore();
+  }
+  if(abilOn("courier")&&ABIL_ST.crate){   /* СБРОС: ящик остаётся там, где выброшен */
+    const x=zx(ABIL_ST.crate.x),y=zy(ABIL_ST.crate.y),s=shipZ(G.zoom);
+    ctx.save();ctx.translate(x,y);ctx.rotate(ABIL_ST.crate.a+G.t*.01);ctx.scale(s,s);
+    ctx.fillStyle="#6a5a3c";ctx.fillRect(-6,-5,12,10);ctx.strokeStyle="rgba(0,0,0,.5)";ctx.lineWidth=1;ctx.strokeRect(-6,-5,12,10);
+    ctx.strokeStyle="rgba(255,214,150,.7)";ctx.beginPath();ctx.moveTo(-6,0);ctx.lineTo(6,0);ctx.moveTo(0,-5);ctx.lineTo(0,5);ctx.stroke();
+    ctx.restore();
+  }
   if(ABIL_ST.k==="miner"&&abilOn("miner")&&ABIL_ST.beam){
     ctx.save();ctx.globalCompositeOperation="lighter";ctx.strokeStyle="rgba(255,190,110,.85)";ctx.lineWidth=3;
     ctx.beginPath();ctx.moveTo(zx(G.ship.x),zy(G.ship.y));ctx.lineTo(zx(ABIL_ST.beam.x),zy(ABIL_ST.beam.y));ctx.stroke();ctx.restore();

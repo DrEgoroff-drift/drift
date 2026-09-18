@@ -175,10 +175,17 @@ job (the phone milestone), but no fix may add raster cost without a number.
   The map mark is a glyph per giant (moon, slab, pill, grid, dock bracket, peaks, masts). Left:
   the ruler in the frame, docking/visiting — those are M464's open tails, not design.
 - [ ] **D25 Paper and stamps** (M503/M505/M509/M513): the ПЛАН on the sign, the passport page in КНИЖКА, the recall letter, the transit plate stencilled on the flank.
-- [ ] **D24 Railway life** (M499–M508): the vestibule's new rows are plain buttons — a parcel tag, a pass card with punched rides, the passenger's silhouette, the подстаканник, the seal drawn on the hold.
+- [~] **D24 Railway life — rows done 18.09 on the S23.** The parcel is a paper tag with a hole
+  (dashed edge, ochre), the pass a card with a punched row, the passenger a phosphor silhouette
+  before the line. Left: the подстаканник for the tea row, the seal drawn on the hold in flight.
 - [ ] **D23 Album** (P13): the lightbox is a dark sheet with chips — a real photo-album page (corners, paper), filter previews as thumbnails, the saved PNG's caption band typeset properly.
 - [ ] **D22 Rented core** (M488): the HQ rows are plain — the Хай-Фронт core as a glossy card with the tariff table, the advert lines styled as adverts in the manager log.
-- [ ] **D21 Special systems** (M484): the rim arc is a thin conic ring — a proper charge ring, an ability glyph on the pad while ready, the effects (afterburner flame for ФОРСАЖ, the crate for СБРОС, the cutter beam, the salvo flash, the searchlight).
+- [~] **D21 Special systems — done 18.09 on the S23 except two effects.** The charge ring is 4 px
+  with a bright head at the arc's end; when charged the pad carries «ДОЛГОЕ · ФОРСАЖ» above it (it
+  dims with the pad's own `.off` opacity — acceptable, reads on a dark sky). Effects: ФОРСАЖ
+  lengthens the plume ×1.7, СБРОС leaves a crate where it was thrown, СИРЕНА sends two rings; the
+  cutter beam and the searchlight cone were already drawn. Left: the salvo flash (ЗАЛП fires the
+  guns, which flash themselves) — judged enough; БАЛЛАСТ has no picture (it is a number).
 - [ ] **D20 Барахолка** (M463): hulks are flat rectangles with triangle awnings — real moored hulls (fleet art), canvas that sags, lamp strings that swing; the stall window as a table of goods, not a list.
 - [ ] **D19 Подписка** (M487): the second button and the honest line are plain text; a «ЗАБЛОКИРОВАНО» seal on the instrument face, the tariff-updated letter.
 - [ ] **D18 Scars** (M482): drawn where they are on the silhouette — a soot patch over a burnt cell, a skewed mount, a drip trail from the tank; the КОРПУС ПОМНИТ rows.

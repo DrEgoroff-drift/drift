@@ -483,7 +483,7 @@ function trailStep(dt,thrusting,turning,braking,idle){
   const lvl=G.mods.engine|0;
   /* длина хвоста: тяга корпуса × модуль двигателя × характер класса.
      Ниже единицы не опускаем — у «Мамонта» шлейф короткий, но он есть */
-  const span=(.45+st.thr*.5)*(1+lvl*.28)*trailChar(G.shipId).len*idleK;
+  const span=(.45+st.thr*.5)*(1+lvl*.28)*trailChar(G.shipId).len*idleK*((typeof abilOn==="function"&&abilOn("scout"))?1.7:1);   /* ФОРСАЖ — факел длиннее (D21) */
   /* ── номер очереди ──
      Лента соединяет подряд идущие точки одного сопла, и до сих пор ей было
      всё равно, был ли между ними перерыв. Отпустил тягу, отлетел, дал снова —
