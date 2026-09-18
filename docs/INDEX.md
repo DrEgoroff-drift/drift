@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 558 · символов верхнего уровня: 5411
+Файлов: 558 · символов верхнего уровня: 5412
 
 ## СИМВОЛЫ
 
@@ -1300,7 +1300,8 @@ doomTick                     src/12v-doom.js:137-167
 doorsShut                    src/11ar-doors.js:27-31
 draftAll                     src/27jb-kb.js:24
 draftOf                      src/27jb-kb.js:26-42
-draftSave                    src/27jb-kb.js:43-46
+draftSave                    src/27jb-kb.js:43-47
+draftTowerAt                 src/27jb-kb.js:49-54
 drawAccel                    src/20aa-poi-shapes.js:143-166
 drawAccountShelf             src/12w-survey.js:99-115
 drawAllies                   src/12a-crew.js:678-695
@@ -2023,7 +2024,7 @@ GUN_NAMED_BY_ID              src/05b-guns.js:163
 GUN_NICK                     src/05b-guns.js:107
 GUN_RANGE0                   src/05c-arms.js:67
 gunAimTick                   src/05c-arms.js:174-188
-gunBarrelsDraw               src/05c-arms.js:255-287
+gunBarrelsDraw               src/05c-arms.js:255-290
 gunFactoryOf                 src/05b-guns.js:171
 gunFamilyApply               src/05c-arms.js:108-139
 gunFamilyKeyOf               src/05b-guns.js:170
@@ -2041,7 +2042,7 @@ gunsInGroup                  src/05c-arms.js:225-228
 gunSpec                      src/05c-arms.js:72-76
 gunSpecMake                  src/05c-arms.js:77-102
 gunSpecs                     src/05c-arms.js:207-213
-gunTotals                    src/05c-arms.js:288-302
+gunTotals                    src/05c-arms.js:291-305
 H_SILENT                     tests/91zzzzzzz-hands.js:39-41
 h01                          src/01-core.js:28
 HAIL_HOLD                    src/12ar-hail.js:20
@@ -2528,15 +2529,15 @@ jump                         src/18-mode-map.js:527-534
 jumpToBase                   src/21a-mode-base.js:384-401
 KB                           src/27jb-kb.js:23
 KB_RULE                      src/27jb-kb.js:14-22
-kbClose                      src/27jb-kb.js:75
-kbDone                       src/27jb-kb.js:121-129
-kbDraw                       src/27jb-kb.js:131-155
-kbNumbers                    src/27jb-kb.js:63-67
-kbOpen                       src/27jb-kb.js:69-74
-kbPlace                      src/27jb-kb.js:49-62
-kbRender                     src/27jb-kb.js:76-102
-kbRule                       src/27jb-kb.js:47
-kbTap                        src/27jb-kb.js:103-120
+kbClose                      src/27jb-kb.js:83
+kbDone                       src/27jb-kb.js:129-137
+kbDraw                       src/27jb-kb.js:139-163
+kbNumbers                    src/27jb-kb.js:71-75
+kbOpen                       src/27jb-kb.js:77-82
+kbPlace                      src/27jb-kb.js:57-70
+kbRender                     src/27jb-kb.js:84-110
+kbRule                       src/27jb-kb.js:55
+kbTap                        src/27jb-kb.js:111-128
 KEEP_DARK_AFTER              src/11k-keepers.js:48
 KEEP_HABIT                   src/11k-keepers.js:35-45
 KEEP_LAST                    src/11k-keepers.js:84
@@ -3063,14 +3064,14 @@ MODS                         src/04-mods.js:2-13
 modStatWith                  src/26b-ui-station-work.js:21-24
 modWork                      src/26b-ui-station-work.js:20
 modWorkRun                   src/26b-ui-station-work.js:35-43
-MOUNT_CACHE                  src/05d-mounts.js:25
-MOUNT_KINDS                  src/05d-mounts.js:21-24
+MOUNT_CACHE                  src/05d-mounts.js:28
+MOUNT_KINDS                  src/05d-mounts.js:21-27
 MOUNT_SIZE_RU                src/05d-mounts.js:20
 MOUNT_SIZES                  src/05d-mounts.js:19
-mountAt                      src/05d-mounts.js:43-47
-mountsOf                     src/05d-mounts.js:26-42
-mountTakes                   src/05d-mounts.js:64-69
-mountWhyNot                  src/05d-mounts.js:71-77
+mountAt                      src/05d-mounts.js:46-54
+mountsOf                     src/05d-mounts.js:29-45
+mountTakes                   src/05d-mounts.js:71-76
+mountWhyNot                  src/05d-mounts.js:78-84
 mouseWalkAt                  src/15-input.js:432-461
 msgHeld                      src/08-state.js:387
 MSL_ARM                      src/16b-missile.js:20
@@ -3462,7 +3463,7 @@ partMaker                    src/05-parts.js:139
 partMakerRu                  src/05-parts.js:140-143
 partSealed                   src/05e-clearance.js:80
 partSeq                      src/05-parts.js:363
-partSize                     src/05d-mounts.js:52-61
+partSize                     src/05d-mounts.js:59-68
 parWin                       src/12y-parrot-face.js:48
 passAll                      src/11p-pass.js:19
 passAtShip                   src/11p-pass.js:47
@@ -3575,7 +3576,7 @@ placeX                       src/11v-places.js:38
 PLAN_CACHE                   src/05e-plan.js:20
 PLAN_COL                     src/05e-plan.js:131
 PLAN_ETHER                   src/11r-plan.js:20-26
-PLAN_F                       src/27jb-kb.js:163
+PLAN_F                       src/27jb-kb.js:171
 PLAN_ITEM_COL                src/05e-plan.js:132
 PLAN_WANT                    src/05e-plan.js:78
 planAll                      src/11r-plan.js:27
@@ -3627,7 +3628,7 @@ planetSunRot                 src/07-planet.js:329-333
 planetTakeLoad               src/12n-planet.js:126-143
 planetTick                   src/12n-planet.js:44-54
 planetWetAt                  src/07a-terrain.js:56-60
-planFactors                  src/27jb-kb.js:164-175
+planFactors                  src/27jb-kb.js:172-183
 planFoot                     src/05e-plan.js:73-76
 planGroundLine               src/11r-plan.js:47-52
 planIsCore                   src/11r-plan.js:41
@@ -4546,7 +4547,7 @@ SIGN_HOLD                    src/21-mode-surface.js:198
 siteTestOpen                 tests/91x-hold-site.js:11-18
 siteTestStation              tests/91x-hold-site.js:2-9
 sixthGone                    src/12k-stories-d.js:77
-sizeIdx                      src/05d-mounts.js:62
+sizeIdx                      src/05d-mounts.js:69
 SKIPPED_NODE                 tests/90-harness.js:87
 SKIPPED_PROBE                tests/90-harness.js:59
 SKIPPED_SKIP                 tests/90-harness.js:65
@@ -5486,7 +5487,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/05b-instr-kit.js · 10 КБ
   · приборы — это товар:1
 
-## src/05c-arms.js · 19 КБ
+## src/05c-arms.js · 20 КБ
   · орудие в семи числах, щит в трёх повадках (M362, §2 §4):1
 
 ## src/05d-mounts.js · 5 КБ
@@ -6472,7 +6473,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/27j-ui-opis.js · 60 КБ
   · ОПИСЬ: один стол для всего, что на тебе и в трюме (M341):1
 
-## src/27jb-kb.js · 11 КБ
+## src/27jb-kb.js · 12 КБ
   · КБ: редактор чертежа, синька (M477, DESIGN-shipyard §3, review §2.2):1
 
 ## src/27jb-ui-got.js · 4 КБ
@@ -7073,7 +7074,7 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## tests/91zzzzk4-rail.js · 4 КБ
 
-## tests/91zzzzk5-plan.js · 6 КБ
+## tests/91zzzzk5-plan.js · 7 КБ
 
 ## tests/91zzzzl-maphold.js · 5 КБ
   · автотесты: владения на карте (M348):1

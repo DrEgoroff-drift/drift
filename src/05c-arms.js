@@ -195,7 +195,7 @@ function gunOnMount(g,m){
   const M=MOUNT_KINDS[m.mount]||MOUNT_KINDS.turret;
   if(M.cone===1&&M.dmg===1)return g;
   const out=Object.assign({},g);
-  out.cone=+(g.cone*M.cone).toFixed(3);
+  out.cone=M.cone?+(g.cone*M.cone).toFixed(3):Math.PI;   /* башня — круг целиком */
   out.dmg=g.dmg*M.dmg;
   out.mount=m.mount;
   return out;
@@ -280,7 +280,10 @@ function gunBarrelsDraw(guns,shipA){
     ctx.beginPath();ctx.moveTo(.5,-w*.62);ctx.lineTo(len-.4,-w*.42);ctx.stroke();
     /* жёсткая сидит в набор приливом, турель стоит на тумбе */
     ctx.fillStyle=m.mount==="fix"?"rgba(20,24,30,.95)":"rgba(52,60,70,.95)";
-    ctx.beginPath();ctx.arc(0,0,m.mount==="fix"?w*.9:w*1.35,0,TAU);ctx.fill();
+    ctx.beginPath();ctx.arc(0,0,m.mount==="fix"?w*.9:(m.mount==="tower"?w*2.1:w*1.35),0,TAU);ctx.fill();
+    /* башня (M479): круглый погон на спине с крестом — снаряжение читается силуэтом */
+    if(m.mount==="tower"){ctx.strokeStyle="rgba(214,224,236,.55)";ctx.lineWidth=.4;ctx.stroke();
+      ctx.beginPath();ctx.moveTo(-w*1.4,0);ctx.lineTo(w*1.4,0);ctx.moveTo(0,-w*1.4);ctx.lineTo(0,w*1.4);ctx.stroke();}
     ctx.restore();
   }
   ctx.restore();

@@ -11175,3 +11175,8 @@ plausibly reach.
   trap's energy draw, the countdown spoken in the hold, detonation below 20 %). **M469 Eaters** —
   reactor/armour/shield/instrument densities, доводка by нейтронная крошка, greenhouses and дачники,
   jewellers, the luxury counter, the navies' buy.
+
+- [ ] **[design owed] M479 БАШНЯ, exposure, sight.** The spine mount: 360°, costs its cell (no decks now, so one
+  cell), drawn in flight as a round turret on the back — the loadout read by silhouette; rim parts
+  take their side's wear (`12s-wear`) when hit from that side (war §4's ×1.6 from behind now also
+  means «engines take it»); instruments count only forward.

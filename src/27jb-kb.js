@@ -17,7 +17,7 @@ const KB_RULE={
   core:{ok:q=>q.kind!=="side"&&q.kind!=="nose",no:"реактор у борта не ставят"},
   m_weapon:{ok:q=>q.kind!=="side"&&q.kind!=="nose",no:"реактор у борта не ставят"},
   util:{ok:q=>q.nose3,no:"приборы видят из носовой трети"},
-  gun:{ok:q=>q.kind==="nose"||q.kind==="side",no:"орудие — на обшивку"},
+  gun:{ok:q=>q.kind==="nose"||q.kind==="side"||q.kind==="spine",no:"орудие — на обшивку или на хребет (башня)"},
   m_armor:{ok:q=>q.kind==="side"||q.kind==="nose",no:"броня — по обшивке"}
 };
 const KB={sel:null,msg:"",id:null};
@@ -43,6 +43,14 @@ function draftOf(id){
 function draftSave(id,d){
   const it={};for(const x of d.items)it[x.key]=x.cells.map(q=>[q.i,q.j]);
   draftAll()[id]={it,hold:d.hold.map(q=>[q.i,q.j])};
+  if(typeof GUN_LIST!=="undefined")GUN_LIST=null;   /* подвес мог стать башней (M479) */
+}
+/* орудие этого слота стоит на хребте? — тогда это башня: {x,y} клетки в координатах корпуса */
+function draftTowerAt(id,slot){
+  const D=G.draft&&G.draft[id],c=D&&D.it&&D.it["p"+slot];
+  if(!c||!c.length)return null;
+  const P=planOf(id),q=P.cells.find(x=>x.i===c[0][0]&&x.j===c[0][1]);
+  return q&&q.kind==="spine"?{x:q.x,y:q.y}:null;
 }
 function kbRule(it){return KB_RULE[(it.what==="mod"?"m_":"")+it.kind]||null;}
 /* положить вещь якорем в клетку q: остальные клетки — ближайшие свободные, где правило пускает */

@@ -31,7 +31,7 @@ TEST_SUITES.push(()=>suite("КБ: правила места, трюм кисть
   ok(eng&&gun,"в лотке есть мотор и орудие");
   const deck=d.P.cells.find(q=>q.kind==="deck");
   eq(kbPlace(d,eng,deck),"двигатели — только в кормовой ряд","мотор на палубу — отказ одной строкой");
-  if(deck)eq(kbPlace(d,gun,deck),"орудие — на обшивку","орудие внутрь — отказ");
+  if(deck)eq(kbPlace(d,gun,deck),"орудие — на обшивку или на хребет (башня)","орудие на палубу — отказ");
   const util=d.items.find(x=>x.kind==="util"),aft=d.P.cells.find(q=>q.kind==="deck"&&!q.nose3);
   if(util&&aft)eq(kbPlace(d,util,aft),"приборы видят из носовой трети","прибор в корму — отказ");
   /* трюм кистью: свободная клетка палубы — да/нет */
@@ -74,4 +74,22 @@ TEST_SUITES.push(()=>suite("числа от чертежа: неподвижна
   const F=planFactors();ok(F.mass>=.8&&F.mass<=1.1,"масса зажата .8…1.1");
   G.draft={};G.fit[id]={};
   eq(stat().cargoMax,stat().cargoMax,"без чертежа числа стабильны");
+}));
+TEST_SUITES.push(()=>suite("башня: орудие на хребте стреляет кругом",()=>{
+  resetWorld();
+  const id=G.shipId,si=slotsOf(id).indexOf("gun");
+  G.draft={};
+  const m0=mountAt(id,si);ok(m0&&m0.mount!=="tower","без чертежа — обычный подвес");
+  const d=draftOf(id);
+  /* положить орудие на хребет, если есть такая клетка и орудие стоит */
+  G.fit[id]={};G.fit[id][si]="t";const d2=draftOf(id),gun=d2.items.find(x=>x.kind==="gun");
+  const sp=d2.P.cells.find(q=>q.kind==="spine");
+  ok(!!(gun&&sp),"у стартового корабля есть орудие и хребет");
+  if(gun&&sp){
+    eq(kbPlace(d2,gun,sp),"","орудие на хребет — можно");
+    draftSave(id,d2);
+    const m=mountAt(id,si);eq(m&&m.mount,"tower","это башня");
+    eq(gunOnMount({cone:.3,dmg:10},m).cone,Math.PI,"конус — круг целиком");
+  }
+  G.draft={};G.fit[id]={};
 }));

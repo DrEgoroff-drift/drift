@@ -20,7 +20,10 @@ const MOUNT_SIZES=["L","M","H"];
 const MOUNT_SIZE_RU={L:"лёгкий",M:"средний",H:"тяжёлый"};
 const MOUNT_KINDS={
   fix:   {ru:"жёсткая", sh:"Ж", cone:.5,  dmg:1.25, note:"смотрит по носу: конус вдвое уже, урон выше"},
-  turret:{ru:"турель",  sh:"Т", cone:1,   dmg:1,    note:"ходит в своём конусе целиком"}
+  turret:{ru:"турель",  sh:"Т", cone:1,   dmg:1,    note:"ходит в своём конусе целиком"},
+  /* башня (M479): орудие, поставленное в КБ на хребет, — круг целиком; цена —
+     клетка хребта, где мог бы быть трюм, и урон чуть ниже (погон длинный) */
+  tower: {ru:"башня",   sh:"Б", cone:0,   dmg:.9,   note:"на хребте: стреляет во все стороны"}
 };
 const MOUNT_CACHE={};
 function mountsOf(id){
@@ -42,7 +45,11 @@ function mountsOf(id){
 }
 function mountAt(id,slot){
   const m=mountsOf(id);
-  for(const x of m)if(x.i===slot)return x;
+  for(const x of m)if(x.i===slot){
+    /* чертёж (M479): орудие на хребте — башня, и стоит оно там, где его клетка */
+    if(typeof draftTowerAt==="function"){const t=draftTowerAt(id,slot);if(t)return {...x,mount:"tower",x:t.x,y:t.y};}
+    return x;
+  }
   return null;
 }
 /* ── размер самой части ──
