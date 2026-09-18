@@ -173,7 +173,7 @@ function helmDrawSticks(){
       const f=c?clamp(c.vp/Math.max(q.k,.08),0,1):0;
       if(f>.02){
         const fx=q.x0+(hx-q.x0)*f,fy=q.y0+(hy-q.y0)*f;
-        ctx.globalAlpha=.44*a;ctx.fillStyle="rgb("+col+")";
+        ctx.globalAlpha=.32*a;ctx.fillStyle="rgb("+col+")";   /* было .44: на чёрном лента читалась сплошным стаканом (D2, 18.09) */
         helmBandPath(q.x0,q.y0,fx,fy,HELM_BAND0,HELM_BAND0+(w1-HELM_BAND0)*f);ctx.fill();
       }
       /* голова — шеврон, а не кружок под подушечкой */

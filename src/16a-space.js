@@ -517,12 +517,20 @@ function drawStarSingle(ox,oy,R,col,heat){
     const gg=ctx.createLinearGradient(0,0,Math.cos(a)*len,Math.sin(a)*len);
     gg.addColorStop(0,"rgba("+c.join(",")+",.22)");
     gg.addColorStop(1,"rgba("+c.join(",")+",0)");
+    /* оперение (D1, 18.09): один клин с ровной кромкой на телефоне у гиганта
+       читался наклеенной бумажной полоской — на ×1 луч в тысячу пикселей
+       с резким краем. Три вложенных клина всё уже и ярче к оси: край
+       растворяется, ось остаётся. Стоимость — ещё восемь тонких заливок */
     ctx.fillStyle=gg;
-    ctx.beginPath();
-    ctx.moveTo(Math.cos(a+.045)*R*.4,Math.sin(a+.045)*R*.4);
-    ctx.lineTo(Math.cos(a)*len,Math.sin(a)*len);
-    ctx.lineTo(Math.cos(a-.045)*R*.4,Math.sin(a-.045)*R*.4);
-    ctx.closePath();ctx.fill();
+    for(const [hw,ga] of [[.11,.28],[.07,.4],[.04,1]]){
+      ctx.globalAlpha=ga;
+      ctx.beginPath();
+      ctx.moveTo(Math.cos(a+hw)*R*.4,Math.sin(a+hw)*R*.4);
+      ctx.lineTo(Math.cos(a)*len,Math.sin(a)*len);
+      ctx.lineTo(Math.cos(a-hw)*R*.4,Math.sin(a-hw)*R*.4);
+      ctx.closePath();ctx.fill();
+    }
+    ctx.globalAlpha=1;
   }
   /* ореол вокруг ядра: тонкое кольцо читалось резкой окружностью, поэтому оно
      широкое и почти прозрачное — так это гало, а не обруч.

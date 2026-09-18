@@ -393,7 +393,8 @@ TEST_SUITES.push(()=>suite("кильватер: длина от скорости
   };
   ok(run(0,60)===0&&WAKE.length===0,"на месте кильватера нет");
   const slow=run(2,400),fast=run(8,400);
-  ok(fast>1500,"на крейсерской хвост длинный ("+Math.round(fast)+" ед.)");
+  /* D2 (18.09): жизнь 120 кадров на крейсерской — хвост на ×1 гаснет за полэкрана телефона, а не идёт до HUD */
+  ok(fast>700&&fast<1400,"на крейсерской хвост длинный, но не до края ("+Math.round(fast)+" ед.)");
   ok(fast>slow*3,"и растёт со скоростью: "+Math.round(slow)+" → "+Math.round(fast));
   ok(WAKE.length<=WAKE_MAX,"потолок точек держится ("+WAKE.length+")");
   const tips=wakeTips(hullOf(G.shipId));

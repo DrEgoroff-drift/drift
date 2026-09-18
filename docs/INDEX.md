@@ -1473,10 +1473,10 @@ drawSkyLayer                 src/19-mode-landing.js:171-269
 drawSpa                      src/29i-spa-draw.js:41-486
 drawSpaceDust                src/16a-space.js:275-308
 drawStarBody                 src/16a-space.js:448-464
-drawStarHole                 src/16a-space.js:568-598
-drawStarNeutron              src/16a-space.js:541-565
+drawStarHole                 src/16a-space.js:576-606
+drawStarNeutron              src/16a-space.js:549-573
 drawStars                    src/16-flight.js:28-72
-drawStarSingle               src/16a-space.js:465-539
+drawStarSingle               src/16a-space.js:465-547
 drawStation                  src/17c-system-draw.js:438-502
 drawStationBody              src/17c-system-draw.js:174-380
 drawStationMods              src/17a-station-mod.js:214-217
@@ -1501,8 +1501,8 @@ drawTemple                   src/20aa-poi-shapes.js:50-89
 drawThingIcon                src/27i-ui-table.js:400-436
 drawTierTrim                 src/03b-hull-paint.js:73-166
 drawTiles                    src/18c-chunks.js:144-151
-drawTrail                    src/16-flight.js:554-642
-drawWake                     src/16-flight.js:393-460
+drawTrail                    src/16-flight.js:562-650
+drawWake                     src/16-flight.js:393-462
 drawWallPaper                src/11ae-concert.js:39-71
 drawWanderer                 src/12v-wander.js:175-318
 drawWanderMap                src/12v-wander.js:159-173
@@ -2252,7 +2252,7 @@ HELM_TAKE_MS                 src/15a-helm.js:81
 HELM_THR                     src/15a-helm.js:74
 HELM_TRAIL                   src/15a-helm.js:113
 HELM_TRAIL_MAX               src/15a-helm.js:115
-helmApply                    src/15a-helm.js:449-543
+helmApply                    src/15a-helm.js:449-547
 helmBandPath                 src/15b-helm-draw.js:135-143
 helmCamOff                   src/15b-helm-draw.js:120-133
 helmCanvasXY                 src/15a-helm.js:152
@@ -5279,7 +5279,7 @@ TRAIL_LIFE                   src/16-flight.js:302
 TRAIL_TINT                   src/16-flight.js:262
 trailBurst                   src/16-flight.js:240
 trailChar                    src/16-flight.js:255-261
-trailStep                    src/16-flight.js:461-553
+trailStep                    src/16-flight.js:463-561
 trailTint                    src/16-flight.js:267-283
 TRAINEE_LINES                src/11ac-trainee.js:14-18
 TRAINEE_NAMES                src/11ac-trainee.js:13
@@ -6311,14 +6311,14 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/15d-domread.js · 3 КБ
   · сторож чтений вёрстки: ?domread:1
 
-## src/16-flight.js · 44 КБ
+## src/16-flight.js · 45 КБ
   · фон:1
   · автопилот:120
   · шлейф двигателей и струи ориентации:218
   · кильватер: хвосты от скорости, а не от сопла:284
   · нить кильватера — ступенями спада, а не отрезками (0.2):361
 
-## src/16a-space.js · 38 КБ
+## src/16a-space.js · 39 КБ
   · облик системы:1
 
 ## src/16a0-glow.js · 3 КБ
@@ -6891,7 +6891,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/90d-selectors.js · 4 КБ
   · селекторы: заглушка DOM отвечает, как браузер:1
 
-## tests/91a-flight.js · 23 КБ
+## tests/91a-flight.js · 24 КБ
   · автотесты: наборы:1
   · первая минута: цель, которую нельзя потерять:244
   · M234: ранец — запас, а не декорация:308

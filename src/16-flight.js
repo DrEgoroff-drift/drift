@@ -297,7 +297,7 @@ function trailTint(id,lvl){
    Кромки считаются один раз и кэшируются на корпусе (`h.wakeTips`). */
 const WAKE=[],WAKE_MAX=2000,WAKE_TIPS=3;
 /* жизнь точки кильватера в кадрах: на малом ходу и прибавка к крейсерской — это и есть длина хвоста */
-const WAKE_LIFE={lo:60,hi:200};
+const WAKE_LIFE={lo:40,hi:80};   /* D2 (18.09): на телефоне ×1 нити шли до самого HUD — линейки; яркая треть теперь ~200 px */
 /* жизнь точки шлейфа из сопел в кадрах на единицу его длины (span) — длина горячего хвоста */
 const TRAIL_LIFE={k:40,fall:2};   /* fall — степень спада яркости к хвосту */
 let wakeBurst=0,wakeOn=false;
@@ -423,7 +423,9 @@ function drawWake(zx,zy,Z){
       if(c){x1=(bx+zx(c.x))*.5;y1=(by+zy(c.y))*.5;}else{x1=bx;y1=by;}
       if((x0<-60&&x1<-60)||(x0>W+60&&x1>W+60)||(y0<-60&&y1<-60)||(y0>H+60&&y1>H+60))continue;
       const u=clamp((a.life/a.max+b2.life/b2.max)*.5,0,1),kk=(a.k+b2.k)*.5;
-      const f1=u*u*.08+u*u*u*u*.10, f2=u*u*u*.26+u*u*u*u*u*u*.30;
+      /* ядро гаснет к половине жизни (D2, 18.09): с кубом нить на ×1 держала
+         яркость до края экрана и читалась линейкой; ореол живёт дольше ядра */
+      const u4=u*u*u*u, f1=u*u*.08+u4*.10, f2=u4*.22+u4*u4*.34;
       /* ведро — по ядру: именно оно читается как рисунок нити, ореол широк
          и мягок. Доля kk сокращается — она одна на всю дорожку */
       let b=((u+f2/WAKE_A2MAX)*.5*WAKE_BUCK)|0;if(b>=WAKE_BUCK)b=WAKE_BUCK-1;if(b<0)b=0;
@@ -458,7 +460,12 @@ function drawWake(zx,zy,Z){
   }
   ctx.restore();
 }
-function trailStep(dt,thrusting,turning,braking){
+function trailStep(dt,thrusting,turning,braking,idle){
+  /* поддержание (D2, 18.09): помощь держит ход, маршевый в нуле — сопла тлеют
+     слабым ровным факелом: короче и тоньше, той же лентой и той же очередью,
+     чтобы разгон переходил в крейсерскую без шва */
+  const idleK=(!thrusting&&idle)?.42:1;
+  thrusting=thrusting||!!idle;
   wakeStep(dt);   /* кильватер живёт в том же кадре, что и шлейф */
   const sh=G.ship,h=hullOf(G.shipId),st=stat();
   for(let i=TRAIL.length-1;i>=0;i--){
@@ -476,7 +483,7 @@ function trailStep(dt,thrusting,turning,braking){
   const lvl=G.mods.engine|0;
   /* длина хвоста: тяга корпуса × модуль двигателя × характер класса.
      Ниже единицы не опускаем — у «Мамонта» шлейф короткий, но он есть */
-  const span=(.45+st.thr*.5)*(1+lvl*.28)*trailChar(G.shipId).len;
+  const span=(.45+st.thr*.5)*(1+lvl*.28)*trailChar(G.shipId).len*idleK;
   /* ── номер очереди ──
      Лента соединяет подряд идущие точки одного сопла, и до сих пор ей было
      всё равно, был ли между ними перерыв. Отпустил тягу, отлетел, дал снова —
@@ -513,10 +520,11 @@ function trailStep(dt,thrusting,turning,braking){
          струя. «Клинок» страдал сильнее всех: у него и скорость выше, и лента
          длиннее — обе величины растут от тяги. */
       const bx=ex-sh.vx*dt*.5, by=ey-sh.vy*dt*.5;
-      TRAIL.push({x:bx,y:by,hot:1,e:i,b:trailBurst,r:e.r*(.54+rndFx()*.08),
+      const er=e.r*(.54+rndFx()*.08)*(idleK<1?.72:1);
+      TRAIL.push({x:bx,y:by,hot:1,e:i,b:trailBurst,r:er,
         max:TRAIL_LIFE.k*span,life:TRAIL_LIFE.k*span-.5,
         vx:-Math.cos(sh.a+spread)*sp, vy:-Math.sin(sh.a+spread)*sp});
-      TRAIL.push({x:ex,y:ey,hot:1,e:i,b:trailBurst,r:e.r*(.54+rndFx()*.08),
+      TRAIL.push({x:ex,y:ey,hot:1,e:i,b:trailBurst,r:er,
         max:TRAIL_LIFE.k*span,life:TRAIL_LIFE.k*span,
         vx:-Math.cos(sh.a+spread)*sp, vy:-Math.sin(sh.a+spread)*sp});
     }

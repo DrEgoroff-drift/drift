@@ -218,7 +218,7 @@ function updateSystem(dt){
   const BK=(typeof makerBank==="function")?makerBank(makerOf(G.shipId)):1;
   sh.bank+=(clamp(rate*13*BK,-.8*BK,.8*BK)-sh.bank)*Math.min(1,.07*dt);
   trailStep(dt,G.fuel>0&&((helm&&helm.main)||apOn),!apOn&&!!helm&&Math.abs(helm.rate)>1e-4,
-    !apOn&&!!helm&&helm.thr&&G.fuel>0);
+    !apOn&&!!helm&&helm.thr&&G.fuel>0,!apOn&&!!helm&&helm.idle);
   }
 
   const d0=Math.hypot(sh.x,sh.y)||1;

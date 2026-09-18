@@ -94,11 +94,20 @@ Remove the item's «[design owed]» marker in its stage when done. Phone cadence
 job (the phone milestone), but no fix may add raster cost without a number.
 
 **Stage 0 — the frame**
-- [ ] **D1 The baked hull and star core.** The step at the baked picture's edge, the star's
-  breathing (core alpha live), nav lights/nozzles over the bake; `G.opts.gfx.hullBake=0` for A/B.
-- [ ] **D2 The tails.** The ribbon's halo (.24, after «как сосиски»), the author's pick of length
-  (frame A–D sent 18.09), the wake's «ruler» rails at ×2.4, the finger trail (0.2 s). Knobs:
-  `TRAIL_LIFE`, `TRAIL_HALO`, `WAKE_LIFE`.
+- [x] **D1 The baked hull and star core — done 18.09 on the S23.** Bake A/B at ×8: no step at the
+  edge, nav lights and nozzles sit on the bake; the core breathes (47 k px change over 5 s). What
+  was ugly was the star's four rays: one hard-edged wedge each, a paper strip a thousand px long
+  by a giant — now three nested wedges (edge .11 rad at .28, axis .04 at 1). Left: the giant's
+  corona washes the whole phone frame one orange (pair 0) — legitimate up close, no rim light on
+  the ship; if it bothers the author, a cool rim on the hull from `lightDir` is the next step.
+- [x] **D2 The tails — done 18.09 on the S23.** Found on the phone: under the finger the main
+  engine fires only while accelerating (135 of 266 frames), at cruise the assist holds speed with
+  thrust at zero and the ship flew with NO plume — towed. Now the helm reports `idle` (assist, no
+  main, speed > ¼ cruise) and `trailStep` keeps a sustaining plume at .42 span, .72 radius, same
+  lane. The wake: `WAKE_LIFE` 60/200 → 40/80 and the core fades by u⁴ — the three rails no longer
+  run into the HUD; the author's length pick (A–D) never came, so this is the Designer's: the
+  bright third ≈ 200 px at ×1. The stick's filled band .44 → .32 (it read as a solid cup on black).
+  Test `кильватер` retuned to 700–1400 units.
 - [ ] **D3 ×1.5 in flight** (switch built, OFF): what it costs the sky (nebula a quarter darker) —
   for the author's call.
 
