@@ -1959,3 +1959,11 @@ body.table u.addr{color:#7a4a20}
   box-shadow:inset 0 0 0 1px rgba(255,255,255,.28),0 1px 2px rgba(0,0,0,.5)}
 #railWin[data-by=ra] .rw-buf::after{content:"";position:absolute;left:33px;top:50%;width:7px;height:10px;transform:translateY(-10%);
   border:2px solid #c9ced6;border-left:0;border-radius:0 5px 5px 0}
+
+/* схема линий на бумаге (M472): лист поверх вестибюля, касание сворачивает */
+#railScheme{display:none;position:fixed;inset:0;z-index:45;background:rgba(0,0,0,.55);align-items:center;justify-content:center;flex-direction:column;gap:6px}
+#railScheme.open{display:flex}
+#railScheme canvas{display:block;border-radius:2px;box-shadow:0 14px 40px rgba(0,0,0,.7),0 0 0 1px rgba(60,40,20,.5);transform:rotate(-1.2deg)}
+#railScheme b{font:600 10px ui-monospace,monospace;letter-spacing:.12em;color:#e9dcc0}
+#railScheme s{text-decoration:none;font:10px ui-monospace,monospace;color:rgba(233,220,192,.6)}
+#railWin .rw-map{margin-top:10px}

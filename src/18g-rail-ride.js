@@ -35,7 +35,7 @@ function drawRailArrive(zx,zy){
 function railRideStart(t){
   const l=t.l,n=l.stops.length,seq=[];
   for(let m=0;m<=t.k;m++){let i=t.i0+t.dir*m;if(l.loop)i=((i%n)+n)%n;seq.push(i);}
-  RAIL_RIDE={l,seq,seg:0,phase:"go",t:0,dur:railSegDur(l,seq,0)*(t.bus?1.6:1),pause:0,express:!!t.express,bus:!!t.bus,t0:G.t,flash:G.t};
+  RAIL_RIDE={l,seq,seg:0,phase:"go",t:0,dur:railSegDur(l,seq,0)*(t.bus?1.6:1),pause:0,express:!!t.express,bus:!!t.bus,t0:G.t,flash:G.t,next:(typeof railNextLeg==="function")?railNextLeg(t):null};
   if(t.bus&&typeof railBusTalk==="function")railBusTalk();   /* водитель маршрутки знает, почему (M510) */
   G.mode="rail";G.ap=null;
   if(typeof socCount==="function")socCount("rides");   /* «Знающие» считают поездки (M512) */
@@ -68,7 +68,14 @@ function updateRail(dt){
     if(typeof cueReset==="function")cueReset();   /* на перегоне выйти нельзя — пульт молчит */
     R.t+=sec;
     if(R.t>=R.dur){R.seg++;R.phase="stop";R.pause=0;R.hold=2;
-      const s=R.l.stops[R.seq[R.seg]],last=R.seg>=R.seq.length-1;
+      const s=R.l.stops[R.seq[R.seg]],last=R.seg>=R.seq.length-1&&!R.next;
+      /* пересадка (M472): конец первой ноги — поезд другой линии, три секунды стоянки */
+      if(R.seg>=R.seq.length-1&&R.next){
+        const nx=R.next;R.next=null;R.l=nx.l;R.seq=nx.seq;R.seg=0;R.hold=3;
+        say("Пересадка · «"+railStopName(s)+"»\nдальше — "+nx.l.ru,150);
+        if(typeof voiceSay==="function")voiceSay(["Станция "+railStopName(s)+".","Пересадка на линию "+nx.l.ru+"."],"disp");
+        R.flash=G.t;return;
+      }
       /* EXPRESS™ проходит мимо: остановки нет, только конечная (M474) */
       if(R.express&&!last){R.phase="go";R.t=0;R.dur=railSegDur(R.l,R.seq,R.seg)*.92;return;}
       /* Хай-Фронт: «обновление установлено» — линия стоит на первой остановке */
@@ -84,7 +91,7 @@ function updateRail(dt){
     return;
   }
   R.pause+=sec;
-  const last=R.seg>=R.seq.length-1;
+  const last=R.seg>=R.seq.length-1&&!R.next;
   if(!last){
     const shown=cue("СТАНЦИЯ «"+railStopName(R.l.stops[R.seq[R.seg]]).toUpperCase()+"»\nДЕЙСТВИЕ — ВЫЙТИ",CUE_ACT);
     if(shown&&actEdge){railExit();return;}

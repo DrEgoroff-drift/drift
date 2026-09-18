@@ -111,6 +111,8 @@ function railDestinations(){
       out.push({l,i0,i1:i,dir,k,dist,to:l.stops[i]});
     }
   }
+  /* через один узел (M472 хвост): после прямых, по цене всего пути */
+  if(typeof railDestinationsVia==="function")return out.concat(railDestinationsVia(out));
   return out;
 }
 function railFare(t){
@@ -148,13 +150,14 @@ function railWinRender(){
     }
     else railDestinations().slice(0,14).forEach((t,i)=>{
       const F=railFare(t);
-      h+="<button class='act rw-go' data-i='"+i+"'>ДО «"+railStopName(t.to).toUpperCase()+"» · "+t.k+" ОСТ. · "+F.fare+" КР"+(F.bag?" + БАГАЖ "+F.bag:"")+"<s>"+t.l.ru+"</s></button>";
+      h+="<button class='act rw-go' data-i='"+i+"'>ДО «"+railStopName(t.to).toUpperCase()+"» · "+t.k+" ОСТ. · "+F.fare+" КР"+(F.bag?" + БАГАЖ "+F.bag:"")+"<s>"+(t.via?"пересадка на «"+railStopName(t.via.at)+"» · "+t.via.l.ru:t.l.ru)+"</s></button>";
       /* Компания: тот же путь экспрессом — без остановок, ×10, реклама под ценой */
       if(typeof railOwner==="function"&&railOwner()==="co"&&t.k>=2)
         h+="<button class='act rw-go' data-i='"+i+"' data-x='1'>EXPRESS™ ДО «"+railStopName(t.to).toUpperCase()+"» · "+(F.fare*RAIL_EXPRESS_MUL)+" КР<s>на три секунды быстрее!</s></button>";
     });
   }
   if(typeof railLifeHtml==="function")h+=railLifeHtml();   /* посылка, проездной, попутчик, пломба (M499–M508) */
+  h+="<button class='act rw-map'>СХЕМА ЛИНИЙ<s>развернуть бумагу</s></button>";
   h+="<div class='rw-sec'>БУФЕТ</div><button class='act rw-buf'>"+(RAIL_BUFFET[by]||RAIL_BUFFET.gt).toUpperCase()+" · 3 КР</button>";
   h+="<button class='act rw-out'>ВЫЙТИ НА ПЕРРОН</button>";
   w.innerHTML=h;w.dataset.by=by||"gt";   /* отделка вестибюля по хозяину (M471, CSS) */
@@ -162,6 +165,7 @@ function railWinRender(){
   const D=railDestinations();
   w.querySelectorAll(".rw-go").forEach(b=>b.onclick=()=>railBuy(D[+b.dataset.i],!!b.dataset.x,!!b.dataset.b));
   w.querySelector(".rw-buf").onclick=railBuffet;
+  const bm=w.querySelector(".rw-map");if(bm)bm.onclick=()=>{if(typeof railSchemeOpen==="function")railSchemeOpen();};
   w.querySelector(".rw-out").onclick=railWinClose;
 }
 function railBuy(t,express,bus){

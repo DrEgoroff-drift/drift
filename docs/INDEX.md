@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 592 · символов верхнего уровня: 5735
+Файлов: 593 · символов верхнего уровня: 5742
 
 ## СИМВОЛЫ
 
@@ -1465,7 +1465,7 @@ drawPOI                      src/20a-poi.js:173-234
 drawPortal                   src/20aa-poi-shapes.js:464-489
 drawPostcard                 src/25g-postcard.js:170-611
 drawRaid                     src/24aa-raid-draw.js:14-655
-drawRail                     src/18g-rail-ride.js:111-149
+drawRail                     src/18g-rail-ride.js:118-156
 drawRailArrive               src/18g-rail-ride.js:31-34
 drawRailMap                  src/18e-rail-net.js:181-204
 drawRing                     src/17c-system-draw.js:4-15
@@ -4041,21 +4041,23 @@ RAIL_RING_OFF                src/18f-rail-station.js:18
 RAIL_RING_RU                 src/18e-rail-net.js:24
 RAIL_RINGS                   src/18e-rail-net.js:23
 RAIL_SALT                    src/18e-rail-net.js:28
+RAIL_VIA_K                   src/18k-rail-scheme.js:12
 railArmAng                   src/18e-rail-net.js:103
 railAt                       src/18e-rail-net.js:112-120
 railBranchAng                src/18e-rail-net.js:51-54
 railBucket                   src/18i-rail-life.js:16
-railBuffet                   src/18f-rail-station.js:180-187
+railBuffet                   src/18f-rail-station.js:184-191
 railBuildLines               src/18e-rail-net.js:55-101
 railBusTalk                  src/18j-rail-rush.js:29-34
-railBuy                      src/18f-rail-station.js:167-179
+railBuy                      src/18f-rail-station.js:171-183
 railCatch                    src/18j-rail-rush.js:17-25
 railClosedWhy                src/18h-rail-powers.js:16-21
 railDeclare                  src/18h-rail-powers.js:23-33
-railDestinations             src/18f-rail-station.js:102-115
+railDestinations             src/18f-rail-station.js:102-117
+railDestinationsVia          src/18k-rail-scheme.js:13-35
 railDocked                   src/18f-rail-station.js:86-93
-railExit                     src/18g-rail-ride.js:98-110
-railFare                     src/18f-rail-station.js:116-122
+railExit                     src/18g-rail-ride.js:105-117
+railFare                     src/18f-rail-station.js:118-124
 railFlash                    src/18g-rail-ride.js:17-30
 railFmt                      src/18f-rail-station.js:98
 railHere                     src/18f-rail-station.js:24-30
@@ -4071,6 +4073,7 @@ railLifeStop                 src/18i-rail-life.js:92-99
 railNearest                  src/18e-rail-net.js:32-42
 railNet                      src/18e-rail-net.js:147-156
 railNetPartial               src/18e-rail-net.js:168-179
+railNextLeg                  src/18k-rail-scheme.js:37-42
 railOwner                    src/18h-rail-powers.js:14
 railOwnerAt                  src/18h-rail-powers.js:39
 railParcelOffer              src/18i-rail-life.js:32-39
@@ -4083,19 +4086,22 @@ railPaxOffer                 src/18i-rail-life.js:50-54
 railPolar                    src/18e-rail-net.js:45-48
 railReady                    src/18f-rail-station.js:23
 railRideStart                src/18g-rail-ride.js:35-45
+railSchemeClose              src/18k-rail-scheme.js:56
+railSchemeDraw               src/18k-rail-scheme.js:57-118
+railSchemeOpen               src/18k-rail-scheme.js:45-55
 railSegDur                   src/18g-rail-ride.js:46-49
 railStation                  src/18e-rail-net.js:158-163
 railStep                     src/18e-rail-net.js:43
 railStopName                 src/18f-rail-station.js:99
 railStopsOf                  src/18e-rail-net.js:122-146
-railTick                     src/18f-rail-station.js:189-194
+railTick                     src/18f-rail-station.js:193-198
 railTrainPos                 src/18g-rail-ride.js:51-63
 railUAt                      src/18e-rail-net.js:105-110
 railWaitNow                  src/18f-rail-station.js:97
-railWinClose                 src/18f-rail-station.js:124
-railWinOpen                  src/18f-rail-station.js:123
-railWinRender                src/18f-rail-station.js:130-166
-railWinShow                  src/18f-rail-station.js:125-129
+railWinClose                 src/18f-rail-station.js:126
+railWinOpen                  src/18f-rail-station.js:125
+railWinRender                src/18f-rail-station.js:132-170
+railWinShow                  src/18f-rail-station.js:127-131
 RALLY_CACHE                  src/12at-vote.js:69
 rallyAt                      src/12at-vote.js:102-106
 rallyJoin                    src/12at-vote.js:94-100
@@ -4589,6 +4595,7 @@ scarPriceMul                 src/05b2-scars.js:27
 scarsOf                      src/05b2-scars.js:20
 scarsRoll                    src/05b2-scars.js:15-19
 scarTick                     src/05b2-scars.js:29-34
+SCHEME_INK                   src/18k-rail-scheme.js:44
 SCK                          src/18c-chunks.js:39
 SCOOP_BAND                   src/19a-mode-scoop.js:15
 SCOOP_PX                     src/19a-mode-scoop.js:16
@@ -5375,7 +5382,7 @@ updateHomeIn                 src/29c-home-in.js:160-200
 updateLanding                src/19-mode-landing.js:68-137
 updateMap                    src/18-mode-map.js:520-533
 updateRaid                   src/24a-mode-raid.js:215-345
-updateRail                   src/18g-rail-ride.js:64-96
+updateRail                   src/18g-rail-ride.js:64-103
 updateScoop                  src/19a-mode-scoop.js:75-176
 updateSpa                    src/29i-spa-draw.js:514-519
 updateSurface                src/21-mode-surface.js:200-657
@@ -6512,7 +6519,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/18f-rail-station.js · 14 КБ
   · станция железной дороги в системе и вестибюль (M471–M472, DESIGN-metro §3):1
 
-## src/18g-rail-ride.js · 10 КБ
+## src/18g-rail-ride.js · 11 КБ
   · поездка: режим rail на карте галактики (M473, DESIGN-metro §4):1
 
 ## src/18h-rail-powers.js · 3 КБ
@@ -6525,6 +6532,9 @@ zooTick                      src/11ad-zoo.js:41-54
   · ажиотаж (M504, PLAN «new mechanics», st. 3):1
   · «успеваете скорым» (M507):13
   · компенсационная маршрутка (M510):26
+
+## src/18k-rail-scheme.js · 8 КБ
+  · пересадка и схема на бумаге (M472 хвост, 18.09):1
 
 ## src/19-mode-landing-ground.js · 25 КБ
   · посадка: разрез грунта:1
@@ -7496,7 +7506,7 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## tests/91zzzzk3-far.js · 7 КБ
 
-## tests/91zzzzk4-rail.js · 10 КБ
+## tests/91zzzzk4-rail.js · 12 КБ
 
 ## tests/91zzzzk5-plan.js · 9 КБ
 

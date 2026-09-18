@@ -141,3 +141,30 @@ TEST_SUITES.push(()=>suite("шесть железных дорог: касса �
   ok(!!(or||co),"на сети есть станции Орднунга или Компании");
   RAIL_WAIT=null;RAIL_DECL="";
 }));
+
+/* ── M472 хвост: пересадка через узел ── */
+TEST_SUITES.push(()=>suite("метро M472: пересадка — билет через узел, поезд меняет линию",()=>{
+  resetWorld();G.credits=5000;
+  const N=railNet();
+  let jk=null;for(const k in N.at)if(N.at[k].length>1){jk=k;break;}
+  ok(!!jk,"в сети есть узел");
+  /* встаём на соседней с узлом остановке одной из его линий */
+  const l=N.byId[N.at[jk][0]],j=l.stops.findIndex(s=>s.sx+","+s.sy===jk);
+  const s0=l.stops[j>0?j-1:j+1];
+  G.sx=s0.sx;G.sy=s0.sy;G.sys=getSystem(G.sx,G.sy);
+  const D=railDestinations(),via=D.filter(t=>t.via);
+  ok(via.length>0,"есть билеты с пересадкой: "+via.length);
+  const t=via[0];
+  ok(N.at[t.via.at.sx+","+t.via.at.sy].length>1,"пересадка на узле");
+  ok(t.k===t.via.k1+t.via.k,"остановок — обе ноги");
+  ok(railFare(t).fare>=railFare(D[0]).fare||t.dist>=D[0].dist,"цена по всему пути");
+  railRideStart(t);
+  ok(RAIL_RIDE&&RAIL_RIDE.next&&RAIL_RIDE.next.l===t.via.l,"вторая нога записана");
+  const l1=RAIL_RIDE.l;
+  let guard=0;while(RAIL_RIDE&&RAIL_RIDE.l===l1&&guard++<5000)updateRail(1);
+  ok(RAIL_RIDE&&RAIL_RIDE.l===t.via.l,"на узле поезд стал другой линией");
+  ok(!RAIL_RIDE.next,"второй пересадки нет");
+  guard=0;while(RAIL_RIDE&&guard++<20000)updateRail(1);
+  ok(!RAIL_RIDE,"доехали");
+  eq(G.sx+","+G.sy,t.to.sx+","+t.to.sy,"и вышли там, куда брали билет");
+}));
