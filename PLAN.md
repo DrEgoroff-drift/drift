@@ -560,7 +560,7 @@ material consequences are the part that does not exist yet — that is what stag
   («транзит просрочен» — a fine, and the plate is drawn crooked). Registered: your flag's number
   replaces the paper plate — the slogan of a ГЛАВТРАССА yard is never touched. Kindness: the
   inspector waves you through once, «до понедельника», and writes nothing down.
-- **M507 «Успеваете скорым»** (st. 3): ДЕЛО reads the timetable — a job with a deadline says which
+- **M507 «Успеваете скорым»** — BUILT 18.09 `railCatch` in `18j-rail-rush` [design owed]: a taken board job's ДЕЛО row adds «успеваете / не успеваете электричкой «L» · отправление через M:SS · k ост.» when a line from here reaches its destination (ride ≈ 25 s a stop). Found on the way: a second `offerCarried` in `11ah-offer` had overridden R5b's, so ДЕЛО wrote «undefined мин» since R5b — R5b's is now `offerCarriedRows`. (st. 3): ДЕЛО reads the timetable — a job with a deadline says which
   train makes it and when it leaves.
 - **M508 Пломба** — BUILT 18.09 [design owed]: Орднунг boarding with cargo seals the hold (`G.railSeal`), `sellCargo` refuses, lifted on exit; pirates' respect not yet. (st. 3, M474 Орднунг): a declared hold is sealed at boarding — nothing sells from it
   until arrival, and pirates at rim stations do not touch a sealed hold (they fear the form).

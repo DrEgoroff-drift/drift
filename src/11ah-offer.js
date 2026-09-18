@@ -164,14 +164,17 @@ function offerVisit(){
 function offerLive(){
   return offersAll().filter(o=>!o.taken&&offerAge(o)<o.ttl);
 }
-/* взятая работа для ДЕЛА (R5b): что, куда и сколько минут осталось */
-function offerCarried(){
+/* взятая работа для ДЕЛА (R5b): что, куда и сколько минут осталось.
+   Своё имя (18.09): второе offerCarried ниже по файлу перекрывало это, и ДЕЛО
+   с R5b писало «undefined мин» — поля name/left были только здесь */
+function offerCarriedRows(){
   const out=[];
   for(const o of offersAll()){
     if(!o.carry||o.done)continue;
     const K=OFFER_KIND[o.kind];if(!K)continue;
     const left=Math.max(0,Math.ceil((offerTtl(o)-offerAge(o))/CEL_DAY));
-    out.push({o,name:K.ru[0].toUpperCase()+K.ru.slice(1),dest:o.to&&o.to.name||"—",named:!!o.named,left});
+    out.push({o,name:K.ru[0].toUpperCase()+K.ru.slice(1),dest:o.to&&o.to.name||"—",named:!!o.named,left,
+      train:(o.to&&typeof railCatch==="function")?railCatch(o.to.sx,o.to.sy,left):null});   /* «успеваете скорым» (M507) */
   }
   return out;
 }

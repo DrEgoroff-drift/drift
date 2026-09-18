@@ -92,11 +92,11 @@ function dealRender(){
 
   /* ── дела с доски (R5b) ── взятая работа живёт не меньше четверти часа, и
      её срок виден здесь, а не только на бумаге в ВЕЩАХ */
-  const carried=(typeof offerCarried==="function")?offerCarried():[];
+  const carried=(typeof offerCarriedRows==="function")?offerCarriedRows():[];
   if(carried.length){
     $dlBody.appendChild(el("div","sec","ДЕЛА С ДОСКИ · "+carried.length));
     for(const c of carried)
-      dealRow(c.name,"на «"+c.dest+"» · "+(c.named?"вас назвали":"взято на доске"),
+      dealRow(c.name,"на «"+c.dest+"» · "+(c.named?"вас назвали":"взято на доске")+(c.train?" · "+c.train:""),
         [c.left+" мин","осталось"],c.left<5?"#f2b25c":"");
   }
 

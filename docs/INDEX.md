@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 584 · символов верхнего уровня: 5631
+Файлов: 584 · символов верхнего уровня: 5632
 
 ## СИМВОЛЫ
 
@@ -3375,21 +3375,21 @@ OFFER_SHIFT                  src/11ah-offer.js:73
 OFFER_TTL                    src/11ah-offer.js:61
 offerAdd                     src/11ah-offer.js:113-127
 offerAge                     src/11ah-offer.js:69
-offerCaravDone               src/11ah-offer.js:347-355
-offerCardTail                src/11ah-offer.js:227-230
-offerCarried                 src/11ah-offer.js:168-177
-offerCarried                 src/11ah-offer.js:277-279
-offerDeliver                 src/11ah-offer.js:257-276
-offerDest                    src/11ah-offer.js:210-222
-offerHere                    src/11ah-offer.js:178-180
-offerLine                    src/11ah-offer.js:283-287
-offerListTaken               src/11ah-offer.js:339-345
+offerCaravDone               src/11ah-offer.js:350-358
+offerCardTail                src/11ah-offer.js:230-233
+offerCarried                 src/11ah-offer.js:280-282
+offerCarriedRows             src/11ah-offer.js:170-180
+offerDeliver                 src/11ah-offer.js:260-279
+offerDest                    src/11ah-offer.js:213-225
+offerHere                    src/11ah-offer.js:181-183
+offerLine                    src/11ah-offer.js:286-290
+offerListTaken               src/11ah-offer.js:342-348
 offerLive                    src/11ah-offer.js:164-166
 offerPay                     src/11ah-offer.js:104-110
 offersAll                    src/11ah-offer.js:75-78
-offerShutLine                src/11ah-offer.js:305-312
-offerTake                    src/11ah-offer.js:236-252
-offerTick                    src/11ah-offer.js:186-205
+offerShutLine                src/11ah-offer.js:308-315
+offerTake                    src/11ah-offer.js:239-255
+offerTick                    src/11ah-offer.js:189-208
 offerTtl                     src/11ah-offer.js:70
 offerVisit                   src/11ah-offer.js:134-163
 ok                           tests/90-harness.js:165-169
@@ -3988,6 +3988,7 @@ railBucket                   src/18i-rail-life.js:16
 railBuffet                   src/18f-rail-station.js:174-180
 railBuildLines               src/18e-rail-net.js:55-101
 railBuy                      src/18f-rail-station.js:162-173
+railCatch                    src/18j-rail-rush.js:17-25
 railClosedWhy                src/18h-rail-powers.js:16-21
 railDeclare                  src/18h-rail-powers.js:23-33
 railDestinations             src/18f-rail-station.js:102-115
@@ -4708,7 +4709,7 @@ shipZ                        src/16-flight.js:238
 shipZoneR                    src/19f-lander.js:14
 SHOT_CLEAN                   src/28-loop.js:356
 SHOVE_V                      src/13a-guns.js:36
-SHUT_LINES                   src/11ah-offer.js:299-304
+SHUT_LINES                   src/11ah-offer.js:302-307
 SIGN_HOLD                    src/21-mode-surface.js:199
 siteTestOpen                 tests/91x-hold-site.js:11-18
 siteTestStation              tests/91x-hold-site.js:2-9
@@ -5807,7 +5808,7 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## src/11ah-offer.js · 24 КБ
   · возможность:1
-  · возможности углубляются экспедицией (M229):314
+  · возможности углубляются экспедицией (M229):317
 
 ## src/11ah-wall.js · 15 КБ
   · стена, которая помнит:1
@@ -6402,8 +6403,9 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/18i-rail-life.js · 9 КБ
   · жизнь на железной дороге (M499–M502, M508; PLAN «new mechanics»):1
 
-## src/18j-rail-rush.js · 1 КБ
+## src/18j-rail-rush.js · 2 КБ
   · ажиотаж (M504, PLAN «new mechanics», st. 3):1
+  · «успеваете скорым» (M507):13
 
 ## src/19-mode-landing-ground.js · 25 КБ
   · посадка: разрез грунта:1
@@ -7370,7 +7372,7 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## tests/91zzzzk5-plan.js · 9 КБ
 
-## tests/91zzzzk6-stapel.js · 22 КБ
+## tests/91zzzzk6-stapel.js · 23 КБ
 
 ## tests/91zzzzl-maphold.js · 5 КБ
   · автотесты: владения на карте (M348):1

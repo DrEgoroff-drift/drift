@@ -313,3 +313,16 @@ TEST_SUITES.push(()=>suite("ажиотаж: ЖИЛА — дополнитель�
   eq(railInterval(sx,sy),I0,"через две смены — как было");
   clockSet(base);G.st=null;
 }));
+TEST_SUITES.push(()=>suite("ДЕЛО: взятая работа с именем и сроком, «успеваете скорым» (M507)",()=>{
+  resetWorld();
+  const N=railNet(),k=Object.keys(N.at).find(k=>{const p=k.split(",").map(Number);return getSystem(p[0],p[1]).station;});
+  const [sx,sy]=k.split(",").map(Number);G.sx=sx;G.sy=sy;G.sys=getSystem(sx,sy);
+  const t=railDestinations()[0];
+  const line=railCatch(t.to.sx,t.to.sy,999);
+  ok(/^успеваете электричкой/.test(line),"до места работы идёт поезд: "+line);
+  ok(/^не успеваете/.test(railCatch(t.to.sx,t.to.sy,0)),"срок вышел — не успеваете");
+  eq(railCatch(9999,9999,10),null,"туда поезда нет — молчит");
+  /* строки ДЕЛА: у взятой работы есть имя и минуты (раньше — undefined) */
+  const rows=offerCarriedRows();ok(Array.isArray(rows),"строки ДЕЛА собираются");
+  ok(typeof offerCarried==="function"&&offerCarried()!==rows,"доска и ДЕЛО — разные функции");
+}));

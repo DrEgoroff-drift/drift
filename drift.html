@@ -12558,14 +12558,17 @@ function offerVisit(){
 function offerLive(){
   return offersAll().filter(o=>!o.taken&&offerAge(o)<o.ttl);
 }
-/* взятая работа для ДЕЛА (R5b): что, куда и сколько минут осталось */
-function offerCarried(){
+/* взятая работа для ДЕЛА (R5b): что, куда и сколько минут осталось.
+   Своё имя (18.09): второе offerCarried ниже по файлу перекрывало это, и ДЕЛО
+   с R5b писало «undefined мин» — поля name/left были только здесь */
+function offerCarriedRows(){
   const out=[];
   for(const o of offersAll()){
     if(!o.carry||o.done)continue;
     const K=OFFER_KIND[o.kind];if(!K)continue;
     const left=Math.max(0,Math.ceil((offerTtl(o)-offerAge(o))/CEL_DAY));
-    out.push({o,name:K.ru[0].toUpperCase()+K.ru.slice(1),dest:o.to&&o.to.name||"—",named:!!o.named,left});
+    out.push({o,name:K.ru[0].toUpperCase()+K.ru.slice(1),dest:o.to&&o.to.name||"—",named:!!o.named,left,
+      train:(o.to&&typeof railCatch==="function")?railCatch(o.to.sx,o.to.sy,left):null});   /* «успеваете скорым» (M507) */
   }
   return out;
 }
@@ -53649,6 +53652,19 @@ function rushStart(sx,sy){
   logAdd("dim","ГЛАВТРАССА: по многочисленным просьбам трудящихся на остановку «"+(getSystem(sx,sy).name||sx+":"+sy)+"» назначен дополнительный поезд");
 }
 function rushFuelMul(){return (G.st&&rushAt(G.sx,G.sy))?1.33:1;}
+/* ══════════════ «успеваете скорым» (M507) ══════════════
+   ДЕЛО читает расписание: если отсюда до места работы идёт поезд, строка
+   говорит какой и когда отправление — и успеваете ли. Только со станции,
+   у которой есть кольцо: расписание висит в вестибюле, а не в воздухе. */
+function railCatch(sx,sy,leftMin){
+  if(typeof railStation!=="function"||typeof railDestinations!=="function")return null;
+  let D;try{if(!railStation(G.sx,G.sy))return null;D=railDestinations();}catch(e){return null;}
+  const t=D.filter(x=>x.to.sx===sx&&x.to.sy===sy).sort((a,b)=>a.k-b.k)[0];
+  if(!t)return null;
+  const wait=railWaitNow(G.sx,G.sy),ride=t.k*25;
+  const ok=leftMin==null||wait+ride<leftMin*60;
+  return (ok?"успеваете":"не успеваете")+" электричкой «"+t.l.ru+"» · отправление через "+railFmt(wait)+" · "+t.k+" ост.";
+}
 
 /* ══════════════ посадка: разрез грунта ══════════════
    Отрезано от `19-mode-landing` 09.09.2026: файл дорос до 50 КБ, и внутри у него
@@ -92010,11 +92026,11 @@ function dealRender(){
 
   /* ── дела с доски (R5b) ── взятая работа живёт не меньше четверти часа, и
      её срок виден здесь, а не только на бумаге в ВЕЩАХ */
-  const carried=(typeof offerCarried==="function")?offerCarried():[];
+  const carried=(typeof offerCarriedRows==="function")?offerCarriedRows():[];
   if(carried.length){
     $dlBody.appendChild(el("div","sec","ДЕЛА С ДОСКИ · "+carried.length));
     for(const c of carried)
-      dealRow(c.name,"на «"+c.dest+"» · "+(c.named?"вас назвали":"взято на доске"),
+      dealRow(c.name,"на «"+c.dest+"» · "+(c.named?"вас назвали":"взято на доске")+(c.train?" · "+c.train:""),
         [c.left+" мин","осталось"],c.left<5?"#f2b25c":"");
   }
 
