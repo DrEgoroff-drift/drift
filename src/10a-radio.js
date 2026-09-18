@@ -95,7 +95,9 @@ const RADIO_PROG_SETS=[
   {A:[0,0,5,5,3,3,4,4],B:[5,5,6,6,0,0,4,4]},
   {A:[0,3,0,4,0,3,6,4],B:[3,3,0,0,5,5,4,4]},
   {A:[0,6,5,6,0,6,5,4],B:[2,2,5,5,3,3,4,4]},        // сползание вниз — Артемьев
-  {A:[0,2,5,4,0,2,3,4],B:[5,3,0,4,5,3,6,4]}
+  {A:[0,2,5,4,0,2,3,4],B:[5,3,0,4,5,3,6,4]},
+  {A:[0,0,3,3,0,0,4,4],B:[5,5,3,3,1,1,4,4]},         // i iv v — простой минор
+  {A:[0,6,0,6,3,5,4,4],B:[2,2,6,6,3,3,4,4]}          // i VII — фригийское качание
 ];
 const RADIO_PROGS={intro:[0,5,0,6],brk:[5,0,5,6],out:[5,6,0,0],
   danger:[0,5,6,0,0,5,6,4],cantina:[0,3,4,0,0,5,3,4]};
@@ -396,7 +398,7 @@ function radioPad(t,key,cd,dur,kind){
     let last=t;
     for(let i=0;i<5;i++){
       const o=c.createOscillator(),g=c.createGain(),p=c.createStereoPanner();
-      o.type="sine";o.frequency.value=midiHz(key+12+radioDeg(cd+[0,2,4,7,9][i]))*(1+(RADIO.r()-.5)*.03);
+      o.type="sine";o.frequency.value=midiHz(key+12+radioDeg(cd+[0,2,4,7,9,6,8][i]))*(1+(RADIO.r()-.5)*.006);   // расстройка в 5 центов, не в четверть тона
       lg.connect(g.gain);p.pan.value=(i/4)*1.4-.7;
       const end=radioEnv(g.gain,t,1.2,.016,dur-.5,1.5);last=Math.max(last,end);
       o.connect(g);g.connect(p);p.connect(RADIO.padIn);o.start(t);o.stop(end+.1);
@@ -405,7 +407,10 @@ function radioPad(t,key,cd,dur,kind){
     return;
   }
   const c=SND.ctx;
-  [0,2,4,7].forEach((iv,i)=>{
+  /* созвучие на каждом такте своё: трезвучие, септаккорд, sus2, add9, квинта с ноной —
+     все из ступеней лада, поэтому в миноре они минорные, во фригийском — фригийские */
+  const VO=[[0,2,4,7],[0,2,4,6],[0,1,4,7],[0,2,4,8],[0,4,7,8],[0,2,6,7]];
+  VO[Math.floor(RADIO.r()*VO.length)].forEach((iv,i)=>{
     t+=i?.04+RADIO.r()*.05:0;                    // голоса вступают вразнобой, а не залпом
     const f=midiHz(key+12+radioDeg(cd+iv)+(kind==="choirhi"?12:0)),g=c.createGain(),p=c.createStereoPanner();
     p.pan.value=-.4+i*.27;
@@ -499,8 +504,8 @@ function radioBass(t,s,key,cd,w,nextCd){
   let nr=radioDeg(nextCd);while(nr-root>6)nr-=12;while(root-nr>6)nr+=12;
   const what=n[1];
   const semi=what==="r"?root:what==="8"?root+12:what==="3"?radioDeg(cd+2):what==="5"?radioDeg(cd+4):
-    what==="7"?radioDeg(cd+6)-12:what==="a"?nr+(nr>root?-1:1):
-    /* w: ступень лада рядом с корнем следующего аккорда */
+    what==="7"?radioDeg(cd+6)-12:
+    /* a/w: подход к корню следующего аккорда соседней ступенью ЛАДА — хроматика фальшивила */
     (nr>root?radioDeg(nextCd-1)-(radioDeg(nextCd)-nr):radioDeg(nextCd+1)-(radioDeg(nextCd)-nr));
   const dur=Math.max(.08,n[2]*radioS16()*.9);
   const lowD=RADIO.mood==="danger"&&what==="r"?-12:0;
@@ -552,13 +557,15 @@ function radioBassVoice(t,midi,dur,acc,pat,s){
 /* фигурация: шестнадцатые по аккорду, восьмые вверх, или «бипы» — случайные высокие
    ноты лада, как у вычислительной машины в кино */
 function radioArp(t,s,key,cd){
+  const key_=key;
   const kind=RADIO.mood==="danger"?"seq16":radioA("arp");
   if(kind==="none")return;
   let d;
   if(kind==="drip"){        // капля: короткий синус с падением высоты, редко
     if(RADIO.r()>.12)return;
     const c=SND.ctx,o=c.createOscillator(),g=c.createGain(),p=c.createStereoPanner();
-    o.type="sine";o.frequency.setValueAtTime(1800+RADIO.r()*900,t);o.frequency.exponentialRampToValueAtTime(500,t+.09);
+    const dh=midiHz(key+48+radioDeg([0,2,4,7][Math.floor(RADIO.r()*4)]));
+    o.type="sine";o.frequency.setValueAtTime(dh*2,t);o.frequency.exponentialRampToValueAtTime(dh,t+.07);
     p.pan.value=RADIO.r()*1.6-.8;
     const end=radioEnv(g.gain,t,.003,.02,.01,.1);
     o.connect(g);g.connect(p);p.connect(RADIO.layers.arp);o.start(t);o.stop(end+.03);return;
@@ -708,7 +715,7 @@ function radioBellVoice(t,fr,len,dst,peak){
    каждое тише и глуше; высота всякий раз другая, иногда вне лада — чужой позывной */
 function radioBeacon(t,key,cd){
   const r=RADIO.r,c=SND.ctx;
-  const midi=r()<.3?key+40+Math.floor(r()*24):key+36+radioDeg(Math.floor(r()*14));
+  const midi=key+36+radioDeg([0,2,4,7,9,11,14][Math.floor(r()*7)]);   // только звуки лада: тоника, терция, квинта и их октавы
   const fr=midiHz(midi),gap=.55+r()*.35;
   for(let k=0;k<4;k++){
     const tk=t+k*gap,v=[.05,.026,.013,.006][k];
@@ -743,7 +750,8 @@ function radioTune(t){
   g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.05,t+.15);g.gain.exponentialRampToValueAtTime(.0001,t+1.2);
   n.connect(bp);bp.connect(g);g.connect(SND.music);n.start(t);n.stop(t+1.25);
   const o=c.createOscillator(),og=c.createGain();o.type="sine";
-  o.frequency.setValueAtTime(2200,t+.1);o.frequency.exponentialRampToValueAtTime(380,t+.8);
+  const tonic=midiHz((RADIO.trk?RADIO.trk.key:0)+24);
+  o.frequency.setValueAtTime(tonic*4,t+.1);o.frequency.exponentialRampToValueAtTime(tonic,t+.8);
   og.gain.setValueAtTime(.0001,t+.1);og.gain.exponentialRampToValueAtTime(.012,t+.3);og.gain.exponentialRampToValueAtTime(.0001,t+.85);
   o.connect(og);og.connect(SND.music);o.start(t+.1);o.stop(t+.9);
 }
