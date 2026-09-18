@@ -449,6 +449,7 @@ function shipRow(id,S){
          (сеть «полный трюм», 0.360.0) */
       if(!own&&G.credits<pay){say("НЕ ХВАТАЕТ КРЕДИТОВ",60);return;}
       if(!own){G.credits-=pay;G.owned[id]=true;
+        if(typeof regBought==="function"&&typeof stampOwnerAt==="function")regBought(id,stampOwnerAt(G.sx,G.sy));   /* куплен в чужой земле — транзит (M513) */
         logAdd("money","Куплен корабль «"+S.ru+"» за "+pay.toLocaleString("ru")+" кр");
         /* вторая строка «Ключа от верфи»: уникальный корпус приходит не пустым */
         if(relicDeep("key")&&id[0]==="u"){

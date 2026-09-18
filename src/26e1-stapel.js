@@ -116,6 +116,7 @@ function stapelCollect(viaPost){
   S.done.push(o);S.o=null;
   const id=stapelId(o),sh=stapelShip(o);
   G.uniqueShips[id]=sh;G.owned[id]=true;
+  if(typeof regBought==="function")regBought(id,o.by);   /* чужой стапель — транзитные номера (M513) */
   logAdd("good","Со стапеля сошёл «"+sh.ru+"» — "+sh.cls+" · в ангаре");
   return id;
 }

@@ -281,3 +281,24 @@ TEST_SUITES.push(()=>suite("отзыв партии: извещение, дет�
   G.sx=at[0];G.sy=at[1];
   const id=p.id;ok(recallReplace(p)&&!recalled(p)&&p.id===id,"у Хай-Фронта — замена даром, на то же место");
 }));
+TEST_SUITES.push(()=>suite("постановка на учёт: транзит, доброта, утильсбор, очередь, штраф (M513)",()=>{
+  resetWorld();
+  const flag=playerFlag();
+  let home=null,abroad=null;
+  for(let sx=-14;sx<=14;sx++)for(let sy=-14;sy<=14;sy++){const o=stampOwnerAt(sx,sy);if(o===flag&&!home)home=[sx,sy];if(o&&o!==flag&&!abroad)abroad=[sx,sy];}
+  ok(home&&abroad,"есть своя земля и чужая");
+  const id="uRegT";G.uniqueShips[id]=genUniqueShip(5151);G.owned[id]=true;G.shipId=id;
+  eq(regBought(id,flag),null,"в своей земле — без транзита");
+  ok(!!regBought(id,stampOwnerAt(abroad[0],abroad[1])),"в чужой — транзитные номера");
+  const go=a=>{G.sx=a[0];G.sy=a[1];G.sys=getSystem(a[0],a[1]);return regArrive();};
+  eq(go(abroad),null,"в чужой земле пикет не свой");
+  eq(go(home),"wave","первый раз — «до понедельника»");
+  G.credits=1e5;const c0=G.credits;
+  eq(go(home),"queued","второй — утильсбор и очередь");
+  eq(c0-G.credits,regFee(id),"утильсбор по массе: "+regFee(id));
+  const r=regOf(id),base=now();r.until=base+1000;clockSet(base+2000);
+  eq(go(home),"fine","транзит истёк раньше очереди — штраф");
+  clockSet(r.q+1);eq(go(home),"done","очередь дошла — номера");
+  ok(!regPending(id),"на учёте");
+  clockSet(base);G.shipId="strizh";delete G.uniqueShips[id];delete G.owned[id];
+}));

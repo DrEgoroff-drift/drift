@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 582 · символов верхнего уровня: 5620
+Файлов: 583 · символов верхнего уровня: 5627
 
 ## СИМВОЛЫ
 
@@ -29,7 +29,7 @@ $menu                        src/15-input.js:243
 $msg                         src/27z-telemetry.js:43
 $msl                         src/27z-telemetry.js:47
 $nav                         src/27z-telemetry.js:45
-$opts                        src/26-ui-station.js:694
+$opts                        src/26-ui-station.js:695
 $padsEl                      src/15-input.js:4
 $place                       src/27z-telemetry.js:42
 $sh                          src/27z-telemetry.js:8
@@ -143,7 +143,7 @@ arcHit                       src/13a-guns.js:368-385
 ARMED_CAP                    src/13-combat.js:12
 armedCount                   src/13-combat.js:236
 arrive                       src/16-flight.js:178-216
-arriveSystem                 src/18-mode-map.js:539-583
+arriveSystem                 src/18-mode-map.js:539-584
 ARTIFACTS                    src/12h-relic.js:48-63
 askText                      src/11u-names.js:59-77
 asMap                        src/14-save.js:209-215
@@ -4110,6 +4110,11 @@ recStop                      src/15c-rec.js:29
 recTick                      src/15c-rec.js:39-51
 rectsDirty                   src/08-state.js:93-97
 refineBank                   src/11-log.js:170
+REG_TRANSIT                  src/12al3-reg.js:12
+regAll                       src/12al3-reg.js:13
+regArrive                    src/12al3-reg.js:26-52
+regBought                    src/12al3-reg.js:16-22
+regFee                       src/12al3-reg.js:23
 REGION_A                     src/06b-region.js:22
 REGION_B                     src/06b-region.js:24
 REGION_GAP                   src/06c-regions.js:36
@@ -4127,6 +4132,8 @@ regionOfTheme                src/06c-regions.js:90
 regionPlace                  src/06c-regions.js:44-75
 regionPlainSys               src/06c-regions.js:77-86
 regionThemeAt                src/06c-regions.js:88
+regOf                        src/12al3-reg.js:14
+regPending                   src/12al3-reg.js:24
 RELAY_BY                     src/11ap-relay.js:70
 RELAY_EAR                    src/11ap-relay.js:74
 RELAY_GAPS                   src/11ap-relay.js:72
@@ -4191,8 +4198,8 @@ renderRoute                  src/12r-route.js:349-448
 renderSiteTab                src/26c-ui-station-site.js:7-130
 renderSmena                  src/12ud-smena.js:123-164
 renderStrips                 src/27i-ui-table.js:328-370
-renderTab                    src/26-ui-station.js:485-497
-renderTabBody                src/26-ui-station.js:498-690
+renderTab                    src/26-ui-station.js:486-498
+renderTabBody                src/26-ui-station.js:499-691
 renderThings                 src/27i-ui-table.js:371-395
 RENT_ADS                     src/12f1-mgr-rent.js:18
 RENT_OPIN                    src/12f1-mgr-rent.js:20
@@ -4248,7 +4255,7 @@ rescueSigNow                 src/16c-rescue.js:600
 rescueSync                   src/16c-rescue.js:602-615
 rescueTake                   src/16c-rescue.js:105-146
 resEma                       src/28-loop.js:234
-resetArm                     src/26-ui-station.js:693
+resetArm                     src/26-ui-station.js:694
 resetWorld                   tests/90-harness.js:235-349
 resize                       src/08-state.js:22-57
 resModeCap                   src/28-loop.js:257-262
@@ -4687,7 +4694,7 @@ SHIP_GUARD                   src/17-mode-system.js:19
 SHIP_KEYS                    src/03-ships.js:12
 SHIP_SCALE_MIN               src/16c-rescue.js:201
 shipData                     src/03-ships.js:13
-shipRow                      src/26-ui-station.js:430-474
+shipRow                      src/26-ui-station.js:430-475
 SHIPS                        src/03-ships.js:2-11
 shipScaleAt                  src/16c-rescue.js:210
 shipScaleCap                 src/16c-rescue.js:209
@@ -4866,18 +4873,18 @@ stampOwnerAt                 src/17i-stamp.js:16-21
 stampPage                    src/17i-stamp.js:63-84
 stampShow                    src/17i-stamp.js:51-61
 stampText                    src/17i-stamp.js:24-35
-STAPEL_PV                    src/26e1-stapel.js:123
+STAPEL_PV                    src/26e1-stapel.js:124
 STAPEL_SIZE                  src/26e1-stapel.js:10-14
 STAPEL_SIZES                 src/26e1-stapel.js:26
-STAPEL_UI                    src/26e1-stapel.js:130
+STAPEL_UI                    src/26e1-stapel.js:131
 STAPEL_YARD                  src/26e1-stapel.js:17-24
 stapelAll                    src/26e1-stapel.js:27-32
-stapelBlock                  src/26e1-stapel.js:131-189
+stapelBlock                  src/26e1-stapel.js:132-190
 stapelClosedWhy              src/26e1-stapel.js:96-101
-stapelCollect                src/26e1-stapel.js:111-121
+stapelCollect                src/26e1-stapel.js:111-122
 stapelId                     src/26e1-stapel.js:68
 stapelOrder                  src/26e1-stapel.js:80-94
-stapelPreview                src/26e1-stapel.js:124-129
+stapelPreview                src/26e1-stapel.js:125-130
 stapelReady                  src/26e1-stapel.js:102
 stapelRestore                src/26e1-stapel.js:75-78
 stapelShip                   src/26e1-stapel.js:59-67
@@ -5973,6 +5980,9 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/12al2-laws.js · 4 КБ
   · закон земли — по одному, только озвученные (M456, review §1.5):1
 
+## src/12al3-reg.js · 4 КБ
+  · постановка на учёт — утильсбор (M513, PLAN «new mechanics», st. 6):1
+
 ## src/12am-chron-agents.js · 17 КБ
   · шесть агентов (M370, §7.5, §16.2 шаг 4):1
 
@@ -6678,7 +6688,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/26-ui-station.js · 49 КБ
   · станция:1
   · заголовки и полосы (M299, docs/DESIGN-screens.md §1a):303
-  · настройки:692
+  · настройки:693
 
 ## src/26a-ui-station-home.js · 21 КБ
   · станция: вкладка «дом и базы»:1
@@ -7353,7 +7363,7 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## tests/91zzzzk5-plan.js · 9 КБ
 
-## tests/91zzzzk6-stapel.js · 20 КБ
+## tests/91zzzzk6-stapel.js · 21 КБ
 
 ## tests/91zzzzl-maphold.js · 5 КБ
   · автотесты: владения на карте (M348):1

@@ -132,6 +132,7 @@ job (the phone milestone), but no fix may add raster cost without a number.
   path, vestibule block and the vestibule page (M471–M472); the ride on the map (M473: the flight
   pads still show in the carriage; the train mark and the headlight) — as each is
   built.
+- [ ] **D25 Paper and stamps** (M503/M505/M509/M513): the ПЛАН on the sign, the passport page in КНИЖКА, the recall letter, the transit plate stencilled on the flank.
 - [ ] **D24 Railway life** (M499–M508): the vestibule's new rows are plain buttons — a parcel tag, a pass card with punched rides, the passenger's silhouette, the подстаканник, the seal drawn on the hold.
 - [ ] **D23 Album** (P13): the lightbox is a dark sheet with chips — a real photo-album page (corners, paper), filter previews as thumbnails, the saved PNG's caption band typeset properly.
 - [ ] **D22 Rented core** (M488): the HQ rows are plain — the Хай-Фронт core as a glossy card with the tariff table, the advert lines styled as adverts in the manager log.
@@ -617,7 +618,7 @@ material consequences are the part that does not exist yet — that is what stag
   a passport: free rides for a week, and the Орднунг form asks one question fewer.
 - **M506 Покупки за рубежом** — ALREADY IN since M369/M388: station parts are generated with the land's maker (`pby`) and `PART_MAKER_BIAS` skews their affixes (Орднунг coneMul down, Коммуна turnMul up…). The named habits (Коммуна turret wider) would change issued parts — `PART_GEN` forbids; only via a new generator version, deliberately. (st. 4, M480): a part bought in a power's land carries that yard's habit
   (an Орднунг shield is front-heavy, a Коммуна turret turns wider) — shopping abroad matters.
-- **M513 Постановка на учёт — утильсбор** (st. 6, with M481/M506/M452/M495; the author 14.09: «купил корабль
+- **M513 Постановка на учёт — утильсбор** — BUILT 18.09 `12al3-reg` [design owed]: a hull bought (shipRow) or collected from СТАПЕЛЬ in a land not `playerFlag()` gets transit plates for 9 смен (`G.reg[id]`); in own land `regArrive` (from `arriveSystem`): once «до понедельника» (`G.regWave`), then утильсбор (hull×8 + cargo×3) and a queue of 3 смен; transit expired before the queue — a 60 кр fine per arrival; queue done — plates issued. **Open:** the paper plate drawn on the flank (crooked when expired), the home yard refusing to re-plan it, the foreign warranty void. (st. 6, with M481/M506/M452/M495; the author 14.09: «купил корабль
   — тебя останавливают, надо на учёт поставить»). A hull bought or ordered in another power's land
   flies on **транзитные номера** — a paper plate stencilled on the flank, valid 3 сводки. On the first
   arrival under your own flag the picket stops you: «постановка на учёт» — **утильсбор** («сбор за

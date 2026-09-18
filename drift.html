@@ -9838,7 +9838,7 @@ const G={
   inv:[],fit:{},shield:0,shieldHit:0,energy:0,loot:[],partsBought:{},
   /* допуск и налёт (M363, §11.4): допуск не падает, налёт копится только в полёте */
   clearance:1,flownMs:0,gunGroup:0,
-  mined:{},farTaken:{},draft:{},smenaAt:{},stapel:{},thrown:[],bazBought:null,railParcel:null,railPass:null,railSeal:0,gosDone:{},recalled:{},tapeRoll:0,tapes:{},actWk:null,   /* выработанные залежи по планетам; неделя налёта и талоны (05e) */
+  mined:{},farTaken:{},draft:{},smenaAt:{},stapel:{},thrown:[],bazBought:null,railParcel:null,railPass:null,railSeal:0,gosDone:{},recalled:{},reg:{},regWave:0,tapeRoll:0,tapes:{},actWk:null,   /* выработанные залежи по планетам; неделя налёта и талоны (05e) */
   tech:new Set(),techLvl:{},barter:new Set(),
   found:new Set(),species:new Set(),
   ap:null,          // автопилот
@@ -22267,6 +22267,59 @@ function lawRingTick(sh){
     logAdd("warn","Орднунг: превышение в кольце станции ("+v.toFixed(1)+" при норме "+LAW_SPEED+") · "+par+" · штраф "+fine+" кр · экз. 1 из 3");
     say("ШТРАФ · "+par+"\nскоростной режим в кольце станции",120);
   }
+}
+
+/* ══════════════ постановка на учёт — утильсбор (M513, PLAN «new mechanics», st. 6) ══════════════
+   Автор, 14.09: «купил корабль — тебя останавливают, надо на учёт поставить».
+   Корпус, купленный или заказанный в земле ЧУЖОЙ державы, летает на
+   ТРАНЗИТНЫХ НОМЕРАХ — бумажка на борту, годна три сводки (девять смен).
+   Первый прилёт в землю своего флага — пикет: «постановка на учёт».
+   УТИЛЬСБОР — «сбор за будущую утилизацию», по массе корпуса (дороже всего
+   тому, кого никогда не разрежут), форма 2-ТС в трёх экземплярах, номер в
+   очереди, ждать сводку (три смены). Не уложились в транзит — каждый пикет
+   своей земли штрафует, «транзит просрочен». Поставили — номера своего флага.
+   Доброта: однажды инспектор машет рукой, «до понедельника», и ничего не пишет.
+   Состояние — по кораблю, G.reg[id] = {by, until, q, done}; G.regWave — раз. */
+const REG_TRANSIT=9,REG_WAIT=3,REG_FINE=60;
+function regAll(){return G.reg||(G.reg={});}
+function regOf(id){return regAll()[id]||null;}
+/* куплено/заказано: в чужой земле — транзитные номера */
+function regBought(id,by){
+  if(!id||!by||by===playerFlag())return null;
+  const r={by,until:now()+REG_TRANSIT*HOLD_SHIFT,q:0,done:0};
+  regAll()[id]=r;
+  logAdd("dim","Транзитные номера «"+makerRu(by)+"» · годны "+REG_TRANSIT+" смен · на учёт — в земле своего флага");
+  return r;
+}
+function regFee(id){const S=shipData(id);return S?Math.round((S.hull*8+S.cargo*3)/10)*10:0;}
+function regPending(id){const r=regOf(id);return !!(r&&!r.done);}
+/* прилёт: зовёт arriveSystem */
+function regArrive(){
+  const id=G.shipId,r=regOf(id);
+  if(!r||r.done)return null;
+  const own=(typeof stampOwnerAt==="function")?stampOwnerAt(G.sx,G.sy):null;
+  if(own!==playerFlag())return null;
+  /* очередь дошла — номера выданы */
+  if(r.q&&now()>=r.q){r.done=1;logAdd("good","Учёт: номера "+makerRu(own)+" выданы · транзитка снята");say("Поставлен на учёт\nномера выданы",140);return "done";}
+  if(r.q){
+    if(now()>r.until){
+      if(G.credits>=REG_FINE)G.credits-=REG_FINE;
+      logAdd("bad","Пикет: транзит просрочен · штраф "+REG_FINE+" кр · «очередь ваша ещё не подошла, а номера уже не годны»");
+      return "fine";
+    }
+    return null;
+  }
+  /* первый раз: доброта или 2-ТС */
+  if(!G.regWave){G.regWave=1;
+    logAdd("good","Пикет: инспектор смотрит на транзитку и машет рукой — «до понедельника». Ничего не записал.");
+    say("Пикет\n«Езжайте. До понедельника.»",150);return "wave";}
+  const fee=regFee(id);
+  if(G.credits<fee){logAdd("bad","Пикет: утильсбор "+fee+" кр — не хватает. «Приходите с деньгами»");return "broke";}
+  G.credits-=fee;r.q=now()+REG_WAIT*HOLD_SHIFT;
+  const no=10+hashi(G.sx,G.sy,(now()/60000)|0)%90;
+  logAdd("money","Постановка на учёт: утильсбор "+fee+" кр («сбор за будущую утилизацию») · форма 2-ТС в трёх экземплярах · очередь № "+no+" · через сводку");
+  say("Постановка на учёт\nутильсбор "+fee+" кр · очередь № "+no,170);
+  return "queued";
 }
 
 /* ══════════════ шесть агентов (M370, §7.5, §16.2 шаг 4) ══════════════
@@ -41732,7 +41785,7 @@ function snapshot(){
     inv:G.inv.map(packPart),fit:G.fit,partsBought:prunePartsBought(),
     tech:[...G.tech],techLvl:G.techLvl,barter:[...G.barter],found:[...G.found],
     species:[...G.species],bioV:2,
-    opts:G.opts,zoom:G.zoom,market:G.market,uniqueShips:(typeof stapelStrip==="function")?stapelStrip(G.uniqueShips):G.uniqueShips,stapel:G.stapel||{},thrown:G.thrown||[],railParcel:G.railParcel||null,railPass:G.railPass||null,railSeal:G.railSeal?1:0,gosDone:G.gosDone||{},recalled:G.recalled||{},bazBought:G.bazBought||null,tow:G.tow,
+    opts:G.opts,zoom:G.zoom,market:G.market,uniqueShips:(typeof stapelStrip==="function")?stapelStrip(G.uniqueShips):G.uniqueShips,stapel:G.stapel||{},thrown:G.thrown||[],railParcel:G.railParcel||null,railPass:G.railPass||null,railSeal:G.railSeal?1:0,gosDone:G.gosDone||{},recalled:G.recalled||{},reg:G.reg||{},regWave:G.regWave?1:0,bazBought:G.bazBought||null,tow:G.tow,
     episodes:G.episodes,notebook:G.notebook,gifts:G.gifts,mslBy:G.mslBy,
     bonds:G.bonds,bondHold:G.bondHold,coupN:G.coupN,
     letter:G.letter||null,dipSwapN:G.dipSwapN,smugN:G.smugN,smugBy:G.smugBy,
@@ -41895,7 +41948,7 @@ function applySave(s){
   if(typeof hudNumDirty==="function")hudNumDirty();
   G.sx=s.sx|0;G.sy=s.sy|0;G.sys=getSystem(G.sx,G.sy);
   G.uniqueShips=asMap(s.uniqueShips);
-  G.railParcel=(s.railParcel&&typeof s.railParcel==="object")?s.railParcel:null;G.railPass=(s.railPass&&typeof s.railPass==="object")?s.railPass:null;G.railSeal=s.railSeal?1:0;G.gosDone=asMap(s.gosDone);G.recalled=asMap(s.recalled);   /* M499–M508 */
+  G.railParcel=(s.railParcel&&typeof s.railParcel==="object")?s.railParcel:null;G.railPass=(s.railPass&&typeof s.railPass==="object")?s.railPass:null;G.railSeal=s.railSeal?1:0;G.gosDone=asMap(s.gosDone);G.recalled=asMap(s.recalled);G.reg=asMap(s.reg);G.regWave=s.regWave?1:0;   /* M499–M508 */
   G.thrown=Array.isArray(s.thrown)?s.thrown.slice(0,12):[];G.bazBought=(s.bazBought&&typeof s.bazBought==="object")?s.bazBought:null;   /* барахолка (M463) */
   G.stapel=asMap(s.stapel);if(typeof stapelRestore==="function")stapelRestore();   /* заказанные корпуса выводятся из заказа (M481) */
   G.tow=(s.tow&&typeof s.tow==="object")?s.tow:null;   /* корпус на тросе (M369b) */
@@ -51191,6 +51244,7 @@ function arriveSystem(sx,sy,o){
   spawnPirates();spawnAllies();
   if(typeof gestArrive==="function")gestArrive();   /* чья земля: жест первого корабля (M452, 17h) */
   if(typeof stampArrive==="function")stampArrive(fromBy);   /* граница: штамп в КНИЖКУ (M453, 17i) */
+  if(typeof regArrive==="function")regArrive();   /* пикет своей земли: постановка на учёт (M513) */
   sfx("jump");
   /* Жестянка (12z) слышна с порога: она передаёт свою просьбу в пустоту и не
      знает, что её некому исполнить. Работающая смена молчит */
@@ -81697,6 +81751,7 @@ function shipRow(id,S){
          (сеть «полный трюм», 0.360.0) */
       if(!own&&G.credits<pay){say("НЕ ХВАТАЕТ КРЕДИТОВ",60);return;}
       if(!own){G.credits-=pay;G.owned[id]=true;
+        if(typeof regBought==="function"&&typeof stampOwnerAt==="function")regBought(id,stampOwnerAt(G.sx,G.sy));   /* куплен в чужой земле — транзит (M513) */
         logAdd("money","Куплен корабль «"+S.ru+"» за "+pay.toLocaleString("ru")+" кр");
         /* вторая строка «Ключа от верфи»: уникальный корпус приходит не пустым */
         if(relicDeep("key")&&id[0]==="u"){
@@ -83410,6 +83465,7 @@ function stapelCollect(viaPost){
   S.done.push(o);S.o=null;
   const id=stapelId(o),sh=stapelShip(o);
   G.uniqueShips[id]=sh;G.owned[id]=true;
+  if(typeof regBought==="function")regBought(id,o.by);   /* чужой стапель — транзитные номера (M513) */
   logAdd("good","Со стапеля сошёл «"+sh.ru+"» — "+sh.cls+" · в ангаре");
   return id;
 }
