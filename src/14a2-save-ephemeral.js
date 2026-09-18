@@ -33,6 +33,7 @@ const SAVE_EPHEMERAL={
   gunCool:"кадр",gunPin:"кадр",gmines:"кадр",tether:"кадр",foeTether:"кадр",msl:"кадр",mslCool:"кадр",mslFx:"кадр",
   jamT:"кадр",ramOn:"кадр",engaged:"кадр",fcam:"кадр",fshake:"кадр",ctl:"кадр",marks:"кадр",range:"кадр",
   battCool:"кадр",battFx:"кадр",shiftT:"кадр",etherT:"кадр",
+  zoomT:"кадр",   /* цель плавного зума (P9): после загрузки зум стоит где стоял */
   /* мир: выводится из семени и часов */
   sys:"мир",pirates:"мир",allies:"мир",barges:"мир",npcWrecks:"мир",cantina:"мир",st:"мир",sel:"карта",
   escortT:"мир",escortDone:"мир",hail:"мир",ringNow:"мир",occT:"мир",

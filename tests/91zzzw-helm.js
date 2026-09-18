@@ -57,10 +57,10 @@ TEST_SUITES.push(()=>suite("штурвал: каждый ввод пишет т�
   near(G.ctl.ay,-1,1e-6,"стик вверх на полный ход → ay=−1");
   near(G.ctl.head,-Math.PI/2,1e-6,"…и нос по ходу: вверх");
   ok(G.ctl.headIdle,"рука на курсе не лежит — метка перебьёт нос");
-  HELM.S={id:1,x0:100,y0:400,x:100+12+35,y:400};helmTick(1);
+  HELM.S={id:1,x0:100,y0:400,x:100+HELM_DEAD+HELM_REACH/2,y:400};helmTick(1);
   near(G.ctl.ax,.5,1e-6,"полхода → .5");
-  HELM.S={id:1,x0:100,y0:400,x:106,y:400};helmTick(1);
-  ok(!G.ctl.assist&&G.ctl.brake,"в мёртвой зоне 12 px — «стой»: тормоз без кнопки");
+  HELM.S={id:1,x0:100,y0:400,x:100+HELM_DEAD/2,y:400};helmTick(1);
+  ok(!G.ctl.assist&&G.ctl.brake,"в мёртвой зоне ("+HELM_DEAD+" px, P8) — «стой»: тормоз без кнопки");
   HELM.S=null;
   ok(sh===G.ship,"корабль тот же");
 }));

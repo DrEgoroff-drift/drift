@@ -84,6 +84,26 @@ const RES={
      всем остальным, и в этом весь вывоз. Ни продать, ни отдать, ни выбросить. */
   folk:     {ru:"Люди",       col:"#f2e6c8",price:0,pax:"эвакуация"}
 };
+/* ── десять дальних товаров (M465, DESIGN-resources §2) ──
+   Чем дальше от ядра, тем дороже — в сердце: ценность делает обратная дорога.
+   У каждого — полоса (от ядра, в секторах), глагол добычи, одно свойство и
+   едок. В TRADE_KEYS и ORE_KEYS их НЕТ: те списки кормят генерацию станций и
+   цен случайным потоком, и лишний ключ сдвинул бы весь старый мир (сторож
+   «старый мир не сдвинулся»). Свой поток и свой рынок — 06d-far и M467.
+   Слова — обычные (янтарь, чернозём, крошка): край галактики словами дома. */
+const FAR_RES={
+  he3:       {ru:"Гелий-3",           col:"#9fe7ff",price:85,  far:{band:10,verb:"scoop",place:"gas",eat:"реакторы: плотность реактора на верфи · силовой цех владения"}},
+  palladium: {ru:"Палладий",          col:"#d8dce6",price:95,  far:{band:10,verb:"belt", place:"belt",eat:"приборы и ярус ПРИБОРЫ · мастерская кооператива"}},
+  amber:     {ru:"Космический янтарь",col:"#f0a93c",price:130, far:{band:10,verb:"cave", place:"ice,jungle",prop:"fragile",eat:"ювелиры Коммуны (×1,5 в её земле) · книга на ПОЛКУ о том, что внутри"}},
+  osmium:    {ru:"Осмий",             col:"#6f86a8",price:190, far:{band:25,verb:"mine", place:"metal",prop:"heavy2",eat:"броня: плотность брони на верфи · корпуса ГЛАВТРАССЫ"}},
+  chernozem: {ru:"Звёздный чернозём", col:"#7a5a3a",price:170, far:{band:25,verb:"drill",place:"jungle,terran",eat:"теплицы: базы, фермы владения, дачники платят ×1,5"}},
+  magdust:   {ru:"Магнитная пыль",    col:"#b36cff",price:260, far:{band:25,verb:"belt", place:"belt:hot",eat:"щиты: плотность щита · рельсы Орднунга"}},
+  pearl:     {ru:"Жемчуг пустоты",    col:"#ffe2f2",price:320, far:{band:25,verb:"fauna",place:"fauna",eat:"стойка роскоши Компании (×1,5 в её земле) · лавка гостиницы"}},
+  darkglass: {ru:"Тёмное стекло",     col:"#3c4a66",price:600, far:{band:40,verb:"drill",place:"volcanic,crystal:old",eat:"оптика Хай-Фронта (×1,5 в её земле) · прибор, что читает залежь тоньше"}},
+  antimatter:{ru:"Антивещество",      col:"#ff4f6a",price:900, far:{band:40,verb:"scoop",place:"gas",prop:"trap",eat:"тяжёлая торпеда · верхний ярус реактора · флот любой державы"}},
+  neutron:   {ru:"Нейтронная крошка", col:"#e8f0ff",price:1500,far:{band:50,verb:"drill",place:"rocky,metal",prop:"heavy5",eat:"доводка на верфи вместо узла · самая тяжёлая броня"}}
+};
+Object.assign(RES,FAR_RES);
 const RES_KEYS=Object.keys(RES);
 /* боеприпас — не товар и не сырьё: он не попадает ни в рынок, ни в те списки,
    где редкое сырьё едят (образцы управляющих, дары посёлку, крафт) */
@@ -97,7 +117,8 @@ const FAUNA_RES=["carbon","xeno"];
 const RARE_RES=RES_KEYS.filter(k=>!!RES[k].rare);
 /* промышленное (M291): не редкое и не товар — груз для своих цехов */
 const IND_KEYS=RES_KEYS.filter(k=>!!RES[k].ind&&!RES[k].rare);
-const TRADE_KEYS=RES_KEYS.filter(k=>RARE_RES.indexOf(k)<0&&AMMO_KEYS.indexOf(k)<0&&
+const FAR_KEYS=Object.keys(FAR_RES);
+const TRADE_KEYS=RES_KEYS.filter(k=>!RES[k].far&&RARE_RES.indexOf(k)<0&&AMMO_KEYS.indexOf(k)<0&&
   PAX_KEYS.indexOf(k)<0&&IND_KEYS.indexOf(k)<0);
 const ORE_KEYS=TRADE_KEYS.filter(k=>FAUNA_RES.indexOf(k)<0);
 const PROFILE={

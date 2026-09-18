@@ -488,7 +488,8 @@ patchnote of each version names the M-numbers it closes.
 
 ### Stage 3 — far, and back with a hold (resources + the railway)
 
-- [ ] **[design owed] M465 Ten goods — table and roll** (`DESIGN-resources.md` §2–3, review §2.5). Rows in `RES`
+- [x] **[design owed] M465 Ten goods — table and roll — BUILT 18.09 (Control).** `FAR_RES` in `02-world` (he3, palladium, amber, osmium, chernozem, magdust, pearl, darkglass, antimatter, neutron: band, verb, place, property, eater line), merged into `RES` but kept OUT of `TRADE_KEYS`/`ORE_KEYS` (and the slow-exchange pool) — those lists feed generation through `rnd`. `src/06d-far.js`: presence by band (0 before, .25 at the band start → .8 ten sectors in), places by verb (gas giant, belt, ice/jungle cave, metal mine, jungle/terran drill, flora worlds for fauna, dead-star proxies — no white dwarfs/pulsars exist: hot stars' belts for magnetic dust, red dwarfs' volcanic/crystal worlds for dark glass, rocky/metal past r 50 for neutron crumbs), lognormal grade 70/25/5/0.5 % with units 4–12 / 30–80 / 150–400 / 600–1600. Suite `91zzzzk3-far`: **the old world's fingerprint (systems, planets, belts, stations, prices over a 18×14 grid to r 85) equals the one taken before the change** — nothing moved; grades within §3; none inside r 10. **Not yet in play:** no verb yields them (the scoop, belt, cave, mine, drill and hunt still give the old goods) — the hook-up goes with M466 (the reading) and M468 (properties); no market lists them (M467). Original text:
+  **M465 Ten goods — table and roll** (`DESIGN-resources.md` §2–3, review §2.5). Rows in `RES`
   with band, verb, property, price, eater line: **солнечный газ** (frontier, scoop, 85, reactors) ·
   **белая руда** (frontier, belt, 95, instruments) · **космический янтарь** (frontier, cave, 130,
   fragile → «крошка» at ⅓, Коммуна ×1.5) · **осмий** (deep, mine, 190, heavy ×2 hold, armour) ·

@@ -80,7 +80,7 @@ function slowReply(){
   if(r===1)return f.concat([f[0]]);
   /* осмысленная ошибка: добавляет то, чего не клали, но что подходит — того же цвета ряда */
   const rr=rng(hashi(f.length,r,0x510E));
-  const pool=RES_KEYS.filter(k=>f.indexOf(k)<0&&k!=="folk"&&k!=="missile");
+  const pool=RES_KEYS.filter(k=>f.indexOf(k)<0&&k!=="folk"&&k!=="missile"&&!RES[k].far);   /* дальние (M465) — вне старого потока */
   const add=pool.length?pool[Math.floor(rr()*pool.length)]:f[0];
   const out=f.concat([f[f.length-1],add]);
   if(r>=3)out.push(add);
