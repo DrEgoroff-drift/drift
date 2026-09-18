@@ -66,3 +66,14 @@ TEST_SUITES.push(()=>suite("названия по хозяину (M489)",()=>{
   for(const k in seen)ok(seen[k].indexOf("Горловина")>=0&&seen[k]!=="Горловина","«"+seen[k]+"» — топоним с суффиксом");
   ok(/ [А-Я]/.test(firmName(5)),"фирма — город и чужое слово: "+firmName(5));
 }));
+TEST_SUITES.push(()=>suite("«Чебуречная»: лодка на подъезде кормит и рассказывает (M462)",()=>{
+  resetWorld();
+  let at=null;
+  for(let sx=-8;sx<=8&&!at;sx++)for(let sy=-8;sy<=8&&!at;sy++){
+    const sys=getSystem(sx,sy);if(!sys.station)continue;G.sx=sx;G.sy=sy;G.sys=sys;if(chebHere())at={sx,sy};}
+  ok(!!at,"лодка есть хотя бы в одной людной системе сердца");
+  const C=chebHere();G.ship.x=C.x;G.ship.y=C.y;G.credits=100;
+  actEdge=true;const n=G.log.length;chebInteract(G.ship);actEdge=false;
+  eq(G.credits,100-CHEB_PRICE,"чебурек за копейки");
+  ok(G.log.slice(n).some(l=>/Чебуречная/.test(l.s)),"строка в тетради: еда и слух");
+}));

@@ -341,6 +341,7 @@ function updateSystem(dt){
   /* флот ГЛАВТРАССЫ: позывной, заправка по норме (12ai) */
   /* кольцо железной дороги: стыковка и вестибюль (M471–M472) */
   if(typeof railInteract==="function"&&railInteract(sh))return;
+  if(typeof chebInteract==="function"&&chebInteract(sh))return;   /* «Чебуречная» на подъезде (M462) */
   if(typeof fleetInteract==="function"&&fleetInteract(sh))return;
   /* торговая баржа — к ней можно подойти и сторговаться без стыковки (12l) */
   if(typeof bargeInteract==="function"&&bargeInteract(sh))return;
@@ -670,6 +671,7 @@ function drawSystem(){
   if(G.haul&&typeof drawHaul==="function")drawHaul(zx,zy,Z);   /* спасательный буксир (16c) */
   if(typeof drawSysTraffic==="function")drawSysTraffic(zx,zy,Z);   /* челноки станции (M309) */
   if(typeof drawSysLaneShips==="function")drawSysLaneShips(zx,zy,Z);   /* очередь у дока (M459) */
+  if(typeof drawCheburek==="function")drawCheburek(zx,zy,Z);   /* «Чебуречная» (M462) */
   if(typeof drawGesture==="function")drawGesture(zx,zy,Z);   /* жест хозяина (M452) */
   if(typeof drawWanderer==="function")drawWanderer(zx,zy,Z);        /* «Сорока» у планеты (M342) */
   if(typeof drawFleet==="function")drawFleet(zx,zy,Z);               /* флот ГЛАВТРАССЫ (M310) */

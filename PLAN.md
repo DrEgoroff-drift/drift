@@ -521,7 +521,7 @@ patchnote of each version names the M-numbers it closes.
   «ДЖЕКПОТ-СИТИ™», «Пансион № 4» (lights out 22:00), «Ля Люн», the door in the rock, the honeycomb.
   Docking opens the doors that exist: sanatorium (`29h/29i-spa`), cinema (`27da-kino`), cantina
   rumours. Kindness: under 30 % hull the clerk lets you sleep off the fatigue free, «потом заплатите».
-- [ ] **[design owed] M462 «Чебуречная»** — a junk boat on the lane hailing «Чебуреки! Горячие!» whatever the hour;
+- [x] **[design owed] M462 «Чебуречная» — BUILT 18.09 (Control), `src/17j-cheburek.js`.** At busy stations (life ≥ .35, every other system by seed) a junk boat shuttles the lane axis on a 70 s cycle, window lit, «ЧЕБУРЕКИ» over it; within 200 «ЧЕБУРЕКИ! ГОРЯЧИЕ! · ДЕЙСТВИЕ — ВЗЯТЬ · 4 КР» → the owner's `food` and a rumour into the journal and ЛЮДИ; no money — «в долг не кормим… ладно, держи». Original: — a junk boat on the lane hailing «Чебуреки! Горячие!» whatever the hour;
   sells the owner's `POWERS[k].food`; a meal comes with a rumour and a ДНЕВНИК line.
 - [ ] **[design owed] M455 The peacetime fleet in flight** (borders §2.4, from war §7.3's table): ГЛАВТРАССА
   субботник tugs pushing belt debris; Компания ad hulls and hired «contractors»; Орднунг an
