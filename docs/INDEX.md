@@ -2346,7 +2346,7 @@ holdCapMul                   src/12ad-site.js:208
 holdDealList                 src/12ad-site.js:324-346
 holdDeed                     src/12ad-site.js:25-29
 holdDock                     src/12ad-site.js:31-43
-holdDrawPile                 src/27j-ui-hold.js:151-173
+holdDrawPile                 src/27j-ui-hold.js:226-248
 holdEventWeights             src/12ag-holdfx.js:85-89
 holdExtraMercs               src/12ag-holdfx.js:82
 holdExtraMgrs                src/12ag-holdfx.js:83
@@ -2360,7 +2360,7 @@ holdNearestEater             src/12ad-site.js:310-322
 holdNews                     src/12ah-holdnews.js:26-37
 holDock                      src/11am-holiday.js:86-121
 holdOf                       src/12ab-hold.js:36
-holdPiece                    src/27j-ui-hold.js:26-147
+holdPiece                    src/27j-ui-hold.js:26-222
 holdPierHeal                 src/12ag-holdfx.js:128-133
 holdPileN                    src/27j-ui-hold.js:22
 holdRaidThin                 src/12ag-holdfx.js:113
@@ -4203,7 +4203,7 @@ renderChess                  src/25n-chess.js:279-326
 renderDeeds                  src/11-log.js:119-149
 renderDeskTop                src/27ia-desk-top.js:343-366
 renderDiary                  src/29f-winter.js:221-249
-renderHold                   src/27j-ui-hold.js:177
+renderHold                   src/27j-ui-hold.js:252
 renderLog                    src/11-log.js:94-117
 renderLoreBoard              src/27h-ui-lore.js:26-79
 renderMail                   src/25k-post-mail.js:36-109
@@ -6798,7 +6798,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/27j-console.js · 11 КБ
   · пульт: приёмник, подсказка, кресло:1
 
-## src/27j-ui-hold.js · 8 КБ
+## src/27j-ui-hold.js · 14 КБ
   · трюм как раскладка (M179):1
 
 ## src/27j-ui-kitlay.js · 9 КБ

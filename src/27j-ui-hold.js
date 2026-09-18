@@ -138,6 +138,81 @@ function holdPiece(c,k,s,j){
     c.beginPath();c.roundRect(-s*.2,-s*.2,s*.4,s*.5,s*.1);c.fill();
     c.fillStyle="rgba(0,0,0,.25)";
     c.fillRect(-s*.2,s*.16,s*.4,s*.14);
+  /* ── дальнее (D12, телефон 18.09): десять сортов лежали одинаковыми
+     шариками разного цвета — у каждого свой предмет, читаемый силуэтом ── */
+  }else if(k==="he3"){
+    sh(.3);
+    /* криобаллон лёжа: цилиндр с обручами и иней */
+    c.fillStyle="#b8c4cc";c.beginPath();c.roundRect(-s*.6,-s*.24,s*1.2,s*.48,s*.22);c.fill();
+    c.fillStyle=col;c.fillRect(-s*.42,-s*.24,s*.1,s*.48);c.fillRect(s*.32,-s*.24,s*.1,s*.48);
+    c.fillStyle="rgba(255,255,255,.55)";c.fillRect(-s*.5,-s*.16,s,s*.07);
+    c.fillStyle="#6e7a84";c.fillRect(s*.6,-s*.07,s*.14,s*.14);
+  }else if(k==="palladium"){
+    sh(.32);
+    /* стопка тонких пластин */
+    for(let i=0;i<3;i++){c.fillStyle=i?"rgba(0,0,0,.18)":col;
+      c.beginPath();c.moveTo(-s*.55,s*.2-i*s*.1);c.lineTo(-s*.3,-s*.1-i*s*.1);c.lineTo(s*.55,-s*.1-i*s*.1);c.lineTo(s*.3,s*.2-i*s*.1);c.closePath();c.fill();
+      if(i){c.fillStyle=col;c.beginPath();c.moveTo(-s*.55,s*.2-i*s*.1);c.lineTo(-s*.3,-s*.1-i*s*.1);c.lineTo(s*.55,-s*.1-i*s*.1);c.lineTo(s*.3,s*.2-i*s*.1);c.closePath();c.fill();}}
+    c.fillStyle="rgba(255,255,255,.5)";c.fillRect(-s*.2,-s*.3,s*.6,s*.05);
+  }else if(k==="amber"){
+    sh(.3);
+    /* капля с включением: светится изнутри */
+    c.fillStyle=col;c.beginPath();c.moveTo(0,-s*.55);c.quadraticCurveTo(s*.5,-s*.1,s*.32,s*.28);c.quadraticCurveTo(0,s*.5,-s*.32,s*.28);c.quadraticCurveTo(-s*.5,-s*.1,0,-s*.55);c.fill();
+    c.fillStyle="rgba(120,60,10,.7)";c.beginPath();c.ellipse(s*.04,s*.06,s*.09,s*.13,.5,0,TAU);c.fill();   /* мошка внутри */
+    c.fillStyle="rgba(255,240,200,.55)";c.beginPath();c.ellipse(-s*.14,-s*.2,s*.1,s*.16,.6,0,TAU);c.fill();
+  }else if(k==="osmium"){
+    sh(.36);
+    /* маленький и тяжёлый: кубик с гранью, вдавлен в тень */
+    c.fillStyle=col;c.fillRect(-s*.3,-s*.16,s*.6,s*.48);
+    c.fillStyle="rgba(255,255,255,.3)";c.beginPath();c.moveTo(-s*.3,-s*.16);c.lineTo(-s*.14,-s*.34);c.lineTo(s*.46,-s*.34);c.lineTo(s*.3,-s*.16);c.closePath();c.fill();
+    c.fillStyle="rgba(0,0,0,.3)";c.beginPath();c.moveTo(s*.3,-s*.16);c.lineTo(s*.46,-s*.34);c.lineTo(s*.46,s*.14);c.lineTo(s*.3,s*.32);c.closePath();c.fill();
+  }else if(k==="chernozem"){
+    sh(.26);
+    /* мешок с завязкой */
+    c.fillStyle=col;c.beginPath();c.moveTo(-s*.5,s*.36);c.quadraticCurveTo(-s*.62,-s*.2,-s*.18,-s*.36);c.lineTo(s*.18,-s*.36);c.quadraticCurveTo(s*.62,-s*.2,s*.5,s*.36);c.closePath();c.fill();
+    c.fillStyle="#a88a68";c.beginPath();c.ellipse(0,-s*.4,s*.2,s*.1,0,0,TAU);c.fill();
+    c.strokeStyle="rgba(0,0,0,.4)";c.lineWidth=Math.max(1,s*.05);c.beginPath();c.moveTo(-s*.2,-s*.32);c.lineTo(s*.2,-s*.32);c.stroke();
+    c.fillStyle="rgba(120,200,90,.8)";c.fillRect(-s*.06,-s*.62,s*.05,s*.2);c.fillRect(s*.02,-s*.58,s*.05,s*.16);   /* росток */
+  }else if(k==="magdust"){
+    sh(.28);
+    /* колба, к стенкам которой тянутся ворсинки */
+    c.fillStyle="rgba(200,210,230,.35)";c.beginPath();c.roundRect(-s*.34,-s*.5,s*.68,s*.9,s*.12);c.fill();
+    c.fillStyle=col;c.beginPath();c.ellipse(0,s*.12,s*.24,s*.2,0,0,TAU);c.fill();
+    c.strokeStyle=col;c.lineWidth=Math.max(1,s*.04);
+    for(let i=0;i<7;i++){const a=i/7*TAU;c.beginPath();c.moveTo(Math.cos(a)*s*.2,s*.12+Math.sin(a)*s*.16);c.lineTo(Math.cos(a)*s*.31,s*.12+Math.sin(a)*s*.3);c.stroke();}
+    c.fillStyle="#6e7a84";c.fillRect(-s*.16,-s*.6,s*.32,s*.12);
+  }else if(k==="pearl"){
+    sh(.24);
+    /* жемчужина в раскрытой створке */
+    c.fillStyle="#5b5570";c.beginPath();c.ellipse(0,s*.16,s*.54,s*.24,0,0,TAU);c.fill();
+    c.fillStyle="#7e7894";c.beginPath();c.ellipse(0,s*.1,s*.46,s*.16,0,0,TAU);c.fill();
+    c.fillStyle=col;c.beginPath();c.arc(0,-s*.06,s*.22,0,TAU);c.fill();
+    c.fillStyle="rgba(255,255,255,.8)";c.beginPath();c.arc(-s*.08,-s*.14,s*.06,0,TAU);c.fill();
+    c.fillStyle="rgba(255,150,220,.25)";c.beginPath();c.arc(s*.06,s*.02,s*.1,0,TAU);c.fill();
+  }else if(k==="darkglass"){
+    sh(.32);
+    /* обсидиановый осколок: раковистый скол с одним холодным бликом */
+    c.fillStyle=col;c.beginPath();c.moveTo(-s*.5,s*.3);c.lineTo(-s*.3,-s*.4);c.lineTo(s*.1,-s*.5);c.lineTo(s*.55,-s*.05);c.lineTo(s*.3,s*.32);c.closePath();c.fill();
+    c.fillStyle="rgba(0,0,0,.35)";c.beginPath();c.moveTo(-s*.3,-s*.4);c.lineTo(s*.1,-s*.5);c.lineTo(s*.05,s*.05);c.closePath();c.fill();
+    c.strokeStyle="rgba(190,220,255,.8)";c.lineWidth=Math.max(1,s*.04);c.beginPath();c.moveTo(-s*.28,-s*.34);c.lineTo(s*.06,-s*.44);c.stroke();
+  }else if(k==="antimatter"){
+    sh(.24);
+    /* ловушка: тор с полем, внутри искра — единственное, что здесь светится */
+    c.strokeStyle="#8a97a0";c.lineWidth=Math.max(1.5,s*.12);c.beginPath();c.ellipse(0,0,s*.46,s*.3,0,0,TAU);c.stroke();
+    c.strokeStyle=col;c.lineWidth=Math.max(1,s*.04);c.beginPath();c.ellipse(0,0,s*.3,s*.18,0,0,TAU);c.stroke();
+    c.fillStyle="rgba(255,255,255,.95)";c.beginPath();c.arc(0,0,s*.07,0,TAU);c.fill();
+    c.fillStyle=col;c.globalAlpha=.35;c.beginPath();c.arc(0,0,s*.16,0,TAU);c.fill();c.globalAlpha=1;
+  }else if(k==="neutron"){
+    sh(.4);
+    /* крошка в свинцовой капсуле: крошечная, тень тяжелее самой вещи */
+    c.fillStyle="#4d5560";c.beginPath();c.roundRect(-s*.3,-s*.2,s*.6,s*.4,s*.18);c.fill();
+    c.fillStyle="rgba(0,0,0,.35)";c.fillRect(-s*.3,0,s*.6,s*.2);
+    c.fillStyle="#ffd24a";c.fillRect(-s*.1,-s*.12,s*.2,s*.06);   /* маркировка */
+    c.fillStyle=col;c.beginPath();c.arc(0,s*.02,s*.05,0,TAU);c.fill();
+  }else if(k==="amberchip"){
+    sh(.22);
+    for(let i=0;i<4;i++){const hx=((i*53)%3-1)*s*.28,hy=((i*29)%3-1)*s*.12;
+      c.fillStyle=col;c.beginPath();c.moveTo(hx-s*.12,hy+s*.08);c.lineTo(hx,hy-s*.12);c.lineTo(hx+s*.14,hy+s*.06);c.closePath();c.fill();}
   }else{
     sh(.28);
     c.fillStyle=col;

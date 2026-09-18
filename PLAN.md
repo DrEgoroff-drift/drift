@@ -152,8 +152,13 @@ job (the phone milestone), but no fix may add raster cost without a number.
   read at both. Bulge cap and speck colours left as built (they read once the glyphs stepped back).
 
 **Stage 3 — far**
-- [ ] **D12 The ten far goods**: ten glyphs/colours in the ТРЮМ spread round the wheel (review
-  §4.4), the belt entry's reading line, ЖИЛА across the screen (the only shout).
+- [~] **D12 The ten far goods — the ТРЮМ piles done 18.09 on the S23.** All ten (and the amber
+  chip) lay as same-shaped balls in different colours; now each is its own object in `holdPiece`:
+  cryo cylinder (He-3), plate stack (palladium), drop with an inclusion (amber), heavy cube
+  (osmium), sack with a sprout (chernozem), flask with filings (magdust), pearl in a shell,
+  obsidian shard with one cold glint (dark glass), trap ring with a spark (antimatter), lead capsule
+  with a yellow mark (neutron), amber chips. NOT done: the wheel spread (§4.4), the belt entry's
+  reading line, ЖИЛА across the screen.
 - [ ] **D14 The blueprint** (M476–M479): the ОПИСЬ ЧЕРТЁЖ now a plain grid — the синька of M477 (Prussian blue, ochre stamps by kind, «СОГЛАСОВАНО»), the hold readable, the turret on the back in flight (M479).
 - [ ] **D15 Stage 5 voice** (M485–M486 …): the drone's name and quirk in the list, the tape strip on the hull (grey on grey — barely reads at ×4.5).
 - [ ] **D13 The railway**: the faint lines and station circles on the map (M470); the ring, glide
