@@ -1093,7 +1093,7 @@ cultSeriesOn                 src/12b3-fx-cult.js:191
 cultSeriesWho                src/12b3-fx-cult.js:187-190
 cultSeriesWindow             src/12b3-fx-cult.js:183-186
 CUN                          src/22-mode-cave.js:22-32
-curTok                       src/09-audio.js:83
+curTok                       src/09-audio.js:96
 CUT_RANGE                    src/24-mode-belt.js:187
 cvs                          src/08-state.js:2
 CVS_RECT                     src/08-state.js:83
@@ -1609,7 +1609,7 @@ EN_THR                       src/05c-arms.js:163
 endPtr                       src/15-input.js:428-433
 energyCap                    src/05c-arms.js:166
 energyRegen                  src/05c-arms.js:167
-engineLoop                   src/09-audio.js:329-355
+engineLoop                   src/09-audio.js:342-368
 enterBase                    src/21a-mode-base.js:121-153
 enterBelt                    src/24-mode-belt.js:89-137
 enterCave                    src/22-mode-cave.js:175-232
@@ -1619,7 +1619,7 @@ enterRaid                    src/24a-mode-raid.js:134-189
 enterSpa                     src/29h-spa.js:51-65
 enterSurface                 src/21-mode-surface.js:7-198
 enterWinter                  src/29f-winter.js:112-119
-env                          src/09-audio.js:59-64
+env                          src/09-audio.js:72-77
 EPI_KINDS                    src/12ap-notebook.js:20-30
 EPI_MAX                      src/12ap-notebook.js:31
 EPI_SPEED                    src/12ap-notebook.js:33
@@ -1887,7 +1887,7 @@ FRAME_JS                     src/28-loop.js:119
 FRAME_MS                     src/28-loop.js:141
 frameBody                    src/28-loop.js:411-534
 frameLastAt                  src/28-loop.js:601
-freeVoice                    src/09-audio.js:91-95
+freeVoice                    src/09-audio.js:104-108
 FUEL_PER_ICE                 src/21b1-base-pay.js:100
 fuelPriceHere                src/12k-rep.js:63-70
 FUR_TONES                    src/20f-fauna.js:20-24
@@ -3217,7 +3217,7 @@ MODS                         src/04-mods.js:2-13
 modStatWith                  src/26b-ui-station-work.js:21-24
 modWork                      src/26b-ui-station-work.js:20
 modWorkRun                   src/26b-ui-station-work.js:35-43
-MOTIFS                       src/09-audio.js:97-104
+MOTIFS                       src/09-audio.js:110-117
 MOUNT_CACHE                  src/05d-mounts.js:28
 MOUNT_KINDS                  src/05d-mounts.js:21-27
 MOUNT_SIZE_RU                src/05d-mounts.js:20
@@ -3373,11 +3373,11 @@ nodeRoll                     src/05a-nodes.js:123-148
 NODES                        src/05a-nodes.js:70
 nodesHave                    src/05a-nodes.js:102
 nodesRender                  src/05a-nodes.js:177-230
-noise                        src/09-audio.js:66-78
+noise                        src/09-audio.js:79-91
 noise1                       src/01-core.js:113
 noise2                       src/01-core.js:116-120
 noise3                       src/24-mode-belt.js:7-15
-noiseBuf                     src/09-audio.js:65
+noiseBuf                     src/09-audio.js:78
 normsOf                      src/12ab-hold.js:89-97
 note                         tests/90-harness.js:102
 NOTE_MAX                     src/12ap-notebook.js:32
@@ -4814,8 +4814,8 @@ settleWatch                  src/12t-settle.js:397-403
 settleWords                  src/12t-settle.js:258-262
 setTx                        src/27z-telemetry.js:84-93
 setZoom                      src/15-input.js:340
-SFX                          src/09-audio.js:105-320
-sfx                          src/09-audio.js:321-327
+SFX                          src/09-audio.js:118-333
+sfx                          src/09-audio.js:334-340
 SH_DX                        src/03b-hull-paint.js:175
 SHARD_H                      tests/90-harness.js:32
 sharpWord                    src/21a9-base-laws.js:41-45
@@ -5079,7 +5079,7 @@ stGround                     src/17c-system-draw.js:120
 stGroup                      src/26-ui-station.js:140
 stGroupOf                    src/26-ui-station.js:139
 stMakerDress                 src/17c1-station-dress.js:10-52
-stopEngine                   src/09-audio.js:356-360
+stopEngine                   src/09-audio.js:369-373
 STORAGE_OK                   src/14-save.js:7
 STORAGE_TOLD                 src/14-save.js:13
 STORIES                      src/12k-stories-a.js:45-348
@@ -5524,7 +5524,7 @@ visitHere                    src/11b-speech.js:87-90
 visitMark                    src/11b-speech.js:91-95
 visitsAll                    src/11b-speech.js:86
 vLink                        src/18d-verlet.js:78-86
-voice                        src/09-audio.js:84-90
+voice                        src/09-audio.js:97-103
 VOICE_FEMALE                 src/12pa-beacon.js:197
 VOICE_KEYS                   src/02a-worldmix.js:81
 VOICE_MALE                   src/12pa-beacon.js:196
@@ -5946,7 +5946,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/08a-statehash.js · 6 КБ
   · хэш состояния (M441):1
 
-## src/09-audio.js · 17 КБ
+## src/09-audio.js · 18 КБ
   · звук: чистый синтез, ни одного файла:1
 
 ## src/09a-roomtone.js · 6 КБ

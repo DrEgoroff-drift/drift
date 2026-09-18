@@ -10461,6 +10461,19 @@ function unlockAudio(){
     if(!MUS.timer)MUS.timer=setInterval(musicTick,60);
   }
 }
+/* ── спрятанная вкладка молчит ──
+   Игровые часы во второй вкладке стоят, а звук шёл: движок и шесть слоёв музыки
+   крутились в фоне, забирая полъядра и играя поверх живой игры в соседней вкладке.
+   Спрятали — контекст засыпает целиком (музыка, эффекты, двигатель); показали —
+   просыпается, планировщик музыки сам пропускает пропущенное. Настройка игрока не
+   трогается. */
+document.addEventListener("visibilitychange",()=>{
+  const c=SND.ctx;if(!c)return;
+  try{
+    if(document.hidden){if(c.state==="running")c.suspend();}
+    else if(audioOn()&&c.state==="suspended")c.resume();
+  }catch(e){}
+});
 /* ── кирпичики синтеза ── */
 function env(g,t,a,d,peak){
   g.gain.cancelScheduledValues(t);
