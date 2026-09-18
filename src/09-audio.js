@@ -33,17 +33,13 @@ function initAudio(){
     const mus=c.createGain(),sf=c.createGain(),en=c.createGain();
     mus.connect(m);sf.connect(m);en.connect(m);
     SND.ctx=c;SND.master=m;SND.music=mus;SND.sfx=sf;SND.eng=en;SND.ready=true;
-    /* спрятанная вкладка молчит (замер на S23 автора, 19.09): звук жил и в фоне —
-       шесть слоёв музыки на скрытой вкладке ели 40–60% ядра и звучали поверх
-       второй, открытой вкладки игры. Кадр в фоне и так стоит; звук — вслед за ним */
-    document.addEventListener("visibilitychange",()=>{try{if(document.hidden)c.suspend();else c.resume();}catch(e){}});
     applyVolumes();
     return c;
   }catch(e){return null;}
 }
 function applyVolumes(){
   if(!SND.ready)return;
-  const a=G.opts.audio||{music:.6,sfx:.6,engine:.4,on:true};
+  const a=G.opts.audio||{music:.2,sfx:.6,engine:.4,on:true};
   const on=(a.on!==false&&!SND.hush)?1:0;
   SND.music.gain.value=(a.music==null?.6:a.music)*on;
   SND.sfx.gain.value=(a.sfx==null?.6:a.sfx)*on;
@@ -59,6 +55,19 @@ function unlockAudio(){
     if(!MUS.timer)MUS.timer=setInterval(musicTick,60);
   }
 }
+/* ── спрятанная вкладка молчит ──
+   Игровые часы во второй вкладке стоят, а звук шёл: движок и шесть слоёв музыки
+   крутились в фоне, забирая полъядра и играя поверх живой игры в соседней вкладке.
+   Спрятали — контекст засыпает целиком (музыка, эффекты, двигатель); показали —
+   просыпается, планировщик музыки сам пропускает пропущенное. Настройка игрока не
+   трогается. */
+document.addEventListener("visibilitychange",()=>{
+  const c=SND.ctx;if(!c)return;
+  try{
+    if(document.hidden){if(c.state==="running")c.suspend();}
+    else if(audioOn()&&c.state==="suspended")c.resume();
+  }catch(e){}
+});
 /* ── кирпичики синтеза ── */
 function env(g,t,a,d,peak){
   g.gain.cancelScheduledValues(t);

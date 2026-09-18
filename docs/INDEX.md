@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 593 · символов верхнего уровня: 5749
+Файлов: 594 · символов верхнего уровня: 5812
 
 ## СИМВОЛЫ
 
@@ -136,8 +136,8 @@ applyCrewEvent               src/12b-crew-events.js:215-224
 applyPadMode                 src/15-input.js:72-75
 applyPadSize                 src/15-input.js:8
 applySave                    src/14-save.js:216-625
-applySaveRest                src/14a1-save-rest.js:15-387
-applyVolumes                 src/09-audio.js:44-51
+applySaveRest                src/14a1-save-rest.js:15-392
+applyVolumes                 src/09-audio.js:40-47
 apVel                        src/16-flight.js:132
 ARC_JUMP                     src/13a-guns.js:39
 arcHit                       src/13a-guns.js:368-385
@@ -1097,7 +1097,7 @@ cultSeriesOn                 src/12b3-fx-cult.js:191
 cultSeriesWho                src/12b3-fx-cult.js:187-190
 cultSeriesWindow             src/12b3-fx-cult.js:183-186
 CUN                          src/22-mode-cave.js:22-32
-curTok                       src/09-audio.js:87
+curTok                       src/09-audio.js:96
 CUT_RANGE                    src/24-mode-belt.js:187
 cvs                          src/08-state.js:2
 CVS_RECT                     src/08-state.js:83
@@ -1613,7 +1613,7 @@ EN_THR                       src/05c-arms.js:163
 endPtr                       src/15-input.js:428-433
 energyCap                    src/05c-arms.js:166
 energyRegen                  src/05c-arms.js:167
-engineLoop                   src/09-audio.js:333-359
+engineLoop                   src/09-audio.js:342-368
 enterBase                    src/21a-mode-base.js:121-153
 enterBelt                    src/24-mode-belt.js:89-137
 enterCave                    src/22-mode-cave.js:175-232
@@ -1623,7 +1623,7 @@ enterRaid                    src/24a-mode-raid.js:134-189
 enterSpa                     src/29h-spa.js:51-65
 enterSurface                 src/21-mode-surface.js:7-198
 enterWinter                  src/29f-winter.js:112-119
-env                          src/09-audio.js:63-68
+env                          src/09-audio.js:72-77
 EPI_KINDS                    src/12ap-notebook.js:20-30
 EPI_MAX                      src/12ap-notebook.js:31
 EPI_SPEED                    src/12ap-notebook.js:33
@@ -1891,7 +1891,7 @@ FRAME_JS                     src/28-loop.js:119
 FRAME_MS                     src/28-loop.js:141
 frameBody                    src/28-loop.js:425-553
 frameLastAt                  src/28-loop.js:620
-freeVoice                    src/09-audio.js:95-99
+freeVoice                    src/09-audio.js:104-108
 FUEL_PER_ICE                 src/21b1-base-pay.js:100
 fuelPriceHere                src/12k-rep.js:63-70
 FUR_TONES                    src/20f-fauna.js:20-24
@@ -2580,7 +2580,7 @@ importCode                   src/14a-cloud.js:62-64
 IND_FEE                      src/12ac-bld.js:111
 IND_KEYS                     src/02-world.js:123
 indPrice                     src/12ac-bld.js:160-169
-initAudio                    src/09-audio.js:19-43
+initAudio                    src/09-audio.js:19-39
 INST_TOPICS                  src/11ab-institute.js:17-24
 instAll                      src/11ab-institute.js:25
 instBlock                    src/11ab-institute.js:116-133
@@ -2815,7 +2815,7 @@ lawLunch                     src/12al2-laws.js:37-41
 lawNormTake                  src/12al2-laws.js:30-35
 lawOwner                     src/12al2-laws.js:16
 lawRingTick                  src/12al2-laws.js:43-55
-layerLevel                   src/10-music.js:362-376
+layerLevel                   src/10-music.js:362-377
 ldFoe                        tests/91zzzw-combat.js:472-476
 LEADBREAK                    src/13a-guns.js:42
 ledgerAll                    src/11ai-ledger.js:36-39
@@ -2982,7 +2982,7 @@ mailToday                    src/25j-post-wire.js:40
 mailWire                     src/25j-post-wire.js:55-63
 MAIN_CTX                     src/08-state.js:4
 makeIR                       src/10-music.js:109-121
-makePhrase                   src/10-music.js:380-403
+makePhrase                   src/10-music.js:381-404
 MAKER_ASSEMBLY               src/03a-hull-maker.js:463
 MAKER_CV                     src/28y-look.js:311
 MAKER_KEYS                   src/03a-hull-maker.js:73
@@ -3221,7 +3221,7 @@ MODS                         src/04-mods.js:2-13
 modStatWith                  src/26b-ui-station-work.js:21-24
 modWork                      src/26b-ui-station-work.js:20
 modWorkRun                   src/26b-ui-station-work.js:35-43
-MOTIFS                       src/09-audio.js:101-108
+MOTIFS                       src/09-audio.js:110-117
 MOUNT_CACHE                  src/05d-mounts.js:28
 MOUNT_KINDS                  src/05d-mounts.js:21-27
 MOUNT_SIZE_RU                src/05d-mounts.js:20
@@ -3258,10 +3258,10 @@ MUS_WET                      src/10-music.js:105
 musBeacon                    src/10-music.js:275-300
 MUSIC_SCENES                 src/10-music.js:27-36
 musicInit                    src/10-music.js:142-223
-musicSceneNow                src/10-music.js:489-524
+musicSceneNow                src/10-music.js:493-528
 musicSetScene                src/10-music.js:326-361
-musicStop                    src/10-music.js:525-530
-musicTick                    src/10-music.js:406-487
+musicStop                    src/10-music.js:529-535
+musicTick                    src/10-music.js:407-491
 musNote                      src/10-music.js:229-269
 musPerc                      src/10-music.js:301-325
 NAME_MAX                     src/11u-names.js:14
@@ -3377,11 +3377,11 @@ nodeRoll                     src/05a-nodes.js:123-148
 NODES                        src/05a-nodes.js:70
 nodesHave                    src/05a-nodes.js:102
 nodesRender                  src/05a-nodes.js:177-230
-noise                        src/09-audio.js:70-82
+noise                        src/09-audio.js:79-91
 noise1                       src/01-core.js:113
 noise2                       src/01-core.js:116-120
 noise3                       src/24-mode-belt.js:7-15
-noiseBuf                     src/09-audio.js:69
+noiseBuf                     src/09-audio.js:78
 normsOf                      src/12ab-hold.js:89-97
 note                         tests/90-harness.js:102
 NOTE_MAX                     src/12ap-notebook.js:32
@@ -3523,11 +3523,11 @@ opisSlotOf                   src/27j-ui-opis.js:104-108
 opisTarget                   src/27j-ui-opis.js:89-103
 opisUnfit                    src/27j-ui-opis.js:218
 opisWear                     src/27j-ui-opis.js:247-251
-OPT_TABS                     src/27-ui-ship.js:335
-optGroups                    src/27-ui-ship.js:338-355
+OPT_TABS                     src/27-ui-ship.js:360
+optGroups                    src/27-ui-ship.js:363-380
 OPTS_BOOT                    tests/90-harness.js:203
 optsNumify                   src/14a2-save-ephemeral.js:23-28
-optTab                       src/27-ui-ship.js:337
+optTab                       src/27-ui-ship.js:362
 orbPathOf                    src/17-mode-system.js:471-481
 ORDER_WIN                    src/12aa-need.js:76
 orderDeliver                 src/12aa-need.js:116-127
@@ -4013,9 +4013,72 @@ rackRoller                   src/25d-instr-rack.js:290-319
 rackScrew                    src/25d-instr-rack.js:84-92
 rackTex                      src/25d-instr-rack.js:168-282
 rackToggle                   src/25d-instr-rack.js:56-59
+RADIO                        src/10a-radio.js:119
+RADIO_ARCH                   src/10a-radio.js:24-40
 RADIO_BANDS                  src/25e-receiver.js:13-18
+RADIO_BASS                   src/10a-radio.js:524-545
+RADIO_BASS_POOL              src/10a-radio.js:546-552
+RADIO_CHORD_GRAPH            src/10a-radio.js:177
+RADIO_DRIFT_MODES            src/10a-radio.js:118
+RADIO_EN                     src/10a-radio.js:382
+RADIO_GEN_A                  src/10a-radio.js:114
+RADIO_GEN_B                  src/10a-radio.js:115
+RADIO_GEN_C                  src/10a-radio.js:178
+RADIO_LAYERS                 src/10a-radio.js:122
+RADIO_MODES                  src/10a-radio.js:88-91
+RADIO_MOOD                   src/10a-radio.js:105-113
+RADIO_PROG_SETS              src/10a-radio.js:93-101
+RADIO_PROGS                  src/10a-radio.js:102
+RADIO_RH                     src/10a-radio.js:375-381
+RADIO_TRACKS                 src/10a-radio.js:41-87
+radioA                       src/10a-radio.js:128
+radioAdvance                 src/10a-radio.js:238-241
+radioArp                     src/10a-radio.js:635-657
 radioBand                    src/25e-receiver.js:19-27
+radioBar                     src/10a-radio.js:275
+radioBass                    src/10a-radio.js:559-585
+radioBassPick                src/10a-radio.js:554-558
+radioBassVoice               src/10a-radio.js:587-631
+radioBeacon                  src/10a-radio.js:797-818
+radioBell                    src/10a-radio.js:819-821
+radioBellVoice               src/10a-radio.js:783-792
+radioBpm                     src/10a-radio.js:276
+radioBuild                   src/10a-radio.js:131-168
+radioCap                     src/10a-radio.js:435-440
+radioCapRel                  src/10a-radio.js:442-446
+radioDeg                     src/10a-radio.js:282
+radioDrums                   src/10a-radio.js:699-737
+radioDrumStyle               src/10a-radio.js:255
+radioEnv                     src/10a-radio.js:447-452
+radioForm                    src/10a-radio.js:209-218
+radioGenTrack                src/10a-radio.js:179-208
+radioHat                     src/10a-radio.js:777-782
+radioKick                    src/10a-radio.js:753-759
+radioLead                    src/10a-radio.js:661-697
+radioLoad                    src/10a-radio.js:219-236
+radioMelody                  src/10a-radio.js:400-429
+radioMix                     src/10a-radio.js:256-274
+radioMoodNow                 src/10a-radio.js:248-254
+radioNow                     src/10a-radio.js:126
+radioOn                      src/10a-radio.js:125
+radioPad                     src/10a-radio.js:455-515
+radioPhrase                  src/10a-radio.js:383-399
+radioRim                     src/10a-radio.js:771-776
+radioS16                     src/10a-radio.js:277
+radioScale                   src/10a-radio.js:278-281
+radioSkip                    src/10a-radio.js:242-246
+radioSnare                   src/10a-radio.js:760-769
+radioSpectral                src/10a-radio.js:829-846
+radioSrc                     src/10a-radio.js:124
+radioStep                    src/10a-radio.js:307-372
+radioStop                    src/10a-radio.js:870-875
+radioTabla                   src/10a-radio.js:738-743
+radioTick                    src/10a-radio.js:285-301
+radioTimp                    src/10a-radio.js:744-752
+radioTune                    src/10a-radio.js:857-869
 radioTune                    src/25e-receiver.js:29-85
+radioWave                    src/10a-radio.js:848-855
+radioWhere                   src/10a-radio.js:302-306
 RAID_N                       src/24a-mode-raid.js:6
 RAID_ROOMS                   src/24a-mode-raid.js:7-13
 raidFloorAt                  src/24a-mode-raid.js:77
@@ -4265,7 +4328,7 @@ renderHold                   src/27j-ui-hold.js:252
 renderLog                    src/11-log.js:94-117
 renderLoreBoard              src/27h-ui-lore.js:26-79
 renderMail                   src/25k-post-mail.js:36-109
-renderOpts                   src/27-ui-ship.js:58-330
+renderOpts                   src/27-ui-ship.js:58-355
 renderPrices                 src/12aa-need.js:258-285
 renderQsl                    src/11an-qsl.js:160-201
 renderRecord                 src/11aa-record.js:86-109
@@ -4755,8 +4818,8 @@ settleWatch                  src/12t-settle.js:397-403
 settleWords                  src/12t-settle.js:258-262
 setTx                        src/27z-telemetry.js:84-93
 setZoom                      src/15-input.js:340
-SFX                          src/09-audio.js:109-324
-sfx                          src/09-audio.js:325-331
+SFX                          src/09-audio.js:118-333
+sfx                          src/09-audio.js:334-340
 SH_DX                        src/03b-hull-paint.js:175
 SHARD_H                      tests/90-harness.js:32
 sharpWord                    src/21a9-base-laws.js:41-45
@@ -5020,7 +5083,7 @@ stGround                     src/17c-system-draw.js:120
 stGroup                      src/26-ui-station.js:140
 stGroupOf                    src/26-ui-station.js:139
 stMakerDress                 src/17c1-station-dress.js:10-52
-stopEngine                   src/09-audio.js:360-364
+stopEngine                   src/09-audio.js:369-373
 STORAGE_OK                   src/14-save.js:7
 STORAGE_TOLD                 src/14-save.js:13
 STORIES                      src/12k-stories-a.js:45-348
@@ -5375,7 +5438,7 @@ UNIQ                         src/21b1-base-pay.js:35-44
 UNIQ_EVERY                   src/21b1-base-pay.js:45
 UNIQUE_COLS                  src/03-ships.js:14
 UNIQUE_TAG                   src/03-ships.js:15
-unlockAudio                  src/09-audio.js:52-61
+unlockAudio                  src/09-audio.js:48-57
 unpackPart                   src/05-parts.js:473-479
 updateAllies                 src/12a-crew.js:644-677
 updateBarges                 src/12l-barge.js:165-196
@@ -5465,7 +5528,7 @@ visitHere                    src/11b-speech.js:87-90
 visitMark                    src/11b-speech.js:91-95
 visitsAll                    src/11b-speech.js:86
 vLink                        src/18d-verlet.js:78-86
-voice                        src/09-audio.js:88-94
+voice                        src/09-audio.js:97-103
 VOICE_FEMALE                 src/12pa-beacon.js:197
 VOICE_KEYS                   src/02a-worldmix.js:81
 VOICE_MALE                   src/12pa-beacon.js:196
@@ -5895,6 +5958,9 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## src/10-music.js · 33 КБ
   · музыка: слои, а не треки:1
+
+## src/10a-radio.js · 63 КБ
+  · радио: треки и генератор:1
 
 ## src/11-log.js · 10 КБ
   · бортовой журнал:1
@@ -6865,7 +6931,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/26e2-post.js · 8 КБ
   · Космопочта — учреждение как погода (M492, DESIGN-birchpunk):1
 
-## src/27-ui-ship.js · 24 КБ
+## src/27-ui-ship.js · 26 КБ
   · силуэт корпуса и вход в ОПИСЬ:1
 
 ## src/27b-ui-crew.js · 15 КБ

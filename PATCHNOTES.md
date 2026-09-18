@@ -6,7 +6,7 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
-## 0.452.0 - a flat 60, and the lane that stopped shouting from afar
+## 0.453.0 - a flat 60, and the lane that stopped shouting from afar
 
 - **Fix** (`28-loop`): the frame cap estimated the display period from the *shortest* recent
   interval; under a saturated GPU a late frame is followed by a catch-up 6-9 ms later, the estimate
@@ -17,8 +17,26 @@ could ever save.
 - **Fix** (`17k`, `17l`, `17g`): at far zoom the billboard is an unlettered plate and the hotel name
   is gone (letters fade in towards x0.5); the hotel and the lane queue shrink with the world instead
   of stacking at a size floor.
-- **Fix** (`09-audio`): a hidden tab suspends its audio - six music layers kept playing in the
-  background and ate 40-60% of a core.
+
+## 0.452.0 - the radio: pieces with form, a generator that assembles them, silence in a hidden tab
+
+- **Radio** (`10a-radio`, settings ЗВУК → «Что играет»): a second voice beside the ambient layers of
+  `10-music` — pieces with a form (intro, theme, counter-line, bridge, return), dial tuning between
+  them. Twenty named tracks on ten dark archetypes (Zodiac, Berlin school, Solaris, Stalker, Through
+  Thorns, music box, Jarre, waltz, Letters from a Dead Man, Siberiade); the first six take key, tempo
+  and bar chords from the author's Suno references, «Безмолвная орбита» its melody contour from 1:00.
+  The generator is the default: each piece assembled from parts — pad, soloist, drums or none, two
+  bass figures, figuration, melody manner and contour, a random chord walk, a random form, mood drift
+  at section boundaries (tempo, minor mode, key), a pivot chord (dominant sus4-7 of the new key)
+  before every key change. Slow (32–45 bpm), minor only, one long bass note per three bars, chord held
+  as long as the bass, every voice's tail cut to the chord change or the note rests. Beacon (a muffled
+  buoy ping with fading echoes, on the bar's chord), bells, overtone clouds on the chord root (partials
+  2 3 4 6 8 9 12 16 19 24 only — the ones that sit in a minor scale). Danger tilts to phrygian with
+  timpani, the cantina to dorian with brushes; the map and the ground drop the drums. Music defaults
+  to 20 %. Audited in the page: every oscillator pitch on the scale.
+- **Fix** (`09-audio`): a hidden tab is silent — the context suspends on `visibilitychange` and resumes
+  when shown; a second tab used to keep six layers playing over the live game at half a core.
+- **Save**: `G.opts.audio.src` (`gen`/`tracks`/`ambient`), `track`, `genN` with defaults in `applySave`.
 
 ## 0.451.0 - red suites closed, the phone stick and the signs that shrank
 
