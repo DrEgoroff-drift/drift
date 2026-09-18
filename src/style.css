@@ -1967,3 +1967,11 @@ body.table u.addr{color:#7a4a20}
 #railScheme b{font:600 10px ui-monospace,monospace;letter-spacing:.12em;color:#e9dcc0}
 #railScheme s{text-decoration:none;font:10px ui-monospace,monospace;color:rgba(233,220,192,.6)}
 #railWin .rw-map{margin-top:10px}
+
+/* барахолка (D20): прилавок таблицей — три колонки под шапкой, продано — вычеркнуто */
+#bazWin .bz-tab{border:1px solid rgba(240,210,160,.25);border-radius:3px;overflow:hidden}
+#bazWin .bz-th{display:grid;grid-template-columns:1fr auto;gap:8px;padding:4px 8px;font-size:9px;letter-spacing:.14em;opacity:.55;background:rgba(240,210,160,.08)}
+#bazWin .bz-row{display:grid;grid-template-columns:1fr auto;grid-template-areas:"nm pr" "nt pr";gap:2px 10px;align-items:center;padding:6px 8px;border-top:1px solid rgba(255,255,255,.06)}
+#bazWin .bz-row:nth-child(2n+1){background:rgba(0,0,0,.18)}
+#bazWin .bz-row b{grid-area:nm;font-size:12px}#bazWin .bz-row s{grid-area:nt;text-decoration:none;font-size:10px;opacity:.7}#bazWin .bz-row button{grid-area:pr}
+#bazWin .bz-row.sold b{text-decoration:line-through;opacity:.5}

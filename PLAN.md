@@ -203,7 +203,7 @@ job (the phone milestone), but no fix may add raster cost without a number.
   lengthens the plume ×1.7, СБРОС leaves a crate where it was thrown, СИРЕНА sends two rings; the
   cutter beam and the searchlight cone were already drawn. Left: the salvo flash (ЗАЛП fires the
   guns, which flash themselves) — judged enough; БАЛЛАСТ has no picture (it is a number).
-- [ ] **D20 Барахолка** (M463): hulks are flat rectangles with triangle awnings — real moored hulls (fleet art), canvas that sags, lamp strings that swing; the stall window as a table of goods, not a list.
+- [x] **D20 Барахолка** (M463) — done 18.09 on the S23: the hulks are real hulls from the table, dead under a dark film, moored at their angles; each carries a sagging canvas on two poles; the lamp strings swing lamp by lamp; the stall window is a table with a header and alternating rows, sold struck through.
 - [ ] **D19 Подписка** (M487): the second button and the honest line are plain text; a «ЗАБЛОКИРОВАНО» seal on the instrument face, the tariff-updated letter.
 - [ ] **D18 Scars** (M482): drawn where they are on the silhouette — a soot patch over a burnt cell, a skewed mount, a drip trail from the tank; the КОРПУС ПОМНИТ rows.
 - [ ] **D17 Космопочта** (M492): a text row today — the post window (the grille, the clock over it, the talon printed), the hours plate on the door, the «распишитесь» moment.

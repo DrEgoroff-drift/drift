@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 593 · символов верхнего уровня: 5742
+Файлов: 593 · символов верхнего уровня: 5743
 
 ## СИМВОЛЫ
 
@@ -365,15 +365,16 @@ battAt                       src/21d-battery.js:17-31
 battDraw                     src/21d-battery.js:67-76
 battTarget                   src/21d-battery.js:33-35
 battTick                     src/21d-battery.js:36-65
+BAZ_HULLS                    src/17n-bazaar.js:67
 BAZ_THROWN_MAX               src/17n-bazaar.js:9
 bazBought                    src/17n-bazaar.js:19-23
 bazBucket                    src/17n-bazaar.js:18
 bazBuy                       src/17n-bazaar.js:47-61
-bazClose                     src/17n-bazaar.js:101
+bazClose                     src/17n-bazaar.js:116
 bazHere                      src/17n-bazaar.js:10-17
-bazInteract                  src/17n-bazaar.js:94-100
+bazInteract                  src/17n-bazaar.js:109-115
 bazLots                      src/17n-bazaar.js:33-46
-bazOpen                      src/17n-bazaar.js:102-120
+bazOpen                      src/17n-bazaar.js:117-137
 bazPartBase                  src/17n-bazaar.js:31
 bazThrow                     src/17n-bazaar.js:25-30
 BB_CACHE                     src/17k-billboard.js:12
@@ -1364,7 +1365,7 @@ drawBarges                   src/12l-barge.js:586-609
 drawBargesMap                src/12l-barge.js:611-632
 drawBase                     src/21ac-base-draw.js:43-730
 drawBaseBuilding             src/21c-built.js:105-136
-drawBazaar                   src/17n-bazaar.js:62-93
+drawBazaar                   src/17n-bazaar.js:68-108
 drawBeast                    src/20f-fauna.js:231-339
 drawBeastAlien               src/20f-fauna.js:65-229
 drawBelt                     src/24-mode-belt.js:378-718
@@ -6470,7 +6471,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/17m-peace-fleet.js · 7 КБ
   · мирный флот в полёте (M455, DESIGN-borders §2.4, war §7.3):1
 
-## src/17n-bazaar.js · 7 КБ
+## src/17n-bazaar.js · 9 КБ
   · барахолка, которая помнит (M463, DESIGN-life):1
 
 ## src/17o-giants.js · 18 КБ
