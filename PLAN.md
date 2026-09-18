@@ -141,10 +141,11 @@ job (the phone milestone), but no fix may add raster cost without a number.
 - [~] **D9 M453 the stamp — the empty page checked on the S23 18.09.** The eight dashed cells on
   the paper read as a document page. The inked stamps (grain, tilt, the Компания slip) were not
   in this save — judge them with a save that has stamps.
-- [ ] **D10 M454 the station by its builder** — not reached 18.09: the six-maker capture on the
-  phone slipped off frame (camera lag after teleport); needs a held camera. Ask stands: the plate
-  reads light grey for all (the station's one light washes the ground out); the dressing is
-  plate-only — the maker grammar must reach the modules and the core, or it stays «a sticker».
+- [~] **D10 M454 the station by its builder — core and panels done 18.09 on the S23** (six
+  captures with the ship re-placed by the orbiting station before each). The plate's ground went
+  .12 → .2 and now reaches the core trunk (gradient mixed .3 with `makerGround`) and the solar
+  panels (.22): Рассвет reads ochre, Компания white, Хай-Фронт pale, Коммуна blue-grey, Орднунг
+  dark. Left: the module boxes (green/blue) are still the same on all six.
 - [x] **D11 M447/M448 the galaxy on the map — done 18.09 on the S23.** The home frame reads; at
   ×2.5 and ×5 the per-system glyph (halo, rays, station ring) stayed ×1-sized while the cell shrank
   to 9 px and a thousand glyphs made grey soup — the glyph now scales with the cell (`gk` =
@@ -164,11 +165,13 @@ job (the phone milestone), but no fix may add raster cost without a number.
   edges with no neighbour, the hold hatched, parts as ochre stamps with a kind letter
   (О Щ Д К Р У П М), «СОГЛАСОВАНО» double-boxed in the corner. Same brush serves the КБ. Left:
   the turret on the back in flight (M479) — not judged.
-- [ ] **D15 Stage 5 voice** (M485–M486 …): the drone's name and quirk in the list, the tape strip on the hull (grey on grey — barely reads at ×4.5).
-- [ ] **D13 The railway**: the faint lines and station circles on the map (M470); the ring, glide
-  path, vestibule block and the vestibule page (M471–M472); the ride on the map (M473: the flight
-  pads still show in the carriage; the train mark and the headlight) — as each is
-  built.
+- [~] **D15 Stage 5 voice — the tape done 18.09 on the S23.** The strip was grey on grey; now
+  black electrical tape with a glossy edge, a shadow under it and a folded tip, slightly wider —
+  reads at ×4.5. Left: the drone's name and quirk in the list.
+- [~] **D13 The railway — checked on the S23 18.09 at «Луун».** The ring with its spiral, the
+  dashed glide path and the «ЛИНИЯ 6-12 +2» label read in the system; the vestibule page (board,
+  fares, life rows) reads. Not judged: the map lines (faint by design, seen at ×1 only), the ride
+  on the map (M473) — needs a ride.
 - [x] **D26 Giants — done 18.09 on the S23 (all seven captured at ×0.28).** Each body is now
   baked once (1500×900, 1 px per unit) by the room rules: mass → seams/rivets → a human-scale
   detail (landing strip at the moon's mouth, the hotel's parking row and marquee bulbs, the

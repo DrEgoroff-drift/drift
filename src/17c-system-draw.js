@@ -114,8 +114,12 @@ function stationViz(S){
   S.viz={a:.75+r()*.55,b:.8+r()*.5,n:3+Math.floor(r()*3),ph:r()*TAU,f:r()};
   return S.viz;
 }
+/* грунт строителя доходит до ствола и панелей, а не только до плиты (D10, телефон
+   18.09: шесть станций отличались одной полоской — «наклейка») */
+let ST_BY="gt";
+function stGround(base,k){return (typeof makerGround==="function")?rgba(mixc(base,makerGround(ST_BY),k),1):rgba(base,1);}
 function stPanels(len,wid){        /* солнечные панели — неподвижны относительно звезды */
-  ctx.fillStyle="rgba(52,88,128,.95)";ctx.strokeStyle="rgba(130,190,230,.4)";ctx.lineWidth=1;
+  ctx.fillStyle=stGround([52,88,128],.22);ctx.strokeStyle="rgba(130,190,230,.4)";ctx.lineWidth=1;
   for(const s of [-1,1]){
     const y0=s>0?18:-18-len;
     ctx.beginPath();ctx.rect(-wid/2,y0,wid,len);ctx.fill();ctx.stroke();
@@ -126,7 +130,7 @@ function stPanels(len,wid){        /* солнечные панели — неп
 }
 function stCore(w,h,seams){        /* центральный ствол с причальным раструбом наверху */
   const bg=ctx.createLinearGradient(-w,0,w,0);
-  bg.addColorStop(0,"#2a3a48");bg.addColorStop(.45,"#1d2734");bg.addColorStop(1,"#141b25");
+  bg.addColorStop(0,stGround([42,58,72],.3));bg.addColorStop(.45,stGround([29,39,52],.3));bg.addColorStop(1,stGround([20,27,37],.3));
   ctx.fillStyle=bg;ctx.strokeStyle="rgba(0,0,0,.45)";ctx.lineWidth=.8;
   ctx.beginPath();ctx.rect(-w,-h,w*2,h*2);ctx.fill();ctx.stroke();
   if(seams){
@@ -188,8 +192,8 @@ function drawStationBody(V,S,ty){
   {
     /* плита в грунте строителя (M454): тёмная, но своего тона — белая Компания
        и серый Орднунг различимы уже здесь */
-    const by=(S&&S.by)||"gt";
-    ctx.fillStyle=(typeof makerGround==="function")?rgba(mixc([30,40,54],makerGround(by),.12),1):"#1e2836";
+    const by=(S&&S.by)||"gt";ST_BY=by;
+    ctx.fillStyle=(typeof makerGround==="function")?rgba(mixc([30,40,54],makerGround(by),.2),1):"#1e2836";
     ctx.strokeStyle="rgba(0,0,0,.5)";ctx.lineWidth=.8;
     stPlatePath(V);ctx.fill();ctx.stroke();
     if(typeof stMakerDress==="function")stMakerDress(by,V);

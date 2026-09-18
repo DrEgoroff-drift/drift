@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 587 · символов верхнего уровня: 5665
+Файлов: 587 · символов верхнего уровня: 5667
 
 ## СИМВОЛЫ
 
@@ -1477,8 +1477,8 @@ drawStarHole                 src/16a-space.js:576-606
 drawStarNeutron              src/16a-space.js:549-573
 drawStars                    src/16-flight.js:28-72
 drawStarSingle               src/16a-space.js:465-547
-drawStation                  src/17c-system-draw.js:438-502
-drawStationBody              src/17c-system-draw.js:174-380
+drawStation                  src/17c-system-draw.js:442-506
+drawStationBody              src/17c-system-draw.js:178-384
 drawStationMods              src/17a-station-mod.js:214-217
 drawStencils                 src/03d-hull-marks.js:1-90
 drawStModule                 src/17a-station-mod.js:95-210
@@ -1496,7 +1496,7 @@ drawSysNebula                src/16a-space.js:208-236
 drawSysRail                  src/18f-rail-station.js:32-65
 drawSystem                   src/17-mode-system.js:459-747
 drawSysTraffic               src/17f-sys-traffic.js:36-40
-drawTapes                    src/12s1-tape.js:37-49
+drawTapes                    src/12s1-tape.js:37-52
 drawTemple                   src/20aa-poi-shapes.js:50-89
 drawThingIcon                src/27i-ui-table.js:400-436
 drawTierTrim                 src/03b-hull-paint.js:73-166
@@ -4821,7 +4821,7 @@ smenaSync                    src/12ud-smena.js:107-119
 smenaWhere                   src/12ud-smena.js:121
 smK                          src/12ud-smena.js:24
 smL                          src/12ud-smena.js:25
-SMOKE_N                      src/17c-system-draw.js:387
+SMOKE_N                      src/17c-system-draw.js:391
 SMOKE_PATHS                  src/12tb-settle-draw2.js:246
 smokePath                    src/12tb-settle-draw2.js:247-262
 smP                          src/12ud-smena.js:28
@@ -4895,12 +4895,13 @@ SPIRIT_LOW                   src/21a1b-base-food.js:14
 sprgba                       src/29i-spa-draw.js:22
 SRC_DISCOUNT                 src/12ad-site.js:22
 srcPrice                     src/12ad-site.js:294-297
-ST_ART                       src/17c-system-draw.js:407
+ST_ART                       src/17c-system-draw.js:411
+ST_BY                        src/17c-system-draw.js:119
 ST_GROUPS                    src/26-ui-station.js:131-138
 ST_MOD_FILL                  src/17a-station-mod.js:81
 ST_MODULES                   src/17a-station-mod.js:14-29
 ST_TYPES                     src/06-galaxy.js:54-72
-stackSmoke                   src/17c-system-draw.js:388-401
+stackSmoke                   src/17c-system-draw.js:392-405
 stallWho                     src/28-loop.js:122-130
 STAMP_ORDER                  src/17i-stamp.js:11
 STAMP_POEM                   src/17i-stamp.js:14
@@ -4944,7 +4945,7 @@ STAT_SHOW                    src/05-parts.js:426-438
 STATE_HASH_SKIP              src/08a-statehash.js:24-29
 stateHash                    src/08a-statehash.js:30-81
 stateHashParts               src/08a-statehash.js:82-90
-stationArt                   src/17c-system-draw.js:408-437
+stationArt                   src/17c-system-draw.js:412-441
 stationDeals                 src/27g-deals.js:141-158
 stationFleet                 src/04b-fleet.js:163-191
 stationMercs                 src/12a-crew.js:95-147
@@ -4956,11 +4957,12 @@ stationParts                 src/03-ships.js:159-198
 stationUniqueOffer           src/03-ships.js:143-156
 stationViz                   src/17c-system-draw.js:111-116
 statPreview                  src/05-parts.js:417-425
-stCore                       src/17c-system-draw.js:127-142
+stCore                       src/17c-system-draw.js:131-146
 stDel                        src/14-save.js:26
 steps                        tests/90-harness.js:386
 stepWorld                    src/28-loop.js:364-384
 stGet                        src/14-save.js:8
+stGround                     src/17c-system-draw.js:120
 stGroup                      src/26-ui-station.js:140
 stGroupOf                    src/26-ui-station.js:139
 stMakerDress                 src/17c1-station-dress.js:10-52
@@ -5010,10 +5012,10 @@ storyTableLine               src/11c-stories.js:281-287
 storyTraces                  src/11c-stories.js:219-236
 storyTurns                   src/11c-stories.js:121-142
 storyWhen                    src/11c-stories.js:205-209
-stPanels                     src/17c-system-draw.js:117-126
-stPlatePath                  src/17c-system-draw.js:166-173
+stPanels                     src/17c-system-draw.js:121-130
+stPlatePath                  src/17c-system-draw.js:170-177
 STRATA_K                     src/18a1-glaze.js:119
-stRing                       src/17c-system-draw.js:143-162
+stRing                       src/17c-system-draw.js:147-166
 STRIP_CHUNK                  src/07-planet.js:79
 STRIP_JOB                    src/07-planet.js:82
 STRIP_MS                     src/07-planet.js:78
@@ -6348,7 +6350,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/17b-finds.js · 17 КБ
   · находки в полёте:1
 
-## src/17c-system-draw.js · 29 КБ
+## src/17c-system-draw.js · 30 КБ
   · система: кольца, пояс и станция в кадре:1
 
 ## src/17c1-station-dress.js · 4 КБ

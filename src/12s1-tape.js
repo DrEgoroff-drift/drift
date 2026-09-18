@@ -39,11 +39,14 @@ function drawTapes(h,n){
   const L=h.len,bw=h.bw;
   for(let i=0;i<n;i++){
     const r=rng(hashi(h.seed||1,0x7A9E,i));
-    const x=h.tail+(.15+r()*.7)*L,y=(r()*2-1)*bw*.55,a=(r()-.5)*1.1,ln=L*(.06+r()*.05),w=Math.max(1.6,bw*.22);
+    const x=h.tail+(.15+r()*.7)*L,y=(r()*2-1)*bw*.55,a=(r()-.5)*1.1,ln=L*(.07+r()*.05),w=Math.max(1.8,bw*.26);
+    /* D15 (телефон 18.09): серая полоса на серой обшивке не читалась. Изолента —
+       чёрная, глянцевая: тёмное тело, светлый блик по кромке и загнутый уголок */
     ctx.save();ctx.translate(x,y);ctx.rotate(a);
-    ctx.fillStyle="rgba(58,64,72,.96)";ctx.fillRect(-ln/2,-w/2,ln,w);
-    ctx.fillStyle="rgba(170,176,184,.35)";ctx.fillRect(-ln/2,-w/2,ln,w*.3);
-    ctx.strokeStyle="rgba(20,22,26,.5)";ctx.lineWidth=.3;ctx.strokeRect(-ln/2,-w/2,ln,w);
+    ctx.fillStyle="rgba(0,0,0,.35)";ctx.fillRect(-ln/2+.4,-w/2+.5,ln,w);            /* тень под полосой */
+    ctx.fillStyle="rgba(18,20,24,.97)";ctx.fillRect(-ln/2,-w/2,ln,w);
+    ctx.fillStyle="rgba(200,206,214,.42)";ctx.fillRect(-ln/2,-w/2,ln,w*.22);         /* блик */
+    ctx.fillStyle="rgba(120,126,134,.5)";ctx.fillRect(ln/2-w*.35,-w/2,w*.35,w);       /* загнутый кончик */
     ctx.restore();
   }
 }
