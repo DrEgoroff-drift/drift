@@ -329,7 +329,8 @@ function applySaveRest(s){
   G.told=Array.isArray(s.told)?s.told.slice(-24):[];
   G.mined=asMap(s.mined);   /* выработанные залежи (21-mode-surface) */
   G.farTaken=asMap(s.farTaken);   /* выбранное из дальних залежей (M466) */
-  G.draft=asMap(s.draft);   /* чертежи кораблей — правка игрока (M477); нет записи — упаковщик */
+  G.draft=asMap(s.draft);
+  G.tapeRoll=s.tapeRoll|0;G.tapes=asMap(s.tapes);   /* изолента (M486) */   /* чертежи кораблей — правка игрока (M477); нет записи — упаковщик */
   G._hullHeld=null;         /* корпус до беды считается заново от загруженного (28-loop) */
   G.actWk=(s.actWk&&typeof s.actWk==="object"&&!Array.isArray(s.actWk))?{wk:s.actWk.wk|0,ms:Math.max(0,+s.actWk.ms||0),used:s.actWk.used|0}:null;
   G.lastDig=(s.lastDig&&typeof s.lastDig==="object")?s.lastDig:null;

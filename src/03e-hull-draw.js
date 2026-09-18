@@ -531,6 +531,7 @@ function hullPart1(h,id,bank,ticks){
     drawWear(h,clamp(wearOf(id)*((typeof makerRow==="function")?makerRow(h.by).wear:1),0,1));
   /* швы починок — поверх налёта и тоже в обрезке: биография не смывается (12s) */
   if(typeof drawSeams==="function")drawSeams(h,typeof seamsOf==="function"?seamsOf(id):0);
+  if(typeof drawTapes==="function")drawTapes(h,typeof tapesOf==="function"?tapesOf(id):0);   /* изолента (M486) */
   ctx.restore();
   /* ── грань корпуса ──
      Полупрозрачная линия в цвет корпуса — не грань, а ореол: вблизи она

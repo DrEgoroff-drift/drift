@@ -127,6 +127,7 @@ job (the phone milestone), but no fix may add raster cost without a number.
 - [ ] **D12 The ten far goods**: ten glyphs/colours in the ТРЮМ spread round the wheel (review
   §4.4), the belt entry's reading line, ЖИЛА across the screen (the only shout).
 - [ ] **D14 The blueprint** (M476–M479): the ОПИСЬ ЧЕРТЁЖ now a plain grid — the синька of M477 (Prussian blue, ochre stamps by kind, «СОГЛАСОВАНО»), the hold readable, the turret on the back in flight (M479).
+- [ ] **D15 Stage 5 voice** (M485–M486 …): the drone's name and quirk in the list, the tape strip on the hull (grey on grey — barely reads at ×4.5).
 - [ ] **D13 The railway**: the faint lines and station circles on the map (M470); the ring, glide
   path, vestibule block and the vestibule page (M471–M472); the ride on the map (M473: the flight
   pads still show in the carriage; the train mark and the headlight) — as each is
@@ -483,7 +484,7 @@ patchnote of each version names the M-numbers it closes.
   (Митя, Глаша, Буля, Кузя, Жучка, Громобой…) and **one quirk** = one number off the norm both ways
   («работает только днём — днём быстрее», «возит лишнее», «поёт при бурении»). Journal lines in the
   name: «Митя встал. Чинится сам. Ругается.» Drones never die (2026-09-03). Hands stay faceless.
-- [ ] **[design owed] M486 Изолента.** A consumable for kopecks: field repair of any part or the hull to 50 %
+- [ ] **[design owed] M486 Изолента — BUILT 18.09 (Control), `src/12s1-tape.js`.** Rolls for 5 кр beside the repair buttons; ЗАМОТАТЬ in ОПИСЬ anywhere → hull exactly 50 %, a grey strip on the hull (up to 6, in the bake key), saved (`tapeRoll`, `tapes`); a full yard repair takes the tape off — except at a Рассвет yard, where tape is a finish. **Open:** the кулибин trait, tape on a part (not only the hull), the first hour's ДО 50 % button anywhere. Original: A consumable for kopecks: field repair of any part or the hull to 50 %
   (the first hour's ДО 50 % button, anywhere); leaves a grey **tape strip drawn on the hull** where
   used (a scar until a yard repair); the trait **«кулибин»** on a hand/manager: tapes free from scrap,
   holds 60 %, «заматывает так, что не видно». Рассвет's yard treats tape as a finish.

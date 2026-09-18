@@ -37,7 +37,7 @@ function hullBakeDraw(h,id,bank){
   const crowns=(typeof drawCrowns==="function")&&id===G.shipId&&G.crowns&&
     NODE_FAMS.some(f=>G.crowns[f.id]);
   const bq=Math.round(bank*20);
-  const common=sb+"|"+Math.round(wearOf(id)*64)+"|"+(typeof seamsOf==="function"?seamsOf(id):0)+
+  const common=sb+"|"+Math.round(wearOf(id)*64)+"|"+(typeof seamsOf==="function"?seamsOf(id):0)+"|"+(typeof tapesOf==="function"?tapesOf(id):0)+
     "|"+(typeof cosmOn==="function"?cosmOn("mark"):"");
   /* слои между живыми вставками: [1] строка [2] венцы [3]; без вставок слои сливаются */
   const layers=[];

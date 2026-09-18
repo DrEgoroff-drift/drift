@@ -256,6 +256,7 @@ function repairDo(frac){
     if(units<=0){say("Не хватает кредитов");return;}
   }
   G.credits-=cost;G.hull+=units;
+  if(frac>=1&&units>=q.units&&typeof tapeYardRepaired==="function")tapeYardRepaired();   /* как положено — без изоленты (M486) */
   if(units<q.units)say("Починили на что хватило · +"+units);
   else if(cost<q.units*q.per)say("Первый час: чинят по карману");
   renderTab();
@@ -271,6 +272,13 @@ function repairBtns(){
   bh.style.display=h.units?"":"none";
   bh.textContent="ДО 50% · "+h.cost.toLocaleString("ru");
   bf.textContent=!f.units?"КОРПУС ЦЕЛ":(h.units?"ПОЛНОСТЬЮ · ":"РЕМОНТ · ")+f.cost.toLocaleString("ru");
+  /* изолента — рядом с ремонтом, за копейки (M486) */
+  let bt=document.getElementById("bTape");
+  if(!bt&&bf.parentNode&&typeof tapeBuy==="function"){
+    bt=document.createElement("button");bt.id="bTape";bt.className=bf.className;
+    bt.addEventListener("click",()=>{tapeBuy();repairBtns();});bf.parentNode.insertBefore(bt,bf.nextSibling);
+  }
+  if(bt)bt.textContent="ИЗОЛЕНТА · "+TAPE_PRICE+(tapeRolls()?" · В ЗАПАСЕ "+tapeRolls():"");
 }
 document.getElementById("bRepairHalf").addEventListener("click",()=>repairDo(.5));
 document.getElementById("bRepair").addEventListener("click",()=>repairDo(1));

@@ -151,6 +151,20 @@ function drawPlan(cx,W0,H0,pk){
 }
 /* ── блок ЧЕРТЁЖ в ОПИСИ (M476): только вид, правка — КБ (M477) ── */
 function opisPlanBlock(){
+  const wrap=document.createElement("div");
+  /* изолента (M486): замотать можно где угодно — корпус до половины */
+  if(typeof tapeRolls==="function"&&(tapeRolls()>0||tapesOf()>0)){
+    const t=document.createElement("div");t.className="op-tape";
+    t.innerHTML="<h4>ИЗОЛЕНТА<s>рулонов "+tapeRolls()+" · полос на корпусе "+tapesOf()+"</s></h4>";
+    if(tapeCan()){const b=document.createElement("button");b.className="act";b.textContent="ЗАМОТАТЬ · КОРПУС ДО 50 %";
+      b.onclick=()=>{tapeUse();if(typeof opisRerender==="function")opisRerender();};t.appendChild(b);}
+    else{const e=document.createElement("s");e.className="chalk";e.textContent=tapeRolls()?"корпус выше половины — мотать рано":"рулонов нет · продаётся у ремонта на станции";t.appendChild(e);}
+    wrap.appendChild(t);
+  }
+  wrap.appendChild(opisPlanOnly());
+  return wrap;
+}
+function opisPlanOnly(){
   const pk=planNow(),P=pk.P;
   const box=document.createElement("div");box.className="op-plan";
   const n=k=>P.cells.filter(q=>q.kind===k).length;

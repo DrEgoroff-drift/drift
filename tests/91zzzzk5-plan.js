@@ -93,3 +93,16 @@ TEST_SUITES.push(()=>suite("башня: орудие на хребте стре�
   }
   G.draft={};G.fit[id]={};
 }));
+TEST_SUITES.push(()=>suite("изолента: до половины где угодно, полоса до верфи",()=>{
+  resetWorld();
+  const hm=stat().hullMax;G.hull=hm*.2;G.tapeRoll=0;G.tapes={};
+  ok(!tapeCan(),"без рулона — нечем");
+  G.credits=100;tapeBuy();eq(tapeRolls(),1,"рулон куплен за копейки");
+  ok(tapeUse(),"замотали");eq(G.hull,Math.ceil(hm*.5),"корпус — ровно половина");
+  eq(tapesOf(),1,"на корпусе полоса");ok(!tapeCan(),"выше половины мотать рано");
+  const S=JSON.parse(JSON.stringify(snapshot()));G.tapes={};applySave(S);
+  eq(tapesOf(),1,"полоса переживает сейв");
+  G.sys=getSystem(0,0);if(G.sys.station)G.sys.station.by="gt";tapeYardRepaired();
+  eq(tapesOf(),0,"верфь сняла полосу");
+  G.tapes={};G.tapeRoll=0;
+}));
