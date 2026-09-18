@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 577 · символов верхнего уровня: 5579
+Файлов: 578 · символов верхнего уровня: 5586
 
 ## СИМВОЛЫ
 
@@ -93,9 +93,16 @@ aiFace                       src/12d-mgr-face.js:210-244
 aiLearn                      src/12f-mgr-ai.js:108-125
 aiStage                      src/12f-mgr-ai.js:19-23
 aiUpkeep                     src/12f-mgr-ai.js:128-130
+ALBUM_FX                     src/25g1-album-fx.js:11-17
 ALBUM_MAX                    src/25g-postcard.js:627
 albumAll                     src/25g-postcard.js:628
+albumCanvas                  src/25g1-album-fx.js:41-51
+albumClose                   src/25g1-album-fx.js:53
+albumDpr                     src/25g1-album-fx.js:52
+albumFx                      src/25g1-album-fx.js:18-39
+albumLightbox                src/25g1-album-fx.js:55-92
 albumOpen                    src/25g-postcard.js:677
+albumSave                    src/25g1-album-fx.js:94-110
 alCount                      tests/91zzzzzy-alive.js:15-22
 ALL_NAMES                    tests/90-harness.js:93
 allyOf                       src/27b-ui-crew.js:8
@@ -1484,7 +1491,7 @@ drawSystem                   src/17-mode-system.js:458-745
 drawSysTraffic               src/17f-sys-traffic.js:36-40
 drawTapes                    src/12s1-tape.js:36-48
 drawTemple                   src/20aa-poi-shapes.js:50-89
-drawThingIcon                src/27i-ui-table.js:399-435
+drawThingIcon                src/27i-ui-table.js:400-436
 drawTierTrim                 src/03b-hull-paint.js:73-166
 drawTiles                    src/18c-chunks.js:144-151
 drawTrail                    src/16-flight.js:554-642
@@ -4126,7 +4133,7 @@ relicSynth                   src/12h-relic.js:113-121
 relicUnequip                 src/12h-relic.js:87
 RELIEF_KEYS                  src/02a-worldmix.js:79
 RELIEF_MIX                   src/07a-terrain.js:16-34
-renderAlbum                  src/25g-postcard.js:678-739
+renderAlbum                  src/25g-postcard.js:678-702
 renderBarge                  src/12l-barge.js:672-763
 renderBaseLink               src/21a2-base-link.js:137-163
 renderBasesTab               src/26a-ui-station-home.js:4-323
@@ -4149,10 +4156,10 @@ renderRelays                 src/11ap-relay.js:253-301
 renderRoute                  src/12r-route.js:349-448
 renderSiteTab                src/26c-ui-station-site.js:7-130
 renderSmena                  src/12ud-smena.js:123-164
-renderStrips                 src/27i-ui-table.js:327-369
+renderStrips                 src/27i-ui-table.js:328-370
 renderTab                    src/26-ui-station.js:485-497
 renderTabBody                src/26-ui-station.js:498-690
-renderThings                 src/27i-ui-table.js:370-394
+renderThings                 src/27i-ui-table.js:371-395
 RENT_ADS                     src/12f1-mgr-rent.js:18
 RENT_OPIN                    src/12f1-mgr-rent.js:20
 RENT_TIERS                   src/12f1-mgr-rent.js:13-17
@@ -5018,21 +5025,21 @@ TAB_CH                       src/14a-cloud.js:21
 TAB_ID                       src/14a-cloud.js:20
 TAB_LIVE                     src/14a-cloud.js:19
 TABLE_REPLY                  src/11b-speech.js:158-187
-tableBake                    src/27i-ui-table.js:144-181
+tableBake                    src/27i-ui-table.js:145-182
 tableBlock                   src/27c-ui-hq.js:640-728
-tableHead                    src/27i-ui-table.js:190-197
+tableHead                    src/27i-ui-table.js:191-198
 tableIsOpen                  src/27i-ui-table.js:23
 tableNewBy                   src/27i-ui-table.js:111-118
 tableNewThings               src/27i-ui-table.js:108
 tableNoticeAll               src/27i-ui-table.js:103-107
-tableRender                  src/27i-ui-table.js:198-202
-tableRenderBody              src/27i-ui-table.js:203-318
-tableRow                     src/27i-ui-table.js:319-324
-tableSetTab                  src/27i-ui-table.js:140-181
+tableRender                  src/27i-ui-table.js:199-203
+tableRenderBody              src/27i-ui-table.js:204-319
+tableRow                     src/27i-ui-table.js:320-325
+tableSetTab                  src/27i-ui-table.js:141-182
 tableShowsLog                src/27i-ui-table.js:57
 tableShowsRecord             src/27i-ui-table.js:58
 tableTab                     src/27i-ui-table.js:22
-tableToggle                  src/27i-ui-table.js:119-139
+tableToggle                  src/27i-ui-table.js:119-140
 tableWasNew                  src/27i-ui-table.js:110
 tabLive                      src/14a-cloud.js:36
 tabsSync                     src/15-input.js:222-237
@@ -6591,9 +6598,12 @@ zooTick                      src/11ad-zoo.js:41-54
   · орбита:223
   · атмосфера газового гиганта:391
 
-## src/25g-postcard.js · 45 КБ
+## src/25g-postcard.js · 43 КБ
   · открытка: снимок сцены, а не пиксели:1
   · камера и альбом:613
+
+## src/25g1-album-fx.js · 7 КБ
+  · альбом: большая карточка, фильтры, снимок себе (P13, плейтест §4.3):1
 
 ## src/25h-post-forms.js · 20 КБ
   · бланки открытки:1

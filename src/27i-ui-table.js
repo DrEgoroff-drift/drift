@@ -125,6 +125,7 @@ function tableToggle(open,tab){
   if(tab)tableTab=tab;
   else if(tableOpenNow&&!was)tableTab="top";
   w.classList.toggle("open",tableOpenNow);
+  if(!tableOpenNow&&typeof albumClose==="function"){albumClose();albumOpen=-1;}   /* большая карточка уходит со столом (P13) */
   document.body.classList.toggle("table",tableOpenNow);
   logOpen=tableOpenNow;
   if(tableOpenNow){

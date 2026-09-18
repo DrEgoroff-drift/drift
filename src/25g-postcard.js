@@ -684,56 +684,19 @@ function renderAlbum(box){
   }
   const wrap=document.createElement("div");
   wrap.className="album";
+  /* P13: в листе — ровные карточки; тычок открывает её во весь экран
+     (25g1-album-fx: фильтры, подписать, отправить, сохранить себе) */
   A.forEach((s,i)=>{
-    const big=(albumOpen===i);
     const cell=document.createElement("div");
-    cell.className="card"+(big?" big":"");
-    const cw=big?Math.max(320,Math.min(760,box.clientWidth-24)):228;
-    const ch=Math.round(cw*.625);
-    if(big&&albumBack&&typeof renderCardBack==="function"){
-      const host=document.createElement("div");
-      host.className="side";host.style.width=cw+"px";host.style.minHeight=ch+"px";
-      renderCardBack(host,s,()=>tableRender());
-      cell.appendChild(host);
-    }else{
-      const cv=document.createElement("canvas");
-      cv.width=Math.round(cw*2);cv.height=Math.round(ch*2);
-      cv.style.width=cw+"px";cv.style.height=ch+"px";
-      const cc=cv.getContext("2d");
-      cc.scale(2,2);
-      if(!drawPostcard(cc,s,cw,ch)){cc.fillStyle="#12161d";cc.fillRect(0,0,cw,ch);}
-      cell.appendChild(cv);
-    }
-    if(big){
-      const row=document.createElement("div");row.className="acts";
-      const b=document.createElement("button");
-      b.className="act sm";
-      const signed=(typeof postSigned==="function")&&postSigned(s);
-      /* кнопка называет действие, а не состояние: неподписанную карточку
-         «подписывают», подписанную — «переворачивают» (правило интерфейса) */
-      b.textContent=albumBack?"ЛИЦО":(signed?"ПЕРЕВЕРНУТЬ":"ПОДПИСАТЬ");
-      b.onclick=e=>{e.stopPropagation();
-        if(!albumBack&&!signed&&typeof postSign==="function")postSign(s);
-        albumBack=!albumBack;tableRender();};
-      row.appendChild(b);
-      /* отправить можно только подписанную: пустая фотография без бланка —
-         это снимок для себя, а не открытка кому-то (M190) */
-      if(signed&&typeof mailOn==="function"&&mailOn()){
-        const sd=document.createElement("button");
-        sd.className="act sm gold";
-        const left=mailLeft();
-        sd.textContent=left>0?"ОТПРАВИТЬ":"СЕГОДНЯ ХВАТИТ";
-        sd.disabled=left<=0;
-        sd.onclick=e=>{e.stopPropagation();mailSend(s,null);};
-        row.appendChild(sd);
-      }
-      cell.appendChild(row);
-    }
+    cell.className="card";
+    const cw=228,ch=Math.round(cw*.625);
+    cell.appendChild((typeof albumCanvas==="function")?albumCanvas(s,cw,ch,albumDpr()):document.createElement("canvas"));
     const cap=document.createElement("s");
-    cap.textContent=postCaption(s)+(s.ver&&s.ver!==VER?" · снято на "+s.ver:"");
+    cap.textContent=postCaption(s)+(s.ver&&s.ver!==VER?" · снято на "+s.ver:"")+(s.fx&&s.fx!=="none"&&typeof ALBUM_FX!=="undefined"&&ALBUM_FX[s.fx]?" · "+ALBUM_FX[s.fx].ru.toLowerCase():"");
     cell.appendChild(cap);
-    cell.onclick=()=>{albumOpen=big?-1:i;albumBack=false;tableRender();};
+    cell.onclick=()=>{albumOpen=i;albumBack=false;tableRender();};
     wrap.appendChild(cell);
   });
+  if(typeof albumLightbox==="function"){if(albumOpen>=0&&A[albumOpen])albumLightbox(A[albumOpen],albumOpen);else albumClose();}
   box.appendChild(wrap);
 }

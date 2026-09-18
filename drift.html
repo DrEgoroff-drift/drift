@@ -1838,6 +1838,14 @@ body.table u.addr{color:#7a4a20}
 /* ── ПРИЁМНИКИ: куда ведёт строка (P11) [design owed] ── */
 .rl-go{display:inline-block;margin-top:3px;font:600 10px ui-monospace,monospace;letter-spacing:.12em;color:#1f5f57}
 
+/* ── АЛЬБОМ во весь экран (P13) [design owed] ── */
+#albumLb{position:fixed;inset:0;z-index:70;background:rgba(8,7,6,.94);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:12px 16px;overflow:auto}
+#albumLb .lb-card canvas{display:block;border:8px solid #f3ecdc;box-shadow:0 6px 28px rgba(0,0,0,.6)}
+#albumLb .lb-cap{color:#d9ccb0;font-size:12px;text-align:center}
+#albumLb .lb-fx,#albumLb .lb-acts{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+#albumLb .chip{font:600 11px ui-monospace,monospace;letter-spacing:.1em;padding:8px 10px;min-height:44px;border:1px solid #6a5a44;background:none;color:#d9ccb0;border-radius:3px}
+#albumLb .chip.on{border-color:#f2b25c;color:#f2b25c}
+
 </style>
 </head>
 <body>
@@ -79214,58 +79222,132 @@ function renderAlbum(box){
   }
   const wrap=document.createElement("div");
   wrap.className="album";
+  /* P13: в листе — ровные карточки; тычок открывает её во весь экран
+     (25g1-album-fx: фильтры, подписать, отправить, сохранить себе) */
   A.forEach((s,i)=>{
-    const big=(albumOpen===i);
     const cell=document.createElement("div");
-    cell.className="card"+(big?" big":"");
-    const cw=big?Math.max(320,Math.min(760,box.clientWidth-24)):228;
-    const ch=Math.round(cw*.625);
-    if(big&&albumBack&&typeof renderCardBack==="function"){
-      const host=document.createElement("div");
-      host.className="side";host.style.width=cw+"px";host.style.minHeight=ch+"px";
-      renderCardBack(host,s,()=>tableRender());
-      cell.appendChild(host);
-    }else{
-      const cv=document.createElement("canvas");
-      cv.width=Math.round(cw*2);cv.height=Math.round(ch*2);
-      cv.style.width=cw+"px";cv.style.height=ch+"px";
-      const cc=cv.getContext("2d");
-      cc.scale(2,2);
-      if(!drawPostcard(cc,s,cw,ch)){cc.fillStyle="#12161d";cc.fillRect(0,0,cw,ch);}
-      cell.appendChild(cv);
-    }
-    if(big){
-      const row=document.createElement("div");row.className="acts";
-      const b=document.createElement("button");
-      b.className="act sm";
-      const signed=(typeof postSigned==="function")&&postSigned(s);
-      /* кнопка называет действие, а не состояние: неподписанную карточку
-         «подписывают», подписанную — «переворачивают» (правило интерфейса) */
-      b.textContent=albumBack?"ЛИЦО":(signed?"ПЕРЕВЕРНУТЬ":"ПОДПИСАТЬ");
-      b.onclick=e=>{e.stopPropagation();
-        if(!albumBack&&!signed&&typeof postSign==="function")postSign(s);
-        albumBack=!albumBack;tableRender();};
-      row.appendChild(b);
-      /* отправить можно только подписанную: пустая фотография без бланка —
-         это снимок для себя, а не открытка кому-то (M190) */
-      if(signed&&typeof mailOn==="function"&&mailOn()){
-        const sd=document.createElement("button");
-        sd.className="act sm gold";
-        const left=mailLeft();
-        sd.textContent=left>0?"ОТПРАВИТЬ":"СЕГОДНЯ ХВАТИТ";
-        sd.disabled=left<=0;
-        sd.onclick=e=>{e.stopPropagation();mailSend(s,null);};
-        row.appendChild(sd);
-      }
-      cell.appendChild(row);
-    }
+    cell.className="card";
+    const cw=228,ch=Math.round(cw*.625);
+    cell.appendChild((typeof albumCanvas==="function")?albumCanvas(s,cw,ch,albumDpr()):document.createElement("canvas"));
     const cap=document.createElement("s");
-    cap.textContent=postCaption(s)+(s.ver&&s.ver!==VER?" · снято на "+s.ver:"");
+    cap.textContent=postCaption(s)+(s.ver&&s.ver!==VER?" · снято на "+s.ver:"")+(s.fx&&s.fx!=="none"&&typeof ALBUM_FX!=="undefined"&&ALBUM_FX[s.fx]?" · "+ALBUM_FX[s.fx].ru.toLowerCase():"");
     cell.appendChild(cap);
-    cell.onclick=()=>{albumOpen=big?-1:i;albumBack=false;tableRender();};
+    cell.onclick=()=>{albumOpen=i;albumBack=false;tableRender();};
     wrap.appendChild(cell);
   });
+  if(typeof albumLightbox==="function"){if(albumOpen>=0&&A[albumOpen])albumLightbox(A[albumOpen],albumOpen);else albumClose();}
   box.appendChild(wrap);
+}
+
+/* ══════════════ альбом: большая карточка, фильтры, снимок себе (P13, плейтест §4.3) ══════════════
+   Автор: «фото должны открываться большими по тычку»; «оставить перерисовку
+   из снимка, но рисовать куда лучше — фотофильтры»; «настоящий красивый
+   скриншот себе в галерею, с подписью — и ничего на нашем сервере».
+   • Тычок по карточке — во весь экран (#albumLb), в настоящих пикселях экрана;
+   • фильтр на карточку: ПЛЁНКА, СЕПИЯ, ХОЛОД, НОЧЬ — поверх той же
+     перерисовки; выбор лежит в снимке (s.fx, пара байт), случай — от снимка,
+     не от Math.random;
+   • СОХРАНИТЬ — PNG с полосой подписи («ДРЕЙФ» · место · сектор · час) на
+     устройство игрока, скачиванием. На сервер не уходит ничего. */
+const ALBUM_FX={
+  none:{ru:"КАК ЕСТЬ"},
+  film:{ru:"ПЛЁНКА"},
+  sepia:{ru:"СЕПИЯ"},
+  cold:{ru:"ХОЛОД"},
+  night:{ru:"НОЧЬ"}
+};
+function albumFx(c,w,h,s,dpr){
+  const fx=s&&s.fx;if(!fx||fx==="none"||!ALBUM_FX[fx])return;
+  const W2=Math.round(w*dpr),H2=Math.round(h*dpr);
+  let img;try{img=c.getImageData(0,0,W2,H2);}catch(e){return;}
+  const d=img.data,r=rng(hashi(s.sx|0,s.sy|0,(s.t|0)^0xF11A));
+  const grain=fx==="film"?18:fx==="night"?26:fx==="sepia"?10:6;
+  for(let i=0;i<d.length;i+=4){
+    let R=d[i],Gc=d[i+1],B=d[i+2];
+    const L=.3*R+.59*Gc+.11*B;
+    if(fx==="film"){R=R*.92+30;Gc=Gc*.9+22;B=B*.82+18;}                 /* выцветшие чёрные, тёплый свет */
+    else if(fx==="sepia"){R=L*1.07+28;Gc=L*.88+14;B=L*.66;}
+    else if(fx==="cold"){R=R*.86;Gc=Gc*.97+4;B=B*1.08+14;const k=1.12;R=(R-128)*k+128;Gc=(Gc-128)*k+128;B=(B-128)*k+128;}
+    else if(fx==="night"){R=L*.35;Gc=L*1.05+10;B=L*.45;}                /* прибор ночного видения */
+    const n=(r()-.5)*grain;
+    d[i]=clamp(R+n,0,255);d[i+1]=clamp(Gc+n,0,255);d[i+2]=clamp(B+n,0,255);
+  }
+  c.save();c.setTransform(1,0,0,1,0,0);c.putImageData(img,0,0);c.restore();
+  /* виньетка: край темнеет, как у настоящего объектива */
+  const g=c.createRadialGradient(w/2,h/2,Math.min(w,h)*.35,w/2,h/2,Math.hypot(w,h)*.55);
+  g.addColorStop(0,"rgba(0,0,0,0)");g.addColorStop(1,fx==="night"?"rgba(0,10,0,.7)":"rgba(0,0,0,.45)");
+  c.fillStyle=g;c.fillRect(0,0,w,h);
+}
+/* одна карточка на холсте: перерисовка + фильтр */
+function albumCanvas(s,cw,ch,dpr){
+  const cv=document.createElement("canvas");
+  cv.width=Math.round(cw*dpr);cv.height=Math.round(ch*dpr);
+  cv.style.width=cw+"px";cv.style.height=ch+"px";
+  const cc=cv.getContext("2d");
+  if(!cc)return cv;
+  cc.scale(dpr,dpr);
+  if(!drawPostcard(cc,s,cw,ch)){cc.fillStyle="#12161d";cc.fillRect(0,0,cw,ch);}
+  else albumFx(cc,cw,ch,s,dpr);
+  return cv;
+}
+function albumDpr(){return Math.min(3,(typeof window!=="undefined"&&window.devicePixelRatio)||1);}
+function albumClose(){const w=document.getElementById("albumLb");if(w)w.remove();}
+/* во весь экран: карточка, фильтры, подписать / отправить / сохранить */
+function albumLightbox(s,i){
+  albumClose();
+  const lb=document.createElement("div");lb.id="albumLb";
+  const vw=(typeof window!=="undefined"?window.innerWidth:390),vh=(typeof window!=="undefined"?window.innerHeight:844);
+  const cw=Math.round(Math.min(vw-24,(vh-220)/.625,1100)),ch=Math.round(cw*.625);
+  const host=document.createElement("div");host.className="lb-card";
+  if(albumBack&&typeof renderCardBack==="function"){
+    const side=document.createElement("div");side.className="side";side.style.width=cw+"px";side.style.minHeight=ch+"px";
+    renderCardBack(side,s,()=>tableRender());host.appendChild(side);
+  }else host.appendChild(albumCanvas(s,cw,ch,albumDpr()));
+  lb.appendChild(host);
+  const cap=document.createElement("div");cap.className="lb-cap";
+  cap.textContent=postCaption(s)+(s.ver&&s.ver!==VER?" · снято на "+s.ver:"");
+  lb.appendChild(cap);
+  if(!albumBack){
+    const fr=document.createElement("div");fr.className="lb-fx";
+    for(const k in ALBUM_FX){
+      const b=document.createElement("button");b.className="chip"+(((s.fx||"none")===k)?" on":"");b.textContent=ALBUM_FX[k].ru;
+      b.onclick=e=>{e.stopPropagation();s.fx=k;albumLightbox(s,i);};
+      fr.appendChild(b);
+    }
+    lb.appendChild(fr);
+  }
+  const row=document.createElement("div");row.className="lb-acts";
+  const mk=(t,cls,fn)=>{const b=document.createElement("button");b.className="act "+(cls||"");b.textContent=t;b.onclick=e=>{e.stopPropagation();fn();};row.appendChild(b);return b;};
+  const signed=(typeof postSigned==="function")&&postSigned(s);
+  mk(albumBack?"ЛИЦО":(signed?"ПЕРЕВЕРНУТЬ":"ПОДПИСАТЬ"),"",()=>{
+    if(!albumBack&&!signed&&typeof postSign==="function")postSign(s);
+    albumBack=!albumBack;tableRender();});
+  if(signed&&typeof mailOn==="function"&&mailOn()){
+    const left=mailLeft(),b=mk(left>0?"ОТПРАВИТЬ":"СЕГОДНЯ ХВАТИТ","gold",()=>mailSend(s,null));b.disabled=left<=0;
+  }
+  if(!albumBack)mk("СОХРАНИТЬ СЕБЕ","",()=>albumSave(s));
+  mk("ЗАКРЫТЬ","",()=>{albumOpen=-1;albumBack=false;albumClose();tableRender();});
+  lb.appendChild(row);
+  lb.onclick=e=>{if(e.target===lb){albumOpen=-1;albumBack=false;albumClose();tableRender();}};
+  document.body.appendChild(lb);
+}
+/* снимок себе: карточка крупно и полоса подписи — PNG скачиванием */
+function albumSave(s){
+  const cw=1200,ch=750,band=64;
+  const cv=document.createElement("canvas");cv.width=cw;cv.height=ch+band;
+  const c=cv.getContext("2d");if(!c)return false;
+  if(!drawPostcard(c,s,cw,ch)){c.fillStyle="#12161d";c.fillRect(0,0,cw,ch);}else albumFx(c,cw,ch,s,1);
+  c.fillStyle="#f3ecdc";c.fillRect(0,ch,cw,band);
+  c.fillStyle="#2a241a";c.font="600 24px Georgia,serif";c.textBaseline="middle";
+  c.fillText("«Дрейф» · "+postCaption(s),24,ch+band/2);
+  c.font="16px ui-monospace,monospace";c.textAlign="right";c.fillStyle="#7a6a50";
+  c.fillText("сектор "+(s.sx|0)+":"+(s.sy|0)+" · drift-game.ru",cw-24,ch+band/2);
+  const name="drift-"+(s.sx|0)+"_"+(s.sy|0)+"-"+(s.t|0)+".png";
+  const go=url=>{const a=document.createElement("a");a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();};
+  if(cv.toBlob)cv.toBlob(b=>{if(!b)return;const u=URL.createObjectURL(b);go(u);setTimeout(()=>URL.revokeObjectURL(u),4000);},"image/png");
+  else go(cv.toDataURL("image/png"));
+  if(typeof say==="function")say("Снимок сохранён на устройство",90);
+  return true;
 }
 
 /* ══════════════ бланки открытки ══════════════
@@ -87457,6 +87539,7 @@ function tableToggle(open,tab){
   if(tab)tableTab=tab;
   else if(tableOpenNow&&!was)tableTab="top";
   w.classList.toggle("open",tableOpenNow);
+  if(!tableOpenNow&&typeof albumClose==="function"){albumClose();albumOpen=-1;}   /* большая карточка уходит со столом (P13) */
   document.body.classList.toggle("table",tableOpenNow);
   logOpen=tableOpenNow;
   if(tableOpenNow){

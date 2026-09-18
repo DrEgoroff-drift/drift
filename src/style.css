@@ -1823,3 +1823,11 @@ body.table u.addr{color:#7a4a20}
   -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 0);mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 0)}
 /* ── ПРИЁМНИКИ: куда ведёт строка (P11) [design owed] ── */
 .rl-go{display:inline-block;margin-top:3px;font:600 10px ui-monospace,monospace;letter-spacing:.12em;color:#1f5f57}
+
+/* ── АЛЬБОМ во весь экран (P13) [design owed] ── */
+#albumLb{position:fixed;inset:0;z-index:70;background:rgba(8,7,6,.94);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:12px 16px;overflow:auto}
+#albumLb .lb-card canvas{display:block;border:8px solid #f3ecdc;box-shadow:0 6px 28px rgba(0,0,0,.6)}
+#albumLb .lb-cap{color:#d9ccb0;font-size:12px;text-align:center}
+#albumLb .lb-fx,#albumLb .lb-acts{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+#albumLb .chip{font:600 11px ui-monospace,monospace;letter-spacing:.1em;padding:8px 10px;min-height:44px;border:1px solid #6a5a44;background:none;color:#d9ccb0;border-radius:3px}
+#albumLb .chip.on{border-color:#f2b25c;color:#f2b25c}
