@@ -1796,3 +1796,14 @@ body.table u.addr{color:#7a4a20}
 #smenaAct .sa-s{font-size:11px;letter-spacing:.2em;opacity:.6}
 @keyframes smAct{0%{opacity:0;transform:translate(-50%,-44%)}15%{opacity:1;transform:translate(-50%,-50%)}80%{opacity:1}100%{opacity:0}}
 .smena canvas.smena-plate{display:block;margin:6px auto 4px;border:6px solid #f6efe0;box-shadow:0 1px 4px rgba(0,0,0,.35);transform:rotate(-1.2deg)}
+
+/* ── СТАПЕЛЬ: заказ корпуса (M481) [design owed] ── */
+.stapel .stp-ch{display:flex;flex-wrap:wrap;gap:4px;margin:4px 0}
+.stapel .chip{font-size:11px;padding:3px 7px;border:1px solid var(--dim);background:none;color:inherit;border-radius:3px}
+.stapel .chip.on{border-color:var(--gold,#f2b25c);color:var(--gold,#f2b25c)}
+.stapel .stp-pv{display:flex;justify-content:center;margin:6px 0}
+.stapel .stp-sl{display:flex;align-items:center;gap:8px;font-size:11px}
+.stapel .stp-sl span{width:60px}.stapel .stp-sl input{flex:1}
+.stapel .stp-n{font-size:11px;opacity:.8;margin:4px 0}
+.stapel>.stp-ch,.stapel>.stp-sl,.stapel>.stp-n,.stapel>button.act{margin-left:14px;margin-right:14px}
+.stapel .chip{font-family:inherit}.stapel input[type=range]{accent-color:#f2b25c}

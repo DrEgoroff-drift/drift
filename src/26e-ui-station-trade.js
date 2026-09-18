@@ -302,6 +302,7 @@ function stTabYard(st){
        Чёрный корпус на тросе становится вашим не даром и не сразу: док берёт
        за работу, и только после неё у корпуса появляется имя. Порода — та, с
        которой он сошёл со стапеля, и она никуда не девается. */
+    if(typeof stapelBlock==="function"){const sb=stapelBlock();if(sb)$body.appendChild(sb);}   /* СТАПЕЛЬ (M481) */
     if(G.tow){
       const TB=G.tow.by||"gt";
       const TP=(typeof powerOf==="function")?powerOf(TB):null;

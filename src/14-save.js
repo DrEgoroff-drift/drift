@@ -56,7 +56,7 @@ function snapshot(){
     inv:G.inv.map(packPart),fit:G.fit,partsBought:prunePartsBought(),
     tech:[...G.tech],techLvl:G.techLvl,barter:[...G.barter],found:[...G.found],
     species:[...G.species],bioV:2,
-    opts:G.opts,zoom:G.zoom,market:G.market,uniqueShips:G.uniqueShips,tow:G.tow,
+    opts:G.opts,zoom:G.zoom,market:G.market,uniqueShips:(typeof stapelStrip==="function")?stapelStrip(G.uniqueShips):G.uniqueShips,stapel:G.stapel||{},tow:G.tow,
     episodes:G.episodes,notebook:G.notebook,gifts:G.gifts,mslBy:G.mslBy,
     bonds:G.bonds,bondHold:G.bondHold,coupN:G.coupN,
     letter:G.letter||null,dipSwapN:G.dipSwapN,smugN:G.smugN,smugBy:G.smugBy,
@@ -219,6 +219,7 @@ function applySave(s){
   if(typeof hudNumDirty==="function")hudNumDirty();
   G.sx=s.sx|0;G.sy=s.sy|0;G.sys=getSystem(G.sx,G.sy);
   G.uniqueShips=asMap(s.uniqueShips);
+  G.stapel=asMap(s.stapel);if(typeof stapelRestore==="function")stapelRestore();   /* заказанные корпуса выводятся из заказа (M481) */
   G.tow=(s.tow&&typeof s.tow==="object")?s.tow:null;   /* корпус на тросе (M369b) */
   /* дела и люди (M374): без них четвёртый допуск и покупка корпуса теряют
      основание, поэтому они в сейве, а летопись — нет */

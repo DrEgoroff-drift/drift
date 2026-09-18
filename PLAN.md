@@ -132,6 +132,7 @@ job (the phone milestone), but no fix may add raster cost without a number.
   path, vestibule block and the vestibule page (M471–M472); the ride on the map (M473: the flight
   pads still show in the carriage; the train mark and the headlight) — as each is
   built.
+- [ ] **D16 СТАПЕЛЬ** (M481): the order panel is plain chips and bare sliders — a slipway drawing (the hull on a cradle, the power's ground colour, the maker's mark), sliders as a draughtsman's scales, the stats as a delta strip; the «ГОТОВ» moment at collection.
 
 ### NEXT — the order after 18.09 (Control's handover; the team of three was closed by the author)
 
@@ -507,6 +508,7 @@ patchnote of each version names the M-numbers it closes.
   closing a chapter is an «АКТ» moment across the screen; a real book
   with plates from the player's own flight; the text may be edited to fit.
 - [ ] **[design owed] M457 Sound — the motif BUILT 18.09 (Control), `SFX.motif` + `MOTIFS` in `09-audio`.** Three notes per power on the first entry of the day (with the gesture's words): ГЛАВТРАССА a steady march up a fifth and octave, Компания a ding-dong jingle, Орднунг three identical by the stopwatch, Коммуна a slow minor, Рассвет warm and swung, Хай-Фронт a digital «тинь-тинь-тинь» two octaves up. Scheduled on the audio clock, one voice freed at the end. **Not heard:** headless audio needs a user gesture — an ear pass is owed (the AnalyserNode check of VERIFY.md at the release run). **Open:** the rest of the item below. Original text in the archive.
+- [ ] **[design owed] M481 СТАПЕЛЬ — BUILT 18.09 (Control), `src/26e1-stapel.js`.** At a yard (`stype` yard) in a power's land (`stampOwnerAt`) the ВЕРФЬ tab has СТАПЕЛЬ: class (7) × size (лёгкий/средний/тяжёлый) × length and width sliders (.85–1.15, `S.hl`/`S.hw` in `hullOf` — absent on every older hull, nothing shifts), a live preview, stats inside the class corridor of `FLEET_PROFILE` (`stapelStats`), price ×1.25 over the fleet formula on the button. One order at a time, ready after one смена (`HOLD_SHIFT`, not a сводка — 40 shifts was too long), a ПОЧТА log line when ready, collected at the same yard. Saved: only the orders (`G.stapel`); the ship record is derived on load (`stapelRestore`) and stripped from `uniqueShips` (`stapelStrip`). Test `91zzzzk6-stapel`. **Open:** the yard's character (M480) on ordered hulls only; Космопочта delivery elsewhere (M492); M513 утильсбор.
 - [ ] **[design owed] M480 Six yards' character** (shipyard §4, review §2.2): built-in / limit / habit — ГЛАВТРАССА
   бронепояс +25 % hull, +8 % mass, **a slogan along the flank that cannot be removed** («ПЛАН —
   ЗАКОН»); Компания −15 % price, a running line on your hull, billed per cell; Орднунг a free front

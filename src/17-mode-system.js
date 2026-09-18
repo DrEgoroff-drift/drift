@@ -273,7 +273,8 @@ function updateSystem(dt){
   if(typeof lawRingTick==="function")lawRingTick(sh);   /* скоростной режим Орднунга у станции (M456) */
   if(typeof dsTick==="function")dsTick();   /* новости о вашем поступке — двумя голосами (M491) */
   if(typeof peaceTick==="function")peaceTick(sh,dt);   /* ремонтный буксир Рассвета (M455) */
-  if(typeof supportTick==="function"&&(G.t|0)%60===0)supportTick();   /* техподдержка решает заявки (M495) */   /* ловушки антивещества: питание или процент в минуту (M468) */
+  if(typeof supportTick==="function"&&(G.t|0)%60===0)supportTick();
+  if(typeof stapelTick==="function"&&(G.t|0)%60===0)stapelTick();   /* стапель: заказ готов — строка в почте (M481) */   /* техподдержка решает заявки (M495) */   /* ловушки антивещества: питание или процент в минуту (M468) */
   if(typeof hailTick==="function"&&hailTick(sh,dt,actEdge))return;
 
   if(sys.station){
