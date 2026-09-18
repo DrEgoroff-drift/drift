@@ -384,6 +384,7 @@ const WAKE_BUCK=32;
 const WAKE_A1MAX=.18, WAKE_A2MAX=.56;   /* пики ореола и ядра при u=1, kk=1 */
 const TRAIL_BUCK=24;
 const TRAIL_AMAX=.8;   /* пик альфы ленты при u=1 */
+const TRAIL_HALO={w:3,a:.24,core:.7};   /* ореол ленты: ширина и альфа от ядра; ядро уже, чем было */
 const trX0=[],trY0=[],trX1=[],trY1=[],trB=[];
 const trAcc=new Float64Array(TRAIL_BUCK*4);   /* на ступень: sum u, sum a, sum w, n */
 const wkX0=[],wkY0=[],wkCX=[],wkCY=[],wkX1=[],wkY1=[],wkB=[];
@@ -603,8 +604,18 @@ function drawTrail(zx,zy,Z){
       const col=u>.78?mixc(T.mid,T.core,(u-.78)/.22):mixc(T.edge,T.mid,u/.78);
       /* Спад квадратичный, а не линейный: с линейным хвост держал яркость
          почти до конца и выглядел начерченной линией. Газ должен рассеиваться. */
+      /* ореол по тому же пути (автор 18.09: «шлейф как сосиски, размой»):
+         ступени с торцами встык давали колбаски с жёстким краем, а струи
+         соседних сопел лежали рядом полосками. Широкий бледный проход под
+         ядром сплавляет их в один факел и прячет ступени толщины; путь тот же,
+         так что это второй stroke на ступень, а не на отрезок */
+      ctx.lineCap="round";
+      ctx.strokeStyle=rgba(col,al*TRAIL_HALO.a);
+      ctx.lineWidth=lw*TRAIL_HALO.w;
+      ctx.stroke();
+      ctx.lineCap="butt";
       ctx.strokeStyle=rgba(col,al);
-      ctx.lineWidth=lw;
+      ctx.lineWidth=lw*TRAIL_HALO.core;
       ctx.stroke();
     }
     /* добела раскалённый корешок у самого сопла */
