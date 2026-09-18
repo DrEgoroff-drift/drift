@@ -147,7 +147,8 @@ function stTabBoard(){
 }
 function stTabMarket(st){
     const prices=marketFor(G.sys),mkt=G.market[G.sys.key];
-    if(typeof gosRow==="function"){const gr=gosRow();if(gr)$body.appendChild(gr);}   /* госзаказ со щита (M503) */
+    if(typeof gosRow==="function"){const gr=gosRow();if(gr)$body.appendChild(gr);}
+    if(typeof recallRows==="function"){const rr=recallRows();if(rr)$body.appendChild(rr);}   /* отзыв партии (M509) */   /* госзаказ со щита (M503) */
     $body.appendChild(el("div","sec","ТРЮМ "+held()+" / "+st.cargoMax+
       " · ТОПЛИВО "+fuelPriceHere()+" кр/ед · РЕМОНТ "+repairCost()+" кр/ед"));
     /* Маршрут переехал в конец вкладки (проход «дорога»). Он стоял вторым

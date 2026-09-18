@@ -6384,7 +6384,8 @@ function fittedParts(){
 function partBonus(){
   if(PART_BONUS)return PART_BONUS;
   const b={};
-  for(const p of fittedParts())for(const k in p.bonus)b[k]=(b[k]||0)+p.bonus[k];
+  const rc=typeof recallScale==="function";   /* отозванная деталь слабее (M509) */
+  for(const p of fittedParts())for(const k in p.bonus)b[k]=(b[k]||0)+(rc?recallScale(p,k,p.bonus[k]):p.bonus[k]);
   PART_BONUS=b;
   return b;
 }
@@ -7485,6 +7486,59 @@ function subRush(id){
   G.credits-=fee;u.sub.off=0;u.sub.warn=0;
   logAdd("money","ЭКСТРЕННОЕ ПРОДЛЕНИЕ · «"+INSTR_BY_ID[id].ru+"» · −"+fee+" кр · спасибо, что вы с нами");
   return true;
+}
+
+/* ══════════════ отзыв партии (M509, PLAN «new mechanics», st. 6) ══════════════
+   Раз в неделю (семь смен) Хай-Фронт отзывает партию: из ваших деталей их
+   работы примерно каждая шестая попадает под отзыв — извещение в ПОЧТУ,
+   «партия отозвана». Замена даром на любой станции в земле Хай-Фронта
+   (строка во вкладке верфи/торговли): деталь того же рода и тира, новая,
+   на то же место. Оставили — старая становится шрамом: её прибавки на
+   15 % слабее, пока не замените. Отозванные — по зерну в G.recalled. */
+const RECALL_WEEK=7,RECALL_MUL=.85;
+function recallBucket(){return Math.floor(now()/(HOLD_SHIFT*RECALL_WEEK));}
+function recalled(p){return !!(p&&G.recalled&&G.recalled[p.seed>>>0]);}
+/* раз в минуту: новая неделя — новый отзыв */
+function recallTick(){
+  const b=recallBucket();
+  if(G.recallB===b)return;
+  G.recallB=b;
+  if(!G.recalled)G.recalled={};
+  const hit=[];
+  for(const p of G.inv||[]){
+    if(p.by!=="hf"||recalled(p))continue;
+    if(hashi(p.seed>>>0,b,0x2EC1)%6===0){G.recalled[p.seed>>>0]=1;hit.push(p);}
+  }
+  if(!hit.length)return;
+  invalidateParts();
+  logAdd("bad","ПОЧТА · Хай-Фронт: партия отозвана — «"+hit.map(p=>p.name).join("», «")+"». Бесплатная замена на станциях Хай-Фронта. Оставленная деталь работает хуже.");
+}
+/* прибавки с отзывом: зовёт partBonus */
+function recallScale(p,k,v){return (recalled(p)&&k!=="gun"&&k!=="msl")?v*RECALL_MUL:v;}
+function recallReplace(p){
+  if(!recalled(p))return false;
+  const by=(typeof stampOwnerAt==="function")?stampOwnerAt(G.sx,G.sy):null;
+  if(by!=="hf"){say("Замена — только у Хай-Фронта",90);return false;}
+  const np=genPart(hashi(p.seed>>>0,recallBucket(),0x2EC2)>>>0,p.tier,p.kind,0,null,"hf");
+  delete G.recalled[p.seed>>>0];
+  const id=p.id;Object.assign(p,np);p.id=id;
+  invalidateParts();
+  logAdd("tech","Хай-Фронт: замена по отзыву · «"+p.name+"» на месте старой · «спасибо, что остаётесь с нами»");
+  return true;
+}
+function recallRows(){
+  const L=(G.inv||[]).filter(recalled);
+  if(!L.length)return null;
+  const box=document.createElement("div");
+  box.appendChild(el("div","sec","ОТЗЫВ ПАРТИИ · ХАЙ-ФРОНТ"));
+  const hf=(typeof stampOwnerAt==="function")&&stampOwnerAt(G.sx,G.sy)==="hf";
+  for(const p of L){
+    const r=el("div","row");
+    r.appendChild(el("div","nm","<b>"+p.name+"</b><s>партия отозвана · работает на "+Math.round(RECALL_MUL*100)+" % · "+(hf?"замена даром":"замена — на станциях Хай-Фронта")+"</s>"));
+    if(hf){const b=el("button","act gold","ЗАМЕНИТЬ ДАРОМ");b.onclick=()=>{if(recallReplace(p))renderTab();};r.appendChild(b);}
+    box.appendChild(r);
+  }
+  return box;
 }
 
 /* ══════════════ орудие в семи числах, щит в трёх повадках (M362, §2 §4) ══════════════
@@ -9784,7 +9838,7 @@ const G={
   inv:[],fit:{},shield:0,shieldHit:0,energy:0,loot:[],partsBought:{},
   /* допуск и налёт (M363, §11.4): допуск не падает, налёт копится только в полёте */
   clearance:1,flownMs:0,gunGroup:0,
-  mined:{},farTaken:{},draft:{},smenaAt:{},stapel:{},thrown:[],bazBought:null,railParcel:null,railPass:null,railSeal:0,gosDone:{},tapeRoll:0,tapes:{},actWk:null,   /* выработанные залежи по планетам; неделя налёта и талоны (05e) */
+  mined:{},farTaken:{},draft:{},smenaAt:{},stapel:{},thrown:[],bazBought:null,railParcel:null,railPass:null,railSeal:0,gosDone:{},recalled:{},tapeRoll:0,tapes:{},actWk:null,   /* выработанные залежи по планетам; неделя налёта и талоны (05e) */
   tech:new Set(),techLvl:{},barter:new Set(),
   found:new Set(),species:new Set(),
   ap:null,          // автопилот
@@ -41678,7 +41732,7 @@ function snapshot(){
     inv:G.inv.map(packPart),fit:G.fit,partsBought:prunePartsBought(),
     tech:[...G.tech],techLvl:G.techLvl,barter:[...G.barter],found:[...G.found],
     species:[...G.species],bioV:2,
-    opts:G.opts,zoom:G.zoom,market:G.market,uniqueShips:(typeof stapelStrip==="function")?stapelStrip(G.uniqueShips):G.uniqueShips,stapel:G.stapel||{},thrown:G.thrown||[],railParcel:G.railParcel||null,railPass:G.railPass||null,railSeal:G.railSeal?1:0,gosDone:G.gosDone||{},bazBought:G.bazBought||null,tow:G.tow,
+    opts:G.opts,zoom:G.zoom,market:G.market,uniqueShips:(typeof stapelStrip==="function")?stapelStrip(G.uniqueShips):G.uniqueShips,stapel:G.stapel||{},thrown:G.thrown||[],railParcel:G.railParcel||null,railPass:G.railPass||null,railSeal:G.railSeal?1:0,gosDone:G.gosDone||{},recalled:G.recalled||{},bazBought:G.bazBought||null,tow:G.tow,
     episodes:G.episodes,notebook:G.notebook,gifts:G.gifts,mslBy:G.mslBy,
     bonds:G.bonds,bondHold:G.bondHold,coupN:G.coupN,
     letter:G.letter||null,dipSwapN:G.dipSwapN,smugN:G.smugN,smugBy:G.smugBy,
@@ -41841,7 +41895,7 @@ function applySave(s){
   if(typeof hudNumDirty==="function")hudNumDirty();
   G.sx=s.sx|0;G.sy=s.sy|0;G.sys=getSystem(G.sx,G.sy);
   G.uniqueShips=asMap(s.uniqueShips);
-  G.railParcel=(s.railParcel&&typeof s.railParcel==="object")?s.railParcel:null;G.railPass=(s.railPass&&typeof s.railPass==="object")?s.railPass:null;G.railSeal=s.railSeal?1:0;G.gosDone=asMap(s.gosDone);   /* M499–M508 */
+  G.railParcel=(s.railParcel&&typeof s.railParcel==="object")?s.railParcel:null;G.railPass=(s.railPass&&typeof s.railPass==="object")?s.railPass:null;G.railSeal=s.railSeal?1:0;G.gosDone=asMap(s.gosDone);G.recalled=asMap(s.recalled);   /* M499–M508 */
   G.thrown=Array.isArray(s.thrown)?s.thrown.slice(0,12):[];G.bazBought=(s.bazBought&&typeof s.bazBought==="object")?s.bazBought:null;   /* барахолка (M463) */
   G.stapel=asMap(s.stapel);if(typeof stapelRestore==="function")stapelRestore();   /* заказанные корпуса выводятся из заказа (M481) */
   G.tow=(s.tow&&typeof s.tow==="object")?s.tow:null;   /* корпус на тросе (M369b) */
@@ -42839,7 +42893,7 @@ function optsNumify(o){
 }
 const SAVE_EPHEMERAL={
   /* корабль в полёте: x/y/a идут в сейв своими строками, остальное — кадр */
-  ship:"кадр",ap:"кадр",mapBackTable:"кадр",orbit:"мир",watch:"кадр",aim:"кадр",beams:"кадр",shots:"кадр",loot:"кадр",
+  ship:"кадр",ap:"кадр",mapBackTable:"кадр",recallB:"мир",orbit:"мир",watch:"кадр",aim:"кадр",beams:"кадр",shots:"кадр",loot:"кадр",
   energy:"кадр",heat:"кадр",burnT:"кадр",stunT:"кадр",shield:"кадр",shieldHit:"кадр",shieldPulse:"кадр",shieldOff:"кадр",
   gunCool:"кадр",gunPin:"кадр",gmines:"кадр",tether:"кадр",foeTether:"кадр",msl:"кадр",mslCool:"кадр",mslFx:"кадр",
   jamT:"кадр",ramOn:"кадр",engaged:"кадр",fcam:"кадр",fshake:"кадр",ctl:"кадр",marks:"кадр",range:"кадр",
@@ -47271,7 +47325,8 @@ function updateSystem(dt){
   if(typeof supportTick==="function"&&(G.t|0)%60===0)supportTick();
   if(typeof stapelTick==="function"&&(G.t|0)%60===0)stapelTick();
   if(typeof scarTick==="function"&&(G.t|0)%3600===0)scarTick();
-  if(typeof subTick==="function"&&(G.t|0)%60===0)subTick();   /* подписка: взнос на границе смены (M487) */   /* течёт бак: −1 % в минуту (M482) */   /* стапель: заказ готов — строка в почте (M481) */   /* техподдержка решает заявки (M495) */   /* ловушки антивещества: питание или процент в минуту (M468) */
+  if(typeof subTick==="function"&&(G.t|0)%60===0)subTick();
+  if(typeof recallTick==="function"&&(G.t|0)%60===0)recallTick();   /* отзыв партии Хай-Фронта (M509) */   /* подписка: взнос на границе смены (M487) */   /* течёт бак: −1 % в минуту (M482) */   /* стапель: заказ готов — строка в почте (M481) */   /* техподдержка решает заявки (M495) */   /* ловушки антивещества: питание или процент в минуту (M468) */
   if(typeof hailTick==="function"&&hailTick(sh,dt,actEdge))return;
 
   if(sys.station){
@@ -82993,7 +83048,8 @@ function stTabBoard(){
 }
 function stTabMarket(st){
     const prices=marketFor(G.sys),mkt=G.market[G.sys.key];
-    if(typeof gosRow==="function"){const gr=gosRow();if(gr)$body.appendChild(gr);}   /* госзаказ со щита (M503) */
+    if(typeof gosRow==="function"){const gr=gosRow();if(gr)$body.appendChild(gr);}
+    if(typeof recallRows==="function"){const rr=recallRows();if(rr)$body.appendChild(rr);}   /* отзыв партии (M509) */   /* госзаказ со щита (M503) */
     $body.appendChild(el("div","sec","ТРЮМ "+held()+" / "+st.cargoMax+
       " · ТОПЛИВО "+fuelPriceHere()+" кр/ед · РЕМОНТ "+repairCost()+" кр/ед"));
     /* Маршрут переехал в конец вкладки (проход «дорога»). Он стоял вторым

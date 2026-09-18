@@ -263,3 +263,21 @@ TEST_SUITES.push(()=>suite("дипломатический паспорт: се�
   const F=railPassFare({fare:30,bag:2,sum:32,metro:true});
   eq(F.fare,0,"по паспорту — даром, даже метро");
 }));
+TEST_SUITES.push(()=>suite("отзыв партии: извещение, деталь слабее, замена у Хай-Фронта (M509)",()=>{
+  resetWorld();
+  /* ищем деталь Хай-Фронта, которая попадёт под отзыв в эту неделю */
+  let p=null;const b=recallBucket();
+  for(let s=1;s<400&&!p;s++){const q=genPart(s*7919,3,"engine",0,null,"hf");if(hashi(q.seed>>>0,b,0x2EC1)%6===0)p=q;}
+  ok(!!p,"деталь под отзыв нашлась");
+  addPart(p);
+  const slot=slotsOf(G.shipId).indexOf("engine");if(slot>=0)fitPart(slot,p.id);
+  const b0=Object.assign({},partBonus());
+  G.recallB=undefined;recallTick();
+  ok(recalled(p),"партия отозвана");
+  const k=Object.keys(p.bonus).find(x=>x!=="gun"&&x!=="msl"&&p.bonus[x]);
+  if(slot>=0&&k)ok(Math.abs(partBonus()[k]-b0[k]*RECALL_MUL)<1e-6||Math.abs(partBonus()[k])<Math.abs(b0[k]),"оставленная работает хуже");
+  ok(!recallReplace(p),"не у Хай-Фронта — не заменить");
+  let at=null;for(let sx=-14;sx<=14&&!at;sx++)for(let sy=-14;sy<=14&&!at;sy++)if(stampOwnerAt(sx,sy)==="hf")at=[sx,sy];
+  G.sx=at[0];G.sy=at[1];
+  const id=p.id;ok(recallReplace(p)&&!recalled(p)&&p.id===id,"у Хай-Фронта — замена даром, на то же место");
+}));

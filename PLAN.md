@@ -615,7 +615,7 @@ material consequences are the part that does not exist yet — that is what stag
   многочисленным просьбам трудящихся», the полустанок's prices spike, the approach fills.
 - **M505 Дипломатический паспорт** — BUILT 18.09 `17i1-passport` [design owed]: the seventh first stamp (six powers + Ялта) issues it once (`R.pass`), 7 смен: every fare 0 incl. metro, Орднунг declares on the first press. (st. 5, M453): all six border stamps + Ялта's → the замполит issues
   a passport: free rides for a week, and the Орднунг form asks one question fewer.
-- **M506 Покупки за рубежом** (st. 4, M480): a part bought in a power's land carries that yard's habit
+- **M506 Покупки за рубежом** — ALREADY IN since M369/M388: station parts are generated with the land's maker (`pby`) and `PART_MAKER_BIAS` skews their affixes (Орднунг coneMul down, Коммуна turnMul up…). The named habits (Коммуна turret wider) would change issued parts — `PART_GEN` forbids; only via a new generator version, deliberately. (st. 4, M480): a part bought in a power's land carries that yard's habit
   (an Орднунг shield is front-heavy, a Коммуна turret turns wider) — shopping abroad matters.
 - **M513 Постановка на учёт — утильсбор** (st. 6, with M481/M506/M452/M495; the author 14.09: «купил корабль
   — тебя останавливают, надо на учёт поставить»). A hull bought or ordered in another power's land
@@ -631,7 +631,7 @@ material consequences are the part that does not exist yet — that is what stag
   train makes it and when it leaves.
 - **M508 Пломба** — BUILT 18.09 [design owed]: Орднунг boarding with cargo seals the hold (`G.railSeal`), `sellCargo` refuses, lifted on exit; pirates' respect not yet. (st. 3, M474 Орднунг): a declared hold is sealed at boarding — nothing sells from it
   until arrival, and pirates at rim stations do not touch a sealed hold (they fear the form).
-- **M509 Отзыв партии** (st. 6, M487): Хай-Фронт recalls a part model — «партия отозвана», a free
+- **M509 Отзыв партии** — BUILT 18.09 `05b4-recall` [design owed]: each week (7 смен) about one in six of your Хай-Фронт parts is recalled (`G.recalled` by seed), a ПОЧТА line; kept, its affixes work at 85 % (`partBonus`); ЗАМЕНИТЬ ДАРОМ in any Хай-Фронт land station's trade tab reseeds it in place, same kind and tier. (st. 6, M487): Хай-Фронт recalls a part model — «партия отозвана», a free
   replacement at their yard; kept, the old one becomes a scar.
 - **M510 Компенсационная маршрутка** (st. 6, M474): on a shut stretch («временные трудности») Рассвет's
   bus runs along it stop by stop — slower, and the driver knows why the line is shut.

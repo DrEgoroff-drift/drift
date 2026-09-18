@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 581 · символов верхнего уровня: 5613
+Файлов: 582 · символов верхнего уровня: 5620
 
 ## СИМВОЛЫ
 
@@ -66,7 +66,7 @@ actCouponUse                 src/05e-clearance.js:38
 ACTION_RU                    src/15-input.js:144
 actionKey                    src/15-input.js:159-164
 actPressT                    src/15-input.js:94
-addPart                      src/05-parts.js:364-379
+addPart                      src/05-parts.js:365-380
 addPath                      src/25-cockpit.js:154-158
 addRes                       src/11-log.js:161-168
 addrForm                     src/11b-speech.js:96-99
@@ -82,7 +82,7 @@ AFFIX_SPREAD                 src/05-parts.js:76
 AFFIX2                       src/05-parts.js:63-72
 affLabel                     src/05-parts.js:95-99
 affVal                       src/05-parts.js:89-94
-afterFitChange               src/05-parts.js:407-413
+afterFitChange               src/05-parts.js:408-414
 AI_COST                      src/12f-mgr-ai.js:8
 AI_NAMES                     src/12f-mgr-ai.js:9
 AI_STAGES                    src/12f-mgr-ai.js:12-18
@@ -575,7 +575,7 @@ capIv                        src/28-loop.js:300
 capLum                       src/19e-clouds.js:55-60
 capOf                        src/05-parts.js:221-225
 capRu                        src/11t-rumours.js:58
-capUsed                      src/05-parts.js:356-361
+capUsed                      src/05-parts.js:357-362
 CAST                         src/12k-stories-a.js:22-43
 CAST_B                       src/12k-stories-b.js:7-24
 CAST_C                       src/12k-stories-c.js:7-20
@@ -1482,12 +1482,12 @@ drawSurface                  src/21e-surface-draw.js:277-291
 drawSurfaceHud               src/21e-surface-draw.js:21-115
 drawSurfaceWorld             src/21e1-surface-world.js:10-615
 drawSurvey                   src/12w-survey.js:63-89
-drawSysHud                   src/17-mode-system.js:746-993
+drawSysHud                   src/17-mode-system.js:747-994
 drawSysLane                  src/17g-sys-lane.js:75-103
 drawSysLaneShips             src/17g-sys-lane.js:112-138
 drawSysNebula                src/16a-space.js:208-236
 drawSysRail                  src/18f-rail-station.js:32-65
-drawSystem                   src/17-mode-system.js:458-745
+drawSystem                   src/17-mode-system.js:459-746
 drawSysTraffic               src/17f-sys-traffic.js:36-40
 drawTapes                    src/12s1-tape.js:36-48
 drawTemple                   src/20aa-poi-shapes.js:50-89
@@ -1756,7 +1756,7 @@ firstSaid                    src/11ao-firsthour.js:37
 firstSay                     src/11ao-firsthour.js:39-46
 firstTick                    src/11ao-firsthour.js:50-69
 fitMap                       src/05-parts.js:339-343
-fitPart                      src/05-parts.js:388-405
+fitPart                      src/05-parts.js:389-406
 fittedGuns                   src/05-parts.js:323-334
 fittedOfKind                 src/05-parts.js:314-317
 fittedParts                  src/05-parts.js:344-348
@@ -2567,7 +2567,7 @@ invalidateKeyMap             src/15-input.js:125
 invalidateParts              src/05-parts.js:310
 ipctx                        src/25c-instr-hud.js:17
 IPOD_S                       src/25c-instr-hud.js:18
-isFitted                     src/05-parts.js:380-383
+isFitted                     src/05-parts.js:381-384
 ISLAND_LETTERS               src/11y-island.js:15-22
 islandAll                    src/11y-island.js:23
 islandBlock                  src/11y-island.js:60-66
@@ -3462,7 +3462,7 @@ optGroups                    src/27-ui-ship.js:338-355
 OPTS_BOOT                    tests/90-harness.js:203
 optsNumify                   src/14a2-save-ephemeral.js:23-28
 optTab                       src/27-ui-ship.js:337
-orbPathOf                    src/17-mode-system.js:447-457
+orbPathOf                    src/17-mode-system.js:448-458
 ORDER_WIN                    src/12aa-need.js:76
 orderDeliver                 src/12aa-need.js:116-127
 orderHere                    src/12aa-need.js:112-115
@@ -3476,7 +3476,7 @@ ORE_NODE_W                   src/23-mode-dig.js:12
 oreNode                      src/23-mode-dig.js:13-29
 ownerName                    src/12al1-toponym.js:14-18
 ownerOf                      src/13-combat.js:13
-packPart                     src/05-parts.js:464-471
+packPart                     src/05-parts.js:465-472
 PAD_KEY                      src/15-input.js:19
 PAD_SAFE                     src/18-mode-map.js:2
 padsAuto                     src/15-input.js:69
@@ -3548,16 +3548,16 @@ PART_KEYS                    src/05-parts.js:30
 PART_KINDS                   src/05-parts.js:11-24
 PART_MAKER_BIAS              src/05-parts.js:122-129
 PART_MAKER_NAME              src/05-parts.js:130-138
-PART_MAX                     src/05-parts.js:362
+PART_MAX                     src/05-parts.js:363
 PART_PRE                     src/05-parts.js:83
 PART_SUF                     src/05-parts.js:85
-partBonus                    src/05-parts.js:349-355
+partBonus                    src/05-parts.js:349-356
 partById                     src/05-parts.js:335-338
 partClearance                src/05e-clearance.js:75-79
 partMaker                    src/05-parts.js:139
 partMakerRu                  src/05-parts.js:140-143
 partSealed                   src/05e-clearance.js:80
-partSeq                      src/05-parts.js:363
+partSeq                      src/05-parts.js:364
 partSize                     src/05d-mounts.js:59-68
 parWin                       src/12y-parrot-face.js:48
 passAll                      src/11p-pass.js:19
@@ -4082,6 +4082,13 @@ rebinding                    src/15-input.js:176
 REC                          src/15c-rec.js:18
 REC_KEYS                     src/15c-rec.js:19
 REC_SEG                      src/15c-rec.js:17
+RECALL_WEEK                  src/05b4-recall.js:8
+recallBucket                 src/05b4-recall.js:9
+recalled                     src/05b4-recall.js:10
+recallReplace                src/05b4-recall.js:28-38
+recallRows                   src/05b4-recall.js:39-52
+recallScale                  src/05b4-recall.js:27
+recallTick                   src/05b4-recall.js:12-25
 recApEv                      src/15c-rec.js:33-37
 recDump                      src/15c-rec.js:52-54
 recHead                      src/15c-rec.js:20-26
@@ -4516,8 +4523,8 @@ scoopBandAt                  src/19a-mode-scoop.js:25-28
 scoopCenter                  src/19a-mode-scoop.js:17-24
 scoopScrX                    src/19a-mode-scoop.js:270
 scoopSpawn                   src/19a-mode-scoop.js:33-50
-scrapPart                    src/05-parts.js:450-460
-scrapYield                   src/05-parts.js:440-449
+scrapPart                    src/05-parts.js:451-461
+scrapYield                   src/05-parts.js:441-450
 SCREEN_LAYERS                src/18c-chunks.js:111
 screenLayer                  src/18c-chunks.js:112-121
 SCRIP_BASE                   src/12u-scrip.js:28
@@ -4888,7 +4895,7 @@ start                        src/15-input.js:620-628
 startLanding                 src/19-mode-landing.js:2-33
 startScoop                   src/19a-mode-scoop.js:51-61
 stat                         src/08-state.js:264-332
-STAT_SHOW                    src/05-parts.js:425-437
+STAT_SHOW                    src/05-parts.js:426-438
 STATE_HASH_SKIP              src/08a-statehash.js:24-29
 stateHash                    src/08a-statehash.js:30-81
 stateHashParts               src/08a-statehash.js:82-90
@@ -4903,7 +4910,7 @@ stationNewsLines             src/26-ui-station.js:11-19
 stationParts                 src/03-ships.js:159-198
 stationUniqueOffer           src/03-ships.js:143-156
 stationViz                   src/17c-system-draw.js:111-116
-statPreview                  src/05-parts.js:416-424
+statPreview                  src/05-parts.js:417-425
 stCore                       src/17c-system-draw.js:127-142
 stDel                        src/14-save.js:26
 steps                        tests/90-harness.js:386
@@ -4975,10 +4982,10 @@ stTabBoard                   src/26e-ui-station-trade.js:11-147
 stTabFuse                    src/26b-ui-station-work.js:373
 stTabInstr                   src/26b-ui-station-work.js:225-372
 stTabLab                     src/26b-ui-station-work.js:307-372
-stTabMarket                  src/26e-ui-station-trade.js:148-245
+stTabMarket                  src/26e-ui-station-trade.js:148-246
 stTabMods                    src/26b-ui-station-work.js:105-372
 stTabsHere                   src/26-ui-station.js:141
-stTabYard                    src/26e-ui-station-trade.js:246-391
+stTabYard                    src/26e-ui-station-trade.js:247-392
 stTypeOf                     src/06-galaxy.js:73
 STUN_TIME                    src/13a-guns.js:27
 SUB_FEATS                    src/05b3-sub.js:11
@@ -5262,13 +5269,13 @@ UIK                          src/08-state.js:13
 uiK                          src/18c-chunks.js:53
 uiScale                      src/08-state.js:21
 uiSelRestore                 tests/90-harness.js:232
-unfitPart                    src/05-parts.js:384-387
+unfitPart                    src/05-parts.js:385-388
 UNIQ                         src/21b1-base-pay.js:35-44
 UNIQ_EVERY                   src/21b1-base-pay.js:45
 UNIQUE_COLS                  src/03-ships.js:14
 UNIQUE_TAG                   src/03-ships.js:15
 unlockAudio                  src/09-audio.js:48-57
-unpackPart                   src/05-parts.js:472-478
+unpackPart                   src/05-parts.js:473-479
 updateAllies                 src/12a-crew.js:644-677
 updateBarges                 src/12l-barge.js:165-196
 updateBase                   src/21a-mode-base.js:403-557
@@ -5285,7 +5292,7 @@ updateRail                   src/18g-rail-ride.js:40-69
 updateScoop                  src/19a-mode-scoop.js:75-176
 updateSpa                    src/29i-spa-draw.js:514-519
 updateSurface                src/21-mode-surface.js:200-657
-updateSystem                 src/17-mode-system.js:53-443
+updateSystem                 src/17-mode-system.js:53-444
 updateWanderRoom             src/24c-mode-wanderer.js:58-88
 updateWinter                 src/29g-winter-draw.js:808-817
 useBeacon                    src/23-mode-dig.js:88-113
@@ -5696,6 +5703,9 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## src/05b3-sub.js · 4 КБ
   · подписка — лучший товар фирмы (M487, DESIGN-birchpunk):1
+
+## src/05b4-recall.js · 3 КБ
+  · отзыв партии (M509, PLAN «new mechanics», st. 6):1
 
 ## src/05c-arms.js · 20 КБ
   · орудие в семи числах, щит в трёх повадках (M362, §2 §4):1
@@ -7343,7 +7353,7 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## tests/91zzzzk5-plan.js · 9 КБ
 
-## tests/91zzzzk6-stapel.js · 18 КБ
+## tests/91zzzzk6-stapel.js · 20 КБ
 
 ## tests/91zzzzl-maphold.js · 5 КБ
   · автотесты: владения на карте (M348):1

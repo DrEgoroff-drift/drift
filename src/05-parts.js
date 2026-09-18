@@ -349,7 +349,8 @@ function fittedParts(){
 function partBonus(){
   if(PART_BONUS)return PART_BONUS;
   const b={};
-  for(const p of fittedParts())for(const k in p.bonus)b[k]=(b[k]||0)+p.bonus[k];
+  const rc=typeof recallScale==="function";   /* отозванная деталь слабее (M509) */
+  for(const p of fittedParts())for(const k in p.bonus)b[k]=(b[k]||0)+(rc?recallScale(p,k,p.bonus[k]):p.bonus[k]);
   PART_BONUS=b;
   return b;
 }
