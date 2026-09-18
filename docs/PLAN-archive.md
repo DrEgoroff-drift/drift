@@ -10960,3 +10960,87 @@ plausibly reach.
   stick and a prompt line give 2 real reads total, both cold. Control's own P4 conditions had added
   two more reads (padsRect and a second promptRect in `drawSysHud`) — 8.17 a frame on a629378;
   folded into the same cleanup. Phone re-measurement pending.
+
+## Moved 2026-09-18, originals (stage items built as drafts)
+
+— original text of: - [x] **[design owed] M459 The approach — «подъезд»** — BUILT 18.09 (Control), `…
+
+  **M459 The approach — «подъезд»** (`DESIGN-life.md` §2–3.1, review §4.4). From the entry point
+  (P9) to the station: buoys every few hundred units, one lamp each, **lamps chasing toward the
+  dock** at ~2 buoys/s (a phase, not blinking); a **holding queue** at busy stations — 2–6 ships on a
+  slow ellipse, one docking, one leaving; density = rung × heartland gradient (`sysDanger`); tugs
+  and the shuttles of `17f-sys-traffic` re-routed onto the lane. Absorbs the haul-scene review
+  (shuttles passing, a route bar instead of the countdown, the destination chip = the station).
+  Buoys baked per system; only phases and ships per frame. Meter: `prof()` on the phone layout —
+  the approach adds ≤ 1 ms raster; `look()` on the heartland scene keeps pair % ≥ 15.
+
+— original text of: - [x] **[design owed] M452 The first ship's gesture — BUILT 18.09 (Control), fir…
+
+  **M452 The first ship's gesture** (review §2.1). Within 5 s of arrival one ship of the owner
+  (`chronOwner`) does one thing: ГЛАВТРАССА picket alongside, a spotlight cone sweeps you,
+  «Записываю», a КНИЖКА line «Проследовал. Замечаний нет.» (monthly: «Замечание: нет замечаний»);
+  Компания drone with a screen before your nose, ПОЧТА «Пролёт — 0 кр (акция). Сбор за оформление
+  акции — 40 кр»; Орднунг scan plane tail to nose, a pad form «цель визита» with three answers, all
+  «служебная»; Коммуна — nobody, a buoy «ОБЕД. ВЕРНУСЬ»; Рассвет tug «чинить есть что?» / at 100 %
+  «ну хоть покрась» (one panel painted, 5 кр); Хай-Фронт camera drone at a fixed offset to the dock,
+  «ваш рейтинг доверия рассчитан» (never shown anywhere). Rear/front/fresh-occupation states as in
+  borders §2.1; Ялта: all six, weapons sealed. The gesture ship is the fleet art in the maker's
+  dressing. The **post** is background: one truss + board + lamp + the dressing's prop, baked, at
+  the entry point (borders §2.1 table for the six dressings).
+
+— original text of: - [ ] **[design owed] M453 The stamp + P14 ТРУДОВАЯ КНИЖКА — the stamp and its p…
+
+  **M453 The stamp + P14 ТРУДОВАЯ КНИЖКА** (borders §2.2, review §4.4, playtest §4.4). Border
+  crossing = owner change (or wild → owned) on arrival: a stamp across the screen 1.2 s (DOM on the
+  КНИЖКА paper, tilt 5–12° by seed, ink grain, scale 1.3 → 1 in 120 ms, hold 900, fade); six papers
+  (violet stencil «ОТМЕТКА О ПРОЕЗДЕ · ПОСТ № n» + signature; Компания's till slip scrolling up
+  «ВЪЕЗД — 0 кр (акция) · спасибо за выбор»; Орднунг black numbered «Экз. 1 из 3», time to the
+  minute; Коммуна blue italic with a poem line and the date slightly wrong; Рассвет ochre hand, a
+  sun, a thumbprint; Хай-Фронт dot matrix «v4.1» + a trust number). **The КНИЖКА becomes a real
+  document** (P14): stamps, seals, signatures, the vacation savings, the доска почёта and the
+  grounding ending (all designed in M161, none on the page) — with **ОТМЕТКИ О ПРОЕЗДЕ** as its first
+  real page (six + Ялта + the pirates' scratch to collect). Save: which stamps, when (`G.stamps`).
+
+— original text of: - [ ] **[design owed] M454 Station body and traffic by builder — first draft BUI…
+
+  **M454 Station body and traffic by builder** (borders §2.3). `17e-station-body` applies the
+  maker grammar (`HULL_MAKER` dimensions: profile law, seams, marks, ground) to the station by
+  `station.by`; `17f-sys-traffic` draws 7 of 10 ships from the owner's maker, 3 from neighbours; a
+  border system mixes, a heartland is uniform.
+
+— original text of: - [ ] **[design owed] M447 The world galaxy + M448 the stars — first draft BUILT…
+
+  **M447 The world galaxy + M448 the stars** (`docs/DESIGN-galaxy.md`): `galaxyAt(x,y)` (disk,
+  bulge + bar, two arms and spurs, dust, knots); world tiles in two levels, 4 ms bake budget,
+  fade-in fallback; band and nebula leave the map; M438's sky block retired; Node suite, a detector
+  for «the galaxy moves with the sheet»; goldens accepted; faint stars per sector at constant
+  screen density, no cross/halo/twinkle. Acceptance frame: home, 0:0, zoom 1, inside the bulge.
+  **The metro's ride and scheme (stage 3) draw on this.**
+
+— original text of: - [x] **[design owed] M465 Ten goods — table and roll — BUILT 18.09 (Control).**…
+
+  **M465 Ten goods — table and roll** (`DESIGN-resources.md` §2–3, review §2.5). Rows in `RES`
+  with band, verb, property, price, eater line: **солнечный газ** (frontier, scoop, 85, reactors) ·
+  **белая руда** (frontier, belt, 95, instruments) · **космический янтарь** (frontier, cave, 130,
+  fragile → «крошка» at ⅓, Коммуна ×1.5) · **осмий** (deep, mine, 190, heavy ×2 hold, armour) ·
+  **звёздный чернозём** (deep, drill, 170, greenhouses/дачники ×1.5) · **магнитная пыль** (deep,
+  belts by star class, 260, shields) · **жемчуг пустоты** (deep, fauna, 320, Компания ×1.5) ·
+  **тёмное стекло** (rim, drill, 600, optics, Хай-Фронт ×1.5) · **ловушки** (antimatter, rim
+  scoop, 900, perishable 1 %/min without reactor feed, detonates below 20 % hull) · **нейтронная
+  крошка** (beyond r 50, drill, 1 500, heavy ×5, доводка). **New random salt** — a Node suite proves
+  no existing deposit, price or station moved (old-salt hashes before/after). Presence by band;
+  richness `exp(N(μ(r),1))`: ~70 % бедная, 25 % хорошая, 5 % богатая, 0.5 % **ЖИЛА** ×20.
+
+— original text of: - [x] **[design owed] M466 Reading and ЖИЛА — BUILT 18.09 (Control), `src/06e-fa…
+
+  **M466 Reading and ЖИЛА.** The scanner shows a range («осмий: 40–160») narrowed by the
+  instrument's resolution (изыскатель ±10 %, рудовоз ±60 %; тёмное стекло in the instruments halves
+  every range) — the professions' honesty rule. ЖИЛА: the word across the screen (ГЛАВТРАССА
+  stencil, warm, 1.2 s — the only time the game shouts), a ДНЕВНИК line, a rumour at the nearest
+  stations after one сводка, company on that approach afterwards («трое, все говорят, что первыми»).
+
+— original text of: - [x] **[design owed] M467 Prices by distance — BUILT 18.09 (Control), `12-econo…
+
+  **M467 Prices by distance.** ½ base in its own band, 1× at r≈10, 1.3× in the heart, the eater's
+  ×1.5 in its land; the live market's flood-and-recover holds; far goods rarely on sale in the heart.
+  Eaters speak at their counters (review §3: «весы наши, тара ваша», «принимаем по весу, вес — наш»).
