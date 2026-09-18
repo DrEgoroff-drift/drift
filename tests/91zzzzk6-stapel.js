@@ -382,3 +382,12 @@ TEST_SUITES.push(()=>suite("великаны: семь, у звёзд, разн�
   const g=L[1];G.sx=g.sx;G.sy=g.sy;G.sys=getSystem(g.sx,g.sy);giantArrive();
   ok(G.giantsSeen[g.k]===1,"первая встреча записана");
 }));
+TEST_SUITES.push(()=>suite("едоки дальнего: верфь, земля, флот (M469)",()=>{
+  resetWorld();
+  const yard={sx:5,sy:5,station:{stype:"yard"}},trade={sx:5,sy:5,station:{stype:"trade"}};
+  ok(farEaterMul(yard,"he3",null)>farEaterMul(trade,"he3",null),"гелий-3 верфь берёт дороже — реакторы");
+  eq(farEaterMul(trade,"magdust","or"),1.5,"магнитная пыль — Орднунг, щиты и рельсы");
+  eq(farEaterMul(trade,"antimatter","gt"),1.3,"антивещество — флот любой державы");
+  eq(farEaterMul(trade,"antimatter",null),1,"ничья земля — как есть");
+  eq(farEaterMul(trade,"amber","km"),1.5,"янтарь — ювелиры Коммуны, как было");
+}));

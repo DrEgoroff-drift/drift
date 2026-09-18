@@ -24,6 +24,18 @@ function marketFor(sys){
    общее: живой рынок так же роняет цену завала и так же её отпускает, и одна
    жила не печатает денег. */
 const FAR_EATER={amber:"km",pearl:"co",darkglass:"hf"};
+/* едоки (M469): кто ещё берёт дальнее дороже — верфь (плотность реактора,
+   брони, приборов; доводка крошкой), земля (броня ГЛАВТРАССЫ, щиты и рельсы
+   Орднунга, теплицы Рассвета), флот любой державы (антивещество) */
+const FAR_EAT_YARD={he3:1.4,palladium:1.3,osmium:1.3,neutron:1.4};
+const FAR_EAT_LAND={osmium:["gt",1.3],magdust:["or",1.5],chernozem:["ra",1.5]};
+function farEaterMul(sys,k,own){
+  let m=(FAR_EATER[k]&&FAR_EATER[k]===own)?1.5:1;
+  if(FAR_EAT_YARD[k]&&sys.station&&sys.station.stype==="yard")m*=FAR_EAT_YARD[k];
+  const L=FAR_EAT_LAND[k];if(L&&L[0]===own)m*=L[1];
+  if(k==="antimatter"&&own&&own!=="yalta"&&own!=="pirate")m*=1.3;   /* флот любой державы */
+  return m;
+}
 function farCurve(r,band){
   if(r<6)return 1.3;
   if(r<10)return 1.3-.3*(r-6)/4;
@@ -32,7 +44,7 @@ function farCurve(r,band){
 function farBasePrice(sys,k){
   const F=RES[k].far,r=Math.hypot(sys.sx,sys.sy);
   const own=(typeof stampOwnerAt==="function")?stampOwnerAt(sys.sx,sys.sy):null;
-  return RES[k].price*farCurve(r,F.band)*(FAR_EATER[k]&&FAR_EATER[k]===own?1.5:1);
+  return RES[k].price*farCurve(r,F.band)*farEaterMul(sys,k,own);
 }
 function farPriceCtx(sys,C,k){
   return Math.max(1,Math.round(farBasePrice(sys,k)*C.mul*C.occ*clamp(1+(C.m.pressure[k]||0),.4,1.8)));
