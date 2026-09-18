@@ -61,8 +61,9 @@ function kbPlace(d,it,q){
   return "";
 }
 function kbNumbers(d){
-  const used=d.items.reduce((a,x)=>a+x.cells.length,0);
-  return "ЯЧЕЙКИ "+(used+d.hold.length)+"/"+d.P.cells.length+" · ТРЮМ "+d.hold.length+" КЛ.";
+  const used=d.items.reduce((a,x)=>a+x.cells.length,0),st=stat(),F=planFactors();
+  const pct=v=>(v>=1?"+":"")+Math.round((v-1)*100)+"%";
+  return "ЯЧЕЙКИ "+(used+d.hold.length)+"/"+d.P.cells.length+" · ТРЮМ "+st.cargoMax+" ("+pct(F.cargo)+") · РАЗГОН ×"+F.mass.toFixed(2);
 }
 /* ── экран ── */
 function kbOpen(){
@@ -151,4 +152,24 @@ function kbDraw(c,s,d){
     const ab={gun:"ОР",shield:"ЩТ",engine:"ДВ",hull:"БР",core:"РК",util:"ПР",missile:"ПУ"}[it.kind]||({engine:"ДВ",tank:"БК",armor:"БР",drill:"БУ",hyper:"ГП",weapon:"РК"}[it.kind]||"?");
     c.fillText(ab,q.j*s+s/2,q.i*s+s/2);
   });
+}
+/* ── числа от чертежа (M478, DESIGN-shipyard §3) ──
+   Неподвижная точка: пока чертёж не правили — оба множителя ровно 1, и у
+   старого сейва ни одно число не сдвинулось. Правка двигает два числа:
+   трюм = клетки трюма × плотность, откалиброванная так, что типовой чертёж даёт
+   сегодняшний трюм, потолок ×1.4 (торговля не ломается); тяга и поворот — от
+   массы плана (вещь — клетка, пустой трюм — полклетки) против типового,
+   зажато в .8…1.1 (чувство руля P8 не разваливается). */
+const PLAN_F={key:"",v:{cargo:1,mass:1}};
+function planFactors(){
+  const id=G.shipId,D=G.draft&&G.draft[id];
+  if(!D)return {cargo:1,mass:1};
+  const key=id+"|"+JSON.stringify(D)+"|"+JSON.stringify(G.fit[id]||{})+"|"+JSON.stringify(G.mods||{});
+  if(PLAN_F.key===key)return PLAN_F.v;
+  const d=draftOf(id),t=planPack(id,G.fit[id]||{},G.mods||{});
+  const mass=pk=>pk.items.reduce((a,x)=>a+x.cells.length,0)+pk.hold.length*.5;
+  const cargo=t.hold.length?clamp(d.hold.length/t.hold.length,0,1.4):1;
+  const m=clamp(Math.sqrt(Math.max(1,mass(t))/Math.max(1,mass(d))),.8,1.1);
+  PLAN_F.key=key;PLAN_F.v={cargo,mass:m};
+  return PLAN_F.v;
 }

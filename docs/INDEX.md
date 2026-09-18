@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 557 · символов верхнего уровня: 5403
+Файлов: 557 · символов верхнего уровня: 5405
 
 ## СИМВОЛЫ
 
@@ -999,14 +999,14 @@ CSW                          src/19e-clouds.js:68
 ctlHint                      src/15-input.js:171-175
 ctlReset                     src/15a-helm.js:126-131
 ctx                          src/08-state.js:3
-cue                          src/08-state.js:371-376
+cue                          src/08-state.js:373-378
 CUE_EPS                      src/27m-scroll-cue.js:25
-CUE_INFO                     src/08-state.js:351
-CUE_LVL                      src/08-state.js:352
-cueFold                      src/08-state.js:379-384
-cueLvl                       src/08-state.js:358-361
-cueReset                     src/08-state.js:362
-cueSameOffer                 src/08-state.js:370
+CUE_INFO                     src/08-state.js:353
+CUE_LVL                      src/08-state.js:354
+cueFold                      src/08-state.js:381-386
+cueLvl                       src/08-state.js:360-363
+cueReset                     src/08-state.js:364
+cueSameOffer                 src/08-state.js:372
 CULT_EXP_GOAL                src/12b3-fx-cult.js:22
 CULT_PLAY                    src/12b3-fx-cult.js:51-94
 CULT_PLAY_EVERY              src/12b3-fx-cult.js:19
@@ -1779,7 +1779,7 @@ folkVisit                    src/12u-folk.js:104-113
 FOOD_SUPPLY                  src/21a1b-base-food.js:16
 foundBase                    src/21a-mode-base.js:101-115
 frame                        src/28-loop.js:599-645
-FRAME_IN                     src/08-state.js:341
+FRAME_IN                     src/08-state.js:343
 FRAME_JS                     src/28-loop.js:119
 FRAME_MS                     src/28-loop.js:141
 frameBody                    src/28-loop.js:411-531
@@ -2139,7 +2139,7 @@ heatAdd                      src/13a-guns.js:47-52
 heatHaze                     src/18d-postfx.js:76-80
 heatHazeFrom                 src/18d-postfx.js:58-73
 heatTick                     src/13a-guns.js:54-62
-held                         src/08-state.js:330
+held                         src/08-state.js:332
 HELM                         src/15a-helm.js:117
 HELM_ACC                     src/15a-helm.js:75
 HELM_ARC0                    src/15a-helm.js:99
@@ -2523,15 +2523,15 @@ jump                         src/18-mode-map.js:527-534
 jumpToBase                   src/21a-mode-base.js:384-401
 KB                           src/27jb-kb.js:23
 KB_RULE                      src/27jb-kb.js:14-22
-kbClose                      src/27jb-kb.js:74
-kbDone                       src/27jb-kb.js:120-128
-kbDraw                       src/27jb-kb.js:130-154
-kbNumbers                    src/27jb-kb.js:63-66
-kbOpen                       src/27jb-kb.js:68-73
+kbClose                      src/27jb-kb.js:75
+kbDone                       src/27jb-kb.js:121-129
+kbDraw                       src/27jb-kb.js:131-155
+kbNumbers                    src/27jb-kb.js:63-67
+kbOpen                       src/27jb-kb.js:69-74
 kbPlace                      src/27jb-kb.js:49-62
-kbRender                     src/27jb-kb.js:75-101
+kbRender                     src/27jb-kb.js:76-102
 kbRule                       src/27jb-kb.js:47
-kbTap                        src/27jb-kb.js:102-119
+kbTap                        src/27jb-kb.js:103-120
 KEEP_DARK_AFTER              src/11k-keepers.js:48
 KEEP_HABIT                   src/11k-keepers.js:35-45
 KEEP_LAST                    src/11k-keepers.js:84
@@ -3067,7 +3067,7 @@ mountsOf                     src/05d-mounts.js:26-42
 mountTakes                   src/05d-mounts.js:64-69
 mountWhyNot                  src/05d-mounts.js:71-77
 mouseWalkAt                  src/15-input.js:432-461
-msgHeld                      src/08-state.js:385
+msgHeld                      src/08-state.js:387
 MSL_ARM                      src/16b-missile.js:20
 MSL_COOL                     src/16b-missile.js:16
 MSL_DMG                      src/16b-missile.js:14
@@ -3570,6 +3570,7 @@ placeX                       src/11v-places.js:38
 PLAN_CACHE                   src/05e-plan.js:20
 PLAN_COL                     src/05e-plan.js:131
 PLAN_ETHER                   src/11r-plan.js:20-26
+PLAN_F                       src/27jb-kb.js:163
 PLAN_ITEM_COL                src/05e-plan.js:132
 PLAN_WANT                    src/05e-plan.js:78
 planAll                      src/11r-plan.js:27
@@ -3621,6 +3622,7 @@ planetSunRot                 src/07-planet.js:329-333
 planetTakeLoad               src/12n-planet.js:126-143
 planetTick                   src/12n-planet.js:44-54
 planetWetAt                  src/07a-terrain.js:56-60
+planFactors                  src/27jb-kb.js:164-175
 planFoot                     src/05e-plan.js:73-76
 planGroundLine               src/11r-plan.js:47-52
 planIsCore                   src/11r-plan.js:41
@@ -4348,7 +4350,7 @@ saveGame                     src/14a-cloud.js:38-51
 saveText                     src/14-save.js:148-186
 saveTop                      src/14-save.js:142-145
 saveWeigh                    src/14-save.js:129-141
-say                          src/08-state.js:342
+say                          src/08-state.js:344
 SCALE_KEYS                   src/10-music.js:25
 SCALES                       src/10-music.js:5-24
 SCK                          src/18c-chunks.js:39
@@ -4704,7 +4706,7 @@ starRGB                      src/19c-light.js:49-59
 start                        src/15-input.js:615-623
 startLanding                 src/19-mode-landing.js:2-33
 startScoop                   src/19a-mode-scoop.js:51-61
-stat                         src/08-state.js:264-329
+stat                         src/08-state.js:264-331
 STAT_SHOW                    src/05-parts.js:425-437
 STATE_HASH_SKIP              src/08a-statehash.js:24-29
 stateHash                    src/08a-statehash.js:30-81
@@ -5372,7 +5374,7 @@ WORLD_SPREAD                 src/10-music.js:99
 WORLD_SUB                    src/08-state.js:169
 WORLD_VIB                    src/10-music.js:98
 WORLD_VOICE                  src/10-music.js:57-73
-worldCovered                 src/08-state.js:389
+worldCovered                 src/08-state.js:391
 worldQuiet                   src/11ar-doors.js:32
 worldRes                     src/02a-worldmix.js:119-126
 worldTables                  src/02a-worldmix.js:86-117
@@ -5519,7 +5521,7 @@ zooTick                      src/11ad-zoo.js:41-54
   · рельеф:11
   · где сел — то и видел:35
 
-## src/08-state.js · 32 КБ
+## src/08-state.js · 33 КБ
   · состояние:1
   · DOM не читается в кадре (0.3):58
 
@@ -6461,7 +6463,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/27j-ui-opis.js · 60 КБ
   · ОПИСЬ: один стол для всего, что на тебе и в трюме (M341):1
 
-## src/27jb-kb.js · 9 КБ
+## src/27jb-kb.js · 11 КБ
   · КБ: редактор чертежа, синька (M477, DESIGN-shipyard §3, review §2.2):1
 
 ## src/27jb-ui-got.js · 4 КБ
@@ -7062,7 +7064,7 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## tests/91zzzzk4-rail.js · 4 КБ
 
-## tests/91zzzzk5-plan.js · 5 КБ
+## tests/91zzzzk5-plan.js · 6 КБ
 
 ## tests/91zzzzl-maphold.js · 5 КБ
   · автотесты: владения на карте (M348):1

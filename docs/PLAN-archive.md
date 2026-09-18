@@ -11164,3 +11164,9 @@ plausibly reach.
   **ПРОЕКТЫ** per hull. Save **`G.draft[shipId]`** (`G.plan` is the industrial plan, `11r-plan`) = `[[thing, cx, cy, turn]…]`, the packer as the
   `applySave` default. ОСНАСТКА's hull section becomes КБ; a foreign yard bills by cells moved
   (Компания: «перемещение ячейки — 1 кр, итого 14 кр, спасибо за выбор»).
+
+- [ ] **[design owed] M478 Numbers from the plan.** cargo = hold cells × hold-module density; fuel/jump = tank cells ×
+  density; energy = reactor cells × output (`weapon` module = the reactor level, war §4); hull
+  points = the hull's + armour parts; thrust/turn = the hull's × mass factor **clamped .8–1.1**
+  (tied to P8's feel); sight = instruments in the nose third. Module tiers become densities.
+  Bounds: cargo ≤ ×1.4 nominal; the oracle line from stage 3.

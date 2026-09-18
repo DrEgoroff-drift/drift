@@ -58,3 +58,20 @@ TEST_SUITES.push(()=>suite("чертёж: упаковщик сам соблюд
   }
   ok(bad.length<=Math.ceil(ids.length*.1),"типовой чертёж нарушает правила места не больше чем у десятой части корпусов: "+bad.join(" "));
 }));
+TEST_SUITES.push(()=>suite("числа от чертежа: неподвижная точка и пределы",()=>{
+  resetWorld();
+  const id=G.shipId;G.fit[id]={};slotsOf(id).forEach((k,i)=>G.fit[id][i]="t"+i);G.draft={};
+  const s0=stat();
+  /* типовой чертёж, записанный явно, — те же числа */
+  const d=draftOf(id);draftSave(id,d);
+  const s1=stat();
+  eq([s1.cargoMax,s1.thr.toFixed(4),s1.turn.toFixed(4)].join(" "),[s0.cargoMax,s0.thr.toFixed(4),s0.turn.toFixed(4)].join(" "),"типовой чертёж — ровно сегодняшние числа");
+  /* весь трюм снят — корабль легче, трюм меньше, но в пределах */
+  d.hold=[];draftSave(id,d);const s2=stat();
+  ok(s2.cargoMax<s0.cargoMax,"без трюма — трюм меньше: "+s2.cargoMax+" < "+s0.cargoMax);
+  ok(s2.thr>=s0.thr&&s2.thr<=s0.thr*1.1+1e-9,"и разгон лучше, но не больше ×1.1");
+  /* трюм на всю свободную палубу — не выше ×1.4 */
+  const F=planFactors();ok(F.mass>=.8&&F.mass<=1.1,"масса зажата .8…1.1");
+  G.draft={};G.fit[id]={};
+  eq(stat().cargoMax,stat().cargoMax,"без чертежа числа стабильны");
+}));
