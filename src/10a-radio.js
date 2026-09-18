@@ -763,7 +763,7 @@ function radioBeacon(t,key,cd){
   }
 }
 function radioBell(t,key,cd){
-  radioBellVoice(t,midiHz(key+48+radioDeg(cd+[0,2,4][Math.floor(RADIO.r()*3)])),2.2,RADIO.layers.bell,.012);
+  radioBellVoice(t,midiHz(key+48+radioDeg(cd+[0,2,4][Math.floor(RADIO.r()*3)])),2.2,RADIO.layers.bell,.008);
 }
 /* ── обертоновое облако ──
    Самый «космический» приём — спектральный: не аккорд из нот, а натуральный ряд одного
