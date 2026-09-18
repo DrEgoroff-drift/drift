@@ -11109,3 +11109,37 @@ plausibly reach.
   one-pixel line itself (the very thing ×1.5 breaks) and the single-pixel stars, which are literally
   the author's «movement, not twinkle» rule. In one sentence: the cheapest thing to sell is the
   emptiness's depth, the dearest are the line and the stars, and the ribbon sits between them.
+
+- [ ] **[design owed] M471 The station in the system.** At the end of the approach, past the ordinary station: **the
+  ring** (a torus flat, inner disc a shade lighter with a slow faint spiral, the line's plate) and
+  **the glide path** (two converging dotted lamp lines chasing inward); a small vestibule block (one
+  body, six dressings; at the rim a bare platform with one lamp). Within ~300: «Станция «Нейэль».
+  Стыковка?» — ДА. **Align**: speed under the mark, nose in the cone 2 s, helm-assisted, wide cone on
+  the phone; too fast → «Сбросьте скорость», restart, no penalty; **after 5 s of failing the ring
+  takes you** — «Автостыковка. Просьба не мешать», КНИЖКА «стыковка выполнена автоматикой».
+  Berth: the ship slides in. **The train is the batch**: ships arrived since the last opening stand
+  in a row on the lamps — a вахтовка, a barge, a yacht; at the rim you and a drone.
+
+- [ ] **[design owed] M472 The vestibule** — the metro's only new screen, one page on the station paper: **ТАБЛО**
+  split-flap («ЭЛЕКТРИЧКА до «Край» · через 0:14», «СКОРЫЙ · 1:40», «МЕТРО · прибывает»; flaps turn
+  on change), **КУДА ВАМ** unfolds the scheme on the same paper — tap a stop → pad «ДО «НЕЙЭЛЬ» · 3
+  ОСТАНОВКИ · 5 кр» / «ДО «СУХОЙ» · 11 ОСТАНОВОК · 38 кр + багаж 12 кр»; routes through
+  interchanges by themselves; **КАССА** — жетон (brass disc, 5 кр flat «сорок лет»), билет 2
+  кр/sector, скорый ×2, baggage per ton, «крупногабаритный» ×3 (the tape measure always finds «плюс
+  десять»); **БУФЕТ** three items by the owner (лимонад «Звёздный», «Кола Партнёр™», «вода
+  минеральная 0,33 № 2», «кофе с круассаном (закрыто)», «чай из общего котла», «энергетик v4») — a
+  drink comes with a rumour (`11t`) and a ДНЕВНИК line. Wait = the interval: ~6 s in the heart,
+  **≤ 40 s real at the rim** (табло «следующий поезд — завтра», forty seconds later «поезд подан»).
+
+- [ ] **[design owed] M473 The ride** — `G.mode="rail"` on the galaxy map. Departure: «поезд подан», the batch goes
+  in 0.3 s apart, your stars stretch to the ring's centre 0.6 s, a white-cyan flash. The ride: the
+  camera frames the line ahead drawn thick in the scheme's colour; the train a rounded glyph with a
+  headlight wedge; stops as ticks; segment 0.8 s + 0.35 s/sector, **a stop ~2 s** with the name, the
+  announcer once (`12pa-beacon`) and **ВЫЙТИ** on the pad; **ПЕРЕСАДКА** at junctions with the other
+  line's wait; a paper strip at the top carries the announcements («Осторожно, двери закрываются» —
+  said anyway; «Уступайте места пассажирам с детьми и крупногабаритным грузом»; «Поезд следует до
+  станции «Край» со всеми остановками. Остановок: сто четырнадцать»; «Конечная. Поезд дальше не
+  идёт, просьба освободить вагоны»; front stops «Поезд проследует без остановки»). Metro hop ≈ 6–8 s,
+  heart to rim ≤ 60 s; held pad ×2, never a skip; desk open during the ride. Arrival: thrown out of
+  the destination's ring onto its approach, slow, facing the station. Save `{line,from,to,t}`,
+  resumes at the next stop. Kindness: the полустанок's lamp comes on as you approach — «ждали».

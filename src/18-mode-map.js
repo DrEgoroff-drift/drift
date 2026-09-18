@@ -529,8 +529,17 @@ function jump(cost){
      над головами живущих внизу (M110, 12t-settle) */
   if(typeof settleLeftBehind==="function")settleLeftBehind();
   if(typeof quietLeave==="function")quietLeave();   /* тихий уезд (11n): прошло больше, чем прожито */
+  G.fuel-=cost;
+  arriveSystem(G.sel.x,G.sel.y,{cost});
+}
+/* ── прибытие в систему: одно на прыжок и на поезд (M473) ──
+   Всё, что мир делает, когда корабль появился в новой системе, — в одном
+   месте. Поезд отличается только тем, где корабль появляется (у кольца
+   станции, а не у входа) и что об этом сказано. */
+function arriveSystem(sx,sy,o){
+  o=o||{};
   const fromBy=(typeof stampOwnerAt==="function")?stampOwnerAt(G.sx,G.sy):null;   /* чья земля остаётся за кормой (M453) */
-  G.fuel-=cost;G.sx=G.sel.x;G.sy=G.sel.y;G.sys=getSystem(G.sx,G.sy);G.ap=null;
+  G.sx=sx;G.sy=sy;G.sys=getSystem(G.sx,G.sy);G.ap=null;
   if(G.course&&G.course.sx===G.sx&&G.course.sy===G.sy)G.course=null;   /* прибыли — курса больше нет (M321) */
   if(typeof odoAdd==="function")odoAdd("jumps");   // путь, по которому зреет память (11d)
   if(typeof vegaJump==="function")vegaJump();        // укачивает (M153)
@@ -543,7 +552,7 @@ function jump(cost){
      нём строит свою полосу жизнь M459 (этап 2). Заодно из потока rnd() ушёл один
      вызов: сдвинулись все реплеи и наборы с одинаковым хешем — перед
      релизом сознательный test.ps1 -Accept, строкой в патчноуте. */
-  const E=sysEntry(G.sx,G.sy),a=E.a;   /* вход системы — начало полосы M459 (17g) */
+  const E=o.at||sysEntry(G.sx,G.sy),a=E.a;   /* вход системы — начало полосы M459 (17g); поезд — у кольца */
   G.ship.x=E.x;G.ship.y=E.y;
   /* прибытие без хода (боты 12.09): с .7 прямо на звезду брошенный корабль за
      полминуты входил в корону и разбивался почти молча — отпущенный руль теперь
@@ -566,9 +575,9 @@ function jump(cost){
   /* «Тихоня» (11at, M231): если ей время — её застают у родного причала */
   if(typeof giftArrive==="function")giftArrive();
   saveGame(true);
-  logAdd("dim","Прыжок в "+G.sys.name+" ("+G.sx+":"+G.sy+") · −"+cost+" топлива"+
+  logAdd("dim",(o.rail?"Поезд прибыл: "+G.sys.name+" ("+G.sx+":"+G.sy+")":"Прыжок в "+G.sys.name+" ("+G.sx+":"+G.sy+") · −"+o.cost+" топлива")+
     (G.pirates.length?" · чужих сигнатур: "+G.pirates.length:""));
-  say("Прибытие: "+G.sys.name+"\n"+G.sys.cls.ru+
+  say((o.rail?"Поезд прибыл: ":"Прибытие: ")+G.sys.name+"\n"+G.sys.cls.ru+
     (G.sys.station?"\nстанция":"")+(G.sys.belt?"\nпояс астероидов":"")+
     (G.pirates.length?"\nчужие сигнатуры: "+G.pirates.length:""));
 }

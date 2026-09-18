@@ -61,7 +61,7 @@ function tableShowsRecord(){return tableTab==="record";}
    внутренний ключ режима, английским словом, в русской игре. Таблица держит
    все режимы разом — если появится новый и его сюда не впишут, шапка честно
    промолчит, а не выдаст ключ. */
-const MODE_RU={system:"в системе",map:"навигация",landing:"посадка",surface:"на поверхности",
+const MODE_RU={rail:"в поезде",system:"в системе",map:"навигация",landing:"посадка",surface:"на поверхности",
   cave:"в пещере",dig:"в шахте",belt:"в поясе",scoop:"в атмосфере",base:"на базе",
   homein:"дома",raid:"абордаж",dock:"на станции",road:"в дороге",wanderer:"на «Сороке»"};
 function modeRu(){return MODE_RU[G.mode]||"";}

@@ -33,3 +33,28 @@ TEST_SUITES.push(()=>suite("рельсы: сеть по зерну, связна
   const k0=Object.keys(N.at)[0].split(",").map(Number),S=railStation(k0[0],k0[1]);
   ok(S&&S.lines.length>=1,"railStation называет линии");
 }));
+TEST_SUITES.push(()=>suite("рельсы: стыковка, касса, поездка, прибытие",()=>{
+  resetWorld();
+  const N=railNet();
+  const k=Object.keys(N.at).find(k=>{const p=k.split(",").map(Number);return Math.hypot(p[0],p[1])<=12&&getSystem(p[0],p[1]).station;});
+  ok(!!k,"станция метро в сердце нашлась");
+  const [sx,sy]=k.split(",").map(Number);
+  G.sx=sx;G.sy=sy;G.sys=getSystem(sx,sy);G.mode="system";
+  const R=railHere();ok(!!R,"у станции есть кольцо");
+  /* стыковка: медленно и в конусе — две секунды */
+  G.ship.x=R.x+R.ux*40;G.ship.y=R.y+R.uy*40;G.ship.vx=G.ship.vy=0;
+  RAIL_DOCK={hold:0,t:0};
+  for(let i=0;i<130&&!railWinOpen();i++)railInteract(G.ship);
+  ok(railWinOpen(),"две секунды в конусе — ПРИНЯТО, вестибюль открыт");
+  /* касса: жетон, поезд, поездка */
+  const D=railDestinations();ok(D.length>0,"куда ехать — есть: "+D.length);
+  const t=D.find(d=>d.k>=2)||D[0],c0=G.credits;
+  railBuy(t);ok(G.credits<c0&&RAIL_WAIT,"билет куплен, поезд ждём");
+  for(let i=0;i<60*100&&G.mode==="system";i++)railTick(1);
+  eq(G.mode,"rail","поезд пришёл — мы в поезде");
+  for(let i=0;i<60*120&&G.mode==="rail";i++)updateRail(1);
+  eq(G.mode,"system","конечная — корабль выпущен в систему");
+  eq(G.sx+","+G.sy,t.to.sx+","+t.to.sy,"и это система назначения");
+  const R2=railHere();ok(R2&&Math.hypot(G.ship.x-R2.x,G.ship.y-R2.y)<120,"корабль у кольца станции назначения");
+  railWinClose();
+}));

@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 552 · символов верхнего уровня: 5347
+Файлов: 554 · символов верхнего уровня: 5377
 
 ## СИМВОЛЫ
 
@@ -123,6 +123,7 @@ arcHit                       src/13a-guns.js:368-385
 ARMED_CAP                    src/13-combat.js:12
 armedCount                   src/13-combat.js:235
 arrive                       src/16-flight.js:178-216
+arriveSystem                 src/18-mode-map.js:539-583
 ARTIFACTS                    src/12h-relic.js:48-63
 askText                      src/11u-names.js:59-77
 asMap                        src/14-save.js:209-215
@@ -930,9 +931,9 @@ craftAffordable              src/03-ships.js:110-114
 craftAmmo                    src/16b-missile.js:61-71
 craftPart                    src/03-ships.js:115-124
 CRASH_SHIP                   src/01a-crashlog.js:19
-crashAt                      src/28-loop.js:543-557
-crashN                       src/28-loop.js:538
-crashSay                     src/28-loop.js:564-593
+crashAt                      src/28-loop.js:545-559
+crashN                       src/28-loop.js:540
+crashSay                     src/28-loop.js:566-595
 crashShip                    src/01a-crashlog.js:20-37
 crashStack                   src/01a-crashlog.js:39-41
 CREW_BASE_TRAITS             src/21a9-base-laws.js:92-97
@@ -1047,7 +1048,7 @@ CVS_RECT                     src/08-state.js:83
 cvsRect                      src/08-state.js:98-101
 dayK                         src/19c-light.js:68-73
 dayKq                        src/19c-light.js:74
-dbg                          src/28-loop.js:701-771
+dbg                          src/28-loop.js:703-773
 dcol                         src/21b-surface-deco.js:155-160
 DEAL_KINDS                   src/27g-deals.js:17-137
 dealAnswer                   src/27g-deals.js:163-196
@@ -1398,6 +1399,7 @@ drawPOI                      src/20a-poi.js:173-234
 drawPortal                   src/20aa-poi-shapes.js:464-489
 drawPostcard                 src/25g-postcard.js:170-611
 drawRaid                     src/24aa-raid-draw.js:14-655
+drawRail                     src/18g-rail-ride.js:76-113
 drawRailMap                  src/18e-rail-net.js:181-204
 drawRing                     src/17c-system-draw.js:4-15
 drawRingTape                 src/11x-ring.js:107-118
@@ -1430,11 +1432,12 @@ drawSurface                  src/21e-surface-draw.js:277-291
 drawSurfaceHud               src/21e-surface-draw.js:21-115
 drawSurfaceWorld             src/21e1-surface-world.js:10-615
 drawSurvey                   src/12w-survey.js:63-89
-drawSysHud                   src/17-mode-system.js:725-972
+drawSysHud                   src/17-mode-system.js:729-976
 drawSysLane                  src/17g-sys-lane.js:75-103
 drawSysLaneShips             src/17g-sys-lane.js:112-138
 drawSysNebula                src/16a-space.js:208-236
-drawSystem                   src/17-mode-system.js:444-724
+drawSysRail                  src/18f-rail-station.js:32-65
+drawSystem                   src/17-mode-system.js:447-728
 drawSysTraffic               src/17f-sys-traffic.js:36-40
 drawTemple                   src/20aa-poi-shapes.js:50-89
 drawThingIcon                src/27i-ui-table.js:399-435
@@ -1450,7 +1453,7 @@ drawWater                    src/21e-surface-draw.js:194-275
 drawWear                     src/12s-wear.js:102-171
 drawWeather                  src/19d-weather.js:96-233
 drawWinter                   src/29g-winter-draw.js:334-765
-drawWorld                    src/28-loop.js:384-408
+drawWorld                    src/28-loop.js:385-410
 drawWreck                    src/20aa-poi-shapes.js:8-48
 drawWrecksSystem             src/12l-barge.js:362-388
 drDoors                      tests/91zzzzzn-doors.js:26-43
@@ -1771,12 +1774,12 @@ folkState                    src/12u-folk.js:83-86
 folkVisit                    src/12u-folk.js:104-113
 FOOD_SUPPLY                  src/21a1b-base-food.js:16
 foundBase                    src/21a-mode-base.js:101-115
-frame                        src/28-loop.js:597-643
+frame                        src/28-loop.js:599-645
 FRAME_IN                     src/08-state.js:341
 FRAME_JS                     src/28-loop.js:119
 FRAME_MS                     src/28-loop.js:141
-frameBody                    src/28-loop.js:409-529
-frameLastAt                  src/28-loop.js:596
+frameBody                    src/28-loop.js:411-531
+frameLastAt                  src/28-loop.js:598
 freeVoice                    src/09-audio.js:91-95
 FUEL_PER_ICE                 src/21b1-base-pay.js:100
 fuelPriceHere                src/12k-rep.js:63-70
@@ -2512,7 +2515,7 @@ jobOffer                     src/12e-mgr-jobs.js:228-240
 jobPick                      src/12e-mgr-jobs.js:259-282
 jobRefuse                    src/12e-mgr-jobs.js:57-66
 jobTick                      src/12e-mgr-jobs.js:287-296
-jump                         src/18-mode-map.js:527-574
+jump                         src/18-mode-map.js:527-534
 jumpToBase                   src/21a-mode-base.js:384-401
 KEEP_DARK_AFTER              src/11k-keepers.js:48
 KEEP_HABIT                   src/11k-keepers.js:35-45
@@ -3343,7 +3346,7 @@ optGroups                    src/27-ui-ship.js:338-355
 OPTS_BOOT                    tests/90-harness.js:203
 optsNumify                   src/14a2-save-ephemeral.js:23-28
 optTab                       src/27-ui-ship.js:337
-orbPathOf                    src/17-mode-system.js:433-443
+orbPathOf                    src/17-mode-system.js:436-446
 ORDER_WIN                    src/12aa-need.js:76
 orderDeliver                 src/12aa-need.js:116-127
 orderHere                    src/12aa-need.js:112-115
@@ -3725,7 +3728,7 @@ probeShot                    src/25m-probe.js:85-97
 probeSpeak                   src/25m-probe.js:100-121
 probeTarget                  src/25m-probe.js:38-46
 probeVoice                   src/25m-probe.js:75-83
-prof                         src/28-loop.js:663-690
+prof                         src/28-loop.js:665-692
 PROFILE                      src/02-world.js:124-137
 profW                        src/03-ships.js:205-214
 PROMPT_RECT                  src/08-state.js:105
@@ -3819,29 +3822,55 @@ raidSolid                    src/24a-mode-raid.js:78-81
 raidSolidAt                  src/24a-mode-raid.js:82
 raidUp                       src/24aa-raid-draw.js:8-12
 RAIL_ARM_RU                  src/18e-rail-net.js:25
+RAIL_BUFFET                  src/18f-rail-station.js:20
 RAIL_COL                     src/18e-rail-net.js:180
+RAIL_DOCK                    src/18f-rail-station.js:22
 RAIL_FORK                    src/18e-rail-net.js:22
+RAIL_HAIL_R                  src/18f-rail-station.js:19
 RAIL_METRO_R                 src/18e-rail-net.js:26
 RAIL_NET                     src/18e-rail-net.js:29
 RAIL_PART                    src/18e-rail-net.js:167
 RAIL_R                       src/18e-rail-net.js:21
+RAIL_RIDE                    src/18g-rail-ride.js:12
 RAIL_RIM                     src/18e-rail-net.js:27
+RAIL_RING_OFF                src/18f-rail-station.js:18
 RAIL_RING_RU                 src/18e-rail-net.js:24
 RAIL_RINGS                   src/18e-rail-net.js:23
 RAIL_SALT                    src/18e-rail-net.js:28
 railArmAng                   src/18e-rail-net.js:103
 railAt                       src/18e-rail-net.js:112-120
 railBranchAng                src/18e-rail-net.js:51-54
+railBuffet                   src/18f-rail-station.js:161-167
 railBuildLines               src/18e-rail-net.js:55-101
+railBuy                      src/18f-rail-station.js:152-160
+railDestinations             src/18f-rail-station.js:100-113
+railDocked                   src/18f-rail-station.js:86-93
+railExit                     src/18g-rail-ride.js:65-75
+railFare                     src/18f-rail-station.js:114-119
+railFmt                      src/18f-rail-station.js:97
+railHere                     src/18f-rail-station.js:24-30
+railInteract                 src/18f-rail-station.js:67-85
+railInterval                 src/18f-rail-station.js:95
 railLen                      src/18e-rail-net.js:49
 railNearest                  src/18e-rail-net.js:32-42
 railNet                      src/18e-rail-net.js:147-156
 railNetPartial               src/18e-rail-net.js:168-179
 railPolar                    src/18e-rail-net.js:45-48
+railReady                    src/18f-rail-station.js:23
+railRideStart                src/18g-rail-ride.js:13-21
+railSegDur                   src/18g-rail-ride.js:22-25
 railStation                  src/18e-rail-net.js:158-163
 railStep                     src/18e-rail-net.js:43
+railStopName                 src/18f-rail-station.js:98
 railStopsOf                  src/18e-rail-net.js:122-146
+railTick                     src/18f-rail-station.js:169-174
+railTrainPos                 src/18g-rail-ride.js:27-39
 railUAt                      src/18e-rail-net.js:105-110
+railWaitNow                  src/18f-rail-station.js:96
+railWinClose                 src/18f-rail-station.js:121
+railWinOpen                  src/18f-rail-station.js:120
+railWinRender                src/18f-rail-station.js:127-151
+railWinShow                  src/18f-rail-station.js:122-126
 RALLY_CACHE                  src/12at-vote.js:69
 rallyAt                      src/12at-vote.js:102-106
 rallyJoin                    src/12at-vote.js:94-100
@@ -4669,7 +4698,7 @@ statPreview                  src/05-parts.js:416-424
 stCore                       src/17c-system-draw.js:127-142
 stDel                        src/14-save.js:26
 steps                        tests/90-harness.js:385
-stepWorld                    src/28-loop.js:364-383
+stepWorld                    src/28-loop.js:364-384
 stGet                        src/14-save.js:8
 stGroup                      src/26-ui-station.js:139
 stGroupOf                    src/26-ui-station.js:138
@@ -5021,10 +5050,11 @@ updateHomeIn                 src/29c-home-in.js:160-200
 updateLanding                src/19-mode-landing.js:68-137
 updateMap                    src/18-mode-map.js:513-526
 updateRaid                   src/24a-mode-raid.js:215-345
+updateRail                   src/18g-rail-ride.js:40-63
 updateScoop                  src/19a-mode-scoop.js:75-176
 updateSpa                    src/29i-spa-draw.js:514-519
 updateSurface                src/21-mode-surface.js:199-656
-updateSystem                 src/17-mode-system.js:53-429
+updateSystem                 src/17-mode-system.js:53-432
 updateWanderRoom             src/24c-mode-wanderer.js:58-88
 updateWinter                 src/29g-winter-draw.js:808-817
 useBeacon                    src/23-mode-dig.js:88-113
@@ -5973,7 +6003,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/16c-rescue.js · 51 КБ
   · пустой бак: хода нет, но выход есть всегда (11.09):1
 
-## src/17-mode-system.js · 72 КБ
+## src/17-mode-system.js · 73 КБ
   · режим: система:1
 
 ## src/17a-station-mod.js · 13 КБ
@@ -6011,7 +6041,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/17z1-galaxy.js · 12 КБ
   · мировая галактика: небо карты стоит в мире (M447–M448, docs/DESIGN-galaxy.md):1
 
-## src/18-mode-map.js · 41 КБ
+## src/18-mode-map.js · 42 КБ
   · карта:1
   · где у карты пол и где правый борт:3
   · карта: ночное небо, а не схема молекулы:65
@@ -6042,6 +6072,12 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## src/18e-rail-net.js · 11 КБ
   · железная дорога: сеть (M470, docs/DESIGN-metro.md §2):1
+
+## src/18f-rail-station.js · 11 КБ
+  · станция железной дороги в системе и вестибюль (M471–M472, DESIGN-metro §3):1
+
+## src/18g-rail-ride.js · 7 КБ
+  · поездка: режим rail на карте галактики (M473, DESIGN-metro §4):1
 
 ## src/19-mode-landing-ground.js · 25 КБ
   · посадка: разрез грунта:1
@@ -6428,9 +6464,9 @@ zooTick                      src/11ad-zoo.js:41-54
   · авторазрешение:188
   · РОВНЫЙ ТАКТ (0.1b):301
   · развилка режимов — одна на всех (M238):357
-  · кадр, который не убивает игру (M234):530
-  · prof() — на что уходит кадр:651
-  · dbg() — что держит корабль:692
+  · кадр, который не убивает игру (M234):532
+  · prof() — на что уходит кадр:653
+  · dbg() — что держит корабль:694
 
 ## src/28y-look.js · 30 КБ
   · look() — прибор кадра:1
@@ -6992,7 +7028,7 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## tests/91zzzzk3-far.js · 6 КБ
 
-## tests/91zzzzk4-rail.js · 3 КБ
+## tests/91zzzzk4-rail.js · 4 КБ
 
 ## tests/91zzzzl-maphold.js · 5 КБ
   · автотесты: владения на карте (M348):1

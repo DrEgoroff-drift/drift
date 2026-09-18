@@ -374,6 +374,7 @@ function stepWorld(dt){
   else if(G.mode==="cave"&&G.cave)updateCave(dt);
   else if(G.mode==="belt"&&G.belt)updateBelt(dt);
   else if(G.mode==="scoop"&&G.scoop)updateScoop(dt);
+  else if(G.mode==="rail")updateRail(dt);   /* в поезде (M473) */
   else if(G.mode==="base"&&G.base)updateBase(dt);
   else if(G.mode==="raid"&&G.raid)updateRaid(dt);
   else if(G.mode==="homein"&&G.hin)updateHomeIn(dt);   /* дом изнутри (M170) */
@@ -394,6 +395,7 @@ function drawWorld(){
   else if(G.mode==="cave"&&G.cave)drawCave();
   else if(G.mode==="belt"&&G.belt)drawBelt();
   else if(G.mode==="scoop"&&G.scoop)drawScoop();
+  else if(G.mode==="rail")drawRail();
   else if(G.mode==="base"&&G.base)drawBase();
   else if(G.mode==="raid"&&G.raid)drawRaid();
   else if(G.mode==="homein"&&G.hin)drawHomeIn();

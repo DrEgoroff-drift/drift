@@ -268,6 +268,7 @@ function updateSystem(dt){
      ждёт по-настоящему, ДО причала, пояса и базы (R1, 12.09): прежде он стоял
      после них, и у причала подсказка звала стыковаться, пока пикет ждал ответа */
   if(typeof gestTick==="function")gestTick(sh);   /* жест хозяина после прыжка (M452) */
+  if(typeof railTick==="function")railTick(dt);   /* поезд подходит, пока вы в вестибюле (M472) */
   if(typeof hailTick==="function"&&hailTick(sh,dt,actEdge))return;
 
   if(sys.station){
@@ -337,6 +338,8 @@ function updateSystem(dt){
     }
   }
   /* флот ГЛАВТРАССЫ: позывной, заправка по норме (12ai) */
+  /* кольцо железной дороги: стыковка и вестибюль (M471–M472) */
+  if(typeof railInteract==="function"&&railInteract(sh))return;
   if(typeof fleetInteract==="function"&&fleetInteract(sh))return;
   /* торговая баржа — к ней можно подойти и сторговаться без стыковки (12l) */
   if(typeof bargeInteract==="function"&&bargeInteract(sh))return;
@@ -646,6 +649,7 @@ function drawSystem(){
   }
   if(typeof drawSysLane==="function")drawSysLane(zx,zy,Z);   /* подъезд: бакены (M459, 17g) */
   if(typeof drawGestPost==="function")drawGestPost(zx,zy,Z);   /* пост у входа (M452, 17h) */
+  if(typeof drawSysRail==="function")drawSysRail(zx,zy,Z);   /* кольцо станции железной дороги (M471) */
   if(sys.station){
     const x=zx(sys.station.x),y=zy(sys.station.y);
     drawStation(x,y,Z);
