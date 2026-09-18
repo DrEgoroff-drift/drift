@@ -16,7 +16,7 @@
    "kill":"сквозной: сцены",
    "why":"W не даёт тяги, а поле при этом меняется (история M437: орган без ответа)"},
   {"name":"instr-lies","file":"src/27z-telemetry.js",
-   "find":"setTx\\(\\$fn,Math\\.round\\(G\\.fuel\\)\\+\"/\"","replace":"setTx($fn,(Math.round(G.fuel)+1)+\"/\"",
+   "find":"setPair\\(\\$fn,\"fn\",Math\\.round\\(G\\.fuel\\),","replace":"setPair($fn,\"fn\",Math.round(G.fuel)+1,",
    "kill":"сквозной: сцены",
    "why":"прибор «бак» показывает не то, что в мире (история: «РАКЕТА 0» при ракетах в трюме)"},
   {"name":"rail-no-aria","file":"src/index.html",

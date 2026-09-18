@@ -50,8 +50,9 @@ function bbLine(by){
 }
 function drawBillboard(zx,zy,Z){
   const B=bbHere();if(!B)return;
-  const x=zx(B.x),y=zy(B.y),s=clamp(Z,.6,1.5);
-  if(x<-160||x>W+160||y<-120||y>H+120)return;
+  /* щит читают: мельче мерки борта не сжимается (кегль × UIK, как всё, что читает игрок) */
+  const x=zx(B.x),y=zy(B.y),s=Math.max(1,clamp(Z,.6,1.5))*UIK;
+  if(x<-160*s||x>W+160*s||y<-120*s||y>H+120*s)return;
   const col=(typeof laneLampCol==="function")?laneLampCol(B.by):[255,190,110];
   const pw=120*s,ph=40*s;
   /* ферма и панель */

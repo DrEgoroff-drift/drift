@@ -6,6 +6,22 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.451.0 - red suites closed, the phone stick and the signs that shrank
+
+- **Fix** (`16c-abil`): the special system's cooldown lived in `G.t` across a new game, so the ability
+  started on cooldown and ФОРСАЖ fired only in the first run (`abilStale()`).
+- **Fix** (`15a`/`15b`, `17-mode-system`): the touch stick is born in the frame, not in the event;
+  compass chips grow to the 44 px touch size before placement, not after; the prompt lift no longer
+  flips 0↔91 px every other frame (a per-frame style write under the finger).
+- **Fix** (`17k-billboard`, `17l-hotel`): the lane billboard and the hotel sign follow the UI ruler
+  (`UIK`) and stop shrinking below it — on a 2560 px screen they read at 7 px.
+- **Fix** (`18-mode-map`): «останется N» under the jump price gets its own backing plate; its
+  contrast was decided by the galaxy behind it.
+- **Tests**: helm suite reads `HELM_DEAD`; the stagnation law honours the driver's mute table; the
+  parallax law skips blocks the drag uncovered (on a phone that was 40% of the frame); the zoom law
+  accepts the ship as the zoom centre; `resetWorld` clears the rail network and ride state (the
+  system golden depended on suite order); the `instr-lies` mutant retargeted.
+
 ## 0.450.1 - a plan that could go negative
 
 - **Fix** (`17k1-gosplan`, `18i-rail-life`): the plan quantity and the fellow passenger's line took a

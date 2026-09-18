@@ -122,7 +122,8 @@ const HELM={src:"keys",     /* кто вёл последним: keys | stick */
   home:null,                 /* где стик был в последний раз: точка покоя рисунка (M410) */
   trail:[],                  /* последние положения пальца — хвост ленты (M422) */
   cam:{x:0,y:0,dx:0,dy:1},   /* увод камеры из-под пальца, мировые единицы (M422) */
-  key:{},lockEdge:false,lockWas:false,lift:-1};
+  key:{},lockEdge:false,lockWas:false,lift:-1,
+  liftRect:null,liftBase:0};   /* какой прямоугольник подсказки мерили и с каким подъёмом (helmLift) */
 function ctlReset(){
   G.ctl={head:null,headK:1,turn:0,tx:0,ty:0,brake:false,fire:false,msl:false,
     headIdle:true,thrOnly:false,assist:false,ax:0,ay:0,src:HELM.src,slow:false,vk:0,vp:0,

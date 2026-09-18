@@ -178,7 +178,7 @@ TEST_SUITES.push(()=>suite("штурвал: метки, автозахват, р
 TEST_SUITES.push(()=>suite("штурвал M410: стик задаёт ход, нос идёт за меткой",{tier:"browser"},()=>{
   const sh=helmShip(),st=stat();
   const maxSp=6.4+st.thr*1.6;
-  HELM.src="stick";HELM.S={id:1,x0:100,y0:400,x:100+12+70,y:400};
+  HELM.src="stick";HELM.S={id:1,x0:100,y0:400,x:100+HELM_DEAD+HELM_REACH,y:400};
   helmRun(240,1);
   const sp=Math.hypot(sh.vx,sh.vy);
   ok(sp>maxSp*.9&&sp<=maxSp+1e-6,"за четыре секунды набрана крейсерская: "+sp.toFixed(2)+" из "+maxSp.toFixed(2));
@@ -189,7 +189,7 @@ TEST_SUITES.push(()=>suite("штурвал M410: стик задаёт ход, �
   ok(!G.ctl.out.main&&!G.ctl.out.thr,"скорость набрана — двигатели молчат");
   eq(G.fuel,f0,"и топливо не горит");
   /* полхода — полскорости, без перелёта */
-  HELM.S={id:1,x0:100,y0:400,x:100+12+35,y:400};
+  HELM.S={id:1,x0:100,y0:400,x:100+HELM_DEAD+HELM_REACH*.5,y:400};
   helmRun(240,1);
   near(Math.hypot(sh.vx,sh.vy),maxSp*.5,maxSp*.06,"полхода стика — половина крейсерской: "+Math.hypot(sh.vx,sh.vy).toFixed(2));
   /* палец в мёртвой зоне — стоп */
@@ -205,7 +205,7 @@ TEST_SUITES.push(()=>suite("штурвал M410: стик задаёт ход, �
   helmShip();
   const p=helmPirate(0,-760-500,false);p.dummy=1;
   G.marks.push(p);
-  HELM.src="stick";HELM.S={id:1,x0:100,y0:400,x:100+12+70,y:400};
+  HELM.src="stick";HELM.S={id:1,x0:100,y0:400,x:100+HELM_DEAD+HELM_REACH,y:400};
   helmRun(240,1);
   /* корабль за четыре секунды ушёл вправо, и метка теперь слева-сверху:
      нос обязан быть на ней, где бы она ни оказалась, а не «вверху» */
