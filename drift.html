@@ -11632,7 +11632,7 @@ function radioLoad(t){
   RADIO.form=radioForm();RADIO.bars=RADIO.form.reduce((s,f)=>s+f[1],0);
   RADIO.mel={};RADIO.step=0;RADIO.prevLead=0;RADIO.bassPrev=0;RADIO.bassPick={};
   RADIO.next=t;RADIO.src=radioSrc();RADIO.sec="intro";
-  RADIO.tempoK=1;RADIO.keyShift=0;RADIO.modeNow=null;RADIO.lv={pad:1,lead:1,arp:1};
+  RADIO.tempoK=1;RADIO.keyShift=0;RADIO.modeNow=null;RADIO.lv={pad:1,lead:1,arp:1};RADIO.specNext=t+15+RADIO.r()*30;
   radioMix(t,true);
   if(RADIO.tuned)radioTune(t-.6);RADIO.tuned=true;
   const g=RADIO.bus.gain;g.cancelScheduledValues(t);g.setValueAtTime(.0001,t);g.linearRampToValueAtTime(1,t+1.5);
@@ -11717,10 +11717,10 @@ function radioStep(t){
          начало и конец пьесы были в её тональности */
       const rr=RADIO.r;
       RADIO.tempoK=Math.max(.8,Math.min(1.2,RADIO.tempoK+(rr()-.5)*.2));
-      if(w.i>0&&!w.last){
+      if(w.i>0&&!w.last&&bar%3===0){       // только на такте, где бас берётся заново: иначе дрон висел в старом тоне
         if(rr()<.4)RADIO.modeNow=RADIO_DRIFT_MODES[Math.floor(rr()*RADIO_DRIFT_MODES.length)];
         if(rr()<.35)RADIO.keyShift=[-2,-1,0,1,2][Math.floor(rr()*5)];
-      }else{RADIO.modeNow=null;RADIO.keyShift=0;}
+      }else if(w.i===0||w.last){RADIO.modeNow=null;RADIO.keyShift=0;}
       RADIO.lv={pad:.7+rr()*.4,lead:.7+rr()*.4,arp:.5+rr()*.6};
     }
     if(RADIO.mood!==RADIO.moodT){RADIO.mood=RADIO.moodT;ch=true;}
@@ -11737,7 +11737,7 @@ function radioStep(t){
     (TP&&TP[w.name])||RADIO_PROGS[w.name]||(TP&&TP.A)||RADIO_PROG_SETS[0].A;
   const cd=prog[w.barIn%prog.length],nextCd=prog[(w.barIn+1)%prog.length];
   /* модуляция на тон в последней теме; «провал» — такт, где остаются бас и солист */
-  const key=RADIO.trk.key-12+RADIO.keyShift+(w.last&&w.name!=="out"?(radioA("modUp")|0):0);   // 0 = A2 → бас в первой октаве
+  const key=RADIO.trk.key-12+RADIO.keyShift;   // 0 = A2 → бас в первой октаве
   const DE=radioA("dropEvery")|0,drop=DE>0&&bar%DE===DE-1&&w.name!=="intro"&&w.name!=="out";
   if(s===0&&!drop)radioPad(t,key,cd,radioS16()*B,(w.name==="B"&&radioA("padB"))||radioA("pad"));
   radioBass(t,s,key,cd,w,nextCd);
@@ -11748,6 +11748,8 @@ function radioStep(t){
   /* маяк: раз в несколько тактов — одна звонкая высокая нота с эхом, как позывной */
   if(s===0&&bar%2===1&&r()<.4)radioBeacon(t+radioS16()*Math.floor(r()*8),key,cd);
   if(s===0&&bar%8===0&&radioA("waves"))radioWave(t,radioS16()*B*2);
+  /* обертоновое облако: раз в минуту-полторы, на ~20 с — см. radioSpectral */
+  if(s===0&&(RADIO.specNext==null||t>=RADIO.specNext)&&w.name!=="out"){RADIO.specNext=t+50+r()*50;radioSpectral(t,key);}
 }
 
 /* ── мелодия: сочиняется один раз на пьесу и повторяется — так её запоминают ── */
@@ -12165,6 +12167,30 @@ function radioBeacon(t,key,cd){
 }
 function radioBell(t,key,cd){
   radioBellVoice(t,midiHz(key+48+radioDeg(cd+[0,2,4][Math.floor(RADIO.r()*3)])),2.2,RADIO.layers.bell,.02);
+}
+/* ── обертоновое облако ──
+   Самый «космический» приём — спектральный: не аккорд из нот, а натуральный ряд одного
+   основного тона (Радиг, Штокхаузен «Stimmung»). Берутся 5–7 партиалов, каждый — синус
+   со своим медленным дыханием и местом в стерео; вплывают за 4–6 с, висят, уходят за
+   6–8 с — около 20 секунд, потом следующее облако будет другим. Партиалы только те, что
+   в темперации ложатся в минор: 2 3 4 6 8 9 12 16 19 24 (19-й — малая терция с точностью
+   до двух центов); 5, 7, 10, 11, 13 не берутся — они фальшивят против лада. */
+function radioSpectral(t,key){
+  const c=SND.ctx,r=RADIO.r,base=midiHz(key-12);
+  const P=[2,3,4,6,8,9,12,16,19,24].filter(()=>r()<.6);
+  if(P.length<4)P.push(3,4,6);
+  for(const n of P.slice(0,7)){
+    const o=c.createOscillator(),g=c.createGain(),p=c.createStereoPanner(),lfo=c.createOscillator(),lg=c.createGain();
+    o.type="sine";o.frequency.value=base*n;
+    const v=.05/Math.sqrt(n);
+    lfo.frequency.value=.05+r()*.12;lg.gain.value=v*.5;lfo.connect(lg);lg.connect(g.gain);
+    p.pan.value=r()*1.6-.8;
+    const a=4+r()*2,h=8+r()*4,rel=6+r()*2,t0=t+r()*1.5;
+    g.gain.setValueAtTime(.0001,t0);g.gain.exponentialRampToValueAtTime(v,t0+a);
+    g.gain.setValueAtTime(v,t0+a+h);g.gain.exponentialRampToValueAtTime(.0001,t0+a+h+rel);
+    o.connect(g);g.connect(p);p.connect(RADIO.layers.bell);
+    o.start(t0);lfo.start(t0);o.stop(t0+a+h+rel+.1);lfo.stop(t0+a+h+rel+.1);
+  }
 }
 /* волна Жарра: шум через полосовой фильтр, который медленно проходит вверх и вниз */
 function radioWave(t,len){
