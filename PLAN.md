@@ -105,6 +105,14 @@ Rule 3: same look, cheaper work.
   re-shot automatically — such runs used to report a glorious 99 % and mislead everyone, including
   the Tester. Stage 0's gate at full resolution is not taken and did not come closer all evening; the
   only thing that takes it is the author's call on ×1.5.
+- [x] **0.5 Tester's queue, closed by Control 18.09** — (1) the Node DOM stub audited: 30 selectors
+  the game asks were answered wrong (".pads button" gave the panel, "#fbar i" the bar,
+  "[data-k=thrust]" any node, closest/matches always no); a real mini engine now, all old checks stay
+  green, `tests/90d-selectors.js` pins it in both tiers (73584f8). (2) celDay column: a five-digit
+  day fits left of the red margin with room — P6 closed by a frame through the player's path.
+  (3) The two "quarantine" ОПИСЬ failures were real: the brake stayed dimmed in flight after the
+  surface (yesterday's M181 gate), and the opis header lost its matches count after P1 — both fixed
+  (dc67a87). Browser tier 18 080 / 0, node 16 352 / 0. **Still open: g11 on the laptop** — not run.
 - [ ] **0.4 `src/16a-space.js` crossed the 40 KB build guard (41 KB) on 9dc0a3f.** Not a blocker and
   not to be fixed on the run. When it is split, split it by meaning: the sprite oven with its cache
   (`GLOW_SP`, `GLOW_CACHE`, `glowSprite`, `glowBlit`) apart from the things it bakes.
@@ -247,6 +255,20 @@ Rule 3: same look, cheaper work.
   a share of the breathing length, so it pulsed where four rays meet the disc), 2.19 px of source
   across the whole taper, and a stretch of up to ×11 at full zoom. The rule that came out of it is in
   GOTCHAS (c1cd737): bake what fills its bounding box — discs, glows, bodies — never slivers.
+  **Hull baked, 51a0824 + dc67a87 (Control, after the team was closed).** `drawHull` is split into
+  three still parts (`hullPart1..3`, 03e) with the live layers between them in the old order —
+  flames and nozzle glow, brake tongues, the Company runline's moving lights (`makerTicks`), crowns,
+  nav lights, the lvl bar — and `03e1-hull-bake` lays the still parts down as pictures under the
+  current matrix. Calls per ship with flames lit: **902–1490 → 72–140**. In the live loop after a
+  few seconds of banking: 178 hits, 2 bakes, ~31 pictures per hull. Scale in 1/16-octave steps
+  (quarter octaves were caught by the maker instrument M369 at 89.9 % < 90: the softness is real on
+  the small plan), one ink box per hull in world units, probe ≤ 768 px (close-ups draw the old way —
+  a 3200 px probe hung the browser tier). Off switch: `G.opts.gfx.hullBake=0`.
+  **Not yet measured on the phone** — that is the only number that counts; the S23 was not reachable
+  over Wi-Fi (only an unauthorized 192.168.1.52:5555, serial UZ1A2246001408, answered). Next: the
+  cadence on the phone by the three-run protocol with the helm alive, bake on vs off; then the
+  Designer's check of the baked hull against her four risks (lights and nozzles, a step at the
+  picture's edge, lag in rotation) — done by me side by side at ×2, not by her.
 
 - [ ] **A second, independent instrument for the frame: the screen recording** (Designer, 18.09).
   Counting skips from *outside* the game, so it cannot be fooled by our own counters: a skipped vsync
