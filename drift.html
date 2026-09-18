@@ -11766,9 +11766,9 @@ function radioStep(t){
   if(!drop&&!PV)radioArp(t,s,key,cd);
   if(!drop)radioDrums(t,s,w);
   if(!PV)radioMelody(t,s,w,key,cd);
-  if(s===0&&bar%2===0&&r()<.5&&!PV)radioBell(t,key,cd);
+  if(s===0&&r()<.6&&!PV)radioBell(t+radioS16()*Math.floor(r()*B),key,cd);
   /* маяк: раз в несколько тактов — одна звонкая высокая нота с эхом, как позывной */
-  if(s===0&&bar%2===1&&r()<.45&&!PV)radioBeacon(t+radioS16()*Math.floor(r()*8),key,cd);   // примерно раз в четыре такта
+  if(s===0&&bar%2===1&&r()<.6&&!PV)radioBeacon(t+radioS16()*Math.floor(r()*8),key,cd);   // примерно раз в четыре такта
   if(s===0&&bar%8===0&&radioA("waves"))radioWave(t,radioS16()*B*2);
   /* обертоновое облако: раз в минуту-полторы, на ~20 с — см. radioSpectral */
   if(s===0&&!PV&&(RADIO.specNext==null||t>=RADIO.specNext)&&w.name!=="out"){RADIO.specNext=t+50+r()*50;radioSpectral(t,key,cd);}
@@ -11832,11 +11832,20 @@ function radioMelody(t,s,w,key,cd){
 }
 
 /* ── голоса ── */
-/* укоротить ноту так, чтобы её хвост (rel) дотух через полсекунды после смены аккорда */
+/* нота и смена аккорда: если хвост (rel) не дотухает через полсекунды после смены —
+   нота укорачивается, но не больше чем на треть; иначе она не начинается вовсе (-1):
+   сдавленный обрубок в 0.15 с слышался как «захлебнулось» */
 function radioCap(t,dur,rel){
   const lim=(RADIO.chordEnd||0)-t;
-  if(lim<=0)return dur;
-  return dur+rel>lim+.5?Math.max(.15,lim+.5-rel):dur;
+  if(lim<=0||dur+rel<=lim+.5)return dur;
+  const need=lim+.5-rel;
+  return need>=dur*.66?need:-1;
+}
+/* для подложки: не пропускать, а поджать хвост — не короче 0.8 с */
+function radioCapRel(t,hold,rel){
+  const lim=(RADIO.chordEnd||0)-t;
+  if(lim<=0||hold+rel<=lim+.5)return rel;
+  return Math.max(.8,lim+.5-hold);
 }
 function radioEnv(g,t,a,peak,hold,rel){
   const end=Math.max(t+a+.005,t+hold);
@@ -11858,7 +11867,7 @@ function radioPad(t,key,cd,dur,kind,semis){
       const o=c.createOscillator(),g=c.createGain(),p=c.createStereoPanner();
       o.type="sine";o.frequency.value=midiHz(key+12+(semis?semis[i%semis.length]+12*(i>>2):radioDeg(cd+[0,2,4,7,9,6,8][i])))*(1+(RADIO.r()-.5)*.006);   // расстройка в 5 центов, не в четверть тона
       lg.connect(g.gain);p.pan.value=(i/4)*1.4-.7;
-      const end=radioEnv(g.gain,t,2,.016,radioCap(t,dur-.5,3),3);last=Math.max(last,end);
+      const end=radioEnv(g.gain,t,2,.016,dur-.5,radioCapRel(t,dur-.5,3));last=Math.max(last,end);
       o.connect(g);g.connect(p);p.connect(RADIO.padIn);o.start(t);o.stop(end+.1);
     }
     lfo.start(t);lfo.stop(last+.1);
@@ -11871,13 +11880,13 @@ function radioPad(t,key,cd,dur,kind,semis){
   /* воздух: тихий синус двумя октавами выше — спектр раздвигается вверх, каши в середине нет */
   {const c=SND.ctx,o=c.createOscillator(),g=c.createGain(),p=c.createStereoPanner();
     o.type="sine";o.frequency.value=midiHz(key+36+(semis?semis[0]:radioDeg(cd+[0,4,7][Math.floor(RADIO.r()*3)])));
-    p.pan.value=RADIO.r()*1.2-.6;const end=radioEnv(g.gain,t+.5,2.5,.004,radioCap(t+.5,dur-1,3),3);
+    p.pan.value=RADIO.r()*1.2-.6;const end=radioEnv(g.gain,t+.5,2.5,.004,dur-1,radioCapRel(t+.5,dur-1,3));
     o.connect(g);g.connect(p);p.connect(RADIO.layers.bell);o.start(t+.5);o.stop(end+.1);}
   (semis?[0,1,2,3]:VO[Math.floor(RADIO.r()*VO.length)]).forEach((iv,i)=>{
     t+=i?.04+RADIO.r()*.05:0;                    // голоса вступают вразнобой, а не залпом
     const f=midiHz(key+(kind==="choirhi"?12:0)+(semis?semis[iv]:radioDeg(cd+iv))),g=c.createGain(),p=c.createStereoPanner();   // октавой ниже солиста: середина — ему
     p.pan.value=-.4+i*.27;
-    const org=kind==="organ",rel=org?1:2.6,hold=radioCap(t,dur-.1,rel);
+    const org=kind==="organ",hold=dur-.1,rel=radioCapRel(t,hold,org?1:2.6);
     const end=radioEnv(g.gain,t,org?.3:1.4,org?.012:.018,hold,rel);   // растушёвка: наплыв полторы секунды, хвост две с половиной
     let dst=g;
     /* аккордеон: пила сквозь язычковую полосу, с дрожью; детский хор — форманты «и» октавой выше */
@@ -11994,7 +12003,7 @@ function radioBassVoice(t,midi,dur,acc,pat,s){
     /* «пумм»: мягкий толчок в четверть секунды, потом тон оседает и висит до конца */
     g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.14*acc,t+.25);
     g.gain.exponentialRampToValueAtTime(.07*acc,t+1.6);g.gain.setValueAtTime(.07*acc,t+Math.max(1.7,dur-.3));
-    const tail=Math.min(2,Math.max(.4,(RADIO.chordEnd||t+dur+2)-t-dur+.5));   // хвост дотухает к смене аккорда
+    const tail=Math.min(2,Math.max(.8,(RADIO.chordEnd||t+dur+2)-t-dur+.5));   // хвост дотухает к смене аккорда
     g.gain.exponentialRampToValueAtTime(.0001,t+dur+tail);const end=t+dur+tail;
     o.connect(f);f.connect(g);g.connect(RADIO.layers.bass);o.start(t);sb.start(t);o.stop(end+.05);sb.stop(end+.05);
     return;
@@ -12075,6 +12084,7 @@ function radioLead(t,midi,dur,layer){
   else{f.frequency.setValueAtTime(pv?2400:fl?2600:harm?1200:1700,t);f.frequency.exponentialRampToValueAtTime(pv?800:fl?2000:harm?900:1200,t+(pv?.5:.8));}
   const g=c.createGain(),o2g=c.createGain();o2g.gain.value=fl?.12:1;
   const rel=fl?.9:du?1.4:1.2;dur=radioCap(t,dur,rel);
+  if(dur<0)return;                                            // не успеет дозвучать до смены аккорда — пауза
   const end=radioEnv(g.gain,t,fl?.3:du?.4:br?.3:th?.5:.4,harm?.016:fl?.034:du?.03:br?.028:.026,dur,rel);
   o1.connect(f);o2.connect(o2g);o2g.connect(f);f.connect(g);g.connect(RADIO.layers[layer]);
   /* тело: у пил тихая октава снизу — солист перестаёт быть тонким */
@@ -12174,7 +12184,7 @@ function radioHat(t,v){
   n.connect(f);f.connect(g);g.connect(RADIO.layers.hat);n.start(t,RADIO.r()*.5,.05);n.stop(t+.06);
 }
 function radioBellVoice(t,fr,len,dst,peak){
-  len=radioCap(t,len*1.5,0)/1.5;
+  {const lim=(RADIO.chordEnd||0)-t;if(lim>0)len=Math.min(len,Math.max(.6,(lim+.5)/1.5));}   // колокол укорачивается, не пропадает
   const c=SND.ctx,car=c.createOscillator(),mod=c.createOscillator(),mg=c.createGain(),g=c.createGain();
   car.frequency.value=fr;mod.frequency.value=fr*3.5;
   mg.gain.setValueAtTime(fr*1.5,t);mg.gain.exponentialRampToValueAtTime(1,t+len*.7);
@@ -12195,9 +12205,9 @@ function radioBeacon(t,key,cd){
   const fr=midiHz(midi),gap=1+r()*.4;
   const K=Math.max(2,Math.min(6,Math.floor(((RADIO.chordEnd||t+9)-t)/gap)));   // эхо не заходит в следующий аккорд
   const wob=c.createOscillator(),wg=c.createGain();wob.frequency.value=.25+r()*.2;wg.gain.value=fr*.004;wob.connect(wg);
-  const dry=c.createGain();dry.gain.value=.25;dry.connect(RADIO.bus);
+  const dry=c.createGain();dry.gain.value=.4;dry.connect(RADIO.bus);
   for(let k=0;k<K;k++){
-    const tk=t+k*gap,v=[.026,.015,.009,.005,.003,.002][k];
+    const tk=t+k*gap,v=[.07,.04,.024,.014,.008,.005][k];
     const o=c.createOscillator(),g=c.createGain(),f=c.createBiquadFilter(),p=c.createStereoPanner();
     o.type="sine";o.frequency.value=fr;wg.connect(o.frequency);
     f.type="lowpass";f.frequency.value=[900,700,560,450,380,320][k];f.Q.value=.8;
@@ -12210,7 +12220,7 @@ function radioBeacon(t,key,cd){
   wob.start(t);wob.stop(t+6*gap+3);
 }
 function radioBell(t,key,cd){
-  radioBellVoice(t,midiHz(key+48+radioDeg(cd+[0,2,4][Math.floor(RADIO.r()*3)])),2.2,RADIO.layers.bell,.008);
+  radioBellVoice(t,midiHz(key+48+radioDeg(cd+[0,2,4][Math.floor(RADIO.r()*3)])),2.2,RADIO.layers.bell,.04);
 }
 /* ── обертоновое облако ──
    Самый «космический» приём — спектральный: не аккорд из нот, а натуральный ряд одного
