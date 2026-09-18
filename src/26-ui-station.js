@@ -23,6 +23,7 @@ function openStationBody(){
   toggleSos(false);rescueDockCool();   /* окно выходов не висит устаревшим за станцией; причал остужает (16c) */
   if(typeof cosmChimePlay==="function")cosmChimePlay();   /* свой сигнал стыковки (M344) */
   mgrTick();mgrRouteVisit(G.sys);routeVisit(G.sys);
+  if(typeof lawDock==="function")lawDock();   /* закон земли: норма, пошлина (M456) */
   if(typeof holdDock==="function")holdDock(G.sys);   /* груз, с которым пристыковались, и бункеры (M291) */
   scripVisitReset();          // потолок обмена бонами — на заход (12u-scrip)
   if(typeof coopVisitReset==="function")coopVisitReset();   /* потолок прилавка — на заход (12aj, M351) */
@@ -226,8 +227,11 @@ document.getElementById("bUndock").addEventListener("click",closeStation);
    станция под ним остаётся */
 document.getElementById("stDesk").addEventListener("click",()=>{sfx("ui");tableToggle(true);});
 document.getElementById("bRefuel").addEventListener("click",()=>{
-  const st=stat(),need=Math.ceil(st.fuelMax-G.fuel);
+  const st=stat();let need=Math.ceil(st.fuelMax-G.fuel);
   if(need<=0){say("Баки полны");return;}
+  /* норма ГЛАВТРАССЫ (M456): первые единицы — по кредиту */
+  const nn=(typeof lawNormTake==="function")?Math.min(lawNormTake(need),G.credits|0):0;
+  if(nn>0){G.credits-=nn;G.fuel+=nn;need-=nn;if(need<=0){say("Заправлено по норме");renderTab();return;}}
   const per=fuelPriceHere(),can=Math.min(need,Math.floor(G.credits/per));
   if(can<=0){say("Не хватает кредитов");return;}
   G.credits-=can*per;G.fuel+=can;

@@ -528,7 +528,7 @@ patchnote of each version names the M-numbers it closes.
   inspection pair holding a trader; Коммуна's fleet in a neat line, lights low, on strike days;
   Рассвет's repair tug that comes to any damaged ship, yours too; Хай-Фронт's reboot line. Driven by
   the chronicle's states where they exist (`12au-rites`, `12ay-fx-soc`).
-- [ ] **[design owed] M456 One law each — the voiced ones only** (review §1.5): ГЛАВТРАССА норма (a fuel norm per
+- [ ] **[design owed] M456 One law each — four BUILT 18.09 (Control), `src/12al2-laws.js`.** ГЛАВТРАССА норма: the first 20 fuel units per docking at 1 кр, a log line; Компания пошлина: 40 кр at docking (0 with an expedition passenger aboard — «спонсор на борту™»); Орднунг скоростной режим: faster than 4.5 within 600 of the station → a 15 кр fine with a paragraph number and «экз. 1 из 3», once per approach-hour; Коммуна обед: 13:00–14:00 game time the counter takes nothing (fuel always). **Release risk:** the Компания fee at every docking may shift browser suites that count credits after docking — read the release run for it. **Open:** «сделаем из ваших» (Рассвет), the ticket in ПОЧТА instead of the journal, the lunch shown on the trade tab. Original: (review §1.5): ГЛАВТРАССА норма (a fuel norm per
   visit for kopecks); Компания пошлина (docking 40 кр, free with a sponsor on board); Орднунг
   скоростной режим in the numbered ring (a ticket in ПОЧТА with a paragraph number); Коммуна обед
   (yard and one counter shut an hour, fuel always sold); Рассвет «сделаем из ваших» (two parts → one

@@ -92,6 +92,8 @@ function buyCargo(sys,k,qty){
   return qty;
 }
 function sellCargo(sys,k,qty){
+  /* обед Коммуны (M456): приёмка закрыта час, топливо — всегда */
+  if(typeof lawLunch==="function"&&lawLunch()&&sys===G.sys){say("Обед. Приёмка с 14:00",90);return 0;}
   qty=Math.min(qty,G.cargo[k]);
   if(qty<=0)return 0;
   /* аппетит станции (M290): первые N в смену — с надбавкой, остальное по обычной.

@@ -77,3 +77,18 @@ TEST_SUITES.push(()=>suite("«Чебуречная»: лодка на подъе
   eq(G.credits,100-CHEB_PRICE,"чебурек за копейки");
   ok(G.log.slice(n).some(l=>/Чебуречная/.test(l.s)),"строка в тетради: еда и слух");
 }));
+TEST_SUITES.push(()=>suite("закон земли: норма, пошлина, штраф, обед (M456)",()=>{
+  resetWorld();
+  const find=by=>{for(let sx=-12;sx<=12;sx++)for(let sy=-12;sy<=12;sy++){if(stampOwnerAt(sx,sy)===by&&getSystem(sx,sy).station)return [sx,sy];}return null;};
+  const go=p=>{G.sx=p[0];G.sy=p[1];G.sys=getSystem(p[0],p[1]);};
+  const co=find("co"),gt=find("gt"),or=find("or"),km=find("km");
+  ok(co&&gt&&or&&km,"у каждой из четырёх держав есть станция в сердце");
+  go(co);G.credits=100;lawDock();eq(G.credits,60,"Компания: сбор за оформление 40 кр");
+  go(gt);lawDock();eq(lawNormTake(50),LAW_NORM,"ГЛАВТРАССА: норма — двадцать единиц");eq(lawNormTake(50),0,"второй раз за стыковку — уже без нормы");
+  go(or);const S=G.sys.station;G.ship.x=S.x+100;G.ship.y=S.y;G.ship.vx=9;G.ship.vy=0;G.credits=100;
+  lawRingTick(G.ship);eq(G.credits,100-LAW_FINE,"Орднунг: штраф за скорость в кольце");
+  lawRingTick(G.ship);eq(G.credits,100-LAW_FINE,"раз за подход, не каждый кадр");
+  go(km);const t0=G.t;G.t=Math.floor(G.t/CEL_DAY)*CEL_DAY+CEL_DAY*13.5/24;
+  ok(lawLunch(),"Коммуна: в час дня — обед");G.cargo.iron=5;eq(sellCargo(G.sys,"iron",5),0,"приёмка закрыта");
+  G.t=t0;G.cargo.iron=0;G.ship.vx=0;
+}));
