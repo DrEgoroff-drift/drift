@@ -277,8 +277,11 @@ function radioTick(){
   const t0=c.currentTime;
   if(!RADIO.trk||RADIO.src!==radioSrc()){radioLoad(t0+.05);}
   RADIO.moodT=radioMoodNow();
-  if(RADIO.next<t0)RADIO.next=t0+.05;
-  while(RADIO.next<t0+.3){
+  /* упреждение 2 с: при 0.3 с любая задержка потока (загрузка сцены, тяжёлый кадр)
+     сваливала ноты кучей и оставляла дыру. Если всё же отстали — не догоняем, а
+     пропускаем: ноты в прошлом играть кучей нельзя */
+  if(RADIO.next<t0){RADIO.step+=Math.floor((t0-RADIO.next)/radioS16());RADIO.next=t0+.1;}
+  while(RADIO.next<t0+2){
     const t=RADIO.next;
     radioStep(t);
     RADIO.next+=radioS16();RADIO.step++;
@@ -318,7 +321,7 @@ function radioStep(t){
   radioMelody(t,s,w,key,cd);
   if(s===0&&bar%2===0&&r()<.5)radioBell(t,key,cd);
   /* маяк: раз в несколько тактов — одна звонкая высокая нота с эхом, как позывной */
-  if(s===0&&r()<.22)radioBeacon(t,key,cd);
+  if(s===0&&bar%2===1&&r()<.4)radioBeacon(t+radioS16()*Math.floor(r()*8),key,cd);
   if(s===0&&bar%8===0&&radioA("waves"))radioWave(t,radioS16()*B*2);
 }
 
@@ -403,6 +406,7 @@ function radioPad(t,key,cd,dur,kind){
   }
   const c=SND.ctx;
   [0,2,4,7].forEach((iv,i)=>{
+    t+=i?.04+RADIO.r()*.05:0;                    // голоса вступают вразнобой, а не залпом
     const f=midiHz(key+12+radioDeg(cd+iv)+(kind==="choirhi"?12:0)),g=c.createGain(),p=c.createStereoPanner();
     p.pan.value=-.4+i*.27;
     const org=kind==="organ";
@@ -700,16 +704,23 @@ function radioBellVoice(t,fr,len,dst,peak){
   car.connect(g);g.connect(dst);
   car.start(t);mod.start(t);car.stop(end+.05);mod.stop(end+.05);
 }
+/* маяк: протяжный «пик» спасательного буя — чистый тон полсекунды и три эха,
+   каждое тише и глуше; высота всякий раз другая, иногда вне лада — чужой позывной */
 function radioBeacon(t,key,cd){
-  const c=SND.ctx,fr=midiHz(key+48+radioDeg(cd+[0,4,7][Math.floor(RADIO.r()*3)]));
-  const car=c.createOscillator(),mod=c.createOscillator(),mg=c.createGain(),g=c.createGain(),p=c.createStereoPanner();
-  car.type="sine";mod.type="sine";car.frequency.value=fr;mod.frequency.value=fr*2.01;      // стеклянный, почти чистый
-  mg.gain.setValueAtTime(fr*.9,t);mg.gain.exponentialRampToValueAtTime(fr*.05,t+1.2);
-  mod.connect(mg);mg.connect(car.frequency);
-  p.pan.value=RADIO.r()*1.4-.7;
-  const end=radioEnv(g.gain,t,.003,.06,.02,3.5);
-  car.connect(g);g.connect(p);p.connect(RADIO.layers.bell);
-  car.start(t);mod.start(t);car.stop(end+.05);mod.stop(end+.05);
+  const r=RADIO.r,c=SND.ctx;
+  const midi=r()<.3?key+40+Math.floor(r()*24):key+36+radioDeg(Math.floor(r()*14));
+  const fr=midiHz(midi),gap=.55+r()*.35;
+  for(let k=0;k<4;k++){
+    const tk=t+k*gap,v=[.05,.026,.013,.006][k];
+    const o=c.createOscillator(),g=c.createGain(),f=c.createBiquadFilter(),p=c.createStereoPanner();
+    o.type="sine";o.frequency.value=fr;
+    f.type="lowpass";f.frequency.value=6000-k*1300;              // эхо глуше с каждым разом
+    p.pan.value=(k%2?-.5:.5)*(.3+r()*.5);
+    g.gain.setValueAtTime(.0001,tk);g.gain.exponentialRampToValueAtTime(v,tk+.015);
+    g.gain.setValueAtTime(v,tk+.42);g.gain.exponentialRampToValueAtTime(.0001,tk+.42+1.2);
+    o.connect(f);f.connect(g);g.connect(p);p.connect(RADIO.layers.bell);
+    o.start(tk);o.stop(tk+1.7);
+  }
 }
 function radioBell(t,key,cd){
   radioBellVoice(t,midiHz(key+48+radioDeg(cd+[0,2,4][Math.floor(RADIO.r()*3)])),2.2,RADIO.layers.bell,.02);

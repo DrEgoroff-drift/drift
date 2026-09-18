@@ -4012,10 +4012,10 @@ rackToggle                   src/25d-instr-rack.js:56-59
 RADIO                        src/10a-radio.js:114
 RADIO_ARCH                   src/10a-radio.js:24-40
 RADIO_BANDS                  src/25e-receiver.js:13-18
-RADIO_BASS                   src/10a-radio.js:446-467
-RADIO_BASS_POOL              src/10a-radio.js:468-474
+RADIO_BASS                   src/10a-radio.js:450-471
+RADIO_BASS_POOL              src/10a-radio.js:472-478
 RADIO_CHORD_GRAPH            src/10a-radio.js:169
-RADIO_EN                     src/10a-radio.js:333
+RADIO_EN                     src/10a-radio.js:336
 RADIO_GEN_A                  src/10a-radio.js:112
 RADIO_GEN_B                  src/10a-radio.js:113
 RADIO_GEN_C                  src/10a-radio.js:170
@@ -4024,53 +4024,53 @@ RADIO_MODES                  src/10a-radio.js:88-91
 RADIO_MOOD                   src/10a-radio.js:103-111
 RADIO_PROG_SETS              src/10a-radio.js:93-99
 RADIO_PROGS                  src/10a-radio.js:100
-RADIO_RH                     src/10a-radio.js:326-332
+RADIO_RH                     src/10a-radio.js:329-335
 RADIO_TRACKS                 src/10a-radio.js:41-87
 radioA                       src/10a-radio.js:122
 radioAdvance                 src/10a-radio.js:229-232
-radioArp                     src/10a-radio.js:550-570
+radioArp                     src/10a-radio.js:554-574
 radioBand                    src/25e-receiver.js:19-27
 radioBar                     src/10a-radio.js:264
-radioBass                    src/10a-radio.js:481-504
-radioBassPick                src/10a-radio.js:476-480
-radioBassVoice               src/10a-radio.js:506-546
-radioBeacon                  src/10a-radio.js:703-713
-radioBell                    src/10a-radio.js:714-716
-radioBellVoice               src/10a-radio.js:694-702
+radioBass                    src/10a-radio.js:485-508
+radioBassPick                src/10a-radio.js:480-484
+radioBassVoice               src/10a-radio.js:510-550
+radioBeacon                  src/10a-radio.js:709-724
+radioBell                    src/10a-radio.js:725-727
+radioBellVoice               src/10a-radio.js:698-706
 radioBpm                     src/10a-radio.js:265
 radioBuild                   src/10a-radio.js:125-160
 radioDeg                     src/10a-radio.js:271
-radioDrums                   src/10a-radio.js:610-648
+radioDrums                   src/10a-radio.js:614-652
 radioDrumStyle               src/10a-radio.js:246
-radioEnv                     src/10a-radio.js:378-383
+radioEnv                     src/10a-radio.js:381-386
 radioForm                    src/10a-radio.js:201-210
 radioGenTrack                src/10a-radio.js:171-200
-radioHat                     src/10a-radio.js:688-693
-radioKick                    src/10a-radio.js:664-670
-radioLead                    src/10a-radio.js:574-608
+radioHat                     src/10a-radio.js:692-697
+radioKick                    src/10a-radio.js:668-674
+radioLead                    src/10a-radio.js:578-612
 radioLoad                    src/10a-radio.js:211-227
-radioMelody                  src/10a-radio.js:351-375
+radioMelody                  src/10a-radio.js:354-378
 radioMix                     src/10a-radio.js:247-263
 radioMoodNow                 src/10a-radio.js:239-245
 radioNow                     src/10a-radio.js:120
 radioOn                      src/10a-radio.js:119
-radioPad                     src/10a-radio.js:386-437
-radioPhrase                  src/10a-radio.js:334-350
-radioRim                     src/10a-radio.js:682-687
+radioPad                     src/10a-radio.js:389-441
+radioPhrase                  src/10a-radio.js:337-353
+radioRim                     src/10a-radio.js:686-691
 radioS16                     src/10a-radio.js:266
 radioScale                   src/10a-radio.js:267-270
 radioSkip                    src/10a-radio.js:233-237
-radioSnare                   src/10a-radio.js:671-680
+radioSnare                   src/10a-radio.js:675-684
 radioSrc                     src/10a-radio.js:118
-radioStep                    src/10a-radio.js:293-323
-radioStop                    src/10a-radio.js:739-744
-radioTabla                   src/10a-radio.js:649-654
-radioTick                    src/10a-radio.js:274-287
-radioTimp                    src/10a-radio.js:655-663
-radioTune                    src/10a-radio.js:727-738
+radioStep                    src/10a-radio.js:296-326
+radioStop                    src/10a-radio.js:750-755
+radioTabla                   src/10a-radio.js:653-658
+radioTick                    src/10a-radio.js:274-290
+radioTimp                    src/10a-radio.js:659-667
+radioTune                    src/10a-radio.js:738-749
 radioTune                    src/25e-receiver.js:29-85
-radioWave                    src/10a-radio.js:718-725
-radioWhere                   src/10a-radio.js:288-292
+radioWave                    src/10a-radio.js:729-736
+radioWhere                   src/10a-radio.js:291-295
 RAID_N                       src/24a-mode-raid.js:6
 RAID_ROOMS                   src/24a-mode-raid.js:7-13
 raidFloorAt                  src/24a-mode-raid.js:77
@@ -5951,7 +5951,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/10-music.js · 33 КБ
   · музыка: слои, а не треки:1
 
-## src/10a-radio.js · 51 КБ
+## src/10a-radio.js · 52 КБ
   · радио: треки и генератор:1
 
 ## src/11-log.js · 10 КБ
