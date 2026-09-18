@@ -23,3 +23,14 @@ TEST_SUITES.push(()=>suite("«Смена»: 72 главы, предикаты н
   resetWorld();G.smena=[1,2,3,10,11];eq(smenaNext(),4,"после старого вразнобой — следующая по порядку, четвёртая");
   resetWorld();
 }));
+TEST_SUITES.push(()=>suite("«Смена»: мест разного вида хватает на 72 главы в круге r ≤ 20 (P15)",()=>{
+  resetWorld();
+  const keys=new Set();
+  for(let sx=-20;sx<=20;sx++)for(let sy=-20;sy<=20;sy++){
+    if(Math.hypot(sx,sy)>20||!starAt(sx,sy))continue;
+    const s=getSystem(sx,sy);G.sys=s;
+    for(const p of s.planets)if(p.type!=="gas")keys.add(smenaPlaceKey(p));
+  }
+  G.sys=getSystem(0,0);
+  ok(keys.size>=72,"видов мест в круге r 20: "+keys.size);
+}));
