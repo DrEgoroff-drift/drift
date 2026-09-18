@@ -132,6 +132,7 @@ job (the phone milestone), but no fix may add raster cost without a number.
   path, vestibule block and the vestibule page (M471–M472); the ride on the map (M473: the flight
   pads still show in the carriage; the train mark and the headlight) — as each is
   built.
+- [ ] **D26 Giants** (M464): first-pass silhouettes are flat shapes — each needs the room-craft treatment (mass, layers, one light, a human-scale detail), and the map mark its own glyph per giant.
 - [ ] **D25 Paper and stamps** (M503/M505/M509/M513): the ПЛАН on the sign, the passport page in КНИЖКА, the recall letter, the transit plate stencilled on the flank.
 - [ ] **D24 Railway life** (M499–M508): the vestibule's new rows are plain buttons — a parcel tag, a pass card with punched rides, the passenger's silhouette, the подстаканник, the seal drawn on the hold.
 - [ ] **D23 Album** (P13): the lightbox is a dark sheet with chips — a real photo-album page (corners, paper), filter previews as thumbnails, the saved PNG's caption band typeset properly.
@@ -635,7 +636,7 @@ after `fn()` — not built.
   and parts; running it is legal for a neutral, the pickets hail you and you answer by speed. **«Буханка»** — the
   base's surface–ship shuttle as a named machine (M485), a boxy old van with engines, always a bit
   broken, **the one machine the player may rename** (from the name table, no free text).
-- [ ] **[design owed] M464 One giant per arm.** Each arm and the core get one colossal structure 20–50× a ship,
+- [ ] **[design owed] M464 One giant per arm — first pass BUILT 18.09 (Control), `src/17o-giants.js`.** Fixed geography, not war: six around the disc at 18–26 sectors (angle step 60°), snapped to the nearest star, the hollow moon near the core; a ringed cross mark with the name under it on the map; in the system the body 2600 from the star, 600–1400 units wide, one silhouette per kind (moon with lit rings, Дом водителя with windows, the cylinder with КОМПАНИЯ™, customs forms, the dry dock with its hull, the town in rocks, the mast garden blinking); first sight logged (`G.giantsSeen`). **Open:** the drawing itself (D26), the ruler in the frame, docking/visiting, arms matched to the galaxy model's real arms. Original: Each arm and the core get one colossal structure 20–50× a ship,
   named in the galaxy's voice: a hollow moon with a mining town lit in rings; the Коммуна's dry dock
   where one hull has been built for three hundred years; the Компания's cylinder with its logo
   along its length; ГЛАВТРАССА's «Дом водителя» the size of a station; Орднунг's customs city where

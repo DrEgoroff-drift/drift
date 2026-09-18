@@ -132,6 +132,7 @@ function drawMap(){
   mapRhumbPaint(ctx,W,H,px,py);
   drawGalaxyStars(V,cell);   /* звёзды галактики — предметы мира, не мерцают (M448) */
   if(typeof drawRailMap==="function")drawRailMap(V,cell);   /* железная дорога бледно, 1:1 с листом (M470) */
+  if(typeof drawGiantsMap==="function")drawGiantsMap(V,cell);   /* великаны — ориентиры (M464) */
   const jr=(st.jump+.02)*cell;
   /* круг прыжка: не окружность-волосок, а освещённая область — сразу видно,
      докуда рука дотягивается */
@@ -567,7 +568,8 @@ function arriveSystem(sx,sy,o){
   if(typeof gestArrive==="function")gestArrive();   /* чья земля: жест первого корабля (M452, 17h) */
   if(typeof stampArrive==="function")stampArrive(fromBy);   /* граница: штамп в КНИЖКУ (M453, 17i) */
   if(typeof regArrive==="function")regArrive();
-  if(typeof blockArrive==="function")blockArrive();   /* голос блокады (M498) */   /* пикет своей земли: постановка на учёт (M513) */
+  if(typeof blockArrive==="function")blockArrive();   /* голос блокады (M498) */
+  if(typeof giantArrive==="function")giantArrive();   /* великан рукава (M464) */   /* пикет своей земли: постановка на учёт (M513) */
   sfx("jump");
   /* Жестянка (12z) слышна с порога: она передаёт свою просьбу в пустоту и не
      знает, что её некому исполнить. Работающая смена молчит */

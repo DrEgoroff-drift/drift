@@ -371,3 +371,14 @@ TEST_SUITES.push(()=>suite("голос блокады: волна оккупан
   G.cargo.organics=5;const c0=G.credits;const q=sellCargo(s,"organics",5);ok(G.credits>c0,"продали в блокаду");
   delete G.occ[occKey(s.sx,s.sy)];void sx;void sy;void q;
 }));
+TEST_SUITES.push(()=>suite("великаны: семь, у звёзд, разнесены, мир не двигают (M464)",()=>{
+  resetWorld();
+  const L=giantsAll();
+  eq(L.length,7,"семь великанов");
+  ok(L.every(g=>starAt(g.sx,g.sy)),"каждый — у звезды");
+  const keys=new Set(L.map(g=>g.sx+","+g.sy));eq(keys.size,7,"все в разных системах");
+  let minD=1e9;for(let i=1;i<L.length;i++)for(let j=i+1;j<L.length;j++)minD=Math.min(minD,Math.hypot(L[i].sx-L[j].sx,L[i].sy-L[j].sy));
+  ok(minD>=8,"рукавные разнесены: ближе "+minD.toFixed(1)+" секторов не стоят");
+  const g=L[1];G.sx=g.sx;G.sy=g.sy;G.sys=getSystem(g.sx,g.sy);giantArrive();
+  ok(G.giantsSeen[g.k]===1,"первая встреча записана");
+}));

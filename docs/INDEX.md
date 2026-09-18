@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 586 · символов верхнего уровня: 5649
+Файлов: 587 · символов верхнего уровня: 5657
 
 ## СИМВОЛЫ
 
@@ -143,7 +143,7 @@ arcHit                       src/13a-guns.js:368-385
 ARMED_CAP                    src/13-combat.js:12
 armedCount                   src/13-combat.js:236
 arrive                       src/16-flight.js:178-216
-arriveSystem                 src/18-mode-map.js:540-586
+arriveSystem                 src/18-mode-map.js:541-588
 ARTIFACTS                    src/12h-relic.js:48-63
 askText                      src/11u-names.js:59-77
 asMap                        src/14-save.js:209-215
@@ -1411,6 +1411,8 @@ drawGalaxy                   src/17z1-galaxy.js:97-137
 drawGalaxyStars              src/17z1-galaxy.js:156-195
 drawGestPost                 src/17h-sys-gesture.js:190-211
 drawGesture                  src/17h-sys-gesture.js:87-170
+drawGiant                    src/17o-giants.js:54-94
+drawGiantsMap                src/17o-giants.js:38-52
 drawGlassHUD                 src/24-mode-belt.js:720-807
 drawGlyph                    src/12t-settle.js:59-77
 drawGround                   src/19-mode-landing-ground.js:11-239
@@ -1432,7 +1434,7 @@ drawLanding                  src/19-mode-landing.js:285-413
 drawLoreMarks                src/12q-lore.js:235-266
 drawLuxeDeck                 src/03c-hull-luxe.js:109-275
 drawLuxeSkin                 src/03c-hull-luxe.js:27-108
-drawMap                      src/18-mode-map.js:120-498
+drawMap                      src/18-mode-map.js:120-499
 drawMisFigure                src/11z-misclosure.js:63-87
 drawModule                   src/21aa-base-rooms.js:384-500
 drawMonolith                 src/20aa-poi-shapes.js:193-210
@@ -1487,12 +1489,12 @@ drawSurface                  src/21e-surface-draw.js:277-291
 drawSurfaceHud               src/21e-surface-draw.js:21-115
 drawSurfaceWorld             src/21e1-surface-world.js:10-615
 drawSurvey                   src/12w-survey.js:63-89
-drawSysHud                   src/17-mode-system.js:747-994
+drawSysHud                   src/17-mode-system.js:748-995
 drawSysLane                  src/17g-sys-lane.js:75-103
 drawSysLaneShips             src/17g-sys-lane.js:112-138
 drawSysNebula                src/16a-space.js:208-236
 drawSysRail                  src/18f-rail-station.js:32-65
-drawSystem                   src/17-mode-system.js:459-746
+drawSystem                   src/17-mode-system.js:459-747
 drawSysTraffic               src/17f-sys-traffic.js:36-40
 drawTapes                    src/12s1-tape.js:37-49
 drawTemple                   src/20aa-poi-shapes.js:50-89
@@ -1951,6 +1953,12 @@ gestTick                     src/17h-sys-gesture.js:52-79
 getSystem                    src/06-galaxy.js:99-193
 GIANT                        src/19a-mode-scoop.js:192
 GIANT_KEEP                   src/19a-mode-scoop.js:193
+giantArrive                  src/17o-giants.js:96-102
+giantAt                      src/17o-giants.js:34
+giantPos                     src/17o-giants.js:36
+GIANTS                       src/17o-giants.js:18
+GIANTS_DEF                   src/17o-giants.js:9-17
+giantsAll                    src/17o-giants.js:19-33
 giantTex                     src/19a-mode-scoop.js:194-268
 GIFT_DAY                     src/11at-gift.js:28
 GIFT_DEEDS                   src/11at-gift.js:26
@@ -2603,7 +2611,7 @@ jobOffer                     src/12e-mgr-jobs.js:228-240
 jobPick                      src/12e-mgr-jobs.js:259-282
 jobRefuse                    src/12e-mgr-jobs.js:57-66
 jobTick                      src/12e-mgr-jobs.js:287-296
-jump                         src/18-mode-map.js:527-535
+jump                         src/18-mode-map.js:528-536
 jumpToBase                   src/21a-mode-base.js:384-401
 KB                           src/27jb-kb.js:23
 KB_RULE                      src/27jb-kb.js:14-22
@@ -2972,7 +2980,7 @@ mapGridPaint                 src/17z-map-backdrop.js:108-120
 mapHoldingsDraw              src/18b-map-hold.js:80-184
 mapHoldingsTop               src/18b-map-hold.js:186-226
 mapHousePatch                src/18b-map-hold.js:31-45
-mapJump                      src/18-mode-map.js:504-512
+mapJump                      src/18-mode-map.js:505-513
 mapLayer                     src/18b-map-hold.js:26
 mapLayerNext                 src/18b-map-hold.js:28
 mapLayerOn                   src/18b-map-hold.js:27
@@ -5315,7 +5323,7 @@ updateCombat                 src/13-pirates.js:116-301
 updateDig                    src/23-mode-dig.js:144-253
 updateHomeIn                 src/29c-home-in.js:160-200
 updateLanding                src/19-mode-landing.js:68-137
-updateMap                    src/18-mode-map.js:513-526
+updateMap                    src/18-mode-map.js:514-527
 updateRaid                   src/24a-mode-raid.js:215-345
 updateRail                   src/18g-rail-ride.js:42-71
 updateScoop                  src/19a-mode-scoop.js:75-176
@@ -6377,6 +6385,9 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/17n-bazaar.js · 7 КБ
   · барахолка, которая помнит (M463, DESIGN-life):1
 
+## src/17o-giants.js · 7 КБ
+  · по великану на рукав (M464, DESIGN-life):1
+
 ## src/17z-map-backdrop.js · 8 КБ
 
 ## src/17z1-galaxy.js · 12 КБ
@@ -7396,7 +7407,7 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## tests/91zzzzk5-plan.js · 9 КБ
 
-## tests/91zzzzk6-stapel.js · 26 КБ
+## tests/91zzzzk6-stapel.js · 27 КБ
 
 ## tests/91zzzzl-maphold.js · 5 КБ
   · автотесты: владения на карте (M348):1
