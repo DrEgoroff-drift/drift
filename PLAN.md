@@ -475,8 +475,16 @@ Rule 3: same look, cheaper work.
   Bottom padding: closed by a frame — 57 px of air under the last card at 390×844, nothing fixed
   over it (P1–P3 already fixed it). `crash.log` noise: closed since 0.419 — only `logShip` sends, and
   all nine callers are real evidence (save, cloud, chronicle).
-- [ ] Station header review 13–15: СТОЛ out of the masthead; two tab rows = 110 px — fold to one;
-  prices before the cooperative form; the Director's news on ДОСКА. Each passes «чтобы что?».
+- [ ] Station header review 13–15 — **half done 18.09 (Control):** prices before the cooperative
+  form ✓; the Director's news moved from ЕЩЁ to the board as «СЕГОДНЯ В СИСТЕМЕ» in the ЗДЕСЬ lane ✓.
+  **Open, a design fork for the author** (the Designer who would have decided it is gone):
+  - *СТОЛ out of the masthead* — it cannot simply go: in dock the station screen covers МЕНЮ, so
+    that button is the ONLY way to the desk. Proposal: into the tab row as its last item, drawn as
+    paper (the player's own things, not the station's), so it reads as «your desk» and not a
+    station service. Alternative: a fourth button in the bottom row (cramped at 390: ~85 px each).
+  - *Two tab rows (≈90 px measured) → one* — proposal: one horizontally scrolling row where the
+    active group opens its sub-tabs inline («ДОСКА · ТОРГОВЛЯ: РЫНОК БАРТЕР БОНЫ · КОРАБЛЬ …»),
+    45 px; the groups survive, the second row goes. Alternative: one flat row of all 13 tabs.
 - **Privacy, standing:** the author's save sits outside git (`C:\Claude\drift-private`) — never
   commit it; the two bot signs in `~/drift-data/trace/p/0_0.json` the author removes by hand.
 
