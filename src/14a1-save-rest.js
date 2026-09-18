@@ -85,6 +85,9 @@ function applySaveRest(s){
           role:String(b.guest.role||"driller"),seed:b.guest.seed|0,n:b.guest.n|0}:null,
         /* погода директора (M397): у неё есть сроки, и они переживают выход */
         dust:b.dust|0,cold:b.cold|0,vein:b.vein|0,thief:b.thief|0,dead:b.dead|0,
+        /* баня и гриб (M497): смена банного вечера и с какой смены гриб растёт */
+        bath:(b.bath===undefined||b.bath===null)?null:b.bath|0,
+        grib:(b.grib&&typeof b.grib==="object")?{n0:b.grib.n0|0}:null,
         /* развалина (M402, §39): из аккаунта ничего не удаляется — база живёт
            в записи и разбитой, вместе с тем, кто в неё въехал */
         ruin:(b.ruin&&typeof b.ruin==="object")?{n:b.ruin.n|0,
@@ -94,7 +97,7 @@ function applySaveRest(s){
         /* договор с управляющим (M405): в записи только НОМЕР — сам он
            выводится броском, как и всё остальное в этой игре */
         mgr:(b.mgr&&typeof b.mgr==="object")?{id:b.mgr.id|0,since:b.mgr.since|0,
-          due:b.mgr.due|0}:null,
+          due:b.mgr.due|0,rest:(b.mgr.rest===undefined||b.mgr.rest===null)?null:b.mgr.rest|0}:null,
         /* оборот и суточный расход управляющего: без них доли обнулялись
            перезагрузкой, а потолок стройки начинался заново (разбор 0.409.1) */
         _turn:b._turn|0,_earned:b._earned|0,devSaid:b.devSaid?1:0,

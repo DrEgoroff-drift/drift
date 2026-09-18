@@ -100,7 +100,7 @@ function baseHallHit(B,c,r,dmg){
 }
 /* ── что соседство даёт ── */
 function baseAdjSpirit(B){
-  return baseAdjCount(B,"green")*6+baseAdjCount(B,"care")*4-baseAdjCount(B,"gun")*4;
+  return baseAdjCount(B,"green")*6+baseAdjCount(B,"care")*4-baseAdjCount(B,"gun")*4+baseAdjCount(B,"steam")*8;
 }
 function baseAdjAir(B){return baseAdjCount(B,"green");}
 function baseAdjHeat(B){return -baseAdjCount(B,"vent")*30;}   /* в десятых (§16) */

@@ -33,6 +33,8 @@ function avrRoll(S,B){
   if(!S||S.avrDone)return null;
   S.avrDone=1;
   if(!B||baseParked(B))return null;
+  /* чайный гриб (M497): созрел — заход начинается с ножа, без броска */
+  if(typeof gribAvral==="function"){const g=gribAvral(S,B);if(g)return g;}
   const live=[];
   for(let r=0;r<baseRows(B);r++)for(let c=0;c<BASE_COLS;c++){
     const cell=baseCell(B,c,r);
@@ -100,6 +102,7 @@ function avrTick(S,B,dt,act){
 }
 function avrWin(S,B){
   const A=S.avr;S.avr=null;
+  if(A.k==="grib"&&typeof gribCut==="function"){gribCut(B);return true;}
   const n=(typeof baseShift==="function")?baseShift():0;
   if(typeof baseLog==="function")baseLog(B,"avrok",n,{who:baseWho(B,"engineer")});
   tell("good","Аврал отбит","АВРАЛ ОТБИТ\nотсек цел, беда не пошла дальше");
@@ -110,6 +113,13 @@ function avrLose(S,B){
   const A=S.avr;S.avr=null;
   const n=(typeof baseShift==="function")?baseShift():0;
   const cell=baseCell(B,A.c,A.r);
+  /* гриб — не пожар: никуда не идёт, просто остаётся и ест дальше */
+  if(A.k==="grib"){
+    if(cell)cell.hp=Math.max(.3,cell.hp-.1);
+    if(typeof baseLog==="function")baseLog(B,"avrno",n,{});
+    tell("warn","Аврал упущен","АВРАЛ УПУЩЕН\nгриб остался и ест дальше");
+    return false;
+  }
   /* побит, но не уничтожен: чинить его игрок будет сам, и это дешевле, чем
      ставить заново */
   if(cell)cell.hp=Math.max(.3,cell.hp-.25);
@@ -125,7 +135,7 @@ function avrDraw(S,X,Y,lit){
   if(!A||typeof ctx==="undefined")return;
   const x=X(BASE_OX+A.c*BCELL_W),y=Y(BASE_OY+A.r*BCELL_H);
   const p=.5+.5*Math.sin(G.t*.25);
-  const col=A.k==="fire"?[255,140,60]:(A.k==="vent"?[150,220,255]:[110,180,255]);
+  const col=A.k==="fire"?[255,140,60]:(A.k==="vent"?[150,220,255]:(A.k==="grib"?[220,170,80]:[110,180,255]));
   ctx.save();
   ctx.globalCompositeOperation="lighter";
   const g=ctx.createRadialGradient(x+BCELL_W/2,y+BCELL_H/2,4,x+BCELL_W/2,y+BCELL_H/2,BCELL_W*.8);

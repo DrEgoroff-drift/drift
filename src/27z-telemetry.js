@@ -467,7 +467,8 @@ function hud(){
     }
   }
   document.body.classList.toggle("inbelt",G.mode==="belt");
-  document.body.classList.toggle("inrail",G.mode==="rail");   /* в вагоне пэды полёта ни к чему (M473 хвост, 18.09) */
+  document.body.classList.toggle("inrail",G.mode==="rail");
+  if(G.mode!=="system"&&typeof abilPadRim==="function")abilPadRim();   /* подпись способности не залипает с полёта (18.09) */   /* в вагоне пэды полёта ни к чему (M473 хвост, 18.09) */
   document.body.classList.toggle("aboard",G.mode==="wanderer");   /* на борту «Сороки» (M343): приёмник и тяга ни к чему */
   /* состав ряда меняется редко (поставили пушку, вошли в пояс) — пересчитываем
      ширину кнопок только тогда, а не каждый кадр */

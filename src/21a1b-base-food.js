@@ -37,6 +37,8 @@ function baseSpirit(B,n){
   if(typeof charterSpirit==="function")s+=charterSpirit(B);
   /* закон 5 (M401): люди — не множители, и у каждой черты своя причина */
   if(typeof baseTraitSpirit==="function")s+=baseTraitSpirit(B);
+  /* баня (M497): после банного вечера всей базе легче */
+  if(typeof banyaSpirit==="function")s+=banyaSpirit(B,n);
   if(P.eff<.7)s-=8;                                        /* и свет мигает */
   if(L.q==="good"&&(L.food|0)>0&&!baseParked(B)&&!b)s+=10; /* а бывает и хорошо */
   return clamp(s|0,0,100);
@@ -71,7 +73,8 @@ function baseWalkOut(B,n){
 function baseFoodStep(B,P,n){
   const L=baseLife(B),eff=clamp(P.eff,0,1);
   /* садовод (M395): две пятых сверху и обещание, что скверного харча не будет */
-  const k=((eff<.5)?.5:eff)*((typeof baseFoodBoost==="function")?baseFoodBoost(B):1);
+  const k=((eff<.5)?.5:eff)*((typeof baseFoodBoost==="function")?baseFoodBoost(B):1)
+    *((typeof gribMul==="function")?gribMul(B,n):1);   /* чайный гриб (M497): три смены ×2 */
   let good=0,poor=0;
   for(const cell of B.cells){
     if(!cell||cell.hp<=0)continue;
@@ -95,6 +98,7 @@ function baseFoodStep(B,P,n){
   }
   /* вкус: оранжерея перебивает бак — она кормит первым делом людей, а бак идёт
      в добавку. Ничего не выросло — вкус остаётся прежним, каким был */
+  if(typeof gribEat==="function")gribEat(B,n);            /* а потом он ест органику */
   if(good)L.q="good";
   else if(poor)L.q=(typeof baseFoodKeepsGood==="function"&&baseFoodKeepsGood(B))?"good":"poor";
   return (good||poor)?1:0;

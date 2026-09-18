@@ -15,7 +15,7 @@ TEST_SUITES.push(()=>suite("база M396: девять правил сосед�
     for(const b of R.b)ok(b==="*"||!!BUILD[b],"и второй тоже — "+b);
     ok(R.note&&R.note.length>6,"и оно сказано словами: "+R.note);
   }
-  eq(ADJ.length,9,"правил ровно девять");
+  eq(ADJ.length,10,"правил ровно десять (девять M396 и «пар» бани M497)");
   /* зелень рядом с жильём: дух и воздух */
   B.cells[0]={k:"garden",hp:1};B.cells[1]={k:"habitat",hp:1};
   eq(baseAdjCount(B,"green"),1,"оранжерея рядом с жильём — правило сработало");
@@ -217,7 +217,7 @@ TEST_SUITES.push(()=>suite("база M398: аврал — руки против 
   G.crew=[];
   const S={cur:0,row:0,avr:null,avrDone:0};
   /* виды беды названы и различны */
-  eq(AVR_KINDS.length,3,"три вида беды");
+  eq(AVR_KINDS.length,4,"четыре вида беды (три M398 и чайный гриб M497)");
   const seen={};
   for(const k of AVR_KINDS){
     ok(k.ru&&k.note,"у «"+k.k+"» есть имя и слово: "+k.ru);
@@ -492,4 +492,79 @@ TEST_SUITES.push(()=>suite("база M401: игрок всегда может с
   basePark(B,"hand",baseShift());
   ok(baseWhy(B).indexOf("приказу")>=0,"и консервация — тоже причина: "+baseWhy(B));
   ok(baseWhy(B).indexOf("undefined")<0,"и нигде не мусор");
+}));
+
+/* ── M497: баня и чайный гриб ──
+   Баня — про людей: банный вечер берёт воду, даёт дух, глушит изъян
+   управляющего и смягчает ПАЛАТУ. Гриб — событие с ножом: ×2, потом ест,
+   аврал в оранжерее его срезает в товар. */
+TEST_SUITES.push(()=>suite("база M497: баня — вода, дух, отдых управляющего, инспектор",()=>{
+  const B=bLife();bCrew(B,2);
+  B.cells[1]={k:"banya",hp:1};B.cells[3]={k:"habitat",hp:1};
+  const L=baseLife(B);L.water=50;L.food=60;L.air=120;
+  ok(banyaLive(B),"баня стоит");
+  eq(baseAdjCount(B,"steam"),0,"пар считается только рядом с жилым");
+  B.cells[3]=null;B.cells[0]={k:"habitat",hp:1};
+  eq(baseAdjCount(B,"steam"),1,"баня и жилой рядом — пар");
+  const n0=BANYA_EVERY*10;
+  eq(banyaStep(B,n0+1),0,"не в ту смену — ничего");
+  const w0=L.water;
+  eq(banyaStep(B,n0),1,"банный вечер по номеру смены");
+  eq(L.water,w0-BANYA_WATER,"воды стало меньше ровно на баню");
+  eq(banyaSpirit(B,n0+2),BANYA_SPIRIT,"после бани духу лучше");
+  eq(banyaSpirit(B,n0+BANYA_GLOW+1),0,"и это проходит");
+  ok(B.log.some(l=>l.k==="bath"),"журнал: банный вечер");
+  L.water=1;
+  eq(banyaStep(B,n0+BANYA_EVERY),1,"без воды — строка «баня холодная»");
+  ok(B.log.some(l=>l.k==="bathcold"),"журнал: баня холодная");
+  /* управляющий: изъян молчит после бани */
+  let id=1;while(!bmgrOf(id).flaw)id++;           /* первый порождённый с изъяном */
+  const term=bmgrOf(id).term,flaw=bmgrOf(id).flaw.id;
+  B.mgr={id,since:0};
+  eq((bmgrFlawOn(B,term+3)||{}).id,flaw,"изъян есть, пока не отдохнул");
+  L.water=50;banyaStep(B,BANYA_EVERY*40);
+  eq(B.mgr.rest,BANYA_EVERY*40,"отдых записан на базе, а не на порождённом");
+  eq(bmgrFlawOn(B,BANYA_EVERY*40+1),null,"после бани изъян молчит");
+  eq((bmgrFlawOn(B,BANYA_EVERY*40+BANYA_REST+1)||{}).id,flaw,"и снова просыпается");
+  B.mgr=null;
+  /* ПАЛАТА: штраф на одно нарушение меньше */
+  const n=Math.floor(PAL_PERIOD/2);
+  const P=palOf(B);P.debt=0;B.log=[];
+  palStep(B,n);
+  const soft=P.debt|0;
+  ok(B.log.some(l=>l.k==="palbanya"),"инспектор заодно попарился");
+  B.cells[1]=null;P.debt=0;B.log=[];
+  palStep(B,n);
+  ok((P.debt|0)>=soft,"без бани штраф не меньше: "+(P.debt|0)+" ≥ "+soft);
+}));
+TEST_SUITES.push(()=>suite("база M497: чайный гриб — ×2, потом ест, аврал срезает в товар",()=>{
+  const B=bLife();bCrew(B,2);
+  B.cells[1]={k:"garden",hp:1,sown:1};
+  const L=baseLife(B);L.water=200;L.food=0;L.air=120;B.pool.organics=30;
+  ok(dirPool(B).some(e=>e.k==="grib"),"с оранжереей гриб в пуле режиссёра");
+  B.cells[1].hp=0;
+  ok(!dirPool(B).some(e=>e.k==="grib"),"без живой оранжереи — нет");
+  B.cells[1].hp=1;
+  const P=basePower(B);
+  baseFoodStep(B,P,10);const plain=L.food;
+  L.food=0;
+  eq(baseEventApply(B,{k:"grib"},20),1,"гриб разросся");
+  baseFoodStep(B,P,21);
+  ok(L.food>plain,"харч вдвое: "+L.food+" > "+plain);
+  const o0=B.pool.organics|0;
+  baseFoodStep(B,P,20+GRIB_BOOM+1);
+  ok((B.pool.organics|0)<o0-LIFE_GARDEN.seed*0,"после трёх смен ест органику: "+(B.pool.organics|0)+" < "+o0);
+  /* заход на базу — аврал в оранжерее без броска */
+  clockSet(HOLD_SHIFT*(20+GRIB_BOOM+2));
+  const S={cur:0,row:0,avr:null,avrDone:0};
+  const A=avrRoll(S,B);
+  ok(A&&A.k==="grib","аврал — чайный гриб: "+(A&&A.k));
+  eq(baseCell(B,A.c,A.r).k,"garden","и он в оранжерее");
+  G.cargo.grib=0;
+  avrWin(S,B);
+  ok(!B.grib,"гриб вырезан");
+  ok((G.cargo.grib|0)+(B.pool.grib|0)>=GRIB_CUT[0],"срез стал товаром: "+(G.cargo.grib|0)+" в трюме, "+(B.pool.grib|0)+" на складе");
+  ok(RES.grib&&RES.grib.made,"«Чайный гриб» — товар базы, станции его не генерируют");
+  ok(TRADE_KEYS.indexOf("grib")<0,"и не в списке торговли");
+  eq(FAR_EAT_LAND.grib[0],"ra","Рассвет — едок");
 }));

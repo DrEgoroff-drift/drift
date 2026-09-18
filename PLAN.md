@@ -702,7 +702,7 @@ after `fn()` — not built.
   ПАЛАТА's QR-plate (the клеймо on a beast); a slow trickle of its world's good — organics, carbon,
   xeno, on deep worlds чернозём — **only while someone talks to it** (a hand on the farm or the
   player landed); a far beast gives a far good; never lost, homesick after a move (half yield).
-- [ ] **[design owed] M497 Баня and чайный гриб.** A base module **баня**: fatigue resets on a bath night (the С5
+- [x] **M497 Баня and чайный гриб — BUILT 18.09 (Control), `src/21ac1-base-banya.js`, tests in `91zzzw-base2`.** Баня module (1300 кр): a bath night every 6 shifts takes 4 water, +3 spirit for 6 shifts, +8 to a habitat next door («пар» in the adjacency table), the base manager's flaw sleeps 12 shifts after it (`B.mgr.rest`), the ПАЛАТА check fines one item (40 кр) less and logs «заодно попарился»; no water — «баня холодная». Чайный гриб — a director event only with a live greenhouse: food ×2 for 3 shifts, then it eats 5 organics a shift until an аврал in the greenhouse (forced on the next visit) cuts it into 6–14 «Чайный гриб» (`RES.grib`, `made:1` — stations never generate it, Рассвет pays ×1.5). The parlour drawn: plank walls, каменка with stones and firebox glow, chimney, two-step полок with a lying man and a sitting one in a felt hat, веник, thermometer keyed to the bath night, steam. Phone-checked. Original: A base module **баня**: fatigue resets on a bath night (the С5
   axis on managers); an inspection at a base with a баня finds one thing fewer — the inspector
   «заодно попарится» (honest man, likes a bath). **Чайный гриб** — a director event (base §10): the
   greenhouse culture overgrows, yield ×2 for three shifts, then it eats the base's organics; an

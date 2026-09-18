@@ -43,7 +43,8 @@ const DIR_EV=[
 ];
 function dirPool(B){
   const t=(B&&B.type)||"rocky";
-  return DIR_EV.filter(e=>e.worlds[0]==="*"||e.worlds.indexOf(t)>=0);
+  return DIR_EV.filter(e=>(e.worlds[0]==="*"||e.worlds.indexOf(t)>=0)&&
+    (!e.need||((B&&B.cells)||[]).some(c=>c&&c.k===e.need&&c.hp>0)));   /* гриб — только при оранжерее */
 }
 /* ── четверть доброго, и не «примерно» ──
    У каждого мира свой набор бед: на каменистой их три, на земной две. Если
@@ -168,6 +169,7 @@ function baseEventApply(B,e,n){
   if(e.k==="dust"){B.dust=n+DIR_DUST;baseLog(B,"dust",n);return 1;}
   if(e.k==="cold"){B.cold=n+DIR_COLD;baseLog(B,"cold",n);return 1;}
   if(e.k==="vein"){B.vein=n+DIR_VEIN;baseLog(B,"vein",n);return 1;}
+  if(e.k==="grib")return (typeof gribStart==="function")?gribStart(B,n):0;
   if(e.k==="quake"){
     const live=[];
     for(let i=0;i<B.cells.length;i++)if(B.cells[i]&&B.cells[i].hp>0)live.push(i);

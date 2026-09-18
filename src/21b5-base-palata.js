@@ -132,10 +132,14 @@ function palStep(B,n){
   }
   if((n%PAL_PERIOD)===Math.floor(PAL_PERIOD/2)){
     const I=palInspector();
-    const fine=120+((hashi(B.sx,B.sy,n)%9)*40);
+    let fine=120+((hashi(B.sx,B.sy,n)%9)*40);
+    /* баня (M497): инспектор заодно попарился — одно нарушение не заметил */
+    const soft=typeof banyaLive==="function"&&banyaLive(B);
+    if(soft)fine=Math.max(120,fine-BANYA_PAL);
     P.debt=(P.debt|0)+fine;
     baseLog(B,"palcheck",n,{who:I.name,rank:I.rank,q:fine,
       form:PAL_FORMS[hashi(n,B.idx|0,3)%PAL_FORMS.length]});
+    if(soft)baseLog(B,"palbanya",n,{who:I.name,rank:I.rank});
     said=1;
   }
   /* и изъятие: долг, который никто не платит, кончается участком */

@@ -82,7 +82,9 @@ const RES={
   missile:  {ru:"Ракеты",     col:"#ff8f6a",price:0,ammo:"сборка в лаборатории"},
   /* Люди (M114): не груз и не товар — но место в трюме они занимают наравне со
      всем остальным, и в этом весь вывоз. Ни продать, ни отдать, ни выбросить. */
-  folk:     {ru:"Люди",       col:"#f2e6c8",price:0,pax:"эвакуация"}
+  folk:     {ru:"Люди",       col:"#f2e6c8",price:0,pax:"эвакуация"},
+  /* срез чайного гриба с базы (M497): в конце таблицы, чтобы старый мир не сдвинулся */
+  grib:     {ru:"Чайный гриб",col:"#c8a060",price:90,made:1}   /* made: делается на базе, станции его не генерируют */
 };
 /* ── десять дальних товаров (M465, DESIGN-resources §2) ──
    Чем дальше от ядра, тем дороже — в сердце: ценность делает обратная дорога.
@@ -121,7 +123,7 @@ const RARE_RES=RES_KEYS.filter(k=>!!RES[k].rare);
 const IND_KEYS=RES_KEYS.filter(k=>!!RES[k].ind&&!RES[k].rare);
 const FAR_KEYS=Object.keys(FAR_RES);
 const FAR_ROLL=FAR_KEYS.filter(k=>!FAR_RES[k].far.chip);   /* что лежит в земле; крошка — нет */
-const TRADE_KEYS=RES_KEYS.filter(k=>!RES[k].far&&RARE_RES.indexOf(k)<0&&AMMO_KEYS.indexOf(k)<0&&
+const TRADE_KEYS=RES_KEYS.filter(k=>!RES[k].far&&!RES[k].made&&RARE_RES.indexOf(k)<0&&AMMO_KEYS.indexOf(k)<0&&
   PAX_KEYS.indexOf(k)<0&&IND_KEYS.indexOf(k)<0);
 const ORE_KEYS=TRADE_KEYS.filter(k=>FAUNA_RES.indexOf(k)<0);
 const PROFILE={

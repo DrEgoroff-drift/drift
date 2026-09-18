@@ -95,6 +95,7 @@ function bmgrOfBase(B){
   if(!B||!B.mgr)return null;
   const M=bmgrOf(B.mgr.id);
   M.since=B.mgr.since|0;
+  M.rest=B.mgr.rest;          /* баня (M497): когда отдыхал — на записи базы, а не на порождённом */
   return M;
 }
 function bmgrHire(B,M){
@@ -133,6 +134,7 @@ function bmgrFlawOn(B,n){
   const M=bmgrOfBase(B);
   if(!M||!M.flaw)return null;
   if(n===undefined)n=(typeof baseShift==="function")?baseShift():0;
+  if(typeof banyaRested==="function"&&banyaRested(M,n))return null;   /* баня (M497): отошёл */
   return (n-(M.since|0))>=M.term?M.flaw:null;
 }
 function bmgrStep(B,n){

@@ -170,6 +170,8 @@ function baseShiftRun(B,n){
     if(typeof baseUniqStep==="function")said|=baseUniqStep(B,n)?1:0;
     /* управляющий (M405): жалованье, доля и изъян — после всего, что он вёл */
     if(typeof bmgrStep==="function")said|=bmgrStep(B,n)?1:0;
+    /* баня (M497): банный вечер по номеру смены — после управляющего, которому он нужен */
+    if(typeof banyaStep==="function")said|=banyaStep(B,n)?1:0;
     /* опорный пункт экспедиции (M409, §44): трафик мира сворачивает сюда */
     if(typeof fwdStep==="function")said|=fwdStep(B,n)?1:0;
     /* и он же развивает базу (M407): строят все, правильно — один */
