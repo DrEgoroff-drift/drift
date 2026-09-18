@@ -357,3 +357,17 @@ TEST_SUITES.push(()=>suite("общества: вступают делом, вз�
   G.tapeRoll=1;G.hull=1;tapeUse();eq(G.hull,Math.ceil(stat().hullMax*.6),"изолента кулибина держит 60 %");
   ok(socJoin("partner"),"в партнёрскую программу — каждый");
 }));
+TEST_SUITES.push(()=>suite("голос блокады: волна оккупанта, прилавок платит вдвое (M498)",()=>{
+  resetWorld();
+  const sx=4,sy=-3;let s=null;
+  for(let x=-10;x<=10&&!s;x++)for(let y=-10;y<=10&&!s;y++){const q=getSystem(x,y);if(q.station&&q.station.prices&&q.station.prices.organics)s=q;}
+  G.sx=s.sx;G.sy=s.sy;G.sys=s;
+  eq(blockMul(s,"organics"),1,"без блокады — как есть");
+  G.occ=G.occ||{};G.occ[occKey(s.sx,s.sy)]={lvl:2};
+  eq(blockMul(s,"organics"),2,"в блокаде органика вдвое");
+  eq(blockMul(s,"iron"),1,"железо — как есть");
+  ok(blockArrive(),"волна оккупанта говорит");
+  ok(!blockArrive(),"раз в сутки, не каждый прилёт");
+  G.cargo.organics=5;const c0=G.credits;const q=sellCargo(s,"organics",5);ok(G.credits>c0,"продали в блокаду");
+  delete G.occ[occKey(s.sx,s.sy)];void sx;void sy;void q;
+}));

@@ -104,6 +104,7 @@ function sellCargo(sys,k,qty){
   /* бункеры своих цехов (M291): берут по обычной цене, но с паем; давление вниз
      двигает только то, чего никто не съел */
   Q.nB=(typeof bldFeed==="function")?bldFeed(sys,k,qty-Q.nA):0;
+  if(typeof blockMul==="function")Q.revenue*=blockMul(sys,k);   /* блокада платит вдвое за еду, воду, топливо (M498) */
   const revenue=Q.revenue;
   sellCargo.last=Q;
   const N=(typeof needOf==="function")?needOf(sys):null;   /* до закрытия: нужда ×2 в заработок маршрута не идёт (M289) */

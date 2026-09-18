@@ -566,7 +566,8 @@ function arriveSystem(sx,sy,o){
   spawnPirates();spawnAllies();
   if(typeof gestArrive==="function")gestArrive();   /* чья земля: жест первого корабля (M452, 17h) */
   if(typeof stampArrive==="function")stampArrive(fromBy);   /* граница: штамп в КНИЖКУ (M453, 17i) */
-  if(typeof regArrive==="function")regArrive();   /* пикет своей земли: постановка на учёт (M513) */
+  if(typeof regArrive==="function")regArrive();
+  if(typeof blockArrive==="function")blockArrive();   /* голос блокады (M498) */   /* пикет своей земли: постановка на учёт (M513) */
   sfx("jump");
   /* Жестянка (12z) слышна с порога: она передаёт свою просьбу в пустоту и не
      знает, что её некому исполнить. Работающая смена молчит */

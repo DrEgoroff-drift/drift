@@ -629,7 +629,7 @@ after `fn()` — not built.
   «заодно попарится» (honest man, likes a bath). **Чайный гриб** — a director event (base §10): the
   greenhouse culture overgrows, yield ×2 for three shifts, then it eats the base's organics; an
   аврал cuts it back; the cut sells to Рассвет as «чайный гриб».
-- [ ] **[design owed] M498 The blockade's voice, and «Буханка».** The blockade exists (`occLvl≥2`, `12-economy` ~223:
+- [ ] **[design owed] M498 The blockade's voice, and «Буханка» — the voice BUILT 18.09 (Control), `src/13b1-blockade.js`:** at occLvl ≥ 2 the occupier's wave speaks once a world-day per system («Полки полны… Страдают другие»), a line says the counter is empty; organics, ice and isotopes sell ×2 (`sellCargo`). **Open:** the pickets' hail answered by speed, parts ×2, «Буханка». Original: The blockade exists (`occLvl≥2`, `12-economy` ~223:
   drone circles stop, barges stand, the H1 battery lifts it); what it lacks is the voice — the occupier's
   wave says the shelves are full and the others suffer, the counter is empty and pays **×2** for food, fuel
   and parts; running it is legal for a neutral, the pickets hail you and you answer by speed. **«Буханка»** — the

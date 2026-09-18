@@ -28,7 +28,7 @@ function optsNumify(o){
 }
 const SAVE_EPHEMERAL={
   /* корабль в полёте: x/y/a идут в сейв своими строками, остальное — кадр */
-  ship:"кадр",ap:"кадр",mapBackTable:"кадр",recallB:"мир",orbit:"мир",watch:"кадр",aim:"кадр",beams:"кадр",shots:"кадр",loot:"кадр",
+  ship:"кадр",ap:"кадр",mapBackTable:"кадр",blockHeard:"кадр",recallB:"мир",orbit:"мир",watch:"кадр",aim:"кадр",beams:"кадр",shots:"кадр",loot:"кадр",
   energy:"кадр",heat:"кадр",burnT:"кадр",stunT:"кадр",shield:"кадр",shieldHit:"кадр",shieldPulse:"кадр",shieldOff:"кадр",
   gunCool:"кадр",gunPin:"кадр",gmines:"кадр",tether:"кадр",foeTether:"кадр",msl:"кадр",mslCool:"кадр",mslFx:"кадр",
   jamT:"кадр",ramOn:"кадр",engaged:"кадр",fcam:"кадр",fshake:"кадр",ctl:"кадр",marks:"кадр",range:"кадр",

@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 585 · символов верхнего уровня: 5644
+Файлов: 586 · символов верхнего уровня: 5649
 
 ## СИМВОЛЫ
 
@@ -143,7 +143,7 @@ arcHit                       src/13a-guns.js:368-385
 ARMED_CAP                    src/13-combat.js:12
 armedCount                   src/13-combat.js:236
 arrive                       src/16-flight.js:178-216
-arriveSystem                 src/18-mode-map.js:540-585
+arriveSystem                 src/18-mode-map.js:540-586
 ARTIFACTS                    src/12h-relic.js:48-63
 askText                      src/11u-names.js:59-77
 asMap                        src/14-save.js:209-215
@@ -455,6 +455,11 @@ bldUpgradeCost               src/12ac-bld.js:152-159
 bldWant                      src/12ad-site.js:243-253
 bldWhy                       src/12ad-site.js:147-154
 bLife                        tests/91zzzw-base.js:25-56
+BLOCK_GOODS                  src/13b1-blockade.js:7
+BLOCK_LINES                  src/13b1-blockade.js:8
+blockArrive                  src/13b1-blockade.js:13-23
+blockHere                    src/13b1-blockade.js:10
+blockMul                     src/13b1-blockade.js:11
 BLOG                         src/21a1-base-life.js:50-114
 BLOOM_CV                     src/19c-light.js:338
 BLOOM_K                      src/19c-light.js:339
@@ -1136,7 +1141,7 @@ decoWall                     src/21ba-deco-shapes.js:147-189
 deedAdd                      src/11ai-ledger.js:53-64
 DEEDS                        src/11ai-ledger.js:25-35
 depKind                      src/21b-surface-deco.js:396-405
-deployDrone                  src/12-economy.js:221-238
+deployDrone                  src/12-economy.js:222-239
 DEPTH_TIERS                  src/04-mods.js:54-58
 DESC_MOOD                    src/01-core.js:193-198
 DESC_TAIL                    src/01-core.js:199
@@ -1519,30 +1524,30 @@ DRONE_TAIL                   src/12e-drone-flight.js:223
 DRONE_TRIP_BASE              src/12e-drone-flight.js:18
 droneBreakP                  src/12e-drone-flight.js:161-165
 droneBreaks                  src/12e-drone-flight.js:166
-droneCapacity                src/12-economy.js:216-219
+droneCapacity                src/12-economy.js:217-220
 droneFar                     src/12e-drone-flight.js:92
 droneFixMs                   src/12e-drone-flight.js:167-176
 droneGuestPos                src/12e-drone-flight.js:229-241
 droneHome                    src/12e-drone-flight.js:93-105
-droneMarket                  src/12-economy.js:170-192
+droneMarket                  src/12-economy.js:171-193
 droneName                    src/12e-drone-flight.js:54
 droneNextId                  src/12e-drone-flight.js:32-37
 droneNick                    src/12e-drone-flight.js:53
 droneNormalize               src/12e-drone-flight.js:60-76
-dronePaybackH                src/12-economy.js:147
+dronePaybackH                src/12-economy.js:148
 dronePhase                   src/12e-drone-flight.js:120-129
 dronePoint                   src/12e-drone-flight.js:84-91
 dronePos                     src/12e-drone-flight.js:132-148
-dronePrice                   src/12-economy.js:142-145
+dronePrice                   src/12-economy.js:143-146
 droneQuirk                   src/12e-drone-flight.js:52
-droneRecall                  src/12-economy.js:128-136
+droneRecall                  src/12-economy.js:129-137
 droneRoutes                  src/12e-drone-flight.js:193-215
 DRONES                       src/04-mods.js:60-66
-droneShopHas                 src/12-economy.js:149-155
-droneShopTake                src/12-economy.js:156-160
+droneShopHas                 src/12-economy.js:150-156
+droneShopTake                src/12-economy.js:157-161
 droneStateRu                 src/12e-drone-flight.js:178-188
 droneSys                     src/12e-drone-flight.js:81-83
-droneTarget                  src/12-economy.js:220
+droneTarget                  src/12-economy.js:221
 droneTripMs                  src/12e-drone-flight.js:108-116
 drOut                        tests/91zzzzzn-doors.js:45-50
 drPair                       tests/91zzzzzn-doors.js:19-24
@@ -3232,7 +3237,7 @@ nbFoe                        tests/91zzzw-notebook.js:15-20
 nbWorld                      tests/91zzzw-notebook.js:6-14
 near                         tests/90-harness.js:172
 nearestPOI                   src/20a-poi.js:236-241
-nearestStation               src/12-economy.js:193-208
+nearestStation               src/12-economy.js:194-209
 NEB_COMP                     src/16a-space.js:119
 NEB_JOB                      src/16a-space.js:52
 NEB_MS                       src/16a-space.js:51
@@ -4629,8 +4634,8 @@ secSpyHere                   src/12b2-fx-sec.js:89-98
 secSpyMul                    src/12b2-fx-sec.js:99-106
 secSpyOn                     src/12b2-fx-sec.js:82-85
 secTidy                      src/26-ui-station.js:360-379
-sellCargo                    src/12-economy.js:94-118
-sellDroneYield               src/12-economy.js:119-124
+sellCargo                    src/12-economy.js:94-119
+sellDroneYield               src/12-economy.js:120-125
 sellQuote                    src/12ab-hold.js:101-110
 setPair                      src/27z-telemetry.js:108-113
 setPct                       src/27z-telemetry.js:102-107
@@ -5165,7 +5170,7 @@ theOne                       src/21b3-base-hunt.js:46
 theOneId                     src/21b3-base-hunt.js:35-45
 thingAdd                     src/27i-ui-table.js:72-79
 thingsAll                    src/27i-ui-table.js:71
-tickDrones                   src/12-economy.js:247-337
+tickDrones                   src/12-economy.js:248-338
 tickLaunchHold               src/21-mode-surface.js:659-672
 TIER_RU                      src/05-parts.js:86
 tierAt                       src/04-mods.js:59
@@ -5941,7 +5946,7 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## src/12-economy.js · 23 КБ
   · живой рынок:1
-  · дроны:126
+  · дроны:127
 
 ## src/12a-crew.js · 45 КБ
   · наёмники: флот, которым не управляешь напрямую:1
@@ -6245,6 +6250,9 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## src/13b-occupy.js · 21 КБ
   · пираты берут системы:1
+
+## src/13b1-blockade.js · 2 КБ
+  · голос блокады (M498, PLAN):1
 
 ## src/13c-roles.js · 8 КБ
   · роли пиратов по рангу (M361, §5):1
@@ -7388,7 +7396,7 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## tests/91zzzzk5-plan.js · 9 КБ
 
-## tests/91zzzzk6-stapel.js · 25 КБ
+## tests/91zzzzk6-stapel.js · 26 КБ
 
 ## tests/91zzzzl-maphold.js · 5 КБ
   · автотесты: владения на карте (M348):1

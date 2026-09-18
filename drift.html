@@ -18383,6 +18383,7 @@ function sellCargo(sys,k,qty){
   /* бункеры своих цехов (M291): берут по обычной цене, но с паем; давление вниз
      двигает только то, чего никто не съел */
   Q.nB=(typeof bldFeed==="function")?bldFeed(sys,k,qty-Q.nA):0;
+  if(typeof blockMul==="function")Q.revenue*=blockMul(sys,k);   /* блокада платит вдвое за еду, воду, топливо (M498) */
   const revenue=Q.revenue;
   sellCargo.last=Q;
   const N=(typeof needOf==="function")?needOf(sys):null;   /* до закрытия: нужда ×2 в заработок маршрута не идёт (M289) */
@@ -41261,6 +41262,30 @@ function drawFactRoute(vis){
   ctx.restore();
 }
 
+/* ══════════════ голос блокады (M498, PLAN) ══════════════
+   Блокада есть (occLvl ≥ 2: дроны не летают, баржи стоят, батарея H1 её
+   снимает) — не было голоса. Теперь волна оккупанта в эфире говорит, что
+   полки полны, а страдают другие; прилавок пуст и платит вдвое за еду, воду
+   и топливо (органика, лёд, изотопы). Возить в блокаду нейтралу законно.
+   «Буханка» (именная машина базы) — дальше. */
+const BLOCK_GOODS={organics:1,ice:1,isotopes:1},BLOCK_MUL=2;
+const BLOCK_LINES=["Полки полны. Снабжение бесперебойно. Страдают другие.","Цены стабильны. Очередей нет. Слухам не верьте.",
+  "Жизнь налажена. Вывоз продовольствия — по разрешению.","Ситуация под контролем. Под нашим."];
+function blockHere(sys){sys=sys||G.sys;return !!(sys&&typeof occLvl==="function"&&occLvl(sys.sx!=null?sys.sx:G.sx,sys.sy!=null?sys.sy:G.sy)>=2);}
+function blockMul(sys,k){return (BLOCK_GOODS[k]&&blockHere(sys))?BLOCK_MUL:1;}
+/* прилёт в блокаду: волна оккупанта, раз в сутки мира на систему */
+function blockArrive(){
+  if(!blockHere())return false;
+  const key=G.sx+","+G.sy,d=celDay();
+  G.blockHeard=G.blockHeard||{};
+  if(G.blockHeard[key]===d)return false;
+  G.blockHeard[key]=d;
+  const line=BLOCK_LINES[hashi(G.sx,G.sy,d)%BLOCK_LINES.length];
+  if(typeof etherLine==="function")etherLine(line,"волна администрации");
+  logAdd("dim","Блокада: прилавок пуст — еду, воду и топливо берут вдвое. Возить сюда нейтралу законно.");
+  return true;
+}
+
 /* ══════════════ роли пиратов по рангу (M361, §5) ══════════════
    Ранг — не «плюс к числам», а то, КАК с вами дерутся: шакал бросается, даёт
    залп и уходит; ветеран держит четыреста-шестьсот и ходит бортом; капитан
@@ -43024,7 +43049,7 @@ function optsNumify(o){
 }
 const SAVE_EPHEMERAL={
   /* корабль в полёте: x/y/a идут в сейв своими строками, остальное — кадр */
-  ship:"кадр",ap:"кадр",mapBackTable:"кадр",recallB:"мир",orbit:"мир",watch:"кадр",aim:"кадр",beams:"кадр",shots:"кадр",loot:"кадр",
+  ship:"кадр",ap:"кадр",mapBackTable:"кадр",blockHeard:"кадр",recallB:"мир",orbit:"мир",watch:"кадр",aim:"кадр",beams:"кадр",shots:"кадр",loot:"кадр",
   energy:"кадр",heat:"кадр",burnT:"кадр",stunT:"кадр",shield:"кадр",shieldHit:"кадр",shieldPulse:"кадр",shieldOff:"кадр",
   gunCool:"кадр",gunPin:"кадр",gmines:"кадр",tether:"кадр",foeTether:"кадр",msl:"кадр",mslCool:"кадр",mslFx:"кадр",
   jamT:"кадр",ramOn:"кадр",engaged:"кадр",fcam:"кадр",fshake:"кадр",ctl:"кадр",marks:"кадр",range:"кадр",
@@ -51325,7 +51350,8 @@ function arriveSystem(sx,sy,o){
   spawnPirates();spawnAllies();
   if(typeof gestArrive==="function")gestArrive();   /* чья земля: жест первого корабля (M452, 17h) */
   if(typeof stampArrive==="function")stampArrive(fromBy);   /* граница: штамп в КНИЖКУ (M453, 17i) */
-  if(typeof regArrive==="function")regArrive();   /* пикет своей земли: постановка на учёт (M513) */
+  if(typeof regArrive==="function")regArrive();
+  if(typeof blockArrive==="function")blockArrive();   /* голос блокады (M498) */   /* пикет своей земли: постановка на учёт (M513) */
   sfx("jump");
   /* Жестянка (12z) слышна с порога: она передаёт свою просьбу в пустоту и не
      знает, что её некому исполнить. Работающая смена молчит */
