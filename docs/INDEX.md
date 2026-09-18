@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 542 · символов верхнего уровня: 5218
+Файлов: 542 · символов верхнего уровня: 5220
 
 ## СИМВОЛЫ
 
@@ -1967,12 +1967,13 @@ hailCalm                     src/12ar-hail.js:72-80
 hailContraband               src/12ar-hail.js:44-53
 hailHold                     src/12ar-hail.js:24
 hailPicket                   src/12ar-hail.js:26-37
-hailRunCheck                 src/12ar-hail.js:244-248
+hailRisk                     src/12ar-hail.js:210-215
+hailRunCheck                 src/12ar-hail.js:268-272
 hailShotAt                   src/12ar-hail.js:116-119
 hailStartSys                 src/12ar-hail.js:70
 hailTick                     src/12ar-hail.js:121-175
 hailWarnVolley               src/12ar-hail.js:81-90
-hailWinSync                  src/12ar-hail.js:212-242
+hailWinSync                  src/12ar-hail.js:221-266
 HALL_N                       src/21a4-base-adj.js:28
 HALL_POWER                   src/21a4-base-adj.js:29
 HAND_LINE                    src/12td-settle-hand.js:31-34
@@ -2080,7 +2081,7 @@ HELM_TAKE                    src/15a-helm.js:78
 HELM_TAKE_MS                 src/15a-helm.js:81
 HELM_THR                     src/15a-helm.js:74
 HELM_TRAIL                   src/15a-helm.js:113
-helmApply                    src/15a-helm.js:434-528
+helmApply                    src/15a-helm.js:443-537
 helmBandPath                 src/15b-helm-draw.js:135-143
 helmCamOff                   src/15b-helm-draw.js:120-133
 helmCanvasXY                 src/15a-helm.js:150
@@ -2089,12 +2090,12 @@ helmDrawMarks                src/15b-helm-draw.js:8-21
 helmDrawSticks               src/15b-helm-draw.js:151-242
 helmDry                      src/15b-helm-draw.js:145
 helmDryLabel                 src/15b-helm-draw.js:146-150
-helmEdgeInput                src/15a-helm.js:333-345
+helmEdgeInput                src/15a-helm.js:342-354
 helmHome                     src/15b-helm-draw.js:52-65
 helmLift                     src/15b-helm-draw.js:69-106
-helmLock                     src/15a-helm.js:266-274
-helmLockNext                 src/15a-helm.js:276-293
-helmMarksClean               src/15a-helm.js:257-265
+helmLock                     src/15a-helm.js:275-283
+helmLockNext                 src/15a-helm.js:285-302
+helmMarksClean               src/15a-helm.js:266-274
 helmMarkTop                  src/15b-helm-draw.js:109-114
 helmPinchBlocked             src/15a-helm.js:253
 helmPirate                   tests/91zzzw-helm.js:17-20
@@ -2102,14 +2103,15 @@ helmPtrEnd                   src/15a-helm.js:240-245
 helmRun                      tests/91zzzw-helm.js:16
 helmScreenOpen               src/15a-helm.js:250
 helmShip                     tests/91zzzw-helm.js:6-15
-helmShotAt                   src/15a-helm.js:309-312
+helmShotAt                   src/15a-helm.js:318-321
 helmStickFoot                src/15b-helm-draw.js:38-46
 helmStickShape               src/15b-helm-draw.js:29-35
 helmSyncPointer              src/15a-helm.js:176-196
 helmTake                     src/15a-helm.js:215-223
-helmTap                      src/15a-helm.js:295-307
-helmTargets                  src/15a-helm.js:256
-helmTick                     src/15a-helm.js:347-431
+helmTap                      src/15a-helm.js:304-316
+helmTargetable               src/15a-helm.js:260-264
+helmTargets                  src/15a-helm.js:265
+helmTick                     src/15a-helm.js:356-440
 helmTrail                    src/15a-helm.js:206-212
 hex2rgb                      src/01-core.js:218-221
 hexA                         src/12e-drone-flight.js:302-308
@@ -5559,7 +5561,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/12ap-notebook.js · 12 КБ
   · эпизоды и записная книжка (M374, §6.2–6.3):1
 
-## src/12ar-hail.js · 16 КБ
+## src/12ar-hail.js · 18 КБ
   · четыре правила и позывной (M373, §6.1):1
 
 ## src/12as-left.js · 9 КБ

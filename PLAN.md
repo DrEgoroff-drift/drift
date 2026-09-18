@@ -517,9 +517,19 @@ Rule 3: same look, cheaper work.
     `hashi(sx,sy,0x51A7)` instead of `rnd()*TAU`, the nose toward the station (to the star if none).
     **Release note:** one `rnd()` call left the stream, so every replay and same-hash suite moves —
     a deliberate `test.ps1 -Accept` pass, named in the patchnote.
-- [ ] **P10 ЦЕЛЬ and the hail** (§3): one pad with five meanings (hail answer, probe, crew-off,
-  thanks, lock); pickets not lockable; the hail's fight answer red and named «БОЙ». One meaning per
-  pad state, the verb from the prompt (M355).
+- [x] **P10 ЦЕЛЬ and the hail — done 18.09 (Control).**
+  - **One meaning per pad state** was already true (M355/B1): every claimant names itself in the
+    prompt («ЦЕЛЬ — ЗОНД 900 кр», «ЦЕЛЬ — СНЯТЬ ЭКИПАЖ», «ЦЕЛЬ — БЛАГОДАРНОСТЬ», «ЦЕЛЬ — ПО ДЕЛУ»)
+    and the pad takes the verb — verified, nothing to change.
+  - **Pickets lockable:** `helmTargetable` (15a) — hostile ships and every ship of a power, even a
+    peaceful one; never the player's crew or flag. Autofire still fires only at hostiles
+    (`!mk.iff`, 13-pirates), so a locked picket is aimed at, not shot, until the player fires.
+  - **Hail colours by consequence — the author's reading 18.09:** there is no fight answer, both
+    answers are peaceful by default; «опасность — красное, не опасно — зелёное». `hailRisk` names
+    what each answer leads to here and now: enemy-stamped cassettes in the hold → both red (fire on
+    any word); blockade → ПРОХОДОМ red (ordered to stand), ПО ДЕЛУ green; otherwise both green.
+    Window buttons and the ДЕЙСТВИЕ/ЦЕЛЬ pads take the same colours (`body[data-hail-*]`); the
+    permanent gold of ПРОХОДОМ and the red ring on ЦЕЛЬ under a peaceful answer are gone.
 - Gate: `g11` on the phone before/after; the frame gate of stage 0 still holds.
 
 ### Stage 2 — whose land, in five seconds (borders + life Ж1 + the galaxy)

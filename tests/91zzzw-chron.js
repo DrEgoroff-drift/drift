@@ -233,7 +233,7 @@ TEST_SUITES.push(()=>suite("война M372: пикет в тылу, чужой 
     return;
   }
   ok(G.pirates.length>=2,"в тылу стоит пикет: "+G.pirates.length);
-  ok(G.pirates.every(p=>p.iff===1),"и он не берётся в захват — это не ваш бой");
+  ok(G.pirates.every(p=>p.iff===1),"и он не враждебен — это не ваш бой (в прицел взять можно, P10)");
   ok(G.pirates.every(p=>!!p.pw&&!!MAKER_KEYS.indexOf(p.pw)>=0),"у каждого свой флаг");
   eq(G.pirates.length<=NPC_BATTLE,true,"потолок восьми держится");
   /* фронт: две стороны и они разные */

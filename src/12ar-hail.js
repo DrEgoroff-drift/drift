@@ -204,6 +204,15 @@ function hailAnswer(kind){
   }
   return true;
 }
+/* чем кончится ответ: «risk» — после него стреляют или велят стоять, «safe» —
+   отпускают. Клеймо их врага в трюме — огонь на любое слово; в блокаде
+   «проходом» — приказ стоять, а «по делу» принимают */
+function hailRisk(kind){
+  const H=G.hail;if(!H)return "safe";
+  if(hailContraband(H.by))return "risk";
+  if(H.blk&&kind==="pass")return "risk";
+  return "safe";
+}
 /* ── окно оклика (блокер надзора 12.09) ──
    На телефоне вопрос не читался: подсказка с ответами резалась многоточием,
    «ЦЕЛЬ — ПО ДЕЛУ» не было видно нигде. Теперь оклик — окно того же терминала,
@@ -215,11 +224,15 @@ function hailWinSync(){
   const H=G.hail,b=document.body;
   /* поверх любого экрана (R0, дев 12.09): прежде окно пряталось за СТОЛОМ, а отсчёт шёл */
   const show=!!H&&G.mode==="system";
-  if(!show){if(e&&e.classList.contains("open")){e.classList.remove("open");b.classList.remove("hailopen");}return;}
+  if(!show){
+    if(e&&e.classList.contains("open")){e.classList.remove("open");b.classList.remove("hailopen");}
+    if(b.dataset.hailAct){delete b.dataset.hailAct;delete b.dataset.hailLock;}
+    return;
+  }
   if(!e){
     e=document.createElement("div");e.id="hailwin";
     e.innerHTML="<b><em></em></b><div class='hq'></div><div class='hbar'><i></i></div><s class='hw'></s>"+
-      "<div class='ha'><button class='act gold' data-a='pass'>ПРОХОДОМ<small>ДЕЙСТВИЕ</small></button>"+
+      "<div class='ha'><button class='act' data-a='pass'>ПРОХОДОМ<small>ДЕЙСТВИЕ</small></button>"+
       "<button class='act' data-a='busy'>ПО ДЕЛУ<small>ЦЕЛЬ</small></button></div>";
     for(const bt of e.querySelectorAll(".ha button"))
       bt.onclick=ev=>{ev.stopPropagation();sfx("ui");hailAnswer(bt.dataset.a);hailWinSync();};
@@ -238,6 +251,17 @@ function hailWinSync(){
     (H.warn?"ВАС УЖЕ ПРЕДУПРЕДИЛИ · молчание дальше — огонь":"молчание — тоже ответ: сперва предупреждение");
   e.classList.toggle("warn",!!H.warn&&!H.hold);
   ha.style.display=H.hold?"none":"";
+  /* цвет ответа — по его последствиям здесь и сейчас (автор 18.09: «опасность
+     красное, не опасно зелёное… сейчас перепутано»). Было: ПРОХОДОМ золотом как
+     рекомендованный, а ЦЕЛЬ под «по делу» с красным кольцом — в блокаде ровно
+     наоборот, без блокады оба ответа одинаково мирные. Те же цвета — на пэдах */
+  const rP=hailRisk("pass"),rB=hailRisk("busy");
+  for(const bt of ha.querySelectorAll("button")){
+    const r=bt.dataset.a==="pass"?rP:rB;
+    bt.classList.toggle("safe",r==="safe");bt.classList.toggle("risk",r==="risk");
+  }
+  if(b.dataset.hailAct!==rP)b.dataset.hailAct=rP;
+  if(b.dataset.hailLock!==rB)b.dataset.hailLock=rB;
   e.classList.add("open");b.classList.add("hailopen");
 }
 /* пошёл сквозь блокаду: расстояние от точки оклика растёт — значит идёт */

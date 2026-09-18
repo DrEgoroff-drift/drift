@@ -434,6 +434,15 @@ body.sosopen #console,body.sosopen #camBtn,body.hailopen #console,body.hailopen 
 #hailwin .ha{display:flex;gap:8px;padding:10px 12px 12px}
 #hailwin .ha .act{flex:1 1 0;min-height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
 #hailwin .ha .act small{font-size:9px;letter-spacing:.12em;opacity:.7}
+/* ответы по последствиям (автор 18.09): безопасный — зелёный фосфор, опасный — красный */
+#hailwin .ha .act.safe{color:var(--phos);border-color:rgba(127,230,216,.55);background:rgba(127,230,216,.08)}
+#hailwin .ha .act.risk{color:#ff6b57;border-color:rgba(255,107,87,.6);background:rgba(255,107,87,.10)}
+body[data-hail-lock=safe] .pads button[data-k=lock]{color:var(--phos)}
+body[data-hail-lock=safe] .pads button[data-k=lock]::before{border-color:rgba(127,230,216,.45)}
+body[data-hail-act=safe] .pads button[data-k=act]{color:var(--phos)}
+body[data-hail-act=safe] .pads button[data-k=act]::before{border-color:rgba(127,230,216,.45)}
+body[data-hail-act=risk] .pads button[data-k=act]{color:var(--alarm)}
+body[data-hail-act=risk] .pads button[data-k=act]::before{border-color:rgba(255,107,87,.38)}
 body.hailopen #prompt{visibility:hidden}
 body.hailopen .rail{opacity:.12;pointer-events:none}   /* как у окна бака: на 7 секунд оклика борт не нужен */
 /* «что получил» (п. 5, 12.09): добыча боя карточкой — стекло окна выходов,

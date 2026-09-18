@@ -253,14 +253,23 @@ function helmScreenOpen(){return scrOpen();}
 function helmPinchBlocked(){return G.mode==="system"&&!!HELM.S;}
 
 /* ── захват ── */
-function helmTargets(){return (G.pirates||[]).filter(p=>p.hull>0&&!p.iff);}
+/* кого можно взять в цель: враждебных — и корабли держав, даже мирные (P10,
+   плейтест 13.09 §3.1: пикет «Коммуны» окликнул, а взять его в цель было нельзя —
+   список был пуст при двух бортах в 1 263 и 1 753). Захват — только прицел,
+   стрелять или нет, решает игрок. Свой экипаж и свой флаг — нет */
+function helmTargetable(p){
+  if(!p||p.hull<=0)return false;
+  if(!p.iff)return true;
+  return !!p.pw&&!(typeof playerFlag==="function"&&p.pw===playerFlag());
+}
+function helmTargets(){return (G.pirates||[]).filter(helmTargetable);}
 function helmMarksClean(){
   if(!G.marks)G.marks=[];
   /* помеховая капитана (M368, §5): рядом с ним захват не держится вовсе —
      ни ваш палец, ни автозахват стрелявшего его не вернут, пока не отойти */
   if(G.jamT>0){G.marks.length=0;return;}
   const alive=new Set(G.pirates||[]);
-  for(let i=G.marks.length-1;i>=0;i--)if(!alive.has(G.marks[i])||G.marks[i].hull<=0||G.marks[i].iff)G.marks.splice(i,1);
+  for(let i=G.marks.length-1;i>=0;i--)if(!alive.has(G.marks[i])||!helmTargetable(G.marks[i]))G.marks.splice(i,1);
   if(G.marks.length>HELM_MARKS)G.marks.length=HELM_MARKS;
 }
 function helmLock(p){

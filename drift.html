@@ -448,6 +448,15 @@ body.sosopen #console,body.sosopen #camBtn,body.hailopen #console,body.hailopen 
 #hailwin .ha{display:flex;gap:8px;padding:10px 12px 12px}
 #hailwin .ha .act{flex:1 1 0;min-height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
 #hailwin .ha .act small{font-size:9px;letter-spacing:.12em;opacity:.7}
+/* ответы по последствиям (автор 18.09): безопасный — зелёный фосфор, опасный — красный */
+#hailwin .ha .act.safe{color:var(--phos);border-color:rgba(127,230,216,.55);background:rgba(127,230,216,.08)}
+#hailwin .ha .act.risk{color:#ff6b57;border-color:rgba(255,107,87,.6);background:rgba(255,107,87,.10)}
+body[data-hail-lock=safe] .pads button[data-k=lock]{color:var(--phos)}
+body[data-hail-lock=safe] .pads button[data-k=lock]::before{border-color:rgba(127,230,216,.45)}
+body[data-hail-act=safe] .pads button[data-k=act]{color:var(--phos)}
+body[data-hail-act=safe] .pads button[data-k=act]::before{border-color:rgba(127,230,216,.45)}
+body[data-hail-act=risk] .pads button[data-k=act]{color:var(--alarm)}
+body[data-hail-act=risk] .pads button[data-k=act]::before{border-color:rgba(255,107,87,.38)}
 body.hailopen #prompt{visibility:hidden}
 body.hailopen .rail{opacity:.12;pointer-events:none}   /* как у окна бака: на 7 секунд оклика борт не нужен */
 /* «что получил» (п. 5, 12.09): добыча боя карточкой — стекло окна выходов,
@@ -23275,6 +23284,15 @@ function hailAnswer(kind){
   }
   return true;
 }
+/* чем кончится ответ: «risk» — после него стреляют или велят стоять, «safe» —
+   отпускают. Клеймо их врага в трюме — огонь на любое слово; в блокаде
+   «проходом» — приказ стоять, а «по делу» принимают */
+function hailRisk(kind){
+  const H=G.hail;if(!H)return "safe";
+  if(hailContraband(H.by))return "risk";
+  if(H.blk&&kind==="pass")return "risk";
+  return "safe";
+}
 /* ── окно оклика (блокер надзора 12.09) ──
    На телефоне вопрос не читался: подсказка с ответами резалась многоточием,
    «ЦЕЛЬ — ПО ДЕЛУ» не было видно нигде. Теперь оклик — окно того же терминала,
@@ -23286,11 +23304,15 @@ function hailWinSync(){
   const H=G.hail,b=document.body;
   /* поверх любого экрана (R0, дев 12.09): прежде окно пряталось за СТОЛОМ, а отсчёт шёл */
   const show=!!H&&G.mode==="system";
-  if(!show){if(e&&e.classList.contains("open")){e.classList.remove("open");b.classList.remove("hailopen");}return;}
+  if(!show){
+    if(e&&e.classList.contains("open")){e.classList.remove("open");b.classList.remove("hailopen");}
+    if(b.dataset.hailAct){delete b.dataset.hailAct;delete b.dataset.hailLock;}
+    return;
+  }
   if(!e){
     e=document.createElement("div");e.id="hailwin";
     e.innerHTML="<b><em></em></b><div class='hq'></div><div class='hbar'><i></i></div><s class='hw'></s>"+
-      "<div class='ha'><button class='act gold' data-a='pass'>ПРОХОДОМ<small>ДЕЙСТВИЕ</small></button>"+
+      "<div class='ha'><button class='act' data-a='pass'>ПРОХОДОМ<small>ДЕЙСТВИЕ</small></button>"+
       "<button class='act' data-a='busy'>ПО ДЕЛУ<small>ЦЕЛЬ</small></button></div>";
     for(const bt of e.querySelectorAll(".ha button"))
       bt.onclick=ev=>{ev.stopPropagation();sfx("ui");hailAnswer(bt.dataset.a);hailWinSync();};
@@ -23309,6 +23331,17 @@ function hailWinSync(){
     (H.warn?"ВАС УЖЕ ПРЕДУПРЕДИЛИ · молчание дальше — огонь":"молчание — тоже ответ: сперва предупреждение");
   e.classList.toggle("warn",!!H.warn&&!H.hold);
   ha.style.display=H.hold?"none":"";
+  /* цвет ответа — по его последствиям здесь и сейчас (автор 18.09: «опасность
+     красное, не опасно зелёное… сейчас перепутано»). Было: ПРОХОДОМ золотом как
+     рекомендованный, а ЦЕЛЬ под «по делу» с красным кольцом — в блокаде ровно
+     наоборот, без блокады оба ответа одинаково мирные. Те же цвета — на пэдах */
+  const rP=hailRisk("pass"),rB=hailRisk("busy");
+  for(const bt of ha.querySelectorAll("button")){
+    const r=bt.dataset.a==="pass"?rP:rB;
+    bt.classList.toggle("safe",r==="safe");bt.classList.toggle("risk",r==="risk");
+  }
+  if(b.dataset.hailAct!==rP)b.dataset.hailAct=rP;
+  if(b.dataset.hailLock!==rB)b.dataset.hailLock=rB;
   e.classList.add("open");b.classList.add("hailopen");
 }
 /* пошёл сквозь блокаду: расстояние от точки оклика растёт — значит идёт */
@@ -42738,14 +42771,23 @@ function helmScreenOpen(){return scrOpen();}
 function helmPinchBlocked(){return G.mode==="system"&&!!HELM.S;}
 
 /* ── захват ── */
-function helmTargets(){return (G.pirates||[]).filter(p=>p.hull>0&&!p.iff);}
+/* кого можно взять в цель: враждебных — и корабли держав, даже мирные (P10,
+   плейтест 13.09 §3.1: пикет «Коммуны» окликнул, а взять его в цель было нельзя —
+   список был пуст при двух бортах в 1 263 и 1 753). Захват — только прицел,
+   стрелять или нет, решает игрок. Свой экипаж и свой флаг — нет */
+function helmTargetable(p){
+  if(!p||p.hull<=0)return false;
+  if(!p.iff)return true;
+  return !!p.pw&&!(typeof playerFlag==="function"&&p.pw===playerFlag());
+}
+function helmTargets(){return (G.pirates||[]).filter(helmTargetable);}
 function helmMarksClean(){
   if(!G.marks)G.marks=[];
   /* помеховая капитана (M368, §5): рядом с ним захват не держится вовсе —
      ни ваш палец, ни автозахват стрелявшего его не вернут, пока не отойти */
   if(G.jamT>0){G.marks.length=0;return;}
   const alive=new Set(G.pirates||[]);
-  for(let i=G.marks.length-1;i>=0;i--)if(!alive.has(G.marks[i])||G.marks[i].hull<=0||G.marks[i].iff)G.marks.splice(i,1);
+  for(let i=G.marks.length-1;i>=0;i--)if(!alive.has(G.marks[i])||!helmTargetable(G.marks[i]))G.marks.splice(i,1);
   if(G.marks.length>HELM_MARKS)G.marks.length=HELM_MARKS;
 }
 function helmLock(p){
