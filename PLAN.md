@@ -686,7 +686,7 @@ material consequences are the part that does not exist yet — that is what stag
 
 ### Release tails — any gap, all before a push
 
-Determinism: `wanderer · A` reads real chance or time on the corridor's buy path
+**Red before 0.450.0, not from the design pass (verified on `d1028d1`, 18.09):** helm M410 «стик задаёт ход» (cruise 6.70 of 8.00, half-stick 3.10), the same-hash «под руками второй прогон» in the system scene, «полный трюм» (СДАТЬ on the market overfills the hold by 8), the detector «карта · A · застой» and the phone stick suites (`x0` of null, the stick born on the wrong half). Each needs its own look before the next push. Determinism: `wanderer · A` reads real chance or time on the corridor's buy path
 (`wanderBuy`/`wanStep`, 24c) — find it, move the scene; the clock out of `stateHash` (still mixed in: `08a-statehash` ~79 `mixN(now())`; decided
 11.09: a separate field, `T.state()` returns both — today it returns `{hash,snap,purse}` and `T.clock()` apart); `planetStripTick` by `wallMs()` writes `stripLvl`
 into hashed state. Housekeeping: ~~the `.gz` cache headers~~ and ~~the PATCHNOTES trim~~ — both found done 14.09; the patch-bump rule (tests/tools/docs → patch; `src/` → minor after

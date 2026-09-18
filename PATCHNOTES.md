@@ -6,6 +6,51 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.450.0 - the design pass on the S23, and stage 7 of the base
+
+- **The design queue D1–D26, walked on the author's S23 over Wi-Fi** (Control, 18.09). A sustaining
+  plume under the finger (`helm.idle` — the engine fired only while accelerating, 135 frames of 266),
+  the wake kept out of the HUD, star rays feathered in three wedges, the nav row fading instead of a
+  flat cut, the ready pad breathing red under a risk hail and green under a safe one, the ability
+  name over the pad only in the system, the lane buoy as an instrument (belt, reflector, mast with
+  a radar cross, caged lamp), map glyphs shrinking with the cell so the galaxy shows at ×5,
+  «Долгий рукав» / «Рыжий рукав» lettered along the arms and ten nebulae named in the cabin's voice
+  («Печка», «Молоко», «Синяя вдова», «Гнилой угол»…) with the place in the system card, the ten far
+  goods as their own objects in ТРЮМ, the six giants baked with human-scale detail and lit from the
+  star, the blueprint as a синька (Prussian blue, mm grid, ochre stamps with kind letters),
+  black glossy tape, the station's ground colour by builder down to the panels and containers,
+  scars and the transit plate on the hull, the peace fleet's ad ferry with a screen and Хай-Фронт
+  camera drones, the system edge as a teal band the ship leans on. Paper: album page with corner
+  mounts, rent card, bordeaux passport, Космопочта notice paper, six vestibule finishes by owner,
+  rail-life rows as a paper tag, a punched card and a phosphor silhouette; the carriage shows only
+  ВЫЙТИ.
+- **M497 Баня and чайный гриб** (`21ac1-base-banya`): a bath night every six shifts takes water
+  and gives spirit, the base manager's flaw sleeps twelve shifts after it, the ПАЛАТА inspector finds
+  one item fewer; the greenhouse culture overgrows (food ×2 for three shifts, then it eats organics)
+  until an аврал cuts it into «Чайный гриб», which Рассвет buys ×1.5. The parlour is drawn.
+- **M496 Ферма** (`21ac2-base-farm`): a stunned beast is taken alive when an empty farm waits,
+  moves in with a name and the ПАЛАТА клеймо, and gives its world's good only while someone talks
+  to it; a broken farm never loses it. The pen with the real beast, the name board and the plate.
+- **M511 Волокита** (`12al5-vol`): animals aboard ride the rail and cross borders only with papers —
+  N documents rolled 2–10 and never told; the pile on the КНИЖКА desk as paper sheets, a different
+  office per document, Орднунг in three copies, Коммуна at lunch, jam that changes nothing, the last
+  official signing without reading and the only one with a name.
+- **M498 «Буханка»** (`21ac3-base-van`): the base's named van with one quirk for ever, drawn at the
+  pad and on the plateau, renamed from the table at the station desk; blockade pickets now hail and
+  are outrun at two thirds of full speed, alloys sell ×2 in a blockade.
+- **Rail**: transfers through a junction with one fare and a 3 s stop where the train changes line,
+  the scheme unfolded on paper from the vestibule (`18k-rail-scheme`), the hyper flash at departure,
+  stops and exit, the dispatcher's voice reading the stops (`18g`).
+- **Smaller design**: the tower mount reads as a turret (barbette, dome, mantlet), the Орднунг seal
+  on the hull, a подстаканник at the tea buffet, the recall letter and the subscription letter in
+  ВЕЩИ, «ЗАБЛОКИРОВАНО» stamped over a locked instrument, the post window drawn on the notice paper,
+  the bazaar's hulks as real dead hulls under sagging canvas and swinging lamps with the stall as a
+  table, scars anchored to their blueprint cells with «корпус помнит» rows in ОПИСЬ.
+- **Tests**: base2 suites for M497/M496/M498, the record suite for M511, the rail suite for
+  transfers; the golden frames re-shot in all three windows. Known red in the browser tier, older
+  than this release (verified on `d1028d1`): the helm M410 cruise suite, the same-hash determinism
+  suite, the broke double-tap on СДАТЬ, the map-A detector and the phone stick suites — listed in
+  PLAN under release tails.
 ## 0.449.0 - the wake and the system edge
 
 - **The wake** (`16-flight` `wakeStep`/`drawWake`): a second tail that comes from speed, not from
