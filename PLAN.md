@@ -504,7 +504,7 @@ patchnote of each version names the M-numbers it closes.
   извещения in ПОЧТА for a hull from СТАПЕЛЬ, a rare part, cooperative goods; collect at the counter
   in hours; a parcel waits 30 days then returns; a queue number. Kindness: the clerk keeps it a day
   longer, «не по правилам».
-- [ ] **[design owed] M460 Billboards + M491 the contradicting newscast + P12 ЭФИР — one pass.** Billboards: a truss,
+- [ ] **[design owed] M460 Billboards — BUILT 18.09 (Control), `src/17k-billboard.js`; M491 and P12 open.** At busy stations (life ≥ .45) one billboard beside the lane: truss, dark panel, the owner's title in three-stroke neon (glow / body / white core, additive), ГЛАВТРАССА with one dead letter and a 200 ms buzz once a minute; one crawling line with a real deal from the base prices of stations within 3 sectors (no `marketFor` — a sign must not touch the world), in the owner's voice (Компания «…ВЫГОДНО КАК НИКОГДА™ · ДО КОНЦА АКЦИИ 00:00:03», Орднунг «…ПРОВЕРЕНО», Хай-Фронт «ТИТАН:41 @… Δ2 // РЕКОМЕНДОВАНО»…), recomputed every 10 s. **Open:** 1–3 signs, the hull tint within R, the сводка/циркуляры/holding lines, stale prices as a fork; M491 the contradicting newscast; P12 ЭФИР. Original: Billboards: a truss,
   a panel, three-stroke neon lettering (glow / core / white-hot centre), one crawling line; **the
   line is useful** — real prices from `G.market` («ТИТАН 41 У ПАРТНЁРА В 2 ПРЫЖКАХ — ВЫГОДНО КАК
   НИКОГДА», stale ones as a fork), the сводка in the owner's voice, the Director's циркуляры, a

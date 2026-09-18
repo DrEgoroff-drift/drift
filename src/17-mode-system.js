@@ -653,6 +653,7 @@ function drawSystem(){
   if(typeof drawSysLane==="function")drawSysLane(zx,zy,Z);   /* подъезд: бакены (M459, 17g) */
   if(typeof drawGestPost==="function")drawGestPost(zx,zy,Z);   /* пост у входа (M452, 17h) */
   if(typeof drawSysRail==="function")drawSysRail(zx,zy,Z);   /* кольцо станции железной дороги (M471) */
+  if(typeof drawBillboard==="function")drawBillboard(zx,zy,Z);   /* щит с бегущей строкой (M460) */
   if(sys.station){
     const x=zx(sys.station.x),y=zy(sys.station.y);
     drawStation(x,y,Z);
