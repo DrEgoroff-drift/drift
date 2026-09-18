@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 538 · символов верхнего уровня: 5192
+Файлов: 539 · символов верхнего уровня: 5206
 
 ## СИМВОЛЫ
 
@@ -1362,7 +1362,7 @@ drawHomeIn                   src/29d-home-draw.js:9-332
 drawHomeOut                  src/21f-home-out.js:73-312
 drawHomeRoom                 src/27e-ui-home.js:42-62
 drawHqRoom                   src/27f-hq-room.js:22-31
-drawHull                     src/03e-hull-draw.js:1-612
+drawHull                     src/03e-hull-draw.js:1-74
 drawHullMarks                src/03b-hull-paint.js:184-491
 drawKitFigure                src/12x-suit.js:202-299
 drawLander                   src/19f-lander.js:52-340
@@ -2018,6 +2018,8 @@ hazeBand                     src/19c-light.js:191-198
 hazeDone                     src/18d-postfx.js:74
 hazeFar                      src/19c-light.js:167-188
 hazeGrab                     src/18d-postfx.js:39-56
+HB_MAX                       src/03e1-hull-bake.js:18
+HB_STATS                     src/03e1-hull-bake.js:21
 hdAgeShifts                  tests/91zzzzy-hold.js:48-59
 hdLay                        tests/91zzzzy-hold.js:41-46
 hDraw                        tests/91zzzzzzz-hands.js:36
@@ -2302,16 +2304,26 @@ hudFloorMeasure              src/27z-telemetry.js:123-154
 hudNumDirty                  src/08-state.js:92
 hudWake                      src/27z-telemetry.js:60-69
 hueToward                    src/19b-sky.js:53-64
+HULL_BAKES                   src/03e1-hull-bake.js:19
+HULL_BOX                     src/03e1-hull-bake.js:20
 HULL_CACHE                   src/03-ships.js:199
 HULL_CLASS                   src/03-ships.js:227-252
 HULL_HELD_MS                 src/28-loop.js:8
 HULL_MAKER                   src/03a-hull-maker.js:23-72
 HULL_PER_ALLOY               src/21b1-base-pay.js:116
 HULL_ROLE                    src/03f-hull-role.js:17-30
+hullBakeDraw                 src/03e1-hull-bake.js:26-61
+hullBakeGet                  src/03e1-hull-bake.js:62-88
+hullBakeRender               src/03e1-hull-bake.js:90-100
+hullBakeScale                src/03e1-hull-bake.js:22-25
 hullClassOf                  src/03-ships.js:253-268
 hullHeld                     src/28-loop.js:9
 hullHeldTick                 src/28-loop.js:10-15
+hullInkBox                   src/03e1-hull-bake.js:103-114
 hullOf                       src/03a-hull-gen.js:1-531
+hullPart1                    src/03e-hull-draw.js:79-551
+hullPart2                    src/03e-hull-draw.js:553-556
+hullPart3                    src/03e-hull-draw.js:559-636
 hullRole                     src/03f-hull-role.js:51
 hullShade                    src/03b-hull-paint.js:176-183
 hullSilhouette               src/27-ui-ship.js:9-43
@@ -2694,22 +2706,23 @@ mailWire                     src/25j-post-wire.js:55-63
 MAIN_CTX                     src/08-state.js:4
 makeIR                       src/10-music.js:109-121
 makePhrase                   src/10-music.js:380-403
-MAKER_ASSEMBLY               src/03a-hull-maker.js:454
+MAKER_ASSEMBLY               src/03a-hull-maker.js:463
 MAKER_CV                     src/28y-look.js:311
 MAKER_KEYS                   src/03a-hull-maker.js:73
 MAKER_PX                     src/28y-look.js:310
-makerAssembly                src/03a-hull-maker.js:455
-makerBank                    src/03a-hull-maker.js:408
+makerAssembly                src/03a-hull-maker.js:464
+makerBank                    src/03a-hull-maker.js:417
 makerBySeed                  src/03a-hull-maker.js:89
-makerDraw                    src/03a-hull-maker.js:231-353
+makerDraw                    src/03a-hull-maker.js:241-362
 makerFeat                    src/28y-look.js:312-385
-makerFlame                   src/03a-hull-maker.js:407
+makerFlame                   src/03a-hull-maker.js:416
 makerForms                   src/03a-hull-maker.js:93-101
-makerGround                  src/03a-hull-maker.js:443
-makerHum                     src/03a-hull-maker.js:409
+makerGround                  src/03a-hull-maker.js:452
+makerHum                     src/03a-hull-maker.js:418
 makerJoint                   src/03a-hull-maker.js:199-227
-makerLightCol                src/03a-hull-maker.js:445-449
-makerMarks                   src/03a-hull-maker.js:357-405
+makerLightCol                src/03a-hull-maker.js:454-458
+makerLive                    src/03a-hull-maker.js:237-240
+makerMarks                   src/03a-hull-maker.js:366-414
 makeRock                     src/24-mode-belt.js:54-80
 makerOf                      src/03a-hull-maker.js:80-86
 makerOuts                    src/03a-hull-maker.js:176-194
@@ -2718,8 +2731,9 @@ makerRead                    src/28y-look.js:393-457
 makerRow                     src/03a-hull-maker.js:87
 makerRu                      src/03a-hull-maker.js:90
 makerStand                   src/28y-look.js:386-392
-makerWear                    src/03a-hull-maker.js:444
-makerWidth                   src/03a-hull-maker.js:414-441
+makerTicks                   src/03a-hull-maker.js:233-236
+makerWear                    src/03a-hull-maker.js:453
+makerWidth                   src/03a-hull-maker.js:423-450
 makeWorld                    src/02a-worldmix.js:47-64
 MAP_BOX                      src/18-mode-map.js:28
 MAP_LAYERS                   src/18b-map-hold.js:25
@@ -5228,7 +5242,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/03a-hull-gen.js · 37 КБ
   · схема планера:58
 
-## src/03a-hull-maker.js · 26 КБ
+## src/03a-hull-maker.js · 27 КБ
   · у всего есть изготовитель (M369, §19.1, §19.4):1
 
 ## src/03b-hull-paint.js · 28 КБ
@@ -5238,7 +5252,10 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## src/03d-hull-marks.js · 6 КБ
 
-## src/03e-hull-draw.js · 38 КБ
+## src/03e-hull-draw.js · 40 КБ
+
+## src/03e1-hull-bake.js · 6 КБ
+  · печка корпуса (Stage 0, 18.09):1
 
 ## src/03f-hull-role.js · 6 КБ
   · корпус — это профессия, а не ступенька:1

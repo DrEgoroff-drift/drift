@@ -29,6 +29,54 @@ function drawHull(id,thrusting,braking,lvl,bank){
     ctx.fillStyle="rgba(255,140,70,"+(.2+rndFx()*.12).toFixed(2)+")";
     ctx.beginPath();ctx.arc(e.x+e.r*.1,e.y,e.r*.42,0,TAU);ctx.fill();
   }
+  if(braking){
+    const f=4+rndFx()*6;
+    ctx.fillStyle="rgba(127,230,216,.7)";
+    for(const s of [-1,1]){
+      const y=h.bw*.5*s;
+      ctx.beginPath();ctx.moveTo(h.nose*.5,y-1.8);ctx.lineTo(h.nose*.5+f,y);
+      ctx.lineTo(h.nose*.5,y+1.8);ctx.closePath();ctx.fill();
+    }
+  }
+  /* ── неподвижное тело ── (Stage 0, 18.09) три куска ниже рисуют одно и то же
+     каждый кадр, и 03e1-hull-bake печёт их в картинку; между кусками стоит
+     живое, что обязано идти в прежнем порядке слоёв: бегущая строка Компании
+     и венцы. Тормозные языки переехали сюда, выше железа двигателя: они у
+     носа, железо у кормы, пересечься им негде — пиксели те же. */
+  if(!hullBakeDraw(h,id,bank||0)){
+    hullPart1(h,id,bank||0,true);
+    hullPart2(h);
+    if(typeof drawCrowns==="function")drawCrowns(h,id);
+    hullPart3(h,id);
+  }
+  /* ── бортовые огни ── */
+  /* Огни ставились по законцовке первого крыла, а при её отсутствии — по
+     ±bw*1.6, то есть заведомо ЗА бортом: у рудовоза и яхты две точки висели
+     в пустоте рядом с корпусом. Огонь горит на самой дальней точке борта,
+     поэтому запасной вариант считается по обводу, а не по числу. */
+  const on=blink>0;
+  for(const [s,c] of [[-1,"255,80,70"],[1,"110,255,150"]]){
+    let wy;
+    if(h.wings.length)wy=h.wings[0][2];
+    else{const lx=h.nose*.18;wy=[lx,-profW(h.prof,lx)*1.02];}
+    /* у яхты огонь мельче: на узком борту точка в полтора радиуса читалась
+       пуговицей, пришитой к обшивке */
+    /* рисунок огней — косметика «Сороки»: ровные, двойной проблеск, попеременные */
+    const onS=(typeof cosmLightOn==="function")?cosmLightOn(s,blink,G.t):on;
+    ctx.fillStyle="rgba("+c+","+(onS?.95:.25)+")";
+    ctx.beginPath();ctx.arc(wy[0],wy[1]*s,h.yac?.7:1.25,0,TAU);ctx.fill();
+  }
+  if(lvl>1){
+    ctx.strokeStyle="rgba(180,240,255,"+(.16+lvl*.07).toFixed(2)+")";ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(h.tail*.35,-h.bw-lvl*.7);ctx.lineTo(h.tail*.35,h.bw+lvl*.7);ctx.stroke();
+  }
+  if(banked)ctx.restore();
+}
+
+/* кусок 1: железо двигателя, навеска, корпус, налёт, грань, отделка, приметы.
+   ticks=false — без бегущих огней строки: их рисует живой проход поверх
+   испечённого (makerLive) */
+function hullPart1(h,id,bank,ticks){
   /* ── двигатель как ЖЕЛЕЗО ──
      Сопло было дыркой в корме с огоньком: у корабля не было двигателя, был
      источник факела. На честном виде сверху двигатель — толстая тёмная бочка,
@@ -53,15 +101,6 @@ function drawHull(id,thrusting,braking,lvl,bank){
     ctx.fillStyle="rgba(6,8,12,.95)";                     // зев
     ctx.beginPath();ctx.ellipse(e.x-bl*.06,e.y,br*.34,br*.74,0,0,TAU);ctx.fill();
     ctx.strokeStyle=rgba(mixc(h.iron,[255,255,255],.2),.8);ctx.lineWidth=.4;ctx.stroke();
-  }
-  if(braking){
-    const f=4+rndFx()*6;
-    ctx.fillStyle="rgba(127,230,216,.7)";
-    for(const s of [-1,1]){
-      const y=h.bw*.5*s;
-      ctx.beginPath();ctx.moveTo(h.nose*.5,y-1.8);ctx.lineTo(h.nose*.5+f,y);
-      ctx.lineTo(h.nose*.5,y+1.8);ctx.closePath();ctx.fill();
-    }
   }
   /* ── радиаторы ── позади корпуса, как и крылья: пластина уходит под борт.
      Тёмная сторона смотрит в пустоту, рёбра идут поперёк — по ним панель и
@@ -508,9 +547,16 @@ function drawHull(id,thrusting,braking,lvl,bank){
   drawHullMarks(h);
   /* приметы и метки изготовителя (M369): часть корабля, а не наклейка —
      поэтому до бортовых огней и общего света, вместе со всей навеской */
-  if(typeof makerDraw==="function"){makerDraw(h);makerMarks(h);}
+  if(typeof makerDraw==="function")makerDraw(h,!ticks);
+}
+/* кусок 2: метки изготовителя и пиратская шкура — поверх строки, под венцами */
+function hullPart2(h){
+  if(typeof makerMarks==="function")makerMarks(h);
   if(h.pirate)drawPirateSkin(h);
-  if(typeof drawCrowns==="function")drawCrowns(h,id);
+}
+/* кусок 3: боксы, антенны, фонарь, свет сверху; киль — отсюда же: он у кормы
+   по оси, огни на законцовках, друг друга они не касаются */
+function hullPart3(h,id){
   /* ── боксы по бортам ──
      Были голым прямоугольником с полупрозрачной обводкой в .9: вдали сходило,
      вблизи (а игрок приближает часто — иначе корабль мелкий) читалось мыльной
@@ -583,30 +629,8 @@ function drawHull(id,thrusting,braking,lvl,bank){
     ctx.beginPath();ctx.moveTo(bx,by);ctx.lineTo(bx-2,by+side*3.2);ctx.stroke();
     ctx.fillStyle=rgba(h.lite,.8);ctx.beginPath();ctx.arc(bx-2,by+side*3.2,.7,0,TAU);ctx.fill();
   }
-  /* ── бортовые огни ── */
-  /* Огни ставились по законцовке первого крыла, а при её отсутствии — по
-     ±bw*1.6, то есть заведомо ЗА бортом: у рудовоза и яхты две точки висели
-     в пустоте рядом с корпусом. Огонь горит на самой дальней точке борта,
-     поэтому запасной вариант считается по обводу, а не по числу. */
-  const on=blink>0;
-  for(const [s,c] of [[-1,"255,80,70"],[1,"110,255,150"]]){
-    let wy;
-    if(h.wings.length)wy=h.wings[0][2];
-    else{const lx=h.nose*.18;wy=[lx,-profW(h.prof,lx)*1.02];}
-    /* у яхты огонь мельче: на узком борту точка в полтора радиуса читалась
-       пуговицей, пришитой к обшивке */
-    /* рисунок огней — косметика «Сороки»: ровные, двойной проблеск, попеременные */
-    const onS=(typeof cosmLightOn==="function")?cosmLightOn(s,blink,G.t):on;
-    ctx.fillStyle="rgba("+c+","+(onS?.95:.25)+")";
-    ctx.beginPath();ctx.arc(wy[0],wy[1]*s,h.yac?.7:1.25,0,TAU);ctx.fill();
-  }
   if(h.fin){
     ctx.strokeStyle=rgba(h.lite,.45);ctx.lineWidth=.5;
     ctx.beginPath();ctx.moveTo(h.tail*.65,0);ctx.lineTo(h.tail-3.5,0);ctx.stroke();
   }
-  if(lvl>1){
-    ctx.strokeStyle="rgba(180,240,255,"+(.16+lvl*.07).toFixed(2)+")";ctx.lineWidth=1;
-    ctx.beginPath();ctx.moveTo(h.tail*.35,-h.bw-lvl*.7);ctx.lineTo(h.tail*.35,h.bw+lvl*.7);ctx.stroke();
-  }
-  if(banked)ctx.restore();
 }
