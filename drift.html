@@ -26601,6 +26601,7 @@ function mgrLearn(m,id){
    убыточен — и это правильно: он не ускоритель раннего старта, а способ поднять
    потолок, когда потолок уже мешает. */
 function mgrPay(m){
+  if(m.rent)return rentTier(m).fee;      // арендное — по тарифу (M488, 12f1)
   if(m.ai)return aiUpkeep(m);            // ядро берёт не оклад, а обслуживание
   return Math.round(MGR_ROLES[m.role].pay*(1+(mgrLevel(m)-1)*.18)*mgrTraitMul(m,"pay"));
 }
@@ -26889,6 +26890,7 @@ function mgrTick(){
       aiDrift(m,min,work);
       if(m.gone){G.mgrs.splice(i,1);continue;}
     }
+    if(m.rent&&now-(m.rent.t||0)>=HOLD_SHIFT/4){m.rent.t=now;rentSay(m);}   /* реклама и мнения по тарифу (M488) */
     if(work>0){
       m.xp=(m.xp||0)+work*mgrTraitMul(m,"xp");
       const lv=mgrLevel(m);
@@ -26924,6 +26926,7 @@ function mgrPayroll(m,min){
   const drop=mgrTraitMul(m,"loyDrop");
   /* Машине нечего обижаться: недоплата не роняет лояльность, а разгоняет дрейф.
      Ядро, которому урезали бюджет, начинает решать за вас быстрее. */
+  if(m.rent){if(short>0)rentShort(m);return;}   /* арендное не дрейфует — понижает тариф (M488) */
   if(m.ai){
     if(short>0){
       m.drift=clamp((m.drift||0)+min*1.1,0,100);
@@ -28134,6 +28137,7 @@ function buildAi(role){
    Растёт от каждого самостоятельного решения, то есть от работы: чем полезнее
    ядро, тем быстрее оно перестаёт быть вашим. Это и есть цена. */
 function aiDrift(m,min,work){
+  if(m.rent)return;   /* арендное ядро Хай-Фронта не дрейфует никогда (M488) */
   /* «Тихий маяк»: ядро дрейфует вдвое медленнее — единственный способ
      удержать машину, кроме отката прошивки */
   const d=(min*.35+work*.02)*(relicOn("quiet")?.5:1);
@@ -28189,6 +28193,7 @@ function aiDrift(m,min,work){
 /* Ядро не учится по вашему плану: очки оно тратит само, и выбирает не то, что
    выбрали бы вы. Дерево то же — рука другая. */
 function aiLearn(m){
+  if(m.rent&&!rentTier(m).learn)return;   /* БАЗОВЫЙ тариф само не учится (M488) */
   while(mgrPoints(m)>0){
     const open=[];
     for(const br of MGR_PERKS[m.role])
@@ -28209,6 +28214,78 @@ function aiLearn(m){
    чем самостоятельнее ядро, тем больше вычислений оно себе позволяет */
 function aiUpkeep(m){
   return Math.round((16+(mgrLevel(m)-1)*5)*(1+(m.drift||0)/60));
+}
+
+/* ══════════════ второе ядро — в аренду (M488, DESIGN-birchpunk) ══════════════
+   Своё ядро (12f) собирают из иридия и оно медленно перестаёт спрашивать.
+   Хай-Фронт предлагает обратное: ядро по тарифу, по сети, без материалов.
+     БАЗОВЫЙ   — даром; в каждой третьей сводке реклама; само не учится;
+     ПРЕМИУМ   — 6 кр/мин; учится само, как своё;
+     СЕМЕЙНЫЙ  — 10 кр/мин; учится и делится мнением о том, как вы живёте.
+   Арендное не дрейфует никогда. Не заплатили — само понижает себя до
+   БАЗОВОГО и извиняется. Место занимает то же, что человек: правило четырёх
+   мест держится. Доброта: на бесплатном тарифе, пока у вас горит база,
+   реклама один раз пропускается.
+   Выбор — шутка: своя машина, которая перестаёт спрашивать, или их машина,
+   которая не перестаёт продавать. На управляющем: m.rent = {tier, n}. */
+const RENT_TIERS={
+  base:{ru:"БАЗОВЫЙ", fee:0, learn:0,note:"даром · реклама в каждой третьей сводке · само не учится"},
+  prem:{ru:"ПРЕМИУМ", fee:6, learn:1,note:"учится само · без рекламы"},
+  fam: {ru:"СЕМЕЙНЫЙ",fee:10,learn:1,opin:1,note:"учится · мнения о том, как вы живёте"}
+};
+const RENT_ADS=["Хай-Фронт Облако™ — ваши данные в надёжных руках. Наших.","Попробуйте ПРЕМИУМ: первая минута — по цене минуты!",
+  "HIVE·HOTEL v2 — капсула рассчитана на вас.","Обновите тариф — обновите жизнь. Хай-Фронт.","Эта сводка спонсирована. Кем — неважно."];
+const RENT_OPIN=["По моим данным, вы спите меньше рекомендованного.","Ваш маршрут неэффективен, но в нём есть что-то человеческое.",
+  "Я бы на вашем месте позвонил родным. У меня нет родных.","Вы давно не были дома. Я просто отмечаю."];
+function rentTier(m){return m&&m.rent?(RENT_TIERS[m.rent.tier]||RENT_TIERS.base):null;}
+function rentAi(role,tier){
+  if(!MGR_ROLES[role]||!RENT_TIERS[tier])return false;
+  if(mgrTaken(role)){say("Домен занят");return false;}
+  if(G.mgrs.length>=MGR_CAP){say("Все четыре места заняты\nарендное тоже занимает место");return false;}
+  const seed=hashi(now()&0xffff,role.length*977,0xA12);
+  const m={id:"hf"+seed,seed,name:"«HF-"+(100+seed%900)+"»",role,ai:1,rent:{tier,n:0},
+    traits:[],lv0:1,xp:0,perks:[],rules:[],loy:100,drift:0,
+    tMs:now(),earned:0,spent:0,tookCr:0,stole:0,shipId:null,route:[],log:[],fee:0};
+  G.mgrs.push(m);
+  mgrSay(m,"Подключено. Тариф «"+RENT_TIERS[tier].ru+"». Спасибо, что выбрали Хай-Фронт.","good");
+  tell("","Арендовано ядро "+m.name+" · тариф "+RENT_TIERS[tier].ru,"Ядро "+m.name+"\nтариф "+RENT_TIERS[tier].ru);
+  return true;
+}
+function rentSetTier(m,tier){if(!m.rent||!RENT_TIERS[tier])return false;m.rent.tier=tier;mgrSay(m,"Тариф изменён: «"+RENT_TIERS[tier].ru+"». Изменения вступили в силу мгновенно.");return true;}
+/* недоплата: не дрейф, а понижение тарифа с извинением */
+function rentShort(m){
+  if(m.rent.tier==="base")return;
+  m.rent.tier="base";
+  mgrSay(m,"Платёж не прошёл. Тариф понижен до «БАЗОВЫЙ». Приносим извинения за неудобства.","warn");
+}
+function rentBaseBurning(){
+  const B=G.bases;if(!B)return false;
+  const L=Array.isArray(B)?B:Object.values(B);
+  return L.some(b=>b&&b.fire);
+}
+/* каждая сводка арендного: реклама или мнение */
+function rentSay(m){
+  const T=rentTier(m);if(!T)return;
+  m.rent.n=(m.rent.n|0)+1;
+  if(m.rent.tier==="base"&&m.rent.n%3===0){
+    if(rentBaseBurning()&&!m.rent.spared){m.rent.spared=1;mgrSay(m,"Рекламу пропускаем. У вас горит база.");return;}
+    mgrSay(m,"Реклама: "+RENT_ADS[m.rent.n/3%RENT_ADS.length|0]);
+  }
+  if(T.opin&&m.rent.n%4===0)mgrSay(m,RENT_OPIN[m.rent.n/4%RENT_OPIN.length|0]);
+}
+/* ШТАБ: предложение аренды — рядом со своим ядром */
+function hqRentOffer(free){
+  $hqBody.appendChild(el("div","sec","ЯДРО ХАЙ-ФРОНТА · В АРЕНДУ · ЗАНИМАЕТ МЕСТО ЧЕЛОВЕКА"));
+  for(const t in RENT_TIERS){
+    const T=RENT_TIERS[t],r=el("div","row");
+    r.appendChild(el("div","nm","<b>"+T.ru+(T.fee?" · "+T.fee+" кр/мин":" · даром")+"</b><s>"+T.note+" · не дрейфует</s>"));
+    for(const k of free){
+      const b=el("button","act sm",MGR_ROLES[k].ru.toUpperCase());
+      b.onclick=()=>{if(rentAi(k,t)){hqSel=null;hqRender();}};
+      r.appendChild(b);
+    }
+    $hqBody.appendChild(r);
+  }
 }
 
 /* ══════════════ ушедший управляющий: ренегат ══════════════ */
@@ -42111,6 +42188,7 @@ function applySave(s){
        Список полей здесь белый, поэтому новое поле надо вносить явно,
        иначе оно молча теряется при каждой загрузке. */
     relic:(m.relic&&ARTIFACTS[m.relic])?m.relic:null,
+    rent:(m.rent&&typeof RENT_TIERS!=="undefined"&&RENT_TIERS[m.rent.tier])?{tier:m.rent.tier,n:m.rent.n|0,spared:m.rent.spared?1:0}:null,   /* ядро в аренду (M488) */
     cutBonus:+m.cutBonus||0,ultCount:Math.max(0,m.ultCount|0),pool:Math.max(0,+m.pool||0),
     jobPast:(Array.isArray(m.jobPast)?m.jobPast:[]).filter(x=>jobDef(x)).slice(0,20),
     /* поручение переживает загрузку, но срок идёт заново: счётчики-маркеры
@@ -84205,9 +84283,10 @@ function hqRender(){
    человек стоит денег и требует внимания к настроению, машина бесплатна и
    безразлична — и постепенно перестаёт быть вашей. */
 function hqAiOffer(){
-  if(!aiCanBuild())return;
   const free=MGR_ROLE_KEYS.filter(k=>!mgrTaken(k));
   if(!free.length||G.mgrs.length>=MGR_CAP)return;
+  if(typeof hqRentOffer==="function")hqRentOffer(free);   /* ядро Хай-Фронта в аренду (M488) */
+  if(!aiCanBuild())return;
   $hqBody.appendChild(el("div","sec","ИИ-ЯДРО · ЗАНИМАЕТ МЕСТО ЧЕЛОВЕКА, А НЕ ПЯТОЕ"));
   const r=el("div","row");
   r.appendChild(el("div","nm","<b>Собрать ядро</b><s>не берёт долю и оклада не просит, "+

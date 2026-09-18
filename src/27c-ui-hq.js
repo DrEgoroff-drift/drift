@@ -476,9 +476,10 @@ function hqRender(){
    человек стоит денег и требует внимания к настроению, машина бесплатна и
    безразлична — и постепенно перестаёт быть вашей. */
 function hqAiOffer(){
-  if(!aiCanBuild())return;
   const free=MGR_ROLE_KEYS.filter(k=>!mgrTaken(k));
   if(!free.length||G.mgrs.length>=MGR_CAP)return;
+  if(typeof hqRentOffer==="function")hqRentOffer(free);   /* ядро Хай-Фронта в аренду (M488) */
+  if(!aiCanBuild())return;
   $hqBody.appendChild(el("div","sec","ИИ-ЯДРО · ЗАНИМАЕТ МЕСТО ЧЕЛОВЕКА, А НЕ ПЯТОЕ"));
   const r=el("div","row");
   r.appendChild(el("div","nm","<b>Собрать ядро</b><s>не берёт долю и оклада не просит, "+

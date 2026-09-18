@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 576 · символов верхнего уровня: 5569
+Файлов: 577 · символов верхнего уровня: 5579
 
 ## СИМВОЛЫ
 
@@ -88,11 +88,11 @@ AI_NAMES                     src/12f-mgr-ai.js:9
 AI_STAGES                    src/12f-mgr-ai.js:12-18
 aiAfford                     src/12f-mgr-ai.js:25-28
 aiCanBuild                   src/12f-mgr-ai.js:24
-aiDrift                      src/12f-mgr-ai.js:52-104
+aiDrift                      src/12f-mgr-ai.js:52-105
 aiFace                       src/12d-mgr-face.js:210-244
-aiLearn                      src/12f-mgr-ai.js:107-123
+aiLearn                      src/12f-mgr-ai.js:108-125
 aiStage                      src/12f-mgr-ai.js:19-23
-aiUpkeep                     src/12f-mgr-ai.js:126-128
+aiUpkeep                     src/12f-mgr-ai.js:128-130
 ALBUM_MAX                    src/25g-postcard.js:627
 albumAll                     src/25g-postcard.js:628
 albumOpen                    src/25g-postcard.js:677
@@ -127,7 +127,7 @@ appetitePrice                src/12ab-hold.js:84
 applyCrewEvent               src/12b-crew-events.js:215-224
 applyPadMode                 src/15-input.js:72-75
 applyPadSize                 src/15-input.js:8
-applySave                    src/14-save.js:216-621
+applySave                    src/14-save.js:216-622
 applySaveRest                src/14a1-save-rest.js:15-379
 applyVolumes                 src/09-audio.js:40-47
 apVel                        src/16-flight.js:132
@@ -454,7 +454,7 @@ BLOOM_K                      src/19c-light.js:339
 bloomPass                    src/19c-light.js:341-364
 BLUE_TAB                     src/01-core.js:132
 blueNoise                    src/01-core.js:133-150
-BLUEPRINTS                   src/12c-mgr-core.js:662-668
+BLUEPRINTS                   src/12c-mgr-core.js:665-671
 BM_WARM                      src/21aa-base-rooms.js:20
 BMGR_BY                      src/21b2-base-mgr.js:32
 BMGR_DUE                     src/21b2-base-mgr.js:34
@@ -515,12 +515,12 @@ boxesBlock                   src/12ue-boxes.js:66-82
 boxFind                      src/12ue-boxes.js:43-58
 boxHas                       src/12ue-boxes.js:40
 boxRoll                      src/12ue-boxes.js:60-64
-BP_KEYS                      src/12c-mgr-core.js:669
+BP_KEYS                      src/12c-mgr-core.js:672
 bPipe                        src/21aa-base-rooms.js:244-254
-bpMul                        src/12c-mgr-core.js:673-677
+bpMul                        src/12c-mgr-core.js:676-680
 bPool                        tests/91zzzw-base.js:57
-bpRecheck                    src/12c-mgr-core.js:740-753
-bpState                      src/12c-mgr-core.js:670
+bpRecheck                    src/12c-mgr-core.js:743-756
+bpState                      src/12c-mgr-core.js:673
 brLaws                       tests/91zzzzzc-broke.js:21-38
 brownBuf                     src/10-music.js:125
 brownNoise                   src/10-music.js:126-141
@@ -554,7 +554,7 @@ cantDealRow                  src/27c-ui-hq.js:167-196
 cantFigure                   src/27d-ui-cantina.js:403-450
 cantFolkRow                  src/27c-ui-hq.js:198-206
 cantHireRow                  src/27c-ui-hq.js:133-165
-cantinaPool                  src/12c-mgr-core.js:259-265
+cantinaPool                  src/12c-mgr-core.js:260-266
 cantinaScene                 src/27c-ui-hq.js:270-313
 cantProps                    src/27d-ui-cantina-props.js:153-234
 cantRoomBody                 src/27d-ui-cantina.js:45-391
@@ -1669,7 +1669,7 @@ FACE_SKIN                    src/12d-mgr-face.js:10
 faceEl                       src/27c-ui-hq.js:6-12
 facePath                     src/12d-mgr-face.js:19-28
 faceRnd                      src/12d-mgr-face.js:16
-factPrices                   src/27c-ui-hq.js:580-597
+factPrices                   src/27c-ui-hq.js:581-598
 FAME_N                       src/21b3-base-hunt.js:27
 fameOf                       src/21b3-base-hunt.js:98-102
 fameWhere                    src/21b3-base-hunt.js:103-115
@@ -1735,7 +1735,7 @@ findTestSys                  tests/91x-finds.js:3-10
 FIRE_ALONE                   src/21a5-base-dir.js:120
 fireCool                     src/13-pirates.js:115
 fireMerc                     src/12a-crew.js:239-251
-fireMgr                      src/12c-mgr-core.js:356-366
+fireMgr                      src/12c-mgr-core.js:357-367
 fireShot                     src/13-combat.js:14-30
 FIRM_TOWN                    src/12al1-toponym.js:19
 FIRM_WORD                    src/12al1-toponym.js:20
@@ -1905,7 +1905,7 @@ genBeltPOI                   src/24b-belt-poi.js:20-47
 genDeco                      src/21b-surface-deco.js:37-140
 genDesc                      src/01-core.js:200-211
 genMerc                      src/12a-crew.js:63-92
-genMgr                       src/12c-mgr-core.js:236-255
+genMgr                       src/12c-mgr-core.js:237-256
 genName                      src/01-core.js:183
 genPart                      src/05-parts.js:144-217
 genPlant                     src/20-life.js:189-191
@@ -2292,7 +2292,7 @@ hinUpStuff                   src/29e-home-up.js:243-364
 hinUpWindow                  src/29e-home-up.js:367-417
 hinWidth                     src/29c-home-in.js:50
 hireMerc                     src/12a-crew.js:219-234
-hireMgr                      src/12c-mgr-core.js:301-317
+hireMgr                      src/12c-mgr-core.js:302-318
 HIT_FX                       src/18d-postfx.js:10
 HIT_REAR                     src/13-combat.js:11
 hitCandidates                tests/91zzzzzg-hit.js:19-38
@@ -2431,14 +2431,15 @@ HOUSES                       src/12u-scrip.js:21-26
 houseWallMark                src/17d-house-shapes.js:72-94
 HQ_H                         src/27f-hq-room.js:18
 HQ_ORDER                     src/27f-hq-room.js:21
-hqAiOffer                    src/27c-ui-hq.js:478-497
+hqAiOffer                    src/27c-ui-hq.js:478-498
 hqBtnTick                    src/27c-ui-hq.js:315-321
 hqConsole                    src/27f-hq-room.js:228-314
 hqFigure                     src/27f-hq-room.js:513-614
 hqHover                      src/27f-hq-room.js:687
-hqJobCard                    src/27c-ui-hq.js:537-575
-hqRelicSlot                  src/27c-ui-hq.js:503-533
+hqJobCard                    src/27c-ui-hq.js:538-576
+hqRelicSlot                  src/27c-ui-hq.js:504-534
 hqRender                     src/27c-ui-hq.js:322-473
+hqRentOffer                  src/12f1-mgr-rent.js:59-71
 hqRoomBody                   src/27f-hq-room.js:32-167
 hqScene                      src/27f-hq-room.js:644-686
 hqScreenData                 src/27f-hq-room.js:316-373
@@ -3031,63 +3032,63 @@ MGR_JOBS                     src/12e-mgr-jobs.js:90-224
 MGR_PERKS                    src/12c-mgr-core.js:60-129
 MGR_ROLE_KEYS                src/12c-mgr-core.js:19
 MGR_ROLES                    src/12c-mgr-core.js:9-18
-MGR_RULES                    src/12c-mgr-core.js:377-406
+MGR_RULES                    src/12c-mgr-core.js:378-407
 MGR_TRAITS                   src/12c-mgr-core.js:23-46
 MGR_XP                       src/12c-mgr-core.js:138
 mgrBearing                   src/21b3-base-hunt.js:75-86
 mgrBearLine                  src/21b3-base-hunt.js:89-94
-mgrBestLeg                   src/12c-mgr-core.js:584-605
-mgrBuildDiscount             src/12c-mgr-core.js:223
+mgrBestLeg                   src/12c-mgr-core.js:587-608
+mgrBuildDiscount             src/12c-mgr-core.js:224
 mgrCandidatesHere            src/21b3-base-hunt.js:137-142
-mgrCmdCut                    src/12c-mgr-core.js:210-216
-mgrCrewCap                   src/12c-mgr-core.js:218
-mgrCrewXp                    src/12c-mgr-core.js:217
-mgrCrewYield                 src/12c-mgr-core.js:203-207
-mgrCut                       src/12c-mgr-core.js:173-181
-mgrDefect                    src/12c-mgr-core.js:348-355
-mgrDomain                    src/12c-mgr-core.js:515-525
-mgrDomainLine                src/27c-ui-hq.js:599-618
-mgrDroneRate                 src/12c-mgr-core.js:219-222
+mgrCmdCut                    src/12c-mgr-core.js:211-217
+mgrCrewCap                   src/12c-mgr-core.js:219
+mgrCrewXp                    src/12c-mgr-core.js:218
+mgrCrewYield                 src/12c-mgr-core.js:204-208
+mgrCut                       src/12c-mgr-core.js:174-182
+mgrDefect                    src/12c-mgr-core.js:349-356
+mgrDomain                    src/12c-mgr-core.js:518-528
+mgrDomainLine                src/27c-ui-hq.js:600-619
+mgrDroneRate                 src/12c-mgr-core.js:220-223
 mgrFace                      src/12d-mgr-face.js:29-205
-mgrFee                       src/12c-mgr-core.js:299
+mgrFee                       src/12c-mgr-core.js:300
 mgrHas                       src/12c-mgr-core.js:48
 mgrHead                      src/27c-ui-hq.js:24-42
 mgrHereNow                   src/21b3-base-hunt.js:68-71
-mgrHireMul                   src/12c-mgr-core.js:224-232
+mgrHireMul                   src/12c-mgr-core.js:225-233
 mgrJobAt                     src/21b3-base-hunt.js:50-52
-mgrLeak                      src/12c-mgr-core.js:186-189
+mgrLeak                      src/12c-mgr-core.js:187-190
 mgrLearn                     src/12c-mgr-core.js:145-164
 mgrLevel                     src/12c-mgr-core.js:139-142
 mgrNext                      src/12c-mgr-core.js:143
-mgrOf                        src/12c-mgr-core.js:199
-mgrPay                       src/12c-mgr-core.js:169-172
-mgrPayroll                   src/12c-mgr-core.js:476-513
+mgrOf                        src/12c-mgr-core.js:200
+mgrPay                       src/12c-mgr-core.js:169-173
+mgrPayroll                   src/12c-mgr-core.js:478-516
 mgrPerk                      src/12c-mgr-core.js:134
 mgrPerkList                  src/12c-mgr-core.js:130-133
-mgrPerkOf                    src/12c-mgr-core.js:200
+mgrPerkOf                    src/12c-mgr-core.js:201
 mgrPoints                    src/12c-mgr-core.js:144
-mgrRouteMax                  src/12c-mgr-core.js:578
-mgrRouteVisit                src/12c-mgr-core.js:566-577
-mgrRule                      src/12c-mgr-core.js:414
+mgrRouteMax                  src/12c-mgr-core.js:581
+mgrRouteVisit                src/12c-mgr-core.js:569-580
+mgrRule                      src/12c-mgr-core.js:415
 mgrRumour                    src/21b3-base-hunt.js:119-134
-mgrSamples                   src/12c-mgr-core.js:679-682
-mgrSay                       src/12c-mgr-core.js:368-372
-mgrSeverance                 src/12c-mgr-core.js:320
-mgrSlots                     src/12c-mgr-core.js:407-413
-mgrTake                      src/12c-mgr-core.js:190-198
-mgrTaken                     src/12c-mgr-core.js:300
-mgrTick                      src/12c-mgr-core.js:424-471
-mgrToggleRule                src/12c-mgr-core.js:415-420
+mgrSamples                   src/12c-mgr-core.js:682-685
+mgrSay                       src/12c-mgr-core.js:369-373
+mgrSeverance                 src/12c-mgr-core.js:321
+mgrSlots                     src/12c-mgr-core.js:408-414
+mgrTake                      src/12c-mgr-core.js:191-199
+mgrTaken                     src/12c-mgr-core.js:301
+mgrTick                      src/12c-mgr-core.js:425-473
+mgrToggleRule                src/12c-mgr-core.js:416-421
 mgrTrait                     src/12c-mgr-core.js:47
 mgrTraitAdd                  src/12c-mgr-core.js:53-56
 mgrTraitMul                  src/12c-mgr-core.js:49-52
 mgrUltCost                   src/12e-mgr-jobs.js:285
-mgrUltimatum                 src/12c-mgr-core.js:326-344
+mgrUltimatum                 src/12c-mgr-core.js:327-345
 mgrWhere                     src/21b3-base-hunt.js:53-67
-mgrWorkCmd                   src/12c-mgr-core.js:528-549
-mgrWorkFact                  src/12c-mgr-core.js:606-658
-mgrWorkKeep                  src/12c-mgr-core.js:552-561
-mgrWorkSci                   src/12c-mgr-core.js:683-738
+mgrWorkCmd                   src/12c-mgr-core.js:531-552
+mgrWorkFact                  src/12c-mgr-core.js:609-661
+mgrWorkKeep                  src/12c-mgr-core.js:555-564
+mgrWorkSci                   src/12c-mgr-core.js:686-741
 midiHz                       src/10-music.js:106
 MINE_LIFE                    src/13a-guns.js:31
 MINE_MOUTH_R                 src/21-mode-surface.js:4
@@ -3386,7 +3387,7 @@ opCensus                     tests/91zzzzzt-opis.js:15-21
 openBarge                    src/12l-barge.js:637-646
 openCrewView                 src/27b-ui-crew.js:230-236
 openDeal                     src/27n-ui-deal.js:198-203
-openHq                       src/27c-ui-hq.js:619-624
+openHq                       src/27c-ui-hq.js:620-625
 openStation                  src/26-ui-station.js:20
 openStationBody              src/26-ui-station.js:21-125
 openWanderer                 src/24c-mode-wanderer.js:22-41
@@ -4152,6 +4153,15 @@ renderStrips                 src/27i-ui-table.js:327-369
 renderTab                    src/26-ui-station.js:485-497
 renderTabBody                src/26-ui-station.js:498-690
 renderThings                 src/27i-ui-table.js:370-394
+RENT_ADS                     src/12f1-mgr-rent.js:18
+RENT_OPIN                    src/12f1-mgr-rent.js:20
+RENT_TIERS                   src/12f1-mgr-rent.js:13-17
+rentAi                       src/12f1-mgr-rent.js:23-35
+rentBaseBurning              src/12f1-mgr-rent.js:43-47
+rentSay                      src/12f1-mgr-rent.js:49-57
+rentSetTier                  src/12f1-mgr-rent.js:36
+rentShort                    src/12f1-mgr-rent.js:38-42
+rentTier                     src/12f1-mgr-rent.js:22
 REP_MIN                      src/12k-rep.js:16
 REP_WORDS                    src/12k-rep.js:17-25
 repAdd                       src/12k-rep.js:36-48
@@ -4852,7 +4862,7 @@ stationArt                   src/17c-system-draw.js:408-437
 stationDeals                 src/27g-deals.js:141-158
 stationFleet                 src/04b-fleet.js:163-191
 stationMercs                 src/12a-crew.js:95-147
-stationMgrs                  src/12c-mgr-core.js:266-298
+stationMgrs                  src/12c-mgr-core.js:267-299
 stationMods                  src/17a-station-mod.js:30-72
 stationModsLine              src/17a-station-mod.js:74-77
 stationNewsLines             src/26-ui-station.js:11-19
@@ -5009,7 +5019,7 @@ TAB_ID                       src/14a-cloud.js:20
 TAB_LIVE                     src/14a-cloud.js:19
 TABLE_REPLY                  src/11b-speech.js:158-187
 tableBake                    src/27i-ui-table.js:144-181
-tableBlock                   src/27c-ui-hq.js:639-727
+tableBlock                   src/27c-ui-hq.js:640-728
 tableHead                    src/27i-ui-table.js:190-197
 tableIsOpen                  src/27i-ui-table.js:23
 tableNewBy                   src/27i-ui-table.js:111-118
@@ -5981,8 +5991,8 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## src/12c-mgr-core.js · 48 КБ
   · управляющие: домен вместо приказов:1
-  · стоящие приказы:373
-  · ленивый тик домена:421
+  · стоящие приказы:374
+  · ленивый тик домена:422
 
 ## src/12d-mgr-face.js · 13 КБ
   · портреты управляющих:1
@@ -5998,6 +6008,9 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## src/12f-mgr-ai.js · 8 КБ
   · ИИ-ядро: управляющий, которого собрали:1
+
+## src/12f1-mgr-rent.js · 6 КБ
+  · второе ядро — в аренду (M488, DESIGN-birchpunk):1
 
 ## src/12g-mgr-rogue.js · 8 КБ
   · ушедший управляющий: ренегат:1
@@ -7284,7 +7297,7 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## tests/91zzzzk5-plan.js · 9 КБ
 
-## tests/91zzzzk6-stapel.js · 13 КБ
+## tests/91zzzzk6-stapel.js · 14 КБ
 
 ## tests/91zzzzl-maphold.js · 5 КБ
   · автотесты: владения на карте (M348):1

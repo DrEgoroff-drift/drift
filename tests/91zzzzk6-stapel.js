@@ -177,3 +177,22 @@ TEST_SUITES.push(()=>suite("особая система корпуса: по к�
   ok(abilFire()&&G.pirates[0].hull===20,"РЕЗАК: 30 по корпусу в носу");
   G.pirates=[];G.shipId="strizh";
 }));
+TEST_SUITES.push(()=>suite("ядро в аренду: тариф, без дрейфа, понижение с извинением, реклама",()=>{
+  resetWorld();
+  G.mgrs=[];
+  const role=MGR_ROLE_KEYS[0];
+  ok(rentAi(role,"prem"),"арендовали ПРЕМИУМ");
+  const m=G.mgrs[0];
+  eq(mgrPay(m),6,"6 кр/мин по тарифу");
+  aiDrift(m,100,500);eq(m.drift,0,"арендное не дрейфует");
+  rentShort(m);eq(m.rent.tier,"base","не заплатили — понизилось до БАЗОВОГО");
+  ok(m.log.some(x=>/извинения/.test(x.s)),"и извинилось");
+  eq(mgrPay(m),0,"БАЗОВЫЙ — даром");
+  for(let i=0;i<3;i++)rentSay(m);
+  ok(m.log.some(x=>/^Реклама/.test(x.s)),"в третьей сводке реклама");
+  G.bases=[{fire:{c:0,r:0}}];m.rent.n=2;rentSay(m);
+  ok(m.log[0].s.indexOf("горит база")>=0,"база горит — рекламу пропустили");
+  const snap=snapshot();eq(snap.mgrs[0].rent.tier,"base","тариф в сейве");
+  ok(!rentAi(MGR_ROLE_KEYS[0],"base"),"домен занят — второе на то же место нельзя");
+  G.mgrs=[];G.bases=null;
+}));

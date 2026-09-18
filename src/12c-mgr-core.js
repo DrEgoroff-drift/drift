@@ -167,6 +167,7 @@ function mgrLearn(m,id){
    убыточен — и это правильно: он не ускоритель раннего старта, а способ поднять
    потолок, когда потолок уже мешает. */
 function mgrPay(m){
+  if(m.rent)return rentTier(m).fee;      // арендное — по тарифу (M488, 12f1)
   if(m.ai)return aiUpkeep(m);            // ядро берёт не оклад, а обслуживание
   return Math.round(MGR_ROLES[m.role].pay*(1+(mgrLevel(m)-1)*.18)*mgrTraitMul(m,"pay"));
 }
@@ -455,6 +456,7 @@ function mgrTick(){
       aiDrift(m,min,work);
       if(m.gone){G.mgrs.splice(i,1);continue;}
     }
+    if(m.rent&&now-(m.rent.t||0)>=HOLD_SHIFT/4){m.rent.t=now;rentSay(m);}   /* реклама и мнения по тарифу (M488) */
     if(work>0){
       m.xp=(m.xp||0)+work*mgrTraitMul(m,"xp");
       const lv=mgrLevel(m);
@@ -490,6 +492,7 @@ function mgrPayroll(m,min){
   const drop=mgrTraitMul(m,"loyDrop");
   /* Машине нечего обижаться: недоплата не роняет лояльность, а разгоняет дрейф.
      Ядро, которому урезали бюджет, начинает решать за вас быстрее. */
+  if(m.rent){if(short>0)rentShort(m);return;}   /* арендное не дрейфует — понижает тариф (M488) */
   if(m.ai){
     if(short>0){
       m.drift=clamp((m.drift||0)+min*1.1,0,100);

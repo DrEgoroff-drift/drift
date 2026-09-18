@@ -132,6 +132,7 @@ job (the phone milestone), but no fix may add raster cost without a number.
   path, vestibule block and the vestibule page (M471–M472); the ride on the map (M473: the flight
   pads still show in the carriage; the train mark and the headlight) — as each is
   built.
+- [ ] **D22 Rented core** (M488): the HQ rows are plain — the Хай-Фронт core as a glossy card with the tariff table, the advert lines styled as adverts in the manager log.
 - [ ] **D21 Special systems** (M484): the rim arc is a thin conic ring — a proper charge ring, an ability glyph on the pad while ready, the effects (afterburner flame for ФОРСАЖ, the crate for СБРОС, the cutter beam, the salvo flash, the searchlight).
 - [ ] **D20 Барахолка** (M463): hulks are flat rectangles with triangle awnings — real moored hulls (fleet art), canvas that sags, lamp strings that swing; the stall window as a table of goods, not a list.
 - [ ] **D19 Подписка** (M487): the second button and the honest line are plain text; a «ЗАБЛОКИРОВАНО» seal on the instrument face, the tariff-updated letter.
@@ -545,7 +546,7 @@ patchnote of each version names the M-numbers it closes.
   ~23 сводок; the card says so); a lapse only at a сводка boundary, announced a shift before in
   ПОЧТА; in a fight **ЭКСТРЕННОЕ ПРОДЛЕНИЕ · ×3** for one сводка; at renewal the tariff «обновлён» —
   same price, one feature fewer, sold as an add-on; a lapsed base cold store stops giving, never
-  takes. **M488 A second core — rented** (the ИИ-ядро already exists: `12f-mgr-ai` — built for
+  takes. **M488 A second core — rented — BUILT 18.09 (Control), `src/12f1-mgr-rent.js`:** ШТАБ offers ЯДРО ХАЙ-ФРОНТА on three tariffs next to your own core (no perk, no materials): БАЗОВЫЙ free, an advert every third report (every quarter смена), does not learn; ПРЕМИУМ 6 кр/мин, learns; СЕМЕЙНЫЙ 10 кр/мин, learns, opinions on how you live. Never drifts (`aiDrift` returns); unpaid → down to БАЗОВЫЙ with an apology (`rentShort`); a burning base skips one advert; `m.rent` in the manager whitelist of `applySave`; the four-seat rule holds. **Open:** changing tariff from the manager card, ПРЕМИУМ's real forecast. Original: (the ИИ-ядро already exists: `12f-mgr-ai` — built for
   `AI_COST`, takes a human's seat, no cut, and a hidden drift that ends in decisions you never gave). Хай-Фронт
   offers the other way: **a rented core on a tariff** — БАЗОВЫЙ (free, an advert in every third report),
   ПРЕМИУМ (route prices, a real forecast), СЕМЕЙНЫЙ (opinions on how you live); it does not drift, it
