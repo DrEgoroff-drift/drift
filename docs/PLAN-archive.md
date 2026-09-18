@@ -10894,3 +10894,40 @@ plausibly reach.
     any word); blockade → ПРОХОДОМ red (ordered to stand), ПО ДЕЛУ green; otherwise both green.
     Window buttons and the ДЕЙСТВИЕ/ЦЕЛЬ pads take the same colours (`body[data-hail-*]`); the
     permanent gold of ПРОХОДОМ and the red ring on ЦЕЛЬ under a peaceful answer are gone.
+
+## Moved 2026-09-18, third batch
+
+- [ ] **~~THE FRAME IS BISTABLE~~ — WITHDRAWN by its own author the same evening (Tester, 18.09):
+  it was a fault in his rig, not in the game.** In part of the runs his synthetic touch never
+  reached the game, so the finger «lay» there with no stick alive — and those runs are the 99–100 %
+  he took for a second state. With a check that the stick is really born (and the touch repeated
+  when it is not), four 30 s runs in a row read 81.3 / 81.4 / 80.0 / 80.5 % at 50.0–50.6 fps: the
+  spread is gone. **Every number from this evening with a zero stick must be read as «measured with
+  no steering».** The dull, correct picture: with no steering the frame is perfect, with live
+  steering 14 % of frames miss 16.7 ms, and that share holds steady across builds and across time.
+  The reasoning kept below is kept only so nobody walks the same path again. Six
+
+- [ ] **Longer tails** (author: «хвосты от корабля побольше надо, а то сейчас куцие»). `WAKE` sits
+  at 642 points of 2 000 and `TRAIL` at 0 of 560 — the buffers are two thirds empty, and on `main`
+  the wake held 750 at the same speed. Lengthen life/length **after** the milliseconds are found,
+  or the budget goes straight back; the look is the designer's call.
+  Designer's note from the ×2.4 comparison (18.09): at that zoom the trail reads as a *ruler* —
+  two even rails the full height of the screen, same on `main` and on the branch. That is the
+  language from before Stage 0, not a regression, and it belongs with this item: when the tails are
+  lengthened, the rails are what has to stop looking drawn with a straightedge. Show the author a frame first.
+  Same item, the stick's finger trail (Designer, 18.09, measured): its length is set in POINTS
+  (`HELM_TRAIL` = 7), so the tail's length in time depends on the sampling rate and on the frame
+  rate — at one point a frame the arc is 208 px long, at two a frame 105, at four 52. Control read
+  this backwards and asked for the trail to be lengthened after ec9f3fc; the Designer's numbers show
+  ec9f3fc made it two to four times LONGER, and she accepts it as it stands. What is worth fixing,
+  with the engine tails and not before: measure a tail in TIME (keep points younger than ~0.2 s)
+  rather than in count, so it looks the same at 60 and 120 Hz.
+  Designer's audit of what is measured how (18.09), so the tails conversation argues about taste
+  and not about facts: the wake (life 60–260 by speed) and the ribbon (40×span hot, 6–11 sparks) are
+  already measured in TIME, and their count ceilings (2000, 560) are overflow guards never reached in
+  normal flight — leave both alone. Measured in COUNT: the finger trail (7 points) — the only real
+  case, fix by keeping points younger than ~0.2 s; the wake tips (3) are how many jets we draw, the
+  helm marks (3) and the map's rum trail (12) are a memory of the player's actions — count is honest
+  for all three. So if the author still finds the tails stubby, the number to change is the LIFE, not
+  the way it is measured. The Designer is preparing one frame for the author: three bands at equal
+  speed — finger trail, wake, ribbon — each captioned with how long it lives.

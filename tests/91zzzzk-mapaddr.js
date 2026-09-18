@@ -75,26 +75,45 @@ TEST_SUITES.push(()=>suite("карта: спички из кошелька, об
   G.mapMarks=[];G.rumours=[];G.matches=0;G.mode="system";G.sel={x:G.sx,y:G.sy};
 }));
 
-/* ══ небо за листом (M438) ══
-   Фон карты был прибит к экрану: протяжка двигала лист, а полоса Галактики,
-   туманность и звёздная крошка стояли колом — одна плоскость вместо глубины.
-   Сторож держит закон: слой тем медленнее, чем он дальше, направление у всех
-   одно, и небу есть предел — уехать с листа оно не может. */
-TEST_SUITES.push(()=>suite("карта: небо отстаёт от листа и знает свой предел",{tier:"browser"},()=>{
+/* ── мировая галактика (M447–M448): формула, а не картинка ──
+   Небо M438 ехало долей пути листа — автор прочёл это «приклеено к экрану».
+   Теперь небо карты — функция координат мира. Сторож держит модель: она
+   детерминирована, конечна, ярче всего в ядре, рукав светлее межрукавья на
+   том же радиусе, край диска тёмен; звёзды держат плотность на экране. */
+TEST_SUITES.push(()=>suite("галактика: модель в мире",()=>{
   resetWorld();
-  const M=100;
-  /* малый ход — честная доля пути: небо не «залипает» на первых пикселях */
-  ok(Math.abs(mapSkyShift(10,.14,M)-1.4)<.05,"малый ход идёт долей пути");
-  /* чем дальше слой, тем медленнее: крошка > туманность > полоса */
-  const d=140;
-  const neb=mapSkyShift(d,.14,M),band=mapSkyShift(d,.05,M);
-  ok(band<neb&&neb<d,"полоса медленнее туманности, туманность медленнее листа");
-  ok(band>0&&neb>0,"небо идёт ЗА листом, а не против него");
-  /* предел: сколько лист ни тащи, небо не уедет с него */
-  for(const big of [1e3,1e4,1e6])ok(Math.abs(mapSkyShift(big,.14,M))<=M,"небо упирается в предел "+big);
-  eq(mapSkyShift(-d,.14,M).toFixed(4),(-neb).toFixed(4),"ход назад зеркален");
-  eq(mapSkyShift(0,.14,M),0,"стоит лист — стоит и небо");
-  /* и сам кадр с уехавшим листом рисуется без исключения */
+  let bad=0;
+  for(let x=-200;x<=200;x+=17)for(let y=-200;y<=200;y+=19){
+    const g=galaxyAt(x,y);
+    if(!isFinite(g.glow)||g.glow<0||g.glow>1||!isFinite(g.dust)||g.col.some(c=>!isFinite(c)))bad++;
+  }
+  eq(bad,0,"ни одного NaN и выхода за 0…1 на ±200");
+  eq(JSON.stringify(galaxyAt(13.3,-7.1)),JSON.stringify(galaxyAt(13.3,-7.1)),"одна и та же точка — одно и то же небо");
+  const c0=galaxyAt(0,0).glow;
+  let brighter=0;for(let a=0;a<12;a++)for(const r of [6,12,20])if(galaxyAt(Math.cos(a)*r,Math.sin(a)*r).glow>c0)brighter++;
+  eq(brighter,0,"ядро — самое яркое место");
+  /* рукав против межрукавья на одном радиусе: лучший и худший угол кольца */
+  for(const r of [12,18,26]){
+    let hi=0,lo=1;
+    for(let a=0;a<72;a++){const g=galaxyAt(Math.cos(a*TAU/72)*r,Math.sin(a*TAU/72)*r);hi=Math.max(hi,g.arm);lo=Math.min(lo,g.arm);}
+    ok(hi>lo+.3,"на r="+r+" есть и рукав, и межрукавье ("+hi.toFixed(2)+" / "+lo.toFixed(2)+")");
+  }
+  let rim=0,n=0;for(let a=0;a<36;a++){rim+=galaxyAt(Math.cos(a)*55,Math.sin(a)*55).glow;n++;}
+  ok(rim/n<.12,"край диска тёмен: среднее "+(rim/n).toFixed(3));
+  ok(galaxyAt(0,0).bulge<=GAL_BULGE_CAP+.001,"балдж под потолком — дом читается");
+}));
+TEST_SUITES.push(()=>suite("галактика: звёзды держат плотность на экране",{tier:"browser"},()=>{
+  resetWorld();
+  const counts=[];
+  for(const z of [.6,1,2,5]){
+    G.mapZoom=z;const cell=mapCell(),V=mapViewC();
+    drawGalaxyStars(V,cell);
+    let n=0;for(const b of GAL_STAR_BUF)n+=b.length/3;
+    counts.push(n);
+  }
+  const mn=Math.min(...counts),mx=Math.max(...counts);
+  ok(mn>0,"звёзды есть на любом зуме");
+  ok(mx<mn*3.5,"число точек на экране в одной полосе при зуме .6…5: "+counts.map(Math.round).join(" / "));
   G.mode="map";G.mapView={x:G.sx+6.5,y:G.sy-4.5};G.mapZoom=1.8;
   let err="";try{drawMap();}catch(e){err=e.message;}
   eq(err,"","карта с уехавшим листом рисуется");

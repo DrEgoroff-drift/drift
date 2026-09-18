@@ -200,15 +200,7 @@ Rule 3: same look, cheaper work.
   stick and a prompt line give 2 real reads total, both cold. Control's own P4 conditions had added
   two more reads (padsRect and a second promptRect in `drawSysHud`) — 8.17 a frame on a629378;
   folded into the same cleanup. Phone re-measurement pending.
-- [ ] **~~THE FRAME IS BISTABLE~~ — WITHDRAWN by its own author the same evening (Tester, 18.09):
-  it was a fault in his rig, not in the game.** In part of the runs his synthetic touch never
-  reached the game, so the finger «lay» there with no stick alive — and those runs are the 99–100 %
-  he took for a second state. With a check that the stick is really born (and the touch repeated
-  when it is not), four 30 s runs in a row read 81.3 / 81.4 / 80.0 / 80.5 % at 50.0–50.6 fps: the
-  spread is gone. **Every number from this evening with a zero stick must be read as «measured with
-  no steering».** The dull, correct picture: with no steering the frame is perfect, with live
-  steering 14 % of frames miss 16.7 ms, and that share holds steady across builds and across time.
-  The reasoning kept below is kept only so nobody walks the same path again. Six
+- [x] **~~THE FRAME IS BISTABLE~~ — withdrawn by its author 18.09;** body in `docs/PLAN-archive.md` («Moved 2026-09-18, third batch»).
 
   30 s runs on one build with the same steering: 79.9 / 99.7 / 82.3 / 80.1 / 82.2 / 81.2 % cadence
   at 50.0 / 59.8 / 50.9 / 50.0 / 51.0 / 50.5 fps. **There are no intermediate values** in any of the
@@ -380,30 +372,7 @@ Rule 3: same look, cheaper work.
   after the pick — phone cadence check in the phone milestone (the ribbon's draw calls scale with
   the number of live segments per bucket-path, not per segment, so the cost is path length).
   Older notes below.
-- [ ] **Longer tails** (author: «хвосты от корабля побольше надо, а то сейчас куцие»). `WAKE` sits
-  at 642 points of 2 000 and `TRAIL` at 0 of 560 — the buffers are two thirds empty, and on `main`
-  the wake held 750 at the same speed. Lengthen life/length **after** the milliseconds are found,
-  or the budget goes straight back; the look is the designer's call.
-  Designer's note from the ×2.4 comparison (18.09): at that zoom the trail reads as a *ruler* —
-  two even rails the full height of the screen, same on `main` and on the branch. That is the
-  language from before Stage 0, not a regression, and it belongs with this item: when the tails are
-  lengthened, the rails are what has to stop looking drawn with a straightedge. Show the author a frame first.
-  Same item, the stick's finger trail (Designer, 18.09, measured): its length is set in POINTS
-  (`HELM_TRAIL` = 7), so the tail's length in time depends on the sampling rate and on the frame
-  rate — at one point a frame the arc is 208 px long, at two a frame 105, at four 52. Control read
-  this backwards and asked for the trail to be lengthened after ec9f3fc; the Designer's numbers show
-  ec9f3fc made it two to four times LONGER, and she accepts it as it stands. What is worth fixing,
-  with the engine tails and not before: measure a tail in TIME (keep points younger than ~0.2 s)
-  rather than in count, so it looks the same at 60 and 120 Hz.
-  Designer's audit of what is measured how (18.09), so the tails conversation argues about taste
-  and not about facts: the wake (life 60–260 by speed) and the ribbon (40×span hot, 6–11 sparks) are
-  already measured in TIME, and their count ceilings (2000, 560) are overflow guards never reached in
-  normal flight — leave both alone. Measured in COUNT: the finger trail (7 points) — the only real
-  case, fix by keeping points younger than ~0.2 s; the wake tips (3) are how many jets we draw, the
-  helm marks (3) and the map's rum trail (12) are a memory of the player's actions — count is honest
-  for all three. So if the author still finds the tails stubby, the number to change is the LIFE, not
-  the way it is measured. The Designer is preparing one frame for the author: three bands at equal
-  speed — finger trail, wake, ribbon — each captioned with how long it lives.
+  Older notes on the tails (the wake/ribbon audit, the finger trail in count): `docs/PLAN-archive.md` («Moved 2026-09-18, third batch»).
 - [x] **0.2 Raster** — done; body in `docs/PLAN-archive.md` («Moved 2026-09-18»).
 - [x] **0.2a The haze over the nozzles — the frame's real bill.** — done; body in `docs/PLAN-archive.md` («Moved 2026-09-18»).
 - [x] **0.3 Layout in the frame** — done; body in `docs/PLAN-archive.md` («Moved 2026-09-18»).
@@ -534,7 +503,8 @@ patchnote of each version names the M-numbers it closes.
   maker grammar (`HULL_MAKER` dimensions: profile law, seams, marks, ground) to the station by
   `station.by`; `17f-sys-traffic` draws 7 of 10 ships from the owner's maker, 3 from neighbours; a
   border system mixes, a heartland is uniform.
-- [ ] **[design owed] M447 The world galaxy + M448 the stars** (`docs/DESIGN-galaxy.md`): `galaxyAt(x,y)` (disk,
+- [ ] **[design owed] M447 The world galaxy + M448 the stars — first draft BUILT 18.09 (Control), `src/17z1-galaxy.js`.** `galaxyAt` (disk, capped bulge + bar, two log arms + spurs, fbm clumps, dust on the trailing edge, pink knots, colour round the wheel); world tiles 128 texels at 4 and 1 texel/sector, LRU 48, bake ≤ 48 rows AND ≤ 4 ms a frame, the far level under the near one, the near fading in by frames drawn (the map's `G.t` stands still); stars per sector by hash against a zoom-constant screen density, 6 colours × 3 brightness fills, cached per sector (0.2 ms at ×5). The map's band, nebula, `drawStars` and `mapSkyShift` are gone. Tests: the M438 suite → «галактика: модель в мире» (Node, green) + «звёзды держат плотность» (browser, green in Node); the mutant `sky-with-sheet` → `galaxy-on-ship`; the drag detector law flipped to «deep < 8 %, sheet ≥ 25 %» — **thresholds set before measuring, verify at release**; goldens of the map change — `-Accept`. **Designer's notes:** at ×5 the map's own system glyphs (a dense field of soft discs) cover the galaxy — the glyph field, not the galaxy, is the loud layer there; the home frame is warm haze, readable; M449–M451 (names, the overview, the flight sky from the same model) not started. Original text:
+  **M447 The world galaxy + M448 the stars** (`docs/DESIGN-galaxy.md`): `galaxyAt(x,y)` (disk,
   bulge + bar, two arms and spurs, dust, knots); world tiles in two levels, 4 ms bake budget,
   fade-in fallback; band and nebula leave the map; M438's sky block retired; Node suite, a detector
   for «the galaxy moves with the sheet»; goldens accepted; faint stars per sector at constant

@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 543 · символов верхнего уровня: 5240
+Файлов: 547 · символов верхнего уровня: 5288
 
 ## СИМВОЛЫ
 
@@ -1105,56 +1105,56 @@ DESK_ITEMS                   src/27ia-desk-top.js:298-330
 deskItemNew                  src/27ia-desk-top.js:337-341
 deskItemOf                   src/27ia-desk-top.js:331-335
 DET                          tests/90b-detect.js:34
-DET_ASTRO_H                  tests/90c-detect-laws.js:273
+DET_ASTRO_H                  tests/90c-detect-laws.js:275
 DET_CLOSE                    tests/91zzzzzzzz-detect.js:107
 DET_COST                     tests/91zzzzzzzz-detect.js:188
 DET_DIRTY                    tests/90c-detect-laws.js:142
 DET_EXEMPT                   tests/90c-detect-laws.js:64-78
-DET_HOOKED                   tests/90b-detect.js:340
+DET_HOOKED                   tests/90b-detect.js:341
 DET_INSTR                    tests/90c-detect-laws.js:16-38
 DET_MUTE                     tests/91zzzzzzzz-detect.js:21-57
 DET_N                        tests/91zzzzzzzz-detect.js:16
-DET_NAMES                    tests/90b-detect.js:306
-DET_PROTOS                   tests/90b-detect.js:322
+DET_NAMES                    tests/90b-detect.js:307
+DET_PROTOS                   tests/90b-detect.js:323
 DET_SETTLE_ERRS              tests/91zzzzzzzz-detect.js:62
 DET_SM                       tests/90b-detect.js:104
-DET_STATE_OF                 tests/90b-detect.js:357
-DET_TEXT_MIN                 tests/90c-detect-laws.js:202
+DET_STATE_OF                 tests/90b-detect.js:358
+DET_TEXT_MIN                 tests/90c-detect-laws.js:204
 detBgShift                   tests/90b-detect.js:147-154
-detBlink                     tests/90b-detect.js:251-265
-detBlocks                    tests/90b-detect.js:228-235
+detBlink                     tests/90b-detect.js:252-266
+detBlocks                    tests/90b-detect.js:229-236
 detCanvases                  tests/91zzzzzzzz-detect.js:161-172
 detCloseTry                  tests/91zzzzzzzz-detect.js:112-136
-detColor                     tests/90c-detect-laws.js:204-209
-detContrast                  tests/90c-detect-laws.js:213-224
-detControls                  tests/90c-detect-laws.js:158-200
+detColor                     tests/90c-detect-laws.js:206-211
+detContrast                  tests/90c-detect-laws.js:215-226
+detControls                  tests/90c-detect-laws.js:158-202
 detCost                      tests/91zzzzzzzz-detect.js:189
 detCrash                     tests/90c-detect-laws.js:95-102
 detDiff                      tests/90b-detect.js:125-129
 detDoors                     tests/91zzzzzzzz-detect.js:280-304
-DETECTORS                    tests/90c-detect-laws.js:288
+DETECTORS                    tests/90c-detect-laws.js:290
 detErr                       tests/90b-detect.js:137-145
 detExempt                    tests/90c-detect-laws.js:79-89
 detFrame                     tests/91zzzzzzzz-detect.js:174-179
 detGrab                      tests/90b-detect.js:105-113
-detHook                      tests/90b-detect.js:341-354
+detHook                      tests/90b-detect.js:342-355
 detHudText                   tests/91zzzzzzzz-detect.js:138-145
-detHuman                     tests/90c-detect-laws.js:274-287
+detHuman                     tests/90c-detect-laws.js:276-289
 detInk                       tests/90b-detect.js:86-98
 detInstr                     tests/90c-detect-laws.js:143-156
 detInstrRead                 tests/90c-detect-laws.js:40-59
 detIsOpen                    tests/91zzzzzzzz-detect.js:108-111
 detLaw                       tests/90c-detect-laws.js:118-140
-detLum                       tests/90c-detect-laws.js:203
+detLum                       tests/90c-detect-laws.js:205
 detNameless                  tests/91zzzzzzzz-detect.js:149-160
-detNames                     tests/90b-detect.js:307-321
-detNewMotion                 tests/90b-detect.js:241-245
+detNames                     tests/90b-detect.js:308-322
+detNewMotion                 tests/90b-detect.js:242-246
 detOverlays                  tests/91zzzzzzzz-detect.js:98-106
-detParallax                  tests/90b-detect.js:206-226
+detParallax                  tests/90b-detect.js:207-227
 detPatch                     tests/90b-detect.js:115-121
 detPatchShift                tests/90b-detect.js:156-165
-detPicture                   tests/90c-detect-laws.js:225-271
-detProtoOf                   tests/90b-detect.js:323-339
+detPicture                   tests/90c-detect-laws.js:227-273
+detProtoOf                   tests/90b-detect.js:324-340
 detRot                       tests/90b-detect.js:171-190
 detRuler                     tests/91zzzzzzzz-detect.js:75-84
 detSamp                      tests/90b-detect.js:130-135
@@ -1167,7 +1167,7 @@ detStuck                     tests/90c-detect-laws.js:104-116
 detSuitSrc                   tests/90c-detect-laws.js:13-15
 detTick                      tests/91zzzzzzzz-detect.js:180-186
 detV                         tests/90c-detect-laws.js:92
-detWalk                      tests/90b-detect.js:271-294
+detWalk                      tests/90b-detect.js:272-295
 DEV_CAP                      src/21b4-base-build.js:26
 DEV_DAY                      src/21b4-base-build.js:25
 DEV_EVERY                    src/21b4-base-build.js:18
@@ -1354,6 +1354,10 @@ drawFleetMap                 src/12ai-fleet.js:321-356
 drawFleetShip                src/12ai1-fleet-art.js:375-400
 drawFoeBody                  src/24ab-raid-foe.js:10-130
 drawForeground               src/21b-surface-deco.js:278-383
+drawGalaxy                   src/17z1-galaxy.js:97-137
+drawGalaxyStars              src/17z1-galaxy.js:156-195
+drawGestPost                 src/17h-sys-gesture.js:189-210
+drawGesture                  src/17h-sys-gesture.js:86-169
 drawGlassHUD                 src/24-mode-belt.js:718-805
 drawGlyph                    src/12t-settle.js:59-77
 drawGround                   src/19-mode-landing-ground.js:11-239
@@ -1374,7 +1378,7 @@ drawLanding                  src/19-mode-landing.js:285-413
 drawLoreMarks                src/12q-lore.js:235-266
 drawLuxeDeck                 src/03c-hull-luxe.js:109-275
 drawLuxeSkin                 src/03c-hull-luxe.js:27-108
-drawMap                      src/18-mode-map.js:126-533
+drawMap                      src/18-mode-map.js:120-497
 drawMisFigure                src/11z-misclosure.js:63-87
 drawModule                   src/21aa-base-rooms.js:384-500
 drawMonolith                 src/20aa-poi-shapes.js:193-210
@@ -1402,7 +1406,7 @@ drawRouteMap                 src/12r-route.js:267-323
 drawRungRing                 src/12ae-ladder.js:72-87
 drawScoop                    src/19a-mode-scoop.js:266-597
 drawSeams                    src/12s-wear.js:184-199
-drawShuttleArc               src/17f-sys-traffic.js:36-69
+drawShuttleArc               src/17f-sys-traffic.js:43-79
 drawSkyBase                  src/19c-light.js:296-329
 drawSkyBodies                src/19b-sky.js:96-128
 drawSkyLayer                 src/19-mode-landing.js:171-269
@@ -1413,8 +1417,8 @@ drawStarHole                 src/16a-space.js:568-598
 drawStarNeutron              src/16a-space.js:541-565
 drawStars                    src/16-flight.js:28-72
 drawStarSingle               src/16a-space.js:465-539
-drawStation                  src/17c-system-draw.js:434-498
-drawStationBody              src/17c-system-draw.js:174-376
+drawStation                  src/17c-system-draw.js:438-502
+drawStationBody              src/17c-system-draw.js:174-380
 drawStationMods              src/17a-station-mod.js:214-217
 drawStencils                 src/03d-hull-marks.js:1-90
 drawStModule                 src/17a-station-mod.js:95-210
@@ -1425,12 +1429,12 @@ drawSurface                  src/21e-surface-draw.js:277-291
 drawSurfaceHud               src/21e-surface-draw.js:21-115
 drawSurfaceWorld             src/21e1-surface-world.js:10-615
 drawSurvey                   src/12w-survey.js:63-89
-drawSysHud                   src/17-mode-system.js:722-969
+drawSysHud                   src/17-mode-system.js:725-972
 drawSysLane                  src/17g-sys-lane.js:75-103
 drawSysLaneShips             src/17g-sys-lane.js:112-138
 drawSysNebula                src/16a-space.js:208-236
-drawSystem                   src/17-mode-system.js:443-721
-drawSysTraffic               src/17f-sys-traffic.js:29-33
+drawSystem                   src/17-mode-system.js:444-724
+drawSysTraffic               src/17f-sys-traffic.js:36-40
 drawTemple                   src/20aa-poi-shapes.js:50-89
 drawThingIcon                src/27i-ui-table.js:399-435
 drawTierTrim                 src/03b-hull-paint.js:73-166
@@ -1775,6 +1779,26 @@ fxWorld                      tests/91zzzw-fx.js:6-16
 G                            src/08-state.js:174-260
 G_BOOT_KEYS                  tests/90-harness.js:186
 g11Fps                       src/28z-fps-probe.js:7-14
+GAL_BAR_A                    src/17z1-galaxy.js:21
+GAL_BUDGET_MS                src/17z1-galaxy.js:66
+GAL_BULGE_CAP                src/17z1-galaxy.js:23
+GAL_CELL                     src/17z1-galaxy.js:141
+GAL_GLOW_CAP                 src/17z1-galaxy.js:24
+GAL_LV                       src/17z1-galaxy.js:64
+GAL_PITCH                    src/17z1-galaxy.js:22
+GAL_RD                       src/17z1-galaxy.js:20
+GAL_STAR_BUF                 src/17z1-galaxy.js:155
+GAL_STAR_CAND                src/17z1-galaxy.js:153
+GAL_STAR_COL                 src/17z1-galaxy.js:154
+GAL_STAR_SCREEN              src/17z1-galaxy.js:152
+GAL_TILE                     src/17z1-galaxy.js:63
+GAL_TILES                    src/17z1-galaxy.js:65
+GAL_VER                      src/17z1-galaxy.js:19
+galArmD                      src/17z1-galaxy.js:26-30
+galaxyAt                     src/17z1-galaxy.js:31-61
+galaxyCell                   src/17z1-galaxy.js:142-147
+galBake                      src/17z1-galaxy.js:80-95
+galTile                      src/17z1-galaxy.js:67-78
 GATE_WHY                     tests/91zzzzzl-gates.js:19
 genBeast                     src/20f-fauna.js:58-60
 genBeltPOI                   src/24b-belt-poi.js:20-47
@@ -1797,6 +1821,21 @@ geoFaultAt                   src/18b-geology.js:92-97
 geoFaultX                    src/18b-geology.js:99-102
 geologyOf                    src/18b-geology.js:45-71
 geoWob                       src/18b-geology.js:80-82
+GEST                         src/17h-sys-gesture.js:23
+GEST_POST                    src/17h-sys-gesture.js:21
+GEST_POST_CV                 src/17h-sys-gesture.js:171
+GEST_SAID                    src/17h-sys-gesture.js:24
+GEST_T                       src/17h-sys-gesture.js:20
+gestAge                      src/17h-sys-gesture.js:43
+gestArrive                   src/17h-sys-gesture.js:32-39
+gestEase                     src/17h-sys-gesture.js:85
+gestLive                     src/17h-sys-gesture.js:40-42
+gestOnce                     src/17h-sys-gesture.js:45-49
+gestOwner                    src/17h-sys-gesture.js:25-30
+gestPostNo                   src/17h-sys-gesture.js:50
+gestPostSprite               src/17h-sys-gesture.js:172-188
+gestShipFrame                src/17h-sys-gesture.js:80-84
+gestTick                     src/17h-sys-gesture.js:51-78
 getSystem                    src/06-galaxy.js:99-193
 GIANT                        src/19a-mode-scoop.js:187
 GIANT_KEEP                   src/19a-mode-scoop.js:188
@@ -2438,7 +2477,7 @@ jobOffer                     src/12e-mgr-jobs.js:228-240
 jobPick                      src/12e-mgr-jobs.js:259-282
 jobRefuse                    src/12e-mgr-jobs.js:57-66
 jobTick                      src/12e-mgr-jobs.js:287-296
-jump                         src/18-mode-map.js:562-606
+jump                         src/18-mode-map.js:526-573
 jumpToBase                   src/21a-mode-base.js:384-401
 KEEP_DARK_AFTER              src/11k-keepers.js:48
 KEEP_HABIT                   src/11k-keepers.js:35-45
@@ -2777,7 +2816,7 @@ mapGridPaint                 src/17z-map-backdrop.js:108-120
 mapHoldingsDraw              src/18b-map-hold.js:80-184
 mapHoldingsTop               src/18b-map-hold.js:186-226
 mapHousePatch                src/18b-map-hold.js:31-45
-mapJump                      src/18-mode-map.js:539-547
+mapJump                      src/18-mode-map.js:503-511
 mapLayer                     src/18b-map-hold.js:26
 mapLayerNext                 src/18b-map-hold.js:28
 mapLayerOn                   src/18b-map-hold.js:27
@@ -2801,7 +2840,6 @@ mapRoseDraw                  src/18a-map-addr.js:187-210
 mapRulersDraw                src/18a-map-addr.js:112-185
 mapRulerTop                  src/18a-map-addr.js:53
 mapRumoursDraw               src/18a-map-addr.js:76-93
-mapSkyShift                  src/18-mode-map.js:125
 mapStarPaint                 src/17z-map-backdrop.js:126-146
 mapTagAt                     src/18b-map-hold.js:71-78
 mapTrassaPairs               src/18b-map-hold.js:47-59
@@ -3270,7 +3308,7 @@ optGroups                    src/27-ui-ship.js:338-355
 OPTS_BOOT                    tests/90-harness.js:203
 optsNumify                   src/14a2-save-ephemeral.js:23-28
 optTab                       src/27-ui-ship.js:337
-orbPathOf                    src/17-mode-system.js:432-442
+orbPathOf                    src/17-mode-system.js:433-443
 ORDER_WIN                    src/12aa-need.js:76
 orderDeliver                 src/12aa-need.js:116-127
 orderHere                    src/12aa-need.js:112-115
@@ -3890,7 +3928,7 @@ renderMail                   src/25k-post-mail.js:36-109
 renderOpts                   src/27-ui-ship.js:58-330
 renderPrices                 src/12aa-need.js:258-285
 renderQsl                    src/11an-qsl.js:160-201
-renderRecord                 src/11aa-record.js:86-105
+renderRecord                 src/11aa-record.js:86-106
 renderRelays                 src/11ap-relay.js:243-283
 renderRoute                  src/12r-route.js:349-448
 renderSiteTab                src/26c-ui-station-site.js:7-130
@@ -4465,7 +4503,7 @@ smenaSync                    src/12ud-smena.js:107-116
 smenaWhere                   src/12ud-smena.js:118
 smK                          src/12ud-smena.js:24
 smL                          src/12ud-smena.js:25
-SMOKE_N                      src/17c-system-draw.js:383
+SMOKE_N                      src/17c-system-draw.js:387
 SMOKE_PATHS                  src/12tb-settle-draw2.js:246
 smokePath                    src/12tb-settle-draw2.js:247-262
 smP                          src/12ud-smena.js:28
@@ -4528,13 +4566,22 @@ SPIRIT_LOW                   src/21a1b-base-food.js:14
 sprgba                       src/29i-spa-draw.js:22
 SRC_DISCOUNT                 src/12ad-site.js:22
 srcPrice                     src/12ad-site.js:294-297
-ST_ART                       src/17c-system-draw.js:403
+ST_ART                       src/17c-system-draw.js:407
 ST_GROUPS                    src/26-ui-station.js:130-137
 ST_MOD_FILL                  src/17a-station-mod.js:81
 ST_MODULES                   src/17a-station-mod.js:14-29
 ST_TYPES                     src/06-galaxy.js:54-72
-stackSmoke                   src/17c-system-draw.js:384-397
+stackSmoke                   src/17c-system-draw.js:388-401
 stallWho                     src/28-loop.js:122-130
+STAMP_ORDER                  src/17i-stamp.js:11
+STAMP_POEM                   src/17i-stamp.js:14
+STAMP_RU                     src/17i-stamp.js:12
+stampArrive                  src/17i-stamp.js:37-48
+stampBook                    src/17i-stamp.js:22
+stampOwnerAt                 src/17i-stamp.js:16-21
+stampPage                    src/17i-stamp.js:62-83
+stampShow                    src/17i-stamp.js:50-60
+stampText                    src/17i-stamp.js:24-35
 STAR_CLASS                   src/02-world.js:149-155
 STAR_COLS                    src/16-flight.js:2
 STAR_LX                      src/16-flight.js:27
@@ -4548,7 +4595,7 @@ STAT_SHOW                    src/05-parts.js:425-437
 STATE_HASH_SKIP              src/08a-statehash.js:24-29
 stateHash                    src/08a-statehash.js:30-81
 stateHashParts               src/08a-statehash.js:82-90
-stationArt                   src/17c-system-draw.js:404-433
+stationArt                   src/17c-system-draw.js:408-437
 stationDeals                 src/27g-deals.js:141-158
 stationFleet                 src/04b-fleet.js:163-191
 stationMercs                 src/12a-crew.js:95-147
@@ -4567,6 +4614,7 @@ stepWorld                    src/28-loop.js:364-383
 stGet                        src/14-save.js:8
 stGroup                      src/26-ui-station.js:139
 stGroupOf                    src/26-ui-station.js:138
+stMakerDress                 src/17c1-station-dress.js:10-52
 stopEngine                   src/09-audio.js:336-340
 STORAGE_OK                   src/14-save.js:7
 STORAGE_TOLD                 src/14-save.js:13
@@ -4686,7 +4734,7 @@ sysPirateBase                src/24a-mode-raid.js:98-102
 sysRasterDrop                src/06-galaxy.js:23-35
 sysRasterTick                src/06-galaxy.js:37-49
 sysStyle                     src/16a-space.js:21-41
-sysTraffic                   src/17f-sys-traffic.js:11-28
+sysTraffic                   src/17f-sys-traffic.js:11-35
 T                            tests/90a-tools.js:54-603
 tab                          src/26-ui-station.js:3
 TAB_CH                       src/14a-cloud.js:21
@@ -4912,12 +4960,12 @@ updateCombat                 src/13-pirates.js:116-301
 updateDig                    src/23-mode-dig.js:143-251
 updateHomeIn                 src/29c-home-in.js:160-200
 updateLanding                src/19-mode-landing.js:68-137
-updateMap                    src/18-mode-map.js:548-561
+updateMap                    src/18-mode-map.js:512-525
 updateRaid                   src/24a-mode-raid.js:215-345
 updateScoop                  src/19a-mode-scoop.js:75-171
 updateSpa                    src/29i-spa-draw.js:514-519
 updateSurface                src/21-mode-surface.js:199-656
-updateSystem                 src/17-mode-system.js:53-428
+updateSystem                 src/17-mode-system.js:53-429
 updateWanderRoom             src/24c-mode-wanderer.js:58-88
 updateWinter                 src/29g-winter-draw.js:808-817
 useBeacon                    src/23-mode-dig.js:87-112
@@ -5369,7 +5417,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/11a-quests.js · 9 КБ
   · журнал дел:1
 
-## src/11aa-record.js · 7 КБ
+## src/11aa-record.js · 8 КБ
   · трудовая книжка: биография, написанная другими:1
 
 ## src/11ab-institute.js · 9 КБ
@@ -5872,21 +5920,33 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/17c-system-draw.js · 29 КБ
   · система: кольца, пояс и станция в кадре:1
 
+## src/17c1-station-dress.js · 4 КБ
+  · станция по строителю: одевка плиты (M454, DESIGN-borders §2.3):1
+
 ## src/17d-house-shapes.js · 7 КБ
   · дома как язык форм:1
 
 ## src/17e-station-body.js · 8 КБ
   · тело станции и планеты: что построил игрок, видно:1
 
-## src/17f-sys-traffic.js · 4 КБ
+## src/17f-sys-traffic.js · 5 КБ
   · трафик системы: чужие машины, которым тут есть дело (M309):1
 
 ## src/17g-sys-lane.js · 8 КБ
   · подъезд: полоса от входа в систему к доку (M459, DESIGN-life §2–3.1):1
 
+## src/17h-sys-gesture.js · 13 КБ
+  · чья земля — за пять секунд: жест первого корабля и пост (M452, DESIGN-review §2.1):1
+
+## src/17i-stamp.js · 5 КБ
+  · отметка о проезде: штамп на границе (M453, DESIGN-borders §2.2):1
+
 ## src/17z-map-backdrop.js · 8 КБ
 
-## src/18-mode-map.js · 44 КБ
+## src/17z1-galaxy.js · 12 КБ
+  · мировая галактика: небо карты стоит в мире (M447–M448, docs/DESIGN-galaxy.md):1
+
+## src/18-mode-map.js · 41 КБ
   · карта:1
   · где у карты пол и где правый борт:3
   · карта: ночное небо, а не схема молекулы:65
