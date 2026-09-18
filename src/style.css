@@ -1821,3 +1821,5 @@ body.table u.addr{color:#7a4a20}
 .pads button[data-k="act"]{position:relative}
 .pads button.abil-cd::after{content:"";position:absolute;inset:-3px;border-radius:inherit;background:var(--abil);pointer-events:none;
   -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 0);mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 0)}
+/* ── ПРИЁМНИКИ: куда ведёт строка (P11) [design owed] ── */
+.rl-go{display:inline-block;margin-top:3px;font:600 10px ui-monospace,monospace;letter-spacing:.12em;color:#1f5f57}

@@ -233,10 +233,20 @@ function relayDial(box){
   kn.style.cssText="position:absolute;top:-3px;height:36px;width:1px;background:rgba(138,50,38,.85);"+
     "left:"+(clamp(G.radioF==null?.05:G.radioF,0,1)*100).toFixed(2)+"%";
   st.appendChild(kn);
+  /* шкала — ручка (P11): тычок ставит приёмник на эту частоту; по засечке —
+     ровно на мачту. Раньше шкала только объясняла */
+  st.style.cursor="pointer";
+  st.onclick=e=>{
+    const rc=st.getBoundingClientRect(),f=clamp((e.clientX-rc.left)/Math.max(1,rc.width),0,1);
+    let hit=null,bd=.012;for(const R of relayList()){const d=Math.abs(R.f-f);if(d<bd){bd=d;hit=R;}}
+    G.radioF=hit?hit.f:+f.toFixed(3);
+    say(hit?"Приёмник на "+hit.call+" «"+hit.name+"»\nчастота "+hit.f.toFixed(3):"Ручка на "+G.radioF.toFixed(3)+"\nслушайте — в щелях бывают мачты",110);
+    kn.style.left=(G.radioF*100).toFixed(2)+"%";
+  };
   sp.appendChild(st);
   const cap=document.createElement("div");
   cap.style.cssText="font-size:11px;color:#8b7d61";
-  cap.textContent="постоянные диапазоны стоят блоками, мачты — засечками между ними: искать их надо в щелях, медленной ручкой";
+  cap.textContent="тронь шкалу — ручка встанет туда; по засечке — прямо на мачту. Блоки — постоянные диапазоны, мачты ищут в щелях";
   sp.appendChild(cap);
   row.appendChild(em);row.appendChild(sp);box.appendChild(row);
 }
@@ -257,7 +267,12 @@ function renderRelays(box){
     tableRow(box,"dim","","приёмников ещё не слышали: их частоты лежат в шуме, между диапазонами");
     return;
   }
-  tableRow(box,"head","","ПРИЁМНИКИ · КОГО СЛЫШАЛИ И ГДЕ ОН СТОИТ · ТЫЧОК — КУРС ТУДА");
+  tableRow(box,"head","","ПРИЁМНИКИ · КОГО СЛЫШАЛИ И ГДЕ ОН СТОИТ");
+  /* зачем они (P11, плейтест §4.1): новичок не знает, что дают мачты */
+  tableRow(box,"dim","","Приёмники — мачты в мире: маяки, ретрансляторы, метеопосты, зимовки. "+
+    "Ретранслятор держит эфир чистым в своих секторах — биржа со слуха пишется дальше. "+
+    "Метеопост и зимовка платят за новости, если к ним подлететь. Маяк и бакен — ничего, только место. "+
+    "Их частоты лежат в шуме между диапазонами: тронь шкалу — ручка приёмника встанет туда.");
   relayDial(box);
   for(const R of L){
     const row=document.createElement("div");row.className="li";
@@ -276,7 +291,10 @@ function renderRelays(box){
     row.appendChild(em);row.appendChild(sp);
     if(typeof gotoSector==="function"){
       row.style.cursor="pointer";
-      row.onclick=()=>{gotoSector(R.sx,R.sy,R.call+" · "+R.ru);};
+      /* куда ведёт тычок — сказано на самой строке (P11) */
+      const go=document.createElement("b");go.className="rl-go";go.textContent="НА КАРТУ ›";
+      sp.appendChild(document.createElement("br"));sp.appendChild(go);
+      row.onclick=()=>{G.mapBackTable="relay";gotoSector(R.sx,R.sy,R.call+" · "+R.ru);};
     }
     box.appendChild(row);
   }

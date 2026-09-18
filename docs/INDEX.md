@@ -1576,7 +1576,7 @@ el                           src/26-ui-station.js:289
 EN_SHIELD                    src/05c-arms.js:162
 EN_SHOT                      src/05c-arms.js:161
 EN_THR                       src/05c-arms.js:163
-endPtr                       src/15-input.js:421-426
+endPtr                       src/15-input.js:426-431
 energyCap                    src/05c-arms.js:166
 energyRegen                  src/05c-arms.js:167
 engineLoop                   src/09-audio.js:329-355
@@ -3152,7 +3152,7 @@ mountAt                      src/05d-mounts.js:46-54
 mountsOf                     src/05d-mounts.js:29-45
 mountTakes                   src/05d-mounts.js:71-76
 mountWhyNot                  src/05d-mounts.js:78-84
-mouseWalkAt                  src/15-input.js:432-461
+mouseWalkAt                  src/15-input.js:437-466
 msgHeld                      src/08-state.js:388
 MSL_ARM                      src/16b-missile.js:20
 MSL_COOL                     src/16b-missile.js:16
@@ -3214,7 +3214,7 @@ natStormHere                 src/12az-fx-nat.js:27
 natStormTick                 src/12az-fx-nat.js:28-33
 natSwarmHere                 src/12az-fx-nat.js:39
 natSwarmTick                 src/12az-fx-nat.js:40-51
-navAction                    src/15-input.js:278-290
+navAction                    src/15-input.js:278-295
 nbFoe                        tests/91zzzw-notebook.js:15-20
 nbWorld                      tests/91zzzw-notebook.js:6-14
 near                         tests/90-harness.js:172
@@ -3623,7 +3623,7 @@ pickKindByBias               src/20-life.js:180-184
 pickShare                    src/20e-species.js:125-130
 pickStType                   src/06-galaxy.js:76-82
 PICKUPS                      src/24a-mode-raid.js:24-28
-pinch0                       src/15-input.js:389
+pinch0                       src/15-input.js:394
 PIR_ART                      src/12i-pirate-hull.js:18
 PIR_CLASS                    src/12i-pirate-hull.js:20-25
 PIR_GUNART                   src/12i-pirate-hull.js:33-46
@@ -3863,7 +3863,7 @@ prunePartsBought             src/14-save.js:33-41
 prWalk                       tests/91zzzzzi-promise.js:82-92
 psPlanet                     tests/91zzzu-post-scenes.js:6-16
 psSnap                       tests/91zzzu-post-scenes.js:17-20
-ptr                          src/15-input.js:388
+ptr                          src/15-input.js:393
 PU_CELLS                     tests/91zzzzzd-pure.js:28
 puFinger                     tests/91zzzzzd-pure.js:19-27
 putOnTable                   src/11b-speech.js:220-230
@@ -4096,19 +4096,19 @@ RELAY_REACH                  src/11ap-relay.js:73
 relayAll                     src/11ap-relay.js:149-152
 relayArrive                  src/11ap-relay.js:179-183
 relayAtFreq                  src/11ap-relay.js:134-145
-relayDial                    src/11ap-relay.js:207-242
-relayDrawSystem              src/11ap-relay.js:358-479
+relayDial                    src/11ap-relay.js:207-252
+relayDrawSystem              src/11ap-relay.js:376-497
 relayEar                     src/11ap-relay.js:126-130
 relayFind                    tests/91zzzw-relay.js:6-13
 relayFreq                    src/11ap-relay.js:99-103
-relayInteract                src/11ap-relay.js:340-353
+relayInteract                src/11ap-relay.js:358-371
 relayKnown                   src/11ap-relay.js:153
 relayList                    src/11ap-relay.js:189-199
 relayOf                      src/11ap-relay.js:81-97
-relayServe                   src/11ap-relay.js:316-339
+relayServe                   src/11ap-relay.js:334-357
 relaysNear                   src/11ap-relay.js:108-122
 relaySpeak                   src/11ap-relay.js:167-174
-relaySpot                    src/11ap-relay.js:299-312
+relaySpot                    src/11ap-relay.js:317-330
 relayWrite                   src/11ap-relay.js:156-164
 releaseAllKeys               src/15-input.js:208-211
 RELIC_KEYS                   src/12h-relic.js:64
@@ -4145,7 +4145,7 @@ renderOpts                   src/27-ui-ship.js:58-330
 renderPrices                 src/12aa-need.js:258-285
 renderQsl                    src/11an-qsl.js:160-201
 renderRecord                 src/11aa-record.js:86-106
-renderRelays                 src/11ap-relay.js:243-283
+renderRelays                 src/11ap-relay.js:253-301
 renderRoute                  src/12r-route.js:349-448
 renderSiteTab                src/26c-ui-station-site.js:7-130
 renderSmena                  src/12ud-smena.js:123-164
@@ -4625,7 +4625,7 @@ settleWallX                  src/12t-settle.js:119
 settleWatch                  src/12t-settle.js:397-403
 settleWords                  src/12t-settle.js:258-262
 setTx                        src/27z-telemetry.js:84-93
-setZoom                      src/15-input.js:335
+setZoom                      src/15-input.js:340
 SFX                          src/09-audio.js:105-320
 sfx                          src/09-audio.js:321-327
 SH_DX                        src/03b-hull-paint.js:175
@@ -4850,7 +4850,7 @@ STAR_COLS                    src/16-flight.js:2
 STAR_LX                      src/16-flight.js:27
 starAt                       src/06-galaxy.js:2
 starRGB                      src/19c-light.js:49-59
-start                        src/15-input.js:615-623
+start                        src/15-input.js:620-628
 startLanding                 src/19-mode-landing.js:2-33
 startScoop                   src/19a-mode-scoop.js:51-61
 stat                         src/08-state.js:264-332
@@ -5043,7 +5043,7 @@ tactTick                     src/28-loop.js:332-345
 tactWork                     src/28-loop.js:325
 TALE_DRINK                   src/12b-crew-events.js:13
 TALE_JOB                     src/12b-crew-events.js:15
-tap                          src/15-input.js:463-587
+tap                          src/15-input.js:468-592
 TAPE_ADAPT                   src/25b-tape.js:26
 TAPE_DT                      src/25b-tape.js:24
 TAPE_GAIN                    src/25b-tape.js:25
@@ -5578,12 +5578,12 @@ zooCatch                     src/11ad-zoo.js:19-29
 zooDrawPen                   src/11ad-zoo.js:97-109
 zooHomeBlock                 src/11ad-zoo.js:84-95
 ZOOM_MIN                     src/01-core.js:21
-ZOOM_RATE                    src/15-input.js:344
-zoomModeHas                  src/15-input.js:303
-zoomRest                     src/15-input.js:346-351
-zoomStep                     src/15-input.js:298-301
-zoomStep                     src/15-input.js:352-358
-zoomTo                       src/15-input.js:345
+ZOOM_RATE                    src/15-input.js:349
+zoomModeHas                  src/15-input.js:308
+zoomRest                     src/15-input.js:351-356
+zoomStep                     src/15-input.js:303-306
+zoomStep                     src/15-input.js:357-363
+zoomTo                       src/15-input.js:350
 zooPen                       src/11ad-zoo.js:17
 zooSell                      src/11ad-zoo.js:61-70
 zooSettle                    src/11ad-zoo.js:33-39
@@ -5775,9 +5775,9 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/11ao-firsthour.js · 5 КБ
   · первый час: сменщик в эфире:1
 
-## src/11ap-relay.js · 29 КБ
+## src/11ap-relay.js · 31 КБ
   · приёмники как места:1
-  · у мачты есть тело:285
+  · у мачты есть тело:303
 
 ## src/11aq-late.js · 9 КБ
   · поздний час у стойки:1

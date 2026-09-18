@@ -1835,6 +1835,8 @@ body.table u.addr{color:#7a4a20}
 .pads button[data-k="act"]{position:relative}
 .pads button.abil-cd::after{content:"";position:absolute;inset:-3px;border-radius:inherit;background:var(--abil);pointer-events:none;
   -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 0);mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 0)}
+/* ── ПРИЁМНИКИ: куда ведёт строка (P11) [design owed] ── */
+.rl-go{display:inline-block;margin-top:3px;font:600 10px ui-monospace,monospace;letter-spacing:.12em;color:#1f5f57}
 
 </style>
 </head>
@@ -14024,10 +14026,20 @@ function relayDial(box){
   kn.style.cssText="position:absolute;top:-3px;height:36px;width:1px;background:rgba(138,50,38,.85);"+
     "left:"+(clamp(G.radioF==null?.05:G.radioF,0,1)*100).toFixed(2)+"%";
   st.appendChild(kn);
+  /* шкала — ручка (P11): тычок ставит приёмник на эту частоту; по засечке —
+     ровно на мачту. Раньше шкала только объясняла */
+  st.style.cursor="pointer";
+  st.onclick=e=>{
+    const rc=st.getBoundingClientRect(),f=clamp((e.clientX-rc.left)/Math.max(1,rc.width),0,1);
+    let hit=null,bd=.012;for(const R of relayList()){const d=Math.abs(R.f-f);if(d<bd){bd=d;hit=R;}}
+    G.radioF=hit?hit.f:+f.toFixed(3);
+    say(hit?"Приёмник на "+hit.call+" «"+hit.name+"»\nчастота "+hit.f.toFixed(3):"Ручка на "+G.radioF.toFixed(3)+"\nслушайте — в щелях бывают мачты",110);
+    kn.style.left=(G.radioF*100).toFixed(2)+"%";
+  };
   sp.appendChild(st);
   const cap=document.createElement("div");
   cap.style.cssText="font-size:11px;color:#8b7d61";
-  cap.textContent="постоянные диапазоны стоят блоками, мачты — засечками между ними: искать их надо в щелях, медленной ручкой";
+  cap.textContent="тронь шкалу — ручка встанет туда; по засечке — прямо на мачту. Блоки — постоянные диапазоны, мачты ищут в щелях";
   sp.appendChild(cap);
   row.appendChild(em);row.appendChild(sp);box.appendChild(row);
 }
@@ -14048,7 +14060,12 @@ function renderRelays(box){
     tableRow(box,"dim","","приёмников ещё не слышали: их частоты лежат в шуме, между диапазонами");
     return;
   }
-  tableRow(box,"head","","ПРИЁМНИКИ · КОГО СЛЫШАЛИ И ГДЕ ОН СТОИТ · ТЫЧОК — КУРС ТУДА");
+  tableRow(box,"head","","ПРИЁМНИКИ · КОГО СЛЫШАЛИ И ГДЕ ОН СТОИТ");
+  /* зачем они (P11, плейтест §4.1): новичок не знает, что дают мачты */
+  tableRow(box,"dim","","Приёмники — мачты в мире: маяки, ретрансляторы, метеопосты, зимовки. "+
+    "Ретранслятор держит эфир чистым в своих секторах — биржа со слуха пишется дальше. "+
+    "Метеопост и зимовка платят за новости, если к ним подлететь. Маяк и бакен — ничего, только место. "+
+    "Их частоты лежат в шуме между диапазонами: тронь шкалу — ручка приёмника встанет туда.");
   relayDial(box);
   for(const R of L){
     const row=document.createElement("div");row.className="li";
@@ -14067,7 +14084,10 @@ function renderRelays(box){
     row.appendChild(em);row.appendChild(sp);
     if(typeof gotoSector==="function"){
       row.style.cursor="pointer";
-      row.onclick=()=>{gotoSector(R.sx,R.sy,R.call+" · "+R.ru);};
+      /* куда ведёт тычок — сказано на самой строке (P11) */
+      const go=document.createElement("b");go.className="rl-go";go.textContent="НА КАРТУ ›";
+      sp.appendChild(document.createElement("br"));sp.appendChild(go);
+      row.onclick=()=>{G.mapBackTable="relay";gotoSector(R.sx,R.sy,R.call+" · "+R.ru);};
     }
     box.appendChild(row);
   }
@@ -42808,7 +42828,7 @@ function optsNumify(o){
 }
 const SAVE_EPHEMERAL={
   /* корабль в полёте: x/y/a идут в сейв своими строками, остальное — кадр */
-  ship:"кадр",ap:"кадр",orbit:"мир",watch:"кадр",aim:"кадр",beams:"кадр",shots:"кадр",loot:"кадр",
+  ship:"кадр",ap:"кадр",mapBackTable:"кадр",orbit:"мир",watch:"кадр",aim:"кадр",beams:"кадр",shots:"кадр",loot:"кадр",
   energy:"кадр",heat:"кадр",burnT:"кадр",stunT:"кадр",shield:"кадр",shieldHit:"кадр",shieldPulse:"кадр",shieldOff:"кадр",
   gunCool:"кадр",gunPin:"кадр",gmines:"кадр",tether:"кадр",foeTether:"кадр",msl:"кадр",mslCool:"кадр",mslFx:"кадр",
   jamT:"кадр",ramOn:"кадр",engaged:"кадр",fcam:"кадр",fshake:"кадр",ctl:"кадр",marks:"кадр",range:"кадр",
@@ -43320,7 +43340,12 @@ function navAction(){
   /* из санатория уйти можно в любую минуту, и за это ничего не будет (M199) */
   if(G.mode==="spa"){exitSpa();return;}
   if(G.mode==="system"){G.mode="map";G.sel.x=G.sx;G.sel.y=G.sy;}
-  else if(G.mode==="map"){if(typeof mapBack==="function"&&mapBack())return;G.mode="system";if(typeof mapReset==="function")mapReset();}
+  else if(G.mode==="map"){
+    /* с бумаги стола — назад на ту же бумагу (P11: ПРИЁМНИКИ → карта → ПРИЁМНИКИ) */
+    const tb=G.mapBackTable;G.mapBackTable=null;
+    if(!(typeof mapBack==="function"&&mapBack())){G.mode="system";if(typeof mapReset==="function")mapReset();}
+    if(tb&&typeof tableToggle==="function")tableToggle(true,tb);
+    return;}
   else say("Навигация недоступна\nвне свободного полёта");
 }
 /* ── плюс и минус ──

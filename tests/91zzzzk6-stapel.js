@@ -196,3 +196,14 @@ TEST_SUITES.push(()=>suite("ядро в аренду: тариф, без дре�
   ok(!rentAi(MGR_ROLE_KEYS[0],"base"),"домен занят — второе на то же место нельзя");
   G.mgrs=[];G.bases=null;
 }));
+TEST_SUITES.push(()=>suite("ПРИЁМНИКИ: с карты НАЗАД — на ту же бумагу",()=>{
+  resetWorld();
+  let opened=null;const tt=tableToggle,sel0=G.sel,co0=G.course,mv0=G.mapView;tableToggle=(o,t)=>{opened=t||null;};
+  G.mode="system";G.mapBackTable="relay";gotoSector(G.sx+2,G.sy,"проба");
+  eq(G.mode,"map","тычок по строке — карта");
+  navAction();
+  eq(G.mode,"system","НАЗАД — из карты");
+  eq(opened,"relay","и снова ПРИЁМНИКИ");
+  ok(G.mapBackTable==null,"возврат одноразовый");
+  tableToggle=tt;G.course=co0;G.sel=sel0;G.mapView=mv0;
+}));

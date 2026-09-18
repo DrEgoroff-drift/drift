@@ -285,7 +285,12 @@ function navAction(){
   /* из санатория уйти можно в любую минуту, и за это ничего не будет (M199) */
   if(G.mode==="spa"){exitSpa();return;}
   if(G.mode==="system"){G.mode="map";G.sel.x=G.sx;G.sel.y=G.sy;}
-  else if(G.mode==="map"){if(typeof mapBack==="function"&&mapBack())return;G.mode="system";if(typeof mapReset==="function")mapReset();}
+  else if(G.mode==="map"){
+    /* с бумаги стола — назад на ту же бумагу (P11: ПРИЁМНИКИ → карта → ПРИЁМНИКИ) */
+    const tb=G.mapBackTable;G.mapBackTable=null;
+    if(!(typeof mapBack==="function"&&mapBack())){G.mode="system";if(typeof mapReset==="function")mapReset();}
+    if(tb&&typeof tableToggle==="function")tableToggle(true,tb);
+    return;}
   else say("Навигация недоступна\nвне свободного полёта");
 }
 /* ── плюс и минус ──
