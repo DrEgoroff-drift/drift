@@ -1,0 +1,138 @@
+/* ══════════════ подъезд: полоса от входа в систему к доку (Ж1, DESIGN-life §2–3.1) ══════════════
+   У системы есть вход (P9: угол от зерна), и от него к станции ведёт полоса:
+   пары бакенов через каждые LANE_GAP, по одному огню на бакене, и огни БЕГУТ к
+   доку — фаза, а не мигание (закон «движение, а не мигание»). У людной станции —
+   очередь: два–шесть кораблей на медленном эллипсе сбоку от полосы, один
+   садится, один уходит по полосе к входу.
+
+   Густота — сердцевина × ступень: у ядра и в обжитом людно, на краю пусто,
+   в дикой системе (без станции) ничего. Всё это функция времени, ничего не
+   хранится и не считается вне кадра — как челноки 17f. Бакен запечён один раз
+   на всю игру, корабли очереди — спрайты флота (12ai1) в грунте хозяина
+   станции; каждый кадр — только огни и положение кораблей. */
+const LANE_GAP=240;      /* шаг пар бакенов вдоль полосы, ед. */
+const LANE_W=46;         /* полуширина полосы — бакен от оси */
+const LANE_DOCK=150;     /* первая пара — столько от станции */
+const LANE_CHASE=2;      /* бегущий огонь: пар в секунду */
+const LANE_Q_MAX=6;      /* очередь у дока, кораблей */
+const LANE_Q_CLS=["post","tanker","fridge","ore","lighter","ferry"];
+/* вход в систему: сюда кладёт корабль прыжок (18-mode-map), отсюда начинается полоса */
+function sysEntry(sx,sy){
+  const a=((hashi(sx,sy,0x51A7)>>>0)%3600)/3600*TAU,r=1500;
+  return {x:Math.cos(a)*r,y:Math.sin(a)*r,a};
+}
+/* жизнь системы 0…1: сердцевина (sysDanger — 0 у ядра) × ступень лестницы.
+   Ступень — это обжитость ИГРОКОМ, поэтому она только добавляет: станция
+   сердцевины людна и без него */
+function laneLife(sys){
+  const heart=1-sysDanger(sys.sx,sys.sy);
+  const rung=(typeof rungOf==="function")?rungOf(sys.sx,sys.sy):0;
+  return clamp((.35+.65*heart)*(.6+.4*Math.min(1,rung/30)),0,1);
+}
+function sysLane(sys){
+  if(sys.lane!==undefined)return sys.lane;
+  const st=sys.station;
+  if(!st)return sys.lane=null;
+  const E=sysEntry(sys.sx,sys.sy),life=laneLife(sys);
+  const dx=E.x-st.x,dy=E.y-st.y,L=Math.hypot(dx,dy)||1,ux=dx/L,uy=dy/L;
+  /* пары: две на тихой станции, три на людной — бюджет 3–6 бакенов (§4) */
+  const pairs=life>.6?3:2,buoys=[];
+  for(let i=0;i<pairs;i++){
+    const d=LANE_DOCK+i*LANE_GAP;if(d>L-80)break;
+    for(const s of [-1,1])buoys.push({x:st.x+ux*d-uy*LANE_W*s,y:st.y+uy*d+ux*LANE_W*s,i});
+  }
+  const r=rng((sys.seed^0x1A4E)>>>0),by=st.by||"gt";
+  /* очередь — только у людной станции; сбоку от полосы, чтобы не стоять на ней */
+  const qn=life<.45?0:Math.min(LANE_Q_MAX,Math.round(2+(life-.45)/.55*4));
+  const side=r()<.5?-1:1;
+  const hx=st.x+ux*120-uy*260*side,hy=st.y+uy*120+ux*260*side;
+  const ship=()=>({k:LANE_Q_CLS[Math.floor(r()*LANE_Q_CLS.length)],seed:(r()*1e9)|0,by});
+  const queue=[];for(let i=0;i<qn;i++)queue.push(ship());
+  return sys.lane={st:{x:st.x,y:st.y},E,ux,uy,L,pairs,buoys,life,by,
+    hx,hy,side,queue,dock:qn?ship():null,out:qn?ship():null,ph:r()};
+}
+/* ── бакен: печётся один раз на всю игру ──
+   Тёмный цилиндр с холодной кромкой и короткой фермой к огню; сам огонь — живой */
+const LANE_BUOY={cv:null,R:14,SS:4};
+function laneBuoySprite(){
+  if(LANE_BUOY.cv)return LANE_BUOY.cv;
+  const R=LANE_BUOY.R,SS=LANE_BUOY.SS,cv=document.createElement("canvas");
+  cv.width=cv.height=R*2*SS;
+  const c=cv.getContext("2d");c.scale(SS,SS);c.translate(R,R);
+  c.fillStyle="#1d242e";c.strokeStyle="rgba(0,0,0,.7)";c.lineWidth=.7;
+  c.beginPath();c.moveTo(-3,-6);c.lineTo(3,-6);c.lineTo(4,5);c.lineTo(-4,5);c.closePath();c.fill();c.stroke();
+  c.fillStyle="rgba(190,212,232,.45)";c.fillRect(-3.4,-1,.9,5);          /* кромка с солнечной стороны */
+  c.fillStyle="#2b3440";c.fillRect(-4.5,5,9,1.6);                           /* пояс */
+  c.strokeStyle="rgba(150,164,180,.55)";c.lineWidth=.6;                     /* ферма к огню */
+  c.beginPath();c.moveTo(-1.5,-6);c.lineTo(0,-10);c.lineTo(1.5,-6);c.stroke();
+  c.fillStyle="#3a444f";c.beginPath();c.arc(0,-10.5,1.6,0,TAU);c.fill();   /* колпак огня */
+  return LANE_BUOY.cv=cv;
+}
+function laneLampCol(by){
+  const MF=(typeof makerFlame==="function")?makerFlame(by):null;
+  return (MF&&MF.col)?MF.col:[255,190,110];
+}
+function drawSysLane(zx,zy,Z){
+  const sys=G.sys;if(!sys)return;
+  const P=sysLane(sys);if(!P||!P.buoys.length)return;
+  const s=clamp(Z,.6,1.5)*1.1,sp=laneBuoySprite(),R=LANE_BUOY.R*s;
+  const col=laneLampCol(P.by);
+  const glow=glowSprite("lane|"+col.join(","),()=>{
+    const g=ctx.createRadialGradient(0,0,0,0,0,1);
+    g.addColorStop(0,rgba(mixc(col,[255,255,255],.6),1));g.addColorStop(.25,rgba(col,.55));g.addColorStop(1,rgba(col,0));
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(0,0,1,0,TAU);ctx.fill();
+  });
+  /* бегущий огонь: гребень идёт от дальней пары к ближней и уходит в док;
+     пауза в полторы пары между проходами — чтобы читалось направление */
+  const lead=P.pairs-1-((G.t/60*LANE_CHASE)%(P.pairs+1.5));
+  const na=Math.atan2(P.uy,P.ux)+Math.PI/2;       /* бакен стоит поперёк полосы */
+  for(const b of P.buoys){
+    const x=zx(b.x),y=zy(b.y);
+    if(x<-40||x>W+40||y<-40||y>H+40)continue;
+    ctx.save();ctx.translate(x,y);ctx.rotate(na);
+    ctx.drawImage(sp,-R,-R,R*2,R*2);
+    ctx.restore();
+    const k=Math.max(0,1-Math.abs(b.i-lead)*1.4);
+    const lx=x+Math.cos(na-Math.PI/2)*10.5*s,ly=y+Math.sin(na-Math.PI/2)*10.5*s;
+    ctx.globalAlpha=.35+.65*k;
+    glowBlit(glow,lx,ly,(8+14*k)*s);
+    ctx.globalAlpha=1;
+    ctx.fillStyle=rgba(mixc(col,[255,255,255],.5),.5+.5*k);     /* сама лампа — точка, видна и в паузе */
+    ctx.beginPath();ctx.arc(lx,ly,Math.max(1,1.3*s),0,TAU);ctx.fill();
+  }
+}
+/* ── очередь у дока и два движения мимо неё ── */
+function laneShip(f,x,y,a,al,Z){
+  if(al<=.02||x<-200||x>W+200||y<-200||y>H+200)return;
+  const s=fleetScale(Z)*.62;
+  ctx.save();ctx.globalAlpha=al;ctx.translate(x,y);ctx.rotate(a);ctx.scale(s,s);
+  drawFleetShip(f);
+  ctx.restore();
+}
+function drawSysLaneShips(zx,zy,Z){
+  const sys=G.sys;if(!sys)return;
+  const P=sysLane(sys);if(!P||!P.queue.length||typeof drawFleetShip!=="function")return;
+  const ts=G.t/60,n=P.queue.length;
+  const ea=Math.atan2(P.uy,P.ux),ca=Math.cos(ea),sa=Math.sin(ea);
+  /* эллипс ожидания: полоса — его длинная ось; круг за сорок секунд */
+  const onEll=w=>{const ex=Math.cos(w)*150,ey=Math.sin(w)*70*P.side;
+    return {x:P.hx+ex*ca-ey*sa,y:P.hy+ex*sa+ey*ca}};
+  for(let i=0;i<n;i++){
+    const w=ts*TAU/40+i/n*TAU+P.ph*TAU,p=onEll(w),p2=onEll(w+.02);
+    laneShip(P.queue[i],zx(p.x),zy(p.y),Math.atan2(p2.y-p.y,p2.x-p.x),1,Z);
+  }
+  /* садится: с эллипса к доку за десять секунд, у дока гаснет — вошёл */
+  {
+    const u=(ts/10+P.ph)%1,e=u*u*(3-2*u),a0=onEll(P.ph*TAU);
+    const x=a0.x+(P.st.x-a0.x)*e,y=a0.y+(P.st.y-a0.y)*e;
+    const al=Math.min(1,u/.1,(1-u)/.2);
+    laneShip(P.dock,zx(x),zy(y),Math.atan2(P.st.y-a0.y,P.st.x-a0.x),al,Z);
+  }
+  /* уходит: от дока по оси полосы к входу, разгоняясь; у входа гаснет — прыгнул */
+  {
+    const u=(ts/14+P.ph*.5)%1,d=40+(P.L-40)*u*u;
+    const x=P.st.x+P.ux*d,y=P.st.y+P.uy*d;
+    const al=Math.min(1,u/.08,(1-u)/.15);
+    laneShip(P.out,zx(x),zy(y),ea,al,Z);
+  }
+}

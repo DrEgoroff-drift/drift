@@ -545,7 +545,8 @@ Rule 3: same look, cheaper work.
 
 ### Stage 2 — whose land, in five seconds (borders + life Ж1 + the galaxy)
 
-- [ ] **Ж1 The approach — «подъезд»** (`DESIGN-life.md` §2–3.1, review §4.4). From the entry point
+- [x] **Ж1 The approach — «подъезд»** — BUILT 18.09 (Control), `src/17g-sys-lane.js`: `sysEntry` (one source for the jump and the lane), `laneLife` = (.35+.65·heart)·(.6+.4·rung/30) — rung is the PLAYER's holding, so it only adds; 2–3 buoy pairs from 150 u off the dock every 240 u, one baked buoy sprite for the whole game, lamps in the owner maker's flame colour chasing toward the dock at 2 pairs/s; a queue of 2–6 fleet sprites (12ai1, the station maker's ground) on a 150×70 ellipse beside the lane when life ≥ .45, one docking (10 s), one leaving along the lane to the entry (14 s). Not done from the item: tugs/shuttles of 17f re-routed onto the lane, the haul-scene review (route bar, destination chip). Phone owed: `prof()` ≤ 1 ms raster, `look()` pair %. Original text:
+  **Ж1 The approach — «подъезд»** (`DESIGN-life.md` §2–3.1, review §4.4). From the entry point
   (P9) to the station: buoys every few hundred units, one lamp each, **lamps chasing toward the
   dock** at ~2 buoys/s (a phase, not blinking); a **holding queue** at busy stations — 2–6 ships on a
   slow ellipse, one docking, one leaving; density = rung × heartland gradient (`sysDanger`); tugs
