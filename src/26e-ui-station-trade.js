@@ -302,6 +302,7 @@ function stTabYard(st){
        Чёрный корпус на тросе становится вашим не даром и не сразу: док берёт
        за работу, и только после неё у корпуса появляется имя. Порода — та, с
        которой он сошёл со стапеля, и она никуда не девается. */
+    if(typeof scarBlock==="function"){const sb=scarBlock();if(sb)$body.appendChild(sb);}   /* шрамы (M482) */
     if(typeof stapelBlock==="function"){const sb=stapelBlock();if(sb)$body.appendChild(sb);}   /* СТАПЕЛЬ (M481) */
     if(G.tow){
       const TB=G.tow.by||"gt";
@@ -309,12 +310,15 @@ function stTabYard(st){
       const base=genUniqueShip(hashi(G.tow.seed,0x0E57,7));
       base.by=TB;
       base.cls="восстановленный корпус";
+      /* корпус помнит (M482): 1–3 шрама с троса, по 12 % скидки за каждый */
+      base.scars=scarsRoll(hashi(G.tow.seed,0x5CA2,1),1+hashi(G.tow.seed,0x5CA2,2)%3);
       base.note="Пришёл на тросе чёрным, без имени и огней. "+
         (TP?"Стапель "+TP.ru+".":"")+" Что с ним было — не написано нигде.";
-      const cost=Math.round((2200+base.price*.45)/50)*50;
+      const cost=Math.round((2200+base.price*.45*scarPriceMul(base))/50)*50;
       $body.appendChild(el("div","sec","НА ТРОСЕ · ВОССТАНОВЛЕНИЕ"+(TP?" · "+TP.ru.toUpperCase():"")));
       const rr=el("div","row");
       rr.appendChild(el("div","nm","<b>Чёрный корпус</b><s>"+base.note+
+        (base.scars.length?"<br>шрамы: "+base.scars.map(k=>SCAR_KIND[k].ru).join(", ")+" — дешевле, чинит верфь":"")+
         "<br>тяга "+base.thr.toFixed(2)+" · поворот "+base.turn.toFixed(2)+
         " · трюм "+base.cargo+" · бак "+base.fuel+" · корпус "+base.hull+"</s>"));
       const rb=el("button","act"+(G.credits>=cost?" gold":""),cost.toLocaleString("ru")+" кр");

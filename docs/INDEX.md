@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 572 · символов верхнего уровня: 5521
+Файлов: 573 · символов верхнего уровня: 5532
 
 ## СИМВОЛЫ
 
@@ -1007,14 +1007,14 @@ CSW                          src/19e-clouds.js:68
 ctlHint                      src/15-input.js:171-175
 ctlReset                     src/15a-helm.js:126-131
 ctx                          src/08-state.js:3
-cue                          src/08-state.js:373-378
+cue                          src/08-state.js:374-379
 CUE_EPS                      src/27m-scroll-cue.js:25
-CUE_INFO                     src/08-state.js:353
-CUE_LVL                      src/08-state.js:354
-cueFold                      src/08-state.js:381-386
-cueLvl                       src/08-state.js:360-363
-cueReset                     src/08-state.js:364
-cueSameOffer                 src/08-state.js:372
+CUE_INFO                     src/08-state.js:354
+CUE_LVL                      src/08-state.js:355
+cueFold                      src/08-state.js:382-387
+cueLvl                       src/08-state.js:361-364
+cueReset                     src/08-state.js:365
+cueSameOffer                 src/08-state.js:373
 CULT_EXP_GOAL                src/12b3-fx-cult.js:22
 CULT_PLAY                    src/12b3-fx-cult.js:51-94
 CULT_PLAY_EVERY              src/12b3-fx-cult.js:19
@@ -1449,12 +1449,12 @@ drawSurface                  src/21e-surface-draw.js:277-291
 drawSurfaceHud               src/21e-surface-draw.js:21-115
 drawSurfaceWorld             src/21e1-surface-world.js:10-615
 drawSurvey                   src/12w-survey.js:63-89
-drawSysHud                   src/17-mode-system.js:741-988
+drawSysHud                   src/17-mode-system.js:742-989
 drawSysLane                  src/17g-sys-lane.js:75-103
 drawSysLaneShips             src/17g-sys-lane.js:112-138
 drawSysNebula                src/16a-space.js:208-236
 drawSysRail                  src/18f-rail-station.js:32-65
-drawSystem                   src/17-mode-system.js:455-740
+drawSystem                   src/17-mode-system.js:456-741
 drawSysTraffic               src/17f-sys-traffic.js:36-40
 drawTapes                    src/12s1-tape.js:36-48
 drawTemple                   src/20aa-poi-shapes.js:50-89
@@ -1571,7 +1571,7 @@ epiAdd                       src/12ap-notebook.js:56-83
 epiAll                       src/12ap-notebook.js:34
 epiBoth                      src/12ap-notebook.js:101-110
 epiGiftDue                   src/12ap-notebook.js:144-149
-epiGiftTake                  src/12ap-notebook.js:150-163
+epiGiftTake                  src/12ap-notebook.js:150-164
 epiHailLine                  src/12ap-notebook.js:118-126
 epiHere                      src/12ap-notebook.js:91-99
 epiNeverForgave              src/12ap-notebook.js:130-140
@@ -1811,7 +1811,7 @@ folkVisit                    src/12u-folk.js:104-113
 FOOD_SUPPLY                  src/21a1b-base-food.js:16
 foundBase                    src/21a-mode-base.js:101-115
 frame                        src/28-loop.js:599-645
-FRAME_IN                     src/08-state.js:343
+FRAME_IN                     src/08-state.js:344
 FRAME_JS                     src/28-loop.js:119
 FRAME_MS                     src/28-loop.js:141
 frameBody                    src/28-loop.js:411-531
@@ -2043,20 +2043,20 @@ GUN_FACTORY                  src/05b-guns.js:99-106
 GUN_FAM_KEYS                 src/05b-guns.js:93
 GUN_FAMILY                   src/05b-guns.js:24-92
 GUN_FIX_G1                   tests/91zzzw-guns.js:11-32
-GUN_GROUPS                   src/05c-arms.js:219
+GUN_GROUPS                   src/05c-arms.js:224
 GUN_LIST                     src/05-parts.js:322
 GUN_NAMED                    src/05b-guns.js:121-162
 GUN_NAMED_BY_ID              src/05b-guns.js:163
 GUN_NICK                     src/05b-guns.js:107
 GUN_RANGE0                   src/05c-arms.js:67
 gunAimTick                   src/05c-arms.js:174-188
-gunBarrelsDraw               src/05c-arms.js:255-290
+gunBarrelsDraw               src/05c-arms.js:260-295
 gunFactoryOf                 src/05b-guns.js:171
 gunFamilyApply               src/05c-arms.js:108-139
 gunFamilyKeyOf               src/05b-guns.js:170
 gunFireOnce                  src/13a-guns.js:113-259
-gunGroupOf                   src/05c-arms.js:220-224
-gunGroupPick                 src/05c-arms.js:230-248
+gunGroupOf                   src/05c-arms.js:225-229
+gunGroupPick                 src/05c-arms.js:235-253
 gunLeadAngle                 src/05c-arms.js:149-157
 gunMiss                      src/05c-arms.js:142-146
 gunNamedRoll                 src/05b-guns.js:165-168
@@ -2064,11 +2064,11 @@ gunNameOf                    src/05b-guns.js:173-176
 gunOnMount                   src/05c-arms.js:193-202
 GUNS_CACHE                   src/05c-arms.js:206
 gunSeriesOf                  src/05b-guns.js:169
-gunsInGroup                  src/05c-arms.js:225-228
+gunsInGroup                  src/05c-arms.js:230-233
 gunSpec                      src/05c-arms.js:72-76
 gunSpecMake                  src/05c-arms.js:77-102
-gunSpecs                     src/05c-arms.js:207-213
-gunTotals                    src/05c-arms.js:291-305
+gunSpecs                     src/05c-arms.js:207-218
+gunTotals                    src/05c-arms.js:296-310
 H_SILENT                     tests/91zzzzzzz-hands.js:39-41
 h01                          src/01-core.js:28
 HAIL_HOLD                    src/12ar-hail.js:20
@@ -2171,7 +2171,7 @@ heatAdd                      src/13a-guns.js:47-52
 heatHaze                     src/18d-postfx.js:76-80
 heatHazeFrom                 src/18d-postfx.js:58-73
 heatTick                     src/13a-guns.js:54-62
-held                         src/08-state.js:332
+held                         src/08-state.js:333
 HELM                         src/15a-helm.js:117
 HELM_ACC                     src/15a-helm.js:75
 HELM_ARC0                    src/15a-helm.js:99
@@ -3126,7 +3126,7 @@ mountsOf                     src/05d-mounts.js:29-45
 mountTakes                   src/05d-mounts.js:71-76
 mountWhyNot                  src/05d-mounts.js:78-84
 mouseWalkAt                  src/15-input.js:432-461
-msgHeld                      src/08-state.js:387
+msgHeld                      src/08-state.js:388
 MSL_ARM                      src/16b-missile.js:20
 MSL_COOL                     src/16b-missile.js:16
 MSL_DMG                      src/16b-missile.js:14
@@ -3281,9 +3281,9 @@ normsOf                      src/12ab-hold.js:89-97
 note                         tests/90-harness.js:102
 NOTE_MAX                     src/12ap-notebook.js:32
 noteAll                      src/12ap-notebook.js:35
-noteAsk                      src/12ap-notebook.js:208-228
-noteAskable                  src/12ap-notebook.js:204-207
-noteBlock                    src/12ap-notebook.js:167-202
+noteAsk                      src/12ap-notebook.js:209-229
+noteAskable                  src/12ap-notebook.js:205-208
+noteBlock                    src/12ap-notebook.js:168-203
 now                          src/01-core.js:88
 NPC_BATTLE                   src/13d-npc.js:14
 NPC_PICKET                   src/13d-npc.js:13
@@ -3422,7 +3422,7 @@ optGroups                    src/27-ui-ship.js:338-355
 OPTS_BOOT                    tests/90-harness.js:203
 optsNumify                   src/14a2-save-ephemeral.js:23-28
 optTab                       src/27-ui-ship.js:337
-orbPathOf                    src/17-mode-system.js:444-454
+orbPathOf                    src/17-mode-system.js:445-455
 ORDER_WIN                    src/12aa-need.js:76
 orderDeliver                 src/12aa-need.js:116-127
 orderHere                    src/12aa-need.js:112-115
@@ -4424,9 +4424,20 @@ saveGame                     src/14a-cloud.js:38-51
 saveText                     src/14-save.js:148-186
 saveTop                      src/14-save.js:142-145
 saveWeigh                    src/14-save.js:129-141
-say                          src/08-state.js:344
+say                          src/08-state.js:345
 SCALE_KEYS                   src/10-music.js:25
 SCALES                       src/10-music.js:5-24
+SCAR_KEYS                    src/05b2-scars.js:14
+SCAR_KIND                    src/05b2-scars.js:9-13
+scarBlock                    src/05b2-scars.js:44-58
+scarFactors                  src/05b2-scars.js:23-25
+scarFix                      src/05b2-scars.js:36-42
+scarFixCost                  src/05b2-scars.js:35
+scarHas                      src/05b2-scars.js:21
+scarPriceMul                 src/05b2-scars.js:27
+scarsOf                      src/05b2-scars.js:20
+scarsRoll                    src/05b2-scars.js:15-19
+scarTick                     src/05b2-scars.js:29-34
 SCK                          src/18c-chunks.js:39
 SCOOP_BAND                   src/19a-mode-scoop.js:15
 SCOOP_PX                     src/19a-mode-scoop.js:16
@@ -4806,7 +4817,7 @@ starRGB                      src/19c-light.js:49-59
 start                        src/15-input.js:615-623
 startLanding                 src/19-mode-landing.js:2-33
 startScoop                   src/19a-mode-scoop.js:51-61
-stat                         src/08-state.js:264-331
+stat                         src/08-state.js:264-332
 STAT_SHOW                    src/05-parts.js:425-437
 STATE_HASH_SKIP              src/08a-statehash.js:24-29
 stateHash                    src/08a-statehash.js:30-81
@@ -4897,7 +4908,7 @@ stTabLab                     src/26b-ui-station-work.js:292-357
 stTabMarket                  src/26e-ui-station-trade.js:148-244
 stTabMods                    src/26b-ui-station-work.js:105-357
 stTabsHere                   src/26-ui-station.js:141
-stTabYard                    src/26e-ui-station-trade.js:245-386
+stTabYard                    src/26e-ui-station-trade.js:245-390
 stTypeOf                     src/06-galaxy.js:73
 STUN_TIME                    src/13a-guns.js:27
 subdivide                    src/24-mode-belt.js:34-49
@@ -5193,7 +5204,7 @@ updateRail                   src/18g-rail-ride.js:40-68
 updateScoop                  src/19a-mode-scoop.js:75-176
 updateSpa                    src/29i-spa-draw.js:514-519
 updateSurface                src/21-mode-surface.js:200-657
-updateSystem                 src/17-mode-system.js:53-440
+updateSystem                 src/17-mode-system.js:53-441
 updateWanderRoom             src/24c-mode-wanderer.js:58-88
 updateWinter                 src/29g-winter-draw.js:808-817
 useBeacon                    src/23-mode-dig.js:88-113
@@ -5490,7 +5501,7 @@ WORLD_SPREAD                 src/10-music.js:99
 WORLD_SUB                    src/08-state.js:169
 WORLD_VIB                    src/10-music.js:98
 WORLD_VOICE                  src/10-music.js:57-73
-worldCovered                 src/08-state.js:391
+worldCovered                 src/08-state.js:392
 worldQuiet                   src/11ar-doors.js:32
 worldRes                     src/02a-worldmix.js:119-126
 worldTables                  src/02a-worldmix.js:86-117
@@ -5598,6 +5609,9 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## src/05b1-warranty.js · 5 КБ
   · гарантия / техподдержка / изолента (M495, DESIGN-birchpunk §4.1):1
+
+## src/05b2-scars.js · 3 КБ
+  · корпус помнит — шрамы (M482, DESIGN-shipyard §6):1
 
 ## src/05c-arms.js · 20 КБ
   · орудие в семи числах, щит в трёх повадках (M362, §2 §4):1
@@ -6563,7 +6577,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/26d-ui-wanderer.js · 5 КБ
   · пульт «Сороки»: карточка витрины перед вами (M343):1
 
-## src/26e-ui-station-trade.js · 28 КБ
+## src/26e-ui-station-trade.js · 29 КБ
   · станция: доска, рынок и док (выделено из 26, M415):1
 
 ## src/26e1-stapel.js · 11 КБ
@@ -7224,7 +7238,7 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## tests/91zzzzk5-plan.js · 9 КБ
 
-## tests/91zzzzk6-stapel.js · 7 КБ
+## tests/91zzzzk6-stapel.js · 8 КБ
 
 ## tests/91zzzzl-maphold.js · 5 КБ
   · автотесты: владения на карте (M348):1

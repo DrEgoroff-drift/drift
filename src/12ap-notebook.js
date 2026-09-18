@@ -153,6 +153,7 @@ function epiGiftTake(by){
   G.gifts[by]=1;
   const sh=genUniqueShip(hashi(0x91F7,MAKER_KEYS.indexOf(by)+1,G.sx|0));
   sh.by=by;sh.cls="корпус со списания";
+  sh.scars=scarsRoll(hashi(sh.seed,0x5CA2,3),1);   /* со списания — один шрам (M482) */
   const P=(typeof powerOf==="function")?powerOf(by):null;
   sh.note="Отдан, а не продан. "+(P?P.ru:"")+" списала его и не стала резать.";
   const uid="g"+by+(sh.seed>>>0);

@@ -94,3 +94,21 @@ TEST_SUITES.push(()=>suite("Космопочта: часы на двери, из
   ok(!!id&&o.kind===1&&G.owned[id],"«полежит ещё денёк» — и выдали: "+id);
   clockSet(base);G.stapel={};delete G.uniqueShips[id];delete G.owned[id];void r0;
 }));
+TEST_SUITES.push(()=>suite("корпус помнит: шрамы бьют по числам, верфь чинит",()=>{
+  resetWorld();
+  const id="uScarT",base=genUniqueShip(4242);base.scars=[];
+  G.uniqueShips[id]=base;G.owned[id]=true;G.shipId=id;
+  const s0=stat();
+  base.scars=["burn","bent","leak"];
+  const s1=stat();
+  ok(s1.cargoMax<s0.cargoMax,"выгоревшая клетка — трюм меньше: "+s0.cargoMax+" → "+s1.cargoMax);
+  ok(s1.turn<s0.turn,"погнутый подвес — поворот хуже");
+  ok(Math.abs(scarPriceMul(base)-.64)<1e-9,"три шрама — на 36 % дешевле");
+  G.mode="system";G.fuel=100;scarTick();
+  ok(G.fuel<100,"течёт бак: "+G.fuel.toFixed(2));
+  const r=scarsRoll(7,3);ok(r.length>=1&&r.length<=3&&r.every(k=>SCAR_KIND[k]),"бросок шрамов: "+r.join(","));
+  G.credits=1e6;ok(scarFix(id,"burn")&&!scarHas(base,"burn"),"верфь заварила клетку");
+  /* шрамы — история: в сейве */
+  const snap=snapshot();eq(JSON.stringify(snap.uniqueShips[id].scars),JSON.stringify(["bent","leak"]),"шрамы лежат в сейве");
+  G.shipId="strizh";delete G.uniqueShips[id];delete G.owned[id];
+}));

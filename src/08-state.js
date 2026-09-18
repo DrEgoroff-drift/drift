@@ -275,6 +275,7 @@ function stat(){
   const WT=(typeof wanderStat==="function")?wanderStat():{turn:1,fuel:0,jump:0,cool:1};
   /* чертёж (M478, 27jb): без правки оба множителя — ровно 1 */
   const PF=(typeof planFactors==="function")?planFactors():{cargo:1,mass:1};
+  const SC=(typeof scarFactors==="function")?scarFactors(S):{cargo:1,turn:1};   /* шрамы корпуса (M482) */
   /* орудие, поле и реактор как ВЕЩИ, а не как два числа (M362, 05c-arms):
      семь чисел ствола, повадка щита и ёмкость энергии считаются от того,
      что стоит в гнёздах, — поэтому их части нужны здесь по отдельности */
@@ -293,9 +294,9 @@ function stat(){
     /* налёт часов: облезлая машина слушается хуже — единственное, чем износ
        вмешивается в арифметику (12s-wear) */
     thr:S.thr*(1+m.engine*.19)*mul("thrMul")*bpMul("cleanjet",1.1,.93)*(cr("moth")?1.25:1)*(1+rs("thr"))*wearMul()*PF.mass,
-    turn:S.turn*(1+m.engine*.07)*mul("turnMul")*(cr("moth")?1.25:1)*(1+rs("turn"))*wearMul()*WT.turn*PF.mass,
+    turn:S.turn*(1+m.engine*.07)*mul("turnMul")*(cr("moth")?1.25:1)*(1+rs("turn"))*wearMul()*WT.turn*PF.mass*SC.turn,
     fuelMax:Math.max(20,Math.round(S.fuel*(1+m.tank*.3)+(B.has("icecore")?50:0)+(P.fuelAdd||0)+(cr("well")?60:0)+rs("fuel")+WT.fuel)),
-    cargoMax:Math.max(8,-(typeof vegaAboard==="function"&&vegaAboard()?1:0)-(typeof zooCargoSlots==="function"?zooCargoSlots():0)+Math.round(S.cargo*PF.cargo*(1+m.hold*.32)*(T.has("pack")?1.4:1)*(B.has("bioseal")?1.2:1)*mul("cargoMul")*bpMul("wide",1.12,.92)*(cr("ark")?1.2:1)*(1+rs("cargo")))),
+    cargoMax:Math.max(8,-(typeof vegaAboard==="function"&&vegaAboard()?1:0)-(typeof zooCargoSlots==="function"?zooCargoSlots():0)+Math.round(S.cargo*PF.cargo*SC.cargo*(1+m.hold*.32)*(T.has("pack")?1.4:1)*(B.has("bioseal")?1.2:1)*mul("cargoMul")*bpMul("wide",1.12,.92)*(cr("ark")?1.2:1)*(1+rs("cargo")))),
     hullMax:Math.max(20,Math.round((gunList.some(a=>a.g&&a.g.fx==="ram")?1.35:1)*(S.hull*(1+m.armor*.2)+(T.has("cera")?30:0)+(B.has("crystplate")?40:0)+(P.hullAdd||0)+(bpState("hardweld")>0?25:(bpState("hardweld")<0?-15:0))+(cr("ark")?40:0)))),
     drill:(cr("cair")?1.3:1)*(1+m.drill*.55)*(T.has("drone")?2:1)*drillBonus*(B.has("iridrill")?1.25:1)*mul("drillMul")*bpMul("coldbore",1.18,.88)*(1+rs("drill")),
     synthRatio:B.has("isosynth")?8:4,

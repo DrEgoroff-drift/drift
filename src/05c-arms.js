@@ -205,11 +205,16 @@ function gunOnMount(g,m){
    а список меняется только при смене оснастки или уровня. */
 let GUNS_CACHE=null,GUNS_KEY="";
 function gunSpecs(list,dmg,cool,lvl){
-  const key=dmg+"|"+cool+"|"+lvl+"|"+list.map(a=>a.slot+":"+a.part.seed+":"+a.part.tier+":"+(a.m?a.m.mount:"-")).join(",");
+  /* погнутый подвес (M482): конус первого ствола на треть уже */
+  const arc=(typeof scarFactors==="function")?scarFactors(shipData(G.shipId)).arc:1;
+  const key=dmg+"|"+cool+"|"+lvl+"|"+arc+"|"+list.map(a=>a.slot+":"+a.part.seed+":"+a.part.tier+":"+(a.m?a.m.mount:"-")).join(",");
   if(GUNS_KEY===key&&GUNS_CACHE)return GUNS_CACHE;
   GUNS_KEY=key;
-  return GUNS_CACHE=list.map(a=>({slot:a.slot,part:a.part,m:a.m,
-    g:gunOnMount(gunSpecMake(dmg,cool,a.part,lvl),a.m)}));
+  return GUNS_CACHE=list.map((a,i)=>{
+    let g=gunOnMount(gunSpecMake(dmg,cool,a.part,lvl),a.m);
+    if(i===0&&arc<1&&g.cone<Math.PI){g=Object.assign({},g);g.cone=+(g.cone*arc).toFixed(3);}
+    return {slot:a.slot,part:a.part,m:a.m,g};
+  });
 }
 /* ── группы 1–3 (§3.3) ──
    «всё», «дальнее», «ближнее». Дальнее — стволы с дальностью выше средней
