@@ -125,6 +125,31 @@ function renderOpts(){
     $optBody.appendChild(rr);
   };
   volRow("Музыка","фоновая мелодия, своя в каждой локации и на каждой планете","music");
+  /* ── радио (10a): треки, генератор или прежний эмбиент ── */
+  const SRC=[["tracks","ТРЕКИ"],["gen","ГЕНЕРАТОР"],["ambient","ЭМБИЕНТ"]];
+  const SRC_NOTE={tracks:"десять пьес по полторы минуты — идут по кругу, их можно листать",
+    gen:"каждая пьеса сочиняется заново и больше не повторится",
+    ambient:"прежняя музыка слоями — без начала и конца"};
+  const rsrc=el("div","row");
+  rsrc.appendChild(el("div","nm","<b>Что играет</b><s>"+SRC_NOTE[radioSrc()]+"</s>"));
+  const bsrc=el("button","act gold",SRC.find(s=>s[0]===radioSrc())[1]);
+  bsrc.onclick=()=>{const i=SRC.findIndex(s=>s[0]===radioSrc());G.opts.audio.src=SRC[(i+1)%SRC.length][0];
+    radioSkip(0);unlockAudio();renderOpts();};
+  rsrc.appendChild(bsrc);$optBody.appendChild(rsrc);
+  if(radioOn()){
+    const rt=el("div","row");
+    const gen=radioSrc()==="gen";
+    const name=gen?(radioNow()||"—"):RADIO_TRACKS[G.opts.audio.track|0].n;
+    rt.appendChild(el("div","nm","<b>"+name+"</b><s>"+(gen?"пьеса № "+(G.opts.audio.genN|0):
+      "трек "+((G.opts.audio.track|0)+1)+" из "+RADIO_TRACKS.length)+"</s>"));
+    if(!gen){
+      const bp=el("button","act","◀");bp.onclick=()=>{radioSkip(-1);unlockAudio();renderOpts();};
+      rt.appendChild(bp);
+    }
+    const bn=el("button","act gold",gen?"ДРУГАЯ":"▶");
+    bn.onclick=()=>{radioSkip(1);unlockAudio();renderOpts();};
+    rt.appendChild(bn);$optBody.appendChild(rt);
+  }
   volRow("Эффекты","выстрелы, бур, шаги, интерфейс","sfx",()=>sfx("ui",{f:900}));
   volRow("Двигатель","гул тяги — звучит только когда двигатель работает","engine",()=>{
     engineLoop(1,.5);setTimeout(stopEngine,700);});

@@ -382,6 +382,11 @@ function applySaveRest(s){
   if(typeof G.opts.audio.music!=="number")G.opts.audio.music=.6;
   if(typeof G.opts.audio.sfx!=="number")G.opts.audio.sfx=.6;
   if(typeof G.opts.audio.engine!=="number")G.opts.audio.engine=.4;
+  /* радио (10a): источник, номер трека, счётчик генератора */
+  if(!["tracks","gen","ambient"].includes(G.opts.audio.src))G.opts.audio.src="tracks";
+  if(!(G.opts.audio.track>=0&&G.opts.audio.track<RADIO_TRACKS.length))G.opts.audio.track=0;
+  G.opts.audio.track|=0;
+  if(!(G.opts.audio.genN>=0))G.opts.audio.genN=0;
   invalidateKeyMap();applyPadMode();applyPadSize();applyVolumes();
   return true;
 }

@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 593 · символов верхнего уровня: 5745
+Файлов: 594 · символов верхнего уровня: 5784
 
 ## СИМВОЛЫ
 
@@ -135,7 +135,7 @@ applyCrewEvent               src/12b-crew-events.js:215-224
 applyPadMode                 src/15-input.js:72-75
 applyPadSize                 src/15-input.js:8
 applySave                    src/14-save.js:216-625
-applySaveRest                src/14a1-save-rest.js:15-387
+applySaveRest                src/14a1-save-rest.js:15-392
 applyVolumes                 src/09-audio.js:40-47
 apVel                        src/16-flight.js:132
 ARC_JUMP                     src/13a-guns.js:39
@@ -2811,7 +2811,7 @@ lawLunch                     src/12al2-laws.js:37-41
 lawNormTake                  src/12al2-laws.js:30-35
 lawOwner                     src/12al2-laws.js:16
 lawRingTick                  src/12al2-laws.js:43-55
-layerLevel                   src/10-music.js:362-376
+layerLevel                   src/10-music.js:362-377
 ldFoe                        tests/91zzzw-combat.js:472-476
 LEADBREAK                    src/13a-guns.js:42
 ledgerAll                    src/11ai-ledger.js:36-39
@@ -2978,7 +2978,7 @@ mailToday                    src/25j-post-wire.js:40
 mailWire                     src/25j-post-wire.js:55-63
 MAIN_CTX                     src/08-state.js:4
 makeIR                       src/10-music.js:109-121
-makePhrase                   src/10-music.js:380-403
+makePhrase                   src/10-music.js:381-404
 MAKER_ASSEMBLY               src/03a-hull-maker.js:463
 MAKER_CV                     src/28y-look.js:311
 MAKER_KEYS                   src/03a-hull-maker.js:73
@@ -3254,10 +3254,10 @@ MUS_WET                      src/10-music.js:105
 musBeacon                    src/10-music.js:275-300
 MUSIC_SCENES                 src/10-music.js:27-36
 musicInit                    src/10-music.js:142-223
-musicSceneNow                src/10-music.js:489-524
+musicSceneNow                src/10-music.js:493-528
 musicSetScene                src/10-music.js:326-361
-musicStop                    src/10-music.js:525-530
-musicTick                    src/10-music.js:406-487
+musicStop                    src/10-music.js:529-535
+musicTick                    src/10-music.js:407-491
 musNote                      src/10-music.js:229-269
 musPerc                      src/10-music.js:301-325
 NAME_MAX                     src/11u-names.js:14
@@ -3519,11 +3519,11 @@ opisSlotOf                   src/27j-ui-opis.js:104-108
 opisTarget                   src/27j-ui-opis.js:89-103
 opisUnfit                    src/27j-ui-opis.js:218
 opisWear                     src/27j-ui-opis.js:247-251
-OPT_TABS                     src/27-ui-ship.js:335
-optGroups                    src/27-ui-ship.js:338-355
+OPT_TABS                     src/27-ui-ship.js:360
+optGroups                    src/27-ui-ship.js:363-380
 OPTS_BOOT                    tests/90-harness.js:203
 optsNumify                   src/14a2-save-ephemeral.js:23-28
-optTab                       src/27-ui-ship.js:337
+optTab                       src/27-ui-ship.js:362
 orbPathOf                    src/17-mode-system.js:470-480
 ORDER_WIN                    src/12aa-need.js:76
 orderDeliver                 src/12aa-need.js:116-127
@@ -4009,9 +4009,48 @@ rackRoller                   src/25d-instr-rack.js:290-319
 rackScrew                    src/25d-instr-rack.js:84-92
 rackTex                      src/25d-instr-rack.js:168-282
 rackToggle                   src/25d-instr-rack.js:56-59
+RADIO                        src/10a-radio.js:51
 RADIO_BANDS                  src/25e-receiver.js:13-18
+RADIO_GEN_A                  src/10a-radio.js:49
+RADIO_GEN_B                  src/10a-radio.js:50
+RADIO_LAYERS                 src/10a-radio.js:53
+RADIO_MODES                  src/10a-radio.js:32-35
+RADIO_MOOD                   src/10a-radio.js:42-48
+RADIO_PROGS                  src/10a-radio.js:37-40
+RADIO_TRACKS                 src/10a-radio.js:19-31
+radioAdvance                 src/10a-radio.js:122-125
+radioArp                     src/10a-radio.js:262-268
 radioBand                    src/25e-receiver.js:19-27
+radioBass                    src/10a-radio.js:250-261
+radioBell                    src/10a-radio.js:315-324
+radioBpm                     src/10a-radio.js:150
+radioBuild                   src/10a-radio.js:60-91
+radioDeg                     src/10a-radio.js:156
+radioDrums                   src/10a-radio.js:286-292
+radioEnv                     src/10a-radio.js:231-236
+radioForm                    src/10a-radio.js:102-107
+radioGenTrack                src/10a-radio.js:94-101
+radioHat                     src/10a-radio.js:309-314
+radioKick                    src/10a-radio.js:293-298
+radioLead                    src/10a-radio.js:269-285
+radioLoad                    src/10a-radio.js:108-120
+radioMelody                  src/10a-radio.js:215-228
+radioMix                     src/10a-radio.js:139-149
+radioMoodNow                 src/10a-radio.js:132-138
+radioNow                     src/10a-radio.js:57
+radioOn                      src/10a-radio.js:56
+radioPhrase                  src/10a-radio.js:202-214
+radioS16                     src/10a-radio.js:151
+radioScale                   src/10a-radio.js:152-155
+radioSkip                    src/10a-radio.js:126-130
+radioSnare                   src/10a-radio.js:299-308
+radioSrc                     src/10a-radio.js:55
+radioStep                    src/10a-radio.js:178-199
+radioStop                    src/10a-radio.js:325-330
+radioStrings                 src/10a-radio.js:237-249
+radioTick                    src/10a-radio.js:159-172
 radioTune                    src/25e-receiver.js:29-85
+radioWhere                   src/10a-radio.js:173-177
 RAID_N                       src/24a-mode-raid.js:6
 RAID_ROOMS                   src/24a-mode-raid.js:7-13
 raidFloorAt                  src/24a-mode-raid.js:77
@@ -4261,7 +4300,7 @@ renderHold                   src/27j-ui-hold.js:252
 renderLog                    src/11-log.js:94-117
 renderLoreBoard              src/27h-ui-lore.js:26-79
 renderMail                   src/25k-post-mail.js:36-109
-renderOpts                   src/27-ui-ship.js:58-330
+renderOpts                   src/27-ui-ship.js:58-355
 renderPrices                 src/12aa-need.js:258-285
 renderQsl                    src/11an-qsl.js:160-201
 renderRecord                 src/11aa-record.js:86-109
@@ -5892,6 +5931,9 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/10-music.js · 33 КБ
   · музыка: слои, а не треки:1
 
+## src/10a-radio.js · 19 КБ
+  · радио: треки и генератор:1
+
 ## src/11-log.js · 10 КБ
   · бортовой журнал:1
 
@@ -6861,7 +6903,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/26e2-post.js · 8 КБ
   · Космопочта — учреждение как погода (M492, DESIGN-birchpunk):1
 
-## src/27-ui-ship.js · 24 КБ
+## src/27-ui-ship.js · 26 КБ
   · силуэт корпуса и вход в ОПИСЬ:1
 
 ## src/27b-ui-crew.js · 15 КБ

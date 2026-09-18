@@ -362,6 +362,7 @@ function musicSetScene(key,scene){
 function layerLevel(k,scene){
   const w=scene[k]||0;
   if(typeof expQuiet==="function"&&expQuiet())return 0;   /* минута тишины (M159) */
+  if(radioOn())return 0;                                    /* играет радио (10a) */
   /* перкуссия и плотность мотива подчиняются напряжению: в бою музыка
      собирается сама, а после — расходится, без отдельного «боевого трека» */
   if(k==="perc")return (w+MUS.intensity*.5)*.2;
@@ -405,6 +406,9 @@ function makePhrase(seed,steps){
    музыку не дёргают — она вообще не привязана к requestAnimationFrame */
 function musicTick(){
   if(!MUS.ready||!MUS.sc||!audioOn()||!SND.ready||SND.ctx.state!=="running")return;
+  /* радио (10a): пьесы вместо слоёв; эмбиент при этом молчит — его слои в нуле */
+  if(radioOn()){radioTick();return;}
+  if(RADIO.trk){radioStop();MUS.key=null;return;}     // слои эмбиента поднимет musicSetScene
   const c=SND.ctx,sc=MUS.sc,steps=SCALES[sc.scale]||SCALES.minor;
   /* Сетка — половинка, а не восьмая. Шаг в 2-3 секунды: у ноты есть время
      распуститься и затухнуть. В бою напряжение стягивает сетку вдвое —
@@ -527,4 +531,5 @@ function musicStop(){
   const t=SND.ctx.currentTime;
   for(const k of MUS_LAYERS)MUS.layers[k].gain.setTargetAtTime(0,t,.4);
   MUS.key=null;
+  radioStop();
 }
