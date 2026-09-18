@@ -9784,7 +9784,7 @@ const G={
   inv:[],fit:{},shield:0,shieldHit:0,energy:0,loot:[],partsBought:{},
   /* допуск и налёт (M363, §11.4): допуск не падает, налёт копится только в полёте */
   clearance:1,flownMs:0,gunGroup:0,
-  mined:{},farTaken:{},draft:{},smenaAt:{},stapel:{},thrown:[],bazBought:null,tapeRoll:0,tapes:{},actWk:null,   /* выработанные залежи по планетам; неделя налёта и талоны (05e) */
+  mined:{},farTaken:{},draft:{},smenaAt:{},stapel:{},thrown:[],bazBought:null,railParcel:null,railPass:null,railSeal:0,tapeRoll:0,tapes:{},actWk:null,   /* выработанные залежи по планетам; неделя налёта и талоны (05e) */
   tech:new Set(),techLvl:{},barter:new Set(),
   found:new Set(),species:new Set(),
   ap:null,          // автопилот
@@ -18314,6 +18314,7 @@ function buyCargo(sys,k,qty){
 function sellCargo(sys,k,qty){
   /* обед Коммуны (M456): приёмка закрыта час, топливо — всегда */
   if(typeof lawLunch==="function"&&lawLunch()&&sys===G.sys){say("Обед. Приёмка с 14:00",90);return 0;}
+  if(G.railSeal){say("Трюм опломбирован\nОрднунг: до места назначения",90);return 0;}   /* пломба (M508) */
   qty=Math.min(qty,G.cargo[k]);
   if(qty<=0)return 0;
   /* аппетит станции (M290): первые N в смену — с надбавкой, остальное по обычной.
@@ -41676,7 +41677,7 @@ function snapshot(){
     inv:G.inv.map(packPart),fit:G.fit,partsBought:prunePartsBought(),
     tech:[...G.tech],techLvl:G.techLvl,barter:[...G.barter],found:[...G.found],
     species:[...G.species],bioV:2,
-    opts:G.opts,zoom:G.zoom,market:G.market,uniqueShips:(typeof stapelStrip==="function")?stapelStrip(G.uniqueShips):G.uniqueShips,stapel:G.stapel||{},thrown:G.thrown||[],bazBought:G.bazBought||null,tow:G.tow,
+    opts:G.opts,zoom:G.zoom,market:G.market,uniqueShips:(typeof stapelStrip==="function")?stapelStrip(G.uniqueShips):G.uniqueShips,stapel:G.stapel||{},thrown:G.thrown||[],railParcel:G.railParcel||null,railPass:G.railPass||null,railSeal:G.railSeal?1:0,bazBought:G.bazBought||null,tow:G.tow,
     episodes:G.episodes,notebook:G.notebook,gifts:G.gifts,mslBy:G.mslBy,
     bonds:G.bonds,bondHold:G.bondHold,coupN:G.coupN,
     letter:G.letter||null,dipSwapN:G.dipSwapN,smugN:G.smugN,smugBy:G.smugBy,
@@ -41839,6 +41840,7 @@ function applySave(s){
   if(typeof hudNumDirty==="function")hudNumDirty();
   G.sx=s.sx|0;G.sy=s.sy|0;G.sys=getSystem(G.sx,G.sy);
   G.uniqueShips=asMap(s.uniqueShips);
+  G.railParcel=(s.railParcel&&typeof s.railParcel==="object")?s.railParcel:null;G.railPass=(s.railPass&&typeof s.railPass==="object")?s.railPass:null;G.railSeal=s.railSeal?1:0;   /* M499–M508 */
   G.thrown=Array.isArray(s.thrown)?s.thrown.slice(0,12):[];G.bazBought=(s.bazBought&&typeof s.bazBought==="object")?s.bazBought:null;   /* барахолка (M463) */
   G.stapel=asMap(s.stapel);if(typeof stapelRestore==="function")stapelRestore();   /* заказанные корпуса выводятся из заказа (M481) */
   G.tow=(s.tow&&typeof s.tow==="object")?s.tow:null;   /* корпус на тросе (M369b) */
@@ -53114,7 +53116,8 @@ function railFare(t){
   const metro=Math.hypot(G.sx,G.sy)<=RAIL_METRO_R&&Math.hypot(t.to.sx,t.to.sy)<=RAIL_METRO_R;
   const fare=metro?5:Math.max(4,Math.round(2*t.dist));
   const bag=metro?0:Math.ceil(held()/5);
-  return {fare,bag,sum:fare+bag,metro};
+  const F={fare,bag,sum:fare+bag,metro};
+  return (typeof railPassFare==="function")?railPassFare(F):F;   /* проездной (M500) */
 }
 function railWinOpen(){const w=typeof document!=="undefined"&&document.getElementById("railWin");return !!(w&&w.classList.contains("open"));}
 function railWinClose(){const w=document.getElementById("railWin");if(w)w.classList.remove("open");RAIL_WAIT=null;}
@@ -53145,9 +53148,11 @@ function railWinRender(){
         h+="<button class='act rw-go' data-i='"+i+"' data-x='1'>EXPRESS™ ДО «"+railStopName(t.to).toUpperCase()+"» · "+(F.fare*RAIL_EXPRESS_MUL)+" КР<s>на три секунды быстрее!</s></button>";
     });
   }
+  if(typeof railLifeHtml==="function")h+=railLifeHtml();   /* посылка, проездной, попутчик, пломба (M499–M508) */
   h+="<div class='rw-sec'>БУФЕТ</div><button class='act rw-buf'>"+(RAIL_BUFFET[by]||RAIL_BUFFET.gt).toUpperCase()+" · 3 КР</button>";
   h+="<button class='act rw-out'>ВЫЙТИ НА ПЕРРОН</button>";
   w.innerHTML=h;
+  if(typeof railLifeBind==="function")railLifeBind(w);
   const D=railDestinations();
   w.querySelectorAll(".rw-go").forEach(b=>b.onclick=()=>railBuy(D[+b.dataset.i],!!b.dataset.x));
   w.querySelector(".rw-buf").onclick=railBuffet;
@@ -53160,6 +53165,7 @@ function railBuy(t,express){
   if(express){F.fare*=RAIL_EXPRESS_MUL;F.sum=F.fare+F.bag;}
   if(G.credits<F.sum){say("Не хватает на билет\nнужно "+F.sum+" кр",90);return;}
   G.credits-=F.sum;
+  if(typeof railLifeBoard==="function")railLifeBoard(t,F);
   logAdd("money",(F.metro?"Жетон":"Билет")+" до «"+railStopName(t.to)+"» · −"+F.sum+" кр"+(F.bag?" (багаж "+F.bag+")":""));
   RAIL_WAIT={...t,express:!!express,t:railWaitNow(G.sx,G.sy)};
   railWinRender();
@@ -53231,6 +53237,7 @@ function updateRail(dt){
       /* Хай-Фронт: «обновление установлено» — линия стоит на первой остановке */
       const hp=(typeof railHfPauseAt==="function"&&R.seg===1)?railHfPauseAt(R):0;
       if(hp){R.hfDone=1;R.hold=2+hp;say("Обновление установлено\nперезагрузка линии · "+hp+" с",200);return;}
+      if(typeof railLifeStop==="function")railLifeStop(R);   /* чай, попутчик (M501–M502) */
       if(last)say("Конечная. «"+railStopName(s)+"»\nпоезд дальше не идёт, просьба освободить вагоны",150);
       else say("Станция «"+railStopName(s)+"»\nследующая — «"+railStopName(R.l.stops[R.seq[R.seg+1]])+"»",110);
     }
@@ -53256,6 +53263,7 @@ function railExit(){
     const P=sysLane(sys);
     if(P){const x=P.st.x-P.ux*RAIL_RING_OFF,y=P.st.y-P.uy*RAIL_RING_OFF;at={x:x+P.ux*60,y:y+P.uy*60,a:Math.atan2(P.uy,P.ux)};}
   }
+  if(typeof railLifeExit==="function")railLifeExit(s);   /* посылка, попутчик, пломба (M499–M508) */
   arriveSystem(s.sx,s.sy,{rail:true,at});
   G.ship.vx=(at?Math.cos(at.a):0)*.5;G.ship.vy=(at?Math.sin(at.a):0)*.5;
 }
@@ -53336,6 +53344,114 @@ function railHfPauseAt(R){
   return (hashi(R.seq[0],R.seq.length,(R.t0|0)&1023)%3===0)?RAIL_HF_PAUSE:0;
 }
 function railOwnerAt(st){return (typeof stampOwnerAt==="function")?stampOwnerAt(st.sx,st.sy):null;}
+
+/* ══════════════ жизнь на железной дороге (M499–M502, M508; PLAN «new mechanics») ══════════════
+   Вестибюль и вагон, в которых есть люди:
+   M499 ПОПУТНАЯ ПОСЫЛКА — Космопочта просит довезти посылку до остановки на
+        вашей линии; доставлено ВЫХОДОМ там — пара кредитов и слух (G.railParcel);
+   M500 ПРОЕЗДНОЙ — ГЛАВТРАССЫ, единственная честная подписка в игре:
+        окупается за 12 поездок, так и написано; каждая поездка — отметка
+        в КНИЖКЕ (G.railPass = {until, rides});
+   M501 ПОПУТЧИК — пассажир просит взять с собой: платит свой билет,
+        говорит в дороге, на выходе оставляет слух;
+   M502 ПРОВОДНИК — на электричке в 3+ остановки единственный человек дороги
+        приносит чай в подстаканнике: слух и тепло;
+   M508 ПЛОМБА — у Орднунга задекларированный трюм пломбируют при посадке:
+        до выхода из него ничего не продать (G.railSeal). */
+const RAIL_PASS_RIDES=12,RAIL_PASS_LIFE=10;   /* поездок до окупаемости; смен действует */
+let RAIL_LIFE={pax:null,tea:false,teaDone:false};
+function railBucket(){return Math.floor(now()/HOLD_SHIFT);}
+/* ── проездной ── */
+function railPassOn(){return !!(G.railPass&&now()<G.railPass.until);}
+function railPassPrice(){
+  const D=railDestinations();if(!D.length)return 0;
+  let s=0;for(const t of D)s+=railFare(t).fare;
+  return Math.round(s/D.length*RAIL_PASS_RIDES);
+}
+function railPassBuy(){
+  const p=railPassPrice();if(!p||railPassOn())return false;
+  if(G.credits<p){say("Не хватает на проездной\nнужно "+p+" кр",90);return false;}
+  G.credits-=p;G.railPass={until:now()+RAIL_PASS_LIFE*HOLD_SHIFT,rides:0,price:p};
+  logAdd("money","Проездной ГЛАВТРАССЫ · −"+p+" кр · на "+RAIL_PASS_LIFE+" смен · окупается за "+RAIL_PASS_RIDES+" поездок");
+  return true;
+}
+/* ── посылка ── */
+function railParcelOffer(){
+  if(G.railParcel)return null;
+  const D=railDestinations();if(!D.length)return null;
+  const h=hashi(G.sx,G.sy,railBucket()^0x9A7C);
+  if(h%3)return null;                                   /* не на каждой станции и не всякую смену */
+  const t=D[h%D.length];
+  return {sx:t.to.sx,sy:t.to.sy,to:railStopName(t.to),pay:6+t.k*3,from:railStopName({sx:G.sx,sy:G.sy}),b:railBucket()};
+}
+function railParcelTake(){
+  const o=railParcelOffer();if(!o)return false;
+  G.railParcel=o;
+  logAdd("dim","Космопочта: «Раз уж вы едете — посылочка до «"+o.to+"». Не кантовать.» · в трюме");
+  return true;
+}
+/* ── попутчик ── */
+const RAIL_PAX=["бабушка с рассадой","студент с тубусом","монтёр в каске","проводник на смене — едет домой","девушка с виолончелью","дед с ведром"];
+const RAIL_PAX_TALK=["«А я в ваши годы на своём летал. Потом цены поднялись.»","«Вы не знаете, до конечной далеко? Я всегда проезжаю.»",
+  "«Там, куда еду, говорят, опять перекрыли. Или открыли. Кто их поймёт.»","«Вы только не говорите никому, что я без билета. Шучу. С билетом.»"];
+function railPaxOffer(){
+  const h=hashi(G.sx,G.sy,railBucket()^0x7A55);
+  if(h%2||RAIL_LIFE.pax)return null;
+  return {who:RAIL_PAX[h%RAIL_PAX.length],talk:RAIL_PAX_TALK[(h>>3)%RAIL_PAX_TALK.length]};
+}
+/* ── вестибюль: строки и кнопки поверх кассы ── */
+function railLifeHtml(){
+  let h="";
+  const by=(typeof railOwner==="function")?railOwner():null;
+  if(by==="gt"||!by){
+    h+="<div class='rw-sec'>ПРОЕЗДНОЙ ГЛАВТРАССЫ</div>";
+    if(railPassOn())h+="<div class='rw-row'><span>проездной действует · поездок "+(G.railPass.rides|0)+"</span><em>ещё "+Math.ceil((G.railPass.until-now())/HOLD_SHIFT)+" смен</em></div>";
+    else{const p=railPassPrice();if(p)h+="<button class='act rw-pass'>ПРОЕЗДНОЙ · "+p+" КР · "+RAIL_PASS_LIFE+" СМЕН<s>окупается за "+RAIL_PASS_RIDES+" поездок — честно</s></button>";}
+  }
+  const o=railParcelOffer();
+  if(G.railParcel)h+="<div class='rw-sec'>ПОСЫЛКА</div><div class='rw-row'><span>везёте посылку до «"+G.railParcel.to+"»</span><em>выйти там — сдать</em></div>";
+  else if(o)h+="<div class='rw-sec'>КОСМОПОЧТА ПРОСИТ</div><button class='act rw-parcel'>ПОСЫЛКА ДО «"+o.to.toUpperCase()+"» · +"+o.pay+" КР<s>не кантовать</s></button>";
+  const px=railPaxOffer();
+  if(px&&!RAIL_LIFE.pax)h+="<div class='rw-sec'>ПОПУТЧИК</div><button class='act rw-pax'>ВЗЯТЬ С СОБОЙ: "+px.who.toUpperCase()+"<s>заплатит за свой билет</s></button>";
+  else if(RAIL_LIFE.pax)h+="<div class='rw-row'><span>с вами едет: "+RAIL_LIFE.pax.who+"</span><em>платит за себя</em></div>";
+  if(G.railSeal)h+="<div class='rw-row'><span>трюм опломбирован · Орднунг</span><em>до выхода не продать</em></div>";
+  return h;
+}
+function railLifeBind(w){
+  const q=s=>w.querySelector(s);
+  if(q(".rw-pass"))q(".rw-pass").onclick=()=>{railPassBuy();railWinRender();};
+  if(q(".rw-parcel"))q(".rw-parcel").onclick=()=>{railParcelTake();railWinRender();};
+  if(q(".rw-pax"))q(".rw-pax").onclick=()=>{RAIL_LIFE.pax=railPaxOffer();logAdd("dim","Попутчик: "+RAIL_LIFE.pax.who+" — «спасибо, я тихо»");railWinRender();};
+}
+/* ── касса: проездной обнуляет билет (багаж платится) ── */
+function railPassFare(F){if(railPassOn()&&!F.metro){F.fare=0;F.sum=F.bag;F.pass=1;}return F;}
+/* ── посадка: отметка проездного, билет попутчика, пломба Орднунга ── */
+function railLifeBoard(t,F){
+  if(F&&F.pass){G.railPass.rides=(G.railPass.rides|0)+1;
+    logAdd("dim","КНИЖКА: отметка о поездке по проездному · № "+G.railPass.rides+(G.railPass.rides===RAIL_PASS_RIDES?" · окупился":""));}
+  if(RAIL_LIFE.pax){const f=Math.max(4,Math.round(2*t.dist));earn(f,"rail");logAdd("money",RAIL_LIFE.pax.who+" платит за свой билет · +"+f+" кр");}
+  if(typeof railOwner==="function"&&railOwner()==="or"&&held()>0){G.railSeal=1;logAdd("dim","Орднунг: трюм опломбирован до места назначения · пломба № "+(1000+hashi(G.sx,G.sy,railBucket())%9000));}
+  RAIL_LIFE.tea=!!(t.k>=3&&!(typeof railFare==="function"&&railFare(t).metro));RAIL_LIFE.teaDone=false;
+}
+/* ── остановка в пути: чай, разговор ── */
+function railLifeStop(R){
+  if(RAIL_LIFE.tea&&!RAIL_LIFE.teaDone&&R.seg===1){
+    RAIL_LIFE.teaDone=true;
+    const L=(typeof rumoursHere==="function")?rumoursHere():[];
+    peopleLine("Чай, пожалуйста. Подстаканник вернёте. "+(L.length?"А говорят, есть "+L[hashi(R.seq[0],R.seg,0x7EA)%L.length].short:"Ничего не говорят, пейте горячим."),"проводница",true);
+  }
+  if(RAIL_LIFE.pax&&R.seg===1&&!RAIL_LIFE.pax.said){RAIL_LIFE.pax.said=1;peopleLine(RAIL_LIFE.pax.talk,RAIL_LIFE.pax.who,false);}
+}
+/* ── выход: посылка сдана, попутчик сошёл, пломба снята ── */
+function railLifeExit(s){
+  if(G.railParcel&&G.railParcel.sx===s.sx&&G.railParcel.sy===s.sy){
+    const P=G.railParcel;G.railParcel=null;earn(P.pay,"post");
+    const L=(typeof rumoursHere==="function")?rumoursHere():[];
+    logAdd("money","Посылка сдана в «"+P.to+"» · +"+P.pay+" кр"+(L.length?" · на почте говорят: "+L[0].short:""));
+  }
+  if(RAIL_LIFE.pax){logAdd("dim",RAIL_LIFE.pax.who+" сходит: «Спасибо. Если что — я тут рядом.»");RAIL_LIFE.pax=null;}
+  if(G.railSeal){G.railSeal=0;logAdd("dim","Пломба снята по прибытии · Орднунг");}
+}
 
 /* ══════════════ посадка: разрез грунта ══════════════
    Отрезано от `19-mode-landing` 09.09.2026: файл дорос до 50 КБ, и внутри у него

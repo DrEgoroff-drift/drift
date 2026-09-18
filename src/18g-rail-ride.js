@@ -50,6 +50,7 @@ function updateRail(dt){
       /* Хай-Фронт: «обновление установлено» — линия стоит на первой остановке */
       const hp=(typeof railHfPauseAt==="function"&&R.seg===1)?railHfPauseAt(R):0;
       if(hp){R.hfDone=1;R.hold=2+hp;say("Обновление установлено\nперезагрузка линии · "+hp+" с",200);return;}
+      if(typeof railLifeStop==="function")railLifeStop(R);   /* чай, попутчик (M501–M502) */
       if(last)say("Конечная. «"+railStopName(s)+"»\nпоезд дальше не идёт, просьба освободить вагоны",150);
       else say("Станция «"+railStopName(s)+"»\nследующая — «"+railStopName(R.l.stops[R.seq[R.seg+1]])+"»",110);
     }
@@ -75,6 +76,7 @@ function railExit(){
     const P=sysLane(sys);
     if(P){const x=P.st.x-P.ux*RAIL_RING_OFF,y=P.st.y-P.uy*RAIL_RING_OFF;at={x:x+P.ux*60,y:y+P.uy*60,a:Math.atan2(P.uy,P.ux)};}
   }
+  if(typeof railLifeExit==="function")railLifeExit(s);   /* посылка, попутчик, пломба (M499–M508) */
   arriveSystem(s.sx,s.sy,{rail:true,at});
   G.ship.vx=(at?Math.cos(at.a):0)*.5;G.ship.vy=(at?Math.sin(at.a):0)*.5;
 }

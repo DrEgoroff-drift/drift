@@ -132,6 +132,7 @@ job (the phone milestone), but no fix may add raster cost without a number.
   path, vestibule block and the vestibule page (M471–M472); the ride on the map (M473: the flight
   pads still show in the carriage; the train mark and the headlight) — as each is
   built.
+- [ ] **D24 Railway life** (M499–M508): the vestibule's new rows are plain buttons — a parcel tag, a pass card with punched rides, the passenger's silhouette, the подстаканник, the seal drawn on the hold.
 - [ ] **D23 Album** (P13): the lightbox is a dark sheet with chips — a real photo-album page (corners, paper), filter previews as thumbnails, the saved PNG's caption band typeset properly.
 - [ ] **D22 Rented core** (M488): the HQ rows are plain — the Хай-Фронт core as a glossy card with the tariff table, the advert lines styled as adverts in the manager log.
 - [ ] **D21 Special systems** (M484): the rim arc is a thin conic ring — a proper charge ring, an ability glyph on the pad while ready, the effects (afterburner flame for ФОРСАЖ, the crate for СБРОС, the cutter beam, the salvo flash, the searchlight).
@@ -600,13 +601,13 @@ The game today carries its world in text (the hundred stories, rumours, the cant
 material consequences are the part that does not exist yet — that is what stages 2–3 are for.
 
 **New mechanics — grown out of the seams (M499–M511; each names its stage):**
-- **M499 Попутная посылка** (st. 3, with M492): at a vestibule Космопочта asks you to carry a parcel to
+- **M499 Попутная посылка** — BUILT 18.09 `18i-rail-life` [design owed]: every third station/смена, `G.railParcel`, paid through `earn` on ВЫЙТИ at its stop. (st. 3, with M492): at a vestibule Космопочта asks you to carry a parcel to
   a stop on your line; delivered by ВЫЙТИ there — a few кр and a rumour; the parcel is a hold row.
-- **M500 Проездной** (st. 3): ГЛАВТРАССА's monthly pass — the one subscription in the game that is
+- **M500 Проездной** — BUILT 18.09 [design owed]: price = 12 × the mean fare from here, 10 смен, non-metro fares 0, a КНИЖКА line per ride. (st. 3): ГЛАВТРАССА's monthly pass — the one subscription in the game that is
   fair (pays off at 12 rides, the card says so); stamped in КНИЖКА each ride.
-- **M501 Попутчик** (st. 3): a passenger at the vestibule asks to ride with you — pays their fare,
+- **M501 Попутчик** — BUILT 18.09 [design owed]: every other station/смена, pays their fare via `earn`, one line at the first stop. (st. 3): a passenger at the vestibule asks to ride with you — pays their fare,
   talks during the ride (the passenger table, M156), leaves a rumour.
-- **M502 Проводник** (st. 3): on the скорый the one human of the railway brings tea in a
+- **M502 Проводник** — BUILT 18.09 [design owed]: rides of 3+ non-metro stops, tea and a rumour at the first stop (no crew fatigue yet). (st. 3): on the скорый the one human of the railway brings tea in a
   подстаканник — crew fatigue eased, one rumour; the kindness of the whole railway.
 - **M503 Госзаказ на билборде** (st. 5, M460 + M467): «ПЛАН: 40 ед. осмия до сводки 118» — a fixed
   price for whoever delivers, a КНИЖКА stamp «УДАРНИК», the сводка reports «план выполнен на 103 %».
@@ -628,7 +629,7 @@ material consequences are the part that does not exist yet — that is what stag
   inspector waves you through once, «до понедельника», and writes nothing down.
 - **M507 «Успеваете скорым»** (st. 3): ДЕЛО reads the timetable — a job with a deadline says which
   train makes it and when it leaves.
-- **M508 Пломба** (st. 3, M474 Орднунг): a declared hold is sealed at boarding — nothing sells from it
+- **M508 Пломба** — BUILT 18.09 [design owed]: Орднунг boarding with cargo seals the hold (`G.railSeal`), `sellCargo` refuses, lifted on exit; pirates' respect not yet. (st. 3, M474 Орднунг): a declared hold is sealed at boarding — nothing sells from it
   until arrival, and pirates at rim stations do not touch a sealed hold (they fear the form).
 - **M509 Отзыв партии** (st. 6, M487): Хай-Фронт recalls a part model — «партия отозвана», a free
   replacement at their yard; kept, the old one becomes a scar.

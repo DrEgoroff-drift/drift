@@ -207,3 +207,35 @@ TEST_SUITES.push(()=>suite("ПРИЁМНИКИ: с карты НАЗАД — н�
   ok(G.mapBackTable==null,"возврат одноразовый");
   tableToggle=tt;G.course=co0;G.sel=sel0;G.mapView=mv0;
 }));
+TEST_SUITES.push(()=>suite("жизнь дороги: посылка, проездной, попутчик, чай, пломба (M499–M508)",()=>{
+  resetWorld();
+  const N=railNet();
+  const keys=Object.keys(N.at).filter(k=>{const p=k.split(",").map(Number);return getSystem(p[0],p[1]).station&&(stampOwnerAt(p[0],p[1])==="gt"||!stampOwnerAt(p[0],p[1]));});
+  ok(keys.length>0,"станция ГЛАВТРАССЫ на линии есть");
+  const [sx,sy]=keys[0].split(",").map(Number);
+  G.sx=sx;G.sy=sy;G.sys=getSystem(sx,sy);G.mode="system";G.credits=1e5;
+  /* проездной: цена = 12 средних билетов, поездки дальше — даром, отметка в книжке */
+  const pp=railPassPrice();ok(pp>0,"проездной продают: "+pp+" кр");
+  ok(railPassBuy()&&railPassOn(),"купили");
+  const D=railDestinations(),far=D.find(t=>!railFare(t).metro)||null;
+  if(far)eq(railFare(far).fare,0,"по проездному билет не платится");
+  /* посылка: ищем смену, в которую она предложена */
+  let o=null,base=now();
+  for(let i=0;i<30&&!o;i++){clockSet(base+i*HOLD_SHIFT);o=railParcelOffer();}
+  ok(!!o,"Космопочта просит довезти посылку");
+  ok(railParcelTake()&&G.railParcel,"взяли посылку");
+  const c0=G.credits;railLifeExit({sx:G.railParcel.sx,sy:G.railParcel.sy});
+  ok(!G.railParcel&&G.credits===c0+o.pay,"выход на её остановке — сдана, +"+o.pay);
+  /* попутчик платит за себя */
+  RAIL_LIFE.pax={who:"дед с ведром",talk:"…"};const t=D[0],c1=G.credits;
+  railLifeBoard(t,railFare(t));ok(G.credits>c1,"попутчик заплатил за билет");
+  /* чай на 3+ остановках электрички */
+  const t3=D.find(x=>x.k>=3&&!railFare(x).metro);
+  if(t3){railLifeBoard(t3,railFare(t3));ok(RAIL_LIFE.tea,"в дальней электричке будет чай");}
+  railLifeExit({sx:9999,sy:9999});ok(RAIL_LIFE.pax===null,"попутчик сошёл");
+  /* пломба: продать нельзя до выхода */
+  G.railSeal=1;G.cargo.iron=5;
+  eq(sellCargo(G.sys,"iron",1)|0,0,"опломбированный трюм не продаётся");
+  railLifeExit({sx:9999,sy:9999});eq(G.railSeal,0,"пломба снята на выходе");
+  clockSet(base);RAIL_LIFE={pax:null,tea:false,teaDone:false};
+}));

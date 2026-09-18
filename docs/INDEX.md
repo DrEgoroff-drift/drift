@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 578 · символов верхнего уровня: 5586
+Файлов: 579 · символов верхнего уровня: 5603
 
 ## СИМВОЛЫ
 
@@ -134,7 +134,7 @@ appetitePrice                src/12ab-hold.js:84
 applyCrewEvent               src/12b-crew-events.js:215-224
 applyPadMode                 src/15-input.js:72-75
 applyPadSize                 src/15-input.js:8
-applySave                    src/14-save.js:216-622
+applySave                    src/14-save.js:216-623
 applySaveRest                src/14a1-save-rest.js:15-379
 applyVolumes                 src/09-audio.js:40-47
 apVel                        src/16-flight.js:132
@@ -1136,7 +1136,7 @@ decoWall                     src/21ba-deco-shapes.js:147-189
 deedAdd                      src/11ai-ledger.js:53-64
 DEEDS                        src/11ai-ledger.js:25-35
 depKind                      src/21b-surface-deco.js:396-405
-deployDrone                  src/12-economy.js:220-237
+deployDrone                  src/12-economy.js:221-238
 DEPTH_TIERS                  src/04-mods.js:54-58
 DESC_MOOD                    src/01-core.js:193-198
 DESC_TAIL                    src/01-core.js:199
@@ -1449,7 +1449,7 @@ drawPOI                      src/20a-poi.js:173-234
 drawPortal                   src/20aa-poi-shapes.js:464-489
 drawPostcard                 src/25g-postcard.js:170-611
 drawRaid                     src/24aa-raid-draw.js:14-655
-drawRail                     src/18g-rail-ride.js:81-118
+drawRail                     src/18g-rail-ride.js:83-120
 drawRailMap                  src/18e-rail-net.js:181-204
 drawRing                     src/17c-system-draw.js:4-15
 drawRingTape                 src/11x-ring.js:107-118
@@ -1519,30 +1519,30 @@ DRONE_TAIL                   src/12e-drone-flight.js:223
 DRONE_TRIP_BASE              src/12e-drone-flight.js:18
 droneBreakP                  src/12e-drone-flight.js:161-165
 droneBreaks                  src/12e-drone-flight.js:166
-droneCapacity                src/12-economy.js:215-218
+droneCapacity                src/12-economy.js:216-219
 droneFar                     src/12e-drone-flight.js:92
 droneFixMs                   src/12e-drone-flight.js:167-176
 droneGuestPos                src/12e-drone-flight.js:229-241
 droneHome                    src/12e-drone-flight.js:93-105
-droneMarket                  src/12-economy.js:169-191
+droneMarket                  src/12-economy.js:170-192
 droneName                    src/12e-drone-flight.js:54
 droneNextId                  src/12e-drone-flight.js:32-37
 droneNick                    src/12e-drone-flight.js:53
 droneNormalize               src/12e-drone-flight.js:60-76
-dronePaybackH                src/12-economy.js:146
+dronePaybackH                src/12-economy.js:147
 dronePhase                   src/12e-drone-flight.js:120-129
 dronePoint                   src/12e-drone-flight.js:84-91
 dronePos                     src/12e-drone-flight.js:132-148
-dronePrice                   src/12-economy.js:141-144
+dronePrice                   src/12-economy.js:142-145
 droneQuirk                   src/12e-drone-flight.js:52
-droneRecall                  src/12-economy.js:127-135
+droneRecall                  src/12-economy.js:128-136
 droneRoutes                  src/12e-drone-flight.js:193-215
 DRONES                       src/04-mods.js:60-66
-droneShopHas                 src/12-economy.js:148-154
-droneShopTake                src/12-economy.js:155-159
+droneShopHas                 src/12-economy.js:149-155
+droneShopTake                src/12-economy.js:156-160
 droneStateRu                 src/12e-drone-flight.js:178-188
 droneSys                     src/12e-drone-flight.js:81-83
-droneTarget                  src/12-economy.js:219
+droneTarget                  src/12-economy.js:220
 droneTripMs                  src/12e-drone-flight.js:108-116
 drOut                        tests/91zzzzzn-doors.js:45-50
 drPair                       tests/91zzzzzn-doors.js:19-24
@@ -3226,7 +3226,7 @@ nbFoe                        tests/91zzzw-notebook.js:15-20
 nbWorld                      tests/91zzzw-notebook.js:6-14
 near                         tests/90-harness.js:172
 nearestPOI                   src/20a-poi.js:236-241
-nearestStation               src/12-economy.js:192-207
+nearestStation               src/12-economy.js:193-208
 NEB_COMP                     src/16a-space.js:119
 NEB_JOB                      src/16a-space.js:52
 NEB_MS                       src/16a-space.js:51
@@ -3957,9 +3957,13 @@ RAIL_DOCK                    src/18f-rail-station.js:22
 RAIL_EXPRESS_MUL             src/18h-rail-powers.js:12
 RAIL_FORK                    src/18e-rail-net.js:22
 RAIL_HAIL_R                  src/18f-rail-station.js:19
+RAIL_LIFE                    src/18i-rail-life.js:15
 RAIL_METRO_R                 src/18e-rail-net.js:26
 RAIL_NET                     src/18e-rail-net.js:29
 RAIL_PART                    src/18e-rail-net.js:167
+RAIL_PASS_RIDES              src/18i-rail-life.js:14
+RAIL_PAX                     src/18i-rail-life.js:47
+RAIL_PAX_TALK                src/18i-rail-life.js:48
 RAIL_R                       src/18e-rail-net.js:21
 RAIL_RIDE                    src/18g-rail-ride.js:12
 RAIL_RIM                     src/18e-rail-net.js:27
@@ -3970,26 +3974,39 @@ RAIL_SALT                    src/18e-rail-net.js:28
 railArmAng                   src/18e-rail-net.js:103
 railAt                       src/18e-rail-net.js:112-120
 railBranchAng                src/18e-rail-net.js:51-54
-railBuffet                   src/18f-rail-station.js:169-175
+railBucket                   src/18i-rail-life.js:16
+railBuffet                   src/18f-rail-station.js:173-179
 railBuildLines               src/18e-rail-net.js:55-101
-railBuy                      src/18f-rail-station.js:158-168
+railBuy                      src/18f-rail-station.js:161-172
 railClosedWhy                src/18h-rail-powers.js:16-21
 railDeclare                  src/18h-rail-powers.js:23-32
 railDestinations             src/18f-rail-station.js:101-114
 railDocked                   src/18f-rail-station.js:86-93
-railExit                     src/18g-rail-ride.js:70-80
-railFare                     src/18f-rail-station.js:115-120
+railExit                     src/18g-rail-ride.js:71-82
+railFare                     src/18f-rail-station.js:115-121
 railFmt                      src/18f-rail-station.js:97
 railHere                     src/18f-rail-station.js:24-30
 railHfPauseAt                src/18h-rail-powers.js:34-37
 railInteract                 src/18f-rail-station.js:67-85
 railInterval                 src/18f-rail-station.js:95
 railLen                      src/18e-rail-net.js:49
+railLifeBind                 src/18i-rail-life.js:73-78
+railLifeBoard                src/18i-rail-life.js:82-88
+railLifeExit                 src/18i-rail-life.js:99-107
+railLifeHtml                 src/18i-rail-life.js:56-72
+railLifeStop                 src/18i-rail-life.js:90-97
 railNearest                  src/18e-rail-net.js:32-42
 railNet                      src/18e-rail-net.js:147-156
 railNetPartial               src/18e-rail-net.js:168-179
 railOwner                    src/18h-rail-powers.js:14
 railOwnerAt                  src/18h-rail-powers.js:38
+railParcelOffer              src/18i-rail-life.js:32-39
+railParcelTake               src/18i-rail-life.js:40-45
+railPassBuy                  src/18i-rail-life.js:24-30
+railPassFare                 src/18i-rail-life.js:80
+railPassOn                   src/18i-rail-life.js:18
+railPassPrice                src/18i-rail-life.js:19-23
+railPaxOffer                 src/18i-rail-life.js:50-54
 railPolar                    src/18e-rail-net.js:45-48
 railReady                    src/18f-rail-station.js:23
 railRideStart                src/18g-rail-ride.js:13-21
@@ -3998,14 +4015,14 @@ railStation                  src/18e-rail-net.js:158-163
 railStep                     src/18e-rail-net.js:43
 railStopName                 src/18f-rail-station.js:98
 railStopsOf                  src/18e-rail-net.js:122-146
-railTick                     src/18f-rail-station.js:177-182
+railTick                     src/18f-rail-station.js:181-186
 railTrainPos                 src/18g-rail-ride.js:27-39
 railUAt                      src/18e-rail-net.js:105-110
 railWaitNow                  src/18f-rail-station.js:96
-railWinClose                 src/18f-rail-station.js:122
-railWinOpen                  src/18f-rail-station.js:121
-railWinRender                src/18f-rail-station.js:128-157
-railWinShow                  src/18f-rail-station.js:123-127
+railWinClose                 src/18f-rail-station.js:123
+railWinOpen                  src/18f-rail-station.js:122
+railWinRender                src/18f-rail-station.js:129-160
+railWinShow                  src/18f-rail-station.js:124-128
 RALLY_CACHE                  src/12at-vote.js:69
 rallyAt                      src/12at-vote.js:102-106
 rallyJoin                    src/12at-vote.js:94-100
@@ -4582,8 +4599,8 @@ secSpyHere                   src/12b2-fx-sec.js:89-98
 secSpyMul                    src/12b2-fx-sec.js:99-106
 secSpyOn                     src/12b2-fx-sec.js:82-85
 secTidy                      src/26-ui-station.js:360-379
-sellCargo                    src/12-economy.js:94-117
-sellDroneYield               src/12-economy.js:118-123
+sellCargo                    src/12-economy.js:94-118
+sellDroneYield               src/12-economy.js:119-124
 sellQuote                    src/12ab-hold.js:101-110
 setPair                      src/27z-telemetry.js:108-113
 setPct                       src/27z-telemetry.js:102-107
@@ -5107,7 +5124,7 @@ theOne                       src/21b3-base-hunt.js:46
 theOneId                     src/21b3-base-hunt.js:35-45
 thingAdd                     src/27i-ui-table.js:72-79
 thingsAll                    src/27i-ui-table.js:71
-tickDrones                   src/12-economy.js:246-336
+tickDrones                   src/12-economy.js:247-337
 tickLaunchHold               src/21-mode-surface.js:659-672
 TIER_RU                      src/05-parts.js:86
 tierAt                       src/04-mods.js:59
@@ -5254,7 +5271,7 @@ updateHomeIn                 src/29c-home-in.js:160-200
 updateLanding                src/19-mode-landing.js:68-137
 updateMap                    src/18-mode-map.js:513-526
 updateRaid                   src/24a-mode-raid.js:215-345
-updateRail                   src/18g-rail-ride.js:40-68
+updateRail                   src/18g-rail-ride.js:40-69
 updateScoop                  src/19a-mode-scoop.js:75-176
 updateSpa                    src/29i-spa-draw.js:514-519
 updateSurface                src/21-mode-surface.js:200-657
@@ -5878,9 +5895,9 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/11z-misclosure.js · 6 КБ
   · невязка: уезд, где счёт неба и счёт людей расходятся:1
 
-## src/12-economy.js · 22 КБ
+## src/12-economy.js · 23 КБ
   · живой рынок:1
-  · дроны:125
+  · дроны:126
 
 ## src/12a-crew.js · 45 КБ
   · наёмники: флот, которым не управляешь напрямую:1
@@ -6341,6 +6358,9 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## src/18h-rail-powers.js · 3 КБ
   · шесть железных дорог (M474, DESIGN-metro §6):1
+
+## src/18i-rail-life.js · 9 КБ
+  · жизнь на железной дороге (M499–M502, M508; PLAN «new mechanics»):1
 
 ## src/19-mode-landing-ground.js · 25 КБ
   · посадка: разрез грунта:1
@@ -7307,7 +7327,7 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## tests/91zzzzk5-plan.js · 9 КБ
 
-## tests/91zzzzk6-stapel.js · 14 КБ
+## tests/91zzzzk6-stapel.js · 17 КБ
 
 ## tests/91zzzzl-maphold.js · 5 КБ
   · автотесты: владения на карте (M348):1
