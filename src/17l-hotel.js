@@ -17,7 +17,7 @@ function hotelHere(){
 }
 function drawHotel(zx,zy,Z){
   const Ht=hotelHere();if(!Ht)return;
-  const x=zx(Ht.x),y=zy(Ht.y),s=clamp(Z,.6,1.5);
+  const x=zx(Ht.x),y=zy(Ht.y),s=clamp(Z*1.2,.3,1.5);   /* издали — с миром, не поверх очереди */
   if(x<-120||x>W+120||y<-120||y>H+120)return;
   const w=58*s,h=34*s,cols=9,rows=4,hr=Math.floor(((G.t%CEL_DAY)/CEL_DAY)*24);
   ctx.fillStyle="#1a2029";ctx.strokeStyle="rgba(0,0,0,.6)";ctx.lineWidth=1;
@@ -30,7 +30,8 @@ function drawHotel(zx,zy,Z){
   }
   const col=(typeof laneLampCol==="function")?laneLampCol(Ht.by):[255,190,110];
   ctx.save();ctx.globalCompositeOperation="lighter";ctx.font="bold "+Math.round(8*Math.max(1,s)*UIK)+"px ui-monospace,monospace";ctx.textAlign="center";
-  ctx.fillStyle=rgba(col,.9);ctx.fillText(Ht.name,x,y-h/2-6*s);ctx.restore();
+  /* имя отеля — вблизи; издали его несёт подсказка у стойки, над очередью полосы оно каша */
+  ctx.fillStyle=rgba(col,.9*clamp((Z-.3)/.2,0,1));if(Z>.3)ctx.fillText(Ht.name,x,y-h/2-6*s);ctx.restore();
 }
 function hotelInteract(sh){
   const Ht=hotelHere();if(!Ht)return false;

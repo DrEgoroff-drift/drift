@@ -137,7 +137,7 @@ applyPadMode                 src/15-input.js:72-75
 applyPadSize                 src/15-input.js:8
 applySave                    src/14-save.js:216-625
 applySaveRest                src/14a1-save-rest.js:15-387
-applyVolumes                 src/09-audio.js:40-47
+applyVolumes                 src/09-audio.js:44-51
 apVel                        src/16-flight.js:132
 ARC_JUMP                     src/13a-guns.js:39
 arcHit                       src/13a-guns.js:368-385
@@ -1095,7 +1095,7 @@ cultSeriesOn                 src/12b3-fx-cult.js:191
 cultSeriesWho                src/12b3-fx-cult.js:187-190
 cultSeriesWindow             src/12b3-fx-cult.js:183-186
 CUN                          src/22-mode-cave.js:22-32
-curTok                       src/09-audio.js:83
+curTok                       src/09-audio.js:87
 CUT_RANGE                    src/24-mode-belt.js:187
 cvs                          src/08-state.js:2
 CVS_RECT                     src/08-state.js:83
@@ -1374,7 +1374,7 @@ drawBelt                     src/24-mode-belt.js:378-718
 drawBeltPOISprite            src/24b-belt-poi.js:50-185
 drawBeltRing                 src/17c-system-draw.js:94-106
 drawBeltRocks                src/17c-system-draw.js:41-82
-drawBillboard                src/17k-billboard.js:51-82
+drawBillboard                src/17k-billboard.js:51-93
 drawBuildMenu                src/21aa-base-rooms.js:504-520
 drawBuilt                    src/21c-built.js:64-101
 drawCantinaRoom              src/27d-ui-cantina.js:32-44
@@ -1435,7 +1435,7 @@ drawHitFx                    src/18d-postfx.js:87-105
 drawHomeIn                   src/29d-home-draw.js:9-332
 drawHomeOut                  src/21f-home-out.js:73-312
 drawHomeRoom                 src/27e-ui-home.js:42-62
-drawHotel                    src/17l-hotel.js:18-34
+drawHotel                    src/17l-hotel.js:18-35
 drawHqRoom                   src/27f-hq-room.js:22-31
 drawHull                     src/03e-hull-draw.js:68-141
 drawHullMarks                src/03b-hull-paint.js:184-491
@@ -1506,7 +1506,7 @@ drawSurfaceWorld             src/21e1-surface-world.js:10-615
 drawSurvey                   src/12w-survey.js:63-89
 drawSysHud                   src/17-mode-system.js:773-1028
 drawSysLane                  src/17g-sys-lane.js:84-112
-drawSysLaneShips             src/17g-sys-lane.js:121-147
+drawSysLaneShips             src/17g-sys-lane.js:123-149
 drawSysNebula                src/16a-space.js:208-236
 drawSysRail                  src/18f-rail-station.js:32-65
 drawSystem                   src/17-mode-system.js:482-772
@@ -1611,7 +1611,7 @@ EN_THR                       src/05c-arms.js:163
 endPtr                       src/15-input.js:428-433
 energyCap                    src/05c-arms.js:166
 energyRegen                  src/05c-arms.js:167
-engineLoop                   src/09-audio.js:329-355
+engineLoop                   src/09-audio.js:333-359
 enterBase                    src/21a-mode-base.js:121-153
 enterBelt                    src/24-mode-belt.js:89-137
 enterCave                    src/22-mode-cave.js:175-232
@@ -1621,7 +1621,7 @@ enterRaid                    src/24a-mode-raid.js:134-189
 enterSpa                     src/29h-spa.js:51-65
 enterSurface                 src/21-mode-surface.js:7-198
 enterWinter                  src/29f-winter.js:112-119
-env                          src/09-audio.js:59-64
+env                          src/09-audio.js:63-68
 EPI_KINDS                    src/12ap-notebook.js:20-30
 EPI_MAX                      src/12ap-notebook.js:31
 EPI_SPEED                    src/12ap-notebook.js:33
@@ -1889,7 +1889,7 @@ FRAME_JS                     src/28-loop.js:119
 FRAME_MS                     src/28-loop.js:141
 frameBody                    src/28-loop.js:411-534
 frameLastAt                  src/28-loop.js:601
-freeVoice                    src/09-audio.js:91-95
+freeVoice                    src/09-audio.js:95-99
 FUEL_PER_ICE                 src/21b1-base-pay.js:100
 fuelPriceHere                src/12k-rep.js:63-70
 FUR_TONES                    src/20f-fauna.js:20-24
@@ -2478,9 +2478,9 @@ homeUpWorld                  tests/91zzzc-home-up.js:5-9
 homingStep                   src/13a-guns.js:501-508
 HOTEL_NIGHT                  src/17l-hotel.js:11
 HOTEL_SIGN                   src/17l-hotel.js:10
-hotelDesk                    src/17l-hotel.js:43-55
+hotelDesk                    src/17l-hotel.js:44-56
 hotelHere                    src/17l-hotel.js:12-17
-hotelInteract                src/17l-hotel.js:35-42
+hotelInteract                src/17l-hotel.js:36-43
 HOURS_COIN                   src/11h-hours.js:87
 HOURS_ETHER                  src/11h-hours.js:23-30
 hoursAll                     src/11h-hours.js:31
@@ -2578,7 +2578,7 @@ importCode                   src/14a-cloud.js:62-64
 IND_FEE                      src/12ac-bld.js:111
 IND_KEYS                     src/02-world.js:123
 indPrice                     src/12ac-bld.js:160-169
-initAudio                    src/09-audio.js:19-39
+initAudio                    src/09-audio.js:19-43
 INST_TOPICS                  src/11ab-institute.js:17-24
 instAll                      src/11ab-institute.js:25
 instBlock                    src/11ab-institute.js:116-133
@@ -2789,7 +2789,7 @@ LANE_W                       src/17g-sys-lane.js:14
 laneBuoySprite               src/17g-sys-lane.js:57-79
 laneLampCol                  src/17g-sys-lane.js:80-83
 laneLife                     src/17g-sys-lane.js:27-31
-laneShip                     src/17g-sys-lane.js:114-120
+laneShip                     src/17g-sys-lane.js:114-122
 last                         src/28-loop.js:107
 LAST_RUN_DAY                 src/12k-letters.js:40
 lastDroneTick                src/28-loop.js:108
@@ -3219,7 +3219,7 @@ MODS                         src/04-mods.js:2-13
 modStatWith                  src/26b-ui-station-work.js:21-24
 modWork                      src/26b-ui-station-work.js:20
 modWorkRun                   src/26b-ui-station-work.js:35-43
-MOTIFS                       src/09-audio.js:97-104
+MOTIFS                       src/09-audio.js:101-108
 MOUNT_CACHE                  src/05d-mounts.js:28
 MOUNT_KINDS                  src/05d-mounts.js:21-27
 MOUNT_SIZE_RU                src/05d-mounts.js:20
@@ -3375,11 +3375,11 @@ nodeRoll                     src/05a-nodes.js:123-148
 NODES                        src/05a-nodes.js:70
 nodesHave                    src/05a-nodes.js:102
 nodesRender                  src/05a-nodes.js:177-230
-noise                        src/09-audio.js:66-78
+noise                        src/09-audio.js:70-82
 noise1                       src/01-core.js:113
 noise2                       src/01-core.js:116-120
 noise3                       src/24-mode-belt.js:7-15
-noiseBuf                     src/09-audio.js:65
+noiseBuf                     src/09-audio.js:69
 normsOf                      src/12ab-hold.js:89-97
 note                         tests/90-harness.js:102
 NOTE_MAX                     src/12ap-notebook.js:32
@@ -4753,8 +4753,8 @@ settleWatch                  src/12t-settle.js:397-403
 settleWords                  src/12t-settle.js:258-262
 setTx                        src/27z-telemetry.js:84-93
 setZoom                      src/15-input.js:340
-SFX                          src/09-audio.js:105-320
-sfx                          src/09-audio.js:321-327
+SFX                          src/09-audio.js:109-324
+sfx                          src/09-audio.js:325-331
 SH_DX                        src/03b-hull-paint.js:175
 SHARD_H                      tests/90-harness.js:32
 sharpWord                    src/21a9-base-laws.js:41-45
@@ -5018,7 +5018,7 @@ stGround                     src/17c-system-draw.js:120
 stGroup                      src/26-ui-station.js:140
 stGroupOf                    src/26-ui-station.js:139
 stMakerDress                 src/17c1-station-dress.js:10-52
-stopEngine                   src/09-audio.js:356-360
+stopEngine                   src/09-audio.js:360-364
 STORAGE_OK                   src/14-save.js:7
 STORAGE_TOLD                 src/14-save.js:13
 STORIES                      src/12k-stories-a.js:45-348
@@ -5373,7 +5373,7 @@ UNIQ                         src/21b1-base-pay.js:35-44
 UNIQ_EVERY                   src/21b1-base-pay.js:45
 UNIQUE_COLS                  src/03-ships.js:14
 UNIQUE_TAG                   src/03-ships.js:15
-unlockAudio                  src/09-audio.js:48-57
+unlockAudio                  src/09-audio.js:52-61
 unpackPart                   src/05-parts.js:473-479
 updateAllies                 src/12a-crew.js:644-677
 updateBarges                 src/12l-barge.js:165-196
@@ -5463,7 +5463,7 @@ visitHere                    src/11b-speech.js:87-90
 visitMark                    src/11b-speech.js:91-95
 visitsAll                    src/11b-speech.js:86
 vLink                        src/18d-verlet.js:78-86
-voice                        src/09-audio.js:84-90
+voice                        src/09-audio.js:88-94
 VOICE_FEMALE                 src/12pa-beacon.js:197
 VOICE_KEYS                   src/02a-worldmix.js:81
 VOICE_MALE                   src/12pa-beacon.js:196
@@ -5885,7 +5885,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/08a-statehash.js · 6 КБ
   · хэш состояния (M441):1
 
-## src/09-audio.js · 17 КБ
+## src/09-audio.js · 18 КБ
   · звук: чистый синтез, ни одного файла:1
 
 ## src/09a-roomtone.js · 6 КБ

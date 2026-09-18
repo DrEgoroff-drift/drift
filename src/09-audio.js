@@ -33,6 +33,10 @@ function initAudio(){
     const mus=c.createGain(),sf=c.createGain(),en=c.createGain();
     mus.connect(m);sf.connect(m);en.connect(m);
     SND.ctx=c;SND.master=m;SND.music=mus;SND.sfx=sf;SND.eng=en;SND.ready=true;
+    /* спрятанная вкладка молчит (замер на S23 автора, 19.09): звук жил и в фоне —
+       шесть слоёв музыки на скрытой вкладке ели 40–60% ядра и звучали поверх
+       второй, открытой вкладки игры. Кадр в фоне и так стоит; звук — вслед за ним */
+    document.addEventListener("visibilitychange",()=>{try{if(document.hidden)c.suspend();else c.resume();}catch(e){}});
     applyVolumes();
     return c;
   }catch(e){return null;}

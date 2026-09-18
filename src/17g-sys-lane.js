@@ -113,7 +113,9 @@ function drawSysLane(zx,zy,Z){
 /* ── очередь у дока и два движения мимо неё ── */
 function laneShip(f,x,y,a,al,Z){
   if(al<=.02||x<-200||x>W+200||y<-200||y>H+200)return;
-  const s=fleetScale(Z)*.62;
+  /* издали очередь сжимается с миром: эллипс ожидания 150×70 на ×0.16 — полсотни пикселей,
+     корабли с полом масштаба ложились в нём друг на друга кашей (снимок автора 19.09) */
+  const s=Math.min(fleetScale(Z),Z*1.4)*.62;
   ctx.save();ctx.globalAlpha=al;ctx.translate(x,y);ctx.rotate(a);ctx.scale(s,s);
   drawFleetShip(f);
   ctx.restore();

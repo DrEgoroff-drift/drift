@@ -54,6 +54,16 @@ function drawBillboard(zx,zy,Z){
   const x=zx(B.x),y=zy(B.y),s=Math.max(1,clamp(Z,.6,1.5))*UIK;
   if(x<-160*s||x>W+160*s||y<-120*s||y>H+120*s)return;
   const col=(typeof laneLampCol==="function")?laneLampCol(B.by):[255,190,110];
+  /* издали щит — табличка по масштабу мира, без букв: читаемый кегль на ×0.16 ложится
+     поверх очереди полосы и отеля кашей (снимок автора 19.09). Буквы проявляются к ×0.5 */
+  const rd=clamp((Z-.3)/.2,0,1);
+  if(rd<=0){
+    const w=Math.max(6,120*Z),h=Math.max(2,40*Z);
+    ctx.fillStyle="#0e1217";ctx.fillRect(x-w/2,y-h/2,w,h);
+    ctx.fillStyle=rgba(col,.55);ctx.fillRect(x-w/2+1,y-h*.25,w-2,Math.max(1,h*.2));
+    return;
+  }
+  ctx.save();ctx.globalAlpha*=rd;
   const pw=120*s,ph=40*s;
   /* ферма и панель */
   ctx.strokeStyle="rgba(150,164,180,.6)";ctx.lineWidth=1;
@@ -78,5 +88,6 @@ function drawBillboard(zx,zy,Z){
   ctx.save();ctx.beginPath();ctx.rect(x-pw/2+4,y+ph*.05,pw-8,ph*.4);ctx.clip();
   ctx.fillStyle=rgba(mixc(col,[255,255,255],.3),.85);
   for(let k=-1;k<3;k++)ctx.fillText(L,x-pw/2+4-off+k*tw,y+ph*.25);
+  ctx.restore();
   ctx.restore();
 }
