@@ -343,7 +343,7 @@ function radioStep(t){
   radioMelody(t,s,w,key,cd);
   if(s===0&&bar%2===0&&r()<.5)radioBell(t,key,cd);
   /* маяк: раз в несколько тактов — одна звонкая высокая нота с эхом, как позывной */
-  if(s===0&&r()<.55)radioBeacon(t+radioS16()*Math.floor(r()*8),key,cd);
+  if(s===0&&bar%2===1&&r()<.45)radioBeacon(t+radioS16()*Math.floor(r()*8),key,cd);   // примерно раз в четыре такта
   if(s===0&&bar%8===0&&radioA("waves"))radioWave(t,radioS16()*B*2);
   /* обертоновое облако: раз в минуту-полторы, на ~20 с — см. radioSpectral */
   if(s===0&&(RADIO.specNext==null||t>=RADIO.specNext)&&w.name!=="out"){RADIO.specNext=t+50+r()*50;radioSpectral(t,key);}
@@ -757,7 +757,7 @@ function radioBeacon(t,key,cd){
   const wob=c.createOscillator(),wg=c.createGain();wob.frequency.value=.25+r()*.2;wg.gain.value=fr*.004;wob.connect(wg);
   const dry=c.createGain();dry.gain.value=.25;dry.connect(RADIO.bus);
   for(let k=0;k<6;k++){
-    const tk=t+k*gap,v=[.04,.022,.013,.008,.005,.003][k];
+    const tk=t+k*gap,v=[.026,.015,.009,.005,.003,.002][k];
     const o=c.createOscillator(),g=c.createGain(),f=c.createBiquadFilter(),p=c.createStereoPanner();
     o.type="sine";o.frequency.value=fr;wg.connect(o.frequency);
     f.type="lowpass";f.frequency.value=[900,700,560,450,380,320][k];f.Q.value=.8;
