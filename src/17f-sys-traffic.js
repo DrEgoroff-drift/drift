@@ -17,12 +17,19 @@ function sysTraffic(sys){
   const n=Math.min(4,1+Math.floor(rung/6));
   const r=rng((sys.seed^0x7A4F)>>>0);
   const bodies=(sys.planets||[]).filter(p=>p.type!=="gas");
+  /* чьи машины (M454): семь из десяти — завода хозяина, три — соседей. В глубине
+     земли соседи те же, и трафик однороден; на границе — пёстрый */
+  const own=st.by||"gt",near=[];
+  if(typeof chronOwnerKey==="function")
+    for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++){
+      if(!dx&&!dy)continue;const o=chronOwnerKey(sys.sx+dx,sys.sy+dy);if(o)near.push(o);}
   for(let i=0;i<n;i++){
     const p=bodies.length?bodies[Math.floor(r()*bodies.length)]:null;
     const B=p?{x:p.x,y:p.y,r:p.radius}:{x:-st.x*.4,y:-st.y*.4,r:20};
     out.push({ax:st.x,ay:st.y,bx:B.x,by:B.y,br:B.r,
       bow:(r()-.5)*.5,                     /* изгиб дуги, доля длины */
-      spd:.00009+r()*.00007,ph:r()*TAU,k:.7+r()*.6,blink:r()*TAU});
+      spd:.00009+r()*.00007,ph:r()*TAU,k:.7+r()*.6,blink:r()*TAU,
+      by:(r()<.7||!near.length)?own:near[Math.floor(r()*near.length)]});
   }
   return sys.traffic=out;
 }
@@ -56,10 +63,13 @@ function drawShuttleArc(t,zx,zy,Z){
     const a=Math.atan2(ty*dir,tx*dir);
     ctx.save();ctx.translate(x,y);ctx.rotate(a);ctx.scale(s*t.k,s*t.k);
     /* сопло: тёплая точка позади, тело — тёмный корпус с холодной кромкой */
+    /* огонь сопла и грунт — завода машины (M454): белый капсульный челнок
+       Компании и охристый Рассвета различаются и в точку */
+    const MF=(t.by&&typeof makerFlame==="function")?makerFlame(t.by):null,fc=MF?MF.col:[255,180,110];
     const fg=ctx.createRadialGradient(-5,0,0,-5,0,4);
-    fg.addColorStop(0,"rgba(255,214,150,.9)");fg.addColorStop(1,"rgba(255,150,80,0)");
+    fg.addColorStop(0,rgba(mixc(fc,[255,255,255],.4),.9));fg.addColorStop(1,rgba(fc,0));
     ctx.fillStyle=fg;ctx.beginPath();ctx.arc(-5,0,4,0,TAU);ctx.fill();
-    ctx.fillStyle="#232b36";ctx.strokeStyle="rgba(0,0,0,.6)";ctx.lineWidth=.6;
+    ctx.fillStyle=(t.by&&typeof makerGround==="function")?rgba(mixc([35,43,54],makerGround(t.by),.35),1):"#232b36";ctx.strokeStyle="rgba(0,0,0,.6)";ctx.lineWidth=.6;
     ctx.beginPath();ctx.moveTo(4,0);ctx.lineTo(-3,-2);ctx.lineTo(-4,0);ctx.lineTo(-3,2);ctx.closePath();ctx.fill();ctx.stroke();
     ctx.fillStyle="rgba(200,220,240,.5)";ctx.fillRect(-1,-2.2,2.5,.8);
     /* бортовой огонь: медленно, врозь с остальными */

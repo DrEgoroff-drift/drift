@@ -186,9 +186,13 @@ function drawStationBody(V,S,ty){
      держатся одного силуэта на любом масштабе, а щели между ними перестают
      светиться небом. Восьмиугольник, не эллипс — кругов и так дохуя. */
   {
-    ctx.fillStyle="#1e2836";
+    /* плита в грунте строителя (M454): тёмная, но своего тона — белая Компания
+       и серый Орднунг различимы уже здесь */
+    const by=(S&&S.by)||"gt";
+    ctx.fillStyle=(typeof makerGround==="function")?rgba(mixc([30,40,54],makerGround(by),.12),1):"#1e2836";
     ctx.strokeStyle="rgba(0,0,0,.5)";ctx.lineWidth=.8;
     stPlatePath(V);ctx.fill();ctx.stroke();
+    if(typeof stMakerDress==="function")stMakerDress(by,V);
   }
   /* модули идут первым слоем: они висят на штангах вокруг ядра, и ядро типа
      должно перекрывать их, а не наоборот (17a-station-mod) */

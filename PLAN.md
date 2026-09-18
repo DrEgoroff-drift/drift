@@ -529,7 +529,8 @@ patchnote of each version names the M-numbers it closes.
   document** (P14): stamps, seals, signatures, the vacation savings, the доска почёта and the
   grounding ending (all designed in M161, none on the page) — with **ОТМЕТКИ О ПРОЕЗДЕ** as its first
   real page (six + Ялта + the pirates' scratch to collect). Save: which stamps, when (`G.stamps`).
-- [ ] **[design owed] M454 Station body and traffic by builder** (borders §2.3). `17e-station-body` applies the
+- [ ] **[design owed] M454 Station body and traffic by builder — first draft BUILT 18.09 (Control).** The plate under the modules takes the builder's ground and a dressing (`src/17c1-station-dress.js`, baked into `stationArt`): ГЛАВТРАССА red band + «СТ-n» + star, Компания white + pink/cyan logo band «КОМПАНИЯ™», Орднунг black ribs + numbers, Коммуна long arcs + a warm window band, Рассвет patchwork + a hand-painted sun, Хай-Фронт white, one red dot, cyan under-light. Shuttles (17f) carry a maker: 7/10 the owner's, 3/10 a neighbour owner's; nozzle and body tint from the maker. **Designer's notes from Control's frame (×2.4):** the plate reads light grey for every builder — the station's one light (cream .44 at the star side) washes the ground out, so the ground difference is lost; the Орднунг ribs hide under the modules; the dressing is plate-only — the modules and the core are still the common kit, so a station is «the same station with a sticker», not the maker's grammar (profile law, seams, joints). That is the Designer's pass. Original text:
+  **M454 Station body and traffic by builder** (borders §2.3). `17e-station-body` applies the
   maker grammar (`HULL_MAKER` dimensions: profile law, seams, marks, ground) to the station by
   `station.by`; `17f-sys-traffic` draws 7 of 10 ships from the owner's maker, 3 from neighbours; a
   border system mixes, a heartland is uniform.
