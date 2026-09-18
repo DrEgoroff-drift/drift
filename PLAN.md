@@ -172,34 +172,7 @@ Rule 3: same look, cheaper work.
 - [x] **0.4 `src/16a-space.js` crossed the 40 KB build guard** — done; body in `docs/PLAN-archive.md` («Moved 2026-09-18»).
 - [x] **0.1 Cadence** — done; body in `docs/PLAN-archive.md` («Moved 2026-09-18»).
 - [x] **0.1b An even tact** — done; body in `docs/PLAN-archive.md` («Moved 2026-09-18»).
-- **Gate, honestly: half taken.** On the author's S23, `RES_AUTO` now holds at 2 for ten minutes
-  straight (it used to fall to 1 in thirty seconds) and the haze is no longer the bottleneck —
-  muting it changes nothing. But the cadence gate is **not** met: the first minute read 58.2 fps
-  at 97 %, and over ten minutes the shelf is 76–83 % with 475–619 frames over 24 ms a minute and
-  p95 33.4 ms. The first minute was luck, and striking the gate on it was my mistake.
-  Screen recording of the S23 itself on 05128a9 (Tester, 17.09, screenrecord, calm flight): 600
-  frames in 9.99 s, median 16.7 ms, p95 17.0, two frames over 24 ms. So the idle frame is already
-  smooth; the shelf comes from **active steering** — a minute with the finger on the stick reads
-  83–90 %, ten minutes 79–80 %. The next measurement is prof() with the finger held vs. without.
-  **Answered (Tester, 18.09, S23, three 20 s runs in a row, thermal 1): the remainder is the
-  finger, not the drawing.** No finger 60.0 fps / 99.9 %; finger on the stick 50.9 / 81.9 % with 184
-  frames over 24 ms; finger off again 59.8 / 99.5 %. Same scene throughout. Ruled out by test: ship
-  speed (81.3 % standing vs 81.8 % at speed) and the accumulated wake (clearing WAKE+TRAIL moved
-  80.0 → 81.2 %). Under the finger frameBody is 7.74 ms against 5.91 at rest, pointermove fires only
-  0.54 times a frame — and **getBoundingClientRect is called 6.08 times a frame under the finger and
-  5.33 at rest, where item 0.3 promised zero.** So 0.3 regressed or never covered these callers:
-  find the five-to-six layout reads still in the frame and cache them. This also explains every
-  earlier disagreement in the numbers: a first minute always beat the shelf because the finger had
-  been on the glass for less of it. (Earlier "no finger" figures are withdrawn — the Tester's driver
-  left the touch held between runs, so the stick counted as active.)
-  **Found and fixed by stack trace (8a3f6ff):** two callers duplicated 08-state's cache with their
-  own raw read — `fleetPromptRect()` measured `#prompt` once per visible fleet ship every frame (the
-  finger-independent baseline, which is why the count drifted with traffic and why 0.3's own
-  measurement missed it), and `helmLift()` did the same only while the stick is live (the touch-only
-  delta). Both route through `promptRect()` now: 120 synthetic frames with three fleet ships, a live
-  stick and a prompt line give 2 real reads total, both cold. Control's own P4 conditions had added
-  two more reads (padsRect and a second promptRect in `drawSysHud`) — 8.17 a frame on a629378;
-  folded into the same cleanup. Phone re-measurement pending.
+- **Gate, honestly: half taken** (RES_AUTO holds at 2 on the S23; the cadence gate is the phone milestone's) — full status in `docs/PLAN-archive.md` («Moved 2026-09-18, third batch»).
 - [x] **~~THE FRAME IS BISTABLE~~ — withdrawn by its author 18.09;** body in `docs/PLAN-archive.md` («Moved 2026-09-18, third batch»).
 
   30 s runs on one build with the same steering: 79.9 / 99.7 / 82.3 / 80.1 / 82.2 / 81.2 % cadence
