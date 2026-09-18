@@ -15,23 +15,26 @@ function drawScars(h,id){
   for(const k of sc){
     if(k==="burn"){
       const q=pickCell("deck",h.seed|0);
-      const x=q?q.x:h.tail+L*(.18+r()*.12),y=q?q.y:(r()*2-1)*bw*.3,R=bw*.34;
+      const x=q?q.x:h.tail+L*(.18+r()*.12),y=q?q.y:(r()*2-1)*bw*.3,R=bw*.55;
       const g=ctx.createRadialGradient(x,y,0,x,y,R);
-      g.addColorStop(0,"rgba(20,14,10,.85)");g.addColorStop(.6,"rgba(40,26,16,.55)");g.addColorStop(1,"rgba(150,70,30,0)");
+      g.addColorStop(0,"rgba(16,12,10,.92)");g.addColorStop(.55,"rgba(40,26,16,.7)");g.addColorStop(.85,"rgba(150,70,30,.35)");g.addColorStop(1,"rgba(150,70,30,0)");
       ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(x,y,R*1.3,R*.8,r()*.6,0,TAU);ctx.fill();
+      /* копоть языками от очага — чтобы читалось пожаром, а не тенью */
+      ctx.strokeStyle="rgba(20,14,10,.55)";ctx.lineWidth=Math.max(.8,bw*.08);ctx.lineCap="round";
+      for(let i=0;i<4;i++){const a=r()*TAU,l=R*(1.1+r()*.9);ctx.beginPath();ctx.moveTo(x,y);ctx.quadraticCurveTo(x+Math.cos(a)*l*.5,y+Math.sin(a)*l*.5+bw*.1,x+Math.cos(a)*l,y+Math.sin(a)*l);ctx.stroke();}
     }else if(k==="bent"){
       const m=M.length?M[hashi(h.seed|0,M.length,0x5CA4)%M.length]:null;
-      const s=m?(m.y<0?-1:1):(r()<.5?-1:1),x=m?m.x:h.tail+L*(.4+r()*.3),y=s*profW(h.prof,x)*.92,d=bw*.14;
-      ctx.strokeStyle="rgba(0,0,0,.55)";ctx.lineWidth=1.2;
+      const s=m?(m.y<0?-1:1):(r()<.5?-1:1),x=m?m.x:h.tail+L*(.4+r()*.3),y=s*profW(h.prof,x)*.92,d=bw*.22;
+      ctx.strokeStyle="rgba(0,0,0,.7)";ctx.lineWidth=1.8;
       ctx.beginPath();ctx.moveTo(x-d*1.6,y);ctx.lineTo(x-d*.3,y-s*d);ctx.lineTo(x+d*.6,y+s*d*.3);ctx.lineTo(x+d*1.8,y);ctx.stroke();
       ctx.strokeStyle="rgba(255,255,255,.28)";ctx.lineWidth=.6;
       ctx.beginPath();ctx.moveTo(x-d*1.4,y+s*.6);ctx.lineTo(x-d*.3,y-s*d+s*.6);ctx.stroke();
     }else if(k==="leak"){
       const q=pickCell("stern",(h.seed|0)+3);
-      const x0=q?q.x+bw*.1:h.tail+L*(.5+r()*.2),y0=q?q.y:(r()*2-1)*bw*.35,len=L*.22;
+      const x0=q?q.x+bw*.1:h.tail+L*(.5+r()*.2),y0=q?q.y:(r()*2-1)*bw*.35,len=L*.34;
       const g=ctx.createLinearGradient(x0,y0,x0-len,y0);
       g.addColorStop(0,"rgba(30,26,22,.7)");g.addColorStop(1,"rgba(30,26,22,0)");
-      ctx.strokeStyle=g;ctx.lineWidth=Math.max(1,bw*.07);ctx.lineCap="round";
+      ctx.strokeStyle=g;ctx.lineWidth=Math.max(1.4,bw*.12);ctx.lineCap="round";
       ctx.beginPath();ctx.moveTo(x0,y0);ctx.quadraticCurveTo(x0-len*.5,y0+bw*.06,x0-len,y0+bw*.03);ctx.stroke();
       ctx.fillStyle="rgba(30,26,22,.6)";ctx.beginPath();ctx.arc(x0,y0,Math.max(.8,bw*.06),0,TAU);ctx.fill();
     }
@@ -596,7 +599,6 @@ function hullPart1(h,id,bank,ticks){
   /* швы починок — поверх налёта и тоже в обрезке: биография не смывается (12s) */
   if(typeof drawSeams==="function")drawSeams(h,typeof seamsOf==="function"?seamsOf(id):0);
   if(typeof drawTapes==="function")drawTapes(h,typeof tapesOf==="function"?tapesOf(id):0);   /* изолента (M486) */
-  drawScars(h,id);   /* шрамы корпуса (M482): ожог, вмятина, потёк — видны на борту, не только в ОПИСИ */
   drawSeal(h,id);   /* пломба Орднунга (M508) */
   drawTransitPlate(h,id);   /* транзитные номера (M513): табличка на борту, пока не на учёте */
   ctx.restore();
@@ -616,6 +618,9 @@ function hullPart1(h,id,bank,ticks){
   /* приметы и метки изготовителя (M369): часть корабля, а не наклейка —
      поэтому до бортовых огней и общего света, вместе со всей навеской */
   if(typeof makerDraw==="function")makerDraw(h,!ticks);
+  /* шрамы корпуса (M482, D18): ПОСЛЕ примет и табличек — ожог ложится и на
+     табличку, иначе метки изготовителя закрывали его целиком */
+  ctx.save();tracePoly(h.poly);ctx.clip();drawScars(h,id);ctx.restore();
 }
 /* кусок 2: метки изготовителя и пиратская шкура — поверх строки, под венцами */
 function hullPart2(h){

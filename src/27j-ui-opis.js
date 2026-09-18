@@ -163,6 +163,15 @@ function opisPanel(id,title,rows,cur,fut,extra){
 }
 /* панели перерисовываются отдельно от стола: наведение не должно перестраивать
    сотню карточек ради двух чисел */
+/* корпус помнит (D18): шрамы строками под приборами — что и чем платите */
+function opisScarRows(n){
+  if(typeof scarsOf!=="function")return;
+  const sc=scarsOf(shipData(G.shipId));if(!sc.length)return;
+  let h="<div class='grp'>корпус помнит</div>";
+  for(const k of sc)h+="<div class='ln scar'><em>"+SCAR_KIND[k].ru+"</em><b>"+SCAR_KIND[k].fx+"</b></div>";
+  h+="<div class='why'>чинит верфь · корпус со шрамами дешевле</div>";
+  n.insertAdjacentHTML("beforeend",h);
+}
 function opisPanels(){
   const f=opisFocus();
   const oldS=OPIS.panels.ship,oldK=OPIS.panels.kit;
@@ -170,14 +179,7 @@ function opisPanels(){
     const cap=capUsed(),capM=capOf(G.shipId);
     const n=opisPanel("ship","ПРИБОРЫ",OPIS_SHIP,stat(),opisShipFuture(f),
       "оснастка "+cap+"/"+capM);
-    /* корпус помнит (D18): шрамы строками под приборами — что и чем платите */
-    if(typeof scarsOf==="function"){
-      const sc=scarsOf(shipData(G.shipId));
-      if(sc.length){let h="<div class='grp'>корпус помнит</div>";
-        for(const k of sc)h+="<div class='ln scar'><em>"+SCAR_KIND[k].ru+"</em><b>"+SCAR_KIND[k].fx+"</b></div>";
-        h+="<div class='why'>чинит верфь · корпус со шрамами дешевле</div>";
-        n.insertAdjacentHTML("beforeend",h);}
-    }
+    opisScarRows(n);
     oldS.replaceWith(n);OPIS.panels.ship=n;
   }
   if(oldK&&oldK.isConnected){
@@ -861,6 +863,7 @@ function opisRender(box){
     OPIS.sel=(OPIS.sel&&OPIS.sel.t==="slot"&&OPIS.sel.i===i)?null:(fm[i]!=null?{t:"slot",i,id:fm[i]}:{t:"slot",i});opisRerender();
   });
   const ps=opisPanel("ship","ПРИБОРЫ",OPIS_SHIP,st,opisShipFuture(opisFocus()),"оснастка "+capUsed()+"/"+capOf(G.shipId));
+  opisScarRows(ps);
   OPIS.panels.ship=ps;
   const sp=document.createElement("div");sp.className="op-spare";sp.dataset.drop="spare";
   sp.innerHTML="<h4>СНЯТЫЕ ЧАСТИ<s>"+inv.length+"</s></h4>";
