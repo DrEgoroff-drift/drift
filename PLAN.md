@@ -499,7 +499,8 @@ patchnote of each version names the M-numbers it closes.
   (shuttles passing, a route bar instead of the countdown, the destination chip = the station).
   Buoys baked per system; only phases and ships per frame. Meter: `prof()` on the phone layout —
   the approach adds ≤ 1 ms raster; `look()` on the heartland scene keeps pair % ≥ 15.
-- [ ] **M452 The first ship's gesture** (review §2.1). Within 5 s of arrival one ship of the owner
+- [x] **M452 The first ship's gesture — BUILT 18.09 (Control), first pass, `src/17h-sys-gesture.js`.** Owner = `chronOwnerKey` or the station's maker; the gesture plays on every arrival, its words (ether, КНИЖКА via `recordAdd`) once per game day per system. ГЛАВТРАССА picket alongside + spotlight cone + «Записываю» + КНИЖКА «Проследовал. Замечаний нет.» (every 30th day «Замечание: нет замечаний»); Компания screen drone before the nose + the 0 кр / 40 кр bill on air; Орднунг one scan line tail → nose; Коммуна nobody (the post's board says «ОБЕД. ВЕРНУСЬ»); Рассвет tug «чинить есть что?» / «ну хоть покрась»; Хай-Фронт camera drone at a fixed offset for 90 s, one red line, «рейтинг доверия рассчитан». The post: a baked truss + board + one lamp with its own motion, 140 u beside the entry. **Not done (open):** the Орднунг pad form «цель визита», the Рассвет paint job for 5 кр, the Компания bill as a real charge (goes with M456 law of the land), the rear/front/fresh-occupation/Ялта/pirate states, the Хай-Фронт drone leaving at docking rather than at 90 s. Phone owed: the gesture's frame on the phone. Original text:
+  **M452 The first ship's gesture** (review §2.1). Within 5 s of arrival one ship of the owner
   (`chronOwner`) does one thing: ГЛАВТРАССА picket alongside, a spotlight cone sweeps you,
   «Записываю», a КНИЖКА line «Проследовал. Замечаний нет.» (monthly: «Замечание: нет замечаний»);
   Компания drone with a screen before your nose, ПОЧТА «Пролёт — 0 кр (акция). Сбор за оформление

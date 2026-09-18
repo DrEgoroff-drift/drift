@@ -588,6 +588,7 @@ function jump(cost){
   G.ship.a=st0?Math.atan2(st0.y-G.ship.y,st0.x-G.ship.x):a+Math.PI;
   G.mode="system";
   spawnPirates();spawnAllies();
+  if(typeof gestArrive==="function")gestArrive();   /* чья земля: жест первого корабля (M452, 17h) */
   sfx("jump");
   /* Жестянка (12z) слышна с порога: она передаёт свою просьбу в пустоту и не
      знает, что её некому исполнить. Работающая смена молчит */

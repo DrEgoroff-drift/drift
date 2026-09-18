@@ -267,6 +267,7 @@ function updateSystem(dt){
   /* оклик пикета (M373, §6.1): пока на него не ответили, остальное ждёт — и
      ждёт по-настоящему, ДО причала, пояса и базы (R1, 12.09): прежде он стоял
      после них, и у причала подсказка звала стыковаться, пока пикет ждал ответа */
+  if(typeof gestTick==="function")gestTick(sh);   /* жест хозяина после прыжка (M452) */
   if(typeof hailTick==="function"&&hailTick(sh,dt,actEdge))return;
 
   if(sys.station){
@@ -644,6 +645,7 @@ function drawSystem(){
     if(G.ap&&G.ap.kind==="planet"&&G.ap.p===p)reticle(x,y,r+16);
   }
   if(typeof drawSysLane==="function")drawSysLane(zx,zy,Z);   /* подъезд: бакены (M459, 17g) */
+  if(typeof drawGestPost==="function")drawGestPost(zx,zy,Z);   /* пост у входа (M452, 17h) */
   if(sys.station){
     const x=zx(sys.station.x),y=zy(sys.station.y);
     drawStation(x,y,Z);
@@ -663,6 +665,7 @@ function drawSystem(){
   if(G.haul&&typeof drawHaul==="function")drawHaul(zx,zy,Z);   /* спасательный буксир (16c) */
   if(typeof drawSysTraffic==="function")drawSysTraffic(zx,zy,Z);   /* челноки станции (M309) */
   if(typeof drawSysLaneShips==="function")drawSysLaneShips(zx,zy,Z);   /* очередь у дока (M459) */
+  if(typeof drawGesture==="function")drawGesture(zx,zy,Z);   /* жест хозяина (M452) */
   if(typeof drawWanderer==="function")drawWanderer(zx,zy,Z);        /* «Сорока» у планеты (M342) */
   if(typeof drawFleet==="function")drawFleet(zx,zy,Z);               /* флот ГЛАВТРАССЫ (M310) */
   if(typeof drawMooredBarge==="function")drawMooredBarge(zx,zy,Z);   /* своя баржа у Причала (M296) */
