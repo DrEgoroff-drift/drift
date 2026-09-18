@@ -67,7 +67,7 @@ class El {
   insertAdjacentHTML() {} insertAdjacentElement(_, e) { return this.appendChild(e); }
   querySelector(sel) { return qs(this, sel)[0] || null; } querySelectorAll(sel) { return qs(this, sel); }
   getElementsByClassName(c) { return qs(this, "." + c); } getElementsByTagName(t) { return qs(this, t); }
-  closest() { return null; } contains(c) { return c === this || this.children.some(x => x.contains && x.contains(c)); } matches() { return false; }
+  closest(sel) { const g = qsParse(sel); for (let e = this; e && e.classList; e = e.parentElement) if (g.some(x => qsMatch(e, x))) return e; return null; } contains(c) { return c === this || this.children.some(x => x.contains && x.contains(c)); } matches(sel) { return qsParse(sel).some(x => qsMatch(this, x)); }
   cloneNode() { const e = new El(this.tagName); e.className = this.className; e.textContent = this.textContent; return e; }
   addEventListener() {} removeEventListener() {} dispatchEvent() { return true; }
   setAttribute(k, v) { this.attrs[k] = String(v); if (k === "id") this.id = String(v); if (k === "class") this.className = String(v); }
@@ -79,27 +79,74 @@ class El {
   get isConnected() { return true; } get ownerDocument() { return document; }
 }
 function qs(root, sel) {
-  /* только то, что игра реально спрашивает: #id, .class (и их сочетание,
-     ".scr.open"), tag, и их запятые. До этой правки (18.09) составной класс
-     ".scr.open" сверялся только по ПЕРВОМУ классу ("scr") — split() резал
-     строку и по точке, и по остальным разделителям разом, так что ".open"
-     терялся молча. Любой узел с классом "scr" читался как открытый экран
-     навсегда, что бы ни делал classList.remove("open") — отсюда штурвальные
-     тесты видели курсор «занятым чужим экраном» без единого реального экрана
-     (найдено тестировщиком по регрессии, диагноз уточнён: не гонка с
-     наблюдателем, а этот разбор селектора). */
-  const out = [];
-  const parts = String(sel).split(",").map(s => s.trim()).filter(Boolean);
-  const walk = (e) => { for (const c of e.children) { if (!c || !c.children) continue; for (const p of parts) if (match(c, p)) { out.push(c); break; } walk(c); } };
-  const match = (e, p) => {
-    const id = p.match(/#([-\w]+)/); if (id && e.id !== id[1]) return false;
-    const classes = p.match(/\.[-\w]+/g) || [];
-    if (!classes.every(c => e.classList.contains(c.slice(1)))) return false;
-    const tag = p.match(/^[a-zA-Z*][-\w]*/);
-    if (tag && tag[0] !== "*" && e.tagName !== tag[0].toUpperCase()) return false;
-    return true;
-  };
+  /* мини-движок селекторов: ровно то, что игра спрашивает (18.09, аудит после
+     «.scr.open»). Прежний разбор знал только #id/.class/tag одним куском и
+     молча врал на всём остальном: ".pads button" отдавал саму панель вместо
+     кнопок, "#fbar i" — полосу вместо заливки, "[data-k=thrust]" совпадал с
+     ЛЮБЫМ узлом документа, а closest/matches всегда отвечали «нет». Теперь:
+     запятые; потомок (пробел) и дочерний (>); tag, #id, .class, [attr],
+     [attr=val], :not(простой). Чего движок не знает — бросает, а не угадывает. */
+  const groups = qsParse(sel), out = [];
+  const walk = (e) => { for (const c of e.children) { if (!c || !c.children) continue; if (groups.some(g => qsMatch(c, g))) out.push(c); walk(c); } };
   walk(root); return out;
+}
+const QS_CACHE = new Map();
+function qsParse(sel) {
+  sel = String(sel); if (QS_CACHE.has(sel)) return QS_CACHE.get(sel);
+  const groups = [];
+  for (const g of qsSplit(sel, ",")) {
+    const steps = []; let comb = " ";
+    const toks = g.trim().replace(/\s*>\s*/g, " > ").split(/\s+/).filter(Boolean);
+    for (const t of toks) { if (t === ">") { comb = ">"; continue; } steps.push({ comb, c: qsCompound(t, sel) }); comb = " "; }
+    if (!steps.length) throw new Error("qs: empty selector in " + JSON.stringify(sel));
+    groups.push(steps);
+  }
+  QS_CACHE.set(sel, groups); return groups;
+}
+function qsSplit(s, ch) { const r = []; let d = 0, cur = ""; for (const x of s) { if (x === "(" || x === "[") d++; if (x === ")" || x === "]") d--; if (x === ch && !d) { r.push(cur); cur = ""; } else cur += x; } r.push(cur); return r.filter(t => t.trim()); }
+function qsCompound(t, sel) {
+  const c = { tag: null, id: null, cls: [], attrs: [], not: [] };
+  const re = /^(\*|[a-zA-Z][-\w]*)|#([-\w]+)|\.([-\w]+)|\[\s*([-\w:]+)\s*(?:=\s*(?:"([^"]*)"|'([^']*)'|([^\]\s]*)))?\s*\]|:not\(([^)]*)\)/y;
+  let pos = 0, m;
+  while (pos < t.length) {
+    re.lastIndex = pos; m = re.exec(t);
+    if (!m || m.index !== pos) throw new Error("qs: unsupported selector " + JSON.stringify(sel) + " at " + JSON.stringify(t.slice(pos)));
+    if (m[1]) c.tag = m[1] === "*" ? null : m[1].toUpperCase();
+    else if (m[2]) c.id = m[2];
+    else if (m[3]) c.cls.push(m[3]);
+    else if (m[4]) c.attrs.push([m[4], m[5] !== undefined ? m[5] : m[6] !== undefined ? m[6] : m[7]]);
+    else if (m[8] !== undefined) c.not.push(qsCompound(m[8].trim(), sel));
+    pos = re.lastIndex;
+  }
+  return c;
+}
+function qsAttr(e, k) {
+  if (e.attrs && k in e.attrs) return e.attrs[k];
+  if (k === "id") return e.id || null;
+  if (k === "class") return e.className || null;
+  if (k.startsWith("data-")) { const v = e.dataset && e.dataset[k.slice(5).replace(/-([a-z])/g, (_, x) => x.toUpperCase())]; return v === undefined ? null : String(v); }
+  if (k.startsWith("on") && typeof e[k] === "function") return "";
+  return null;
+}
+function qsOne(e, c) {
+  if (!e || !e.classList) return false;
+  if (c.tag && e.tagName !== c.tag) return false;
+  if (c.id && e.id !== c.id) return false;
+  for (const k of c.cls) if (!e.classList.contains(k)) return false;
+  for (const [k, v] of c.attrs) { const a = qsAttr(e, k); if (a === null || (v !== undefined && a !== v)) return false; }
+  for (const n of c.not) if (qsOne(e, n)) return false;
+  return true;
+}
+function qsMatch(e, steps) {
+  const go = (el, i) => {
+    if (!qsOne(el, steps[i].c)) return false;
+    if (i === 0) return true;
+    let p = el.parentElement;
+    if (steps[i].comb === ">") return !!p && go(p, i - 1);
+    for (; p; p = p.parentElement) if (go(p, i - 1)) return true;
+    return false;
+  };
+  return go(e, steps.length - 1);
 }
 
 /* ── документ ── */
@@ -146,8 +193,8 @@ document.querySelector = (sel) => {
      а следующий же scrOpen() заново его заводит; найдено по регрессии
      штурвальных тестов (Тестировщик, Контроль, 18.09): мышь намертво теряла
      курс, потому что «экран открыт» стало неснимаемой ложью. */
-  const first = sel.split(",")[0].trim().split(/\s+/).pop();
-  if ((first.match(/[.#]/g) || []).length > 1) return null;
+  const first = sel.trim();
+  if (!/^[.#][-\w]+$/.test(first)) return null;   /* заводим только простой адрес целиком: ".rail .zoom" или "[data-k=thrust]" — запрос, не адрес */
   const e = new El(first.replace(/^[.#]/, "").split(/[.#:\[]/)[0] || "div");
   first.split(/(?=[.#])/).forEach(pc => { if (pc.startsWith(".")) e.classList.add(pc.slice(1).split(/[:\[]/)[0]); else if (pc.startsWith("#")) { e.id = pc.slice(1).split(/[:\[]/)[0]; byId.set(e.id, e); } });
   document.body.appendChild(e); return e;
