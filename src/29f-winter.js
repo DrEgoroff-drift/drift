@@ -222,7 +222,7 @@ function renderDiary(box){
   box.innerHTML="";
   const W=winAll();
   const finished=(typeof thingsAll==="function")&&thingsAll().some(t=>t.diary);
-  if(!W&&!finished){tableRow(box,"dim","","дневника нет");return;}
+  if(!W&&!finished){tableRow(box,"dim","","дневника нет: его пишут на зимовке — наряд с ДОСКИ станции");return;}
   if(!W){
     tableRow(box,"dim","","дневник сдан вместе со сменой и лежит в вещах");
     return;

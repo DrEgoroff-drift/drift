@@ -99,8 +99,10 @@ function renderLog(page){
   if(!rows.length){
     const e=document.createElement("div");e.className="li dim";
     const s=document.createElement("span");
+    /* пустой лист говорит, откуда берётся его содержимое (0b, СТОЛ 13–15) */
     s.textContent=page==="ether"?"эфир пуст: крутите ручку приёмника на пульте":
-                  page==="folk"?"никто ещё ничего не сказал":"пока пусто";
+                  page==="folk"?"никто ещё ничего не сказал: говорят у стойки станции и в смену на борту":
+                  "пока пусто: борт пишет сам — покупки, ремонт, бой, поломки";
     e.appendChild(s);box.appendChild(e);return;
   }
   for(let i=rows.length-1;i>=0;i--){
@@ -123,7 +125,7 @@ function renderDeeds(){
   const open=questOpen();
   if(!open.length){
     const e=document.createElement("div");e.className="li dim";
-    const s=document.createElement("span");s.textContent="дел нет";
+    const s=document.createElement("span");s.textContent="дел нет: их берут на станции — сделки, наряды, охота за головами, баржи; фронт присылает сам";
     e.appendChild(s);box.appendChild(e);return;
   }
   const head=document.createElement("div");head.className="li head";

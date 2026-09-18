@@ -55,7 +55,7 @@ actionKey                    src/15-input.js:159-164
 actPressT                    src/15-input.js:94
 addPart                      src/05-parts.js:364-379
 addPath                      src/25-cockpit.js:154-158
-addRes                       src/11-log.js:159-165
+addRes                       src/11-log.js:161-167
 addrForm                     src/11b-speech.js:96-99
 addrify                      src/18a-map-addr.js:242-265
 ADJ                          src/21a4-base-adj.js:17-27
@@ -995,14 +995,14 @@ CSW                          src/19e-clouds.js:68
 ctlHint                      src/15-input.js:171-175
 ctlReset                     src/15a-helm.js:120-125
 ctx                          src/08-state.js:3
-cue                          src/08-state.js:365-370
+cue                          src/08-state.js:371-376
 CUE_EPS                      src/27m-scroll-cue.js:25
-CUE_INFO                     src/08-state.js:345
-CUE_LVL                      src/08-state.js:346
-cueFold                      src/08-state.js:373-378
-cueLvl                       src/08-state.js:352-355
-cueReset                     src/08-state.js:356
-cueSameOffer                 src/08-state.js:364
+CUE_INFO                     src/08-state.js:351
+CUE_LVL                      src/08-state.js:352
+cueFold                      src/08-state.js:379-384
+cueLvl                       src/08-state.js:358-361
+cueReset                     src/08-state.js:362
+cueSameOffer                 src/08-state.js:370
 CULT_EXP_GOAL                src/12b3-fx-cult.js:22
 CULT_PLAY                    src/12b3-fx-cult.js:51-94
 CULT_PLAY_EVERY              src/12b3-fx-cult.js:19
@@ -1728,7 +1728,7 @@ folkVisit                    src/12u-folk.js:104-113
 FOOD_SUPPLY                  src/21a1b-base-food.js:16
 foundBase                    src/21a-mode-base.js:101-115
 frame                        src/28-loop.js:597-643
-FRAME_IN                     src/08-state.js:335
+FRAME_IN                     src/08-state.js:341
 FRAME_JS                     src/28-loop.js:119
 FRAME_MS                     src/28-loop.js:141
 frameBody                    src/28-loop.js:409-529
@@ -2898,7 +2898,7 @@ MINE_LIFE                    src/13a-guns.js:31
 MINE_MOUTH_R                 src/21-mode-surface.js:4
 MINE_R                       src/13a-guns.js:32
 mineDeep                     src/23a-dig-draw.js:625-628
-minedUnit                    src/11-log.js:168-174
+minedUnit                    src/11-log.js:170-176
 mineKey                      src/23a-dig-draw.js:614
 mineLay                      src/13a-guns.js:279-287
 mineLoad                     src/23a-dig-draw.js:629-638
@@ -2939,7 +2939,7 @@ mkWorld                      tests/91zzzx-maker.js:7-11
 mlFit                        tests/91zzzw-msl.js:16-23
 mlLauncher                   tests/91zzzw-msl.js:8-15
 modCard                      src/26b-ui-station-work.js:44-104
-modCost                      src/11-log.js:155-158
+modCost                      src/11-log.js:157-160
 modDiffHtml                  src/26b-ui-station-work.js:25-34
 MODE_RU                      src/27i-ui-table.js:64
 modeRu                       src/27i-ui-table.js:67
@@ -2956,7 +2956,7 @@ mountsOf                     src/05d-mounts.js:26-42
 mountTakes                   src/05d-mounts.js:64-69
 mountWhyNot                  src/05d-mounts.js:71-77
 mouseWalkAt                  src/15-input.js:408-437
-msgHeld                      src/08-state.js:379
+msgHeld                      src/08-state.js:385
 MSL_ARM                      src/16b-missile.js:20
 MSL_COOL                     src/16b-missile.js:16
 MSL_DMG                      src/16b-missile.js:14
@@ -3794,7 +3794,7 @@ recStart                     src/15c-rec.js:28
 recStop                      src/15c-rec.js:29
 recTick                      src/15c-rec.js:39-51
 rectsDirty                   src/08-state.js:93-97
-refineBank                   src/11-log.js:167
+refineBank                   src/11-log.js:169
 REGION_A                     src/06b-region.js:22
 REGION_B                     src/06b-region.js:24
 REGION_GAP                   src/06c-regions.js:36
@@ -3860,11 +3860,11 @@ renderBooks                  src/12ub-books.js:157-186
 renderCantina                src/27c-ui-hq.js:68-131
 renderCardBack               src/25i-post-back.js:88-178
 renderChess                  src/25n-chess.js:279-326
-renderDeeds                  src/11-log.js:117-147
+renderDeeds                  src/11-log.js:119-149
 renderDeskTop                src/27ia-desk-top.js:343-366
 renderDiary                  src/29f-winter.js:221-249
 renderHold                   src/27j-ui-hold.js:177
-renderLog                    src/11-log.js:94-115
+renderLog                    src/11-log.js:94-117
 renderLoreBoard              src/27h-ui-lore.js:26-79
 renderMail                   src/25k-post-mail.js:36-109
 renderOpts                   src/27-ui-ship.js:58-330
@@ -4176,7 +4176,7 @@ saveGame                     src/14a-cloud.js:38-51
 saveText                     src/14-save.js:148-186
 saveTop                      src/14-save.js:142-145
 saveWeigh                    src/14-save.js:129-141
-say                          src/08-state.js:336
+say                          src/08-state.js:342
 SCALE_KEYS                   src/10-music.js:25
 SCALES                       src/10-music.js:5-24
 SCK                          src/18c-chunks.js:39
@@ -4787,7 +4787,7 @@ tinTick                      src/12ta-tin.js:118-130
 tmCount                      tests/91zzzzy-time.js:26-34
 tmShift                      tests/91zzzzy-time.js:17-24
 tnoise                       src/18a-material.js:16-22
-toggleLog                    src/11-log.js:150-154
+toggleLog                    src/11-log.js:152-156
 toggleLoreBoard              src/27h-ui-lore.js:81-84
 toggleMenu                   src/15-input.js:244-251
 toggleParrotWin              src/12y-parrot-face.js:706-721
@@ -5182,7 +5182,7 @@ WORLD_SPREAD                 src/10-music.js:99
 WORLD_SUB                    src/08-state.js:169
 WORLD_VIB                    src/10-music.js:98
 WORLD_VOICE                  src/10-music.js:57-73
-worldCovered                 src/08-state.js:383
+worldCovered                 src/08-state.js:389
 worldQuiet                   src/11ar-doors.js:32
 worldRes                     src/02a-worldmix.js:119-126
 worldTables                  src/02a-worldmix.js:86-117

@@ -468,8 +468,13 @@ Rule 3: same look, cheaper work.
   game are server replies to the player's own tap (ОСТАВЛЕНО, ГОЛОС ПОДАН, the cloud) or the
   «open in another tab» warning — both must show over a screen. The rule is written at `say()` in
   `08-state`; a future world voice from a timer sets MSG_WORLD itself.
-- [ ] СТОЛ: empty sheets say where to get the thing; bottom padding under the last row of desk
-  objects. `journal` lines («Дрон … встал») should not reach `crash.log` (M417 noise).
+- [x] СТОЛ — done 18.09 (Control). Empty sheets: read on a fresh game, 13 of 17 already named their
+  source; the four silent ones now do — БОРТ («борт пишет сам — покупки, ремонт, бой, поломки»),
+  ЛЮДИ («говорят у стойки станции и в смену на борту»), ДЕЛА («берут на станции — сделки, наряды,
+  охота за головами, баржи; фронт присылает сам»), ДНЕВНИК («пишут на зимовке — наряд с ДОСКИ»).
+  Bottom padding: closed by a frame — 57 px of air under the last card at 390×844, nothing fixed
+  over it (P1–P3 already fixed it). `crash.log` noise: closed since 0.419 — only `logShip` sends, and
+  all nine callers are real evidence (save, cloud, chronicle).
 - [ ] Station header review 13–15: СТОЛ out of the masthead; two tab rows = 110 px — fold to one;
   prices before the cooperative form; the Director's news on ДОСКА. Each passes «чтобы что?».
 - **Privacy, standing:** the author's save sits outside git (`C:\Claude\drift-private`) — never
