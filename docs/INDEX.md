@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 587 · символов верхнего уровня: 5667
+Файлов: 587 · символов верхнего уровня: 5668
 
 ## СИМВОЛЫ
 
@@ -488,7 +488,7 @@ bmgrSilent                   src/21b2-base-mgr.js:182-185
 bmgrStep                     src/21b2-base-mgr.js:138-176
 bmgrWorkMul                  src/21b2-base-mgr.js:128-131
 boardLanes                   src/26-ui-station.js:390-416
-BODY_CAM                     src/17-mode-system.js:40
+BODY_CAM                     src/17-mode-system.js:62
 BODY_LABELS                  src/17-mode-system.js:24
 bodyInSystem                 src/16-flight.js:109-118
 bookAll                      src/12ub-books.js:122
@@ -553,7 +553,7 @@ buyPriceFor                  src/12-economy.js:87-91
 bWall                        src/21aa-base-rooms.js:187-242
 bWorker                      src/21aa-base-rooms.js:322-382
 CAM_LAG_PX                   src/16a-space.js:316
-camBody                      src/17-mode-system.js:43-52
+camBody                      src/17-mode-system.js:65-74
 camBtnTick                   src/25g-postcard.js:666-670
 camOffset                    src/19c-light.js:155-162
 camStep                      src/19c-light.js:141-153
@@ -1396,6 +1396,7 @@ drawDigWorld                 src/23a-dig-draw.js:45-607
 drawDronesMap                src/12e-drone-flight.js:328-346
 drawDronesSystem             src/12e-drone-flight.js:242-315
 drawDustMotes                src/19-mode-landing.js:271-284
+drawEdgeWall                 src/17-mode-system.js:44-61
 drawElevator                 src/20aa-poi-shapes.js:91-113
 drawExhaust                  src/16a-space.js:384-444
 drawFactory                  src/20aa-poi-shapes.js:378-462
@@ -1489,12 +1490,12 @@ drawSurface                  src/21e-surface-draw.js:277-291
 drawSurfaceHud               src/21e-surface-draw.js:21-115
 drawSurfaceWorld             src/21e1-surface-world.js:10-615
 drawSurvey                   src/12w-survey.js:63-89
-drawSysHud                   src/17-mode-system.js:748-995
+drawSysHud                   src/17-mode-system.js:771-1018
 drawSysLane                  src/17g-sys-lane.js:84-112
 drawSysLaneShips             src/17g-sys-lane.js:121-147
 drawSysNebula                src/16a-space.js:208-236
 drawSysRail                  src/18f-rail-station.js:32-65
-drawSystem                   src/17-mode-system.js:459-747
+drawSystem                   src/17-mode-system.js:481-770
 drawSysTraffic               src/17f-sys-traffic.js:36-40
 drawTapes                    src/12s1-tape.js:37-52
 drawTemple                   src/20aa-poi-shapes.js:50-89
@@ -3482,7 +3483,7 @@ optGroups                    src/27-ui-ship.js:338-355
 OPTS_BOOT                    tests/90-harness.js:203
 optsNumify                   src/14a2-save-ephemeral.js:23-28
 optTab                       src/27-ui-ship.js:337
-orbPathOf                    src/17-mode-system.js:448-458
+orbPathOf                    src/17-mode-system.js:470-480
 ORDER_WIN                    src/12aa-need.js:76
 orderDeliver                 src/12aa-need.js:116-127
 orderHere                    src/12aa-need.js:112-115
@@ -5339,7 +5340,7 @@ updateRail                   src/18g-rail-ride.js:42-71
 updateScoop                  src/19a-mode-scoop.js:75-176
 updateSpa                    src/29i-spa-draw.js:514-519
 updateSurface                src/21-mode-surface.js:200-657
-updateSystem                 src/17-mode-system.js:53-444
+updateSystem                 src/17-mode-system.js:75-466
 updateWanderRoom             src/24c-mode-wanderer.js:58-88
 updateWinter                 src/29g-winter-draw.js:808-817
 useBeacon                    src/23-mode-dig.js:88-113
@@ -6341,7 +6342,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/16c-rescue.js · 51 КБ
   · пустой бак: хода нет, но выход есть всегда (11.09):1
 
-## src/17-mode-system.js · 75 КБ
+## src/17-mode-system.js · 76 КБ
   · режим: система:1
 
 ## src/17a-station-mod.js · 13 КБ

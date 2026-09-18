@@ -122,10 +122,12 @@ job (the phone milestone), but no fix may add raster cost without a number.
   ring amber over the consequence colour — a dangerous «ПРОХОДОМ» breathed like a recommendation.
   Now the ready pad breathes red (`breatheRisk`) or phosphor (`breatheSafe`) by `data-hail-act`.
   Picket brackets (helmDrawMarks, M360) not re-judged here — no picket in the forced frame.
-- [~] **D6 Under the finger — checked on the S23 18.09, two parts not reached.** shipZ measured
-  .8 / 1.04 / 1.4 at ×1 / ×2.4 / ×4.5 as P8 set it; the dead-zone СТОП ring (20 px, amber word
-  above) reads under the thumb; the finger band is lighter since D2. NOT judged: the edge wall
-  and the orbit body kept in frame — they need a run to the system's edge; next phone session.
+- [x] **D6 Under the finger — done 18.09 on the S23.** shipZ measured .8 / 1.04 / 1.4 at ×1 /
+  ×2.4 / ×4.5 as P8 set it; the dead-zone СТОП ring reads under the thumb; the finger band is
+  lighter since D2. The edge wall had NO picture — the anchor turned the ship and only a line said
+  why; now `drawEdgeWall`: the rim fades in over the last 900 units as a wide soft band and a
+  dashed line in the compass teal, with a breathing «упор» spot where the ship leans on it. The
+  orbit body in frame (BODY_CAM) left as built.
 
 **Stage 2 — whose land**
 - [x] **D7 M459 the approach — done 18.09 on the S23.** The buoy was a dark cylinder with a lamp

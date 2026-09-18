@@ -37,6 +37,28 @@ function sysEdge(sys){
   if(sys.station)outer=Math.max(outer,sys.station.orbit||0);
   return Math.max(outer*1.6,3840);
 }
+/* ── стена края (D6, телефон 18.09): якорь заворачивал корабль, а в мире не было
+   ничего — только строка. Кромка проступает за 900 единиц: широкая мягкая
+   полоса и тонкая пунктирная линия тем же цветом, что фишки компаса; у самого
+   корабля — «упор», светлое пятно на линии там, где он в неё упёрся ── */
+function drawEdgeWall(zx,zy,Z){
+  const sys=G.sys,sh=G.ship;if(!sys||!sh)return;
+  const R=sysEdge(sys),d=Math.hypot(sh.x,sh.y)||1,k=clamp((d-(R-900))/900,0,1);
+  if(k<=0)return;
+  const cx=zx(0),cy=zy(0),r=R*Z;
+  ctx.save();
+  ctx.strokeStyle="rgba(127,230,216,"+(.10*k).toFixed(3)+")";ctx.lineWidth=Math.max(14,70*Z);
+  ctx.beginPath();ctx.arc(cx,cy,r,0,TAU);ctx.stroke();
+  ctx.strokeStyle="rgba(127,230,216,"+(.55*k).toFixed(3)+")";ctx.lineWidth=1.2;ctx.setLineDash([6,10]);
+  ctx.beginPath();ctx.arc(cx,cy,r,0,TAU);ctx.stroke();ctx.setLineDash([]);
+  if(d>R-120){   /* упор: пятно на кромке напротив корабля, дышит */
+    const a=Math.atan2(sh.y,sh.x),px=cx+Math.cos(a)*r,py=cy+Math.sin(a)*r,pk=.5+.5*Math.sin(G.t*.12);
+    const g=ctx.createRadialGradient(px,py,0,px,py,60*Z+20);
+    g.addColorStop(0,"rgba(180,255,240,"+(.28*pk).toFixed(3)+")");g.addColorStop(1,"rgba(127,230,216,0)");
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(px,py,60*Z+20,0,TAU);ctx.fill();
+  }
+  ctx.restore();
+}
 const BODY_CAM={x:0,y:0};   /* сдвиг кадра к телу орбиты или посадки (P9) — вид, не мир */
 /* тело, которое обязано оставаться в кадре: то, вокруг которого орбита, иначе
    ближайшее, если корабль у самой поверхности (ближе 250 — там же зона посадки) */
@@ -665,7 +687,8 @@ function drawSystem(){
   if(typeof drawBillboard==="function")drawBillboard(zx,zy,Z);   /* щит с бегущей строкой (M460) */
   if(typeof drawHotel==="function")drawHotel(zx,zy,Z);
   if(typeof drawBazaar==="function")drawBazaar(zx,zy,Z);
-  if(typeof drawGiant==="function")drawGiant(zx,zy,Z);   /* великан рукава (M464) */   /* барахолка (M463) */   /* гостиница (M461) */
+  if(typeof drawGiant==="function")drawGiant(zx,zy,Z);   /* великан рукава (M464) */
+  drawEdgeWall(zx,zy,Z);   /* кромка системы видна, когда к ней подошли (D6, 18.09) */   /* барахолка (M463) */   /* гостиница (M461) */
   if(typeof drawPeaceFleet==="function")drawPeaceFleet(zx,zy,Z);   /* мирный флот державы (M455) */
   if(sys.station){
     const x=zx(sys.station.x),y=zy(sys.station.y);
