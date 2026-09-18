@@ -342,11 +342,18 @@ TEST_SUITES.push(()=>suite("телефон: стик рождается под �
   const rc=cvs.getBoundingClientRect();
   const send=(t,id,cx,cy)=>cvs.dispatchEvent(new PointerEvent(t,
     {pointerId:id,pointerType:"touch",clientX:cx,clientY:cy,bubbles:true,cancelable:true}));
+  /* Кадр после движения пальца. Сенсор шлёт движение чаще кадра, поэтому
+     `pointermove` с 0.446 только запоминает сырые координаты, а переводит их в
+     пиксели канвы и решает «тычок или стик» — helmSyncPointer(), РАЗ ЗА КАДР
+     (15a-helm, разбор каденции 18.09). Значит стик рождается не в обработчике
+     события, а в ближайшем кадре: набор делает этот кадр явно, иначе он мерил
+     бы состояние между двумя кадрами, какого игрок никогда не видит. */
+  const frame=()=>helmSyncPointer();
   /* 1. правая половина — тоже штурвал (до M422 там не рождалось ничего) */
   const rx=rc.left+rc.width*.78,ry=rc.top+rc.height*.42;
   send("pointerdown",11,rx,ry);
   ok(HELM.P&&!HELM.S,"палец лёг — он ещё тычок, стика нет");
-  send("pointermove",11,rx-30,ry-10);
+  send("pointermove",11,rx-30,ry-10);frame();
   ok(!!HELM.S,"сдвинулся — родился стик, и это ПРАВАЯ половина");
   ok(Math.abs(HELM.S.x0-(rx-rc.left)*W/rc.width)<2,"центр там, где палец лёг, а не там, где он сейчас");
   helmTick(1);
@@ -371,7 +378,7 @@ TEST_SUITES.push(()=>suite("телефон: стик рождается под �
   send("pointerup",14,rc.left+rc.width*.6,rc.top+rc.height*.5);
   /* 4. при живом стике второй палец щипок не открывает */
   send("pointerdown",15,rc.left+rc.width*.5,rc.top+rc.height*.5);
-  send("pointermove",15,rc.left+rc.width*.5+40,rc.top+rc.height*.5);
+  send("pointermove",15,rc.left+rc.width*.5+40,rc.top+rc.height*.5);frame();
   ok(!!HELM.S,"стик жив");
   ok(helmPinchBlocked(),"пока он жив, щипок не мешает рулю");
   send("pointerup",15,rc.left+rc.width*.5+40,rc.top+rc.height*.5);

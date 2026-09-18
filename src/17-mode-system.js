@@ -15,6 +15,7 @@ let CHIP_POS=new Map();
 let CHIP_T=0;   /* wallNow() метки предыдущего кадра фишек — для их плавного шага */
 /* пороги фишек компаса — все здесь, одной группой, а не по одному рядом с
    местом, где каждый читается (Контроль, ревью кода 18.09) */
+const CHIP_TOUCH=44;     /* зона нажатия фишки под палец: правило интерфейса, а не вкус */
 const CHIP_IN=12;        /* кромка едет внутрь не дальше этого, под следом стика/строкой подсказки */
 const SHIP_GUARD=36;     /* щедрый запас вокруг корабля на экране — фишка не ляжет на нос */
 const CHIP_SPEED=200;    /* px/с — с какой скоростью фишка едет к месту вдоль своей кромки */
@@ -838,16 +839,24 @@ function drawSysHud(zx,zy,sh,sys,U){
      Следы стиков, живая строка подсказки, нос корабля (щедрый запас вокруг
      экранной точки — настоящий силуэт своего масштаба и корпуса здесь не
      заводим ради одной плашки) и подушки стика в покое. */
+  /* Узлы интерфейса раздуваются на ЗОНУ НАЖАТИЯ фишки (M422, правка 19.09):
+     плашка ростом 16, а палец берёт её за 44 (SYS_CHIPS ниже растит её вокруг
+     центра). Расходиться со следом стика и со строкой подсказки обязана именно
+     зона: иначе плашка честно стоит рядом, а её невидимая половина лежит прямо
+     под большим пальцем. Между собой фишки по-прежнему меряются плашками —
+     раздуй и их, и нижний ряд разъехался бы втрое. */
+  const CHIP_TPX=6,CHIP_TPY=Math.max(0,(CHIP_TOUCH-16)/2);
+  const grow=r=>({x:r.x-CHIP_TPX,y:r.y-CHIP_TPY,w:r.w+2*CHIP_TPX,h:r.h+2*CHIP_TPY});
   const placed=[];
-  for(const f of feet)placed.push({x:(f.x-f.r)/U,y:(f.y-f.r)/U,w:2*f.r/U,h:2*f.r/U});
-  if(pr&&pr.height>0)placed.push({x:pr.left/U,y:pr.top/U,w:pr.width/U,h:pr.height/U});
+  for(const f of feet)placed.push(grow({x:(f.x-f.r)/U,y:(f.y-f.r)/U,w:2*f.r/U,h:2*f.r/U}));
+  if(pr&&pr.height>0)placed.push(grow({x:pr.left/U,y:pr.top/U,w:pr.width/U,h:pr.height/U}));
   {
     const zsx=zx(sh.x),zsy=zy(sh.y);
     placed.push({x:zsx-SHIP_GUARD,y:zsy-SHIP_GUARD,w:2*SHIP_GUARD,h:2*SHIP_GUARD});
   }
   {
     const padsr=padsRect();
-    if(padsr&&padsr.height>0)placed.push({x:padsr.left/U,y:padsr.top/U,w:padsr.width/U,h:padsr.height/U});
+    if(padsr&&padsr.height>0)placed.push(grow({x:padsr.left/U,y:padsr.top/U,w:padsr.width/U,h:padsr.height/U}));
   }
   ctx.font="8px ui-monospace,monospace";
   /* под окном оклика и окном бака фишки гаснут, как борт (R0, дев 12.09): на
@@ -998,7 +1007,7 @@ function drawSysHud(zx,zy,sh,sys,U){
        за видимым местом (rx,ry уже сглажены), а не за логическим слотом —
        иначе палец бил бы мимо плашки во время подъезда или затухания. */
     if(m.t&&A===1&&dcA>.5){
-      const PAD=Math.max(0,(44-ch)/2);
+      const PAD=Math.max(0,(CHIP_TOUCH-ch)/2);
       SYS_CHIPS.push({x:(rx-6)*U,y:(ry-PAD)*U,w:(cw+12)*U,h:(ch+PAD*2)*U,t:m.t});
     }
     ctx.globalAlpha=AA;ctx.fillStyle="rgba(5,7,12,.72)";ctx.fillRect(rx,ry,cw,ch);
