@@ -88,6 +88,7 @@ function applySaveRest(s){
         /* баня и гриб (M497): смена банного вечера и с какой смены гриб растёт */
         bath:(b.bath===undefined||b.bath===null)?null:b.bath|0,
         grib:(b.grib&&typeof b.grib==="object")?{n0:b.grib.n0|0}:null,
+        van:(b.van&&typeof b.van==="object")?{n:b.van.n|0,q:b.van.q|0,tries:b.van.tries|0}:null,   /* «Буханка» (M498) */
         /* ферма (M496): зверь по имени — семя, вид, откуда, и что с ним было */
         farm:(b.farm&&typeof b.farm==="object")?{sx:b.farm.sx|0,sy:b.farm.sy|0,idx:b.farm.idx|0,sp:String(b.farm.sp||""),seed:b.farm.seed>>>0,
           name:String(b.farm.name||"Зорька").slice(0,16),since:b.farm.since|0,moved:b.farm.moved|0,wait:b.farm.wait|0,lonely:b.farm.lonely|0,

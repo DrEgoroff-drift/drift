@@ -189,40 +189,10 @@ pad(x0,y0,w,h,cx,fy,lit,seed,B,P){
   ctx.beginPath();ctx.moveTo(trx+8,y0+19);ctx.lineTo(trx+8,y0+19+hl);ctx.stroke();
   ctx.lineWidth=1.8;ctx.beginPath();
   ctx.arc(trx+8,y0+21+hl,3,-.4,Math.PI+.4);ctx.stroke();
-  /* ── нос челнока (M232) ──
-     Слева стояла зелёная масса ящиков и не читалась ничем. Площадка — причал:
-     из левого бокса в отсек заглядывает НОС пришвартованного челнока — обвод,
-     остекление, стойка шасси и габаритный огонь. Огонь дышит, не мигает. */
-  {
-    const ny=fy-16;
-    ctx.fillStyle="rgba(0,0,0,.30)";
-    ctx.beginPath();ctx.ellipse(x0+14,fy-1,16,2.4,0,0,TAU);ctx.fill();
-    ctx.fillStyle="rgba(58,66,78,.98)";
-    ctx.beginPath();
-    ctx.moveTo(x0-2,ny-16);
-    ctx.quadraticCurveTo(x0+26,ny-14,x0+30,ny-2);
-    ctx.quadraticCurveTo(x0+26,ny+8,x0-2,ny+10);
-    ctx.closePath();ctx.fill();
-    ctx.fillStyle="rgba(150,170,190,"+(.16+lit*.14).toFixed(3)+")";   // обвод ловит лампу
-    ctx.beginPath();
-    ctx.moveTo(x0-2,ny-15);ctx.quadraticCurveTo(x0+24,ny-13,x0+29,ny-3);
-    ctx.lineTo(x0+27,ny-2);ctx.quadraticCurveTo(x0+22,ny-11,x0-2,ny-13);
-    ctx.closePath();ctx.fill();
-    ctx.fillStyle="rgba(14,20,28,.95)";                                // остекление
-    ctx.beginPath();
-    ctx.moveTo(x0+10,ny-12);ctx.quadraticCurveTo(x0+22,ny-10,x0+25,ny-4);
-    ctx.lineTo(x0+18,ny-4);ctx.lineTo(x0+10,ny-8);ctx.closePath();ctx.fill();
-    ctx.strokeStyle="rgba(120,138,156,.35)";ctx.lineWidth=1;           // стык обшивки
-    ctx.beginPath();ctx.moveTo(x0+6,ny-14);ctx.lineTo(x0+6,ny+9);ctx.stroke();
-    const gb=.6+.4*Math.sin(G.t*.01+seed);                             // габаритный огонь
-    ctx.fillStyle="rgba(120,255,170,"+(.5+.4*gb).toFixed(2)+")";
-    ctx.beginPath();ctx.arc(x0+29,ny-2,1.8,0,TAU);ctx.fill();
-    bGlow(x0+29,ny-2,12,"120,255,170",.10+.10*gb);
-    ctx.strokeStyle="rgba(90,104,120,.9)";ctx.lineWidth=2;             // стойка шасси
-    ctx.beginPath();ctx.moveTo(x0+14,ny+9);ctx.lineTo(x0+14,fy-3);ctx.stroke();
-    ctx.fillStyle="rgba(30,36,44,.95)";
-    ctx.beginPath();ctx.arc(x0+14,fy-3,3,0,TAU);ctx.fill();
-  }
+  /* ── «Буханка» у причала (M498, 18.09): раньше в отсек заглядывал нос безымянного
+     челнока (M232). Теперь у причала стоит вся машина базы — с именем на борту
+     и своей причудой, 21ac3-base-van. */
+  if(typeof drawVan==="function")drawVan(x0,fy,lit,seed,B);
   const dx=x0+w-24;
   ctx.fillStyle="rgba(0,0,0,.28)";
   ctx.beginPath();ctx.ellipse(dx+9,fy-1,11,2.2,0,0,TAU);ctx.fill();

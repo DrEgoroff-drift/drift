@@ -619,3 +619,24 @@ TEST_SUITES.push(()=>suite("база M496: ферма — живым в клет
   F.sx=30;F.sy=0;F._b=null;
   eq(farmGood(F,3),"pearl","с дальнего мира — жемчуг пустоты");
 }));
+
+/* ── M498: «Буханка» — машина базы с именем ── */
+TEST_SUITES.push(()=>suite("база M498: «Буханка» — имя, причуда, переименование по кругу",()=>{
+  const B=bLife();
+  eq(vanOf(B),null,"без площадки машины нет");
+  B.cells[1]={k:"pad",hp:1};
+  const v=vanOf(B);ok(!!v,"с площадкой — есть");
+  ok(VAN_NAMES.indexOf(vanName(B))>=0,"имя из таблицы: "+vanName(B));
+  ok(!!vanQuirk(B),"причуда: "+vanQuirk(B).ru);
+  const was=vanName(B),nn=vanRename(B);
+  ok(nn!==was&&VAN_NAMES.indexOf(nn)>=0,"переименована по кругу: "+was+" → "+nn);
+  ok(B.log.some(l=>l.k==="vanren"),"журнал записал");
+  let back=nn;for(let i=0;i<VAN_NAMES.length-1;i++)back=vanRename(B);
+  eq(back,was,"полный круг возвращает имя");
+  v.q=0;v.tries=0;
+  const r=[vanStart(B),vanStart(B),vanStart(B),vanStart(B)];
+  eq(r.join(","),"false,true,true,false","первая и четвёртая — со второго нажатия");
+  v.q=1;eq(vanStart(B),true,"с другой причудой заводится всегда");
+  B.log=[];vanStep(B,VAN_SAY*3);
+  ok(B.log.some(l=>l.k==="van"),"раз в двенадцать смен — строка о причуде");
+}));

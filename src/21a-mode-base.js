@@ -501,8 +501,8 @@ function updateBase(dt){
       net.sort((a,b)=>Math.hypot(a.sx-B.sx,a.sy-B.sy)-Math.hypot(b.sx-B.sx,b.sy-B.sy));
       const T=net[0],c=baseJumpCost(T);
       G.prompt="ПЛОЩАДКА · ДЕЙСТВИЕ — ПЕРЕБРОСКА НА «"+T.name.toUpperCase()+"»"+
-        "\n"+c.credits+" кр и "+c.fuel+" топлива";
-      if(actEdge)jumpToBase(T);
+        "\n"+c.credits+" кр и "+c.fuel+" топлива"+((typeof vanLine==="function"&&vanLine(B))?"\n"+vanLine(B).toUpperCase():"");   /* машина с именем (M498) */
+      if(actEdge&&(typeof vanStart!=="function"||vanStart(B)))jumpToBase(T);
       return;
     }
     /* кто здесь работает (M395): роль ячейки — это её работа, и человек на ней

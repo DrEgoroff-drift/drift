@@ -197,6 +197,14 @@ function renderBasesTab(st){
          решение игрока, а не строка в журнале */
       if(B.guest)r.firstChild.innerHTML+="<s><b style='color:#e8c46a'>у затвора ждёт "+
         B.guest.name+" · просится остаться</b></s>";
+      /* машина базы (M498): имя и причуда; единственное, что можно переименовать */
+      if(typeof vanLine==="function"&&vanLine(B)){
+        r.firstChild.innerHTML+="<s>машина: "+vanLine(B)+"</s>";
+        const bv=el("button","act sm","ПЕРЕИМЕНОВАТЬ МАШИНУ");
+        bv.title="имя идёт по кругу таблицы: "+VAN_NAMES.join(", ");
+        bv.onclick=()=>{vanRename(B);renderTab();};
+        r.appendChild(bv);
+      }
       r.appendChild(el("div","qt",P.pads?"площадка":"—"));
       /* снабдить можно только там, где вы есть: запас возят, а не заказывают */
       if(here&&typeof baseSupply==="function"){

@@ -317,6 +317,7 @@ function baseDrawGround(B,S,X,Y,camx,camy,gy,sky,pal,pl){
           ctx.fillStyle=on?"rgba(127,230,216,.95)":"rgba(127,230,216,.25)";
           ctx.beginPath();ctx.arc(pxs-36+i*12,py-14,2,0,TAU);ctx.fill();
         }
+        if(typeof drawVanSmall==="function")drawVanSmall(pxs-4,py-12,B);   /* машина базы на плато (M498) */
       }
     }
     /* ── отвал у ворот (G9) ──
