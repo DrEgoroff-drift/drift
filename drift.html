@@ -46932,6 +46932,7 @@ function abilMul(what){
   return 1;
 }
 function abilFire(){
+  abilStale();
   if(G.mode!=="system"||G.t<ABIL_ST.cd)return false;
   const k=abilKind(),A=ABIL[k]||ABIL.scout,sh=G.ship;
   let line="";
@@ -46974,9 +46975,24 @@ function abilFire(){
   say(line,Math.min(240,A.dur*60+60));
   return true;
 }
+/* ── время мира пошло заново (0.450.0) ──
+   ABIL_ST держит метки `on` и `cd` в игровых часах G.t, но живёт на модуле и
+   переживает новую игру и загрузку сейва: после сброса мира G.t=0, а метка
+   осталась от прежней жизни — и особая система молча стоит на перезарядке
+   двадцать секунд, которых игрок не тратил. Тест хэша (91zzzzzbb, сцена
+   «система») нашёл это как расхождение двух прогонов: первый жал ФОРСАЖ,
+   второй — уже нет. Часы мира вспять — значит мир новый: чистим метки. */
+function abilStale(){
+  if(G.t<(ABIL_ST.lastT||0)){
+    ABIL_ST.k=null;ABIL_ST.on=0;ABIL_ST.cd=0;ABIL_ST.text="";
+    ABIL_ST.crate=null;ABIL_ST.beam=null;ABIL_ST.armed=false;ABIL_ST.fired=false;
+  }
+  ABIL_ST.lastT=G.t;
+}
 /* долгое нажатие: зовёт петля системы после предложений ДЕЙСТВИЯ */
 let ABIL_KEY=false;
 function abilTick(){
+  abilStale();
   if(keys.abil&&!ABIL_KEY)abilFire();ABIL_KEY=!!keys.abil;   /* клавиша V */
   abilPadRim();
   if(actEdge)ABIL_ST.armed=!(typeof cueLvl==="function"&&cueLvl()===CUE_ACT),ABIL_ST.fired=false;

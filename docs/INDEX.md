@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 593 · символов верхнего уровня: 5745
+Файлов: 593 · символов верхнего уровня: 5746
 
 ## СИМВОЛЫ
 
@@ -48,18 +48,19 @@ _indPrice                    src/12ac-bld.js:112
 _mapDirty                    src/15-input.js:124
 _suite                       tests/90-harness.js:11
 ABIL                         src/16c-abil.js:15-23
-ABIL_BTN                     src/16c-abil.js:95
+ABIL_BTN                     src/16c-abil.js:111
 ABIL_HOLD                    src/16c-abil.js:24
-ABIL_KEY                     src/16c-abil.js:84
+ABIL_KEY                     src/16c-abil.js:99
 ABIL_ST                      src/16c-abil.js:25
-abilFire                     src/16c-abil.js:40-82
+abilFire                     src/16c-abil.js:40-83
 abilKind                     src/16c-abil.js:26
 abilMul                      src/16c-abil.js:35-39
 abilOf                       src/16c-abil.js:27
 abilOn                       src/16c-abil.js:28
-abilPadRim                   src/16c-abil.js:96-107
+abilPadRim                   src/16c-abil.js:112-123
 abilReady01                  src/16c-abil.js:30-33
-abilTick                     src/16c-abil.js:85-93
+abilStale                    src/16c-abil.js:91-97
+abilTick                     src/16c-abil.js:100-109
 ACT_WEEK_MS                  src/05e-clearance.js:36
 actCoupons                   src/05e-clearance.js:37
 actCouponUse                 src/05e-clearance.js:38
@@ -1354,7 +1355,7 @@ draftAll                     src/27jb-kb.js:24
 draftOf                      src/27jb-kb.js:26-42
 draftSave                    src/27jb-kb.js:43-47
 draftTowerAt                 src/27jb-kb.js:49-54
-drawAbil                     src/16c-abil.js:108-133
+drawAbil                     src/16c-abil.js:124-149
 drawAccel                    src/20aa-poi-shapes.js:143-166
 drawAccountShelf             src/12w-survey.js:99-115
 drawAllies                   src/12a-crew.js:678-695
@@ -6416,7 +6417,7 @@ zooTick                      src/11ad-zoo.js:41-54
   · ракеты: боеприпас — это груз:1
   · пять видов боеприпаса (M367, §4):21
 
-## src/16c-abil.js · 9 КБ
+## src/16c-abil.js · 10 КБ
   · особая система корпуса (M484, DESIGN-shipyard):1
 
 ## src/16c-rescue.js · 51 КБ
