@@ -6,7 +6,7 @@
 
 The author, 14.09.2026, after a look at Remember Tomorrow: «мне нравится конструктор кораблей там +
 конструктор кораблей Starsector, надо всё исследовать и добавить нам». This is the research, what
-we already have, the laws, the design, one fork and the queue К1–К8. Nothing is built yet.
+we already have, the laws, the design, one fork and the queue M476–M483. Nothing is built yet.
 
 Companion document: `docs/DESIGN-borders.md` — the powers' character in the world. The two meet
 at the yard (§5 here): a power's character reaches the player's hands through the hull it builds.
@@ -136,7 +136,7 @@ best one-hop deal on a stripped hauler.
 
 The same class drawn by six conveyors already looks six ways (`HULL_MAKER`). Now it also *works*
 six ways. **Built-in** is free and cannot be removed; **limit** is the price; **habit** is how the
-plan is shaped. Numbers are starting points for К5's calibration pass.
+plan is shaped. Numbers are starting points for M480's calibration pass.
 
 | yard | built-in | limit | habit of the plan |
 |---|---|---|---|
@@ -212,25 +212,25 @@ The rest was decided on the author's behalf: two sliders on СТАПЕЛЬ, not 
 grammar is what makes a hull read as a power's); three footprints; mass clamped to .8–1.1 so
 flight feel under the finger does not drift (the phone playtest's P8); one energy bar.
 
-## 10. The queue — К1–К8, each playable on /dev
+## 10. The queue — M476–M483, each playable on /dev
 
-- **К1 the plan, read-only.** Cells and decks from `hullOf`; rim/spine/deck classification; the
+- **M476 the plan, read-only.** Cells and decks from `hullOf`; rim/spine/deck classification; the
   packer; the fixpoint suite (every hull in `SHIPS`, a fleet sample, unique, fused: numbers equal
   today's ±1); ОПИСЬ shows the plan. No new save field yet.
-- **К2 the КБ editor.** Tray, place/move/turn, hold paint, the rules of place with their refusal
+- **M477 the КБ editor.** Tray, place/move/turn, hold paint, the rules of place with their refusal
   lines, the numbers strip; the save field `G.draft[shipId]` (`G.plan` is taken by the industrial plan, `11r-plan`) (list of `[thing, deck, cx, cy, turn]`)
   in `snapshot()` with the packer as `applySave` default; ОСНАСТКА's hull section becomes КБ.
-- **К3 the numbers from the plan.** Cargo, fuel, energy, mass → thrust/turn; module tiers become
+- **M478 the numbers from the plan.** Cargo, fuel, energy, mass → thrust/turn; module tiers become
   densities; the bounds; the worlds oracle line.
-- **К4 башня, exposure, sight.** The spine mount through the decks and its drawing in flight
+- **M479 башня, exposure, sight.** The spine mount through the decks and its drawing in flight
   (a round turret on the back — the loadout read by silhouette); rim parts take their side's wear;
   instruments count only forward.
-- **К5 the six yards' character.** Built-ins, limits, habits; calibration by the worlds oracle and
+- **M480 the six yards' character.** Built-ins, limits, habits; calibration by the worlds oracle and
   the стрельбище.
-- **К6 СТАПЕЛЬ.** Hull orders at a power's yard in its territory; the live preview; the order in
+- **M481 СТАПЕЛЬ.** Hull orders at a power's yard in its territory; the live preview; the order in
   the save; ПОЧТА line; delivery.
-- **К7 the hull remembers.** Scars on wrecks and captured hulls, repair; доводка with a node.
-- **К8 the fast path everywhere.** ПРОЕКТЫ; NPC and pirate ships built by the packer; the new-part
+- **M482 the hull remembers.** Scars on wrecks and captured hulls, repair; доводка with a node.
+- **M483 the fast path everywhere.** ПРОЕКТЫ; NPC and pirate ships built by the packer; the new-part
   mark.
 
 Each pass: the craft codex for anything drawn (§1 layer order, §13 body-outline-one-light), the

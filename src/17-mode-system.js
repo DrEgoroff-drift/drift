@@ -643,7 +643,7 @@ function drawSystem(){
     }
     if(G.ap&&G.ap.kind==="planet"&&G.ap.p===p)reticle(x,y,r+16);
   }
-  if(typeof drawSysLane==="function")drawSysLane(zx,zy,Z);   /* подъезд: бакены (Ж1, 17g) */
+  if(typeof drawSysLane==="function")drawSysLane(zx,zy,Z);   /* подъезд: бакены (M459, 17g) */
   if(sys.station){
     const x=zx(sys.station.x),y=zy(sys.station.y);
     drawStation(x,y,Z);
@@ -662,7 +662,7 @@ function drawSystem(){
   if(typeof drawBarges==="function")drawBarges(zx,zy,Z);
   if(G.haul&&typeof drawHaul==="function")drawHaul(zx,zy,Z);   /* спасательный буксир (16c) */
   if(typeof drawSysTraffic==="function")drawSysTraffic(zx,zy,Z);   /* челноки станции (M309) */
-  if(typeof drawSysLaneShips==="function")drawSysLaneShips(zx,zy,Z);   /* очередь у дока (Ж1) */
+  if(typeof drawSysLaneShips==="function")drawSysLaneShips(zx,zy,Z);   /* очередь у дока (M459) */
   if(typeof drawWanderer==="function")drawWanderer(zx,zy,Z);        /* «Сорока» у планеты (M342) */
   if(typeof drawFleet==="function")drawFleet(zx,zy,Z);               /* флот ГЛАВТРАССЫ (M310) */
   if(typeof drawMooredBarge==="function")drawMooredBarge(zx,zy,Z);   /* своя баржа у Причала (M296) */

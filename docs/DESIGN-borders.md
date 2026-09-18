@@ -1,12 +1,12 @@
 # Whose land is this — the powers you can feel (2026-09-14)
 
-> **Reviewed the same day — `docs/DESIGN-review-2026-09-14.md` wins where it differs:** Б1 is the
+> **Reviewed the same day — `docs/DESIGN-review-2026-09-14.md` wins where it differs:** M452 is the
 > first ship's gesture, the post is one body with six dressings in the background; the six musical
 > modes become a motif each; the trust rating and the law-of-the-land table as a system are cut.
 
 The author, 14.09.2026: «нравятся расы [Remember Tomorrow], у нас фракции, добавим характер —
 сейчас в мире нет ничего, чтобы было понятно, что ты у другой фракции, надо придумать». The design
-and the queue Б1–Б7; nothing is built yet. The powers themselves (who they are, what they want,
+and the queue M452–M458; nothing is built yet. The powers themselves (who they are, what they want,
 the satire) are `docs/DESIGN-war.md` §7 and `12al-powers` — this document does not change them, it
 puts them *into the world*. Companion: `docs/DESIGN-shipyard.md` §4 (each power's yard).
 
@@ -143,20 +143,20 @@ motion on top. Stations reuse the hull maker's conveyor. Traffic reuses the flee
 is DOM on paper (the КНИЖКА cloth). The phone budget: the post layer is one `screenLayer`-sized
 bake per system entry; `prof()` before and after on the phone layout.
 
-## 4. The queue — Б1–Б7, each playable on /dev
+## 4. The queue — M452–M458, each playable on /dev
 
-- **Б1 the post at the jump point** — six posts, their lights and motions; rear / front / fresh
+- **M452 the post at the jump point** — six posts, their lights and motions; rear / front / fresh
   occupation / Ялта / pirate states; placed at the jump-in point of every owned system.
-- **Б2 the stamp** — border-crossing detection by owner change, the 1.2 s stamp, the КНИЖКА page
+- **M453 the stamp** — border-crossing detection by owner change, the 1.2 s stamp, the КНИЖКА page
   ОТМЕТКИ О ПРОЕЗДЕ, six papers; the save keeps which stamps you have and when.
-- **Б3 station and traffic** — the station body by builder through the maker grammar; traffic by
+- **M454 station and traffic** — the station body by builder through the maker grammar; traffic by
   owner, border mixing.
-- **Б4 the peacetime fleet** — six behaviours in flight, driven by the chronicle's state (truce,
+- **M455 the peacetime fleet** — six behaviours in flight, driven by the chronicle's state (truce,
   strike, rite) where it already exists.
-- **Б5 the law of the land** — six rules with their lines, tickets, receipts and the trust rating.
-- **Б6 sound** — ether on entry, six musical modes, the crossfade.
-- **Б7 the map** — border lines by pattern, readable chips at near zoom, the emblem on the
+- **M456 the law of the land** — six rules with their lines, tickets, receipts and the trust rating.
+- **M457 sound** — ether on entry, six musical modes, the crossfade.
+- **M458 the map** — border lines by pattern, readable chips at near zoom, the emblem on the
   compass label and the header.
 
-Order: Б1 → Б2 → Б3 first — after those three the author's complaint is answered in the first five
-seconds of any jump. Б4–Б7 give the five minutes and the map.
+Order: M452 → M453 → M454 first — after those three the author's complaint is answered in the first five
+seconds of any jump. M455–M458 give the five minutes and the map.

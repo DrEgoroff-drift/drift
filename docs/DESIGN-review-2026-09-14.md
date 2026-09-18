@@ -42,16 +42,16 @@ Per document, the verdict:
 
 | document | keep | cut | change |
 |---|---|---|---|
-| borders | the stamp, the approach entry, station body by builder | six musical modes (→ a three-note motif per power on the radio), the trust rating, the law-of-the-land table as a system | the post is demoted to a dressing; the **first ship's gesture** (§2.1) becomes Б1 |
+| borders | the stamp, the approach entry, station body by builder | six musical modes (→ a three-note motif per power on the radio), the trust rating, the law-of-the-land table as a system | the post is demoted to a dressing; the **first ship's gesture** (§2.1) becomes M452 |
 | shipyard | cells, packer, fixpoint, yard characters, СТАПЕЛЬ, scars | deck tabs, «по разнарядке» as a restriction on the home power | one plan view; ГЛАВТРАССА's limit becomes a gag (the slogan) |
 | life | the approach, billboards with prices, the food barge, hotels as doors | the giants (deferred to a later queue), six hotel bodies | the bazaar sells back what you threw away (§2.3) |
 | metro | everything of the third draft | the coupling, six vestibule bodies | the batch as the train; alignment fail-safe; the announcements (§3) |
 | resources | the ten, the tail, the reading | — | names lean to the register (§2.5); the eaters get voices |
-| birchpunk | Д1, Д2, Д5, Д7, Д8, Д11 | farm, bath, kombucha, blockade, van → «base, deferred» (the base has fifty sections already) | the triangle is the centre |
+| birchpunk | M485, M486, M489, M491, M492, M495 | farm, bath, kombucha, blockade, van → «base, deferred» (the base has fifty sections already) | the triangle is the centre |
 
 ## 2. The reinvention — what is different now
 
-### 2.1 Borders: the first ship's gesture (new Б1)
+### 2.1 Borders: the first ship's gesture (new M452)
 Within five seconds of a jump one ship does one characteristic thing to you. Cheaper than six
 architectures and it *is* character, because character is behaviour:
 
@@ -65,7 +65,7 @@ architectures and it *is* character, because character is behaviour:
 | Хай-Фронт | a camera drone falls in at a fixed offset and follows you to the dock | a line: «Ваш рейтинг доверия рассчитан» — and the rating is never shown anywhere |
 
 The post stays as one construction with six dressings (§4.2), placed at the same entry point;
-it is background, the gesture is the scene. The stamp (Б2) is unchanged and is the best thing in
+it is background, the gesture is the scene. The stamp (M453) is unchanged and is the best thing in
 the batch.
 
 ### 2.2 Shipyard: one view, one document
@@ -81,7 +81,7 @@ The blueprint is a document: it is **«согласовано»** by a stamp tha
 fake queue («ваш чертёж 4-й в очереди»), and ТИПОВОЙ is labelled **«КАК У ВСЕХ»**.
 
 ### 2.3 Life: the bazaar remembers
-The bazaar of hulks (Ж5) sells back **what you threw away**. Every part discarded in ОПИСЬ goes
+The bazaar of hulks (M463) sells back **what you threw away**. Every part discarded in ОПИСЬ goes
 into a small ring buffer (`G.thrown`, twelve entries, the only new save field in the life batch)
 and turns up on a stall within a few сводки at ×3, with a tag «ношеная, один хозяин». Nothing else
 in the life document is a mechanic; this one is, and it is the joke and the economy at once.
@@ -159,27 +159,27 @@ zoom 1. Pads and prompts as today (the verb from the prompt). Nothing new hangs 
 except the alignment cone while docking.
 
 ### 4.4 The drawings, one by one
-- **The gesture ship** (Б1): the fleet art's silhouette with the maker's dressing; the spotlight is
+- **The gesture ship** (M452): the fleet art's silhouette with the maker's dressing; the spotlight is
   a cone of the cold key at low alpha with its warm edge on your hull; the scan plane is a single
   line the width of the frame passing once.
 - **The post** (background): a truss with a board, one lamp, the dressing's prop. Baked; only the
   lamp's motion per frame.
-- **The stamp** (Б2): DOM on the КНИЖКА paper, tilted 5–12° by seed, ink with alpha grain, slams in
+- **The stamp** (M453): DOM on the КНИЖКА paper, tilted 5–12° by seed, ink with alpha grain, slams in
   at scale 1.3 → 1 in 120 ms, holds 900 ms, fades. Violet for ГЛАВТРАССА, black for Орднунг, blue
   ink for Коммуна, ochre for Рассвет, dot-matrix grey for Хай-Фронт; Компания's is a till slip
   that scrolls up from the bottom edge instead of stamping.
-- **The lane** (Ж1): buoys as small dark bodies with one lamp each; the lamps' phase chases toward
+- **The lane** (M459): buoys as small dark bodies with one lamp each; the lamps' phase chases toward
   the dock at ~2 buoys/s. The queue: ships on a slow ellipse at the dock, one peeling off per
   minute, one joining.
-- **Billboards** (Ж2): a truss, a panel, three-stroke neon lettering, one crawling line in the
+- **Billboards** (M460): a truss, a panel, three-stroke neon lettering, one crawling line in the
   station's paper font. Within R of a billboard the hull gets an additive glow stamp of the
   panel's colour on the facing side (the warm accent on the body).
-- **Hotels** (Ж3): one slab body, a grid of windows lit per the dressing, a three-stroke sign above.
-- **The gate ring** (М2): seen from above — a torus lying flat, its inner disc a shade lighter than
+- **Hotels** (M461): one slab body, a grid of windows lit per the dressing, a three-stroke sign above.
+- **The gate ring** (M471): seen from above — a torus lying flat, its inner disc a shade lighter than
   space with a faint slow spiral (the drive); the glide path two converging dotted lines of lamps
   chasing inward. Departure: the ship's stars stretch toward the ring's centre for 0.6 s, a
   white-cyan flash, gone. The batch stands on the lamps in a row.
-- **The vestibule paper** (М3): the station screens' cream paper, one page. ТАБЛО is a **split-flap
+- **The vestibule paper** (M472): the station screens' cream paper, one page. ТАБЛО is a **split-flap
   board** — flaps turn when a line changes (motion with a reason; the Aeroflot-hall image). КАССА a
   window with a жетон drawn as a brass disc; БУФЕТ three items on a card with prices; КУДА ВАМ a
   wide button that unfolds the scheme on the same paper.
@@ -187,17 +187,17 @@ except the alignment cone while docking.
   paper, as every metro scheme allows it), white circles with black rims for stops, a double
   circle for interchanges, Cyrillic sans, «ВЫ ЗДЕСЬ» in red. On the map beneath, the lines are
   faint smooth curves 1:1 with the sheet.
-- **The ride** (М4): the galaxy map with the line ahead drawn thick in the scheme's colour; the
+- **The ride** (M473): the galaxy map with the line ahead drawn thick in the scheme's colour; the
   train is a small rounded glyph with a headlight wedge; a stop is the glyph halting and a ring
   expanding once; at the top a paper strip like the carriage's running line carries the
   announcement; ВЫЙТИ on the pad in the frame's own hierarchy.
-- **The blueprint** (К2): **синька** — deep Prussian-blue paper, the silhouette and grid in
+- **The blueprint** (M477): **синька** — deep Prussian-blue paper, the silhouette and grid in
   light-blue/white line, the parts as **warm ochre ink stamps** by kind (gun a barrel glyph, reactor
   a circle with a dot, tank a rounded bar, hold a hatch), БАШНЯ a circle with a cross through the
   spine, a violet «СОГЛАСОВАНО» in a corner, scars as brown burn marks, tape as a grey strip. Nose
   up, the plan fills the width, the tray under it. The «Техника — молодёжи» centrefold, not a
   spreadsheet.
-- **The resources** (Р): ten glyphs in the ТРЮМ, hues spread round the wheel so the hold stays a
+- **The resources** (M465–M469): ten glyphs in the ТРЮМ, hues spread round the wheel so the hold stays a
   rich palette: солнечный газ pale gold; белая руда bone; янтарь amber with a dark fleck; осмий
   blue-black, matte, one hard highlight; чернозём near-black brown; магнитная пыль violet-grey;
   жемчуг a cold white with a faint rainbow rim; тёмное стекло obsidian with one reflection;
@@ -208,7 +208,7 @@ except the alignment cone while docking.
 
 ## 5. Order, revised
 
-Б1 (the gesture) + Б2 (the stamp) + Ж1 (the approach) in one pass — they share the entry point and
-answer «чья земля» in five seconds with the least drawing. Then Р1–Р3, then М1–М4 with the batch,
-then К1–К3 with the single-view blueprint, then Д1/Д2/Д11. The giants, the base-side birchpunk and
+M452 (the gesture) + M453 (the stamp) + M459 (the approach) in one pass — they share the entry point and
+answer «чья земля» in five seconds with the least drawing. Then M465–M467, then M470–M473 with the batch,
+then M476–M478 with the single-view blueprint, then M485/M486/M495. The giants, the base-side birchpunk and
 the six musical modes are out of this batch.

@@ -10810,3 +10810,87 @@ plausibly reach.
   hull, one bottom line about the anchor, the field around the ship clear and the trail not crossed.
   Verified in the browser: crossing the edge now only ever sets `G.prompt` (the bottom line);
   `G.msg`/`G.edgeWarned` are untouched by it.
+
+## Moved 2026-09-18 (second batch — stage 0b and stage 1 bodies)
+
+- [x] **0.3 Layout reads — DONE by its own meter, and it did not move the cadence.** Reads in the
+  frame went from 6.3 a frame to 0.31 after three fixes (the fleet label and the helm lift reading
+  raw, the brake button fighting the helm-hide row every frame, and the six-node observer watching
+  style with subtree so every gauge's own width dirtied the cache). Mutations fell fifty-fold,
+  rectsDirty 62 → 11 per 600 frames. **And the cadence under steering did not budge: 80–84 % on every
+  build of the last ten commits.** Said plainly so nobody re-litigates it: the item is a clean win on
+  its own measure and pure code hygiene in effect — the deadline is missed in the raster, not in our
+  JS, which measures 6–8 ms against 16.7. The evening's other lesson is in GOTCHAS: the phone's first
+  minute is inflated (92.8 % rested, 83.7 % after a minute idle, 78.5 % on a fresh reload, thermal 1
+  throughout), so throw the first run away and judge by the last two of three.
+  **Final number of the evening, rig fixed (8a6d001, real S23, three counted 30 s runs, the helm
+  alive in all three):** cadence 83.0 / 81.0 / 80.3 %, frames over 24 ms 262 / 288 / 296, fps 51.2 /
+  50.4 / 50.1 — a spread of one and a half points. Reference points from the same rig: no helm
+  99–100 %, ×1.5 with the helm 94–97 %, RES_AUTO holds 2 even after ten minutes, thermal never above
+  2. **Rig rule now enforced in the harness:** a run in which the helm never got born is rejected and
+  re-shot automatically — such runs used to report a glorious 99 % and mislead everyone, including
+  the Tester. Stage 0's gate at full resolution is not taken and did not come closer all evening; the
+  only thing that takes it is the author's call on ×1.5.
+
+- [x] **0.5 Tester's queue, closed by Control 18.09** — (1) the Node DOM stub audited: 30 selectors
+  the game asks were answered wrong (".pads button" gave the panel, "#fbar i" the bar,
+  "[data-k=thrust]" any node, closest/matches always no); a real mini engine now, all old checks stay
+  green, `tests/90d-selectors.js` pins it in both tiers (73584f8). (2) celDay column: a five-digit
+  day fits left of the red margin with room — P6 closed by a frame through the player's path.
+  (3) The two "quarantine" ОПИСЬ failures were real: the brake stayed dimmed in flight after the
+  surface (yesterday's M181 gate), and the opis header lost its matches count after P1 — both fixed
+  (dc67a87). Browser tier 18 080 / 0, node 16 352 / 0. **Still open: g11 on the laptop** — not run.
+
+- [x] **0.4 `src/16a-space.js` crossed the 40 KB build guard (41 KB) on 9dc0a3f** — closed by the ray revert (dbc06ea): 40 694 bytes. Three files sit just under the 40 960 line now — `16a-space` 40 694, `03e-hull-draw` 40 704, `27z-telemetry` 40 775; the next line added to any of them trips it, so split at the next touch, not before. Not a blocker and
+  not to be fixed on the run. When it is split, split it by meaning: the sprite oven with its cache
+  (`GLOW_SP`, `GLOW_CACHE`, `glowSprite`, `glowBlit`) apart from the things it bakes.
+
+- [x] **The anchor and the stick** — done 18.09 (Control), **phone owed**. The edge is a WALL now,
+  argued with the INPUT, not the state (`15a-helm` `helmEdgeInput`, `17-mode-system` anchor block):
+  past the edge (and in a 240 px band before it) the outward part of the stick's wish is removed,
+  the tangential part stays; a soft pull to the edge line keeps the ship ON it; the braking rule no
+  longer reads the anchor's bend as «pulling against the motion»; while the stick holds the wall the
+  anchor's course-bend is silent (`c.edge`) — two rudders on one edge were the crawl. Coasting
+  without a stick, the anchor arcs home as before. Test `tests/91a2-edge.js`: straight out from
+  cruise — no sideways crawl (old 0.59 of cruise), rests at the wall, ~0 fuel there (old 5.16 per
+  300 frames); diagonal — slides along; no stick — arcs home fuel-free. Two models rejected by the
+  test's trace are written in the code comment (coast-and-arc gave a pendulum through the brake
+  rule; turning the push into a slide flipped direction as the fixed stick gained a backward
+  tangential part around the curve).
+
+- [x] `say()` from timers/network callbacks — closed by verification 18.09 (Control): callbacks run
+  outside the frame, so FRAME_IN is always false there and they count as responses; all 26 in the
+  game are server replies to the player's own tap (ОСТАВЛЕНО, ГОЛОС ПОДАН, the cloud) or the
+  «open in another tab» warning — both must show over a screen. The rule is written at `say()` in
+  `08-state`; a future world voice from a timer sets MSG_WORLD itself.
+
+- [x] СТОЛ — done 18.09 (Control). Empty sheets: read on a fresh game, 13 of 17 already named their
+  source; the four silent ones now do — БОРТ («борт пишет сам — покупки, ремонт, бой, поломки»),
+  ЛЮДИ («говорят у стойки станции и в смену на борту»), ДЕЛА («берут на станции — сделки, наряды,
+  охота за головами, баржи; фронт присылает сам»), ДНЕВНИК («пишут на зимовке — наряд с ДОСКИ»).
+  Bottom padding: closed by a frame — 57 px of air under the last card at 390×844, nothing fixed
+  over it (P1–P3 already fixed it). `crash.log` noise: closed since 0.419 — only `logShip` sends, and
+  all nine callers are real evidence (save, cloud, chronicle).
+
+- [x] Station header review 13–15 — done 18.09 (Control, the author chose the forms). Prices before
+  the cooperative form; the Director's news from ЕЩЁ to the board («СЕГОДНЯ В СИСТЕМЕ», lane
+  ЗДЕСЬ); **one tab row**: the open group's tabs stand inline right after its name on their own
+  band (`#stTabs` is moved inside `#stGroups`, the node and its selectors unchanged), the row fades
+  at the right edge like the desk's — the list starts at 148 px instead of ~215 at 390×844;
+  **СТОЛ stays in the masthead, redrawn** («в шапку аккуратно впишем»): a paper tag under the
+  wallet — your money, your data, your desk on the right, the station on the left — 59×44 hit
+  area. Tests that listed groups with `#stGroups button` now say `#stGroups > button`.
+
+- [x] **P10 ЦЕЛЬ and the hail — done 18.09 (Control).**
+  - **One meaning per pad state** was already true (M355/B1): every claimant names itself in the
+    prompt («ЦЕЛЬ — ЗОНД 900 кр», «ЦЕЛЬ — СНЯТЬ ЭКИПАЖ», «ЦЕЛЬ — БЛАГОДАРНОСТЬ», «ЦЕЛЬ — ПО ДЕЛУ»)
+    and the pad takes the verb — verified, nothing to change.
+  - **Pickets lockable:** `helmTargetable` (15a) — hostile ships and every ship of a power, even a
+    peaceful one; never the player's crew or flag. Autofire still fires only at hostiles
+    (`!mk.iff`, 13-pirates), so a locked picket is aimed at, not shot, until the player fires.
+  - **Hail colours by consequence — the author's reading 18.09:** there is no fight answer, both
+    answers are peaceful by default; «опасность — красное, не опасно — зелёное». `hailRisk` names
+    what each answer leads to here and now: enemy-stamped cassettes in the hold → both red (fire on
+    any word); blockade → ПРОХОДОМ red (ordered to stand), ПО ДЕЛУ green; otherwise both green.
+    Window buttons and the ДЕЙСТВИЕ/ЦЕЛЬ pads take the same colours (`body[data-hail-*]`); the
+    permanent gold of ПРОХОДОМ and the red ring on ЦЕЛЬ under a peaceful answer are gone.

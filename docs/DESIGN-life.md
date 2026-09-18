@@ -1,12 +1,12 @@
 # A living space — neon, hotels, traffic (2026-09-14)
 
 > **Reviewed the same day — `docs/DESIGN-review-2026-09-14.md` wins where it differs:** one hotel
-> body with six dressings; the bazaar sells back what you threw away (`G.thrown`); the giants Ж6
+> body with six dressings; the bazaar sells back what you threw away (`G.thrown`); the giants M464
 > are deferred; the neon rules (three strokes, no flicker) are in the review §4.
 
 The author, 14.09.2026: «как в фильмах космических — неоновые билборды, отели в космосе, как в
 Стражах Галактики и во всех остальных. Надо наполнить космос жизнью, исследуй, как в кино
-показывают». The research, the laws, the places and the queue Ж1–Ж6; nothing is built yet.
+показывают». The research, the laws, the places and the queue M459–M464; nothing is built yet.
 Companions: `docs/DESIGN-borders.md` (whose land — the post, the stamp, the laws) and
 `docs/DESIGN-metro.md` (the gate lines). The three share one spatial grammar, §2.
 
@@ -30,7 +30,7 @@ The recurring devices, reduced to what a phone canvas can afford:
 | a hotel / resort as a destination | somewhere to *want* to go | a docking place with lit windows and a sign; the quiet features get a door |
 | food sold in space | commerce does not stop for the future | a food barge cruising the lane and hailing |
 | junk and repurposed ships | history without new tech | a bazaar of docked hulks; the fleet art reused |
-| customs, police, tolls | someone's jurisdiction | the post (borders Б1) — already designed |
+| customs, police, tolls | someone's jurisdiction | the post (borders M452) — already designed |
 | crowds around one big thing | the cheapest scale cue | a holding queue at the dock |
 | broadcast chatter | fills silence at zero draw cost | the six waves exist; billboards carry text |
 | signs in many scripts | depth of history | each power's paper and lettering (borders §2.2) |
@@ -67,8 +67,8 @@ place to stand, so **each system gets a fixed entry point** (a seeded angle; the
 near it) and everything is laid along **the approach — «подъезд»**:
 
 ```
-entry (the post, borders Б1) → the lane (buoys, billboards, traffic, the food barge)
-      → the station (the hotel, the bazaar beside it) → the gate (metro, М2)
+entry (the post, borders M452) → the lane (buoys, billboards, traffic, the food barge)
+      → the station (the hotel, the bazaar beside it) → the gate (metro, M471)
 ```
 
 A player who arrives reads the whole system along one line: whose it is, how it lives, what is
@@ -76,17 +76,17 @@ sold, where one can sleep, where the train leaves. The lane is also where the ey
 a line from the bottom of the screen to the dock.
 
 Cost to watch: `jump` draws the angle from `rnd()`; a seeded angle removes one `rnd()` call, which
-moves every recorded replay and the same-hash suites — one deliberate `-Accept` pass in Ж1.
+moves every recorded replay and the same-hash suites — one deliberate `-Accept` pass in M459.
 
 ## 3. The places
 
-### 3.1 The lane — «подъезд» (Ж1)
+### 3.1 The lane — «подъезд» (M459)
 Buoys every few hundred units from the entry to the dock, their lights **chasing toward the
 dock** (runway lights — motion, not blinking). A **holding queue** at busy stations: two to six
 ships circling, one docking, one leaving. Tugs, a taxi-shuttle. Density = rung × the heartland
 gradient. Painted: buoys baked once per system; lights and ships per frame.
 
-### 3.2 Billboards — the news with neon (Ж2)
+### 3.2 Billboards — the news with neon (M460)
 A billboard is a frame of neon tubes on a truss, baked once; one crawling line of text on it. Its
 content is **useful** — it is the market and the news riding a new surface:
 - **prices**: «ТИТАН 41 У ПАРТНЁРА В 2 ПРЫЖКАХ — ВЫГОДНО КАК НИКОГДА» (Компания; real numbers from
@@ -98,7 +98,7 @@ the loudest, a logo™ and a jingle line; Орднунг a white panel of number
 italic neon; Рассвет hand-painted boards lit by lamps; Хай-Фронт a clean screen with a version
 string. Near a billboard your hull catches its colour (Law 2).
 
-### 3.3 Hotels — a door for the quiet features (Ж3)
+### 3.3 Hotels — a door for the quiet features (M461)
 Next to a station in the heartland: a hotel with lit windows and a sign. Docking there opens what
 the game already has behind DOM screens — the sanatorium (`29h/29i-spa`), the cinema (`27da-kino`),
 the rumours of the cantina — so the hotel is not a new system, it is **the world's door to the
@@ -113,18 +113,18 @@ quiet features**. Six faces:
 | Рассвет | a guesthouse cut into an asteroid, a painted door, a common table |
 | Хай-Фронт | a capsule hotel — a honeycomb of pods, each lit the same, one flickering |
 
-### 3.4 The food barge — «Чебуречная» (Ж4)
+### 3.4 The food barge — «Чебуречная» (M462)
 A small junk boat cruising the lane (The Fifth Element's flying fast food), hailing: «Чебуреки!
 Горячие!». Each power's barge sells its `POWERS[k].food`. **A meal comes with a rumour** (`11t`)
 — the useful output; and a line in ДНЕВНИК. It is never needed and always nice.
 
-### 3.5 The bazaar of hulks (Ж5)
+### 3.5 The bazaar of hulks (M463)
 In belt systems of the heartland: a knot of old hulls moored together, awnings, lights on strings
 (Knowhere's market, Блук's bazaar). Docking gives **odd lots** — the rarities' and wreck-parts'
 tables on a separate counter, a mixed bag by the seed — and the scarred hulls of the shipyard's §6
 for sale cheap. Reuses the fleet art for the hulks.
 
-### 3.6 One giant per arm (Ж6)
+### 3.6 One giant per arm (M464)
 Each galactic arm and the core get one colossal structure, 20–50× a ship, seen from far in its
 system and named in the galaxy's voice (M449): a hollow moon with a mining town inside, lit in
 rings; a dry dock of the Коммуна where one hull has been under construction for three hundred
@@ -136,19 +136,19 @@ the frame. (The Ring, M154, is not one of these and is never explained.)
 
 Per system at most: one post, 3–6 buoys, 1–3 billboards, one hotel, one food barge, one queue of
 ≤ 6 ships — baked sprites at `UIK`-aware density; per frame only lights, one crawling line and the
-ships. `prof()` on the phone layout before and after Ж1 and Ж2; the frame ledger (`look()`) for
+ships. `prof()` on the phone layout before and after M459 and M460; the frame ledger (`look()`) for
 the heartland scene — neon must add the warm accent without breaking «pair %».
 
-## 5. The queue — Ж1–Ж6, each playable on /dev
+## 5. The queue — M459–M464, each playable on /dev
 
-- **Ж1 the approach** — the fixed entry point per system, the lane with chasing buoy lights, the
+- **M459 the approach** — the fixed entry point per system, the lane with chasing buoy lights, the
   holding queue and tugs; the `-Accept` pass for the moved `rnd()`.
-- **Ж2 billboards** — the neon sprite family per power, the crawling line fed by prices, news,
+- **M460 billboards** — the neon sprite family per power, the crawling line fed by prices, news,
   circulars and holdings; the accent light on nearby hulls.
-- **Ж3 hotels** — six faces; docking opens the sanatorium, cinema and cantina doors that exist.
-- **Ж4 the food barge** — cruising and hailing; the meal with a rumour.
-- **Ж5 the bazaar of hulks** — odd lots, scarred hulls.
-- **Ж6 the giants** — one per arm and the core, named, on the map.
+- **M461 hotels** — six faces; docking opens the sanatorium, cinema and cantina doors that exist.
+- **M462 the food barge** — cruising and hailing; the meal with a rumour.
+- **M463 the bazaar of hulks** — odd lots, scarred hulls.
+- **M464 the giants** — one per arm and the core, named, on the map.
 
-Order with the other queues: Ж1 goes together with borders Б1 (the post stands at the same entry
-point), Ж2 after Б2. The craft codex judges each; neon gets its own almanac issue.
+Order with the other queues: M459 goes together with borders M452 (the post stands at the same entry
+point), M460 after M453. The craft codex judges each; neon gets its own almanac issue.

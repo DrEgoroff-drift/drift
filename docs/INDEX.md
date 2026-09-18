@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 542 · символов верхнего уровня: 5220
+Файлов: 543 · символов верхнего уровня: 5240
 
 ## СИМВОЛЫ
 
@@ -996,7 +996,7 @@ crownReady                   src/05a-nodes.js:158
 CRYO_RECIPE                  src/21a1a-base-heat.js:33
 CSW                          src/19e-clouds.js:68
 ctlHint                      src/15-input.js:171-175
-ctlReset                     src/15a-helm.js:124-129
+ctlReset                     src/15a-helm.js:126-131
 ctx                          src/08-state.js:3
 cue                          src/08-state.js:371-376
 CUE_EPS                      src/27m-scroll-cue.js:25
@@ -1425,16 +1425,18 @@ drawSurface                  src/21e-surface-draw.js:277-291
 drawSurfaceHud               src/21e-surface-draw.js:21-115
 drawSurfaceWorld             src/21e1-surface-world.js:10-615
 drawSurvey                   src/12w-survey.js:63-89
-drawSysHud                   src/17-mode-system.js:720-967
+drawSysHud                   src/17-mode-system.js:722-969
+drawSysLane                  src/17g-sys-lane.js:75-103
+drawSysLaneShips             src/17g-sys-lane.js:112-138
 drawSysNebula                src/16a-space.js:208-236
-drawSystem                   src/17-mode-system.js:443-719
+drawSystem                   src/17-mode-system.js:443-721
 drawSysTraffic               src/17f-sys-traffic.js:29-33
 drawTemple                   src/20aa-poi-shapes.js:50-89
 drawThingIcon                src/27i-ui-table.js:399-435
 drawTierTrim                 src/03b-hull-paint.js:73-166
 drawTiles                    src/18c-chunks.js:144-151
-drawTrail                    src/16-flight.js:549-627
-drawWake                     src/16-flight.js:388-455
+drawTrail                    src/16-flight.js:554-642
+drawWake                     src/16-flight.js:393-460
 drawWallPaper                src/11ae-concert.js:39-71
 drawWanderer                 src/12v-wander.js:175-318
 drawWanderMap                src/12v-wander.js:159-173
@@ -2057,7 +2059,7 @@ heatHaze                     src/18d-postfx.js:76-80
 heatHazeFrom                 src/18d-postfx.js:58-73
 heatTick                     src/13a-guns.js:54-62
 held                         src/08-state.js:330
-HELM                         src/15a-helm.js:115
+HELM                         src/15a-helm.js:117
 HELM_ACC                     src/15a-helm.js:75
 HELM_ARC0                    src/15a-helm.js:99
 HELM_ASSIST_BAND             src/15a-helm.js:91
@@ -2069,50 +2071,52 @@ HELM_DEAD                    src/15a-helm.js:86
 HELM_EDGE_BAND               src/15a-helm.js:90
 HELM_FOOT                    src/15a-helm.js:103
 HELM_GAP                     src/15a-helm.js:112
-HELM_KEYS                    src/15a-helm.js:133
+HELM_KEYS                    src/15a-helm.js:135
 HELM_MARKS                   src/15a-helm.js:95
 HELM_NUDGE                   src/15a-helm.js:82
 HELM_NUDGE_R                 src/15a-helm.js:85
 HELM_PICK                    src/15a-helm.js:93
-HELM_RANGE                   src/15a-helm.js:114
+HELM_RANGE                   src/15a-helm.js:116
 HELM_REACH                   src/15a-helm.js:89
 HELM_STOP                    src/15a-helm.js:76
 HELM_TAKE                    src/15a-helm.js:78
 HELM_TAKE_MS                 src/15a-helm.js:81
 HELM_THR                     src/15a-helm.js:74
 HELM_TRAIL                   src/15a-helm.js:113
-helmApply                    src/15a-helm.js:443-537
+HELM_TRAIL_MAX               src/15a-helm.js:115
+helmApply                    src/15a-helm.js:449-543
 helmBandPath                 src/15b-helm-draw.js:135-143
 helmCamOff                   src/15b-helm-draw.js:120-133
-helmCanvasXY                 src/15a-helm.js:150
-helmDrag                     src/15a-helm.js:202-205
+helmCanvasXY                 src/15a-helm.js:152
+helmDrag                     src/15a-helm.js:204-207
 helmDrawMarks                src/15b-helm-draw.js:8-21
-helmDrawSticks               src/15b-helm-draw.js:151-242
+helmDrawSticks               src/15b-helm-draw.js:151-243
 helmDry                      src/15b-helm-draw.js:145
 helmDryLabel                 src/15b-helm-draw.js:146-150
-helmEdgeInput                src/15a-helm.js:342-354
+helmEdgeInput                src/15a-helm.js:348-360
 helmHome                     src/15b-helm-draw.js:52-65
 helmLift                     src/15b-helm-draw.js:69-106
-helmLock                     src/15a-helm.js:275-283
-helmLockNext                 src/15a-helm.js:285-302
-helmMarksClean               src/15a-helm.js:266-274
+helmLock                     src/15a-helm.js:281-289
+helmLockNext                 src/15a-helm.js:291-308
+helmMarksClean               src/15a-helm.js:272-280
 helmMarkTop                  src/15b-helm-draw.js:109-114
-helmPinchBlocked             src/15a-helm.js:253
+helmPinchBlocked             src/15a-helm.js:259
 helmPirate                   tests/91zzzw-helm.js:17-20
-helmPtrEnd                   src/15a-helm.js:240-245
+helmPtrEnd                   src/15a-helm.js:246-251
 helmRun                      tests/91zzzw-helm.js:16
-helmScreenOpen               src/15a-helm.js:250
+helmScreenOpen               src/15a-helm.js:256
 helmShip                     tests/91zzzw-helm.js:6-15
-helmShotAt                   src/15a-helm.js:318-321
+helmShotAt                   src/15a-helm.js:324-327
 helmStickFoot                src/15b-helm-draw.js:38-46
 helmStickShape               src/15b-helm-draw.js:29-35
-helmSyncPointer              src/15a-helm.js:176-196
-helmTake                     src/15a-helm.js:215-223
-helmTap                      src/15a-helm.js:304-316
-helmTargetable               src/15a-helm.js:260-264
-helmTargets                  src/15a-helm.js:265
-helmTick                     src/15a-helm.js:356-440
-helmTrail                    src/15a-helm.js:206-212
+helmSyncPointer              src/15a-helm.js:178-198
+helmTake                     src/15a-helm.js:221-229
+helmTap                      src/15a-helm.js:310-322
+helmTargetable               src/15a-helm.js:266-270
+helmTargets                  src/15a-helm.js:271
+helmTick                     src/15a-helm.js:362-446
+helmTrail                    src/15a-helm.js:208-214
+helmTrailAge                 src/15a-helm.js:215-218
 hex2rgb                      src/01-core.js:218-221
 hexA                         src/12e-drone-flight.js:302-308
 hexa                         src/12w-survey.js:91-94
@@ -2527,8 +2531,19 @@ landerLen                    src/19f-lander.js:11
 landingDust                  src/19f-lander.js:344-370
 landOnTestPlanet             tests/90-harness.js:350-356
 landStartY                   src/19-mode-landing.js:38-43
+LANE_BUOY                    src/17g-sys-lane.js:56
+LANE_CHASE                   src/17g-sys-lane.js:16
+LANE_DOCK                    src/17g-sys-lane.js:15
+LANE_GAP                     src/17g-sys-lane.js:13
+LANE_Q_CLS                   src/17g-sys-lane.js:18
+LANE_Q_MAX                   src/17g-sys-lane.js:17
 LANE_RU                      src/26-ui-station.js:377
 LANE_RX                      src/26-ui-station.js:373-376
+LANE_W                       src/17g-sys-lane.js:14
+laneBuoySprite               src/17g-sys-lane.js:57-70
+laneLampCol                  src/17g-sys-lane.js:71-74
+laneLife                     src/17g-sys-lane.js:27-31
+laneShip                     src/17g-sys-lane.js:105-111
 last                         src/28-loop.js:107
 LAST_RUN_DAY                 src/12k-letters.js:40
 lastDroneTick                src/28-loop.js:108
@@ -4661,8 +4676,10 @@ SYS_K_ORBIT                  src/06-galaxy.js:98
 SYS_LRU                      src/06-galaxy.js:21
 sysDanger                    src/01-core.js:187
 sysEdge                      src/17-mode-system.js:33-39
+sysEntry                     src/17g-sys-lane.js:20-23
 sysHasFauna                  src/12ad-site.js:114-117
 sysJitter                    src/01-core.js:188-192
+sysLane                      src/17g-sys-lane.js:32-53
 sysMakes                     src/12ad-site.js:134-140
 sysNebulaTex                 src/16a-space.js:53-101
 sysPirateBase                src/24a-mode-raid.js:98-102
@@ -4810,7 +4827,7 @@ toldWorked                   src/11aj-told.js:41-45
 toldWorth                    src/11aj-told.js:49-54
 totalLoss                    src/21-mode-surface.js:700-721
 towShare                     src/03f-hull-role.js:87-89
-trAcc                        src/16-flight.js:384
+trAcc                        src/16-flight.js:389
 TRACE_CAP_DAY                src/11ag-trace.js:46
 TRACE_MARK                   src/11ag-trace.js:32-45
 TRACE_SC                     src/11ag-trace.js:191
@@ -4840,13 +4857,15 @@ traceToday                   src/11ag-trace.js:72
 TRACK_LIFE                   src/21-mode-surface.js:6
 TRADE_KEYS                   src/02-world.js:100
 TRAIL                        src/16-flight.js:239
-TRAIL_AMAX                   src/16-flight.js:382
-TRAIL_BUCK                   src/16-flight.js:381
+TRAIL_AMAX                   src/16-flight.js:386
+TRAIL_BUCK                   src/16-flight.js:385
 TRAIL_CHAR                   src/16-flight.js:247-254
+TRAIL_HALO                   src/16-flight.js:387
+TRAIL_LIFE                   src/16-flight.js:302
 TRAIL_TINT                   src/16-flight.js:262
 trailBurst                   src/16-flight.js:240
 trailChar                    src/16-flight.js:255-261
-trailStep                    src/16-flight.js:456-548
+trailStep                    src/16-flight.js:461-553
 trailTint                    src/16-flight.js:267-283
 TRAINEE_LINES                src/11ac-trainee.js:14-18
 TRAINEE_NAMES                src/11ac-trainee.js:13
@@ -4863,7 +4882,7 @@ traineeTick                  src/11ac-trainee.js:59-70
 traitOf                      src/12a-crew.js:28
 TRIP_N                       tests/91zzzzzzzzc-trips.js:11
 tripWorlds                   tests/91zzzzzzzzc-trips.js:12-20
-trX0                         src/16-flight.js:383
+trX0                         src/16-flight.js:388
 tvHop                        tests/91zzzzzw-travel.js:36-48
 tvKeys                       tests/91zzzzzw-travel.js:15
 tvSizes                      tests/91zzzzzw-travel.js:17-34
@@ -4986,12 +5005,13 @@ vRopeAt                      src/18d-verlet.js:125-131
 vStep                        src/18d-verlet.js:53-77
 W                            src/08-state.js:5
 WAKE                         src/16-flight.js:298
-WAKE_A1MAX                   src/16-flight.js:380
-WAKE_BUCK                    src/16-flight.js:379
-wakeBurst                    src/16-flight.js:299
-wakeLanes                    src/16-flight.js:387
-wakeStep                     src/16-flight.js:328-356
-wakeTips                     src/16-flight.js:300-327
+WAKE_A1MAX                   src/16-flight.js:384
+WAKE_BUCK                    src/16-flight.js:383
+WAKE_LIFE                    src/16-flight.js:300
+wakeBurst                    src/16-flight.js:303
+wakeLanes                    src/16-flight.js:392
+wakeStep                     src/16-flight.js:332-360
+wakeTips                     src/16-flight.js:304-331
 WALK_PARA                    tests/91zzy-walk.js:8
 walkParas                    tests/91zzy-walk.js:9-20
 WALKS                        tests/91zzzzzzzza-walks.js:19-99
@@ -5178,8 +5198,8 @@ winTone                      src/29g-winter-draw.js:89-94
 winWall                      src/29f-winter.js:162-172
 withCtx                      src/18c-chunks.js:58-65
 withScale                    src/18c-chunks.js:41-47
-wkAcc                        src/16-flight.js:386
-wkX0                         src/16-flight.js:385
+wkAcc                        src/16-flight.js:391
+wkX0                         src/16-flight.js:390
 WLD_RINGS                    tests/91zzzzzzzzz-worlds.js:28
 wldMedian                    tests/91zzzzzzzzz-worlds.js:37
 wldNear                      tests/91zzzzzzzzz-worlds.js:29-36
@@ -5808,7 +5828,7 @@ zooTick                      src/11ad-zoo.js:41-54
   · ввод:87
   · полоса вкладок шире экрана:216
 
-## src/15a-helm.js · 40 КБ
+## src/15a-helm.js · 41 КБ
   · штурвал (M360):1
 
 ## src/15b-helm-draw.js · 14 КБ
@@ -5820,12 +5840,12 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/15d-domread.js · 3 КБ
   · сторож чтений вёрстки: ?domread:1
 
-## src/16-flight.js · 42 КБ
+## src/16-flight.js · 44 КБ
   · фон:1
   · автопилот:120
   · шлейф двигателей и струи ориентации:218
   · кильватер: хвосты от скорости, а не от сопла:284
-  · нить кильватера — ступенями спада, а не отрезками (0.2):357
+  · нить кильватера — ступенями спада, а не отрезками (0.2):361
 
 ## src/16a-space.js · 38 КБ
   · облик системы:1
@@ -5860,6 +5880,9 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## src/17f-sys-traffic.js · 4 КБ
   · трафик системы: чужие машины, которым тут есть дело (M309):1
+
+## src/17g-sys-lane.js · 8 КБ
+  · подъезд: полоса от входа в систему к доку (M459, DESIGN-life §2–3.1):1
 
 ## src/17z-map-backdrop.js · 8 КБ
 

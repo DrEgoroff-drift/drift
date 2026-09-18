@@ -73,7 +73,7 @@ Two services on one track net:
   one Node suite for determinism, reachability and «no two stops in one system».
 
 **Names.** Inside a power's land a line and its stops follow the owner's naming rule (birchpunk
-Д5: «Горловина Каунти», «Бецирк Нейэль № 4»…); lines carry numbers and the arm's or region's name
+M489: «Горловина Каунти», «Бецирк Нейэль № 4»…); lines carry numbers and the arm's or region's name
 (M449): «Линия 7, Рукав Лебедя». Beyond the powers, the old railway names: «разъезд 214-й
 сектор», «полустанок Сухой», «платформа Дальняя».
 
@@ -131,7 +131,7 @@ long run stays under a minute): a metro hop of three stops ≈ 6–8 s; the main
 the rim ≈ 45–60 s. Held pad = ×2, never a skip.
 
 **Arrival** — the destination's ring throws the ship out onto its approach, slow, facing the
-station: the post, the lane, the station ahead (borders Б1, life Ж1).
+station: the post, the lane, the station ahead (borders M452, life M459).
 
 **A save during a ride** keeps `{line, from, to, t}`; loading resumes at the next stop.
 
@@ -158,18 +158,18 @@ station: the post, the lane, the station ahead (borders Б1, life Ж1).
 | Рассвет | **маршрутка** — stops on request at any system along the line («остановите у пояса!»), the only service that leaves you *between* stations |
 | Хай-Фронт | driverless and fastest; now and then «обновление установлено» and the line stands a minute |
 
-## 7. The queue — М1–М6, each playable on /dev
+## 7. The queue — M470–M475, each playable on /dev
 
-- **М1 the net** — radials with forks, rings, arm трассы, stations by spacing, junctions, the rim's
+- **M470 the net** — radials with forks, rings, arm трассы, stations by spacing, junctions, the rim's
   полустанки and «Край»; lazy per region; the Node suite; names by the owner's rule.
-- **М2 the station** — ring and vestibule at the end of the approach, six finishes and the bare rim
+- **M471 the station** — ring and vestibule at the end of the approach, six finishes and the bare rim
   platform; the hail, the glide-path alignment, the berth.
-- **М3 the vestibule** — ТАБЛО, КУДА ВАМ, КАССА, БУФЕТ with the rumour; the interval wait.
-- **М4 the ride** — `G.mode="rail"` on the galaxy map: the moving mark, stops, the announcer,
+- **M472 the vestibule** — ТАБЛО, КУДА ВАМ, КАССА, БУФЕТ with the rumour; the interval wait.
+- **M473 the ride** — `G.mode="rail"` on the galaxy map: the moving mark, stops, the announcer,
   ВЫЙТИ, ПЕРЕСАДКА, timing, «Конечная»; the ring's hyperdrive departure and arrival; the save.
-- **М5 services and powers** — метро/электричка/скорый, Express™, declaration, strikes, маршрутка,
+- **M474 services and powers** — метро/электричка/скорый, Express™, declaration, strikes, маршрутка,
   updates; closed front stations.
-- **М6 economy** — fares, baggage, the size rule; the oracle line; a holding-built station.
+- **M475 economy** — fares, baggage, the size rule; the oracle line; a holding-built station.
 
 Struck from earlier drafts: tunnel walls, drawn station halls and mosaics, events inside the
 tunnel, the couple-to-an-электровоз scene (the hyperdrive into the ring replaces it).

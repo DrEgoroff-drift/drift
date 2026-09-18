@@ -79,7 +79,7 @@ the finger. **Verified against the code of 0.449.0 on 14.09** (four scans, the d
 hand): every item below is absent or partial in `src/`; found already done and struck — the `.gz` cache
 headers (`site/.htaccess`: `FileETag MTime Size` + `Cache-Control` on all three `.gz` blocks) and the
 PATCHNOTES trim (oldest entry 0.400.0, `docs/PATCHNOTES-archive.md` exists); found partly built and
-rewritten — Д4 (the ИИ-ядро exists), Д14 (the blockade exists); a name collision fixed — `G.plan` is the
+rewritten — M488 (the ИИ-ядро exists), M498 (the blockade exists); a name collision fixed — `G.plan` is the
 industrial plan (`11r-plan`), the blueprint is `G.draft`.
 
 ### NEXT — the order after 18.09 (Control's handover; the team of three was closed by the author)
@@ -145,7 +145,7 @@ Findings of 17–18.09 not recorded elsewhere:
   thread's thickness, never its length.
 - **Designer's instruments** (her scratchpad `…\9711c220-…\scratchpad`): `skips.py <video>` — share
   of double movement steps, per-second profile, a frame at each skip, counted from OUTSIDE the game;
-  `layers.js` — the frame's calls and painted area by caller; `dpruthor_sheet2.png` — the sheet for
+  `layers.js` — the frame's calls and painted area by caller; `dpr/author_sheet2.png` — the sheet for
   the author from real frames (`author_sheet.png` is the withdrawn simulation, never show it).
 - ~~**Scoop mode passed bank as lvl**~~ — fixed (Control, 18.09): the 4th argument of `drawHull` is
   `lvl`, so the scoop's flame grew on the climb and shrank on the dive. First note here was wrong:
@@ -167,35 +167,9 @@ Findings of 17–18.09 not recorded elsewhere:
 Numbers: `docs/PLAYTEST-2026-09-13.md` §2.1, §6. Meter: `docs/night-2026-09-13/raw/phone-tools/trace.py`
 on the S23 (390×844, DPR 2.625, 120 Hz) before, after every item, at the end; `g11` on the laptop.
 Rule 3: same look, cheaper work.
-- [x] **0.3 Layout reads — DONE by its own meter, and it did not move the cadence.** Reads in the
-  frame went from 6.3 a frame to 0.31 after three fixes (the fleet label and the helm lift reading
-  raw, the brake button fighting the helm-hide row every frame, and the six-node observer watching
-  style with subtree so every gauge's own width dirtied the cache). Mutations fell fifty-fold,
-  rectsDirty 62 → 11 per 600 frames. **And the cadence under steering did not budge: 80–84 % on every
-  build of the last ten commits.** Said plainly so nobody re-litigates it: the item is a clean win on
-  its own measure and pure code hygiene in effect — the deadline is missed in the raster, not in our
-  JS, which measures 6–8 ms against 16.7. The evening's other lesson is in GOTCHAS: the phone's first
-  minute is inflated (92.8 % rested, 83.7 % after a minute idle, 78.5 % on a fresh reload, thermal 1
-  throughout), so throw the first run away and judge by the last two of three.
-  **Final number of the evening, rig fixed (8a6d001, real S23, three counted 30 s runs, the helm
-  alive in all three):** cadence 83.0 / 81.0 / 80.3 %, frames over 24 ms 262 / 288 / 296, fps 51.2 /
-  50.4 / 50.1 — a spread of one and a half points. Reference points from the same rig: no helm
-  99–100 %, ×1.5 with the helm 94–97 %, RES_AUTO holds 2 even after ten minutes, thermal never above
-  2. **Rig rule now enforced in the harness:** a run in which the helm never got born is rejected and
-  re-shot automatically — such runs used to report a glorious 99 % and mislead everyone, including
-  the Tester. Stage 0's gate at full resolution is not taken and did not come closer all evening; the
-  only thing that takes it is the author's call on ×1.5.
-- [x] **0.5 Tester's queue, closed by Control 18.09** — (1) the Node DOM stub audited: 30 selectors
-  the game asks were answered wrong (".pads button" gave the panel, "#fbar i" the bar,
-  "[data-k=thrust]" any node, closest/matches always no); a real mini engine now, all old checks stay
-  green, `tests/90d-selectors.js` pins it in both tiers (73584f8). (2) celDay column: a five-digit
-  day fits left of the red margin with room — P6 closed by a frame through the player's path.
-  (3) The two "quarantine" ОПИСЬ failures were real: the brake stayed dimmed in flight after the
-  surface (yesterday's M181 gate), and the opis header lost its matches count after P1 — both fixed
-  (dc67a87). Browser tier 18 080 / 0, node 16 352 / 0. **Still open: g11 on the laptop** — not run.
-- [x] **0.4 `src/16a-space.js` crossed the 40 KB build guard (41 KB) on 9dc0a3f** — closed by the ray revert (dbc06ea): 40 694 bytes. Three files sit just under the 40 960 line now — `16a-space` 40 694, `03e-hull-draw` 40 704, `27z-telemetry` 40 775; the next line added to any of them trips it, so split at the next touch, not before. Not a blocker and
-  not to be fixed on the run. When it is split, split it by meaning: the sprite oven with its cache
-  (`GLOW_SP`, `GLOW_CACHE`, `glowSprite`, `glowBlit`) apart from the things it bakes.
+- [x] **0.3 Layout reads** — done; body in `docs/PLAN-archive.md` («Moved 2026-09-18»).
+- [x] **0.5 Tester's queue, closed by Control 18.09** — done; body in `docs/PLAN-archive.md` («Moved 2026-09-18»).
+- [x] **0.4 `src/16a-space.js` crossed the 40 KB build guard** — done; body in `docs/PLAN-archive.md` («Moved 2026-09-18»).
 - [x] **0.1 Cadence** — done; body in `docs/PLAN-archive.md` («Moved 2026-09-18»).
 - [x] **0.1b An even tact** — done; body in `docs/PLAN-archive.md` («Moved 2026-09-18»).
 - **Gate, honestly: half taken.** On the author's S23, `RES_AUTO` now holds at 2 for ten minutes
@@ -462,38 +436,10 @@ Rule 3: same look, cheaper work.
 - [x] **RELEASE BLOCKER closed: the four «штурвал» failures  — done; body in `docs/PLAN-archive.md` («Moved 2026-09-18»).
 - [x] **P6** — done; body in `docs/PLAN-archive.md` («Moved 2026-09-18»).
 - [x] **P7** — done; body in `docs/PLAN-archive.md` («Moved 2026-09-18»).
-- [x] **The anchor and the stick** — done 18.09 (Control), **phone owed**. The edge is a WALL now,
-  argued with the INPUT, not the state (`15a-helm` `helmEdgeInput`, `17-mode-system` anchor block):
-  past the edge (and in a 240 px band before it) the outward part of the stick's wish is removed,
-  the tangential part stays; a soft pull to the edge line keeps the ship ON it; the braking rule no
-  longer reads the anchor's bend as «pulling against the motion»; while the stick holds the wall the
-  anchor's course-bend is silent (`c.edge`) — two rudders on one edge were the crawl. Coasting
-  without a stick, the anchor arcs home as before. Test `tests/91a2-edge.js`: straight out from
-  cruise — no sideways crawl (old 0.59 of cruise), rests at the wall, ~0 fuel there (old 5.16 per
-  300 frames); diagonal — slides along; no stick — arcs home fuel-free. Two models rejected by the
-  test's trace are written in the code comment (coast-and-arc gave a pendulum through the brake
-  rule; turning the push into a slide flipped direction as the fixed stick gained a backward
-  tangential part around the curve).
-- [x] `say()` from timers/network callbacks — closed by verification 18.09 (Control): callbacks run
-  outside the frame, so FRAME_IN is always false there and they count as responses; all 26 in the
-  game are server replies to the player's own tap (ОСТАВЛЕНО, ГОЛОС ПОДАН, the cloud) or the
-  «open in another tab» warning — both must show over a screen. The rule is written at `say()` in
-  `08-state`; a future world voice from a timer sets MSG_WORLD itself.
-- [x] СТОЛ — done 18.09 (Control). Empty sheets: read on a fresh game, 13 of 17 already named their
-  source; the four silent ones now do — БОРТ («борт пишет сам — покупки, ремонт, бой, поломки»),
-  ЛЮДИ («говорят у стойки станции и в смену на борту»), ДЕЛА («берут на станции — сделки, наряды,
-  охота за головами, баржи; фронт присылает сам»), ДНЕВНИК («пишут на зимовке — наряд с ДОСКИ»).
-  Bottom padding: closed by a frame — 57 px of air under the last card at 390×844, nothing fixed
-  over it (P1–P3 already fixed it). `crash.log` noise: closed since 0.419 — only `logShip` sends, and
-  all nine callers are real evidence (save, cloud, chronicle).
-- [x] Station header review 13–15 — done 18.09 (Control, the author chose the forms). Prices before
-  the cooperative form; the Director's news from ЕЩЁ to the board («СЕГОДНЯ В СИСТЕМЕ», lane
-  ЗДЕСЬ); **one tab row**: the open group's tabs stand inline right after its name on their own
-  band (`#stTabs` is moved inside `#stGroups`, the node and its selectors unchanged), the row fades
-  at the right edge like the desk's — the list starts at 148 px instead of ~215 at 390×844;
-  **СТОЛ stays in the masthead, redrawn** («в шапку аккуратно впишем»): a paper tag under the
-  wallet — your money, your data, your desk on the right, the station on the left — 59×44 hit
-  area. Tests that listed groups with `#stGroups button` now say `#stGroups > button`.
+- [x] **The anchor and the stick** — done, **phone owed** (edge-slide feel); body in `docs/PLAN-archive.md` («Moved 2026-09-18»).
+- [x] **`say()` from timers/network callbacks** — done; body in `docs/PLAN-archive.md` («Moved 2026-09-18»).
+- [x] **СТОЛ** — done; body in `docs/PLAN-archive.md` («Moved 2026-09-18»).
+- [x] **Station header review 13–15** — done; body in `docs/PLAN-archive.md` («Moved 2026-09-18»).
 - **Privacy, standing:** the author's save sits outside git (`C:\Claude\drift-private`) — never
   commit it; the two bot signs in `~/drift-data/trace/p/0_0.json` the author removes by hand.
 
@@ -528,25 +474,24 @@ Rule 3: same look, cheaper work.
     `hashi(sx,sy,0x51A7)` instead of `rnd()*TAU`, the nose toward the station (to the star if none).
     **Release note:** one `rnd()` call left the stream, so every replay and same-hash suite moves —
     a deliberate `test.ps1 -Accept` pass, named in the patchnote.
-- [x] **P10 ЦЕЛЬ and the hail — done 18.09 (Control).**
-  - **One meaning per pad state** was already true (M355/B1): every claimant names itself in the
-    prompt («ЦЕЛЬ — ЗОНД 900 кр», «ЦЕЛЬ — СНЯТЬ ЭКИПАЖ», «ЦЕЛЬ — БЛАГОДАРНОСТЬ», «ЦЕЛЬ — ПО ДЕЛУ»)
-    and the pad takes the verb — verified, nothing to change.
-  - **Pickets lockable:** `helmTargetable` (15a) — hostile ships and every ship of a power, even a
-    peaceful one; never the player's crew or flag. Autofire still fires only at hostiles
-    (`!mk.iff`, 13-pirates), so a locked picket is aimed at, not shot, until the player fires.
-  - **Hail colours by consequence — the author's reading 18.09:** there is no fight answer, both
-    answers are peaceful by default; «опасность — красное, не опасно — зелёное». `hailRisk` names
-    what each answer leads to here and now: enemy-stamped cassettes in the hold → both red (fire on
-    any word); blockade → ПРОХОДОМ red (ordered to stand), ПО ДЕЛУ green; otherwise both green.
-    Window buttons and the ДЕЙСТВИЕ/ЦЕЛЬ pads take the same colours (`body[data-hail-*]`); the
-    permanent gold of ПРОХОДОМ and the red ring on ЦЕЛЬ under a peaceful answer are gone.
+- [x] **P10 ЦЕЛЬ and the hail** — done; body in `docs/PLAN-archive.md` («Moved 2026-09-18»).
 - Gate: `g11` on the phone before/after; the frame gate of stage 0 still holds.
 
-### Stage 2 — whose land, in five seconds (borders + life Ж1 + the galaxy)
+**Task names (18.09, the author: «почему по-русски — переименуй вехи по-английски, одинаково во всей
+игре»).** The stage items had Cyrillic family codes; they are now M-numbers like every other
+milestone, one contiguous block per family, so an old reference maps by arithmetic:
+borders Б1–Б7 = **M452–M458**, life Ж1–Ж6 = **M459–M464**, resources Р1–Р5 = **M465–M469**, metro
+М1–М6 = **M470–M475**, shipyard К1–К9 = **M476–M484**, birchpunk Д1–Д14 = **M485–M498**, new
+mechanics Н1–Н15 = **M499–M513**. Renamed in this file, `docs/PLAN-ru.md` and the seven stage
+designs. Left as they are, on purpose: historical codes in code comments and the archive (the
+marathon's П0–П8, the story forks С1–С3, the interface laws И1–И11) — they name archived sections,
+not open work — and in-game strings (part suffixes «М1», «Р-12»). Versions stay `0.NNN.x`; the
+patchnote of each version names the M-numbers it closes.
 
-- [x] **Ж1 The approach — «подъезд»** — BUILT 18.09 (Control), `src/17g-sys-lane.js`: `sysEntry` (one source for the jump and the lane), `laneLife` = (.35+.65·heart)·(.6+.4·rung/30) — rung is the PLAYER's holding, so it only adds; 2–3 buoy pairs from 150 u off the dock every 240 u, one baked buoy sprite for the whole game, lamps in the owner maker's flame colour chasing toward the dock at 2 pairs/s; a queue of 2–6 fleet sprites (12ai1, the station maker's ground) on a 150×70 ellipse beside the lane when life ≥ .45, one docking (10 s), one leaving along the lane to the entry (14 s). Not done from the item: tugs/shuttles of 17f re-routed onto the lane, the haul-scene review (route bar, destination chip). Phone owed: `prof()` ≤ 1 ms raster, `look()` pair %. Original text:
-  **Ж1 The approach — «подъезд»** (`DESIGN-life.md` §2–3.1, review §4.4). From the entry point
+### Stage 2 — whose land, in five seconds (borders + life M459 + the galaxy)
+
+- [x] **M459 The approach — «подъезд»** — BUILT 18.09 (Control), `src/17g-sys-lane.js`: `sysEntry` (one source for the jump and the lane), `laneLife` = (.35+.65·heart)·(.6+.4·rung/30) — rung is the PLAYER's holding, so it only adds; 2–3 buoy pairs from 150 u off the dock every 240 u, one baked buoy sprite for the whole game, lamps in the owner maker's flame colour chasing toward the dock at 2 pairs/s; a queue of 2–6 fleet sprites (12ai1, the station maker's ground) on a 150×70 ellipse beside the lane when life ≥ .45, one docking (10 s), one leaving along the lane to the entry (14 s). Not done from the item: tugs/shuttles of 17f re-routed onto the lane, the haul-scene review (route bar, destination chip). Phone owed: `prof()` ≤ 1 ms raster, `look()` pair %. Original text:
+  **M459 The approach — «подъезд»** (`DESIGN-life.md` §2–3.1, review §4.4). From the entry point
   (P9) to the station: buoys every few hundred units, one lamp each, **lamps chasing toward the
   dock** at ~2 buoys/s (a phase, not blinking); a **holding queue** at busy stations — 2–6 ships on a
   slow ellipse, one docking, one leaving; density = rung × heartland gradient (`sysDanger`); tugs
@@ -554,7 +499,7 @@ Rule 3: same look, cheaper work.
   (shuttles passing, a route bar instead of the countdown, the destination chip = the station).
   Buoys baked per system; only phases and ships per frame. Meter: `prof()` on the phone layout —
   the approach adds ≤ 1 ms raster; `look()` on the heartland scene keeps pair % ≥ 15.
-- [ ] **Б1 The first ship's gesture** (review §2.1). Within 5 s of arrival one ship of the owner
+- [ ] **M452 The first ship's gesture** (review §2.1). Within 5 s of arrival one ship of the owner
   (`chronOwner`) does one thing: ГЛАВТРАССА picket alongside, a spotlight cone sweeps you,
   «Записываю», a КНИЖКА line «Проследовал. Замечаний нет.» (monthly: «Замечание: нет замечаний»);
   Компания drone with a screen before your nose, ПОЧТА «Пролёт — 0 кр (акция). Сбор за оформление
@@ -565,7 +510,7 @@ Rule 3: same look, cheaper work.
   borders §2.1; Ялта: all six, weapons sealed. The gesture ship is the fleet art in the maker's
   dressing. The **post** is background: one truss + board + lamp + the dressing's prop, baked, at
   the entry point (borders §2.1 table for the six dressings).
-- [ ] **Б2 The stamp + P14 ТРУДОВАЯ КНИЖКА** (borders §2.2, review §4.4, playtest §4.4). Border
+- [ ] **M453 The stamp + P14 ТРУДОВАЯ КНИЖКА** (borders §2.2, review §4.4, playtest §4.4). Border
   crossing = owner change (or wild → owned) on arrival: a stamp across the screen 1.2 s (DOM on the
   КНИЖКА paper, tilt 5–12° by seed, ink grain, scale 1.3 → 1 in 120 ms, hold 900, fade); six papers
   (violet stencil «ОТМЕТКА О ПРОЕЗДЕ · ПОСТ № n» + signature; Компания's till slip scrolling up
@@ -575,7 +520,7 @@ Rule 3: same look, cheaper work.
   document** (P14): stamps, seals, signatures, the vacation savings, the доска почёта and the
   grounding ending (all designed in M161, none on the page) — with **ОТМЕТКИ О ПРОЕЗДЕ** as its first
   real page (six + Ялта + the pirates' scratch to collect). Save: which stamps, when (`G.stamps`).
-- [ ] **Б3 Station body and traffic by builder** (borders §2.3). `17e-station-body` applies the
+- [ ] **M454 Station body and traffic by builder** (borders §2.3). `17e-station-body` applies the
   maker grammar (`HULL_MAKER` dimensions: profile law, seams, marks, ground) to the station by
   `station.by`; `17f-sys-traffic` draws 7 of 10 ships from the owner's maker, 3 from neighbours; a
   border system mixes, a heartland is uniform.
@@ -590,7 +535,7 @@ Rule 3: same look, cheaper work.
 
 ### Stage 3 — far, and back with a hold (resources + the railway)
 
-- [ ] **Р1 Ten goods — table and roll** (`DESIGN-resources.md` §2–3, review §2.5). Rows in `RES`
+- [ ] **M465 Ten goods — table and roll** (`DESIGN-resources.md` §2–3, review §2.5). Rows in `RES`
   with band, verb, property, price, eater line: **солнечный газ** (frontier, scoop, 85, reactors) ·
   **белая руда** (frontier, belt, 95, instruments) · **космический янтарь** (frontier, cave, 130,
   fragile → «крошка» at ⅓, Коммуна ×1.5) · **осмий** (deep, mine, 190, heavy ×2 hold, armour) ·
@@ -601,22 +546,22 @@ Rule 3: same look, cheaper work.
   крошка** (beyond r 50, drill, 1 500, heavy ×5, доводка). **New random salt** — a Node suite proves
   no existing deposit, price or station moved (old-salt hashes before/after). Presence by band;
   richness `exp(N(μ(r),1))`: ~70 % бедная, 25 % хорошая, 5 % богатая, 0.5 % **ЖИЛА** ×20.
-- [ ] **Р2 Reading and ЖИЛА.** The scanner shows a range («осмий: 40–160») narrowed by the
+- [ ] **M466 Reading and ЖИЛА.** The scanner shows a range («осмий: 40–160») narrowed by the
   instrument's resolution (изыскатель ±10 %, рудовоз ±60 %; тёмное стекло in the instruments halves
   every range) — the professions' honesty rule. ЖИЛА: the word across the screen (ГЛАВТРАССА
   stencil, warm, 1.2 s — the only time the game shouts), a ДНЕВНИК line, a rumour at the nearest
   stations after one сводка, company on that approach afterwards («трое, все говорят, что первыми»).
-- [ ] **Р3 Prices by distance.** ½ base in its own band, 1× at r≈10, 1.3× in the heart, the eater's
+- [ ] **M467 Prices by distance.** ½ base in its own band, 1× at r≈10, 1.3× in the heart, the eater's
   ×1.5 in its land; the live market's flood-and-recover holds; far goods rarely on sale in the heart.
   Eaters speak at their counters (review §3: «весы наши, тара ваша», «принимаем по весу, вес — наш»).
-- [ ] **М1 The net and the scheme** (`DESIGN-metro.md` §2, §4, review §4.4). Six radials from the
+- [ ] **M470 The net and the scheme** (`DESIGN-metro.md` §2, §4, review §4.4). Six radials from the
   core at the powers' home angles, **forking** outward so line density stays even (6 at r 6, ~12 at
   15, ~24 at 35, on without end); rings at Ялта's radius (Кольцевая; **Ялта = «Площадь Шести
   Держав»**), r≈18 (Большое), r≈35 (Дальнее), then ×1.9; two spiral трассы along the arms
   (`galaxyAt`); a stop = the nearest station system to each spacing step (метро 1.5–2.5 sectors
   inside r 12; электричка 4–8; a step with none is a перегон); junctions where lines cross; past
   r 40 single tracks with **полустанки** and «Край». Lazy per region; Node suite (reachability,
-  one stop per system, determinism). Names by owner (Д5 rule; beyond the powers: «разъезд 214-й
+  one stop per system, determinism). Names by owner (M489 rule; beyond the powers: «разъезд 214-й
   сектор», «полустанок Сухой»). **M449 named places rides along**: arms and ~10 nebulae named in
   the game's voice, lines carry the arm's name («Линия 7, Рукав Лебедя»), labels at far zoom.
   **The scheme** (our own, on paper): thick coloured lines on paper, white circles black-rimmed,
@@ -624,7 +569,7 @@ Rule 3: same look, cheaper work.
   lines as faint smooth curves 1:1 with the sheet (no parallax). **M450 the overview** (pinch past
   zoom 5) becomes the scheme's zoomed-out sibling: the disk, «вы здесь», the settled circle, the
   danger rim, marks, rumours — and the lines.
-- [ ] **М2 The station in the system.** At the end of the approach, past the ordinary station: **the
+- [ ] **M471 The station in the system.** At the end of the approach, past the ordinary station: **the
   ring** (a torus flat, inner disc a shade lighter with a slow faint spiral, the line's plate) and
   **the glide path** (two converging dotted lamp lines chasing inward); a small vestibule block (one
   body, six dressings; at the rim a bare platform with one lamp). Within ~300: «Станция «Нейэль».
@@ -633,7 +578,7 @@ Rule 3: same look, cheaper work.
   takes you** — «Автостыковка. Просьба не мешать», КНИЖКА «стыковка выполнена автоматикой».
   Berth: the ship slides in. **The train is the batch**: ships arrived since the last opening stand
   in a row on the lamps — a вахтовка, a barge, a yacht; at the rim you and a drone.
-- [ ] **М3 The vestibule** — the metro's only new screen, one page on the station paper: **ТАБЛО**
+- [ ] **M472 The vestibule** — the metro's only new screen, one page on the station paper: **ТАБЛО**
   split-flap («ЭЛЕКТРИЧКА до «Край» · через 0:14», «СКОРЫЙ · 1:40», «МЕТРО · прибывает»; flaps turn
   on change), **КУДА ВАМ** unfolds the scheme on the same paper — tap a stop → pad «ДО «НЕЙЭЛЬ» · 3
   ОСТАНОВКИ · 5 кр» / «ДО «СУХОЙ» · 11 ОСТАНОВОК · 38 кр + багаж 12 кр»; routes through
@@ -643,7 +588,7 @@ Rule 3: same look, cheaper work.
   минеральная 0,33 № 2», «кофе с круассаном (закрыто)», «чай из общего котла», «энергетик v4») — a
   drink comes with a rumour (`11t`) and a ДНЕВНИК line. Wait = the interval: ~6 s in the heart,
   **≤ 40 s real at the rim** (табло «следующий поезд — завтра», forty seconds later «поезд подан»).
-- [ ] **М4 The ride** — `G.mode="rail"` on the galaxy map. Departure: «поезд подан», the batch goes
+- [ ] **M473 The ride** — `G.mode="rail"` on the galaxy map. Departure: «поезд подан», the batch goes
   in 0.3 s apart, your stars stretch to the ring's centre 0.6 s, a white-cyan flash. The ride: the
   camera frames the line ahead drawn thick in the scheme's colour; the train a rounded glyph with a
   headlight wedge; stops as ticks; segment 0.8 s + 0.35 s/sector, **a stop ~2 s** with the name, the
@@ -656,20 +601,20 @@ Rule 3: same look, cheaper work.
   the destination's ring onto its approach, slow, facing the station. Save `{line,from,to,t}`,
   resumes at the next stop. Kindness: the полустанок's lamp comes on as you approach — «ждали».
 - [ ] **Oracle lines** (`91zzzzzzzzz-worlds`): best rail round trip ≤ ×1.3 of best jumps in credits
-  per minute of play (baggage is the lever); the stripped hauler's best one-hop deal (for К3).
+  per minute of play (baggage is the lever); the stripped hauler's best one-hop deal (for M478).
 - **Gate:** from home to a rim полустанок and back with a hold of deep goods in under 4 minutes of
   play, paying its ticket on an average roll; the ride never shows a loading screen.
 
 ### Stage 4 — the ship (`DESIGN-shipyard.md`, review §1.3, §2.2, §4.4)
 
-- [ ] **К1 The plan, read-only.** `hullOf` → cells (side = length/N, N 8…14 by size; ≥ 48 px on
+- [ ] **M476 The plan, read-only.** `hullOf` → cells (side = length/N, N 8…14 by size; ≥ 48 px on
   390 px), **one view, nose up**: rim cells = ОБШИВКА (mounts: нос → жёсткая, борт → турель with an
   outward arc, as `mountsOf` today), axis cells behind the nose third = the spine (БАШНЯ), interior =
   ПАЛУБА. **No deck tabs.** The **packer** turns every existing fit (`SHIPS`, `FLEET`, unique, fused,
   NPC, pirates) into a plan by the maker's habit; **fixpoint suite**: every number equals today's ±1
   for an untouched save, nothing that fits unfits, «a fully upgraded module set fits any hull».
   ОПИСЬ shows the plan (swap same-footprint on the same cell only). No new save field.
-- [ ] **К2 The КБ editor** — the second and last new screen: **синька** (Prussian blue, silhouette
+- [ ] **M477 The КБ editor** — the second and last new screen: **синька** (Prussian blue, silhouette
   and grid in light line, parts as warm ochre ink stamps by kind, БАШНЯ a circle with a cross, scars
   brown, tape grey, «СОГЛАСОВАНО» violet in the corner — landing by itself after a fake queue «ваш
   чертёж 4-й в очереди»). Footprints 1 / 2 (turns) / 4. Tray under the plan: things from the hold
@@ -681,74 +626,74 @@ Rule 3: same look, cheaper work.
   **ПРОЕКТЫ** per hull. Save **`G.draft[shipId]`** (`G.plan` is the industrial plan, `11r-plan`) = `[[thing, cx, cy, turn]…]`, the packer as the
   `applySave` default. ОСНАСТКА's hull section becomes КБ; a foreign yard bills by cells moved
   (Компания: «перемещение ячейки — 1 кр, итого 14 кр, спасибо за выбор»).
-- [ ] **К3 Numbers from the plan.** cargo = hold cells × hold-module density; fuel/jump = tank cells ×
+- [ ] **M478 Numbers from the plan.** cargo = hold cells × hold-module density; fuel/jump = tank cells ×
   density; energy = reactor cells × output (`weapon` module = the reactor level, war §4); hull
   points = the hull's + armour parts; thrust/turn = the hull's × mass factor **clamped .8–1.1**
   (tied to P8's feel); sight = instruments in the nose third. Module tiers become densities.
   Bounds: cargo ≤ ×1.4 nominal; the oracle line from stage 3.
-- [ ] **К4 БАШНЯ, exposure, sight.** The spine mount: 360°, costs its cell (no decks now, so one
+- [ ] **M479 БАШНЯ, exposure, sight.** The spine mount: 360°, costs its cell (no decks now, so one
   cell), drawn in flight as a round turret on the back — the loadout read by silhouette; rim parts
   take their side's wear (`12s-wear`) when hit from that side (war §4's ×1.6 from behind now also
   means «engines take it»); instruments count only forward.
-- [ ] **Р4 Properties** — heavy (×2, ×5 hold), fragile (крошка on a hit), perishable/dangerous (the
-  trap's energy draw, the countdown spoken in the hold, detonation below 20 %). **Р5 Eaters** —
+- [ ] **M468 Properties** — heavy (×2, ×5 hold), fragile (крошка on a hit), perishable/dangerous (the
+  trap's energy draw, the countdown spoken in the hold, detonation below 20 %). **M469 Eaters** —
   reactor/armour/shield/instrument densities, доводка by нейтронная крошка, greenhouses and дачники,
   jewellers, the luxury counter, the navies' buy.
 - **Gate:** an old save loads with every number unchanged; a hauler stripped to the hold and a
   warship stripped of hold both fly under the finger the same (P8 meter); the blueprint passes the
   craft codex and gets its almanac issue.
 
-### Stage 5 — the voice and the joke (`DESIGN-birchpunk.md` §2, §4; life Ж2–Ж4; borders Б4–Б5)
+### Stage 5 — the voice and the joke (`DESIGN-birchpunk.md` §2, §4; life M460–M462; borders M455–M456)
 
-- [ ] **Д1 Machines with names.** Drones, the base crawler, the tug, the barge autopilot: a name
+- [ ] **M485 Machines with names.** Drones, the base crawler, the tug, the barge autopilot: a name
   (Митя, Глаша, Буля, Кузя, Жучка, Громобой…) and **one quirk** = one number off the norm both ways
   («работает только днём — днём быстрее», «возит лишнее», «поёт при бурении»). Journal lines in the
   name: «Митя встал. Чинится сам. Ругается.» Drones never die (2026-09-03). Hands stay faceless.
-- [ ] **Д2 Изолента.** A consumable for kopecks: field repair of any part or the hull to 50 %
+- [ ] **M486 Изолента.** A consumable for kopecks: field repair of any part or the hull to 50 %
   (the first hour's ДО 50 % button, anywhere); leaves a grey **tape strip drawn on the hull** where
   used (a scar until a yard repair); the trait **«кулибин»** on a hand/manager: tapes free from scrap,
   holds 60 %, «заматывает так, что не видно». Рассвет's yard treats tape as a finish.
-- [ ] **Д11 The triangle — гарантия / техподдержка / изолента** (§4.1). Firm parts (Компания,
+- [ ] **M495 The triangle — гарантия / техподдержка / изолента** (§4.1). Firm parts (Компания,
   Хай-Фронт) carry «гарантия 12 сводок» in ОПИСЬ. Broken: **ТЕХПОДДЕРЖКА** — an эфир call, «ваш
   звонок очень важен для нас», one bar of hold music (`10-music`), a queue number counting down in
   game time (37 → … and once back to 41), repair to 100 % in 1–3 сводки, free, the part dead
   meanwhile; **ИЗОЛЕНТА** — now, 50 %, «гарантия аннулирована: обнаружены следы изоленты»; **ЯРД** —
   proper, for money. Kindness: the old master at any yard welds one seam free for a taped hull:
   «сынок, ну кто ж так».
-- [ ] **Д5 Names by owner** («Рязань Каунти»): settlements, holdings, metro stops = homely toponym +
+- [ ] **M489 Names by owner** («Рязань Каунти»): settlements, holdings, metro stops = homely toponym +
   the owner's administrative suffix (ГЛАВТРАССА «пгт Верхний Пояс», Компания «Горловина Каунти»,
   «Нейэль-Сити», Орднунг «Бецирк Нейэль № 4», Коммуна «Сен-Горловина», Рассвет «кооператив
   «Горловина»», Хай-Фронт «Горловина-2 v3.1»); a flag change repaints the sign. Firms = provincial
   city + foreign tech word, invented («Кострома Роботикс», «Урюпинск Орбитал»); never a real one.
-- [ ] **Д8 Космопочта.** ГЛАВТРАССА's post at stations open by the game clock (hours on the door);
+- [ ] **M492 Космопочта.** ГЛАВТРАССА's post at stations open by the game clock (hours on the door);
   извещения in ПОЧТА for a hull from СТАПЕЛЬ, a rare part, cooperative goods; collect at the counter
   in hours; a parcel waits 30 days then returns; a queue number. Kindness: the clerk keeps it a day
   longer, «не по правилам».
-- [ ] **Ж2 Billboards + Д7 the contradicting newscast + P12 ЭФИР — one pass.** Billboards: a truss,
+- [ ] **M460 Billboards + M491 the contradicting newscast + P12 ЭФИР — one pass.** Billboards: a truss,
   a panel, three-stroke neon lettering (glow / core / white-hot centre), one crawling line; **the
   line is useful** — real prices from `G.market` («ТИТАН 41 У ПАРТНЁРА В 2 ПРЫЖКАХ — ВЫГОДНО КАК
   НИКОГДА», stale ones as a fork), the сводка in the owner's voice, the Director's циркуляры, a
   holding's own station («ТОПЛИВО ЕСТЬ»), «до конца акции 00:00:03» for ever; six letterings (review
   §4.2); a ГЛАВТРАССА sign always has a dead letter, one *buzzes* once a minute (200 ms dip) — the only
   permitted flicker besides Хай-Фронт's honeycomb cell; within R the hull takes the panel's colour
-  as an additive stamp on the facing side. **Д7:** `12p-news` answers the player's own last deed
+  as an additive stamp on the facing side. **M491:** `12p-news` answers the player's own last deed
   within one сводка in each power's doublespeak (a barge pulled out of a fight → Маяк «на трассе
   спокойно», Компания «партнёр обеспечил безопасность перевозок™», Хай-Фронт «инцидент не
   зафиксирован»); the player alone knows. **P12:** ЭФИР (92 rows, 50 distinct, events drowned) —
   events first, chatter folded, the six waves' contradictions as its spine.
-- [ ] **Ж3 Hotels** — one slab-of-windows body, six dressings (which windows are lit, the sign):
+- [ ] **M461 Hotels** — one slab-of-windows body, six dressings (which windows are lit, the sign):
   «ГОС ИНИЦА «КОСМОС»» (two letters dead, «МЕСТ НЕТ» on the board, «для вас найдём» at the desk),
   «ДЖЕКПОТ-СИТИ™», «Пансион № 4» (lights out 22:00), «Ля Люн», the door in the rock, the honeycomb.
   Docking opens the doors that exist: sanatorium (`29h/29i-spa`), cinema (`27da-kino`), cantina
   rumours. Kindness: under 30 % hull the clerk lets you sleep off the fatigue free, «потом заплатите».
-- [ ] **Ж4 «Чебуречная»** — a junk boat on the lane hailing «Чебуреки! Горячие!» whatever the hour;
+- [ ] **M462 «Чебуречная»** — a junk boat on the lane hailing «Чебуреки! Горячие!» whatever the hour;
   sells the owner's `POWERS[k].food`; a meal comes with a rumour and a ДНЕВНИК line.
-- [ ] **Б4 The peacetime fleet in flight** (borders §2.4, from war §7.3's table): ГЛАВТРАССА
+- [ ] **M455 The peacetime fleet in flight** (borders §2.4, from war §7.3's table): ГЛАВТРАССА
   субботник tugs pushing belt debris; Компания ad hulls and hired «contractors»; Орднунг an
   inspection pair holding a trader; Коммуна's fleet in a neat line, lights low, on strike days;
   Рассвет's repair tug that comes to any damaged ship, yours too; Хай-Фронт's reboot line. Driven by
   the chronicle's states where they exist (`12au-rites`, `12ay-fx-soc`).
-- [ ] **Б5 One law each — the voiced ones only** (review §1.5): ГЛАВТРАССА норма (a fuel norm per
+- [ ] **M456 One law each — the voiced ones only** (review §1.5): ГЛАВТРАССА норма (a fuel norm per
   visit for kopecks); Компания пошлина (docking 40 кр, free with a sponsor on board); Орднунг
   скоростной режим in the numbered ring (a ticket in ПОЧТА with a paragraph number); Коммуна обед
   (yard and one counter shut an hour, fuel always sold); Рассвет «сделаем из ваших» (two parts → one
@@ -766,12 +711,12 @@ Rule 3: same look, cheaper work.
   in beautiful places (not by buying drones — 25/72 opened on the author's save without a landing);
   closing a chapter is an «АКТ» moment across the screen; a real book
   with plates from the player's own flight; the text may be edited to fit.
-- [ ] **Б6 Sound** — a three-note motif per power on the radio at entry (not six musical modes); the
-  receiver speaks the owner's `air` line once. **Б7 Map borders** — territory edges as lines in the
+- [ ] **M457 Sound** — a three-note motif per power on the radio at entry (not six musical modes); the
+  receiver speaks the owner's `air` line once. **M458 Map borders** — territory edges as lines in the
   owner's pattern (dotted stars, ring marks, numbered dashes, a wave, uneven dashes with suns,
   dots), 1:1 with the sheet; the emblem chip readable (14–18 px) at near zoom; the glyph on the
   compass label and the header.
-- [ ] **К5 Six yards' character** (shipyard §4, review §2.2): built-in / limit / habit — ГЛАВТРАССА
+- [ ] **M480 Six yards' character** (shipyard §4, review §2.2): built-in / limit / habit — ГЛАВТРАССА
   бронепояс +25 % hull, +8 % mass, **a slogan along the flank that cannot be removed** («ПЛАН —
   ЗАКОН»); Компания −15 % price, a running line on your hull, billed per cell; Орднунг a free front
   shield cell, footprints do not turn; Коммуна turrets +30° arc, −15 % cells, shut at lunch/strike,
@@ -779,34 +724,34 @@ Rule 3: same look, cheaper work.
   the only yard that welds a pod (+2–4 cells) onto any hull, no башня above medium; Хай-Фронт a
   free instrument cell, −15 % hull, **firmware moves one part a cell per сводка «оптимизировано»**
   («отложить обновление» 3 сводки), stock turns every сводка. Calibrated by the worlds oracle and
-  the стрельбище. **К6 СТАПЕЛЬ** — order a hull at a power's yard in its land: class × size × two
+  the стрельбище. **M481 СТАПЕЛЬ** — order a hull at a power's yard in its land: class × size × two
   sliders inside the maker grammar, live preview, price on the button, ready after one сводка
-  (ПОЧТА/Космопочта), persisted as the order only `{by,cls,size,l,w,seed}`. **К7 The hull
+  (ПОЧТА/Космопочта), persisted as the order only `{by,cls,size,l,w,seed}`. **M482 The hull
   remembers** — 1–3 шрамы on wrecked/towed/captured hulls (a burnt cell, a bent mount −30 % arc, a
   leaky tank cell) drawn where they are, repaired for money, cheaper to buy; **доводка** — a yard
   welds one thing in (+1 tier, immovable, a seam drawn), two per hull, paid with money and a node
-  (or нейтронная крошка). **К8 The fast path** — NPC and pirate ships built by the packer; the
-  new-part mark on the plan. **К9 Особая система корпуса** (the one thing the designer still
+  (or нейтронная крошка). **M483 The fast path** — NPC and pirate ships built by the packer; the
+  new-part mark on the plan. **M484 Особая система корпуса** (the one thing the designer still
   lacked): one active ability per `HULL_CLASS` on a cooldown, drawn on the pad
   as a fourth verb — scout **форсаж** (3 s ×1.6 thrust), courier **сброс** (dump one hold cell as a
   decoy), hauler **балласт** (turn ×1.5 for 4 s at the cost of 1 % cargo), miner **резак** (the drill
   as a short-range beam), warship **залп** (all groups at once, 8 s reload), yacht **сирена** (a hail
   every ship answers), survey **прожектор** (reveals every deposit range in view for 10 s).
-- [ ] **М5 Six railways** (metro §6): Компания **Express™** (dashed twin line skipping small stops,
+- [ ] **M474 Six railways** (metro §6): Компания **Express™** (dashed twin line skipping small stops,
   ×10, an ad under the fare — «на три секунды быстрее!», and it is); Орднунг boards only with the
   hold declared («ДЕКЛАРИРУЮ»), doors on the second; Коммуна greyed on strike days and at lunch;
   Рассвет **маршрутка** — «до куда?» — tap the map — «ну поехали», stops at any system on the line;
   Хай-Фронт «обновление установлено», the line stands a minute. Closed front stops on the scheme.
-  **М6 Economy and growth** — fares, baggage, the size rule tuned; a holding-built station
+  **M475 Economy and growth** — fares, baggage, the size rule tuned; a holding-built station
   («продление линии», a late holding deed, named by the generator).
-- [ ] **Ж5 The bazaar that remembers** — in heartland belt systems a knot of moored hulks (fleet
+- [ ] **M463 The bazaar that remembers** — in heartland belt systems a knot of moored hulks (fleet
   art), awnings, lights on strings; odd lots; scarred hulls cheap; **`G.thrown`** (12 entries) —
   what you discarded in ОПИСЬ returns to a stall at ×3, «ношеная, один хозяин».
-- [ ] **Д3 Подписка** — firm parts and base modules: 10 % up front + 4 %/сводка (owning wins after
+- [ ] **M487 Подписка** — firm parts and base modules: 10 % up front + 4 %/сводка (owning wins after
   ~23 сводок; the card says so); a lapse only at a сводка boundary, announced a shift before in
   ПОЧТА; in a fight **ЭКСТРЕННОЕ ПРОДЛЕНИЕ · ×3** for one сводка; at renewal the tariff «обновлён» —
   same price, one feature fewer, sold as an add-on; a lapsed base cold store stops giving, never
-  takes. **Д4 A second core — rented** (the ИИ-ядро already exists: `12f-mgr-ai` — built for
+  takes. **M488 A second core — rented** (the ИИ-ядро already exists: `12f-mgr-ai` — built for
   `AI_COST`, takes a human's seat, no cut, and a hidden drift that ends in decisions you never gave). Хай-Фронт
   offers the other way: **a rented core on a tariff** — БАЗОВЫЙ (free, an advert in every third report),
   ПРЕМИУМ (route prices, a real forecast), СЕМЕЙНЫЙ (opinions on how you live); it does not drift, it
@@ -817,23 +762,23 @@ Rule 3: same look, cheaper work.
 ### Second pass over the whole plan (14.09) — seams, the standing checklist, new mechanics
 
 **Seams found between systems (each is a line in the item it belongs to; listed here so they are not lost):**
-- **MODS → the plan (К3).** Today `capOf` is shared by modules and parts; when tiers become
+- **MODS → the plan (M478).** Today `capOf` is shared by modules and parts; when tiers become
   densities, `hold`/`tank`/`weapon`(reactor)/`armor` are densities per cell, `engine`/`hyper`/`drill`
-  stay station upgrades on the hull's constants — one mapping table in К3, and the fixpoint suite
+  stay station upgrades on the hull's constants — one mapping table in M478, and the fixpoint suite
   covers both halves. Densities are per hull size (nominal ÷ typical cells), never shown as a number.
-- **Drones and the far goods (Р1).** Drones never mine band-2/3 goods and sell band-1 goods at the
+- **Drones and the far goods (M465).** Drones never mine band-2/3 goods and sell band-1 goods at the
   band price (½) — otherwise a drone on a rim жила prints money offline.
-- **The stamp and the metro (Б2, М4).** A stamp lands only on arrival by jump or on ВЫЙТИ, never on
+- **The stamp and the metro (M453, M473).** A stamp lands only on arrival by jump or on ВЫЙТИ, never on
   a stop passed through; the gesture fires on both kinds of arrival; the ring's «Стыковка?» hail
   fires only when heading into the ring, not when thrown out of it.
-- **The first hour (Б1, М3).** In the home system the gesture *is* ГЛАВТРАССА's and is the first
+- **The first hour (M452, M472).** In the home system the gesture *is* ГЛАВТРАССА's and is the first
   hour's first line; the замполит hands the newcomer one жетон («первый — за счёт трассы») — the
   metro is met in the first hour, not found.
 - **Rescue and rails (`16c-rescue`).** A dry ship at a rail stop gets a third exit beside ДОМОЙ /
   БУКСИР: **НА МЕТРО** (a ticket home for its fare).
-- **The scheme's scope (М1).** The paper shows your line, the rings it meets and their neighbours;
+- **The scheme's scope (M470).** The paper shows your line, the rings it meets and their neighbours;
   pinch/scroll for more — never the whole infinite net. «Край» is per player (no shared state).
-- **К9's place on the pad.** The two permanent buttons stay; the special system is the ДЕЙСТВИЕ pad's
+- **M484's place on the pad.** The two permanent buttons stay; the special system is the ДЕЙСТВИЕ pad's
   **long-press** with its cooldown drawn as the pad's rim — no third button over the world.
 - **Replays (0.1, P9).** The fixed step and the seeded entry angle each move every recording and
   same-hash suite once: one `-Accept` per change, named in the patchnote, `91zzzzzzzzb-replay` re-based.
@@ -858,24 +803,24 @@ one question, «захотелось самому сделать ещё рейс
 The game today carries its world in text (the hundred stories, rumours, the cantina, the books); the
 material consequences are the part that does not exist yet — that is what stages 2–3 are for.
 
-**New mechanics — grown out of the seams (Н1–Н13; each names its stage):**
-- **Н1 Попутная посылка** (st. 3, with Д8): at a vestibule Космопочта asks you to carry a parcel to
+**New mechanics — grown out of the seams (M499–M511; each names its stage):**
+- **M499 Попутная посылка** (st. 3, with M492): at a vestibule Космопочта asks you to carry a parcel to
   a stop on your line; delivered by ВЫЙТИ there — a few кр and a rumour; the parcel is a hold row.
-- **Н2 Проездной** (st. 3): ГЛАВТРАССА's monthly pass — the one subscription in the game that is
+- **M500 Проездной** (st. 3): ГЛАВТРАССА's monthly pass — the one subscription in the game that is
   fair (pays off at 12 rides, the card says so); stamped in КНИЖКА each ride.
-- **Н3 Попутчик** (st. 3): a passenger at the vestibule asks to ride with you — pays their fare,
+- **M501 Попутчик** (st. 3): a passenger at the vestibule asks to ride with you — pays their fare,
   talks during the ride (the passenger table, M156), leaves a rumour.
-- **Н4 Проводник** (st. 3): on the скорый the one human of the railway brings tea in a
+- **M502 Проводник** (st. 3): on the скорый the one human of the railway brings tea in a
   подстаканник — crew fatigue eased, one rumour; the kindness of the whole railway.
-- **Н5 Госзаказ на билборде** (st. 5, Ж2 + Р3): «ПЛАН: 40 ед. осмия до сводки 118» — a fixed
+- **M503 Госзаказ на билборде** (st. 5, M460 + M467): «ПЛАН: 40 ед. осмия до сводки 118» — a fixed
   price for whoever delivers, a КНИЖКА stamp «УДАРНИК», the сводка reports «план выполнен на 103 %».
-- **Н6 Ажиотаж** (st. 3, Р2 + М5): after a ЖИЛА rumour the line adds a train to that stop «по
+- **M504 Ажиотаж** (st. 3, M466 + M474): after a ЖИЛА rumour the line adds a train to that stop «по
   многочисленным просьбам трудящихся», the полустанок's prices spike, the approach fills.
-- **Н7 Дипломатический паспорт** (st. 5, Б2): all six border stamps + Ялта's → the замполит issues
+- **M505 Дипломатический паспорт** (st. 5, M453): all six border stamps + Ялта's → the замполит issues
   a passport: free rides for a week, and the Орднунг form asks one question fewer.
-- **Н8 Покупки за рубежом** (st. 4, К5): a part bought in a power's land carries that yard's habit
+- **M506 Покупки за рубежом** (st. 4, M480): a part bought in a power's land carries that yard's habit
   (an Орднунг shield is front-heavy, a Коммуна turret turns wider) — shopping abroad matters.
-- **Н15 Постановка на учёт — утильсбор** (st. 6, with К6/Н8/Б1/Д11; the author 14.09: «купил корабль
+- **M513 Постановка на учёт — утильсбор** (st. 6, with M481/M506/M452/M495; the author 14.09: «купил корабль
   — тебя останавливают, надо на учёт поставить»). A hull bought or ordered in another power's land
   flies on **транзитные номера** — a paper plate stencilled on the flank, valid 3 сводки. On the first
   arrival under your own flag the picket stops you: «постановка на учёт» — **утильсбор** («сбор за
@@ -885,15 +830,15 @@ material consequences are the part that does not exist yet — that is what stag
   («транзит просрочен» — a fine, and the plate is drawn crooked). Registered: your flag's number
   replaces the paper plate — the slogan of a ГЛАВТРАССА yard is never touched. Kindness: the
   inspector waves you through once, «до понедельника», and writes nothing down.
-- **Н9 «Успеваете скорым»** (st. 3): ДЕЛО reads the timetable — a job with a deadline says which
+- **M507 «Успеваете скорым»** (st. 3): ДЕЛО reads the timetable — a job with a deadline says which
   train makes it and when it leaves.
-- **Н10 Пломба** (st. 3, М5 Орднунг): a declared hold is sealed at boarding — nothing sells from it
+- **M508 Пломба** (st. 3, M474 Орднунг): a declared hold is sealed at boarding — nothing sells from it
   until arrival, and pirates at rim stations do not touch a sealed hold (they fear the form).
-- **Н11 Отзыв партии** (st. 6, Д3): Хай-Фронт recalls a part model — «партия отозвана», a free
+- **M509 Отзыв партии** (st. 6, M487): Хай-Фронт recalls a part model — «партия отозвана», a free
   replacement at their yard; kept, the old one becomes a scar.
-- **Н12 Компенсационная маршрутка** (st. 6, М5): on a shut stretch («временные трудности») Рассвет's
+- **M510 Компенсационная маршрутка** (st. 6, M474): on a shut stretch («временные трудности») Рассвет's
   bus runs along it stop by stop — slower, and the driver knows why the line is shut.
-- **Н14 Общества и льготы — membership** (st. 5; the author 14.09 on the маршрутка's driver who
+- **M512 Общества и льготы — membership** (st. 5; the author 14.09 on the маршрутка's driver who
   knows why the line is shut: «это КГБ прям, можно примкнуть к гильдии — какие могут быть и какие
   льготы»). A society is joined by a deed, not a fee; a **членский билет** goes to ВЕЩИ; dues are
   always a shown line (the manager-cut rule); leaving is free, rejoining costs; each has one duty
@@ -916,7 +861,7 @@ material consequences are the part that does not exist yet — that is what stag
   only one that advertises): «льготы» are coupons that expire and points that convert into points;
   the cashier whispers «не вступайте». Several at once are allowed — the dues add up, the duties
   collide, and the desk shows the arithmetic.
-- **Н13 Волокита — the paper chain** (st. 7, Д12; the author 14.09: «надо прям заебать игрока
+- **M511 Волокита — the paper chain** (st. 7, M496; the author 14.09: «надо прям заебать игрока
   бюрократией»). Any animal — the farm beast, **the parrot the player already has** — rides the train
   or crosses a border only with papers. The ПАЛАТА needs **N documents, N rolled 2–10** per animal
   and never told: справка о прививках · акт о некусаемости · выписка из реестра фауны · согласие
@@ -929,7 +874,7 @@ material consequences are the part that does not exist yet — that is what stag
   the joke and it is honest (§22): the desk shows the pile and «ещё документов: неизвестно».
   Kindness: the last official signs without reading — «ну сколько ж можно, летай уже» — and that
   signature is the only one with a name. **Animals to invent later** (the author): a table of
-  species per world with a quirk each, in Д12's row.
+  species per world with a quirk each, in M496's row.
 
 ### Release tails — any gap, all before a push
 
@@ -944,30 +889,30 @@ after `fn()` — not built.
 
 ### Stage 7 — the base and the giants (`DESIGN-birchpunk.md` §4.3–4.7, `DESIGN-life.md` §3.6)
 
-- [ ] **Д12 The farm — одомашнивание.** A beast of a planet (`20f-fauna`), calmed by the probe or
+- [ ] **M496 The farm — одомашнивание.** A beast of a planet (`20f-fauna`), calmed by the probe or
   a net, taken to a base with a **ферма** module; a name (Зорька, Пеструшка, Бурка…) and the
   ПАЛАТА's QR-plate (the клеймо on a beast); a slow trickle of its world's good — organics, carbon,
   xeno, on deep worlds чернозём — **only while someone talks to it** (a hand on the farm or the
   player landed); a far beast gives a far good; never lost, homesick after a move (half yield).
-- [ ] **Д13 Баня and чайный гриб.** A base module **баня**: fatigue resets on a bath night (the С5
+- [ ] **M497 Баня and чайный гриб.** A base module **баня**: fatigue resets on a bath night (the С5
   axis on managers); an inspection at a base with a баня finds one thing fewer — the inspector
   «заодно попарится» (honest man, likes a bath). **Чайный гриб** — a director event (base §10): the
   greenhouse culture overgrows, yield ×2 for three shifts, then it eats the base's organics; an
   аврал cuts it back; the cut sells to Рассвет as «чайный гриб».
-- [ ] **Д14 The blockade's voice, and «Буханка».** The blockade exists (`occLvl≥2`, `12-economy` ~223:
+- [ ] **M498 The blockade's voice, and «Буханка».** The blockade exists (`occLvl≥2`, `12-economy` ~223:
   drone circles stop, barges stand, the H1 battery lifts it); what it lacks is the voice — the occupier's
   wave says the shelves are full and the others suffer, the counter is empty and pays **×2** for food, fuel
   and parts; running it is legal for a neutral, the pickets hail you and you answer by speed. **«Буханка»** — the
-  base's surface–ship shuttle as a named machine (Д1), a boxy old van with engines, always a bit
+  base's surface–ship shuttle as a named machine (M485), a boxy old van with engines, always a bit
   broken, **the one machine the player may rename** (from the name table, no free text).
-- [ ] **Ж6 One giant per arm.** Each arm and the core get one colossal structure 20–50× a ship,
+- [ ] **M464 One giant per arm.** Each arm and the core get one colossal structure 20–50× a ship,
   named in the galaxy's voice: a hollow moon with a mining town lit in rings; the Коммуна's dry dock
   where one hull has been built for three hundred years; the Компания's cylinder with its logo
   along its length; ГЛАВТРАССА's «Дом водителя» the size of a station; Орднунг's customs city where
   every building is a form; Хай-Фронт's relay garden; Рассвет's belt town in the rocks. A landmark
   on the map and a ruler in the frame. (The Ring, M154, is not one of these.)
 
-**Cut for good, so they are not re-invented:** six musical modes (→ a motif each, Б6); the tunnel
+**Cut for good, so they are not re-invented:** six musical modes (→ a motif each, M457); the tunnel
 with walls and station halls; the trust rating; the lab restart until a CPU budget per session.
 
 **Decisions of 14.09 (the author's, not re-litigated):** the hold and tanks are cells · the metro

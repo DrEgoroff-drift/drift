@@ -5,7 +5,7 @@
 > speaks at its counter (review §3); glyphs and hues in the review §4.4.
 
 The author, 14.09.2026: «ещё про ресурсы надо подумать, добавить с десяток. Чем дальше, тем
-ценнее, но как повезёт». The model, the ten, the luck, the prices, the eaters and the queue Р1–Р5;
+ценнее, но как повезёт». The model, the ten, the luck, the prices, the eaters and the queue M465–M469;
 nothing is built. This is the reason to ride the mainline out (`DESIGN-metro.md`): the rim pays.
 
 ## 0. What there is (0.449.0, `02-world`)
@@ -46,9 +46,9 @@ beyond** 40+. Base price = the price in the heart; at its own band it sells for 
 | 2 | **Палладий** | frontier | metal belts — the belt | — | 95 | instruments and the ПРИБОРЫ tier; the co-operative's workshop |
 | 3 | **Космический янтарь** | frontier | caves of ice and jungle worlds — the cave; a resin with things caught inside | **fragile**: a hull hit cracks 20 % of it to «крошка» (sells at a third) | 130 | the Коммуна's jewellers (×1.5 in its land); a book for ПОЛКА about what is inside |
 | 4 | **Осмий** | deep | metal worlds — the mine, deep veins | **heavy**: one unit takes two of the hold | 190 | armour: the shipyard's armour density; hulls of ГЛАВТРАССА |
-| 5 | **Звёздный чернозём** | deep | the surface of jungle and terran worlds far out — the drill | — | 170 | **greenhouses**: bases, the holding's farms, the дачники (birchpunk Д9) pay ×1.5 |
+| 5 | **Звёздный чернозём** | deep | the surface of jungle and terran worlds far out — the drill | — | 170 | **greenhouses**: bases, the holding's farms, the дачники (birchpunk M493) pay ×1.5 |
 | 6 | **Магнитная пыль** | deep | belts around white dwarfs and neutron stars (by star class) — the belt | — | 260 | shields: shield parts' density; Орднунг's rails |
-| 7 | **Жемчуг пустоты** | deep | the void's fauna — the hunt (`20f-fauna`) | — | 320 | the Компания's luxury counter (×1.5 in its land); the hotel's shop (life Ж3) |
+| 7 | **Жемчуг пустоты** | deep | the void's fauna — the hunt (`20f-fauna`) | — | 320 | the Компания's luxury counter (×1.5 in its land); the hotel's shop (life M461) |
 | 8 | **Тёмное стекло** | rim | volcanic and crystal worlds around dead stars — the drill | — | 600 | Хай-Фронт's optics (×1.5 in its land); the instrument that reads deposits finer (§3) |
 | 9 | **Антивещество в ловушке** | rim | gas giants past r = 40 — the scoop, with a trap in the hold | **perishable and dangerous**: loses 1 % a minute unless the reactor feeds the traps (energy drawn); a hull breach below 20 % detonates it — the cargo is gone and the hull takes a blow | 900 | the heaviest torpedo; a reactor's top tier; bought by every power's navy |
 | 10 | **Нейтронная крошка** | beyond (r > 50) | the smallest bodies around pulsars — the drill, the deepest | **heavy**: one unit takes five of the hold | 1 500 | доводка at a yard (shipyard §6) instead of a node; the heaviest armour |
@@ -91,19 +91,19 @@ the value of ~10–20 units of a deep good; a good deposit is 30–80 units; a �
 The trip pays when luck is average and makes a fortune when it is not — and a poor trip still pays
 its ticket in the frontier goods on the way.
 
-## 5. The queue — Р1–Р5
+## 5. The queue — M465–M469
 
-- **Р1 the table and the roll** — ten rows in `RES` with band, verb, property, price and eater
+- **M465 the table and the roll** — ten rows in `RES` with band, verb, property, price and eater
   line; the new salt; presence and lognormal richness per system; a Node suite: the distribution
   over 10 000 systems matches §3, and **no existing deposit or station changed** (the old salt's
   hashes before and after).
-- **Р2 reading and ЖИЛА** — the scanner's range by resolution; the жила's word, ДНЕВНИК line and the
+- **M466 reading and ЖИЛА** — the scanner's range by resolution; the жила's word, ДНЕВНИК line and the
   rumour after a сводка.
-- **Р3 prices by distance** — the ½ / 1 / 1.3 curve and the power eaters; heart markets list far goods
+- **M467 prices by distance** — the ½ / 1 / 1.3 curve and the power eaters; heart markets list far goods
   rarely.
-- **Р4 properties** — heavy (hold ×2, ×5), fragile (крошка on a hit), perishable and dangerous
+- **M468 properties** — heavy (hold ×2, ×5), fragile (крошка on a hit), perishable and dangerous
   (the trap's energy draw, the detonation below 20 % hull).
-- **Р5 eaters** — the shipyard densities (reactor, armour, shields, instruments; доводка by
+- **M469 eaters** — the shipyard densities (reactor, armour, shields, instruments; доводка by
   нейтронная крошка), greenhouses and дачники, the jewellers, the luxury counter, the navy's buy.
 
-Order with the others: Р1–Р3 before the mainline (М1–М6) is worth riding; Р4–Р5 with the shipyard.
+Order with the others: M465–M467 before the mainline (M470–M475) is worth riding; M468–M469 with the shipyard.
