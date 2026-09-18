@@ -57,7 +57,7 @@ abilKind                     src/16c-abil.js:26
 abilMul                      src/16c-abil.js:35-39
 abilOf                       src/16c-abil.js:27
 abilOn                       src/16c-abil.js:28
-abilPadRim                   src/16c-abil.js:96-106
+abilPadRim                   src/16c-abil.js:96-107
 abilReady01                  src/16c-abil.js:30-33
 abilTick                     src/16c-abil.js:85-93
 ACT_WEEK_MS                  src/05e-clearance.js:36
@@ -1346,7 +1346,7 @@ draftAll                     src/27jb-kb.js:24
 draftOf                      src/27jb-kb.js:26-42
 draftSave                    src/27jb-kb.js:43-47
 draftTowerAt                 src/27jb-kb.js:49-54
-drawAbil                     src/16c-abil.js:107-132
+drawAbil                     src/16c-abil.js:108-133
 drawAccel                    src/20aa-poi-shapes.js:143-166
 drawAccountShelf             src/12w-survey.js:99-115
 drawAllies                   src/12a-crew.js:678-695
@@ -2483,7 +2483,7 @@ hqWallProps                  src/27f-hq-room.js:170-216
 hqWindowView                 src/27f-hq-room.js:616-640
 hsAlive                      tests/91zzzzza-save-hostile.js:29-37
 hsMut                        tests/91zzzzza-save-hostile.js:20-27
-hud                          src/27z-telemetry.js:155-498
+hud                          src/27z-telemetry.js:155-499
 HUD_BAND                     src/27z-telemetry.js:21
 HUD_FLOOR                    src/27z-telemetry.js:31
 HUD_NUM                      src/08-state.js:91

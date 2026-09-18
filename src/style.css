@@ -764,6 +764,9 @@ body.inbelt .pads button[data-k=thrust]{font-size:14px}
 body.inbelt .pads button[data-k=act],
 body.inbelt .pads button[data-k=brake],
 body.inbelt .pads button[data-k=fire]{font-size:8px}
+/* в вагоне (M473): руля нет, остаётся одно ДЕЙСТВИЕ — ВЫЙТИ на остановке */
+body.inrail .pads button:not([data-k=act]){visibility:hidden;pointer-events:none}
+body.inrail #camBtn,body.inrail .rail{opacity:.25;pointer-events:none}
 
 /* узкий экран: поля панелей уже. Строки приборов (.v, .locus u) отсюда ушли
    (проход по каскаду 11.09): телефонный блок ≤760 стоит в файле ниже и

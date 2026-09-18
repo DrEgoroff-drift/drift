@@ -101,8 +101,9 @@ function abilPadRim(){
   const f=abilReady01(),deg=Math.round(f*360);
   /* D21: кольцо толще и с яркой головкой у конца дуги; готово — имя над кнопкой */
   const v=f>=1?"":"conic-gradient(rgba(242,178,92,.75) "+Math.max(0,deg-8)+"deg, #ffd9a0 "+deg+"deg, transparent 0)";
-  if(b.dataset.rim!==v){b.dataset.rim=v;b.style.setProperty("--abil",v||"none");b.classList.toggle("abil-cd",f<1);
-    const ok=f>=1&&G.mode==="system";b.classList.toggle("abil-ok",ok);if(ok)b.dataset.abil="ДОЛГОЕ · "+abilOf().ru;}
+  const ok=f>=1&&G.mode==="system",vk=v+(ok?"|ok":"");
+  if(b.dataset.rim!==vk){b.dataset.rim=vk;b.style.setProperty("--abil",v||"none");b.classList.toggle("abil-cd",f<1);
+    b.classList.toggle("abil-ok",ok);if(ok)b.dataset.abil="ДОЛГОЕ · "+abilOf().ru;}   /* режим входит в ключ: в вагоне подписи нет */
 }
 function drawAbil(zx,zy){
   /* D21: у каждой системы своё видимое (ФОРСАЖ — факел в trailStep) */

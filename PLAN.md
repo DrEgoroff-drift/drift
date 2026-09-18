@@ -159,7 +159,7 @@ job (the phone milestone), but no fix may add raster cost without a number.
   (osmium), sack with a sprout (chernozem), flask with filings (magdust), pearl in a shell,
   obsidian shard with one cold glint (dark glass), trap ring with a spark (antimatter), lead capsule
   with a yellow mark (neutron), amber chips. NOT done: the wheel spread (§4.4), the belt entry's
-  reading line, ЖИЛА across the screen.
+  reading line. ЖИЛА across the screen checked on the S23 18.09 — the orange stamp reads.
 - [~] **D14 The blueprint — the ОПИСЬ view done 18.09 on the S23.** `drawPlan` is now a синька:
   Prussian blue with millimetre grid, white-ink cell lines, the hull outline thick along the
   edges with no neighbour, the hold hatched, parts as ochre stamps with a kind letter
@@ -557,7 +557,7 @@ patchnote of each version names the M-numbers it closes.
 - **M470 The net** — names by owner (M489 rule) and «Край»; beyond r 60; the scheme as its own screen (КУДА ВАМ, M472); M449 names of arms and nebulae on the map.
 - **M471 The station in the system** — ~~six finishes of the vestibule by owner~~ (done 18.09: `#railWin[data-by]` — Компания white/blue glossy, Орднунг ruled form paper, Коммуна cream hand-drawn italic, Рассвет warm wood, Хай-Фронт dark glass mono; checked on the S23), the bare rim platform, helm assist in the cone.
 - **M472 The vestibule** — ПЕРЕСАДКА routing through junctions (only same-line rides now), split-flap turning, крупногабаритный ×3, the scheme unfolded on paper.
-- **M473 The ride** — the hyperdrive departure/arrival flash, the announcer's voice, held pad ×2, a save mid-ride (wakes at the origin now), the flight pads still shown in the carriage.
+- **M473 The ride** — the hyperdrive departure/arrival flash, the announcer's voice, held pad ×2, a save mid-ride (wakes at the origin now); ~~the flight pads still shown in the carriage~~ (done 18.09: `body.inrail` hides all pads but ДЕЙСТВИЕ/ВЫЙТИ; checked on the S23).
 - **M476 The plan, read-only** — unique/fused/NPC hulls in the suite; the hold's green is barely visible (синька in M477).
 - **M477 The КБ editor** — footprints 2/4 turning and the Орднунг «поворот не предусмотрен формуляром», the numbers strip with deltas (M478), ПРОЕКТЫ ×3, the foreign yard's bill per cell moved, ОСНАСТКА's hull section → КБ, the tray showing things from the hold.
 - [ ] **[design owed] M469 Eaters — the prices BUILT 18.09 (Control), `farEaterMul` in `12-economy`.** Besides the three land eaters (amber Коммуна, pearl Компания, darkglass Хай-Фронт ×1.5): yards pay he3 ×1.4, palladium ×1.3, osmium ×1.3, neutron ×1.4; osmium ×1.3 in ГЛАВТРАССА land, magdust ×1.5 in Орднунг land, chernozem ×1.5 in Рассвет land (the greenhouses — until дачники M493 exist), antimatter ×1.3 in any power's land. **Open:** the goods actually consumed by the yard's densities and доводка (M482), the luxury counter, the hotel shop. (Was only inside the M468 body — restored here when that body went to the archive.)
