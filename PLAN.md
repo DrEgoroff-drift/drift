@@ -166,7 +166,7 @@ job (the phone milestone), but no fix may add raster cost without a number.
   Prussian blue with millimetre grid, white-ink cell lines, the hull outline thick along the
   edges with no neighbour, the hold hatched, parts as ochre stamps with a kind letter
   (О Щ Д К Р У П М), «СОГЛАСОВАНО» double-boxed in the corner. Same brush serves the КБ. Left:
-  the turret on the back in flight (M479) — not judged.
+  ~~the turret on the back in flight (M479)~~ — judged 18.09 on the S23: the cross read as a sight; now a bolted barbette, a domed turret lit from one side, a mantlet and the barrel over the dome.
 - [~] **D15 Stage 5 voice — the tape done 18.09 on the S23.** The strip was grey on grey; now
   black electrical tape with a glossy edge, a shadow under it and a folded tip, slightly wider —
   reads at ×4.5. Left: the drone's name and quirk in the list.

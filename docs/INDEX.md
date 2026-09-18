@@ -2147,7 +2147,7 @@ GUN_NAMED_BY_ID              src/05b-guns.js:163
 GUN_NICK                     src/05b-guns.js:107
 GUN_RANGE0                   src/05c-arms.js:67
 gunAimTick                   src/05c-arms.js:174-188
-gunBarrelsDraw               src/05c-arms.js:260-295
+gunBarrelsDraw               src/05c-arms.js:260-309
 gunFactoryOf                 src/05b-guns.js:171
 gunFamilyApply               src/05c-arms.js:108-139
 gunFamilyKeyOf               src/05b-guns.js:170
@@ -2165,7 +2165,7 @@ gunsInGroup                  src/05c-arms.js:230-233
 gunSpec                      src/05c-arms.js:72-76
 gunSpecMake                  src/05c-arms.js:77-102
 gunSpecs                     src/05c-arms.js:207-218
-gunTotals                    src/05c-arms.js:296-310
+gunTotals                    src/05c-arms.js:310-324
 H_SILENT                     tests/91zzzzzzz-hands.js:39-41
 h01                          src/01-core.js:28
 HAIL_HOLD                    src/12ar-hail.js:20
@@ -5821,7 +5821,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/05b4-recall.js · 3 КБ
   · отзыв партии (M509, PLAN «new mechanics», st. 6):1
 
-## src/05c-arms.js · 20 КБ
+## src/05c-arms.js · 21 КБ
   · орудие в семи числах, щит в трёх повадках (M362, §2 §4):1
 
 ## src/05d-mounts.js · 5 КБ
