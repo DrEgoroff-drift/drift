@@ -101,8 +101,17 @@ our JS is 6–8 ms, the deadline is lost in the RASTER. In this order:
 3. **If the bake helps — bake the rest by the same rule** (GOTCHAS: bake what fills its box, never
    slivers): the other modes' still bodies (station, landing, belt), checked with the Designer's
    caller breakdown (`layers.js`). If it does not help — stop baking and say so here.
-4. **g11 on the laptop** — the one Stage-0 gate item nobody ran on 17–18.09 (`docs/g11.ps1`, needs
-   `docs/stand.ps1` on 8777, run with nothing else loading the CPU).
+4. ~~**g11 on the laptop**~~ — run 18.09 by Control, headless ×2, two runs per build:
+   | build | system | belt | landing | surface | the rest |
+   |---|---|---|---|---|---|
+   | main f68f5a8 | 46 · 44 | 60 · 58 | 32 · 32 | 26 · 24 | 55–60 |
+   | HEAD, hull bake off | 54 · 43 | 60 · 57 | 32 · 32 | 27 · 24 | 49–60 |
+   | HEAD, hull bake on | 44 · 60 | 49 · 57 | 25 · 23 | 26 · 25 | 59–60 |
+   **The gate (≥ 55 in every mode) fails in LANDING and SURFACE, and it failed before the evening
+   started** — main gives the same 32 and 24–26, so this is old, not a regression. The laptop's noise
+   (system 43–60 on one build) is too large to judge the hull bake; that is the phone's job. The
+   next frame work after the phone number: what eats landing and surface (the Designer's
+   `layers.js` breakdown there, as was done for the system).
 5. **Frame acceptance of the baked star core and hull** against the Designer's four risks: the
    star's pulsation and corona, the ship's lights and nozzles, a step at the baked picture's edge, a
    one-frame lag of the baked picture in rotation. Control's side-by-side at ×2 found none; a frame

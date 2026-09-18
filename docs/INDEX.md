@@ -1397,7 +1397,7 @@ drawRoad                     src/27l-road-draw.js:87-622
 drawRocks                    src/19-mode-landing-ground.js:294-386
 drawRouteMap                 src/12r-route.js:267-323
 drawRungRing                 src/12ae-ladder.js:72-87
-drawScoop                    src/19a-mode-scoop.js:266-593
+drawScoop                    src/19a-mode-scoop.js:266-597
 drawSeams                    src/12s-wear.js:184-199
 drawShuttleArc               src/17f-sys-traffic.js:36-69
 drawSkyBase                  src/19c-light.js:296-329
@@ -5882,7 +5882,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/19-mode-landing.js · 26 КБ
   · посадка:1
 
-## src/19a-mode-scoop.js · 38 КБ
+## src/19a-mode-scoop.js · 39 КБ
   · сбор летучих газов: заход в атмосферу гиганта:1
   · небо гиганта: полосы, а не лепёшки:172
 
