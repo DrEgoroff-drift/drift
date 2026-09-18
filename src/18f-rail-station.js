@@ -167,6 +167,7 @@ function railWinRender(){
 function railBuy(t,express,bus){
   if(!t||RAIL_WAIT)return;
   if(!bus&&typeof railDeclare==="function"&&!railDeclare(t))return;   /* Орднунг: сначала декларация (M474) */
+  if(typeof volRail==="function"&&!volRail())return;   /* животное без бумаг — проводник не пускает (M511) */
   const F=railFare(t);
   if(express){F.fare*=RAIL_EXPRESS_MUL;F.sum=F.fare+F.bag;}
   if(G.credits<F.sum){say("Не хватает на билет\nнужно "+F.sum+" кр",90);return;}

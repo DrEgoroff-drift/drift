@@ -36,3 +36,48 @@ TEST_SUITES.push(()=>suite("книжка: медкомиссия через 12 �
   ok(!recordBoardHere(),"второй раз не зовут");
   G.vega=null;G.record=null;
 }));
+
+/* ── M511: волокита ──
+   N не сообщается; документы по одному, у каждого свой чиновник; Орднунг в
+   трёх экземплярах, Коммуна на обеде; варенье ничего не меняет; последний
+   подписывает не глядя — и только у него имя; без бумаг не едут. */
+TEST_SUITES.push(()=>suite("волокита M511: бумаги на животное — по одной, никто не говорит сколько",()=>{
+  resetWorld();G.credits=5000;G.vol={};
+  G.beast={sx:0,sy:0,idx:0,sp:"Тестовый зверь",seed:777};
+  const A=volAnimals();eq(A.length,1,"зверь в клетке — животное на борту");
+  const a=A[0],P=volOf(a);
+  ok(P.need>=VOL_MIN&&P.need<=VOL_MAX,"N от 2 до 10: "+P.need);
+  ok(!volOk(a),"бумаг нет");
+  eq(volRail(),false,"проводник не пускает");
+  const c0=G.credits;eq(volBorder("or"),1,"пикет заметил");eq(G.credits,c0,"первый раз — махнул рукой");
+  volBorder("or");eq(G.credits,c0-VOL_FINE,"второй — штраф");
+  const own0=window.stampOwnerAt;
+  let guard=0;
+  while(!P.done&&guard++<60){
+    const N=volNext(a);
+    if(N.last){G.mode="dock";G.st={stype:"trade",by:"gt"};ok(volSign(a),"последний подписывает где угодно");break;}
+    G.mode="dock";G.st={stype:N.st,by:N.by};window.stampOwnerAt=()=>N.by;
+    let tries=0;
+    while(volNext(a)&&volNext(a).i===N.i&&tries++<5){
+      const r=volSign(a);
+      if(!r)clockAdvance(HOLD_SHIFT+1);   /* три экземпляра и обед — в другую смену */
+    }
+    ok(volNext(a)===null||volNext(a).i===N.i+1,"документ "+N.i+" подписан: "+N.ru);
+  }
+  window.stampOwnerAt=own0;
+  ok(P.done,"бумаги в порядке после "+P.docs.length+" подписей");
+  eq(P.docs.length,P.need,"ровно N — ни больше, ни меньше");
+  ok(!!P.docs[P.docs.length-1].name,"имя только у последней подписи: "+P.docs[P.docs.length-1].name);
+  ok(P.docs.slice(0,-1).every(d=>!d.name),"у остальных имени нет");
+  ok(volRail(),"с бумагами проводник пускает");
+  ok(thingsAll().some(t=>/Ветпаспорт/.test(t.ru)),"ветпаспорт в ВЕЩАХ");
+  G.beast={sx:0,sy:0,idx:0,sp:"Второй",seed:778};
+  const b=volAnimals()[0],Q=volOf(b);
+  eq(volFast(b),false,"без намёка не ускоряют");
+  Q.hint=1;const need=Q.need,cr=G.credits;
+  ok(volFast(b),"варенье передано");
+  eq(G.credits,cr-VOL_FAST,"варенье стоит "+VOL_FAST);
+  eq(Q.need,need,"и ничего не изменилось");
+  eq(Q.fast,1,"штамп «принято к сведению» лёг в стопку");
+  G.beast=null;G.mode="system";
+}));

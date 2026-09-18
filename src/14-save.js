@@ -56,7 +56,7 @@ function snapshot(){
     inv:G.inv.map(packPart),fit:G.fit,partsBought:prunePartsBought(),
     tech:[...G.tech],techLvl:G.techLvl,barter:[...G.barter],found:[...G.found],
     species:[...G.species],bioV:2,
-    opts:G.opts,zoom:G.zoom,market:G.market,uniqueShips:(typeof stapelStrip==="function")?stapelStrip(G.uniqueShips):G.uniqueShips,stapel:G.stapel||{},thrown:G.thrown||[],railParcel:G.railParcel||null,railPass:G.railPass||null,railSeal:G.railSeal?1:0,gosDone:G.gosDone||{},recalled:G.recalled||{},reg:G.reg||{},regWave:G.regWave?1:0,rush:G.rush||null,soc:G.soc||{},giantsSeen:G.giantsSeen||{},beast:G.beast||null,bazBought:G.bazBought||null,tow:G.tow,
+    opts:G.opts,zoom:G.zoom,market:G.market,uniqueShips:(typeof stapelStrip==="function")?stapelStrip(G.uniqueShips):G.uniqueShips,stapel:G.stapel||{},thrown:G.thrown||[],railParcel:G.railParcel||null,railPass:G.railPass||null,railSeal:G.railSeal?1:0,gosDone:G.gosDone||{},recalled:G.recalled||{},reg:G.reg||{},regWave:G.regWave?1:0,rush:G.rush||null,soc:G.soc||{},giantsSeen:G.giantsSeen||{},beast:G.beast||null,vol:G.vol||{},bazBought:G.bazBought||null,tow:G.tow,
     episodes:G.episodes,notebook:G.notebook,gifts:G.gifts,mslBy:G.mslBy,
     bonds:G.bonds,bondHold:G.bondHold,coupN:G.coupN,
     letter:G.letter||null,dipSwapN:G.dipSwapN,smugN:G.smugN,smugBy:G.smugBy,
@@ -221,6 +221,7 @@ function applySave(s){
   G.uniqueShips=asMap(s.uniqueShips);
   G.railParcel=(s.railParcel&&typeof s.railParcel==="object")?s.railParcel:null;G.railPass=(s.railPass&&typeof s.railPass==="object")?s.railPass:null;G.railSeal=s.railSeal?1:0;G.gosDone=asMap(s.gosDone);G.recalled=asMap(s.recalled);G.reg=asMap(s.reg);G.regWave=s.regWave?1:0;G.rush=(s.rush&&typeof s.rush==="object")?s.rush:null;G.soc=asMap(s.soc);G.giantsSeen=asMap(s.giantsSeen);   /* M499–M508 */
   G.beast=(s.beast&&typeof s.beast==="object")?{sx:s.beast.sx|0,sy:s.beast.sy|0,idx:s.beast.idx|0,sp:String(s.beast.sp||""),seed:s.beast.seed>>>0}:null;   /* зверь в клетке (M496) */
+  G.vol=asMap(s.vol);   /* волокита (M511) */
   G.thrown=Array.isArray(s.thrown)?s.thrown.slice(0,12):[];G.bazBought=(s.bazBought&&typeof s.bazBought==="object")?s.bazBought:null;   /* барахолка (M463) */
   G.stapel=asMap(s.stapel);if(typeof stapelRestore==="function")stapelRestore();   /* заказанные корпуса выводятся из заказа (M481) */
   G.tow=(s.tow&&typeof s.tow==="object")?s.tow:null;   /* корпус на тросе (M369b) */

@@ -669,7 +669,7 @@ material consequences are the part that does not exist yet — that is what stag
   only one that advertises): «льготы» are coupons that expire and points that convert into points;
   the cashier whispers «не вступайте». Several at once are allowed — the dues add up, the duties
   collide, and the desk shows the arithmetic.
-- **M511 Волокита — the paper chain** (st. 7, M496; the author 14.09: «надо прям заебать игрока
+- **M511 Волокита — BUILT 18.09 (Control), `src/12al5-vol.js`, test in `91zzp-record`.** Animals aboard (the caged beast of M496, the parrot) ride the rail and cross a border only with papers: N docs rolled 2–10 per animal and never told; the desk on the КНИЖКА page shows the pile as paper sheets (a tint per power, the «ПРИНЯТО К СВЕДЕНИЮ» stamp lilac, the one name on the last sheet), «собрано N · ещё документов: неизвестно», and names the next document and its office (official + power + station type by seed); Орднунг wants three copies in three shifts, the Коммуна official is at lunch until the next shift; after two docs the clerk whispers «можно ускорить» — jam for 60 кр adds a stamp and changes nothing; the last one signs anywhere, without reading, «ну сколько ж можно, летай уже», and gets a name; «Ветпаспорт» goes to ВЕЩИ. Without papers the conductor refuses the ride; the border picket waves once, then fines 40 кр. Phone-checked. Original: (st. 7, M496; the author 14.09: «надо прям заебать игрока
   бюрократией»). Any animal — the farm beast, **the parrot the player already has** — rides the train
   or crosses a border only with papers. The ПАЛАТА needs **N documents, N rolled 2–10** per animal
   and never told: справка о прививках · акт о некусаемости · выписка из реестра фауны · согласие

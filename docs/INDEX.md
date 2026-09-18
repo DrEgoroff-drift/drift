@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 590 · символов верхнего уровня: 5702
+Файлов: 591 · символов верхнего уровня: 5718
 
 ## СИМВОЛЫ
 
@@ -134,7 +134,7 @@ appetitePrice                src/12ab-hold.js:84
 applyCrewEvent               src/12b-crew-events.js:215-224
 applyPadMode                 src/15-input.js:72-75
 applyPadSize                 src/15-input.js:8
-applySave                    src/14-save.js:216-624
+applySave                    src/14-save.js:216-625
 applySaveRest                src/14a1-save-rest.js:15-386
 applyVolumes                 src/09-audio.js:40-47
 apVel                        src/16-flight.js:132
@@ -4041,10 +4041,10 @@ railArmAng                   src/18e-rail-net.js:103
 railAt                       src/18e-rail-net.js:112-120
 railBranchAng                src/18e-rail-net.js:51-54
 railBucket                   src/18i-rail-life.js:16
-railBuffet                   src/18f-rail-station.js:179-186
+railBuffet                   src/18f-rail-station.js:180-187
 railBuildLines               src/18e-rail-net.js:55-101
 railBusTalk                  src/18j-rail-rush.js:29-34
-railBuy                      src/18f-rail-station.js:167-178
+railBuy                      src/18f-rail-station.js:167-179
 railCatch                    src/18j-rail-rush.js:17-25
 railClosedWhy                src/18h-rail-powers.js:16-21
 railDeclare                  src/18h-rail-powers.js:23-33
@@ -4083,7 +4083,7 @@ railStation                  src/18e-rail-net.js:158-163
 railStep                     src/18e-rail-net.js:43
 railStopName                 src/18f-rail-station.js:99
 railStopsOf                  src/18e-rail-net.js:122-146
-railTick                     src/18f-rail-station.js:188-193
+railTick                     src/18f-rail-station.js:189-194
 railTrainPos                 src/18g-rail-ride.js:29-41
 railUAt                      src/18e-rail-net.js:105-110
 railWaitNow                  src/18f-rail-station.js:97
@@ -4250,7 +4250,7 @@ renderMail                   src/25k-post-mail.js:36-109
 renderOpts                   src/27-ui-ship.js:58-330
 renderPrices                 src/12aa-need.js:258-285
 renderQsl                    src/11an-qsl.js:160-201
-renderRecord                 src/11aa-record.js:86-108
+renderRecord                 src/11aa-record.js:86-109
 renderRelays                 src/11ap-relay.js:253-301
 renderRoute                  src/12r-route.js:349-448
 renderSiteTab                src/26c-ui-station-site.js:7-130
@@ -4941,11 +4941,11 @@ stallWho                     src/28-loop.js:122-130
 STAMP_ORDER                  src/17i-stamp.js:11
 STAMP_POEM                   src/17i-stamp.js:14
 STAMP_RU                     src/17i-stamp.js:12
-stampArrive                  src/17i-stamp.js:37-49
+stampArrive                  src/17i-stamp.js:37-50
 stampBook                    src/17i-stamp.js:22
 stampOwnerAt                 src/17i-stamp.js:16-21
-stampPage                    src/17i-stamp.js:63-90
-stampShow                    src/17i-stamp.js:51-61
+stampPage                    src/17i-stamp.js:64-91
+stampShow                    src/17i-stamp.js:52-62
 stampText                    src/17i-stamp.js:24-35
 STAPEL_PV                    src/26e1-stapel.js:124
 STAPEL_SIZE                  src/26e1-stapel.js:10-14
@@ -5448,6 +5448,22 @@ voiceOpts                    src/12pa-beacon.js:186-190
 voicePick                    src/12pa-beacon.js:198-206
 voiceSay                     src/12pa-beacon.js:217-228
 voiceTick                    src/12pa-beacon.js:253-255
+VOL_BY                       src/12al5-vol.js:27
+VOL_DOCS                     src/12al5-vol.js:16-25
+VOL_FAST                     src/12al5-vol.js:26
+volAll                       src/12al5-vol.js:28
+volAnimals                   src/12al5-vol.js:30-35
+volBlocked                   src/12al5-vol.js:111-114
+volBorder                    src/12al5-vol.js:124-132
+volFast                      src/12al5-vol.js:101-109
+volHere                      src/12al5-vol.js:54-57
+volNext                      src/12al5-vol.js:46-53
+volOf                        src/12al5-vol.js:36-43
+volOk                        src/12al5-vol.js:44
+volPage                      src/12al5-vol.js:134-168
+volRail                      src/12al5-vol.js:116-122
+volSign                      src/12al5-vol.js:70-99
+volWhy                       src/12al5-vol.js:59-69
 VOTE_MONTH                   src/12at-vote.js:15
 VOTE_Q                       src/12at-vote.js:16-20
 voteBlock                    src/12at-vote.js:108-146
@@ -6061,6 +6077,9 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/12al4-soc.js · 6 КБ
   · общества и льготы (M512, PLAN «new mechanics», st. 5):1
 
+## src/12al5-vol.js · 11 КБ
+  · волокита — бумаги на животное (M511, PLAN st. 7):1
+
 ## src/12am-chron-agents.js · 17 КБ
   · шесть агентов (M370, §7.5, §16.2 шаг 4):1
 
@@ -6473,7 +6492,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/18e-rail-net.js · 11 КБ
   · железная дорога: сеть (M470, docs/DESIGN-metro.md §2):1
 
-## src/18f-rail-station.js · 13 КБ
+## src/18f-rail-station.js · 14 КБ
   · станция железной дороги в системе и вестибюль (M471–M472, DESIGN-metro §3):1
 
 ## src/18g-rail-ride.js · 8 КБ
@@ -7175,7 +7194,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzo-island.js · 1 КБ
   · автотесты: Остров Забвения (M160):1
 
-## tests/91zzp-record.js · 3 КБ
+## tests/91zzp-record.js · 6 КБ
   · автотесты: трудовая книжка (M161):1
 
 ## tests/91zzq-institute.js · 3 КБ

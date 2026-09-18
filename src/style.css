@@ -1929,3 +1929,22 @@ body.table u.addr{color:#7a4a20}
 #albumLb .lb-fx,#albumLb .lb-acts{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
 #albumLb .chip{font:600 11px ui-monospace,monospace;letter-spacing:.1em;padding:8px 10px;min-height:44px;border:1px solid #6a5a44;background:none;color:#d9ccb0;border-radius:3px}
 #albumLb .chip.on{border-color:#f2b25c;color:#f2b25c}
+
+/* волокита (M511): стопка бумаг на столе — каждая подпись листом со своим оттенком державы,
+   «принято к сведению» лиловым штампом, единственное имя — на последнем листе */
+.li.vol span{display:block}
+.vol-pile{display:flex;flex-wrap:wrap;gap:4px 6px;margin:6px 0 4px}
+.vol-doc{position:relative;display:block;width:58px;height:40px;background:#efe8da;color:#2b2622;font-style:normal;
+  box-shadow:0 1px 2px rgba(0,0,0,.5),inset 0 0 0 1px rgba(0,0,0,.08);transform:rotate(-2deg);padding:4px 4px 0;box-sizing:border-box;overflow:hidden}
+.vol-doc:nth-child(2n){transform:rotate(1.5deg)}
+.vol-doc:nth-child(3n){transform:rotate(-.5deg)}
+.vol-doc s{display:block;text-decoration:none;font:400 6.5px/1.2 ui-monospace,monospace;letter-spacing:.02em;color:#3a3229}
+.vol-doc::after{content:"";position:absolute;right:5px;bottom:5px;width:14px;height:14px;border-radius:50%;border:1.5px solid rgba(140,40,40,.55);transform:rotate(12deg)}
+.vol-doc.vol-co{background:#fff;border-left:3px solid #1e4fb8}
+.vol-doc.vol-or{background:#f3efe4;background-image:repeating-linear-gradient(180deg,transparent 0 5px,rgba(90,110,150,.22) 5px 6px)}
+.vol-doc.vol-km{background:#f5ecd6}.vol-doc.vol-km s{font-style:italic}
+.vol-doc.vol-ra{background:#e9d9b8}
+.vol-doc.vol-hf{background:#2a2f36;color:#c8d2dc}.vol-doc.vol-hf s{color:#c8d2dc}.vol-doc.vol-hf::after{border-color:rgba(200,210,220,.4)}
+.vol-doc.vol-fast::after{content:"ПРИНЯТО К СВЕДЕНИЮ";width:auto;height:auto;border:1.5px solid rgba(110,70,160,.7);border-radius:2px;color:rgba(110,70,160,.85);
+  font:700 5px/1.1 ui-monospace,monospace;padding:1px 2px;left:4px;right:auto;bottom:4px;transform:rotate(-8deg)}
+.vol-doc[data-nm]::before{content:attr(data-nm);position:absolute;left:4px;bottom:3px;font:italic 6px ui-monospace,monospace;color:#1e2a80;transform:rotate(-6deg)}

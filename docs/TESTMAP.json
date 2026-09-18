@@ -81,7 +81,7 @@
   "tests/91zzm-letters.js": ["src/06-galaxy.js", "src/06a-celest.js", "src/08-state.js", "src/11b-speech.js", "src/12k-letters.js", "src/12ta-tin.js", "src/14-save.js", "src/26-ui-station.js"],
   "tests/91zzn-departure.js": ["src/06-galaxy.js", "src/06a-celest.js", "src/06b-region.js", "src/06c-regions.js", "src/08-state.js", "src/10-music.js", "src/11b-speech.js", "src/11x-expedition.js"],
   "tests/91zzo-island.js": ["src/06a-celest.js", "src/08-state.js", "src/11y-island.js", "src/14-save.js"],
-  "tests/91zzp-record.js": ["src/06-galaxy.js", "src/06a-celest.js", "src/06b-region.js", "src/06c-regions.js", "src/08-state.js", "src/11aa-record.js", "src/14-save.js", "src/27i-ui-table.js"],
+  "tests/91zzp-record.js": ["src/01-core.js", "src/06-galaxy.js", "src/06a-celest.js", "src/06b-region.js", "src/06c-regions.js", "src/08-state.js", "src/11aa-record.js", "src/12ab-hold.js", "src/12al5-vol.js", "src/14-save.js", "src/17i-stamp.js", "src/27i-ui-table.js", "src/28-loop.js"],
   "tests/91zzq-institute.js": ["src/06-galaxy.js", "src/06a-celest.js", "src/08-state.js", "src/11aa-record.js", "src/11ab-institute.js", "src/12a-crew.js", "src/14-save.js"],
   "tests/91zzr-trainee.js": ["src/06-galaxy.js", "src/06a-celest.js", "src/08-state.js", "src/11ac-trainee.js", "src/11b-speech.js", "src/11w-vega.js", "src/12j-home.js", "src/14-save.js"],
   "tests/91zzs-zoo.js": ["src/06-galaxy.js", "src/06a-celest.js", "src/06b-region.js", "src/06c-regions.js", "src/08-state.js", "src/11aa-record.js", "src/11ad-zoo.js", "src/12j-home.js", "src/14-save.js"],
