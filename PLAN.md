@@ -108,8 +108,8 @@ job (the phone milestone), but no fix may add raster cost without a number.
   run into the HUD; the author's length pick (A–D) never came, so this is the Designer's: the
   bright third ≈ 200 px at ×1. The stick's filled band .44 → .32 (it read as a solid cup on black).
   Test `кильватер` retuned to 700–1400 units.
-- [ ] **D3 ×1.5 in flight** (switch built, OFF): what it costs the sky (nebula a quarter darker) —
-  for the author's call.
+- [x] **D3 ×1.5 in flight — the author's call 18.09: «темнее не надо».** The switch stays OFF
+  (`G.opts.gfx.resByMode`); the sky keeps its light. Closed.
 
 **Stage 0b / 1 — the interface and the finger**
 - [x] **D4 The station header — checked on the S23 18.09.** One row and the paper СТОЛ tag were
@@ -138,14 +138,14 @@ job (the phone milestone), but no fix may add raster cost without a number.
   Коммуна board on its truss. Two things were too faint on the phone: the Компания screen drone
   was a 30×12 px colour crumb — ×1.35 now; the ГЛАВТРАССА spotlight cone .20 → .30. The post
   boards' lettering reads at ×1. km/ra/hf not re-judged this run.
-- [~] **D9 M453 the stamp — the empty page checked on the S23 18.09.** The eight dashed cells on
-  the paper read as a document page. The inked stamps (grain, tilt, the Компания slip) were not
-  in this save — judge them with a save that has stamps.
-- [~] **D10 M454 the station by its builder — core and panels done 18.09 on the S23** (six
+- [x] **D9 M453 the stamp — done 18.09 on the S23 (all eight forced into the book).** The page
+  reads as a document: tilted ink frames in each power's colour, the Компания slip as a white
+  paper, the ×N counters. Ink grain skipped — at phone size it would be noise.
+- [x] **D10 M454 the station by its builder — done 18.09 on the S23** (six
   captures with the ship re-placed by the orbiting station before each). The plate's ground went
   .12 → .2 and now reaches the core trunk (gradient mixed .3 with `makerGround`) and the solar
   panels (.22): Рассвет reads ochre, Компания white, Хай-Фронт pale, Коммуна blue-grey, Орднунг
-  dark. Left: the module boxes (green/blue) are still the same on all six.
+  dark; the trade containers and the indust hoppers take the ground too (.3). Done.
 - [x] **D11 M447/M448 the galaxy on the map — done 18.09 on the S23.** The home frame reads; at
   ×2.5 and ×5 the per-system glyph (halo, rays, station ring) stayed ×1-sized while the cell shrank
   to 9 px and a thousand glyphs made grey soup — the glyph now scales with the cell (`gk` =

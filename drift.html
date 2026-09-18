@@ -49040,7 +49040,7 @@ function drawStationBody(V,S,ty){
       const yy=-10+i*8,sx=(i%2?1:-1);
       ctx.beginPath();ctx.moveTo(sx*6,yy);ctx.lineTo(sx*20,yy);ctx.stroke();
       for(let j=0;j<2;j++){
-        ctx.fillStyle=j?"#1d2f42":"#243a2c";
+        ctx.fillStyle=stGround(j?[29,47,66]:[36,58,44],.3);   /* контейнеры в грунте строителя (D10) */
         ctx.beginPath();ctx.rect(sx*(11+j*6)-3,yy-3.2,6,6.4);ctx.fill();ctx.stroke();
       }
     }
@@ -49048,7 +49048,7 @@ function drawStationBody(V,S,ty){
   }else if(ty==="indust"){
     /* домны и факел: переработка видна снаружи — конвейеры, дым, огонь */
     stPanels(9,5);
-    ctx.strokeStyle="rgba(0,0,0,.45)";ctx.lineWidth=.8;ctx.fillStyle="#242c36";
+    ctx.strokeStyle="rgba(0,0,0,.45)";ctx.lineWidth=.8;ctx.fillStyle=stGround([36,44,54],.3);
     for(const sx of [-1,1]){
       ctx.beginPath();
       ctx.moveTo(sx*9,-8);ctx.lineTo(sx*24*V.a,-13);ctx.lineTo(sx*24*V.a,9);ctx.lineTo(sx*9,6);
