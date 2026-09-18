@@ -27,7 +27,7 @@ function kpDoor(){const H=kpHours(G.sx,G.sy);return "ЧАСЫ РАБОТЫ "+H[0
 function kpDue(o){return o.ready+(KP_KEEP+(o.kind?1:0))*KP_DAY;}
 /* посылка ещё на почте? (иначе ушла отправителю — на стапель) */
 function kpHolds(o){return !!(o&&now()>=o.ready&&now()<kpDue(o));}
-function kpTicket(o){return 11+hashi(o.no|0,G.sx,0x7A1)%60;}
+function kpTicket(o){return 11+(hashi(o.no|0,G.sx,0x7A1)>>>0)%60;}
 /* получить в окне */
 function kpTake(){
   const o=stapelAll().o;

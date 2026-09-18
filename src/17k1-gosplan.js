@@ -9,7 +9,7 @@ function gosBucket(){return Math.floor(now()/(HOLD_SHIFT*GOS_SHIFTS));}
 function gosPlan(){
   const sys=G.sys;if(!sys||!sys.station)return null;
   const B=(typeof bbHere==="function")?bbHere():null;if(!B||B.by!=="gt")return null;
-  const b=gosBucket(),h=hashi(G.sx,G.sy,b^0x6059);
+  const b=gosBucket(),h=hashi(G.sx,G.sy,b^0x6059)>>>0;   /* без знака: со знаком план выходил отрицательным (упал деплой 0.450.0 на Linux, где сдвиг часов дал другой bucket) */
   const pool=TRADE_KEYS.filter(k=>RES[k]&&!RES[k].pax&&k!=="folk").concat(typeof FAR_KEYS!=="undefined"?FAR_KEYS:[]);
   const k=pool[h%pool.length],far=!!(RES[k].far);
   const n=far?5+(h>>4)%16:20+(h>>4)%31;
@@ -28,7 +28,7 @@ function gosDeliver(){
   earn(P.n*P.price,"plan");
   if(!G.gosDone)G.gosDone={};G.gosDone[P.key]=1;
   const R=(typeof recordAll==="function")?recordAll():null;if(R)R.udar=(R.udar|0)+1;
-  const pct=101+hashi(G.sx,G.sy,gosBucket())%7;
+  const pct=101+(hashi(G.sx,G.sy,gosBucket())>>>0)%7;
   logAdd("good","Госзаказ сдан: "+RES[P.k].ru.toLowerCase()+" ×"+P.n+" · +"+(P.n*P.price).toLocaleString("ru")+" кр · КНИЖКА: «УДАРНИК»");
   logAdd("dim","Сводка "+P.svodka+": план по станции «"+G.st.name+"» выполнен на "+pct+" %");
   return true;
