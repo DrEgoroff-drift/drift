@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 580 · символов верхнего уровня: 5609
+Файлов: 581 · символов верхнего уровня: 5613
 
 ## СИМВОЛЫ
 
@@ -3570,6 +3570,10 @@ passDraw                     src/11p-pass.js:64-86
 passGroundLine               src/11p-pass.js:38-46
 passIsCore                   src/11p-pass.js:32
 passLight                    src/11p-pass.js:49-54
+PASSPORT_KEYS                src/17i1-passport.js:6
+passportDue                  src/17i1-passport.js:7-10
+passportIssue                src/17i1-passport.js:12-19
+passportOn                   src/17i1-passport.js:11
 passShipX                    src/11p-pass.js:34-37
 passTell                     src/11p-pass.js:55-60
 PAX_KEYS                     src/02-world.js:115
@@ -3985,31 +3989,31 @@ railBuffet                   src/18f-rail-station.js:173-179
 railBuildLines               src/18e-rail-net.js:55-101
 railBuy                      src/18f-rail-station.js:161-172
 railClosedWhy                src/18h-rail-powers.js:16-21
-railDeclare                  src/18h-rail-powers.js:23-32
+railDeclare                  src/18h-rail-powers.js:23-33
 railDestinations             src/18f-rail-station.js:101-114
 railDocked                   src/18f-rail-station.js:86-93
 railExit                     src/18g-rail-ride.js:71-82
 railFare                     src/18f-rail-station.js:115-121
 railFmt                      src/18f-rail-station.js:97
 railHere                     src/18f-rail-station.js:24-30
-railHfPauseAt                src/18h-rail-powers.js:34-37
+railHfPauseAt                src/18h-rail-powers.js:35-38
 railInteract                 src/18f-rail-station.js:67-85
 railInterval                 src/18f-rail-station.js:95
 railLen                      src/18e-rail-net.js:49
 railLifeBind                 src/18i-rail-life.js:73-78
-railLifeBoard                src/18i-rail-life.js:82-88
-railLifeExit                 src/18i-rail-life.js:99-107
+railLifeBoard                src/18i-rail-life.js:84-90
+railLifeExit                 src/18i-rail-life.js:101-109
 railLifeHtml                 src/18i-rail-life.js:56-72
-railLifeStop                 src/18i-rail-life.js:90-97
+railLifeStop                 src/18i-rail-life.js:92-99
 railNearest                  src/18e-rail-net.js:32-42
 railNet                      src/18e-rail-net.js:147-156
 railNetPartial               src/18e-rail-net.js:168-179
 railOwner                    src/18h-rail-powers.js:14
-railOwnerAt                  src/18h-rail-powers.js:38
+railOwnerAt                  src/18h-rail-powers.js:39
 railParcelOffer              src/18i-rail-life.js:32-39
 railParcelTake               src/18i-rail-life.js:40-45
 railPassBuy                  src/18i-rail-life.js:24-30
-railPassFare                 src/18i-rail-life.js:80
+railPassFare                 src/18i-rail-life.js:80-90
 railPassOn                   src/18i-rail-life.js:18
 railPassPrice                src/18i-rail-life.js:19-23
 railPaxOffer                 src/18i-rail-life.js:50-54
@@ -4849,11 +4853,11 @@ stallWho                     src/28-loop.js:122-130
 STAMP_ORDER                  src/17i-stamp.js:11
 STAMP_POEM                   src/17i-stamp.js:14
 STAMP_RU                     src/17i-stamp.js:12
-stampArrive                  src/17i-stamp.js:37-48
+stampArrive                  src/17i-stamp.js:37-49
 stampBook                    src/17i-stamp.js:22
 stampOwnerAt                 src/17i-stamp.js:16-21
-stampPage                    src/17i-stamp.js:62-83
-stampShow                    src/17i-stamp.js:50-60
+stampPage                    src/17i-stamp.js:63-84
+stampShow                    src/17i-stamp.js:51-61
 stampText                    src/17i-stamp.js:24-35
 STAPEL_PV                    src/26e1-stapel.js:123
 STAPEL_SIZE                  src/26e1-stapel.js:10-14
@@ -6303,6 +6307,9 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## src/17i-stamp.js · 5 КБ
   · отметка о проезде: штамп на границе (M453, DESIGN-borders §2.2):1
+
+## src/17i1-passport.js · 2 КБ
+  · дипломатический паспорт (M505, PLAN «new mechanics», st. 5):1
 
 ## src/17j-cheburek.js · 3 КБ
   · «Чебуречная» — лодка на подъезде (M462, DESIGN-life §3.4):1

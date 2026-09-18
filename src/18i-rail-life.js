@@ -77,7 +77,9 @@ function railLifeBind(w){
   if(q(".rw-pax"))q(".rw-pax").onclick=()=>{RAIL_LIFE.pax=railPaxOffer();logAdd("dim","Попутчик: "+RAIL_LIFE.pax.who+" — «спасибо, я тихо»");railWinRender();};
 }
 /* ── касса: проездной обнуляет билет (багаж платится) ── */
-function railPassFare(F){if(railPassOn()&&!F.metro){F.fare=0;F.sum=F.bag;F.pass=1;}return F;}
+function railPassFare(F){
+  if(typeof passportOn==="function"&&passportOn()){F.fare=0;F.sum=F.bag;F.passport=1;return F;}   /* паспорт — даром везде (M505) */
+  if(railPassOn()&&!F.metro){F.fare=0;F.sum=F.bag;F.pass=1;}return F;}
 /* ── посадка: отметка проездного, билет попутчика, пломба Орднунга ── */
 function railLifeBoard(t,F){
   if(F&&F.pass){G.railPass.rides=(G.railPass.rides|0)+1;

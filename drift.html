@@ -49727,6 +49727,7 @@ function stampArrive(fromBy){
   e.v=(e.v|0)+1;
   stampShow(by,had?{d:celDay(),t:G.t,sx:G.sx,sy:G.sy}:e);
   if(!had&&typeof recordAdd==="function")recordAdd(STAMP_RU[by],"отметка о проезде — "+stampText(by,e).join(" · "));
+  if(!had&&typeof passportIssue==="function")passportIssue();   /* седьмая отметка — паспорт (M505) */
   return by;
 }
 /* ── штамп через экран: DOM на бумаге, 1.2 с ── */
@@ -49763,6 +49764,26 @@ function stampPage(box){
     g.appendChild(c);
   }
   box.appendChild(g);
+}
+
+/* ══════════════ дипломатический паспорт (M505, PLAN «new mechanics», st. 5) ══════════════
+   Все шесть пограничных отметок и отметка Ялты в КНИЖКЕ — и замполит выдаёт
+   паспорт: неделю (семь смен) дороги всех шести держав возят даром, а форма
+   Орднунга задаёт на один вопрос меньше — декларация без второго нажатия.
+   Паспорт выдаётся один раз (R.pass = {at, until}). */
+const PASSPORT_KEYS=["gt","co","or","km","ra","hf","yalta"],PASSPORT_LIFE=7;
+function passportDue(){
+  const R=(typeof stampBook==="function")?stampBook():null;
+  return !!(R&&!R.pass&&PASSPORT_KEYS.every(k=>R.st[k]));
+}
+function passportOn(){const R=(typeof recordAll==="function")?recordAll():null;return !!(R&&R.pass&&now()<R.pass.until);}
+function passportIssue(){
+  if(!passportDue())return false;
+  const R=stampBook();R.pass={at:celDay(),until:now()+PASSPORT_LIFE*HOLD_SHIFT};
+  if(typeof recordAdd==="function")recordAdd("замполит","выдан дипломатический паспорт: все шесть держав и Ялта отмечены. Годен на неделю.");
+  logAdd("good","Дипломатический паспорт · неделю дороги даром · Орднунг спрашивает на вопрос меньше");
+  if(typeof say==="function")say("Дипломатический паспорт\nзамполит: «Вы у нас теперь человек мира»",220);
+  return true;
 }
 
 /* ══════════════ «Чебуречная» — лодка на подъезде (M462, DESIGN-life §3.4) ══════════════
@@ -53380,6 +53401,7 @@ function railClosedWhy(){
 /* Орднунг: первое нажатие — декларация, второе — посадка */
 function railDeclare(t){
   if(railOwner()!=="or")return true;
+  if(typeof passportOn==="function"&&passportOn())return true;   /* паспорт: на вопрос меньше (M505) */
   const key=t.l.id+":"+t.i1;
   if(RAIL_DECL===key)return true;
   RAIL_DECL=key;
@@ -53474,7 +53496,9 @@ function railLifeBind(w){
   if(q(".rw-pax"))q(".rw-pax").onclick=()=>{RAIL_LIFE.pax=railPaxOffer();logAdd("dim","Попутчик: "+RAIL_LIFE.pax.who+" — «спасибо, я тихо»");railWinRender();};
 }
 /* ── касса: проездной обнуляет билет (багаж платится) ── */
-function railPassFare(F){if(railPassOn()&&!F.metro){F.fare=0;F.sum=F.bag;F.pass=1;}return F;}
+function railPassFare(F){
+  if(typeof passportOn==="function"&&passportOn()){F.fare=0;F.sum=F.bag;F.passport=1;return F;}   /* паспорт — даром везде (M505) */
+  if(railPassOn()&&!F.metro){F.fare=0;F.sum=F.bag;F.pass=1;}return F;}
 /* ── посадка: отметка проездного, билет попутчика, пломба Орднунга ── */
 function railLifeBoard(t,F){
   if(F&&F.pass){G.railPass.rides=(G.railPass.rides|0)+1;

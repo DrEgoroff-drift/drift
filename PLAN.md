@@ -613,7 +613,7 @@ material consequences are the part that does not exist yet — that is what stag
   price for whoever delivers, a КНИЖКА stamp «УДАРНИК», the сводка reports «план выполнен на 103 %».
 - **M504 Ажиотаж** (st. 3, M466 + M474): after a ЖИЛА rumour the line adds a train to that stop «по
   многочисленным просьбам трудящихся», the полустанок's prices spike, the approach fills.
-- **M505 Дипломатический паспорт** (st. 5, M453): all six border stamps + Ялта's → the замполит issues
+- **M505 Дипломатический паспорт** — BUILT 18.09 `17i1-passport` [design owed]: the seventh first stamp (six powers + Ялта) issues it once (`R.pass`), 7 смен: every fare 0 incl. metro, Орднунг declares on the first press. (st. 5, M453): all six border stamps + Ялта's → the замполит issues
   a passport: free rides for a week, and the Орднунг form asks one question fewer.
 - **M506 Покупки за рубежом** (st. 4, M480): a part bought in a power's land carries that yard's habit
   (an Орднунг shield is front-heavy, a Коммуна turret turns wider) — shopping abroad matters.

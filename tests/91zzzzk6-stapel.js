@@ -252,3 +252,14 @@ TEST_SUITES.push(()=>suite("госзаказ на щите: план, твёрд
   eq(recordAll().udar|0,u0+1,"в КНИЖКЕ — УДАРНИК");
   ok(gosPlan().done&&gosBbLine()===null,"по этой сводке план закрыт");
 }));
+TEST_SUITES.push(()=>suite("дипломатический паспорт: семь отметок, дорога даром (M505)",()=>{
+  resetWorld();
+  const R=stampBook();
+  for(const k of PASSPORT_KEYS.slice(0,6))R.st[k]={d:1,t:1,sx:0,sy:0,v:1};
+  ok(!passportDue(),"без Ялты — нет");
+  R.st.yalta={d:1,t:1,sx:0,sy:0,v:1};
+  ok(passportDue()&&passportIssue()&&passportOn(),"семь отметок — паспорт выдан");
+  ok(!passportIssue(),"второй раз не выдают");
+  const F=railPassFare({fare:30,bag:2,sum:32,metro:true});
+  eq(F.fare,0,"по паспорту — даром, даже метро");
+}));

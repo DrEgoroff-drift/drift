@@ -22,6 +22,7 @@ function railClosedWhy(){
 /* Орднунг: первое нажатие — декларация, второе — посадка */
 function railDeclare(t){
   if(railOwner()!=="or")return true;
+  if(typeof passportOn==="function"&&passportOn())return true;   /* паспорт: на вопрос меньше (M505) */
   const key=t.l.id+":"+t.i1;
   if(RAIL_DECL===key)return true;
   RAIL_DECL=key;

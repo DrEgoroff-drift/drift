@@ -44,6 +44,7 @@ function stampArrive(fromBy){
   e.v=(e.v|0)+1;
   stampShow(by,had?{d:celDay(),t:G.t,sx:G.sx,sy:G.sy}:e);
   if(!had&&typeof recordAdd==="function")recordAdd(STAMP_RU[by],"отметка о проезде — "+stampText(by,e).join(" · "));
+  if(!had&&typeof passportIssue==="function")passportIssue();   /* седьмая отметка — паспорт (M505) */
   return by;
 }
 /* ── штамп через экран: DOM на бумаге, 1.2 с ── */
