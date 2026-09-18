@@ -59,13 +59,22 @@ function laneBuoySprite(){
   const R=LANE_BUOY.R,SS=LANE_BUOY.SS,cv=document.createElement("canvas");
   cv.width=cv.height=R*2*SS;
   const c=cv.getContext("2d");c.scale(SS,SS);c.translate(R,R);
-  c.fillStyle="#1d242e";c.strokeStyle="rgba(0,0,0,.7)";c.lineWidth=.7;
-  c.beginPath();c.moveTo(-3,-6);c.lineTo(3,-6);c.lineTo(4,5);c.lineTo(-4,5);c.closePath();c.fill();c.stroke();
-  c.fillStyle="rgba(190,212,232,.45)";c.fillRect(-3.4,-1,.9,5);          /* кромка с солнечной стороны */
-  c.fillStyle="#2b3440";c.fillRect(-4.5,5,9,1.6);                           /* пояс */
-  c.strokeStyle="rgba(150,164,180,.55)";c.lineWidth=.6;                     /* ферма к огню */
-  c.beginPath();c.moveTo(-1.5,-6);c.lineTo(0,-10);c.lineTo(1.5,-6);c.stroke();
-  c.fillStyle="#3a444f";c.beginPath();c.arc(0,-10.5,1.6,0,TAU);c.fill();   /* колпак огня */
+  /* D7 (телефон 18.09): тёмный цилиндр с огнём сбоку читался мусорным баком.
+     Бакен — прибор, и у него знаки прибора: светлый корпус с тенью на одной
+     стороне, ЧЁРНО-ЖЁЛТЫЙ пояс (знак «бакен» у всех флотов), катафот и крест
+     радарного отражателя над фермой; огонь — на мачте, в клетке */
+  c.fillStyle="#3b4553";c.strokeStyle="rgba(0,0,0,.75)";c.lineWidth=.7;
+  c.beginPath();c.moveTo(-3.6,-5);c.lineTo(3.6,-5);c.lineTo(4.4,6);c.lineTo(-4.4,6);c.closePath();c.fill();c.stroke();
+  c.fillStyle="rgba(0,0,0,.35)";c.beginPath();c.moveTo(.6,-5);c.lineTo(3.6,-5);c.lineTo(4.4,6);c.lineTo(1.2,6);c.closePath();c.fill();   /* тень на теневой стороне */
+  c.fillStyle="rgba(210,226,240,.55)";c.fillRect(-3.6,-4.4,1,10);          /* кромка с солнечной стороны */
+  for(let i=0;i<4;i++){c.fillStyle=i%2?"#e8b830":"#161a20";c.fillRect(-4+i*2,0,2.1,2.2);}   /* пояс: жёлтое с чёрным */
+  c.fillStyle="rgba(255,120,90,.9)";c.fillRect(-1.2,3.2,2.4,1.4);          /* катафот */
+  c.fillStyle="#2b3440";c.fillRect(-4.8,6,9.6,1.6);                          /* башмак */
+  c.strokeStyle="rgba(170,184,200,.8)";c.lineWidth=.7;                      /* мачта и ферма */
+  c.beginPath();c.moveTo(-2,-5);c.lineTo(0,-9);c.lineTo(2,-5);c.moveTo(0,-9);c.lineTo(0,-11.5);c.stroke();
+  c.beginPath();c.moveTo(-2.2,-7.6);c.lineTo(2.2,-7.6);c.stroke();          /* крест отражателя */
+  c.strokeStyle="rgba(200,214,228,.7)";c.lineWidth=.5;                      /* клетка огня */
+  c.beginPath();c.arc(0,-11.5,2,0,TAU);c.stroke();
   return LANE_BUOY.cv=cv;
 }
 function laneLampCol(by){
@@ -93,9 +102,9 @@ function drawSysLane(zx,zy,Z){
     ctx.drawImage(sp,-R,-R,R*2,R*2);
     ctx.restore();
     const k=Math.max(0,1-Math.abs(b.i-lead)*1.4);
-    const lx=x+Math.cos(na-Math.PI/2)*10.5*s,ly=y+Math.sin(na-Math.PI/2)*10.5*s;
+    const lx=x+Math.cos(na-Math.PI/2)*11.5*s,ly=y+Math.sin(na-Math.PI/2)*11.5*s;
     ctx.globalAlpha=.35+.65*k;
-    glowBlit(glow,lx,ly,(8+14*k)*s);
+    glowBlit(glow,lx,ly,(7+22*k)*s);   /* D7: гребень крупнее — огни посадочной полосы, а не искры */
     ctx.globalAlpha=1;
     ctx.fillStyle=rgba(mixc(col,[255,255,255],.5),.5+.5*k);     /* сама лампа — точка, видна и в паузе */
     ctx.beginPath();ctx.arc(lx,ly,Math.max(1,1.3*s),0,TAU);ctx.fill();

@@ -1490,8 +1490,8 @@ drawSurfaceHud               src/21e-surface-draw.js:21-115
 drawSurfaceWorld             src/21e1-surface-world.js:10-615
 drawSurvey                   src/12w-survey.js:63-89
 drawSysHud                   src/17-mode-system.js:748-995
-drawSysLane                  src/17g-sys-lane.js:75-103
-drawSysLaneShips             src/17g-sys-lane.js:112-138
+drawSysLane                  src/17g-sys-lane.js:84-112
+drawSysLaneShips             src/17g-sys-lane.js:121-147
 drawSysNebula                src/16a-space.js:208-236
 drawSysRail                  src/18f-rail-station.js:32-65
 drawSystem                   src/17-mode-system.js:459-747
@@ -2739,10 +2739,10 @@ LANE_Q_MAX                   src/17g-sys-lane.js:17
 LANE_RU                      src/26-ui-station.js:389
 LANE_RX                      src/26-ui-station.js:385-388
 LANE_W                       src/17g-sys-lane.js:14
-laneBuoySprite               src/17g-sys-lane.js:57-70
-laneLampCol                  src/17g-sys-lane.js:71-74
+laneBuoySprite               src/17g-sys-lane.js:57-79
+laneLampCol                  src/17g-sys-lane.js:80-83
 laneLife                     src/17g-sys-lane.js:27-31
-laneShip                     src/17g-sys-lane.js:105-111
+laneShip                     src/17g-sys-lane.js:114-120
 last                         src/28-loop.js:107
 LAST_RUN_DAY                 src/12k-letters.js:40
 lastDroneTick                src/28-loop.js:108
@@ -6358,7 +6358,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/17f-sys-traffic.js · 5 КБ
   · трафик системы: чужие машины, которым тут есть дело (M309):1
 
-## src/17g-sys-lane.js · 8 КБ
+## src/17g-sys-lane.js · 10 КБ
   · подъезд: полоса от входа в систему к доку (M459, DESIGN-life §2–3.1):1
 
 ## src/17h-sys-gesture.js · 13 КБ

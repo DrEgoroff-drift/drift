@@ -128,8 +128,11 @@ job (the phone milestone), but no fix may add raster cost without a number.
   and the orbit body kept in frame — they need a run to the system's edge; next phone session.
 
 **Stage 2 — whose land**
-- [ ] **D7 M459 the approach**: buoys read as bins/debris — a real buoy; the chase must read as
-  runway lights; the queue ships' size and order against the station.
+- [x] **D7 M459 the approach — done 18.09 on the S23.** The buoy was a dark cylinder with a lamp
+  beside it — a bin. Now an instrument: lit body with a shaded side, black-and-yellow belt, red
+  reflector, mast with a radar cross and the lamp in a cage; the lead lamp's glow 8+14 → 7+22 so
+  the chase reads as runway lights. Queue ships against the station (≈¼ of it) read right; the
+  order — ellipse, one landing, one leaving — left as built.
 - [ ] **D8 M452 the gesture ×6 and the post**: each power's gesture as its character (spotlight,
   screen drone, scan line, empty buoy, tug, camera eye); the post boards' lettering.
 - [ ] **D9 M453 the stamp**: six papers across the screen and on the КНИЖКА page — ink grain,
