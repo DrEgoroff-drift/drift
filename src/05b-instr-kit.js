@@ -159,6 +159,7 @@ function instrBuy(off){
   if(G.credits<price)return false;
   G.credits-=price;
   instrInstall(off.id,off.u);
+  if(typeof warrantyGive==="function")warrantyGive(instrKit()[off.id]);   /* фирменный — с гарантией (M495) */
   const T=instrTraits(off.u);
   tell("money",INSTR_BY_ID[off.id].ru+" · "+T.ru+" · −"+price.toLocaleString("ru")+" кр",
        INSTR_BY_ID[off.id].ru+"\n"+T.ru);

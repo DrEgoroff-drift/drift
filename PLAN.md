@@ -488,7 +488,7 @@ patchnote of each version names the M-numbers it closes.
   (the first hour's ДО 50 % button, anywhere); leaves a grey **tape strip drawn on the hull** where
   used (a scar until a yard repair); the trait **«кулибин»** on a hand/manager: tapes free from scrap,
   holds 60 %, «заматывает так, что не видно». Рассвет's yard treats tape as a finish.
-- [ ] **[design owed] M495 The triangle — гарантия / техподдержка / изолента** (§4.1). Firm parts (Компания,
+- [ ] **[design owed] M495 The triangle — BUILT on instruments 18.09 (Control), `src/05b1-warranty.js`.** Only instruments break in the game (`instrKnock`), so the triangle lives there: firm instruments («Сирин», «Веха») carry 12 shifts of warranty from purchase; a broken one shows in ОПИСЬ with ТЕХПОДДЕРЖКА (an ether call «ваш звонок очень важен для нас», queue № 37 melting with game time and once back to 41, 1–3 shifts, then new and free — «оцените нашу работу от одного до одного») and ИЗОЛЕНТА (a roll, now, half, «гарантия аннулирована: обнаружены следы изоленты»); the yard stays `instrFix`. **Open:** parts do not break — the design's «Компания / Хай-Фронт parts» need a part-failure mechanic first; the bar of hold music; the old master's free seam. Original: (§4.1). Firm parts (Компания,
   Хай-Фронт) carry «гарантия 12 сводок» in ОПИСЬ. Broken: **ТЕХПОДДЕРЖКА** — an эфир call, «ваш
   звонок очень важен для нас», one bar of hold music (`10-music`), a queue number counting down in
   game time (37 → … and once back to 41), repair to 100 % in 1–3 сводки, free, the part dead

@@ -161,6 +161,7 @@ function opisPlanBlock(){
     else{const e=document.createElement("s");e.className="chalk";e.textContent=tapeRolls()?"корпус выше половины — мотать рано":"рулонов нет · продаётся у ремонта на станции";t.appendChild(e);}
     wrap.appendChild(t);
   }
+  if(typeof warrantyBlock==="function"){const wb=warrantyBlock();if(wb)wrap.appendChild(wb);}   /* разбитые приборы: три дороги (M495) */
   wrap.appendChild(opisPlanOnly());
   return wrap;
 }

@@ -106,3 +106,15 @@ TEST_SUITES.push(()=>suite("изолента: до половины где уг�
   eq(tapesOf(),0,"верфь сняла полосу");
   G.tapes={};G.tapeRoll=0;
 }));
+TEST_SUITES.push(()=>suite("гарантия / техподдержка / изолента (M495)",()=>{
+  resetWorld();
+  const id=Object.keys(instrKit())[0],u=instrUnit(id);
+  u.w="sirin";warrantyGive(u);u.wear=1;
+  ok(warrantyOn(u)&&instrBroken(u),"фирменный прибор разбит и на гарантии");
+  ok(supportCall(id),"звонок в поддержку");eq(supportQueue(u),37,"вы тридцать седьмой");
+  clockAdvance(u.ts.until-now()+1000);supportTick();
+  eq(u.wear,0,"заявка решена — прибор как новый, даром");
+  u.wear=1;G.tapeRoll=1;ok(instrTape(id),"изолента: сейчас");
+  eq(u.wear,.5,"вполсилы");ok(!warrantyOn(u),"гарантия аннулирована: следы изоленты");
+  u.w="kazenny";u.wr=0;u.tp=0;u.wear=0;G.tapeRoll=0;
+}));
