@@ -12153,15 +12153,15 @@ function radioBellVoice(t,fr,len,dst,peak){
    тише и глуше предыдущего; сухого сигнала почти нет, всё уходит в зал и задержку */
 function radioBeacon(t,key,cd){
   const r=RADIO.r,c=SND.ctx;
-  const midi=key+36+radioDeg([0,2,4,7,9,11,14][Math.floor(r()*7)]);
+  const midi=key+24+radioDeg([0,2,4,7][Math.floor(r()*4)]);   // октавой ниже: середина, не верх
   const fr=midiHz(midi),gap=1+r()*.4;
   const wob=c.createOscillator(),wg=c.createGain();wob.frequency.value=.25+r()*.2;wg.gain.value=fr*.004;wob.connect(wg);
-  const dry=c.createGain();dry.gain.value=.35;dry.connect(RADIO.bus);
+  const dry=c.createGain();dry.gain.value=.25;dry.connect(RADIO.bus);
   for(let k=0;k<6;k++){
-    const tk=t+k*gap,v=[.11,.06,.035,.02,.012,.007][k];
+    const tk=t+k*gap,v=[.04,.022,.013,.008,.005,.003][k];
     const o=c.createOscillator(),g=c.createGain(),f=c.createBiquadFilter(),p=c.createStereoPanner();
     o.type="sine";o.frequency.value=fr;wg.connect(o.frequency);
-    f.type="lowpass";f.frequency.value=[1300,950,750,600,480,400][k];f.Q.value=.8;
+    f.type="lowpass";f.frequency.value=[900,700,560,450,380,320][k];f.Q.value=.8;
     p.pan.value=(k%2?-.5:.5)*(.3+r()*.5);
     g.gain.setValueAtTime(.0001,tk);g.gain.exponentialRampToValueAtTime(v,tk+.09);
     g.gain.setValueAtTime(v,tk+.5);g.gain.exponentialRampToValueAtTime(.0001,tk+.5+2.2);
