@@ -102,3 +102,14 @@ TEST_SUITES.push(()=>suite("новости противоречат друг д�
   ok(/спокойно/.test(L[0]),"Маяк: на трассе спокойно");
   G.episodes=[];G.notebook=[];
 }));
+TEST_SUITES.push(()=>suite("гостиница: ночь за деньги, ниже трети — даром (M461)",()=>{
+  resetWorld();
+  let Ht=null;
+  for(let sx=-8;sx<=8&&!Ht;sx++)for(let sy=-8;sy<=8&&!Ht;sy++){const s=getSystem(sx,sy);if(!s.station)continue;G.sx=sx;G.sy=sy;G.sys=s;Ht=hotelHere();}
+  ok(!!Ht,"у людной станции есть гостиница");
+  const hm=stat().hullMax;G.hull=hm*.8;G.credits=100;hotelDesk(Ht);
+  eq(G.credits,100-HOTEL_NIGHT,"ночь стоит денег");
+  G.hull=hm*.2;G.credits=100;hotelDesk(Ht);
+  eq(G.credits,100,"корпус ниже трети — даром, «потом заплатите»");
+  ok(G.hull>hm*.2,"и за ночь корпус подтянулся");
+}));

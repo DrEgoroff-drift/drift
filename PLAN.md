@@ -516,7 +516,7 @@ patchnote of each version names the M-numbers it closes.
   спокойно», Компания «партнёр обеспечил безопасность перевозок™», Хай-Фронт «инцидент не
   зафиксирован»); the player alone knows. **P12:** ЭФИР (92 rows, 50 distinct, events drowned) —
   events first, chatter folded, the six waves' contradictions as its spine.
-- [ ] **[design owed] M461 Hotels** — one slab-of-windows body, six dressings (which windows are lit, the sign):
+- [ ] **[design owed] M461 Hotels — first pass BUILT 18.09 (Control), `src/17l-hotel.js`.** At busy stations a slab of windows across the lane from the billboard, the owner's sign («ГОС ИНИЦА «КОСМОС»» with «МЕСТ НЕТ» on the board, «ДЖЕКПОТ-СИТИ™» all lit, «ПАНСИОН № 4» dark 22–6, «LA LUNE», «ДВЕРЬ В СКАЛЕ», «HIVE·HOTEL v2»); ДЕЙСТВИЕ — К СТОЙКЕ: a night for 12 кр heals 10 % hull with the owner's greeting («Мест нет. …Для вас найдём.»); under a third of hull — free, «потом заплатите»; the porter mentions the cinema when `kinoHere`. **Open:** the doors (sanatorium needs a voucher and an ocean world — how a hotel offers it), cantina rumours at the desk, fatigue (does not exist for the player). Original: — one slab-of-windows body, six dressings (which windows are lit, the sign):
   «ГОС ИНИЦА «КОСМОС»» (two letters dead, «МЕСТ НЕТ» on the board, «для вас найдём» at the desk),
   «ДЖЕКПОТ-СИТИ™», «Пансион № 4» (lights out 22:00), «Ля Люн», the door in the rock, the honeycomb.
   Docking opens the doors that exist: sanatorium (`29h/29i-spa`), cinema (`27da-kino`), cantina
