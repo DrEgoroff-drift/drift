@@ -11151,3 +11151,16 @@ plausibly reach.
   NPC, pirates) into a plan by the maker's habit; **fixpoint suite**: every number equals today's ±1
   for an untouched save, nothing that fits unfits, «a fully upgraded module set fits any hull».
   ОПИСЬ shows the plan (swap same-footprint on the same cell only). No new save field.
+
+- [ ] **[design owed] M477 The КБ editor** — the second and last new screen: **синька** (Prussian blue, silhouette
+  and grid in light line, parts as warm ochre ink stamps by kind, БАШНЯ a circle with a cross, scars
+  brown, tape grey, «СОГЛАСОВАНО» violet in the corner — landing by itself after a fake queue «ваш
+  чертёж 4-й в очереди»). Footprints 1 / 2 (turns) / 4. Tray under the plan: things from the hold
+  that fit the selected cell glow. Tap-tap places, long-press lifts; a refusal is one line: «реактор
+  у борта не ставят», «двигатели — только в кормовой ряд», «приборы видят из носовой трети», «поворот
+  не предусмотрен формуляром» (Орднунг). **The hold is what is left** (author's decision 14.09):
+  free interior cells paint as ТРЮМ by tap. Numbers strip: **ЯЧЕЙКИ 34/40 · ТРЮМ 90 · БАК 140 ·
+  ЭНЕРГИЯ «в бою 12 с» · РАЗГОН ×0.94**, coloured by delta. **ТИПОВОЙ = «КАК У ВСЕХ»**; three
+  **ПРОЕКТЫ** per hull. Save **`G.draft[shipId]`** (`G.plan` is the industrial plan, `11r-plan`) = `[[thing, cx, cy, turn]…]`, the packer as the
+  `applySave` default. ОСНАСТКА's hull section becomes КБ; a foreign yard bills by cells moved
+  (Компания: «перемещение ячейки — 1 кр, итого 14 кр, спасибо за выбор»).

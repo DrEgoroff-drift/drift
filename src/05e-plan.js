@@ -8,7 +8,7 @@
      nose  — обшивка носовой трети на оси: жёсткая установка;
      side  — обшивка по бортам, крылья, гондолы: турель, дуга наружу;
      spine — ось за носовой третью, не обшивка: БАШНЯ (M479);
-     stern — кормовой ряд тела: сопла выходят сквозь обшивку;
+     stern — кормовые ряды тела (15 % длины, не меньше двух): сопла выходят сквозь обшивку;
      deck  — всё остальное внутри: реактор, баки, приборы, трюм.
 
    Упаковщик кладёт в план то, что стоит на корабле сегодня (части по слотам и
@@ -60,7 +60,7 @@ function planOf(id){
        нос; у тонкого корпуса нутро — это его ось, обшивка — крылья */
     const rim=!q.body||q.i===firstBody||(rowW[q.i]>=3&&!(isB(q.i,q.j-1)&&isB(q.i,q.j+1)));
     const noseThird=q.i<N/3,axis=q.j===mid;
-    if(q.body&&q.i===lastBody)q.kind="stern";
+    if(q.body&&q.i>=lastBody-Math.max(1,Math.round(N*.15))&&rowW[q.i]>0)q.kind="stern";   /* корма — последние 15 % рядов, не меньше двух: у иглы хвост в клетку, а моторов бывает три */
     else if(rim)q.kind=(noseThird&&Math.abs(q.j-mid)<=1)?"nose":"side";
     else if(axis&&!noseThird)q.kind="spine";
     else q.kind="deck";
@@ -81,7 +81,7 @@ const PLAN_WANT={gun:["nose","side"],shield:["deck","spine"],engine:["stern","de
 /* упаковать сегодняшнюю оснастку: [{what,ru,cells:[cell]}] + трюм и пустое */
 function planPack(id,fit,mods){
   const P=planOf(id),free=new Set(P.cells),out=[];
-  const pick=(want,n,near,nose3)=>{
+  const pick=(want,n,near,nose3,rule)=>{
     const got=[];
     for(const k of want){
       let pool=[...free].filter(q=>q.kind===k&&(!nose3||q.nose3));
@@ -90,30 +90,43 @@ function planPack(id,fit,mods){
       for(const q of pool){if(got.length>=n)break;got.push(q);free.delete(q);}
       if(got.length>=n)break;
     }
-    /* не хватило своих — в любую свободную клетку тела: оснастка не «выпадает» */
+    /* не хватило своих — сперва туда, куда пускает правило места (КБ), потом в любую клетку тела */
+    if(got.length<n&&rule)for(const q of [...free]){if(got.length>=n)break;if(rule.ok(q)){got.push(q);free.delete(q);}}
     if(got.length<n)for(const q of [...free]){if(got.length>=n)break;if(q.body){got.push(q);free.delete(q);}}
     if(got.length<n)for(const q of [...free]){if(got.length>=n)break;got.push(q);free.delete(q);}   /* и в крыло, если тела не хватило */
     return got;
   };
   const slots=slotsOf(id),M=(typeof mountsOf==="function")?mountsOf(id):[];
+  /* сначала то, чьё место жёстче всего: моторы, приборы, реактор, орудия — потом остальное */
+  const q=[];
   (fit?Object.keys(fit):[]).forEach(si=>{
     const pid=fit[si];if(pid==null)return;
     const kind=slots[si]||"util",m=M.find(x=>x.i===+si);
-    const n=planFoot(kind,kind==="gun"?(m&&m.size):null,0);
-    const cells=pick(PLAN_WANT[kind]||["deck"],n,m&&kind==="gun"?m:null,kind==="util");
-    out.push({what:"part",kind,slot:+si,id:pid,cells,need:n});
+    q.push({what:"part",kind,slot:+si,id:pid,m,need:planFoot(kind,kind==="gun"?(m&&m.size):null,0),rk:kind});
   });
   for(const k in (mods||{})){
     const lvl=mods[k]|0;if(!lvl||k==="hold")continue;
-    const n=planFoot(k,null,lvl);
-    out.push({what:"mod",kind:k,lvl,cells:pick(PLAN_WANT["m_"+k]||["deck"],n,null,k==="drill"),need:n});
+    q.push({what:"mod",kind:k,lvl,need:1,rk:"m_"+k});
+  }
+  const PRI={engine:0,m_engine:0,util:1,m_drill:1,core:2,m_weapon:2,gun:3,m_armor:3};
+  q.sort((a,b)=>(PRI[a.rk]??5)-(PRI[b.rk]??5));
+  const rules=(typeof KB_RULE!=="undefined")?KB_RULE:{};
+  for(const it of q){
+    const cells=pick(PLAN_WANT[it.rk]||["deck"],it.need,it.m&&it.kind==="gun"?it.m:null,it.rk==="util"||it.rk==="m_drill",rules[it.rk]);
+    const o={what:it.what,kind:it.kind,cells,need:it.need};
+    if(it.what==="part"){o.slot=it.slot;o.id=it.id;}else o.lvl=it.lvl;
+    out.push(o);
   }
   const hold=[...free].filter(q=>q.kind==="deck"||q.kind==="spine");
   for(const q of hold)free.delete(q);
   return {P,items:out,hold,empty:[...free]};
 }
 /* текущий корабль игрока */
-function planNow(){return planPack(G.shipId,G.fit[G.shipId]||{},G.mods||{});}
+function planNow(){
+  /* правленый чертёж (КБ, M477) — если он есть; иначе упаковщик */
+  if(typeof draftOf==="function"&&G.draft&&G.draft[G.shipId]){const d=draftOf(G.shipId);return {P:d.P,items:d.items,hold:d.hold,empty:[]};}
+  return planPack(G.shipId,G.fit[G.shipId]||{},G.mods||{});
+}
 /* ── нарисовать чертёж (вид ОПИСИ, синька в M477): нос вверх ── */
 const PLAN_COL={nose:"#e8b35a",side:"#c9924a",spine:"#9ab6d6",stern:"#e07a50",deck:"#3a5068"};
 const PLAN_ITEM_COL={gun:"#f2b25c",shield:"#7fe6d8",engine:"#ff8f6a",hull:"#b9a58a",core:"#c58ae0",util:"#8fd08a",missile:"#ff6a6a",mod:"#d9dde3"};
@@ -150,5 +163,9 @@ function opisPlanBlock(){
   const lg=document.createElement("s");lg.className="chalk";
   lg.textContent="обшивка "+(n("nose")+n("side"))+" · хребет "+n("spine")+" · корма "+n("stern")+" · палуба "+n("deck")+" · зелёное — трюм";
   box.appendChild(lg);
+  /* правка — КБ, и только у причала: в полёте чертёж не переделывают (M477) */
+  if(G.mode==="dock"&&typeof kbOpen==="function"){
+    const b=document.createElement("button");b.className="act";b.textContent="КБ · ПРАВИТЬ ЧЕРТЁЖ";b.onclick=kbOpen;box.appendChild(b);
+  }else{const e=document.createElement("s");e.className="chalk";e.textContent=" · правка чертежа — в КБ у причала";lg.appendChild(e);}
   return box;
 }

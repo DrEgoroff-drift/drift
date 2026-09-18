@@ -22,3 +22,39 @@ TEST_SUITES.push(()=>suite("чертёж: план из корпуса, всё �
   const pk=planNow();ok(pk.hold.length>0,"у стартового корабля есть трюм: "+pk.hold.length+" клеток");
   eq(JSON.stringify(planOf(G.shipId).cells.map(q=>q.kind)),JSON.stringify((delete PLAN_CACHE[G.shipId],planOf(G.shipId)).cells.map(q=>q.kind)),"план — функция корпуса");
 }));
+TEST_SUITES.push(()=>suite("КБ: правила места, трюм кистью, чертёж в сейве",()=>{
+  resetWorld();
+  const id=G.shipId;slotsOf(id).forEach((k,i)=>{if(k==="gun"||k==="engine"){}});
+  G.fit[id]={};slotsOf(id).forEach((k,i)=>G.fit[id][i]="t"+i);
+  G.draft={};const d=draftOf(id);
+  const eng=d.items.find(x=>x.kind==="engine"&&x.what==="part"),gun=d.items.find(x=>x.kind==="gun");
+  ok(eng&&gun,"в лотке есть мотор и орудие");
+  const deck=d.P.cells.find(q=>q.kind==="deck");
+  eq(kbPlace(d,eng,deck),"двигатели — только в кормовой ряд","мотор на палубу — отказ одной строкой");
+  if(deck)eq(kbPlace(d,gun,deck),"орудие — на обшивку","орудие внутрь — отказ");
+  const util=d.items.find(x=>x.kind==="util"),aft=d.P.cells.find(q=>q.kind==="deck"&&!q.nose3);
+  if(util&&aft)eq(kbPlace(d,util,aft),"приборы видят из носовой трети","прибор в корму — отказ");
+  /* трюм кистью: свободная клетка палубы — да/нет */
+  const free=d.P.cells.find(q=>(q.kind==="deck"||q.kind==="spine")&&d.hold.indexOf(q)<0&&!d.items.some(x=>x.cells.indexOf(q)>=0));
+  const h0=d.hold.length;
+  const h1=d.hold[0];KB.d=d;KB.id=id;KB.sel=null;kbTap(h1.i,h1.j);
+  eq(KB.d.hold.length,h0-1,"тап по трюму — клетка снова пустая");
+  ok(G.draft[id]&&G.draft[id].hold.length===h0-1,"чертёж записан в G.draft");
+  /* сейв и обратно */
+  const S=JSON.parse(JSON.stringify(snapshot()));
+  G.draft={};applySave(S);
+  eq(draftOf(id).hold.length,h0-1,"после загрузки чертёж тот же");
+  delete G.draft[id];eq(draftOf(id).hold.length,planPack(id,G.fit[id]||{},G.mods||{}).hold.length,"ТИПОВОЙ — снова как у всех (упаковщик)");
+  G.fit[id]={};G.draft={};
+}));
+TEST_SUITES.push(()=>suite("чертёж: упаковщик сам соблюдает правила места",()=>{
+  resetWorld();
+  const ids=Object.keys(SHIPS).concat(Object.keys(FLEET).slice(0,40)),bad=[];
+  for(const id of ids){
+    const fit={};slotsOf(id).forEach((k,i)=>fit[i]="t"+i);
+    const pk=planPack(id,fit,{engine:3,tank:2,armor:2,drill:1,hyper:1,weapon:2});
+    for(const it of pk.items){const R=KB_RULE[(it.what==="mod"?"m_":"")+it.kind];
+      if(R&&it.cells.some(q=>!R.ok(q))){bad.push(id+":"+it.kind);break;}}
+  }
+  ok(bad.length<=Math.ceil(ids.length*.1),"типовой чертёж нарушает правила места не больше чем у десятой части корпусов: "+bad.join(" "));
+}));

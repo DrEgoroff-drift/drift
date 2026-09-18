@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 556 · символов верхнего уровня: 5389
+Файлов: 557 · символов верхнего уровня: 5403
 
 ## СИМВОЛЫ
 
@@ -115,7 +115,7 @@ applyCrewEvent               src/12b-crew-events.js:215-224
 applyPadMode                 src/15-input.js:72-75
 applyPadSize                 src/15-input.js:8
 applySave                    src/14-save.js:216-619
-applySaveRest                src/14a1-save-rest.js:15-376
+applySaveRest                src/14a1-save-rest.js:15-377
 applyVolumes                 src/09-audio.js:40-47
 apVel                        src/16-flight.js:132
 ARC_JUMP                     src/13a-guns.js:39
@@ -1298,6 +1298,9 @@ doomMins                     src/12v-doom.js:35
 doomStanding                 src/12v-doom.js:38
 doomTick                     src/12v-doom.js:137-167
 doorsShut                    src/11ar-doors.js:27-31
+draftAll                     src/27jb-kb.js:24
+draftOf                      src/27jb-kb.js:26-42
+draftSave                    src/27jb-kb.js:43-46
 drawAccel                    src/20aa-poi-shapes.js:143-166
 drawAccountShelf             src/12w-survey.js:99-115
 drawAllies                   src/12a-crew.js:678-695
@@ -1391,7 +1394,7 @@ drawObserv                   src/20aa-poi-shapes.js:491-513
 drawPirate                   src/12i-pirate-hull.js:428-478
 drawPirateBase               src/24a-mode-raid.js:103-133
 drawPirateSkin               src/03d-hull-marks.js:99-126
-drawPlan                     src/05e-plan.js:120-138
+drawPlan                     src/05e-plan.js:133-151
 drawPlanetLights             src/17e-station-body.js:45-64
 drawPlanetWorks              src/17e-station-body.js:74-123
 drawPlant                    src/20-life.js:394-403
@@ -2518,6 +2521,17 @@ jobRefuse                    src/12e-mgr-jobs.js:57-66
 jobTick                      src/12e-mgr-jobs.js:287-296
 jump                         src/18-mode-map.js:527-534
 jumpToBase                   src/21a-mode-base.js:384-401
+KB                           src/27jb-kb.js:23
+KB_RULE                      src/27jb-kb.js:14-22
+kbClose                      src/27jb-kb.js:74
+kbDone                       src/27jb-kb.js:120-128
+kbDraw                       src/27jb-kb.js:130-154
+kbNumbers                    src/27jb-kb.js:63-66
+kbOpen                       src/27jb-kb.js:68-73
+kbPlace                      src/27jb-kb.js:49-62
+kbRender                     src/27jb-kb.js:75-101
+kbRule                       src/27jb-kb.js:47
+kbTap                        src/27jb-kb.js:102-119
 KEEP_DARK_AFTER              src/11k-keepers.js:48
 KEEP_HABIT                   src/11k-keepers.js:35-45
 KEEP_LAST                    src/11k-keepers.js:84
@@ -3332,7 +3346,7 @@ opisPartCard                 src/27j-ui-opis.js:546-573
 opisPartHtml                 src/27j-ui-opis.js:524-545
 opisPhone                    src/27j-ui-opis.js:71
 opisPileCard                 src/27j-ui-opis.js:594-615
-opisPlanBlock                src/05e-plan.js:140-154
+opisPlanBlock                src/05e-plan.js:153-171
 opisPriceCue                 src/27j-ui-opis.js:575-584
 opisRender                   src/27j-ui-opis.js:704-975
 opisRerender                 src/27j-ui-opis.js:74-84
@@ -3554,9 +3568,9 @@ PLACES_AT                    src/11v-places.js:18
 placesAll                    src/11v-places.js:19-31
 placeX                       src/11v-places.js:38
 PLAN_CACHE                   src/05e-plan.js:20
-PLAN_COL                     src/05e-plan.js:118
+PLAN_COL                     src/05e-plan.js:131
 PLAN_ETHER                   src/11r-plan.js:20-26
-PLAN_ITEM_COL                src/05e-plan.js:119
+PLAN_ITEM_COL                src/05e-plan.js:132
 PLAN_WANT                    src/05e-plan.js:78
 planAll                      src/11r-plan.js:27
 planCorePlanet               src/11r-plan.js:36-40
@@ -3612,9 +3626,9 @@ planGroundLine               src/11r-plan.js:47-52
 planIsCore                   src/11r-plan.js:41
 planIsCoreT                  src/11r-plan.js:42
 planN                        src/05e-plan.js:21
-planNow                      src/05e-plan.js:116
+planNow                      src/05e-plan.js:125-129
 planOf                       src/05e-plan.js:31-70
-planPack                     src/05e-plan.js:82-114
+planPack                     src/05e-plan.js:82-123
 planPtIn                     src/05e-plan.js:22-29
 PLANT_FORM_K                 src/20e-species.js:20
 PLANT_H_K                    src/20e-species.js:24
@@ -5473,7 +5487,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/05e-clearance.js · 7 КБ
   · допуск вместо уровней (M363, §11.4):1
 
-## src/05e-plan.js · 10 КБ
+## src/05e-plan.js · 12 КБ
   · чертёж корабля: клетки из корпуса и упаковщик (M476, DESIGN-shipyard §3, review §2.2):1
 
 ## src/06-galaxy.js · 14 КБ
@@ -6447,6 +6461,9 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/27j-ui-opis.js · 60 КБ
   · ОПИСЬ: один стол для всего, что на тебе и в трюме (M341):1
 
+## src/27jb-kb.js · 9 КБ
+  · КБ: редактор чертежа, синька (M477, DESIGN-shipyard §3, review §2.2):1
+
 ## src/27jb-ui-got.js · 4 КБ
   · «ЧТО ПОЛУЧИЛ» — добыча боя карточкой (п. 5 плейтеста 11.09):1
 
@@ -7045,7 +7062,7 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## tests/91zzzzk4-rail.js · 4 КБ
 
-## tests/91zzzzk5-plan.js · 2 КБ
+## tests/91zzzzk5-plan.js · 5 КБ
 
 ## tests/91zzzzl-maphold.js · 5 КБ
   · автотесты: владения на карте (M348):1
