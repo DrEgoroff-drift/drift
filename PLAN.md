@@ -165,7 +165,15 @@ job (the phone milestone), but no fix may add raster cost without a number.
   path, vestibule block and the vestibule page (M471–M472); the ride on the map (M473: the flight
   pads still show in the carriage; the train mark and the headlight) — as each is
   built.
-- [ ] **D26 Giants** (M464): first-pass silhouettes are flat shapes — each needs the room-craft treatment (mass, layers, one light, a human-scale detail), and the map mark its own glyph per giant.
+- [x] **D26 Giants — done 18.09 on the S23 (all seven captured at ×0.28).** Each body is now
+  baked once (1500×900, 1 px per unit) by the room rules: mass → seams/rivets → a human-scale
+  detail (landing strip at the moon's mouth, the hotel's parking row and marquee bulbs, the
+  cylinder's porthole row and dock, the customs barrier and a stamp on every form-house, cranes
+  on the dry dock and half the hull without plating, lamps along the town's street, mast shoes on
+  the garden's platform) → one light from the star's side (`source-atop`). Live on top: the
+  garden's blink, the moon's beacon, the hotel's red «МЕСТА ЕСТЬ», the cylinder's running light.
+  The map mark is a glyph per giant (moon, slab, pill, grid, dock bracket, peaks, masts). Left:
+  the ruler in the frame, docking/visiting — those are M464's open tails, not design.
 - [ ] **D25 Paper and stamps** (M503/M505/M509/M513): the ПЛАН on the sign, the passport page in КНИЖКА, the recall letter, the transit plate stencilled on the flank.
 - [ ] **D24 Railway life** (M499–M508): the vestibule's new rows are plain buttons — a parcel tag, a pass card with punched rides, the passenger's silhouette, the подстаканник, the seal drawn on the hold.
 - [ ] **D23 Album** (P13): the lightbox is a dark sheet with chips — a real photo-album page (corners, paper), filter previews as thumbnails, the saved PNG's caption band typeset properly.

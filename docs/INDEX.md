@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 587 · символов верхнего уровня: 5660
+Файлов: 587 · символов верхнего уровня: 5664
 
 ## СИМВОЛЫ
 
@@ -1411,8 +1411,8 @@ drawGalaxy                   src/17z1-galaxy.js:97-137
 drawGalaxyStars              src/17z1-galaxy.js:156-195
 drawGestPost                 src/17h-sys-gesture.js:192-213
 drawGesture                  src/17h-sys-gesture.js:87-172
-drawGiant                    src/17o-giants.js:54-94
-drawGiantsMap                src/17o-giants.js:38-52
+drawGiant                    src/17o-giants.js:162-189
+drawGiantsMap                src/17o-giants.js:49-61
 drawGlassHUD                 src/24-mode-belt.js:720-807
 drawGlyph                    src/12t-settle.js:59-77
 drawGround                   src/19-mode-landing-ground.js:11-239
@@ -1955,9 +1955,13 @@ gestShipFrame                src/17h-sys-gesture.js:81-85
 gestTick                     src/17h-sys-gesture.js:52-79
 getSystem                    src/06-galaxy.js:99-193
 GIANT                        src/19a-mode-scoop.js:192
+GIANT_CV                     src/17o-giants.js:68
 GIANT_KEEP                   src/19a-mode-scoop.js:193
-giantArrive                  src/17o-giants.js:96-102
+giantArrive                  src/17o-giants.js:191-197
 giantAt                      src/17o-giants.js:34
+giantBake                    src/17o-giants.js:70-161
+giantLightAng                src/17o-giants.js:69
+giantMapGlyph                src/17o-giants.js:38-48
 giantPos                     src/17o-giants.js:36
 GIANTS                       src/17o-giants.js:18
 GIANTS_DEF                   src/17o-giants.js:9-17
@@ -6388,7 +6392,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/17n-bazaar.js · 7 КБ
   · барахолка, которая помнит (M463, DESIGN-life):1
 
-## src/17o-giants.js · 7 КБ
+## src/17o-giants.js · 18 КБ
   · по великану на рукав (M464, DESIGN-life):1
 
 ## src/17z-map-backdrop.js · 8 КБ
