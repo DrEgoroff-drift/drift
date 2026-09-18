@@ -270,7 +270,8 @@ function updateSystem(dt){
   if(typeof gestTick==="function")gestTick(sh);   /* жест хозяина после прыжка (M452) */
   if(typeof railTick==="function")railTick(dt);   /* поезд подходит, пока вы в вестибюле (M472) */
   if(typeof farTrapTick==="function")farTrapTick(dt);
-  if(typeof lawRingTick==="function")lawRingTick(sh);   /* скоростной режим Орднунга у станции (M456) */   /* ловушки антивещества: питание или процент в минуту (M468) */
+  if(typeof lawRingTick==="function")lawRingTick(sh);   /* скоростной режим Орднунга у станции (M456) */
+  if(typeof dsTick==="function")dsTick();   /* новости о вашем поступке — двумя голосами (M491) */   /* ловушки антивещества: питание или процент в минуту (M468) */
   if(typeof hailTick==="function"&&hailTick(sh,dt,actEdge))return;
 
   if(sys.station){

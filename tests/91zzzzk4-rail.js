@@ -92,3 +92,13 @@ TEST_SUITES.push(()=>suite("закон земли: норма, пошлина, �
   ok(lawLunch(),"Коммуна: в час дня — обед");G.cargo.iron=5;eq(sellCargo(G.sys,"iron",5),0,"приёмка закрыта");
   G.t=t0;G.cargo.iron=0;G.ship.vx=0;
 }));
+TEST_SUITES.push(()=>suite("новости противоречат друг другу (M491)",()=>{
+  resetWorld();DS_Q=[];
+  const e=epiAdd("tow","gt",{force:true,who:"Семёныч"});ok(!!e,"поступок при свидетеле");
+  const n=G.log.length;dsTick();eq(G.log.length,n,"сразу эфир молчит");
+  G.t+=DS_DELAY*60+1;dsTick();
+  const L=G.log.slice(n).filter(l=>l.k==="ether").map(l=>l.s);
+  eq(L.length,2,"два голоса: "+L.join(" | "));
+  ok(/спокойно/.test(L[0]),"Маяк: на трассе спокойно");
+  G.episodes=[];G.notebook=[];
+}));

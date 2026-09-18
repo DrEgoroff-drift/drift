@@ -78,6 +78,7 @@ function epiAdd(kind,by,opts){
   if(typeof logAdd==="function")
     logAdd(K.w>0?"kill":"warn",(P?P.ru:by)+" · "+who+": "+K.ru+
       " (сектор "+e.sx+":"+e.sy+", видел "+wit+")");
+  if(typeof dsDeed==="function")dsDeed(e);   /* эфир расскажет по-своему (M491) */
   return e;
 }
 /* ── доехал ли эпизод сюда (§6.3) ── */
