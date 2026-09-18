@@ -89,6 +89,7 @@ function renderRecord(box){
   tableRow(box,"head","","ТРУДОВАЯ КНИЖКА · "+recordPilot().toUpperCase()+" · СТАЖ "+recordYears()+" "+pl3(recordYears(),"ГОД","ГОДА","ЛЕТ")+(R.grounded?" · ПЕНСИЯ":""));
   const H=recordHonour();
   if(H.length)tableRow(box,"sec","","НА ДОСКЕ ПОЧЁТА: "+H.join(", "));
+  if(typeof stampPage==="function")stampPage(box);   /* первая настоящая страница документа (M453) */
   if(!R.e.length){tableRow(box,"dim","","записей нет: их делают другие — станции, институт, люди");return;}
   for(let i=R.e.length-1;i>=0;i--){
     const x=R.e[i];

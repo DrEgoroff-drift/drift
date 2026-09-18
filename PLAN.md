@@ -518,7 +518,8 @@ patchnote of each version names the M-numbers it closes.
   borders §2.1; Ялта: all six, weapons sealed. The gesture ship is the fleet art in the maker's
   dressing. The **post** is background: one truss + board + lamp + the dressing's prop, baked, at
   the entry point (borders §2.1 table for the six dressings).
-- [ ] **[design owed] M453 The stamp + P14 ТРУДОВАЯ КНИЖКА** (borders §2.2, review §4.4, playtest §4.4). Border
+- [ ] **[design owed] M453 The stamp + P14 ТРУДОВАЯ КНИЖКА — the stamp and its page BUILT 18.09 (Control), `src/17i-stamp.js`.** Crossing = the owner under the ship changed since the last arrival (`R.last` inside `G.record`, no save-format change; the first jump compares with the system left). Screen stamp: DOM, tilt 5–12° by seed, 1.3 → 1, hold, fade in 1.2 s; Компания a till slip from the bottom edge. Page ОТМЕТКИ О ПРОЕЗДЕ at the top of КНИЖКА: 8 cells (six + Ялта + pirates), first stamp kept, a ×n counter; the first stamp of each power also writes a КНИЖКА line. **Open:** ink grain, Ялта and the pirates' scratch are never earned yet, the rest of P14 (seals, vacation savings, the grounding ending on the page). Original text:
+  **M453 The stamp + P14 ТРУДОВАЯ КНИЖКА** (borders §2.2, review §4.4, playtest §4.4). Border
   crossing = owner change (or wild → owned) on arrival: a stamp across the screen 1.2 s (DOM on the
   КНИЖКА paper, tilt 5–12° by seed, ink grain, scale 1.3 → 1 in 120 ms, hold 900, fade); six papers
   (violet stencil «ОТМЕТКА О ПРОЕЗДЕ · ПОСТ № n» + signature; Компания's till slip scrolling up
