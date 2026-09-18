@@ -302,3 +302,14 @@ TEST_SUITES.push(()=>suite("постановка на учёт: транзит, 
   ok(!regPending(id),"на учёте");
   clockSet(base);G.shipId="strizh";delete G.uniqueShips[id];delete G.owned[id];
 }));
+TEST_SUITES.push(()=>suite("ажиотаж: ЖИЛА — дополнительный поезд и дорогое топливо (M504)",()=>{
+  resetWorld();
+  const sx=3,sy=2,I0=railInterval(sx,sy);
+  rushStart(sx,sy);
+  ok(railInterval(sx,sy)<I0,"интервал короче: "+I0+" → "+railInterval(sx,sy));
+  G.sx=sx;G.sy=sy;G.sys=getSystem(sx,sy);G.st={fuelPrice:10};
+  eq(rushFuelMul(),1.33,"топливо на треть дороже");
+  const base=now();clockSet(base+RUSH_SHIFTS*HOLD_SHIFT+1);
+  eq(railInterval(sx,sy),I0,"через две смены — как было");
+  clockSet(base);G.st=null;
+}));

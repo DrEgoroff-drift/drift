@@ -544,7 +544,7 @@ material consequences are the part that does not exist yet — that is what stag
   подстаканник — crew fatigue eased, one rumour; the kindness of the whole railway.
 - **M503 Госзаказ на билборде** — BUILT 18.09 `17k1-gosplan` [design owed]: at ГЛАВТРАССА billboard stations every other 10 s cycle the sign shows the plan (good, qty, сводка = three смены, fixed price ×1.3 or ×1.2 far); ГОСЗАКАЗ row atop the trade tab delivers via `earn`, `G.gosDone`, КНИЖКА `R.udar` shown on the record page, «план выполнен на 101–107 %». (st. 5, M460 + M467): «ПЛАН: 40 ед. осмия до сводки 118» — a fixed
   price for whoever delivers, a КНИЖКА stamp «УДАРНИК», the сводка reports «план выполнен на 103 %».
-- **M504 Ажиотаж** (st. 3, M466 + M474): after a ЖИЛА rumour the line adds a train to that stop «по
+- **M504 Ажиотаж** — BUILT 18.09 `18j-rail-rush` [design owed]: the first take of a grade-3 vein starts `G.rush` for 2 смен — the stop's interval halves, fuel there ×1.33, a ГЛАВТРАССА line. **Open:** the approach filling with traffic. (st. 3, M466 + M474): after a ЖИЛА rumour the line adds a train to that stop «по
   многочисленным просьбам трудящихся», the полустанок's prices spike, the approach fills.
 - **M505 Дипломатический паспорт** — BUILT 18.09 `17i1-passport` [design owed]: the seventh first stamp (six powers + Ялта) issues it once (`R.pass`), 7 смен: every fare 0 incl. metro, Орднунг declares on the first press. (st. 5, M453): all six border stamps + Ялта's → the замполит issues
   a passport: free rides for a week, and the Орднунг form asks one question fewer.

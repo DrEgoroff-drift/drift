@@ -8940,7 +8940,7 @@ function farTake(k,n){
   T[key]=(T[key]|0)+n;
   if(first){
     const d=farDeposits(G.sx,G.sy).find(x=>x.k===k);
-    if(d&&d.grade===3)farVein(d);
+    if(d&&d.grade===3){farVein(d);if(typeof rushStart==="function")rushStart(G.sx,G.sy);}   /* ажиотаж на дороге (M504) */
   }
 }
 /* ── прибор: честный диапазон ── */
@@ -9838,7 +9838,7 @@ const G={
   inv:[],fit:{},shield:0,shieldHit:0,energy:0,loot:[],partsBought:{},
   /* допуск и налёт (M363, §11.4): допуск не падает, налёт копится только в полёте */
   clearance:1,flownMs:0,gunGroup:0,
-  mined:{},farTaken:{},draft:{},smenaAt:{},stapel:{},thrown:[],bazBought:null,railParcel:null,railPass:null,railSeal:0,gosDone:{},recalled:{},reg:{},regWave:0,tapeRoll:0,tapes:{},actWk:null,   /* выработанные залежи по планетам; неделя налёта и талоны (05e) */
+  mined:{},farTaken:{},draft:{},smenaAt:{},stapel:{},thrown:[],bazBought:null,railParcel:null,railPass:null,railSeal:0,gosDone:{},recalled:{},reg:{},regWave:0,rush:null,tapeRoll:0,tapes:{},actWk:null,   /* выработанные залежи по планетам; неделя налёта и талоны (05e) */
   tech:new Set(),techLvl:{},barter:new Set(),
   found:new Set(),species:new Set(),
   ap:null,          // автопилот
@@ -29618,7 +29618,7 @@ function fuelPriceHere(){
   let coup=(typeof riteFuelMul==="function")?riteFuelMul():1;
   if(coup>=1&&typeof actCoupons==="function"&&actCoupons()>0)coup=.5;   /* талон за налёт (05e) */
   return Math.max(1,Math.round((G.st?G.st.fuelPrice:10)*repFuelMul()*
-    (typeof holdFuelMul==="function"?holdFuelMul():1)*coup));   /* Заправочный узел (F2) */
+    (typeof holdFuelMul==="function"?holdFuelMul():1)*coup*(typeof rushFuelMul==="function"?rushFuelMul():1)));   /* ажиотаж (M504) */   /* Заправочный узел (F2) */
 }
 /* железо в доке: части и корпуса. Скидка вдвое меньше, чем на работе, — станок
    не помнит вас лично, а продавец помнит наполовину */
@@ -41785,7 +41785,7 @@ function snapshot(){
     inv:G.inv.map(packPart),fit:G.fit,partsBought:prunePartsBought(),
     tech:[...G.tech],techLvl:G.techLvl,barter:[...G.barter],found:[...G.found],
     species:[...G.species],bioV:2,
-    opts:G.opts,zoom:G.zoom,market:G.market,uniqueShips:(typeof stapelStrip==="function")?stapelStrip(G.uniqueShips):G.uniqueShips,stapel:G.stapel||{},thrown:G.thrown||[],railParcel:G.railParcel||null,railPass:G.railPass||null,railSeal:G.railSeal?1:0,gosDone:G.gosDone||{},recalled:G.recalled||{},reg:G.reg||{},regWave:G.regWave?1:0,bazBought:G.bazBought||null,tow:G.tow,
+    opts:G.opts,zoom:G.zoom,market:G.market,uniqueShips:(typeof stapelStrip==="function")?stapelStrip(G.uniqueShips):G.uniqueShips,stapel:G.stapel||{},thrown:G.thrown||[],railParcel:G.railParcel||null,railPass:G.railPass||null,railSeal:G.railSeal?1:0,gosDone:G.gosDone||{},recalled:G.recalled||{},reg:G.reg||{},regWave:G.regWave?1:0,rush:G.rush||null,bazBought:G.bazBought||null,tow:G.tow,
     episodes:G.episodes,notebook:G.notebook,gifts:G.gifts,mslBy:G.mslBy,
     bonds:G.bonds,bondHold:G.bondHold,coupN:G.coupN,
     letter:G.letter||null,dipSwapN:G.dipSwapN,smugN:G.smugN,smugBy:G.smugBy,
@@ -41948,7 +41948,7 @@ function applySave(s){
   if(typeof hudNumDirty==="function")hudNumDirty();
   G.sx=s.sx|0;G.sy=s.sy|0;G.sys=getSystem(G.sx,G.sy);
   G.uniqueShips=asMap(s.uniqueShips);
-  G.railParcel=(s.railParcel&&typeof s.railParcel==="object")?s.railParcel:null;G.railPass=(s.railPass&&typeof s.railPass==="object")?s.railPass:null;G.railSeal=s.railSeal?1:0;G.gosDone=asMap(s.gosDone);G.recalled=asMap(s.recalled);G.reg=asMap(s.reg);G.regWave=s.regWave?1:0;   /* M499–M508 */
+  G.railParcel=(s.railParcel&&typeof s.railParcel==="object")?s.railParcel:null;G.railPass=(s.railPass&&typeof s.railPass==="object")?s.railPass:null;G.railSeal=s.railSeal?1:0;G.gosDone=asMap(s.gosDone);G.recalled=asMap(s.recalled);G.reg=asMap(s.reg);G.regWave=s.regWave?1:0;G.rush=(s.rush&&typeof s.rush==="object")?s.rush:null;   /* M499–M508 */
   G.thrown=Array.isArray(s.thrown)?s.thrown.slice(0,12):[];G.bazBought=(s.bazBought&&typeof s.bazBought==="object")?s.bazBought:null;   /* барахолка (M463) */
   G.stapel=asMap(s.stapel);if(typeof stapelRestore==="function")stapelRestore();   /* заказанные корпуса выводятся из заказа (M481) */
   G.tow=(s.tow&&typeof s.tow==="object")?s.tow:null;   /* корпус на тросе (M369b) */
@@ -53272,7 +53272,8 @@ function railDocked(auto){
   railWinShow();
 }
 /* ── вестибюль: одна страница ── */
-function railInterval(sx,sy){const r=Math.hypot(sx,sy);return r<=RAIL_METRO_R?10:Math.round(30+60*clamp((r-12)/28,0,1));}
+function railInterval(sx,sy){const r=Math.hypot(sx,sy);const I=r<=RAIL_METRO_R?10:Math.round(30+60*clamp((r-12)/28,0,1));
+  return (typeof rushAt==="function"&&rushAt(sx,sy))?Math.max(5,Math.round(I/2)):I;}   /* ажиотаж: дополнительный поезд (M504) */
 function railWaitNow(sx,sy){const I=railInterval(sx,sy);return Math.ceil(I-((G.t/60)%I));}
 function railFmt(s){return Math.floor(s/60)+":"+String(s%60).padStart(2,"0");}
 function railStopName(st){const s=getSystem(st.sx,st.sy),base=s.station?s.station.name:s.name;
@@ -53635,6 +53636,19 @@ function railLifeExit(s){
   if(RAIL_LIFE.pax){logAdd("dim",RAIL_LIFE.pax.who+" сходит: «Спасибо. Если что — я тут рядом.»");RAIL_LIFE.pax=null;}
   if(G.railSeal){G.railSeal=0;logAdd("dim","Пломба снята по прибытии · Орднунг");}
 }
+
+/* ══════════════ ажиотаж (M504, PLAN «new mechanics», st. 3) ══════════════
+   ЖИЛА прогремела — и дорога добавляет поезд «по многочисленным просьбам
+   трудящихся»: интервал у этой остановки вдвое короче, топливо на её
+   станции на треть дороже, в журнале строка. Две смены — и всё стихает.
+   G.rush = {sx, sy, until}. */
+const RUSH_SHIFTS=2;
+function rushAt(sx,sy){const R=G.rush;return !!(R&&R.sx===sx&&R.sy===sy&&now()<R.until);}
+function rushStart(sx,sy){
+  G.rush={sx,sy,until:now()+RUSH_SHIFTS*HOLD_SHIFT};
+  logAdd("dim","ГЛАВТРАССА: по многочисленным просьбам трудящихся на остановку «"+(getSystem(sx,sy).name||sx+":"+sy)+"» назначен дополнительный поезд");
+}
+function rushFuelMul(){return (G.st&&rushAt(G.sx,G.sy))?1.33:1;}
 
 /* ══════════════ посадка: разрез грунта ══════════════
    Отрезано от `19-mode-landing` 09.09.2026: файл дорос до 50 КБ, и внутри у него

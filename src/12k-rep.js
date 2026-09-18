@@ -66,7 +66,7 @@ function fuelPriceHere(){
   let coup=(typeof riteFuelMul==="function")?riteFuelMul():1;
   if(coup>=1&&typeof actCoupons==="function"&&actCoupons()>0)coup=.5;   /* талон за налёт (05e) */
   return Math.max(1,Math.round((G.st?G.st.fuelPrice:10)*repFuelMul()*
-    (typeof holdFuelMul==="function"?holdFuelMul():1)*coup));   /* Заправочный узел (F2) */
+    (typeof holdFuelMul==="function"?holdFuelMul():1)*coup*(typeof rushFuelMul==="function"?rushFuelMul():1)));   /* ажиотаж (M504) */   /* Заправочный узел (F2) */
 }
 /* железо в доке: части и корпуса. Скидка вдвое меньше, чем на работе, — станок
    не помнит вас лично, а продавец помнит наполовину */

@@ -92,7 +92,8 @@ function railDocked(auto){
   railWinShow();
 }
 /* ── вестибюль: одна страница ── */
-function railInterval(sx,sy){const r=Math.hypot(sx,sy);return r<=RAIL_METRO_R?10:Math.round(30+60*clamp((r-12)/28,0,1));}
+function railInterval(sx,sy){const r=Math.hypot(sx,sy);const I=r<=RAIL_METRO_R?10:Math.round(30+60*clamp((r-12)/28,0,1));
+  return (typeof rushAt==="function"&&rushAt(sx,sy))?Math.max(5,Math.round(I/2)):I;}   /* ажиотаж: дополнительный поезд (M504) */
 function railWaitNow(sx,sy){const I=railInterval(sx,sy);return Math.ceil(I-((G.t/60)%I));}
 function railFmt(s){return Math.floor(s/60)+":"+String(s%60).padStart(2,"0");}
 function railStopName(st){const s=getSystem(st.sx,st.sy),base=s.station?s.station.name:s.name;

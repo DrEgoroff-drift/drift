@@ -29,7 +29,7 @@ function farTake(k,n){
   T[key]=(T[key]|0)+n;
   if(first){
     const d=farDeposits(G.sx,G.sy).find(x=>x.k===k);
-    if(d&&d.grade===3)farVein(d);
+    if(d&&d.grade===3){farVein(d);if(typeof rushStart==="function")rushStart(G.sx,G.sy);}   /* ажиотаж на дороге (M504) */
   }
 }
 /* ── прибор: честный диапазон ── */

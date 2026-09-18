@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 583 · символов верхнего уровня: 5627
+Файлов: 584 · символов верхнего уровня: 5631
 
 ## СИМВОЛЫ
 
@@ -3985,16 +3985,16 @@ railArmAng                   src/18e-rail-net.js:103
 railAt                       src/18e-rail-net.js:112-120
 railBranchAng                src/18e-rail-net.js:51-54
 railBucket                   src/18i-rail-life.js:16
-railBuffet                   src/18f-rail-station.js:173-179
+railBuffet                   src/18f-rail-station.js:174-180
 railBuildLines               src/18e-rail-net.js:55-101
-railBuy                      src/18f-rail-station.js:161-172
+railBuy                      src/18f-rail-station.js:162-173
 railClosedWhy                src/18h-rail-powers.js:16-21
 railDeclare                  src/18h-rail-powers.js:23-33
-railDestinations             src/18f-rail-station.js:101-114
+railDestinations             src/18f-rail-station.js:102-115
 railDocked                   src/18f-rail-station.js:86-93
 railExit                     src/18g-rail-ride.js:71-82
-railFare                     src/18f-rail-station.js:115-121
-railFmt                      src/18f-rail-station.js:97
+railFare                     src/18f-rail-station.js:116-122
+railFmt                      src/18f-rail-station.js:98
 railHere                     src/18f-rail-station.js:24-30
 railHfPauseAt                src/18h-rail-powers.js:35-38
 railInteract                 src/18f-rail-station.js:67-85
@@ -4023,16 +4023,16 @@ railRideStart                src/18g-rail-ride.js:13-21
 railSegDur                   src/18g-rail-ride.js:22-25
 railStation                  src/18e-rail-net.js:158-163
 railStep                     src/18e-rail-net.js:43
-railStopName                 src/18f-rail-station.js:98
+railStopName                 src/18f-rail-station.js:99
 railStopsOf                  src/18e-rail-net.js:122-146
-railTick                     src/18f-rail-station.js:181-186
+railTick                     src/18f-rail-station.js:182-187
 railTrainPos                 src/18g-rail-ride.js:27-39
 railUAt                      src/18e-rail-net.js:105-110
-railWaitNow                  src/18f-rail-station.js:96
-railWinClose                 src/18f-rail-station.js:123
-railWinOpen                  src/18f-rail-station.js:122
-railWinRender                src/18f-rail-station.js:129-160
-railWinShow                  src/18f-rail-station.js:124-128
+railWaitNow                  src/18f-rail-station.js:97
+railWinClose                 src/18f-rail-station.js:124
+railWinOpen                  src/18f-rail-station.js:123
+railWinRender                src/18f-rail-station.js:130-161
+railWinShow                  src/18f-rail-station.js:125-129
 RALLY_CACHE                  src/12at-vote.js:69
 rallyAt                      src/12at-vote.js:102-106
 rallyJoin                    src/12at-vote.js:94-100
@@ -4494,6 +4494,10 @@ rungRingSegs                 src/12ae-ladder.js:56
 rungRoman                    src/12ae-ladder.js:47
 RUNGS                        src/12ae-ladder.js:13
 runTests                     tests/90-harness.js:425-509
+RUSH_SHIFTS                  src/18j-rail-rush.js:6
+rushAt                       src/18j-rail-rush.js:7
+rushFuelMul                  src/18j-rail-rush.js:12
+rushStart                    src/18j-rail-rush.js:8-11
 rxRecord                     src/11x-ring.js:64-74
 S1                           src/01-core.js:180
 S2                           src/01-core.js:181
@@ -6386,7 +6390,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/18e-rail-net.js · 11 КБ
   · железная дорога: сеть (M470, docs/DESIGN-metro.md §2):1
 
-## src/18f-rail-station.js · 12 КБ
+## src/18f-rail-station.js · 13 КБ
   · станция железной дороги в системе и вестибюль (M471–M472, DESIGN-metro §3):1
 
 ## src/18g-rail-ride.js · 8 КБ
@@ -6397,6 +6401,9 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## src/18i-rail-life.js · 9 КБ
   · жизнь на железной дороге (M499–M502, M508; PLAN «new mechanics»):1
+
+## src/18j-rail-rush.js · 1 КБ
+  · ажиотаж (M504, PLAN «new mechanics», st. 3):1
 
 ## src/19-mode-landing-ground.js · 25 КБ
   · посадка: разрез грунта:1
@@ -7363,7 +7370,7 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## tests/91zzzzk5-plan.js · 9 КБ
 
-## tests/91zzzzk6-stapel.js · 21 КБ
+## tests/91zzzzk6-stapel.js · 22 КБ
 
 ## tests/91zzzzl-maphold.js · 5 КБ
   · автотесты: владения на карте (M348):1
