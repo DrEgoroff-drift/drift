@@ -113,3 +113,15 @@ TEST_SUITES.push(()=>suite("гостиница: ночь за деньги, ни
   eq(G.credits,100,"корпус ниже трети — даром, «потом заплатите»");
   ok(G.hull>hm*.2,"и за ночь корпус подтянулся");
 }));
+TEST_SUITES.push(()=>suite("мирный флот: буксир Рассвета чинит и вас (M455)",()=>{
+  resetWorld();
+  let at=null;
+  for(let sx=-12;sx<=12&&!at;sx++)for(let sy=-12;sy<=12&&!at;sy++)if(stampOwnerAt(sx,sy)==="ra"&&getSystem(sx,sy).station)at=[sx,sy];
+  ok(!!at,"в сердце есть станция Рассвета");
+  G.sx=at[0];G.sy=at[1];G.sys=getSystem(at[0],at[1]);PEACE_TUG=null;
+  const hm=stat().hullMax;G.hull=hm*.3;G.ship.x=G.sys.station.x+300;G.ship.y=G.sys.station.y;G.ship.vx=G.ship.vy=0;
+  for(let i=0;i<60*60;i++)peaceTick(G.ship,1);
+  ok(G.hull>hm*.3,"буксир дошёл и подварил: "+Math.round(G.hull)+" из "+hm);
+  ok(G.hull<=hm*.6+1e-6,"не выше 60 % — это подварка, не верфь");
+  G.hull=hm;PEACE_TUG=null;
+}));

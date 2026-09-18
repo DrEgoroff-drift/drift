@@ -271,7 +271,8 @@ function updateSystem(dt){
   if(typeof railTick==="function")railTick(dt);   /* поезд подходит, пока вы в вестибюле (M472) */
   if(typeof farTrapTick==="function")farTrapTick(dt);
   if(typeof lawRingTick==="function")lawRingTick(sh);   /* скоростной режим Орднунга у станции (M456) */
-  if(typeof dsTick==="function")dsTick();   /* новости о вашем поступке — двумя голосами (M491) */   /* ловушки антивещества: питание или процент в минуту (M468) */
+  if(typeof dsTick==="function")dsTick();   /* новости о вашем поступке — двумя голосами (M491) */
+  if(typeof peaceTick==="function")peaceTick(sh,dt);   /* ремонтный буксир Рассвета (M455) */   /* ловушки антивещества: питание или процент в минуту (M468) */
   if(typeof hailTick==="function"&&hailTick(sh,dt,actEdge))return;
 
   if(sys.station){
@@ -657,6 +658,7 @@ function drawSystem(){
   if(typeof drawSysRail==="function")drawSysRail(zx,zy,Z);   /* кольцо станции железной дороги (M471) */
   if(typeof drawBillboard==="function")drawBillboard(zx,zy,Z);   /* щит с бегущей строкой (M460) */
   if(typeof drawHotel==="function")drawHotel(zx,zy,Z);   /* гостиница (M461) */
+  if(typeof drawPeaceFleet==="function")drawPeaceFleet(zx,zy,Z);   /* мирный флот державы (M455) */
   if(sys.station){
     const x=zx(sys.station.x),y=zy(sys.station.y);
     drawStation(x,y,Z);
