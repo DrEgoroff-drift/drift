@@ -31,14 +31,43 @@ const RADIO_ARCH={
   pozyv:   {pad:"strings",lead:"brass",   drums:"march", bassA:"walk", bassB:"fifth", arp:"up8",  rh:"dotted",bell:.3,dr:.7,cut:4200},
   box:     {pad:"organ",  lead:"bell",    drums:"none",  bassA:"sparse",bassB:"pedal",arp:"up8",  rh:"busy",  bell:0, dr:0, cut:3000},
   bossa:   {pad:"organ",  lead:"flute",   drums:"bossa", bassA:"bossa",bassB:"walk",  arp:"none", rh:"sparse",bell:.3,dr:.6,cut:3600},
-  jarre:   {pad:"strings",lead:"saw",     drums:"motor", bassA:"sync", bassB:"arp",   arp:"seq16",rh:"sparse",bell:.2,dr:.5,cut:4200,waves:true}
+  jarre:   {pad:"strings",lead:"saw",     drums:"motor", bassA:"sync", bassB:"arp",   arp:"seq16",rh:"sparse",bell:.2,dr:.5,cut:4200,waves:true},
+  /* советская кинофантастика — приёмы композиторов, не цитаты:
+     «Сталкер» (Артемьев) — восточная флейта над кластерным дроном АНС, редкая табла, капли;
+     «Кин-дза-дза» (Канчели) — аккордеон, хабанера, медь невпопад;
+     «Гостья из будущего» (Крылатов) — тёплая струнная баллада, флейта, в бридже детский хор;
+     «Через тернии к звёздам» (Рыбников) — эпос: хор, литавры, медь, педаль в басу;
+     «Тайна третьей планеты» (Зацепин) — озорной «плывущий» синтезатор, бипы, органчик */
+  stalker: {pad:"cluster", lead:"duduk",   drums:"tabla", bassA:"pedal", bassB:"glide", arp:"drip", rh:"long",  bell:.2,dr:.4,cut:2800},
+  kindza:  {pad:"accordion",lead:"brass",  drums:"tango", bassA:"tango", bassB:"walk",  arp:"none", rh:"dotted",bell:0, dr:.8,cut:4000},
+  dalyoko: {pad:"strings", lead:"flute",   drums:"soft",  bassA:"sparse",bassB:"walk",  arp:"up8",  rh:"sparse",bell:.5,dr:.4,cut:3600,padB:"choirhi"},
+  ternii:  {pad:"choir",   lead:"brass",   drums:"timp",  bassA:"pedal", bassB:"fifth", arp:"seq16",rh:"long",  bell:.3,dr:.7,cut:3400,epic:true},
+  tretya:  {pad:"organ",   lead:"wobble",  drums:"half",  bassA:"zodiac",bassB:"run",   arp:"bleep",rh:"busy",  bell:.4,dr:.6,cut:4400}
 };
 const RADIO_TRACKS=[
   /* первые шесть — по образцам автора: тональность, темп и аккорды с MP3 */
   {n:"Тихий сигнал возвращения",arch:"berlin", s:1961,bpm:99, key:3, mode:"minor",
     prog:{A:[3,3,0,0,3,3,0,0],B:[2,4,4,4,0,0,2,4]}},
+  /* «Безмолвная орбита» — с 1:00 образца: аккорды по тактам и контур мелодии сняты
+     (scratchpad orbit.py), октавные скачки выправлены рукой */
   {n:"Безмолвная орбита",       arch:"solaris",s:1957,bpm:76, key:0, mode:"minor",lead:"flute",pad:"strings",
-    prog:{A:[0,0,4,4,3,2,0,4],B:[6,6,0,0,4,4,3,6]}},
+    prog:{intro:[2,2,0,0],A:[2,2,0,0,4,4,1,5],B:[0,0,2,6,3,0,2,5],out:[0,0]},
+    mel:{A:[[[0,1,2],[2,4,2],[6,4,4],[10,6,2],[12,4,4]],
+            [[0,1,12],[12,-1,2],[14,1,2]],
+            [[0,1,2],[2,4,2],[4,1,4],[12,0,2],[14,2,2]],
+            [[0,0,2],[2,2,2],[6,2,6],[14,3,2]],
+            [[0,1,2],[8,0,8]],
+            [[2,0,2],[8,0,8]],
+            [[0,0,4],[4,4,2],[8,6,4],[12,-1,2],[14,6,2]],
+            [[0,6,2],[2,-1,2],[4,2,4],[8,3,8]]],
+         B:[[[0,-1,2],[2,3,6],[8,4,2],[10,0,6]],
+            [[0,0,6],[10,4,2]],
+            [[0,0,2],[8,-1,8]],
+            [[0,2,6],[8,6,2],[12,5,2],[14,5,2]],
+            [[0,1,2],[8,0,2],[14,0,2]],
+            [[2,0,2],[8,0,8]],
+            [[0,0,4],[4,4,2],[8,6,4],[12,-1,2],[14,6,2]],
+            [[0,6,2],[2,-1,2],[4,2,4],[8,3,8]]]}},
   {n:"Дистанционный сигнал",    arch:"box",    s:1965,bpm:78, key:3, mode:"minor",
     prog:{A:[0,0,3,1,4,0,4,5],B:[0,0,3,3,1,0,0,1]}},
   {n:"Космический оптимизм",    arch:"jarre",  s:1975,bpm:104,key:0, mode:"minor",
@@ -55,17 +84,14 @@ const RADIO_TRACKS=[
   {n:"Хор далёкой планеты",     arch:"solaris",s:1968,bpm:72, key:-2,mode:"dorian"},
   {n:"Вальс невесомости",       arch:"waltz",  s:1972,bpm:138,key:0, mode:"minor"},
   {n:"Позывные «Утренней звезды»",arch:"pozyv",s:1980,bpm:100,key:3, mode:"major",lead:"theremin"},
-  /* народная, общественное достояние: песня на стихи Некрасова (1861) */
-  {n:"Коробейники",             arch:"zodiac", s:1861,bpm:100,key:0, mode:"minor",
-    prog:{intro:[0,0,4,0],A:[4,0,4,0],B:[3,2,4,0],brk:[3,0,4,0],out:[0,0]},
-    mel:{A:[[[0,4,4],[4,1,2],[6,2,2],[8,3,4],[12,2,2],[14,1,2]],
-            [[0,0,4],[4,0,2],[6,2,2],[8,4,4],[12,3,2],[14,2,2]],
-            [[0,1,6],[6,2,2],[8,3,4],[12,4,4]],
-            [[0,2,4],[4,0,4],[8,0,8]]],
-         B:[[[0,3,6],[6,5,2],[8,7,4],[12,6,2],[14,5,2]],
-            [[0,4,6],[6,2,2],[8,4,4],[12,3,2],[14,2,2]],
-            [[0,1,4],[4,1,2],[6,2,2],[8,3,4],[12,4,4]],
-            [[0,2,4],[4,0,4],[8,0,4]]]}}
+  /* по фильмам */
+  {n:"Зона",                    arch:"stalker",s:1979,bpm:70, key:-3,mode:"phryg"},
+  {n:"Ку!",                     arch:"kindza", s:1986,bpm:108,key:2, mode:"minor"},
+  {n:"Письмо из будущего",      arch:"dalyoko",s:1985,bpm:84, key:1, mode:"major"},
+  {n:"Ступень к звёздам",       arch:"ternii", s:1981,bpm:78, key:-4,mode:"minor"},
+  {n:"Планета-загадка",         arch:"tretya", s:1981,bpm:102,key:4, mode:"mixo"},
+  {n:"Отроки на орбите",        arch:"pozyv",  s:1974,bpm:116,key:0, mode:"major",pad:"choirhi"},
+  {n:"Буря на Венере",          arch:"solaris",s:1962,bpm:64, key:-5,mode:"minor",arp:"drip",pad:"cluster"}
 ];
 const RADIO_MODES={
   minor:[0,2,3,5,7,8,10], dorian:[0,2,3,5,7,9,10], major:[0,2,4,5,7,9,11],
@@ -108,12 +134,17 @@ function radioBuild(){
   RADIO.ctx=c;
   RADIO.bus=c.createGain();RADIO.bus.gain.value=0;RADIO.bus.connect(SND.music);
   RADIO.lp=c.createBiquadFilter();RADIO.lp.type="lowpass";RADIO.lp.frequency.value=3200;RADIO.lp.Q.value=.3;
-  RADIO.lp.connect(RADIO.bus);
+  /* тёплая сатурация ленты: тихое проходит как есть, пики мягко сжимаются — звук
+     перестаёт быть «полифонией из телефона» */
+  const sat=c.createWaveShaper(),cu=new Float32Array(1024);
+  for(let i=0;i<1024;i++){const x=i*2/1023-1;cu[i]=Math.tanh(1.6*x)/Math.tanh(1.6);}
+  sat.curve=cu;sat.oversample="2x";
+  RADIO.lp.connect(sat);sat.connect(RADIO.bus);
   const d=c.createDelay(2),fb=c.createGain(),dt=c.createBiquadFilter(),dw=c.createGain();
   fb.gain.value=.3;dt.type="lowpass";dt.frequency.value=2200;dw.gain.value=.16;
   d.connect(dt);dt.connect(fb);fb.connect(d);dt.connect(dw);dw.connect(RADIO.bus);
   RADIO.dly=d;
-  const wet=c.createGain();wet.gain.value=.5;
+  const wet=c.createGain();wet.gain.value=.75;
   if(MUS.fx&&MUS.fx.send&&MUS.fx.send.context===c)wet.connect(MUS.fx.send);
   RADIO.layers={};
   for(const k of RADIO_LAYERS){
@@ -134,18 +165,47 @@ function radioBuild(){
   RADIO.noise=nb;
 }
 
-/* пьеса генератора: архетип, лад, темп, гармония и имя — всё из зерна */
+/* ── генератор: не выбирает готовый архетип, а СОБИРАЕТ пьесу из частей ──
+   Подложка, солист, ударные, два рисунка баса, фигурация, манера мелодии, контур,
+   тембр баса, срез, задержка — каждое из своего списка; гармония — случайное блуждание
+   по графу аккордов; форма — случайная последовательность частей; сверх того случайные
+   события: модуляция на тон в последней теме, «провал» каждые N тактов (остаются бас и
+   солист), соло без подложки, три четверти. Два зерна дают две по-разному устроенные
+   пьесы, а не одну в другой тональности. */
+const RADIO_CHORD_GRAPH={0:[5,3,4,2,6,5],5:[3,0,4,6,2],3:[4,0,5,1],4:[0,5,3,0],2:[5,3,6],6:[0,5,3,4],1:[4,0,3]};
+const RADIO_GEN_C=["над Тереком","у Кассиопеи","на Венере","в Зоне","до Плюка","за кольцами","на рассвете","в тумане","с орбиты","без ответа"];
 function radioGenTrack(n){
   const r=rng(hashi(n,0x5EED,77));
-  const pick=a=>a[Math.floor(r()*a.length)];
-  const arch=pick(Object.keys(RADIO_ARCH));
-  const BPM={zodiac:[92,114],berlin:[84,104],solaris:[66,80],waltz:[126,150],pozyv:[100,124],box:[72,88],bossa:[90,104],jarre:[98,116]}[arch];
-  return {n:pick(RADIO_GEN_A)+" "+pick(RADIO_GEN_B),arch,s:hashi(n,1957,3)>>>0,
-    bpm:Math.round(BPM[0]+r()*(BPM[1]-BPM[0])),key:Math.floor(r()*9)-4,
-    mode:arch==="pozyv"?pick(["major","mixo"]):pick(["minor","minor","dorian","dorian","mixo"]),
-    prog:RADIO_PROG_SETS[Math.floor(r()*RADIO_PROG_SETS.length)]};
+  const pick=a=>a[Math.floor(r()*a.length)],ch=p=>r()<p;
+  const bar=ch(.15)?12:16;
+  const mode=pick(["minor","minor","dorian","dorian","mixo","major","phryg"]);
+  /* гармония: блуждание по графу, аккорд держится такт или два */
+  const walk=(len)=>{const out=[];let d=0;while(out.length<len){const h=ch(.35)?2:1;for(let k=0;k<h&&out.length<len;k++)out.push(d);d=pick(RADIO_CHORD_GRAPH[d]||[0]);}out[len-1]=pick([4,6,4,3]);return out;};
+  const prog={A:walk(8),B:walk(8)};
+  if(ch(.5))prog.A[0]=0;
+  /* форма: вступление, 3–5 частей, конец */
+  const form=[["intro",pick([2,4,4,8])]];
+  const parts=pick([["A","A2","B","A"],["A","B","A","solo","A"],["A","B","brk","A2"],["A","A2","solo","B","A"],["A","B","A2","B"],["A","brk","A","B","A"]]);
+  for(const q of parts)form.push([q,q==="brk"||q==="solo"?4:8]);
+  form.push(["out",2]);
+  const drums=bar===12?"waltz":pick(["half","none","march","bossa","motor","soft","tabla","tango","timp","none"]);
+  const pad=pick(["strings","choir","organ","cluster","accordion","choirhi","strings","none"]);
+  const lead=pick(["polivoks","saw","theremin","flute","brass","bell","duduk","wobble"]);
+  const cap=w=>w[0].toUpperCase()+w.slice(1);
+  const name=ch(.3)?cap(pick(RADIO_GEN_B))+" "+pick(RADIO_GEN_C):pick(RADIO_GEN_A)+" "+pick(RADIO_GEN_B)+(ch(.25)?" "+pick(RADIO_GEN_C):"");
+  const bassKeys=Object.keys(RADIO_BASS).filter(k=>k[0]!=="w");
+  return {n:name,arch:"gen",s:hashi(n,1957,3)>>>0,
+    bpm:Math.round((bar===12?120:drums==="none"?66:80)+r()*(bar===12?36:44)),key:Math.floor(r()*9)-4,mode,bar,prog,form,
+    pad,lead,drums,padB:ch(.3)?pick(["choirhi","choir","strings","cluster"]):null,
+    bassA:bar===12?"wz":pick(bassKeys),bassB:bar===12?"wzwalk":pick(bassKeys),
+    arp:pick(["seq16","up8","bleep","drip","none","none"]),rh:bar===12?"waltz":pick(Object.keys(RADIO_RH).filter(k=>k!=="waltz")),
+    contour:pick(["fall","rise","arch","zig"]),bassTone:pick(["pluck","round","synth"]),
+    bell:r()*.7,dr:.3+r()*.7,cut:Math.round(2400+r()*2600),dlyMul:pick([2,3,4]),
+    waves:ch(.2),build:drums==="none"&&ch(.5),epic:ch(.15),
+    modUp:ch(.35)?2:0,dropEvery:ch(.4)?pick([4,8]):0};
 }
 function radioForm(){
+  if(RADIO.trk.form)return RADIO.trk.form;
   const bpm=RADIO.trk.bpm*(radioA("bar")===12?.75:1);
   /* берлинская школа нарастает слоями — длинное вступление вместо бриджа */
   if(radioA("build"))return [["intro",8],["A",8],["A2",8],["B",4],["A",8],["out",2]];
@@ -161,6 +221,7 @@ function radioLoad(t){
   else{
     trk=RADIO_TRACKS[((a.track|0)%RADIO_TRACKS.length+RADIO_TRACKS.length)%RADIO_TRACKS.length];
     if(!trk.prog)trk.prog=RADIO_PROG_SETS[(trk.s>>>2)%RADIO_PROG_SETS.length];
+    trk.form=null;
   }
   RADIO.trk=trk;RADIO.title=trk.n;RADIO.r=rng(trk.s>>>0||1);
   RADIO.form=radioForm();RADIO.bars=RADIO.form.reduce((s,f)=>s+f[1],0);
@@ -191,20 +252,20 @@ function radioMoodNow(){
 function radioDrumStyle(){const m=RADIO_MOOD[RADIO.mood];return (m&&m.drums)||radioA("drums");}
 function radioMix(t,instant){
   const m=RADIO_MOOD[RADIO.mood]||RADIO_MOOD.travel,sec=RADIO.sec||"A";
-  const off=(sec==="intro"||sec==="brk"||sec==="out");
+  const off=(sec==="intro"||sec==="brk"||sec==="out"),solo=sec==="solo";
   /* барабаны: у архетипа без ударных их нет и в полёте; опасность и кантина приносят свои */
   const dr=(radioDrumStyle()==="none"?0:(radioA("dr")||.6))*m.dr;
   /* берлинская школа: во вступлении слои входят по одному — секвенсор, потом бипы, потом подложка */
   let arpIn=1,padIn=1;
   if(radioA("build")&&sec==="intro"){const bi=Math.floor(RADIO.step/(radioBar()*2));arpIn=bi>=1?1:0;padIn=bi>=2?1:0;}
-  const L={pad:(radioA("pad")==="none"?0:.9)*m.pad*padIn,bass:.9*m.bass,lead:off?0:m.lead,
-    harm:sec==="A2"||sec==="B"?.6*m.lead:0,arp:(radioA("arp")==="none"?0:.8)*m.arp*arpIn*(sec==="brk"?.5:1),
+  const L={pad:(radioA("pad")==="none"||solo?0:(radioA("epic")?1.1:.9))*m.pad*padIn,bass:.9*m.bass,lead:off?0:m.lead*(solo?1.2:1),
+    harm:sec==="A2"||sec==="B"?.6*m.lead:0,arp:(radioA("arp")==="none"||solo?0:.8)*m.arp*arpIn*(sec==="brk"?.5:1),
     kick:dr*(off&&sec!=="brk"?0:1),snare:dr*(off?0:.8),hat:dr*(sec==="brk"?0:.5),
     bell:radioA("bell"),fx:radioA("waves")?.8:0};
   const glide=(p,v,tc)=>{p.cancelScheduledValues(t);p.setValueAtTime(p.value,t);p.linearRampToValueAtTime(v,t+(instant?.05:tc));};
   for(const k of RADIO_LAYERS)glide(RADIO.layers[k].gain,L[k],1.5);
   glide(RADIO.lp.frequency,Math.min(9000,radioA("cut")*m.cut),2);
-  RADIO.dly.delayTime.setValueAtTime(radioS16()*3,t);
+  RADIO.dly.delayTime.setValueAtTime(radioS16()*(radioA("dlyMul")||3),t);
 }
 function radioBar(){return radioA("bar")===12?12:16;}   // вальс — три четверти
 function radioBpm(){return RADIO.trk.bpm*((RADIO_MOOD[RADIO.mood]||{}).k||1);}
@@ -232,8 +293,8 @@ function radioTick(){
 }
 function radioWhere(bar){
   let b=bar;
-  for(const [name,len] of RADIO.form){if(b<len)return {name,barIn:b,len};b-=len;}
-  return {name:"out",barIn:0,len:1};
+  for(let i=0;i<RADIO.form.length;i++){const [name,len]=RADIO.form[i];if(b<len)return {name,barIn:b,len,i,last:i>=RADIO.form.length-2};b-=len;}
+  return {name:"out",barIn:0,len:1,i:RADIO.form.length,last:true};
 }
 function radioStep(t){
   const B=radioBar(),s=RADIO.step%B,bar=Math.floor(RADIO.step/B),w=radioWhere(bar),r=RADIO.r;
@@ -253,11 +314,13 @@ function radioStep(t){
   const prog=(m.prog&&!RADIO.trk.mel)?RADIO_PROGS[m.prog]:
     (TP&&TP[w.name])||RADIO_PROGS[w.name]||(TP&&TP.A)||RADIO_PROG_SETS[0].A;
   const cd=prog[w.barIn%prog.length],nextCd=prog[(w.barIn+1)%prog.length];
-  const key=RADIO.trk.key-12;                 // 0 = A2 → бас в первой октаве
-  if(s===0)radioPad(t,key,cd,radioS16()*B);
+  /* модуляция на тон в последней теме; «провал» — такт, где остаются бас и солист */
+  const key=RADIO.trk.key-12+(w.last&&w.name!=="out"?(radioA("modUp")|0):0);   // 0 = A2 → бас в первой октаве
+  const DE=radioA("dropEvery")|0,drop=DE>0&&bar%DE===DE-1&&w.name!=="intro"&&w.name!=="out";
+  if(s===0&&!drop)radioPad(t,key,cd,radioS16()*B,(w.name==="B"&&radioA("padB"))||radioA("pad"));
   radioBass(t,s,key,cd,w,nextCd);
-  radioArp(t,s,key,cd);
-  radioDrums(t,s,w);
+  if(!drop)radioArp(t,s,key,cd);
+  if(!drop)radioDrums(t,s,w);
   radioMelody(t,s,w,key,cd);
   if(s===0&&bar%2===0&&r()<.5)radioBell(t,key,cd);
   if(s===0&&bar%4===0&&radioA("waves"))radioWave(t,radioS16()*B*2);
@@ -277,11 +340,12 @@ function radioPhrase(){
   /* манера: фанфара прыгает по звукам аккорда вверх, шкатулка и босса ходят ступенями,
      «Солярис» и берлинцы тянут и сползают вниз */
   const jump=rh==="dotted"?[0,2,4,7,4,7]:[0,2,4,7,2,4];
-  const step=rh==="long"?[-1,-1,-2,1]:rh==="dotted"?[1,2,-1,1]:[-1,-1,1,-2];
+  const CT={fall:[-1,-1,-2,1],rise:[1,1,2,-1],zig:[-2,2,-1,1,3,-3]};
+  const ct=radioA("contour"),step=CT[ct]||(rh==="long"?[-1,-1,-2,1]:rh==="dotted"?[1,2,-1,1]:[-1,-1,1,-2]);
   const mk=(on)=>{const out=[];let d=pick([0,2,4]);
     on.forEach((st,i)=>{
       if(st%4===0)d=pick(jump);                   // на доле — звук аккорда
-      else d+=pick(step);                         // между — шаг
+      else d+=pick(ct==="arch"?(st<B/2?CT.rise:CT.fall):step);   // между — шаг по контуру
       out.push({st,d,dur:(on[i+1]==null?B:on[i+1])-st});
     });return out;};
   const b1=mk(pick(RADIO_RH[rh])),b2=mk(pick(RADIO_EN[rh]));
@@ -290,7 +354,7 @@ function radioPhrase(){
 }
 function radioMelody(t,s,w,key,cd){
   if(w.name==="intro"||w.name==="brk"||w.name==="out")return;
-  const k=w.name==="A2"?"A":w.name;
+  const k=w.name==="A2"||w.name==="solo"?"A":w.name;
   /* готовая мелодия (народная): такты по кругу, ступени от тоники */
   const FM=RADIO.trk.mel&&(RADIO.trk.mel[k]||RADIO.trk.mel.A);
   if(FM){
@@ -322,21 +386,42 @@ function radioEnv(g,t,a,peak,hold,rel){
 }
 /* подложка: струнный ансамбль (три пилы), хор (пила через форманты «а»),
    органчик «Электроника» (регистры 8′, 4′, 2⅔′ без фильтра, ровный звук) */
-function radioPad(t,key,cd,dur){
-  const kind=radioA("pad");
+function radioPad(t,key,cd,dur,kind){
+  kind=kind||radioA("pad");
   if(kind==="none")return;
+  /* кластер АНС: восемь синусов, расстроенных на четверть тона, дышат медленно */
+  if(kind==="cluster"){
+    const c=SND.ctx;
+    for(let i=0;i<8;i++){
+      const o=c.createOscillator(),g=c.createGain(),lfo=c.createOscillator(),lg=c.createGain(),p=c.createStereoPanner();
+      o.type="sine";o.frequency.value=midiHz(key+12+radioDeg(cd+[0,2,4,7][i%4]))*(1+(RADIO.r()-.5)*.03);
+      lfo.frequency.value=.08+RADIO.r()*.12;lg.gain.value=.004;lfo.connect(lg);lg.connect(g.gain);
+      p.pan.value=(i/7)*1.4-.7;
+      const end=radioEnv(g.gain,t,1.2,.011,dur-.5,1.5);
+      o.connect(g);g.connect(p);p.connect(RADIO.padIn);o.start(t);lfo.start(t);o.stop(end+.1);lfo.stop(end+.1);
+    }
+    return;
+  }
   const c=SND.ctx;
   [0,2,4,7].forEach((iv,i)=>{
-    const f=midiHz(key+12+radioDeg(cd+iv)),g=c.createGain(),p=c.createStereoPanner();
+    const f=midiHz(key+12+radioDeg(cd+iv)+(kind==="choirhi"?12:0)),g=c.createGain(),p=c.createStereoPanner();
     p.pan.value=-.4+i*.27;
     const org=kind==="organ";
     const end=radioEnv(g.gain,t,org?.03:.35,org?.012:.018,dur-.1,org?.15:.7);
     let dst=g;
-    if(kind==="choir"){
+    /* аккордеон: пила сквозь язычковую полосу, с дрожью; детский хор — форманты «и» октавой выше */
+    if(kind==="accordion"){
+      dst=c.createBiquadFilter();dst.type="bandpass";dst.frequency.value=900;dst.Q.value=1.2;
+      const ag=c.createGain();ag.gain.value=.7;dst.connect(ag);ag.connect(g);
+      const lfo=c.createOscillator(),lg=c.createGain();lfo.frequency.value=6;lg.gain.value=.15;
+      lfo.connect(lg);lg.connect(g.gain);lfo.start(t);lfo.stop(end+.1);
+    }
+    if(kind==="choir"||kind==="choirhi"){
       dst=c.createGain();
-      for(const [hz,q,v] of [[730,7,1.6],[1090,8,1.1],[2440,10,.35]]){
+      const hi=kind==="choirhi";
+      for(const [hz,q,v] of hi?[[400,8,1.4],[2200,9,1.2],[2900,11,.5]]:[[730,7,1.6],[1090,8,1.1],[2440,10,.35]]){
         const bp=c.createBiquadFilter();bp.type="bandpass";bp.frequency.value=hz*(1+(i-1.5)*.02);bp.Q.value=q;
-        const bg=c.createGain();bg.gain.value=v*2.2;dst.connect(bp);bp.connect(bg);bg.connect(g);
+        const bg=c.createGain();bg.gain.value=v*(hi?1.1:2.2);dst.connect(bp);bp.connect(bg);bg.connect(g);
       }
     }
     if(org){
@@ -344,9 +429,9 @@ function radioPad(t,key,cd,dur){
         const o=c.createOscillator(),og=c.createGain();o.type="sine";o.frequency.value=f*mul;og.gain.value=v;
         o.connect(og);og.connect(g);o.start(t);o.stop(end+.05);
       }
-    }else for(const ct of [-9,0,9]){
-      const o=c.createOscillator();o.type="sawtooth";o.frequency.value=f;o.detune.value=ct;
-      o.connect(dst);o.start(t);o.stop(end+.05);
+    }else for(const ct of [-14,-6,0,6,14]){        // унисон из пяти: плотный «ансамбль», а не писк
+      const o=c.createOscillator(),og=c.createGain();o.type="sawtooth";o.frequency.value=f;o.detune.value=ct+(RADIO.r()-.5)*3;
+      og.gain.value=.6;o.connect(og);og.connect(dst);o.start(t);o.stop(end+.05);
     }
     g.connect(p);p.connect(RADIO.padIn);
   });
@@ -376,6 +461,7 @@ const RADIO_BASS={
   /* ровный пульс восьмыми — тревога, мотор */
   pulse: [[0,"r",1],[2,"r",1],[4,"r",1],[6,"r",1],[8,"r",1],[10,"r",1],[12,"r",1],[14,"5",1]],
   bossa: [[0,"r",3],[3,"5",1],[4,"5",4],[8,"r",3],[11,"5",1],[12,"5",4]],
+  tango: [[0,"r",3],[3,"5",1],[4,"r",2],[6,"5",2],[8,"r",3],[11,"5",1],[12,"3",2],[14,"a",2]],
   wz:    [[0,"r",8],[8,"5",4]],
   wzwalk:[[0,"r",4],[4,"5",4],[8,"a",4]]
 };
@@ -399,7 +485,7 @@ function radioBass(t,s,key,cd,w,nextCd){
   else if(mo.bass_)name=radioBassPick(mo.bass_);
   else if(calm&&radioA("bassA")!=="seq")name=radioBassPick("calm");
   else if(w.name==="intro"||w.name==="out")name=radioA("build")?"seq":radioBassPick("calm");
-  else if(w.name==="B"||w.name==="brk")name=radioBassPick(radioA("bassB"));
+  else if(w.name==="B"||w.name==="brk"||w.name==="solo")name=radioBassPick(radioA("bassB"));
   else name=radioBassPick(radioA("bassA"));
   let pat=RADIO_BASS[name];
   /* сбивка: четвёртый такт кончается пробежкой к следующему аккорду */
@@ -443,6 +529,9 @@ function radioBassVoice(t,midi,dur,acc,pat,s){
   RADIO.bassPrev=hz;
   const end=radioEnv(g.gain,t,pat==="glide"?.08:.006,(pat==="seq"?.075:.1)*acc,Math.max(.02,dur-.08),.12);
   o.connect(f);f.connect(g);g.connect(RADIO.layers.bass);o.start(t);o.stop(end+.05);
+  /* саб: чистый синус октавой ниже, короче ноты — низ ощущается, а не бубнит */
+  if(tone!=="round"&&midi>-20){const sb=c.createOscillator(),sg=c.createGain();sb.type="sine";sb.frequency.value=hz/2;
+    const e2=radioEnv(sg.gain,t,.01,.07*acc,Math.max(.02,dur*.6),.08);sb.connect(sg);sg.connect(RADIO.layers.bass);sb.start(t);sb.stop(e2+.05);}
 }
 
 /* фигурация: шестнадцатые по аккорду, восьмые вверх, или «бипы» — случайные высокие
@@ -451,6 +540,14 @@ function radioArp(t,s,key,cd){
   const kind=RADIO.mood==="danger"?"seq16":radioA("arp");
   if(kind==="none")return;
   let d;
+  if(kind==="drip"){        // капля: короткий синус с падением высоты, редко
+    if(RADIO.r()>.12)return;
+    const c=SND.ctx,o=c.createOscillator(),g=c.createGain(),p=c.createStereoPanner();
+    o.type="sine";o.frequency.setValueAtTime(1800+RADIO.r()*900,t);o.frequency.exponentialRampToValueAtTime(500,t+.09);
+    p.pan.value=RADIO.r()*1.6-.8;
+    const end=radioEnv(g.gain,t,.003,.02,.01,.1);
+    o.connect(g);g.connect(p);p.connect(RADIO.layers.arp);o.start(t);o.stop(end+.03);return;
+  }
   if(kind==="seq16")d=[0,2,4,7,9,7,4,2][s%8];
   else if(kind==="up8"){if(s%2)return;d=[0,2,4,7][(s>>1)%4]+((s>>3)%2?7:0);}
   else{if(RADIO.r()>.28)return;d=Math.floor(RADIO.r()*10);}
@@ -467,23 +564,29 @@ function radioLead(t,midi,dur,layer){
   const c=SND.ctx,hz=midiHz(midi),harm=layer==="harm",kind=harm?"harm":radioA("lead");
   if(kind==="bell"){radioBellVoice(t,hz,Math.min(1.6,dur+.8),RADIO.layers.lead,.03);return;}
   const o1=c.createOscillator(),o2=c.createOscillator();
-  const th=kind==="theremin",fl=kind==="flute",br=kind==="brass",pv=kind==="polivoks";
-  o1.type=th||fl?"sine":harm?"triangle":"sawtooth";
-  o2.type=th?"triangle":fl?"sine":harm?"sine":"sawtooth";
-  o2.detune.value=th?2:fl?1200:pv?14:br?7:9;
-  /* подъезд к ноте: у терменвокса на каждой, у прочих изредка — иначе мультфильм */
-  const from=!harm&&RADIO.prevLead&&(th||RADIO.r()<.2)?RADIO.prevLead:hz;
-  for(const o of [o1,o2]){o.frequency.setValueAtTime(from,t);o.frequency.exponentialRampToValueAtTime(hz,t+(th?.22:.06));}
+  const th=kind==="theremin",fl=kind==="flute",br=kind==="brass",pv=kind==="polivoks",du=kind==="duduk",wo=kind==="wobble";
+  o1.type=th||fl?"sine":wo?"triangle":harm?"triangle":"sawtooth";
+  o2.type=th?"triangle":fl||wo?"sine":harm?"sine":"sawtooth";
+  o2.detune.value=th?2:fl?1200:wo?1200:pv?14:br?7:9;
+  /* подъезд к ноте: у терменвокса на каждой, у дудука форшлаг снизу, у прочих изредка */
+  const from=du?hz*Math.pow(2,-1/12):!harm&&RADIO.prevLead&&(th||RADIO.r()<.2)?RADIO.prevLead:hz;
+  for(const o of [o1,o2]){o.frequency.setValueAtTime(from,t);o.frequency.exponentialRampToValueAtTime(hz,t+(th?.22:du?.12:.06));}
   if(!harm)RADIO.prevLead=hz;
-  const lfo=c.createOscillator(),lg=c.createGain();lfo.frequency.value=fl?5.2:4.8;
-  lg.gain.setValueAtTime(0,t);lg.gain.linearRampToValueAtTime(0,t+.18);lg.gain.linearRampToValueAtTime(hz*(th?.012:fl?.003:.005),t+.6);
+  /* вибрато: у «плывущего» синтезатора быстрое и сразу, у дудука широкое и позднее */
+  const lfo=c.createOscillator(),lg=c.createGain();lfo.frequency.value=wo?6.5:fl?5.2:du?4.2:4.8;
+  lg.gain.setValueAtTime(wo?hz*.012:0,t);lg.gain.linearRampToValueAtTime(wo?hz*.012:0,t+.18);lg.gain.linearRampToValueAtTime(hz*(th?.012:fl?.003:du?.014:wo?.012:.005),t+(du?.9:.6));
   lfo.connect(lg);lg.connect(o1.frequency);lg.connect(o2.frequency);
-  const f=c.createBiquadFilter();f.type="lowpass";f.Q.value=pv?9:br?3:2;
+  const f=c.createBiquadFilter();f.type="lowpass";f.Q.value=pv?9:br?3:du?3:2;
+  if(du){f.frequency.setValueAtTime(1100,t);f.frequency.linearRampToValueAtTime(1500,t+dur*.6);f.frequency.linearRampToValueAtTime(900,t+dur);}
+  else
   if(br){f.frequency.setValueAtTime(500,t);f.frequency.exponentialRampToValueAtTime(2600,t+.12);f.frequency.exponentialRampToValueAtTime(1600,t+.5);}
   else{f.frequency.setValueAtTime(pv?3200:fl?3000:harm?1400:2200,t);f.frequency.exponentialRampToValueAtTime(pv?900:fl?2400:harm?1000:1500,t+(pv?.25:.4));}
   const g=c.createGain(),o2g=c.createGain();o2g.gain.value=fl?.12:1;
-  const end=radioEnv(g.gain,t,fl?.08:br?.03:.06,harm?.016:fl?.034:br?.028:.026,dur,fl?.25:.35);
+  const end=radioEnv(g.gain,t,fl?.08:du?.15:br?.03:.06,harm?.016:fl?.034:du?.03:br?.028:.026,dur,fl?.25:du?.5:.35);
   o1.connect(f);o2.connect(o2g);o2g.connect(f);f.connect(g);g.connect(RADIO.layers[layer]);
+  /* тело: у пил тихая октава снизу — солист перестаёт быть тонким */
+  if(!harm&&!th&&!fl&&!wo){const o3=c.createOscillator(),g3=c.createGain();o3.type="sawtooth";o3.frequency.value=hz/2;g3.gain.value=.35;
+    o3.connect(g3);g3.connect(f);o3.start(t);o3.stop(end+.05);}
   for(const o of [o1,o2,lfo]){o.start(t);o.stop(end+.05);}
   if(fl){          // дыхание флейты: короткий шум на атаке
     const n=c.createBufferSource(),bp=c.createBiquadFilter(),ng=c.createGain();
@@ -517,10 +620,35 @@ function radioDrums(t,s,w){
     if(s%4===0)radioKick(t,.6);if(s===4||s===12)radioSnare(t,.6);
     if(s%2===0)radioHat(t,.4);
     if(fill&&s>=12)radioSnare(t,.4);
+  }else if(st==="tabla"){                                     // редкая табла: низкий «ге», высокий «на»
+    if(s===0||s===10)radioTabla(t,1);if(s===6||s===13)radioTabla(t,0);
+  }else if(st==="tango"){                                     // хабанера
+    if(s===0||s===3||s===4||s===6||s===8||s===11||s===12||s===14)radioKick(t,s%4===0?.9:.5);
+    if(s===4||s===12)radioSnare(t,.7);if(s===8||s===14)radioRim(t);
+  }else if(st==="timp"){                                      // литавры: удар на раз, дробь в конец
+    if(s===0)radioTimp(t,1);if(s===8)radioTimp(t,.6);
+    if(fill&&s>=10)radioTimp(t,.3+(s-10)*.1);
+  }else if(st==="soft"){                                      // щётки
+    if(s===0)radioKick(t,.5);if(s===8)radioRim(t);if(s%2===0)radioHat(t,.3);
   }else if(st==="pulse"){                                     // тревога
     if(s%4===0||s===14)radioKick(t);if(s===8)radioSnare(t,1);
     if(s%2===1)radioHat(t,.35);if(s%4===2)radioHat(t,.6);
   }
+}
+function radioTabla(t,low){
+  const c=SND.ctx,o=c.createOscillator(),g=c.createGain();
+  o.type="sine";o.frequency.setValueAtTime(low?190:620,t);o.frequency.exponentialRampToValueAtTime(low?110:560,t+(low?.18:.05));
+  g.gain.setValueAtTime(low?.14:.06,t);g.gain.exponentialRampToValueAtTime(.001,t+(low?.3:.08));
+  o.connect(g);g.connect(RADIO.layers.kick);o.start(t);o.stop(t+.35);
+}
+function radioTimp(t,v){
+  const c=SND.ctx,o=c.createOscillator(),g=c.createGain(),n=c.createBufferSource(),ng=c.createGain(),bp=c.createBiquadFilter();
+  o.type="sine";o.frequency.setValueAtTime(90,t);o.frequency.exponentialRampToValueAtTime(58,t+.5);
+  g.gain.setValueAtTime(.3*v,t);g.gain.exponentialRampToValueAtTime(.001,t+.9);
+  n.buffer=RADIO.noise;bp.type="lowpass";bp.frequency.value=400;
+  ng.gain.setValueAtTime(.08*v,t);ng.gain.exponentialRampToValueAtTime(.001,t+.1);
+  o.connect(g);g.connect(RADIO.layers.kick);n.connect(bp);bp.connect(ng);ng.connect(RADIO.layers.kick);
+  o.start(t);o.stop(t+1);n.start(t,RADIO.r()*.5,.12);n.stop(t+.12);
 }
 function radioKick(t,v){
   v=v||1;
