@@ -170,6 +170,14 @@ function opisPanels(){
     const cap=capUsed(),capM=capOf(G.shipId);
     const n=opisPanel("ship","ПРИБОРЫ",OPIS_SHIP,stat(),opisShipFuture(f),
       "оснастка "+cap+"/"+capM);
+    /* корпус помнит (D18): шрамы строками под приборами — что и чем платите */
+    if(typeof scarsOf==="function"){
+      const sc=scarsOf(shipData(G.shipId));
+      if(sc.length){let h="<div class='grp'>корпус помнит</div>";
+        for(const k of sc)h+="<div class='ln scar'><em>"+SCAR_KIND[k].ru+"</em><b>"+SCAR_KIND[k].fx+"</b></div>";
+        h+="<div class='why'>чинит верфь · корпус со шрамами дешевле</div>";
+        n.insertAdjacentHTML("beforeend",h);}
+    }
     oldS.replaceWith(n);OPIS.panels.ship=n;
   }
   if(oldK&&oldK.isConnected){

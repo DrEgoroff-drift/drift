@@ -1996,6 +1996,9 @@ body.table u.addr{color:#7a4a20}
 .row.sub-off::after{content:"ЗАБЛОКИРОВАНО";position:absolute;right:14px;top:8px;padding:2px 6px;border:2px solid rgba(200,40,40,.75);border-radius:3px;
   color:rgba(200,40,40,.85);font:700 9px ui-monospace,monospace;letter-spacing:.14em;transform:rotate(-8deg);pointer-events:none}
 
+/* корпус помнит (D18): строки шрамов под приборами — ржавым */
+.op-panel .ln.scar em{color:#c8763c}.op-panel .ln.scar b{color:#c8763c;font-weight:400;font-size:10px}
+
 </style>
 </head>
 <body>
@@ -5078,20 +5081,28 @@ function drawScars(h,id){
   const S=shipData(id);if(!S)return;
   const sc=scarsOf(S);if(!sc.length)return;
   const L=h.len,bw=h.bw,r=rng(hashi(h.seed||1,0x5CA2,7));
+  /* где именно (D18): шрам лежит на своей клетке чертежа — ожог на палубной
+     клетке (трюм), излом у подвеса орудия, потёк у кормовой клетки (бак) */
+  const P=(typeof planOf==="function")?planOf(id):null,cells=(P&&P.cells)||[];
+  const pickCell=(kind,seed)=>{const L2=cells.filter(q=>q&&q.kind===kind);return L2.length?L2[hashi(seed,L2.length,0x5CA3)%L2.length]:null;};
+  const M=(typeof mountsOf==="function")?mountsOf(id):[];
   for(const k of sc){
     if(k==="burn"){
-      const x=h.tail+L*(.18+r()*.12),y=(r()*2-1)*bw*.3,R=bw*.34;
+      const q=pickCell("deck",h.seed|0);
+      const x=q?q.x:h.tail+L*(.18+r()*.12),y=q?q.y:(r()*2-1)*bw*.3,R=bw*.34;
       const g=ctx.createRadialGradient(x,y,0,x,y,R);
       g.addColorStop(0,"rgba(20,14,10,.85)");g.addColorStop(.6,"rgba(40,26,16,.55)");g.addColorStop(1,"rgba(150,70,30,0)");
       ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(x,y,R*1.3,R*.8,r()*.6,0,TAU);ctx.fill();
     }else if(k==="bent"){
-      const s=r()<.5?-1:1,x=h.tail+L*(.4+r()*.3),y=s*profW(h.prof,x)*.92,d=bw*.14;
+      const m=M.length?M[hashi(h.seed|0,M.length,0x5CA4)%M.length]:null;
+      const s=m?(m.y<0?-1:1):(r()<.5?-1:1),x=m?m.x:h.tail+L*(.4+r()*.3),y=s*profW(h.prof,x)*.92,d=bw*.14;
       ctx.strokeStyle="rgba(0,0,0,.55)";ctx.lineWidth=1.2;
       ctx.beginPath();ctx.moveTo(x-d*1.6,y);ctx.lineTo(x-d*.3,y-s*d);ctx.lineTo(x+d*.6,y+s*d*.3);ctx.lineTo(x+d*1.8,y);ctx.stroke();
       ctx.strokeStyle="rgba(255,255,255,.28)";ctx.lineWidth=.6;
       ctx.beginPath();ctx.moveTo(x-d*1.4,y+s*.6);ctx.lineTo(x-d*.3,y-s*d+s*.6);ctx.stroke();
     }else if(k==="leak"){
-      const x0=h.tail+L*(.5+r()*.2),y0=(r()*2-1)*bw*.35,len=L*.22;
+      const q=pickCell("stern",(h.seed|0)+3);
+      const x0=q?q.x+bw*.1:h.tail+L*(.5+r()*.2),y0=q?q.y:(r()*2-1)*bw*.35,len=L*.22;
       const g=ctx.createLinearGradient(x0,y0,x0-len,y0);
       g.addColorStop(0,"rgba(30,26,22,.7)");g.addColorStop(1,"rgba(30,26,22,0)");
       ctx.strokeStyle=g;ctx.lineWidth=Math.max(1,bw*.07);ctx.lineCap="round";
@@ -91077,6 +91088,14 @@ function opisPanels(){
     const cap=capUsed(),capM=capOf(G.shipId);
     const n=opisPanel("ship","ПРИБОРЫ",OPIS_SHIP,stat(),opisShipFuture(f),
       "оснастка "+cap+"/"+capM);
+    /* корпус помнит (D18): шрамы строками под приборами — что и чем платите */
+    if(typeof scarsOf==="function"){
+      const sc=scarsOf(shipData(G.shipId));
+      if(sc.length){let h="<div class='grp'>корпус помнит</div>";
+        for(const k of sc)h+="<div class='ln scar'><em>"+SCAR_KIND[k].ru+"</em><b>"+SCAR_KIND[k].fx+"</b></div>";
+        h+="<div class='why'>чинит верфь · корпус со шрамами дешевле</div>";
+        n.insertAdjacentHTML("beforeend",h);}
+    }
     oldS.replaceWith(n);OPIS.panels.ship=n;
   }
   if(oldK&&oldK.isConnected){

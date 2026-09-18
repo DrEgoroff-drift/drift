@@ -1435,7 +1435,7 @@ drawHomeOut                  src/21f-home-out.js:73-312
 drawHomeRoom                 src/27e-ui-home.js:42-62
 drawHotel                    src/17l-hotel.js:18-34
 drawHqRoom                   src/27f-hq-room.js:22-31
-drawHull                     src/03e-hull-draw.js:57-130
+drawHull                     src/03e-hull-draw.js:65-138
 drawHullMarks                src/03b-hull-paint.js:184-491
 drawKitFigure                src/12x-suit.js:202-299
 drawLander                   src/19f-lander.js:52-340
@@ -1475,9 +1475,9 @@ drawRoad                     src/27l-road-draw.js:87-622
 drawRocks                    src/19-mode-landing-ground.js:294-386
 drawRouteMap                 src/12r-route.js:267-323
 drawRungRing                 src/12ae-ladder.js:72-87
-drawScars                    src/03e-hull-draw.js:5-31
+drawScars                    src/03e-hull-draw.js:5-39
 drawScoop                    src/19a-mode-scoop.js:271-602
-drawSeal                     src/03e-hull-draw.js:36-47
+drawSeal                     src/03e-hull-draw.js:44-55
 drawSeams                    src/12s-wear.js:184-199
 drawShuttleArc               src/17f-sys-traffic.js:43-79
 drawSkyBase                  src/19c-light.js:296-329
@@ -1515,7 +1515,7 @@ drawThingIcon                src/27i-ui-table.js:400-454
 drawTierTrim                 src/03b-hull-paint.js:73-166
 drawTiles                    src/18c-chunks.js:144-151
 drawTrail                    src/16-flight.js:562-650
-drawTransitPlate             src/03e-hull-draw.js:48-56
+drawTransitPlate             src/03e-hull-draw.js:56-64
 drawVan                      src/21ac3-base-van.js:71-133
 drawVanSmall                 src/21ac3-base-van.js:135-141
 drawWake                     src/16-flight.js:393-462
@@ -2419,7 +2419,7 @@ holdSkyMul                   src/12ag-holdfx.js:117
 holdTechMul                  src/12ag-holdfx.js:119
 holdTestStation              tests/91x-hold.js:2-9
 holdUklad                    src/12ah-holdnews.js:19-24
-holdWorth                    src/27j-ui-opis.js:586-594
+holdWorth                    src/27j-ui-opis.js:594-602
 holEtherLine                 src/11am-holiday.js:76-82
 HOLIDAYS                     src/11am-holiday.js:22-25
 holMap                       src/11am-holiday.js:59
@@ -2550,9 +2550,9 @@ hullHeld                     src/28-loop.js:9
 hullHeldTick                 src/28-loop.js:10-15
 hullInkBox                   src/03e1-hull-bake.js:112-123
 hullOf                       src/03a-hull-gen.js:1-532
-hullPart1                    src/03e-hull-draw.js:135-611
-hullPart2                    src/03e-hull-draw.js:613-616
-hullPart3                    src/03e-hull-draw.js:619-696
+hullPart1                    src/03e-hull-draw.js:143-619
+hullPart2                    src/03e-hull-draw.js:621-624
+hullPart3                    src/03e-hull-draw.js:627-704
 hullRole                     src/03f-hull-role.js:51
 hullShade                    src/03b-hull-paint.js:176-183
 hullSilhouette               src/27-ui-ship.js:9-43
@@ -3470,54 +3470,54 @@ OPIS_HW                      src/27j-ui-opis.js:70
 OPIS_KIT                     src/27j-ui-opis.js:62-69
 OPIS_SHIP                    src/27j-ui-opis.js:44-61
 OPIS_TABS                    src/27j-ui-opis.js:37
-opisActs                     src/27j-ui-opis.js:514-524
-opisArmed                    src/27j-ui-opis.js:187
-opisAsk                      src/27j-ui-opis.js:223-226
-opisAskForm                  src/27j-ui-opis.js:667-685
-opisBar                      src/27j-ui-opis.js:687-703
-opisCanDump                  src/27j-ui-opis.js:222
-opisCard                     src/27j-ui-opis.js:500-513
-opisConfirm                  src/27j-ui-opis.js:188-192
-opisDragWire                 src/27j-ui-opis.js:246-267
-opisDrawBox                  src/27j-ui-opis.js:446-474
-opisDrawHatch                src/27j-ui-opis.js:475-498
-opisDrawMatchbox             src/27j-ui-opis.js:424-445
-opisDrop                     src/27j-ui-opis.js:354-392
-opisDropAt                   src/27j-ui-opis.js:337-342
-opisDropEnd                  src/27j-ui-opis.js:343-353
-opisDump                     src/27j-ui-opis.js:227-236
-opisFit                      src/27j-ui-opis.js:193-207
+opisActs                     src/27j-ui-opis.js:522-532
+opisArmed                    src/27j-ui-opis.js:195
+opisAsk                      src/27j-ui-opis.js:231-234
+opisAskForm                  src/27j-ui-opis.js:675-693
+opisBar                      src/27j-ui-opis.js:695-711
+opisCanDump                  src/27j-ui-opis.js:230
+opisCard                     src/27j-ui-opis.js:508-521
+opisConfirm                  src/27j-ui-opis.js:196-200
+opisDragWire                 src/27j-ui-opis.js:254-275
+opisDrawBox                  src/27j-ui-opis.js:454-482
+opisDrawHatch                src/27j-ui-opis.js:483-506
+opisDrawMatchbox             src/27j-ui-opis.js:432-453
+opisDrop                     src/27j-ui-opis.js:362-400
+opisDropAt                   src/27j-ui-opis.js:345-350
+opisDropEnd                  src/27j-ui-opis.js:351-361
+opisDump                     src/27j-ui-opis.js:235-244
+opisFit                      src/27j-ui-opis.js:201-215
 opisFocus                    src/27j-ui-opis.js:86
-opisFold                     src/27j-ui-opis.js:629-633
-opisGhostMove                src/27j-ui-opis.js:311-314
-opisHead                     src/27j-ui-opis.js:661-665
-opisHullCap                  src/27j-ui-opis.js:637-660
-opisHullRedraw               src/27j-ui-opis.js:394-410
-opisHullSlotAt               src/27j-ui-opis.js:411-422
-opisKitCard                  src/27j-ui-opis.js:617-625
+opisFold                     src/27j-ui-opis.js:637-641
+opisGhostMove                src/27j-ui-opis.js:319-322
+opisHead                     src/27j-ui-opis.js:669-673
+opisHullCap                  src/27j-ui-opis.js:645-668
+opisHullRedraw               src/27j-ui-opis.js:402-418
+opisHullSlotAt               src/27j-ui-opis.js:419-430
+opisKitCard                  src/27j-ui-opis.js:625-633
 opisKitFuture                src/27j-ui-opis.js:128-135
-opisLeave                    src/27j-ui-opis.js:978-983
-opisLift                     src/27j-ui-opis.js:268-310
-opisMarkCan                  src/27j-ui-opis.js:316-331
-opisMarkOver                 src/27j-ui-opis.js:332-336
+opisLeave                    src/27j-ui-opis.js:986-991
+opisLift                     src/27j-ui-opis.js:276-318
+opisMarkCan                  src/27j-ui-opis.js:324-339
+opisMarkOver                 src/27j-ui-opis.js:340-344
 opisPanel                    src/27j-ui-opis.js:136-163
-opisPanels                   src/27j-ui-opis.js:166-185
-opisPartCard                 src/27j-ui-opis.js:547-574
-opisPartHtml                 src/27j-ui-opis.js:525-546
+opisPanels                   src/27j-ui-opis.js:166-193
+opisPartCard                 src/27j-ui-opis.js:555-582
+opisPartHtml                 src/27j-ui-opis.js:533-554
 opisPhone                    src/27j-ui-opis.js:71
-opisPileCard                 src/27j-ui-opis.js:595-616
+opisPileCard                 src/27j-ui-opis.js:603-624
 opisPlanBlock                src/05e-plan.js:174-188
 opisPlanOnly                 src/05e-plan.js:189-207
-opisPriceCue                 src/27j-ui-opis.js:576-585
-opisRender                   src/27j-ui-opis.js:705-976
+opisPriceCue                 src/27j-ui-opis.js:584-593
+opisRender                   src/27j-ui-opis.js:713-984
 opisRerender                 src/27j-ui-opis.js:74-84
 opisSame                     src/27j-ui-opis.js:85
-opisScrap                    src/27j-ui-opis.js:209-221
+opisScrap                    src/27j-ui-opis.js:217-229
 opisShipFuture               src/27j-ui-opis.js:110-127
 opisSlotOf                   src/27j-ui-opis.js:104-108
 opisTarget                   src/27j-ui-opis.js:89-103
-opisUnfit                    src/27j-ui-opis.js:208
-opisWear                     src/27j-ui-opis.js:237-241
+opisUnfit                    src/27j-ui-opis.js:216
+opisWear                     src/27j-ui-opis.js:245-249
 OPT_TABS                     src/27-ui-ship.js:335
 optGroups                    src/27-ui-ship.js:338-355
 OPTS_BOOT                    tests/90-harness.js:203
@@ -5790,7 +5790,7 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## src/03d-hull-marks.js · 6 КБ
 
-## src/03e-hull-draw.js · 44 КБ
+## src/03e-hull-draw.js · 45 КБ
 
 ## src/03e1-hull-bake.js · 7 КБ
   · печка корпуса (Stage 0, 18.09):1
@@ -6906,7 +6906,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/27j-ui-kitlay.js · 9 КБ
   · комплект, разложенный на столе:1
 
-## src/27j-ui-opis.js · 60 КБ
+## src/27j-ui-opis.js · 61 КБ
   · ОПИСЬ: один стол для всего, что на тебе и в трюме (M341):1
 
 ## src/27jb-kb.js · 12 КБ
