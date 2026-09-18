@@ -404,6 +404,15 @@ function drawThingIcon(c,k,W,H){
     c.fillStyle="#e6dcc2";c.fillRect(-40,-22,80,44);
     c.strokeStyle="rgba(90,70,40,.6)";c.lineWidth=1.5;c.strokeRect(-40,-22,80,44);
     c.beginPath();c.moveTo(-40,-22);c.lineTo(0,6);c.lineTo(40,-22);c.stroke();
+  }else if(k==="recall"){
+    /* письмо об отзыве (D25): тёмная шапка Хай-Фронта, строки, красный штамп наискось */
+    c.fillStyle="#f4f4f6";c.fillRect(-28,-34,56,68);
+    c.fillStyle="#2a2f36";c.fillRect(-28,-34,56,12);
+    c.fillStyle="#c8d2dc";c.fillRect(-22,-30,18,3);
+    c.strokeStyle="rgba(60,64,72,.35)";c.lineWidth=1;
+    for(let y=-14;y<30;y+=7){c.beginPath();c.moveTo(-20,y);c.lineTo(20,y);c.stroke();}
+    c.save();c.rotate(-.35);c.strokeStyle="rgba(190,40,40,.85)";c.lineWidth=2;c.strokeRect(-20,-6,40,14);
+    c.fillStyle="rgba(190,40,40,.9)";c.font="bold 9px ui-monospace,monospace";c.textAlign="center";c.textBaseline="middle";c.fillText("ОТЗЫВ",0,1);c.restore();
   }else if(k==="paper"||k==="record"||k==="voucher"){
     c.fillStyle="#ece6d2";c.fillRect(-28,-34,56,68);
     c.strokeStyle="rgba(90,70,40,.35)";c.lineWidth=1;

@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 592 · символов верхнего уровня: 5734
+Файлов: 592 · символов верхнего уровня: 5735
 
 ## СИМВОЛЫ
 
@@ -1434,7 +1434,7 @@ drawHomeOut                  src/21f-home-out.js:73-312
 drawHomeRoom                 src/27e-ui-home.js:42-62
 drawHotel                    src/17l-hotel.js:18-34
 drawHqRoom                   src/27f-hq-room.js:22-31
-drawHull                     src/03e-hull-draw.js:43-116
+drawHull                     src/03e-hull-draw.js:57-130
 drawHullMarks                src/03b-hull-paint.js:184-491
 drawKitFigure                src/12x-suit.js:202-299
 drawLander                   src/19f-lander.js:52-340
@@ -1476,6 +1476,7 @@ drawRouteMap                 src/12r-route.js:267-323
 drawRungRing                 src/12ae-ladder.js:72-87
 drawScars                    src/03e-hull-draw.js:5-31
 drawScoop                    src/19a-mode-scoop.js:271-602
+drawSeal                     src/03e-hull-draw.js:36-47
 drawSeams                    src/12s-wear.js:184-199
 drawShuttleArc               src/17f-sys-traffic.js:43-79
 drawSkyBase                  src/19c-light.js:296-329
@@ -1509,11 +1510,11 @@ drawSystem                   src/17-mode-system.js:481-771
 drawSysTraffic               src/17f-sys-traffic.js:36-40
 drawTapes                    src/12s1-tape.js:37-52
 drawTemple                   src/20aa-poi-shapes.js:50-89
-drawThingIcon                src/27i-ui-table.js:400-436
+drawThingIcon                src/27i-ui-table.js:400-445
 drawTierTrim                 src/03b-hull-paint.js:73-166
 drawTiles                    src/18c-chunks.js:144-151
 drawTrail                    src/16-flight.js:562-650
-drawTransitPlate             src/03e-hull-draw.js:34-42
+drawTransitPlate             src/03e-hull-draw.js:48-56
 drawVan                      src/21ac3-base-van.js:71-133
 drawVanSmall                 src/21ac3-base-van.js:135-141
 drawWake                     src/16-flight.js:393-462
@@ -2548,9 +2549,9 @@ hullHeld                     src/28-loop.js:9
 hullHeldTick                 src/28-loop.js:10-15
 hullInkBox                   src/03e1-hull-bake.js:112-123
 hullOf                       src/03a-hull-gen.js:1-532
-hullPart1                    src/03e-hull-draw.js:121-596
-hullPart2                    src/03e-hull-draw.js:598-601
-hullPart3                    src/03e-hull-draw.js:604-681
+hullPart1                    src/03e-hull-draw.js:135-611
+hullPart2                    src/03e-hull-draw.js:613-616
+hullPart3                    src/03e-hull-draw.js:619-696
 hullRole                     src/03f-hull-role.js:51
 hullShade                    src/03b-hull-paint.js:176-183
 hullSilhouette               src/27-ui-ship.js:9-43
@@ -4147,10 +4148,10 @@ REC_SEG                      src/15c-rec.js:17
 RECALL_WEEK                  src/05b4-recall.js:8
 recallBucket                 src/05b4-recall.js:9
 recalled                     src/05b4-recall.js:10
-recallReplace                src/05b4-recall.js:28-38
-recallRows                   src/05b4-recall.js:39-52
-recallScale                  src/05b4-recall.js:27
-recallTick                   src/05b4-recall.js:12-25
+recallReplace                src/05b4-recall.js:30-40
+recallRows                   src/05b4-recall.js:41-54
+recallScale                  src/05b4-recall.js:29
+recallTick                   src/05b4-recall.js:12-27
 recApEv                      src/15c-rec.js:33-37
 recDump                      src/15c-rec.js:52-54
 recHead                      src/15c-rec.js:20-26
@@ -5780,7 +5781,7 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## src/03d-hull-marks.js · 6 КБ
 
-## src/03e-hull-draw.js · 43 КБ
+## src/03e-hull-draw.js · 44 КБ
 
 ## src/03e1-hull-bake.js · 7 КБ
   · печка корпуса (Stage 0, 18.09):1
@@ -5818,7 +5819,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/05b3-sub.js · 4 КБ
   · подписка — лучший товар фирмы (M487, DESIGN-birchpunk):1
 
-## src/05b4-recall.js · 3 КБ
+## src/05b4-recall.js · 4 КБ
   · отзыв партии (M509, PLAN «new mechanics», st. 6):1
 
 ## src/05c-arms.js · 21 КБ
@@ -6877,7 +6878,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/27h-ui-lore.js · 6 КБ
   · доска отчёта: место, где собранное можно прочесть:1
 
-## src/27i-ui-table.js · 32 КБ
+## src/27i-ui-table.js · 33 КБ
   · стол: одно место для всего, что читают:1
   · страница никогда не теряет прокрутку (P1):24
 

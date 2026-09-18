@@ -1948,3 +1948,14 @@ body.table u.addr{color:#7a4a20}
 .vol-doc.vol-fast::after{content:"ПРИНЯТО К СВЕДЕНИЮ";width:auto;height:auto;border:1.5px solid rgba(110,70,160,.7);border-radius:2px;color:rgba(110,70,160,.85);
   font:700 5px/1.1 ui-monospace,monospace;padding:1px 2px;left:4px;right:auto;bottom:4px;transform:rotate(-8deg)}
 .vol-doc[data-nm]::before{content:attr(data-nm);position:absolute;left:4px;bottom:3px;font:italic 6px ui-monospace,monospace;color:#1e2a80;transform:rotate(-6deg)}
+
+/* подстаканник (D24): у буфета Рассвета чай — в стакане с подстаканником */
+#railWin[data-by=ra] .rw-buf{position:relative;padding-left:52px;text-align:left}
+#railWin[data-by=ra] .rw-buf::before{content:"";position:absolute;left:16px;top:50%;width:18px;height:26px;transform:translateY(-50%);
+  border-radius:2px 2px 5px 5px;
+  background:linear-gradient(180deg,rgba(255,255,255,.18) 0,rgba(255,255,255,.05) 18%,rgba(196,110,40,.9) 22%,rgba(120,58,22,.95) 48%,#b9bec6 48%,#7d838c 100%);
+  background-image:linear-gradient(180deg,#2a3038 0,#1c2128 18%,#c46e28 22%,#7a3a16 48%,transparent 48%),
+    repeating-linear-gradient(45deg,#c9ced6 0 2px,#6f757e 2px 4px),repeating-linear-gradient(-45deg,#c9ced6 0 2px,transparent 2px 4px);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.28),0 1px 2px rgba(0,0,0,.5)}
+#railWin[data-by=ra] .rw-buf::after{content:"";position:absolute;left:33px;top:50%;width:7px;height:10px;transform:translateY(-10%);
+  border:2px solid #c9ced6;border-left:0;border-radius:0 5px 5px 0}

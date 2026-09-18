@@ -39,7 +39,7 @@ function hullBakeDraw(h,id,bank){
   const bq=Math.round(bank*20);
   const common=sb+"|"+Math.round(wearOf(id)*64)+"|"+(typeof seamsOf==="function"?seamsOf(id):0)+"|"+(typeof tapesOf==="function"?tapesOf(id):0)+
     "|"+(typeof cosmOn==="function"?cosmOn("mark"):"")+
-    "|"+((typeof scarsOf==="function")?scarsOf(shipData(id)).join(""):"")+"|"+((typeof regPending==="function"&&regPending(id))?1:0);   /* шрамы и транзитка — в выпечке (D25/M482, 18.09) */
+    "|"+((typeof scarsOf==="function")?scarsOf(shipData(id)).join(""):"")+"|"+((typeof regPending==="function"&&regPending(id))?1:0)+"|"+((G.railSeal&&id===G.shipId)?1:0);   /* шрамы, транзитка и пломба — в выпечке (D25/M482, 18.09) */
   /* слои между живыми вставками: [1] строка [2] венцы [3]; без вставок слои сливаются */
   const layers=[];
   let cur=[1];

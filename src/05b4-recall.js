@@ -22,6 +22,8 @@ function recallTick(){
   if(!hit.length)return;
   invalidateParts();
   logAdd("bad","ПОЧТА · Хай-Фронт: партия отозвана — «"+hit.map(p=>p.name).join("», «")+"». Бесплатная замена на станциях Хай-Фронта. Оставленная деталь работает хуже.");
+  /* письмо в ВЕЩАХ (D25 18.09): бланк Хай-Фронта с красным «ОТЗЫВ» */
+  if(typeof thingAdd==="function")thingAdd("recall","Отзыв партии · Хай-Фронт","«Уважаемый пользователь! В партии обнаружена особенность.» Отозвано: "+hit.map(p=>p.name).join(", ")+" · замена бесплатно на станциях Хай-Фронта · «спасибо, что остаётесь с нами»");
 }
 /* прибавки с отзывом: зовёт partBonus */
 function recallScale(p,k,v){return (recalled(p)&&k!=="gun"&&k!=="msl")?v*RECALL_MUL:v;}

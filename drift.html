@@ -1963,6 +1963,17 @@ body.table u.addr{color:#7a4a20}
   font:700 5px/1.1 ui-monospace,monospace;padding:1px 2px;left:4px;right:auto;bottom:4px;transform:rotate(-8deg)}
 .vol-doc[data-nm]::before{content:attr(data-nm);position:absolute;left:4px;bottom:3px;font:italic 6px ui-monospace,monospace;color:#1e2a80;transform:rotate(-6deg)}
 
+/* подстаканник (D24): у буфета Рассвета чай — в стакане с подстаканником */
+#railWin[data-by=ra] .rw-buf{position:relative;padding-left:52px;text-align:left}
+#railWin[data-by=ra] .rw-buf::before{content:"";position:absolute;left:16px;top:50%;width:18px;height:26px;transform:translateY(-50%);
+  border-radius:2px 2px 5px 5px;
+  background:linear-gradient(180deg,rgba(255,255,255,.18) 0,rgba(255,255,255,.05) 18%,rgba(196,110,40,.9) 22%,rgba(120,58,22,.95) 48%,#b9bec6 48%,#7d838c 100%);
+  background-image:linear-gradient(180deg,#2a3038 0,#1c2128 18%,#c46e28 22%,#7a3a16 48%,transparent 48%),
+    repeating-linear-gradient(45deg,#c9ced6 0 2px,#6f757e 2px 4px),repeating-linear-gradient(-45deg,#c9ced6 0 2px,transparent 2px 4px);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.28),0 1px 2px rgba(0,0,0,.5)}
+#railWin[data-by=ra] .rw-buf::after{content:"";position:absolute;left:33px;top:50%;width:7px;height:10px;transform:translateY(-10%);
+  border:2px solid #c9ced6;border-left:0;border-radius:0 5px 5px 0}
+
 </style>
 </head>
 <body>
@@ -5069,6 +5080,20 @@ function drawScars(h,id){
 }
 /* ── транзитные номера (M513, D25): жёлтая табличка с чёрной каймой у кормы,
    две строки «ТРАНЗИТ» — читается на ×2 и выше, на ×1 остаётся жёлтой меткой ── */
+/* пломба Орднунга (M508, D24 18.09): свинцовая бляшка на проволоке поверх люка
+   трюма у миделя, пока трюм опломбирован — только на своём корабле */
+function drawSeal(h,id){
+  if(!G.railSeal||id!==G.shipId)return;
+  const x=h.tail+h.len*.42,r=Math.max(1.6,h.bw*.14);
+  ctx.save();ctx.translate(x,0);
+  ctx.strokeStyle="rgba(200,206,214,.8)";ctx.lineWidth=.45;
+  ctx.beginPath();ctx.moveTo(-r*2.4,-r*.9);ctx.quadraticCurveTo(0,-r*1.8,r*2.4,-r*.9);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(-r*2.4,r*.9);ctx.quadraticCurveTo(0,r*1.8,r*2.4,r*.9);ctx.stroke();
+  ctx.fillStyle="#8a9098";ctx.beginPath();ctx.arc(0,0,r,0,TAU);ctx.fill();
+  ctx.strokeStyle="#2a2e34";ctx.lineWidth=.35;ctx.stroke();
+  ctx.fillStyle="#2a2e34";ctx.fillRect(-r*.55,-r*.12,r*1.1,r*.24);
+  ctx.restore();
+}
 function drawTransitPlate(h,id){
   if(typeof regPending!=="function"||!regPending(id))return;
   const x=h.tail+h.len*.12,w=Math.max(4,h.bw*.5),hh=w*.42;
@@ -5613,6 +5638,7 @@ function hullPart1(h,id,bank,ticks){
   if(typeof drawSeams==="function")drawSeams(h,typeof seamsOf==="function"?seamsOf(id):0);
   if(typeof drawTapes==="function")drawTapes(h,typeof tapesOf==="function"?tapesOf(id):0);   /* изолента (M486) */
   drawScars(h,id);   /* шрамы корпуса (M482): ожог, вмятина, потёк — видны на борту, не только в ОПИСИ */
+  drawSeal(h,id);   /* пломба Орднунга (M508) */
   drawTransitPlate(h,id);   /* транзитные номера (M513): табличка на борту, пока не на учёте */
   ctx.restore();
   /* ── грань корпуса ──
@@ -5758,7 +5784,7 @@ function hullBakeDraw(h,id,bank){
   const bq=Math.round(bank*20);
   const common=sb+"|"+Math.round(wearOf(id)*64)+"|"+(typeof seamsOf==="function"?seamsOf(id):0)+"|"+(typeof tapesOf==="function"?tapesOf(id):0)+
     "|"+(typeof cosmOn==="function"?cosmOn("mark"):"")+
-    "|"+((typeof scarsOf==="function")?scarsOf(shipData(id)).join(""):"")+"|"+((typeof regPending==="function"&&regPending(id))?1:0);   /* шрамы и транзитка — в выпечке (D25/M482, 18.09) */
+    "|"+((typeof scarsOf==="function")?scarsOf(shipData(id)).join(""):"")+"|"+((typeof regPending==="function"&&regPending(id))?1:0)+"|"+((G.railSeal&&id===G.shipId)?1:0);   /* шрамы, транзитка и пломба — в выпечке (D25/M482, 18.09) */
   /* слои между живыми вставками: [1] строка [2] венцы [3]; без вставок слои сливаются */
   const layers=[];
   let cur=[1];
@@ -7676,6 +7702,8 @@ function recallTick(){
   if(!hit.length)return;
   invalidateParts();
   logAdd("bad","ПОЧТА · Хай-Фронт: партия отозвана — «"+hit.map(p=>p.name).join("», «")+"». Бесплатная замена на станциях Хай-Фронта. Оставленная деталь работает хуже.");
+  /* письмо в ВЕЩАХ (D25 18.09): бланк Хай-Фронта с красным «ОТЗЫВ» */
+  if(typeof thingAdd==="function")thingAdd("recall","Отзыв партии · Хай-Фронт","«Уважаемый пользователь! В партии обнаружена особенность.» Отозвано: "+hit.map(p=>p.name).join(", ")+" · замена бесплатно на станциях Хай-Фронта · «спасибо, что остаётесь с нами»");
 }
 /* прибавки с отзывом: зовёт partBonus */
 function recallScale(p,k,v){return (recalled(p)&&k!=="gun"&&k!=="msl")?v*RECALL_MUL:v;}
@@ -89638,6 +89666,15 @@ function drawThingIcon(c,k,W,H){
     c.fillStyle="#e6dcc2";c.fillRect(-40,-22,80,44);
     c.strokeStyle="rgba(90,70,40,.6)";c.lineWidth=1.5;c.strokeRect(-40,-22,80,44);
     c.beginPath();c.moveTo(-40,-22);c.lineTo(0,6);c.lineTo(40,-22);c.stroke();
+  }else if(k==="recall"){
+    /* письмо об отзыве (D25): тёмная шапка Хай-Фронта, строки, красный штамп наискось */
+    c.fillStyle="#f4f4f6";c.fillRect(-28,-34,56,68);
+    c.fillStyle="#2a2f36";c.fillRect(-28,-34,56,12);
+    c.fillStyle="#c8d2dc";c.fillRect(-22,-30,18,3);
+    c.strokeStyle="rgba(60,64,72,.35)";c.lineWidth=1;
+    for(let y=-14;y<30;y+=7){c.beginPath();c.moveTo(-20,y);c.lineTo(20,y);c.stroke();}
+    c.save();c.rotate(-.35);c.strokeStyle="rgba(190,40,40,.85)";c.lineWidth=2;c.strokeRect(-20,-6,40,14);
+    c.fillStyle="rgba(190,40,40,.9)";c.font="bold 9px ui-monospace,monospace";c.textAlign="center";c.textBaseline="middle";c.fillText("ОТЗЫВ",0,1);c.restore();
   }else if(k==="paper"||k==="record"||k==="voucher"){
     c.fillStyle="#ece6d2";c.fillRect(-28,-34,56,68);
     c.strokeStyle="rgba(90,70,40,.35)";c.lineWidth=1;

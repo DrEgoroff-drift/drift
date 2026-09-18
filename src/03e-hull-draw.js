@@ -31,6 +31,20 @@ function drawScars(h,id){
 }
 /* ── транзитные номера (M513, D25): жёлтая табличка с чёрной каймой у кормы,
    две строки «ТРАНЗИТ» — читается на ×2 и выше, на ×1 остаётся жёлтой меткой ── */
+/* пломба Орднунга (M508, D24 18.09): свинцовая бляшка на проволоке поверх люка
+   трюма у миделя, пока трюм опломбирован — только на своём корабле */
+function drawSeal(h,id){
+  if(!G.railSeal||id!==G.shipId)return;
+  const x=h.tail+h.len*.42,r=Math.max(1.6,h.bw*.14);
+  ctx.save();ctx.translate(x,0);
+  ctx.strokeStyle="rgba(200,206,214,.8)";ctx.lineWidth=.45;
+  ctx.beginPath();ctx.moveTo(-r*2.4,-r*.9);ctx.quadraticCurveTo(0,-r*1.8,r*2.4,-r*.9);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(-r*2.4,r*.9);ctx.quadraticCurveTo(0,r*1.8,r*2.4,r*.9);ctx.stroke();
+  ctx.fillStyle="#8a9098";ctx.beginPath();ctx.arc(0,0,r,0,TAU);ctx.fill();
+  ctx.strokeStyle="#2a2e34";ctx.lineWidth=.35;ctx.stroke();
+  ctx.fillStyle="#2a2e34";ctx.fillRect(-r*.55,-r*.12,r*1.1,r*.24);
+  ctx.restore();
+}
 function drawTransitPlate(h,id){
   if(typeof regPending!=="function"||!regPending(id))return;
   const x=h.tail+h.len*.12,w=Math.max(4,h.bw*.5),hh=w*.42;
@@ -575,6 +589,7 @@ function hullPart1(h,id,bank,ticks){
   if(typeof drawSeams==="function")drawSeams(h,typeof seamsOf==="function"?seamsOf(id):0);
   if(typeof drawTapes==="function")drawTapes(h,typeof tapesOf==="function"?tapesOf(id):0);   /* изолента (M486) */
   drawScars(h,id);   /* шрамы корпуса (M482): ожог, вмятина, потёк — видны на борту, не только в ОПИСИ */
+  drawSeal(h,id);   /* пломба Орднунга (M508) */
   drawTransitPlate(h,id);   /* транзитные номера (M513): табличка на борту, пока не на учёте */
   ctx.restore();
   /* ── грань корпуса ──
