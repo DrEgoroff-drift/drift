@@ -6,6 +6,13 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.450.1 - a plan that could go negative
+
+- **Fix** (`17k1-gosplan`, `18i-rail-life`): the plan quantity and the fellow passenger's line took a
+  signed shift of an unsigned hash; for hashes above 2^31 the plan came out negative (the deploy of
+  0.450.0 failed on the Linux runner, whose clock put the station in such a bucket). Both shifts are
+  unsigned now.
+
 ## 0.450.0 - the design pass on the S23, and stage 7 of the base
 
 - **The design queue D1–D26, walked on the author's S23 over Wi-Fi** (Control, 18.09). A sustaining

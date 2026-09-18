@@ -50,7 +50,7 @@ const RAIL_PAX_TALK=["«А я в ваши годы на своём летал. �
 function railPaxOffer(){
   const h=hashi(G.sx,G.sy,railBucket()^0x7A55);
   if(h%2||RAIL_LIFE.pax)return null;
-  return {who:RAIL_PAX[h%RAIL_PAX.length],talk:RAIL_PAX_TALK[(h>>3)%RAIL_PAX_TALK.length]};
+  return {who:RAIL_PAX[h%RAIL_PAX.length],talk:RAIL_PAX_TALK[(h>>>3)%RAIL_PAX_TALK.length]};
 }
 /* ── вестибюль: строки и кнопки поверх кассы ── */
 function railLifeHtml(){

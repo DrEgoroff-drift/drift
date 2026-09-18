@@ -12,7 +12,7 @@ function gosPlan(){
   const b=gosBucket(),h=hashi(G.sx,G.sy,b^0x6059)>>>0;   /* без знака: со знаком план выходил отрицательным (упал деплой 0.450.0 на Linux, где сдвиг часов дал другой bucket) */
   const pool=TRADE_KEYS.filter(k=>RES[k]&&!RES[k].pax&&k!=="folk").concat(typeof FAR_KEYS!=="undefined"?FAR_KEYS:[]);
   const k=pool[h%pool.length],far=!!(RES[k].far);
-  const n=far?5+(h>>4)%16:20+(h>>4)%31;
+  const n=far?5+(h>>>4)%16:20+(h>>>4)%31;   /* >>>: знаковый сдвиг давал отрицательный план */
   const price=Math.round(RES[k].price*(far?1.2:1.3));
   const key=G.sx+","+G.sy+","+b;
   return {k,n,price,key,svodka:100+b%900,done:!!(G.gosDone&&G.gosDone[key])};
