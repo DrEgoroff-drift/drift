@@ -94,6 +94,14 @@ function freeVoice(node){
   node.onended=()=>{if(!tk.freed){tk.freed=true;SND.voices=Math.max(0,SND.voices-1);}};
 }
 /* ── эффекты ── */
+const MOTIFS={
+  gt:{n:[0,7,12],f:392,w:"triangle",dt:.24,d:.2},     /* марш: кварта-квинта вверх, ровно */
+  co:{n:[12,9,16],f:523,w:"sine",dt:.16,d:.22},       /* джингл: динь-дон-динь */
+  or:{n:[0,0,0],f:440,w:"sine",dt:.2,d:.06},          /* три одинаковые, по секундомеру */
+  km:{n:[0,3,7],f:330,w:"triangle",dt:.32,d:.3},      /* минор, не торопясь */
+  ra:{n:[0,5,9],f:294,w:"triangle",dt:.21,d:.24},     /* тепло, вразвалку */
+  hf:{n:[0,12,24],f:880,w:"square",dt:.09,d:.05}      /* цифровое «тинь-тинь-тинь» */
+};
 const SFX={
   /* короткий нисходящий свип: чем выше тон, тем «легче» орудие */
   shot(o){
@@ -220,6 +228,18 @@ const SFX={
       osc.start(t);osc.stop(t+1.3);
       if(k>1)freeVoice(osc);
     }
+  },
+  /* позывной державы на въезде (M457): три ноты, у каждой свои интервалы,
+     тембр и темп — узнаётся на слух раньше, чем прочитана вывеска */
+  motif(o){
+    const M=MOTIFS[(o&&o.by)||"gt"]||MOTIFS.gt,c=SND.ctx,t0=c.currentTime+.02;
+    M.n.forEach((st,i)=>{
+      const t=t0+i*M.dt,osc=c.createOscillator(),g=c.createGain();
+      osc.type=M.w;osc.frequency.setValueAtTime(M.f*Math.pow(2,st/12),t);
+      env(g,t,.008,M.d,.22*3);
+      osc.connect(g);g.connect(SND.sfx);osc.start(t);osc.stop(t+M.d+.06);
+      if(i===M.n.length-1)freeVoice(osc);
+    });
   },
   ui(o){
     const c=SND.ctx,t=c.currentTime;

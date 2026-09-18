@@ -546,7 +546,7 @@ patchnote of each version names the M-numbers it closes.
   in beautiful places (not by buying drones — 25/72 opened on the author's save without a landing);
   closing a chapter is an «АКТ» moment across the screen; a real book
   with plates from the player's own flight; the text may be edited to fit.
-- [ ] **[design owed] M457 Sound** — a three-note motif per power on the radio at entry (not six musical modes); the
+- [ ] **[design owed] M457 Sound — the motif BUILT 18.09 (Control), `SFX.motif` + `MOTIFS` in `09-audio`.** Three notes per power on the first entry of the day (with the gesture's words): ГЛАВТРАССА a steady march up a fifth and octave, Компания a ding-dong jingle, Орднунг three identical by the stopwatch, Коммуна a slow minor, Рассвет warm and swung, Хай-Фронт a digital «тинь-тинь-тинь» two octaves up. Scheduled on the audio clock, one voice freed at the end. **Not heard:** headless audio needs a user gesture — an ear pass is owed (the AnalyserNode check of VERIFY.md at the release run). **Open:** the rest of the item below. Original: — a three-note motif per power on the radio at entry (not six musical modes); the
   receiver speaks the owner's `air` line once. **M458 Map borders** — territory edges as lines in the
   owner's pattern (dotted stars, ring marks, numbered dashes, a wave, uneven dashes with suns,
   dots), 1:1 with the sheet; the emblem chip readable (14–18 px) at near zoom; the glyph on the

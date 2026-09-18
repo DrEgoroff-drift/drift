@@ -36,6 +36,7 @@ function gestArrive(){
   GEST={sx:G.sx,sy:G.sy,by,t0:G.t,said:GEST_SAID[key]===day,fired:{},
     seed:hashi(G.sx,G.sy,0x6E57)>>>0};
   GEST_SAID[key]=day;
+  if(!GEST.said&&typeof sfx==="function")sfx("motif",{by});   /* позывной державы на радио (M457) */
 }
 function gestLive(){
   return GEST&&G.mode==="system"&&GEST.sx===G.sx&&GEST.sy===G.sy?GEST:null;
