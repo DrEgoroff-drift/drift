@@ -356,7 +356,8 @@ function updateCave(dt){
   }
   const nearBug=C.fauna.find(b=>b.stun>0&&Math.hypot(b.x-C.x,b.y-C.y)<46);
   C.sample=nearBug||null;
-  if(nearBug){   /* образец берётся сам, как и в шахте */
+  if(nearBug&&typeof beastTake==="function"&&beastTake(nearBug,G.surf&&G.surf.p)){C.fauna.splice(C.fauna.indexOf(nearBug),1);}   /* живым — на ферму (M496) */
+  else if(nearBug){   /* образец берётся сам, как и в шахте */
     const r=rng(hashi(Math.round(nearBug.x),Math.round(nearBug.y),0x5A99));
     const c=addRes("carbon",2+Math.floor(r()*4));
     const x2=r()<.4?addRes("xeno",1+Math.floor(r()*2)):0;

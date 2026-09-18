@@ -125,6 +125,7 @@ function enterBase(p){
   /* ярус проверяем и на входе: иначе вскрытый нижний ряд появлялся бы только
      после следующего тика, и игрок не понимал бы, что уже можно строить ниже */
   baseGrowCheck(B);
+  if(typeof farmEnter==="function")farmEnter(B);   /* зверь из клетки — на ферму (M496) */
   G.base={B,p,cur:Math.floor(BASE_COLS/2),row:0,
     cur0:Math.floor(BASE_COLS/2),row0:0,          /* где встали: подсказка живёт до первого шага */
     x:0,y:0,walkPhase:0,menu:false,pick:0,

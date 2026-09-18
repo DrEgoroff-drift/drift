@@ -317,7 +317,9 @@ function digFauna(dt,st){
      занята копанием вниз, да и лишний жест здесь никому не был нужен */
   const near=D.bugs.find(b=>b.stun>0&&Math.hypot(b.x-px,b.y-py)<40);
   D.sample=near||null;
-  if(near){
+  /* ферма (M496): есть куда везти — берём живым, а не образцом */
+  if(near&&typeof beastTake==="function"&&beastTake(near,D.p)){D.bugs.splice(D.bugs.indexOf(near),1);}
+  else if(near){
     const r=rng(hashi(Math.round(near.x),Math.round(near.y),0x5A99));
     const c=addRes("carbon",2+Math.floor(r()*4));
     const x2=r()<.35+ti*.12?addRes("xeno",1+Math.floor(r()*2)):0;

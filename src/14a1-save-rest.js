@@ -88,6 +88,10 @@ function applySaveRest(s){
         /* баня и гриб (M497): смена банного вечера и с какой смены гриб растёт */
         bath:(b.bath===undefined||b.bath===null)?null:b.bath|0,
         grib:(b.grib&&typeof b.grib==="object")?{n0:b.grib.n0|0}:null,
+        /* ферма (M496): зверь по имени — семя, вид, откуда, и что с ним было */
+        farm:(b.farm&&typeof b.farm==="object")?{sx:b.farm.sx|0,sy:b.farm.sy|0,idx:b.farm.idx|0,sp:String(b.farm.sp||""),seed:b.farm.seed>>>0,
+          name:String(b.farm.name||"Зорька").slice(0,16),since:b.farm.since|0,moved:b.farm.moved|0,wait:b.farm.wait|0,lonely:b.farm.lonely|0,
+          got:b.farm.got|0,acc:b.farm.acc|0,no:b.farm.no|0}:null,
         /* развалина (M402, §39): из аккаунта ничего не удаляется — база живёт
            в записи и разбитой, вместе с тем, кто в неё въехал */
         ruin:(b.ruin&&typeof b.ruin==="object")?{n:b.ruin.n|0,

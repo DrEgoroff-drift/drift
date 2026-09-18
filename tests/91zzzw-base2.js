@@ -568,3 +568,54 @@ TEST_SUITES.push(()=>suite("база M497: чайный гриб — ×2, пот
   ok(TRADE_KEYS.indexOf("grib")<0,"и не в списке торговли");
   eq(FAR_EAT_LAND.grib[0],"ra","Рассвет — едок");
 }));
+
+/* ── M496: ферма — зверь по имени ──
+   Взяли живым, потому что есть куда везти; въехал с именем и клеймом; даёт
+   своё только пока говорят; выбитая ферма его не теряет. */
+TEST_SUITES.push(()=>suite("база M496: ферма — живым в клетку, имя, даёт пока говорят, не теряется",()=>{
+  const B=bLife();bCrew(B,1);
+  G.beast=null;
+  const p=G.sys.planets.find(x=>x.type!=="gas");
+  const list=faunaOf(p);ok(list.length>0,"у планеты есть фауна");
+  const b=specimenBeast(rng(7),list[0],10,10);
+  eq(beastTake(b,p),false,"без фермы зверя не берут — образец как раньше");
+  B.cells[1]={k:"farm",hp:1};
+  ok(!!farmWanted(),"ферма ждёт");
+  eq(beastTake(b,p),true,"с фермой — живым в клетку");
+  ok(G.beast&&G.beast.sp===b.name,"в клетке "+(G.beast&&G.beast.sp));
+  eq(beastTake(b,p),false,"вторая клетка не влезает");
+  /* въезд */
+  B.log=[];
+  eq(farmEnter(B),1,"въехал");
+  ok(!G.beast,"клетка пуста");
+  const F=B.farm;ok(F&&FARM_NAMES.indexOf(F.name)>=0,"имя из таблицы: "+(F&&F.name));
+  ok(F.no>=1000,"клеймо ПАЛАТЫ № Ф-"+F.no);
+  ok(B.log.some(l=>l.k==="farm_in"),"журнал: въехал");
+  ok(!!farmBeast(F)&&farmBeast(F).name===F.sp,"зверь восстанавливается из семени");
+  /* даёт, пока говорят: садовод на ферме */
+  const c0=Object.assign({},B.pool);
+  G.crew[0].role="driller";
+  farmStep(B,100);
+  eq(JSON.stringify(B.pool),JSON.stringify(c0),"бурильщик — не собеседник: ничего");
+  G.crew[0].role="gardener";
+  let got=0;for(let n=101;n<=112;n++)got+=farmStep(B,n)|0;
+  const sum=k=>Object.keys(B.pool).reduce((s,x)=>s+(B.pool[x]|0),0);
+  eq(sum(),Object.keys(c0).reduce((s,x)=>s+(c0[x]|0),0)+12,"двенадцать смен разговора — двенадцать единиц");
+  ok(B.log.some(l=>l.k==="farm_got"),"журнал зовёт по имени: "+F.name);
+  /* одиночество — строка, а не тишина */
+  G.crew=[];B.log=[];
+  for(let n=113;n<=113+FARM_LONELY;n++)farmStep(B,n);
+  ok(B.log.some(l=>l.k==="farm_lonely"),"скучает");
+  /* выбило — не потерян; отстроили — тоскует, даёт вполовину */
+  B.cells[1].hp=0;B.log=[];
+  farmStep(B,130);
+  ok(B.farm&&B.log.some(l=>l.k==="farm_wait"),"ферма выбита — ждёт в породе");
+  B.cells[1].hp=1;bCrew(B,1);G.crew[0].role="gardener";
+  farmStep(B,131);
+  ok(B.log.some(l=>l.k==="farm_back"),"вернулся");
+  const s0=sum();for(let n=132;n<131+FARM_HOME;n++)farmStep(B,n);   /* пока тоскует: 11 смен, чётные дают */
+  eq(sum()-s0,FARM_HOME/2,"тоскует: вполовину");
+  /* дальний зверь — жемчуг */
+  F.sx=30;F.sy=0;F._b=null;
+  eq(farmGood(F,3),"pearl","с дальнего мира — жемчуг пустоты");
+}));

@@ -697,7 +697,7 @@ after `fn()` — not built.
 
 ### Stage 7 — the base and the giants (`DESIGN-birchpunk.md` §4.3–4.7, `DESIGN-life.md` §3.6)
 
-- [ ] **[design owed] M496 The farm — одомашнивание.** A beast of a planet (`20f-fauna`), calmed by the probe or
+- [x] **M496 The farm — BUILT 18.09 (Control), `src/21ac2-base-farm.js`, test in `91zzzw-base2`.** Ферма module (1500 кр, gardener's post). A stunned beast in the mine or the cave is taken alive (`G.beast`, one cage) when some base has a live empty farm — otherwise the sample as before; the first entry to such a base moves it in: a name from the table (Зорька, Пеструшка, Тихон…), the ПАЛАТА клеймо № Ф-xxxx, a journal line. One unit a shift of its world's good (organics on soft worlds, carbon on rock, xeno for alien archetypes; from ≥25 sectors every third shift «Жемчуг пустоты», far jungle/terran every second «Звёздный чернозём») — only while a gardener is on the farm or the player is on the base; nobody talks — «скучает» once in 12 shifts. A broken farm never loses it («ждёт в породе»); rebuilt — homesick, half yield for 12 shifts. Room: straw, hay bale, pitchfork, three-rail pen with posts, trough and bowl, name board and the white клеймо plate, the real `drawBeast` in the pen (flyers hang low), the talker on a stool. Saved in `G.beast` and `B.farm`. Phone-checked. Original: A beast of a planet (`20f-fauna`), calmed by the probe or
   a net, taken to a base with a **ферма** module; a name (Зорька, Пеструшка, Бурка…) and the
   ПАЛАТА's QR-plate (the клеймо on a beast); a slow trickle of its world's good — organics, carbon,
   xeno, on deep worlds чернозём — **only while someone talks to it** (a hand on the farm or the

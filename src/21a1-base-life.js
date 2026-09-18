@@ -172,6 +172,8 @@ function baseShiftRun(B,n){
     if(typeof bmgrStep==="function")said|=bmgrStep(B,n)?1:0;
     /* баня (M497): банный вечер по номеру смены — после управляющего, которому он нужен */
     if(typeof banyaStep==="function")said|=banyaStep(B,n)?1:0;
+    /* ферма (M496): зверь даёт своё, пока с ним говорят */
+    if(typeof farmStep==="function")said|=farmStep(B,n)?1:0;
     /* опорный пункт экспедиции (M409, §44): трафик мира сворачивает сюда */
     if(typeof fwdStep==="function")said|=fwdStep(B,n)?1:0;
     /* и он же развивает базу (M407): строят все, правильно — один */
