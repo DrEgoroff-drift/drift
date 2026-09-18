@@ -19,7 +19,7 @@ function railPassOn(){return !!(G.railPass&&now()<G.railPass.until);}
 function railPassPrice(){
   const D=railDestinations();if(!D.length)return 0;
   let s=0;for(const t of D)s+=railFare(t).fare;
-  return Math.round(s/D.length*RAIL_PASS_RIDES);
+  return Math.round(s/D.length*RAIL_PASS_RIDES*((typeof socIn==="function"&&socIn("union"))?.5:1));   /* профсоюз: вполцены (M512) */
 }
 function railPassBuy(){
   const p=railPassPrice();if(!p||railPassOn())return false;

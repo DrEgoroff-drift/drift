@@ -525,6 +525,7 @@ function updateMap(dt){
   }
 }
 function jump(cost){
+  if(typeof socCount==="function")socCount("jumps");   /* профсоюз считает прыжки (M512) */
   /* уходя, платит не только топливо: тех, кто сел вам на хвост, вы оставляете
      над головами живущих внизу (M110, 12t-settle) */
   if(typeof settleLeftBehind==="function")settleLeftBehind();

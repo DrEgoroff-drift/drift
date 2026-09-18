@@ -343,3 +343,17 @@ TEST_SUITES.push(()=>suite("компенсационная маршрутка: �
   ok(Math.abs(RAIL_RIDE.dur/railSegDur(RAIL_RIDE.l,RAIL_RIDE.seq,0)-1.6)<1e-6,"перегон в 1.6 раза дольше");
   RAIL_RIDE=null;G.mode="system";void d0;
 }));
+TEST_SUITES.push(()=>suite("общества: вступают делом, взнос строкой, льгота работает, выйти даром (M512)",()=>{
+  resetWorld();
+  ok(!socCanJoin("union"),"без ста прыжков в профсоюз не берут");
+  socAll().c.jumps=100;ok(socJoin("union"),"сто прыжков — вступили");
+  const c0=G.credits;earn(1000,"test");
+  eq(G.credits-c0,980,"взнос 2 % вычтен");
+  eq(socAll().m.union.dues,20,"и записан строкой");
+  ok(socLeave("union")&&!socIn("union"),"выйти даром");
+  G.credits=100;ok(!socJoin("union"),"вернуться без денег — нельзя");
+  G.credits=1000;ok(socJoin("union")&&G.credits===1000-SOC_REJOIN,"вернуться — за деньги");
+  socAll().c.tapes=10;ok(socJoin("kulib"),"кулибины — за десять изолент");
+  G.tapeRoll=1;G.hull=1;tapeUse();eq(G.hull,Math.ceil(stat().hullMax*.6),"изолента кулибина держит 60 %");
+  ok(socJoin("partner"),"в партнёрскую программу — каждый");
+}));

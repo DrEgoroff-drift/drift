@@ -9838,7 +9838,7 @@ const G={
   inv:[],fit:{},shield:0,shieldHit:0,energy:0,loot:[],partsBought:{},
   /* допуск и налёт (M363, §11.4): допуск не падает, налёт копится только в полёте */
   clearance:1,flownMs:0,gunGroup:0,
-  mined:{},farTaken:{},draft:{},smenaAt:{},stapel:{},thrown:[],bazBought:null,railParcel:null,railPass:null,railSeal:0,gosDone:{},recalled:{},reg:{},regWave:0,rush:null,tapeRoll:0,tapes:{},actWk:null,   /* выработанные залежи по планетам; неделя налёта и талоны (05e) */
+  mined:{},farTaken:{},draft:{},smenaAt:{},stapel:{},thrown:[],bazBought:null,railParcel:null,railPass:null,railSeal:0,gosDone:{},recalled:{},reg:{},regWave:0,rush:null,soc:{},tapeRoll:0,tapes:{},actWk:null,   /* выработанные залежи по планетам; неделя налёта и талоны (05e) */
   tech:new Set(),techLvl:{},barter:new Set(),
   found:new Set(),species:new Set(),
   ap:null,          // автопилот
@@ -11542,6 +11542,7 @@ function renderRecord(box){
   if(H.length)tableRow(box,"sec","","НА ДОСКЕ ПОЧЁТА: "+H.join(", "));
   if(typeof stampPage==="function")stampPage(box);   /* первая настоящая страница документа (M453) */
   if(R.udar)tableRow(box,"sec","","ОТМЕТКИ «УДАРНИК»: "+R.udar+" · госзаказы сданы по твёрдой цене");   /* M503 */
+  if(typeof socPage==="function")socPage(box);   /* общества и льготы (M512) */
   if(!R.e.length){tableRow(box,"dim","","записей нет: их делают другие — станции, институт, люди");return;}
   for(let i=R.e.length-1;i>=0;i--){
     const x=R.e[i];
@@ -22325,6 +22326,78 @@ function regArrive(){
   return "queued";
 }
 
+/* ══════════════ общества и льготы (M512, PLAN «new mechanics», st. 5) ══════════════
+   Автор, 14.09: «можно примкнуть к гильдии — какие могут быть и какие льготы».
+   Вступают ДЕЛОМ, а не взносом; членский билет — в ВЕЩИ; взносы — всегда
+   видимой строкой (правило доли управляющего); выйти даром, вернуться — за
+   деньги. У каждого одна льгота и одна шутка. Первый проход — пять обществ,
+   чьё дело уже можно сосчитать:
+     ПРОФСОЮЗ ВОДИТЕЛЕЙ (ГЛАВТРАССА) — 100 прыжков; взнос 2 % с заработка;
+       проездной вполцены;
+     ТОВАРИЩЕСТВО КУЛИБИНЫХ — 10 раз замотали изолентой; изолента держит 60 %;
+     «ЗНАЮЩИЕ» (маршрутчики Рассвета) — 10 поездок; чай в буфете даром — и
+       слух к нему;
+     КЛУБ ФИЛАТЕЛИСТОВ ОТМЕТОК — 4 отметки; обязанностей нет, собрания в гостинице;
+     ПАРТНЁРСКАЯ ПРОГРАММА™ (Компания) — вступить может каждый; «баллы
+       конвертируются в баллы», кассир шепчет «не вступайте».
+   G.soc = {m:{id:{at,dues}}, left:{id:1}, c:{jumps,tapes,rides}}. */
+const SOC_REJOIN=500;
+const SOC={
+  union:{ru:"Профсоюз водителей",by:"gt",dues:.02,deedRu:"100 прыжков",deed:()=>socC().jumps>=100,
+    perk:"проездной вполцены",joke:"«тринадцатая» — в конце года, из общего котла, если котёл будет"},
+  kulib:{ru:"Товарищество кулибиных",dues:0,deedRu:"10 раз замотали изолентой",deed:()=>socC().tapes>=10,
+    perk:"изолента держит 60 %",joke:"«сделаем из ваших» — и делают"},
+  know:{ru:"«Знающие»",by:"ra",dues:0,deedRu:"10 поездок",deed:()=>socC().rides>=10,
+    perk:"чай в буфете даром — и слух к нему",joke:"всё знают, говорят только за чаем"},
+  phil:{ru:"Клуб филателистов отметок",dues:0,deedRu:"4 отметки в КНИЖКЕ",
+    deed:()=>typeof stampBook==="function"&&Object.keys(stampBook().st).length>=4,
+    perk:"собрания в гостинице",joke:"пиратская отметка — предмет зависти"},
+  partner:{ru:"Партнёрская программа™",by:"co",dues:0,deedRu:"вступить может каждый",deed:()=>true,
+    perk:"баллы, которые конвертируются в баллы",joke:"кассир шепчет: «не вступайте»"}
+};
+function socAll(){const S=G.soc||(G.soc={});S.m=S.m||{};S.left=S.left||{};S.c=S.c||{};return S;}
+function socC(){const c=socAll().c;c.jumps=c.jumps|0;c.tapes=c.tapes|0;c.rides=c.rides|0;return c;}
+function socCount(k){socC()[k]++;}
+function socIn(id){return !!socAll().m[id];}
+function socCanJoin(id){const D=SOC[id];return !!(D&&!socIn(id)&&D.deed());}
+function socJoin(id){
+  if(!socCanJoin(id))return false;
+  const S=socAll();
+  if(S.left[id]){if(G.credits<SOC_REJOIN){say("Восстановление — "+SOC_REJOIN+" кр",90);return false;}G.credits-=SOC_REJOIN;}
+  S.m[id]={at:celDay(),dues:0};
+  if(typeof thingAdd==="function")thingAdd("paper","Членский билет · "+SOC[id].ru,"вступили делом: "+SOC[id].deedRu+" · льгота: "+SOC[id].perk);
+  logAdd("good","Вы вступили: "+SOC[id].ru+" · льгота — "+SOC[id].perk+(SOC[id].dues?" · взнос "+Math.round(SOC[id].dues*100)+" % с заработка":""));
+  return true;
+}
+function socLeave(id){
+  const S=socAll();if(!S.m[id])return false;
+  delete S.m[id];S.left[id]=1;
+  logAdd("dim","Вы вышли: "+SOC[id].ru+" · билет сдан · вернуться — "+SOC_REJOIN+" кр");
+  return true;
+}
+/* взносы: зовёт earn — видимая строка на странице КНИЖКИ, вычет сразу */
+function socDues(sum){
+  let d=0;const S=socAll();
+  for(const id in S.m){const D=SOC[id];if(!D||!D.dues)continue;const x=Math.floor(sum*D.dues);if(x>0){S.m[id].dues=(S.m[id].dues|0)+x;d+=x;}}
+  return d;
+}
+/* страница КНИЖКИ: общества — где вы, куда можно, чего не хватает */
+function socPage(box){
+  const S=socAll();
+  tableRow(box,"head","","ОБЩЕСТВА · ВСТУПАЮТ ДЕЛОМ, А НЕ ВЗНОСОМ");
+  for(const id in SOC){
+    const D=SOC[id],row=document.createElement("div");row.className="li";
+    const em=document.createElement("em");em.textContent=socIn(id)?"член":D.deed()?"можно":"—";
+    const sp=document.createElement("span");
+    sp.innerHTML="<b>"+D.ru+"</b> · "+D.perk+"<br><i>"+(socIn(id)?(D.dues?"взносы "+Math.round(D.dues*100)+" % · уплачено "+(S.m[id].dues|0)+" кр · ":"")+D.joke:"вступить: "+D.deedRu)+"</i>";
+    const b=document.createElement("button");b.className="act sm";
+    if(socIn(id)){b.textContent="ВЫЙТИ";b.onclick=e=>{e.stopPropagation();socLeave(id);tableRender();};}
+    else{b.textContent=S.left[id]?"ВЕРНУТЬСЯ · "+SOC_REJOIN+" КР":"ВСТУПИТЬ";b.disabled=!D.deed();b.onclick=e=>{e.stopPropagation();if(socJoin(id))tableRender();};}
+    sp.appendChild(document.createElement("br"));sp.appendChild(b);
+    row.appendChild(em);row.appendChild(sp);box.appendChild(row);
+  }
+}
+
 /* ══════════════ шесть агентов (M370, §7.5, §16.2 шаг 4) ══════════════
    Держава — не таблица настроений, а АГЕНТ с нуждами. У каждой четыре нужды в
    промилле (руда, товары, корпуса, связь), сила, отношения к пятерым и ход раз
@@ -29220,6 +29293,7 @@ function earn(sum,why){
   sum=Math.round(sum);
   if(!isFinite(sum)||sum<=0)return 0;
   G.credits+=sum;
+  if(typeof socDues==="function"){const d=socDues(sum);if(d)G.credits-=d;}   /* взносы обществ — строкой в КНИЖКЕ (M512) */
   homeTurn(sum,why);
   if(typeof coopEarn==="function")coopEarn(sum,why);   /* гроссбух кооператива (M351) */
   return sum;
@@ -33532,7 +33606,8 @@ function tapeCan(){return tapeRolls()>0&&G.hull<stat().hullMax*.5-.5;}
 function tapeUse(){
   if(!tapeCan())return false;
   G.tapeRoll=tapeRolls()-1;
-  G.hull=Math.ceil(stat().hullMax*.5);
+  G.hull=Math.ceil(stat().hullMax*((typeof socIn==="function"&&socIn("kulib"))?.6:.5));   /* кулибины мотают крепче (M512) */
+  if(typeof socCount==="function")socCount("tapes");
   G.tapes=G.tapes||{};G.tapes[G.shipId]=Math.min(TAPE_MAX,tapesOf()+1);
   logAdd("tech","Корпус замотан изолентой · до половины · рулонов осталось "+tapeRolls());
   say("Замотано\nкорпус 50 % · держится",100);
@@ -41788,7 +41863,7 @@ function snapshot(){
     inv:G.inv.map(packPart),fit:G.fit,partsBought:prunePartsBought(),
     tech:[...G.tech],techLvl:G.techLvl,barter:[...G.barter],found:[...G.found],
     species:[...G.species],bioV:2,
-    opts:G.opts,zoom:G.zoom,market:G.market,uniqueShips:(typeof stapelStrip==="function")?stapelStrip(G.uniqueShips):G.uniqueShips,stapel:G.stapel||{},thrown:G.thrown||[],railParcel:G.railParcel||null,railPass:G.railPass||null,railSeal:G.railSeal?1:0,gosDone:G.gosDone||{},recalled:G.recalled||{},reg:G.reg||{},regWave:G.regWave?1:0,rush:G.rush||null,bazBought:G.bazBought||null,tow:G.tow,
+    opts:G.opts,zoom:G.zoom,market:G.market,uniqueShips:(typeof stapelStrip==="function")?stapelStrip(G.uniqueShips):G.uniqueShips,stapel:G.stapel||{},thrown:G.thrown||[],railParcel:G.railParcel||null,railPass:G.railPass||null,railSeal:G.railSeal?1:0,gosDone:G.gosDone||{},recalled:G.recalled||{},reg:G.reg||{},regWave:G.regWave?1:0,rush:G.rush||null,soc:G.soc||{},bazBought:G.bazBought||null,tow:G.tow,
     episodes:G.episodes,notebook:G.notebook,gifts:G.gifts,mslBy:G.mslBy,
     bonds:G.bonds,bondHold:G.bondHold,coupN:G.coupN,
     letter:G.letter||null,dipSwapN:G.dipSwapN,smugN:G.smugN,smugBy:G.smugBy,
@@ -41951,7 +42026,7 @@ function applySave(s){
   if(typeof hudNumDirty==="function")hudNumDirty();
   G.sx=s.sx|0;G.sy=s.sy|0;G.sys=getSystem(G.sx,G.sy);
   G.uniqueShips=asMap(s.uniqueShips);
-  G.railParcel=(s.railParcel&&typeof s.railParcel==="object")?s.railParcel:null;G.railPass=(s.railPass&&typeof s.railPass==="object")?s.railPass:null;G.railSeal=s.railSeal?1:0;G.gosDone=asMap(s.gosDone);G.recalled=asMap(s.recalled);G.reg=asMap(s.reg);G.regWave=s.regWave?1:0;G.rush=(s.rush&&typeof s.rush==="object")?s.rush:null;   /* M499–M508 */
+  G.railParcel=(s.railParcel&&typeof s.railParcel==="object")?s.railParcel:null;G.railPass=(s.railPass&&typeof s.railPass==="object")?s.railPass:null;G.railSeal=s.railSeal?1:0;G.gosDone=asMap(s.gosDone);G.recalled=asMap(s.recalled);G.reg=asMap(s.reg);G.regWave=s.regWave?1:0;G.rush=(s.rush&&typeof s.rush==="object")?s.rush:null;G.soc=asMap(s.soc);   /* M499–M508 */
   G.thrown=Array.isArray(s.thrown)?s.thrown.slice(0,12):[];G.bazBought=(s.bazBought&&typeof s.bazBought==="object")?s.bazBought:null;   /* барахолка (M463) */
   G.stapel=asMap(s.stapel);if(typeof stapelRestore==="function")stapelRestore();   /* заказанные корпуса выводятся из заказа (M481) */
   G.tow=(s.tow&&typeof s.tow==="object")?s.tow:null;   /* корпус на тросе (M369b) */
@@ -51209,6 +51284,7 @@ function updateMap(dt){
   }
 }
 function jump(cost){
+  if(typeof socCount==="function")socCount("jumps");   /* профсоюз считает прыжки (M512) */
   /* уходя, платит не только топливо: тех, кто сел вам на хвост, вы оставляете
      над головами живущих внизу (M110, 12t-settle) */
   if(typeof settleLeftBehind==="function")settleLeftBehind();
@@ -53362,8 +53438,9 @@ function railBuy(t,express,bus){
   railWinRender();
 }
 function railBuffet(){
-  if(G.credits<3){say("Буфет: «мелочи нет? и у нас нет»",90);return;}
-  G.credits-=3;
+  const free=typeof socIn==="function"&&socIn("know");   /* «Знающим» чай даром (M512) */
+  if(!free&&G.credits<3){say("Буфет: «мелочи нет? и у нас нет»",90);return;}
+  if(!free)G.credits-=3;
   const L=(typeof rumoursHere==="function")?rumoursHere():[];
   const line=L.length?"говорят, есть "+L[Math.floor(rnd()*L.length)].short:"сегодня ничего не говорят, пейте молча";
   peopleLine(line,"буфетчица",true);
@@ -53394,6 +53471,7 @@ function railRideStart(t){
   RAIL_RIDE={l,seq,seg:0,phase:"go",t:0,dur:railSegDur(l,seq,0)*(t.bus?1.6:1),pause:0,express:!!t.express,bus:!!t.bus,t0:G.t};
   if(t.bus&&typeof railBusTalk==="function")railBusTalk();   /* водитель маршрутки знает, почему (M510) */
   G.mode="rail";G.ap=null;
+  if(typeof socCount==="function")socCount("rides");   /* «Знающие» считают поездки (M512) */
   if(typeof cueReset==="function")cueReset();   /* оклик кольца остался в системе — в вагоне его нет */
   sfx("jump");
   say("Поезд отправляется\n"+l.ru+" · до «"+railStopName(l.stops[seq[seq.length-1]])+"»",120);
@@ -53559,7 +53637,7 @@ function railPassOn(){return !!(G.railPass&&now()<G.railPass.until);}
 function railPassPrice(){
   const D=railDestinations();if(!D.length)return 0;
   let s=0;for(const t of D)s+=railFare(t).fare;
-  return Math.round(s/D.length*RAIL_PASS_RIDES);
+  return Math.round(s/D.length*RAIL_PASS_RIDES*((typeof socIn==="function"&&socIn("union"))?.5:1));   /* профсоюз: вполцены (M512) */
 }
 function railPassBuy(){
   const p=railPassPrice();if(!p||railPassOn())return false;

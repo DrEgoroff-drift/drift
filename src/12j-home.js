@@ -39,6 +39,7 @@ function earn(sum,why){
   sum=Math.round(sum);
   if(!isFinite(sum)||sum<=0)return 0;
   G.credits+=sum;
+  if(typeof socDues==="function"){const d=socDues(sum);if(d)G.credits-=d;}   /* взносы обществ — строкой в КНИЖКЕ (M512) */
   homeTurn(sum,why);
   if(typeof coopEarn==="function")coopEarn(sum,why);   /* гроссбух кооператива (M351) */
   return sum;

@@ -568,7 +568,7 @@ material consequences are the part that does not exist yet — that is what stag
   replacement at their yard; kept, the old one becomes a scar.
 - **M510 Компенсационная маршрутка** — BUILT 18.09 [design owed]: when `railClosedWhy` shuts a Коммуна counter the vestibule offers МАРШРУТКА to the first six stops (same fare, no declaration, leaves in 3 s, segments ×1.6), the driver's line says why (`railBusTalk`). **Open:** shut stretches of the front (the line itself cut), the bus drawn. (st. 6, M474): on a shut stretch («временные трудности») Рассвет's
   bus runs along it stop by stop — slower, and the driver knows why the line is shut.
-- **M512 Общества и льготы — membership** (st. 5; the author 14.09 on the маршрутка's driver who
+- **M512 Общества и льготы — membership** — FIRST PASS BUILT 18.09 `12al4-soc` [design owed]: five societies on the КНИЖКА page (ВСТУПИТЬ/ВЫЙТИ/ВЕРНУТЬСЯ 500 кр), a членский билет in ВЕЩИ: Профсоюз (100 jumps; 2 % dues inside `earn`, shown as paid; проездной ×.5), Кулибины (10 tapes; tape to 60 %), «Знающие» (10 rides; buffet free), Филателисты (4 stamps), Партнёрская программа™ (anyone). Counters in `G.soc.c`. **Open:** duties (субботник, the week's parcel), ДОСО, спасатели, дачники, читатели; the arithmetic on the desk. (st. 5; the author 14.09 on the маршрутка's driver who
   knows why the line is shut: «это КГБ прям, можно примкнуть к гильдии — какие могут быть и какие
   льготы»). A society is joined by a deed, not a fee; a **членский билет** goes to ВЕЩИ; dues are
   always a shown line (the manager-cut rule); leaving is free, rejoining costs; each has one duty

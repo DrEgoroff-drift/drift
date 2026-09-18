@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 584 · символов верхнего уровня: 5633
+Файлов: 585 · символов верхнего уровня: 5644
 
 ## СИМВОЛЫ
 
@@ -143,7 +143,7 @@ arcHit                       src/13a-guns.js:368-385
 ARMED_CAP                    src/13-combat.js:12
 armedCount                   src/13-combat.js:236
 arrive                       src/16-flight.js:178-216
-arriveSystem                 src/18-mode-map.js:539-584
+arriveSystem                 src/18-mode-map.js:540-585
 ARTIFACTS                    src/12h-relic.js:48-63
 askText                      src/11u-names.js:59-77
 asMap                        src/14-save.js:209-215
@@ -1449,7 +1449,7 @@ drawPOI                      src/20a-poi.js:173-234
 drawPortal                   src/20aa-poi-shapes.js:464-489
 drawPostcard                 src/25g-postcard.js:170-611
 drawRaid                     src/24aa-raid-draw.js:14-655
-drawRail                     src/18g-rail-ride.js:84-121
+drawRail                     src/18g-rail-ride.js:85-122
 drawRailMap                  src/18e-rail-net.js:181-204
 drawRing                     src/17c-system-draw.js:4-15
 drawRingTape                 src/11x-ring.js:107-118
@@ -1489,7 +1489,7 @@ drawSysNebula                src/16a-space.js:208-236
 drawSysRail                  src/18f-rail-station.js:32-65
 drawSystem                   src/17-mode-system.js:459-746
 drawSysTraffic               src/17f-sys-traffic.js:36-40
-drawTapes                    src/12s1-tape.js:36-48
+drawTapes                    src/12s1-tape.js:37-49
 drawTemple                   src/20aa-poi-shapes.js:50-89
 drawThingIcon                src/27i-ui-table.js:400-436
 drawTierTrim                 src/03b-hull-paint.js:73-166
@@ -1565,7 +1565,7 @@ e2eHands                     tests/91zzzzz-e2e-life.js:95
 e2eLate                      tests/91zzzzz-e2e-life.js:384
 e2eLost                      tests/91zzzzz-e2e-life.js:157-174
 e2eScan                      tests/91zzzzz-e2e-life.js:66-93
-earn                         src/12j-home.js:38-45
+earn                         src/12j-home.js:38-46
 ecoBestLeg                   tests/91zzw-economy.js:18-35
 ECON_CYCLE                   src/12ax-fx-econ.js:20
 ECON_EMB                     src/12ax-fx-econ.js:23
@@ -2371,16 +2371,16 @@ HOME_DOCK_COOL               src/16c-rescue.js:47
 HOME_HIT                     src/27e-ui-home.js:33
 HOME_JUMP_BASE               src/16c-rescue.js:44
 HOME_MAN                     src/21f-home-out.js:55
-HOME_MATE                    src/12j-home.js:85
+HOME_MATE                    src/12j-home.js:86
 HOME_ROOM_H                  src/27e-ui-home.js:14
 HOME_STEP_W                  src/27e-ui-home.js:20
 HOME_TAXI                    src/16c-rescue.js:46
 HOME_TIERS                   src/12j-home.js:10-19
 HOME_VIEW                    src/27e-ui-home.js:34
-homeBeacon                   src/12j-home.js:179-185
-homeBeaconCost               src/12j-home.js:178
-homeCanRebuild               src/12j-home.js:225
-homeCanRevive                src/12j-home.js:152
+homeBeacon                   src/12j-home.js:180-186
+homeBeaconCost               src/12j-home.js:179
+homeCanRebuild               src/12j-home.js:226
+homeCanRevive                src/12j-home.js:153
 homeCool                     src/16c-rescue.js:55
 homeCrewFigure               src/27e-ui-home.js:680-693
 homeDoorX                    src/21f-home-out.js:314-318
@@ -2390,28 +2390,28 @@ homeHereP                    src/21f-home-out.js:26-32
 homeHitAt                    src/27e-ui-home.js:35-41
 homeInit                     src/12j-home.js:20-23
 homeJumpCount                src/16c-rescue.js:54
-homeMateKind                 src/12j-home.js:92-97
-homeMateName                 src/12j-home.js:86-89
-homeMateTake                 src/12j-home.js:98-136
-homeMoraleMul                src/12j-home.js:212
+homeMateKind                 src/12j-home.js:93-98
+homeMateName                 src/12j-home.js:87-90
+homeMateTake                 src/12j-home.js:99-137
+homeMoraleMul                src/12j-home.js:213
 homeNext                     src/12j-home.js:29-32
-homeOrderBonus               src/12j-home.js:209
+homeOrderBonus               src/12j-home.js:210
 homeOutPal                   src/21f-home-out.js:57-68
 homePlan                     src/21f-home-out.js:327-334
 homePlanet                   src/21f-home-out.js:18-24
-homeProgress                 src/12j-home.js:138-146
-homeRebuild                  src/12j-home.js:226-240
-homeRevive                   src/12j-home.js:153-173
+homeProgress                 src/12j-home.js:139-147
+homeRebuild                  src/12j-home.js:227-241
+homeRevive                   src/12j-home.js:154-174
 homeRoomBody                 src/27e-ui-home.js:63-607
 homeRoomW                    src/27e-ui-home.js:21-26
 homeSceneClick               src/27e-ui-home.js:628-676
 homeShade                    src/27e-ui-home.js:696-699
-homeShow                     src/12j-home.js:195-202
-homeShowBonus                src/12j-home.js:216-221
+homeShow                     src/12j-home.js:196-203
+homeShowBonus                src/12j-home.js:217-222
 homeSigns                    src/21f-home-out.js:335-368
 homeSpotX                    src/21f-home-out.js:34-54
-homeStore                    src/12j-home.js:188-194
-homeTurn                     src/12j-home.js:46-76
+homeStore                    src/12j-home.js:189-195
+homeTurn                     src/12j-home.js:47-77
 homeUpWorld                  tests/91zzzc-home-up.js:5-9
 homingStep                   src/13a-guns.js:501-508
 HOTEL_NIGHT                  src/17l-hotel.js:11
@@ -2598,7 +2598,7 @@ jobOffer                     src/12e-mgr-jobs.js:228-240
 jobPick                      src/12e-mgr-jobs.js:259-282
 jobRefuse                    src/12e-mgr-jobs.js:57-66
 jobTick                      src/12e-mgr-jobs.js:287-296
-jump                         src/18-mode-map.js:527-534
+jump                         src/18-mode-map.js:527-535
 jumpToBase                   src/21a-mode-base.js:384-401
 KB                           src/27jb-kb.js:23
 KB_RULE                      src/27jb-kb.js:14-22
@@ -3985,7 +3985,7 @@ railArmAng                   src/18e-rail-net.js:103
 railAt                       src/18e-rail-net.js:112-120
 railBranchAng                src/18e-rail-net.js:51-54
 railBucket                   src/18i-rail-life.js:16
-railBuffet                   src/18f-rail-station.js:179-185
+railBuffet                   src/18f-rail-station.js:179-186
 railBuildLines               src/18e-rail-net.js:55-101
 railBusTalk                  src/18j-rail-rush.js:29-34
 railBuy                      src/18f-rail-station.js:167-178
@@ -3994,7 +3994,7 @@ railClosedWhy                src/18h-rail-powers.js:16-21
 railDeclare                  src/18h-rail-powers.js:23-33
 railDestinations             src/18f-rail-station.js:102-115
 railDocked                   src/18f-rail-station.js:86-93
-railExit                     src/18g-rail-ride.js:72-83
+railExit                     src/18g-rail-ride.js:73-84
 railFare                     src/18f-rail-station.js:116-122
 railFmt                      src/18f-rail-station.js:98
 railHere                     src/18f-rail-station.js:24-30
@@ -4021,14 +4021,14 @@ railPassPrice                src/18i-rail-life.js:19-23
 railPaxOffer                 src/18i-rail-life.js:50-54
 railPolar                    src/18e-rail-net.js:45-48
 railReady                    src/18f-rail-station.js:23
-railRideStart                src/18g-rail-ride.js:13-22
-railSegDur                   src/18g-rail-ride.js:23-26
+railRideStart                src/18g-rail-ride.js:13-23
+railSegDur                   src/18g-rail-ride.js:24-27
 railStation                  src/18e-rail-net.js:158-163
 railStep                     src/18e-rail-net.js:43
 railStopName                 src/18f-rail-station.js:99
 railStopsOf                  src/18e-rail-net.js:122-146
-railTick                     src/18f-rail-station.js:187-192
-railTrainPos                 src/18g-rail-ride.js:28-40
+railTick                     src/18f-rail-station.js:188-193
+railTrainPos                 src/18g-rail-ride.js:29-41
 railUAt                      src/18e-rail-net.js:105-110
 railWaitNow                  src/18f-rail-station.js:97
 railWinClose                 src/18f-rail-station.js:124
@@ -4194,7 +4194,7 @@ renderMail                   src/25k-post-mail.js:36-109
 renderOpts                   src/27-ui-ship.js:58-330
 renderPrices                 src/12aa-need.js:258-285
 renderQsl                    src/11an-qsl.js:160-201
-renderRecord                 src/11aa-record.js:86-107
+renderRecord                 src/11aa-record.js:86-108
 renderRelays                 src/11ap-relay.js:253-301
 renderRoute                  src/12r-route.js:349-448
 renderSiteTab                src/26c-ui-station-site.js:7-130
@@ -4808,16 +4808,27 @@ snapshot                     src/14-save.js:42-109
 SND                          src/09-audio.js:4
 sndWalk                      src/28-loop.js:51
 snStand                      tests/91zzzzzx-sound.js:22-57
+SOC                          src/12al4-soc.js:17-29
 SOC_CULT                     src/12ay-fx-soc.js:13
 SOC_HOLIDAY                  src/12ay-fx-soc.js:12
 SOC_REFUGEE                  src/12ay-fx-soc.js:10
+SOC_REJOIN                   src/12al4-soc.js:16
 SOC_REVOLT                   src/12ay-fx-soc.js:14
 SOC_STRIKE                   src/12ay-fx-soc.js:11
+socAll                       src/12al4-soc.js:30
+socC                         src/12al4-soc.js:31
+socCanJoin                   src/12al4-soc.js:34
+socCount                     src/12al4-soc.js:32
 socCultHere                  src/12ay-fx-soc.js:58-61
+socDues                      src/12al4-soc.js:51-55
 socHolidayHere               src/12ay-fx-soc.js:51-54
+socIn                        src/12al4-soc.js:33
 socInc                       src/12ay-fx-soc.js:15-17
+socJoin                      src/12al4-soc.js:35-43
+socLeave                     src/12al4-soc.js:44-49
 socLine                      src/12ay-fx-soc.js:95-103
 socOwnerIs                   src/12ay-fx-soc.js:18-21
+socPage                      src/12al4-soc.js:57-71
 socPirateMul                 src/12ay-fx-soc.js:91-93
 socPriceMul                  src/12ay-fx-soc.js:83-90
 socRefugeeNear               src/12ay-fx-soc.js:26-34
@@ -5104,7 +5115,7 @@ TAPE_GAIN                    src/25b-tape.js:25
 TAPE_N                       src/25b-tape.js:22
 TAPE_PENS                    src/25b-tape.js:23
 TAPE_PRICE                   src/12s1-tape.js:8
-tapeBuy                      src/12s1-tape.js:22-27
+tapeBuy                      src/12s1-tape.js:23-28
 tapeCan                      src/12s1-tape.js:11
 tapeInit                     src/25b-tape.js:27-31
 tapePack                     src/25b-tape.js:34-38
@@ -5118,8 +5129,8 @@ tapeStrip                    src/25b-tape.js:187-196
 tapeTear                     src/11b-speech.js:196-212
 tapeTick                     src/25b-tape.js:79-93
 tapeUnpack                   src/25b-tape.js:39-46
-tapeUse                      src/12s1-tape.js:12-21
-tapeYardRepaired             src/12s1-tape.js:29-34
+tapeUse                      src/12s1-tape.js:12-22
+tapeYardRepaired             src/12s1-tape.js:30-35
 targetPos                    src/16-flight.js:121-129
 TAU                          src/01-core.js:14
 TECH                         src/04-mods.js:14-46
@@ -5301,7 +5312,7 @@ updateHomeIn                 src/29c-home-in.js:160-200
 updateLanding                src/19-mode-landing.js:68-137
 updateMap                    src/18-mode-map.js:513-526
 updateRaid                   src/24a-mode-raid.js:215-345
-updateRail                   src/18g-rail-ride.js:41-70
+updateRail                   src/18g-rail-ride.js:42-71
 updateScoop                  src/19a-mode-scoop.js:75-176
 updateSpa                    src/29i-spa-draw.js:514-519
 updateSurface                src/21-mode-surface.js:200-657
@@ -5614,8 +5625,8 @@ wrecksHere                   src/12l-barge.js:332
 wrgba                        src/29g-winter-draw.js:27
 wtab                         src/02a-worldmix.js:85
 xpWorth                      tests/91zzzzzm-exploit.js:26-49
-yachtMoraleMul               src/12j-home.js:254-257
-yachtOwned                   src/12j-home.js:247-253
+yachtMoraleMul               src/12j-home.js:255-258
+yachtOwned                   src/12j-home.js:248-254
 YALTA_R                      src/12al-powers.js:159
 yaltaAt                      src/12al-powers.js:160-167
 yaltaHere                    src/12al-powers.js:172
@@ -5989,6 +6000,9 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/12al3-reg.js · 4 КБ
   · постановка на учёт — утильсбор (M513, PLAN «new mechanics», st. 6):1
 
+## src/12al4-soc.js · 6 КБ
+  · общества и льготы (M512, PLAN «new mechanics», st. 5):1
+
 ## src/12am-chron-agents.js · 17 КБ
   · шесть агентов (M370, §7.5, §16.2 шаг 4):1
 
@@ -6083,8 +6097,8 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## src/12j-home.js · 16 КБ
   · дом:1
-  · домочадец:77
-  · что ступени дают:203
+  · домочадец:78
+  · что ступени дают:204
 
 ## src/12k-letters.js · 11 КБ
   · последний рейс: Жестянка закрывается, письма с содержанием:1
@@ -6241,7 +6255,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/13d-npc.js · 13 КБ
   · война, которую видно (M372, §7.4):1
 
-## src/14-save.js · 47 КБ
+## src/14-save.js · 48 КБ
   · сохранение:1
   · запись не имеет права убить полёт:110
   · пустая карта возвращается из облака СПИСКОМ:187
@@ -7374,7 +7388,7 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## tests/91zzzzk5-plan.js · 9 КБ
 
-## tests/91zzzzk6-stapel.js · 24 КБ
+## tests/91zzzzk6-stapel.js · 25 КБ
 
 ## tests/91zzzzl-maphold.js · 5 КБ
   · автотесты: владения на карте (M348):1

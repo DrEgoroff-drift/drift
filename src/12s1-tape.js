@@ -12,7 +12,8 @@ function tapeCan(){return tapeRolls()>0&&G.hull<stat().hullMax*.5-.5;}
 function tapeUse(){
   if(!tapeCan())return false;
   G.tapeRoll=tapeRolls()-1;
-  G.hull=Math.ceil(stat().hullMax*.5);
+  G.hull=Math.ceil(stat().hullMax*((typeof socIn==="function"&&socIn("kulib"))?.6:.5));   /* кулибины мотают крепче (M512) */
+  if(typeof socCount==="function")socCount("tapes");
   G.tapes=G.tapes||{};G.tapes[G.shipId]=Math.min(TAPE_MAX,tapesOf()+1);
   logAdd("tech","Корпус замотан изолентой · до половины · рулонов осталось "+tapeRolls());
   say("Замотано\nкорпус 50 % · держится",100);

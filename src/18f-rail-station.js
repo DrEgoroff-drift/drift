@@ -177,8 +177,9 @@ function railBuy(t,express,bus){
   railWinRender();
 }
 function railBuffet(){
-  if(G.credits<3){say("Буфет: «мелочи нет? и у нас нет»",90);return;}
-  G.credits-=3;
+  const free=typeof socIn==="function"&&socIn("know");   /* «Знающим» чай даром (M512) */
+  if(!free&&G.credits<3){say("Буфет: «мелочи нет? и у нас нет»",90);return;}
+  if(!free)G.credits-=3;
   const L=(typeof rumoursHere==="function")?rumoursHere():[];
   const line=L.length?"говорят, есть "+L[Math.floor(rnd()*L.length)].short:"сегодня ничего не говорят, пейте молча";
   peopleLine(line,"буфетчица",true);

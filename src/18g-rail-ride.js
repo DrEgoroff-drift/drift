@@ -16,6 +16,7 @@ function railRideStart(t){
   RAIL_RIDE={l,seq,seg:0,phase:"go",t:0,dur:railSegDur(l,seq,0)*(t.bus?1.6:1),pause:0,express:!!t.express,bus:!!t.bus,t0:G.t};
   if(t.bus&&typeof railBusTalk==="function")railBusTalk();   /* водитель маршрутки знает, почему (M510) */
   G.mode="rail";G.ap=null;
+  if(typeof socCount==="function")socCount("rides");   /* «Знающие» считают поездки (M512) */
   if(typeof cueReset==="function")cueReset();   /* оклик кольца остался в системе — в вагоне его нет */
   sfx("jump");
   say("Поезд отправляется\n"+l.ru+" · до «"+railStopName(l.stops[seq[seq.length-1]])+"»",120);
