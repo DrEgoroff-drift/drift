@@ -50540,8 +50540,18 @@ function drawPeaceFleet(zx,zy,Z){
   }else if(by==="co"){
     const x=cx+Math.cos(t*.05)*160,y=cy+Math.sin(t*.05)*60,a=Math.atan2(Math.cos(t*.05)*60,-Math.sin(t*.05)*160);
     peaceShip("ferry",seed,"co",zx(x),zy(y),a,Z);
+    /* экран на рекламном борту (дизайн 18.09): бегущие цветные полосы, как у
+       дрона-встречающего, — «партнёр» виден и без подписи */
+    {const k=clamp(Z,.6,1.5),sx=zx(x),sy=zy(y)-12*k,off=(G.t*.6)%40;
+      ctx.save();ctx.translate(sx,sy);ctx.scale(k,k);
+      ctx.fillStyle="#20262e";ctx.fillRect(-16,-6,32,10);ctx.fillStyle="#0b1016";ctx.fillRect(-14,-4.5,28,7);
+      ctx.beginPath();ctx.rect(-14,-4.5,28,7);ctx.clip();
+      for(let i=-1;i<3;i++){const bx=-14+i*20-off*.5+20;
+        ctx.fillStyle="rgba(255,90,170,.95)";ctx.fillRect(bx,-3,9,2);ctx.fillStyle="rgba(90,230,255,.9)";ctx.fillRect(bx+11,-3,6,2);
+        ctx.fillStyle="rgba(255,230,120,.9)";ctx.fillRect(bx+2,.5,12,1.6);}
+      ctx.restore();}
     ctx.fillStyle="rgba(255,70,160,.8)";ctx.font=uiFont(8);ctx.textAlign="center";
-    ctx.fillText("РЕКЛАМА · ПАРТНЁР™",zx(x),zy(y)-22*clamp(Z,.6,1.5));
+    ctx.fillText("РЕКЛАМА · ПАРТНЁР™",zx(x),zy(y)-24*clamp(Z,.6,1.5));
     peaceShip("patrol",seed+1,"co",zx(x-60),zy(y+40),a,Z);
   }else if(by==="or"){
     /* досмотр: торговец стоит, двое по бокам, белые огни ровно */
@@ -50562,9 +50572,15 @@ function drawPeaceFleet(zx,zy,Z){
   }else if(by==="hf"){
     /* линия перезагрузки: огни гаснут волной, дрон за дроном */
     for(let i=0;i<6;i++){
-      const x=cx+(i-2.5)*40,y=cy,off=((t*1.2-i*.35)%4+4)%4<.5;
-      ctx.fillStyle="#d8e0e8";ctx.beginPath();ctx.arc(zx(x),zy(y),4*clamp(Z,.6,1.5),0,TAU);ctx.fill();
-      ctx.fillStyle=off?"rgba(40,40,40,.9)":"rgba(130,255,236,.95)";ctx.beginPath();ctx.arc(zx(x),zy(y),1.6*clamp(Z,.6,1.5),0,TAU);ctx.fill();
+      const x=cx+(i-2.5)*40,y=cy,off=((t*1.2-i*.35)%4+4)%4<.5,k=clamp(Z,.6,1.5);
+      /* дрон-камера Хай-Фронта, как у встречающего (17h): диск, крест лопастей,
+         глаз — а не точка (дизайн 18.09); при перезагрузке глаз гаснет */
+      ctx.save();ctx.translate(zx(x),zy(y));ctx.scale(k,k);
+      ctx.strokeStyle="rgba(130,255,236,.45)";ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(-7,-5);ctx.lineTo(7,5);ctx.moveTo(-7,5);ctx.lineTo(7,-5);ctx.stroke();
+      ctx.fillStyle="#d8e0e8";ctx.beginPath();ctx.arc(0,0,4.2,0,TAU);ctx.fill();
+      ctx.fillStyle="#10161c";ctx.beginPath();ctx.arc(0,1.4,2,0,TAU);ctx.fill();
+      ctx.fillStyle=off?"rgba(60,60,60,.9)":"rgba(255,70,70,.95)";ctx.beginPath();ctx.arc(0,1.8,.8,0,TAU);ctx.fill();
+      ctx.restore();
     }
     ctx.fillStyle="rgba(130,255,236,.7)";ctx.font=uiFont(8);ctx.textAlign="center";ctx.fillText("ОБНОВЛЕНИЕ УСТАНАВЛИВАЕТСЯ",zx(cx),zy(cy)-18*clamp(Z,.6,1.5));
   }

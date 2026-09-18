@@ -1445,7 +1445,7 @@ drawNebula                   src/16-flight.js:91-103
 drawNodeIcon                 src/05a-nodes.js:264-361
 drawObelisk                  src/20aa-poi-shapes.js:276-376
 drawObserv                   src/20aa-poi-shapes.js:491-513
-drawPeaceFleet               src/17m-peace-fleet.js:26-69
+drawPeaceFleet               src/17m-peace-fleet.js:26-85
 drawPirate                   src/12i-pirate-hull.js:428-478
 drawPirateBase               src/24a-mode-raid.js:103-133
 drawPirateSkin               src/03d-hull-marks.js:99-126
@@ -3630,11 +3630,11 @@ pcTestPixels                 tests/91zzzi-postcard.js:17-22
 pcTestPlanet                 tests/91zzzi-postcard.js:2-9
 pcTestSnap                   tests/91zzzi-postcard.js:12-16
 pcWash                       src/25g-post-craft.js:40-55
-PEACE_TUG                    src/17m-peace-fleet.js:71
+PEACE_TUG                    src/17m-peace-fleet.js:87
 peaceHere                    src/17m-peace-fleet.js:12-19
-peaceRepairPos               src/17m-peace-fleet.js:72-75
+peaceRepairPos               src/17m-peace-fleet.js:88-91
 peaceShip                    src/17m-peace-fleet.js:20-25
-peaceTick                    src/17m-peace-fleet.js:76-86
+peaceTick                    src/17m-peace-fleet.js:92-102
 PEEP_LIT                     src/20c-peep.js:28
 PEEP_LOAD                    src/20c-peep.js:27
 PEEP_PASS                    src/20c-peep.js:25
@@ -6398,7 +6398,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/17l-hotel.js · 4 КБ
   · гостиницы (M461, DESIGN-life §3.3):1
 
-## src/17m-peace-fleet.js · 6 КБ
+## src/17m-peace-fleet.js · 7 КБ
   · мирный флот в полёте (M455, DESIGN-borders §2.4, war §7.3):1
 
 ## src/17n-bazaar.js · 7 КБ
