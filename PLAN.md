@@ -82,6 +82,60 @@ PATCHNOTES trim (oldest entry 0.400.0, `docs/PATCHNOTES-archive.md` exists); fou
 rewritten — Д4 (the ИИ-ядро exists), Д14 (the blockade exists); a name collision fixed — `G.plan` is the
 industrial plan (`11r-plan`), the blueprint is `G.draft`.
 
+### NEXT — the order after 18.09 (Control's handover; the team of three was closed by the author)
+
+State of `helm-layout` (C:\Claude\drift-work): local commits only, nothing pushed; node 16 352 / 0,
+browser 18 080 / 0. The single question behind everything: **smooth flight on the phone**
+(author: «на тел дергается все прогоны … плавный полет нужен»). Measured and settled: with the stick
+under the finger 80–83 % of frames make the 16.7 ms deadline, without it 99–100 %, at ×1.5 94–97 %;
+our JS is 6–8 ms, the deadline is lost in the RASTER. In this order:
+
+1. **Measure the hull bake on the phone** (51a0824, dc67a87) — bake on vs off
+   (`G.opts.gfx.hullBake=0`), by the protocol below. It is the only number that says whether baking
+   helps; nothing after this step is decided without it. Phone: the author allowed testing any time;
+   on 18.09 only `192.168.1.52:5555` answered (unauthorized until «Разрешить» on its screen), the S23
+   needs «Беспроводная отладка» switched on to appear in `adb mdns services`.
+2. **The author's call on ×1.5 in flight** — the switch is built and OFF (`c7556b7`,
+   `G.opts.gfx.resByMode`). Its real price, from real frames (not the withdrawn simulation): the sky a
+   quarter darker (nebula and faint glow); the trail line and the one-pixel stars hold.
+3. **If the bake helps — bake the rest by the same rule** (GOTCHAS: bake what fills its box, never
+   slivers): the other modes' still bodies (station, landing, belt), checked with the Designer's
+   caller breakdown (`layers.js`). If it does not help — stop baking and say so here.
+4. **g11 on the laptop** — the one Stage-0 gate item nobody ran on 17–18.09 (`docs/g11.ps1`, needs
+   `docs/stand.ps1` on 8777, run with nothing else loading the CPU).
+5. **Frame acceptance of the baked star core and hull** against the Designer's four risks: the
+   star's pulsation and corona, the ship's lights and nozzles, a step at the baked picture's edge, a
+   one-frame lag of the baked picture in rotation. Control's side-by-side at ×2 found none; a frame
+   from the phone is still owed.
+6. **Tails at ×2.40 for the author's «куцые хвосты»** — filmed on the phone (headless hangs after a
+   few dozen thrust frames and cannot film them).
+7. **Split `src/16a-space.js`** (item 0.4) — the sprite oven apart from what it bakes.
+8. **Release** (Control): `test.ps1 -Accept` for goldens (the hull and the star changed pixels),
+   `-Full`, `-Mobile`, `-Mutants`, the Node tier, PATCHNOTES lines, push, md5 of the three site files
+   after deploy.
+
+Findings of 17–18.09 not recorded elsewhere:
+- **Law of the frame for any cut or bake (Designer):** protect the thin trail line, the one-pixel
+  stars and the depth of the void (the nebula's glow). The ribbon only with a frame in hand — cut the
+  thread's thickness, never its length.
+- **Designer's instruments** (her scratchpad `…\9711c220-…\scratchpad`): `skips.py <video>` — share
+  of double movement steps, per-second profile, a frame at each skip, counted from OUTSIDE the game;
+  `layers.js` — the frame's calls and painted area by caller; `dpruthor_sheet2.png` — the sheet for
+  the author from real frames (`author_sheet.png` is the withdrawn simulation, never show it).
+- **Scoop mode passes bank as lvl** (Control, 18.09): `19a-mode-scoop.js:547`
+  `drawHull(G.shipId,keys.thrust&&G.fuel>0,false,S.bank)` — the 4th argument is `lvl`, so the
+  hull never banks in the scoop and the flame grows with the bank. Fix: `…,false,0,S.bank`; look at
+  the frame first — the flame size there may be what the author is used to.
+- **ОПИСЬ drag, the path not taken:** the lifted item falls off the finger at the browser's
+  touch-scroll threshold (~16–24 px). `preventDefault` on pointermove made it worse (f04f78a,
+  reverted e2804dc); a manual `scrollTop` loses to the browser's inertia. The way when it is taken up:
+  a narrow grab handle with `touch-action:none` from the start.
+- **Cadence protocol (Tester):** real S23 over Wi-Fi adb, one tab, the stick confirmed alive; record
+  the conditions — zoom, open screens, hold contents, fleet ships in frame, prompt text, thrust,
+  thermal, minutes since open; first line of the report is frames-with-stick; three 30 s runs, the
+  first thrown away (the phone's first minute lies); judge by the share of late frames and the
+  interval histogram, never by the average fps. A run without a living stick is rejected.
+
 ### Stage 0 — THE FRAME FIRST (author 14.09: «разрыв кадров, дёрганье — это первым»)
 
 Numbers: `docs/PLAYTEST-2026-09-13.md` §2.1, §6. Meter: `docs/night-2026-09-13/raw/phone-tools/trace.py`
