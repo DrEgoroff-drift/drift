@@ -436,8 +436,11 @@ function drawMap(){
     /* сколько останется в баке — вторая строка, мельче: это уже подробность */
     if(!far&&!poor){
       mapFont(8);
-      ctx.fillStyle="rgba(160,182,192,.7)";
-      ctx.fillText("останется "+Math.round(G.fuel-cost),mx,my+18*U);
+      const L2="останется "+Math.round(G.fuel-cost),w2=ctx.measureText(L2).width;
+      /* под строкой своя подложка: без неё контраст решала галактика за ней */
+      ctx.fillStyle="rgba(6,10,16,.72)";ctx.fillRect(mx-w2/2-4*U,my+12*U,w2+8*U,12*U);
+      ctx.fillStyle="rgba(170,192,202,.9)";
+      ctx.fillText(L2,mx,my+18*U);
     }
     ctx.restore();
     ctx.textBaseline="alphabetic";

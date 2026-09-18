@@ -250,6 +250,11 @@ function resetWorld(){
      Красным это стало только когда быстрый ярус выкинул тяжёлый набор между
      ними, который чистил кэш по своим делам (0.359.3). Чистим всегда. */
   if(typeof SYS_CACHE!=="undefined")SYS_CACHE.clear();
+  /* поезд — тоже: поездка, ожидание и попутчик живут вне G. Набор про стапель
+     уезжал поездом, и золотой кадр системы через десяток наборов видел чужую
+     поездку (0.451.0). Сеть дорог не трогаем: она чистый кэш от зерна, а её
+     пересчёт наполнил бы кэш систем в наборе про память дороги */
+  if(typeof RAIL_DOCK!=="undefined"){RAIL_DOCK=null;RAIL_WAIT=null;RAIL_RIDE=null;RAIL_ARRIVE=-1e9;RAIL_LIFE={pax:null,tea:false,teaDone:false};}
   G.mode="system";G.sx=0;G.sy=0;G.sys=getSystem(0,0);G.zoom=1;
   G.shipId="strizh";G.owned={strizh:true};
   G.ship={x:0,y:-760,vx:0,vy:0,a:0,av:0,bank:0};

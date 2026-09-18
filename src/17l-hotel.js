@@ -29,7 +29,7 @@ function drawHotel(zx,zy,Z){
     ctx.fillRect(x-w/2+4*s+i*5.8*s,y-h/2+4*s+j*7.2*s,3.4*s,4.2*s);
   }
   const col=(typeof laneLampCol==="function")?laneLampCol(Ht.by):[255,190,110];
-  ctx.save();ctx.globalCompositeOperation="lighter";ctx.font="bold "+Math.round(8*s)+"px ui-monospace,monospace";ctx.textAlign="center";
+  ctx.save();ctx.globalCompositeOperation="lighter";ctx.font="bold "+Math.round(8*Math.max(1,s)*UIK)+"px ui-monospace,monospace";ctx.textAlign="center";
   ctx.fillStyle=rgba(col,.9);ctx.fillText(Ht.name,x,y-h/2-6*s);ctx.restore();
 }
 function hotelInteract(sh){

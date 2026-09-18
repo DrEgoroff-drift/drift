@@ -2294,7 +2294,7 @@ body.table u.addr{color:#7a4a20}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.450.1";
+const VER="0.451.0";
 /* ── стенд не пишет в живой мир (Контроль 12.09) ──
    dev.html и ?test=1 помечают каждый POST полем test:1; api.php, war.php и
    log.php такую запись в общие пулы (знаки, вещи, открытки, дорога, война,
@@ -44511,7 +44511,8 @@ const HELM={src:"keys",     /* кто вёл последним: keys | stick */
   home:null,                 /* где стик был в последний раз: точка покоя рисунка (M410) */
   trail:[],                  /* последние положения пальца — хвост ленты (M422) */
   cam:{x:0,y:0,dx:0,dy:1},   /* увод камеры из-под пальца, мировые единицы (M422) */
-  key:{},lockEdge:false,lockWas:false,lift:-1};
+  key:{},lockEdge:false,lockWas:false,lift:-1,
+  liftRect:null,liftBase:0};   /* какой прямоугольник подсказки мерили и с каким подъёмом (helmLift) */
 function ctlReset(){
   G.ctl={head:null,headK:1,turn:0,tx:0,ty:0,brake:false,fire:false,msl:false,
     headIdle:true,thrOnly:false,assist:false,ax:0,ay:0,src:HELM.src,slow:false,vk:0,vp:0,
@@ -45016,8 +45017,16 @@ function helmLift(){
     if(r&&r.height>0){
       /* мерим ОТ НЕПОДНЯТОГО места: подсказка уже поднята на прошлый lift, и
          без этой поправки следующий кадр увидел бы её чистой и уронил обратно —
-         строка бы дрожала под пальцем */
-      const base=Math.max(0,HELM.lift),top=r.top+base,bot=r.bottom+base;
+         строка бы дрожала под пальцем. Поправка идёт НЕ от нынешнего lift, а от
+         того, что стоял в момент ЗАМЕРА: прямоугольник подсказки лежит в кэше
+         (08-state), а --helmlift пишется в стиль <body>, за которым наблюдателя
+         нет, — значит замер может быть и старше нынешнего подъёма. Кэш отдаёт
+         один и тот же объект, пока не пересчитан, по нему и узнаём, свежий ли
+         он: сменился объект — сменилась и база. Без этого второй вызов подряд
+         складывал подъём дважды, не находил пальца над строкой и ронял её
+         обратно — то самое дрожание, которое поправка и должна была убрать. */
+      if(HELM.liftRect!==r){HELM.liftRect=r;HELM.liftBase=Math.max(0,HELM.lift);}
+      const base=HELM.liftBase||0,top=r.top+base,bot=r.bottom+base;
       for(const f of foot)
         if(f.x+f.r>r.left&&f.x-f.r<r.right&&f.y-f.r<bot&&f.y+f.r>top)
           lift=Math.max(lift,bot-(f.y-f.r)+8);
@@ -47759,6 +47768,7 @@ let CHIP_POS=new Map();
 let CHIP_T=0;   /* wallNow() метки предыдущего кадра фишек — для их плавного шага */
 /* пороги фишек компаса — все здесь, одной группой, а не по одному рядом с
    местом, где каждый читается (Контроль, ревью кода 18.09) */
+const CHIP_TOUCH=44;     /* зона нажатия фишки под палец: правило интерфейса, а не вкус */
 const CHIP_IN=12;        /* кромка едет внутрь не дальше этого, под следом стика/строкой подсказки */
 const SHIP_GUARD=36;     /* щедрый запас вокруг корабля на экране — фишка не ляжет на нос */
 const CHIP_SPEED=200;    /* px/с — с какой скоростью фишка едет к месту вдоль своей кромки */
@@ -48582,16 +48592,24 @@ function drawSysHud(zx,zy,sh,sys,U){
      Следы стиков, живая строка подсказки, нос корабля (щедрый запас вокруг
      экранной точки — настоящий силуэт своего масштаба и корпуса здесь не
      заводим ради одной плашки) и подушки стика в покое. */
+  /* Узлы интерфейса раздуваются на ЗОНУ НАЖАТИЯ фишки (M422, правка 19.09):
+     плашка ростом 16, а палец берёт её за 44 (SYS_CHIPS ниже растит её вокруг
+     центра). Расходиться со следом стика и со строкой подсказки обязана именно
+     зона: иначе плашка честно стоит рядом, а её невидимая половина лежит прямо
+     под большим пальцем. Между собой фишки по-прежнему меряются плашками —
+     раздуй и их, и нижний ряд разъехался бы втрое. */
+  const CHIP_TPX=6,CHIP_TPY=Math.max(0,(CHIP_TOUCH-16)/2);
+  const grow=r=>({x:r.x-CHIP_TPX,y:r.y-CHIP_TPY,w:r.w+2*CHIP_TPX,h:r.h+2*CHIP_TPY});
   const placed=[];
-  for(const f of feet)placed.push({x:(f.x-f.r)/U,y:(f.y-f.r)/U,w:2*f.r/U,h:2*f.r/U});
-  if(pr&&pr.height>0)placed.push({x:pr.left/U,y:pr.top/U,w:pr.width/U,h:pr.height/U});
+  for(const f of feet)placed.push(grow({x:(f.x-f.r)/U,y:(f.y-f.r)/U,w:2*f.r/U,h:2*f.r/U}));
+  if(pr&&pr.height>0)placed.push(grow({x:pr.left/U,y:pr.top/U,w:pr.width/U,h:pr.height/U}));
   {
     const zsx=zx(sh.x),zsy=zy(sh.y);
     placed.push({x:zsx-SHIP_GUARD,y:zsy-SHIP_GUARD,w:2*SHIP_GUARD,h:2*SHIP_GUARD});
   }
   {
     const padsr=padsRect();
-    if(padsr&&padsr.height>0)placed.push({x:padsr.left/U,y:padsr.top/U,w:padsr.width/U,h:padsr.height/U});
+    if(padsr&&padsr.height>0)placed.push(grow({x:padsr.left/U,y:padsr.top/U,w:padsr.width/U,h:padsr.height/U}));
   }
   ctx.font="8px ui-monospace,monospace";
   /* под окном оклика и окном бака фишки гаснут, как борт (R0, дев 12.09): на
@@ -48742,7 +48760,7 @@ function drawSysHud(zx,zy,sh,sys,U){
        за видимым местом (rx,ry уже сглажены), а не за логическим слотом —
        иначе палец бил бы мимо плашки во время подъезда или затухания. */
     if(m.t&&A===1&&dcA>.5){
-      const PAD=Math.max(0,(44-ch)/2);
+      const PAD=Math.max(0,(CHIP_TOUCH-ch)/2);
       SYS_CHIPS.push({x:(rx-6)*U,y:(ry-PAD)*U,w:(cw+12)*U,h:(ch+PAD*2)*U,t:m.t});
     }
     ctx.globalAlpha=AA;ctx.fillStyle="rgba(5,7,12,.72)";ctx.fillRect(rx,ry,cw,ch);
@@ -50683,8 +50701,9 @@ function bbLine(by){
 }
 function drawBillboard(zx,zy,Z){
   const B=bbHere();if(!B)return;
-  const x=zx(B.x),y=zy(B.y),s=clamp(Z,.6,1.5);
-  if(x<-160||x>W+160||y<-120||y>H+120)return;
+  /* щит читают: мельче мерки борта не сжимается (кегль × UIK, как всё, что читает игрок) */
+  const x=zx(B.x),y=zy(B.y),s=Math.max(1,clamp(Z,.6,1.5))*UIK;
+  if(x<-160*s||x>W+160*s||y<-120*s||y>H+120*s)return;
   const col=(typeof laneLampCol==="function")?laneLampCol(B.by):[255,190,110];
   const pw=120*s,ph=40*s;
   /* ферма и панель */
@@ -50790,7 +50809,7 @@ function drawHotel(zx,zy,Z){
     ctx.fillRect(x-w/2+4*s+i*5.8*s,y-h/2+4*s+j*7.2*s,3.4*s,4.2*s);
   }
   const col=(typeof laneLampCol==="function")?laneLampCol(Ht.by):[255,190,110];
-  ctx.save();ctx.globalCompositeOperation="lighter";ctx.font="bold "+Math.round(8*s)+"px ui-monospace,monospace";ctx.textAlign="center";
+  ctx.save();ctx.globalCompositeOperation="lighter";ctx.font="bold "+Math.round(8*Math.max(1,s)*UIK)+"px ui-monospace,monospace";ctx.textAlign="center";
   ctx.fillStyle=rgba(col,.9);ctx.fillText(Ht.name,x,y-h/2-6*s);ctx.restore();
 }
 function hotelInteract(sh){
@@ -52099,8 +52118,11 @@ function drawMap(){
     /* сколько останется в баке — вторая строка, мельче: это уже подробность */
     if(!far&&!poor){
       mapFont(8);
-      ctx.fillStyle="rgba(160,182,192,.7)";
-      ctx.fillText("останется "+Math.round(G.fuel-cost),mx,my+18*U);
+      const L2="останется "+Math.round(G.fuel-cost),w2=ctx.measureText(L2).width;
+      /* под строкой своя подложка: без неё контраст решала галактика за ней */
+      ctx.fillStyle="rgba(6,10,16,.72)";ctx.fillRect(mx-w2/2-4*U,my+12*U,w2+8*U,12*U);
+      ctx.fillStyle="rgba(170,192,202,.9)";
+      ctx.fillText(L2,mx,my+18*U);
     }
     ctx.restore();
     ctx.textBaseline="alphabetic";

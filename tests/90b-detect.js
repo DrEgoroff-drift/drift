@@ -212,6 +212,10 @@ function detParallax(a,b,DX,DY){
     let mn=1e9,mx=-1;
     for(let y=by;y<by+B;y++)for(let x=bx;x<bx+B;x++){const v=b[y*SW+x];if(v<mn)mn=v;if(v>mx)mx=v;}
     if(mx-mn<12)continue;
+    /* блок, чей источник при сдвиге 1:1 за краем, — новое небо, открытое протяжкой:
+       ему нечем ответить, кроме малых долей, и он записывался в «глубокие».
+       На телефоне (390 px) протяжка открывает ~40% кадра — закон краснел зря */
+    if(bx-dx<0||by-dy<0||bx+B-dx>SW||by+B-dy>SH)continue;
     let bk=0,be=1e9;
     for(const k of ks){
       let s=0,n=0;

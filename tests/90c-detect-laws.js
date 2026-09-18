@@ -184,7 +184,12 @@ function detControls(c){
       why="A: нос не повернул против часовой — лучший поворот силуэта "+r.th+"° (совпадение против "+r.iNeg.toFixed(2)+", по "+r.iPos.toFixed(2)+", без поворота "+r.i0.toFixed(2)+")"+(c.diag?" · "+c.diag:"");
     }else if(c.gesture==="колесо"&&(c.mode0==="system"||c.mode0==="map")&&c.zc){
       const s=detScale(c.before,c.after,c.zc[0]/c.before.k,c.zc[1]/c.before.k);
-      cls=s.s>=1.07&&s.e<s.e1;   /* лучший масштаб крупнее, и он лучше «ничего не случилось» */
+      /* в пустом космосе на телефоне укрупняется один корабль, а он стоит не в
+         центре камеры (helmCamOff): масштаб от центра не находит ничего, от
+         корабля — ровно шаг зума. Годится любой из двух центров */
+      const s2=c.ship0?detScale(c.before,c.after,c.ship0[0]/c.before.k,c.ship0[1]/c.before.k):null;
+      const grew=q=>q&&q.s>=1.07&&q.e<q.e1;   /* лучший масштаб крупнее, и он лучше «ничего не случилось» */
+      cls=grew(s)||grew(s2);
       why="«+» и колесо: кадр не укрупнился от центра (лучший масштаб ×"+s.s+")";
     }else if(c.gesture==="протяжка"&&c.mode0==="map"&&c.drag){
       const p=detParallax(c.before,c.after,c.drag[0],c.drag[1]);
