@@ -137,10 +137,10 @@ function radioBuild(){
   sat.curve=cu;sat.oversample="2x";
   RADIO.lp.connect(sat);sat.connect(RADIO.bus);
   const d=c.createDelay(2),fb=c.createGain(),dt=c.createBiquadFilter(),dw=c.createGain();
-  fb.gain.value=.3;dt.type="lowpass";dt.frequency.value=2200;dw.gain.value=.16;
+  fb.gain.value=.42;dt.type="lowpass";dt.frequency.value=1800;dw.gain.value=.22;
   d.connect(dt);dt.connect(fb);fb.connect(d);dt.connect(dw);dw.connect(RADIO.bus);
   RADIO.dly=d;
-  const wet=c.createGain();wet.gain.value=.75;
+  const wet=c.createGain();wet.gain.value=1;
   if(MUS.fx&&MUS.fx.send&&MUS.fx.send.context===c)wet.connect(MUS.fx.send);
   RADIO.layers={};
   for(const k of RADIO_LAYERS){
@@ -254,17 +254,18 @@ function radioMix(t,instant){
   /* берлинская школа: во вступлении слои входят по одному — секвенсор, потом бипы, потом подложка */
   let arpIn=1,padIn=1;
   if(radioA("build")&&sec==="intro"){const bi=Math.floor(RADIO.step/(radioBar()*2));arpIn=bi>=1?1:0;padIn=bi>=2?1:0;}
-  const L={pad:(radioA("pad")==="none"||solo?0:(radioA("epic")?1.1:.9))*m.pad*padIn,bass:.9*m.bass,lead:off?0:m.lead*(solo?1.2:1),
-    harm:sec==="A2"||sec==="B"?.6*m.lead:0,arp:(radioA("arp")==="none"||solo?0:.8)*m.arp*arpIn*(sec==="brk"?.5:1),
-    kick:dr*(off&&sec!=="brk"?0:1),snare:dr*(off?0:.8),hat:dr*(sec==="brk"?0:.5),
-    bell:Math.max(.5,radioA("bell")||0),fx:radioA("waves")?.5:0};
+  const Q=.6;   // всё, кроме маяка и колокола, — тише: они должны выступать из тумана
+  const L={pad:(radioA("pad")==="none"||solo?0:(radioA("epic")?1.1:.9))*m.pad*padIn*Q,bass:.9*m.bass*Q,lead:off?0:m.lead*(solo?1.2:1)*Q,
+    harm:(sec==="A2"||sec==="B"?.6*m.lead:0)*Q,arp:(radioA("arp")==="none"||solo?0:.8)*m.arp*arpIn*(sec==="brk"?.5:1)*Q,
+    kick:dr*(off&&sec!=="brk"?0:1)*Q,snare:dr*(off?0:.8)*Q,hat:dr*(sec==="brk"?0:.5)*Q,
+    bell:Math.max(1.6,radioA("bell")*2),fx:radioA("waves")?.5*Q:0};
   const glide=(p,v,tc)=>{p.cancelScheduledValues(t);p.setValueAtTime(p.value,t);p.linearRampToValueAtTime(v,t+(instant?.05:tc));};
   for(const k of RADIO_LAYERS)glide(RADIO.layers[k].gain,L[k],1.5);
-  glide(RADIO.lp.frequency,Math.min(9000,radioA("cut")*m.cut),2);
+  glide(RADIO.lp.frequency,Math.min(9000,radioA("cut")*m.cut*.8),2);
   RADIO.dly.delayTime.setValueAtTime(radioS16()*(radioA("dlyMul")||3),t);
 }
 function radioBar(){return radioA("bar")===12?12:16;}   // вальс — три четверти
-function radioBpm(){return RADIO.trk.bpm*((RADIO_MOOD[RADIO.mood]||{}).k||1);}
+function radioBpm(){return RADIO.trk.bpm*.5*((RADIO_MOOD[RADIO.mood]||{}).k||1);}   // вдвое медленнее таблицы: время здесь тянется
 function radioS16(){return 60/radioBpm()/4;}
 function radioScale(){
   const m=RADIO_MOOD[RADIO.mood];
@@ -400,7 +401,7 @@ function radioPad(t,key,cd,dur,kind){
       const o=c.createOscillator(),g=c.createGain(),p=c.createStereoPanner();
       o.type="sine";o.frequency.value=midiHz(key+12+radioDeg(cd+[0,2,4,7,9,6,8][i]))*(1+(RADIO.r()-.5)*.006);   // расстройка в 5 центов, не в четверть тона
       lg.connect(g.gain);p.pan.value=(i/4)*1.4-.7;
-      const end=radioEnv(g.gain,t,1.2,.016,dur-.5,1.5);last=Math.max(last,end);
+      const end=radioEnv(g.gain,t,2,.016,dur-.5,3);last=Math.max(last,end);
       o.connect(g);g.connect(p);p.connect(RADIO.padIn);o.start(t);o.stop(end+.1);
     }
     lfo.start(t);lfo.stop(last+.1);
@@ -415,7 +416,7 @@ function radioPad(t,key,cd,dur,kind){
     const f=midiHz(key+12+radioDeg(cd+iv)+(kind==="choirhi"?12:0)),g=c.createGain(),p=c.createStereoPanner();
     p.pan.value=-.4+i*.27;
     const org=kind==="organ";
-    const end=radioEnv(g.gain,t,org?.03:.35,org?.012:.018,dur-.1,org?.15:.7);
+    const end=radioEnv(g.gain,t,org?.3:1.4,org?.012:.018,dur-.1,org?1:2.6);   // растушёвка: наплыв полторы секунды, хвост две с половиной
     let dst=g;
     /* аккордеон: пила сквозь язычковую полосу, с дрожью; детский хор — форманты «и» октавой выше */
     if(kind==="accordion"){
@@ -523,9 +524,9 @@ function radioBassVoice(t,midi,dur,acc,pat,s){
     f.frequency.setValueAtTime(220,t);f.frequency.linearRampToValueAtTime(420,t+dur*.5);f.frequency.linearRampToValueAtTime(200,t+dur);
     const sb=c.createOscillator();sb.type="sine";sb.connect(f);
     const from=RADIO.bassPrev||hz;
-    for(const q of [o,sb]){q.frequency.setValueAtTime(from,t);q.frequency.exponentialRampToValueAtTime(hz,t+.35);}
+    for(const q of [o,sb]){q.frequency.setValueAtTime(from,t);q.frequency.exponentialRampToValueAtTime(hz,t+.8);}
     RADIO.bassPrev=hz;
-    const end=radioEnv(g.gain,t,.5,.11*acc,Math.max(.1,dur-.2),.6);
+    const end=radioEnv(g.gain,t,1.1,.11*acc,Math.max(.1,dur-.2),1.4);
     o.connect(f);f.connect(g);g.connect(RADIO.layers.bass);o.start(t);sb.start(t);o.stop(end+.05);sb.stop(end+.05);
     return;
   }
@@ -602,9 +603,9 @@ function radioLead(t,midi,dur,layer){
   if(du){f.frequency.setValueAtTime(1100,t);f.frequency.linearRampToValueAtTime(1500,t+dur*.6);f.frequency.linearRampToValueAtTime(900,t+dur);}
   else
   if(br){f.frequency.setValueAtTime(500,t);f.frequency.exponentialRampToValueAtTime(2600,t+.12);f.frequency.exponentialRampToValueAtTime(1600,t+.5);}
-  else{f.frequency.setValueAtTime(pv?3200:fl?3000:harm?1400:2200,t);f.frequency.exponentialRampToValueAtTime(pv?900:fl?2400:harm?1000:1500,t+(pv?.25:.4));}
+  else{f.frequency.setValueAtTime(pv?2400:fl?2600:harm?1200:1700,t);f.frequency.exponentialRampToValueAtTime(pv?800:fl?2000:harm?900:1200,t+(pv?.5:.8));}
   const g=c.createGain(),o2g=c.createGain();o2g.gain.value=fl?.12:1;
-  const end=radioEnv(g.gain,t,fl?.12:du?.2:br?.12:th?.25:.18,harm?.016:fl?.034:du?.03:br?.028:.026,dur,fl?.4:du?.7:.6);
+  const end=radioEnv(g.gain,t,fl?.3:du?.4:br?.3:th?.5:.4,harm?.016:fl?.034:du?.03:br?.028:.026,dur,fl?.9:du?1.4:1.2);
   o1.connect(f);o2.connect(o2g);o2g.connect(f);f.connect(g);g.connect(RADIO.layers[layer]);
   /* тело: у пил тихая октава снизу — солист перестаёт быть тонким */
   if(pv){const o3=c.createOscillator(),g3=c.createGain();o3.type="sawtooth";o3.frequency.value=hz/2;g3.gain.value=.35;
@@ -676,7 +677,7 @@ function radioKick(t,v){
   v=v||1;
   const c=SND.ctx,o=c.createOscillator(),g=c.createGain();
   o.frequency.setValueAtTime(95,t);o.frequency.exponentialRampToValueAtTime(40,t+.16);
-  g.gain.setValueAtTime(.22*v,t);g.gain.exponentialRampToValueAtTime(.001,t+.45);
+  g.gain.setValueAtTime(.16*v,t);g.gain.exponentialRampToValueAtTime(.001,t+.6);
   o.connect(g);g.connect(RADIO.layers.kick);o.start(t);o.stop(t+.35);
 }
 function radioSnare(t,v){
@@ -707,7 +708,7 @@ function radioBellVoice(t,fr,len,dst,peak){
   car.frequency.value=fr;mod.frequency.value=fr*3.5;
   mg.gain.setValueAtTime(fr*1.5,t);mg.gain.exponentialRampToValueAtTime(1,t+len*.7);
   mod.connect(mg);mg.connect(car.frequency);
-  const end=radioEnv(g.gain,t,.004,peak,.01,len);
+  const end=radioEnv(g.gain,t,.03,peak,.01,len*1.5);
   car.connect(g);g.connect(dst);
   car.start(t);mod.start(t);car.stop(end+.05);mod.stop(end+.05);
 }
@@ -716,17 +717,17 @@ function radioBellVoice(t,fr,len,dst,peak){
 function radioBeacon(t,key,cd){
   const r=RADIO.r,c=SND.ctx;
   const midi=key+36+radioDeg([0,2,4,7,9,11,14][Math.floor(r()*7)]);   // только звуки лада: тоника, терция, квинта и их октавы
-  const fr=midiHz(midi),gap=.55+r()*.35;
+  const fr=midiHz(midi),gap=.9+r()*.5;
   for(let k=0;k<4;k++){
     const tk=t+k*gap,v=[.05,.026,.013,.006][k];
     const o=c.createOscillator(),g=c.createGain(),f=c.createBiquadFilter(),p=c.createStereoPanner();
     o.type="sine";o.frequency.value=fr;
     f.type="lowpass";f.frequency.value=6000-k*1300;              // эхо глуше с каждым разом
     p.pan.value=(k%2?-.5:.5)*(.3+r()*.5);
-    g.gain.setValueAtTime(.0001,tk);g.gain.exponentialRampToValueAtTime(v,tk+.015);
-    g.gain.setValueAtTime(v,tk+.42);g.gain.exponentialRampToValueAtTime(.0001,tk+.42+1.2);
+    g.gain.setValueAtTime(.0001,tk);g.gain.exponentialRampToValueAtTime(v,tk+.06);
+    g.gain.setValueAtTime(v,tk+.5);g.gain.exponentialRampToValueAtTime(.0001,tk+.5+2);
     o.connect(f);f.connect(g);g.connect(p);p.connect(RADIO.layers.bell);
-    o.start(tk);o.stop(tk+1.7);
+    o.start(tk);o.stop(tk+2.7);
   }
 }
 function radioBell(t,key,cd){
