@@ -117,7 +117,11 @@ job (the phone milestone), but no fix may add raster cost without a number.
   lived on `nav.tabs` only — now on `nav.groups` too, off when scrolled to the tail), and on an
   empty hold the market opened with four grey caps blocks before the first price — the empty
   hint now sits in the ТРЮМ line («ПУСТ — ПЛАНЕТА ИЛИ ПОЯС»), one block fewer. The board reads.
-- [ ] **D5 The hail**: safe green / risk red buttons and pad; picket lock brackets.
+- [x] **D5 The hail — checked on the S23 18.09.** The window's safe/risk colours were right; the
+  PAD was not: under a hail the ДЕЙСТВИЕ pad is `.ready` and its `breathe` animation painted the
+  ring amber over the consequence colour — a dangerous «ПРОХОДОМ» breathed like a recommendation.
+  Now the ready pad breathes red (`breatheRisk`) or phosphor (`breatheSafe`) by `data-hail-act`.
+  Picket brackets (helmDrawMarks, M360) not re-judged here — no picket in the forced frame.
 - [ ] **D6 Under the finger**: ship scale growing with zoom (.8 → 1.4) against the station and the
   fleet; the stick's dead-zone ring (22 px); the edge-wall feedback; the orbit body kept in frame.
 
