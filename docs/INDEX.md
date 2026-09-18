@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 557 · символов верхнего уровня: 5405
+Файлов: 558 · символов верхнего уровня: 5411
 
 ## СИМВОЛЫ
 
@@ -55,7 +55,7 @@ actionKey                    src/15-input.js:159-164
 actPressT                    src/15-input.js:94
 addPart                      src/05-parts.js:364-379
 addPath                      src/25-cockpit.js:154-158
-addRes                       src/11-log.js:161-167
+addRes                       src/11-log.js:161-168
 addrForm                     src/11b-speech.js:96-99
 addrify                      src/18a-map-addr.js:242-265
 ADJ                          src/21a4-base-adj.js:17-27
@@ -91,7 +91,7 @@ ambK                         src/19c-light.js:115-120
 ambRGB                       src/19c-light.js:100-112
 AMMO_BATCH                   src/16b-missile.js:59
 AMMO_COST                    src/16b-missile.js:58
-AMMO_KEYS                    src/02-world.js:110
+AMMO_KEYS                    src/02-world.js:112
 ammoBatch                    src/16b-missile.js:60
 ammoRow                      src/16b-missile.js:74-95
 ammoStamp                    src/12ar-hail.js:42
@@ -121,7 +121,7 @@ apVel                        src/16-flight.js:132
 ARC_JUMP                     src/13a-guns.js:39
 arcHit                       src/13a-guns.js:368-385
 ARMED_CAP                    src/13-combat.js:12
-armedCount                   src/13-combat.js:235
+armedCount                   src/13-combat.js:236
 arrive                       src/16-flight.js:178-216
 arriveSystem                 src/18-mode-map.js:539-583
 ARTIFACTS                    src/12h-relic.js:48-63
@@ -360,7 +360,7 @@ beastTraitWord               src/20e-species.js:224-233
 BELT_AVLIM                   src/24-mode-belt.js:87
 BELT_HALF                    src/24-mode-belt.js:85
 BELT_POI                     src/24b-belt-poi.js:13-19
-BELT_RES                     src/02-world.js:138
+BELT_RES                     src/02-world.js:141
 BELT_STROKES                 src/24-mode-belt.js:53
 beltBasis                    src/24-mode-belt.js:167-177
 beltDots                     src/17c-system-draw.js:88-93
@@ -844,7 +844,7 @@ clWith                       tests/91zzzzzr-cloud.js:30-43
 cockpitPlan                  src/25-cockpit.js:92-152
 cockpitStyleKey              src/25-cockpit.js:46-50
 cockpitTex                   src/25-cockpit.js:187-399
-combatShots                  src/13-combat.js:153-206
+combatShots                  src/13-combat.js:154-207
 concertAll                   src/11ae-concert.js:22
 concertNotes                 src/11ae-concert.js:82-86
 concertSend                  src/11ae-concert.js:87-104
@@ -1436,12 +1436,12 @@ drawSurface                  src/21e-surface-draw.js:277-291
 drawSurfaceHud               src/21e-surface-draw.js:21-115
 drawSurfaceWorld             src/21e1-surface-world.js:10-615
 drawSurvey                   src/12w-survey.js:63-89
-drawSysHud                   src/17-mode-system.js:729-976
+drawSysHud                   src/17-mode-system.js:730-977
 drawSysLane                  src/17g-sys-lane.js:75-103
 drawSysLaneShips             src/17g-sys-lane.js:112-138
 drawSysNebula                src/16a-space.js:208-236
 drawSysRail                  src/18f-rail-station.js:32-65
-drawSystem                   src/17-mode-system.js:447-728
+drawSystem                   src/17-mode-system.js:448-729
 drawSysTraffic               src/17f-sys-traffic.js:36-40
 drawTemple                   src/20aa-poi-shapes.js:50-89
 drawThingIcon                src/27i-ui-table.js:399-435
@@ -1627,14 +1627,18 @@ FAR_CACHE                    src/06d-far.js:24
 FAR_EATER                    src/12-economy.js:26
 FAR_FP_BEFORE                tests/91zzzzk3-far.js:5
 FAR_GRADE                    src/06d-far.js:22
-FAR_KEYS                     src/02-world.js:120
-FAR_RES                      src/02-world.js:94-105
+FAR_KEYS                     src/02-world.js:122
+FAR_RES                      src/02-world.js:94-107
+FAR_ROLL                     src/02-world.js:123
 FAR_SALT                     src/06d-far.js:20
 FAR_TAKE_SALT                src/06e-far-take.js:14
+FAR_TRAP_BANK                src/06f-far-props.js:33
 FAR_UNITS                    src/06d-far.js:23
+FAR_W                        src/06f-far-props.js:11
 FAR_Z                        src/06d-far.js:21
 farBasePrice                 src/12-economy.js:32-36
 farBeltDress                 src/06e-far-take.js:64-77
+farCargoHit                  src/06f-far-props.js:14-31
 farCurve                     src/12-economy.js:27-31
 farDeposits                  src/06d-far.js:59-79
 farDigNode                   src/06e-far-take.js:79-89
@@ -1655,9 +1659,10 @@ farScoopPick                 src/06e-far-take.js:91-97
 farSpread                    src/06e-far-take.js:36-39
 farTake                      src/06e-far-take.js:26-34
 farTakenAll                  src/06e-far-take.js:15
+farTrapTick                  src/06f-far-props.js:34-44
 farVein                      src/06e-far-take.js:53-62
 farWorldFingerprint          tests/91zzzzk3-far.js:6-15
-FAUNA_RES                    src/02-world.js:116
+FAUNA_RES                    src/02-world.js:118
 faunaOf                      src/20e-species.js:268-284
 fbm1                         src/01-core.js:114
 fbm2                         src/01-core.js:121
@@ -1718,7 +1723,7 @@ fleaScrip                    src/12ua-flea.js:122
 FLEET                        src/04b-fleet.js:107
 FLEET_ART                    src/12ai1-fleet-art.js:12
 FLEET_CLASSES                src/12ai-fleet.js:20-40
-FLEET_COOL                   src/13-combat.js:211
+FLEET_COOL                   src/13-combat.js:212
 FLEET_EPITH                  src/04b-fleet.js:57
 FLEET_KEYS                   src/04b-fleet.js:148
 FLEET_LUXE                   src/04b-fleet.js:59
@@ -1740,7 +1745,7 @@ fleetArtOf                   src/12ai1-fleet-art.js:13-339
 fleetCaravanActive           src/12ai-fleet.js:307-313
 fleetColor                   src/04b-fleet.js:95
 fleetEscortActive            src/12ai-fleet.js:305
-fleetFire                    src/13-combat.js:212-233
+fleetFire                    src/13-combat.js:213-234
 fleetGlyph                   src/12ai1-fleet-art.js:342-374
 fleetHailFirst               src/12ai-fleet.js:161-181
 fleetHere                    src/12ai-fleet.js:50-87
@@ -2241,7 +2246,7 @@ hitCandidates                tests/91zzzzzg-hit.js:19-38
 hitCovered                   tests/91zzzzzg-hit.js:41-67
 hitFx                        src/18d-postfx.js:11
 hitLocMul                    src/13-combat.js:32-35
-hitShip                      src/13-combat.js:87-151
+hitShip                      src/13-combat.js:88-152
 hlFoe                        tests/91zzzw-combat.js:628-632
 HOL_BY                       src/11am-holiday.js:26
 HOL_D                        tests/91zzzm-holiday.js:2
@@ -2437,7 +2442,7 @@ ICO_F                        src/24-mode-belt.js:28
 ICO_V                        src/24-mode-belt.js:22-27
 importCode                   src/14a-cloud.js:62-64
 IND_FEE                      src/12ac-bld.js:111
-IND_KEYS                     src/02-world.js:119
+IND_KEYS                     src/02-world.js:121
 indPrice                     src/12ac-bld.js:160-169
 initAudio                    src/09-audio.js:19-39
 INST_TOPICS                  src/11ab-institute.js:17-24
@@ -3009,7 +3014,7 @@ MINE_LIFE                    src/13a-guns.js:31
 MINE_MOUTH_R                 src/21-mode-surface.js:4
 MINE_R                       src/13a-guns.js:32
 mineDeep                     src/23a-dig-draw.js:625-628
-minedUnit                    src/11-log.js:170-178
+minedUnit                    src/11-log.js:171-179
 mineKey                      src/23a-dig-draw.js:614
 mineLay                      src/13a-guns.js:279-287
 mineLoad                     src/23a-dig-draw.js:629-638
@@ -3362,7 +3367,7 @@ optGroups                    src/27-ui-ship.js:338-355
 OPTS_BOOT                    tests/90-harness.js:203
 optsNumify                   src/14a2-save-ephemeral.js:23-28
 optTab                       src/27-ui-ship.js:337
-orbPathOf                    src/17-mode-system.js:436-446
+orbPathOf                    src/17-mode-system.js:437-447
 ORDER_WIN                    src/12aa-need.js:76
 orderDeliver                 src/12aa-need.js:116-127
 orderHere                    src/12aa-need.js:112-115
@@ -3371,7 +3376,7 @@ ORDERS                       src/12a-crew.js:149-155
 orderTake                    src/12aa-need.js:103-111
 orderTick                    src/12aa-need.js:129-135
 orderWin                     src/12aa-need.js:77
-ORE_KEYS                     src/02-world.js:123
+ORE_KEYS                     src/02-world.js:126
 ORE_NODE_W                   src/23-mode-dig.js:12
 oreNode                      src/23-mode-dig.js:13-29
 ownerOf                      src/13-combat.js:13
@@ -3471,7 +3476,7 @@ passIsCore                   src/11p-pass.js:32
 passLight                    src/11p-pass.js:49-54
 passShipX                    src/11p-pass.js:34-37
 passTell                     src/11p-pass.js:55-60
-PAX_KEYS                     src/02-world.js:113
+PAX_KEYS                     src/02-world.js:115
 payCost                      src/21a-mode-base.js:100
 PC_GRAIN                     src/25g-post-craft.js:7
 pcA                          src/25g-postcard.js:149
@@ -3544,7 +3549,7 @@ pirateArtOf                  src/12i-pirate-hull.js:238-424
 pirateBaseOf                 src/24a-mode-raid.js:87-96
 pirateBuild                  src/12i-pirate-hull.js:54-231
 pirateClass                  src/12i-pirate-hull.js:47-52
-pirateFellTo                 src/13-combat.js:74-82
+pirateFellTo                 src/13-combat.js:75-83
 pirateHas                    src/13d-loadout.js:34-37
 pirateLoadout                src/13d-loadout.js:33
 pirateRoleTick               src/13c-roles.js:51-127
@@ -3644,7 +3649,7 @@ plantStemForm                src/20e-species.js:27
 plantTraitWord               src/20e-species.js:29-37
 plate                        src/25-cockpit.js:160-164
 playerFlag                   src/12al-powers.js:93
-playerHit                    src/13-combat.js:37-71
+playerHit                    src/13-combat.js:37-72
 plClass                      tests/91zzzzzo-plural.js:23-29
 plLand                       tests/91zzzzy-place.js:28-34
 plWorlds                     tests/91zzzzy-place.js:15-26
@@ -3757,7 +3762,7 @@ probeSpeak                   src/25m-probe.js:100-121
 probeTarget                  src/25m-probe.js:38-46
 probeVoice                   src/25m-probe.js:75-83
 prof                         src/28-loop.js:665-692
-PROFILE                      src/02-world.js:124-137
+PROFILE                      src/02-world.js:127-140
 profW                        src/03-ships.js:205-214
 PROMPT_RECT                  src/08-state.js:105
 promptEl                     src/08-state.js:106-109
@@ -3928,7 +3933,7 @@ RARE_BY_WHERE                src/12m-rare.js:76
 RARE_FX                      src/12m-rare.js:38-51
 RARE_GRADES                  src/12m-rare.js:52-58
 RARE_NOTE                    src/12m-rare.js:68
-RARE_RES                     src/02-world.js:117
+RARE_RES                     src/02-world.js:119
 RARE_SALT                    src/12m-rare.js:77
 RARE_WHERE                   src/12m-rare.js:26-33
 RARE_WHERE_IX                src/12m-rare.js:34
@@ -3968,7 +3973,7 @@ recStart                     src/15c-rec.js:28
 recStop                      src/15c-rec.js:29
 recTick                      src/15c-rec.js:39-51
 rectsDirty                   src/08-state.js:93-97
-refineBank                   src/11-log.js:169
+refineBank                   src/11-log.js:170
 REGION_A                     src/06b-region.js:22
 REGION_B                     src/06b-region.js:24
 REGION_GAP                   src/06c-regions.js:36
@@ -4074,7 +4079,7 @@ RES_AUTO                     src/08-state.js:160
 RES_DOWN_K                   src/28-loop.js:226
 RES_DOWN_WIN                 src/28-loop.js:227
 RES_HOLD_MS                  src/28-loop.js:228
-RES_KEYS                     src/02-world.js:107
+RES_KEYS                     src/02-world.js:109
 RES_WAIT0                    src/28-loop.js:229
 resAuto                      src/28-loop.js:263-299
 RESCUE_ASK_GAP               src/16c-rescue.js:25
@@ -4104,6 +4109,7 @@ resize                       src/08-state.js:22-57
 resModeCap                   src/28-loop.js:257-262
 resSay                       src/28-loop.js:243-246
 resTarget                    src/28-loop.js:239-242
+resW                         src/06f-far-props.js:12
 resWait                      src/28-loop.js:235
 RET_BOARD                    src/11s-returners.js:29
 RET_ETHER                    src/11s-returners.js:19-23
@@ -4698,7 +4704,7 @@ stampOwnerAt                 src/17i-stamp.js:16-21
 stampPage                    src/17i-stamp.js:62-83
 stampShow                    src/17i-stamp.js:50-60
 stampText                    src/17i-stamp.js:24-35
-STAR_CLASS                   src/02-world.js:170-176
+STAR_CLASS                   src/02-world.js:173-179
 STAR_COLS                    src/16-flight.js:2
 STAR_LX                      src/16-flight.js:27
 starAt                       src/06-galaxy.js:2
@@ -5019,7 +5025,7 @@ traceSpotX                   src/11ag-trace.js:105-108
 traceTake                    src/11ag-trace.js:120-139
 traceToday                   src/11ag-trace.js:72
 TRACK_LIFE                   src/21-mode-surface.js:6
-TRADE_KEYS                   src/02-world.js:121
+TRADE_KEYS                   src/02-world.js:124
 TRAIL                        src/16-flight.js:239
 TRAIL_AMAX                   src/16-flight.js:386
 TRAIL_BUCK                   src/16-flight.js:385
@@ -5050,7 +5056,7 @@ trX0                         src/16-flight.js:388
 tvHop                        tests/91zzzzzw-travel.js:36-48
 tvKeys                       tests/91zzzzzw-travel.js:15
 tvSizes                      tests/91zzzzzw-travel.js:17-34
-TYPES                        src/02-world.js:146-169
+TYPES                        src/02-world.js:149-172
 UI_BOOT                      tests/90-harness.js:195
 UI_SEL_BOOT                  tests/90-harness.js:230
 uidRand                      src/01-core.js:97-100
@@ -5082,7 +5088,7 @@ updateRail                   src/18g-rail-ride.js:40-63
 updateScoop                  src/19a-mode-scoop.js:75-176
 updateSpa                    src/29i-spa-draw.js:514-519
 updateSurface                src/21-mode-surface.js:199-656
-updateSystem                 src/17-mode-system.js:53-432
+updateSystem                 src/17-mode-system.js:53-433
 updateWanderRoom             src/24c-mode-wanderer.js:58-88
 updateWinter                 src/29g-winter-draw.js:808-817
 useBeacon                    src/23-mode-dig.js:88-113
@@ -5426,9 +5432,9 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## src/01a-crashlog.js · 7 КБ
 
-## src/02-world.js · 17 КБ
+## src/02-world.js · 18 КБ
   · ресурсы:1
-  · миры:140
+  · миры:143
 
 ## src/02a-worldmix.js · 8 КБ
   · смешанные миры:1
@@ -5510,6 +5516,9 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## src/06e-far-take.js · 5 КБ
   · дальние залежи в игре: выемка, прибор, ЖИЛА (M466, DESIGN-resources §3):1
+
+## src/06f-far-props.js · 3 КБ
+  · свойства дальних товаров: одно на товар (M468, DESIGN-resources §2, law 4):1
 
 ## src/07-planet.js · 27 КБ
   · текстуры планет:1
@@ -5956,7 +5965,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/12z-parrot-acts.js · 17 КБ
   · трепло: репертуар:1
 
-## src/13-combat.js · 13 КБ
+## src/13-combat.js · 14 КБ
   · бой: выстрелы с владельцем (M361):1
 
 ## src/13-pirates.js · 30 КБ
@@ -7060,7 +7069,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzzzk-mapaddr.js · 8 КБ
   · автотесты: карта говорит адресами (M347):1
 
-## tests/91zzzzk3-far.js · 6 КБ
+## tests/91zzzzk3-far.js · 7 КБ
 
 ## tests/91zzzzk4-rail.js · 4 КБ
 

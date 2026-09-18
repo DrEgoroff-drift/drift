@@ -60,7 +60,7 @@ function farDeposits(sx,sy){
   const key=sx+","+sy;
   if(FAR_CACHE.has(key))return FAR_CACHE.get(key);
   const sys=getSystem(sx,sy),R=farR(sx,sy),out=[];
-  FAR_KEYS.forEach((k,ki)=>{
+  FAR_ROLL.forEach((k,ki)=>{
     const r=rng((hashi(sx,sy,FAR_SALT)^(ki*0x9E3779B1))>>>0);
     const p=farPresence(RES[k].far.band,R),roll=r();
     if(roll>=p)return;

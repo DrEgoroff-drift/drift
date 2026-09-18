@@ -19,7 +19,7 @@ TEST_SUITES.push(()=>suite("дальние товары: старый мир н�
 }));
 TEST_SUITES.push(()=>suite("дальние товары: полосы и тяжёлый хвост удачи",()=>{
   resetWorld();
-  eq(FAR_KEYS.length,10,"товаров десять");
+  eq(FAR_ROLL.length,10,"товаров в земле десять");
   for(const k of FAR_KEYS){
     ok(RES[k].far&&RES[k].far.eat&&RES[k].price>0,k+": есть полоса, едок и цена");
     ok(TRADE_KEYS.indexOf(k)<0&&ORE_KEYS.indexOf(k)<0,k+": вне старых списков (их поток кормит генерацию)");
@@ -43,7 +43,7 @@ TEST_SUITES.push(()=>suite("дальние товары: полосы и тяж�
   ok(f[1]>.17&&f[1]<.32,"хороших ~25 %: "+(f[1]*100).toFixed(1));
   ok(f[2]>.02&&f[2]<.09,"богатых ~5 %: "+(f[2]*100).toFixed(1));
   ok(f[3]>.001&&f[3]<.015,"жил ~0.5 %: "+(f[3]*100).toFixed(2));
-  for(const k of FAR_KEYS)ok((band[k]|0)>0,k+": встречается где-то в мире");
+  for(const k of FAR_ROLL)ok((band[k]|0)>0,k+": встречается где-то в мире");
   eq(JSON.stringify(farDeposits(31,-17)),JSON.stringify((FAR_CACHE.clear(),farDeposits(31,-17))),"один сектор — одни залежи");
 }));
 TEST_SUITES.push(()=>suite("дальние товары: выемка, честный прибор, ЖИЛА",()=>{
@@ -94,4 +94,25 @@ TEST_SUITES.push(()=>suite("дальние товары: цена по расс�
   G.cargo.osmium=5;const c0=G.credits,rev=sellCargo(home,"osmium",5);
   ok(rev>0&&G.credits>c0&&G.cargo.osmium===0,"осмий сдан за "+rev);
   eq(farWorldFingerprint(),FAR_FP_BEFORE,"и старый мир после торговли всё тот же");
+}));
+TEST_SUITES.push(()=>suite("дальние товары: тяжёлое, хрупкое, ловушки",()=>{
+  resetWorld();
+  for(const k of RES_KEYS)G.cargo[k]=0;
+  const cap=stat().cargoMax;
+  eq(addRes("osmium",999),Math.floor(cap/2),"осмий берут вдвое меньше: он весит две единицы");
+  eq(held(),Math.floor(cap/2)*2,"трюм считает вес");
+  G.cargo.osmium=0;eq(addRes("neutron",999),Math.floor(cap/5),"нейтронная крошка — пять мест");
+  G.cargo.neutron=0;
+  /* янтарь колется от удара */
+  G.cargo.amber=10;G.hull=stat().hullMax;farCargoHit();
+  eq(G.cargo.amber+"/"+G.cargo.amberchip,"8/2","удар колет пятую часть в крошку");
+  ok(G.market&&true,"");
+  /* ловушки: без питания — убывает, ниже пятой корпуса — вспышка */
+  G.cargo.amber=0;G.cargo.amberchip=0;G.cargo.antimatter=100;G.mods.weapon=0;
+  for(let i=0;i<3600;i++)farTrapTick(1);
+  eq(G.cargo.antimatter,99,"без питания — процент за минуту");
+  const hm=stat().hullMax;G.hull=hm*.15;farCargoHit();
+  eq(G.cargo.antimatter,0,"корпус ниже пятой — груз ушёл вспышкой");
+  ok(G.hull<hm*.15,"и ударил по корпусу");
+  G.hull=hm;
 }));

@@ -101,7 +101,9 @@ const FAR_RES={
   pearl:     {ru:"Жемчуг пустоты",    col:"#ffe2f2",price:320, far:{band:25,verb:"fauna",place:"fauna",eat:"стойка роскоши Компании (×1,5 в её земле) · лавка гостиницы"}},
   darkglass: {ru:"Тёмное стекло",     col:"#3c4a66",price:600, far:{band:40,verb:"drill",place:"volcanic,crystal:old",eat:"оптика Хай-Фронта (×1,5 в её земле) · прибор, что читает залежь тоньше"}},
   antimatter:{ru:"Антивещество",      col:"#ff4f6a",price:900, far:{band:40,verb:"scoop",place:"gas",prop:"trap",eat:"тяжёлая торпеда · верхний ярус реактора · флот любой державы"}},
-  neutron:   {ru:"Нейтронная крошка", col:"#e8f0ff",price:1500,far:{band:50,verb:"drill",place:"rocky,metal",prop:"heavy5",eat:"доводка на верфи вместо узла · самая тяжёлая броня"}}
+  neutron:   {ru:"Нейтронная крошка", col:"#e8f0ff",price:1500,far:{band:50,verb:"drill",place:"rocky,metal",prop:"heavy5",eat:"доводка на верфи вместо узла · самая тяжёлая броня"}},
+  /* не залежь, а то, что остаётся от янтаря после удара (M468): по трети цены */
+  amberchip: {ru:"Янтарная крошка",   col:"#c98a3a",price:43,  far:{band:10,verb:"",place:"",chip:1,eat:"приёмка по весу — «вес наш»"}}
 };
 Object.assign(RES,FAR_RES);
 const RES_KEYS=Object.keys(RES);
@@ -118,6 +120,7 @@ const RARE_RES=RES_KEYS.filter(k=>!!RES[k].rare);
 /* промышленное (M291): не редкое и не товар — груз для своих цехов */
 const IND_KEYS=RES_KEYS.filter(k=>!!RES[k].ind&&!RES[k].rare);
 const FAR_KEYS=Object.keys(FAR_RES);
+const FAR_ROLL=FAR_KEYS.filter(k=>!FAR_RES[k].far.chip);   /* что лежит в земле; крошка — нет */
 const TRADE_KEYS=RES_KEYS.filter(k=>!RES[k].far&&RARE_RES.indexOf(k)<0&&AMMO_KEYS.indexOf(k)<0&&
   PAX_KEYS.indexOf(k)<0&&IND_KEYS.indexOf(k)<0);
 const ORE_KEYS=TRADE_KEYS.filter(k=>FAUNA_RES.indexOf(k)<0);

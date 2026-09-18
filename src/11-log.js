@@ -163,7 +163,8 @@ function addRes(k,n){
      событие, а не цифра — поэтому ноль, а не «меньше» */
   if(typeof natOreMul==="function")n=n*natOreMul(k);
   const cap=stat().cargoMax,free=cap-held();
-  const t=Math.min(n,free);if(t>0)G.cargo[k]+=t;return t;
+  const w=(typeof resW==="function")?resW(k):1;   /* тяжёлое берут, сколько влезает по весу (M468) */
+  const t=Math.min(n,Math.floor(free/w));if(t>0)G.cargo[k]+=t;return t;
 }
 /* штучная добыча: дробный бонус обогащения копится, чтобы +18% не съедалось округлением */
 let refineBank=0;

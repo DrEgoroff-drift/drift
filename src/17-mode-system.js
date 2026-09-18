@@ -269,6 +269,7 @@ function updateSystem(dt){
      после них, и у причала подсказка звала стыковаться, пока пикет ждал ответа */
   if(typeof gestTick==="function")gestTick(sh);   /* жест хозяина после прыжка (M452) */
   if(typeof railTick==="function")railTick(dt);   /* поезд подходит, пока вы в вестибюле (M472) */
+  if(typeof farTrapTick==="function")farTrapTick(dt);   /* ловушки антивещества: питание или процент в минуту (M468) */
   if(typeof hailTick==="function"&&hailTick(sh,dt,actEdge))return;
 
   if(sys.station){

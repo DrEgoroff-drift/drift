@@ -11170,3 +11170,8 @@ plausibly reach.
   points = the hull's + armour parts; thrust/turn = the hull's × mass factor **clamped .8–1.1**
   (tied to P8's feel); sight = instruments in the nose third. Module tiers become densities.
   Bounds: cargo ≤ ×1.4 nominal; the oracle line from stage 3.
+
+- [ ] **[design owed] M468 Properties** — heavy (×2, ×5 hold), fragile (крошка on a hit), perishable/dangerous (the
+  trap's energy draw, the countdown spoken in the hold, detonation below 20 %). **M469 Eaters** —
+  reactor/armour/shield/instrument densities, доводка by нейтронная крошка, greenhouses and дачники,
+  jewellers, the luxury counter, the navies' buy.

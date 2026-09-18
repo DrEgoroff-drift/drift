@@ -475,10 +475,7 @@ patchnote of each version names the M-numbers it closes.
   cell), drawn in flight as a round turret on the back — the loadout read by silhouette; rim parts
   take their side's wear (`12s-wear`) when hit from that side (war §4's ×1.6 from behind now also
   means «engines take it»); instruments count only forward.
-- [ ] **[design owed] M468 Properties** — heavy (×2, ×5 hold), fragile (крошка on a hit), perishable/dangerous (the
-  trap's energy draw, the countdown spoken in the hold, detonation below 20 %). **M469 Eaters** —
-  reactor/armour/shield/instrument densities, доводка by нейтронная крошка, greenhouses and дачники,
-  jewellers, the luxury counter, the navies' buy.
+- [x] **[design owed] M468 Properties — BUILT 18.09 (Control), `src/06f-far-props.js`.** Heavy: `held()` weighs (осмий 2, нейтронная крошка 5), `addRes` takes what fits by weight. Fragile: every hull hit in `playerHit` cracks a fifth of the янтарь into «янтарная крошка» (a new far row, 43 кр, not in the ground — the roll runs over `FAR_ROLL`, the ten, so deposits did not move). Trap: антивещество loses 1 % a game-minute unless a reactor (weapon module) feeds it from energy; the hold says so once a minute; below 20 % hull the traps let go — the cargo is gone, the hull −10 %. Suite covers all three. **Open — M469 the eaters** (reactor/armour/shield/instrument densities, доводка by нейтронная крошка, greenhouses and дачники, jewellers, the luxury counter, the navies' buy); the countdown in the ТРЮМ row. Original text in the archive.
 - **Gate:** an old save loads with every number unchanged; a hauler stripped to the hold and a
   warship stripped of hold both fly under the finger the same (P8 meter); the blueprint passes the
   craft codex and gets its almanac issue.
