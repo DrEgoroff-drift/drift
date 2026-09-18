@@ -7,6 +7,16 @@ let fuseSel=[];   // два корпуса, выбранных под сплав
    он виден сразу, поверх экрана. Кадр, внутри которого случилась стыковка,
    записывал эти строки «голосом мира», и они сгорали за экраном станции,
    ни разу не показавшись (критик тестировщика 12.09) */
+/* что мир говорит сегодня — строки Директора, по одной на событие; пусто — пустой список */
+function stationNewsLines(){
+  const L=[];
+  const add=v=>{if(v)for(const x of String(v).split("\n"))if(x.trim())L.push(x.trim());};
+  if(typeof econLine==="function")add(econLine(G.sys));
+  for(const f of [typeof socLine==="function"&&socLine,typeof natLine==="function"&&natLine,
+    typeof powLine==="function"&&powLine,typeof dipLine==="function"&&dipLine,
+    typeof secLine==="function"&&secLine,typeof cultLine==="function"&&cultLine])if(f)add(f());
+  return L;
+}
 function openStation(){const fi=FRAME_IN;FRAME_IN=false;try{openStationBody();}finally{FRAME_IN=fi;}}
 function openStationBody(){
   G.st=G.sys.station;G.mode="dock";G.ap=null;toggleLog(false);
@@ -79,14 +89,9 @@ function openStationBody(){
     (stP?"\n"+stP.ru+" · "+stP.hail:"")+
     /* флаг сменился (M372): пока хозяин свежий, станция говорит об этом
        первой строкой — и по ней же понятно, почему цены другие */
-    /* экономика Директора одной строкой (M382): ярмарка, эмбарго, жила, волна */
-    ((typeof econLine==="function"&&econLine(G.sys))?"\n"+econLine(G.sys):"")+
-    ((typeof socLine==="function"&&socLine())?"\n"+socLine():"")+
-    ((typeof natLine==="function"&&natLine())?"\n"+natLine():"")+
-    ((typeof powLine==="function"&&powLine())?"\n"+powLine():"")+
-    ((typeof dipLine==="function"&&dipLine())?"\n"+dipLine():"")+
-    ((typeof secLine==="function"&&secLine())?"\n"+secLine():"")+
-    ((typeof cultLine==="function"&&cultLine())?"\n"+cultLine():"")+
+    /* новости Директора (ярмарка, эмбарго, жила, волна — M382 и соседи) ушли
+       на ДОСКУ (ревью шапки 13–15): под «ЕЩЁ» их не находили, а доска и есть
+       «всё, что мир говорит о себе». Здесь — только сама станция */
     ((typeof occPowerHere==="function"&&occPowerHere())
       ?"\nФЛАГ СМЕНИЛСЯ · "+powerOf(occPowerHere().by).ru.toUpperCase()+
         " · треть выработки в реквизицию":"");

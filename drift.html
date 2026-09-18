@@ -77823,6 +77823,16 @@ let fuseSel=[];   // два корпуса, выбранных под сплав
    он виден сразу, поверх экрана. Кадр, внутри которого случилась стыковка,
    записывал эти строки «голосом мира», и они сгорали за экраном станции,
    ни разу не показавшись (критик тестировщика 12.09) */
+/* что мир говорит сегодня — строки Директора, по одной на событие; пусто — пустой список */
+function stationNewsLines(){
+  const L=[];
+  const add=v=>{if(v)for(const x of String(v).split("\n"))if(x.trim())L.push(x.trim());};
+  if(typeof econLine==="function")add(econLine(G.sys));
+  for(const f of [typeof socLine==="function"&&socLine,typeof natLine==="function"&&natLine,
+    typeof powLine==="function"&&powLine,typeof dipLine==="function"&&dipLine,
+    typeof secLine==="function"&&secLine,typeof cultLine==="function"&&cultLine])if(f)add(f());
+  return L;
+}
 function openStation(){const fi=FRAME_IN;FRAME_IN=false;try{openStationBody();}finally{FRAME_IN=fi;}}
 function openStationBody(){
   G.st=G.sys.station;G.mode="dock";G.ap=null;toggleLog(false);
@@ -77895,14 +77905,9 @@ function openStationBody(){
     (stP?"\n"+stP.ru+" · "+stP.hail:"")+
     /* флаг сменился (M372): пока хозяин свежий, станция говорит об этом
        первой строкой — и по ней же понятно, почему цены другие */
-    /* экономика Директора одной строкой (M382): ярмарка, эмбарго, жила, волна */
-    ((typeof econLine==="function"&&econLine(G.sys))?"\n"+econLine(G.sys):"")+
-    ((typeof socLine==="function"&&socLine())?"\n"+socLine():"")+
-    ((typeof natLine==="function"&&natLine())?"\n"+natLine():"")+
-    ((typeof powLine==="function"&&powLine())?"\n"+powLine():"")+
-    ((typeof dipLine==="function"&&dipLine())?"\n"+dipLine():"")+
-    ((typeof secLine==="function"&&secLine())?"\n"+secLine():"")+
-    ((typeof cultLine==="function"&&cultLine())?"\n"+cultLine():"")+
+    /* новости Директора (ярмарка, эмбарго, жила, волна — M382 и соседи) ушли
+       на ДОСКУ (ревью шапки 13–15): под «ЕЩЁ» их не находили, а доска и есть
+       «всё, что мир говорит о себе». Здесь — только сама станция */
     ((typeof occPowerHere==="function"&&occPowerHere())
       ?"\nФЛАГ СМЕНИЛСЯ · "+powerOf(occPowerHere().by).ru.toUpperCase()+
         " · треть выработки в реквизицию":"");
@@ -79438,6 +79443,15 @@ function stTabBoard(){
        наряды (M152e), циркуляр (M156), стенгазета (M165), доска почёта (M161). */
     if(stTypeOf(G.st.stype).tabs.length===0)
       $body.appendChild(el("div","sec","ТОПЛИВО "+fuelPriceHere()+" кр/ед · РЕМОНТ "+repairCost()+" кр/ед · "+repLine(G.sys).toUpperCase()));
+    /* сегодня в системе — строки Директора (ревью шапки 13–15): раньше их
+       прятало «ЕЩЁ» в шапке, а место им здесь, на стене новостей, первыми */
+    {
+      const news=(typeof stationNewsLines==="function")?stationNewsLines():[];
+      if(news.length){
+        secHead("СЕГОДНЯ В СИСТЕМЕ",{count:news.length});
+        for(const n of news)$body.appendChild(el("div","row","<div class='nm'><s style='color:#cfe3ea'>"+n+"</s></div>"));
+      }
+    }
     const sp=(typeof speechHere==="function")?speechHere():null;
     if(sp){
       secHead("ОЧЕРЕДЬ У СТОЙКИ",{count:sp.addr});
@@ -79613,7 +79627,6 @@ function stTabMarket(st){
       :"ТРЮМ ПУСТ — САДИТЕСЬ НА ПЛАНЕТУ ИЛИ ИДИТЕ В ПОЯС"));
     /* прилавок ВЗЯТЬ — кооперативу, запись — на станции дома (12aj, M351) */
     if(typeof coopCounterBlock==="function")coopCounterBlock();
-    if(typeof coopRegBlock==="function")coopRegBlock();
     /* редкое лежит в том же трюме, но купить его никто не возьмётся:
        оно тратится, а не продаётся — поэтому отдельной секцией и без кнопки */
     if(RARE_RES.some(k=>G.cargo[k]>0)){
@@ -79648,6 +79661,11 @@ function stTabMarket(st){
       r.appendChild(el("div","qt",prices[k]+"<s>кр/ед</s>"));
       $body.appendChild(r);
     }
+    /* запись кооператива — ПОСЛЕ цен (ревью шапки 13–15): на рынок приходят
+       узнать, почём; форма на полэкрана над ценами отвечала на вопрос,
+       которого игрок ещё не задал. Чтобы что: сначала цена, потом — захочешь
+       ли брать товар сам */
+    if(typeof coopRegBlock==="function")coopRegBlock();
     if(!hasRoute)renderRoute();
 }
 function stTabYard(st){

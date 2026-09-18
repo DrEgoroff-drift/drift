@@ -14,6 +14,15 @@ function stTabBoard(){
        наряды (M152e), циркуляр (M156), стенгазета (M165), доска почёта (M161). */
     if(stTypeOf(G.st.stype).tabs.length===0)
       $body.appendChild(el("div","sec","ТОПЛИВО "+fuelPriceHere()+" кр/ед · РЕМОНТ "+repairCost()+" кр/ед · "+repLine(G.sys).toUpperCase()));
+    /* сегодня в системе — строки Директора (ревью шапки 13–15): раньше их
+       прятало «ЕЩЁ» в шапке, а место им здесь, на стене новостей, первыми */
+    {
+      const news=(typeof stationNewsLines==="function")?stationNewsLines():[];
+      if(news.length){
+        secHead("СЕГОДНЯ В СИСТЕМЕ",{count:news.length});
+        for(const n of news)$body.appendChild(el("div","row","<div class='nm'><s style='color:#cfe3ea'>"+n+"</s></div>"));
+      }
+    }
     const sp=(typeof speechHere==="function")?speechHere():null;
     if(sp){
       secHead("ОЧЕРЕДЬ У СТОЙКИ",{count:sp.addr});
@@ -189,7 +198,6 @@ function stTabMarket(st){
       :"ТРЮМ ПУСТ — САДИТЕСЬ НА ПЛАНЕТУ ИЛИ ИДИТЕ В ПОЯС"));
     /* прилавок ВЗЯТЬ — кооперативу, запись — на станции дома (12aj, M351) */
     if(typeof coopCounterBlock==="function")coopCounterBlock();
-    if(typeof coopRegBlock==="function")coopRegBlock();
     /* редкое лежит в том же трюме, но купить его никто не возьмётся:
        оно тратится, а не продаётся — поэтому отдельной секцией и без кнопки */
     if(RARE_RES.some(k=>G.cargo[k]>0)){
@@ -224,6 +232,11 @@ function stTabMarket(st){
       r.appendChild(el("div","qt",prices[k]+"<s>кр/ед</s>"));
       $body.appendChild(r);
     }
+    /* запись кооператива — ПОСЛЕ цен (ревью шапки 13–15): на рынок приходят
+       узнать, почём; форма на полэкрана над ценами отвечала на вопрос,
+       которого игрок ещё не задал. Чтобы что: сначала цена, потом — захочешь
+       ли брать товар сам */
+    if(typeof coopRegBlock==="function")coopRegBlock();
     if(!hasRoute)renderRoute();
 }
 function stTabYard(st){
