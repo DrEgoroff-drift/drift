@@ -4,7 +4,7 @@
    полки полны, а страдают другие; прилавок пуст и платит вдвое за еду, воду
    и топливо (органика, лёд, изотопы). Возить в блокаду нейтралу законно.
    «Буханка» (именная машина базы) — дальше. */
-const BLOCK_GOODS={organics:1,ice:1,isotopes:1},BLOCK_MUL=2;
+const BLOCK_GOODS={organics:1,ice:1,isotopes:1,alloy:1},BLOCK_MUL=2;   /* еда, вода, топливо и запчасти (сплавы) */
 const BLOCK_LINES=["Полки полны. Снабжение бесперебойно. Страдают другие.","Цены стабильны. Очередей нет. Слухам не верьте.",
   "Жизнь налажена. Вывоз продовольствия — по разрешению.","Ситуация под контролем. Под нашим."];
 function blockHere(sys){sys=sys||G.sys;return !!(sys&&typeof occLvl==="function"&&occLvl(sys.sx!=null?sys.sx:G.sx,sys.sy!=null?sys.sy:G.sy)>=2);}
@@ -18,6 +18,6 @@ function blockArrive(){
   G.blockHeard[key]=d;
   const line=BLOCK_LINES[hashi(G.sx,G.sy,d)%BLOCK_LINES.length];
   if(typeof etherLine==="function")etherLine(line,"волна администрации");
-  logAdd("dim","Блокада: прилавок пуст — еду, воду и топливо берут вдвое. Возить сюда нейтралу законно.");
+  logAdd("dim","Блокада: прилавок пуст — еду, воду, топливо и сплавы берут вдвое. Возить сюда нейтралу законно.");
   return true;
 }

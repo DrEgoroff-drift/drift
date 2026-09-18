@@ -2181,7 +2181,7 @@ hailContraband               src/12ar-hail.js:44-53
 hailHold                     src/12ar-hail.js:24
 hailPicket                   src/12ar-hail.js:26-37
 hailRisk                     src/12ar-hail.js:210-215
-hailRunCheck                 src/12ar-hail.js:268-272
+hailRunCheck                 src/12ar-hail.js:268-286
 hailShotAt                   src/12ar-hail.js:116-119
 hailStartSys                 src/12ar-hail.js:70
 hailTick                     src/12ar-hail.js:121-175
@@ -6122,7 +6122,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/12ap-notebook.js · 12 КБ
   · эпизоды и записная книжка (M374, §6.2–6.3):1
 
-## src/12ar-hail.js · 18 КБ
+## src/12ar-hail.js · 19 КБ
   · четыре правила и позывной (M373, §6.1):1
 
 ## src/12as-left.js · 9 КБ

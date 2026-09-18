@@ -56,7 +56,7 @@ function hailContraband(by){
    словами, а расстоянием: если после оклика борт продолжает уходить, значит
    он пошёл сквозь. */
 function hailBlockade(){
-  return !!(typeof chronFront==="function"&&chronFront(G.sx,G.sy));
+  return !!((typeof chronFront==="function"&&chronFront(G.sx,G.sy))||(typeof blockHere==="function"&&blockHere()));   /* фронт или блокада (M498) */
 }
 /* ── злость: одна на державу и на систему, не на галактику ──
    Нарушил — стреляют здесь и сейчас те, кто это видел. Летопись про это не
@@ -268,5 +268,19 @@ function hailWinSync(){
 function hailRunCheck(sh){
   const H=G.hail;
   if(!H||!H.hold)return;
-  if(Math.hypot(sh.x-H.x,sh.y-H.y)>1400)hailAnger(H.by,"четвёртое правило: пошёл сквозь блокаду");
+  if(Math.hypot(sh.x-H.x,sh.y-H.y)>1400){
+    /* блокада (M498): нейтралу возить сюда законно, и на пикет отвечают скоростью —
+       ушёл на двух третях хода, пока они разворачивались, — отстали, без злости */
+    if(H.blk&&typeof blockHere==="function"&&blockHere()){
+      const st=stat(),mx=6.4+(st.thr||0)*1.6,sp=Math.hypot(sh.vx,sh.vy);
+      if(sp>mx*.62){
+        G.hail=null;const P=(typeof powerOf==="function")?powerOf(H.by):null;
+        say("ОТОРВАЛИСЬ · ПИКЕТ ОТСТАЛ",100);
+        if(typeof etherLine==="function")etherLine("…ушёл на скорости. Борт запомнили.",P?P.ru:"пикет");
+        logAdd("dim","Блокада: пикет "+(P?P.ru:"")+" отстал — ответили скоростью. Нейтралу возить сюда законно");
+        hailWinSync();return;
+      }
+    }
+    hailAnger(H.by,"четвёртое правило: пошёл сквозь блокаду");
+  }
 }
