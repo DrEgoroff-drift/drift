@@ -463,8 +463,11 @@ Rule 3: same look, cheaper work.
   test's trace are written in the code comment (coast-and-arc gave a pendulum through the brake
   rule; turning the push into a slide flipped direction as the fixed stick gained a backward
   tangential part around the curve).
-- [ ] `say()` from timers/network callbacks is neither frame-born nor tap-born — mark as world
-  (`sayWorld`) or set FRAME_IN there.
+- [x] `say()` from timers/network callbacks — closed by verification 18.09 (Control): callbacks run
+  outside the frame, so FRAME_IN is always false there and they count as responses; all 26 in the
+  game are server replies to the player's own tap (ОСТАВЛЕНО, ГОЛОС ПОДАН, the cloud) or the
+  «open in another tab» warning — both must show over a screen. The rule is written at `say()` in
+  `08-state`; a future world voice from a timer sets MSG_WORLD itself.
 - [ ] СТОЛ: empty sheets say where to get the thing; bottom padding under the last row of desk
   objects. `journal` lines («Дрон … встал») should not reach `crash.log` (M417 noise).
 - [ ] Station header review 13–15: СТОЛ out of the masthead; two tab rows = 110 px — fold to one;
