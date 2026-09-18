@@ -110,8 +110,15 @@ our JS is 6–8 ms, the deadline is lost in the RASTER. In this order:
    **The gate (≥ 55 in every mode) fails in LANDING and SURFACE, and it failed before the evening
    started** — main gives the same 32 and 24–26, so this is old, not a regression. The laptop's noise
    (system 43–60 on one build) is too large to judge the hull bake; that is the phone's job. The
-   next frame work after the phone number: what eats landing and surface (the Designer's
-   `layers.js` breakdown there, as was done for the system).
+   next frame work after the phone number: what eats landing and surface.
+   **Looked into the same day (Control, real clock, own headless Chrome):** at the PHONE's size
+   (390×844) landing/surface hold 57–60 fps with the frame's JS at 3.4–4 ms; at the laptop's
+   2560×1600 canvas they drop to 46–49 fps with JS still 4–5 ms — the same wall as on the phone,
+   paint area, not our code. The deep g11's gains from `drawStrata` and `geoFaultAt` (+8…+11) are
+   the chunk bakes in the first seconds after the probe stages the scene: both are only called while
+   baking a ground chunk (`18b-geology`, inside `drawStrata`), and over 8 s of steady landing there
+   were 0 re-bakes and no DPR change. So the laptop gate is a question of resolution on a big
+   canvas (`gfx.res` auto should step down there), not of a leak — decide with ×1.5 (step 2).
 5. **Frame acceptance of the baked star core and hull** against the Designer's four risks: the
    star's pulsation and corona, the ship's lights and nozzles, a step at the baked picture's edge, a
    one-frame lag of the baked picture in rotation. Control's side-by-side at ×2 found none; a frame
