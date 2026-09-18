@@ -77,3 +77,21 @@ TEST_SUITES.push(()=>suite("дальние товары: выемка, чест�
   ok(G.log.length>n0&&/ЖИЛА/.test(G.log[G.log.length-1].s),"жила записана на борту");
   G.cargo[at.d.k]=0;G.farTaken={};
 }));
+TEST_SUITES.push(()=>suite("дальние товары: цена по расстоянию и едок",()=>{
+  resetWorld();
+  near(farCurve(0,25),1.3,1e-9,"в сердце — 1.3 базы");
+  near(farCurve(10,25),1,1e-9,"у края круга заселения — база");
+  near(farCurve(40,25),.5,1e-9,"в своей полосе — половина");
+  ok(farCurve(15,25)<1&&farCurve(15,25)>.5,"между — по прямой");
+  /* сердце платит больше полосы — ценность делает обратная дорога */
+  const home=getSystem(0,0);
+  let far=null;for(let sx=30;sx<60&&!far;sx++){const s=getSystem(sx,3);if(s.station)far=s;}
+  ok(!!(home.station&&far),"станции нашлись");
+  G.market={};
+  const pH=marketFor(home).osmium,pF=marketFor(far).osmium;
+  ok(pH>pF*1.8,"осмий дома дороже, чем в глубине: "+pH+" против "+pF);
+  /* и продаётся: трюм пустеет, деньги приходят */
+  G.cargo.osmium=5;const c0=G.credits,rev=sellCargo(home,"osmium",5);
+  ok(rev>0&&G.credits>c0&&G.cargo.osmium===0,"осмий сдан за "+rev);
+  eq(farWorldFingerprint(),FAR_FP_BEFORE,"и старый мир после торговли всё тот же");
+}));

@@ -506,7 +506,8 @@ patchnote of each version names the M-numbers it closes.
   every range) — the professions' honesty rule. ЖИЛА: the word across the screen (ГЛАВТРАССА
   stencil, warm, 1.2 s — the only time the game shouts), a ДНЕВНИК line, a rumour at the nearest
   stations after one сводка, company on that approach afterwards («трое, все говорят, что первыми»).
-- [ ] **[design owed] M467 Prices by distance.** ½ base in its own band, 1× at r≈10, 1.3× in the heart, the eater's
+- [x] **[design owed] M467 Prices by distance — BUILT 18.09 (Control), `12-economy` `farPriceCtx`.** Base × curve (1.3 in the heart r<6 → 1 at r 10 → ½ at band+5 and beyond) × 1.5 where the eater's power owns the land (янтарь Коммуна, жемчуг Компания, тёмное стекло Хай-Фронт) × station type × occupation × the same live pressure; the base is NOT written into `station.prices` (that object is in the old-world fingerprint). Sold in the same СДАТЬ rows with the counter's line («весы наши, тара ваша», «принимаем по весу, вес — наш» for the fragile). **Open:** far goods for sale in the heart («rarely and dear»); the other eaters (реакторы, броня, щиты, теплицы) are M469. Original text:
+  **M467 Prices by distance.** ½ base in its own band, 1× at r≈10, 1.3× in the heart, the eater's
   ×1.5 in its land; the live market's flood-and-recover holds; far goods rarely on sale in the heart.
   Eaters speak at their counters (review §3: «весы наши, тара ваша», «принимаем по весу, вес — наш»).
 - [ ] **[design owed] M470 The net and the scheme** (`DESIGN-metro.md` §2, §4, review §4.4). Six radials from the

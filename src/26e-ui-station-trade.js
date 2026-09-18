@@ -161,7 +161,7 @@ function stTabMarket(st){
     const hasRoute=(typeof routeOf==="function")&&routeOf().legs.length>=2;
     if(hasRoute)renderRoute();
     let any=false,tot=0;
-    for(const k of TRADE_KEYS){
+    for(const k of TRADE_KEYS.concat(FAR_KEYS)){   /* дальние продаются тем же рядом (M467) */
       const q=G.cargo[k];if(!q)continue;any=true;
       const price=prices[k],base=RES[k].price;
       /* котировка с аппетитом (M290): тег говорит правду для первых N единиц и
@@ -171,6 +171,9 @@ function stTabMarket(st){
       let tg=price>base*1.12?"выгодно":(price<base*.9?"дёшево":"обычная цена");
       if(Q.nA)tg="берут первые "+Q.nA+" по "+Q.priceA+" кр"+(Q.nA<q?", остальное "+price:"");
       if((mkt.pressure[k]||0)<-.05)tg+=" · недавно продавали здесь";
+      /* дальний товар: приёмщик говорит своё (review §3) — весы наши */
+      if(RES[k].far)tg+=(FAR_EATER[k]&&typeof stampOwnerAt==="function"&&FAR_EATER[k]===stampOwnerAt(G.sx,G.sy)
+        ?" · здесь его едят — ×1,5":"")+(RES[k].far.prop==="fragile"?" · «принимаем по весу, вес — наш»":" · «весы наши, тара ваша»");
       const r=el("div","row");
       r.appendChild(el("div","nm","<b style='color:"+RES[k].col+"'>"+RES[k].ru+
         "</b><s>"+price+" кр/ед · "+tg+" (база "+base+")</s>"));
@@ -189,7 +192,7 @@ function stTabMarket(st){
       r.appendChild(el("div","qt",tot.toLocaleString("ru")+"<s>кр</s>"));
       const b=el("button","act gold","ПРОДАТЬ ВСЁ");
       b.onclick=()=>{let sum=0,n=0;
-        for(const k of TRADE_KEYS){const q=G.cargo[k];if(q>0){sum+=sellCargo(G.sys,k,q);n+=q;}}
+        for(const k of TRADE_KEYS.concat(FAR_KEYS)){const q=G.cargo[k];if(q>0){sum+=sellCargo(G.sys,k,q);n+=q;}}
         tell("money","Груз сдан на «"+G.st.name+"» · "+n+" ед · +"+sum.toLocaleString("ru")+" кр",
              "Груз реализован\n+"+sum.toLocaleString("ru")+" кр");
         renderTab();};

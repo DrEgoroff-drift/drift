@@ -8,11 +8,34 @@ function marketFor(sys){
   if(secs>0){
     const decay=Math.pow(.5,secs/10800);   /* давление держится часами, а не полчаса (M152e): дальше лететь выгоднее, чем туда-сюда */
     for(const k of TRADE_KEYS){m.pressure[k]=(m.pressure[k]||0)*decay;if(m.ask[k])m.ask[k]*=decay;}
+    for(const k of FAR_KEYS)if(m.pressure[k])m.pressure[k]*=decay;   /* дальние (M467) — то же давление */
     m.t=G.t;
   }
   const prices={},C=marketCtx(sys,m);
   for(const k of TRADE_KEYS)prices[k]=marketPriceCtx(sys,C,k,0);
+  for(const k of FAR_KEYS)prices[k]=farPriceCtx(sys,C,k);
   return prices;
+}
+/* ── дальние товары: цена по расстоянию (M467, DESIGN-resources §4) ──
+   Далёкое дёшево там, где найдено, и дорого там, где живут: ½ базы в своей
+   полосе, 1× у края круга заселения (r≈10), 1.3× в сердце (r<6); едок своей
+   державы платит ×1.5 в её земле. Базы нет в station.prices — её не трогаем:
+   тот объект входит в отпечаток старого мира (91zzzzk3). Давление прилавка
+   общее: живой рынок так же роняет цену завала и так же её отпускает, и одна
+   жила не печатает денег. */
+const FAR_EATER={amber:"km",pearl:"co",darkglass:"hf"};
+function farCurve(r,band){
+  if(r<6)return 1.3;
+  if(r<10)return 1.3-.3*(r-6)/4;
+  return 1-.5*clamp((r-10)/Math.max(1,band+5-10),0,1);
+}
+function farBasePrice(sys,k){
+  const F=RES[k].far,r=Math.hypot(sys.sx,sys.sy);
+  const own=(typeof stampOwnerAt==="function")?stampOwnerAt(sys.sx,sys.sy):null;
+  return RES[k].price*farCurve(r,F.band)*(FAR_EATER[k]&&FAR_EATER[k]===own?1.5:1);
+}
+function farPriceCtx(sys,C,k){
+  return Math.max(1,Math.round(farBasePrice(sys,k)*C.mul*C.occ*clamp(1+(C.m.pressure[k]||0),.4,1.8)));
 }
 /* множители станции, общие для всех товаров — считаются один раз на котировку */
 function marketCtx(sys,m){
