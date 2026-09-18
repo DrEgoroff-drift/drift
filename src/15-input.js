@@ -111,7 +111,7 @@ document.querySelectorAll("[data-k]").forEach(b=>{
 });
 const KMAP={KeyA:"left",ArrowLeft:"left",KeyD:"right",ArrowRight:"right",KeyW:"thrust",
   ArrowUp:"thrust",KeyS:"brake",ArrowDown:"brake",Space:"act",Enter:"act",KeyF:"fire",
-  KeyG:"msl"};
+  KeyG:"msl",KeyV:"abil"};
 /* в поясе раскладка своя: стрелки — это рули, а не «газ/тормоз» */
 const KMAP_BELT={KeyA:"left",ArrowLeft:"left",KeyD:"right",ArrowRight:"right",
   KeyW:"pup",ArrowUp:"pup",KeyS:"pdown",ArrowDown:"pdown",

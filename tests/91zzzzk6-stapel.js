@@ -154,3 +154,26 @@ TEST_SUITES.push(()=>suite("барахолка: разобранное возв�
   eq(JSON.stringify(bazLots(B).map(x=>x.k)),JSON.stringify(bazLots(B).map(x=>x.k)),"ряд — функция места и смены");
   const snap=snapshot();ok(Array.isArray(snap.thrown),"разобранное в сейве");
 }));
+TEST_SUITES.push(()=>suite("особая система корпуса: по классу, перезарядка, эффекты",()=>{
+  resetWorld();
+  eq(Object.keys(ABIL).sort().join(","),Object.keys(HULL_CLASS).sort().join(","),"у каждого класса своя система");
+  G.mode="system";
+  /* разведчик: форсаж — тяга ×1.6 на время, потом ровно 1 */
+  const sc=Object.keys(FLEET).find(id=>FLEET[id].hcls==="scout");G.owned[sc]=true;G.shipId=sc;
+  const t0=stat().thr;
+  ok(abilFire(),"ФОРСАЖ включился");
+  ok(Math.abs(stat().thr/t0-1.6)<1e-6,"тяга ×1.6");
+  ok(!abilFire(),"на перезарядке второй раз нельзя");
+  ok(abilReady01()<.1,"обод пуст сразу после");
+  G.t+=ABIL.scout.dur*60+1;ok(Math.abs(stat().thr-t0)<1e-9,"через 3 с тяга прежняя");
+  G.t+=ABIL.scout.cd*60;ok(abilReady01()===1,"перезарядка кончилась");
+  /* курьер: сброс — клетка трюма за борт, пираты рядом теряют вас */
+  const co=Object.keys(FLEET).find(id=>FLEET[id].hcls==="courier");G.owned[co]=true;G.shipId=co;
+  G.cargo.iron=20;G.pirates=[{x:G.ship.x+100,y:G.ship.y,hull:50,jamT:0}];
+  ok(abilFire()&&G.cargo.iron<20&&G.pirates[0].jamT>=4,"СБРОС: груз ушёл, пират потерял вас");
+  /* буровик: резак бьёт в нос */
+  G.t+=3600;const mi=Object.keys(FLEET).find(id=>FLEET[id].hcls==="miner");G.owned[mi]=true;G.shipId=mi;
+  G.ship.a=0;G.pirates=[{x:G.ship.x+100,y:G.ship.y,hull:50}];
+  ok(abilFire()&&G.pirates[0].hull===20,"РЕЗАК: 30 по корпусу в носу");
+  G.pirates=[];G.shipId="strizh";
+}));

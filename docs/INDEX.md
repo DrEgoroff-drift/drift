@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 575 · символов верхнего уровня: 5555
+Файлов: 576 · символов верхнего уровня: 5569
 
 ## СИМВОЛЫ
 
@@ -47,6 +47,19 @@ _file                        tests/90-harness.js:22
 _indPrice                    src/12ac-bld.js:112
 _mapDirty                    src/15-input.js:124
 _suite                       tests/90-harness.js:11
+ABIL                         src/16c-abil.js:15-23
+ABIL_BTN                     src/16c-abil.js:94
+ABIL_HOLD                    src/16c-abil.js:24
+ABIL_KEY                     src/16c-abil.js:83
+ABIL_ST                      src/16c-abil.js:25
+abilFire                     src/16c-abil.js:40-81
+abilKind                     src/16c-abil.js:26
+abilMul                      src/16c-abil.js:35-39
+abilOf                       src/16c-abil.js:27
+abilOn                       src/16c-abil.js:28
+abilPadRim                   src/16c-abil.js:95-103
+abilReady01                  src/16c-abil.js:30-33
+abilTick                     src/16c-abil.js:84-92
 ACT_WEEK_MS                  src/05e-clearance.js:36
 actCoupons                   src/05e-clearance.js:37
 actCouponUse                 src/05e-clearance.js:38
@@ -950,9 +963,9 @@ craftAffordable              src/03-ships.js:110-114
 craftAmmo                    src/16b-missile.js:61-71
 craftPart                    src/03-ships.js:115-124
 CRASH_SHIP                   src/01a-crashlog.js:19
-crashAt                      src/28-loop.js:545-559
-crashN                       src/28-loop.js:540
-crashSay                     src/28-loop.js:566-595
+crashAt                      src/28-loop.js:548-562
+crashN                       src/28-loop.js:543
+crashSay                     src/28-loop.js:569-598
 crashShip                    src/01a-crashlog.js:20-37
 crashStack                   src/01a-crashlog.js:39-41
 CREW_BASE_TRAITS             src/21a9-base-laws.js:92-97
@@ -1067,7 +1080,7 @@ CVS_RECT                     src/08-state.js:83
 cvsRect                      src/08-state.js:98-101
 dayK                         src/19c-light.js:68-73
 dayKq                        src/19c-light.js:74
-dbg                          src/28-loop.js:703-773
+dbg                          src/28-loop.js:706-776
 dcol                         src/21b-surface-deco.js:155-160
 DEAL_KINDS                   src/27g-deals.js:17-137
 dealAnswer                   src/27g-deals.js:163-196
@@ -1321,6 +1334,7 @@ draftAll                     src/27jb-kb.js:24
 draftOf                      src/27jb-kb.js:26-42
 draftSave                    src/27jb-kb.js:43-47
 draftTowerAt                 src/27jb-kb.js:49-54
+drawAbil                     src/16c-abil.js:104-114
 drawAccel                    src/20aa-poi-shapes.js:143-166
 drawAccountShelf             src/12w-survey.js:99-115
 drawAllies                   src/12a-crew.js:678-695
@@ -1461,12 +1475,12 @@ drawSurface                  src/21e-surface-draw.js:277-291
 drawSurfaceHud               src/21e-surface-draw.js:21-115
 drawSurfaceWorld             src/21e1-surface-world.js:10-615
 drawSurvey                   src/12w-survey.js:63-89
-drawSysHud                   src/17-mode-system.js:745-992
+drawSysHud                   src/17-mode-system.js:746-993
 drawSysLane                  src/17g-sys-lane.js:75-103
 drawSysLaneShips             src/17g-sys-lane.js:112-138
 drawSysNebula                src/16a-space.js:208-236
 drawSysRail                  src/18f-rail-station.js:32-65
-drawSystem                   src/17-mode-system.js:458-744
+drawSystem                   src/17-mode-system.js:458-745
 drawSysTraffic               src/17f-sys-traffic.js:36-40
 drawTapes                    src/12s1-tape.js:36-48
 drawTemple                   src/20aa-poi-shapes.js:50-89
@@ -1822,12 +1836,12 @@ folkState                    src/12u-folk.js:83-86
 folkVisit                    src/12u-folk.js:104-113
 FOOD_SUPPLY                  src/21a1b-base-food.js:16
 foundBase                    src/21a-mode-base.js:101-115
-frame                        src/28-loop.js:599-645
+frame                        src/28-loop.js:602-648
 FRAME_IN                     src/08-state.js:344
 FRAME_JS                     src/28-loop.js:119
 FRAME_MS                     src/28-loop.js:141
-frameBody                    src/28-loop.js:411-531
-frameLastAt                  src/28-loop.js:598
+frameBody                    src/28-loop.js:411-534
+frameLastAt                  src/28-loop.js:601
 freeVoice                    src/09-audio.js:91-95
 FUEL_PER_ICE                 src/21b1-base-pay.js:100
 fuelPriceHere                src/12k-rep.js:63-70
@@ -3834,7 +3848,7 @@ probeShot                    src/25m-probe.js:85-97
 probeSpeak                   src/25m-probe.js:100-121
 probeTarget                  src/25m-probe.js:38-46
 probeVoice                   src/25m-probe.js:75-83
-prof                         src/28-loop.js:665-692
+prof                         src/28-loop.js:668-695
 PROFILE                      src/02-world.js:127-140
 profW                        src/03-ships.js:205-214
 PROMPT_RECT                  src/08-state.js:105
@@ -6208,10 +6222,13 @@ zooTick                      src/11ad-zoo.js:41-54
   · ракеты: боеприпас — это груз:1
   · пять видов боеприпаса (M367, §4):21
 
+## src/16c-abil.js · 7 КБ
+  · особая система корпуса (M484, DESIGN-shipyard):1
+
 ## src/16c-rescue.js · 51 КБ
   · пустой бак: хода нет, но выход есть всегда (11.09):1
 
-## src/17-mode-system.js · 74 КБ
+## src/17-mode-system.js · 75 КБ
   · режим: система:1
 
 ## src/17a-station-mod.js · 13 КБ
@@ -6699,9 +6716,9 @@ zooTick                      src/11ad-zoo.js:41-54
   · авторазрешение:188
   · РОВНЫЙ ТАКТ (0.1b):301
   · развилка режимов — одна на всех (M238):357
-  · кадр, который не убивает игру (M234):532
-  · prof() — на что уходит кадр:653
-  · dbg() — что держит корабль:694
+  · кадр, который не убивает игру (M234):535
+  · prof() — на что уходит кадр:656
+  · dbg() — что держит корабль:697
 
 ## src/28y-look.js · 30 КБ
   · look() — прибор кадра:1
@@ -7267,7 +7284,7 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## tests/91zzzzk5-plan.js · 9 КБ
 
-## tests/91zzzzk6-stapel.js · 11 КБ
+## tests/91zzzzk6-stapel.js · 13 КБ
 
 ## tests/91zzzzl-maphold.js · 5 КБ
   · автотесты: владения на карте (M348):1

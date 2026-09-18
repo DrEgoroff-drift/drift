@@ -1816,3 +1816,8 @@ body.table u.addr{color:#7a4a20}
 #bazWin .bz-row{display:grid;grid-template-columns:1fr auto;gap:2px 8px;align-items:center;padding:4px 0;border-top:1px solid rgba(255,255,255,.06)}
 #bazWin .bz-row s{text-decoration:none;font-size:11px;opacity:.6;grid-column:1}#bazWin .bz-row button{grid-row:1/3;grid-column:2}
 #bazWin .bz-x{margin-top:10px;width:100%}
+
+/* ── особая система корпуса: перезарядка ободом ДЕЙСТВИЯ (M484) [design owed] ── */
+.pads button[data-k="act"]{position:relative}
+.pads button.abil-cd::after{content:"";position:absolute;inset:-3px;border-radius:inherit;background:var(--abil);pointer-events:none;
+  -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 0);mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 0)}

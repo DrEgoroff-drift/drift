@@ -477,6 +477,9 @@ function frameBody(now){
   if(!document.hasFocus()){if(!wasBlurred){wasBlurred=true;releaseAllKeys();}}
   else wasBlurred=false;
   actEdge=keys.act&&!prevAct;prevAct=keys.act;
+  /* особая система корпуса (M484): долгое ДЕЙСТВИЕ — до кадра, пока на экране
+     ещё подсказка, которую игрок видел в миг нажатия */
+  if(G.mode==="system"&&typeof abilTick==="function")abilTick();
   if(G.running){
     G.t+=dt;
     /* налёт для допуска (M363, 05e): настоящими миллисекундами и только в

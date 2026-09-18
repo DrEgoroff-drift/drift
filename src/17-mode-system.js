@@ -685,7 +685,8 @@ function drawSystem(){
   if(typeof drawSysTraffic==="function")drawSysTraffic(zx,zy,Z);   /* челноки станции (M309) */
   if(typeof drawSysLaneShips==="function")drawSysLaneShips(zx,zy,Z);   /* очередь у дока (M459) */
   if(typeof drawCheburek==="function")drawCheburek(zx,zy,Z);   /* «Чебуречная» (M462) */
-  if(typeof drawGesture==="function")drawGesture(zx,zy,Z);   /* жест хозяина (M452) */
+  if(typeof drawGesture==="function")drawGesture(zx,zy,Z);
+  if(typeof drawAbil==="function")drawAbil(zx,zy);   /* луч резака, прожектор (M484) */   /* жест хозяина (M452) */
   if(typeof drawWanderer==="function")drawWanderer(zx,zy,Z);        /* «Сорока» у планеты (M342) */
   if(typeof drawFleet==="function")drawFleet(zx,zy,Z);               /* флот ГЛАВТРАССЫ (M310) */
   if(typeof drawMooredBarge==="function")drawMooredBarge(zx,zy,Z);   /* своя баржа у Причала (M296) */
