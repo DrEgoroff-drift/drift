@@ -125,3 +125,19 @@ TEST_SUITES.push(()=>suite("мирный флот: буксир Рассвета
   ok(G.hull<=hm*.6+1e-6,"не выше 60 % — это подварка, не верфь");
   G.hull=hm;PEACE_TUG=null;
 }));
+TEST_SUITES.push(()=>suite("шесть железных дорог: касса Коммуны, декларация Орднунга, экспресс Компании (M474)",()=>{
+  resetWorld();
+  const N=railNet();
+  const find=by=>Object.keys(N.at).map(k=>k.split(",").map(Number)).find(p=>stampOwnerAt(p[0],p[1])===by&&getSystem(p[0],p[1]).station);
+  const go=p=>{G.sx=p[0];G.sy=p[1];G.sys=getSystem(p[0],p[1]);RAIL_WAIT=null;RAIL_DECL="";};
+  const or=find("or");
+  if(or){go(or);const t=railDestinations()[0];G.credits=500;
+    railBuy(t);ok(!RAIL_WAIT,"Орднунг: первое нажатие — только декларация");
+    railBuy(t);ok(!!RAIL_WAIT,"второе — посадка");}
+  const co=find("co");
+  if(co){go(co);const t=railDestinations().find(d=>d.k>=2);G.credits=5000;const c0=G.credits;
+    railBuy(t,true);ok(RAIL_WAIT&&RAIL_WAIT.express,"экспресс куплен");
+    eq(c0-G.credits,railFare(t).fare*RAIL_EXPRESS_MUL+railFare(t).bag,"×10 к цене");}
+  ok(!!(or||co),"на сети есть станции Орднунга или Компании");
+  RAIL_WAIT=null;RAIL_DECL="";
+}));

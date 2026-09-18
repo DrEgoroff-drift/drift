@@ -572,7 +572,7 @@ patchnote of each version names the M-numbers it closes.
   decoy), hauler **балласт** (turn ×1.5 for 4 s at the cost of 1 % cargo), miner **резак** (the drill
   as a short-range beam), warship **залп** (all groups at once, 8 s reload), yacht **сирена** (a hail
   every ship answers), survey **прожектор** (reveals every deposit range in view for 10 s).
-- [ ] **[design owed] M474 Six railways** (metro §6): Компания **Express™** (dashed twin line skipping small stops,
+- [ ] **[design owed] M474 Six railways — four BUILT 18.09 (Control), `src/18h-rail-powers.js`.** By the land of the departure station: Компания EXPRESS™ beside every ticket of 2+ stops (×10, «на три секунды быстрее!», skips the stops, segments ×.92); Орднунг boards only after «ДЕКЛАРИРУЮ» — the first press declares the hold (a numbered declaration line), the second boards; Коммуна's counter closed at lunch and on strike days; Хай-Фронт every third ride stands 60 s at the first stop, «обновление установлено». **Open:** Рассвет маршрутка (stop anywhere on the line), the dashed Express line on the scheme, closed front stops; M475. Test fragility: the ride suite picks the first heart metro station — if its land ever turns Орднунг, the suite needs the double press. Original: (metro §6): Компания **Express™** (dashed twin line skipping small stops,
   ×10, an ad under the fare — «на три секунды быстрее!», and it is); Орднунг boards only with the
   hold declared («ДЕКЛАРИРУЮ»), doors on the second; Коммуна greyed on strike days and at lunch;
   Рассвет **маршрутка** — «до куда?» — tap the map — «ну поехали», stops at any system on the line;

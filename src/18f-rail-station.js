@@ -137,26 +137,33 @@ function railWinRender(){
     h+="<div class='rw-sec'>ВАШ ПОЕЗД</div><div class='rw-row'><span>до «"+railStopName(RAIL_WAIT.to)+"» · "+RAIL_WAIT.k+" "+pl3(RAIL_WAIT.k,"остановка","остановки","остановок")+"</span><em>поезд прибывает через "+Math.ceil(RAIL_WAIT.t)+" с</em></div>";
   }else{
     h+="<div class='rw-sec'>КУДА ВАМ · КАССА</div>";
-    railDestinations().slice(0,14).forEach((t,i)=>{
+    const why=(typeof railClosedWhy==="function")?railClosedWhy():null;   /* Коммуна: обед, забастовка (M474) */
+    if(why)h+="<div class='rw-row'><span>"+why+"</span><em>приходите позже</em></div>";
+    else railDestinations().slice(0,14).forEach((t,i)=>{
       const F=railFare(t);
       h+="<button class='act rw-go' data-i='"+i+"'>ДО «"+railStopName(t.to).toUpperCase()+"» · "+t.k+" ОСТ. · "+F.fare+" КР"+(F.bag?" + БАГАЖ "+F.bag:"")+"<s>"+t.l.ru+"</s></button>";
+      /* Компания: тот же путь экспрессом — без остановок, ×10, реклама под ценой */
+      if(typeof railOwner==="function"&&railOwner()==="co"&&t.k>=2)
+        h+="<button class='act rw-go' data-i='"+i+"' data-x='1'>EXPRESS™ ДО «"+railStopName(t.to).toUpperCase()+"» · "+(F.fare*RAIL_EXPRESS_MUL)+" КР<s>на три секунды быстрее!</s></button>";
     });
   }
   h+="<div class='rw-sec'>БУФЕТ</div><button class='act rw-buf'>"+(RAIL_BUFFET[by]||RAIL_BUFFET.gt).toUpperCase()+" · 3 КР</button>";
   h+="<button class='act rw-out'>ВЫЙТИ НА ПЕРРОН</button>";
   w.innerHTML=h;
   const D=railDestinations();
-  w.querySelectorAll(".rw-go").forEach(b=>b.onclick=()=>railBuy(D[+b.dataset.i]));
+  w.querySelectorAll(".rw-go").forEach(b=>b.onclick=()=>railBuy(D[+b.dataset.i],!!b.dataset.x));
   w.querySelector(".rw-buf").onclick=railBuffet;
   w.querySelector(".rw-out").onclick=railWinClose;
 }
-function railBuy(t){
+function railBuy(t,express){
   if(!t||RAIL_WAIT)return;
+  if(typeof railDeclare==="function"&&!railDeclare(t))return;   /* Орднунг: сначала декларация (M474) */
   const F=railFare(t);
+  if(express){F.fare*=RAIL_EXPRESS_MUL;F.sum=F.fare+F.bag;}
   if(G.credits<F.sum){say("Не хватает на билет\nнужно "+F.sum+" кр",90);return;}
   G.credits-=F.sum;
   logAdd("money",(F.metro?"Жетон":"Билет")+" до «"+railStopName(t.to)+"» · −"+F.sum+" кр"+(F.bag?" (багаж "+F.bag+")":""));
-  RAIL_WAIT={...t,t:railWaitNow(G.sx,G.sy)};
+  RAIL_WAIT={...t,express:!!express,t:railWaitNow(G.sx,G.sy)};
   railWinRender();
 }
 function railBuffet(){

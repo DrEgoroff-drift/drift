@@ -13,7 +13,7 @@ let RAIL_RIDE=null;
 function railRideStart(t){
   const l=t.l,n=l.stops.length,seq=[];
   for(let m=0;m<=t.k;m++){let i=t.i0+t.dir*m;if(l.loop)i=((i%n)+n)%n;seq.push(i);}
-  RAIL_RIDE={l,seq,seg:0,phase:"go",t:0,dur:railSegDur(l,seq,0),pause:0};
+  RAIL_RIDE={l,seq,seg:0,phase:"go",t:0,dur:railSegDur(l,seq,0),pause:0,express:!!t.express,t0:G.t};
   G.mode="rail";G.ap=null;
   if(typeof cueReset==="function")cueReset();   /* оклик кольца остался в системе — в вагоне его нет */
   sfx("jump");
@@ -43,8 +43,13 @@ function updateRail(dt){
   if(R.phase==="go"){
     if(typeof cueReset==="function")cueReset();   /* на перегоне выйти нельзя — пульт молчит */
     R.t+=sec;
-    if(R.t>=R.dur){R.seg++;R.phase="stop";R.pause=0;
+    if(R.t>=R.dur){R.seg++;R.phase="stop";R.pause=0;R.hold=2;
       const s=R.l.stops[R.seq[R.seg]],last=R.seg>=R.seq.length-1;
+      /* EXPRESS™ проходит мимо: остановки нет, только конечная (M474) */
+      if(R.express&&!last){R.phase="go";R.t=0;R.dur=railSegDur(R.l,R.seq,R.seg)*.92;return;}
+      /* Хай-Фронт: «обновление установлено» — линия стоит на первой остановке */
+      const hp=(typeof railHfPauseAt==="function"&&R.seg===1)?railHfPauseAt(R):0;
+      if(hp){R.hfDone=1;R.hold=2+hp;say("Обновление установлено\nперезагрузка линии · "+hp+" с",200);return;}
       if(last)say("Конечная. «"+railStopName(s)+"»\nпоезд дальше не идёт, просьба освободить вагоны",150);
       else say("Станция «"+railStopName(s)+"»\nследующая — «"+railStopName(R.l.stops[R.seq[R.seg+1]])+"»",110);
     }
@@ -56,7 +61,7 @@ function updateRail(dt){
     const shown=cue("СТАНЦИЯ «"+railStopName(R.l.stops[R.seq[R.seg]]).toUpperCase()+"»\nДЕЙСТВИЕ — ВЫЙТИ",CUE_ACT);
     if(shown&&actEdge){railExit();return;}
   }
-  if(R.pause>=2){
+  if(R.pause>=(R.hold||2)){
     if(last){railExit();return;}
     R.phase="go";R.t=0;R.dur=railSegDur(R.l,R.seq,R.seg);
   }
