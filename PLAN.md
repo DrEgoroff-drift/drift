@@ -122,10 +122,11 @@ Findings of 17–18.09 not recorded elsewhere:
   of double movement steps, per-second profile, a frame at each skip, counted from OUTSIDE the game;
   `layers.js` — the frame's calls and painted area by caller; `dpruthor_sheet2.png` — the sheet for
   the author from real frames (`author_sheet.png` is the withdrawn simulation, never show it).
-- **Scoop mode passes bank as lvl** (Control, 18.09): `19a-mode-scoop.js:547`
-  `drawHull(G.shipId,keys.thrust&&G.fuel>0,false,S.bank)` — the 4th argument is `lvl`, so the
-  hull never banks in the scoop and the flame grows with the bank. Fix: `…,false,0,S.bank`; look at
-  the frame first — the flame size there may be what the author is used to.
+- ~~**Scoop mode passed bank as lvl**~~ — fixed (Control, 18.09): the 4th argument of `drawHull` is
+  `lvl`, so the scoop's flame grew on the climb and shrank on the dive. First note here was wrong:
+  the scoop is a SIDE view and `S.bank` is pitch (already applied by `rotate`), so passing it as
+  roll would squash the silhouette. Now `lvl=G.mods.engine`, roll 0 — the same flame as in the
+  system. Look at the frame in the release pass.
 - **ОПИСЬ drag, the path not taken:** the lifted item falls off the finger at the browser's
   touch-scroll threshold (~16–24 px). `preventDefault` on pointermove made it worse (f04f78a,
   reverted e2804dc); a manual `scrollTop` loses to the browser's inertia. The way when it is taken up:

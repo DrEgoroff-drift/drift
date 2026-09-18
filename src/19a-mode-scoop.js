@@ -544,7 +544,11 @@ function drawScoop(){
     }
   }
   ctx.save();ctx.translate(sx,sy);ctx.rotate(S.bank*.5);ctx.scale(1.5,1.5);
-  drawHull(G.shipId,keys.thrust&&G.fuel>0,false,S.bank);
+  /* четвёртый аргумент — уровень двигателя, а не наклон: сюда долго шёл S.bank,
+     и пламя росло на подъёме и сжималось на снижении. Наклон уже дан поворотом
+     выше; крен корпусу не передаём — это вид сбоку, крен сплющил бы силуэт.
+     Уровень — как в системе: тот же корабль, тот же двигатель, то же пламя. */
+  drawHull(G.shipId,keys.thrust&&G.fuel>0,false,(G.mods&&G.mods.engine)||0,0);
   ctx.restore();
   /* сборник: два раструба забирают газ, пока корабль в коридоре */
   if(sy>=bt&&sy<=bb){
