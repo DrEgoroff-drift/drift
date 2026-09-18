@@ -133,16 +133,23 @@ job (the phone milestone), but no fix may add raster cost without a number.
   reflector, mast with a radar cross and the lamp in a cage; the lead lamp's glow 8+14 → 7+22 so
   the chase reads as runway lights. Queue ships against the station (≈¼ of it) read right; the
   order — ellipse, one landing, one leaving — left as built.
-- [ ] **D8 M452 the gesture ×6 and the post**: each power's gesture as its character (spotlight,
-  screen drone, scan line, empty buoy, tug, camera eye); the post boards' lettering.
-- [ ] **D9 M453 the stamp**: six papers across the screen and on the КНИЖКА page — ink grain,
-  tilt, the Компания slip; the eight-cell page as a document.
-- [ ] **D10 M454 the station by its builder**: the plate reads light grey for all (the station's
-  one light washes the ground out); the dressing is plate-only — the maker grammar must reach the
-  modules and the core, or it stays «a sticker».
-- [ ] **D11 M447/M448 the galaxy on the map**: the home frame (the acceptance frame), the bulge
-  cap, the arms at ×2.5, the map's own system-glyph field that drowns the galaxy at ×5, the star
-  specks' size and colours.
+- [x] **D8 M452 the gesture ×6 — checked on the S23 18.09 (gt, or, co forced at the entry).**
+  The character is there: the patrol with its cone, the scan line across the whole frame, the
+  Коммуна board on its truss. Two things were too faint on the phone: the Компания screen drone
+  was a 30×12 px colour crumb — ×1.35 now; the ГЛАВТРАССА spotlight cone .20 → .30. The post
+  boards' lettering reads at ×1. km/ra/hf not re-judged this run.
+- [~] **D9 M453 the stamp — the empty page checked on the S23 18.09.** The eight dashed cells on
+  the paper read as a document page. The inked stamps (grain, tilt, the Компания slip) were not
+  in this save — judge them with a save that has stamps.
+- [ ] **D10 M454 the station by its builder** — not reached 18.09: the six-maker capture on the
+  phone slipped off frame (camera lag after teleport); needs a held camera. Ask stands: the plate
+  reads light grey for all (the station's one light washes the ground out); the dressing is
+  plate-only — the maker grammar must reach the modules and the core, or it stays «a sticker».
+- [x] **D11 M447/M448 the galaxy on the map — done 18.09 on the S23.** The home frame reads; at
+  ×2.5 and ×5 the per-system glyph (halo, rays, station ring) stayed ×1-sized while the cell shrank
+  to 9 px and a thousand glyphs made grey soup — the glyph now scales with the cell (`gk` =
+  cell/45, floor .35) and fades to .4, station/belt rings off under 16 px: the arms and the bulge
+  read at both. Bulge cap and speck colours left as built (they read once the glyphs stepped back).
 
 **Stage 3 — far**
 - [ ] **D12 The ten far goods**: ten glyphs/colours in the ТРЮМ spread round the wheel (review

@@ -199,10 +199,15 @@ function drawMap(){
     const here=gx===G.sx&&gy===G.sy;
     /* глубина тьмой: дальний сектор тусклее, недостижимый — вполовину */
     const fade=clamp(1-v.d/(R*1.15),.18,1)*(v.near?1:.5);
-    const rr=1.8+s.cls.t*2.2;
+    /* значок системы уступает галактике на отъезде (D11, телефон 18.09): на ×5
+       клетка 9 px, а знак — ядро, лучи, кольцо станции — оставался размером
+       с ×1, и тысяча знаков топила спираль в серой каше. Знак ужимается с
+       клеткой (до .35) и бледнеет; кольца станции и пояса ниже 16 px не нужны */
+    const gk=clamp(cell/45,.35,1);
+    const rr=(1.8+s.cls.t*2.2)*gk;
     const col=hex2rgb(s.cls.col);
     /* ореол, лучи, ядро — в 17z-map-backdrop: тот же рисунок звезды и на сайте */
-    mapStarPaint(ctx,x,y,col,s.cls.t,fade,{rr});
+    mapStarPaint(ctx,x,y,col,s.cls.t,fade*(.4+.6*gk),{rr});
     ctx.globalAlpha=fade;
     /* ── занятая пиратами система ──
        Кольцо из штрихов вместо ровного круга: занятость должна читаться как
@@ -241,9 +246,9 @@ function drawMap(){
         ctx.fillStyle=og;ctx.beginPath();ctx.arc(x,y,orr,0,TAU);ctx.fill();
       }
     }
-    if(s.station){ctx.strokeStyle="rgba(242,178,92,.55)";ctx.lineWidth=1;
+    if(s.station&&cell>=16){ctx.strokeStyle="rgba(242,178,92,.55)";ctx.lineWidth=1;
       ctx.beginPath();ctx.arc(x,y,rr+6,0,TAU);ctx.stroke();}
-    if(s.belt){ctx.strokeStyle="rgba(180,190,200,.3)";ctx.lineWidth=1;
+    if(s.belt&&cell>=16){ctx.strokeStyle="rgba(180,190,200,.3)";ctx.lineWidth=1;
       ctx.beginPath();ctx.arc(x,y,rr+10,-.9,2.4);ctx.stroke();}
     /* кольцо освоения (M292): с ★5, по сегменту на пятилетку, столбик огней по постройкам */
     if(typeof drawRungRing==="function")drawRungRing(x,y,rr,gx,gy);

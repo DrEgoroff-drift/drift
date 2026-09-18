@@ -104,7 +104,7 @@ function drawGesture(zx,zy,Z){
       const a=Math.atan2(hy-y,hx-x),L=Math.hypot(hx-x,hy-y),hw=.16;
       ctx.save();ctx.globalCompositeOperation="lighter";
       const gr=ctx.createLinearGradient(x,y,hx,hy);
-      gr.addColorStop(0,"rgba(200,225,255,"+(.20*k).toFixed(3)+")");gr.addColorStop(1,"rgba(200,225,255,"+(.06*k).toFixed(3)+")");
+      gr.addColorStop(0,"rgba(200,225,255,"+(.30*k).toFixed(3)+")");gr.addColorStop(1,"rgba(200,225,255,"+(.09*k).toFixed(3)+")");   /* D8: на телефоне конус в .20 едва читался */
       ctx.fillStyle=gr;ctx.beginPath();ctx.moveTo(x,y);
       ctx.lineTo(x+Math.cos(a-hw)*L*1.08,y+Math.sin(a-hw)*L*1.08);
       ctx.lineTo(x+Math.cos(a+hw)*L*1.08,y+Math.sin(a+hw)*L*1.08);ctx.closePath();ctx.fill();
@@ -115,7 +115,9 @@ function drawGesture(zx,zy,Z){
   }else if(g.by==="co"){
     /* дрон с экраном перед носом: бегущая строка — единственное насыщенное в кадре */
     const inn=gestEase(t/1.2),out=gestEase((t-6.5)/1.5);
-    const p=at(70+80*(1-inn),60*out),x=zx(p.x),y=zy(p.y),k=clamp(Z,.6,1.5);
+    /* D8 (телефон 18.09): на ×1 экран дрона был 30×12 px — цветная крошка;
+       ×1.35 — читается экраном с бегущей строкой */
+    const p=at(70+80*(1-inn),60*out),x=zx(p.x),y=zy(p.y),k=clamp(Z,.6,1.5)*1.35;
     ctx.save();ctx.globalAlpha=1-out;ctx.translate(x,y);ctx.rotate(sh.a+Math.PI/2);ctx.scale(k,k);
     ctx.fillStyle="#20262e";ctx.fillRect(-15,-7,30,12);
     ctx.fillStyle="#0b1016";ctx.fillRect(-13,-5.5,26,9);

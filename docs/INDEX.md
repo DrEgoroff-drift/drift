@@ -143,7 +143,7 @@ arcHit                       src/13a-guns.js:368-385
 ARMED_CAP                    src/13-combat.js:12
 armedCount                   src/13-combat.js:236
 arrive                       src/16-flight.js:178-216
-arriveSystem                 src/18-mode-map.js:541-588
+arriveSystem                 src/18-mode-map.js:546-593
 ARTIFACTS                    src/12h-relic.js:48-63
 askText                      src/11u-names.js:59-77
 asMap                        src/14-save.js:209-215
@@ -1409,8 +1409,8 @@ drawFoeBody                  src/24ab-raid-foe.js:10-130
 drawForeground               src/21b-surface-deco.js:278-383
 drawGalaxy                   src/17z1-galaxy.js:97-137
 drawGalaxyStars              src/17z1-galaxy.js:156-195
-drawGestPost                 src/17h-sys-gesture.js:190-211
-drawGesture                  src/17h-sys-gesture.js:87-170
+drawGestPost                 src/17h-sys-gesture.js:192-213
+drawGesture                  src/17h-sys-gesture.js:87-172
 drawGiant                    src/17o-giants.js:54-94
 drawGiantsMap                src/17o-giants.js:38-52
 drawGlassHUD                 src/24-mode-belt.js:720-807
@@ -1434,7 +1434,7 @@ drawLanding                  src/19-mode-landing.js:285-413
 drawLoreMarks                src/12q-lore.js:235-266
 drawLuxeDeck                 src/03c-hull-luxe.js:109-275
 drawLuxeSkin                 src/03c-hull-luxe.js:27-108
-drawMap                      src/18-mode-map.js:120-499
+drawMap                      src/18-mode-map.js:120-504
 drawMisFigure                src/11z-misclosure.js:63-87
 drawModule                   src/21aa-base-rooms.js:384-500
 drawMonolith                 src/20aa-poi-shapes.js:193-210
@@ -1940,7 +1940,7 @@ geologyOf                    src/18b-geology.js:45-71
 geoWob                       src/18b-geology.js:80-82
 GEST                         src/17h-sys-gesture.js:23
 GEST_POST                    src/17h-sys-gesture.js:21
-GEST_POST_CV                 src/17h-sys-gesture.js:172
+GEST_POST_CV                 src/17h-sys-gesture.js:174
 GEST_SAID                    src/17h-sys-gesture.js:24
 GEST_T                       src/17h-sys-gesture.js:20
 gestAge                      src/17h-sys-gesture.js:44
@@ -1950,7 +1950,7 @@ gestLive                     src/17h-sys-gesture.js:41-43
 gestOnce                     src/17h-sys-gesture.js:46-50
 gestOwner                    src/17h-sys-gesture.js:25-30
 gestPostNo                   src/17h-sys-gesture.js:51
-gestPostSprite               src/17h-sys-gesture.js:173-189
+gestPostSprite               src/17h-sys-gesture.js:175-191
 gestShipFrame                src/17h-sys-gesture.js:81-85
 gestTick                     src/17h-sys-gesture.js:52-79
 getSystem                    src/06-galaxy.js:99-193
@@ -2614,7 +2614,7 @@ jobOffer                     src/12e-mgr-jobs.js:228-240
 jobPick                      src/12e-mgr-jobs.js:259-282
 jobRefuse                    src/12e-mgr-jobs.js:57-66
 jobTick                      src/12e-mgr-jobs.js:287-296
-jump                         src/18-mode-map.js:528-536
+jump                         src/18-mode-map.js:533-541
 jumpToBase                   src/21a-mode-base.js:384-401
 KB                           src/27jb-kb.js:23
 KB_RULE                      src/27jb-kb.js:14-22
@@ -2983,7 +2983,7 @@ mapGridPaint                 src/17z-map-backdrop.js:108-120
 mapHoldingsDraw              src/18b-map-hold.js:80-184
 mapHoldingsTop               src/18b-map-hold.js:186-226
 mapHousePatch                src/18b-map-hold.js:31-45
-mapJump                      src/18-mode-map.js:505-513
+mapJump                      src/18-mode-map.js:510-518
 mapLayer                     src/18b-map-hold.js:26
 mapLayerNext                 src/18b-map-hold.js:28
 mapLayerOn                   src/18b-map-hold.js:27
@@ -5326,7 +5326,7 @@ updateCombat                 src/13-pirates.js:116-301
 updateDig                    src/23-mode-dig.js:144-253
 updateHomeIn                 src/29c-home-in.js:160-200
 updateLanding                src/19-mode-landing.js:68-137
-updateMap                    src/18-mode-map.js:514-527
+updateMap                    src/18-mode-map.js:519-532
 updateRaid                   src/24a-mode-raid.js:215-345
 updateRail                   src/18g-rail-ride.js:42-71
 updateScoop                  src/19a-mode-scoop.js:75-176
@@ -6361,7 +6361,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/17g-sys-lane.js · 10 КБ
   · подъезд: полоса от входа в систему к доку (M459, DESIGN-life §2–3.1):1
 
-## src/17h-sys-gesture.js · 13 КБ
+## src/17h-sys-gesture.js · 14 КБ
   · чья земля — за пять секунд: жест первого корабля и пост (M452, DESIGN-review §2.1):1
 
 ## src/17i-stamp.js · 5 КБ
@@ -6396,7 +6396,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/17z1-galaxy.js · 12 КБ
   · мировая галактика: небо карты стоит в мире (M447–M448, docs/DESIGN-galaxy.md):1
 
-## src/18-mode-map.js · 42 КБ
+## src/18-mode-map.js · 43 КБ
   · карта:1
   · где у карты пол и где правый борт:3
   · карта: ночное небо, а не схема молекулы:65

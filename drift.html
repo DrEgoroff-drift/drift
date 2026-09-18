@@ -49844,7 +49844,7 @@ function drawGesture(zx,zy,Z){
       const a=Math.atan2(hy-y,hx-x),L=Math.hypot(hx-x,hy-y),hw=.16;
       ctx.save();ctx.globalCompositeOperation="lighter";
       const gr=ctx.createLinearGradient(x,y,hx,hy);
-      gr.addColorStop(0,"rgba(200,225,255,"+(.20*k).toFixed(3)+")");gr.addColorStop(1,"rgba(200,225,255,"+(.06*k).toFixed(3)+")");
+      gr.addColorStop(0,"rgba(200,225,255,"+(.30*k).toFixed(3)+")");gr.addColorStop(1,"rgba(200,225,255,"+(.09*k).toFixed(3)+")");   /* D8: на телефоне конус в .20 едва читался */
       ctx.fillStyle=gr;ctx.beginPath();ctx.moveTo(x,y);
       ctx.lineTo(x+Math.cos(a-hw)*L*1.08,y+Math.sin(a-hw)*L*1.08);
       ctx.lineTo(x+Math.cos(a+hw)*L*1.08,y+Math.sin(a+hw)*L*1.08);ctx.closePath();ctx.fill();
@@ -49855,7 +49855,9 @@ function drawGesture(zx,zy,Z){
   }else if(g.by==="co"){
     /* дрон с экраном перед носом: бегущая строка — единственное насыщенное в кадре */
     const inn=gestEase(t/1.2),out=gestEase((t-6.5)/1.5);
-    const p=at(70+80*(1-inn),60*out),x=zx(p.x),y=zy(p.y),k=clamp(Z,.6,1.5);
+    /* D8 (телефон 18.09): на ×1 экран дрона был 30×12 px — цветная крошка;
+       ×1.35 — читается экраном с бегущей строкой */
+    const p=at(70+80*(1-inn),60*out),x=zx(p.x),y=zy(p.y),k=clamp(Z,.6,1.5)*1.35;
     ctx.save();ctx.globalAlpha=1-out;ctx.translate(x,y);ctx.rotate(sh.a+Math.PI/2);ctx.scale(k,k);
     ctx.fillStyle="#20262e";ctx.fillRect(-15,-7,30,12);
     ctx.fillStyle="#0b1016";ctx.fillRect(-13,-5.5,26,9);
@@ -51142,10 +51144,15 @@ function drawMap(){
     const here=gx===G.sx&&gy===G.sy;
     /* глубина тьмой: дальний сектор тусклее, недостижимый — вполовину */
     const fade=clamp(1-v.d/(R*1.15),.18,1)*(v.near?1:.5);
-    const rr=1.8+s.cls.t*2.2;
+    /* значок системы уступает галактике на отъезде (D11, телефон 18.09): на ×5
+       клетка 9 px, а знак — ядро, лучи, кольцо станции — оставался размером
+       с ×1, и тысяча знаков топила спираль в серой каше. Знак ужимается с
+       клеткой (до .35) и бледнеет; кольца станции и пояса ниже 16 px не нужны */
+    const gk=clamp(cell/45,.35,1);
+    const rr=(1.8+s.cls.t*2.2)*gk;
     const col=hex2rgb(s.cls.col);
     /* ореол, лучи, ядро — в 17z-map-backdrop: тот же рисунок звезды и на сайте */
-    mapStarPaint(ctx,x,y,col,s.cls.t,fade,{rr});
+    mapStarPaint(ctx,x,y,col,s.cls.t,fade*(.4+.6*gk),{rr});
     ctx.globalAlpha=fade;
     /* ── занятая пиратами система ──
        Кольцо из штрихов вместо ровного круга: занятость должна читаться как
@@ -51184,9 +51191,9 @@ function drawMap(){
         ctx.fillStyle=og;ctx.beginPath();ctx.arc(x,y,orr,0,TAU);ctx.fill();
       }
     }
-    if(s.station){ctx.strokeStyle="rgba(242,178,92,.55)";ctx.lineWidth=1;
+    if(s.station&&cell>=16){ctx.strokeStyle="rgba(242,178,92,.55)";ctx.lineWidth=1;
       ctx.beginPath();ctx.arc(x,y,rr+6,0,TAU);ctx.stroke();}
-    if(s.belt){ctx.strokeStyle="rgba(180,190,200,.3)";ctx.lineWidth=1;
+    if(s.belt&&cell>=16){ctx.strokeStyle="rgba(180,190,200,.3)";ctx.lineWidth=1;
       ctx.beginPath();ctx.arc(x,y,rr+10,-.9,2.4);ctx.stroke();}
     /* кольцо освоения (M292): с ★5, по сегменту на пятилетку, столбик огней по постройкам */
     if(typeof drawRungRing==="function")drawRungRing(x,y,rr,gx,gy);
