@@ -132,6 +132,7 @@ job (the phone milestone), but no fix may add raster cost without a number.
   path, vestibule block and the vestibule page (M471–M472); the ride on the map (M473: the flight
   pads still show in the carriage; the train mark and the headlight) — as each is
   built.
+- [ ] **D19 Подписка** (M487): the second button and the honest line are plain text; a «ЗАБЛОКИРОВАНО» seal on the instrument face, the tariff-updated letter.
 - [ ] **D18 Scars** (M482): drawn where they are on the silhouette — a soot patch over a burnt cell, a skewed mount, a drip trail from the tank; the КОРПУС ПОМНИТ rows.
 - [ ] **D17 Космопочта** (M492): a text row today — the post window (the grille, the clock over it, the talon printed), the hours plate on the door, the «распишитесь» moment.
 - [ ] **D16 СТАПЕЛЬ** (M481): the order panel is plain chips and bare sliders — a slipway drawing (the hull on a cradle, the power's ground colour, the maker's mark), sliders as a draughtsman's scales, the stats as a delta strip; the «ГОТОВ» moment at collection.
@@ -537,7 +538,7 @@ patchnote of each version names the M-numbers it closes.
 - [ ] **[design owed] M463 The bazaar that remembers** — in heartland belt systems a knot of moored hulks (fleet
   art), awnings, lights on strings; odd lots; scarred hulls cheap; **`G.thrown`** (12 entries) —
   what you discarded in ОПИСЬ returns to a stall at ×3, «ношеная, один хозяин».
-- [ ] **[design owed] M487 Подписка** — firm parts and base modules: 10 % up front + 4 %/сводка (owning wins after
+- [ ] **[design owed] M487 Подписка — instruments BUILT 18.09 (Control), `src/05b3-sub.js`.** At Компания and Хай-Фронт stations a firm instrument («Сирин», «Веха») has a second button on the counter: ПОДПИСКА 10 % now + 4 % per смена (`HOLD_SHIFT` stands for the сводка), «владеть выгоднее после 23 смен — мы честно пишем». Charged at the смена boundary (kit and shelf alike); a missed fee first sends a ПОЧТА warning, the next boundary blocks the instrument (resolution ×.5 in `instrQuality`) until paid; ЭКСТРЕННОЕ ПРОДЛЕНИЕ ×3 unblocks at once; every fifth fee «тариф обновлён», one named feature becomes an add-on (flavour). **Open:** base modules by subscription and the cold store that stops giving; ×3 offered in a fight; M488. Original: firm parts and base modules: 10 % up front + 4 %/сводка (owning wins after
   ~23 сводок; the card says so); a lapse only at a сводка boundary, announced a shift before in
   ПОЧТА; in a fight **ЭКСТРЕННОЕ ПРОДЛЕНИЕ · ×3** for one сводка; at renewal the tariff «обновлён» —
   same price, one feature fewer, sold as an add-on; a lapsed base cold store stops giving, never

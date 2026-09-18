@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 573 · символов верхнего уровня: 5532
+Файлов: 574 · символов верхнего уровня: 5543
 
 ## СИМВОЛЫ
 
@@ -1449,12 +1449,12 @@ drawSurface                  src/21e-surface-draw.js:277-291
 drawSurfaceHud               src/21e-surface-draw.js:21-115
 drawSurfaceWorld             src/21e1-surface-world.js:10-615
 drawSurvey                   src/12w-survey.js:63-89
-drawSysHud                   src/17-mode-system.js:742-989
+drawSysHud                   src/17-mode-system.js:743-990
 drawSysLane                  src/17g-sys-lane.js:75-103
 drawSysLaneShips             src/17g-sys-lane.js:112-138
 drawSysNebula                src/16a-space.js:208-236
 drawSysRail                  src/18f-rail-station.js:32-65
-drawSystem                   src/17-mode-system.js:456-741
+drawSystem                   src/17-mode-system.js:457-742
 drawSysTraffic               src/17f-sys-traffic.js:36-40
 drawTapes                    src/12s1-tape.js:36-48
 drawTemple                   src/20aa-poi-shapes.js:50-89
@@ -1822,7 +1822,7 @@ fuelPriceHere                src/12k-rep.js:63-70
 FUR_TONES                    src/20f-fauna.js:20-24
 furColor                     src/20f-fauna.js:25-34
 fuseAffordable               src/03-ships.js:38-41
-fuseCard                     src/26b-ui-station-work.js:321-357
+fuseCard                     src/26b-ui-station-work.js:336-372
 fuseCost                     src/03-ships.js:33-37
 fuseGen                      src/03-ships.js:32
 fusePreview                  src/03-ships.js:46-63
@@ -2487,37 +2487,37 @@ INSTR                        src/25a-instr.js:19-53
 INSTR_BY_ID                  src/25a-instr.js:55
 INSTR_KEYS                   src/25a-instr.js:54
 INSTR_SHELF_MAX              src/05b-instr-kit.js:32
-INSTR_WEAR_RATE              src/05b-instr-kit.js:84
+INSTR_WEAR_RATE              src/05b-instr-kit.js:85
 INSTR_WORKS                  src/05b-instr-kit.js:18-31
-instrAgeTick                 src/05b-instr-kit.js:85-95
+instrAgeTick                 src/05b-instr-kit.js:86-96
 instrBroken                  src/05b1-warranty.js:16
-instrBuy                     src/05b-instr-kit.js:157-167
+instrBuy                     src/05b-instr-kit.js:158-168
 instReport                   src/11ab-institute.js:51-70
 instRest                     src/11ab-institute.js:103-115
 instRestHere                 src/11ab-institute.js:96-99
-instrFix                     src/05b-instr-kit.js:168-176
-instrFixCost                 src/05b-instr-kit.js:118-121
-instrFromShelf               src/05b-instr-kit.js:177-183
-instrInstall                 src/05b-instr-kit.js:147-156
-instrJitter                  src/05b-instr-kit.js:73-76
+instrFix                     src/05b-instr-kit.js:169-177
+instrFixCost                 src/05b-instr-kit.js:119-122
+instrFromShelf               src/05b-instr-kit.js:178-184
+instrInstall                 src/05b-instr-kit.js:148-157
+instrJitter                  src/05b-instr-kit.js:74-77
 instrKit                     src/05b-instr-kit.js:39-42
 instrKitInit                 src/05b-instr-kit.js:34-38
-instrKnock                   src/05b-instr-kit.js:101-110
+instrKnock                   src/05b-instr-kit.js:102-111
 instrMisclose                src/25a-instr.js:92-94
-instrOffers                  src/05b-instr-kit.js:126-142
+instrOffers                  src/05b-instr-kit.js:127-143
 instrPanel                   src/25a-instr.js:100-190
-instrPenWidth                src/05b-instr-kit.js:77-79
+instrPenWidth                src/05b-instr-kit.js:78-80
 instrPodDraw                 src/25c-instr-hud.js:19-81
 instrPodTick                 src/25c-instr-hud.js:84-89
-instrPrice                   src/05b-instr-kit.js:114-117
-instrQuality                 src/05b-instr-kit.js:65-70
+instrPrice                   src/05b-instr-kit.js:115-118
+instrQuality                 src/05b-instr-kit.js:65-71
 instrRead                    src/25a-instr.js:59-82
 instrShelf                   src/05b-instr-kit.js:43-46
 instrTape                    src/05b1-warranty.js:42-49
 instrTrack                   src/25a-instr.js:86-88
 instrTraits                  src/05b-instr-kit.js:56-61
 instrUnit                    src/05b-instr-kit.js:47-51
-instrWearRu                  src/05b-instr-kit.js:96-98
+instrWearRu                  src/05b-instr-kit.js:97-99
 instrWorks                   src/05b-instr-kit.js:52
 instState                    src/11ab-institute.js:26
 instTake                     src/11ab-institute.js:34-41
@@ -3422,7 +3422,7 @@ optGroups                    src/27-ui-ship.js:338-355
 OPTS_BOOT                    tests/90-harness.js:203
 optsNumify                   src/14a2-save-ephemeral.js:23-28
 optTab                       src/27-ui-ship.js:337
-orbPathOf                    src/17-mode-system.js:445-455
+orbPathOf                    src/17-mode-system.js:446-456
 ORDER_WIN                    src/12aa-need.js:76
 orderDeliver                 src/12aa-need.js:116-127
 orderHere                    src/12aa-need.js:112-115
@@ -4902,16 +4902,27 @@ stripSell                    src/11b-speech.js:231-242
 stripValue                   src/11b-speech.js:193-195
 stSet                        src/14-save.js:14-25
 stTabBoard                   src/26e-ui-station-trade.js:11-147
-stTabFuse                    src/26b-ui-station-work.js:358
-stTabInstr                   src/26b-ui-station-work.js:225-357
-stTabLab                     src/26b-ui-station-work.js:292-357
+stTabFuse                    src/26b-ui-station-work.js:373
+stTabInstr                   src/26b-ui-station-work.js:225-372
+stTabLab                     src/26b-ui-station-work.js:307-372
 stTabMarket                  src/26e-ui-station-trade.js:148-244
-stTabMods                    src/26b-ui-station-work.js:105-357
+stTabMods                    src/26b-ui-station-work.js:105-372
 stTabsHere                   src/26-ui-station.js:141
 stTabYard                    src/26e-ui-station-trade.js:245-390
 stTypeOf                     src/06-galaxy.js:73
 STUN_TIME                    src/13a-guns.js:27
+SUB_FEATS                    src/05b3-sub.js:11
+SUB_UP                       src/05b3-sub.js:10
+subAllowed                   src/05b3-sub.js:16-18
+subBreakEven                 src/05b3-sub.js:20
+subBuy                       src/05b3-sub.js:21-32
+subCharge                    src/05b3-sub.js:35-47
 subdivide                    src/24-mode-belt.js:34-49
+subFee                       src/05b3-sub.js:19
+subHereBy                    src/05b3-sub.js:12-15
+subOff                       src/05b3-sub.js:33
+subRush                      src/05b3-sub.js:62-68
+subTick                      src/05b3-sub.js:48-60
 suite                        tests/90-harness.js:103-164
 SUITE_KEYS                   tests/90-harness.js:90
 SUITE_OPTS                   tests/90-harness.js:92
@@ -5204,7 +5215,7 @@ updateRail                   src/18g-rail-ride.js:40-68
 updateScoop                  src/19a-mode-scoop.js:75-176
 updateSpa                    src/29i-spa-draw.js:514-519
 updateSurface                src/21-mode-surface.js:200-657
-updateSystem                 src/17-mode-system.js:53-441
+updateSystem                 src/17-mode-system.js:53-442
 updateWanderRoom             src/24c-mode-wanderer.js:58-88
 updateWinter                 src/29g-winter-draw.js:808-817
 useBeacon                    src/23-mode-dig.js:88-113
@@ -5612,6 +5623,9 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## src/05b2-scars.js · 3 КБ
   · корпус помнит — шрамы (M482, DESIGN-shipyard §6):1
+
+## src/05b3-sub.js · 4 КБ
+  · подписка — лучший товар фирмы (M487, DESIGN-birchpunk):1
 
 ## src/05c-arms.js · 20 КБ
   · орудие в семи числах, щит в трёх повадках (M362, §2 §4):1
@@ -6568,7 +6582,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/26a-ui-station-home.js · 21 КБ
   · станция: вкладка «дом и базы»:1
 
-## src/26b-ui-station-work.js · 26 КБ
+## src/26b-ui-station-work.js · 28 КБ
   · станция: мастерская и наука:1
 
 ## src/26c-ui-station-site.js · 9 КБ
@@ -7238,7 +7252,7 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## tests/91zzzzk5-plan.js · 9 КБ
 
-## tests/91zzzzk6-stapel.js · 8 КБ
+## tests/91zzzzk6-stapel.js · 10 КБ
 
 ## tests/91zzzzl-maphold.js · 5 КБ
   · автотесты: владения на карте (M348):1

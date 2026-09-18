@@ -275,7 +275,8 @@ function updateSystem(dt){
   if(typeof peaceTick==="function")peaceTick(sh,dt);   /* ремонтный буксир Рассвета (M455) */
   if(typeof supportTick==="function"&&(G.t|0)%60===0)supportTick();
   if(typeof stapelTick==="function"&&(G.t|0)%60===0)stapelTick();
-  if(typeof scarTick==="function"&&(G.t|0)%3600===0)scarTick();   /* течёт бак: −1 % в минуту (M482) */   /* стапель: заказ готов — строка в почте (M481) */   /* техподдержка решает заявки (M495) */   /* ловушки антивещества: питание или процент в минуту (M468) */
+  if(typeof scarTick==="function"&&(G.t|0)%3600===0)scarTick();
+  if(typeof subTick==="function"&&(G.t|0)%60===0)subTick();   /* подписка: взнос на границе смены (M487) */   /* течёт бак: −1 % в минуту (M482) */   /* стапель: заказ готов — строка в почте (M481) */   /* техподдержка решает заявки (M495) */   /* ловушки антивещества: питание или процент в минуту (M468) */
   if(typeof hailTick==="function"&&hailTick(sh,dt,actEdge))return;
 
   if(sys.station){

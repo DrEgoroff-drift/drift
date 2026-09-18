@@ -66,7 +66,8 @@ function instrQuality(id){
   const u=instrUnit(id), T=instrTraits(u);
   const wear=clamp(u.wear||0,0,1);
   const role=(typeof hullRole==="function")?hullRole().instr:1;
-  return T.res*(1-wear*.45)*role;
+  const lock=(u.sub&&u.sub.off)?.5:1;   /* подписка не оплачена — прибор заблокирован (M487) */
+  return T.res*(1-wear*.45)*role*lock;
 }
 /* дрожь стрелки: у нервной «Сирины» она видна всегда, у «Горна» почти нет.
    Это оформление показания, а не показание: на само число не влияет */

@@ -256,6 +256,10 @@ function stTabInstr(){
         b.onclick=()=>{if(instrFix(id))renderTab();};
         r.appendChild(b);
       }else r.appendChild(el("div","nm","<s>выверен</s>"));
+      if(typeof subOff==="function"&&subOff(instrUnit(id))){   /* заблокирован подпиской (M487) */
+        const fee=subFee(instrUnit(id))*3,xb=el("button","act gold","ЭКСТРЕННОЕ ПРОДЛЕНИЕ · ×3 · "+fee+" КР");
+        xb.disabled=G.credits<fee;xb.onclick=()=>{if(subRush(id))renderTab();};r.appendChild(xb);
+      }
       $body.appendChild(r);
     }
     const offers=instrOffers();
@@ -273,7 +277,18 @@ function stTabInstr(){
       const b=el("button","act gold",price.toLocaleString("ru")+" кр");
       b.disabled=G.credits<price;
       b.onclick=()=>{if(instrBuy(off))renderTab();};
-      r.appendChild(b);$body.appendChild(r);
+      r.appendChild(b);
+      /* подписка (M487): у Компании и Хай-Фронта фирменное — ещё и так */
+      if(typeof subAllowed==="function"&&subAllowed(off)){
+        const up=Math.round(price*SUB_UP),fee=Math.max(1,Math.round(price*SUB_RATE));
+        const sb=el("button","act","ПОДПИСКА · "+up.toLocaleString("ru")+" КР + "+fee+"/СМЕНУ");
+        sb.title="владеть выгоднее после "+subBreakEven()+" смен";
+        sb.disabled=G.credits<up;
+        sb.onclick=()=>{if(subBuy(off))renderTab();};
+        r.appendChild(sb);
+        r.appendChild(el("div","nm","<s>подписка: владеть выгоднее после "+subBreakEven()+" смен — мы честно пишем</s>"));
+      }
+      $body.appendChild(r);
     }
     const shelf=instrShelf();
     if(shelf.length){

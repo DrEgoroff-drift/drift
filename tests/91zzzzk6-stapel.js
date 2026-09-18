@@ -112,3 +112,26 @@ TEST_SUITES.push(()=>suite("корпус помнит: шрамы бьют по 
   const snap=snapshot();eq(JSON.stringify(snap.uniqueShips[id].scars),JSON.stringify(["bent","leak"]),"шрамы лежат в сейве");
   G.shipId="strizh";delete G.uniqueShips[id];delete G.owned[id];
 }));
+TEST_SUITES.push(()=>suite("подписка: 10 % сразу, 4 % за смену, извещение, блокировка, экстренное",()=>{
+  resetWorld();
+  let at=null;
+  for(let sx=-14;sx<=14&&!at;sx++)for(let sy=-14;sy<=14&&!at;sy++)if(getSystem(sx,sy).station&&stampOwnerAt(sx,sy)==="co")at=[sx,sy];
+  G.sx=at[0];G.sy=at[1];G.sys=getSystem(G.sx,G.sy);G.st=G.sys.station;
+  const id=INSTR_KEYS[0],off={id,u:{w:"sirin",s:77,wear:0}};
+  ok(subAllowed(off),"у Компании «Сирин» можно подписать");
+  ok(!subAllowed({id,u:{w:"gorn",s:1,wear:0}}),"«Горн» — нет, не фирменный");
+  eq(subBreakEven(),23,"владеть выгоднее после 23 смен");
+  const price=instrPrice(off.u);G.credits=1e6;
+  ok(subBuy(off),"подписали");eq(1e6-G.credits,Math.round(price*.1),"10 % сразу");
+  const u=instrKit()[id],q0=instrQuality(id);
+  const t0=now();clockSet(u.sub.next+1);G.credits=1e6;subTick();
+  eq(1e6-G.credits,subFee(u),"4 % на границе смены");
+  G.credits=0;clockSet(u.sub.next+1);subTick();
+  ok(u.sub.warn===1&&!u.sub.off,"не хватило — сперва извещение");
+  clockSet(u.sub.next+1);subTick();
+  ok(u.sub.off===1&&instrQuality(id)<q0*.6,"следующая смена — заблокирован, различает хуже");
+  G.credits=1e6;ok(subRush(id)&&!u.sub.off,"экстренное продление ×3 разблокирует");
+  for(let i=0;i<5;i++){clockSet(u.sub.next+1);subTick();}
+  ok(u.sub.feat>=1,"каждый пятый взнос — «тариф обновлён»");
+  clockSet(t0);G.instrKit=null;
+}));
