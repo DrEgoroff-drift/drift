@@ -122,8 +122,10 @@ job (the phone milestone), but no fix may add raster cost without a number.
   ring amber over the consequence colour — a dangerous «ПРОХОДОМ» breathed like a recommendation.
   Now the ready pad breathes red (`breatheRisk`) or phosphor (`breatheSafe`) by `data-hail-act`.
   Picket brackets (helmDrawMarks, M360) not re-judged here — no picket in the forced frame.
-- [ ] **D6 Under the finger**: ship scale growing with zoom (.8 → 1.4) against the station and the
-  fleet; the stick's dead-zone ring (22 px); the edge-wall feedback; the orbit body kept in frame.
+- [~] **D6 Under the finger — checked on the S23 18.09, two parts not reached.** shipZ measured
+  .8 / 1.04 / 1.4 at ×1 / ×2.4 / ×4.5 as P8 set it; the dead-zone СТОП ring (20 px, amber word
+  above) reads under the thumb; the finger band is lighter since D2. NOT judged: the edge wall
+  and the orbit body kept in frame — they need a run to the system's edge; next phone session.
 
 **Stage 2 — whose land**
 - [ ] **D7 M459 the approach**: buoys read as bins/debris — a real buoy; the chase must read as
