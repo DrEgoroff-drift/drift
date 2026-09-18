@@ -11548,17 +11548,19 @@ function radioBuild(){
   RADIO.layers={};
   for(const k of RADIO_LAYERS){
     const g=c.createGain();g.gain.value=0;g.connect(RADIO.lp);
-    if(k!=="kick"&&k!=="hat"&&k!=="bass")g.connect(wet);
+    if(k==="pad"){const pw=c.createGain();pw.gain.value=.45;g.connect(pw);pw.connect(wet);}   // пэд в зал вполовину, иначе каша
+    else if(k!=="kick"&&k!=="hat"&&k!=="bass")g.connect(wet);
     if(k==="lead"||k==="arp"||k==="bell")g.connect(d);
     RADIO.layers[k]=g;
   }
   /* хорус подложки: одна модулированная задержка рядом с сухим */
   RADIO.padIn=c.createGain();
-  const sf=c.createBiquadFilter();sf.type="lowpass";sf.frequency.value=2200;
+  const sf=c.createBiquadFilter();sf.type="lowpass";sf.frequency.value=1500;
+  const shp=c.createBiquadFilter();shp.type="highpass";shp.frequency.value=90;shp.connect(sf);
   const cd=c.createDelay(.05);cd.delayTime.value=.012;
   const lfo=c.createOscillator(),lg=c.createGain();lfo.frequency.value=.6;lg.gain.value=.004;
   lfo.connect(lg);lg.connect(cd.delayTime);lfo.start();
-  RADIO.padIn.connect(sf);sf.connect(RADIO.layers.pad);sf.connect(cd);cd.connect(RADIO.layers.pad);
+  RADIO.padIn.connect(shp);sf.connect(RADIO.layers.pad);sf.connect(cd);cd.connect(RADIO.layers.pad);
   const n=c.sampleRate,nb=c.createBuffer(1,n,n),nd=nb.getChannelData(0);
   const r=rng(4242);for(let i=0;i<n;i++)nd[i]=r()*2-1;
   RADIO.noise=nb;
@@ -11659,7 +11661,7 @@ function radioMix(t,instant){
   if(radioA("build")&&sec==="intro"){const bi=Math.floor(RADIO.step/(radioBar()*2));arpIn=bi>=1?1:0;padIn=bi>=2?1:0;}
   const Q=.6;   // всё, кроме маяка и колокола, — тише: они должны выступать из тумана
   const L={pad:(radioA("pad")==="none"||solo?0:(radioA("epic")?1.1:.9))*m.pad*padIn*Q,bass:.9*m.bass*Q,lead:off?0:m.lead*(solo?1.2:1)*Q,
-    harm:(sec==="A2"||sec==="B"?.6*m.lead:0)*Q,arp:(radioA("arp")==="none"||solo?0:.8)*m.arp*arpIn*(sec==="brk"?.5:1)*Q,
+    harm:(sec==="A2"||sec==="B"?.35*m.lead:0)*Q,arp:(radioA("arp")==="none"||solo?0:.55)*m.arp*arpIn*(sec==="brk"?.5:1)*Q,
     kick:dr*(off&&sec!=="brk"?0:1)*Q,snare:dr*(off?0:.8)*Q,hat:dr*(sec==="brk"?0:.5)*Q,
     bell:Math.max(1.6,radioA("bell")*2),fx:radioA("waves")?.5*Q:0};
   const glide=(p,v,tc)=>{p.cancelScheduledValues(t);p.setValueAtTime(p.value,t);p.linearRampToValueAtTime(v,t+(instant?.05:tc));};
@@ -11813,10 +11815,10 @@ function radioPad(t,key,cd,dur,kind){
   const c=SND.ctx;
   /* созвучие на каждом такте своё: трезвучие, септаккорд, sus2, add9, квинта с ноной —
      все из ступеней лада, поэтому в миноре они минорные, во фригийском — фригийские */
-  const VO=[[0,2,4,7],[0,2,4,6],[0,1,4,7],[0,2,4,8],[0,4,7,8],[0,2,6,7]];
+  const VO=[[0,2,4],[0,2,6],[0,1,4],[0,4,8],[0,4,7],[0,2,7]];   // три голоса: четвёртый забивал середину
   VO[Math.floor(RADIO.r()*VO.length)].forEach((iv,i)=>{
     t+=i?.04+RADIO.r()*.05:0;                    // голоса вступают вразнобой, а не залпом
-    const f=midiHz(key+12+radioDeg(cd+iv)+(kind==="choirhi"?12:0)),g=c.createGain(),p=c.createStereoPanner();
+    const f=midiHz(key+(kind==="choirhi"?12:0)+radioDeg(cd+iv)),g=c.createGain(),p=c.createStereoPanner();   // октавой ниже солиста: середина — ему
     p.pan.value=-.4+i*.27;
     const org=kind==="organ";
     const end=radioEnv(g.gain,t,org?.3:1.4,org?.012:.018,dur-.1,org?1:2.6);   // растушёвка: наплыв полторы секунды, хвост две с половиной
@@ -11901,7 +11903,10 @@ function radioBass(t,s,key,cd,w,nextCd){
   else if(w.name==="B"||w.name==="brk"||w.name==="solo")name=radioBassPick(radioA("bassB"));
   else name=radioBassPick(radioA("bassA"));
   let pat=RADIO_BASS[name];
-  /* дрон тянется весь такт; на новом аккорде он не берётся заново, а сползает (см. голос) */
+  /* бас звучит втрое реже: одно «пумм» на три такта, и тянется все три — на новом
+     аккорде он не берётся заново, а сползает (см. голос) */
+  const bar=Math.floor(RADIO.step/radioBar()),rare=name!=="seq";
+  if(rare){if(bar%3!==0)return;pat=[[0,"r",radioBar()]];}      // одна нота, на три такта
   const n=pat.find(x=>x[0]===s);
   if(!n)return;
   const root=radioDeg(cd);
@@ -11911,7 +11916,7 @@ function radioBass(t,s,key,cd,w,nextCd){
     what==="7"?radioDeg(cd+6)-12:
     /* a/w: подход к корню следующего аккорда соседней ступенью ЛАДА — хроматика фальшивила */
     (nr>root?radioDeg(nextCd-1)-(radioDeg(nextCd)-nr):radioDeg(nextCd+1)-(radioDeg(nextCd)-nr));
-  const dur=Math.max(.08,n[2]*radioS16()*.9);
+  const dur=Math.max(.08,n[2]*radioS16()*.9)*(rare?3:1);
   const lowD=RADIO.mood==="danger"&&what==="r"?-12:0;
   radioBassVoice(t,key+semi+lowD,dur,s===0?1:.8,name,s);
 }
@@ -11929,7 +11934,10 @@ function radioBassVoice(t,midi,dur,acc,pat,s){
     const from=RADIO.bassPrev||hz;
     for(const q of [o,sb]){q.frequency.setValueAtTime(from,t);q.frequency.exponentialRampToValueAtTime(hz,t+.8);}
     RADIO.bassPrev=hz;
-    const end=radioEnv(g.gain,t,1.1,.11*acc,Math.max(.1,dur-.2),1.4);
+    /* «пумм»: мягкий толчок в четверть секунды, потом тон оседает и висит до конца */
+    g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.14*acc,t+.25);
+    g.gain.exponentialRampToValueAtTime(.07*acc,t+1.6);g.gain.setValueAtTime(.07*acc,t+Math.max(1.7,dur-.3));
+    g.gain.exponentialRampToValueAtTime(.0001,t+dur+2);const end=t+dur+2;
     o.connect(f);f.connect(g);g.connect(RADIO.layers.bass);o.start(t);sb.start(t);o.stop(end+.05);sb.stop(end+.05);
     return;
   }
