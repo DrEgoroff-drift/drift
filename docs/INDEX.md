@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 587 · символов верхнего уровня: 5668
+Файлов: 588 · символов верхнего уровня: 5674
 
 ## СИМВОЛЫ
 
@@ -143,7 +143,7 @@ arcHit                       src/13a-guns.js:368-385
 ARMED_CAP                    src/13-combat.js:12
 armedCount                   src/13-combat.js:236
 arrive                       src/16-flight.js:178-216
-arriveSystem                 src/18-mode-map.js:546-593
+arriveSystem                 src/18-mode-map.js:547-594
 ARTIFACTS                    src/12h-relic.js:48-63
 askText                      src/11u-names.js:59-77
 asMap                        src/14-save.js:209-215
@@ -1409,6 +1409,7 @@ drawFleetShip                src/12ai1-fleet-art.js:375-400
 drawFoeBody                  src/24ab-raid-foe.js:10-130
 drawForeground               src/21b-surface-deco.js:278-383
 drawGalaxy                   src/17z1-galaxy.js:97-137
+drawGalaxyNames              src/17z2-galaxy-names.js:38-63
 drawGalaxyStars              src/17z1-galaxy.js:156-195
 drawGestPost                 src/17h-sys-gesture.js:192-213
 drawGesture                  src/17h-sys-gesture.js:87-172
@@ -1435,7 +1436,7 @@ drawLanding                  src/19-mode-landing.js:285-413
 drawLoreMarks                src/12q-lore.js:235-266
 drawLuxeDeck                 src/03c-hull-luxe.js:109-275
 drawLuxeSkin                 src/03c-hull-luxe.js:27-108
-drawMap                      src/18-mode-map.js:120-504
+drawMap                      src/18-mode-map.js:120-505
 drawMisFigure                src/11z-misclosure.js:63-87
 drawModule                   src/21aa-base-rooms.js:384-500
 drawMonolith                 src/20aa-poi-shapes.js:193-210
@@ -1897,12 +1898,14 @@ fxWorld                      tests/91zzzw-fx.js:6-16
 G                            src/08-state.js:174-260
 G_BOOT_KEYS                  tests/90-harness.js:186
 g11Fps                       src/28z-fps-probe.js:7-14
+GAL_ARMS                     src/17z2-galaxy-names.js:8-11
 GAL_BAR_A                    src/17z1-galaxy.js:21
 GAL_BUDGET_MS                src/17z1-galaxy.js:66
 GAL_BULGE_CAP                src/17z1-galaxy.js:23
 GAL_CELL                     src/17z1-galaxy.js:141
 GAL_GLOW_CAP                 src/17z1-galaxy.js:24
 GAL_LV                       src/17z1-galaxy.js:64
+GAL_NEBULAE                  src/17z2-galaxy-names.js:16-27
 GAL_PITCH                    src/17z1-galaxy.js:22
 GAL_RD                       src/17z1-galaxy.js:20
 GAL_STAR_BUF                 src/17z1-galaxy.js:155
@@ -1913,9 +1916,12 @@ GAL_TILE                     src/17z1-galaxy.js:63
 GAL_TILES                    src/17z1-galaxy.js:65
 GAL_VER                      src/17z1-galaxy.js:19
 galArmD                      src/17z1-galaxy.js:26-30
+galArmPt                     src/17z2-galaxy-names.js:14
+galArmTh                     src/17z2-galaxy-names.js:13
 galaxyAt                     src/17z1-galaxy.js:31-61
 galaxyCell                   src/17z1-galaxy.js:142-147
 galBake                      src/17z1-galaxy.js:80-95
+galPlaceName                 src/17z2-galaxy-names.js:29-36
 galTile                      src/17z1-galaxy.js:67-78
 GATE_WHY                     tests/91zzzzzl-gates.js:19
 genBeast                     src/20f-fauna.js:58-60
@@ -2619,7 +2625,7 @@ jobOffer                     src/12e-mgr-jobs.js:228-240
 jobPick                      src/12e-mgr-jobs.js:259-282
 jobRefuse                    src/12e-mgr-jobs.js:57-66
 jobTick                      src/12e-mgr-jobs.js:287-296
-jump                         src/18-mode-map.js:533-541
+jump                         src/18-mode-map.js:534-542
 jumpToBase                   src/21a-mode-base.js:384-401
 KB                           src/27jb-kb.js:23
 KB_RULE                      src/27jb-kb.js:14-22
@@ -2988,7 +2994,7 @@ mapGridPaint                 src/17z-map-backdrop.js:108-120
 mapHoldingsDraw              src/18b-map-hold.js:80-184
 mapHoldingsTop               src/18b-map-hold.js:186-226
 mapHousePatch                src/18b-map-hold.js:31-45
-mapJump                      src/18-mode-map.js:510-518
+mapJump                      src/18-mode-map.js:511-519
 mapLayer                     src/18b-map-hold.js:26
 mapLayerNext                 src/18b-map-hold.js:28
 mapLayerOn                   src/18b-map-hold.js:27
@@ -5334,7 +5340,7 @@ updateCombat                 src/13-pirates.js:116-301
 updateDig                    src/23-mode-dig.js:144-253
 updateHomeIn                 src/29c-home-in.js:160-200
 updateLanding                src/19-mode-landing.js:68-137
-updateMap                    src/18-mode-map.js:519-532
+updateMap                    src/18-mode-map.js:520-533
 updateRaid                   src/24a-mode-raid.js:215-345
 updateRail                   src/18g-rail-ride.js:42-71
 updateScoop                  src/19a-mode-scoop.js:75-176
@@ -6403,6 +6409,9 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## src/17z1-galaxy.js · 12 КБ
   · мировая галактика: небо карты стоит в мире (M447–M448, docs/DESIGN-galaxy.md):1
+
+## src/17z2-galaxy-names.js · 4 КБ
+  · имена мест галактики (M449, DESIGN-galaxy §M449):1
 
 ## src/18-mode-map.js · 43 КБ
   · карта:1

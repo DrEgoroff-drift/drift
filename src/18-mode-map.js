@@ -131,6 +131,7 @@ function drawMap(){
   drawGalaxy(V,cell);
   mapRhumbPaint(ctx,W,H,px,py);
   drawGalaxyStars(V,cell);   /* звёзды галактики — предметы мира, не мерцают (M448) */
+  if(typeof drawGalaxyNames==="function")drawGalaxyNames(V,cell);   /* рукава и туманности по имени (M449) */
   if(typeof drawRailMap==="function")drawRailMap(V,cell);   /* железная дорога бледно, 1:1 с листом (M470) */
   if(typeof drawGiantsMap==="function")drawGiantsMap(V,cell);   /* великаны — ориентиры (M464) */
   const jr=(st.jump+.02)*cell;
@@ -362,7 +363,7 @@ function drawMap(){
     const ss=sel?sel.s:null;
     L.push(["rgba(127,230,216,.55)",
       (ss?((typeof nameOf==="function")?nameOf(ss):ss.name).toUpperCase()+" · "+ss.cls.ru+" · "+ss.planets.length+" "+pl3(ss.planets.length,"планета","планеты","планет")+
-          (ss.station?" · станция":"")+(ss.belt?" · пояс":"")+" · ":"СЕКТОР "+G.sel.x+":"+G.sel.y+"   ·   ")+
+          (ss.station?" · станция":"")+(ss.belt?" · пояс":"")+((typeof galPlaceName==="function")?" · "+galPlaceName(G.sel.x,G.sel.y):"")+" · ":"СЕКТОР "+G.sel.x+":"+G.sel.y+"   ·   ")+
       dsel.toFixed(2)+" из "+st.jump.toFixed(2)+" пк"+
       ((typeof rungFootTxt==="function")?rungFootTxt(G.sel.x,G.sel.y):"")]);   /* пятилетка римской цифрой (M292) */
     if(typeof routeOf==="function"&&routeOf().legs.length>=1)
