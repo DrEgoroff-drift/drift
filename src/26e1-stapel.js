@@ -12,6 +12,17 @@ const STAPEL_SIZE={
   medium:{ru:"средний",k:.50,len:1.00,price:1.00},
   heavy: {ru:"тяжёлый",k:.86,len:1.14,price:1.38}
 };
+/* ── характер шести верфей (M480, shipyard §4) — только на заказанных корпусах:
+   каталог и старые сейвы не трогаются. Встроенное / ограничение / привычка. */
+const STAPEL_YARD={
+  gt:{hull:1.25,thr:.93,note:"бронепояс +25 % корпуса, тяжелее на 8 % · по борту «ПЛАН — ЗАКОН», не смывается"},
+  co:{price:.85,note:"на 15 % дешевле · по вашему борту бежит строка рекламы, клетка оплачена"},
+  or:{hull:1.08,turn:.96,note:"носовая броня даром · чертёж по норме: ни одна клетка не повёрнута"},
+  km:{cargo:.85,turn:1.06,lunch:1,note:"поворот мягче, клеток на 15 % меньше · «так красивее» — изгиб, которого вы не заказывали"},
+  ra:{cargo:1.1,note:"приварят лишний отсек (+10 % трюма) · корпус держит бой: «на соплях, но держит»"},
+  hf:{hull:.85,fuel:1.08,note:"прибор даром, корпус на 15 % тоньше · прошивка обновляется сама"}
+};
+function stapelYard(by){return STAPEL_YARD[by]||{};}
 const STAPEL_SIZES=["light","medium","heavy"],STAPEL_L=[.85,1.15],STAPEL_MARKUP=1.25;
 function stapelAll(){
   const S=G.stapel||(G.stapel={});
@@ -38,8 +49,11 @@ function stapelStats(o){
   const cargo=Math.round(sp(P.cargo,kz+kw*.5));
   const hull=Math.round(sp(P.hull,kz+kw*.2));
   const power=(thr+turn)*.5+fuel/240+cargo/280+hull/250;
-  const price=Math.round(clamp(power*7000*Z.price*STAPEL_MARKUP-4000,1500,260000)/50)*50;
-  return {thr,turn,fuel,cargo,hull,price};
+  const Y=stapelYard(o.by),m=k=>Y[k]||1;
+  const price=Math.round(clamp(power*7000*Z.price*STAPEL_MARKUP*m("price")-4000,1500,260000)/50)*50;
+  /* характер верфи — поверх коридора: ради него и летят к державе */
+  return {thr:+(thr*m("thr")).toFixed(2),turn:+(turn*m("turn")).toFixed(2),fuel:Math.round(fuel*m("fuel")),
+    cargo:Math.round(cargo*m("cargo")),hull:Math.round(hull*m("hull")),price};
 }
 /* запись корабля из заказа — выводится, не хранится */
 function stapelShip(o){
@@ -66,7 +80,8 @@ function stapelRestore(){
 function stapelOrder(o){
   const S=stapelAll(),by=stapelYardBy();
   if(!by||S.o)return false;
-  const N=stapelStats(o);
+  const why=stapelClosedWhy(by);if(why){say(why,120);return false;}
+  const N=stapelStats(Object.assign({},o,{by}));
   if(G.credits<N.price){say("НЕ ХВАТАЕТ КРЕДИТОВ",60);return false;}
   G.credits-=N.price;
   S.n++;
@@ -76,6 +91,13 @@ function stapelOrder(o){
   logAdd("money","Стапель "+makerRu(by)+": заказан "+HULL_CLASS[o.cls].ru+" · "+STAPEL_SIZE[o.size].ru+
     " за "+N.price.toLocaleString("ru")+" кр · готов через смену");
   return true;
+}
+/* Коммуна: стапель стоит в обед и в забастовку */
+function stapelClosedWhy(by){
+  if(!stapelYard(by).lunch)return null;
+  if(typeof socStrikeHere==="function"&&socStrikeHere())return "ЗАБАСТОВКА · СТАПЕЛЬ СТОИТ";
+  if(typeof lawLunch==="function"&&lawLunch())return "ОБЕД · СТАПЕЛЬ С 14:00";
+  return null;
 }
 function stapelReady(){const o=stapelAll().o;return !!(o&&now()>=o.ready);}
 /* раз в минуту: готово — строка в почте, один раз */
@@ -143,6 +165,9 @@ function stapelBlock(){
       d.appendChild(b);}
     return d;
   };
+  box.appendChild(el("div","stp-n",stapelYard(by).note||""));
+  const shut=stapelClosedWhy(by);
+  if(shut){box.appendChild(el("div","stp-n",shut+" · приходите позже"));return box;}
   box.appendChild(chips(Object.keys(HULL_CLASS),k=>HULL_CLASS[k].ru,()=>U.cls,k=>U.cls=k));
   box.appendChild(chips(STAPEL_SIZES,k=>STAPEL_SIZE[k].ru,()=>U.size,k=>U.size=k));
   box.appendChild(pv);

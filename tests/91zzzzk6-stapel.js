@@ -51,3 +51,13 @@ TEST_SUITES.push(()=>suite("стапель: заказ, смена, корпус
   ok(!SHIPS.strizh.hl&&!FLEET.f0.hl,"у каталожных корпусов нет hl/hw");
   G.stapel={};delete G.uniqueShips[id];delete G.owned[id];
 }));
+TEST_SUITES.push(()=>suite("стапель: шесть верфей — шесть характеров",()=>{
+  resetWorld();
+  const o=by=>stapelStats({by,cls:"warship",size:"medium",l:1,w:1});
+  ok(o("gt").hull>o("hf").hull*1.3,"ГЛАВТРАССА с бронепоясом, Хай-Фронт тоньше: "+o("gt").hull+" / "+o("hf").hull);
+  ok(o("co").price<o("or").price,"Компания дешевле: "+o("co").price+" < "+o("or").price);
+  ok(o("ra").cargo>o("km").cargo,"Рассвет приварит отсек, у Коммуны клеток меньше");
+  const set=new Set(MAKER_KEYS.map(b=>JSON.stringify(o(b))));
+  eq(set.size,MAKER_KEYS.length,"у каждой из шести верфей свой корпус из одного заказа");
+  for(const b of MAKER_KEYS)ok(!!stapelYard(b).note,"у верфи "+b+" есть строка характера");
+}));

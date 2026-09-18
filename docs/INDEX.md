@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 571 · символов верхнего уровня: 5506
+Файлов: 571 · символов верхнего уровня: 5509
 
 ## СИМВОЛЫ
 
@@ -4766,23 +4766,26 @@ stampOwnerAt                 src/17i-stamp.js:16-21
 stampPage                    src/17i-stamp.js:62-83
 stampShow                    src/17i-stamp.js:50-60
 stampText                    src/17i-stamp.js:24-35
-STAPEL_PV                    src/26e1-stapel.js:99
+STAPEL_PV                    src/26e1-stapel.js:121
 STAPEL_SIZE                  src/26e1-stapel.js:10-14
-STAPEL_SIZES                 src/26e1-stapel.js:15
-STAPEL_UI                    src/26e1-stapel.js:106
-stapelAll                    src/26e1-stapel.js:16-21
-stapelBlock                  src/26e1-stapel.js:107-162
-stapelCollect                src/26e1-stapel.js:89-97
-stapelId                     src/26e1-stapel.js:54
-stapelOrder                  src/26e1-stapel.js:66-79
-stapelPreview                src/26e1-stapel.js:100-105
-stapelReady                  src/26e1-stapel.js:80
-stapelRestore                src/26e1-stapel.js:61-64
-stapelShip                   src/26e1-stapel.js:45-53
-stapelStats                  src/26e1-stapel.js:31-43
-stapelStrip                  src/26e1-stapel.js:56-60
-stapelTick                   src/26e1-stapel.js:82-87
-stapelYardBy                 src/26e1-stapel.js:23-27
+STAPEL_SIZES                 src/26e1-stapel.js:26
+STAPEL_UI                    src/26e1-stapel.js:128
+STAPEL_YARD                  src/26e1-stapel.js:17-24
+stapelAll                    src/26e1-stapel.js:27-32
+stapelBlock                  src/26e1-stapel.js:129-187
+stapelClosedWhy              src/26e1-stapel.js:96-101
+stapelCollect                src/26e1-stapel.js:111-119
+stapelId                     src/26e1-stapel.js:68
+stapelOrder                  src/26e1-stapel.js:80-94
+stapelPreview                src/26e1-stapel.js:122-127
+stapelReady                  src/26e1-stapel.js:102
+stapelRestore                src/26e1-stapel.js:75-78
+stapelShip                   src/26e1-stapel.js:59-67
+stapelStats                  src/26e1-stapel.js:42-57
+stapelStrip                  src/26e1-stapel.js:70-74
+stapelTick                   src/26e1-stapel.js:104-109
+stapelYard                   src/26e1-stapel.js:25
+stapelYardBy                 src/26e1-stapel.js:34-38
 STAR_CLASS                   src/02-world.js:173-179
 STAR_COLS                    src/16-flight.js:2
 STAR_LX                      src/16-flight.js:27
@@ -6551,7 +6554,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/26e-ui-station-trade.js · 28 КБ
   · станция: доска, рынок и док (выделено из 26, M415):1
 
-## src/26e1-stapel.js · 9 КБ
+## src/26e1-stapel.js · 11 КБ
   · СТАПЕЛЬ — заказ корпуса у державы (M481, DESIGN-shipyard §5):1
 
 ## src/27-ui-ship.js · 24 КБ
@@ -7206,7 +7209,7 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## tests/91zzzzk5-plan.js · 9 КБ
 
-## tests/91zzzzk6-stapel.js · 4 КБ
+## tests/91zzzzk6-stapel.js · 5 КБ
 
 ## tests/91zzzzl-maphold.js · 5 КБ
   · автотесты: владения на карте (M348):1
