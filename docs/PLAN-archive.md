@@ -11180,3 +11180,88 @@ plausibly reach.
   cell), drawn in flight as a round turret on the back — the loadout read by silhouette; rim parts
   take their side's wear (`12s-wear`) when hit from that side (war §4's ×1.6 from behind now also
   means «engines take it»); instruments count only forward.
+
+## Moved 2026-09-18, originals of stage 5–6 items
+
+— original of: - [ ] **[design owed] M485 Machines with names — drones BUILT 18.09 (Control), `…
+Drones, the base crawler, the tug, the barge autopilot: a name
+  (Митя, Глаша, Буля, Кузя, Жучка, Громобой…) and **one quirk** = one number off the norm both ways
+  («работает только днём — днём быстрее», «возит лишнее», «поёт при бурении»). Journal lines in the
+  name: «Митя встал. Чинится сам. Ругается.» Drones never die (2026-09-03). Hands stay faceless.
+
+— original of: - [ ] **[design owed] M486 Изолента — BUILT 18.09 (Control), `src/12s1-tape.js`.…
+A consumable for kopecks: field repair of any part or the hull to 50 %
+  (the first hour's ДО 50 % button, anywhere); leaves a grey **tape strip drawn on the hull** where
+  used (a scar until a yard repair); the trait **«кулибин»** on a hand/manager: tapes free from scrap,
+  holds 60 %, «заматывает так, что не видно». Рассвет's yard treats tape as a finish.
+
+— original of: - [ ] **[design owed] M495 The triangle — BUILT on instruments 18.09 (Control), …
+(§4.1). Firm parts (Компания,
+  Хай-Фронт) carry «гарантия 12 сводок» in ОПИСЬ. Broken: **ТЕХПОДДЕРЖКА** — an эфир call, «ваш
+  звонок очень важен для нас», one bar of hold music (`10-music`), a queue number counting down in
+  game time (37 → … and once back to 41), repair to 100 % in 1–3 сводки, free, the part dead
+  meanwhile; **ИЗОЛЕНТА** — now, 50 %, «гарантия аннулирована: обнаружены следы изоленты»; **ЯРД** —
+  proper, for money. Kindness: the old master at any yard welds one seam free for a taped hull:
+  «сынок, ну кто ж так».
+
+— original of: - [ ] **[design owed] M489 Names by owner — the rule BUILT 18.09 (Control), `src…
+(«Рязань Каунти»): settlements, holdings, metro stops = homely toponym +
+  the owner's administrative suffix (ГЛАВТРАССА «пгт Верхний Пояс», Компания «Горловина Каунти»,
+  «Нейэль-Сити», Орднунг «Бецирк Нейэль № 4», Коммуна «Сен-Горловина», Рассвет «кооператив
+  «Горловина»», Хай-Фронт «Горловина-2 v3.1»); a flag change repaints the sign. Firms = provincial
+  city + foreign tech word, invented («Кострома Роботикс», «Урюпинск Орбитал»); never a real one.
+
+— original of: - [ ] **[design owed] M460 Billboards — BUILT 18.09 (Control), `src/17k-billboar…
+Billboards: a truss,
+  a panel, three-stroke neon lettering (glow / core / white-hot centre), one crawling line; **the
+  line is useful** — real prices from `G.market` («ТИТАН 41 У ПАРТНЁРА В 2 ПРЫЖКАХ — ВЫГОДНО КАК
+  НИКОГДА», stale ones as a fork), the сводка in the owner's voice, the Director's циркуляры, a
+  holding's own station («ТОПЛИВО ЕСТЬ»), «до конца акции 00:00:03» for ever; six letterings (review
+  §4.2); a ГЛАВТРАССА sign always has a dead letter, one *buzzes* once a minute (200 ms dip) — the only
+  permitted flicker besides Хай-Фронт's honeycomb cell; within R the hull takes the panel's colour
+  as an additive stamp on the facing side. **M491:** `12p-news` answers the player's own last deed
+  within one сводка in each power's doublespeak (a barge pulled out of a fight → Маяк «на трассе
+  спокойно», Компания «партнёр обеспечил безопасность перевозок™», Хай-Фронт «инцидент не
+  зафиксирован»); the player alone knows. **P12:** ЭФИР (92 rows, 50 distinct, events drowned) —
+  events first, chatter folded, the six waves' contradictions as its spine.
+
+— original of: - [ ] **[design owed] M461 Hotels — first pass BUILT 18.09 (Control), `src/17l-h…
+— one slab-of-windows body, six dressings (which windows are lit, the sign):
+  «ГОС ИНИЦА «КОСМОС»» (two letters dead, «МЕСТ НЕТ» on the board, «для вас найдём» at the desk),
+  «ДЖЕКПОТ-СИТИ™», «Пансион № 4» (lights out 22:00), «Ля Люн», the door in the rock, the honeycomb.
+  Docking opens the doors that exist: sanatorium (`29h/29i-spa`), cinema (`27da-kino`), cantina
+  rumours. Kindness: under 30 % hull the clerk lets you sleep off the fatigue free, «потом заплатите».
+
+— original of: - [x] **[design owed] M462 «Чебуречная» — BUILT 18.09 (Control), `src/17j-chebur…
+— a junk boat on the lane hailing «Чебуреки! Горячие!» whatever the hour;
+  sells the owner's `POWERS[k].food`; a meal comes with a rumour and a ДНЕВНИК line.
+
+— original of: - [ ] **[design owed] M455 The peacetime fleet — BUILT 18.09 (Control), `src/17m…
+(borders §2.4, from war §7.3's table): ГЛАВТРАССА
+  субботник tugs pushing belt debris; Компания ad hulls and hired «contractors»; Орднунг an
+  inspection pair holding a trader; Коммуна's fleet in a neat line, lights low, on strike days;
+  Рассвет's repair tug that comes to any damaged ship, yours too; Хай-Фронт's reboot line. Driven by
+  the chronicle's states where they exist (`12au-rites`, `12ay-fx-soc`).
+
+— original of: - [ ] **[design owed] M456 One law each — four BUILT 18.09 (Control), `src/12al2…
+(review §1.5): ГЛАВТРАССА норма (a fuel norm per
+  visit for kopecks); Компания пошлина (docking 40 кр, free with a sponsor on board); Орднунг
+  скоростной режим in the numbered ring (a ticket in ПОЧТА with a paragraph number); Коммуна обед
+  (yard and one counter shut an hour, fuel always sold); Рассвет «сделаем из ваших» (two parts → one
+  better, no deadline on jobs). The trust rating is cut.
+
+— original of: - [ ] **[design owed] M457 Sound — the motif BUILT 18.09 (Control), `SFX.motif` …
+— a three-note motif per power on the radio at entry (not six musical modes); the
+  receiver speaks the owner's `air` line once. **M458 Map borders** — territory edges as lines in the
+  owner's pattern (dotted stars, ring marks, numbered dashes, a wave, uneven dashes with suns,
+  dots), 1:1 with the sheet; the emblem chip readable (14–18 px) at near zoom; the glyph on the
+  compass label and the header.
+
+— original of: - [ ] **[design owed] M474 Six railways — four BUILT 18.09 (Control), `src/18h-r…
+(metro §6): Компания **Express™** (dashed twin line skipping small stops,
+  ×10, an ad under the fare — «на три секунды быстрее!», and it is); Орднунг boards only with the
+  hold declared («ДЕКЛАРИРУЮ»), doors on the second; Коммуна greyed on strike days and at lunch;
+  Рассвет **маршрутка** — «до куда?» — tap the map — «ну поехали», stops at any system on the line;
+  Хай-Фронт «обновление установлено», the line stands a minute. Closed front stops on the scheme.
+  **M475 Economy and growth** — fares, baggage, the size rule tuned; a holding-built station
+  («продление линии», a late holding deed, named by the generator).
