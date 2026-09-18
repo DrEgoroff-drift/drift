@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 541 · символов верхнего уровня: 5210
+Файлов: 542 · символов верхнего уровня: 5211
 
 ## СИМВОЛЫ
 
@@ -509,6 +509,7 @@ buyCargo                     src/12-economy.js:57-70
 buyPriceFor                  src/12-economy.js:52-56
 bWall                        src/21aa-base-rooms.js:187-242
 bWorker                      src/21aa-base-rooms.js:322-382
+CAM_LAG_PX                   src/16a-space.js:316
 camBtnTick                   src/25g-postcard.js:666-670
 camOffset                    src/19c-light.js:155-162
 camStep                      src/19c-light.js:141-153
@@ -993,7 +994,7 @@ crownReady                   src/05a-nodes.js:158
 CRYO_RECIPE                  src/21a1a-base-heat.js:33
 CSW                          src/19e-clouds.js:68
 ctlHint                      src/15-input.js:171-175
-ctlReset                     src/15a-helm.js:120-125
+ctlReset                     src/15a-helm.js:124-129
 ctx                          src/08-state.js:3
 cue                          src/08-state.js:371-376
 CUE_EPS                      src/27m-scroll-cue.js:25
@@ -1341,7 +1342,7 @@ drawDronesMap                src/12e-drone-flight.js:312-330
 drawDronesSystem             src/12e-drone-flight.js:226-299
 drawDustMotes                src/19-mode-landing.js:271-284
 drawElevator                 src/20aa-poi-shapes.js:91-113
-drawExhaust                  src/16a-space.js:376-436
+drawExhaust                  src/16a-space.js:384-444
 drawFactory                  src/20aa-poi-shapes.js:378-462
 drawFactRoute                src/13b-occupy.js:285-338
 drawFindsSystem              src/17b-finds.js:181-263
@@ -1405,11 +1406,11 @@ drawSkyBodies                src/19b-sky.js:96-128
 drawSkyLayer                 src/19-mode-landing.js:171-269
 drawSpa                      src/29i-spa-draw.js:41-486
 drawSpaceDust                src/16a-space.js:275-308
-drawStarBody                 src/16a-space.js:475-491
-drawStarHole                 src/16a-space.js:595-625
-drawStarNeutron              src/16a-space.js:568-592
+drawStarBody                 src/16a-space.js:448-464
+drawStarHole                 src/16a-space.js:568-598
+drawStarNeutron              src/16a-space.js:541-565
 drawStars                    src/16-flight.js:28-72
-drawStarSingle               src/16a-space.js:492-566
+drawStarSingle               src/16a-space.js:465-539
 drawStation                  src/17c-system-draw.js:434-498
 drawStationBody              src/17c-system-draw.js:174-376
 drawStationMods              src/17a-station-mod.js:214-217
@@ -1555,7 +1556,7 @@ ethTick                      src/25l-post-ether.js:59-104
 evacCost                     src/21-mode-surface.js:677
 evacFrom                     src/21-mode-surface.js:678
 evacuate                     src/21-mode-surface.js:679-699
-exhaustHaze                  src/16a-space.js:351-375
+exhaustHaze                  src/16a-space.js:359-383
 exileCandidates              src/12g-mgr-rogue.js:123-130
 exitBase                     src/21a-mode-base.js:153-156
 exitBelt                     src/24-mode-belt.js:176-184
@@ -1703,7 +1704,7 @@ fleetPromptRect              src/12ai-fleet.js:112-115
 fleetRung                    src/12ai-fleet.js:48
 fleetScale                   src/12ai-fleet.js:105
 fleetUniqueName              src/04b-fleet.js:100-105
-flightCam                    src/16a-space.js:316-342
+flightCam                    src/16a-space.js:317-350
 floraOf                      src/20e-species.js:91-105
 FOE_ARM_COOL                 src/13d-loadout.js:31
 FOE_KINDS                    src/24a-mode-raid.js:17-22
@@ -1816,10 +1817,10 @@ globusAim                    src/25f-globus.js:49-68
 globusDraw                   src/25f-globus.js:81-140
 globusSys                    tests/91zzzg-globus.js:7-11
 globusTick                   src/25f-globus.js:70-77
-GLOW_CACHE                   src/16a-space.js:456
-GLOW_SP                      src/16a-space.js:455
+GLOW_CACHE                   src/16a0-glow.js:23
+GLOW_SP                      src/16a0-glow.js:22
 GLOW_TIERS                   src/11i-glow.js:121
-glowBlit                     src/16a-space.js:471
+glowBlit                     src/16a0-glow.js:38
 glowCaveX                    src/11i-glow.js:139-142
 glowCorePlanet               src/11i-glow.js:33-37
 glowDepthAt                  src/11i-glow.js:24-29
@@ -1832,7 +1833,7 @@ glowGroundLine               src/11i-glow.js:110-115
 glowIsCore                   src/11i-glow.js:38
 glowPatches                  src/11i-glow.js:73-82
 glowScan                     src/11i-glow.js:64-68
-glowSprite                   src/16a-space.js:457-469
+glowSprite                   src/16a0-glow.js:24-36
 glowTier                     src/11i-glow.js:122-128
 glyphEl                      src/12t-settle.js:79-90
 glyphHasRunes                src/12t-settle.js:52-56
@@ -2053,61 +2054,61 @@ heatHaze                     src/18d-postfx.js:76-80
 heatHazeFrom                 src/18d-postfx.js:58-73
 heatTick                     src/13a-guns.js:54-62
 held                         src/08-state.js:330
-HELM                         src/15a-helm.js:111
+HELM                         src/15a-helm.js:115
 HELM_ACC                     src/15a-helm.js:75
-HELM_ARC0                    src/15a-helm.js:95
-HELM_ASSIST_BAND             src/15a-helm.js:87
-HELM_ASSIST_EPS              src/15a-helm.js:88
-HELM_BAND                    src/15a-helm.js:106
-HELM_BAND0                   src/15a-helm.js:107
+HELM_ARC0                    src/15a-helm.js:99
+HELM_ASSIST_BAND             src/15a-helm.js:91
+HELM_ASSIST_EPS              src/15a-helm.js:92
+HELM_BAND                    src/15a-helm.js:110
+HELM_BAND0                   src/15a-helm.js:111
 HELM_BRAKE_DOT               src/15a-helm.js:77
-HELM_DEAD                    src/15a-helm.js:84
-HELM_EDGE_BAND               src/15a-helm.js:86
-HELM_FOOT                    src/15a-helm.js:99
-HELM_GAP                     src/15a-helm.js:108
-HELM_KEYS                    src/15a-helm.js:129
-HELM_MARKS                   src/15a-helm.js:91
+HELM_DEAD                    src/15a-helm.js:86
+HELM_EDGE_BAND               src/15a-helm.js:90
+HELM_FOOT                    src/15a-helm.js:103
+HELM_GAP                     src/15a-helm.js:112
+HELM_KEYS                    src/15a-helm.js:133
+HELM_MARKS                   src/15a-helm.js:95
 HELM_NUDGE                   src/15a-helm.js:82
-HELM_NUDGE_R                 src/15a-helm.js:83
-HELM_PICK                    src/15a-helm.js:89
-HELM_RANGE                   src/15a-helm.js:110
-HELM_REACH                   src/15a-helm.js:85
+HELM_NUDGE_R                 src/15a-helm.js:85
+HELM_PICK                    src/15a-helm.js:93
+HELM_RANGE                   src/15a-helm.js:114
+HELM_REACH                   src/15a-helm.js:89
 HELM_STOP                    src/15a-helm.js:76
 HELM_TAKE                    src/15a-helm.js:78
 HELM_TAKE_MS                 src/15a-helm.js:81
 HELM_THR                     src/15a-helm.js:74
-HELM_TRAIL                   src/15a-helm.js:109
-helmApply                    src/15a-helm.js:430-524
+HELM_TRAIL                   src/15a-helm.js:113
+helmApply                    src/15a-helm.js:434-528
 helmBandPath                 src/15b-helm-draw.js:135-143
 helmCamOff                   src/15b-helm-draw.js:120-133
-helmCanvasXY                 src/15a-helm.js:146
-helmDrag                     src/15a-helm.js:198-201
+helmCanvasXY                 src/15a-helm.js:150
+helmDrag                     src/15a-helm.js:202-205
 helmDrawMarks                src/15b-helm-draw.js:8-21
 helmDrawSticks               src/15b-helm-draw.js:151-242
 helmDry                      src/15b-helm-draw.js:145
 helmDryLabel                 src/15b-helm-draw.js:146-150
-helmEdgeInput                src/15a-helm.js:329-341
+helmEdgeInput                src/15a-helm.js:333-345
 helmHome                     src/15b-helm-draw.js:52-65
 helmLift                     src/15b-helm-draw.js:69-106
-helmLock                     src/15a-helm.js:262-270
-helmLockNext                 src/15a-helm.js:272-289
-helmMarksClean               src/15a-helm.js:253-261
+helmLock                     src/15a-helm.js:266-274
+helmLockNext                 src/15a-helm.js:276-293
+helmMarksClean               src/15a-helm.js:257-265
 helmMarkTop                  src/15b-helm-draw.js:109-114
-helmPinchBlocked             src/15a-helm.js:249
+helmPinchBlocked             src/15a-helm.js:253
 helmPirate                   tests/91zzzw-helm.js:17-20
-helmPtrEnd                   src/15a-helm.js:236-241
+helmPtrEnd                   src/15a-helm.js:240-245
 helmRun                      tests/91zzzw-helm.js:16
-helmScreenOpen               src/15a-helm.js:246
+helmScreenOpen               src/15a-helm.js:250
 helmShip                     tests/91zzzw-helm.js:6-15
-helmShotAt                   src/15a-helm.js:305-308
+helmShotAt                   src/15a-helm.js:309-312
 helmStickFoot                src/15b-helm-draw.js:38-46
 helmStickShape               src/15b-helm-draw.js:29-35
-helmSyncPointer              src/15a-helm.js:172-192
-helmTake                     src/15a-helm.js:211-219
-helmTap                      src/15a-helm.js:291-303
-helmTargets                  src/15a-helm.js:252
-helmTick                     src/15a-helm.js:343-427
-helmTrail                    src/15a-helm.js:202-208
+helmSyncPointer              src/15a-helm.js:176-196
+helmTake                     src/15a-helm.js:215-223
+helmTap                      src/15a-helm.js:295-307
+helmTargets                  src/15a-helm.js:256
+helmTick                     src/15a-helm.js:347-431
+helmTrail                    src/15a-helm.js:206-212
 hex2rgb                      src/01-core.js:217-220
 hexA                         src/12e-drone-flight.js:302-308
 hexa                         src/12w-survey.js:91-94
@@ -5798,7 +5799,7 @@ zooTick                      src/11ad-zoo.js:41-54
   · ввод:87
   · полоса вкладок шире экрана:216
 
-## src/15a-helm.js · 39 КБ
+## src/15a-helm.js · 40 КБ
   · штурвал (M360):1
 
 ## src/15b-helm-draw.js · 14 КБ
@@ -5817,8 +5818,11 @@ zooTick                      src/11ad-zoo.js:41-54
   · кильватер: хвосты от скорости, а не от сопла:284
   · нить кильватера — ступенями спада, а не отрезками (0.2):357
 
-## src/16a-space.js · 40 КБ
+## src/16a-space.js · 38 КБ
   · облик системы:1
+
+## src/16a0-glow.js · 3 КБ
+  · печка свечений: спрайт единичного радиуса:1
 
 ## src/16b-missile.js · 17 КБ
   · ракеты: боеприпас — это груз:1
