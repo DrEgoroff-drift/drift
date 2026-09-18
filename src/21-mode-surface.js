@@ -169,6 +169,7 @@ function enterSurface(){
     suit:suitMax(),warned:false,beacon:0,walkAmp:0,walkPhase:0,cave:caveMouth,peep};
   G.mode="surface";
   if(typeof placeMark==="function")placeMark();   // память места и одометр (11d)
+  if(typeof smenaLand==="function")smenaLand(p);   // «Смена»: следующая глава — в новом месте (P15)
   if(typeof traceAsk==="function")traceAsk();     // не оставил ли здесь знак другой живой человек (11ag)
   G.surfTipShown=0;
   logAdd("dim","Посадка на "+p.name+" · залежей: "+deposits.length);

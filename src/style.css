@@ -1787,3 +1787,12 @@ body.table u.addr{color:#7a4a20}
 #kbWin .kb-acts button{flex:1;min-height:44px}
 #kbWin .kb-stamp{position:fixed;left:50%;top:40%;transform:translate(-50%,-50%) rotate(-9deg);padding:8px 18px;
   border:4px solid #8a6ad8;color:#8a6ad8;font:800 26px ui-monospace,monospace;letter-spacing:.2em;opacity:.9}
+
+/* ── «Смена»: акт главы через экран и картинка главы (P15) ── */
+#smenaAct{position:fixed;left:50%;top:40%;transform:translate(-50%,-50%);z-index:61;pointer-events:none;text-align:center;
+  color:#f3dfb4;text-shadow:0 0 18px rgba(0,0,0,.9);animation:smAct 3.2s ease-out forwards}
+#smenaAct .sa-n{font:600 13px ui-monospace,monospace;letter-spacing:.5em;opacity:.8}
+#smenaAct .sa-t{font:italic 30px Georgia,"Times New Roman",serif;margin:8px 0}
+#smenaAct .sa-s{font-size:11px;letter-spacing:.2em;opacity:.6}
+@keyframes smAct{0%{opacity:0;transform:translate(-50%,-44%)}15%{opacity:1;transform:translate(-50%,-50%)}80%{opacity:1}100%{opacity:0}}
+.smena canvas.smena-plate{display:block;margin:6px auto 4px;border:6px solid #f6efe0;box-shadow:0 1px 4px rgba(0,0,0,.35);transform:rotate(-1.2deg)}

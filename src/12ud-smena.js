@@ -107,6 +107,9 @@ function smenaIsOpen(n){return smenaRec().indexOf(n)>=0;}
 function smenaSync(){
   const S=smenaRec();let fresh=0;
   for(const [n,,f] of SMENA_CH){
+    /* P15: предикаты больше не открывают глав — книга идёт по порядку и по
+       новым местам (12ud1-smena-quest). Сам собой открывается только «Док» */
+    if(n!==1)continue;
     if(S.indexOf(n)>=0)continue;
     let ok=false;try{ok=!!f();}catch(e){ok=false;}
     if(ok){S.push(n);fresh++;}
@@ -120,7 +123,8 @@ let smenaOpenCh=0;
 function renderSmena(box){
   box.innerHTML="";
   smenaSync();
-  tableRow(box,"dim","","«Смена» · роман · открыто "+smenaCount()+" из 72 · глава открывается, когда прожита");
+  const nx=(typeof smenaNext==="function")?smenaNext():0;
+  tableRow(box,"dim","","«Смена» · роман · открыто "+smenaCount()+" из 72 · "+(nx?"глава "+nx+" откроется на посадке — там, где книга ещё не была":"прочитано всё"));
   for(const P of SMENA_PARTS){
     const L=(typeof loreChapter==="function")?loreChapter(P.lore):null;
     tableRow(box,"head","","ЧАСТЬ "+["I","II","III","IV","V","VI","VII","VIII"][P.n-1]+" · "+P.ru.toUpperCase()+
@@ -130,7 +134,7 @@ function renderSmena(box){
       const row=document.createElement("div");row.className="li"+(open?"":" dim");
       const em=document.createElement("em");em.textContent=String(n);
       const sp=document.createElement("span");
-      sp.textContent=open?t:(t+" · "+smenaWhere(n));
+      sp.textContent=open?t:(n===nx?t+" · следующая":t);
       row.appendChild(em);row.appendChild(sp);
       if(open){
         row.style.cursor="pointer";
@@ -140,6 +144,10 @@ function renderSmena(box){
         box.appendChild(row);
         if(smenaOpenCh===n){
           const txt=document.createElement("div");txt.className="smena";
+          /* картинка из вашей игры — там, где глава прожита (P15) */
+          const pl=(typeof smenaPlate==="function")?smenaPlate(n):null;
+          if(pl){txt.appendChild(pl);const A=smenaAtAll()[n],cap=document.createElement("p");cap.className="cap";
+            cap.textContent="прожито: "+(A.p||"")+" · сектор "+A.sx+":"+A.sy;txt.appendChild(cap);}
           for(const p of (SMENA_TEXT[String(n)]||[])){
             const el2=document.createElement(p==="· · ·"?"hr":"p");
             if(p==="· · ·"){el2.className="scene";}

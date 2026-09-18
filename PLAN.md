@@ -502,7 +502,7 @@ patchnote of each version names the M-numbers it closes.
 
 ### Stage 6 — the story and the rest
 
-- [ ] **[design owed] P15 «Смена» — the main quest** (§5.2–5.3): chapters as milestones opened in sequence by deeds
+- [ ] **[design owed] P15 «Смена» — the quest spine BUILT 18.09 (Control), `src/12ud1-smena-quest.js`.** Chapters now open IN ORDER (the next after the last open, «Док» always first) and only on a landing on a world of a new kind (type + mix + star class) where no earlier chapter opened — money, drones and menus no longer open anything (`SMENA_CH` predicates kept as data, only chapter 1 still opens by predicate). Each opening: «ГЛАВА N · «title»» across the screen for 3 s; the chapter keeps where it was lived and a postcard snapshot (`postSnap`, ~200 B), drawn as a tilted photo at the head of the chapter with «прожито: … · сектор …». Old saves keep what was open; the next is the first unopened. Harness resets the new fields. **Open:** a reader view with ← →, the hard part (a chapter's deed in the place, not just a landing), a real book look, the ~72 kinds of place — check that 72 distinct keys exist within reach. Original: (§5.2–5.3): chapters as milestones opened in sequence by deeds
   in beautiful places (not by buying drones — 25/72 opened on the author's save without a landing);
   closing a chapter is an «АКТ» moment across the screen; a real book
   with plates from the player's own flight; the text may be edited to fit.
