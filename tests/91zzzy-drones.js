@@ -219,3 +219,12 @@ TEST_SUITES.push(()=>suite("дроны: после суток догона фл�
   ok(worst<.05,"шанс поломки не уполз за тысячи кругов: "+worst.toFixed(3));
   ok(down<=Math.ceil(fleet.length/2),"и в доке не половина флота: "+down+" из "+fleet.length);
 }));
+TEST_SUITES.push(()=>suite("дроны: имя и одна причуда (M485)",()=>{
+  resetWorld();
+  const a={id:7},b={id:7};
+  eq(droneName(a),droneName(b),"имя — от бортового номера, навсегда");
+  ok(/\(Д-7\)/.test(droneName(a)),"номер остаётся в имени: "+droneName(a));
+  const seen=new Set();for(let i=1;i<60;i++)seen.add(droneQuirk({id:i}).ru);
+  ok(seen.size>=4,"причуд несколько: "+seen.size);
+  for(const Q of DRONE_QUIRKS)ok((Q.rate>=1)===(Q.brk>=1||Q.fix>=1)||Q.ru==="норма"||(Q.rate<1&&Q.brk<1),"«"+Q.ru+"»: что даёт, то и берёт");
+}));

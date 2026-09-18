@@ -35,7 +35,23 @@ function droneNextId(){
   for(const id of G.droneIds||[])if((id|0)>mx)mx=id|0;
   return mx+1;
 }
-function droneName(d){return "Д-"+(d&&d.id?d.id:"?");}
+/* ── машина с именем (M485, DESIGN-birchpunk §2) ──
+   У железки, которая неделю возит тебе руду, есть имя и одна причуда. Имя и
+   причуда выводятся из бортового номера — сейв не меняется, и «Д-7» остаётся
+   Митей навсегда. Причуда — одно число в обе стороны от нормы: что даёт, то и
+   берёт. Дроны не погибают никогда (решено 03.09); люди остаются без лиц. */
+const DRONE_NAMES=["Митя","Глаша","Буля","Кузя","Жучка","Громобой","Тоня","Сёма","Пыжик","Дуся","Филя","Рыжик","Мотя","Зинка","Бублик","Стёпа"];
+const DRONE_QUIRKS=[
+  {ru:"торопыга",   rate:1.15,brk:1.4, fix:1,   say:"Спешил."},
+  {ru:"возит лишнее",rate:1.12,brk:1,  fix:1.35,say:"Перегрузился."},
+  {ru:"осторожный", rate:.9,  brk:.5,  fix:1,   say:"Постоял, подумал."},
+  {ru:"поёт при бурении",rate:1.06,brk:1.15,fix:1,say:"Ругается."},
+  {ru:"ленивый, но живучий",rate:.94,brk:.7,fix:.8,say:"Ворчит."},
+  {ru:"норма",      rate:1,   brk:1,   fix:1,   say:"Чинится сам."}
+];
+function droneQuirk(d){const id=(d&&d.id)|0;return DRONE_QUIRKS[hashi(id,0xD60E,3)%DRONE_QUIRKS.length];}
+function droneNick(d){const id=(d&&d.id)|0;return DRONE_NAMES[hashi(id,0xD60E,1)%DRONE_NAMES.length];}
+function droneName(d){return droneNick(d)+" (Д-"+(d&&d.id?d.id:"?")+")";}
 
 /* ── старые записи ──
    Сохранения до M237 знают про дрон четыре поля. Недостающее дописывается при
@@ -145,7 +161,7 @@ function dronePos(d,now,sys){
 function droneBreakP(d){
   if(typeof bldHas==="function"&&bldHas(d.sx,d.sy,"hangar"))return 0;   /* Ангар (F4) */
   const dg=(typeof sysDanger==="function")?sysDanger(d.sx,d.sy):0;
-  return clamp(DRONE_BREAK_P*(1+dg*1.6)+(d.wear|0)*DRONE_BREAK_WEAR,0,.2);
+  return clamp((DRONE_BREAK_P*(1+dg*1.6)+(d.wear|0)*DRONE_BREAK_WEAR)*droneQuirk(d).brk,0,.2);
 }
 function droneBreaks(d){return rnd()<droneBreakP(d);}
 function droneFixMs(d){
@@ -156,7 +172,7 @@ function droneFixMs(d){
   if(sys&&sys.station&&sys.station.stype==="yard")ms*=.5;
   /* смотритель с «авто-сбытом» держит и ремонт: у него на станции свои люди */
   if(typeof mgrPerkOf==="function"&&mgrPerkOf("keep","sell"))ms*=.75;
-  return Math.round(ms);
+  return Math.round(ms*droneQuirk(d).fix);
 }
 /* ── строка состояния для списков ── */
 function droneStateRu(d,now){

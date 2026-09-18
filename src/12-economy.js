@@ -263,7 +263,7 @@ function tickDrones(){
     if(d.stuck){d.stuck=0;started[key]=(started[key]|0)+1;}
     const T=droneTripMs(d);
     /* «Авто-сбыт» смотрителя: тот же множитель, что и был — быстрее оборот */
-    const rate=d.rate*(mgrPerkOf("keep","sell")?1.35:1);
+    const rate=d.rate*(mgrPerkOf("keep","sell")?1.35:1)*droneQuirk(d).rate;   /* причуда машины (M485) */
     const capMs=Math.max(0,Math.min(now-(d.lastMs||now),cap));
     const from=now-capMs;                 /* дальше суток не догоняем */
     if(d.t0<from)d.t0=from;
@@ -300,8 +300,8 @@ function tickDrones(){
            журнал «warn» как свежая — тринадцать строк на второй секунде
            (телефон автора, crash.log 05.09). Живой строкой остаётся только
            та, что стоит сейчас; прочие считаются и называются одной */
-        if(d.down>now)logAdd("warn","Дрон "+droneName(d)+" встал на «"+nearestStation(d.sx,d.sy).name+
-          "» · чинится сам, "+Math.round(droneFixMs(d)/60000)+" мин");
+        if(d.down>now)logAdd("warn",droneNick(d)+" встал на «"+nearestStation(d.sx,d.sy).name+
+          "». Чинится сам, "+Math.round(droneFixMs(d)/60000)+" мин. "+droneQuirk(d).say);
         else oldBreaks++;
       }else d.t0=done;
     }

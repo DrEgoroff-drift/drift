@@ -479,7 +479,7 @@ patchnote of each version names the M-numbers it closes.
 
 ### Stage 5 — the voice and the joke (`DESIGN-birchpunk.md` §2, §4; life M460–M462; borders M455–M456)
 
-- [ ] **[design owed] M485 Machines with names.** Drones, the base crawler, the tug, the barge autopilot: a name
+- [ ] **[design owed] M485 Machines with names — drones BUILT 18.09 (Control), `12e-drone-flight`.** Name (16) and one quirk (6: торопыга, возит лишнее, осторожный, поёт при бурении, ленивый но живучий, норма) from the hull number — no save field; the quirk moves rate / break chance / repair time both ways; the break line speaks in the name: «Митя встал на «…». Чинится сам, n мин. Ругается.» **Open:** the base crawler, the tug, the barge autopilot; the quirk in the drone list. Original: Drones, the base crawler, the tug, the barge autopilot: a name
   (Митя, Глаша, Буля, Кузя, Жучка, Громобой…) and **one quirk** = one number off the norm both ways
   («работает только днём — днём быстрее», «возит лишнее», «поёт при бурении»). Journal lines in the
   name: «Митя встал. Чинится сам. Ругается.» Drones never die (2026-09-03). Hands stay faceless.
