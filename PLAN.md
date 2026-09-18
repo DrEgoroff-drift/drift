@@ -118,7 +118,7 @@ our JS is 6–8 ms, the deadline is lost in the RASTER. In this order:
    from the phone is still owed.
 6. **Tails at ×2.40 for the author's «куцые хвосты»** — filmed on the phone (headless hangs after a
    few dozen thrust frames and cannot film them).
-7. **Split `src/16a-space.js`** (item 0.4) — the sprite oven apart from what it bakes.
+7. ~~**Split `src/16a-space.js`**~~ — moot after the ray revert (item 0.4).
 8. **Release** (Control): `test.ps1 -Accept` for goldens (the hull and the star changed pixels),
    `-Full`, `-Mobile`, `-Mutants`, the Node tier, PATCHNOTES lines, push, md5 of the three site files
    after deploy.
@@ -177,7 +177,7 @@ Rule 3: same look, cheaper work.
   (3) The two "quarantine" ОПИСЬ failures were real: the brake stayed dimmed in flight after the
   surface (yesterday's M181 gate), and the opis header lost its matches count after P1 — both fixed
   (dc67a87). Browser tier 18 080 / 0, node 16 352 / 0. **Still open: g11 on the laptop** — not run.
-- [ ] **0.4 `src/16a-space.js` crossed the 40 KB build guard (41 KB) on 9dc0a3f.** Not a blocker and
+- [x] **0.4 `src/16a-space.js` crossed the 40 KB build guard (41 KB) on 9dc0a3f** — closed by the ray revert (dbc06ea): 40 694 bytes. Three files sit just under the 40 960 line now — `16a-space` 40 694, `03e-hull-draw` 40 704, `27z-telemetry` 40 775; the next line added to any of them trips it, so split at the next touch, not before. Not a blocker and
   not to be fixed on the run. When it is split, split it by meaning: the sprite oven with its cache
   (`GLOW_SP`, `GLOW_CACHE`, `glowSprite`, `glowBlit`) apart from the things it bakes.
 - [x] **0.1 Cadence** — done; body in `docs/PLAN-archive.md` («Moved 2026-09-18»).
