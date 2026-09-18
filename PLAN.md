@@ -122,7 +122,10 @@ our JS is 6–8 ms, the deadline is lost in the RASTER. In this order:
 5. **Frame acceptance of the baked star core and hull** against the Designer's four risks: the
    star's pulsation and corona, the ship's lights and nozzles, a step at the baked picture's edge, a
    one-frame lag of the baked picture in rotation. Control's side-by-side at ×2 found none; a frame
-   from the phone is still owed.
+   from the phone is still owed. Two of the four are closed by construction: **no lag** — the picture
+   is laid down in the same `drawHull` call under the frame's own matrix, never a frame's old one; **lights
+   and nozzles** are not in the picture at all (flames, nozzle glow and nav lights are drawn live).
+   Left for the eye: the star's breathing (the core's alpha is still live) and a step at the edge.
 6. **Tails at ×2.40 for the author's «куцые хвосты»** — filmed on the phone (headless hangs after a
    few dozen thrust frames and cannot film them).
 7. ~~**Split `src/16a-space.js`**~~ — moot after the ray revert (item 0.4).
