@@ -490,7 +490,7 @@ Rule 3: same look, cheaper work.
 
 ### Stage 1 — the ship under the finger (`docs/PLAYTEST-2026-09-13.md` §2.2–2.6, §3)
 
-- [ ] **P8 Under the finger — two of three done 18.09 (Control), phone owed.**
+- [x] **P8 Under the finger — done 18.09 (Control), phone owed.**
   - ✓ **Camera:** `flightCam` (16a) bounds the lag in SCREEN pixels, `CAM_LAG_PX=32`: at constant
     speed the lag is v·Z/k, and k is at least what keeps that ≤ 32. Measured at cruise under the
     stick: 19 / 25 / 14 / 0 px at zoom .17 / 1 / 2.4 / 4.5 (the plan's meter: ≤ 60 at ×2.4; the old
@@ -500,11 +500,11 @@ Rule 3: same look, cheaper work.
     это не надо». Test 7 in `91zzzw-helm` now asserts the opposite of what it did.
   - ✓ **«Stop here»:** `HELM_DEAD` 12 → 22 px (≈ 2 → 3.7 mm on the S23; the thumb drifted past 12 and
     the rule fired on 15 frames of 3 177). Full thrust now at 92 px instead of 82. Phone to confirm.
-  - **Open, a fork for the author — the hull does not grow on zoom.** `SHIP_SCALE_MAX=.8` is the
-    author's own decision of 12.09 («выше корабль не растёт, растёт мир»), and the fleet, pirates
-    and barges share the number; the 13.09 playtest names the same cap as a problem (at ×4.5 the
-    hull is 5.6× smaller than the world). Proposal: the cap rises with zoom for EVERY ship, gently —
-    .8 at ×1, ~1.05 at ×2.4, 1.4 at ×4.5 — so sizes between ships stay honest.
+  - ✓ **The hull grows on zoom — the author chose 18.09 «потолок мягко растёт у всех».**
+    `shipScaleCap(Z)` (16c) = .8 + .6·(Z−1)/(ZOOM_MAX−1): .8 at ×1, ~1.04 at ×2.4, 1.4 at ×4.5; every
+    ship reads it through `shipScaleAt` / `fleetScale`, so sizes between ships stay honest; the haul
+    keeps its own zoom clamp on the constant. Two browser-tier tests restated as the new law
+    (`91zzxa-playable`, `91zzza-cave-props`) — run at release.
   - Side effect: `16a-space.js` crossed 40 KB again; the sprite oven moved to `16a0-glow.js`.
 - [ ] **P9 Zoom + 2a atmosphere + the entry point — one camera design.** Pinch jumps across 28× (217
   frames > 6 %/frame): easing and resting steps. At ×4.5 the frame is 87×188 world units, the

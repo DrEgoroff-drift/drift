@@ -717,7 +717,10 @@ TEST_SUITES.push(()=>suite("масштаб: корабль не мельче .7 
   eq(ZOOM_MAX,4.5,"мировой зум до ×4.5");
   setZoom(99);eq(G.zoom,ZOOM_MAX,"setZoom упирается в потолок");
   setZoom(.01);eq(G.zoom,ZOOM_MIN,"и в пол");setZoom(1);
-  eq(fleetScale(4.5),fleetScale(SHIP_SCALE_MAX),"флот растёт до потолка корабля и не дальше");
+  /* потолок растёт с зумом у всех (P8, 18.09): флот всегда .85 от своего корабля */
+  for(const z of [.5,1,2.4,4.5])near(fleetScale(z),Math.max(.5,Math.min(z,shipScaleCap(z)))*.85,1e-9,"флот — .85 от потолка корабля на зуме "+z);
+  ok(shipScaleAt(4.5)>shipScaleAt(1),"приблизил — свой корабль вырос ("+shipScaleAt(1)+" → "+shipScaleAt(4.5).toFixed(2)+")");
+  ok(shipScaleAt(4.5)<4.5/3,"но мир растёт быстрее корабля");
   ok(fleetScale(.8)>fleetScale(.5)*1.4,"а до потолка растёт вместе с миром");
   /* сейв с зумом старого потолка грузится в новые пределы */
   const sv=snapshot();sv.zoom=9;applySave(sv);eq(G.zoom,ZOOM_MAX,"зум из сейва — в пределах");

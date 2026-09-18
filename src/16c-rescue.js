@@ -199,7 +199,15 @@ const haulRim={cv:null};              /* холст-маска кромки: о�
    рисуется ровно физическим, зоны посадки и черпака лежат там, где нарисовано.
    Тем же числом рисуются флот, пираты, баржи и свои корабли */
 const SHIP_SCALE_MIN=.7,SHIP_SCALE_MAX=.8;
-function shipScaleAt(Z){return clamp(Z,SHIP_SCALE_MIN,SHIP_SCALE_MAX);}
+/* потолок растёт с зумом (P8, автор 18.09: «потолок мягко растёт у всех»):
+   при .8 на ×4.5 корпус был в 5.6 раза мельче мира вокруг (плейтест 13.09
+   §2.4) — приблизил, а свой корабль не вырос. Теперь .8 до ×1, ~1.05 на ×2.4,
+   1.4 на ×4.5: мир по-прежнему растёт быстрее корабля, но корабль тоже
+   растёт. Одно число на всех — флот, пираты, баржи, экипаж, буксир, — чтобы
+   корабли между собой оставались честного размера. SHIP_SCALE_MAX остаётся
+   нижней точкой потолка и зажимом зума у буксира ниже */
+function shipScaleCap(Z){return SHIP_SCALE_MAX+.6*clamp((Z-1)/(ZOOM_MAX-1),0,1);}
+function shipScaleAt(Z){return clamp(Z,SHIP_SCALE_MIN,shipScaleCap(Z));}
 function haulBarge(){const T=G.haul;return T._b||(T._b={seed:T.seed,by:"gt"});}
 function haulName(){return "буксир «"+HAUL_NAMES[((G.haul?G.haul.seed:0)>>>0)%HAUL_NAMES.length]+"»";}
 function haulSay(t){if(typeof etherLine==="function")etherLine(t,haulName());}
