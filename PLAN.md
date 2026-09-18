@@ -126,8 +126,10 @@ job (the phone milestone), but no fix may add raster cost without a number.
 **Stage 3 — far**
 - [ ] **D12 The ten far goods**: ten glyphs/colours in the ТРЮМ spread round the wheel (review
   §4.4), the belt entry's reading line, ЖИЛА across the screen (the only shout).
+- [ ] **D14 The blueprint** (M476–M479): the ОПИСЬ ЧЕРТЁЖ now a plain grid — the синька of M477 (Prussian blue, ochre stamps by kind, «СОГЛАСОВАНО»), the hold readable, the turret on the back in flight (M479).
 - [ ] **D13 The railway**: the faint lines and station circles on the map (M470); the ring, glide
-  path, vestibule block and the vestibule page (M471–M472); the ride on the map (M473) — as each is
+  path, vestibule block and the vestibule page (M471–M472); the ride on the map (M473: the flight
+  pads still show in the carriage; the train mark and the headlight) — as each is
   built.
 
 ### NEXT — the order after 18.09 (Control's handover; the team of three was closed by the author)
@@ -466,13 +468,7 @@ patchnote of each version names the M-numbers it closes.
 
 ### Stage 4 — the ship (`DESIGN-shipyard.md`, review §1.3, §2.2, §4.4)
 
-- [ ] **[design owed] M476 The plan, read-only.** `hullOf` → cells (side = length/N, N 8…14 by size; ≥ 48 px on
-  390 px), **one view, nose up**: rim cells = ОБШИВКА (mounts: нос → жёсткая, борт → турель with an
-  outward arc, as `mountsOf` today), axis cells behind the nose third = the spine (БАШНЯ), interior =
-  ПАЛУБА. **No deck tabs.** The **packer** turns every existing fit (`SHIPS`, `FLEET`, unique, fused,
-  NPC, pirates) into a plan by the maker's habit; **fixpoint suite**: every number equals today's ±1
-  for an untouched save, nothing that fits unfits, «a fully upgraded module set fits any hull».
-  ОПИСЬ shows the plan (swap same-footprint on the same cell only). No new save field.
+- [x] **[design owed] M476 The plan, read-only — BUILT 18.09 (Control), `src/05e-plan.js`.** `planOf(id)` rasterises `hullOf` nose up: cell = max(min(len/N, body width/3), span/7), N 8–14 (up to 24 for needles — the plan scrolls lengthwise), ≤ 7 columns so a cell is ≥ 44 px on a 390 px phone; classes nose / side (rim, wings) / spine / stern (the last body row) / deck; body rim only where a row is ≥ 3 cells wide (a needle's inside is its axis). `planPack` lays today's fit by habit (guns to the rim nearest their mount, L/M/H = 1/2/4 cells; engines to the stern; instruments to the nose third; the launcher to the spine; modules one cell each — tier is density), free deck and spine = ТРЮМ. No number depends on the plan yet, so an old save keeps every number by construction. Suite `91zzzzk5-plan` over the 8 hulls + 40 fleet: nose/side, stern, deck exist; ≤ 7 columns; a full fit with every module at tier 5 fits every hull. ОПИСЬ shows ЧЕРТЁЖ (a 200 px canvas + a legend line). **Open:** unique/fused/NPC hulls in the suite; the hold's green is barely visible (синька in M477). Original text in the archive.
 - [ ] **[design owed] M477 The КБ editor** — the second and last new screen: **синька** (Prussian blue, silhouette
   and grid in light line, parts as warm ochre ink stamps by kind, БАШНЯ a circle with a cross, scars
   brown, tape grey, «СОГЛАСОВАНО» violet in the corner — landing by itself after a fake queue «ваш

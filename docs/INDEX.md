@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 554 · символов верхнего уровня: 5377
+Файлов: 556 · символов верхнего уровня: 5389
 
 ## СИМВОЛЫ
 
@@ -1391,6 +1391,7 @@ drawObserv                   src/20aa-poi-shapes.js:491-513
 drawPirate                   src/12i-pirate-hull.js:428-478
 drawPirateBase               src/24a-mode-raid.js:103-133
 drawPirateSkin               src/03d-hull-marks.js:99-126
+drawPlan                     src/05e-plan.js:120-138
 drawPlanetLights             src/17e-station-body.js:45-64
 drawPlanetWorks              src/17e-station-body.js:74-123
 drawPlant                    src/20-life.js:394-403
@@ -3321,7 +3322,7 @@ opisHullRedraw               src/27j-ui-opis.js:393-409
 opisHullSlotAt               src/27j-ui-opis.js:410-421
 opisKitCard                  src/27j-ui-opis.js:616-624
 opisKitFuture                src/27j-ui-opis.js:128-135
-opisLeave                    src/27j-ui-opis.js:976-981
+opisLeave                    src/27j-ui-opis.js:977-982
 opisLift                     src/27j-ui-opis.js:267-309
 opisMarkCan                  src/27j-ui-opis.js:315-330
 opisMarkOver                 src/27j-ui-opis.js:331-335
@@ -3331,8 +3332,9 @@ opisPartCard                 src/27j-ui-opis.js:546-573
 opisPartHtml                 src/27j-ui-opis.js:524-545
 opisPhone                    src/27j-ui-opis.js:71
 opisPileCard                 src/27j-ui-opis.js:594-615
+opisPlanBlock                src/05e-plan.js:140-154
 opisPriceCue                 src/27j-ui-opis.js:575-584
-opisRender                   src/27j-ui-opis.js:704-974
+opisRender                   src/27j-ui-opis.js:704-975
 opisRerender                 src/27j-ui-opis.js:74-84
 opisSame                     src/27j-ui-opis.js:85
 opisScrap                    src/27j-ui-opis.js:209-220
@@ -3551,7 +3553,11 @@ PLACES                       src/11v-places.js:13-17
 PLACES_AT                    src/11v-places.js:18
 placesAll                    src/11v-places.js:19-31
 placeX                       src/11v-places.js:38
+PLAN_CACHE                   src/05e-plan.js:20
+PLAN_COL                     src/05e-plan.js:118
 PLAN_ETHER                   src/11r-plan.js:20-26
+PLAN_ITEM_COL                src/05e-plan.js:119
+PLAN_WANT                    src/05e-plan.js:78
 planAll                      src/11r-plan.js:27
 planCorePlanet               src/11r-plan.js:36-40
 planDeliver                  src/11r-plan.js:67-85
@@ -3601,9 +3607,15 @@ planetSunRot                 src/07-planet.js:329-333
 planetTakeLoad               src/12n-planet.js:126-143
 planetTick                   src/12n-planet.js:44-54
 planetWetAt                  src/07a-terrain.js:56-60
+planFoot                     src/05e-plan.js:73-76
 planGroundLine               src/11r-plan.js:47-52
 planIsCore                   src/11r-plan.js:41
 planIsCoreT                  src/11r-plan.js:42
+planN                        src/05e-plan.js:21
+planNow                      src/05e-plan.js:116
+planOf                       src/05e-plan.js:31-70
+planPack                     src/05e-plan.js:82-114
+planPtIn                     src/05e-plan.js:22-29
 PLANT_FORM_K                 src/20e-species.js:20
 PLANT_H_K                    src/20e-species.js:24
 PLANT_KINDS                  src/20-life.js:160
@@ -5461,6 +5473,9 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/05e-clearance.js · 7 КБ
   · допуск вместо уровней (M363, §11.4):1
 
+## src/05e-plan.js · 10 КБ
+  · чертёж корабля: клетки из корпуса и упаковщик (M476, DESIGN-shipyard §3, review §2.2):1
+
 ## src/06-galaxy.js · 14 КБ
   · галактика:1
   · испечённое живёт не дольше, чем нужно (M332):4
@@ -7029,6 +7044,8 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzzzk3-far.js · 6 КБ
 
 ## tests/91zzzzk4-rail.js · 4 КБ
+
+## tests/91zzzzk5-plan.js · 2 КБ
 
 ## tests/91zzzzl-maphold.js · 5 КБ
   · автотесты: владения на карте (M348):1

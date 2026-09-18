@@ -11143,3 +11143,11 @@ plausibly reach.
   heart to rim ≤ 60 s; held pad ×2, never a skip; desk open during the ride. Arrival: thrown out of
   the destination's ring onto its approach, slow, facing the station. Save `{line,from,to,t}`,
   resumes at the next stop. Kindness: the полустанок's lamp comes on as you approach — «ждали».
+
+- [ ] **[design owed] M476 The plan, read-only.** `hullOf` → cells (side = length/N, N 8…14 by size; ≥ 48 px on
+  390 px), **one view, nose up**: rim cells = ОБШИВКА (mounts: нос → жёсткая, борт → турель with an
+  outward arc, as `mountsOf` today), axis cells behind the nose third = the spine (БАШНЯ), interior =
+  ПАЛУБА. **No deck tabs.** The **packer** turns every existing fit (`SHIPS`, `FLEET`, unique, fused,
+  NPC, pirates) into a plan by the maker's habit; **fixpoint suite**: every number equals today's ±1
+  for an untouched save, nothing that fits unfits, «a fully upgraded module set fits any hull».
+  ОПИСЬ shows the plan (swap same-footprint on the same cell only). No new save field.

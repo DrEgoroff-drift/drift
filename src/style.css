@@ -1765,3 +1765,7 @@ body.table u.addr{color:#7a4a20}
 #railWin .rw-board em,#railWin .rw-row em{font-style:normal;color:#ffd08a}
 #railWin button.act{display:block;width:100%;min-height:44px;margin:6px 0;text-align:left}
 #railWin button.act s{display:block;text-decoration:none;color:var(--dim);font-size:10px}
+/* ── чертёж в ОПИСИ (M476) ── */
+.op-plan{padding:6px 0}
+.op-plan canvas{display:block;margin:6px auto;background:#0d2238;border:1px solid rgba(180,210,240,.25);border-radius:4px}
+.op-plan h4 s{margin-left:8px}

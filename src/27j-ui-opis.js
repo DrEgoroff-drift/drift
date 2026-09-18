@@ -863,6 +863,7 @@ function opisRender(box){
   pg.appendChild(hcv);
   if(phone)pg.appendChild(opisHullCap(slots,fm,inv,sp));
   pg.appendChild(ps);pg.appendChild(sc);pg.appendChild(sp);
+  if(typeof opisPlanBlock==="function")pg.appendChild(opisPlanBlock());   /* чертёж корабля, только вид (M476) */
   z3.appendChild(pg);
   /* ── зона 2: кукла, раскладка, шесть мест, приборы комплекта, запас ── */
   const z2=document.createElement("section");z2.className="op-z op-kit";z2.dataset.drop="kit";
