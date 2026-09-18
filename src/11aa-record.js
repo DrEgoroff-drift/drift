@@ -90,6 +90,7 @@ function renderRecord(box){
   const H=recordHonour();
   if(H.length)tableRow(box,"sec","","НА ДОСКЕ ПОЧЁТА: "+H.join(", "));
   if(typeof stampPage==="function")stampPage(box);   /* первая настоящая страница документа (M453) */
+  if(R.udar)tableRow(box,"sec","","ОТМЕТКИ «УДАРНИК»: "+R.udar+" · госзаказы сданы по твёрдой цене");   /* M503 */
   if(!R.e.length){tableRow(box,"dim","","записей нет: их делают другие — станции, институт, люди");return;}
   for(let i=R.e.length-1;i>=0;i--){
     const x=R.e[i];

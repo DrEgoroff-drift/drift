@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 579 · символов верхнего уровня: 5603
+Файлов: 580 · символов верхнего уровня: 5609
 
 ## СИМВОЛЫ
 
@@ -374,7 +374,7 @@ BB_CACHE                     src/17k-billboard.js:12
 BB_TITLE                     src/17k-billboard.js:11
 bbDeal                       src/17k-billboard.js:20-30
 bbHere                       src/17k-billboard.js:13-18
-bbLine                       src/17k-billboard.js:31-47
+bbLine                       src/17k-billboard.js:31-50
 bBox                         src/21aa-base-rooms.js:23-28
 bCalm                        tests/91zzzw-base.js:71-81
 bCrate                       src/21aa-base-rooms.js:270-277
@@ -1359,7 +1359,7 @@ drawBelt                     src/24-mode-belt.js:378-718
 drawBeltPOISprite            src/24b-belt-poi.js:50-185
 drawBeltRing                 src/17c-system-draw.js:94-106
 drawBeltRocks                src/17c-system-draw.js:41-82
-drawBillboard                src/17k-billboard.js:48-78
+drawBillboard                src/17k-billboard.js:51-81
 drawBuildMenu                src/21aa-base-rooms.js:504-520
 drawBuilt                    src/21c-built.js:64-101
 drawCantinaRoom              src/27d-ui-cantina.js:32-44
@@ -1997,6 +1997,12 @@ goalOwnYacht                 src/13b-occupy.js:208-214
 GOLD_BW                      tests/91zzzzzzzzz-golden.js:25
 goldCmp                      tests/91zzzzzzzzz-golden.js:36-46
 goldSig                      tests/91zzzzzzzzz-golden.js:26-35
+GOS_SHIFTS                   src/17k1-gosplan.js:7
+gosBbLine                    src/17k1-gosplan.js:20-23
+gosBucket                    src/17k1-gosplan.js:8
+gosDeliver                   src/17k1-gosplan.js:24-35
+gosPlan                      src/17k1-gosplan.js:9-19
+gosRow                       src/17k1-gosplan.js:37-45
 GOT                          src/27jb-ui-got.js:12
 gotAdd                       src/27jb-ui-got.js:13
 gotCalm                      src/27jb-ui-got.js:15-20
@@ -4168,7 +4174,7 @@ renderMail                   src/25k-post-mail.js:36-109
 renderOpts                   src/27-ui-ship.js:58-330
 renderPrices                 src/12aa-need.js:258-285
 renderQsl                    src/11an-qsl.js:160-201
-renderRecord                 src/11aa-record.js:86-106
+renderRecord                 src/11aa-record.js:86-107
 renderRelays                 src/11ap-relay.js:253-301
 renderRoute                  src/12r-route.js:349-448
 renderSiteTab                src/26c-ui-station-site.js:7-130
@@ -4965,10 +4971,10 @@ stTabBoard                   src/26e-ui-station-trade.js:11-147
 stTabFuse                    src/26b-ui-station-work.js:373
 stTabInstr                   src/26b-ui-station-work.js:225-372
 stTabLab                     src/26b-ui-station-work.js:307-372
-stTabMarket                  src/26e-ui-station-trade.js:148-244
+stTabMarket                  src/26e-ui-station-trade.js:148-245
 stTabMods                    src/26b-ui-station-work.js:105-372
 stTabsHere                   src/26-ui-station.js:141
-stTabYard                    src/26e-ui-station-trade.js:245-390
+stTabYard                    src/26e-ui-station-trade.js:246-391
 stTypeOf                     src/06-galaxy.js:73
 STUN_TIME                    src/13a-guns.js:27
 SUB_FEATS                    src/05b3-sub.js:11
@@ -6301,8 +6307,11 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/17j-cheburek.js · 3 КБ
   · «Чебуречная» — лодка на подъезде (M462, DESIGN-life §3.4):1
 
-## src/17k-billboard.js · 5 КБ
+## src/17k-billboard.js · 6 КБ
   · рекламные щиты на подъезде (M460, DESIGN-life §3.2, review §4.2):1
+
+## src/17k1-gosplan.js · 3 КБ
+  · госзаказ на билборде (M503, PLAN «new mechanics», st. 5):1
 
 ## src/17l-hotel.js · 4 КБ
   · гостиницы (M461, DESIGN-life §3.3):1
@@ -7327,7 +7336,7 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## tests/91zzzzk5-plan.js · 9 КБ
 
-## tests/91zzzzk6-stapel.js · 17 КБ
+## tests/91zzzzk6-stapel.js · 18 КБ
 
 ## tests/91zzzzl-maphold.js · 5 КБ
   · автотесты: владения на карте (M348):1

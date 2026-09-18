@@ -9784,7 +9784,7 @@ const G={
   inv:[],fit:{},shield:0,shieldHit:0,energy:0,loot:[],partsBought:{},
   /* допуск и налёт (M363, §11.4): допуск не падает, налёт копится только в полёте */
   clearance:1,flownMs:0,gunGroup:0,
-  mined:{},farTaken:{},draft:{},smenaAt:{},stapel:{},thrown:[],bazBought:null,railParcel:null,railPass:null,railSeal:0,tapeRoll:0,tapes:{},actWk:null,   /* выработанные залежи по планетам; неделя налёта и талоны (05e) */
+  mined:{},farTaken:{},draft:{},smenaAt:{},stapel:{},thrown:[],bazBought:null,railParcel:null,railPass:null,railSeal:0,gosDone:{},tapeRoll:0,tapes:{},actWk:null,   /* выработанные залежи по планетам; неделя налёта и талоны (05e) */
   tech:new Set(),techLvl:{},barter:new Set(),
   found:new Set(),species:new Set(),
   ap:null,          // автопилот
@@ -11487,6 +11487,7 @@ function renderRecord(box){
   const H=recordHonour();
   if(H.length)tableRow(box,"sec","","НА ДОСКЕ ПОЧЁТА: "+H.join(", "));
   if(typeof stampPage==="function")stampPage(box);   /* первая настоящая страница документа (M453) */
+  if(R.udar)tableRow(box,"sec","","ОТМЕТКИ «УДАРНИК»: "+R.udar+" · госзаказы сданы по твёрдой цене");   /* M503 */
   if(!R.e.length){tableRow(box,"dim","","записей нет: их делают другие — станции, институт, люди");return;}
   for(let i=R.e.length-1;i>=0;i--){
     const x=R.e[i];
@@ -41677,7 +41678,7 @@ function snapshot(){
     inv:G.inv.map(packPart),fit:G.fit,partsBought:prunePartsBought(),
     tech:[...G.tech],techLvl:G.techLvl,barter:[...G.barter],found:[...G.found],
     species:[...G.species],bioV:2,
-    opts:G.opts,zoom:G.zoom,market:G.market,uniqueShips:(typeof stapelStrip==="function")?stapelStrip(G.uniqueShips):G.uniqueShips,stapel:G.stapel||{},thrown:G.thrown||[],railParcel:G.railParcel||null,railPass:G.railPass||null,railSeal:G.railSeal?1:0,bazBought:G.bazBought||null,tow:G.tow,
+    opts:G.opts,zoom:G.zoom,market:G.market,uniqueShips:(typeof stapelStrip==="function")?stapelStrip(G.uniqueShips):G.uniqueShips,stapel:G.stapel||{},thrown:G.thrown||[],railParcel:G.railParcel||null,railPass:G.railPass||null,railSeal:G.railSeal?1:0,gosDone:G.gosDone||{},bazBought:G.bazBought||null,tow:G.tow,
     episodes:G.episodes,notebook:G.notebook,gifts:G.gifts,mslBy:G.mslBy,
     bonds:G.bonds,bondHold:G.bondHold,coupN:G.coupN,
     letter:G.letter||null,dipSwapN:G.dipSwapN,smugN:G.smugN,smugBy:G.smugBy,
@@ -41840,7 +41841,7 @@ function applySave(s){
   if(typeof hudNumDirty==="function")hudNumDirty();
   G.sx=s.sx|0;G.sy=s.sy|0;G.sys=getSystem(G.sx,G.sy);
   G.uniqueShips=asMap(s.uniqueShips);
-  G.railParcel=(s.railParcel&&typeof s.railParcel==="object")?s.railParcel:null;G.railPass=(s.railPass&&typeof s.railPass==="object")?s.railPass:null;G.railSeal=s.railSeal?1:0;   /* M499–M508 */
+  G.railParcel=(s.railParcel&&typeof s.railParcel==="object")?s.railParcel:null;G.railPass=(s.railPass&&typeof s.railPass==="object")?s.railPass:null;G.railSeal=s.railSeal?1:0;G.gosDone=asMap(s.gosDone);   /* M499–M508 */
   G.thrown=Array.isArray(s.thrown)?s.thrown.slice(0,12):[];G.bazBought=(s.bazBought&&typeof s.bazBought==="object")?s.bazBought:null;   /* барахолка (M463) */
   G.stapel=asMap(s.stapel);if(typeof stapelRestore==="function")stapelRestore();   /* заказанные корпуса выводятся из заказа (M481) */
   G.tow=(s.tow&&typeof s.tow==="object")?s.tow:null;   /* корпус на тросе (M369b) */
@@ -49846,7 +49847,10 @@ function bbLine(by){
   const key=G.sx+","+G.sy+","+Math.floor(G.t/600);
   if(BB_CACHE.key===key)return BB_CACHE.line;
   const D=bbDeal();let L;
-  if(!D)L="СВОБОДНОЕ МЕСТО ДЛЯ ВАШЕЙ РЕКЛАМЫ";
+  /* ГЛАВТРАССА через раз вешает план (M503) */
+  const gp=(by==="gt"&&(Math.floor(G.t/600)&1)&&typeof gosBbLine==="function")?gosBbLine():null;
+  if(gp)L=gp;
+  else if(!D)L="СВОБОДНОЕ МЕСТО ДЛЯ ВАШЕЙ РЕКЛАМЫ";
   else{
     const g=RES[D.k].ru.toUpperCase(),n=D.d+" "+pl3(D.d,"ПРЫЖОК","ПРЫЖКА","ПРЫЖКОВ");
     L=by==="co"?g+" "+D.p+" У ПАРТНЁРА В "+D.d+" "+pl3(D.d,"ПРЫЖКЕ","ПРЫЖКАХ","ПРЫЖКАХ")+" — ВЫГОДНО КАК НИКОГДА™ · ДО КОНЦА АКЦИИ 00:00:03":
@@ -49889,6 +49893,52 @@ function drawBillboard(zx,zy,Z){
   ctx.fillStyle=rgba(mixc(col,[255,255,255],.3),.85);
   for(let k=-1;k<3;k++)ctx.fillText(L,x-pw/2+4-off+k*tw,y+ph*.25);
   ctx.restore();
+}
+
+/* ══════════════ госзаказ на билборде (M503, PLAN «new mechanics», st. 5) ══════════════
+   У людной станции ГЛАВТРАССЫ щит через раз вместо цены соседа пишет ПЛАН:
+   «ПЛАН: 40 ЕД. ОСМИЯ ДО СВОДКИ 118». Цена твёрдая, кто сдал — тот и молодец:
+   сдать можно на самой станции (строка ГОСЗАКАЗ во вкладке торговли), в
+   КНИЖКЕ — отметка «УДАРНИК», в журнале — «план выполнен на 103 %».
+   План — из места и сводки (три смены), выполненный помнится (G.gosDone). */
+const GOS_SHIFTS=3;
+function gosBucket(){return Math.floor(now()/(HOLD_SHIFT*GOS_SHIFTS));}
+function gosPlan(){
+  const sys=G.sys;if(!sys||!sys.station)return null;
+  const B=(typeof bbHere==="function")?bbHere():null;if(!B||B.by!=="gt")return null;
+  const b=gosBucket(),h=hashi(G.sx,G.sy,b^0x6059);
+  const pool=TRADE_KEYS.filter(k=>RES[k]&&!RES[k].pax&&k!=="folk").concat(typeof FAR_KEYS!=="undefined"?FAR_KEYS:[]);
+  const k=pool[h%pool.length],far=!!(RES[k].far);
+  const n=far?5+(h>>4)%16:20+(h>>4)%31;
+  const price=Math.round(RES[k].price*(far?1.2:1.3));
+  const key=G.sx+","+G.sy+","+b;
+  return {k,n,price,key,svodka:100+b%900,done:!!(G.gosDone&&G.gosDone[key])};
+}
+function gosBbLine(){
+  const P=gosPlan();if(!P||P.done)return null;
+  return "ПЛАН: "+P.n+" ЕД. "+RES[P.k].ru.toUpperCase()+" ДО СВОДКИ "+P.svodka+" · ПО "+P.price+" КР · СДАВАТЬ ЗДЕСЬ";
+}
+function gosDeliver(){
+  const P=gosPlan();if(!P||P.done)return false;
+  if((G.cargo[P.k]|0)<P.n){say("Не хватает до плана\nнужно "+P.n+" ед.",90);return false;}
+  G.cargo[P.k]-=P.n;
+  earn(P.n*P.price,"plan");
+  if(!G.gosDone)G.gosDone={};G.gosDone[P.key]=1;
+  const R=(typeof recordAll==="function")?recordAll():null;if(R)R.udar=(R.udar|0)+1;
+  const pct=101+hashi(G.sx,G.sy,gosBucket())%7;
+  logAdd("good","Госзаказ сдан: "+RES[P.k].ru.toLowerCase()+" ×"+P.n+" · +"+(P.n*P.price).toLocaleString("ru")+" кр · КНИЖКА: «УДАРНИК»");
+  logAdd("dim","Сводка "+P.svodka+": план по станции «"+G.st.name+"» выполнен на "+pct+" %");
+  return true;
+}
+/* строка во вкладке торговли */
+function gosRow(){
+  const P=gosPlan();if(!P)return null;
+  const r=el("div","row");
+  r.appendChild(el("div","nm","<b>ГОСЗАКАЗ · "+RES[P.k].ru+" ×"+P.n+"</b><s>"+(P.done?"план по этой сводке выполнен — спасибо, товарищ":
+    "цена твёрдая: "+P.price+" кр за ед. · до сводки "+P.svodka+" · в трюме "+(G.cargo[P.k]|0))+"</s>"));
+  if(!P.done){const b=el("button","act gold","СДАТЬ · "+(P.n*P.price).toLocaleString("ru")+" КР");
+    b.disabled=(G.cargo[P.k]|0)<P.n;b.onclick=()=>{if(gosDeliver())renderTab();};r.appendChild(b);}
+  return r;
 }
 
 /* ══════════════ гостиницы (M461, DESIGN-life §3.3) ══════════════
@@ -82919,6 +82969,7 @@ function stTabBoard(){
 }
 function stTabMarket(st){
     const prices=marketFor(G.sys),mkt=G.market[G.sys.key];
+    if(typeof gosRow==="function"){const gr=gosRow();if(gr)$body.appendChild(gr);}   /* госзаказ со щита (M503) */
     $body.appendChild(el("div","sec","ТРЮМ "+held()+" / "+st.cargoMax+
       " · ТОПЛИВО "+fuelPriceHere()+" кр/ед · РЕМОНТ "+repairCost()+" кр/ед"));
     /* Маршрут переехал в конец вкладки (проход «дорога»). Он стоял вторым

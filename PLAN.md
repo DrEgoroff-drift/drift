@@ -609,7 +609,7 @@ material consequences are the part that does not exist yet — that is what stag
   talks during the ride (the passenger table, M156), leaves a rumour.
 - **M502 Проводник** — BUILT 18.09 [design owed]: rides of 3+ non-metro stops, tea and a rumour at the first stop (no crew fatigue yet). (st. 3): on the скорый the one human of the railway brings tea in a
   подстаканник — crew fatigue eased, one rumour; the kindness of the whole railway.
-- **M503 Госзаказ на билборде** (st. 5, M460 + M467): «ПЛАН: 40 ед. осмия до сводки 118» — a fixed
+- **M503 Госзаказ на билборде** — BUILT 18.09 `17k1-gosplan` [design owed]: at ГЛАВТРАССА billboard stations every other 10 s cycle the sign shows the plan (good, qty, сводка = three смены, fixed price ×1.3 or ×1.2 far); ГОСЗАКАЗ row atop the trade tab delivers via `earn`, `G.gosDone`, КНИЖКА `R.udar` shown on the record page, «план выполнен на 101–107 %». (st. 5, M460 + M467): «ПЛАН: 40 ед. осмия до сводки 118» — a fixed
   price for whoever delivers, a КНИЖКА stamp «УДАРНИК», the сводка reports «план выполнен на 103 %».
 - **M504 Ажиотаж** (st. 3, M466 + M474): after a ЖИЛА rumour the line adds a train to that stop «по
   многочисленным просьбам трудящихся», the полустанок's prices spike, the approach fills.

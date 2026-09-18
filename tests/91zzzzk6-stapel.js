@@ -239,3 +239,16 @@ TEST_SUITES.push(()=>suite("жизнь дороги: посылка, проез�
   railLifeExit({sx:9999,sy:9999});eq(G.railSeal,0,"пломба снята на выходе");
   clockSet(base);RAIL_LIFE={pax:null,tea:false,teaDone:false};
 }));
+TEST_SUITES.push(()=>suite("госзаказ на щите: план, твёрдая цена, УДАРНИК (M503)",()=>{
+  resetWorld();
+  let P=null;
+  for(let sx=-12;sx<=12&&!P;sx++)for(let sy=-12;sy<=12&&!P;sy++){const s=getSystem(sx,sy);if(!s.station)continue;G.sx=sx;G.sy=sy;G.sys=s;G.st=s.station;P=gosPlan();}
+  ok(!!P,"у людной станции ГЛАВТРАССЫ есть план: "+(P&&P.k+" ×"+P.n));
+  ok(/^ПЛАН: /.test(gosBbLine()),"щит пишет план");
+  G.cargo[P.k]=P.n-1;ok(!gosDeliver(),"не хватает — не сдать");
+  G.cargo[P.k]=P.n;const c0=G.credits,u0=(recordAll().udar|0);
+  ok(gosDeliver(),"сдали");
+  eq(G.credits-c0,P.n*P.price,"по твёрдой цене");
+  eq(recordAll().udar|0,u0+1,"в КНИЖКЕ — УДАРНИК");
+  ok(gosPlan().done&&gosBbLine()===null,"по этой сводке план закрыт");
+}));
