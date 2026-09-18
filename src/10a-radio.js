@@ -144,7 +144,7 @@ function radioBuild(){
   fb.gain.value=.42;dt.type="lowpass";dt.frequency.value=1800;dw.gain.value=.22;
   d.connect(dt);dt.connect(fb);fb.connect(d);dt.connect(dw);dw.connect(RADIO.bus);
   RADIO.dly=d;
-  const wet=c.createGain();wet.gain.value=1;
+  const wet=c.createGain();wet.gain.value=1;RADIO.wet=wet;
   if(MUS.fx&&MUS.fx.send&&MUS.fx.send.context===c)wet.connect(MUS.fx.send);
   RADIO.layers={};
   for(const k of RADIO_LAYERS){
@@ -746,21 +746,26 @@ function radioBellVoice(t,fr,len,dst,peak){
 }
 /* маяк: протяжный «пик» спасательного буя — чистый тон полсекунды и три эха,
    каждое тише и глуше; высота всякий раз другая, иногда вне лада — чужой позывной */
+/* маяк — как под водой: глухой тон, чуть плывущий по высоте, и пять эх, каждое
+   тише и глуше предыдущего; сухого сигнала почти нет, всё уходит в зал и задержку */
 function radioBeacon(t,key,cd){
   const r=RADIO.r,c=SND.ctx;
-  const midi=key+36+radioDeg([0,2,4,7,9,11,14][Math.floor(r()*7)]);   // только звуки лада: тоника, терция, квинта и их октавы
-  const fr=midiHz(midi),gap=.9+r()*.5;
-  for(let k=0;k<4;k++){
-    const tk=t+k*gap,v=[.11,.055,.028,.012][k];
+  const midi=key+36+radioDeg([0,2,4,7,9,11,14][Math.floor(r()*7)]);
+  const fr=midiHz(midi),gap=1+r()*.4;
+  const wob=c.createOscillator(),wg=c.createGain();wob.frequency.value=.25+r()*.2;wg.gain.value=fr*.004;wob.connect(wg);
+  const dry=c.createGain();dry.gain.value=.35;dry.connect(RADIO.bus);
+  for(let k=0;k<6;k++){
+    const tk=t+k*gap,v=[.11,.06,.035,.02,.012,.007][k];
     const o=c.createOscillator(),g=c.createGain(),f=c.createBiquadFilter(),p=c.createStereoPanner();
-    o.type="sine";o.frequency.value=fr;
-    f.type="lowpass";f.frequency.value=6000-k*1300;              // эхо глуше с каждым разом
+    o.type="sine";o.frequency.value=fr;wg.connect(o.frequency);
+    f.type="lowpass";f.frequency.value=[1300,950,750,600,480,400][k];f.Q.value=.8;
     p.pan.value=(k%2?-.5:.5)*(.3+r()*.5);
-    g.gain.setValueAtTime(.0001,tk);g.gain.exponentialRampToValueAtTime(v,tk+.06);
-    g.gain.setValueAtTime(v,tk+.5);g.gain.exponentialRampToValueAtTime(.0001,tk+.5+2);
-    o.connect(f);f.connect(g);g.connect(p);p.connect(RADIO.bus);p.connect(RADIO.dly);   // мимо среза: звонкий
-    o.start(tk);o.stop(tk+2.7);
+    g.gain.setValueAtTime(.0001,tk);g.gain.exponentialRampToValueAtTime(v,tk+.09);
+    g.gain.setValueAtTime(v,tk+.5);g.gain.exponentialRampToValueAtTime(.0001,tk+.5+2.2);
+    o.connect(f);f.connect(g);g.connect(p);p.connect(dry);p.connect(RADIO.wet);p.connect(RADIO.dly);
+    o.start(tk);o.stop(tk+2.9);
   }
+  wob.start(t);wob.stop(t+6*gap+3);
 }
 function radioBell(t,key,cd){
   radioBellVoice(t,midiHz(key+48+radioDeg(cd+[0,2,4][Math.floor(RADIO.r()*3)])),2.2,RADIO.layers.bell,.008);
