@@ -131,6 +131,7 @@ function drawMap(){
   drawGalaxy(V,cell);
   mapRhumbPaint(ctx,W,H,px,py);
   drawGalaxyStars(V,cell);   /* звёзды галактики — предметы мира, не мерцают (M448) */
+  if(typeof drawRailMap==="function")drawRailMap(V,cell);   /* железная дорога бледно, 1:1 с листом (M470) */
   const jr=(st.jump+.02)*cell;
   /* круг прыжка: не окружность-волосок, а освещённая область — сразу видно,
      докуда рука дотягивается */

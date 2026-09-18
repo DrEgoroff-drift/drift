@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 547 · символов верхнего уровня: 5288
+Файлов: 552 · символов верхнего уровня: 5347
 
 ## СИМВОЛЫ
 
@@ -91,7 +91,7 @@ ambK                         src/19c-light.js:115-120
 ambRGB                       src/19c-light.js:100-112
 AMMO_BATCH                   src/16b-missile.js:59
 AMMO_COST                    src/16b-missile.js:58
-AMMO_KEYS                    src/02-world.js:90
+AMMO_KEYS                    src/02-world.js:110
 ammoBatch                    src/16b-missile.js:60
 ammoRow                      src/16b-missile.js:74-95
 ammoStamp                    src/12ar-hail.js:42
@@ -115,7 +115,7 @@ applyCrewEvent               src/12b-crew-events.js:215-224
 applyPadMode                 src/15-input.js:72-75
 applyPadSize                 src/15-input.js:8
 applySave                    src/14-save.js:216-619
-applySaveRest                src/14a1-save-rest.js:15-375
+applySaveRest                src/14a1-save-rest.js:15-376
 applyVolumes                 src/09-audio.js:40-47
 apVel                        src/16-flight.js:132
 ARC_JUMP                     src/13a-guns.js:39
@@ -343,9 +343,9 @@ bCalm                        tests/91zzzw-base.js:71-81
 bCrate                       src/21aa-base-rooms.js:270-277
 bCrew                        tests/91zzzw-base.js:199-205
 bDress                       src/21aa-base-rooms.js:122-183
-BEACON_COOL                  src/23-mode-dig.js:85
-beaconCool                   src/23-mode-dig.js:86
-beaconTick                   src/23-mode-dig.js:113-124
+BEACON_COOL                  src/23-mode-dig.js:86
+beaconCool                   src/23-mode-dig.js:87
+beaconTick                   src/23-mode-dig.js:114-125
 BEAM_LIFE                    src/13a-guns.js:28
 beamAdd                      src/13a-guns.js:79-83
 beamsDraw                    src/13a-guns.js:91-102
@@ -359,11 +359,11 @@ beastTraitWord               src/20e-species.js:224-233
 BELT_AVLIM                   src/24-mode-belt.js:87
 BELT_HALF                    src/24-mode-belt.js:85
 BELT_POI                     src/24b-belt-poi.js:13-19
-BELT_RES                     src/02-world.js:117
+BELT_RES                     src/02-world.js:138
 BELT_STROKES                 src/24-mode-belt.js:53
-beltBasis                    src/24-mode-belt.js:165-175
+beltBasis                    src/24-mode-belt.js:167-177
 beltDots                     src/17c-system-draw.js:88-93
-beltFwd                      src/24-mode-belt.js:160-163
+beltFwd                      src/24-mode-belt.js:162-165
 beltIcy                      src/24-mode-belt.js:88
 BG                           src/16-flight.js:3
 BG_BRIGHT                    src/16-flight.js:17
@@ -505,9 +505,9 @@ builtSpot                    src/21c-built.js:42-63
 buoyEtherLine                src/12ae-ladder.js:124-138
 BURN_DPS                     src/13a-guns.js:26
 BURN_TIME                    src/13a-guns.js:25
-BUY_SPREAD                   src/12-economy.js:51
-buyCargo                     src/12-economy.js:57-70
-buyPriceFor                  src/12-economy.js:52-56
+BUY_SPREAD                   src/12-economy.js:74
+buyCargo                     src/12-economy.js:80-93
+buyPriceFor                  src/12-economy.js:75-79
 bWall                        src/21aa-base-rooms.js:187-242
 bWorker                      src/21aa-base-rooms.js:322-382
 CAM_LAG_PX                   src/16a-space.js:316
@@ -1041,7 +1041,7 @@ cultSeriesWho                src/12b3-fx-cult.js:187-190
 cultSeriesWindow             src/12b3-fx-cult.js:183-186
 CUN                          src/22-mode-cave.js:22-32
 curTok                       src/09-audio.js:83
-CUT_RANGE                    src/24-mode-belt.js:185
+CUT_RANGE                    src/24-mode-belt.js:187
 cvs                          src/08-state.js:2
 CVS_RECT                     src/08-state.js:83
 cvsRect                      src/08-state.js:98-101
@@ -1096,7 +1096,7 @@ decoWall                     src/21ba-deco-shapes.js:147-189
 deedAdd                      src/11ai-ledger.js:53-64
 DEEDS                        src/11ai-ledger.js:25-35
 depKind                      src/21b-surface-deco.js:396-405
-deployDrone                  src/12-economy.js:195-212
+deployDrone                  src/12-economy.js:218-235
 DEPTH_TIERS                  src/04-mods.js:54-58
 DESC_MOOD                    src/01-core.js:193-198
 DESC_TAIL                    src/01-core.js:199
@@ -1202,9 +1202,9 @@ DIG_CELL                     src/23-mode-dig.js:3
 DIG_GEO_K                    src/23-mode-dig.js:9
 DIG_TURF                     src/23aa-dig-rock.js:463
 digBedding                   src/23aa-dig-rock.js:118-145
-digCell                      src/23-mode-dig.js:29-49
+digCell                      src/23-mode-dig.js:30-50
 digCun                       src/23aa-dig-rock.js:158-182
-digFauna                     src/23-mode-dig.js:254-327
+digFauna                     src/23-mode-dig.js:256-329
 digRGB                       src/23aa-dig-rock.js:465
 digRockMass                  src/23aa-dig-rock.js:183-446
 digRockPass                  src/23aa-dig-rock.js:26-101
@@ -1309,7 +1309,7 @@ drawBase                     src/21ac-base-draw.js:43-730
 drawBaseBuilding             src/21c-built.js:105-136
 drawBeast                    src/20f-fauna.js:231-339
 drawBeastAlien               src/20f-fauna.js:65-229
-drawBelt                     src/24-mode-belt.js:376-716
+drawBelt                     src/24-mode-belt.js:378-718
 drawBeltPOISprite            src/24b-belt-poi.js:50-185
 drawBeltRing                 src/17c-system-draw.js:94-106
 drawBeltRocks                src/17c-system-draw.js:41-82
@@ -1338,7 +1338,7 @@ drawDeadBattery              src/20aa-poi-shapes.js:221-275
 drawDeco                     src/21b-surface-deco.js:166-225
 drawDeposit                  src/21b-surface-deco.js:406-560
 drawDig                      src/23a-dig-draw.js:655-659
-drawDigFauna                 src/23-mode-dig.js:328-337
+drawDigFauna                 src/23-mode-dig.js:330-339
 drawDigWorld                 src/23a-dig-draw.js:45-607
 drawDronesMap                src/12e-drone-flight.js:312-330
 drawDronesSystem             src/12e-drone-flight.js:226-299
@@ -1358,7 +1358,7 @@ drawGalaxy                   src/17z1-galaxy.js:97-137
 drawGalaxyStars              src/17z1-galaxy.js:156-195
 drawGestPost                 src/17h-sys-gesture.js:189-210
 drawGesture                  src/17h-sys-gesture.js:86-169
-drawGlassHUD                 src/24-mode-belt.js:718-805
+drawGlassHUD                 src/24-mode-belt.js:720-807
 drawGlyph                    src/12t-settle.js:59-77
 drawGround                   src/19-mode-landing-ground.js:11-239
 drawGroundCrumbs             src/19-mode-landing-ground.js:242-252
@@ -1378,7 +1378,7 @@ drawLanding                  src/19-mode-landing.js:285-413
 drawLoreMarks                src/12q-lore.js:235-266
 drawLuxeDeck                 src/03c-hull-luxe.js:109-275
 drawLuxeSkin                 src/03c-hull-luxe.js:27-108
-drawMap                      src/18-mode-map.js:120-497
+drawMap                      src/18-mode-map.js:120-498
 drawMisFigure                src/11z-misclosure.js:63-87
 drawModule                   src/21aa-base-rooms.js:384-500
 drawMonolith                 src/20aa-poi-shapes.js:193-210
@@ -1398,13 +1398,14 @@ drawPOI                      src/20a-poi.js:173-234
 drawPortal                   src/20aa-poi-shapes.js:464-489
 drawPostcard                 src/25g-postcard.js:170-611
 drawRaid                     src/24aa-raid-draw.js:14-655
+drawRailMap                  src/18e-rail-net.js:181-204
 drawRing                     src/17c-system-draw.js:4-15
 drawRingTape                 src/11x-ring.js:107-118
 drawRoad                     src/27l-road-draw.js:87-622
 drawRocks                    src/19-mode-landing-ground.js:294-386
 drawRouteMap                 src/12r-route.js:267-323
 drawRungRing                 src/12ae-ladder.js:72-87
-drawScoop                    src/19a-mode-scoop.js:266-597
+drawScoop                    src/19a-mode-scoop.js:271-602
 drawSeams                    src/12s-wear.js:184-199
 drawShuttleArc               src/17f-sys-traffic.js:43-79
 drawSkyBase                  src/19c-light.js:296-329
@@ -1462,28 +1463,28 @@ DRONE_TAIL                   src/12e-drone-flight.js:207
 DRONE_TRIP_BASE              src/12e-drone-flight.js:18
 droneBreakP                  src/12e-drone-flight.js:145-149
 droneBreaks                  src/12e-drone-flight.js:150
-droneCapacity                src/12-economy.js:190-193
+droneCapacity                src/12-economy.js:213-216
 droneFar                     src/12e-drone-flight.js:76
 droneFixMs                   src/12e-drone-flight.js:151-160
 droneGuestPos                src/12e-drone-flight.js:213-225
 droneHome                    src/12e-drone-flight.js:77-89
-droneMarket                  src/12-economy.js:144-166
+droneMarket                  src/12-economy.js:167-189
 droneName                    src/12e-drone-flight.js:38
 droneNextId                  src/12e-drone-flight.js:32-37
 droneNormalize               src/12e-drone-flight.js:44-60
-dronePaybackH                src/12-economy.js:121
+dronePaybackH                src/12-economy.js:144
 dronePhase                   src/12e-drone-flight.js:104-113
 dronePoint                   src/12e-drone-flight.js:68-75
 dronePos                     src/12e-drone-flight.js:116-132
-dronePrice                   src/12-economy.js:116-119
-droneRecall                  src/12-economy.js:102-110
+dronePrice                   src/12-economy.js:139-142
+droneRecall                  src/12-economy.js:125-133
 droneRoutes                  src/12e-drone-flight.js:177-199
 DRONES                       src/04-mods.js:60-66
-droneShopHas                 src/12-economy.js:123-129
-droneShopTake                src/12-economy.js:130-134
+droneShopHas                 src/12-economy.js:146-152
+droneShopTake                src/12-economy.js:153-157
 droneStateRu                 src/12e-drone-flight.js:162-172
 droneSys                     src/12e-drone-flight.js:65-67
-droneTarget                  src/12-economy.js:194
+droneTarget                  src/12-economy.js:217
 droneTripMs                  src/12e-drone-flight.js:92-100
 drOut                        tests/91zzzzzn-doors.js:45-50
 drPair                       tests/91zzzzzn-doors.js:19-24
@@ -1523,9 +1524,9 @@ energyCap                    src/05c-arms.js:166
 energyRegen                  src/05c-arms.js:167
 engineLoop                   src/09-audio.js:309-335
 enterBase                    src/21a-mode-base.js:121-152
-enterBelt                    src/24-mode-belt.js:89-135
+enterBelt                    src/24-mode-belt.js:89-137
 enterCave                    src/22-mode-cave.js:175-232
-enterDig                     src/23-mode-dig.js:50-69
+enterDig                     src/23-mode-dig.js:51-70
 enterHomeIn                  src/29c-home-in.js:65-73
 enterRaid                    src/24a-mode-raid.js:134-189
 enterSpa                     src/29h-spa.js:51-65
@@ -1567,9 +1568,9 @@ evacuate                     src/21-mode-surface.js:679-699
 exhaustHaze                  src/16a-space.js:359-383
 exileCandidates              src/12g-mgr-rogue.js:123-130
 exitBase                     src/21a-mode-base.js:153-156
-exitBelt                     src/24-mode-belt.js:176-184
+exitBelt                     src/24-mode-belt.js:178-186
 exitCave                     src/22-mode-cave.js:233-237
-exitDig                      src/23-mode-dig.js:70-80
+exitDig                      src/23-mode-dig.js:71-81
 exitHomeIn                   src/29c-home-in.js:74-78
 exitScoop                    src/19a-mode-scoop.js:62-74
 exitSpa                      src/29h-spa.js:119-125
@@ -1615,7 +1616,41 @@ factPrices                   src/27c-ui-hq.js:580-597
 FAME_N                       src/21b3-base-hunt.js:27
 fameOf                       src/21b3-base-hunt.js:98-102
 fameWhere                    src/21b3-base-hunt.js:103-115
-FAUNA_RES                    src/02-world.js:96
+FAR_CACHE                    src/06d-far.js:24
+FAR_EATER                    src/12-economy.js:26
+FAR_FP_BEFORE                tests/91zzzzk3-far.js:5
+FAR_GRADE                    src/06d-far.js:22
+FAR_KEYS                     src/02-world.js:120
+FAR_RES                      src/02-world.js:94-105
+FAR_SALT                     src/06d-far.js:20
+FAR_TAKE_SALT                src/06e-far-take.js:14
+FAR_UNITS                    src/06d-far.js:23
+FAR_Z                        src/06d-far.js:21
+farBasePrice                 src/12-economy.js:32-36
+farBeltDress                 src/06e-far-take.js:64-77
+farCurve                     src/12-economy.js:27-31
+farDeposits                  src/06d-far.js:59-79
+farDigNode                   src/06e-far-take.js:79-89
+farGradeOf                   src/06d-far.js:57
+farGradeRu                   src/06d-far.js:80
+farHere                      src/06e-far-take.js:19-23
+farKey                       src/06e-far-take.js:16
+farLeft                      src/06e-far-take.js:17
+farNormal                    src/06d-far.js:53-56
+farPlaces                    src/06d-far.js:33-51
+farPlanetIdx                 src/06e-far-take.js:24
+farPresence                  src/06d-far.js:28-31
+farPriceCtx                  src/12-economy.js:37-39
+farR                         src/06d-far.js:25
+farReading                   src/06e-far-take.js:40-45
+farReadLine                  src/06e-far-take.js:46-51
+farScoopPick                 src/06e-far-take.js:91-97
+farSpread                    src/06e-far-take.js:36-39
+farTake                      src/06e-far-take.js:26-34
+farTakenAll                  src/06e-far-take.js:15
+farVein                      src/06e-far-take.js:53-62
+farWorldFingerprint          tests/91zzzzk3-far.js:6-15
+FAUNA_RES                    src/02-world.js:116
 faunaOf                      src/20e-species.js:268-284
 fbm1                         src/01-core.js:114
 fbm2                         src/01-core.js:121
@@ -1837,9 +1872,9 @@ gestPostSprite               src/17h-sys-gesture.js:172-188
 gestShipFrame                src/17h-sys-gesture.js:80-84
 gestTick                     src/17h-sys-gesture.js:51-78
 getSystem                    src/06-galaxy.js:99-193
-GIANT                        src/19a-mode-scoop.js:187
-GIANT_KEEP                   src/19a-mode-scoop.js:188
-giantTex                     src/19a-mode-scoop.js:189-263
+GIANT                        src/19a-mode-scoop.js:192
+GIANT_KEEP                   src/19a-mode-scoop.js:193
+giantTex                     src/19a-mode-scoop.js:194-268
 GIFT_DAY                     src/11at-gift.js:28
 GIFT_DEEDS                   src/11at-gift.js:26
 GIFT_W                       src/11at-gift.js:27
@@ -2395,7 +2430,7 @@ ICO_F                        src/24-mode-belt.js:28
 ICO_V                        src/24-mode-belt.js:22-27
 importCode                   src/14a-cloud.js:62-64
 IND_FEE                      src/12ac-bld.js:111
-IND_KEYS                     src/02-world.js:99
+IND_KEYS                     src/02-world.js:119
 indPrice                     src/12ac-bld.js:160-169
 initAudio                    src/09-audio.js:19-39
 INST_TOPICS                  src/11ab-institute.js:17-24
@@ -2477,7 +2512,7 @@ jobOffer                     src/12e-mgr-jobs.js:228-240
 jobPick                      src/12e-mgr-jobs.js:259-282
 jobRefuse                    src/12e-mgr-jobs.js:57-66
 jobTick                      src/12e-mgr-jobs.js:287-296
-jump                         src/18-mode-map.js:526-573
+jump                         src/18-mode-map.js:527-574
 jumpToBase                   src/21a-mode-base.js:384-401
 KEEP_DARK_AFTER              src/11k-keepers.js:48
 KEEP_HABIT                   src/11k-keepers.js:35-45
@@ -2506,7 +2541,7 @@ keyRow                       src/27-ui-ship.js:46-57
 keys                         src/08-state.js:170
 keyStateOK                   tests/91zzzzze-keys.js:23-29
 killPirate                   src/13-pirates.js:308-348
-killRock                     src/24-mode-belt.js:152-159
+killRock                     src/24-mode-belt.js:154-161
 KINO_EVERY                   src/27da-kino.js:20
 KINO_REEL                    src/27da-kino.js:23-30
 KINO_TITLES                  src/27da-kino.js:31-35
@@ -2816,7 +2851,7 @@ mapGridPaint                 src/17z-map-backdrop.js:108-120
 mapHoldingsDraw              src/18b-map-hold.js:80-184
 mapHoldingsTop               src/18b-map-hold.js:186-226
 mapHousePatch                src/18b-map-hold.js:31-45
-mapJump                      src/18-mode-map.js:503-511
+mapJump                      src/18-mode-map.js:504-512
 mapLayer                     src/18b-map-hold.js:26
 mapLayerNext                 src/18b-map-hold.js:28
 mapLayerOn                   src/18b-map-hold.js:27
@@ -2848,10 +2883,10 @@ mapUnderTrassa               src/18b-map-hold.js:60-63
 mapViewC                     src/18-mode-map.js:76
 mapZoomK                     src/18-mode-map.js:81
 mapZoomSet                   src/18-mode-map.js:84
-marketCtx                    src/12-economy.js:18-28
-marketFor                    src/12-economy.js:2-16
-marketPrice                  src/12-economy.js:41-44
-marketPriceCtx               src/12-economy.js:33-40
+marketCtx                    src/12-economy.js:41-51
+marketFor                    src/12-economy.js:2-18
+marketPrice                  src/12-economy.js:64-67
+marketPriceCtx               src/12-economy.js:56-63
 MAT_CAP                      src/18a-material.js:96
 MAT_CHAR                     src/18a-material.js:49
 MAT_JOB                      src/18a-material.js:97
@@ -2956,7 +2991,7 @@ MINE_LIFE                    src/13a-guns.js:31
 MINE_MOUTH_R                 src/21-mode-surface.js:4
 MINE_R                       src/13a-guns.js:32
 mineDeep                     src/23a-dig-draw.js:625-628
-minedUnit                    src/11-log.js:170-176
+minedUnit                    src/11-log.js:170-178
 mineKey                      src/23a-dig-draw.js:614
 mineLay                      src/13a-guns.js:279-287
 mineLoad                     src/23a-dig-draw.js:629-638
@@ -3080,7 +3115,7 @@ nbFoe                        tests/91zzzw-notebook.js:15-20
 nbWorld                      tests/91zzzw-notebook.js:6-14
 near                         tests/90-harness.js:172
 nearestPOI                   src/20a-poi.js:236-241
-nearestStation               src/12-economy.js:167-182
+nearestStation               src/12-economy.js:190-205
 NEB_COMP                     src/16a-space.js:119
 NEB_JOB                      src/16a-space.js:52
 NEB_MS                       src/16a-space.js:51
@@ -3317,9 +3352,9 @@ ORDERS                       src/12a-crew.js:149-155
 orderTake                    src/12aa-need.js:103-111
 orderTick                    src/12aa-need.js:129-135
 orderWin                     src/12aa-need.js:77
-ORE_KEYS                     src/02-world.js:102
+ORE_KEYS                     src/02-world.js:123
 ORE_NODE_W                   src/23-mode-dig.js:12
-oreNode                      src/23-mode-dig.js:13-28
+oreNode                      src/23-mode-dig.js:13-29
 ownerOf                      src/13-combat.js:13
 packPart                     src/05-parts.js:464-471
 PAD_KEY                      src/15-input.js:19
@@ -3417,7 +3452,7 @@ passIsCore                   src/11p-pass.js:32
 passLight                    src/11p-pass.js:49-54
 passShipX                    src/11p-pass.js:34-37
 passTell                     src/11p-pass.js:55-60
-PAX_KEYS                     src/02-world.js:93
+PAX_KEYS                     src/02-world.js:113
 payCost                      src/21a-mode-base.js:100
 PC_GRAIN                     src/25g-post-craft.js:7
 pcA                          src/25g-postcard.js:149
@@ -3691,7 +3726,7 @@ probeSpeak                   src/25m-probe.js:100-121
 probeTarget                  src/25m-probe.js:38-46
 probeVoice                   src/25m-probe.js:75-83
 prof                         src/28-loop.js:663-690
-PROFILE                      src/02-world.js:103-116
+PROFILE                      src/02-world.js:124-137
 profW                        src/03-ships.js:205-214
 PROMPT_RECT                  src/08-state.js:105
 promptEl                     src/08-state.js:106-109
@@ -3783,6 +3818,30 @@ raidLineOfSight              src/24a-mode-raid.js:347-354
 raidSolid                    src/24a-mode-raid.js:78-81
 raidSolidAt                  src/24a-mode-raid.js:82
 raidUp                       src/24aa-raid-draw.js:8-12
+RAIL_ARM_RU                  src/18e-rail-net.js:25
+RAIL_COL                     src/18e-rail-net.js:180
+RAIL_FORK                    src/18e-rail-net.js:22
+RAIL_METRO_R                 src/18e-rail-net.js:26
+RAIL_NET                     src/18e-rail-net.js:29
+RAIL_PART                    src/18e-rail-net.js:167
+RAIL_R                       src/18e-rail-net.js:21
+RAIL_RIM                     src/18e-rail-net.js:27
+RAIL_RING_RU                 src/18e-rail-net.js:24
+RAIL_RINGS                   src/18e-rail-net.js:23
+RAIL_SALT                    src/18e-rail-net.js:28
+railArmAng                   src/18e-rail-net.js:103
+railAt                       src/18e-rail-net.js:112-120
+railBranchAng                src/18e-rail-net.js:51-54
+railBuildLines               src/18e-rail-net.js:55-101
+railLen                      src/18e-rail-net.js:49
+railNearest                  src/18e-rail-net.js:32-42
+railNet                      src/18e-rail-net.js:147-156
+railNetPartial               src/18e-rail-net.js:168-179
+railPolar                    src/18e-rail-net.js:45-48
+railStation                  src/18e-rail-net.js:158-163
+railStep                     src/18e-rail-net.js:43
+railStopsOf                  src/18e-rail-net.js:122-146
+railUAt                      src/18e-rail-net.js:105-110
 RALLY_CACHE                  src/12at-vote.js:69
 rallyAt                      src/12at-vote.js:102-106
 rallyJoin                    src/12at-vote.js:94-100
@@ -3812,7 +3871,7 @@ RARE_BY_WHERE                src/12m-rare.js:76
 RARE_FX                      src/12m-rare.js:38-51
 RARE_GRADES                  src/12m-rare.js:52-58
 RARE_NOTE                    src/12m-rare.js:68
-RARE_RES                     src/02-world.js:97
+RARE_RES                     src/02-world.js:117
 RARE_SALT                    src/12m-rare.js:77
 RARE_WHERE                   src/12m-rare.js:26-33
 RARE_WHERE_IX                src/12m-rare.js:34
@@ -3958,7 +4017,7 @@ RES_AUTO                     src/08-state.js:160
 RES_DOWN_K                   src/28-loop.js:226
 RES_DOWN_WIN                 src/28-loop.js:227
 RES_HOLD_MS                  src/28-loop.js:228
-RES_KEYS                     src/02-world.js:87
+RES_KEYS                     src/02-world.js:107
 RES_WAIT0                    src/28-loop.js:229
 resAuto                      src/28-loop.js:263-299
 RESCUE_ASK_GAP               src/16c-rescue.js:25
@@ -4227,7 +4286,7 @@ SAME_FRAMES                  tests/91zzzzzbb-samehash.js:21
 sameRun                      tests/91zzzzzbb-samehash.js:22-39
 sameRunHands                 tests/91zzzzzbb-samehash.js:77-95
 SAVE_BUDGET                  src/14-save.js:126
-SAVE_EPHEMERAL               src/14a2-save-ephemeral.js:29-55
+SAVE_EPHEMERAL               src/14a2-save-ephemeral.js:29-56
 SAVE_KEY                     src/14-save.js:6
 saveFatSaid                  src/14-save.js:127
 saveGame                     src/14a-cloud.js:38-51
@@ -4243,7 +4302,7 @@ SCOOP_PX                     src/19a-mode-scoop.js:16
 scoopBand                    src/19a-mode-scoop.js:29
 scoopBandAt                  src/19a-mode-scoop.js:25-28
 scoopCenter                  src/19a-mode-scoop.js:17-24
-scoopScrX                    src/19a-mode-scoop.js:265
+scoopScrX                    src/19a-mode-scoop.js:270
 scoopSpawn                   src/19a-mode-scoop.js:33-50
 scrapPart                    src/05-parts.js:450-460
 scrapYield                   src/05-parts.js:440-449
@@ -4338,8 +4397,8 @@ secSpyHere                   src/12b2-fx-sec.js:89-98
 secSpyMul                    src/12b2-fx-sec.js:99-106
 secSpyOn                     src/12b2-fx-sec.js:82-85
 secTidy                      src/26-ui-station.js:348-367
-sellCargo                    src/12-economy.js:71-92
-sellDroneYield               src/12-economy.js:93-98
+sellCargo                    src/12-economy.js:94-115
+sellDroneYield               src/12-economy.js:116-121
 sellQuote                    src/12ab-hold.js:101-110
 setPair                      src/27z-telemetry.js:108-113
 setPct                       src/27z-telemetry.js:102-107
@@ -4394,7 +4453,7 @@ SFX                          src/09-audio.js:97-300
 SH_DX                        src/03b-hull-paint.js:175
 SHARD_H                      tests/90-harness.js:32
 sharpWord                    src/21a9-base-laws.js:41-45
-shatter                      src/24-mode-belt.js:137-151
+shatter                      src/24-mode-belt.js:139-153
 SHIELD_DELAY                 src/05c-arms.js:47
 SHIELD_KEYS                  src/05c-arms.js:46
 SHIELD_OFF                   src/13a-guns.js:33
@@ -4582,7 +4641,7 @@ stampOwnerAt                 src/17i-stamp.js:16-21
 stampPage                    src/17i-stamp.js:62-83
 stampShow                    src/17i-stamp.js:50-60
 stampText                    src/17i-stamp.js:24-35
-STAR_CLASS                   src/02-world.js:149-155
+STAR_CLASS                   src/02-world.js:170-176
 STAR_COLS                    src/16-flight.js:2
 STAR_LX                      src/16-flight.js:27
 starAt                       src/06-galaxy.js:2
@@ -4678,10 +4737,10 @@ stTabBoard                   src/26e-ui-station-trade.js:11-147
 stTabFuse                    src/26b-ui-station-work.js:358
 stTabInstr                   src/26b-ui-station-work.js:225-357
 stTabLab                     src/26b-ui-station-work.js:292-357
-stTabMarket                  src/26e-ui-station-trade.js:148-241
+stTabMarket                  src/26e-ui-station-trade.js:148-244
 stTabMods                    src/26b-ui-station-work.js:105-357
 stTabsHere                   src/26-ui-station.js:140
-stTabYard                    src/26e-ui-station-trade.js:242-382
+stTabYard                    src/26e-ui-station-trade.js:245-385
 stTypeOf                     src/06-galaxy.js:73
 STUN_TIME                    src/13a-guns.js:27
 subdivide                    src/24-mode-belt.js:34-49
@@ -4694,8 +4753,8 @@ SUITE_WINS                   tests/90-harness.js:89
 suiteGroup                   tests/90-harness.js:79-83
 suiteOrder                   tests/90-harness.js:392-399
 suiteWin                     tests/90-harness.js:94-99
-suitFailure                  src/23-mode-dig.js:134-142
-suitHit                      src/23-mode-dig.js:127-133
+suitFailure                  src/23-mode-dig.js:135-143
+suitHit                      src/23-mode-dig.js:128-134
 suitMax                      src/12x-suit.js:89
 SUN_DIR                      src/19c-light.js:22
 SUN_DIR_FLAT                 src/19c-light.js:23
@@ -4816,7 +4875,7 @@ theOne                       src/21b3-base-hunt.js:46
 theOneId                     src/21b3-base-hunt.js:35-45
 thingAdd                     src/27i-ui-table.js:72-79
 thingsAll                    src/27i-ui-table.js:71
-tickDrones                   src/12-economy.js:221-311
+tickDrones                   src/12-economy.js:244-334
 tickLaunchHold               src/21-mode-surface.js:658-671
 TIER_RU                      src/05-parts.js:86
 tierAt                       src/04-mods.js:59
@@ -4903,7 +4962,7 @@ traceSpotX                   src/11ag-trace.js:105-108
 traceTake                    src/11ag-trace.js:120-139
 traceToday                   src/11ag-trace.js:72
 TRACK_LIFE                   src/21-mode-surface.js:6
-TRADE_KEYS                   src/02-world.js:100
+TRADE_KEYS                   src/02-world.js:121
 TRAIL                        src/16-flight.js:239
 TRAIL_AMAX                   src/16-flight.js:386
 TRAIL_BUCK                   src/16-flight.js:385
@@ -4934,7 +4993,7 @@ trX0                         src/16-flight.js:388
 tvHop                        tests/91zzzzzw-travel.js:36-48
 tvKeys                       tests/91zzzzzw-travel.js:15
 tvSizes                      tests/91zzzzzw-travel.js:17-34
-TYPES                        src/02-world.js:125-148
+TYPES                        src/02-world.js:146-169
 UI_BOOT                      tests/90-harness.js:195
 UI_SEL_BOOT                  tests/90-harness.js:230
 uidRand                      src/01-core.js:97-100
@@ -4953,22 +5012,22 @@ unpackPart                   src/05-parts.js:472-478
 updateAllies                 src/12a-crew.js:644-677
 updateBarges                 src/12l-barge.js:165-196
 updateBase                   src/21a-mode-base.js:403-557
-updateBelt                   src/24-mode-belt.js:186-375
+updateBelt                   src/24-mode-belt.js:188-377
 updateCave                   src/22-mode-cave.js:251-433
 updateCaveDeco               src/22a-cave-deco.js:205-228
 updateCombat                 src/13-pirates.js:116-301
-updateDig                    src/23-mode-dig.js:143-251
+updateDig                    src/23-mode-dig.js:144-253
 updateHomeIn                 src/29c-home-in.js:160-200
 updateLanding                src/19-mode-landing.js:68-137
-updateMap                    src/18-mode-map.js:512-525
+updateMap                    src/18-mode-map.js:513-526
 updateRaid                   src/24a-mode-raid.js:215-345
-updateScoop                  src/19a-mode-scoop.js:75-171
+updateScoop                  src/19a-mode-scoop.js:75-176
 updateSpa                    src/29i-spa-draw.js:514-519
 updateSurface                src/21-mode-surface.js:199-656
 updateSystem                 src/17-mode-system.js:53-429
 updateWanderRoom             src/24c-mode-wanderer.js:58-88
 updateWinter                 src/29g-winter-draw.js:808-817
-useBeacon                    src/23-mode-dig.js:87-112
+useBeacon                    src/23-mode-dig.js:88-113
 vCloth                       src/18d-verlet.js:41-50
 vDrawCloth                   src/18d-verlet.js:104-121
 vDrawRope                    src/18d-verlet.js:90-100
@@ -5277,7 +5336,7 @@ yaltaHere                    src/12al-powers.js:172
 yaltaIs                      src/12al-powers.js:168-171
 yaltaSealed                  src/12al-powers.js:175-179
 YARD_CHANCE                  src/04b-fleet.js:162
-ZAP_COOL                     src/23-mode-dig.js:253
+ZAP_COOL                     src/23-mode-dig.js:255
 ZOO_PEN_CAP                  src/11ad-zoo.js:14
 zooAll                       src/11ad-zoo.js:15
 zooBlock                     src/11ad-zoo.js:72-82
@@ -5309,9 +5368,9 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## src/01a-crashlog.js · 7 КБ
 
-## src/02-world.js · 14 КБ
+## src/02-world.js · 17 КБ
   · ресурсы:1
-  · миры:119
+  · миры:140
 
 ## src/02a-worldmix.js · 8 КБ
   · смешанные миры:1
@@ -5384,6 +5443,12 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## src/06c-regions.js · 6 КБ
   · таблица областей: пятнадцать тем на одной решётке:1
+
+## src/06d-far.js · 5 КБ
+  · дальние залежи: присутствие и тяжёлый хвост удачи (M465, DESIGN-resources §3):1
+
+## src/06e-far-take.js · 5 КБ
+  · дальние залежи в игре: выемка, прибор, ЖИЛА (M466, DESIGN-resources §3):1
 
 ## src/07-planet.js · 27 КБ
   · текстуры планет:1
@@ -5559,9 +5624,9 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/11z-misclosure.js · 6 КБ
   · невязка: уезд, где счёт неба и счёт людей расходятся:1
 
-## src/12-economy.js · 21 КБ
+## src/12-economy.js · 22 КБ
   · живой рынок:1
-  · дроны:100
+  · дроны:123
 
 ## src/12a-crew.js · 45 КБ
   · наёмники: флот, которым не управляешь напрямую:1
@@ -5975,6 +6040,9 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/18d-verlet.js · 7 КБ
   · верле: верёвки и ткань:1
 
+## src/18e-rail-net.js · 11 КБ
+  · железная дорога: сеть (M470, docs/DESIGN-metro.md §2):1
+
 ## src/19-mode-landing-ground.js · 25 КБ
   · посадка: разрез грунта:1
 
@@ -5983,7 +6051,7 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## src/19a-mode-scoop.js · 39 КБ
   · сбор летучих газов: заход в атмосферу гиганта:1
-  · небо гиганта: полосы, а не лепёшки:172
+  · небо гиганта: полосы, а не лепёшки:177
 
 ## src/19b-sky.js · 34 КБ
   · небо:1
@@ -6168,7 +6236,7 @@ zooTick                      src/11ad-zoo.js:41-54
   · шахта: порода:1
   · почвенный профиль: небо кончается не линейкой:449
 
-## src/24-mode-belt.js · 40 КБ
+## src/24-mode-belt.js · 41 КБ
   · ПОЯС АСТЕРОИДОВ · ВИД ИЗ КАБИНЫ:1
 
 ## src/24a-mode-raid.js · 20 КБ
@@ -6921,6 +6989,10 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## tests/91zzzzk-mapaddr.js · 8 КБ
   · автотесты: карта говорит адресами (M347):1
+
+## tests/91zzzzk3-far.js · 6 КБ
+
+## tests/91zzzzk4-rail.js · 3 КБ
 
 ## tests/91zzzzl-maphold.js · 5 КБ
   · автотесты: владения на карте (M348):1

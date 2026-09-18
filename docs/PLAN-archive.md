@@ -11044,3 +11044,19 @@ plausibly reach.
   **M467 Prices by distance.** ½ base in its own band, 1× at r≈10, 1.3× in the heart, the eater's
   ×1.5 in its land; the live market's flood-and-recover holds; far goods rarely on sale in the heart.
   Eaters speak at their counters (review §3: «весы наши, тара ваша», «принимаем по весу, вес — наш»).
+
+- [ ] **[design owed] M470 The net and the scheme** (`DESIGN-metro.md` В§2, В§4, review В§4.4). Six radials from the
+  core at the powers' home angles, **forking** outward so line density stays even (6 at r 6, ~12 at
+  15, ~24 at 35, on without end); rings at РЇР»С‚Р°'s radius (РљРѕР»СЊС†РµРІР°СЏ; **РЇР»С‚Р° = В«РџР»РѕС‰Р°РґСЊ РЁРµСЃС‚Рё
+  Р”РµСЂР¶Р°РІВ»**), rв‰€18 (Р‘РѕР»СЊС€РѕРµ), rв‰€35 (Р”Р°Р»СЊРЅРµРµ), then Г—1.9; two spiral С‚СЂР°СЃСЃС‹ along the arms
+  (`galaxyAt`); a stop = the nearest station system to each spacing step (РјРµС‚СЂРѕ 1.5вЂ“2.5 sectors
+  inside r 12; СЌР»РµРєС‚СЂРёС‡РєР° 4вЂ“8; a step with none is a РїРµСЂРµРіРѕРЅ); junctions where lines cross; past
+  r 40 single tracks with **РїРѕР»СѓСЃС‚Р°РЅРєРё** and В«РљСЂР°Р№В». Lazy per region; Node suite (reachability,
+  one stop per system, determinism). Names by owner (M489 rule; beyond the powers: В«СЂР°Р·СЉРµР·Рґ 214-Р№
+  СЃРµРєС‚РѕСЂВ», В«РїРѕР»СѓСЃС‚Р°РЅРѕРє РЎСѓС…РѕР№В»). **M449 named places rides along**: arms and ~10 nebulae named in
+  the game's voice, lines carry the arm's name (В«Р›РёРЅРёСЏ 7, Р СѓРєР°РІ Р›РµР±РµРґСЏВ»), labels at far zoom.
+  **The scheme** (our own, on paper): thick coloured lines on paper, white circles black-rimmed,
+  double circles for interchanges, В«Р’Р« Р—Р”Р•РЎР¬В» red, shut stretches hatched; on the galaxy map the
+  lines as faint smooth curves 1:1 with the sheet (no parallax). **M450 the overview** (pinch past
+  zoom 5) becomes the scheme's zoomed-out sibling: the disk, В«РІС‹ Р·РґРµСЃСЊВ», the settled circle, the
+  danger rim, marks, rumours вЂ” and the lines.
