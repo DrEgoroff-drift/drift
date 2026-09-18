@@ -555,7 +555,7 @@ patchnote of each version names the M-numbers it closes.
 - **M466 Reading and ЖИЛА** — the cave (янтарь) and the hunt (жемчуг) verbs give nothing yet; the rumour a сводка later and the company on the approach; the reading on the planet card / dig entry (belt only now); тёмное стекло narrowing the reading.
 - **M467 Prices by distance** — far goods for sale in the heart («rarely and dear»); the other eaters (реакторы, броня, щиты, теплицы) are M469.
 - **M470 The net** — names by owner (M489 rule) and «Край»; beyond r 60; the scheme as its own screen (КУДА ВАМ, M472); M449 names of arms and nebulae on the map.
-- **M471 The station in the system** — six finishes of the vestibule by owner, the bare rim platform, helm assist in the cone.
+- **M471 The station in the system** — ~~six finishes of the vestibule by owner~~ (done 18.09: `#railWin[data-by]` — Компания white/blue glossy, Орднунг ruled form paper, Коммуна cream hand-drawn italic, Рассвет warm wood, Хай-Фронт dark glass mono; checked on the S23), the bare rim platform, helm assist in the cone.
 - **M472 The vestibule** — ПЕРЕСАДКА routing through junctions (only same-line rides now), split-flap turning, крупногабаритный ×3, the scheme unfolded on paper.
 - **M473 The ride** — the hyperdrive departure/arrival flash, the announcer's voice, held pad ×2, a save mid-ride (wakes at the origin now), the flight pads still shown in the carriage.
 - **M476 The plan, read-only** — unique/fused/NPC hulls in the suite; the hold's green is barely visible (синька in M477).

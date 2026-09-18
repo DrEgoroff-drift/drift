@@ -1807,6 +1807,29 @@ body.table u.addr{color:#7a4a20}
   background:#101419;border:1px solid rgba(242,178,92,.35);border-radius:10px;color:var(--text);
   box-shadow:0 12px 40px rgba(0,0,0,.6)}
 #railWin.open{display:block}
+/* ── шесть отделок вестибюля по хозяину земли (M471, 18.09) — держава читается с порога ── */
+#railWin[data-by=co]{background:linear-gradient(180deg,#f4f6fa,#e6ebf2);color:#1b2a3a;border-color:#2f6fd0;border-radius:16px}
+#railWin[data-by=co] .rw-head b{color:#2f6fd0}#railWin[data-by=co] .rw-head s,#railWin[data-by=co] .rw-sec{color:#5a6a7c}
+#railWin[data-by=co] .rw-board{background:#fff;border-color:#c9d4e2;color:#1b2a3a}#railWin[data-by=co] .rw-board em{color:#2f6fd0}
+#railWin[data-by=co] button.act{background:#fff;border:1px solid #2f6fd0;color:#1b2a3a;border-radius:12px}#railWin[data-by=co] button.act s{color:#5a6a7c}
+#railWin[data-by=co] button.act[data-x]{background:linear-gradient(90deg,#2f6fd0,#5a9bff);color:#fff;border:0}
+#railWin[data-by=or]{background:#d9d4c4;color:#2a2622;border:1px solid #6a6458;border-radius:0;
+  background-image:repeating-linear-gradient(0deg,transparent 0 21px,rgba(106,100,88,.25) 21px 22px)}
+#railWin[data-by=or] .rw-head b{color:#2a2622;font-weight:700}#railWin[data-by=or] .rw-head s,#railWin[data-by=or] .rw-sec{color:#5a544a}
+#railWin[data-by=or] .rw-board{background:#e8e4d8;border:1px solid #6a6458;border-radius:0;color:#2a2622}#railWin[data-by=or] .rw-board em{color:#8a2d2d}
+#railWin[data-by=or] button.act{background:#e8e4d8;border:1px solid #6a6458;color:#2a2622;border-radius:0}#railWin[data-by=or] button.act s{color:#5a544a}
+#railWin[data-by=km]{background:#efe6cf;color:#3a2e1c;border:1.5px dashed #8a6a3a;border-radius:6px;font-style:italic}
+#railWin[data-by=km] .rw-head b{color:#8a4a1a}#railWin[data-by=km] .rw-head s,#railWin[data-by=km] .rw-sec{color:#7a6a4a}
+#railWin[data-by=km] .rw-board{background:#f7f0dc;border:1px solid #c9b58e;color:#3a2e1c}#railWin[data-by=km] .rw-board em{color:#8a4a1a}
+#railWin[data-by=km] button.act{background:#f7f0dc;border:1px solid #c9b58e;color:#3a2e1c;border-radius:4px}#railWin[data-by=km] button.act s{color:#7a6a4a}
+#railWin[data-by=ra]{background:linear-gradient(180deg,#3a2a1c,#2a1e14);color:#f2dcb8;border-color:#c98a3a;border-radius:12px}
+#railWin[data-by=ra] .rw-head b{color:#ffb347}#railWin[data-by=ra] .rw-head s,#railWin[data-by=ra] .rw-sec{color:#c9a880}
+#railWin[data-by=ra] .rw-board{background:#1d1510;border-color:#5a4230;color:#f2dcb8}#railWin[data-by=ra] .rw-board em{color:#ffb347}
+#railWin[data-by=ra] button.act{background:rgba(255,179,71,.08);border:1px solid #c98a3a;color:#f2dcb8}#railWin[data-by=ra] button.act s{color:#c9a880}
+#railWin[data-by=hf]{background:linear-gradient(160deg,#141d24,#0b1116);color:#dbe8f0;border-color:rgba(140,220,255,.55);border-radius:4px;font-family:ui-monospace,monospace}
+#railWin[data-by=hf] .rw-head b{color:#8ee6ff;letter-spacing:.14em}#railWin[data-by=hf] .rw-head s,#railWin[data-by=hf] .rw-sec{color:#6f8a99}
+#railWin[data-by=hf] .rw-board{background:#050a0e;border-color:#1f3340;color:#dbe8f0}#railWin[data-by=hf] .rw-board em{color:#8ee6ff}
+#railWin[data-by=hf] button.act{background:rgba(140,220,255,.05);border:1px solid rgba(140,220,255,.45);color:#dbe8f0;border-radius:2px}#railWin[data-by=hf] button.act s{color:#6f8a99}
 #railWin .rw-head b{display:block;font-size:15px;color:var(--amber);letter-spacing:.06em}
 #railWin .rw-head s{display:block;text-decoration:none;color:var(--dim);font-size:11px;margin-top:2px}
 #railWin .rw-sec{margin:12px 0 6px;font-size:10px;letter-spacing:.14em;color:var(--dim)}
@@ -53813,7 +53836,7 @@ function railWinRender(){
   if(typeof railLifeHtml==="function")h+=railLifeHtml();   /* посылка, проездной, попутчик, пломба (M499–M508) */
   h+="<div class='rw-sec'>БУФЕТ</div><button class='act rw-buf'>"+(RAIL_BUFFET[by]||RAIL_BUFFET.gt).toUpperCase()+" · 3 КР</button>";
   h+="<button class='act rw-out'>ВЫЙТИ НА ПЕРРОН</button>";
-  w.innerHTML=h;
+  w.innerHTML=h;w.dataset.by=by||"gt";   /* отделка вестибюля по хозяину (M471, CSS) */
   if(typeof railLifeBind==="function")railLifeBind(w);
   const D=railDestinations();
   w.querySelectorAll(".rw-go").forEach(b=>b.onclick=()=>railBuy(D[+b.dataset.i],!!b.dataset.x,!!b.dataset.b));

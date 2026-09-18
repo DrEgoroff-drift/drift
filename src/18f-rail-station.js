@@ -157,7 +157,7 @@ function railWinRender(){
   if(typeof railLifeHtml==="function")h+=railLifeHtml();   /* посылка, проездной, попутчик, пломба (M499–M508) */
   h+="<div class='rw-sec'>БУФЕТ</div><button class='act rw-buf'>"+(RAIL_BUFFET[by]||RAIL_BUFFET.gt).toUpperCase()+" · 3 КР</button>";
   h+="<button class='act rw-out'>ВЫЙТИ НА ПЕРРОН</button>";
-  w.innerHTML=h;
+  w.innerHTML=h;w.dataset.by=by||"gt";   /* отделка вестибюля по хозяину (M471, CSS) */
   if(typeof railLifeBind==="function")railLifeBind(w);
   const D=railDestinations();
   w.querySelectorAll(".rw-go").forEach(b=>b.onclick=()=>railBuy(D[+b.dataset.i],!!b.dataset.x,!!b.dataset.b));
