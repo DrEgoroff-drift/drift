@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 588 · символов верхнего уровня: 5674
+Файлов: 588 · символов верхнего уровня: 5676
 
 ## СИМВОЛЫ
 
@@ -1427,7 +1427,7 @@ drawHomeOut                  src/21f-home-out.js:73-312
 drawHomeRoom                 src/27e-ui-home.js:42-62
 drawHotel                    src/17l-hotel.js:18-34
 drawHqRoom                   src/27f-hq-room.js:22-31
-drawHull                     src/03e-hull-draw.js:1-74
+drawHull                     src/03e-hull-draw.js:43-116
 drawHullMarks                src/03b-hull-paint.js:184-491
 drawKitFigure                src/12x-suit.js:202-299
 drawLander                   src/19f-lander.js:52-340
@@ -1466,6 +1466,7 @@ drawRoad                     src/27l-road-draw.js:87-622
 drawRocks                    src/19-mode-landing-ground.js:294-386
 drawRouteMap                 src/12r-route.js:267-323
 drawRungRing                 src/12ae-ladder.js:72-87
+drawScars                    src/03e-hull-draw.js:5-31
 drawScoop                    src/19a-mode-scoop.js:271-602
 drawSeams                    src/12s-wear.js:184-199
 drawShuttleArc               src/17f-sys-traffic.js:43-79
@@ -1504,6 +1505,7 @@ drawThingIcon                src/27i-ui-table.js:400-436
 drawTierTrim                 src/03b-hull-paint.js:73-166
 drawTiles                    src/18c-chunks.js:144-151
 drawTrail                    src/16-flight.js:562-650
+drawTransitPlate             src/03e-hull-draw.js:34-42
 drawWake                     src/16-flight.js:393-462
 drawWallPaper                src/11ae-concert.js:39-71
 drawWanderer                 src/12v-wander.js:175-318
@@ -2508,18 +2510,18 @@ HULL_HELD_MS                 src/28-loop.js:8
 HULL_MAKER                   src/03a-hull-maker.js:23-72
 HULL_PER_ALLOY               src/21b1-base-pay.js:116
 HULL_ROLE                    src/03f-hull-role.js:17-30
-hullBakeDraw                 src/03e1-hull-bake.js:31-66
-hullBakeGet                  src/03e1-hull-bake.js:67-96
-hullBakeRender               src/03e1-hull-bake.js:98-108
+hullBakeDraw                 src/03e1-hull-bake.js:31-67
+hullBakeGet                  src/03e1-hull-bake.js:68-97
+hullBakeRender               src/03e1-hull-bake.js:99-109
 hullBakeScale                src/03e1-hull-bake.js:27-30
 hullClassOf                  src/03-ships.js:253-268
 hullHeld                     src/28-loop.js:9
 hullHeldTick                 src/28-loop.js:10-15
-hullInkBox                   src/03e1-hull-bake.js:111-122
+hullInkBox                   src/03e1-hull-bake.js:112-123
 hullOf                       src/03a-hull-gen.js:1-532
-hullPart1                    src/03e-hull-draw.js:79-552
-hullPart2                    src/03e-hull-draw.js:554-557
-hullPart3                    src/03e-hull-draw.js:560-637
+hullPart1                    src/03e-hull-draw.js:121-596
+hullPart2                    src/03e-hull-draw.js:598-601
+hullPart3                    src/03e-hull-draw.js:604-681
 hullRole                     src/03f-hull-role.js:51
 hullShade                    src/03b-hull-paint.js:176-183
 hullSilhouette               src/27-ui-ship.js:9-43
@@ -5720,7 +5722,7 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## src/03d-hull-marks.js · 6 КБ
 
-## src/03e-hull-draw.js · 40 КБ
+## src/03e-hull-draw.js · 43 КБ
 
 ## src/03e1-hull-bake.js · 7 КБ
   · печка корпуса (Stage 0, 18.09):1

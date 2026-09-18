@@ -1,3 +1,45 @@
+/* ── шрамы (M482, дизайн 18.09): три рода, каждый — своя метка на обшивке ──
+   ожог — тёмное пятно с рыжей каймой у кормы; вмятина — излом канта на борту
+   с тенью; потёк — тёмная струйка от люка к корме. Рисуются в обрезке корпуса,
+   печкой (ключ выпечки знает состав шрамов) */
+function drawScars(h,id){
+  if(typeof scarsOf!=="function")return;
+  const S=shipData(id);if(!S)return;
+  const sc=scarsOf(S);if(!sc.length)return;
+  const L=h.len,bw=h.bw,r=rng(hashi(h.seed||1,0x5CA2,7));
+  for(const k of sc){
+    if(k==="burn"){
+      const x=h.tail+L*(.18+r()*.12),y=(r()*2-1)*bw*.3,R=bw*.34;
+      const g=ctx.createRadialGradient(x,y,0,x,y,R);
+      g.addColorStop(0,"rgba(20,14,10,.85)");g.addColorStop(.6,"rgba(40,26,16,.55)");g.addColorStop(1,"rgba(150,70,30,0)");
+      ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(x,y,R*1.3,R*.8,r()*.6,0,TAU);ctx.fill();
+    }else if(k==="bent"){
+      const s=r()<.5?-1:1,x=h.tail+L*(.4+r()*.3),y=s*profW(h.prof,x)*.92,d=bw*.14;
+      ctx.strokeStyle="rgba(0,0,0,.55)";ctx.lineWidth=1.2;
+      ctx.beginPath();ctx.moveTo(x-d*1.6,y);ctx.lineTo(x-d*.3,y-s*d);ctx.lineTo(x+d*.6,y+s*d*.3);ctx.lineTo(x+d*1.8,y);ctx.stroke();
+      ctx.strokeStyle="rgba(255,255,255,.28)";ctx.lineWidth=.6;
+      ctx.beginPath();ctx.moveTo(x-d*1.4,y+s*.6);ctx.lineTo(x-d*.3,y-s*d+s*.6);ctx.stroke();
+    }else if(k==="leak"){
+      const x0=h.tail+L*(.5+r()*.2),y0=(r()*2-1)*bw*.35,len=L*.22;
+      const g=ctx.createLinearGradient(x0,y0,x0-len,y0);
+      g.addColorStop(0,"rgba(30,26,22,.7)");g.addColorStop(1,"rgba(30,26,22,0)");
+      ctx.strokeStyle=g;ctx.lineWidth=Math.max(1,bw*.07);ctx.lineCap="round";
+      ctx.beginPath();ctx.moveTo(x0,y0);ctx.quadraticCurveTo(x0-len*.5,y0+bw*.06,x0-len,y0+bw*.03);ctx.stroke();
+      ctx.fillStyle="rgba(30,26,22,.6)";ctx.beginPath();ctx.arc(x0,y0,Math.max(.8,bw*.06),0,TAU);ctx.fill();
+    }
+  }
+}
+/* ── транзитные номера (M513, D25): жёлтая табличка с чёрной каймой у кормы,
+   две строки «ТРАНЗИТ» — читается на ×2 и выше, на ×1 остаётся жёлтой меткой ── */
+function drawTransitPlate(h,id){
+  if(typeof regPending!=="function"||!regPending(id))return;
+  const x=h.tail+h.len*.12,w=Math.max(4,h.bw*.5),hh=w*.42;
+  ctx.save();ctx.translate(x,0);
+  ctx.fillStyle="#e8c53a";ctx.fillRect(-w/2,-hh/2,w,hh);
+  ctx.strokeStyle="#1a1408";ctx.lineWidth=.4;ctx.strokeRect(-w/2,-hh/2,w,hh);
+  ctx.fillStyle="#1a1408";ctx.fillRect(-w*.38,-hh*.18,w*.76,hh*.14);ctx.fillRect(-w*.3,hh*.08,w*.6,hh*.14);
+  ctx.restore();
+}
 function drawHull(id,thrusting,braking,lvl,bank){
   const h=hullOf(id),blink=Math.sin(G.t*.07);
   lvl=lvl||0;
@@ -532,6 +574,8 @@ function hullPart1(h,id,bank,ticks){
   /* швы починок — поверх налёта и тоже в обрезке: биография не смывается (12s) */
   if(typeof drawSeams==="function")drawSeams(h,typeof seamsOf==="function"?seamsOf(id):0);
   if(typeof drawTapes==="function")drawTapes(h,typeof tapesOf==="function"?tapesOf(id):0);   /* изолента (M486) */
+  drawScars(h,id);   /* шрамы корпуса (M482): ожог, вмятина, потёк — видны на борту, не только в ОПИСИ */
+  drawTransitPlate(h,id);   /* транзитные номера (M513): табличка на борту, пока не на учёте */
   ctx.restore();
   /* ── грань корпуса ──
      Полупрозрачная линия в цвет корпуса — не грань, а ореол: вблизи она
