@@ -510,7 +510,9 @@ function renderTabBody(){
       "зато баки полны и корпус залатан</s></div>"));
     return;
   }
-  if(tab==="board"){stTabBoard();return;}
+  if(tab==="board"){stTabBoard();
+    if(typeof kpBlock==="function")$body.appendChild(kpBlock());   /* Космопочта (M492) */
+    return;}
   if(tab==="market"){stTabMarket(st);}
   else if(tab==="yard"){stTabYard(st);}
   else if(tab==="mods"){stTabMods();}

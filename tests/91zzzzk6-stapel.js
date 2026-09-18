@@ -61,3 +61,36 @@ TEST_SUITES.push(()=>suite("стапель: шесть верфей — шест
   eq(set.size,MAKER_KEYS.length,"у каждой из шести верфей свой корпус из одного заказа");
   for(const b of MAKER_KEYS)ok(!!stapelYard(b).note,"у верфи "+b+" есть строка характера");
 }));
+TEST_SUITES.push(()=>suite("Космопочта: часы на двери, извещение, 30 суток, добрый клерк",()=>{
+  resetWorld();
+  let at=null;
+  for(let sx=-14;sx<=14&&!at;sx++)for(let sy=-14;sy<=14&&!at;sy++){
+    const s=getSystem(sx,sy);if(s.station&&s.station.stype==="yard"&&stampOwnerAt(sx,sy))at=[sx,sy];
+  }
+  G.sx=at[0];G.sy=at[1];G.sys=getSystem(G.sx,G.sy);G.st=G.sys.station;G.credits=1e6;
+  /* часы: открыто меньше половины суток и никогда в обед */
+  let open=0,lunch=0;
+  for(let i=0;i<240;i++){const t=i*KP_DAY/240;if(kpOpenAt(t,G.sx,G.sy)){open++;if(kpHour(t)===13)lunch++;}}
+  ok(open>60&&open<130,"окно открыто часть суток: "+open+"/240");
+  eq(lunch,0,"в обед закрыто");
+  ok(stapelOrder({cls:"courier",size:"light",l:1,w:1}),"заказ");
+  const o=G.stapel.o;o.ready=now()-1;
+  /* другая станция, окно открыто */
+  let other=null;
+  for(let sx=-14;sx<=14&&!other;sx++)for(let sy=-14;sy<=14&&!other;sy++){
+    const s=getSystem(sx,sy);if(s.station&&(sx!==at[0]||sy!==at[1]))other=[sx,sy];
+  }
+  G.sx=other[0];G.sy=other[1];G.sys=getSystem(G.sx,G.sy);G.st=G.sys.station;
+  ok(stapelCollect()===null,"без почты чужая станция не выдаёт");
+  /* сдвигаем часы так, чтобы окно было закрыто, потом открыто */
+  const base=now(),seek=want=>{for(let i=0;i<48;i++){clockSet(base+i*KP_DAY/48);if(kpOpen()===want)return true;}return false;};
+  ok(seek(false)&&kpTake()===null,"закрытое окно не выдаёт");
+  /* просрочено больше чем на сутки — ушла отправителю */
+  const r0=o.ready;o.ready=now()-(KP_KEEP+2)*KP_DAY;seek(true);
+  ok(kpTake()===null&&!o.kind,"через 32 суток посылки на почте нет");
+  /* опоздали на полсуток — клерк оставляет, раз */
+  o.ready=now()-(KP_KEEP+.5)*KP_DAY;
+  const id=kpTake();
+  ok(!!id&&o.kind===1&&G.owned[id],"«полежит ещё денёк» — и выдали: "+id);
+  clockSet(base);G.stapel={};delete G.uniqueShips[id];delete G.owned[id];void r0;
+}));

@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 571 · символов верхнего уровня: 5509
+Файлов: 572 · символов верхнего уровня: 5521
 
 ## СИМВОЛЫ
 
@@ -29,7 +29,7 @@ $menu                        src/15-input.js:243
 $msg                         src/27z-telemetry.js:43
 $msl                         src/27z-telemetry.js:47
 $nav                         src/27z-telemetry.js:45
-$opts                        src/26-ui-station.js:692
+$opts                        src/26-ui-station.js:694
 $padsEl                      src/15-input.js:4
 $place                       src/27z-telemetry.js:42
 $sh                          src/27z-telemetry.js:8
@@ -2651,6 +2651,18 @@ kitWearMul                   src/12x-suit.js:68
 kitWearPiece                 src/12x-suit.js:139-145
 KMAP                         src/15-input.js:112
 KMAP_BELT                    src/15-input.js:116
+KP_DAY                       src/26e2-post.js:11
+kpBlock                      src/26e2-post.js:43-66
+kpDoor                       src/26e2-post.js:25
+kpDue                        src/26e2-post.js:27
+kpHolds                      src/26e2-post.js:29
+kpHour                       src/26e2-post.js:12
+kpHours                      src/26e2-post.js:13
+kpMinsToOpen                 src/26e2-post.js:20-24
+kpOpen                       src/26e2-post.js:18
+kpOpenAt                     src/26e2-post.js:14-17
+kpTake                       src/26e2-post.js:32-42
+kpTicket                     src/26e2-post.js:30
 labCount                     src/12h-relic.js:16-24
 labStaffed                   src/12h-relic.js:27-31
 labWorking                   src/12h-relic.js:32-42
@@ -4112,7 +4124,7 @@ renderSiteTab                src/26c-ui-station-site.js:7-130
 renderSmena                  src/12ud-smena.js:123-164
 renderStrips                 src/27i-ui-table.js:327-369
 renderTab                    src/26-ui-station.js:485-497
-renderTabBody                src/26-ui-station.js:498-688
+renderTabBody                src/26-ui-station.js:498-690
 renderThings                 src/27i-ui-table.js:370-394
 REP_MIN                      src/12k-rep.js:16
 REP_WORDS                    src/12k-rep.js:17-25
@@ -4159,7 +4171,7 @@ rescueSigNow                 src/16c-rescue.js:600
 rescueSync                   src/16c-rescue.js:602-615
 rescueTake                   src/16c-rescue.js:105-146
 resEma                       src/28-loop.js:234
-resetArm                     src/26-ui-station.js:691
+resetArm                     src/26-ui-station.js:693
 resetWorld                   tests/90-harness.js:235-349
 resize                       src/08-state.js:22-57
 resModeCap                   src/28-loop.js:257-262
@@ -4766,18 +4778,18 @@ stampOwnerAt                 src/17i-stamp.js:16-21
 stampPage                    src/17i-stamp.js:62-83
 stampShow                    src/17i-stamp.js:50-60
 stampText                    src/17i-stamp.js:24-35
-STAPEL_PV                    src/26e1-stapel.js:121
+STAPEL_PV                    src/26e1-stapel.js:123
 STAPEL_SIZE                  src/26e1-stapel.js:10-14
 STAPEL_SIZES                 src/26e1-stapel.js:26
-STAPEL_UI                    src/26e1-stapel.js:128
+STAPEL_UI                    src/26e1-stapel.js:130
 STAPEL_YARD                  src/26e1-stapel.js:17-24
 stapelAll                    src/26e1-stapel.js:27-32
-stapelBlock                  src/26e1-stapel.js:129-187
+stapelBlock                  src/26e1-stapel.js:131-189
 stapelClosedWhy              src/26e1-stapel.js:96-101
-stapelCollect                src/26e1-stapel.js:111-119
+stapelCollect                src/26e1-stapel.js:111-121
 stapelId                     src/26e1-stapel.js:68
 stapelOrder                  src/26e1-stapel.js:80-94
-stapelPreview                src/26e1-stapel.js:122-127
+stapelPreview                src/26e1-stapel.js:124-129
 stapelReady                  src/26e1-stapel.js:102
 stapelRestore                src/26e1-stapel.js:75-78
 stapelShip                   src/26e1-stapel.js:59-67
@@ -6537,7 +6549,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/26-ui-station.js · 49 КБ
   · станция:1
   · заголовки и полосы (M299, docs/DESIGN-screens.md §1a):303
-  · настройки:690
+  · настройки:692
 
 ## src/26a-ui-station-home.js · 21 КБ
   · станция: вкладка «дом и базы»:1
@@ -6556,6 +6568,9 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## src/26e1-stapel.js · 11 КБ
   · СТАПЕЛЬ — заказ корпуса у державы (M481, DESIGN-shipyard §5):1
+
+## src/26e2-post.js · 4 КБ
+  · Космопочта — учреждение как погода (M492, DESIGN-birchpunk):1
 
 ## src/27-ui-ship.js · 24 КБ
   · силуэт корпуса и вход в ОПИСЬ:1
@@ -7209,7 +7224,7 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## tests/91zzzzk5-plan.js · 9 КБ
 
-## tests/91zzzzk6-stapel.js · 5 КБ
+## tests/91zzzzk6-stapel.js · 7 КБ
 
 ## tests/91zzzzl-maphold.js · 5 КБ
   · автотесты: владения на карте (M348):1

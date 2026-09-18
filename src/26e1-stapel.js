@@ -105,12 +105,14 @@ function stapelTick(){
   const o=stapelAll().o;
   if(!o||o.told||now()<o.ready)return;
   o.told=1;
-  logAdd("good","ПОЧТА · стапель «"+o.st+"» ("+o.sx+":"+o.sy+"): ваш корпус готов, заберите на верфи");
+  logAdd("good","ПОЧТА · извещение: корпус со стапеля «"+o.st+"» ("+o.sx+":"+o.sy+") — получить в окне Космопочты на любой станции или на самом стапеле · хранится "+(typeof KP_KEEP==="number"?KP_KEEP:30)+" сут.");
 }
 /* забрать на той же верфи */
-function stapelCollect(){
+function stapelCollect(viaPost){
   const S=stapelAll(),o=S.o;
-  if(!o||!stapelReady()||G.sx!==o.sx||G.sy!==o.sy||!G.st||G.st.stype!=="yard")return null;
+  if(!o||!stapelReady()||!G.st)return null;
+  /* с почты (M492) — в любом окне; без неё — на той же верфи */
+  if(!viaPost&&(G.sx!==o.sx||G.sy!==o.sy||G.st.stype!=="yard"))return null;
   S.done.push(o);S.o=null;
   const id=stapelId(o),sh=stapelShip(o);
   G.uniqueShips[id]=sh;G.owned[id]=true;
