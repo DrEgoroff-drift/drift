@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 594 · символов верхнего уровня: 5812
+Файлов: 594 · символов верхнего уровня: 5815
 
 ## СИМВОЛЫ
 
@@ -1437,7 +1437,7 @@ drawHitFx                    src/18d-postfx.js:87-105
 drawHomeIn                   src/29d-home-draw.js:9-332
 drawHomeOut                  src/21f-home-out.js:73-312
 drawHomeRoom                 src/27e-ui-home.js:42-62
-drawHotel                    src/17l-hotel.js:18-35
+drawHotel                    src/17l-hotel.js:31-91
 drawHqRoom                   src/27f-hq-room.js:22-31
 drawHull                     src/03e-hull-draw.js:68-141
 drawHullMarks                src/03b-hull-paint.js:184-491
@@ -1457,7 +1457,7 @@ drawNebula                   src/16-flight.js:91-103
 drawNodeIcon                 src/05a-nodes.js:264-361
 drawObelisk                  src/20aa-poi-shapes.js:276-376
 drawObserv                   src/20aa-poi-shapes.js:491-513
-drawPeaceFleet               src/17m-peace-fleet.js:26-85
+drawPeaceFleet               src/17m-peace-fleet.js:51-109
 drawPirate                   src/12i-pirate-hull.js:428-478
 drawPirateBase               src/24a-mode-raid.js:103-133
 drawPirateSkin               src/03d-hull-marks.js:99-126
@@ -2480,9 +2480,10 @@ homeUpWorld                  tests/91zzzc-home-up.js:5-9
 homingStep                   src/13a-guns.js:501-508
 HOTEL_NIGHT                  src/17l-hotel.js:11
 HOTEL_SIGN                   src/17l-hotel.js:10
-hotelDesk                    src/17l-hotel.js:44-56
+hotelDesk                    src/17l-hotel.js:100-112
 hotelHere                    src/17l-hotel.js:12-17
-hotelInteract                src/17l-hotel.js:36-43
+hotelInteract                src/17l-hotel.js:92-99
+hotelLitFrac                 src/17l-hotel.js:25-30
 HOURS_COIN                   src/11h-hours.js:87
 HOURS_ETHER                  src/11h-hours.js:23-30
 hoursAll                     src/11h-hours.js:31
@@ -2525,6 +2526,7 @@ hqStations                   src/27f-hq-room.js:219-223
 hqTable                      src/27f-hq-room.js:377-508
 hqWallProps                  src/27f-hq-room.js:170-216
 hqWindowView                 src/27f-hq-room.js:616-640
+HR_COLS                      src/17l-hotel.js:24
 hsAlive                      tests/91zzzzza-save-hostile.js:29-37
 hsMut                        tests/91zzzzza-save-hostile.js:20-27
 hud                          src/27z-telemetry.js:155-500
@@ -3667,11 +3669,12 @@ pcTestPixels                 tests/91zzzi-postcard.js:17-22
 pcTestPlanet                 tests/91zzzi-postcard.js:2-9
 pcTestSnap                   tests/91zzzi-postcard.js:12-16
 pcWash                       src/25g-post-craft.js:40-55
-PEACE_TUG                    src/17m-peace-fleet.js:87
+PEACE_TUG                    src/17m-peace-fleet.js:111
+peaceFlag                    src/17m-peace-fleet.js:28-50
 peaceHere                    src/17m-peace-fleet.js:12-19
-peaceRepairPos               src/17m-peace-fleet.js:88-91
+peaceRepairPos               src/17m-peace-fleet.js:112-115
 peaceShip                    src/17m-peace-fleet.js:20-25
-peaceTick                    src/17m-peace-fleet.js:92-102
+peaceTick                    src/17m-peace-fleet.js:116-126
 PEEP_LIT                     src/20c-peep.js:28
 PEEP_LOAD                    src/20c-peep.js:27
 PEEP_PASS                    src/20c-peep.js:25
@@ -6537,10 +6540,10 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/17k1-gosplan.js · 3 КБ
   · госзаказ на билборде (M503, PLAN «new mechanics», st. 5):1
 
-## src/17l-hotel.js · 4 КБ
+## src/17l-hotel.js · 8 КБ
   · гостиницы (M461, DESIGN-life §3.3):1
 
-## src/17m-peace-fleet.js · 7 КБ
+## src/17m-peace-fleet.js · 9 КБ
   · мирный флот в полёте (M455, DESIGN-borders §2.4, war §7.3):1
 
 ## src/17n-bazaar.js · 9 КБ

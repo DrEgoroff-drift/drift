@@ -23,6 +23,31 @@ function peaceShip(k,seed,by,x,y,a,Z,al){
   ctx.save();if(al!=null)ctx.globalAlpha=al;ctx.translate(x,y);ctx.rotate(a);ctx.scale(s,s);
   drawFleetShip({k,seed,by});ctx.restore();
 }
+/* красный флаг Коммуны: полотнище — 14 полос, каждая сдвинута волной и затенена
+   по наклону; звезда у древка. Ветра в пустоте нет — его делает поток станции */
+function peaceFlag(x,y,Z,t,limp){
+  const k=Math.max(.3,Z*1.2);if(x<-150*k||x>W+150*k||y<-200*k||y>H+60*k)return;
+  const poleH=130*k,fw=78*k,fh=46*k,N=14,top=y-poleH;
+  ctx.fillStyle="#8d949b";ctx.fillRect(x-1.2*k,top-4*k,2.4*k,poleH+4*k);
+  ctx.fillStyle="#c9a64a";ctx.beginPath();ctx.arc(x,top-5*k,2.6*k,0,TAU);ctx.fill();
+  const amp=limp?1.5*k:6*k,sp=limp?.6:3.2;
+  for(let i=0;i<N;i++){
+    const u0=i/N,u1=(i+1)/N,ph=t*sp-u0*6;
+    const dy0=Math.sin(ph)*amp*u0,dy1=Math.sin(ph-6/N)*amp*u1;
+    const sag=limp?u0*u0*fh*.9:0,sag1=limp?u1*u1*fh*.9:0;
+    const x0=x+fw*u0*(limp?.55:1),x1=x+fw*u1*(limp?.55:1)+.6;
+    const sh=Math.cos(ph)*(limp?.1:.28);
+    const r=Math.round(clamp(178+sh*120,90,230)),g=Math.round(clamp(34+sh*25,10,70));
+    ctx.fillStyle="rgb("+r+","+g+",40)";
+    ctx.beginPath();ctx.moveTo(x0,top+dy0+sag);ctx.lineTo(x1,top+dy1+sag1);ctx.lineTo(x1,top+fh+dy1+sag1*.6);ctx.lineTo(x0,top+fh+dy0+sag*.6);ctx.closePath();ctx.fill();
+  }
+  if(k>.4){
+    const sx=x+fw*.18,sy=top+fh*.3+Math.sin(t*sp-1)*amp*.18,R=6*k;
+    ctx.fillStyle="#f2c94c";ctx.beginPath();
+    for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,rr=i&1?R*.42:R;ctx.lineTo(sx+Math.cos(a)*rr,sy+Math.sin(a)*rr);}
+    ctx.closePath();ctx.fill();
+  }
+}
 function drawPeaceFleet(zx,zy,Z){
   const S=peaceHere();if(!S||typeof drawFleetShip!=="function")return;
   const t=G.t/60,{by,cx,cy,seed}=S;
@@ -60,10 +85,9 @@ function drawPeaceFleet(zx,zy,Z){
     ctx.fillText("ДОСМОТР · ЭКЗ. 1 ИЗ 3",zx(cx),zy(cy)-26*clamp(Z,.6,1.5));
   }else if(by==="km"){
     const strike=(typeof socStrikeHere==="function")&&socStrikeHere();
-    for(let i=0;i<4;i++){
-      const x=cx+(i-1.5)*70+(strike?0:Math.sin(t*.1)*20),y=cy;
-      peaceShip("ferry",seed+i,"km",zx(x),zy(y),-Math.PI/2,Z,strike?.55:1);
-    }
+    /* один флаг вместо четырёх паромов строем (автор 19.09: «флаги пиздец, давай 1 и
+       развевается»). Мачта, полотнище полосами с волной; в забастовку — обвис */
+    peaceFlag(zx(cx),zy(cy),Z,t,strike);
     if(strike){ctx.fillStyle="rgba(176,204,234,.8)";ctx.font=uiFont(8);ctx.textAlign="center";ctx.fillText("ЗАБАСТОВКА · ФЛОТ СТОИТ",zx(cx),zy(cy)-26*clamp(Z,.6,1.5));}
   }else if(by==="ra"){
     const R=peaceRepairPos(S);peaceShip("tug",seed,"ra",zx(R.x),zy(R.y),R.a,Z);
