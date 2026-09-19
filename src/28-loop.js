@@ -468,8 +468,10 @@ function frameBody(now){
      проваливается в 30, как проваливалась оценка по кратчайшему промежутку. */
   {
     const per=1000/Math.min(60,capOpt||60);
-    if(capDue&&now<capDue-4){FRAME_DREW=false;FRAME_IN=false;return;}
-    capDue=(!capDue||now-capDue>per)?now+per:capDue+per;
+    /* пропуск — только если чуть рано; время ушло назад (стенды и мотор тестов зовут
+       кадр со своими часами) — сетка встаёт заново, иначе ждали бы её вечно */
+    if(capDue&&now<capDue-4&&now>capDue-2*per){FRAME_DREW=false;FRAME_IN=false;return;}
+    capDue=(!capDue||now-capDue>per||now<capDue-2*per)?now+per:capDue+per;
   }
   FRAME_DREW=true;
   resAuto(now-last);

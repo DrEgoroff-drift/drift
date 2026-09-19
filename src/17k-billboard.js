@@ -13,8 +13,8 @@ const BB_CACHE={key:"",line:""};
 function bbHere(){
   const sys=G.sys;if(!sys||!sys.station||typeof sysLane!=="function")return null;
   const P=sysLane(sys);if(!P||P.life<.45)return null;
-  const d=LANE_DOCK+LANE_GAP*1.2;
-  return {x:P.st.x+P.ux*d+P.uy*150,y:P.st.y+P.uy*d-P.ux*150,a:Math.atan2(P.uy,P.ux),by:P.by,P};
+  const d=LANE_DOCK+LANE_GAP*1.8;
+  return {x:P.st.x+P.ux*d+P.uy*200*P.side,y:P.st.y+P.uy*d-P.ux*200*P.side,a:Math.atan2(P.uy,P.ux),by:P.by,P};
 }
 /* лучшая цена у соседей: товар, станция, сколько секторов */
 function bbDeal(){

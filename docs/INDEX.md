@@ -987,9 +987,9 @@ craftAffordable              src/03-ships.js:110-114
 craftAmmo                    src/16b-missile.js:61-71
 craftPart                    src/03-ships.js:115-124
 CRASH_SHIP                   src/01a-crashlog.js:19
-crashAt                      src/28-loop.js:567-581
-crashN                       src/28-loop.js:562
-crashSay                     src/28-loop.js:588-617
+crashAt                      src/28-loop.js:569-583
+crashN                       src/28-loop.js:564
+crashSay                     src/28-loop.js:590-619
 crashShip                    src/01a-crashlog.js:20-37
 crashStack                   src/01a-crashlog.js:39-41
 CREW_BASE_TRAITS             src/21a9-base-laws.js:92-97
@@ -1104,7 +1104,7 @@ CVS_RECT                     src/08-state.js:83
 cvsRect                      src/08-state.js:98-101
 dayK                         src/19c-light.js:68-73
 dayKq                        src/19c-light.js:74
-dbg                          src/28-loop.js:725-795
+dbg                          src/28-loop.js:727-797
 dcol                         src/21b-surface-deco.js:155-160
 DEAL_KINDS                   src/27g-deals.js:17-137
 dealAnswer                   src/27g-deals.js:163-196
@@ -1507,8 +1507,8 @@ drawSurfaceHud               src/21e-surface-draw.js:21-115
 drawSurfaceWorld             src/21e1-surface-world.js:10-615
 drawSurvey                   src/12w-survey.js:63-89
 drawSysHud                   src/17-mode-system.js:773-1028
-drawSysLane                  src/17g-sys-lane.js:84-112
-drawSysLaneShips             src/17g-sys-lane.js:123-149
+drawSysLane                  src/17g-sys-lane.js:86-114
+drawSysLaneShips             src/17g-sys-lane.js:125-151
 drawSysNebula                src/16a-space.js:208-236
 drawSysRail                  src/18f-rail-station.js:32-65
 drawSystem                   src/17-mode-system.js:482-772
@@ -1885,12 +1885,12 @@ folkState                    src/12u-folk.js:83-86
 folkVisit                    src/12u-folk.js:104-113
 FOOD_SUPPLY                  src/21a1b-base-food.js:16
 foundBase                    src/21a-mode-base.js:101-115
-frame                        src/28-loop.js:621-667
+frame                        src/28-loop.js:623-669
 FRAME_IN                     src/08-state.js:344
 FRAME_JS                     src/28-loop.js:119
 FRAME_MS                     src/28-loop.js:141
-frameBody                    src/28-loop.js:425-553
-frameLastAt                  src/28-loop.js:620
+frameBody                    src/28-loop.js:425-555
+frameLastAt                  src/28-loop.js:622
 freeVoice                    src/09-audio.js:104-108
 FUEL_PER_ICE                 src/21b1-base-pay.js:100
 fuelPriceHere                src/12k-rep.js:63-70
@@ -2779,7 +2779,7 @@ landerLen                    src/19f-lander.js:11
 landingDust                  src/19f-lander.js:344-370
 landOnTestPlanet             tests/90-harness.js:356-362
 landStartY                   src/19-mode-landing.js:38-43
-LANE_BUOY                    src/17g-sys-lane.js:56
+LANE_BUOY                    src/17g-sys-lane.js:58
 LANE_CHASE                   src/17g-sys-lane.js:16
 LANE_DOCK                    src/17g-sys-lane.js:15
 LANE_GAP                     src/17g-sys-lane.js:13
@@ -2788,10 +2788,10 @@ LANE_Q_MAX                   src/17g-sys-lane.js:17
 LANE_RU                      src/26-ui-station.js:389
 LANE_RX                      src/26-ui-station.js:385-388
 LANE_W                       src/17g-sys-lane.js:14
-laneBuoySprite               src/17g-sys-lane.js:57-79
-laneLampCol                  src/17g-sys-lane.js:80-83
+laneBuoySprite               src/17g-sys-lane.js:59-81
+laneLampCol                  src/17g-sys-lane.js:82-85
 laneLife                     src/17g-sys-lane.js:27-31
-laneShip                     src/17g-sys-lane.js:114-122
+laneShip                     src/17g-sys-lane.js:116-124
 last                         src/28-loop.js:107
 LAST_RUN_DAY                 src/12k-letters.js:40
 lastDroneTick                src/28-loop.js:108
@@ -3933,7 +3933,7 @@ probeShot                    src/25m-probe.js:85-97
 probeSpeak                   src/25m-probe.js:100-121
 probeTarget                  src/25m-probe.js:38-46
 probeVoice                   src/25m-probe.js:75-83
-prof                         src/28-loop.js:687-714
+prof                         src/28-loop.js:689-716
 PROFILE                      src/02-world.js:129-142
 profW                        src/03-ships.js:205-214
 PROMPT_RECT                  src/08-state.js:105
@@ -5209,7 +5209,7 @@ sysEdge                      src/17-mode-system.js:34-40
 sysEntry                     src/17g-sys-lane.js:20-23
 sysHasFauna                  src/12ad-site.js:114-117
 sysJitter                    src/01-core.js:188-192
-sysLane                      src/17g-sys-lane.js:32-53
+sysLane                      src/17g-sys-lane.js:32-55
 sysMakes                     src/12ad-site.js:134-140
 sysNebulaTex                 src/16a-space.js:53-101
 sysPirateBase                src/24a-mode-raid.js:98-102
@@ -7007,7 +7007,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/27z-telemetry.js · 40 КБ
   · телеметрия: приборы пишут в DOM:1
 
-## src/28-loop.js · 64 КБ
+## src/28-loop.js · 65 КБ
   · авария:1
   · звук по кадрам:48
   · цикл:106
@@ -7015,9 +7015,9 @@ zooTick                      src/11ad-zoo.js:41-54
   · авторазрешение:188
   · РОВНЫЙ ТАКТ (0.1b):315
   · развилка режимов — одна на всех (M238):371
-  · кадр, который не убивает игру (M234):554
-  · prof() — на что уходит кадр:675
-  · dbg() — что держит корабль:716
+  · кадр, который не убивает игру (M234):556
+  · prof() — на что уходит кадр:677
+  · dbg() — что держит корабль:718
 
 ## src/28y-look.js · 30 КБ
   · look() — прибор кадра:1

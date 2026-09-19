@@ -13,7 +13,7 @@ function hotelHere(){
   const sys=G.sys;if(!sys||!sys.station||typeof sysLane!=="function")return null;
   const P=sysLane(sys);if(!P||P.life<.45)return null;
   const d=LANE_DOCK+LANE_GAP*.4;
-  return {x:P.st.x+P.ux*d-P.uy*170,y:P.st.y+P.uy*d+P.ux*170,by:P.by,name:HOTEL_SIGN[P.by]||HOTEL_SIGN.gt};
+  return {x:P.st.x+P.ux*d+P.uy*280*P.side,y:P.st.y+P.uy*d-P.ux*280*P.side,by:P.by,name:HOTEL_SIGN[P.by]||HOTEL_SIGN.gt};
 }
 function drawHotel(zx,zy,Z){
   const Ht=hotelHere();if(!Ht)return;

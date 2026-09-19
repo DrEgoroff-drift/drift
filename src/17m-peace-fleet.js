@@ -14,7 +14,7 @@ function peaceHere(){
   const by=(typeof stampOwnerAt==="function")?stampOwnerAt(G.sx,G.sy):null;if(!by)return null;
   const P=sysLane(sys);if(!P)return null;
   /* сцена стоит за станцией, по другую сторону от полосы подъезда */
-  const cx=P.st.x-P.uy*420*P.side,cy=P.st.y+P.ux*420*P.side;
+  const cx=P.st.x-P.uy*560*P.side,cy=P.st.y+P.ux*560*P.side;
   return {by,P,cx,cy,seed:hashi(G.sx,G.sy,0x9EA5)>>>0};
 }
 function peaceShip(k,seed,by,x,y,a,Z,al){

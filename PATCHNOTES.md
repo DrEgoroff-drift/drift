@@ -6,6 +6,16 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.454.0 - air around the lane
+
+- **Fix** (`17g`, `17l`, `17k`, `17m`): the hotel stood on a fixed side of the lane while the holding
+  queue picked its side by seed - on half the systems the two, the billboard and the parked fleet
+  piled into one heap (the author's screenshot, 19.09). Now the queue keeps its side at 300 from the
+  axis with the parked fleet behind it at 560; the hotel (280) and the billboard (200, further down
+  the lane) always stand on the other side.
+- **Fix** (`28-loop`): the flat-60 schedule reset itself when the clock stepped back (stands and the
+  test motor drive frames with their own time) - the shot stand drew a black world on 0.453.0.
+
 ## 0.453.0 - a flat 60, and the lane that stopped shouting from afar
 
 - **Fix** (`28-loop`): the frame cap estimated the display period from the *shortest* recent

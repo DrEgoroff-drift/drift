@@ -45,7 +45,9 @@ function sysLane(sys){
   /* очередь — только у людной станции; сбоку от полосы, чтобы не стоять на ней */
   const qn=life<.45?0:Math.min(LANE_Q_MAX,Math.round(2+(life-.45)/.55*4));
   const side=r()<.5?-1:1;
-  const hx=st.x+ux*120-uy*260*side,hy=st.y+uy*120+ux*260*side;
+  /* воздух (автор 19.09: «пошире все сделать, добавить воздуха»): очередь — своя сторона, 300 от оси;
+     стоянка флота за ней (560, 17m); отель и щит — ВСЕГДА на другой стороне, щит дальше по полосе */
+  const hx=st.x+ux*120-uy*300*side,hy=st.y+uy*120+ux*300*side;
   const ship=()=>({k:LANE_Q_CLS[Math.floor(r()*LANE_Q_CLS.length)],seed:(r()*1e9)|0,by});
   const queue=[];for(let i=0;i<qn;i++)queue.push(ship());
   return sys.lane={st:{x:st.x,y:st.y},E,ux,uy,L,pairs,buoys,life,by,
