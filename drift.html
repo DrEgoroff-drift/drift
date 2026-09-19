@@ -9922,7 +9922,10 @@ function groundAt(tr,x){
 
 /* ══════════════ состояние ══════════════ */
 const cvs=document.getElementById("c");
-let ctx=cvs.getContext("2d");
+/* непрозрачный холст (0.455): под ним ничего нет, а прозрачный компоновщик Chrome
+   каждый кадр смешивал со страницей — ещё один полноэкранный проход, ~0.65 мс
+   встроенной видеокарты на ×2 (A/B на ноуте автора) */
+let ctx=cvs.getContext("2d",{alpha:false});
 const MAIN_CTX=ctx;
 let W=0,H=0,DPR=1;
 /* ── у интерфейса своя мерка, и она тоже от кадра (M221) ──
@@ -46624,9 +46627,6 @@ function drawWake(zx,zy,Z){
     if(!a)wakeLanes.set(k,a=[]);
     a.push(t);
   }
-  ctx.save();
-  ctx.globalCompositeOperation="lighter";
-  ctx.lineCap="butt";ctx.lineJoin="round";
   /* Первый проход был карандашной линией: волосок, при отъезде неотличимый
      от колец орбит. Теперь нить — ТЕЛО в два слоя: тонкое ясное ядро у кромки
      и ореол, который ширится с возрастом (среда расплывается). Спад квадратичный. */
@@ -46634,10 +46634,14 @@ function drawWake(zx,zy,Z){
      читались бусинами на нити. Нить идёт квадратичными дугами через середины
      отрезков — стык двух дуг касательный, углов на повороте нет; каждая ступень
      красится своей долей жизни, так что спад к хвосту остаётся. */
+  /* ступени — ОБЩИЕ на все дорожки (0.455, замер на ноуте автора): у дорожек один
+     возраст и одни ступени, а stroke на ступень КАЖДОЙ дорожки давал до 384 проходов
+     толстой кривой за кадр — 100 мс/с занятости встроенной видеокарты из ~570, при
+     сотне закрашенных пикселей. Сведённые, они отличаются на ≤8 из 255 яркости */
+  let n=0;
+  wkAcc.fill(0);
   for(const arr of wakeLanes.values()){
     if(arr.length<2)continue;
-    let n=0;
-    wkAcc.fill(0);
     for(let i=1;i<arr.length;i++){
       const a=arr[i-1],b2=arr[i],c=arr[i+1];
       const ax=zx(a.x),ay=zy(a.y),bx=zx(b2.x),by=zy(b2.y);
@@ -46662,6 +46666,11 @@ function drawWake(zx,zy,Z){
       wkAcc[b*5+3]+=Math.max(.8,(1+(1-u)*.6)*SZ);
       wkAcc[b*5+4]++;
     }
+  }
+  ctx.save();
+  ctx.globalCompositeOperation="lighter";
+  ctx.lineCap="butt";ctx.lineJoin="round";
+  {
     for(let b=0;b<WAKE_BUCK;b++){
       const cnt=wkAcc[b*5+4];
       if(!cnt)continue;
@@ -46805,10 +46814,13 @@ function drawTrail(zx,zy,Z){
      посчитать один раз — вместе с mixc, который на каждом отрезке рождал массив.
      Толщина ещё зависит от радиуса точки — берём средний по ступени: радиусы
      соседних точек одной ленты отличаются на доли пикселя. */
+  /* ступени общие на все сопла — как у кильватера (0.455): stroke на ступень каждой
+     ленты множил проходы по числу сопел, а цвет, альфа и толщина у лент одного
+     возраста одни и те же */
+  let n=0;
+  trAcc.fill(0);
   for(const k in lanes){
     const arr=lanes[k];
-    let n=0;
-    trAcc.fill(0);
     for(let i=1;i<arr.length;i++){
       const a=arr[i-1],b2=arr[i];
       const x0=zx(a.x),y0=zy(a.y),x1=zx(b2.x),y1=zy(b2.y);
@@ -46822,6 +46834,8 @@ function drawTrail(zx,zy,Z){
       trAcc[b*4+2]+=Math.max(1,b2.r*SZ*(2.4-u*1.3)*CW*1.35);
       trAcc[b*4+3]++;
     }
+  }
+  {
     for(let b=0;b<TRAIL_BUCK;b++){
       const cnt=trAcc[b*4+3];
       if(!cnt)continue;
@@ -46849,16 +46863,17 @@ function drawTrail(zx,zy,Z){
       ctx.lineWidth=lw*TRAIL_HALO.core;
       ctx.stroke();
     }
-    /* добела раскалённый корешок у самого сопла */
-    const f=arr[arr.length-1];
+  }
+  /* добела раскалённые корешки у сопел — одним путём на все */
+  ctx.fillStyle=rgba(T.core,.62);ctx.beginPath();
+  for(const k in lanes){
+    const arr=lanes[k],f=arr[arr.length-1];
     if(f){
-      const x=zx(f.x),y=zy(f.y);
-      if(x>-40&&x<W+40&&y>-40&&y<H+40){
-        ctx.fillStyle=rgba(T.core,.62);
-        ctx.beginPath();ctx.arc(x,y,Math.max(.8,f.r*SZ*1.3),0,TAU);ctx.fill();
-      }
+      const x=zx(f.x),y=zy(f.y),r=Math.max(.8,f.r*SZ*1.3);
+      if(x>-40&&x<W+40&&y>-40&&y<H+40){ctx.moveTo(x+r,y);ctx.arc(x,y,r,0,TAU);}
     }
   }
+  ctx.fill();
   ctx.restore();
   /* холодные струи маневровых — короткие дымки, не лента */
   for(const t of TRAIL){
@@ -58264,6 +58279,7 @@ function drawSkyBase(p){
 let BLOOM_CV=null;
 const BLOOM_K={wanderer:.18,system:.34,map:0,landing:.16,surface:.16,dig:.20,cave:.24,
                belt:.24,scoop:.20,base:.18,raid:.18,homein:.22,winter:.20,spa:.18};
+let BLOOM_CV2=null;
 function bloomPass(k){
   if(!(k>0)||W<8||H<8)return;
   if(G.opts&&G.opts.gfx&&G.opts.gfx.draw===0)return;
@@ -58279,13 +58295,23 @@ function bloomPass(k){
   g.globalCompositeOperation="multiply";
   g.drawImage(BLOOM_CV,0,0);
   g.globalCompositeOperation="source-over";
+  /* размытие — на МАЛОМ холсте (0.455, замер на ноуте автора): blur(7px) на
+     полном кадре считался по всем 5.4 Мпкс при ×2 — ~3 мс видеокарты за кадр.
+     Та же ширина в четвертной копии — 7/4/DPR px (прежний blur мерился в пикселях
+     устройства; сверено попиксельно на ×1/×1.5/×2: ≤8 из 255), дальше билинейное растяжение:
+     размытое мелкое, растянутое, и есть размытое крупное */
+  let src=BLOOM_CV;
+  if("filter" in g){
+    if(!BLOOM_CV2||BLOOM_CV2.width!==w||BLOOM_CV2.height!==h){BLOOM_CV2=document.createElement("canvas");BLOOM_CV2.width=w;BLOOM_CV2.height=h;}
+    const g2=BLOOM_CV2.getContext("2d");
+    g2.clearRect(0,0,w,h);g2.filter="blur("+(1.75/DPR).toFixed(3)+"px)";g2.drawImage(BLOOM_CV,0,0);g2.filter="none";
+    src=BLOOM_CV2;
+  }
   ctx.save();
   ctx.globalCompositeOperation="lighter";
   ctx.globalAlpha=k;
-  const hasF=("filter" in ctx);
-  if(hasF)ctx.filter="blur(7px)";
-  ctx.drawImage(BLOOM_CV,0,0,w,h,0,0,W,H);
-  if(hasF)ctx.filter="none";
+  ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality="high";
+  ctx.drawImage(src,0,0,w,h,0,0,W,H);
   ctx.restore();
 }
 

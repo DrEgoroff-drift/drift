@@ -338,6 +338,7 @@ function drawSkyBase(p){
 let BLOOM_CV=null;
 const BLOOM_K={wanderer:.18,system:.34,map:0,landing:.16,surface:.16,dig:.20,cave:.24,
                belt:.24,scoop:.20,base:.18,raid:.18,homein:.22,winter:.20,spa:.18};
+let BLOOM_CV2=null;
 function bloomPass(k){
   if(!(k>0)||W<8||H<8)return;
   if(G.opts&&G.opts.gfx&&G.opts.gfx.draw===0)return;
@@ -353,13 +354,23 @@ function bloomPass(k){
   g.globalCompositeOperation="multiply";
   g.drawImage(BLOOM_CV,0,0);
   g.globalCompositeOperation="source-over";
+  /* размытие — на МАЛОМ холсте (0.455, замер на ноуте автора): blur(7px) на
+     полном кадре считался по всем 5.4 Мпкс при ×2 — ~3 мс видеокарты за кадр.
+     Та же ширина в четвертной копии — 7/4/DPR px (прежний blur мерился в пикселях
+     устройства; сверено попиксельно на ×1/×1.5/×2: ≤8 из 255), дальше билинейное растяжение:
+     размытое мелкое, растянутое, и есть размытое крупное */
+  let src=BLOOM_CV;
+  if("filter" in g){
+    if(!BLOOM_CV2||BLOOM_CV2.width!==w||BLOOM_CV2.height!==h){BLOOM_CV2=document.createElement("canvas");BLOOM_CV2.width=w;BLOOM_CV2.height=h;}
+    const g2=BLOOM_CV2.getContext("2d");
+    g2.clearRect(0,0,w,h);g2.filter="blur("+(1.75/DPR).toFixed(3)+"px)";g2.drawImage(BLOOM_CV,0,0);g2.filter="none";
+    src=BLOOM_CV2;
+  }
   ctx.save();
   ctx.globalCompositeOperation="lighter";
   ctx.globalAlpha=k;
-  const hasF=("filter" in ctx);
-  if(hasF)ctx.filter="blur(7px)";
-  ctx.drawImage(BLOOM_CV,0,0,w,h,0,0,W,H);
-  if(hasF)ctx.filter="none";
+  ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality="high";
+  ctx.drawImage(src,0,0,w,h,0,0,W,H);
   ctx.restore();
 }
 

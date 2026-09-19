@@ -401,9 +401,6 @@ function drawWake(zx,zy,Z){
     if(!a)wakeLanes.set(k,a=[]);
     a.push(t);
   }
-  ctx.save();
-  ctx.globalCompositeOperation="lighter";
-  ctx.lineCap="butt";ctx.lineJoin="round";
   /* Первый проход был карандашной линией: волосок, при отъезде неотличимый
      от колец орбит. Теперь нить — ТЕЛО в два слоя: тонкое ясное ядро у кромки
      и ореол, который ширится с возрастом (среда расплывается). Спад квадратичный. */
@@ -411,10 +408,14 @@ function drawWake(zx,zy,Z){
      читались бусинами на нити. Нить идёт квадратичными дугами через середины
      отрезков — стык двух дуг касательный, углов на повороте нет; каждая ступень
      красится своей долей жизни, так что спад к хвосту остаётся. */
+  /* ступени — ОБЩИЕ на все дорожки (0.455, замер на ноуте автора): у дорожек один
+     возраст и одни ступени, а stroke на ступень КАЖДОЙ дорожки давал до 384 проходов
+     толстой кривой за кадр — 100 мс/с занятости встроенной видеокарты из ~570, при
+     сотне закрашенных пикселей. Сведённые, они отличаются на ≤8 из 255 яркости */
+  let n=0;
+  wkAcc.fill(0);
   for(const arr of wakeLanes.values()){
     if(arr.length<2)continue;
-    let n=0;
-    wkAcc.fill(0);
     for(let i=1;i<arr.length;i++){
       const a=arr[i-1],b2=arr[i],c=arr[i+1];
       const ax=zx(a.x),ay=zy(a.y),bx=zx(b2.x),by=zy(b2.y);
@@ -439,6 +440,11 @@ function drawWake(zx,zy,Z){
       wkAcc[b*5+3]+=Math.max(.8,(1+(1-u)*.6)*SZ);
       wkAcc[b*5+4]++;
     }
+  }
+  ctx.save();
+  ctx.globalCompositeOperation="lighter";
+  ctx.lineCap="butt";ctx.lineJoin="round";
+  {
     for(let b=0;b<WAKE_BUCK;b++){
       const cnt=wkAcc[b*5+4];
       if(!cnt)continue;
@@ -582,10 +588,13 @@ function drawTrail(zx,zy,Z){
      посчитать один раз — вместе с mixc, который на каждом отрезке рождал массив.
      Толщина ещё зависит от радиуса точки — берём средний по ступени: радиусы
      соседних точек одной ленты отличаются на доли пикселя. */
+  /* ступени общие на все сопла — как у кильватера (0.455): stroke на ступень каждой
+     ленты множил проходы по числу сопел, а цвет, альфа и толщина у лент одного
+     возраста одни и те же */
+  let n=0;
+  trAcc.fill(0);
   for(const k in lanes){
     const arr=lanes[k];
-    let n=0;
-    trAcc.fill(0);
     for(let i=1;i<arr.length;i++){
       const a=arr[i-1],b2=arr[i];
       const x0=zx(a.x),y0=zy(a.y),x1=zx(b2.x),y1=zy(b2.y);
@@ -599,6 +608,8 @@ function drawTrail(zx,zy,Z){
       trAcc[b*4+2]+=Math.max(1,b2.r*SZ*(2.4-u*1.3)*CW*1.35);
       trAcc[b*4+3]++;
     }
+  }
+  {
     for(let b=0;b<TRAIL_BUCK;b++){
       const cnt=trAcc[b*4+3];
       if(!cnt)continue;
@@ -626,16 +637,17 @@ function drawTrail(zx,zy,Z){
       ctx.lineWidth=lw*TRAIL_HALO.core;
       ctx.stroke();
     }
-    /* добела раскалённый корешок у самого сопла */
-    const f=arr[arr.length-1];
+  }
+  /* добела раскалённые корешки у сопел — одним путём на все */
+  ctx.fillStyle=rgba(T.core,.62);ctx.beginPath();
+  for(const k in lanes){
+    const arr=lanes[k],f=arr[arr.length-1];
     if(f){
-      const x=zx(f.x),y=zy(f.y);
-      if(x>-40&&x<W+40&&y>-40&&y<H+40){
-        ctx.fillStyle=rgba(T.core,.62);
-        ctx.beginPath();ctx.arc(x,y,Math.max(.8,f.r*SZ*1.3),0,TAU);ctx.fill();
-      }
+      const x=zx(f.x),y=zy(f.y),r=Math.max(.8,f.r*SZ*1.3);
+      if(x>-40&&x<W+40&&y>-40&&y<H+40){ctx.moveTo(x+r,y);ctx.arc(x,y,r,0,TAU);}
     }
   }
+  ctx.fill();
   ctx.restore();
   /* холодные струи маневровых — короткие дымки, не лента */
   for(const t of TRAIL){
