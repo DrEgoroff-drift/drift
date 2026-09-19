@@ -6,6 +6,20 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.455.0 - the khrushchevka, one flag, and a lighter frame
+
+- **Hotel** (`17l`): a five-storey khrushchevka in three-quarter view - panel seams, a hip slate
+  roof with brick chimneys and wire-strung aerials, glazed balconies each in its own colour,
+  curtains, «ПРОДАЮ», entrances with benches. Windows follow the hour of the world-day, each
+  with its own threshold, and one changes its mind every few seconds. Baked once per window
+  mask - one drawImage a frame.
+- **Commune** (`17m`): the line of four ferries is one red flag on a mast that waves; on a
+  strike day it hangs.
+- **Perf** (measured on an AMD iGPU at x2, GPU-process ms per frame, 30.6 -> 34.9 fps):
+  wake and trail stroke per shared bucket instead of per lane; bloom is blurred on its quarter
+  canvas (same picture within 8/255); the main canvas is opaque; the film grain is not laid on
+  black-sky scenes, where it changed 0.1% of subpixels by 1/255.
+
 ## 0.454.0 - air around the lane
 
 - **Fix** (`17g`, `17l`, `17k`, `17m`): the hotel stood on a fixed side of the lane while the holding
