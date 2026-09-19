@@ -51715,7 +51715,7 @@ function hotelHere(){
    Окна живут по суткам: у каждого свой порог по зерну, вечером горит почти всё, к ночи
    гаснет по одному, к утру — редкие; раз в несколько секунд одно окно передумывает.
    Размер — мировой (растёт с зумом), издали — плита без мелочей. */
-const HR_COLS=12,HR_SIDE=3,HR_ROWS=5,HR_W=160,HR_SW=34,HR_SK=12,HR_FH=84,HR_TOP=46,HR_BW=200,HR_BH=136,HR_PX=2.5;
+const HR_COLS=12,HR_SIDE=3,HR_ROWS=5,HR_W=160,HR_SW=34,HR_SK=12,HR_FH=84,HR_TOP=46,HR_BW=200,HR_BH=136,HR_PX=1.6;
 function hotelLitFrac(by,hr){
   if(by==="co")return .95;
   if(by==="or"&&(hr>=22||hr<6))return .04;
@@ -51879,7 +51879,8 @@ function hotelBake(sd,mask){
 }
 function drawHotel(zx,zy,Z){
   const Ht=hotelHere();if(!Ht)return;
-  const x=zx(Ht.x),y=zy(Ht.y),k=Math.max(.22,Z*1.25),w=HR_BW*k,h=HR_BH*k;
+  const x=zx(Ht.x),y=zy(Ht.y),k=Math.max(.08,Z*.42),   /* втрое меньше первой пробы (автор 19.09) */
+  w=HR_BW*k,h=HR_BH*k;
   if(x<-w||x>W+w||y<-h*1.5||y>H+h)return;
   const sd=G.sx*31+G.sy,hr=((G.t%CEL_DAY)/CEL_DAY)*24;
   const cv=hotelBake(sd,hotelWinLit(sd,hotelLitFrac(Ht.by,hr),Math.floor(G.t/60/6)));

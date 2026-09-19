@@ -1437,7 +1437,7 @@ drawHitFx                    src/18d-postfx.js:87-105
 drawHomeIn                   src/29d-home-draw.js:9-332
 drawHomeOut                  src/21f-home-out.js:73-312
 drawHomeRoom                 src/27e-ui-home.js:42-62
-drawHotel                    src/17l-hotel.js:186-197
+drawHotel                    src/17l-hotel.js:186-198
 drawHqRoom                   src/27f-hq-room.js:22-31
 drawHull                     src/03e-hull-draw.js:68-141
 drawHullMarks                src/03b-hull-paint.js:184-491
@@ -2482,9 +2482,9 @@ HOTEL_BAKE                   src/17l-hotel.js:42
 HOTEL_NIGHT                  src/17l-hotel.js:11
 HOTEL_SIGN                   src/17l-hotel.js:10
 hotelBake                    src/17l-hotel.js:47-185
-hotelDesk                    src/17l-hotel.js:206-218
+hotelDesk                    src/17l-hotel.js:207-219
 hotelHere                    src/17l-hotel.js:12-17
-hotelInteract                src/17l-hotel.js:198-205
+hotelInteract                src/17l-hotel.js:199-206
 hotelLitFrac                 src/17l-hotel.js:25-30
 hotelWinLit                  src/17l-hotel.js:33-41
 HOURS_COIN                   src/11h-hours.js:87
