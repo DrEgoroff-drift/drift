@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 594 · символов верхнего уровня: 5815
+Файлов: 594 · символов верхнего уровня: 5818
 
 ## СИМВОЛЫ
 
@@ -1437,7 +1437,7 @@ drawHitFx                    src/18d-postfx.js:87-105
 drawHomeIn                   src/29d-home-draw.js:9-332
 drawHomeOut                  src/21f-home-out.js:73-312
 drawHomeRoom                 src/27e-ui-home.js:42-62
-drawHotel                    src/17l-hotel.js:31-91
+drawHotel                    src/17l-hotel.js:186-197
 drawHqRoom                   src/27f-hq-room.js:22-31
 drawHull                     src/03e-hull-draw.js:68-141
 drawHullMarks                src/03b-hull-paint.js:184-491
@@ -2478,12 +2478,15 @@ homeStore                    src/12j-home.js:189-195
 homeTurn                     src/12j-home.js:47-77
 homeUpWorld                  tests/91zzzc-home-up.js:5-9
 homingStep                   src/13a-guns.js:501-508
+HOTEL_BAKE                   src/17l-hotel.js:42
 HOTEL_NIGHT                  src/17l-hotel.js:11
 HOTEL_SIGN                   src/17l-hotel.js:10
-hotelDesk                    src/17l-hotel.js:100-112
+hotelBake                    src/17l-hotel.js:47-185
+hotelDesk                    src/17l-hotel.js:206-218
 hotelHere                    src/17l-hotel.js:12-17
-hotelInteract                src/17l-hotel.js:92-99
+hotelInteract                src/17l-hotel.js:198-205
 hotelLitFrac                 src/17l-hotel.js:25-30
+hotelWinLit                  src/17l-hotel.js:33-41
 HOURS_COIN                   src/11h-hours.js:87
 HOURS_ETHER                  src/11h-hours.js:23-30
 hoursAll                     src/11h-hours.js:31
@@ -6540,7 +6543,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/17k1-gosplan.js · 3 КБ
   · госзаказ на билборде (M503, PLAN «new mechanics», st. 5):1
 
-## src/17l-hotel.js · 8 КБ
+## src/17l-hotel.js · 16 КБ
   · гостиницы (M461, DESIGN-life §3.3):1
 
 ## src/17m-peace-fleet.js · 9 КБ
