@@ -400,12 +400,19 @@ function grainPass(vig){
     g.putImageData(im,0,0);
     GRAIN_PAT=ctx.createPattern(cv,"repeat");
   }
+  /* В космосе зерно невидимо: overlay по почти чёрному — это d·(1±1%), и замер
+     кадра системы дал 0.1% субпикселей, сдвинутых на 1/255. А стоит проход
+     дорого: overlay на встроенной видеокарте (D3D11) копирует кадр под собой —
+     1–3 мс за кадр на ×2 (0.455, ноут автора). Где небо чёрное, его не кладём */
+  const dark=G.mode==="system"||G.mode==="dock"||G.mode==="barge";
+  if(!dark){
   ctx.save();
   ctx.globalCompositeOperation="overlay";
   ctx.globalAlpha=.075;
   ctx.fillStyle=GRAIN_PAT;
   ctx.fillRect(0,0,W,H);
   ctx.restore();
+  }
   if(vig){
     ctx.drawImage(screenLayer("vigg|"+W+"|"+H,()=>{
       const g=ctx.createRadialGradient(W*.5,H*.48,Math.min(W,H)*.34,W*.5,H*.48,Math.max(W,H)*.76);

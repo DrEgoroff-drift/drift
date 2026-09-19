@@ -2072,7 +2072,7 @@ gotRender                    src/27jb-ui-got.js:29-55
 gotTick                      src/27jb-ui-got.js:56-60
 gradePass                    src/19c-light.js:258-294
 GRAIN_PAT                    src/19c-light.js:389
-grainPass                    src/19c-light.js:390-417
+grainPass                    src/19c-light.js:390-424
 GREEN_BEDS                   src/21g-greenhouse.js:23
 GREEN_FULL                   src/21g-greenhouse.js:24
 GREEN_SP                     src/21g-greenhouse.js:68
@@ -6629,7 +6629,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/19b-sky.js · 34 КБ
   · небо:1
 
-## src/19c-light.js · 29 КБ
+## src/19c-light.js · 30 КБ
   · свет и воздух:1
   · свечение (bloom) — M243:331
   · зерно и виньетка — один слой на все сцены (M244):377
