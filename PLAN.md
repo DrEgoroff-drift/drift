@@ -686,6 +686,8 @@ material consequences are the part that does not exist yet — that is what stag
 
 ### Release tails — any gap, all before a push
 
+**0.453.0 (19.09 night, released WITHOUT tests at the author's word):** the frame cap estimated the vsync period from the SHORTEST interval (`capIv`) - under a 100% GPU a late frame plus its 6-9 ms catch-up slid it to «120 Hz» and the game dropped every other frame itself (sim: 5% late -> 23 fps of 60). This is the likely cause of the phone's locked-30 stretches in `rec.mp4` and the desktop stutter. Now a flat 60 by schedule (`capDue`, `28-loop`), 120 tact off. Far lane: billboard/hotel unlettered below x0.3, queue and hotel scale with the world. OWED: run `test.ps1 -Full` + Node tier on 0.453.0; the author to fly the phone again and say if «откидывает назад» is gone; the four white parked ships by the lane still keep their size floor (drawn outside `drawSysLaneShips`); a server frame-stats beacon was asked for - not built (touches `site/api.php`, ask first).
+
 **HANDOVER 19.09 (Control → the next session; the author: «опусом в новой сессии будем чинить»). Do this first, in order:**
 
 1.–2. ~~Merge the agent branches, release~~ — done in 0.451.0 (19.09): five branches cherry-picked (helm test taken from the phone-stick branch); «полный трюм» found green in every order, no agent branch needed. Found on the way and fixed: world signs below the UI ruler, the parallax law on a phone frame, the zoom law's centre, the rail ride leaking across suites, «останется N» contrast. Flickers seen once under load, green on rerun: «прогоны: двенадцать путей» (-Full), quarantined «рейсы» (Node) — watch.
