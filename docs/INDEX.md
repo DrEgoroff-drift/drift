@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 594 · символов верхнего уровня: 5819
+Файлов: 594 · символов верхнего уровня: 5820
 
 ## СИМВОЛЫ
 
@@ -1394,7 +1394,7 @@ drawCaveWorld                src/22-mode-cave.js:648-750
 drawCelest                   src/06a-celest.js:167-218
 drawCheburek                 src/17j-cheburek.js:18-32
 drawChunks                   src/18c-chunks.js:90-96
-drawClouds                   src/19e-clouds.js:386-526
+drawClouds                   src/19e-clouds.js:386-528
 drawCockpit                  src/25-cockpit.js:400-674
 drawCombat                   src/13-pirates.js:349-449
 drawCosmMark                 src/12va-wander-cosm.js:112-132
@@ -1518,7 +1518,7 @@ drawTapes                    src/12s1-tape.js:37-52
 drawTemple                   src/20aa-poi-shapes.js:50-89
 drawThingIcon                src/27i-ui-table.js:400-454
 drawTierTrim                 src/03b-hull-paint.js:73-166
-drawTiles                    src/18c-chunks.js:144-151
+drawTiles                    src/18c-chunks.js:159-170
 drawTrail                    src/16-flight.js:568-662
 drawTransitPlate             src/03e-hull-draw.js:59-67
 drawVan                      src/21ac3-base-van.js:71-133
@@ -5319,7 +5319,8 @@ tierAt                       src/04-mods.js:59
 tierFromDanger               src/05-parts.js:101-108
 tierOf                       src/04b-fleet.js:157
 TILE                         src/18c-chunks.js:128
-tileAt                       src/18c-chunks.js:134-143
+tileAt                       src/18c-chunks.js:134-144
+tileSpan                     src/18c-chunks.js:150-158
 tileStore                    src/18c-chunks.js:129-133
 timeBucket                   src/03-ships.js:128-131
 TIN_BIN                      src/12ta-tin.js:31
@@ -6584,7 +6585,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/18b-map-hold.js · 13 КБ
   · владения на карте (M348):1
 
-## src/18c-chunks.js · 9 КБ
+## src/18c-chunks.js · 11 КБ
   · кэш статичного: чанки и слои:1
 
 ## src/18d-postfx.js · 7 КБ
