@@ -22,10 +22,6 @@ no fallback, and every ported layer better than before, not the same. The recipe
 layer order, the kit, the porting checklist — is `docs/DESIGN-gpu.md`; the decision is in `docs/DECISIONS.md`.
 Built: the core and post pass (08b), the layer kit (08c), the space backdrop (16g), the system under the planets (17g), `docs/shot.py` on the GPU.
 
-- [ ] **G2b the black hole:** still the 2D look (flat outline ring, the same arc on top) — not accepted by
-  Control 23.09. Wanted: Doppler asymmetry of the disc (the side coming at us brighter and whiter), a thin
-  bright photon ring at the horizon, lensing of the background around it (`hole()` in `17g-gpu-system`).
-  The single star may carry a slightly stronger wide corona falloff — it must stay the system's main point.
 - [ ] **G3 planets and moons:** spheres lit by their star — terminator, atmosphere rim, rings with their shadow,
   night lights on held worlds; the labels stay 2D.
 - [ ] **G4 the system view on top:** ships as sprites from the hull bake, lit from the star; wake, trail, exhaust
@@ -257,9 +253,6 @@ Check each against the code before building — some may already hold.
 
 ## 11. Small things seen on the way (23.09)
 
-- [ ] **The target chip over ТРЮМ:** the compass chip «◄ … 1827» sits on the ТРЮМ «0/40» line top left
-  (main and gpu alike, system view) — against the 12.09 law: compass chips only off-frame, never under
-  windows or the HUD. Keep the chip out of the HUD's rectangle.
 - [ ] **Planet angles follow the frame rate, not the game clock:** `updateSystem` does `p.ang+=angRate(…)*dt`
   (moons and the station alike), so where a planet stands depends on how many frames ran — two devices see
   different worlds. Make the angle a pure function of game time (`ang0+spd*G.t`, same clamp). Check the save

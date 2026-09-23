@@ -68,7 +68,7 @@ fn star(p:vec2f,sv:vec4f,cv:vec4f,t:f32,big:f32,px:f32)->vec4f{
     let x=max(r-Rd,0.);
     e=e+col*(exp(-x*2.6)*.85+exp(-x*.9)*.2*(.6+.8*n))*breath;
   }
-  e=e+col*.12*heat*pow(clamp(1.-(r-.3)/6.7,0.,1.),2.2)*smoothstep(Rd*.9,Rd*1.3,r);
+  e=e+col*.15*heat*pow(clamp(1.-(r-.3)/6.7,0.,1.),2.2)*smoothstep(Rd*.9,Rd*1.3,r);
   e=e+col*.03*exp(-pow((r-2.3)/.3,2.));
   for(var i=0;i<4;i++){
     let a=f32(i)*1.5707963+.2;let ax=vec2f(cos(a),sin(a));

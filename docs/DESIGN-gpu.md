@@ -32,7 +32,9 @@ The author, 23.09.2026: «переноси все на новые техноло
   session 21f451ab, `kpairs.py <scene> <name> "<js>"…` shoots main and gpu with the same `--js`
   (main's own `docs/shot.py` in `mainref`); freeze the scene first (`freeze.js` there: planet, moon and station
   angles pinned, `spd=0`, ship placed) — otherwise the two sides differ. Accepted pair: `g2f.png`, `g2f_crop.png`.
-- G2 accepted by Control (24a10e2) for single, giant, binary; the black hole is not — PLAN §0 G2b.
+- G2 accepted by Control (24a10e2) for single, giant, binary. G2b (the hole): background lensed through the nebula
+  texture of 16g plus hashed stars in the source plane, Keplerian disc with Doppler asymmetry, photon ring, the far
+  disc bent over the shadow — pair `g2b.png` / `g2b_crop.png`, awaiting Control. Wide corona term .12 → .15 (weight).
 - **Next: G3 planets and moons** — the loop after `BODY_LABELS.length=0` in `17-mode-system.js`: `drawRing(…,-1)`,
   `planetDraw` (07-planet:352, its only caller), lights/works (2D, keep), `drawRing(…,1)`, doom veil (2D, keep),
   the 2D atmosphere stroke (r+2.5, .18 — replace), moons as flat `#9aa8b2` discs (replace), labels (2D). Plan: one
