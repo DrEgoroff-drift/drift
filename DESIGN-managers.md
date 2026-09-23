@@ -2,7 +2,7 @@
 
 The original design document. It has since been built (`12c-mgr-core`, `12d-mgr-face`,
 `12g-mgr-rogue`, `12h-relic`, `27c-ui-hq`); where the implementation departed from this text, the
-reason is recorded in the milestone in [`docs/PLAN-archive.md`](docs/PLAN-archive.md). Kept as the
+reason is recorded in the milestone in [`docs/done/`](docs/done/README.md). Kept as the
 statement of intent — read it to understand *why* the system is shaped this way.
 
 Offline progress is deliberately out of scope: everything is computed from elapsed time only while

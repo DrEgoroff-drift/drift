@@ -626,8 +626,9 @@ carried home persist.
 | [`site/`](site) | The [drift-game.ru](https://drift-game.ru) pages: front page, accounts and cloud saves (one small PHP endpoint, `api.php`), and the standalone 3D bird. Published automatically on push. |
 | [`bird/`](bird) | Sources of the 3D bird (WebGL2, `bird.ps1` builds them into one self-contained file). Not part of the game. |
 | [`CLAUDE.md`](CLAUDE.md) | House rules for working on the code: what lives where, what must not change, how to verify. |
-| [`PLAN.md`](PLAN.md) | The live plan: cross-cutting rules and the milestones still ahead. |
-| [`docs/PLAN-archive.md`](docs/PLAN-archive.md) | Design log — every finished milestone, what it solved and why it was built that way. |
+| [`PLAN.md`](PLAN.md) | The plan: only the work still ahead, by milestone. |
+| [`docs/DECISIONS.md`](docs/DECISIONS.md) | The rules and the author's decisions that stand across all the work. |
+| [`docs/done/`](docs/done/README.md) | Design log — every finished milestone, what it solved and why it was built that way; files of at most 40 KB. |
 | [`docs/INDEX.md`](docs/INDEX.md) | Generated address book of the sources: every top-level symbol as `file:line`. Grep it, do not read it. |
 | [`PATCHNOTES.md`](PATCHNOTES.md) | One entry per version: what changed and what it fixed. |
 
