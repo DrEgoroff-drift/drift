@@ -11316,3 +11316,132 @@ Billboards: a truss,
 - **[design owed] M477 The КБ editor — first pass BUILT 18.09 (Control), `src/27jb-kb.js`.** A full-screen синька (`#kbWin`): Prussian-blue grid, rim cells ochre-lined, deck light-lined, parts as ochre stamps with a two-letter mark, the hold hatched; the tray of today's things; tap a thing then a cell — the rules of place refuse in one line («двигатели — только в кормовой ряд», «реактор у борта не ставят», «приборы видят из носовой трети», «орудие — на обшивку», «броня — по обшивке»); a free deck cell toggles ТРЮМ; ТИПОВОЙ · КАК У ВСЕХ; ГОТОВО → «ваш чертёж 4-й в очереди…» → the violet «СОГЛАСОВАНО» stamp. Saved as `G.draft[shipId]={it,hold}` (snapshot + applySave, absent = the packer). Opened from ОПИСЬ ЧЕРТЁЖ only at the dock. The packer now places the most constrained things first and prefers rule-legal cells; the stern is the last 15 % of rows (≥ 2). Suites: refusals, hold brush, save round-trip, the typical plan obeys the rules. **Open:** footprints 2/4 turning and the Орднунг «поворот не предусмотрен формуляром», the numbers strip with deltas (M478), ПРОЕКТЫ ×3, the foreign yard's bill per cell moved, ОСНАСТКА's hull section → КБ, the tray showing things from the hold. Original text in the archive.
 - **[design owed] M468 Properties — BUILT 18.09 (Control), `src/06f-far-props.js`.** Heavy: `held()` weighs (осмий 2, нейтронная крошка 5), `addRes` takes what fits by weight. Fragile: every hull hit in `playerHit` cracks a fifth of the янтарь into «янтарная крошка» (a new far row, 43 кр, not in the ground — the roll runs over `FAR_ROLL`, the ten, so deposits did not move). Trap: антивещество loses 1 % a game-minute unless a reactor (weapon module) feeds it from energy; the hold says so once a minute; below 20 % hull the traps let go — the cargo is gone, the hull −10 %. Suite covers all three. **Open — M469 the eaters** (reactor/armour/shield/instrument densities, доводка by нейтронная крошка, greenhouses and дачники, jewellers, the luxury counter, the navies' buy); the countdown in the ТРЮМ row. Original text in the archive.
 - **[design owed] M462 «Чебуречная» — BUILT 18.09 (Control), `src/17j-cheburek.js`.** At busy stations (life ≥ .35, every other system by seed) a junk boat shuttles the lane axis on a 70 s cycle, window lit, «ЧЕБУРЕКИ» over it; within 200 «ЧЕБУРЕКИ! ГОРЯЧИЕ! · ДЕЙСТВИЕ — ВЗЯТЬ · 4 КР» → the owner's `food` and a rumour into the journal and ЛЮДИ; no money — «в долг не кормим… ладно, держи». Original text in the archive.
+
+## Moved 2026-09-23, the design pass
+
+### DESIGN PASS — the queue (the author 18.09: «дизайн проход прям с этапа 0»; start it with «давай дизайн проход»)
+
+Everything Control built from Stage 0 on is a working draft; the picture is the Designer's. A new
+session that hears «давай дизайн проход» starts HERE, top to bottom, one item per commit. Method
+for every item: read the craft codex (`docs/DESIGN-craft.md`) and the art-direction memories; a
+frame BEFORE on the phone layout (390×844, own headless Chrome, or the S23); self-critique in
+passes (draft → critique harder than a stranger's → optimise); fix IN THE GAME, never in the frame;
+a frame AFTER; a sheet before/after to the author; the check that can be a test goes into tests.
+Remove the item's «[design owed]» marker in its stage when done. Phone cadence is not this pass's
+job (the phone milestone), but no fix may add raster cost without a number.
+
+**Stage 0 — the frame**
+- [x] **D1 The baked hull and star core — done 18.09 on the S23.** Bake A/B at ×8: no step at the
+  edge, nav lights and nozzles sit on the bake; the core breathes (47 k px change over 5 s). What
+  was ugly was the star's four rays: one hard-edged wedge each, a paper strip a thousand px long
+  by a giant — now three nested wedges (edge .11 rad at .28, axis .04 at 1). Left: the giant's
+  corona washes the whole phone frame one orange (pair 0) — legitimate up close, no rim light on
+  the ship; if it bothers the author, a cool rim on the hull from `lightDir` is the next step.
+- [x] **D2 The tails — done 18.09 on the S23.** Found on the phone: under the finger the main
+  engine fires only while accelerating (135 of 266 frames), at cruise the assist holds speed with
+  thrust at zero and the ship flew with NO plume — towed. Now the helm reports `idle` (assist, no
+  main, speed > ¼ cruise) and `trailStep` keeps a sustaining plume at .42 span, .72 radius, same
+  lane. The wake: `WAKE_LIFE` 60/200 → 40/80 and the core fades by u⁴ — the three rails no longer
+  run into the HUD; the author's length pick (A–D) never came, so this is the Designer's: the
+  bright third ≈ 200 px at ×1. The stick's filled band .44 → .32 (it read as a solid cup on black).
+  Test `кильватер` retuned to 700–1400 units.
+- [x] **D3 ×1.5 in flight — the author's call 18.09: «темнее не надо».** The switch stays OFF
+  (`G.opts.gfx.resByMode`); the sky keeps its light. Closed.
+
+**Stage 0b / 1 — the interface and the finger**
+- [x] **D4 The station header — checked on the S23 18.09.** One row and the paper СТОЛ tag were
+  already in; what the phone showed: the row cut off at «КОРАБЛ» with a flat edge (the fade mask
+  lived on `nav.tabs` only — now on `nav.groups` too, off when scrolled to the tail), and on an
+  empty hold the market opened with four grey caps blocks before the first price — the empty
+  hint now sits in the ТРЮМ line («ПУСТ — ПЛАНЕТА ИЛИ ПОЯС»), one block fewer. The board reads.
+- [x] **D5 The hail — checked on the S23 18.09.** The window's safe/risk colours were right; the
+  PAD was not: under a hail the ДЕЙСТВИЕ pad is `.ready` and its `breathe` animation painted the
+  ring amber over the consequence colour — a dangerous «ПРОХОДОМ» breathed like a recommendation.
+  Now the ready pad breathes red (`breatheRisk`) or phosphor (`breatheSafe`) by `data-hail-act`.
+  Picket brackets (helmDrawMarks, M360) not re-judged here — no picket in the forced frame.
+- [x] **D6 Under the finger — done 18.09 on the S23.** shipZ measured .8 / 1.04 / 1.4 at ×1 /
+  ×2.4 / ×4.5 as P8 set it; the dead-zone СТОП ring reads under the thumb; the finger band is
+  lighter since D2. The edge wall had NO picture — the anchor turned the ship and only a line said
+  why; now `drawEdgeWall`: the rim fades in over the last 900 units as a wide soft band and a
+  dashed line in the compass teal, with a breathing «упор» spot where the ship leans on it. The
+  orbit body in frame (BODY_CAM) left as built.
+
+**Stage 2 — whose land**
+- [x] **D7 M459 the approach — done 18.09 on the S23.** The buoy was a dark cylinder with a lamp
+  beside it — a bin. Now an instrument: lit body with a shaded side, black-and-yellow belt, red
+  reflector, mast with a radar cross and the lamp in a cage; the lead lamp's glow 8+14 → 7+22 so
+  the chase reads as runway lights. Queue ships against the station (≈¼ of it) read right; the
+  order — ellipse, one landing, one leaving — left as built.
+- [x] **D8 M452 the gesture ×6 — checked on the S23 18.09 (gt, or, co forced at the entry).**
+  The character is there: the patrol with its cone, the scan line across the whole frame, the
+  Коммуна board on its truss. Two things were too faint on the phone: the Компания screen drone
+  was a 30×12 px colour crumb — ×1.35 now; the ГЛАВТРАССА spotlight cone .20 → .30. The post
+  boards' lettering reads at ×1. km/ra/hf not re-judged this run.
+- [x] **D9 M453 the stamp — done 18.09 on the S23 (all eight forced into the book).** The page
+  reads as a document: tilted ink frames in each power's colour, the Компания slip as a white
+  paper, the ×N counters. Ink grain skipped — at phone size it would be noise.
+- [x] **D10 M454 the station by its builder — done 18.09 on the S23** (six
+  captures with the ship re-placed by the orbiting station before each). The plate's ground went
+  .12 → .2 and now reaches the core trunk (gradient mixed .3 with `makerGround`) and the solar
+  panels (.22): Рассвет reads ochre, Компания white, Хай-Фронт pale, Коммуна blue-grey, Орднунг
+  dark; the trade containers and the indust hoppers take the ground too (.3). Done.
+- [x] **D11 M447/M448 the galaxy on the map — done 18.09 on the S23.** The home frame reads; at
+  ×2.5 and ×5 the per-system glyph (halo, rays, station ring) stayed ×1-sized while the cell shrank
+  to 9 px and a thousand glyphs made grey soup — the glyph now scales with the cell (`gk` =
+  cell/45, floor .35) and fades to .4, station/belt rings off under 16 px: the arms and the bulge
+  read at both. Bulge cap and speck colours left as built (they read once the glyphs stepped back).
+
+**Stage 3 — far**
+- [x] **D12 The ten far goods — the ТРЮМ piles done 18.09 on the S23; the reading 23.09.** All ten (and the amber
+  chip) lay as same-shaped balls in different colours; now each is its own object in `holdPiece`:
+  cryo cylinder (He-3), plate stack (palladium), drop with an inclusion (amber), heavy cube
+  (osmium), sack with a sprout (chernozem), flask with filings (magdust), pearl in a shell,
+  obsidian shard with one cold glint (dark glass), trap ring with a spark (antimatter), lead capsule
+  with a yellow mark (neutron), amber chips. The wheel (§4.4) judged 23.09 and left: the ten already sit
+  on ten hues AND ten shapes; the review's bone and pale gold were written for a dark hold and vanish on the ОПИСЬ cream paper (and `col` is the UI text colour too). The reading: `farReadShow` hangs an instrument plate for 6.5 s under the belt's entry text — each deposit a scale with its range as a lit band, the header naming the instrument's honesty (изыскатель ±10 % … рудовоз ±60 %): a good instrument is SEEN as a narrow band. ЖИЛА across the screen checked on the S23 18.09 — the orange stamp reads.
+- [x] **D14 The blueprint — the ОПИСЬ view done 18.09 on the S23.** `drawPlan` is now a синька:
+  Prussian blue with millimetre grid, white-ink cell lines, the hull outline thick along the
+  edges with no neighbour, the hold hatched, parts as ochre stamps with a kind letter
+  (О Щ Д К Р У П М), «СОГЛАСОВАНО» double-boxed in the corner. Same brush serves the КБ. Left:
+  ~~the turret on the back in flight (M479)~~ — judged 18.09 on the S23: the cross read as a sight; now a bolted barbette, a domed turret lit from one side, a mantlet and the barrel over the dome.
+- [x] **D15 Stage 5 voice — the tape done 18.09 on the S23; the drone's plate 23.09.** The strip was grey on grey; now
+  black electrical tape with a glossy edge, a shadow under it and a folded tip, slightly wider —
+  reads at ×4.5. The drone in both lists (ДЕЛО, the station's drone rows) is `droneTag`: a state lamp (green runs, amber in repair, red stuck under pirates), the name stencilled in the cargo colour on a riveted tin plate, the board number small, the quirk pencilled on a paper tag (none for «норма»).
+- [x] **D13 The railway — checked on the S23 18.09 at «Луун»; map and ride 23.09.** The ring with its spiral, the
+  dashed glide path and the «ЛИНИЯ 6-12 +2» label read in the system; the vestibule page (board,
+  fares, life rows) reads. The map lines, judged at ×0.6/×1/×2.5/×5 with the whole net built (a stand
+  shows 12 of 95 lines — `railNetPartial` builds one a frame): far out they are the right faint scaffold, but at ×1, where a route is planned, they vanished — now weight grows with the cell (`k=(cell-14)/34`): a dark casing and a denser core, metro-style. In the ride the other lines stay pale (`drawRailMap(...,pale)`, as M473 wrote) and the own line is a rail — casing, the scheme colour, a light centre line.
+- [x] **D26 Giants — done 18.09 on the S23 (all seven captured at ×0.28).** Each body is now
+  baked once (1500×900, 1 px per unit) by the room rules: mass → seams/rivets → a human-scale
+  detail (landing strip at the moon's mouth, the hotel's parking row and marquee bulbs, the
+  cylinder's porthole row and dock, the customs barrier and a stamp on every form-house, cranes
+  on the dry dock and half the hull without plating, lamps along the town's street, mast shoes on
+  the garden's platform) → one light from the star's side (`source-atop`). Live on top: the
+  garden's blink, the moon's beacon, the hotel's red «МЕСТА ЕСТЬ», the cylinder's running light.
+  The map mark is a glyph per giant (moon, slab, pill, grid, dock bracket, peaks, masts). Left:
+  the ruler in the frame, docking/visiting — those are M464's open tails, not design.
+- [x] **D25 Paper and stamps — the passport done 18.09 on the S23; the ПЛАН on the sign 23.09.** The passport was not on
+  any page at all (only in fares); now a bordeaux cover with gold lettering under the stamp grid
+  in КНИЖКА while it runs, with «до N смен». Then 18.09 later: the transit plate on the flank (`drawTransitPlate`, yellow with two black lines by the stern, baked with the hull), and M482's scars drawn on the hull (`drawScars`: burn patch, bent edge, leak streak). The ПЛАН on the ГЛАВТРАССА sign is a decree, not an ad: while `gosBbPlan` holds, the ticker gives way to a kumach panel with a gold star and two lines that STAND («ПЛАН: 18 ЕД. …», «ДО СВОДКИ · ПО · СДАВАТЬ ЗДЕСЬ»); ~~the recall letter~~ — done 18.09: a `recall` thing in ВЕЩИ with a Хай-Фронт header and a red «ОТЗЫВ» stamp.
+- [x] **D24 Railway life — rows done 18.09 on the S23.** The parcel is a paper tag with a hole
+  (dashed edge, ochre), the pass a card with a punched row, the passenger a phosphor silhouette
+  before the line. ~~Left: the подстаканник for the tea row, the seal drawn on the hold in flight~~ — done 18.09: the Рассвет buffet button carries a glass in a lattice holder with a handle (CSS), the Орднунг seal is a lead disc on wire over the hold hatch at midships (`drawSeal`, in the bake key).
+- [x] **D23 Album — the page done 18.09 on the S23; filters and the saved page 23.09.** The lightbox is a black album page with
+  paper grain, the card sits in four corner mounts, the caption is white-pencil italic serif under
+  the photo. The filter chips are thumbnails: the card drawn ONCE small, the five filters
+  applied to copies (one repaint + five nail-sized pixel passes, not five repaints). СОХРАНИТЬ СЕБЕ writes the album page itself — dark grained paper, the card in a cream frame on four mounts, the caption in white pencil.
+- [x] **D22 Rented core — the card done 18.09 on the S23; the adverts 23.09.** The three tiers are one glossy
+  Хай-Фронт card (`.rent-card`): cyan-edged, head with the ◉ mark, tariff rows name / price /
+  note, role buttons under each, the «спасибо, что остаётесь с нами» foot. The adverts in «Что он говорит»
+  are `mgrSay(...,"ad")`, drawn as glossy Хай-Фронт inserts (`.mg-ad`, a blue РЕКЛАМА label); old saves' «Реклама: » lines are caught by prefix.
+- [x] **D21 Special systems — done 18.09 on the S23; the two effects judged (23.09 re-read: closed).** The charge ring is 4 px
+  with a bright head at the arc's end; when charged the pad carries «ДОЛГОЕ · ФОРСАЖ» above it (it
+  dims with the pad's own `.off` opacity — acceptable, reads on a dark sky). Effects: ФОРСАЖ
+  lengthens the plume ×1.7, СБРОС leaves a crate where it was thrown, СИРЕНА sends two rings; the
+  cutter beam and the searchlight cone were already drawn. Left: the salvo flash (ЗАЛП fires the
+  guns, which flash themselves) — judged enough; БАЛЛАСТ has no picture (it is a number).
+- [x] **D20 Барахолка** (M463) — done 18.09 on the S23: the hulks are real hulls from the table, dead under a dark film, moored at their angles; each carries a sagging canvas on two poles; the lamp strings swing lamp by lamp; the stall window is a table with a header and alternating rows, sold struck through.
+- [x] **D19 Подписка** (M487) — done 18.09: a red «ЗАБЛОКИРОВАНО» seal stamped across the locked instrument's row in the shop, the «тариф обновлён» mail as a glossy white-and-blue letter in ВЕЩИ.
+- [x] **D18 Scars** (M482) — done 18.09: `drawScars` anchors each scar to its place on the blueprint — the burn on a deck cell, the kink at a gun mount, the leak by a stern cell; «корпус помнит» rows under ПРИБОРЫ in ОПИСЬ name the scar and what it costs.
+- [x] **D17 Космопочта** (M492) — done 18.09: the notice paper carries a drawn window — grille, the clerk under a warm lamp when open, a lowered shutter with «ЗАКРЫТО» when not, the clock above on post time, the hours plate on the wall, the printed talon when a notice waits; «распишитесь» stays the collection line.
+- [x] **D16 СТАПЕЛЬ** (M481) — done 23.09 (solo, headless 500 px): `stapelSheet` (`26e2-stapel-draw`) lays the order on a slipway sheet — concrete slabs in the maker's ground, rails on sleepers, raked timber shores, keel blocks, a gantry crane, two hard-hats for scale, one lamp in the corner, white-ink dimensions measured from the hull's PIXELS (`stapelHullBox`: nose spikes and pods overran `halfW` by up to a third), the power's emblem. In work, the hull is plated from the stern by the share of the shift, the rest a red-lead frame with a weld spark under the crane; ready — a red «ГОТОВ» double stamp, and ЗАБРАТЬ throws a «ГОТОВ» stamp across the screen (`stapelFx`). Sliders are boxwood scales with a red-hair cursor, 44 px; the numbers are a delta strip against the ship you fly with the place in the class corridor; class and size chips 44 px.
