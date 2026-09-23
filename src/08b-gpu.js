@@ -1,74 +1,79 @@
-/* ══════════════ видеокарта: кадр собирает WebGPU (G0, docs/DESIGN-gpu.md) ══════════════
-   Гибрид по решению автора (23.09): что видеокарта умеет — считает она (поля,
-   частицы, свет, пост); чего не умеет — рисует Canvas 2D на прозрачный
-   передний слой, и он ложится в кадр текстурой. Нет WebGPU, gfx.gpu=0, тест или
-   стенд — игра рисует по-старому, целиком в 2D, и ничего не теряет.
-   Кадр: сцена видеокарты (gpuScene) → передний 2D-слой → свечение, зерно,
-   виньетка, хроматика одним проходом → слой интерфейса (стойка) поверх. */
-const GPU={ok:false,on:false,shown:false,lost:false,busy:false,dead:false,
+/* ══════════════ видеокарта: кадр рисует WebGPU (docs/DESIGN-gpu.md) ══════════════
+   Решение автора (23.09): всё, что умеет видеокарта, — на видеокарте; чего не
+   умеет (текст, сложные векторные фигуры) — рисует Canvas 2D на #c, и #c ложится в
+   кадр текстурой. Старого 2D-кадра больше нет: без WebGPU игра честно говорит,
+   какой нужен браузер. #c невидим (opacity 0) и по-прежнему ловит палец.
+   Кадр: сцена видеокарты (gpuScene) → #c поверх → свечение, зерно, виньетка,
+   хроматика, дизеринг одним проходом → слой интерфейса (стойка) поверх всего. */
+const GPU={ok:false,on:false,lost:false,busy:false,none:false,
   dev:null,cv:null,gx:null,fmt:"",L:null,P:{},B:{},S:null,U:null,UA:new Float32Array(16),
-  T:{},V:{},N:null,noiseOk:false,front:null,fctx:null,ui:null,uctx:null,
+  T:{},V:{},N:null,noiseOk:false,ui:null,uctx:null,snap:null,
   bw:0,bh:0,qw:2,qh:2,dpr:0,cw:0,ch:0,enc:null,scenePass:null,sceneOn:false,
-  sceneBg:{r:0,g:0,b:0,a:1},uiOn:false,uiWas:false,hitK:0,hitDx:0,post:{k:0,grain:0,vig:0},q:null,
-  lay:{},bufs:{},bgs:{},cvTex:new Map(),trash:[]};
+  sceneBg:{r:0,g:0,b:0,a:1},uiOn:false,uiWas:false,hitK:0,hitDx:0,post:{k:0,grain:0,vig:0},
+  lay:{},bufs:{},bgs:{},cvTex:new Map(),trash:[],errs:0,frameNo:0,snapNo:-1,wantSnap:false};
 
-/* адрес решает раньше настроек: ?gpu=1 включает и на стенде (сверка кадров),
-   ?gpu=0 выключает везде. Стенды и тесты снимают #c — им старый путь */
-function gpuWanted(){
-  if(typeof TEST!=="undefined"||GPU.dead)return false;
-  if(GPU.q===null){const s=(typeof location!=="undefined"&&location.search)||"";
-    GPU.q=/[?&]gpu=1/.test(s)?1:(/[?&]gpu=0/.test(s)||/[?&](s|scene|shot)=/.test(s))?0:-1;}
-  if(GPU.q>=0)return GPU.q===1;
-  try{return G.opts.gfx.gpu!==0;}catch(e){return true;}
+/* кадр целиком (видеокарта + 2D) для тех, кто его читает: look(), детекторы,
+   эталоны. Показанный кадр WebGPU после конца задачи не читается, поэтому снимок
+   делает сам кадр — сразу после отправки, в той же задаче (gpuPresent). Если
+   свежего снимка нет, рисуем кадр вне цикла: drawWorld() сам его соберёт */
+function gpuSnapshot(){
+  if(!GPU.ok||!GPU.cv)return cvs;
+  if(GPU.snapNo!==GPU.frameNo&&!GPU.on)drawWorld();
+  return GPU.snap||cvs;
 }
-/* холст кадра для тех, кто его читает (марево, отражение в воде, look):
-   в режиме видеокарты кадр 2D живёт на переднем слое, а не в #c */
-function frameCanvas(){return (GPU.shown&&GPU.front)?GPU.front:cvs;}
-
+function gpuTakeSnap(){
+  const c=GPU.snap||(GPU.snap=document.createElement("canvas"));
+  if(c.width!==GPU.cv.width||c.height!==GPU.cv.height){c.width=GPU.cv.width;c.height=GPU.cv.height;}
+  c.getContext("2d",{willReadFrequently:true}).drawImage(GPU.cv,0,0);
+  GPU.snapNo=GPU.frameNo;
+}
+/* нет WebGPU — говорим прямо, какой браузер нужен (игрок видит это вместо мира) */
+function gpuNone(why){
+  GPU.none=true;
+  try{crashShip("gpu","нет WebGPU: "+why,"");}catch(_){}
+  if(typeof document==="undefined"||!document.body||document.getElementById("nogpu"))return;
+  const d=document.createElement("div");d.id="nogpu";
+  d.innerHTML="<b>Этому браузеру не хватает WebGPU</b><s>«Дрейф» рисует мир видеокартой. Подойдут свежие Chrome, Edge, Яндекс Браузер и Opera, Safari 26 и новее.</s>";
+  document.body.appendChild(d);
+}
 async function gpuInit(){
-  if(GPU.ok||GPU.busy||GPU.dead||typeof TEST!=="undefined")return;
-  if(typeof navigator==="undefined"||!navigator.gpu)return;
+  if(GPU.ok||GPU.busy)return;
+  if(typeof navigator==="undefined"||!navigator.gpu){gpuNone("navigator.gpu");return;}
   GPU.busy=true;
   try{
     const ad=await navigator.gpu.requestAdapter({powerPreference:"high-performance"});
-    if(!ad)return;
+    if(!ad){gpuNone("адаптера нет");return;}
     const dev=await ad.requestDevice();
     GPU.dev=dev;GPU.lost=false;
     dev.lost.then(i=>{if(GPU.dev===dev&&!(i&&i.reason==="destroyed"))gpuDrop("устройство потеряно: "+((i&&i.message)||""),true);});
-    /* ошибка проверки — картинка уже неправда: назад в 2D до конца сеанса */
-    dev.addEventListener("uncapturederror",e=>{gpuDrop("ошибка: "+String((e.error&&e.error.message)||e.error),false);GPU.dead=true;});
+    /* ошибка проверки — наш промах в шейдере или привязке: в журнал сбоев (не
+       больше десятка за сеанс), кадр идёт дальше */
+    dev.addEventListener("uncapturederror",e=>{if(GPU.errs++<10)try{crashShip("gpu","ошибка: "+String((e.error&&e.error.message)||e.error),"");}catch(_){}});
     if(!GPU.cv){
       const cv=document.createElement("canvas");cv.id="g";
       /* поверх #c, но прозрачен для пальца: события слушает #c (15-input, 15a-helm) */
-      cv.style.cssText="position:fixed;inset:0;width:100%;height:100%;display:none;pointer-events:none";
+      cv.style.cssText="position:fixed;inset:0;width:100%;height:100%;pointer-events:none";
       cvs.after(cv);GPU.cv=cv;
     }
     GPU.gx=GPU.cv.getContext("webgpu");
     GPU.fmt=navigator.gpu.getPreferredCanvasFormat();
     GPU.gx.configure({device:dev,format:GPU.fmt,alphaMode:"opaque"});
-    if(!GPU.front){
-      GPU.front=document.createElement("canvas");GPU.fctx=GPU.front.getContext("2d",{alpha:true});
-      GPU.ui=document.createElement("canvas");GPU.uctx=GPU.ui.getContext("2d",{alpha:true});
-    }
+    if(!GPU.ui){GPU.ui=document.createElement("canvas");GPU.uctx=GPU.ui.getContext("2d",{alpha:true});}
     gpuPipes();
     GPU.lay={};GPU.bufs={};GPU.bgs={};GPU.cvTex=new Map();GPU.trash=[];
     GPU.T={};GPU.bw=0;GPU.ok=true;
     gpuResize();
   }catch(e){
-    GPU.ok=false;
-    try{crashShip("gpu","init: "+((e&&e.message)||e),"");}catch(_){}
+    GPU.ok=false;gpuNone("init: "+((e&&e.message)||e));
   }finally{GPU.busy=false;}
 }
-/* видеокарта отказала — кадр возвращается в 2D сразу, со следующего же кадра */
+/* устройство потеряно (сон телефона, сброс драйвера): кадр ждёт, ядро поднимается заново */
 function gpuDrop(why,retry){
-  GPU.ok=false;GPU.on=false;GPU.shown=false;GPU.lost=true;GPU.enc=null;GPU.scenePass=null;
-  if(GPU.cv)GPU.cv.style.display="none";
-  if(ctx===GPU.fctx||ctx===GPU.uctx)ctx=MAIN_CTX;
-  try{MAIN_CTX.setTransform(DPR,0,0,DPR,0,0);}catch(_){}
+  GPU.ok=false;GPU.on=false;GPU.lost=true;GPU.enc=null;GPU.scenePass=null;
+  if(ctx===GPU.uctx)ctx=MAIN_CTX;
   try{crashShip("gpu",why,"");}catch(_){}
-  if(retry&&!GPU.dead)setTimeout(()=>{GPU.lost=false;GPU.dev=null;gpuInit();},2000);
+  if(retry)setTimeout(()=>{GPU.lost=false;GPU.dev=null;gpuInit();},1500);
 }
-
 /* ── проходы поста: общий треугольник на весь экран, одна раскладка привязок ── */
 const GPU_POST_WGSL=`
 struct U{res:vec2f,css:vec2f,dpr:f32,k:f32,grain:f32,vig:f32,hitK:f32,hitDx:f32,ui:f32,scene:f32,qres:vec2f,sigma:f32,t:f32};
@@ -151,9 +156,8 @@ function gpuNoise(){
 function gpuResize(){
   if(!GPU.ok)return;
   const bw=cvs.width,bh=cvs.height;if(bw<2||bh<2)return;
-  /* смена ширины холста сбрасывает и его преобразование */
-  GPU.front.width=bw;GPU.front.height=bh;GPU.ui.width=bw;GPU.ui.height=bh;
-  GPU.fctx.setTransform(DPR,0,0,DPR,0,0);GPU.uctx.setTransform(DPR,0,0,DPR,0,0);GPU.uiWas=false;
+  /* #c меряет resize() (08-state); смена ширины холста сбрасывает и преобразование */
+  GPU.ui.width=bw;GPU.ui.height=bh;GPU.uctx.setTransform(DPR,0,0,DPR,0,0);GPU.uiWas=false;
   GPU.cv.width=bw;GPU.cv.height=bh;
   const qw=Math.max(2,Math.round(W/4)),qh=Math.max(2,Math.round(H/4));
   for(const k in GPU.T)GPU.T[k].destroy();
@@ -184,31 +188,34 @@ function gpuUni(){
 }
 
 /* ── кадр ── */
-/* начало кадра: решаем, кто его собирает; в режиме видеокарты ctx смотрит на
-   передний слой, и весь 2D-код рисует туда, не зная об этом */
+/* начало кадра: без готового устройства кадр не рисуется (мир всё равно шагает) */
 function gpuFrame(){
-  const on=GPU.ok&&!GPU.lost&&gpuWanted();
-  if(on!==GPU.shown){
-    GPU.shown=on;if(GPU.cv)GPU.cv.style.display=on?"block":"none";
-    if(!on)try{MAIN_CTX.setTransform(DPR,0,0,DPR,0,0);}catch(_){}
-  }
-  if(!on){GPU.on=false;if(ctx===GPU.fctx||ctx===GPU.uctx)ctx=MAIN_CTX;return false;}
+  if(!GPU.ok||GPU.lost){GPU.on=false;return false;}
   if(cvs.width!==GPU.bw||cvs.height!==GPU.bh||DPR!==GPU.dpr||W!==GPU.cw||H!==GPU.ch)gpuResize();
   if(GPU.trash.length){for(const t of GPU.trash)t.destroy();GPU.trash.length=0;}
-  const f=GPU.fctx;
-  f.setTransform(1,0,0,1,0,0);f.clearRect(0,0,GPU.bw,GPU.bh);f.setTransform(DPR,0,0,DPR,0,0);
-  ctx=f;GPU.on=true;
+  ctx=MAIN_CTX;
+  ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,GPU.bw,GPU.bh);ctx.setTransform(DPR,0,0,DPR,0,0);
+  GPU.on=true;
   GPU.enc=GPU.dev.createCommandEncoder();GPU.scenePass=null;GPU.sceneOn=false;GPU.hitK=0;
   return true;
 }
 /* проход сцены видеокарты: его открывает первый слой кадра, закрывает сборка.
-   Всё, что рисуется сюда, лежит ПОД передним 2D-слоем (docs/DESIGN-gpu.md §3) */
+   Всё, что рисуется сюда, лежит ПОД передним 2D-слоем (docs/DESIGN-gpu.md §3).
+   Вне кадра (прямой вызов из теста или стенда) — null: слой молчит */
 function gpuScene(){
+  if(!GPU.on||!GPU.enc)return null;
   if(!GPU.scenePass){
     GPU.scenePass=GPU.enc.beginRenderPass({colorAttachments:[{view:GPU.V.scene,loadOp:"clear",storeOp:"store",clearValue:GPU.sceneBg}]});
     GPU.sceneOn=true;
   }
   return GPU.scenePass;
+}
+/* кадр вне цикла (тест, стенд, look): собрать, показать, снять — одной задачей */
+function gpuManual(draw){
+  if(!gpuFrame())return false;
+  GPU.wantSnap=true;
+  try{draw();}finally{if(GPU.on){if(GPU.enc&&ctx===MAIN_CTX)gpuWorld(0,false,false);gpuPresent();}}
+  return true;
 }
 /* мир дорисован: передний слой — в текстуру, свечение — в четверть кадра.
    Дальше кадр рисует интерфейс — на свой слой, без свечения и зерна */
@@ -216,11 +223,13 @@ function gpuWorld(k,grain,vig){
   try{
     if(GPU.scenePass){GPU.scenePass.end();GPU.scenePass=null;}
     const off=!!(G.opts&&G.opts.gfx&&G.opts.gfx.draw===0);
-    const dark=G.mode==="system"||G.mode==="dock"||G.mode==="barge";
     const P=GPU.post;
-    P.k=(!off&&G.running)?k:0;P.grain=(!off&&grain&&!dark&&G.running)?1:0;P.vig=(!off&&grain&&vig&&G.running)?1:0;
+    /* зерно теперь и на чёрном небе: видеокарте оно ничего не стоит, а в тёмных
+       градиентах туманности и короны работает как дизеринг (2D снимал его ради
+       полноэкранного overlay, 1–3 мс) */
+    P.k=(!off&&G.running)?k:0;P.grain=(!off&&grain&&G.running)?1:0;P.vig=(!off&&grain&&vig&&G.running)?1:0;
     if(!GPU.noiseOk)gpuNoise();
-    GPU.dev.queue.copyExternalImageToTexture({source:GPU.front},{texture:GPU.T.front,premultipliedAlpha:true},[GPU.bw,GPU.bh]);
+    GPU.dev.queue.copyExternalImageToTexture({source:cvs},{texture:GPU.T.front,premultipliedAlpha:true},[GPU.bw,GPU.bh]);
     if(P.k>0){gpuPass(GPU.V.bloomA,GPU.P.down,GPU.B.down);gpuPass(GPU.V.bloomB,GPU.P.blurH,GPU.B.blurH);gpuPass(GPU.V.bloomA,GPU.P.blurV,GPU.B.blurV);}
     if(GPU.uiWas){const q=GPU.uctx;q.setTransform(1,0,0,1,0,0);q.clearRect(0,0,GPU.bw,GPU.bh);q.setTransform(DPR,0,0,DPR,0,0);GPU.uiWas=false;}
     ctx=GPU.uctx;
@@ -236,9 +245,11 @@ function gpuPresent(){
     gpuUni();
     gpuPass(GPU.gx.getCurrentTexture().createView(),GPU.P.fin,GPU.B.fin);
     GPU.dev.queue.submit([GPU.enc.finish()]);
+    GPU.frameNo++;
+    if(GPU.wantSnap){GPU.wantSnap=false;gpuTakeSnap();}
   }catch(e){gpuDrop("кадр: "+((e&&e.message)||e),true);}
   GPU.enc=null;GPU.on=false;
-  if(ctx===GPU.fctx||ctx===GPU.uctx)ctx=MAIN_CTX;
+  if(ctx===GPU.uctx)ctx=MAIN_CTX;
 }
 /* ── набор для слоёв сцены (G1+): конвейер, буфер, привязки, текстура из 2D ──
    Всё живёт при устройстве: gpuInit после потери собирает заново. Слои рисуют в
@@ -298,4 +309,4 @@ fn texCubic(t:texture_2d<f32>,sm:sampler,uv:vec2f)->vec4f{
   let sx=s.x/(s.x+s.y);let sy=s.z/(s.z+s.w);
   return mix(mix(s3,s2,sx),mix(s1,s0,sx),sy);}`;
 /* поднимается после всего скрипта: в сборке тестов TEST объявлен ниже игры */
-if(typeof navigator!=="undefined"&&navigator.gpu)setTimeout(gpuInit,0);
+if(typeof document!=="undefined"&&document.body)setTimeout(gpuInit,0);

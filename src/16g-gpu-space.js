@@ -143,7 +143,8 @@ function gspStarsDust(pass,P,ub,dustBase){
    те же камеры, что у 2D-ветки drawSystem */
 function gpuSpaceSys(sys,cx0,cy0,Z){
   GPU.sceneBg=SPACE_BG;
-  const pass=gpuScene(),P=gspPipes();
+  const pass=gpuScene();if(!pass)return;
+  const P=gspPipes();
   const cx=cx0*.06*Z,cy=cy0*.06*Z;
   const M=starMove(cx,cy,1);
   const ub=gspUni(cx,cy,1,M,cx0*Z,cy0*Z);
@@ -158,7 +159,8 @@ function gpuSpaceSys(sys,cx0,cy0,Z){
 /* заставка: две туманности на разной глубине и звёзды (drawNebula + drawStars) */
 function gpuSpaceTitle(c){
   GPU.sceneBg=SPACE_BG;
-  const pass=gpuScene(),P=gspPipes();
+  const pass=gpuScene();if(!pass)return;
+  const P=gspPipes();
   const M=starMove(c,0,1);
   const ub=gspUni(c,0,1,M,0,0);
   const ex=W*.2,ey=H*.2,ex2=W*.5,ey2=H*.5;

@@ -7,14 +7,8 @@
       W×H, а ctx считает в CSS-единицах — иначе марево уедет в угол.
    3. Дорого — только когда есть повод: марево лишь при тяге, хроматика лишь
       несколько кадров после попадания. В тихом кадре здесь ноль работы. */
-let HIT_FX=0,FX_CN=null;
+let HIT_FX=0;
 function hitFx(k){HIT_FX=Math.max(HIT_FX,clamp(k==null?1:k,0,1));}
-function fxCanvas(){
-  if(!FX_CN||FX_CN.width!==cvs.width||FX_CN.height!==cvs.height){
-    FX_CN=document.createElement("canvas");FX_CN.width=cvs.width;FX_CN.height=cvs.height;
-  }
-  return FX_CN;
-}
 /* ── марево над соплами ──
    Горячий газ преломляет: то, что за факелом, дрожит. Прямоугольник кадра за
    соплом режется на полоски поперёк факела, и каждая кладётся обратно со своим
@@ -50,7 +44,7 @@ function hazeGrab(x0,y0,w,h){
   const g=HZ_CN.getContext("2d");
   g.setTransform(1,0,0,1,0,0);
   g.globalCompositeOperation="copy";   /* без clearRect: copy сам затирает */
-  g.drawImage(frameCanvas(),sx0*DPR,sy0*DPR,pw,ph,0,0,pw,ph);
+  g.drawImage(cvs,sx0*DPR,sy0*DPR,pw,ph,0,0,pw,ph);
   HZ_OX=sx0;HZ_OY=sy0;HZ_OK=true;
   return true;
 }
@@ -88,21 +82,6 @@ function drawHitFx(dt){
   if(HIT_FX<=.02){HIT_FX=0;return;}
   const k=HIT_FX;
   const dx=(1.5+5*k)*(1+.35*Math.sin(G.t*2.1));
-  /* у видеокарты хроматика — строка общего прохода (08b fsFinal) */
-  if(GPU.on){GPU.hitK=k;GPU.hitDx=dx;HIT_FX*=Math.exp(-(dt||1)*.22);return;}
-  const off=fxCanvas(),o=off.getContext("2d");
-  ctx.save();
-  for(const [col,sgn] of [["rgb(255,40,40)",-1],["rgb(40,90,255)",1]]){
-    o.setTransform(1,0,0,1,0,0);
-    o.globalCompositeOperation="source-over";
-    o.clearRect(0,0,off.width,off.height);
-    o.drawImage(cvs,0,0);
-    o.globalCompositeOperation="multiply";
-    o.fillStyle=col;o.fillRect(0,0,off.width,off.height);
-    ctx.globalCompositeOperation="lighter";
-    ctx.globalAlpha=.30*k;
-    ctx.drawImage(off,0,0,off.width,off.height,sgn*dx,0,W,H);
-  }
-  ctx.restore();
-  HIT_FX*=Math.exp(-(dt||1)*.22);
+  /* хроматика — строка общего прохода видеокарты (08b fsFinal) */
+  GPU.hitK=k;GPU.hitDx=dx;HIT_FX*=Math.exp(-(dt||1)*.22);
 }

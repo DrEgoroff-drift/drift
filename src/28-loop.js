@@ -396,7 +396,13 @@ function stepWorld(dt){
   else if(G.mode==="spa"&&G.spa)updateSpa(dt);         /* санаторий (M199) */
   else if(G.mode==="wanderer"&&G.wan)updateWanderRoom(dt);   /* на борту «Сороки» (M343) */
 }
+/* вне цикла (тесты, стенды, look) кадр собирается здесь же: видеокарта рисует
+   только внутри кадра, и снимок для чтения делает этот кадр */
 function drawWorld(){
+  if(!GPU.on&&GPU.ok){gpuManual(drawWorldIn);return;}
+  drawWorldIn();
+}
+function drawWorldIn(){
   /* у сцен без своего неба свет постоянный (M243): SUN_DIR не должен нести
      сюда азимут планеты, с которой игрок только что ушёл, — иначе тени в
      комнатах ложатся по вчерашнему закату */
@@ -418,10 +424,7 @@ function drawWorld(){
   else if(G.mode==="wanderer"&&G.wan)drawWanderRoom();
   /* ореол вокруг яркого — последним по миру и до приборов (M243); зерно на все
      сцены, виньетка — где своей нет (M244). У видеокарты всё это — один проход (08b) */
-  const bk=BLOOM_K[G.mode]||0,gr=G.mode!=="map",vg=!(G.mode==="surface"||G.mode==="landing");
-  if(GPU.on){gpuWorld(bk,gr,vg);return;}
-  if(typeof bloomPass==="function")bloomPass(bk);
-  if(typeof grainPass==="function"&&gr)grainPass(vg);
+  gpuWorld(BLOOM_K[G.mode]||0,G.mode!=="map",!(G.mode==="surface"||G.mode==="landing"));
 }
 function frameBody(now){
   FRAME_IN=true;   /* всё, что скажет кадр, — голос мира (say, 08-state); снимается в конце и на событиях */
@@ -543,18 +546,16 @@ function frameBody(now){
     }
     if(G.mode==="barge"&&!scrOpen())G.mode="system";
     audioTick(dt);
-    gpuFrame();   /* кадр собирает видеокарта, если может (08b): ctx смотрит на передний слой */
-    drawWorld();
-    if(typeof drawHitFx==="function")drawHitFx(dt);   /* хроматика после попадания (M325) */
+    /* кадр рисует видеокарта (08b); пока устройства нет — мир шагает без картинки */
+    const drew=gpuFrame();
+    if(drew){drawWorld();if(typeof drawHitFx==="function")drawHitFx(dt);}   /* хроматика после попадания (M325) */
     hud();
     /* приборная стойка (25d) поверх мира: раскрытая аппаратура, к которой
        игрок повернулся. Рисуется последней, но до DOM-строки приборов */
-    if(typeof rackDraw==="function")rackDraw();
-    if(GPU.on)gpuPresent();
+    if(drew){if(typeof rackDraw==="function")rackDraw();gpuPresent();}
   }else{
     G.t=tReal*.06;
     if(gpuFrame()){gpuSpaceTitle(tReal*.004);gpuWorld(0,false,false);gpuPresent();}
-    else{ctx.fillStyle="#05070c";ctx.fillRect(0,0,W,H);drawNebula(tReal*.004,0,1);drawStars(tReal*.004,0,1);}
   }
 }
 /* ══════════════ кадр, который не убивает игру (M234) ══════════════

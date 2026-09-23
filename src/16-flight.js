@@ -95,19 +95,6 @@ function nebula(){
   c.putImageData(img,0,0);NEBULA=cn;return cn;
 }
 /* смещение зажато, поэтому картинка не тайлится и швов не бывает */
-function drawNebula(cx,cy,par){
-  const N=nebula(),ex=W*.2,ey=H*.2;
-  const ox=-ex/2+clamp(-cx*par*.01,-ex/2,ex/2);
-  const oy=-ey/2+clamp(-cy*par*.01,-ey/2,ey/2);
-  ctx.globalAlpha=.6;ctx.drawImage(N,ox,oy,W+ex,H+ey);
-  /* второй слой ближе и крупнее, ходит втрое быстрее (хвост G10): две
-     туманности на разной глубине — и по их расхождению глаз видит объём */
-  const ex2=W*.5,ey2=H*.5;
-  const ox2=-ex2/2+clamp(-cx*par*.03,-ex2/2,ex2/2)+W*.18;
-  const oy2=-ey2/2+clamp(-cy*par*.03,-ey2/2,ey2/2)-H*.12;
-  ctx.globalAlpha=.26;ctx.drawImage(N,ox2,oy2,W+ex2,H+ey2);
-  ctx.globalAlpha=1;
-}
 
 /* Тело из текущей системы или из прежней? Сектор проверяется первым — он ловит
    прыжок. Сверка по ссылке ловит второй случай: система та же, но пересобрана

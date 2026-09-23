@@ -65,7 +65,9 @@
 html,body{height:100%;overflow:hidden;background:var(--void);
   font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
   color:var(--phos);user-select:none;-webkit-user-select:none;touch-action:none}
-#c{position:fixed;inset:0;width:100%;height:100%;display:block}
+#c{position:fixed;inset:0;width:100%;height:100%;display:block;opacity:0}
+#nogpu{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);max-width:420px;padding:22px 26px;background:#0b1018;border:1px solid #2a3a48;border-radius:10px;color:#cfe3ea;font:14px/1.5 ui-monospace,monospace;z-index:50}
+#nogpu b{display:block;color:#f2b25c;margin-bottom:8px}#nogpu s{text-decoration:none;color:#9fb4c0}
 
 /* ══════════════ одна мерка на весь интерфейс (M221) ══════════════
    Мир с M217 растёт вместе с окном. Приборы, пульт, пэды, борт и экраны
@@ -10059,10 +10061,9 @@ function groundAt(tr,x){
 
 /* ══════════════ состояние ══════════════ */
 const cvs=document.getElementById("c");
-/* непрозрачный холст (0.455): под ним ничего нет, а прозрачный компоновщик Chrome
-   каждый кадр смешивал со страницей — ещё один полноэкранный проход, ~0.65 мс
-   встроенной видеокарты на ×2 (A/B на ноуте автора) */
-let ctx=cvs.getContext("2d",{alpha:false});
+/* #c — прозрачный передний слой (docs/DESIGN-gpu.md): что рисует 2D, видеокарта
+   кладёт текстурой поверх своей сцены. Сам #c невидим и только ловит палец */
+let ctx=cvs.getContext("2d",{alpha:true});
 const MAIN_CTX=ctx;
 let W=0,H=0,DPR=1;
 /* ── у интерфейса своя мерка, и она тоже от кадра (M221) ──
@@ -10544,75 +10545,82 @@ function stateHashParts(root){
   return out;
 }
 
-/* ══════════════ видеокарта: кадр собирает WebGPU (G0, docs/DESIGN-gpu.md) ══════════════
-   Гибрид по решению автора (23.09): что видеокарта умеет — считает она (поля,
-   частицы, свет, пост); чего не умеет — рисует Canvas 2D на прозрачный
-   передний слой, и он ложится в кадр текстурой. Нет WebGPU, gfx.gpu=0, тест или
-   стенд — игра рисует по-старому, целиком в 2D, и ничего не теряет.
-   Кадр: сцена видеокарты (gpuScene) → передний 2D-слой → свечение, зерно,
-   виньетка, хроматика одним проходом → слой интерфейса (стойка) поверх. */
-const GPU={ok:false,on:false,shown:false,lost:false,busy:false,dead:false,
+/* ══════════════ видеокарта: кадр рисует WebGPU (docs/DESIGN-gpu.md) ══════════════
+   Решение автора (23.09): всё, что умеет видеокарта, — на видеокарте; чего не
+   умеет (текст, сложные векторные фигуры) — рисует Canvas 2D на #c, и #c ложится в
+   кадр текстурой. Старого 2D-кадра больше нет: без WebGPU игра честно говорит,
+   какой нужен браузер. #c невидим (opacity 0) и по-прежнему ловит палец.
+   Кадр: сцена видеокарты (gpuScene) → #c поверх → свечение, зерно, виньетка,
+   хроматика, дизеринг одним проходом → слой интерфейса (стойка) поверх всего. */
+const GPU={ok:false,on:false,lost:false,busy:false,none:false,
   dev:null,cv:null,gx:null,fmt:"",L:null,P:{},B:{},S:null,U:null,UA:new Float32Array(16),
-  T:{},V:{},N:null,noiseOk:false,front:null,fctx:null,ui:null,uctx:null,
+  T:{},V:{},N:null,noiseOk:false,ui:null,uctx:null,snap:null,
   bw:0,bh:0,qw:2,qh:2,dpr:0,cw:0,ch:0,enc:null,scenePass:null,sceneOn:false,
-  sceneBg:{r:0,g:0,b:0,a:1},uiOn:false,uiWas:false,hitK:0,hitDx:0,post:{k:0,grain:0,vig:0},q:null};
+  sceneBg:{r:0,g:0,b:0,a:1},uiOn:false,uiWas:false,hitK:0,hitDx:0,post:{k:0,grain:0,vig:0},
+  lay:{},bufs:{},bgs:{},cvTex:new Map(),trash:[],errs:0,frameNo:0,snapNo:-1,wantSnap:false};
 
-/* адрес решает раньше настроек: ?gpu=1 включает и на стенде (сверка кадров),
-   ?gpu=0 выключает везде. Стенды и тесты снимают #c — им старый путь */
-function gpuWanted(){
-  if(typeof TEST!=="undefined"||GPU.dead)return false;
-  if(GPU.q===null){const s=(typeof location!=="undefined"&&location.search)||"";
-    GPU.q=/[?&]gpu=1/.test(s)?1:(/[?&]gpu=0/.test(s)||/[?&](s|scene|shot)=/.test(s))?0:-1;}
-  if(GPU.q>=0)return GPU.q===1;
-  try{return G.opts.gfx.gpu!==0;}catch(e){return true;}
+/* кадр целиком (видеокарта + 2D) для тех, кто его читает: look(), детекторы,
+   эталоны. Показанный кадр WebGPU после конца задачи не читается, поэтому снимок
+   делает сам кадр — сразу после отправки, в той же задаче (gpuPresent). Если
+   свежего снимка нет, рисуем кадр вне цикла: drawWorld() сам его соберёт */
+function gpuSnapshot(){
+  if(!GPU.ok||!GPU.cv)return cvs;
+  if(GPU.snapNo!==GPU.frameNo&&!GPU.on)drawWorld();
+  return GPU.snap||cvs;
 }
-/* холст кадра для тех, кто его читает (марево, отражение в воде, look):
-   в режиме видеокарты кадр 2D живёт на переднем слое, а не в #c */
-function frameCanvas(){return (GPU.shown&&GPU.front)?GPU.front:cvs;}
-
+function gpuTakeSnap(){
+  const c=GPU.snap||(GPU.snap=document.createElement("canvas"));
+  if(c.width!==GPU.cv.width||c.height!==GPU.cv.height){c.width=GPU.cv.width;c.height=GPU.cv.height;}
+  c.getContext("2d",{willReadFrequently:true}).drawImage(GPU.cv,0,0);
+  GPU.snapNo=GPU.frameNo;
+}
+/* нет WebGPU — говорим прямо, какой браузер нужен (игрок видит это вместо мира) */
+function gpuNone(why){
+  GPU.none=true;
+  try{crashShip("gpu","нет WebGPU: "+why,"");}catch(_){}
+  if(typeof document==="undefined"||!document.body||document.getElementById("nogpu"))return;
+  const d=document.createElement("div");d.id="nogpu";
+  d.innerHTML="<b>Этому браузеру не хватает WebGPU</b><s>«Дрейф» рисует мир видеокартой. Подойдут свежие Chrome, Edge, Яндекс Браузер и Opera, Safari 26 и новее.</s>";
+  document.body.appendChild(d);
+}
 async function gpuInit(){
-  if(GPU.ok||GPU.busy||GPU.dead||typeof TEST!=="undefined")return;
-  if(typeof navigator==="undefined"||!navigator.gpu)return;
+  if(GPU.ok||GPU.busy)return;
+  if(typeof navigator==="undefined"||!navigator.gpu){gpuNone("navigator.gpu");return;}
   GPU.busy=true;
   try{
     const ad=await navigator.gpu.requestAdapter({powerPreference:"high-performance"});
-    if(!ad)return;
+    if(!ad){gpuNone("адаптера нет");return;}
     const dev=await ad.requestDevice();
     GPU.dev=dev;GPU.lost=false;
     dev.lost.then(i=>{if(GPU.dev===dev&&!(i&&i.reason==="destroyed"))gpuDrop("устройство потеряно: "+((i&&i.message)||""),true);});
-    /* ошибка проверки — картинка уже неправда: назад в 2D до конца сеанса */
-    dev.addEventListener("uncapturederror",e=>{gpuDrop("ошибка: "+String((e.error&&e.error.message)||e.error),false);GPU.dead=true;});
+    /* ошибка проверки — наш промах в шейдере или привязке: в журнал сбоев (не
+       больше десятка за сеанс), кадр идёт дальше */
+    dev.addEventListener("uncapturederror",e=>{if(GPU.errs++<10)try{crashShip("gpu","ошибка: "+String((e.error&&e.error.message)||e.error),"");}catch(_){}});
     if(!GPU.cv){
       const cv=document.createElement("canvas");cv.id="g";
       /* поверх #c, но прозрачен для пальца: события слушает #c (15-input, 15a-helm) */
-      cv.style.cssText="position:fixed;inset:0;width:100%;height:100%;display:none;pointer-events:none";
+      cv.style.cssText="position:fixed;inset:0;width:100%;height:100%;pointer-events:none";
       cvs.after(cv);GPU.cv=cv;
     }
     GPU.gx=GPU.cv.getContext("webgpu");
     GPU.fmt=navigator.gpu.getPreferredCanvasFormat();
     GPU.gx.configure({device:dev,format:GPU.fmt,alphaMode:"opaque"});
-    if(!GPU.front){
-      GPU.front=document.createElement("canvas");GPU.fctx=GPU.front.getContext("2d",{alpha:true});
-      GPU.ui=document.createElement("canvas");GPU.uctx=GPU.ui.getContext("2d",{alpha:true});
-    }
+    if(!GPU.ui){GPU.ui=document.createElement("canvas");GPU.uctx=GPU.ui.getContext("2d",{alpha:true});}
     gpuPipes();
+    GPU.lay={};GPU.bufs={};GPU.bgs={};GPU.cvTex=new Map();GPU.trash=[];
     GPU.T={};GPU.bw=0;GPU.ok=true;
     gpuResize();
   }catch(e){
-    GPU.ok=false;
-    try{crashShip("gpu","init: "+((e&&e.message)||e),"");}catch(_){}
+    GPU.ok=false;gpuNone("init: "+((e&&e.message)||e));
   }finally{GPU.busy=false;}
 }
-/* видеокарта отказала — кадр возвращается в 2D сразу, со следующего же кадра */
+/* устройство потеряно (сон телефона, сброс драйвера): кадр ждёт, ядро поднимается заново */
 function gpuDrop(why,retry){
-  GPU.ok=false;GPU.on=false;GPU.shown=false;GPU.lost=true;GPU.enc=null;GPU.scenePass=null;
-  if(GPU.cv)GPU.cv.style.display="none";
-  if(ctx===GPU.fctx||ctx===GPU.uctx)ctx=MAIN_CTX;
-  try{MAIN_CTX.setTransform(DPR,0,0,DPR,0,0);}catch(_){}
+  GPU.ok=false;GPU.on=false;GPU.lost=true;GPU.enc=null;GPU.scenePass=null;
+  if(ctx===GPU.uctx)ctx=MAIN_CTX;
   try{crashShip("gpu",why,"");}catch(_){}
-  if(retry&&!GPU.dead)setTimeout(()=>{GPU.lost=false;GPU.dev=null;gpuInit();},2000);
+  if(retry)setTimeout(()=>{GPU.lost=false;GPU.dev=null;gpuInit();},1500);
 }
-
 /* ── проходы поста: общий треугольник на весь экран, одна раскладка привязок ── */
 const GPU_POST_WGSL=`
 struct U{res:vec2f,css:vec2f,dpr:f32,k:f32,grain:f32,vig:f32,hitK:f32,hitDx:f32,ui:f32,scene:f32,qres:vec2f,sigma:f32,t:f32};
@@ -10695,9 +10703,8 @@ function gpuNoise(){
 function gpuResize(){
   if(!GPU.ok)return;
   const bw=cvs.width,bh=cvs.height;if(bw<2||bh<2)return;
-  /* смена ширины холста сбрасывает и его преобразование */
-  GPU.front.width=bw;GPU.front.height=bh;GPU.ui.width=bw;GPU.ui.height=bh;
-  GPU.fctx.setTransform(DPR,0,0,DPR,0,0);GPU.uctx.setTransform(DPR,0,0,DPR,0,0);GPU.uiWas=false;
+  /* #c меряет resize() (08-state); смена ширины холста сбрасывает и преобразование */
+  GPU.ui.width=bw;GPU.ui.height=bh;GPU.uctx.setTransform(DPR,0,0,DPR,0,0);GPU.uiWas=false;
   GPU.cv.width=bw;GPU.cv.height=bh;
   const qw=Math.max(2,Math.round(W/4)),qh=Math.max(2,Math.round(H/4));
   for(const k in GPU.T)GPU.T[k].destroy();
@@ -10728,30 +10735,34 @@ function gpuUni(){
 }
 
 /* ── кадр ── */
-/* начало кадра: решаем, кто его собирает; в режиме видеокарты ctx смотрит на
-   передний слой, и весь 2D-код рисует туда, не зная об этом */
+/* начало кадра: без готового устройства кадр не рисуется (мир всё равно шагает) */
 function gpuFrame(){
-  const on=GPU.ok&&!GPU.lost&&gpuWanted();
-  if(on!==GPU.shown){
-    GPU.shown=on;if(GPU.cv)GPU.cv.style.display=on?"block":"none";
-    if(!on)try{MAIN_CTX.setTransform(DPR,0,0,DPR,0,0);}catch(_){}
-  }
-  if(!on){GPU.on=false;if(ctx===GPU.fctx||ctx===GPU.uctx)ctx=MAIN_CTX;return false;}
+  if(!GPU.ok||GPU.lost){GPU.on=false;return false;}
   if(cvs.width!==GPU.bw||cvs.height!==GPU.bh||DPR!==GPU.dpr||W!==GPU.cw||H!==GPU.ch)gpuResize();
-  const f=GPU.fctx;
-  f.setTransform(1,0,0,1,0,0);f.clearRect(0,0,GPU.bw,GPU.bh);f.setTransform(DPR,0,0,DPR,0,0);
-  ctx=f;GPU.on=true;
+  if(GPU.trash.length){for(const t of GPU.trash)t.destroy();GPU.trash.length=0;}
+  ctx=MAIN_CTX;
+  ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,GPU.bw,GPU.bh);ctx.setTransform(DPR,0,0,DPR,0,0);
+  GPU.on=true;
   GPU.enc=GPU.dev.createCommandEncoder();GPU.scenePass=null;GPU.sceneOn=false;GPU.hitK=0;
   return true;
 }
 /* проход сцены видеокарты: его открывает первый слой кадра, закрывает сборка.
-   Всё, что рисуется сюда, лежит ПОД передним 2D-слоем (docs/DESIGN-gpu.md §3) */
+   Всё, что рисуется сюда, лежит ПОД передним 2D-слоем (docs/DESIGN-gpu.md §3).
+   Вне кадра (прямой вызов из теста или стенда) — null: слой молчит */
 function gpuScene(){
+  if(!GPU.on||!GPU.enc)return null;
   if(!GPU.scenePass){
     GPU.scenePass=GPU.enc.beginRenderPass({colorAttachments:[{view:GPU.V.scene,loadOp:"clear",storeOp:"store",clearValue:GPU.sceneBg}]});
     GPU.sceneOn=true;
   }
   return GPU.scenePass;
+}
+/* кадр вне цикла (тест, стенд, look): собрать, показать, снять — одной задачей */
+function gpuManual(draw){
+  if(!gpuFrame())return false;
+  GPU.wantSnap=true;
+  try{draw();}finally{if(GPU.on){if(GPU.enc&&ctx===MAIN_CTX)gpuWorld(0,false,false);gpuPresent();}}
+  return true;
 }
 /* мир дорисован: передний слой — в текстуру, свечение — в четверть кадра.
    Дальше кадр рисует интерфейс — на свой слой, без свечения и зерна */
@@ -10759,11 +10770,13 @@ function gpuWorld(k,grain,vig){
   try{
     if(GPU.scenePass){GPU.scenePass.end();GPU.scenePass=null;}
     const off=!!(G.opts&&G.opts.gfx&&G.opts.gfx.draw===0);
-    const dark=G.mode==="system"||G.mode==="dock"||G.mode==="barge";
     const P=GPU.post;
-    P.k=(!off&&G.running)?k:0;P.grain=(!off&&grain&&!dark&&G.running)?1:0;P.vig=(!off&&grain&&vig&&G.running)?1:0;
+    /* зерно теперь и на чёрном небе: видеокарте оно ничего не стоит, а в тёмных
+       градиентах туманности и короны работает как дизеринг (2D снимал его ради
+       полноэкранного overlay, 1–3 мс) */
+    P.k=(!off&&G.running)?k:0;P.grain=(!off&&grain&&G.running)?1:0;P.vig=(!off&&grain&&vig&&G.running)?1:0;
     if(!GPU.noiseOk)gpuNoise();
-    GPU.dev.queue.copyExternalImageToTexture({source:GPU.front},{texture:GPU.T.front,premultipliedAlpha:true},[GPU.bw,GPU.bh]);
+    GPU.dev.queue.copyExternalImageToTexture({source:cvs},{texture:GPU.T.front,premultipliedAlpha:true},[GPU.bw,GPU.bh]);
     if(P.k>0){gpuPass(GPU.V.bloomA,GPU.P.down,GPU.B.down);gpuPass(GPU.V.bloomB,GPU.P.blurH,GPU.B.blurH);gpuPass(GPU.V.bloomA,GPU.P.blurV,GPU.B.blurV);}
     if(GPU.uiWas){const q=GPU.uctx;q.setTransform(1,0,0,1,0,0);q.clearRect(0,0,GPU.bw,GPU.bh);q.setTransform(DPR,0,0,DPR,0,0);GPU.uiWas=false;}
     ctx=GPU.uctx;
@@ -10779,12 +10792,71 @@ function gpuPresent(){
     gpuUni();
     gpuPass(GPU.gx.getCurrentTexture().createView(),GPU.P.fin,GPU.B.fin);
     GPU.dev.queue.submit([GPU.enc.finish()]);
+    GPU.frameNo++;
+    if(GPU.wantSnap){GPU.wantSnap=false;gpuTakeSnap();}
   }catch(e){gpuDrop("кадр: "+((e&&e.message)||e),true);}
   GPU.enc=null;GPU.on=false;
-  if(ctx===GPU.fctx||ctx===GPU.uctx)ctx=MAIN_CTX;
+  if(ctx===GPU.uctx)ctx=MAIN_CTX;
 }
+/* ── набор для слоёв сцены (G1+): конвейер, буфер, привязки, текстура из 2D ──
+   Всё живёт при устройстве: gpuInit после потери собирает заново. Слои рисуют в
+   проход gpuScene() — под передним 2D-слоем; цвет премультиплицирован */
+const GPU_BLEND={
+  over:{color:{srcFactor:"one",dstFactor:"one-minus-src-alpha"},alpha:{srcFactor:"one",dstFactor:"one-minus-src-alpha"}},
+  add:{color:{srcFactor:"one",dstFactor:"one"},alpha:{srcFactor:"one",dstFactor:"one"}}};
+function gpuPipe(name,code,blend){
+  const c=GPU.lay[name];if(c)return c;
+  const mod=GPU.dev.createShaderModule({code});
+  return GPU.lay[name]=GPU.dev.createRenderPipeline({layout:"auto",vertex:{module:mod,entryPoint:"vs"},
+    fragment:{module:mod,entryPoint:"fs",targets:[{format:"rgba8unorm",blend:GPU_BLEND[blend||"over"]}]},
+    primitive:{topology:"triangle-list"}});
+}
+function gpuBuf(name,bytes,usage){
+  const b=GPU.bufs[name];
+  if(b&&b.size>=bytes)return b;
+  if(b)GPU.trash.push(b);
+  return GPU.bufs[name]=GPU.dev.createBuffer({size:Math.max(16,Math.ceil(bytes/16)*16),usage});
+}
+/* привязки кэшируются по набору ресурсов: сменился буфер или текстура — новая группа */
+function gpuBind(name,pipe,res){
+  const c=GPU.bgs[name];
+  if(c&&c.res.length===res.length&&c.res.every((r,i)=>r===res[i]))return c.bg;
+  const bg=GPU.dev.createBindGroup({layout:pipe.getBindGroupLayout(0),
+    entries:res.map((r,i)=>({binding:i,resource:(r instanceof GPUBuffer)?{buffer:r}:r}))});
+  GPU.bgs[name]={res,bg};return bg;
+}
+/* 2D-холст как текстура: печки при перепечке отдают НОВЫЙ холст, поэтому ключ —
+   сам объект. Старые уходят в корзину и гибнут в начале следующего кадра */
+function gpuCanvasTex(cv){
+  const m=GPU.cvTex;let e=m.get(cv);
+  if(e)return e;
+  const w=cv.width,h=cv.height,U=GPUTextureUsage;
+  const tex=GPU.dev.createTexture({size:[w,h],format:"rgba8unorm",usage:U.TEXTURE_BINDING|U.COPY_DST|U.RENDER_ATTACHMENT});
+  GPU.dev.queue.copyExternalImageToTexture({source:cv},{texture:tex,premultipliedAlpha:true},[w,h]);
+  e={tex,view:tex.createView(),w,h};m.set(cv,e);
+  if(m.size>8){const k=m.keys().next().value;GPU.trash.push(m.get(k).tex);m.delete(k);}
+  return e;
+}
+/* общие куски шейдеров слоёв: мерка кадра и покрытие фигур со сглаживанием.
+   Покрытие честное, по площади пикселя — так же, как Skia гладит края в 2D */
+const GPU_WGSL_COMMON=`
+fn pmod(a:f32,m:f32)->f32{return a-m*floor(a/m);}
+fn covRect(p:vec2f,r:vec4f)->f32{return clamp(min(p.x+.5,r.z)-max(p.x-.5,r.x),0.,1.)*clamp(min(p.y+.5,r.w)-max(p.y-.5,r.y),0.,1.);}
+fn covDisc(p:vec2f,c:vec2f,r:f32)->f32{let re=max(r,.7);return clamp(.5-(length(p-c)-re),0.,1.)*min(1.,r*r/(re*re));}
+fn covSeg(p:vec2f,a:vec2f,b:vec2f,hw:f32)->f32{
+  let ab=b-a;let t=clamp(dot(p-a,ab)/max(dot(ab,ab),1e-4),0.,1.);let he=max(hw,.5);
+  return clamp(.5-(length(p-a-ab*t)-he),0.,1.)*min(1.,hw/he);}
+fn cubicW(v:f32)->vec4f{let n=vec4f(1.,2.,3.,4.)-v;let s=n*n*n;let x=s.x;let y=s.y-4.*s.x;let z=s.z-4.*s.y+6.*s.x;return vec4f(x,y,z,6.-x-y-z)/6.;}
+fn texCubic(t:texture_2d<f32>,sm:sampler,uv:vec2f)->vec4f{
+  let ts=vec2f(textureDimensions(t));var c=uv*ts-.5;let f=fract(c);c=c-f;
+  let xc=cubicW(f.x);let yc=cubicW(f.y);let s=vec4f(xc.xz+xc.yw,yc.xz+yc.yw);
+  let o=(c.xxyy+vec4f(-.5,1.5,-.5,1.5)+vec4f(xc.yw,yc.yw)/s)/ts.xxyy;
+  let s0=textureSampleLevel(t,sm,o.xz,0.);let s1=textureSampleLevel(t,sm,o.yz,0.);
+  let s2=textureSampleLevel(t,sm,o.xw,0.);let s3=textureSampleLevel(t,sm,o.yw,0.);
+  let sx=s.x/(s.x+s.y);let sy=s.z/(s.z+s.w);
+  return mix(mix(s3,s2,sx),mix(s1,s0,sx),sy);}`;
 /* поднимается после всего скрипта: в сборке тестов TEST объявлен ниже игры */
-if(typeof navigator!=="undefined"&&navigator.gpu)setTimeout(gpuInit,0);
+if(typeof document!=="undefined"&&document.body)setTimeout(gpuInit,0);
 
 /* ══════════════ звук: чистый синтез, ни одного файла ══════════════ */
 /* Браузер не даёт завести AudioContext до жеста пользователя, поэтому
@@ -46682,13 +46754,20 @@ for(let i=0;i<14;i++)BG_BRIGHT.push({x:rndFx(),y:rndFx(),z:.86+rndFx()*.14,
    входа между кадрами — сигнатура не меняется, все режимы получают закон
    даром; скачок камеры (смена режима) прочерков не даёт. */
 let STAR_LX=null,STAR_LY=null,STAR_LT=-1;
-function drawStars(cx,cy,par){
+/* ход камеры для закона «движение, а не мигание» — общий у 2D и видеокарты (16g) */
+const STAR_MV={dx:0,dy:0,kx:1,ky:1,mov:0};
+function starMove(cx,cy,par){
   let dx=0,dy=0;
   if(STAR_LT>=0&&G.t-STAR_LT<1.5){dx=cx-STAR_LX;dy=cy-STAR_LY;}
   STAR_LX=cx;STAR_LY=cy;STAR_LT=G.t;
   if(Math.hypot(dx,dy)>60){dx=0;dy=0;}
-  const KX=W/1600*2.6, KY=H/1200*2.6;            /* прочерк ~ пары кадров пути */
-  const mov=clamp(Math.hypot(dx*KX,dy*KY)*par,0,6)/6;
+  const M=STAR_MV;M.dx=dx;M.dy=dy;
+  M.kx=W/1600*2.6;M.ky=H/1200*2.6;            /* прочерк ~ пары кадров пути */
+  M.mov=clamp(Math.hypot(dx*M.kx,dy*M.ky)*par,0,6)/6;
+  return M;
+}
+function drawStars(cx,cy,par){
+  const M=starMove(cx,cy,par),dx=M.dx,dy=M.dy,KX=M.kx,KY=M.ky,mov=M.mov;
   const a0=ctx.globalAlpha;
   for(const g of BG_GROUP){
     ctx.fillStyle=g.css;ctx.strokeStyle=g.css;
@@ -46745,19 +46824,6 @@ function nebula(){
   c.putImageData(img,0,0);NEBULA=cn;return cn;
 }
 /* смещение зажато, поэтому картинка не тайлится и швов не бывает */
-function drawNebula(cx,cy,par){
-  const N=nebula(),ex=W*.2,ey=H*.2;
-  const ox=-ex/2+clamp(-cx*par*.01,-ex/2,ex/2);
-  const oy=-ey/2+clamp(-cy*par*.01,-ey/2,ey/2);
-  ctx.globalAlpha=.6;ctx.drawImage(N,ox,oy,W+ex,H+ey);
-  /* второй слой ближе и крупнее, ходит втрое быстрее (хвост G10): две
-     туманности на разной глубине — и по их расхождению глаз видит объём */
-  const ex2=W*.5,ey2=H*.5;
-  const ox2=-ex2/2+clamp(-cx*par*.03,-ex2/2,ex2/2)+W*.18;
-  const oy2=-ey2/2+clamp(-cy*par*.03,-ey2/2,ey2/2)-H*.12;
-  ctx.globalAlpha=.26;ctx.drawImage(N,ox2,oy2,W+ex2,H+ey2);
-  ctx.globalAlpha=1;
-}
 
 /* Тело из текущей системы или из прежней? Сектор проверяется первым — он ловит
    прыжок. Сверка по ссылке ловит второй случай: система та же, но пересобрана
@@ -47525,12 +47591,11 @@ function wcBlots(c2,st,Wc,Hc){
     c2.globalCompositeOperation="lighter";
   }
 }
-function drawSysNebula(sys,cx,cy){
+/* композиция туманности системы: печётся раз на систему и размер кадра; null — ещё печётся */
+function sysNebComp(sys){
   const N=sysNebulaTex(sys);
-  if(!N)return;               // ещё печётся — этот кадр обойдётся без неё
+  if(!N)return null;               // ещё печётся — этот кадр обойдётся без неё
   const ex=W*.24,ey=H*.24;
-  const ox=-ex/2+clamp(-cx*.012,-ex/2,ex/2);
-  const oy=-ey/2+clamp(-cy*.012,-ey/2,ey/2);
   const C=NEB_COMP;
   if(!C||C.src!==N||C.w!==W||C.h!==H||C.dpr!==DPR){
     const cv=document.createElement("canvas");
@@ -47551,8 +47616,7 @@ function drawSysNebula(sys,cx,cy){
     wcBlots(c2,sysStyle(sys),W+ex,H+ey);
     NEB_COMP={cv,src:N,w:W,h:H,dpr:DPR};
   }
-  ctx.drawImage(NEB_COMP.cv,ox,oy,W+ex,H+ey);
-  return true;
+  return NEB_COMP;
 }
 /* ── пыль между планетами ──
    ближний слой, идущий быстрее звёзд: именно он даёт ощущение скорости, потому
@@ -47592,40 +47656,6 @@ function dustTable(n){
    стоит), с разным размером и яркостью, дают то, ради чего пыль и нужна:
    по ней видно, что ты ЛЕТИШЬ и что пространство имеет глубину. */
 const DUST_LAYERS=[{par:.22,s:1.7,a:.5,n:.45},{par:.55,s:1,a:1,n:1},{par:.95,s:.7,a:.75,n:.7}];
-function drawSpaceDust(cx,cy,Z,dens){
-  /* всего крупинок стало меньше, чем было: три слоя по прежней плотности
-     стоили лишнюю миллисекунду, а пустоты убирали три процента — глубину
-     даёт РАЗНЫЙ ХОД слоёв, а не количество точек */
-  const base=Math.round(46*dens*G.opts.gfx.particles);
-  if(base<=0)return;
-  const span=900;
-  const sw=W+40,sh=H+40;
-  const a0=ctx.globalAlpha;
-  ctx.fillStyle=DUST_COL;
-  /* ОДНА таблица на все три слоя: `dustTable` кэширует ровно одну длину, и
-     три разных запроса перестраивали её каждый кадр — пять миллисекунд на
-     ровном месте (поймано замером сразу после правки) */
-  const T=dustTable(base);
-  for(let L=0;L<DUST_LAYERS.length;L++){
-    const LY=DUST_LAYERS[L], n=Math.round(base*LY.n);
-    if(n<=0)continue;
-    /* прозрачность ставится РАЗ на слой, а не на каждую крупинку: смена
-       globalAlpha — состояние контекста, и триста смен на кадр стоили
-       три с половиной миллисекунды (замер) */
-    ctx.globalAlpha=a0*LY.a*.62;
-    /* пыль ТЕЧЁТ (M254): медленный снос вдоль запечённого направления, той же
-       мировой скоростью на всех слоях — параллакс сам делит её по глубине.
-       Ход медленный (~4 px/с у ближнего слоя): на стоянке пустота живёт, а
-       скорость полёта он не путает — она на порядок больше */
-    for(let i=0;i<n;i++){
-      const d=T[(i+L*37)%base];
-      const px=((d.u*span+L*211+(d.dx*G.t*.09-cx)*LY.par)%span+span)%span/span*sw-20;
-      const py=((d.v*span+L*137+(d.dy*G.t*.09-cy)*LY.par)%span+span)%span/span*sh-20;
-      ctx.fillRect(px,py,d.s*LY.s,d.s*LY.s);
-    }
-  }
-  ctx.globalAlpha=a0;
-}
 /* ── ощущение полёта ──
    Корабль двигался как курсор: камера приклеена, тяга ничем не отмечена, кроме
    мелких частиц шлейфа. Скорость чувствуется по трём вещам — камера отстаёт,
@@ -49096,6 +49126,178 @@ addEventListener("keydown",e=>{
 /* такт активности зовёт кадр (28-loop, раз в 600 кадров): у скрытой вкладки rAF
    стоит — и её время не засчитывается само собой */
 
+/* ══════════════ космос на видеокарте (G1, docs/DESIGN-gpu.md) ══════════════
+   Фон системы и заставки: туманность (её печёт 2D — сюда она ложится текстурой),
+   звёзды и пыль — формулами в шейдере, один вызов на слой вместо сотен fillRect.
+   Логика та же, что у drawStars / drawSpaceDust (16-flight, 16a-space): те же
+   таблицы, тот же ход камеры starMove и закон «движение, а не мигание».
+   Лучше, чем в 2D: звезда и пылинка — круглые точки той же площади (квадрат в пять
+   пикселей при DPR 2.6 читался квадратом); прочерк на ходу — капсула, как и
+   выглядит смазанная точка; туманность заставки (192²) растянута бикубикой — у
+   билинейной выборки на ×13 проступал ромб. */
+const SPACE_BG={r:5/255,g:7/255,b:12/255,a:1};
+const GSP={stars:null,dustBase:-1,dustN:0,UA:new Float32Array(20),QA:new Float32Array(16)};
+const GSP_WGSL_U=`
+struct SP{a:vec4f,b:vec4f,c:vec4f,d:vec4f,e:vec4f};
+@group(0) @binding(0) var<uniform> u:SP;
+fn toClip(p:vec2f)->vec4f{return vec4f(p.x/u.a.x*2.-1.,1.-p.y/u.a.y*2.,0.,1.);}
+fn corn(i:u32)->vec2f{var c=array(vec2f(0.,0.),vec2f(1.,0.),vec2f(1.,1.),vec2f(0.,0.),vec2f(1.,1.),vec2f(0.,1.));return c[i];}
+struct VO{@builtin(position) p:vec4f,@location(0) col:vec4f,@location(1) @interpolate(flat) g:vec4f,@location(2) @interpolate(flat) h:vec4f};
+@fragment fn fs(i:VO)->@location(0) vec4f{
+  let p=i.p.xy;var cov=0.;
+  if(i.h.x<.5){cov=covRect(p,i.g);}
+  else if(i.h.x<1.5){cov=covDisc(p,i.g.xy,i.g.z);}
+  else{cov=covSeg(p,i.g.xy,i.g.zw,i.h.y);}
+  let al=i.col.a*cov;return vec4f(i.col.rgb*al,al);}`;
+/* a: res.xy, css.xy · b: dpr, t, cx, cy · c: par, mdx, mdy, mov · d: kx, ky, a0, – · e: пыль dcx, dcy, sw, sh */
+/* звезда = три части (тело, два луча крестика); на ходу тело — прочерк */
+const GSP_STARS=`
+@group(0) @binding(1) var<storage,read> st:array<vec4f>;
+@vertex fn vs(@builtin(vertex_index) vi:u32,@builtin(instance_index) ii:u32)->VO{
+  let s=st[(ii/3u)*2u];let c=st[(ii/3u)*2u+1u];let part=ii%3u;
+  let z=s.z;let bright=c.w>.5;let dpr=u.b.x;let mov=u.c.w;
+  let px=pmod(s.x*1600.-u.b.z*u.c.x*z,1600.)/1600.*u.a.z;
+  let py=pmod(s.y*1200.-u.b.w*u.c.x*z,1200.)/1200.*u.a.w;
+  var a=0.;var sz=1.;
+  if(bright){a=.55+.25*sin(u.b.y*.03+s.w)*(1.-mov);}
+  else{a=(.11+z*.55)*(.76+.24*sin(u.b.y*.045*(.4+z)+s.w)*(1.-mov));sz=select(select(1.,1.4,z>.5),2.1,z>.85);}
+  a=a*u.d.z;
+  let l=vec2f(u.c.y*u.d.x*u.c.x*z,u.c.z*u.d.y*u.c.x*z);let ll=length(l);
+  var mode=-1.;var g=vec4f(0.);var hw=0.;
+  if(part==0u){
+    if(bright){
+      if(mov>.04&&ll>1.2){mode=2.;g=vec4f(px,py,px+l.x,py+l.y);hw=1.;}
+      else{mode=1.;g=vec4f(px+.1,py+.1,2.6*.5641896,0.);}
+    }else{
+      if(mov>.04&&z>.4&&ll>1.2){mode=2.;g=vec4f(px,py,px+l.x,py+l.y);hw=sz*.36;}
+      else{mode=1.;g=vec4f(px+sz*.5,py+sz*.5,sz*.5641896,0.);}
+    }
+  }else if(bright){
+    if(mov<.2){mode=0.;a=a*.35;g=select(vec4f(px+.1,py-3.4,px+1.1,py+4.2),vec4f(px-3.4,py+.1,px+4.2,py+1.1),part==1u);}
+  }else if(z>.9&&mov<.2){
+    mode=0.;a=a*.3;g=select(vec4f(px+.35,py-2.4,px+1.15,py+3.4),vec4f(px-2.4,py+.35,px+3.4,py+1.15),part==1u);
+  }
+  let m=1./dpr;var lo=vec2f(-9.);var hi=vec2f(-8.);
+  if(mode==0.){lo=g.xy-m;hi=g.zw+m;}
+  else if(mode==1.){lo=g.xy-g.z-m;hi=g.xy+g.z+m;}
+  else if(mode==2.){lo=min(g.xy,g.zw)-hw-m;hi=max(g.xy,g.zw)+hw+m;}
+  var o:VO;o.p=toClip(mix(lo,hi,corn(vi))*dpr);o.col=vec4f(c.rgb,a);o.g=g*dpr;o.h=vec4f(mode,hw*dpr,0.,0.);
+  return o;}`;
+/* пылинка: (u,v,размер,ход слоя) (dx,dy,сдвиг слоя) (альфа слоя) */
+const GSP_DUST=`
+@group(0) @binding(1) var<storage,read> du:array<vec4f>;
+@vertex fn vs(@builtin(vertex_index) vi:u32,@builtin(instance_index) ii:u32)->VO{
+  let p0=du[ii*3u];let p1=du[ii*3u+1u];let p2=du[ii*3u+2u];let dpr=u.b.x;
+  let px=pmod(p0.x*900.+p1.z+(p1.x*u.b.y*.09-u.e.x)*p0.w,900.)/900.*u.e.z-20.;
+  let py=pmod(p0.y*900.+p1.w+(p1.y*u.b.y*.09-u.e.y)*p0.w,900.)/900.*u.e.w-20.;
+  let r=p0.z*.5641896;let c=vec2f(px,py)+p0.z*.5;let m=1./dpr;
+  var o:VO;o.p=toClip(mix(c-r-m,c+r+m,corn(vi))*dpr);
+  o.col=vec4f(198./255.,214./255.,236./255.,p2.x*u.d.z);o.g=vec4f(c*dpr,r*dpr,0.);o.h=vec4f(1.,0.,0.,0.);
+  return o;}`;
+/* прямоугольник с текстурой: (x,y,w,h) в пикселях CSS, (альфа, бикубика) */
+const GSP_QUAD=`
+@group(0) @binding(1) var<storage,read> q:array<vec4f>;
+@group(0) @binding(2) var tx:texture_2d<f32>;
+@group(0) @binding(3) var sm:sampler;
+struct QO{@builtin(position) p:vec4f,@location(0) uv:vec2f,@location(1) @interpolate(flat) k:vec4f};
+@vertex fn vs(@builtin(vertex_index) vi:u32,@builtin(instance_index) ii:u32)->QO{
+  let r=q[ii*2u];let k=q[ii*2u+1u];let cn=corn(vi);
+  var o:QO;o.p=toClip((r.xy+cn*r.zw)*u.b.x);o.uv=cn;o.k=k;return o;}
+@fragment fn fs(i:QO)->@location(0) vec4f{
+  var c:vec4f;
+  if(i.k.y>.5){c=texCubic(tx,sm,i.uv);}else{c=textureSampleLevel(tx,sm,i.uv,0.);}
+  return c*i.k.x;}`;
+
+function gspPipes(){
+  const H=GPU_WGSL_COMMON+GSP_WGSL_U;
+  return {stars:gpuPipe("gsp.stars",H+GSP_STARS),dust:gpuPipe("gsp.dust",H+GSP_DUST),
+          quad:gpuPipe("gsp.quad",H.replace(/@fragment fn fs\(i:VO\)[\s\S]*$/,"")+GSP_QUAD)};
+}
+/* таблица звёзд — та же, что у 2D (BG_GROUP по цветам, затем BG_BRIGHT), один раз */
+function gspStarBuf(){
+  if(GSP.stars&&GPU.bufs["gsp.st"]===GSP.stars)return GSP.stars;
+  const a=[];
+  for(let gi=0;gi<BG_GROUP.length;gi++){const c=STAR_COLS[gi];
+    for(const s of BG_GROUP[gi].list)a.push(s.x,s.y,s.z,s.ph,c[0]/255,c[1]/255,c[2]/255,0);}
+  for(const s of BG_BRIGHT){const c=s.css.match(/\d+/g).map(Number);a.push(s.x,s.y,s.z,s.ph,c[0]/255,c[1]/255,c[2]/255,1);}
+  const f=new Float32Array(a),U=GPUBufferUsage;
+  const b=gpuBuf("gsp.st",f.byteLength,U.STORAGE|U.COPY_DST);
+  GPU.dev.queue.writeBuffer(b,0,f);GSP.nStars=a.length/8;
+  return GSP.stars=b;
+}
+/* пыль: три слоя с разным ходом, та же таблица dustTable, что у 2D */
+function gspDustBuf(base){
+  const U=GPUBufferUsage;
+  if(base===GSP.dustBase&&GPU.bufs["gsp.du"])return GPU.bufs["gsp.du"];
+  const T=dustTable(base),a=[];
+  for(let L=0;L<DUST_LAYERS.length;L++){
+    const LY=DUST_LAYERS[L],n=Math.round(base*LY.n);
+    for(let i=0;i<n;i++){const d=T[(i+L*37)%base];
+      a.push(d.u,d.v,d.s*LY.s,LY.par, d.dx,d.dy,L*211,L*137, LY.a*.62,0,0,0);}
+  }
+  const f=new Float32Array(a.length?a:[0,0,0,0,0,0,0,0,0,0,0,0]);
+  const b=gpuBuf("gsp.du",f.byteLength,U.STORAGE|U.COPY_DST);
+  GPU.dev.queue.writeBuffer(b,0,f);GSP.dustBase=base;GSP.dustN=a.length/12;
+  return b;
+}
+function gspUni(cx,cy,par,M,dcx,dcy){
+  const a=GSP.UA;
+  a[0]=GPU.bw;a[1]=GPU.bh;a[2]=W;a[3]=H;a[4]=DPR;a[5]=G.t;a[6]=cx;a[7]=cy;
+  a[8]=par;a[9]=M.dx;a[10]=M.dy;a[11]=M.mov;a[12]=M.kx;a[13]=M.ky;a[14]=1;a[15]=0;
+  a[16]=dcx;a[17]=dcy;a[18]=W+40;a[19]=H+40;
+  const U=GPUBufferUsage,b=gpuBuf("gsp.u",80,U.UNIFORM|U.COPY_DST);
+  GPU.dev.queue.writeBuffer(b,0,a);return b;
+}
+/* до двух прямоугольников туманности за кадр — в одном буфере */
+function gspQuads(pass,P,ub,tex,list,cubic){
+  const a=GSP.QA;let n=0;
+  for(const r of list){a.set([r[0],r[1],r[2],r[3],r[4],cubic?1:0,0,0],n*8);n++;}
+  const U=GPUBufferUsage,qb=gpuBuf("gsp.q",64,U.STORAGE|U.COPY_DST);
+  GPU.dev.queue.writeBuffer(qb,0,a);
+  pass.setPipeline(P.quad);
+  pass.setBindGroup(0,gpuBind("gsp.quad",P.quad,[ub,qb,tex.view,GPU.S.lin]));
+  pass.draw(6,n);
+}
+function gspStarsDust(pass,P,ub,dustBase){
+  const sb=gspStarBuf();
+  pass.setPipeline(P.stars);pass.setBindGroup(0,gpuBind("gsp.stars",P.stars,[ub,sb]));
+  pass.draw(6,GSP.nStars*3);
+  if(dustBase>0){
+    const db=gspDustBuf(dustBase);
+    if(GSP.dustN>0){pass.setPipeline(P.dust);pass.setBindGroup(0,gpuBind("gsp.dust",P.dust,[ub,db]));pass.draw(6,GSP.dustN);}
+  }
+}
+/* фон системы: туманность (или ровная ночь, пока она печётся), звёзды, пыль —
+   те же камеры, что у 2D-ветки drawSystem */
+function gpuSpaceSys(sys,cx0,cy0,Z){
+  GPU.sceneBg=SPACE_BG;
+  const pass=gpuScene();if(!pass)return;
+  const P=gspPipes();
+  const cx=cx0*.06*Z,cy=cy0*.06*Z;
+  const M=starMove(cx,cy,1);
+  const ub=gspUni(cx,cy,1,M,cx0*Z,cy0*Z);
+  const C=sysNebComp(sys);
+  if(C){
+    const ex=W*.24,ey=H*.24;
+    const ox=-ex/2+clamp(-cx*.012,-ex/2,ex/2),oy=-ey/2+clamp(-cy*.012,-ey/2,ey/2);
+    gspQuads(pass,P,ub,gpuCanvasTex(C.cv),[[ox,oy,W+ex,H+ey,1]],false);
+  }
+  gspStarsDust(pass,P,ub,Math.round(46*sysStyle(sys).dust*G.opts.gfx.particles));
+}
+/* заставка: две туманности на разной глубине и звёзды (drawNebula + drawStars) */
+function gpuSpaceTitle(c){
+  GPU.sceneBg=SPACE_BG;
+  const pass=gpuScene();if(!pass)return;
+  const P=gspPipes();
+  const M=starMove(c,0,1);
+  const ub=gspUni(c,0,1,M,0,0);
+  const ex=W*.2,ey=H*.2,ex2=W*.5,ey2=H*.5;
+  const ox=-ex/2+clamp(-c*.01,-ex/2,ex/2),oy=-ey/2;
+  const ox2=-ex2/2+clamp(-c*.03,-ex2/2,ex2/2)+W*.18,oy2=-ey2/2-H*.12;
+  gspQuads(pass,P,ub,gpuCanvasTex(nebula()),[[ox,oy,W+ex,H+ey,.6],[ox2,oy2,W+ex2,H+ey2,.26]],true);
+  gspStarsDust(pass,P,ub,0);
+}
+
 /* ══════════════ режим: система ══════════════ */
 /* Фишки компаса у кромки кадра, с их прямоугольниками и готовыми целями
    автопилота. Заполняется рисованием (drawSystem), читается тычком (15-input):
@@ -49630,11 +49832,7 @@ function drawSystem(){
      проходом, а само наложение из складывающего стало непрозрачным — это
      дешевле, потому что не надо читать то, что уже лежит на экране. Пока
      туманность не доспела, заливка нужна, и её делает эта же строка. */
-  if(!drawSysNebula(sys,cx0*.06*Z,cy0*.06*Z)){
-    ctx.fillStyle="#05070c";ctx.fillRect(0,0,W,H);
-  }
-  drawStars(cx0*.06*Z,cy0*.06*Z,1);
-  drawSpaceDust(cx0*Z,cy0*Z,Z,sysStyle(sys).dust);
+  gpuSpaceSys(sys,cx0,cy0,Z);   /* туманность, звёзды, пыль — на видеокарте (16g) */
   const ox=zx(0),oy=zy(0);
   ctx.lineWidth=1;
   /* орбиты гаснут с расстоянием: ровные кольца одной яркости делали систему чертежом (G10) */
@@ -55412,14 +55610,8 @@ function drawTiles(store,camx,camy,paint){
       W×H, а ctx считает в CSS-единицах — иначе марево уедет в угол.
    3. Дорого — только когда есть повод: марево лишь при тяге, хроматика лишь
       несколько кадров после попадания. В тихом кадре здесь ноль работы. */
-let HIT_FX=0,FX_CN=null;
+let HIT_FX=0;
 function hitFx(k){HIT_FX=Math.max(HIT_FX,clamp(k==null?1:k,0,1));}
-function fxCanvas(){
-  if(!FX_CN||FX_CN.width!==cvs.width||FX_CN.height!==cvs.height){
-    FX_CN=document.createElement("canvas");FX_CN.width=cvs.width;FX_CN.height=cvs.height;
-  }
-  return FX_CN;
-}
 /* ── марево над соплами ──
    Горячий газ преломляет: то, что за факелом, дрожит. Прямоугольник кадра за
    соплом режется на полоски поперёк факела, и каждая кладётся обратно со своим
@@ -55455,7 +55647,7 @@ function hazeGrab(x0,y0,w,h){
   const g=HZ_CN.getContext("2d");
   g.setTransform(1,0,0,1,0,0);
   g.globalCompositeOperation="copy";   /* без clearRect: copy сам затирает */
-  g.drawImage(frameCanvas(),sx0*DPR,sy0*DPR,pw,ph,0,0,pw,ph);
+  g.drawImage(cvs,sx0*DPR,sy0*DPR,pw,ph,0,0,pw,ph);
   HZ_OX=sx0;HZ_OY=sy0;HZ_OK=true;
   return true;
 }
@@ -55493,23 +55685,8 @@ function drawHitFx(dt){
   if(HIT_FX<=.02){HIT_FX=0;return;}
   const k=HIT_FX;
   const dx=(1.5+5*k)*(1+.35*Math.sin(G.t*2.1));
-  /* у видеокарты хроматика — строка общего прохода (08b fsFinal) */
-  if(GPU.on){GPU.hitK=k;GPU.hitDx=dx;HIT_FX*=Math.exp(-(dt||1)*.22);return;}
-  const off=fxCanvas(),o=off.getContext("2d");
-  ctx.save();
-  for(const [col,sgn] of [["rgb(255,40,40)",-1],["rgb(40,90,255)",1]]){
-    o.setTransform(1,0,0,1,0,0);
-    o.globalCompositeOperation="source-over";
-    o.clearRect(0,0,off.width,off.height);
-    o.drawImage(cvs,0,0);
-    o.globalCompositeOperation="multiply";
-    o.fillStyle=col;o.fillRect(0,0,off.width,off.height);
-    ctx.globalCompositeOperation="lighter";
-    ctx.globalAlpha=.30*k;
-    ctx.drawImage(off,0,0,off.width,off.height,sgn*dx,0,W,H);
-  }
-  ctx.restore();
-  HIT_FX*=Math.exp(-(dt||1)*.22);
+  /* хроматика — строка общего прохода видеокарты (08b fsFinal) */
+  GPU.hitK=k;GPU.hitDx=dx;HIT_FX*=Math.exp(-(dt||1)*.22);
 }
 
 /* ══════════════ верле: верёвки и ткань ══════════════
@@ -58839,44 +59016,8 @@ function drawSkyBase(p){
    из него выбивается тёмное (умножение на себя — это квадрат яркости, серое
    гаснет, яркое остаётся), размывается и кладётся обратно сложением.
    Три drawImage на кадр, без единого чтения пикселей. */
-let BLOOM_CV=null;
 const BLOOM_K={wanderer:.18,system:.34,map:0,landing:.16,surface:.16,dig:.20,cave:.24,
                belt:.24,scoop:.20,base:.18,raid:.18,homein:.22,winter:.20,spa:.18};
-let BLOOM_CV2=null;
-function bloomPass(k){
-  if(!(k>0)||W<8||H<8)return;
-  if(G.opts&&G.opts.gfx&&G.opts.gfx.draw===0)return;
-  const w=Math.max(2,Math.round(W/4)),h=Math.max(2,Math.round(H/4));
-  if(!BLOOM_CV||BLOOM_CV.width!==w||BLOOM_CV.height!==h){
-    BLOOM_CV=document.createElement("canvas");BLOOM_CV.width=w;BLOOM_CV.height=h;
-  }
-  const g=BLOOM_CV.getContext("2d");
-  g.globalCompositeOperation="source-over";
-  g.clearRect(0,0,w,h);
-  g.drawImage(cvs,0,0,w,h);
-  /* порог без чтения пикселей: кадр, умноженный сам на себя */
-  g.globalCompositeOperation="multiply";
-  g.drawImage(BLOOM_CV,0,0);
-  g.globalCompositeOperation="source-over";
-  /* размытие — на МАЛОМ холсте (0.455, замер на ноуте автора): blur(7px) на
-     полном кадре считался по всем 5.4 Мпкс при ×2 — ~3 мс видеокарты за кадр.
-     Та же ширина в четвертной копии — 7/4/DPR px (прежний blur мерился в пикселях
-     устройства; сверено попиксельно на ×1/×1.5/×2: ≤8 из 255), дальше билинейное растяжение:
-     размытое мелкое, растянутое, и есть размытое крупное */
-  let src=BLOOM_CV;
-  if("filter" in g){
-    if(!BLOOM_CV2||BLOOM_CV2.width!==w||BLOOM_CV2.height!==h){BLOOM_CV2=document.createElement("canvas");BLOOM_CV2.width=w;BLOOM_CV2.height=h;}
-    const g2=BLOOM_CV2.getContext("2d");
-    g2.clearRect(0,0,w,h);g2.filter="blur("+(1.75/DPR).toFixed(3)+"px)";g2.drawImage(BLOOM_CV,0,0);g2.filter="none";
-    src=BLOOM_CV2;
-  }
-  ctx.save();
-  ctx.globalCompositeOperation="lighter";
-  ctx.globalAlpha=k;
-  ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality="high";
-  ctx.drawImage(src,0,0,w,h,0,0,W,H);
-  ctx.restore();
-}
 
 /* ══════════════ зерно и виньетка — один слой на все сцены (M244) ══════════════
    Две вещи, которые связывают девять разных сцен в одну игру и стоят почти
@@ -58890,42 +59031,6 @@ function bloomPass(k){
    распределены равномерно по построению — это заодно и лучшая матрица против
    бэндинга: у белого пороги толпились, и ступень рвалась неровно. Доказано
    на открытке (M250), стоимость та же — плитка печётся один раз. */
-let GRAIN_PAT=null;
-function grainPass(vig){
-  if(G.opts&&G.opts.gfx&&G.opts.gfx.draw===0)return;
-  if(W<8||H<8)return;
-  if(!GRAIN_PAT){
-    const cv=document.createElement("canvas");cv.width=cv.height=64;
-    const g=cv.getContext("2d"),im=g.createImageData(64,64),bt=blueNoise();
-    for(let i=0;i<64*64;i++){
-      const v=110+Math.round(bt[i]*36);
-      im.data[i*4]=im.data[i*4+1]=im.data[i*4+2]=v;im.data[i*4+3]=255;
-    }
-    g.putImageData(im,0,0);
-    GRAIN_PAT=ctx.createPattern(cv,"repeat");
-  }
-  /* В космосе зерно невидимо: overlay по почти чёрному — это d·(1±1%), и замер
-     кадра системы дал 0.1% субпикселей, сдвинутых на 1/255. А стоит проход
-     дорого: overlay на встроенной видеокарте (D3D11) копирует кадр под собой —
-     1–3 мс за кадр на ×2 (0.455, ноут автора). Где небо чёрное, его не кладём */
-  const dark=G.mode==="system"||G.mode==="dock"||G.mode==="barge";
-  if(!dark){
-  ctx.save();
-  ctx.globalCompositeOperation="overlay";
-  ctx.globalAlpha=.075;
-  ctx.fillStyle=GRAIN_PAT;
-  ctx.fillRect(0,0,W,H);
-  ctx.restore();
-  }
-  if(vig){
-    ctx.drawImage(screenLayer("vigg|"+W+"|"+H,()=>{
-      const g=ctx.createRadialGradient(W*.5,H*.48,Math.min(W,H)*.34,W*.5,H*.48,Math.max(W,H)*.76);
-      g.addColorStop(0,"rgba(0,0,0,0)");
-      g.addColorStop(1,"rgba(0,0,0,.40)");
-      ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
-    }),0,0,W,H);
-  }
-}
 
 /* ══════════════ падающие тени: рельеф затеняет сам себя (P5, M433) ══════════════
    Одиннадцатая строка свода ремесла (`docs/DESIGN-story-craft.md`, P5), первая
@@ -72121,7 +72226,7 @@ function drawWater(tr,camx,camy,p){
         const dyTop=y+(hh-(i+1)*bh);   /* в зеркале верхняя лента ложится глубже всего */
         ctx.globalAlpha=.5*(1-t*.6);
         ctx.save();ctx.translate(0,dyTop+bh);ctx.scale(1,-1);
-        ctx.drawImage(frameCanvas(),sx0*DPR,syTop*DPR,sw*DPR,Math.ceil(bh)*DPR,sx0+dx,0,sw,Math.ceil(bh));
+        ctx.drawImage(cvs,sx0*DPR,syTop*DPR,sw*DPR,Math.ceil(bh)*DPR,sx0+dx,0,sw,Math.ceil(bh));
         ctx.restore();
       }
       ctx.globalAlpha=1;
@@ -96960,7 +97065,13 @@ function stepWorld(dt){
   else if(G.mode==="spa"&&G.spa)updateSpa(dt);         /* санаторий (M199) */
   else if(G.mode==="wanderer"&&G.wan)updateWanderRoom(dt);   /* на борту «Сороки» (M343) */
 }
+/* вне цикла (тесты, стенды, look) кадр собирается здесь же: видеокарта рисует
+   только внутри кадра, и снимок для чтения делает этот кадр */
 function drawWorld(){
+  if(!GPU.on&&GPU.ok){gpuManual(drawWorldIn);return;}
+  drawWorldIn();
+}
+function drawWorldIn(){
   /* у сцен без своего неба свет постоянный (M243): SUN_DIR не должен нести
      сюда азимут планеты, с которой игрок только что ушёл, — иначе тени в
      комнатах ложатся по вчерашнему закату */
@@ -96982,10 +97093,7 @@ function drawWorld(){
   else if(G.mode==="wanderer"&&G.wan)drawWanderRoom();
   /* ореол вокруг яркого — последним по миру и до приборов (M243); зерно на все
      сцены, виньетка — где своей нет (M244). У видеокарты всё это — один проход (08b) */
-  const bk=BLOOM_K[G.mode]||0,gr=G.mode!=="map",vg=!(G.mode==="surface"||G.mode==="landing");
-  if(GPU.on){gpuWorld(bk,gr,vg);return;}
-  if(typeof bloomPass==="function")bloomPass(bk);
-  if(typeof grainPass==="function"&&gr)grainPass(vg);
+  gpuWorld(BLOOM_K[G.mode]||0,G.mode!=="map",!(G.mode==="surface"||G.mode==="landing"));
 }
 function frameBody(now){
   FRAME_IN=true;   /* всё, что скажет кадр, — голос мира (say, 08-state); снимается в конце и на событиях */
@@ -97107,19 +97215,16 @@ function frameBody(now){
     }
     if(G.mode==="barge"&&!scrOpen())G.mode="system";
     audioTick(dt);
-    gpuFrame();   /* кадр собирает видеокарта, если может (08b): ctx смотрит на передний слой */
-    drawWorld();
-    if(typeof drawHitFx==="function")drawHitFx(dt);   /* хроматика после попадания (M325) */
+    /* кадр рисует видеокарта (08b); пока устройства нет — мир шагает без картинки */
+    const drew=gpuFrame();
+    if(drew){drawWorld();if(typeof drawHitFx==="function")drawHitFx(dt);}   /* хроматика после попадания (M325) */
     hud();
     /* приборная стойка (25d) поверх мира: раскрытая аппаратура, к которой
        игрок повернулся. Рисуется последней, но до DOM-строки приборов */
-    if(typeof rackDraw==="function")rackDraw();
-    if(GPU.on)gpuPresent();
+    if(drew){if(typeof rackDraw==="function")rackDraw();gpuPresent();}
   }else{
-    gpuFrame();
-    ctx.fillStyle="#05070c";ctx.fillRect(0,0,W,H);
-    G.t=tReal*.06;drawNebula(tReal*.004,0,1);drawStars(tReal*.004,0,1);
-    if(GPU.on){gpuWorld(0,false,false);gpuPresent();}
+    G.t=tReal*.06;
+    if(gpuFrame()){gpuSpaceTitle(tReal*.004);gpuWorld(0,false,false);gpuPresent();}
   }
 }
 /* ══════════════ кадр, который не убивает игру (M234) ══════════════
@@ -97412,7 +97517,7 @@ const LOOK_TARGET={pair:15,mass:14,edge:18,contrast:.30,tones:5};
    меньше. Тон учитывается только у насыщенных и не чёрных пикселей — у серого
    тона нет, и складывать его в гистограмму значит врать себе. */
 function lookFrame(){
-  const fc=frameCanvas(),cx=fc.getContext("2d");
+  const fc=gpuSnapshot(),cx=fc.getContext("2d");
   const W2=fc.width,H2=fc.height;
   const d=cx.getImageData(0,0,W2,H2).data;
   const hue=new Array(36).fill(0);

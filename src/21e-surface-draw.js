@@ -238,7 +238,7 @@ function drawWater(tr,camx,camy,p){
         const dyTop=y+(hh-(i+1)*bh);   /* в зеркале верхняя лента ложится глубже всего */
         ctx.globalAlpha=.5*(1-t*.6);
         ctx.save();ctx.translate(0,dyTop+bh);ctx.scale(1,-1);
-        ctx.drawImage(frameCanvas(),sx0*DPR,syTop*DPR,sw*DPR,Math.ceil(bh)*DPR,sx0+dx,0,sw,Math.ceil(bh));
+        ctx.drawImage(cvs,sx0*DPR,syTop*DPR,sw*DPR,Math.ceil(bh)*DPR,sx0+dx,0,sw,Math.ceil(bh));
         ctx.restore();
       }
       ctx.globalAlpha=1;

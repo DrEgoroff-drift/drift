@@ -335,44 +335,8 @@ function drawSkyBase(p){
    из него выбивается тёмное (умножение на себя — это квадрат яркости, серое
    гаснет, яркое остаётся), размывается и кладётся обратно сложением.
    Три drawImage на кадр, без единого чтения пикселей. */
-let BLOOM_CV=null;
 const BLOOM_K={wanderer:.18,system:.34,map:0,landing:.16,surface:.16,dig:.20,cave:.24,
                belt:.24,scoop:.20,base:.18,raid:.18,homein:.22,winter:.20,spa:.18};
-let BLOOM_CV2=null;
-function bloomPass(k){
-  if(!(k>0)||W<8||H<8)return;
-  if(G.opts&&G.opts.gfx&&G.opts.gfx.draw===0)return;
-  const w=Math.max(2,Math.round(W/4)),h=Math.max(2,Math.round(H/4));
-  if(!BLOOM_CV||BLOOM_CV.width!==w||BLOOM_CV.height!==h){
-    BLOOM_CV=document.createElement("canvas");BLOOM_CV.width=w;BLOOM_CV.height=h;
-  }
-  const g=BLOOM_CV.getContext("2d");
-  g.globalCompositeOperation="source-over";
-  g.clearRect(0,0,w,h);
-  g.drawImage(cvs,0,0,w,h);
-  /* порог без чтения пикселей: кадр, умноженный сам на себя */
-  g.globalCompositeOperation="multiply";
-  g.drawImage(BLOOM_CV,0,0);
-  g.globalCompositeOperation="source-over";
-  /* размытие — на МАЛОМ холсте (0.455, замер на ноуте автора): blur(7px) на
-     полном кадре считался по всем 5.4 Мпкс при ×2 — ~3 мс видеокарты за кадр.
-     Та же ширина в четвертной копии — 7/4/DPR px (прежний blur мерился в пикселях
-     устройства; сверено попиксельно на ×1/×1.5/×2: ≤8 из 255), дальше билинейное растяжение:
-     размытое мелкое, растянутое, и есть размытое крупное */
-  let src=BLOOM_CV;
-  if("filter" in g){
-    if(!BLOOM_CV2||BLOOM_CV2.width!==w||BLOOM_CV2.height!==h){BLOOM_CV2=document.createElement("canvas");BLOOM_CV2.width=w;BLOOM_CV2.height=h;}
-    const g2=BLOOM_CV2.getContext("2d");
-    g2.clearRect(0,0,w,h);g2.filter="blur("+(1.75/DPR).toFixed(3)+"px)";g2.drawImage(BLOOM_CV,0,0);g2.filter="none";
-    src=BLOOM_CV2;
-  }
-  ctx.save();
-  ctx.globalCompositeOperation="lighter";
-  ctx.globalAlpha=k;
-  ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality="high";
-  ctx.drawImage(src,0,0,w,h,0,0,W,H);
-  ctx.restore();
-}
 
 /* ══════════════ зерно и виньетка — один слой на все сцены (M244) ══════════════
    Две вещи, которые связывают девять разных сцен в одну игру и стоят почти
@@ -386,39 +350,3 @@ function bloomPass(k){
    распределены равномерно по построению — это заодно и лучшая матрица против
    бэндинга: у белого пороги толпились, и ступень рвалась неровно. Доказано
    на открытке (M250), стоимость та же — плитка печётся один раз. */
-let GRAIN_PAT=null;
-function grainPass(vig){
-  if(G.opts&&G.opts.gfx&&G.opts.gfx.draw===0)return;
-  if(W<8||H<8)return;
-  if(!GRAIN_PAT){
-    const cv=document.createElement("canvas");cv.width=cv.height=64;
-    const g=cv.getContext("2d"),im=g.createImageData(64,64),bt=blueNoise();
-    for(let i=0;i<64*64;i++){
-      const v=110+Math.round(bt[i]*36);
-      im.data[i*4]=im.data[i*4+1]=im.data[i*4+2]=v;im.data[i*4+3]=255;
-    }
-    g.putImageData(im,0,0);
-    GRAIN_PAT=ctx.createPattern(cv,"repeat");
-  }
-  /* В космосе зерно невидимо: overlay по почти чёрному — это d·(1±1%), и замер
-     кадра системы дал 0.1% субпикселей, сдвинутых на 1/255. А стоит проход
-     дорого: overlay на встроенной видеокарте (D3D11) копирует кадр под собой —
-     1–3 мс за кадр на ×2 (0.455, ноут автора). Где небо чёрное, его не кладём */
-  const dark=G.mode==="system"||G.mode==="dock"||G.mode==="barge";
-  if(!dark){
-  ctx.save();
-  ctx.globalCompositeOperation="overlay";
-  ctx.globalAlpha=.075;
-  ctx.fillStyle=GRAIN_PAT;
-  ctx.fillRect(0,0,W,H);
-  ctx.restore();
-  }
-  if(vig){
-    ctx.drawImage(screenLayer("vigg|"+W+"|"+H,()=>{
-      const g=ctx.createRadialGradient(W*.5,H*.48,Math.min(W,H)*.34,W*.5,H*.48,Math.max(W,H)*.76);
-      g.addColorStop(0,"rgba(0,0,0,0)");
-      g.addColorStop(1,"rgba(0,0,0,.40)");
-      ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
-    }),0,0,W,H);
-  }
-}
