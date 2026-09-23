@@ -45,8 +45,19 @@ Built: the core and post pass (08b), the layer kit (08c), the space backdrop (16
   `mksiteshots` without `--disable-gpu`.
 - [ ] **G14 the rest:** the postcard painter on the GPU if it reads better; the `gfx` options of the 2D era
   (resolution tricks, `draw`) reviewed — keep what still means something.
-- **Gate:** every mode drawn by WebGPU with zero validation errors on the laptop and the S23; each mode's
-  before/after sheet shown to the author; the phone cadence of §1 at least as good as before; the whole run green.
+- [ ] **G1 again:** the space pair reads the same as main (only the nebula got richer) — not closed until it
+  is visibly better (live nebula field, stars with a real point spread and temperature, depth in the dust).
+- **Gate:**
+  - every mode drawn by WebGPU with zero validation errors on the laptop and the S23;
+  - each G step closed by a `main | gpu` pair of the same scene and one line of what got better (main
+    references shot once from `origin/main`);
+  - every launcher (`deploy.yml` 62/79/195/209, `mkshots`, `mksiteshots`, `pageshot`, `shot.ps1`, `towebp`,
+    `test.ps1`) shoots one scene that is the game, not the «no WebGPU» stub — the GPU flags live in one place
+    (`docs/shot.py`), the other launchers call it or are deleted;
+  - the GitHub runner has no GPU: the same flag set on the software adapter (SwiftShader) proven locally
+    first, then in CI;
+  - callers of `docs/shot.py` (`vetshot.py`, `lab`) run;
+  - the phone cadence of §1 at least as good as before; the whole run green.
 
 ## 1. Phone tests — smooth flight on the S23
 

@@ -137,6 +137,7 @@ def main():
     ap.add_argument("--dpr", type=float, default=2)
     ap.add_argument("--delay", type=int, default=2600, help="ms after the GPU is up before --js runs")
     ap.add_argument("--port", type=int, default=9460)
+    ap.add_argument("--budget", type=int, default=40000, help="ms a scene may take before it is shot as is (vetshot passes it)")
     a = ap.parse_args()
     chrome = next((c for c in CHROMES if os.path.exists(c)), None)
     if not chrome: sys.exit("no Chrome")
@@ -165,7 +166,7 @@ def main():
             ws.call("Page.enable"); ws.call("Page.addScriptToEvaluateOnNewDocument", source=CATCH)
             ws.call("Page.navigate", url="file:///" + page.replace("\\", "/") + ("" if sc == "title" else "?s=" + sc))
             t0 = time.time()
-            while time.time() - t0 < 40 and ev(ws, "document.title") != "SHOT_DONE": time.sleep(.3)
+            while time.time() - t0 < max(a.budget, a.delay + 10000) / 1000 and ev(ws, "document.title") != "SHOT_DONE": time.sleep(.3)
             time.sleep(.5)
             st = ev(ws, "({shot:window.__shot||null,gpu:{ok:GPU.ok,none:GPU.none,errs:GPU.errs},"
                         "crash:document.body.innerText.indexOf('СБОЙ')>=0,errors:(window.__errs||[]).slice(0,6)})")
