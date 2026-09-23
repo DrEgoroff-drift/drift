@@ -1471,7 +1471,7 @@ drawPOI                      src/20a-poi.js:173-234
 drawPortal                   src/20aa-poi-shapes.js:464-489
 drawPostcard                 src/25g-postcard.js:170-611
 drawRaid                     src/24aa-raid-draw.js:14-655
-drawRail                     src/18g-rail-ride.js:118-159
+drawRail                     src/18g-rail-ride.js:118-175
 drawRailArrive               src/18g-rail-ride.js:31-34
 drawRailMap                  src/18e-rail-net.js:181-210
 drawRing                     src/17c-system-draw.js:4-15
@@ -6610,7 +6610,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/18f-rail-station.js · 14 КБ
   · станция железной дороги в системе и вестибюль (M471–M472, DESIGN-metro §3):1
 
-## src/18g-rail-ride.js · 11 КБ
+## src/18g-rail-ride.js · 12 КБ
   · поездка: режим rail на карте галактики (M473, DESIGN-metro §4):1
 
 ## src/18h-rail-powers.js · 3 КБ

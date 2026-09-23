@@ -55831,8 +55831,12 @@ function drawRail(){
   /* путь — кайма, полотно в цвете схемы и светлая осевая: рельс, а не черта */
   ctx.beginPath();l.pts.forEach((q,i)=>i?ctx.lineTo(X(q[0]),Y(q[1])):ctx.moveTo(X(q[0]),Y(q[1])));
   ctx.strokeStyle="rgba(3,4,10,.8)";ctx.lineWidth=8;ctx.stroke();
-  ctx.strokeStyle=rgba(c,.8);ctx.lineWidth=4;ctx.stroke();
-  ctx.strokeStyle=rgba(mixc(c,[255,255,255],.6),.45);ctx.lineWidth=1;ctx.stroke();
+  if(R.bus){                                        /* маршрутка идёт трассой, не рельсом: пунктир (M510) */
+    ctx.setLineDash([10,7]);ctx.strokeStyle="rgba(242,178,92,.85)";ctx.lineWidth=3;ctx.stroke();ctx.setLineDash([]);
+  }else{
+    ctx.strokeStyle=rgba(c,.8);ctx.lineWidth=4;ctx.stroke();
+    ctx.strokeStyle=rgba(mixc(c,[255,255,255],.6),.45);ctx.lineWidth=1;ctx.stroke();
+  }
   /* остановки маршрута: засечки с именами; пересадки — двойной круг */
   ctx.font=uiFont(10);ctx.textAlign="left";
   R.seq.forEach((i,m)=>{
@@ -55851,8 +55855,20 @@ function drawRail(){
   ctx.translate(tx,ty);ctx.rotate(a);
   const hg=ctx.createLinearGradient(8,0,70,0);hg.addColorStop(0,"rgba(255,244,210,.35)");hg.addColorStop(1,"rgba(255,244,210,0)");
   ctx.fillStyle=hg;ctx.beginPath();ctx.moveTo(8,0);ctx.lineTo(70,-16);ctx.lineTo(70,16);ctx.closePath();ctx.fill();
+  if(R.bus){
+    /* ПАЗик: кремовый короб с красной полосой, окна по борту, табличка
+       маршрута спереди; качается, как маршрутка на выбоинах */
+    ctx.rotate(Math.sin(G.t*.31)*.05);
+    ctx.fillStyle="#0b0d12";ctx.fillRect(-14,-7.5,26,15);
+    ctx.fillStyle="#e9dcae";ctx.fillRect(-13,-6.5,24,13);
+    ctx.fillStyle="#c8402f";ctx.fillRect(-13,-1.4,24,2.8);
+    ctx.fillStyle="rgba(30,40,52,.9)";for(let i=0;i<5;i++){ctx.fillRect(-11+i*4.2,-5.6,3,2.6);ctx.fillRect(-11+i*4.2,3,3,2.6);}
+    ctx.fillStyle="#f5f2e8";ctx.fillRect(9.5,-3,2.5,6);
+    ctx.fillStyle="#0b0d12";ctx.font="bold 5px ui-monospace,monospace";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("М",10.8,.3);
+  }else{
   ctx.fillStyle="#f5efe0";ctx.strokeStyle="#0b0d12";ctx.lineWidth=2;
   ctx.beginPath();ctx.moveTo(-12,-6);ctx.lineTo(8,-6);ctx.arc(8,0,6,-Math.PI/2,Math.PI/2);ctx.lineTo(-12,6);ctx.closePath();ctx.fill();ctx.stroke();
+  }
   ctx.restore();
   if(R.flash!==undefined)railFlash(tx,ty,G.t-R.flash,a,1);   /* уход/приход — вспышка гипера */
   /* строка сверху: линия и следующая */
