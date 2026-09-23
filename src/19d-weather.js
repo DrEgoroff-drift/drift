@@ -93,6 +93,14 @@ function weatherName(p){
    Дождь шёл одним слоем поверх ВСЕГО, включая корабль и подписи, отчего
    корабль казался прозрачным. Дальние капли теперь падают до мира, ближние
    после: у осадков появляется глубина, а силуэты остаются целыми. */
+/* планы осадков: скорость (база + разброс), длина штриха, толщина, альфа,
+   параллакс от камеры, размер хлопьев */
+const WX_PLANES=[
+  {s:.45,sr:.35,l:.6, w:.6, a:.34,px:.05,r:.6},
+  {s:.70,sr:.55,l:.9, w:.9, a:.48,px:.10,r:.85},
+  {s:1.30,sr:.60,l:1.45,w:1.5,a:.62,px:.17,r:1.15},
+  {s:1.95,sr:.75,l:2.1,w:2.3,a:.78,px:.26,r:1.5}
+];
 function drawWeather(p,camx,camy,layer){
   const w=weatherOf(p);
   if(!w.kind)return;
@@ -136,49 +144,42 @@ function drawWeather(p,camx,camy,layer){
     ctx.restore();return;
   }
   ctx.lineCap="round";
+  /* четыре плана глубины (дизайн 23.09): дальний — тонкий, бледный, ленивый,
+     ближний — толстый, яркий, быстрый; у каждого свой параллакс от камеры.
+     Скорость по-прежнему своя у каждой капли (разброс внутри плана), а
+     прозрачность — у плана: все капли плана идут ОДНИМ контуром. Было 160
+     штрихов со своей альфой каждый — стало до восьми (план × небо/грунт) */
+  const PL=WX_PLANES,Q=layer==="far"?[0,1]:layer==="near"?[2,3]:[0,1,2,3];
+  const paths=[],cnt=[];for(let j=0;j<8;j++){paths.push(new Path2D());cnt.push(0);}
+  const dr=W0.dir||0,sgn=wind<0?-1:1,hor=H*SURF_HOR;
   for(let i=0;i<n;i++){
     const r1=h01(i,1,0x5E7), r2=h01(i,2,0x5E7), r3=h01(i,3,0x5E7);
-    /* две глубины: ближние капли крупнее, быстрее и ярче, дальние — тонкая
-       сетка. Одним слоем дождь читался помехами на стекле (G7) */
-    const near=r2>.74;
-    if(layer==="far"&&near)continue;
-    if(layer==="near"&&!near)continue;
-    /* Скорость своя у КАЖДОЙ капли, а не у слоя. Слоя было два, и это уже
-       давало глубину, но внутри ближнего все капли падали ровно в 1.75 — и
-       слой читался ползущей текстурой, а не водой: глаз ловит одинаковый
-       ход быстрее, чем одинаковый размер. Разброс берётся отдельным хешем,
-       чтобы не быть привязанным к глубине: рядом идут и быстрые, и ленивые. */
-    const rs=h01(i,4,0x5E7);
-    const spd=W0.spd*(near?1.30+rs*.9:.50+rs*.7);
-    /* вертикаль всегда сверху вниз, горизонталь — от ветра; и то и другое
-       заворачивается по экрану, поэтому частиц ровно столько, сколько видно */
+    const q=r2<.45?0:r2<.74?1:r2<.9?2:3;
+    if(Q.indexOf(q)<0)continue;
+    const P=PL[q],rs=h01(i,4,0x5E7);
+    const spd=W0.spd*(P.s+rs*P.sr);
     const fall=(r1*1400+t*spd)%(H+80);
-    const drift=(r3*1600+t*spd*wind*.5-camx*.12)%(W+160);
+    const drift=(r3*1600+t*spd*wind*.5-camx*P.px)%(W+160);
     const x=((drift)%(W+160)+W+160)%(W+160)-80;
     const y=fall-40;
-    const a=(.22+r2*.5)*k;
     if(W0.len>0){
-      /* штрих по направлению движения: у дождя почти вертикальный,
-         у пыли почти горизонтальный */
-      const dr=W0.dir||0;
-      const sgn=wind<0?-1:1;
-      /* штрих по земле — не штрих по небу (§14): одна и та же белая нить над
-         небом читается дождём, а на грунте и на стене дома — царапиной.
-         Ниже линии горизонта (SURF_HOR) капля глуше и короче */
-      const gnd=y>H*SURF_HOR;
-      const lk=(near?1.6:.8)*(gnd?.7:1);
-      const vx=sgn*W0.len*lk*(dr*3.4+Math.abs(wind)*.4);
-      const vy=W0.len*lk*(1-dr*.82);
-      ctx.strokeStyle="rgba("+c.join(",")+","+(a*(near?1.25:.85)*(gnd?.45:1)).toFixed(3)+")";
-      ctx.lineWidth=(w.kind==="rain"?1:1.4)*(near?1.8:.9);
-      ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+vx,y+vy);ctx.stroke();
+      /* штрих по земле глуше и короче неба (§14) — свой контур плана */
+      const gnd=y>hor?1:0,lk=P.l*(gnd?.7:1);
+      const vx=sgn*W0.len*lk*(dr*3.4+Math.abs(wind)*.4),vy=W0.len*lk*(1-dr*.82);
+      const pa=paths[q*2+gnd];pa.moveTo(x,y);pa.lineTo(x+vx,y+vy);cnt[q*2+gnd]++;
     }else{
-      /* снег и пепел планируют: своя фаза покачивания у каждой частицы */
-      const sw=Math.sin(t*.02*(.5+r2)+r3*TAU)*(10+r2*22);
-      ctx.fillStyle="rgba("+c.join(",")+","+a.toFixed(3)+")";
-      const s=.9+r2*2.1;
-      ctx.beginPath();ctx.arc(x+sw+wind*8,y,s,0,TAU);ctx.fill();
+      /* снег и пепел планируют: фаза покачивания своя у каждой частицы */
+      const sw=Math.sin(t*.02*(.5+r2)+r3*TAU)*(10+r2*22),rr=(.9+r2*2.1)*P.r;
+      const pa=paths[q*2];pa.moveTo(x+sw+wind*8+rr,y);pa.arc(x+sw+wind*8,y,rr,0,TAU);cnt[q*2]++;
     }
+  }
+  const cs=c.join(",");
+  for(const q of Q){
+    const P=PL[q];
+    if(W0.len>0){
+      ctx.lineWidth=(w.kind==="rain"?1:1.4)*P.w;
+      for(let g=0;g<2;g++)if(cnt[q*2+g]){ctx.strokeStyle="rgba("+cs+","+(P.a*k*(g?.45:1)).toFixed(3)+")";ctx.stroke(paths[q*2+g]);}
+    }else if(cnt[q*2]){ctx.fillStyle="rgba("+cs+","+(P.a*k*.9).toFixed(3)+")";ctx.fill(paths[q*2]);}
   }
   /* полотна пыли: широкие полупрозрачные пласты, проносящиеся поперёк кадра.
      Именно они делают бурю бурей — отдельные штрихи глаз читает как помехи,

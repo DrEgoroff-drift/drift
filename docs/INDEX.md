@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 595 · символов верхнего уровня: 5832
+Файлов: 595 · символов верхнего уровня: 5833
 
 ## СИМВОЛЫ
 
@@ -1532,7 +1532,7 @@ drawWanderMap                src/12v-wander.js:159-173
 drawWanderRoom               src/24c-mode-wanderer-draw.js:117-341
 drawWater                    src/21e-surface-draw.js:194-275
 drawWear                     src/12s-wear.js:102-171
-drawWeather                  src/19d-weather.js:96-233
+drawWeather                  src/19d-weather.js:104-234
 drawWinter                   src/29g-winter-draw.js:334-765
 drawWorld                    src/28-loop.js:399-424
 drawWreck                    src/20aa-poi-shapes.js:8-48
@@ -5812,6 +5812,7 @@ wreckInteract                src/12l-barge.js:335-361
 wrecksHere                   src/12l-barge.js:332
 wrgba                        src/29g-winter-draw.js:27
 wtab                         src/02a-worldmix.js:85
+WX_PLANES                    src/19d-weather.js:98-103
 xpWorth                      tests/91zzzzzm-exploit.js:26-49
 yachtMoraleMul               src/12j-home.js:255-258
 yachtOwned                   src/12j-home.js:248-254
@@ -6650,7 +6651,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/19c1-cast.js · 9 КБ
   · падающие тени: рельеф затеняет сам себя (P5, M433):1
 
-## src/19d-weather.js · 14 КБ
+## src/19d-weather.js · 13 КБ
   · погода:1
 
 ## src/19e-clouds.js · 41 КБ
