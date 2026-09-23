@@ -6,6 +6,48 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.456.0 - the design pass, closed
+
+- **Slipway** (`26e1`, `26e2`, M481): the order lies on a slipway sheet - concrete slabs in the
+  maker's ground, rails on sleepers, raked timber shores, a gantry crane, two hard-hats for scale,
+  white-ink dimensions measured from the hull's pixels, the power's emblem. In work the hull is
+  plated from the stern by the share of the shift, the rest a red-lead frame with a weld spark;
+  ready - a red «ГОТОВ» stamp, and collecting throws one across the screen. The sliders are
+  boxwood scales; the numbers are a strip of differences against the ship you fly.
+- **Ordered hulls** (`03e`, M480): each yard leaves its mark - «ПЛАН — ЗАКОН» on the flank, the
+  Company's ad strip, Орднунг nose armour, the Commune's painted curve, Рассвет's welded extra
+  plate, Хай-Фронт's firmware dome.
+- **Орднунг** (`12al2`, M456): the speed ring that fines you is drawn - a dashed ring at 600 with
+  eight numbered «4.5» signs; the nearest lights while you speed.
+- **Drones** (`12e`, M485): a plate in both lists - a state lamp, the name stencilled in the cargo
+  colour, the board number, the quirk pencilled on a paper tag.
+- **Rented core** (`12f1`, `27c`): its adverts are glossy Хай-Фронт inserts in the manager's feed.
+- **Billboard** (`17k`, M503): the ГЛАВТРАССА plan is a kumach decree with a gold star; its two
+  lines stand while the adverts run.
+- **Album** (`25g1`): the filters show themselves as thumbnails (one repaint and five small pixel
+  passes); СОХРАНИТЬ СЕБЕ saves an album page - the card on four mounts, the caption in white pencil.
+- **Belt** (`06e`, `24`): the entry reading is an instrument plate - each deposit a scale, its range
+  a lit band as wide as the instrument is coarse.
+- **Railway** (`18e`, `18g`, M510): lines gain weight as the map comes close; in the ride the other
+  lines stay pale and your own is a rail; the compensation minibus is a cream ПАЗик on a dashed road.
+- **Чебуречная** (`17j`, M462): a kiosk afloat - rust rim, a patched plate, steam, a garland, a
+  hand-painted sign on strings; its window used to blink and now breathes.
+- **Rush** (`17g`, M504): after a vein the approach fills - a file of prospectors from the entry and
+  a second, wider waiting ring.
+- **Membership cards** (`12al4`, `27i`, M512): embossed covers per society; the Партнёрская
+  программа™ is glossy plastic with a magnetic stripe.
+- **«Смена»** (`12ud`, P15): a chapter reads as a book - its header, the folio, leafing through the
+  open chapters.
+- **Weather** (`19d`): precipitation falls in four depth planes, each with its own parallax, one path
+  per plane - up to 8 strokes a frame instead of ~160.
+- **Plants** (`20-life`): gusts travel across the field along the wind; the plants they pass bend,
+  and their own sway quiets as the wind rises.
+- **Fix** (`17g`): the approach lane - buoys, queue, billboard, hotel, the Чебуречная - stayed where
+  the station was first seen and drifted about 60 units a minute off its orbiting dock; it now
+  follows the station.
+- **Perf** (`18c`, `19e`): tiles draw only their occupied rows, and additive cloud glow below
+  0.002 is skipped - pixel-identical.
+
 ## 0.455.0 - the khrushchevka, one flag, and a lighter frame
 
 - **Hotel** (`17l`): a five-storey khrushchevka in three-quarter view - panel seams, a hip slate
