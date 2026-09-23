@@ -32,7 +32,17 @@ The author, 23.09.2026: «переноси все на новые техноло
   session 21f451ab, `kpairs.py <scene> <name> "<js>"…` shoots main and gpu with the same `--js`
   (main's own `docs/shot.py` in `mainref`); freeze the scene first (`freeze.js` there: planet, moon and station
   angles pinned, `spd=0`, ship placed) — otherwise the two sides differ. Accepted pair: `g2f.png`, `g2f_crop.png`.
-- **Next: G3 planets and moons** — `planetDraw`/`drawRing` in `17-mode-system.js` after `BODY_LABELS.length=0`.
+- G2 awaits Control's re-review of `g2f.png` (commit 24a10e2); the first pass was rejected (different state, overexposed star).
+- **Next: G3 planets and moons** — the loop after `BODY_LABELS.length=0` in `17-mode-system.js`: `drawRing(…,-1)`,
+  `planetDraw` (07-planet:352, its only caller), lights/works (2D, keep), `drawRing(…,1)`, doom veil (2D, keep),
+  the 2D atmosphere stroke (r+2.5, .18 — replace), moons as flat `#9aa8b2` discs (replace), labels (2D). Plan: one
+  instanced quad per body in `gpuScene()` (only belt rocks are 2D below it — acceptable). Strip `p.strip` (canvas,
+  may be null while baking → palette colour): columns = longitude `f*TAU`, rows = `sin(lat)` (orthographic y), so
+  `u=atan2(nx,nz)/TAU+planetSpin(p)/TAU`, `v=(ny+1)/2` — true sphere mapping (2D used asin(nx) per column, smeared
+  at the poles). Light: in-plane toward the star `atan2(-p.y,-p.x)`, z .74 (planetLight's bake), k=.16+1.02*pow(l,.85);
+  rim from `p.T.sky[0]` lifted to white (gas: top of palette, airless: none), only on the lit side. Rings (i,o,tilt,n,s)
+  as an analytic band: back half hidden by depth, the planet's shadow on the ring and the ring's shadow on the disc.
+  Freeze the scene as for G2 and put a ringed gas giant in frame.
 - Merge each: `build.ps1`, `python docs/shot.py <scenes> --look --tag gpu`, 0 `gpu.errs`, pair with
   `scratchpad/mainref/docs/shots/main_<scene>.png`, one line of what got better, commit, strike from PLAN §0.
 - Next after G2+G3 merges: G4 (system view on top, shares `17-mode-system.js`), port 9481; then G14.
