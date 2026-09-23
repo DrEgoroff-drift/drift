@@ -468,7 +468,7 @@ blockArrive                  src/13b1-blockade.js:13-23
 blockHere                    src/13b1-blockade.js:10
 blockMul                     src/13b1-blockade.js:11
 BLOG                         src/21a1-base-life.js:50-114
-BLOOM_K                      src/19c-light.js:339
+BLOOM_K                      src/19c-light.js:341
 BLUE_TAB                     src/01-core.js:132
 blueNoise                    src/01-core.js:133-150
 BLUEPRINTS                   src/12c-mgr-core.js:665-671
@@ -1479,7 +1479,7 @@ drawScoop                    src/19a-mode-scoop.js:271-602
 drawSeal                     src/03e-hull-draw.js:47-58
 drawSeams                    src/12s-wear.js:184-199
 drawShuttleArc               src/17f-sys-traffic.js:67-102
-drawSkyBase                  src/19c-light.js:296-330
+drawSkyBase                  src/19c-light.js:298-332
 drawSkyBodies                src/19b-sky.js:96-128
 drawSkyLayer                 src/19-mode-landing.js:171-269
 drawSpa                      src/29i-spa-draw.js:41-486
@@ -2099,25 +2099,25 @@ gpuDrones                    src/16ga-gpu-trail.js:132-176
 gpuDrop                      src/08b-gpu.js:72-77
 gpuExhaust                   src/16ga-gpu-trail.js:234-259
 gpuField                     src/08c-gpu-kit.js:189-217
-gpuFrame                     src/08b-gpu.js:205-214
+gpuFrame                     src/08b-gpu.js:219-228
 gpuHullLight                 src/16ga-gpu-trail.js:302-321
 gpuImage                     src/08c-gpu-kit.js:117-129
 gpuKitU                      src/08c-gpu-kit.js:89-93
 gpuLitSprite                 src/17c-system-draw.js:461-468
-gpuManual                    src/08b-gpu.js:262-267
+gpuManual                    src/08b-gpu.js:276-281
 gpuMoon                      src/17ga-gpu-planets.js:143-148
-gpuNoise                     src/08b-gpu.js:157-162
+gpuNoise                     src/08b-gpu.js:170-175
 gpuNone                      src/08b-gpu.js:32-39
-gpuOver                      src/08b-gpu.js:245-260
-gpuPass                      src/08b-gpu.js:191-194
+gpuOver                      src/08b-gpu.js:259-274
+gpuPass                      src/08b-gpu.js:204-207
 gpuPipe                      src/08c-gpu-kit.js:13-20
-gpuPipes                     src/08b-gpu.js:133-154
+gpuPipes                     src/08b-gpu.js:146-167
 gpuPirateBody                src/12i-pirate-hull.js:432-437
 gpuPlanet                    src/17ga-gpu-planets.js:127-141
-gpuPresent                   src/08b-gpu.js:288-302
-gpuResize                    src/08b-gpu.js:163-190
-gpuScene                     src/08b-gpu.js:218-227
-gpuScene3D                   src/08b-gpu.js:231-239
+gpuPresent                   src/08b-gpu.js:302-316
+gpuResize                    src/08b-gpu.js:176-203
+gpuScene                     src/08b-gpu.js:232-241
+gpuScene3D                   src/08b-gpu.js:245-253
 gpuShapes                    src/08c-gpu-kit.js:159-170
 gpuSky                       src/19ca-gpu-sky.js:65-81
 gpuSnapshot                  src/08b-gpu.js:20-24
@@ -2127,10 +2127,10 @@ gpuStation                   src/17c-system-draw.js:469
 gpuSysUnder                  src/17g-gpu-system.js:287-292
 gpuTakeSnap                  src/08b-gpu.js:25-30
 gpuTrail                     src/16ga-gpu-trail.js:53-90
-gpuUni                       src/08b-gpu.js:195-201
+gpuUni                       src/08b-gpu.js:208-215
 gpuWake                      src/16ga-gpu-trail.js:99-123
-gpuWorld                     src/08b-gpu.js:270-286
-gradePass                    src/19c-light.js:258-294
+gpuWorld                     src/08b-gpu.js:284-300
+gradePass                    src/19c-light.js:260-296
 GREEN_BEDS                   src/21g-greenhouse.js:23
 GREEN_FULL                   src/21g-greenhouse.js:24
 GREEN_SP                     src/21g-greenhouse.js:68
@@ -2970,7 +2970,7 @@ lightsDrawReveal             src/11g-lights.js:137-170
 lightsEnter                  src/11g-lights.js:172-177
 lightsEntryX                 src/11g-lights.js:83-88
 lightsGroundLine             src/11g-lights.js:90-97
-lightShafts                  src/19c-light.js:223-254
+lightShafts                  src/19c-light.js:223-256
 lightsIsCore                 src/11g-lights.js:45-48
 lightsNight                  src/11g-lights.js:68-71
 lightsOpen                   src/11g-lights.js:79-81
@@ -6051,7 +6051,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/08a-statehash.js · 6 КБ
   · хэш состояния (M441):1
 
-## src/08b-gpu.js · 20 КБ
+## src/08b-gpu.js · 21 КБ
   · видеокарта: кадр рисует WebGPU (docs/DESIGN-gpu.md):1
 
 ## src/08c-gpu-kit.js · 15 КБ
@@ -6745,8 +6745,8 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## src/19c-light.js · 27 КБ
   · свет и воздух:1
-  · свечение (bloom) — M243:332
-  · зерно и виньетка — один слой на все сцены (M244):342
+  · свечение (bloom) — M243:334
+  · зерно и виньетка — один слой на все сцены (M244):344
 
 ## src/19c1-cast.js · 9 КБ
   · падающие тени: рельеф затеняет сам себя (P5, M433):1

@@ -10367,7 +10367,7 @@ function stateHashParts(root){
    Кадр: сцена видеокарты (gpuScene) → #c поверх → свечение, зерно, виньетка,
    хроматика, дизеринг одним проходом → слой интерфейса (стойка) поверх всего. */
 const GPU={ok:false,on:false,lost:false,busy:false,none:false,
-  dev:null,cv:null,gx:null,fmt:"",L:null,P:{},B:{},S:null,U:null,UA:new Float32Array(16),
+  dev:null,cv:null,gx:null,fmt:"",L:null,P:{},B:{},S:null,U:null,UA:new Float32Array(24),shaft:null,
   T:{},V:{},N:null,noiseOk:false,ui:null,uctx:null,snap:null,
   bw:0,bh:0,qw:2,qh:2,dpr:0,cw:0,ch:0,enc:null,scenePass:null,sceneOn:false,
   sceneBg:{r:0,g:0,b:0,a:1},uiOn:false,uiWas:false,hitK:0,hitDx:0,post:{k:0,grain:0,vig:0},
@@ -10438,7 +10438,7 @@ function gpuDrop(why,retry){
 }
 /* ── проходы поста: общий треугольник на весь экран, одна раскладка привязок ── */
 const GPU_POST_WGSL=`
-struct U{res:vec2f,css:vec2f,dpr:f32,k:f32,grain:f32,vig:f32,hitK:f32,hitDx:f32,ui:f32,scene:f32,qres:vec2f,sigma:f32,t:f32};
+struct U{res:vec2f,css:vec2f,dpr:f32,k:f32,grain:f32,vig:f32,hitK:f32,hitDx:f32,ui:f32,scene:f32,qres:vec2f,sigma:f32,t:f32,sh:vec4f,shc:vec4f};
 @group(0) @binding(0) var<uniform> u:U;
 @group(0) @binding(1) var sl:sampler;
 @group(0) @binding(2) var sr:sampler;
@@ -10475,6 +10475,19 @@ fn overlay(b:vec3f,s:vec3f)->vec3f{return select(1.-2.*(1.-b)*(1.-s),2.*b*s,b<ve
 @fragment fn fsFinal(v:V)->@location(0) vec4f{
   var c=frameAt(v.uv);
   if(u.k>0.){c=min(c+u.k*textureSampleLevel(tBloom,sl,v.uv,0.).rgb,vec3f(1.));}
+  /* лучи от звезды (G5): от пикселя к звезде копится видимое небо — там, где
+     передний слой прозрачен. Облака и хребты режут свет на настоящие полосы */
+  if(u.sh.z>0.){
+    let sp=u.sh.xy;let dd=sp-v.uv;let j=textureLoad(tNoise,vec2i(v.p.xy)%vec2i(64),0).r;
+    var acc=0.;
+    for(var i=0;i<28;i++){let q=v.uv+dd*((f32(i)+j)/28.);
+      let wq=exp(-length((q-sp)*vec2f(u.css.x/u.css.y,1.))*7.);
+      if(any(q<vec2f(0.))||any(q>vec2f(1.))){acc+=wq;continue;}
+      acc+=(1.-textureSampleLevel(tFront,sl,q,0.).a)*wq;}
+    let asp=u.css.x/u.css.y;let dl=length((v.uv-sp)*vec2f(asp,1.));
+    let r=acc/28.*exp(-dl*1.4)*u.sh.z*2.2;
+    c=min(c+u.shc.rgb*r,vec3f(1.));
+  }
   /* зерно: узор 64×64 в пикселях CSS, режим overlay, 7.5% — как 19c grainPass */
   if(u.grain>.5){let s=textureSampleLevel(tNoise,sr,v.p.xy/(64.*u.dpr),0.).r;c=mix(c,overlay(c,vec3f(s)),.075);}
   if(u.vig>.5){
@@ -10509,7 +10522,7 @@ function gpuPipes(){
            primitive:{topology:"triangle-list"}})};
   GPU.S={lin:d.createSampler({magFilter:"linear",minFilter:"linear"}),
          rep:d.createSampler({magFilter:"linear",minFilter:"linear",addressModeU:"repeat",addressModeV:"repeat"})};
-  GPU.U=d.createBuffer({size:64,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});
+  GPU.U=d.createBuffer({size:96,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});
   GPU.N=d.createTexture({size:[64,64],format:"r8unorm",usage:GPUTextureUsage.TEXTURE_BINDING|GPUTextureUsage.COPY_DST});
   GPU.noiseOk=false;
 }
@@ -10558,6 +10571,7 @@ function gpuUni(){
   a[0]=GPU.bw;a[1]=GPU.bh;a[2]=W;a[3]=H;a[4]=DPR;a[5]=P.k;a[6]=P.grain;a[7]=P.vig;
   a[8]=GPU.hitK;a[9]=GPU.hitDx;a[10]=GPU.uiOn?1:0;a[11]=GPU.sceneOn?1:0;
   a[12]=GPU.qw;a[13]=GPU.qh;a[14]=1.75/DPR;a[15]=G.t||0;
+  const S=GPU.shaft;a[16]=S?S.x:0;a[17]=S?S.y:0;a[18]=S?S.k:0;a[20]=S?S.r:0;a[21]=S?S.g:0;a[22]=S?S.b:0;
   GPU.dev.queue.writeBuffer(GPU.U,0,a);
 }
 
@@ -10570,7 +10584,7 @@ function gpuFrame(){
   ctx=MAIN_CTX;
   ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,GPU.bw,GPU.bh);ctx.setTransform(DPR,0,0,DPR,0,0);
   GPU.on=true;
-  GPU.enc=GPU.dev.createCommandEncoder();GPU.scenePass=null;GPU.overPass=null;GPU.sceneOn=false;GPU.scene3D=false;GPU.hitK=0;
+  GPU.enc=GPU.dev.createCommandEncoder();GPU.scenePass=null;GPU.overPass=null;GPU.sceneOn=false;GPU.scene3D=false;GPU.hitK=0;GPU.shaft=null;
   return true;
 }
 /* проход сцены видеокарты: его открывает первый слой кадра, закрывает сборка.
@@ -59364,6 +59378,8 @@ function lightShafts(p){
   const sun=starRGB();
   /* один и тот же веер из пяти лучей под одним углом стоял на каждом мире
      штампом (G1): число, раскрытие и наклон — от планеты */
+  /* на видеокарте лучи честные: общий проход режет свет по облакам и хребтам (08b) */
+  if(GPU.on){GPU.shaft={x:sx/W,y:sy/H,k:.16*wk,r:sun[0]/255,g:sun[1]/255,b:sun[2]/255};return;}
   const hs=hashi(p.seed,0x5AF7,1), nS=2+(hs&3), a0=.92+((hs>>>4)&15)/15*.4, spr=.12+((hs>>>8)&7)/7*.14;
   ctx.save();
   ctx.globalCompositeOperation="lighter";
@@ -59651,7 +59667,7 @@ fn field(p0:vec2f,uv:vec2f)->vec4f{
   /* рассеяние вокруг звезды */
   let d=length(p-sun)/H;
   if(up>0.){
-    let sg=select(.38*exp(-d*16.),.42*exp(-d*3.4)+.22*exp(-d*11.),air>.5);
+    let sg=select(.38*exp(-d*16.),.26*exp(-d*4.6)+.2*exp(-d*14.),air>.5);
     c=mix(c,sc,clamp(sg*up,0.,1.))+sc*sg*up*.25;
   }
   c=mix(c,vec3f(4.,6.,14.)/255.,nite*.9);

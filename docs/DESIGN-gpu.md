@@ -99,8 +99,12 @@ The author, 23.09.2026: «переноси все на новые техноло
   MIXED into the sky (adding it turned pink into lavender); the disc is emissive (never darker than the sky behind
   it, no dark limb ring). TRAP: a field called inside `withScale` gets `p` and `res.zw` already in VIRTUAL W,H —
   pass world/sunSpot coords as they are, no K. Pairs `g5a` (low sun, rain) and `g5b_crop.png` (alt .45), scene
-  `surf.js` (pins `celSun` with ALT and `G.t` by wrapping `drawSurface`). Next in G5: clouds (`drawClouds`, 19e),
-  haze bands (`hazeBand`, `hazeFar`, 19c), shafts (`lightShafts`), weather, night lamps, water, grade.
+  `surf.js` (pins `celSun` with ALT and `G.t` by wrapping `drawSurface`). Done (2/n): light shafts in the final
+  pass (08b `fsFinal`, uniforms `sh`/`shc`, U is 96 bytes now): each pixel marches 28 steps toward the sun and
+  sums the transparent front layer weighted by closeness to the sun — clouds and ridges near the sun cut the light,
+  light spills over the ridge; `lightShafts` only sets `GPU.shaft` (reset in `gpuFrame`). Sky scattering toned down
+  with it. Pair `g5c_crop.png` (alt .3, `weatherPower` stubbed to 0). Next in G5: clouds (`drawClouds`, 19e),
+  haze bands (`hazeBand`, `hazeFar`, 19c), weather, night lamps, water, grade.
   A GPU draw after `gpuHullLight` must use `gpuOver`, not `gpuScene` (the scene pass is closed by then).
 - Merge each: `build.ps1`, `python docs/shot.py <scenes> --look --tag gpu`, 0 `gpu.errs`, pair with
   `scratchpad/mainref/docs/shots/main_<scene>.png`, one line of what got better, commit, strike from PLAN §0.

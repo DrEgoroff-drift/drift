@@ -36,7 +36,7 @@ fn field(p0:vec2f,uv:vec2f)->vec4f{
   /* рассеяние вокруг звезды */
   let d=length(p-sun)/H;
   if(up>0.){
-    let sg=select(.38*exp(-d*16.),.42*exp(-d*3.4)+.22*exp(-d*11.),air>.5);
+    let sg=select(.38*exp(-d*16.),.26*exp(-d*4.6)+.2*exp(-d*14.),air>.5);
     c=mix(c,sc,clamp(sg*up,0.,1.))+sc*sg*up*.25;
   }
   c=mix(c,vec3f(4.,6.,14.)/255.,nite*.9);
