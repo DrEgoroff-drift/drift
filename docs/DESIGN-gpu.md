@@ -94,6 +94,13 @@ The author, 23.09.2026: «переноси все на новые техноло
   Pirate hulls use it too (`gpuPirateBody`, 12i; pair `g4n_crop.png`, scene `pirates.js`, stubs `updateCombat`).
 - G4 closed (Контроль, 24.09). Leftovers in PLAN: G4b heat haze, G4c wrecks as hulls, G4d the other ships lit.
 - **Next: G5 landing and surface, the air** (sky, sun, clouds, haze, shafts, weather, night lamps, water, grade).
+  Done (1/n): `gpuSky` (19ca) — sky, horizon glow, scattering and the disc in one field, called from `drawSkyBase`
+  (landing and surface); `drawSkyLayer` skips its glow sprite and disc when `SKY_GPU===GPU.frameNo`. The glow is
+  MIXED into the sky (adding it turned pink into lavender); the disc is emissive (never darker than the sky behind
+  it, no dark limb ring). TRAP: a field called inside `withScale` gets `p` and `res.zw` already in VIRTUAL W,H —
+  pass world/sunSpot coords as they are, no K. Pairs `g5a` (low sun, rain) and `g5b_crop.png` (alt .45), scene
+  `surf.js` (pins `celSun` with ALT and `G.t` by wrapping `drawSurface`). Next in G5: clouds (`drawClouds`, 19e),
+  haze bands (`hazeBand`, `hazeFar`, 19c), shafts (`lightShafts`), weather, night lamps, water, grade.
   A GPU draw after `gpuHullLight` must use `gpuOver`, not `gpuScene` (the scene pass is closed by then).
 - Merge each: `build.ps1`, `python docs/shot.py <scenes> --look --tag gpu`, 0 `gpu.errs`, pair with
   `scratchpad/mainref/docs/shots/main_<scene>.png`, one line of what got better, commit, strike from PLAN §0.

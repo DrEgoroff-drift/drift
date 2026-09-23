@@ -200,7 +200,7 @@ function drawSkyLayer(p,camx,camy){
   {
     const under=clamp((SS.alt+.42)/.5,0,1);        /* 0 — глубокая ночь */
     const a=SS.up?1:under*.7;
-    if(a>.02){
+    if(a>.02&&SKY_GPU!==GPU.frameNo){
       const GS=glowSprite("sunglow2|"+sc+"|"+hasAtm,()=>{
         const g=ctx.createRadialGradient(0,0,0,0,0,1);
         /* двенадцать стопов по степенной кривой: воздух рассеивает широко и
@@ -225,7 +225,7 @@ function drawSkyLayer(p,camx,camy){
      зените кромка мягкая и к краю темнее (лимб), у горизонта диск сплюснут,
      покраснел и снизу съеден дымкой — атмосферная экстинкция. В вакууме
      кромка резкая: смягчать её нечему. */
-  if(SS.up){
+  if(SS.up&&SKY_GPU!==GPU.frameNo){
     const sr=H*.045;
     const low=hasAtm?clamp(1-SS.alt*2.2,0,1):0;    /* 1 — у самого горизонта */
     const altQ=Math.round(low*12);

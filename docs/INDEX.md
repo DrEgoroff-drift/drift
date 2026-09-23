@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 602 · символов верхнего уровня: 5909
+Файлов: 603 · символов верхнего уровня: 5913
 
 ## СИМВОЛЫ
 
@@ -468,7 +468,7 @@ blockArrive                  src/13b1-blockade.js:13-23
 blockHere                    src/13b1-blockade.js:10
 blockMul                     src/13b1-blockade.js:11
 BLOG                         src/21a1-base-life.js:50-114
-BLOOM_K                      src/19c-light.js:338
+BLOOM_K                      src/19c-light.js:339
 BLUE_TAB                     src/01-core.js:132
 blueNoise                    src/01-core.js:133-150
 BLUEPRINTS                   src/12c-mgr-core.js:665-671
@@ -1479,7 +1479,7 @@ drawScoop                    src/19a-mode-scoop.js:271-602
 drawSeal                     src/03e-hull-draw.js:47-58
 drawSeams                    src/12s-wear.js:184-199
 drawShuttleArc               src/17f-sys-traffic.js:67-102
-drawSkyBase                  src/19c-light.js:296-329
+drawSkyBase                  src/19c-light.js:296-330
 drawSkyBodies                src/19b-sky.js:96-128
 drawSkyLayer                 src/19-mode-landing.js:171-269
 drawSpa                      src/29i-spa-draw.js:41-486
@@ -2119,6 +2119,7 @@ gpuResize                    src/08b-gpu.js:163-190
 gpuScene                     src/08b-gpu.js:218-227
 gpuScene3D                   src/08b-gpu.js:231-239
 gpuShapes                    src/08c-gpu-kit.js:159-170
+gpuSky                       src/19ca-gpu-sky.js:65-81
 gpuSnapshot                  src/08b-gpu.js:20-24
 gpuSpaceSys                  src/16g-gpu-space.js:184-198
 gpuSpaceTitle                src/16g-gpu-space.js:200-211
@@ -2198,6 +2199,8 @@ grownExtra                   src/11q-grown.js:35-38
 grownGroundLine              src/11q-grown.js:39-44
 grownIsCore                  src/11q-grown.js:27-32
 grownOnGive                  src/11q-grown.js:54-62
+GSK                          src/19ca-gpu-sky.js:12
+GSK_WGSL                     src/19ca-gpu-sky.js:13
 GSP                          src/16g-gpu-space.js:17
 GSP_DUST                     src/16g-gpu-space.js:76
 GSP_DUST_L                   src/16g-gpu-space.js:19
@@ -4951,6 +4954,7 @@ SKIPPED_PROBE                tests/90-harness.js:59
 SKIPPED_SKIP                 tests/90-harness.js:65
 SKIPPED_SLOW                 tests/90-harness.js:61
 SKY_BULL                     src/11ak-skywatch.js:27
+SKY_GPU                      src/19ca-gpu-sky.js:64
 SKY_HOR                      src/11ak-skywatch.js:80
 SKY_KINDS                    src/11ak-skywatch.js:29-33
 SKY_LAPSE                    src/11ak-skywatch.js:28
@@ -6739,13 +6743,16 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/19b-sky.js · 34 КБ
   · небо:1
 
-## src/19c-light.js · 26 КБ
+## src/19c-light.js · 27 КБ
   · свет и воздух:1
-  · свечение (bloom) — M243:331
-  · зерно и виньетка — один слой на все сцены (M244):341
+  · свечение (bloom) — M243:332
+  · зерно и виньетка — один слой на все сцены (M244):342
 
 ## src/19c1-cast.js · 9 КБ
   · падающие тени: рельеф затеняет сам себя (P5, M433):1
+
+## src/19ca-gpu-sky.js · 5 КБ
+  · небо грунта на видеокарте (G5, docs/DESIGN-gpu.md):1
 
 ## src/19d-weather.js · 13 КБ
   · погода:1
