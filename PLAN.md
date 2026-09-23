@@ -17,6 +17,9 @@ quality, the ship stays under the finger.
 
 ## 1. Phone tests — smooth flight on the S23
 
+A neighbouring session is moving the renderer to WebGL (the author, 23.09) — the raster numbers of §1
+and §2 are measured again on its build before anything is cut.
+
 The author 18.09: «на тел дергается все прогоны … плавный полет нужен»; «потом пройдемся все
 померяем, отдельно веха тесты на тел». Known: with the stick under the finger 80–83 % of frames make
 16.7 ms, without it 99–100 %; our JS is 6–8 ms — the deadline is lost in the raster. Every
@@ -207,3 +210,21 @@ Check each against the code before building — some may already hold.
 - [ ] **The lab:** stopped since 11.09 (CPU 57 % of a day against 50 %) — a CPU budget per session before any
   restart.
 - [ ] **A server frame-stats beacon** was asked for — it touches `site/api.php`: ask first.
+
+## 11. Small things seen on the way (23.09)
+
+- [ ] **The belt entry on the phone:** `#msg` is clamped to 3 lines (`-webkit-line-clamp:3`), and an icy
+  ring's fourth line pushes out «тяните по стеклу — обзор», the only hint of how to look around. Fold the
+  ice note into the ore line.
+- [ ] **Whose voice on the approach:** the lane — billboard, hotel, parked fleet — dresses by the station's
+  builder (`st.by` in `sysLane`), while laws and stamps go by the land's owner (`stampOwnerAt`); in Итлуора
+  a ГЛАВТРАССА billboard stood in Орднунг land. Decide which one speaks (M454 gives the body to the
+  builder, M460 gives the sign to the owner).
+- [ ] **A good's colour is also a text colour:** `RES[k].col` colours words in lists; тёмное стекло
+  `#3c4a66` reads at about 2:1 on the dark UI, осмий is borderline — a text shade per good.
+- [ ] **`03e-hull-draw.js` grew to 49 KB** with the yard marks: move the hull's marks (scars, transit plate,
+  seal, yard mark) to their own module along that seam.
+- [ ] **Old worktrees:** `C:\Claude\drift-refactor` (one WIP commit «stall report names who held the frame»,
+  330 behind), `drift-lab` (an uncommitted `site/war.js`), `drift-t1`, `drift-t2`, `drift-tests` (still
+  since 12.09) and the main checkout `C:\Claude\files` (236 behind) — see what is unmerged, then refresh
+  or remove.
