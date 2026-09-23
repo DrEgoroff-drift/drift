@@ -234,7 +234,7 @@ function lightShafts(p){
   /* один и тот же веер из пяти лучей под одним углом стоял на каждом мире
      штампом (G1): число, раскрытие и наклон — от планеты */
   /* на видеокарте лучи честные: общий проход режет свет по облакам и хребтам (08b) */
-  if(GPU.on){GPU.shaft={x:sx/W,y:sy/H,k:.16*wk,r:sun[0]/255,g:sun[1]/255,b:sun[2]/255};return;}
+  if(GPU.on){GPU.shaft={x:sx/W,y:sy/H,rad:.045,k:.16*wk,r:sun[0]/255,g:sun[1]/255,b:sun[2]/255};return;}
   const hs=hashi(p.seed,0x5AF7,1), nS=2+(hs&3), a0=.92+((hs>>>4)&15)/15*.4, spr=.12+((hs>>>8)&7)/7*.14;
   ctx.save();
   ctx.globalCompositeOperation="lighter";

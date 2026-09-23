@@ -31,8 +31,20 @@ Built: the core and post pass (08b), the layer kit (08c), the space backdrop (16
 - [ ] **G4c wrecks as hulls:** a wreck (`npcWreckDraw`, 13d-npc) is a flat dark disc labelled «КОРПУС». Draw it
   as the NPC hull by `w.seed` through `hullOf`, broken, with smouldering edges, a slow spin and the star's light; the
   label becomes a chip. After G4.
-- [ ] **G5 landing and surface, the air:** sky, sun, live clouds, haze, shafts, weather in depth, the night with
-  its lamps, the water mirror, the grade.
+- [ ] **L1 the space backdrop as a volume (before G5…G14):** a domain-warped FBM nebula, emission plus absorption,
+  three parallax layers, dark dust lanes that hide stars, a slow flow; lit by the system's star — brighter and
+  warmer toward it, and the star's glow is scattering in the nebula and dust (it went dark in gpu: x 0–300 of
+  k_g4m main (156,72,52) → gpu (67,37,36)). Near-camera dust with parallax and stretch in flight. Budget: nebula
+  at ¼ resolution, not every frame, ≤2 ms on the laptop (`prof()`).
+- [ ] **L2 HDR light:** everything emissive into rgba16f at real brightness (star ≫ flames ≫ lamps); bloom as a mip
+  ladder instead of the ¼-frame 4×4; AgX/ACES tone map; a grade per star class — one shot tells where you are.
+- [ ] **L3 light touches the world:** normals from baked sprites' relief, a list of point lights (flames, beams,
+  bursts, station lamps): a beam or a burst lights hulls nearby, metal gets a glint.
+- [ ] **L4 particles on the GPU:** exhaust, sparks, burst smoke and debris, a shock wave with distortion.
+- [ ] **G5 the air, the rest (frozen for L1–L4):** done — sky, disc, scattering, shafts in the final pass (08b). Left:
+  live clouds (`drawClouds` 19e), haze bands (`hazeBand`/`hazeFar` 19c), weather in depth, night lamps, the water
+  mirror, the grade; shafts must be shown to read — a sun behind cloud gaps (the 2D clouds are too thin to cut
+  rays; clouds on the GPU first).
 - [ ] **G6 landing and surface, the bodies:** ground chunks and far ridges as textures; deco, flora and fauna as
   sprites where order needs it; the plants' wind on the GPU.
 - [ ] **G7 cave and mine:** tiles as textures, darkness and lamp light per pixel, ore glows, dust.
@@ -50,7 +62,8 @@ Built: the core and post pass (08b), the layer kit (08c), the space backdrop (16
   (resolution tricks, `draw`) reviewed — keep what still means something.
 - **Gate:**
   - every mode drawn by WebGPU with zero validation errors on the laptop and the S23;
-  - each G step closed by a `main | gpu` pair of the same scene and one line of what got better (main
+  - each step closed by a `main | gpu` pair of the WHOLE frame, scaled to 760 px wide, visibly better at first
+    glance (crops only as an extra), and one line of what got better (main
     references shot once from `origin/main`);
   - every launcher (`deploy.yml` 62/79/195/209, `mkshots`, `mksiteshots`, `pageshot`, `shot.ps1`, `towebp`,
     `test.ps1`) shoots one scene that is the game, not the «no WebGPU» stub — the GPU flags live in one place

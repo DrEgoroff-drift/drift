@@ -93,18 +93,20 @@ The author, 23.09.2026: «переноси все на новые техноло
   `updateBarges`).
   Pirate hulls use it too (`gpuPirateBody`, 12i; pair `g4n_crop.png`, scene `pirates.js`, stubs `updateCombat`).
 - G4 closed (Контроль, 24.09). Leftovers in PLAN: G4b heat haze, G4c wrecks as hulls, G4d the other ships lit.
-- **Next: G5 landing and surface, the air** (sky, sun, clouds, haze, shafts, weather, night lamps, water, grade).
-  Done (1/n): `gpuSky` (19ca) — sky, horizon glow, scattering and the disc in one field, called from `drawSkyBase`
-  (landing and surface); `drawSkyLayer` skips its glow sprite and disc when `SKY_GPU===GPU.frameNo`. The glow is
-  MIXED into the sky (adding it turned pink into lavender); the disc is emissive (never darker than the sky behind
-  it, no dark limb ring). TRAP: a field called inside `withScale` gets `p` and `res.zw` already in VIRTUAL W,H —
-  pass world/sunSpot coords as they are, no K. Pairs `g5a` (low sun, rain) and `g5b_crop.png` (alt .45), scene
-  `surf.js` (pins `celSun` with ALT and `G.t` by wrapping `drawSurface`). Done (2/n): light shafts in the final
-  pass (08b `fsFinal`, uniforms `sh`/`shc`, U is 96 bytes now): each pixel marches 28 steps toward the sun and
-  sums the transparent front layer weighted by closeness to the sun — clouds and ridges near the sun cut the light,
-  light spills over the ridge; `lightShafts` only sets `GPU.shaft` (reset in `gpuFrame`). Sky scattering toned down
-  with it. Pair `g5c_crop.png` (alt .3, `weatherPower` stubbed to 0). Next in G5: clouds (`drawClouds`, 19e),
-  haze bands (`hazeBand`, `hazeFar`, 19c), weather, night lamps, water, grade.
+- **G5 frozen (Контроль, 24.09: the author «прям как было»), rest in PLAN §0.** Done (1/n): `gpuSky` (19ca) — sky,
+  horizon glow, scattering and the disc in one field, called from `drawSkyBase` (landing and surface);
+  `drawSkyLayer` skips its glow sprite and disc when `SKY_GPU===GPU.frameNo`. The glow is MIXED into the sky
+  (adding it turned pink into lavender); the disc is emissive: `dc+sky*.3`, never a per-channel `max` (that took
+  the sky's blue and turned the low sun pink). TRAP: a field called inside `withScale` gets `p` and `res.zw` already
+  in VIRTUAL W,H — pass world/sunSpot coords as they are, no K. Done (2/n, 3/n): light shafts in the final pass
+  (08b `fsFinal`, uniforms `sh`/`shc`, U is 96 bytes): each pixel marches 28 steps toward a random point of the
+  disc (soft penumbra, `sh.w` = disc radius) and takes the open share of the path weighted near the sun;
+  `lightShafts` only sets `GPU.shaft` (reset in `gpuFrame`). Shafts are NOT yet shown to read: the 2D clouds are
+  too thin to cut them. Pairs `g5b_crop`, `g5c_crop`, `g5d_crop` (sun behind the cloud edge and the peak), scene
+  `surf.js` (pins `celSun` with ALT, `G.t`, and hides the chapter card `#smenaAct` and `say()` in both builds).
+- **New gate (Контроль, 24.09): the WHOLE frame pair scaled to 760 px wide, visibly better at first glance.**
+- **Next: L1 the space backdrop as a volume** (PLAN §0), scene k_g4m; then L2 HDR, L3 lights on the world, L4
+  particles; then G5 rest … G14.
   A GPU draw after `gpuHullLight` must use `gpuOver`, not `gpuScene` (the scene pass is closed by then).
 - Merge each: `build.ps1`, `python docs/shot.py <scenes> --look --tag gpu`, 0 `gpu.errs`, pair with
   `scratchpad/mainref/docs/shots/main_<scene>.png`, one line of what got better, commit, strike from PLAN §0.

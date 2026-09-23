@@ -117,14 +117,19 @@ fn overlay(b:vec3f,s:vec3f)->vec3f{return select(1.-2.*(1.-b)*(1.-s),2.*b*s,b<ve
   /* лучи от звезды (G5): от пикселя к звезде копится видимое небо — там, где
      передний слой прозрачен. Облака и хребты режут свет на настоящие полосы */
   if(u.sh.z>0.){
-    let sp=u.sh.xy;let dd=sp-v.uv;let j=textureLoad(tNoise,vec2i(v.p.xy)%vec2i(64),0).r;
-    var acc=0.;
+    let asp=u.css.x/u.css.y;
+    /* цель — случайная точка диска, а не центр: край тени мягкий, как от тела, а не от точки */
+    let j=textureLoad(tNoise,vec2i(v.p.xy)%vec2i(64),0).r;let j2=textureLoad(tNoise,(vec2i(v.p.xy)+vec2i(29,41))%vec2i(64),0).r;
+    let sp=u.sh.xy+vec2f(cos(j2*6.283)/asp,sin(j2*6.283))*u.sh.w*sqrt(fract(j*7.31));let dd=sp-v.uv;
+    var acc=0.;var ws=0.;
     for(var i=0;i<28;i++){let q=v.uv+dd*((f32(i)+j)/28.);
-      let wq=exp(-length((q-sp)*vec2f(u.css.x/u.css.y,1.))*7.);
+      let wq=exp(-length((q-sp)*vec2f(asp,1.))*7.);ws+=wq;
       if(any(q<vec2f(0.))||any(q>vec2f(1.))){acc+=wq;continue;}
       acc+=(1.-textureSampleLevel(tFront,sl,q,0.).a)*wq;}
-    let asp=u.css.x/u.css.y;let dl=length((v.uv-sp)*vec2f(asp,1.));
-    let r=acc/28.*exp(-dl*1.4)*u.sh.z*2.2;
+    /* доля открытого пути к звезде: 1 — луч, 0 — тень хребта или облака */
+    let vis=acc/max(ws,1e-4);
+    let dl=length((v.uv-u.sh.xy)*vec2f(asp,1.));
+    let r=vis*vis*exp(-dl*2.4)*u.sh.z*1.5;
     c=min(c+u.shc.rgb*r,vec3f(1.));
   }
   /* зерно: узор 64×64 в пикселях CSS, режим overlay, 7.5% — как 19c grainPass */
@@ -210,7 +215,7 @@ function gpuUni(){
   a[0]=GPU.bw;a[1]=GPU.bh;a[2]=W;a[3]=H;a[4]=DPR;a[5]=P.k;a[6]=P.grain;a[7]=P.vig;
   a[8]=GPU.hitK;a[9]=GPU.hitDx;a[10]=GPU.uiOn?1:0;a[11]=GPU.sceneOn?1:0;
   a[12]=GPU.qw;a[13]=GPU.qh;a[14]=1.75/DPR;a[15]=G.t||0;
-  const S=GPU.shaft;a[16]=S?S.x:0;a[17]=S?S.y:0;a[18]=S?S.k:0;a[20]=S?S.r:0;a[21]=S?S.g:0;a[22]=S?S.b:0;
+  const S=GPU.shaft;a[16]=S?S.x:0;a[17]=S?S.y:0;a[18]=S?S.k:0;a[19]=S?S.rad:0;a[20]=S?S.r:0;a[21]=S?S.g:0;a[22]=S?S.b:0;
   GPU.dev.queue.writeBuffer(GPU.U,0,a);
 }
 
