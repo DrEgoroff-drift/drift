@@ -43,7 +43,9 @@ The author, 23.09.2026: «переноси все на новые техноло
 - G3 accepted by Control; G3b (surface in three scales, sun glint on water) is in PLAN §0.
 - **G4 in progress.** Done: the trail (`16ga-gpu-trail`: one triangle ribbon per nozzle lane with shared node
   normals, per-point age, gaussian core+halo; beads between segments gone). Pair `g4a_crop.png`, js in
-  `trail.js` (a synthetic TRAIL, no thrust). Next in order: `drawExhaust` (16a-space:348) + `exhaustHaze`, the
+  `trail.js` (a synthetic TRAIL, no thrust). The exhaust (same module, `gpuExhaust`: gaussian flame, flowing noise, shock diamonds, tone-mapped nozzle; the
+  drawn heat arcs dropped; pair `g4b_crop.png`, thrust forced by wrapping `drawExhaust` in the js). `exhaustHaze` still
+  grabs the 2D layer, which no longer holds the flame — port it as a GPU distortion or drop it. Next: the
   hull lit from the star (`hullBakeGet`, 03e1), `drawWake`, then combat, drones, traffic, `drawEdgeWall`
   (17-mode-system:45). All of drawSystem after the planet loop is still 2D (lines ~593–650).
 - Merge each: `build.ps1`, `python docs/shot.py <scenes> --look --tag gpu`, 0 `gpu.errs`, pair with

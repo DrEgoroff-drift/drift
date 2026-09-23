@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 601 · символов верхнего уровня: 5887
+Файлов: 601 · символов верхнего уровня: 5891
 
 ## СИМВОЛЫ
 
@@ -1407,7 +1407,7 @@ drawDronesSystem             src/12e-drone-flight.js:252-325
 drawDustMotes                src/19-mode-landing.js:271-284
 drawEdgeWall                 src/17-mode-system.js:45-62
 drawElevator                 src/20aa-poi-shapes.js:91-113
-drawExhaust                  src/16a-space.js:348-408
+drawExhaust                  src/16a-space.js:348
 drawFactory                  src/20aa-poi-shapes.js:378-462
 drawFactRoute                src/13b-occupy.js:285-338
 drawFindsSystem              src/17b-finds.js:181-263
@@ -1985,6 +1985,9 @@ gestPostSprite               src/17h-sys-gesture.js:175-191
 gestShipFrame                src/17h-sys-gesture.js:81-85
 gestTick                     src/17h-sys-gesture.js:52-79
 getSystem                    src/06-galaxy.js:99-193
+GEX                          src/16ga-gpu-trail.js:87
+GEX_WGSL                     src/16ga-gpu-trail.js:88
+gexPush                      src/16ga-gpu-trail.js:128-134
 GIANT                        src/19a-mode-scoop.js:192
 GIANT_CV                     src/17o-giants.js:68
 GIANT_KEEP                   src/19a-mode-scoop.js:193
@@ -2081,6 +2084,7 @@ gpuBind                      src/08c-gpu-kit.js:28-34
 gpuBuf                       src/08c-gpu-kit.js:21-26
 gpuCanvasTex                 src/08c-gpu-kit.js:37-50
 gpuDrop                      src/08b-gpu.js:72-77
+gpuExhaust                   src/16ga-gpu-trail.js:135-160
 gpuField                     src/08c-gpu-kit.js:189-217
 gpuFrame                     src/08b-gpu.js:205-214
 gpuImage                     src/08c-gpu-kit.js:117-129
@@ -6557,7 +6561,7 @@ zooTick                      src/11ad-zoo.js:41-54
   · кильватер: хвосты от скорости, а не от сопла:278
   · нить кильватера — ступенями спада, а не отрезками (0.2):355
 
-## src/16a-space.js · 27 КБ
+## src/16a-space.js · 24 КБ
   · облик системы:1
 
 ## src/16a0-glow.js · 3 КБ
@@ -6576,8 +6580,8 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/16g-gpu-space.js · 12 КБ
   · космос на видеокарте (G1, docs/DESIGN-gpu.md):1
 
-## src/16ga-gpu-trail.js · 5 КБ
-  · шлейф корабля на видеокарте (G4, docs/DESIGN-gpu.md):1
+## src/16ga-gpu-trail.js · 9 КБ
+  · шлейф и факел корабля на видеокарте (G4, docs/DESIGN-gpu.md):1
 
 ## src/17-mode-system.js · 72 КБ
   · режим: система:1
