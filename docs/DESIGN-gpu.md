@@ -189,7 +189,17 @@ Heat haze behind the nozzle (G4b).
   left barge on green gas still reads as outline, not 3×. Stars by a power law (`.09+.7·zz^2.4`), spikes only on
   the first six bright ones; motes tinted toward the star, near layer streaks in flight. Pairs `l2normal_760`,
   `l2giant_760`, `l2dwarf_760`, `l2g4m_760` (real kind, no palette reset). Measures: `tone.py`, `hull.py`,
-  `dirtmap.py` in the scratchpad. Next in L1: shafts in space (6), the landmark per system.
+  `dirtmap.py` in the scratchpad. Done (3/n): the dark rim is for hulls only — `drawHull` registers up to 8
+  circles (`GPU.sepH`, CSS px from `ctx.getTransform()`) into the post uniform `hl`; `sil()` (08b) runs in the
+  final pass AND in `fsComp` (hulls usually reach the scene through a `gpuOver` segment before the final pass,
+  there the gas behind is read from the nebula texture bound in the scene slot, `gpuCompNeb`). On bright gas a
+  hull turns silhouette (×.14, lights kept, edge rimmed with the gas colour), 12-direction soft rim; UI labels
+  get nothing. The star is the source again: a white-hot core (`2.6·exp(−(r/.4Rd)²)`) and whiter, stronger
+  spikes in 17g, a tighter corona, the nebula's glow core cut to .2, and a stellar-wind bubble in the gas
+  (`bub`, ×.28 at the limb → 1 at .5 H): core 255, ring 150–250 px median 142. The near-star region takes the
+  tone closer to the star's colour (bias .3), and its glow goes to warm white — orange over teal was grey. The
+  normal pair's green is emerald-teal (36,196,176; field 160–177°). Pairs `l3*_760`; `star.py <name> x y`.
+  Next in L1: shafts in space (6), the landmark per system.
   A GPU draw after `gpuHullLight` must use `gpuOver`, not `gpuScene` (the scene pass is closed by then).
 - Merge each: `build.ps1`, `python docs/shot.py <scenes> --look --tag gpu`, 0 `gpu.errs`, pair with
   `scratchpad/mainref/docs/shots/main_<scene>.png`, one line of what got better, commit, strike from PLAN §0.

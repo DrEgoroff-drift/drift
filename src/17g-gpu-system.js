@@ -66,7 +66,7 @@ fn star(p:vec2f,sv:vec4f,cv:vec4f,t:f32,big:f32,px:f32)->vec4f{
        радиусу — ступень была бы видна кольцом */
     let n=sf(lrot(dir,t*.0014)*(2.4+big)+vec2f(r*.45,-r*.3)+vec2f(0.,t*.002));
     let x=max(r-Rd,0.);
-    e=e+col*(exp(-x*2.6)*.85+exp(-x*.9)*.2*(.6+.8*n))*breath;
+    e=e+col*(exp(-x*3.)*.75+exp(-x*.9)*.16*(.6+.8*n))*breath;
   }
   e=e+col*.15*heat*pow(clamp(1.-(r-.3)/6.7,0.,1.),2.2)*smoothstep(Rd*.9,Rd*1.3,r);
   e=e+col*.03*exp(-pow((r-2.3)/.3,2.));
@@ -76,8 +76,10 @@ fn star(p:vec2f,sv:vec4f,cv:vec4f,t:f32,big:f32,px:f32)->vec4f{
     let len=(4.2+1.2*sin(t*.02+f32(i)))*heat;
     if(s>Rd*.6&&s<len){let k=(s-Rd*.6)/(len-Rd*.6);
       let w=max(.05*(1.-k)+.006,.7*px/R);
-      e=e+col*.36*(1.-k)*smoothstep(Rd*.6,Rd*1.4,s)*exp(-q*q/(w*w))*(.6+.4*exp(-q*q/(w*w*.12)));}
+      e=e+mix(col,vec3f(1.,.97,.92),.55*(1.-k))*.6*(1.-k)*smoothstep(Rd*.6,Rd*1.4,s)*exp(-q*q/(w*w))*(.6+.4*exp(-q*q/(w*w*.12)));}
   }
+  /* белое горячее ядро и блик: источник — самое яркое в кадре, и на ярком газе тоже */
+  e=e+vec3f(1.,.97,.93)*2.6*exp(-pow(r/(Rd*.4),2.));
   var photo=vec4f(0.);var gl=1.;
   if(r<Rd+.06){
     let rn=min(r/Rd,1.);let mu=sqrt(max(0.,1.-rn*rn));

@@ -6,7 +6,7 @@
    Кадр: сцена видеокарты (gpuScene) → #c поверх → свечение, зерно, виньетка,
    хроматика, дизеринг одним проходом → слой интерфейса (стойка) поверх всего. */
 const GPU={ok:false,on:false,lost:false,busy:false,none:false,
-  dev:null,cv:null,gx:null,fmt:"",L:null,P:{},B:{},S:null,U:null,UA:new Float32Array(24),shaft:null,
+  dev:null,cv:null,gx:null,fmt:"",L:null,P:{},B:{},S:null,U:null,UA:new Float32Array(56),shaft:null,sepH:[],
   T:{},V:{},N:null,noiseOk:false,ui:null,uctx:null,snap:null,
   bw:0,bh:0,qw:2,qh:2,dpr:0,cw:0,ch:0,enc:null,scenePass:null,sceneOn:false,
   sceneBg:{r:0,g:0,b:0,a:1},uiOn:false,uiWas:false,hitK:0,hitDx:0,post:{k:0,grain:0,vig:0},
@@ -77,7 +77,7 @@ function gpuDrop(why,retry){
 }
 /* ── проходы поста: общий треугольник на весь экран, одна раскладка привязок ── */
 const GPU_POST_WGSL=`
-struct U{res:vec2f,css:vec2f,dpr:f32,k:f32,grain:f32,vig:f32,hitK:f32,hitDx:f32,ui:f32,scene:f32,qres:vec2f,sigma:f32,t:f32,sh:vec4f,shc:vec4f};
+struct U{res:vec2f,css:vec2f,dpr:f32,k:f32,grain:f32,vig:f32,hitK:f32,hitDx:f32,ui:f32,scene:f32,qres:vec2f,sigma:f32,t:f32,sh:vec4f,shc:vec4f,hl:array<vec4f,8>};
 @group(0) @binding(0) var<uniform> u:U;
 @group(0) @binding(1) var sl:sampler;
 @group(0) @binding(2) var sr:sampler;
@@ -110,23 +110,35 @@ fn blur(uv:vec2f,d:vec2f)->vec4f{
   return vec4f(acc/w,1.);}
 @fragment fn fsBlurH(v:V)->@location(0) vec4f{return blur(v.uv,vec2f(1./u.qres.x,0.));}
 @fragment fn fsBlurV(v:V)->@location(0) vec4f{return blur(v.uv,vec2f(0.,1./u.qres.y));}
+/* корпус на ярком газе — силуэтом (L1): только у корпусов (hl — круги, их отмечает
+   drawHull), интерфейсу ничего. Газ вокруг темнеет каймой по силуэту; сам корпус на
+   ярком газе темнеет, как против света, а кромку ему обводит свет газа за ним; огни
+   корпуса остаются; на тёмном газе корпус не трогается. Ответ — премультиплицированный
+   слой поверх s (газа под ним) */
+fn sil(uv:vec2f,f:vec4f,s:vec3f)->vec4f{
+  let px=uv*u.css;var hk=0.;
+  for(var k=0;k<8;k++){let h=u.hl[k];if(h.z<=0.){break;}
+    hk=max(hk,1.-smoothstep(h.z,h.z+16.,length(px-h.xy)));}
+  if(hk<=0.){return f;}
+  var nm=0.;var mn=1.;
+  /* кайма — мягкая: двенадцать направлений, шаг мелкий, дальние слабее (редкие
+     дальние выборки рисовали лесенку-звезду из копий силуэта) */
+  for(var k=0;k<12;k++){let an=f32(k)*.5235988;let d=vec2f(cos(an),sin(an))/u.css;
+    mn=min(mn,textureSampleLevel(tFront,sl,uv+d*1.5,0.).a);
+    nm=max(nm,textureSampleLevel(tFront,sl,uv+d*2.5,0.).a);
+    nm=max(nm,textureSampleLevel(tFront,sl,uv+d*5.,0.).a*.7);
+    nm=max(nm,textureSampleLevel(tFront,sl,uv+d*8.,0.).a*.4);}
+  let bk=smoothstep(.1,.3,dot(s,vec3f(.2126,.7152,.0722)))*hk;
+  let da=u.shc.w*smoothstep(.05,.6,nm)*hk;
+  let fl=max(f.r,max(f.g,f.b))/max(f.a,1e-3);
+  let rgb=f.rgb*(1.-.86*bk*(1.-smoothstep(.86,.98,fl)))+s*clamp(f.a-mn,0.,1.)*bk*1.3;
+  return vec4f(rgb,f.a+(1.-f.a)*da);}
 fn overlay(b:vec3f,s:vec3f)->vec3f{return select(1.-2.*(1.-b)*(1.-s),2.*b*s,b<vec3f(.5));}
 @fragment fn fsFinal(v:V)->@location(0) vec4f{
   var c=frameAt(v.uv);
-  /* корпус на ярком газе — силуэтом (L1): газ вокруг переднего слоя темнеет узкой
-     каймой, сам корпус не трогается. Кадр в целом не темнеет */
   if(u.shc.w>0.&&u.scene>.5){
-    let fa=textureSampleLevel(tFront,sl,v.uv,0.).a;
-    if(fa<.98){
-      var nm=0.;
-      for(var k=0;k<8;k++){let an=f32(k)*.785398;let d=vec2f(cos(an),sin(an))/u.css;
-        nm=max(nm,textureSampleLevel(tFront,sl,v.uv+d*3.,0.).a);
-        nm=max(nm,textureSampleLevel(tFront,sl,v.uv+d*7.,0.).a*.7);
-        nm=max(nm,textureSampleLevel(tFront,sl,v.uv+d*13.,0.).a*.4);}
-      let s=textureSampleLevel(tScene,sl,v.uv,0.).rgb;
-      c=c-s*(1.-fa)*u.shc.w*smoothstep(.05,.6,nm);
-    }
-  }
+    let s=textureSampleLevel(tScene,sl,v.uv,0.).rgb;
+    let o=sil(v.uv,textureSampleLevel(tFront,sl,v.uv,0.),s);c=s*(1.-o.a)+o.rgb;}
   if(u.k>0.){c=min(c+u.k*textureSampleLevel(tBloom,sl,v.uv,0.).rgb,vec3f(1.));}
   /* лучи от звезды (G5): от пикселя к звезде копится видимое небо — там, где
      передний слой прозрачен. Облака и хребты режут свет на настоящие полосы */
@@ -160,7 +172,13 @@ fn overlay(b:vec3f,s:vec3f)->vec3f{return select(1.-2.*(1.-b)*(1.-s),2.*b*s,b<ve
   c=c+((n*255.-110.)/36.-.5)/255.;
   return vec4f(c,1.);}
 /* сегмент gpuOver: 2D, нарисованное до сих пор, ложится в сцену (премультиплицировано) */
-@fragment fn fsComp(v:V)->@location(0) vec4f{return textureSampleLevel(tFront,sl,v.uv,0.);}`;
+@fragment fn fsComp(v:V)->@location(0) vec4f{
+  let f=textureSampleLevel(tFront,sl,v.uv,0.);
+  if(u.shc.w<=0.){return f;}
+  /* сцену здесь не прочесть (в неё рисуем) — газ за корпусом берём из туманности
+     (16gb кладёт её на место сцены), тоном как при сведении */
+  let nb=max(textureSampleLevel(tScene,sl,v.uv,0.).rgb,vec3f(0.));let m=max(max(nb.r,nb.g),max(nb.b,1e-4));
+  return sil(v.uv,f,nb*(1.-exp(-m*1.25))/(m*1.25)*1.12);}`;
 
 function gpuPipes(){
   const d=GPU.dev,F=GPUShaderStage.FRAGMENT;
@@ -180,7 +198,7 @@ function gpuPipes(){
            primitive:{topology:"triangle-list"}})};
   GPU.S={lin:d.createSampler({magFilter:"linear",minFilter:"linear"}),
          rep:d.createSampler({magFilter:"linear",minFilter:"linear",addressModeU:"repeat",addressModeV:"repeat"})};
-  GPU.U=d.createBuffer({size:96,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});
+  GPU.U=d.createBuffer({size:224,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});
   GPU.N=d.createTexture({size:[64,64],format:"r8unorm",usage:GPUTextureUsage.TEXTURE_BINDING|GPUTextureUsage.COPY_DST});
   GPU.noiseOk=false;
 }
@@ -220,6 +238,17 @@ function gpuResize(){
       {binding:3,resource:GPU.N.createView()},{binding:4,resource:T.front.createView()},
       {binding:5,resource:T.bloomB.createView()},{binding:6,resource:T.ui.createView()},{binding:7,resource:GPU.N.createView()}]})};
 }
+/* склейка сегмента с туманностью на месте сцены — силуэтам корпусов (sil) */
+function gpuCompNeb(){
+  const B=GPU.B;
+  if(!(GNB.view&&GNB.dev===GPU.dev))return B.comp;
+  if(B.compN&&B.compNv===GNB.view)return B.compN;
+  const S=GPU.S,T=GPU.T;B.compNv=GNB.view;
+  return B.compN=GPU.dev.createBindGroup({layout:GPU.L,entries:[
+    {binding:0,resource:{buffer:GPU.U}},{binding:1,resource:S.lin},{binding:2,resource:S.rep},
+    {binding:3,resource:GNB.view},{binding:4,resource:T.front.createView()},
+    {binding:5,resource:T.bloomB.createView()},{binding:6,resource:T.ui.createView()},{binding:7,resource:GPU.N.createView()}]});
+}
 function gpuPass(view,pipe,bind){
   const p=GPU.enc.beginRenderPass({colorAttachments:[{view,loadOp:"clear",storeOp:"store",clearValue:{r:0,g:0,b:0,a:1}}]});
   p.setPipeline(pipe);p.setBindGroup(0,bind);p.draw(3);p.end();
@@ -230,6 +259,7 @@ function gpuUni(){
   a[8]=GPU.hitK;a[9]=GPU.hitDx;a[10]=GPU.uiOn?1:0;a[11]=GPU.sceneOn?1:0;
   a[12]=GPU.qw;a[13]=GPU.qh;a[14]=1.75/DPR;a[15]=G.t||0;
   const S=GPU.shaft;a[16]=S?S.x:0;a[17]=S?S.y:0;a[18]=S?S.k:0;a[19]=S?S.rad:0;a[20]=S?S.r:0;a[21]=S?S.g:0;a[22]=S?S.b:0;a[23]=GPU.sep||0;
+  const L=GPU.sepH;for(let i=0;i<8;i++){const h=L[i],o=24+i*4;a[o]=h?h[0]:0;a[o+1]=h?h[1]:0;a[o+2]=h?h[2]:0;a[o+3]=0;}
   GPU.dev.queue.writeBuffer(GPU.U,0,a);
 }
 
@@ -242,7 +272,7 @@ function gpuFrame(){
   ctx=MAIN_CTX;
   ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,GPU.bw,GPU.bh);ctx.setTransform(DPR,0,0,DPR,0,0);
   GPU.on=true;
-  GPU.enc=GPU.dev.createCommandEncoder();GPU.scenePass=null;GPU.overPass=null;GPU.sceneOn=false;GPU.scene3D=false;GPU.hitK=0;GPU.shaft=null;GPU.sep=0;
+  GPU.enc=GPU.dev.createCommandEncoder();GPU.scenePass=null;GPU.overPass=null;GPU.sceneOn=false;GPU.scene3D=false;GPU.hitK=0;GPU.shaft=null;GPU.sep=0;GPU.sepH.length=0;
   return true;
 }
 /* проход сцены видеокарты: его открывает первый слой кадра, закрывает сборка.
@@ -284,7 +314,7 @@ function gpuOver(){
   d.queue.copyExternalImageToTexture({source:cvs},{texture:GPU.T.front,premultipliedAlpha:true},[GPU.bw,GPU.bh]);
   gpuUni();
   const p=GPU.enc.beginRenderPass({colorAttachments:[{view:GPU.V.scene,loadOp:"load",storeOp:"store"}]});
-  p.setPipeline(GPU.P.comp);p.setBindGroup(0,GPU.B.comp);p.draw(3);p.end();
+  p.setPipeline(GPU.P.comp);p.setBindGroup(0,GPU.sep?gpuCompNeb():GPU.B.comp);p.draw(3);p.end();
   /* отправляем сделанное: следующая загрузка #c не должна обогнать эту склейку */
   d.queue.submit([GPU.enc.finish()]);GPU.enc=d.createCommandEncoder();
   ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,GPU.bw,GPU.bh);ctx.restore();

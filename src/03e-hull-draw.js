@@ -114,6 +114,11 @@ function drawYardMark(h,id){
 }
 function drawHull(id,thrusting,braking,lvl,bank){
   const h=hullOf(id),blink=Math.sin(G.t*.07);
+  /* на ярком газе корпус станет силуэтом (08b): отметить, где он и какой величины */
+  if(GPU.sep&&ctx.canvas===cvs&&GPU.sepH.length<8){
+    if(!h._R){let r=0;for(const q of h.poly)r=Math.max(r,Math.hypot(q[0],q[1]));h._R=r*1.3;}
+    const m=ctx.getTransform();GPU.sepH.push([m.e/DPR,m.f/DPR,h._R*Math.hypot(m.a,m.b)/DPR]);
+  }
   lvl=lvl||0;
   const banked=bankTransform(bank||0);
   /* «брюхо» корпуса: смещённый тёмный силуэт проглядывает с той стороны, куда
