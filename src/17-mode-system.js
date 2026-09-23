@@ -772,6 +772,11 @@ function drawSysHud(zx,zy,sh,sys,U){
     const padsr=padsRect();
     if(padsr&&padsr.height>0)placed.push(grow({x:padsr.left/U,y:padsr.top/U,w:padsr.width/U,h:padsr.height/U}));
   }
+  {
+    /* шкалы слева вверху: фишка на строке ТРЮМ — фишка под HUD (закон 12.09) */
+    const hr=hudRect();
+    if(hr&&hr.height>0)placed.push({x:hr.left/U-4,y:hr.top/U-4,w:hr.width/U+8,h:hr.height/U+8});
+  }
   ctx.font="8px ui-monospace,monospace";
   /* под окном оклика и окном бака фишки гаснут, как борт (R0, дев 12.09): на
      них не жмут, пока окно ждёт ответа, и они не спорят с ним глазами */

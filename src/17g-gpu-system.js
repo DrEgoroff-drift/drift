@@ -12,9 +12,10 @@
      плоских треугольников; лучи — с растушёвкой по формуле, без трёх клиньев;
    · зарево — по той же кривой, но точно, а не шестнадцатью стопами градиента;
    · нейтронная: лучи с гауссовым краем вместо прямоугольника;
-   · чёрная дыра: задняя половина диска прячется за дырой (в 2D она шла поверх
-     чёрного круга), дуги втягиваемого газа гаснут к концам. */
-const GSY={OA:new Float32Array(24*20),UA:new Float32Array(8),SA:new Float32Array(32),belt:[]};
+   · чёрная дыра (G2b): фон за ней собран линзой в кольцо Эйнштейна, диск горячий
+     внутри и течёт по Кеплеру, сторона, что летит на нас, ярче и белее (доплер),
+     у горизонта — тонкое фотонное кольцо, дальняя сторона диска загнута над тенью. */
+const GSY={OA:new Float32Array(24*20),UA:new Float32Array(8),SA:new Float32Array(36),belt:[]};
 const GSY_ORB_WGSL=`
 struct U{a:vec4f,b:vec4f};
 @group(0) @binding(0) var<uniform> u:U;
@@ -117,28 +118,73 @@ fn neutron(p:vec2f,nv:vec4f,rot:f32,px:f32)->vec4f{
   e=e+vec3f(170.,210.,255.)/255.*.16*(1.-smoothstep(R*.09-.5*px,R*.09+.5*px,de));
   return vec4f(e,0.);
 }
-fn hole(p:vec2f,hv:vec4f,t:f32,px:f32)->vec4f{
-  let d=p-hv.xy;let R=hv.z;let rr=length(d);var acc=vec4f(0.);
-  let s=rr/(R*6.);
-  if(s<1.){var a=0.;var c=vec3f(0.);
-    if(s<.1333){a=.96;}
-    else if(s<.22){a=mix(.96,.6,(s-.1333)/.0867);c=vec3f(6.,4.,12.)/255.;}
-    else if(s<.55){let k=(s-.22)/.33;a=mix(.6,.06,k);c=mix(vec3f(6.,4.,12.),vec3f(160.,150.,255.),k)/255.;}
-    else{a=.06*(1.-(s-.55)/.45);c=vec3f(160.,150.,255.)/255.;}
-    acc=over(acc,vec4f(c*a,a));}
-  let dc=clamp((R*.8-rr)/px+.5,0.,1.);
-  acc=over(acc,vec4f(0.,0.,0.,dc));
-  let l=lrot(d,-.25);let de=edist(l,R*2.1,R*.5);
-  if(l.y>=0.){acc=over(acc,vec4f(vec3f(255.,206.,140.)/255.*.7*(1.-smoothstep(R*.08-.5*px,R*.08+.5*px,de)),0.));}
-  else{acc=over(acc,vec4f(vec3f(255.,170.,100.)/255.*.3*(1.-smoothstep(R*.05-.5*px,R*.05+.5*px,de))*(1.-dc),0.));
-       let dr=abs(rr-R*1.05);let ang=atan2(l.y,l.x)+6.2831853;
-       if(ang>3.1416*1.02&&ang<3.1416*1.98){acc=over(acc,vec4f(vec3f(255.,236.,200.)/255.*.45*(1.-smoothstep(R*.04-.5*px,R*.04+.5*px,dr)),0.));}}
-  for(var i=0;i<5;i++){
-    let tt=fract(t*.004+f32(i)*.2);let r0=R*(4.4-tt*3.2);
-    let al=lrot(l,tt*2.4+f32(i));let ph=atan2(al.y/(r0*.32),al.x/r0);
-    if(ph>0.&&ph<1.5){let dd=edist(al,r0,r0*.32);
-      acc=over(acc,vec4f(vec3f(255.,190.,130.)/255.*.2*(1.-tt)*sin(3.1416*ph/1.5)*(1.-smoothstep(.8-.5*px,.8+.5*px,dd)),0.));}
+/* чёрная дыра (G2b): линза фона, диск с доплеровской асимметрией, фотонное кольцо.
+   Тень — радиус Rs; линза — точечная: источник на β=ρ−θE²/ρ, усиление |ρ⁴/(ρ⁴−θE⁴)|;
+   туманность берётся той же текстурой, что у фона (16g), звёзды за дырой — свои,
+   из хэша в плоскости источника: они и вытягиваются в дуги у кольца Эйнштейна */
+fn hstars(q:vec2f)->f32{
+  let c=floor(q/13.);let h=sh(c+vec2f(17.,3.));
+  if(h<.9){return 0.;}
+  let o=(vec2f(sh(c+vec2f(5.,9.)),sh(c+vec2f(2.,31.)))*.6+.2)*13.;
+  let dd=q-c*13.-o;return (h-.9)*9.*exp(-dot(dd,dd)/.5);}
+fn disc(l:vec2f,Rs:f32,t:f32,px:f32)->vec4f{
+  /* плоскость диска: наклон .24, от 1.5Rs до 3.8Rs; горячее внутри */
+  let q=vec2f(l.x,l.y/.24);let rd=length(q);let ri=Rs*1.5;let ro=Rs*3.8;
+  if(rd<ri*.8||rd>ro*1.1){return vec4f(0.);}
+  let ph=atan2(q.y,q.x);let Tk=pow(ri/max(rd,ri),.75);
+  /* поток: кеплеров сдвиг — внутренние нити обгоняют внешние */
+  let w=t*.02*pow(ri/rd,1.5);
+  let n=sf(vec2f((ph+w)*3.2,rd/Rs*2.6))*.7+sf(vec2f((ph+w)*9.,rd/Rs*7.))*.5;
+  let edge=smoothstep(ri*.85,ri*1.05,rd)*(1.-smoothstep(ro*.7,ro*1.08,rd));
+  /* доплер: левая сторона летит на нас — ярче и белее, правая — тусклее и краснее */
+  let los=-cos(ph)*.42*sqrt(ri/rd);
+  let dop=pow(1.+los,3.);
+  var col=mix(vec3f(1.,.42,.16),vec3f(1.,.86,.62),Tk);
+  col=mix(col,vec3f(.86,.92,1.),clamp(los*1.3,0.,.65));
+  col=col*mix(vec3f(1.),vec3f(1.,.62,.45),clamp(-los*1.6,0.,1.));
+  let I=col*Tk*Tk*1.5*dop*(.45+.75*n)*edge;
+  let a=clamp(edge*(.35+.5*Tk),0.,1.);
+  return vec4f(I,a);
+}
+fn hole(p:vec2f,hv:vec4f,nb:vec4f,t:f32,px:f32)->vec4f{
+  let d=p-hv.xy;let Rs=hv.z*.8;let rr=length(d);let dir=d/max(rr,1e-4);
+  var acc=vec4f(0.);
+  /* 1. линза: фон за дырой, собранный кольцом Эйнштейна */
+  let tE=Rs*2.5;let wl=1.-smoothstep(Rs*4.,Rs*7.5,rr);
+  if(wl>0.){
+    let src=hv.xy+dir*(rr-tE*tE/max(rr,1e-3));
+    let r4=rr*rr*rr*rr;let e4=tE*tE*tE*tE;
+    let mag=min(abs(r4/max(abs(r4-e4),1.)),7.);
+    var bg=vec3f(0.);
+    if(nb.z>0.){bg=textureSampleLevel(t0,smp,(src-nb.xy)/nb.zw,0.).rgb;}
+    /* свои звёзды — редкие, как у фона, который линза закрыла, и ярче там, где она
+       их усиливает (дуги у кольца); не из-за самой тени: иначе одна звезда за центром рисует циркульную окружность */
+    let st=hstars(src)*(.35+clamp(mag-1.3,0.,3.))*smoothstep(Rs*.8,Rs*1.6,length(src-hv.xy));
+    let a=wl*select(0.,1.,nb.z>0.);
+    acc=vec4f(bg*(.85+.15*min(mag,3.))*a+vec3f(1.,.96,.9)*st*wl,a);
   }
+  /* 2. задняя половина диска — за тенью */
+  let l=lrot(d,-.25);
+  var em=vec3f(0.);
+  if(l.y<0.){let dk=disc(l,Rs,t,px);acc=over(acc,vec4f(vec3f(1.)-exp(-dk.rgb),dk.a));}
+  /* 3. тень горизонта */
+  let dc=clamp((Rs-rr)/(1.5*px)+.5,0.,1.);
+  acc=over(acc,vec4f(0.,0.,0.,dc));
+  /* 4. фотонное кольцо: тонкое, у самой тени, ярче на стороне, что летит к нам */
+  let rw=max(Rs*.035,1.1*px);
+  let pr=exp(-pow((rr-Rs*1.04)/rw,2.));
+  let side=.6+.9*clamp(-l.x/Rs*.5+.5,0.,1.);
+  em=em+vec3f(1.,.9,.72)*pr*1.6*side;
+  /* 5. изображение дальней стороны диска, загнутое линзой над тенью */
+  if(l.y<0.){
+    let k=(rr-Rs*1.12)/(Rs*.55);
+    if(k>0.&&k<1.){let ang=clamp(-l.y/rr,0.,1.);
+      let los=-l.x/rr*.5;
+      em=em+mix(vec3f(1.,.55,.25),vec3f(1.,.9,.75),1.-k)*pow(1.+los,3.)*ang*sin(3.1416*k)*.55;}
+  }
+  acc=over(acc,vec4f(vec3f(1.)-exp(-em),0.));
+  /* 6. ближняя половина диска — поверх тени */
+  if(l.y>=0.){let dk=disc(l,Rs,t,px);acc=over(acc,vec4f(vec3f(1.)-exp(-dk.rgb),dk.a));}
   return acc;
 }
 fn field(p:vec2f,uv:vec2f)->vec4f{
@@ -146,7 +192,7 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   var acc=vec4f(0.);
   if(kind<.5){acc=over(acc,star(p,V[0],V[1],t,V[4].w,px));acc=over(acc,star(p,V[2],V[3],t,V[4].w,px));}
   else if(kind<1.5){acc=over(acc,neutron(p,V[7],V[4].z+t*.006,px));}
-  else{acc=over(acc,hole(p,V[7],t,px));}
+  else{acc=over(acc,hole(p,V[7],V[8],t,px));}
   return over(acc,vec4f(bleed(p,V[5],V[6].rgb),0.));
 }`;
 function gsyUni(){
@@ -210,7 +256,12 @@ function gsyStar(pass,sys,ox,oy,R){
   const put=(o,x,y,r,heat,col)=>{const c=hex2rgb(col);S[o]=x;S[o+1]=y;S[o+2]=r;S[o+3]=heat;
     S[o+4]=c[0]/255;S[o+5]=c[1]/255;S[o+6]=c[2]/255;S[o+7]=1;};
   let kind=0,big=0;
-  if(st.kind==="hole"){kind=2;S[28]=ox;S[29]=oy;S[30]=R;}
+  let tex=null;
+  if(st.kind==="hole"){kind=2;S[28]=ox;S[29]=oy;S[30]=R;
+    /* линзе нужна туманность фона — та же текстура и та же рамка, что у 16g */
+    const C=sysNebComp(sys);
+    if(C){const cx=(W/2-ox)*.06,cy=(H/2-oy)*.06,ex=W*.24,ey=H*.24;
+      S[32]=-ex/2+clamp(-cx*.012,-ex/2,ex/2);S[33]=-ey/2+clamp(-cy*.012,-ey/2,ey/2);S[34]=W+ex;S[35]=H+ey;tex=C.cv;}}
   else if(st.kind==="neutron"){kind=1;const per=110;
     S[28]=ox;S[29]=oy;S[30]=R;S[31]=Math.pow(Math.max(0,Math.sin((G.t%per)/per*Math.PI)),8);}
   else if(st.kind==="binary"){const a=G.t*.0022+st.phase,d=R*st.sep*1.6;
@@ -225,7 +276,7 @@ function gsyStar(pass,sys,ox,oy,R){
   const c=hex2rgb(sys.cls.col);
   S[20]=ox;S[21]=oy;S[22]=reach;S[23]=Math.hypot(dx,dy)<reach?1:0;
   S[24]=c[0]/255;S[25]=c[1]/255;S[26]=c[2]/255;S[27]=DPR;
-  gpuField(pass,"gsy.star",GSY_STAR_WGSL,S,[]);
+  gpuField(pass,"gsy.star",GSY_STAR_WGSL,S,tex?[tex]:[]);
 }
 /* всё под планетами — в проход сцены, сразу за фоном (16g) */
 function gpuSysUnder(sys,ox,oy,R,Z){
