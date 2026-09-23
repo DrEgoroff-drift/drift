@@ -51245,7 +51245,15 @@ function laneLife(sys){
   return clamp((.35+.65*heart)*(.6+.4*Math.min(1,rung/30)),0,1);
 }
 function sysLane(sys){
-  if(sys.lane!==undefined)return sys.lane;
+  if(sys.lane!==undefined){
+    /* станция ходит по орбите (~60 ед. в минуту), а полоса запоминалась по
+       первому снимку — за пять минут бакены, очередь, щит и «Чебуречная»
+       уходили от дока на сотни единиц (найдено 23.09). Полоса едет за станцией */
+    const P=sys.lane,st=sys.station;
+    if(P&&st){const dx=st.x-P.st.x,dy=st.y-P.st.y;
+      if(dx||dy){P.st.x=st.x;P.st.y=st.y;P.hx+=dx;P.hy+=dy;P.E={x:P.E.x+dx,y:P.E.y+dy};for(const b of P.buoys){b.x+=dx;b.y+=dy;}}}
+    return P;
+  }
   const st=sys.station;
   if(!st)return sys.lane=null;
   const E=sysEntry(sys.sx,sys.sy),life=laneLife(sys);
@@ -51337,10 +51345,31 @@ function laneShip(f,x,y,a,al,Z){
   drawFleetShip(f);
   ctx.restore();
 }
+/* ── ажиотаж на подъезде (M504, дизайн-проход 23.09) ──
+   После ЖИЛЫ сюда летят все: от входа по оси полосы тянется вереница
+   старателей, и за очередью у дока встаёт второй, широкий круг ожидания.
+   Корабли — функция времени и зерна системы, ничего не хранится */
+function drawRushTraffic(P,zx,zy,Z,ts){
+  if(!P.rush){const r=rng((hashi(G.sx,G.sy,0x2A5)>>>0)||1),by=P.by;
+    P.rush=[];for(let i=0;i<9;i++)P.rush.push({k:LANE_Q_CLS[Math.floor(r()*LANE_Q_CLS.length)],seed:(r()*1e9)|0,by:r()<.5?by:"ra"});}
+  const ea=Math.atan2(P.uy,P.ux),ca=Math.cos(ea),sa=Math.sin(ea);
+  for(let i=0;i<5;i++){                                            /* вереница от входа — к доку */
+    const u=(ts/22+i/5+P.ph)%1,d=P.L-(P.L-260)*u;
+    const x=P.st.x+P.ux*d-P.uy*(28*(i%2?1:-1)),y=P.st.y+P.uy*d+P.ux*(28*(i%2?1:-1));
+    laneShip(P.rush[i],zx(x),zy(y),ea+Math.PI,Math.min(1,u/.08,(1-u)/.12),Z);
+  }
+  for(let i=0;i<4;i++){                                            /* второй круг ожидания, шире и медленнее */
+    const w=-ts*TAU/70+i/4*TAU+P.ph*3,ex=Math.cos(w)*240,ey=Math.sin(w)*120*P.side;
+    const x=P.hx+ex*ca-ey*sa,y=P.hy+ex*sa+ey*ca,w2=w-.02,x2=P.hx+Math.cos(w2)*240*ca-Math.sin(w2)*120*P.side*sa,y2=P.hy+Math.cos(w2)*240*sa+Math.sin(w2)*120*P.side*ca;
+    laneShip(P.rush[5+i],zx(x),zy(y),Math.atan2(y2-y,x2-x),.9,Z);
+  }
+}
 function drawSysLaneShips(zx,zy,Z){
   const sys=G.sys;if(!sys)return;
-  const P=sysLane(sys);if(!P||!P.queue.length||typeof drawFleetShip!=="function")return;
+  const P=sysLane(sys);if(!P||typeof drawFleetShip!=="function")return;
   const ts=G.t/60,n=P.queue.length;
+  if(typeof rushAt==="function"&&rushAt(G.sx,G.sy))drawRushTraffic(P,zx,zy,Z,ts);   /* ажиотаж: подъезд полон (M504) */
+  if(!n)return;
   const ea=Math.atan2(P.uy,P.ux),ca=Math.cos(ea),sa=Math.sin(ea);
   /* эллипс ожидания: полоса — его длинная ось; круг за сорок секунд */
   const onEll=w=>{const ex=Math.cos(w)*150,ey=Math.sin(w)*70*P.side;

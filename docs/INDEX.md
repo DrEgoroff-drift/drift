@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 595 · символов верхнего уровня: 5831
+Файлов: 595 · символов верхнего уровня: 5832
 
 ## СИМВОЛЫ
 
@@ -1481,6 +1481,7 @@ drawRoad                     src/27l-road-draw.js:87-622
 drawRocks                    src/19-mode-landing-ground.js:294-386
 drawRouteMap                 src/12r-route.js:267-323
 drawRungRing                 src/12ae-ladder.js:72-87
+drawRushTraffic              src/17g-sys-lane.js:137-151
 drawScars                    src/03e-hull-draw.js:5-42
 drawScoop                    src/19a-mode-scoop.js:271-602
 drawSeal                     src/03e-hull-draw.js:47-58
@@ -1509,8 +1510,8 @@ drawSurfaceHud               src/21e-surface-draw.js:21-115
 drawSurfaceWorld             src/21e1-surface-world.js:10-615
 drawSurvey                   src/12w-survey.js:63-89
 drawSysHud                   src/17-mode-system.js:774-1029
-drawSysLane                  src/17g-sys-lane.js:86-114
-drawSysLaneShips             src/17g-sys-lane.js:125-151
+drawSysLane                  src/17g-sys-lane.js:94-122
+drawSysLaneShips             src/17g-sys-lane.js:152-180
 drawSysNebula                src/16a-space.js:208-236
 drawSysRail                  src/18f-rail-station.js:32-65
 drawSystem                   src/17-mode-system.js:482-773
@@ -2790,7 +2791,7 @@ landerLen                    src/19f-lander.js:11
 landingDust                  src/19f-lander.js:344-370
 landOnTestPlanet             tests/90-harness.js:356-362
 landStartY                   src/19-mode-landing.js:38-43
-LANE_BUOY                    src/17g-sys-lane.js:58
+LANE_BUOY                    src/17g-sys-lane.js:66
 LANE_CHASE                   src/17g-sys-lane.js:16
 LANE_DOCK                    src/17g-sys-lane.js:15
 LANE_GAP                     src/17g-sys-lane.js:13
@@ -2799,10 +2800,10 @@ LANE_Q_MAX                   src/17g-sys-lane.js:17
 LANE_RU                      src/26-ui-station.js:389
 LANE_RX                      src/26-ui-station.js:385-388
 LANE_W                       src/17g-sys-lane.js:14
-laneBuoySprite               src/17g-sys-lane.js:59-81
-laneLampCol                  src/17g-sys-lane.js:82-85
+laneBuoySprite               src/17g-sys-lane.js:67-89
+laneLampCol                  src/17g-sys-lane.js:90-93
 laneLife                     src/17g-sys-lane.js:27-31
-laneShip                     src/17g-sys-lane.js:116-124
+laneShip                     src/17g-sys-lane.js:124-132
 last                         src/28-loop.js:107
 LAST_RUN_DAY                 src/12k-letters.js:40
 lastDroneTick                src/28-loop.js:108
@@ -5227,7 +5228,7 @@ sysEdge                      src/17-mode-system.js:34-40
 sysEntry                     src/17g-sys-lane.js:20-23
 sysHasFauna                  src/12ad-site.js:114-117
 sysJitter                    src/01-core.js:188-192
-sysLane                      src/17g-sys-lane.js:32-55
+sysLane                      src/17g-sys-lane.js:32-63
 sysMakes                     src/12ad-site.js:134-140
 sysNebulaTex                 src/16a-space.js:53-101
 sysPirateBase                src/24a-mode-raid.js:98-102
@@ -6535,7 +6536,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/17f-sys-traffic.js · 5 КБ
   · трафик системы: чужие машины, которым тут есть дело (M309):1
 
-## src/17g-sys-lane.js · 10 КБ
+## src/17g-sys-lane.js · 13 КБ
   · подъезд: полоса от входа в систему к доку (M459, DESIGN-life §2–3.1):1
 
 ## src/17h-sys-gesture.js · 14 КБ
