@@ -40,7 +40,12 @@ The author, 23.09.2026: «переноси все на новые техноло
   day-side atmosphere beyond the limb instead of the r+2.5 stroke, rings in their plane with ringlets and both
   shadows, moons as lit spheres. 2D `planetDraw/planetPaint/planetLight/planetCols/drawRing` are gone. Pair
   `g3a.png` / `g3a_crop.png` (gas giant `planets[3]`, terran `planets[0]`; ship and zoom in the kpairs js).
-- **Next: G4 the system view on top** (ships, wake, trail, exhaust, combat, drones, traffic, the edge wall).
+- G3 accepted by Control; G3b (surface in three scales, sun glint on water) is in PLAN §0.
+- **G4 in progress.** Done: the trail (`16ga-gpu-trail`: one triangle ribbon per nozzle lane with shared node
+  normals, per-point age, gaussian core+halo; beads between segments gone). Pair `g4a_crop.png`, js in
+  `trail.js` (a synthetic TRAIL, no thrust). Next in order: `drawExhaust` (16a-space:348) + `exhaustHaze`, the
+  hull lit from the star (`hullBakeGet`, 03e1), `drawWake`, then combat, drones, traffic, `drawEdgeWall`
+  (17-mode-system:45). All of drawSystem after the planet loop is still 2D (lines ~593–650).
 - Merge each: `build.ps1`, `python docs/shot.py <scenes> --look --tag gpu`, 0 `gpu.errs`, pair with
   `scratchpad/mainref/docs/shots/main_<scene>.png`, one line of what got better, commit, strike from PLAN §0.
 - Next after G2+G3 merges: G4 (system view on top, shares `17-mode-system.js`), port 9481; then G14.

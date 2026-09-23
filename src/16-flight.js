@@ -376,11 +376,8 @@ function wakeStep(dt){
    шести процентов яркости — ниже порога глаза (допуск Дизайнера ±8 единиц). */
 const WAKE_BUCK=32;
 const WAKE_A1MAX=.18, WAKE_A2MAX=.56;   /* пики ореола и ядра при u=1, kk=1 */
-const TRAIL_BUCK=24;
 const TRAIL_AMAX=.8;   /* пик альфы ленты при u=1 */
 const TRAIL_HALO={w:3,a:.24,core:.7};   /* ореол ленты: ширина и альфа от ядра; ядро уже, чем было */
-const trX0=[],trY0=[],trX1=[],trY1=[],trB=[];
-const trAcc=new Float64Array(TRAIL_BUCK*4);   /* на ступень: sum u, sum a, sum w, n */
 const wkX0=[],wkY0=[],wkCX=[],wkCY=[],wkX1=[],wkY1=[],wkB=[];
 const wkAcc=new Float64Array(WAKE_BUCK*5);   /* на ступень: sum a1, a2, w1, w2, n */
 const wakeLanes=new Map();
@@ -561,96 +558,5 @@ function trailStep(dt,thrusting,turning,braking,idle){
 }
 function drawTrail(zx,zy,Z){
   drawWake(zx,zy,Z);   /* кильватер под шлейфом и под корпусом */
-  const T0=trailTint(G.shipId,G.mods.engine|0),T=(typeof cosmTrail==="function")?cosmTrail(T0):T0,SZ=shipZ(Z),CW=trailChar(G.shipId).w;   /* след — косметика «Сороки» */
-  /* ленты по соплам: массив хронологичен, поэтому в каждой корзине точки
-     идут от самой старой к свежей — ровно порядок отрисовки полосы */
-  const lanes={};
-  for(const t of TRAIL){
-    if(!t.hot)continue;
-    /* ключ — сопло И номер очереди: разные очереди тяги не сшиваются в одну
-       полосу, поэтому поперёк пропуска больше нет прямой */
-    const k=t.e+"/"+(t.b|0);
-    (lanes[k]||(lanes[k]=[])).push(t);
-  }
-  ctx.save();
-  ctx.globalCompositeOperation="lighter";
-  /* стык встык, а не скруглённый: у быстрого корабля соседние точки далеко,
-     и круглые торцы превращали ленту в цепочку бусин */
-  ctx.lineCap="butt";ctx.lineJoin="round";
-  /* Лента тоже идёт ступенями спада, а не отрезками (0.2, см. drawWake):
-     цвет, альфа и толщина зависят только от возраста, значит на ступень их нужно
-     посчитать один раз — вместе с mixc, который на каждом отрезке рождал массив.
-     Толщина ещё зависит от радиуса точки — берём средний по ступени: радиусы
-     соседних точек одной ленты отличаются на доли пикселя. */
-  /* ступени общие на все сопла — как у кильватера (0.455): stroke на ступень каждой
-     ленты множил проходы по числу сопел, а цвет, альфа и толщина у лент одного
-     возраста одни и те же */
-  let n=0;
-  trAcc.fill(0);
-  for(const k in lanes){
-    const arr=lanes[k];
-    for(let i=1;i<arr.length;i++){
-      const a=arr[i-1],b2=arr[i];
-      const x0=zx(a.x),y0=zy(a.y),x1=zx(b2.x),y1=zy(b2.y);
-      if((x0<-60&&x1<-60)||(x0>W+60&&x1>W+60)||(y0<-60&&y1<-60)||(y0>H+60&&y1>H+60))continue;
-      const u=clamp((a.life/a.max+b2.life/b2.max)*.5,0,1);
-      const fa=Math.pow(u,TRAIL_LIFE.fall)*.30+u*u*u*u*.5;
-      let b=((u+fa/TRAIL_AMAX)*.5*TRAIL_BUCK)|0;if(b>=TRAIL_BUCK)b=TRAIL_BUCK-1;if(b<0)b=0;
-      trX0[n]=x0;trY0[n]=y0;trX1[n]=x1;trY1[n]=y1;trB[n]=b;n++;
-      trAcc[b*4]+=u;
-      trAcc[b*4+1]+=fa;
-      trAcc[b*4+2]+=Math.max(1,b2.r*SZ*(2.4-u*1.3)*CW*1.35);
-      trAcc[b*4+3]++;
-    }
-  }
-  {
-    for(let b=0;b<TRAIL_BUCK;b++){
-      const cnt=trAcc[b*4+3];
-      if(!cnt)continue;
-      const u=trAcc[b*4]/cnt,al=trAcc[b*4+1]/cnt,lw=trAcc[b*4+2]/cnt;
-      ctx.beginPath();
-      for(let i=0;i<n;i++){
-        if(trB[i]!==b)continue;
-        ctx.moveTo(trX0[i],trY0[i]);ctx.lineTo(trX1[i],trY1[i]);
-      }
-      /* у сопла — белое ядро, к хвосту цвет уходит в акцент корпуса */
-      const col=u>.78?mixc(T.mid,T.core,(u-.78)/.22):mixc(T.edge,T.mid,u/.78);
-      /* Спад квадратичный, а не линейный: с линейным хвост держал яркость
-         почти до конца и выглядел начерченной линией. Газ должен рассеиваться. */
-      /* ореол по тому же пути (автор 18.09: «шлейф как сосиски, размой»):
-         ступени с торцами встык давали колбаски с жёстким краем, а струи
-         соседних сопел лежали рядом полосками. Широкий бледный проход под
-         ядром сплавляет их в один факел и прячет ступени толщины; путь тот же,
-         так что это второй stroke на ступень, а не на отрезок */
-      ctx.lineCap="round";
-      ctx.strokeStyle=rgba(col,al*TRAIL_HALO.a);
-      ctx.lineWidth=lw*TRAIL_HALO.w;
-      ctx.stroke();
-      ctx.lineCap="butt";
-      ctx.strokeStyle=rgba(col,al);
-      ctx.lineWidth=lw*TRAIL_HALO.core;
-      ctx.stroke();
-    }
-  }
-  /* добела раскалённые корешки у сопел — одним путём на все */
-  ctx.fillStyle=rgba(T.core,.62);ctx.beginPath();
-  for(const k in lanes){
-    const arr=lanes[k],f=arr[arr.length-1];
-    if(f){
-      const x=zx(f.x),y=zy(f.y),r=Math.max(.8,f.r*SZ*1.3);
-      if(x>-40&&x<W+40&&y>-40&&y<H+40){ctx.moveTo(x+r,y);ctx.arc(x,y,r,0,TAU);}
-    }
-  }
-  ctx.fill();
-  ctx.restore();
-  /* холодные струи маневровых — короткие дымки, не лента */
-  for(const t of TRAIL){
-    if(t.hot)continue;
-    const x=zx(t.x),y=zy(t.y);
-    if(x<-30||x>W+30||y<-30||y>H+30)continue;
-    const u=clamp(t.life/t.max,0,1);
-    const rr=Math.max(.5,t.r*SZ*(2.6-u*1.9));
-    ctx.fillStyle="rgba(205,232,246,"+(u*.22).toFixed(3)+")";
-    ctx.beginPath();ctx.arc(x,y,rr,0,TAU);ctx.fill();
-  }
+  gpuTrail(zx,zy,Z);   /* ленты по соплам, дымки и корешки — на видеокарте (16ga) */
 }

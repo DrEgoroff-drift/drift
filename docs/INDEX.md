@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 600 · символов верхнего уровня: 5886
+Файлов: 601 · символов верхнего уровня: 5887
 
 ## СИМВОЛЫ
 
@@ -1509,11 +1509,11 @@ drawTemple                   src/20aa-poi-shapes.js:50-89
 drawThingIcon                src/27i-ui-table.js:400-478
 drawTierTrim                 src/03b-hull-paint.js:73-166
 drawTiles                    src/18c-chunks.js:159-170
-drawTrail                    src/16-flight.js:562-656
+drawTrail                    src/16-flight.js:559-562
 drawTransitPlate             src/03e-hull-draw.js:59-67
 drawVan                      src/21ac3-base-van.js:71-133
 drawVanSmall                 src/21ac3-base-van.js:135-141
-drawWake                     src/16-flight.js:387-462
+drawWake                     src/16-flight.js:384-459
 drawWallPaper                src/11ae-concert.js:39-71
 drawWanderer                 src/12v-wander.js:175-318
 drawWanderMap                src/12v-wander.js:159-173
@@ -2104,6 +2104,7 @@ gpuSpaceSys                  src/16g-gpu-space.js:184-198
 gpuSpaceTitle                src/16g-gpu-space.js:200-211
 gpuSysUnder                  src/17g-gpu-system.js:287-292
 gpuTakeSnap                  src/08b-gpu.js:25-30
+gpuTrail                     src/16ga-gpu-trail.js:28-77
 gpuUni                       src/08b-gpu.js:195-201
 gpuWorld                     src/08b-gpu.js:270-286
 gradePass                    src/19c-light.js:258-294
@@ -2198,6 +2199,9 @@ gsyOrb                       src/17g-gpu-system.js:209-215
 gsyOrbits                    src/17g-gpu-system.js:231-248
 gsyStar                      src/17g-gpu-system.js:259-285
 gsyUni                       src/17g-gpu-system.js:203-207
+GTR                          src/16ga-gpu-trail.js:9
+GTR_WGSL                     src/16ga-gpu-trail.js:10
+gtrPush                      src/16ga-gpu-trail.js:22-26
 GUEST_EVERY                  src/21a3-base-people.js:30
 GUN_CACHE                    src/05c-arms.js:71
 GUN_FACTORY                  src/05b-guns.js:99-106
@@ -5438,7 +5442,6 @@ toldWorth                    src/11aj-told.js:49-54
 TOPO_FMT                     src/12al1-toponym.js:6-13
 totalLoss                    src/21-mode-surface.js:701-722
 towShare                     src/03f-hull-role.js:87-89
-trAcc                        src/16-flight.js:383
 TRACE_CAP_DAY                src/11ag-trace.js:46
 TRACE_MARK                   src/11ag-trace.js:32-45
 TRACE_SC                     src/11ag-trace.js:191
@@ -5468,15 +5471,14 @@ traceToday                   src/11ag-trace.js:72
 TRACK_LIFE                   src/21-mode-surface.js:6
 TRADE_KEYS                   src/02-world.js:126
 TRAIL                        src/16-flight.js:233
-TRAIL_AMAX                   src/16-flight.js:380
-TRAIL_BUCK                   src/16-flight.js:379
+TRAIL_AMAX                   src/16-flight.js:379
 TRAIL_CHAR                   src/16-flight.js:241-248
-TRAIL_HALO                   src/16-flight.js:381
+TRAIL_HALO                   src/16-flight.js:380
 TRAIL_LIFE                   src/16-flight.js:296
 TRAIL_TINT                   src/16-flight.js:256
 trailBurst                   src/16-flight.js:234
 trailChar                    src/16-flight.js:249-255
-trailStep                    src/16-flight.js:463-561
+trailStep                    src/16-flight.js:460-558
 trailTint                    src/16-flight.js:261-277
 TRAINEE_LINES                src/11ac-trainee.js:14-18
 TRAINEE_NAMES                src/11ac-trainee.js:13
@@ -5493,7 +5495,6 @@ traineeTick                  src/11ac-trainee.js:59-70
 traitOf                      src/12a-crew.js:28
 TRIP_N                       tests/91zzzzzzzzc-trips.js:11
 tripWorlds                   tests/91zzzzzzzzc-trips.js:12-20
-trX0                         src/16-flight.js:382
 tvHop                        tests/91zzzzzw-travel.js:36-48
 tvKeys                       tests/91zzzzzw-travel.js:15
 tvSizes                      tests/91zzzzzw-travel.js:17-34
@@ -5649,7 +5650,7 @@ WAKE_A1MAX                   src/16-flight.js:378
 WAKE_BUCK                    src/16-flight.js:377
 WAKE_LIFE                    src/16-flight.js:294
 wakeBurst                    src/16-flight.js:297
-wakeLanes                    src/16-flight.js:386
+wakeLanes                    src/16-flight.js:383
 wakeStep                     src/16-flight.js:326-354
 wakeTips                     src/16-flight.js:298-325
 WALK_PARA                    tests/91zzy-walk.js:8
@@ -5843,8 +5844,8 @@ winTone                      src/29g-winter-draw.js:89-94
 winWall                      src/29f-winter.js:162-172
 withCtx                      src/18c-chunks.js:58-65
 withScale                    src/18c-chunks.js:41-47
-wkAcc                        src/16-flight.js:385
-wkX0                         src/16-flight.js:384
+wkAcc                        src/16-flight.js:382
+wkX0                         src/16-flight.js:381
 WLD_RINGS                    tests/91zzzzzzzzz-worlds.js:28
 wldMedian                    tests/91zzzzzzzzz-worlds.js:37
 wldNear                      tests/91zzzzzzzzz-worlds.js:29-36
@@ -6549,7 +6550,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/15d-domread.js · 3 КБ
   · сторож чтений вёрстки: ?domread:1
 
-## src/16-flight.js · 45 КБ
+## src/16-flight.js · 40 КБ
   · фон:1
   · автопилот:114
   · шлейф двигателей и струи ориентации:212
@@ -6574,6 +6575,9 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## src/16g-gpu-space.js · 12 КБ
   · космос на видеокарте (G1, docs/DESIGN-gpu.md):1
+
+## src/16ga-gpu-trail.js · 5 КБ
+  · шлейф корабля на видеокарте (G4, docs/DESIGN-gpu.md):1
 
 ## src/17-mode-system.js · 72 КБ
   · режим: система:1
