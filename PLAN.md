@@ -183,9 +183,9 @@ job (the phone milestone), but no fix may add raster cost without a number.
   garden's blink, the moon's beacon, the hotel's red «МЕСТА ЕСТЬ», the cylinder's running light.
   The map mark is a glyph per giant (moon, slab, pill, grid, dock bracket, peaks, masts). Left:
   the ruler in the frame, docking/visiting — those are M464's open tails, not design.
-- [~] **D25 Paper and stamps — the passport done 18.09 on the S23.** The passport was not on
+- [x] **D25 Paper and stamps — the passport done 18.09 on the S23; the ПЛАН on the sign 23.09.** The passport was not on
   any page at all (only in fares); now a bordeaux cover with gold lettering under the stamp grid
-  in КНИЖКА while it runs, with «до N смен». Then 18.09 later: the transit plate on the flank (`drawTransitPlate`, yellow with two black lines by the stern, baked with the hull), and M482's scars drawn on the hull (`drawScars`: burn patch, bent edge, leak streak). Left: the ПЛАН on the sign (a text line on the billboard already); ~~the recall letter~~ — done 18.09: a `recall` thing in ВЕЩИ with a Хай-Фронт header and a red «ОТЗЫВ» stamp.
+  in КНИЖКА while it runs, with «до N смен». Then 18.09 later: the transit plate on the flank (`drawTransitPlate`, yellow with two black lines by the stern, baked with the hull), and M482's scars drawn on the hull (`drawScars`: burn patch, bent edge, leak streak). The ПЛАН on the ГЛАВТРАССА sign is a decree, not an ad: while `gosBbPlan` holds, the ticker gives way to a kumach panel with a gold star and two lines that STAND («ПЛАН: 18 ЕД. …», «ДО СВОДКИ · ПО · СДАВАТЬ ЗДЕСЬ»); ~~the recall letter~~ — done 18.09: a `recall` thing in ВЕЩИ with a Хай-Фронт header and a red «ОТЗЫВ» stamp.
 - [~] **D24 Railway life — rows done 18.09 on the S23.** The parcel is a paper tag with a hole
   (dashed edge, ochre), the pass a card with a punched row, the passenger a phosphor silhouette
   before the line. ~~Left: the подстаканник for the tea row, the seal drawn on the hold in flight~~ — done 18.09: the Рассвет buffet button carries a glass in a lattice holder with a handle (CSS), the Орднунг seal is a lead disc on wire over the hold hatch at midships (`drawSeal`, in the bake key).

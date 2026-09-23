@@ -17,6 +17,11 @@ function gosPlan(){
   const key=G.sx+","+G.sy+","+b;
   return {k,n,price,key,svodka:100+b%900,done:!!(G.gosDone&&G.gosDone[key])};
 }
+/* план на щите сейчас? — тот же чередующийся десяток секунд, что у bbLine */
+function gosBbPlan(by){
+  if(by!=="gt"||!(Math.floor(G.t/600)&1))return null;
+  const P=gosPlan();return P&&!P.done?P:null;
+}
 function gosBbLine(){
   const P=gosPlan();if(!P||P.done)return null;
   return "ПЛАН: "+P.n+" ЕД. "+RES[P.k].ru.toUpperCase()+" ДО СВОДКИ "+P.svodka+" · ПО "+P.price+" КР · СДАВАТЬ ЗДЕСЬ";

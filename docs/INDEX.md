@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 595 · символов верхнего уровня: 5827
+Файлов: 595 · символов верхнего уровня: 5828
 
 ## СИМВОЛЫ
 
@@ -1377,7 +1377,7 @@ drawBelt                     src/24-mode-belt.js:378-718
 drawBeltPOISprite            src/24b-belt-poi.js:50-185
 drawBeltRing                 src/17c-system-draw.js:94-106
 drawBeltRocks                src/17c-system-draw.js:41-82
-drawBillboard                src/17k-billboard.js:51-93
+drawBillboard                src/17k-billboard.js:51-113
 drawBuildMenu                src/21aa-base-rooms.js:504-520
 drawBuilt                    src/21c-built.js:64-101
 drawCantinaRoom              src/27d-ui-cantina.js:32-44
@@ -2057,11 +2057,12 @@ GOLD_BW                      tests/91zzzzzzzzz-golden.js:25
 goldCmp                      tests/91zzzzzzzzz-golden.js:36-46
 goldSig                      tests/91zzzzzzzzz-golden.js:26-35
 GOS_SHIFTS                   src/17k1-gosplan.js:7
-gosBbLine                    src/17k1-gosplan.js:20-23
+gosBbLine                    src/17k1-gosplan.js:25-28
+gosBbPlan                    src/17k1-gosplan.js:21-24
 gosBucket                    src/17k1-gosplan.js:8
-gosDeliver                   src/17k1-gosplan.js:24-35
+gosDeliver                   src/17k1-gosplan.js:29-40
 gosPlan                      src/17k1-gosplan.js:9-19
-gosRow                       src/17k1-gosplan.js:37-45
+gosRow                       src/17k1-gosplan.js:42-50
 GOT                          src/27jb-ui-got.js:12
 gotAdd                       src/27jb-ui-got.js:13
 gotCalm                      src/27jb-ui-got.js:15-20
@@ -6546,10 +6547,10 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/17j-cheburek.js · 3 КБ
   · «Чебуречная» — лодка на подъезде (M462, DESIGN-life §3.4):1
 
-## src/17k-billboard.js · 6 КБ
+## src/17k-billboard.js · 8 КБ
   · рекламные щиты на подъезде (M460, DESIGN-life §3.2, review §4.2):1
 
-## src/17k1-gosplan.js · 3 КБ
+## src/17k1-gosplan.js · 4 КБ
   · госзаказ на билборде (M503, PLAN «new mechanics», st. 5):1
 
 ## src/17l-hotel.js · 16 КБ

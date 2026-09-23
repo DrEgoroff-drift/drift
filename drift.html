@@ -51706,6 +51706,26 @@ function drawBillboard(zx,zy,Z){
   ctx.fillStyle=rgba(col,.9*buzz);ctx.fillText(T,x,y-ph*.18);
   ctx.fillStyle=rgba([255,255,255],.35*buzz);ctx.fillText(T,x,y-ph*.18);
   ctx.restore();
+  /* ПЛАН — не реклама, а указ (D25): кумач со звездой и две строки, которые
+     стоят, а не бегут. Щит на это время подрастает на строку */
+  const GP=(typeof gosBbPlan==="function")?gosBbPlan(B.by):null;
+  if(GP){
+    const px=x-pw/2+3,py=y+ph*.02,qw=pw-6,qh=ph*.62;
+    ctx.fillStyle="#0e1217";ctx.fillRect(x-pw/2,y+ph*.5,pw,ph*.2);
+    ctx.fillStyle="rgba(150,26,22,.96)";ctx.fillRect(px,py,qw,qh);
+    ctx.fillStyle="rgba(255,120,90,.18)";ctx.fillRect(px,py,qw,Math.max(1,qh*.08));
+    const sx0=px+qh*.5,sy0=py+qh*.5,sr=qh*.34;
+    ctx.fillStyle="#f2c14e";ctx.beginPath();
+    for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,rr=i&1?sr*.42:sr;i?ctx.lineTo(sx0+Math.cos(a)*rr,sy0+Math.sin(a)*rr):ctx.moveTo(sx0+Math.cos(a)*rr,sy0+Math.sin(a)*rr);}
+    ctx.closePath();ctx.fill();
+    ctx.textAlign="left";ctx.fillStyle="#fff4e0";
+    ctx.font="bold "+Math.round(8.5*s)+"px ui-monospace,monospace";
+    ctx.fillText("ПЛАН: "+GP.n+" ЕД. "+RES[GP.k].ru.toUpperCase(),px+qh,py+qh*.3,qw-qh-3);
+    ctx.fillStyle="rgba(255,230,200,.82)";ctx.font=Math.round(6.5*s)+"px ui-monospace,monospace";
+    ctx.fillText("ДО СВОДКИ "+GP.svodka+" · ПО "+GP.price+" КР · СДАВАТЬ ЗДЕСЬ",px+qh,py+qh*.72,qw-qh-3);
+    ctx.restore();
+    return;
+  }
   /* бегущая строка — единственное, что движется */
   const L=bbLine(B.by)+"   ·   ";
   ctx.font=Math.round(8*s)+"px ui-monospace,monospace";ctx.textAlign="left";
@@ -51735,6 +51755,11 @@ function gosPlan(){
   const price=Math.round(RES[k].price*(far?1.2:1.3));
   const key=G.sx+","+G.sy+","+b;
   return {k,n,price,key,svodka:100+b%900,done:!!(G.gosDone&&G.gosDone[key])};
+}
+/* план на щите сейчас? — тот же чередующийся десяток секунд, что у bbLine */
+function gosBbPlan(by){
+  if(by!=="gt"||!(Math.floor(G.t/600)&1))return null;
+  const P=gosPlan();return P&&!P.done?P:null;
 }
 function gosBbLine(){
   const P=gosPlan();if(!P||P.done)return null;
