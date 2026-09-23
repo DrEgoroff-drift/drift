@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 602 · символов верхнего уровня: 5900
+Файлов: 602 · символов верхнего уровня: 5899
 
 ## СИМВОЛЫ
 
@@ -363,7 +363,6 @@ BATT_COOL                    src/21d-battery.js:13
 BATT_DMG                     src/21d-battery.js:14
 BATT_RANGE                   src/21d-battery.js:12
 battAt                       src/21d-battery.js:17-31
-battDraw                     src/21d-battery.js:67-76
 battTarget                   src/21d-battery.js:33-35
 battTick                     src/21d-battery.js:36-65
 BAZ_HULLS                    src/17n-bazaar.js:67
@@ -1391,7 +1390,7 @@ drawCheburek                 src/17j-cheburek.js:22-62
 drawChunks                   src/18c-chunks.js:90-96
 drawClouds                   src/19e-clouds.js:386-528
 drawCockpit                  src/25-cockpit.js:400-674
-drawCombat                   src/13-pirates.js:349-442
+drawCombat                   src/13-pirates.js:349-439
 drawCosmMark                 src/12va-wander-cosm.js:112-132
 drawCrowns                   src/05a-nodes.js:379-414
 drawCrystalForest            src/20aa-poi-shapes.js:115-141
@@ -1945,8 +1944,8 @@ galBake                      src/17z1-galaxy.js:80-95
 galPlaceName                 src/17z2-galaxy-names.js:29-36
 galTile                      src/17z1-galaxy.js:67-78
 GATE_WHY                     tests/91zzzzzl-gates.js:19
-GBM                          src/13z-gpu-combat.js:103
-GBM_WGSL                     src/13z-gpu-combat.js:104
+GBM                          src/13z-gpu-combat.js:115
+GBM_WGSL                     src/13z-gpu-combat.js:116
 GEN                          src/13z-gpu-combat.js:16
 GEN_MINE                     src/13z-gpu-combat.js:60
 GEN_WGSL                     src/13z-gpu-combat.js:17
@@ -2089,10 +2088,10 @@ GPU_SHP_WGSL                 src/08c-gpu-kit.js:134
 GPU_WGSL_COMMON              src/08c-gpu-kit.js:53
 gpuArena                     src/08c-gpu-kit.js:73-83
 gpuBind                      src/08c-gpu-kit.js:28-34
-gpuBooms                     src/13z-gpu-combat.js:127-139
+gpuBooms                     src/13z-gpu-combat.js:139-151
 gpuBuf                       src/08c-gpu-kit.js:21-26
 gpuCanvasTex                 src/08c-gpu-kit.js:37-50
-gpuCombatEnergy              src/13z-gpu-combat.js:61-101
+gpuCombatEnergy              src/13z-gpu-combat.js:61-113
 gpuDrop                      src/08b-gpu.js:72-77
 gpuExhaust                   src/16ga-gpu-trail.js:181-206
 gpuField                     src/08c-gpu-kit.js:189-217
@@ -6505,7 +6504,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/13-combat.js · 14 КБ
   · бой: выстрелы с владельцем (M361):1
 
-## src/13-pirates.js · 30 КБ
+## src/13-pirates.js · 29 КБ
   · пираты:1
 
 ## src/13a-guns.js · 22 КБ

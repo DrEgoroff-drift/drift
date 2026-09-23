@@ -64,13 +64,3 @@ function battTick(dt){
   }
 }
 /* линия с грунта: рисуется тем же проектором, что и весь бой (13-pirates) */
-function battDraw(zx,zy,Z){
-  for(const f of G.battFx||[]){
-    const a=Math.max(0,f.t/14);
-    ctx.strokeStyle="rgba(150,230,255,"+(a*.85).toFixed(2)+")";
-    ctx.lineWidth=Math.max(1,2.4*a);
-    ctx.beginPath();ctx.moveTo(zx(f.x1),zy(f.y1));ctx.lineTo(zx(f.x2),zy(f.y2));ctx.stroke();
-    ctx.fillStyle="rgba(220,245,255,"+(a*.7).toFixed(2)+")";
-    ctx.beginPath();ctx.arc(zx(f.x2),zy(f.y2),3+6*(1-a),0,TAU);ctx.fill();
-  }
-}

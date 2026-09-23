@@ -57,10 +57,10 @@ function genPush(x0,y0,x1,y1,cw,gr,inten,tailA,c,flare){
   f[o]=x0;f[o+1]=y0;f[o+2]=x1;f[o+3]=y1;f[o+4]=cw;f[o+5]=gr;f[o+6]=inten;f[o+7]=tailA;
   f[o+8]=c[0];f[o+9]=c[1];f[o+10]=c[2];f[o+11]=flare;GEN.n++;
 }
-const GEN_MINE=[127/255,230/255,216/255],GEN_FOE=[1,107/255,87/255];
+const GEN_MINE=[127/255,230/255,216/255],GEN_FOE=[1,107/255,87/255],GEN_BATT=[150/255,230/255,1];
 function gpuCombatEnergy(zx,zy,Z){
   const any=L=>L&&L.length;
-  if(!any(G.shots)&&!any(G.beams)&&!any(G.gmines)&&!any(G.msl)&&!any(G.mslFx))return;
+  if(!any(G.shots)&&!any(G.beams)&&!any(G.gmines)&&!any(G.msl)&&!any(G.mslFx)&&!any(G.battFx)&&!any(G.loot))return;
   const pass=gpuScene();if(!pass)return;
   GEN.n=0;
   const zk=clamp(Z,.5,2),zones=[];
@@ -83,6 +83,18 @@ function gpuCombatEnergy(zx,zy,Z){
     const x0=zx(b.x1),y0=zy(b.y1),x1=zx(b.x2),y1=zy(b.y2);
     if(Math.max(x0,x1)<-40||Math.min(x0,x1)>W+40||Math.max(y0,y1)<-40||Math.min(y0,y1)>H+40)continue;
     genPush(x0,y0,x1,y1,b.w*zk*.55,b.w*zk*1.5,a*c[3],.8,c,a);
+  }
+  /* разряд батареи с грунта (21d): тот же луч, гаснет за четырнадцать кадров */
+  if(G.battFx)for(const f of G.battFx){
+    const a=Math.max(0,f.t/14);
+    genPush(zx(f.x1),zy(f.y1),zx(f.x2),zy(f.y2),Math.max(.8,1.3*a),2.6+2*(1-a),a*.9,.85,GEN_BATT,a*1.2);
+  }
+  /* свет маячка контейнера: коробка стоит в своём свете (цвет категории), огонёк — в 2D поверх */
+  if(G.loot)for(const L of G.loot){
+    const x=zx(L.x),y=zy(L.y);
+    if(x<-40||x>W+40||y<-40||y>H+40)continue;
+    const pulse=.45+.55*Math.abs(Math.sin(G.t*.05+L.spin));
+    const s=clamp(Z,.6,1.6)*7;genPush(x,y,x,y,.5,s*.8,pulse*.7,1,genCol(PART_KINDS[L.part.kind].col),0);
   }
   for(const s of G.shots){
     const x=zx(s.x),y=zy(s.y);

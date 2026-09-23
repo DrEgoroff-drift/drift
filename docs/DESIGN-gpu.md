@@ -67,8 +67,11 @@ The author, 23.09.2026: «переноси все на новые техноло
   h202–222 in the body). Same segment draws missile flames and mine lights; mine zones are a soft field plus a
   thin glowing edge; missile bursts are `gpuBooms` (a field, ≤14 per frame): ragged fireball cooling white →
   yellow → cherry inside a soft shock ring. 2D `minesDraw` and the missile flame/burst strokes are gone. Pair
-  `g4h_crop.png`, scene `combat2.js`.
-  **Next in G4:** the rest of combat (battery line, wrecks, loot — `drawCombat`, 13-pirates:349),
+  `g4h_crop.png`, scene `combat2.js`. The ground battery discharge (`G.battFx`) is the same segment (2D `battDraw`
+  gone); a loot box stands in a soft glow of its part colour from the GPU, its hex body and beacon dot stay 2D on
+  top. Pair `g4i_crop.png`, scene `combat3.js` (loot needs `vx:0,vy:0` or it goes NaN). Wreck and «left» markers
+  stay 2D: they are interface marks, not light.
+  **Next in G4:**
   drones, traffic, station
   (`drawStation`, 17c), barges; everything after the planet loop in drawSystem except the above is still 2D.
   A GPU draw after `gpuHullLight` must use `gpuOver`, not `gpuScene` (the scene pass is closed by then).
