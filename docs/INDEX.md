@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 595 · символов верхнего уровня: 5829
+Файлов: 595 · символов верхнего уровня: 5830
 
 ## СИМВОЛЫ
 
@@ -1440,7 +1440,7 @@ drawHomeOut                  src/21f-home-out.js:73-312
 drawHomeRoom                 src/27e-ui-home.js:42-62
 drawHotel                    src/17l-hotel.js:186-198
 drawHqRoom                   src/27f-hq-room.js:22-31
-drawHull                     src/03e-hull-draw.js:68-141
+drawHull                     src/03e-hull-draw.js:115-188
 drawHullMarks                src/03b-hull-paint.js:184-491
 drawKitFigure                src/12x-suit.js:202-299
 drawLander                   src/19f-lander.js:52-340
@@ -1535,6 +1535,7 @@ drawWinter                   src/29g-winter-draw.js:334-765
 drawWorld                    src/28-loop.js:399-424
 drawWreck                    src/20aa-poi-shapes.js:8-48
 drawWrecksSystem             src/12l-barge.js:362-388
+drawYardMark                 src/03e-hull-draw.js:71-114
 drDoors                      tests/91zzzzzn-doors.js:26-43
 DRILL_EAT                    src/13a-guns.js:37
 DRONE_BREAK_P                src/12e-drone-flight.js:21
@@ -2563,9 +2564,9 @@ hullHeld                     src/28-loop.js:9
 hullHeldTick                 src/28-loop.js:10-15
 hullInkBox                   src/03e1-hull-bake.js:112-123
 hullOf                       src/03a-hull-gen.js:1-532
-hullPart1                    src/03e-hull-draw.js:146-624
-hullPart2                    src/03e-hull-draw.js:626-629
-hullPart3                    src/03e-hull-draw.js:632-709
+hullPart1                    src/03e-hull-draw.js:193-671
+hullPart2                    src/03e-hull-draw.js:673-676
+hullPart3                    src/03e-hull-draw.js:679-756
 hullRole                     src/03f-hull-role.js:51
 hullShade                    src/03b-hull-paint.js:176-183
 hullSilhouette               src/27-ui-ship.js:9-43
@@ -5875,7 +5876,7 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## src/03d-hull-marks.js · 6 КБ
 
-## src/03e-hull-draw.js · 45 КБ
+## src/03e-hull-draw.js · 49 КБ
 
 ## src/03e1-hull-bake.js · 7 КБ
   · печка корпуса (Stage 0, 18.09):1
