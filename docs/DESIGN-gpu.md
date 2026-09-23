@@ -70,9 +70,13 @@ The author, 23.09.2026: «переноси все на новые техноло
   `g4h_crop.png`, scene `combat2.js`. The ground battery discharge (`G.battFx`) is the same segment (2D `battDraw`
   gone); a loot box stands in a soft glow of its part colour from the GPU, its hex body and beacon dot stay 2D on
   top. Pair `g4i_crop.png`, scene `combat3.js` (loot needs `vx:0,vy:0` or it goes NaN). Wreck and «left» markers
-  stay 2D: they are interface marks, not light.
-  **Next in G4:**
-  drones, traffic, station
+  stay 2D: they are interface marks, not light (the wreck's flat disc → PLAN G4c). Drones are `gpuDrones` (16ga):
+  the tail is one smooth ribbon over sixteen `dronePos` samples, the machine a light in the cargo colour (grey
+  spark when empty), the repair lamp breathes; labels stay 2D in `drawDronesSystem`. Pair `g4j_crop.png`, scene
+  `drones.js` (stubs `clockNow`). The hull light now leaves bright saturated pixels (nav lights, beacons) out of
+  both light and shadow (`own`), red and green lamps = main. `freeze.js` pins `G.t=12` every frame by wrapping
+  `drawSystem` — blinking lights otherwise catch different phases in the two shots.
+  **Next in G4:** traffic, station
   (`drawStation`, 17c), barges; everything after the planet loop in drawSystem except the above is still 2D.
   A GPU draw after `gpuHullLight` must use `gpuOver`, not `gpuScene` (the scene pass is closed by then).
 - Merge each: `build.ps1`, `python docs/shot.py <scenes> --look --tag gpu`, 0 `gpu.errs`, pair with

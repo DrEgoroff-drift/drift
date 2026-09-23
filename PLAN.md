@@ -28,6 +28,9 @@ Built: the core and post pass (08b), the layer kit (08c), the space backdrop (16
   removed. Bring it back as a UV offset by noise inside the flame cone in the post pass (08b).
 - [ ] **G4 the system view on top:** ships as sprites from the hull bake, lit from the star; wake, trail, exhaust
   and heat haze on the GPU; combat flashes, drones, traffic, the edge wall.
+- [ ] **G4c wrecks as hulls:** a wreck (`npcWreckDraw`, 13d-npc) is a flat dark disc labelled «КОРПУС». Draw it
+  as the NPC hull by `w.seed` through `hullOf`, broken, with smouldering edges, a slow spin and the star's light; the
+  label becomes a chip. After G4.
 - [ ] **G5 landing and surface, the air:** sky, sun, live clouds, haze, shafts, weather in depth, the night with
   its lamps, the water mirror, the grade.
 - [ ] **G6 landing and surface, the bodies:** ground chunks and far ridges as textures; deco, flora and fauna as

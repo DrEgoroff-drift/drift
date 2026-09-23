@@ -104,12 +104,16 @@ function gpuCombatEnergy(zx,zy,Z){
   }
   if(zones.length)gpuShapes(pass,zones,{blend:"add"});
   gpuBooms(pass,zx,zy,Z);
+  genDraw(pass,"gen");
+}
+/* накопленные genPush — одним вызовом; key — своё имя буфера на каждого, кто рисует в кадре */
+function genDraw(pass,key){
   if(!GEN.n)return;
   const U=GPUBufferUsage,d=GPU.dev,uu=GEN.u;
   const ub=gpuBuf("gen.u",32,U.UNIFORM|U.COPY_DST);uu[0]=GPU.bw;uu[1]=GPU.bh;uu[2]=W;uu[3]=H;uu[4]=DPR;d.queue.writeBuffer(ub,0,uu);
-  const eb=gpuBuf("gen.e",GEN.f.byteLength,U.STORAGE|U.COPY_DST);d.queue.writeBuffer(eb,0,GEN.f,0,GEN.n*12);
+  const eb=gpuBuf(key+".e",GEN.f.byteLength,U.STORAGE|U.COPY_DST);d.queue.writeBuffer(eb,0,GEN.f,0,GEN.n*12);
   const P=gpuPipe("gen",GEN_WGSL,"over");   /* over: свет луча заслоняет фон под собой — оттенок не плывёт в цвет туманности */
-  pass.setPipeline(P);pass.setBindGroup(0,gpuBind("gen",P,[ub,eb]));pass.draw(6,GEN.n);
+  pass.setPipeline(P);pass.setBindGroup(0,gpuBind(key,P,[ub,eb]));pass.draw(6,GEN.n);
 }
 /* разрывы ракет: до четырнадцати за кадр одним полем; V[i] = (x, y, радиус волны, остаток жизни) */
 const GBM=new Float32Array(60);

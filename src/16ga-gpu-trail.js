@@ -121,6 +121,59 @@ function gpuWake(zx,zy,Z){
   }
   gtrDraw(pass,"gwk");
 }
+/* ── дроны (G4) ──
+   Те же машины и то же положение по часам (dronePos), тот же цвет груза; лучше,
+   чем семь отрезков полилинии и два круга:
+   · хвост — одна гладкая лента по шестнадцати точкам, сужается и гаснет по длине,
+     без изломов на стыках;
+   · машина — огонёк: ядро и ореол в цвет груза у гружёной, тусклая искра у порожней;
+   · аварийная лампа того, кто стоит в ремонте, светит и дышит, а не мигает кругом. */
+const DRONE_SEG=16;
+function gpuDrones(zx,zy,Z){
+  const list=G.drones||[];if(!list.length)return;
+  const pass=gpuScene();if(!pass)return;
+  const now=clockNow(),k=clamp(Z,.7,1.8),rings=[];
+  GTR.n=0;GEN.n=0;
+  const grey=[150,170,180];
+  for(const d of list){
+    if((d.sx!==G.sx||d.sy!==G.sy)&&d.mkt&&d.mkt.sx===G.sx&&d.mkt.sy===G.sy&&!d.down){
+      droneNormalize(d,now);
+      const g=droneGuestPos(d,now);if(!g)continue;
+      const c=genCol((RES[d.res]&&RES[d.res].col)||"#cfe3ea");
+      genPush(zx(g.x),zy(g.y),zx(g.x),zy(g.y),(g.loaded?1.5:1.1)*k,(g.loaded?3:1.6)*k,g.loaded?.9:.5,1,g.loaded?c:[.67,.73,.77],g.loaded?.2:0);
+      continue;
+    }
+    if(d.sx!==G.sx||d.sy!==G.sy)continue;
+    droneNormalize(d,now);
+    const P=dronePos(d,now,G.sys),x=zx(P.x),y=zy(P.y);
+    if(x<-60||x>W+60||y<-60||y>H+60)continue;
+    const hex=(RES[d.res]&&RES[d.res].col)||"#cfe3ea",c=genCol(hex);
+    if(d.down>now){
+      const pu=.5+.5*Math.sin(now*.004),amb=[242/255,178/255,92/255];
+      genPush(x,y,x,y,1.8,3+pu*2.5,.35+pu*.55,1,amb,.25+pu*.3);
+      rings.push([3,x,y,6.5+pu*2,0,.6,2.5,242,178,92,.1+pu*.2]);
+      continue;
+    }
+    /* хвост: шестнадцать точек за те же 2.6 с */
+    const pts=[];
+    for(let i=0;i<DRONE_SEG;i++){const q=dronePos(d,now-i*(DRONE_TAIL_MS/DRONE_SEG),G.sys);pts.push([zx(q.x),zy(q.y)]);}
+    const c255=P.loaded?hex2rgb(hex):grey;
+    const node=i=>{
+      const u=1-i/(DRONE_SEG-1),p=pts[Math.max(0,i-1)],q=pts[Math.min(DRONE_SEG-1,i+1)];
+      let dx=q[0]-p[0],dy=q[1]-p[1];const l=Math.hypot(dx,dy)||1;dx/=l;dy/=l;
+      const hw=(P.loaded?1.9:1.3)*(.35+.65*u)*1.6+1;
+      const a=(P.loaded?.5:.26)*u*u;
+      return {x:pts[i][0],y:pts[i][1],nx:-dy*hw,ny:dx*hw,a,col:c255,k:.45,h:a*.35};
+    };
+    let A=node(0);
+    for(let i=1;i<DRONE_SEG;i++){const B=node(i);gtrLane(A,B);A=B;}
+    if(P.loaded)genPush(x,y,x,y,1.7*k,3.4*k,.95,1,c,.3);
+    else genPush(x,y,x,y,1.2*k,1.8*k,.55,1,[.67,.73,.77],0);
+  }
+  gtrDraw(pass,"gdt");
+  if(rings.length)gpuShapes(pass,rings,{blend:"add"});
+  genDraw(pass,"gdn");
+}
 /* ── факел сопла (G4) ──
    Та же геометрия (сопла в масштабе корпуса, длина от пульса, косметика «Сороки»:
    цвета, длина, ширина, двойной факел, кольцо); лучше, чем три градиентных
@@ -223,7 +276,7 @@ fn field(p:vec2f,uv0:vec2f)->vec4f{
   let dp=p-c;let rr=length(dp);
   if(rr>rad||any(uv<vec2f(0.))||any(uv>vec2f(1.))){return vec4f(0.);}
   let u1=vec2f(fu.res.x/fu.res.z/V[3].z);
-  let a=textureSampleLevel(t0,smp,uv,0.).a;
+  let c4=textureSampleLevel(t0,smp,uv,0.);let a=c4.a;
   if(a<.02){return vec4f(0.);}
   /* рельеф маски: узкий шаг даёт кромку, широкий — скат борта к середине */
   let L=normalize(vec3f(sd,.22));
@@ -237,10 +290,13 @@ fn field(p:vec2f,uv0:vec2f)->vec4f{
   let rim=pow(max(dot(n,L),0.),3.)*pow(1.-n.z,1.5);
   /* борт: скат к звезде теплеет, к лицевым граням спадает */
   let body=max(dot(nb,L),0.)*(1.-nb.z)*.3;
-  let lit=col*(rim*1.1+body)*a*fade*k;
+  /* огни светят сами и в тень не падают: яркое насыщенное (ходовые, маяки) — мимо света и тени */
+  let rgb=c4.rgb/max(a,1e-3);let mx=max(rgb.r,max(rgb.g,rgb.b));let sat=(mx-min(rgb.r,min(rgb.g,rgb.b)))/max(mx,1e-3);
+  let own=1.-smoothstep(.3,.55,sat*mx);
+  let lit=col*(rim*1.1+body)*a*fade*k*own;
   /* тень: перепад через весь корпус, дальний скат — глубже */
   let away=max(-dot(nb.xy,sd),0.)*(1.-nb.z);
-  let dark=clamp(.66*smoothstep(-.4,.6,-side)+.3*away,0.,.7)*a*fade*k;
+  let dark=clamp(.66*smoothstep(-.4,.6,-side)+.3*away,0.,.7)*a*fade*k*own;
   return vec4f(lit,dark);
 }`;
 function gpuHullLight(x,y,sx,sy,Z,sys){

@@ -229,7 +229,7 @@ function droneRoutes(){
    тусклый и бесцветный: направление торговли читается без единой подписи.
    Подпись появляется только на приближении — над миром висит лишь то, что
    нужно сейчас, а на общем плане нужен поток, а не имена.
-   Стоимость кадра: на дрон — восемь точек полилинии и один кружок. */
+   Рисует gpuDrones (16ga): хвост лентой по шестнадцати точкам, машина огоньком. */
 const DRONE_TAIL=8, DRONE_TAIL_MS=2600;
 /* ── гость (M350): дрон из соседнего сектора, который сдаёт на ЭТУ станцию ──
    В своей системе он уходит за край в сторону рынка; здесь он появляется с того
@@ -252,75 +252,32 @@ function droneGuestPos(d,now){
 function drawDronesSystem(zx,zy,Z){
   const list=G.drones||[];
   if(!list.length)return;
+  /* хвосты, огни и аварийные лампы — на видеокарте (gpuDrones, 16ga); здесь подписи */
+  gpuDrones(zx,zy,Z);
+  if(Z<=1.15)return;
   const now=clockNow();
-  ctx.lineCap="round";
   for(const d of list){
     if((d.sx!==G.sx||d.sy!==G.sy)&&d.mkt&&d.mkt.sx===G.sx&&d.mkt.sy===G.sy&&!d.down){
-      droneNormalize(d,now);
       const g=droneGuestPos(d,now);if(!g)continue;
-      const gx=zx(g.x),gy=zy(g.y),col=(RES[d.res]&&RES[d.res].col)||"#cfe3ea",k=clamp(Z,.7,1.8);
-      ctx.fillStyle=g.loaded?hexA(col,.85):"rgba(170,186,196,.7)";
-      ctx.beginPath();ctx.arc(gx,gy,(g.loaded?2.4:1.8)*k,0,TAU);ctx.fill();
-      if(Z>1.15){ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";ctx.fillStyle=hexA(col,.85);ctx.fillText(droneName(d)+" · ИЗ "+d.sx+":"+d.sy,gx,gy-9);}
+      const gx=zx(g.x),gy=zy(g.y),col=(RES[d.res]&&RES[d.res].col)||"#cfe3ea";
+      ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";ctx.fillStyle=hexA(col,.85);ctx.fillText(droneName(d)+" · ИЗ "+d.sx+":"+d.sy,gx,gy-9);
       continue;
     }
     if(d.sx!==G.sx||d.sy!==G.sy)continue;
-    droneNormalize(d,now);
+    droneNormalize(d,now);if(d.down>now)continue;
     const col=(RES[d.res]&&RES[d.res].col)||"#cfe3ea";
     const P=dronePos(d,now,G.sys);
     const x=zx(P.x),y=zy(P.y);
     if(x<-60||x>W+60||y<-60||y>H+60)continue;
-    /* ── стоит в ремонте ──
-       Единственное мигание, которое игре разрешено, — аварийная лампа; это
-       она. Дрон стоит у станции, куда дотянул, и ждёт своих людей. */
-    if(d.down>now){
-      const pu=.5+.5*Math.sin(now*.004);
-      ctx.fillStyle="rgba(242,178,92,"+(.25+pu*.5).toFixed(3)+")";
-      ctx.beginPath();ctx.arc(x,y,3.4,0,TAU);ctx.fill();
-      ctx.strokeStyle="rgba(242,178,92,"+(.15+pu*.3).toFixed(3)+")";ctx.lineWidth=1;
-      ctx.beginPath();ctx.arc(x,y,6.5+pu*2,0,TAU);ctx.stroke();
-      continue;
-    }
-    /* хвост: где он был последние секунды. Не линия маршрута, а след машины —
-       поэтому он короткий и гаснет. */
-    /* хвост гаснет ПО ДЛИНЕ: одна полилиния одной прозрачности читается
-       палкой, а не следом. Семь коротких отрезков, каждый тусклее и тоньше */
-    let prev=null;
-    for(let i=0;i<DRONE_TAIL;i++){
-      const q=dronePos(d,now-i*(DRONE_TAIL_MS/DRONE_TAIL),G.sys);
-      const qx=zx(q.x),qy=zy(q.y);
-      if(prev){
-        const a=(1-i/DRONE_TAIL)*(1-i/DRONE_TAIL);
-        ctx.strokeStyle=P.loaded?hexA(col,(.38*a).toFixed(3)):"rgba(150,170,180,"+(.20*a).toFixed(3)+")";
-        ctx.lineWidth=(P.loaded?1.9:1.3)*(1-i/DRONE_TAIL*.65);
-        ctx.beginPath();ctx.moveTo(prev[0],prev[1]);ctx.lineTo(qx,qy);ctx.stroke();
-      }
-      prev=[qx,qy];
-    }
-    /* сама машина: гружёная — цветная точка с искрой, порожняя — серая крупинка */
-    /* размер идёт за камерой: на общем плане это крупинка, вблизи — машина.
-       Постоянные 2.6 px делали порожний дрон невидимым на любом приближении */
     const k=clamp(Z,.7,1.8);
-    if(P.loaded){
-      ctx.fillStyle=hexA(col,.9);
-      ctx.beginPath();ctx.arc(x,y,2.6*k,0,TAU);ctx.fill();
-      ctx.fillStyle=hexA(col,.22);
-      ctx.beginPath();ctx.arc(x,y,5.2*k,0,TAU);ctx.fill();
-    }else{
-      ctx.fillStyle="rgba(170,186,196,.75)";
-      ctx.beginPath();ctx.arc(x,y,2*k,0,TAU);ctx.fill();
-    }
-    /* имя и груз — только когда камера подошла близко */
-    if(Z>1.15){
-      /* подпись тонет в свете звезды: над короной цвет груза читался пятном.
-         Тень под буквой стоит копейки и держит текст на любом фоне (закон 3
-         про кромку — та же мысль, только для шрифта) */
-      const t=droneName(d)+" · "+RES[d.res].ru.toUpperCase()+(droneFar(d)?" → "+d.mkt.name.toUpperCase():"");
-      const ly=y-9-5*(k-1);
-      ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
-      ctx.fillStyle="rgba(4,6,10,.8)";ctx.fillText(t,x+1,ly+1);
-      ctx.fillStyle=hexA(col,.92);ctx.fillText(t,x,ly);
-    }
+    /* подпись тонет в свете звезды: над короной цвет груза читался пятном.
+       Тень под буквой стоит копейки и держит текст на любом фоне (закон 3
+       про кромку — та же мысль, только для шрифта) */
+    const t=droneName(d)+" · "+RES[d.res].ru.toUpperCase()+(droneFar(d)?" → "+d.mkt.name.toUpperCase():"");
+    const ly=y-9-5*(k-1);
+    ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+    ctx.fillStyle="rgba(4,6,10,.8)";ctx.fillText(t,x+1,ly+1);
+    ctx.fillStyle=hexA(col,.92);ctx.fillText(t,x,ly);
   }
 }
 /* цвет ресурса задан строкой «#rrggbb»; прозрачность к нему добавляем здесь,

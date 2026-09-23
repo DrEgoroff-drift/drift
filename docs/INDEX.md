@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 602 · символов верхнего уровня: 5899
+Файлов: 602 · символов верхнего уровня: 5902
 
 ## СИМВОЛЫ
 
@@ -1400,8 +1400,8 @@ drawDeposit                  src/21b-surface-deco.js:406-560
 drawDig                      src/23a-dig-draw.js:655-659
 drawDigFauna                 src/23-mode-dig.js:332-341
 drawDigWorld                 src/23a-dig-draw.js:45-607
-drawDronesMap                src/12e-drone-flight.js:338-356
-drawDronesSystem             src/12e-drone-flight.js:252-325
+drawDronesMap                src/12e-drone-flight.js:295-313
+drawDronesSystem             src/12e-drone-flight.js:252-282
 drawDustMotes                src/19-mode-landing.js:271-284
 drawEdgeWall                 src/17-mode-system.js:69-78
 drawElevator                 src/20aa-poi-shapes.js:91-113
@@ -1532,6 +1532,7 @@ DRONE_FIX_MS                 src/12e-drone-flight.js:24
 DRONE_MAX_CATCHUP            src/12e-drone-flight.js:27
 DRONE_NAMES                  src/12e-drone-flight.js:43
 DRONE_QUIRKS                 src/12e-drone-flight.js:44-51
+DRONE_SEG                    src/16ga-gpu-trail.js:131
 DRONE_TAIL                   src/12e-drone-flight.js:233
 DRONE_TRIP_BASE              src/12e-drone-flight.js:18
 droneBreakP                  src/12e-drone-flight.js:171-175
@@ -1944,8 +1945,8 @@ galBake                      src/17z1-galaxy.js:80-95
 galPlaceName                 src/17z2-galaxy-names.js:29-36
 galTile                      src/17z1-galaxy.js:67-78
 GATE_WHY                     tests/91zzzzzl-gates.js:19
-GBM                          src/13z-gpu-combat.js:115
-GBM_WGSL                     src/13z-gpu-combat.js:116
+GBM                          src/13z-gpu-combat.js:119
+GBM_WGSL                     src/13z-gpu-combat.js:120
 GEN                          src/13z-gpu-combat.js:16
 GEN_MINE                     src/13z-gpu-combat.js:60
 GEN_WGSL                     src/13z-gpu-combat.js:17
@@ -1954,6 +1955,7 @@ genBeltPOI                   src/24b-belt-poi.js:20-47
 genCol                       src/13z-gpu-combat.js:48-53
 genDeco                      src/21b-surface-deco.js:37-140
 genDesc                      src/01-core.js:200-211
+genDraw                      src/13z-gpu-combat.js:110-117
 genMerc                      src/12a-crew.js:63-92
 genMgr                       src/12c-mgr-core.js:237-256
 genName                      src/01-core.js:183
@@ -1990,11 +1992,11 @@ gestTick                     src/17h-sys-gesture.js:52-79
 getSystem                    src/06-galaxy.js:99-193
 GEW                          src/17-mode-system.js:48
 GEW_WGSL                     src/17-mode-system.js:49
-GEX                          src/16ga-gpu-trail.js:133
-GEX_WGSL                     src/16ga-gpu-trail.js:134
-gexPush                      src/16ga-gpu-trail.js:174-180
-GHL                          src/16ga-gpu-trail.js:216
-GHL_WGSL                     src/16ga-gpu-trail.js:217
+GEX                          src/16ga-gpu-trail.js:186
+GEX_WGSL                     src/16ga-gpu-trail.js:187
+gexPush                      src/16ga-gpu-trail.js:227-233
+GHL                          src/16ga-gpu-trail.js:269
+GHL_WGSL                     src/16ga-gpu-trail.js:270
 GIANT                        src/19a-mode-scoop.js:192
 GIANT_CV                     src/17o-giants.js:68
 GIANT_KEEP                   src/19a-mode-scoop.js:193
@@ -2088,15 +2090,16 @@ GPU_SHP_WGSL                 src/08c-gpu-kit.js:134
 GPU_WGSL_COMMON              src/08c-gpu-kit.js:53
 gpuArena                     src/08c-gpu-kit.js:73-83
 gpuBind                      src/08c-gpu-kit.js:28-34
-gpuBooms                     src/13z-gpu-combat.js:139-151
+gpuBooms                     src/13z-gpu-combat.js:143-155
 gpuBuf                       src/08c-gpu-kit.js:21-26
 gpuCanvasTex                 src/08c-gpu-kit.js:37-50
-gpuCombatEnergy              src/13z-gpu-combat.js:61-113
+gpuCombatEnergy              src/13z-gpu-combat.js:61-108
+gpuDrones                    src/16ga-gpu-trail.js:132-176
 gpuDrop                      src/08b-gpu.js:72-77
-gpuExhaust                   src/16ga-gpu-trail.js:181-206
+gpuExhaust                   src/16ga-gpu-trail.js:234-259
 gpuField                     src/08c-gpu-kit.js:189-217
 gpuFrame                     src/08b-gpu.js:205-214
-gpuHullLight                 src/16ga-gpu-trail.js:246-265
+gpuHullLight                 src/16ga-gpu-trail.js:302-321
 gpuImage                     src/08c-gpu-kit.js:117-129
 gpuKitU                      src/08c-gpu-kit.js:89-93
 gpuManual                    src/08b-gpu.js:262-267
@@ -2413,7 +2416,7 @@ helmTick                     src/15a-helm.js:363-447
 helmTrail                    src/15a-helm.js:209-215
 helmTrailAge                 src/15a-helm.js:216-219
 hex2rgb                      src/01-core.js:218-221
-hexA                         src/12e-drone-flight.js:328-334
+hexA                         src/12e-drone-flight.js:285-291
 hexa                         src/12w-survey.js:91-94
 hexRGB                       src/24-mode-belt.js:81-83
 HIN_DOORW                    src/29c-home-in.js:24
@@ -6338,10 +6341,10 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/12d-mgr-face.js · 13 КБ
   · портреты управляющих:1
 
-## src/12e-drone-flight.js · 24 КБ
+## src/12e-drone-flight.js · 21 КБ
   · дроны летают:1
   · дрон в кадре:227
-  · куда делась вкладка РЕЙСЫ:358
+  · куда делась вкладка РЕЙСЫ:315
 
 ## src/12e-mgr-jobs.js · 19 КБ
   · поручения управляющих:1
@@ -6525,7 +6528,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/13d-npc.js · 13 КБ
   · война, которую видно (M372, §7.4):1
 
-## src/13z-gpu-combat.js · 9 КБ
+## src/13z-gpu-combat.js · 10 КБ
   · болты и лучи боя на видеокарте (G4, docs/DESIGN-gpu.md):1
 
 ## src/14-save.js · 48 КБ
@@ -6590,7 +6593,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/16g-gpu-space.js · 12 КБ
   · космос на видеокарте (G1, docs/DESIGN-gpu.md):1
 
-## src/16ga-gpu-trail.js · 17 КБ
+## src/16ga-gpu-trail.js · 20 КБ
   · шлейф, факел и свет на корпусе корабля на видеокарте (G4, docs/DESIGN-gpu.md):1
 
 ## src/17-mode-system.js · 73 КБ
