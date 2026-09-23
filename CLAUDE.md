@@ -43,8 +43,9 @@ Documents work the same way — in parts, not whole:
 
 | What you need | Where to go |
 |---|---|
-| what to do next | `PLAN.md` (≤100 KB, guarded by `build.ps1`) — rules, loose ends, open queues; safe to read whole |
-| why something was done this way | `docs/PLAN-archive.md` (~600 KB) — **grep by milestone only** |
+| what to do next | `PLAN.md` — only the open work, by milestone (≤ 40 KB, guarded by `build.ps1`); safe to read whole |
+| the rules and decisions that stand | `docs/DECISIONS.md` — cross-cutting rules, the frame's laws, the author's decisions; read the part a question touches |
+| why something was done this way | `docs/done/` — the closed plan in files of ≤ 40 KB, index in `README.md`; **grep by milestone**, then read one file |
 | what changed in a version | `PATCHNOTES.md` — newest first, the first 40 lines usually suffice |
 | where a symbol is declared | `docs/INDEX.md` — grep only |
 | the designs behind the working plan's stages 2–6 | `docs/DESIGN-review-2026-09-14.md` first (it overrides the six), then `DESIGN-borders`, `-life`, `-metro`, `-resources`, `-shipyard`, `-birchpunk`; background reading in `docs/RESEARCH-2026-09-14.md` — never cited in `PLAN.md` |
@@ -52,14 +53,14 @@ Documents work the same way — in parts, not whole:
 | craft laws behind the visual queue | `docs/DESIGN-craft.md` — rules taken from painting traditions, each tied to a module |
 | narrative research + the combined craft plan | `docs/DESIGN-story-craft.md` — deed turns, glyph grammar, pacing clocks; its last section orders all craft work |
 
-Never read whole: `docs/PLAN-archive.md`, `docs/INDEX.md`, `drift.html`, `tests.html`
+Never read whole: `docs/INDEX.md`, `drift.html`, `tests.html`
 (the last two are build artifacts — there is nothing to find in them that is not in
 `src/` and `tests/`).
 
 ## Size guard
 
 `build.ps1` warns when a module in `src/` or a suite in `tests/` passes **40 KB**, and when
-`PLAN.md` passes **100 KB** — a reminder, not an error: past that a file can no longer be read
+`PLAN.md` or a file in `docs/done/` passes **40 KB** — a reminder, not an error: past that a file can no longer be read
 whole cheaply. The rule looks forward. Modules already over the line for good reason are listed
 in `build.ps1` (`$BULK_OLD`) and stay silent until they **grow**; a new one crossing it is
 flagged at once. When splitting: cut along an existing seam, keep the concatenation order, never
@@ -74,7 +75,7 @@ git config core.hooksPath .githooks
 ```
 
 **The default answer for a new picture is no.** `docs/shots/*.png` is ignored and whitelists
-only the 24 frames `README.md`/`ALMANAC.md`/`PLAN-archive.md` actually cite; a stand is meant to
+only the 24 frames `README.md`/`ALMANAC.md`/`docs/done/` actually cite; a stand is meant to
 be looked at through `dev.ps1`, which needs no file in git at all. **And a reshoot is not free**
 — those 24 frames weigh 24 MB, git cannot delta a PNG, so every wholesale reshoot writes 24 MB
 into history for ever (`scoop.png` alone piled up 48 MB). Reshoot only the frames a change
@@ -290,8 +291,9 @@ RMS and spectrum, measuring the node's output, never `AudioParam.value`.
 The game version is the `VER` constant in `01-core`, also shown on the title screen. What changed
 and when is in [`PATCHNOTES.md`](PATCHNOTES.md), one entry per version.
 
-The live plan is [`PLAN.md`](PLAN.md): cross-cutting rules, the loose ends and the open queues. Completed milestones are moved to
-[`docs/PLAN-archive.md`](docs/PLAN-archive.md) as documentation of decisions — grep it for a
-specific milestone, don't read it through. New work is written into `PLAN.md`, one milestone per
-commit; when a milestone closes, its body moves to the archive **in the same commit** and one
-line stays — the live plan must stay under 100 KB, or every session pays for the history.
+The plan is [`PLAN.md`](PLAN.md): only what we want next, by milestone, each stage with its gate
+(the author, 23.09: «план это план, а не то что мы сделали»). What is done is not kept there: a
+finished item is deleted from `PLAN.md` **in the commit that finishes it** and its story goes to
+the patchnote; a long body worth keeping goes to [`docs/done/`](docs/done/README.md) — files of at
+most 40 KB, grepped by milestone, never read through. The rules and decisions that outlive any
+item are in [`docs/DECISIONS.md`](docs/DECISIONS.md).
