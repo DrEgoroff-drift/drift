@@ -51,7 +51,7 @@ function rentSay(m){
   m.rent.n=(m.rent.n|0)+1;
   if(m.rent.tier==="base"&&m.rent.n%3===0){
     if(rentBaseBurning()&&!m.rent.spared){m.rent.spared=1;mgrSay(m,"Рекламу пропускаем. У вас горит база.");return;}
-    mgrSay(m,"Реклама: "+RENT_ADS[m.rent.n/3%RENT_ADS.length|0]);
+    mgrSay(m,RENT_ADS[m.rent.n/3%RENT_ADS.length|0],"ad");   /* в ленте — баннером (D22) */
   }
   if(T.opin&&m.rent.n%4===0)mgrSay(m,RENT_OPIN[m.rent.n/4%RENT_OPIN.length|0]);
 }

@@ -1705,7 +1705,7 @@ FACE_SKIN                    src/12d-mgr-face.js:10
 faceEl                       src/27c-ui-hq.js:6-12
 facePath                     src/12d-mgr-face.js:19-28
 faceRnd                      src/12d-mgr-face.js:16
-factPrices                   src/27c-ui-hq.js:581-598
+factPrices                   src/27c-ui-hq.js:587-604
 FAME_N                       src/21b3-base-hunt.js:27
 fameOf                       src/21b3-base-hunt.js:98-102
 fameWhere                    src/21b3-base-hunt.js:103-115
@@ -2514,14 +2514,14 @@ HOUSES                       src/12u-scrip.js:21-26
 houseWallMark                src/17d-house-shapes.js:72-94
 HQ_H                         src/27f-hq-room.js:18
 HQ_ORDER                     src/27f-hq-room.js:21
-hqAiOffer                    src/27c-ui-hq.js:478-498
+hqAiOffer                    src/27c-ui-hq.js:484-504
 hqBtnTick                    src/27c-ui-hq.js:315-321
 hqConsole                    src/27f-hq-room.js:228-314
 hqFigure                     src/27f-hq-room.js:513-614
 hqHover                      src/27f-hq-room.js:687
-hqJobCard                    src/27c-ui-hq.js:538-576
-hqRelicSlot                  src/27c-ui-hq.js:504-534
-hqRender                     src/27c-ui-hq.js:322-473
+hqJobCard                    src/27c-ui-hq.js:544-582
+hqRelicSlot                  src/27c-ui-hq.js:510-540
+hqRender                     src/27c-ui-hq.js:322-479
 hqRentOffer                  src/12f1-mgr-rent.js:59-77
 hqRoomBody                   src/27f-hq-room.js:32-167
 hqScene                      src/27f-hq-room.js:644-686
@@ -3132,7 +3132,7 @@ mgrCrewYield                 src/12c-mgr-core.js:204-208
 mgrCut                       src/12c-mgr-core.js:174-182
 mgrDefect                    src/12c-mgr-core.js:349-356
 mgrDomain                    src/12c-mgr-core.js:518-528
-mgrDomainLine                src/27c-ui-hq.js:600-619
+mgrDomainLine                src/27c-ui-hq.js:606-625
 mgrDroneRate                 src/12c-mgr-core.js:220-223
 mgrFace                      src/12d-mgr-face.js:29-205
 mgrFee                       src/12c-mgr-core.js:300
@@ -3472,7 +3472,7 @@ opCensus                     tests/91zzzzzt-opis.js:15-21
 openBarge                    src/12l-barge.js:637-646
 openCrewView                 src/27b-ui-crew.js:230-236
 openDeal                     src/27n-ui-deal.js:198-203
-openHq                       src/27c-ui-hq.js:620-625
+openHq                       src/27c-ui-hq.js:626-631
 openStation                  src/26-ui-station.js:20
 openStationBody              src/26-ui-station.js:21-125
 openWanderer                 src/24c-mode-wanderer.js:22-41
@@ -5238,7 +5238,7 @@ TAB_ID                       src/14a-cloud.js:20
 TAB_LIVE                     src/14a-cloud.js:19
 TABLE_REPLY                  src/11b-speech.js:158-187
 tableBake                    src/27i-ui-table.js:145-182
-tableBlock                   src/27c-ui-hq.js:640-728
+tableBlock                   src/27c-ui-hq.js:646-734
 tableHead                    src/27i-ui-table.js:191-198
 tableIsOpen                  src/27i-ui-table.js:23
 tableNewBy                   src/27i-ui-table.js:111-118

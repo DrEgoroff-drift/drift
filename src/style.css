@@ -1759,6 +1759,11 @@ body.table u.addr{color:#7a4a20}
   font:700 11px/1.3 ui-monospace,monospace;text-align:center;transform:rotate(var(--tilt,0deg));opacity:.85}
 .stp-cell i{position:absolute;right:4px;bottom:2px;font-style:normal;font-size:10px;opacity:.7}
 /* ядро Хай-Фронта в аренду — глянцевая карточка (M488, D22) */
+.mg-ad{display:block;position:relative;margin:6px 0;padding:6px 26px 6px 8px;border-radius:6px;color:#0f2a38;font-size:11px;line-height:1.35;
+  background:linear-gradient(170deg,#f4fbff 0%,#cfefff 55%,#a9dcf2 100%);box-shadow:inset 0 1px 0 #fff,0 1px 3px rgba(0,0,0,.55)}
+.mg-ad i{display:inline-block;margin-right:6px;padding:0 4px;border-radius:2px;font-style:normal;font-size:8px;letter-spacing:.14em;
+  vertical-align:1px;color:#fff;background:#1f8fc4}
+.mg-ad::after{content:"◉";position:absolute;right:8px;top:50%;transform:translateY(-50%);color:#1f8fc4;font-size:12px}
 .rent-card{margin:14px 12px;border-radius:10px;overflow:hidden;color:#dbe8f0;
   background:linear-gradient(160deg,#243642,#111a20 55%,#0d1418);border:1px solid rgba(140,220,255,.45);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 8px 24px rgba(0,0,0,.45)}

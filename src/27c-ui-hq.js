@@ -380,7 +380,13 @@ function hqRender(){
   if(m.log&&m.log.length){
     const COL={warn:"#ff9d7a",good:"#8fd08a"};
     $hqBody.appendChild(el("div","row","<div class='nm'><b>Что он говорит</b><s>"+
-      m.log.map(e=>"<span style='color:"+(COL[e.k]||"var(--dim)")+"'>• "+e.s+"</span>").join("<br>")+
+      m.log.map(e=>{
+        /* реклама арендного ядра — вклейкой Хай-Фронта, а не строкой его речи (D22);
+           старые записи несли префикс «Реклама: » */
+        const ad=e.k==="ad"||/^Реклама: /.test(e.s);
+        return ad?"<span class='mg-ad'><i>РЕКЛАМА</i>"+e.s.replace(/^Реклама: /,"")+"</span>":
+          "<span style='color:"+(COL[e.k]||"var(--dim)")+"'>• "+e.s+"</span><br>";
+      }).join("")+
       "</s></div>"));
   }
   /* перки: дерево видно целиком, включая невыученное — игрок должен планировать.

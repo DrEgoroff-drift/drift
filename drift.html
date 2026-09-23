@@ -1773,6 +1773,11 @@ body.table u.addr{color:#7a4a20}
   font:700 11px/1.3 ui-monospace,monospace;text-align:center;transform:rotate(var(--tilt,0deg));opacity:.85}
 .stp-cell i{position:absolute;right:4px;bottom:2px;font-style:normal;font-size:10px;opacity:.7}
 /* ядро Хай-Фронта в аренду — глянцевая карточка (M488, D22) */
+.mg-ad{display:block;position:relative;margin:6px 0;padding:6px 26px 6px 8px;border-radius:6px;color:#0f2a38;font-size:11px;line-height:1.35;
+  background:linear-gradient(170deg,#f4fbff 0%,#cfefff 55%,#a9dcf2 100%);box-shadow:inset 0 1px 0 #fff,0 1px 3px rgba(0,0,0,.55)}
+.mg-ad i{display:inline-block;margin-right:6px;padding:0 4px;border-radius:2px;font-style:normal;font-size:8px;letter-spacing:.14em;
+  vertical-align:1px;color:#fff;background:#1f8fc4}
+.mg-ad::after{content:"◉";position:absolute;right:8px;top:50%;transform:translateY(-50%);color:#1f8fc4;font-size:12px}
 .rent-card{margin:14px 12px;border-radius:10px;overflow:hidden;color:#dbe8f0;
   background:linear-gradient(160deg,#243642,#111a20 55%,#0d1418);border:1px solid rgba(140,220,255,.45);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 8px 24px rgba(0,0,0,.45)}
@@ -29894,7 +29899,7 @@ function rentSay(m){
   m.rent.n=(m.rent.n|0)+1;
   if(m.rent.tier==="base"&&m.rent.n%3===0){
     if(rentBaseBurning()&&!m.rent.spared){m.rent.spared=1;mgrSay(m,"Рекламу пропускаем. У вас горит база.");return;}
-    mgrSay(m,"Реклама: "+RENT_ADS[m.rent.n/3%RENT_ADS.length|0]);
+    mgrSay(m,RENT_ADS[m.rent.n/3%RENT_ADS.length|0],"ad");   /* в ленте — баннером (D22) */
   }
   if(T.opin&&m.rent.n%4===0)mgrSay(m,RENT_OPIN[m.rent.n/4%RENT_OPIN.length|0]);
 }
@@ -87874,7 +87879,13 @@ function hqRender(){
   if(m.log&&m.log.length){
     const COL={warn:"#ff9d7a",good:"#8fd08a"};
     $hqBody.appendChild(el("div","row","<div class='nm'><b>Что он говорит</b><s>"+
-      m.log.map(e=>"<span style='color:"+(COL[e.k]||"var(--dim)")+"'>• "+e.s+"</span>").join("<br>")+
+      m.log.map(e=>{
+        /* реклама арендного ядра — вклейкой Хай-Фронта, а не строкой его речи (D22);
+           старые записи несли префикс «Реклама: » */
+        const ad=e.k==="ad"||/^Реклама: /.test(e.s);
+        return ad?"<span class='mg-ad'><i>РЕКЛАМА</i>"+e.s.replace(/^Реклама: /,"")+"</span>":
+          "<span style='color:"+(COL[e.k]||"var(--dim)")+"'>• "+e.s+"</span><br>";
+      }).join("")+
       "</s></div>"));
   }
   /* перки: дерево видно целиком, включая невыученное — игрок должен планировать.
