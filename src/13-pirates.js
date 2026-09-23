@@ -349,7 +349,6 @@ function killPirate(p){
 function drawCombat(zx,zy,Z){
   /* лучи (M364) и болты — светящейся энергией на видеокарте (13z) */
   gpuCombatEnergy(zx,zy,Z);
-  if(typeof minesDraw==="function")minesDraw(zx,zy,Z);
   /* линия батареи с грунта (21d) — рисуется до всего остального, чтобы луч
      уходил под корабли, а не поверх них */
   if(typeof battDraw==="function")battDraw(zx,zy,Z);

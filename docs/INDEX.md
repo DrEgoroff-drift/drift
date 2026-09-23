@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 602 · символов верхнего уровня: 5898
+Файлов: 602 · символов верхнего уровня: 5900
 
 ## СИМВОЛЫ
 
@@ -140,7 +140,7 @@ applySaveRest                src/14a1-save-rest.js:15-392
 applyVolumes                 src/09-audio.js:40-47
 apVel                        src/16-flight.js:126
 ARC_JUMP                     src/13a-guns.js:39
-arcHit                       src/13a-guns.js:356-373
+arcHit                       src/13a-guns.js:337-354
 ARMED_CAP                    src/13-combat.js:12
 armedCount                   src/13-combat.js:236
 arrive                       src/16-flight.js:172-210
@@ -1391,7 +1391,7 @@ drawCheburek                 src/17j-cheburek.js:22-62
 drawChunks                   src/18c-chunks.js:90-96
 drawClouds                   src/19e-clouds.js:386-528
 drawCockpit                  src/25-cockpit.js:400-674
-drawCombat                   src/13-pirates.js:349-443
+drawCombat                   src/13-pirates.js:349-442
 drawCosmMark                 src/12va-wander-cosm.js:112-132
 drawCrowns                   src/05a-nodes.js:379-414
 drawCrystalForest            src/20aa-poi-shapes.js:115-141
@@ -1795,8 +1795,8 @@ fittedGuns                   src/05-parts.js:323-334
 fittedOfKind                 src/05-parts.js:314-317
 fittedParts                  src/05-parts.js:344-348
 flagOf                       src/12al-powers.js:94-100
-flakCatch                    src/13a-guns.js:450-464
-flakTick                     src/13a-guns.js:398-417
+flakCatch                    src/13a-guns.js:431-445
+flakTick                     src/13a-guns.js:379-398
 FLEA_EPOCH                   src/12ua-flea.js:26
 FLEA_GOT                     src/12ua-flea.js:27
 FLEA_MARKUP                  src/12ua-flea.js:24
@@ -1858,7 +1858,7 @@ floraOf                      src/20e-species.js:91-105
 FOE_ARM_COOL                 src/13d-loadout.js:31
 FOE_KINDS                    src/24a-mode-raid.js:17-22
 foeArmFire                   src/13d-loadout.js:51-130
-foeFlak                      src/13a-guns.js:424-448
+foeFlak                      src/13a-guns.js:405-429
 foeGun                       src/13d-loadout.js:40-48
 foeMineLay                   src/13d-loadout.js:132-141
 foeTetherTick                src/13d-loadout.js:145-159
@@ -1945,12 +1945,14 @@ galBake                      src/17z1-galaxy.js:80-95
 galPlaceName                 src/17z2-galaxy-names.js:29-36
 galTile                      src/17z1-galaxy.js:67-78
 GATE_WHY                     tests/91zzzzzl-gates.js:19
-GEN                          src/13z-gpu-combat.js:10
-GEN_MINE                     src/13z-gpu-combat.js:50
-GEN_WGSL                     src/13z-gpu-combat.js:11
+GBM                          src/13z-gpu-combat.js:103
+GBM_WGSL                     src/13z-gpu-combat.js:104
+GEN                          src/13z-gpu-combat.js:16
+GEN_MINE                     src/13z-gpu-combat.js:60
+GEN_WGSL                     src/13z-gpu-combat.js:17
 genBeast                     src/20f-fauna.js:58-60
 genBeltPOI                   src/24b-belt-poi.js:20-47
-genCol                       src/13z-gpu-combat.js:38-43
+genCol                       src/13z-gpu-combat.js:48-53
 genDeco                      src/21b-surface-deco.js:37-140
 genDesc                      src/01-core.js:200-211
 genMerc                      src/12a-crew.js:63-92
@@ -1959,7 +1961,7 @@ genName                      src/01-core.js:183
 genPart                      src/05-parts.js:144-217
 genPlant                     src/20-life.js:189-191
 genPOI                       src/20a-poi.js:32-75
-genPush                      src/13z-gpu-combat.js:44-49
+genPush                      src/13z-gpu-combat.js:54-59
 genRaid                      src/24a-mode-raid.js:30-72
 genTerrain                   src/07a-terrain.js:73-198
 genUniqueShip                src/03-ships.js:16-27
@@ -2087,9 +2089,10 @@ GPU_SHP_WGSL                 src/08c-gpu-kit.js:134
 GPU_WGSL_COMMON              src/08c-gpu-kit.js:53
 gpuArena                     src/08c-gpu-kit.js:73-83
 gpuBind                      src/08c-gpu-kit.js:28-34
+gpuBooms                     src/13z-gpu-combat.js:127-139
 gpuBuf                       src/08c-gpu-kit.js:21-26
 gpuCanvasTex                 src/08c-gpu-kit.js:37-50
-gpuCombatEnergy              src/13z-gpu-combat.js:51-74
+gpuCombatEnergy              src/13z-gpu-combat.js:61-101
 gpuDrop                      src/08b-gpu.js:72-77
 gpuExhaust                   src/16ga-gpu-trail.js:181-206
 gpuField                     src/08c-gpu-kit.js:189-217
@@ -2554,7 +2557,7 @@ homeSpotX                    src/21f-home-out.js:34-54
 homeStore                    src/12j-home.js:189-195
 homeTurn                     src/12j-home.js:47-77
 homeUpWorld                  tests/91zzzc-home-up.js:5-9
-homingStep                   src/13a-guns.js:489-496
+homingStep                   src/13a-guns.js:470-477
 HOTEL_BAKE                   src/17l-hotel.js:42
 HOTEL_NIGHT                  src/17l-hotel.js:11
 HOTEL_SIGN                   src/17l-hotel.js:10
@@ -2726,7 +2729,7 @@ islandState                  src/11y-island.js:24
 islandTake                   src/11y-island.js:33-39
 JAM_R                        src/13a-guns.js:34
 JAM_TIME                     src/13a-guns.js:35
-jamPulse                     src/13a-guns.js:343-352
+jamPulse                     src/13a-guns.js:324-333
 JET_BURN                     src/20d-jetpack.js:17
 JET_KICK                     src/20d-jetpack.js:19
 jetCanLift                   src/20d-jetpack.js:21
@@ -3261,7 +3264,6 @@ mineLay                      src/13a-guns.js:267-275
 mineLoad                     src/23a-dig-draw.js:629-638
 MINERAL                      src/18a-material.js:32
 mineSave                     src/23a-dig-draw.js:639-648
-minesDraw                    src/13a-guns.js:321-339
 mineSpotX                    src/23a-dig-draw.js:621-624
 minesTick                    src/13a-guns.js:276-320
 MIRROR_CORE                  src/11f-mirror.js:22-29
@@ -3328,7 +3330,7 @@ MSL_TURN                     src/16b-missile.js:15
 MSL_VMAX                     src/16b-missile.js:18
 mslBoom                      src/16b-missile.js:154-167
 mslCheck                     src/16b-missile.js:114-120
-mslDraw                      src/16b-missile.js:253-281
+mslDraw                      src/16b-missile.js:253-269
 mslFire                      src/16b-missile.js:121-153
 mslFoeFire                   src/16b-missile.js:172-181
 mslKindKeyOf                 src/16b-missile.js:50-53
@@ -4262,7 +4264,7 @@ rallyRows                    src/12at-vote.js:79
 RAM_K                        src/13a-guns.js:44
 RAM_R                        src/13a-guns.js:43
 ramp                         src/07-planet.js:2-7
-ramTick                      src/13a-guns.js:469-488
+ramTick                      src/13a-guns.js:450-469
 RANGE_DIST                   src/24d-range.js:13
 RANGE_SEC                    src/24d-range.js:12
 rangeCanHere                 src/24d-range.js:15
@@ -5390,7 +5392,7 @@ testNetHits                  tests/90-harness.js:419-429
 testSource                   tests/90-harness.js:414-418
 TETHER_LIFE                  src/13a-guns.js:40
 TETHER_PULL                  src/13a-guns.js:41
-tetherTick                   src/13a-guns.js:377-394
+tetherTick                   src/13a-guns.js:358-375
 tfbm                         src/18a-material.js:23-27
 theOne                       src/21b3-base-hunt.js:46
 theOneId                     src/21b3-base-hunt.js:35-45
@@ -6506,7 +6508,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/13-pirates.js · 30 КБ
   · пираты:1
 
-## src/13a-guns.js · 23 КБ
+## src/13a-guns.js · 22 КБ
   · повадки семейств (M364, §2.1):1
 
 ## src/13b-occupy.js · 21 КБ
@@ -6524,7 +6526,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/13d-npc.js · 13 КБ
   · война, которую видно (M372, §7.4):1
 
-## src/13z-gpu-combat.js · 4 КБ
+## src/13z-gpu-combat.js · 9 КБ
   · болты и лучи боя на видеокарте (G4, docs/DESIGN-gpu.md):1
 
 ## src/14-save.js · 48 КБ

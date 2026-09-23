@@ -256,12 +256,7 @@ function mslDraw(zx,zy,Z){
     const P=m.foe?MSL_PAINT_FOE:(MSL_PAINT[m.kind]||MSL_PAINT.plain);
     /* факел длиннее самой ракеты: на масштабе системы корпус — три пикселя,
        и видно её именно по следу */
-    const bx=x-Math.cos(m.a)*P.len*Z,by=y-Math.sin(m.a)*P.len*Z;
-    const g=ctx.createLinearGradient(x,y,bx,by);
-    g.addColorStop(0,P.head);
-    g.addColorStop(1,P.tail);
-    ctx.strokeStyle=g;ctx.lineWidth=Math.max(1,(m.big?3.6:2.6)*Z);
-    ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(bx,by);ctx.stroke();
+    /* факел — на видеокарте (gpuCombatEnergy, 13z); здесь корпус поверх него */
     ctx.fillStyle=P.dot;
     ctx.beginPath();ctx.arc(x,y,Math.max(1,P.r*Z),0,TAU);ctx.fill();
     /* ловушка мигает: она и работает тем, что заметна больше, чем есть */
@@ -270,12 +265,5 @@ function mslDraw(zx,zy,Z){
       ctx.beginPath();ctx.arc(x,y,Math.max(2,4.5*Z),0,TAU);ctx.stroke();
     }
   }
-  for(const f of G.mslFx||[]){
-    const a=Math.max(0,f.t/18),r=(1-a)*34*Z+4;
-    ctx.strokeStyle="rgba(255,190,120,"+(a*.8).toFixed(2)+")";
-    ctx.lineWidth=Math.max(1,2.4*a*Z);
-    ctx.beginPath();ctx.arc(zx(f.x),zy(f.y),r,0,TAU);ctx.stroke();
-    ctx.fillStyle="rgba(255,150,90,"+(a*.35).toFixed(2)+")";
-    ctx.beginPath();ctx.arc(zx(f.x),zy(f.y),r*.6,0,TAU);ctx.fill();
-  }
+  /* разрывы — огненным шаром на видеокарте (gpuBooms, 13z) */
 }

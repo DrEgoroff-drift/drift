@@ -61,8 +61,14 @@ The author, 23.09.2026: «переноси все на новые техноло
   `g4f_crop.png`, scene `wake.js` (synthetic WAKE, two lanes). Combat energy is `gpuCombatEnergy` (13z): bolts
   (`G.shots`) and beam traces (`G.beams`) as one instanced glowing segment — white core, exponential glow in the
   colour, a hot head / impact flare, a muzzle flare for beams, tone-mapped; 2D `beamsDraw` and the shot strokes
-  are gone. Pair `g4g_crop.png`, scene `combat.js` (stubs `combatShots`/`beamsTick` so nothing moves).
-  **Next in G4:** the rest of combat (mines, missiles, battery line, wrecks, loot — `drawCombat`, 13-pirates:349),
+  are gone. Pair `g4g_crop.png`, scene `combat.js` (stubs `combatShots`/`beamsTick` so nothing moves). Colour
+  rework after review: tone by the max channel (hue kept), white only `pow(core,6)` on the axis, the halo in a
+  saturated copy of the colour, blend `over` so the nebula does not tint the glow (orange s≈.67 h10–15, blue
+  h202–222 in the body). Same segment draws missile flames and mine lights; mine zones are a soft field plus a
+  thin glowing edge; missile bursts are `gpuBooms` (a field, ≤14 per frame): ragged fireball cooling white →
+  yellow → cherry inside a soft shock ring. 2D `minesDraw` and the missile flame/burst strokes are gone. Pair
+  `g4h_crop.png`, scene `combat2.js`.
+  **Next in G4:** the rest of combat (battery line, wrecks, loot — `drawCombat`, 13-pirates:349),
   drones, traffic, station
   (`drawStation`, 17c), barges; everything after the planet loop in drawSystem except the above is still 2D.
   A GPU draw after `gpuHullLight` must use `gpuOver`, not `gpuScene` (the scene pass is closed by then).

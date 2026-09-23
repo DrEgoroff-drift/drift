@@ -318,25 +318,6 @@ function minesTick(dt){
     L.splice(i,1);
   }
 }
-function minesDraw(zx,zy,Z){
-  const L=G.gmines;
-  if(!L||!L.length)return;
-  ctx.save();
-  for(const m of L){
-    const x=zx(m.x),y=zy(m.y);
-    if(x<-40||x>W+40||y<-40||y>H+40)continue;
-    const on=m.arm<=0;
-    ctx.globalAlpha=on?(.55+.35*Math.abs(Math.sin(G.t*.16))):.3;
-    /* чужая мина красится чужим цветом (M368): решение «облетать или нет»
-       принимается по кругу на земле, а не после взрыва */
-    const col=m.foe?"#ff6b57":"#ffb25c";
-    ctx.fillStyle=on?col:"#8fa0b0";
-    ctx.beginPath();ctx.arc(x,y,3.2*clamp(Z,.5,1.8),0,TAU);ctx.fill();
-    ctx.globalAlpha=.16;ctx.strokeStyle=col;ctx.lineWidth=1;
-    ctx.beginPath();ctx.arc(x,y,MINE_R*Z,0,TAU);ctx.stroke();
-  }
-  ctx.restore();
-}
 /* ── помеха (M365) ──
    Не стреляет: держит вокруг вас круг, в котором чужие теряют вас из виду и
    половину времени бьют мимо. Ствол для того, кто не хочет драться. */
