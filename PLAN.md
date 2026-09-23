@@ -228,3 +228,53 @@ Check each against the code before building — some may already hold.
   330 behind), `drift-lab` (an uncommitted `site/war.js`), `drift-t1`, `drift-t2`, `drift-tests` (still
   since 12.09) and the main checkout `C:\Claude\files` (236 behind) — see what is unmerged, then refresh
   or remove.
+
+## 12. Economy audit (23.09) — holes read from the code, and the seams that close them
+
+Read solo on 0.456.0: `12-economy`, `12ab-hold`, `12aa-need`, `12aj-coop`, `12l-barge`, `13b-occupy`,
+`12al2-laws`, `17k1-gosplan`, `12c-mgr-core`, every `earn()` caller and all ~70 deductions of
+`G.credits`. Nothing changed; each item below names the fix it wants. The net owed in §10 («the
+money-printing counter») is the gate here. Ranked by weight.
+
+- [ ] **The liberation prize repeats for one system** (`13b-occupy` `occKill`): 2400 + danger × 9000
+  every time a system falls to level 0; a freed neighbour of a nest is re-occupied by `occTick` and
+  re-freed for three kills, and pirates respawn on every entry (15-min seed bucket). The largest faucet
+  in the game, several times the 200 кр/мин of trade. Pay in full once per system (a set like
+  `G.gosDone`), half and fading after — or only while the nest is suppressed.
+- [ ] **The hotel repairs for 12 кр** (`17l-hotel` `hotelDesk`): +10 % hull per press, `HOTEL_NIGHT` 12,
+  no cooldown; the dock takes 14 кр per hp. Keep the kindness under a third (review 14.09); one night
+  per game day per station, and the night priced near half of the dock's same tenth.
+- [ ] **«Bought here, handed in here» at the plan and the order:** the appetite is guarded by
+  `appetiteGotHere` (M331); the state order (`17k1-gosplan`, 1.3 × table price, handed in at the same
+  station) and the order (`12aa-need`, 1.5 × table + 120 per sector, delivered where the cooperative
+  can buy) are not; the expedition counter (`11x`) the same, nearly cancelled by ask and ×1.25. One
+  ledger «bought here this shift» read by all four, one net.
+- [ ] **«Per visit» means per docking** (`26-ui-station` `openStationBody`: `lawDock`,
+  `scripVisitReset`, `coopVisitReset`): undock and dock again resets the cooperative cap 60/150, the
+  40 bons and the ГЛАВТРАССА норма's 20 fuel at 1 кр. Key a visit on (station, `holdShift()`).
+- [ ] **The escort advance without an obligation** (`12l-barge` `bargeEscortAccept`): 200 + 3 × cap
+  (470–890 кр) at once; failure only when the barge sinks, leaving the system counts as success. Half
+  at accept, half at the destination; leaving with the contract fails it.
+- [ ] **The balance goes negative and the reload forgives it:** `12b-crew-events` seized
+  (1.4 × gross + 400) and barvdebt (120 + .6 × gross) subtract without a floor — the only two of the
+  ~70 deductions; `14a1-save-rest` clamps to 0 on load, so the debt vanishes with a restart. Either a
+  floor as in `lawDock`, or a real debt (ПАЛАТА already keeps `P.debt` for bases).
+- [ ] **Sale multipliers multiply** (`marketPriceCtx`): need ×2, monopoly, expedition, power ×1.25,
+  embargo, strike, spy, then blockade ×2 in `sellCargo` — only pressure and appetite add inside the
+  clamp, though the comment promises no multiplying; need in a blockade is ×3.1 on food. Take the max
+  of need and blockade, and cap the product.
+- [ ] **Smaller seams:** a drone in a need system sells at ×2 the whole window and never closes it
+  (`sellDroneYield` skips `needClose`); the drone picks its market by seen prices and sells at live
+  ones; an order's deadline runs from the window's end, so one taken late leaves 2–3 game minutes for
+  2–8 sectors (count `due` from the taking); the factor's margin floor .05 scales with perk volume, so a
+  maxed factor prints ~200 кр/мин whatever the market; `evacuate()` in `21-mode-surface` has no
+  callers (dead — the live path is `16c-rescue`).
+- [ ] **Owed from the audit of 4.09 (`docs/ECONOMY-AUDIT.md`):** the probe that moves to another leg
+  when one goes negative (§6, never written); pressure decay on real time (A4) — a player back after
+  two hours of play finds the same floor next day.
+- **Gate:** three nets in «деньги не печатаются»: freeing the same system twice pays at most half the
+  second time; buying and handing in at one station for the plan or the order never nets positive; the
+  balance is never below zero after any row of the hired hands' event table. Found sound and left
+  alone: the counter (ask on buying, pressure after selling, slices, spread), far goods sell-only,
+  barges (sell above and buy below the destination, budget-capped), scrip (12 % round trip), the drone
+  price 1.6ⁿ, people paid only online, the loan since 0.409.1.
