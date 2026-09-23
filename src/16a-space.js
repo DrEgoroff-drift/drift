@@ -205,12 +205,11 @@ function wcBlots(c2,st,Wc,Hc){
     c2.globalCompositeOperation="lighter";
   }
 }
-function drawSysNebula(sys,cx,cy){
+/* композиция туманности системы: печётся раз на систему и размер кадра; null — ещё печётся */
+function sysNebComp(sys){
   const N=sysNebulaTex(sys);
-  if(!N)return;               // ещё печётся — этот кадр обойдётся без неё
+  if(!N)return null;               // ещё печётся — этот кадр обойдётся без неё
   const ex=W*.24,ey=H*.24;
-  const ox=-ex/2+clamp(-cx*.012,-ex/2,ex/2);
-  const oy=-ey/2+clamp(-cy*.012,-ey/2,ey/2);
   const C=NEB_COMP;
   if(!C||C.src!==N||C.w!==W||C.h!==H||C.dpr!==DPR){
     const cv=document.createElement("canvas");
@@ -231,7 +230,15 @@ function drawSysNebula(sys,cx,cy){
     wcBlots(c2,sysStyle(sys),W+ex,H+ey);
     NEB_COMP={cv,src:N,w:W,h:H,dpr:DPR};
   }
-  ctx.drawImage(NEB_COMP.cv,ox,oy,W+ex,H+ey);
+  return NEB_COMP;
+}
+function drawSysNebula(sys,cx,cy){
+  const C=sysNebComp(sys);
+  if(!C)return;               // ещё печётся — этот кадр обойдётся без неё
+  const ex=W*.24,ey=H*.24;
+  const ox=-ex/2+clamp(-cx*.012,-ex/2,ex/2);
+  const oy=-ey/2+clamp(-cy*.012,-ey/2,ey/2);
+  ctx.drawImage(C.cv,ox,oy,W+ex,H+ey);
   return true;
 }
 /* ── пыль между планетами ──

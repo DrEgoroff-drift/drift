@@ -25,13 +25,20 @@ for(let i=0;i<14;i++)BG_BRIGHT.push({x:rndFx(),y:rndFx(),z:.86+rndFx()*.14,
    входа между кадрами — сигнатура не меняется, все режимы получают закон
    даром; скачок камеры (смена режима) прочерков не даёт. */
 let STAR_LX=null,STAR_LY=null,STAR_LT=-1;
-function drawStars(cx,cy,par){
+/* ход камеры для закона «движение, а не мигание» — общий у 2D и видеокарты (16g) */
+const STAR_MV={dx:0,dy:0,kx:1,ky:1,mov:0};
+function starMove(cx,cy,par){
   let dx=0,dy=0;
   if(STAR_LT>=0&&G.t-STAR_LT<1.5){dx=cx-STAR_LX;dy=cy-STAR_LY;}
   STAR_LX=cx;STAR_LY=cy;STAR_LT=G.t;
   if(Math.hypot(dx,dy)>60){dx=0;dy=0;}
-  const KX=W/1600*2.6, KY=H/1200*2.6;            /* прочерк ~ пары кадров пути */
-  const mov=clamp(Math.hypot(dx*KX,dy*KY)*par,0,6)/6;
+  const M=STAR_MV;M.dx=dx;M.dy=dy;
+  M.kx=W/1600*2.6;M.ky=H/1200*2.6;            /* прочерк ~ пары кадров пути */
+  M.mov=clamp(Math.hypot(dx*M.kx,dy*M.ky)*par,0,6)/6;
+  return M;
+}
+function drawStars(cx,cy,par){
+  const M=starMove(cx,cy,par),dx=M.dx,dy=M.dy,KX=M.kx,KY=M.ky,mov=M.mov;
   const a0=ctx.globalAlpha;
   for(const g of BG_GROUP){
     ctx.fillStyle=g.css;ctx.strokeStyle=g.css;

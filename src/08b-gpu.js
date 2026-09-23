@@ -9,7 +9,8 @@ const GPU={ok:false,on:false,shown:false,lost:false,busy:false,dead:false,
   dev:null,cv:null,gx:null,fmt:"",L:null,P:{},B:{},S:null,U:null,UA:new Float32Array(16),
   T:{},V:{},N:null,noiseOk:false,front:null,fctx:null,ui:null,uctx:null,
   bw:0,bh:0,qw:2,qh:2,dpr:0,cw:0,ch:0,enc:null,scenePass:null,sceneOn:false,
-  sceneBg:{r:0,g:0,b:0,a:1},uiOn:false,uiWas:false,hitK:0,hitDx:0,post:{k:0,grain:0,vig:0},q:null};
+  sceneBg:{r:0,g:0,b:0,a:1},uiOn:false,uiWas:false,hitK:0,hitDx:0,post:{k:0,grain:0,vig:0},q:null,
+  lay:{},bufs:{},bgs:{},cvTex:new Map(),trash:[]};
 
 /* адрес решает раньше настроек: ?gpu=1 включает и на стенде (сверка кадров),
    ?gpu=0 выключает везде. Стенды и тесты снимают #c — им старый путь */
@@ -50,6 +51,7 @@ async function gpuInit(){
       GPU.ui=document.createElement("canvas");GPU.uctx=GPU.ui.getContext("2d",{alpha:true});
     }
     gpuPipes();
+    GPU.lay={};GPU.bufs={};GPU.bgs={};GPU.cvTex=new Map();GPU.trash=[];
     GPU.T={};GPU.bw=0;GPU.ok=true;
     gpuResize();
   }catch(e){
@@ -192,6 +194,7 @@ function gpuFrame(){
   }
   if(!on){GPU.on=false;if(ctx===GPU.fctx||ctx===GPU.uctx)ctx=MAIN_CTX;return false;}
   if(cvs.width!==GPU.bw||cvs.height!==GPU.bh||DPR!==GPU.dpr||W!==GPU.cw||H!==GPU.ch)gpuResize();
+  if(GPU.trash.length){for(const t of GPU.trash)t.destroy();GPU.trash.length=0;}
   const f=GPU.fctx;
   f.setTransform(1,0,0,1,0,0);f.clearRect(0,0,GPU.bw,GPU.bh);f.setTransform(DPR,0,0,DPR,0,0);
   ctx=f;GPU.on=true;
@@ -237,5 +240,62 @@ function gpuPresent(){
   GPU.enc=null;GPU.on=false;
   if(ctx===GPU.fctx||ctx===GPU.uctx)ctx=MAIN_CTX;
 }
+/* ── набор для слоёв сцены (G1+): конвейер, буфер, привязки, текстура из 2D ──
+   Всё живёт при устройстве: gpuInit после потери собирает заново. Слои рисуют в
+   проход gpuScene() — под передним 2D-слоем; цвет премультиплицирован */
+const GPU_BLEND={
+  over:{color:{srcFactor:"one",dstFactor:"one-minus-src-alpha"},alpha:{srcFactor:"one",dstFactor:"one-minus-src-alpha"}},
+  add:{color:{srcFactor:"one",dstFactor:"one"},alpha:{srcFactor:"one",dstFactor:"one"}}};
+function gpuPipe(name,code,blend){
+  const c=GPU.lay[name];if(c)return c;
+  const mod=GPU.dev.createShaderModule({code});
+  return GPU.lay[name]=GPU.dev.createRenderPipeline({layout:"auto",vertex:{module:mod,entryPoint:"vs"},
+    fragment:{module:mod,entryPoint:"fs",targets:[{format:"rgba8unorm",blend:GPU_BLEND[blend||"over"]}]},
+    primitive:{topology:"triangle-list"}});
+}
+function gpuBuf(name,bytes,usage){
+  const b=GPU.bufs[name];
+  if(b&&b.size>=bytes)return b;
+  if(b)GPU.trash.push(b);
+  return GPU.bufs[name]=GPU.dev.createBuffer({size:Math.max(16,Math.ceil(bytes/16)*16),usage});
+}
+/* привязки кэшируются по набору ресурсов: сменился буфер или текстура — новая группа */
+function gpuBind(name,pipe,res){
+  const c=GPU.bgs[name];
+  if(c&&c.res.length===res.length&&c.res.every((r,i)=>r===res[i]))return c.bg;
+  const bg=GPU.dev.createBindGroup({layout:pipe.getBindGroupLayout(0),
+    entries:res.map((r,i)=>({binding:i,resource:(r instanceof GPUBuffer)?{buffer:r}:r}))});
+  GPU.bgs[name]={res,bg};return bg;
+}
+/* 2D-холст как текстура: печки при перепечке отдают НОВЫЙ холст, поэтому ключ —
+   сам объект. Старые уходят в корзину и гибнут в начале следующего кадра */
+function gpuCanvasTex(cv){
+  const m=GPU.cvTex;let e=m.get(cv);
+  if(e)return e;
+  const w=cv.width,h=cv.height,U=GPUTextureUsage;
+  const tex=GPU.dev.createTexture({size:[w,h],format:"rgba8unorm",usage:U.TEXTURE_BINDING|U.COPY_DST|U.RENDER_ATTACHMENT});
+  GPU.dev.queue.copyExternalImageToTexture({source:cv},{texture:tex,premultipliedAlpha:true},[w,h]);
+  e={tex,view:tex.createView(),w,h};m.set(cv,e);
+  if(m.size>8){const k=m.keys().next().value;GPU.trash.push(m.get(k).tex);m.delete(k);}
+  return e;
+}
+/* общие куски шейдеров слоёв: мерка кадра и покрытие фигур со сглаживанием.
+   Покрытие честное, по площади пикселя — так же, как Skia гладит края в 2D */
+const GPU_WGSL_COMMON=`
+fn pmod(a:f32,m:f32)->f32{return a-m*floor(a/m);}
+fn covRect(p:vec2f,r:vec4f)->f32{return clamp(min(p.x+.5,r.z)-max(p.x-.5,r.x),0.,1.)*clamp(min(p.y+.5,r.w)-max(p.y-.5,r.y),0.,1.);}
+fn covDisc(p:vec2f,c:vec2f,r:f32)->f32{let re=max(r,.7);return clamp(.5-(length(p-c)-re),0.,1.)*min(1.,r*r/(re*re));}
+fn covSeg(p:vec2f,a:vec2f,b:vec2f,hw:f32)->f32{
+  let ab=b-a;let t=clamp(dot(p-a,ab)/max(dot(ab,ab),1e-4),0.,1.);let he=max(hw,.5);
+  return clamp(.5-(length(p-a-ab*t)-he),0.,1.)*min(1.,hw/he);}
+fn cubicW(v:f32)->vec4f{let n=vec4f(1.,2.,3.,4.)-v;let s=n*n*n;let x=s.x;let y=s.y-4.*s.x;let z=s.z-4.*s.y+6.*s.x;return vec4f(x,y,z,6.-x-y-z)/6.;}
+fn texCubic(t:texture_2d<f32>,sm:sampler,uv:vec2f)->vec4f{
+  let ts=vec2f(textureDimensions(t));var c=uv*ts-.5;let f=fract(c);c=c-f;
+  let xc=cubicW(f.x);let yc=cubicW(f.y);let s=vec4f(xc.xz+xc.yw,yc.xz+yc.yw);
+  let o=(c.xxyy+vec4f(-.5,1.5,-.5,1.5)+vec4f(xc.yw,yc.yw)/s)/ts.xxyy;
+  let s0=textureSampleLevel(t,sm,o.xz,0.);let s1=textureSampleLevel(t,sm,o.yz,0.);
+  let s2=textureSampleLevel(t,sm,o.xw,0.);let s3=textureSampleLevel(t,sm,o.yw,0.);
+  let sx=s.x/(s.x+s.y);let sy=s.z/(s.z+s.w);
+  return mix(mix(s3,s2,sx),mix(s1,s0,sx),sy);}`;
 /* поднимается после всего скрипта: в сборке тестов TEST объявлен ниже игры */
 if(typeof navigator!=="undefined"&&navigator.gpu)setTimeout(gpuInit,0);

@@ -552,10 +552,9 @@ function frameBody(now){
     if(typeof rackDraw==="function")rackDraw();
     if(GPU.on)gpuPresent();
   }else{
-    gpuFrame();
-    ctx.fillStyle="#05070c";ctx.fillRect(0,0,W,H);
-    G.t=tReal*.06;drawNebula(tReal*.004,0,1);drawStars(tReal*.004,0,1);
-    if(GPU.on){gpuWorld(0,false,false);gpuPresent();}
+    G.t=tReal*.06;
+    if(gpuFrame()){gpuSpaceTitle(tReal*.004);gpuWorld(0,false,false);gpuPresent();}
+    else{ctx.fillStyle="#05070c";ctx.fillRect(0,0,W,H);drawNebula(tReal*.004,0,1);drawStars(tReal*.004,0,1);}
   }
 }
 /* ══════════════ кадр, который не убивает игру (M234) ══════════════
