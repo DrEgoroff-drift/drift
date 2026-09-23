@@ -60,7 +60,7 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   let band=exp(-(dist*dist)/(w*w));
   let edge=(1.-smoothstep(.0,.06,e))*band;
   let line=exp(-(dist*dist)/2.2);
-  var I=band*.10+edge*.2+line*.5;
+  var I=(band*.10+edge*.2+line*.5)*.75;   /* вдали от упора тише: стена не перекрикивает корабль */
   if(hit>0.){let dc=length(p-cp);let fall=exp(-dc/(160.*Z+60.));
     I=I+fall*(.28*pk+.18*max(0.,sin(dc*.09-t*.25)))*exp(-(dist*dist)/(w*w*4.));}
   let col=vec3f(127.,230.,216.)/255.;
