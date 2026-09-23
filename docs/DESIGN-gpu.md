@@ -78,6 +78,16 @@ Heat haze behind the nozzle (G4b).
 
 ## Where I stopped (update on every commit)
 
+- **Deploy candidate: `ef8c8b9` (L1 3/n), accepted by Контроль by its pairs.** The author: deploy to main
+  before the limit window reaches 90%; the signal «ДЕПЛОЙ» comes from Контроль. On it: close the step with a
+  commit; `test.ps1 -Full` and `node test-node.js`; bump `VER` and a PATCHNOTES line (what the player sees
+  better, plus «needs a browser with WebGPU»); a release commit; send Контроль its sha. **Контроль pushes**
+  (`git push origin gpu:main`, fast-forward only) and watches the workflow, md5 and data-alive. Rollback if
+  the site falls: a commit on top with the tree of `d543aff`, never a force-push. Only a commit Контроль
+  accepted by pairs goes to main. CI rehearsal of ef8c8b9 (deploy.yml flags, `--disable-gpu`): load clean,
+  smoke 4/4, Node green (the «рейсы» suite fails in full order only, green alone; it sits in quarantine).
+- Order now: rest of L1 (shafts in space, one huge landmark per system), then L2.
+
 - Done: core `08b`, kit `08c`, space `16g` (G1: live nebula wisps and lanes, stars with halo and tapered
   spikes, dust with depth of field; pair in `scratchpad/pairs/system_crop.png`),
   `docs/shot.py` on the GPU (`--budget` kept for `vetshot.py`).
