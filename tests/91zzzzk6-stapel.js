@@ -189,7 +189,7 @@ TEST_SUITES.push(()=>suite("ядро в аренду: тариф, без дре�
   ok(m.log.some(x=>/извинения/.test(x.s)),"и извинилось");
   eq(mgrPay(m),0,"БАЗОВЫЙ — даром");
   for(let i=0;i<3;i++)rentSay(m);
-  ok(m.log.some(x=>/^Реклама/.test(x.s)),"в третьей сводке реклама");
+  ok(m.log.some(x=>x.k==="ad"),"в третьей сводке реклама (вклейкой, D22)");
   G.bases=[{fire:{c:0,r:0}}];m.rent.n=2;rentSay(m);
   ok(m.log[0].s.indexOf("горит база")>=0,"база горит — рекламу пропустили");
   const snap=snapshot();eq(snap.mgrs[0].rent.tier,"base","тариф в сейве");

@@ -51792,14 +51792,13 @@ function drawCheburek(zx,zy,Z){
   /* вывеска — в экранных координатах, чтобы читалась при любом курсе лодки */
   const k=Math.max(1,s)*(typeof UIK==="number"?UIK:1),by=y-20*s-8*k;
   ctx.font="bold "+Math.round(8*k)+"px ui-monospace,monospace";ctx.textAlign="center";ctx.textBaseline="middle";
-  const tw=ctx.measureText("ЧЕБУРЕКИ").width+8*k;
+  const tw=ctx.measureText("ЧЕБУРЕКИ").width+12*k;
   ctx.strokeStyle="rgba(200,190,170,.45)";ctx.lineWidth=.8;ctx.beginPath();
-  ctx.moveTo(x-tw*.3,by+5*k);ctx.lineTo(x-4*s,y-6*s);ctx.moveTo(x+tw*.3,by+5*k);ctx.lineTo(x+4*s,y-6*s);ctx.stroke();
-  ctx.save();ctx.translate(x,by);ctx.rotate(-.04);
-  ctx.fillStyle="rgba(0,0,0,.45)";ctx.fillRect(-tw/2+1.5,-5.5*k+1.5,tw,11*k);
-  ctx.fillStyle="#efe3c6";ctx.fillRect(-tw/2,-5.5*k,tw,11*k);
-  ctx.fillStyle="#b8322a";ctx.fillText("ЧЕБУРЕКИ",0,.5);
-  ctx.restore();
+  ctx.moveTo(x-tw*.3,by+7.5*k);ctx.lineTo(x-4*s,y-6*s);ctx.moveTo(x+tw*.3,by+7.5*k);ctx.lineTo(x+4*s,y-6*s);ctx.stroke();
+  /* без поворота: детекторы и глаз читают доску там, где она стоит */
+  ctx.fillStyle="rgba(0,0,0,.45)";ctx.fillRect(x-tw/2+1.5,by-7.5*k+1.5,tw,15*k);
+  ctx.fillStyle="#efe3c6";ctx.fillRect(x-tw/2,by-7.5*k,tw,15*k);
+  ctx.fillStyle="#b8322a";ctx.fillText("ЧЕБУРЕКИ",x,by+.5);
 }
 function chebInteract(sh){
   const C=chebHere();if(!C)return false;

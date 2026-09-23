@@ -717,7 +717,7 @@ chBlack                      src/25n-chess.js:37
 chCheck                      src/25n-chess.js:182
 CHEB_PRICE                   src/17j-cheburek.js:9
 chebHere                     src/17j-cheburek.js:10-17
-chebInteract                 src/17j-cheburek.js:64-78
+chebInteract                 src/17j-cheburek.js:63-77
 chessAll                     src/25n-chess.js:199-203
 chessDraw                    src/25n-chess.js:246-275
 chessGame                    src/25n-chess.js:204
@@ -1392,7 +1392,7 @@ drawCaveSolid                src/22a-cave-deco.js:241-299
 drawCaveWater                src/22a-cave-deco.js:300-324
 drawCaveWorld                src/22-mode-cave.js:648-750
 drawCelest                   src/06a-celest.js:167-218
-drawCheburek                 src/17j-cheburek.js:22-63
+drawCheburek                 src/17j-cheburek.js:22-62
 drawChunks                   src/18c-chunks.js:90-96
 drawClouds                   src/19e-clouds.js:386-528
 drawCockpit                  src/25-cockpit.js:400-674
