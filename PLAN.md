@@ -162,7 +162,7 @@ job (the phone milestone), but no fix may add raster cost without a number.
   obsidian shard with one cold glint (dark glass), trap ring with a spark (antimatter), lead capsule
   with a yellow mark (neutron), amber chips. The wheel (§4.4) judged 23.09 and left: the ten already sit
   on ten hues AND ten shapes; the review's bone and pale gold were written for a dark hold and vanish on the ОПИСЬ cream paper (and `col` is the UI text colour too). The reading: `farReadShow` hangs an instrument plate for 6.5 s under the belt's entry text — each deposit a scale with its range as a lit band, the header naming the instrument's honesty (изыскатель ±10 % … рудовоз ±60 %): a good instrument is SEEN as a narrow band. ЖИЛА across the screen checked on the S23 18.09 — the orange stamp reads.
-- [~] **D14 The blueprint — the ОПИСЬ view done 18.09 on the S23.** `drawPlan` is now a синька:
+- [x] **D14 The blueprint — the ОПИСЬ view done 18.09 on the S23.** `drawPlan` is now a синька:
   Prussian blue with millimetre grid, white-ink cell lines, the hull outline thick along the
   edges with no neighbour, the hold hatched, parts as ochre stamps with a kind letter
   (О Щ Д К Р У П М), «СОГЛАСОВАНО» double-boxed in the corner. Same brush serves the КБ. Left:
@@ -186,7 +186,7 @@ job (the phone milestone), but no fix may add raster cost without a number.
 - [x] **D25 Paper and stamps — the passport done 18.09 on the S23; the ПЛАН on the sign 23.09.** The passport was not on
   any page at all (only in fares); now a bordeaux cover with gold lettering under the stamp grid
   in КНИЖКА while it runs, with «до N смен». Then 18.09 later: the transit plate on the flank (`drawTransitPlate`, yellow with two black lines by the stern, baked with the hull), and M482's scars drawn on the hull (`drawScars`: burn patch, bent edge, leak streak). The ПЛАН on the ГЛАВТРАССА sign is a decree, not an ad: while `gosBbPlan` holds, the ticker gives way to a kumach panel with a gold star and two lines that STAND («ПЛАН: 18 ЕД. …», «ДО СВОДКИ · ПО · СДАВАТЬ ЗДЕСЬ»); ~~the recall letter~~ — done 18.09: a `recall` thing in ВЕЩИ with a Хай-Фронт header and a red «ОТЗЫВ» stamp.
-- [~] **D24 Railway life — rows done 18.09 on the S23.** The parcel is a paper tag with a hole
+- [x] **D24 Railway life — rows done 18.09 on the S23.** The parcel is a paper tag with a hole
   (dashed edge, ochre), the pass a card with a punched row, the passenger a phosphor silhouette
   before the line. ~~Left: the подстаканник for the tea row, the seal drawn on the hold in flight~~ — done 18.09: the Рассвет buffet button carries a glass in a lattice holder with a handle (CSS), the Орднунг seal is a lead disc on wire over the hold hatch at midships (`drawSeal`, in the bake key).
 - [x] **D23 Album — the page done 18.09 on the S23; filters and the saved page 23.09.** The lightbox is a black album page with
@@ -197,7 +197,7 @@ job (the phone milestone), but no fix may add raster cost without a number.
   Хай-Фронт card (`.rent-card`): cyan-edged, head with the ◉ mark, tariff rows name / price /
   note, role buttons under each, the «спасибо, что остаётесь с нами» foot. The adverts in «Что он говорит»
   are `mgrSay(...,"ad")`, drawn as glossy Хай-Фронт inserts (`.mg-ad`, a blue РЕКЛАМА label); old saves' «Реклама: » lines are caught by prefix.
-- [~] **D21 Special systems — done 18.09 on the S23 except two effects.** The charge ring is 4 px
+- [x] **D21 Special systems — done 18.09 on the S23; the two effects judged (23.09 re-read: closed).** The charge ring is 4 px
   with a bright head at the arc's end; when charged the pad carries «ДОЛГОЕ · ФОРСАЖ» above it (it
   dims with the pad's own `.off` opacity — acceptable, reads on a dark sky). Effects: ФОРСАЖ
   lengthens the plume ×1.7, СБРОС leaves a crate where it was thrown, СИРЕНА sends two rings; the
