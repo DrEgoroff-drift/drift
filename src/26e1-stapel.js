@@ -129,40 +129,49 @@ function stapelPreview(o,w,h){
   return shipThumb(STAPEL_PV,w,h);
 }
 let STAPEL_UI={cls:"scout",size:"medium",l:1,w:1};
+function stapelSheetW(){return Math.max(260,Math.min(520,((typeof $body!=="undefined"&&$body&&$body.clientWidth)||420)-28));}
 function stapelBlock(){
   const by=stapelYardBy(),S=stapelAll();
   const box=document.createElement("div");box.className="stapel";
   if(!by&&!S.o)return null;
   box.appendChild(el("div","sec","СТАПЕЛЬ"+(by?" · "+makerRu(by).toUpperCase()+" · КОРПУС ПО ЗАКАЗУ":"")));
-  /* заказ в работе */
+  const sw=stapelSheetW(),sh=Math.round(sw*.46);
+  /* заказ в работе: на листе он обшит на долю смены, готовый — под штампом */
   if(S.o){
-    const o=S.o,here=G.sx===o.sx&&G.sy===o.sy;
+    const o=S.o,here=G.sx===o.sx&&G.sy===o.sy,rd=stapelReady();
+    const pv=el("div","stp-pv");
+    pv.appendChild(stapelSheet(o,sw,sh,{prog:rd?1:1-(o.ready-now())/HOLD_SHIFT,ready:rd}));
+    box.appendChild(pv);
     const r=el("div","row");
-    if(stapelReady()&&here){
+    if(rd&&here){
       r.appendChild(el("div","nm","<b>Заказ готов</b><s>"+HULL_CLASS[o.cls].ru+" · "+STAPEL_SIZE[o.size].ru+" · стапель "+makerRu(o.by)+"</s>"));
       const b=el("button","act gold","ЗАБРАТЬ");
-      b.onclick=()=>{const id=stapelCollect();if(id){say("Корпус ваш\n«"+shipData(id).ru+"»",160);renderTab();saveGame(true);}};
+      b.onclick=()=>{const id=stapelCollect();if(id){stapelFx(o.by,shipData(id).ru);renderTab();saveGame(true);}};
       r.appendChild(b);
     }else{
       const left=Math.max(0,Math.ceil((o.ready-now())/60000));
       r.appendChild(el("div","nm","<b>На стапеле: "+HULL_CLASS[o.cls].ru+" · "+STAPEL_SIZE[o.size].ru+"</b><s>"+
-        (stapelReady()?"готов · забрать на «"+o.st+"», сектор "+o.sx+":"+o.sy:"ещё "+left+" мин · «"+o.st+"»")+
+        (rd?"готов · забрать на «"+o.st+"», сектор "+o.sx+":"+o.sy:"обшивка "+Math.round(100*(1-(o.ready-now())/HOLD_SHIFT))+" % · ещё "+left+" мин · «"+o.st+"»")+
         " · второй заказ — после этого</s>"));
     }
     box.appendChild(r);
     return box;
   }
   const U=STAPEL_UI,o=()=>({by,cls:U.cls,size:U.size,l:U.l,w:U.w});
-  const pv=el("div","stp-pv"),nums=el("div","stp-n"),buy=el("button","act gold","");
+  const pv=el("div","stp-pv"),nums=el("div","stp-nums"),buy=el("button","act gold stp-buy","");
+  const val={};
   const redraw=()=>{
-    pv.innerHTML="";pv.appendChild(stapelPreview(o(),280,120));
+    pv.innerHTML="";pv.appendChild(stapelSheet(o(),sw,sh));
+    const m=stapelSheet.last||{};
+    if(val.l)val.l.textContent=m.l+" м";
+    if(val.w)val.w.textContent=m.b+" м";
     const N=stapelStats(o());
-    nums.innerHTML="тяга "+N.thr.toFixed(2)+" · поворот "+N.turn.toFixed(2)+" · трюм "+N.cargo+" · бак "+N.fuel+" · корпус "+N.hull;
+    nums.innerHTML="";nums.appendChild(stapelDelta(N,U.cls));
     buy.textContent="ЗАКАЗАТЬ · "+N.price.toLocaleString("ru")+" КР";
     buy.disabled=G.credits<N.price;
   };
-  const chips=(keys,ru,cur,set)=>{
-    const d=el("div","stp-ch");
+  const chips=(keys,ru,cur,set,cls)=>{
+    const d=el("div","stp-ch"+(cls?" "+cls:""));
     for(const k of keys){const b=el("button","chip"+(cur()===k?" on":""),ru(k));
       b.onclick=()=>{set(k);d.querySelectorAll(".chip").forEach(x=>x.classList.remove("on"));b.classList.add("on");redraw();};
       d.appendChild(b);}
@@ -172,13 +181,14 @@ function stapelBlock(){
   const shut=stapelClosedWhy(by);
   if(shut){box.appendChild(el("div","stp-n",shut+" · приходите позже"));return box;}
   box.appendChild(chips(Object.keys(HULL_CLASS),k=>HULL_CLASS[k].ru,()=>U.cls,k=>U.cls=k));
-  box.appendChild(chips(STAPEL_SIZES,k=>STAPEL_SIZE[k].ru,()=>U.size,k=>U.size=k));
+  box.appendChild(chips(STAPEL_SIZES,k=>STAPEL_SIZE[k].ru,()=>U.size,k=>U.size=k,"stp-seg"));
   box.appendChild(pv);
+  /* ползунки — масштабные линейки: самшит, риски, визир с красной нитью */
   const slider=(ru,key)=>{
     const d=el("label","stp-sl","<span>"+ru+"</span>");
     const i=document.createElement("input");i.type="range";i.min=STAPEL_L[0];i.max=STAPEL_L[1];i.step=.01;i.value=U[key];
     i.oninput=()=>{U[key]=+i.value;redraw();};
-    d.appendChild(i);return d;
+    d.appendChild(i);val[key]=el("b","","");d.appendChild(val[key]);return d;
   };
   box.appendChild(slider("длина","l"));
   box.appendChild(slider("ширина","w"));

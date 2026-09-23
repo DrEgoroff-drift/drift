@@ -1880,16 +1880,42 @@ body.table u.addr{color:#7a4a20}
 @keyframes smAct{0%{opacity:0;transform:translate(-50%,-44%)}15%{opacity:1;transform:translate(-50%,-50%)}80%{opacity:1}100%{opacity:0}}
 .smena canvas.smena-plate{display:block;margin:6px auto 4px;border:6px solid #f6efe0;box-shadow:0 1px 4px rgba(0,0,0,.35);transform:rotate(-1.2deg)}
 
-/* ── СТАПЕЛЬ: заказ корпуса (M481) [design owed] ── */
-.stapel .stp-ch{display:flex;flex-wrap:wrap;gap:4px;margin:4px 0}
-.stapel .chip{font-size:11px;padding:3px 7px;border:1px solid var(--dim);background:none;color:inherit;border-radius:3px}
-.stapel .chip.on{border-color:var(--gold,#f2b25c);color:var(--gold,#f2b25c)}
-.stapel .stp-pv{display:flex;justify-content:center;margin:6px 0}
-.stapel .stp-sl{display:flex;align-items:center;gap:8px;font-size:11px}
-.stapel .stp-sl span{width:60px}.stapel .stp-sl input{flex:1}
+/* ── СТАПЕЛЬ: заказ корпуса (M481, лист — D16) ── */
+.stapel .stp-ch{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:4px;margin:6px 0}
+.stapel .chip{min-height:44px;font-size:11px;line-height:1.1;font-family:inherit;padding:0 4px;border:1px solid rgba(232,214,168,.22);
+  background:rgba(232,214,168,.03);color:rgba(232,214,168,.72);border-radius:2px}
+.stapel .chip.on{border-color:#f2b25c;color:#f2b25c;background:rgba(242,178,92,.10);box-shadow:inset 0 -2px 0 #f2b25c}
+.stapel .stp-seg{gap:0;grid-template-columns:repeat(3,1fr)}.stapel .stp-seg .chip{border-radius:0}.stapel .stp-seg .chip+.chip{border-left-width:0}
+.stapel .stp-seg .chip.on{border-left-width:1px}.stapel .stp-seg .chip.on+.chip{border-left-width:0}
+.stapel .stp-pv{display:flex;justify-content:center;margin:8px 0 4px}
+.stapel canvas.stp-sheet{display:block;border:1px solid rgba(226,234,244,.14);box-shadow:0 2px 10px rgba(0,0,0,.5)}
+.stapel .stp-sl{display:grid;grid-template-columns:62px 1fr 52px;align-items:center;gap:10px;min-height:44px;font-size:12px}
+.stapel .stp-sl span{color:rgba(232,214,168,.72)}.stapel .stp-sl b{text-align:right;font-weight:400;color:#e8d6a8}
+.stapel input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:44px;margin:0;background:none;cursor:pointer}
+.stapel input[type=range]::-webkit-slider-runnable-track{height:16px;border-radius:1px;
+  background:repeating-linear-gradient(90deg,rgba(52,36,14,.8) 0 1px,transparent 1px 10%) 0 0/100% 8px no-repeat,
+    repeating-linear-gradient(90deg,rgba(52,36,14,.45) 0 1px,transparent 1px 2%) 0 0/100% 4px no-repeat,linear-gradient(#e2cf9c,#c7ae78);
+  box-shadow:inset 0 -1px 0 rgba(60,40,10,.5),0 2px 3px rgba(0,0,0,.55)}
+.stapel input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:30px;margin-top:-7px;border:1px solid rgba(12,14,18,.85);border-radius:2px;
+  background:linear-gradient(90deg,transparent 6px,#c8322a 6px 8px,transparent 8px),rgba(200,220,240,.22);box-shadow:0 2px 4px rgba(0,0,0,.6)}
+.stapel input[type=range]::-moz-range-track{height:16px;border-radius:1px;
+  background:repeating-linear-gradient(90deg,rgba(52,36,14,.8) 0 1px,transparent 1px 10%) 0 0/100% 8px no-repeat,
+    repeating-linear-gradient(90deg,rgba(52,36,14,.45) 0 1px,transparent 1px 2%) 0 0/100% 4px no-repeat,linear-gradient(#e2cf9c,#c7ae78)}
+.stapel input[type=range]::-moz-range-thumb{width:12px;height:28px;border:1px solid rgba(12,14,18,.85);border-radius:2px;
+  background:linear-gradient(90deg,transparent 5px,#c8322a 5px 7px,transparent 7px),rgba(200,220,240,.22)}
 .stapel .stp-n{font-size:11px;opacity:.8;margin:4px 0}
-.stapel>.stp-ch,.stapel>.stp-sl,.stapel>.stp-n,.stapel>button.act{margin-left:14px;margin-right:14px}
-.stapel .chip{font-family:inherit}.stapel input[type=range]{accent-color:#f2b25c}
+.stapel .stp-dl{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;margin:8px 0;background:rgba(232,214,168,.12);border:1px solid rgba(232,214,168,.12)}
+.stapel .stp-dc{position:relative;padding:6px 6px 9px;background:#0e1217;text-align:left;min-width:0}
+.stapel .stp-dc i{display:block;font-style:normal;font-size:10px;color:rgba(232,214,168,.55)}
+.stapel .stp-dc b{display:block;font-size:15px;font-weight:400;color:#e8d6a8;margin-top:2px}
+.stapel .stp-dc em{display:block;font-style:normal;font-size:10px;color:rgba(232,214,168,.4)}
+.stapel .stp-dc.up em{color:var(--phos,#7ce0a0)}.stapel .stp-dc.dn em{color:#e0685a}
+.stapel .stp-dc u{position:absolute;left:6px;right:6px;bottom:4px;height:2px;background:rgba(232,214,168,.14)}
+.stapel .stp-dc u::after{content:"";position:absolute;left:calc(var(--q)*100% - 1px);top:-2px;width:3px;height:6px;background:#e8d6a8}
+.stapel>.stp-ch,.stapel>.stp-sl,.stapel>.stp-n,.stapel>.stp-nums,.stapel>button.act{margin-left:14px;margin-right:14px}
+.stapel>button.stp-buy{display:block;width:calc(100% - 28px);min-height:48px}
+.stp-fx.stp-done .l0{font-size:34px;letter-spacing:.34em;line-height:1.1}
+.stp-fx.stp-done .l1{font-size:14px;margin-top:2px}
 
 /* ── барахолка (M463) [design owed] ── */
 #bazWin{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:60;width:min(420px,calc(100vw - 32px));max-height:80vh;overflow:auto;

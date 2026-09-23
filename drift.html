@@ -1894,16 +1894,42 @@ body.table u.addr{color:#7a4a20}
 @keyframes smAct{0%{opacity:0;transform:translate(-50%,-44%)}15%{opacity:1;transform:translate(-50%,-50%)}80%{opacity:1}100%{opacity:0}}
 .smena canvas.smena-plate{display:block;margin:6px auto 4px;border:6px solid #f6efe0;box-shadow:0 1px 4px rgba(0,0,0,.35);transform:rotate(-1.2deg)}
 
-/* ── СТАПЕЛЬ: заказ корпуса (M481) [design owed] ── */
-.stapel .stp-ch{display:flex;flex-wrap:wrap;gap:4px;margin:4px 0}
-.stapel .chip{font-size:11px;padding:3px 7px;border:1px solid var(--dim);background:none;color:inherit;border-radius:3px}
-.stapel .chip.on{border-color:var(--gold,#f2b25c);color:var(--gold,#f2b25c)}
-.stapel .stp-pv{display:flex;justify-content:center;margin:6px 0}
-.stapel .stp-sl{display:flex;align-items:center;gap:8px;font-size:11px}
-.stapel .stp-sl span{width:60px}.stapel .stp-sl input{flex:1}
+/* ── СТАПЕЛЬ: заказ корпуса (M481, лист — D16) ── */
+.stapel .stp-ch{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:4px;margin:6px 0}
+.stapel .chip{min-height:44px;font-size:11px;line-height:1.1;font-family:inherit;padding:0 4px;border:1px solid rgba(232,214,168,.22);
+  background:rgba(232,214,168,.03);color:rgba(232,214,168,.72);border-radius:2px}
+.stapel .chip.on{border-color:#f2b25c;color:#f2b25c;background:rgba(242,178,92,.10);box-shadow:inset 0 -2px 0 #f2b25c}
+.stapel .stp-seg{gap:0;grid-template-columns:repeat(3,1fr)}.stapel .stp-seg .chip{border-radius:0}.stapel .stp-seg .chip+.chip{border-left-width:0}
+.stapel .stp-seg .chip.on{border-left-width:1px}.stapel .stp-seg .chip.on+.chip{border-left-width:0}
+.stapel .stp-pv{display:flex;justify-content:center;margin:8px 0 4px}
+.stapel canvas.stp-sheet{display:block;border:1px solid rgba(226,234,244,.14);box-shadow:0 2px 10px rgba(0,0,0,.5)}
+.stapel .stp-sl{display:grid;grid-template-columns:62px 1fr 52px;align-items:center;gap:10px;min-height:44px;font-size:12px}
+.stapel .stp-sl span{color:rgba(232,214,168,.72)}.stapel .stp-sl b{text-align:right;font-weight:400;color:#e8d6a8}
+.stapel input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:44px;margin:0;background:none;cursor:pointer}
+.stapel input[type=range]::-webkit-slider-runnable-track{height:16px;border-radius:1px;
+  background:repeating-linear-gradient(90deg,rgba(52,36,14,.8) 0 1px,transparent 1px 10%) 0 0/100% 8px no-repeat,
+    repeating-linear-gradient(90deg,rgba(52,36,14,.45) 0 1px,transparent 1px 2%) 0 0/100% 4px no-repeat,linear-gradient(#e2cf9c,#c7ae78);
+  box-shadow:inset 0 -1px 0 rgba(60,40,10,.5),0 2px 3px rgba(0,0,0,.55)}
+.stapel input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:30px;margin-top:-7px;border:1px solid rgba(12,14,18,.85);border-radius:2px;
+  background:linear-gradient(90deg,transparent 6px,#c8322a 6px 8px,transparent 8px),rgba(200,220,240,.22);box-shadow:0 2px 4px rgba(0,0,0,.6)}
+.stapel input[type=range]::-moz-range-track{height:16px;border-radius:1px;
+  background:repeating-linear-gradient(90deg,rgba(52,36,14,.8) 0 1px,transparent 1px 10%) 0 0/100% 8px no-repeat,
+    repeating-linear-gradient(90deg,rgba(52,36,14,.45) 0 1px,transparent 1px 2%) 0 0/100% 4px no-repeat,linear-gradient(#e2cf9c,#c7ae78)}
+.stapel input[type=range]::-moz-range-thumb{width:12px;height:28px;border:1px solid rgba(12,14,18,.85);border-radius:2px;
+  background:linear-gradient(90deg,transparent 5px,#c8322a 5px 7px,transparent 7px),rgba(200,220,240,.22)}
 .stapel .stp-n{font-size:11px;opacity:.8;margin:4px 0}
-.stapel>.stp-ch,.stapel>.stp-sl,.stapel>.stp-n,.stapel>button.act{margin-left:14px;margin-right:14px}
-.stapel .chip{font-family:inherit}.stapel input[type=range]{accent-color:#f2b25c}
+.stapel .stp-dl{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;margin:8px 0;background:rgba(232,214,168,.12);border:1px solid rgba(232,214,168,.12)}
+.stapel .stp-dc{position:relative;padding:6px 6px 9px;background:#0e1217;text-align:left;min-width:0}
+.stapel .stp-dc i{display:block;font-style:normal;font-size:10px;color:rgba(232,214,168,.55)}
+.stapel .stp-dc b{display:block;font-size:15px;font-weight:400;color:#e8d6a8;margin-top:2px}
+.stapel .stp-dc em{display:block;font-style:normal;font-size:10px;color:rgba(232,214,168,.4)}
+.stapel .stp-dc.up em{color:var(--phos,#7ce0a0)}.stapel .stp-dc.dn em{color:#e0685a}
+.stapel .stp-dc u{position:absolute;left:6px;right:6px;bottom:4px;height:2px;background:rgba(232,214,168,.14)}
+.stapel .stp-dc u::after{content:"";position:absolute;left:calc(var(--q)*100% - 1px);top:-2px;width:3px;height:6px;background:#e8d6a8}
+.stapel>.stp-ch,.stapel>.stp-sl,.stapel>.stp-n,.stapel>.stp-nums,.stapel>button.act{margin-left:14px;margin-right:14px}
+.stapel>button.stp-buy{display:block;width:calc(100% - 28px);min-height:48px}
+.stp-fx.stp-done .l0{font-size:34px;letter-spacing:.34em;line-height:1.1}
+.stp-fx.stp-done .l1{font-size:14px;margin-top:2px}
 
 /* ── барахолка (M463) [design owed] ── */
 #bazWin{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:60;width:min(420px,calc(100vw - 32px));max-height:80vh;overflow:auto;
@@ -86418,40 +86444,49 @@ function stapelPreview(o,w,h){
   return shipThumb(STAPEL_PV,w,h);
 }
 let STAPEL_UI={cls:"scout",size:"medium",l:1,w:1};
+function stapelSheetW(){return Math.max(260,Math.min(520,((typeof $body!=="undefined"&&$body&&$body.clientWidth)||420)-28));}
 function stapelBlock(){
   const by=stapelYardBy(),S=stapelAll();
   const box=document.createElement("div");box.className="stapel";
   if(!by&&!S.o)return null;
   box.appendChild(el("div","sec","СТАПЕЛЬ"+(by?" · "+makerRu(by).toUpperCase()+" · КОРПУС ПО ЗАКАЗУ":"")));
-  /* заказ в работе */
+  const sw=stapelSheetW(),sh=Math.round(sw*.46);
+  /* заказ в работе: на листе он обшит на долю смены, готовый — под штампом */
   if(S.o){
-    const o=S.o,here=G.sx===o.sx&&G.sy===o.sy;
+    const o=S.o,here=G.sx===o.sx&&G.sy===o.sy,rd=stapelReady();
+    const pv=el("div","stp-pv");
+    pv.appendChild(stapelSheet(o,sw,sh,{prog:rd?1:1-(o.ready-now())/HOLD_SHIFT,ready:rd}));
+    box.appendChild(pv);
     const r=el("div","row");
-    if(stapelReady()&&here){
+    if(rd&&here){
       r.appendChild(el("div","nm","<b>Заказ готов</b><s>"+HULL_CLASS[o.cls].ru+" · "+STAPEL_SIZE[o.size].ru+" · стапель "+makerRu(o.by)+"</s>"));
       const b=el("button","act gold","ЗАБРАТЬ");
-      b.onclick=()=>{const id=stapelCollect();if(id){say("Корпус ваш\n«"+shipData(id).ru+"»",160);renderTab();saveGame(true);}};
+      b.onclick=()=>{const id=stapelCollect();if(id){stapelFx(o.by,shipData(id).ru);renderTab();saveGame(true);}};
       r.appendChild(b);
     }else{
       const left=Math.max(0,Math.ceil((o.ready-now())/60000));
       r.appendChild(el("div","nm","<b>На стапеле: "+HULL_CLASS[o.cls].ru+" · "+STAPEL_SIZE[o.size].ru+"</b><s>"+
-        (stapelReady()?"готов · забрать на «"+o.st+"», сектор "+o.sx+":"+o.sy:"ещё "+left+" мин · «"+o.st+"»")+
+        (rd?"готов · забрать на «"+o.st+"», сектор "+o.sx+":"+o.sy:"обшивка "+Math.round(100*(1-(o.ready-now())/HOLD_SHIFT))+" % · ещё "+left+" мин · «"+o.st+"»")+
         " · второй заказ — после этого</s>"));
     }
     box.appendChild(r);
     return box;
   }
   const U=STAPEL_UI,o=()=>({by,cls:U.cls,size:U.size,l:U.l,w:U.w});
-  const pv=el("div","stp-pv"),nums=el("div","stp-n"),buy=el("button","act gold","");
+  const pv=el("div","stp-pv"),nums=el("div","stp-nums"),buy=el("button","act gold stp-buy","");
+  const val={};
   const redraw=()=>{
-    pv.innerHTML="";pv.appendChild(stapelPreview(o(),280,120));
+    pv.innerHTML="";pv.appendChild(stapelSheet(o(),sw,sh));
+    const m=stapelSheet.last||{};
+    if(val.l)val.l.textContent=m.l+" м";
+    if(val.w)val.w.textContent=m.b+" м";
     const N=stapelStats(o());
-    nums.innerHTML="тяга "+N.thr.toFixed(2)+" · поворот "+N.turn.toFixed(2)+" · трюм "+N.cargo+" · бак "+N.fuel+" · корпус "+N.hull;
+    nums.innerHTML="";nums.appendChild(stapelDelta(N,U.cls));
     buy.textContent="ЗАКАЗАТЬ · "+N.price.toLocaleString("ru")+" КР";
     buy.disabled=G.credits<N.price;
   };
-  const chips=(keys,ru,cur,set)=>{
-    const d=el("div","stp-ch");
+  const chips=(keys,ru,cur,set,cls)=>{
+    const d=el("div","stp-ch"+(cls?" "+cls:""));
     for(const k of keys){const b=el("button","chip"+(cur()===k?" on":""),ru(k));
       b.onclick=()=>{set(k);d.querySelectorAll(".chip").forEach(x=>x.classList.remove("on"));b.classList.add("on");redraw();};
       d.appendChild(b);}
@@ -86461,13 +86496,14 @@ function stapelBlock(){
   const shut=stapelClosedWhy(by);
   if(shut){box.appendChild(el("div","stp-n",shut+" · приходите позже"));return box;}
   box.appendChild(chips(Object.keys(HULL_CLASS),k=>HULL_CLASS[k].ru,()=>U.cls,k=>U.cls=k));
-  box.appendChild(chips(STAPEL_SIZES,k=>STAPEL_SIZE[k].ru,()=>U.size,k=>U.size=k));
+  box.appendChild(chips(STAPEL_SIZES,k=>STAPEL_SIZE[k].ru,()=>U.size,k=>U.size=k,"stp-seg"));
   box.appendChild(pv);
+  /* ползунки — масштабные линейки: самшит, риски, визир с красной нитью */
   const slider=(ru,key)=>{
     const d=el("label","stp-sl","<span>"+ru+"</span>");
     const i=document.createElement("input");i.type="range";i.min=STAPEL_L[0];i.max=STAPEL_L[1];i.step=.01;i.value=U[key];
     i.oninput=()=>{U[key]=+i.value;redraw();};
-    d.appendChild(i);return d;
+    d.appendChild(i);val[key]=el("b","","");d.appendChild(val[key]);return d;
   };
   box.appendChild(slider("длина","l"));
   box.appendChild(slider("ширина","w"));
@@ -86594,6 +86630,206 @@ function kpBlock(){
   }
   box.appendChild(r);
   return box;
+}
+
+/* ══════════════ СТАПЕЛЬ — лист (D16, дизайн-проход) ══════════════
+   Заказ рисуется не голым силуэтом в пустоте, а на стапеле: бетонные плиты в
+   грунте державы, рельсы со шпалами, подпоры, кран, два человека для мерила,
+   размерные линии белой тушью и эмблема хозяйки земли. Свет один — фонарь в
+   левом верхнем углу, всё стоящее отбрасывает тень туда же. Пока заказ в
+   работе, корпус обшит на долю смены от кормы; необшитое — набор в сурике.
+   Рисуется раз на сдвиг ползунка, в кадре игры не участвует. */
+function stapelSheet(o,cw,ch,st){
+  st=st||{};
+  const prog=clamp(st.prog==null?1:st.prog,0,1),by=o.by;
+  const dpr=Math.min(2,window.devicePixelRatio||1)*(typeof UIK==="number"?UIK:1);
+  const cn=document.createElement("canvas");
+  cn.width=Math.round(cw*dpr);cn.height=Math.round(ch*dpr);
+  cn.style.width=cw+"px";cn.style.height=ch+"px";cn.className="stp-sheet";
+  const c=cn.getContext("2d");c.scale(dpr,dpr);
+  const g=makerGround(by)||[170,170,170],P=powerOf(by);
+  const r=rng((hashi(o.no|0,by.charCodeAt(0),0x57A9)>>>0)||1);
+  const base=[13,16,21],mix=k=>base.map((v,i)=>Math.round(v+(g[i]-v)*k));
+  const rgba=(a,al)=>"rgba("+a[0]+","+a[1]+","+a[2]+","+al+")";
+  /* пол: тёмный грунт, свет только добавляется */
+  c.fillStyle=rgba(mix(.09),1);c.fillRect(0,0,cw,ch);
+  /* плиты (крупный масштаб): тон на плиту, шов тёмный, кромка светлая к фонарю */
+  const sw=Math.max(34,ch/3.2);
+  for(let y=0;y<ch;y+=sw)for(let x=-(r()*sw|0);x<cw;x+=sw*1.6){
+    c.fillStyle=rgba(g,(.015+r()*.035).toFixed(3));c.fillRect(x,y,sw*1.6,sw);
+  }
+  c.lineWidth=1;c.strokeStyle="rgba(0,0,0,.5)";c.beginPath();
+  for(let y=sw,row=1;y<ch+sw;y+=sw,row++){c.moveTo(0,y+.5);c.lineTo(cw,y+.5);
+    for(let x=(row&1)*sw*.8;x<cw;x+=sw*1.6){c.moveTo(x+.5,y-sw);c.lineTo(x+.5,y);}}
+  c.stroke();
+  c.strokeStyle=rgba(g,.07);c.beginPath();
+  for(let y=sw,row=1;y<ch+sw;y+=sw,row++){c.moveTo(0,y+1.5);c.lineTo(cw,y+1.5);
+    for(let x=(row&1)*sw*.8;x<cw;x+=sw*1.6){c.moveTo(x+1.5,y-sw);c.lineTo(x+1.5,y);}}
+  c.stroke();
+  /* пятна масла (средний) и зерно (мелкий) */
+  for(let i=0;i<5;i++){
+    const x=r()*cw,y=r()*ch,rr=6+r()*16,gr=c.createRadialGradient(x,y,0,x,y,rr);
+    gr.addColorStop(0,"rgba(0,0,0,.22)");gr.addColorStop(1,"rgba(0,0,0,0)");
+    c.fillStyle=gr;c.fillRect(x-rr,y-rr,rr*2,rr*2);
+  }
+  for(let i=0;i<cw*ch/90;i++){
+    c.fillStyle=i&1?rgba(g,.07):"rgba(0,0,0,.18)";
+    c.fillRect((i*0.618034*cw+r()*9)%cw,r()*ch,1,1);
+  }
+  /* корпус: та же временная запись, что у превью */
+  NPC_SHIPS[STAPEL_PV]=stapelShip(Object.assign({seed:0x57A9,no:0},o));
+  delete HULL_CACHE[STAPEL_PV+"!"+by];
+  const hl=hullOf(STAPEL_PV);
+  /* границы корпуса — по пикселям, не по halfW: остриё носа и гондолы выходят
+     за числа генератора, а лист обязан их вместить и мерить честно */
+  const b=stapelHullBox(hl),Lw=b.x1-b.x0,Lh=b.y1-b.y0;
+  const sc=Math.min((cw-96)/Lw,(ch-92)/Lh);
+  stapelSheet.last={l:Math.round(Lw),b:Math.round(Lh)};
+  const cx0=cw*.5-4,cy0=ch*.5+2,X0=cx0-(b.x0+b.x1)*.5*sc,Y0=cy0-(b.y0+b.y1)*.5*sc;
+  const xn=X0+b.x1*sc,xt=X0+b.x0*sc,hw=Lh*.5*sc,xf=xt+(xn-xt)*prog;
+  const ry=[cy0-hw-11,cy0+hw+11];
+  /* рельсы со шпалами */
+  c.strokeStyle="rgba(0,0,0,.45)";c.lineWidth=3;c.beginPath();
+  for(let x=10;x<cw-10;x+=8)for(const y of ry){c.moveTo(x,y-5);c.lineTo(x,y+5);}
+  c.stroke();
+  for(const y of ry){
+    c.fillStyle="rgba(0,0,0,.5)";c.fillRect(6,y-2,cw-12,5);
+    c.fillStyle="rgba(196,202,210,.5)";c.fillRect(6,y-2,cw-12,1.5);
+    c.fillStyle="rgba(196,202,210,.22)";c.fillRect(6,y+1,cw-12,1);
+  }
+  /* кильблоки по оси — видны за носом и кормой; подпоры от рельса к борту */
+  c.fillStyle="rgba(150,108,58,.9)";
+  for(let x=xt-14;x<xn+14;x+=Math.max(9,sc*5))c.fillRect(x-2,cy0-3,4,6);
+  /* подпоры — наклонные брусья: пятка на рельсе, голова под бортом */
+  const shores=Math.max(2,Math.round((xn-xt)/60));
+  for(let i=0;i<shores;i++){
+    const x=xt+(xn-xt)*(i+.5)/shores;
+    for(const k of [-1,1]){
+      const y0=ry[k>0?1:0],y1=cy0+k*hw*.45,x0=x-(y0-y1)*k*.55;
+      c.strokeStyle="rgba(0,0,0,.45)";c.lineWidth=3.5;c.beginPath();c.moveTo(x0+3,y0+3);c.lineTo(x+3,y1+3);c.stroke();
+      c.strokeStyle="rgba(122,90,52,.95)";c.lineWidth=2.2;c.beginPath();c.moveTo(x0,y0);c.lineTo(x,y1);c.stroke();
+      c.strokeStyle="rgba(214,170,110,.35)";c.lineWidth=.8;c.beginPath();c.moveTo(x0-.6,y0-.6);c.lineTo(x-.6,y1-.6);c.stroke();
+      c.fillStyle="rgba(60,44,26,.95)";c.fillRect(x0-3,y0-2,6,4);
+    }
+  }
+  /* корпус — в свой холст, обшивка и набор там же, тень одним вызовом */
+  const off=document.createElement("canvas");off.width=cn.width;off.height=cn.height;
+  const oc=off.getContext("2d");oc.scale(dpr,dpr);
+  oc.save();oc.translate(X0,Y0);oc.scale(sc,sc);
+  const old=ctx;ctx=oc;try{drawHull(STAPEL_PV,false,false,0);}finally{ctx=old;}
+  oc.restore();
+  if(prog<1){
+    oc.save();oc.beginPath();oc.rect(xf,0,cw-xf,ch);oc.clip();
+    oc.globalCompositeOperation="source-atop";
+    oc.fillStyle="rgba(24,22,21,.9)";oc.fillRect(xf,0,cw-xf,ch);
+    oc.strokeStyle="rgba(176,86,52,.85)";oc.lineWidth=1.2;oc.beginPath();          /* шпангоуты в сурике */
+    for(let x=xf+3;x<cw;x+=Math.max(3.5,sc*2.2)){oc.moveTo(x,cy0-hw-2);oc.lineTo(x,cy0+hw+2);}
+    oc.stroke();
+    oc.strokeStyle="rgba(176,86,52,.6)";oc.lineWidth=1;oc.beginPath();          /* стрингеры */
+    for(const k of [-.62,-.28,0,.28,.62]){oc.moveTo(xf,cy0+k*hw);oc.lineTo(cw,cy0+k*hw);}
+    oc.stroke();
+    oc.restore();
+  }
+  c.save();c.shadowColor="rgba(0,0,0,.6)";c.shadowBlur=7;c.shadowOffsetX=5;c.shadowOffsetY=6;
+  c.drawImage(off,0,0,cw,ch);c.restore();
+  if(prog<1&&prog>0){                                                         /* сварка на кромке обшивки */
+    const gy=cy0+(r()-.5)*hw,gr=c.createRadialGradient(xf,gy,0,xf,gy,10);
+    gr.addColorStop(0,"rgba(255,244,210,.95)");gr.addColorStop(.25,"rgba(150,200,255,.45)");gr.addColorStop(1,"rgba(150,200,255,0)");
+    c.globalCompositeOperation="lighter";c.fillStyle=gr;c.fillRect(xf-10,gy-10,20,20);c.globalCompositeOperation="source-over";
+  }
+  /* козловой кран: над кромкой обшивки, а готовому — отогнан за корму */
+  const kx=prog<1?xf:Math.max(30,xt-20);
+  c.save();c.shadowColor="rgba(0,0,0,.55)";c.shadowBlur=4;c.shadowOffsetX=6;c.shadowOffsetY=8;
+  c.fillStyle="#caa23e";c.fillRect(kx-3,ry[0]-7,6,ry[1]-ry[0]+14);
+  c.restore();
+  c.fillStyle="rgba(20,18,14,.85)";
+  for(let y=ry[0]-7;y<ry[0]+1;y+=4)c.fillRect(kx-3,y,6,2);
+  for(let y=ry[1]-1;y<ry[1]+7;y+=4)c.fillRect(kx-3,y,6,2);
+  c.fillStyle="#2a2723";c.fillRect(kx-5,cy0-5,10,9);
+  c.fillStyle="rgba(255,236,190,.35)";c.fillRect(kx-5,cy0-5,10,1.5);
+  /* мерило — два человека у рельса: каска и плечи, тень */
+  for(const [px,py] of [[xt-8,ry[1]+9],[xt+(xn-xt)*.62,ry[0]-9]]){
+    c.fillStyle="rgba(0,0,0,.45)";c.beginPath();c.ellipse(px+1.6,py+2,2.6,1.7,0,0,TAU);c.fill();
+    c.fillStyle="#2f3a44";c.beginPath();c.ellipse(px,py,2.6,1.7,0,0,TAU);c.fill();
+    c.fillStyle="#f0c24a";c.beginPath();c.arc(px,py-.4,1.4,0,TAU);c.fill();
+  }
+  /* фонарь в углу — источник у света, и пятно света от него */
+  const lx=12,ly=12,gl=c.createRadialGradient(lx,ly,0,lx,ly,cw*.75);
+  gl.addColorStop(0,"rgba(255,214,150,.16)");gl.addColorStop(.4,"rgba(255,214,150,.05)");gl.addColorStop(1,"rgba(255,214,150,0)");
+  c.globalCompositeOperation="lighter";c.fillStyle=gl;c.fillRect(0,0,cw,ch);
+  const gh=c.createRadialGradient(lx,ly,0,lx,ly,9);
+  gh.addColorStop(0,"rgba(255,236,196,.9)");gh.addColorStop(1,"rgba(255,214,150,0)");
+  c.fillStyle=gh;c.fillRect(lx-9,ly-9,18,18);c.globalCompositeOperation="source-over";
+  c.fillStyle="rgba(0,0,0,.7)";c.beginPath();c.arc(lx+3,ly+4,3,0,TAU);c.fill();
+  c.fillStyle="#fff2d6";c.beginPath();c.arc(lx,ly,1.8,0,TAU);c.fill();
+  /* размерные линии белой тушью */
+  const ink="rgba(226,234,244,.72)";
+  c.font="10px ui-monospace,monospace";c.textBaseline="middle";c.textAlign="center";
+  const dy=ch-10;
+  c.strokeStyle="rgba(226,234,244,.25)";c.lineWidth=1;c.setLineDash([2,3]);c.beginPath();
+  c.moveTo(xt+.5,cy0+hw*.4);c.lineTo(xt+.5,dy+4);c.moveTo(xn+.5,cy0);c.lineTo(xn+.5,dy+4);c.stroke();c.setLineDash([]);
+  c.strokeStyle=ink;c.beginPath();c.moveTo(xt,dy+.5);c.lineTo(xn,dy+.5);
+  c.moveTo(xt-3,dy+3.5);c.lineTo(xt+3,dy-2.5);c.moveTo(xn-3,dy+3.5);c.lineTo(xn+3,dy-2.5);c.stroke();
+  const tl=Math.round(Lw)+" м",tw=c.measureText(tl).width+8;
+  c.fillStyle=rgba(mix(.09),1);c.fillRect((xt+xn)/2-tw/2,dy-6,tw,12);
+  c.fillStyle=ink;c.fillText(tl,(xt+xn)/2,dy+.5);
+  const dx=cw-12;
+  c.beginPath();c.moveTo(dx+.5,cy0-hw);c.lineTo(dx+.5,cy0+hw);
+  c.moveTo(dx-3,cy0-hw+3);c.lineTo(dx+3,cy0-hw-3);c.moveTo(dx-3,cy0+hw+3);c.lineTo(dx+3,cy0+hw-3);c.stroke();
+  c.save();c.translate(dx,cy0);c.rotate(-Math.PI/2);
+  const bl=Math.round(Lh)+" м",bw=c.measureText(bl).width+8;
+  c.fillStyle=rgba(mix(.09),1);c.fillRect(-bw/2,-6,bw,12);c.fillStyle=ink;c.fillText(bl,0,.5);c.restore();
+  /* эмблема хозяйки и номер стапеля */
+  const oldc=ctx;ctx=c;try{powerEmblem(by,cw-22,19,10);}finally{ctx=oldc;}
+  c.textAlign="right";c.fillStyle=P.col||ink;c.font="10px ui-monospace,monospace";
+  c.fillText(makerRu(by).toUpperCase(),cw-38,15);
+  c.fillStyle="rgba(226,234,244,.5)";c.fillText("стапель № "+(1+((hashi(G.sx|0,G.sy|0,0x57A9)>>>0)%9)),cw-38,27);
+  /* ГОТОВ — красный двойной штамп, как «СОГЛАСОВАНО» на синьке */
+  if(st.ready){
+    c.save();c.translate(cx0+(xn-cx0)*.35,cy0-2);c.rotate(-.16);
+    c.strokeStyle="rgba(214,62,52,.9)";c.lineWidth=2;c.strokeRect(-46,-15,92,30);c.lineWidth=1;c.strokeRect(-42,-11,84,22);
+    c.fillStyle="rgba(214,62,52,.92)";c.font="bold 17px ui-monospace,monospace";c.textAlign="center";c.fillText("ГОТОВ",0,1);
+    c.restore();
+  }
+  return cn;
+}
+/* рамка корпуса в единицах мира: рисуем в 2 px на единицу и ищем непустые
+   пиксели. Один раз на сдвиг ползунка — не в кадре игры */
+function stapelHullBox(hl){
+  const k=2,pad=hl.len*.4+20,W=Math.ceil((hl.len+pad*2)*k),H=Math.ceil((hl.halfW*2+pad*2)*k);
+  const cn=document.createElement("canvas");cn.width=W;cn.height=H;
+  const c=cn.getContext("2d"),ox=pad-hl.tail,oy=hl.halfW+pad;
+  c.translate(ox*k,oy*k);c.scale(k,k);
+  const old=ctx;ctx=c;try{drawHull(STAPEL_PV,false,false,0);}finally{ctx=old;}
+  const d=c.getImageData(0,0,W,H).data;
+  let x0=W,x1=-1,y0=H,y1=-1;
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(d[(y*W+x)*4+3]>24){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y;}
+  if(x1<0)return {x0:hl.tail,x1:hl.nose,y0:-hl.halfW,y1:hl.halfW};
+  return {x0:x0/k-ox,x1:(x1+1)/k-ox,y0:y0/k-oy,y1:(y1+1)/k-oy};
+}
+/* числа заказа полосой: значение, разница с тем, на чём летите, и место в
+   коридоре класса — видно, что даёт ползунок, а не только сколько стоит */
+const STAPEL_KEYS=[["thr","тяга",2],["turn","поворот",2],["cargo","трюм",0],["fuel","бак",0],["hull","корпус",0]];
+function stapelDelta(N,cls){
+  const d=el("div","stp-dl"),cur=shipData(G.shipId)||{},P=FLEET_PROFILE[cls]||FLEET_PROFILE.scout;
+  for(const [k,ru,f] of STAPEL_KEYS){
+    const v=N[k],dv=+(v-(cur[k]||0)).toFixed(f),q=clamp((v-P[k][0])/((P[k][1]-P[k][0])||1),0,1);
+    const cell=el("div","stp-dc"+(dv>0?" up":dv<0?" dn":""),
+      "<i>"+ru+"</i><b>"+v.toFixed(f)+"</b><em>"+(dv>0?"+":dv<0?"−":"=")+(dv?Math.abs(dv).toFixed(f):"")+"</em>"+
+      "<u style='--q:"+q.toFixed(2)+"'></u>");
+    d.appendChild(cell);
+  }
+  return d;
+}
+/* ГОТОВ у окна выдачи — штамп через экран, тем же ходом, что отметка о проезде */
+function stapelFx(by,name){
+  if(typeof document==="undefined"||!document.body)return;
+  const old=document.getElementById("stampFx");if(old)old.remove();
+  const d=document.createElement("div");d.id="stampFx";d.className="stp-fx stp-done stp-"+by;
+  d.style.setProperty("--tilt","-6deg");
+  d.innerHTML="<div class='l0'>ГОТОВ</div><div class='l1'>«"+name+"»</div><div class='l2'>сошёл со стапеля "+makerRu(by)+"</div>";
+  document.body.appendChild(d);
+  setTimeout(()=>{if(d.parentNode)d.remove();},1300);
 }
 
 /* ══════════════ силуэт корпуса и вход в ОПИСЬ ══════════════

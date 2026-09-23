@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 594 · символов верхнего уровня: 5820
+Файлов: 595 · символов верхнего уровня: 5826
 
 ## СИМВОЛЫ
 
@@ -5036,20 +5036,26 @@ stampOwnerAt                 src/17i-stamp.js:16-21
 stampPage                    src/17i-stamp.js:64-91
 stampShow                    src/17i-stamp.js:52-62
 stampText                    src/17i-stamp.js:24-35
+STAPEL_KEYS                  src/26e2-stapel-draw.js:178
 STAPEL_PV                    src/26e1-stapel.js:124
 STAPEL_SIZE                  src/26e1-stapel.js:10-14
 STAPEL_SIZES                 src/26e1-stapel.js:26
 STAPEL_UI                    src/26e1-stapel.js:131
 STAPEL_YARD                  src/26e1-stapel.js:17-24
 stapelAll                    src/26e1-stapel.js:27-32
-stapelBlock                  src/26e1-stapel.js:132-190
+stapelBlock                  src/26e1-stapel.js:133-200
 stapelClosedWhy              src/26e1-stapel.js:96-101
 stapelCollect                src/26e1-stapel.js:111-122
+stapelDelta                  src/26e2-stapel-draw.js:179-189
+stapelFx                     src/26e2-stapel-draw.js:191-199
+stapelHullBox                src/26e2-stapel-draw.js:164-175
 stapelId                     src/26e1-stapel.js:68
 stapelOrder                  src/26e1-stapel.js:80-94
 stapelPreview                src/26e1-stapel.js:125-130
 stapelReady                  src/26e1-stapel.js:102
 stapelRestore                src/26e1-stapel.js:75-78
+stapelSheet                  src/26e2-stapel-draw.js:8-161
+stapelSheetW                 src/26e1-stapel.js:132
 stapelShip                   src/26e1-stapel.js:59-67
 stapelStats                  src/26e1-stapel.js:42-57
 stapelStrip                  src/26e1-stapel.js:70-74
@@ -6933,11 +6939,14 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/26e-ui-station-trade.js · 29 КБ
   · станция: доска, рынок и док (выделено из 26, M415):1
 
-## src/26e1-stapel.js · 11 КБ
+## src/26e1-stapel.js · 12 КБ
   · СТАПЕЛЬ — заказ корпуса у державы (M481, DESIGN-shipyard §5):1
 
 ## src/26e2-post.js · 8 КБ
   · Космопочта — учреждение как погода (M492, DESIGN-birchpunk):1
+
+## src/26e2-stapel-draw.js · 13 КБ
+  · СТАПЕЛЬ — лист (D16, дизайн-проход):1
 
 ## src/27-ui-ship.js · 26 КБ
   · силуэт корпуса и вход в ОПИСЬ:1
