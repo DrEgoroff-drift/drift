@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 602 · символов верхнего уровня: 5902
+Файлов: 602 · символов верхнего уровня: 5904
 
 ## СИМВОЛЫ
 
@@ -1478,7 +1478,7 @@ drawScars                    src/03e-hull-draw.js:5-42
 drawScoop                    src/19a-mode-scoop.js:271-602
 drawSeal                     src/03e-hull-draw.js:47-58
 drawSeams                    src/12s-wear.js:184-199
-drawShuttleArc               src/17f-sys-traffic.js:43-79
+drawShuttleArc               src/17f-sys-traffic.js:67-102
 drawSkyBase                  src/19c-light.js:296-329
 drawSkyBodies                src/19b-sky.js:96-128
 drawSkyLayer                 src/19-mode-landing.js:171-269
@@ -1501,7 +1501,7 @@ drawSysLane                  src/17g-sys-lane.js:94-122
 drawSysLaneShips             src/17g-sys-lane.js:152-180
 drawSysRail                  src/18f-rail-station.js:32-65
 drawSystem                   src/17-mode-system.js:498-697
-drawSysTraffic               src/17f-sys-traffic.js:36-40
+drawSysTraffic               src/17f-sys-traffic.js:37-41
 drawTapes                    src/12s1-tape.js:37-52
 drawTemple                   src/20aa-poi-shapes.js:50-89
 drawThingIcon                src/27i-ui-table.js:400-478
@@ -4934,6 +4934,8 @@ shipZoneR                    src/19f-lander.js:14
 SHOT_CLEAN                   src/28-loop.js:370
 SHOVE_V                      src/13a-guns.js:36
 SHUT_LINES                   src/11ah-offer.js:302-307
+SHUT_N                       src/17f-sys-traffic.js:66
+shuttleAt                    src/17f-sys-traffic.js:43-60
 SIGN_HOLD                    src/21-mode-surface.js:199
 siteTestOpen                 tests/91x-hold-site.js:11-18
 siteTestStation              tests/91x-hold-site.js:2-9
@@ -5311,7 +5313,7 @@ sysPirateBase                src/24a-mode-raid.js:98-102
 sysRasterDrop                src/06-galaxy.js:23-35
 sysRasterTick                src/06-galaxy.js:37-49
 sysStyle                     src/16a-space.js:21-41
-sysTraffic                   src/17f-sys-traffic.js:11-35
+sysTraffic                   src/17f-sys-traffic.js:11-36
 T                            tests/90a-tools.js:54-603
 tab                          src/26-ui-station.js:3
 TAB_CH                       src/14a-cloud.js:21
@@ -6617,7 +6619,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/17e-station-body.js · 8 КБ
   · тело станции и планеты: что построил игрок, видно:1
 
-## src/17f-sys-traffic.js · 5 КБ
+## src/17f-sys-traffic.js · 7 КБ
   · трафик системы: чужие машины, которым тут есть дело (M309):1
 
 ## src/17g-gpu-system.js · 18 КБ

@@ -261,6 +261,9 @@ Check each against the code before building — some may already hold.
 - [ ] **Chips on the way to their slot avoid each other:** `CHIP_POS` glides a chip to its logical slot without a
   collision check, so two chips crossing lie on each other mid-way (seen 23.09 after a teleport). The law «chips never
   lie on each other or on the HUD» holds in motion too (main, not the gpu branch).
+- [ ] **Station shuttles never drawn (main):** `sysTraffic` (17f) set `by` twice — the arc end's y and then the
+  maker key — so every shuttle sat at NaN and M309 traffic has been invisible since M454. Fixed on the gpu branch
+  (maker is `t.mk`); port the one-line fix to main.
 - [ ] **Planet angles follow the frame rate, not the game clock:** `updateSystem` does `p.ang+=angRate(…)*dt`
   (moons and the station alike), so where a planet stands depends on how many frames ran — two devices see
   different worlds. Make the angle a pure function of game time (`ang0+spd*G.t`, same clamp). Check the save

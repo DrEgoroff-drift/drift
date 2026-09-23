@@ -75,8 +75,13 @@ The author, 23.09.2026: «переноси все на новые техноло
   spark when empty), the repair lamp breathes; labels stay 2D in `drawDronesSystem`. Pair `g4j_crop.png`, scene
   `drones.js` (stubs `clockNow`). The hull light now leaves bright saturated pixels (nav lights, beacons) out of
   both light and shadow (`own`), red and green lamps = main. `freeze.js` pins `G.t=12` every frame by wrapping
-  `drawSystem` — blinking lights otherwise catch different phases in the two shots.
-  **Next in G4:** traffic, station
+  `drawSystem` — blinking lights otherwise catch different phases in the two shots. Station shuttles
+  (`drawShuttleArc`, 17f; also «Сорока»'s arc): `shuttleAt(t,T)` gives place and heading, the GPU draws a fading
+  wake along the same arc (twelve past samples), the nozzle flame and the breathing side light; the hull stays 2D.
+  They had never been drawn at all: `sysTraffic` set `by` twice (arc end y, then the maker), fixed as `t.mk`
+  (PLAN line for main). Each call draws at once under its own buffer key (`gsh<n>`, reset per frame). Pair
+  `g4k_crop.png`, scene `traffic.js` (explicit arcs with literal ends, ship at 1400,0).
+  **Next in G4:** station
   (`drawStation`, 17c), barges; everything after the planet loop in drawSystem except the above is still 2D.
   A GPU draw after `gpuHullLight` must use `gpuOver`, not `gpuScene` (the scene pass is closed by then).
 - Merge each: `build.ps1`, `python docs/shot.py <scenes> --look --tag gpu`, 0 `gpu.errs`, pair with
