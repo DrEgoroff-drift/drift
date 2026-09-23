@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 595 · символов верхнего уровня: 5834
+Файлов: 596 · символов верхнего уровня: 5848
 
 ## СИМВОЛЫ
 
@@ -988,9 +988,9 @@ craftAffordable              src/03-ships.js:110-114
 craftAmmo                    src/16b-missile.js:61-71
 craftPart                    src/03-ships.js:115-124
 CRASH_SHIP                   src/01a-crashlog.js:19
-crashAt                      src/28-loop.js:569-583
-crashN                       src/28-loop.js:564
-crashSay                     src/28-loop.js:590-619
+crashAt                      src/28-loop.js:574-588
+crashN                       src/28-loop.js:569
+crashSay                     src/28-loop.js:595-624
 crashShip                    src/01a-crashlog.js:20-37
 crashStack                   src/01a-crashlog.js:39-41
 CREW_BASE_TRAITS             src/21a9-base-laws.js:92-97
@@ -1105,7 +1105,7 @@ CVS_RECT                     src/08-state.js:86
 cvsRect                      src/08-state.js:101-104
 dayK                         src/19c-light.js:68-73
 dayKq                        src/19c-light.js:74
-dbg                          src/28-loop.js:727-797
+dbg                          src/28-loop.js:732-802
 dcol                         src/21b-surface-deco.js:155-160
 DEAL_KINDS                   src/27g-deals.js:17-137
 dealAnswer                   src/27g-deals.js:163-196
@@ -1434,7 +1434,7 @@ drawGround                   src/19-mode-landing-ground.js:11-239
 drawGroundCrumbs             src/19-mode-landing-ground.js:242-252
 drawGroundGrass              src/19-mode-landing-ground.js:255-292
 drawHaul                     src/16c-rescue.js:414-558
-drawHitFx                    src/18d-postfx.js:87-105
+drawHitFx                    src/18d-postfx.js:87-108
 drawHomeIn                   src/29d-home-draw.js:9-332
 drawHomeOut                  src/21f-home-out.js:73-312
 drawHomeRoom                 src/27e-ui-home.js:42-62
@@ -1534,7 +1534,7 @@ drawWater                    src/21e-surface-draw.js:194-275
 drawWear                     src/12s-wear.js:102-171
 drawWeather                  src/19d-weather.js:104-234
 drawWinter                   src/29g-winter-draw.js:334-765
-drawWorld                    src/28-loop.js:399-424
+drawWorld                    src/28-loop.js:399-425
 drawWreck                    src/20aa-poi-shapes.js:8-48
 drawWrecksSystem             src/12l-barge.js:362-388
 drawYardMark                 src/03e-hull-draw.js:71-114
@@ -1891,12 +1891,13 @@ folkState                    src/12u-folk.js:83-86
 folkVisit                    src/12u-folk.js:104-113
 FOOD_SUPPLY                  src/21a1b-base-food.js:16
 foundBase                    src/21a-mode-base.js:101-115
-frame                        src/28-loop.js:623-669
+frame                        src/28-loop.js:628-674
 FRAME_IN                     src/08-state.js:347
 FRAME_JS                     src/28-loop.js:119
 FRAME_MS                     src/28-loop.js:141
-frameBody                    src/28-loop.js:425-555
-frameLastAt                  src/28-loop.js:622
+frameBody                    src/28-loop.js:426-560
+frameCanvas                  src/08b-gpu.js:25
+frameLastAt                  src/28-loop.js:627
 freeVoice                    src/09-audio.js:104-108
 FUEL_PER_ICE                 src/21b1-base-pay.js:100
 fuelPriceHere                src/12k-rep.js:63-70
@@ -2076,6 +2077,19 @@ gotNext                      src/27jb-ui-got.js:28
 gotoSector                   src/11a-quests.js:68-88
 gotRender                    src/27jb-ui-got.js:29-55
 gotTick                      src/27jb-ui-got.js:56-60
+GPU                          src/08b-gpu.js:8
+GPU_POST_WGSL                src/08b-gpu.js:71
+gpuDrop                      src/08b-gpu.js:61-68
+gpuFrame                     src/08b-gpu.js:187-200
+gpuNoise                     src/08b-gpu.js:143-148
+gpuPass                      src/08b-gpu.js:172-175
+gpuPipes                     src/08b-gpu.js:123-140
+gpuPresent                   src/08b-gpu.js:227-239
+gpuResize                    src/08b-gpu.js:149-171
+gpuScene                     src/08b-gpu.js:203-209
+gpuUni                       src/08b-gpu.js:176-182
+gpuWanted                    src/08b-gpu.js:16-22
+gpuWorld                     src/08b-gpu.js:212-225
 gradePass                    src/19c-light.js:258-294
 GRAIN_PAT                    src/19c-light.js:389
 grainPass                    src/19c-light.js:390-424
@@ -3947,7 +3961,7 @@ probeShot                    src/25m-probe.js:85-97
 probeSpeak                   src/25m-probe.js:100-121
 probeTarget                  src/25m-probe.js:38-46
 probeVoice                   src/25m-probe.js:75-83
-prof                         src/28-loop.js:689-716
+prof                         src/28-loop.js:694-721
 PROFILE                      src/02-world.js:129-142
 profW                        src/03-ships.js:205-214
 PROMPT_RECT                  src/08-state.js:108
@@ -5972,6 +5986,9 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/08a-statehash.js · 6 КБ
   · хэш состояния (M441):1
 
+## src/08b-gpu.js · 15 КБ
+  · видеокарта: кадр собирает WebGPU (G0, docs/DESIGN-gpu.md):1
+
 ## src/09-audio.js · 18 КБ
   · звук: чистый синтез, ни одного файла:1
 
@@ -7040,9 +7057,9 @@ zooTick                      src/11ad-zoo.js:41-54
   · авторазрешение:188
   · РОВНЫЙ ТАКТ (0.1b):315
   · развилка режимов — одна на всех (M238):371
-  · кадр, который не убивает игру (M234):556
-  · prof() — на что уходит кадр:677
-  · dbg() — что держит корабль:718
+  · кадр, который не убивает игру (M234):561
+  · prof() — на что уходит кадр:682
+  · dbg() — что держит корабль:723
 
 ## src/28y-look.js · 30 КБ
   · look() — прибор кадра:1
