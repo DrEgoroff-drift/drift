@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 602 · символов верхнего уровня: 5908
+Файлов: 602 · символов верхнего уровня: 5909
 
 ## СИМВОЛЫ
 
@@ -1390,7 +1390,7 @@ drawCheburek                 src/17j-cheburek.js:22-62
 drawChunks                   src/18c-chunks.js:90-96
 drawClouds                   src/19e-clouds.js:386-528
 drawCockpit                  src/25-cockpit.js:400-674
-drawCombat                   src/13-pirates.js:349-439
+drawCombat                   src/13-pirates.js:349-440
 drawCosmMark                 src/12va-wander-cosm.js:112-132
 drawCrowns                   src/05a-nodes.js:379-414
 drawCrystalForest            src/20aa-poi-shapes.js:115-141
@@ -1453,7 +1453,7 @@ drawNodeIcon                 src/05a-nodes.js:264-361
 drawObelisk                  src/20aa-poi-shapes.js:276-376
 drawObserv                   src/20aa-poi-shapes.js:491-513
 drawPeaceFleet               src/17m-peace-fleet.js:51-109
-drawPirate                   src/12i-pirate-hull.js:428-478
+drawPirate                   src/12i-pirate-hull.js:438-488
 drawPirateBase               src/24a-mode-raid.js:103-133
 drawPirateSkin               src/03d-hull-marks.js:99-126
 drawPlan                     src/05e-plan.js:137-172
@@ -2112,6 +2112,7 @@ gpuOver                      src/08b-gpu.js:245-260
 gpuPass                      src/08b-gpu.js:191-194
 gpuPipe                      src/08c-gpu-kit.js:13-20
 gpuPipes                     src/08b-gpu.js:133-154
+gpuPirateBody                src/12i-pirate-hull.js:432-437
 gpuPlanet                    src/17ga-gpu-planets.js:127-141
 gpuPresent                   src/08b-gpu.js:288-302
 gpuResize                    src/08b-gpu.js:163-190
@@ -3808,7 +3809,7 @@ PIRATE_LOADOUT               src/13d-loadout.js:23-28
 PIRATE_NAMES                 src/13-pirates.js:3
 PIRATE_RANKS                 src/13-pirates.js:13-18
 pirateArmTick                src/13d-loadout.js:163-181
-pirateArtOf                  src/12i-pirate-hull.js:238-424
+pirateArtOf                  src/12i-pirate-hull.js:238-427
 pirateBaseOf                 src/24a-mode-raid.js:87-96
 pirateBuild                  src/12i-pirate-hull.js:54-231
 pirateClass                  src/12i-pirate-hull.js:47-52
@@ -6368,7 +6369,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/12h-relic.js · 8 КБ
   · артефакты и лаборатория:1
 
-## src/12i-pirate-hull.js · 28 КБ
+## src/12i-pirate-hull.js · 29 КБ
   · пиратский корпус:1
 
 ## src/12j-home.js · 16 КБ

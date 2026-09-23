@@ -30853,7 +30853,7 @@ function pirateArtOf(id,rogue,hurt,rank,des){
   /* побитый корабль — вторая выпечка, а не пятна поверх целой: пока силуэт
      оставался прежним, разбитый пират выглядел просто испачканным */
   /* ранг входит в ключ: у него своё снаряжение, а значит и свои стволы (M368) */
-  const key=id+(rogue?"!r":"")+(hurt?"!h":"")+"!"+(rank|0)+(des?"!d":"");
+  const key=id+(rogue?"!r":"")+(hurt?"!h":"")+"!"+(rank|0)+(des?"!d":"")+(GPU.on?"!g":"");
   if(PIR_ART[key])return PIR_ART[key];
   /* `shipData` знает все три источника корпусов: у ренегата это ВАШ корабль */
   const S=shipData(id)||{seed:hashi(1,2,3),col:"#d95a3c"};
@@ -31016,7 +31016,9 @@ function pirateArtOf(id,rogue,hurt,rank,des){
      Пока каждая деталь заливалась своим ровным цветом, корабль оставался кучей
      равноправных пятен: у сварки не было ни верха, ни низа. Свет кладётся
      последним по всей выпечке разом (`source-atop` — только по нарисованному),
-     и куски сразу становятся одним телом, освещённым сверху. */
+     и куски сразу становятся одним телом, освещённым сверху.
+     На видеокарте свет кладёт gpuLitSprite по рельефу, от звезды (G4). */
+  if(!GPU.on){
   ctx.globalCompositeOperation="source-atop";
   const lg=ctx.createLinearGradient(0,-B.hw*1.5,0,B.hw*1.6);
   lg.addColorStop(0,"rgba(255,238,214,.34)");
@@ -31032,6 +31034,7 @@ function pirateArtOf(id,rogue,hurt,rank,des){
     const p=bodyTop[i];i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]);
   }
   ctx.stroke();
+  }
   ctx=prev;
   const art={cn,rad,B,cls,cols:C,ru:PIR_CLASS[cls].ru};
   PIR_ART[key]=art;return art;
@@ -31039,7 +31042,14 @@ function pirateArtOf(id,rogue,hurt,rank,des){
 /* ── рисование: картинка плюс живой слой, который печь нельзя ──
    Повреждения копятся вместе с hp, выхлоп грязный и несинхронный — и то и
    другое меняется каждый кадр, поэтому идёт поверх выпечки. */
-function drawPirate(p){
+/* корпус пирата светом звезды на видеокарте; x,y — экран, s — масштаб, как у ctx.scale */
+function gpuPirateBody(p,x,y,s){
+  const hp=clamp((p.hull||0)/(p.hullMax||1),0,1);
+  const art=pirateArtOf(p.shipId,p.rogue||p.hunter,hp<.5,p.rank|0,p.deserter?1:0);
+  let lx=-p.x,ly=-p.y;const ln=Math.hypot(lx,ly)||1;lx/=ln;ly/=ln;
+  return gpuLitSprite(art.cn,x,y,art.rad*s,s,p.a,lx,ly,0);
+}
+function drawPirate(p,lit){
   const hp=clamp((p.hull||0)/(p.hullMax||1),0,1);
   /* ниже половины берём вторую выпечку — рваный корпус, а не тот же силуэт
      в пятнах. Обе картинки живут в кэше и считаются по одному разу */
@@ -31060,7 +31070,7 @@ function drawPirate(p){
       }
     }
   }
-  ctx.drawImage(art.cn,-art.rad,-art.rad,art.rad*2,art.rad*2);
+  if(!lit)ctx.drawImage(art.cn,-art.rad,-art.rad,art.rad*2,art.rad*2);
   /* ── повреждения: раньше урон читался только полоской над кораблём ── */
   if(hp<.85){
     const r=rng(hashi(p.seed||1,0x0D06,5));
@@ -42210,13 +42220,14 @@ function drawCombat(zx,zy,Z){
   for(const p of G.pirates){
     const x=zx(p.x),y=zy(p.y);
     if(x>-60&&x<W+60&&y>-60&&y<H+60){
-      ctx.save();ctx.translate(x,y);ctx.rotate(p.a);
       const s=shipScaleAt(Z)*.82;   /* один потолок с кораблём (16c, п. 2) */
+      const lit=gpuPirateBody(p,x,y,s);   /* корпус светом звезды на видеокарте (G4) */
+      ctx.save();ctx.translate(x,y);ctx.rotate(p.a);
       ctx.scale(s,s);
       /* пират рисуется своим сварным корпусом (12i), а не вашим кораблём в
          чужой раскраске: у него шесть-восемь десятков полигонов, выпеченных
          один раз по seed, и живой слой повреждений поверх */
-      drawPirate(p);
+      drawPirate(p,lit);
       ctx.restore();
       /* ренегата видно сразу: полоса шире, имя ярче и подпись, кто это такой —
          игрок должен узнать своего человека раньше, чем получит от него */

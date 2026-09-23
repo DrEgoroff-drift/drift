@@ -91,8 +91,9 @@ The author, 23.09.2026: «переноси все на новые техноло
   `gpuBargeBody`: `bargeArtOf` bakes the bare hull with the GPU on (no top gradient, no top-edge stroke), the live
   lights and nozzles stay 2D on top (`drawBarge(b,lit)`). Pair `g4m_crop.png`, scene `barges.js` (stubs
   `updateBarges`).
-  **Next in G4:** the other ships drawn in drawSystem (peace fleet, fleet, allies, pirate base, pirates' own hulls,
-  «Сорока»); everything after the planet loop in drawSystem except the above is still 2D.
+  Pirate hulls use it too (`gpuPirateBody`, 12i; pair `g4n_crop.png`, scene `pirates.js`, stubs `updateCombat`).
+- G4 closed (Контроль, 24.09). Leftovers in PLAN: G4b heat haze, G4c wrecks as hulls, G4d the other ships lit.
+- **Next: G5 landing and surface, the air** (sky, sun, clouds, haze, shafts, weather, night lamps, water, grade).
   A GPU draw after `gpuHullLight` must use `gpuOver`, not `gpuScene` (the scene pass is closed by then).
 - Merge each: `build.ps1`, `python docs/shot.py <scenes> --look --tag gpu`, 0 `gpu.errs`, pair with
   `scratchpad/mainref/docs/shots/main_<scene>.png`, one line of what got better, commit, strike from PLAN §0.

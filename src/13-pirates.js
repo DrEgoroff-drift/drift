@@ -381,13 +381,14 @@ function drawCombat(zx,zy,Z){
   for(const p of G.pirates){
     const x=zx(p.x),y=zy(p.y);
     if(x>-60&&x<W+60&&y>-60&&y<H+60){
-      ctx.save();ctx.translate(x,y);ctx.rotate(p.a);
       const s=shipScaleAt(Z)*.82;   /* один потолок с кораблём (16c, п. 2) */
+      const lit=gpuPirateBody(p,x,y,s);   /* корпус светом звезды на видеокарте (G4) */
+      ctx.save();ctx.translate(x,y);ctx.rotate(p.a);
       ctx.scale(s,s);
       /* пират рисуется своим сварным корпусом (12i), а не вашим кораблём в
          чужой раскраске: у него шесть-восемь десятков полигонов, выпеченных
          один раз по seed, и живой слой повреждений поверх */
-      drawPirate(p);
+      drawPirate(p,lit);
       ctx.restore();
       /* ренегата видно сразу: полоса шире, имя ярче и подпись, кто это такой —
          игрок должен узнать своего человека раньше, чем получит от него */

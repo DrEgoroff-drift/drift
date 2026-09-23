@@ -20,14 +20,14 @@ quality, the ship stays under the finger.
 «Первое — на новый движок, потом по плану.» WebGPU only, Canvas 2D as the brush for text and vector shapes,
 no fallback, and every ported layer better than before, not the same. The recipe — the frame, the one rule of
 layer order, the kit, the porting checklist — is `docs/DESIGN-gpu.md`; the decision is in `docs/DECISIONS.md`.
-Built: the core and post pass (08b), the layer kit (08c), the space backdrop (16g), the system under the planets (17g), planets and moons (17ga), `docs/shot.py` on the GPU.
+Built: the core and post pass (08b), the layer kit (08c), the space backdrop (16g), the system under the planets (17g), planets and moons (17ga), the system view on top — trail, wake, exhaust, hull light, drones (16ga), combat (13z), lit station/barge/pirate sprites (17c), shuttles (17f), `docs/shot.py` on the GPU.
 
 - [ ] **G3b planet surface in three scales:** close up the strip is mush — only the macro scale exists. A procedural
   middle and fine layer in the shader from the biome's colours, and the sun's glint on water (17ga).
 - [ ] **G4b heat haze as a distortion:** the 2D haze (M325) grabbed the 2D layer, where the flame no longer is —
   removed. Bring it back as a UV offset by noise inside the flame cone in the post pass (08b).
-- [ ] **G4 the system view on top:** ships as sprites from the hull bake, lit from the star; wake, trail, exhaust
-  and heat haze on the GPU; combat flashes, drones, traffic, the edge wall.
+- [ ] **G4d the other ships lit:** the peace fleet, the ГЛАВТРАССА fleet, allies, the pirate base and «Сорока» are
+  still flat 2D bakes with a top-lit gradient; give them `gpuLitSprite` (17c) as barges and pirates have.
 - [ ] **G4c wrecks as hulls:** a wreck (`npcWreckDraw`, 13d-npc) is a flat dark disc labelled «КОРПУС». Draw it
   as the NPC hull by `w.seed` through `hullOf`, broken, with smouldering edges, a slow spin and the star's light; the
   label becomes a chip. After G4.
