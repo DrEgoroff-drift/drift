@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 595 · символов верхнего уровня: 5826
+Файлов: 595 · символов верхнего уровня: 5827
 
 ## СИМВОЛЫ
 
@@ -1406,8 +1406,8 @@ drawDeposit                  src/21b-surface-deco.js:406-560
 drawDig                      src/23a-dig-draw.js:655-659
 drawDigFauna                 src/23-mode-dig.js:332-341
 drawDigWorld                 src/23a-dig-draw.js:45-607
-drawDronesMap                src/12e-drone-flight.js:328-346
-drawDronesSystem             src/12e-drone-flight.js:242-315
+drawDronesMap                src/12e-drone-flight.js:338-356
+drawDronesSystem             src/12e-drone-flight.js:252-325
 drawDustMotes                src/19-mode-landing.js:271-284
 drawEdgeWall                 src/17-mode-system.js:45-62
 drawElevator                 src/20aa-poi-shapes.js:91-113
@@ -1543,35 +1543,36 @@ DRONE_FIX_MS                 src/12e-drone-flight.js:24
 DRONE_MAX_CATCHUP            src/12e-drone-flight.js:27
 DRONE_NAMES                  src/12e-drone-flight.js:43
 DRONE_QUIRKS                 src/12e-drone-flight.js:44-51
-DRONE_TAIL                   src/12e-drone-flight.js:223
+DRONE_TAIL                   src/12e-drone-flight.js:233
 DRONE_TRIP_BASE              src/12e-drone-flight.js:18
-droneBreakP                  src/12e-drone-flight.js:161-165
-droneBreaks                  src/12e-drone-flight.js:166
+droneBreakP                  src/12e-drone-flight.js:171-175
+droneBreaks                  src/12e-drone-flight.js:176
 droneCapacity                src/12-economy.js:229-232
-droneFar                     src/12e-drone-flight.js:92
-droneFixMs                   src/12e-drone-flight.js:167-176
-droneGuestPos                src/12e-drone-flight.js:229-241
-droneHome                    src/12e-drone-flight.js:93-105
+droneFar                     src/12e-drone-flight.js:102
+droneFixMs                   src/12e-drone-flight.js:177-186
+droneGuestPos                src/12e-drone-flight.js:239-251
+droneHome                    src/12e-drone-flight.js:103-115
 droneMarket                  src/12-economy.js:183-205
 droneName                    src/12e-drone-flight.js:54
 droneNextId                  src/12e-drone-flight.js:32-37
 droneNick                    src/12e-drone-flight.js:53
-droneNormalize               src/12e-drone-flight.js:60-76
+droneNormalize               src/12e-drone-flight.js:70-86
 dronePaybackH                src/12-economy.js:160
-dronePhase                   src/12e-drone-flight.js:120-129
-dronePoint                   src/12e-drone-flight.js:84-91
-dronePos                     src/12e-drone-flight.js:132-148
+dronePhase                   src/12e-drone-flight.js:130-139
+dronePoint                   src/12e-drone-flight.js:94-101
+dronePos                     src/12e-drone-flight.js:142-158
 dronePrice                   src/12-economy.js:155-158
 droneQuirk                   src/12e-drone-flight.js:52
 droneRecall                  src/12-economy.js:141-149
-droneRoutes                  src/12e-drone-flight.js:193-215
+droneRoutes                  src/12e-drone-flight.js:203-225
 DRONES                       src/04-mods.js:60-66
 droneShopHas                 src/12-economy.js:162-168
 droneShopTake                src/12-economy.js:169-173
-droneStateRu                 src/12e-drone-flight.js:178-188
-droneSys                     src/12e-drone-flight.js:81-83
+droneStateRu                 src/12e-drone-flight.js:188-198
+droneSys                     src/12e-drone-flight.js:91-93
+droneTag                     src/12e-drone-flight.js:58-64
 droneTarget                  src/12-economy.js:233
-droneTripMs                  src/12e-drone-flight.js:108-116
+droneTripMs                  src/12e-drone-flight.js:118-126
 drOut                        tests/91zzzzzn-doors.js:45-50
 drPair                       tests/91zzzzzn-doors.js:19-24
 DS_BAD                       src/12p1-doublespeak.js:18-25
@@ -2335,7 +2336,7 @@ helmTick                     src/15a-helm.js:363-447
 helmTrail                    src/15a-helm.js:209-215
 helmTrailAge                 src/15a-helm.js:216-219
 hex2rgb                      src/01-core.js:218-221
-hexA                         src/12e-drone-flight.js:318-324
+hexA                         src/12e-drone-flight.js:328-334
 hexa                         src/12w-survey.js:91-94
 hexRGB                       src/24-mode-belt.js:81-83
 HIN_DOORW                    src/29c-home-in.js:24
@@ -6259,10 +6260,10 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/12d-mgr-face.js · 13 КБ
   · портреты управляющих:1
 
-## src/12e-drone-flight.js · 23 КБ
+## src/12e-drone-flight.js · 24 КБ
   · дроны летают:1
-  · дрон в кадре:217
-  · куда делась вкладка РЕЙСЫ:348
+  · дрон в кадре:227
+  · куда делась вкладка РЕЙСЫ:358
 
 ## src/12e-mgr-jobs.js · 19 КБ
   · поручения управляющих:1

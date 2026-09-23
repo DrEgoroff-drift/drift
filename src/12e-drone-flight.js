@@ -52,6 +52,16 @@ const DRONE_QUIRKS=[
 function droneQuirk(d){const id=(d&&d.id)|0;return DRONE_QUIRKS[hashi(id,0xD60E,3)%DRONE_QUIRKS.length];}
 function droneNick(d){const id=(d&&d.id)|0;return DRONE_NAMES[hashi(id,0xD60E,1)%DRONE_NAMES.length];}
 function droneName(d){return droneNick(d)+" (Д-"+(d&&d.id?d.id:"?")+")";}
+/* табличка машины в списке (D15): имя трафаретом цвета груза на клёпаной
+   жести, бортовой номер мелко, причуда — карандашом на бумажном ярлыке, лампа
+   слева: горит — работает, янтарь — в ремонте, красная — стоит под пиратами */
+function droneTag(d){
+  const col=(RES[d.res]&&RES[d.res].col)||"#cfe3ea",now=clockNow();
+  const lamp=d.stuck?"stuck":d.down>now?"down":"run";
+  const q=droneQuirk(d);
+  return "<span class='dn-tag'><i class='dn-lamp "+lamp+"'></i><b class='dn-plate' style='--c:"+col+"'>"+droneNick(d)+
+    "</b><em class='dn-no'>Д-"+(d&&d.id?d.id:"?")+"</em>"+(q.ru!=="норма"?"<u class='dn-q'>"+q.ru+"</u>":"")+"</span>";
+}
 
 /* ── старые записи ──
    Сохранения до M237 знают про дрон четыре поля. Недостающее дописывается при

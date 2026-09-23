@@ -380,8 +380,8 @@ function stTabYard(st){
       const home=nearestStation(d.sx,d.sy);
       const r=el("div","row");
       const mk=(typeof droneFar==="function")?droneFar(d):null;
-      r.appendChild(el("div","nm","<b style='color:"+RES[d.res].col+"'>"+droneName(d)+" · "+RES[d.res].ru+
-        "</b><s><i>"+((typeof droneQuirk==="function")?droneQuirk(d).ru:"")+"</i> · сектор "+d.sx+":"+d.sy+" · возит на «"+(mk?mk.name:home.name)+"» · "+droneStateRu(d)+
+      r.appendChild(el("div","nm",droneTag(d)+
+        "<s>"+RES[d.res].ru+" · сектор "+d.sx+":"+d.sy+" · возит на «"+(mk?mk.name:home.name)+"» · "+droneStateRu(d)+
         " · кругов "+(d.trips|0)+" · "+(d.earned|0).toLocaleString("ru")+" кр"+(d.pool>=0?" · осталось "+d.pool:"")+"</s>"));
       /* отозвать можно только там, где машина работает: за ней надо прилететь (M350) */
       if(d.sx===G.sx&&d.sy===G.sy){

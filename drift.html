@@ -1894,6 +1894,21 @@ body.table u.addr{color:#7a4a20}
 @keyframes smAct{0%{opacity:0;transform:translate(-50%,-44%)}15%{opacity:1;transform:translate(-50%,-50%)}80%{opacity:1}100%{opacity:0}}
 .smena canvas.smena-plate{display:block;margin:6px auto 4px;border:6px solid #f6efe0;box-shadow:0 1px 4px rgba(0,0,0,.35);transform:rotate(-1.2deg)}
 
+/* ── машина с именем в списке (M485, D15) ── */
+.dn-tag{display:flex;align-items:center;flex-wrap:wrap;gap:6px 8px;margin-bottom:3px}
+.dn-lamp{width:8px;height:8px;border-radius:50%;background:#2b3a2e;box-shadow:inset 0 -1px 1px rgba(0,0,0,.6)}
+.dn-lamp.run{background:#7ce0a0;box-shadow:0 0 6px rgba(124,224,160,.55),inset 0 -1px 1px rgba(0,0,0,.35)}
+.dn-lamp.down{background:#f2b25c;box-shadow:0 0 6px rgba(242,178,92,.6),inset 0 -1px 1px rgba(0,0,0,.35)}
+.dn-lamp.stuck{background:#e0685a;box-shadow:0 0 6px rgba(224,104,90,.6),inset 0 -1px 1px rgba(0,0,0,.35)}
+.dn-plate{position:relative;padding:3px 12px 2px;font-weight:700;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--c);
+  background:radial-gradient(circle at 5px 50%,rgba(210,220,230,.45) 0 1.2px,transparent 1.8px),
+    radial-gradient(circle at calc(100% - 5px) 50%,rgba(210,220,230,.45) 0 1.2px,transparent 1.8px),linear-gradient(#2b3138,#1a1e23);
+  border:1px solid #3c444c;border-radius:2px;box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 1px 2px rgba(0,0,0,.7);
+  text-shadow:0 0 1px rgba(0,0,0,.6)}
+.dn-no{font-style:normal;font-size:10px;letter-spacing:.08em;color:rgba(200,210,220,.45)}
+.dn-q{text-decoration:none;display:inline-block;padding:1px 7px;background:#c4b48f;color:#3a3020;opacity:.92;border:1px dashed #6a5a3c;border-radius:2px;
+  font:italic 11px/1.3 Georgia,"Times New Roman",serif;transform:rotate(-2deg);box-shadow:0 1px 2px rgba(0,0,0,.5)}
+
 /* ── СТАПЕЛЬ: заказ корпуса (M481, лист — D16) ── */
 .stapel .stp-ch{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:4px;margin:6px 0}
 .stapel .chip{min-height:44px;font-size:11px;line-height:1.1;font-family:inherit;padding:0 4px;border:1px solid rgba(232,214,168,.22);
@@ -29088,6 +29103,16 @@ const DRONE_QUIRKS=[
 function droneQuirk(d){const id=(d&&d.id)|0;return DRONE_QUIRKS[hashi(id,0xD60E,3)%DRONE_QUIRKS.length];}
 function droneNick(d){const id=(d&&d.id)|0;return DRONE_NAMES[hashi(id,0xD60E,1)%DRONE_NAMES.length];}
 function droneName(d){return droneNick(d)+" (Д-"+(d&&d.id?d.id:"?")+")";}
+/* табличка машины в списке (D15): имя трафаретом цвета груза на клёпаной
+   жести, бортовой номер мелко, причуда — карандашом на бумажном ярлыке, лампа
+   слева: горит — работает, янтарь — в ремонте, красная — стоит под пиратами */
+function droneTag(d){
+  const col=(RES[d.res]&&RES[d.res].col)||"#cfe3ea",now=clockNow();
+  const lamp=d.stuck?"stuck":d.down>now?"down":"run";
+  const q=droneQuirk(d);
+  return "<span class='dn-tag'><i class='dn-lamp "+lamp+"'></i><b class='dn-plate' style='--c:"+col+"'>"+droneNick(d)+
+    "</b><em class='dn-no'>Д-"+(d&&d.id?d.id:"?")+"</em>"+(q.ru!=="норма"?"<u class='dn-q'>"+q.ru+"</u>":"")+"</span>";
+}
 
 /* ── старые записи ──
    Сохранения до M237 знают про дрон четыре поля. Недостающее дописывается при
@@ -86299,8 +86324,8 @@ function stTabYard(st){
       const home=nearestStation(d.sx,d.sy);
       const r=el("div","row");
       const mk=(typeof droneFar==="function")?droneFar(d):null;
-      r.appendChild(el("div","nm","<b style='color:"+RES[d.res].col+"'>"+droneName(d)+" · "+RES[d.res].ru+
-        "</b><s><i>"+((typeof droneQuirk==="function")?droneQuirk(d).ru:"")+"</i> · сектор "+d.sx+":"+d.sy+" · возит на «"+(mk?mk.name:home.name)+"» · "+droneStateRu(d)+
+      r.appendChild(el("div","nm",droneTag(d)+
+        "<s>"+RES[d.res].ru+" · сектор "+d.sx+":"+d.sy+" · возит на «"+(mk?mk.name:home.name)+"» · "+droneStateRu(d)+
         " · кругов "+(d.trips|0)+" · "+(d.earned|0).toLocaleString("ru")+" кр"+(d.pool>=0?" · осталось "+d.pool:"")+"</s>"));
       /* отозвать можно только там, где машина работает: за ней надо прилететь (M350) */
       if(d.sx===G.sx&&d.sy===G.sy){
@@ -95419,7 +95444,7 @@ function dealRender(){
          денег — как у людей, а не прозой через точки */
       if(open)for(const d of r.drones){
         const rr=el("div","row deal sub");
-        rr.appendChild(el("div","nm","<b>"+droneName(d)+"</b><s><i>"+((typeof droneQuirk==="function")?droneQuirk(d).ru:"")+"</i> · "+droneStateRu(d)+" · кругов "+(d.trips|0)+"</s>"));
+        rr.appendChild(el("div","nm",droneTag(d)+"<s>"+droneStateRu(d)+" · кругов "+(d.trips|0)+"</s>"));
         rr.appendChild(el("div","qt",(d.earned|0).toLocaleString("ru")+"<s>кр всего</s>"));
         $dlBody.appendChild(rr);
       }

@@ -167,9 +167,9 @@ job (the phone milestone), but no fix may add raster cost without a number.
   edges with no neighbour, the hold hatched, parts as ochre stamps with a kind letter
   (О Щ Д К Р У П М), «СОГЛАСОВАНО» double-boxed in the corner. Same brush serves the КБ. Left:
   ~~the turret on the back in flight (M479)~~ — judged 18.09 on the S23: the cross read as a sight; now a bolted barbette, a domed turret lit from one side, a mantlet and the barrel over the dome.
-- [~] **D15 Stage 5 voice — the tape done 18.09 on the S23.** The strip was grey on grey; now
+- [x] **D15 Stage 5 voice — the tape done 18.09 on the S23; the drone's plate 23.09.** The strip was grey on grey; now
   black electrical tape with a glossy edge, a shadow under it and a folded tip, slightly wider —
-  reads at ×4.5. Left: the drone's name and quirk in the list.
+  reads at ×4.5. The drone in both lists (ДЕЛО, the station's drone rows) is `droneTag`: a state lamp (green runs, amber in repair, red stuck under pirates), the name stencilled in the cargo colour on a riveted tin plate, the board number small, the quirk pencilled on a paper tag (none for «норма»).
 - [~] **D13 The railway — checked on the S23 18.09 at «Луун».** The ring with its spiral, the
   dashed glide path and the «ЛИНИЯ 6-12 +2» label read in the system; the vestibule page (board,
   fares, life rows) reads. Not judged: the map lines (faint by design, seen at ×1 only), the ride
