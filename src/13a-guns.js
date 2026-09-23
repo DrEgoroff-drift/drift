@@ -88,18 +88,6 @@ function beamsTick(dt){
     if(G.beams[i].life<=0)G.beams.splice(i,1);
   }
 }
-function beamsDraw(zx,zy,Z){
-  if(!G.beams||!G.beams.length)return;
-  ctx.save();ctx.lineCap="round";
-  for(const b of G.beams){
-    const a=clamp(b.life/BEAM_LIFE,0,1);
-    ctx.globalAlpha=.85*a;ctx.strokeStyle=b.col;ctx.lineWidth=b.w*clamp(Z,.5,2);
-    ctx.beginPath();ctx.moveTo(zx(b.x1),zy(b.y1));ctx.lineTo(zx(b.x2),zy(b.y2));ctx.stroke();
-    ctx.globalAlpha=.26*a;ctx.lineWidth=b.w*2.6*clamp(Z,.5,2);
-    ctx.stroke();
-  }
-  ctx.restore();
-}
 /* урон по цели от луча: тот же расчёт, что у попадания снаряда (13-combat),
    но без полёта — поэтому «выстрел» собирается на месте и сразу применяется */
 function rayDamage(p,ang,g,dmg){

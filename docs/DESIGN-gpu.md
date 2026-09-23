@@ -58,8 +58,12 @@ The author, 23.09.2026: «переноси все на новые техноло
   chip smoothing after a teleport looked like overlapping chips. The wake is `gpuWake` (16ga) on the same ribbon
   as the trail (`gtrLane`/`gtrDraw`, vertex = 3 vec4: core alpha, core share, halo alpha, world place, tatter
   weight); its halo tears into world-fixed wisps that drift slowly; the 2D bucketed `drawWake` is gone. Pair
-  `g4f_crop.png`, scene `wake.js` (synthetic WAKE, two lanes).
-  **Next in G4:** combat (`drawCombat`, 13-pirates:349), drones, traffic, station
+  `g4f_crop.png`, scene `wake.js` (synthetic WAKE, two lanes). Combat energy is `gpuCombatEnergy` (13z): bolts
+  (`G.shots`) and beam traces (`G.beams`) as one instanced glowing segment — white core, exponential glow in the
+  colour, a hot head / impact flare, a muzzle flare for beams, tone-mapped; 2D `beamsDraw` and the shot strokes
+  are gone. Pair `g4g_crop.png`, scene `combat.js` (stubs `combatShots`/`beamsTick` so nothing moves).
+  **Next in G4:** the rest of combat (mines, missiles, battery line, wrecks, loot — `drawCombat`, 13-pirates:349),
+  drones, traffic, station
   (`drawStation`, 17c), barges; everything after the planet loop in drawSystem except the above is still 2D.
   A GPU draw after `gpuHullLight` must use `gpuOver`, not `gpuScene` (the scene pass is closed by then).
 - Merge each: `build.ps1`, `python docs/shot.py <scenes> --look --tag gpu`, 0 `gpu.errs`, pair with

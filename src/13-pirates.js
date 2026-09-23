@@ -347,9 +347,8 @@ function killPirate(p){
     (dropped?" · контейнер с частью":""));
 }
 function drawCombat(zx,zy,Z){
-  /* лучи (M364): у них нет полёта, поэтому и в петле выстрелов их нет —
-     свой короткий след, гаснущий за четыре кадра */
-  if(typeof beamsDraw==="function")beamsDraw(zx,zy,Z);
+  /* лучи (M364) и болты — светящейся энергией на видеокарте (13z) */
+  gpuCombatEnergy(zx,zy,Z);
   if(typeof minesDraw==="function")minesDraw(zx,zy,Z);
   /* линия батареи с грунта (21d) — рисуется до всего остального, чтобы луч
      уходил под корабли, а не поверх них */
@@ -440,10 +439,5 @@ function drawCombat(zx,zy,Z){
       ctx.fillStyle="rgba(255,107,87,.8)";
       ctx.beginPath();ctx.arc(mx,my,3.4,0,TAU);ctx.fill();
     }
-  }
-  for(const s of G.shots){
-    const x=zx(s.x),y=zy(s.y);
-    ctx.strokeStyle=s.mine?"rgba(127,230,216,.95)":"rgba(255,107,87,.95)";ctx.lineWidth=2;
-    ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x-s.vx*1.6*Z,y-s.vy*1.6*Z);ctx.stroke();
   }
 }
