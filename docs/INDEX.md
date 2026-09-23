@@ -6,12 +6,12 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 602 · символов верхнего уровня: 5907
+Файлов: 602 · символов верхнего уровня: 5908
 
 ## СИМВОЛЫ
 
 $actBtn                      src/27z-telemetry.js:35
-$bg                          src/12l-barge.js:635
+$bg                          src/12l-barge.js:645
 $bThr                        src/27z-telemetry.js:44
 $cv                          src/27b-ui-crew.js:6
 $dl                          src/27n-ui-deal.js:18
@@ -186,15 +186,15 @@ BARGE_PERIOD                 src/12l-barge.js:12
 BARGE_SS                     src/12l-barge.js:396
 BARGE_TEMPER                 src/12l-barge.js:17-21
 BARGE_TKEYS                  src/12l-barge.js:22
-bargeArtOf                   src/12l-barge.js:398-554
+bargeArtOf                   src/12l-barge.js:398-557
 bargeAttackers               src/12l-barge.js:162-164
 bargeAutoLoad                src/12ag-holdfx.js:35-55
 bargeBuyPrice                src/12l-barge.js:102-104
 bargeCrewRow                 src/12af-barge.js:136-157
-bargeCur                     src/12l-barge.js:636
+bargeCur                     src/12l-barge.js:646
 bargeDealList                src/12af-barge.js:121-134
 bargeDestPrice               src/12l-barge.js:82-91
-bargeElRow                   src/12l-barge.js:662-671
+bargeElRow                   src/12l-barge.js:672-681
 bargeEscortAccept            src/12l-barge.js:299-313
 bargeEscortAdvance           src/12l-barge.js:298
 bargeEscortEnd               src/12l-barge.js:314-325
@@ -209,7 +209,7 @@ bargeName                    src/12af-barge.js:25
 bargeNearOther               src/12l-barge.js:70-79
 bargeNextName                src/12af-barge.js:108-114
 bargePaxDeliver              src/12l-barge.js:259-269
-bargeRepNudge                src/12l-barge.js:658-661
+bargeRepNudge                src/12l-barge.js:668-671
 bargeRescued                 src/12l-barge.js:212-230
 bargeSellPrice               src/12l-barge.js:99-101
 bargeStart                   src/12af-barge.js:37-47
@@ -861,7 +861,7 @@ CLOCKS                       src/11d-clocks.js:36-52
 clockSeg                     src/11d-clocks.js:79-83
 clockSet                     src/01-core.js:92
 clockWhy                     src/11d-clocks.js:94-100
-closeBarge                   src/12l-barge.js:647-654
+closeBarge                   src/12l-barge.js:657-664
 closeDeal                    src/27n-ui-deal.js:204
 closeStation                 src/26-ui-station.js:195-219
 CLOUD                        src/14-save.js:5
@@ -1360,9 +1360,9 @@ drawAccountShelf             src/12w-survey.js:99-115
 drawAllies                   src/12a-crew.js:678-695
 drawAnomaly                  src/20aa-poi-shapes.js:168-191
 drawAstronaut                src/20-life.js:4-141
-drawBarge                    src/12l-barge.js:555-585
-drawBarges                   src/12l-barge.js:586-609
-drawBargesMap                src/12l-barge.js:611-632
+drawBarge                    src/12l-barge.js:564-594
+drawBarges                   src/12l-barge.js:595-619
+drawBargesMap                src/12l-barge.js:621-642
 drawBase                     src/21ac-base-draw.js:43-730
 drawBaseBuilding             src/21c-built.js:105-136
 drawBazaar                   src/17n-bazaar.js:68-108
@@ -1448,7 +1448,7 @@ drawMap                      src/18-mode-map.js:120-508
 drawMisFigure                src/11z-misclosure.js:63-87
 drawModule                   src/21aa-base-rooms.js:384-500
 drawMonolith                 src/20aa-poi-shapes.js:193-210
-drawMooredBarge              src/17e-station-body.js:17-37
+drawMooredBarge              src/17e-station-body.js:17-38
 drawNodeIcon                 src/05a-nodes.js:264-361
 drawObelisk                  src/20aa-poi-shapes.js:276-376
 drawObserv                   src/20aa-poi-shapes.js:491-513
@@ -1457,8 +1457,8 @@ drawPirate                   src/12i-pirate-hull.js:428-478
 drawPirateBase               src/24a-mode-raid.js:103-133
 drawPirateSkin               src/03d-hull-marks.js:99-126
 drawPlan                     src/05e-plan.js:137-172
-drawPlanetLights             src/17e-station-body.js:45-64
-drawPlanetWorks              src/17e-station-body.js:74-123
+drawPlanetLights             src/17e-station-body.js:46-65
+drawPlanetWorks              src/17e-station-body.js:75-124
 drawPlant                    src/20-life.js:406-415
 drawPlantAlien               src/20-life.js:210-377
 drawPOI                      src/20a-poi.js:173-234
@@ -1484,7 +1484,7 @@ drawSkyBodies                src/19b-sky.js:96-128
 drawSkyLayer                 src/19-mode-landing.js:171-269
 drawSpa                      src/29i-spa-draw.js:41-486
 drawStars                    src/16-flight.js:40-79
-drawStation                  src/17c-system-draw.js:466-530
+drawStation                  src/17c-system-draw.js:470-534
 drawStationBody              src/17c-system-draw.js:153-359
 drawStationMods              src/17a-station-mod.js:214-217
 drawStencils                 src/03d-hull-marks.js:1-90
@@ -2089,6 +2089,7 @@ GPU_POST_WGSL                src/08b-gpu.js:79
 GPU_SHP_WGSL                 src/08c-gpu-kit.js:134
 GPU_WGSL_COMMON              src/08c-gpu-kit.js:53
 gpuArena                     src/08c-gpu-kit.js:73-83
+gpuBargeBody                 src/12l-barge.js:559-563
 gpuBind                      src/08c-gpu-kit.js:28-34
 gpuBooms                     src/13z-gpu-combat.js:143-155
 gpuBuf                       src/08c-gpu-kit.js:21-26
@@ -2102,6 +2103,7 @@ gpuFrame                     src/08b-gpu.js:205-214
 gpuHullLight                 src/16ga-gpu-trail.js:302-321
 gpuImage                     src/08c-gpu-kit.js:117-129
 gpuKitU                      src/08c-gpu-kit.js:89-93
+gpuLitSprite                 src/17c-system-draw.js:461-468
 gpuManual                    src/08b-gpu.js:262-267
 gpuMoon                      src/17ga-gpu-planets.js:143-148
 gpuNoise                     src/08b-gpu.js:157-162
@@ -2119,7 +2121,7 @@ gpuShapes                    src/08c-gpu-kit.js:159-170
 gpuSnapshot                  src/08b-gpu.js:20-24
 gpuSpaceSys                  src/16g-gpu-space.js:184-198
 gpuSpaceTitle                src/16g-gpu-space.js:200-211
-gpuStation                   src/17c-system-draw.js:459-465
+gpuStation                   src/17c-system-draw.js:469
 gpuSysUnder                  src/17g-gpu-system.js:287-292
 gpuTakeSnap                  src/08b-gpu.js:25-30
 gpuTrail                     src/16ga-gpu-trail.js:53-90
@@ -2208,8 +2210,7 @@ gspSeed                      src/16g-gpu-space.js:181
 gspStarBuf                   src/16g-gpu-space.js:126-136
 gspStarsDust                 src/16g-gpu-space.js:171-179
 gspUni                       src/16g-gpu-space.js:152-159
-GST                          src/17c-system-draw.js:425
-GST_WGSL                     src/17c-system-draw.js:426
+GST_WGSL                     src/17c-system-draw.js:425
 GSY                          src/17g-gpu-system.js:18
 GSY_ORB_WGSL                 src/17g-gpu-system.js:19
 GSY_STAR_WGSL                src/17g-gpu-system.js:45
@@ -3552,7 +3553,7 @@ ONE_BEAR_ERR                 src/21b3-base-hunt.js:26
 ONE_ID                       src/21b3-base-hunt.js:34
 ONE_JOB                      src/21b3-base-hunt.js:25
 opCensus                     tests/91zzzzzt-opis.js:15-21
-openBarge                    src/12l-barge.js:637-646
+openBarge                    src/12l-barge.js:647-656
 openCrewView                 src/27b-ui-crew.js:230-236
 openDeal                     src/27n-ui-deal.js:198-203
 openHq                       src/27c-ui-hq.js:626-631
@@ -3863,7 +3864,7 @@ planetHaul                   src/12n-planet.js:67-86
 planetHeightAt               src/07a-terrain.js:65-72
 planetHere                   src/12n-planet.js:61-64
 planEtherLine                src/11r-plan.js:43-46
-planetLightsN                src/17e-station-body.js:39-44
+planetLightsN                src/17e-station-body.js:40-45
 planetLoadSum                src/12n-planet.js:122-125
 planetMat                    src/18a-material.js:99-106
 planetMatHue                 src/18a-material.js:363-366
@@ -4402,7 +4403,7 @@ relicUnequip                 src/12h-relic.js:87
 RELIEF_KEYS                  src/02a-worldmix.js:79
 RELIEF_MIX                   src/07a-terrain.js:16-34
 renderAlbum                  src/25g-postcard.js:678-702
-renderBarge                  src/12l-barge.js:672-763
+renderBarge                  src/12l-barge.js:682-773
 renderBaseLink               src/21a2-base-link.js:137-163
 renderBasesTab               src/26a-ui-station-home.js:4-331
 renderBooks                  src/12ub-books.js:157-186
@@ -6402,7 +6403,7 @@ zooTick                      src/11ad-zoo.js:41-54
   · контракт охраны:294
   · остовы погибших барж:331
   · корпус баржи:390
-  · торг с баржой:634
+  · торг с баржой:644
 
 ## src/12m-rare.js · 13 КБ
   · редкости: сто адресов, а не рулетка:1
@@ -6610,7 +6611,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/17b-finds.js · 17 КБ
   · находки в полёте:1
 
-## src/17c-system-draw.js · 32 КБ
+## src/17c-system-draw.js · 33 КБ
   · система: кольца, пояс и станция в кадре:1
 
 ## src/17c1-station-dress.js · 4 КБ

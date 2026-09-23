@@ -86,9 +86,13 @@ The author, 23.09.2026: «переноси все на новые техноло
   field over the art texture: relief normal from the mask, cos³ rim toward the star, light as a near-white MULTIPLIER on the
   albedo (an additive film washed blue modules into pink, rejected), a shadow gradient (≤.55), lamps exempt, and
   the station's own warm gaussian glow instead of the 2D radial stops. The indust flare stack stays 2D on top.
-  Pair `g4l_crop.png` (ship at -880,-1000, zoom 1.3).
-  **Next in G4:** barges (`drawBarges`, `drawMooredBarge`); everything after the planet loop in drawSystem except the
-  above is still 2D.
+  Pair `g4l_crop.png` (ship at -880,-1000, zoom 1.3). The station field is now `gpuLitSprite(cv,x,y,R,s,rot,lx,ly,glow)`
+  (17c): any baked sprite, rotated, lit by the star. Barges (`drawBarges`, `drawMooredBarge`) use it through
+  `gpuBargeBody`: `bargeArtOf` bakes the bare hull with the GPU on (no top gradient, no top-edge stroke), the live
+  lights and nozzles stay 2D on top (`drawBarge(b,lit)`). Pair `g4m_crop.png`, scene `barges.js` (stubs
+  `updateBarges`).
+  **Next in G4:** the other ships drawn in drawSystem (peace fleet, fleet, allies, pirate base, pirates' own hulls,
+  «Сорока»); everything after the planet loop in drawSystem except the above is still 2D.
   A GPU draw after `gpuHullLight` must use `gpuOver`, not `gpuScene` (the scene pass is closed by then).
 - Merge each: `build.ps1`, `python docs/shot.py <scenes> --look --tag gpu`, 0 `gpu.errs`, pair with
   `scratchpad/mainref/docs/shots/main_<scene>.png`, one line of what got better, commit, strike from PLAN §0.

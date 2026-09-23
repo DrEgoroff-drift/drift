@@ -402,7 +402,7 @@ function bargeArtOf(b){
      и грунт берутся из той же таблицы, что у корпусов: один слой грамматики на
      всех пятерых генераторов (D24). */
   const by=b.by||(b.by=(typeof makerBySeed==="function")?makerBySeed(b.seed):"gt");
-  const key="bg"+b.seed+"!"+by;
+  const key="bg"+b.seed+"!"+by+(GPU.on?"!g":"");
   if(BARGE_ART[key])return BARGE_ART[key];
   const r=rng(hashi(b.seed,0x5A19,9));
   const L=104+r()*40, hw=L*(.14+r()*.04);
@@ -535,7 +535,9 @@ function bargeArtOf(b){
     ctx.strokeStyle="rgba(0,0,0,"+(l[4]*.6).toFixed(2)+")";ctx.lineWidth=l[4];
     ctx.beginPath();ctx.moveTo(l[0],l[1]);ctx.lineTo(l[2],l[3]);ctx.stroke();
   }
-  /* ── один свет на всю сборку последним слоем ── */
+  /* ── один свет на всю сборку последним слоем ──
+     на видеокарте его кладёт gpuLitSprite по рельефу, от звезды (G4) */
+  if(!GPU.on){
   ctx.globalCompositeOperation="source-atop";
   const lg=ctx.createLinearGradient(0,-hw*2.4,0,hw*1.4);
   lg.addColorStop(0,"rgba(255,240,216,.32)");
@@ -548,13 +550,20 @@ function bargeArtOf(b){
   ctx.beginPath();
   top.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));
   ctx.stroke();
+  }
   ctx=prev;
   const art={cn,rad,L,hw,lights,cols:C};
   BARGE_ART[key]=art;return art;
 }
-function drawBarge(b){
+/* корпус баржи светом звезды на видеокарте; x,y — экран, s — масштаб, как у ctx.scale */
+function gpuBargeBody(b,x,y,s){
   const art=bargeArtOf(b);
-  ctx.drawImage(art.cn,-art.rad,-art.rad,art.rad*2,art.rad*2);
+  let lx=-b.x,ly=-b.y;const ln=Math.hypot(lx,ly)||1;lx/=ln;ly/=ln;
+  return gpuLitSprite(art.cn,x,y,art.rad*s,s,b.a,lx,ly,0);
+}
+function drawBarge(b,lit){
+  const art=bargeArtOf(b);
+  if(!lit)ctx.drawImage(art.cn,-art.rad,-art.rad,art.rad*2,art.rad*2);
   /* живой слой: ходовые огни и рубка мигают — печь их нельзя */
   for(const li of art.lights){
     if(li.c==="nav"){
@@ -587,9 +596,10 @@ function drawBarges(zx,zy,Z){
   for(const b of G.barges){
     const x=zx(b.x),y=zy(b.y);
     if(x>-80&&x<W+80&&y>-80&&y<H+80){
-      ctx.save();ctx.translate(x,y);ctx.rotate(b.a);
-      const s=shipScaleAt(Z)*.8;ctx.scale(s,s);   /* один потолок с кораблём (16c, п. 2) */
-      drawBarge(b);
+      const s=shipScaleAt(Z)*.8;   /* один потолок с кораблём (16c, п. 2) */
+      const lit=gpuBargeBody(b,x,y,s);
+      ctx.save();ctx.translate(x,y);ctx.rotate(b.a);ctx.scale(s,s);
+      drawBarge(b,lit);
       ctx.restore();
       const hp=clamp(b.hp/b.hullMax,0,1);
       if(hp<.999){

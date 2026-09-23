@@ -422,26 +422,26 @@ function stationArt(key,s,V,S,ty,lx,ly){
    половине: маска выпечки читается рельефом, кромка горит только там, где борт
    смотрит на звезду, тень идёт перепадом через всё тело, огни и окна светят сами.
    Собственный свет станции — гауссово пятно под корпусом, а не кольца градиента. */
-const GST=new Float32Array(16);
 const GST_WGSL=`
 fn sa(uv:vec2f,d:vec2f)->vec2f{
   return vec2f(textureSampleLevel(t0,smp,uv+vec2f(d.x,0.),0.).a-textureSampleLevel(t0,smp,uv-vec2f(d.x,0.),0.).a,
                textureSampleLevel(t0,smp,uv+vec2f(0.,d.y),0.).a-textureSampleLevel(t0,smp,uv-vec2f(0.,d.y),0.).a);}
 fn field(p:vec2f,uv0:vec2f)->vec4f{
-  let V=fu.v;let c=V[0].xy;let R=V[0].z;let s=V[0].w;let sd=normalize(V[1].xy);let col=V[2].rgb;
+  let V=fu.v;let c=V[0].xy;let R=V[0].z;let s=V[0].w;let sd=normalize(V[1].xy);let col=V[2].rgb;let ro=V[1].zw;
   let dp=p-c;let rr=length(dp);
   /* свой свет станции: тёплое гауссово пятно, окна и прожекторы */
-  let gl=vec3f(1.,.84,.59)*(exp(-(rr*rr)/(R*R*.12))*.22+exp(-rr/(R*.5))*.07);
+  let gl=vec3f(1.,.84,.59)*(exp(-(rr*rr)/(R*R*.12))*.22+exp(-rr/(R*.5))*.07)*V[3].x;
   if(rr>R*1.2){return vec4f(gl,0.);}
-  let uv=(dp/R+1.)*.5;
+  /* спрайт повёрнут на ro=(cos,sin): место — в его осях, нормали — обратно в экран */
+  let lp=vec2f(dot(dp,ro),dot(dp,vec2f(-ro.y,ro.x)));let uv=(lp/R+1.)*.5;
   if(any(uv<vec2f(0.))||any(uv>vec2f(1.))){return vec4f(gl,0.);}
   let c4=textureSampleLevel(t0,smp,uv,0.);let a=c4.a;
   if(a<.01){return vec4f(gl,0.);}
   let u1=vec2f(.5/R);
   let L=normalize(vec3f(sd,.3));
-  let g=-sa(uv,u1*1.1);let tl=clamp(length(g),0.,.98);
+  let g0=-sa(uv,u1*1.1);let g=vec2f(g0.x*ro.x-g0.y*ro.y,g0.x*ro.y+g0.y*ro.x);let tl=clamp(length(g),0.,.98);
   let n=vec3f(g/max(length(g),1e-4)*tl,sqrt(1.-tl*tl));
-  let gb=-(sa(uv,u1*3.*s)*.5+sa(uv,u1*8.*s)*.5);let tb=clamp(length(gb)*1.2,0.,.9);
+  let gb0=-(sa(uv,u1*3.*s)*.5+sa(uv,u1*8.*s)*.5);let gb=vec2f(gb0.x*ro.x-gb0.y*ro.y,gb0.x*ro.y+gb0.y*ro.x);let tb=clamp(length(gb)*1.2,0.,.9);
   let nb=vec3f(gb/max(length(gb),1e-4)*tb,sqrt(1.-tb*tb));
   let side=dot(dp,sd)/R;
   let rgb=c4.rgb/max(a,1e-3);let mx=max(rgb.r,max(rgb.g,rgb.b));let sat=(mx-min(rgb.r,min(rgb.g,rgb.b)))/max(mx,1e-3);
@@ -456,13 +456,17 @@ fn field(p:vec2f,uv0:vec2f)->vec4f{
   let lit=col*rim*1.1*own*a;
   return vec4f(c4.rgb*shade*mix(vec3f(1.),col,.08)+lit+gl*(1.-a),a);
 }`;
-function gpuStation(art,x,y,s,lx,ly){
+/* выпечка cv (полуразмер R в пикселях экрана, поворот rot) со светом звезды по рельефу;
+   (lx,ly) — к звезде; glow — доля своего тёплого света (станция 1, баржа 0) */
+function gpuLitSprite(cv,x,y,R,s,rot,lx,ly,glow){
   const pass=gpuScene();if(!pass)return false;
   const c=(typeof starRGB==="function")?starRGB():[255,244,214],m=Math.max(1,c[0],c[1],c[2]);
-  const U=GST;U[0]=x;U[1]=y;U[2]=art.R;U[3]=s;U[4]=lx;U[5]=ly;U[8]=c[0]/m;U[9]=c[1]/m;U[10]=c[2]/m;U[11]=1;
-  gpuField(pass,"gst",GST_WGSL,U,[gpuCanvasTex(art.cn)]);
+  const U=new Float32Array(16);U[0]=x;U[1]=y;U[2]=R;U[3]=s;U[4]=lx;U[5]=ly;U[6]=Math.cos(rot);U[7]=Math.sin(rot);
+  U[8]=c[0]/m;U[9]=c[1]/m;U[10]=c[2]/m;U[11]=1;U[12]=glow;
+  gpuField(pass,"gst",GST_WGSL,U,[gpuCanvasTex(cv)]);
   return true;
 }
+function gpuStation(art,x,y,s,lx,ly){return gpuLitSprite(art.cn,x,y,art.R,s,0,lx,ly,1);}
 function drawStation(x,y,Z){
   /* ── станция крупнее корабля, потому что корабль в неё заходит (M242) ──
      На увеличении торговый узел с шестью модулями был 170 px, а корабль рядом

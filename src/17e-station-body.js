@@ -24,9 +24,10 @@ function drawMooredBarge(zx,zy,Z){
   b.seed=hashi(sys.seed,0xB0A7,1);b.x=st.x+96;b.y=st.y+58;b.a=-.55;
   b.hullMax=140;b.hp=140;b.capName=bargeName(c);b.distress=0;b.underFire=0;b.escort=0;b.done=0;
   const x=zx(b.x),y=zy(b.y);
-  ctx.save();ctx.translate(x,y);ctx.rotate(b.a);
-  const s=clamp(Z,.5,1.5)*.8;ctx.scale(s,s);
-  drawBarge(b);
+  const s=clamp(Z,.5,1.5)*.8;
+  const lit=(typeof gpuBargeBody==="function")&&gpuBargeBody(b,x,y,s);
+  ctx.save();ctx.translate(x,y);ctx.rotate(b.a);ctx.scale(s,s);
+  drawBarge(b,lit);
   ctx.restore();
   /* швартов: одна линия к станции, чтобы стоянка читалась стоянкой */
   ctx.strokeStyle="rgba(242,178,92,.35)";ctx.lineWidth=1;
