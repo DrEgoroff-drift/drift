@@ -155,13 +155,13 @@ job (the phone milestone), but no fix may add raster cost without a number.
   read at both. Bulge cap and speck colours left as built (they read once the glyphs stepped back).
 
 **Stage 3 — far**
-- [~] **D12 The ten far goods — the ТРЮМ piles done 18.09 on the S23.** All ten (and the amber
+- [x] **D12 The ten far goods — the ТРЮМ piles done 18.09 on the S23; the reading 23.09.** All ten (and the amber
   chip) lay as same-shaped balls in different colours; now each is its own object in `holdPiece`:
   cryo cylinder (He-3), plate stack (palladium), drop with an inclusion (amber), heavy cube
   (osmium), sack with a sprout (chernozem), flask with filings (magdust), pearl in a shell,
   obsidian shard with one cold glint (dark glass), trap ring with a spark (antimatter), lead capsule
-  with a yellow mark (neutron), amber chips. NOT done: the wheel spread (§4.4), the belt entry's
-  reading line. ЖИЛА across the screen checked on the S23 18.09 — the orange stamp reads.
+  with a yellow mark (neutron), amber chips. The wheel (§4.4) judged 23.09 and left: the ten already sit
+  on ten hues AND ten shapes; the review's bone and pale gold were written for a dark hold and vanish on the ОПИСЬ cream paper (and `col` is the UI text colour too). The reading: `farReadShow` hangs an instrument plate for 6.5 s under the belt's entry text — each deposit a scale with its range as a lit band, the header naming the instrument's honesty (изыскатель ±10 % … рудовоз ±60 %): a good instrument is SEEN as a narrow band. ЖИЛА across the screen checked on the S23 18.09 — the orange stamp reads.
 - [~] **D14 The blueprint — the ОПИСЬ view done 18.09 on the S23.** `drawPlan` is now a синька:
   Prussian blue with millimetre grid, white-ink cell lines, the hull outline thick along the
   edges with no neighbour, the hold hatched, parts as ochre stamps with a kind letter
