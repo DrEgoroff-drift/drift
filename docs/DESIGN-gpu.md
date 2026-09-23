@@ -30,7 +30,8 @@ The author, 23.09.2026: «переноси все на новые техноло
   the star of every kind as one field (photosphere with granulation, glare laid over the disc so the limb
   hands off to the corona; giant stays orange, dwarf white-hot), the bleed. Pairs by kind: scratchpad of
   session 21f451ab, `kpairs.py <scene> <name> "<js>"…` shoots main and gpu with the same `--js`
-  (main's own `docs/shot.py` in `mainref`); the planets may still sit at different angles on the two sides.
+  (main's own `docs/shot.py` in `mainref`); freeze the scene first (`freeze.js` there: planet, moon and station
+  angles pinned, `spd=0`, ship placed) — otherwise the two sides differ. Accepted pair: `g2f.png`, `g2f_crop.png`.
 - **Next: G3 planets and moons** — `planetDraw`/`drawRing` in `17-mode-system.js` after `BODY_LABELS.length=0`.
 - Merge each: `build.ps1`, `python docs/shot.py <scenes> --look --tag gpu`, 0 `gpu.errs`, pair with
   `scratchpad/mainref/docs/shots/main_<scene>.png`, one line of what got better, commit, strike from PLAN §0.

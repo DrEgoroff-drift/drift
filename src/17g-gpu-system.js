@@ -56,40 +56,47 @@ fn over(acc:vec4f,s:vec4f)->vec4f{return s+acc*(1.-s.a);}
 fn star(p:vec2f,sv:vec4f,cv:vec4f,t:f32,big:f32,px:f32)->vec4f{
   let d=p-sv.xy;let R=sv.z;let heat=sv.w;let col=cv.rgb;let rr=length(d);let r=rr/R;
   if(cv.w<.5||r>9.5){return vec4f(0.);}
-  let Rd=.62;let dir=d/max(rr,1e-4);
+  /* диск маленький (белое ядро — точка, а не блин), у гиганта крупнее */
+  let Rd=mix(.24,.42,big);let dir=d/max(rr,1e-4);
   var e=vec3f(0.);
   let breath=.93+.07*sin(t*.04);
   {
-    /* корона без порога по радиусу: ступень на 4R была бы видна кольцом */
+    /* корона: тугой ореол у диска и слабые стримеры дальше; без порога по
+       радиусу — ступень была бы видна кольцом */
     let n=sf(lrot(dir,t*.0014)*(2.4+big)+vec2f(r*.45,-r*.3)+vec2f(0.,t*.002));
-    let inner=exp(-max(r-Rd,0.)*.9)*.9;
-    e=e+col*inner*mix(1.,.45+1.1*n,smoothstep(Rd,Rd+.3,r))*breath;
+    let x=max(r-Rd,0.);
+    e=e+col*(exp(-x*2.6)*.85+exp(-x*.9)*.2*(.6+.8*n))*breath;
   }
-  e=e+col*.16*heat*1.35*pow(clamp(1.-(r-.3)/6.7,0.,1.),2.2)*smoothstep(Rd*.9,Rd*1.3,r);
+  e=e+col*.12*heat*pow(clamp(1.-(r-.3)/6.7,0.,1.),2.2)*smoothstep(Rd*.9,Rd*1.3,r);
   e=e+col*.03*exp(-pow((r-2.3)/.3,2.));
   for(var i=0;i<4;i++){
     let a=f32(i)*1.5707963+.2;let ax=vec2f(cos(a),sin(a));
     let s=dot(d,ax)/R;let q=abs(dot(d,vec2f(-ax.y,ax.x)))/R;
     let len=(4.2+1.2*sin(t*.02+f32(i)))*heat;
-    if(s>.4&&s<len){let k=(s-.4)/(len-.4);
+    if(s>Rd*.6&&s<len){let k=(s-Rd*.6)/(len-Rd*.6);
       let w=max(.05*(1.-k)+.006,.7*px/R);
-      e=e+col*.36*(1.-k)*exp(-q*q/(w*w))*(.6+.4*exp(-q*q/(w*w*.12)));}
+      e=e+col*.36*(1.-k)*smoothstep(Rd*.6,Rd*1.4,s)*exp(-q*q/(w*w))*(.6+.4*exp(-q*q/(w*w*.12)));}
   }
-  var photo=vec4f(0.);
+  var photo=vec4f(0.);var gl=1.;
   if(r<Rd+.06){
     let rn=min(r/Rd,1.);let mu=sqrt(max(0.,1.-rn*rn));
-    let limb=1.-.3*(1.-mu)-.1*(1.-mu)*(1.-mu);
-    let gs=(7.+9.*(1.-big))/Rd;
-    let gr=.86+.28*sf(d/R*gs+vec2f(t*.0015,-t*.001));
+    let lk=1.-mu;let limb=1.-(.5+.15*big)*lk-(.25+.1*big)*lk*lk;
+    let gs=(5.+6.*(1.-big))/Rd;
+    let ga=.32+.3*big;let gr=1.-ga*.5+ga*sf(d/R*gs+vec2f(t*.0015,-t*.001));
     /* белизна — от жара: гигант холодный и остаётся оранжевым, карлик — добела */
-    let wh=mix(.3,.85,clamp((heat-.7)/.3,0.,1.));
-    let hot=mix(col,vec3f(1.,.99,.965),wh*mu);
-    let cov=clamp((Rd*R-rr)/(1.5*px)+.5,0.,1.);
-    photo=vec4f(hot*limb*mix(1.,gr,mu)*cov,cov);
+    let wh=mix(.12,.85,clamp((heat-.7)/.3,0.,1.));
+    let hot=mix(col,vec3f(1.,.99,.965),wh*mu*mu);
+    let cov=clamp((Rd*R-rr)/(2.*px)+.5,0.,1.);
+    /* гигант холоднее — и поверхность у него тусклее: выдержка меньше */
+    let I=hot*limb*mix(1.,gr,mu)*mix(2.2,1.35,big);
+    photo=vec4f(I*cov,cov);
+    gl=1.-.6*cov*mu;   /* засветка над серединой диска слабее — цвет поверхности не выцветает */
   }
-  /* свечение ложится и на диск (как засветка в глазу), слабее в середине —
-     тогда край фотосферы переходит в корону, а не обведён тёмным кольцом */
-  return photo+vec4f(e*(1.-.6*photo.a),0.);
+  /* тон — один на диск и корону: 1−exp(−x) вместо обрезки на единице. Середина
+     белая, к лимбу видно потемнение и цвет звезды, плоского пересвеченного блина
+     нет; свечение продолжается через край диска, поэтому кромки-обводки нет */
+  let tone=vec3f(1.)-exp(-(photo.rgb+e*1.15*gl));
+  return vec4f(tone,photo.a);
 }
 fn bleed(p:vec2f,bv:vec4f,col:vec3f)->vec3f{
   if(bv.w<.5){return vec3f(0.);}

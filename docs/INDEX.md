@@ -2097,7 +2097,7 @@ gpuShapes                    src/08c-gpu-kit.js:159-170
 gpuSnapshot                  src/08b-gpu.js:20-24
 gpuSpaceSys                  src/16g-gpu-space.js:184-198
 gpuSpaceTitle                src/16g-gpu-space.js:200-211
-gpuSysUnder                  src/17g-gpu-system.js:224-229
+gpuSysUnder                  src/17g-gpu-system.js:231-236
 gpuTakeSnap                  src/08b-gpu.js:25-30
 gpuUni                       src/08b-gpu.js:195-201
 gpuWorld                     src/08b-gpu.js:270-286
@@ -2186,13 +2186,13 @@ gspUni                       src/16g-gpu-space.js:152-159
 GSY                          src/17g-gpu-system.js:17
 GSY_ORB_WGSL                 src/17g-gpu-system.js:18
 GSY_STAR_WGSL                src/17g-gpu-system.js:44
-gsyBeltDots                  src/17g-gpu-system.js:192-200
-gsyEll                       src/17g-gpu-system.js:159-168
-gsyMean                      src/17g-gpu-system.js:169-172
-gsyOrb                       src/17g-gpu-system.js:151-157
-gsyOrbits                    src/17g-gpu-system.js:173-190
-gsyStar                      src/17g-gpu-system.js:201-222
-gsyUni                       src/17g-gpu-system.js:145-149
+gsyBeltDots                  src/17g-gpu-system.js:199-207
+gsyEll                       src/17g-gpu-system.js:166-175
+gsyMean                      src/17g-gpu-system.js:176-179
+gsyOrb                       src/17g-gpu-system.js:158-164
+gsyOrbits                    src/17g-gpu-system.js:180-197
+gsyStar                      src/17g-gpu-system.js:208-229
+gsyUni                       src/17g-gpu-system.js:152-156
 GUEST_EVERY                  src/21a3-base-people.js:30
 GUN_CACHE                    src/05c-arms.js:71
 GUN_FACTORY                  src/05b-guns.js:99-106
@@ -6597,7 +6597,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/17f-sys-traffic.js · 5 КБ
   · трафик системы: чужие машины, которым тут есть дело (M309):1
 
-## src/17g-gpu-system.js · 13 КБ
+## src/17g-gpu-system.js · 14 КБ
   · система под планетами на видеокарте (G2, docs/DESIGN-gpu.md):1
 
 ## src/17g-sys-lane.js · 13 КБ
