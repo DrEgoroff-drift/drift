@@ -549,11 +549,9 @@ function drawSystem(){
         ? {i:1.34+rr()*.26,o:1.85+rr()*.7,tilt:.16+rr()*.26,n:3+Math.floor(rr()*4),s:p.seed}
         : null;
     }
-    if(p.ring&&r>5)drawRing(x,y,r,p.ring,-1);
-    planetDraw(p,x,y,r);
+    gpuPlanet(p,x,y,r);   /* шар, свет, воздух и кольцо с тенями — на видеокарте (17ga) */
     if(typeof drawPlanetLights==="function")drawPlanetLights(sys,p,x,y,r);   /* огни ваших построек (M296) */
     if(typeof drawPlanetWorks==="function")drawPlanetWorks(sys,p,x,y,r);     /* отвал, купол, полоса (M306) */
-    if(p.ring&&r>5)drawRing(x,y,r,p.ring,1);
     /* конец света виден с орбиты (хвост M114): у обречённой планеты рыжий
        ореол, а когда срок вышел — серая пелена поверх диска и потухший цвет.
        Планета та, на которой стоял посёлок */
@@ -573,13 +571,10 @@ function drawSystem(){
         }
       }
     }
-    if(p.type!=="rocky"&&r>4){ctx.strokeStyle="rgba(150,220,255,.18)";ctx.lineWidth=2;
-      ctx.beginPath();ctx.arc(x,y,r+2.5,0,TAU);ctx.stroke();}
     for(let mi=0;mi<p.moons.length;mi++){
       const m=p.moons[mi];
       const mx=zx(m.x),my=zy(m.y),mr=Math.max(1,m.radius*Z);
-      ctx.fillStyle="#9aa8b2";
-      ctx.beginPath();ctx.arc(mx,my,mr,0,TAU);ctx.fill();
+      gpuMoon(m,(p.idx|0)+"_"+mi,mx,my,mr);
       if(G.ap&&G.ap.kind==="planet"&&G.ap.p===m)reticle(mx,my,mr+10);
       if(G.found.has(m.key)&&mr>2.4){
         ctx.fillStyle="rgba(154,168,178,.7)";ctx.font=uiFont(8);ctx.textAlign="center";

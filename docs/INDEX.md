@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 599 · символов верхнего уровня: 5885
+Файлов: 600 · символов верхнего уровня: 5886
 
 ## СИМВОЛЫ
 
@@ -408,7 +408,7 @@ BELT_POI                     src/24b-belt-poi.js:13-19
 BELT_RES                     src/02-world.js:143
 BELT_STROKES                 src/24-mode-belt.js:53
 beltBasis                    src/24-mode-belt.js:167-177
-beltDots                     src/17c-system-draw.js:88-93
+beltDots                     src/17c-system-draw.js:76-81
 beltFwd                      src/24-mode-belt.js:162-165
 beltIcy                      src/24-mode-belt.js:88
 BG                           src/16-flight.js:3
@@ -1372,7 +1372,7 @@ drawBeast                    src/20f-fauna.js:231-339
 drawBeastAlien               src/20f-fauna.js:65-229
 drawBelt                     src/24-mode-belt.js:378-718
 drawBeltPOISprite            src/24b-belt-poi.js:50-185
-drawBeltRocks                src/17c-system-draw.js:41-82
+drawBeltRocks                src/17c-system-draw.js:29-70
 drawBillboard                src/17k-billboard.js:51-113
 drawBuildMenu                src/21aa-base-rooms.js:504-520
 drawBuilt                    src/21c-built.js:64-101
@@ -1470,7 +1470,6 @@ drawRaid                     src/24aa-raid-draw.js:14-655
 drawRail                     src/18g-rail-ride.js:118-175
 drawRailArrive               src/18g-rail-ride.js:31-34
 drawRailMap                  src/18e-rail-net.js:181-210
-drawRing                     src/17c-system-draw.js:4-15
 drawRingTape                 src/11x-ring.js:107-118
 drawRoad                     src/27l-road-draw.js:87-622
 drawRocks                    src/19-mode-landing-ground.js:294-386
@@ -1487,8 +1486,8 @@ drawSkyBodies                src/19b-sky.js:96-128
 drawSkyLayer                 src/19-mode-landing.js:171-269
 drawSpa                      src/29i-spa-draw.js:41-486
 drawStars                    src/16-flight.js:40-79
-drawStation                  src/17c-system-draw.js:429-493
-drawStationBody              src/17c-system-draw.js:165-371
+drawStation                  src/17c-system-draw.js:417-481
+drawStationBody              src/17c-system-draw.js:153-359
 drawStationMods              src/17a-station-mod.js:214-217
 drawStencils                 src/03d-hull-marks.js:1-90
 drawStModule                 src/17a-station-mod.js:95-210
@@ -1499,11 +1498,11 @@ drawSurface                  src/21e-surface-draw.js:277-291
 drawSurfaceHud               src/21e-surface-draw.js:21-115
 drawSurfaceWorld             src/21e1-surface-world.js:10-615
 drawSurvey                   src/12w-survey.js:63-89
-drawSysHud                   src/17-mode-system.js:687-946
+drawSysHud                   src/17-mode-system.js:682-941
 drawSysLane                  src/17g-sys-lane.js:94-122
 drawSysLaneShips             src/17g-sys-lane.js:152-180
 drawSysRail                  src/18f-rail-station.js:32-65
-drawSystem                   src/17-mode-system.js:482-686
+drawSystem                   src/17-mode-system.js:482-681
 drawSysTraffic               src/17f-sys-traffic.js:36-40
 drawTapes                    src/12s1-tape.js:37-52
 drawTemple                   src/20aa-poi-shapes.js:50-89
@@ -2065,6 +2064,10 @@ gotNext                      src/27jb-ui-got.js:28
 gotoSector                   src/11a-quests.js:68-88
 gotRender                    src/27jb-ui-got.js:29-55
 gotTick                      src/27jb-ui-got.js:56-60
+GPL                          src/17ga-gpu-planets.js:13
+GPL_WGSL                     src/17ga-gpu-planets.js:14
+gplBody                      src/17ga-gpu-planets.js:105-120
+gplSun                       src/17ga-gpu-planets.js:122-125
 GPU                          src/08b-gpu.js:8
 GPU_BLEND                    src/08c-gpu-kit.js:8-20
 GPU_FLD_HEAD                 src/08c-gpu-kit.js:175
@@ -2083,12 +2086,14 @@ gpuFrame                     src/08b-gpu.js:205-214
 gpuImage                     src/08c-gpu-kit.js:117-129
 gpuKitU                      src/08c-gpu-kit.js:89-93
 gpuManual                    src/08b-gpu.js:262-267
+gpuMoon                      src/17ga-gpu-planets.js:143-148
 gpuNoise                     src/08b-gpu.js:157-162
 gpuNone                      src/08b-gpu.js:32-39
 gpuOver                      src/08b-gpu.js:245-260
 gpuPass                      src/08b-gpu.js:191-194
 gpuPipe                      src/08c-gpu-kit.js:13-20
 gpuPipes                     src/08b-gpu.js:133-154
+gpuPlanet                    src/17ga-gpu-planets.js:127-141
 gpuPresent                   src/08b-gpu.js:288-302
 gpuResize                    src/08b-gpu.js:163-190
 gpuScene                     src/08b-gpu.js:218-227
@@ -3816,7 +3821,7 @@ planDeliver                  src/11r-plan.js:67-85
 planDepthAt                  src/11r-plan.js:28-33
 planDepthHere                src/11r-plan.js:34
 planEndless                  src/11r-plan.js:54-58
-PLANET_BAKE_ANG              src/07-planet.js:325
+PLANET_BAKE_ANG              src/07-planet.js:195
 PLANET_BARGE                 src/12n-planet.js:17
 PLANET_CAP                   src/12n-planet.js:16
 PLANET_FULL                  src/12n-planet.js:14
@@ -3826,21 +3831,17 @@ PLANET_SPIN                  src/07-planet.js:32
 planetBargeLoad              src/12n-planet.js:108-121
 planetBargeRow               src/12n-planet.js:145-151
 planetBiome                  src/20-life.js:161-179
-planetCols                   src/07-planet.js:255-266
-planetDraw                   src/07-planet.js:352-397
 planetGrant                  src/12n-planet.js:25-40
 planetHasLife                src/07a-terrain.js:61-64
 planetHaul                   src/12n-planet.js:67-86
 planetHeightAt               src/07a-terrain.js:65-72
 planetHere                   src/12n-planet.js:61-64
 planEtherLine                src/11r-plan.js:43-46
-planetLight                  src/07-planet.js:210-250
 planetLightsN                src/17e-station-body.js:39-44
 planetLoadSum                src/12n-planet.js:122-125
 planetMat                    src/18a-material.js:99-106
 planetMatHue                 src/18a-material.js:363-366
 planetMatNow                 src/18a-material.js:120-127
-planetPaint                  src/07-planet.js:272-323
 planetPeriod                 src/07-planet.js:37-41
 planetReady                  src/12n-planet.js:19-21
 planetRender                 src/12n-planet.js:155-184
@@ -3855,7 +3856,7 @@ planetStripChunk             src/07-planet.js:105-153
 planetStripSeekRow           src/07-planet.js:98-103
 planetStripStart             src/07-planet.js:85-96
 planetStripTick              src/07-planet.js:160-182
-planetSunRot                 src/07-planet.js:329-333
+planetSunRot                 src/07-planet.js:199-203
 planetTakeLoad               src/12n-planet.js:126-143
 planetTick                   src/12n-planet.js:44-54
 planetWetAt                  src/07a-terrain.js:56-60
@@ -4473,7 +4474,7 @@ retDock                      src/11s-returners.js:51-58
 retDrift                     src/11s-returners.js:48-50
 retEtherLine                 src/11s-returners.js:40-43
 retGroundLine                src/11s-returners.js:44-46
-reticle                      src/17c-system-draw.js:16-24
+reticle                      src/17c-system-draw.js:4-12
 rgba                         src/01-core.js:222
 ridged                       src/18a-material.js:30
 RING_FIRST                   src/11x-ring.js:20
@@ -4603,8 +4604,8 @@ roadToday                    src/27k-road.js:191
 roadTripRu                   src/27k-road.js:227
 roadTurnPay                  src/27k-road.js:106
 roadTurnTick                 src/27k-road.js:527-540
-ROCK_CELL                    src/17c-system-draw.js:40
-ROCK_SHAPES                  src/17c-system-draw.js:26-37
+ROCK_CELL                    src/17c-system-draw.js:28
+ROCK_SHAPES                  src/17c-system-draw.js:14-25
 ROGUE_CAP                    src/12g-mgr-rogue.js:11
 rogueDefeated                src/12g-mgr-rogue.js:91-120
 rogueFrom                    src/12g-mgr-rogue.js:38-65
@@ -4999,7 +5000,7 @@ smenaSync                    src/12ud-smena.js:107-119
 smenaWhere                   src/12ud-smena.js:121
 smK                          src/12ud-smena.js:24
 smL                          src/12ud-smena.js:25
-SMOKE_N                      src/17c-system-draw.js:378
+SMOKE_N                      src/17c-system-draw.js:366
 SMOKE_PATHS                  src/12tb-settle-draw2.js:246
 smokePath                    src/12tb-settle-draw2.js:247-262
 smP                          src/12ud-smena.js:28
@@ -5074,13 +5075,13 @@ SPIRIT_LOW                   src/21a1b-base-food.js:14
 sprgba                       src/29i-spa-draw.js:22
 SRC_DISCOUNT                 src/12ad-site.js:22
 srcPrice                     src/12ad-site.js:294-297
-ST_ART                       src/17c-system-draw.js:398
-ST_BY                        src/17c-system-draw.js:106
+ST_ART                       src/17c-system-draw.js:386
+ST_BY                        src/17c-system-draw.js:94
 ST_GROUPS                    src/26-ui-station.js:131-138
 ST_MOD_FILL                  src/17a-station-mod.js:81
 ST_MODULES                   src/17a-station-mod.js:14-29
 ST_TYPES                     src/06-galaxy.js:54-72
-stackSmoke                   src/17c-system-draw.js:379-392
+stackSmoke                   src/17c-system-draw.js:367-380
 stallWho                     src/28-loop.js:122-130
 STAMP_ORDER                  src/17i-stamp.js:11
 STAMP_POEM                   src/17i-stamp.js:14
@@ -5132,7 +5133,7 @@ STAT_SHOW                    src/05-parts.js:426-438
 STATE_HASH_SKIP              src/08a-statehash.js:24-29
 stateHash                    src/08a-statehash.js:30-81
 stateHashParts               src/08a-statehash.js:82-90
-stationArt                   src/17c-system-draw.js:399-428
+stationArt                   src/17c-system-draw.js:387-416
 stationDeals                 src/27g-deals.js:141-158
 stationFleet                 src/04b-fleet.js:163-191
 stationMercs                 src/12a-crew.js:95-147
@@ -5142,14 +5143,14 @@ stationModsLine              src/17a-station-mod.js:74-77
 stationNewsLines             src/26-ui-station.js:11-19
 stationParts                 src/03-ships.js:159-198
 stationUniqueOffer           src/03-ships.js:143-156
-stationViz                   src/17c-system-draw.js:98-103
+stationViz                   src/17c-system-draw.js:86-91
 statPreview                  src/05-parts.js:417-425
-stCore                       src/17c-system-draw.js:118-133
+stCore                       src/17c-system-draw.js:106-121
 stDel                        src/14-save.js:26
 steps                        tests/90-harness.js:391
 stepWorld                    src/28-loop.js:378-398
 stGet                        src/14-save.js:8
-stGround                     src/17c-system-draw.js:107
+stGround                     src/17c-system-draw.js:95
 stGroup                      src/26-ui-station.js:140
 stGroupOf                    src/26-ui-station.js:139
 stMakerDress                 src/17c1-station-dress.js:10-52
@@ -5199,10 +5200,10 @@ storyTableLine               src/11c-stories.js:281-287
 storyTraces                  src/11c-stories.js:219-236
 storyTurns                   src/11c-stories.js:121-142
 storyWhen                    src/11c-stories.js:205-209
-stPanels                     src/17c-system-draw.js:108-117
-stPlatePath                  src/17c-system-draw.js:157-164
+stPanels                     src/17c-system-draw.js:96-105
+stPlatePath                  src/17c-system-draw.js:145-152
 STRATA_K                     src/18a1-glaze.js:119
-stRing                       src/17c-system-draw.js:134-153
+stRing                       src/17c-system-draw.js:122-141
 STRIP_CHUNK                  src/07-planet.js:79
 STRIP_JOB                    src/07-planet.js:82
 STRIP_MS                     src/07-planet.js:78
@@ -6006,7 +6007,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/06f-far-props.js · 3 КБ
   · свойства дальних товаров: одно на товар (M468, DESIGN-resources §2, law 4):1
 
-## src/07-planet.js · 27 КБ
+## src/07-planet.js · 14 КБ
   · текстуры планет:1
   · вращение:8
 
@@ -6603,6 +6604,9 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## src/17g-sys-lane.js · 13 КБ
   · подъезд: полоса от входа в систему к доку (M459, DESIGN-life §2–3.1):1
+
+## src/17ga-gpu-planets.js · 9 КБ
+  · планеты и луны на видеокарте (G3, docs/DESIGN-gpu.md):1
 
 ## src/17h-sys-gesture.js · 14 КБ
   · чья земля — за пять секунд: жест первого корабля и пост (M452, DESIGN-review §2.1):1

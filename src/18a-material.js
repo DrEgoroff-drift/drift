@@ -104,7 +104,7 @@ function planetMat(p){
   if(!MAT_JOB||MAT_JOB.p!==p)MAT_JOB=matJobMake(p);
   return null;
 }
-/* допекаем по кадрам — зовётся из planetDraw рядом с развёрткой */
+/* допекаем по кадрам — зовётся из gpuPlanet рядом с развёрткой */
 function matTick(){
   const J=MAT_JOB;if(!J)return;
   const t0=wallMs();

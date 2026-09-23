@@ -1,18 +1,6 @@
 /* ══════════════ система: кольца, пояс и станция в кадре ══════════════
    Отрезано от 17-mode-system на распиле 0.108.x: updateSystem и drawSystem
    остались там; формы пояса и станции — здесь. */
-function drawRing(x,y,r,R,half){
-  const rr=rng(R.s^0x77);
-  ctx.save();
-  if(half>0){ctx.beginPath();ctx.rect(x-r*R.o-4,y,r*R.o*2+8,r*R.o+8);ctx.clip();}
-  ctx.lineWidth=Math.max(.6,r*(R.o-R.i)/R.n*.8);
-  for(let i=0;i<R.n;i++){
-    const t=R.i+(R.o-R.i)*(i+.5)/R.n, a=.06+rr()*.16;
-    ctx.strokeStyle="rgba("+(190+rr()*50|0)+","+(172+rr()*46|0)+","+(146+rr()*54|0)+","+a.toFixed(2)+")";
-    ctx.beginPath();ctx.ellipse(x,y,r*t,r*t*R.tilt,0,0,TAU);ctx.stroke();
-  }
-  ctx.restore();
-}
 function reticle(x,y,r){
   ctx.strokeStyle="rgba(242,178,92,.9)";ctx.lineWidth=1.3;
   const a=G.t*.03;

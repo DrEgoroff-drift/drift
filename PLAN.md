@@ -20,10 +20,8 @@ quality, the ship stays under the finger.
 «Первое — на новый движок, потом по плану.» WebGPU only, Canvas 2D as the brush for text and vector shapes,
 no fallback, and every ported layer better than before, not the same. The recipe — the frame, the one rule of
 layer order, the kit, the porting checklist — is `docs/DESIGN-gpu.md`; the decision is in `docs/DECISIONS.md`.
-Built: the core and post pass (08b), the layer kit (08c), the space backdrop (16g), the system under the planets (17g), `docs/shot.py` on the GPU.
+Built: the core and post pass (08b), the layer kit (08c), the space backdrop (16g), the system under the planets (17g), planets and moons (17ga), `docs/shot.py` on the GPU.
 
-- [ ] **G3 planets and moons:** spheres lit by their star — terminator, atmosphere rim, rings with their shadow,
-  night lights on held worlds; the labels stay 2D.
 - [ ] **G4 the system view on top:** ships as sprites from the hull bake, lit from the star; wake, trail, exhaust
   and heat haze on the GPU; combat flashes, drones, traffic, the edge wall.
 - [ ] **G5 landing and surface, the air:** sky, sun, live clouds, haze, shafts, weather in depth, the night with
