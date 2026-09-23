@@ -14,11 +14,11 @@
      размытые пятна. В 2D было наоборот — самые крупные пылинки летели в самом
      дальнем слое (s 1.7 при par .22), и ближний план читался как дальний. */
 const SPACE_BG={r:5/255,g:7/255,b:12/255,a:1};
-const GSP={stars:null,dustBase:-1,dustN:0,UA:new Float32Array(20),QA:new Float32Array(24)};
+const GSP={stars:null,dustBase:-1,dustN:0,UA:new Float32Array(28),star:null,QA:new Float32Array(24)};
 /* размер и мягкость пылинки по слоям DUST_LAYERS (дальний → ближний) */
 const GSP_DUST_L=[{s:.75,soft:0,a:1},{s:1.05,soft:0,a:1},{s:2.2,soft:1,a:.26}];
 const GSP_WGSL_U=`
-struct SP{a:vec4f,b:vec4f,c:vec4f,d:vec4f,e:vec4f};
+struct SP{a:vec4f,b:vec4f,c:vec4f,d:vec4f,e:vec4f,f:vec4f,g:vec4f};
 @group(0) @binding(0) var<uniform> u:SP;
 fn toClip(p:vec2f)->vec4f{return vec4f(p.x/u.a.x*2.-1.,1.-p.y/u.a.y*2.,0.,1.);}
 fn corn(i:u32)->vec2f{var c=array(vec2f(0.,0.),vec2f(1.,0.),vec2f(1.,1.),vec2f(0.,0.),vec2f(1.,1.),vec2f(0.,1.));return c[i];}
@@ -39,11 +39,16 @@ const GSP_STARS=`
 @vertex fn vs(@builtin(vertex_index) vi:u32,@builtin(instance_index) ii:u32)->VO{
   let s=st[(ii/4u)*2u];let c=st[(ii/4u)*2u+1u];let part=ii%4u;
   let z=s.z;let bright=c.w>.5;let dpr=u.b.x;let mov=u.c.w;
+  /* номер среди ярких: лучи — только у первых шести из четырнадцати (в кадре их
+     около половины — три-четыре крестика, а не десятки) */
+  let bi=i32(ii/4u)-i32(u.d.w);let spiky=bright&&bi<6;
   let px=pmod(s.x*1600.-u.b.z*u.c.x*z,1600.)/1600.*u.a.z;
   let py=pmod(s.y*1200.-u.b.w*u.c.x*z,1200.)/1200.*u.a.w;
   var a=0.;var sz=1.;
-  if(bright){a=.55+.25*sin(u.b.y*.03+s.w)*(1.-mov);}
-  else{a=(.11+z*.55)*(.76+.24*sin(u.b.y*.045*(.4+z)+s.w)*(1.-mov));sz=select(select(1.,1.4,z>.5),2.1,z>.85);}
+  /* яркость по степенному закону: много слабых, мало ярких (было — ровно по глубине) */
+  let zz=clamp((z-.2)/.8,0.,1.);
+  if(bright){a=(.42+.4*select(0.,1.,spiky))+.2*sin(u.b.y*.03+s.w)*(1.-mov);}
+  else{a=(.09+.7*pow(zz,2.4))*(.76+.24*sin(u.b.y*.045*(.4+z)+s.w)*(1.-mov));sz=select(select(1.,1.3,zz>.55),1.9,zz>.9);}
   a=a*u.d.z;
   let still=1.-smoothstep(.04,.3,mov);
   let l=vec2f(u.c.y*u.d.x*u.c.x*z,u.c.z*u.d.y*u.c.x*z);let ll=length(l);
@@ -59,11 +64,8 @@ const GSP_STARS=`
     }
   }else if(part==1u){
     if(bright){mode=3.;g=vec4f(ctr,8.5,0.);a=a*.42*(.35+.65*still);}
-    else if(z>.8){mode=3.;g=vec4f(ctr,3.2+sz,0.);a=a*.16*(.35+.65*still);}
-  }else if(still>.01){
-    if(bright){mode=4.;g=vec4f(ctr,10.,f32(part==2u));hw=.72;a=min(1.,a*1.25)*still;}
-    else if(z>.9){mode=4.;g=vec4f(ctr,5.5,f32(part==2u));hw=.55;a=a*.6*still;}
-  }
+    else if(zz>.9){mode=3.;g=vec4f(ctr,2.6+sz,0.);a=a*.14*(.35+.65*still);}
+  }else if(still>.01&&spiky){mode=4.;g=vec4f(ctr,11.,f32(part==2u));hw=.72;a=min(1.,a*1.25)*still;}
   let m=1./dpr;var lo=vec2f(-9.);var hi=vec2f(-8.);
   if(mode==1.){lo=g.xy-g.z-m;hi=g.xy+g.z+m;}
   else if(mode==2.){lo=min(g.xy,g.zw)-hw-m;hi=max(g.xy,g.zw)+hw+m;}
@@ -81,8 +83,20 @@ const GSP_DUST=`
   let py=pmod(p0.y*900.+p1.w+(p1.y*u.b.y*.09-u.e.y)*p0.w,900.)/900.*u.e.w-20.;
   let soft=p2.y>.5;let c=vec2f(px,py)+p0.z*.5;let m=1./dpr;
   let r=select(p0.z*.5641896,p0.z*.9,soft);let e=select(r,r*1.25,soft);
-  var o:VO;o.p=toClip(mix(c-e-m,c+e+m,corn(vi))*dpr);
-  o.col=vec4f(198./255.,214./255.,236./255.,p2.x*u.d.z);o.g=vec4f(c*dpr,r*dpr,0.);o.h=vec4f(select(1.,3.,soft),0.,0.,0.);
+  /* свет звезды: пылинка ближе к ней теплее и ярче, вдали — холодная серо-голубая */
+  let sd=length(c-u.f.xy)/u.a.w;let lit=u.f.w/(1.+sd*sd*6.);
+  let col=mix(vec3f(150.,176.,222.)/255.,u.g.rgb,clamp(lit,0.,.85));
+  let al=p2.x*u.d.z*(.55+.9*lit);
+  /* на ходу ближняя пылинка — росчерк против хода, длиной по своему параллаксу */
+  let l=-vec2f(u.c.y,u.c.z)/.06*p0.w*2.2;let ll=length(l);
+  var o:VO;
+  if(u.c.w>.04&&ll>1.5&&p0.w>.5){
+    let hw=max(r*.45,.5);o.p=toClip(mix(min(c,c+l)-hw-m,max(c,c+l)+hw+m,corn(vi))*dpr);
+    o.col=vec4f(col,al*clamp(2.2/sqrt(ll),.25,1.));o.g=vec4f(c*dpr,(c+l)*dpr);o.h=vec4f(2.,hw*dpr,0.,0.);
+  }else{
+    o.p=toClip(mix(c-e-m,c+e+m,corn(vi))*dpr);
+    o.col=vec4f(col,al);o.g=vec4f(c*dpr,r*dpr,0.);o.h=vec4f(select(1.,3.,soft),0.,0.,0.);
+  }
   return o;}`;
 /* туманность: прямоугольник с текстурой (x,y,w,h) в пикселях CSS, (альфа, бикубика,
    сила живой детали); деталь — шум в пикселях CSS прямоугольника, едет вместе с ним */
@@ -152,9 +166,10 @@ function gspDustBuf(base){
 function gspUni(cx,cy,par,M,dcx,dcy){
   const a=GSP.UA;
   a[0]=GPU.bw;a[1]=GPU.bh;a[2]=W;a[3]=H;a[4]=DPR;a[5]=G.t;a[6]=cx;a[7]=cy;
-  a[8]=par;a[9]=M.dx;a[10]=M.dy;a[11]=M.mov;a[12]=M.kx;a[13]=M.ky;a[14]=1;a[15]=0;
+  a[8]=par;a[9]=M.dx;a[10]=M.dy;a[11]=M.mov;a[12]=M.kx;a[13]=M.ky;a[14]=1;a[15]=GSP.nStars?GSP.nStars-BG_BRIGHT.length:0;
   a[16]=dcx;a[17]=dcy;a[18]=W+40;a[19]=H+40;
-  const U=GPUBufferUsage,b=gpuBuf("gsp.u",80,U.UNIFORM|U.COPY_DST);
+  const S=GSP.star;a[20]=S?S.x:0;a[21]=S?S.y:0;a[23]=S?S.on:0;a[24]=S?S.c[0]/255:0;a[25]=S?S.c[1]/255:0;a[26]=S?S.c[2]/255:0;
+  const U=GPUBufferUsage,b=gpuBuf("gsp.u",112,U.UNIFORM|U.COPY_DST);
   GPU.dev.queue.writeBuffer(b,0,a);return b;
 }
 /* до трёх прямоугольников туманности за кадр — в одном буфере:
@@ -184,7 +199,8 @@ function gspSeed(nb){return ((nb[0][0]*3+nb[0][1]*7+nb[1][2]*11)%97)*1.7;}
 function gpuSpaceSys(sys,cx0,cy0,Z){
   GPU.sceneBg=SPACE_BG;
   /* туманность объёмом (16gb) считается своим проходом — до прохода сцены */
-  const neb=gpuNebulaGen(sys,cx0*Z,cy0*Z,gnbStar(sys,W/2-cx0*Z,H/2-cy0*Z,sys.radius*Z));
+  GSP.star=gnbStar(sys,W/2-cx0*Z,H/2-cy0*Z,sys.radius*Z);
+  const neb=gpuNebulaGen(sys,cx0*Z,cy0*Z,GSP.star);
   const pass=gpuScene();if(!pass)return;
   const P=gspPipes();
   const cx=cx0*.06*Z,cy=cy0*.06*Z;
@@ -197,7 +213,7 @@ function gpuSpaceSys(sys,cx0,cy0,Z){
 }
 /* заставка: две туманности на разной глубине и звёзды (drawNebula + drawStars) */
 function gpuSpaceTitle(c){
-  GPU.sceneBg=SPACE_BG;
+  GPU.sceneBg=SPACE_BG;GSP.star=null;
   const pass=gpuScene();if(!pass)return;
   const P=gspPipes();
   const M=starMove(c,0,1);

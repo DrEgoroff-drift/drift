@@ -177,8 +177,19 @@ Heat haze behind the nozzle (G4b).
   amber mono with plum shadows (giants), bleached (hole); one system in five is INSIDE an emission nebula
   (`fill`). 17g's flat `bleed` circle is off when the nebula is up (it was the brown murk). Pairs `l1giant_760`,
   `l1normal_760` (a fill system), `l1dwarf_760`; scene `freeze.js`+`barges.js`+`delete …gnbPal`. `small.py <name>`
-  makes the 760 px whole-frame pair. Next in L1: stars by power law and ≤5 spikes (7), motes as streaks (8),
-  shafts in space (6), the landmark per system.
+  makes the 760 px whole-frame pair. Done (2/n): the frame is composed large — one shaped mass (`mass` on a
+  shared macro coordinate), one wide dark lane across (`band`, near layer), a calm void; the two tones go by
+  REGION (`sel` with a dark seam), never per pixel; near the star the region takes the tone closer to its colour.
+  Full-resolution detail at composite: ridged noise cuts the gas into filaments (`fineE`), lane edges sharpened
+  (`fineT`), an ionization rim on gas edges facing the star in the gas's own hue. Shadow toning is a short step
+  (`V[2].w` = palette `sw`: .1 default, .2 giant, .15 dwarf) — a wide mix of a tone with its shadow was the grey
+  (dirt 9% → ≤1%). Giant: amber light, plum shadows (median 309–318°). Dwarf: two ice tones (mid 198°), indigo
+  shadows (240°), glow white-blue — the glow's wide part takes the gas's hue, the core keeps the star's. Hulls on
+  bright gas get a dark rim (`GPU.sep` → `a[23]`, fsFinal darkens scene near front alpha, 3/7/13 css px) — the
+  left barge on green gas still reads as outline, not 3×. Stars by a power law (`.09+.7·zz^2.4`), spikes only on
+  the first six bright ones; motes tinted toward the star, near layer streaks in flight. Pairs `l2normal_760`,
+  `l2giant_760`, `l2dwarf_760`, `l2g4m_760` (real kind, no palette reset). Measures: `tone.py`, `hull.py`,
+  `dirtmap.py` in the scratchpad. Next in L1: shafts in space (6), the landmark per system.
   A GPU draw after `gpuHullLight` must use `gpuOver`, not `gpuScene` (the scene pass is closed by then).
 - Merge each: `build.ps1`, `python docs/shot.py <scenes> --look --tag gpu`, 0 `gpu.errs`, pair with
   `scratchpad/mainref/docs/shots/main_<scene>.png`, one line of what got better, commit, strike from PLAN §0.

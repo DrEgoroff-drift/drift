@@ -113,6 +113,20 @@ fn blur(uv:vec2f,d:vec2f)->vec4f{
 fn overlay(b:vec3f,s:vec3f)->vec3f{return select(1.-2.*(1.-b)*(1.-s),2.*b*s,b<vec3f(.5));}
 @fragment fn fsFinal(v:V)->@location(0) vec4f{
   var c=frameAt(v.uv);
+  /* корпус на ярком газе — силуэтом (L1): газ вокруг переднего слоя темнеет узкой
+     каймой, сам корпус не трогается. Кадр в целом не темнеет */
+  if(u.shc.w>0.&&u.scene>.5){
+    let fa=textureSampleLevel(tFront,sl,v.uv,0.).a;
+    if(fa<.98){
+      var nm=0.;
+      for(var k=0;k<8;k++){let an=f32(k)*.785398;let d=vec2f(cos(an),sin(an))/u.css;
+        nm=max(nm,textureSampleLevel(tFront,sl,v.uv+d*3.,0.).a);
+        nm=max(nm,textureSampleLevel(tFront,sl,v.uv+d*7.,0.).a*.7);
+        nm=max(nm,textureSampleLevel(tFront,sl,v.uv+d*13.,0.).a*.4);}
+      let s=textureSampleLevel(tScene,sl,v.uv,0.).rgb;
+      c=c-s*(1.-fa)*u.shc.w*smoothstep(.05,.6,nm);
+    }
+  }
   if(u.k>0.){c=min(c+u.k*textureSampleLevel(tBloom,sl,v.uv,0.).rgb,vec3f(1.));}
   /* лучи от звезды (G5): от пикселя к звезде копится видимое небо — там, где
      передний слой прозрачен. Облака и хребты режут свет на настоящие полосы */
@@ -215,7 +229,7 @@ function gpuUni(){
   a[0]=GPU.bw;a[1]=GPU.bh;a[2]=W;a[3]=H;a[4]=DPR;a[5]=P.k;a[6]=P.grain;a[7]=P.vig;
   a[8]=GPU.hitK;a[9]=GPU.hitDx;a[10]=GPU.uiOn?1:0;a[11]=GPU.sceneOn?1:0;
   a[12]=GPU.qw;a[13]=GPU.qh;a[14]=1.75/DPR;a[15]=G.t||0;
-  const S=GPU.shaft;a[16]=S?S.x:0;a[17]=S?S.y:0;a[18]=S?S.k:0;a[19]=S?S.rad:0;a[20]=S?S.r:0;a[21]=S?S.g:0;a[22]=S?S.b:0;
+  const S=GPU.shaft;a[16]=S?S.x:0;a[17]=S?S.y:0;a[18]=S?S.k:0;a[19]=S?S.rad:0;a[20]=S?S.r:0;a[21]=S?S.g:0;a[22]=S?S.b:0;a[23]=GPU.sep||0;
   GPU.dev.queue.writeBuffer(GPU.U,0,a);
 }
 
@@ -228,7 +242,7 @@ function gpuFrame(){
   ctx=MAIN_CTX;
   ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,GPU.bw,GPU.bh);ctx.setTransform(DPR,0,0,DPR,0,0);
   GPU.on=true;
-  GPU.enc=GPU.dev.createCommandEncoder();GPU.scenePass=null;GPU.overPass=null;GPU.sceneOn=false;GPU.scene3D=false;GPU.hitK=0;GPU.shaft=null;
+  GPU.enc=GPU.dev.createCommandEncoder();GPU.scenePass=null;GPU.overPass=null;GPU.sceneOn=false;GPU.scene3D=false;GPU.hitK=0;GPU.shaft=null;GPU.sep=0;
   return true;
 }
 /* проход сцены видеокарты: его открывает первый слой кадра, закрывает сборка.
