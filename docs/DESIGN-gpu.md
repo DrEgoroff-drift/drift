@@ -20,11 +20,12 @@ The author, 23.09.2026: «переноси все на новые техноло
 - Done: core `08b`, kit `08c`, space `16g` (G1: live nebula wisps and lanes, stars with halo and tapered
   spikes, dust with depth of field; pair in `scratchpad/pairs/system_crop.png`),
   `docs/shot.py` on the GPU (`--budget` kept for `vetshot.py`).
-- Running in worktrees from `fbbcd12`: G2+G3 (9471), G5+G6 (9472), G13 (9476).
-- Stopped 23.09 for the token limit (reset 01:40), worktrees kept at
-  `C:\Claude\files\.claude\worktrees\agent-<id>`: G7 a66c3d3 (9473), G8 a06773e (9474), G9 a9ff05c (9475),
-  G10+rail a55ab88 (9477), G11a af79ea7 (9478), G11b aa0b9b8 (9479, was starting a shared room kit),
-  G12 a214f96 (9480, also the blank tape strip). Restart two at a time, short brief with the §7 file:line map.
+- Solo from 23.09 (the author: «один он эффективнее») — no porting agents. The ten agents were stopped
+  before any commit; their worktrees are removed. Kept drafts in the session scratchpad: `agent-G5G6/
+  tracked.patch` (19e-clouds rewritten as density bakers, 42 KB, the GPU air module not started) and
+  `agent-G11b/src__24cf-gpu-rooms.js` (a shared room kit, 5 KB). G12's tape fix is merged: the paper shows
+  before the first two samples (the strip was blank for three seconds — not a GPU bug).
+- Order: G2 → G14, one at a time, each closed by a pair and a line of gain.
 - Merge each: `build.ps1`, `python docs/shot.py <scenes> --look --tag gpu`, 0 `gpu.errs`, pair with
   `scratchpad/mainref/docs/shots/main_<scene>.png`, one line of what got better, commit, strike from PLAN §0.
 - Next after G2+G3 merges: G4 (system view on top, shares `17-mode-system.js`), port 9481; then G14.
