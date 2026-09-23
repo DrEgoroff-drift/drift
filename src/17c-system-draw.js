@@ -392,6 +392,8 @@ function stationArt(key,s,V,S,ty,lx,ly){
     ctx.save();ctx.translate(R,R);ctx.scale(s,s);
     drawStationBody(V,S,ty);
     ctx.restore();
+    /* на видеокарте свет кладёт gpuStation по рельефу — здесь только голый корпус */
+    if(GPU.on)return;
     ctx.globalCompositeOperation="source-atop";
     const lg=ctx.createLinearGradient(R+lx*R,R+ly*R,R-lx*R,R-ly*R);
     lg.addColorStop(0,"rgba(255,236,208,.44)");
@@ -414,6 +416,53 @@ function stationArt(key,s,V,S,ty,lx,ly){
   ST_ART.set(key,art);
   return art;
 }
+/* ── станция на видеокарте (G4) ──
+   Корпус тот же (выпечка drawStationBody), но свет на нём — от звезды по рельефу,
+   как на корабле (gpuHullLight), а не плоский градиент с обводкой по освещённой
+   половине: маска выпечки читается рельефом, кромка горит только там, где борт
+   смотрит на звезду, тень идёт перепадом через всё тело, огни и окна светят сами.
+   Собственный свет станции — гауссово пятно под корпусом, а не кольца градиента. */
+const GST=new Float32Array(16);
+const GST_WGSL=`
+fn sa(uv:vec2f,d:vec2f)->vec2f{
+  return vec2f(textureSampleLevel(t0,smp,uv+vec2f(d.x,0.),0.).a-textureSampleLevel(t0,smp,uv-vec2f(d.x,0.),0.).a,
+               textureSampleLevel(t0,smp,uv+vec2f(0.,d.y),0.).a-textureSampleLevel(t0,smp,uv-vec2f(0.,d.y),0.).a);}
+fn field(p:vec2f,uv0:vec2f)->vec4f{
+  let V=fu.v;let c=V[0].xy;let R=V[0].z;let s=V[0].w;let sd=normalize(V[1].xy);let col=V[2].rgb;
+  let dp=p-c;let rr=length(dp);
+  /* свой свет станции: тёплое гауссово пятно, окна и прожекторы */
+  let gl=vec3f(1.,.84,.59)*(exp(-(rr*rr)/(R*R*.12))*.22+exp(-rr/(R*.5))*.07);
+  if(rr>R*1.2){return vec4f(gl,0.);}
+  let uv=(dp/R+1.)*.5;
+  if(any(uv<vec2f(0.))||any(uv>vec2f(1.))){return vec4f(gl,0.);}
+  let c4=textureSampleLevel(t0,smp,uv,0.);let a=c4.a;
+  if(a<.01){return vec4f(gl,0.);}
+  let u1=vec2f(.5/R);
+  let L=normalize(vec3f(sd,.3));
+  let g=-sa(uv,u1*1.1);let tl=clamp(length(g),0.,.98);
+  let n=vec3f(g/max(length(g),1e-4)*tl,sqrt(1.-tl*tl));
+  let gb=-(sa(uv,u1*3.*s)*.5+sa(uv,u1*8.*s)*.5);let tb=clamp(length(gb)*1.2,0.,.9);
+  let nb=vec3f(gb/max(length(gb),1e-4)*tb,sqrt(1.-tb*tb));
+  let side=dot(dp,sd)/R;
+  let rgb=c4.rgb/max(a,1e-3);let mx=max(rgb.r,max(rgb.g,rgb.b));let sat=(mx-min(rgb.r,min(rgb.g,rgb.b)))/max(mx,1e-3);
+  let own=1.-smoothstep(.3,.55,sat*mx);
+  let rim=pow(max(dot(n,L),0.),3.)*pow(1.-n.z,1.5);
+  let body=max(dot(nb,L),0.)*(1.-nb.z)*.35+max(side,0.)*.12;
+  let away=max(-dot(nb.xy,sd),0.)*(1.-nb.z);
+  let dark=clamp(.45*smoothstep(-.1,.9,-side)+.25*away,0.,.55)*own;
+  let lf=smoothstep(-.2,.8,side)*own;
+  let lit=col*(rim*1.1+body)*own*a;
+  /* плёнка света звезды на обшивке: тёмный грунт иначе тонет в космосе целиком */
+  let base=mix(c4.rgb,mix(vec3f(1.),col,.3)*a,(.12+.28*lf)*own);
+  return vec4f(base*(1.-dark)+lit+gl*(1.-a),a);
+}`;
+function gpuStation(art,x,y,s,lx,ly){
+  const pass=gpuScene();if(!pass)return false;
+  const c=(typeof starRGB==="function")?starRGB():[255,244,214],m=Math.max(1,c[0],c[1],c[2]);
+  const U=GST;U[0]=x;U[1]=y;U[2]=art.R;U[3]=s;U[4]=lx;U[5]=ly;U[8]=c[0]/m;U[9]=c[1]/m;U[10]=c[2]/m;U[11]=1;
+  gpuField(pass,"gst",GST_WGSL,U,[gpuCanvasTex(art.cn)]);
+  return true;
+}
 function drawStation(x,y,Z){
   /* ── станция крупнее корабля, потому что корабль в неё заходит (M242) ──
      На увеличении торговый узел с шестью модулями был 170 px, а корабль рядом
@@ -424,7 +473,7 @@ function drawStation(x,y,Z){
      Самая яркая рукотворная вещь в системе не давала вокруг себя ничего:
      ни ореола, ни отблеска. Мягкое пятно её собственного света кладётся ДО
      корпуса — тогда оно читается свечением окон и прожекторов, а не нимбом. */
-  {
+  if(!GPU.on){
     const R=70*s;
     const gg=ctx.createRadialGradient(x,y,0,x,y,R);
     gg.addColorStop(0,"rgba(255,214,150,.16)");
@@ -437,9 +486,9 @@ function drawStation(x,y,Z){
   let lx=-(S.x||0),ly=-(S.y||0);const ln=Math.hypot(lx,ly);
   if(ln<1e-6){lx=-.86;ly=-.51;}else{lx/=ln;ly/=ln;}   /* пока станция не встала на орбиту — свет слева сверху */
   const nb=(typeof bldBuiltHere==="function")?bldBuiltHere(G.sys).length:0;
-  const key=(G.sys.key||"?")+"|"+ty+"|"+nb+"|"+(Math.round(s*4)/4)+"|"+Math.floor(G.t/18)+"|"+SCK;
+  const key=(G.sys.key||"?")+"|"+ty+"|"+nb+"|"+(Math.round(s*4)/4)+"|"+Math.floor(G.t/18)+"|"+SCK+"|"+(GPU.on?"g":"c");
   const art=stationArt(key,s,V,S,ty,lx,ly);
-  ctx.drawImage(art.cn,x-art.R,y-art.R,art.R*2,art.R*2);
+  if(!gpuStation(art,x,y,s,lx,ly))ctx.drawImage(art.cn,x-art.R,y-art.R,art.R*2,art.R*2);
   /* факельная труба живёт поверх выпечки (M325): в спрайте пламя стоит по
      18 тактов, а факел — единственное на станции, что обязано плясать */
   if(ty==="indust"){

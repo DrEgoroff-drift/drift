@@ -95,7 +95,7 @@ function drawShuttleArc(t,zx,zy,Z){
   ctx.save();ctx.translate(x,y);ctx.rotate(a);ctx.scale(s*t.k,s*t.k);
   /* огонь сопла и грунт — завода машины (M454): белый капсульный челнок
      Компании и охристый Рассвета различаются и в точку */
-  ctx.fillStyle=(t.mk&&typeof makerGround==="function")?rgba(mixc([35,43,54],makerGround(t.mk),.35),1):"#232b36";ctx.strokeStyle="rgba(0,0,0,.6)";ctx.lineWidth=.6;
+  ctx.fillStyle=(t.mk&&typeof makerGround==="function")?rgba(mixc([35,43,54],makerGround(t.mk),.7),1):"#232b36";ctx.strokeStyle="rgba(0,0,0,.6)";ctx.lineWidth=.6;
   ctx.beginPath();ctx.moveTo(4,0);ctx.lineTo(-3,-2);ctx.lineTo(-4,0);ctx.lineTo(-3,2);ctx.closePath();ctx.fill();ctx.stroke();
   ctx.fillStyle="rgba(200,220,240,.5)";ctx.fillRect(-1,-2.2,2.5,.8);
   ctx.restore();
