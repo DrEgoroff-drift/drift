@@ -15,10 +15,43 @@ quality, the ship stays under the finger.
 **Release checkpoints** — a push after the whole run: after the phone tests, after stage 2 («чья
 земля»), after stage 3 («дорога»), then per stage.
 
+## 0. The engine — everything on WebGPU, first (the author, 23.09)
+
+«Первое — на новый движок, потом по плану.» WebGPU only, Canvas 2D as the brush for text and vector shapes,
+no fallback, and every ported layer better than before, not the same. The recipe — the frame, the one rule of
+layer order, the kit, the porting checklist — is `docs/DESIGN-gpu.md`; the decision is in `docs/DECISIONS.md`.
+Built: the core and post pass (08b), the layer kit (08c), the space backdrop (16g), `docs/shot.py` on the GPU.
+
+- [ ] **G2 the system view under the planets:** orbits and their comet tails, the belt ring, the star in every
+  kind (single, binary, giant, dwarf, neutron, hole) — limb darkening, granulation, a living corona, the bleed.
+- [ ] **G3 planets and moons:** spheres lit by their star — terminator, atmosphere rim, rings with their shadow,
+  night lights on held worlds; the labels stay 2D.
+- [ ] **G4 the system view on top:** ships as sprites from the hull bake, lit from the star; wake, trail, exhaust
+  and heat haze on the GPU; combat flashes, drones, traffic, the edge wall.
+- [ ] **G5 landing and surface, the air:** sky, sun, live clouds, haze, shafts, weather in depth, the night with
+  its lamps, the water mirror, the grade.
+- [ ] **G6 landing and surface, the bodies:** ground chunks and far ridges as textures; deco, flora and fauna as
+  sprites where order needs it; the plants' wind on the GPU.
+- [ ] **G7 cave and mine:** tiles as textures, darkness and lamp light per pixel, ore glows, dust.
+- [ ] **G8 the belt:** the asteroids in real 3D (`gpuScene3D`, depth, per-pixel light), the backdrop in one pass.
+- [ ] **G9 the scoop:** the gas giant as a live flowing field.
+- [ ] **G10 the map:** the galaxy backdrop, stars as points, the rails; the text stays 2D.
+- [ ] **G11 rooms:** base, home, winter, spa, raid, HQ, cantina, wanderer — still parts baked, light and air on
+  the GPU.
+- [ ] **G12 road, rail ride, cockpit:** the road's CPU bloom field (26 Hz `putImageData`) becomes a shader.
+- [ ] **G13 tests and tools:** the harness waits for the device; pixel suites and detectors read
+  `gpuSnapshot()`; goldens re-accepted; GPU flags in `test.ps1` and CI; `shot.ps1`, `pageshot.ps1` and the
+  stand server removed — the `mk*.ps1` sheets, `g11` and `lookrun` go through `docs/shot.py`; `mkshots` and
+  `mksiteshots` without `--disable-gpu`.
+- [ ] **G14 the rest:** the postcard painter on the GPU if it reads better; the `gfx` options of the 2D era
+  (resolution tricks, `draw`) reviewed — keep what still means something.
+- **Gate:** every mode drawn by WebGPU with zero validation errors on the laptop and the S23; each mode's
+  before/after sheet shown to the author; the phone cadence of §1 at least as good as before; the whole run green.
+
 ## 1. Phone tests — smooth flight on the S23
 
-A neighbouring session is moving the renderer to WebGL (the author, 23.09) — the raster numbers of §1
-and §2 are measured again on its build before anything is cut.
+The renderer is moving to WebGPU (§0, the author 23.09) — the raster numbers of §1 and §2 are measured
+again on the GPU build before anything is cut.
 
 The author 18.09: «на тел дергается все прогоны … плавный полет нужен»; «потом пройдемся все
 померяем, отдельно веха тесты на тел». Known: with the stick under the finger 80–83 % of frames make

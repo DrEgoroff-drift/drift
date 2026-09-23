@@ -5,6 +5,14 @@ forks the author decided or let us decide. Not a plan (that is `PLAN.md` — onl
 a record (what is done: `PATCHNOTES.md` by version, `docs/done/` for the old plan bodies). Moved here from
 `PLAN.md` verbatim on 2026-09-23.
 
+## The renderer (the author, 23.09)
+
+- **WebGPU draws the frame; Canvas 2D is the brush** for text and vector shapes, live on the transparent `#c` or
+  baked into textures. No 2D fallback: without WebGPU the game names the browsers that can play.
+- **Graphics only get better.** A ported layer is judged against the old one side by side; the same look is
+  the floor, the aim is better within the laws below. The world stays math in JS; only the painting moved.
+- **Order:** the engine first, then the plan. Recipe and layer order: `docs/DESIGN-gpu.md`.
+
 ## Cross-cutting rules
 
 
