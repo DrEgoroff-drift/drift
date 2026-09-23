@@ -47105,111 +47105,9 @@ function wakeStep(dt){
     WAKE.push({x:ex,y:ey,s,t:tp,b:wakeBurst,k:k*tp.w,max:life,life,vx:Math.cos(na)*push,vy:Math.sin(na)*push});
   }
 }
-/* ══════════ нить кильватера — ступенями спада, а не отрезками (0.2) ══════════
-   Каждый отрезок нити ставился СВОЕЙ обводкой — две на штуку, ядро и ореол.
-   На крейсерской в очереди до двух с половиной тысяч точек, то есть порядка пяти
-   тысяч обводок за кадр: замер на S23 отдавал drawWake 31–56 мс на секунду — больше
-   всего в игре. При этом яркость и толщина меняются вдоль нити МЕДЛЕННО: вся
-   разница внутри одной восьмой жизни — полпикселя толщины и пара единиц альфы,
-   глаз такого не видит. Поэтому отрезки собираются в ВОСЕМЬ ступеней по возрасту,
-   и каждая ступень — ОДИН путь: до шестнадцати обводок на нить вместо двух на
-   отрезок. Путь после stroke() не сбрасывается — ореол и ядро идут по одному
-   и тому же, второй раз его не строим.
-
-   Геометрия кладётся в постоянные плоские массивы (растут один раз и живут):
-   прежний проход рождал на каждый отрезок по две строки rgba и по паре массивов
-   на середины — именно они стояли в самых длинных провалах сборщика мусора. */
-/* Шаг ступени — по ЯРКОСТИ, а не по возрасту (0.2 fix, Дизайнер 17.09).
-   Альфа — четвёртая степень возраста, поэтому ровные ведра по возрасту давали
-   у сопла шаг в десятки единиц яркости, а на хвосте — почти ничего: лента
-   читалась плиткой (профиль вдоль хвоста — пила с провалами через 30 px), а
-   дальний конец держался ярче, чем на main: средняя по широкому ведру возраста
-   выше яркости самого хвоста. Теперь ведро берётся по доле от пиковой альфы,
-   шаг один на всю нить — шестнадцатая пика, то есть стык соседей не выше
-   шести процентов яркости — ниже порога глаза (допуск Дизайнера ±8 единиц). */
-const WAKE_BUCK=32;
-const WAKE_A1MAX=.18, WAKE_A2MAX=.56;   /* пики ореола и ядра при u=1, kk=1 */
 const TRAIL_AMAX=.8;   /* пик альфы ленты при u=1 */
 const TRAIL_HALO={w:3,a:.24,core:.7};   /* ореол ленты: ширина и альфа от ядра; ядро уже, чем было */
-const wkX0=[],wkY0=[],wkCX=[],wkCY=[],wkX1=[],wkY1=[],wkB=[];
-const wkAcc=new Float64Array(WAKE_BUCK*5);   /* на ступень: sum a1, a2, w1, w2, n */
-const wakeLanes=new Map();
-function drawWake(zx,zy,Z){
-  if(!WAKE.length)return;
-  const SZ=shipZ(Z);
-  const col=mixc([196,222,255],hex2rgb(shipData(G.shipId).col),.25);
-  for(const a of wakeLanes.values())a.length=0;
-  for(const t of WAKE){
-    const k=t.s+"/"+t.b+"/"+t.t.x;
-    let a=wakeLanes.get(k);
-    if(!a)wakeLanes.set(k,a=[]);
-    a.push(t);
-  }
-  /* Первый проход был карандашной линией: волосок, при отъезде неотличимый
-     от колец орбит. Теперь нить — ТЕЛО в два слоя: тонкое ясное ядро у кромки
-     и ореол, который ширится с возрастом (среда расплывается). Спад квадратичный. */
-  /* Автор (12.09): «без точечек, давай плавно». Моты сняты: на увеличении они
-     читались бусинами на нити. Нить идёт квадратичными дугами через середины
-     отрезков — стык двух дуг касательный, углов на повороте нет; каждая ступень
-     красится своей долей жизни, так что спад к хвосту остаётся. */
-  /* ступени — ОБЩИЕ на все дорожки (0.455, замер на ноуте автора): у дорожек один
-     возраст и одни ступени, а stroke на ступень КАЖДОЙ дорожки давал до 384 проходов
-     толстой кривой за кадр — 100 мс/с занятости встроенной видеокарты из ~570, при
-     сотне закрашенных пикселей. Сведённые, они отличаются на ≤8 из 255 яркости */
-  let n=0;
-  wkAcc.fill(0);
-  for(const arr of wakeLanes.values()){
-    if(arr.length<2)continue;
-    for(let i=1;i<arr.length;i++){
-      const a=arr[i-1],b2=arr[i],c=arr[i+1];
-      const ax=zx(a.x),ay=zy(a.y),bx=zx(b2.x),by=zy(b2.y);
-      const x0=i===1?ax:(ax+bx)*.5,y0=i===1?ay:(ay+by)*.5;
-      let x1,y1;
-      if(c){x1=(bx+zx(c.x))*.5;y1=(by+zy(c.y))*.5;}else{x1=bx;y1=by;}
-      if((x0<-60&&x1<-60)||(x0>W+60&&x1>W+60)||(y0<-60&&y1<-60)||(y0>H+60&&y1>H+60))continue;
-      const u=clamp((a.life/a.max+b2.life/b2.max)*.5,0,1),kk=(a.k+b2.k)*.5;
-      /* ядро гаснет к половине жизни (D2, 18.09): с кубом нить на ×1 держала
-         яркость до края экрана и читалась линейкой; ореол живёт дольше ядра */
-      const u4=u*u*u*u, f1=u*u*.08+u4*.10, f2=u4*.22+u4*u4*.34;
-      /* ведро — по ядру: именно оно читается как рисунок нити, ореол широк
-         и мягок. Доля kk сокращается — она одна на всю дорожку */
-      let b=((u+f2/WAKE_A2MAX)*.5*WAKE_BUCK)|0;if(b>=WAKE_BUCK)b=WAKE_BUCK-1;if(b<0)b=0;
-      wkX0[n]=x0;wkY0[n]=y0;wkCX[n]=i===1?x0:bx;wkCY[n]=i===1?y0:by;wkX1[n]=x1;wkY1[n]=y1;wkB[n]=b;n++;
-      /* в ступень складываем ГОТОВЫЕ яркость и толщину, а не возраст: средняя
-         от возраста и возраст от средней — разные числа, и на самой яркой
-         ступени вторая гасила ядро у кромки почти на треть */
-      wkAcc[b*5]+=kk*f1;
-      wkAcc[b*5+1]+=kk*f2;
-      wkAcc[b*5+2]+=(2.2+(1-u)*4.5)*SZ;
-      wkAcc[b*5+3]+=Math.max(.8,(1+(1-u)*.6)*SZ);
-      wkAcc[b*5+4]++;
-    }
-  }
-  ctx.save();
-  ctx.globalCompositeOperation="lighter";
-  ctx.lineCap="butt";ctx.lineJoin="round";
-  {
-    for(let b=0;b<WAKE_BUCK;b++){
-      const cnt=wkAcc[b*5+4];
-      if(!cnt)continue;
-      const a1=wkAcc[b*5]/cnt,a2=wkAcc[b*5+1]/cnt,w1=wkAcc[b*5+2]/cnt,w2=wkAcc[b*5+3]/cnt;
-      ctx.beginPath();
-      for(let i=0;i<n;i++){
-        if(wkB[i]!==b)continue;
-        ctx.moveTo(wkX0[i],wkY0[i]);ctx.quadraticCurveTo(wkCX[i],wkCY[i],wkX1[i],wkY1[i]);
-      }
-      ctx.strokeStyle=rgba(col,a1);
-      ctx.lineWidth=w1;
-      ctx.stroke();
-      /* ядро гаснет кубом: у кромки ясное, на полпути уже вполсилы — иначе
-         на ×1 нити читались ровными канатами до края экрана. Путь тот же */
-      ctx.strokeStyle=rgba(col,a2);
-      ctx.lineWidth=w2;
-      ctx.stroke();
-    }
-  }
-  ctx.restore();
-}
+const wakeLanes=new Map();   /* дорожки кильватера — рисует gpuWake (16ga) */
 function trailStep(dt,thrusting,turning,braking,idle){
   /* поддержание (D2, 18.09): помощь держит ход, маршевый в нуле — сопла тлеют
      слабым ровным факелом: короче и тоньше, той же лентой и той же очередью,
@@ -47310,7 +47208,7 @@ function trailStep(dt,thrusting,turning,braking,idle){
   }
 }
 function drawTrail(zx,zy,Z){
-  drawWake(zx,zy,Z);   /* кильватер под шлейфом и под корпусом */
+  gpuWake(zx,zy,Z);   /* кильватер под шлейфом и под корпусом (16ga) */
   gpuTrail(zx,zy,Z);   /* ленты по соплам, дымки и корешки — на видеокарте (16ga) */
 }
 
@@ -49029,23 +48927,48 @@ function gpuSpaceTitle(c){
    · возраст — у каждой точки свой, без двадцати четырёх ступеней спада;
    · поперёк — гауссов профиль газа: тонкое ядро и широкий ореол одной формулой,
      а не два stroke с резкой кромкой. */
-const GTR={f:new Float32Array(8*6*256),n:0,u:new Float32Array(8)};
+const GTR={f:new Float32Array(12*6*256),n:0,u:new Float32Array(8)};
 const GTR_WGSL=`
 struct U{a:vec4f,b:vec4f};
 @group(0) @binding(0) var<uniform> u:U;
 @group(0) @binding(1) var<storage,read> vb:array<vec4f>;
-struct VO{@builtin(position) p:vec4f,@location(0) s:f32,@location(1) a:f32,@location(2) c:vec3f,@location(3) k:f32};
+struct VO{@builtin(position) p:vec4f,@location(0) s:f32,@location(1) a:f32,@location(2) c:vec3f,@location(3) k:f32,@location(4) h:f32,@location(5) w:vec3f};
 @vertex fn vs(@builtin(vertex_index) vi:u32)->VO{
-  let v0=vb[vi*2u];let v1=vb[vi*2u+1u];let q=v0.xy*u.b.x;
+  let v0=vb[vi*3u];let v1=vb[vi*3u+1u];let q=v0.xy*u.b.x;
   var o:VO;o.p=vec4f(q.x/u.a.x*2.-1.,1.-q.y/u.a.y*2.,0.,1.);
-  o.s=v0.z;o.a=v0.w;o.c=v1.rgb;o.k=v1.w;return o;}
+  let v2=vb[vi*3u+2u];o.s=v0.z;o.a=v0.w;o.c=v1.rgb;o.k=v1.w;o.h=v2.x;o.w=v2.yzw;return o;}
+fn th(p:vec2f)->f32{var q=fract(vec3f(p.xyx)*.1031);q=q+dot(q,q.yzx+33.33);return fract((q.x+q.y)*q.z);}
+fn tn(p:vec2f)->f32{let i=floor(p);let f=fract(p);let w=f*f*(3.-2.*f);
+  return mix(mix(th(i),th(i+vec2f(1.,0.)),w.x),mix(th(i+vec2f(0.,1.)),th(i+vec2f(1.,1.)),w.x),w.y);}
 @fragment fn fs(i:VO)->@location(0) vec4f{
-  let s=i.s;let core=exp(-(s*s)/(i.k*i.k)*1.6);let halo=exp(-s*s*2.)*.3;
-  let I=i.a*(core+halo);return vec4f(i.c*I,I);}`;
-function gtrPush(x,y,s,a,c,k){
-  let f=GTR.f;const o=GTR.n*8;
-  if(o+8>f.length){const g=new Float32Array(f.length*2);g.set(f);f=GTR.f=g;}
-  f[o]=x;f[o+1]=y;f[o+2]=s;f[o+3]=a;f[o+4]=c[0]/255;f[o+5]=c[1]/255;f[o+6]=c[2]/255;f[o+7]=k;GTR.n++;
+  let s=i.s;var core=exp(-(s*s)/(i.k*i.k)*1.6);var halo=exp(-s*s*2.);
+  /* потревоженная среда: клочья, неподвижные в мире (w.xy — место в мире), медленно текут */
+  if(i.w.z>0.){let q=i.w.xy+vec2f(s*.35,0.);let tt=u.b.y*.05;
+    let n=tn(q+vec2f(tt,0.))*.6+tn(q*2.3-vec2f(0.,tt*1.7))*.4;
+    halo=halo*mix(1.,.2+1.6*n*n,i.w.z);core=core*mix(1.,.7+.6*n,i.w.z*.5);}
+  let I=i.a*core+i.h*halo;return vec4f(i.c*I,I);}`;
+/* вершина ленты: место, поперечная координата s∈[-1,1], альфа ядра, цвет, доля ядра
+   в ширине, альфа ореола */
+function gtrPush(x,y,s,a,c,k,h,wx,wy,wn){
+  let f=GTR.f;const o=GTR.n*12;
+  if(o+12>f.length){const g=new Float32Array(f.length*2);g.set(f);f=GTR.f=g;}
+  f[o]=x;f[o+1]=y;f[o+2]=s;f[o+3]=a;f[o+4]=c[0]/255;f[o+5]=c[1]/255;f[o+6]=c[2]/255;f[o+7]=k;f[o+8]=h;f[o+9]=wx||0;f[o+10]=wy||0;f[o+11]=wn||0;GTR.n++;
+}
+/* узлы одной дорожки → полоса треугольников с общими нормалями в узлах */
+function gtrLane(A,B){
+  const off=(A.x<-60&&B.x<-60)||(A.x>W+60&&B.x>W+60)||(A.y<-60&&B.y<-60)||(A.y>H+60&&B.y>H+60);
+  if(off)return;
+  const a0=(N,s)=>gtrPush(N.x+N.nx*s,N.y+N.ny*s,s,N.a,N.col,N.k,N.h,N.wx,N.wy,N.wn);
+  a0(A,-1);a0(A,1);a0(B,1);a0(A,-1);a0(B,1);a0(B,-1);
+}
+function gtrDraw(pass,key){
+  if(!GTR.n)return;
+  const U=GPUBufferUsage,d=GPU.dev;
+  const ub=gpuBuf("gtr.u",32,U.UNIFORM|U.COPY_DST),uu=GTR.u;uu[0]=GPU.bw;uu[1]=GPU.bh;uu[2]=W;uu[3]=H;uu[4]=DPR;uu[5]=G.t;
+  d.queue.writeBuffer(ub,0,uu);
+  const vb=gpuBuf(key+".v",GTR.f.byteLength,U.STORAGE|U.COPY_DST);d.queue.writeBuffer(vb,0,GTR.f,0,GTR.n*12);
+  const P=gpuPipe("gtr",GTR_WGSL,"add");
+  pass.setPipeline(P);pass.setBindGroup(0,gpuBind(key,P,[ub,vb]));pass.draw(GTR.n);
 }
 /* ленты горячих струй; холодные дымки маневровых и корешки у сопел — кругами кита */
 function gpuTrail(zx,zy,Z){
@@ -49063,32 +48986,19 @@ function gpuTrail(zx,zy,Z){
     const hw=(Math.max(1,t.r*SZ*(2.4-u*1.3)*CW*1.35)*TRAIL_HALO.w*.5+1)*(1+(1-u)*1.6);
     const p=arr[Math.max(0,i-1)],q=arr[Math.min(arr.length-1,i+1)];
     let dx=zx(q.x)-zx(p.x),dy=zy(q.y)-zy(p.y);const l=Math.hypot(dx,dy)||1;dx/=l;dy/=l;
-    return {x:zx(t.x),y:zy(t.y),nx:-dy*hw,ny:dx*hw,a,col};
+    return {x:zx(t.x),y:zy(t.y),nx:-dy*hw,ny:dx*hw,a,col,k:K,h:a*.3};
   };
   for(const k in lanes){
     const arr=lanes[k];if(arr.length<2)continue;
     let A=node(arr,0);
     for(let i=1;i<arr.length;i++){
-      const B=node(arr,i);
-      const off=(A.x<-60&&B.x<-60)||(A.x>W+60&&B.x>W+60)||(A.y<-60&&B.y<-60)||(A.y>H+60&&B.y>H+60);
-      if(!off){
-        gtrPush(A.x-A.nx,A.y-A.ny,-1,A.a,A.col,K);gtrPush(A.x+A.nx,A.y+A.ny,1,A.a,A.col,K);gtrPush(B.x+B.nx,B.y+B.ny,1,B.a,B.col,K);
-        gtrPush(A.x-A.nx,A.y-A.ny,-1,A.a,A.col,K);gtrPush(B.x+B.nx,B.y+B.ny,1,B.a,B.col,K);gtrPush(B.x-B.nx,B.y-B.ny,-1,B.a,B.col,K);
-      }
-      A=B;
+      const B=node(arr,i);gtrLane(A,B);A=B;
     }
     /* добела раскалённый корешок у сопла */
     const f=arr[arr.length-1],x=zx(f.x),y=zy(f.y),r=Math.max(.8,f.r*SZ*1.3);
     if(x>-40&&x<W+40&&y>-40&&y<H+40)puffs.push([1,x,y,r,0,0,r*.8,T.core[0],T.core[1],T.core[2],.62]);
   }
-  if(GTR.n){
-    const U=GPUBufferUsage,d=GPU.dev;
-    const ub=gpuBuf("gtr.u",32,U.UNIFORM|U.COPY_DST),uu=GTR.u;uu[0]=GPU.bw;uu[1]=GPU.bh;uu[2]=W;uu[3]=H;uu[4]=DPR;
-    d.queue.writeBuffer(ub,0,uu);
-    const vb=gpuBuf("gtr.v",GTR.f.byteLength,U.STORAGE|U.COPY_DST);d.queue.writeBuffer(vb,0,GTR.f,0,GTR.n*8);
-    const P=gpuPipe("gtr",GTR_WGSL,"add");
-    pass.setPipeline(P);pass.setBindGroup(0,gpuBind("gtr",P,[ub,vb]));pass.draw(GTR.n);
-  }
+  gtrDraw(pass,"gtr");
   /* холодные струи маневровых — мягкие дымки */
   for(const t of TRAIL){
     if(t.hot)continue;
@@ -49098,6 +49008,39 @@ function gpuTrail(zx,zy,Z){
     puffs.push([1,x,y,rr,0,0,rr*.9,205,232,246,u*.22]);
   }
   if(puffs.length)gpuShapes(pass,puffs,{blend:"add"});
+}
+/* ── кильватер (G4) ──
+   Те же дорожки WAKE (борт/всплеск/кромка), тот же цвет, возраст и спад, что у
+   2D-нити; лучше, чем тридцать две ступени яркости обводками:
+   · у каждого узла свой возраст — ни ступеней по яркости, ни шва между ними;
+   · ядро и ореол — одна гауссова лента: ясная нить у кромки корпуса и мягкая
+     среда, расплывающаяся с возрастом, без жёсткого края stroke;
+   · среда потревожена: ореол рвётся на клочья, привязанные к месту в мире (корабль
+     проходит сквозь них, а не тащит узор за собой), и клочья медленно текут. */
+function gpuWake(zx,zy,Z){
+  if(!WAKE.length)return;
+  const pass=gpuScene();if(!pass)return;
+  const SZ=shipZ(Z),col=mixc([196,222,255],hex2rgb(shipData(G.shipId).col),.25);
+  const lanes=wakeLanes;
+  for(const a of lanes.values())a.length=0;
+  for(const t of WAKE){const k=t.s+"/"+t.b+"/"+t.t.x;let a=lanes.get(k);if(!a)lanes.set(k,a=[]);a.push(t);}
+  GTR.n=0;
+  const node=(arr,i)=>{
+    const t=arr[i],u=clamp(t.life/t.max,0,1),u4=u*u*u*u;
+    /* те же пики, что у 2D: ореол f1, ядро f2 (ядро гаснет к половине жизни) */
+    const f1=(u*u*.08+u4*.10)*t.k,f2=(u4*.22+u4*u4*.34)*t.k;
+    const w1=(2.2+(1-u)*4.5)*SZ,w2=Math.max(.8,(1+(1-u)*.6)*SZ);
+    const hw=w1*1.25+1;
+    const p=arr[Math.max(0,i-1)],q=arr[Math.min(arr.length-1,i+1)];
+    let dx=zx(q.x)-zx(p.x),dy=zy(q.y)-zy(p.y);const l=Math.hypot(dx,dy)||1;dx/=l;dy/=l;
+    return {x:zx(t.x),y:zy(t.y),nx:-dy*hw,ny:dx*hw,a:f2*1.25,col,k:w2*.5/hw,h:f1*2.3,wx:t.x*.07,wy:t.y*.07,wn:.9};
+  };
+  for(const arr of lanes.values()){
+    if(arr.length<2)continue;
+    let A=node(arr,0);
+    for(let i=1;i<arr.length;i++){const B=node(arr,i);gtrLane(A,B);A=B;}
+  }
+  gtrDraw(pass,"gwk");
 }
 /* ── факел сопла (G4) ──
    Та же геометрия (сопла в масштабе корпуса, длина от пульса, косметика «Сороки»:
@@ -49218,7 +49161,7 @@ fn field(p:vec2f,uv0:vec2f)->vec4f{
   let lit=col*(rim*1.1+body)*a*fade*k;
   /* тень: перепад через весь корпус, дальний скат — глубже */
   let away=max(-dot(nb.xy,sd),0.)*(1.-nb.z);
-  let dark=clamp(.66*smoothstep(-.4,.6,-side)+.3*away,0.,.82)*a*fade*k;
+  let dark=clamp(.66*smoothstep(-.4,.6,-side)+.3*away,0.,.7)*a*fade*k;
   return vec4f(lit,dark);
 }`;
 function gpuHullLight(x,y,sx,sy,Z,sys){

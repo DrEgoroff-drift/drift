@@ -55,8 +55,11 @@ The author, 23.09.2026: «переноси все на новые техноло
   star lying almost in the plane (z .22); the rim is cos³ and only where the relief is steep, the side warms
   by its wide normal, and the shadow is a gradient across the whole hull (up to .82) deepened on the far slope;
   pair `g4e_crop.png`. Scene js (`freeze.js`, `trail.js`) also `CHIP_POS.clear()` — stale
-  chip smoothing after a teleport looked like overlapping chips.
-  **Next in G4:** `drawWake` (16-flight:384), combat (`drawCombat`, 13-pirates:349), drones, traffic, station
+  chip smoothing after a teleport looked like overlapping chips. The wake is `gpuWake` (16ga) on the same ribbon
+  as the trail (`gtrLane`/`gtrDraw`, vertex = 3 vec4: core alpha, core share, halo alpha, world place, tatter
+  weight); its halo tears into world-fixed wisps that drift slowly; the 2D bucketed `drawWake` is gone. Pair
+  `g4f_crop.png`, scene `wake.js` (synthetic WAKE, two lanes).
+  **Next in G4:** combat (`drawCombat`, 13-pirates:349), drones, traffic, station
   (`drawStation`, 17c), barges; everything after the planet loop in drawSystem except the above is still 2D.
   A GPU draw after `gpuHullLight` must use `gpuOver`, not `gpuScene` (the scene pass is closed by then).
 - Merge each: `build.ps1`, `python docs/shot.py <scenes> --look --tag gpu`, 0 `gpu.errs`, pair with

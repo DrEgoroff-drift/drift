@@ -6,23 +6,48 @@
    · возраст — у каждой точки свой, без двадцати четырёх ступеней спада;
    · поперёк — гауссов профиль газа: тонкое ядро и широкий ореол одной формулой,
      а не два stroke с резкой кромкой. */
-const GTR={f:new Float32Array(8*6*256),n:0,u:new Float32Array(8)};
+const GTR={f:new Float32Array(12*6*256),n:0,u:new Float32Array(8)};
 const GTR_WGSL=`
 struct U{a:vec4f,b:vec4f};
 @group(0) @binding(0) var<uniform> u:U;
 @group(0) @binding(1) var<storage,read> vb:array<vec4f>;
-struct VO{@builtin(position) p:vec4f,@location(0) s:f32,@location(1) a:f32,@location(2) c:vec3f,@location(3) k:f32};
+struct VO{@builtin(position) p:vec4f,@location(0) s:f32,@location(1) a:f32,@location(2) c:vec3f,@location(3) k:f32,@location(4) h:f32,@location(5) w:vec3f};
 @vertex fn vs(@builtin(vertex_index) vi:u32)->VO{
-  let v0=vb[vi*2u];let v1=vb[vi*2u+1u];let q=v0.xy*u.b.x;
+  let v0=vb[vi*3u];let v1=vb[vi*3u+1u];let q=v0.xy*u.b.x;
   var o:VO;o.p=vec4f(q.x/u.a.x*2.-1.,1.-q.y/u.a.y*2.,0.,1.);
-  o.s=v0.z;o.a=v0.w;o.c=v1.rgb;o.k=v1.w;return o;}
+  let v2=vb[vi*3u+2u];o.s=v0.z;o.a=v0.w;o.c=v1.rgb;o.k=v1.w;o.h=v2.x;o.w=v2.yzw;return o;}
+fn th(p:vec2f)->f32{var q=fract(vec3f(p.xyx)*.1031);q=q+dot(q,q.yzx+33.33);return fract((q.x+q.y)*q.z);}
+fn tn(p:vec2f)->f32{let i=floor(p);let f=fract(p);let w=f*f*(3.-2.*f);
+  return mix(mix(th(i),th(i+vec2f(1.,0.)),w.x),mix(th(i+vec2f(0.,1.)),th(i+vec2f(1.,1.)),w.x),w.y);}
 @fragment fn fs(i:VO)->@location(0) vec4f{
-  let s=i.s;let core=exp(-(s*s)/(i.k*i.k)*1.6);let halo=exp(-s*s*2.)*.3;
-  let I=i.a*(core+halo);return vec4f(i.c*I,I);}`;
-function gtrPush(x,y,s,a,c,k){
-  let f=GTR.f;const o=GTR.n*8;
-  if(o+8>f.length){const g=new Float32Array(f.length*2);g.set(f);f=GTR.f=g;}
-  f[o]=x;f[o+1]=y;f[o+2]=s;f[o+3]=a;f[o+4]=c[0]/255;f[o+5]=c[1]/255;f[o+6]=c[2]/255;f[o+7]=k;GTR.n++;
+  let s=i.s;var core=exp(-(s*s)/(i.k*i.k)*1.6);var halo=exp(-s*s*2.);
+  /* потревоженная среда: клочья, неподвижные в мире (w.xy — место в мире), медленно текут */
+  if(i.w.z>0.){let q=i.w.xy+vec2f(s*.35,0.);let tt=u.b.y*.05;
+    let n=tn(q+vec2f(tt,0.))*.6+tn(q*2.3-vec2f(0.,tt*1.7))*.4;
+    halo=halo*mix(1.,.2+1.6*n*n,i.w.z);core=core*mix(1.,.7+.6*n,i.w.z*.5);}
+  let I=i.a*core+i.h*halo;return vec4f(i.c*I,I);}`;
+/* вершина ленты: место, поперечная координата s∈[-1,1], альфа ядра, цвет, доля ядра
+   в ширине, альфа ореола */
+function gtrPush(x,y,s,a,c,k,h,wx,wy,wn){
+  let f=GTR.f;const o=GTR.n*12;
+  if(o+12>f.length){const g=new Float32Array(f.length*2);g.set(f);f=GTR.f=g;}
+  f[o]=x;f[o+1]=y;f[o+2]=s;f[o+3]=a;f[o+4]=c[0]/255;f[o+5]=c[1]/255;f[o+6]=c[2]/255;f[o+7]=k;f[o+8]=h;f[o+9]=wx||0;f[o+10]=wy||0;f[o+11]=wn||0;GTR.n++;
+}
+/* узлы одной дорожки → полоса треугольников с общими нормалями в узлах */
+function gtrLane(A,B){
+  const off=(A.x<-60&&B.x<-60)||(A.x>W+60&&B.x>W+60)||(A.y<-60&&B.y<-60)||(A.y>H+60&&B.y>H+60);
+  if(off)return;
+  const a0=(N,s)=>gtrPush(N.x+N.nx*s,N.y+N.ny*s,s,N.a,N.col,N.k,N.h,N.wx,N.wy,N.wn);
+  a0(A,-1);a0(A,1);a0(B,1);a0(A,-1);a0(B,1);a0(B,-1);
+}
+function gtrDraw(pass,key){
+  if(!GTR.n)return;
+  const U=GPUBufferUsage,d=GPU.dev;
+  const ub=gpuBuf("gtr.u",32,U.UNIFORM|U.COPY_DST),uu=GTR.u;uu[0]=GPU.bw;uu[1]=GPU.bh;uu[2]=W;uu[3]=H;uu[4]=DPR;uu[5]=G.t;
+  d.queue.writeBuffer(ub,0,uu);
+  const vb=gpuBuf(key+".v",GTR.f.byteLength,U.STORAGE|U.COPY_DST);d.queue.writeBuffer(vb,0,GTR.f,0,GTR.n*12);
+  const P=gpuPipe("gtr",GTR_WGSL,"add");
+  pass.setPipeline(P);pass.setBindGroup(0,gpuBind(key,P,[ub,vb]));pass.draw(GTR.n);
 }
 /* ленты горячих струй; холодные дымки маневровых и корешки у сопел — кругами кита */
 function gpuTrail(zx,zy,Z){
@@ -40,32 +65,19 @@ function gpuTrail(zx,zy,Z){
     const hw=(Math.max(1,t.r*SZ*(2.4-u*1.3)*CW*1.35)*TRAIL_HALO.w*.5+1)*(1+(1-u)*1.6);
     const p=arr[Math.max(0,i-1)],q=arr[Math.min(arr.length-1,i+1)];
     let dx=zx(q.x)-zx(p.x),dy=zy(q.y)-zy(p.y);const l=Math.hypot(dx,dy)||1;dx/=l;dy/=l;
-    return {x:zx(t.x),y:zy(t.y),nx:-dy*hw,ny:dx*hw,a,col};
+    return {x:zx(t.x),y:zy(t.y),nx:-dy*hw,ny:dx*hw,a,col,k:K,h:a*.3};
   };
   for(const k in lanes){
     const arr=lanes[k];if(arr.length<2)continue;
     let A=node(arr,0);
     for(let i=1;i<arr.length;i++){
-      const B=node(arr,i);
-      const off=(A.x<-60&&B.x<-60)||(A.x>W+60&&B.x>W+60)||(A.y<-60&&B.y<-60)||(A.y>H+60&&B.y>H+60);
-      if(!off){
-        gtrPush(A.x-A.nx,A.y-A.ny,-1,A.a,A.col,K);gtrPush(A.x+A.nx,A.y+A.ny,1,A.a,A.col,K);gtrPush(B.x+B.nx,B.y+B.ny,1,B.a,B.col,K);
-        gtrPush(A.x-A.nx,A.y-A.ny,-1,A.a,A.col,K);gtrPush(B.x+B.nx,B.y+B.ny,1,B.a,B.col,K);gtrPush(B.x-B.nx,B.y-B.ny,-1,B.a,B.col,K);
-      }
-      A=B;
+      const B=node(arr,i);gtrLane(A,B);A=B;
     }
     /* добела раскалённый корешок у сопла */
     const f=arr[arr.length-1],x=zx(f.x),y=zy(f.y),r=Math.max(.8,f.r*SZ*1.3);
     if(x>-40&&x<W+40&&y>-40&&y<H+40)puffs.push([1,x,y,r,0,0,r*.8,T.core[0],T.core[1],T.core[2],.62]);
   }
-  if(GTR.n){
-    const U=GPUBufferUsage,d=GPU.dev;
-    const ub=gpuBuf("gtr.u",32,U.UNIFORM|U.COPY_DST),uu=GTR.u;uu[0]=GPU.bw;uu[1]=GPU.bh;uu[2]=W;uu[3]=H;uu[4]=DPR;
-    d.queue.writeBuffer(ub,0,uu);
-    const vb=gpuBuf("gtr.v",GTR.f.byteLength,U.STORAGE|U.COPY_DST);d.queue.writeBuffer(vb,0,GTR.f,0,GTR.n*8);
-    const P=gpuPipe("gtr",GTR_WGSL,"add");
-    pass.setPipeline(P);pass.setBindGroup(0,gpuBind("gtr",P,[ub,vb]));pass.draw(GTR.n);
-  }
+  gtrDraw(pass,"gtr");
   /* холодные струи маневровых — мягкие дымки */
   for(const t of TRAIL){
     if(t.hot)continue;
@@ -75,6 +87,39 @@ function gpuTrail(zx,zy,Z){
     puffs.push([1,x,y,rr,0,0,rr*.9,205,232,246,u*.22]);
   }
   if(puffs.length)gpuShapes(pass,puffs,{blend:"add"});
+}
+/* ── кильватер (G4) ──
+   Те же дорожки WAKE (борт/всплеск/кромка), тот же цвет, возраст и спад, что у
+   2D-нити; лучше, чем тридцать две ступени яркости обводками:
+   · у каждого узла свой возраст — ни ступеней по яркости, ни шва между ними;
+   · ядро и ореол — одна гауссова лента: ясная нить у кромки корпуса и мягкая
+     среда, расплывающаяся с возрастом, без жёсткого края stroke;
+   · среда потревожена: ореол рвётся на клочья, привязанные к месту в мире (корабль
+     проходит сквозь них, а не тащит узор за собой), и клочья медленно текут. */
+function gpuWake(zx,zy,Z){
+  if(!WAKE.length)return;
+  const pass=gpuScene();if(!pass)return;
+  const SZ=shipZ(Z),col=mixc([196,222,255],hex2rgb(shipData(G.shipId).col),.25);
+  const lanes=wakeLanes;
+  for(const a of lanes.values())a.length=0;
+  for(const t of WAKE){const k=t.s+"/"+t.b+"/"+t.t.x;let a=lanes.get(k);if(!a)lanes.set(k,a=[]);a.push(t);}
+  GTR.n=0;
+  const node=(arr,i)=>{
+    const t=arr[i],u=clamp(t.life/t.max,0,1),u4=u*u*u*u;
+    /* те же пики, что у 2D: ореол f1, ядро f2 (ядро гаснет к половине жизни) */
+    const f1=(u*u*.08+u4*.10)*t.k,f2=(u4*.22+u4*u4*.34)*t.k;
+    const w1=(2.2+(1-u)*4.5)*SZ,w2=Math.max(.8,(1+(1-u)*.6)*SZ);
+    const hw=w1*1.25+1;
+    const p=arr[Math.max(0,i-1)],q=arr[Math.min(arr.length-1,i+1)];
+    let dx=zx(q.x)-zx(p.x),dy=zy(q.y)-zy(p.y);const l=Math.hypot(dx,dy)||1;dx/=l;dy/=l;
+    return {x:zx(t.x),y:zy(t.y),nx:-dy*hw,ny:dx*hw,a:f2*1.25,col,k:w2*.5/hw,h:f1*2.3,wx:t.x*.07,wy:t.y*.07,wn:.9};
+  };
+  for(const arr of lanes.values()){
+    if(arr.length<2)continue;
+    let A=node(arr,0);
+    for(let i=1;i<arr.length;i++){const B=node(arr,i);gtrLane(A,B);A=B;}
+  }
+  gtrDraw(pass,"gwk");
 }
 /* ── факел сопла (G4) ──
    Та же геометрия (сопла в масштабе корпуса, длина от пульса, косметика «Сороки»:
@@ -195,7 +240,7 @@ fn field(p:vec2f,uv0:vec2f)->vec4f{
   let lit=col*(rim*1.1+body)*a*fade*k;
   /* тень: перепад через весь корпус, дальний скат — глубже */
   let away=max(-dot(nb.xy,sd),0.)*(1.-nb.z);
-  let dark=clamp(.66*smoothstep(-.4,.6,-side)+.3*away,0.,.82)*a*fade*k;
+  let dark=clamp(.66*smoothstep(-.4,.6,-side)+.3*away,0.,.7)*a*fade*k;
   return vec4f(lit,dark);
 }`;
 function gpuHullLight(x,y,sx,sy,Z,sys){
