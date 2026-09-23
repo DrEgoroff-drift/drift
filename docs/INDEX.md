@@ -1499,7 +1499,7 @@ drawSurface                  src/21e-surface-draw.js:277-291
 drawSurfaceHud               src/21e-surface-draw.js:21-115
 drawSurfaceWorld             src/21e1-surface-world.js:10-615
 drawSurvey                   src/12w-survey.js:63-89
-drawSysHud                   src/17-mode-system.js:687-947
+drawSysHud                   src/17-mode-system.js:687-946
 drawSysLane                  src/17g-sys-lane.js:94-122
 drawSysLaneShips             src/17g-sys-lane.js:152-180
 drawSysRail                  src/18f-rail-station.js:32-65
@@ -2097,7 +2097,7 @@ gpuShapes                    src/08c-gpu-kit.js:159-170
 gpuSnapshot                  src/08b-gpu.js:20-24
 gpuSpaceSys                  src/16g-gpu-space.js:184-198
 gpuSpaceTitle                src/16g-gpu-space.js:200-211
-gpuSysUnder                  src/17g-gpu-system.js:282-287
+gpuSysUnder                  src/17g-gpu-system.js:287-292
 gpuTakeSnap                  src/08b-gpu.js:25-30
 gpuUni                       src/08b-gpu.js:195-201
 gpuWorld                     src/08b-gpu.js:270-286
@@ -2186,13 +2186,13 @@ gspUni                       src/16g-gpu-space.js:152-159
 GSY                          src/17g-gpu-system.js:18
 GSY_ORB_WGSL                 src/17g-gpu-system.js:19
 GSY_STAR_WGSL                src/17g-gpu-system.js:45
-gsyBeltDots                  src/17g-gpu-system.js:245-253
-gsyEll                       src/17g-gpu-system.js:212-221
-gsyMean                      src/17g-gpu-system.js:222-225
-gsyOrb                       src/17g-gpu-system.js:204-210
-gsyOrbits                    src/17g-gpu-system.js:226-243
-gsyStar                      src/17g-gpu-system.js:254-280
-gsyUni                       src/17g-gpu-system.js:198-202
+gsyBeltDots                  src/17g-gpu-system.js:250-258
+gsyEll                       src/17g-gpu-system.js:217-226
+gsyMean                      src/17g-gpu-system.js:227-230
+gsyOrb                       src/17g-gpu-system.js:209-215
+gsyOrbits                    src/17g-gpu-system.js:231-248
+gsyStar                      src/17g-gpu-system.js:259-285
+gsyUni                       src/17g-gpu-system.js:203-207
 GUEST_EVERY                  src/21a3-base-people.js:30
 GUN_CACHE                    src/05c-arms.js:71
 GUN_FACTORY                  src/05b-guns.js:99-106
@@ -6598,7 +6598,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/17f-sys-traffic.js · 5 КБ
   · трафик системы: чужие машины, которым тут есть дело (M309):1
 
-## src/17g-gpu-system.js · 17 КБ
+## src/17g-gpu-system.js · 18 КБ
   · система под планетами на видеокарте (G2, docs/DESIGN-gpu.md):1
 
 ## src/17g-sys-lane.js · 13 КБ

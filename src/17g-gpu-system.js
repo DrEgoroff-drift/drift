@@ -150,13 +150,18 @@ fn hole(p:vec2f,hv:vec4f,nb:vec4f,t:f32,px:f32)->vec4f{
   let d=p-hv.xy;let Rs=hv.z*.8;let rr=length(d);let dir=d/max(rr,1e-4);
   var acc=vec4f(0.);
   /* 1. линза: фон за дырой, собранный кольцом Эйнштейна */
-  let tE=Rs*2.5;let wl=1.-smoothstep(Rs*4.,Rs*7.5,rr);
+  let tE=Rs*2.1;let wl=1.-smoothstep(Rs*4.,Rs*7.5,rr);
   if(wl>0.){
     let src=hv.xy+dir*(rr-tE*tE/max(rr,1e-3));
     let r4=rr*rr*rr*rr;let e4=tE*tE*tE*tE;
     let mag=min(abs(r4/max(abs(r4-e4),1.)),7.);
     var bg=vec3f(0.);
-    if(nb.z>0.){bg=textureSampleLevel(t0,smp,(src-nb.xy)/nb.zw,0.).rgb;}
+    /* у кольца линза тянет фон по радиусу в разы — одна выборка давала рябь
+       кругами; четыре выборки на размер пикселя в плоскости источника, а у самого
+       кольца — шире: полосы туманности, стянутые в круги, читались муаром */
+    if(nb.z>0.){let j=max(px*(1.+tE*tE/max(rr*rr,1.))*1.8,Rs*.3*exp(-pow((rr-tE)/(Rs*1.4),2.)));let tg=vec2f(-dir.y,dir.x);
+      for(var k=0;k<4;k++){let o=select(-1.,1.,k%2==0)*select(dir,tg,k<2)*j;
+        bg=bg+textureSampleLevel(t0,smp,(src+o-nb.xy)/nb.zw,0.).rgb*.25;}}
     /* свои звёзды — редкие, как у фона, который линза закрыла, и ярче там, где она
        их усиливает (дуги у кольца); не из-за самой тени: иначе одна звезда за центром рисует циркульную окружность */
     let st=hstars(src)*(.35+clamp(mag-1.3,0.,3.))*smoothstep(Rs*.8,Rs*1.6,length(src-hv.xy));

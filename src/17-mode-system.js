@@ -747,7 +747,9 @@ function drawSysHud(zx,zy,sh,sys,U){
   for(const f of feet)inY1=Math.min(inY1,(f.y-f.r)/U-10);
   if(pr&&pr.height>0)inY1=Math.min(inY1,pr.top/U-8);
   inY1=Math.max(inY1,y1base-CHIP_IN);   /* внутрь — не дальше CHIP_IN пикселей */
-  const inset={x0:10,x1:W-10,y0:76,y1:Math.max(140,inY1)};
+  /* верхняя кромка — ниже всего блока шкал: фишка в строке ТРЮМ читалась её частью */
+  const hr=hudRect(),hudY1=(hr&&hr.height>0)?hr.bottom/U+8:76;
+  const inset={x0:10,x1:W-10,y0:Math.max(76,hudY1),y1:Math.max(140,inY1)};
   /* занятые места — одной сборкой, а не разрозненными блоками: это одна мысль
      («мимо чего скользит фишка»), а не четыре (Контроль, ревью кода 18.09).
      Следы стиков, живая строка подсказки, нос корабля (щедрый запас вокруг
@@ -772,11 +774,8 @@ function drawSysHud(zx,zy,sh,sys,U){
     const padsr=padsRect();
     if(padsr&&padsr.height>0)placed.push(grow({x:padsr.left/U,y:padsr.top/U,w:padsr.width/U,h:padsr.height/U}));
   }
-  {
-    /* шкалы слева вверху: фишка на строке ТРЮМ — фишка под HUD (закон 12.09) */
-    const hr=hudRect();
-    if(hr&&hr.height>0)placed.push({x:hr.left/U-4,y:hr.top/U-4,w:hr.width/U+8,h:hr.height/U+8});
-  }
+  /* и сам блок шкал — занятое место, если кромка до него всё же дотянется */
+  if(hr&&hr.height>0)placed.push({x:hr.left/U-4,y:hr.top/U-4,w:hr.width/U+8,h:hr.height/U+8});
   ctx.font="8px ui-monospace,monospace";
   /* под окном оклика и окном бака фишки гаснут, как борт (R0, дев 12.09): на
      них не жмут, пока окно ждёт ответа, и они не спорят с ним глазами */
