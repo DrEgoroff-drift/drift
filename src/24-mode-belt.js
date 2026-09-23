@@ -129,9 +129,9 @@ function enterBelt(){
   if(typeof groveDress==="function"){groveDress(G.belt);groveVisit();}   /* роща (11j) */
   for(const k in keys)keys[k]=false;
   document.querySelectorAll(".pads button").forEach(bb=>bb.classList.remove("on"));
+  if(typeof farReadShow==="function")farReadShow(farHere("belt"));   /* залежь — табличкой прибора, шкалой (D12) */
   say("Вход в "+B.name+"\nруда: "+B.res.map(k=>RES[k].ru).join(", ")+
     (beltIcy(B)?"\nкольцо дальнее — попадаются кристаллы льда":"")+
-    ((typeof farReadLine==="function"&&farReadLine(farHere("belt")))?"\nприбор: "+farReadLine(farHere("belt")):"")+
     (document.body.classList.contains("mobile")?"\nтяните по стеклу — обзор"   /* на касании клавиш нет (R6) */
       :"\n◀ ▶ курс · ▲ ▼ тангаж · Q E крен\nПРОБЕЛ тяга · тяните по стеклу — обзор"));
 }

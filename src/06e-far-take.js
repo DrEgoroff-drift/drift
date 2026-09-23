@@ -49,6 +49,25 @@ function farReadLine(list){
     return RES[d.k].ru.toLowerCase()+": "+(R.lo===R.hi?R.lo:R.lo+"–"+R.hi);
   }).join(" · ");
 }
+/* табличка прибора на входе (D12): залежь — шкалой, диапазон — полосой. Ширина
+   полосы и есть честность прибора: у изыскателя узкая, у рудовоза во всю шкалу */
+function farReadShow(list){
+  if(typeof document==="undefined"||!document.body)return false;
+  const L=list.filter(d=>farLeft(G.sx,G.sy,d)>0);if(!L.length)return false;
+  const old=document.getElementById("farRead");if(old)old.remove();
+  const e=farSpread(),pct=Math.round(e*100);
+  const who=e<=.1?"изыскатель":e>=.6?"рудовоз":"прибор борта";
+  let h="<div class='fr-h'><b>ПРИБОР · ЗАЛЕЖЬ</b><s>"+who+" · ±"+pct+" %</s></div>";
+  for(const d of L){
+    const R=farReading(d),mx=Math.max(1,R.hi*1.25),a=R.lo/mx*100,w=Math.max(1.5,(R.hi-R.lo)/mx*100);
+    h+="<div class='fr-row' style='--c:"+RES[d.k].col+"'><b>"+RES[d.k].ru+"</b><span class='fr-bar'><i style='left:"+a.toFixed(1)+
+      "%;width:"+w.toFixed(1)+"%'></i></span><em>"+(R.lo===R.hi?R.lo:R.lo+"–"+R.hi)+"</em></div>";
+  }
+  const el0=document.createElement("div");el0.id="farRead";el0.innerHTML=h;
+  document.body.appendChild(el0);
+  setTimeout(()=>{if(el0.parentNode)el0.remove();},6500);
+  return true;
+}
 /* ── ЖИЛА: слово через экран, строка на борту ── */
 function farVein(d){
   logAdd("good","ЖИЛА · "+RES[d.k].ru+" · сектор "+G.sx+":"+G.sy+" · по прибору — на двадцать трюмов");

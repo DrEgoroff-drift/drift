@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 595 · символов верхнего уровня: 5828
+Файлов: 595 · символов верхнего уровня: 5829
 
 ## СИМВОЛЫ
 
@@ -1725,11 +1725,11 @@ FAR_UNITS                    src/06d-far.js:23
 FAR_W                        src/06f-far-props.js:11
 FAR_Z                        src/06d-far.js:21
 farBasePrice                 src/12-economy.js:44-48
-farBeltDress                 src/06e-far-take.js:64-77
+farBeltDress                 src/06e-far-take.js:83-96
 farCargoHit                  src/06f-far-props.js:14-31
 farCurve                     src/12-economy.js:39-43
 farDeposits                  src/06d-far.js:59-79
-farDigNode                   src/06e-far-take.js:79-89
+farDigNode                   src/06e-far-take.js:98-108
 farEaterMul                  src/12-economy.js:32-38
 farGradeOf                   src/06d-far.js:57
 farGradeRu                   src/06d-far.js:80
@@ -1756,12 +1756,13 @@ farPriceCtx                  src/12-economy.js:49-51
 farR                         src/06d-far.js:25
 farReading                   src/06e-far-take.js:40-45
 farReadLine                  src/06e-far-take.js:46-51
-farScoopPick                 src/06e-far-take.js:91-97
+farReadShow                  src/06e-far-take.js:54-70
+farScoopPick                 src/06e-far-take.js:110-116
 farSpread                    src/06e-far-take.js:36-39
 farTake                      src/06e-far-take.js:26-34
 farTakenAll                  src/06e-far-take.js:15
 farTrapTick                  src/06f-far-props.js:34-44
-farVein                      src/06e-far-take.js:53-62
+farVein                      src/06e-far-take.js:72-81
 farWorldFingerprint          tests/91zzzzk3-far.js:6-15
 FAUNA_RES                    src/02-world.js:120
 faunaOf                      src/20e-species.js:268-284
@@ -5943,7 +5944,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/06d-far.js · 5 КБ
   · дальние залежи: присутствие и тяжёлый хвост удачи (M465, DESIGN-resources §3):1
 
-## src/06e-far-take.js · 5 КБ
+## src/06e-far-take.js · 7 КБ
   · дальние залежи в игре: выемка, прибор, ЖИЛА (M466, DESIGN-resources §3):1
 
 ## src/06f-far-props.js · 3 КБ
