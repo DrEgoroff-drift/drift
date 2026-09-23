@@ -42,23 +42,39 @@ function sysEdge(sys){
    ничего — только строка. Кромка проступает за 900 единиц: широкая мягкая
    полоса и тонкая пунктирная линия тем же цветом, что фишки компаса; у самого
    корабля — «упор», светлое пятно на линии там, где он в неё упёрся ── */
+/* кромка системы (D6, 18.09) — на видеокарте (G4): вместо обруча с пунктиром
+   поле-мембрана из шестигранных ячеек, которые текут вдоль кромки; у точки
+   упора — пятно и кольца ряби, расходящиеся по полю; гаснет той же долей k */
+const GEW=new Float32Array(12);
+const GEW_WGSL=`
+fn hexd(p:vec2f)->f32{let s=vec2f(1.,1.7320508);let a=p-s*floor(p/s+.5);let b=p-s*floor((p-s*.5)/s+.5)-s*.5;
+  let q=select(b,a,dot(a,a)<dot(b,b));let h=abs(q);return .5-max(dot(h,normalize(vec2f(1.,1.7320508))),h.x);}
+fn field(p:vec2f,uv:vec2f)->vec4f{
+  let V=fu.v;let c=V[0].xy;let r=V[0].z;let k=V[0].w;let cp=V[1].xy;let pk=V[1].z;let t=V[1].w;let Z=V[2].x;let hit=V[2].y;
+  let dv=p-c;let dist=length(dv)-r;let w=max(8.,40.*Z);
+  if(abs(dist)>w*3.+140.){return vec4f(0.);}
+  let cell=26.*Z+10.;let n=max(6.,round(6.2831853*r/cell));
+  let a=(atan2(dv.y,dv.x)/6.2831853+.5)*n;
+  let hp=vec2f(a,(dist/cell)+t*.004);
+  let e=hexd(hp*vec2f(1.,1.)*1.);
+  let band=exp(-(dist*dist)/(w*w));
+  let edge=(1.-smoothstep(.0,.06,e))*band;
+  let line=exp(-(dist*dist)/2.2);
+  var I=band*.10+edge*.2+line*.5;
+  if(hit>0.){let dc=length(p-cp);let fall=exp(-dc/(160.*Z+60.));
+    I=I+fall*(.28*pk+.18*max(0.,sin(dc*.09-t*.25)))*exp(-(dist*dist)/(w*w*4.));}
+  let col=vec3f(127.,230.,216.)/255.;
+  return vec4f(col*I*k,0.);
+}`;
 function drawEdgeWall(zx,zy,Z){
   const sys=G.sys,sh=G.ship;if(!sys||!sh)return;
   const R=sysEdge(sys),d=Math.hypot(sh.x,sh.y)||1,k=clamp((d-(R-900))/900,0,1);
   if(k<=0)return;
-  const cx=zx(0),cy=zy(0),r=R*Z;
-  ctx.save();
-  ctx.strokeStyle="rgba(127,230,216,"+(.10*k).toFixed(3)+")";ctx.lineWidth=Math.max(14,70*Z);
-  ctx.beginPath();ctx.arc(cx,cy,r,0,TAU);ctx.stroke();
-  ctx.strokeStyle="rgba(127,230,216,"+(.55*k).toFixed(3)+")";ctx.lineWidth=1.2;ctx.setLineDash([6,10]);
-  ctx.beginPath();ctx.arc(cx,cy,r,0,TAU);ctx.stroke();ctx.setLineDash([]);
-  if(d>R-120){   /* упор: пятно на кромке напротив корабля, дышит */
-    const a=Math.atan2(sh.y,sh.x),px=cx+Math.cos(a)*r,py=cy+Math.sin(a)*r,pk=.5+.5*Math.sin(G.t*.12);
-    const g=ctx.createRadialGradient(px,py,0,px,py,60*Z+20);
-    g.addColorStop(0,"rgba(180,255,240,"+(.28*pk).toFixed(3)+")");g.addColorStop(1,"rgba(127,230,216,0)");
-    ctx.fillStyle=g;ctx.beginPath();ctx.arc(px,py,60*Z+20,0,TAU);ctx.fill();
-  }
-  ctx.restore();
+  const pass=gpuScene();if(!pass)return;
+  const cx=zx(0),cy=zy(0),r=R*Z,a=Math.atan2(sh.y,sh.x),U=GEW;
+  U[0]=cx;U[1]=cy;U[2]=r;U[3]=k;U[4]=cx+Math.cos(a)*r;U[5]=cy+Math.sin(a)*r;U[6]=.5+.5*Math.sin(G.t*.12);U[7]=G.t;
+  U[8]=Z;U[9]=d>R-120?1:0;
+  gpuField(pass,"gew",GEW_WGSL,U,[]);
 }
 const BODY_CAM={x:0,y:0};   /* сдвиг кадра к телу орбиты или посадки (P9) — вид, не мир */
 /* тело, которое обязано оставаться в кадре: то, вокруг которого орбита, иначе
@@ -610,7 +626,6 @@ function drawSystem(){
   drawTrail(zx,zy,Z);
   /* факел рисуется до корпуса: иначе яркое ядро сопла ложится поверх обшивки */
   drawExhaust(zx,zy,Z,thrusting?1:0);
-  if(thrusting&&typeof heatHaze==="function")exhaustHaze(zx,zy,Z);   /* марево за соплами (M325) */
   drawCombat(zx,zy,Z);
   helmDrawMarks(zx,zy,Z);   /* скобки захвата (M360) */
   if(typeof drawWrecksSystem==="function")drawWrecksSystem(zx,zy,Z);

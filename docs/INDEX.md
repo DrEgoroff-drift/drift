@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 601 · символов верхнего уровня: 5891
+Файлов: 601 · символов верхнего уровня: 5892
 
 ## СИМВОЛЫ
 
@@ -495,7 +495,7 @@ bmgrSilent                   src/21b2-base-mgr.js:184-187
 bmgrStep                     src/21b2-base-mgr.js:140-178
 bmgrWorkMul                  src/21b2-base-mgr.js:129-132
 boardLanes                   src/26-ui-station.js:390-416
-BODY_CAM                     src/17-mode-system.js:63
+BODY_CAM                     src/17-mode-system.js:79
 BODY_LABELS                  src/17-mode-system.js:25
 bodyInSystem                 src/16-flight.js:103-112
 bookAll                      src/12ub-books.js:122
@@ -560,7 +560,7 @@ buyPriceFor                  src/12-economy.js:87-91
 bWall                        src/21aa-base-rooms.js:187-242
 bWorker                      src/21aa-base-rooms.js:322-382
 CAM_LAG_PX                   src/16a-space.js:280
-camBody                      src/17-mode-system.js:66-75
+camBody                      src/17-mode-system.js:82-91
 camBtnTick                   src/25g-postcard.js:666-670
 camOffset                    src/19c-light.js:155-162
 camStep                      src/19c-light.js:141-153
@@ -1405,9 +1405,9 @@ drawDigWorld                 src/23a-dig-draw.js:45-607
 drawDronesMap                src/12e-drone-flight.js:338-356
 drawDronesSystem             src/12e-drone-flight.js:252-325
 drawDustMotes                src/19-mode-landing.js:271-284
-drawEdgeWall                 src/17-mode-system.js:45-62
+drawEdgeWall                 src/17-mode-system.js:69-78
 drawElevator                 src/20aa-poi-shapes.js:91-113
-drawExhaust                  src/16a-space.js:348
+drawExhaust                  src/16a-space.js:323
 drawFactory                  src/20aa-poi-shapes.js:378-462
 drawFactRoute                src/13b-occupy.js:285-338
 drawFindsSystem              src/17b-finds.js:181-263
@@ -1498,11 +1498,11 @@ drawSurface                  src/21e-surface-draw.js:277-291
 drawSurfaceHud               src/21e-surface-draw.js:21-115
 drawSurfaceWorld             src/21e1-surface-world.js:10-615
 drawSurvey                   src/12w-survey.js:63-89
-drawSysHud                   src/17-mode-system.js:682-941
+drawSysHud                   src/17-mode-system.js:697-956
 drawSysLane                  src/17g-sys-lane.js:94-122
 drawSysLaneShips             src/17g-sys-lane.js:152-180
 drawSysRail                  src/18f-rail-station.js:32-65
-drawSystem                   src/17-mode-system.js:482-681
+drawSystem                   src/17-mode-system.js:498-696
 drawSysTraffic               src/17f-sys-traffic.js:36-40
 drawTapes                    src/12s1-tape.js:37-52
 drawTemple                   src/20aa-poi-shapes.js:50-89
@@ -1650,7 +1650,6 @@ ethTick                      src/25l-post-ether.js:59-104
 evacCost                     src/21-mode-surface.js:678
 evacFrom                     src/21-mode-surface.js:679
 evacuate                     src/21-mode-surface.js:680-700
-exhaustHaze                  src/16a-space.js:323-347
 exileCandidates              src/12g-mgr-rogue.js:123-130
 exitBase                     src/21a-mode-base.js:154-157
 exitBelt                     src/24-mode-belt.js:178-186
@@ -1985,9 +1984,11 @@ gestPostSprite               src/17h-sys-gesture.js:175-191
 gestShipFrame                src/17h-sys-gesture.js:81-85
 gestTick                     src/17h-sys-gesture.js:52-79
 getSystem                    src/06-galaxy.js:99-193
-GEX                          src/16ga-gpu-trail.js:87
-GEX_WGSL                     src/16ga-gpu-trail.js:88
-gexPush                      src/16ga-gpu-trail.js:128-134
+GEW                          src/17-mode-system.js:48
+GEW_WGSL                     src/17-mode-system.js:49
+GEX                          src/16ga-gpu-trail.js:88
+GEX_WGSL                     src/16ga-gpu-trail.js:89
+gexPush                      src/16ga-gpu-trail.js:129-135
 GIANT                        src/19a-mode-scoop.js:192
 GIANT_CV                     src/17o-giants.js:68
 GIANT_KEEP                   src/19a-mode-scoop.js:193
@@ -2084,7 +2085,7 @@ gpuBind                      src/08c-gpu-kit.js:28-34
 gpuBuf                       src/08c-gpu-kit.js:21-26
 gpuCanvasTex                 src/08c-gpu-kit.js:37-50
 gpuDrop                      src/08b-gpu.js:72-77
-gpuExhaust                   src/16ga-gpu-trail.js:135-160
+gpuExhaust                   src/16ga-gpu-trail.js:136-161
 gpuField                     src/08c-gpu-kit.js:189-217
 gpuFrame                     src/08b-gpu.js:205-214
 gpuImage                     src/08c-gpu-kit.js:117-129
@@ -2108,7 +2109,7 @@ gpuSpaceSys                  src/16g-gpu-space.js:184-198
 gpuSpaceTitle                src/16g-gpu-space.js:200-211
 gpuSysUnder                  src/17g-gpu-system.js:287-292
 gpuTakeSnap                  src/08b-gpu.js:25-30
-gpuTrail                     src/16ga-gpu-trail.js:28-77
+gpuTrail                     src/16ga-gpu-trail.js:28-78
 gpuUni                       src/08b-gpu.js:195-201
 gpuWorld                     src/08b-gpu.js:270-286
 gradePass                    src/19c-light.js:258-294
@@ -3600,7 +3601,7 @@ optGroups                    src/27-ui-ship.js:363-380
 OPTS_BOOT                    tests/90-harness.js:203
 optsNumify                   src/14a2-save-ephemeral.js:23-28
 optTab                       src/27-ui-ship.js:362
-orbPathOf                    src/17-mode-system.js:471-481
+orbPathOf                    src/17-mode-system.js:487-497
 ORDER_WIN                    src/12aa-need.js:76
 orderDeliver                 src/12aa-need.js:116-127
 orderHere                    src/12aa-need.js:112-115
@@ -5534,7 +5535,7 @@ updateRail                   src/18g-rail-ride.js:64-103
 updateScoop                  src/19a-mode-scoop.js:75-176
 updateSpa                    src/29i-spa-draw.js:514-519
 updateSurface                src/21-mode-surface.js:200-657
-updateSystem                 src/17-mode-system.js:76-467
+updateSystem                 src/17-mode-system.js:92-483
 updateWanderRoom             src/24c-mode-wanderer.js:58-88
 updateWinter                 src/29g-winter-draw.js:808-817
 useBeacon                    src/23-mode-dig.js:88-113
@@ -6561,7 +6562,7 @@ zooTick                      src/11ad-zoo.js:41-54
   · кильватер: хвосты от скорости, а не от сопла:278
   · нить кильватера — ступенями спада, а не отрезками (0.2):355
 
-## src/16a-space.js · 24 КБ
+## src/16a-space.js · 23 КБ
   · облик системы:1
 
 ## src/16a0-glow.js · 3 КБ
@@ -6580,10 +6581,10 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/16g-gpu-space.js · 12 КБ
   · космос на видеокарте (G1, docs/DESIGN-gpu.md):1
 
-## src/16ga-gpu-trail.js · 9 КБ
+## src/16ga-gpu-trail.js · 10 КБ
   · шлейф и факел корабля на видеокарте (G4, docs/DESIGN-gpu.md):1
 
-## src/17-mode-system.js · 72 КБ
+## src/17-mode-system.js · 73 КБ
   · режим: система:1
 
 ## src/17a-station-mod.js · 13 КБ

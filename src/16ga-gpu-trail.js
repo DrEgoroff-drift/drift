@@ -36,7 +36,8 @@ function gpuTrail(zx,zy,Z){
     const t=arr[i],u=clamp(t.life/t.max,0,1);
     const a=Math.min(TRAIL_AMAX,Math.pow(u,TRAIL_LIFE.fall)*.30+u*u*u*u*.5);
     const col=u>.78?mixc(T.mid,T.core,(u-.78)/.22):mixc(T.edge,T.mid,u/.78);
-    const hw=Math.max(1,t.r*SZ*(2.4-u*1.3)*CW*1.35)*TRAIL_HALO.w*.5+1;
+    /* газ расходится: к хвосту лента шире (яркость и так гаснет с возрастом) */
+    const hw=(Math.max(1,t.r*SZ*(2.4-u*1.3)*CW*1.35)*TRAIL_HALO.w*.5+1)*(1+(1-u)*1.6);
     const p=arr[Math.max(0,i-1)],q=arr[Math.min(arr.length-1,i+1)];
     let dx=zx(q.x)-zx(p.x),dy=zy(q.y)-zy(p.y);const l=Math.hypot(dx,dy)||1;dx/=l;dy/=l;
     return {x:zx(t.x),y:zy(t.y),nx:-dy*hw,ny:dx*hw,a,col};

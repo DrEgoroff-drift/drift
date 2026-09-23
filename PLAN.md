@@ -24,6 +24,8 @@ Built: the core and post pass (08b), the layer kit (08c), the space backdrop (16
 
 - [ ] **G3b planet surface in three scales:** close up the strip is mush — only the macro scale exists. A procedural
   middle and fine layer in the shader from the biome's colours, and the sun's glint on water (17ga).
+- [ ] **G4b heat haze as a distortion:** the 2D haze (M325) grabbed the 2D layer, where the flame no longer is —
+  removed. Bring it back as a UV offset by noise inside the flame cone in the post pass (08b).
 - [ ] **G4 the system view on top:** ships as sprites from the hull bake, lit from the star; wake, trail, exhaust
   and heat haze on the GPU; combat flashes, drones, traffic, the edge wall.
 - [ ] **G5 landing and surface, the air:** sky, sun, live clouds, haze, shafts, weather in depth, the night with
