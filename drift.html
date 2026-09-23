@@ -49185,27 +49185,40 @@ function gpuExhaust(zx,zy,Z,thr){
 /* ── свет звезды на корпусе (G4) ──
    Корпус рисуется кистью 2D (сотни штрихов — это вектор), но свет на нём — от
    звезды, а не запечённый сверху-слева: слой поверх (gpuOver) берёт альфу уже
-   нарисованного кадра как маску корабля. По градиенту маски — кромка корпуса и её
-   нормаль: кромка, обращённая к звезде, загорается цветом светила; дальняя от
-   звезды половина корпуса уходит в тень, ближняя получает тёплый отсвет. */
+   нарисованного кадра как маску корабля. Маска читается как рельеф: у кромки
+   поверхность уходит от глаза (нормаль ложится в плоскость кадра), в середине
+   смотрит на нас. Свет — Ламберт по этой нормали от звезды, почти в плоскости
+   системы: ярче всего узкая скользящая полоса освещённого борта, к лицевым
+   граням спадает; не обводка по всему контуру. Дальний борт и дальняя половина
+   уходят в тень заметно — объём держит перепад, а не линия. */
 const GHL=new Float32Array(16),GHL_M=512;
 const GHL_WGSL=`
+fn ga(uv:vec2f,d:vec2f)->vec2f{
+  return vec2f(textureSampleLevel(t0,smp,uv+vec2f(d.x,0.),0.).a-textureSampleLevel(t0,smp,uv-vec2f(d.x,0.),0.).a,
+               textureSampleLevel(t0,smp,uv+vec2f(0.,d.y),0.).a-textureSampleLevel(t0,smp,uv-vec2f(0.,d.y),0.).a);}
 fn field(p:vec2f,uv0:vec2f)->vec4f{
   let V=fu.v;let uv=(p*fu.res.x/fu.res.z-V[3].xy)/V[3].z;let c=V[0].xy;let rad=V[0].z;let sd=normalize(V[1].xy);let col=V[2].rgb;let k=V[2].w;
   let dp=p-c;let rr=length(dp);
   if(rr>rad||any(uv<vec2f(0.))||any(uv>vec2f(1.))){return vec4f(0.);}
-  let px=vec2f(1.5*fu.res.x/fu.res.z/V[3].z);
+  let u1=vec2f(fu.res.x/fu.res.z/V[3].z);
   let a=textureSampleLevel(t0,smp,uv,0.).a;
   if(a<.02){return vec4f(0.);}
-  let gx=textureSampleLevel(t0,smp,uv+vec2f(px.x,0.),0.).a-textureSampleLevel(t0,smp,uv-vec2f(px.x,0.),0.).a;
-  let gy=textureSampleLevel(t0,smp,uv+vec2f(0.,px.y),0.).a-textureSampleLevel(t0,smp,uv-vec2f(0.,px.y),0.).a;
-  let g=vec2f(gx,gy);let gl=length(g);
-  let n=-g/max(gl,1e-4);
-  let rim=clamp(dot(n,sd),0.,1.)*clamp(gl*1.4,0.,1.);
+  /* рельеф маски: узкий шаг даёт кромку, широкий — скат борта к середине */
+  let L=normalize(vec3f(sd,.22));
+  let g=-ga(uv,u1*1.1);let tl=clamp(length(g),0.,.98);
+  let n=vec3f(g/max(length(g),1e-4)*tl,sqrt(1.-tl*tl));
+  let gb=-(ga(uv,u1*3.)*.5+ga(uv,u1*7.)*.5);let tb=clamp(length(gb)*1.2,0.,.9);
+  let nb=vec3f(gb/max(length(gb),1e-4)*tb,sqrt(1.-tb*tb));
   let side=dot(dp,sd)/rad;
   let fade=1.-smoothstep(rad*.8,rad,rr);
-  let dark=.42*smoothstep(-.05,.85,-side)*a*fade*k;
-  let lit=col*(rim*.85+.14*smoothstep(0.,.9,side))*a*fade*k;
+  /* кромка: только грани, смотрящие на звезду (cos³), и только у самого края */
+  let rim=pow(max(dot(n,L),0.),3.)*pow(1.-n.z,1.5);
+  /* борт: скат к звезде теплеет, к лицевым граням спадает */
+  let body=max(dot(nb,L),0.)*(1.-nb.z)*.3;
+  let lit=col*(rim*1.1+body)*a*fade*k;
+  /* тень: перепад через весь корпус, дальний скат — глубже */
+  let away=max(-dot(nb.xy,sd),0.)*(1.-nb.z);
+  let dark=clamp(.66*smoothstep(-.4,.6,-side)+.3*away,0.,.82)*a*fade*k;
   return vec4f(lit,dark);
 }`;
 function gpuHullLight(x,y,sx,sy,Z,sys){

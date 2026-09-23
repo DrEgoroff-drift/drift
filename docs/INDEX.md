@@ -1989,8 +1989,8 @@ GEW_WGSL                     src/17-mode-system.js:49
 GEX                          src/16ga-gpu-trail.js:88
 GEX_WGSL                     src/16ga-gpu-trail.js:89
 gexPush                      src/16ga-gpu-trail.js:129-135
-GHL                          src/16ga-gpu-trail.js:168
-GHL_WGSL                     src/16ga-gpu-trail.js:169
+GHL                          src/16ga-gpu-trail.js:171
+GHL_WGSL                     src/16ga-gpu-trail.js:172
 GIANT                        src/19a-mode-scoop.js:192
 GIANT_CV                     src/17o-giants.js:68
 GIANT_KEEP                   src/19a-mode-scoop.js:193
@@ -2090,7 +2090,7 @@ gpuDrop                      src/08b-gpu.js:72-77
 gpuExhaust                   src/16ga-gpu-trail.js:136-161
 gpuField                     src/08c-gpu-kit.js:189-217
 gpuFrame                     src/08b-gpu.js:205-214
-gpuHullLight                 src/16ga-gpu-trail.js:188-207
+gpuHullLight                 src/16ga-gpu-trail.js:201-220
 gpuImage                     src/08c-gpu-kit.js:117-129
 gpuKitU                      src/08c-gpu-kit.js:89-93
 gpuManual                    src/08b-gpu.js:262-267
@@ -6584,7 +6584,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/16g-gpu-space.js · 12 КБ
   · космос на видеокарте (G1, docs/DESIGN-gpu.md):1
 
-## src/16ga-gpu-trail.js · 13 КБ
+## src/16ga-gpu-trail.js · 14 КБ
   · шлейф, факел и свет на корпусе корабля на видеокарте (G4, docs/DESIGN-gpu.md):1
 
 ## src/17-mode-system.js · 73 КБ

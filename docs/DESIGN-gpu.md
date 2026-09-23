@@ -50,7 +50,11 @@ The author, 23.09.2026: «переноси все на новые техноло
   16ga): after the ship's 2D draw, `gpuOver` + an IMMEDIATE `copyTextureToTexture` of a 512² patch of
   `GPU.T.front` (now COPY_SRC) into `GPU.T.hm`. The pass runs only at submit, after gpuWorld re-uploaded #c
   without the hull, so sampling `T.front` directly sees nothing. Mask alpha → edge normal → rim in star colour,
-  far half darkened; pair `g4d_crop.png`. Scene js (`freeze.js`, `trail.js`) also `CHIP_POS.clear()` — stale
+  far half darkened; pair `g4d_crop.png`. Reworked after review («reads as an outline sticker»): the mask is read
+  as relief — a narrow-step gradient for the edge, a wide one (3 and 7 px) for the slope of the side; Lambert from a
+  star lying almost in the plane (z .22); the rim is cos³ and only where the relief is steep, the side warms
+  by its wide normal, and the shadow is a gradient across the whole hull (up to .82) deepened on the far slope;
+  pair `g4e_crop.png`. Scene js (`freeze.js`, `trail.js`) also `CHIP_POS.clear()` — stale
   chip smoothing after a teleport looked like overlapping chips.
   **Next in G4:** `drawWake` (16-flight:384), combat (`drawCombat`, 13-pirates:349), drones, traffic, station
   (`drawStation`, 17c), barges; everything after the planet loop in drawSystem except the above is still 2D.
