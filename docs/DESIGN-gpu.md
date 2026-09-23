@@ -17,14 +17,17 @@ The author, 23.09.2026: «переноси все на новые техноло
 
 ## Where I stopped (update on every commit)
 
-- Done: core `08b`, kit `08c`, space `16g` (G1 — reopened: the pair reads the same, needs a real gain),
+- Done: core `08b`, kit `08c`, space `16g` (G1: live nebula wisps and lanes, stars with halo and tapered
+  spikes, dust with depth of field; pair in `scratchpad/pairs/system_crop.png`),
   `docs/shot.py` on the GPU (`--budget` kept for `vetshot.py`).
 - Running in worktrees from `fbbcd12`, one port each: G2+G3 9471, G5+G6 9472, G7 9473, G8 9474, G9 9475,
   G13 9476, G10+rail ride 9477, G11a base+raid 9478, G11b home/winter/spa/HQ/cantina/wanderer 9479,
   G12 road+cockpit 9480.
 - Merge each: `build.ps1`, `python docs/shot.py <scenes> --look --tag gpu`, 0 `gpu.errs`, pair with
   `scratchpad/mainref/docs/shots/main_<scene>.png`, one line of what got better, commit, strike from PLAN §0.
-- Next after G2+G3 merges: G4 (system view on top, shares `17-mode-system.js`), port 9481; then G1 again, G14.
+- Next after G2+G3 merges: G4 (system view on top, shares `17-mode-system.js`), port 9481; then G14.
+- Seen on the system pair, not yet owned: the tape strip under the dials is blank on gpu (grey paper on main)
+  — G12 (cockpit and tape) checks it.
 - Traps: mixed line endings (match HEAD per file, check bytes with Python); `gpuScene()` is null outside a
   frame; a presented canvas is unreadable after its task (snapshot in `gpuPresent`); launchers with
   `--disable-gpu` shoot the «no WebGPU» stub (G13).

@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 598 · символов верхнего уровня: 5876
+Файлов: 598 · символов верхнего уровня: 5878
 
 ## СИМВОЛЫ
 
@@ -2100,8 +2100,8 @@ gpuScene                     src/08b-gpu.js:218-227
 gpuScene3D                   src/08b-gpu.js:231-239
 gpuShapes                    src/08c-gpu-kit.js:159-170
 gpuSnapshot                  src/08b-gpu.js:20-24
-gpuSpaceSys                  src/16g-gpu-space.js:144-158
-gpuSpaceTitle                src/16g-gpu-space.js:160-171
+gpuSpaceSys                  src/16g-gpu-space.js:184-198
+gpuSpaceTitle                src/16g-gpu-space.js:200-211
 gpuTakeSnap                  src/08b-gpu.js:25-30
 gpuUni                       src/08b-gpu.js:195-201
 gpuWorld                     src/08b-gpu.js:270-286
@@ -2174,17 +2174,19 @@ grownExtra                   src/11q-grown.js:35-38
 grownGroundLine              src/11q-grown.js:39-44
 grownIsCore                  src/11q-grown.js:27-32
 grownOnGive                  src/11q-grown.js:54-62
-GSP                          src/16g-gpu-space.js:11
-GSP_DUST                     src/16g-gpu-space.js:59
-GSP_QUAD                     src/16g-gpu-space.js:70
-GSP_STARS                    src/16g-gpu-space.js:26
-GSP_WGSL_U                   src/16g-gpu-space.js:12
-gspDustBuf                   src/16g-gpu-space.js:101-114
-gspPipes                     src/16g-gpu-space.js:83-87
-gspQuads                     src/16g-gpu-space.js:124-132
-gspStarBuf                   src/16g-gpu-space.js:89-99
-gspStarsDust                 src/16g-gpu-space.js:133-141
-gspUni                       src/16g-gpu-space.js:115-122
+GSP                          src/16g-gpu-space.js:17
+GSP_DUST                     src/16g-gpu-space.js:76
+GSP_DUST_L                   src/16g-gpu-space.js:19
+GSP_QUAD                     src/16g-gpu-space.js:89
+GSP_STARS                    src/16g-gpu-space.js:37
+GSP_WGSL_U                   src/16g-gpu-space.js:20
+gspDustBuf                   src/16g-gpu-space.js:138-151
+gspPipes                     src/16g-gpu-space.js:120-124
+gspQuads                     src/16g-gpu-space.js:162-170
+gspSeed                      src/16g-gpu-space.js:181
+gspStarBuf                   src/16g-gpu-space.js:126-136
+gspStarsDust                 src/16g-gpu-space.js:171-179
+gspUni                       src/16g-gpu-space.js:152-159
 GUEST_EVERY                  src/21a3-base-people.js:30
 GUN_CACHE                    src/05c-arms.js:71
 GUN_FACTORY                  src/05b-guns.js:99-106
@@ -5034,7 +5036,7 @@ SPA_PLAN                     src/29h-spa.js:28-34
 spaAll                       src/29h-spa.js:45
 spaBoardRows                 src/29i-spa-draw.js:38
 spaCanHere                   src/29h-spa.js:47-50
-SPACE_BG                     src/16g-gpu-space.js:10
+SPACE_BG                     src/16g-gpu-space.js:16
 spaEnd                       src/29h-spa.js:103-118
 spaGeom                      src/29i-spa-draw.js:24-36
 spaHit                       src/29i-spa-draw.js:488-506
@@ -6562,7 +6564,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/16c-rescue.js · 51 КБ
   · пустой бак: хода нет, но выход есть всегда (11.09):1
 
-## src/16g-gpu-space.js · 9 КБ
+## src/16g-gpu-space.js · 12 КБ
   · космос на видеокарте (G1, docs/DESIGN-gpu.md):1
 
 ## src/17-mode-system.js · 78 КБ

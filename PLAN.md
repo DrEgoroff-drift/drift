@@ -45,8 +45,6 @@ Built: the core and post pass (08b), the layer kit (08c), the space backdrop (16
   `mksiteshots` without `--disable-gpu`.
 - [ ] **G14 the rest:** the postcard painter on the GPU if it reads better; the `gfx` options of the 2D era
   (resolution tricks, `draw`) reviewed — keep what still means something.
-- [ ] **G1 again:** the space pair reads the same as main (only the nebula got richer) — not closed until it
-  is visibly better (live nebula field, stars with a real point spread and temperature, depth in the dust).
 - **Gate:**
   - every mode drawn by WebGPU with zero validation errors on the laptop and the S23;
   - each G step closed by a `main | gpu` pair of the same scene and one line of what got better (main
