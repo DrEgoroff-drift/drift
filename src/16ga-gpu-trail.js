@@ -1,4 +1,4 @@
-/* ══════════════ шлейф и факел корабля на видеокарте (G4, docs/DESIGN-gpu.md) ══════════════
+/* ══════════════ шлейф, факел и свет на корпусе корабля на видеокарте (G4, docs/DESIGN-gpu.md) ══════════════
    Те же ленты по соплам из TRAIL, тот же цвет по возрасту (ядро → акцент корпуса) и
    та же толщина; лучше, чем в 2D:
    · лента — одна полоса треугольников с общими нормалями в узлах, а не отрезки
@@ -158,4 +158,50 @@ function gpuExhaust(zx,zy,Z,thr){
   const eb=gpuBuf("gex.e",GEX.f.byteLength,U.STORAGE|U.COPY_DST);d.queue.writeBuffer(eb,0,GEX.f,0,GEX.n*20);
   const P=gpuPipe("gex",GEX_WGSL,"add");
   pass.setPipeline(P);pass.setBindGroup(0,gpuBind("gex",P,[ub,eb]));pass.draw(6,GEX.n);
+}
+/* ── свет звезды на корпусе (G4) ──
+   Корпус рисуется кистью 2D (сотни штрихов — это вектор), но свет на нём — от
+   звезды, а не запечённый сверху-слева: слой поверх (gpuOver) берёт альфу уже
+   нарисованного кадра как маску корабля. По градиенту маски — кромка корпуса и её
+   нормаль: кромка, обращённая к звезде, загорается цветом светила; дальняя от
+   звезды половина корпуса уходит в тень, ближняя получает тёплый отсвет. */
+const GHL=new Float32Array(16),GHL_M=512;
+const GHL_WGSL=`
+fn field(p:vec2f,uv0:vec2f)->vec4f{
+  let V=fu.v;let uv=(p*fu.res.x/fu.res.z-V[3].xy)/V[3].z;let c=V[0].xy;let rad=V[0].z;let sd=normalize(V[1].xy);let col=V[2].rgb;let k=V[2].w;
+  let dp=p-c;let rr=length(dp);
+  if(rr>rad||any(uv<vec2f(0.))||any(uv>vec2f(1.))){return vec4f(0.);}
+  let px=vec2f(1.5*fu.res.x/fu.res.z/V[3].z);
+  let a=textureSampleLevel(t0,smp,uv,0.).a;
+  if(a<.02){return vec4f(0.);}
+  let gx=textureSampleLevel(t0,smp,uv+vec2f(px.x,0.),0.).a-textureSampleLevel(t0,smp,uv-vec2f(px.x,0.),0.).a;
+  let gy=textureSampleLevel(t0,smp,uv+vec2f(0.,px.y),0.).a-textureSampleLevel(t0,smp,uv-vec2f(0.,px.y),0.).a;
+  let g=vec2f(gx,gy);let gl=length(g);
+  let n=-g/max(gl,1e-4);
+  let rim=clamp(dot(n,sd),0.,1.)*clamp(gl*1.4,0.,1.);
+  let side=dot(dp,sd)/rad;
+  let fade=1.-smoothstep(rad*.8,rad,rr);
+  let dark=.42*smoothstep(-.05,.85,-side)*a*fade*k;
+  let lit=col*(rim*.85+.14*smoothstep(0.,.9,side))*a*fade*k;
+  return vec4f(lit,dark);
+}`;
+function gpuHullLight(x,y,sx,sy,Z,sys){
+  if(!sys||!GPU.on)return;
+  const h=hullOf(G.shipId),sc=shipScaleAt(Z);
+  const rad=Math.max(h.nose||0,-(h.tail||0),(h.bw||8)*3)*1.25*sc+6;
+  const dx=sx-x,dy=sy-y;if(!dx&&!dy)return;
+  const pass=gpuOver();if(!pass)return;
+  /* маска — копия кусочка слоя 2D вокруг корабля, сделанная СРАЗУ: сам слой
+     до отправки этого прохода ещё раз перезальют (gpuWorld), и проход увидел бы
+     уже слой без корпуса */
+  const S=GHL_M,d=GPU.dev;
+  if(!GPU.T.hm){GPU.T.hm=d.createTexture({size:[S,S],format:"rgba8unorm",usage:GPUTextureUsage.TEXTURE_BINDING|GPUTextureUsage.COPY_DST});GPU.V.hm=null;}
+  if(!GPU.V.hm)GPU.V.hm=GPU.T.hm.createView();
+  const ox=Math.max(0,Math.min(GPU.bw-S,Math.round((x-rad)*DPR))),oy=Math.max(0,Math.min(GPU.bh-S,Math.round((y-rad)*DPR)));
+  const cw=Math.min(S,GPU.bw),ch=Math.min(S,GPU.bh),e=d.createCommandEncoder();
+  e.copyTextureToTexture({texture:GPU.T.front,origin:[ox,oy]},{texture:GPU.T.hm},[cw,ch]);d.queue.submit([e.finish()]);
+  const c=(typeof starRGB==="function")?starRGB():[255,244,214],m=Math.max(1,c[0],c[1],c[2]);
+  const U=GHL;U[0]=x;U[1]=y;U[2]=rad;U[4]=dx;U[5]=dy;U[8]=c[0]/m;U[9]=c[1]/m;U[10]=c[2]/m;U[11]=1;
+  U[12]=ox;U[13]=oy;U[14]=S;
+  gpuField(pass,"ghl",GHL_WGSL,U,[{view:GPU.V.hm}]);
 }

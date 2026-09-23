@@ -170,7 +170,7 @@ function gpuResize(){
   for(const k in GPU.T)GPU.T[k].destroy();
   const TB=GPUTextureUsage.TEXTURE_BINDING,RA=GPUTextureUsage.RENDER_ATTACHMENT,CD=GPUTextureUsage.COPY_DST;
   const mk=(w,h,f,us)=>GPU.dev.createTexture({size:[w,h],format:f,usage:us});
-  GPU.T={front:mk(bw,bh,"rgba8unorm",TB|CD|RA),ui:mk(bw,bh,"rgba8unorm",TB|CD|RA),
+  GPU.T={front:mk(bw,bh,"rgba8unorm",TB|CD|RA|GPUTextureUsage.COPY_SRC),ui:mk(bw,bh,"rgba8unorm",TB|CD|RA),
     scene:mk(bw,bh,"rgba8unorm",TB|RA),bloomA:mk(qw,qh,"rgba16float",TB|RA),bloomB:mk(qw,qh,"rgba16float",TB|RA)};
   GPU.V={scene:GPU.T.scene.createView(),bloomA:GPU.T.bloomA.createView(),bloomB:GPU.T.bloomB.createView()};
   GPU.scene3D=false;
