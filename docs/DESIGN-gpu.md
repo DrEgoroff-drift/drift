@@ -26,16 +26,12 @@ The author, 23.09.2026: «переноси все на новые техноло
   `agent-G11b/src__24cf-gpu-rooms.js` (a shared room kit, 5 KB). G12's tape fix is merged: the paper shows
   before the first two samples (the strip was blank for three seconds — not a GPU bug).
 - Order: G2 → G14, one at a time, each closed by a pair and a line of gain.
-- **G2 in progress:** `src/17g-gpu-system.js` is written but NOT wired and not yet run (WGSL unchecked):
-  `gpuSysUnder(sys,ox,oy,R,Z)` = orbits as exact ellipses with a continuous comet tail, station ring, belt
-  band + dots, the star of every kind as one field (photosphere, corona streamers, spikes; neutron; hole with
-  the back of the disc hidden) and the bleed. Next: in `17-mode-system.js` replace lines 536–624 (from
-  `const ox=zx(0)` to just before `BODY_LABELS.length=0`) with `const ox=zx(0),oy=zy(0);ctx.lineWidth=1;
-  const R=sys.radius*Z;gpuSysUnder(sys,ox,oy,R,Z);if(sys.belt)drawBeltRocks(ox,oy,sys.belt,Z,G.ship.x,G.ship.y);`
-  (match the file's line endings); delete `drawStarBody…drawStarHole` (16a-space:409–570) and `drawBeltRing`
-  (17c-system-draw:94–106); build; `python docs/shot.py system --tag g2 --look`, fix WGSL errors; try each kind
-  with `--js` (sysStyle(sys).kind: binary, giant, dwarf, neutron, hole); pair with
-  `scratchpad/mainref/docs/shots/main_system.png` via `scratchpad/pair.py`; commit; then G3 (planets).
+- G2 done: `17g-gpu-system` — orbits as exact ellipses with a continuous tail, station ring, belt band + dots,
+  the star of every kind as one field (photosphere with granulation, glare laid over the disc so the limb
+  hands off to the corona; giant stays orange, dwarf white-hot), the bleed. Pairs by kind: scratchpad of
+  session 21f451ab, `kpairs.py <scene> <name> "<js>"…` shoots main and gpu with the same `--js`
+  (main's own `docs/shot.py` in `mainref`); the planets may still sit at different angles on the two sides.
+- **Next: G3 planets and moons** — `planetDraw`/`drawRing` in `17-mode-system.js` after `BODY_LABELS.length=0`.
 - Merge each: `build.ps1`, `python docs/shot.py <scenes> --look --tag gpu`, 0 `gpu.errs`, pair with
   `scratchpad/mainref/docs/shots/main_<scene>.png`, one line of what got better, commit, strike from PLAN §0.
 - Next after G2+G3 merges: G4 (system view on top, shares `17-mode-system.js`), port 9481; then G14.

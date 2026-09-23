@@ -91,19 +91,6 @@ function beltDots(B){
   for(let i=0;i<190;i++){t[i*2]=r()*TAU;t[i*2+1]=(r()-.5)*130;}
   return B.dots=t;
 }
-function drawBeltRing(ox,oy,B,Z){
-  const t=beltDots(B);
-  ctx.fillStyle="rgba(170,180,190,.5)";
-  for(let i=0;i<190;i++){
-    const a=t[i*2], rr=(B.orbit+t[i*2+1])*Z;
-    const x=ox+Math.cos(a)*rr, y=oy+Math.sin(a)*rr;
-    if(x<0||x>W||y<0||y>H)continue;
-    ctx.fillRect(x,y,1.4,1.4);
-  }
-  ctx.strokeStyle="rgba(200,200,210,.09)";ctx.lineWidth=Math.max(1,60*Z);
-  ctx.beginPath();ctx.arc(ox,oy,B.orbit*Z,0,TAU);ctx.stroke();
-  drawBeltRocks(ox,oy,B,Z,G.ship.x,G.ship.y);
-}
 /* Станция рисуется процедурно, тем же приёмом, что корпуса кораблей (03-ships):
    общий скелет — ядро, причал, огни, — а силуэт задаёт тип станции, пропорции и
    мелочь берутся из seed системы. Кэшируем в S.viz: станция эфемерна и живёт

@@ -129,8 +129,8 @@ async function g11RunDeep(){
   try{
     G.mode="system";G.ap=null;
     await sleep(5000);                   /* прогрев: меряем крейсер, не пекарню */
-    out.system=await g11Deep(["drawSysNebula","drawStars","drawSpaceDust","drawStarBody",
-      "drawBeltRing","planetDraw","drawRing","drawTrail","drawBarges","drawFinds"]);
+    out.system=await g11Deep(["drawSysNebula","drawStars","drawSpaceDust","gpuSysUnder",
+      "planetDraw","drawRing","drawTrail","drawBarges","drawFinds"]);
     {
       const s0=find(x=>x.planets.some(q=>q.type!=="gas"));
       G.sx=s0.sx;G.sy=s0.sy;G.sys=s0;G.ap=null;

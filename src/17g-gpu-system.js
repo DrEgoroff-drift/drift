@@ -59,11 +59,10 @@ fn star(p:vec2f,sv:vec4f,cv:vec4f,t:f32,big:f32,px:f32)->vec4f{
   let Rd=.62;let dir=d/max(rr,1e-4);
   var e=vec3f(0.);
   let breath=.93+.07*sin(t*.04);
-  if(r<4.){
-    let ph=t*.0014;
-    let n=sf(lrot(dir,ph)*(2.4+big)+vec2f(r*.45,-r*.3)+vec2f(0.,t*.002));
-    let str=.5+1.;
-    let inner=exp(-max(r-Rd,0.)*3.1)*.95;
+  {
+    /* корона без порога по радиусу: ступень на 4R была бы видна кольцом */
+    let n=sf(lrot(dir,t*.0014)*(2.4+big)+vec2f(r*.45,-r*.3)+vec2f(0.,t*.002));
+    let inner=exp(-max(r-Rd,0.)*.9)*.9;
     e=e+col*inner*mix(1.,.45+1.1*n,smoothstep(Rd,Rd+.3,r))*breath;
   }
   e=e+col*.16*heat*1.35*pow(clamp(1.-(r-.3)/6.7,0.,1.),2.2)*smoothstep(Rd*.9,Rd*1.3,r);
@@ -79,14 +78,18 @@ fn star(p:vec2f,sv:vec4f,cv:vec4f,t:f32,big:f32,px:f32)->vec4f{
   var photo=vec4f(0.);
   if(r<Rd+.06){
     let rn=min(r/Rd,1.);let mu=sqrt(max(0.,1.-rn*rn));
-    let limb=1.-.55*(1.-mu)-.2*(1.-mu)*(1.-mu);
+    let limb=1.-.3*(1.-mu)-.1*(1.-mu)*(1.-mu);
     let gs=(7.+9.*(1.-big))/Rd;
     let gr=.86+.28*sf(d/R*gs+vec2f(t*.0015,-t*.001));
-    let hot=mix(col,vec3f(1.,.99,.965),.82*mu);
-    let cov=clamp((Rd*R-rr)/px+.5,0.,1.);
+    /* белизна — от жара: гигант холодный и остаётся оранжевым, карлик — добела */
+    let wh=mix(.3,.85,clamp((heat-.7)/.3,0.,1.));
+    let hot=mix(col,vec3f(1.,.99,.965),wh*mu);
+    let cov=clamp((Rd*R-rr)/(1.5*px)+.5,0.,1.);
     photo=vec4f(hot*limb*mix(1.,gr,mu)*cov,cov);
   }
-  return over(vec4f(e,0.),photo);
+  /* свечение ложится и на диск (как засветка в глазу), слабее в середине —
+     тогда край фотосферы переходит в корону, а не обведён тёмным кольцом */
+  return photo+vec4f(e*(1.-.6*photo.a),0.);
 }
 fn bleed(p:vec2f,bv:vec4f,col:vec3f)->vec3f{
   if(bv.w<.5){return vec3f(0.);}
@@ -152,13 +155,13 @@ function gsyOrb(n,cx,cy,A,B,ux,uy,sg,e,Mp,span,base,tail,r,g,b,hw,soft){
   a[k+16]=soft;a[k+17]=0;a[k+18]=0;a[k+19]=0;
   return n+1;
 }
-/* кадр эллипса из кеплерова пути: перицентр O[0], апоцентр O[48], четверть O[24] задаёт ход */
+/* кадр эллипса из кеплерова пути: перицентр — точка 0, апоцентр — точка 24, точка 12 задаёт ход */
 function gsyEll(p){
   let F=p._gsyE;
   if(!F){
-    const O=orbPathOf(p),cx=(O[0]+O[96])/2,cy=(O[1]+O[97])/2;
-    const A=Math.hypot(O[0]-O[96],O[1]-O[97])/2||1,ux=(O[0]-cx)/A,uy=(O[1]-cy)/A;
-    const sg=((O[48]-cx)*-uy+(O[49]-cy)*ux)<0?-1:1;
+    const O=orbPathOf(p),cx=(O[0]+O[48])/2,cy=(O[1]+O[49])/2;
+    const A=Math.hypot(O[0]-O[48],O[1]-O[49])/2||1,ux=(O[0]-cx)/A,uy=(O[1]-cy)/A;
+    const sg=((O[24]-cx)*-uy+(O[25]-cy)*ux)<0?-1:1;
     F=p._gsyE={cx,cy,A,B:A*Math.sqrt(Math.max(0,1-(p.ecc||0)*(p.ecc||0))),ux,uy,sg};
   }
   return F;
@@ -172,7 +175,7 @@ function gsyOrbits(pass,sys,ox,oy,Z){
   for(const p of sys.planets){
     if(n>=22)break;
     const F=gsyEll(p),fade=clamp(1-p.orbit*Z/(W*1.6),.3,1),e=p.ecc||0;
-    n=gsyOrb(n,zx(F.cx),zy(F.cy),F.A*Z,F.B*Z,F.ux,F.uy,F.sg,e,gsyMean(F,p.x,p.y,e),9/48*TAU,
+    n=gsyOrb(n,ox+F.cx*Z,oy+F.cy*Z,F.A*Z,F.B*Z,F.ux,F.uy,F.sg,e,gsyMean(F,p.x,p.y,e),9/48*TAU,
              .05*fade,.24*fade,120,190,210,.5,0);
   }
   if(sys.station){const st=sys.station;
