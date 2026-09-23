@@ -101,9 +101,9 @@ albumCanvas                  src/25g1-album-fx.js:41-51
 albumClose                   src/25g1-album-fx.js:53
 albumDpr                     src/25g1-album-fx.js:52
 albumFx                      src/25g1-album-fx.js:18-39
-albumLightbox                src/25g1-album-fx.js:55-92
+albumLightbox                src/25g1-album-fx.js:55-101
 albumOpen                    src/25g-postcard.js:677
-albumSave                    src/25g1-album-fx.js:94-110
+albumSave                    src/25g1-album-fx.js:105-136
 alCount                      tests/91zzzzzy-alive.js:15-22
 ALL_NAMES                    tests/90-harness.js:93
 allyOf                       src/27b-ui-crew.js:8
@@ -6894,7 +6894,7 @@ zooTick                      src/11ad-zoo.js:41-54
   · открытка: снимок сцены, а не пиксели:1
   · камера и альбом:613
 
-## src/25g1-album-fx.js · 7 КБ
+## src/25g1-album-fx.js · 9 КБ
   · альбом: большая карточка, фильтры, снимок себе (P13, плейтест §4.3):1
 
 ## src/25h-post-forms.js · 20 КБ

@@ -189,10 +189,10 @@ job (the phone milestone), but no fix may add raster cost without a number.
 - [~] **D24 Railway life — rows done 18.09 on the S23.** The parcel is a paper tag with a hole
   (dashed edge, ochre), the pass a card with a punched row, the passenger a phosphor silhouette
   before the line. ~~Left: the подстаканник for the tea row, the seal drawn on the hold in flight~~ — done 18.09: the Рассвет buffet button carries a glass in a lattice holder with a handle (CSS), the Орднунг seal is a lead disc on wire over the hold hatch at midships (`drawSeal`, in the bake key).
-- [~] **D23 Album — the page done 18.09 on the S23.** The lightbox is a black album page with
+- [x] **D23 Album — the page done 18.09 on the S23; filters and the saved page 23.09.** The lightbox is a black album page with
   paper grain, the card sits in four corner mounts, the caption is white-pencil italic serif under
-  the photo. Left: filter previews as thumbnails (five extra canvases — a phone-cost question),
-  the saved PNG's caption band.
+  the photo. The filter chips are thumbnails: the card drawn ONCE small, the five filters
+  applied to copies (one repaint + five nail-sized pixel passes, not five repaints). СОХРАНИТЬ СЕБЕ writes the album page itself — dark grained paper, the card in a cream frame on four mounts, the caption in white pencil.
 - [x] **D22 Rented core — the card done 18.09 on the S23; the adverts 23.09.** The three tiers are one glossy
   Хай-Фронт card (`.rent-card`): cyan-edged, head with the ◉ mark, tariff rows name / price /
   note, role buttons under each, the «спасибо, что остаётесь с нами» foot. The adverts in «Что он говорит»

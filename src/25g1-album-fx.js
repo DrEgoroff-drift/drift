@@ -68,8 +68,17 @@ function albumLightbox(s,i){
   lb.appendChild(cap);
   if(!albumBack){
     const fr=document.createElement("div");fr.className="lb-fx";
+    /* фильтр показывает себя (D23): карточка перерисована ОДИН раз в малый
+       холст, пять фильтров — по его копиям; на телефоне это пять проходов по
+       пикселям размером с ноготь, а не пять перерисовок */
+    const tw=Math.max(44,Math.min(64,Math.floor((vw-56)/5)-10)),th=Math.round(tw*.625),td=Math.min(2,albumDpr());
+    const base=albumCanvas(Object.assign({},s,{fx:"none"}),tw,th,td);
     for(const k in ALBUM_FX){
-      const b=document.createElement("button");b.className="chip"+(((s.fx||"none")===k)?" on":"");b.textContent=ALBUM_FX[k].ru;
+      const b=document.createElement("button");b.className="chip fxth"+(((s.fx||"none")===k)?" on":"");
+      const cv=document.createElement("canvas");cv.width=base.width;cv.height=base.height;cv.style.width=tw+"px";cv.style.height=th+"px";
+      const cc=cv.getContext("2d");
+      if(cc){cc.scale(td,td);cc.drawImage(base,0,0,tw,th);albumFx(cc,tw,th,Object.assign({},s,{fx:k}),td);}
+      b.appendChild(cv);b.appendChild(document.createElement("span")).textContent=ALBUM_FX[k].ru;
       b.onclick=e=>{e.stopPropagation();s.fx=k;albumLightbox(s,i);};
       fr.appendChild(b);
     }
@@ -90,17 +99,34 @@ function albumLightbox(s,i){
   lb.onclick=e=>{if(e.target===lb){albumOpen=-1;albumBack=false;albumClose();tableRender();}};
   document.body.appendChild(lb);
 }
-/* снимок себе: карточка крупно и полоса подписи — PNG скачиванием */
+/* снимок себе — страницей альбома (D23): чёрная бумага с зерном, карточка в
+   кремовой рамке на четырёх уголках, подпись белым карандашом под ней. Тот же
+   язык, что у большой карточки в игре, — снимок узнаётся своим */
 function albumSave(s){
-  const cw=1200,ch=750,band=64;
-  const cv=document.createElement("canvas");cv.width=cw;cv.height=ch+band;
+  const cw=1200,ch=750,m=16,pad=64,capH=118,PW=cw+2*(pad+m),PH=ch+2*m+pad+capH;
+  const cv=document.createElement("canvas");cv.width=PW;cv.height=PH;
   const c=cv.getContext("2d");if(!c)return false;
-  if(!drawPostcard(c,s,cw,ch)){c.fillStyle="#12161d";c.fillRect(0,0,cw,ch);}else albumFx(c,cw,ch,s,1);
-  c.fillStyle="#f3ecdc";c.fillRect(0,ch,cw,band);
-  c.fillStyle="#2a241a";c.font="600 24px Georgia,serif";c.textBaseline="middle";
-  c.fillText("«Дрейф» · "+postCaption(s),24,ch+band/2);
-  c.font="16px ui-monospace,monospace";c.textAlign="right";c.fillStyle="#7a6a50";
-  c.fillText("сектор "+(s.sx|0)+":"+(s.sy|0)+" · drift-game.ru",cw-24,ch+band/2);
+  const g=c.createRadialGradient(PW/2,PH*.3,0,PW/2,PH*.3,PW*.8);
+  g.addColorStop(0,"#2a231c");g.addColorStop(.7,"#15110d");g.addColorStop(1,"#120e0b");
+  c.fillStyle=g;c.fillRect(0,0,PW,PH);
+  const r=rng(hashi(s.sx|0,s.sy|0,(s.t|0)^0xA1B));
+  for(let i=0;i<PW*PH/70;i++){c.fillStyle=i&1?"rgba(255,240,220,.035)":"rgba(0,0,0,.22)";c.fillRect(r()*PW|0,r()*PH|0,1,1);}
+  const x0=pad,y0=pad;
+  c.save();c.shadowColor="rgba(0,0,0,.72)";c.shadowBlur=28;c.shadowOffsetY=7;
+  c.fillStyle="#f3ecdc";c.fillRect(x0,y0,cw+2*m,ch+2*m);c.restore();
+  c.drawImage(albumCanvas(s,cw,ch,1),x0+m,y0+m);
+  /* фотоуголки: тёмная бумага поверх рамки, светлая кромка по гипотенузе */
+  const L=46,o=10,C=[[x0-o,y0-o,1,1],[x0+cw+2*m+o,y0-o,-1,1],[x0-o,y0+ch+2*m+o,1,-1],[x0+cw+2*m+o,y0+ch+2*m+o,-1,-1]];
+  for(const [qx,qy,sx,sy] of C){
+    c.fillStyle="#3b2f22";c.beginPath();c.moveTo(qx,qy);c.lineTo(qx+sx*L,qy);c.lineTo(qx,qy+sy*L);c.closePath();c.fill();
+    c.strokeStyle="rgba(255,236,200,.14)";c.lineWidth=1.5;c.beginPath();c.moveTo(qx+sx*L,qy);c.lineTo(qx,qy+sy*L);c.stroke();
+  }
+  const cy=y0+ch+2*m+capH*.42;
+  c.textAlign="center";c.textBaseline="middle";
+  c.fillStyle="rgba(236,228,210,.9)";c.font="italic 32px Georgia,\"Times New Roman\",serif";
+  c.fillText("«Дрейф» · "+postCaption(s),PW/2,cy,PW-2*pad);
+  c.fillStyle="rgba(200,184,150,.55)";c.font="17px ui-monospace,monospace";
+  c.fillText("сектор "+(s.sx|0)+":"+(s.sy|0)+" · drift-game.ru",PW/2,cy+38);
   const name="drift-"+(s.sx|0)+"_"+(s.sy|0)+"-"+(s.t|0)+".png";
   const go=url=>{const a=document.createElement("a");a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();};
   if(cv.toBlob)cv.toBlob(b=>{if(!b)return;const u=URL.createObjectURL(b);go(u);setTimeout(()=>URL.revokeObjectURL(u),4000);},"image/png");
