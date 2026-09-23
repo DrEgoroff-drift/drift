@@ -140,6 +140,14 @@ with walls and station halls; the trust rating; the lab restart until a CPU budg
 is a real station in the system, not an abstract ring · rides are seconds to a minute · the net is
 procedural and infinite · jumps stay for near · «пока только в план пиши».
 
+## Open on purpose, and left out by the review
+
+- **Open by design** (left open deliberately, not owed): M125–M127, M131–M132, the yacht railing, P9b
+  settlement recursion, holding deeds without counters — the reasons in `docs/done/` (grep «Open by design»).
+- **Not kept by the review of 14.09** (`docs/DESIGN-review-2026-09-14.md` §1): M490 the region-places and
+  M493 дачники (`docs/DESIGN-birchpunk.md`) — take up only on the author's word; M494 the warmth rule lives
+  on as the checklist's «one kindness named in the patchnote».
+
 ## Housekeeping
 
 - **Refactors rejected (0.438.0 audit):** a palette module, a `G.mode` table, removing `typeof` guards, a schema-driven `applySave`, an uncommitted `drift.html`.

@@ -20,7 +20,15 @@ quality, the ship stays under the finger.
 The author 18.09: «на тел дергается все прогоны … плавный полет нужен»; «потом пройдемся все
 померяем, отдельно веха тесты на тел». Known: with the stick under the finger 80–83 % of frames make
 16.7 ms, without it 99–100 %; our JS is 6–8 ms — the deadline is lost in the raster. Every
-measurement here follows the cadence protocol in `docs/DECISIONS.md`.
+measurement here follows the cadence protocol in `docs/DECISIONS.md`. The author allowed testing any
+time; the S23 shows in `adb mdns services` only with «Беспроводная отладка» on (on 18.09 only
+`192.168.1.52:5555` answered, unauthorized until «Разрешить» on its screen). Tools:
+`docs/night-2026-09-13/raw/phone-tools`.
+
+- [ ] **Before the runs:** ask the author to close the two «CryptoTab Pool» tabs (`web.ctpool.net`, a
+  browser miner) in the same Chrome; fly with the real finger — the S23 reports touch at 240 Hz, a CDP
+  stick at 26 Hz; suspect the long save (160 log lines, 21 drones, 493 DOM nodes) only if those two do
+  not clear the stutter.
 
 - [ ] **The hull bake, on vs off** (`G.opts.gfx.hullBake=0`) — the only number that says whether baking
   helps. If it helps: bake the other modes' still bodies (station, landing, belt) by the rule «bake what
@@ -58,16 +66,19 @@ Cut only at the same look, or when the picture gets better (the author 23.09: «
 - [ ] The surface at ×2 runs ~30 fps (3.8 k canvas ops, plants 1.3 k): plant poses can now be baked —
   between gust crests they are nearly still — but their glow uses `lighter`, which blends differently in
   a sprite. A look change: ask first.
+- [ ] One look at the scoop frame: its flame follows `lvl=G.mods.engine` since 18.09 (it grew on the
+  climb before), never looked at since.
 
 ## 3. Stage 2 — whose land, in five seconds
 
-- [ ] **M453 the stamp + P14 КНИЖКА:** ink grain; Ялта's stamp and the pirates' scratch cannot be earned
-  yet; the rest of P14 — seals, vacation savings, the grounding ending on the page.
+- [ ] **M453 the stamp + P14 КНИЖКА:** Ялта's stamp and the pirates' scratch cannot be earned yet; the rest of P14 — seals, vacation savings, the grounding ending on the page.
 - [ ] **M454 the station by its builder:** the maker's grammar on the modules and the core (profile law,
-  seams, joints), not the common kit with a dressed plate; the station's one light washes the ground out;
-  the Орднунг ribs hide under the modules.
+  seams, joints), not the common kit with a dressed plate; the Орднунг ribs hide under the modules.
 - [ ] **M447/M448 the galaxy:** M450 the overview and M451 the flight sky from the same model; verify the
   drag detector's thresholds («deep < 8 %, sheet ≥ 25 %» were set before measuring).
+- [ ] **M458 map borders:** territory edges as lines in the owner's pattern (dotted stars, ring marks,
+  numbered dashes, a wave, uneven dashes with suns, dots), 1:1 with the sheet; the emblem chip readable
+  (14–18 px) at near zoom; the glyph on the compass label and the header. Not started.
 - **Gate:** on any jump in the settled circle a tester names the owner within 5 s without reading a label
   (three testers, six powers); the stamp lands once per crossing.
 
@@ -108,6 +119,8 @@ Cut only at the same look, or when the picture gets better (the author 23.09: «
   `engine`/`hyper`/`drill` stay station upgrades; the fixpoint suite covers both halves.
 - [ ] **M479 exposure:** rim parts take their side's wear when hit from that side; «engines take it» from
   behind.
+- [ ] **M483 the fast path everywhere:** NPC and pirate ships built by the packer; the new-part mark
+  (ПРОЕКТЫ is under M477). Not started — `docs/DESIGN-shipyard.md` §10.
 - **Gate:** an old save loads with every number unchanged; a hauler stripped to the hold and a warship
   stripped of hold both fly under the finger the same (the P8 meter); the blueprint gets its almanac issue.
 
@@ -139,7 +152,7 @@ Cut only at the same look, or when the picture gets better (the author 23.09: «
 - [ ] **P15 «Смена»:** a chapter's deed in the place, not just a landing; check that 72 distinct kinds of
   place exist within reach.
 - [ ] **M457 sound:** an ear pass on the six motifs (the AnalyserNode check of `docs/VERIFY.md` at a release
-  run), then the rest of the item.
+  run); the receiver speaks the owner's `air` line once at entry.
 - [ ] **M480/M481 yards:** the free cells (need the plan, M477); Хай-Фронт firmware moving a part per
   сводка; Рассвет hull points back from debris; calibration by the worlds oracle and the стрельбище.
 - [ ] **M484 the special system:** the ability named on the ship card; СИРЕНА answered by the ships actually
