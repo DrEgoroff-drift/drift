@@ -144,6 +144,10 @@ function renderSmena(box){
         box.appendChild(row);
         if(smenaOpenCh===n){
           const txt=document.createElement("div");txt.className="smena";
+          /* книга, а не строка списка (P15, дизайн 23.09): шапка главы,
+             колонцифра и листание по открытым главам */
+          const hd=document.createElement("div");hd.className="sm-h";
+          hd.innerHTML="<b>ГЛАВА "+n+"</b><i>"+t+"</i>";txt.appendChild(hd);
           /* картинка из вашей игры — там, где глава прожита (P15) */
           const pl=(typeof smenaPlate==="function")?smenaPlate(n):null;
           if(pl){txt.appendChild(pl);const A=smenaAtAll()[n],cap=document.createElement("p");cap.className="cap";
@@ -156,6 +160,14 @@ function renderSmena(box){
             else el2.textContent=p;
             txt.appendChild(el2);
           }
+          const opened=[];for(let m=1;m<=72;m++)if(smenaIsOpen(m))opened.push(m);
+          const at=opened.indexOf(n),nav=document.createElement("div");nav.className="sm-nav";
+          const go=m=>{const b=document.createElement("button");b.textContent=(m<n?"← глава ":"глава ")+m+(m>n?" →":"");
+            b.onclick=e=>{e.stopPropagation();smenaOpenCh=m;renderSmena(box);const q=box.querySelector(".smena");if(q&&q.scrollIntoView)q.scrollIntoView({block:"start"});};return b;};
+          nav.appendChild(at>0?go(opened[at-1]):document.createElement("span"));
+          const pg=document.createElement("span");pg.className="pg";pg.textContent="— "+n+" —";nav.appendChild(pg);
+          nav.appendChild(at>=0&&at<opened.length-1?go(opened[at+1]):document.createElement("span"));
+          txt.appendChild(nav);
           box.appendChild(txt);
         }
       }else box.appendChild(row);

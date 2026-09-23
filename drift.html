@@ -1465,6 +1465,12 @@ body.mapclean .hud,body.mapclean .pads,body.mapclean #console,body.mapclean #pro
    есть та же вставка другим шрифтом, а не другим голосом. Правку отменили. */
 .smena .journal{font-family:ui-monospace,monospace;font-size:13px;color:#4a3a24;border-left:2px solid #6a5a3a;padding:4px 10px;margin:8px 0 12px;background:rgba(120,96,56,.10)}
 .smena .cap{font-size:12px;color:#6a5c44;font-style:italic}
+.smena .sm-h{text-align:center;margin:8px 0 18px;padding-bottom:12px;border-bottom:1px solid rgba(90,70,40,.22)}
+.smena .sm-h b{display:block;font:600 11px ui-monospace,monospace;letter-spacing:.5em;color:#8b7d61}
+.smena .sm-h i{display:block;font:italic 24px/1.25 Georgia,"Times New Roman",serif;color:#2f2718;margin-top:6px}
+.smena .sm-nav{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;margin:20px 0 6px;padding-top:12px;border-top:1px solid rgba(90,70,40,.22)}
+.smena .sm-nav button{min-height:44px;padding:0 12px;background:none;border:1px solid rgba(90,70,40,.35);border-radius:2px;color:#4a3a24;font:italic 14px Georgia,"Times New Roman",serif}
+.smena .sm-nav button:last-child{justify-self:end}.smena .sm-nav .pg{font:13px Georgia,"Times New Roman",serif;color:#8b7d61}
 #loglist .li.dim span{color:var(--dim)}
 
 /* ══════════════ ОПИСЬ (M341): сукно с четырьмя зонами ══════════════
@@ -38575,6 +38581,10 @@ function renderSmena(box){
         box.appendChild(row);
         if(smenaOpenCh===n){
           const txt=document.createElement("div");txt.className="smena";
+          /* книга, а не строка списка (P15, дизайн 23.09): шапка главы,
+             колонцифра и листание по открытым главам */
+          const hd=document.createElement("div");hd.className="sm-h";
+          hd.innerHTML="<b>ГЛАВА "+n+"</b><i>"+t+"</i>";txt.appendChild(hd);
           /* картинка из вашей игры — там, где глава прожита (P15) */
           const pl=(typeof smenaPlate==="function")?smenaPlate(n):null;
           if(pl){txt.appendChild(pl);const A=smenaAtAll()[n],cap=document.createElement("p");cap.className="cap";
@@ -38587,6 +38597,14 @@ function renderSmena(box){
             else el2.textContent=p;
             txt.appendChild(el2);
           }
+          const opened=[];for(let m=1;m<=72;m++)if(smenaIsOpen(m))opened.push(m);
+          const at=opened.indexOf(n),nav=document.createElement("div");nav.className="sm-nav";
+          const go=m=>{const b=document.createElement("button");b.textContent=(m<n?"← глава ":"глава ")+m+(m>n?" →":"");
+            b.onclick=e=>{e.stopPropagation();smenaOpenCh=m;renderSmena(box);const q=box.querySelector(".smena");if(q&&q.scrollIntoView)q.scrollIntoView({block:"start"});};return b;};
+          nav.appendChild(at>0?go(opened[at-1]):document.createElement("span"));
+          const pg=document.createElement("span");pg.className="pg";pg.textContent="— "+n+" —";nav.appendChild(pg);
+          nav.appendChild(at>=0&&at<opened.length-1?go(opened[at+1]):document.createElement("span"));
+          txt.appendChild(nav);
           box.appendChild(txt);
         }
       }else box.appendChild(row);

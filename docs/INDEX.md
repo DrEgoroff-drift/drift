@@ -4348,7 +4348,7 @@ renderRecord                 src/11aa-record.js:86-109
 renderRelays                 src/11ap-relay.js:253-301
 renderRoute                  src/12r-route.js:349-448
 renderSiteTab                src/26c-ui-station-site.js:7-130
-renderSmena                  src/12ud-smena.js:123-164
+renderSmena                  src/12ud-smena.js:123-176
 renderStrips                 src/27i-ui-table.js:328-370
 renderTab                    src/26-ui-station.js:486-498
 renderTabBody                src/26-ui-station.js:499-691
@@ -6392,7 +6392,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/12ud-smena-text.js · 458 КБ
   · «Смена»: текст романа — СГЕНЕРИРОВАНО docs/mksmena.py из docs/SMENA.md, руками не править:1
 
-## src/12ud-smena.js · 13 КБ
+## src/12ud-smena.js · 14 КБ
   · «Смена»: роман, который читается, когда прожит (M353):1
 
 ## src/12ud1-smena-quest.js · 4 КБ
