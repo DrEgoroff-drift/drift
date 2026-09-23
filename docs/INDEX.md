@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 595 · символов верхнего уровня: 5830
+Файлов: 595 · символов верхнего уровня: 5831
 
 ## СИМВОЛЫ
 
@@ -1446,6 +1446,7 @@ drawKitFigure                src/12x-suit.js:202-299
 drawLander                   src/19f-lander.js:52-340
 drawLandGear                 src/19f-lander.js:26-51
 drawLanding                  src/19-mode-landing.js:285-413
+drawLawRing                  src/12al2-laws.js:61-85
 drawLoreMarks                src/12q-lore.js:235-266
 drawLuxeDeck                 src/03c-hull-luxe.js:109-275
 drawLuxeSkin                 src/03c-hull-luxe.js:27-108
@@ -1507,12 +1508,12 @@ drawSurface                  src/21e-surface-draw.js:277-291
 drawSurfaceHud               src/21e-surface-draw.js:21-115
 drawSurfaceWorld             src/21e1-surface-world.js:10-615
 drawSurvey                   src/12w-survey.js:63-89
-drawSysHud                   src/17-mode-system.js:773-1028
+drawSysHud                   src/17-mode-system.js:774-1029
 drawSysLane                  src/17g-sys-lane.js:86-114
 drawSysLaneShips             src/17g-sys-lane.js:125-151
 drawSysNebula                src/16a-space.js:208-236
 drawSysRail                  src/18f-rail-station.js:32-65
-drawSystem                   src/17-mode-system.js:482-772
+drawSystem                   src/17-mode-system.js:482-773
 drawSysTraffic               src/17f-sys-traffic.js:36-40
 drawTapes                    src/12s1-tape.js:37-52
 drawTemple                   src/20aa-poi-shapes.js:50-89
@@ -6183,7 +6184,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/12al1-toponym.js · 2 КБ
   · названия по хозяину (M489, DESIGN-birchpunk §2):1
 
-## src/12al2-laws.js · 4 КБ
+## src/12al2-laws.js · 6 КБ
   · закон земли — по одному, только озвученные (M456, review §1.5):1
 
 ## src/12al3-reg.js · 4 КБ

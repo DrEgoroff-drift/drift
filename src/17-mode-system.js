@@ -686,6 +686,7 @@ function drawSystem(){
   if(typeof drawGestPost==="function")drawGestPost(zx,zy,Z);   /* пост у входа (M452, 17h) */
   if(typeof drawSysRail==="function")drawSysRail(zx,zy,Z);   /* кольцо станции железной дороги (M471) */
   if(typeof drawBillboard==="function")drawBillboard(zx,zy,Z);   /* щит с бегущей строкой (M460) */
+  if(typeof drawLawRing==="function")drawLawRing(zx,zy,Z);   /* кольцо скоростного режима Орднунга (M456) */
   if(typeof drawHotel==="function")drawHotel(zx,zy,Z);
   if(typeof drawBazaar==="function")drawBazaar(zx,zy,Z);
   if(typeof drawGiant==="function")drawGiant(zx,zy,Z);   /* великан рукава (M464) */

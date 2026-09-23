@@ -53,3 +53,33 @@ function lawRingTick(sh){
     say("ШТРАФ · "+par+"\nскоростной режим в кольце станции",120);
   }
 }
+
+/* кольцо Орднунга видно (дизайн-проход): закон, который штрафует, обязан быть
+   нарисован. Пунктир на шестистах и восемь нумерованных столбов со знаком
+   «4.5» — белый круг в красном ободе. Превышение внутри кольца зажигает
+   ближний знак ровным светом — поведение у света, не мигание */
+function drawLawRing(zx,zy,Z){
+  if(lawOwner()!=="or"||!G.sys||!G.sys.station)return;
+  const S=G.sys.station,cx=zx(S.x),cy=zy(S.y),R=LAW_RING*Z;
+  if(R<24||cx+R<-40||cx-R>W+40||cy+R<-40||cy-R>H+40)return;
+  const sh=G.ship,inR=Math.hypot(sh.x-S.x,sh.y-S.y)<LAW_RING,over=inR&&Math.hypot(sh.vx,sh.vy)>LAW_SPEED;
+  const k=Math.max(.9,clamp(Z,.4,1.6))*(typeof UIK==="number"?UIK:1);   /* знак читают: мельче порога не сжимается */
+  ctx.save();
+  ctx.setLineDash([6*k,9*k]);ctx.strokeStyle="rgba(232,228,220,"+(inR?.28:.16)+")";ctx.lineWidth=1.2;
+  ctx.beginPath();ctx.arc(cx,cy,R,0,TAU);ctx.stroke();ctx.setLineDash([]);
+  const sa=Math.atan2(sh.y-S.y,sh.x-S.x);
+  for(let i=0;i<8;i++){
+    const a=i/8*TAU+.2,x=cx+Math.cos(a)*R,y=cy+Math.sin(a)*R;
+    if(x<-30||x>W+30||y<-30||y>H+30)continue;
+    const r=5.5*k,lit=over&&Math.abs(Math.atan2(Math.sin(a-sa),Math.cos(a-sa)))<Math.PI/8;
+    ctx.fillStyle="rgba(0,0,0,.45)";ctx.fillRect(x-.6*k+1,y+r,1.2*k,r*1.1);
+    ctx.fillStyle="#8a9098";ctx.fillRect(x-.6*k,y+r*.9,1.2*k,r*1.1);
+    if(lit){const g=ctx.createRadialGradient(x,y,0,x,y,r*3.2);g.addColorStop(0,"rgba(255,90,70,.45)");g.addColorStop(1,"rgba(255,90,70,0)");
+      ctx.globalCompositeOperation="lighter";ctx.fillStyle=g;ctx.fillRect(x-r*3.2,y-r*3.2,r*6.4,r*6.4);ctx.globalCompositeOperation="source-over";}
+    ctx.fillStyle="#f4f1ea";ctx.beginPath();ctx.arc(x,y,r,0,TAU);ctx.fill();
+    ctx.strokeStyle=lit?"#ff4a3a":"#c8322a";ctx.lineWidth=r*.26;ctx.beginPath();ctx.arc(x,y,r*.84,0,TAU);ctx.stroke();
+    if(r>=4){ctx.fillStyle="#1a1a1a";ctx.font="bold "+(r*.78).toFixed(1)+"px ui-monospace,monospace";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("4.5",x,y+.3);
+      ctx.fillStyle="rgba(232,228,220,.6)";ctx.font=(r*.62).toFixed(1)+"px ui-monospace,monospace";ctx.fillText("№"+(i+1),x,y+r*2.6);}
+  }
+  ctx.restore();
+}
