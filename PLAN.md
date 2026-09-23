@@ -193,10 +193,10 @@ job (the phone milestone), but no fix may add raster cost without a number.
   paper grain, the card sits in four corner mounts, the caption is white-pencil italic serif under
   the photo. Left: filter previews as thumbnails (five extra canvases — a phone-cost question),
   the saved PNG's caption band.
-- [~] **D22 Rented core — the card done 18.09 on the S23.** The three tiers are one glossy
+- [x] **D22 Rented core — the card done 18.09 on the S23; the adverts 23.09.** The three tiers are one glossy
   Хай-Фронт card (`.rent-card`): cyan-edged, head with the ◉ mark, tariff rows name / price /
-  note, role buttons under each, the «спасибо, что остаётесь с нами» foot. Left: the advert
-  lines in the manager log styled as adverts.
+  note, role buttons under each, the «спасибо, что остаётесь с нами» foot. The adverts in «Что он говорит»
+  are `mgrSay(...,"ad")`, drawn as glossy Хай-Фронт inserts (`.mg-ad`, a blue РЕКЛАМА label); old saves' «Реклама: » lines are caught by prefix.
 - [~] **D21 Special systems — done 18.09 on the S23 except two effects.** The charge ring is 4 px
   with a bright head at the arc's end; when charged the pad carries «ДОЛГОЕ · ФОРСАЖ» above it (it
   dims with the pad's own `.off` opacity — acceptable, reads on a dark sky). Effects: ФОРСАЖ
