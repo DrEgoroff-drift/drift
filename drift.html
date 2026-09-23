@@ -51191,14 +51191,14 @@ fn field(p:vec2f,uv0:vec2f)->vec4f{
   let rgb=c4.rgb/max(a,1e-3);let mx=max(rgb.r,max(rgb.g,rgb.b));let sat=(mx-min(rgb.r,min(rgb.g,rgb.b)))/max(mx,1e-3);
   let own=1.-smoothstep(.3,.55,sat*mx);
   let rim=pow(max(dot(n,L),0.),3.)*pow(1.-n.z,1.5);
-  let body=max(dot(nb,L),0.)*(1.-nb.z)*.35+max(side,0.)*.12;
+  /* свет — множитель по грунту (почти белый): тёмное остаётся тёмным, синее — синим;
+     тёплый цвет звезды — только кромке cos³ */
   let away=max(-dot(nb.xy,sd),0.)*(1.-nb.z);
   let dark=clamp(.45*smoothstep(-.1,.9,-side)+.25*away,0.,.55)*own;
   let lf=smoothstep(-.2,.8,side)*own;
-  let lit=col*(rim*1.1+body)*own*a;
-  /* плёнка света звезды на обшивке: тёмный грунт иначе тонет в космосе целиком */
-  let base=mix(c4.rgb,mix(vec3f(1.),col,.3)*a,(.12+.28*lf)*own);
-  return vec4f(base*(1.-dark)+lit+gl*(1.-a),a);
+  let shade=(1.+.9*lf+max(dot(nb,L),0.)*(1.-nb.z)*1.2*own)*(1.-dark);
+  let lit=col*rim*1.1*own*a;
+  return vec4f(c4.rgb*shade*mix(vec3f(1.),col,.08)+lit+gl*(1.-a),a);
 }`;
 function gpuStation(art,x,y,s,lx,ly){
   const pass=gpuScene();if(!pass)return false;
