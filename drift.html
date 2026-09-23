@@ -10886,13 +10886,17 @@ function gpuBind(name,pipe,res){
 }
 /* 2D-холст как текстура: печки при перепечке отдают НОВЫЙ холст, поэтому ключ —
    сам объект. Старые уходят в корзину и гибнут в начале следующего кадра */
-function gpuCanvasTex(cv){
+function gpuCanvasTex(cv,ver){
   const m=GPU.cvTex;let e=m.get(cv);
+  /* ver — для печек, что перерисовывают тот же холст на месте: сменилась — перезагружаем */
+  if(e&&ver!==undefined&&e.ver!==ver&&e.w===cv.width&&e.h===cv.height){
+    GPU.dev.queue.copyExternalImageToTexture({source:cv},{texture:e.tex,premultipliedAlpha:true},[e.w,e.h]);e.ver=ver;}
+  if(e&&(e.w!==cv.width||e.h!==cv.height)){GPU.trash.push(e.tex);m.delete(cv);e=null;}
   if(e)return e;
   const w=cv.width,h=cv.height,U=GPUTextureUsage;
   const tex=GPU.dev.createTexture({size:[w,h],format:"rgba8unorm",usage:U.TEXTURE_BINDING|U.COPY_DST|U.RENDER_ATTACHMENT});
   GPU.dev.queue.copyExternalImageToTexture({source:cv},{texture:tex,premultipliedAlpha:true},[w,h]);
-  e={tex,view:tex.createView(),w,h};m.set(cv,e);
+  e={tex,view:tex.createView(),w,h,ver};m.set(cv,e);
   if(m.size>8){const k=m.keys().next().value;GPU.trash.push(m.get(k).tex);m.delete(k);}
   return e;
 }

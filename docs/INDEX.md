@@ -2072,21 +2072,21 @@ gotRender                    src/27jb-ui-got.js:29-55
 gotTick                      src/27jb-ui-got.js:56-60
 GPU                          src/08b-gpu.js:8
 GPU_BLEND                    src/08c-gpu-kit.js:8-20
-GPU_FLD_HEAD                 src/08c-gpu-kit.js:171
-GPU_IMG_WGSL                 src/08c-gpu-kit.js:93
-GPU_KIT_WGSL                 src/08c-gpu-kit.js:80
+GPU_FLD_HEAD                 src/08c-gpu-kit.js:175
+GPU_IMG_WGSL                 src/08c-gpu-kit.js:97
+GPU_KIT_WGSL                 src/08c-gpu-kit.js:84
 GPU_POST_WGSL                src/08b-gpu.js:79
-GPU_SHP_WGSL                 src/08c-gpu-kit.js:130
-GPU_WGSL_COMMON              src/08c-gpu-kit.js:49
-gpuArena                     src/08c-gpu-kit.js:69-79
+GPU_SHP_WGSL                 src/08c-gpu-kit.js:134
+GPU_WGSL_COMMON              src/08c-gpu-kit.js:53
+gpuArena                     src/08c-gpu-kit.js:73-83
 gpuBind                      src/08c-gpu-kit.js:28-34
 gpuBuf                       src/08c-gpu-kit.js:21-26
-gpuCanvasTex                 src/08c-gpu-kit.js:37-46
+gpuCanvasTex                 src/08c-gpu-kit.js:37-50
 gpuDrop                      src/08b-gpu.js:72-77
-gpuField                     src/08c-gpu-kit.js:185-213
+gpuField                     src/08c-gpu-kit.js:189-217
 gpuFrame                     src/08b-gpu.js:205-214
-gpuImage                     src/08c-gpu-kit.js:113-125
-gpuKitU                      src/08c-gpu-kit.js:85-89
+gpuImage                     src/08c-gpu-kit.js:117-129
+gpuKitU                      src/08c-gpu-kit.js:89-93
 gpuManual                    src/08b-gpu.js:262-267
 gpuNoise                     src/08b-gpu.js:157-162
 gpuNone                      src/08b-gpu.js:32-39
@@ -2098,7 +2098,7 @@ gpuPresent                   src/08b-gpu.js:288-302
 gpuResize                    src/08b-gpu.js:163-190
 gpuScene                     src/08b-gpu.js:218-227
 gpuScene3D                   src/08b-gpu.js:231-239
-gpuShapes                    src/08c-gpu-kit.js:155-166
+gpuShapes                    src/08c-gpu-kit.js:159-170
 gpuSnapshot                  src/08b-gpu.js:20-24
 gpuSpaceSys                  src/16g-gpu-space.js:144-158
 gpuSpaceTitle                src/16g-gpu-space.js:160-171
@@ -6017,7 +6017,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/08b-gpu.js · 20 КБ
   · видеокарта: кадр рисует WebGPU (docs/DESIGN-gpu.md):1
 
-## src/08c-gpu-kit.js · 14 КБ
+## src/08c-gpu-kit.js · 15 КБ
   · набор для слоёв видеокарты (docs/DESIGN-gpu.md §4):1
 
 ## src/09-audio.js · 18 КБ
