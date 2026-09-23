@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 597 · символов верхнего уровня: 5865
+Файлов: 598 · символов верхнего уровня: 5876
 
 ## СИМВОЛЫ
 
@@ -2071,29 +2071,40 @@ gotoSector                   src/11a-quests.js:68-88
 gotRender                    src/27jb-ui-got.js:29-55
 gotTick                      src/27jb-ui-got.js:56-60
 GPU                          src/08b-gpu.js:8
-GPU_BLEND                    src/08b-gpu.js:257-266
-GPU_POST_WGSL                src/08b-gpu.js:78
-GPU_WGSL_COMMON              src/08b-gpu.js:295
-gpuBind                      src/08b-gpu.js:274-280
-gpuBuf                       src/08b-gpu.js:267-272
-gpuCanvasTex                 src/08b-gpu.js:283-292
-gpuDrop                      src/08b-gpu.js:71-76
-gpuFrame                     src/08b-gpu.js:192-201
-gpuManual                    src/08b-gpu.js:214-219
-gpuNoise                     src/08b-gpu.js:150-155
-gpuNone                      src/08b-gpu.js:31-38
-gpuPass                      src/08b-gpu.js:178-181
-gpuPipe                      src/08b-gpu.js:260-266
-gpuPipes                     src/08b-gpu.js:130-147
-gpuPresent                   src/08b-gpu.js:239-253
-gpuResize                    src/08b-gpu.js:156-177
-gpuScene                     src/08b-gpu.js:205-212
-gpuSnapshot                  src/08b-gpu.js:19-23
+GPU_BLEND                    src/08c-gpu-kit.js:8-20
+GPU_FLD_HEAD                 src/08c-gpu-kit.js:171
+GPU_IMG_WGSL                 src/08c-gpu-kit.js:93
+GPU_KIT_WGSL                 src/08c-gpu-kit.js:80
+GPU_POST_WGSL                src/08b-gpu.js:79
+GPU_SHP_WGSL                 src/08c-gpu-kit.js:130
+GPU_WGSL_COMMON              src/08c-gpu-kit.js:49
+gpuArena                     src/08c-gpu-kit.js:69-79
+gpuBind                      src/08c-gpu-kit.js:28-34
+gpuBuf                       src/08c-gpu-kit.js:21-26
+gpuCanvasTex                 src/08c-gpu-kit.js:37-46
+gpuDrop                      src/08b-gpu.js:72-77
+gpuField                     src/08c-gpu-kit.js:185-213
+gpuFrame                     src/08b-gpu.js:205-214
+gpuImage                     src/08c-gpu-kit.js:113-125
+gpuKitU                      src/08c-gpu-kit.js:85-89
+gpuManual                    src/08b-gpu.js:262-267
+gpuNoise                     src/08b-gpu.js:157-162
+gpuNone                      src/08b-gpu.js:32-39
+gpuOver                      src/08b-gpu.js:245-260
+gpuPass                      src/08b-gpu.js:191-194
+gpuPipe                      src/08c-gpu-kit.js:13-20
+gpuPipes                     src/08b-gpu.js:133-154
+gpuPresent                   src/08b-gpu.js:288-302
+gpuResize                    src/08b-gpu.js:163-190
+gpuScene                     src/08b-gpu.js:218-227
+gpuScene3D                   src/08b-gpu.js:231-239
+gpuShapes                    src/08c-gpu-kit.js:155-166
+gpuSnapshot                  src/08b-gpu.js:20-24
 gpuSpaceSys                  src/16g-gpu-space.js:144-158
 gpuSpaceTitle                src/16g-gpu-space.js:160-171
-gpuTakeSnap                  src/08b-gpu.js:24-29
-gpuUni                       src/08b-gpu.js:182-188
-gpuWorld                     src/08b-gpu.js:222-237
+gpuTakeSnap                  src/08b-gpu.js:25-30
+gpuUni                       src/08b-gpu.js:195-201
+gpuWorld                     src/08b-gpu.js:270-286
 gradePass                    src/19c-light.js:258-294
 GREEN_BEDS                   src/21g-greenhouse.js:23
 GREEN_FULL                   src/21g-greenhouse.js:24
@@ -6005,6 +6016,9 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## src/08b-gpu.js · 20 КБ
   · видеокарта: кадр рисует WebGPU (docs/DESIGN-gpu.md):1
+
+## src/08c-gpu-kit.js · 14 КБ
+  · набор для слоёв видеокарты (docs/DESIGN-gpu.md §4):1
 
 ## src/09-audio.js · 18 КБ
   · звук: чистый синтез, ни одного файла:1

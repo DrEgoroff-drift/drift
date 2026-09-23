@@ -10,7 +10,8 @@ const GPU={ok:false,on:false,lost:false,busy:false,none:false,
   T:{},V:{},N:null,noiseOk:false,ui:null,uctx:null,snap:null,
   bw:0,bh:0,qw:2,qh:2,dpr:0,cw:0,ch:0,enc:null,scenePass:null,sceneOn:false,
   sceneBg:{r:0,g:0,b:0,a:1},uiOn:false,uiWas:false,hitK:0,hitDx:0,post:{k:0,grain:0,vig:0},
-  lay:{},bufs:{},bgs:{},cvTex:new Map(),trash:[],errs:0,frameNo:0,snapNo:-1,wantSnap:false};
+  lay:{},bufs:{},bgs:{},cvTex:new Map(),trash:[],errs:0,frameNo:0,snapNo:-1,wantSnap:false,overPass:null,
+  ar:{},fL:null};
 
 /* кадр целиком (видеокарта + 2D) для тех, кто его читает: look(), детекторы,
    эталоны. Показанный кадр WebGPU после конца задачи не читается, поэтому снимок
@@ -60,7 +61,7 @@ async function gpuInit(){
     GPU.gx.configure({device:dev,format:GPU.fmt,alphaMode:"opaque"});
     if(!GPU.ui){GPU.ui=document.createElement("canvas");GPU.uctx=GPU.ui.getContext("2d",{alpha:true});}
     gpuPipes();
-    GPU.lay={};GPU.bufs={};GPU.bgs={};GPU.cvTex=new Map();GPU.trash=[];
+    GPU.lay={};GPU.bufs={};GPU.bgs={};GPU.cvTex=new Map();GPU.trash=[];GPU.ar={};GPU.fL=null;GPU.nView=null;
     GPU.T={};GPU.bw=0;GPU.ok=true;
     gpuResize();
   }catch(e){
@@ -125,7 +126,9 @@ fn overlay(b:vec3f,s:vec3f)->vec3f{return select(1.-2.*(1.-b)*(1.-s),2.*b*s,b<ve
   /* дизеринг синим шумом во всех режимах: полос в тёмных градиентах больше нет */
   let n=textureLoad(tNoise,vec2i(v.p.xy)%vec2i(64),0).r;
   c=c+((n*255.-110.)/36.-.5)/255.;
-  return vec4f(c,1.);}`;
+  return vec4f(c,1.);}
+/* сегмент gpuOver: 2D, нарисованное до сих пор, ложится в сцену (премультиплицировано) */
+@fragment fn fsComp(v:V)->@location(0) vec4f{return textureSampleLevel(tFront,sl,v.uv,0.);}`;
 
 function gpuPipes(){
   const d=GPU.dev,F=GPUShaderStage.FRAGMENT;
@@ -138,7 +141,11 @@ function gpuPipes(){
   const mk=(fs,fmt)=>d.createRenderPipeline({layout:PL,vertex:{module:mod,entryPoint:"vs"},
     fragment:{module:mod,entryPoint:fs,targets:[{format:fmt}]},primitive:{topology:"triangle-list"}});
   GPU.P={down:mk("fsDown","rgba16float"),blurH:mk("fsBlurH","rgba16float"),
-         blurV:mk("fsBlurV","rgba16float"),fin:mk("fsFinal",GPU.fmt)};
+         blurV:mk("fsBlurV","rgba16float"),fin:mk("fsFinal",GPU.fmt),
+         comp:d.createRenderPipeline({layout:PL,vertex:{module:mod,entryPoint:"vs"},
+           fragment:{module:mod,entryPoint:"fsComp",targets:[{format:"rgba8unorm",blend:{
+             color:{srcFactor:"one",dstFactor:"one-minus-src-alpha"},alpha:{srcFactor:"one",dstFactor:"one-minus-src-alpha"}}}]},
+           primitive:{topology:"triangle-list"}})};
   GPU.S={lin:d.createSampler({magFilter:"linear",minFilter:"linear"}),
          rep:d.createSampler({magFilter:"linear",minFilter:"linear",addressModeU:"repeat",addressModeV:"repeat"})};
   GPU.U=d.createBuffer({size:64,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});
@@ -166,6 +173,7 @@ function gpuResize(){
   GPU.T={front:mk(bw,bh,"rgba8unorm",TB|CD|RA),ui:mk(bw,bh,"rgba8unorm",TB|CD|RA),
     scene:mk(bw,bh,"rgba8unorm",TB|RA),bloomA:mk(qw,qh,"rgba16float",TB|RA),bloomB:mk(qw,qh,"rgba16float",TB|RA)};
   GPU.V={scene:GPU.T.scene.createView(),bloomA:GPU.T.bloomA.createView(),bloomB:GPU.T.bloomB.createView()};
+  GPU.scene3D=false;
   GPU.bw=bw;GPU.bh=bh;GPU.qw=qw;GPU.qh=qh;GPU.dpr=DPR;GPU.cw=W;GPU.ch=H;
   const S=GPU.S,T=GPU.T;
   const bind=bloom=>GPU.dev.createBindGroup({layout:GPU.L,entries:[
@@ -173,7 +181,12 @@ function gpuResize(){
     {binding:3,resource:T.scene.createView()},{binding:4,resource:T.front.createView()},
     {binding:5,resource:bloom.createView()},{binding:6,resource:T.ui.createView()},{binding:7,resource:GPU.N.createView()}]});
   /* текстура не может быть и целью прохода, и его входом: свечение ходит между A и B */
-  GPU.B={down:bind(T.bloomB),blurH:bind(T.bloomA),blurV:bind(T.bloomB),fin:bind(T.bloomA)};
+  GPU.B={down:bind(T.bloomB),blurH:bind(T.bloomA),blurV:bind(T.bloomB),fin:bind(T.bloomA),
+    /* сегмент рисует В сцену — значит, в привязках её быть не может: на её месте шум */
+    comp:GPU.dev.createBindGroup({layout:GPU.L,entries:[
+      {binding:0,resource:{buffer:GPU.U}},{binding:1,resource:S.lin},{binding:2,resource:S.rep},
+      {binding:3,resource:GPU.N.createView()},{binding:4,resource:T.front.createView()},
+      {binding:5,resource:T.bloomB.createView()},{binding:6,resource:T.ui.createView()},{binding:7,resource:GPU.N.createView()}]})};
 }
 function gpuPass(view,pipe,bind){
   const p=GPU.enc.beginRenderPass({colorAttachments:[{view,loadOp:"clear",storeOp:"store",clearValue:{r:0,g:0,b:0,a:1}}]});
@@ -196,7 +209,7 @@ function gpuFrame(){
   ctx=MAIN_CTX;
   ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,GPU.bw,GPU.bh);ctx.setTransform(DPR,0,0,DPR,0,0);
   GPU.on=true;
-  GPU.enc=GPU.dev.createCommandEncoder();GPU.scenePass=null;GPU.sceneOn=false;GPU.hitK=0;
+  GPU.enc=GPU.dev.createCommandEncoder();GPU.scenePass=null;GPU.overPass=null;GPU.sceneOn=false;GPU.scene3D=false;GPU.hitK=0;
   return true;
 }
 /* проход сцены видеокарты: его открывает первый слой кадра, закрывает сборка.
@@ -204,11 +217,46 @@ function gpuFrame(){
    Вне кадра (прямой вызов из теста или стенда) — null: слой молчит */
 function gpuScene(){
   if(!GPU.on||!GPU.enc)return null;
+  if(GPU.scene3D){GPU.scenePass.end();GPU.scenePass=null;GPU.scene3D=false;}
   if(!GPU.scenePass){
-    GPU.scenePass=GPU.enc.beginRenderPass({colorAttachments:[{view:GPU.V.scene,loadOp:"clear",storeOp:"store",clearValue:GPU.sceneBg}]});
+    GPU.scenePass=GPU.enc.beginRenderPass({colorAttachments:[{view:GPU.V.scene,
+      loadOp:GPU.sceneOn?"load":"clear",storeOp:"store",clearValue:GPU.sceneBg}]});
     GPU.sceneOn=true;
   }
   return GPU.scenePass;
+}
+/* тот же проход сцены, но с глубиной (depth24plus, чистится при открытии): для
+   настоящего 3D — камни пояса, отсеки рейда. Конвейеры в нём объявляют
+   depthStencil {format:"depth24plus"}; следующий gpuScene() вернёт обычный проход */
+function gpuScene3D(){
+  if(!GPU.on||!GPU.enc)return null;
+  if(GPU.scenePass){GPU.scenePass.end();GPU.scenePass=null;}
+  if(!GPU.T.depth){GPU.T.depth=GPU.dev.createTexture({size:[GPU.bw,GPU.bh],format:"depth24plus",usage:GPUTextureUsage.RENDER_ATTACHMENT});GPU.V.depth=GPU.T.depth.createView();}
+  GPU.scenePass=GPU.enc.beginRenderPass({colorAttachments:[{view:GPU.V.scene,loadOp:GPU.sceneOn?"load":"clear",storeOp:"store",clearValue:GPU.sceneBg}],
+    depthStencilAttachment:{view:GPU.V.depth,depthClearValue:1,depthLoadOp:"clear",depthStoreOp:"discard"}});
+  GPU.sceneOn=true;GPU.scene3D=true;
+  return GPU.scenePass;
+}
+/* ── слой ПОВЕРХ того, что 2D уже нарисовал (docs/DESIGN-gpu.md §3) ──
+   Вклеивает #c в сцену как есть сейчас, чистит #c и открывает проход поверх.
+   Что 2D нарисует после — ляжет выше этого слоя. Каждый вызов — новый сегмент
+   (загрузка #c, один полноэкранный проход, отправка); подряд идущие слои одного
+   сегмента рисуют в один возвращённый проход. Вне кадра — null */
+function gpuOver(){
+  if(!GPU.on||!GPU.enc)return null;
+  const d=GPU.dev;
+  if(GPU.overPass){GPU.overPass.end();GPU.overPass=null;}
+  if(!GPU.sceneOn)gpuScene();
+  if(GPU.scenePass){GPU.scenePass.end();GPU.scenePass=null;GPU.scene3D=false;}
+  d.queue.copyExternalImageToTexture({source:cvs},{texture:GPU.T.front,premultipliedAlpha:true},[GPU.bw,GPU.bh]);
+  gpuUni();
+  const p=GPU.enc.beginRenderPass({colorAttachments:[{view:GPU.V.scene,loadOp:"load",storeOp:"store"}]});
+  p.setPipeline(GPU.P.comp);p.setBindGroup(0,GPU.B.comp);p.draw(3);p.end();
+  /* отправляем сделанное: следующая загрузка #c не должна обогнать эту склейку */
+  d.queue.submit([GPU.enc.finish()]);GPU.enc=d.createCommandEncoder();
+  ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,GPU.bw,GPU.bh);ctx.restore();
+  GPU.overPass=GPU.enc.beginRenderPass({colorAttachments:[{view:GPU.V.scene,loadOp:"load",storeOp:"store"}]});
+  return GPU.overPass;
 }
 /* кадр вне цикла (тест, стенд, look): собрать, показать, снять — одной задачей */
 function gpuManual(draw){
@@ -221,7 +269,8 @@ function gpuManual(draw){
    Дальше кадр рисует интерфейс — на свой слой, без свечения и зерна */
 function gpuWorld(k,grain,vig){
   try{
-    if(GPU.scenePass){GPU.scenePass.end();GPU.scenePass=null;}
+    if(GPU.scenePass){GPU.scenePass.end();GPU.scenePass=null;GPU.scene3D=false;}
+    if(GPU.overPass){GPU.overPass.end();GPU.overPass=null;}
     const off=!!(G.opts&&G.opts.gfx&&G.opts.gfx.draw===0);
     const P=GPU.post;
     /* зерно теперь и на чёрном небе: видеокарте оно ничего не стоит, а в тёмных
@@ -251,62 +300,5 @@ function gpuPresent(){
   GPU.enc=null;GPU.on=false;
   if(ctx===GPU.uctx)ctx=MAIN_CTX;
 }
-/* ── набор для слоёв сцены (G1+): конвейер, буфер, привязки, текстура из 2D ──
-   Всё живёт при устройстве: gpuInit после потери собирает заново. Слои рисуют в
-   проход gpuScene() — под передним 2D-слоем; цвет премультиплицирован */
-const GPU_BLEND={
-  over:{color:{srcFactor:"one",dstFactor:"one-minus-src-alpha"},alpha:{srcFactor:"one",dstFactor:"one-minus-src-alpha"}},
-  add:{color:{srcFactor:"one",dstFactor:"one"},alpha:{srcFactor:"one",dstFactor:"one"}}};
-function gpuPipe(name,code,blend){
-  const c=GPU.lay[name];if(c)return c;
-  const mod=GPU.dev.createShaderModule({code});
-  return GPU.lay[name]=GPU.dev.createRenderPipeline({layout:"auto",vertex:{module:mod,entryPoint:"vs"},
-    fragment:{module:mod,entryPoint:"fs",targets:[{format:"rgba8unorm",blend:GPU_BLEND[blend||"over"]}]},
-    primitive:{topology:"triangle-list"}});
-}
-function gpuBuf(name,bytes,usage){
-  const b=GPU.bufs[name];
-  if(b&&b.size>=bytes)return b;
-  if(b)GPU.trash.push(b);
-  return GPU.bufs[name]=GPU.dev.createBuffer({size:Math.max(16,Math.ceil(bytes/16)*16),usage});
-}
-/* привязки кэшируются по набору ресурсов: сменился буфер или текстура — новая группа */
-function gpuBind(name,pipe,res){
-  const c=GPU.bgs[name];
-  if(c&&c.res.length===res.length&&c.res.every((r,i)=>r===res[i]))return c.bg;
-  const bg=GPU.dev.createBindGroup({layout:pipe.getBindGroupLayout(0),
-    entries:res.map((r,i)=>({binding:i,resource:(r instanceof GPUBuffer)?{buffer:r}:r}))});
-  GPU.bgs[name]={res,bg};return bg;
-}
-/* 2D-холст как текстура: печки при перепечке отдают НОВЫЙ холст, поэтому ключ —
-   сам объект. Старые уходят в корзину и гибнут в начале следующего кадра */
-function gpuCanvasTex(cv){
-  const m=GPU.cvTex;let e=m.get(cv);
-  if(e)return e;
-  const w=cv.width,h=cv.height,U=GPUTextureUsage;
-  const tex=GPU.dev.createTexture({size:[w,h],format:"rgba8unorm",usage:U.TEXTURE_BINDING|U.COPY_DST|U.RENDER_ATTACHMENT});
-  GPU.dev.queue.copyExternalImageToTexture({source:cv},{texture:tex,premultipliedAlpha:true},[w,h]);
-  e={tex,view:tex.createView(),w,h};m.set(cv,e);
-  if(m.size>8){const k=m.keys().next().value;GPU.trash.push(m.get(k).tex);m.delete(k);}
-  return e;
-}
-/* общие куски шейдеров слоёв: мерка кадра и покрытие фигур со сглаживанием.
-   Покрытие честное, по площади пикселя — так же, как Skia гладит края в 2D */
-const GPU_WGSL_COMMON=`
-fn pmod(a:f32,m:f32)->f32{return a-m*floor(a/m);}
-fn covRect(p:vec2f,r:vec4f)->f32{return clamp(min(p.x+.5,r.z)-max(p.x-.5,r.x),0.,1.)*clamp(min(p.y+.5,r.w)-max(p.y-.5,r.y),0.,1.);}
-fn covDisc(p:vec2f,c:vec2f,r:f32)->f32{let re=max(r,.7);return clamp(.5-(length(p-c)-re),0.,1.)*min(1.,r*r/(re*re));}
-fn covSeg(p:vec2f,a:vec2f,b:vec2f,hw:f32)->f32{
-  let ab=b-a;let t=clamp(dot(p-a,ab)/max(dot(ab,ab),1e-4),0.,1.);let he=max(hw,.5);
-  return clamp(.5-(length(p-a-ab*t)-he),0.,1.)*min(1.,hw/he);}
-fn cubicW(v:f32)->vec4f{let n=vec4f(1.,2.,3.,4.)-v;let s=n*n*n;let x=s.x;let y=s.y-4.*s.x;let z=s.z-4.*s.y+6.*s.x;return vec4f(x,y,z,6.-x-y-z)/6.;}
-fn texCubic(t:texture_2d<f32>,sm:sampler,uv:vec2f)->vec4f{
-  let ts=vec2f(textureDimensions(t));var c=uv*ts-.5;let f=fract(c);c=c-f;
-  let xc=cubicW(f.x);let yc=cubicW(f.y);let s=vec4f(xc.xz+xc.yw,yc.xz+yc.yw);
-  let o=(c.xxyy+vec4f(-.5,1.5,-.5,1.5)+vec4f(xc.yw,yc.yw)/s)/ts.xxyy;
-  let s0=textureSampleLevel(t,sm,o.xz,0.);let s1=textureSampleLevel(t,sm,o.yz,0.);
-  let s2=textureSampleLevel(t,sm,o.xw,0.);let s3=textureSampleLevel(t,sm,o.yw,0.);
-  let sx=s.x/(s.x+s.y);let sy=s.z/(s.z+s.w);
-  return mix(mix(s3,s2,sx),mix(s1,s0,sx),sy);}`;
 /* поднимается после всего скрипта: в сборке тестов TEST объявлен ниже игры */
 if(typeof document!=="undefined"&&document.body)setTimeout(gpuInit,0);
