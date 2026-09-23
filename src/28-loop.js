@@ -416,11 +416,12 @@ function drawWorld(){
   else if(G.mode==="winter"&&G.win)drawWinter();
   else if(G.mode==="spa"&&G.spa)drawSpa();
   else if(G.mode==="wanderer"&&G.wan)drawWanderRoom();
-  /* ореол вокруг яркого — последним по миру и до приборов (M243) */
-  if(typeof bloomPass==="function")bloomPass(BLOOM_K[G.mode]||0);
-  /* зерно на все сцены, виньетка — где своей нет (M244) */
-  if(typeof grainPass==="function"&&G.mode!=="map")
-    grainPass(!(G.mode==="surface"||G.mode==="landing"));
+  /* ореол вокруг яркого — последним по миру и до приборов (M243); зерно на все
+     сцены, виньетка — где своей нет (M244). У видеокарты всё это — один проход (08b) */
+  const bk=BLOOM_K[G.mode]||0,gr=G.mode!=="map",vg=!(G.mode==="surface"||G.mode==="landing");
+  if(GPU.on){gpuWorld(bk,gr,vg);return;}
+  if(typeof bloomPass==="function")bloomPass(bk);
+  if(typeof grainPass==="function"&&gr)grainPass(vg);
 }
 function frameBody(now){
   FRAME_IN=true;   /* всё, что скажет кадр, — голос мира (say, 08-state); снимается в конце и на событиях */
@@ -542,15 +543,19 @@ function frameBody(now){
     }
     if(G.mode==="barge"&&!scrOpen())G.mode="system";
     audioTick(dt);
+    gpuFrame();   /* кадр собирает видеокарта, если может (08b): ctx смотрит на передний слой */
     drawWorld();
     if(typeof drawHitFx==="function")drawHitFx(dt);   /* хроматика после попадания (M325) */
     hud();
     /* приборная стойка (25d) поверх мира: раскрытая аппаратура, к которой
        игрок повернулся. Рисуется последней, но до DOM-строки приборов */
     if(typeof rackDraw==="function")rackDraw();
+    if(GPU.on)gpuPresent();
   }else{
+    gpuFrame();
     ctx.fillStyle="#05070c";ctx.fillRect(0,0,W,H);
     G.t=tReal*.06;drawNebula(tReal*.004,0,1);drawStars(tReal*.004,0,1);
+    if(GPU.on){gpuWorld(0,false,false);gpuPresent();}
   }
 }
 /* ══════════════ кадр, который не убивает игру (M234) ══════════════

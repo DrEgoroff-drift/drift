@@ -44,8 +44,8 @@ const LOOK_TARGET={pair:15,mass:14,edge:18,contrast:.30,tones:5};
    меньше. Тон учитывается только у насыщенных и не чёрных пикселей — у серого
    тона нет, и складывать его в гистограмму значит врать себе. */
 function lookFrame(){
-  const cx=cvs.getContext("2d");
-  const W2=cvs.width,H2=cvs.height;
+  const fc=frameCanvas(),cx=fc.getContext("2d");
+  const W2=fc.width,H2=fc.height;
   const d=cx.getImageData(0,0,W2,H2).data;
   const hue=new Array(36).fill(0);
   const sat=[],val=[];let warm=0,cold=0;

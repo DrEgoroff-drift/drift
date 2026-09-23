@@ -50,7 +50,7 @@ function hazeGrab(x0,y0,w,h){
   const g=HZ_CN.getContext("2d");
   g.setTransform(1,0,0,1,0,0);
   g.globalCompositeOperation="copy";   /* без clearRect: copy сам затирает */
-  g.drawImage(cvs,sx0*DPR,sy0*DPR,pw,ph,0,0,pw,ph);
+  g.drawImage(frameCanvas(),sx0*DPR,sy0*DPR,pw,ph,0,0,pw,ph);
   HZ_OX=sx0;HZ_OY=sy0;HZ_OK=true;
   return true;
 }
@@ -86,8 +86,11 @@ function heatHaze(x0,y0,w,h,k,seed){
    середина кадра почти не светлеет, красятся только сдвинутые края. */
 function drawHitFx(dt){
   if(HIT_FX<=.02){HIT_FX=0;return;}
-  const k=HIT_FX,off=fxCanvas(),o=off.getContext("2d");
+  const k=HIT_FX;
   const dx=(1.5+5*k)*(1+.35*Math.sin(G.t*2.1));
+  /* у видеокарты хроматика — строка общего прохода (08b fsFinal) */
+  if(GPU.on){GPU.hitK=k;GPU.hitDx=dx;HIT_FX*=Math.exp(-(dt||1)*.22);return;}
+  const off=fxCanvas(),o=off.getContext("2d");
   ctx.save();
   for(const [col,sgn] of [["rgb(255,40,40)",-1],["rgb(40,90,255)",1]]){
     o.setTransform(1,0,0,1,0,0);
