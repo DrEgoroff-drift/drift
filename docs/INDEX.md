@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 595 · символов верхнего уровня: 5833
+Файлов: 595 · символов верхнего уровня: 5834
 
 ## СИМВОЛЫ
 
@@ -1466,8 +1466,8 @@ drawPirateSkin               src/03d-hull-marks.js:99-126
 drawPlan                     src/05e-plan.js:137-172
 drawPlanetLights             src/17e-station-body.js:45-64
 drawPlanetWorks              src/17e-station-body.js:74-123
-drawPlant                    src/20-life.js:394-403
-drawPlantAlien               src/20-life.js:198-365
+drawPlant                    src/20-life.js:406-415
+drawPlantAlien               src/20-life.js:210-377
 drawPOI                      src/20a-poi.js:173-234
 drawPortal                   src/20aa-poi-shapes.js:464-489
 drawPostcard                 src/25g-postcard.js:170-611
@@ -3825,10 +3825,11 @@ planPtIn                     src/05e-plan.js:22-29
 PLANT_FORM_K                 src/20e-species.js:20
 PLANT_H_K                    src/20e-species.js:24
 PLANT_KINDS                  src/20-life.js:160
-plantGrad                    src/20-life.js:377-383
+plantBend                    src/20-life.js:202-209
+plantGrad                    src/20-life.js:389-395
 plantLitter                  src/20e-species.js:196-210
 planTook                     src/11r-plan.js:59-63
-plantPaint                   src/20-life.js:404-604
+plantPaint                   src/20-life.js:416-616
 plantSpeciesName             src/20e-species.js:86-89
 plantStemForm                src/20e-species.js:27
 plantTraitWord               src/20e-species.js:29-37
@@ -6660,7 +6661,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/19f-lander.js · 22 КБ
   · посадочный корабль:1
 
-## src/20-life.js · 36 КБ
+## src/20-life.js · 37 КБ
   · астронавт:1
   · флора:143
 

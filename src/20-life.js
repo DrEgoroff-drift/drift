@@ -195,8 +195,20 @@ function genPlant(r,p,x,gy,env){
 
    Свечение снизу шляпки и внутри мембраны — не украшение: оно отделяет
    растение от грунта в темноте, когда силуэт уже не читается. */
+/* порыв идёт по полю (дизайн 23.09): каждое растение качалось само по себе —
+   поле дрожало вразнобой, и ветра не было видно. Теперь по миру бегут два
+   гребня порыва разной длины и скорости, по ветру; под гребнем стебель
+   ложится, между гребнями — своя мелкая дрожь, тем тише, чем сильнее ветер */
+function plantBend(pl){
+  const own=Math.sin(G.t*pl.sway+pl.phase);
+  const w=(typeof WIND==="number")?WIND:0,aw=Math.min(1,Math.abs(w));
+  if(aw<.05)return own;
+  const dir=w<0?-1:1,x=(pl.x||0)*dir;
+  const cr=(u,sp,L)=>{const f=((x-G.t*sp)/L)%1,g=f<0?f+1:f;return Math.pow(Math.sin(g*Math.PI),8);};
+  return own*(1-.5*aw)+dir*aw*(.3+1.8*(cr(0,1.7,560)+.6*cr(0,2.4,910)));
+}
 function drawPlantAlien(pl,x,y,stemC,leafC,sc,ph){
-  const bend=Math.sin(G.t*pl.sway+pl.phase);
+  const bend=plantBend(pl);
   const gl=sc?"127,230,216":((pl.leaf[0]|0)+","+(pl.leaf[1]|0)+","+(pl.leaf[2]|0));
   ctx.save();ctx.translate(x,y);
   /* затмение (06a-celest): то, что живёт светом, на свету и складывается —
@@ -479,7 +491,7 @@ function plantPaint(pl,x,y,haze,dark){
   }
   /* ── формы, узнаваемые силуэтом ── */
   if(pl.kind>=7&&pl.kind<=11){drawPlantAlien(pl,x,y,stemC,leafC,sc,ph);return;}
-  const bend=Math.sin(G.t*pl.sway+pl.phase);
+  const bend=plantBend(pl);
   ctx.save();ctx.translate(x,y);
   /* ствол: ломаная из сегментов, верх качается сильнее низа */
   const pts=[[0,0]];
