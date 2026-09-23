@@ -717,7 +717,7 @@ chBlack                      src/25n-chess.js:37
 chCheck                      src/25n-chess.js:182
 CHEB_PRICE                   src/17j-cheburek.js:9
 chebHere                     src/17j-cheburek.js:10-17
-chebInteract                 src/17j-cheburek.js:33-47
+chebInteract                 src/17j-cheburek.js:64-78
 chessAll                     src/25n-chess.js:199-203
 chessDraw                    src/25n-chess.js:246-275
 chessGame                    src/25n-chess.js:204
@@ -1392,7 +1392,7 @@ drawCaveSolid                src/22a-cave-deco.js:241-299
 drawCaveWater                src/22a-cave-deco.js:300-324
 drawCaveWorld                src/22-mode-cave.js:648-750
 drawCelest                   src/06a-celest.js:167-218
-drawCheburek                 src/17j-cheburek.js:18-32
+drawCheburek                 src/17j-cheburek.js:22-63
 drawChunks                   src/18c-chunks.js:90-96
 drawClouds                   src/19e-clouds.js:386-528
 drawCockpit                  src/25-cockpit.js:400-674
@@ -6547,7 +6547,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/17i1-passport.js · 2 КБ
   · дипломатический паспорт (M505, PLAN «new mechanics», st. 5):1
 
-## src/17j-cheburek.js · 3 КБ
+## src/17j-cheburek.js · 6 КБ
   · «Чебуречная» — лодка на подъезде (M462, DESIGN-life §3.4):1
 
 ## src/17k-billboard.js · 8 КБ
