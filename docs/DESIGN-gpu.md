@@ -45,9 +45,16 @@ The author, 23.09.2026: «переноси все на новые техноло
   normals, per-point age, gaussian core+halo; beads between segments gone). Pair `g4a_crop.png`, js in
   `trail.js` (a synthetic TRAIL, no thrust). The exhaust (same module, `gpuExhaust`: gaussian flame, flowing noise, shock diamonds, tone-mapped nozzle; the
   drawn heat arcs dropped; pair `g4b_crop.png`, thrust forced by wrapping `drawExhaust` in the js). `exhaustHaze` still
-  grabs the 2D layer, which no longer holds the flame — port it as a GPU distortion or drop it. Next: the
-  hull lit from the star (`hullBakeGet`, 03e1), `drawWake`, then combat, drones, traffic, `drawEdgeWall`
-  (17-mode-system:45). All of drawSystem after the planet loop is still 2D (lines ~593–650).
+  grabs the 2D layer — removed, G4b in PLAN. Done since: the edge wall as a GPU membrane (`drawEdgeWall`,
+  17-mode-system; pair `g4c.png`), the trail widening to its tail, and the hull lit from the star (`gpuHullLight`,
+  16ga): after the ship's 2D draw, `gpuOver` + an IMMEDIATE `copyTextureToTexture` of a 512² patch of
+  `GPU.T.front` (now COPY_SRC) into `GPU.T.hm`. The pass runs only at submit, after gpuWorld re-uploaded #c
+  without the hull, so sampling `T.front` directly sees nothing. Mask alpha → edge normal → rim in star colour,
+  far half darkened; pair `g4d_crop.png`. Scene js (`freeze.js`, `trail.js`) also `CHIP_POS.clear()` — stale
+  chip smoothing after a teleport looked like overlapping chips.
+  **Next in G4:** `drawWake` (16-flight:384), combat (`drawCombat`, 13-pirates:349), drones, traffic, station
+  (`drawStation`, 17c), barges; everything after the planet loop in drawSystem except the above is still 2D.
+  A GPU draw after `gpuHullLight` must use `gpuOver`, not `gpuScene` (the scene pass is closed by then).
 - Merge each: `build.ps1`, `python docs/shot.py <scenes> --look --tag gpu`, 0 `gpu.errs`, pair with
   `scratchpad/mainref/docs/shots/main_<scene>.png`, one line of what got better, commit, strike from PLAN §0.
 - Next after G2+G3 merges: G4 (system view on top, shares `17-mode-system.js`), port 9481; then G14.
