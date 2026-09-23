@@ -170,10 +170,10 @@ job (the phone milestone), but no fix may add raster cost without a number.
 - [x] **D15 Stage 5 voice — the tape done 18.09 on the S23; the drone's plate 23.09.** The strip was grey on grey; now
   black electrical tape with a glossy edge, a shadow under it and a folded tip, slightly wider —
   reads at ×4.5. The drone in both lists (ДЕЛО, the station's drone rows) is `droneTag`: a state lamp (green runs, amber in repair, red stuck under pirates), the name stencilled in the cargo colour on a riveted tin plate, the board number small, the quirk pencilled on a paper tag (none for «норма»).
-- [~] **D13 The railway — checked on the S23 18.09 at «Луун».** The ring with its spiral, the
+- [x] **D13 The railway — checked on the S23 18.09 at «Луун»; map and ride 23.09.** The ring with its spiral, the
   dashed glide path and the «ЛИНИЯ 6-12 +2» label read in the system; the vestibule page (board,
-  fares, life rows) reads. Not judged: the map lines (faint by design, seen at ×1 only), the ride
-  on the map (M473) — needs a ride.
+  fares, life rows) reads. The map lines, judged at ×0.6/×1/×2.5/×5 with the whole net built (a stand
+  shows 12 of 95 lines — `railNetPartial` builds one a frame): far out they are the right faint scaffold, but at ×1, where a route is planned, they vanished — now weight grows with the cell (`k=(cell-14)/34`): a dark casing and a denser core, metro-style. In the ride the other lines stay pale (`drawRailMap(...,pale)`, as M473 wrote) and the own line is a rail — casing, the scheme colour, a light centre line.
 - [x] **D26 Giants — done 18.09 on the S23 (all seven captured at ×0.28).** Each body is now
   baked once (1500×900, 1 px per unit) by the room rules: mass → seams/rivets → a human-scale
   detail (landing strip at the moon's mouth, the hotel's parking row and marquee bulbs, the

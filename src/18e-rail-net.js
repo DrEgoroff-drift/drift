@@ -178,16 +178,22 @@ function railNetPartial(){
   return P.lines.slice(0,P.i);
 }
 const RAIL_COL={radial:[226,214,200],ring:[242,178,92],arm:[127,230,216]};
-function drawRailMap(V,cell){
+function drawRailMap(V,cell,pale){
   const L=railNetPartial();
   const X=x=>W/2+(x-V.x)*cell,Y=y=>H/2+(y-V.y)*cell;
   ctx.save();ctx.lineCap="round";ctx.lineJoin="round";
+  /* издали сеть — тонкий каркас галактики; вблизи, где по ней прокладывают
+     путь, линия набирает плотность и кайму, как на схеме метро (D13) */
+  const k=pale?0:clamp((cell-14)/34,0,1);   /* в вагоне прочие линии бледные (M473) */
+  const path=l=>{ctx.beginPath();for(let i=0;i<l.pts.length;i++){const p=l.pts[i];i?ctx.lineTo(X(p[0]),Y(p[1])):ctx.moveTo(X(p[0]),Y(p[1]));}};
+  if(k>0){
+    ctx.strokeStyle="rgba(4,6,10,"+(.5*k).toFixed(3)+")";
+    for(const l of L){ctx.lineWidth=(l.kind==="radial"?1:1.4)+k*3.4;path(l);ctx.stroke();}
+  }
   for(const l of L){
-    const c=RAIL_COL[l.kind];
-    ctx.strokeStyle=rgba(c,l.kind==="radial"?.13:.18);ctx.lineWidth=l.kind==="radial"?1:1.4;
-    ctx.beginPath();
-    for(let i=0;i<l.pts.length;i++){const p=l.pts[i];i?ctx.lineTo(X(p[0]),Y(p[1])):ctx.moveTo(X(p[0]),Y(p[1]));}
-    ctx.stroke();
+    const c=RAIL_COL[l.kind],r=l.kind==="radial";
+    ctx.strokeStyle=rgba(c,((r?.13:.18)+k*(r?.32:.42)).toFixed(3));ctx.lineWidth=(r?1:1.4)+k*(r?.6:1);
+    path(l);ctx.stroke();
   }
   /* станции — только вблизи: белый кружок в чёрной кайме, пересадка — двойной */
   if(cell>=16&&RAIL_NET){

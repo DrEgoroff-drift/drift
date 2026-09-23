@@ -1471,9 +1471,9 @@ drawPOI                      src/20a-poi.js:173-234
 drawPortal                   src/20aa-poi-shapes.js:464-489
 drawPostcard                 src/25g-postcard.js:170-611
 drawRaid                     src/24aa-raid-draw.js:14-655
-drawRail                     src/18g-rail-ride.js:118-156
+drawRail                     src/18g-rail-ride.js:118-159
 drawRailArrive               src/18g-rail-ride.js:31-34
-drawRailMap                  src/18e-rail-net.js:181-204
+drawRailMap                  src/18e-rail-net.js:181-210
 drawRing                     src/17c-system-draw.js:4-15
 drawRingTape                 src/11x-ring.js:107-118
 drawRoad                     src/27l-road-draw.js:87-622
@@ -6603,7 +6603,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/18d-verlet.js · 7 КБ
   · верле: верёвки и ткань:1
 
-## src/18e-rail-net.js · 11 КБ
+## src/18e-rail-net.js · 12 КБ
   · железная дорога: сеть (M470, docs/DESIGN-metro.md §2):1
 
 ## src/18f-rail-station.js · 14 КБ

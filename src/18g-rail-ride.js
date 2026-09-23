@@ -120,13 +120,16 @@ function drawRail(){
   ctx.fillStyle="#03040a";ctx.fillRect(0,0,W,H);
   const cell=Math.min(W,H)/14,p=railTrainPos(),V={x:p.x,y:p.y};
   drawGalaxy(V,cell);drawGalaxyStars(V,cell);
-  if(typeof drawRailMap==="function")drawRailMap(V,cell);
+  if(typeof drawRailMap==="function")drawRailMap(V,cell,true);
   const X=x=>W/2+(x-V.x)*cell,Y=y=>H/2+(y-V.y)*cell,l=R.l;
   /* своя линия — толсто, в цвете схемы */
   const c=RAIL_COL[l.kind];
   ctx.save();ctx.lineCap="round";ctx.lineJoin="round";
-  ctx.strokeStyle=rgba(c,.75);ctx.lineWidth=4;ctx.beginPath();
-  l.pts.forEach((q,i)=>i?ctx.lineTo(X(q[0]),Y(q[1])):ctx.moveTo(X(q[0]),Y(q[1])));ctx.stroke();
+  /* путь — кайма, полотно в цвете схемы и светлая осевая: рельс, а не черта */
+  ctx.beginPath();l.pts.forEach((q,i)=>i?ctx.lineTo(X(q[0]),Y(q[1])):ctx.moveTo(X(q[0]),Y(q[1])));
+  ctx.strokeStyle="rgba(3,4,10,.8)";ctx.lineWidth=8;ctx.stroke();
+  ctx.strokeStyle=rgba(c,.8);ctx.lineWidth=4;ctx.stroke();
+  ctx.strokeStyle=rgba(mixc(c,[255,255,255],.6),.45);ctx.lineWidth=1;ctx.stroke();
   /* остановки маршрута: засечки с именами; пересадки — двойной круг */
   ctx.font=uiFont(10);ctx.textAlign="left";
   R.seq.forEach((i,m)=>{
