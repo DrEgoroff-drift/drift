@@ -23704,7 +23704,7 @@ function socJoin(id){
   const S=socAll();
   if(S.left[id]){if(G.credits<SOC_REJOIN){say("Восстановление — "+SOC_REJOIN+" кр",90);return false;}G.credits-=SOC_REJOIN;}
   S.m[id]={at:celDay(),dues:0};
-  if(typeof thingAdd==="function")thingAdd("paper","Членский билет · "+SOC[id].ru,"вступили делом: "+SOC[id].deedRu+" · льгота: "+SOC[id].perk);
+  if(typeof thingAdd==="function")thingAdd("soccard","Членский билет · "+SOC[id].ru,"вступили делом: "+SOC[id].deedRu+" · льгота: "+SOC[id].perk,{soc:id});
   logAdd("good","Вы вступили: "+SOC[id].ru+" · льгота — "+SOC[id].perk+(SOC[id].dues?" · взнос "+Math.round(SOC[id].dues*100)+" % с заработка":""));
   return true;
 }
@@ -91574,7 +91574,7 @@ function renderThings(box){
     const cv=document.createElement("canvas");cv.width=128;cv.height=80;
     if(t.k==="tape"&&t.full&&typeof drawMisFigure==="function")drawMisFigure(cv.getContext("2d"),128,80);
     else if(t.k==="tape"&&t.ring&&typeof drawRingTape==="function")drawRingTape(cv.getContext("2d"),t,128,80);
-    else drawThingIcon(cv.getContext("2d"),t.k,128,80);
+    else drawThingIcon(cv.getContext("2d"),t.k,128,80,t);
     const nm=document.createElement("div");nm.className="nm";
     nm.innerHTML="<b>"+t.ru+"</b><s>"+(t.note||"")+
       (t.sx!=null?(t.note?" · ":"")+"сектор "+t.sx+":"+t.sy:"")+"</s>";
@@ -91594,7 +91594,7 @@ function renderThings(box){
    вместе с бумажным столом (A3): вырезка из газеты и найденная пластина
    выглядели одним и тем же серым прямоугольником, а на столе вещь опознают
    по силуэту раньше, чем прочтут подпись. */
-function drawThingIcon(c,k,W,H){
+function drawThingIcon(c,k,W,H,t){
   c.clearRect(0,0,W,H);
   c.save();c.translate(W/2,H/2);
   if(k==="letter"){
@@ -91619,6 +91619,30 @@ function drawThingIcon(c,k,W,H){
     for(let y=-14;y<30;y+=7){c.beginPath();c.moveTo(-20,y);c.lineTo(20,y);c.stroke();}
     c.save();c.rotate(-.35);c.strokeStyle="rgba(190,40,40,.85)";c.lineWidth=2;c.strokeRect(-20,-6,40,14);
     c.fillStyle="rgba(190,40,40,.9)";c.font="bold 9px ui-monospace,monospace";c.textAlign="center";c.textBaseline="middle";c.fillText("ОТЗЫВ",0,1);c.restore();
+  }else if(k==="soccard"){
+    /* членский билет (M512): корка с тиснением — у каждого общества своя;
+       Партнёрская программа™ — не корка, а пластик с магнитной полосой */
+    const id=t&&t.soc;
+    if(id==="partner"){
+      c.fillStyle="#f6f8fb";c.beginPath();c.roundRect?c.roundRect(-34,-22,68,44,5):c.rect(-34,-22,68,44);c.fill();
+      c.fillStyle="#1e4fb8";c.fillRect(-34,-12,68,8);
+      c.fillStyle="#c9a24a";c.fillRect(-26,2,11,8);
+      c.fillStyle="#1e4fb8";c.font="bold 7px ui-monospace,monospace";c.textAlign="left";c.textBaseline="middle";c.fillText("PARTNER™",-10,6);
+      c.fillStyle="rgba(60,70,90,.45)";for(let i=0;i<6;i++)c.fillRect(-26+i*7,15,5,1.5);
+    }else{
+      const col={union:"#8e1f1f",kulib:"#2f4a34",know:"#6a3e22",phil:"#233a66"}[id]||"#5a2a2a";
+      c.fillStyle="rgba(0,0,0,.35)";c.fillRect(-23,-29,50,62);
+      c.fillStyle=col;c.fillRect(-25,-31,50,62);
+      c.fillStyle="rgba(255,255,255,.06)";c.fillRect(-25,-31,50,3);
+      c.strokeStyle="rgba(214,178,92,.75)";c.lineWidth=1;c.strokeRect(-21,-27,42,54);
+      c.fillStyle="#d6b25c";c.strokeStyle="#d6b25c";c.lineWidth=1.4;
+      if(id==="union"){c.beginPath();for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,r=i&1?4:10;c.lineTo(Math.cos(a)*r,-6+Math.sin(a)*r);}c.closePath();c.fill();}
+      else if(id==="kulib"){c.beginPath();c.arc(0,-6,6,0,TAU);c.stroke();for(let i=0;i<8;i++){const a=i/8*TAU;c.fillRect(Math.cos(a)*8.5-1.5,-6+Math.sin(a)*8.5-1.5,3,3);}}
+      else if(id==="know"){c.strokeRect(-5,-15,10,14);c.beginPath();c.moveTo(-6,-3);c.lineTo(6,-3);c.lineTo(5,1);c.lineTo(-5,1);c.closePath();c.stroke();c.beginPath();c.arc(8,-8,3,-Math.PI/2,Math.PI/2);c.stroke();}
+      else{c.fillRect(-8,-14,16,16);c.fillStyle=col;for(let i=0;i<4;i++){for(const [x,y] of [[-8+i*4.3,-14],[-8+i*4.3,2],[-8,-14+i*4.3],[8,-14+i*4.3]]){c.beginPath();c.arc(x+(x>7?0:0),y,1.2,0,TAU);c.fill();}}}
+      c.fillStyle="#d6b25c";c.font="bold 6px ui-monospace,monospace";c.textAlign="center";c.textBaseline="middle";
+      c.fillText("ЧЛЕНСКИЙ",0,12);c.fillText("БИЛЕТ",0,19);
+    }
   }else if(k==="paper"||k==="record"||k==="voucher"){
     c.fillStyle="#ece6d2";c.fillRect(-28,-34,56,68);
     c.strokeStyle="rgba(90,70,40,.35)";c.lineWidth=1;

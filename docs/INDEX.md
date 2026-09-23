@@ -1517,7 +1517,7 @@ drawSystem                   src/17-mode-system.js:482-773
 drawSysTraffic               src/17f-sys-traffic.js:36-40
 drawTapes                    src/12s1-tape.js:37-52
 drawTemple                   src/20aa-poi-shapes.js:50-89
-drawThingIcon                src/27i-ui-table.js:400-454
+drawThingIcon                src/27i-ui-table.js:400-478
 drawTierTrim                 src/03b-hull-paint.js:73-166
 drawTiles                    src/18c-chunks.js:159-170
 drawTrail                    src/16-flight.js:568-662
@@ -6983,7 +6983,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/27h-ui-lore.js · 6 КБ
   · доска отчёта: место, где собранное можно прочесть:1
 
-## src/27i-ui-table.js · 34 КБ
+## src/27i-ui-table.js · 36 КБ
   · стол: одно место для всего, что читают:1
   · страница никогда не теряет прокрутку (P1):24
 

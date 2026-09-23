@@ -37,7 +37,7 @@ function socJoin(id){
   const S=socAll();
   if(S.left[id]){if(G.credits<SOC_REJOIN){say("Восстановление — "+SOC_REJOIN+" кр",90);return false;}G.credits-=SOC_REJOIN;}
   S.m[id]={at:celDay(),dues:0};
-  if(typeof thingAdd==="function")thingAdd("paper","Членский билет · "+SOC[id].ru,"вступили делом: "+SOC[id].deedRu+" · льгота: "+SOC[id].perk);
+  if(typeof thingAdd==="function")thingAdd("soccard","Членский билет · "+SOC[id].ru,"вступили делом: "+SOC[id].deedRu+" · льгота: "+SOC[id].perk,{soc:id});
   logAdd("good","Вы вступили: "+SOC[id].ru+" · льгота — "+SOC[id].perk+(SOC[id].dues?" · взнос "+Math.round(SOC[id].dues*100)+" % с заработка":""));
   return true;
 }
