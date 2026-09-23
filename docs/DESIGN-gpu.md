@@ -14,6 +14,67 @@ The author, 23.09.2026: «переноси все на новые техноло
 - **No new tools:** rewrite the old one or kill it and write one new. Before rewriting a shared tool, grep its
   callers.
 - **No heredocs** for scripts: write a `.py` file, run it by path.
+- **Rules may be broken for beauty** (the author, 24.09: «можно менять правила, если это красиво»). The frame
+  laws, the palette, «the language stays» and every point of §L are defaults, not fences: if breaking one makes
+  the WHOLE frame visibly more beautiful, break it, and say in the gain line what was broken and for what. The
+  judge is the 760 px pair. Never moved: gameplay, physics, world generation (a seed gives the same system; new
+  randomness comes from its own `rng` stream), the save format. The process stays.
+- **The step gate (24.09):** a pair of WHOLE frames (2560×1600 → 760 px wide), one scene, gpu visibly better at
+  first glance; the gain line is about the frame, not an element. Crops only as an extra. Cheap by construction
+  (¼ resolution, caches), not by benches.
+
+## L. The leap — redo everything, Control says what (brief of 24.09, before G5…G14)
+
+The author: «пусть всё переделывает». Order L1 → L2 → L3 → L4 → the G steps again on top. A commit per sub-item,
+each with a whole-frame pair. Frame laws stand as defaults: cold key + warm accent; a frame is 2–3 masses; the
+light has a source and the lit sits by it; everything standing casts a shadow; grain instead of flat fill; motion,
+not blinking; mix tone along a short arc.
+
+**L1 the space backdrop** (first: k_g4m plus two more star classes).
+1. Grade: space shadows cold (violet → blue, no brown; the old gpu backdrop was (37,22,35), brown murk); the star's
+   side warm.
+2. The nebula in three scales. Macro: 2–3 masses a frame — a lit mass, a dark dust band, a void (notan, `look()`).
+   Middle: filaments and pillars, the brightest gas is the edge toward the star. Micro: grain along the flow field.
+   Palette: 2–3 hues around the wheel per system, ≥90° apart, not one violet family.
+3. Dust absorbs: stars and gas behind a band get dimmer and redder.
+4. Depth: three parallax layers; the far one colder, paler, softer, the near one more contrasty.
+5. The star's glow is scattering in gas and dust: warm, by density (denser = brighter), seen with the star off
+   frame. The k_g4m regression (left band 156 → 67) closed with margin.
+6. Shafts in space: planets, station, asteroids between the star and the camera cut the light — shadow rays through
+   the dust (radial blur of the occlusion mask from the star's screen point, off frame too).
+7. Stars: brightness by a power law (many faint, few bright), colour by temperature. Spikes only on the ≤5
+   brightest in frame (tens now — noise). Stretch in flight, twinkle only at rest.
+8. Near-camera motes (parallax >1): sparse, lit from the star's side, streaks in flight.
+Bolder (24.09): at least one system in five sits INSIDE a bright emission nebula — the whole frame glows, hulls are
+silhouettes on light; grades need not be cold+warm — monochrome (amber for a red giant) and contrast pairs
+(teal + orange, magenta + green) are allowed, take the most beautiful per star class; every system has one huge
+landmark on the backdrop seen from everywhere (a supernova remnant ring, pillars, a hole's jets, a comet tail
+across half the sky).
+
+**L2 HDR light.** The scene in rgba16f with a ladder of brightness (star core ≫ flames ≫ lamps ≫ a lit hull ≤ 1).
+Bloom as a mip ladder (6 levels, soft knee): wide and warm at the star, narrow at a flame. AgX tone map. A grade per
+star class (LUT or split toning): red dwarf — embers and deep violet; yellow — gold with teal shadows; blue giant —
+ice and indigo; binary — two keys, the frame split; hole — desaturated with the disc's orange accent. A star in
+frame gets a light anamorphic streak and 2–3 ghosts. The UI takes no bloom and no grade.
+
+**L3 light touches the world.** Materials of baked sprites: metal — a hard glint stroke, paint — diffuse, glass
+reflects the star, windows and lamps emissive. Point lights (flames, beams, bolts, bursts, station lamps, nav
+lights) light hulls in a radius: a beam paints a hull's edge its colour, a burst flashes on every hull nearby, one's
+own flame lights the stern. Star shadows: a station shades its moored barges.
+
+**L4 particles.** Exhaust: curl noise and a temperature ladder white → yellow → orange → red → smoke. Sparks: HDR
+streaks. A burst: fireball, debris with lit edges, smoke lit by fire and star; the shock wave refracts the screen.
+Heat haze behind the nozzle (G4b).
+
+**Then the G steps again, on top of L.** Known so far:
+- G2 the star alive: granulation flows, the corona in jets, prominences on the limb, flares.
+- G3/G3b planets: surface in three scales, ocean glint, clouds with shadows on the ground, city lights at night,
+  a Rayleigh rim and a sunset band at the terminator.
+- G5 surface: the sky by scattering in the planet's air; volumetric cloud layer with a silver edge to the sun;
+  visible rays through clouds; far ridges sink into sky colour; weather as particles lit by sun and lamps; HDR
+  lamps and pools of light at night; water reflects sky and sun; wet sheen after rain.
+- G7 cave: darkness, light only from the lamp — a cone with soft shadows from rocks, ore emissive with bloom, dust
+  in the beam.
 
 ## Where I stopped (update on every commit)
 
@@ -105,8 +166,19 @@ The author, 23.09.2026: «переноси все на новые техноло
   too thin to cut them. Pairs `g5b_crop`, `g5c_crop`, `g5d_crop` (sun behind the cloud edge and the peak), scene
   `surf.js` (pins `celSun` with ALT, `G.t`, and hides the chapter card `#smenaAct` and `say()` in both builds).
 - **New gate (Контроль, 24.09): the WHOLE frame pair scaled to 760 px wide, visibly better at first glance.**
-- **Next: L1 the space backdrop as a volume** (PLAN §0), scene k_g4m; then L2 HDR, L3 lights on the world, L4
-  particles; then G5 rest … G14.
+- **Next: L1 the space backdrop** (§L), then L2 HDR, L3 lights on the world, L4 particles; then G5 rest … G14.
+  Done (1/n): `16gb-gpu-nebula` — the system nebula computed on the GPU instead of the 2D-baked 256² tile: three
+  parallax layers of domain-warped FBM (masses with voids, filaments brightest), emission plus absorption (dust
+  lanes dim AND redden what is behind — a `mul` pass with `pow(T,(.72,1,1.42))`, then an `add` pass of light),
+  lit by the star from the limb (1/(1+r²), warmer toward it), the glow is scattering weighted by gas density.
+  Rendered at ¼ frame into rgba16f (own pipeline, `gpuNebulaGen` before the scene pass opens; re-rendered when the
+  camera moves or every 3rd frame), laid bicubic. Stars are drawn UNDER it now, motes over it. The palette is
+  `gnbPalette` (own rng stream 0x4E42): orange+teal, magenta+green, violet+rose, ice+indigo (hot stars, dwarfs),
+  amber mono with plum shadows (giants), bleached (hole); one system in five is INSIDE an emission nebula
+  (`fill`). 17g's flat `bleed` circle is off when the nebula is up (it was the brown murk). Pairs `l1giant_760`,
+  `l1normal_760` (a fill system), `l1dwarf_760`; scene `freeze.js`+`barges.js`+`delete …gnbPal`. `small.py <name>`
+  makes the 760 px whole-frame pair. Next in L1: stars by power law and ≤5 spikes (7), motes as streaks (8),
+  shafts in space (6), the landmark per system.
   A GPU draw after `gpuHullLight` must use `gpuOver`, not `gpuScene` (the scene pass is closed by then).
 - Merge each: `build.ps1`, `python docs/shot.py <scenes> --look --tag gpu`, 0 `gpu.errs`, pair with
   `scratchpad/mainref/docs/shots/main_<scene>.png`, one line of what got better, commit, strike from PLAN §0.

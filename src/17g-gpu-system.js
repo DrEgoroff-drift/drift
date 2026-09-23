@@ -280,6 +280,8 @@ function gsyStar(pass,sys,ox,oy,R){
   const reach=R*30,dx=ox<0?-ox:(ox>W?ox-W:0),dy=oy<0?-oy:(oy>H?oy-H:0);
   const c=hex2rgb(sys.cls.col);
   S[20]=ox;S[21]=oy;S[22]=reach;S[23]=Math.hypot(dx,dy)<reach?1:0;
+  /* зарево держит объёмная туманность (16gb) — рассеянием по газу; ровный круг поверх давал бурую муть */
+  if(GNB.view&&GNB.dev===GPU.dev&&GNB.sys===sys)S[23]=0;
   S[24]=c[0]/255;S[25]=c[1]/255;S[26]=c[2]/255;S[27]=DPR;
   gpuField(pass,"gsy.star",GSY_STAR_WGSL,S,tex?[tex]:[]);
 }

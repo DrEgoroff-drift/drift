@@ -168,10 +168,10 @@ function gspQuads(pass,P,ub,tex,list,cubic){
   pass.setBindGroup(0,gpuBind("gsp.quad",P.quad,[ub,qb,tex.view,GPU.S.lin]));
   pass.draw(6,n);
 }
-function gspStarsDust(pass,P,ub,dustBase){
-  const sb=gspStarBuf();
-  pass.setPipeline(P.stars);pass.setBindGroup(0,gpuBind("gsp.stars",P.stars,[ub,sb]));
-  pass.draw(6,GSP.nStars*4);
+function gspStarsDust(pass,P,ub,dustBase,noStars){
+  if(!noStars){const sb=gspStarBuf();
+    pass.setPipeline(P.stars);pass.setBindGroup(0,gpuBind("gsp.stars",P.stars,[ub,sb]));
+    pass.draw(6,GSP.nStars*4);}
   if(dustBase>0){
     const db=gspDustBuf(dustBase);
     if(GSP.dustN>0){pass.setPipeline(P.dust);pass.setBindGroup(0,gpuBind("gsp.dust",P.dust,[ub,db]));pass.draw(6,GSP.dustN);}
@@ -183,18 +183,17 @@ function gspSeed(nb){return ((nb[0][0]*3+nb[0][1]*7+nb[1][2]*11)%97)*1.7;}
    те же камеры, что у 2D-ветки drawSystem; шум детали сдвинут по зерну системы */
 function gpuSpaceSys(sys,cx0,cy0,Z){
   GPU.sceneBg=SPACE_BG;
+  /* туманность объёмом (16gb) считается своим проходом — до прохода сцены */
+  const neb=gpuNebulaGen(sys,cx0*Z,cy0*Z,gnbStar(sys,W/2-cx0*Z,H/2-cy0*Z,sys.radius*Z));
   const pass=gpuScene();if(!pass)return;
   const P=gspPipes();
   const cx=cx0*.06*Z,cy=cy0*.06*Z;
   const M=starMove(cx,cy,1);
   const ub=gspUni(cx,cy,1,M,cx0*Z,cy0*Z);
-  const C=sysNebComp(sys);
-  if(C){
-    const ex=W*.24,ey=H*.24;
-    const ox=-ex/2+clamp(-cx*.012,-ex/2,ex/2),oy=-ey/2+clamp(-cy*.012,-ey/2,ey/2);
-    gspQuads(pass,P,ub,gpuCanvasTex(C.cv),[[ox,oy,W+ex,H+ey,1,.9,gspSeed(sysStyle(sys).neb)]],false);
-  }
-  gspStarsDust(pass,P,ub,Math.round(46*sysStyle(sys).dust*G.opts.gfx.particles));
+  /* звёзды — под туманностью: её пыль гасит их, газ светит поверх */
+  gspStarsDust(pass,P,ub,0);
+  if(neb)gpuNebulaComp(pass);
+  gspStarsDust(pass,P,ub,Math.round(46*sysStyle(sys).dust*G.opts.gfx.particles),true);
 }
 /* заставка: две туманности на разной глубине и звёзды (drawNebula + drawStars) */
 function gpuSpaceTitle(c){
