@@ -76,6 +76,69 @@ Heat haze behind the nozzle (G4b).
 - G7 cave: darkness, light only from the lamp — a cone with soft shadows from rocks, ore emissive with bloom, dust
   in the beam.
 
+### L.S Ships and interface (Контроль 15/n, 24.09; the author: «давай нормально нарисуем»)
+**Stage 1 amendments.**
+1. The HUD overlay runs at the device's native DPR (2.625 on the S23; the world stays at 1.5), so text is sharp.
+   The overlay is not redrawn every frame: a full-screen canvas at 2.625 is ~10 MB to the compositor per frame.
+   Raster only on change. Whatever follows the world or a finger (edge chips, compass, target brackets, sticks)
+   is DOM with `transform` (the compositor moves it without raster) or a small canvas of its own. Pair at 390×844,
+   DPR 2.625, shows exactly the sharper text.
+2. Hulls: porting is redrawing. The current bake keys on bank (.05 rad) and scale (1/16 octave), so every turn and
+   zoom is a new bake, and on the GPU an upload. Bake the MATERIAL, not the light, once per hull. Key: seed,
+   `PART_GEN`, the step of grime and scars. Master ~2× the largest on-screen length, with mips. Layers: albedo
+   (paint without light); height → normal (spine, plates, seams, scars); emission (windows, nav lights); mask
+   paint / bare metal / glass → gloss. Bank and scale leave the key and go to the shader. Start from `GST_WGSL`
+   (direction to the star, the cos³ rim, keeping its own colour, `plOcc`). Pass 1: pair no worse than now, zero
+   uploads in flight.
+3. The flame is a shader at once; `drawFlame` is not ported as is. An HDR core > 1 feeds the bloom; the plume flows
+   along the axis over the noise tile. Today `rndFx()` every frame is twinkle, and the law is motion, not twinkle.
+   Length follows thrust with smoothing. Working flames orange fire; cool ones short white-blue.
+4. Pirates, «Чебурек», missiles, combat — the same material path. Station art: a key without motion. The
+   `gpuCanvasTex` cache and the 416×140 pod as in the plan.
+5. Gate: uploads 0, submits 1 → Контроль's phone, 30 s + 5 min → candidate. Further redrawing does not hold the
+   candidate.
+
+**After the candidate — redraw passes.** Each: a 760 pair and one line of what got better.
+
+*Ships.* On the phone at 58 px a ship reads as a body in real light; up close (card, hangar) as a machine made of
+material.
+- a) One light, the star. The terminator across the hull. Flying toward the star — the nose is lit; away — the stern
+  is lit, with a thin rim on the star's side.
+- b) Shadow is not black: fill from the gas — the nebula's colour at the ship, a low mip. Warm shade in orange gas,
+  cold in blue.
+- c) Rock stops light: in a planet's shadow the ship goes dark, only windows and flame live.
+- d) Glints by count: gloss only through the bare-metal mask, a high power, 2–4 hard glints on the spine and edges,
+  sliding as it turns. Not a smear over the whole hull.
+- e) Windows and lamps: HDR emission, a light bloom, lit in shadow too.
+- f) The flame lights the stern: a warm spot falling off over ~.3 of the flame length. A second light, i.e. a
+  breach of «one light» — name it in the line.
+- g) Silhouette: a 1-device-px rim; on bright gas the body is dark; `GPU.sep` stays; nothing shimmers on a turn
+  (mips, premultiplied).
+- h) Untouched: the silhouette, the maker grammar, part sizes, hitboxes, `PART_GEN`, seeds, the save. `makerRead`
+  (M369) ≥ 90 %.
+Pairs: the player's ship at phone scale in three positions — toward the star, away from it, in a planet's shadow;
+plus a pirate and a close-up (hangar or card).
+
+*Interface.* The world is the picture; the interface is a quiet instrument; the one warm accent is the next action.
+From the phone frame (0bd3b0b, portrait):
+- a) Everything is caps with letter-spacing (К ЗВЕЗДЕ, КАРТА, МЕНЮ, ФОТО, ЭФИР · ПРИНЯТО, ЦЕЛЬ, ТОПЛИВО…).
+  Hierarchy by size and colour (CLAUDE.md): sentence case, numbers larger than labels, tabular digits.
+- b) Four warm things at once (К ЗВЕЗДЕ, ФОТО, ЦЕЛЬ, the МЕНЮ dot) — no hierarchy. Warm only for the next action;
+  the rest cold and quiet.
+- c) The right edge: three plates ~⅕ of the screen width plus ФОТО. «Two permanent buttons» kept to the letter, not
+  by area. Compact, from 44 px. Check that «К звезде» appears only for a reason.
+- d) Four thin bars with small labels read as a table. Fuel and hull lead: a large number, a short bar, warming as
+  they run out. Energy and hold are quieter and speak up only on change.
+- e) Overlaps: ДОЛГОЕ and ФОРСАЖ lie under the ЭФИР ticker and under ФОТО. A test: overlay element rectangles never
+  intersect at 390×844 or at 760.
+- f) Plates: dark glass without a gradient, a hairline edge, the text carries the colour. Light is only added from
+  the dark ground, never laid over as a gradient.
+- g) Untouched: ≥ 44 px, `--ui` as the one ruler, `withScale(UIK…)`, a button names its action.
+Order: the flight HUD first, one pair at 390×844 and at 760. A fork of taste: the pair goes to the author for a
+verdict before any other screen.
+
+The phone frame budget does not grow: GPU ≤ 12 ms.
+
 ## Where I stopped (update on every commit)
 
 - **Released 0.457.0 (`2a288f7`, from `rel`; merged back into gpu as `b0c8cac`).** The next candidate goes from

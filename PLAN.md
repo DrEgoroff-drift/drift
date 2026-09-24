@@ -29,15 +29,20 @@ interface goes to its own DOM canvas over the WebGPU canvas. The browser compose
 copied into Dawn and gets no post. Target: `#c` is never uploaded, one submit a frame (the hull-mask submit of
 `gpuHullLight` goes with the hulls). Every step: a 760 pair with max|Δ|, uploads and submits per frame as
 numbers; the picture only no worse. Physics, seeds, the save and QUANT stay untouched.
-- [ ] **Stage 1 — flight (system):**
-  - the HUD (`drawSysHud`, the sticks, labels, chips, compass) on the overlay;
-  - hulls and flames as GPU sprites (bake once, then instances, light in the shader);
+- [ ] **Stage 1 — flight (system)** (amended by 15/n, `docs/DESIGN-gpu.md` §L.S):
+  - the HUD on the overlay (done: 9e8877a), then at the native DPR and rastered only on change; what follows the
+    world or a finger (chips, compass, brackets, sticks) as DOM with `transform` or a small canvas;
+  - hulls: bake the material (albedo, height → normal, emission, gloss mask) once per hull, bank and scale in the
+    shader, from `GST_WGSL`; the flame as a shader (HDR core, plume on the noise tile, no per-frame `rndFx`);
   - pirates, missiles and combat effects;
   - the caches: the hull bake that repeats every frame (its key misses), the station art rebaked on the move
     with a new texture each time, and whether the 8-slot `gpuCanvasTex` thrashes;
   - the instrument pod (416×140, 66 calls a frame): redraw only when a reading changes.
   - Gate: uploads 0 and submits 1 per flight frame; then Контроль's phone run, ≥ 95 % of frames on time over
     30 s and over 5 minutes. A pass makes it a release candidate (Контроль pushes).
+- [ ] **Redraw passes after the candidate** (§L.S): ships in real light (a–h, pairs toward / away from the star, in
+  a planet's shadow, a pirate, a close-up); then the flight HUD as a quiet instrument (a–g), one pair at 390×844
+  and 760 to the author for a verdict before any other screen.
 - [ ] **Stage 2 — the other modes, by share of play time:** map, landing, surface, cave, mine, belt, raid,
   cockpit, scoop, base; one step per mode, each with a pair and the upload count. G4c, G4d and G6–G12 below
   are how each mode's body is drawn.
