@@ -78,7 +78,7 @@ Heat haze behind the nozzle (G4b).
 
 ## Where I stopped (update on every commit)
 
-- **Deploy candidate: `7658f17` (L1b 4/n; before it `92679b3`), accepted by Контроль by its pairs.** The author: deploy to main
+- **Deploy candidate: `d57c40c` (L1b 5/n; before it `7658f17`), accepted by Контроль by its pairs.** The author: deploy to main
   before the limit window reaches 90%; the signal «ДЕПЛОЙ» comes from Контроль. On it: close the step with a
   commit; `test.ps1 -Full` and `node test-node.js`; bump `VER` and a PATCHNOTES line (what the player sees
   better, plus «needs a browser with WebGPU»); a release commit; send Контроль its sha. **Контроль pushes**
@@ -86,13 +86,16 @@ Heat haze behind the nozzle (G4b).
   the site falls: a commit on top with the tree of `d543aff`, never a force-push. Only a commit Контроль
   accepted by pairs goes to main. CI rehearsal of ef8c8b9 (deploy.yml flags, `--disable-gpu`): load clean,
   smoke 4/4, Node green (the «рейсы» suite fails in full order only, green alone; it sits in quarantine).
-- Order now: L1b 5/n done, awaiting Контроль. **L1b 5/n — brief: the frame at ×2 stops being a black hole; dust bodies read by their shape
-  (starlit side, thin parts show stars), and space with stars comes back.** The wall sits farther from the
-  frame centre — solid bodies ≤45% of the frame at any zoom; a faint warm-grey-brown reflected light (L 8–14)
-  on the star side of a body, fading into its depth; rims stay where gas is. Target: black (L < 12) ≤45% at
-  ×2.00, ≤40% at ×1.60, median L ≥14. Gate: l4a ×2.00, nnormal ×1.60, l2c ×1.10, whole frames at 760. Then
-  the G steps anew on top of L, by the bible §L in its order, each with a one-line brief here first (G5
-  frozen). L1b and L4 follow-ups sit in PLAN §0.
+- L1b 6/n done (below, with the author's «лужа» pass); waiting for Контроль's verdict on its pairs.
+- Brief of **L1b 6/n — pillars become tapering trunks, not sticks, and the star field is as rich as
+  main's.** A pillar is a trunk: base width ≈ ⅓ of its length, narrowing to a rounded head a little wider than
+  its neck, 2–3 swellings along it, a bend up to 15°; 2–4 in the frame, each at most half the way from the wall
+  to the star — the black ceiling (≤45%) is kept by count and length, not thickness. The reflected light is a
+  bark: neutral grey-brown with 30% of the nearby gas tone, gone 5–8 px inside. Stars: with no absorption, l4a
+  holds ≥242 (main's count), most small, rare bright ones with a light glow through the L2 mips. Gate: whole
+  frames at 760 — nnormal ×1.60, l4a ×2.00, l2c ×1.10 — plus l2c «e0e933f | now», no less drama. Then the G
+  steps anew on top of L, by the bible §L in its order, each with a one-line brief here first (G5 frozen).
+  L1b and L4 follow-ups sit in PLAN §0.
 
 - Done: core `08b`, kit `08c`, space `16g` (G1: live nebula wisps and lanes, stars with halo and tapered
   spikes, dust with depth of field; pair in `scratchpad/pairs/system_crop.png`),
@@ -371,6 +374,23 @@ Heat haze behind the nozzle (G4b).
   (billows in growing coordinates, the same ladder, heat `exp(−a/.42)`, gone by 1.1 s), 22 spark streaks
   (a 1/30 s path each, HDR). Flash — `gpuLight` (white ~.1 s, then warm), shock — `gpuShock` over ~1.1 s.
   Drawn before `genDraw`, so bolts and beams stay on top and sharper.
+  Done (L1b 6/n, trunks and a soft nebula; the author on the nnormal angle: «слишком резкие переходы,
+  выглядит как лужа а не как туманность»; Контроль cancelled the sharp star-side edge). A pillar is one
+  tapering trunk per angular cell (14 a turn, share .5): length ≤ half the wall-to-star way and ≤ .72 H, base
+  half-width L/5 narrowing to .55 of it, a round head 1.25× the neck, ±22% swellings, a bend by the cell's
+  hash; the wall's lumps reach the pillar at a third (full lumps ate the heads into spikes). Wall .87 → .76
+  of the radial span. Soft everywhere: body ramps over 60 CSS px on the back, 34 at the sides, 27 facing the
+  star; density rises over 26 px and is uneven by `dn`; the back edge tears into mid-scale wisps; the near gas
+  layer sits 30% in front of a body at its edge and none over the core. The rim is a glow 8–20 px (two
+  exponentials), no inner line. Tone zones: the selector gets a finer warp (±.08) and a .38–.62 ramp, the mix
+  keeps the ends' saturation (two complements no longer grey out), the seam dims the gas by .45, not .9. The
+  bark: grey-brown with 30% of the gas tone, gone 6.5 px inside. The cavity glows: ionised gas from 40% to
+  92% of the wall radius, patchy, in the gas tone with 30% of the star's white, so pillars stand as
+  silhouettes on light (the brown inside a body is dimmer near a bright star — at l2c it matched the gas).
+  Stars in 2D sizes (1 / 1.4 / 2.1 px) and a flatter law (floor .2). Field (L median / black): l4a ×2.00
+  14.1 / 20%, nnormal ×1.60 16.9 / 19%, l2c ×1.10 73.7 / 1%. Stars at l4a: bare field 260 (main 242), with
+  gas and no dust 226 — the gas veils the faintest; a higher floor (.27, .36) did not move it (±5 twinkle).
+  Left: l2c's pillars are dark fingers on glow, smaller than e0e933f's black masses.
   Done (L1b 5/n, the black frame at ×2; Контроль on 7658f17: 88% black, no star field, duller than main).
   Masks (debug output of solid dust / body / gas) showed solid dust on 75% of the field at ×2 and ×1.6 — the
   pillars, not the wall, carry it, and one hashed pillar more or less moves it by 20%. Now: the big pillars'

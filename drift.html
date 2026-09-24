@@ -49253,10 +49253,10 @@ const GSP_STARS=`
   let px=pmod(s.x*1600.-u.b.z*u.c.x*z,1600.)/1600.*u.a.z;
   let py=pmod(s.y*1200.-u.b.w*u.c.x*z,1200.)/1200.*u.a.w;
   var a=0.;var sz=1.;
-  /* яркость по степенному закону: много слабых, мало ярких (было — ровно по глубине) */
+  /* яркость по степенному закону: много слабых, мало ярких; пол .2 — слабая звезда видна, как у 2D (L1b 6/n) */
   let zz=clamp((z-.2)/.8,0.,1.);
   if(bright){a=(.42+.4*select(0.,1.,spiky))+.2*sin(u.b.y*.03+s.w)*(1.-mov);}
-  else{a=(.09+.7*pow(zz,2.4))*(.76+.24*sin(u.b.y*.045*(.4+z)+s.w)*(1.-mov));sz=select(select(1.,1.3,zz>.55),1.9,zz>.9);}
+  else{a=(.2+.55*pow(zz,1.5))*(.76+.24*sin(u.b.y*.045*(.4+z)+s.w)*(1.-mov));sz=select(select(1.,1.4,z>.5),2.1,z>.85);}
   a=a*u.d.z;
   let still=1.-smoothstep(.04,.3,mov);
   let l=vec2f(u.c.y*u.d.x*u.c.x*z,u.c.z*u.d.y*u.c.x*z);let ll=length(l);
@@ -49904,58 +49904,55 @@ fn caps(a:f32,d:f32,wa:f32,wb:f32,L:f32)->f32{
   if(a<0.){return length(vec2f(a,d))-wa;}
   if(a<L){return abs(d)-mix(wa,wb,a/L);}
   return length(vec2f(a-L,d))-wb;}
-/* столпы одного масштаба: ячейки по углу (n на оборот — шов у звезды сходится сам) и по ln r
-   (cr); в ячейке с вероятностью pr — голова. Ствол уходит от звезды до стены, ширина — в H,
-   а не в угле: у звезды столп не сходится в иглу. Голова глубже стены на gw кадра — нет
-   столпа (полость у звезды выметена). gl — доля голов с глобулой впереди: хвост от звезды */
-fn pillars(D:DQ,se:f32,rw:f32,n:f32,cr:f32,pr:f32,w0:f32,gw:f32,gl:f32,sd:f32)->f32{
+/* столп — сужающийся ствол (L1b 6/n): одна ячейка по углу (n на оборот) — не больше одного
+   столпа, с вероятностью pr. Длина — не больше половины пути от стены до звезды и не больше
+   .72 кадра: столп растёт из стены, кадр ему пересекать незачем. У основания ширина ≈ ⅓
+   длины, к голове сужается, по длине 2–3 вздутия, изгиб до 15°; голова круглая и чуть шире
+   шеи. gl — доля голов с глобулой впереди */
+fn pillars(D:DQ,rw:f32,n:f32,pr:f32,gl:f32,sd:f32)->f32{
   var m=-1.;let per=6.2832/n;
-  let i0=floor(D.q.x/per);let j0=floor(D.q.y/cr);
+  let i0=floor(D.q.x/per);
   for(var di=-2;di<=2;di++){
     let i=i0+f32(di);let im=i-n*floor(i/n);
-    for(var dj=-4;dj<=2;dj++){
-      let j=j0+f32(dj);
-      let h=gh(vec2f(im*1.37+sd,j*2.11+sd*.7));
-      if(h>pr){continue;}
-      let h2=gh(vec2f(im+sd*3.1,j-sd*1.3));let h3=gh(vec2f(j*.7+sd*.3,im*1.9+5.));
-      let qh=(j+.1+.8*h3)*cr;let rh0=dR(D,qh);
-      let sh=(qh-D.r0)/(D.r1-D.r0);
-      /* голова ближе к звезде, чем можно, — столп уходит в стену (а не тоньшает в волос) */
-      let gt=smoothstep(se-gw-.1,se-gw+.02,sh);
-      if(gt<=0.){continue;}
-      let rh=mix(rw+.03,rh0,gt);
-      let w=w0*(.6+.8*h/pr);
-      let a=D.r-rh;
-      /* ствол чуть гнётся по длине */
-      let d=(D.q.x-(i+.25+.5*h2)*per)/D.k*D.r+w*1.2*(gn(vec2f(a/w*.35,im*3.1+sd))-.5);
-      /* ствол — до самой стены: столп растёт из неё */
-      m=max(m,-caps(a,d,w,w*1.9,max(rw-rh,2.*w)+.05));
-      /* глобула — только вдали от звезды: у самой звезды поперечник по углу схлопывается,
-         и глобула размазалась бы в кольцо */
-      let g=w*(.14+.14*h3);let gp=w+g*(2.+4.*h2/max(gl,1e-3));
-      if(h2<gl&&rh-gp>.12+6.*g){
-        m=max(m,-caps(a+gp,d+w*.5*(h3-.5),g,g*.25,g*5.));}
-    }}
+    let h=gh(vec2f(im*1.37+sd,sd*.7+3.));
+    if(h>pr){continue;}
+    let h2=gh(vec2f(im+sd*3.1,7.));let h3=gh(vec2f(im*1.9+5.,sd*.3));
+    let L=min(.5*rw,.72)*(.7+.3*h3);
+    let rh=rw-L;let a=D.r-rh;
+    let t=clamp(a/L,0.,1.);
+    /* изгиб: основание сидит в стене, голова уходит вбок — наклон у головы ≤ 15° */
+    let sg=select(-1.,1.,h2>.5);
+    let dd=(D.q.x-(i+.25+.5*h2)*per)/D.k*D.r-sg*L*.12*(1.-t)*(1.-t);
+    let wb=L/5.;let wn=max(wb*.55,.01);let wh=wn*1.25;
+    let bul=1.+.22*(2.*gn(vec2f(t*2.6+h*9.,im*1.7+sd))-1.);
+    let hw=(wn+(wb-wn)*pow(t,1.3))*bul;
+    if(a>wh){m=max(m,hw-abs(dd));}
+    m=max(m,wh-length(vec2f(a-wh,dd)));
+    /* глобула — впереди головы, хвостом к столпу */
+    if(h2<gl||h2>1.-gl*.5){
+      let g=wh*(.4+.2*h3);let gp=wh*(2.6+2.5*h3);
+      if(rh-gp>.1){m=max(m,-caps(a+gp,dd+wh*.4*(h3-.5),g,g*.25,g*4.));}}
+  }
   return m;}
-/* x: поле в H (>0 — внутри тела), z: плотность толщи, w: s */
+/* x: поле в H (>0 — внутри тела), y: свечение полости, z: плотность толщи, w: s */
 fn dustAt(p:vec2f,W:f32,H:f32,seed:f32)->vec4f{
   let D=dpolar(p,W,H);let tr=D.tr;let s=D.s;
   let o=vec2f(fract(seed*.37)*50.+7.,fract(seed*.71)*50.+3.);
   let sd=fract(seed*.113)*97.;
   /* стена полости: вдали от звезды — материнское облако, у кромки кадра */
-  let se=.975+(nzs(tr,D.q,vec2f(4.,1.),o+vec2f(21.,9.),2)-.5)*.2+(nzs(tr,D.q,vec2f(11.,2.5),o+vec2f(4.,13.),2)-.5)*.16;
+  let se=.76+(nzs(tr,D.q,vec2f(4.,1.),o+vec2f(21.,9.),2)-.5)*.2+(nzs(tr,D.q,vec2f(11.,2.5),o+vec2f(4.,13.),2)-.5)*.16;
   let rw=dR(D,D.r0+se*(D.r1-D.r0));
-  var m=D.r-rw;
-  /* из стены к звезде — столпы трёх масштабов, у голов — глобулы */
-  m=max(m,pillars(D,se,rw,18.,.8,.41,.05,.9,.45,sd));
-  m=max(m,pillars(D,se,rw,40.,.55,.26,.026,.55,.3,sd+13.));
-  m=max(m,pillars(D,se,rw,70.,.4,.25,.012,.22,0.,sd+29.));
-  /* край комковатый: крупные наплывы и мелкие */
-  m=m+(nzs(tr,D.q,vec2f(7.,1.8),o+vec2f(8.,8.),2)-.5)*.04+(nzs(tr,D.q,vec2f(14.,7.),o+vec2f(1.,3.),3)-.5)*.022
-    +(nzs(tr,D.q,vec2f(40.,18.),o+vec2f(6.,1.),2)-.5)*.01
-    -(1.-smoothstep(.0,.2,s))*.04;
+  /* край комковатый: крупные наплывы и мелкие — у стены в полную силу, у столпа на треть
+     (иначе наплыв размером с голову съедает её в остриё) */
+  let lu=(nzs(tr,D.q,vec2f(7.,1.8),o+vec2f(8.,8.),2)-.5)*.04+(nzs(tr,D.q,vec2f(14.,7.),o+vec2f(1.,3.),3)-.5)*.022
+    +(nzs(tr,D.q,vec2f(40.,18.),o+vec2f(6.,1.),2)-.5)*.01;
+  var m=D.r-rw+lu-(1.-smoothstep(.0,.2,s))*.04;
+  /* из стены к звезде — 2–4 столпа в кадре, у части голов — глобулы */
+  m=max(m,pillars(D,rw,14.,.5,.2,sd)+lu*.35);
   let dn=nzs(tr,D.q,vec2f(12.,3.),o+vec2f(2.,9.),3);
-  return vec4f(m,0.,dn,s);}
+  /* y: свечение полости — ионизованный газ перед стеной, от середины пути к звезде до стены */
+  let cav=smoothstep(.4*rw,.92*rw,D.r)*(1.-smoothstep(rw-.02,rw+.12,D.r+lu));
+  return vec4f(m,cav,dn,s);}
 struct LK{e:vec3f,a:f32,w:f32};
 fn lmk(p:vec2f,W:f32,H:f32,sp:vec2f)->LK{
   let ty=u.h.w;let k=u.i.w;
@@ -50038,9 +50035,12 @@ fn lmk(p:vec2f,W:f32,H:f32,sp:vec2f)->LK{
   let mass=smoothstep(.47-.22*fill+er,.6-.12*fill+er,M);
   let ns=normalize(sc+vec3f(1e-3));
   let near=select(1.,-1.,dot(ns,normalize(A))>dot(ns,normalize(B)));
-  let sel=fb(qm*.55+wm*.9+vec2f(11.,3.),3)+near*.3*smoothstep(.05,.45,lit)*son;
-  let tone=smoothstep(.485,.515,sel);
-  let seam=1.-smoothstep(.0,.045,abs(sel-.5));
+  /* стык тонов — не стенка: переход на ~60–150 px, тона перемешаны клочьями (варп мельче
+     крупного плана) — тон меняется не быстрее ~2° на px (автор 24.09: «лужа») */
+  let sel0=fb(qm*.55+wm*.9+vec2f(11.,3.),3)+near*.3*smoothstep(.05,.45,lit)*son;
+  let sel=sel0+(fb(qm*2.6+wm*2.+vec2f(3.,17.),3)-.5)*.16;
+  let tone=smoothstep(.38,.62,sel);
+  let seam=1.-smoothstep(.0,.07,abs(sel-.5));
   let bv=fb(vec2f(qm.x*.3+wm.y*.6,qm.y*.95+wm.x*.3)+vec2f(21.,5.),3);
   /* полоса узкая: шум fb держится у .5, и широкий порог клал её на полкадра — звёзд не было */
   let band=1.-smoothstep(.015,.05,abs(bv-.5));
@@ -50052,7 +50052,7 @@ fn lmk(p:vec2f,W:f32,H:f32,sp:vec2f)->LK{
      светило остаётся самым ярким в кадре */
   let bub=mix(.28,1.,smoothstep(.04,.5,sd));
   let tint=clamp(lit*.6,0.,.5)*sat(sc)*max(dot(normalize(sc),normalize(mix(A,B,.5))),0.)*.6;
-  var C=vec3f(0.);var T=1.;var dsum=0.;
+  var C=vec3f(0.);var T=1.;var dsum=0.;var Cf=vec3f(0.);
   for(var L=0;L<3;L++){
     let fl=f32(L);
     /* дальний слой крупный и медленный, ближний — мельче и быстрее */
@@ -50064,7 +50064,7 @@ fn lmk(p:vec2f,W:f32,H:f32,sp:vec2f)->LK{
     let d=fb(q+2.1*w2,5);
     let amp=select(select(.55,.95,L==1),.6,L==2)*dens0;
     /* дальний слой мягче (широкий порог), ближний контрастнее */
-    let g=smoothstep(.46-.06*(2.-fl)-.12*fill+er*.6,.76+.07*(2.-fl)+er*.3,d)*amp*mass*(1.-.9*seam)*bub*(1.-.5*LM.w);
+    let g=smoothstep(.46-.06*(2.-fl)-.12*fill+er*.6,.76+.07*(2.-fl)+er*.3,d)*amp*mass*(1.-.45*seam)*bub*(1.-.5*LM.w);
     /* пыль: тонкие прожилки-хребты у каждого слоя, у ближнего — ещё и широкая полоса */
     let rid=1.-abs(2.*fb(q*1.6+w2*1.4+vec2f(9.,4.),4)-1.);
     var ab=smoothstep(.8,.9,rid)*dust*(.3+.35*fl)*(.4+.6*smoothstep(.3,.6,d));
@@ -50073,12 +50073,15 @@ fn lmk(p:vec2f,W:f32,H:f32,sp:vec2f)->LK{
     /* в окне пыль тоньше — громадину видно целиком, а не клочьями */
     ab=ab*(1.-.6*LM.w);
     /* тон — по области массы, а не по завитку: в одном пикселе один цвет */
+    /* промежуточный тон — той же насыщенности, что края: смесь двух дополнительных иначе серая */
     var col=mix(A,B,tone);
+    let cmx=max(col.r,max(col.g,col.b));
+    col=max(cmx+(col-cmx)*mix(sat(A),sat(B),tone)/max(sat(col),1e-3),vec3f(0.));
     col=mix(col,sc,tint)*(1.+.25*fl);
     /* волокна — самые плотные гребни — светят ярче тела */
     let e=col*g*(.62+1.3*lit)*(.6+1.1*smoothstep(.62,.84,d))*(1.+.8*lit*smoothstep(.55,.9,d));
     let rim=mix(gc,vec3f(1.),.25)*max(sc.r,max(sc.g,sc.b))*lit*ab*.3;
-    C=C*exp(-ab*2.6)+e+rim;T=T*exp(-ab*2.6);dsum=dsum+g;
+    C=C*exp(-ab*2.6)+e+rim;T=T*exp(-ab*2.6);dsum=dsum+g;if(L==2){Cf=e+rim;}
   }
   /* зарево звезды — рассеяние: ядро у диска ровное, дальше — по плотности газа;
      полоса пыли режет его */
@@ -50094,6 +50097,11 @@ fn lmk(p:vec2f,W:f32,H:f32,sp:vec2f)->LK{
      каймой — фронт ионизации; глобулы; в газе — тёмные волокна. В разрывах пыли видны звёзды
      за ней (она гасит и их, через T). Не вуаль: либо газ, либо тело пыли */
   let DD=dustAt(p,W,H,seed);let dn=DD.z;
+  /* полость светится за столпами: пыль встаёт силуэтом на свету, а не лежит на пустоте
+     (Орёл) — свет неровный, клочьями, в тон газа с долей белого звезды */
+  let cvn=.45+.55*smoothstep(.3,.7,fb(p/H*3.2+vec2f(seed*.3+4.,2.),3));
+  let cvg=DD.y*cvn*son*(.4+.8*lit)*(1.-.5*LM.w);
+  C=C+mix(gc,sw,.3)*cvg*.3;dsum=dsum+cvg*.5;
   /* край — в пикселях: расстояние до порога по градиенту гладкого поля */
   let ex=1.5;
   let gD=vec2f(dustAt(p+vec2f(ex,0.),W,H,seed).x-dustAt(p-vec2f(ex,0.),W,H,seed).x,
@@ -50102,27 +50110,30 @@ fn lmk(p:vec2f,W:f32,H:f32,sp:vec2f)->LK{
   let tS=normalize(sp-p+vec2f(1e-3));
   let fd=dot(-gD/gl2,tS);let face=max(fd,0.);
   let fw=smoothstep(.15,.55,face);
-  /* край несимметричен: к звезде — резкий, изъеденный, с каймой; от звезды — мягкий,
-     пыль тает в газ на 10–20 px. Изъеден только освещённый край */
   let DQ0=dpolar(p,W,H);
   /* мелочь края — в слое с параллаксом пыли (.12): у центра кадра она едет вместе с пылью */
   let pl=(p+u.b.xy*.12)/H;
-  let ero=(fb(pl*55.+vec2f(5.,5.),3)-.5)*(.005+.012*fw);
+  /* тыльный край рвётся клочьями (средний масштаб), освещённый — мелко изъеден */
+  let ero=(fb(pl*55.+vec2f(5.,5.),3)-.5)*(.005+.012*fw)+(fb(pl*16.+vec2f(2.,7.),3)-.5)*.045*(1.-fw);
   let dk=clamp(dust,.6,1.3)*(1.-.75*LM.w);
   let thr=-.012*(dk-1.)+.08*LM.w;
   let dpx=(thr-DD.x-ero)/gl2;                   /* >0 — снаружи тела, в CSS px */
-  /* мягко — только тыл (край смотрит от звезды); бока столпов резкие */
-  let wsoft=mix(16.,1.2,smoothstep(-.75,-.25,fd));
-  let body=1.-smoothstep(-wsoft,1.,dpx);
+  /* край мягкий и наружу, и внутрь: тыл тает на ~60 px, к звезде — на ~30 (там его держит
+     кайма); резкая граница читалась лужей (автор, 24.09) */
+  let wsoft=mix(60.,34.,smoothstep(-.75,-.25,fd))*mix(1.,.8,fw);
+  let body=1.-smoothstep(-wsoft*.6,wsoft*.4,dpx);
   /* плотность растёт вглубь; в толще — неровная: местами газ и звёзды просвечивают */
   /* газ за телом закрыт его силуэтом; звёзды — по толщине: столп в 20–60 px просвечивает
      ими вполсилы, стена глухая */
-  let od=body*(.35+3.*smoothstep(1.,16.,-dpx)*(.3+.9*dn))*dk;
+  /* толща неровная: сгустки и разрежения, а не ровная чернота */
+  let dv=smoothstep(.3,.72,dn);
+  let od=body*(.3+3.2*smoothstep(0.,26.,-dpx)*(.35+.65*dv))*dk;
   let odT=body*(.1+3.4*pow(smoothstep(8.,70.,-dpx),1.5)*(.15+1.1*dn))*dk;
   /* кайма фронта ионизации — только к звезде: линия 1–3 px светлее газа и свечение наружу */
   let brk=smoothstep(.25,.55,fb(pl*9.+vec2f(7.,3.),2));
   let o=max(dpx,0.);
-  let edge=smoothstep(-1.5,.3,dpx)*(exp(-o/1.3)+.3*exp(-o/8.));
+  /* кайма — мягкое свечение 8–20 px: ярче у тела, наружу гаснет, без резкой внутренней границы */
+  let edge=smoothstep(-8.,2.,dpx)*(.55*exp(-o/4.)+.45*exp(-o/12.));
   /* кайма — фронт ионизации: светится газ у кромки, её сила — по его плотности; на пустом
      космосе пыль только гасит звёзды — ни каймы, ни бурого */
   let gas=smoothstep(.02,.3,dsum);
@@ -50130,18 +50141,21 @@ fn lmk(p:vec2f,W:f32,H:f32,sp:vec2f)->LK{
   let ic=mix(gc*1.5,vec3f(1.,.95,.86),.3)*max(max(sc.r,max(sc.g,sc.b)),.7);
   /* внутри — бурый (тон 15–30°): отражённый свет, прожилки вдоль столпа, к сердцевине темнее */
   let vein=1.-abs(2.*nzs(DQ0.tr,DQ0.q,vec2f(30.,4.),vec2f(1.,6.),3)-1.);
-  let deep=.4+.6*exp(min(dpx,0.)/18.);
+  let deep=.2+.8*exp(min(dpx,0.)/14.);
   /* рельеф толщи: бугры светлее на склоне к звезде — облако объёмное, а не вуаль */
   let dn2=nzs(DQ0.tr,DQ0.q-vec2f(0.,.035),vec2f(12.,3.),vec2f(fract(seed*.37)*50.+9.,fract(seed*.71)*50.+12.),3);
   let dn1=nzs(DQ0.tr,DQ0.q,vec2f(12.,3.),vec2f(fract(seed*.37)*50.+9.,fract(seed*.71)*50.+12.),3);
   let emb=clamp((dn2-dn1)*9.,-1.,1.);
-  let brown=vec3f(.13,.08,.02)*(.6+.8*lit)*(.6+.8*pow(vein,4.))*deep*max(1.+.6*emb,.15)
+  let brown=vec3f(.13,.08,.02)*(.55+.35*lit)*(.6+.8*pow(vein,4.))*deep*max(1.+.6*emb,.15)
     *(1.+2.*face*fw*exp(min(dpx,0.)/6.))*body*(1.-exp(-od*2.4))*dk*gas;
-  /* отражённый свет звезды и без газа: тёпло-серый на стороне тела к звезде, вглубь гаснет —
-     тело читается формой, а не дырой (L1b 5/n) */
-  let refl=vec3f(.18,.147,.11)*(.3+.7*fw)*(.12+.88*exp(min(dpx,0.)/20.))*body*(1.-gas)*dk
+  /* отражённый свет звезды и без газа — на стороне тела к звезде (L1b 5/n) */
+  /* кора: серо-бурый с третью тона газа рядом, внутрь тела гаснет за 5–8 px */
+  let refl=mix(vec3f(.17,.15,.13),gc*.16,.3)*(.3+.7*fw)*(.06+.94*exp(min(dpx,0.)/6.5))*body*(1.-gas)*dk
     *mix(.6,1.,smoothstep(.3,.7,dn));
-  C=C*exp(-od*2.4)+ic*ion*1.5+brown+refl;T=T*exp(-odT*2.4);
+  /* ближний слой газа отчасти перед пылью: тело не вырезано из кадра, а лежит в глубине */
+  let ta=exp(-od*2.4);
+  /* …но сердцевина глухая: чем глубже, тем меньше ближнего газа поверх — драма столпа */
+  C=(C-Cf)*ta+Cf*mix(ta,1.,.3*(1.-smoothstep(6.,30.,-dpx)))+ic*ion*1.5+brown+refl;T=T*exp(-odT*2.4);
   /* громадина — за всеми слоями: её свет прошёл сквозь их пыль (T), её пыль гасит звёзды */
   C=C+LM.e*mix(T,1.,.5);T=T*exp(-LM.a*2.);
   return vec4f(C,1.-T);}`;

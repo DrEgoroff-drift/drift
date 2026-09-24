@@ -45,10 +45,10 @@ const GSP_STARS=`
   let px=pmod(s.x*1600.-u.b.z*u.c.x*z,1600.)/1600.*u.a.z;
   let py=pmod(s.y*1200.-u.b.w*u.c.x*z,1200.)/1200.*u.a.w;
   var a=0.;var sz=1.;
-  /* яркость по степенному закону: много слабых, мало ярких (было — ровно по глубине) */
+  /* яркость по степенному закону: много слабых, мало ярких; пол .2 — слабая звезда видна, как у 2D (L1b 6/n) */
   let zz=clamp((z-.2)/.8,0.,1.);
   if(bright){a=(.42+.4*select(0.,1.,spiky))+.2*sin(u.b.y*.03+s.w)*(1.-mov);}
-  else{a=(.09+.7*pow(zz,2.4))*(.76+.24*sin(u.b.y*.045*(.4+z)+s.w)*(1.-mov));sz=select(select(1.,1.3,zz>.55),1.9,zz>.9);}
+  else{a=(.2+.55*pow(zz,1.5))*(.76+.24*sin(u.b.y*.045*(.4+z)+s.w)*(1.-mov));sz=select(select(1.,1.4,z>.5),2.1,z>.85);}
   a=a*u.d.z;
   let still=1.-smoothstep(.04,.3,mov);
   let l=vec2f(u.c.y*u.d.x*u.c.x*z,u.c.z*u.d.y*u.c.x*z);let ll=length(l);
