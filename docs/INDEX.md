@@ -2058,11 +2058,11 @@ GNB_EMI                      src/16gb-gpu-nebula.js:123
 GNB_FINE                     src/16gb-gpu-nebula.js:103
 GNB_GEN                      src/16gb-gpu-nebula.js:28
 GNB_NOISE                    src/16gb-gpu-nebula.js:20
-GNB_PAL                      src/16gb-gpu-nebula.js:183-198
-gnbPalette                   src/16gb-gpu-nebula.js:190-198
-gnbPipe                      src/16gb-gpu-nebula.js:171-176
-gnbStar                      src/16gb-gpu-nebula.js:200-205
-gnbTarget                    src/16gb-gpu-nebula.js:163-170
+GNB_PAL                      src/16gb-gpu-nebula.js:189-204
+gnbPalette                   src/16gb-gpu-nebula.js:196-204
+gnbPipe                      src/16gb-gpu-nebula.js:177-182
+gnbStar                      src/16gb-gpu-nebula.js:206-211
+gnbTarget                    src/16gb-gpu-nebula.js:169-176
 gnFoe                        tests/91zzzw-guns2.js:17-23
 gnGun                        tests/91zzzw-guns2.js:25-28
 gnWorld                      tests/91zzzw-guns2.js:7-16
@@ -2118,8 +2118,8 @@ gpuKitU                      src/08c-gpu-kit.js:89-93
 gpuLitSprite                 src/17c-system-draw.js:461-468
 gpuManual                    src/08b-gpu.js:325-330
 gpuMoon                      src/17ga-gpu-planets.js:143-148
-gpuNebulaComp                src/16gb-gpu-nebula.js:238-245
-gpuNebulaGen                 src/16gb-gpu-nebula.js:208-237
+gpuNebulaComp                src/16gb-gpu-nebula.js:244-251
+gpuNebulaGen                 src/16gb-gpu-nebula.js:214-243
 gpuNoise                     src/08b-gpu.js:207-212
 gpuNone                      src/08b-gpu.js:32-39
 gpuOver                      src/08b-gpu.js:308-323

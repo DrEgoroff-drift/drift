@@ -49546,16 +49546,22 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   /* тени планет (L1.6): планета между звездой и газом режет свет — за ней по газу
      тёмный клин от звезды, край мягкий и расходится с расстоянием (у звезды есть
      размер), вдали клин тает — газ освещает и рассеянный свет */
-  var shd=0.;
+  var shd=0.;var ray=0.;
   let toS=V[1].xy-p;let Ls=max(length(toS),1.);let ds=toS/Ls;
   for(var k=0;k<7;k++){let P=V[4+k];if(P.z<=0.){break;}
     let q=P.xy-p;let tq=dot(q,ds);
     if(tq>P.z*.5&&tq<Ls){let dq=length(q-ds*tq);let pen=P.z*.12+tq*.05;
-      shd=max(shd,(1.-smoothstep(P.z-pen,P.z+pen,dq))*exp(-tq/(P.z*16.)));}}
-  c=c*(1.-.78*shd);
+      let fd=exp(-tq/(P.z*16.));
+      shd=max(shd,(1.-smoothstep(P.z-pen,P.z+pen,dq))*fd);
+      /* по краям клина свет чуть ярче — лучи между тенями */
+      let e=(dq-P.z-pen)/(pen+P.z*.6);ray=max(ray,exp(-e*e)*select(0.,1.,dq>P.z)*fd);}}
+  c=c*(1.-.8*shd)*(1.+.3*ray);
   /* тонкая пыль всюду: свет звезды в ней — лучи, тени планет — тёмные клинья */
   let dl=max(length(p-V[1].xy)/H-V[1].z,0.);
-  c=c+mix(V[2].rgb,vec3f(1.),.3)*V[1].w*.07*smoothstep(.12,.3,dl)/(1.+pow(dl/.3,2.))*(1.-shd);
+  /* освещённая звездой пыль по всей системе, и в пустотах: ровный тёплый туман (L ~10–15
+     на кадре), у самой звезды его нет — там царит её корона; клинья режут и его */
+  let fog=V[1].w*(.045+.05/(1.+pow(dl/.4,2.)))*smoothstep(.12,.3,dl)*(1.-body);
+  c=c+mix(V[2].rgb,vec3f(1.,.92,.8),.35)*fog*(1.-shd)*(1.+.3*ray);
   let hue=c/max(l0,1e-3);
   c=c+mix(hue,vec3f(1.),.3)*smoothstep(.02,.16,fr)*fineE(p*1.7)*.55;
   /* тени — третьим цветом: тёмный газ уходит в тон теней, светлый держит свой */
