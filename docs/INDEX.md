@@ -731,11 +731,11 @@ CHIP_SPEED                   src/17-mode-system.js:21
 CHIP_T                       src/17-mode-system.js:15
 CHIP_TOUCH                   src/17-mode-system.js:18
 CHIPDOM                      src/08bh-gpu-hud.js:35
-chipDom                      src/08bh-gpu-hud.js:44-79
+chipDom                      src/08bh-gpu-hud.js:44-80
 chipDomBox                   src/08bh-gpu-hud.js:36-41
-chipDomEnd                   src/08bh-gpu-hud.js:145-147
-chipDomSnap                  src/08bh-gpu-hud.js:82-93
-chipDomSweep                 src/08bh-gpu-hud.js:149-155
+chipDomEnd                   src/08bh-gpu-hud.js:149-151
+chipDomSnap                  src/08bh-gpu-hud.js:83-94
+chipDomSweep                 src/08bh-gpu-hud.js:153-159
 chKing                       src/25n-chess.js:112-116
 chLegal                      src/25n-chess.js:191-195
 chMine                       src/25n-chess.js:38
@@ -1339,9 +1339,9 @@ dominoMove                   src/11af-domino.js:25-39
 dominoSettle                 src/11af-domino.js:40-56
 dominoStart                  src/11af-domino.js:14-21
 dominoTile                   src/11af-domino.js:13
-domLabel                     src/08bh-gpu-hud.js:103-132
-domLabelEnd                  src/08bh-gpu-hud.js:134-143
-domLabelId                   src/08bh-gpu-hud.js:102
+domLabel                     src/08bh-gpu-hud.js:104-136
+domLabelEnd                  src/08bh-gpu-hud.js:138-147
+domLabelId                   src/08bh-gpu-hud.js:103
 DOMR                         src/15d-domread.js:17
 DOMR_ON                      src/15d-domread.js:16
 DOMR_SAVE                    src/15d-domread.js:18
@@ -2932,7 +2932,7 @@ kpTake                       src/26e2-post.js:32-42
 kpTicket                     src/26e2-post.js:30
 kpWindow                     src/26e2-post.js:47-92
 labCount                     src/12h-relic.js:16-24
-LABDOM                       src/08bh-gpu-hud.js:99
+LABDOM                       src/08bh-gpu-hud.js:100
 labStaffed                   src/12h-relic.js:27-31
 labWorking                   src/12h-relic.js:32-42
 LAND_ARC                     src/07a-terrain.js:49
@@ -6129,7 +6129,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/08b-gpu.js · 46 КБ
   · видеокарта: кадр рисует WebGPU (docs/DESIGN-gpu.md):1
 
-## src/08bh-gpu-hud.js · 10 КБ
+## src/08bh-gpu-hud.js · 11 КБ
   · слой приборов: #hud и фишки у кромки (ступень 1, docs/DESIGN-gpu.md §L.S):1
 
 ## src/08c-gpu-kit.js · 15 КБ

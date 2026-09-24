@@ -59,7 +59,7 @@ function chipDom(k,rx,ry,cw,ch,A,col,label,onRight,ang,U){
   if(sig!==e.sig){
     e.sig=sig;const cv=e.cv,w=cw*U,h=ch*U;
     cv.width=Math.max(1,Math.round(w*nd));cv.height=Math.max(1,Math.round(h*nd));
-    cv.style.width=w+"px";cv.style.height=h+"px";
+    cv.style.width=cv.width/nd+"px";cv.style.height=cv.height/nd+"px";   /* ровно в пиксели устройства, как у подписей */
     const g=cv.getContext("2d");g.setTransform(U*nd,0,0,U*nd,0,0);
     g.fillStyle="rgba(5,7,12,.72)";g.fillRect(0,0,cw,ch);
     g.strokeStyle=col;g.globalAlpha=.5;g.lineWidth=1;g.strokeRect(.5,.5,cw-1,ch-1);g.globalAlpha=1;
@@ -69,13 +69,14 @@ function chipDom(k,rx,ry,cw,ch,A,col,label,onRight,ang,U){
     const a=e.ar.style;a.width=10*U+"px";a.height=8*U+"px";a.background=col;
     a.left=((onRight?cw-8:8)-4)*U+"px";a.top=(ch/2-4)*U+"px";a.transformOrigin=4*U+"px "+4*U+"px";
   }
-  const pos="translate("+(rx*U).toFixed(2)+"px,"+(ry*U).toFixed(2)+"px)";
+  const px=Math.round(rx*U*nd)/nd,py=Math.round(ry*U*nd)/nd;
+  const pos="translate("+px.toFixed(3)+"px,"+py.toFixed(3)+"px)";
   if(pos!==e.pos){e.pos=pos;e.d.style.transform=pos;}
   const op=A.toFixed(3);if(op!==e.op){e.op=op;e.d.style.opacity=op;}
   const rot="rotate("+ang.toFixed(3)+"rad)";if(rot!==e.rot){e.rot=rot;e.ar.style.transform=rot;}
   if(!e.on){e.on=true;e.d.style.display="";}
   /* то же числами — для снимка кадра (chipDomSnap) */
-  e.x=rx*U;e.y=ry*U;e.w=cw*U;e.h=ch*U;e.A=A;e.ang=ang;e.col=col;e.U=U;e.ax=(onRight?cw-8:8)*U;e.ay=ch/2*U;
+  e.x=px;e.y=py;e.w=e.cv.width/nd;e.h=e.cv.height/nd;e.A=A;e.ang=ang;e.col=col;e.U=U;e.ax=(onRight?cw-8:8)*U;e.ay=ch/2*U;
 }
 /* снимок кадра (gpuTakeSnap): фишки поверх, как их кладёт композитор, — чтобы look(),
    детекторы и эталоны видели то же, что игрок. Платится только в момент снимка */
@@ -116,15 +117,18 @@ function domLabel(k,x,y,text,font,col,align,al){
     g.setTransform(1,0,0,1,0,0);g.font=font;g.textBaseline=bl;g.textAlign="left";
     const m=g.measureText(text),tw=m.width;
     const up=Math.ceil(m.actualBoundingBoxAscent||0)+2,dn=Math.ceil(m.actualBoundingBoxDescent||0)+2;
-    const w=Math.ceil(tw)+4,h=up+dn;
+    /* холст — целое число пикселей устройства, и CSS-размер ровно тот же: иначе
+       композитор тянет его на долю пикселя, и штрих глифа мылится и тускнеет вдвое */
+    const w=Math.ceil((Math.ceil(tw)+4)*nd)/nd,h=Math.ceil((up+dn)*nd)/nd;
     e.cv.width=Math.max(1,Math.round(w*nd));e.cv.height=Math.max(1,Math.round(h*nd));
-    e.cv.style.width=w+"px";e.cv.style.height=h+"px";
+    e.cv.style.width=e.cv.width/nd+"px";e.cv.style.height=e.cv.height/nd+"px";
     g.setTransform(nd,0,0,nd,0,0);g.font=font;g.textBaseline=bl;g.textAlign="left";g.fillStyle=col;
     g.fillText(text,2,up);
     e.w=w;e.h=h;e.dx=(align==="center"?-tw/2:align==="right"||align==="end"?-tw:0)-2;e.dy=-up;
   }
-  e.x=x+e.dx;e.y=y+e.dy;
-  const pos="translate("+e.x.toFixed(2)+"px,"+e.y.toFixed(2)+"px)";
+  /* место — на целый пиксель устройства: шаг в пиксель на ходу тексту нормален, дробь — мыло */
+  e.x=Math.round((x+e.dx)*nd)/nd;e.y=Math.round((y+e.dy)*nd)/nd;
+  const pos="translate("+e.x.toFixed(3)+"px,"+e.y.toFixed(3)+"px)";
   if(pos!==e.pos){e.pos=pos;e.cv.style.transform=pos;}
   const op=al.toFixed(3);if(op!==e.op){e.op=op;e.cv.style.opacity=op;}
   e.A=al;

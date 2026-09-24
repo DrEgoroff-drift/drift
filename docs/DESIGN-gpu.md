@@ -300,6 +300,11 @@ The phone frame budget does not grow: GPU ≤ 12 ms.
   sprite baked once per maker colour (`shuttleSprite`, 40×24) and turned by `gpuImage`: the pair at ×1.5 max|Δ|
   28 on its hairline. `gpuCanvasTex` became a true LRU (a hit moves to the back), so eight canvases in use no
   longer evict each other. Flight `#c` is now the hull (bake + bank underside + nav lights) and its flame only.
+  1c fixes (Контроль): the dimness was the blur. A label canvas sat at a fractional pixel, and its CSS size was not
+  a whole number of device pixels, so the compositor resampled a 1-px stroke and halved its peak. Labels and
+  chips now take a device-pixel size and a device-pixel place (`Math.round(x·dpr)/dpr`). Glyph cores against
+  bc7fe4e (0.457.0's label path, the 10 brightest pixels): planet label and chips 0 at DPR 1 and 1.5; the station
+  label −6 and −10, the old front layer's `emit()` glow on its near-1 red, which 16/n removes anyway.
 - Brief of **L4 k/n — the shock ring and the exhaust haze bend the backdrop, never a hull** (Контроль 24.09): no
   hull, own or pirate, sprite or 2D, is cut into bands; an RGB fringe on the backdrop only. Done (08b/08c): the
   scene's alpha became the hull mask — every blend keeps it (`GPU_KEEP_A`), the lit sprite (`gst`: pirates,
