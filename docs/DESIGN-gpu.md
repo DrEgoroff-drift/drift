@@ -228,6 +228,20 @@ Heat haze behind the nozzle (G4b).
   (×.2 at the planet, ×.6 four diameters out). Pairs `lm0..lm3_760` (forced kind, centred), natural
   `nnormal/ngiant/ndwarf`. Gates: star ring 145; dirt V40+ 2.8% (V30+ 7.1%: the window's void is V 30–35,
   near black); giant 1.9%, dwarf 1.2%.
+  Done (6/n returns, Контроль): **the backdrop law — nothing on the backdrop looks like a game object (beam,
+  shot, exhaust, ship): soft edges, dimmer than the game layer.** The comet's frame turns so the tails point
+  away from the star (`lfr`, shared by GEN and EMI in `GNB_NOISE`): straight blue ion tail, gold dust tail
+  bending off in a V (`lcy`, bend side from the seed), small dim head, both tails gather light away from it.
+  The jets left GEN: the hole's lens (17g) laid the old 2D tile over the volume, hiding the gas and the jets
+  alike; now the lens samples `GNB.view` (screen frame, fades where the source leaves the screen, chroma
+  restored — four taps across copper and blue averaged grey), and `jets()` in 17g draws from the hole's poles,
+  perpendicular to its disk (−.25+π/2), both ways, wide and soft, knots near the core, lobes, the counterjet
+  dimmer, before the shadow. The hole palette is copper + cold violet (the grey «faded» one was dirt). The
+  window's fog goes to black (`lwin`, EMI reads the landmark from `V[11..13]`). The rest of the dirt was
+  complementary mixing: the star's halo in 17g (its own colour out to 7 R) over teal gas — at .2 while the
+  volume is live (`S[31]`); the glow tint takes one side of the seam; the galaxy's inner arms gold, not white;
+  its lanes dim its own light. Gates (V30+, S<.25, HUD included; main ≈1.7%): nnormal 1.6%, giant 1.7%,
+  dwarf 1.2%, lm0 1.9, lm1 2.3, lm2 1.6, lm3 2.7, natural hole 1.5; ring g4m 133.
   Next: L2 (HDR ladder, mip bloom, AgX, grade per class).
   A GPU draw after `gpuHullLight` must use `gpuOver`, not `gpuScene` (the scene pass is closed by then).
 - Merge each: `build.ps1`, `python docs/shot.py <scenes> --look --tag gpu`, 0 `gpu.errs`, pair with
