@@ -192,6 +192,14 @@ Heat haze behind the nozzle (G4b).
   pass with the same `gh` instead of JS; the ±256 tile of 13/n changed the gas layout of the system visibly.
   A branch «outside the window → hash» was exact but slower (0.97 ms): the compiler runs both sides. Pairs
   (zoom .4 / 1.2): max|Δ| 2 on 95 px / 1 px; desktop nebGen 0.92–0.94 → 0.69 ms.
+  (c) Rejected: a forward difference from `DD.x` (two `dustAt` instead of four) made nebGen 0.74 → 0.59 ms,
+  but the pair gave max|Δ| 11 / 14 (zoom .4 / 1.2), spread along the lit dust rims: the dust field has kinks
+  (`max` of wall and pillars), and a one-sided difference tilts the gradient that sets the rim's facing. The
+  central difference stays. (d) The landmark's frame constants (centre, cos/sin of the angle, the comet's
+  `atan2`, size in px) are computed once by `gnbLfr` on the CPU and passed to GEN (`u.l`, `u.k.w`) and EMI
+  (`V[14]`, `V[13].x`); `pow(x,2.)` → `sq` in GEN and EMI. Pairs at zoom .4, the landmark kind forced to each
+  of 0–3: max|Δ| 1 on ≤ 34 px (kind 3: 0); zoom 1.2: 1 on 6 px. Desktop ms unchanged within noise.
+  Then the direction changed (author, 24.09): all 2D moves to WebGPU; (e) waits until after that.
   G3b 3/n (e1aeb19) and L4 k/n (7b406eb) accepted.
 - Brief of **L4 k/n — the shock ring and the exhaust haze bend the backdrop, never a hull** (Контроль 24.09): no
   hull, own or pirate, sprite or 2D, is cut into bands; an RGB fringe on the backdrop only. Done (08b/08c): the

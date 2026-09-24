@@ -16,7 +16,7 @@
    Цена: объём и свет — в четверть кадра (rgba16f), пересчёт — когда камера
    сдвинулась или раз в три кадра; сведение — два полноэкранных прохода
    (поглощение, свечение). Цвета — gnbPalette: своя пара тонов и своя тень. */
-const GNB={tex:null,view:null,dev:null,w:0,h:0,last:-99,cx:1e9,cy:1e9,sys:null,U:new Float32Array(44),C:new Float32Array(60)};
+const GNB={tex:null,view:null,dev:null,w:0,h:0,last:-99,cx:1e9,cy:1e9,sys:null,U:new Float32Array(48),C:new Float32Array(60)};
 const GNB_NOISE=`
 fn gh(p:vec2f)->f32{var q=fract(vec3f(p.xyx)*.1031);q=q+dot(q,q.yzx+33.33);return fract((q.x+q.y)*q.z);}
 fn gn(p:vec2f)->f32{let i=floor(p);let f=fract(p);let w=f*f*(3.-2.*f);
@@ -26,22 +26,11 @@ fn fb(p0:vec2f,n:i32)->f32{var p=p0;var s=0.;var a=.5;var m=0.;
   return s/m;}
 fn sat(c:vec3f)->f32{let mx=max(c.r,max(c.g,c.b));return (mx-min(c.r,min(c.g,c.b)))/max(mx,1e-4);}
 fn sq(x:f32)->f32{return x*x;}
-/* громадина (L1.7) — общая геометрия для объёма и сведения. h: x,y (в H от центра),
-   размер (в H), вид · i: угол, наклон, зерно, сила. Комета ставит хвост от звезды,
-   джеты выходят из самой дыры по оси, перпендикулярной её диску (17g: наклон -.25) */
-fn lfr(p:vec2f,W:f32,H:f32,sp:vec2f,h:vec4f,i:vec4f,cam:vec2f,par:f32)->vec2f{
-  /* место — доли полукадра по каждой оси: и на широком экране, и на телефоне громадина в своём углу */
-  var Lc=vec2f(W,H)*(.5+h.xy*.5)-cam*par;var a=i.x;
-  if(h.w>2.5){Lc=sp;a=1.3208;}
-  else if(h.w>.5&&h.w<1.5){
-    /* комета: голова в своём углу (решётка, отступ от HUD — как у всех), хвосты — внутрь
-       кадра, но мимо середины: ось отведена от направления на центр на 30±5° к вертикальной
-       кромке (в центре всегда свой корабль — прямая в него читалась лучом наведения; сверху
-       и снизу — полосы HUD). Громадина на бесконечности: проекция хвоста любая */
-    let v=vec2f(W,H)*.5-Lc;
-    a=atan2(v.y,v.x)+select(-1.,1.,v.x*v.y>0.)*(.52+(i.x/6.2832-.5)*.17);}
-  let d0=(p-Lc)/(H*h.z);let c=cos(a);let s=sin(a);
-  return vec2f(c*d0.x+s*d0.y,-s*d0.x+c*d0.y);}
+/* громадина (L1.7) — общая геометрия для объёма и сведения. q: центр в px, cos и sin
+   угла; sc — размер в px. Всё это константы кадра — их считает gnbLfr на процессоре */
+fn lfr(p:vec2f,q:vec4f,sc:f32)->vec2f{
+  let d0=(p-q.xy)/sc;
+  return vec2f(q.z*d0.x+q.w*d0.y,-q.w*d0.x+q.z*d0.y);}
 /* пылевой хвост отстаёт по орбите — в свою сторону у каждой кометы */
 fn lbend(i:vec4f)->f32{return select(-.36,.36,fract(i.z)>.5);}
 fn lcy(d:vec2f,i:vec4f)->f32{let x=max(d.x,0.);return d.y+lbend(i)*(x+.35*x*x);}
@@ -55,7 +44,7 @@ fn lwin(d:vec2f,h:vec4f,i:vec4f)->f32{
   else{let x=abs(d.x);w=exp(-sq(d.y/(.04+.2*x)))*smoothstep(1.8,.9,x);}
   return min(w*1.4,1.)*select(0.,1.,i.w>0.);}`;
 const GNB_GEN=`
-struct NU{a:vec4f,b:vec4f,c:vec4f,d:vec4f,e:vec4f,f:vec4f,g:vec4f,h:vec4f,i:vec4f,j:vec4f,k:vec4f};
+struct NU{a:vec4f,b:vec4f,c:vec4f,d:vec4f,e:vec4f,f:vec4f,g:vec4f,h:vec4f,i:vec4f,j:vec4f,k:vec4f,l:vec4f};
 @group(0) @binding(0) var<uniform> u:NU;
 struct VO{@builtin(position) p:vec4f,@location(0) uv:vec2f};
 @vertex fn vs(@builtin(vertex_index) i:u32)->VO{
@@ -160,7 +149,7 @@ struct LK{e:vec3f,a:f32,w:f32};
 fn lmk(p:vec2f,W:f32,H:f32,sp:vec2f)->LK{
   let ty=u.h.w;let k=u.i.w;
   if(k<=0.){return LK(vec3f(0.),0.,0.);}
-  let d=lfr(p,W,H,sp,u.h,u.i,u.b.xy,u.j.w);
+  let d=lfr(p,u.l,u.k.w);
   let ls=u.i.z;let c1=u.j.rgb;let c2=u.k.rgb;
   var e=vec3f(0.);var ab=0.;
   if(ty<.5){
@@ -224,7 +213,7 @@ fn lmk(p:vec2f,W:f32,H:f32,sp:vec2f)->LK{
   let sp=u.e.xy;let rr=max(u.e.z/H,.012);let son=u.e.w;let sc=u.f.rgb;let fill=u.f.w;
   /* освещённость от звезды: 1/(1+r²) от края диска — у гиганта и у карлика одинаково по кадру */
   let sd=max(length(p-sp)/H-rr,0.);
-  let lit=son/(1.+pow(sd/.2,2.));
+  let lit=son/(1.+sq(sd/.2));
   /* крупный план кадра — общий для всех слоёв (средний параллакс): форма массы,
      области тонов со швом между ними, широкая полоса пыли */
   let qm=((p-vec2f(W,H)*.5)+u.b.xy*.045)/H*.62+vec2f(seed*1.3,seed*.4);
@@ -435,7 +424,7 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   let ly=textureSampleLevel(t0,smp,uv+vec2f(0.,ts.y*1.5),0.).rgb-textureSampleLevel(t0,smp,uv-vec2f(0.,ts.y*1.5),0.).rgb;
   let gr=vec2f(max(lx.r,max(lx.g,lx.b)),max(ly.r,max(ly.g,ly.b)));
   let dir=normalize(p-V[1].xy+vec2f(1e-3));
-  let sd=max(length(p-V[1].xy)/H-V[1].z,0.);let lit=V[1].w/(1.+pow(sd/.2,2.));
+  let sd=max(length(p-V[1].xy)/H-V[1].z,0.);let lit=V[1].w/(1.+sq(sd/.2));
   let fr=max(dot(gr,dir),0.)*lit;
   /* тени планет (L1.6): планета между звездой и газом режет свет — за ней по газу
      тёмный клин от звезды, край мягкий и расходится с расстоянием (у звезды есть
@@ -464,9 +453,9 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   let dl=max(length(p-V[1].xy)/H-V[1].z,0.);
   /* освещённая звездой пыль по всей системе, и в пустотах: ровный тёплый туман (L ~10–15
      на кадре), у самой звезды его нет — там царит её корона; клинья режут и его */
-  let wn=lwin(lfr(p,fu.res.z,H,V[1].xy,V[11],V[12],V[0].xy,V[13].w),V[11],V[12])*mix(1.,.3+.7*smoothstep(.02,.22,sd),V[1].w);
+  let wn=lwin(lfr(p,V[14],V[13].x),V[11],V[12])*mix(1.,.3+.7*smoothstep(.02,.22,sd),V[1].w);
   /* густая пыль закрывает и туман за собой: тело пыли темнее пустоты */
-  let fog=V[1].w*(.1+.05/(1.+pow(dl/.4,2.)))*smoothstep(.12,.3,dl)*(1.-body)*(1.-.92*wn)
+  let fog=V[1].w*(.1+.05/(1.+sq(dl/.4)))*smoothstep(.12,.3,dl)*(1.-body)*(1.-.92*wn)
     *mix(.55,1.,clamp(1.-g0.a,0.,1.));
   /* где есть хоть тусклый газ, туман берёт его тон: тёплый туман на бирюзе был серым */
   /* в пустоте туман — цвет звезды, но не бледнее насыщенности .5: бледно-тёплое на
@@ -545,6 +534,22 @@ function gnbLandmark(sys,k){
   const tl=cr===0,x=q(x0,cr&1?1:-1),y=tl?-(.36+.14*Math.min(1,Math.abs(y0)*2)):q(y0,cr&2?1:-1);
   return {t,x:tl?Math.min(x,-.74):x,y,s,a:r()*6.283,p:.35+r()*.3,l:r()*40,k:2.2,c:GNB_LM_COL[t]};
 }
+/* место и поворот громадины в кадре (P1 14/n г): константы кадра — раз на процессоре, а не в
+   каждом пикселе. Параллакс .006. Возвращает [x, y, cos, sin, размер в px] */
+function gnbLfr(lm,camx,camy,st){
+  const o=GNB.LQ||(GNB.LQ=new Float32Array(5));
+  /* место — доли полукадра по каждой оси: и на широком экране, и на телефоне громадина в своём углу */
+  let x=W*(.5+lm.x*.5)-camx*.006,y=H*(.5+lm.y*.5)-camy*.006,a=lm.a;
+  if(lm.t>2.5){x=st.x;y=st.y;a=1.3208;}
+  else if(lm.t===1){
+    /* комета: голова в своём углу (решётка, отступ от HUD — как у всех), хвосты — внутрь
+       кадра, но мимо середины: ось отведена от направления на центр на 30±5° к вертикальной
+       кромке (в центре всегда свой корабль — прямая в него читалась лучом наведения; сверху
+       и снизу — полосы HUD). Громадина на бесконечности: проекция хвоста любая */
+    const vx=W/2-x,vy=H/2-y;
+    a=Math.atan2(vy,vx)+(vx*vy>0?1:-1)*(.52+(lm.a/6.2832-.5)*.17);}
+  o[0]=x;o[1]=y;o[2]=Math.cos(a);o[3]=Math.sin(a);o[4]=H*lm.s;return o;
+}
 /* светило для туманности: место на экране, радиус, цвет по виду звезды */
 function gnbStar(sys,ox,oy,R){
   const k=sysStyle(sys).kind;
@@ -569,6 +574,7 @@ function gpuNebulaGen(sys,camx,camy,st,Z){
   /* громадина — и сведению: окно гасит туман */
   const lm=pl.lm;
   c[44]=lm.x;c[45]=lm.y;c[46]=lm.s;c[47]=lm.t;c[48]=lm.a;c[49]=lm.p;c[50]=lm.l;c[51]=lm.k;c[55]=.006;
+  const lq=gnbLfr(lm,camx,camy,st);c[52]=lq[4];for(let k=0;k<4;k++)c[56+k]=lq[k];
   c[11]=pl.sw||.1;c[12]=pl.c[0]/255;c[13]=pl.c[1]/255;c[14]=pl.c[2]/255;
   /* пыль (L1b) в полярных координатах звезды: сдвиг угла и ln r копится по кадрам так, чтобы
      узор у центра кадра полз с параллаксом .12, а направления смотрели на настоящую звезду.
@@ -597,7 +603,8 @@ function gpuNebulaGen(sys,camx,camy,st,Z){
   a[24]=GNB.Qc;a[25]=GNB.Yc;a[26]=(l0-lD)*kD+GNB.Yc;a[27]=(l1-lD)*kD+GNB.Yc;
   a[28]=lm.x;a[29]=lm.y;a[30]=lm.s;a[31]=lm.t;a[32]=lm.a;a[33]=lm.p;a[34]=lm.l;a[35]=lm.k;
   a[36]=lm.c[0][0];a[37]=lm.c[0][1];a[38]=lm.c[0][2];a[39]=.006;a[40]=lm.c[1][0];a[41]=lm.c[1][1];a[42]=lm.c[1][2];
-  const U=GPUBufferUsage,ub=gpuBuf("gnb.u",176,U.UNIFORM|U.COPY_DST);
+  a[43]=lq[4];for(let k=0;k<4;k++)a[44+k]=lq[k];
+  const U=GPUBufferUsage,ub=gpuBuf("gnb.u",192,U.UNIFORM|U.COPY_DST);
   GPU.dev.queue.writeBuffer(ub,0,a);
   const P=gnbPipe();
   const p=GPU.enc.beginRenderPass({colorAttachments:[{view:GNB.view,loadOp:"clear",storeOp:"store",clearValue:{r:0,g:0,b:0,a:0}}],timestampWrites:gpuTs("nebGen")});
