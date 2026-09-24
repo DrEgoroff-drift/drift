@@ -36,7 +36,8 @@ function resize(){
      TDZ: до объявления G он недоступен, а 2 — это же самое «не ограничен»,
      что и выключенное правило даёт после */
   let modeCap=2;try{modeCap=resModeCap();}catch(e){}
-  try{if(window.innerWidth<=760&&matchMedia("(pointer:coarse)").matches)modeCap=Math.min(modeCap,PHONE_DPR);}catch(e){}
+  /* телефон — по короткой стороне: в альбомной S23 шириной 798 CSS px, и потолок не срабатывал */
+  try{if(Math.min(window.innerWidth,window.innerHeight)<=760&&matchMedia("(pointer:coarse)").matches)modeCap=Math.min(modeCap,PHONE_DPR);}catch(e){}
   DPR=want?Math.min(want,window.devicePixelRatio||1):Math.min(RES_AUTO,modeCap,window.devicePixelRatio||1);
   W=window.innerWidth;H=window.innerHeight;
   /* телефон не трогаем: там своя вёрстка, вымеренная под узкий экран */

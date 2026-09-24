@@ -156,6 +156,11 @@ Heat haze behind the nozzle (G4b).
   cores, the brightest at luma 244; the rest on faint halos); the bicubic alone gives max|Δ| 1 on 34 px
   (the compiler contracts the reused value differently). Desktop timestamps (617×1113, thrust, two
   alternated runs each): nebComp + scene0 1.70–1.71 → 1.38 ms; nebGen 0.91–0.93 untouched; gpu errs 0.
+  S23 on 48aeeca (landscape 1596×650 ×2): nebComp 11.8 ms, nebGen 4.3; killing the regeneration +1 fps,
+  so the rare-generation plan (9/n) is dropped. front2D +27 against frontPx +1: the 2D raster eats, not the copy.
+  **P1 12/n — the phone cap reads the short side** (Контроль 24.09): `innerWidth<=760` missed the S23 held
+  sideways (798 CSS px) and it drew at ×2. Now `min(innerWidth,innerHeight)<=760` and a coarse pointer.
+  Stand at ×2 with a coarse pointer faked: 844×390 → 1.5, 390×844 → 1.5, 1400×900 → 2.
   G3b 3/n (e1aeb19) and L4 k/n (7b406eb) accepted.
 - Brief of **L4 k/n — the shock ring and the exhaust haze bend the backdrop, never a hull** (Контроль 24.09): no
   hull, own or pirate, sprite or 2D, is cut into bands; an RGB fringe on the backdrop only. Done (08b/08c): the
