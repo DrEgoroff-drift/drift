@@ -124,6 +124,18 @@ fn distort(px:vec2f)->vec2f{
     }
   }
   return o;}
+/* маска корпусов: спрайты видеокарты гасят альфу сцены (08c hull), 2D-корпуса кладут своё
+   покрытие в альфу слоя огней (fsComp) */
+fn hullM(uv:vec2f)->f32{
+  if(u.scene<.5){return 0.;}
+  let s=textureSampleLevel(tScene,sl,uv,0.).a;let e=textureSampleLevel(tEmit,sl,uv,0.).a;
+  return smoothstep(.01,.25,max(1.-s,e));}
+/* мягкая маска: у кромки корпуса сдвиг сходит на нет за ~6 px, а не рвётся ступенькой */
+fn hullSoft(uv:vec2f)->f32{
+  var m=hullM(uv);
+  for(var i=0;i<8;i++){let a=f32(i)*.7854;let d=vec2f(cos(a),sin(a))/u.css;
+    m=max(m,max(hullM(uv+d*2.5)*.8,hullM(uv+d*6.)*.4));}
+  return m;}
 fn sceneAt(uv:vec2f)->vec3f{
   if(u.scene>.5){return max(textureSampleLevel(tScene,sl,uv,0.).rgb,vec3f(0.));}
   return vec3f(0.);}
@@ -218,8 +230,12 @@ fn overlay(b:vec3f,s:vec3f)->vec3f{return select(1.-2.*(1.-b)*(1.-s),2.*b*s,b<ve
      свечением уходит в золото и к белому плавно, без плато на единице */
   var hs=sceneAt(v.uv);var f=textureSampleLevel(tFront,sl,v.uv,0.);
   /* преломление: сдвиг по каналам чуть разный — у кромок волны тонкая радуга, как у линзы */
-  if(u.dn.x>0.){let o=distort(v.uv*u.css)/u.css;
-    if(dot(o,o)*dot(u.css,u.css)>.0004){hs=vec3f(sceneAt(v.uv+o*1.08).r,sceneAt(v.uv+o).g,sceneAt(v.uv+o*.92).b);}}
+  /* корпуса не гнутся (L4 k/n): пиксель корпуса стоит на месте, и фон рядом не берёт корпус
+     источником — сдвиг гаснет к кромке, радуга остаётся только на фоне */
+  if(u.dn.x>0.){var o=distort(v.uv*u.css)/u.css;
+    if(dot(o,o)*dot(u.css,u.css)>.0004){
+      o=o*(1.-hullSoft(v.uv));o=o*(1.-hullM(v.uv+o*.5))*(1.-max(hullM(v.uv+o*.92),hullM(v.uv+o*1.08)));
+      hs=vec3f(sceneAt(v.uv+o*1.08).r,sceneAt(v.uv+o).g,sceneAt(v.uv+o*.92).b);}}
   if(u.shc.w>0.&&u.scene>.5){let hk=silK(v.uv);if(hk>0.&&f.a>0.){let rn=rimN(v.uv);
     f=sil(v.uv,f,tone(hs),tone(sceneAt(v.uv+rn.xy*6./u.css)),rn.z,hk);}}
   var h=hs*(1.-f.a)+f.rgb;
@@ -298,12 +314,14 @@ fn overlay(b:vec3f,s:vec3f)->vec3f{return select(1.-2.*(1.-b)*(1.-s),2.*b*s,b<ve
 struct CO{@location(0) c:vec4f,@location(1) e:vec4f};
 @fragment fn fsComp(v:V)->CO{
   let f=textureSampleLevel(tFront,sl,v.uv,0.);
-  if(u.shc.w<=0.){return CO(f,vec4f(emit(f.rgb),0.));}
+  /* альфа второй цели — маска 2D-корпусов (в их кругах): её читает преломление (distort) */
+  let hk=silK(v.uv);let hm=f.a*hk;
+  if(u.shc.w<=0.){return CO(f,vec4f(emit(f.rgb),hm));}
   /* сцену здесь не прочесть (в неё рисуем) — газ за корпусом берём из туманности
      (16gb кладёт её на место сцены), тоном как при сведении */
-  let hk=silK(v.uv);if(hk<=0.||f.a<=0.){return CO(f,vec4f(emit(f.rgb),0.));}
+  if(hk<=0.||f.a<=0.){return CO(f,vec4f(emit(f.rgb),hm));}
   let rn=rimN(v.uv);
-  let nb=gasT(v.uv);let o=sil(v.uv,f,nb,gasT(v.uv+rn.xy*6./u.css),rn.z,hk);return CO(o,vec4f(emit(o.rgb),0.));}
+  let nb=gasT(v.uv);let o=sil(v.uv,f,nb,gasT(v.uv+rn.xy*6./u.css),rn.z,hk);return CO(o,vec4f(emit(o.rgb),hm));}
 fn gasT(uv:vec2f)->vec3f{
   let nb=max(textureSampleLevel(tScene,sl,uv,0.).rgb,vec3f(0.));let m=max(max(nb.r,nb.g),max(nb.b,1e-4));
   return nb*(1.-exp(-m*1.25))/(m*1.25)*1.12;}`;
@@ -326,7 +344,7 @@ function gpuPipes(){
            primitive:{topology:"triangle-list"}}),
          comp:d.createRenderPipeline({layout:PL,vertex:{module:mod,entryPoint:"vs"},
            fragment:{module:mod,entryPoint:"fsComp",targets:[{format:"rgba16float",blend:{
-             color:{srcFactor:"one",dstFactor:"one-minus-src-alpha"},alpha:{srcFactor:"one",dstFactor:"one-minus-src-alpha"}}},
+             color:{srcFactor:"one",dstFactor:"one-minus-src-alpha"},alpha:{srcFactor:"zero",dstFactor:"one"}}},
              {format:"rgba16float",blend:{color:{srcFactor:"one",dstFactor:"one"},alpha:{srcFactor:"one",dstFactor:"one"}}}]},
            primitive:{topology:"triangle-list"}})};
   GPU.S={lin:d.createSampler({magFilter:"linear",minFilter:"linear"}),

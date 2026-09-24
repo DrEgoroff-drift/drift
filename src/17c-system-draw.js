@@ -480,7 +480,7 @@ function gpuLitSprite(cv,x,y,R,s,rot,lx,ly,glow){
   const c=(typeof starRGB==="function")?starRGB():[255,244,214],m=Math.max(1,c[0],c[1],c[2]);
   const U=new Float32Array(16);U[0]=x;U[1]=y;U[2]=R;U[3]=s;U[4]=lx;U[5]=ly;U[6]=Math.cos(rot);U[7]=Math.sin(rot);
   U[8]=c[0]/m;U[9]=c[1]/m;U[10]=c[2]/m;U[11]=1;U[12]=glow;
-  gpuField(pass,"gst",GST_WGSL,U,[gpuCanvasTex(cv),{view:GPU.V.lt}]);
+  gpuField(pass,"gst",GST_WGSL,U,[gpuCanvasTex(cv),{view:GPU.V.lt}],{blend:"hull"});
   return true;
 }
 function gpuStation(art,x,y,s,lx,ly){return gpuLitSprite(art.cn,x,y,art.R,s,0,lx,ly,1);}

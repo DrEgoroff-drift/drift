@@ -5,9 +5,14 @@
    весь экран — небо, облака, свет, туман — своим кусочком WGSL). Координаты — в
    пикселях CSS, как у 2D; цвет на входе обычный, премультипликация — здесь.
    Всё живёт при устройстве: gpuInit после потери собирает заново. */
+/* альфа сцены — маска корпусов (L4 k/n): фон её не трогает (1 от очистки), корпус-спрайт
+   (hull) гасит её на своём покрытии, остальные смеси её не меняют. Её читает
+   последний проход: волна и марево гнут фон, но не корпуса */
+const GPU_KEEP_A={srcFactor:"zero",dstFactor:"one"};
 const GPU_BLEND={
-  over:{color:{srcFactor:"one",dstFactor:"one-minus-src-alpha"},alpha:{srcFactor:"one",dstFactor:"one-minus-src-alpha"}},
-  add:{color:{srcFactor:"one",dstFactor:"one"},alpha:{srcFactor:"one",dstFactor:"one"}},
+  over:{color:{srcFactor:"one",dstFactor:"one-minus-src-alpha"},alpha:GPU_KEEP_A},
+  add:{color:{srcFactor:"one",dstFactor:"one"},alpha:GPU_KEEP_A},
+  hull:{color:{srcFactor:"one",dstFactor:"one-minus-src-alpha"},alpha:{srcFactor:"zero",dstFactor:"one-minus-src-alpha"}},
   /* умножение, как multiply у 2D на непрозрачном фоне: тьма пещеры, тени, дымка */
   mul:{color:{srcFactor:"dst",dstFactor:"one-minus-src-alpha"},alpha:{srcFactor:"zero",dstFactor:"one"}}};
 function gpuPipe(name,code,blend,layout){

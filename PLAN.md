@@ -47,10 +47,6 @@ Built: the core and post pass (08b), the layer kit (08c), the space backdrop (16
   246, 198 at .85 R, a bump 201 at the limb, then glow 193; R 249–255 over the whole disc (clipped). Limb
   darkening into red with no bump at the edge, R ≤245 on the limb.
 - [ ] G3b gas giant (Контроль 24.09): the thin jets along the flow still read weak at 1:1.
-- [ ] L4 shock ring (24.09, found by the 0.457 isolation leak): `gpuShock` (13z) refracts the player's own hull —
-  a missile blast next to the ship cuts it into shifted bands with colour fringes. Контроль decided: the ring
-  bends the backdrop, gas and dust only, never ship or station hulls (refract before the hull layer, or a hull
-  mask); an RGB fringe, if any, on the backdrop only. Gate: a large «was | now» pair of a blast beside the ship.
 - [ ] CI with WebGPU (Контроль 24.09): the smoke in `deploy.yml` runs `--disable-gpu`, so it proves only the
   «no WebGPU» notice. Turn WebGPU on in CI through SwiftShader (the flag set proven locally first), then the
   smoke and the picture suites see the real frame.

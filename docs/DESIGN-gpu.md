@@ -82,8 +82,18 @@ Heat haze behind the nozzle (G4b).
   gpu the same way: the release list plus `cismoke`, its sha to Контроль. Rollback: a commit with the tree of
   `d543aff` on top, no force-push. `C:/Claude/drift-rel` stays — it is Контроль's working directory; nothing is
   done in it.
-- Now: G3b 3/n lights (done, below) → L4 k/n the shock ring past hulls → §L in order. A pair handed in, Контроль
-  told, the next item taken without waiting for a verdict.
+- Now: G3b 3/n lights (e1aeb19) and L4 k/n the shock ring past hulls (done, below) handed in → §L in order. A pair
+  handed in, Контроль told, the next item taken without waiting for a verdict.
+- Brief of **L4 k/n — the shock ring and the exhaust haze bend the backdrop, never a hull** (Контроль 24.09): no
+  hull, own or pirate, sprite or 2D, is cut into bands; an RGB fringe on the backdrop only. Done (08b/08c): the
+  scene's alpha became the hull mask — every blend keeps it (`GPU_KEEP_A`), the lit sprite (`gst`: pirates,
+  stations, barges) draws with blend `hull` and lowers it by its coverage; 2D hulls (drawHull now marks its circle
+  whenever the GPU is on, not only on bright gas) leave their coverage in the emit target's alpha (`fsComp`).
+  `fsFinal` damps the offset by `hullSoft` (the mask plus 8 taps at 2.5 and 6 px, so the backdrop calms over ~6
+  px instead of a step at the edge) and by the mask at the source (.5, .92, 1.08 of the offset — a channel
+  landing on a hull's thin edge made neon specks). Pairs `l4_8.png` (the ship, blast 8 frames old),
+  `l4_16.png`, `l4_p.png` (ship and a pirate with the blast between), sheet `l4_sheet.png`; scripts `g4s.sh`,
+  `g4sab.sh was` (shoots HEAD as «was» from a patch of the working tree).
 - The old release path, kept for its steps: the author: deploy to main
   before the limit window reaches 90%; the signal «ДЕПЛОЙ» comes from Контроль. On it: close the step with a
   commit; `test.ps1 -Full` and `node test-node.js`; bump `VER` and a PATCHNOTES line (what the player sees
