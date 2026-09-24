@@ -17,10 +17,39 @@ quality, the ship stays under the finger.
 
 ## 0. The engine — everything on WebGPU, first (the author, 23.09)
 
-«Первое — на новый движок, потом по плану.» WebGPU only, Canvas 2D as the brush for text and vector shapes,
-no fallback, and every ported layer better than before, not the same. The recipe — the frame, the one rule of
+«Первое — на новый движок, потом по плану.» WebGPU only, Canvas 2D only for the interface on its own overlay
+(24.09), no fallback, and every ported layer better than before, not the same. The recipe — the frame, the one rule of
 layer order, the kit, the porting checklist — is `docs/DESIGN-gpu.md`; the decision is in `docs/DECISIONS.md`.
 Built: the core and post pass (08b), the layer kit (08c), the space backdrop (16g), the system under the planets (17g), planets and moons (17ga), the system view on top — trail, wake, exhaust, hull light, drones (16ga), combat (13z), lit station/barge/pirate sprites (17c), shuttles (17f), `docs/shot.py` on the GPU.
+
+**The order from 24.09 ~18:10 (the author: «нахрен 2D, всё переноси»).** The S23 profile showed the frame
+waits on the seams between the 2D canvas `#c` and Dawn. Two uploads a frame, the raster itself is small, and
+switching off `front2D` alone took the phone from 29 to 59 fps. So the world moves to the GPU entirely, and the
+interface goes to its own DOM canvas over the WebGPU canvas. The browser composes that canvas; it is never
+copied into Dawn and gets no post. Target: `#c` is never uploaded, one submit a frame (the hull-mask submit of
+`gpuHullLight` goes with the hulls). Every step: a 760 pair with max|Δ|, uploads and submits per frame as
+numbers; the picture only no worse. Physics, seeds, the save and QUANT stay untouched.
+- [ ] **Stage 1 — flight (system):**
+  - the HUD (`drawSysHud`, the sticks, labels, chips, compass) on the overlay;
+  - hulls and flames as GPU sprites (bake once, then instances, light in the shader);
+  - pirates, missiles and combat effects;
+  - the caches: the hull bake that repeats every frame (its key misses), the station art rebaked on the move
+    with a new texture each time, and whether the 8-slot `gpuCanvasTex` thrashes;
+  - the instrument pod (416×140, 66 calls a frame): redraw only when a reading changes.
+  - Gate: uploads 0 and submits 1 per flight frame; then Контроль's phone run, ≥ 95 % of frames on time over
+    30 s and over 5 minutes. A pass makes it a release candidate (Контроль pushes).
+- [ ] **Stage 2 — the other modes, by share of play time:** map, landing, surface, cave, mine, belt, raid,
+  cockpit, scoop, base; one step per mode, each with a pair and the upload count. G4c, G4d and G6–G12 below
+  are how each mode's body is drawn.
+- [ ] **Heat margin** — before stage 2 if the 5-minute run of stage 1 fails, otherwise interleaved with it:
+  - `under` (6.8 ms on the phone): the corona's hash noise on the noise tile with the frame constants on the
+    CPU; orbits as a triangle strip along the ellipse instead of a bbox quad with `atan2` per pixel;
+  - rare regeneration of the nebula with fields (9/n);
+  - the post chain: 12 of 15.4 passes a frame are bloom and final — fewer steps, the first straight to ¼,
+    merged where the target is the same;
+  - P1 14/n (e): planets whose shadow cone cannot reach the screen culled on the CPU, exact to half an LSB.
+- [ ] Debts: the chip-jump gate (per-frame shift ≤ CHIP_SPEED·dt + 1 px, stable draw order by id); max|Δ| of
+  7d10c66^ against 7d10c66.
 
 - [ ] **G4d the other ships lit:** the peace fleet, the ГЛАВТРАССА fleet, allies, the pirate base and «Сорока» are
   still flat 2D bakes with a top-lit gradient; give them `gpuLitSprite` (17c) as barges and pirates have.
