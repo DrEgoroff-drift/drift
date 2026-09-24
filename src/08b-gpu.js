@@ -162,35 +162,38 @@ fn blur(uv:vec2f,d:vec2f)->vec4f{
 @fragment fn fsBlurH(v:V)->@location(0) vec4f{return blur(v.uv,vec2f(1./u.qres.x,0.));}
 @fragment fn fsBlurV(v:V)->@location(0) vec4f{return blur(v.uv,vec2f(0.,1./u.qres.y));}
 /* корпус на ярком газе — силуэтом (L1): только у корпусов (hl — круги, их отмечает
-   drawHull), интерфейсу ничего. Газ вокруг темнеет каймой по силуэту; сам корпус на
-   ярком газе темнеет, как против света, а кромку ему обводит свет газа за ним; огни
-   корпуса остаются; на тёмном газе корпус не трогается. Ответ — премультиплицированный
-   слой поверх s (газа под ним) */
-fn sil(uv:vec2f,f:vec4f,s:vec3f)->vec4f{
+   drawHull), интерфейсу ничего. Сам корпус на ярком газе темнеет, как против света,
+   огни остаются; на тёмном газе корпус не трогается. L3 3/n: тёмной каймы вокруг больше
+   нет (туманность за кораблём его тень не получает — облако читалось грязью); вместо неё
+   кромку обводит свет газа за ней: там, где нормаль рельефа смотрит вбок, корпус берёт
+   цвет газа, взятого снаружи по нормали, × (1-n.z)³. На тёмном космосе обвода нет.
+   Ответ — премультиплицированный слой поверх s (газа под ним) */
+fn silK(uv:vec2f)->f32{
   let px=uv*u.css;var hk=0.;
   for(var k=0;k<8;k++){let h=u.hl[k];if(h.z<=0.){break;}
     hk=max(hk,1.-smoothstep(h.z,h.z+16.,length(px-h.xy)));}
-  if(hk<=0.){return f;}
-  var nm=0.;var mn=1.;
-  /* кайма — мягкая: двенадцать направлений, шаг мелкий, дальние слабее (редкие
-     дальние выборки рисовали лесенку-звезду из копий силуэта) */
-  for(var k=0;k<12;k++){let an=f32(k)*.5235988;let d=vec2f(cos(an),sin(an))/u.css;
-    mn=min(mn,textureSampleLevel(tFront,sl,uv+d*1.5,0.).a);
-    nm=max(nm,textureSampleLevel(tFront,sl,uv+d*2.5,0.).a);
-    nm=max(nm,textureSampleLevel(tFront,sl,uv+d*5.,0.).a*.7);
-    nm=max(nm,textureSampleLevel(tFront,sl,uv+d*8.,0.).a*.4);}
+  return hk;}
+/* нормаль кромки по альфе корпуса: xy — наружу, z — (1-n.z)³ */
+fn rimN(uv:vec2f)->vec3f{
+  let dx=vec2f(2.,0.)/u.css;let dy=vec2f(0.,2.)/u.css;
+  let g=vec2f(textureSampleLevel(tFront,sl,uv+dx,0.).a-textureSampleLevel(tFront,sl,uv-dx,0.).a,
+              textureSampleLevel(tFront,sl,uv+dy,0.).a-textureSampleLevel(tFront,sl,uv-dy,0.).a);
+  let t=clamp(length(g),0.,1.);let nz=sqrt(1.-t*t);
+  return vec3f(-g/max(length(g),1e-4),pow(1.-nz,3.));}
+fn sil(uv:vec2f,f:vec4f,s:vec3f,rs:vec3f,rn:f32,hk:f32)->vec4f{
   let bk=smoothstep(.1,.3,dot(s,vec3f(.2126,.7152,.0722)))*hk;
-  let da=u.shc.w*smoothstep(.05,.6,nm)*hk;
+  let rk=smoothstep(.08,.26,dot(rs,vec3f(.2126,.7152,.0722)))*hk;
   let fl=max(f.r,max(f.g,f.b))/max(f.a,1e-3);
-  let rgb=f.rgb*(1.-.86*bk*(1.-smoothstep(.86,.98,fl)))+s*clamp(f.a-mn,0.,1.)*bk*1.3;
-  return vec4f(rgb,f.a+(1.-f.a)*da);}
+  let rgb=f.rgb*(1.-.86*bk*(1.-smoothstep(.86,.98,fl)))+rs*rn*f.a*rk*1.4;
+  return vec4f(rgb,f.a);}
 fn overlay(b:vec3f,s:vec3f)->vec3f{return select(1.-2.*(1.-b)*(1.-s),2.*b*s,b<vec3f(.5));}
 @fragment fn fsFinal(v:V)->@location(0) vec4f{
   /* кадр собирается до плеча: сцена как светит, передний слой поверх, свечение
      сложением, как в 2D, — и только потом одно плечо на всё. Яркий газ под
      свечением уходит в золото и к белому плавно, без плато на единице */
   let hs=sceneAt(v.uv);var f=textureSampleLevel(tFront,sl,v.uv,0.);
-  if(u.shc.w>0.&&u.scene>.5){f=sil(v.uv,f,tone(hs));}
+  if(u.shc.w>0.&&u.scene>.5){let hk=silK(v.uv);if(hk>0.&&f.a>0.){let rn=rimN(v.uv);
+    f=sil(v.uv,f,tone(hs),tone(sceneAt(v.uv+rn.xy*6./u.css)),rn.z,hk);}}
   var h=hs*(1.-f.a)+f.rgb;
   if(u.k>0.){h=h+u.k*.8*textureSampleLevel(tBloom,sl,v.uv,0.).rgb*(1.-.6*f.a);}
   /* засветка ядра: мелочь перед ядром звезды тонет в его свете, как в камере, — тёмная
@@ -270,8 +273,12 @@ struct CO{@location(0) c:vec4f,@location(1) e:vec4f};
   if(u.shc.w<=0.){return CO(f,vec4f(emit(f.rgb),0.));}
   /* сцену здесь не прочесть (в неё рисуем) — газ за корпусом берём из туманности
      (16gb кладёт её на место сцены), тоном как при сведении */
-  let nb=max(textureSampleLevel(tScene,sl,v.uv,0.).rgb,vec3f(0.));let m=max(max(nb.r,nb.g),max(nb.b,1e-4));
-  let o=sil(v.uv,f,nb*(1.-exp(-m*1.25))/(m*1.25)*1.12);return CO(o,vec4f(emit(o.rgb),0.));}`;
+  let hk=silK(v.uv);if(hk<=0.||f.a<=0.){return CO(f,vec4f(emit(f.rgb),0.));}
+  let rn=rimN(v.uv);
+  let nb=gasT(v.uv);let o=sil(v.uv,f,nb,gasT(v.uv+rn.xy*6./u.css),rn.z,hk);return CO(o,vec4f(emit(o.rgb),0.));}
+fn gasT(uv:vec2f)->vec3f{
+  let nb=max(textureSampleLevel(tScene,sl,uv,0.).rgb,vec3f(0.));let m=max(max(nb.r,nb.g),max(nb.b,1e-4));
+  return nb*(1.-exp(-m*1.25))/(m*1.25)*1.12;}`;
 
 function gpuPipes(){
   const d=GPU.dev,F=GPUShaderStage.FRAGMENT;

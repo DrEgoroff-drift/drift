@@ -78,7 +78,7 @@ Heat haze behind the nozzle (G4b).
 
 ## Where I stopped (update on every commit)
 
-- **Deploy candidate: `d959de8` (L3 1/n; before it `6c3e569`), accepted by Контроль by its pairs.** The author: deploy to main
+- **Deploy candidate: `d0b1058` (L3 2/n; before it `d959de8`), accepted by Контроль by its pairs.** The author: deploy to main
   before the limit window reaches 90%; the signal «ДЕПЛОЙ» comes from Контроль. On it: close the step with a
   commit; `test.ps1 -Full` and `node test-node.js`; bump `VER` and a PATCHNOTES line (what the player sees
   better, plus «needs a browser with WebGPU»); a release commit; send Контроль its sha. **Контроль pushes**
@@ -86,7 +86,7 @@ Heat haze behind the nozzle (G4b).
   the site falls: a commit on top with the tree of `d543aff`, never a force-push. Only a commit Контроль
   accepted by pairs goes to main. CI rehearsal of ef8c8b9 (deploy.yml flags, `--disable-gpu`): load clean,
   smoke 4/4, Node green (the «рейсы» suite fails in full order only, green alone; it sits in quarantine).
-- Order now: L3 2/n done (awaiting Контроль), then L4 (particles), then the G steps (G5 frozen).
+- Order now: L3 3/n done (awaiting Контроль), then L1b (dust), L4 (particles), then the G steps (G5 frozen).
 
 - Done: core `08b`, kit `08c`, space `16g` (G1: live nebula wisps and lanes, stars with halo and tapered
   spikes, dust with depth of field; pair in `scratchpad/pairs/system_crop.png`),
@@ -302,8 +302,22 @@ Heat haze behind the nozzle (G4b).
   centre stays farther than .33 of the diagonal, only the edge enters the middle third; it frames play, not
   lies under it. A hole's jets stay at the star. Field gate vs 79dd76a: L median +14…20% — the landmark's
   window (gas recedes around it) left the middle; S +2…7%, dirt unchanged.
-  Next: L4 — exhaust by curl noise with a temperature ladder, HDR spark streaks, fireball/debris/smoke,
-  shock-wave refraction, heat haze.
+  Done (L3 3/n, the frame's edges): the dark halo is gone. L1's `sil` darkened the gas up to 8 px around
+  every hull on bright gas (12 directions × 3 radii) and read as dirt: nebula behind a ship does not take
+  its shadow. Now it is a rim light instead (08b `rimN`, `sil`): the normal from the hull's alpha gradient
+  (2 px), gas sampled 6 px outward along it (fsComp: the ¼-res nebula; fsFinal: the scene), added on the hull
+  × (1-n.z)³ × 1.4, only over bright gas; the hull's own darkening against bright gas stays. Scout on
+  nnormal: ring 3–8 px 40.5 vs the bare gas at the same pixels 37.3 (+9%, no dark ring; the gas there is
+  darker than at 20–30 px on its own, 59 — the stub row shows it); rim hue 171° = gas 171°.
+  The comet is a chord along the frame's edge: the tail points away from the star (in half-frame units),
+  the head half a tail back from the edge's middle, the side by the stream — it was in the corner with its
+  tail out of the frame. The landmark's own strength (not the gas window) falls toward the centre:
+  ×.35 → ×1 over .2–.45, measured by the frame's ellipse (on the diagonal the same as a share of the
+  diagonal; the middle of the long edge keeps .74, not .45). Corners by a lattice of the system's place,
+  `(sx+2·sy)&3`: neighbours always differ, any four in a row give all four (12 systems: 3/4/3/2); the top
+  left drops below the HUD bars (y .36–.5 of a half-frame, x ≥ .74) — median L under the bars 24–29.
+  Next: L1b dust — dark absorbing filaments and globules in front of the emission gas, bright ionisation
+  fronts, stars through the gaps (Carina / Pillars); field L median toward 30, black 10–20%. Then L4.
   A GPU draw after `gpuHullLight` must use `gpuOver`, not `gpuScene` (the scene pass is closed by then).
 - Merge each: `build.ps1`, `python docs/shot.py <scenes> --look --tag gpu`, 0 `gpu.errs`, pair with
   `scratchpad/mainref/docs/shots/main_<scene>.png`, one line of what got better, commit, strike from PLAN §0.
