@@ -549,6 +549,5 @@ function drawStation(x,y,Z){
      читалось поверх её же переборок (M242) */
   /* и растёт вместе с бортом (M443): девять пикселей при раздутом интерфейсе
      читались так же, как подписи карты до M437 */
-  ctx.fillStyle="rgba(242,178,92,.6)";ctx.font=uiFont(9);ctx.textAlign="center";
-  ctx.fillText(S.name.toUpperCase(),x,y+42*s+12*uiK());
+  domLabel("st",x,y+42*s+12*uiK(),S.name.toUpperCase(),uiFont(9),"rgba(242,178,92,.6)","center");
 }

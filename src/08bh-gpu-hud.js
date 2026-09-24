@@ -29,6 +29,7 @@ function gpuHudFlush(rack){
     GPU.uiWas=key!=="";GPU.hkey=key;
   }
   q.length=0;
+  domLabelEnd();
 }
 /* ── фишки у кромки ── */
 const CHIPDOM={box:null,m:new Map(),touched:false};
@@ -87,6 +88,58 @@ function chipDomSnap(g,sc){
     g.fillStyle=e.col;g.beginPath();g.moveTo(6,0);g.lineTo(-4,4);g.lineTo(-4,-4);g.closePath();g.fill();
     g.restore();
   }
+  for(const e of LABDOM.m.values())if(e.on){g.globalAlpha=Math.min(1,e.A);g.drawImage(e.cv,e.x*sc,e.y*sc,e.w*sc,e.h*sc);}
+  g.globalAlpha=1;
+}
+/* ── подписи мира (имя станции, планет): ездят за миром, как фишки ──
+   Маленький холст на родном DPR с тем же fillText, что был на #c, — глифы те же;
+   перерисовка — только когда сменились текст, шрифт или цвет, место двигает transform.
+   Базовая линия берётся у ctx на момент вызова: y значит то же, что значил у fillText.
+   Без видеокарты — прямо на ctx, как раньше */
+const LABDOM={m:new Map(),id:new WeakMap(),n:0};
+/* ключ подписи для вещи без своего сида (контейнер): номер живёт рядом, не в самой вещи —
+   поле в объекте мира уехало бы в сейв */
+function domLabelId(o){let i=LABDOM.id.get(o);if(!i){i=++LABDOM.n;LABDOM.id.set(o,i);}return i;}
+function domLabel(k,x,y,text,font,col,align,al){
+  if(al==null)al=1;
+  if(!GPU.ok||!GPU.on){ctx.fillStyle=col;ctx.font=font;ctx.textAlign=align;ctx.globalAlpha=al;ctx.fillText(text,x,y);ctx.globalAlpha=1;return;}
+  const box=chipDomBox();if(!box)return;
+  let e=LABDOM.m.get(k);
+  if(!e){
+    const cv=document.createElement("canvas");cv.style.cssText="position:absolute;left:0;top:0;transform-origin:0 0";
+    box.appendChild(cv);e={cv,sig:"",pos:"",on:false};LABDOM.m.set(k,e);
+  }
+  e.used=true;
+  const nd=gpuHudDpr(),bl=ctx.textBaseline,sig=text+"|"+font+"|"+col+"|"+align+"|"+bl+"|"+nd;
+  if(sig!==e.sig){
+    e.sig=sig;const g=e.cv.getContext("2d");
+    g.setTransform(1,0,0,1,0,0);g.font=font;g.textBaseline=bl;g.textAlign="left";
+    const m=g.measureText(text),tw=m.width;
+    const up=Math.ceil(m.actualBoundingBoxAscent||0)+2,dn=Math.ceil(m.actualBoundingBoxDescent||0)+2;
+    const w=Math.ceil(tw)+4,h=up+dn;
+    e.cv.width=Math.max(1,Math.round(w*nd));e.cv.height=Math.max(1,Math.round(h*nd));
+    e.cv.style.width=w+"px";e.cv.style.height=h+"px";
+    g.setTransform(nd,0,0,nd,0,0);g.font=font;g.textBaseline=bl;g.textAlign="left";g.fillStyle=col;
+    g.fillText(text,2,up);
+    e.w=w;e.h=h;e.dx=(align==="center"?-tw/2:align==="right"||align==="end"?-tw:0)-2;e.dy=-up;
+  }
+  e.x=x+e.dx;e.y=y+e.dy;
+  const pos="translate("+e.x.toFixed(2)+"px,"+e.y.toFixed(2)+"px)";
+  if(pos!==e.pos){e.pos=pos;e.cv.style.transform=pos;}
+  const op=al.toFixed(3);if(op!==e.op){e.op=op;e.cv.style.opacity=op;}
+  e.A=al;
+  if(!e.on){e.on=true;e.cv.style.display="";}
+}
+/* конец мира (gpuHudFlush): подписи, которых в кадре не было, — спрятать */
+function domLabelEnd(){
+  for(const [k,e] of LABDOM.m){
+    if(e.used)e.last=GPU.frameNo;
+    else{if(e.on){e.on=false;e.cv.style.display="none";}
+      /* давно не нужна (пират ушёл, планета другой системы) — долой из DOM */
+      if(GPU.frameNo-(e.last||0)>600){e.cv.remove();LABDOM.m.delete(k);}}
+    e.used=false;
+  }
+  LABDOM.fl=true;
 }
 /* после фишек кадра: кого не было — спрятать */
 function chipDomEnd(){
@@ -96,4 +149,7 @@ function chipDomEnd(){
 function chipDomSweep(){
   if(!CHIPDOM.touched)for(const e of CHIPDOM.m.values()){if(e.on){e.on=false;e.d.style.display="none";}}
   CHIPDOM.touched=false;
+  /* мир прошлого кадра не доходил до конца (другой режим) — подписи тоже спрятать */
+  if(!LABDOM.fl)for(const e of LABDOM.m.values()){if(e.on){e.on=false;e.cv.style.display="none";}}
+  LABDOM.fl=false;
 }

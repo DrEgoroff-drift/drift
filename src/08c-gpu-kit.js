@@ -45,7 +45,9 @@ function gpuCanvasTex(cv,ver){
   if(e&&ver!==undefined&&e.ver!==ver&&e.w===cv.width&&e.h===cv.height){
     GPU.dev.queue.copyExternalImageToTexture({source:cv},{texture:e.tex,premultipliedAlpha:true},[e.w,e.h]);e.ver=ver;}
   if(e&&(e.w!==cv.width||e.h!==cv.height)){GPU.trash.push(e.tex);m.delete(cv);e=null;}
-  if(e)return e;
+  /* попадание — в конец очереди: вытесняется давно не нужный, а не первый заведённый
+     (иначе девять холстов в кадре перегружали бы друг друга каждый кадр) */
+  if(e){m.delete(cv);m.set(cv,e);return e;}
   const w=cv.width,h=cv.height,U=GPUTextureUsage;
   const tex=GPU.dev.createTexture({size:[w,h],format:"rgba8unorm",usage:U.TEXTURE_BINDING|U.COPY_DST|U.RENDER_ATTACHMENT});
   GPU.dev.queue.copyExternalImageToTexture({source:cv},{texture:tex,premultipliedAlpha:true},[w,h]);

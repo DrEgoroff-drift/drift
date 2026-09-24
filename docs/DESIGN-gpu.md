@@ -292,6 +292,14 @@ The phone frame budget does not grow: GPU ≤ 12 ms.
   with no `-Accept`. `chipDom` returns at once without a GPU (the Node tier has no `after()`): the Node tier is
   green (quarantined «рейсы» red before Stage 1 as well), and Chrome `--disable-gpu` as in deploy.yml loads with
   no Uncaught and passes the smoke.
+  1c (the `#c` rewrite, labels and shuttles): the world's labels — station, planets, moons, finds, pirate names,
+  the loot countdown — are `domLabel` (08bh): a small native-DPR canvas with the same `fillText`, redrawn when
+  the text changes, moved by `transform`, dropped from the DOM after 600 unused frames, laid over the snapshot.
+  They no longer pass through the tone curve, as the HUD since 1a: an alpha-.6 label reads as authored in 2D, a
+  touch dimmer than the toned one (station label 155 → 89 at its brightest pixel). The shuttle's body is a
+  sprite baked once per maker colour (`shuttleSprite`, 40×24) and turned by `gpuImage`: the pair at ×1.5 max|Δ|
+  28 on its hairline. `gpuCanvasTex` became a true LRU (a hit moves to the back), so eight canvases in use no
+  longer evict each other. Flight `#c` is now the hull (bake + bank underside + nav lights) and its flame only.
 - Brief of **L4 k/n — the shock ring and the exhaust haze bend the backdrop, never a hull** (Контроль 24.09): no
   hull, own or pirate, sprite or 2D, is cut into bands; an RGB fringe on the backdrop only. Done (08b/08c): the
   scene's alpha became the hull mask — every blend keeps it (`GPU_KEEP_A`), the lit sprite (`gst`: pirates,

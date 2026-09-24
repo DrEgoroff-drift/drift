@@ -24,9 +24,11 @@ function sysTraffic(sys){
     for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++){
       if(!dx&&!dy)continue;const o=chronOwnerKey(sys.sx+dx,sys.sy+dy);if(o)near.push(o);}
   for(let i=0;i<n;i++){
+    /* концы — ссылки на сами тела, не копии: станция и планеты ходят по орбитам,
+       а трафик строится раньше, чем станция встала на место (было 0,0 у звезды) */
     const p=bodies.length?bodies[Math.floor(r()*bodies.length)]:null;
-    const B=p?{x:p.x,y:p.y,r:p.radius}:{x:-st.x*.4,y:-st.y*.4,r:20};
-    out.push({ax:st.x,ay:st.y,bx:B.x,by:B.y,br:B.r,
+    const B=p||{get x(){return -st.x*.4;},get y(){return -st.y*.4;}};
+    out.push({A:st,B,br:p?p.radius:20,
       bow:(r()-.5)*.5,                     /* изгиб дуги, доля длины */
       spd:.00009+r()*.00007,ph:r()*TAU,k:.7+r()*.6,blink:r()*TAU,
       /* mk, не by: by — это y конца дуги, и завод его затирал — челноки стояли в NaN и не рисовались */
@@ -44,13 +46,15 @@ function shuttleAt(t,T){
   /* туда-обратно по дуге; у концов притормаживает — стыковка, а не пролёт */
   let u=(T*t.spd+t.ph/TAU)%1;u=u<.5?u*2:2-u*2;
   const e=u*u*(3-2*u);
-  const dx=t.bx-t.ax,dy=t.by-t.ay,L=Math.hypot(dx,dy)||1;
+  /* концы читаются вживую из тел (A, B); голые ax…by — для разовой дуги «Сороки» (12v) */
+  const ax=t.A?t.A.x:t.ax,ay=t.A?t.A.y:t.ay,bx=t.B?t.B.x:t.bx,by=t.B?t.B.y:t.by;
+  const dx=bx-ax,dy=by-ay,L=Math.hypot(dx,dy)||1;
   const nx=-dy/L,ny=dx/L;
   const bow=Math.sin(e*Math.PI)*t.bow*L;
   /* не влетать в станцию и в планету: концы дуги отступают от тел */
   const m0=28/L,m1=(t.br+18)/L;
   const ee=m0+e*(1-m0-m1);
-  const wx=t.ax+dx*ee+nx*bow, wy=t.ay+dy*ee+ny*bow;
+  const wx=ax+dx*ee+nx*bow, wy=ay+dy*ee+ny*bow;
   /* курс — по касательной к дуге */
   const de=.002, e2=Math.min(1,e+de);
   const bow2=Math.sin(e2*Math.PI)*t.bow*L;
@@ -92,11 +96,32 @@ function drawShuttleArc(t,zx,zy,Z){
     if(bl>.6){const k=(bl-.6)/.4;genPush(x-ca*1.4*sk-sa*2*sk,y-sa*1.4*sk+ca*2*sk,x-ca*1.4*sk-sa*2*sk,y-sa*1.4*sk+ca*2*sk,.8*sk,2.4*sk,k,1,[1,120/255,90/255],.3*k);}
     genDraw(pass,key+"g");
   }
-  ctx.save();ctx.translate(x,y);ctx.rotate(a);ctx.scale(s*t.k,s*t.k);
   /* огонь сопла и грунт — завода машины (M454): белый капсульный челнок
      Компании и охристый Рассвета различаются и в точку */
-  ctx.fillStyle=(t.mk&&typeof makerGround==="function")?rgba(mixc([35,43,54],makerGround(t.mk),.7),1):"#232b36";ctx.strokeStyle="rgba(0,0,0,.6)";ctx.lineWidth=.6;
+  const gr=(t.mk&&typeof makerGround==="function")?rgba(mixc([35,43,54],makerGround(t.mk),.7),1):"#232b36";
+  if(pass){
+    /* корпус — выпечка на цвет завода, один раз; поворот и масштаб — в шейдере */
+    const sk=s*t.k;
+    gpuImage(pass,shuttleSprite(gr),[{x,y,w:SHUT_SW*sk,h:SHUT_SH*sk,rot:a}]);
+    return;
+  }
+  ctx.save();ctx.translate(x,y);ctx.rotate(a);ctx.scale(s*t.k,s*t.k);
+  shuttleBody(gr);
+  ctx.restore();
+}
+function shuttleBody(gr){
+  ctx.fillStyle=gr;ctx.strokeStyle="rgba(0,0,0,.6)";ctx.lineWidth=.6;
   ctx.beginPath();ctx.moveTo(4,0);ctx.lineTo(-3,-2);ctx.lineTo(-4,0);ctx.lineTo(-3,2);ctx.closePath();ctx.fill();ctx.stroke();
   ctx.fillStyle="rgba(200,220,240,.5)";ctx.fillRect(-1,-2.2,2.5,.8);
-  ctx.restore();
+}
+/* выпечка корпуса челнока: 10×6 в мерке челнока, SHUT_PX пикселей на единицу — на экране
+   челнок ~1.5 px кадра на единицу, так что выборка сжимает вдвое-втрое, без мерцания */
+const SHUT_SW=10,SHUT_SH=6,SHUT_PX=4,SHUT_ART=new Map();
+function shuttleSprite(gr){
+  let cv=SHUT_ART.get(gr);if(cv)return cv;
+  cv=document.createElement("canvas");cv.width=SHUT_SW*SHUT_PX;cv.height=SHUT_SH*SHUT_PX;
+  const g=cv.getContext("2d"),c0=ctx;ctx=g;
+  try{g.setTransform(SHUT_PX,0,0,SHUT_PX,cv.width/2,cv.height/2);shuttleBody(gr);}finally{ctx=c0;}
+  if(SHUT_ART.size>=8)SHUT_ART.delete(SHUT_ART.keys().next().value);
+  SHUT_ART.set(gr,cv);return cv;
 }

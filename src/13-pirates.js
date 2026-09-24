@@ -375,8 +375,7 @@ function drawCombat(zx,zy,Z){
     ctx.fillStyle=col;ctx.globalAlpha=pulse;
     ctx.beginPath();ctx.arc(x,y,2.2,0,TAU);ctx.fill();ctx.globalAlpha=1;
     if(L.life<900){   // перед исчезновением предупреждаем
-      ctx.fillStyle="rgba(255,157,122,.8)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
-      ctx.fillText(Math.ceil(L.life/60)+"с",x,y-s-5);
+      domLabel("lt"+domLabelId(L),x,y-s-5,Math.ceil(L.life/60)+"с","8px ui-monospace,monospace","rgba(255,157,122,.8)","center");
     }
   }
   for(const p of G.pirates){
@@ -426,11 +425,8 @@ function drawCombat(zx,zy,Z){
        const hit=BODY_LABELS.some(b=>!(bx1<b.x0||b.x1<bx0||by1<b.y0||b.y1<by0))||
          SYS_CHIPS.some(c=>!(bx1*U2<c.x||c.x+c.w<bx0*U2||by1*U2<c.y||c.y+c.h<by0*U2));
        if(hit)ly=y-22;}
-      ctx.fillText(lbl,x,ly);
-      if(p.rogue){
-        ctx.fillStyle="rgba(197,138,224,.6)";ctx.font="8px ui-monospace,monospace";
-        ctx.fillText("БЫВШИЙ УПРАВЛЯЮЩИЙ",x,y+37);
-      }
+      domLabel("pn"+p.seed,x,ly,lbl,ctx.font,ctx.fillStyle,"center");
+      if(p.rogue)domLabel("pr"+p.seed,x,y+37,"БЫВШИЙ УПРАВЛЯЮЩИЙ","8px ui-monospace,monospace","rgba(197,138,224,.6)","center");
     }else if(G.tech.has("radar")){
       const ang=Math.atan2(p.y-G.ship.y,p.x-G.ship.x);
       const mx=W/2+Math.cos(ang)*(Math.min(W,H)/2-26),my=H/2+Math.sin(ang)*(Math.min(W,H)/2-26);

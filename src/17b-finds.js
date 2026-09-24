@@ -255,9 +255,6 @@ function drawFindsSystem(zx,zy,Z){
       ctx.strokeStyle="rgba(242,178,92,"+(.30*(1-ph)).toFixed(3)+")";ctx.lineWidth=1;
       ctx.beginPath();ctx.arc(x,y,14+ph*46,0,TAU);ctx.stroke();
     }
-    ctx.fillStyle=K.col;ctx.globalAlpha=.75;
-    ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
-    ctx.fillText(K.ru.toUpperCase(),x,y+24*s);
-    ctx.globalAlpha=1;
+    domLabel("fd"+f.seed,x,y+24*s,K.ru.toUpperCase(),"8px ui-monospace,monospace",K.col,"center",.75);
   }
 }
