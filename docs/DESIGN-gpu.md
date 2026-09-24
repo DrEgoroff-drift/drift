@@ -134,6 +134,9 @@ From the phone frame (0bd3b0b, portrait):
 - f) Plates: dark glass without a gradient, a hairline edge, the text carries the colour. Light is only added from
   the dark ground, never laid over as a gradient.
 - g) Untouched: ≥ 44 px, `--ui` as the one ruler, `withScale(UIK…)`, a button names its action.
+- h) The distance in an edge chip's label ticks every frame: the digits flicker and the chip canvases re-raster
+  1.8 times a frame. In motion two significant digits (3182 → 3.2к); the exact number on approach or at a stop.
+  Chip rasters drop to ~0.
 Order: the flight HUD first, one pair at 390×844 and at 760. A fork of taste: the pair goes to the author for a
 verdict before any other screen.
 
@@ -282,6 +285,13 @@ The phone frame budget does not grow: GPU ≤ 12 ms.
   in the label changes), uploads 2.06, submits 3, `#c` 13.4 calls (the world). Pairs: 411×742 ×1.5 against 1a
   max|Δ| 58 on glyph edges (subpixel placement), the chips look the same; 390×844 ×2.625 shows the text sharp.
   G3b 3/n (e1aeb19) and L4 k/n (7b406eb) accepted.
+  1b fixes (Контроль on 9daced2): the snapshot carries the chips — `gpuTakeSnap` lays each chip's canvas and
+  arrow over it by the chip's place, size, opacity and angle (`chipDomSnap`), paid only when a snapshot is taken,
+  so `look()`, the detectors and the goldens see what the player sees. Against the page screenshot, inside the
+  chip rects, it differs only by one frame's motion. Goldens at 1280×800 and 390×844 and the detectors are green
+  with no `-Accept`. `chipDom` returns at once without a GPU (the Node tier has no `after()`): the Node tier is
+  green (quarantined «рейсы» red before Stage 1 as well), and Chrome `--disable-gpu` as in deploy.yml loads with
+  no Uncaught and passes the smoke.
 - Brief of **L4 k/n — the shock ring and the exhaust haze bend the backdrop, never a hull** (Контроль 24.09): no
   hull, own or pirate, sprite or 2D, is cut into bands; an RGB fringe on the backdrop only. Done (08b/08c): the
   scene's alpha became the hull mask — every blend keeps it (`GPU_KEEP_A`), the lit sprite (`gst`: pirates,

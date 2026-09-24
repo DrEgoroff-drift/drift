@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 606 · символов верхнего уровня: 5980
+Файлов: 606 · символов верхнего уровня: 5981
 
 ## СИМВОЛЫ
 
@@ -731,10 +731,11 @@ CHIP_SPEED                   src/17-mode-system.js:21
 CHIP_T                       src/17-mode-system.js:15
 CHIP_TOUCH                   src/17-mode-system.js:18
 CHIPDOM                      src/08bh-gpu-hud.js:34
-chipDom                      src/08bh-gpu-hud.js:43-74
+chipDom                      src/08bh-gpu-hud.js:43-78
 chipDomBox                   src/08bh-gpu-hud.js:35-40
-chipDomEnd                   src/08bh-gpu-hud.js:76-78
-chipDomSweep                 src/08bh-gpu-hud.js:80-83
+chipDomEnd                   src/08bh-gpu-hud.js:92-94
+chipDomSnap                  src/08bh-gpu-hud.js:81-90
+chipDomSweep                 src/08bh-gpu-hud.js:96-99
 chKing                       src/25n-chess.js:112-116
 chLegal                      src/25n-chess.js:191-195
 chMine                       src/25n-chess.js:38
@@ -1698,7 +1699,7 @@ expReady                     src/11x-expedition.js:25-28
 expRelease                   src/11x-expedition.js:101-110
 expStart                     src/11x-expedition.js:29-38
 EYES_SUITE                   tests/99-run.js:39-41
-f16                          src/08b-gpu.js:445
+f16                          src/08b-gpu.js:446
 FACE_EYE                     src/12d-mgr-face.js:14
 FACE_HAIR                    src/12d-mgr-face.js:12
 FACE_ROLE_BG                 src/12d-mgr-face.js:15
@@ -2066,7 +2067,7 @@ glowPatches                  src/11i-glow.js:73-82
 glowScan                     src/11i-glow.js:64-68
 glowSprite                   src/16a0-glow.js:24-36
 glowTier                     src/11i-glow.js:122-128
-GLT_H                        src/08b-gpu.js:444
+GLT_H                        src/08b-gpu.js:445
 glyphEl                      src/12t-settle.js:79-90
 glyphHasRunes                src/12t-settle.js:52-56
 glyphNodes                   src/12t-settle.js:92-102
@@ -2129,69 +2130,69 @@ GPU_FLD_HEAD                 src/08c-gpu-kit.js:180
 GPU_IMG_WGSL                 src/08c-gpu-kit.js:102
 GPU_KEEP_A                   src/08c-gpu-kit.js:11
 GPU_KIT_WGSL                 src/08c-gpu-kit.js:89
-GPU_PL_WGSL                  src/08b-gpu.js:459
-GPU_POST_WGSL                src/08b-gpu.js:87
+GPU_PL_WGSL                  src/08b-gpu.js:460
+GPU_POST_WGSL                src/08b-gpu.js:88
 GPU_SHP_WGSL                 src/08c-gpu-kit.js:139
 GPU_WGSL_COMMON              src/08c-gpu-kit.js:58
 gpuArena                     src/08c-gpu-kit.js:78-88
 gpuBargeBody                 src/12l-barge.js:559-563
 gpuBind                      src/08c-gpu-kit.js:33-39
-gpuBloom                     src/08b-gpu.js:606-613
+gpuBloom                     src/08b-gpu.js:607-614
 gpuBooms                     src/13z-gpu-combat.js:149-167
 gpuBuf                       src/08c-gpu-kit.js:26-31
 gpuBursts                    src/13z-gpu-combat.js:266-286
 gpuCanvasTex                 src/08c-gpu-kit.js:42-55
 gpuCombatEnergy              src/13z-gpu-combat.js:64-115
-gpuCompNeb                   src/08b-gpu.js:418-428
+gpuCompNeb                   src/08b-gpu.js:419-429
 gpuDrones                    src/16ga-gpu-trail.js:132-176
-gpuDrop                      src/08b-gpu.js:80-85
+gpuDrop                      src/08b-gpu.js:81-86
 gpuExhaust                   src/16ga-gpu-trail.js:259-292
 gpuField                     src/08c-gpu-kit.js:194-222
-gpuFrame                     src/08b-gpu.js:508-518
-gpuFrontCopy                 src/08b-gpu.js:552-554
-gpuHaze                      src/08b-gpu.js:441
+gpuFrame                     src/08b-gpu.js:509-519
+gpuFrontCopy                 src/08b-gpu.js:553-555
+gpuHaze                      src/08b-gpu.js:442
 gpuHud                       src/08bh-gpu-hud.js:14-17
 gpuHudDpr                    src/08bh-gpu-hud.js:12
 gpuHudFlush                  src/08bh-gpu-hud.js:20-32
 gpuHullLight                 src/16ga-gpu-trail.js:345-364
 gpuImage                     src/08c-gpu-kit.js:122-134
 gpuKitU                      src/08c-gpu-kit.js:94-98
-gpuLight                     src/08b-gpu.js:443
+gpuLight                     src/08b-gpu.js:444
 gpuLitSprite                 src/17c-system-draw.js:478-485
-gpuLtWrite                   src/08b-gpu.js:447-454
-gpuManual                    src/08b-gpu.js:577-582
+gpuLtWrite                   src/08b-gpu.js:448-455
+gpuManual                    src/08b-gpu.js:578-583
 gpuMoon                      src/17ga-gpu-planets.js:400-405
 gpuNebulaComp                src/16gb-gpu-nebula.js:617-627
 gpuNebulaGen                 src/16gb-gpu-nebula.js:562-614
-gpuNoise                     src/08b-gpu.js:375-380
-gpuNone                      src/08b-gpu.js:35-42
-gpuOver                      src/08b-gpu.js:555-575
-gpuPass                      src/08b-gpu.js:429-432
+gpuNoise                     src/08b-gpu.js:376-381
+gpuNone                      src/08b-gpu.js:36-43
+gpuOver                      src/08b-gpu.js:556-576
+gpuPass                      src/08b-gpu.js:430-433
 gpuPipe                      src/08c-gpu-kit.js:18-25
-gpuPipes                     src/08b-gpu.js:346-372
+gpuPipes                     src/08b-gpu.js:347-373
 gpuPirateBody                src/12i-pirate-hull.js:432-437
 gpuPlanet                    src/17ga-gpu-planets.js:320-338
-gpuPresent                   src/08b-gpu.js:615-629
-gpuResize                    src/08b-gpu.js:381-416
-gpuScene                     src/08b-gpu.js:522-532
-gpuScene3D                   src/08b-gpu.js:536-544
+gpuPresent                   src/08b-gpu.js:616-630
+gpuResize                    src/08b-gpu.js:382-417
+gpuScene                     src/08b-gpu.js:523-533
+gpuScene3D                   src/08b-gpu.js:537-545
 gpuSeg                       src/28z-fps-probe.js:139-142
 gpuShapes                    src/08c-gpu-kit.js:164-175
-gpuShock                     src/08b-gpu.js:442
+gpuShock                     src/08b-gpu.js:443
 gpuSky                       src/19ca-gpu-sky.js:66-82
 gpuSnapshot                  src/08b-gpu.js:22-26
 gpuSpaceSys                  src/16g-gpu-space.js:201-219
 gpuSpaceTitle                src/16g-gpu-space.js:221-232
 gpuStation                   src/17c-system-draw.js:486
 gpuSysUnder                  src/17g-gpu-system.js:386-391
-gpuTakeSnap                  src/08b-gpu.js:27-33
+gpuTakeSnap                  src/08b-gpu.js:27-34
 gpuTrail                     src/16ga-gpu-trail.js:53-90
 gpuTs                        src/28z-fps-probe.js:128-135
 gpuTsAround                  src/28z-fps-probe.js:145-149
 gpuTsResolve                 src/28z-fps-probe.js:151-169
-gpuUni                       src/08b-gpu.js:492-504
+gpuUni                       src/08b-gpu.js:493-505
 gpuWake                      src/16ga-gpu-trail.js:99-123
-gpuWorld                     src/08b-gpu.js:585-604
+gpuWorld                     src/08b-gpu.js:586-605
 gradePass                    src/19c-light.js:260-296
 GREEN_BEDS                   src/21g-greenhouse.js:23
 GREEN_FULL                   src/21g-greenhouse.js:24
@@ -6121,7 +6122,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/08b-gpu.js · 46 КБ
   · видеокарта: кадр рисует WebGPU (docs/DESIGN-gpu.md):1
 
-## src/08bh-gpu-hud.js · 6 КБ
+## src/08bh-gpu-hud.js · 7 КБ
   · слой приборов: #hud и фишки у кромки (ступень 1, docs/DESIGN-gpu.md §L.S):1
 
 ## src/08c-gpu-kit.js · 15 КБ

@@ -41,6 +41,8 @@ function chipDomBox(){
 /* фишка k в кадре: место (rx,ry) и размер (cw,ch) в мерке U, прозрачность, цвет, подпись,
    сторона подписи, угол стрелки. Рисунок — как у 2D: плашка, волосяной обвод, стрелка, текст */
 function chipDom(k,rx,ry,cw,ch,A,col,label,onRight,ang,U){
+  /* без видеокарты мира нет, и фишкам не над чем висеть (Node-ярус, Chrome без WebGPU) */
+  if(!GPU.ok)return;
   const box=chipDomBox();if(!box)return;
   CHIPDOM.touched=true;
   let e=CHIPDOM.m.get(k);
@@ -71,6 +73,20 @@ function chipDom(k,rx,ry,cw,ch,A,col,label,onRight,ang,U){
   const op=A.toFixed(3);if(op!==e.op){e.op=op;e.d.style.opacity=op;}
   const rot="rotate("+ang.toFixed(3)+"rad)";if(rot!==e.rot){e.rot=rot;e.ar.style.transform=rot;}
   if(!e.on){e.on=true;e.d.style.display="";}
+  /* то же числами — для снимка кадра (chipDomSnap) */
+  e.x=rx*U;e.y=ry*U;e.w=cw*U;e.h=ch*U;e.A=A;e.ang=ang;e.col=col;e.U=U;e.ax=(onRight?cw-8:8)*U;e.ay=ch/2*U;
+}
+/* снимок кадра (gpuTakeSnap): фишки поверх, как их кладёт композитор, — чтобы look(),
+   детекторы и эталоны видели то же, что игрок. Платится только в момент снимка */
+function chipDomSnap(g,sc){
+  for(const e of CHIPDOM.m.values()){
+    if(!e.on||!(e.A>0))continue;
+    g.save();g.globalAlpha=Math.min(1,e.A);
+    g.drawImage(e.cv,e.x*sc,e.y*sc,e.w*sc,e.h*sc);
+    g.translate((e.x+e.ax)*sc,(e.y+e.ay)*sc);g.rotate(e.ang);g.scale(e.U*sc,e.U*sc);
+    g.fillStyle=e.col;g.beginPath();g.moveTo(6,0);g.lineTo(-4,4);g.lineTo(-4,-4);g.closePath();g.fill();
+    g.restore();
+  }
 }
 /* после фишек кадра: кого не было — спрятать */
 function chipDomEnd(){

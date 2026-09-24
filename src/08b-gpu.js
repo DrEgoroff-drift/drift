@@ -29,6 +29,7 @@ function gpuTakeSnap(){
   if(c.width!==GPU.cv.width||c.height!==GPU.cv.height){c.width=GPU.cv.width;c.height=GPU.cv.height;}
   const g=c.getContext("2d",{willReadFrequently:true});g.drawImage(GPU.cv,0,0);
   if(GPU.uiWas&&GPU.ui)g.drawImage(GPU.ui,0,0,c.width,c.height);   /* приборы — поверх, как на экране */
+  chipDomSnap(g,c.width/Math.max(1,W));
   GPU.snapNo=GPU.frameNo;
 }
 /* нет WebGPU — говорим прямо, какой браузер нужен (игрок видит это вместо мира) */
