@@ -106,6 +106,10 @@ Heat haze behind the nozzle (G4b).
   (to .35 R by 9 radii) while the penumbra grows (.3 px per px of distance), so it lightens and blurs into a
   cone. Pair `psh_pair.png`, crop `psh_crop.png` (the outermost giant, star behind it): mean luminance in
   three windows of the shadow 5.6 → 9.7, 12.6 → 17.0, 7.8 → 11.6.
+  **P1 4/n — the glow's first rung reads each texel once**: `fsDown` called `frameAt` and `frameHdr` per
+  tap, both sampling the front layer and the scene — 80 fetches per quarter-res pixel, 5 per screen pixel.
+  Inlined, one fetch each: 48, same arithmetic. Pair `bl_pair.png`: the glow is the same, only the unpinned
+  stars and the HUD clock differ; gpu errs 0. A cut that is right whatever the S23's deep numbers say.
   G3b 3/n (e1aeb19) and L4 k/n (7b406eb) accepted.
 - Brief of **L4 k/n — the shock ring and the exhaust haze bend the backdrop, never a hull** (Контроль 24.09): no
   hull, own or pirate, sprite or 2D, is cut into bands; an RGB fringe on the backdrop only. Done (08b/08c): the

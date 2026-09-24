@@ -172,9 +172,13 @@ fn frameHdr(uv:vec2f)->vec3f{
    светит много выше единицы (звезда). Поэтому у факела и газа ореол узкий, у звезды —
    широкий, и пелены на полкадра нет */
 @fragment fn fsDown(v:V)->@location(0) vec4f{
+  /* frameAt и frameHdr вручную: одна выборка переднего слоя и сцены на точку, не две
+     (P1: 48 выборок на пиксель вместо 80, арифметика та же) */
   let fp=1./u.qres;var c=vec3f(0.);var h=vec3f(0.);
   for(var j=0;j<4;j++){for(var i=0;i<4;i++){
-    let o=(vec2f(f32(i),f32(j))+.5)/4.-.5;c+=frameAt(v.uv+o*fp);h+=frameHdr(v.uv+o*fp);}}
+    let q=v.uv+((vec2f(f32(i),f32(j))+.5)/4.-.5)*fp;
+    let f=textureSampleLevel(tFront,sl,q,0.);let s=sceneAt(q);let a=1.-f.a;
+    c+=tone(s)*a+f.rgb;h+=(knee(s,1.4)+textureSampleLevel(tEmit,sl,q,0.).rgb)*a;}}
   c=c/16.;return vec4f(c*c+h/16.,1.);}
 fn bs(uv:vec2f)->vec3f{return textureSampleLevel(tBloom,sl,uv,0.).rgb;}
 @fragment fn fsMipDn(v:V)->@location(0) vec4f{
