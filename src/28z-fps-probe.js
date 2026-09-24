@@ -119,6 +119,46 @@ async function g11Deep(list){
 /* ЦП отдельно от видеокарты (P1 8/n): js — FRAME_JS (весь frameBody), мир — время stepWorld
    за вызов и кванты корабля за кадр (WORLD_SUB): при кадре 45 мс это 5–6 квантов, и если мир
    дорог — спираль. Обёртка ставится на время замера (g11CpuHook) и снимается после */
+/* ── метки времени видеокарты (P1 9/n): сколько мс идёт сам проход, а не кадр ──
+   Пока GPU.tsOn, проход с именем (пересчёт туманности, её сведение, первый проход сцены,
+   склейка 2D, первая ступень свечения, финал) пишет метки начала и конца; в конце кадра
+   они уходят в буфер и читаются в GPU.tsAcc — сумма мс и число по имени, «frame» — от
+   первой метки до последней. Без пробы gpuTs ничего не создаёт. Телефонный Chrome
+   округляет метки до 0.1 мс — для проходов в миллисекунды хватает */
+function gpuTs(name){
+  if(!GPU.tsOn||!GPU.tsOk)return undefined;
+  const T=GPU.tsQ||(GPU.tsQ={qs:GPU.dev.createQuerySet({type:"timestamp",count:32}),
+    res:GPU.dev.createBuffer({size:256,usage:GPUBufferUsage.QUERY_RESOLVE|GPUBufferUsage.COPY_SRC}),rb:[],names:[],n:0});
+  if(T.n+2>32)return undefined;
+  const i=T.n;T.n+=2;T.names.push([name,i]);
+  return {querySet:T.qs,beginningOfPassWriteIndex:i,endOfPassWriteIndex:i+1};
+}
+/* до отправки кадра: метки — в буфер чтения; возвращает, что сделать после отправки */
+function gpuTsResolve(){
+  const T=GPU.tsQ;if(!T||!T.n)return null;
+  const names=T.names,n=T.n;T.n=0;T.names=[];
+  let rb=T.rb.find(b=>b.mapState==="unmapped");
+  if(!rb){if(T.rb.length>=4)return null;
+    rb=GPU.dev.createBuffer({size:256,usage:GPUBufferUsage.MAP_READ|GPUBufferUsage.COPY_DST});T.rb.push(rb);}
+  GPU.enc.resolveQuerySet(T.qs,0,n,T.res,0);GPU.enc.copyBufferToBuffer(T.res,0,rb,0,n*8);
+  return ()=>rb.mapAsync(GPUMapMode.READ).then(()=>{
+    const a=new BigInt64Array(rb.getMappedRange(0,n*8)),acc=GPU.tsAcc||(GPU.tsAcc={});let lo=null,hi=null;
+    for(const [nm,i] of names){const b=a[i],e=a[i+1];if(!b||!e||e<b)continue;
+      const r=acc[nm]||(acc[nm]={ms:0,n:0});r.ms+=Number(e-b)/1e6;r.n++;
+      if(lo===null||b<lo)lo=b;if(hi===null||e>hi)hi=e;}
+    if(lo!==null){const r=acc.frame||(acc.frame={ms:0,n:0});r.ms+=Number(hi-lo)/1e6;r.n++;}
+    rb.unmap();}).catch(()=>{});
+}
+/* мс видеокарты за sec: по имени — среднее на проход и доля кадров, где он был */
+async function g11GpuMs(sec){
+  if(!GPU.tsOk)return null;
+  const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+  GPU.tsAcc={};const f0=GPU.frameNo;GPU.tsOn=true;
+  try{await sleep(sec*1000);}finally{GPU.tsOn=false;}
+  const fr=Math.max(1,GPU.frameNo-f0);await sleep(300);
+  const o={};for(const k in GPU.tsAcc){const r=GPU.tsAcc[k];o[k]={ms:+(r.ms/r.n).toFixed(2),share:Math.round(100*r.n/fr)};}
+  return o;
+}
 const G11_CPU={w:0,wn:0,q:0,qmax:0};
 function g11CpuHook(on){
   if(on&&!window.__g11sw){const sw=window.stepWorld;window.__g11sw=sw;
@@ -213,6 +253,9 @@ async function g11RunDeepHere(){
     out.base=await g11Iv(3);put("база "+JSON.stringify(out.base));
     out.nebRegen=Math.round(100*((GNB.nGen|0)-g0)/Math.max(1,GPU.frameNo-f0))+"%";
     put("туманность пересчитана в "+out.nebRegen+" кадров");
+    /* сведение туманности под меткой идёт своим проходом — на телефоне это лишняя загрузка
+       и выгрузка сцены, поэтому мс — отдельным отрезком, не внутри пар */
+    try{out.gpuMs=await g11GpuMs(2);put("мс видеокарты "+JSON.stringify(out.gpuMs));}catch(e){err.push("ts: "+(e&&e.message||e));}
     try{out.gpu=await g11GpuDeep(put);}catch(e){err.push("gpu: "+(e&&e.message||e));}
     try{out.dpr2=await g11DprSweep(put);}catch(e){err.push("dpr: "+(e&&e.message||e));}
   }finally{g11CpuHook(false);RES_AUTO=RA;PHONE_DPR=PD;resFresh=0;resize();}

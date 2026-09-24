@@ -572,16 +572,22 @@ function gpuNebulaGen(sys,camx,camy,st,Z){
   const U=GPUBufferUsage,ub=gpuBuf("gnb.u",176,U.UNIFORM|U.COPY_DST);
   GPU.dev.queue.writeBuffer(ub,0,a);
   const P=gnbPipe();
-  const p=GPU.enc.beginRenderPass({colorAttachments:[{view:GNB.view,loadOp:"clear",storeOp:"store",clearValue:{r:0,g:0,b:0,a:0}}]});
+  const p=GPU.enc.beginRenderPass({colorAttachments:[{view:GNB.view,loadOp:"clear",storeOp:"store",clearValue:{r:0,g:0,b:0,a:0}}],timestampWrites:gpuTs("nebGen")});
   p.setPipeline(P);p.setBindGroup(0,gpuBind("gnb.gen",P,[ub]));p.draw(3);p.end();
   GNB.sys=sys;GNB.cx=camx;GNB.cy=camy;GNB.last=GPU.frameNo;GNB.nGen=(GNB.nGen|0)+1;
   return true;
 }
+/* возвращает проход сцены, в который рисовать дальше: под меткой времени (проба) сведение
+   идёт своим проходом — у меток нет записи внутри прохода на телефоне */
 function gpuNebulaComp(pass){
-  if(!GNB.view||GNB.dev!==GPU.dev)return;
+  if(!GNB.view||GNB.dev!==GPU.dev)return pass;
+  const ts=gpuTs("nebComp");let p=pass;
+  if(ts){pass.end();GPU.scenePass=null;p=GPU.enc.beginRenderPass({colorAttachments:[{view:GPU.V.scene,loadOp:"load",storeOp:"store"}],timestampWrites:ts});}
   /* сначала пыль гасит и краснит то, что за ней (звёзды, фон), потом газ светит поверх */
-  gpuField(pass,"gnb.abs",GNB_ABS,GNB.C,[{view:GNB.view}],{blend:"mul"});
-  gpuField(pass,"gnb.emi",GNB_EMI,GNB.C,[{view:GNB.view}],{blend:"add"});
+  gpuField(p,"gnb.abs",GNB_ABS,GNB.C,[{view:GNB.view}],{blend:"mul"});
+  gpuField(p,"gnb.emi",GNB_EMI,GNB.C,[{view:GNB.view}],{blend:"add"});
   /* корпуса на ярком газе — силуэтами: общий проход темнит газ вокруг 2D (08b) */
   GPU.sep=.7;
+  if(ts){p.end();return gpuScene();}
+  return pass;
 }

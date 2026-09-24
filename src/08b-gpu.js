@@ -46,7 +46,9 @@ async function gpuInit(){
   try{
     const ad=await navigator.gpu.requestAdapter({powerPreference:"high-performance"});
     if(!ad){gpuNone("адаптера нет");return;}
-    const dev=await ad.requestDevice();
+    /* метки времени проходов — для пробы ?g11=deep (28z gpuTs); без пробы не пишутся */
+    const tsf=ad.features.has("timestamp-query")?["timestamp-query"]:[];
+    const dev=await ad.requestDevice({requiredFeatures:tsf});GPU.tsOk=tsf.length>0;
     GPU.dev=dev;GPU.lost=false;
     dev.lost.then(i=>{if(GPU.dev===dev&&!(i&&i.reason==="destroyed"))gpuDrop("устройство потеряно: "+((i&&i.message)||""),true);});
     /* ошибка проверки — наш промах в шейдере или привязке: в журнал сбоев (не
@@ -418,8 +420,8 @@ function gpuCompNeb(){
     {binding:5,resource:T.bloomB.createView()},{binding:6,resource:T.ui.createView()},{binding:7,resource:GPU.N.createView()},
     {binding:8,resource:GPU.N.createView()}]});
 }
-function gpuPass(view,pipe,bind){
-  const p=GPU.enc.beginRenderPass({colorAttachments:[{view,loadOp:"clear",storeOp:"store",clearValue:{r:0,g:0,b:0,a:1}}]});
+function gpuPass(view,pipe,bind,ts){
+  const p=GPU.enc.beginRenderPass({colorAttachments:[{view,loadOp:"clear",storeOp:"store",clearValue:{r:0,g:0,b:0,a:1}}],timestampWrites:ts&&gpuTs(ts)});
   p.setPipeline(pipe);p.setBindGroup(0,bind);p.draw(3);p.end();
 }
 /* ── L3: точечный свет на корпусах ──
@@ -515,7 +517,7 @@ function gpuScene(){
   if(GPU.scene3D){GPU.scenePass.end();GPU.scenePass=null;GPU.scene3D=false;}
   if(!GPU.scenePass){
     GPU.scenePass=GPU.enc.beginRenderPass({colorAttachments:[{view:GPU.V.scene,
-      loadOp:GPU.sceneOn?"load":"clear",storeOp:"store",clearValue:GPU.sceneBg}]});
+      loadOp:GPU.sceneOn?"load":"clear",storeOp:"store",clearValue:GPU.sceneBg}],timestampWrites:GPU.sceneOn?undefined:gpuTs("scene0")});
     GPU.sceneOn=true;
   }
   return GPU.scenePass;
@@ -554,7 +556,7 @@ function gpuOver(){
   gpuFrontCopy();
   gpuUni();
   const p=GPU.enc.beginRenderPass({colorAttachments:[{view:GPU.V.scene,loadOp:"load",storeOp:"store"},
-    {view:GPU.V.emit,loadOp:GPU.emitOn?"load":"clear",storeOp:"store",clearValue:{r:0,g:0,b:0,a:0}}]});
+    {view:GPU.V.emit,loadOp:GPU.emitOn?"load":"clear",storeOp:"store",clearValue:{r:0,g:0,b:0,a:0}}],timestampWrites:gpuTs("frontComp")});
   GPU.emitOn=true;
   p.setPipeline(GPU.P.comp);p.setBindGroup(0,GPU.sep?gpuCompNeb():GPU.B.comp);p.draw(3);p.end();
   /* отправляем сделанное: следующая загрузка #c не должна обогнать эту склейку */
@@ -595,7 +597,7 @@ function gpuWorld(k,grain,vig){
 /* лестница свечения: колено в первый уровень, вниз по уровням, вверх — сложением */
 function gpuBloom(){
   const V=GPU.MV,B=GPU.MB,n=V.length;
-  gpuPass(V[0],GPU.P.down,GPU.B.down);
+  gpuPass(V[0],GPU.P.down,GPU.B.down,"bloomDown");
   for(let i=1;i<n;i++)gpuPass(V[i],GPU.P.mipDn,B[i-1]);
   for(let i=n-1;i>0;i--){
     const p=GPU.enc.beginRenderPass({colorAttachments:[{view:V[i-1],loadOp:"load",storeOp:"store"}]});
@@ -609,8 +611,10 @@ function gpuPresent(){
     if(ui){GPU.dev.queue.copyExternalImageToTexture({source:GPU.ui},{texture:GPU.T.ui,premultipliedAlpha:true},[GPU.bw,GPU.bh]);GPU.uiWas=true;}
     GPU.uiOn=ui;
     gpuUni();gpuLtWrite();
-    gpuPass(GPU.gx.getCurrentTexture().createView(),GPU.kill.fin?GPU.P.fin0:GPU.P.fin,GPU.B.fin);
+    gpuPass(GPU.gx.getCurrentTexture().createView(),GPU.kill.fin?GPU.P.fin0:GPU.P.fin,GPU.B.fin,"final");
+    const tsRead=gpuTsResolve();
     GPU.dev.queue.submit([GPU.enc.finish()]);
+    if(tsRead)tsRead();
     GPU.frameNo++;
     if(GPU.wantSnap){GPU.wantSnap=false;gpuTakeSnap();}
   }catch(e){gpuDrop("кадр: "+((e&&e.message)||e),true);}

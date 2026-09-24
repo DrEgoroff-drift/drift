@@ -203,14 +203,14 @@ function gpuSpaceSys(sys,cx0,cy0,Z){
   const neb=gpuNebulaGen(sys,cx0*Z,cy0*Z,GSP.star,Z);
   /* с туманностью цвет космоса кладёт её проход EMI (16gb): очистка — в чёрное */
   if(neb)GPU.sceneBg=SPACE_BLACK;
-  const pass=gpuScene();if(!pass)return;
+  let pass=gpuScene();if(!pass)return;
   const P=gspPipes();
   const cx=cx0*.06*Z,cy=cy0*.06*Z;
   const M=starMove(cx,cy,1);
   const ub=gspUni(cx,cy,1,M,cx0*Z,cy0*Z);
   /* звёзды — под туманностью: её пыль гасит их, газ светит поверх */
   gspStarsDust(pass,P,ub,0);
-  if(neb)gpuNebulaComp(pass);
+  if(neb)pass=gpuNebulaComp(pass);
   gspStarsDust(pass,P,ub,Math.round(46*sysStyle(sys).dust*G.opts.gfx.particles),true);
 }
 /* заставка: две туманности на разной глубине и звёзды (drawNebula + drawStars) */
