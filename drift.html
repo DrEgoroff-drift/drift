@@ -11222,8 +11222,27 @@ function gpuCanvasTex(cv,ver){
   const tex=GPU.dev.createTexture({size:[w,h],format:"rgba8unorm",usage:U.TEXTURE_BINDING|U.COPY_DST|U.RENDER_ATTACHMENT});
   GPU.dev.queue.copyExternalImageToTexture({source:cv},{texture:tex,premultipliedAlpha:true},[w,h]);
   e={tex,view:tex.createView(),w,h,ver};m.set(cv,e);
-  if(m.size>8){const k=m.keys().next().value;GPU.trash.push(m.get(k).tex);m.delete(k);}
+  if(m.size>GPU_CVTEX_CAP){const k=m.keys().next().value;GPU.trash.push(m.get(k).tex);m.delete(k);}
   return e;
+}
+/* в кадре живут десятки печёных холстов (дом, вывеска, Чебурек, челноки, по два слоя):
+   восемь мест перегружали их по кругу каждый кадр */
+const GPU_CVTEX_CAP=32;
+/* уровень детализации печёного холста: gpuImage берёт нулевой уровень, и сильно сжатый
+   холст мерцает (окно дома — в пиксель). Уровни — половинки, печёт лениво; берётся тот,
+   что не мельче ширины на экране devW (пиксели устройства). ver — как у gpuCanvasTex */
+const CV_LVL=new WeakMap();
+function gpuCvLevel(cv,ver,devW){
+  let L=CV_LVL.get(cv);
+  if(!L||L.ver!==ver||L.w!==cv.width||L.h!==cv.height){L={ver,w:cv.width,h:cv.height,lv:[cv],pool:L?L.lv:[]};CV_LVL.set(cv,L);}
+  let i=0;while(i<5&&(cv.width>>(i+1))>=devW&&(cv.height>>(i+1))>=4)i++;
+  for(let j=1;j<=i;j++)if(!L.lv[j]){
+    const s=L.lv[j-1],c=L.pool[j]||document.createElement("canvas");
+    c.width=Math.max(1,s.width>>1);c.height=Math.max(1,s.height>>1);
+    const g=c.getContext("2d");g.clearRect(0,0,c.width,c.height);g.imageSmoothingQuality="high";g.drawImage(s,0,0,c.width,c.height);
+    L.lv[j]=c;
+  }
+  return L.lv[i];
 }
 /* общие куски шейдеров слоёв: мерка кадра и покрытие фигур со сглаживанием.
    Покрытие честное, по площади пикселя — так же, как Skia гладит края в 2D */
@@ -11270,7 +11289,8 @@ function gpuKitU(){
 }
 /* картинка: rects = [{x,y,w,h, a, rot, u0,v0,u1,v1, cubic}] — x,y — центр, w,h — размер в
    пикселях CSS, rot — поворот вокруг центра, u0..v1 — кусок текстуры (по умолчанию
-   вся), cubic — бикубика для сильного растяжения. o.blend: over | add | mul */
+   вся), cubic — бикубика для сильного растяжения. o.blend: over | add | mul.
+   Цвет умножается на a — на сложении это усиление: a>1 даёт свет выше единицы (эмиссия) */
 const GPU_IMG_WGSL=GPU_KIT_WGSL+`
 @group(0) @binding(1) var<storage,read> iq:array<vec4f>;
 @group(0) @binding(2) var itx:texture_2d<f32>;
@@ -11299,7 +11319,7 @@ function gpuImage(pass,cv,rects,o){
     f[k]=r.x;f[k+1]=r.y;f[k+2]=r.w;f[k+3]=r.h;f[k+4]=r.a==null?1:r.a;f[k+5]=r.rot||0;f[k+6]=r.cubic?1:0;
     f[k+8]=r.u0||0;f[k+9]=r.v0||0;f[k+10]=r.u1==null?1:r.u1;f[k+11]=r.v1==null?1:r.v1;}
   GPU.dev.queue.writeBuffer(A.buf,A.off*4,f);
-  const t=gpuCanvasTex(cv);
+  const t=gpuCanvasTex(cv,o&&o.ver);   /* o.ver — печка перерисовала тот же холст на месте */
   pass.setPipeline(P);
   pass.setBindGroup(0,gpuBind("kit.img|"+blend,P,[gpuKitU(),A.buf,t.view,GPU.S.lin]));
   pass.draw(6,n,0,A.off/12);
@@ -54431,46 +54451,94 @@ function chebHere(){
    на заклёпках — «утлая»; окно раздачи — ровный тёплый свет, дышит плавно (не
    мигает); пар из трубы тянется назад — единственное, что движется; гирлянда
    по борту; вывеска — доска на двух верёвках, красным по крему, от руки */
+/* 16/n: лодка печётся раз, два слоя. cv — краска без света (окно — тёмное тёплое стекло
+   выключенной лампы); em — свет лампы за стеклом и лампочек гирлянды, ореол узкий, в
+   долю окна, — он принадлежит лампе. Дыхание — усилением в кадре, не перепечкой.
+   Прежний 2D-ореол (радиальный «lighter» на 12 единиц) и emit() по цвету давали окну
+   ~18× белого и светили дважды — ушли */
+const CHEB_PX=4,CHEB_X0=-20,CHEB_Y0=-10,CHEB_BW=38,CHEB_BH=20,CHEB_LAMP=1.6;
+let CHEB_ART=null;
+function chebHullPath(c){c.beginPath();c.moveTo(16,0);c.lineTo(10,-8);c.lineTo(-14,-8);c.lineTo(-16,0);c.lineTo(-14,8);c.lineTo(10,8);c.closePath();}
+function chebBake(){
+  if(CHEB_ART)return CHEB_ART;
+  const mk=()=>{const q=document.createElement("canvas");q.width=CHEB_BW*CHEB_PX;q.height=CHEB_BH*CHEB_PX;
+    const g=q.getContext("2d");g.setTransform(CHEB_PX,0,0,CHEB_PX,-CHEB_X0*CHEB_PX,-CHEB_Y0*CHEB_PX);return [q,g];};
+  const [cv,c]=mk(),[em,e]=mk();
+  c.fillStyle="#4a3a2e";c.strokeStyle="rgba(0,0,0,.7)";c.lineWidth=.9;chebHullPath(c);c.fill();c.stroke();
+  c.save();c.clip();
+  c.strokeStyle="rgba(150,64,40,.85)";c.lineWidth=2.4;c.stroke();                 /* ржавая кайма */
+  c.fillStyle="#5d4a38";c.fillRect(-12,2.5,6,3.6);                                  /* заплата */
+  c.fillStyle="rgba(220,200,170,.55)";for(const [px,py] of [[-11.4,3],[-6.6,3],[-11.4,5.6],[-6.6,5.6]]){c.beginPath();c.arc(px,py,.35,0,TAU);c.fill();}
+  c.restore();
+  c.fillStyle="rgba(255,255,255,.08)";c.fillRect(-13,-7.4,22,1);                   /* кант к свету */
+  c.fillStyle="#6b5645";c.fillRect(-9,-5,13,10);                                    /* будка */
+  c.fillStyle="rgba(255,255,255,.1)";c.fillRect(-9,-5,13,1.2);
+  c.fillStyle="#3b2c20";c.fillRect(-7,-3.2,7,6.4);                                  /* стекло раздачи */
+  c.fillStyle="rgba(60,40,24,.6)";c.fillRect(-7,-.4,7,.8);
+  c.fillStyle="#2a221c";c.beginPath();c.arc(7,-4,1.7,0,TAU);c.fill();              /* труба */
+  c.fillStyle="#8a7458";for(let i=0;i<5;i++){c.beginPath();c.arc(-12+i*5,7,.8,0,TAU);c.fill();}   /* гирлянда */
+  c.strokeStyle="rgba(40,30,20,.6)";c.lineWidth=.3;c.beginPath();for(let i=0;i<5;i++){const qx=-12+i*5;i?c.quadraticCurveTo(qx-2.5,7.9,qx,7):c.moveTo(qx,7);}c.stroke();
+  e.shadowColor="rgba(255,180,100,.8)";e.shadowBlur=1.4*CHEB_PX;                  /* ореол ~.7 единицы: окно — 7 */
+  e.fillStyle="rgb(255,210,140)";e.fillRect(-7,-3.2,7,6.4);
+  e.shadowBlur=.8*CHEB_PX;e.fillStyle="rgba(255,214,150,.9)";for(let i=0;i<5;i++){e.beginPath();e.arc(-12+i*5,7,.8,0,TAU);e.fill();}
+  e.shadowBlur=0;e.globalCompositeOperation="destination-out";e.fillStyle="rgba(0,0,0,.8)";e.fillRect(-7,-.4,7,.8);   /* переплёт не светит */
+  return CHEB_ART={cv,em};
+}
+/* доска «ЧЕБУРЕКИ» — в пикселях устройства под размер шрифта, с тенью */
+let CHEB_SIGN=null;
+function chebSignBake(F,k){
+  const d=DPR,key=F+"|"+k+"|"+d;if(CHEB_SIGN&&CHEB_SIGN.key===key)return CHEB_SIGN;
+  const cv=(CHEB_SIGN&&CHEB_SIGN.cv)||document.createElement("canvas");let g=cv.getContext("2d");
+  const font="bold "+F+"px ui-monospace,monospace";g.font=font;
+  const tw=g.measureText("ЧЕБУРЕКИ").width+12*k,bh=15*k;
+  cv.width=Math.ceil((tw+1.5)*d)+1;cv.height=Math.ceil((bh+1.5)*d)+1;
+  g=cv.getContext("2d");g.setTransform(d,0,0,d,0,0);g.clearRect(0,0,cv.width,cv.height);
+  g.fillStyle="rgba(0,0,0,.45)";g.fillRect(1.5,1.5,tw,bh);
+  g.fillStyle="#efe3c6";g.fillRect(0,0,tw,bh);
+  g.font=font;g.textAlign="center";g.textBaseline="middle";g.fillStyle="#b8322a";g.fillText("ЧЕБУРЕКИ",tw/2,bh/2+.5);
+  return CHEB_SIGN={key,cv,tw,bh};
+}
 function drawCheburek(zx,zy,Z){
   const C=chebHere();if(!C)return;
   const x=zx(C.x),y=zy(C.y);if(x<-80||x>W+80||y<-80||y>H+80)return;
-  const s=clamp(Z,.6,1.5),br=.86+.1*Math.sin(G.t*.045);
-  ctx.save();ctx.translate(x,y);ctx.rotate(C.a);ctx.scale(s,s);
-  ctx.fillStyle="#4a3a2e";ctx.strokeStyle="rgba(0,0,0,.7)";ctx.lineWidth=.9;
-  ctx.beginPath();ctx.moveTo(16,0);ctx.lineTo(10,-8);ctx.lineTo(-14,-8);ctx.lineTo(-16,0);ctx.lineTo(-14,8);ctx.lineTo(10,8);ctx.closePath();ctx.fill();ctx.stroke();
-  ctx.save();ctx.clip();
-  ctx.strokeStyle="rgba(150,64,40,.85)";ctx.lineWidth=2.4;ctx.stroke();                 /* ржавая кайма */
-  ctx.fillStyle="#5d4a38";ctx.fillRect(-12,2.5,6,3.6);                                    /* заплата */
-  ctx.fillStyle="rgba(220,200,170,.55)";for(const [px,py] of [[-11.4,3],[-6.6,3],[-11.4,5.6],[-6.6,5.6]]){ctx.beginPath();ctx.arc(px,py,.35,0,TAU);ctx.fill();}
-  ctx.restore();
-  ctx.fillStyle="rgba(255,255,255,.08)";ctx.fillRect(-13,-7.4,22,1);                     /* кант к свету */
-  ctx.fillStyle="#6b5645";ctx.fillRect(-9,-5,13,10);                                      /* будка */
-  ctx.fillStyle="rgba(255,255,255,.1)";ctx.fillRect(-9,-5,13,1.2);
-  const gw=ctx.createRadialGradient(-3.5,0,0,-3.5,0,12);
-  gw.addColorStop(0,"rgba(255,196,120,"+(.3*br).toFixed(3)+")");gw.addColorStop(1,"rgba(255,196,120,0)");
-  ctx.globalCompositeOperation="lighter";ctx.fillStyle=gw;ctx.fillRect(-16,-12,25,24);ctx.globalCompositeOperation="source-over";
-  ctx.fillStyle="rgba(255,210,140,"+br.toFixed(3)+")";ctx.fillRect(-7,-3.2,7,6.4);        /* окно раздачи */
-  ctx.fillStyle="rgba(60,40,24,.6)";ctx.fillRect(-7,-.4,7,.8);
-  ctx.fillStyle="#2a221c";ctx.beginPath();ctx.arc(7,-4,1.7,0,TAU);ctx.fill();            /* труба */
-  for(let i=0;i<4;i++){                                                                   /* пар — назад и в сторону */
-    const u=((G.t*.6+i*25)%100)/100,px=7-u*24,py=-4-u*7+Math.sin(u*6+i)*1.2,r=1.4+u*5;
-    ctx.fillStyle="rgba(230,226,218,"+(.32*(1-u)).toFixed(3)+")";ctx.beginPath();ctx.arc(px,py,r,0,TAU);ctx.fill();
+  const s=clamp(Z,.6,1.5),br=.86+.1*Math.sin(G.t*.045),A=chebBake(),ca=Math.cos(C.a),sa=Math.sin(C.a);
+  const P=(px,py)=>[x+(px*ca-py*sa)*s,y+(px*sa+py*ca)*s];   /* точка лодки → экран */
+  /* пар — назад и в сторону; у окна подсвечен снизу тёплым (низ клуба ближе к лампе) */
+  const steam=[],warm=[];
+  for(let i=0;i<4;i++){
+    const u=((G.t*.6+i*25)%100)/100,px=7-u*24,py=-4-u*7+Math.sin(u*6+i)*1.2,r=1.4+u*5,[sx,sy]=P(px,py);
+    steam.push([1,sx,sy,r*.8*s,0,0,r*.5*s,230,226,218,.32*(1-u)]);
+    const near=clamp(1-Math.abs(px+3.5)/9,0,1)*(1-u);
+    if(near>0){const [wx,wy]=P(px,py+r*.4);warm.push([1,wx,wy,r*.55*s,0,0,r*.45*s,255,186,112,.22*near*br]);}
   }
-  ctx.fillStyle="rgba(255,214,150,.9)";for(let i=0;i<5;i++){ctx.beginPath();ctx.arc(-12+i*5,7,.8,0,TAU);ctx.fill();}   /* гирлянда */
-  ctx.strokeStyle="rgba(40,30,20,.6)";ctx.lineWidth=.3;ctx.beginPath();for(let i=0;i<5;i++){const qx=-12+i*5;i?ctx.quadraticCurveTo(qx-2.5,7.9,qx,7):ctx.moveTo(qx,7);}ctx.stroke();
-  const fl=.6+.4*Math.sin(G.t*.2);
-  ctx.fillStyle="rgba(255,150,70,"+(.55+.3*fl).toFixed(3)+")";ctx.beginPath();ctx.arc(-17,0,1.6+fl*.6,0,TAU);ctx.fill();   /* сопло */
+  const fl=.6+.4*Math.sin(G.t*.2),[nx,ny]=P(-17,0);
+  const noz=[1,nx,ny,(1.2+fl*.5)*s,0,0,.8*s,255,150,70,.55+.3*fl];   /* сопло */
+  const k=Math.max(1,s)*(typeof UIK==="number"?UIK:1),by=y-20*s-8*k,S=chebSignBake(Math.round(8*k),k);
+  const d=DPR,sl=Math.round((x-S.tw/2)*d)/d,st=Math.round((by-7.5*k)*d)/d,sw=S.cv.width/d,sh=S.cv.height/d;
+  const pass=gpuScene();
+  if(pass){
+    const [cx,cy]=P(CHEB_X0+CHEB_BW/2,CHEB_Y0+CHEB_BH/2),bw=CHEB_BW*s,bh=CHEB_BH*s,L=q=>gpuCvLevel(q,undefined,bw*d);
+    gpuImage(pass,L(A.cv),[{x:cx,y:cy,w:bw,h:bh,rot:C.a}]);
+    gpuImage(pass,L(A.em),[{x:cx,y:cy,w:bw,h:bh,rot:C.a,a:CHEB_LAMP*br}],{blend:"add"});
+    gpuShapes(pass,steam);
+    gpuShapes(pass,warm.concat([noz]),{blend:"add"});
+    /* вывеска — в экранных координатах, чтобы читалась при любом курсе лодки; без
+       поворота: детекторы и глаз читают доску там, где она стоит */
+    gpuShapes(pass,[[2,x-S.tw*.3,by+7.5*k,x-4*s,y-6*s,.4,0,200,190,170,.45],[2,x+S.tw*.3,by+7.5*k,x+4*s,y-6*s,.4,0,200,190,170,.45]]);
+    gpuImage(pass,S.cv,[{x:sl+sw/2,y:st+sh/2,w:sw,h:sh}],{ver:S.key});
+    return;
+  }
+  ctx.save();ctx.translate(x,y);ctx.rotate(C.a);ctx.scale(s,s);
+  ctx.drawImage(A.cv,CHEB_X0,CHEB_Y0,CHEB_BW,CHEB_BH);
+  ctx.globalCompositeOperation="lighter";ctx.globalAlpha=br;ctx.drawImage(A.em,CHEB_X0,CHEB_Y0,CHEB_BW,CHEB_BH);
+  ctx.restore();ctx.save();
+  for(const t of steam){ctx.fillStyle=rgba([t[7],t[8],t[9]],t[10]);ctx.beginPath();ctx.arc(t[1],t[2],t[3]+t[6]*.5,0,TAU);ctx.fill();}
+  ctx.globalCompositeOperation="lighter";
+  for(const t of warm.concat([noz])){ctx.fillStyle=rgba([t[7],t[8],t[9]],t[10]);ctx.beginPath();ctx.arc(t[1],t[2],t[3]+t[6]*.5,0,TAU);ctx.fill();}
   ctx.restore();
-  /* вывеска — в экранных координатах, чтобы читалась при любом курсе лодки */
-  const k=Math.max(1,s)*(typeof UIK==="number"?UIK:1),by=y-20*s-8*k;
-  ctx.font="bold "+Math.round(8*k)+"px ui-monospace,monospace";ctx.textAlign="center";ctx.textBaseline="middle";
-  const tw=ctx.measureText("ЧЕБУРЕКИ").width+12*k;
   ctx.strokeStyle="rgba(200,190,170,.45)";ctx.lineWidth=.8;ctx.beginPath();
-  ctx.moveTo(x-tw*.3,by+7.5*k);ctx.lineTo(x-4*s,y-6*s);ctx.moveTo(x+tw*.3,by+7.5*k);ctx.lineTo(x+4*s,y-6*s);ctx.stroke();
-  /* без поворота: детекторы и глаз читают доску там, где она стоит */
-  ctx.fillStyle="rgba(0,0,0,.45)";ctx.fillRect(x-tw/2+1.5,by-7.5*k+1.5,tw,15*k);
-  ctx.fillStyle="#efe3c6";ctx.fillRect(x-tw/2,by-7.5*k,tw,15*k);
-  ctx.fillStyle="#b8322a";ctx.fillText("ЧЕБУРЕКИ",x,by+.5);
+  ctx.moveTo(x-S.tw*.3,by+7.5*k);ctx.lineTo(x-4*s,y-6*s);ctx.moveTo(x+S.tw*.3,by+7.5*k);ctx.lineTo(x+4*s,y-6*s);ctx.stroke();
+  ctx.drawImage(S.cv,sl,st,sw,sh);
 }
 function chebInteract(sh){
   const C=chebHere();if(!C)return false;
@@ -54697,13 +54765,21 @@ function hotelWinLit(sd,lit,flick){
 let HOTEL_BAKE=null;
 /* Хрущёвка печётся целиком в свой холст (правило «что не движется — рисуется раз»):
    перепекается, только когда меняется набор горящих окон, — раз в несколько секунд.
-   В кадре — один drawImage. Вид три четверти, как у макета на столе: фасад,
-   торец в тени, вальмовая крыша шифером, трубы, антенны на проволоке. */
-function hotelBake(sd,mask){
-  if(HOTEL_BAKE&&HOTEL_BAKE.sd===sd&&HOTEL_BAKE.mask===mask)return HOTEL_BAKE.cv;
-  const cv=(HOTEL_BAKE&&HOTEL_BAKE.cv)||document.createElement("canvas");
-  cv.width=Math.ceil(HR_BW*HR_PX);cv.height=Math.ceil(HR_BH*HR_PX);
+   Вид три четверти, как у макета на столе: фасад, торец в тени, вальмовая крыша
+   шифером, трубы, антенны на проволоке.
+   Три слоя (16/n): cv — краска без света; em — свет стёкол, узкий ореол в долю окна
+   (свечение принадлежит окну, шире — дело блума, и его мало); sh — тот же дом под
+   тёплым светом вывески сверху, сходит на нет ко второму этажу */
+const HOTEL_EM=1,HOTEL_NEON=1.4,HOTEL_SHEEN=.8;
+function hotelBake(sd,mask,col){
+  const ck=col.join();
+  if(HOTEL_BAKE&&HOTEL_BAKE.sd===sd&&HOTEL_BAKE.mask===mask&&HOTEL_BAKE.ck===ck)return HOTEL_BAKE;
+  const mk=k=>(HOTEL_BAKE&&HOTEL_BAKE[k])||document.createElement("canvas");
+  const cv=mk("cv"),em=mk("em"),shc=mk("sh");
+  for(const q of [cv,em,shc]){q.width=Math.ceil(HR_BW*HR_PX);q.height=Math.ceil(HR_BH*HR_PX);}
   const c=cv.getContext("2d");c.setTransform(HR_PX,0,0,HR_PX,0,0);c.clearRect(0,0,HR_BW,HR_BH);
+  const e=em.getContext("2d");e.setTransform(HR_PX,0,0,HR_PX,0,0);e.clearRect(0,0,HR_BW,HR_BH);
+  e.shadowColor="rgba(255,176,96,.7)";e.shadowBlur=1.6;   /* в пикселях холста, мимо трансформа: ~десятая окна */
   const r=rng((sd^0x5A11)>>>0),T0=HR_TOP,FW=HR_W,FH=HR_FH,cw=FW/HR_COLS,rh=FH/HR_ROWS,X0=4;
   const CURT=["#e8b86a","#f0d49a","#d98d5a","#c9e0a0","#f4c2a8","#b8c8e8","#e0a0a0"];
   const ENTR=[3,8];
@@ -54716,6 +54792,11 @@ function hotelBake(sd,mask){
       c.fillStyle=CURT[hh%CURT.length];c.globalAlpha=.8;
       c.fillRect(x,y,w*.28,h);c.fillRect(x+w*.72,y,w*.28,h);c.globalAlpha=1;
       if(hh%7===0){c.fillStyle="rgba(60,40,30,.55)";c.beginPath();c.arc(x+w*.52,y+h*.45,h*.14,0,TAU);c.fill();c.fillRect(x+w*.42,y+h*.58,w*.2,h*.42);}
+      e.fillStyle="rgba(255,168,80,.5)";e.fillRect(x,y,w,h);   /* лампа за шторой, оранжевее стекла: плечо тона белит, тепло держит цвет; переплёт не светит */
+      e.save();e.globalCompositeOperation="destination-out";e.shadowBlur=0;e.fillStyle="#000";
+      e.fillRect(x+w*.5-.22,y,.45,h);if(big)e.fillRect(x,y+h*.32,w,.4);
+      if(hh%7===0){e.globalAlpha=.6;e.beginPath();e.arc(x+w*.52,y+h*.45,h*.14,0,TAU);e.fill();e.fillRect(x+w*.42,y+h*.58,w*.2,h*.42);}
+      e.restore();
     }else{
       const g=c.createLinearGradient(x,y,x+w,y+h);g.addColorStop(0,"#3a4550");g.addColorStop(1,"#1a2027");
       c.fillStyle=g;c.fillRect(x,y,w,h);
@@ -54736,7 +54817,8 @@ function hotelBake(sd,mask){
   for(let j=0;j<HR_ROWS;j++)for(let i=0;i<HR_SIDE;i++){
     const n=HR_COLS*HR_ROWS+j*HR_SIDE+i,p=sideP((i+.3)/HR_SIDE,(j+.24)/HR_ROWS);
     c.save();c.translate(p[0],p[1]);c.transform(1,-SK/SW,0,1,0,0);
-    winAt(0,0,SW/HR_SIDE*.4,rh*.52,mask[n]==="1",hashi(n,sd,0x407E)>>>0,false);c.restore();
+    e.save();e.translate(p[0],p[1]);e.transform(1,-SK/SW,0,1,0,0);e.globalAlpha=.7;   /* торец в тени: стекло под углом, свет глуше */
+    winAt(0,0,SW/HR_SIDE*.4,rh*.52,mask[n]==="1",hashi(n,sd,0x407E)>>>0,false);c.restore();e.restore();
   }
   {const p=sideP(.35,.9);c.strokeStyle="rgba(40,40,40,.55)";c.lineWidth=.5;c.beginPath();
    c.arc(p[0],p[1]-3,2.4,0,TAU);c.moveTo(p[0]-3,p[1]+1);c.lineTo(p[0]+4,p[1]-1);c.stroke();}
@@ -54756,6 +54838,7 @@ function hotelBake(sd,mask){
     if(ENTR.includes(i)){   /* лестничная клетка — узкое окно между этажами */
       if(j<HR_ROWS-1){c.fillStyle="rgba(40,34,26,.5)";c.fillRect(x+cw*.2,y+rh*.62,cw*.6,rh*.3);
         c.fillStyle=on?"#e9d8a0":"#2c343b";c.fillRect(x+cw*.24,y+rh*.66,cw*.52,rh*.22);
+        if(on){e.fillStyle="rgba(240,220,160,.4)";e.fillRect(x+cw*.24,y+rh*.66,cw*.52,rh*.22);}
         c.fillStyle="#f3efe4";c.fillRect(x+cw*.5-.2,y+rh*.66,.4,rh*.22);}
       continue;
     }
@@ -54772,6 +54855,7 @@ function hotelBake(sd,mask){
     c.fillStyle=cb;c.fillRect(x,y+h*.55,w,h*.45);
     c.fillStyle=ca;c.fillRect(x,y+h*.55,w,h*.08);
     c.fillStyle=on?"#f7cf85":"#33404a";c.fillRect(x+.4,y,w-.8,h*.55);
+    if(on){e.fillStyle="rgba(255,206,128,.42)";e.fillRect(x+.4,y,w-.8,h*.55);}
     c.fillStyle="#f3efe4";for(let k=0;k<=4;k++)c.fillRect(x+.4+k*(w-1.2)/4,y,.4,h*.55);
     c.fillRect(x,y,w,.5);
     c.fillStyle=cb;c.fillRect(x-.3,y-1,w+.6,1);
@@ -54798,6 +54882,7 @@ function hotelBake(sd,mask){
     c.fillStyle="#6c7075";c.fillRect(x-cw*.05,y-rh*.84,cw*1.1,rh*.1);
     c.fillStyle="rgba(0,0,0,.3)";c.fillRect(x-cw*.05,y-rh*.74,cw*1.1,rh*.05);
     c.fillStyle="#ffe8a8";c.fillRect(x+cw*.46,y-rh*.73,cw*.08,rh*.05);
+    e.fillStyle="rgba(255,232,168,.9)";e.fillRect(x+cw*.46,y-rh*.73,cw*.08,rh*.05);
     const bx=x+cw*1.25;c.fillStyle="#2f8a3a";c.fillRect(bx,y-3.2,cw*.95,1.2);c.fillStyle="#1f5a26";c.fillRect(bx,y-2,cw*.95,.6);
     c.fillStyle="#555";c.fillRect(bx+.4,y-2,.5,2);c.fillRect(bx+cw*.95-.9,y-2,.5,2);
   }
@@ -54829,14 +54914,35 @@ function hotelBake(sd,mask){
   c.moveTo(X0+FW*.72+5,T0-RH*.8-12);c.arc(X0+FW*.72,T0-RH*.8-12,5,0,TAU);
   for(let k=0;k<tops.length-1;k++){const [x0,y0]=tops[k],[x1,y1]=tops[k+1];c.moveTo(x0,y0);c.quadraticCurveTo((x0+x1)/2,Math.max(y0,y1)+7,x1,y1);}
   c.stroke();
-  c.globalCompositeOperation="lighter";   /* окна светят наружу — ореол печётся с домом */
-  for(let j=0;j<HR_ROWS;j++)for(let i=0;i<HR_COLS;i++){
-    if(mask[j*HR_COLS+i]!=="1"||ENTR.includes(i))continue;
-    const x=X0+i*cw+cw*.5,y=T0+j*rh+rh*.48,g=c.createRadialGradient(x,y,0,x,y,cw*.9);
-    g.addColorStop(0,"rgba(255,190,110,.16)");g.addColorStop(1,"rgba(255,190,110,0)");c.fillStyle=g;c.fillRect(x-cw,y-cw,cw*2,cw*2);
-  }
-  c.globalCompositeOperation="source-over";
-  HOTEL_BAKE={sd,mask,cv};return cv;
+  /* отсвет вывески: дом, умноженный на её цвет, от конька до второго этажа */
+  const s=shc.getContext("2d");s.setTransform(1,0,0,1,0,0);s.globalCompositeOperation="source-over";
+  s.clearRect(0,0,shc.width,shc.height);s.drawImage(cv,0,0);
+  const gs=s.createLinearGradient(0,6*HR_PX,0,(T0+rh*1.4)*HR_PX);gs.addColorStop(0,rgba(col,1));gs.addColorStop(.45,rgba(col.map(v=>v*.35),1));gs.addColorStop(1,"#000");
+  s.globalCompositeOperation="multiply";s.fillStyle=gs;s.fillRect(0,0,shc.width,shc.height);
+  s.globalCompositeOperation="destination-in";s.drawImage(cv,0,0);s.globalCompositeOperation="source-over";
+  HOTEL_BAKE={sd,mask,ck,cv,em,sh:shc,ver:((HOTEL_BAKE&&HOTEL_BAKE.ver)|0)+1};return HOTEL_BAKE;
+}
+/* неон (16/n): буква — трубка. Альбедо — всё имя тёмным стеклом (мёртвые буквы видны
+   трубкой без газа), эмиссия — живые буквы: насыщенный цвет трубки с ореолом уже
+   просвета между буквами и бледное горячее ядро тоньше штриха. Печётся в пикселях
+   устройства под размер шрифта на экране — ложится один к одному */
+const HOTEL_SIGN_FULL={gt:"ГОСТИНИЦА «КОСМОС»"};
+let HOTEL_SIGNB=null;
+function hotelSignBake(name,full,F,col){
+  const d=DPR,key=name+"|"+full+"|"+F+"|"+col.join()+"|"+d;
+  if(HOTEL_SIGNB&&HOTEL_SIGNB.key===key)return HOTEL_SIGNB;
+  const al=(HOTEL_SIGNB&&HOTEL_SIGNB.al)||document.createElement("canvas"),em=(HOTEL_SIGNB&&HOTEL_SIGNB.em)||document.createElement("canvas");
+  const Fd=F*d,fb="bold "+Fd+"px ui-monospace,monospace",fr=Fd+"px ui-monospace,monospace";
+  let a=al.getContext("2d");a.font=fb;
+  const tw=Math.ceil(a.measureText(full).width),pad=Math.ceil(3*d),base=pad+Math.ceil(Fd*.82);
+  for(const q of [al,em]){q.width=tw+pad*2;q.height=base+Math.ceil(Fd*.28)+pad;}
+  a=al.getContext("2d");a.font=fb;a.textAlign="left";a.textBaseline="alphabetic";
+  a.fillStyle="rgba(78,64,62,.9)";a.fillText(full,pad,base);
+  const e=em.getContext("2d");e.font=fb;e.textAlign="left";e.textBaseline="alphabetic";
+  e.shadowColor=rgba(col,.85);e.shadowBlur=Math.max(1,Fd*.14);e.fillStyle=rgba(col,1);e.fillText(name,pad,base);
+  e.shadowBlur=0;e.shadowColor="rgba(0,0,0,0)";e.font=fr;
+  e.fillStyle=rgba(col.map(v=>v+(255-v)*.62),1);e.fillText(name,pad,base);
+  HOTEL_SIGNB={key,al,em,tw,pad,base};return HOTEL_SIGNB;
 }
 function drawHotel(zx,zy,Z){
   const Ht=hotelHere();if(!Ht)return;
@@ -54844,12 +54950,30 @@ function drawHotel(zx,zy,Z){
   w=HR_BW*k,h=HR_BH*k;
   if(x<-w||x>W+w||y<-h*1.5||y>H+h)return;
   const sd=G.sx*31+G.sy,hr=((G.t%CEL_DAY)/CEL_DAY)*24;
-  const cv=hotelBake(sd,hotelWinLit(sd,hotelLitFrac(Ht.by,hr),Math.floor(G.t/60/6)));
-  const ox=x-(4+HR_W/2)*k,oy=y-(HR_TOP+HR_FH/2)*k;   /* якорь — центр фасада */
-  ctx.drawImage(cv,ox,oy,w,h);
   const col=(typeof laneLampCol==="function")?laneLampCol(Ht.by):[255,190,110],fa=clamp((Z-.3)/.2,0,1);
-  if(fa>0){ctx.save();ctx.globalCompositeOperation="lighter";ctx.font="bold "+Math.round(8*Math.max(1,k)*UIK)+"px ui-monospace,monospace";ctx.textAlign="center";
-    ctx.fillStyle=rgba(col,.9*fa);ctx.fillText(Ht.name,x,oy+6*k);ctx.restore();}
+  const B=hotelBake(sd,hotelWinLit(sd,hotelLitFrac(Ht.by,hr),Math.floor(G.t/60/6)),col);
+  const ox=x-(4+HR_W/2)*k,oy=y-(HR_TOP+HR_FH/2)*k;   /* якорь — центр фасада */
+  const F=Math.round(8*Math.max(1,k)*UIK),S=fa>0?hotelSignBake(Ht.name,Ht.name===HOTEL_SIGN.gt?HOTEL_SIGN_FULL.gt:Ht.name,F,col):null;
+  /* вывеска: там же, где был fillText по центру на базовой линии oy+6k, — в целых пикселях устройства */
+  const d=DPR,sl=S?Math.round((x-S.tw/2/d-S.pad/d)*d)/d:0,st=S?Math.round((oy+6*k-S.base/d)*d)/d:0,sw=S?S.al.width/d:0,sh=S?S.al.height/d:0;
+  const pass=gpuScene();
+  if(pass){
+    const v=B.ver,L=q=>gpuCvLevel(q,v,w*d),R=a=>[{x:ox+w/2,y:oy+h/2,w,h,a}];
+    gpuImage(pass,L(B.cv),R(1),{ver:v});
+    gpuImage(pass,L(B.em),R(HOTEL_EM),{blend:"add",ver:v});
+    if(S){
+      gpuImage(pass,L(B.sh),R(HOTEL_SHEEN*fa),{blend:"add",ver:v});
+      const r=a=>[{x:sl+sw/2,y:st+sh/2,w:sw,h:sh,a}];
+      gpuImage(pass,S.al,r(fa),{ver:S.key});
+      gpuImage(pass,S.em,r(HOTEL_NEON*fa),{blend:"add",ver:S.key});
+    }
+    return;
+  }
+  ctx.drawImage(B.cv,ox,oy,w,h);
+  ctx.save();ctx.globalCompositeOperation="lighter";ctx.drawImage(B.em,ox,oy,w,h);
+  if(S){ctx.globalAlpha=HOTEL_SHEEN*fa;ctx.drawImage(B.sh,ox,oy,w,h);ctx.globalCompositeOperation="source-over";
+    ctx.globalAlpha=fa;ctx.drawImage(S.al,sl,st,sw,sh);ctx.globalCompositeOperation="lighter";ctx.drawImage(S.em,sl,st,sw,sh);}
+  ctx.restore();
 }
 function hotelInteract(sh){
   const Ht=hotelHere();if(!Ht)return false;

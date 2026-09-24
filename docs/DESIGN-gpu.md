@@ -140,6 +140,24 @@ From the phone frame (0bd3b0b, portrait):
 Order: the flight HUD first, one pair at 390×844 and at 760. A fork of taste: the pair goes to the author for a
 verdict before any other screen.
 
+*Glow (Контроль 16/n; the author on «Космос» and «Чебурек» in orange gas: «на свечение посмотри, поправить надо»).*
+Cause: `emit()` turns any saturated 2D pixel near 1 into a source (knee .9 × 150); the sign drawn "lighter" becomes
+~15× white, the Cheburek window with its `gw` halo ~18×, the hotel windows carry a baked halo too (17l:177); bloom's
+first level is ¼ frame, so its narrowest halo is ≥ 4 px and fills the ~1.5 px gaps between letters. Glow counted twice.
+- a) The rule: a narrow halo belongs to the thing — in its sprite, a fraction of a stroke wide, one rule at every
+  scale. A wide one belongs to light: little goes to bloom, only a weak broad sheen. The 2D halos go (`gw` on the
+  Cheburek, the baked window halo). One glow, not two.
+- b) Hotel (façade, sign, windows) and Cheburek become GPU sprites baked once: albedo + a separate emission layer
+  with its own explicit gain. `emit()` stays only for what is still on `#c`.
+- c) Neon: a letter is a tube — pale hot core, saturated tube colour, halo narrower than the gap between letters.
+  Dead letters show as dark tube glass. The sign casts warm light on the top of the façade. Reads letter by letter
+  at 760 and at phone scale.
+- d) Cheburek: the serving window is a lamp behind glass, gain ≤ 2 of white, a narrow warm halo. Booth and hull
+  read whole; the steam at the window is lit from below.
+Gate: a 760 pair on the author's scene («Космос», Cheburek, the ship, orange gas) plus phone scale; peak glow at the
+sign and at the Cheburek in numbers, was | now; the Cheburek halo leaves the hull outline by ≤ ~⅓ of its length.
+Then hulls (item 2) by the same «explicit emission» path.
+
 The phone frame budget does not grow: GPU ≤ 12 ms.
 
 ## Where I stopped (update on every commit)
@@ -305,6 +323,27 @@ The phone frame budget does not grow: GPU ≤ 12 ms.
   chips now take a device-pixel size and a device-pixel place (`Math.round(x·dpr)/dpr`). Glyph cores against
   bc7fe4e (0.457.0's label path, the 10 brightest pixels): planet label and chips 0 at DPR 1 and 1.5; the station
   label −6 and −10, the old front layer's `emit()` glow on its near-1 red, which 16/n removes anyway.
+  16/n (glow, §L.S): the hotel and the Cheburek left `#c` for the scene pass as sprites baked once, each an albedo
+  layer (drawn over) and an emission layer (drawn add with its own gain); `emit()` no longer sees them. Hotel
+  (17l): windows, balconies, stairwells and door lamps emit through the glass only (mullion and silhouette cut),
+  halo ~a tenth of a window; the baked "lighter" window halo is gone; a third layer is the house times the sign's
+  colour, falling off from the ridge to the second floor (the sign's warm light, gain .8). The sign is a
+  device-pixel bake per font size: every letter of «ГОСТИНИЦА «КОСМОС»» as dark tube glass in the albedo (the dead
+  Т shows), the live letters as the tube colour with a halo of .14 font px, plus a pale core in the regular weight;
+  gain 1.4, placed on whole device pixels. Cheburek (17j): body baked once at 4 px/unit, the window a dark glass
+  lamp in the albedo and a lit pane in the emission (halo .7 unit, the crossbar cut), garland bulbs likewise; the
+  radial `gw` halo is gone; gain 1.6 × breath (≤ 1.8 of white at the pane). Steam is soft `gpuShapes` discs, the
+  puffs near the window lit warm from below (additive, weighted by distance to the lamp); the nozzle a soft
+  additive disc; the board a device-pixel bake, ropes as capsules. Peaks (HDR, by the frame's formulas): the
+  Cheburek pane ~20× white → ≤ 1.8, the sign ~13.5× → ~1.7. Halo around the pane (760 pair, radial mean): ring at
+  8 px 183 → 105, at 12 px 117 → 61; it ends 13 px from the lamp (was 17), i.e. ≤ 5 px past the hull side at s=1
+  against the ⅓-length allowance of ~11 px. Pairs `cuta_*` (760, Z 1) and `cutp_*` (411×742 ×1.5), crops
+  `glyph_hotel/cheb/pboth.png`; stand `hcjs.js` (first system with both, Нейзь, orange gas), script `cut5.sh`.
+  What got better: the windows and the pane are lamps behind glass instead of bloom blotches, the house and the
+  boat read whole, «ЧЕБУРЕКИ» is legible (was burnt white), the sign reads letter by letter with the dead Т.
+  Kit: `gpuImage` passes `o.ver` to `gpuCanvasTex` (bakes redrawn in place); `gpuCvLevel(cv,ver,devW)` picks a
+  halved level so a far hotel does not shimmer; the texture LRU holds 32 (`GPU_CVTEX_CAP`) — eight thrashed once
+  the hotel, sign, boat and shuttles each kept two layers.
 - Brief of **L4 k/n — the shock ring and the exhaust haze bend the backdrop, never a hull** (Контроль 24.09): no
   hull, own or pirate, sprite or 2D, is cut into bands; an RGB fringe on the backdrop only. Done (08b/08c): the
   scene's alpha became the hull mask — every blend keeps it (`GPU_KEEP_A`), the lit sprite (`gst`: pirates,

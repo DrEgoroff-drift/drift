@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 606 · символов верхнего уровня: 5988
+Файлов: 606 · символов верхнего уровня: 6001
 
 ## СИМВОЛЫ
 
@@ -713,9 +713,15 @@ chAt                         src/25n-chess.js:39
 chAttacked                   src/25n-chess.js:80-111
 chBlack                      src/25n-chess.js:37
 chCheck                      src/25n-chess.js:182
+CHEB_ART                     src/17j-cheburek.js:28
 CHEB_PRICE                   src/17j-cheburek.js:9
+CHEB_PX                      src/17j-cheburek.js:27
+CHEB_SIGN                    src/17j-cheburek.js:56
+chebBake                     src/17j-cheburek.js:30-54
 chebHere                     src/17j-cheburek.js:10-17
-chebInteract                 src/17j-cheburek.js:63-77
+chebHullPath                 src/17j-cheburek.js:29
+chebInteract                 src/17j-cheburek.js:111-125
+chebSignBake                 src/17j-cheburek.js:57-68
 chessAll                     src/25n-chess.js:199-203
 chessDraw                    src/25n-chess.js:246-275
 chessGame                    src/25n-chess.js:204
@@ -1104,6 +1110,7 @@ cultSeriesWindow             src/12b3-fx-cult.js:183-186
 CUN                          src/22-mode-cave.js:22-32
 curTok                       src/09-audio.js:96
 CUT_RANGE                    src/24-mode-belt.js:187
+CV_LVL                       src/08c-gpu-kit.js:64
 cvs                          src/08-state.js:2
 CVS_RECT                     src/08-state.js:92
 cvsRect                      src/08-state.js:107-110
@@ -1401,7 +1408,7 @@ drawCaveSolid                src/22a-cave-deco.js:241-299
 drawCaveWater                src/22a-cave-deco.js:300-324
 drawCaveWorld                src/22-mode-cave.js:648-750
 drawCelest                   src/06a-celest.js:167-218
-drawCheburek                 src/17j-cheburek.js:22-62
+drawCheburek                 src/17j-cheburek.js:69-110
 drawChunks                   src/18c-chunks.js:90-96
 drawClouds                   src/19e-clouds.js:386-528
 drawCockpit                  src/25-cockpit.js:400-674
@@ -1447,7 +1454,7 @@ drawHitFx                    src/18d-postfx.js:81-87
 drawHomeIn                   src/29d-home-draw.js:9-332
 drawHomeOut                  src/21f-home-out.js:73-312
 drawHomeRoom                 src/27e-ui-home.js:42-62
-drawHotel                    src/17l-hotel.js:186-198
+drawHotel                    src/17l-hotel.js:224-254
 drawHqRoom                   src/27f-hq-room.js:22-31
 drawHull                     src/03e-hull-draw.js:115-194
 drawHullMarks                src/03b-hull-paint.js:184-491
@@ -2129,15 +2136,16 @@ gplLandMask                  src/17ga-gpu-planets.js:352-368
 gplSun                       src/17ga-gpu-planets.js:314-317
 GPU                          src/08b-gpu.js:8
 GPU_BLEND                    src/08c-gpu-kit.js:12-25
-GPU_FLD_HEAD                 src/08c-gpu-kit.js:182
-GPU_IMG_WGSL                 src/08c-gpu-kit.js:104
+GPU_CVTEX_CAP                src/08c-gpu-kit.js:60
+GPU_FLD_HEAD                 src/08c-gpu-kit.js:202
+GPU_IMG_WGSL                 src/08c-gpu-kit.js:124
 GPU_KEEP_A                   src/08c-gpu-kit.js:11
-GPU_KIT_WGSL                 src/08c-gpu-kit.js:91
+GPU_KIT_WGSL                 src/08c-gpu-kit.js:110
 GPU_PL_WGSL                  src/08b-gpu.js:460
 GPU_POST_WGSL                src/08b-gpu.js:88
-GPU_SHP_WGSL                 src/08c-gpu-kit.js:141
-GPU_WGSL_COMMON              src/08c-gpu-kit.js:60
-gpuArena                     src/08c-gpu-kit.js:80-90
+GPU_SHP_WGSL                 src/08c-gpu-kit.js:161
+GPU_WGSL_COMMON              src/08c-gpu-kit.js:79
+gpuArena                     src/08c-gpu-kit.js:99-109
 gpuBargeBody                 src/12l-barge.js:559-563
 gpuBind                      src/08c-gpu-kit.js:33-39
 gpuBloom                     src/08b-gpu.js:607-614
@@ -2147,10 +2155,11 @@ gpuBursts                    src/13z-gpu-combat.js:266-286
 gpuCanvasTex                 src/08c-gpu-kit.js:42-57
 gpuCombatEnergy              src/13z-gpu-combat.js:64-115
 gpuCompNeb                   src/08b-gpu.js:419-429
+gpuCvLevel                   src/08c-gpu-kit.js:65-76
 gpuDrones                    src/16ga-gpu-trail.js:132-176
 gpuDrop                      src/08b-gpu.js:81-86
 gpuExhaust                   src/16ga-gpu-trail.js:259-292
-gpuField                     src/08c-gpu-kit.js:196-224
+gpuField                     src/08c-gpu-kit.js:216-244
 gpuFrame                     src/08b-gpu.js:509-519
 gpuFrontCopy                 src/08b-gpu.js:553-555
 gpuHaze                      src/08b-gpu.js:442
@@ -2158,8 +2167,8 @@ gpuHud                       src/08bh-gpu-hud.js:14-17
 gpuHudDpr                    src/08bh-gpu-hud.js:12
 gpuHudFlush                  src/08bh-gpu-hud.js:20-33
 gpuHullLight                 src/16ga-gpu-trail.js:345-364
-gpuImage                     src/08c-gpu-kit.js:124-136
-gpuKitU                      src/08c-gpu-kit.js:96-100
+gpuImage                     src/08c-gpu-kit.js:144-156
+gpuKitU                      src/08c-gpu-kit.js:115-119
 gpuLight                     src/08b-gpu.js:444
 gpuLitSprite                 src/17c-system-draw.js:478-485
 gpuLtWrite                   src/08b-gpu.js:448-455
@@ -2180,7 +2189,7 @@ gpuResize                    src/08b-gpu.js:382-417
 gpuScene                     src/08b-gpu.js:523-533
 gpuScene3D                   src/08b-gpu.js:537-545
 gpuSeg                       src/28z-fps-probe.js:139-142
-gpuShapes                    src/08c-gpu-kit.js:166-177
+gpuShapes                    src/08c-gpu-kit.js:186-197
 gpuShock                     src/08b-gpu.js:443
 gpuSky                       src/19ca-gpu-sky.js:66-82
 gpuSnapshot                  src/08b-gpu.js:22-26
@@ -2636,13 +2645,17 @@ homeTurn                     src/12j-home.js:47-77
 homeUpWorld                  tests/91zzzc-home-up.js:5-9
 homingStep                   src/13a-guns.js:470-477
 HOTEL_BAKE                   src/17l-hotel.js:42
+HOTEL_EM                     src/17l-hotel.js:50
 HOTEL_NIGHT                  src/17l-hotel.js:11
 HOTEL_SIGN                   src/17l-hotel.js:10
-hotelBake                    src/17l-hotel.js:47-185
-hotelDesk                    src/17l-hotel.js:207-219
+HOTEL_SIGN_FULL              src/17l-hotel.js:206
+HOTEL_SIGNB                  src/17l-hotel.js:207
+hotelBake                    src/17l-hotel.js:51-201
+hotelDesk                    src/17l-hotel.js:263-275
 hotelHere                    src/17l-hotel.js:12-17
-hotelInteract                src/17l-hotel.js:199-206
+hotelInteract                src/17l-hotel.js:255-262
 hotelLitFrac                 src/17l-hotel.js:25-30
+hotelSignBake                src/17l-hotel.js:208-223
 hotelWinLit                  src/17l-hotel.js:33-41
 HOURS_COIN                   src/11h-hours.js:87
 HOURS_ETHER                  src/11h-hours.js:23-30
@@ -6132,7 +6145,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/08bh-gpu-hud.js · 11 КБ
   · слой приборов: #hud и фишки у кромки (ступень 1, docs/DESIGN-gpu.md §L.S):1
 
-## src/08c-gpu-kit.js · 15 КБ
+## src/08c-gpu-kit.js · 17 КБ
   · набор для слоёв видеокарты (docs/DESIGN-gpu.md §4):1
 
 ## src/09-audio.js · 18 КБ
@@ -6733,7 +6746,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/17i1-passport.js · 2 КБ
   · дипломатический паспорт (M505, PLAN «new mechanics», st. 5):1
 
-## src/17j-cheburek.js · 6 КБ
+## src/17j-cheburek.js · 10 КБ
   · «Чебуречная» — лодка на подъезде (M462, DESIGN-life §3.4):1
 
 ## src/17k-billboard.js · 8 КБ
@@ -6742,7 +6755,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/17k1-gosplan.js · 4 КБ
   · госзаказ на билборде (M503, PLAN «new mechanics», st. 5):1
 
-## src/17l-hotel.js · 16 КБ
+## src/17l-hotel.js · 21 КБ
   · гостиницы (M461, DESIGN-life §3.3):1
 
 ## src/17m-peace-fleet.js · 9 КБ

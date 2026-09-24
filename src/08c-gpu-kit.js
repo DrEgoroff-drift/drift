@@ -52,8 +52,27 @@ function gpuCanvasTex(cv,ver){
   const tex=GPU.dev.createTexture({size:[w,h],format:"rgba8unorm",usage:U.TEXTURE_BINDING|U.COPY_DST|U.RENDER_ATTACHMENT});
   GPU.dev.queue.copyExternalImageToTexture({source:cv},{texture:tex,premultipliedAlpha:true},[w,h]);
   e={tex,view:tex.createView(),w,h,ver};m.set(cv,e);
-  if(m.size>8){const k=m.keys().next().value;GPU.trash.push(m.get(k).tex);m.delete(k);}
+  if(m.size>GPU_CVTEX_CAP){const k=m.keys().next().value;GPU.trash.push(m.get(k).tex);m.delete(k);}
   return e;
+}
+/* в кадре живут десятки печёных холстов (дом, вывеска, Чебурек, челноки, по два слоя):
+   восемь мест перегружали их по кругу каждый кадр */
+const GPU_CVTEX_CAP=32;
+/* уровень детализации печёного холста: gpuImage берёт нулевой уровень, и сильно сжатый
+   холст мерцает (окно дома — в пиксель). Уровни — половинки, печёт лениво; берётся тот,
+   что не мельче ширины на экране devW (пиксели устройства). ver — как у gpuCanvasTex */
+const CV_LVL=new WeakMap();
+function gpuCvLevel(cv,ver,devW){
+  let L=CV_LVL.get(cv);
+  if(!L||L.ver!==ver||L.w!==cv.width||L.h!==cv.height){L={ver,w:cv.width,h:cv.height,lv:[cv],pool:L?L.lv:[]};CV_LVL.set(cv,L);}
+  let i=0;while(i<5&&(cv.width>>(i+1))>=devW&&(cv.height>>(i+1))>=4)i++;
+  for(let j=1;j<=i;j++)if(!L.lv[j]){
+    const s=L.lv[j-1],c=L.pool[j]||document.createElement("canvas");
+    c.width=Math.max(1,s.width>>1);c.height=Math.max(1,s.height>>1);
+    const g=c.getContext("2d");g.clearRect(0,0,c.width,c.height);g.imageSmoothingQuality="high";g.drawImage(s,0,0,c.width,c.height);
+    L.lv[j]=c;
+  }
+  return L.lv[i];
 }
 /* общие куски шейдеров слоёв: мерка кадра и покрытие фигур со сглаживанием.
    Покрытие честное, по площади пикселя — так же, как Skia гладит края в 2D */
@@ -100,7 +119,8 @@ function gpuKitU(){
 }
 /* картинка: rects = [{x,y,w,h, a, rot, u0,v0,u1,v1, cubic}] — x,y — центр, w,h — размер в
    пикселях CSS, rot — поворот вокруг центра, u0..v1 — кусок текстуры (по умолчанию
-   вся), cubic — бикубика для сильного растяжения. o.blend: over | add | mul */
+   вся), cubic — бикубика для сильного растяжения. o.blend: over | add | mul.
+   Цвет умножается на a — на сложении это усиление: a>1 даёт свет выше единицы (эмиссия) */
 const GPU_IMG_WGSL=GPU_KIT_WGSL+`
 @group(0) @binding(1) var<storage,read> iq:array<vec4f>;
 @group(0) @binding(2) var itx:texture_2d<f32>;
@@ -129,7 +149,7 @@ function gpuImage(pass,cv,rects,o){
     f[k]=r.x;f[k+1]=r.y;f[k+2]=r.w;f[k+3]=r.h;f[k+4]=r.a==null?1:r.a;f[k+5]=r.rot||0;f[k+6]=r.cubic?1:0;
     f[k+8]=r.u0||0;f[k+9]=r.v0||0;f[k+10]=r.u1==null?1:r.u1;f[k+11]=r.v1==null?1:r.v1;}
   GPU.dev.queue.writeBuffer(A.buf,A.off*4,f);
-  const t=gpuCanvasTex(cv);
+  const t=gpuCanvasTex(cv,o&&o.ver);   /* o.ver — печка перерисовала тот же холст на месте */
   pass.setPipeline(P);
   pass.setBindGroup(0,gpuBind("kit.img|"+blend,P,[gpuKitU(),A.buf,t.view,GPU.S.lin]));
   pass.draw(6,n,0,A.off/12);

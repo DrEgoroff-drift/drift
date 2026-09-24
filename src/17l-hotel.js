@@ -42,13 +42,21 @@ function hotelWinLit(sd,lit,flick){
 let HOTEL_BAKE=null;
 /* Хрущёвка печётся целиком в свой холст (правило «что не движется — рисуется раз»):
    перепекается, только когда меняется набор горящих окон, — раз в несколько секунд.
-   В кадре — один drawImage. Вид три четверти, как у макета на столе: фасад,
-   торец в тени, вальмовая крыша шифером, трубы, антенны на проволоке. */
-function hotelBake(sd,mask){
-  if(HOTEL_BAKE&&HOTEL_BAKE.sd===sd&&HOTEL_BAKE.mask===mask)return HOTEL_BAKE.cv;
-  const cv=(HOTEL_BAKE&&HOTEL_BAKE.cv)||document.createElement("canvas");
-  cv.width=Math.ceil(HR_BW*HR_PX);cv.height=Math.ceil(HR_BH*HR_PX);
+   Вид три четверти, как у макета на столе: фасад, торец в тени, вальмовая крыша
+   шифером, трубы, антенны на проволоке.
+   Три слоя (16/n): cv — краска без света; em — свет стёкол, узкий ореол в долю окна
+   (свечение принадлежит окну, шире — дело блума, и его мало); sh — тот же дом под
+   тёплым светом вывески сверху, сходит на нет ко второму этажу */
+const HOTEL_EM=1,HOTEL_NEON=1.4,HOTEL_SHEEN=.8;
+function hotelBake(sd,mask,col){
+  const ck=col.join();
+  if(HOTEL_BAKE&&HOTEL_BAKE.sd===sd&&HOTEL_BAKE.mask===mask&&HOTEL_BAKE.ck===ck)return HOTEL_BAKE;
+  const mk=k=>(HOTEL_BAKE&&HOTEL_BAKE[k])||document.createElement("canvas");
+  const cv=mk("cv"),em=mk("em"),shc=mk("sh");
+  for(const q of [cv,em,shc]){q.width=Math.ceil(HR_BW*HR_PX);q.height=Math.ceil(HR_BH*HR_PX);}
   const c=cv.getContext("2d");c.setTransform(HR_PX,0,0,HR_PX,0,0);c.clearRect(0,0,HR_BW,HR_BH);
+  const e=em.getContext("2d");e.setTransform(HR_PX,0,0,HR_PX,0,0);e.clearRect(0,0,HR_BW,HR_BH);
+  e.shadowColor="rgba(255,176,96,.7)";e.shadowBlur=1.6;   /* в пикселях холста, мимо трансформа: ~десятая окна */
   const r=rng((sd^0x5A11)>>>0),T0=HR_TOP,FW=HR_W,FH=HR_FH,cw=FW/HR_COLS,rh=FH/HR_ROWS,X0=4;
   const CURT=["#e8b86a","#f0d49a","#d98d5a","#c9e0a0","#f4c2a8","#b8c8e8","#e0a0a0"];
   const ENTR=[3,8];
@@ -61,6 +69,11 @@ function hotelBake(sd,mask){
       c.fillStyle=CURT[hh%CURT.length];c.globalAlpha=.8;
       c.fillRect(x,y,w*.28,h);c.fillRect(x+w*.72,y,w*.28,h);c.globalAlpha=1;
       if(hh%7===0){c.fillStyle="rgba(60,40,30,.55)";c.beginPath();c.arc(x+w*.52,y+h*.45,h*.14,0,TAU);c.fill();c.fillRect(x+w*.42,y+h*.58,w*.2,h*.42);}
+      e.fillStyle="rgba(255,168,80,.5)";e.fillRect(x,y,w,h);   /* лампа за шторой, оранжевее стекла: плечо тона белит, тепло держит цвет; переплёт не светит */
+      e.save();e.globalCompositeOperation="destination-out";e.shadowBlur=0;e.fillStyle="#000";
+      e.fillRect(x+w*.5-.22,y,.45,h);if(big)e.fillRect(x,y+h*.32,w,.4);
+      if(hh%7===0){e.globalAlpha=.6;e.beginPath();e.arc(x+w*.52,y+h*.45,h*.14,0,TAU);e.fill();e.fillRect(x+w*.42,y+h*.58,w*.2,h*.42);}
+      e.restore();
     }else{
       const g=c.createLinearGradient(x,y,x+w,y+h);g.addColorStop(0,"#3a4550");g.addColorStop(1,"#1a2027");
       c.fillStyle=g;c.fillRect(x,y,w,h);
@@ -81,7 +94,8 @@ function hotelBake(sd,mask){
   for(let j=0;j<HR_ROWS;j++)for(let i=0;i<HR_SIDE;i++){
     const n=HR_COLS*HR_ROWS+j*HR_SIDE+i,p=sideP((i+.3)/HR_SIDE,(j+.24)/HR_ROWS);
     c.save();c.translate(p[0],p[1]);c.transform(1,-SK/SW,0,1,0,0);
-    winAt(0,0,SW/HR_SIDE*.4,rh*.52,mask[n]==="1",hashi(n,sd,0x407E)>>>0,false);c.restore();
+    e.save();e.translate(p[0],p[1]);e.transform(1,-SK/SW,0,1,0,0);e.globalAlpha=.7;   /* торец в тени: стекло под углом, свет глуше */
+    winAt(0,0,SW/HR_SIDE*.4,rh*.52,mask[n]==="1",hashi(n,sd,0x407E)>>>0,false);c.restore();e.restore();
   }
   {const p=sideP(.35,.9);c.strokeStyle="rgba(40,40,40,.55)";c.lineWidth=.5;c.beginPath();
    c.arc(p[0],p[1]-3,2.4,0,TAU);c.moveTo(p[0]-3,p[1]+1);c.lineTo(p[0]+4,p[1]-1);c.stroke();}
@@ -101,6 +115,7 @@ function hotelBake(sd,mask){
     if(ENTR.includes(i)){   /* лестничная клетка — узкое окно между этажами */
       if(j<HR_ROWS-1){c.fillStyle="rgba(40,34,26,.5)";c.fillRect(x+cw*.2,y+rh*.62,cw*.6,rh*.3);
         c.fillStyle=on?"#e9d8a0":"#2c343b";c.fillRect(x+cw*.24,y+rh*.66,cw*.52,rh*.22);
+        if(on){e.fillStyle="rgba(240,220,160,.4)";e.fillRect(x+cw*.24,y+rh*.66,cw*.52,rh*.22);}
         c.fillStyle="#f3efe4";c.fillRect(x+cw*.5-.2,y+rh*.66,.4,rh*.22);}
       continue;
     }
@@ -117,6 +132,7 @@ function hotelBake(sd,mask){
     c.fillStyle=cb;c.fillRect(x,y+h*.55,w,h*.45);
     c.fillStyle=ca;c.fillRect(x,y+h*.55,w,h*.08);
     c.fillStyle=on?"#f7cf85":"#33404a";c.fillRect(x+.4,y,w-.8,h*.55);
+    if(on){e.fillStyle="rgba(255,206,128,.42)";e.fillRect(x+.4,y,w-.8,h*.55);}
     c.fillStyle="#f3efe4";for(let k=0;k<=4;k++)c.fillRect(x+.4+k*(w-1.2)/4,y,.4,h*.55);
     c.fillRect(x,y,w,.5);
     c.fillStyle=cb;c.fillRect(x-.3,y-1,w+.6,1);
@@ -143,6 +159,7 @@ function hotelBake(sd,mask){
     c.fillStyle="#6c7075";c.fillRect(x-cw*.05,y-rh*.84,cw*1.1,rh*.1);
     c.fillStyle="rgba(0,0,0,.3)";c.fillRect(x-cw*.05,y-rh*.74,cw*1.1,rh*.05);
     c.fillStyle="#ffe8a8";c.fillRect(x+cw*.46,y-rh*.73,cw*.08,rh*.05);
+    e.fillStyle="rgba(255,232,168,.9)";e.fillRect(x+cw*.46,y-rh*.73,cw*.08,rh*.05);
     const bx=x+cw*1.25;c.fillStyle="#2f8a3a";c.fillRect(bx,y-3.2,cw*.95,1.2);c.fillStyle="#1f5a26";c.fillRect(bx,y-2,cw*.95,.6);
     c.fillStyle="#555";c.fillRect(bx+.4,y-2,.5,2);c.fillRect(bx+cw*.95-.9,y-2,.5,2);
   }
@@ -174,14 +191,35 @@ function hotelBake(sd,mask){
   c.moveTo(X0+FW*.72+5,T0-RH*.8-12);c.arc(X0+FW*.72,T0-RH*.8-12,5,0,TAU);
   for(let k=0;k<tops.length-1;k++){const [x0,y0]=tops[k],[x1,y1]=tops[k+1];c.moveTo(x0,y0);c.quadraticCurveTo((x0+x1)/2,Math.max(y0,y1)+7,x1,y1);}
   c.stroke();
-  c.globalCompositeOperation="lighter";   /* окна светят наружу — ореол печётся с домом */
-  for(let j=0;j<HR_ROWS;j++)for(let i=0;i<HR_COLS;i++){
-    if(mask[j*HR_COLS+i]!=="1"||ENTR.includes(i))continue;
-    const x=X0+i*cw+cw*.5,y=T0+j*rh+rh*.48,g=c.createRadialGradient(x,y,0,x,y,cw*.9);
-    g.addColorStop(0,"rgba(255,190,110,.16)");g.addColorStop(1,"rgba(255,190,110,0)");c.fillStyle=g;c.fillRect(x-cw,y-cw,cw*2,cw*2);
-  }
-  c.globalCompositeOperation="source-over";
-  HOTEL_BAKE={sd,mask,cv};return cv;
+  /* отсвет вывески: дом, умноженный на её цвет, от конька до второго этажа */
+  const s=shc.getContext("2d");s.setTransform(1,0,0,1,0,0);s.globalCompositeOperation="source-over";
+  s.clearRect(0,0,shc.width,shc.height);s.drawImage(cv,0,0);
+  const gs=s.createLinearGradient(0,6*HR_PX,0,(T0+rh*1.4)*HR_PX);gs.addColorStop(0,rgba(col,1));gs.addColorStop(.45,rgba(col.map(v=>v*.35),1));gs.addColorStop(1,"#000");
+  s.globalCompositeOperation="multiply";s.fillStyle=gs;s.fillRect(0,0,shc.width,shc.height);
+  s.globalCompositeOperation="destination-in";s.drawImage(cv,0,0);s.globalCompositeOperation="source-over";
+  HOTEL_BAKE={sd,mask,ck,cv,em,sh:shc,ver:((HOTEL_BAKE&&HOTEL_BAKE.ver)|0)+1};return HOTEL_BAKE;
+}
+/* неон (16/n): буква — трубка. Альбедо — всё имя тёмным стеклом (мёртвые буквы видны
+   трубкой без газа), эмиссия — живые буквы: насыщенный цвет трубки с ореолом уже
+   просвета между буквами и бледное горячее ядро тоньше штриха. Печётся в пикселях
+   устройства под размер шрифта на экране — ложится один к одному */
+const HOTEL_SIGN_FULL={gt:"ГОСТИНИЦА «КОСМОС»"};
+let HOTEL_SIGNB=null;
+function hotelSignBake(name,full,F,col){
+  const d=DPR,key=name+"|"+full+"|"+F+"|"+col.join()+"|"+d;
+  if(HOTEL_SIGNB&&HOTEL_SIGNB.key===key)return HOTEL_SIGNB;
+  const al=(HOTEL_SIGNB&&HOTEL_SIGNB.al)||document.createElement("canvas"),em=(HOTEL_SIGNB&&HOTEL_SIGNB.em)||document.createElement("canvas");
+  const Fd=F*d,fb="bold "+Fd+"px ui-monospace,monospace",fr=Fd+"px ui-monospace,monospace";
+  let a=al.getContext("2d");a.font=fb;
+  const tw=Math.ceil(a.measureText(full).width),pad=Math.ceil(3*d),base=pad+Math.ceil(Fd*.82);
+  for(const q of [al,em]){q.width=tw+pad*2;q.height=base+Math.ceil(Fd*.28)+pad;}
+  a=al.getContext("2d");a.font=fb;a.textAlign="left";a.textBaseline="alphabetic";
+  a.fillStyle="rgba(78,64,62,.9)";a.fillText(full,pad,base);
+  const e=em.getContext("2d");e.font=fb;e.textAlign="left";e.textBaseline="alphabetic";
+  e.shadowColor=rgba(col,.85);e.shadowBlur=Math.max(1,Fd*.14);e.fillStyle=rgba(col,1);e.fillText(name,pad,base);
+  e.shadowBlur=0;e.shadowColor="rgba(0,0,0,0)";e.font=fr;
+  e.fillStyle=rgba(col.map(v=>v+(255-v)*.62),1);e.fillText(name,pad,base);
+  HOTEL_SIGNB={key,al,em,tw,pad,base};return HOTEL_SIGNB;
 }
 function drawHotel(zx,zy,Z){
   const Ht=hotelHere();if(!Ht)return;
@@ -189,12 +227,30 @@ function drawHotel(zx,zy,Z){
   w=HR_BW*k,h=HR_BH*k;
   if(x<-w||x>W+w||y<-h*1.5||y>H+h)return;
   const sd=G.sx*31+G.sy,hr=((G.t%CEL_DAY)/CEL_DAY)*24;
-  const cv=hotelBake(sd,hotelWinLit(sd,hotelLitFrac(Ht.by,hr),Math.floor(G.t/60/6)));
-  const ox=x-(4+HR_W/2)*k,oy=y-(HR_TOP+HR_FH/2)*k;   /* якорь — центр фасада */
-  ctx.drawImage(cv,ox,oy,w,h);
   const col=(typeof laneLampCol==="function")?laneLampCol(Ht.by):[255,190,110],fa=clamp((Z-.3)/.2,0,1);
-  if(fa>0){ctx.save();ctx.globalCompositeOperation="lighter";ctx.font="bold "+Math.round(8*Math.max(1,k)*UIK)+"px ui-monospace,monospace";ctx.textAlign="center";
-    ctx.fillStyle=rgba(col,.9*fa);ctx.fillText(Ht.name,x,oy+6*k);ctx.restore();}
+  const B=hotelBake(sd,hotelWinLit(sd,hotelLitFrac(Ht.by,hr),Math.floor(G.t/60/6)),col);
+  const ox=x-(4+HR_W/2)*k,oy=y-(HR_TOP+HR_FH/2)*k;   /* якорь — центр фасада */
+  const F=Math.round(8*Math.max(1,k)*UIK),S=fa>0?hotelSignBake(Ht.name,Ht.name===HOTEL_SIGN.gt?HOTEL_SIGN_FULL.gt:Ht.name,F,col):null;
+  /* вывеска: там же, где был fillText по центру на базовой линии oy+6k, — в целых пикселях устройства */
+  const d=DPR,sl=S?Math.round((x-S.tw/2/d-S.pad/d)*d)/d:0,st=S?Math.round((oy+6*k-S.base/d)*d)/d:0,sw=S?S.al.width/d:0,sh=S?S.al.height/d:0;
+  const pass=gpuScene();
+  if(pass){
+    const v=B.ver,L=q=>gpuCvLevel(q,v,w*d),R=a=>[{x:ox+w/2,y:oy+h/2,w,h,a}];
+    gpuImage(pass,L(B.cv),R(1),{ver:v});
+    gpuImage(pass,L(B.em),R(HOTEL_EM),{blend:"add",ver:v});
+    if(S){
+      gpuImage(pass,L(B.sh),R(HOTEL_SHEEN*fa),{blend:"add",ver:v});
+      const r=a=>[{x:sl+sw/2,y:st+sh/2,w:sw,h:sh,a}];
+      gpuImage(pass,S.al,r(fa),{ver:S.key});
+      gpuImage(pass,S.em,r(HOTEL_NEON*fa),{blend:"add",ver:S.key});
+    }
+    return;
+  }
+  ctx.drawImage(B.cv,ox,oy,w,h);
+  ctx.save();ctx.globalCompositeOperation="lighter";ctx.drawImage(B.em,ox,oy,w,h);
+  if(S){ctx.globalAlpha=HOTEL_SHEEN*fa;ctx.drawImage(B.sh,ox,oy,w,h);ctx.globalCompositeOperation="source-over";
+    ctx.globalAlpha=fa;ctx.drawImage(S.al,sl,st,sw,sh);ctx.globalCompositeOperation="lighter";ctx.drawImage(S.em,sl,st,sw,sh);}
+  ctx.restore();
 }
 function hotelInteract(sh){
   const Ht=hotelHere();if(!Ht)return false;
