@@ -104,8 +104,6 @@ time; the S23 shows in `adb mdns services` only with «Беспроводная 
   Gate: S23, 30 s of flight in НЕЙЭЛЬ by the stations — ≥ 95 % of frames at 16.7 ms, none at 50 ms; the
   picture at 760 no worse (a was | now pair). Done so far: the phone's DPR cap 1.5 and `?g11=deep` (in place,
   per GPU pass, DPR steps) — cut the rest by its numbers. Then:
-  - a planet's shadow in the dust is near-black and runs to the screen edge (`ph_tri.png`): a cone that
-    lightens and blurs with distance and dims the dust by half at most;
   - two headless shots of one scene at one DPR show different stars (`ph_same.png`, 24.09): the starfield
     is not pinned per launch, so no was | now pair can compare stars. Find the unpinned draw.
 - [ ] **Before the runs:** ask the author to close the two «CryptoTab Pool» tabs (`web.ctpool.net`, a

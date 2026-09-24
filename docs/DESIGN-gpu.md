@@ -100,6 +100,12 @@ Heat haze behind the nozzle (G4b).
   edges as lines (a dark kant under a coloured 1.1 px line at .4), and the reached speed as the same edges
   brighter and thicker (.8, 1.6 px) up to where the ship has got. Pair `hb_pair.png` (HEAD | now, 411×742 ×1.5
   scaled to the S23).
+  **P1 3/n — a planet's shadow in the gas is a cone, at most half dark** (Контроль 24.09, `ph_tri.png`): the
+  shadow (16gb `GNB_EMI`) took 80 % of the gas and all of the fog and faded over 11.5 radii — a big planet threw
+  a near-black band off the screen. Now it dims by .5 at most, fades over 4 radii + 90 px, its core narrows
+  (to .35 R by 9 radii) while the penumbra grows (.3 px per px of distance), so it lightens and blurs into a
+  cone. Pair `psh_pair.png`, crop `psh_crop.png` (the outermost giant, star behind it): mean luminance in
+  three windows of the shadow 5.6 → 9.7, 12.6 → 17.0, 7.8 → 11.6.
   G3b 3/n (e1aeb19) and L4 k/n (7b406eb) accepted.
 - Brief of **L4 k/n — the shock ring and the exhaust haze bend the backdrop, never a hull** (Контроль 24.09): no
   hull, own or pirate, sprite or 2D, is cut into bands; an RGB fringe on the backdrop only. Done (08b/08c): the
