@@ -49058,7 +49058,7 @@ function gpuSpaceSys(sys,cx0,cy0,Z){
   GPU.sceneBg=SPACE_BG;
   /* туманность объёмом (16gb) считается своим проходом — до прохода сцены */
   GSP.star=gnbStar(sys,W/2-cx0*Z,H/2-cy0*Z,sys.radius*Z);
-  const neb=gpuNebulaGen(sys,cx0*Z,cy0*Z,GSP.star);
+  const neb=gpuNebulaGen(sys,cx0*Z,cy0*Z,GSP.star,Z);
   const pass=gpuScene();if(!pass)return;
   const P=gspPipes();
   const cx=cx0*.06*Z,cy=cy0*.06*Z;
@@ -49423,7 +49423,7 @@ function gpuHullLight(x,y,sx,sy,Z,sys){
    Цена: объём и свет — в четверть кадра (rgba16f), пересчёт — когда камера
    сдвинулась или раз в три кадра; сведение — два полноэкранных прохода
    (поглощение, свечение). Цвета — gnbPalette: своя пара тонов и своя тень. */
-const GNB={tex:null,view:null,dev:null,w:0,h:0,last:-99,cx:1e9,cy:1e9,sys:null,U:new Float32Array(28),C:new Float32Array(20)};
+const GNB={tex:null,view:null,dev:null,w:0,h:0,last:-99,cx:1e9,cy:1e9,sys:null,U:new Float32Array(28),C:new Float32Array(44)};
 const GNB_NOISE=`
 fn gh(p:vec2f)->f32{var q=fract(vec3f(p.xyx)*.1031);q=q+dot(q,q.yzx+33.33);return fract((q.x+q.y)*q.z);}
 fn gn(p:vec2f)->f32{let i=floor(p);let f=fract(p);let w=f*f*(3.-2.*f);
@@ -49525,7 +49525,8 @@ const GNB_ABS=GNB_FINE+`
 fn field(p:vec2f,uv:vec2f)->vec4f{
   let T=fineT(p,clamp(1.-texCubic(t0,smp,uv).a,0.,1.));
   return vec4f(pow(vec3f(T),vec3f(.72,1.,1.42)),1.);}`;
-/* V[0]: камера x,y, время, зерно · V[1]: звезда x,y, радиус/H, вкл · V[2]: цвет звезды · V[3]: цвет теней */
+/* V[0]: камера x,y, время, зерно · V[1]: звезда x,y, радиус/H, вкл · V[2]: цвет звезды, ширина тени ·
+   V[3]: цвет теней · V[4..10]: планеты x,y,r (CSS px) — их тени */
 const GNB_EMI=GNB_FINE+`
 fn field(p:vec2f,uv:vec2f)->vec4f{
   let V=fu.v;let H=fu.res.w;
@@ -49542,6 +49543,19 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   let dir=normalize(p-V[1].xy+vec2f(1e-3));
   let sd=max(length(p-V[1].xy)/H-V[1].z,0.);let lit=V[1].w/(1.+pow(sd/.2,2.));
   let fr=max(dot(gr,dir),0.)*lit;
+  /* тени планет (L1.6): планета между звездой и газом режет свет — за ней по газу
+     тёмный клин от звезды, край мягкий и расходится с расстоянием (у звезды есть
+     размер), вдали клин тает — газ освещает и рассеянный свет */
+  var shd=0.;
+  let toS=V[1].xy-p;let Ls=max(length(toS),1.);let ds=toS/Ls;
+  for(var k=0;k<7;k++){let P=V[4+k];if(P.z<=0.){break;}
+    let q=P.xy-p;let tq=dot(q,ds);
+    if(tq>P.z*.5&&tq<Ls){let dq=length(q-ds*tq);let pen=P.z*.12+tq*.05;
+      shd=max(shd,(1.-smoothstep(P.z-pen,P.z+pen,dq))*exp(-tq/(P.z*16.)));}}
+  c=c*(1.-.78*shd);
+  /* тонкая пыль всюду: свет звезды в ней — лучи, тени планет — тёмные клинья */
+  let dl=max(length(p-V[1].xy)/H-V[1].z,0.);
+  c=c+mix(V[2].rgb,vec3f(1.),.3)*V[1].w*.07*smoothstep(.06,.22,dl)/(1.+pow(dl/.3,2.))*(1.-shd);
   let hue=c/max(l0,1e-3);
   c=c+mix(hue,vec3f(1.),.3)*smoothstep(.02,.16,fr)*fineE(p*1.7)*.55;
   /* тени — третьим цветом: тёмный газ уходит в тон теней, светлый держит свой */
@@ -49598,13 +49612,18 @@ function gnbStar(sys,ox,oy,R){
 }
 /* пересчёт в четверть кадра — отдельным проходом ДО прохода сцены. cam — камера в
    пикселях CSS (cx0*Z), st — gnbStar */
-function gpuNebulaGen(sys,camx,camy,st){
+function gpuNebulaGen(sys,camx,camy,st,Z){
   if(!GPU.on||!GPU.enc||GPU.scenePass||GPU.overPass)return false;
   gnbTarget();
   const st2=sysStyle(sys),pl=gnbPalette(sys);
   /* сведению — камера, звезда и тень каждый кадр, даже без пересчёта объёма */
   const c=GNB.C;c[0]=camx;c[1]=camy;c[2]=(G.t||0)*.0004;c[3]=(st2.nseed%997)*.013;
   c[4]=st.x;c[5]=st.y;c[6]=st.r/H;c[7]=st.on;c[8]=st.c[0]/255;c[9]=st.c[1]/255;c[10]=st.c[2]/255;
+  /* планеты — отбрасывают тени по газу; самые крупные на экране, до семи */
+  let np=0;
+  if(Z)for(const p of sys.planets){if(np>=7)break;const r=p.radius*Z;if(r<3)continue;
+    const o=16+np*4;c[o]=W/2+p.x*Z-camx;c[o+1]=H/2+p.y*Z-camy;c[o+2]=r;c[o+3]=1;np++;}
+  for(let k=np;k<7;k++)c[16+k*4+2]=0;
   c[11]=pl.sw||.1;c[12]=pl.c[0]/255;c[13]=pl.c[1]/255;c[14]=pl.c[2]/255;
   const moved=Math.hypot(camx-GNB.cx,camy-GNB.cy)*.09;
   if(GNB.sys===sys&&moved<.5&&GPU.frameNo-GNB.last<3&&GPU.frameNo>=GNB.last)return true;

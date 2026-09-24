@@ -200,7 +200,7 @@ function gpuSpaceSys(sys,cx0,cy0,Z){
   GPU.sceneBg=SPACE_BG;
   /* туманность объёмом (16gb) считается своим проходом — до прохода сцены */
   GSP.star=gnbStar(sys,W/2-cx0*Z,H/2-cy0*Z,sys.radius*Z);
-  const neb=gpuNebulaGen(sys,cx0*Z,cy0*Z,GSP.star);
+  const neb=gpuNebulaGen(sys,cx0*Z,cy0*Z,GSP.star,Z);
   const pass=gpuScene();if(!pass)return;
   const P=gspPipes();
   const cx=cx0*.06*Z,cy=cy0*.06*Z;

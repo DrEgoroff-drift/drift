@@ -210,6 +210,12 @@ Heat haze behind the nozzle (G4b).
   tone closer to the star's colour (bias .3), and its glow goes to warm white — orange over teal was grey. The
   normal pair's green is emerald-teal (36,196,176; field 160–177°). Pairs `l3*_760`; `star.py <name> x y`.
   Next in L1: shafts in space (6), the landmark per system.
+  Done (4/n), shafts in space: planets cut the star's light in the nebula composite (`GNB_EMI`) — analytic, from
+  up to seven planet circles (`V[4..10]`, CSS px, filled in `gpuNebulaGen(…,Z)`): gas behind a planet (away from
+  the star) darkens ×.22 in a wedge with a penumbra that widens with distance and fades after ~16 radii; a thin
+  star-lit dust haze everywhere (`.07`, zero near the core so the star ring stays ≤150) is cut by the same
+  wedges. Pair `l4shadow_760` (scene: g4m freeze + ship at 0.75 × planet 0's position). Subtle when the gas
+  behind is dim; the planet's own phase (lit side toward the star) is L3. Next in L1: the landmark per system.
   A GPU draw after `gpuHullLight` must use `gpuOver`, not `gpuScene` (the scene pass is closed by then).
 - Merge each: `build.ps1`, `python docs/shot.py <scenes> --look --tag gpu`, 0 `gpu.errs`, pair with
   `scratchpad/mainref/docs/shots/main_<scene>.png`, one line of what got better, commit, strike from PLAN §0.
