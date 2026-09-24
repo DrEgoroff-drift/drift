@@ -2439,7 +2439,7 @@ helmCamOff                   src/15b-helm-draw.js:128-141
 helmCanvasXY                 src/15a-helm.js:153
 helmDrag                     src/15a-helm.js:205-208
 helmDrawMarks                src/15b-helm-draw.js:8-21
-helmDrawSticks               src/15b-helm-draw.js:159-251
+helmDrawSticks               src/15b-helm-draw.js:159-257
 helmDry                      src/15b-helm-draw.js:153
 helmDryLabel                 src/15b-helm-draw.js:154-158
 helmEdgeInput                src/15a-helm.js:349-361
@@ -6617,7 +6617,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/15a-helm.js · 41 КБ
   · штурвал (M360):1
 
-## src/15b-helm-draw.js · 15 КБ
+## src/15b-helm-draw.js · 16 КБ
   · штурвал: рисунок (M422):1
 
 ## src/15c-rec.js · 6 КБ

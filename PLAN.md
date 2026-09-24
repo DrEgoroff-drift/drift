@@ -104,13 +104,10 @@ time; the S23 shows in `adb mdns services` only with «Беспроводная 
   Gate: S23, 30 s of flight in НЕЙЭЛЬ by the stations — ≥ 95 % of frames at 16.7 ms, none at 50 ms; the
   picture at 760 no worse (a was | now pair). Done so far: the phone's DPR cap 1.5 and `?g11=deep` (in place,
   per GPU pass, DPR steps) — cut the rest by its numbers. Then:
-  - the wedge at the ship's nose (orange/turquoise, a tick and a circle at its end, by «чужой бой») is filled
-    flat and near-opaque on the phone and covers the course: find it, make it thin — the edge a line, fill
-    ≤ 15 % fading along its length (Контроль's frame `ph2_seq.png`);
   - a planet's shadow in the dust is near-black and runs to the screen edge (`ph_tri.png`): a cone that
     lightens and blurs with distance and dims the dust by half at most;
-  - the starfield lays itself out anew when the DPR changes (×2 and ×1.5 of one scene show different stars),
-    so every auto step of the resolution reshuffles the sky.
+  - two headless shots of one scene at one DPR show different stars (`ph_same.png`, 24.09): the starfield
+    is not pinned per launch, so no was | now pair can compare stars. Find the unpinned draw.
 - [ ] **Before the runs:** ask the author to close the two «CryptoTab Pool» tabs (`web.ctpool.net`, a
   browser miner) in the same Chrome; fly with the real finger — the S23 reports touch at 240 Hz, a CDP
   stick at 26 Hz; suspect the long save (160 log lines, 21 drones, 493 DOM nodes) only if those two do

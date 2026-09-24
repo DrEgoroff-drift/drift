@@ -171,19 +171,25 @@ function helmDrawSticks(){
       const L=q.r;
       const hx=q.x0+Math.cos(q.ang)*L,hy=q.y0+Math.sin(q.ang)*L;
       const w1=HELM_BAND0+HELM_BAND*q.k;
-      /* тело — ЗАДАННЫЙ ход */
-      ctx.globalAlpha=(.18+.12*q.k)*a;ctx.fillStyle="rgb("+col+")";
+      /* тело — ЗАДАННЫЙ ход: заливка не больше 15 % и тает к голове, край — линией.
+         Две заливки (заданный .18–.30 и фактический .32) складывались в сплошной клин,
+         на телефоне он закрывал курс перед носом (Контроль, 24.09) */
+      const gr=ctx.createLinearGradient(q.x0,q.y0,hx,hy);
+      gr.addColorStop(0,"rgba("+col+",.15)");gr.addColorStop(1,"rgba("+col+",.03)");
+      ctx.globalAlpha=a;ctx.fillStyle=gr;
       helmBandPath(q.x0,q.y0,hx,hy,HELM_BAND0,w1);ctx.fill();
-      /* тёмный кант: без него лента тонет в светлой туманности */
-      ctx.globalAlpha=.3*a;ctx.strokeStyle="rgba(6,10,14,.9)";ctx.lineWidth=1.2;
-      helmBandPath(q.x0,q.y0,hx,hy,HELM_BAND0,w1);ctx.stroke();
-      /* заливка — ФАКТИЧЕСКИЙ: докуда корабль уже разогнался вдоль ленты */
+      /* края: тёмный кант под цветной линией — лента не тонет в светлой туманности */
+      const dx=Math.cos(q.ang),dy=Math.sin(q.ang),nx=-dy,ny=dx;
+      const edges=(t,al,lw)=>{
+        const ex=q.x0+(hx-q.x0)*t,ey=q.y0+(hy-q.y0)*t,we=(HELM_BAND0+(w1-HELM_BAND0)*t)*.5,w0=HELM_BAND0*.5;
+        ctx.beginPath();
+        for(const sg of [-1,1]){ctx.moveTo(q.x0+nx*w0*sg,q.y0+ny*w0*sg);ctx.lineTo(ex+nx*we*sg,ey+ny*we*sg);}
+        ctx.globalAlpha=al*.5*a;ctx.strokeStyle="rgba(6,10,14,.9)";ctx.lineWidth=lw+1.4;ctx.stroke();
+        ctx.globalAlpha=al*a;ctx.strokeStyle="rgb("+col+")";ctx.lineWidth=lw;ctx.stroke();};
+      edges(1,.4,1.1);
+      /* ФАКТИЧЕСКИЙ ход — край ярче и толще докуда корабль уже разогнался вдоль ленты */
       const f=c?clamp(c.vp/Math.max(q.k,.08),0,1):0;
-      if(f>.02){
-        const fx=q.x0+(hx-q.x0)*f,fy=q.y0+(hy-q.y0)*f;
-        ctx.globalAlpha=.32*a;ctx.fillStyle="rgb("+col+")";   /* было .44: на чёрном лента читалась сплошным стаканом (D2, 18.09) */
-        helmBandPath(q.x0,q.y0,fx,fy,HELM_BAND0,HELM_BAND0+(w1-HELM_BAND0)*f);ctx.fill();
-      }
+      if(f>.02)edges(f,.8,1.6);
       /* голова — шеврон, а не кружок под подушечкой */
       ctx.globalAlpha=.62*a;ctx.strokeStyle="rgb("+col+")";ctx.lineWidth=1.8;
       ctx.beginPath();

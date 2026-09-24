@@ -93,7 +93,13 @@ Heat haze behind the nozzle (G4b).
   CSS px and a coarse pointer) caps the auto DPR at 1.5 (`PHONE_DPR`, 08-state) — 0.56 of the pixels for every
   pass and every #c copy; headless shots (fine pointer) are untouched. Pair `ph_pair.png` (411×742 at ×2 |
   ×1.5, both scaled to the S23's 2.625 like the compositor): the same frame, the hull a touch softer; the stars
-  differ because the starfield lays out by device pixels (PLAN §1). L1b 8/n parked (PLAN §0).
+  differ, but they differ between two shots at one DPR too (PLAN §1). L1b 8/n parked (PLAN §0).
+  **P1 2/n — the stick's band stops covering the course** (Контроль 24.09, `ph2_seq.png`): the band from the
+  stick's centre to the finger (15b) was two fills, the set course .18–.30 and the reached speed .32, adding up
+  to a near-opaque wedge in front of the nose. Now one fill, 15 % at the root fading to 3 % at the head, the
+  edges as lines (a dark kant under a coloured 1.1 px line at .4), and the reached speed as the same edges
+  brighter and thicker (.8, 1.6 px) up to where the ship has got. Pair `hb_pair.png` (HEAD | now, 411×742 ×1.5
+  scaled to the S23).
   G3b 3/n (e1aeb19) and L4 k/n (7b406eb) accepted.
 - Brief of **L4 k/n — the shock ring and the exhaust haze bend the backdrop, never a hull** (Контроль 24.09): no
   hull, own or pirate, sprite or 2D, is cut into bands; an RGB fringe on the backdrop only. Done (08b/08c): the
