@@ -332,6 +332,11 @@ function gsyStar(pass,sys,ox,oy,R){
   /* зарево держит объёмная туманность (16gb) — рассеянием по газу; ровный круг поверх давал бурую муть */
   if(GNB.view&&GNB.dev===GPU.dev&&GNB.sys===sys)S[23]=0;
   S[24]=c[0]/255;S[25]=c[1]/255;S[26]=c[2]/255;S[27]=DPR;
+  /* L2 2/n: грейд кадра — по классу звезды, оптика (штрих, блики) — только когда диск
+     в кадре (08b fsFinal). Дыра не светит — ни грейда, ни бликов */
+  if(!kind){const g=st.kind==="giant"?[.6,"#ff7448",.8]:st.kind==="dwarf"?[1.6,"#e8f4ff",1]:[sys.cls.t||1,sys.cls.col,1];
+    const q=hex2rgb(g[1]),r0=S[2]||R,m=Math.min(ox,W-ox,oy,H-oy);
+    GPU.lens={x:ox/W,y:oy/H,k:g[2]*clamp(m/(r0+60),0,1),r:r0,cr:q[0]/255,cg:q[1]/255,cb:q[2]/255,t:g[0]};}
   gpuField(pass,"gsy.star",GSY_STAR_WGSL,S,tex?[tex]:[]);
 }
 /* всё под планетами — в проход сцены, сразу за фоном (16g) */

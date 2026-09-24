@@ -264,7 +264,16 @@ Heat haze behind the nozzle (G4b).
   white core is small (1.6× a gaussian of .16 Rd plus the HDR spot of .11 Rd). Crop 700 px around the l2c
   star: near-white radius 36 px (main 31), L≥200 3.4% of the frame (main 1.3%: our gold gas counts too);
   g4m core 255, ring median 135 (main 137).
-  Next (L2 2/n): a light grade per star class; streak and ghosts for a star in frame.
+  Done (L2 2/n): a light grade per star class and lens optics for a star in frame (08b `fsFinal`, fed by
+  `GPU.lens` from 17g `gsyStar`; uniforms `ln`, `lc`, buffer 256 B). Grade after the tone: highlights ×
+  the star colour normalised by luma (9%), shadows toward cold (warm stars) or violet (t ≥ 1.6) at 10%, so
+  only the hue moves — median L within ±.3%, S −3…+2%, dirt unchanged vs 79dd76a. The hole has none.
+  Optics only while the disc is in frame (fades over r+60 px from the edge): a thin horizontal streak cooler
+  than the star, and three soft hexagons (aperture blades, not circles — circles in combat mean targets and
+  bursts) on the star→centre axis at .62/1.38/1.9 with a per-channel size shift; brightest in the middle, no
+  rim. The backdrop law in numbers: all optics together add at most .058 of the scale (`min(o,.058)`), and
+  30% less over the front layer. Gate script: scratchpad `l2gate2.py` (base b2_* = 79dd76a).
+  Next: L3.
   A GPU draw after `gpuHullLight` must use `gpuOver`, not `gpuScene` (the scene pass is closed by then).
 - Merge each: `build.ps1`, `python docs/shot.py <scenes> --look --tag gpu`, 0 `gpu.errs`, pair with
   `scratchpad/mainref/docs/shots/main_<scene>.png`, one line of what got better, commit, strike from PLAN §0.

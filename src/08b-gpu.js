@@ -6,7 +6,7 @@
    Кадр: сцена видеокарты (gpuScene) → #c поверх → свечение, зерно, виньетка,
    хроматика, дизеринг одним проходом → слой интерфейса (стойка) поверх всего. */
 const GPU={ok:false,on:false,lost:false,busy:false,none:false,
-  dev:null,cv:null,gx:null,fmt:"",L:null,P:{},B:{},S:null,U:null,UA:new Float32Array(56),shaft:null,sepH:[],
+  dev:null,cv:null,gx:null,fmt:"",L:null,P:{},B:{},S:null,U:null,UA:new Float32Array(64),shaft:null,lens:null,sepH:[],
   T:{},V:{},N:null,noiseOk:false,ui:null,uctx:null,snap:null,
   bw:0,bh:0,qw:2,qh:2,dpr:0,cw:0,ch:0,enc:null,scenePass:null,sceneOn:false,
   sceneBg:{r:0,g:0,b:0,a:1},uiOn:false,uiWas:false,hitK:0,hitDx:0,post:{k:0,grain:0,vig:0},
@@ -77,7 +77,7 @@ function gpuDrop(why,retry){
 }
 /* ── проходы поста: общий треугольник на весь экран, одна раскладка привязок ── */
 const GPU_POST_WGSL=`
-struct U{res:vec2f,css:vec2f,dpr:f32,k:f32,grain:f32,vig:f32,hitK:f32,hitDx:f32,ui:f32,scene:f32,qres:vec2f,sigma:f32,t:f32,sh:vec4f,shc:vec4f,hl:array<vec4f,8>};
+struct U{res:vec2f,css:vec2f,dpr:f32,k:f32,grain:f32,vig:f32,hitK:f32,hitDx:f32,ui:f32,scene:f32,qres:vec2f,sigma:f32,t:f32,sh:vec4f,shc:vec4f,hl:array<vec4f,8>,ln:vec4f,lc:vec4f};
 @group(0) @binding(0) var<uniform> u:U;
 @group(0) @binding(1) var sl:sampler;
 @group(0) @binding(2) var sr:sampler;
@@ -212,6 +212,38 @@ fn overlay(b:vec3f,s:vec3f)->vec3f{return select(1.-2.*(1.-b)*(1.-s),2.*b*s,b<ve
     let r=vis*vis*exp(-dl*2.4)*u.sh.z*1.5;
     let b=vec3f(1.)-exp(-u.shc.rgb*r);c=vec3f(1.)-(vec3f(1.)-min(c,vec3f(1.)))*(vec3f(1.)-b);
   }
+  /* L2 2/n: грейд по классу звезды — лёгкий. Света тянутся к цвету звезды, тени в холод
+     (у голубых — в сиреневый): ключ холодный, акцент тёплый. Сдвиг только оттенка —
+     оба множителя нормированы по яркости, медиана L стоит */
+  if(u.lc.w>0.){
+    let Y=vec3f(.2126,.7152,.0722);let l=dot(c,Y);
+    let hi=u.lc.rgb/max(dot(u.lc.rgb,Y),1e-3);
+    let lo0=mix(vec3f(.88,.99,1.22),vec3f(1.1,.92,1.2),smoothstep(1.,1.6,u.lc.w));let lo=lo0/dot(lo0,Y);
+    c=c*mix(vec3f(1.),hi,smoothstep(.2,.75,l)*.09)*mix(vec3f(1.),lo,(1.-smoothstep(.04,.3,l))*.10);}
+  /* оптика — только при звезде в кадре и слабая (закон фона: мягко, тусклее игры).
+     Штрих — тонкая горизонталь, холоднее звезды; блики — мягкие шестигранники
+     (лепестки диафрагмы) на оси звезда→центр, со сдвигом цвета по каналам. Не круги:
+     кольца в бою — это цели и разрывы. Кромок нет — ярче всего середина */
+  if(u.ln.z>0.){
+    let px=v.uv*u.css;let sp=u.ln.xy*u.css;let d=px-sp;
+    let fa=1.-.7*f.a;let sc=u.lc.rgb/max(max(u.lc.r,u.lc.g),1e-3);
+    let sw=1.+u.ln.w*.06;
+    let y1=d.y/sw;let y5=y1*.2;
+    let st=(exp(-y1*y1)+.3*exp(-y5*y5))*exp(-abs(d.x)/(u.css.x*.2));
+    var o=mix(sc,vec3f(.6,.8,1.),.55)*st*.055;
+    let ax=u.css*.5-sp;let mm=min(u.css.x,u.css.y);
+    var tns=array<vec3f,3>(vec3f(.7,.95,1.),vec3f(1.,.8,.55),vec3f(.85,.72,1.));
+    for(var k=0;k<3;k++){
+      let g=vec3f(.62,1.38,1.9)[k];let rr=mm*vec3f(.034,.065,.022)[k];
+      let tn=tns[k];
+      let q=px-(sp+ax*g);
+      /* шестигранник: расстояние до стороны, повёрнутый на постоянный угол */
+      let an=atan2(q.y,q.x)+.3;let sgm=1.0471976;
+      let hx=length(q)*cos(abs(an-sgm*floor(an/sgm)-sgm*.5))/.8660254;
+      let sh=vec3f(1.-smoothstep(.2,1.,hx/(rr*1.05)),1.-smoothstep(.2,1.,hx/rr),1.-smoothstep(.2,1.,hx/(rr*.95)));
+      o=o+sh*mix(sc,tn,.6)*vec3f(.042,.032,.05)[k];}
+    /* закон фона в числах: вся оптика вместе — не больше 6% шкалы над тем, что под ней */
+    c=c+min(o,vec3f(.058))*u.ln.z*fa;}
   /* зерно: узор 64×64 в пикселях CSS, режим overlay, 7.5% — как 19c grainPass */
   if(u.grain>.5){let s=textureSampleLevel(tNoise,sr,v.p.xy/(64.*u.dpr),0.).r;c=mix(c,overlay(c,vec3f(s)),.075);}
   if(u.vig>.5){
@@ -258,7 +290,7 @@ function gpuPipes(){
            primitive:{topology:"triangle-list"}})};
   GPU.S={lin:d.createSampler({magFilter:"linear",minFilter:"linear"}),
          rep:d.createSampler({magFilter:"linear",minFilter:"linear",addressModeU:"repeat",addressModeV:"repeat"})};
-  GPU.U=d.createBuffer({size:224,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});
+  GPU.U=d.createBuffer({size:256,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});
   GPU.N=d.createTexture({size:[64,64],format:"r8unorm",usage:GPUTextureUsage.TEXTURE_BINDING|GPUTextureUsage.COPY_DST});
   GPU.noiseOk=false;
 }
@@ -327,6 +359,8 @@ function gpuUni(){
   a[12]=GPU.qw;a[13]=GPU.qh;a[14]=1.75/DPR;a[15]=G.t||0;
   const S=GPU.shaft;a[16]=S?S.x:0;a[17]=S?S.y:0;a[18]=S?S.k:0;a[19]=S?S.rad:0;a[20]=S?S.r:0;a[21]=S?S.g:0;a[22]=S?S.b:0;a[23]=GPU.sep||0;
   const L=GPU.sepH;for(let i=0;i<8;i++){const h=L[i],o=24+i*4;a[o]=h?h[0]:0;a[o+1]=h?h[1]:0;a[o+2]=h?h[2]:0;a[o+3]=0;}
+  const Q=GPU.lens;a[56]=Q?Q.x:0;a[57]=Q?Q.y:0;a[58]=Q?Q.k:0;a[59]=Q?Q.r:0;
+  a[60]=Q?Q.cr:0;a[61]=Q?Q.cg:0;a[62]=Q?Q.cb:0;a[63]=Q?Q.t:0;
   GPU.dev.queue.writeBuffer(GPU.U,0,a);
 }
 
@@ -339,7 +373,7 @@ function gpuFrame(){
   ctx=MAIN_CTX;
   ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,GPU.bw,GPU.bh);ctx.setTransform(DPR,0,0,DPR,0,0);
   GPU.on=true;
-  GPU.enc=GPU.dev.createCommandEncoder();GPU.scenePass=null;GPU.overPass=null;GPU.sceneOn=false;GPU.emitOn=false;GPU.scene3D=false;GPU.hitK=0;GPU.shaft=null;GPU.sep=0;GPU.sepH.length=0;
+  GPU.enc=GPU.dev.createCommandEncoder();GPU.scenePass=null;GPU.overPass=null;GPU.sceneOn=false;GPU.emitOn=false;GPU.scene3D=false;GPU.hitK=0;GPU.shaft=null;GPU.lens=null;GPU.sep=0;GPU.sepH.length=0;
   return true;
 }
 /* проход сцены видеокарты: его открывает первый слой кадра, закрывает сборка.
