@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 604 · символов верхнего уровня: 5930
+Файлов: 604 · символов верхнего уровня: 5931
 
 ## СИМВОЛЫ
 
@@ -1945,24 +1945,24 @@ galBake                      src/17z1-galaxy.js:80-95
 galPlaceName                 src/17z2-galaxy-names.js:29-36
 galTile                      src/17z1-galaxy.js:67-78
 GATE_WHY                     tests/91zzzzzl-gates.js:19
-GBM                          src/13z-gpu-combat.js:119
-GBM_WGSL                     src/13z-gpu-combat.js:120
+GBM                          src/13z-gpu-combat.js:122
+GBM_WGSL                     src/13z-gpu-combat.js:123
 GEN                          src/13z-gpu-combat.js:16
-GEN_MINE                     src/13z-gpu-combat.js:60
+GEN_MINE                     src/13z-gpu-combat.js:63
 GEN_WGSL                     src/13z-gpu-combat.js:17
 genBeast                     src/20f-fauna.js:58-60
 genBeltPOI                   src/24b-belt-poi.js:20-47
-genCol                       src/13z-gpu-combat.js:48-53
+genCol                       src/13z-gpu-combat.js:51-56
 genDeco                      src/21b-surface-deco.js:37-140
 genDesc                      src/01-core.js:200-211
-genDraw                      src/13z-gpu-combat.js:110-117
+genDraw                      src/13z-gpu-combat.js:113-120
 genMerc                      src/12a-crew.js:63-92
 genMgr                       src/12c-mgr-core.js:237-256
 genName                      src/01-core.js:183
 genPart                      src/05-parts.js:144-217
 genPlant                     src/20-life.js:189-191
 genPOI                       src/20a-poi.js:32-75
-genPush                      src/13z-gpu-combat.js:54-59
+genPush                      src/13z-gpu-combat.js:57-62
 genRaid                      src/24a-mode-raid.js:30-72
 genTerrain                   src/07a-terrain.js:73-198
 genUniqueShip                src/03-ships.js:16-27
@@ -2104,48 +2104,49 @@ GPU_WGSL_COMMON              src/08c-gpu-kit.js:53
 gpuArena                     src/08c-gpu-kit.js:73-83
 gpuBargeBody                 src/12l-barge.js:559-563
 gpuBind                      src/08c-gpu-kit.js:28-34
-gpuBooms                     src/13z-gpu-combat.js:143-155
+gpuBloom                     src/08b-gpu.js:422-429
+gpuBooms                     src/13z-gpu-combat.js:147-159
 gpuBuf                       src/08c-gpu-kit.js:21-26
 gpuCanvasTex                 src/08c-gpu-kit.js:37-50
-gpuCombatEnergy              src/13z-gpu-combat.js:61-108
-gpuCompNeb                   src/08b-gpu.js:242-251
+gpuCombatEnergy              src/13z-gpu-combat.js:64-111
+gpuCompNeb                   src/08b-gpu.js:308-318
 gpuDrones                    src/16ga-gpu-trail.js:132-176
 gpuDrop                      src/08b-gpu.js:72-77
 gpuExhaust                   src/16ga-gpu-trail.js:234-259
 gpuField                     src/08c-gpu-kit.js:189-217
-gpuFrame                     src/08b-gpu.js:268-277
+gpuFrame                     src/08b-gpu.js:335-344
 gpuHullLight                 src/16ga-gpu-trail.js:302-321
 gpuImage                     src/08c-gpu-kit.js:117-129
 gpuKitU                      src/08c-gpu-kit.js:89-93
 gpuLitSprite                 src/17c-system-draw.js:461-468
-gpuManual                    src/08b-gpu.js:325-330
+gpuManual                    src/08b-gpu.js:394-399
 gpuMoon                      src/17ga-gpu-planets.js:143-148
 gpuNebulaComp                src/16gb-gpu-nebula.js:361-368
 gpuNebulaGen                 src/16gb-gpu-nebula.js:326-360
-gpuNoise                     src/08b-gpu.js:207-212
+gpuNoise                     src/08b-gpu.js:267-272
 gpuNone                      src/08b-gpu.js:32-39
-gpuOver                      src/08b-gpu.js:308-323
-gpuPass                      src/08b-gpu.js:252-255
+gpuOver                      src/08b-gpu.js:375-392
+gpuPass                      src/08b-gpu.js:319-322
 gpuPipe                      src/08c-gpu-kit.js:13-20
-gpuPipes                     src/08b-gpu.js:183-204
+gpuPipes                     src/08b-gpu.js:238-264
 gpuPirateBody                src/12i-pirate-hull.js:432-437
 gpuPlanet                    src/17ga-gpu-planets.js:127-141
-gpuPresent                   src/08b-gpu.js:351-365
-gpuResize                    src/08b-gpu.js:213-240
-gpuScene                     src/08b-gpu.js:281-290
-gpuScene3D                   src/08b-gpu.js:294-302
+gpuPresent                   src/08b-gpu.js:431-445
+gpuResize                    src/08b-gpu.js:273-306
+gpuScene                     src/08b-gpu.js:348-357
+gpuScene3D                   src/08b-gpu.js:361-369
 gpuShapes                    src/08c-gpu-kit.js:159-170
 gpuSky                       src/19ca-gpu-sky.js:66-82
 gpuSnapshot                  src/08b-gpu.js:20-24
 gpuSpaceSys                  src/16g-gpu-space.js:199-213
 gpuSpaceTitle                src/16g-gpu-space.js:215-226
 gpuStation                   src/17c-system-draw.js:469
-gpuSysUnder                  src/17g-gpu-system.js:321-326
+gpuSysUnder                  src/17g-gpu-system.js:328-333
 gpuTakeSnap                  src/08b-gpu.js:25-30
 gpuTrail                     src/16ga-gpu-trail.js:53-90
-gpuUni                       src/08b-gpu.js:256-264
+gpuUni                       src/08b-gpu.js:323-331
 gpuWake                      src/16ga-gpu-trail.js:99-123
-gpuWorld                     src/08b-gpu.js:333-349
+gpuWorld                     src/08b-gpu.js:402-420
 gradePass                    src/19c-light.js:260-296
 GREEN_BEDS                   src/21g-greenhouse.js:23
 GREEN_FULL                   src/21g-greenhouse.js:24
@@ -2234,13 +2235,13 @@ GST_WGSL                     src/17c-system-draw.js:425
 GSY                          src/17g-gpu-system.js:18
 GSY_ORB_WGSL                 src/17g-gpu-system.js:19
 GSY_STAR_WGSL                src/17g-gpu-system.js:45
-gsyBeltDots                  src/17g-gpu-system.js:278-286
-gsyEll                       src/17g-gpu-system.js:245-254
-gsyMean                      src/17g-gpu-system.js:255-258
-gsyOrb                       src/17g-gpu-system.js:237-243
-gsyOrbits                    src/17g-gpu-system.js:259-276
-gsyStar                      src/17g-gpu-system.js:287-319
-gsyUni                       src/17g-gpu-system.js:231-235
+gsyBeltDots                  src/17g-gpu-system.js:285-293
+gsyEll                       src/17g-gpu-system.js:252-261
+gsyMean                      src/17g-gpu-system.js:262-265
+gsyOrb                       src/17g-gpu-system.js:244-250
+gsyOrbits                    src/17g-gpu-system.js:266-283
+gsyStar                      src/17g-gpu-system.js:294-326
+gsyUni                       src/17g-gpu-system.js:238-242
 GTR                          src/16ga-gpu-trail.js:9
 GTR_WGSL                     src/16ga-gpu-trail.js:10
 gtrDraw                      src/16ga-gpu-trail.js:43-51
@@ -6068,7 +6069,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/08a-statehash.js · 6 КБ
   · хэш состояния (M441):1
 
-## src/08b-gpu.js · 25 КБ
+## src/08b-gpu.js · 32 КБ
   · видеокарта: кадр рисует WebGPU (docs/DESIGN-gpu.md):1
 
 ## src/08c-gpu-kit.js · 15 КБ
@@ -6651,7 +6652,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/17f-sys-traffic.js · 7 КБ
   · трафик системы: чужие машины, которым тут есть дело (M309):1
 
-## src/17g-gpu-system.js · 21 КБ
+## src/17g-gpu-system.js · 22 КБ
   · система под планетами на видеокарте (G2, docs/DESIGN-gpu.md):1
 
 ## src/17g-sys-lane.js · 13 КБ

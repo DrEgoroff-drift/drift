@@ -42,7 +42,10 @@ struct VO{@builtin(position) p:vec4f,@location(0) @interpolate(flat) k:u32};
   /* тон по старшему каналу: яркость сжимается, отношение каналов (оттенок) — нет */
   e=e*v1.z*1.2;let m=max(e.r,max(e.g,e.b));
   let I=e*(1.-exp(-m))/max(m,1e-4);
-  return vec4f(I,max(I.r,max(I.g,I.b)));
+  /* L2: что светит сверх единицы — ядро луча, голова болта, вспышка удара — остаётся
+     выше неё: сцена rgba16f, плечо сведения и узкое свечение берут это как свет */
+  let x=e*max(m-1.2,0.)/max(m,1e-4)*.8;
+  return vec4f(I+x,max(I.r,max(I.g,I.b)));
 }`;
 /* цвет из css-строки ("#rrggbb" или "rgba(r,g,b,a)") → [r,g,b,a] 0..1, с кэшем */
 function genCol(s){
@@ -138,7 +141,8 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
     e=e+hot*T*1.7+vec3f(1.,.76,.52)*ring+vec3f(1.,.5,.25)*exp(-d/(rs*.5+2.))*a*.35;
   }
   let I=vec3f(1.)-exp(-e);
-  return vec4f(I,max(I.r,max(I.g,I.b)));
+  /* L2: сердце шара светит выше единицы — белое по плечу и со своим ореолом */
+  return vec4f(I+max(e-vec3f(1.5),vec3f(0.))*.6,max(I.r,max(I.g,I.b)));
 }`;
 function gpuBooms(pass,zx,zy,Z){
   const L=G.mslFx;if(!L||!L.length)return;

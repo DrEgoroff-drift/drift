@@ -15,7 +15,7 @@ function gpuPipe(name,code,blend,layout){
   const c=GPU.lay[key];if(c)return c;
   const mod=GPU.dev.createShaderModule({code});
   return GPU.lay[key]=GPU.dev.createRenderPipeline({layout:layout||"auto",vertex:{module:mod,entryPoint:"vs"},
-    fragment:{module:mod,entryPoint:"fs",targets:[{format:"rgba8unorm",blend:GPU_BLEND[blend||"over"]}]},
+    fragment:{module:mod,entryPoint:"fs",targets:[{format:"rgba16float",blend:GPU_BLEND[blend||"over"]}]},
     primitive:{topology:"triangle-list"}});
 }
 function gpuBuf(name,bytes,usage){

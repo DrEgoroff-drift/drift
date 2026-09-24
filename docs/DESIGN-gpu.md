@@ -78,7 +78,7 @@ Heat haze behind the nozzle (G4b).
 
 ## Where I stopped (update on every commit)
 
-- **Deploy candidate: `8e77d8c` (L1 5/n; before it `ef8c8b9`), accepted by Контроль by its pairs.** The author: deploy to main
+- **Deploy candidate: `05f8a47` (L1 6/n; before it `8e77d8c`), accepted by Контроль by its pairs.** The author: deploy to main
   before the limit window reaches 90%; the signal «ДЕПЛОЙ» comes from Контроль. On it: close the step with a
   commit; `test.ps1 -Full` and `node test-node.js`; bump `VER` and a PATCHNOTES line (what the player sees
   better, plus «needs a browser with WebGPU»); a release commit; send Контроль its sha. **Контроль pushes**
@@ -86,7 +86,7 @@ Heat haze behind the nozzle (G4b).
   the site falls: a commit on top with the tree of `d543aff`, never a force-push. Only a commit Контроль
   accepted by pairs goes to main. CI rehearsal of ef8c8b9 (deploy.yml flags, `--disable-gpu`): load clean,
   smoke 4/4, Node green (the «рейсы» suite fails in full order only, green alone; it sits in quarantine).
-- Order now: rest of L1 (shafts in space, one huge landmark per system), then L2.
+- Order now: L2 (1/n done, awaiting Контроль), then L3, L4, then the G steps (G5 frozen).
 
 - Done: core `08b`, kit `08c`, space `16g` (G1: live nebula wisps and lanes, stars with halo and tapered
   spikes, dust with depth of field; pair in `scratchpad/pairs/system_crop.png`),
@@ -242,7 +242,20 @@ Heat haze behind the nozzle (G4b).
   volume is live (`S[31]`); the glow tint takes one side of the seam; the galaxy's inner arms gold, not white;
   its lanes dim its own light. Gates (V30+, S<.25, HUD included; main ≈1.7%): nnormal 1.6%, giant 1.7%,
   dwarf 1.2%, lm0 1.9, lm1 2.3, lm2 1.6, lm3 2.7, natural hole 1.5; ring g4m 133.
-  Next: L2 (HDR ladder, mip bloom, AgX, grade per class).
+  Done (L2 1/n): **light above one.** The scene and the comp target are rgba16f. `fsFinal` builds the frame
+  before the shoulder — scene as it shines, the front over it, the glow ADDED (as 2D did: bright gas goes gold
+  with it) — then one shoulder `tone()` per channel above .75 (smooth to white, no plateau; the hue-preserving
+  variant made the frame beige and the star disc a pink blin). Glow = a mip ladder of six levels (`gpuBloom`:
+  4×4 box → dual-Kawase down → tent up, added, far levels ×.72 and warmer): level 0 = the toned frame squared
+  (the L1 glow) + what the scene shines above 1.4 (`frameHdr`); every level down from the second knees at
+  .45×(lv−1), so gas glows only near itself and only the star reaches the wide levels (no veil). HDR sources:
+  the star's hot centre (17g, +4× a gaussian of .2 Rd over the tone), beam and bolt cores and the burst's heart
+  (13z, the excess over the tone kept). 2D lights: the comp pass writes a second target `tEmit` (binding 8) —
+  the part of a glued 2D pixel near one AND coloured (chroma gate; white paint and text are not fire) ×150 —
+  so nav lights keep their colour and get a halo of it; the last front layer (chips, marks) casts no glow, and
+  the glow is ×(1−.6 a) over opaque front pixels. Gates: 255-px ≤ .12% (star core only), median L +3…+6% vs
+  L1, dirt ≤ 1.6, ring g4m 146 (p95 215), HUD diff = state only (energy count, blinking chip arrow).
+  Next (L2 2/n): a light grade per star class; streak and ghosts for a star in frame.
   A GPU draw after `gpuHullLight` must use `gpuOver`, not `gpuScene` (the scene pass is closed by then).
 - Merge each: `build.ps1`, `python docs/shot.py <scenes> --look --tag gpu`, 0 `gpu.errs`, pair with
   `scratchpad/mainref/docs/shots/main_<scene>.png`, one line of what got better, commit, strike from PLAN §0.
