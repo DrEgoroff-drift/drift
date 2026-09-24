@@ -670,14 +670,14 @@ function drawSystem(){
   gpuHullLight(zx(sh.x),zy(sh.y),zx(0),zy(0),Z,sys);   /* свет звезды на корпусе (16ga) */
   /* при наблюдении в центре не свой корабль — подписываем, за кем смотрим,
      и куда нажать, чтобы вернуться */
-  if(wA){
+  if(wA)gpuHud(()=>{   /* приборы — на свой слой, мимо видеокарты (08b gpuHud) */
     ctx.fillStyle="rgba(127,230,216,.9)";ctx.font="10px ui-monospace,monospace";ctx.textAlign="center";
     /* ниже приборов: сверху слева датчики, справа сводка — там текст не читался */
     ctx.fillText("НАБЛЮДЕНИЕ · "+wA.c.name.toUpperCase()+" · "+
                  ORDERS[wA.c.order.kind].ru.toUpperCase(),W/2,H-52);
     ctx.fillStyle="rgba(93,115,130,.85)";ctx.font="9px ui-monospace,monospace";
     ctx.fillText("ЭКИПАЖ — ВЕРНУТЬ КАМЕРУ",W/2,H-38);
-  }
+  });
   /* кольца-метки вокруг корабля больше нет. Она появилась, когда при отдалении
      от корабля оставался голый силуэт: факел и шлейф считались по мировому
      масштабу и пропадали, глазу не за что было зацепиться. Теперь эффекты идут
@@ -691,8 +691,10 @@ function drawSystem(){
      пиксели — её читает 15-input, который ни про какой zoom не знает. */
   if(!SHOT_CLEAN){                       /* на кадре заглавной приборов нет (M233) */
     const U=(typeof UIK==="number"&&UIK>0)?UIK:1;
-    withScale(U,()=>drawSysHud(v=>zx(v)/U,v=>zy(v)/U,sh,sys,U));
-    helmDrawSticks();   /* стики под пальцами — в пикселях касания, не в мерке (M360) */
+    gpuHud(()=>{
+      withScale(U,()=>drawSysHud(v=>zx(v)/U,v=>zy(v)/U,sh,sys,U));
+      helmDrawSticks();   /* стики под пальцами — в пикселях касания, не в мерке (M360) */
+    });
   }
 }
 function drawSysHud(zx,zy,sh,sys,U){

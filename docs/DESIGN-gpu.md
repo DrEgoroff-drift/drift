@@ -200,6 +200,15 @@ Heat haze behind the nozzle (G4b).
   (`V[14]`, `V[13].x`); `pow(x,2.)` → `sq` in GEN and EMI. Pairs at zoom .4, the landmark kind forced to each
   of 0–3: max|Δ| 1 on ≤ 34 px (kind 3: 0); zoom 1.2: 1 on 6 px. Desktop ms unchanged within noise.
   Then the direction changed (author, 24.09): all 2D moves to WebGPU; (e) waits until after that.
+- **Stage 1 — flight without `#c`** (the author 24.09 «нахрен 2D, всё переноси»; order in `PLAN.md` §0). Target:
+  no upload of `#c`, one submit a frame. 1a: the interface layer `GPU.ui` became a visible DOM canvas `#hud`
+  over `#g`. The system's HUD (`drawSysHud`, the sticks, the watch caption) draws there through `gpuHud(fn)`,
+  and the rack draws there after `gpuWorld`; the rack's `ui` upload is gone. The layer is cleared at
+  `gpuFrame`, and only if something was drawn on it. `gpuTakeSnap` lays it over the snapshot. The HUD no
+  longer passes through the tone curve, the vignette and the grain, as in the 2D frame («до приборов», M243).
+  It also stopped inheriting the world's `textBaseline`: the edge chips' text now sits centred in the plate
+  (it lay on the bottom border). Pairs: the whole frame at zoom .4, max|Δ| 190 only on the chips' text
+  (mean .11); with the rack open, max 5 on 145 px.
   G3b 3/n (e1aeb19) and L4 k/n (7b406eb) accepted.
 - Brief of **L4 k/n — the shock ring and the exhaust haze bend the backdrop, never a hull** (Контроль 24.09): no
   hull, own or pirate, sprite or 2D, is cut into bands; an RGB fringe on the backdrop only. Done (08b/08c): the

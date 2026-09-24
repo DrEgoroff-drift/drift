@@ -4,7 +4,7 @@
    кадр текстурой. Старого 2D-кадра больше нет: без WebGPU игра честно говорит,
    какой нужен браузер. #c невидим (opacity 0) и по-прежнему ловит палец.
    Кадр: сцена видеокарты (gpuScene) → #c поверх → свечение, зерно, виньетка,
-   хроматика, дизеринг одним проходом → слой интерфейса (стойка) поверх всего. */
+   хроматика, дизеринг одним проходом. Приборы и стойка — свой DOM-холст #hud над канвой. */
 const GPU={ok:false,on:false,lost:false,busy:false,none:false,
   dev:null,cv:null,gx:null,fmt:"",L:null,P:{},B:{},S:null,U:null,UA:new Float32Array(132),shaft:null,lens:null,lt:[],oc:[],sepH:[],dz:[],
   T:{},V:{},N:null,noiseOk:false,ui:null,uctx:null,snap:null,
@@ -27,7 +27,8 @@ function gpuSnapshot(){
 function gpuTakeSnap(){
   const c=GPU.snap||(GPU.snap=document.createElement("canvas"));
   if(c.width!==GPU.cv.width||c.height!==GPU.cv.height){c.width=GPU.cv.width;c.height=GPU.cv.height;}
-  c.getContext("2d",{willReadFrequently:true}).drawImage(GPU.cv,0,0);
+  const g=c.getContext("2d",{willReadFrequently:true});g.drawImage(GPU.cv,0,0);
+  if(GPU.uiWas&&GPU.ui)g.drawImage(GPU.ui,0,0);   /* приборы — поверх, как на экране */
   GPU.snapNo=GPU.frameNo;
 }
 /* нет WebGPU — говорим прямо, какой браузер нужен (игрок видит это вместо мира) */
@@ -63,7 +64,10 @@ async function gpuInit(){
     GPU.gx=GPU.cv.getContext("webgpu");
     GPU.fmt=navigator.gpu.getPreferredCanvasFormat();
     GPU.gx.configure({device:dev,format:GPU.fmt,alphaMode:"opaque"});
-    if(!GPU.ui){GPU.ui=document.createElement("canvas");GPU.uctx=GPU.ui.getContext("2d",{alpha:true});}
+    /* слой приборов (ступень 1, 24.09): свой DOM-холст над #g — браузер кладёт его сам,
+       в видеокарту он не копируется и поста не берёт, как приборы 2D-кадра («до приборов», M243) */
+    if(!GPU.ui){const u=document.createElement("canvas");u.id="hud";u.style.cssText=GPU.cv.style.cssText;
+      GPU.cv.after(u);GPU.ui=u;GPU.uctx=u.getContext("2d",{alpha:true});}
     gpuPipes();
     GPU.lay={};GPU.bufs={};GPU.bgs={};GPU.cvTex=new Map();GPU.trash=[];GPU.ar={};GPU.fL=null;GPU.nView=null;
     GPU.T={};GPU.bw=0;GPU.ok=true;
@@ -505,6 +509,7 @@ function gpuFrame(){
   if(GPU.trash.length){for(const t of GPU.trash)t.destroy();GPU.trash.length=0;}
   ctx=MAIN_CTX;
   ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,GPU.bw,GPU.bh);ctx.setTransform(DPR,0,0,DPR,0,0);
+  if(GPU.uiWas){const q=GPU.uctx;q.setTransform(1,0,0,1,0,0);q.clearRect(0,0,GPU.bw,GPU.bh);q.setTransform(DPR,0,0,DPR,0,0);GPU.uiWas=false;}
   GPU.on=true;
   GPU.enc=GPU.dev.createCommandEncoder();GPU.scenePass=null;GPU.overPass=null;GPU.sceneOn=false;GPU.emitOn=false;GPU.scene3D=false;GPU.hitK=0;GPU.shaft=null;GPU.lens=null;GPU.lt.length=0;GPU.oc.length=0;GPU.dz.length=0;GPU.sep=0;GPU.sepH.length=0;
   return true;
@@ -591,9 +596,15 @@ function gpuWorld(k,grain,vig){
     if(P.k>0){
       if(!GPU.emitOn){GPU.enc.beginRenderPass({colorAttachments:[{view:GPU.V.emit,loadOp:"clear",storeOp:"store",clearValue:{r:0,g:0,b:0,a:0}}]}).end();GPU.emitOn=true;}
       gpuBloom();}
-    if(GPU.uiWas){const q=GPU.uctx;q.setTransform(1,0,0,1,0,0);q.clearRect(0,0,GPU.bw,GPU.bh);q.setTransform(DPR,0,0,DPR,0,0);GPU.uiWas=false;}
-    ctx=GPU.uctx;
+    /* дальше кадр рисует стойку (25d) — на слой приборов */
+    ctx=GPU.uctx;if((typeof rackOpen==="function")&&rackOpen()&&G.running&&!scrOpen())GPU.uiWas=true;
   }catch(e){gpuDrop("сборка: "+((e&&e.message)||e),true);}
+}
+/* приборы режима — на слой приборов, мимо видеокарты; без неё — на #c, как раньше */
+function gpuHud(fn){
+  if(!GPU.on||!GPU.uctx){fn();return;}
+  const c0=ctx;ctx=GPU.uctx;GPU.uiWas=true;
+  try{fn();}finally{ctx=c0;}
 }
 /* лестница свечения: колено в первый уровень, вниз по уровням, вверх — сложением */
 function gpuBloom(){
@@ -608,9 +619,7 @@ function gpuBloom(){
 function gpuPresent(){
   if(!GPU.on||!GPU.enc){GPU.on=false;return;}
   try{
-    const ui=(typeof rackOpen==="function")&&rackOpen()&&G.running&&!scrOpen();
-    if(ui){gpuTsAround("ui",()=>GPU.dev.queue.copyExternalImageToTexture({source:GPU.ui},{texture:GPU.T.ui,premultipliedAlpha:true},[GPU.bw,GPU.bh]));GPU.uiWas=true;}
-    GPU.uiOn=ui;
+    GPU.uiOn=false;   /* слой приборов — DOM-холст (#hud), не текстура */
     gpuUni();gpuLtWrite();
     gpuPass(GPU.gx.getCurrentTexture().createView(),GPU.kill.fin?GPU.P.fin0:GPU.P.fin,GPU.B.fin,"final");
     const tsRead=gpuTsResolve();
