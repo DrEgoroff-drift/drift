@@ -140,6 +140,22 @@ Heat haze behind the nozzle (G4b).
   timing taken with `--clock wall` before c0a9f1f is void** — do not lean on it. Headless (411×742
   ×1.5, vsync-bound): canvas 617×1113 in every pair, JS p50 2.4–3.5 ms, world 0.5–0.6 ms, 2 quanta; all
   deltas 0–1 fps — the numbers that matter come from the phone.
+  Probe prep (50a0807, 91e344f, 48aeeca): kill keys `nebGen` (the regeneration alone) and `frontPx` (the
+  #c copy shrunk to 1×1, the 2D raster kept), and GPU pass times by timestamp queries (`out.gpuMs`).
+  **P1 11/n — the dust dims the stars in the stars' own shader** (Контроль 24.09): the nebula composite was
+  two full-res passes, ABS (blend mul) then EMI (blend add). Under the nebula the scene holds only the black
+  clear (`SPACE_BLACK` = 0) and the stars when ABS runs: the regeneration needs no scene pass open, and
+  everything else — dust motes, system-under (orbits, belt, the star's glow), planets, the #c segments — is
+  drawn after the composite; the landmark (the galaxy, the remnant) lives inside the generated texture and
+  reaches the frame through EMI, never through ABS. So the ABS factor moved into the star pipeline's
+  fragment shader (`gnbStars`, 16gb; the coverage is `gspCov`, 16g): every part of a star — dot, streak,
+  halo, spikes — is multiplied per pixel. Over-blend is linear and rgba16f does not clamp, so
+  `m·(s + d(1−a)) = m·s + m·d(1−a)`: a core that is > 1 before absorption lands the same. EMI reads its
+  bicubic once instead of three times. Pinned sky, stepped clock (`cut` pair, 411×742 ×1.5): outside the
+  menu's `newsdot` CSS pulse (DOM, real time), max|Δ| 1 on 531 px, spread over the frame (214 on star
+  cores, the brightest at luma 244; the rest on faint halos); the bicubic alone gives max|Δ| 1 on 34 px
+  (the compiler contracts the reused value differently). Desktop timestamps (617×1113, thrust, two
+  alternated runs each): nebComp + scene0 1.70–1.71 → 1.38 ms; nebGen 0.91–0.93 untouched; gpu errs 0.
   G3b 3/n (e1aeb19) and L4 k/n (7b406eb) accepted.
 - Brief of **L4 k/n — the shock ring and the exhaust haze bend the backdrop, never a hull** (Контроль 24.09): no
   hull, own or pirate, sprite or 2D, is cut into bands; an RGB fringe on the backdrop only. Done (08b/08c): the

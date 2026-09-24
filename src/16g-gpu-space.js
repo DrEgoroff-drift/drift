@@ -23,7 +23,7 @@ struct SP{a:vec4f,b:vec4f,c:vec4f,d:vec4f,e:vec4f,f:vec4f,g:vec4f};
 fn toClip(p:vec2f)->vec4f{return vec4f(p.x/u.a.x*2.-1.,1.-p.y/u.a.y*2.,0.,1.);}
 fn corn(i:u32)->vec2f{var c=array(vec2f(0.,0.),vec2f(1.,0.),vec2f(1.,1.),vec2f(0.,0.),vec2f(1.,1.),vec2f(0.,1.));return c[i];}
 struct VO{@builtin(position) p:vec4f,@location(0) col:vec4f,@location(1) @interpolate(flat) g:vec4f,@location(2) @interpolate(flat) h:vec4f};
-@fragment fn fs(i:VO)->@location(0) vec4f{
+fn gspCov(i:VO)->f32{
   let p=i.p.xy;var cov=0.;
   if(i.h.x<.5){cov=covRect(p,i.g);}
   else if(i.h.x<1.5){cov=covDisc(p,i.g.xy,i.g.z);}
@@ -31,7 +31,9 @@ struct VO{@builtin(position) p:vec4f,@location(0) col:vec4f,@location(1) @interp
   else if(i.h.x<3.5){let d=p-i.g.xy;cov=exp(-3.2*dot(d,d)/(i.g.z*i.g.z));}
   else{let d=abs(p-i.g.xy);let al=select(d.y,d.x,i.g.w>.5);let ac=select(d.x,d.y,i.g.w>.5);
        let f=max(0.,1.-al/i.g.z);cov=exp(-ac*ac/(i.h.y*i.h.y))*f*sqrt(f);}
-  let al=i.col.a*cov;return vec4f(i.col.rgb*al,al);}`;
+  return cov;}
+@fragment fn fs(i:VO)->@location(0) vec4f{
+  let al=i.col.a*gspCov(i);return vec4f(i.col.rgb*al,al);}`;
 /* a: res.xy, css.xy · b: dpr, t, cx, cy · c: par, mdx, mdy, mov · d: kx, ky, a0, – · e: пыль dcx, dcy, sw, sh */
 /* звезда = четыре части: тело, ореол, два луча; на ходу тело — прочерк */
 const GSP_STARS=`
@@ -208,9 +210,10 @@ function gpuSpaceSys(sys,cx0,cy0,Z){
   const cx=cx0*.06*Z,cy=cy0*.06*Z;
   const M=starMove(cx,cy,1);
   const ub=gspUni(cx,cy,1,M,cx0*Z,cy0*Z);
-  /* звёзды — под туманностью: её пыль гасит их, газ светит поверх */
-  gspStarsDust(pass,P,ub,0);
-  if(neb)pass=gpuNebulaComp(pass);
+  /* звёзды — под туманностью: её пыль гасит их (множитель поглощения — в шейдере самой
+     звезды, gnbStars), газ светит поверх */
+  if(neb){gnbStars(pass,ub,gspStarBuf());pass=gpuNebulaComp(pass);}
+  else gspStarsDust(pass,P,ub,0);
   gspStarsDust(pass,P,ub,Math.round(46*sysStyle(sys).dust*G.opts.gfx.particles),true);
 }
 /* заставка: две туманности на разной глубине и звёзды (drawNebula + drawStars) */

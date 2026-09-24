@@ -49294,7 +49294,7 @@ struct SP{a:vec4f,b:vec4f,c:vec4f,d:vec4f,e:vec4f,f:vec4f,g:vec4f};
 fn toClip(p:vec2f)->vec4f{return vec4f(p.x/u.a.x*2.-1.,1.-p.y/u.a.y*2.,0.,1.);}
 fn corn(i:u32)->vec2f{var c=array(vec2f(0.,0.),vec2f(1.,0.),vec2f(1.,1.),vec2f(0.,0.),vec2f(1.,1.),vec2f(0.,1.));return c[i];}
 struct VO{@builtin(position) p:vec4f,@location(0) col:vec4f,@location(1) @interpolate(flat) g:vec4f,@location(2) @interpolate(flat) h:vec4f};
-@fragment fn fs(i:VO)->@location(0) vec4f{
+fn gspCov(i:VO)->f32{
   let p=i.p.xy;var cov=0.;
   if(i.h.x<.5){cov=covRect(p,i.g);}
   else if(i.h.x<1.5){cov=covDisc(p,i.g.xy,i.g.z);}
@@ -49302,7 +49302,9 @@ struct VO{@builtin(position) p:vec4f,@location(0) col:vec4f,@location(1) @interp
   else if(i.h.x<3.5){let d=p-i.g.xy;cov=exp(-3.2*dot(d,d)/(i.g.z*i.g.z));}
   else{let d=abs(p-i.g.xy);let al=select(d.y,d.x,i.g.w>.5);let ac=select(d.x,d.y,i.g.w>.5);
        let f=max(0.,1.-al/i.g.z);cov=exp(-ac*ac/(i.h.y*i.h.y))*f*sqrt(f);}
-  let al=i.col.a*cov;return vec4f(i.col.rgb*al,al);}`;
+  return cov;}
+@fragment fn fs(i:VO)->@location(0) vec4f{
+  let al=i.col.a*gspCov(i);return vec4f(i.col.rgb*al,al);}`;
 /* a: res.xy, css.xy · b: dpr, t, cx, cy · c: par, mdx, mdy, mov · d: kx, ky, a0, – · e: пыль dcx, dcy, sw, sh */
 /* звезда = четыре части: тело, ореол, два луча; на ходу тело — прочерк */
 const GSP_STARS=`
@@ -49479,9 +49481,10 @@ function gpuSpaceSys(sys,cx0,cy0,Z){
   const cx=cx0*.06*Z,cy=cy0*.06*Z;
   const M=starMove(cx,cy,1);
   const ub=gspUni(cx,cy,1,M,cx0*Z,cy0*Z);
-  /* звёзды — под туманностью: её пыль гасит их, газ светит поверх */
-  gspStarsDust(pass,P,ub,0);
-  if(neb)pass=gpuNebulaComp(pass);
+  /* звёзды — под туманностью: её пыль гасит их (множитель поглощения — в шейдере самой
+     звезды, gnbStars), газ светит поверх */
+  if(neb){gnbStars(pass,ub,gspStarBuf());pass=gpuNebulaComp(pass);}
+  else gspStarsDust(pass,P,ub,0);
   gspStarsDust(pass,P,ub,Math.round(46*sysStyle(sys).dust*G.opts.gfx.particles),true);
 }
 /* заставка: две туманности на разной глубине и звёзды (drawNebula + drawStars) */
@@ -50246,21 +50249,41 @@ fn fineE(p:vec2f)->f32{
   let wv=vec2f(gn(qf*.45+V[0].z),gn(qf*.45+vec2f(5.,1.)))*2.2;
   let r=1.-abs(2.*fb(qf+wv,2)-1.);
   return .5+.95*r*r;}`;
-const GNB_ABS=GNB_FINE+`
-fn field(p:vec2f,uv:vec2f)->vec4f{
+/* поглощение — в шейдере звезды (P1 11/n): полноэкранный проход ABS умножал цель сцены, а под
+   туманностью в ней только чёрная очистка и звёзды (пересчёт идёт до открытия сцены, всё
+   прочее — после сведения). Смешение «поверх» линейно по цвету, поэтому множитель на каждом
+   пикселе звезды даёт то же, что множитель на экране, — и платится площадью звёзд.
+   Звёзды — поверх газа, под пылью: общее плечо кадра сжимает слабую звезду на светлом
+   газе в ноль, поэтому то, что за газом (почти одни звёзды — фон чёрный), поднято на
+   его яркость. Прячет звёзды только пыль */
+const GNB_STAR_ABS=GNB_FINE+`
+struct FU{res:vec4f,v:array<vec4f,15>};
+@group(0) @binding(2) var<uniform> fu:FU;
+@group(0) @binding(3) var smp:sampler;
+@group(0) @binding(4) var t0:texture_2d<f32>;
+@fragment fn fs(i:VO)->@location(0) vec4f{
+  let al=i.col.a*gspCov(i);
+  let uv=i.p.xy/fu.res.xy;let p=uv*fu.res.zw;
   let g=texCubic(t0,smp,uv);
   let T=fineT(p,clamp(1.-g.a,0.,1.));
-  /* звёзды — поверх газа, под пылью: общее плечо кадра сжимает слабую звезду на светлом
-     газе в ноль, поэтому то, что за газом (почти одни звёзды — фон чёрный), поднято на
-     его яркость. Прячет звёзды только пыль */
   let le=1.-exp(-max(g.r,max(g.g,g.b))*6.)+fu.v[1].w*.6;
-  return vec4f(pow(vec3f(T),vec3f(.72,1.,1.42))*(1.+2.6*le),1.);}`;
+  return vec4f(i.col.rgb*al*(pow(vec3f(T),vec3f(.72,1.,1.42))*(1.+2.6*le)),al);}`;
+function gnbStars(pass,ub,sb){
+  const P=gpuPipe("gnb.stars",GPU_WGSL_COMMON+GSP_WGSL_U.replace(/@fragment fn fs\(i:VO\)[\s\S]*$/,"")+GSP_STARS+GNB_STAR_ABS);
+  const f=GNB.SU||(GNB.SU=new Float32Array(64));
+  f[0]=GPU.bw;f[1]=GPU.bh;f[2]=W;f[3]=H;f.set(GNB.C.subarray(0,60),4);
+  const nb=gpuBuf("gnb.su",256,GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST);GPU.dev.queue.writeBuffer(nb,0,f);
+  pass.setPipeline(P);pass.setBindGroup(0,gpuBind("gnb.stars",P,[ub,sb,nb,GPU.S.lin,GNB.view]));
+  pass.draw(6,GSP.nStars*4);
+}
 /* V[0]: камера x,y, время, зерно · V[1]: звезда x,y, радиус/H, вкл · V[2]: цвет звезды, ширина тени ·
    V[3]: цвет теней · V[4..10]: планеты x,y,r (CSS px) — их тени */
 const GNB_EMI=GNB_FINE+`
 fn field(p:vec2f,uv:vec2f)->vec4f{
   let V=fu.v;let H=fu.res.w;
-  var c=max(texCubic(t0,smp,uv).rgb,vec3f(0.));
+  /* одна бикубика на пиксель: цвет, туман и цвет космоса читают её (было три — 12 выборок) */
+  let g0=texCubic(t0,smp,uv);
+  var c=max(g0.rgb,vec3f(0.));
   let l0=max(c.r,max(c.g,c.b));
   /* тон газа до волокон: тусклый газ окрашивает туман своим цветом */
   let gh0=c/max(l0,1e-4);
@@ -50305,7 +50328,7 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   let wn=lwin(lfr(p,fu.res.z,H,V[1].xy,V[11],V[12],V[0].xy,V[13].w),V[11],V[12])*mix(1.,.3+.7*smoothstep(.02,.22,sd),V[1].w);
   /* густая пыль закрывает и туман за собой: тело пыли темнее пустоты */
   let fog=V[1].w*(.1+.05/(1.+pow(dl/.4,2.)))*smoothstep(.12,.3,dl)*(1.-body)*(1.-.92*wn)
-    *mix(.55,1.,clamp(1.-texCubic(t0,smp,uv).a,0.,1.));
+    *mix(.55,1.,clamp(1.-g0.a,0.,1.));
   /* где есть хоть тусклый газ, туман берёт его тон: тёплый туман на бирюзе был серым */
   /* в пустоте туман — цвет звезды, но не бледнее насыщенности .5: бледно-тёплое на
      тёмном читалось серой дымкой */
@@ -50326,7 +50349,7 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   let m=max(lum,1e-4);let mm=max(max(c.r,c.g),max(c.b,1e-4));
   /* цвет космоса — здесь, а не очисткой сцены: подъём звёзд на газе (ABS) его не трогает,
      пыль гасит его так же, как звёзды */
-  let Tb=pow(vec3f(fineT(p,clamp(1.-texCubic(t0,smp,uv).a,0.,1.))),vec3f(.72,1.,1.42));
+  let Tb=pow(vec3f(fineT(p,clamp(1.-g0.a,0.,1.))),vec3f(.72,1.,1.42));
   /* неон ушёл: насыщенность и яркость газа ниже, туманность остаётся цветной (автор, 24.09) */
   let co=c*(1.-exp(-mm*1.25))/(mm*1.25)*1.12;let cy=dot(co,vec3f(.2126,.7152,.0722));
   return vec4f(mix(vec3f(cy),co,.66)*mix(1.,.72,smoothstep(.12,.6,cy))+vec3f(5.,7.,12.)/255.*Tb,0.);}`;
@@ -50448,8 +50471,7 @@ function gpuNebulaComp(pass){
   if(!GNB.view||GNB.dev!==GPU.dev)return pass;
   const ts=gpuTs("nebComp");let p=pass;
   if(ts){pass.end();GPU.scenePass=null;p=GPU.enc.beginRenderPass({colorAttachments:[{view:GPU.V.scene,loadOp:"load",storeOp:"store"}],timestampWrites:ts});}
-  /* сначала пыль гасит и краснит то, что за ней (звёзды, фон), потом газ светит поверх */
-  gpuField(p,"gnb.abs",GNB_ABS,GNB.C,[{view:GNB.view}],{blend:"mul"});
+  /* пыль уже погасила и покраснила звёзды (gnbStars); газ светит поверх */
   gpuField(p,"gnb.emi",GNB_EMI,GNB.C,[{view:GNB.view}],{blend:"add"});
   /* корпуса на ярком газе — силуэтами: общий проход темнит газ вокруг 2D (08b) */
   GPU.sep=.7;
