@@ -51295,6 +51295,7 @@ function drawSysHud(zx,zy,sh,sys,U){
     return null;
   };
   let firstAnchor=null,stack=null;   // якорь и растущий фронт текущей стопки на кромке
+  const chipDrawn=[];                // где фишки нарисованы в этом кадре (сглаженные места)
   for(const c of cands){
     const m=c.m,ang=c.ang,dx=c.dx,dy=c.dy,cx=c.cx,cy=c.cy,label=c.label,cw=c.cw,ch=c.ch,onSide=c.onSide;
     const A=m.hail?1:CA;   /* окликнувший не гаснет */
@@ -51372,6 +51373,29 @@ function drawSysHud(zx,zy,sh,sys,U){
       }
     }
     rx=dcx;ry=dcy;
+    /* нарисованные фишки не пересекаются (P1 6/n, Контроль 24.09, hb_pair): слоты
+       разведены, но плашка едет к своему со скоростью CHIP_SPEED, и в пути ложилась
+       на соседнюю — «ЦИЦИИН · 2092» поверх «ЗВЕЗДА · 846». Подошла к уже нарисованной
+       ближе зазора — отодвигается вдоль своей кромки на наложение плюс зазор (у самой
+       границы сдвиг ноль — без скачка); у края кадра — на другую сторону соседки */
+    {
+      const vert=chipEdge(rx,ry,cw,ch)<2;
+      for(let pass=0;pass<3;pass++){
+        let hit=false;
+        for(const d of chipDrawn){
+          if(rx+cw+gap<=d.x||d.x+d.w+gap<=rx||ry+ch+gap<=d.y||d.y+d.h+gap<=ry)continue;
+          hit=true;
+          const lo=vert?d.y-ch-gap:d.x-cw-gap,hi=vert?d.y+d.h+gap:d.x+d.w+gap;
+          const me=vert?ry+ch/2:rx+cw/2,mid=vert?d.y+d.h/2:d.x+d.w/2;
+          const a0=vert?inset.y0:inset.x0,a1=vert?inset.y1-ch:inset.x1-cw;
+          let v=me>=mid?hi:lo;if(v<a0||v>a1)v=me>=mid?lo:hi;
+          v=clamp(v,a0,a1);
+          if(vert)ry=v;else rx=v;
+        }
+        if(!hit)break;
+      }
+      chipDrawn.push({x:rx,y:ry,w:cw,h:ch});
+    }
     const AA=A*dcA;
     /* Зона нажатия шире плашки: правило интерфейса требует 44 px на палец, а
        фишка ростом 16. Растим её вокруг центра, не трогая рисунок. Зона идёт

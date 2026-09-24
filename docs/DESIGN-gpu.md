@@ -114,6 +114,12 @@ Heat haze behind the nozzle (G4b).
   launch drew its own starfield (`BG` in 16-flight) and no pair could compare stars. It now takes
   `DRIFT_SEED` when a stand sets it before the script; `docs/shot.py` sets 1 (`--seed -1` = as in play).
   The player never sets it. Two runs (`same_pair.png`): one sky; what still moves is real time (moons, HUD).
+  **P1 6/n — target chips at the edge never overlap as drawn** (Контроль 24.09, `hb_pair` y≈1390): the
+  slots were apart, but a chip glides to its slot at `CHIP_SPEED` and on the way lay over its neighbour.
+  Now a drawn chip closer than the 4 px gap to one already drawn moves along its own edge by the overlap
+  plus the gap (zero at the boundary, so no jump), or to the neighbour's other side at the frame's edge.
+  Check (`chipab.sh`, ship behind the station on the star's bearing, the station chip forced to be in
+  flight at the star's chip): tightest gap between drawn chips −14.4 px → 4.0 px; gpu errs 0.
   G3b 3/n (e1aeb19) and L4 k/n (7b406eb) accepted.
 - Brief of **L4 k/n — the shock ring and the exhaust haze bend the backdrop, never a hull** (Контроль 24.09): no
   hull, own or pirate, sprite or 2D, is cut into bands; an RGB fringe on the backdrop only. Done (08b/08c): the
