@@ -78,7 +78,7 @@ Heat haze behind the nozzle (G4b).
 
 ## Where I stopped (update on every commit)
 
-- **Deploy candidate: `446a576` (L1b 6/n; before it `d57c40c`), accepted by Контроль by its pairs.** The author: deploy to main
+- **Deploy candidate: `15da663` (L1b 7/n; before it `446a576`), accepted by Контроль by its pairs.** The author: deploy to main
   before the limit window reaches 90%; the signal «ДЕПЛОЙ» comes from Контроль. On it: close the step with a
   commit; `test.ps1 -Full` and `node test-node.js`; bump `VER` and a PATCHNOTES line (what the player sees
   better, plus «needs a browser with WebGPU»); a release commit; send Контроль its sha. **Контроль pushes**
@@ -86,8 +86,10 @@ Heat haze behind the nozzle (G4b).
   the site falls: a commit on top with the tree of `d543aff`, never a force-push. Only a commit Контроль
   accepted by pairs goes to main. CI rehearsal of ef8c8b9 (deploy.yml flags, `--disable-gpu`): load clean,
   smoke 4/4, Node green (the «рейсы» suite fails in full order only, green alone; it sits in quarantine).
-- L1b 6/n accepted (446a576); L1b 7/n — the author's second soft pass on 446a576 plus stars over gas — done
-  (below), waiting for Контроль. Next: the G steps by the bible §L, G2 first.
+- L1b 7/n accepted (15da663). G2 done (below), waiting for Контроль; next G3/G3b planets. Brief of **G2 the star alive: granulation boils (warped cells
+  drifting), the corona flows out in radial jets, 4–6 prominences arch on the limb and breathe, a flare
+  flashes at the limb and fades over seconds; no threshold edge, no neon — corona and prominences melt into
+  the glow.** Gate: whole pairs at 760; l2c at a flare's peak and ~2 s later.
 - Brief of **L1b 6/n — pillars become tapering trunks, not sticks, and the star field is as rich as
   main's.** A pillar is a trunk: base width ≈ ⅓ of its length, narrowing to a rounded head a little wider than
   its neck, 2–3 swellings along it, a bend up to 15°; 2–4 in the frame, each at most half the way from the wall
@@ -375,6 +377,15 @@ Heat haze behind the nozzle (G4b).
   (billows in growing coordinates, the same ladder, heat `exp(−a/.42)`, gone by 1.1 s), 22 spark streaks
   (a 1/30 s path each, HDR). Flash — `gpuLight` (white ~.1 s, then warm), shock — `gpuShock` over ~1.1 s.
   Drawn before `genDraw`, so bolts and beams stay on top and sharper.
+  Done (G2, the star alive; `17g` `star()`). Granulation boils: the cells are bent by a slow warp (t·.004),
+  the pattern turns over in ~2 s. The corona flows out in jets: noise stretched along the ray and sliding
+  outward, two cycles half a period apart with a triangular weight (600 frames), so the coordinate never
+  runs off and the jets never pinch to the centre; long faint streamers fade with exp(−x·.4), no end. Five
+  prominences per star (angle, width, height hashed from `ph` = phase + seed): arches over the limb that
+  breathe (±20%, ~5 s), gaussian across, their feet fade along the arc, filaments drift; thin wire loops read
+  as neon, so they are thick (.08 Rd), loose and dim (×.4) — plasma melting into the glow. A flare every
+  ~12 s at a new place on the limb: rises in ~9 frames, e-folds in ~1.7 s, three gaussians wide. Shots:
+  l2c at the flare's peak and +120 frames (`g2shot.sh` computes the peak from the phase).
   Done (L1b 7/n, the author circled four seams on 446a576's nnormal: «резко цвет меняется, и края мне
   кажется можно поблюрить, и цвет не такой яркий»). The glow tone `gc` (rim, the star's scattered light,
   the cavity) was a hard pick of the seam's side: it drew the magenta arc around the star and the violet

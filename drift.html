@@ -52811,7 +52811,7 @@ fn edist(l:vec2f,A:f32,B:f32)->f32{let f=l.x*l.x/(A*A)+l.y*l.y/(B*B)-1.;
   return abs(f)/max(length(2.*vec2f(l.x/(A*A),l.y/(B*B))),1e-6);}
 fn over(acc:vec4f,s:vec4f)->vec4f{return s+acc*(1.-s.a);}
 /* одно светило: фотосфера (закрывает фон), корона со стримерами, ореол, четыре луча */
-fn star(p:vec2f,sv:vec4f,cv:vec4f,t:f32,big:f32,px:f32,hz:f32)->vec4f{
+fn star(p:vec2f,sv:vec4f,cv:vec4f,t:f32,big:f32,px:f32,hz:f32,ph:f32)->vec4f{
   let d=p-sv.xy;let R=sv.z;let heat=sv.w;let col=cv.rgb;let rr=length(d);let r=rr/R;
   if(cv.w<.5||r>9.5){return vec4f(0.);}
   /* диск маленький (белое ядро — точка, а не блин), у гиганта крупнее */
@@ -52821,12 +52821,50 @@ fn star(p:vec2f,sv:vec4f,cv:vec4f,t:f32,big:f32,px:f32,hz:f32)->vec4f{
   {
     /* корона: тугой ореол у диска и слабые стримеры дальше; без порога по
        радиусу — ступень была бы видна кольцом */
-    let n=sf(lrot(dir,t*.0014)*(2.4+big)+vec2f(r*.45,-r*.3)+vec2f(0.,t*.002));
     let x=max(r-Rd,0.);
-    e=e+col*(exp(-x*3.)*.5+exp(-x*.9)*.16*(.6+.8*n))*breath;
+    /* G2: корона течёт наружу струями — узор по лучу растянут и едет от диска. Два
+       цикла со сдвигом на полпериода и треугольным весом: координата не уходит в
+       бесконечность, струи не схлопываются к центру через минуту */
+    let cy=t/600.;let u1=fract(cy);let u2=fract(cy+.5);let w1=1.-abs(2.*u1-1.);
+    let dr=lrot(dir,t*.0006);
+    let n1=sf(dr*(3.2+big+.55*(x-2.*u1))+vec2f(ph*3.1,1.7));
+    let n2=sf(dr*(3.2+big+.55*(x-2.*u2))+vec2f(ph*3.1+7.3,3.8));
+    let n=n1*w1+n2*(1.-w1);
+    e=e+col*(exp(-x*3.)*.5+exp(-x*.9)*.16*(.45+1.6*n*n))*breath;
+    /* длинные слабые стримеры — тают в свечение, конца у них нет */
+    e=e+mix(col,vec3f(1.,.9,.78),.3)*exp(-x*.4)*.05*pow(n,3.)*8.*breath;
     /* L2: сразу за лимбом — тугая яркая корона (выше единицы, ярче газа за ней):
        край диска читается светом, а не тёмной каймой по светлому газу */
     e=e+mix(col,vec3f(1.,.82,.55),.5)*.35*exp(-x*14.)*smoothstep(Rd*.92,Rd,r)*breath;
+  }
+  /* G2: протуберанцы — арки на лимбе, дышат и текут волокнами; край у них гауссов, а
+     концы тают по дуге — ни одного порогового края, тон тёплый, не неон */
+  if(r<Rd*2.6){
+    let ang=atan2(dir.y,dir.x);let hr=r-Rd;
+    let pc=mix(col,vec3f(1.,.52,.38),.5);
+    for(var i=0;i<5;i++){let fi=f32(i);
+      let a=6.2832*sh(vec2f(ph*1.3+fi*1.31,.7));
+      let wd=.12+.14*sh(vec2f(ph*1.7+fi,2.9));
+      let da=atan2(sin(ang-a),cos(ang-a));let u=da/wd;
+      if(abs(u)<1.8){
+        let hh=Rd*(.2+.38*sh(vec2f(ph*2.3+fi,5.1)))*(1.+.2*sin(t*.021+fi*2.1));
+        let y=hh*sqrt(max(1.-u*u,0.));
+        let th=Rd*.08*(.6+.8*sf(vec2f(u*3.+t*.01,hr/Rd*4.+fi)));
+        let dd=hr-y;
+        let fil=.25+1.2*sf(vec2f(u*5.-t*.006,hr/Rd*9.+fi*3.));
+        let foot=exp(-pow(max(abs(u)-.8,0.)/.25,2.));
+        let lift=smoothstep(-Rd*.06,Rd*.05,hr);
+        e=e+pc*(exp(-dd*dd/(th*th))*fil*.6+.35*exp(-dd*dd/(th*th*6.)))*foot*lift*.4*(.85+.15*sin(t*.05+fi));}
+    }
+  }
+  /* G2: вспышка у лимба — вспыхивает за долю секунды, гаснет за пару; место новое
+     каждый раз (цикл ~12 с) */
+  {
+    let fc=t/720.+fract(ph*.37);let fp=fract(fc);
+    let fI=smoothstep(0.,.012,fp)*exp(-fp*7.);
+    let fa=6.2832*sh(vec2f(floor(fc)+ph,9.));
+    let fd=length(d/R-vec2f(cos(fa),sin(fa))*Rd*.93)/Rd;
+    e=e+vec3f(1.,.92,.8)*fI*(1.3*exp(-fd*fd/.006)+.35*exp(-fd*fd/.05)+.08*exp(-fd*fd/.4));
   }
   /* широкий ореол цветом звезды; при объёмной туманности его держит рассеяние по газу
      (16gb) — свой, одноцветный, ложился на газ дополнительного тона серой дымкой */
@@ -52847,7 +52885,9 @@ fn star(p:vec2f,sv:vec4f,cv:vec4f,t:f32,big:f32,px:f32,hz:f32)->vec4f{
     let rn=min(r/Rd,1.);let mu=sqrt(max(0.,1.-rn*rn));
     let lk=1.-mu;let limb=1.-(.3+.15*big)*lk-(.15+.1*big)*lk*lk;
     let gs=(5.+6.*(1.-big))/Rd;
-    let ga=.7+.2*big;let gr=1.-ga*.5+ga*sf(d/R*gs+vec2f(t*.0015,-t*.001));
+    /* G2: грануляция кипит — ячейки гнёт медленный вихрь, за пару секунд узор другой */
+    let q=d/R*gs;let wq=vec2f(sf(q*.5+vec2f(t*.004,1.3)),sf(q*.5+vec2f(4.1,-t*.0035)));
+    let ga=.7+.2*big;let gr=1.-ga*.5+ga*sf(q+wq*1.6+vec2f(t*.0015,-t*.001));
     /* белизна — от жара: гигант холодный и остаётся оранжевым, карлик — добела */
     let wh=mix(.12,.85,clamp((heat-.7)/.3,0.,1.));
     let hot=mix(mix(col,vec3f(1.,.82,.55),.35),vec3f(1.,.99,.965),wh*mu*mu*mu*mu);
@@ -53000,7 +53040,7 @@ fn hole(p:vec2f,hv:vec4f,nb:vec4f,t:f32,px:f32)->vec4f{
 fn field(p:vec2f,uv:vec2f)->vec4f{
   let V=fu.v;let kind=V[4].x;let t=V[4].y;let px=1./V[6].w;
   var acc=vec4f(0.);
-  if(kind<.5){let hz=1.-.8*V[7].w;acc=over(acc,star(p,V[0],V[1],t,V[4].w,px,hz));acc=over(acc,star(p,V[2],V[3],t,V[4].w,px,hz));}
+  if(kind<.5){let hz=1.-.8*V[7].w;acc=over(acc,star(p,V[0],V[1],t,V[4].w,px,hz,V[4].z));acc=over(acc,star(p,V[2],V[3],t,V[4].w,px,hz,V[4].z+3.7));}
   else if(kind<1.5){acc=over(acc,neutron(p,V[7],V[4].z+t*.006,px));}
   else{acc=over(acc,hole(p,V[7],V[8],t,px));}
   return over(acc,vec4f(bleed(p,V[5],V[6].rgb),0.));
@@ -53083,7 +53123,7 @@ function gsyStar(pass,sys,ox,oy,R){
   else if(st.kind==="giant"){put(0,ox,oy,R*1.85,.72,"#ff7448");big=1;}
   else if(st.kind==="dwarf")put(0,ox,oy,R*.34,1.5,"#e8f4ff");
   else put(0,ox,oy,R,1,sys.cls.col);
-  S[16]=kind;S[17]=G.t;S[18]=st.phase||0;S[19]=big;
+  S[16]=kind;S[17]=G.t;S[18]=(st.phase||0)+(kind?0:(sys.seed%97)*.13);S[19]=big;
   if(!kind)S[31]=GNB.view&&GNB.dev===GPU.dev&&GNB.sys===sys?1:0;
   /* зарево в мировых координатах: вокруг звезды, без порога по краю кадра */
   const reach=R*30,dx=ox<0?-ox:(ox>W?ox-W:0),dy=oy<0?-oy:(oy>H?oy-H:0);
