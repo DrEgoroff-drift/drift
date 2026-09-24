@@ -13,7 +13,7 @@
    · пыль с глубиной резкости: дальний слой — мелкий и резкий, ближний — крупные
      размытые пятна. В 2D было наоборот — самые крупные пылинки летели в самом
      дальнем слое (s 1.7 при par .22), и ближний план читался как дальний. */
-const SPACE_BG={r:5/255,g:7/255,b:12/255,a:1};
+const SPACE_BG={r:5/255,g:7/255,b:12/255,a:1};const SPACE_BLACK={r:0,g:0,b:0,a:1};
 const GSP={stars:null,dustBase:-1,dustN:0,UA:new Float32Array(28),star:null,QA:new Float32Array(24)};
 /* размер и мягкость пылинки по слоям DUST_LAYERS (дальний → ближний) */
 const GSP_DUST_L=[{s:.75,soft:0,a:1},{s:1.05,soft:0,a:1},{s:2.2,soft:1,a:.26}];
@@ -201,6 +201,8 @@ function gpuSpaceSys(sys,cx0,cy0,Z){
   /* туманность объёмом (16gb) считается своим проходом — до прохода сцены */
   GSP.star=gnbStar(sys,W/2-cx0*Z,H/2-cy0*Z,sys.radius*Z);
   const neb=gpuNebulaGen(sys,cx0*Z,cy0*Z,GSP.star,Z);
+  /* с туманностью цвет космоса кладёт её проход EMI (16gb): очистка — в чёрное */
+  if(neb)GPU.sceneBg=SPACE_BLACK;
   const pass=gpuScene();if(!pass)return;
   const P=gspPipes();
   const cx=cx0*.06*Z,cy=cy0*.06*Z;

@@ -78,7 +78,7 @@ Heat haze behind the nozzle (G4b).
 
 ## Where I stopped (update on every commit)
 
-- **Deploy candidate: `d57c40c` (L1b 5/n; before it `7658f17`), accepted by Контроль by its pairs.** The author: deploy to main
+- **Deploy candidate: `446a576` (L1b 6/n; before it `d57c40c`), accepted by Контроль by its pairs.** The author: deploy to main
   before the limit window reaches 90%; the signal «ДЕПЛОЙ» comes from Контроль. On it: close the step with a
   commit; `test.ps1 -Full` and `node test-node.js`; bump `VER` and a PATCHNOTES line (what the player sees
   better, plus «needs a browser with WebGPU»); a release commit; send Контроль its sha. **Контроль pushes**
@@ -86,7 +86,8 @@ Heat haze behind the nozzle (G4b).
   the site falls: a commit on top with the tree of `d543aff`, never a force-push. Only a commit Контроль
   accepted by pairs goes to main. CI rehearsal of ef8c8b9 (deploy.yml flags, `--disable-gpu`): load clean,
   smoke 4/4, Node green (the «рейсы» suite fails in full order only, green alone; it sits in quarantine).
-- L1b 6/n done (below, with the author's «лужа» pass); waiting for Контроль's verdict on its pairs.
+- L1b 6/n accepted (446a576); L1b 7/n — the author's second soft pass on 446a576 plus stars over gas — done
+  (below), waiting for Контроль. Next: the G steps by the bible §L, G2 first.
 - Brief of **L1b 6/n — pillars become tapering trunks, not sticks, and the star field is as rich as
   main's.** A pillar is a trunk: base width ≈ ⅓ of its length, narrowing to a rounded head a little wider than
   its neck, 2–3 swellings along it, a bend up to 15°; 2–4 in the frame, each at most half the way from the wall
@@ -374,6 +375,19 @@ Heat haze behind the nozzle (G4b).
   (billows in growing coordinates, the same ladder, heat `exp(−a/.42)`, gone by 1.1 s), 22 spark streaks
   (a 1/30 s path each, HDR). Flash — `gpuLight` (white ~.1 s, then warm), shock — `gpuShock` over ~1.1 s.
   Drawn before `genDraw`, so bolts and beams stay on top and sharper.
+  Done (L1b 7/n, the author circled four seams on 446a576's nnormal: «резко цвет меняется, и края мне
+  кажется можно поблюрить, и цвет не такой яркий»). The glow tone `gc` (rim, the star's scattered light,
+  the cavity) was a hard pick of the seam's side: it drew the magenta arc around the star and the violet
+  wedge with straight sides by the barge; now it is the same saturation-kept mix as the gas. Tone ramp
+  .27–.73, seam .13 wide. Dust opacity is the edge ramp itself (od = −ln(1 − body·(.8….985))/2.4): the
+  exponential of a ramp had saturated in its first third; body ramps over 135 CSS px on the back, 115
+  elsewhere, 10–90% ≈ 41 px at 760. The rim glows 15–30 px at 760. The near layer's dark band and ridges
+  lost their thresholds; full-res edge sharpening .7 → .2. Colour: EMI keeps .66 of its saturation and
+  squeezes only the bright (×.72 above cy .6) — a flat ×.85 had pushed the dim field under black. Stars
+  over gas, under dust: with a nebula the scene clears to black, ABS lifts what is behind the gas by
+  1 + 2.6·(gas brightness + fog), EMI adds the space colour back dimmed by the dust. nnormal: S mean .52 →
+  .40, gas L p95 139 → 87, hue slope p95 4.7 → 2.4°/px; black 20 / 20 / 1% (l4a, nnormal, l2c). Stars at
+  l4a with gas and no dust 276 (main 242).
   Done (L1b 6/n, trunks and a soft nebula; the author on the nnormal angle: «слишком резкие переходы,
   выглядит как лужа а не как туманность»; Контроль cancelled the sharp star-side edge). A pillar is one
   tapering trunk per angular cell (14 a turn, share .5): length ≤ half the wall-to-star way and ≤ .72 H, base
