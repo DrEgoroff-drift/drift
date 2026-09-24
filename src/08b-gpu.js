@@ -11,7 +11,9 @@ const GPU={ok:false,on:false,lost:false,busy:false,none:false,
   bw:0,bh:0,qw:2,qh:2,dpr:0,cw:0,ch:0,enc:null,scenePass:null,sceneOn:false,
   sceneBg:{r:0,g:0,b:0,a:1},uiOn:false,uiWas:false,hitK:0,hitDx:0,post:{k:0,grain:0,vig:0},
   lay:{},bufs:{},bgs:{},cvTex:new Map(),trash:[],errs:0,frameNo:0,snapNo:-1,wantSnap:false,overPass:null,
-  ar:{},fL:null};
+  ar:{},fL:null,
+  /* выключатели для замера (?g11=deep, 28z): bloom, front — вклейка #c, fin — голый финал */
+  kill:{}};
 
 /* кадр целиком (видеокарта + 2D) для тех, кто его читает: look(), детекторы,
    эталоны. Показанный кадр WebGPU после конца задачи не читается, поэтому снимок
@@ -310,6 +312,11 @@ fn overlay(b:vec3f,s:vec3f)->vec3f{return select(1.-2.*(1.-b)*(1.-s),2.*b*s,b<ve
   let n=textureLoad(tNoise,vec2i(v.p.xy)%vec2i(64),0).r;
   c=c+((n*255.-110.)/36.-.5)/255.;
   return vec4f(c,1.);}
+/* голый финал для замера (GPU.kill.fin): сцена под передним слоем и интерфейс, больше ничего */
+@fragment fn fsFinal0(v:V)->@location(0) vec4f{
+  let f=textureSampleLevel(tFront,sl,v.uv,0.);var c=tone(sceneAt(v.uv))*(1.-f.a)+f.rgb;
+  if(u.ui>.5){let q=textureSampleLevel(tUi,sl,v.uv,0.);c=c*(1.-q.a)+q.rgb;}
+  return vec4f(c,1.);}
 /* сегмент gpuOver: 2D, нарисованное до сих пор, ложится в сцену (премультиплицировано) */
 struct CO{@location(0) c:vec4f,@location(1) e:vec4f};
 @fragment fn fsComp(v:V)->CO{
@@ -337,7 +344,7 @@ function gpuPipes(){
   const mk=(fs,fmt)=>d.createRenderPipeline({layout:PL,vertex:{module:mod,entryPoint:"vs"},
     fragment:{module:mod,entryPoint:fs,targets:[{format:fmt}]},primitive:{topology:"triangle-list"}});
   GPU.P={down:mk("fsDown","rgba16float"),blurH:mk("fsBlurH","rgba16float"),
-         blurV:mk("fsBlurV","rgba16float"),fin:mk("fsFinal",GPU.fmt),mipDn:mk("fsMipDn","rgba16float"),
+         blurV:mk("fsBlurV","rgba16float"),fin:mk("fsFinal",GPU.fmt),fin0:mk("fsFinal0",GPU.fmt),mipDn:mk("fsMipDn","rgba16float"),
          mipUp:d.createRenderPipeline({layout:PL,vertex:{module:mod,entryPoint:"vs"},
            fragment:{module:mod,entryPoint:"fsMipUp",targets:[{format:"rgba16float",blend:{
              color:{srcFactor:"one",dstFactor:"one"},alpha:{srcFactor:"one",dstFactor:"one"}}}]},
@@ -532,6 +539,9 @@ function gpuOver(){
   if(GPU.overPass){GPU.overPass.end();GPU.overPass=null;}
   if(!GPU.sceneOn)gpuScene();
   if(GPU.scenePass){GPU.scenePass.end();GPU.scenePass=null;GPU.scene3D=false;}
+  if(GPU.kill.front){
+    ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,GPU.bw,GPU.bh);ctx.restore();
+    return GPU.overPass=GPU.enc.beginRenderPass({colorAttachments:[{view:GPU.V.scene,loadOp:"load",storeOp:"store"}]});}
   d.queue.copyExternalImageToTexture({source:cvs},{texture:GPU.T.front,premultipliedAlpha:true},[GPU.bw,GPU.bh]);
   gpuUni();
   const p=GPU.enc.beginRenderPass({colorAttachments:[{view:GPU.V.scene,loadOp:"load",storeOp:"store"},
@@ -563,8 +573,9 @@ function gpuWorld(k,grain,vig){
        градиентах туманности и короны работает как дизеринг (2D снимал его ради
        полноэкранного overlay, 1–3 мс) */
     P.k=(!off&&G.running)?k:0;P.grain=(!off&&grain&&G.running)?1:0;P.vig=(!off&&grain&&vig&&G.running)?1:0;
+    if(GPU.kill.bloom)P.k=0;
     if(!GPU.noiseOk)gpuNoise();
-    GPU.dev.queue.copyExternalImageToTexture({source:cvs},{texture:GPU.T.front,premultipliedAlpha:true},[GPU.bw,GPU.bh]);
+    if(!GPU.kill.front)GPU.dev.queue.copyExternalImageToTexture({source:cvs},{texture:GPU.T.front,premultipliedAlpha:true},[GPU.bw,GPU.bh]);
     if(P.k>0){
       if(!GPU.emitOn){GPU.enc.beginRenderPass({colorAttachments:[{view:GPU.V.emit,loadOp:"clear",storeOp:"store",clearValue:{r:0,g:0,b:0,a:0}}]}).end();GPU.emitOn=true;}
       gpuBloom();}
@@ -589,7 +600,7 @@ function gpuPresent(){
     if(ui){GPU.dev.queue.copyExternalImageToTexture({source:GPU.ui},{texture:GPU.T.ui,premultipliedAlpha:true},[GPU.bw,GPU.bh]);GPU.uiWas=true;}
     GPU.uiOn=ui;
     gpuUni();gpuLtWrite();
-    gpuPass(GPU.gx.getCurrentTexture().createView(),GPU.P.fin,GPU.B.fin);
+    gpuPass(GPU.gx.getCurrentTexture().createView(),GPU.kill.fin?GPU.P.fin0:GPU.P.fin,GPU.B.fin);
     GPU.dev.queue.submit([GPU.enc.finish()]);
     GPU.frameNo++;
     if(GPU.wantSnap){GPU.wantSnap=false;gpuTakeSnap();}

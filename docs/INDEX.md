@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 604 · символов верхнего уровня: 5957
+Файлов: 604 · символов верхнего уровня: 5960
 
 ## СИМВОЛЫ
 
@@ -1054,14 +1054,14 @@ CSW                          src/19e-clouds.js:68
 ctlHint                      src/15-input.js:171-175
 ctlReset                     src/15a-helm.js:127-132
 ctx                          src/08-state.js:5
-cue                          src/08-state.js:384-389
+cue                          src/08-state.js:390-395
 CUE_EPS                      src/27m-scroll-cue.js:25
-CUE_INFO                     src/08-state.js:364
-CUE_LVL                      src/08-state.js:365
-cueFold                      src/08-state.js:392-397
-cueLvl                       src/08-state.js:371-374
-cueReset                     src/08-state.js:375
-cueSameOffer                 src/08-state.js:383
+CUE_INFO                     src/08-state.js:370
+CUE_LVL                      src/08-state.js:371
+cueFold                      src/08-state.js:398-403
+cueLvl                       src/08-state.js:377-380
+cueReset                     src/08-state.js:381
+cueSameOffer                 src/08-state.js:389
 CULT_EXP_GOAL                src/12b3-fx-cult.js:22
 CULT_PLAY                    src/12b3-fx-cult.js:51-94
 CULT_PLAY_EVERY              src/12b3-fx-cult.js:19
@@ -1099,8 +1099,8 @@ CUN                          src/22-mode-cave.js:22-32
 curTok                       src/09-audio.js:96
 CUT_RANGE                    src/24-mode-belt.js:187
 cvs                          src/08-state.js:2
-CVS_RECT                     src/08-state.js:85
-cvsRect                      src/08-state.js:100-103
+CVS_RECT                     src/08-state.js:91
+cvsRect                      src/08-state.js:106-109
 dayK                         src/19c-light.js:68-73
 dayKq                        src/19c-light.js:74
 dbg                          src/28-loop.js:732-802
@@ -1693,7 +1693,7 @@ expReady                     src/11x-expedition.js:25-28
 expRelease                   src/11x-expedition.js:101-110
 expStart                     src/11x-expedition.js:29-38
 EYES_SUITE                   tests/99-run.js:39-41
-f16                          src/08b-gpu.js:426
+f16                          src/08b-gpu.js:433
 FACE_EYE                     src/12d-mgr-face.js:14
 FACE_HAIR                    src/12d-mgr-face.js:12
 FACE_ROLE_BG                 src/12d-mgr-face.js:15
@@ -1885,7 +1885,7 @@ folkVisit                    src/12u-folk.js:104-113
 FOOD_SUPPLY                  src/21a1b-base-food.js:16
 foundBase                    src/21a-mode-base.js:101-115
 frame                        src/28-loop.js:628-674
-FRAME_IN                     src/08-state.js:354
+FRAME_IN                     src/08-state.js:360
 FRAME_JS                     src/28-loop.js:119
 FRAME_MS                     src/28-loop.js:141
 frameBody                    src/28-loop.js:429-560
@@ -1923,9 +1923,11 @@ fwdMissing                   src/21b6-base-forward.js:42-52
 fwdStep                      src/21b6-base-forward.js:99-116
 fxInc                        tests/91zzzw-fx.js:18-22
 fxWorld                      tests/91zzzw-fx.js:6-16
-G                            src/08-state.js:184-270
+G                            src/08-state.js:190-276
 G_BOOT_KEYS                  tests/90-harness.js:186
+G11_GPU_KILL                 src/28z-fps-probe.js:135-156
 g11Fps                       src/28z-fps-probe.js:7-14
+g11Iv                        src/28z-fps-probe.js:119-128
 GAL_ARMS                     src/17z2-galaxy-names.js:8-11
 GAL_BAR_A                    src/17z1-galaxy.js:21
 GAL_BUDGET_MS                src/17z1-galaxy.js:66
@@ -2057,7 +2059,7 @@ glowPatches                  src/11i-glow.js:73-82
 glowScan                     src/11i-glow.js:64-68
 glowSprite                   src/16a0-glow.js:24-36
 glowTier                     src/11i-glow.js:122-128
-GLT_H                        src/08b-gpu.js:425
+GLT_H                        src/08b-gpu.js:432
 glyphEl                      src/12t-settle.js:79-90
 glyphHasRunes                src/12t-settle.js:52-56
 glyphNodes                   src/12t-settle.js:92-102
@@ -2115,61 +2117,61 @@ GPU_FLD_HEAD                 src/08c-gpu-kit.js:180
 GPU_IMG_WGSL                 src/08c-gpu-kit.js:102
 GPU_KEEP_A                   src/08c-gpu-kit.js:11
 GPU_KIT_WGSL                 src/08c-gpu-kit.js:89
-GPU_PL_WGSL                  src/08b-gpu.js:440
-GPU_POST_WGSL                src/08b-gpu.js:79
+GPU_PL_WGSL                  src/08b-gpu.js:447
+GPU_POST_WGSL                src/08b-gpu.js:81
 GPU_SHP_WGSL                 src/08c-gpu-kit.js:139
 GPU_WGSL_COMMON              src/08c-gpu-kit.js:58
 gpuArena                     src/08c-gpu-kit.js:78-88
 gpuBargeBody                 src/12l-barge.js:559-563
 gpuBind                      src/08c-gpu-kit.js:33-39
-gpuBloom                     src/08b-gpu.js:576-583
+gpuBloom                     src/08b-gpu.js:587-594
 gpuBooms                     src/13z-gpu-combat.js:149-167
 gpuBuf                       src/08c-gpu-kit.js:26-31
 gpuBursts                    src/13z-gpu-combat.js:266-286
 gpuCanvasTex                 src/08c-gpu-kit.js:42-55
 gpuCombatEnergy              src/13z-gpu-combat.js:64-115
-gpuCompNeb                   src/08b-gpu.js:399-409
+gpuCompNeb                   src/08b-gpu.js:406-416
 gpuDrones                    src/16ga-gpu-trail.js:132-176
-gpuDrop                      src/08b-gpu.js:72-77
+gpuDrop                      src/08b-gpu.js:74-79
 gpuExhaust                   src/16ga-gpu-trail.js:259-292
 gpuField                     src/08c-gpu-kit.js:194-222
-gpuFrame                     src/08b-gpu.js:489-498
-gpuHaze                      src/08b-gpu.js:422
+gpuFrame                     src/08b-gpu.js:496-505
+gpuHaze                      src/08b-gpu.js:429
 gpuHullLight                 src/16ga-gpu-trail.js:345-364
 gpuImage                     src/08c-gpu-kit.js:122-134
 gpuKitU                      src/08c-gpu-kit.js:94-98
-gpuLight                     src/08b-gpu.js:424
+gpuLight                     src/08b-gpu.js:431
 gpuLitSprite                 src/17c-system-draw.js:478-485
-gpuLtWrite                   src/08b-gpu.js:428-435
-gpuManual                    src/08b-gpu.js:548-553
+gpuLtWrite                   src/08b-gpu.js:435-442
+gpuManual                    src/08b-gpu.js:558-563
 gpuMoon                      src/17ga-gpu-planets.js:400-405
 gpuNebulaComp                src/16gb-gpu-nebula.js:575-582
 gpuNebulaGen                 src/16gb-gpu-nebula.js:525-574
-gpuNoise                     src/08b-gpu.js:358-363
-gpuNone                      src/08b-gpu.js:32-39
-gpuOver                      src/08b-gpu.js:529-546
-gpuPass                      src/08b-gpu.js:410-413
+gpuNoise                     src/08b-gpu.js:365-370
+gpuNone                      src/08b-gpu.js:34-41
+gpuOver                      src/08b-gpu.js:536-556
+gpuPass                      src/08b-gpu.js:417-420
 gpuPipe                      src/08c-gpu-kit.js:18-25
-gpuPipes                     src/08b-gpu.js:329-355
+gpuPipes                     src/08b-gpu.js:336-362
 gpuPirateBody                src/12i-pirate-hull.js:432-437
 gpuPlanet                    src/17ga-gpu-planets.js:320-338
-gpuPresent                   src/08b-gpu.js:585-599
-gpuResize                    src/08b-gpu.js:364-397
-gpuScene                     src/08b-gpu.js:502-511
-gpuScene3D                   src/08b-gpu.js:515-523
+gpuPresent                   src/08b-gpu.js:596-610
+gpuResize                    src/08b-gpu.js:371-404
+gpuScene                     src/08b-gpu.js:509-518
+gpuScene3D                   src/08b-gpu.js:522-530
 gpuShapes                    src/08c-gpu-kit.js:164-175
-gpuShock                     src/08b-gpu.js:423
+gpuShock                     src/08b-gpu.js:430
 gpuSky                       src/19ca-gpu-sky.js:66-82
-gpuSnapshot                  src/08b-gpu.js:20-24
+gpuSnapshot                  src/08b-gpu.js:22-26
 gpuSpaceSys                  src/16g-gpu-space.js:199-215
 gpuSpaceTitle                src/16g-gpu-space.js:217-228
 gpuStation                   src/17c-system-draw.js:486
 gpuSysUnder                  src/17g-gpu-system.js:386-391
-gpuTakeSnap                  src/08b-gpu.js:25-30
+gpuTakeSnap                  src/08b-gpu.js:27-32
 gpuTrail                     src/16ga-gpu-trail.js:53-90
-gpuUni                       src/08b-gpu.js:473-485
+gpuUni                       src/08b-gpu.js:480-492
 gpuWake                      src/16ga-gpu-trail.js:99-123
-gpuWorld                     src/08b-gpu.js:556-574
+gpuWorld                     src/08b-gpu.js:566-585
 gradePass                    src/19c-light.js:260-296
 GREEN_BEDS                   src/21g-greenhouse.js:23
 GREEN_FULL                   src/21g-greenhouse.js:24
@@ -2405,7 +2407,7 @@ heatAdd                      src/13a-guns.js:47-52
 heatHaze                     src/18d-postfx.js:70-74
 heatHazeFrom                 src/18d-postfx.js:52-67
 heatTick                     src/13a-guns.js:54-62
-held                         src/08-state.js:343
+held                         src/08-state.js:349
 HELM                         src/15a-helm.js:117
 HELM_ACC                     src/15a-helm.js:75
 HELM_ARC0                    src/15a-helm.js:99
@@ -2666,12 +2668,12 @@ hsMut                        tests/91zzzzza-save-hostile.js:20-27
 hud                          src/27z-telemetry.js:155-500
 HUD_BAND                     src/27z-telemetry.js:21
 HUD_FLOOR                    src/27z-telemetry.js:31
-HUD_NUM                      src/08-state.js:93
+HUD_NUM                      src/08-state.js:99
 HUD_PREV                     src/27z-telemetry.js:58
 HUD_STEP                     src/27z-telemetry.js:57
 hudFloorMeasure              src/27z-telemetry.js:123-154
-hudNumDirty                  src/08-state.js:94
-hudRect                      src/08-state.js:120-126
+hudNumDirty                  src/08-state.js:100
+hudRect                      src/08-state.js:126-132
 hudWake                      src/27z-telemetry.js:60-69
 hueToward                    src/19b-sky.js:53-64
 HULL_BAKES                   src/03e1-hull-bake.js:24
@@ -2836,7 +2838,7 @@ KEY_MODES                    tests/91zzzzze-keys.js:20
 keyLabel                     src/15-input.js:147-158
 keyMap                       src/15-input.js:136-143
 keyRow                       src/27-ui-ship.js:46-57
-keys                         src/08-state.js:180
+keys                         src/08-state.js:186
 keyStateOK                   tests/91zzzzze-keys.js:23-29
 killPirate                   src/13-pirates.js:308-349
 killRock                     src/24-mode-belt.js:154-161
@@ -3368,7 +3370,7 @@ mountsOf                     src/05d-mounts.js:29-45
 mountTakes                   src/05d-mounts.js:71-76
 mountWhyNot                  src/05d-mounts.js:78-84
 mouseWalkAt                  src/15-input.js:439-468
-msgHeld                      src/08-state.js:398
+msgHeld                      src/08-state.js:404
 MSL_ARM                      src/16b-missile.js:20
 MSL_COOL                     src/16b-missile.js:16
 MSL_DMG                      src/16b-missile.js:14
@@ -3686,7 +3688,7 @@ padsAuto                     src/15-input.js:69
 padsFadeIn                   src/15-input.js:77
 padsFadeOut                  src/15-input.js:76
 padsFit                      src/15-input.js:20-61
-padsRect                     src/08-state.js:127-133
+padsRect                     src/08-state.js:133-139
 PAL_CLOSE                    src/21b5-base-palata.js:26
 PAL_FEE                      src/21b5-base-palata.js:21
 PAL_FEES_RU                  src/21b5-base-palata.js:50-55
@@ -3836,6 +3838,7 @@ peopleLine                   src/11-log.js:55-60
 peopleOffline                src/12a-crew.js:385-389
 PERCH_AT                     src/27j-console.js:24
 PERCH_EVERY                  src/27j-console.js:25
+PHONE_DPR                    src/08-state.js:12
 PHYS_DT                      tests/91zzzzy-phys.js:14
 physRun                      tests/91zzzzy-phys.js:29-37
 physShip                     tests/91zzzzy-phys.js:19-26
@@ -4038,7 +4041,7 @@ prbLeg                       tests/91zzw-eco-probe.js:5-23
 prbStations                  tests/91zzw-eco-probe.js:4
 prButtons                    tests/91zzzzzi-promise.js:53
 prDelta                      tests/91zzzzzi-promise.js:26-30
-prevAct                      src/08-state.js:182
+prevAct                      src/08-state.js:188
 priceBestOf                  src/12aa-need.js:242-251
 pricesClose                  src/12aa-need.js:294
 pricesCount                  src/12aa-need.js:252
@@ -4072,9 +4075,9 @@ probeVoice                   src/25m-probe.js:75-83
 prof                         src/28-loop.js:694-721
 PROFILE                      src/02-world.js:129-142
 profW                        src/03-ships.js:205-214
-PROMPT_RECT                  src/08-state.js:107
-promptEl                     src/08-state.js:108-111
-promptRect                   src/08-state.js:112-118
+PROMPT_RECT                  src/08-state.js:113
+promptEl                     src/08-state.js:114-117
+promptRect                   src/08-state.js:118-124
 prRestore                    tests/91zzzzzi-promise.js:59-74
 prSpoke                      tests/91zzzzzi-promise.js:50
 prState                      tests/91zzzzzi-promise.js:25
@@ -4383,7 +4386,7 @@ recSeg                       src/15c-rec.js:27
 recStart                     src/15c-rec.js:28
 recStop                      src/15c-rec.js:29
 recTick                      src/15c-rec.js:39-51
-rectsDirty                   src/08-state.js:95-99
+rectsDirty                   src/08-state.js:101-105
 RED                          src/16gb-gpu-nebula.js:66
 refineBank                   src/11-log.js:170
 REG_TRANSIT                  src/12al3-reg.js:12
@@ -4503,7 +4506,7 @@ repRepairMul                 src/12k-rep.js:53
 repShipMul                   src/12k-rep.js:74
 repWord                      src/12k-rep.js:31-35
 RES                          src/02-world.js:2-88
-RES_AUTO                     src/08-state.js:170
+RES_AUTO                     src/08-state.js:176
 RES_DOWN_K                   src/28-loop.js:226
 RES_DOWN_WIN                 src/28-loop.js:227
 RES_HOLD_MS                  src/28-loop.js:228
@@ -4533,7 +4536,7 @@ rescueTake                   src/16c-rescue.js:105-146
 resEma                       src/28-loop.js:234
 resetArm                     src/26-ui-station.js:694
 resetWorld                   tests/90-harness.js:235-369
-resize                       src/08-state.js:24-59
+resize                       src/08-state.js:29-65
 resModeCap                   src/28-loop.js:257-262
 resSay                       src/28-loop.js:243-246
 resTarget                    src/28-loop.js:239-242
@@ -4788,7 +4791,7 @@ saveGame                     src/14a-cloud.js:38-51
 saveText                     src/14-save.js:148-186
 saveTop                      src/14-save.js:142-145
 saveWeigh                    src/14-save.js:129-141
-say                          src/08-state.js:355
+say                          src/08-state.js:361
 SCALE_KEYS                   src/10-music.js:25
 SCALES                       src/10-music.js:5-24
 SCAR_KEYS                    src/05b2-scars.js:14
@@ -4838,7 +4841,7 @@ scripVisit                   src/12u-scrip.js:95
 scripVisitReset              src/12u-scrip.js:96
 scrollCue                    src/27m-scroll-cue.js:26-30
 scrollCueAll                 src/27m-scroll-cue.js:31-33
-scrOpen                      src/08-state.js:138
+scrOpen                      src/08-state.js:144
 SD_KIND                      src/12tb-settle-draw.js:33-37
 SD_MAN                       src/12tb-settle-draw.js:31
 sdBody                       src/12tb-settle-draw.js:224-234
@@ -5206,7 +5209,7 @@ starRGB                      src/19c-light.js:49-59
 start                        src/15-input.js:622-630
 startLanding                 src/19-mode-landing.js:2-33
 startScoop                   src/19a-mode-scoop.js:51-61
-stat                         src/08-state.js:274-342
+stat                         src/08-state.js:280-348
 STAT_SHOW                    src/05-parts.js:426-438
 STATE_HASH_SKIP              src/08a-statehash.js:24-29
 stateHash                    src/08a-statehash.js:30-81
@@ -5577,9 +5580,9 @@ UI_BOOT                      tests/90-harness.js:195
 UI_SEL_BOOT                  tests/90-harness.js:230
 uidRand                      src/01-core.js:97-100
 uiFont                       src/18c-chunks.js:54
-UIK                          src/08-state.js:15
+UIK                          src/08-state.js:20
 uiK                          src/18c-chunks.js:53
-uiScale                      src/08-state.js:23
+uiScale                      src/08-state.js:28
 uiSelRestore                 tests/90-harness.js:232
 unfitPart                    src/05-parts.js:385-388
 UNIQ                         src/21b1-base-pay.js:35-44
@@ -5922,10 +5925,10 @@ wldNear                      tests/91zzzzzzzzz-worlds.js:29-36
 wldPct                       tests/91zzzzzzzzz-worlds.js:38
 WORLD_MOOD                   src/10-music.js:39-52
 WORLD_SPREAD                 src/10-music.js:99
-WORLD_SUB                    src/08-state.js:179
+WORLD_SUB                    src/08-state.js:185
 WORLD_VIB                    src/10-music.js:98
 WORLD_VOICE                  src/10-music.js:57-73
-worldCovered                 src/08-state.js:402
+worldCovered                 src/08-state.js:408
 worldQuiet                   src/11ar-doors.js:32
 worldRes                     src/02a-worldmix.js:119-126
 worldTables                  src/02a-worldmix.js:86-117
@@ -6090,12 +6093,12 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## src/08-state.js · 34 КБ
   · состояние:1
-  · DOM не читается в кадре (0.3):60
+  · DOM не читается в кадре (0.3):66
 
 ## src/08a-statehash.js · 6 КБ
   · хэш состояния (M441):1
 
-## src/08b-gpu.js · 43 КБ
+## src/08b-gpu.js · 44 КБ
   · видеокарта: кадр рисует WebGPU (docs/DESIGN-gpu.md):1
 
 ## src/08c-gpu-kit.js · 15 КБ
@@ -7197,7 +7200,7 @@ zooTick                      src/11ad-zoo.js:41-54
   · look() — прибор кадра:1
   · читается ли изготовитель (M369, §19.4):296
 
-## src/28z-fps-probe.js · 9 КБ
+## src/28z-fps-probe.js · 14 КБ
   · пробник G11: ?g11:1
 
 ## src/29c-home-in.js · 16 КБ

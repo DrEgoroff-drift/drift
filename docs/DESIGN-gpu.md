@@ -82,8 +82,19 @@ Heat haze behind the nozzle (G4b).
   gpu the same way: the release list plus `cismoke`, its sha to Контроль. Rollback: a commit with the tree of
   `d543aff` on top, no force-push. `C:/Claude/drift-rel` stays — it is Контроль's working directory; nothing is
   done in it.
-- Now: G3b 3/n lights (e1aeb19) and L4 k/n the shock ring past hulls (done, below) handed in → §L in order. A pair
-  handed in, Контроль told, the next item taken without waiting for a verdict.
+- Now: **§L stopped — the phone first** (Контроль 24.09, PLAN §1 top item): 0.457.0 on the S23 at 24.9 fps.
+  Brief of **P1 1/n — measure the GPU frame on the phone, cut the obvious**: `?g11=deep` now works in place
+  (no «new game», no jump — the author's save is safe): it waits for flight, then kills one GPU pass at a
+  time in «base — kill» pairs of 1.5 s (nebula, backdrop, system-under, planets, city lights, trails, combat,
+  hull light, point lights, refraction, bloom, the #c copy, the final pass stripped to scene + front + UI via
+  `fsFinal0`) and steps the DPR ×2/1.5/1.25/1; it prints fps delta and median ms, the share of frames the
+  nebula re-generated, `gfx.res`/`RES_AUTO`, into a box, `console.log` and `window.G11_DEEP`; the old tour is
+  `?g11=deeptour`. The kill switches are `GPU.kill.{bloom,front,fin}` (08b). The obvious cut: a phone (≤760
+  CSS px and a coarse pointer) caps the auto DPR at 1.5 (`PHONE_DPR`, 08-state) — 0.56 of the pixels for every
+  pass and every #c copy; headless shots (fine pointer) are untouched. Pair `ph_pair.png` (411×742 at ×2 |
+  ×1.5, both scaled to the S23's 2.625 like the compositor): the same frame, the hull a touch softer; the stars
+  differ because the starfield lays out by device pixels (PLAN §1). L1b 8/n parked (PLAN §0).
+  G3b 3/n (e1aeb19) and L4 k/n (7b406eb) accepted.
 - Brief of **L4 k/n — the shock ring and the exhaust haze bend the backdrop, never a hull** (Контроль 24.09): no
   hull, own or pirate, sprite or 2D, is cut into bands; an RGB fringe on the backdrop only. Done (08b/08c): the
   scene's alpha became the hull mask — every blend keeps it (`GPU_KEEP_A`), the lit sprite (`gst`: pirates,

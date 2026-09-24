@@ -5,6 +5,11 @@ const cvs=document.getElementById("c");
 let ctx=cvs.getContext("2d",{alpha:true});
 const MAIN_CTX=ctx;
 let W=0,H=0,DPR=1;
+/* потолок чёткости телефона (узкое окно и палец): S23, 0.457.0 — при ×2 канвы 822×1484,
+   кадр 33 мс; каждый проход видеокарты и каждая вклейка #c платят за пиксель. На ×1.5
+   пикселей 0.56 от ×2, на 6-дюймовом экране разницы глазом почти нет. Руками (gfx.res)
+   можно выше. let — пробник ?g11=deep меряет им ступени */
+let PHONE_DPR=1.5;
 /* ── у интерфейса своя мерка, и она тоже от кадра (M221) ──
    Мир с M217 растёт вместе с окном, а приборы, пэды, борт и экраны остались
    в пикселях: на большом мониторе интерфейс превратился в мелкую кайму по
@@ -31,6 +36,7 @@ function resize(){
      TDZ: до объявления G он недоступен, а 2 — это же самое «не ограничен»,
      что и выключенное правило даёт после */
   let modeCap=2;try{modeCap=resModeCap();}catch(e){}
+  try{if(window.innerWidth<=760&&matchMedia("(pointer:coarse)").matches)modeCap=Math.min(modeCap,PHONE_DPR);}catch(e){}
   DPR=want?Math.min(want,window.devicePixelRatio||1):Math.min(RES_AUTO,modeCap,window.devicePixelRatio||1);
   W=window.innerWidth;H=window.innerHeight;
   /* телефон не трогаем: там своя вёрстка, вымеренная под узкий экран */

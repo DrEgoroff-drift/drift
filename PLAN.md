@@ -33,7 +33,10 @@ Built: the core and post pass (08b), the layer kit (08c), the space backdrop (16
   k_g4m main (156,72,52) → gpu (67,37,36)). Near-camera dust with parallax and stretch in flight. Budget: nebula
   at ¼ resolution, not every frame, ≤2 ms on the laptop (`prof()`).
   - [ ] L1b dust, after e0e933f (Контроль 24.09): in l2c the top-right pillars at 760 read as shards or claws —
-    heads sharper than they should be; rounder, blunter heads.
+    heads sharper than they should be; rounder, blunter heads. Parked mid-way for the phone: near-star shards
+    fixed (heads ≥ .38 H from the star, width from the full length, finer erosion), but the ionisation rim
+    then reads as beads along thin crests in l2c — it toggles per ¼-res texel (not the erosion, not the
+    gradient floor, a wider gradient step makes it worse); the patch waits in the session scratchpad.
   - [ ] L1b dust: try a dim warm light 10–20 px inward from the rim, so the cut-out becomes a body.
   - [ ] L1b dust, after 7658f17 (Контроль 24.09): at ×2.00 top right two small orange «tadpoles» — globules
     with a tail and no gas around read as fish at 760. A globule with no gas dims stars like the rest of the dust.
@@ -95,6 +98,19 @@ time; the S23 shows in `adb mdns services` only with «Беспроводная 
 `192.168.1.52:5555` answered, unauthorized until «Разрешить» on its screen). Tools:
 `docs/night-2026-09-13/raw/phone-tools`.
 
+- [ ] **First, above all the picture work (Контроль 24.09): 0.457.0 on the author's S23 runs at 24.9 fps**
+  (median 33.4 ms, p90 50, frames alternate 2 and 3 vsyncs — the eye reads a 50 ms frame as a step back;
+  pauses of 100–150 ms every 20–60 s, worst by Коммуна in someone else's fight; both canvases 822×1484).
+  Gate: S23, 30 s of flight in НЕЙЭЛЬ by the stations — ≥ 95 % of frames at 16.7 ms, none at 50 ms; the
+  picture at 760 no worse (a was | now pair). Done so far: the phone's DPR cap 1.5 and `?g11=deep` (in place,
+  per GPU pass, DPR steps) — cut the rest by its numbers. Then:
+  - the wedge at the ship's nose (orange/turquoise, a tick and a circle at its end, by «чужой бой») is filled
+    flat and near-opaque on the phone and covers the course: find it, make it thin — the edge a line, fill
+    ≤ 15 % fading along its length (Контроль's frame `ph2_seq.png`);
+  - a planet's shadow in the dust is near-black and runs to the screen edge (`ph_tri.png`): a cone that
+    lightens and blurs with distance and dims the dust by half at most;
+  - the starfield lays itself out anew when the DPR changes (×2 and ×1.5 of one scene show different stars),
+    so every auto step of the resolution reshuffles the sky.
 - [ ] **Before the runs:** ask the author to close the two «CryptoTab Pool» tabs (`web.ctpool.net`, a
   browser miner) in the same Chrome; fly with the real finger — the S23 reports touch at 240 Hz, a CDP
   stick at 26 Hz; suspect the long save (160 log lines, 21 drones, 493 DOM nodes) only if those two do
@@ -122,7 +138,8 @@ time; the S23 shows in `adb mdns services` only with «Беспроводная 
   назад» is gone. The four white parked ships by the lane still keep their size floor.
 - [ ] **The «каша» by the star at ×0.16:** ask the author whether the fleet/billboard label and the hotel
   prompt over the lane still read as clutter.
-- **Gate:** cadence ≥ 95 %, no frame > 24 ms in 60 s of steering, `RES_AUTO ≥ 2`, `g11` ≥ 55 fps in every
+- **Gate:** cadence ≥ 95 %, no frame > 24 ms in 60 s of steering, `RES_AUTO ≥ 2` (under the phone's cap of
+  1.5, 08-state `PHONE_DPR`), `g11` ≥ 55 fps in every
   mode on the laptop (landing and surface fail it on a big canvas — paint area, `gfx.res` auto should step
   down there). The gate is re-run after every stage; a stage that breaks it is not closed.
 

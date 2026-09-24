@@ -114,6 +114,84 @@ async function g11Deep(list){
   }
   return res;
 }
+/* промежутки кадров за sec: к/с, медиана и p90 (мс), доля кадров не длиннее такта 60 Гц
+   (≤18.5 мс) и число кадров от 45 мс — ворота телефона меряются этим, не средним */
+function g11Iv(sec){
+  return new Promise(res=>{
+    const d=[];let t0=0,tp=0;
+    const tick=t=>{if(!t0)t0=tp=t;else{d.push(t-tp);tp=t;}
+      if(t-t0<sec*1000){requestAnimationFrame(tick);return;}
+      const s=d.slice().sort((a,b)=>a-b),q=k=>+(s[Math.min(s.length-1,Math.floor(s.length*k))]||0).toFixed(1);
+      res({fps:Math.round(d.length/((t-t0)/1000)),p50:q(.5),p90:q(.9),ok:Math.round(100*d.filter(x=>x<=18.5).length/Math.max(1,d.length)),n45:d.filter(x=>x>=45).length});};
+    requestAnimationFrame(tick);
+  });
+}
+/* ── ?g11=deep: разбор кадра видеокарты НА МЕСТЕ (телефон, 25.09) ──
+   Ничего не нажимает и никуда не переносит: сохранение автора не трогается. Ждёт, пока
+   игрок в полёте (system), и через 4 с глушит по одному проходы видеокарты — пары
+   «база — глушение» по 1.5 с, дельта к/с. Потом ступени чёткости ×2/1.5/1.25/1 (по 2.5 с).
+   Всё это время держать ход (автопилот или тягу): стоящая камера не пересчитывает
+   туманность. Ответ — табличкой поверх, в console.log и в window.G11_DEEP */
+const G11_GPU_KILL=[
+  ["neb",["gpuNebulaGen"]],["space",["gpuSpaceSys"]],["under",["gpuSysUnder"]],
+  ["planets",["gpuPlanet","gpuMoon"]],["cities",["planetLightsOn"]],
+  ["trails",["gpuWake","gpuTrail","gpuDrones"]],["combat",["gpuCombatEnergy"]],
+  ["hullLight",["gpuHullLight"]],["points",["gpuLight"]],["refract",["gpuHaze","gpuShock"]],
+  ["bloom","bloom"],["front2D","front"],["final","fin"]];
+async function g11GpuDeep(put){
+  const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+  const res={};
+  for(const [key,what] of G11_GPU_KILL){
+    const b=await g11Iv(1.5);
+    const saved={};
+    if(typeof what==="string")GPU.kill[what]=true;
+    else for(const nm of what){if(typeof window[nm]==="function"){saved[nm]=window[nm];window[nm]=()=>{};}}
+    await sleep(150);
+    let v;try{v=await g11Iv(1.5);}
+    finally{if(typeof what==="string")GPU.kill[what]=false;else for(const nm in saved)window[nm]=saved[nm];}
+    res[key]=(v.fps-b.fps)+" ("+b.p50+"→"+v.p50+" мс)";
+    put(key+" +"+res[key]);
+  }
+  return res;
+}
+async function g11DprSweep(put){
+  const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+  const res={},RA=RES_AUTO,PD=PHONE_DPR;
+  try{
+    for(const k of [2,1.5,1.25,1]){
+      RES_AUTO=k;PHONE_DPR=k;resFresh=1e9;resize();
+      await sleep(600);
+      const v=await g11Iv(2.5);
+      res["x"+k]=v;put("×"+k+" "+cvs.width+"×"+cvs.height+" "+JSON.stringify(v));
+    }
+  }finally{RES_AUTO=RA;PHONE_DPR=PD;resFresh=0;resize();}
+  return res;
+}
+async function g11RunDeepHere(){
+  const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+  const box=document.createElement("div");
+  box.style.cssText="position:fixed;left:8px;top:8px;z-index:99;color:#7fe6d8;font:11px ui-monospace,monospace;background:rgba(0,0,0,.7);padding:8px;white-space:pre;pointer-events:none";
+  document.body.appendChild(box);
+  const lines=[];const put=t=>{lines.push(t);box.textContent=lines.join("\n");};
+  put("G11 deep · ждёт полёта (system)…");
+  while(!(G.running&&G.mode==="system"&&GPU.ok))await sleep(500);
+  await sleep(4000);
+  const out={dpr:devicePixelRatio,DPR,canvas:cvs.width+"×"+cvs.height,res:G.opts.gfx.res,RES_AUTO,resEma:+resEma.toFixed(1),
+    ua:navigator.userAgent.slice(0,80)};
+  put("DPR "+DPR+" · "+out.canvas+" · gfx.res "+out.res+" · RES_AUTO "+RES_AUTO);
+  const g0=GNB.nGen|0,f0=GPU.frameNo;
+  out.base=await g11Iv(3);put("база "+JSON.stringify(out.base));
+  out.nebRegen=Math.round(100*((GNB.nGen|0)-g0)/Math.max(1,GPU.frameNo-f0))+"%";
+  put("туманность пересчитана в "+out.nebRegen+" кадров");
+  const err=[];
+  try{out.gpu=await g11GpuDeep(put);}catch(e){err.push("gpu: "+(e&&e.message||e));}
+  try{out.dpr2=await g11DprSweep(put);}catch(e){err.push("dpr: "+(e&&e.message||e));}
+  out.err=err;
+  window.G11_DEEP=out;console.log("G11_DEEP "+JSON.stringify(out));
+  put("ГОТОВО · window.G11_DEEP");
+}
+/* старый разбор 2D-проходов с переносом по режимам (стенд, не телефон автора: жмёт
+   «новая игра» и перебрасывает корабль) — ?g11=deeptour */
 async function g11RunDeep(){
   const sleep=ms=>new Promise(r=>setTimeout(r,ms));
   const el=document.getElementById("startEasy");if(el)el.click();
@@ -157,5 +235,6 @@ async function g11RunDeep(){
   try{await fetch("/shot?n=g11deep",{method:"POST",
     body:btoa(unescape(encodeURIComponent(JSON.stringify({dpr:devicePixelRatio,out,err}))))});}catch(e){}
 }
-if(location.search.indexOf("g11=deep")>=0)addEventListener("load",()=>setTimeout(g11RunDeep,1200));
+if(location.search.indexOf("g11=deeptour")>=0)addEventListener("load",()=>setTimeout(g11RunDeep,1200));
+else if(location.search.indexOf("g11=deep")>=0)addEventListener("load",()=>setTimeout(g11RunDeepHere,1200));
 else if(location.search.indexOf("g11")>=0)addEventListener("load",()=>setTimeout(g11Run,1200));

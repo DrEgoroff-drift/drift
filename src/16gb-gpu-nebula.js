@@ -569,7 +569,7 @@ function gpuNebulaGen(sys,camx,camy,st,Z){
   const P=gnbPipe();
   const p=GPU.enc.beginRenderPass({colorAttachments:[{view:GNB.view,loadOp:"clear",storeOp:"store",clearValue:{r:0,g:0,b:0,a:0}}]});
   p.setPipeline(P);p.setBindGroup(0,gpuBind("gnb.gen",P,[ub]));p.draw(3);p.end();
-  GNB.sys=sys;GNB.cx=camx;GNB.cy=camy;GNB.last=GPU.frameNo;
+  GNB.sys=sys;GNB.cx=camx;GNB.cy=camy;GNB.last=GPU.frameNo;GNB.nGen=(GNB.nGen|0)+1;
   return true;
 }
 function gpuNebulaComp(pass){
