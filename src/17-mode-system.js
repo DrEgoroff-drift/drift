@@ -670,7 +670,7 @@ function drawSystem(){
   gpuHullLight(zx(sh.x),zy(sh.y),zx(0),zy(0),Z,sys);   /* свет звезды на корпусе (16ga) */
   /* при наблюдении в центре не свой корабль — подписываем, за кем смотрим,
      и куда нажать, чтобы вернуться */
-  if(wA)gpuHud(()=>{   /* приборы — на свой слой, мимо видеокарты (08b gpuHud) */
+  if(wA)gpuHud("watch"+wA.c.name+wA.c.order.kind,()=>{   /* приборы — на свой слой, по изменению (08bh) */
     ctx.fillStyle="rgba(127,230,216,.9)";ctx.font="10px ui-monospace,monospace";ctx.textAlign="center";
     /* ниже приборов: сверху слева датчики, справа сводка — там текст не читался */
     ctx.fillText("НАБЛЮДЕНИЕ · "+wA.c.name.toUpperCase()+" · "+
@@ -691,10 +691,12 @@ function drawSystem(){
      пиксели — её читает 15-input, который ни про какой zoom не знает. */
   if(!SHOT_CLEAN){                       /* на кадре заглавной приборов нет (M233) */
     const U=(typeof UIK==="number"&&UIK>0)?UIK:1;
-    gpuHud(()=>{
-      withScale(U,()=>drawSysHud(v=>zx(v)/U,v=>zy(v)/U,sh,sys,U));
-      helmDrawSticks();   /* стики под пальцами — в пикселях касания, не в мерке (M360) */
-    });
+    /* фишки у кромки — DOM (08bh chipDom), каждый кадр: едут за миром */
+    withScale(U,()=>drawSysHud(v=>zx(v)/U,v=>zy(v)/U,sh,sys,U));
+    /* стики под пальцами — в пикселях касания, не в мерке (M360); слой перерисовывается каждый
+       кадр, пока палец на экране или след гаснет, иначе — только когда сменилась точка покоя */
+    const hh=(HELM.S||HELM.fade)?"stk"+GPU.frameNo:"stk"+(()=>{const h=helmHome();return Math.round(h.x)+","+Math.round(h.y);})()+helmDry()+document.body.className;
+    gpuHud(hh,helmDrawSticks);
   }
 }
 function drawSysHud(zx,zy,sh,sys,U){
@@ -965,18 +967,13 @@ function drawSysHud(zx,zy,sh,sys,U){
       const PAD=Math.max(0,(CHIP_TOUCH-ch)/2);
       SYS_CHIPS.push({x:(rx-6)*U,y:(ry-PAD)*U,w:(cw+12)*U,h:(ch+PAD*2)*U,t:m.t});
     }
-    ctx.globalAlpha=AA;ctx.fillStyle="rgba(5,7,12,.72)";ctx.fillRect(rx,ry,cw,ch);
-    ctx.strokeStyle=m.c;ctx.globalAlpha=.5*AA;ctx.lineWidth=1;ctx.strokeRect(rx+.5,ry+.5,cw-1,ch-1);ctx.globalAlpha=AA;
     /* после перескока на соседнюю кромку точка луча и сама фишка расходятся:
        сторона надписи берётся по МЕСТУ фишки (P4) */
     const onRight=rx+cw/2>W/2;
-    ctx.save();ctx.translate(onRight?rx+cw-8:rx+8,ry+ch/2);ctx.rotate(ang);
-    ctx.fillStyle=m.c;ctx.beginPath();ctx.moveTo(6,0);ctx.lineTo(-4,4);ctx.lineTo(-4,-4);ctx.closePath();ctx.fill();
-    ctx.restore();
-    ctx.fillStyle=m.c;ctx.textAlign=onRight?"right":"left";
-    ctx.fillText(label,onRight?rx+cw-18:rx+18,ry+12);
-    ctx.textAlign="center";ctx.globalAlpha=1;
+    /* плашка, обвод, стрелка и подпись — DOM-фишка (08bh): место двигает композитор */
+    chipDom(m.k,rx,ry,cw,ch,AA,m.c,label,onRight,ang,U);
   }
+  chipDomEnd();
   /* цель пропала из кадра (тело за спиной, автопилот снят) — забыть её место,
      иначе через минуту чья-то новая фишка того же типа въедет с чужого края */
   for(const k of CHIP_POS.keys())if(!usedKeys[k])CHIP_POS.delete(k);

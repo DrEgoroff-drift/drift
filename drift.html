@@ -10405,7 +10405,7 @@ function gpuTakeSnap(){
   const c=GPU.snap||(GPU.snap=document.createElement("canvas"));
   if(c.width!==GPU.cv.width||c.height!==GPU.cv.height){c.width=GPU.cv.width;c.height=GPU.cv.height;}
   const g=c.getContext("2d",{willReadFrequently:true});g.drawImage(GPU.cv,0,0);
-  if(GPU.uiWas&&GPU.ui)g.drawImage(GPU.ui,0,0);   /* приборы — поверх, как на экране */
+  if(GPU.uiWas&&GPU.ui)g.drawImage(GPU.ui,0,0,c.width,c.height);   /* приборы — поверх, как на экране */
   GPU.snapNo=GPU.frameNo;
 }
 /* нет WebGPU — говорим прямо, какой браузер нужен (игрок видит это вместо мира) */
@@ -10759,7 +10759,9 @@ function gpuResize(){
   if(!GPU.ok)return;
   const bw=cvs.width,bh=cvs.height;if(bw<2||bh<2)return;
   /* #c меряет resize() (08-state); смена ширины холста сбрасывает и преобразование */
-  GPU.ui.width=bw;GPU.ui.height=bh;GPU.uctx.setTransform(DPR,0,0,DPR,0,0);GPU.uiWas=false;
+  /* слой приборов — на родном DPR устройства (08bh) */
+  const nd=gpuHudDpr();GPU.ui.width=Math.max(2,Math.round(W*nd));GPU.ui.height=Math.max(2,Math.round(H*nd));
+  GPU.uctx.setTransform(nd,0,0,nd,0,0);GPU.uiWas=false;GPU.hkey=null;GPU.hnd=nd;
   GPU.cv.width=bw;GPU.cv.height=bh;
   const qw=Math.max(2,Math.round(W/4)),qh=Math.max(2,Math.round(H/4));
   for(const k in GPU.T)GPU.T[k].destroy();
@@ -10882,11 +10884,11 @@ function gpuUni(){
 /* начало кадра: без готового устройства кадр не рисуется (мир всё равно шагает) */
 function gpuFrame(){
   if(!GPU.ok||GPU.lost){GPU.on=false;return false;}
-  if(cvs.width!==GPU.bw||cvs.height!==GPU.bh||DPR!==GPU.dpr||W!==GPU.cw||H!==GPU.ch)gpuResize();
+  if(cvs.width!==GPU.bw||cvs.height!==GPU.bh||DPR!==GPU.dpr||W!==GPU.cw||H!==GPU.ch||gpuHudDpr()!==GPU.hnd)gpuResize();
   if(GPU.trash.length){for(const t of GPU.trash)t.destroy();GPU.trash.length=0;}
   ctx=MAIN_CTX;
   ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,GPU.bw,GPU.bh);ctx.setTransform(DPR,0,0,DPR,0,0);
-  if(GPU.uiWas){const q=GPU.uctx;q.setTransform(1,0,0,1,0,0);q.clearRect(0,0,GPU.bw,GPU.bh);q.setTransform(DPR,0,0,DPR,0,0);GPU.uiWas=false;}
+  if(GPU.hq)GPU.hq.length=0;chipDomSweep();   /* слой приборов и фишки — 08bh */
   GPU.on=true;
   GPU.enc=GPU.dev.createCommandEncoder();GPU.scenePass=null;GPU.overPass=null;GPU.sceneOn=false;GPU.emitOn=false;GPU.scene3D=false;GPU.hitK=0;GPU.shaft=null;GPU.lens=null;GPU.lt.length=0;GPU.oc.length=0;GPU.dz.length=0;GPU.sep=0;GPU.sepH.length=0;
   return true;
@@ -10973,15 +10975,9 @@ function gpuWorld(k,grain,vig){
     if(P.k>0){
       if(!GPU.emitOn){GPU.enc.beginRenderPass({colorAttachments:[{view:GPU.V.emit,loadOp:"clear",storeOp:"store",clearValue:{r:0,g:0,b:0,a:0}}]}).end();GPU.emitOn=true;}
       gpuBloom();}
-    /* дальше кадр рисует стойку (25d) — на слой приборов */
-    ctx=GPU.uctx;if((typeof rackOpen==="function")&&rackOpen()&&G.running&&!scrOpen())GPU.uiWas=true;
+    /* слой приборов — по изменению (08bh); дальше кадр рисует стойку (25d) — туда же */
+    gpuHudFlush((typeof rackOpen==="function")&&rackOpen()&&G.running&&!scrOpen());ctx=GPU.uctx;
   }catch(e){gpuDrop("сборка: "+((e&&e.message)||e),true);}
-}
-/* приборы режима — на слой приборов, мимо видеокарты; без неё — на #c, как раньше */
-function gpuHud(fn){
-  if(!GPU.on||!GPU.uctx){fn();return;}
-  const c0=ctx;ctx=GPU.uctx;GPU.uiWas=true;
-  try{fn();}finally{ctx=c0;}
 }
 /* лестница свечения: колено в первый уровень, вниз по уровням, вверх — сложением */
 function gpuBloom(){
@@ -11010,6 +11006,90 @@ function gpuPresent(){
 }
 /* поднимается после всего скрипта: в сборке тестов TEST объявлен ниже игры */
 if(typeof document!=="undefined"&&document.body)setTimeout(gpuInit,0);
+
+/* ══════════════ слой приборов: #hud и фишки у кромки (ступень 1, docs/DESIGN-gpu.md §L.S) ══════════════
+   Приборы не ходят через видеокарту: браузер сам кладёт их поверх канвы WebGPU. Два правила
+   Контроля (15/n): приборы — на родном DPR устройства (мир на телефоне ×1.5, текст — ×2.625,
+   резкий), и растр только по изменению — полноэкранный холст на 2.625 весит ~10 МБ, и перерисовка
+   каждый кадр гоняла бы их в композитор.
+   · #hud (GPU.ui) — то, что меняется редко или только под пальцем: стики, строка наблюдения,
+     стойка. Кто рисует, сдаёт gpuHud(ключ, рисунок); в конце мира (gpuHudFlush) слой
+     перерисовывается, только если строка ключей кадра не та, что в прошлый раз.
+   · фишки у кромки ездят за миром каждый кадр — это DOM: место и поворот стрелки двигает
+     композитор (transform), а свой маленький холст фишка перерисовывает, только когда сменилась
+     подпись или цвет. */
+function gpuHudDpr(){return Math.min(3,(typeof window!=="undefined"&&window.devicePixelRatio)||1);}
+/* рисунок слоя приборов: без видеокарты — на #c сразу, как раньше */
+function gpuHud(key,fn){
+  if(!GPU.on||!GPU.uctx){fn();return;}
+  (GPU.hq||(GPU.hq=[])).push({key,fn});
+}
+/* конец мира: слой перерисовывается, только если ключи сменились; дальше кадр рисует стойку
+   (25d) — тоже сюда, её ключ меняется каждый кадр */
+function gpuHudFlush(rack){
+  const q=GPU.hq||[],u=GPU.uctx;
+  let key=q.map(e=>e.key).join("|");if(rack)key+="|rack"+GPU.frameNo;
+  if(key!==GPU.hkey){
+    if(GPU.uiWas){u.setTransform(1,0,0,1,0,0);u.clearRect(0,0,GPU.ui.width,GPU.ui.height);}
+    const nd=GPU.ui.width/Math.max(1,W),c0=ctx;ctx=u;
+    try{for(const e of q){u.setTransform(nd,0,0,nd,0,0);u.save();try{e.fn();}finally{u.restore();}}}
+    finally{ctx=c0;}
+    u.setTransform(nd,0,0,nd,0,0);
+    GPU.uiWas=key!=="";GPU.hkey=key;
+  }
+  q.length=0;
+}
+/* ── фишки у кромки ── */
+const CHIPDOM={box:null,m:new Map(),touched:false};
+function chipDomBox(){
+  if(CHIPDOM.box||typeof document==="undefined"||!document.body)return CHIPDOM.box;
+  const b=document.createElement("div");b.id="chips";
+  b.style.cssText="position:fixed;inset:0;pointer-events:none;overflow:hidden";
+  (GPU.ui||GPU.cv||cvs).after(b);return CHIPDOM.box=b;
+}
+/* фишка k в кадре: место (rx,ry) и размер (cw,ch) в мерке U, прозрачность, цвет, подпись,
+   сторона подписи, угол стрелки. Рисунок — как у 2D: плашка, волосяной обвод, стрелка, текст */
+function chipDom(k,rx,ry,cw,ch,A,col,label,onRight,ang,U){
+  const box=chipDomBox();if(!box)return;
+  CHIPDOM.touched=true;
+  let e=CHIPDOM.m.get(k);
+  if(!e){
+    const d=document.createElement("div");d.style.cssText="position:absolute;left:0;top:0;transform-origin:0 0";
+    const cv=document.createElement("canvas");cv.style.cssText="position:absolute;left:0;top:0";
+    const ar=document.createElement("div");ar.style.cssText="position:absolute;clip-path:polygon(100% 50%,0 100%,0 0)";
+    d.appendChild(cv);d.appendChild(ar);box.appendChild(d);
+    e={d,cv,ar,sig:"",pos:"",op:"",rot:"",on:false};CHIPDOM.m.set(k,e);
+  }
+  e.used=true;
+  const nd=gpuHudDpr(),sig=label+"|"+col+"|"+(onRight?1:0)+"|"+Math.round(cw*U*nd)+"|"+Math.round(ch*U*nd)+"|"+U+"|"+nd;
+  if(sig!==e.sig){
+    e.sig=sig;const cv=e.cv,w=cw*U,h=ch*U;
+    cv.width=Math.max(1,Math.round(w*nd));cv.height=Math.max(1,Math.round(h*nd));
+    cv.style.width=w+"px";cv.style.height=h+"px";
+    const g=cv.getContext("2d");g.setTransform(U*nd,0,0,U*nd,0,0);
+    g.fillStyle="rgba(5,7,12,.72)";g.fillRect(0,0,cw,ch);
+    g.strokeStyle=col;g.globalAlpha=.5;g.lineWidth=1;g.strokeRect(.5,.5,cw-1,ch-1);g.globalAlpha=1;
+    g.font="8px ui-monospace,monospace";g.fillStyle=col;g.textAlign=onRight?"right":"left";
+    g.fillText(label,onRight?cw-18:18,12);
+    /* стрелка: треугольник (6,0),(-4,4),(-4,-4) вокруг своей точки — 10×8 в мерке */
+    const a=e.ar.style;a.width=10*U+"px";a.height=8*U+"px";a.background=col;
+    a.left=((onRight?cw-8:8)-4)*U+"px";a.top=(ch/2-4)*U+"px";a.transformOrigin=4*U+"px "+4*U+"px";
+  }
+  const pos="translate("+(rx*U).toFixed(2)+"px,"+(ry*U).toFixed(2)+"px)";
+  if(pos!==e.pos){e.pos=pos;e.d.style.transform=pos;}
+  const op=A.toFixed(3);if(op!==e.op){e.op=op;e.d.style.opacity=op;}
+  const rot="rotate("+ang.toFixed(3)+"rad)";if(rot!==e.rot){e.rot=rot;e.ar.style.transform=rot;}
+  if(!e.on){e.on=true;e.d.style.display="";}
+}
+/* после фишек кадра: кого не было — спрятать */
+function chipDomEnd(){
+  for(const e of CHIPDOM.m.values()){if(!e.used&&e.on){e.on=false;e.d.style.display="none";}e.used=false;}
+}
+/* начало кадра: фишек в прошлом кадре не рисовали (другой режим, чистый кадр) — спрятать все */
+function chipDomSweep(){
+  if(!CHIPDOM.touched)for(const e of CHIPDOM.m.values()){if(e.on){e.on=false;e.d.style.display="none";}}
+  CHIPDOM.touched=false;
+}
 
 /* ══════════════ набор для слоёв видеокарты (docs/DESIGN-gpu.md §4) ══════════════
    Конвейер, буфер, привязки, текстура из 2D-холста — и три готовых слоя:
@@ -51214,7 +51294,7 @@ function drawSystem(){
   gpuHullLight(zx(sh.x),zy(sh.y),zx(0),zy(0),Z,sys);   /* свет звезды на корпусе (16ga) */
   /* при наблюдении в центре не свой корабль — подписываем, за кем смотрим,
      и куда нажать, чтобы вернуться */
-  if(wA)gpuHud(()=>{   /* приборы — на свой слой, мимо видеокарты (08b gpuHud) */
+  if(wA)gpuHud("watch"+wA.c.name+wA.c.order.kind,()=>{   /* приборы — на свой слой, по изменению (08bh) */
     ctx.fillStyle="rgba(127,230,216,.9)";ctx.font="10px ui-monospace,monospace";ctx.textAlign="center";
     /* ниже приборов: сверху слева датчики, справа сводка — там текст не читался */
     ctx.fillText("НАБЛЮДЕНИЕ · "+wA.c.name.toUpperCase()+" · "+
@@ -51235,10 +51315,12 @@ function drawSystem(){
      пиксели — её читает 15-input, который ни про какой zoom не знает. */
   if(!SHOT_CLEAN){                       /* на кадре заглавной приборов нет (M233) */
     const U=(typeof UIK==="number"&&UIK>0)?UIK:1;
-    gpuHud(()=>{
-      withScale(U,()=>drawSysHud(v=>zx(v)/U,v=>zy(v)/U,sh,sys,U));
-      helmDrawSticks();   /* стики под пальцами — в пикселях касания, не в мерке (M360) */
-    });
+    /* фишки у кромки — DOM (08bh chipDom), каждый кадр: едут за миром */
+    withScale(U,()=>drawSysHud(v=>zx(v)/U,v=>zy(v)/U,sh,sys,U));
+    /* стики под пальцами — в пикселях касания, не в мерке (M360); слой перерисовывается каждый
+       кадр, пока палец на экране или след гаснет, иначе — только когда сменилась точка покоя */
+    const hh=(HELM.S||HELM.fade)?"stk"+GPU.frameNo:"stk"+(()=>{const h=helmHome();return Math.round(h.x)+","+Math.round(h.y);})()+helmDry()+document.body.className;
+    gpuHud(hh,helmDrawSticks);
   }
 }
 function drawSysHud(zx,zy,sh,sys,U){
@@ -51509,18 +51591,13 @@ function drawSysHud(zx,zy,sh,sys,U){
       const PAD=Math.max(0,(CHIP_TOUCH-ch)/2);
       SYS_CHIPS.push({x:(rx-6)*U,y:(ry-PAD)*U,w:(cw+12)*U,h:(ch+PAD*2)*U,t:m.t});
     }
-    ctx.globalAlpha=AA;ctx.fillStyle="rgba(5,7,12,.72)";ctx.fillRect(rx,ry,cw,ch);
-    ctx.strokeStyle=m.c;ctx.globalAlpha=.5*AA;ctx.lineWidth=1;ctx.strokeRect(rx+.5,ry+.5,cw-1,ch-1);ctx.globalAlpha=AA;
     /* после перескока на соседнюю кромку точка луча и сама фишка расходятся:
        сторона надписи берётся по МЕСТУ фишки (P4) */
     const onRight=rx+cw/2>W/2;
-    ctx.save();ctx.translate(onRight?rx+cw-8:rx+8,ry+ch/2);ctx.rotate(ang);
-    ctx.fillStyle=m.c;ctx.beginPath();ctx.moveTo(6,0);ctx.lineTo(-4,4);ctx.lineTo(-4,-4);ctx.closePath();ctx.fill();
-    ctx.restore();
-    ctx.fillStyle=m.c;ctx.textAlign=onRight?"right":"left";
-    ctx.fillText(label,onRight?rx+cw-18:rx+18,ry+12);
-    ctx.textAlign="center";ctx.globalAlpha=1;
+    /* плашка, обвод, стрелка и подпись — DOM-фишка (08bh): место двигает композитор */
+    chipDom(m.k,rx,ry,cw,ch,AA,m.c,label,onRight,ang,U);
   }
+  chipDomEnd();
   /* цель пропала из кадра (тело за спиной, автопилот снят) — забыть её место,
      иначе через минуту чья-то новая фишка того же типа въедет с чужого края */
   for(const k of CHIP_POS.keys())if(!usedKeys[k])CHIP_POS.delete(k);

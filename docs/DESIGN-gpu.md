@@ -272,6 +272,15 @@ The phone frame budget does not grow: GPU ≤ 12 ms.
   It also stopped inheriting the world's `textBaseline`: the edge chips' text now sits centred in the plate
   (it lay on the bottom border). Pairs: the whole frame at zoom .4, max|Δ| 190 only on the chips' text
   (mean .11); with the rack open, max 5 on 145 px.
+  1b (15/n amendment 1, module 08bh): `#hud` runs at the device's native DPR (`gpuHudDpr`, ≤ 3) and is rastered
+  only on change. Painters hand in `gpuHud(key, fn)`; `gpuHudFlush` at the end of the world clears and redraws
+  only when the frame's key string differs (sticks: every frame while a finger is down or the trail fades,
+  otherwise the rest point's key; the watch caption: its text; the rack: every frame while open). The edge chips
+  became DOM (`chipDom`): position and arrow rotation by `transform`, opacity by `opacity`; each chip's small
+  canvas (plate, hairline, label, at native DPR) redraws only when its label, colour or side changes.
+  Measured in thrust flight at 390×844 ×2.625: `#hud` raster 0 a frame, chip canvases 1.8 a frame (the distance
+  in the label changes), uploads 2.06, submits 3, `#c` 13.4 calls (the world). Pairs: 411×742 ×1.5 against 1a
+  max|Δ| 58 on glyph edges (subpixel placement), the chips look the same; 390×844 ×2.625 shows the text sharp.
   G3b 3/n (e1aeb19) and L4 k/n (7b406eb) accepted.
 - Brief of **L4 k/n — the shock ring and the exhaust haze bend the backdrop, never a hull** (Контроль 24.09): no
   hull, own or pirate, sprite or 2D, is cut into bands; an RGB fringe on the backdrop only. Done (08b/08c): the

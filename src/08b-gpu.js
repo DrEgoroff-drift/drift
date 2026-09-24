@@ -28,7 +28,7 @@ function gpuTakeSnap(){
   const c=GPU.snap||(GPU.snap=document.createElement("canvas"));
   if(c.width!==GPU.cv.width||c.height!==GPU.cv.height){c.width=GPU.cv.width;c.height=GPU.cv.height;}
   const g=c.getContext("2d",{willReadFrequently:true});g.drawImage(GPU.cv,0,0);
-  if(GPU.uiWas&&GPU.ui)g.drawImage(GPU.ui,0,0);   /* приборы — поверх, как на экране */
+  if(GPU.uiWas&&GPU.ui)g.drawImage(GPU.ui,0,0,c.width,c.height);   /* приборы — поверх, как на экране */
   GPU.snapNo=GPU.frameNo;
 }
 /* нет WebGPU — говорим прямо, какой браузер нужен (игрок видит это вместо мира) */
@@ -382,7 +382,9 @@ function gpuResize(){
   if(!GPU.ok)return;
   const bw=cvs.width,bh=cvs.height;if(bw<2||bh<2)return;
   /* #c меряет resize() (08-state); смена ширины холста сбрасывает и преобразование */
-  GPU.ui.width=bw;GPU.ui.height=bh;GPU.uctx.setTransform(DPR,0,0,DPR,0,0);GPU.uiWas=false;
+  /* слой приборов — на родном DPR устройства (08bh) */
+  const nd=gpuHudDpr();GPU.ui.width=Math.max(2,Math.round(W*nd));GPU.ui.height=Math.max(2,Math.round(H*nd));
+  GPU.uctx.setTransform(nd,0,0,nd,0,0);GPU.uiWas=false;GPU.hkey=null;GPU.hnd=nd;
   GPU.cv.width=bw;GPU.cv.height=bh;
   const qw=Math.max(2,Math.round(W/4)),qh=Math.max(2,Math.round(H/4));
   for(const k in GPU.T)GPU.T[k].destroy();
@@ -505,11 +507,11 @@ function gpuUni(){
 /* начало кадра: без готового устройства кадр не рисуется (мир всё равно шагает) */
 function gpuFrame(){
   if(!GPU.ok||GPU.lost){GPU.on=false;return false;}
-  if(cvs.width!==GPU.bw||cvs.height!==GPU.bh||DPR!==GPU.dpr||W!==GPU.cw||H!==GPU.ch)gpuResize();
+  if(cvs.width!==GPU.bw||cvs.height!==GPU.bh||DPR!==GPU.dpr||W!==GPU.cw||H!==GPU.ch||gpuHudDpr()!==GPU.hnd)gpuResize();
   if(GPU.trash.length){for(const t of GPU.trash)t.destroy();GPU.trash.length=0;}
   ctx=MAIN_CTX;
   ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,GPU.bw,GPU.bh);ctx.setTransform(DPR,0,0,DPR,0,0);
-  if(GPU.uiWas){const q=GPU.uctx;q.setTransform(1,0,0,1,0,0);q.clearRect(0,0,GPU.bw,GPU.bh);q.setTransform(DPR,0,0,DPR,0,0);GPU.uiWas=false;}
+  if(GPU.hq)GPU.hq.length=0;chipDomSweep();   /* слой приборов и фишки — 08bh */
   GPU.on=true;
   GPU.enc=GPU.dev.createCommandEncoder();GPU.scenePass=null;GPU.overPass=null;GPU.sceneOn=false;GPU.emitOn=false;GPU.scene3D=false;GPU.hitK=0;GPU.shaft=null;GPU.lens=null;GPU.lt.length=0;GPU.oc.length=0;GPU.dz.length=0;GPU.sep=0;GPU.sepH.length=0;
   return true;
@@ -596,15 +598,9 @@ function gpuWorld(k,grain,vig){
     if(P.k>0){
       if(!GPU.emitOn){GPU.enc.beginRenderPass({colorAttachments:[{view:GPU.V.emit,loadOp:"clear",storeOp:"store",clearValue:{r:0,g:0,b:0,a:0}}]}).end();GPU.emitOn=true;}
       gpuBloom();}
-    /* дальше кадр рисует стойку (25d) — на слой приборов */
-    ctx=GPU.uctx;if((typeof rackOpen==="function")&&rackOpen()&&G.running&&!scrOpen())GPU.uiWas=true;
+    /* слой приборов — по изменению (08bh); дальше кадр рисует стойку (25d) — туда же */
+    gpuHudFlush((typeof rackOpen==="function")&&rackOpen()&&G.running&&!scrOpen());ctx=GPU.uctx;
   }catch(e){gpuDrop("сборка: "+((e&&e.message)||e),true);}
-}
-/* приборы режима — на слой приборов, мимо видеокарты; без неё — на #c, как раньше */
-function gpuHud(fn){
-  if(!GPU.on||!GPU.uctx){fn();return;}
-  const c0=ctx;ctx=GPU.uctx;GPU.uiWas=true;
-  try{fn();}finally{ctx=c0;}
 }
 /* лестница свечения: колено в первый уровень, вниз по уровням, вверх — сложением */
 function gpuBloom(){
