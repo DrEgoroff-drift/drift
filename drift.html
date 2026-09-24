@@ -49650,9 +49650,11 @@ fn lfr(p:vec2f,W:f32,H:f32,sp:vec2f,h:vec4f,i:vec4f,cam:vec2f,par:f32)->vec2f{
   if(h.w>2.5){Lc=sp;a=1.3208;}
   else if(h.w>.5&&h.w<1.5){
     /* комета: голова в своём углу (решётка, отступ от HUD — как у всех), хвосты — внутрь
-       кадра по диагонали угла ±20° (зерно потока) и гаснут к середине. Громадина на
-       бесконечности: проекция хвоста любая, от звезды его не ставим */
-    let v=vec2f(W,H)*.5-Lc;a=atan2(v.y,v.x)+(i.x/6.2832-.5)*.7;}
+       кадра, но мимо середины: ось отведена от направления на центр на 30±5° к вертикальной
+       кромке (в центре всегда свой корабль — прямая в него читалась лучом наведения; сверху
+       и снизу — полосы HUD). Громадина на бесконечности: проекция хвоста любая */
+    let v=vec2f(W,H)*.5-Lc;
+    a=atan2(v.y,v.x)+select(-1.,1.,v.x*v.y>0.)*(.52+(i.x/6.2832-.5)*.17);}
   let d0=(p-Lc)/(H*h.z);let c=cos(a);let s=sin(a);
   return vec2f(c*d0.x+s*d0.y,-s*d0.x+c*d0.y);}
 /* пылевой хвост отстаёт по орбите — в свою сторону у каждой кометы */
@@ -49668,6 +49670,7 @@ fn lwin(d:vec2f,h:vec4f,i:vec4f)->f32{
   else{let x=abs(d.x);w=exp(-sq(d.y/(.04+.2*x)))*smoothstep(1.8,.9,x);}
   return min(w*1.4,1.)*select(0.,1.,i.w>0.);}`;
 const GNB_GEN=`
+const PDUST=.12;
 struct NU{a:vec4f,b:vec4f,c:vec4f,d:vec4f,e:vec4f,f:vec4f,g:vec4f,h:vec4f,i:vec4f,j:vec4f,k:vec4f};
 @group(0) @binding(0) var<uniform> u:NU;
 struct VO{@builtin(position) p:vec4f,@location(0) uv:vec2f};
@@ -49685,6 +49688,21 @@ const RED=vec3f(.72,1.,1.42);
    голубые рукава с розовыми узлами, пылевые прожилки; 3 — у дыры: джеты из её полюсов.
    Закон фона: ничто не похоже на игровой объект (луч, снаряд, выхлоп) — края мягкие,
    яркость ниже игрового слоя */
+/* L1b: пыль — поле (x: >0 внутри тела, в долях порога), мелкая структура (y), узор (zw).
+   Три масштаба: 2–3 крупные полосы (гребни вытянутого узора), средние столпы и волокна,
+   мелкие глобулы; всё вытянуто по своему направлению системы. Край изъеден мелким шумом */
+fn dustAt(p:vec2f,W:f32,H:f32,seed:f32,t:f32)->vec4f{
+  let q=((p-vec2f(W,H)*.5)+u.b.xy*PDUST)/H+vec2f(seed*2.3+31.,seed*1.1+7.);
+  let th=fract(seed*7.13)*3.1416;let cs=cos(th);let sn=sin(th);
+  let qr=vec2f(cs*q.x+sn*q.y,-sn*q.x+cs*q.y);
+  let w=vec2f(fb(qr*.8+vec2f(3.,t*.15),3),fb(qr*.8+vec2f(8.,1.),3))-.5;
+  let qa=(qr+w*.9)*vec2f(.45,1.5);
+  let band=(1.-abs(2.*fb(qa*.9+vec2f(1.,4.),4)-1.)-.74)*4.;
+  let med=(fb(qa*2.6+w*1.5+vec2f(6.,2.),4)-.62)*4.;
+  let glb=(fb(qr*6.+w*2.+vec2f(13.,2.),3)-.74)*5.;
+  let dn=fb(qr*9.+w*3.+vec2f(2.,9.),3);
+  let er=(fb(qr*22.+vec2f(5.,5.),3)-.5)*.5+(dn-.5)*.3;
+  return vec4f(max(band,max(med,glb))+er,dn,qa);}
 struct LK{e:vec3f,a:f32,w:f32};
 fn lmk(p:vec2f,W:f32,H:f32,sp:vec2f)->LK{
   let ty=u.h.w;let k=u.i.w;
@@ -49713,12 +49731,13 @@ fn lmk(p:vec2f,W:f32,H:f32,sp:vec2f)->LK{
        Ионный хвост — прямой узкий голубой луч (1–2 px у головы, ~8 px к концу, длина
        ~.4 ширины кадра); пылевой — широкий изогнутый тёплый веер, отходит на ~20° */
     let x=d.x;let r=length(d);let xp=max(x,0.);
-    let wi=.0018+.0085*min(xp/.7,1.);
-    let st=.7+.3*fb(vec2f(x*5.-u.b.z*4.,ls),2);
+    /* ионный хвост — мягкий: гаусс 2→10 px, слабые продольные струи поперёк ширины */
+    let wi=.0026+.0095*min(xp/.7,1.);
+    let st=.72+.28*fb(vec2f(x*1.5-u.b.z*2.,d.y/wi*1.3+ls),2);
     let ion=exp(-sq(d.y/wi))*smoothstep(-.004,.02,x)*(1.-smoothstep(.35,.8,x))*st;
     let yc=lcy(d,u.i);let wd=.006+.11*xp;
     let dst=exp(-sq(yc/wd))*smoothstep(0.,.08,x)*exp(-xp/.35)*(.7+.3*fb(vec2f(x*3.,yc*8.)+ls,2));
-    e=vec3f(.5,.75,1.)*ion*.45+vec3f(1.,.86,.62)*dst*.85
+    e=vec3f(.05,.55,1.)*ion*.55+vec3f(1.,.86,.62)*dst*.85
       +vec3f(1.,.95,.86)*(8.*exp(-sq(r/.0035))+.5*exp(-sq(r/.014)));
   } else if(ty<2.5){
     let g=vec2f(d.x,d.y/u.i.y);let r=length(g);let th=atan2(g.y,g.x);
@@ -49815,6 +49834,36 @@ fn lmk(p:vec2f,W:f32,H:f32,sp:vec2f)->LK{
   let sw=mix(sc,vec3f(1.,.95,.88)*max(sc.r,max(sc.g,sc.b)),.6);
   let wc=mix(sw,gc*max(sc.r,max(sc.g,sc.b)),.8);
   C=C+son*(sw*core+wc*wide*1.6*dsum*(1.-.8*seam))*mix(1.,T,.6);
+  /* L1b: пыль перед газом (Киль, Столпы) — кадр перестаёт быть стеной газа. Непрозрачные
+     массы с резким краем, внутри бурые с тонкой структурой; к звезде край горит тонкой яркой
+     каймой — фронт ионизации; глобулы; в газе — тёмные волокна. В разрывах пыли видны звёзды
+     за ней (она гасит и их, через T). Не вуаль: либо газ, либо тело пыли */
+  let DD=dustAt(p,W,H,seed,t);let Dm=DD.x;let dn=DD.y;let dq=DD.zw;
+  /* край — в пикселях: расстояние до порога по градиенту */
+  let ex=1.5;
+  let gD=vec2f(dustAt(p+vec2f(ex,0.),W,H,seed,t).x-dustAt(p-vec2f(ex,0.),W,H,seed,t).x,
+               dustAt(p+vec2f(0.,ex),W,H,seed,t).x-dustAt(p-vec2f(0.,ex),W,H,seed,t).x)/(2.*ex);
+  let gl2=max(length(gD),1e-5);
+  let dk=clamp(dust,.6,1.3)*(1.-.75*LM.w);
+  let thr=.08-.25*(dk-1.)+.6*LM.w;
+  let dpx=(thr-Dm)/gl2;                       /* >0 — снаружи тела, в CSS px */
+  let body=1.-smoothstep(-1.,1.,dpx);
+  /* плотность растёт вглубь: тонкое место просвечивает газом и звёздами, толстое глухое */
+  let od=body*(.35+3.*smoothstep(1.,16.,-dpx))*(.8+.4*dn)*dk;
+  /* кайма фронта ионизации на стороне к свету: линия 1–3 px светлее газа и свечение наружу */
+  let tS=normalize(sp-p+vec2f(1e-3));
+  let face=max(dot(-gD/gl2,tS),0.);
+  let brk=smoothstep(.3,.65,fb(dq*4.+vec2f(7.,3.),3));
+  let o=max(dpx,0.);
+  let edge=smoothstep(-1.5,.3,dpx)*(exp(-o/1.3)+.3*exp(-o/8.));
+  let ion=edge*face*face*brk*(.3+2.4*lit)*dk;
+  let ic=mix(gc*1.5,vec3f(1.,.95,.86),.3)*max(max(sc.r,max(sc.g,sc.b)),.7);
+  /* внутри — бурый (тон 15–30°): отражённый свет, прожилки вдоль вытяжки, к сердцевине темнее */
+  let vein=1.-abs(2.*fb(dq*vec2f(3.,9.)+vec2f(1.,6.),3)-1.);
+  let deep=.35+.65*exp(min(dpx,0.)/18.);
+  let brown=vec3f(.11,.07,0.)*(.5+.9*lit)*(.3+1.6*pow(vein,4.))*deep
+    *(1.+2.*face*exp(min(dpx,0.)/6.))*body*(1.-exp(-od*2.4))*dk;
+  C=C*exp(-od*2.4)+ic*ion*1.1+brown;T=T*exp(-od*2.4);
   /* громадина — за всеми слоями: её свет прошёл сквозь их пыль (T), её пыль гасит звёзды */
   C=C+LM.e*mix(T,1.,.5);T=T*exp(-LM.a*2.);
   return vec4f(C,1.-T);}`;

@@ -78,7 +78,7 @@ Heat haze behind the nozzle (G4b).
 
 ## Where I stopped (update on every commit)
 
-- **Deploy candidate: `96cba49` (L3 3/n; before it `d0b1058`), accepted by Контроль by its pairs.** The author: deploy to main
+- **Deploy candidate: `22b8cac` (L1b 1/n; before it `96cba49`), accepted by Контроль by its pairs.** The author: deploy to main
   before the limit window reaches 90%; the signal «ДЕПЛОЙ» comes from Контроль. On it: close the step with a
   commit; `test.ps1 -Full` and `node test-node.js`; bump `VER` and a PATCHNOTES line (what the player sees
   better, plus «needs a browser with WebGPU»); a release commit; send Контроль its sha. **Контроль pushes**
@@ -86,7 +86,7 @@ Heat haze behind the nozzle (G4b).
   the site falls: a commit on top with the tree of `d543aff`, never a force-push. Only a commit Контроль
   accepted by pairs goes to main. CI rehearsal of ef8c8b9 (deploy.yml flags, `--disable-gpu`): load clean,
   smoke 4/4, Node green (the «рейсы» suite fails in full order only, green alone; it sits in quarantine).
-- Order now: L1b 1/n (comet) done, awaiting Контроль; then L1b dust, L4 (particles), then the G steps (G5 frozen).
+- Order now: L1b 2/n (dust) done, awaiting Контроль; then L4 (particles), then the G steps (G5 frozen).
 
 - Done: core `08b`, kit `08c`, space `16g` (G1: live nebula wisps and lanes, stars with halo and tapered
   spikes, dust with depth of field; pair in `scratchpad/pairs/system_crop.png`),
@@ -324,8 +324,22 @@ Heat haze behind the nozzle (G4b).
   fading from .35 to .8; dust tail — a wide curved warm fan (`lcy` bend ±.36, ~20° off the ion), softer,
   exp(−x/.35). The centre fade dims both toward the middle third. lm1: core p99.9 200 vs the tail's first
   third median 76 (2.6×), tail +84% over the gas beside it (±18 px). Scratchpad `cometmeas.py`.
-  Next: L1b dust — dark absorbing filaments and globules in front of the emission gas, bright ionisation
-  fronts, stars through the gaps (Carina / Pillars); field L median toward 30, black 10–20%. Then L4.
+  Done (L1b 2/n, dust): the frame was a wall of gas. Now a dust layer in front of the emission gas (16gb gen
+  pass, `dustAt`, parallax `PDUST` .12 — the nearest gas layer is .097): three scales in one field — 2–3 long
+  bands (ridges of a stretched pattern), medium pillars and filaments, small globules — all stretched along the
+  system's own direction (`seed`), the edge eaten by fine noise. The edge is measured in pixels (threshold
+  minus field over its gradient, ±1.5 px), so bodies have a sharp outline at ¼ res. Density grows inward: thin
+  places show gas and stars through, thick ones are blind. Inside — brown (reflected light, veins along the
+  stretch, darker toward the core); the grade's shadow key still tints it (giant: violet). The ionisation front:
+  on the side toward the star, a 1–3 px line lighter than the gas plus a 6–10 px glow, broken by noise. Less
+  dust in the landmark's window. nnormal: field L median 41 → 34, black 5 → 6%, bright 9%; dust body hue 13–21°,
+  L 18–23 (the off-screen star's haze lies over it); dwarf 14 / 19% black. Parallax: on a 128 px ship move the
+  dust shifts ~15 px, the near gas ~12 — slightly faster, not a cloud shadow.
+  Comet fix with it: the tail's axis turns 30±5° off the centre toward the vertical edge (a line into the
+  centre hit our own ship and read as a targeting beam); the ion tail is softer (gauss 2→10 px, faint streamers
+  across) and bluer — it adds hue 216°, S .53; off-axis 30.4°, core 2.35× the tail, tail +87% over the gas.
+  Next: L4 — exhaust by curl noise with a temperature ladder, HDR spark streaks, fireball/debris/smoke,
+  shock-wave refraction, heat haze.
   A GPU draw after `gpuHullLight` must use `gpuOver`, not `gpuScene` (the scene pass is closed by then).
 - Merge each: `build.ps1`, `python docs/shot.py <scenes> --look --tag gpu`, 0 `gpu.errs`, pair with
   `scratchpad/mainref/docs/shots/main_<scene>.png`, one line of what got better, commit, strike from PLAN §0.
