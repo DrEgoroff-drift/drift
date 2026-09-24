@@ -115,6 +115,14 @@ TEST_SUITES.push(()=>suite("M309: челноки по ступени, ни од�
     let u=(G.t*t.spd+t.ph/TAU)%1;u=u<.5?u*2:2-u*2;
     ok(u>=0&&u<=1,"параметр хода в [0,1]");
   }
+  /* концы дуги идут за станцией: сдвинули станцию — сдвинулся и челнок у неё */
+  if(sys.station&&T.length){
+    const st=sys.station,t=T[0],x0=st.x,y0=st.y,ph=t.ph;
+    t.ph=0;const a=shuttleAt(t,0);
+    st.x+=500;st.y-=300;const b=shuttleAt(t,0);
+    st.x=x0;st.y=y0;t.ph=ph;
+    ok(Math.abs(b.wx-a.wx-500)<60&&Math.abs(b.wy-a.wy+300)<60,"у станции челнок стоит там, где станция сейчас");
+  }
 }));
 
 /* ══════════════ M310: флот ГЛАВТРАССЫ ══════════════ */
