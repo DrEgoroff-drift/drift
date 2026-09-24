@@ -247,8 +247,11 @@ function gpuExhaust(zx,zy,Z,thr){
     const L=R*(3.4+2.6*puls)*thr*kL;
     if(shape==="twin"){
       gexPush(px-sa*R*.55,py+ca*R*.55,ca,sa,L,R,kW,thr,C0,C1,C2,G.t*.05,false);
+      gpuLight(px-ca*R,py-sa*R,px-ca*R,py-sa*R,C1[0]/255,C1[1]/255,C1[2]/255,R*6,thr*1.4);
       gexPush(px+sa*R*.55,py-ca*R*.55,ca,sa,L,R,kW,thr,C0,C1,C2,G.t*.05,false);
     }else gexPush(px,py,ca,sa,L,R,kW,thr,C0,C1,C2,G.t*.05,shape==="ring");
+    /* L3: свой факел подсвечивает корму */
+    if(shape!=="twin")gpuLight(px-ca*R,py-sa*R,px-ca*R,py-sa*R,C1[0]/255,C1[1]/255,C1[2]/255,R*6,thr*1.4);
   }
   if(!GEX.n)return;
   const U=GPUBufferUsage,d=GPU.dev,uu=GEX.u;
@@ -267,7 +270,10 @@ function gpuExhaust(zx,zy,Z,thr){
    граням спадает; не обводка по всему контуру. Дальний борт и дальняя половина
    уходят в тень заметно — объём держит перепад, а не линия. */
 const GHL=new Float32Array(16),GHL_M=512;
-const GHL_WGSL=`
+const GHL_WGSL=GPU_PL_WGSL+`
+fn plOcc(q:vec2f)->f32{let V=fu.v;let uv=(q*fu.res.x/fu.res.z-V[3].xy)/V[3].z;
+  if(any(uv<vec2f(0.))||any(uv>vec2f(1.))){return 0.;}
+  return textureSampleLevel(t0,smp,uv,0.).a;}
 fn ga(uv:vec2f,d:vec2f)->vec2f{
   return vec2f(textureSampleLevel(t0,smp,uv+vec2f(d.x,0.),0.).a-textureSampleLevel(t0,smp,uv-vec2f(d.x,0.),0.).a,
                textureSampleLevel(t0,smp,uv+vec2f(0.,d.y),0.).a-textureSampleLevel(t0,smp,uv-vec2f(0.,d.y),0.).a);}
@@ -297,7 +303,14 @@ fn field(p:vec2f,uv0:vec2f)->vec4f{
   /* тень: перепад через весь корпус, дальний скат — глубже */
   let away=max(-dot(nb.xy,sd),0.)*(1.-nb.z);
   let dark=clamp(.66*smoothstep(-.4,.6,-side)+.3*away,0.,.7)*a*fade*k*own;
-  return vec4f(lit,dark);
+  /* L3: точечный свет по альбедо корпуса — и на теневом борту: разрыв светит и туда */
+  let pl=plAt(p,normalize(nb+vec3f(n.xy*.6,0.)),rad*.3,rad*.2)*own*fade;
+  /* металл — жёсткий блик-штрих со стороны звезды; стекло отражает звезду */
+  let Hs=normalize(L+vec3f(0.,0.,1.));
+  let met=(1.-smoothstep(.1,.28,sat))*smoothstep(.12,.35,mx)*own;
+  let gls=glassOf(c4)*own;
+  let spec=(col*met*(1.-gls)*1.3*pow(max(dot(n,Hs),0.),40.)+mix(col,vec3f(1.),.6)*gls*glassSpec(glassG(uv,u1*6.),Hs))*a*fade*k;
+  return vec4f(lit+rgb*a*pl+spec,dark);
 }`;
 function gpuHullLight(x,y,sx,sy,Z,sys){
   if(!sys||!GPU.on)return;
@@ -317,5 +330,5 @@ function gpuHullLight(x,y,sx,sy,Z,sys){
   const c=(typeof starRGB==="function")?starRGB():[255,244,214],m=Math.max(1,c[0],c[1],c[2]);
   const U=GHL;U[0]=x;U[1]=y;U[2]=rad;U[4]=dx;U[5]=dy;U[8]=c[0]/m;U[9]=c[1]/m;U[10]=c[2]/m;U[11]=1;
   U[12]=ox;U[13]=oy;U[14]=S;
-  gpuField(pass,"ghl",GHL_WGSL,U,[{view:GPU.V.hm}]);
+  gpuField(pass,"ghl",GHL_WGSL,U,[{view:GPU.V.hm},{view:GPU.V.lt}]);
 }

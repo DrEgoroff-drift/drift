@@ -273,7 +273,27 @@ Heat haze behind the nozzle (G4b).
   bursts) on the star→centre axis at .62/1.38/1.9 with a per-channel size shift; brightest in the middle, no
   rim. The backdrop law in numbers: all optics together add at most .058 of the scale (`min(o,.058)`), and
   30% less over the front layer. Gate script: scratchpad `l2gate2.py` (base b2_* = 79dd76a).
-  Next: L3.
+  Polish with L3 1/n: the grade's shadow keys follow the plan — red dwarf deep violet, yellow teal, blue
+  indigo — and skip the front layer (the interface takes no grade). The core's veil: in HDR, before the tone,
+  `h=max(h, white·2.5·gauss(core))` — a small object right over the core drowns in its light as in a camera
+  (a dark wedge there read as a pupil); `max`, not a sum, so the open star is unchanged. Spots stay out of the
+  core: inside ~.35 of the radius granules only brighten.
+  Done (L3 1/n, light touches the world): one light list per frame (08b `gpuLight`, ≤16 strongest, a beam is
+  a segment, a burst/bolt/flame a point) and star occluders (`GPU.oc`, the station), written at the end of the
+  frame into a 16×3 rgba16f texture (`gpuLtWrite`) that both hull passes read: 17c `gpuLitSprite` (station,
+  barges, pirates) and 16ga `gpuHullLight` (own hull). `plAt`: Lambert on the relief normal, lights at .3 of
+  the hull radius above the plane, 1/(1+d²/r²); the hull shades itself — six steps along its own mask toward
+  the source (`plOcc`, each pass maps its mask), so the far side stays dark. Metal (grey) takes a hard glint
+  stroke toward the star (pow 40 on the edge normal); glass (bluish, mid) reflects the star through its own
+  dome normal from the gradient of glassiness (two steps each way, so frames inside the canopy do not break it
+  into sparks); windows and lamps ×2.3 — above the knee, the bloom takes them. `shAt`: a hull behind the
+  station along the ray to the star is at .4 (soft edge). Sources: beams (26·zk+10, a·1.8), battery, bolts
+  (.4), bursts (r·2.2+24, 3.6a+.6), own flame (R·6, thr·1.4). `GPU.plOff` switches L3 off for pairs.
+  Close-up scenes (scratchpad `l3run.sh`, a camera: `shipScaleAt` 4.5 in the shot only, hull ≈150 px at 760):
+  l3h — beam and burst below: lit side +31%, far side +7%; l3f — flame only: stern half +17%, bow +2%;
+  l3s — barge behind the station −57%, the lit one −1%. Field L within ±.7%, dirt ≤1.7%, HUD diffs = state.
+  Next (L3 2/n): nav lights and windows of 2D hulls (drawHull) into the same light; point lights on planets'
+  night side; then L4.
   A GPU draw after `gpuHullLight` must use `gpuOver`, not `gpuScene` (the scene pass is closed by then).
 - Merge each: `build.ps1`, `python docs/shot.py <scenes> --look --tag gpu`, 0 `gpu.errs`, pair with
   `scratchpad/mainref/docs/shots/main_<scene>.png`, one line of what got better, commit, strike from PLAN §0.

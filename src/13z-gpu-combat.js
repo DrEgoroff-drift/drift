@@ -86,11 +86,13 @@ function gpuCombatEnergy(zx,zy,Z){
     const x0=zx(b.x1),y0=zy(b.y1),x1=zx(b.x2),y1=zy(b.y2);
     if(Math.max(x0,x1)<-40||Math.min(x0,x1)>W+40||Math.max(y0,y1)<-40||Math.min(y0,y1)>H+40)continue;
     genPush(x0,y0,x1,y1,b.w*zk*.55,b.w*zk*1.5,a*c[3],.8,c,a);
+    gpuLight(x0,y0,x1,y1,c[0],c[1],c[2],26*zk+10,a*c[3]*1.8);   /* L3: луч красит ближний борт */
   }
   /* разряд батареи с грунта (21d): тот же луч, гаснет за четырнадцать кадров */
   if(G.battFx)for(const f of G.battFx){
     const a=Math.max(0,f.t/14);
     genPush(zx(f.x1),zy(f.y1),zx(f.x2),zy(f.y2),Math.max(.8,1.3*a),2.6+2*(1-a),a*.9,.85,GEN_BATT,a*1.2);
+    gpuLight(zx(f.x1),zy(f.y1),zx(f.x2),zy(f.y2),GEN_BATT[0],GEN_BATT[1],GEN_BATT[2],30,a*.9);
   }
   /* свет маячка контейнера: коробка стоит в своём свете (цвет категории), огонёк — в 2D поверх */
   if(G.loot)for(const L of G.loot){
@@ -104,6 +106,7 @@ function gpuCombatEnergy(zx,zy,Z){
     if(x<-40||x>W+40||y<-40||y>H+40)continue;
     const cz=clamp(Z,.6,1.6);
     genPush(x-s.vx*2.4*Z,y-s.vy*2.4*Z,x,y,1.05*cz,2.4*cz,1,0,s.mine?GEN_MINE:GEN_FOE,.55);
+    const sc=s.mine?GEN_MINE:GEN_FOE;gpuLight(x,y,x,y,sc[0],sc[1],sc[2],16*cz,.4);
   }
   if(zones.length)gpuShapes(pass,zones,{blend:"add"});
   gpuBooms(pass,zx,zy,Z);
@@ -152,6 +155,7 @@ function gpuBooms(pass,zx,zy,Z){
     const a=Math.max(0,f.t/18),x=zx(f.x),y=zy(f.y),r=(1-a)*34*Z+4;
     if(x<-r*2||x>W+r*2||y<-r*2||y>H+r*2)continue;
     GBM[n*4]=x;GBM[n*4+1]=y;GBM[n*4+2]=r;GBM[n*4+3]=a;n++;
+    gpuLight(x,y,x,y,1,.72,.42,r*2.2+24,3.6*a+.6);   /* L3: разрыв вспыхивает на всех корпусах рядом */
   }
   if(!n)return;
   GBM[56]=n;

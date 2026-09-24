@@ -6,7 +6,7 @@
    Кадр: сцена видеокарты (gpuScene) → #c поверх → свечение, зерно, виньетка,
    хроматика, дизеринг одним проходом → слой интерфейса (стойка) поверх всего. */
 const GPU={ok:false,on:false,lost:false,busy:false,none:false,
-  dev:null,cv:null,gx:null,fmt:"",L:null,P:{},B:{},S:null,U:null,UA:new Float32Array(64),shaft:null,lens:null,sepH:[],
+  dev:null,cv:null,gx:null,fmt:"",L:null,P:{},B:{},S:null,U:null,UA:new Float32Array(64),shaft:null,lens:null,lt:[],oc:[],sepH:[],
   T:{},V:{},N:null,noiseOk:false,ui:null,uctx:null,snap:null,
   bw:0,bh:0,qw:2,qh:2,dpr:0,cw:0,ch:0,enc:null,scenePass:null,sceneOn:false,
   sceneBg:{r:0,g:0,b:0,a:1},uiOn:false,uiWas:false,hitK:0,hitDx:0,post:{k:0,grain:0,vig:0},
@@ -193,6 +193,10 @@ fn overlay(b:vec3f,s:vec3f)->vec3f{return select(1.-2.*(1.-b)*(1.-s),2.*b*s,b<ve
   if(u.shc.w>0.&&u.scene>.5){f=sil(v.uv,f,tone(hs));}
   var h=hs*(1.-f.a)+f.rgb;
   if(u.k>0.){h=h+u.k*.8*textureSampleLevel(tBloom,sl,v.uv,0.).rgb*(1.-.6*f.a);}
+  /* засветка ядра: мелочь перед ядром звезды тонет в его свете, как в камере, — тёмная
+     точка в центре читалась зрачком. max, не сумма: открытая звезда не меняется, крупный
+     корпус держит силуэт за пределами ядра */
+  if(u.ln.w>0.){let dl=length((v.uv-u.ln.xy)*u.css)/u.ln.w;h=max(h,vec3f(1.,.97,.93)*2.5*exp(-dl*dl));}
   var c=tone(h);
   /* лучи от звезды (G5): от пикселя к звезде копится видимое небо — там, где
      передний слой прозрачен. Облака и хребты режут свет на настоящие полосы */
@@ -212,14 +216,16 @@ fn overlay(b:vec3f,s:vec3f)->vec3f{return select(1.-2.*(1.-b)*(1.-s),2.*b*s,b<ve
     let r=vis*vis*exp(-dl*2.4)*u.sh.z*1.5;
     let b=vec3f(1.)-exp(-u.shc.rgb*r);c=vec3f(1.)-(vec3f(1.)-min(c,vec3f(1.)))*(vec3f(1.)-b);
   }
-  /* L2 2/n: грейд по классу звезды — лёгкий. Света тянутся к цвету звезды, тени в холод
-     (у голубых — в сиреневый): ключ холодный, акцент тёплый. Сдвиг только оттенка —
-     оба множителя нормированы по яркости, медиана L стоит */
+  /* L2 2/n: грейд по классу звезды — лёгкий. Света тянутся к цвету звезды, тени — в пару
+     к ней: красный карлик — угли и глубокий фиолет, жёлтая — золото и бирюза, голубая —
+     лёд и индиго. Сдвиг только оттенка — оба множителя нормированы по яркости, медиана L
+     стоит. Интерфейс (передний слой) грейда не берёт */
   if(u.lc.w>0.){
-    let Y=vec3f(.2126,.7152,.0722);let l=dot(c,Y);
-    let hi=u.lc.rgb/max(dot(u.lc.rgb,Y),1e-3);
-    let lo0=mix(vec3f(.88,.99,1.22),vec3f(1.1,.92,1.2),smoothstep(1.,1.6,u.lc.w));let lo=lo0/dot(lo0,Y);
-    c=c*mix(vec3f(1.),hi,smoothstep(.2,.75,l)*.09)*mix(vec3f(1.),lo,(1.-smoothstep(.04,.3,l))*.10);}
+    let Y=vec3f(.2126,.7152,.0722);let l=dot(c,Y);let ga=1.-f.a;
+    let hi=u.lc.rgb/max(dot(u.lc.rgb,Y),1e-3);let t=u.lc.w;
+    let lo0=mix(mix(vec3f(1.12,.9,1.22),vec3f(.84,1.04,1.12),smoothstep(.55,1.,t)),vec3f(.9,.9,1.3),smoothstep(1.,1.5,t));
+    let lo=lo0/dot(lo0,Y);
+    c=c*mix(vec3f(1.),hi,smoothstep(.2,.75,l)*.09*ga)*mix(vec3f(1.),lo,(1.-smoothstep(.04,.3,l))*.10*ga);}
   /* оптика — только при звезде в кадре и слабая (закон фона: мягко, тусклее игры).
      Штрих — тонкая горизонталь, холоднее звезды; блики — мягкие шестигранники
      (лепестки диафрагмы) на оси звезда→центр, со сдвигом цвета по каналам. Не круги:
@@ -227,7 +233,7 @@ fn overlay(b:vec3f,s:vec3f)->vec3f{return select(1.-2.*(1.-b)*(1.-s),2.*b*s,b<ve
   if(u.ln.z>0.){
     let px=v.uv*u.css;let sp=u.ln.xy*u.css;let d=px-sp;
     let fa=1.-.7*f.a;let sc=u.lc.rgb/max(max(u.lc.r,u.lc.g),1e-3);
-    let sw=1.+u.ln.w*.06;
+    let sw=1.+u.ln.w*1.5;
     let y1=d.y/sw;let y5=y1*.2;
     let st=(exp(-y1*y1)+.3*exp(-y5*y5))*exp(-abs(d.x)/(u.css.x*.2));
     var o=mix(sc,vec3f(.6,.8,1.),.55)*st*.055;
@@ -313,11 +319,11 @@ function gpuResize(){
   const TB=GPUTextureUsage.TEXTURE_BINDING,RA=GPUTextureUsage.RENDER_ATTACHMENT,CD=GPUTextureUsage.COPY_DST;
   const mk=(w,h,f,us)=>GPU.dev.createTexture({size:[w,h],format:f,usage:us});
   GPU.T={front:mk(bw,bh,"rgba8unorm",TB|CD|RA|GPUTextureUsage.COPY_SRC),ui:mk(bw,bh,"rgba8unorm",TB|CD|RA),
-    scene:mk(bw,bh,"rgba16float",TB|RA),emit:mk(bw,bh,"rgba16float",TB|RA),bloomA:mk(qw,qh,"rgba16float",TB|RA),bloomB:mk(qw,qh,"rgba16float",TB|RA)};
+    scene:mk(bw,bh,"rgba16float",TB|RA),emit:mk(bw,bh,"rgba16float",TB|RA),lt:mk(16,3,"rgba16float",TB|CD),bloomA:mk(qw,qh,"rgba16float",TB|RA),bloomB:mk(qw,qh,"rgba16float",TB|RA)};
   /* лестница свечения: bloomA — первый уровень, дальше каждый вдвое мельче */
   GPU.M=[GPU.T.bloomA];
   for(let i=1,w=qw,h=qh;i<6;i++){w=Math.max(1,Math.ceil(w/2));h=Math.max(1,Math.ceil(h/2));GPU.T["mip"+i]=mk(w,h,"rgba16float",TB|RA);GPU.M.push(GPU.T["mip"+i]);}
-  GPU.V={scene:GPU.T.scene.createView(),emit:GPU.T.emit.createView(),bloomA:GPU.T.bloomA.createView(),bloomB:GPU.T.bloomB.createView()};
+  GPU.V={lt:GPU.T.lt.createView(),scene:GPU.T.scene.createView(),emit:GPU.T.emit.createView(),bloomA:GPU.T.bloomA.createView(),bloomB:GPU.T.bloomB.createView()};
   GPU.MV=GPU.M.map(t=>t.createView());
   GPU.scene3D=false;
   GPU.bw=bw;GPU.bh=bh;GPU.qw=qw;GPU.qh=qh;GPU.dpr=DPR;GPU.cw=W;GPU.ch=H;
@@ -352,6 +358,61 @@ function gpuPass(view,pipe,bind){
   const p=GPU.enc.beginRenderPass({colorAttachments:[{view,loadOp:"clear",storeOp:"store",clearValue:{r:0,g:0,b:0,a:1}}]});
   p.setPipeline(pipe);p.setBindGroup(0,bind);p.draw(3);p.end();
 }
+/* ── L3: точечный свет на корпусах ──
+   Источники кадра (лучи, разрывы, болты, свой факел) копятся здесь, заслоны звезды
+   (станция) — тоже; в конце кадра шестнадцать сильнейших ложатся в текстуру 16×3:
+   строка 0 — отрезок (точка — отрезок нулевой длины), 1 — цвет×сила и радиус,
+   2 — заслоны (центр, радиус). Её читают проходы корпусов (17c gpuLitSprite,
+   16ga gpuHullLight) до отправки кадра — все видят свет своего кадра */
+function gpuLight(x0,y0,x1,y1,r,g,b,rad,k){if(GPU.on&&k>0&&rad>0)GPU.lt.push([x0,y0,x1,y1,r*k,g*k,b*k,rad,k*rad]);}
+const GLT_H=new Uint16Array(16*3*4),GLT_F=new Float32Array(1),GLT_U=new Uint32Array(GLT_F.buffer);
+function f16(v){GLT_F[0]=v;const x=GLT_U[0],s=(x>>>16)&0x8000,e=((x>>>23)&255)-112;
+  if(e<=0)return s;if(e>=31)return s|0x7bff;return s|(e<<10)|((x&0x7fffff)>>>13);}
+function gpuLtWrite(){
+  const A=GLT_H;A.fill(0);
+  const L=GPU.plOff?[]:GPU.lt.sort((a,b)=>b[8]-a[8]);
+  for(let i=0;i<Math.min(16,L.length);i++){const l=L[i];for(let j=0;j<4;j++){A[i*4+j]=f16(l[j]);A[64+i*4+j]=f16(l[4+j]);}}
+  const O=GPU.plOff?[]:GPU.oc;
+  for(let i=0;i<Math.min(16,O.length);i++){const o=O[i];A[128+i*4]=f16(o[0]);A[129+i*4]=f16(o[1]);A[130+i*4]=f16(o[2]);}
+  GPU.dev.queue.writeTexture({texture:GPU.T.lt},A,{bytesPerRow:128},[16,3]);
+}
+/* свет и заслоны для проходов корпусов (t1 — текстура света): plAt — сумма по рельефу nb,
+   источники на высоте hz над плоскостью; корпус сам себе заслон — шесть шагов по его маске
+   к источнику (plOcc — у каждого прохода своя маска), дальний борт света не видит;
+   shAt — доля света звезды (sd — к звезде) */
+const GPU_PL_WGSL=`
+fn plAt(p:vec2f,nb:vec3f,hz:f32,sp:f32)->vec3f{
+  var s=vec3f(0.);
+  for(var i=0;i<16;i++){
+    let A=textureLoad(t1,vec2i(i,0),0);let B=textureLoad(t1,vec2i(i,1),0);
+    if(B.w<=0.){break;}
+    let ab=A.zw-A.xy;let tt=clamp(dot(p-A.xy,ab)/max(dot(ab,ab),1e-4),0.,1.);
+    let dv=A.xy+ab*tt-p;let d2=dot(dv,dv);let dl=sqrt(d2);
+    var oc=0.;let st=dv/max(dl,1e-3)*min(dl,sp)/6.;
+    for(var j=1;j<=6;j++){oc=oc+plOcc(p+st*f32(j));}
+    s=s+B.rgb*max(dot(nb,normalize(vec3f(dv,hz))),0.)/(1.+d2/(B.w*B.w))*exp(-oc*.4);}
+  return s;}
+/* стекло — голубое, не белое и не чёрное; своя нормаль — купол по перепаду «стеклянности»:
+   фонарь внутри корпуса по альфе плоский, а по стеклу — выпуклый */
+fn glassOf(c:vec4f)->f32{let rgb=c.rgb/max(c.a,1e-3);let mx=max(rgb.r,max(rgb.g,rgb.b));
+  return smoothstep(.03,.2,rgb.b-rgb.r)*smoothstep(.08,.25,mx)*(1.-smoothstep(.6,.85,mx))*smoothstep(.3,.7,c.a);}
+fn glassS(uv:vec2f)->f32{return glassOf(textureSampleLevel(t0,smp,uv,0.));}
+/* перепад — по двум шагам с каждой стороны: рамы и блики внутри фонаря не рвут купол на искры */
+fn glassG(uv:vec2f,d:vec2f)->vec2f{
+  let dx=vec2f(d.x,0.);let dy=vec2f(0.,d.y);
+  return -vec2f(glassS(uv+dx)+glassS(uv+dx*2.)-glassS(uv-dx)-glassS(uv-dx*2.),
+                glassS(uv+dy)+glassS(uv+dy*2.)-glassS(uv-dy)-glassS(uv-dy*2.))*.5;}
+fn glassSpec(g:vec2f,Hs:vec3f)->f32{let tl=clamp(length(g)*.8,0.,.9);
+  let ng=vec3f(g/max(length(g),1e-4)*tl,sqrt(1.-tl*tl));
+  return .08+1.6*pow(max(dot(ng,Hs),0.),12.);}
+fn shAt(p:vec2f,sd:vec2f)->f32{
+  var k=1.;
+  for(var i=0;i<16;i++){
+    let O=textureLoad(t1,vec2i(i,2),0);if(O.z<=0.){break;}
+    let q=O.xy-p;let tt=dot(q,sd);if(tt<=0.||dot(q,q)<O.z*O.z){continue;}
+    k=min(k,mix(.4,1.,smoothstep(O.z*.75,O.z*1.05,length(q-sd*tt))));}
+  return k;}
+`;
 function gpuUni(){
   const a=GPU.UA,P=GPU.post;
   a[0]=GPU.bw;a[1]=GPU.bh;a[2]=W;a[3]=H;a[4]=DPR;a[5]=P.k;a[6]=P.grain;a[7]=P.vig;
@@ -373,7 +434,7 @@ function gpuFrame(){
   ctx=MAIN_CTX;
   ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,GPU.bw,GPU.bh);ctx.setTransform(DPR,0,0,DPR,0,0);
   GPU.on=true;
-  GPU.enc=GPU.dev.createCommandEncoder();GPU.scenePass=null;GPU.overPass=null;GPU.sceneOn=false;GPU.emitOn=false;GPU.scene3D=false;GPU.hitK=0;GPU.shaft=null;GPU.lens=null;GPU.sep=0;GPU.sepH.length=0;
+  GPU.enc=GPU.dev.createCommandEncoder();GPU.scenePass=null;GPU.overPass=null;GPU.sceneOn=false;GPU.emitOn=false;GPU.scene3D=false;GPU.hitK=0;GPU.shaft=null;GPU.lens=null;GPU.lt.length=0;GPU.oc.length=0;GPU.sep=0;GPU.sepH.length=0;
   return true;
 }
 /* проход сцены видеокарты: его открывает первый слой кадра, закрывает сборка.
@@ -468,7 +529,7 @@ function gpuPresent(){
     const ui=(typeof rackOpen==="function")&&rackOpen()&&G.running&&!scrOpen();
     if(ui){GPU.dev.queue.copyExternalImageToTexture({source:GPU.ui},{texture:GPU.T.ui,premultipliedAlpha:true},[GPU.bw,GPU.bh]);GPU.uiWas=true;}
     GPU.uiOn=ui;
-    gpuUni();
+    gpuUni();gpuLtWrite();
     gpuPass(GPU.gx.getCurrentTexture().createView(),GPU.P.fin,GPU.B.fin);
     GPU.dev.queue.submit([GPU.enc.finish()]);
     GPU.frameNo++;

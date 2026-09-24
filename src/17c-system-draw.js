@@ -422,7 +422,11 @@ function stationArt(key,s,V,S,ty,lx,ly){
    половине: маска выпечки читается рельефом, кромка горит только там, где борт
    смотрит на звезду, тень идёт перепадом через всё тело, огни и окна светят сами.
    Собственный свет станции — гауссово пятно под корпусом, а не кольца градиента. */
-const GST_WGSL=`
+const GST_WGSL=GPU_PL_WGSL+`
+fn plOcc(q:vec2f)->f32{let V=fu.v;let dq=q-V[0].xy;let ro=V[1].zw;
+  let uv=(vec2f(dot(dq,ro),dot(dq,vec2f(-ro.y,ro.x)))/V[0].z+1.)*.5;
+  if(any(uv<vec2f(0.))||any(uv>vec2f(1.))){return 0.;}
+  return textureSampleLevel(t0,smp,uv,0.).a;}
 fn sa(uv:vec2f,d:vec2f)->vec2f{
   return vec2f(textureSampleLevel(t0,smp,uv+vec2f(d.x,0.),0.).a-textureSampleLevel(t0,smp,uv-vec2f(d.x,0.),0.).a,
                textureSampleLevel(t0,smp,uv+vec2f(0.,d.y),0.).a-textureSampleLevel(t0,smp,uv-vec2f(0.,d.y),0.).a);}
@@ -454,7 +458,20 @@ fn field(p:vec2f,uv0:vec2f)->vec4f{
   let lf=smoothstep(-.2,.8,side)*own;
   let shade=(1.+.9*lf+max(dot(nb,L),0.)*(1.-nb.z)*1.2*own)*(1.-dark);
   let lit=col*rim*1.1*own*a;
-  return vec4f(c4.rgb*shade*mix(vec3f(1.),col,.08)+lit+gl*(1.-a),a);
+  /* L3: заслон звезды — станция тенит баржу у причала (у самой станции, glow>0, — нет);
+     огни в тень не падают */
+  let sk=mix(1.,select(shAt(p,sd),1.,V[3].x>0.),own);
+  /* L3: точечный свет — лучи, разрывы, болты, факелы: ближний борт берёт их цвет */
+  let pl=plAt(p,normalize(nb+vec3f(n.xy*.6,0.)),R*.3,R*.22)*own;
+  /* металл (серое) — жёсткий блик-штрих со стороны звезды; стекло (голубое) — отражает звезду */
+  let Hs=normalize(L+vec3f(0.,0.,1.));
+  let met=(1.-smoothstep(.1,.28,sat))*smoothstep(.12,.35,mx)*own;
+  let gls=glassOf(c4)*own;
+  let gg0=glassG(uv,u1*6.);let gg=vec2f(gg0.x*ro.x-gg0.y*ro.y,gg0.x*ro.y+gg0.y*ro.x);
+  let spec=(col*met*(1.-gls)*1.3*pow(max(dot(n,Hs),0.),40.)+mix(col,vec3f(1.),.6)*gls*glassSpec(gg,Hs))*sk*a;
+  /* окна и огни светят сами: выше колена — их подхватывает свечение */
+  let em=1.+1.3*(1.-own);
+  return vec4f(c4.rgb*(shade*sk*em+pl)*mix(vec3f(1.),col,.08)+lit*sk+spec+gl*(1.-a),a);
 }`;
 /* выпечка cv (полуразмер R в пикселях экрана, поворот rot) со светом звезды по рельефу;
    (lx,ly) — к звезде; glow — доля своего тёплого света (станция 1, баржа 0) */
@@ -463,7 +480,7 @@ function gpuLitSprite(cv,x,y,R,s,rot,lx,ly,glow){
   const c=(typeof starRGB==="function")?starRGB():[255,244,214],m=Math.max(1,c[0],c[1],c[2]);
   const U=new Float32Array(16);U[0]=x;U[1]=y;U[2]=R;U[3]=s;U[4]=lx;U[5]=ly;U[6]=Math.cos(rot);U[7]=Math.sin(rot);
   U[8]=c[0]/m;U[9]=c[1]/m;U[10]=c[2]/m;U[11]=1;U[12]=glow;
-  gpuField(pass,"gst",GST_WGSL,U,[gpuCanvasTex(cv)]);
+  gpuField(pass,"gst",GST_WGSL,U,[gpuCanvasTex(cv),{view:GPU.V.lt}]);
   return true;
 }
 function gpuStation(art,x,y,s,lx,ly){return gpuLitSprite(art.cn,x,y,art.R,s,0,lx,ly,1);}
@@ -493,6 +510,7 @@ function drawStation(x,y,Z){
   const key=(G.sys.key||"?")+"|"+ty+"|"+nb+"|"+(Math.round(s*4)/4)+"|"+Math.floor(G.t/18)+"|"+SCK+"|"+(GPU.on?"g":"c");
   const art=stationArt(key,s,V,S,ty,lx,ly);
   if(!gpuStation(art,x,y,s,lx,ly))ctx.drawImage(art.cn,x-art.R,y-art.R,art.R*2,art.R*2);
+  else GPU.oc.push([x,y,art.R*.5]);   /* L3: заслон звезды для барж у причала */
   /* факельная труба живёт поверх выпечки (M325): в спрайте пламя стоит по
      18 тактов, а факел — единственное на станции, что обязано плясать */
   if(ty==="indust"){

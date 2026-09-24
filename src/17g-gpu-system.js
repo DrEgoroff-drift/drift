@@ -101,7 +101,10 @@ fn star(p:vec2f,sv:vec4f,cv:vec4f,t:f32,big:f32,px:f32,hz:f32)->vec4f{
     /* L2: поверхность — ниже плеча, иначе плечо и свечение заливают грануляцию белым;
        к лимбу темнеет в цвет звезды: синий уходит первым, красный последним */
     let lc=vec3f(limb,pow(limb,1.35),pow(limb,1.8));
-    let I=hot*lc*mix(1.,gr,mu)*mix(1.4,1.,big);
+    /* пятна — вне ядра (от ~.35 радиуса): тёмная гранула в центре читалась зрачком,
+       а самая яркая точка кадра должна быть самой яркой. В ядре гранулы только светлее */
+    let gg=mix(max(gr,1.),gr,smoothstep(.2,.38,rn));
+    let I=hot*lc*mix(1.,gg,mu)*mix(1.4,1.,big);
     /* L2: фотосфера светит поверх газа, а не вырезает его: закрытый газ делал диск
        тусклее кольца за краем — затмение вместо звезды */
     photo=vec4f(I*cov,cov*.6);
@@ -336,7 +339,7 @@ function gsyStar(pass,sys,ox,oy,R){
      в кадре (08b fsFinal). Дыра не светит — ни грейда, ни бликов */
   if(!kind){const g=st.kind==="giant"?[.6,"#ff7448",.8]:st.kind==="dwarf"?[1.6,"#e8f4ff",1]:[sys.cls.t||1,sys.cls.col,1];
     const q=hex2rgb(g[1]),r0=S[2]||R,m=Math.min(ox,W-ox,oy,H-oy);
-    GPU.lens={x:ox/W,y:oy/H,k:g[2]*clamp(m/(r0+60),0,1),r:r0,cr:q[0]/255,cg:q[1]/255,cb:q[2]/255,t:g[0]};}
+    GPU.lens={x:ox/W,y:oy/H,k:g[2]*clamp(m/(r0+60),0,1),r:r0*(big?.42:.24)*.16,cr:q[0]/255,cg:q[1]/255,cb:q[2]/255,t:g[0]};}
   gpuField(pass,"gsy.star",GSY_STAR_WGSL,S,tex?[tex]:[]);
 }
 /* всё под планетами — в проход сцены, сразу за фоном (16g) */
