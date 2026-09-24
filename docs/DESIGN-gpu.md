@@ -78,7 +78,7 @@ Heat haze behind the nozzle (G4b).
 
 ## Where I stopped (update on every commit)
 
-- **Deploy candidate: `ef8c8b9` (L1 3/n), accepted by Контроль by its pairs.** The author: deploy to main
+- **Deploy candidate: `8e77d8c` (L1 5/n; before it `ef8c8b9`), accepted by Контроль by its pairs.** The author: deploy to main
   before the limit window reaches 90%; the signal «ДЕПЛОЙ» comes from Контроль. On it: close the step with a
   commit; `test.ps1 -Full` and `node test-node.js`; bump `VER` and a PATCHNOTES line (what the player sees
   better, plus «needs a browser with WebGPU»); a release commit; send Контроль its sha. **Контроль pushes**
@@ -209,7 +209,6 @@ Heat haze behind the nozzle (G4b).
   (`bub`, ×.28 at the limb → 1 at .5 H): core 255, ring 150–250 px median 142. The near-star region takes the
   tone closer to the star's colour (bias .3), and its glow goes to warm white — orange over teal was grey. The
   normal pair's green is emerald-teal (36,196,176; field 160–177°). Pairs `l3*_760`; `star.py <name> x y`.
-  Next in L1: shafts in space (6), the landmark per system.
   Done (4/n), shafts in space: planets cut the star's light in the nebula composite (`GNB_EMI`) — analytic, from
   up to seven planet circles (`V[4..10]`, CSS px, filled in `gpuNebulaGen(…,Z)`): behind a planet (away from the
   star) a wedge ×.2 with a penumbra widening with distance, fading after ~16 radii; light along the wedge edges
@@ -217,7 +216,19 @@ Heat haze behind the nozzle (G4b).
   (`fog`, L ~10–15, none inside the corona ring, none on gas bodies — orange fog on teal gas was grey). Pairs
   `l4shadow_760` (wedge across lit gas: planet 0, ship at 1.1×) and `l4fog_760` (planet 1, ship at 1.3×: two
   wedges through the fog). Gates kept: star ring 146, normal dirt 3.0%. The planet's phase is L3.
-  Next in L1: the landmark per system.
+  Done (6/n), the landmark per system: `lmk()` in `GNB_GEN`, one huge thing on the backdrop, parallax .006 so it
+  stays on screen across the whole system; kind, place, size, turn from its own rng stream (`gnbLandmark`,
+  0x4C4D, cached on `sys.gnbPal.lm`; world gen untouched). 0 — supernova remnant: torn ring of filaments, cold
+  shock front outside, warm threads inside; 1 — comet across half the sky: straight ion tail, curved dust tail;
+  2 — far spiral galaxy at an angle: gold bulge, saturated blue arms, pink knots, dust lanes (no diffuse
+  inter-arm light — it read as grey haze); 3 — only at a hole: two wound, knotted jets with lobes. It sits
+  behind all gas layers (added after the loop through their `T`; WGSL gotcha: `pow(x,2.)` of a negative is NaN
+  on D3D — use `sq`) and opens a window: gas thresholds rise around it (erosion, not dimming — dimmed gas is
+  grey), dust thins; near the star it fades to .3 (glare). The small planet's wedge now lightens with distance
+  (×.2 at the planet, ×.6 four diameters out). Pairs `lm0..lm3_760` (forced kind, centred), natural
+  `nnormal/ngiant/ndwarf`. Gates: star ring 145; dirt V40+ 2.8% (V30+ 7.1%: the window's void is V 30–35,
+  near black); giant 1.9%, dwarf 1.2%.
+  Next: L2 (HDR ladder, mip bloom, AgX, grade per class).
   A GPU draw after `gpuHullLight` must use `gpuOver`, not `gpuScene` (the scene pass is closed by then).
 - Merge each: `build.ps1`, `python docs/shot.py <scenes> --look --tag gpu`, 0 `gpu.errs`, pair with
   `scratchpad/mainref/docs/shots/main_<scene>.png`, one line of what got better, commit, strike from PLAN §0.

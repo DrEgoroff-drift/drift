@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 604 · символов верхнего уровня: 5928
+Файлов: 604 · символов верхнего уровня: 5930
 
 ## СИМВОЛЫ
 
@@ -2053,16 +2053,18 @@ glyphHasRunes                src/12t-settle.js:52-56
 glyphNodes                   src/12t-settle.js:92-102
 gn5Foe                       tests/91zzzw-guns3.js:10-16
 GNB                          src/16gb-gpu-nebula.js:19
-GNB_ABS                      src/16gb-gpu-nebula.js:117
-GNB_EMI                      src/16gb-gpu-nebula.js:123
-GNB_FINE                     src/16gb-gpu-nebula.js:103
+GNB_ABS                      src/16gb-gpu-nebula.js:203
+GNB_EMI                      src/16gb-gpu-nebula.js:209
+GNB_FINE                     src/16gb-gpu-nebula.js:189
 GNB_GEN                      src/16gb-gpu-nebula.js:28
+GNB_LM_COL                   src/16gb-gpu-nebula.js:302
 GNB_NOISE                    src/16gb-gpu-nebula.js:20
-GNB_PAL                      src/16gb-gpu-nebula.js:189-204
-gnbPalette                   src/16gb-gpu-nebula.js:196-204
-gnbPipe                      src/16gb-gpu-nebula.js:177-182
-gnbStar                      src/16gb-gpu-nebula.js:206-211
-gnbTarget                    src/16gb-gpu-nebula.js:169-176
+GNB_PAL                      src/16gb-gpu-nebula.js:285-300
+gnbLandmark                  src/16gb-gpu-nebula.js:303-308
+gnbPalette                   src/16gb-gpu-nebula.js:292-300
+gnbPipe                      src/16gb-gpu-nebula.js:273-278
+gnbStar                      src/16gb-gpu-nebula.js:310-315
+gnbTarget                    src/16gb-gpu-nebula.js:265-272
 gnFoe                        tests/91zzzw-guns2.js:17-23
 gnGun                        tests/91zzzw-guns2.js:25-28
 gnWorld                      tests/91zzzw-guns2.js:7-16
@@ -2118,8 +2120,8 @@ gpuKitU                      src/08c-gpu-kit.js:89-93
 gpuLitSprite                 src/17c-system-draw.js:461-468
 gpuManual                    src/08b-gpu.js:325-330
 gpuMoon                      src/17ga-gpu-planets.js:143-148
-gpuNebulaComp                src/16gb-gpu-nebula.js:244-251
-gpuNebulaGen                 src/16gb-gpu-nebula.js:214-243
+gpuNebulaComp                src/16gb-gpu-nebula.js:351-358
+gpuNebulaGen                 src/16gb-gpu-nebula.js:318-350
 gpuNoise                     src/08b-gpu.js:207-212
 gpuNone                      src/08b-gpu.js:32-39
 gpuOver                      src/08b-gpu.js:308-323
@@ -6622,7 +6624,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/16ga-gpu-trail.js · 20 КБ
   · шлейф, факел и свет на корпусе корабля на видеокарте (G4, docs/DESIGN-gpu.md):1
 
-## src/16gb-gpu-nebula.js · 18 КБ
+## src/16gb-gpu-nebula.js · 26 КБ
   · туманность системы объёмом (L1, docs/DESIGN-gpu.md):1
 
 ## src/17-mode-system.js · 73 КБ
