@@ -37,6 +37,8 @@ Built: the core and post pass (08b), the layer kit (08c), the space backdrop (16
   - [ ] L1b dust, after e0e933f (Контроль 24.09): in l2c the top-right pillars at 760 read as shards or claws —
     heads sharper than they should be; rounder, blunter heads.
   - [ ] L1b dust: try a dim warm light 10–20 px inward from the rim, so the cut-out becomes a body.
+  - [ ] L1b dust, after 7658f17 (Контроль 24.09): at ×2.00 top right two small orange «tadpoles» — globules
+    with a tail and no gas around read as fish at 760. A globule with no gas dims stars like the rest of the dust.
 - [ ] **L2 HDR light:** everything emissive into rgba16f at real brightness (star ≫ flames ≫ lamps); bloom as a mip
   ladder instead of the ¼-frame 4×4; AgX/ACES tone map; a grade per star class — one shot tells where you are.
 - [ ] **L3 light touches the world:** normals from baked sprites' relief, a list of point lights (flames, beams,

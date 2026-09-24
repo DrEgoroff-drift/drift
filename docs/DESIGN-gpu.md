@@ -78,7 +78,7 @@ Heat haze behind the nozzle (G4b).
 
 ## Where I stopped (update on every commit)
 
-- **Deploy candidate: `92679b3` (L4 1/n; before it `e0e933f`), accepted by Контроль by its pairs.** The author: deploy to main
+- **Deploy candidate: `7658f17` (L1b 4/n; before it `92679b3`), accepted by Контроль by its pairs.** The author: deploy to main
   before the limit window reaches 90%; the signal «ДЕПЛОЙ» comes from Контроль. On it: close the step with a
   commit; `test.ps1 -Full` and `node test-node.js`; bump `VER` and a PATCHNOTES line (what the player sees
   better, plus «needs a browser with WebGPU»); a release commit; send Контроль its sha. **Контроль pushes**
@@ -86,9 +86,13 @@ Heat haze behind the nozzle (G4b).
   the site falls: a commit on top with the tree of `d543aff`, never a force-push. Only a commit Контроль
   accepted by pairs goes to main. CI rehearsal of ef8c8b9 (deploy.yml flags, `--disable-gpu`): load clean,
   smoke 4/4, Node green (the «рейсы» suite fails in full order only, green alone; it sits in quarantine).
-- Order now: L1b 4/n (dust at other zooms) done, awaiting Контроль — gate: whole frames at 760, l4a ×2.00,
-  nnormal ×1.60, l2c ×1.10; then the G steps anew on top of L, by the bible (G5 frozen). L1b and L4
-  follow-ups sit in PLAN §0.
+- Order now: L1b 5/n done, awaiting Контроль. **L1b 5/n — brief: the frame at ×2 stops being a black hole; dust bodies read by their shape
+  (starlit side, thin parts show stars), and space with stars comes back.** The wall sits farther from the
+  frame centre — solid bodies ≤45% of the frame at any zoom; a faint warm-grey-brown reflected light (L 8–14)
+  on the star side of a body, fading into its depth; rims stay where gas is. Target: black (L < 12) ≤45% at
+  ×2.00, ≤40% at ×1.60, median L ≥14. Gate: l4a ×2.00, nnormal ×1.60, l2c ×1.10, whole frames at 760. Then
+  the G steps anew on top of L, by the bible §L in its order, each with a one-line brief here first (G5
+  frozen). L1b and L4 follow-ups sit in PLAN §0.
 
 - Done: core `08b`, kit `08c`, space `16g` (G1: live nebula wisps and lanes, stars with halo and tapered
   spikes, dust with depth of field; pair in `scratchpad/pairs/system_crop.png`),
@@ -367,6 +371,19 @@ Heat haze behind the nozzle (G4b).
   (billows in growing coordinates, the same ladder, heat `exp(−a/.42)`, gone by 1.1 s), 22 spark streaks
   (a 1/30 s path each, HDR). Flash — `gpuLight` (white ~.1 s, then warm), shock — `gpuShock` over ~1.1 s.
   Drawn before `genDraw`, so bolts and beams stay on top and sharper.
+  Done (L1b 5/n, the black frame at ×2; Контроль on 7658f17: 88% black, no star field, duller than main).
+  Masks (debug output of solid dust / body / gas) showed solid dust on 75% of the field at ×2 and ×1.6 — the
+  pillars, not the wall, carry it, and one hashed pillar more or less moves it by 20%. Now: the big pillars'
+  share .6 → .41, the mid ones .3 → .26, base 2.2 → 1.9 head widths, the wall .8 → .975 of the frame's radial
+  span. Two densities: gas behind a body is closed by its silhouette (as before), the stars go by thickness
+  (`odT`, rising only 8–70 px deep: a pillar lets them through at about half, the wall is solid). A faint
+  warm-grey reflected starlight (`refl`) on the star side of a body where there is no gas, fading into its
+  depth — a body reads by its shape, not as a hole. The near layer's wide dust band was narrow in name only
+  (fb sits near .5, the band lay over half the frame): now |bv−.5| < .015….05, and off the gas it absorbs at
+  .3. The system fog's floor .045 → .1. Field (L median / black < 12): l4a ×2.00 16.1 / 13% (was 8.2 / 88%),
+  nnormal ×1.60 31.6 / 3% (was 10.6 / 61%), l2c ×1.10 50.1 / 0.6% (was 24.2 / 22%); main 19.5, 19.6, 43.6.
+  Solid dust 24 / 27 / 31%. Left: the gpu star field itself is sparser than main's (l4a with no absorption
+  171 stars vs 242) — not the dust's doing.
   Done (L1b 4/n, dust at other zooms; Контроль on the L4 frames at ×2.00: orange curls and worms over the
   right half — rims with no visible body, the bodies black on black space, not facing the star). Cause: gas
   lives in screen space (no zoom), the dust in log-polar around the star, so its cells grew with the star's
