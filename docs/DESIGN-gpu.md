@@ -78,7 +78,7 @@ Heat haze behind the nozzle (G4b).
 
 ## Where I stopped (update on every commit)
 
-- **Deploy candidate: `22b8cac` (L1b 1/n; before it `96cba49`), accepted by Контроль by its pairs.** The author: deploy to main
+- **Deploy candidate: `e0e933f` (L1b 3/n; before it `22b8cac`), accepted by Контроль by its pairs.** The author: deploy to main
   before the limit window reaches 90%; the signal «ДЕПЛОЙ» comes from Контроль. On it: close the step with a
   commit; `test.ps1 -Full` and `node test-node.js`; bump `VER` and a PATCHNOTES line (what the player sees
   better, plus «needs a browser with WebGPU»); a release commit; send Контроль its sha. **Контроль pushes**
@@ -86,8 +86,9 @@ Heat haze behind the nozzle (G4b).
   the site falls: a commit on top with the tree of `d543aff`, never a force-push. Only a commit Контроль
   accepted by pairs goes to main. CI rehearsal of ef8c8b9 (deploy.yml flags, `--disable-gpu`): load clean,
   smoke 4/4, Node green (the «рейсы» suite fails in full order only, green alone; it sits in quarantine).
-- Order now: L1b 3/n (dust: the H II cavity wall, pillars at the star) done, awaiting Контроль; `6a05969` (2/n) was
-  not accepted. Then L4 (particles), then the G steps (G5 frozen).
+- Order now: L4 (particles) 1/n done, awaiting Контроль (gate: full throttle, a ship burst at its peak and
+  ~0.5 s after — `scratchpad/l4a|l4b|l4c_760.png`); then the G steps (G5 frozen). L1b follow-ups sit in PLAN
+  §0 under L1.
 
 - Done: core `08b`, kit `08c`, space `16g` (G1: live nebula wisps and lanes, stars with halo and tapered
   spikes, dust with depth of field; pair in `scratchpad/pairs/system_crop.png`),
@@ -350,8 +351,22 @@ Heat haze behind the nozzle (G4b).
   Comet fix with it: the tail's axis turns 30±5° off the centre toward the vertical edge (a line into the
   centre hit our own ship and read as a targeting beam); the ion tail is softer (gauss 2→10 px, faint streamers
   across) and bluer — it adds hue 216°, S .53; off-axis 30.4°, core 2.35× the tail, tail +87% over the gas.
-  Next: L4 — exhaust by curl noise with a temperature ladder, HDR spark streaks, fireball/debris/smoke,
-  shock-wave refraction, heat haze.
+  Done (L4 1/n, particles). Refraction: the final pass (08b `distort`) shifts the scene by a list of sources
+  in the post uniforms (`GPU.dz`, ≤ 8, `gpuHaze` / `gpuShock`; U grew to 528 bytes) — the heat haze is a
+  noise offset ≤ .8 px inside the flame cone, carried downstream; the shock wave is a ring (derivative of a
+  gaussian in r), the three channels shifted ×1.08 / 1 / .92 for a thin lens fringe. The missile burst lost
+  its drawn ring for the same refraction. Exhaust (16ga `GEX_WGSL`, now `over`): the plume's coordinates are
+  advected by two octaves of curl noise (sideways more than along, growing to the tail), the width grows
+  .5R → 1.55R; the temperature falls along and across and runs a ladder white-blue → yellow → orange → dark
+  red (a cosmetic palette leads the same ladder with its own stops); HDR `.12 + 2.6·T³` plus the nozzle core
+  1.5 — the glow is the L2 mip ladder, no own halo; past .5L the cooled gas turns to smoke (α ≤ .3, lit by the
+  star from one side). Length 7.5–11 R by thrust. Ship burst (13z `burstFx` / `gpuBursts`): a picture only —
+  `BFX` outside `G` and the save, spawned in `killPirate`, seeded by its own counter (golden ratio), aged by
+  `G.t`; one field, bottom up: smoke (lit by the star, α ≤ .45, warmed from inside while the ball burns),
+  seven shards (cut boxes, tumbling normal lit by the star and the flash, cooling edges), the fireball
+  (billows in growing coordinates, the same ladder, heat `exp(−a/.42)`, gone by 1.1 s), 22 spark streaks
+  (a 1/30 s path each, HDR). Flash — `gpuLight` (white ~.1 s, then warm), shock — `gpuShock` over ~1.1 s.
+  Drawn before `genDraw`, so bolts and beams stay on top and sharper.
   A GPU draw after `gpuHullLight` must use `gpuOver`, not `gpuScene` (the scene pass is closed by then).
 - Merge each: `build.ps1`, `python docs/shot.py <scenes> --look --tag gpu`, 0 `gpu.errs`, pair with
   `scratchpad/mainref/docs/shots/main_<scene>.png`, one line of what got better, commit, strike from PLAN §0.

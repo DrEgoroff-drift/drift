@@ -306,6 +306,7 @@ function parrotHeardKill(p){
     heardYours("«"+p.name+"» больше не выйдет на связь",G.sx,G.sy);
 }
 function killPirate(p){
+  if(typeof burstFx==="function")burstFx(p);   /* гибель — разрывом на видеокарте (L4, 13z); миру не видна */
   parrotHeardKill(p);
   /* ренегат — не пират: за него не дают награды, за него возвращают корпус */
   if(p.rogue){rogueDefeated(p);return;}

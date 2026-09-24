@@ -63,7 +63,7 @@ function genPush(x0,y0,x1,y1,cw,gr,inten,tailA,c,flare){
 const GEN_MINE=[127/255,230/255,216/255],GEN_FOE=[1,107/255,87/255],GEN_BATT=[150/255,230/255,1];
 function gpuCombatEnergy(zx,zy,Z){
   const any=L=>L&&L.length;
-  if(!any(G.shots)&&!any(G.beams)&&!any(G.gmines)&&!any(G.msl)&&!any(G.mslFx)&&!any(G.battFx)&&!any(G.loot))return;
+  if(!any(G.shots)&&!any(G.beams)&&!any(G.gmines)&&!any(G.msl)&&!any(G.mslFx)&&!any(G.battFx)&&!any(G.loot)&&!BFX.length)return;
   const pass=gpuScene();if(!pass)return;
   GEN.n=0;
   const zk=clamp(Z,.5,2),zones=[];
@@ -110,6 +110,7 @@ function gpuCombatEnergy(zx,zy,Z){
   }
   if(zones.length)gpuShapes(pass,zones,{blend:"add"});
   gpuBooms(pass,zx,zy,Z);
+  gpuBursts(pass,zx,zy,Z);   /* гибель корабля (L4): под снарядами — они ярче и резче */
   genDraw(pass,"gen");
 }
 /* накопленные genPush — одним вызовом; key — своё имя буфера на каждого, кто рисует в кадре */
@@ -132,8 +133,6 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   for(var k=0;k<n;k++){
     let V=fu.v[k];let dp=p-V.xy;let d=length(dp);let rs=V.z;let a=V.w;
     if(d>rs*1.6+8.){continue;}
-    /* ударная волна: тонкая, светлая, гаснет с остатком жизни */
-    let sw=1.2+rs*.06;let ring=exp(-((d-rs)*(d-rs))/(sw*sw))*a*.75;
     /* огненный шар: рваная кромка по шуму направления, остывает с возрастом */
     let dir=dp/max(d,1e-3);let sd=V.x*.013+V.y*.017;
     let nn=bn(dir*2.6+vec2f(sd,-sd))*.65+bn(dir*6.+vec2f(-sd,sd)+d*.08)*.35;
@@ -141,7 +140,7 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
     let fb=pow(1.-smoothstep(0.,rf,d),1.4);
     let T=fb*(.35+.9*a*a);
     let hot=mix(mix(vec3f(.55,.08,.04),vec3f(1.,.45,.12),smoothstep(.1,.45,T)),mix(vec3f(1.,.82,.4),vec3f(1.,.98,.92),smoothstep(.75,1.1,T)),smoothstep(.4,.8,T));
-    e=e+hot*T*1.7+vec3f(1.,.76,.52)*ring+vec3f(1.,.5,.25)*exp(-d/(rs*.5+2.))*a*.35;
+    e=e+hot*T*1.7+vec3f(1.,.5,.25)*exp(-d/(rs*.5+2.))*a*.35;
   }
   let I=vec3f(1.)-exp(-e);
   /* L2: сердце шара светит выше единицы — белое по плечу и со своим ореолом */
@@ -159,8 +158,129 @@ function gpuBooms(pass,zx,zy,Z){
        и шире, потом тёплое тление */
     const fl=clamp((f.t-12)/6,0,1),fk=fl*fl;
     gpuLight(x,y,x,y,1,.72+.22*fk,.42+.4*fk,r*2.2+24+40*fk,3.6*a+.6+30*fk);
+    /* ударная волна — не нарисованное кольцо, а преломление (L4, 08b) */
+    gpuShock(x,y,r,1.5+r*.08,2.2*a);
   }
   if(!n)return;
   GBM[56]=n;
   gpuField(pass,"gbm",GBM_WGSL,GBM,[],{blend:"add"});
+}
+/* ── гибель корабля (L4) ──
+   Только картинка: мир о ней не знает, в сохранение не попадает, случайность — своя
+   (номер разрыва по золотому сечению, шейдер берёт из него всё остальное). Возраст — по
+   G.t (кадры, 60 в секунду): на паузе разрыв стоит. Слои в одном поле, снизу вверх:
+   дым (освещён звездой с одной стороны, непрозрачность ≤ .45), обломки (свет звезды и
+   вспышки, раскалённые кромки), огненный шар по лестнице температур ~0.6 с, искры
+   штрихами с размытием движения. Свечение — выше единицы, через лестницу мипов (L2);
+   ударная волна — преломление (gpuShock), вспышка — точечный свет на корпусах (L3) */
+const BFX=[],GBX=new Float32Array(60);let BFX_N=0;
+function burstFx(p,r){
+  BFX.push({x:p.x,y:p.y,vx:p.vx||0,vy:p.vy||0,r:r||50,t0:G.t,seed:((++BFX_N)*.6180339887)%1*89.3+3.7,sys:G.sx+","+G.sy});
+  if(BFX.length>6)BFX.shift();
+}
+const GBX_WGSL=`
+fn xh(p:vec2f)->f32{var q=fract(vec3f(p.xyx)*.1031);q=q+dot(q,q.yzx+33.33);return fract((q.x+q.y)*q.z);}
+fn xn(p:vec2f)->f32{let i=floor(p);let f=fract(p);let w=f*f*(3.-2.*f);
+  return mix(mix(xh(i),xh(i+vec2f(1.,0.)),w.x),mix(xh(i+vec2f(0.,1.)),xh(i+vec2f(1.,1.)),w.x),w.y);}
+fn xf(p:vec2f)->f32{return xn(p)*.5+xn(p*2.03+vec2f(3.1,7.7))*.3+xn(p*4.1+vec2f(9.2,1.4))*.2;}
+fn lad(T:f32)->vec3f{
+  var c=mix(vec3f(.12,.02,.01),vec3f(.42,.06,.025),smoothstep(.08,.25,T));
+  c=mix(c,vec3f(1.,.45,.12),smoothstep(.25,.45,T));c=mix(c,vec3f(1.,.8,.34),smoothstep(.45,.66,T));
+  return mix(c,vec3f(.74,.86,1.),smoothstep(.72,.95,T));}
+fn seg(p:vec2f,a:vec2f,b:vec2f)->f32{let ab=b-a;let t=clamp(dot(p-a,ab)/max(dot(ab,ab),1e-4),0.,1.);return length(p-a-ab*t);}
+fn field(p:vec2f,uv:vec2f)->vec4f{
+  let n=i32(fu.v[0].z);let sp=fu.v[0].xy;let sc=fu.v[1].rgb;
+  var col=vec3f(0.);var al=0.;var em=vec3f(0.);
+  for(var b=0;b<6;b++){
+    if(b>=n){break;}
+    let A=fu.v[2+b*2];let B=fu.v[3+b*2];
+    let c=A.xy;let R=A.z;let a=A.w;let sd=B.x;let vel=B.yz;
+    let dp=p-c;let d=length(dp);
+    if(d>R*9.){continue;}
+    let Ls=normalize(vec3f(normalize(sp-p),.5));
+    /* дым: клубы расширяются и редеют; сторона к звезде светлее, от неё — тень; изнутри
+       его ещё греет шар */
+    let heat=smoothstep(0.,.035,a)*exp(-a/.42)*(1.-smoothstep(.6,1.1,a));
+    let rsm=R*(.95+2.*(1.-exp(-a/.9)));let ps=(dp-vel*a*.4)/rsm;
+    let wq=vec2f(xf(ps*1.7+sd),xf(ps*1.7+sd+5.3))-.5;
+    let sb=xf(ps*2.4+wq*1.6+vec2f(sd*1.3,-a*.2));
+    let rq=length(ps)/(.62+.55*sb);
+    if(rq<1.){
+      let op=smoothstep(.1,.45,a)*(1.-smoothstep(1.4,4.2,a))*.45;
+      let sa=clamp((1.-smoothstep(.45,1.,rq))*(.55+.6*sb)*op,0.,.45);
+      let g=vec2f(xf(ps*2.4+wq*1.6+vec2f(sd*1.3+.05,-a*.2))-sb,xf(ps*2.4+wq*1.6+vec2f(sd*1.3,-a*.2+.05))-sb)*20.;
+      let nb=normalize(vec3f(ps*.95-g*.35,sqrt(max(1.-dot(ps,ps)*.85,.06))));
+      let lit=sc*max(dot(nb,Ls),0.)*1.5+vec3f(.07,.075,.09)+vec3f(1.,.38,.1)*heat*1.6*(1.-rq);
+      col=col*(1.-sa)+vec3f(.55,.52,.5)*lit*sa;al=al+sa*(1.-al);
+    }
+    /* обломки: плоские куски обшивки кувыркаются, грань ловит то звезду, то вспышку */
+    for(var j=0;j<7;j++){
+      let fj=f32(j);let h1=xh(vec2f(fj*1.7,sd));let h2=xh(vec2f(sd,fj+3.1));let h3=xh(vec2f(fj+7.3,sd*1.7));let h4=xh(vec2f(sd+fj,9.1));
+      let an=(fj+h1*.8)*.8976;let dr=vec2f(cos(an),sin(an));
+      let pos=c+dr*R*(1.2+3.2*h2)*(1.-exp(-a*.8))/.8+vel*a;
+      let sz=R*(.07+.12*h3);
+      let ang=h4*6.283+a*(h1-.5)*9.;let cs=vec2f(cos(ang),sin(ang));
+      let lq=p-pos;let l2=vec2f(dot(lq,cs),dot(lq,vec2f(-cs.y,cs.x)));
+      let hb=vec2f(sz,sz*(.3+.45*h2));
+      let qd=abs(l2)-hb+vec2f(abs(l2.y)*(h1-.5)*.6,0.);
+      let ca=h2*6.283+fj;let nc=vec2f(cos(ca),sin(ca));
+      let sdf=max(length(max(qd,vec2f(0.)))+min(max(qd.x,qd.y),0.),dot(l2,nc)-sz*(.05+.45*h4));
+      let cov=clamp(.6-sdf,0.,1.);
+      if(cov<=0.){continue;}
+      let tl=a*(2.+4.*h4)+h3*6.283;
+      let nf=normalize(vec3f(cs*sin(tl),.3+abs(cos(tl))));
+      let fl=exp(-a/.13)*5.+exp(-a/.6)*.5;let toC=c-pos;
+      let fla=vec3f(1.,.62,.32)*max(dot(nf,normalize(vec3f(toC,R*.6))),0.)*fl/(1.+dot(toC,toC)/(R*R*3.));
+      let alb=vec3f(.44,.43,.45)*(.65+.55*h1);
+      let edge=smoothstep(-1.2,0.,sdf);
+      var dc=alb*(sc*(max(dot(nf,Ls),0.)*.9+.12)+vec3f(.03)+fla)+vec3f(1.,.32,.07)*(.15+.85*edge)*exp(-a/.28)*1.2;
+      col=col*(1.-cov)+dc*cov;al=al+cov*(1.-al);
+    }
+    /* огненный шар: клубы в растущих координатах, кромка рваная; жар гаснет за ~0.6 с —
+       бело-голубое сердце уходит в жёлтое, оранжевое, тёмно-красное */
+    if(heat>0.){
+      let rf=R*(.5+1.25*(1.-exp(-a/.1)));let pn=dp/rf;
+      let w2=vec2f(xf(pn*2.2+sd*2.),xf(pn*2.2+sd*2.+7.7))-.5;
+      let bl=xf(pn*3.+w2*1.8+vec2f(sd,a*1.5));
+      let rr=length(pn)/(.7+.5*bl);
+      let T=clamp(heat*pow(max(1.-rr,0.),.55)*(.78+.45*bl),0.,1.);
+      em=em+lad(T)*(.06+2.6*T*T*T)*(1.-smoothstep(.75,1.,rr));
+    }
+    /* искры: раскалённые капли, штрих — путь за 1/20 с (размытие движения) */
+    if(a<1.3){
+      for(var i=0;i<22;i++){
+        let fi=f32(i);let h1=xh(vec2f(fi,sd));let h2=xh(vec2f(sd,fi+3.1));let h3=xh(vec2f(fi+7.,sd+1.));
+        let life=.35+.9*h3;if(a>life){continue;}
+        let an=h1*6.2832;let dr=vec2f(cos(an),sin(an));let spd=R*(4.+11.*h2*h2);
+        let a0=max(a-.033,0.);let c0=c+vec2f(h3-.5,h2-.5)*R*.7;
+        let P1=c0+dr*spd*(1.-exp(-a*2.2))/2.2+vel*a;let P0=c0+dr*spd*(1.-exp(-a0*2.2))/2.2+vel*a0;
+        let ds=seg(p,P0,P1);
+        if(ds>3.){continue;}
+        let tt=1.-a/life;let ln=length(P1-P0);
+        em=em+lad(.3+.45*tt)*(.4+3.*tt*tt)*(.35+.9*h3)*exp(-ds*ds/.3)*clamp(3./max(ln,1.),.35,1.);
+      }
+    }
+  }
+  return vec4f(col+em,min(al,1.));
+}`;
+function gpuBursts(pass,zx,zy,Z){
+  const key=G.sx+","+G.sy;let n=0;
+  for(let i=BFX.length-1;i>=0;i--){const b=BFX[i];if(b.sys!==key||G.t-b.t0>270||G.t<b.t0)BFX.splice(i,1);}
+  if(!BFX.length)return;
+  const sz=shipScaleAt(Z);
+  for(const b of BFX){
+    const af=G.t-b.t0,a=af/60,x=zx(b.x+b.vx*af),y=zy(b.y+b.vy*af),R=b.r*sz;
+    if(x<-R*9||x>W+R*9||y<-R*9||y>H+R*9)continue;
+    const o=8+n*8;GBX[o]=x;GBX[o+1]=y;GBX[o+2]=R;GBX[o+3]=a;GBX[o+4]=b.seed;GBX[o+5]=b.vx*Z*60;GBX[o+6]=b.vy*Z*60;n++;
+    /* L3: вспышка — белая первые ~0.1 с, потом тёплое тление шара */
+    const fk=Math.exp(-a/.1),hk=clamp(1-a/.6,0,1);
+    gpuLight(x,y,x,y,1,.7+.25*fk,.4+.45*fk,R*4+60*fk,26*fk+3*hk*hk);
+    /* ударная волна — кольцо преломления, бежит и гаснет за ~1 с */
+    if(a<1.1)gpuShock(x,y,R*(1.3+6*a),2+R*.3+R*.4*a,14*Math.pow(1-a/1.1,1.2));
+    if(n>=6)break;
+  }
+  if(!n)return;
+  const c=(typeof starRGB==="function")?starRGB():[255,244,214],m=Math.max(1,c[0],c[1],c[2]);
+  GBX[0]=zx(0);GBX[1]=zy(0);GBX[2]=n;GBX[4]=c[0]/m;GBX[5]=c[1]/m;GBX[6]=c[2]/m;
+  gpuField(pass,"gbx",GBX_WGSL,GBX,[],{blend:"over"});
 }

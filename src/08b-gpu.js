@@ -6,7 +6,7 @@
    Кадр: сцена видеокарты (gpuScene) → #c поверх → свечение, зерно, виньетка,
    хроматика, дизеринг одним проходом → слой интерфейса (стойка) поверх всего. */
 const GPU={ok:false,on:false,lost:false,busy:false,none:false,
-  dev:null,cv:null,gx:null,fmt:"",L:null,P:{},B:{},S:null,U:null,UA:new Float32Array(64),shaft:null,lens:null,lt:[],oc:[],sepH:[],
+  dev:null,cv:null,gx:null,fmt:"",L:null,P:{},B:{},S:null,U:null,UA:new Float32Array(132),shaft:null,lens:null,lt:[],oc:[],sepH:[],dz:[],
   T:{},V:{},N:null,noiseOk:false,ui:null,uctx:null,snap:null,
   bw:0,bh:0,qw:2,qh:2,dpr:0,cw:0,ch:0,enc:null,scenePass:null,sceneOn:false,
   sceneBg:{r:0,g:0,b:0,a:1},uiOn:false,uiWas:false,hitK:0,hitDx:0,post:{k:0,grain:0,vig:0},
@@ -77,7 +77,7 @@ function gpuDrop(why,retry){
 }
 /* ── проходы поста: общий треугольник на весь экран, одна раскладка привязок ── */
 const GPU_POST_WGSL=`
-struct U{res:vec2f,css:vec2f,dpr:f32,k:f32,grain:f32,vig:f32,hitK:f32,hitDx:f32,ui:f32,scene:f32,qres:vec2f,sigma:f32,t:f32,sh:vec4f,shc:vec4f,hl:array<vec4f,8>,ln:vec4f,lc:vec4f};
+struct U{res:vec2f,css:vec2f,dpr:f32,k:f32,grain:f32,vig:f32,hitK:f32,hitDx:f32,ui:f32,scene:f32,qres:vec2f,sigma:f32,t:f32,sh:vec4f,shc:vec4f,hl:array<vec4f,8>,ln:vec4f,lc:vec4f,dn:vec4f,dz:array<vec4f,16>};
 @group(0) @binding(0) var<uniform> u:U;
 @group(0) @binding(1) var sl:sampler;
 @group(0) @binding(2) var sr:sampler;
@@ -99,6 +99,31 @@ struct V{@builtin(position) p:vec4f,@location(0) uv:vec2f};
 fn tone(c:vec3f)->vec3f{
   let K=.75;let x=max(c-vec3f(K),vec3f(0.));
   return min(c,vec3f(K))+(1.-K)*(vec3f(1.)-exp(-x/(1.-K)));}
+/* L4: преломление — горячий воздух за соплом и ударная волна разрыва не рисуются, а
+   сдвигают то, что за ними (сцену). Источники кладёт gpuDistort: марево — вдоль факела,
+   шум сносится потоком, доли пикселя; волна — кольцо, производная гауссианы по радиусу */
+fn dh(p:vec2f)->f32{var q=fract(vec3f(p.xyx)*.1031);q=q+dot(q,q.yzx+33.33);return fract((q.x+q.y)*q.z);}
+fn dnz(p:vec2f)->f32{let i=floor(p);let f=fract(p);let w=f*f*(3.-2.*f);
+  return mix(mix(dh(i),dh(i+vec2f(1.,0.)),w.x),mix(dh(i+vec2f(0.,1.)),dh(i+vec2f(1.,1.)),w.x),w.y);}
+fn distort(px:vec2f)->vec2f{
+  var o=vec2f(0.);let n=i32(u.dn.x);
+  for(var i=0;i<8;i++){
+    if(i>=n){break;}
+    let A=u.dz[i*2];let B=u.dz[i*2+1];let d=px-A.xy;
+    if(B.w<.5){
+      let s=dot(d,A.zw);let q=dot(d,vec2f(-A.w,A.z));let L=B.x;let R=B.y;
+      if(s<-R||s>L*1.3){continue;}
+      let w=R*(.7+1.1*clamp(s/L,0.,1.));
+      let m=exp(-q*q/(w*w))*smoothstep(-R,R*.6,s)*(1.-smoothstep(L*.5,L*1.3,s));
+      let ns=vec2f(s/R*.8-u.t*.2,q/R*.8);
+      o=o+vec2f(dnz(ns)-.5,dnz(ns+vec2f(17.3,5.1))-.5)*2.*m*B.z;
+    }else{
+      let r=length(d);let x=(r-A.z)/A.w;
+      if(abs(x)>3.){continue;}
+      o=o+d/max(r,1e-3)*B.x*x*exp(-x*x)*2.33;
+    }
+  }
+  return o;}
 fn sceneAt(uv:vec2f)->vec3f{
   if(u.scene>.5){return max(textureSampleLevel(tScene,sl,uv,0.).rgb,vec3f(0.));}
   return vec3f(0.);}
@@ -191,7 +216,10 @@ fn overlay(b:vec3f,s:vec3f)->vec3f{return select(1.-2.*(1.-b)*(1.-s),2.*b*s,b<ve
   /* кадр собирается до плеча: сцена как светит, передний слой поверх, свечение
      сложением, как в 2D, — и только потом одно плечо на всё. Яркий газ под
      свечением уходит в золото и к белому плавно, без плато на единице */
-  let hs=sceneAt(v.uv);var f=textureSampleLevel(tFront,sl,v.uv,0.);
+  var hs=sceneAt(v.uv);var f=textureSampleLevel(tFront,sl,v.uv,0.);
+  /* преломление: сдвиг по каналам чуть разный — у кромок волны тонкая радуга, как у линзы */
+  if(u.dn.x>0.){let o=distort(v.uv*u.css)/u.css;
+    if(dot(o,o)*dot(u.css,u.css)>.0004){hs=vec3f(sceneAt(v.uv+o*1.08).r,sceneAt(v.uv+o).g,sceneAt(v.uv+o*.92).b);}}
   if(u.shc.w>0.&&u.scene>.5){let hk=silK(v.uv);if(hk>0.&&f.a>0.){let rn=rimN(v.uv);
     f=sil(v.uv,f,tone(hs),tone(sceneAt(v.uv+rn.xy*6./u.css)),rn.z,hk);}}
   var h=hs*(1.-f.a)+f.rgb;
@@ -303,7 +331,7 @@ function gpuPipes(){
            primitive:{topology:"triangle-list"}})};
   GPU.S={lin:d.createSampler({magFilter:"linear",minFilter:"linear"}),
          rep:d.createSampler({magFilter:"linear",minFilter:"linear",addressModeU:"repeat",addressModeV:"repeat"})};
-  GPU.U=d.createBuffer({size:256,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});
+  GPU.U=d.createBuffer({size:528,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});
   GPU.N=d.createTexture({size:[64,64],format:"r8unorm",usage:GPUTextureUsage.TEXTURE_BINDING|GPUTextureUsage.COPY_DST});
   GPU.noiseOk=false;
 }
@@ -371,6 +399,10 @@ function gpuPass(view,pipe,bind){
    строка 0 — отрезок (точка — отрезок нулевой длины), 1 — цвет×сила и радиус,
    2 — заслоны (центр, радиус). Её читают проходы корпусов (17c gpuLitSprite,
    16ga gpuHullLight) до отправки кадра — все видят свет своего кадра */
+/* L4: источник преломления для последнего прохода (экран, px CSS). Марево: сопло (x,y), ось
+   факела (dx,dy) от сопла назад, длина L, радиус R, сила k (px). Волна: центр, радиус, ширина, сила */
+function gpuHaze(x,y,dx,dy,L,R,k){if(GPU.on&&k>0)GPU.dz.push([x,y,dx,dy,L,R,k,0]);}
+function gpuShock(x,y,r,w,k){if(GPU.on&&k>0)GPU.dz.push([x,y,r,w,k,0,0,1]);}
 function gpuLight(x0,y0,x1,y1,r,g,b,rad,k){if(GPU.on&&k>0&&rad>0)GPU.lt.push([x0,y0,x1,y1,r*k,g*k,b*k,rad,k*rad]);}
 const GLT_H=new Uint16Array(16*3*4),GLT_F=new Float32Array(1),GLT_U=new Uint32Array(GLT_F.buffer);
 function f16(v){GLT_F[0]=v;const x=GLT_U[0],s=(x>>>16)&0x8000,e=((x>>>23)&255)-112;
@@ -429,6 +461,8 @@ function gpuUni(){
   const L=GPU.sepH;for(let i=0;i<8;i++){const h=L[i],o=24+i*4;a[o]=h?h[0]:0;a[o+1]=h?h[1]:0;a[o+2]=h?h[2]:0;a[o+3]=0;}
   const Q=GPU.lens;a[56]=Q?Q.x:0;a[57]=Q?Q.y:0;a[58]=Q?Q.k:0;a[59]=Q?Q.r:0;
   a[60]=Q?Q.cr:0;a[61]=Q?Q.cg:0;a[62]=Q?Q.cb:0;a[63]=Q?Q.t:0;
+  const D=GPU.dz,nd=Math.min(8,D.length);a[64]=nd;
+  for(let i=0;i<8;i++)for(let j=0;j<8;j++)a[68+i*8+j]=i<nd?D[i][j]:0;
   GPU.dev.queue.writeBuffer(GPU.U,0,a);
 }
 
@@ -441,7 +475,7 @@ function gpuFrame(){
   ctx=MAIN_CTX;
   ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,GPU.bw,GPU.bh);ctx.setTransform(DPR,0,0,DPR,0,0);
   GPU.on=true;
-  GPU.enc=GPU.dev.createCommandEncoder();GPU.scenePass=null;GPU.overPass=null;GPU.sceneOn=false;GPU.emitOn=false;GPU.scene3D=false;GPU.hitK=0;GPU.shaft=null;GPU.lens=null;GPU.lt.length=0;GPU.oc.length=0;GPU.sep=0;GPU.sepH.length=0;
+  GPU.enc=GPU.dev.createCommandEncoder();GPU.scenePass=null;GPU.overPass=null;GPU.sceneOn=false;GPU.emitOn=false;GPU.scene3D=false;GPU.hitK=0;GPU.shaft=null;GPU.lens=null;GPU.lt.length=0;GPU.oc.length=0;GPU.dz.length=0;GPU.sep=0;GPU.sepH.length=0;
   return true;
 }
 /* проход сцены видеокарты: его открывает первый слой кадра, закрывает сборка.

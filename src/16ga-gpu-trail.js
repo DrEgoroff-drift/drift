@@ -183,51 +183,76 @@ function gpuDrones(zx,zy,Z){
    · газ течёт: шум сносится вдоль струи, а у оси стоят ударные «ромбы» —
      яркие узлы сверхзвуковой струи, неподвижные относительно сопла;
    · ядро сопла — тон 1−exp, без плоского белого пятна. */
-const GEX={f:new Float32Array(20*8),n:0,u:new Float32Array(8)};
+const GEX={f:new Float32Array(20*8),n:0,u:new Float32Array(12),nat:1};
 const GEX_WGSL=`
-struct U{a:vec4f,b:vec4f};
+struct U{a:vec4f,b:vec4f,c:vec4f};
 @group(0) @binding(0) var<uniform> u:U;
 @group(0) @binding(1) var<storage,read> eb:array<vec4f>;
 struct VO{@builtin(position) p:vec4f,@location(0) @interpolate(flat) k:u32};
 @vertex fn vs(@builtin(vertex_index) vi:u32,@builtin(instance_index) ii:u32)->VO{
   var c=array(vec2f(-1.,-1.),vec2f(1.,-1.),vec2f(1.,1.),vec2f(-1.,-1.),vec2f(1.,1.),vec2f(-1.,1.));
   let k=ii*5u;let v0=eb[k];let v1=eb[k+1u];
-  let h=v1.x*.5+v1.y*2.5;let ctr=v0.xy-v0.zw*v1.x*.5;
+  let h=v1.x*.85+v1.y*3.2;let ctr=v0.xy-v0.zw*v1.x*.75;
   let q=(ctr+c[vi]*h)*u.b.x;
   var o:VO;o.p=vec4f(q.x/u.a.x*2.-1.,1.-q.y/u.a.y*2.,0.,1.);o.k=k;return o;}
 fn eh(p:vec2f)->f32{var q=fract(vec3f(p.xyx)*.1031);q=q+dot(q,q.yzx+33.33);return fract((q.x+q.y)*q.z);}
 fn en(p:vec2f)->f32{let i=floor(p);let f=fract(p);let w=f*f*(3.-2.*f);
   return mix(mix(eh(i),eh(i+vec2f(1.,0.)),w.x),mix(eh(i+vec2f(0.,1.)),eh(i+vec2f(1.,1.)),w.x),w.y);}
+/* вихрь шума: поток вдоль ротора потенциала — без стоков, газ крутится, а не толпится */
+fn curl(p:vec2f)->vec2f{let e=.3;
+  return vec2f(en(p+vec2f(0.,e))-en(p-vec2f(0.,e)),en(p-vec2f(e,0.))-en(p+vec2f(e,0.)))/(2.*e);}
+/* лестница температур: бело-голубое ядро → жёлтый → оранжевый → тёмно-красный. Свой
+   цвет косметики ведёт ту же лестницу своими ступенями */
+fn lad(T:f32,c0:vec3f,c1:vec3f,c2:vec3f,nat:bool)->vec3f{
+  let hb=select(mix(vec3f(1.),c0,.6),vec3f(.74,.86,1.),nat);
+  let ye=select(mix(c0,c1,.45),vec3f(1.,.8,.34),nat);
+  let orn=select(c1,vec3f(1.,.45,.12),nat);
+  let dr=select(c2*.45,vec3f(.42,.06,.025),nat);
+  var c=mix(dr*.3,dr,smoothstep(.08,.25,T));
+  c=mix(c,orn,smoothstep(.25,.45,T));c=mix(c,ye,smoothstep(.45,.66,T));
+  return mix(c,hb,smoothstep(.72,.95,T));}
 @fragment fn fs(i:VO)->@location(0) vec4f{
   let v0=eb[i.k];let v1=eb[i.k+1u];let v2=eb[i.k+2u];let v3=eb[i.k+3u];let v4=eb[i.k+4u];
   let p=i.p.xy/u.b.x;let d=p-v0.xy;let ax=-v0.zw;let pr=vec2f(-ax.y,ax.x);
-  let s=dot(d,ax);let q=dot(d,pr);let L=max(v1.x,1.);let R=v1.y;let wk=v1.z;let thr=v1.w;let t=v3.w;
-  var e=vec3f(0.);
-  let k=clamp(s/L,0.,1.);
+  let s0=dot(d,ax);let q0=dot(d,pr);let L=max(v1.x,1.);let R=v1.y;let wk=v1.z;let thr=v1.w;let t=v3.w;
+  let nat=v2.w>.5;
+  /* шлейф течёт: две октавы вихря, снос вниз по потоку; у сопла струя тугая, к хвосту — рвётся */
+  let sc=R*2.6;let kk=clamp(s0/L,0.,1.7);
+  let fa=vec2f(s0/sc-t*2.5,q0/sc);
+  let cv=curl(fa)+.5*curl(fa*2.1+vec2f(5.2,1.3)-vec2f(t*2.5,0.));
+  let amp=R*smoothstep(.05,.9,kk)*(.15+.55*kk);
+  let s=s0+cv.x*amp*.35;let q=q0+cv.y*amp;
+  let k=clamp(s/L,0.,1.7);
+  let w=max(R*wk*(.5+1.05*k),.6);
+  let dens=exp(-(q*q)/(w*w)*1.4)*smoothstep(-R*.35,R*.25,s);
+  var e=vec3f(0.);var sa=0.;var sm=vec3f(0.);
   if(s>-R){
-    let wq=max(R*.7*wk*(1.-k*.8),.6);
-    let n=en(vec2f(s/R*.55-t*.9,q/R*.8));
-    let prof=exp(-(q*q)/(wq*wq)*1.6)*pow(1.-k,1.4)*smoothstep(-R*.4,R*.3,s);
-    let turb=mix(1.,.6+.8*n,smoothstep(.1,.5,k));
-    let axis=exp(-(q*q)/(wq*wq*.12));
-    let dia=1.+.45*axis*(1.-k)*pow(.5+.5*cos(s/R*4.6),3.);
-    let temp=clamp(prof*1.2,0.,1.);
-    let col=mix(mix(v4.rgb,v3.rgb,smoothstep(0.,.45,temp)),v2.rgb,smoothstep(.45,.95,temp));
-    e=e+col*prof*turb*dia*.95*thr;
+    /* горячо у оси и у сопла; пятна жара бегут с потоком */
+    let n=en(vec2f(s/R*.7-t*3.,q/R*.9));
+    let axis=exp(-(q*q)/(w*w*.5));
+    let T=clamp(pow(1.-min(k,1.),.9)*axis*(.8+.35*n),0.,1.);
+    let dia=1.+.35*exp(-(q*q)/(w*w*.1))*(1.-k)*pow(.5+.5*cos(s/R*4.6),3.);
+    let tail=1.-smoothstep(.7,1.08,k);
+    e=e+lad(T,v2.rgb,v3.rgb,v4.rgb,nat)*(.12+2.6*T*T*T)*dens*dia*tail*thr;
+    /* остывший газ — дым: тонкий, со стороны звезды светлее; не глушит того, что за ним */
+    let ws=w*1.25;let dsm=exp(-(q*q)/(ws*ws)*1.2);
+    sa=clamp(dsm*smoothstep(.5,.95,k)*(1.-smoothstep(1.15,1.65,k))*(.55+.6*n)*.3*thr,0.,.3);
+    let nb=normalize(vec3f(pr*clamp(q/ws,-1.,1.)*.85+cv*.25,.55));
+    let Ls=normalize(vec3f(normalize(u.b.yz-p),.3));
+    sm=vec3f(.3,.29,.28)*(.06+u.c.rgb*max(dot(nb,Ls),0.)*.9)*sa;
   }
   /* кольцо косметики — на середине факела, движется с пульсом */
   if(v4.w>.5){let rq=vec2f((s-L*.45)/(R*.55),q/(R*1.1));let rl=abs(length(rq)-1.);
     e=e+v3.rgb*.35*thr*exp(-rl*rl*40.);}
-  /* ядро сопла */
-  let dn=length(d)/(R*1.7);
-  e=e+mix(vec3f(1.,1.,.98),v3.rgb,smoothstep(0.,.5,dn))*exp(-dn*dn*4.)*.9*thr;
-  let I=vec3f(1.)-exp(-e*1.3);
-  return vec4f(I,max(I.r,max(I.g,I.b)));
+  /* ядро сопла — бело-голубое, выше единицы: светит лестницей мипов, своего ореола нет */
+  let dn=length(d)/(R*.9);
+  e=e+select(mix(vec3f(1.),v2.rgb,.5),vec3f(.8,.9,1.),nat)*exp(-dn*dn*4.)*1.5*thr;
+  return vec4f(sm+e,sa);
 }`;
 function gexPush(px,py,dx,dy,L,R,wk,thr,C0,C1,C2,t,ring){
   const f=GEX.f,o=GEX.n*20;if(o+20>f.length)return;
   f[o]=px;f[o+1]=py;f[o+2]=dx;f[o+3]=dy;f[o+4]=L;f[o+5]=R;f[o+6]=wk;f[o+7]=thr;
-  f[o+8]=C0[0]/255;f[o+9]=C0[1]/255;f[o+10]=C0[2]/255;f[o+11]=0;
+  f[o+8]=C0[0]/255;f[o+9]=C0[1]/255;f[o+10]=C0[2]/255;f[o+11]=GEX.nat;
   f[o+12]=C1[0]/255;f[o+13]=C1[1]/255;f[o+14]=C1[2]/255;f[o+15]=t;
   f[o+16]=C2[0]/255;f[o+17]=C2[1]/255;f[o+18]=C2[2]/255;f[o+19]=ring?1:0;GEX.n++;
 }
@@ -240,11 +265,14 @@ function gpuExhaust(zx,zy,Z,thr){
   const cc=s=>s.split(",").map(Number);
   const C0=cc(CX?CX.col[0]:"255,246,222"),C1=cc(CX?CX.col[1]:"255,178,96"),C2=cc(CX?CX.col[2]:"255,96,48");
   const kL=CX?CX.len:1,kW=CX?CX.wide:1,shape=CX?CX.shape:"plain";
+  /* свой цвет косметики — своя лестница; штатный — лестница температур как есть */
+  GEX.nat=(!CX||CX.col.join("|")==="255,246,222|255,178,96|255,96,48")?1:0;
   GEX.n=0;
   for(const e of h.eng){
     const px=cx0+(e.x*ca-e.y*sa)*SZ,py=cy0+(e.x*sa+e.y*ca)*SZ;
     const R=Math.max(2.5,e.r*SZ*2.2),puls=.82+.18*Math.sin(G.t*.55+e.x);
-    const L=R*(3.4+2.6*puls)*thr*kL;
+    const L=R*(7.5+3.5*puls)*thr*kL;   /* L4: шлейф длиннее — хвост остывает до дыма */
+    gpuHaze(px,py,-ca,-sa,L*(shape==="twin"?1.1:1),R*(shape==="twin"?1.6:1),.8*thr);   /* L4: марево за соплом */
     if(shape==="twin"){
       gexPush(px-sa*R*.55,py+ca*R*.55,ca,sa,L,R,kW,thr,C0,C1,C2,G.t*.05,false);
       gpuLight(px-ca*R,py-sa*R,px-ca*R,py-sa*R,C1[0]/255,C1[1]/255,C1[2]/255,R*6,thr*1.4);
@@ -255,9 +283,11 @@ function gpuExhaust(zx,zy,Z,thr){
   }
   if(!GEX.n)return;
   const U=GPUBufferUsage,d=GPU.dev,uu=GEX.u;
-  const ub=gpuBuf("gex.u",32,U.UNIFORM|U.COPY_DST);uu[0]=GPU.bw;uu[1]=GPU.bh;uu[2]=W;uu[3]=H;uu[4]=DPR;d.queue.writeBuffer(ub,0,uu);
+  const sc=(typeof starRGB==="function")?starRGB():[255,244,214],sm=Math.max(1,sc[0],sc[1],sc[2]);
+  const ub=gpuBuf("gex.u3",48,U.UNIFORM|U.COPY_DST);uu[0]=GPU.bw;uu[1]=GPU.bh;uu[2]=W;uu[3]=H;uu[4]=DPR;
+  uu[5]=zx(0);uu[6]=zy(0);uu[8]=sc[0]/sm;uu[9]=sc[1]/sm;uu[10]=sc[2]/sm;d.queue.writeBuffer(ub,0,uu);
   const eb=gpuBuf("gex.e",GEX.f.byteLength,U.STORAGE|U.COPY_DST);d.queue.writeBuffer(eb,0,GEX.f,0,GEX.n*20);
-  const P=gpuPipe("gex",GEX_WGSL,"add");
+  const P=gpuPipe("gex",GEX_WGSL,"over");   /* over: дым заслоняет, огонь — сложением (альфа 0) */
   pass.setPipeline(P);pass.setBindGroup(0,gpuBind("gex",P,[ub,eb]));pass.draw(6,GEX.n);
 }
 /* ── свет звезды на корпусе (G4) ──

@@ -24,8 +24,6 @@ Built: the core and post pass (08b), the layer kit (08c), the space backdrop (16
 
 - [ ] **G3b planet surface in three scales:** close up the strip is mush — only the macro scale exists. A procedural
   middle and fine layer in the shader from the biome's colours, and the sun's glint on water (17ga).
-- [ ] **G4b heat haze as a distortion:** the 2D haze (M325) grabbed the 2D layer, where the flame no longer is —
-  removed. Bring it back as a UV offset by noise inside the flame cone in the post pass (08b).
 - [ ] **G4d the other ships lit:** the peace fleet, the ГЛАВТРАССА fleet, allies, the pirate base and «Сорока» are
   still flat 2D bakes with a top-lit gradient; give them `gpuLitSprite` (17c) as barges and pirates have.
 - [ ] **G4c wrecks as hulls:** a wreck (`npcWreckDraw`, 13d-npc) is a flat dark disc labelled «КОРПУС». Draw it
@@ -36,11 +34,13 @@ Built: the core and post pass (08b), the layer kit (08c), the space backdrop (16
   warmer toward it, and the star's glow is scattering in the nebula and dust (it went dark in gpu: x 0–300 of
   k_g4m main (156,72,52) → gpu (67,37,36)). Near-camera dust with parallax and stretch in flight. Budget: nebula
   at ¼ resolution, not every frame, ≤2 ms on the laptop (`prof()`).
+  - [ ] L1b dust, after e0e933f (Контроль 24.09): in l2c the top-right pillars at 760 read as shards or claws —
+    heads sharper than they should be; rounder, blunter heads.
+  - [ ] L1b dust: try a dim warm light 10–20 px inward from the rim, so the cut-out becomes a body.
 - [ ] **L2 HDR light:** everything emissive into rgba16f at real brightness (star ≫ flames ≫ lamps); bloom as a mip
   ladder instead of the ¼-frame 4×4; AgX/ACES tone map; a grade per star class — one shot tells where you are.
 - [ ] **L3 light touches the world:** normals from baked sprites' relief, a list of point lights (flames, beams,
   bursts, station lamps): a beam or a burst lights hulls nearby, metal gets a glint.
-- [ ] **L4 particles on the GPU:** exhaust, sparks, burst smoke and debris, a shock wave with distortion.
 - [ ] **G5 the air, the rest (frozen for L1–L4):** done — sky, disc, scattering, shafts in the final pass (08b). Left:
   live clouds (`drawClouds` 19e), haze bands (`hazeBand`/`hazeFar` 19c), weather in depth, night lamps, the water
   mirror, the grade; shafts must be shown to read — a sun behind cloud gaps (the 2D clouds are too thin to cut
