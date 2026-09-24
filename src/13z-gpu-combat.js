@@ -155,7 +155,10 @@ function gpuBooms(pass,zx,zy,Z){
     const a=Math.max(0,f.t/18),x=zx(f.x),y=zy(f.y),r=(1-a)*34*Z+4;
     if(x<-r*2||x>W+r*2||y<-r*2||y>H+r*2)continue;
     GBM[n*4]=x;GBM[n*4+1]=y;GBM[n*4+2]=r;GBM[n*4+3]=a;n++;
-    gpuLight(x,y,x,y,1,.72,.42,r*2.2+24,3.6*a+.6);   /* L3: разрыв вспыхивает на всех корпусах рядом */
+    /* L3: разрыв вспыхивает на всех корпусах рядом: первые ~100 мс — белая вспышка вдвое ярче
+       и шире, потом тёплое тление */
+    const fl=clamp((f.t-12)/6,0,1),fk=fl*fl;
+    gpuLight(x,y,x,y,1,.72+.22*fk,.42+.4*fk,r*2.2+24+40*fk,3.6*a+.6+30*fk);
   }
   if(!n)return;
   GBM[56]=n;

@@ -510,7 +510,9 @@ function drawStation(x,y,Z){
   const key=(G.sys.key||"?")+"|"+ty+"|"+nb+"|"+(Math.round(s*4)/4)+"|"+Math.floor(G.t/18)+"|"+SCK+"|"+(GPU.on?"g":"c");
   const art=stationArt(key,s,V,S,ty,lx,ly);
   if(!gpuStation(art,x,y,s,lx,ly))ctx.drawImage(art.cn,x-art.R,y-art.R,art.R*2,art.R*2);
-  else GPU.oc.push([x,y,art.R*.5]);   /* L3: заслон звезды для барж у причала */
+  else{GPU.oc.push([x,y,art.R*.5]);   /* L3: заслон звезды для барж у причала */
+    /* огни станции — тёплый свет на пришвартованных: борт к станции теплеет */
+    gpuLight(x,y,x,y,1,.84,.59,art.R*.9,.7);}
   /* факельная труба живёт поверх выпечки (M325): в спрайте пламя стоит по
      18 тактов, а факел — единственное на станции, что обязано плясать */
   if(ty==="indust"){

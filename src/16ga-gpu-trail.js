@@ -312,9 +312,9 @@ fn field(p:vec2f,uv0:vec2f)->vec4f{
   let spec=(col*met*(1.-gls)*1.3*pow(max(dot(n,Hs),0.),40.)+mix(col,vec3f(1.),.6)*gls*glassSpec(glassG(uv,u1*6.),Hs))*a*fade*k;
   return vec4f(lit+rgb*a*pl+spec,dark);
 }`;
-function gpuHullLight(x,y,sx,sy,Z,sys){
+function gpuHullLight(x,y,sx,sy,Z,sys,id){
   if(!sys||!GPU.on)return;
-  const h=hullOf(G.shipId),sc=shipScaleAt(Z);
+  const h=hullOf(id||G.shipId),sc=shipScaleAt(Z);   /* id — чужой корпус (союзник, 12a) */
   const rad=Math.max(h.nose||0,-(h.tail||0),(h.bw||8)*3)*1.25*sc+6;
   const dx=sx-x,dy=sy-y;if(!dx&&!dy)return;
   const pass=gpuOver();if(!pass)return;

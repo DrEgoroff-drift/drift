@@ -78,7 +78,7 @@ Heat haze behind the nozzle (G4b).
 
 ## Where I stopped (update on every commit)
 
-- **Deploy candidate: `05f8a47` (L1 6/n; before it `8e77d8c`), accepted by Контроль by its pairs.** The author: deploy to main
+- **Deploy candidate: `d959de8` (L3 1/n; before it `6c3e569`), accepted by Контроль by its pairs.** The author: deploy to main
   before the limit window reaches 90%; the signal «ДЕПЛОЙ» comes from Контроль. On it: close the step with a
   commit; `test.ps1 -Full` and `node test-node.js`; bump `VER` and a PATCHNOTES line (what the player sees
   better, plus «needs a browser with WebGPU»); a release commit; send Контроль its sha. **Контроль pushes**
@@ -86,7 +86,7 @@ Heat haze behind the nozzle (G4b).
   the site falls: a commit on top with the tree of `d543aff`, never a force-push. Only a commit Контроль
   accepted by pairs goes to main. CI rehearsal of ef8c8b9 (deploy.yml flags, `--disable-gpu`): load clean,
   smoke 4/4, Node green (the «рейсы» suite fails in full order only, green alone; it sits in quarantine).
-- Order now: L2 (1/n done, awaiting Контроль), then L3, L4, then the G steps (G5 frozen).
+- Order now: L3 2/n done (awaiting Контроль), then L4 (particles), then the G steps (G5 frozen).
 
 - Done: core `08b`, kit `08c`, space `16g` (G1: live nebula wisps and lanes, stars with halo and tapered
   spikes, dust with depth of field; pair in `scratchpad/pairs/system_crop.png`),
@@ -292,8 +292,18 @@ Heat haze behind the nozzle (G4b).
   Close-up scenes (scratchpad `l3run.sh`, a camera: `shipScaleAt` 4.5 in the shot only, hull ≈150 px at 760):
   l3h — beam and burst below: lit side +31%, far side +7%; l3f — flame only: stern half +17%, bow +2%;
   l3s — barge behind the station −57%, the lit one −1%. Field L within ±.7%, dirt ≤1.7%, HUD diffs = state.
-  Next (L3 2/n): nav lights and windows of 2D hulls (drawHull) into the same light; point lights on planets'
-  night side; then L4.
+  Done (L3 2/n): allies' 2D hulls (12a, drawHull) go through `gpuHullLight(…,id)` into the same light as
+  the own hull (star, beams, bursts); the station's lamps are a warm point light (`R·.9`, .7) — a moored
+  barge warms on the station side. Burst flash (13z): `fk=fl²`, `fl` a linear ramp over the burst's first 6 ticks
+  (~100 ms, `f.t` counts down from 18) — the light is whiter, +40 px wider and +30 stronger, then the warm
+  smoulder; at the peak (l3h, BT=17.5) the near side's per-pixel median +91%, mean +80%, the far side +18%.
+  The landmark back out of the centre (L1 return): its place is in half-frame units per axis
+  (`Lc=(W,H)·(.5+h.xy·.5)`), and the same two stream numbers map into the corner quarter .66–.95 — the
+  centre stays farther than .33 of the diagonal, only the edge enters the middle third; it frames play, not
+  lies under it. A hole's jets stay at the star. Field gate vs 79dd76a: L median +14…20% — the landmark's
+  window (gas recedes around it) left the middle; S +2…7%, dirt unchanged.
+  Next: L4 — exhaust by curl noise with a temperature ladder, HDR spark streaks, fireball/debris/smoke,
+  shock-wave refraction, heat haze.
   A GPU draw after `gpuHullLight` must use `gpuOver`, not `gpuScene` (the scene pass is closed by then).
 - Merge each: `build.ps1`, `python docs/shot.py <scenes> --look --tag gpu`, 0 `gpu.errs`, pair with
   `scratchpad/mainref/docs/shots/main_<scene>.png`, one line of what got better, commit, strike from PLAN §0.

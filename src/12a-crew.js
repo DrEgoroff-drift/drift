@@ -683,6 +683,8 @@ function drawAllies(zx,zy,Z){
     ctx.save();ctx.translate(x,y);ctx.scale(shipScaleAt(Z),shipScaleAt(Z));ctx.rotate(A.a);   /* один потолок с кораблём (16c) */
     drawHull(A.c.shipId,A.thrust,false,0);
     ctx.restore();
+    /* L3: союзник под тем же светом, что свой корабль: звезда, лучи, разрывы (16ga) */
+    if(GPU.on)gpuHullLight(x,y,zx(0),zy(0),Z,G.sys,A.c.shipId);
     /* имя И дело (M299): плейтест 02.09 — «чувак у станции не летает, просто
        вокруг». Это наёмник на перевозке, и он кружит у станции по приказу;
        без слова «перевозка» под именем это читалось сломанным ИИ */
