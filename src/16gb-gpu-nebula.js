@@ -367,19 +367,19 @@ fn lmk(p:vec2f,W:f32,H:f32,sp:vec2f)->LK{
   return vec4f(C,1.-T);}`;
 /* сведение в полном разрешении. Общая часть: мелкие гребни по течению (волокна и
    зерно), резкие края пыли */
-const GNB_FINE=GNB_NOISE+`
+const GNB_FINE=GNB_NOISE+GNB_TILE+`
 fn fineT(p:vec2f,T0:f32)->f32{
   let V=fu.v;let H=fu.res.w;
   let qf=((p-fu.res.zw*.5)+V[0].xy*.09)/H*7.+V[0].w;
-  let r=1.-abs(2.*fb(qf*1.9+vec2f(gn(qf*.7),gn(qf*.7+3.3))*1.6,2)-1.);
+  let r=1.-abs(2.*fbt(qf*1.9+vec2f(gnt(qf*.7),gnt(qf*.7+3.3))*1.6,2)-1.);
   /* края полос чуть резче бикубики — но мягко: резкий край пыли автор видит лужей */
   let Ts=clamp((T0-.5)*1.7+.5,0.,1.);
   return clamp(mix(T0,Ts,.2)*mix(1.12,.86,r*r*smoothstep(.97,.6,T0)),0.,1.);}
 fn fineE(p:vec2f)->f32{
   let V=fu.v;let H=fu.res.w;
   let qf=((p-fu.res.zw*.5)+V[0].xy*.09)/H*9.+V[0].w+vec2f(4.,9.);
-  let wv=vec2f(gn(qf*.45+V[0].z),gn(qf*.45+vec2f(5.,1.)))*2.2;
-  let r=1.-abs(2.*fb(qf+wv,2)-1.);
+  let wv=vec2f(gnt(qf*.45+V[0].z),gnt(qf*.45+vec2f(5.,1.)))*2.2;
+  let r=1.-abs(2.*fbt(qf+wv,2)-1.);
   return .5+.95*r*r;}`;
 /* поглощение — в шейдере звезды (P1 11/n): полноэкранный проход ABS умножал цель сцены, а под
    туманностью в ней только чёрная очистка и звёзды (пересчёт идёт до открытия сцены, всё
@@ -393,6 +393,7 @@ struct FU{res:vec4f,v:array<vec4f,15>};
 @group(0) @binding(2) var<uniform> fu:FU;
 @group(0) @binding(3) var smp:sampler;
 @group(0) @binding(4) var t0:texture_2d<f32>;
+@group(0) @binding(5) var t1:texture_2d<f32>;
 @fragment fn fs(i:VO)->@location(0) vec4f{
   let al=i.col.a*gspCov(i);
   let uv=i.p.xy/fu.res.xy;let p=uv*fu.res.zw;
@@ -405,7 +406,7 @@ function gnbStars(pass,ub,sb){
   const f=GNB.SU||(GNB.SU=new Float32Array(64));
   f[0]=GPU.bw;f[1]=GPU.bh;f[2]=W;f[3]=H;f.set(GNB.C.subarray(0,60),4);
   const nb=gpuBuf("gnb.su",256,GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST);GPU.dev.queue.writeBuffer(nb,0,f);
-  pass.setPipeline(P);pass.setBindGroup(0,gpuBind("gnb.stars",P,[ub,sb,nb,GPU.S.lin,GNB.view]));
+  pass.setPipeline(P);pass.setBindGroup(0,gpuBind("gnb.stars",P,[ub,sb,nb,GPU.S.lin,GNB.view,gnbNoiseTile()]));
   pass.draw(6,GSP.nStars*4);
 }
 /* V[0]: камера x,y, время, зерно · V[1]: звезда x,y, радиус/H, вкл · V[2]: цвет звезды, ширина тени ·
@@ -421,7 +422,8 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   let gh0=c/max(l0,1e-4);
   /* волокна: гребни в полном разрешении режут тело газа */
   let body=smoothstep(.015,.14,l0);
-  c=c*mix(1.,fineE(p),body*.85);
+  /* деталь — только где её вес не ноль: вне газа шум не считается */
+  if(body>0.){c=c*mix(1.,fineE(p),body*.85);}
   /* фронт ионизации: где газ густеет прочь от звезды — это его кромка к звезде */
   let ts=1./vec2f(textureDimensions(t0));
   let lx=textureSampleLevel(t0,smp,uv+vec2f(ts.x*1.5,0.),0.).rgb-textureSampleLevel(t0,smp,uv-vec2f(ts.x*1.5,0.),0.).rgb;
@@ -468,7 +470,8 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   let sk=.5/max(1.-min(sn.r,min(sn.g,sn.b)),.08);let fs=clamp(1.-(1.-sn)*max(sk,1.),vec3f(0.),vec3f(1.))*smx;
   let fc=mix(fs,gh0*smx,smoothstep(.0003,.004,l0));
   let hue=c/max(l0,1e-3);
-  c=c+mix(hue,vec3f(1.),.3)*smoothstep(.02,.16,fr)*fineE(p*1.7)*.55;
+  let fw=smoothstep(.02,.16,fr);
+  if(fw>0.){c=c+mix(hue,vec3f(1.),.3)*fw*fineE(p*1.7)*.55;}
   /* тени — третьим цветом: тёмный газ уходит в тон теней, светлый держит свой */
   let lum=max(c.r,max(c.g,c.b));
   let cn=V[3].rgb/max(max(V[3].r,max(V[3].g,V[3].b)),1e-3);
@@ -604,7 +607,7 @@ function gpuNebulaComp(pass){
   const ts=gpuTs("nebComp");let p=pass;
   if(ts){pass.end();GPU.scenePass=null;p=GPU.enc.beginRenderPass({colorAttachments:[{view:GPU.V.scene,loadOp:"load",storeOp:"store"}],timestampWrites:ts});}
   /* пыль уже погасила и покраснила звёзды (gnbStars); газ светит поверх */
-  gpuField(p,"gnb.emi",GNB_EMI,GNB.C,[{view:GNB.view}],{blend:"add"});
+  gpuField(p,"gnb.emi",GNB_EMI,GNB.C,[{view:GNB.view},{view:gnbNoiseTile()}],{blend:"add"});
   /* корпуса на ярком газе — силуэтами: общий проход темнит газ вокруг 2D (08b) */
   GPU.sep=.7;
   if(ts){p.end();return gpuScene();}

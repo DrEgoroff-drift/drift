@@ -161,6 +161,18 @@ Heat haze behind the nozzle (G4b).
   **P1 12/n — the phone cap reads the short side** (Контроль 24.09): `innerWidth<=760` missed the S23 held
   sideways (798 CSS px) and it drew at ×2. Now `min(innerWidth,innerHeight)<=760` and a coarse pointer.
   Stand at ×2 with a coarse pointer faked: 844×390 → 1.5, 390×844 → 1.5, 1400×900 → 2.
+  **P1 13/n — the nebula's fine detail reads a baked noise tile** (Контроль 24.09; S23 nebComp 11.8 ms).
+  Desktop ablations of EMI (ms): all 1.38, noise off 0.74, planet shadows off 1.03, gradient fetches off 1.38,
+  bicubic → bilinear 1.31, all three off 0.38. The noise is 2D (time only shifts the warp's sample point),
+  so its lattice is baked (`16gaz`): texel k holds `gh(k−256)`, a 513² r16float tile, period 512 with the
+  last row and column repeating the first. `gnt` gathers the four nodes in one `textureGather` and blends
+  them with the same smoothed weights in arithmetic (the sampler's filter would give 8-bit weights, steps
+  in smooth gas); `fineT`/`fineE` use it. Inside the window −256..255 the noise is the old one; a system whose
+  lattice leaves it gets another realization of the same noise, no seam (the tile is periodic), and a screen
+  spans 9–30 cells of 512. EMI also skips `fineE` where its weight is zero (outside gas, off the ionisation
+  front). Pairs outside the DOM buttons' CSS pulses: 411×742 zoom .4 and zoom 1.2, max|Δ| 1 (2088 and
+  1680 px); 1440×900 zoom .25, max|Δ| 1. Desktop nebComp 1.34–1.37 → 0.92 ms (tile alone 1.12); gpu errs 0.
+  Next in EMI: the planet-shadow loop, 0.35 ms.
   G3b 3/n (e1aeb19) and L4 k/n (7b406eb) accepted.
 - Brief of **L4 k/n — the shock ring and the exhaust haze bend the backdrop, never a hull** (Контроль 24.09): no
   hull, own or pirate, sprite or 2D, is cut into bands; an RGB fringe on the backdrop only. Done (08b/08c): the
