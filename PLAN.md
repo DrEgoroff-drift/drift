@@ -46,6 +46,13 @@ Built: the core and post pass (08b), the layer kit (08c), the space backdrop (16
 - [ ] G2 star disc (Контроль 24.09, after 40f3276): reads as a flat orange ball — k_l2cB radius profile centre
   246, 198 at .85 R, a bump 201 at the limb, then glow 193; R 249–255 over the whole disc (clipped). Limb
   darkening into red with no bump at the edge, R ≤245 on the limb.
+- [ ] G3b gas giant (Контроль 24.09): the thin jets along the flow still read weak at 1:1.
+- [ ] L4 shock ring (24.09, found by the 0.457 isolation leak): `gpuShock` (13z) refracts the player's own hull —
+  a missile blast next to the ship cuts it into shifted bands with colour fringes. Decide: the ring bends the
+  backdrop only, or the hull too but softer; show a «was | now» pair of a blast beside the ship.
+- [ ] CI with WebGPU (Контроль 24.09): the smoke in `deploy.yml` runs `--disable-gpu`, so it proves only the
+  «no WebGPU» notice. Turn WebGPU on in CI through SwiftShader (the flag set proven locally first), then the
+  smoke and the picture suites see the real frame.
 - [ ] **G5 the air, the rest (frozen for L1–L4):** done — sky, disc, scattering, shafts in the final pass (08b). Left:
   live clouds (`drawClouds` 19e), haze bands (`hazeBand`/`hazeFar` 19c), weather in depth, night lamps, the water
   mirror, the grade; shafts must be shown to read — a sun behind cloud gaps (the 2D clouds are too thin to cut

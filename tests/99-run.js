@@ -23,12 +23,25 @@ const BOOT_SUITE=() => suite("игра запустилась сама: живо
   eq(alive,VER,"на корне data-alive с версией сборки (кадров прошло "+frameN+")");
   ok(frameN>=1,"цикл кадров шёл сам, по rAF: "+frameN);
   eq(crashN,0,"сторож кадра ни разу не сработал до тестов");
-  ok(GPU.ok,"видеокарта поднялась до тестов: мир рисует она, без неё глазам тестов смотреть не на что"+(GPU.none?" ("+GPU.none+")":""));
+  /* браузер без WebGPU (дым CI идёт с --disable-gpu) — законный запуск: мира
+     нет, но игра жива и прямо говорит, какой браузер нужен (08b gpuNone).
+     Требование «глазам нужна видеокарта» — в наборе EYES_SUITE ниже */
+  if(GPU.none){
+    const ng=document.getElementById("nogpu");
+    ok(!!ng&&ng.getClientRects().length>0&&getComputedStyle(ng).display!=="none","без WebGPU на экране надпись, а не пустота");
+    ok(!!ng&&/WebGPU/.test(ng.textContent||""),"надпись называет, чего не хватает: «"+(ng?(ng.textContent||"").slice(0,40):"")+"»");
+  }else ok(GPU.ok,"видеокарта поднялась до тестов (или честно сказала, что её нет)");
   ok(typeof CRASH_SHIP==="object"&&CRASH_SHIP.n===0,"на сервер с этой страницы ничего не ушло (стенд молчит)");
+});
+/* глаза тестов: наборы картинки читают кадр видеокарты (gpuSnapshot). Без неё
+   они смотрят в пустоту — один громкий провал здесь, а не сотня странных ниже.
+   Дым CI (only=«игра запустилась») его не зовёт: там видеокарты нет по договору */
+const EYES_SUITE=() => suite("глаза тестов: видеокарта есть",{tier:"browser"}, () => {
+  ok(GPU.ok,"глаза тестов слепы: видеокарты нет"+(GPU.none?" (браузер без WebGPU)":" (не поднялась за 14 с)"));
 });
 BOOT_SUITE.pin="first";
 let BOOT_SINK=0;
-if(!TEST_TIMES&&!(typeof globalThis.TEST_NODE!=="undefined"&&globalThis.TEST_NODE))TEST_SUITES.unshift(BOOT_SUITE);
+if(!TEST_TIMES&&!(typeof globalThis.TEST_NODE!=="undefined"&&globalThis.TEST_NODE)){TEST_SUITES.unshift(EYES_SUITE);TEST_SUITES.unshift(BOOT_SUITE);}
 (function boot(t0){
   /* под Node кадров нет: цикл выключается сразу, набор про запуск — дело Хрома */
   if(typeof TEST_NODE!=="undefined"&&TEST_NODE&&frameN<1){LOOP_OFF=true;runTests();return;}
