@@ -118,8 +118,8 @@ ammoRow                      src/16b-missile.js:74-95
 ammoStamp                    src/12ar-hail.js:42
 ammoStampSet                 src/12ar-hail.js:43
 ANCHOR_CACHE                 src/05-parts.js:253
-angDiff                      src/01-core.js:177
-angWrap                      src/01-core.js:176
+angDiff                      src/01-core.js:180
+angWrap                      src/01-core.js:179
 APPETITE                     src/12ab-hold.js:26-33
 APPETITE_ADD                 src/12ab-hold.js:24
 appetiteAte                  src/12ab-hold.js:46-50
@@ -470,8 +470,8 @@ blockHere                    src/13b1-blockade.js:10
 blockMul                     src/13b1-blockade.js:11
 BLOG                         src/21a1-base-life.js:50-114
 BLOOM_K                      src/19c-light.js:341
-BLUE_TAB                     src/01-core.js:132
-blueNoise                    src/01-core.js:133-150
+BLUE_TAB                     src/01-core.js:135
+blueNoise                    src/01-core.js:136-153
 BLUEPRINTS                   src/12c-mgr-core.js:665-671
 BM_WARM                      src/21aa-base-rooms.js:20
 BMGR_BY                      src/21b2-base-mgr.js:32
@@ -1154,8 +1154,8 @@ DEEDS                        src/11ai-ledger.js:25-35
 depKind                      src/21b-surface-deco.js:396-405
 deployDrone                  src/12-economy.js:234-251
 DEPTH_TIERS                  src/04-mods.js:54-58
-DESC_MOOD                    src/01-core.js:193-198
-DESC_TAIL                    src/01-core.js:199
+DESC_MOOD                    src/01-core.js:196-201
+DESC_TAIL                    src/01-core.js:202
 DESK_DRAW                    src/27ia-desk-top.js:58-293
 DESK_ITEMS                   src/27ia-desk-top.js:298-330
 deskItemNew                  src/27ia-desk-top.js:337-341
@@ -1313,7 +1313,7 @@ DIR_THEMES                   src/12am-chron-director.js:57
 DIR_VEIN                     src/21a5-base-dir.js:29
 DIR_WORTH                    src/21a5-base-dir.js:25
 DIR_WORTH_CAP                src/21a5-base-dir.js:26
-dirAt                        src/01-core.js:163-168
+dirAt                        src/01-core.js:166-171
 dirGoodShare                 src/21a5-base-dir.js:67-72
 dirPool                      src/21a5-base-dir.js:44-48
 dirWeights                   src/21a5-base-dir.js:55-66
@@ -1762,8 +1762,8 @@ farVein                      src/06e-far-take.js:72-81
 farWorldFingerprint          tests/91zzzzk3-far.js:6-15
 FAUNA_RES                    src/02-world.js:120
 faunaOf                      src/20e-species.js:268-284
-fbm1                         src/01-core.js:114
-fbm2                         src/01-core.js:121
+fbm1                         src/01-core.js:117
+fbm2                         src/01-core.js:124
 fbm3                         src/24-mode-belt.js:16-20
 FG_MAN                       src/21b-surface-deco.js:277
 fillMaterial                 src/18a-material.js:372-402
@@ -1964,11 +1964,11 @@ genBeast                     src/20f-fauna.js:58-60
 genBeltPOI                   src/24b-belt-poi.js:20-47
 genCol                       src/13z-gpu-combat.js:51-56
 genDeco                      src/21b-surface-deco.js:37-140
-genDesc                      src/01-core.js:200-211
+genDesc                      src/01-core.js:203-214
 genDraw                      src/13z-gpu-combat.js:117-124
 genMerc                      src/12a-crew.js:63-92
 genMgr                       src/12c-mgr-core.js:237-256
-genName                      src/01-core.js:183
+genName                      src/01-core.js:186
 genPart                      src/05-parts.js:144-217
 genPlant                     src/20-life.js:189-191
 genPOI                       src/20a-poi.js:32-75
@@ -2466,7 +2466,7 @@ helmTargets                  src/15a-helm.js:272
 helmTick                     src/15a-helm.js:363-447
 helmTrail                    src/15a-helm.js:209-215
 helmTrailAge                 src/15a-helm.js:216-219
-hex2rgb                      src/01-core.js:218-221
+hex2rgb                      src/01-core.js:221-224
 hexA                         src/12e-drone-flight.js:285-291
 hexa                         src/12w-survey.js:91-94
 hexRGB                       src/24-mode-belt.js:81-83
@@ -3340,7 +3340,7 @@ misStationOffset             src/11z-misclosure.js:19-24
 misTableReply                src/11z-misclosure.js:50-53
 misTestRegion                tests/91zzj-misclosure.js:2-11
 MIX_KIN                      src/02a-worldmix.js:19-31
-mixc                         src/01-core.js:223
+mixc                         src/01-core.js:226
 mixHex                       src/12x-suit.js:187-190
 mixNum                       src/02a-worldmix.js:43-45
 mixPal                       src/02a-worldmix.js:34-42
@@ -3517,8 +3517,8 @@ NODES                        src/05a-nodes.js:70
 nodesHave                    src/05a-nodes.js:102
 nodesRender                  src/05a-nodes.js:177-230
 noise                        src/09-audio.js:79-91
-noise1                       src/01-core.js:113
-noise2                       src/01-core.js:116-120
+noise1                       src/01-core.js:116
+noise2                       src/01-core.js:119-123
 noise3                       src/24-mode-belt.js:7-15
 noiseBuf                     src/09-audio.js:78
 normsOf                      src/12ab-hold.js:89-97
@@ -3867,7 +3867,7 @@ pirateLoadout                src/13d-loadout.js:33
 pirateRoleTick               src/13c-roles.js:51-127
 pirateShipId                 src/13-pirates.js:20-27
 PL_SKIP                      tests/91zzzzzo-plural.js:31
-pl3                          src/01-core.js:106-112
+pl3                          src/01-core.js:109-115
 PLACE_KINDS                  src/11d-place.js:22
 PLACE_LIFT                   tests/91zzzzy-place.js:93
 placeAge                     src/11d-place.js:53-56
@@ -4553,7 +4553,7 @@ retDrift                     src/11s-returners.js:48-50
 retEtherLine                 src/11s-returners.js:40-43
 retGroundLine                src/11s-returners.js:44-46
 reticle                      src/17c-system-draw.js:4-12
-rgba                         src/01-core.js:222
+rgba                         src/01-core.js:225
 ridged                       src/18a-material.js:30
 RING_FIRST                   src/11x-ring.js:20
 RING_LEN                     src/11x-ring.js:21
@@ -4705,7 +4705,7 @@ roleSteer                    src/13c-roles.js:8
 roleThrust                   src/13c-roles.js:9
 rollCrewEvent                src/12b-crew-events.js:70-96
 rollWorld                    src/02a-worldmix.js:67-76
-ROMAN                        src/01-core.js:182
+ROMAN                        src/01-core.js:185
 ROOM_FIN                     src/21aa-base-rooms.js:46-56
 roomToneTick                 src/09a-roomtone.js:79-99
 ROUTE_MAX                    src/12r-route.js:29
@@ -4778,8 +4778,8 @@ rushAt                       src/18j-rail-rush.js:7
 rushFuelMul                  src/18j-rail-rush.js:12
 rushStart                    src/18j-rail-rush.js:8-11
 rxRecord                     src/11x-ring.js:64-74
-S1                           src/01-core.js:180
-S2                           src/01-core.js:181
+S1                           src/01-core.js:183
+S2                           src/01-core.js:184
 SAME_FRAMES                  tests/91zzzzzbb-samehash.js:21
 sameRun                      tests/91zzzzzbb-samehash.js:22-39
 sameRunHands                 tests/91zzzzzbb-samehash.js:77-95
@@ -5356,11 +5356,11 @@ SYS_EXOTIC                   src/16a-space.js:14-20
 SYS_HOME_KEY                 src/06-galaxy.js:22
 SYS_K_ORBIT                  src/06-galaxy.js:98
 SYS_LRU                      src/06-galaxy.js:21
-sysDanger                    src/01-core.js:187
+sysDanger                    src/01-core.js:190
 sysEdge                      src/17-mode-system.js:34-40
 sysEntry                     src/17g-sys-lane.js:20-23
 sysHasFauna                  src/12ad-site.js:114-117
-sysJitter                    src/01-core.js:188-192
+sysJitter                    src/01-core.js:191-195
 sysLane                      src/17g-sys-lane.js:32-63
 sysMakes                     src/12ad-site.js:134-140
 sysNebComp                   src/16a-space.js:209-234
@@ -5976,8 +5976,8 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/01-core.js · 17 КБ
   · математика:13
   · случай и часы игры (M441):32
-  · имена:179
-  · удалённость и настрой сектора:186
+  · имена:182
+  · удалённость и настрой сектора:189
 
 ## src/01a-crashlog.js · 7 КБ
 

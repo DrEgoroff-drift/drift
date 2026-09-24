@@ -42,6 +42,10 @@ def stand_tail():
 
 def page_for(scene, tail, a):
     html = open(os.path.join(ROOT, "drift.html"), encoding="utf-8").read()
+    # one seed per launch unless asked otherwise: the starfield and chance repeat, so was | now pairs compare
+    if a.seed >= 0:
+        s = html.find("<script")
+        html = html[:s] + "<script>var DRIFT_SEED=%d;</script>" % a.seed + html[s:]
     cut = html.rfind("</body>")
     extra = """
 <script>
@@ -137,6 +141,7 @@ def main():
     ap.add_argument("--dpr", type=float, default=2)
     ap.add_argument("--delay", type=int, default=2600, help="ms after the GPU is up before --js runs")
     ap.add_argument("--port", type=int, default=9460)
+    ap.add_argument("--seed", type=int, default=1, help="DRIFT_SEED for rnd/rndFx (stars, chance); -1 = the wall clock, as in play")
     ap.add_argument("--budget", type=int, default=40000, help="ms a scene may take before it is shot as is (vetshot passes it)")
     a = ap.parse_args()
     chrome = next((c for c in CHROMES if os.path.exists(c)), None)

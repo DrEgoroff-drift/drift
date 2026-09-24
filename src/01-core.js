@@ -98,7 +98,10 @@ function uidRand(){
   try{const a=new Uint32Array(1);crypto.getRandomValues(a);return a[0]/4294967296;}
   catch(e){return Math.random();}
 }
-rndSeed(hashi(Date.now()%2147483647,Math.floor(Date.now()/2147483647),Math.floor(wallMs()*1000)));
+/* стенд (docs/shot.py) ставит DRIFT_SEED до скрипта — звёздное небо и случай одни от
+   запуска к запуску, и пара «было | стало» сравнима попиксельно. Игрок его не ставит */
+rndSeed(typeof DRIFT_SEED==="number"?DRIFT_SEED:
+  hashi(Date.now()%2147483647,Math.floor(Date.now()/2147483647),Math.floor(wallMs()*1000)));
 /* ── русское согласование числительных (полировочный круг) ──
    По коду жило четыре самодельных склонения, и три врали: «1 прыжка»,
    «1 станция получили», стаж «21 ЛЕТ». Одна честная функция на всех:

@@ -110,6 +110,10 @@ Heat haze behind the nozzle (G4b).
   tap, both sampling the front layer and the scene — 80 fetches per quarter-res pixel, 5 per screen pixel.
   Inlined, one fetch each: 48, same arithmetic. Pair `bl_pair.png`: the glow is the same, only the unpinned
   stars and the HUD clock differ; gpu errs 0. A cut that is right whatever the S23's deep numbers say.
+  **P1 5/n — the stand pins the sky**: `01-core` seeded `rnd`/`rndFx` from the wall clock at load, so every
+  launch drew its own starfield (`BG` in 16-flight) and no pair could compare stars. It now takes
+  `DRIFT_SEED` when a stand sets it before the script; `docs/shot.py` sets 1 (`--seed -1` = as in play).
+  The player never sets it. Two runs (`same_pair.png`): one sky; what still moves is real time (moons, HUD).
   G3b 3/n (e1aeb19) and L4 k/n (7b406eb) accepted.
 - Brief of **L4 k/n — the shock ring and the exhaust haze bend the backdrop, never a hull** (Контроль 24.09): no
   hull, own or pirate, sprite or 2D, is cut into bands; an RGB fringe on the backdrop only. Done (08b/08c): the
