@@ -49649,24 +49649,21 @@ fn lfr(p:vec2f,W:f32,H:f32,sp:vec2f,h:vec4f,i:vec4f,cam:vec2f,par:f32)->vec2f{
   var Lc=vec2f(W,H)*(.5+h.xy*.5)-cam*par;var a=i.x;
   if(h.w>2.5){Lc=sp;a=1.3208;}
   else if(h.w>.5&&h.w<1.5){
-    /* комета: хвост от звезды хордой вдоль кромки кадра — голова у угла, хвост во внешнем
-       кольце, а не за краем. Направление — от звезды (в долях полукадра), сторона хорды —
-       знак потока; голова отступает на полхвоста назад */
-    let hf=vec2f(W,H)*.5;let v=(hf-sp)/hf;
-    var us=vec2f(1.,0.);if(dot(v,v)>1e-6){us=normalize(v);}
-    let pr=vec2f(-us.y,us.x)*select(-1.,1.,h.x*us.y-h.y*us.x<0.);
-    Lc=hf*(1.+pr*.82-us*.62)-cam*par;let t=us*hf;a=atan2(t.y,t.x);}
+    /* комета: голова в своём углу (решётка, отступ от HUD — как у всех), хвосты — внутрь
+       кадра по диагонали угла ±20° (зерно потока) и гаснут к середине. Громадина на
+       бесконечности: проекция хвоста любая, от звезды его не ставим */
+    let v=vec2f(W,H)*.5-Lc;a=atan2(v.y,v.x)+(i.x/6.2832-.5)*.7;}
   let d0=(p-Lc)/(H*h.z);let c=cos(a);let s=sin(a);
   return vec2f(c*d0.x+s*d0.y,-s*d0.x+c*d0.y);}
 /* пылевой хвост отстаёт по орбите — в свою сторону у каждой кометы */
-fn lbend(i:vec4f)->f32{return select(-.22,.22,fract(i.z)>.5);}
-fn lcy(d:vec2f,i:vec4f)->f32{let x=max(d.x,0.);return d.y+lbend(i)*(.6*x+x*x);}
+fn lbend(i:vec4f)->f32{return select(-.36,.36,fract(i.z)>.5);}
+fn lcy(d:vec2f,i:vec4f)->f32{let x=max(d.x,0.);return d.y+lbend(i)*(x+.35*x*x);}
 /* окно: вокруг громадины газ отступает, туман гаснет — пустота чёрная, а не серая */
 fn lwin(d:vec2f,h:vec4f,i:vec4f)->f32{
   let t=h.w;var w=0.;
   if(t<.5){w=smoothstep(1.45,.95,length(d));}
-  else if(t<1.5){let x=d.x;let yc=lcy(d,i);let wd=.04+.22*max(x,0.);
-    w=exp(-sq(yc/(wd*1.8+.06)))*smoothstep(1.4,.5,x)*smoothstep(-.2,0.,x);}
+  else if(t<1.5){let x=d.x;let yc=lcy(d,i);let wd=.012+.13*max(x,0.);
+    w=exp(-sq(yc/(wd*1.8+.04)))*smoothstep(.95,.35,x)*smoothstep(-.1,0.,x);}
   else if(t<2.5){w=smoothstep(1.2,.55,length(vec2f(d.x,d.y/i.y)));}
   else{let x=abs(d.x);w=exp(-sq(d.y/(.04+.2*x)))*smoothstep(1.8,.9,x);}
   return min(w*1.4,1.)*select(0.,1.,i.w>0.);}`;
@@ -49711,16 +49708,18 @@ fn lmk(p:vec2f,W:f32,H:f32,sp:vec2f)->LK{
     /* внутри — слабое свечение и клочья */
     e=e+c1*(.05+.14*pow(rid,3.))*smoothstep(1.,.2,r)*(.4+.6*arc);
   } else if(ty<1.5){
-    /* голова в начале координат, хвост — вдоль +x, от звезды. Голова мелкая и тусклая,
-       хвост набирает свет не сразу за ней: белая полоса от точки читалась выстрелом */
-    let x=d.x;let r=length(d);
-    let wi=.015+.035*max(x,0.);
-    let st=.45+.55*fb(vec2f(x*3.-u.b.z*4.,d.y/wi*.6+ls),3);
-    let ion=exp(-sq(d.y/wi))*smoothstep(0.,.3,x)*exp(-max(x,0.)/1.2)*st;
-    /* пыль — широкий мягкий веер, не факел: свет набирает поодаль от головы */
-    let yc=lcy(d,u.i);let wd=.04+.22*max(x,0.);
-    let dst=exp(-sq(yc/wd))*smoothstep(0.,.35,x)*exp(-max(x,0.)/.8)*(.6+.4*fb(vec2f(x*2.,yc*6.)+ls,2));
-    e=c1*ion*.8+c2*dst*.55+vec3f(.7,.9,1.)*(.14*exp(-r/.012)+.07*exp(-r/.04));
+    /* голова в начале координат, хвосты — вдоль +x. d в долях H·s: 1 px на 760 ≈ .0024.
+       Голова — самая яркая точка громадины: ядро 2–3 px, кома ~12 px, тёплый белый.
+       Ионный хвост — прямой узкий голубой луч (1–2 px у головы, ~8 px к концу, длина
+       ~.4 ширины кадра); пылевой — широкий изогнутый тёплый веер, отходит на ~20° */
+    let x=d.x;let r=length(d);let xp=max(x,0.);
+    let wi=.0018+.0085*min(xp/.7,1.);
+    let st=.7+.3*fb(vec2f(x*5.-u.b.z*4.,ls),2);
+    let ion=exp(-sq(d.y/wi))*smoothstep(-.004,.02,x)*(1.-smoothstep(.35,.8,x))*st;
+    let yc=lcy(d,u.i);let wd=.006+.11*xp;
+    let dst=exp(-sq(yc/wd))*smoothstep(0.,.08,x)*exp(-xp/.35)*(.7+.3*fb(vec2f(x*3.,yc*8.)+ls,2));
+    e=vec3f(.5,.75,1.)*ion*.45+vec3f(1.,.86,.62)*dst*.85
+      +vec3f(1.,.95,.86)*(8.*exp(-sq(r/.0035))+.5*exp(-sq(r/.014)));
   } else if(ty<2.5){
     let g=vec2f(d.x,d.y/u.i.y);let r=length(g);let th=atan2(g.y,g.x);
     let disk=exp(-r/.3)*smoothstep(1.05,.6,r);

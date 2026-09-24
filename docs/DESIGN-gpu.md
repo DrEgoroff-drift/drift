@@ -78,7 +78,7 @@ Heat haze behind the nozzle (G4b).
 
 ## Where I stopped (update on every commit)
 
-- **Deploy candidate: `d0b1058` (L3 2/n; before it `d959de8`), accepted by Контроль by its pairs.** The author: deploy to main
+- **Deploy candidate: `96cba49` (L3 3/n; before it `d0b1058`), accepted by Контроль by its pairs.** The author: deploy to main
   before the limit window reaches 90%; the signal «ДЕПЛОЙ» comes from Контроль. On it: close the step with a
   commit; `test.ps1 -Full` and `node test-node.js`; bump `VER` and a PATCHNOTES line (what the player sees
   better, plus «needs a browser with WebGPU»); a release commit; send Контроль its sha. **Контроль pushes**
@@ -86,7 +86,7 @@ Heat haze behind the nozzle (G4b).
   the site falls: a commit on top with the tree of `d543aff`, never a force-push. Only a commit Контроль
   accepted by pairs goes to main. CI rehearsal of ef8c8b9 (deploy.yml flags, `--disable-gpu`): load clean,
   smoke 4/4, Node green (the «рейсы» suite fails in full order only, green alone; it sits in quarantine).
-- Order now: L3 3/n done (awaiting Контроль), then L1b (dust), L4 (particles), then the G steps (G5 frozen).
+- Order now: L1b 1/n (comet) done, awaiting Контроль; then L1b dust, L4 (particles), then the G steps (G5 frozen).
 
 - Done: core `08b`, kit `08c`, space `16g` (G1: live nebula wisps and lanes, stars with halo and tapered
   spikes, dust with depth of field; pair in `scratchpad/pairs/system_crop.png`),
@@ -316,6 +316,14 @@ Heat haze behind the nozzle (G4b).
   diagonal; the middle of the long edge keeps .74, not .45). Corners by a lattice of the system's place,
   `(sx+2·sy)&3`: neighbours always differ, any four in a row give all four (12 systems: 3/4/3/2); the top
   left drops below the HUD bars (y .36–.5 of a half-frame, x ≥ .74) — median L under the bars 24–29.
+  Done (L1b 1/n, the comet): the edge chord read as a coloured haze under the HUD strip. Now the head
+  sits in its lattice corner with the HUD offset like every landmark; the tails go inward along the corner's
+  diagonal ±20° (stream grain) — not away from the star: the landmark is at infinity, its projection is free.
+  In `d` units (H·s; 1 px at 760 ≈ .0024): head — warm white core (gauss .0035, ×8) and coma (.014), the
+  brightest point of the landmark; ion tail — a straight narrow blue ray, half-width .0018 → .01 over .7,
+  fading from .35 to .8; dust tail — a wide curved warm fan (`lcy` bend ±.36, ~20° off the ion), softer,
+  exp(−x/.35). The centre fade dims both toward the middle third. lm1: core p99.9 200 vs the tail's first
+  third median 76 (2.6×), tail +84% over the gas beside it (±18 px). Scratchpad `cometmeas.py`.
   Next: L1b dust — dark absorbing filaments and globules in front of the emission gas, bright ionisation
   fronts, stars through the gaps (Carina / Pillars); field L median toward 30, black 10–20%. Then L4.
   A GPU draw after `gpuHullLight` must use `gpuOver`, not `gpuScene` (the scene pass is closed by then).
