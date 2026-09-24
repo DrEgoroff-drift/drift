@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 605 · символов верхнего уровня: 5970
+Файлов: 605 · символов верхнего уровня: 5972
 
 ## СИМВОЛЫ
 
@@ -1501,11 +1501,11 @@ drawSurface                  src/21e-surface-draw.js:277-291
 drawSurfaceHud               src/21e-surface-draw.js:21-115
 drawSurfaceWorld             src/21e1-surface-world.js:10-615
 drawSurvey                   src/12w-survey.js:63-89
-drawSysHud                   src/17-mode-system.js:697-980
+drawSysHud                   src/17-mode-system.js:698-981
 drawSysLane                  src/17g-sys-lane.js:94-122
 drawSysLaneShips             src/17g-sys-lane.js:152-180
 drawSysRail                  src/18f-rail-station.js:32-65
-drawSystem                   src/17-mode-system.js:498-696
+drawSystem                   src/17-mode-system.js:498-697
 drawSysTraffic               src/17f-sys-traffic.js:37-41
 drawTapes                    src/12s1-tape.js:37-52
 drawTemple                   src/20aa-poi-shapes.js:50-89
@@ -1925,11 +1925,11 @@ fxInc                        tests/91zzzw-fx.js:18-22
 fxWorld                      tests/91zzzw-fx.js:6-16
 G                            src/08-state.js:191-277
 G_BOOT_KEYS                  tests/90-harness.js:186
-G11_CPU                      src/28z-fps-probe.js:162
-G11_GPU_KILL                 src/28z-fps-probe.js:187-218
-g11CpuHook                   src/28z-fps-probe.js:163-168
+G11_CPU                      src/28z-fps-probe.js:185
+G11_GPU_KILL                 src/28z-fps-probe.js:210-241
+g11CpuHook                   src/28z-fps-probe.js:186-191
 g11Fps                       src/28z-fps-probe.js:7-14
-g11Iv                        src/28z-fps-probe.js:169-180
+g11Iv                        src/28z-fps-probe.js:192-203
 GAL_ARMS                     src/17z2-galaxy-names.js:8-11
 GAL_BAR_A                    src/17z1-galaxy.js:21
 GAL_BUDGET_MS                src/17z1-galaxy.js:66
@@ -2131,7 +2131,7 @@ GPU_WGSL_COMMON              src/08c-gpu-kit.js:58
 gpuArena                     src/08c-gpu-kit.js:78-88
 gpuBargeBody                 src/12l-barge.js:559-563
 gpuBind                      src/08c-gpu-kit.js:33-39
-gpuBloom                     src/08b-gpu.js:598-605
+gpuBloom                     src/08b-gpu.js:599-606
 gpuBooms                     src/13z-gpu-combat.js:149-167
 gpuBuf                       src/08c-gpu-kit.js:26-31
 gpuBursts                    src/13z-gpu-combat.js:266-286
@@ -2143,7 +2143,7 @@ gpuDrop                      src/08b-gpu.js:76-81
 gpuExhaust                   src/16ga-gpu-trail.js:259-292
 gpuField                     src/08c-gpu-kit.js:194-222
 gpuFrame                     src/08b-gpu.js:502-511
-gpuFrontCopy                 src/08b-gpu.js:544-546
+gpuFrontCopy                 src/08b-gpu.js:545-547
 gpuHaze                      src/08b-gpu.js:435
 gpuHullLight                 src/16ga-gpu-trail.js:345-364
 gpuImage                     src/08c-gpu-kit.js:122-134
@@ -2151,37 +2151,39 @@ gpuKitU                      src/08c-gpu-kit.js:94-98
 gpuLight                     src/08b-gpu.js:437
 gpuLitSprite                 src/17c-system-draw.js:478-485
 gpuLtWrite                   src/08b-gpu.js:441-448
-gpuManual                    src/08b-gpu.js:569-574
+gpuManual                    src/08b-gpu.js:570-575
 gpuMoon                      src/17ga-gpu-planets.js:400-405
 gpuNebulaComp                src/16gb-gpu-nebula.js:605-615
 gpuNebulaGen                 src/16gb-gpu-nebula.js:552-602
 gpuNoise                     src/08b-gpu.js:371-376
 gpuNone                      src/08b-gpu.js:34-41
-gpuOver                      src/08b-gpu.js:547-567
+gpuOver                      src/08b-gpu.js:548-568
 gpuPass                      src/08b-gpu.js:423-426
 gpuPipe                      src/08c-gpu-kit.js:18-25
 gpuPipes                     src/08b-gpu.js:342-368
 gpuPirateBody                src/12i-pirate-hull.js:432-437
 gpuPlanet                    src/17ga-gpu-planets.js:320-338
-gpuPresent                   src/08b-gpu.js:607-623
+gpuPresent                   src/08b-gpu.js:608-624
 gpuResize                    src/08b-gpu.js:377-410
-gpuScene                     src/08b-gpu.js:515-524
-gpuScene3D                   src/08b-gpu.js:528-536
+gpuScene                     src/08b-gpu.js:515-525
+gpuScene3D                   src/08b-gpu.js:529-537
+gpuSeg                       src/28z-fps-probe.js:139-142
 gpuShapes                    src/08c-gpu-kit.js:164-175
 gpuShock                     src/08b-gpu.js:436
 gpuSky                       src/19ca-gpu-sky.js:66-82
 gpuSnapshot                  src/08b-gpu.js:22-26
-gpuSpaceSys                  src/16g-gpu-space.js:201-218
-gpuSpaceTitle                src/16g-gpu-space.js:220-231
+gpuSpaceSys                  src/16g-gpu-space.js:201-219
+gpuSpaceTitle                src/16g-gpu-space.js:221-232
 gpuStation                   src/17c-system-draw.js:486
 gpuSysUnder                  src/17g-gpu-system.js:386-391
 gpuTakeSnap                  src/08b-gpu.js:27-32
 gpuTrail                     src/16ga-gpu-trail.js:53-90
 gpuTs                        src/28z-fps-probe.js:128-135
-gpuTsResolve                 src/28z-fps-probe.js:137-151
+gpuTsAround                  src/28z-fps-probe.js:145-149
+gpuTsResolve                 src/28z-fps-probe.js:151-169
 gpuUni                       src/08b-gpu.js:486-498
 gpuWake                      src/16ga-gpu-trail.js:99-123
-gpuWorld                     src/08b-gpu.js:577-596
+gpuWorld                     src/08b-gpu.js:578-597
 gradePass                    src/19c-light.js:260-296
 GREEN_BEDS                   src/21g-greenhouse.js:23
 GREEN_FULL                   src/21g-greenhouse.js:24
@@ -6658,7 +6660,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/16c-rescue.js · 51 КБ
   · пустой бак: хода нет, но выход есть всегда (11.09):1
 
-## src/16g-gpu-space.js · 14 КБ
+## src/16g-gpu-space.js · 15 КБ
   · космос на видеокарте (G1, docs/DESIGN-gpu.md):1
 
 ## src/16ga-gpu-trail.js · 24 КБ
@@ -7213,7 +7215,7 @@ zooTick                      src/11ad-zoo.js:41-54
   · look() — прибор кадра:1
   · читается ли изготовитель (M369, §19.4):296
 
-## src/28z-fps-probe.js · 20 КБ
+## src/28z-fps-probe.js · 22 КБ
   · пробник G11: ?g11:1
 
 ## src/29c-home-in.js · 16 КБ

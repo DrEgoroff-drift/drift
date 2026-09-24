@@ -10894,7 +10894,8 @@ function gpuScene(){
   if(GPU.scene3D){GPU.scenePass.end();GPU.scenePass=null;GPU.scene3D=false;}
   if(!GPU.scenePass){
     GPU.scenePass=GPU.enc.beginRenderPass({colorAttachments:[{view:GPU.V.scene,
-      loadOp:GPU.sceneOn?"load":"clear",storeOp:"store",clearValue:GPU.sceneBg}],timestampWrites:GPU.sceneOn?undefined:gpuTs("scene0")});
+      loadOp:GPU.sceneOn?"load":"clear",storeOp:"store",clearValue:GPU.sceneBg}],timestampWrites:gpuTs(GPU.sceneOn?GPU.seg||"scene+":"scene0")});
+    if(!GPU.sceneOn)GPU.seg=null;
     GPU.sceneOn=true;
   }
   return GPU.scenePass;
@@ -10918,8 +10919,8 @@ function gpuScene3D(){
    сегмента рисуют в один возвращённый проход. Вне кадра — null */
 /* #c → передний слой. GPU.kill.fpx (проба ?g11=deep): копия 1×1 — снимок холста (и растр его
    2D) остаётся, байтов почти нет: разводит цену растра и цену копии (P1 10/n) */
-function gpuFrontCopy(){
-  GPU.dev.queue.copyExternalImageToTexture({source:cvs},{texture:GPU.T.front,premultipliedAlpha:true},GPU.kill.fpx?[1,1]:[GPU.bw,GPU.bh]);
+function gpuFrontCopy(n){
+  gpuTsAround(n,()=>GPU.dev.queue.copyExternalImageToTexture({source:cvs},{texture:GPU.T.front,premultipliedAlpha:true},GPU.kill.fpx?[1,1]:[GPU.bw,GPU.bh]));
 }
 function gpuOver(){
   if(!GPU.on||!GPU.enc)return null;
@@ -10930,7 +10931,7 @@ function gpuOver(){
   if(GPU.kill.front){
     ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,GPU.bw,GPU.bh);ctx.restore();
     return GPU.overPass=GPU.enc.beginRenderPass({colorAttachments:[{view:GPU.V.scene,loadOp:"load",storeOp:"store"}]});}
-  gpuFrontCopy();
+  gpuFrontCopy("front1");
   gpuUni();
   const p=GPU.enc.beginRenderPass({colorAttachments:[{view:GPU.V.scene,loadOp:"load",storeOp:"store"},
     {view:GPU.V.emit,loadOp:GPU.emitOn?"load":"clear",storeOp:"store",clearValue:{r:0,g:0,b:0,a:0}}],timestampWrites:gpuTs("frontComp")});
@@ -10939,7 +10940,7 @@ function gpuOver(){
   /* отправляем сделанное: следующая загрузка #c не должна обогнать эту склейку */
   d.queue.submit([GPU.enc.finish()]);GPU.enc=d.createCommandEncoder();
   ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,GPU.bw,GPU.bh);ctx.restore();
-  GPU.overPass=GPU.enc.beginRenderPass({colorAttachments:[{view:GPU.V.scene,loadOp:"load",storeOp:"store"}]});
+  GPU.overPass=GPU.enc.beginRenderPass({colorAttachments:[{view:GPU.V.scene,loadOp:"load",storeOp:"store"}],timestampWrites:gpuTs("over")});
   return GPU.overPass;
 }
 /* кадр вне цикла (тест, стенд, look): собрать, показать, снять — одной задачей */
@@ -10963,7 +10964,7 @@ function gpuWorld(k,grain,vig){
     P.k=(!off&&G.running)?k:0;P.grain=(!off&&grain&&G.running)?1:0;P.vig=(!off&&grain&&vig&&G.running)?1:0;
     if(GPU.kill.bloom)P.k=0;
     if(!GPU.noiseOk)gpuNoise();
-    if(!GPU.kill.front)gpuFrontCopy();
+    if(!GPU.kill.front)gpuFrontCopy("front2");
     if(P.k>0){
       if(!GPU.emitOn){GPU.enc.beginRenderPass({colorAttachments:[{view:GPU.V.emit,loadOp:"clear",storeOp:"store",clearValue:{r:0,g:0,b:0,a:0}}]}).end();GPU.emitOn=true;}
       gpuBloom();}
@@ -10985,7 +10986,7 @@ function gpuPresent(){
   if(!GPU.on||!GPU.enc){GPU.on=false;return;}
   try{
     const ui=(typeof rackOpen==="function")&&rackOpen()&&G.running&&!scrOpen();
-    if(ui){GPU.dev.queue.copyExternalImageToTexture({source:GPU.ui},{texture:GPU.T.ui,premultipliedAlpha:true},[GPU.bw,GPU.bh]);GPU.uiWas=true;}
+    if(ui){gpuTsAround("ui",()=>GPU.dev.queue.copyExternalImageToTexture({source:GPU.ui},{texture:GPU.T.ui,premultipliedAlpha:true},[GPU.bw,GPU.bh]));GPU.uiWas=true;}
     GPU.uiOn=ui;
     gpuUni();gpuLtWrite();
     gpuPass(GPU.gx.getCurrentTexture().createView(),GPU.kill.fin?GPU.P.fin0:GPU.P.fin,GPU.B.fin,"final");
@@ -49484,8 +49485,9 @@ function gpuSpaceSys(sys,cx0,cy0,Z){
   const ub=gspUni(cx,cy,1,M,cx0*Z,cy0*Z);
   /* звёзды — под туманностью: её пыль гасит их (множитель поглощения — в шейдере самой
      звезды, gnbStars), газ светит поверх */
-  if(neb){gnbStars(pass,ub,gspStarBuf());pass=gpuNebulaComp(pass);}
-  else gspStarsDust(pass,P,ub,0);
+  gpuSeg("stars");pass=gpuScene();   /* метки пробы (28z): звёзды своим куском */
+  if(neb){gnbStars(pass,ub,gspStarBuf());GPU.seg="motes";pass=gpuNebulaComp(pass);}
+  else{gspStarsDust(pass,P,ub,0);gpuSeg("motes");pass=gpuScene();}
   gspStarsDust(pass,P,ub,Math.round(46*sysStyle(sys).dust*G.opts.gfx.particles),true);
 }
 /* заставка: две туманности на разной глубине и звёзды (drawNebula + drawStars) */
@@ -51077,9 +51079,9 @@ function drawSystem(){
   ctx.lineWidth=1;
   const R=sys.radius*Z;
   /* орбиты, кольцо станции, пояс, светило и его зарево — на видеокарте (17g) */
-  gpuSysUnder(sys,ox,oy,R,Z);
+  gpuSeg("under");gpuSysUnder(sys,ox,oy,R,Z);   /* gpuSeg — имя прохода для меток пробы (28z), без пробы ничего не делает */
   if(sys.belt)drawBeltRocks(ox,oy,sys.belt,Z,G.ship.x,G.ship.y);
-  BODY_LABELS.length=0;
+  BODY_LABELS.length=0;gpuSeg("planets");
   for(const p of sys.planets){
     const x=zx(p.x),y=zy(p.y),r=p.radius*Z;   /* диск — физический (16c, п. 2): зум делает планету большой, не корабль */
     if(x<-r-60||x>W+r+60||y<-r-60||y>H+r+60)continue;
@@ -51129,6 +51131,7 @@ function drawSystem(){
     }
     if(G.ap&&G.ap.kind==="planet"&&G.ap.p===p)reticle(x,y,r+16);
   }
+  gpuSeg("world");
   if(typeof drawSysLane==="function")drawSysLane(zx,zy,Z);   /* подъезд: бакены (M459, 17g) */
   if(typeof drawGestPost==="function")drawGestPost(zx,zy,Z);   /* пост у входа (M452, 17h) */
   if(typeof drawSysRail==="function")drawSysRail(zx,zy,Z);   /* кольцо станции железной дороги (M471) */
@@ -100180,6 +100183,20 @@ function gpuTs(name){
   const i=T.n;T.n+=2;T.names.push([name,i]);
   return {querySet:T.qs,beginningOfPassWriteIndex:i,endOfPassWriteIndex:i+1};
 }
+/* имя следующего куска прохода сцены: под метками кусок закрывает проход, и следующий
+   gpuScene() откроет новый со своей меткой (на плиточной видеокарте это лишняя выгрузка
+   цели — цена разметки, её несут только кадры пробы) */
+function gpuSeg(name){
+  GPU.seg=name;
+  if(GPU.tsOn&&GPU.tsOk&&GPU.scenePass&&!GPU.scene3D){GPU.scenePass.end();GPU.scenePass=null;}
+}
+/* окно вокруг операции очереди (копия #c): пустой вычислительный проход с меткой до и после,
+   каждый своей отправкой. Начало второго минус конец первого — копия и растр 2D за ней */
+function gpuTsAround(name,fn){
+  const a=gpuTs(name+"<");if(!a){fn();return;}
+  const q=GPU.dev.queue,sub=ts=>{const e=GPU.dev.createCommandEncoder();e.beginComputePass({timestampWrites:ts}).end();q.submit([e.finish()]);};
+  sub(a);fn();const b=gpuTs(name+">");if(b)sub(b);
+}
 /* до отправки кадра: метки — в буфер чтения; возвращает, что сделать после отправки */
 function gpuTsResolve(){
   const T=GPU.tsQ;if(!T||!T.n)return null;
@@ -100190,8 +100207,12 @@ function gpuTsResolve(){
   GPU.enc.resolveQuerySet(T.qs,0,n,T.res,0);GPU.enc.copyBufferToBuffer(T.res,0,rb,0,n*8);
   return ()=>rb.mapAsync(GPUMapMode.READ).then(()=>{
     const a=new BigInt64Array(rb.getMappedRange(0,n*8)),acc=GPU.tsAcc||(GPU.tsAcc={});let lo=null,hi=null;
+    const open={};
     for(const [nm,i] of names){const b=a[i],e=a[i+1];if(!b||!e||e<b)continue;
-      const r=acc[nm]||(acc[nm]={ms:0,n:0});r.ms+=Number(e-b)/1e6;r.n++;
+      const k=nm.slice(-1),base=nm.slice(0,-1);
+      if(k==="<")open[base]=e;
+      else if(k===">"&&open[base]){const r=acc[base]||(acc[base]={ms:0,n:0});r.ms+=Number(b-open[base])/1e6;r.n++;open[base]=0;}
+      else{const r=acc[nm]||(acc[nm]={ms:0,n:0});r.ms+=Number(e-b)/1e6;r.n++;}
       if(lo===null||b<lo)lo=b;if(hi===null||e>hi)hi=e;}
     if(lo!==null){const r=acc.frame||(acc.frame={ms:0,n:0});r.ms+=Number(hi-lo)/1e6;r.n++;}
     rb.unmap();}).catch(()=>{});
@@ -100203,7 +100224,12 @@ async function g11GpuMs(sec){
   GPU.tsAcc={};const f0=GPU.frameNo;GPU.tsOn=true;
   try{await sleep(sec*1000);}finally{GPU.tsOn=false;}
   const fr=Math.max(1,GPU.frameNo-f0);await sleep(300);
-  const o={};for(const k in GPU.tsAcc){const r=GPU.tsAcc[k];o[k]={ms:+(r.ms/r.n).toFixed(2),share:Math.round(100*r.n/fr)};}
+  /* ms — на один проход, pf — сумма за кадр (проход может идти дважды или не каждый кадр);
+     sum — всё размеченное за кадр, кроме самого кадра: frame минус sum — простой видеокарты */
+  const o={};let sum=0;
+  for(const k in GPU.tsAcc){const r=GPU.tsAcc[k];o[k]={ms:+(r.ms/r.n).toFixed(2),pf:+(r.ms/fr).toFixed(2),share:Math.round(100*r.n/fr)};
+    if(k!=="frame")sum+=r.ms/fr;}
+  o.sum={pf:+sum.toFixed(2)};
   return o;
 }
 const G11_CPU={w:0,wn:0,q:0,qmax:0};

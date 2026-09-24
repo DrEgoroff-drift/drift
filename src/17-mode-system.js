@@ -553,9 +553,9 @@ function drawSystem(){
   ctx.lineWidth=1;
   const R=sys.radius*Z;
   /* орбиты, кольцо станции, пояс, светило и его зарево — на видеокарте (17g) */
-  gpuSysUnder(sys,ox,oy,R,Z);
+  gpuSeg("under");gpuSysUnder(sys,ox,oy,R,Z);   /* gpuSeg — имя прохода для меток пробы (28z), без пробы ничего не делает */
   if(sys.belt)drawBeltRocks(ox,oy,sys.belt,Z,G.ship.x,G.ship.y);
-  BODY_LABELS.length=0;
+  BODY_LABELS.length=0;gpuSeg("planets");
   for(const p of sys.planets){
     const x=zx(p.x),y=zy(p.y),r=p.radius*Z;   /* диск — физический (16c, п. 2): зум делает планету большой, не корабль */
     if(x<-r-60||x>W+r+60||y<-r-60||y>H+r+60)continue;
@@ -605,6 +605,7 @@ function drawSystem(){
     }
     if(G.ap&&G.ap.kind==="planet"&&G.ap.p===p)reticle(x,y,r+16);
   }
+  gpuSeg("world");
   if(typeof drawSysLane==="function")drawSysLane(zx,zy,Z);   /* подъезд: бакены (M459, 17g) */
   if(typeof drawGestPost==="function")drawGestPost(zx,zy,Z);   /* пост у входа (M452, 17h) */
   if(typeof drawSysRail==="function")drawSysRail(zx,zy,Z);   /* кольцо станции железной дороги (M471) */

@@ -173,6 +173,16 @@ Heat haze behind the nozzle (G4b).
   front). Pairs outside the DOM buttons' CSS pulses: 411×742 zoom .4 and zoom 1.2, max|Δ| 1 (2088 and
   1680 px); 1440×900 zoom .25, max|Δ| 1. Desktop nebComp 1.34–1.37 → 0.92 ms (tile alone 1.12); gpu errs 0.
   Next in EMI: the planet-shadow loop, 0.35 ms.
+  **P1 probe — labels on every scene segment and every #c copy** (Контроль 24.09: 16 of the S23's 35 ms were
+  unlabelled). `gpuSeg(name)` (28z) names the next piece of the scene pass; under timestamps it closes the pass so
+  the next `gpuScene()` opens a labelled one (an extra target store on a tiled GPU — paid only by probe frames).
+  Pieces: `scene0` (the clear), `stars`, `nebComp`, `motes`, `under`, `planets`, `world`, `over` (after the
+  front composite). A copy of #c is a queue operation outside any pass, and Chrome's 2D raster runs behind it:
+  `gpuTsAround` brackets it with two empty compute passes, each its own submit, and the gap is booked as
+  `front1`, `front2`, `ui`. `out.gpuMs` gives per name `ms` per pass, `pf` per frame, and `sum`; `frame − sum`
+  is GPU idle. Desktop (617×1113, thrust, ms per frame): under 1.28–1.39, front1 1.28–2.42, nebComp 0.91,
+  final 0.34–0.52, bloomDown 0.29–0.42, nebGen 0.39–0.42, front2 0.15, frontComp 0.10, planets 0.09, world
+  0.07–0.09, over 0.06, stars 0.03–0.04; frame 5.8–6.1, sum 5.2–5.3.
   G3b 3/n (e1aeb19) and L4 k/n (7b406eb) accepted.
 - Brief of **L4 k/n — the shock ring and the exhaust haze bend the backdrop, never a hull** (Контроль 24.09): no
   hull, own or pirate, sprite or 2D, is cut into bands; an RGB fringe on the backdrop only. Done (08b/08c): the

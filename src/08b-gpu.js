@@ -517,7 +517,8 @@ function gpuScene(){
   if(GPU.scene3D){GPU.scenePass.end();GPU.scenePass=null;GPU.scene3D=false;}
   if(!GPU.scenePass){
     GPU.scenePass=GPU.enc.beginRenderPass({colorAttachments:[{view:GPU.V.scene,
-      loadOp:GPU.sceneOn?"load":"clear",storeOp:"store",clearValue:GPU.sceneBg}],timestampWrites:GPU.sceneOn?undefined:gpuTs("scene0")});
+      loadOp:GPU.sceneOn?"load":"clear",storeOp:"store",clearValue:GPU.sceneBg}],timestampWrites:gpuTs(GPU.sceneOn?GPU.seg||"scene+":"scene0")});
+    if(!GPU.sceneOn)GPU.seg=null;
     GPU.sceneOn=true;
   }
   return GPU.scenePass;
@@ -541,8 +542,8 @@ function gpuScene3D(){
    сегмента рисуют в один возвращённый проход. Вне кадра — null */
 /* #c → передний слой. GPU.kill.fpx (проба ?g11=deep): копия 1×1 — снимок холста (и растр его
    2D) остаётся, байтов почти нет: разводит цену растра и цену копии (P1 10/n) */
-function gpuFrontCopy(){
-  GPU.dev.queue.copyExternalImageToTexture({source:cvs},{texture:GPU.T.front,premultipliedAlpha:true},GPU.kill.fpx?[1,1]:[GPU.bw,GPU.bh]);
+function gpuFrontCopy(n){
+  gpuTsAround(n,()=>GPU.dev.queue.copyExternalImageToTexture({source:cvs},{texture:GPU.T.front,premultipliedAlpha:true},GPU.kill.fpx?[1,1]:[GPU.bw,GPU.bh]));
 }
 function gpuOver(){
   if(!GPU.on||!GPU.enc)return null;
@@ -553,7 +554,7 @@ function gpuOver(){
   if(GPU.kill.front){
     ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,GPU.bw,GPU.bh);ctx.restore();
     return GPU.overPass=GPU.enc.beginRenderPass({colorAttachments:[{view:GPU.V.scene,loadOp:"load",storeOp:"store"}]});}
-  gpuFrontCopy();
+  gpuFrontCopy("front1");
   gpuUni();
   const p=GPU.enc.beginRenderPass({colorAttachments:[{view:GPU.V.scene,loadOp:"load",storeOp:"store"},
     {view:GPU.V.emit,loadOp:GPU.emitOn?"load":"clear",storeOp:"store",clearValue:{r:0,g:0,b:0,a:0}}],timestampWrites:gpuTs("frontComp")});
@@ -562,7 +563,7 @@ function gpuOver(){
   /* отправляем сделанное: следующая загрузка #c не должна обогнать эту склейку */
   d.queue.submit([GPU.enc.finish()]);GPU.enc=d.createCommandEncoder();
   ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,GPU.bw,GPU.bh);ctx.restore();
-  GPU.overPass=GPU.enc.beginRenderPass({colorAttachments:[{view:GPU.V.scene,loadOp:"load",storeOp:"store"}]});
+  GPU.overPass=GPU.enc.beginRenderPass({colorAttachments:[{view:GPU.V.scene,loadOp:"load",storeOp:"store"}],timestampWrites:gpuTs("over")});
   return GPU.overPass;
 }
 /* кадр вне цикла (тест, стенд, look): собрать, показать, снять — одной задачей */
@@ -586,7 +587,7 @@ function gpuWorld(k,grain,vig){
     P.k=(!off&&G.running)?k:0;P.grain=(!off&&grain&&G.running)?1:0;P.vig=(!off&&grain&&vig&&G.running)?1:0;
     if(GPU.kill.bloom)P.k=0;
     if(!GPU.noiseOk)gpuNoise();
-    if(!GPU.kill.front)gpuFrontCopy();
+    if(!GPU.kill.front)gpuFrontCopy("front2");
     if(P.k>0){
       if(!GPU.emitOn){GPU.enc.beginRenderPass({colorAttachments:[{view:GPU.V.emit,loadOp:"clear",storeOp:"store",clearValue:{r:0,g:0,b:0,a:0}}]}).end();GPU.emitOn=true;}
       gpuBloom();}
@@ -608,7 +609,7 @@ function gpuPresent(){
   if(!GPU.on||!GPU.enc){GPU.on=false;return;}
   try{
     const ui=(typeof rackOpen==="function")&&rackOpen()&&G.running&&!scrOpen();
-    if(ui){GPU.dev.queue.copyExternalImageToTexture({source:GPU.ui},{texture:GPU.T.ui,premultipliedAlpha:true},[GPU.bw,GPU.bh]);GPU.uiWas=true;}
+    if(ui){gpuTsAround("ui",()=>GPU.dev.queue.copyExternalImageToTexture({source:GPU.ui},{texture:GPU.T.ui,premultipliedAlpha:true},[GPU.bw,GPU.bh]));GPU.uiWas=true;}
     GPU.uiOn=ui;
     gpuUni();gpuLtWrite();
     gpuPass(GPU.gx.getCurrentTexture().createView(),GPU.kill.fin?GPU.P.fin0:GPU.P.fin,GPU.B.fin,"final");

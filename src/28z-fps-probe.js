@@ -133,6 +133,20 @@ function gpuTs(name){
   const i=T.n;T.n+=2;T.names.push([name,i]);
   return {querySet:T.qs,beginningOfPassWriteIndex:i,endOfPassWriteIndex:i+1};
 }
+/* имя следующего куска прохода сцены: под метками кусок закрывает проход, и следующий
+   gpuScene() откроет новый со своей меткой (на плиточной видеокарте это лишняя выгрузка
+   цели — цена разметки, её несут только кадры пробы) */
+function gpuSeg(name){
+  GPU.seg=name;
+  if(GPU.tsOn&&GPU.tsOk&&GPU.scenePass&&!GPU.scene3D){GPU.scenePass.end();GPU.scenePass=null;}
+}
+/* окно вокруг операции очереди (копия #c): пустой вычислительный проход с меткой до и после,
+   каждый своей отправкой. Начало второго минус конец первого — копия и растр 2D за ней */
+function gpuTsAround(name,fn){
+  const a=gpuTs(name+"<");if(!a){fn();return;}
+  const q=GPU.dev.queue,sub=ts=>{const e=GPU.dev.createCommandEncoder();e.beginComputePass({timestampWrites:ts}).end();q.submit([e.finish()]);};
+  sub(a);fn();const b=gpuTs(name+">");if(b)sub(b);
+}
 /* до отправки кадра: метки — в буфер чтения; возвращает, что сделать после отправки */
 function gpuTsResolve(){
   const T=GPU.tsQ;if(!T||!T.n)return null;
@@ -143,8 +157,12 @@ function gpuTsResolve(){
   GPU.enc.resolveQuerySet(T.qs,0,n,T.res,0);GPU.enc.copyBufferToBuffer(T.res,0,rb,0,n*8);
   return ()=>rb.mapAsync(GPUMapMode.READ).then(()=>{
     const a=new BigInt64Array(rb.getMappedRange(0,n*8)),acc=GPU.tsAcc||(GPU.tsAcc={});let lo=null,hi=null;
+    const open={};
     for(const [nm,i] of names){const b=a[i],e=a[i+1];if(!b||!e||e<b)continue;
-      const r=acc[nm]||(acc[nm]={ms:0,n:0});r.ms+=Number(e-b)/1e6;r.n++;
+      const k=nm.slice(-1),base=nm.slice(0,-1);
+      if(k==="<")open[base]=e;
+      else if(k===">"&&open[base]){const r=acc[base]||(acc[base]={ms:0,n:0});r.ms+=Number(b-open[base])/1e6;r.n++;open[base]=0;}
+      else{const r=acc[nm]||(acc[nm]={ms:0,n:0});r.ms+=Number(e-b)/1e6;r.n++;}
       if(lo===null||b<lo)lo=b;if(hi===null||e>hi)hi=e;}
     if(lo!==null){const r=acc.frame||(acc.frame={ms:0,n:0});r.ms+=Number(hi-lo)/1e6;r.n++;}
     rb.unmap();}).catch(()=>{});
@@ -156,7 +174,12 @@ async function g11GpuMs(sec){
   GPU.tsAcc={};const f0=GPU.frameNo;GPU.tsOn=true;
   try{await sleep(sec*1000);}finally{GPU.tsOn=false;}
   const fr=Math.max(1,GPU.frameNo-f0);await sleep(300);
-  const o={};for(const k in GPU.tsAcc){const r=GPU.tsAcc[k];o[k]={ms:+(r.ms/r.n).toFixed(2),share:Math.round(100*r.n/fr)};}
+  /* ms — на один проход, pf — сумма за кадр (проход может идти дважды или не каждый кадр);
+     sum — всё размеченное за кадр, кроме самого кадра: frame минус sum — простой видеокарты */
+  const o={};let sum=0;
+  for(const k in GPU.tsAcc){const r=GPU.tsAcc[k];o[k]={ms:+(r.ms/r.n).toFixed(2),pf:+(r.ms/fr).toFixed(2),share:Math.round(100*r.n/fr)};
+    if(k!=="frame")sum+=r.ms/fr;}
+  o.sum={pf:+sum.toFixed(2)};
   return o;
 }
 const G11_CPU={w:0,wn:0,q:0,qmax:0};

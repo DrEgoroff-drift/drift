@@ -212,8 +212,9 @@ function gpuSpaceSys(sys,cx0,cy0,Z){
   const ub=gspUni(cx,cy,1,M,cx0*Z,cy0*Z);
   /* звёзды — под туманностью: её пыль гасит их (множитель поглощения — в шейдере самой
      звезды, gnbStars), газ светит поверх */
-  if(neb){gnbStars(pass,ub,gspStarBuf());pass=gpuNebulaComp(pass);}
-  else gspStarsDust(pass,P,ub,0);
+  gpuSeg("stars");pass=gpuScene();   /* метки пробы (28z): звёзды своим куском */
+  if(neb){gnbStars(pass,ub,gspStarBuf());GPU.seg="motes";pass=gpuNebulaComp(pass);}
+  else{gspStarsDust(pass,P,ub,0);gpuSeg("motes");pass=gpuScene();}
   gspStarsDust(pass,P,ub,Math.round(46*sysStyle(sys).dust*G.opts.gfx.particles),true);
 }
 /* заставка: две туманности на разной глубине и звёзды (drawNebula + drawStars) */
