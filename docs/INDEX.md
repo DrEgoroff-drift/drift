@@ -2061,14 +2061,14 @@ GNB_ABS                      src/16gb-gpu-nebula.js:384
 GNB_EMI                      src/16gb-gpu-nebula.js:395
 GNB_FINE                     src/16gb-gpu-nebula.js:370
 GNB_GEN                      src/16gb-gpu-nebula.js:57
-GNB_LM_COL                   src/16gb-gpu-nebula.js:496
+GNB_LM_COL                   src/16gb-gpu-nebula.js:501
 GNB_NOISE                    src/16gb-gpu-nebula.js:20
-GNB_PAL                      src/16gb-gpu-nebula.js:479-494
-gnbLandmark                  src/16gb-gpu-nebula.js:497-510
-gnbPalette                   src/16gb-gpu-nebula.js:486-494
-gnbPipe                      src/16gb-gpu-nebula.js:467-472
-gnbStar                      src/16gb-gpu-nebula.js:512-517
-gnbTarget                    src/16gb-gpu-nebula.js:459-466
+GNB_PAL                      src/16gb-gpu-nebula.js:484-499
+gnbLandmark                  src/16gb-gpu-nebula.js:502-515
+gnbPalette                   src/16gb-gpu-nebula.js:491-499
+gnbPipe                      src/16gb-gpu-nebula.js:472-477
+gnbStar                      src/16gb-gpu-nebula.js:517-522
+gnbTarget                    src/16gb-gpu-nebula.js:464-471
 gnFoe                        tests/91zzzw-guns2.js:17-23
 gnGun                        tests/91zzzw-guns2.js:25-28
 gnWorld                      tests/91zzzw-guns2.js:7-16
@@ -2097,8 +2097,8 @@ GPL                          src/17ga-gpu-planets.js:23
 GPL_CLOUD                    src/17ga-gpu-planets.js:27
 GPL_SEA                      src/17ga-gpu-planets.js:25
 GPL_WGSL                     src/17ga-gpu-planets.js:29
-gplBody                      src/17ga-gpu-planets.js:244-266
-gplSun                       src/17ga-gpu-planets.js:268-271
+gplBody                      src/17ga-gpu-planets.js:293-315
+gplSun                       src/17ga-gpu-planets.js:317-320
 GPU                          src/08b-gpu.js:8
 GPU_BLEND                    src/08c-gpu-kit.js:8-20
 GPU_FLD_HEAD                 src/08c-gpu-kit.js:175
@@ -2131,9 +2131,9 @@ gpuLight                     src/08b-gpu.js:406
 gpuLitSprite                 src/17c-system-draw.js:478-485
 gpuLtWrite                   src/08b-gpu.js:410-417
 gpuManual                    src/08b-gpu.js:530-535
-gpuMoon                      src/17ga-gpu-planets.js:294-299
-gpuNebulaComp                src/16gb-gpu-nebula.js:570-577
-gpuNebulaGen                 src/16gb-gpu-nebula.js:520-569
+gpuMoon                      src/17ga-gpu-planets.js:343-348
+gpuNebulaComp                src/16gb-gpu-nebula.js:575-582
+gpuNebulaGen                 src/16gb-gpu-nebula.js:525-574
 gpuNoise                     src/08b-gpu.js:340-345
 gpuNone                      src/08b-gpu.js:32-39
 gpuOver                      src/08b-gpu.js:511-528
@@ -2141,7 +2141,7 @@ gpuPass                      src/08b-gpu.js:392-395
 gpuPipe                      src/08c-gpu-kit.js:13-20
 gpuPipes                     src/08b-gpu.js:311-337
 gpuPirateBody                src/12i-pirate-hull.js:432-437
-gpuPlanet                    src/17ga-gpu-planets.js:274-292
+gpuPlanet                    src/17ga-gpu-planets.js:323-341
 gpuPresent                   src/08b-gpu.js:567-581
 gpuResize                    src/08b-gpu.js:346-379
 gpuScene                     src/08b-gpu.js:484-493
@@ -6638,7 +6638,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/16ga-gpu-trail.js · 24 КБ
   · шлейф, факел и свет на корпусе корабля на видеокарте (G4, docs/DESIGN-gpu.md):1
 
-## src/16gb-gpu-nebula.js · 46 КБ
+## src/16gb-gpu-nebula.js · 47 КБ
   · туманность системы объёмом (L1, docs/DESIGN-gpu.md):1
 
 ## src/17-mode-system.js · 73 КБ
@@ -6671,7 +6671,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/17g-sys-lane.js · 13 КБ
   · подъезд: полоса от входа в систему к доку (M459, DESIGN-life §2–3.1):1
 
-## src/17ga-gpu-planets.js · 19 КБ
+## src/17ga-gpu-planets.js · 22 КБ
   · планеты и луны на видеокарте (G3, docs/DESIGN-gpu.md):1
 
 ## src/17h-sys-gesture.js · 14 КБ

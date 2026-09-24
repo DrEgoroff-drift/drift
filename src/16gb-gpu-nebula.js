@@ -417,12 +417,17 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   let toS=V[1].xy-p;let Ls=max(length(toS),1.);let ds=toS/Ls;
   for(var k=0;k<7;k++){let P=V[4+k];if(P.z<=0.){break;}
     let q=P.xy-p;let tq=dot(q,ds);
-    if(tq>P.z*.5&&tq<Ls){let dq=length(q-ds*tq);let pen=P.z*.12+tq*.05;
+    /* ни одного порога: клин начинается за диском и кончается у звезды склонами;
+       полутень не уже ~40 px на 760 кадра (55 CSS px на полуширину) и расходится вдаль.
+       Лучи вдоль краёв включались ступенькой на dq=R — прямая через весь кадр (24.09) */
+    let on=smoothstep(P.z*.2,P.z*.9,tq)*smoothstep(0.,P.z,Ls-tq);
+    if(on>0.){let dq=length(q-ds*tq);let pen=P.z*.12+tq*.08+45.;
       /* у планеты ×.2, через четыре диаметра ×.6 — туман перед тенью её заполняет */
-      let fd=exp(-tq/(P.z*11.5));
-      shd=max(shd,(1.-smoothstep(P.z-pen,P.z+pen,dq))*fd);
-      /* по краям клина свет чуть ярче — лучи между тенями */
-      let e=(dq-P.z-pen)/(pen+P.z*.6);ray=max(ray,exp(-e*e)*select(0.,1.,dq>P.z)*fd);}}
+      let fd=exp(-tq/(P.z*11.5))*on;
+      let sh=1.-smoothstep(P.z-pen,P.z+pen,dq);
+      shd=max(shd,sh*fd);
+      /* по краям клина свет чуть ярче — лучи между тенями, растут, пока тень сходит */
+      let e=(dq-P.z-pen)/(pen+P.z*.6);ray=max(ray,exp(-e*e)*(1.-sh)*fd);}}
   c=c*(1.-.8*shd)*(1.+.3*ray);
   /* тонкая пыль всюду: свет звезды в ней — лучи, тени планет — тёмные клинья */
   let dl=max(length(p-V[1].xy)/H-V[1].z,0.);

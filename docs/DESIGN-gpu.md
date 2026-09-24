@@ -86,10 +86,10 @@ Heat haze behind the nozzle (G4b).
   the site falls: a commit on top with the tree of `d543aff`, never a force-push. Only a commit Контроль
   accepted by pairs goes to main. CI rehearsal of ef8c8b9 (deploy.yml flags, `--disable-gpu`): load clean,
   smoke 4/4, Node green (the «рейсы» suite fails in full order only, green alone; it sits in quarantine).
-- G2 accepted (40f3276); its disc (flat orange ball) is a PLAN §0 line, not now. **G3b done (below), waiting for
-  Контроль.** Brief was: the strip stays the macro scale; a middle and a fine layer of relief from 3D noise on the
-  turning sphere; water with a sun glint; drifting clouds that shade the ground; the holding's lights as city glow
-  on night land; warm terminator and rim. No threshold edge, no neon. Gate: whole pairs at 760.
+- G2 accepted (40f3276), released as B (canvas picture tests quarantined, step A next). G3b 1/n accepted;
+  **G3b 2/n done (below)**; next: the release on `rel`, then step A (tests read the WebGPU frame), then the plan.
+  Brief of 2/n was: the nebula wedge's straight step first; the gas giant with differential bands, curled edges
+  and 1-3 storms in its own colours; fine relief only on heights and ridges; lights as a city, not a fire.
 - Brief of **L1b 6/n — pillars become tapering trunks, not sticks, and the star field is as rich as
   main's.** A pillar is a trunk: base width ≈ ⅓ of its length, narrowing to a rounded head a little wider than
   its neck, 2–3 swellings along it, a bend up to 15°; 2–4 in the frame, each at most half the way from the wall
@@ -136,6 +136,17 @@ Heat haze behind the nozzle (G4b).
   scatters 6 sites per light over the sphere, cores plus a grainy sprawl, on land, over the half away from the star
   (the star sits behind the viewer, true night is a thin crescent). Pairs `g3b_760.png` (terran far/close, gas giant,
   terran with 24 lights), scene script `g3b.sh`.
+- G3b 2/n done. The straight step across the nebula (a radial line from the star past a planet) was the shadow
+  wedge's rays switched on by `select(dq>R)`, there since 8e77d8c (L1 5/n); the wedge now starts, ends and edges on
+  slopes only, penumbra >= ~40 px at 760 (max jump over 4 px across the old line 11 -> 5). Gas giant (`gasUV`):
+  bands drift at their own speeds (a sine of latitude), a curl of 3D noise shears them strongly along and barely
+  across (across as strong as along turned the bands into a mottled sky); 2-3 storms spread in longitude (with one
+  a whole side went empty), an oval twice as wide as tall, a swirl that dies outward, the core lifting a neighbour
+  band's colour; storms are placed on the clean coordinates and the curl calms inside them (the curl moved
+  longitude by more than a storm is wide and shredded it into threads). Relief: the fine layer scales with the
+  ridge mask and height, lowlands smooth. Lights: white-yellow cores by a street grain plus a warm halo nine times
+  wider. Pairs `g3b2_760.png` (7 rows: terran far/close, gas r200, terran 24 lights, r110 with 3 and 24, gas r700),
+  `step_ab.png` (the step, before | after).
 - **G4 in progress.** Done: the trail (`16ga-gpu-trail`: one triangle ribbon per nozzle lane with shared node
   normals, per-point age, gaussian core+halo; beads between segments gone). Pair `g4a_crop.png`, js in
   `trail.js` (a synthetic TRAIL, no thrust). The exhaust (same module, `gpuExhaust`: gaussian flame, flowing noise, shock diamonds, tone-mapped nozzle; the

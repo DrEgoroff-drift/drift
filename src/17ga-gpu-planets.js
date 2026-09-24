@@ -62,6 +62,47 @@ fn palV(c:vec3f)->vec2f{
     let t=clamp(dot(c-a,ab)/max(dot(ab,ab),1e-6),0.,1.);let dd=length(c-a-ab*t);
     if(dd<bd){bd=dd;bv=(f32(i)+t)/f32(np);}}
   return vec2f(bv,bd);}
+/* газ: полосы плывут каждая со своей скоростью (сдвиг на границах), границы волнистые —
+   развёртку читаем сквозь вихревое поле (ротор шума: завитки без разрывов), и 1–3 овала-шторма
+   закручивают цвета самих полос. u — обороты, y — синус широты; шум — на сфере, без шва */
+fn gpsi(uq:f32,y:f32,so:vec3f,t:f32)->f32{
+  let c=sqrt(max(1.-y*y,0.));let a=6.2831853*uq;
+  return fb3(vec3f(c*sin(a)*4.,y*24.+t*.0003,c*cos(a)*4.)+so,2);}
+fn gasUV(u0:f32,y:f32,so:vec3f,t:f32,am:f32)->vec3f{
+  let la=asin(clamp(y,-1.,1.));
+  let sp=.000022*sin(la*7.+so.x)+.00001*sin(la*13.+so.y);
+  var uq=u0+t*sp;var v=y;
+  /* штормы — по чистой развёртке: вихревой сдвиг вдоль полос шире самого овала и рвал его в нитки */
+  var gl=0.;var ms=0.;
+  /* 2–3 шторма вразброс по долготе — с любой стороны виден хоть один */
+  let ns=2+i32(h1(so.x*3.1+.2)*1.99);
+  for(var i=0;i<ns;i++){
+    let fi=f32(i);
+    let yc=(h1(so.y+fi*7.1)-.5)*1.1;let lc0=asin(yc);
+    let lc=(fi+.35*h1(so.z*1.3+fi*2.7))/f32(ns)+t*(.000022*sin(lc0*7.+so.x)+.00001*sin(lc0*13.+so.y));
+    /* rx в оборотах, ry в синусе широты: ry=rx·π·(.8…1.1) — овал вдвое шире высоты */
+    let rx=.022+.028*h1(fi*5.3+so.x);let ry=rx*3.1416*(.8+.3*h1(fi*3.9+so.z));
+    let dx=(fract(uq-lc+.5)-.5)/rx;let dy=(v-yc)/ry;let q2=dx*dx+dy*dy;
+    if(q2<6.){
+      let an=3.2*exp(-q2*1.1)*select(-1.,1.,h1(fi+so.y)>.5)+t*.002*exp(-q2);
+      let cs=cos(an);let sn=sin(an);
+      let rx2=dx*cs-dy*sn;let ry2=dx*sn+dy*cs;
+      /* ядро шторма поднимает цвет соседней полосы — овал читается своим тоном, без контура */
+      let kc=exp(-q2*1.6)*.85;
+      uq=lc+rx2*rx;v=mix(yc+ry2*ry,yc+.07*select(-1.,1.,h1(fi*1.7+so.z)>.5)+ry2*ry*.15,kc);
+      gl=gl+exp(-q2*2.2)-.5*exp(-pow(q2-1.3,2.)*3.);
+      ms=max(ms,exp(-q2*.45));
+    }
+  }
+  let e=.0015;let p0=gpsi(uq,v,so,t);
+  let pu=gpsi(uq+e,v,so,t);let pv=gpsi(uq,v+e,so,t);
+  /* вихрь стихает внутри шторма — овал держит форму, вокруг него полосы рвутся */
+  let A=.0022*(.5+.5*am)*(1.-ms);
+  /* вдоль полос тянет сильно, поперёк — чуть: полосы остаются полосами */
+  uq=uq+(pv-p0)/e*A*1.2;v=v-(pu-p0)/e*A*.2;
+  /* мелкие волны на кромках полос */
+  v=v+.004*am*(1.-ms)*(fb3(vec3f(sin(6.2831853*uq)*20.,v*90.,cos(6.2831853*uq)*20.)+so*2.,2)-.5);
+  return vec3f(uq,v,gl);}
 /* точка экрана на шаре → точка на поверхности, которая вращается вместе с развёрткой */
 fn rotY(v:vec3f,a:f32)->vec3f{let c=cos(a);let s=sin(a);return vec3f(v.x*c+v.z*s,v.y,-v.x*s+v.z*c);}
 /* гребни: хребты линиями, а не ровная рябь */
@@ -74,7 +115,10 @@ fn rg3(p:vec3f,o:i32)->f32{
 fn hgt(b:vec3f,so:vec3f,af:f32)->f32{
   let mt=smoothstep(.5,.7,fb3(b*1.8+so+vec3f(3.,1.,7.),3));
   let wq=vec3f(fb3(b*4.+so,2),fb3(b*4.+so+vec3f(8.,2.,5.),2),fb3(b*4.+so+vec3f(1.,9.,3.),2))-.5;
-  return .42+.5*(fb3(b*8.+so,3)-.5)+mt*.5*(rg3(b*14.+wq*1.6+so*1.3,3)-.3)+.12*af*(fb3(b*48.+so*1.7,3)-.5);}
+  let hm=.42+.5*(fb3(b*8.+so,3)-.5);
+  /* мелкий слой — шершавость гор: в низинах гладко, на хребтах и высотах грубо */
+  let rgh=max(mt,smoothstep(.44,.6,hm));
+  return hm+mt*.5*(rg3(b*14.+wq*1.6+so*1.3,3)-.3)+.16*af*rgh*(fb3(b*48.+so*1.7,3)-.5);}
 /* облака: широтные гряды с завихрениями; порог — пологий склон, а не обрез */
 fn cld(b:vec3f,so:vec3f,cv:f32,af:f32)->f32{
   let wq=vec3f(fb3(b*2.2+so,3),fb3(b*2.2+so+vec3f(5.2,1.3,2.8),3),fb3(b*2.2+so+vec3f(2.9,7.1,.4),3))-.5;
@@ -122,8 +166,10 @@ fn ring(rho:f32,v4:vec4f,v5:vec4f,px:f32)->vec4f{
          леса становятся изрезанными, а не размытыми; и лёгкая резкость против мыла */
       let te=vec2f(1.,2.)/max(v9.y,1.);
       let wp=(vec2f(fb3(B*18.+so,3),fb3(B*18.+so+vec3f(4.,7.,1.),3))-.5)*te*2.4*am;
-      let uv=vec2f(fract(u0)+wp.x,clamp(vv+wp.y,.002,.998));
-      base=textureSampleLevel(tx,smp,uv,0.).rgb;
+      var uu=u0+wp.x;var yy=n.y;var gz=0.;
+      if(kind>1.5){let g=gasUV(u0,n.y,so,t,am);uu=g.x;yy=g.y;gz=g.z;}
+      let uv=vec2f(fract(uu),clamp((yy+1.)*.5+wp.y,.002,.998));
+      base=textureSampleLevel(tx,smp,uv,0.).rgb*(1.+.18*gz);
     }
     let dl=dot(n,L);
     /* терминатор: с воздухом — мягкий, рассеянный; без — резкий */
@@ -138,7 +184,7 @@ fn ring(rho:f32,v4:vec4f,v5:vec4f,px:f32)->vec4f{
          своей отметки (v6.w), берег — склон в пару сотых высоты */
       if(kind>.5&&v0.w<.5){
         let pv=palV(base);
-        let dv=(h0-.42)*.22*am+(fb3(B*90.+so,2)-.5)*.05*af;
+        let dv=(h0-.42)*.22*am+(fb3(B*90.+so,2)-.5)*.05*af*smoothstep(.4,.6,h0);
         let vn=pv.x+dv;
         if(v6.w>0.){wm=1.-smoothstep(v6.w-.012,v6.w+.012,vn);}
         base=max(base+(palAt(vn)-palAt(pv.x))*(1.-smoothstep(.04,.14,pv.y)),vec3f(0.));
@@ -192,18 +238,21 @@ fn ring(rho:f32,v4:vec4f,v5:vec4f,px:f32)->vec4f{
     }
     /* огни построек — города на ночной суше */
     if(v8.w>.5){
-      var g=0.;let N=i32(min(v8.w*6.,160.));
+      var g=0.;var ha=0.;let N=i32(min(v8.w*6.,160.));
       for(var j=0;j<N;j++){
         let fj=f32(j);let z=h1(fj*3.7+v2.w)*1.6-.8;let a=6.2831853*h1(fj*1.9+v2.w*.3+.5);
         let s=vec3f(sqrt(1.-z*z)*sin(a),z,sqrt(1.-z*z)*cos(a));
         let sz=.00012+.0004*h1(fj*5.1+.3);
-        let dd=1.-dot(B,s);g=g+(exp(-dd/sz)+.45*exp(-dd/(sz*6.)))*(.55+.45*h1(fj*7.3+.1));
+        let dd=1.-dot(B,s);let wj=.55+.45*h1(fj*7.3+.1);
+        g=g+exp(-dd/sz)*wj;ha=ha+exp(-dd/(sz*9.))*wj;
       }
-      let grain=.3+1.4*smoothstep(.42,.72,fb3(B*140.+so,2));
+      /* город: белые ядра точками по зерну улиц, тёплый ореол вокруг — без рыжей каши */
+      let grain=.15+1.6*smoothstep(.5,.72,fb3(B*150.+so,2));
       /* звезда почти всегда за спиной смотрящего, и настоящая ночь — узкий серп у края;
          огни горят на всей дальней от звезды половине и гаснут к свету, как в 2D */
       let night=1.-smoothstep(.05,.45,dl);
-      col=col+vec3f(1.,.74,.44)*min(g*grain,1.)*night*(1.-wm)*(1.-cl*.75)*.75;
+      let lk=night*(1.-wm)*(1.-cl*.75);
+      col=col+(vec3f(1.,.94,.78)*min(g*grain,1.2)*.9+vec3f(1.,.66,.36)*min(ha,1.)*.3)*lk;
     }
     /* ободок: рассеяние по краю, днём; у терминатора теплеет */
     let rim=pow(1.-nz,3.)*rimK*smoothstep(-.25,.35,dl);
