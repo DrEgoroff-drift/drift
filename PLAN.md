@@ -104,9 +104,6 @@ time; the S23 shows in `adb mdns services` only with «Беспроводная 
   Gate: S23, 30 s of flight in НЕЙЭЛЬ by the stations — ≥ 95 % of frames at 16.7 ms, none at 50 ms; the
   picture at 760 no worse (a was | now pair). Done so far: the phone's DPR cap 1.5 and `?g11=deep` (in place,
   per GPU pass, DPR steps) — cut the rest by its numbers. Then:
-  - two headless shots of one scene still differ by real time: `shot.py` lets the loop run ~2.6 s on the
-    wall clock, so energy, moons and distances drift a little between runs (`same_pair.png`, 24.09; the
-    stars are pinned since P1 5/n). Pinning it means stepping `frame()` by hand instead of rAF.
 - [ ] **Before the runs:** ask the author to close the two «CryptoTab Pool» tabs (`web.ctpool.net`, a
   browser miner) in the same Chrome; fly with the real finger — the S23 reports touch at 240 Hz, a CDP
   stick at 26 Hz; suspect the long save (160 log lines, 21 drones, 493 DOM nodes) only if those two do

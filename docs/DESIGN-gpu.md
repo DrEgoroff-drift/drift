@@ -120,6 +120,11 @@ Heat haze behind the nozzle (G4b).
   plus the gap (zero at the boundary, so no jump), or to the neighbour's other side at the frame's edge.
   Check (`chipab.sh`, ship behind the station on the star's bearing, the station chip forced to be in
   flight at the star's chip): tightest gap between drawn chips −14.4 px → 4.0 px; gpu errs 0.
+  **P1 7/n — the stand steps the frames**: `docs/shot.py --clock step` (the default) queues rAF and steps
+  it itself, 1/60 s a step; `performance.now`/`Date.now` read the stand's time from the first line (epoch =
+  today's UTC noon), the wait also waits for the scene tail's `G.running`, and a scene script that must
+  act every frame uses `__STEP.each(fn)`. Two runs of the planet scene: max|Δ| 0 over the whole frame
+  (was 217 with real time). Title, surface, cave: finish, errs 0; `--clock wall` keeps the old way.
   G3b 3/n (e1aeb19) and L4 k/n (7b406eb) accepted.
 - Brief of **L4 k/n — the shock ring and the exhaust haze bend the backdrop, never a hull** (Контроль 24.09): no
   hull, own or pirate, sprite or 2D, is cut into bands; an RGB fringe on the backdrop only. Done (08b/08c): the

@@ -16,6 +16,12 @@ the real GPU (its own port and profile — no server, parallel-safe), driven ove
 the live site are blocked. Per scene it prints one line: the PNG path and a JSON with the GPU
 state (ok, errs — validation errors seen by the core), page errors, the «СБОЙ» banner, and the
 --look/--eval results. Only this tool's own Chrome is killed at the end.
+
+Two runs of one scene give one frame: rnd is seeded (--seed), and the page never runs on the wall
+clock (--clock step, the default). requestAnimationFrame only queues; the stand steps the queue
+itself, 1/60 s per step, and performance.now/Date.now read that stepped clock once stepping has
+begun, so frame dt, chip glides and bake budgets are the same every run. --delay is stepped time.
+--clock wall is the old way: the page's own rAF on real time.
 """
 import argparse, base64, json, os, re, socket, struct, subprocess, sys, tempfile, time, urllib.request
 
@@ -33,6 +39,25 @@ CATCH = ("window.__errs=[];addEventListener('error',e=>__errs.push('E '+e.messag
          "console.warn=function(){__errs.push('W '+[...arguments].join(' ').slice(0,240));return cw.apply(console,arguments)}})();")
 
 
+# --clock step: before the game's script. The page's clocks read the stand's time from the first line on
+# (1000 ms at load, however long loading really took; the epoch is today's UTC noon, so orbits and the sky
+# calendar agree between runs of one day and still show today); rAF queues; __STEP.step() advances the time by 1/60 s
+# and runs the queue with it. The GPU wait keeps a real timeout (__STEP.real). A scene script that must act
+# every frame registers with __STEP.each(fn) — a setInterval runs on real time, between a varying number of steps.
+STEP_CLOCK = """<script>(function(){
+var rp=performance.now.bind(performance),d0=Math.floor(Date.now()/864e5)*864e5+432e5-1000,S=window.__STEP={vt:1000,q:[],id:0,real:rp,pre:[]};
+performance.now=function(){return S.vt;};
+Date.now=function(){return Math.floor(d0+S.vt);};
+window.requestAnimationFrame=function(f){S.q.push({id:++S.id,f:f});return S.id;};
+window.cancelAnimationFrame=function(id){S.q=S.q.filter(function(e){return e.id!==id;});};
+S.each=function(f){S.pre.push(f);};
+S.step=function(){S.vt+=1000/60;for(var j=0;j<S.pre.length;j++){try{S.pre[j]();}catch(e){console.error("each: "+e);}}
+  var a=S.q;S.q=[];
+  for(var i=0;i<a.length;i++){try{a[i].f(S.vt);}catch(e){console.error("step: "+e);}}};
+S.run=function(n,done){if(n<=0){done();return;}S.step();setTimeout(function(){S.run(n-1,done);},0);};
+})();</script>"""
+
+
 def stand_tail():
     src = open(os.path.join(HERE, "mkview.ps1"), encoding="utf-8-sig").read()
     m = re.search(r"\$add = @'\r?\n(.*?)\r?\n'@", src, re.S)
@@ -43,30 +68,38 @@ def stand_tail():
 def page_for(scene, tail, a):
     html = open(os.path.join(ROOT, "drift.html"), encoding="utf-8").read()
     # one seed per launch unless asked otherwise: the starfield and chance repeat, so was | now pairs compare
-    if a.seed >= 0:
+    pre = ("<script>var DRIFT_SEED=%d;</script>" % a.seed if a.seed >= 0 else "") + (STEP_CLOCK if a.clock == "step" else "")
+    if pre:
         s = html.find("<script")
-        html = html[:s] + "<script>var DRIFT_SEED=%d;</script>" % a.seed + html[s:]
+        html = html[:s] + pre + html[s:]
     cut = html.rfind("</body>")
     extra = """
 <script>
+function RT(){ return window.__STEP?__STEP.real():performance.now(); }
 (function wait(t0){
   /* кадр рисует только видеокарта: ждём устройство (или честный отказ) */
-  if(typeof GPU!=="undefined"&&!GPU.ok&&!GPU.none&&performance.now()-t0<8000){setTimeout(function(){wait(t0)},40);return;}
-  setTimeout(function(){
+  if(typeof GPU!=="undefined"&&!GPU.ok&&!GPU.none&&RT()-t0<8000){setTimeout(function(){wait(t0)},40);return;}
+  /* и хвост сцены (mkview) — он ставит сцену своим таймером на настоящих часах: шаги до него ушли бы
+     заставке, и сколько их — решал бы случай */
+  if(%s&&window.__STEP&&!(typeof G!=="undefined"&&G.running)&&RT()-t0<8000){setTimeout(function(){wait(t0)},40);return;}
+  /* --clock step: кадры ведёт стенд (__STEP), и ожидание — это шаги, а не миллисекунды */
+  var S=window.__STEP,fr=function(t){ if(S)S.step(); else frame(t); };
+  var go=function(f){ if(S)S.run(Math.round(%d*.06),f); else setTimeout(f,%d); };
+  go(function(){
     try{ %s }catch(e){ console.error("shot js: "+e); }
-    for(var n=0;n<6;n++){ try{ frame(performance.now()+n*16); }catch(e){} }
+    for(var n=0;n<6;n++){ try{ fr(performance.now()+n*16); }catch(e){} }
     /* материал грунта печётся по кадрам (M418): шести кадров ему мало — стенд платит разом */
     try{ if(typeof MAT_JOB!=="undefined" && MAT_JOB && typeof planetMatNow==="function"){
            planetMatNow(MAT_JOB.p);
-           for(var m=0;m<4;m++) frame(performance.now()+(7+m)*16); } }catch(e){}
+           for(var m=0;m<4;m++) fr(performance.now()+(7+m)*16); } }catch(e){}
     var o={scene:%s, ver:VER};
     try{ if(%s)Object.assign(o,lookFrame()); if(%s)o.eval=(function(){return eval(%s);})(); }
     catch(e){ o.error=String(e); }
     window.__shot=o; document.title="SHOT_DONE";
-  }, %d);
-})(performance.now());
+  });
+})(RT());
 </script>
-""" % (a.js or "", json.dumps(scene), "true" if a.look else "false", "true" if a.eval else "false", json.dumps(a.eval or ""), a.delay)
+""" % ("false" if scene == "title" else "true", a.delay, a.delay, a.js or "", json.dumps(scene), "true" if a.look else "false", "true" if a.eval else "false", json.dumps(a.eval or ""))
     return html[:cut] + ("" if scene == "title" else tail) + "\n" + extra + "</body></html>"
 
 
@@ -141,6 +174,7 @@ def main():
     ap.add_argument("--dpr", type=float, default=2)
     ap.add_argument("--delay", type=int, default=2600, help="ms after the GPU is up before --js runs")
     ap.add_argument("--port", type=int, default=9460)
+    ap.add_argument("--clock", choices=["step", "wall"], default="step", help="step: the stand steps frames at 1/60 s; wall: the page's rAF on real time")
     ap.add_argument("--seed", type=int, default=1, help="DRIFT_SEED for rnd/rndFx (stars, chance); -1 = the wall clock, as in play")
     ap.add_argument("--budget", type=int, default=40000, help="ms a scene may take before it is shot as is (vetshot passes it)")
     a = ap.parse_args()
