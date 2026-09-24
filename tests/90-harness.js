@@ -317,6 +317,21 @@ function resetWorld(){
   G.pirates=[];G.barges=[];G.shots=[];   /* баржи (12l) ездили из набора в набор — нашла сеть эфемерных списков (0.443.0) */G.log=[];G.logNew=0;G.prompt="";G.msg="";G.msgT=0;   /* logNew и msgT ехали из набора в набор (нашёл тест хэша, M441) */
   G.t=0;G.running=true;
   for(const k in keys)keys[k]=false;
+  /* руки со штурвала (15a HELM). Нашёл отпечаток мира на входе в сцену
+     «система» (stateHashParts), -Only против -Full: набор касаний оставлял
+     HELM.src="stick" — W разгонял корабль по-стиковому (скорость 1.84
+     против 1.15), и детектор хода краснел только в полном прогоне (0.457) */
+  for(const k in HELM.key)delete HELM.key[k];
+  Object.assign(HELM.mouse,{x:0,y:0,t:-1e9,on:false,down:false,rmb:false});
+  Object.assign(HELM.cam,{x:0,y:0,dx:0,dy:1});
+  HELM.src="keys";HELM.S=null;HELM.P=null;HELM.fade=null;HELM.home=null;HELM.trail.length=0;HELM.lockEdge=false;HELM.lockWas=false;
+  /* и то, что гаснет только кадрами, а кадров между наборами нет: взрывы
+     видеокарты (13z BFX — возраст считается от G.t, а он здесь снова ноль),
+     ленты шлейфа (16 TRAIL) и хроматика удара (18d). Все в мировых координатах,
+     а корабль у всех наборов стартует в одной точке: взрыв чужого набора
+     ложился кольцом преломления прямо на корпус в «системе», силуэт выходил
+     шире, и детектор носа не видел поворота (0.457, только -Full) */
+  BFX.length=0;TRAIL.length=0;trailBurst=0;trailOn=false;HIT_FX=0;
   actEdge=false;prevAct=false;
   /* ── и выйти из дорожного спутника (M354) ──
      «В ДОРОГУ» — обычная кнопка на экранах, и всякий набор, который жмёт всё
