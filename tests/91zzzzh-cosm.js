@@ -20,7 +20,12 @@ TEST_SUITES.push(()=>suite("косметика: каждая вещь меняе
   /* выхлоп: корабль в центре закадровой канвы, тяга полная */
   G.ship.x=0;G.ship.y=0;G.ship.a=0;
   const zx=x=>80+x,zy=y=>60+y;
-  const exh=()=>cosmPix(()=>drawExhaust(zx,zy,1,1));
+  /* факел рисует видеокарта (16ga gpuExhaust): кадр собирается на пустой
+     сцене, 2D-слой прозрачен, читаем собранный кадр в том же окне 160×120 */
+  const exh=()=>{
+    gpuManual(()=>{ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,cvs.width,cvs.height);ctx.restore();drawExhaust(zx,zy,1,1);});
+    return gpuSnapshot().getContext("2d").getImageData(0,0,Math.round(160*DPR),Math.round(120*DPR)).data;
+  };
   cosmRec();const base=exh();
   for(const id in COSM_EXH){cosmRec().owned=[id];cosmWear(id);if(cosmDiff(exh(),base)<20)mute.push(id);}
   G.cosm=null;

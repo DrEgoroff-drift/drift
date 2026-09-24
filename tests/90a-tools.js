@@ -461,7 +461,8 @@ const T=(()=>{
   /* ── глаза ── */
   /* подпись кадра: каждая восьмая проба яркости с настоящего холста (hFrame) */
   function frame(){
-    const cx=cvs.getContext("2d"),w=cvs.width,h=cvs.height;
+    /* кадр целиком: сцена видеокарты и 2D-слой поверх (gpuSnapshot, 08b) */
+    const fc=gpuSnapshot(),cx=fc.getContext("2d"),w=fc.width,h=fc.height;
     const d=cx.getImageData(0,0,w,h).data,out=[];
     for(let y=0;y<h;y+=8)for(let x=0;x<w;x+=8){const i=(y*w+x)*4;out.push((d[i]+d[i+1]+d[i+2])/3);}
     return out;
@@ -651,7 +652,9 @@ TEST_SUITES.push(()=>suite("инструменты: руки и глаза от�
   ok(s1.length>1000&&s1.some(v=>v>10),"подпись кадра снята и не чёрная: "+s1.length+" проб");
   eq(T.diff(s1,s1),0,"кадр с самим собой не расходится");
   const L=T.ledger();
-  ok(L.calls>50&&L.by.fillText>0,"кадр системы: вызовов канвы "+L.calls+", текстов "+(L.by.fillText|0));
+  /* мир рисует видеокарта (08b), на 2D-слое кадра системы — подписи и
+     векторные мелочи: два-три десятка вызовов, а не сотни, как до 0.456 */
+  ok(L.calls>10&&L.by.fillText>0,"кадр системы: вызовов канвы "+L.calls+", текстов "+(L.by.fillText|0));
   ok(L.texts.some(t=>t.main&&t.css>=6),"кегль текста на главной канве читается: до "+Math.max(...L.texts.map(t=>t.css)).toFixed(1)+" px");
   ok(T.look().tones>=0,"прибор кадра меряет");
   const X=T.text();

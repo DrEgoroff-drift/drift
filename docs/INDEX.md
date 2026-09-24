@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 604 · символов верхнего уровня: 5942
+Файлов: 604 · символов верхнего уровня: 5947
 
 ## СИМВОЛЫ
 
@@ -505,7 +505,8 @@ bookOpen                     src/12ub-books.js:156
 bookRoll                     src/12ub-books.js:149-153
 BOOKS                        src/12ub-books.js:23-120
 BOOKS_BY                     src/12ub-books.js:121
-BOOT_SUITE                   tests/99-run.js:21-27
+BOOT_SINK                    tests/99-run.js:30
+BOOT_SUITE                   tests/99-run.js:21-28
 BOSS_ACC                     src/12av-boss.js:117
 BOSS_EVERY                   src/12av-boss.js:29
 BOSS_HULL                    src/12av-boss.js:25
@@ -1160,69 +1161,72 @@ DESK_ITEMS                   src/27ia-desk-top.js:298-330
 deskItemNew                  src/27ia-desk-top.js:337-341
 deskItemOf                   src/27ia-desk-top.js:331-335
 DET                          tests/90b-detect.js:34
-DET_ASTRO_H                  tests/90c-detect-laws.js:284
+DET_ASTRO_H                  tests/90c-detect-laws.js:288
 DET_CLOSE                    tests/91zzzzzzzz-detect.js:107
-DET_COST                     tests/91zzzzzzzz-detect.js:188
+DET_COST                     tests/91zzzzzzzz-detect.js:193
 DET_DIRTY                    tests/90c-detect-laws.js:146
 DET_EXEMPT                   tests/90c-detect-laws.js:64-78
-DET_HOOKED                   tests/90b-detect.js:345
+DET_HOOKED                   tests/90b-detect.js:410
 DET_INSTR                    tests/90c-detect-laws.js:16-38
 DET_MUTE                     tests/91zzzzzzzz-detect.js:21-57
 DET_N                        tests/91zzzzzzzz-detect.js:16
-DET_NAMES                    tests/90b-detect.js:311
-DET_PROTOS                   tests/90b-detect.js:327
+DET_NAMES                    tests/90b-detect.js:376
+DET_PROTOS                   tests/90b-detect.js:392
 DET_SETTLE_ERRS              tests/91zzzzzzzz-detect.js:62
 DET_SM                       tests/90b-detect.js:104
-DET_STATE_OF                 tests/90b-detect.js:362
-DET_TEXT_MIN                 tests/90c-detect-laws.js:213
-detBgShift                   tests/90b-detect.js:147-154
-detBlink                     tests/90b-detect.js:256-270
-detBlocks                    tests/90b-detect.js:233-240
+DET_STATE_OF                 tests/90b-detect.js:427
+DET_TEXT_MIN                 tests/90c-detect-laws.js:217
+detBgShift                   tests/90b-detect.js:150-164
+detBlink                     tests/90b-detect.js:321-335
+detBlob                      tests/90b-detect.js:220-231
+detBlobR                     tests/90b-detect.js:219
+detBlocks                    tests/90b-detect.js:298-305
 detCanvases                  tests/91zzzzzzzz-detect.js:161-172
 detCloseTry                  tests/91zzzzzzzz-detect.js:112-136
-detColor                     tests/90c-detect-laws.js:215-220
-detContrast                  tests/90c-detect-laws.js:224-235
-detControls                  tests/90c-detect-laws.js:162-211
-detCost                      tests/91zzzzzzzz-detect.js:189
+detColor                     tests/90c-detect-laws.js:219-224
+detContrast                  tests/90c-detect-laws.js:228-239
+detControls                  tests/90c-detect-laws.js:162-215
+detCost                      tests/91zzzzzzzz-detect.js:194
 detCrash                     tests/90c-detect-laws.js:95-102
-detDiff                      tests/90b-detect.js:125-129
-detDoors                     tests/91zzzzzzzz-detect.js:280-304
-DETECTORS                    tests/90c-detect-laws.js:299
-detErr                       tests/90b-detect.js:137-145
+detDiff                      tests/90b-detect.js:128-132
+detDoors                     tests/91zzzzzzzz-detect.js:289-313
+DETECTORS                    tests/90c-detect-laws.js:303
+detErr                       tests/90b-detect.js:140-148
 detExempt                    tests/90c-detect-laws.js:79-89
-detFrame                     tests/91zzzzzzzz-detect.js:174-179
-detGrab                      tests/90b-detect.js:105-113
-detHook                      tests/90b-detect.js:346-359
+detFrame                     tests/91zzzzzzzz-detect.js:174-184
+detGrab                      tests/90b-detect.js:105-115
+detHook                      tests/90b-detect.js:411-424
 detHudText                   tests/91zzzzzzzz-detect.js:138-145
-detHuman                     tests/90c-detect-laws.js:285-298
+detHuman                     tests/90c-detect-laws.js:289-302
 detInk                       tests/90b-detect.js:86-98
 detInstr                     tests/90c-detect-laws.js:147-160
 detInstrRead                 tests/90c-detect-laws.js:40-59
 detIsOpen                    tests/91zzzzzzzz-detect.js:108-111
 detLaw                       tests/90c-detect-laws.js:122-144
-detLum                       tests/90c-detect-laws.js:214
+detLum                       tests/90c-detect-laws.js:218
 detNameless                  tests/91zzzzzzzz-detect.js:149-160
-detNames                     tests/90b-detect.js:312-326
-detNewMotion                 tests/90b-detect.js:246-250
+detNames                     tests/90b-detect.js:377-391
+detNewMotion                 tests/90b-detect.js:311-315
 detOverlays                  tests/91zzzzzzzz-detect.js:98-106
-detParallax                  tests/90b-detect.js:207-231
-detPatch                     tests/90b-detect.js:115-121
-detPatchShift                tests/90b-detect.js:156-165
-detPicture                   tests/90c-detect-laws.js:236-282
-detProtoOf                   tests/90b-detect.js:328-344
-detRot                       tests/90b-detect.js:171-190
+detParallax                  tests/90b-detect.js:272-296
+detPatch                     tests/90b-detect.js:117-124
+detPatchScale                tests/90b-detect.js:202-218
+detPatchShift                tests/90b-detect.js:170-189
+detPicture                   tests/90c-detect-laws.js:240-286
+detProtoOf                   tests/90b-detect.js:393-409
+detRot                       tests/90b-detect.js:232-255
 detRuler                     tests/91zzzzzzzz-detect.js:75-84
-detSamp                      tests/90b-detect.js:130-135
-detScale                     tests/90b-detect.js:192-199
+detSamp                      tests/90b-detect.js:133-138
+detScale                     tests/90b-detect.js:257-264
 detSettle                    tests/91zzzzzzzz-detect.js:63-69
 detShipScr                   tests/91zzzzzzzz-detect.js:86-89
 detSig                       tests/91zzzzzzzz-detect.js:91-96
-detStep                      tests/91zzzzzzzz-detect.js:190-278
+detStep                      tests/91zzzzzzzz-detect.js:195-287
 detStuck                     tests/90c-detect-laws.js:104-120
 detSuitSrc                   tests/90c-detect-laws.js:13-15
-detTick                      tests/91zzzzzzzz-detect.js:180-186
+detTick                      tests/91zzzzzzzz-detect.js:185-191
 detV                         tests/90c-detect-laws.js:92
-detWalk                      tests/90b-detect.js:276-299
+detWalk                      tests/90b-detect.js:341-364
 DEV_CAP                      src/21b4-base-build.js:26
 DEV_DAY                      src/21b4-base-build.js:25
 DEV_EVERY                    src/21b4-base-build.js:18
@@ -2969,11 +2973,11 @@ lettersAll                   src/12k-letters.js:41
 lettersBlock                 src/12k-letters.js:99-115
 letterState                  src/12k-letters.js:42
 letterTake                   src/12k-letters.js:70-76
-lgBestNear                   tests/91zzzzy-light.js:60-72
-lgBox                        tests/91zzzzy-light.js:22-37
-lgBrightest                  tests/91zzzzy-light.js:40-48
-lgClean                      tests/91zzzzy-light.js:54-56
-lgHour                       tests/91zzzzy-light.js:75-84
+lgBestNear                   tests/91zzzzy-light.js:62-74
+lgBox                        tests/91zzzzy-light.js:22-39
+lgBrightest                  tests/91zzzzy-light.js:42-50
+lgClean                      tests/91zzzzy-light.js:56-58
+lgHour                       tests/91zzzzy-light.js:77-86
 LIFE_AIR                     src/21a1-base-life.js:273
 LIFE_CAP                     src/21a1-base-life.js:275
 LIFE_COOL                    src/21a1-base-life.js:283
@@ -3043,7 +3047,7 @@ logShip                      src/01a-crashlog.js:50-53
 logTime                      src/11-log.js:69-72
 LONG_HOD                     src/12b3-fx-cult.js:32-45
 look                         src/28y-look.js:273-277
-LOOK_BASE                    tests/91zzzzy-look.js:21-37
+LOOK_BASE                    tests/91zzzzy-look.js:21-39
 LOOK_DAYLIGHT                src/28y-look.js:113
 LOOK_TARGET                  src/28y-look.js:41
 lookAll                      src/28y-look.js:252-271
@@ -3225,8 +3229,9 @@ mayakRec                     src/12pa-beacon.js:38-42
 mayakSector                  src/12pa-beacon.js:60-63
 mayakSold                    src/12pa-beacon.js:49-52
 mayakTick                    src/12pa-beacon.js:125-140
+memGpu                       tests/91zzzzy-mem.js:38-55
 memPixels                    tests/91zzzzy-mem.js:15-33
-memTour                      tests/91zzzzy-mem.js:36-52
+memTour                      tests/91zzzzy-mem.js:58-74
 mercFee                      src/12a-crew.js:218
 mergeKeyMap                  src/15-input.js:126-135
 MGR_CAP                      src/12c-mgr-core.js:8
@@ -5352,7 +5357,7 @@ sysRasterDrop                src/06-galaxy.js:23-35
 sysRasterTick                src/06-galaxy.js:37-49
 sysStyle                     src/16a-space.js:21-41
 sysTraffic                   src/17f-sys-traffic.js:11-36
-T                            tests/90a-tools.js:54-603
+T                            tests/90a-tools.js:54-604
 tab                          src/26-ui-station.js:3
 TAB_CH                       src/14a-cloud.js:21
 TAB_ID                       src/14a-cloud.js:20
@@ -7213,10 +7218,10 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/90a-tools.js · 44 КБ
   · автотесты: инструменты (M442):1
 
-## tests/90b-detect.js · 22 КБ
+## tests/90b-detect.js · 27 КБ
   · детекторы: законы, которые смотрят после каждого шага (M443):1
 
-## tests/90c-detect-laws.js · 22 КБ
+## tests/90c-detect-laws.js · 23 КБ
   · детекторы, часть вторая: законы (M443):1
   · сами детекторы: ctx → нарушения:91
 
@@ -7250,7 +7255,7 @@ zooTick                      src/11ad-zoo.js:41-54
   · автотесты: интерфейс: 44 px, непересечение, кнопка называет действие, разделы:1
   · ключи из кода не показываются игроку:207
   · на чистом старте в кадре нет лишнего:252
-  · M236: колесо крутит мир только над миром:283
+  · M236: колесо крутит мир только над миром:284
 
 ## tests/91g-relic.js · 9 КБ
   · автотесты: лаборатория и артефакты: слот, эффекты, дерево перков без пустот:1
@@ -7724,7 +7729,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzzzg-wander-shop.js · 10 КБ
   · автотесты: борт «Сороки» — комната и лавка (M343):1
 
-## tests/91zzzzh-cosm.js · 6 КБ
+## tests/91zzzzh-cosm.js · 7 КБ
   · автотесты: косметика «Сороки» (M344):1
 
 ## tests/91zzzzi-locker.js · 7 КБ
@@ -7763,10 +7768,10 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzzzy-light.js · 21 КБ
   · свет и свечения (M330):1
 
-## tests/91zzzzy-look.js · 3 КБ
+## tests/91zzzzy-look.js · 4 КБ
   · картина не портится молча (M336):1
 
-## tests/91zzzzy-mem.js · 8 КБ
+## tests/91zzzzy-mem.js · 10 КБ
   · что копится за вечер (M332):1
 
 ## tests/91zzzzy-names.js · 11 КБ
@@ -7878,7 +7883,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzzzzzz-hands.js · 14 КБ
   · руки игрока: судья — кадр:1
 
-## tests/91zzzzzzzz-detect.js · 30 КБ
+## tests/91zzzzzzzz-detect.js · 31 КБ
   · сквозной: каждая сцена × пять жестов под всеми детекторами (M443):1
 
 ## tests/91zzzzzzzza-walks.js · 11 КБ
@@ -7899,4 +7904,4 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzzzzzzzz-worlds.js · 7 КБ
   · дисбаланс по мирам: четвёртый оракул (M443, DESIGN-tests §3.2):1
 
-## tests/99-run.js · 4 КБ
+## tests/99-run.js · 5 КБ

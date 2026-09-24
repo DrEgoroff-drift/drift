@@ -31,6 +31,28 @@ function memPixels(root, maxDepth) {
   walk(root, 0);
   return { px, n, mb: px * 4 / 1048576 };
 }
+/* сколько держит видеокарта: мир рисуется там (08b), и печёное уходит в
+   текстуры — холсты печек (GPU.cvTex), цели кадра (GPU.T), небо туманности
+   (GNB), буферы и кадровые арены, плюс корзина, что гибнет в начале кадра.
+   Все места, где зовётся createTexture/createBuffer, — здесь */
+function memGpu() {
+  if (!GPU.ok) return null;
+  const seen = new Set();
+  let by = 0, n = 0;
+  const bpp = f => /32float/.test(f) ? 16 : /16float/.test(f) ? 8 : /^r8/.test(f) ? 1 : 4;
+  const tx = t => {
+    if (!t || seen.has(t)) return; seen.add(t);
+    if (t instanceof GPUTexture) { by += t.width * t.height * (t.depthOrArrayLayers || 1) * bpp(t.format); n++; }
+    else if (t instanceof GPUBuffer) { by += t.size; n++; }
+  };
+  for (const k in GPU.T) tx(GPU.T[k]);
+  for (const e of GPU.cvTex.values()) tx(e.tex);
+  tx(GPU.N); tx(GNB.tex);
+  for (const k in GPU.bufs) tx(GPU.bufs[k]);
+  for (const k in GPU.ar) tx(GPU.ar[k].buf);
+  for (const t of GPU.trash) tx(t);
+  return { mb: by / 1048576, n, tex: GPU.cvTex.size };
+}
 /* вечер прыжков: N систем, в каждой несколько кадров — чтобы пекарня развёрток
    успела поработать (`planetStripTick` зовётся из отрисовки планеты) */
 function memTour(n, frames) {
@@ -55,7 +77,7 @@ TEST_SUITES.push(() => suite("память: вечер прыжков не ко�
   resetWorld();
   const a = memPixels(SYS_CACHE);
   const tour = memTour(24, 8);
-  const b = memPixels(SYS_CACHE);
+  const b = memPixels(SYS_CACHE), gb = memGpu();
   ok(tour.length >= 20, "систем облетело: " + tour.length + ", в кэше: " + SYS_CACHE.size);
   /* сравнивать с началом нельзя: в общем прогоне до этого набора уже напекли
      соседние наборы, и уборка честно уносит чужое. Судим не разницу, а факт —
@@ -77,6 +99,19 @@ TEST_SUITES.push(() => suite("память: вечер прыжков не ко�
   ok(c.mb < 24, "вдвое больший облёт остаётся на полке: " + b.mb.toFixed(1) + " → " + c.mb.toFixed(1) +
     " МБ (систем " + tour2.length + ", в кэше " + SYS_CACHE.size + ")");
   ok(c.mb < b.mb * 2.5, "и рост не линейный по числу систем");
+  /* ── видеокарта ──
+     Растр печек теперь только полуфабрикат: картинку держат текстуры. Та же
+     полка: вдвое больший облёт не растит память видеокарты, и её счёт ограничен
+     тем, что нужно кадру (цели кадра, небо, восемь холстов в кэше), а не
+     тем, сколько игрок налетал */
+  const gc = memGpu();
+  if (ok(gb && gc, "видеокарта мерится (GPU.ok)")) {
+    ok(gc.mb < 96, "память видеокарты ограничена: " + gb.mb.toFixed(1) + " → " + gc.mb.toFixed(1) +
+      " МБ, объектов " + gb.n + " → " + gc.n + ", холстов в текстурах " + gc.tex);
+    ok(gc.mb < gb.mb * 1.25 + 1, "вдвое больший облёт не растит память видеокарты: " +
+      gb.mb.toFixed(1) + " → " + gc.mb.toFixed(1) + " МБ");
+    ok(gc.tex <= 8, "холстов в текстурах не больше восьми: " + gc.tex);
+  }
   /* и растр покинутой системы действительно отпущен: возвращаемся к первой
      облетевшей и смотрим, что на ней ничего не осталось висеть */
   const first = tour[0];

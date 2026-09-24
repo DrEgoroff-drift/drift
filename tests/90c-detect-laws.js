@@ -177,7 +177,8 @@ function detControls(c){
       const rx=sp.dx-bg.dx,ry=sp.dy-bg.dy,m=Math.hypot(rx,ry);
       const along=m?(rx*Math.cos(c.nose0)+ry*Math.sin(c.nose0))/m:0;
       cls=m>=3&&along>.5;
-      why="W: корабль не пошёл по носу — сдвиг относительно фона "+rx.toFixed(0)+","+ry.toFixed(0)+" px, по носу "+along.toFixed(2);
+      why="W: корабль не пошёл по носу — сдвиг относительно фона "+rx.toFixed(0)+","+ry.toFixed(0)+" px, по носу "+along.toFixed(2)+
+        " (корабль "+sp.dx+","+sp.dy+", фон "+bg.dx.toFixed(1)+","+bg.dy.toFixed(1)+")"+(c.diag?" · "+c.diag:"");
     }else if(c.gesture==="A"&&c.mode0==="system"&&c.p0&&c.p1){
       const r=detRot(c.p0,c.p1);
       cls=r.th<=-4&&r.iNeg>r.iPos+.05&&r.iNeg>r.i0+.05;
@@ -188,9 +189,12 @@ function detControls(c){
          центре камеры (helmCamOff): масштаб от центра не находит ничего, от
          корабля — ровно шаг зума. Годится любой из двух центров */
       const s2=c.ship0?detScale(c.before,c.after,c.ship0[0]/c.before.k,c.ship0[1]/c.before.k):null;
+      /* и третий свидетель — силуэт корабля в его участке (detPatchScale): мир
+         видеокарты в пустом космосе зумом не растёт, растёт корабль */
+      const s3=detPatchScale(c.p0,c.p1);
       const grew=q=>q&&q.s>=1.07&&q.e<q.e1;   /* лучший масштаб крупнее, и он лучше «ничего не случилось» */
-      cls=grew(s)||grew(s2);
-      why="«+» и колесо: кадр не укрупнился от центра (лучший масштаб ×"+s.s+")";
+      cls=grew(s)||grew(s2)||grew(s3);
+      why="«+» и колесо: кадр не укрупнился от центра (лучший масштаб ×"+s.s+(s2?", от корабля ×"+s2.s:"")+(s3?", силуэт ×"+s3.s:"")+")"+(c.diag?" · "+c.diag:"");
     }else if(c.gesture==="протяжка"&&c.mode0==="map"&&c.drag){
       const p=detParallax(c.before,c.after,c.drag[0],c.drag[1]);
       /* закон M447: на карте слой либо в мире (едет 1:1), либо бумага — долей
