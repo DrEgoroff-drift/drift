@@ -41,6 +41,8 @@ Built: the core and post pass (08b), the layer kit (08c), the space backdrop (16
   ladder instead of the ¼-frame 4×4; AgX/ACES tone map; a grade per star class — one shot tells where you are.
 - [ ] **L3 light touches the world:** normals from baked sprites' relief, a list of point lights (flames, beams,
   bursts, station lamps): a beam or a burst lights hulls nearby, metal gets a glint.
+- [ ] L4 sparks (Контроль 24.09, after 92679b3): at the burst peak they read as a drawn star-burst — uneven
+  lengths and angles, 3–4 long streaks, the rest short.
 - [ ] **G5 the air, the rest (frozen for L1–L4):** done — sky, disc, scattering, shafts in the final pass (08b). Left:
   live clouds (`drawClouds` 19e), haze bands (`hazeBand`/`hazeFar` 19c), weather in depth, night lamps, the water
   mirror, the grade; shafts must be shown to read — a sun behind cloud gaps (the 2D clouds are too thin to cut

@@ -78,7 +78,7 @@ Heat haze behind the nozzle (G4b).
 
 ## Where I stopped (update on every commit)
 
-- **Deploy candidate: `e0e933f` (L1b 3/n; before it `22b8cac`), accepted by Контроль by its pairs.** The author: deploy to main
+- **Deploy candidate: `92679b3` (L4 1/n; before it `e0e933f`), accepted by Контроль by its pairs.** The author: deploy to main
   before the limit window reaches 90%; the signal «ДЕПЛОЙ» comes from Контроль. On it: close the step with a
   commit; `test.ps1 -Full` and `node test-node.js`; bump `VER` and a PATCHNOTES line (what the player sees
   better, plus «needs a browser with WebGPU»); a release commit; send Контроль its sha. **Контроль pushes**
@@ -86,9 +86,9 @@ Heat haze behind the nozzle (G4b).
   the site falls: a commit on top with the tree of `d543aff`, never a force-push. Only a commit Контроль
   accepted by pairs goes to main. CI rehearsal of ef8c8b9 (deploy.yml flags, `--disable-gpu`): load clean,
   smoke 4/4, Node green (the «рейсы» suite fails in full order only, green alone; it sits in quarantine).
-- Order now: L4 (particles) 1/n done, awaiting Контроль (gate: full throttle, a ship burst at its peak and
-  ~0.5 s after — `scratchpad/l4a|l4b|l4c_760.png`); then the G steps (G5 frozen). L1b follow-ups sit in PLAN
-  §0 under L1.
+- Order now: L1b 4/n (dust at other zooms) done, awaiting Контроль — gate: whole frames at 760, l4a ×2.00,
+  nnormal ×1.60, l2c ×1.10; then the G steps anew on top of L, by the bible (G5 frozen). L1b and L4
+  follow-ups sit in PLAN §0.
 
 - Done: core `08b`, kit `08c`, space `16g` (G1: live nebula wisps and lanes, stars with halo and tapered
   spikes, dust with depth of field; pair in `scratchpad/pairs/system_crop.png`),
@@ -367,6 +367,18 @@ Heat haze behind the nozzle (G4b).
   (billows in growing coordinates, the same ladder, heat `exp(−a/.42)`, gone by 1.1 s), 22 spark streaks
   (a 1/30 s path each, HDR). Flash — `gpuLight` (white ~.1 s, then warm), shock — `gpuShock` over ~1.1 s.
   Drawn before `genDraw`, so bolts and beams stay on top and sharper.
+  Done (L1b 4/n, dust at other zooms; Контроль on the L4 frames at ×2.00: orange curls and worms over the
+  right half — rims with no visible body, the bodies black on black space, not facing the star). Cause: gas
+  lives in screen space (no zoom), the dust in log-polar around the star, so its cells grew with the star's
+  distance — at ×2 the frame held only bits of edges. Now past .9H (star to frame centre, `lc`) the pattern is
+  squeezed by k = D/.9H around the frame centre (`dpolar` → `DQ.k`, `dR` maps back to a radius, `nzs` wraps at
+  2πk): a pillar has the same size in px at any zoom and still points at the star. JS keeps the pattern's
+  coordinate at the frame centre (`GNB.Qc`, `Yc`, advanced by k·(1−wD)·Δ), so a zoom or a flight away changes
+  the scale about the centre instead of sliding the pattern. The rim (ionisation front) and the brown are
+  scaled by the gas density at the pixel (`gas` = smoothstep(.02, .3, dsum)): no gas — no rim; on empty space
+  dust only dims stars. Field (L median / black < 12): l4a ×2.00 8.2 / 88%, nnormal 10.6 / 61% (was 17.6 /
+  38%), l2c 24.2 / 22%. What is left at ×2.00: gas clumps in the windows between bodies, one rim where gas
+  meets an edge. Parallax (x 480 → 560): the pattern slides, shapes kept.
   A GPU draw after `gpuHullLight` must use `gpuOver`, not `gpuScene` (the scene pass is closed by then).
 - Merge each: `build.ps1`, `python docs/shot.py <scenes> --look --tag gpu`, 0 `gpu.errs`, pair with
   `scratchpad/mainref/docs/shots/main_<scene>.png`, one line of what got better, commit, strike from PLAN §0.

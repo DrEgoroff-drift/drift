@@ -77,12 +77,17 @@ const RED=vec3f(.72,1.,1.42);
    столпы сами смотрят на звезду, и за кадром тоже. Угол меряется от направления «звезда →
    центр кадра»: шов (±π) — за звездой. u.g.x — сдвиг угла, u.g.y — сдвиг ln r (копятся в
    JS): узор ползёт по экрану с параллаксом ~.12, а не со звездой. */
-struct DQ{tr:f32,q:vec2f,s:f32,r:f32,r0:f32,r1:f32};
+struct DQ{tr:f32,q:vec2f,s:f32,r:f32,r0:f32,r1:f32,k:f32,lc:f32};
+/* масштаб узора пыли (L1b 4/n): в лог-полярных ячейка растёт с расстоянием до звезды — на
+   ×2 звезда вдвое дальше, и в кадр влезали одни куски кромок. Дальше .9H узор сжат в k раз
+   вокруг центра кадра: столп того же размера в px на любом зуме, как газ, и смотрит на звезду */
+var<private> DK:f32=1.;
 fn dpolar(p:vec2f,W:f32,H:f32)->DQ{
   let sp=u.e.xy;let v=p-sp;let r=max(length(v),.5);
   let c=normalize(vec2f(W,H)*.5-sp+vec2f(1e-3,0.));
   var o:DQ;o.tr=atan2(c.x*v.y-c.y*v.x,dot(c,v));
-  o.q=vec2f(o.tr+u.g.x,log(r/H)-u.g.y);
+  let lc=log(max(length(vec2f(W,H)*.5-sp),1.)/H);let k=max(1.,exp(lc)/.9);DK=k;
+  o.q=vec2f(o.tr*k+u.g.x,(log(r/H)-lc)*k+u.g.y);o.k=k;o.lc=lc;
   /* по радиусу в кадре: 0 — ближняя к звезде точка кадра, 1 — дальний угол; в том же ln r
      со сдвигом (u.g.zw копятся в JS так же), иначе при полёте к звезде стена стояла бы на экране */
   o.s=(o.q.y-u.g.z)/max(u.g.w-u.g.z,.05);o.r=r/H;o.r0=u.g.z;o.r1=u.g.w;return o;}
@@ -90,7 +95,9 @@ fn dpolar(p:vec2f,W:f32,H:f32)->DQ{
 fn nzs(tr:f32,q:vec2f,fq:vec2f,o:vec2f,n:i32)->f32{
   let a=fb(q*fq+o,n);let w=smoothstep(.6,1.,abs(tr)/3.1416)*.5;
   if(w<=0.){return a;}
-  return mix(a,fb(vec2f(q.x-6.2832*sign(tr),q.y)*fq+o,n),w);}
+  return mix(a,fb(vec2f(q.x-6.2832*DK*sign(tr),q.y)*fq+o,n),w);}
+/* ln r узора (сжатого) → радиус в H */
+fn dR(D:DQ,y:f32)->f32{return exp((y-u.g.y)/D.k+D.lc);}
 /* капсула со сужением: a — вдоль от головы наружу, d — поперёк (всё в H); голова — круг wa,
    к основанию ширина растёт до wb на длине L */
 fn caps(a:f32,d:f32,wa:f32,wb:f32,L:f32)->f32{
@@ -111,7 +118,7 @@ fn pillars(D:DQ,se:f32,rw:f32,n:f32,cr:f32,pr:f32,w0:f32,gw:f32,gl:f32,sd:f32)->
       let h=gh(vec2f(im*1.37+sd,j*2.11+sd*.7));
       if(h>pr){continue;}
       let h2=gh(vec2f(im+sd*3.1,j-sd*1.3));let h3=gh(vec2f(j*.7+sd*.3,im*1.9+5.));
-      let qh=(j+.1+.8*h3)*cr;let rh0=exp(qh+u.g.y);
+      let qh=(j+.1+.8*h3)*cr;let rh0=dR(D,qh);
       let sh=(qh-D.r0)/(D.r1-D.r0);
       /* голова ближе к звезде, чем можно, — столп уходит в стену (а не тоньшает в волос) */
       let gt=smoothstep(se-gw-.1,se-gw+.02,sh);
@@ -120,7 +127,7 @@ fn pillars(D:DQ,se:f32,rw:f32,n:f32,cr:f32,pr:f32,w0:f32,gw:f32,gl:f32,sd:f32)->
       let w=w0*(.6+.8*h/pr);
       let a=D.r-rh;
       /* ствол чуть гнётся по длине */
-      let d=(D.q.x-(i+.25+.5*h2)*per)*D.r+w*1.2*(gn(vec2f(a/w*.35,im*3.1+sd))-.5);
+      let d=(D.q.x-(i+.25+.5*h2)*per)/D.k*D.r+w*1.2*(gn(vec2f(a/w*.35,im*3.1+sd))-.5);
       /* ствол — до самой стены: столп растёт из неё */
       m=max(m,-caps(a,d,w,w*2.2,max(rw-rh,2.*w)+.05));
       /* глобула — только вдали от звезды: у самой звезды поперечник по углу схлопывается,
@@ -137,7 +144,7 @@ fn dustAt(p:vec2f,W:f32,H:f32,seed:f32)->vec4f{
   let sd=fract(seed*.113)*97.;
   /* стена полости: вдали от звезды — материнское облако, у кромки кадра */
   let se=.8+(nzs(tr,D.q,vec2f(4.,1.),o+vec2f(21.,9.),2)-.5)*.2+(nzs(tr,D.q,vec2f(11.,2.5),o+vec2f(4.,13.),2)-.5)*.16;
-  let rw=exp(D.r0+se*(D.r1-D.r0)+u.g.y);
+  let rw=dR(D,D.r0+se*(D.r1-D.r0));
   var m=D.r-rw;
   /* из стены к звезде — столпы трёх масштабов, у голов — глобулы */
   m=max(m,pillars(D,se,rw,18.,.8,.6,.055,.9,.45,sd));
@@ -311,7 +318,10 @@ fn lmk(p:vec2f,W:f32,H:f32,sp:vec2f)->LK{
   let brk=smoothstep(.25,.55,fb(pl*9.+vec2f(7.,3.),2));
   let o=max(dpx,0.);
   let edge=smoothstep(-1.5,.3,dpx)*(exp(-o/1.3)+.3*exp(-o/8.));
-  let ion=edge*face*face*fw*brk*(.8+2.2*lit)*dk;
+  /* кайма — фронт ионизации: светится газ у кромки, её сила — по его плотности; на пустом
+     космосе пыль только гасит звёзды — ни каймы, ни бурого */
+  let gas=smoothstep(.02,.3,dsum);
+  let ion=edge*face*face*fw*brk*(.8+2.2*lit)*dk*gas;
   let ic=mix(gc*1.5,vec3f(1.,.95,.86),.3)*max(max(sc.r,max(sc.g,sc.b)),.7);
   /* внутри — бурый (тон 15–30°): отражённый свет, прожилки вдоль столпа, к сердцевине темнее */
   let vein=1.-abs(2.*nzs(DQ0.tr,DQ0.q,vec2f(30.,4.),vec2f(1.,6.),3)-1.);
@@ -321,7 +331,7 @@ fn lmk(p:vec2f,W:f32,H:f32,sp:vec2f)->LK{
   let dn1=nzs(DQ0.tr,DQ0.q,vec2f(12.,3.),vec2f(fract(seed*.37)*50.+9.,fract(seed*.71)*50.+12.),3);
   let emb=clamp((dn2-dn1)*9.,-1.,1.);
   let brown=vec3f(.13,.08,.02)*(.6+.8*lit)*(.6+.8*pow(vein,4.))*deep*max(1.+.6*emb,.15)
-    *(1.+2.*face*fw*exp(min(dpx,0.)/6.))*body*(1.-exp(-od*2.4))*dk;
+    *(1.+2.*face*fw*exp(min(dpx,0.)/6.))*body*(1.-exp(-od*2.4))*dk*gas;
   C=C*exp(-od*2.4)+ic*ion*1.5+brown;T=T*exp(-od*2.4);
   /* громадина — за всеми слоями: её свет прошёл сквозь их пыль (T), её пыль гасит звёзды */
   C=C+LM.e*mix(T,1.,.5);T=T*exp(-LM.a*2.);
@@ -492,10 +502,12 @@ function gpuNebulaGen(sys,camx,camy,st,Z){
   /* кромки кадра по радиусу (ближняя точка — не ближе .25H) — так же */
   const ex=Math.max(0,Math.abs(sx)-W/2),ey=Math.max(0,Math.abs(sy)-H/2),
         l0=Math.log(Math.max(Math.hypot(ex,ey),.25*H)/H),l1=Math.log(Math.hypot(Math.abs(sx)+W/2,Math.abs(sy)+H/2)/H);
-  if(GNB.dsys!==sys){GNB.dsys=sys;GNB.phU=ph;GNB.dth=wD*ph;GNB.dlr=wD*lD;GNB.dl0=wD*l0;GNB.dl1=wD*l1;}
-  else{let d=ph-GNB.phP;d-=Math.round(d/(2*Math.PI))*2*Math.PI;GNB.phU+=d;GNB.dth+=wD*d;GNB.dlr+=wD*(lD-GNB.lDP);
-    GNB.dl0+=wD*(l0-GNB.l0P);GNB.dl1+=wD*(l1-GNB.l1P);}
-  GNB.phP=ph;GNB.lDP=lD;GNB.l0P=l0;GNB.l1P=l1;
+  /* узор копится у центра кадра в сжатых координатах (kD — как в шейдере): смена зума или
+     удаление от звезды меняют масштаб вокруг центра, а не сдвигают узор */
+  const kD=Math.max(1,sD/H/.9);
+  if(GNB.dsys!==sys){GNB.dsys=sys;GNB.Qc=kD*((1-wD)*ph+Math.PI);GNB.Yc=kD*(1-wD)*lD;}
+  else{let d=ph-GNB.phP;d-=Math.round(d/(2*Math.PI))*2*Math.PI;GNB.Qc+=kD*(1-wD)*d;GNB.Yc+=kD*(1-wD)*(lD-GNB.lDP);}
+  GNB.phP=ph;GNB.lDP=lD;
   const moved=Math.hypot(camx-GNB.cx,camy-GNB.cy)*.09;
   if(GNB.sys===sys&&moved<.5&&GPU.frameNo-GNB.last<3&&GPU.frameNo>=GNB.last)return true;
   const a=GNB.U;
@@ -505,7 +517,7 @@ function gpuNebulaGen(sys,camx,camy,st,Z){
   a[12]=pl.b[0]/255;a[13]=pl.b[1]/255;a[14]=pl.b[2]/255;a[15]=pl.dens;
   a[16]=st.x;a[17]=st.y;a[18]=st.r;a[19]=st.on;
   a[20]=st.c[0]/255;a[21]=st.c[1]/255;a[22]=st.c[2]/255;a[23]=pl.fill;
-  a[24]=GNB.phU+Math.PI-GNB.dth;a[25]=GNB.dlr;a[26]=l0-GNB.dl0;a[27]=l1-GNB.dl1;
+  a[24]=GNB.Qc;a[25]=GNB.Yc;a[26]=(l0-lD)*kD+GNB.Yc;a[27]=(l1-lD)*kD+GNB.Yc;
   a[28]=lm.x;a[29]=lm.y;a[30]=lm.s;a[31]=lm.t;a[32]=lm.a;a[33]=lm.p;a[34]=lm.l;a[35]=lm.k;
   a[36]=lm.c[0][0];a[37]=lm.c[0][1];a[38]=lm.c[0][2];a[39]=.006;a[40]=lm.c[1][0];a[41]=lm.c[1][1];a[42]=lm.c[1][2];
   const U=GPUBufferUsage,ub=gpuBuf("gnb.u",176,U.UNIFORM|U.COPY_DST);
