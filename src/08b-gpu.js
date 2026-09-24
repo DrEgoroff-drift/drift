@@ -537,6 +537,11 @@ function gpuScene3D(){
    Что 2D нарисует после — ляжет выше этого слоя. Каждый вызов — новый сегмент
    (загрузка #c, один полноэкранный проход, отправка); подряд идущие слои одного
    сегмента рисуют в один возвращённый проход. Вне кадра — null */
+/* #c → передний слой. GPU.kill.fpx (проба ?g11=deep): копия 1×1 — снимок холста (и растр его
+   2D) остаётся, байтов почти нет: разводит цену растра и цену копии (P1 10/n) */
+function gpuFrontCopy(){
+  GPU.dev.queue.copyExternalImageToTexture({source:cvs},{texture:GPU.T.front,premultipliedAlpha:true},GPU.kill.fpx?[1,1]:[GPU.bw,GPU.bh]);
+}
 function gpuOver(){
   if(!GPU.on||!GPU.enc)return null;
   const d=GPU.dev;
@@ -546,7 +551,7 @@ function gpuOver(){
   if(GPU.kill.front){
     ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,GPU.bw,GPU.bh);ctx.restore();
     return GPU.overPass=GPU.enc.beginRenderPass({colorAttachments:[{view:GPU.V.scene,loadOp:"load",storeOp:"store"}]});}
-  d.queue.copyExternalImageToTexture({source:cvs},{texture:GPU.T.front,premultipliedAlpha:true},[GPU.bw,GPU.bh]);
+  gpuFrontCopy();
   gpuUni();
   const p=GPU.enc.beginRenderPass({colorAttachments:[{view:GPU.V.scene,loadOp:"load",storeOp:"store"},
     {view:GPU.V.emit,loadOp:GPU.emitOn?"load":"clear",storeOp:"store",clearValue:{r:0,g:0,b:0,a:0}}]});
@@ -579,7 +584,7 @@ function gpuWorld(k,grain,vig){
     P.k=(!off&&G.running)?k:0;P.grain=(!off&&grain&&G.running)?1:0;P.vig=(!off&&grain&&vig&&G.running)?1:0;
     if(GPU.kill.bloom)P.k=0;
     if(!GPU.noiseOk)gpuNoise();
-    if(!GPU.kill.front)GPU.dev.queue.copyExternalImageToTexture({source:cvs},{texture:GPU.T.front,premultipliedAlpha:true},[GPU.bw,GPU.bh]);
+    if(!GPU.kill.front)gpuFrontCopy();
     if(P.k>0){
       if(!GPU.emitOn){GPU.enc.beginRenderPass({colorAttachments:[{view:GPU.V.emit,loadOp:"clear",storeOp:"store",clearValue:{r:0,g:0,b:0,a:0}}]}).end();GPU.emitOn=true;}
       gpuBloom();}

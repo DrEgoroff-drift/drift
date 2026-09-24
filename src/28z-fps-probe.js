@@ -151,7 +151,8 @@ const G11_GPU_KILL=[
   ["planets",["gpuPlanet","gpuMoon"]],["cities",["planetLightsOn"]],
   ["trails",["gpuWake","gpuTrail","gpuDrones"]],["combat",["gpuCombatEnergy"]],
   ["hullLight",["gpuHullLight"]],["points",["gpuLight"]],["refract",["gpuHaze","gpuShock"]],
-  ["bloom","bloom"],["front2D","front"],["final","fin"]];
+  /* frontPx — копии #c размером 1×1: растр 2D остаётся, байтов нет; front2D — ни растра, ни копий */
+  ["bloom","bloom"],["frontPx","fpx"],["front2D","front"],["final","fin"]];
 /* пара — «база, глушение, база» (P1 8/n): одна база перед глушением путала с выигрышем
    дрейф полёта (район, прогрев). Дельта — от средней двух баз; на пару пишется канва и
    место корабля до и после — видно, мерилась ли пара в одном разрешении и в одном месте */
