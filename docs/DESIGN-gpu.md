@@ -255,6 +255,15 @@ Heat haze behind the nozzle (G4b).
   so nav lights keep their colour and get a halo of it; the last front layer (chips, marks) casts no glow, and
   the glow is ×(1−.6 a) over opaque front pixels. Gates: 255-px ≤ .12% (star core only), median L +3…+6% vs
   L1, dirt ≤ 1.6, ring g4m 146 (p95 215), HUD diff = state only (energy count, blinking chip arrow).
+  Done (L2 1/n return, Контроль: «a glass ball, not a star»): the photosphere had a hard edge that cut the
+  bright gas out (the disc darker than the ring past it — an eclipse), a flat white fill and a white core of
+  77 px. Now (17g `star`): the surface is below the shoulder (exposure 1.4/1.0 giant), lifted a third toward
+  warm yellow, darkening to the limb in the star's colour (blue goes first, red last; limb .55, not .25); the
+  edge is soft over the last 8% of the radius; the photosphere covers the gas at .6, not 1; the corona over
+  the disc ×(1−.5 μ); a thin warm corona right past the limb (.35); granulation contrast .7 (+.2 giant); the
+  white core is small (1.6× a gaussian of .16 Rd plus the HDR spot of .11 Rd). Crop 700 px around the l2c
+  star: near-white radius 36 px (main 31), L≥200 3.4% of the frame (main 1.3%: our gold gas counts too);
+  g4m core 255, ring median 135 (main 137).
   Next (L2 2/n): a light grade per star class; streak and ghosts for a star in frame.
   A GPU draw after `gpuHullLight` must use `gpuOver`, not `gpuScene` (the scene pass is closed by then).
 - Merge each: `build.ps1`, `python docs/shot.py <scenes> --look --tag gpu`, 0 `gpu.errs`, pair with
