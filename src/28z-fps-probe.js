@@ -145,7 +145,9 @@ function g11Iv(sec){
    Всё это время держать ход (автопилот или тягу): стоящая камера не пересчитывает
    туманность. Ответ — табличкой поверх, в console.log и в window.G11_DEEP */
 const G11_GPU_KILL=[
-  ["neb",["gpuNebulaGen"]],["space",["gpuSpaceSys"]],["under",["gpuSysUnder"]],
+  /* nebGen — только пересчёт (сведение старой текстуры остаётся); neb — пересчёт и сведение;
+     space — всё это и звёзды: ключи вложены, их выигрыши не складываются */
+  ["nebGen","ngen"],["neb",["gpuNebulaGen"]],["space",["gpuSpaceSys"]],["under",["gpuSysUnder"]],
   ["planets",["gpuPlanet","gpuMoon"]],["cities",["planetLightsOn"]],
   ["trails",["gpuWake","gpuTrail","gpuDrones"]],["combat",["gpuCombatEnergy"]],
   ["hullLight",["gpuHullLight"]],["points",["gpuLight"]],["refract",["gpuHaze","gpuShock"]],

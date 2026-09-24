@@ -1926,7 +1926,7 @@ fxWorld                      tests/91zzzw-fx.js:6-16
 G                            src/08-state.js:190-276
 G_BOOT_KEYS                  tests/90-harness.js:186
 G11_CPU                      src/28z-fps-probe.js:122
-G11_GPU_KILL                 src/28z-fps-probe.js:147-175
+G11_GPU_KILL                 src/28z-fps-probe.js:147-177
 g11CpuHook                   src/28z-fps-probe.js:123-128
 g11Fps                       src/28z-fps-probe.js:7-14
 g11Iv                        src/28z-fps-probe.js:129-140
@@ -2147,8 +2147,8 @@ gpuLitSprite                 src/17c-system-draw.js:478-485
 gpuLtWrite                   src/08b-gpu.js:439-446
 gpuManual                    src/08b-gpu.js:562-567
 gpuMoon                      src/17ga-gpu-planets.js:400-405
-gpuNebulaComp                src/16gb-gpu-nebula.js:579-586
-gpuNebulaGen                 src/16gb-gpu-nebula.js:529-578
+gpuNebulaComp                src/16gb-gpu-nebula.js:580-587
+gpuNebulaGen                 src/16gb-gpu-nebula.js:529-579
 gpuNoise                     src/08b-gpu.js:369-374
 gpuNone                      src/08b-gpu.js:34-41
 gpuOver                      src/08b-gpu.js:540-560
@@ -6656,7 +6656,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/16ga-gpu-trail.js · 24 КБ
   · шлейф, факел и свет на корпусе корабля на видеокарте (G4, docs/DESIGN-gpu.md):1
 
-## src/16gb-gpu-nebula.js · 47 КБ
+## src/16gb-gpu-nebula.js · 48 КБ
   · туманность системы объёмом (L1, docs/DESIGN-gpu.md):1
 
 ## src/17-mode-system.js · 74 КБ
@@ -7202,7 +7202,7 @@ zooTick                      src/11ad-zoo.js:41-54
   · look() — прибор кадра:1
   · читается ли изготовитель (M369, §19.4):296
 
-## src/28z-fps-probe.js · 16 КБ
+## src/28z-fps-probe.js · 17 КБ
   · пробник G11: ?g11:1
 
 ## src/29c-home-in.js · 16 КБ

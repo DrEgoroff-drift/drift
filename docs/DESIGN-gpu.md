@@ -136,7 +136,8 @@ Heat haze behind the nozzle (G4b).
   its true gain is a few fetches per pixel; it was the last pair, measured against one base taken 20 s
   earlier, with resAuto free to step 1→1.5 back up in between. The frozen pairs will say which. Found on the
   way: `shot.py --clock wall` drove six manual `frame()` calls, each starting its own rAF loop — seven
-  frames per vsync, `FRAME_JS` of the last ≈ 0; a manual frame no longer chains rAF. Headless (411×742
+  frames per vsync, `FRAME_JS` of the last ≈ 0; a manual frame no longer chains rAF. **Every headless
+  timing taken with `--clock wall` before c0a9f1f is void** — do not lean on it. Headless (411×742
   ×1.5, vsync-bound): canvas 617×1113 in every pair, JS p50 2.4–3.5 ms, world 0.5–0.6 ms, 2 quanta; all
   deltas 0–1 fps — the numbers that matter come from the phone.
   G3b 3/n (e1aeb19) and L4 k/n (7b406eb) accepted.

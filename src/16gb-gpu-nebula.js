@@ -557,7 +557,8 @@ function gpuNebulaGen(sys,camx,camy,st,Z){
   else{let d=ph-GNB.phP;d-=Math.round(d/(2*Math.PI))*2*Math.PI;GNB.Qc+=kD*(1-wD)*d;GNB.Yc+=kD*(1-wD)*(lD-GNB.lDP);}
   GNB.phP=ph;GNB.lDP=lD;
   const moved=Math.hypot(camx-GNB.cx,camy-GNB.cy)*.09;
-  if(GNB.sys===sys&&moved<.5&&GPU.frameNo-GNB.last<3&&GPU.frameNo>=GNB.last)return true;
+  /* GPU.kill.ngen (проба ?g11=deep): сведение старой текстуры без пересчёта — цена одного пересчёта */
+  if(GNB.sys===sys&&(GPU.kill.ngen||moved<.5&&GPU.frameNo-GNB.last<3&&GPU.frameNo>=GNB.last))return true;
   const a=GNB.U;
   a[0]=GNB.w;a[1]=GNB.h;a[2]=W;a[3]=H;
   a[4]=camx;a[5]=camy;a[6]=c[2];a[7]=c[3];
