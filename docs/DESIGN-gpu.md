@@ -183,6 +183,15 @@ Heat haze behind the nozzle (G4b).
   is GPU idle. Desktop (617×1113, thrust, ms per frame): under 1.28–1.39, front1 1.28–2.42, nebComp 0.91,
   final 0.34–0.52, bloomDown 0.29–0.42, nebGen 0.39–0.42, front2 0.15, frontComp 0.10, planets 0.09, world
   0.07–0.09, over 0.06, stars 0.03–0.04; frame 5.8–6.1, sum 5.2–5.3.
+  **P1 14/n — exact cuts in the nebula** (Контроль 24.09; budget: S23 portrait ×1.5, GPU ≤ 12 ms a frame).
+  (a) `fineT` returns 1 at once when T0 ≥ .97: there the ridge weight is 0 and `mix(T0,Ts,.2)·1.12` ≥ 1.09
+  clamps to 1 — clear sky skips the noise in EMI and in the star shader. Pairs: max|Δ| 0; desktop nebComp
+  unchanged (0.91), the phone decides. (b) The regeneration reads the tile too (`fb`/`gn` → `fbt`/`gnt` in
+  `GNB_GEN`). A histogram of its lattice nodes (atomics, 3 regenerations): 82 % within ±255, 98 % within ±511,
+  5 in 100 000 beyond ±1023. So the tile grew to 2049² (8 MB r16float, period 2048), baked once by a render
+  pass with the same `gh` instead of JS; the ±256 tile of 13/n changed the gas layout of the system visibly.
+  A branch «outside the window → hash» was exact but slower (0.97 ms): the compiler runs both sides. Pairs
+  (zoom .4 / 1.2): max|Δ| 2 on 95 px / 1 px; desktop nebGen 0.92–0.94 → 0.69 ms.
   G3b 3/n (e1aeb19) and L4 k/n (7b406eb) accepted.
 - Brief of **L4 k/n — the shock ring and the exhaust haze bend the backdrop, never a hull** (Контроль 24.09): no
   hull, own or pirate, sprite or 2D, is cut into bands; an RGB fringe on the backdrop only. Done (08b/08c): the

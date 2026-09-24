@@ -61,7 +61,10 @@ struct VO{@builtin(position) p:vec4f,@location(0) uv:vec2f};
 @vertex fn vs(@builtin(vertex_index) i:u32)->VO{
   var P=array(vec2f(-1.,-1.),vec2f(3.,-1.),vec2f(-1.,3.));
   var o:VO;o.p=vec4f(P[i],0.,1.);o.uv=vec2f(P[i].x*.5+.5,.5-P[i].y*.5);return o;}
-${GNB_NOISE}
+${GNB_NOISE}${GNB_TILE}
+/* узлы шума — из плитки (16gaz, P1 14/n): один сбор вместо четырёх хэшей */
+@group(0) @binding(1) var smp:sampler;
+@group(0) @binding(2) var t1:texture_2d<f32>;
 /* пыль ест синий сильнее красного: что за полосой — тусклее и краснее */
 const RED=vec3f(.72,1.,1.42);
 /* достопримечательность системы (L1.7): одна громадина на заднике, видна отовсюду —
@@ -93,9 +96,9 @@ fn dpolar(p:vec2f,W:f32,H:f32)->DQ{
   o.s=(o.q.y-u.g.z)/max(u.g.w-u.g.z,.05);o.r=r/H;o.r0=u.g.z;o.r1=u.g.w;return o;}
 /* шум по полярным координатам: у шва (±π) — смесь двух оборотов, без ступеньки */
 fn nzs(tr:f32,q:vec2f,fq:vec2f,o:vec2f,n:i32)->f32{
-  let a=fb(q*fq+o,n);let w=smoothstep(.6,1.,abs(tr)/3.1416)*.5;
+  let a=fbt(q*fq+o,n);let w=smoothstep(.6,1.,abs(tr)/3.1416)*.5;
   if(w<=0.){return a;}
-  return mix(a,fb(vec2f(q.x-6.2832*DK*sign(tr),q.y)*fq+o,n),w);}
+  return mix(a,fbt(vec2f(q.x-6.2832*DK*sign(tr),q.y)*fq+o,n),w);}
 /* ln r узора (сжатого) → радиус в H */
 fn dR(D:DQ,y:f32)->f32{return exp((y-u.g.y)/D.k+D.lc);}
 /* капсула со сужением: a — вдоль от головы наружу, d — поперёк (всё в H); голова — круг wa,
@@ -124,7 +127,7 @@ fn pillars(D:DQ,rw:f32,n:f32,pr:f32,gl:f32,sd:f32)->f32{
     let sg=select(-1.,1.,h2>.5);
     let dd=(D.q.x-(i+.25+.5*h2)*per)/D.k*D.r-sg*L*.12*(1.-t)*(1.-t);
     let wb=L/5.;let wn=max(wb*.55,.01);let wh=wn*1.25;
-    let bul=1.+.22*(2.*gn(vec2f(t*2.6+h*9.,im*1.7+sd))-1.);
+    let bul=1.+.22*(2.*gnt(vec2f(t*2.6+h*9.,im*1.7+sd))-1.);
     let hw=(wn+(wb-wn)*pow(t,1.3))*bul;
     if(a>wh){m=max(m,hw-abs(dd));}
     m=max(m,wh-length(vec2f(a-wh,dd)));
@@ -161,14 +164,14 @@ fn lmk(p:vec2f,W:f32,H:f32,sp:vec2f)->LK{
   let ls=u.i.z;let c1=u.j.rgb;let c2=u.k.rgb;
   var e=vec3f(0.);var ab=0.;
   if(ty<.5){
-    let wv=vec2f(fb(d*2.2+vec2f(ls,1.),3),fb(d*2.2+vec2f(4.,ls),3))-.5;
+    let wv=vec2f(fbt(d*2.2+vec2f(ls,1.),3),fbt(d*2.2+vec2f(4.,ls),3))-.5;
     let q=d+wv*.22;let r=length(q);
     let th=atan2(q.y,q.x);let dir=q/max(r,1e-3);
     /* кольцо рвано: одна дуга яркая, противоположная — почти пропала */
-    let arc=.15+.85*smoothstep(.35,.7,fb(dir*1.3+vec2f(ls*2.,3.),3));
-    let w=.05+.07*fb(dir*2.+vec2f(7.,ls),2);
+    let arc=.15+.85*smoothstep(.35,.7,fbt(dir*1.3+vec2f(ls*2.,3.),3));
+    let w=.05+.07*fbt(dir*2.+vec2f(7.,ls),2);
     let sh=exp(-sq((r-1.)/w));
-    let rid=1.-abs(2.*fb(q*7.+wv*3.+vec2f(ls,9.),4)-1.);
+    let rid=1.-abs(2.*fbt(q*7.+wv*3.+vec2f(ls,9.),4)-1.);
     let fil=pow(rid,5.)*(.35+.9*sh)+sh*.25;
     let outer=smoothstep(-.02,.03,r-1.+ .03*sin(th*9.+ls));
     let seam=1.-.7*exp(-sq((r-1.)/.012));
@@ -183,18 +186,18 @@ fn lmk(p:vec2f,W:f32,H:f32,sp:vec2f)->LK{
     let x=d.x;let r=length(d);let xp=max(x,0.);
     /* ионный хвост — мягкий: гаусс 2→10 px, слабые продольные струи поперёк ширины */
     let wi=.0026+.0095*min(xp/.7,1.);
-    let st=.72+.28*fb(vec2f(x*1.5-u.b.z*2.,d.y/wi*1.3+ls),2);
+    let st=.72+.28*fbt(vec2f(x*1.5-u.b.z*2.,d.y/wi*1.3+ls),2);
     let ion=exp(-sq(d.y/wi))*smoothstep(-.004,.02,x)*(1.-smoothstep(.35,.8,x))*st;
     let yc=lcy(d,u.i);let wd=.006+.11*xp;
-    let dst=exp(-sq(yc/wd))*smoothstep(0.,.08,x)*exp(-xp/.35)*(.7+.3*fb(vec2f(x*3.,yc*8.)+ls,2));
+    let dst=exp(-sq(yc/wd))*smoothstep(0.,.08,x)*exp(-xp/.35)*(.7+.3*fbt(vec2f(x*3.,yc*8.)+ls,2));
     e=vec3f(.05,.55,1.)*ion*.55+vec3f(1.,.86,.62)*dst*.85
       +vec3f(1.,.95,.86)*(8.*exp(-sq(r/.0035))+.5*exp(-sq(r/.014)));
   } else if(ty<2.5){
     let g=vec2f(d.x,d.y/u.i.y);let r=length(g);let th=atan2(g.y,g.x);
     let disk=exp(-r/.3)*smoothstep(1.05,.6,r);
-    let spi=cos(2.*(th-3.2*log(r+.03))+fb(g*5.+ls,2)*1.5);
+    let spi=cos(2.*(th-3.2*log(r+.03))+fbt(g*5.+ls,2)*1.5);
     let arm=pow(.5+.5*spi,3.);
-    let knot=smoothstep(.6,.8,fb(g*18.+ls,3))*arm;
+    let knot=smoothstep(.6,.8,fbt(g*18.+ls,3))*arm;
     let bul=exp(-pow(r/.07,1.3));
     /* межрукавье тёмное, рукава — насыщенно-голубые, ядро золотое: белёсая дымка по
        полкадра читалась серой */
@@ -225,8 +228,8 @@ fn lmk(p:vec2f,W:f32,H:f32,sp:vec2f)->LK{
   /* крупный план кадра — общий для всех слоёв (средний параллакс): форма массы,
      области тонов со швом между ними, широкая полоса пыли */
   let qm=((p-vec2f(W,H)*.5)+u.b.xy*.045)/H*.62+vec2f(seed*1.3,seed*.4);
-  let wm=vec2f(fb(qm+vec2f(0.,t*.5),3),fb(qm+vec2f(4.1,7.3),3));
-  let M=fb(qm*.8+wm*1.3,4);
+  let wm=vec2f(fbt(qm+vec2f(0.,t*.5),3),fbt(qm+vec2f(4.1,7.3),3));
+  let M=fbt(qm*.8+wm*1.3,4);
   /* окно громадины — газ не тускнеет (тусклый газ сер), а отступает: порог массы растёт,
      остаётся плотное и яркое, между ним — пустота со звёздами */
   /* у самой звезды громадину засвечивает её сияние: два ярких пятна не спорят */
@@ -237,11 +240,11 @@ fn lmk(p:vec2f,W:f32,H:f32,sp:vec2f)->LK{
   let near=select(1.,-1.,dot(ns,normalize(A))>dot(ns,normalize(B)));
   /* стык тонов — не стенка: переход ≥150 px при 760, тона перемешаны клочьями (варп мельче
      крупного плана), между маджентой и бирюзой — широкая синяя полоса (автор 24.09: «лужа») */
-  let sel0=fb(qm*.55+wm*.9+vec2f(11.,3.),3)+near*.3*smoothstep(.05,.45,lit)*son;
-  let sel=sel0+(fb(qm*2.6+wm*2.+vec2f(3.,17.),3)-.5)*.16;
+  let sel0=fbt(qm*.55+wm*.9+vec2f(11.,3.),3)+near*.3*smoothstep(.05,.45,lit)*son;
+  let sel=sel0+(fbt(qm*2.6+wm*2.+vec2f(3.,17.),3)-.5)*.16;
   let tone=smoothstep(.27,.73,sel);
   let seam=1.-smoothstep(.0,.13,abs(sel-.5));
-  let bv=fb(vec2f(qm.x*.3+wm.y*.6,qm.y*.95+wm.x*.3)+vec2f(21.,5.),3);
+  let bv=fbt(vec2f(qm.x*.3+wm.y*.6,qm.y*.95+wm.x*.3)+vec2f(21.,5.),3);
   /* полоса узкая, но без порога: шум fb держится у .5, и широкий порог клал её на полкадра */
   let band=1.-smoothstep(.0,.075,abs(bv-.5));
   /* свет звезды красит газ только настолько, насколько сама звезда цветная: белая
@@ -263,14 +266,14 @@ fn lmk(p:vec2f,W:f32,H:f32,sp:vec2f)->LK{
     let par=.02*pow(2.2,fl);let fr=1.25*pow(1.55,fl);
     let q=((p-vec2f(W,H)*.5)+u.b.xy*par)/H*fr+vec2f(seed+fl*17.3,seed*.7+fl*9.1);
     let tt=t*(1.+fl*.4);
-    let w=vec2f(fb(q+vec2f(0.,tt),4),fb(q+vec2f(5.2,1.3)-vec2f(tt*.7,0.),4));
-    let w2=vec2f(fb(q+1.9*w+vec2f(1.7,9.2),4),fb(q+1.9*w+vec2f(8.3,2.8)+vec2f(0.,tt*.5),4));
-    let d=fb(q+2.1*w2,5);
+    let w=vec2f(fbt(q+vec2f(0.,tt),4),fbt(q+vec2f(5.2,1.3)-vec2f(tt*.7,0.),4));
+    let w2=vec2f(fbt(q+1.9*w+vec2f(1.7,9.2),4),fbt(q+1.9*w+vec2f(8.3,2.8)+vec2f(0.,tt*.5),4));
+    let d=fbt(q+2.1*w2,5);
     let amp=select(select(.55,.95,L==1),.6,L==2)*dens0;
     /* дальний слой мягче (широкий порог), ближний контрастнее */
     let g=smoothstep(.46-.06*(2.-fl)-.12*fill+er*.6,.76+.07*(2.-fl)+er*.3,d)*amp*mass*(1.-.45*seam)*bub*(1.-.5*LM.w);
     /* пыль: тонкие прожилки-хребты у каждого слоя, у ближнего — ещё и широкая полоса */
-    let rid=1.-abs(2.*fb(q*1.6+w2*1.4+vec2f(9.,4.),4)-1.);
+    let rid=1.-abs(2.*fbt(q*1.6+w2*1.4+vec2f(9.,4.),4)-1.);
     var ab=smoothstep(.7,.97,rid)*dust*(.26+.3*fl)*(.4+.6*smoothstep(.3,.6,d));
     /* вне газа полоса лишь приглушает звёзды — тёмная лента видна на газе, а не на пустоте */
     if(L==2){ab=ab+band*(.9+.5*smoothstep(.4,.7,d))*clamp(dust,.6,1.4)*mix(.3,1.,smoothstep(.02,.25,g));}
@@ -303,7 +306,7 @@ fn lmk(p:vec2f,W:f32,H:f32,sp:vec2f)->LK{
   let DD=dustAt(p,W,H,seed);let dn=DD.z;
   /* полость светится за столпами: пыль встаёт силуэтом на свету, а не лежит на пустоте
      (Орёл) — свет неровный, клочьями, в тон газа с долей белого звезды */
-  let cvn=(.3+.7*smoothstep(.3,.7,fb(p/H*3.2+vec2f(seed*.3+4.,2.),3)))*(.55+.45*fb(p/H*9.+vec2f(2.,seed*.2),3));
+  let cvn=(.3+.7*smoothstep(.3,.7,fbt(p/H*3.2+vec2f(seed*.3+4.,2.),3)))*(.55+.45*fbt(p/H*9.+vec2f(2.,seed*.2),3));
   let cvg=DD.y*cvn*son*(.4+.8*lit)*(1.-.5*LM.w);
   C=C+mix(gc,sw,.3)*cvg*.3;dsum=dsum+cvg*.5;
   /* край — в пикселях: расстояние до порога по градиенту гладкого поля */
@@ -318,7 +321,7 @@ fn lmk(p:vec2f,W:f32,H:f32,sp:vec2f)->LK{
   /* мелочь края — в слое с параллаксом пыли (.12): у центра кадра она едет вместе с пылью */
   let pl=(p+u.b.xy*.12)/H;
   /* тыльный край рвётся клочьями (средний масштаб), освещённый — мелко изъеден */
-  let ero=(fb(pl*55.+vec2f(5.,5.),3)-.5)*(.005+.012*fw)+(fb(pl*16.+vec2f(2.,7.),3)-.5)*.045*(1.-fw);
+  let ero=(fbt(pl*55.+vec2f(5.,5.),3)-.5)*(.005+.012*fw)+(fbt(pl*16.+vec2f(2.,7.),3)-.5)*.045*(1.-fw);
   let dk=clamp(dust,.6,1.3)*(1.-.75*LM.w);
   let thr=-.012*(dk-1.)+.08*LM.w;
   let dpx=(thr-DD.x-ero)/gl2;                   /* >0 — снаружи тела, в CSS px */
@@ -336,7 +339,7 @@ fn lmk(p:vec2f,W:f32,H:f32,sp:vec2f)->LK{
   let od=-log(1.-body*mix(.8,.985,dv))/2.4*dk;
   let odT=body*(.1+3.4*pow(smoothstep(8.,70.,-dpx),1.5)*(.15+1.1*dn))*dk;
   /* кайма фронта ионизации — только к звезде: линия 1–3 px светлее газа и свечение наружу */
-  let brk=smoothstep(.25,.55,fb(pl*9.+vec2f(7.,3.),2));
+  let brk=smoothstep(.25,.55,fbt(pl*9.+vec2f(7.,3.),2));
   let o=max(dpx,0.);
   /* кайма — мягкое свечение 15–30 px при 760: ярче у тела, наружу гаснет, без внутренней границы */
   let edge=smoothstep(-26.,4.,dpx)*(.45*exp(-o/10.)+.55*exp(-o/28.));
@@ -369,6 +372,8 @@ fn lmk(p:vec2f,W:f32,H:f32,sp:vec2f)->LK{
    зерно), резкие края пыли */
 const GNB_FINE=GNB_NOISE+GNB_TILE+`
 fn fineT(p:vec2f,T0:f32)->f32{
+  /* чистое небо: при T0≥.97 гребни не весят ничего, mix(T0,Ts,.2)·1.12 ≥ 1.09 — ровно 1 после clamp */
+  if(T0>=.97){return 1.;}
   let V=fu.v;let H=fu.res.w;
   let qf=((p-fu.res.zw*.5)+V[0].xy*.09)/H*7.+V[0].w;
   let r=1.-abs(2.*fbt(qf*1.9+vec2f(gnt(qf*.7),gnt(qf*.7+3.3))*1.6,2)-1.);
@@ -596,7 +601,7 @@ function gpuNebulaGen(sys,camx,camy,st,Z){
   GPU.dev.queue.writeBuffer(ub,0,a);
   const P=gnbPipe();
   const p=GPU.enc.beginRenderPass({colorAttachments:[{view:GNB.view,loadOp:"clear",storeOp:"store",clearValue:{r:0,g:0,b:0,a:0}}],timestampWrites:gpuTs("nebGen")});
-  p.setPipeline(P);p.setBindGroup(0,gpuBind("gnb.gen",P,[ub]));p.draw(3);p.end();
+  p.setPipeline(P);p.setBindGroup(0,gpuBind("gnb.gen",P,[ub,GPU.S.lin,gnbNoiseTile()]));p.draw(3);p.end();
   GNB.sys=sys;GNB.cx=camx;GNB.cy=camy;GNB.last=GPU.frameNo;GNB.nGen=(GNB.nGen|0)+1;
   return true;
 }
