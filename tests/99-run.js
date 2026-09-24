@@ -23,9 +23,11 @@ const BOOT_SUITE=() => suite("игра запустилась сама: живо
   eq(alive,VER,"на корне data-alive с версией сборки (кадров прошло "+frameN+")");
   ok(frameN>=1,"цикл кадров шёл сам, по rAF: "+frameN);
   eq(crashN,0,"сторож кадра ни разу не сработал до тестов");
+  ok(GPU.ok,"видеокарта поднялась до тестов: мир рисует она, без неё глазам тестов смотреть не на что"+(GPU.none?" ("+GPU.none+")":""));
   ok(typeof CRASH_SHIP==="object"&&CRASH_SHIP.n===0,"на сервер с этой страницы ничего не ушло (стенд молчит)");
 });
 BOOT_SUITE.pin="first";
+let BOOT_SINK=0;
 if(!TEST_TIMES&&!(typeof globalThis.TEST_NODE!=="undefined"&&globalThis.TEST_NODE))TEST_SUITES.unshift(BOOT_SUITE);
 (function boot(t0){
   /* под Node кадров нет: цикл выключается сразу, набор про запуск — дело Хрома */
@@ -33,8 +35,14 @@ if(!TEST_TIMES&&!(typeof globalThis.TEST_NODE!=="undefined"&&globalThis.TEST_NOD
   if(TEST_TIMES){LOOP_OFF=true;G.running=false;
     const i0=document.getElementById("intro");if(i0)i0.style.display="none";   /* заставка снимается и здесь: без этого набор про чистый кадр честно краснеет */
     runTests();return;}
+  /* видеокарта: мир рисует только она (08b). Под --virtual-time-budget часы
+     виртуальные, а ответ адаптера приходит по настоящим — пустой опрос
+     проматывает бюджет за миллисекунды, и прогон шёл без мира вовсе (0.456:
+     «пусто 99%», выхлоп молчит, растр 0). Каждый опрос отдаёт ~10 мс
+     настоящего времени счётом, между опросами промис адаптера успевает */
+  if(!GPU.ok&&!GPU.none&&performance.now()-t0<14000){let s=0;for(let k=0;k<2e6;k++)s+=k&1;BOOT_SINK=s;setTimeout(()=>boot(t0),50);return;}
   const ready=frameN>=1||crashN>0;
-  if(!ready&&performance.now()-t0<3000){setTimeout(()=>boot(t0),50);return;}
+  if(!ready&&performance.now()-t0<17000){setTimeout(()=>boot(t0),50);return;}
   G.running=false;
   const intro=document.getElementById("intro");
   if(intro)intro.style.display="none";

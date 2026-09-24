@@ -38,14 +38,20 @@ TEST_SUITES.push(()=>suite("эффекты M325: озеро — в ложбин�
 
 TEST_SUITES.push(()=>suite("эффекты M325: хроматика разводит кромку на красный и синий и гаснет сама",{tier:"browser"},()=>{
   resetWorld();
-  ctx.save();ctx.setTransform(DPR,0,0,DPR,0,0);
-  ctx.fillStyle="#000";ctx.fillRect(0,0,W,H);
-  ctx.fillStyle="#fff";ctx.fillRect(100,100,60,60);
   hitFx(1);
   ok(HIT_FX===1,"сила удара записана");
-  drawHitFx(1);
-  ctx.restore();
-  const px=(x,y)=>ctx.getImageData(Math.round(x*DPR),Math.round(y*DPR),1,1).data;
+  /* хроматика — строка общего прохода видеокарты (08b fsFinal): белый квадрат
+     на 2D-слое, удар в том же кадре, читаем собранный кадр целиком */
+  const drew=gpuManual(()=>{
+    ctx.save();ctx.setTransform(DPR,0,0,DPR,0,0);
+    ctx.fillStyle="#000";ctx.fillRect(0,0,W,H);
+    ctx.fillStyle="#fff";ctx.fillRect(100,100,60,60);
+    drawHitFx(1);
+    ctx.restore();
+  });
+  ok(drew,"кадр видеокарты собран");
+  const fc=gpuSnapshot().getContext("2d");
+  const px=(x,y)=>fc.getImageData(Math.round(x*DPR),Math.round(y*DPR),1,1).data;
   const L=px(96,130),R=px(164,130);
   ok(L[0]>L[2]+20,"слева от белого — красная каёмка: "+L[0]+"/"+L[2]);
   ok(R[2]>R[0]+20,"справа — синяя: "+R[0]+"/"+R[2]);

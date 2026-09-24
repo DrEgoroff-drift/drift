@@ -6,6 +6,13 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.457.0 - the world on the video card
+
+- **WebGPU** (`08b`, `08c`, `16ga`, `16gb`, `17ga`): the sky is drawn on the video card - the nebula
+  and its dust live and drift, light is HDR with a soft bloom, hulls catch the star on their rims,
+  exhaust and bursts are particles, and the star itself is alive. Needs a browser with WebGPU; without
+  one the game says so plainly instead of drawing a world.
+
 ## 0.456.0 - the design pass, closed
 
 - **Slipway** (`26e1`, `26e2`, M481): the order lies on a slipway sheet - concrete slabs in the

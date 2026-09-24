@@ -20,11 +20,13 @@
 /* яркость и тепло куска кадра. Канва живёт в пикселях подложки (dpr), а
    координаты сцены — в CSS-пикселях: множитель берём у самой канвы */
 function lgBox(x, y, w, h) {
-  const K = cvs.width / W;
+  /* кадр целиком: сцена видеокарты и 2D-слой поверх (gpuSnapshot, 08b) */
+  const fc = gpuSnapshot();
+  const K = fc.width / W;
   const X = Math.max(0, Math.round(x * K)), Y = Math.max(0, Math.round(y * K));
-  const Wd = Math.min(cvs.width - X, Math.round(w * K)), Hd = Math.min(cvs.height - Y, Math.round(h * K));
+  const Wd = Math.min(fc.width - X, Math.round(w * K)), Hd = Math.min(fc.height - Y, Math.round(h * K));
   if (Wd <= 0 || Hd <= 0) return { lum: 0, warm: 0, white: 0, n: 0 };
-  const d = cvs.getContext("2d").getImageData(X, Y, Wd, Hd).data;
+  const d = fc.getContext("2d").getImageData(X, Y, Wd, Hd).data;
   let lum = 0, warm = 0, white = 0, n = 0;
   for (let i = 0; i < d.length; i += 4) {
     const r = d[i], g = d[i + 1], b = d[i + 2];

@@ -103,19 +103,22 @@ function detInk(c,s,x,y){
    Яркость — одна на пиксель; цвет детекторам кадра не нужен. */
 let DET_SM=null,DET_SX=null;
 function detGrab(){
-  const SW=320,SH=Math.max(2,Math.round(320*cvs.height/Math.max(1,cvs.width)));
+  /* кадр целиком — сцена видеокарты и 2D-слой поверх (gpuSnapshot, 08b) */
+  const fc=gpuSnapshot();
+  const SW=320,SH=Math.max(2,Math.round(320*fc.height/Math.max(1,fc.width)));
   if(!DET_SM||DET_SM.height!==SH){DET_SM=document.createElement("canvas");DET_SM.width=SW;DET_SM.height=SH;DET_SX=DET_SM.getContext("2d");}
-  DET_SX.clearRect(0,0,SW,SH);DET_SX.drawImage(cvs,0,0,SW,SH);
+  DET_SX.clearRect(0,0,SW,SH);DET_SX.drawImage(fc,0,0,SW,SH);
   const d=DET_SX.getImageData(0,0,SW,SH).data,L=new Float32Array(SW*SH);
   for(let i=0,j=0;j<L.length;i+=4,j++)L[j]=.299*d[i]+.587*d[i+1]+.114*d[i+2];
-  L.w=SW;L.h=SH;L.k=cvs.width/SW;       /* во сколько раз холст крупнее копии */
+  L.w=SW;L.h=SH;L.k=fc.width/SW;       /* во сколько раз холст крупнее копии */
   return L;
 }
 /* участок холста в полном разрешении — вокруг корабля, для поворота и хода */
 function detPatch(cx,cy,R){
   const n=2*R,x0=Math.round(cx-R),y0=Math.round(cy-R);
-  if(x0<0||y0<0||x0+n>cvs.width||y0+n>cvs.height)return null;
-  const d=cvs.getContext("2d").getImageData(x0,y0,n,n).data,L=new Float32Array(n*n);
+  const fc=gpuSnapshot();
+  if(x0<0||y0<0||x0+n>fc.width||y0+n>fc.height)return null;
+  const d=fc.getContext("2d").getImageData(x0,y0,n,n).data,L=new Float32Array(n*n);
   for(let i=0,j=0;j<L.length;i+=4,j++)L[j]=.299*d[i]+.587*d[i+1]+.114*d[i+2];
   return {L,n};
 }
@@ -146,20 +149,41 @@ function detErr(a,b,f,st,mask){
 /* сдвиг фона (в пикселях холста): целый шаг по копии, корабль вырезан маской */
 function detBgShift(a,b,R,mask){
   let best={dx:0,dy:0,e:1e9};
+  const E={},err=(dx,dy)=>{const q=dx+","+dy;return q in E?E[q]:(E[q]=detErr(a,b,(x,y)=>[x-dx,y-dy],3,mask));};
   for(let dy=-R;dy<=R;dy++)for(let dx=-R;dx<=R;dx++){
-    const e=detErr(a,b,(x,y)=>[x-dx,y-dy],3,mask);
+    const e=err(dx,dy);
     if(e<best.e)best={dx,dy,e};
   }
-  return {dx:best.dx*a.k,dy:best.dy*a.k,e:best.e};
+  /* доля шага — параболой по соседям: шаг копии ≈4 px холста, а камера,
+     догоняющая корабль, сдвигает фон на 2–3 px — целый шаг читал это нулём,
+     и корабль «не шёл» (0.457, W в полном прогоне: 2,-1 при фоне 0,0) */
+  const sub=(m,o,p)=>{const d=m-2*o+p;return d>1e-6&&m<1e8&&p<1e8?Math.max(-.5,Math.min(.5,(m-p)/(2*d))):0;};
+  const fx=sub(err(best.dx-1,best.dy),best.e,err(best.dx+1,best.dy));
+  const fy=sub(err(best.dx,best.dy-1),best.e,err(best.dx,best.dy+1));
+  return {dx:(best.dx+fx)*a.k,dy:(best.dy+fy)*a.k,e:best.e};
 }
-/* сдвиг содержимого участка: куда уехал корабль */
+/* сдвиг содержимого участка: куда уехал корабль. Сравниваются только пиксели
+   самого корабля (связное яркое пятно у центра, detBlob, с каймой в пиксель):
+   неподвижное яркое у края участка — звезда, клок туманности — по всему
+   участку перевешивало корабль и тянуло сдвиг к нулю. По миру корабль прошёл
+   8 px экрана, участок целиком читал 2,-1 (0.457, W в полном прогоне) */
 function detPatchShift(p0,p1,R){
   if(!p0||!p1)return null;
   const n=p0.n;let best={dx:0,dy:0,e:1e9};
+  const med=Array.from(p0.L).sort((a,b)=>a-b)[p0.L.length>>1];
+  const blob=detBlob(p0.L,n,med+40).seen,pts=[];
+  for(let y=1;y<n-1;y++)for(let x=1;x<n-1;x++){
+    let on=0;for(let dy=-1;dy<=1&&!on;dy++)for(let dx=-1;dx<=1;dx++)if(blob[(y+dy)*n+x+dx]){on=1;break;}
+    if(on)pts.push(y*n+x);
+  }
+  /* корабля не нашлось — участок целиком, как раньше */
+  const all=pts.length>=12?null:[];
+  if(all)for(let y=R;y<n-R;y+=2)for(let x=R;x<n-R;x+=2)all.push(y*n+x);
+  const P=all||pts;
   for(let dy=-R;dy<=R;dy++)for(let dx=-R;dx<=R;dx++){
     let s=0,k=0;
-    for(let y=R;y<n-R;y+=2)for(let x=R;x<n-R;x+=2){s+=Math.abs(p1.L[y*n+x]-p0.L[(y-dy)*n+(x-dx)]);k++;}
-    const e=s/Math.max(1,k);if(e<best.e)best={dx,dy,e};
+    for(const i of P){const x=i%n,y=(i-x)/n,X=x+dx,Y=y+dy;if(X<0||Y<0||X>=n||Y>=n)continue;s+=Math.abs(p1.L[Y*n+X]-p0.L[i]);k++;}
+    const e=k>=P.length*.6?s/k:1e9;if(e<best.e)best={dx,dy,e};
   }
   return best;
 }
@@ -168,11 +192,52 @@ function detPatchShift(p0,p1,R){
    ярче фона участка, — а не яркость целиком: зерно кадра (grainPass) и
    туманность шумят в каждом пикселе, и по сумме разниц поворот корабля в них
    тонул (в безголовом Хроме оценка «против/по» выходила 6.8 к 6.8) */
+/* радиус пятна у центра участка: яркое в круге 6 px от центра — затравка,
+   дальше заливка по соседям через щель до 2 px (корпус видеокарты в бликах
+   рвётся на куски) */
+/* масштаб корабля в участке: те же пиксели силуэта, растянутые от центра.
+   Пыль видеокарты держит свой размер при любом зуме (16gb), туманность стоит,
+   и в пустом космосе на телефоне кадр целиком «не рос» — рос один корабль,
+   а его несколько пикселей тонули в шевелении всего кадра (0.457, -Mobile) */
+function detPatchScale(p0,p1){
+  if(!p0||!p1||p0.n!==p1.n)return null;
+  const n=p0.n,c=n/2;
+  const med=Array.from(p0.L).sort((a,b)=>a-b)[p0.L.length>>1];
+  const blob=detBlob(p0.L,n,med+40).seen,pts=[];
+  for(let i=0;i<n*n;i++)if(blob[i])pts.push(i);
+  if(pts.length<12)return null;
+  let best={s:1,e:1e9},e1=1e9;
+  for(const s of [.8,.87,.93,1,1.07,1.15,1.25,1.35,1.5]){
+    let sum=0,k=0;
+    for(const i of pts){const x=i%n,y=(i-x)/n,X=Math.round(c+(x-c)*s),Y=Math.round(c+(y-c)*s);
+      if(X<0||Y<0||X>=n||Y>=n)continue;sum+=Math.abs(p1.L[Y*n+X]-p0.L[i]);k++;}
+    const e=k>=pts.length*.6?sum/k:1e9;
+    if(s===1)e1=e;if(e<best.e)best={s,e};
+  }
+  best.e1=e1;return best;
+}
+function detBlobR(L,n,t){return detBlob(L,n,t).r;}
+function detBlob(L,n,t){
+  const c=n/2,seen=new Uint8Array(n*n),st=[];let r=0;
+  for(let y=0;y<n;y++)for(let x=0;x<n;x++){const u=x-c,v=y-c;if(u*u+v*v<=36&&L[y*n+x]>t){seen[y*n+x]=1;st.push(y*n+x);}}
+  while(st.length){
+    const i=st.pop(),x=i%n,y=(i-x)/n;r=Math.max(r,Math.hypot(x-c,y-c));
+    for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++){
+      const X=x+dx,Y=y+dy;if(X<0||Y<0||X>=n||Y>=n)continue;
+      const j=Y*n+X;if(!seen[j]&&L[j]>t){seen[j]=1;st.push(j);}
+    }
+  }
+  return {r,seen};
+}
 function detRot(p0,p1){
   if(!p0||!p1)return null;
-  const n=p0.n,c=n/2,R=c-2;
+  const n=p0.n,c=n/2;
   const med=L=>{const v=Array.from(L).sort((a,b)=>a-b);return v[v.length>>1];};
   const t0=med(p0.L)+40,t1=med(p1.L)+40;
+  /* круг сравнения — по кораблю, а не по участку: корабль — связное пятно у
+     центра, а яркое неподвижное у края (звезда, клок туманности видеокарты)
+     не вращается и тянуло совпадение к нулю (0.456: 0.53/0.52/0.54) */
+  const R=Math.min(c-2,Math.max(8,detBlobR(p0.L,n,t0)+3));
   let best={th:0,iou:-1},i0=0,iNeg=0,iPos=0;
   for(let th=-40;th<=40;th+=4){
     const t=th*Math.PI/180,co=Math.cos(t),si=Math.sin(t);let both=0,any=0;

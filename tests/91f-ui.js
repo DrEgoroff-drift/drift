@@ -262,7 +262,8 @@ TEST_SUITES.push(()=>suite("интерфейс: на чистом старте �
   tableToggle(false);
   G.mode="system";G.parrot=null;hud();
   /* что имеет право висеть над миром с первой секунды */
-  const OK=["c","slope","hud","msg","prompt","console","rail","pads","menu"];
+  /* g — канва видеокарты (08b gpuInit): это сам мир, а не то, что над ним */
+  const OK=["c","g","slope","hud","msg","prompt","console","rail","pads","menu"];
   const stray=[];
   for(const e of document.body.children){
     if(e.tagName==="SCRIPT"||e.tagName==="STYLE")continue;

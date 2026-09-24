@@ -173,8 +173,13 @@ function detCanvases(){
 /* один кадр так, как его делает игра: мир, рисунок, приборы */
 function detFrame(c,texts){
   if(texts){DET.texts=[];DET.astro=[];}
-  try{drawWorld();}catch(e){c.threw.push("drawWorld: "+e.message);}
-  try{hud();}catch(e){c.threw.push("hud: "+e.message);}
+  /* мир и приборы — одним кадром видеокарты, как в цикле (28-loop): иначе
+     приборы ложатся на 2D-слой уже после снимка кадра */
+  const both=()=>{
+    try{drawWorld();}catch(e){c.threw.push("drawWorld: "+e.message);}
+    try{hud();}catch(e){c.threw.push("hud: "+e.message);}
+  };
+  if(GPU.ok&&!GPU.on)gpuManual(both);else both();
   if(texts){c.texts=DET.texts;c.astro=DET.astro;DET.texts=null;DET.astro=null;}
 }
 function detTick(c,n){
@@ -200,7 +205,7 @@ function detStep(S,gesture){
     c.inst=detInstrRead(c.texts);c.hudText=detHudText();
     let t1=performance.now();c.f1=detGrab();
     /* полный кадр — только здесь и один раз: контраст текста */
-    try{c.full=cvs.getContext("2d").getImageData(0,0,cvs.width,cvs.height).data;c.fw=cvs.width;c.fh=cvs.height;}catch(e){}
+    try{const fc=gpuSnapshot();c.full=fc.getContext("2d").getImageData(0,0,fc.width,fc.height).data;c.fw=fc.width;c.fh=fc.height;}catch(e){}
     detCost("глаз",t1);
     detTick(c,1);detFrame(c,false);t1=performance.now();c.f2=detGrab();detCost("глаз",t1);
     detTick(c,1);detFrame(c,false);t1=performance.now();c.f3=detGrab();detCost("глаз",t1);
@@ -212,7 +217,10 @@ function detStep(S,gesture){
     try{if(G.surf&&G.surf.p&&weatherName(G.surf.p)){const w=weatherOf(G.surf.p);if(w&&w.kind&&w.kind!=="fog")c.precip=w.kind;}}catch(e){}
     c.canv=detCanvases();c.cvsW=cvs.width;c.nameless=detNameless();
   }else{
-    if(G.mode==="system"){c.ship0=detShipScr();c.nose0=G.ship.a;const t1=performance.now();c.p0=detPatch(c.ship0[0],c.ship0[1],gesture==="A"?40:48);detCost("глаз",t1);}
+    /* участок «до» — со свежего кадра: снимок видеокарты держит последний
+       нарисованный, а мир с тех пор мог уйти (уборка после прошлого жеста);
+       фон «до» — с того же кадра, иначе сдвиг корабля мерится от чужого фона */
+    if(G.mode==="system"){detFrame(c,false);c.before=detGrab();c.ship0=detShipScr();c.nose0=G.ship.a;const t1=performance.now();c.p0=detPatch(c.ship0[0],c.ship0[1],gesture==="A"?40:48);detCost("глаз",t1);}
     const rc=cvs.getBoundingClientRect(),kx=cvs.width/Math.max(1,rc.width),ky=cvs.height/Math.max(1,rc.height);
     if(gesture==="W")keys.thrust=true;
     else if(gesture==="A")keys.left=true;
@@ -247,10 +255,11 @@ function detStep(S,gesture){
     c.after=detGrab();
     /* W: участок на прежнем месте — видно, куда ушёл корабль; A: на новом —
        видно, как он повернулся */
-    if(c.p0){const at=gesture==="A"?detShipScr():c.ship0;c.p1=detPatch(at[0],at[1],gesture==="A"?40:48);
+    if(c.p0){const at=(gesture==="A"||gesture==="колесо")?detShipScr():c.ship0;c.p1=detPatch(at[0],at[1],gesture==="A"?40:48);
       /* справка к провалу, не приговор: куда смотрел нос и где стоял участок */
       c.diag="нос "+(c.nose0*57.3).toFixed(0)+"→"+(G.ship.a*57.3).toFixed(0)+"°, участок "+c.ship0.map(Math.round)+"→"+at.map(Math.round)+
-        ", холст "+cvs.width+"×"+cvs.height+", окно "+W+"×"+H+", ярко до "+(c.p1?Math.round(Math.max(...c.p0.L))+"/"+Math.round(Math.max(...c.p1.L)):"?");}
+        ", холст "+cvs.width+"×"+cvs.height+", окно "+W+"×"+H+", зум "+(+G.zoom).toFixed(2)+", скорость "+Math.hypot(G.ship.vx||0,G.ship.vy||0).toFixed(2)+
+        ", корпус "+G.shipId+", топливо "+Math.round(G.fuel)+", ярко до "+(c.p1?Math.round(Math.max(...c.p0.L))+"/"+Math.round(Math.max(...c.p1.L)):"?");}
     detCost("глаз",t1);
     const why=DET_MUTE[c.mode0+" · "+gesture];if(why&&!c.mute)c.mute=why;
   }
