@@ -86,7 +86,8 @@ Heat haze behind the nozzle (G4b).
   the site falls: a commit on top with the tree of `d543aff`, never a force-push. Only a commit Контроль
   accepted by pairs goes to main. CI rehearsal of ef8c8b9 (deploy.yml flags, `--disable-gpu`): load clean,
   smoke 4/4, Node green (the «рейсы» suite fails in full order only, green alone; it sits in quarantine).
-- Order now: L1b 2/n (dust) done, awaiting Контроль; then L4 (particles), then the G steps (G5 frozen).
+- Order now: L1b 3/n (dust: the H II cavity wall, pillars at the star) done, awaiting Контроль; `6a05969` (2/n) was
+  not accepted. Then L4 (particles), then the G steps (G5 frozen).
 
 - Done: core `08b`, kit `08c`, space `16g` (G1: live nebula wisps and lanes, stars with halo and tapered
   spikes, dust with depth of field; pair in `scratchpad/pairs/system_crop.png`),
@@ -324,17 +325,28 @@ Heat haze behind the nozzle (G4b).
   fading from .35 to .8; dust tail — a wide curved warm fan (`lcy` bend ±.36, ~20° off the ion), softer,
   exp(−x/.35). The centre fade dims both toward the middle third. lm1: core p99.9 200 vs the tail's first
   third median 76 (2.6×), tail +84% over the gas beside it (±18 px). Scratchpad `cometmeas.py`.
-  Done (L1b 2/n, dust): the frame was a wall of gas. Now a dust layer in front of the emission gas (16gb gen
-  pass, `dustAt`, parallax `PDUST` .12 — the nearest gas layer is .097): three scales in one field — 2–3 long
-  bands (ridges of a stretched pattern), medium pillars and filaments, small globules — all stretched along the
-  system's own direction (`seed`), the edge eaten by fine noise. The edge is measured in pixels (threshold
-  minus field over its gradient, ±1.5 px), so bodies have a sharp outline at ¼ res. Density grows inward: thin
-  places show gas and stars through, thick ones are blind. Inside — brown (reflected light, veins along the
-  stretch, darker toward the core); the grade's shadow key still tints it (giant: violet). The ionisation front:
-  on the side toward the star, a 1–3 px line lighter than the gas plus a 6–10 px glow, broken by noise. Less
-  dust in the landmark's window. nnormal: field L median 41 → 34, black 5 → 6%, bright 9%; dust body hue 13–21°,
-  L 18–23 (the off-screen star's haze lies over it); dwarf 14 / 19% black. Parallax: on a 128 px ship move the
-  dust shifts ~15 px, the near gas ~12 — slightly faster, not a cloud shadow.
+  Done (L1b 3/n, dust; 2/n `6a05969` was not accepted — flat ragged islands along one direction, uniform
+  burnt-paper erosion): dust is the wall of the H II cavity around the star (Pillars / Carina). Everything is
+  built in polar coordinates around the star's screen position (16gb gen pass, `dpolar`): the angle from the
+  «star → frame centre» direction (the ±π seam lies behind the star; `nzs` blends two turns there) and ln r.
+  To keep the dust on its own depth, JS accumulates offsets per frame (`GNB.dth`, `dlr`, `dl0`, `dl1` →
+  `u.g`): near the frame centre the pattern moves with parallax .12 while every direction still points at the
+  real star (a star closer than .3H to the centre — the pattern goes with it). The frame's radial span
+  (nearest frame point, ≥ .25H, → farthest corner) lives in the same shifted ln r, else a radial flight left
+  the wall standing on screen. Shape: a wall at the far side of the frame (the mother cloud, s ≈ .8 with a
+  lumpy edge); pillars grow out of it toward the star — capsules (`caps`) in cells of angle × ln r
+  (`pillars`, three scales: 18 / 40 / 70 per turn): round head facing the star, trunk down to the wall and
+  wider at its base; width in H, not in angle, so a pillar near the star does not become a needle. A head
+  deeper than allowed retracts into the wall (thinning it gave hairlines). Globules — ahead of the big heads,
+  tail away from the star; never near the star (the angle collapses there and a globule smeared into a ring).
+  Edge: the field is a distance in H, the edge in pixels (as before); toward the star — sharp, eroded (noise
+  in the dust's .12 layer), with the ionisation front (line + glow, now also for an off-screen star); sides
+  sharp; the back (edge facing away) melts into the gas over 16 px. Inside: brown with veins and relief
+  (bumps lighter on the slope toward the star); dense dust also hides the fog behind it. The grade's shadow key
+  still tints bodies (giant: violet), as Контроль asked. nnormal: 3–4 thick pillars from the right wall at the
+  star beyond the left edge; l2c: pillars from the right and bottom converge on the star, golden fronts kept.
+  Field (L median / black < 12): nnormal 17.6 / 38%, lm1 19.0 / 35%, l2c 27.7 / 21%, ndwarf 9.7 / 76% (main
+  13.8 / 20%; the dwarf frame is dark on both). Parallax (ship x 480 → 560): pillars slide ~10 px, shapes kept.
   Comet fix with it: the tail's axis turns 30±5° off the centre toward the vertical edge (a line into the
   centre hit our own ship and read as a targeting beam); the ion tail is softer (gauss 2→10 px, faint streamers
   across) and bluer — it adds hue 216°, S .53; off-axis 30.4°, core 2.35× the tail, tail +87% over the gas.
