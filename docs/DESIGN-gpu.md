@@ -125,6 +125,20 @@ Heat haze behind the nozzle (G4b).
   today's UTC noon), the wait also waits for the scene tail's `G.running`, and a scene script that must
   act every frame uses `__STEP.each(fn)`. Two runs of the planet scene: max|Δ| 0 over the whole frame
   (was 217 with real time). Title, surface, cave: finish, errs 0; `--clock wall` keeps the old way.
+  **P1 8/n — the probe stops confusing a resolution step with a win** (Контроль 24.09, S23: resAuto fell
+  1.5→1 at 8 s, `final` killed read −8): `?g11=deep` now freezes the resolution for the whole run
+  (`resFresh=1e9` and the DPR the game had chosen; `&dpr=k` sets one), measures each kill as base–kill–base
+  (delta against the mean of the two bases) and logs per pair the canvas size (one value, or `a→b` if it
+  moved) and the ship's position; every interval also carries the JS time of `frameBody` (p50/p90 of
+  `FRAME_JS`), the cost of one `stepWorld` call and the ship quanta per frame (mean and max `WORLD_SUB`,
+  via a wrapper that is on only while measuring — QUANT_MS untouched). Why `final` read slower: killing it
+  swaps `fsFinal` for `fsFinal0` and nothing else — bloom is still computed and the #c copy still made — so
+  its true gain is a few fetches per pixel; it was the last pair, measured against one base taken 20 s
+  earlier, with resAuto free to step 1→1.5 back up in between. The frozen pairs will say which. Found on the
+  way: `shot.py --clock wall` drove six manual `frame()` calls, each starting its own rAF loop — seven
+  frames per vsync, `FRAME_JS` of the last ≈ 0; a manual frame no longer chains rAF. Headless (411×742
+  ×1.5, vsync-bound): canvas 617×1113 in every pair, JS p50 2.4–3.5 ms, world 0.5–0.6 ms, 2 quanta; all
+  deltas 0–1 fps — the numbers that matter come from the phone.
   G3b 3/n (e1aeb19) and L4 k/n (7b406eb) accepted.
 - Brief of **L4 k/n — the shock ring and the exhaust haze bend the backdrop, never a hull** (Контроль 24.09): no
   hull, own or pirate, sprite or 2D, is cut into bands; an RGB fringe on the backdrop only. Done (08b/08c): the

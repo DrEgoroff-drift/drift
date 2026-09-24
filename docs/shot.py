@@ -83,7 +83,11 @@ function RT(){ return window.__STEP?__STEP.real():performance.now(); }
      заставке, и сколько их — решал бы случай */
   if(%s&&window.__STEP&&!(typeof G!=="undefined"&&G.running)&&RT()-t0<8000){setTimeout(function(){wait(t0)},40);return;}
   /* --clock step: кадры ведёт стенд (__STEP), и ожидание — это шаги, а не миллисекунды */
-  var S=window.__STEP,fr=function(t){ if(S)S.step(); else frame(t); };
+  /* --clock wall: frame(t) в конце ставит себе rAF — ручной кадр без глушения завёл бы ещё одну
+     петлю, и шесть ручных кадров давали семь frame() на такт (FRAME_JS последнего ≈ 0) */
+  var S=window.__STEP,fr=function(t){ if(S){S.step();return;}
+    var r=window.requestAnimationFrame; window.requestAnimationFrame=function(){return 0;};
+    try{ frame(t); }finally{ window.requestAnimationFrame=r; } };
   var go=function(f){ if(S)S.run(Math.round(%d*.06),f); else setTimeout(f,%d); };
   go(function(){
     try{ %s }catch(e){ console.error("shot js: "+e); }
@@ -92,14 +96,23 @@ function RT(){ return window.__STEP?__STEP.real():performance.now(); }
     try{ if(typeof MAT_JOB!=="undefined" && MAT_JOB && typeof planetMatNow==="function"){
            planetMatNow(MAT_JOB.p);
            for(var m=0;m<4;m++) fr(performance.now()+(7+m)*16); } }catch(e){}
-    var o={scene:%s, ver:VER};
-    try{ if(%s)Object.assign(o,lookFrame()); if(%s)o.eval=(function(){return eval(%s);})(); }
-    catch(e){ o.error=String(e); }
-    window.__shot=o; document.title="SHOT_DONE";
+    var fin=function(){
+      var o={scene:%s, ver:VER};
+      try{ if(%s)Object.assign(o,lookFrame()); if(%s)o.eval=(function(){return eval(%s);})(); }
+      catch(e){ o.error=String(e); }
+      window.__shot=o; document.title="SHOT_DONE";
+    };
+    /* --until: замер идёт сам (асинхронно) — ждём его, в пределах --budget; под ручными часами
+       шаги кадров тем временем идут дальше */
+    var U=%s,t1=RT();
+    if(!U)fin();
+    else (function poll(){ var ok=false; try{ ok=!!eval(U); }catch(e){}
+      if(ok||RT()-t1>%d){ fin(); return; } if(S)S.step(); setTimeout(poll,S?0:200); })();
   });
 })(RT());
 </script>
-""" % ("false" if scene == "title" else "true", a.delay, a.delay, a.js or "", json.dumps(scene), "true" if a.look else "false", "true" if a.eval else "false", json.dumps(a.eval or ""))
+""" % ("false" if scene == "title" else "true", a.delay, a.delay, a.js or "", json.dumps(scene), "true" if a.look else "false",
+       "true" if a.eval else "false", json.dumps(a.eval or ""), json.dumps(a.until or ""), max(0, a.budget - a.delay - 2000))
     return html[:cut] + ("" if scene == "title" else tail) + "\n" + extra + "</body></html>"
 
 
@@ -174,6 +187,7 @@ def main():
     ap.add_argument("--dpr", type=float, default=2)
     ap.add_argument("--delay", type=int, default=2600, help="ms after the GPU is up before --js runs")
     ap.add_argument("--port", type=int, default=9460)
+    ap.add_argument("--until", default="", help="JS expression: after --js, wait (within --budget) until it is truthy, then --eval and shoot")
     ap.add_argument("--clock", choices=["step", "wall"], default="step", help="step: the stand steps frames at 1/60 s; wall: the page's rAF on real time")
     ap.add_argument("--seed", type=int, default=1, help="DRIFT_SEED for rnd/rndFx (stars, chance); -1 = the wall clock, as in play")
     ap.add_argument("--budget", type=int, default=40000, help="ms a scene may take before it is shot as is (vetshot passes it)")

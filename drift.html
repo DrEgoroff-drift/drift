@@ -100082,13 +100082,25 @@ async function g11Deep(list){
 }
 /* промежутки кадров за sec: к/с, медиана и p90 (мс), доля кадров не длиннее такта 60 Гц
    (≤18.5 мс) и число кадров от 45 мс — ворота телефона меряются этим, не средним */
+/* ЦП отдельно от видеокарты (P1 8/n): js — FRAME_JS (весь frameBody), мир — время stepWorld
+   за вызов и кванты корабля за кадр (WORLD_SUB): при кадре 45 мс это 5–6 квантов, и если мир
+   дорог — спираль. Обёртка ставится на время замера (g11CpuHook) и снимается после */
+const G11_CPU={w:0,wn:0,q:0,qmax:0};
+function g11CpuHook(on){
+  if(on&&!window.__g11sw){const sw=window.stepWorld;window.__g11sw=sw;
+    window.stepWorld=function(dt){const t=wallMs(),q=WORLD_SUB;try{return sw(dt);}
+      finally{G11_CPU.w+=wallMs()-t;G11_CPU.wn++;G11_CPU.q+=q;if(q>G11_CPU.qmax)G11_CPU.qmax=q;}};}
+  if(!on&&window.__g11sw){window.stepWorld=window.__g11sw;window.__g11sw=null;}
+}
 function g11Iv(sec){
   return new Promise(res=>{
-    const d=[];let t0=0,tp=0;
-    const tick=t=>{if(!t0)t0=tp=t;else{d.push(t-tp);tp=t;}
+    const d=[],js=[];let t0=0,tp=0;const c0=Object.assign({},G11_CPU);G11_CPU.qmax=0;
+    const tick=t=>{if(!t0)t0=tp=t;else{d.push(t-tp);tp=t;js.push(FRAME_JS);}
       if(t-t0<sec*1000){requestAnimationFrame(tick);return;}
-      const s=d.slice().sort((a,b)=>a-b),q=k=>+(s[Math.min(s.length-1,Math.floor(s.length*k))]||0).toFixed(1);
-      res({fps:Math.round(d.length/((t-t0)/1000)),p50:q(.5),p90:q(.9),ok:Math.round(100*d.filter(x=>x<=18.5).length/Math.max(1,d.length)),n45:d.filter(x=>x>=45).length});};
+      const qs=a=>{const s=a.slice().sort((x,y)=>x-y);return k=>+(s[Math.min(s.length-1,Math.floor(s.length*k))]||0).toFixed(1);};
+      const q=qs(d),qj=qs(js),wn=Math.max(1,G11_CPU.wn-c0.wn);
+      res({fps:Math.round(d.length/((t-t0)/1000)),p50:q(.5),p90:q(.9),ok:Math.round(100*d.filter(x=>x<=18.5).length/Math.max(1,d.length)),n45:d.filter(x=>x>=45).length,
+        js50:qj(.5),js90:qj(.9),world:+((G11_CPU.w-c0.w)/wn).toFixed(1),quanta:+((G11_CPU.q-c0.q)/wn).toFixed(1),qmax:G11_CPU.qmax});};
     requestAnimationFrame(tick);
   });
 }
@@ -100104,19 +100116,26 @@ const G11_GPU_KILL=[
   ["trails",["gpuWake","gpuTrail","gpuDrones"]],["combat",["gpuCombatEnergy"]],
   ["hullLight",["gpuHullLight"]],["points",["gpuLight"]],["refract",["gpuHaze","gpuShock"]],
   ["bloom","bloom"],["front2D","front"],["final","fin"]];
+/* пара — «база, глушение, база» (P1 8/n): одна база перед глушением путала с выигрышем
+   дрейф полёта (район, прогрев). Дельта — от средней двух баз; на пару пишется канва и
+   место корабля до и после — видно, мерилась ли пара в одном разрешении и в одном месте */
 async function g11GpuDeep(put){
   const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-  const res={};
+  const res={},at=()=>[Math.round(G.ship.x),Math.round(G.ship.y)];
   for(const [key,what] of G11_GPU_KILL){
-    const b=await g11Iv(1.5);
+    const at0=at(),cv0=cvs.width+"×"+cvs.height;
+    const b1=await g11Iv(1.5);
     const saved={};
     if(typeof what==="string")GPU.kill[what]=true;
     else for(const nm of what){if(typeof window[nm]==="function"){saved[nm]=window[nm];window[nm]=()=>{};}}
     await sleep(150);
     let v;try{v=await g11Iv(1.5);}
     finally{if(typeof what==="string")GPU.kill[what]=false;else for(const nm in saved)window[nm]=saved[nm];}
-    res[key]=(v.fps-b.fps)+" ("+b.p50+"→"+v.p50+" мс)";
-    put(key+" +"+res[key]);
+    await sleep(150);
+    const b2=await g11Iv(1.5);
+    const d=Math.round(v.fps-(b1.fps+b2.fps)/2),cv1=cvs.width+"×"+cvs.height;
+    res[key]={d,b1,kill:v,b2,cvs:cv0===cv1?cv0:cv0+"→"+cv1,at:[at0,at()]};
+    put(key+" "+(d>=0?"+":"")+d+" · p50 "+b1.p50+"/"+b2.p50+"→"+v.p50+" · js "+v.js50+" · "+res[key].cvs);
   }
   return res;
 }
@@ -100142,16 +100161,24 @@ async function g11RunDeepHere(){
   put("G11 deep · ждёт полёта (system)…");
   while(!(G.running&&G.mode==="system"&&GPU.ok))await sleep(500);
   await sleep(4000);
+  /* разрешение на время пар стоит (P1 8/n): resAuto на S23 сбросил 1.5→1 на 8-й секунде, и
+     база ползла 66→17 мс — пары после сброса мерились в другом кадре. Какое выбрала игра к
+     этой минуте, то и держим; ?g11=deep&dpr=1.5 ставит своё */
+  const RA=RES_AUTO,PD=PHONE_DPR,fx=+(new URLSearchParams(location.search).get("dpr"))||0;
+  if(fx){RES_AUTO=fx;PHONE_DPR=fx;}
+  resFresh=1e9;resize();g11CpuHook(true);
   const out={dpr:devicePixelRatio,DPR,canvas:cvs.width+"×"+cvs.height,res:G.opts.gfx.res,RES_AUTO,resEma:+resEma.toFixed(1),
     ua:navigator.userAgent.slice(0,80)};
-  put("DPR "+DPR+" · "+out.canvas+" · gfx.res "+out.res+" · RES_AUTO "+RES_AUTO);
-  const g0=GNB.nGen|0,f0=GPU.frameNo;
-  out.base=await g11Iv(3);put("база "+JSON.stringify(out.base));
-  out.nebRegen=Math.round(100*((GNB.nGen|0)-g0)/Math.max(1,GPU.frameNo-f0))+"%";
-  put("туманность пересчитана в "+out.nebRegen+" кадров");
+  put("DPR "+DPR+" · "+out.canvas+" · gfx.res "+out.res+" · RES_AUTO "+RES_AUTO+" (стоит)");
   const err=[];
-  try{out.gpu=await g11GpuDeep(put);}catch(e){err.push("gpu: "+(e&&e.message||e));}
-  try{out.dpr2=await g11DprSweep(put);}catch(e){err.push("dpr: "+(e&&e.message||e));}
+  try{
+    const g0=GNB.nGen|0,f0=GPU.frameNo;
+    out.base=await g11Iv(3);put("база "+JSON.stringify(out.base));
+    out.nebRegen=Math.round(100*((GNB.nGen|0)-g0)/Math.max(1,GPU.frameNo-f0))+"%";
+    put("туманность пересчитана в "+out.nebRegen+" кадров");
+    try{out.gpu=await g11GpuDeep(put);}catch(e){err.push("gpu: "+(e&&e.message||e));}
+    try{out.dpr2=await g11DprSweep(put);}catch(e){err.push("dpr: "+(e&&e.message||e));}
+  }finally{g11CpuHook(false);RES_AUTO=RA;PHONE_DPR=PD;resFresh=0;resize();}
   out.err=err;
   window.G11_DEEP=out;console.log("G11_DEEP "+JSON.stringify(out));
   put("ГОТОВО · window.G11_DEEP");

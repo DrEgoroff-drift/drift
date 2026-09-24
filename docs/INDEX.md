@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 604 · символов верхнего уровня: 5960
+Файлов: 604 · символов верхнего уровня: 5962
 
 ## СИМВОЛЫ
 
@@ -1925,9 +1925,11 @@ fxInc                        tests/91zzzw-fx.js:18-22
 fxWorld                      tests/91zzzw-fx.js:6-16
 G                            src/08-state.js:190-276
 G_BOOT_KEYS                  tests/90-harness.js:186
-G11_GPU_KILL                 src/28z-fps-probe.js:135-156
+G11_CPU                      src/28z-fps-probe.js:122
+G11_GPU_KILL                 src/28z-fps-probe.js:147-175
+g11CpuHook                   src/28z-fps-probe.js:123-128
 g11Fps                       src/28z-fps-probe.js:7-14
-g11Iv                        src/28z-fps-probe.js:119-128
+g11Iv                        src/28z-fps-probe.js:129-140
 GAL_ARMS                     src/17z2-galaxy-names.js:8-11
 GAL_BAR_A                    src/17z1-galaxy.js:21
 GAL_BUDGET_MS                src/17z1-galaxy.js:66
@@ -7200,7 +7202,7 @@ zooTick                      src/11ad-zoo.js:41-54
   · look() — прибор кадра:1
   · читается ли изготовитель (M369, §19.4):296
 
-## src/28z-fps-probe.js · 14 КБ
+## src/28z-fps-probe.js · 16 КБ
   · пробник G11: ?g11:1
 
 ## src/29c-home-in.js · 16 КБ
