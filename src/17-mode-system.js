@@ -565,8 +565,7 @@ function drawSystem(){
         ? {i:1.34+rr()*.26,o:1.85+rr()*.7,tilt:.16+rr()*.26,n:3+Math.floor(rr()*4),s:p.seed}
         : null;
     }
-    gpuPlanet(p,x,y,r);   /* шар, свет, воздух и кольцо с тенями — на видеокарте (17ga) */
-    if(typeof drawPlanetLights==="function")drawPlanetLights(sys,p,x,y,r);   /* огни ваших построек (M296) */
+    gpuPlanet(p,x,y,r,planetLightsOn(sys,p,r));   /* шар, свет, воздух, облака, кольцо; огни ваших построек (M296) — городами (17ga) */
     if(typeof drawPlanetWorks==="function")drawPlanetWorks(sys,p,x,y,r);     /* отвал, купол, полоса (M306) */
     /* конец света виден с орбиты (хвост M114): у обречённой планеты рыжий
        ореол, а когда срок вышел — серая пелена поверх диска и потухший цвет.

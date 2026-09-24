@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 604 · символов верхнего уровня: 5942
+Файлов: 604 · символов верхнего уровня: 5944
 
 ## СИМВОЛЫ
 
@@ -1459,8 +1459,7 @@ drawPirate                   src/12i-pirate-hull.js:438-488
 drawPirateBase               src/24a-mode-raid.js:103-133
 drawPirateSkin               src/03d-hull-marks.js:99-126
 drawPlan                     src/05e-plan.js:137-172
-drawPlanetLights             src/17e-station-body.js:46-65
-drawPlanetWorks              src/17e-station-body.js:75-124
+drawPlanetWorks              src/17e-station-body.js:62-111
 drawPlant                    src/20-life.js:406-415
 drawPlantAlien               src/20-life.js:210-377
 drawPOI                      src/20a-poi.js:173-234
@@ -1498,11 +1497,11 @@ drawSurface                  src/21e-surface-draw.js:277-291
 drawSurfaceHud               src/21e-surface-draw.js:21-115
 drawSurfaceWorld             src/21e1-surface-world.js:10-615
 drawSurvey                   src/12w-survey.js:63-89
-drawSysHud                   src/17-mode-system.js:698-957
+drawSysHud                   src/17-mode-system.js:697-956
 drawSysLane                  src/17g-sys-lane.js:94-122
 drawSysLaneShips             src/17g-sys-lane.js:152-180
 drawSysRail                  src/18f-rail-station.js:32-65
-drawSystem                   src/17-mode-system.js:498-697
+drawSystem                   src/17-mode-system.js:498-696
 drawSysTraffic               src/17f-sys-traffic.js:37-41
 drawTapes                    src/12s1-tape.js:37-52
 drawTemple                   src/20aa-poi-shapes.js:50-89
@@ -2094,10 +2093,12 @@ gotNext                      src/27jb-ui-got.js:28
 gotoSector                   src/11a-quests.js:68-88
 gotRender                    src/27jb-ui-got.js:29-55
 gotTick                      src/27jb-ui-got.js:56-60
-GPL                          src/17ga-gpu-planets.js:13
-GPL_WGSL                     src/17ga-gpu-planets.js:14
-gplBody                      src/17ga-gpu-planets.js:105-120
-gplSun                       src/17ga-gpu-planets.js:122-125
+GPL                          src/17ga-gpu-planets.js:23
+GPL_CLOUD                    src/17ga-gpu-planets.js:27
+GPL_SEA                      src/17ga-gpu-planets.js:25
+GPL_WGSL                     src/17ga-gpu-planets.js:29
+gplBody                      src/17ga-gpu-planets.js:244-266
+gplSun                       src/17ga-gpu-planets.js:268-271
 GPU                          src/08b-gpu.js:8
 GPU_BLEND                    src/08c-gpu-kit.js:8-20
 GPU_FLD_HEAD                 src/08c-gpu-kit.js:175
@@ -2130,7 +2131,7 @@ gpuLight                     src/08b-gpu.js:406
 gpuLitSprite                 src/17c-system-draw.js:478-485
 gpuLtWrite                   src/08b-gpu.js:410-417
 gpuManual                    src/08b-gpu.js:530-535
-gpuMoon                      src/17ga-gpu-planets.js:143-148
+gpuMoon                      src/17ga-gpu-planets.js:294-299
 gpuNebulaComp                src/16gb-gpu-nebula.js:570-577
 gpuNebulaGen                 src/16gb-gpu-nebula.js:520-569
 gpuNoise                     src/08b-gpu.js:340-345
@@ -2140,7 +2141,7 @@ gpuPass                      src/08b-gpu.js:392-395
 gpuPipe                      src/08c-gpu-kit.js:13-20
 gpuPipes                     src/08b-gpu.js:311-337
 gpuPirateBody                src/12i-pirate-hull.js:432-437
-gpuPlanet                    src/17ga-gpu-planets.js:127-141
+gpuPlanet                    src/17ga-gpu-planets.js:274-292
 gpuPresent                   src/08b-gpu.js:567-581
 gpuResize                    src/08b-gpu.js:346-379
 gpuScene                     src/08b-gpu.js:484-493
@@ -3897,6 +3898,7 @@ planetHeightAt               src/07a-terrain.js:65-72
 planetHere                   src/12n-planet.js:61-64
 planEtherLine                src/11r-plan.js:43-46
 planetLightsN                src/17e-station-body.js:40-45
+planetLightsOn               src/17e-station-body.js:48-52
 planetLoadSum                src/12n-planet.js:122-125
 planetMat                    src/18a-material.js:99-106
 planetMatHue                 src/18a-material.js:363-366
@@ -6657,7 +6659,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/17d-house-shapes.js · 7 КБ
   · дома как язык форм:1
 
-## src/17e-station-body.js · 8 КБ
+## src/17e-station-body.js · 7 КБ
   · тело станции и планеты: что построил игрок, видно:1
 
 ## src/17f-sys-traffic.js · 7 КБ
@@ -6669,7 +6671,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/17g-sys-lane.js · 13 КБ
   · подъезд: полоса от входа в систему к доку (M459, DESIGN-life §2–3.1):1
 
-## src/17ga-gpu-planets.js · 9 КБ
+## src/17ga-gpu-planets.js · 19 КБ
   · планеты и луны на видеокарте (G3, docs/DESIGN-gpu.md):1
 
 ## src/17h-sys-gesture.js · 14 КБ

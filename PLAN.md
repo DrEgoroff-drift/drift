@@ -22,8 +22,6 @@ no fallback, and every ported layer better than before, not the same. The recipe
 layer order, the kit, the porting checklist — is `docs/DESIGN-gpu.md`; the decision is in `docs/DECISIONS.md`.
 Built: the core and post pass (08b), the layer kit (08c), the space backdrop (16g), the system under the planets (17g), planets and moons (17ga), the system view on top — trail, wake, exhaust, hull light, drones (16ga), combat (13z), lit station/barge/pirate sprites (17c), shuttles (17f), `docs/shot.py` on the GPU.
 
-- [ ] **G3b planet surface in three scales:** close up the strip is mush — only the macro scale exists. A procedural
-  middle and fine layer in the shader from the biome's colours, and the sun's glint on water (17ga).
 - [ ] **G4d the other ships lit:** the peace fleet, the ГЛАВТРАССА fleet, allies, the pirate base and «Сорока» are
   still flat 2D bakes with a top-lit gradient; give them `gpuLitSprite` (17c) as barges and pirates have.
 - [ ] **G4c wrecks as hulls:** a wreck (`npcWreckDraw`, 13d-npc) is a flat dark disc labelled «КОРПУС». Draw it
@@ -45,6 +43,9 @@ Built: the core and post pass (08b), the layer kit (08c), the space backdrop (16
   bursts, station lamps): a beam or a burst lights hulls nearby, metal gets a glint.
 - [ ] L4 sparks (Контроль 24.09, after 92679b3): at the burst peak they read as a drawn star-burst — uneven
   lengths and angles, 3–4 long streaks, the rest short.
+- [ ] G2 star disc (Контроль 24.09, after 40f3276): reads as a flat orange ball — k_l2cB radius profile centre
+  246, 198 at .85 R, a bump 201 at the limb, then glow 193; R 249–255 over the whole disc (clipped). Limb
+  darkening into red with no bump at the edge, R ≤245 on the limb.
 - [ ] **G5 the air, the rest (frozen for L1–L4):** done — sky, disc, scattering, shafts in the final pass (08b). Left:
   live clouds (`drawClouds` 19e), haze bands (`hazeBand`/`hazeFar` 19c), weather in depth, night lamps, the water
   mirror, the grade; shafts must be shown to read — a sun behind cloud gaps (the 2D clouds are too thin to cut

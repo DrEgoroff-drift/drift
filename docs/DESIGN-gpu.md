@@ -78,7 +78,7 @@ Heat haze behind the nozzle (G4b).
 
 ## Where I stopped (update on every commit)
 
-- **Deploy candidate: `15da663` (L1b 7/n; before it `446a576`), accepted by Контроль by its pairs.** The author: deploy to main
+- **Deploy candidate: `40f3276` (G2; before it `15da663`), accepted by Контроль by its pairs.** The author: deploy to main
   before the limit window reaches 90%; the signal «ДЕПЛОЙ» comes from Контроль. On it: close the step with a
   commit; `test.ps1 -Full` and `node test-node.js`; bump `VER` and a PATCHNOTES line (what the player sees
   better, plus «needs a browser with WebGPU»); a release commit; send Контроль its sha. **Контроль pushes**
@@ -86,10 +86,10 @@ Heat haze behind the nozzle (G4b).
   the site falls: a commit on top with the tree of `d543aff`, never a force-push. Only a commit Контроль
   accepted by pairs goes to main. CI rehearsal of ef8c8b9 (deploy.yml flags, `--disable-gpu`): load clean,
   smoke 4/4, Node green (the «рейсы» suite fails in full order only, green alone; it sits in quarantine).
-- L1b 7/n accepted (15da663). G2 done (below), waiting for Контроль; next G3/G3b planets. Brief of **G2 the star alive: granulation boils (warped cells
-  drifting), the corona flows out in radial jets, 4–6 prominences arch on the limb and breathe, a flare
-  flashes at the limb and fades over seconds; no threshold edge, no neon — corona and prominences melt into
-  the glow.** Gate: whole pairs at 760; l2c at a flare's peak and ~2 s later.
+- G2 accepted (40f3276); its disc (flat orange ball) is a PLAN §0 line, not now. **G3b done (below), waiting for
+  Контроль.** Brief was: the strip stays the macro scale; a middle and a fine layer of relief from 3D noise on the
+  turning sphere; water with a sun glint; drifting clouds that shade the ground; the holding's lights as city glow
+  on night land; warm terminator and rim. No threshold edge, no neon. Gate: whole pairs at 760.
 - Brief of **L1b 6/n — pillars become tapering trunks, not sticks, and the star field is as rich as
   main's.** A pillar is a trunk: base width ≈ ⅓ of its length, narrowing to a rounded head a little wider than
   its neck, 2–3 swellings along it, a bend up to 15°; 2–4 in the frame, each at most half the way from the wall
@@ -124,6 +124,18 @@ Heat haze behind the nozzle (G4b).
   shadows, moons as lit spheres. 2D `planetDraw/planetPaint/planetLight/planetCols/drawRing` are gone. Pair
   `g3a.png` / `g3a_crop.png` (gas giant `planets[3]`, terran `planets[0]`; ship and zoom in the kpairs js).
 - G3 accepted by Control; G3b (surface in three scales, sun glint on water) is in PLAN §0.
+- G3b done (`17ga`): the palette is handed to the shader, the strip's height is recovered from the colour (nearest
+  point of the palette polyline), middle and fine noise are added to it and it goes back through the palette — the
+  same colours, finer; the strip is read through a two-texel noise warp. Relief: gentle hills everywhere, warped
+  rounded ridges in belts (a coarse mask), shaded by a finite-difference normal; both layers fade in by texels per
+  pixel and earlier at the limb (×√nz, ×nz) so nothing shimmers. Water below a waterline per type (`GPL_SEA`) takes
+  a broad sheen plus a wave-broken core at the half-vector (measured: +30 over 73k px at .37 R towards the star).
+  Clouds (`GPL_CLOUD`, air worlds only): warped zonal fbm, edge eaten by finer noise, drift slower than the day,
+  thicker is brighter, shadow offset .012 from the star; they take the star's tint at 8% (white stayed pink under the
+  orange giant at 25%). Holding lights: `drawPlanetLights` (2D dots) became `planetLightsOn` (a count); the shader
+  scatters 6 sites per light over the sphere, cores plus a grainy sprawl, on land, over the half away from the star
+  (the star sits behind the viewer, true night is a thin crescent). Pairs `g3b_760.png` (terran far/close, gas giant,
+  terran with 24 lights), scene script `g3b.sh`.
 - **G4 in progress.** Done: the trail (`16ga-gpu-trail`: one triangle ribbon per nozzle lane with shared node
   normals, per-point age, gaussian core+halo; beads between segments gone). Pair `g4a_crop.png`, js in
   `trail.js` (a synthetic TRAIL, no thrust). The exhaust (same module, `gpuExhaust`: gaussian flame, flowing noise, shock diamonds, tone-mapped nozzle; the

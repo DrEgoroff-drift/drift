@@ -43,25 +43,12 @@ function planetLightsN(sys){
   const belt=(typeof rungOf==="function")&&rungOf(sys.sx,sys.sy)>=28;
   return belt?48:Math.min(24,nb*3);
 }
-function drawPlanetLights(sys,p,x,y,r){
-  if(!p||p.type==="gas"||r<6)return;
-  /* огни — на первом твёрдом теле системы: там живут */
+/* сколько огней на этой планете: на первом твёрдом теле системы — там живут.
+   Рисует их шейдер планеты (17ga) городами на ночной суше */
+function planetLightsOn(sys,p,r){
+  if(!p||p.type==="gas"||r<6)return 0;
   const first=(sys.planets||[]).find(q=>q.type!=="gas");
-  if(first!==p)return;
-  const n=planetLightsN(sys);if(!n)return;
-  const an=Math.atan2(p.y,p.x);            /* от звезды — ночная сторона */
-  const rr=rng(hashi(p.seed,0x11F5,n));
-  const dot=Math.max(1,r*.024);
-  ctx.save();
-  ctx.beginPath();ctx.arc(x,y,r-1,0,TAU);ctx.clip();
-  ctx.fillStyle="rgba(255,214,150,.85)";
-  for(let i=0;i<n;i++){
-    const a=an+(rr()-.5)*(n>=48?2.6:1.6);
-    const d=r*(.3+rr()*.6);
-    const px=x+Math.cos(a)*d,py=y+Math.sin(a)*d;
-    ctx.beginPath();ctx.arc(px,py,dot*(0.7+rr()*.6),0,TAU);ctx.fill();
-  }
-  ctx.restore();
+  return first===p?planetLightsN(sys):0;
 }
 
 /* ── планета меняется тоже (M306, DESIGN-holding §13) ──

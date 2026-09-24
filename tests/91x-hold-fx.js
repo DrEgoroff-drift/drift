@@ -93,5 +93,6 @@ TEST_SUITES.push(()=>suite("холдинг: 26 построек E–I — одн
   const mods=holdMods(s);
   ok(mods.length===nb&&mods.every(q=>q.d>=40&&q.d<=50&&q.s>=.55),"формы построек висят на внешнем кольце, штанги 40–50, готовые — крупнее");
   ok(typeof drawMooredBarge==="function","причаленная баржа рисуется");
-  ok(typeof drawPlanetLights==="function","огни планеты рисуются");
+  const fp=s.planets.find(q=>q.type!=="gas");
+  ok(!fp||planetLightsOn(s,fp,40)===planetLightsN(s),"огни планеты — на первом твёрдом теле");
 }));
