@@ -53341,7 +53341,8 @@ function drawSysLaneShips(zx,zy,Z){
      тень на грунте сдвинута от звезды;
    · огни построек (planetLightsN) — города на ночной суше, а не кружки поверх диска;
    · у терминатора воздух теплеет: закатная полоса на грунте и облаках, рыжий край. */
-const GPL={A:new Float32Array(64),U:new Float32Array(8)};
+/* A: 16 vec4 тела + 48 огней (pb[16..63]: x,y в долях радиуса, вес) */
+const GPL={A:new Float32Array(256),U:new Float32Array(8)};
 /* отметка воды на высоте развёртки (доля палитры): ниже — море с бликом */
 const GPL_SEA={terran:.27,ocean:.8};
 /* облачность и оттенок облаков по типу: доля неба и сколько в них цвета воздуха */
@@ -53350,7 +53351,7 @@ const GPL_CLOUD={terran:[.34,.12],ocean:[.5,.1],jungle:[.52,.18],ice:[.26,.1],de
 const GPL_WGSL=`
 struct U{a:vec4f,b:vec4f};
 @group(0) @binding(0) var<uniform> u:U;
-@group(0) @binding(1) var<storage,read> pb:array<vec4f,16>;
+@group(0) @binding(1) var<storage,read> pb:array<vec4f,64>;
 @group(0) @binding(2) var smp:sampler;
 @group(0) @binding(3) var tx:texture_2d<f32>;
 struct VO{@builtin(position) p:vec4f};
@@ -53557,23 +53558,18 @@ fn ring(rho:f32,v4:vec4f,v5:vec4f,px:f32)->vec4f{
       cc=cc*mix(vec3f(1.),warm*1.25,ss*.5);
       col=mix(col,cc,cl*.9);
     }
-    /* огни построек — города на ночной суше */
+    /* огни построек — города на суше. Точки кладёт gplCities (CPU): пояс .35–.85 R на
+       дальней от звезды стороне, едут вместе с поверхностью. Ядро меряется пикселями
+       экрана, а не долей шара: три огня — три точки и на малом диске, и на большом;
+       тёплый ореол втрое шире ядра (Контроль 24.09) */
     if(v8.w>.5){
-      var g=0.;var ha=0.;let N=i32(min(v8.w*6.,160.));
+      var g=0.;var ha=0.;let N=i32(min(v8.w,48.));
       for(var j=0;j<N;j++){
-        let fj=f32(j);let z=h1(fj*3.7+v2.w)*1.6-.8;let a=6.2831853*h1(fj*1.9+v2.w*.3+.5);
-        let s=vec3f(sqrt(1.-z*z)*sin(a),z,sqrt(1.-z*z)*cos(a));
-        let sz=.00012+.0004*h1(fj*5.1+.3);
-        let dd=1.-dot(B,s);let wj=.55+.45*h1(fj*7.3+.1);
-        g=g+exp(-dd/sz)*wj;ha=ha+exp(-dd/(sz*9.))*wj;
+        let c=pb[16+j];let dv=(d-c.xy)*r;let dd=dot(dv,dv);
+        g=g+exp(-dd/6.)*c.z;ha=ha+exp(-dd/54.)*c.z;
       }
-      /* город: белые ядра точками по зерну улиц, тёплый ореол вокруг — без рыжей каши */
-      let grain=.15+1.6*smoothstep(.5,.72,fb3(B*150.+so,2));
-      /* звезда почти всегда за спиной смотрящего, и настоящая ночь — узкий серп у края;
-         огни горят на всей дальней от звезды половине и гаснут к свету, как в 2D */
-      let night=1.-smoothstep(.05,.45,dl);
-      let lk=night*(1.-wm)*(1.-cl*.75);
-      col=col+(vec3f(1.,.94,.78)*min(g*grain,1.2)*.9+vec3f(1.,.66,.36)*min(ha,1.)*.3)*lk;
+      let lk=(1.-wm)*(1.-cl*.4);
+      col=col+(vec3f(1.,.95,.84)*min(g,1.)*.8+vec3f(1.,.64,.34)*min(ha,1.)*.16)*lk;
     }
     /* ободок: рассеяние по краю, днём; у терминатора теплеет */
     let rim=pow(1.-nz,3.)*rimK*smoothstep(-.25,.35,dl);
@@ -53622,14 +53618,15 @@ function gplBody(pass,key,x,y,r,tex,o){
   const hi=o.hi||o.base,lo=o.lo||o.base,ct=o.cloudTint||[255,255,255];
   a[24]=hi[0]/255;a[25]=hi[1]/255;a[26]=hi[2]/255;a[27]=o.wet||0;
   a[28]=lo[0]/255;a[29]=lo[1]/255;a[30]=lo[2]/255;a[31]=o.cloud||0;
-  a[32]=ct[0]/255;a[33]=ct[1]/255;a[34]=ct[2]/255;a[35]=o.lights||0;
+  a[32]=ct[0]/255;a[33]=ct[1]/255;a[34]=ct[2]/255;
+  a[35]=o.lights?gplCities(o,a):0;
   a[36]=0;a[37]=tex?tex.width:256;
   const pal=o.pal;if(pal){const np=Math.min(5,pal.length-1);
     for(let i=0;i<=np;i++){a[40+i*4]=pal[i][0]/255;a[41+i*4]=pal[i][1]/255;a[42+i*4]=pal[i][2]/255;}a[43]=np;}
   const U=GPUBufferUsage,d=GPU.dev;
   const ub=gpuBuf("gpl.u",32,U.UNIFORM|U.COPY_DST);
   const u=GPL.U;u[0]=GPU.bw;u[1]=GPU.bh;u[2]=W;u[3]=H;u[4]=DPR;u[5]=G.t||0;d.queue.writeBuffer(ub,0,u);
-  const sb=gpuBuf("gpl.b."+key,256,U.STORAGE|U.COPY_DST);d.queue.writeBuffer(sb,0,a);
+  const sb=gpuBuf("gpl.b."+key,1024,U.STORAGE|U.COPY_DST);d.queue.writeBuffer(sb,0,a);
   const P=gpuPipe("gpl",GPL_WGSL,"over");
   const tv=tex?gpuCanvasTex(tex).view:(GPU.nView||(GPU.nView=GPU.N.createView()));
   pass.setPipeline(P);pass.setBindGroup(0,gpuBind("gpl."+key,P,[ub,sb,GPU.S.lin,tv]));pass.draw(6);
@@ -53658,7 +53655,67 @@ function gpuPlanet(p,x,y,r,lights){
     base:pal[Math.min(np,pal.length>>1)],ring:(p.ring&&r>5)?p.ring:null,sun:gplSun(),seed:p.seed%97,kind:gas?2:1,
     hi:pal[Math.max(0,np-1)],lo:pal[Math.min(np,2)],wet:GPL_SEA[p.type]||0,pal,
     cloud:cw?cw[0]:0,cloudTint:cw?[lerp(236,sk[0],cw[1]),lerp(238,sk[1],cw[1]),lerp(242,sk[2],cw[1])]:null,
-    lights:lights||0});
+    lights:lights||0,strip:S,T:planetSpin(p)/TAU});
+}
+/* ── огни построек: где стоят города ──
+   Контроль 24.09: огни — на суше, в поясе .35–.85 R от середины диска, на стороне от
+   звезды, не у края; три огня читаются тремя точками, двадцать четыре — россыпью.
+   Звезда почти всегда за спиной смотрящего, настоящей ночи на диске почти нет — поэтому
+   окно, а не терминатор. Каждый город — точка тела: он едет с поверхностью ровно с её
+   скоростью, пройдя окно (GPL_CITY_D по долготе) гаснет, и следующим оборотом окна
+   зажигается следующий город на новой широте. Видимых — столько, сколько огней */
+const GPL_CITY_D=.8;
+const GPL_LAND=new WeakMap();
+const gss=(a,b,x)=>{const t=clamp((x-a)/(b-a),0,1);return t*t*(3-2*t);};
+const ghf=(a,b,c)=>hashi(a,b,c)/4294967296;
+/* суша по развёртке: высота — ближайшая точка ломаной палитры (как palV шейдера), выше
+   отметки воды — суша. Один раз на развёртку, грубо: городу хватает 256×128 */
+function gplLandMask(S,pal,wet){
+  let m=GPL_LAND.get(S);if(m)return m;
+  const w=256,h=128,cn=document.createElement("canvas");cn.width=w;cn.height=h;
+  const g=cn.getContext("2d",{willReadFrequently:true});g.drawImage(S,0,0,w,h);
+  const D=g.getImageData(0,0,w,h).data,M=new Uint8Array(w*h),np=Math.min(5,pal.length-1);
+  for(let i=0;i<w*h;i++){
+    const r=D[i*4],gg=D[i*4+1],b=D[i*4+2];let bd=1e9,bv=0;
+    for(let k=0;k<np;k++){
+      const A=pal[k],E=pal[k+1],ax=E[0]-A[0],ay=E[1]-A[1],az=E[2]-A[2];
+      const t=clamp(((r-A[0])*ax+(gg-A[1])*ay+(b-A[2])*az)/Math.max(ax*ax+ay*ay+az*az,1e-6),0,1);
+      const dx=r-A[0]-ax*t,dy=gg-A[1]-ay*t,dz=b-A[2]-az*t,dd=dx*dx+dy*dy+dz*dz;
+      if(dd<bd){bd=dd;bv=(k+t)/np;}
+    }
+    M[i]=bv>wet+.01?1:0;
+  }
+  m={w,h,M};GPL_LAND.set(S,m);return m;
+}
+function gplCities(o,a){
+  const n=Math.min(48,o.lights|0),wet=o.wet||0;
+  const land=wet>0&&o.strip?gplLandMask(o.strip,o.pal,wet):null;
+  if(wet>0&&!land)return 0;
+  /* сторона от звезды на экране: свет шейдера — (sx,sy)·.67 и .74 к смотрящему */
+  const l=Math.hypot(o.sx,o.sy)||1,ax=-o.sx/l,ay=-o.sy/l;
+  const reg=(x,y)=>{const rr=Math.hypot(x,y);if(rr<.3||rr>.9)return 0;
+    return gss(.3,.4,rr)*(1-gss(.8,.9,rr))*gss(.2,.45,(x*ax+y*ay)/rr);};
+  const T=o.T||0,sd=(o.seed|0)*131+7;let k=0;
+  for(let j=0;j<n;j++){
+    const P=ghf(sd,j,77)+T*TAU/GPL_CITY_D,e=Math.floor(P),ph=P-e;
+    /* широта этого оборота окна: первая, чья дорожка пересекает пояс и чей город — на суше */
+    for(let tr=0;tr<32;tr++){
+      const y0=ghf(sd+j*977,e,tr)*1.7-.85,c=Math.sqrt(1-y0*y0);
+      let best=0,r0=null,la=0,lb=0;
+      for(let s=0;s<=40;s++){const L=-1.45+2.9*s/40;
+        if(reg(c*Math.sin(L),y0)>.5){if(r0===null)r0=L;if(L-r0>best){best=L-r0;la=r0;lb=L;}}else r0=null;}
+      if(best<GPL_CITY_D)continue;   /* окно целиком в поясе: город не гаснет на полпути */
+      const lam=(la+lb)/2+(.5-ph)*GPL_CITY_D;
+      if(Math.abs(lam)>1.5)continue;
+      /* точка тела под городом: та же долгота, что читает шейдер (u0 = atan2/2π + оборот) */
+      if(land){const u=((lam/TAU+T)%1+1)%1,v=(y0+1)/2;
+        if(!land.M[Math.min(land.h-1,v*land.h|0)*land.w+Math.min(land.w-1,u*land.w|0)])continue;}
+      const x=c*Math.sin(lam),w=gss(0,.08,ph)*(1-gss(.92,1,ph))*reg(x,y0)*(.8+.2*ghf(sd,j,5));
+      if(w>.02){a[64+k*4]=x;a[65+k*4]=y0;a[66+k*4]=w;k++;}
+      break;
+    }
+  }
+  return k;
 }
 /* луна: освещённый шар; свет — от звезды, как у её планеты */
 function gpuMoon(m,key,x,y,r){

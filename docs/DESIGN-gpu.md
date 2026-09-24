@@ -78,7 +78,13 @@ Heat haze behind the nozzle (G4b).
 
 ## Where I stopped (update on every commit)
 
-- **Deploy candidate: `40f3276` (G2; before it `15da663`), accepted by Контроль by its pairs.** The author: deploy to main
+- **Released 0.457.0 (`2a288f7`, from `rel`; merged back into gpu as `b0c8cac`).** The next candidate goes from
+  gpu the same way: the release list plus `cismoke`, its sha to Контроль. Rollback: a commit with the tree of
+  `d543aff` on top, no force-push. `C:/Claude/drift-rel` stays — it is Контроль's working directory; nothing is
+  done in it.
+- Now: G3b 3/n lights (done, below) → L4 k/n the shock ring past hulls → §L in order. A pair handed in, Контроль
+  told, the next item taken without waiting for a verdict.
+- The old release path, kept for its steps: the author: deploy to main
   before the limit window reaches 90%; the signal «ДЕПЛОЙ» comes from Контроль. On it: close the step with a
   commit; `test.ps1 -Full` and `node test-node.js`; bump `VER` and a PATCHNOTES line (what the player sees
   better, plus «needs a browser with WebGPU»); a release commit; send Контроль its sha. **Контроль pushes**
@@ -147,6 +153,16 @@ Heat haze behind the nozzle (G4b).
   ridge mask and height, lowlands smooth. Lights: white-yellow cores by a street grain plus a warm halo nine times
   wider. Pairs `g3b2_760.png` (7 rows: terran far/close, gas r200, terran 24 lights, r110 with 3 and 24, gas r700),
   `step_ab.png` (the step, before | after).
+- Brief of **G3b 3/n — N lights read as N cities**: on land, in the belt .35–.85 R from the disc centre, on the side
+  away from the star, not at the limb; core >= 2 px at 760, a warm halo ~3x wider, core +60 over the day surface.
+  Done (`17ga`, `gplCities`): the sites are placed on the CPU and handed to the shader (`pb[16..63]`, up to 48, x,y
+  in disc radii and a weight). Each city is a body point riding the surface at its speed through a window of
+  `GPL_CITY_D` = .8 rad of longitude on a hashed latitude; it fades in and out at the window's ends and the next
+  one lights on a new latitude, so the count holds while the planet turns. A latitude is taken only if the whole
+  window lies inside the belt (a shorter run faded the city out halfway — 3 lights showed 2) and the point is land
+  on a 256x128 mask of the strip. Shader: core `exp(-d²/6)`, halo `exp(-d²/54)`, dimmed under clouds ×.6, none on
+  water. Measured at 760: 3 lights → 3 sites, 24 → 24; a core lifts +190 over the surface, 3–4 px above half.
+  Pair `g3m_sheet.png` (r110 «3 | 24», r380 «3 | 24»), crop `g3m_crop.png`; scripts `g3l.sh`, `litmeas.py`.
 - **G4 in progress.** Done: the trail (`16ga-gpu-trail`: one triangle ribbon per nozzle lane with shared node
   normals, per-point age, gaussian core+halo; beads between segments gone). Pair `g4a_crop.png`, js in
   `trail.js` (a synthetic TRAIL, no thrust). The exhaust (same module, `gpuExhaust`: gaussian flame, flowing noise, shock diamonds, tone-mapped nozzle; the

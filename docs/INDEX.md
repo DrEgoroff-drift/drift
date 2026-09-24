@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 604 · символов верхнего уровня: 5950
+Файлов: 604 · символов верхнего уровня: 5956
 
 ## СИМВОЛЫ
 
@@ -2003,6 +2003,7 @@ GEW_WGSL                     src/17-mode-system.js:49
 GEX                          src/16ga-gpu-trail.js:186
 GEX_WGSL                     src/16ga-gpu-trail.js:187
 gexPush                      src/16ga-gpu-trail.js:252-258
+ghf                          src/17ga-gpu-planets.js:349
 GHL                          src/16ga-gpu-trail.js:302
 GHL_WGSL                     src/16ga-gpu-trail.js:303
 GIANT                        src/19a-mode-scoop.js:192
@@ -2098,12 +2099,16 @@ gotNext                      src/27jb-ui-got.js:28
 gotoSector                   src/11a-quests.js:68-88
 gotRender                    src/27jb-ui-got.js:29-55
 gotTick                      src/27jb-ui-got.js:56-60
-GPL                          src/17ga-gpu-planets.js:23
-GPL_CLOUD                    src/17ga-gpu-planets.js:27
-GPL_SEA                      src/17ga-gpu-planets.js:25
-GPL_WGSL                     src/17ga-gpu-planets.js:29
-gplBody                      src/17ga-gpu-planets.js:293-315
-gplSun                       src/17ga-gpu-planets.js:317-320
+GPL                          src/17ga-gpu-planets.js:24
+GPL_CITY_D                   src/17ga-gpu-planets.js:346
+GPL_CLOUD                    src/17ga-gpu-planets.js:28
+GPL_LAND                     src/17ga-gpu-planets.js:347
+GPL_SEA                      src/17ga-gpu-planets.js:26
+GPL_WGSL                     src/17ga-gpu-planets.js:30
+gplBody                      src/17ga-gpu-planets.js:289-312
+gplCities                    src/17ga-gpu-planets.js:369-398
+gplLandMask                  src/17ga-gpu-planets.js:352-368
+gplSun                       src/17ga-gpu-planets.js:314-317
 GPU                          src/08b-gpu.js:8
 GPU_BLEND                    src/08c-gpu-kit.js:8-20
 GPU_FLD_HEAD                 src/08c-gpu-kit.js:175
@@ -2136,7 +2141,7 @@ gpuLight                     src/08b-gpu.js:406
 gpuLitSprite                 src/17c-system-draw.js:478-485
 gpuLtWrite                   src/08b-gpu.js:410-417
 gpuManual                    src/08b-gpu.js:530-535
-gpuMoon                      src/17ga-gpu-planets.js:343-348
+gpuMoon                      src/17ga-gpu-planets.js:400-405
 gpuNebulaComp                src/16gb-gpu-nebula.js:575-582
 gpuNebulaGen                 src/16gb-gpu-nebula.js:525-574
 gpuNoise                     src/08b-gpu.js:340-345
@@ -2146,7 +2151,7 @@ gpuPass                      src/08b-gpu.js:392-395
 gpuPipe                      src/08c-gpu-kit.js:13-20
 gpuPipes                     src/08b-gpu.js:311-337
 gpuPirateBody                src/12i-pirate-hull.js:432-437
-gpuPlanet                    src/17ga-gpu-planets.js:323-341
+gpuPlanet                    src/17ga-gpu-planets.js:320-338
 gpuPresent                   src/08b-gpu.js:567-581
 gpuResize                    src/08b-gpu.js:346-379
 gpuScene                     src/08b-gpu.js:484-493
@@ -2248,6 +2253,7 @@ gspSeed                      src/16g-gpu-space.js:196
 gspStarBuf                   src/16g-gpu-space.js:140-150
 gspStarsDust                 src/16g-gpu-space.js:186-194
 gspUni                       src/16g-gpu-space.js:166-174
+gss                          src/17ga-gpu-planets.js:348
 GST_WGSL                     src/17c-system-draw.js:425
 GSY                          src/17g-gpu-system.js:18
 GSY_ORB_WGSL                 src/17g-gpu-system.js:19
@@ -6677,7 +6683,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/17g-sys-lane.js · 13 КБ
   · подъезд: полоса от входа в систему к доку (M459, DESIGN-life §2–3.1):1
 
-## src/17ga-gpu-planets.js · 22 КБ
+## src/17ga-gpu-planets.js · 26 КБ
   · планеты и луны на видеокарте (G3, docs/DESIGN-gpu.md):1
 
 ## src/17h-sys-gesture.js · 14 КБ
