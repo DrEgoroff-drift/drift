@@ -39,6 +39,8 @@ is half-ported (see «Half-ported modes» below).
 | `lifeLight(o)` | the light: `{lx,ly}` towards the source (screen axes, y down), `key`/`amb` colours 0..1, `k` strength, `rim`, `lit` share of direct light, `shx/sq/sa` shadow skew/squash/density. Without arguments — by `G.mode`: surface (star + sky), cave/dig (lamp), anything else (ceiling). Any field can be overridden: `lifeLight({lx:-.4,ly:-.9})`. Build it once per frame and pass it as `o.light` to many twins. |
 | `lifeSprite(pass,B,S,L)` | the underlying lit sprite, for any other baked figure: `B` from `gpuBake`/`lifeBaked`, `S` = `{x,y,w,h}` centre and size (w<0 mirrors), `rot,a,lod,base,bend,breath,waist,haze,lit,shadow,ao,part}` (see the comment in the file). |
 | `lifeBaked(key,w,h,draw,o)` | the twins' keyed LRU of bakes (cap 160), re-baked after a device loss. |
+| `lifeDim(wx)` | the ridge's cast shadow at world x on the surface (1 — in the light); the twins apply it themselves. |
+| `lifePeepGpu(pass,camx,camy,o)` | the memory-light figures of a peep meadow (`20c`), same walk as `peepGhosts` (shared `peepWalk`); soft additive capsules and facets, a halo without an edge, a trail that cools link by link. `o.x0,o.y0,o.s` — where the 2D frame lands (`lifeHere()`). |
 | `lifeHere(x,y)` | the screen point and scale of `(x,y)` under the current 2D transform — for a half-ported mode that still moves `ctx` (translate, `withScale`) but hands the figure to a twin. |
 
 Example — the surface walker in a mode that still moves `ctx`:
@@ -65,6 +67,8 @@ therefore have a **control** frame (the same cuts, 2D painters) to isolate what 
 | commit | what |
 |---|---|
 | 1 | `20fa-life-gpu.js`: the lit-sprite pipeline `life.spr` (normal from blurred alpha, key/fill hue, rim, projected contact shadow, bend and breath warps) and three twins — walker, beast, plant. `20-life`: `drawAstronaut` `o.bake` (no antenna light — the twin lights it), `PLANT_BAKE` (the plant stands straight in a bake: no gust, eclipse, ridge shadow), `plantUx()` (the star's side, shared). `20f-fauna`: `drawBeast`/`drawBeastAlien` take an optional bake descriptor `k` (static body only). Tests: `91x-life-gpu` — pose keys, light, bake boxes, all 2D painters still draw with and without the bake flags, twins silent without a pass. |
+| 3 | Earthly beasts breathe (breath warp above the body centre, per-animal phase); notes: the API table gains `lifeDim` and `lifePeepGpu`, open problems, the cave and DPR-2 pairs. |
+| 2 | Tuning from the pairs: the fill takes the sky's raw colour (hue only in the light term; the normalised one hazed plants toward white); the key and fill give hue, not paint (an orange star turned the white suit salmon); the rim only on bodies (thin stems were all «edge»); mip sampled a step sharper, like the kit's `GPU_MIP_LOD` (thin stems and outlines faded); a colour multiplier `dim` per instance — plants, beasts and the walker darken in the ridge's cast shadow (2D did it for plants only); figures drawn with the `hull` blend so they mark the scene's figure mask; the core request (shafts and bloom over scene figures). `lifeBake2D`/`LG_2D` — a 2D-canvas bake path through `gpuMipTex`, off by default (kept for comparing bakes). |
 
 ## Pairs (scratchpad, never in git)
 
@@ -74,10 +78,26 @@ Scratchpad: `/tmp/claude-0/-home-user-drift/e923652c-add4-55c1-b712-4a53dd7ccf16
 
 | pair | what got better |
 |---|---|
-| `before-surface.png` \| `after3-surface.png` (control `ctl-surface.png`; crop `cmp3-surface.png`) | the walker keeps his white suit and gets a body: lit side toward the star, shaded side in the sky's hue, a rim on the edge facing the star, and his own shadow on the slope instead of the shared oval. Plants in this frame still read paler than 2D — being tuned (commit 2). |
+| `before-surface.png` \| `after7-surface.png` (control `ctl-surface.png`; crops `pair7.png`, `cmp8.png`; the core fix applied in the scratch build, `after6-surface.png` is the same without it) | plants have bodies: the umbrella at left a shaded underside and its own shadow on the ground, the bushes on the right read in volume instead of flat cut-outs; the walker keeps the white suit with a lit side toward the star and a shadow of his own; plants in the ridge's cast shadow darken as before. Balloons are a touch glossier than 2D (GcCtx's radial highlight); without the core fix the whole of the twins' layer washes toward white (see requests). |
 | `before-cave.png` \| `after1-cave.png` (control `ctl-cave.png`) | lamp beam and chest glow now additive on the GPU (bloom picks them up); the figure itself is ~12 px at 760 — no visible difference at this size. |
+| `ctl-surface-x2.png` \| `after9-surface-x2.png` (DPR 2; crop `walker-x2.png`) | the walker close: two legs with knees and boots where 2D read as one grey block, lit edge on helmet and shoulder toward the star, the antenna light glowing, his shadow on the slope. The mid-distance balloons now fade into the air like every other plant part — the 2D balloon gradient used the raw leaf colour and skipped M233's air perspective. |
+| `before-cave.png` \| `after8-cave.png` (control `ctl2-cave.png`; crop `pair8.png`; core fix in scratch) | the manta over the pool has a body — lit upper edge toward the lamp, shaded belly, the sting a live capsule; the cave's crystal flora keeps its glow; the lamp cone is one clean additive shape. |
 
 ## Requests for files outside the zone
+
+- **Core (`08b-gpu.js`, `fsFinal`) — the one that matters for every ported mode.** The last pass
+  treats everything in the GPU scene as backdrop: the sun shafts accumulate `1 - front.a` along the
+  path to the star, and bloom is damped only under the 2D front layer (`*(1.-.6*f.a)`). A figure
+  (or a ground chunk) drawn into `gpuScene()`/`gpuOver()` therefore gets the shafts screened over
+  it and 2.5× the bloom — on the surface pair the walker and the plants came out washed toward
+  white whatever the twin's own light did (measured: a balloon pixel 115,196,137 in 2D →
+  221,230,226 in the scene, and the same with the twin's lighting switched off). The twins draw
+  with the kit's `hull` blend, so they already clear the scene alpha on their coverage (the mask
+  `hullM` reads to keep hulls out of the heat haze). Proposed fix, two lines, tried in the scratch
+  build (`scratch.py … core`): in the shafts loop
+  `let sm=select(0.,1.-textureSampleLevel(tScene,sl,q,0.).a,u.scene>.5);acc+=(1.-max(front.a,sm))*wq;`
+  and in the bloom add `*(1.-.6*max(f.a,sm))` with the same `sm` at `v.uv`. Sky and nebula keep
+  scene alpha 1 (the clear value), so nothing else changes.
 
 - Surface ship (`21e1-surface-world.js`): call the twins — walker (`lifeAstroGpu`, drop
   `groundShadow` under him), plants and beasts (`lifePlantGpu`/`lifeBeastGpu` in the loops, drop
@@ -92,6 +112,17 @@ Scratchpad: `/tmp/claude-0/-home-user-drift/e923652c-add4-55c1-b712-4a53dd7ccf16
   `kit.img|add` (the lamp beam), and the bake pipelines of `08ca`.
 
 ## Open problems
+
+- **The core request above.** Until the last pass reads the scene's figure mask, anything a mode
+  draws in the scene (the twins included) is washed by sun shafts and full bloom.
+- A tethered balloon's slow bob (`lift`, ±6 % of its height) and the ribbons' per-ribbon phase are
+  frozen in the bake; the ribbons wave as one through the bend. Visible only side by side.
+- The balloons come out a touch glossier than 2D — `GcCtx`'s two-circle radial gradient puts the
+  white stop wider than Skia does. `LG_2D=true` bakes with a 2D canvas instead, for comparison.
+- No pair for the peep twin: a peep meadow shows only during an eclipse on one world in nine;
+  none of the `mkview` scenes has one. Its test covers the walk and the silent-without-pass rule.
+- Earthly beasts breathe (the back rises and falls, per-animal phase), aliens don't — the jelly
+  pulses and the manta flies already.
 
 - Bakes happen in the frame that first needs a pose (24 walk frames per stride, 16 wing frames
   per manta). Cheap on a real GPU; on SwiftShader the first seconds of a mode are slow.
