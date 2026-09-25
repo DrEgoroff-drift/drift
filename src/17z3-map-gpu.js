@@ -40,6 +40,7 @@ fn gArmD(r:f32,th:f32,ph:f32,pitch:f32)->f32{
   let s=th-log(max(r,${GAL_R0.toFixed(4)})/${GAL_R0.toFixed(4)})/pitch-ph;
   return (pmod(s+GPI*.5,GPI)-GPI*.5)*r;}
 fn sq(x:f32)->f32{return x*x;}
+var<private> GNEB:array<vec4f,${GAL_NEBULAE.length}>=array<vec4f,${GAL_NEBULAE.length}>(${GAL_NEBULAE.map((n,i)=>"vec4f("+n.x.toFixed(4)+","+n.y.toFixed(4)+","+(1.3+.5*h01(i,7,0x6C3)).toFixed(3)+","+(i%3)+".)").join(",")});
 fn field(p:vec2f,uv:vec2f)->vec4f{
   let V=fu.v[0];let C=fu.v[1];
   let w0=V.xy+(p-C.xy)/V.z;let x=w0.x;let y=w0.y;let fine=V.w;
@@ -78,6 +79,22 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   var c=col*glow*${GAL_GLOW_CAP.toFixed(3)};
   /* узлы HII светят сами — розовая эмиссия поверх, чуть сверх потолка */
   c+=vec3f(1.,.5,.7)*knot*disk*.10;
+  /* туманности по имени (17z2): облака свечения там, где их зовут водители. Одно
+     общее поле шума на пиксель, маска — сумма гауссиан; розовое ядро, бирюзовая
+     кромка, тёмные глобулы. Место с именем теперь видно, а не только подписано */
+  var nm=0.;var ni=0.;
+  for(var i=0;i<${GAL_NEBULAE.length};i++){let q=GNEB[i];let d2=dot(w0-q.xy,w0-q.xy);
+    if(d2<16.){let g=exp(-d2/(q.z*q.z));nm+=g;ni+=g*q.w;}}
+  if(nm>.004){
+    let hue=ni/nm;
+    let n1=gF(x*.7+y*.2,y*.7-x*.2,${0x6C1},4);let n2=gF(x*1.6,y*1.6,${0x6C2},3);
+    let gas=min(nm,1.)*smoothstep(.3,.7,n1+(n2-.5)*.35*fine);
+    let glob=smoothstep(.62,.8,n2)*nm*.8;
+    let core=mix(vec3f(1.,.42,.66),vec3f(1.,.62,.36),step(1.5,hue));
+    let edge=mix(vec3f(.30,.86,.82),vec3f(.52,.62,1.),step(.5,hue)*step(hue,1.5));
+    let nc=mix(core,edge,smoothstep(.25,.9,1.-nm+n2*.4));
+    c=c*(1.-clamp(glob,0.,.7))+nc*gas*.4*(1.-glob);
+  }
   /* круг прыжка: внутри — чуть светлее и бирюзовая подсветка к кромке, снаружи небо гаснет */
   let L=fu.v[2];
   if(L.w>0.){

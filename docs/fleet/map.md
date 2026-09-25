@@ -26,11 +26,14 @@ new module `17z3-map-gpu`.
    the bends of translucent lines), the dark casing when close, an additive glow under ring/arm lines, station
    discs and rings from the kit; each polyline clipped to the frame. `railNetPartial()` still runs every frame
    without a GPU (logic, not paint).
-
 3. **the jump circle lights the sky** — `18-mode-map`, `17z3`: the 2D radial-gradient fill of the jump circle goes;
    `drawMap` hands the circle to the field (`MAPGPU.lamp`), which brightens the galaxy inside reach, dims it
    outside (only when zoomed in: `.3*clamp((cell-18)/30)`, so the spiral still reads zoomed out) and adds a
    thin teal rim toward the edge. The hairline stroke stays 2D.
+4. **named nebulae glow** — `17z3`: the ten `GAL_NEBULAE` of `17z2` were a dot and a word; now each is an emission
+   cloud in the galaxy field (a gaussian mask per nebula, one shared fbm for the gas, a pink or amber core, a teal
+   or blue edge, dark globules; `GNEB` is baked into the WGSL from the JS table). Cost: one 4-octave and one
+   3-octave fbm per pixel, only where a nebula is within 4 sectors.
 
 ## Pairs (scratchpad of session a777c21e…, 760×475, before = fleet base e4c3a56)
 
@@ -38,9 +41,12 @@ new module `17z3-map-gpu`.
   crisp AA points with a few bright ones, not 1-px squares; system stars' light falls off softly.
 - `scratchpad/pair1-map-z4.png` (`map`, `--js "G.mapZoom=4"`) — the spiral reads: arms are lit bands with a dust lane
   on the inner edge, per pixel instead of 13-px texels; the core stays warm, the sky between arms cold.
-
 - `scratchpad/pair2-map.png` (`map`) — the reach reads as light in the sky itself: the galaxy is brighter and warm
   inside the jump circle and sinks into the dark beyond it, instead of a flat teal wash over the address layer.
+- `scratchpad/pair-neb.png` (`map`, `--js "var n=GAL_NEBULAE[5];G.mapView={x:n.x+1,y:n.y};G.mapZoom=2;"`) — «Печка»
+  is a place you can see: a pink cloud with a teal rim and dark knots, where before there was only empty sky.
+- `scratchpad/pair-rail.png` (`map` + `railRideStart` on the «Рыжий рукав» arm) — the rail ride keeps its sky
+  through the shared `drawGalaxy` (gpuOver path, 0 errors); near parity, the road ship owns the rest of the ride.
 
 ## Requests outside the zone
 
