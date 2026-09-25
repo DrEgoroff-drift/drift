@@ -37,6 +37,9 @@ could ever save.
   for new ones.
 - **Watching a crewmate is drawn by the video card**: the view makes no 2D calls; your ship's barrels and
   launcher are GPU bakes, text widths come from `gcMeasure`.
+- **The ground has its grain again on the landing and the surface.** Since the planets moved to the video
+  card only the system view stepped the ground material, so after landing the tile stayed at its first row.
+  The material now bakes itself a portion per frame wherever it is used; the planet frame makes no 2D calls.
 - README and the site name the WebGPU requirement and the browsers; the key list on the mechanics page
   says Space for the action and G for a missile.
 
