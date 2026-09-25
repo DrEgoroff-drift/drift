@@ -620,6 +620,7 @@ function drawSurfaceWorld(){
       ctx.restore();
     }
   }
+  placesLit(p,tr,camx,camy);   /* фонари мест светят ПОСЛЕ ночи (11va) */
   lightShafts(p);
   gradePass(p);
 }
