@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 615 · символов верхнего уровня: 6135
+Файлов: 615 · символов верхнего уровня: 6137
 
 ## СИМВОЛЫ
 
@@ -1434,7 +1434,7 @@ drawCheburek                 src/17j-cheburek.js:72-113
 drawChunks                   src/18c-chunks.js:90-96
 drawClouds                   src/19e-clouds.js:386-528
 drawCockpit                  src/25-cockpit.js:400-674
-drawCombat                   src/13-pirates.js:362-473
+drawCombat                   src/13-pirates.js:362-472
 drawCosmMark                 src/12va-wander-cosm.js:112-132
 drawCrowns                   src/05a-nodes.js:379-414
 drawCrystalForest            src/20aa-poi-shapes.js:115-141
@@ -1454,8 +1454,8 @@ drawFactory                  src/20aa-poi-shapes.js:378-462
 drawFactRoute                src/13b-occupy.js:285-338
 drawFindsSystem              src/17b-finds.js:238-286
 drawFlame                    src/03b-hull-paint.js:10-56
-drawFleet                    src/12ai-fleet.js:132-153
-drawFleetMap                 src/12ai-fleet.js:323-358
+drawFleet                    src/12ai-fleet.js:140-160
+drawFleetMap                 src/12ai-fleet.js:330-365
 drawFleetShip                src/12ai1-fleet-art.js:418-444
 drawFoeBody                  src/24ab-raid-foe.js:10-130
 drawForeground               src/21b-surface-deco.js:278-383
@@ -1870,7 +1870,7 @@ FLEET_ENG                    src/12ai1-fleet-art.js:388
 FLEET_EPITH                  src/04b-fleet.js:57
 FLEET_KEYS                   src/04b-fleet.js:148
 FLEET_LUXE                   src/04b-fleet.js:59
-FLEET_MAP_LEGS               src/12ai-fleet.js:322
+FLEET_MAP_LEGS               src/12ai-fleet.js:329
 FLEET_MARK                   src/04b-fleet.js:56
 FLEET_N                      src/04b-fleet.js:106
 FLEET_NAMES                  src/12ai-fleet.js:41
@@ -1885,18 +1885,18 @@ FLEET_TIER_CLS               src/04b-fleet.js:46-53
 FLEET_TIER_KEYS              src/04b-fleet.js:30
 FLEET_TIERS                  src/04b-fleet.js:16-29
 fleetArtOf                   src/12ai1-fleet-art.js:13-348
-fleetCaravanActive           src/12ai-fleet.js:309-315
+fleetCaravanActive           src/12ai-fleet.js:316-322
 fleetColor                   src/04b-fleet.js:95
-fleetEscortActive            src/12ai-fleet.js:307
+fleetEscortActive            src/12ai-fleet.js:314
 fleetFire                    src/13-combat.js:213-234
 fleetGlyph                   src/12ai1-fleet-art.js:351-383
-fleetHailFirst               src/12ai-fleet.js:163-183
+fleetHailFirst               src/12ai-fleet.js:170-190
 fleetHere                    src/12ai-fleet.js:50-87
-fleetInteract                src/12ai-fleet.js:184-304
+fleetInteract                src/12ai-fleet.js:191-311
 fleetLabelY                  src/12ai-fleet.js:121-131
-fleetLogKey                  src/12ai-fleet.js:155
-fleetNormKey                 src/12ai-fleet.js:158
-fleetNormTwice               src/12ai-fleet.js:157
+fleetLogKey                  src/12ai-fleet.js:162
+fleetNormKey                 src/12ai-fleet.js:165
+fleetNormTwice               src/12ai-fleet.js:164
 fleetPos                     src/12ai-fleet.js:89-98
 fleetPromptRect              src/12ai-fleet.js:112-115
 fleetRung                    src/12ai-fleet.js:48
@@ -3049,6 +3049,7 @@ kpWindow                     src/26e2-post.js:47-92
 labCount                     src/12h-relic.js:16-24
 LABDOM                       src/08bh-gpu-hud.js:101
 labDomBox                    src/08bh-gpu-hud.js:106-112
+labelW                       src/12ai-fleet.js:135-139
 labStaffed                   src/12h-relic.js:27-31
 labWorking                   src/12h-relic.js:32-42
 LAND_ARC                     src/07a-terrain.js:49
@@ -3098,6 +3099,7 @@ lawOwner                     src/12al2-laws.js:16
 lawRingGpu                   src/12al2-laws.js:63-83
 lawRingTick                  src/12al2-laws.js:43-55
 layerLevel                   src/10-music.js:362-377
+LBL_W                        src/12ai-fleet.js:134
 ldFoe                        tests/91zzzw-combat.js:472-476
 LEADBREAK                    src/13a-guns.js:42
 ledgerAll                    src/11ai-ledger.js:36-39
