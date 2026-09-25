@@ -13,6 +13,32 @@ could ever save.
   `gpuPipeline(key, recipe)`, and `gpuInit` warms the key table behind the title with
   `createRenderPipelineAsync`; the start buttons wait for it at most 2.5 s. The station/pirate light's
   unsharp mask (flag 2/4 in `17c`) keeps its 25.09 form, rewritten to `fu.v[3]`.
+- **Flight HUD redrawn** (`gpu-hud`): sentence case, one warm accent, fuel and hull set large; the rail
+  buttons and prompts no longer touch.
+- **Pipelines are ready before the first flight.** A detector flies every scene that used to compile a
+  pipeline mid-flight (hotel, billboard, fleet, pirates, dock, the wall at the system's edge, the shield at
+  x1.5, a real first flight with pirates and allies) and fills the warm table `08b1` (40 keys). After load
+  no pipeline is created lazily.
+- **No hitch at the hotel.** The texture pool keeps its 1024² bake set, allocated and cleared behind the
+  title; big prebakes go one per frame under a GPU budget (`PB_PX`); the 512×128 shadow set is warm too.
+  On the S23 with a cold shader cache (DPR 1.5, 30 s of flight) 99.94 % of frames fit 16.7 ms and none
+  reaches 50 ms; before, the approach made one 67 ms frame.
+- **A failing frame no longer takes the video card down.** An exception while the world is drawn drops that
+  frame and goes to the frame guard («СБОЙ · …»); only a lost device or an API error drops the device, and
+  the art caches (hulls, fleet, pirates, barges, lit sprites) are baked again on the new one. If the card
+  stops answering mid-game, the notice says so and that the save is intact, instead of blaming the
+  browser. The warm-up gate is armed from load, so a start pressed before the device exists waits too.
+- **Video memory stays flat over a long game.** Art caches have caps (fleet 24, pirates 24, barges 12,
+  hulls 8, bakes 32; a system holds at most 7, 3, 1 and 1). A bake dropped while still in use is baked
+  again where it is drawn.
+- **The searchlight is a field**, not a 1000-px multisampled bake; the picture is the same (6/255 at most).
+- **iPhone: reversed `smoothstep`.** Eleven calls had their edges the wrong way round, which WGSL leaves
+  undefined and Metal draws wrong; they read `1.-smoothstep(b,a,x)` now, and a Node test scans the game
+  for new ones.
+- **Watching a crewmate is drawn by the video card**: the view makes no 2D calls; your ship's barrels and
+  launcher are GPU bakes, text widths come from `gcMeasure`.
+- README and the site name the WebGPU requirement and the browsers; the key list on the mechanics page
+  says Space for the action and G for a missile.
 
 ## 0.461.0 - `under` on the phone: 3.3 → 2.2 ms, the picture the same
 
