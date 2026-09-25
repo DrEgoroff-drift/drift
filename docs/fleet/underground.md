@@ -23,6 +23,21 @@ Branch `claude/gpu-cave`, from the fleet base `claude/optimistic-gates-u46osn`. 
    are lit, not self-lit). Test: `tests/91zzza1-cave-gpu.js` (sources in view, order, colour
    packing, cold ambient, no throw without GPU).
 
+2. **mine: the same light model — lamp and platform lamps with rock shadows, daylight down the
+   shaft, ore glows and glints above 1.0, the cutter lights the face** — new `src/23b-dig-gpu.js`,
+   sharing the field with the cave (the shared WGSL in 22c now leaves four per-mode hooks:
+   `ambAt`, `dayAt`, `skyAt`, `airAt`; the mask is opaque, red = rock, green = open sky). The mine's
+   mask is the void path (`digVoidPath` got optional explicit rows) plus the sky above
+   `digSurfY`, 5 px a texel, rebuilt when a cell is dug (`D.maskV`, bumped in `updateDig`).
+   Daylight marches straight up to the sky through the mask — the shaft gets a column of day;
+   ambient goes from day-lit at the surface to the cave's cold dark 300 px down (at night the
+   surface is dark too). Deleted: the multiply vignette, the warm sprite, the 2D darkness, the
+   platform-lamp sprites, the cone, the floor spot, the near glow, the 2D dust, the 2D ore
+   glints and body glow, the 2D cutter sparks. The tunnel's fill went from near-black paint
+   (.94) to .72: darkness now comes from missing light, and the lamp finds the back wall. The
+   cutter's progress overlay moved after the light (it is a pointer). Test: second suite in
+   `tests/91zzza1-cave-gpu.js`.
+
 ## Pairs (scratchpad, never in git)
 
 Scratchpad: `/tmp/claude-0/-home-user-drift/2c699494-ba63-5130-aae0-c5cca68da174/scratchpad/`
@@ -31,11 +46,20 @@ Scratchpad: `/tmp/claude-0/-home-user-drift/2c699494-ba63-5130-aae0-c5cca68da174
   beam with a visible cone and dust, the dark is cold and holds shapes, the mouth has a daylight
   shaft, veins glow green — warm key against cold shadow instead of one flat warm blob and a
   green wash.
+- `pair-dig-1.png` (the `dig` stand, 6 m at night): the soil goes cold and dark with depth as it
+  should at night, the lamp is a warm light inside the shaft that finds the tunnel's back wall
+  instead of a black box; the ore patch glows its own colour.
+- `pair-digdeep-1.png` (the `dig` stand with `digdeep.js` as `--js`: shaft to 99 m, a drift to
+  the right, a side drift at row 24): ore bodies glow in their colour and their grains glint
+  above 1.0 near the lamp (ice cold-white, iron warm), platform lamps are real lights with
+  bloom cores, the drift is lamp-lit; cold dark rock around instead of an even olive wash.
 
 ## New render pipelines (for the warm-up table `08b1`)
 
 - `fld.cave.mul` — `gpuField`, blend `mul`, sampler `gpuMipSmp()`
 - `fld.cave.add` — `gpuField`, blend `add`, sampler `gpuMipSmp()`
+- `fld.dig.mul` — `gpuField`, blend `mul`, sampler `gpuMipSmp()`
+- `fld.dig.add` — `gpuField`, blend `add`, sampler `gpuMipSmp()`
 - `kit.shp` with blend `add` (probably already warm from other modes)
 
 ## Requests outside the zone
@@ -43,6 +67,9 @@ Scratchpad: `/tmp/claude-0/-home-user-drift/2c699494-ba63-5130-aae0-c5cca68da174
 - none yet
 
 ## Open problems
+
+- Commit 1's message has `Claude-Session:` after `Co-Authored-By:` (the session's attribution
+  order); fleet rule 8 wants `Co-Authored-By:` last — later commits follow rule 8. No amend.
 
 - The browser-tier light suites (`91zzzzy-light` «фонарь в пещере», glow smoothness) read the
   composed frame; they have not been run on this branch (the cloud has no browser tier yet — tools

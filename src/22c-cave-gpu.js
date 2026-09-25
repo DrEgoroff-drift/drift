@@ -20,14 +20,19 @@
 /* числа в поле: fu.v[0] камера (x,y,K,t) · [1] маска: мир → uv (ox,oy,1/w,1/h) ·
    [2] фонарь: место и направление · [3] фонарь: дальность, cos края, cos ядра, сила ·
    [4] цвет фонаря, число источников · [5] окружающий свет, доля дальней стены ·
-   [6..14] источники: x, y, радиус, цвет×сила (упакован: r·65536+g·256+b, 1.00 = 100) */
+   [6..14] источники: x, y, радиус, цвет×сила (упакован: r·65536+g·256+b, 1.00 = 100).
+   Маска: красный — порода, зелёный — открытое небо (шахта). Свои места у режима —
+   четыре функции: ambAt (окружающий), dayAt (свет сверху), skyAt (не освещается —
+   само светит), airAt (где висит воздух: рассеяние и пыль). WGSL не требует
+   объявлять функцию до вызова, поэтому режим дописывает их после общего поля */
 const CAVE_LIT_MAX=9;
 const CAVE_LIT_WGSL=`
 const SIG=.05;
 fn chs(p:vec2f)->f32{var q=fract(vec3f(p.xyx)*.1031);q=q+dot(q,q.yzx+33.33);return fract((q.x+q.y)*q.z);}
 fn cvn(p:vec2f)->f32{let i=floor(p);let f=fract(p);let w=f*f*(3.-2.*f);
   return mix(mix(chs(i),chs(i+vec2f(1.,0.)),w.x),mix(chs(i+vec2f(0.,1.)),chs(i+vec2f(1.,1.)),w.x),w.y);}
-fn rockAt(w:vec2f,lod:f32)->f32{return textureSampleLevel(t0,smp,(w-fu.v[1].xy)*fu.v[1].zw,lod).a;}
+fn maskAt(w:vec2f,lod:f32)->vec4f{return textureSampleLevel(t0,smp,(w-fu.v[1].xy)*fu.v[1].zw,lod);}
+fn rockAt(w:vec2f,lod:f32)->f32{return maskAt(w,lod).r;}
 /* пропускание от источника a до точки b: n шагов по маске, мип растёт от источника —
    мягкая полутень; старт шага сдвинут по хешу точки, ступеньки уходят в зерно */
 fn trans(a:vec2f,b:vec2f,n:i32)->f32{
@@ -55,7 +60,9 @@ const CAVE_MUL_WGSL=CAVE_LIT_WGSL+`
 fn field(p:vec2f,uv:vec2f)->vec4f{
   let w=p/fu.v[0].z+fu.v[0].xy;
   let rk=smoothstep(.3,.7,rockAt(w,0.));
-  var li=fu.v[4].rgb*lampAt(w);
+  let sk=skyAt(w);
+  if(sk>.995){return vec4f(1.,1.,1.,1.);}
+  var li=fu.v[4].rgb*lampAt(w)+dayAt(w);
   if(li.x+li.y+li.z>.003){li=li*trans(fu.v[2].xy,w,20);}
   li+=fu.v[4].rgb*bounceAt(w);
   let n=i32(fu.v[4].w);
@@ -64,13 +71,13 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
     let P=fu.v[6+k];let dd=length(w-P.xy);
     if(dd<P.z){let a=1.-dd/P.z;li+=litCol(P.w)*a*a*trans(P.xy,w,10);}
   }
-  return vec4f(fu.v[5].rgb+li*mix(fu.v[5].w,1.,rk),1.);}
+  return vec4f(mix(ambAt(w)+li*mix(fu.v[5].w,1.,rk),vec3f(1.),sk),1.);}
 `;
 /* воздух: рассеяние луча (с тенями) и пыль в нём; мох и кристаллы — лёгкий ореол */
 const CAVE_ADD_WGSL=CAVE_LIT_WGSL+`
 fn field(p:vec2f,uv:vec2f)->vec4f{
   let K=fu.v[0].z;let w=p/K+fu.v[0].xy;let t=fu.v[0].w;
-  let air=1.-smoothstep(.3,.7,rockAt(w,0.));
+  let air=airAt(w);
   if(air<.01){return vec4f(0.);}
   var sc=vec3f(0.);
   let l0=lampAt(w);
@@ -98,13 +105,20 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   }
   return vec4f(sc*air,0.);}
 `;
+/* места пещеры: неба нет (день в устье — источник), окружающий ровный */
+const CAVE_OWN_WGSL=`
+fn ambAt(w:vec2f)->vec3f{return fu.v[5].rgb;}
+fn dayAt(w:vec2f)->vec3f{return vec3f(0.);}
+fn skyAt(w:vec2f)->f32{return 0.;}
+fn airAt(w:vec2f)->f32{return 1.-smoothstep(.3,.7,rockAt(w,0.));}
+`;
 /* маска породы: одна на пещеру, клетка = тексель, мипы — мягкие тени */
 function caveMaskCv(C){
   if(C.maskCv)return C.maskCv;
   const NX=CAVE_NX,NY=CAVE_NY,cv=document.createElement("canvas");
   cv.width=NX;cv.height=NY;
   const c=cv.getContext("2d"),im=c.createImageData(NX,NY),d=im.data,g=C.g;
-  for(let i=0;i<NX*NY;i++)if(g[i]){d[i*4]=d[i*4+1]=d[i*4+2]=d[i*4+3]=255;}
+  for(let i=0;i<NX*NY;i++){d[i*4+3]=255;if(g[i])d[i*4]=255;}
   c.putImageData(im,0,0);
   return C.maskCv=cv;
 }
@@ -177,8 +191,8 @@ function drawCaveLight(C,camx,camy,lamp){
   for(let i=0;i<L.length;i++){const s=L[i],o=24+i*4;
     U[o]=s.x;U[o+1]=s.y;U[o+2]=s.r;U[o+3]=caveLitPack(s.c[0],s.c[1],s.c[2],s.I);}
   const mt={view:gpuMipTex(caveMaskCv(C)).view},sm=gpuMipSmp();
-  gpuField(pass,"cave.mul",CAVE_MUL_WGSL,U,[mt],{blend:"mul",smp:sm});
-  gpuField(pass,"cave.add",CAVE_ADD_WGSL,U,[mt],{blend:"add",smp:sm});
+  gpuField(pass,"cave.mul",CAVE_MUL_WGSL+CAVE_OWN_WGSL,U,[mt],{blend:"mul",smp:sm});
+  gpuField(pass,"cave.add",CAVE_ADD_WGSL+CAVE_OWN_WGSL,U,[mt],{blend:"add",smp:sm});
   caveEmit(C,camx,camy,pass,K);
 }
 /* руда светит сама (L2): ядро выше единицы — узкий ореол в лестнице свечения,

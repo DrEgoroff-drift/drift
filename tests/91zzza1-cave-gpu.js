@@ -39,3 +39,31 @@ TEST_SUITES.push(()=>suite("пещера G7: источники света в к
   ok(lg.calls>50,"кадр пещеры нарисован без видеокарты: вызовов канвы "+lg.calls);
   resetWorld();
 }));
+
+TEST_SUITES.push(()=>suite("шахта G7: лампы и резак — источники, копка пересобирает маску",()=>{
+  resetWorld();
+  landOnTestPlanet();
+  enterDig();
+  const D=G.dig;
+  ok(!!D,"шахта открыта");
+  eq(digHexRgb("#c08a6a").join(","),"192,138,106","цвет руды из таблицы читается в числа");
+  eq(digHexRgb("#abc").join(","),"170,187,204","короткая запись тоже");
+  /* лампы крепи — экранные точки кадра; источники — в мире, не больше восьми */
+  const camx=D.col*DIG_CELL-W/2, camy=D.row*DIG_CELL-H*.5;
+  D._lamps=[];for(let i=0;i<12;i++)D._lamps.push([W/2+(i-6)*20,H/2+i*3]);
+  const L=digLights(D,camx,camy);
+  eq(L.length,8,"источников не больше восьми: девятое место — числа шахты");
+  ok(L.every(s=>Math.abs(s.x-camx-W/2)<=130&&s.y>camy),"лампы переведены в мир");
+  ok(L.every((s,i)=>!i||L[i-1].k<=s.k),"ближние — первыми");
+  /* кадр без видеокарты: свет молчит, собранные лампы не копятся из кадра в кадр */
+  drawDig();drawDig();
+  ok(!D._lamps||D._lamps.length===0,"лампы кадра сброшены после света");
+  /* копнули — маска света помечена к пересборке */
+  const v0=D.maskV|0;
+  D.face=1;
+  let dug=false;
+  for(let i=0;i<600&&!dug;i++){keys.right=true;updateDig(1);if((D.maskV|0)>v0)dug=true;}
+  keys.right=false;
+  ok(dug,"выкопанная клетка поднимает D.maskV");
+  resetWorld();
+}));

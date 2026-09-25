@@ -1,9 +1,10 @@
 /* ══════════════ шахта: отрисовка ══════════════
    Отрезано от 23-mode-dig на распиле 0.108.x: там состояние, ход и фауна, здесь
    растр. Порядок склейки сохранён: 23 кладёт DIG_* и digCell, 23a читает их. */
-function digVoidPath(D,camx,camy){
+/* ra/rb — ряды явно (маска света 23b берёт всю выработку); без них — ряды кадра */
+function digVoidPath(D,camx,camy,ra,rb){
   const P=new Path2D();
-  const r0=Math.max(0,Math.floor(camy/DIG_CELL)-1), r1=Math.ceil((camy+H)/DIG_CELL)+1;
+  const r0=ra!==undefined?ra:Math.max(0,Math.floor(camy/DIG_CELL)-1), r1=rb!==undefined?rb:Math.ceil((camy+H)/DIG_CELL)+1;
   for(let row=r0;row<=r1;row++)for(let col=-DIG_HALF;col<=DIG_HALF;col++){
     const cell=D.cells[col+","+row];
     if(!cell||!cell.dug)continue;
@@ -52,43 +53,8 @@ function drawDigWorld(){
      digRockPass рисует через W/H, которые withCtx подменяет на размер тайла */
   D.tiles=tileStore(D.tiles,p.seed+"|"+DPR);
   drawTiles(D.tiles,camx,camy,(g,wx0,wy0)=>digRockPass(D,p,wx0,wy0));
-  /* ── свет уходит от человека (M55 #1) ──
-     У массива была одна яркость на весь кадр: глубина темнит равномерно, а
-     расстояния от фонаря порода не знала вовсе. Оттого у шахты не было
-     ЦЕНТРА — камень у кромки экрана горел так же, как камень под ногами, и
-     весь кадр читался ровной заливкой, сколько бы рисунка в ней ни лежало.
-     Под землёй видно ровно то, до чего достал свет; всё дальше уходит в
-     породу. Это и даёт кадру середину, и заодно мирит выработку с массивом:
-     вдали они темнеют вместе, и чёрный ход перестаёт быть дырой в бумаге.
-
-     Считается КАЖДЫЙ кадр и в тайл не печётся: тайл привязан к миру, а
-     человек по нему ходит. Один радиальный градиент на кадр — даром. */
-  {
-    const lx=px-camx+DIG_CELL*.5, ly=py-camy+DIG_CELL*.5;
-    const R0=Math.max(W,H)*.62;
-    const vg=ctx.createRadialGradient(lx,ly,R0*.16,lx,ly,R0);
-    vg.addColorStop(0,"rgb(255,255,255)");
-    vg.addColorStop(.55,"rgb(150,152,160)");
-    vg.addColorStop(1,"rgb(74,76,86)");
-    ctx.save();ctx.globalCompositeOperation="multiply";
-    ctx.fillStyle=vg;ctx.fillRect(0,0,W,H);
-    ctx.restore();
-    /* ── тёплый воздух у налобника (леджер кадров: шахта pair 1%) ──
-       Виньетка давала свету место, но не температуру: кадр шахты жил одной
-       холодной гаммой. Тот же ход, что в пещере: слабое насыщенно-тёплое
-       зарево у самой лампы — тёплый акцент против холодной породы. */
-    {
-      const WP=glowSprite("digwarm",()=>{
-        const g=ctx.createRadialGradient(0,0,0,0,0,1);
-        for(let i=0;i<=8;i++){const t=i/8;
-          g.addColorStop(t,"rgba(255,198,128,"+(.20*Math.pow(1-t,2.2)).toFixed(3)+")");}
-        ctx.fillStyle=g;ctx.fillRect(-1,-1,2,2);
-      });
-      ctx.save();ctx.globalCompositeOperation="lighter";
-      glowBlit(WP,lx,ly,R0*.34);
-      ctx.restore();
-    }
-  }
+  /* свет уходит от человека (M55 #1) — теперь это поле видеокарты (23b): фонарь
+     с тенями от породы, лампы, день сверху; виньетка и тёплое пятно ушли */
   /* ── рудное тело ──
      Светилось радиальным пятном на клетку и читалось бесформенной кляксой,
      ни при чём к камню вокруг. Руда в породе выглядит иначе: это вкрапления —
@@ -135,21 +101,10 @@ function drawDigWorld(){
       ctx.globalAlpha=(.30+((hh>>>19)&7)/7*.35)*vis*(0.85+lampK*.35);
       ctx.fillStyle=col2;
       ctx.beginPath();ctx.ellipse(0,0,rr*el,rr,0,0,TAU);ctx.fill();
-      /* блик на зерне — то, из-за чего руду замечают в темноте */
-      ctx.globalAlpha=Math.min(1,(.22+((hh>>>22)&3)/3*.3)*vis*(0.7+lampK*1.5));
-      ctx.fillStyle="rgba(255,250,235,1)";
-      ctx.beginPath();ctx.ellipse(-rr*.3,-rr*.35,rr*.5,rr*.28,0,0,TAU);ctx.fill();
+      /* блик на зерне — выше единицы, на видеокарте (23b digEmit): его зажигает фонарь */
       ctx.restore();
     }
-    /* и совсем слабое зарево на всё тело — чтобы жила читалась как жила,
-       а не как россыпь точек. Ровно настолько, чтобы поймать взгляд. */
-    ctx.save();ctx.globalCompositeOperation="lighter";
-    ctx.globalAlpha=.07*vis;
-    const g=ctx.createRadialGradient(x+DIG_CELL/2,y+DIG_CELL/2,2,
-      x+DIG_CELL/2,y+DIG_CELL/2,DIG_CELL*.8);
-    g.addColorStop(0,col2);g.addColorStop(1,"rgba(0,0,0,0)");
-    ctx.fillStyle=g;ctx.fillRect(x-DIG_CELL*.3,y-DIG_CELL*.3,DIG_CELL*1.6,DIG_CELL*1.6);
-    ctx.restore();
+    /* зарево тела — тоже там: руда светит сама, слабо, и видна за светом фонаря */
   }
   ctx.restore();
   /* ── выработка ── */
@@ -159,8 +114,10 @@ function drawDigWorld(){
      неё есть верх и низ. Отсюда вертикальный градиент внутри хода. */
   ctx.save();ctx.clip(VP);
   const vg=ctx.createLinearGradient(0,-camy%DIG_CELL,0,H);
-  vg.addColorStop(0,"rgba(4,5,8,.94)");
-  vg.addColorStop(1,"rgba(9,8,7,.88)");
+  /* G7: темноту даёт свет (23b), а не краска — ход залит не в черноту, а
+     притушен: за ним задняя стена той же породы, и фонарь её находит */
+  vg.addColorStop(0,"rgba(4,5,8,.72)");
+  vg.addColorStop(1,"rgba(9,8,7,.64)");
   ctx.fillStyle=vg;ctx.fillRect(0,0,W,H);
   ctx.restore();
   /* ── зерно на обнажённой породе ──
@@ -481,28 +438,6 @@ function drawDigWorld(){
       ctx.fillRect(L-1.4,y+1.5,R-L+4.6,2.2);
     }
   }
-  /* забой под резаком: подсветка и полоса проходки */
-  if(D.target){
-    const t=D.target;
-    for(let row=r0;row<=r1;row++)for(let col=-DIG_HALF;col<=DIG_HALF;col++){
-      if(D.cells[col+","+row]!==t)continue;
-      const x=col*DIG_CELL-camx,y=row*DIG_CELL-camy;
-      ctx.fillStyle="rgba(242,178,92,.20)";ctx.fillRect(x,y,DIG_CELL,DIG_CELL);
-      ctx.fillStyle="rgba(0,0,0,.55)";ctx.fillRect(x+3,y+DIG_CELL-8,DIG_CELL-6,4);
-      ctx.fillStyle="#f2b25c";
-      ctx.fillRect(x+3,y+DIG_CELL-8,(DIG_CELL-6)*clamp(t.prog/t.hard,0,1),4);
-      /* искры из-под резака: единственное, что тут происходит быстро */
-      ctx.save();ctx.globalCompositeOperation="lighter";
-      for(let i=0;i<4;i++){
-        const ph=(G.t*.6+i*23)%18;
-        const a=(1-ph/18)*.5;
-        ctx.fillStyle="rgba(255,210,140,"+a.toFixed(3)+")";
-        ctx.fillRect(x+DIG_CELL/2+Math.cos(i*2.3)*ph*1.2,
-          y+DIG_CELL/2+Math.sin(i*2.3)*ph*.9,1.6,1.6);
-      }
-      ctx.restore();
-    }
-  }
   /* ── небо в устье шахты ──
      Была заливка прямоугольником до y=0, то есть ЛИНЕЙКА во всю ширину кадра:
      выше небо, ниже порода, между ними бритвенный горизонт. Теперь небо кончается
@@ -538,65 +473,23 @@ function drawDigWorld(){
   drawDigFauna(camx,camy);
   const sx=px-camx+DIG_CELL/2,sy=py-camy+DIG_CELL/2;
   const suit=G.surf.suit;
-  /* темнота и фонарь — те же, что в пещере: под землёй свет один и тот же,
-     и разниться он не должен */
-  if(camy>-H*.3){
-    /* виньетка чуть отпущена (M169): при .80 по краю всё, что появилось в
-       породе — трещины, блоки, дайки, — тонуло в чёрном на расстоянии экрана */
-    const g=ctx.createRadialGradient(sx,sy,30,sx,sy,Math.max(W,H)*.52);
-    g.addColorStop(0,"rgba(0,0,0,0)");
-    g.addColorStop(.45,"rgba(1,3,7,.28)");
-    g.addColorStop(1,"rgba(0,1,4,.72)");
-    ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  /* ── свет (G7, 23b) ── темнота, фонарь, лампы площадок, день в стволе, пыль и
+     руда — одно поле видеокарты по всему нарисованному выше, с тенями от породы.
+     Фонарь — на шлеме: человек стоит в (sx, sy+4), налобник на ладонь ниже макушки */
+  drawDigLight(D,p,camx,camy,{x:px+DIG_CELL/2,y:py+DIG_CELL/2-12,f:D.face||1});
+  /* забой под резаком: подсветка и полоса проходки — поверх света, это указатель */
+  if(D.target){
+    const t=D.target;
+    for(let row=r0;row<=r1;row++)for(let col=-DIG_HALF;col<=DIG_HALF;col++){
+      if(D.cells[col+","+row]!==t)continue;
+      const x=col*DIG_CELL-camx,y=row*DIG_CELL-camy;
+      ctx.fillStyle="rgba(242,178,92,.20)";ctx.fillRect(x,y,DIG_CELL,DIG_CELL);
+      ctx.fillStyle="rgba(0,0,0,.55)";ctx.fillRect(x+3,y+DIG_CELL-8,DIG_CELL-6,4);
+      ctx.fillStyle="#f2b25c";
+      ctx.fillRect(x+3,y+DIG_CELL-8,(DIG_CELL-6)*clamp(t.prog/t.hard,0,1),4);
+      /* искры из-под резака — выше единицы, на видеокарте (23b digEmit) */
+    }
   }
-  /* лампы площадок: тёплые круги поверх темноты, внутри выработки */
-  if(D._lamps&&D._lamps.length){
-    const LS=glowSprite("minelamp",()=>{
-      const g=ctx.createRadialGradient(0,0,0,0,0,1);
-      g.addColorStop(0,"rgba(255,214,150,.55)");g.addColorStop(.25,"rgba(255,200,130,.18)");
-      g.addColorStop(1,"rgba(255,180,110,0)");
-      ctx.fillStyle=g;ctx.fillRect(-1,-1,2,2);
-    });
-    ctx.save();ctx.clip(VP);ctx.globalCompositeOperation="lighter";
-    for(const [lx,ly] of D._lamps)glowBlit(LS,lx,ly,64);
-    ctx.restore();
-    D._lamps.length=0;
-  }
-  /* Фонарь светил СКВОЗЬ породу: конус уходил за кромку выработки и подсвечивал
-     пласты на полэкрана — под землёй это ложь в самом заметном месте кадра.
-     Свет живёт внутри хода, поэтому и конус, и пыль клипуются по выработке. */
-  ctx.save();ctx.clip(VP);
-  ctx.globalCompositeOperation="lighter";
-  const f=D.face||1;
-  const lg=ctx.createLinearGradient(sx,sy,sx+f*170,sy);
-  lg.addColorStop(0,"rgba(190,215,235,.13)");
-  lg.addColorStop(1,"rgba(150,190,220,0)");
-  ctx.fillStyle=lg;
-  ctx.beginPath();ctx.moveTo(sx,sy-12);ctx.lineTo(sx+f*190,sy-64);
-  ctx.lineTo(sx+f*190,sy+52);ctx.closePath();ctx.fill();
-  /* Пятно на полу и отсвет вокруг человека. Пока свет был только конусом,
-     ход оставался чёрным даже под ногами: фонарь светил в воздух. Свет,
-     который никуда не ложится, — не свет, а плёнка на кадре. */
-  const fl=ctx.createRadialGradient(sx+f*26,sy+16,4,sx+f*26,sy+16,130);
-  fl.addColorStop(0,"rgba(214,206,178,.20)");
-  fl.addColorStop(.5,"rgba(180,180,160,.07)");
-  fl.addColorStop(1,"rgba(140,160,180,0)");
-  ctx.fillStyle=fl;
-  ctx.beginPath();ctx.ellipse(sx+f*26,sy+16,130,42,0,0,TAU);ctx.fill();
-  /* близкий отсвет: породу у самого человека видно и без фонаря — отражённым */
-  const am=ctx.createRadialGradient(sx,sy,2,sx,sy,84);
-  am.addColorStop(0,"rgba(150,170,190,.10)");
-  am.addColorStop(1,"rgba(120,150,180,0)");
-  ctx.fillStyle=am;ctx.beginPath();ctx.arc(sx,sy,84,0,TAU);ctx.fill();
-  /* пыль в луче: под землёй воздух не бывает чистым */
-  for(let i=0;i<24;i++){
-    const dx=((i*61.7+G.t*.05)%160)-80, dy=((i*97.3+G.t*.03)%140)-70;
-    const a=clamp(1-Math.hypot(dx,dy)/110,0,1)*.24;
-    if(a<=.01)continue;
-    ctx.fillStyle="rgba(200,225,240,"+a.toFixed(3)+")";
-    ctx.fillRect(sx+dx,sy+dy,1.2,1.2);
-  }
-  ctx.restore();
   ctx.save();ctx.translate(sx,sy+4);
   drawAstronaut({face:D.face||1,amp:D.walkAmp,phase:D.walkPhase,air:false,
     mining:!!D.target,suitLow:suit<25,lamp:true});
