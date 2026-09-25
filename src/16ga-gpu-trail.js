@@ -112,10 +112,18 @@ function gpuWake(zx,zy,Z){
   for(const a of lanes.values())a.length=0;
   for(const t of WAKE){const k=t.s+"/"+t.b+"/"+t.t.x;let a=lanes.get(k);if(!a)lanes.set(k,a=[]);a.push(t);}
   GTR.n=0;
+  const sh=G.ship,ca=Math.cos(sh.a),sa=Math.sin(sh.a),eS=shipZ(G.zoom)/G.zoom;
   const node=(arr,i)=>{
     const t=arr[i],u=clamp(t.life/t.max,0,1),u4=u*u*u*u;
     /* те же пики, что у 2D: ореол f1, ядро f2 (ядро гаснет к половине жизни) */
-    const f1=(u*u*.08+u4*.10)*t.k,f2=(u4*.22+u4*u4*.34)*t.k;
+    let f1=(u*u*.08+u4*.10)*t.k,f2=(u4*.22+u4*u4*.34)*t.k;
+    /* у кормы пик не выше 2D (два мазка lighter: f1 + ядро u³·.26+u⁶·.30): гауссов пик
+       ядро·1.25 + ореол·2.3 выходил в полтора раза ярче, белел и белил гондолы (п.3).
+       Меряем от сопла в единицах корпуса (по жизни нельзя: у кормы и в двух корпусах
+       за ней — одни и те же 5 % жизни); дальше 26 единиц — как было */
+    const tp=t.t,tx=sh.x+(tp.x*ca-tp.y*t.s*sa)*eS,ty=sh.y+(tp.x*sa+tp.y*t.s*ca)*eS;
+    const u3=u*u*u,pk=f2*1.25+f1*2.3,q2=f1+(u3*.26+u3*u3*.30)*t.k,g=1-clamp((Math.hypot(t.x-tx,t.y-ty)/eS-20)/6,0,1);
+    if(pk>q2){const s=1-(1-q2/pk)*g*g*(3-2*g);f1*=s;f2*=s;}
     const w1=(2.2+(1-u)*4.5)*SZ,w2=Math.max(.8,(1+(1-u)*.6)*SZ);
     const hw=w1*1.25+1;
     const p=arr[Math.max(0,i-1)],q=arr[Math.min(arr.length-1,i+1)];

@@ -193,6 +193,10 @@ Then hulls (item 2) by the same «explicit emission» path.
 - Brief of **item 3, the pods** (Контроль on 5820c0d: +50 % not taken, «гондолы бело-розовые, будто горят»):
   first the order (plume, ribbon, wake off → pods back to 2D?), then the light; gate body V>.6 per area ±25 %
   of 2D, pods' bright L and S ±15 %, cold; sharpness and trim kept; flame and wake on the phone not paler.
+- Brief of **item 3, the wake at the stern** (Контроль on ee46b87, his call): cool the wake beside the pods —
+  the colour cold as in 2D, the core at the stern not reaching white, its peak no higher than 2D's; further
+  along the length as now. Gate: pods' strip S ≥ .8× of 2D and L ≤ +15 % of 2D (760 and ×1.5), tone 190–230°,
+  on the phone the lanes no shorter and no dimmer than now away from the stern.
 
 The phone frame budget does not grow: GPU ≤ 12 ms.
 
@@ -201,8 +205,9 @@ The phone frame budget does not grow: GPU ≤ 12 ms.
 - **Stage 1 caches (25.09, Контроль's order: station → zoom-following bakes → 25c → item 3).** Station master
   done (17c3, steady uploads 0, layers as in 2D); zoom-following bakes done (each size uploaded once, the way
   back 0); the instrument pod 25c redraws only on change; item 3 done (body V>.6 +12/+13 % over 2D — the
-  excess was the final glow on the hull's own paint, not the exhaust). Next: the hotel's windows as live
-  shapes, then the phone candidate.
+  excess was the final glow on the hull's own paint, not the exhaust); the wake at the stern cooled to 2D's
+  peak within 20 hull units of the nozzle, further as before. Next: the hotel's windows as live shapes, then
+  the phone candidate.
 - **Released 0.457.0 (`2a288f7`, from `rel`; merged back into gpu as `b0c8cac`).** The next candidate goes from
   gpu the same way: the release list plus `cismoke`, its sha to Контроль. Rollback: a commit with the tree of
   `d543aff` on top, no force-push. `C:/Claude/drift-rel` stays — it is Контроль's working directory; nothing is
@@ -556,6 +561,15 @@ The phone frame budget does not grow: GPU ≤ 12 ms.
   blue-grey bar beside each pod (additive, `lighter`), here the same lanes with a gaussian core (a×1.25,
   halo ×2.3) — brighter and near-white at the stern. Composing core over halo as two 2D strokes cut it by 4 %
   and did not cool it; the wake was left as it is (Контроль: not to be touched). 08b 47156 → 47017 bytes.
+  **Item 3, the wake at the stern** (Контроль's call after ee46b87). Each wake node's gaussian peak (core×1.25
+  + halo×2.3) is capped at the 2D peak of its two `lighter` strokes (halo f1 + core u³·.26+u⁶·.30) within 20
+  hull units of its nozzle, fading out by 26; beyond, untouched. The cap goes by distance, not by age: at cruise
+  the stern and the next two hull lengths are the same last 5 % of a point's life, so an age window (u > .6,
+  then u > .93) dimmed the far lanes as much as the near ones (far L 70 → 53). Numbers (2D → HEAD → now;
+  ×1.5 | 760): pods' strip L 48 → 58 → 52 | 46 → 55 → 50, S .25 → .25 → .35 | .22 → .14 → .20; lanes at the
+  stern (5–22 units) V>.6 10 → 24 → 16 % | 10 → 22 → 14 %, L 51 → 83 → 74 | 53 → 83 → 75, bright rgb
+  (174,178,194) → (173,178,194) | (182,186,198) → (185,190,200), hue ≈ 225°/220°; lanes 25–60 and 60–120
+  units behind: L 69.6/76.6 → 69.3/76.6 | 67.1/99.8 → 66.8/99.8 — as before. Gate suite green (16).
 - Brief of **L4 k/n — the shock ring and the exhaust haze bend the backdrop, never a hull** (Контроль 24.09): no
   hull, own or pirate, sprite or 2D, is cut into bands; an RGB fringe on the backdrop only. Done (08b/08c): the
   scene's alpha became the hull mask — every blend keeps it (`GPU_KEEP_A`), the lit sprite (`gst`: pirates,
