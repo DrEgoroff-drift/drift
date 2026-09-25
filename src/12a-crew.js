@@ -680,18 +680,39 @@ function drawAllies(zx,zy,Z){
   for(const A of G.allies){
     const x=zx(A.x),y=zy(A.y);
     if(x<-80||x>W+80||y<-80||y>H+80)continue;
-    ctx.save();ctx.translate(x,y);ctx.scale(shipScaleAt(Z),shipScaleAt(Z));ctx.rotate(A.a);   /* один потолок с кораблём (16c) */
-    drawHull(A.c.shipId,A.thrust,false,0);
-    ctx.restore();
-    /* L3: союзник под тем же светом, что свой корабль: звезда, лучи, разрывы (16ga) */
-    if(GPU.on)gpuHullLight(x,y,zx(0),zy(0),Z,G.sys,A.c.shipId);
+    /* корпус на видеокарте, как свой (17c2): тело светом звезды, факел шейдером, огни
+       явным светом. Раньше — 2D на #c и gpuHullLight: каждый союзник в кадре стоил
+       копии #c и двух отправок. Не взяла видеокарта — прежний 2D */
+    if(!allyHullGpu(A,x,y,Z,zx(0),zy(0))){
+      ctx.save();ctx.translate(x,y);ctx.scale(shipScaleAt(Z),shipScaleAt(Z));ctx.rotate(A.a);   /* один потолок с кораблём (16c) */
+      drawHull(A.c.shipId,A.thrust,false,0);
+      ctx.restore();
+      /* L3: союзник под тем же светом, что свой корабль: звезда, лучи, разрывы (16ga) */
+      if(GPU.on)gpuHullLight(x,y,zx(0),zy(0),Z,G.sys,A.c.shipId);
+    }
     /* имя И дело (M299): плейтест 02.09 — «чувак у станции не летает, просто
        вокруг». Это наёмник на перевозке, и он кружит у станции по приказу;
-       без слова «перевозка» под именем это читалось сломанным ИИ */
-    const K=A.c.order&&ORDERS[A.c.order.kind];
-    ctx.fillStyle="rgba(127,230,216,.75)";ctx.font="9px ui-monospace,monospace";ctx.textAlign="center";
-    ctx.fillText(A.c.name.toUpperCase()+(K?" · "+K.ru.toUpperCase():""),x,y-26*clamp(Z,.3,1.4)-6);
-    ctx.fillStyle="rgba(127,230,216,.45)";ctx.font="7px ui-monospace,monospace";
-    ctx.fillText("ВАШ ЭКИПАЖ",x,y+26*clamp(Z,.3,1.4)+10);
+       без слова «перевозка» под именем это читалось сломанным ИИ.
+       Подписи — слоем подписей (domLabel): на #c текст перекрашивался каждый кадр */
+    const K=A.c.order&&ORDERS[A.c.order.kind],lk="al"+domLabelId(A.c);
+    ctx.font="9px ui-monospace,monospace";
+    domLabel(lk,x,y-26*clamp(Z,.3,1.4)-6,A.c.name.toUpperCase()+(K?" · "+K.ru.toUpperCase():""),ctx.font,"rgba(127,230,216,.75)","center");
+    ctx.font="7px ui-monospace,monospace";
+    domLabel(lk+"c",x,y+26*clamp(Z,.3,1.4)+10,"ВАШ ЭКИПАЖ",ctx.font,"rgba(127,230,216,.45)","center");
+    ctx.textAlign="left";
   }
+}
+/* сглаживание факела в 17c2 живёт по номеру корпуса (HG_THR): союзник на том же корпусе,
+   что игрок, тянул бы его тягу к своей. На время своего вызова союзник подставляет свою
+   запись и уносит её с собой — в карте модуля, не в сейве */
+const ALLY_THR=new WeakMap();
+function allyHullGpu(A,x,y,Z,sx,sy){
+  if(!GPU.on||typeof hullGpuDraw!=="function")return false;
+  const id=A.c.shipId,had=HG_THR.has(id),own=HG_THR.get(id);
+  HG_THR.set(id,ALLY_THR.get(A)||0);
+  const lx=sx-x,ly=sy-y,ln=Math.hypot(lx,ly)||1;   /* к звезде на экране */
+  let ok=false;
+  try{ok=hullGpuDraw(id,x,y,A.a,shipScaleAt(Z),!!A.thrust,false,0,0,lx/ln,ly/ln);}
+  finally{ALLY_THR.set(A,HG_THR.get(id)||0);if(had)HG_THR.set(id,own);else HG_THR.delete(id);}
+  return ok;
 }
