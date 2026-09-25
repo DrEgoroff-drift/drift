@@ -41,3 +41,19 @@ TEST_SUITES.push(()=>suite("слой #ovl: атлас LRU, 600 кадров бе
     ok(OVL.fno>f1&&keys.length>0&&keys.every(k=>!OVL.lab.has(k)),"подпись, которой не было 600 кадров, забыта ("+keys.length+")");
   }finally{window.ovAtlas=at0;G.running=run0;LOOP_OFF=loop0;resetWorld();}
 }));
+/* фишка скользит вдоль кромки дробно: рамка и текст снапятся от одного начала (рамка — X в пикселях устройства,
+   текст — X плюс постоянный отступ, одно округление), и текст в рамке не дрожит на полпикселя */
+TEST_SUITES.push(()=>suite("слой #ovl: текст фишки не дрожит в рамке при скольжении по 0.1 px",{tier:"browser"},()=>{
+  if(!ok(GPU.ok&&!!GPU.dev,"видеокарта есть"))return;
+  const Q=OVL.cq,q0=Q.slice(),dx=new Set(),dy=new Set(),on0=GPU.on;let n=0;
+  try{GPU.on=true;
+    for(const U of [1,1.37,1.75])for(const onR of [false,true])for(let i=0;i<=20;i++){
+      Q.length=0;chipDom("tj",100+i*.1,40+i*.07,120,22,1,"#6cc","ЗВЕЗДА · 2770",onR,.3,U);
+      /* 5 прямоугольников рамки, дальше глифы; первый глиф против угла рамки */
+      if(Q.length<6*OVL_N||Q[5*OVL_N+8]!==1)continue;n++;
+      dx.add(U+"|"+onR+"|"+(Q[5*OVL_N]-Q[0]).toFixed(3));dy.add(U+"|"+onR+"|"+(Q[5*OVL_N+1]-Q[1]).toFixed(3));
+    }
+  }finally{Q.length=0;Q.push(...q0);GPU.on=on0;}
+  eq(n,126,"126 положений фишки с текстом");
+  eq(dx.size+"/"+dy.size,"6/6","по каждому масштабу и стороне — один сдвиг текста от рамки (x/y)");
+}));

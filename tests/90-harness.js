@@ -255,6 +255,9 @@ function resetWorld(){
      поездку (0.451.0). Сеть дорог не трогаем: она чистый кэш от зерна, а её
      пересчёт наполнил бы кэш систем в наборе про память дороги */
   if(typeof RAIL_DOCK!=="undefined"){RAIL_DOCK=null;RAIL_WAIT=null;RAIL_RIDE=null;RAIL_ARRIVE=-1e9;RAIL_LIFE={pax:null,tea:false,teaDone:false};}
+  /* перезарядка «долгого» (16c) — как на свежей странице: G.t сбрасывается, а ABIL_ST.cd оставался от прошлого
+     набора, и готовность (кольцо, подпись «ДОЛГОЕ · …» над кнопкой) зависела от того, кто бежал раньше */
+  if(typeof ABIL_ST!=="undefined"){ABIL_ST={k:null,on:0,cd:0,armed:false,fired:false,text:""};ABIL_KEY=false;}
   G.mode="system";G.sx=0;G.sy=0;G.sys=getSystem(0,0);G.zoom=1;
   G.shipId="strizh";G.owned={strizh:true};
   G.ship={x:0,y:-760,vx:0,vy:0,a:0,av:0,bank:0};
