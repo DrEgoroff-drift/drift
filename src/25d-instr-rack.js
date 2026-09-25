@@ -51,7 +51,7 @@ const RACK_G=[
   {id:"hold",  ru:"ТРЮМ",       unit:"Т",     lo:0,  hi:1,    mid:4,sub:5,dig:1,
    read:()=>held()}
 ];
-const RACK={key:"",B:null,S:null,nd:1,w:0,h:0,geo:null};
+const RACK={key:"",jk:"",P:null,S:null,nd:1,w:0,h:0,geo:null,fade:0};
 function rackOpen(){return !!(G.rack&&G.rack.on);}
 function rackToggle(){
   if(!G.rack)G.rack={on:false};
@@ -167,46 +167,88 @@ function rackGlass(c,cx,cy,r){
    печётся один раз на размер экрана — выпечкой на видеокарте (08ca), в плотности слоя #ovl, с полями
    под тень корпуса (поля — в пикселях устройства: shadowBlur, как у 2D, трансформой не меряется).
    Рядом — вторая выпечка, спрайты живого (стрелка, её тень, втулка, каретка): плотность ×4 и уровни,
-   повёрнутая стрелка сэмплится трилинейно и режется по краю не хуже 2D. Открытие стойки — один кадр
-   с выпечкой, как было с полотном; дальше ни одной новой текстуры */
-const RACK_SH=[40,30,50];   /* поля мастера (px устройства): бока, верх, низ — размытие 26 и сдвиг 10 */
+   повёрнутая стрелка сэмплится трилинейно и режется по краю не хуже 2D.
+   Мастер — не одна выпечка, а слои в порядке рисунка (rackParts): корпус с тенью, две половины ряда
+   циферблатов, короб самописца, правый угол. Каждый — шаг печи 17a0 под её бюджетом (PB_PX: крупная
+   часть одна на кадр), и открытие стойки — несколько кадров, пока наплывает затемнение, а не один
+   кадр в 50 мс. Дальше ни одной новой текстуры */
+const RACK_SH=[40,30,50];
+const RACK_DQ=4;   /* ряд циферблатов — четыре части: первый прибор растрит шрифты шкалы, на 390 половина ряда стоила 20 мс */   /* поля мастера (px устройства): бока, верх, низ — размытие 26 и сдвиг 10 */
 function rackR(g0){const cw=(g0.w-RACK_PAD*2)/RACK_G.length;return Math.max(1,Math.min(cw*.36,(g0.gh-40)*.5));}
-function rackDrop(){if(RACK.B)gpuBakeDrop(RACK.B);if(RACK.S)gpuBakeDrop(RACK.S.B);RACK.B=RACK.S=null;RACK.key="";}
+function rackDrop(){
+  if(RACK.P)for(const p of RACK.P)gpuBakeDrop(p.B);if(RACK.S)gpuBakeDrop(RACK.S.B);RACK.P=RACK.S=null;RACK.key="";
+  if(RACK.jk){prebakeDrop(RACK.jk);RACK.jk="";}}
+/* части мастера (px устройства в мастере с полями; начало — целый пиксель, текстель ложится в пиксель):
+   корпус — весь мастер с полями под тень, остальное — только свой кусок */
+function rackParts(g0,nd){
+  const [mx,mt,mb]=RACK_SH,MW=Math.ceil(g0.w*nd)+mx*2,MH=Math.ceil(g0.h*nd)+mt+mb;
+  const n=RACK_G.length,cw=(g0.w-RACK_PAD*2)/n,R=g0.rec,gh=g0.gh;
+  const box=(k,x0,y0,x1,y1)=>{const X0=clamp(Math.floor(x0*nd)+mx,0,MW-1),Y0=clamp(Math.floor(y0*nd)+mt,0,MH-1);
+    return {k,X0,Y0,X1:clamp(Math.ceil(x1*nd)+mx,X0+1,MW),Y1:clamp(Math.ceil(y1*nd)+mt,Y0+1,MH)};};
+  const L=[{k:"body",X0:0,Y0:0,X1:MW,Y1:MH}];
+  for(let q=0;q<RACK_DQ;q++){const i0=Math.ceil(n*q/RACK_DQ),i1=Math.ceil(n*(q+1)/RACK_DQ);
+    if(i1>i0)L.push(box("d"+q,RACK_PAD+cw*i0-(q?1:2),6,RACK_PAD+cw*i1+(q<RACK_DQ-1?1:2),gh-6));}
+  return [...L,
+    box("rec",R.x-2,R.y-2,R.x+R.w+2,R.y+R.h+2),
+    box("right",R.x+R.w+1,gh-28,g0.w,g0.h)];
+}
+/* задача печи: шаг — одна выпечка. Спрайты первыми (мелкие), за ними части мастера (крупная — одна
+   на кадр, PB_PX), последним — прогрев надписей: он дорог сам (глифы, 17 мс на 390) и встаёт в кадр
+   после самой тяжёлой части, а не рядом с мелкой. Брошенная задача (размер сменился) отдаёт испечённое */
+function* rackBakeJob(g0,nd){
+  const [mx,mt]=RACK_SH,P=[];let S=null,done=false;
+  try{
+    S=rackSprites(rackR(g0),nd);
+    if(!S)return null;
+    yield;
+    for(const p of rackParts(g0,nd)){
+      p.B=gpuBake(p.X1-p.X0,p.Y1-p.Y0,c=>{c.setTransform(nd,0,0,nd,mx-p.X0,mt-p.Y0);rackPaint(c,g0,p.k);},
+        {mips:false,ss:nd<1.5?2:1,once:true});   /* край кольца и стрелки шкалы — вровень с 2D; на плотном экране пиксель и так мелок */
+      if(!p.B)return null;
+      P.push(p);yield;
+    }
+    rackWarm({P,S,nd,fade:1,wk:1},g0);yield;
+    rackWarm({P,S,nd,fade:1,wk:2},g0);
+    done=true;return {P,S};
+  }finally{if(!done){for(const p of P)gpuBakeDrop(p.B);if(S)gpuBakeDrop(S.B);}}
+}
 function rackTex(){
   const g0=rackGeo(),nd=ovNd();
   const key=Math.round(g0.w)+"x"+Math.round(g0.h)+"|"+nd.toFixed(2);
-  if(RACK.key===key&&RACK.B&&RACK.B.dev===GPU.dev)return RACK;
-  rackDrop();
-  const [mx,mt,mb]=RACK_SH;
-  RACK.B=gpuBake(Math.ceil(g0.w*nd)+mx*2,Math.ceil(g0.h*nd)+mt+mb,c=>{c.setTransform(nd,0,0,nd,mx,mt);rackPaint(c,g0);},
-    {mips:false,ss:nd<1.5?2:1,once:true});   /* край кольца и стрелки шкалы — вровень с 2D; на плотном экране пиксель и так мелок */
-  RACK.S=RACK.B?rackSprites(rackR(g0),nd):null;
-  if(RACK.B&&RACK.S)RACK.key=key;
-  RACK.w=g0.w;RACK.h=g0.h;RACK.geo=g0;RACK.nd=nd;
+  if(RACK.key===key&&RACK.P&&RACK.P[0].B.dev===GPU.dev)return RACK;
+  const jk="rack|"+key;
+  if(RACK.P||RACK.jk&&RACK.jk!==jk)rackDrop();
+  RACK.jk=jk;RACK.w=g0.w;RACK.h=g0.h;RACK.geo=g0;RACK.nd=nd;
+  const v=prebake(jk,()=>rackBakeJob(g0,nd));
+  if(v){RACK.P=v.P;RACK.S=v.S;RACK.key=key;RACK.jk="";}
   return RACK;
 }
-function rackPaint(c,g0){
+/* part — один слой мастера (rackParts), без него — всё целиком */
+function rackPaint(c,g0,part){
   const w=g0.w,h=g0.h;
-  /* тень корпуса: стойка стоит перед миром, а не парит в нём */
-  c.save();c.shadowColor="rgba(0,0,0,.6)";c.shadowBlur=26;c.shadowOffsetY=10;
-  c.fillStyle="#101315";c.fillRect(0,0,w,h);c.restore();
-  /* ── корпус стойки: матовый металл, фаска, винты по углам ── */
-  const body=c.createLinearGradient(0,0,0,h);
-  body.addColorStop(0,"#2b3033");body.addColorStop(.28,"#1e2325");
-  body.addColorStop(.72,"#191d20");body.addColorStop(1,"#101315");
-  c.fillStyle=body;c.fillRect(0,0,w,h);
-  rackGrain(c,0,0,w,h,900,.06,["rgba(0,0,0,","rgba(220,235,240,"]);
-  c.strokeStyle="rgba(210,228,235,.10)";c.lineWidth=1;
-  c.beginPath();c.moveTo(0,.5);c.lineTo(w,.5);c.stroke();
-  c.strokeStyle="rgba(0,0,0,.6)";
-  c.beginPath();c.moveTo(0,h-.5);c.lineTo(w,h-.5);c.stroke();
-  for(const [sx,sy] of [[10,10],[w-10,10],[10,h-10],[w-10,h-10]])rackScrew(c,sx,sy,4.5);
+  if(!part||part==="body"){
+    /* тень корпуса: стойка стоит перед миром, а не парит в нём */
+    c.save();c.shadowColor="rgba(0,0,0,.6)";c.shadowBlur=26;c.shadowOffsetY=10;
+    c.fillStyle="#101315";c.fillRect(0,0,w,h);c.restore();
+    /* ── корпус стойки: матовый металл, фаска, винты по углам ── */
+    const body=c.createLinearGradient(0,0,0,h);
+    body.addColorStop(0,"#2b3033");body.addColorStop(.28,"#1e2325");
+    body.addColorStop(.72,"#191d20");body.addColorStop(1,"#101315");
+    c.fillStyle=body;c.fillRect(0,0,w,h);
+    rackGrain(c,0,0,w,h,900,.06,["rgba(0,0,0,","rgba(220,235,240,"]);
+    c.strokeStyle="rgba(210,228,235,.10)";c.lineWidth=1;
+    c.beginPath();c.moveTo(0,.5);c.lineTo(w,.5);c.stroke();
+    c.strokeStyle="rgba(0,0,0,.6)";
+    c.beginPath();c.moveTo(0,h-.5);c.lineTo(w,h-.5);c.stroke();
+    for(const [sx,sy] of [[10,10],[w-10,10],[10,h-10],[w-10,h-10]])rackScrew(c,sx,sy,4.5);
+  }
 
   /* ── верхняя секция: восемь приборов в гнёздах ── */
   const gh=g0.gh, n=RACK_G.length;
   const cw=(w-RACK_PAD*2)/n;
   const r=Math.min(cw*.36,(gh-40)*.5);
   for(let i=0;i<n;i++){
+    if(part&&part!=="d"+Math.floor(i*RACK_DQ/n))continue;
     const g=RACK_G[i], cx=RACK_PAD+cw*(i+.5), cy=RACK_PAD+r+6;
     /* гнездо: прямоугольная рамка вокруг круглого прибора, как в стойке */
     const bx=cx-cw*.46, by=8, bw=cw*.92, bh=gh-16;
@@ -229,86 +271,90 @@ function rackPaint(c,g0){
   }
 
   /* ── нижняя секция: короб самописца ── */
-  const R=g0.rec;
-  const box=c.createLinearGradient(0,R.y,0,R.y+R.h);
-  box.addColorStop(0,"#202528");box.addColorStop(1,"#0f1214");
-  c.fillStyle=box;
-  c.beginPath();c.roundRect(R.x,R.y,R.w,R.h,5);c.fill();
-  c.strokeStyle="rgba(0,0,0,.75)";c.lineWidth=1.6;c.stroke();
-  c.strokeStyle="rgba(200,220,228,.07)";c.lineWidth=1;
-  c.beginPath();c.moveTo(R.x+3,R.y+1);c.lineTo(R.x+R.w-3,R.y+1);c.stroke();
-  const P=rackPaperBox(g0);
-  /* бумага: тёплая, с печатной сеткой и чуть неровными краями */
-  const pg=c.createLinearGradient(0,P.y,0,P.y+P.h);
-  pg.addColorStop(0,"#e6dcc0");pg.addColorStop(.5,"#dfd3b3");pg.addColorStop(1,"#cfc09e");
-  c.fillStyle=pg;c.fillRect(P.x,P.y,P.w,P.h);
-  rackGrain(c,P.x,P.y,P.w,P.h,Math.round(P.w*P.h*.012),.10,
-            ["rgba(120,100,64,","rgba(255,250,230,"]);
-  /* печатная сетка: мелкая клетка и жирная каждая пятая */
-  const cell=Math.max(7,P.h/26);
-  c.lineWidth=1;
-  for(let x=P.x;x<=P.x+P.w+.1;x+=cell){
-    const k=Math.round((x-P.x)/cell);
-    c.strokeStyle=k%5===0?"rgba(150,66,44,.30)":"rgba(150,66,44,.14)";
-    c.beginPath();c.moveTo(Math.round(x)+.5,P.y);c.lineTo(Math.round(x)+.5,P.y+P.h);c.stroke();
-  }
-  for(let y=P.y;y<=P.y+P.h+.1;y+=cell){
-    const k=Math.round((y-P.y)/cell);
-    c.strokeStyle=k%5===0?"rgba(150,66,44,.30)":"rgba(150,66,44,.14)";
-    c.beginPath();c.moveTo(P.x,Math.round(y)+.5);c.lineTo(P.x+P.w,Math.round(y)+.5);c.stroke();
-  }
-  /* полосы дорожек: пять зон с печатной нулевой линией */
-  const th=P.h/TAPE_PENS;
-  for(let i=0;i<TAPE_PENS;i++){
-    const top=P.y+th*i;
-    if(i){
-      c.strokeStyle="rgba(96,60,36,.45)";c.lineWidth=1;
-      c.beginPath();c.moveTo(P.x,Math.round(top)+.5);c.lineTo(P.x+P.w,Math.round(top)+.5);c.stroke();
+  if(!part||part==="rec"){
+    const R=g0.rec;
+    const box=c.createLinearGradient(0,R.y,0,R.y+R.h);
+    box.addColorStop(0,"#202528");box.addColorStop(1,"#0f1214");
+    c.fillStyle=box;
+    c.beginPath();c.roundRect(R.x,R.y,R.w,R.h,5);c.fill();
+    c.strokeStyle="rgba(0,0,0,.75)";c.lineWidth=1.6;c.stroke();
+    c.strokeStyle="rgba(200,220,228,.07)";c.lineWidth=1;
+    c.beginPath();c.moveTo(R.x+3,R.y+1);c.lineTo(R.x+R.w-3,R.y+1);c.stroke();
+    const P=rackPaperBox(g0);
+    /* бумага: тёплая, с печатной сеткой и чуть неровными краями */
+    const pg=c.createLinearGradient(0,P.y,0,P.y+P.h);
+    pg.addColorStop(0,"#e6dcc0");pg.addColorStop(.5,"#dfd3b3");pg.addColorStop(1,"#cfc09e");
+    c.fillStyle=pg;c.fillRect(P.x,P.y,P.w,P.h);
+    rackGrain(c,P.x,P.y,P.w,P.h,Math.round(P.w*P.h*.012),.10,
+              ["rgba(120,100,64,","rgba(255,250,230,"]);
+    /* печатная сетка: мелкая клетка и жирная каждая пятая */
+    const cell=Math.max(7,P.h/26);
+    c.lineWidth=1;
+    for(let x=P.x;x<=P.x+P.w+.1;x+=cell){
+      const k=Math.round((x-P.x)/cell);
+      c.strokeStyle=k%5===0?"rgba(150,66,44,.30)":"rgba(150,66,44,.14)";
+      c.beginPath();c.moveTo(Math.round(x)+.5,P.y);c.lineTo(Math.round(x)+.5,P.y+P.h);c.stroke();
     }
-    c.strokeStyle="rgba(96,60,36,.28)";c.setLineDash([4,4]);
-    c.beginPath();
-    c.moveTo(P.x,Math.round(top+th*.5)+.5);c.lineTo(P.x+P.w,Math.round(top+th*.5)+.5);
-    c.stroke();c.setLineDash([]);
+    for(let y=P.y;y<=P.y+P.h+.1;y+=cell){
+      const k=Math.round((y-P.y)/cell);
+      c.strokeStyle=k%5===0?"rgba(150,66,44,.30)":"rgba(150,66,44,.14)";
+      c.beginPath();c.moveTo(P.x,Math.round(y)+.5);c.lineTo(P.x+P.w,Math.round(y)+.5);c.stroke();
+    }
+    /* полосы дорожек: пять зон с печатной нулевой линией */
+    const th=P.h/TAPE_PENS;
+    for(let i=0;i<TAPE_PENS;i++){
+      const top=P.y+th*i;
+      if(i){
+        c.strokeStyle="rgba(96,60,36,.45)";c.lineWidth=1;
+        c.beginPath();c.moveTo(P.x,Math.round(top)+.5);c.lineTo(P.x+P.w,Math.round(top)+.5);c.stroke();
+      }
+      c.strokeStyle="rgba(96,60,36,.28)";c.setLineDash([4,4]);
+      c.beginPath();
+      c.moveTo(P.x,Math.round(top+th*.5)+.5);c.lineTo(P.x+P.w,Math.round(top+th*.5)+.5);
+      c.stroke();c.setLineDash([]);
+    }
+    /* тень от короба на бумагу: она лежит В приборе, а не наклеена сверху */
+    const sh=c.createLinearGradient(P.x,0,P.x+14,0);
+    sh.addColorStop(0,"rgba(10,12,14,.55)");sh.addColorStop(1,"rgba(10,12,14,0)");
+    c.fillStyle=sh;c.fillRect(P.x,P.y,14,P.h);
+    const sh2=c.createLinearGradient(P.x+P.w-16,0,P.x+P.w,0);
+    sh2.addColorStop(0,"rgba(10,12,14,0)");sh2.addColorStop(1,"rgba(10,12,14,.5)");
+    c.fillStyle=sh2;c.fillRect(P.x+P.w-16,P.y,16,P.h);
+    /* окна подачи: бумага выходит слева из щели и уходит вправо на приёмный ролик */
+    c.fillStyle="#0b0e10";
+    c.fillRect(P.x-6,P.y-2,6,P.h+4);
+    c.fillRect(P.x+P.w,P.y-2,6,P.h+4);
+    rackRoller(c,P.x-10-R.rollW*.62,P.y+P.h*.5,R.rollW*.5,P.h*.56,"supply");
+    rackRoller(c,P.x+P.w+6+R.rollW*.5,P.y+P.h*.5,R.rollW*.5,P.h*.62,"take");
+    /* подписи каналов слева от бумаги */
+    for(let i=0;i<RACK_CH.length;i++){
+      const top=P.y+P.h/TAPE_PENS*i, cy2=top+P.h/TAPE_PENS*.5;
+      c.fillStyle=RACK_CH[i].col;
+      c.beginPath();c.arc(R.x+R.dx,cy2,3.6,0,TAU);c.fill();
+      c.fillStyle="rgba(198,208,212,.75)";
+      c.font=RACK_LEG_FONT;
+      c.textAlign="left";c.textBaseline="middle";
+      if(R.lab[i])c.fillText(R.lab[i],R.x+R.lx,cy2);
+    }
   }
-  /* тень от короба на бумагу: она лежит В приборе, а не наклеена сверху */
-  const sh=c.createLinearGradient(P.x,0,P.x+14,0);
-  sh.addColorStop(0,"rgba(10,12,14,.55)");sh.addColorStop(1,"rgba(10,12,14,0)");
-  c.fillStyle=sh;c.fillRect(P.x,P.y,14,P.h);
-  const sh2=c.createLinearGradient(P.x+P.w-16,0,P.x+P.w,0);
-  sh2.addColorStop(0,"rgba(10,12,14,0)");sh2.addColorStop(1,"rgba(10,12,14,.5)");
-  c.fillStyle=sh2;c.fillRect(P.x+P.w-16,P.y,16,P.h);
-  /* окна подачи: бумага выходит слева из щели и уходит вправо на приёмный ролик */
-  c.fillStyle="#0b0e10";
-  c.fillRect(P.x-6,P.y-2,6,P.h+4);
-  c.fillRect(P.x+P.w,P.y-2,6,P.h+4);
-  rackRoller(c,P.x-10-R.rollW*.62,P.y+P.h*.5,R.rollW*.5,P.h*.56,"supply");
-  rackRoller(c,P.x+P.w+6+R.rollW*.5,P.y+P.h*.5,R.rollW*.5,P.h*.62,"take");
-  /* подписи каналов слева от бумаги */
-  for(let i=0;i<RACK_CH.length;i++){
-    const top=P.y+P.h/TAPE_PENS*i, cy2=top+P.h/TAPE_PENS*.5;
-    c.fillStyle=RACK_CH[i].col;
-    c.beginPath();c.arc(R.x+16,cy2,3.6,0,TAU);c.fill();
-    c.fillStyle="rgba(198,208,212,.75)";
-    c.font=RACK_LEG_FONT;
-    c.textAlign="left";c.textBaseline="middle";
-    if(R.lab[i])c.fillText(R.lab[i],R.x+26,cy2);
+  if(!part||part==="right"){
+    /* неподвижное из правого угла: подпись невязки, подложка и засечки её шкалы, лампа питания —
+       горит ровно, потому что прибор просто включён */
+    c.textAlign="right";c.textBaseline="alphabetic";
+    c.fillStyle="rgba(196,206,210,.55)";c.font="9px ui-monospace,monospace";
+    c.fillText("НЕВЯЗКА",w-RACK_PAD,g0.gh+2);
+    {const bw=54,bx=w-RACK_PAD-bw,by=g0.gh+23;
+     c.fillStyle="rgba(0,0,0,.45)";c.fillRect(bx,by,bw,3);
+     c.fillStyle="rgba(196,206,210,.35)";for(const t of [0,.5,1])c.fillRect(bx+(bw-1)*t,by-2,1,2);}
+    const lx=w-RACK_PAD-6,ly=g0.gh-16;
+    const lg=c.createRadialGradient(lx,ly,.5,lx,ly,7);
+    lg.addColorStop(0,"rgba(255,196,110,.95)");lg.addColorStop(.45,"rgba(226,140,52,.55)");
+    lg.addColorStop(1,"rgba(226,140,52,0)");
+    c.fillStyle=lg;c.beginPath();c.arc(lx,ly,7,0,TAU);c.fill();
+    c.fillStyle="rgba(255,214,150,.95)";
+    c.beginPath();c.arc(lx,ly,2.2,0,TAU);c.fill();
+    if(g0.glob&&typeof globusPaint==="function")globusPaint(c,g0.glob.cx,g0.glob.cy,g0.glob.r);
   }
-  /* неподвижное из правого угла: подпись невязки, подложка и засечки её шкалы, лампа питания —
-     горит ровно, потому что прибор просто включён */
-  c.textAlign="right";c.textBaseline="alphabetic";
-  c.fillStyle="rgba(196,206,210,.55)";c.font="9px ui-monospace,monospace";
-  c.fillText("НЕВЯЗКА",w-RACK_PAD,g0.gh+2);
-  {const bw=54,bx=w-RACK_PAD-bw,by=g0.gh+23;
-   c.fillStyle="rgba(0,0,0,.45)";c.fillRect(bx,by,bw,3);
-   c.fillStyle="rgba(196,206,210,.35)";for(const t of [0,.5,1])c.fillRect(bx+(bw-1)*t,by-2,1,2);}
-  const lx=w-RACK_PAD-6,ly=g0.gh-16;
-  const lg=c.createRadialGradient(lx,ly,.5,lx,ly,7);
-  lg.addColorStop(0,"rgba(255,196,110,.95)");lg.addColorStop(.45,"rgba(226,140,52,.55)");
-  lg.addColorStop(1,"rgba(226,140,52,0)");
-  c.fillStyle=lg;c.beginPath();c.arc(lx,ly,7,0,TAU);c.fill();
-  c.fillStyle="rgba(255,214,150,.95)";
-  c.beginPath();c.arc(lx,ly,2.2,0,TAU);c.fill();
-  if(g0.glob&&typeof globusPaint==="function")globusPaint(c,g0.glob.cx,g0.glob.cy,g0.glob.r);
 }
 /* спрайты живого: стрелка (ось в начале), её тень, втулка, каретка. Каждый — своё окно текстуры
    целым числом texel'ей, между окнами запас под уровни */
@@ -347,12 +393,13 @@ function rackSpr(S,k,ax,ay,a,mul){
 /* где именно лежит бумага внутри короба: слева колонка подписей, справа ролики */
 function rackPaperBox(g0){
   const R=g0.rec, roll=Math.min(46,R.w*.05), L=rackLegend(R.w,roll), leg=L.leg;
-  R.rollW=roll;R.lab=L.lab;
+  R.rollW=roll;R.lab=L.lab;R.lx=L.lx;R.dx=L.dx;
   return {x:R.x+leg,y:R.y+12,w:R.w-leg-roll*2-16,h:R.h-24};
 }
 /* колонка подписей каналов: ширина — по самой длинной подписи, чтобы она не заходила под ролик
    подачи (он стоит в этой же колонке, у бумаги). Подпись — самая полная из «CH1 · ХРОНОМЕТР»,
-   «ХРОНОМЕТР», «CH1», пока бумаге остаётся 60 % короба; тесно и так — одна точка цвета */
+   «ХРОНОМЕТР», «CH1», пока бумаге остаётся 60 % короба. Тесно и так (телефон: справа «Глобус») —
+   номер канала вплотную к точке, пока бумаге остаётся 45 %; иначе одна точка цвета */
 const RACK_LEG_FONT="10px ui-monospace,monospace",RACK_LEG={k:"",v:null};
 function rackLegend(rw,roll){
   const k=Math.round(rw)+"|"+roll.toFixed(2);if(RACK_LEG.k===k)return RACK_LEG.v;
@@ -361,9 +408,11 @@ function rackLegend(rw,roll){
   let v=null;
   for(const f of forms){
     const lab=RACK_CH.map(f),tw=Math.max(...lab.map(s=>rackTextW(s))),leg=26+tw+tail;
-    if(room-leg>=room*.6){v={leg,lab};break;}
+    if(room-leg>=room*.6){v={leg,lab,lx:26,dx:16};break;}
   }
-  if(!v)v={leg:19.6+4+10+roll*1.18,lab:RACK_CH.map(()=>"")};
+  if(!v){const lab=RACK_CH.map((c,i)=>String(i+1)),leg=15+Math.max(...lab.map(s=>rackTextW(s)))+4+10+roll*1.18;
+    if(room-leg>=room*.45)v={leg,lab,lx:15,dx:9};}
+  if(!v)v={leg:19.6+4+10+roll*1.18,lab:RACK_CH.map(()=>""),lx:26,dx:16};
   RACK_LEG.k=k;RACK_LEG.v=v;return v;
 }
 /* ширина подписи: глифы видеокарты (08cb); без document (Node) — моноширинная оценка */
@@ -404,15 +453,26 @@ function rackRoller(c,cx,cy,r,h,kind){
    затемнение — прямоугольник, стойка — мастер, стрелки и каретки — спрайты, перья — графики,
    числа — глифы. Ни одного вызова 2D. Кадр зовёт стойку ДО мира: очередь сливается в конце мира */
 function rackDraw(){
-  if(!rackOpen()||!G.running)return;
+  if(!rackOpen()||!G.running){RACK.fade=0;return;}
   if(scrOpen())return;
   const T=rackTex(), g0=RACK.geo;
-  if(!T.B||!T.S)return;
+  /* открытие: затемнение наплывает за четыре кадра, пока печь печёт части; стойка встаёт целиком */
+  RACK.fade=Math.min(1,RACK.fade+.25);
+  if(!T.P||!T.S){ovRect(0,0,W,H,"rgba(3,5,8,.42)",RACK.fade);return;}
+  rackFrame(T,g0);
+}
+/* прогрев — кадр стойки вхолостую последним шагом печи: глифы живых надписей растрятся там, а не в
+   первом кадре открытой стойки (на 390 это было 18 мс ovText); очереди #ovl срезаются обратно */
+function rackWarm(T,g0){
+  const Qs=[OVL.uq,OVL.lq,OVL.cq,OVL.ur,OVL.gd],n=Qs.map(q=>q.length);
+  try{rackFrame(T,g0);}finally{Qs.forEach((q,i)=>{q.length=n[i];});}
+}
+function rackFrame(T,g0){
   const R=instrRead(),nd=T.nd,S=T.S,[mx,mt]=RACK_SH,Q=OVL.uq;
   /* начало стойки — на целый пиксель устройства: мастер ложится текстель в пиксель */
   const ox=Math.round(g0.x*nd),oy=Math.round(g0.y*nd),X=ox/nd,Y=oy/nd;
-  ovRect(0,0,W,H,"rgba(3,5,8,.42)");
-  ovImage(T.B,(ox-mx+T.B.w/2)/nd,(oy-mt+T.B.h/2)/nd,T.B.w/nd,T.B.h/nd,0,0,0,1,1,1);
+  ovRect(0,0,W,H,"rgba(3,5,8,.42)",T.fade);
+  for(const p of T.P)ovImage(p.B,(ox-mx+p.X0+p.B.w/2)/nd,(oy-mt+p.Y0+p.B.h/2)/nd,p.B.w/nd,p.B.h/nd,0,0,0,1,1,1);
 
   /* ── стрелки ── */
   const n=RACK_G.length, cw=(g0.w-RACK_PAD*2)/n;
@@ -437,12 +497,13 @@ function rackDraw(){
   /* ── правый угол: невязка цифрами; шильдик слева: чья это стойка. Профессия корпуса
      (03f-hull-role) и есть объяснение, почему приборы читают лучше или хуже соседских ── */
   const RL=(typeof hullRole==="function")?hullRole():null;
-  if(RL){
+  const wk=T.wk||0;   /* прогрев (rackWarm) делит надписи на два шага печи */
+  if(RL&&wk!==2){
     ovText(Q,X+RACK_PAD,Y+g0.gh+4,RL.ru,"600 11px ui-monospace,monospace","rgba(214,196,150,.72)","left","alphabetic",1,1);
     ovText(Q,X+RACK_PAD,Y+g0.gh+17,RL.note,"9px ui-monospace,monospace","rgba(150,162,166,.5)","left","alphabetic",1,1);
   }
   const mv=instrMisclose();
-  ovText(Q,X+g0.w-RACK_PAD,Y+g0.gh+18,mv.toFixed(3),"600 13px ui-monospace,monospace","rgba(232,168,84,.9)","right","alphabetic",1,1);
+  if(wk!==2)ovText(Q,X+g0.w-RACK_PAD,Y+g0.gh+18,mv.toFixed(3),"600 13px ui-monospace,monospace","rgba(232,168,84,.9)","right","alphabetic",1,1);
   /* ── шкала под числом ──
      Внешний тестировщик: «приборы, которые нельзя прочесть» — и про эту цифру
      в частности: «0.000» без единицы. Единицы у невязки и нет, она безразмерна
@@ -493,7 +554,7 @@ function rackDraw(){
     /* отметки времени по нижней кромке: сколько минут ленты видно. Считаются от
        такта пера, а не от часов — это ЕГО время, и оно у ядра области идёт быстрее */
     const span=cols*tapeRate()/60;                       // минут на всю бумагу
-    for(let m=0;m<=4;m++){
+    for(let m=0;m<=4&&wk!==1;m++){
       const x=P.x+P.w-P.w*m/4;
       ovText(Q,x,P.y+P.h+4,m?"-"+(span*m/4).toFixed(1)+" мин":"сейчас","8px ui-monospace,monospace","rgba(150,160,164,.5)","center","top",1,1);
     }
@@ -503,6 +564,6 @@ function rackDraw(){
      Единственный прибор стойки, который показывает не число, а место: где ты и
      где окажешься, если затормозить прямо сейчас. Стоит отдельно от ряда
      стрелок нарочно — он другого рода. */
-  if(g0.glob&&typeof globusDraw==="function")
+  if(g0.glob&&typeof globusDraw==="function"&&wk!==1)
     globusDraw(X+g0.glob.cx,Y+g0.glob.cy,g0.glob.r);
 }

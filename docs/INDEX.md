@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 630 · символов верхнего уровня: 6316
+Файлов: 630 · символов верхнего уровня: 6321
 
 ## СИМВОЛЫ
 
@@ -4461,28 +4461,33 @@ r3Sys                        tests/91zzxa-playable.js:177-183
 r4Haul                       tests/91zzxa-playable.js:331-337
 RACK                         src/25d-instr-rack.js:54
 RACK_CH                      src/25d-instr-rack.js:27-33
+RACK_DQ                      src/25d-instr-rack.js:176
 RACK_G                       src/25d-instr-rack.js:36-53
-RACK_LEG_FONT                src/25d-instr-rack.js:356
+RACK_LEG_FONT                src/25d-instr-rack.js:403
 RACK_PAD                     src/25d-instr-rack.js:25
-RACK_SH                      src/25d-instr-rack.js:172
+RACK_SH                      src/25d-instr-rack.js:175
+rackBakeJob                  src/25d-instr-rack.js:198-214
 rackDial                     src/25d-instr-rack.js:105-149
-rackDraw                     src/25d-instr-rack.js:406-508
-rackDrop                     src/25d-instr-rack.js:174
+rackDraw                     src/25d-instr-rack.js:455-463
+rackDrop                     src/25d-instr-rack.js:178-194
+rackFrame                    src/25d-instr-rack.js:470-569
 rackGeo                      src/25d-instr-rack.js:68-80
 rackGlass                    src/25d-instr-rack.js:151-163
 rackGrain                    src/25d-instr-rack.js:94-103
-rackLegend                   src/25d-instr-rack.js:357-368
+rackLegend                   src/25d-instr-rack.js:404-417
 rackOpen                     src/25d-instr-rack.js:55
-rackPaint                    src/25d-instr-rack.js:188-312
-rackPaperBox                 src/25d-instr-rack.js:348-352
-rackR                        src/25d-instr-rack.js:173
-rackRoller                   src/25d-instr-rack.js:372-401
+rackPaint                    src/25d-instr-rack.js:227-358
+rackPaperBox                 src/25d-instr-rack.js:394-398
+rackParts                    src/25d-instr-rack.js:183-194
+rackR                        src/25d-instr-rack.js:177
+rackRoller                   src/25d-instr-rack.js:421-450
 rackScrew                    src/25d-instr-rack.js:84-92
-rackSpr                      src/25d-instr-rack.js:343-346
-rackSprites                  src/25d-instr-rack.js:315-341
-rackTex                      src/25d-instr-rack.js:175-187
-rackTextW                    src/25d-instr-rack.js:370
+rackSpr                      src/25d-instr-rack.js:389-392
+rackSprites                  src/25d-instr-rack.js:361-387
+rackTex                      src/25d-instr-rack.js:215-225
+rackTextW                    src/25d-instr-rack.js:419
 rackToggle                   src/25d-instr-rack.js:56-59
+rackWarm                     src/25d-instr-rack.js:466-469
 RADIO                        src/10a-radio.js:119
 RADIO_ARCH                   src/10a-radio.js:24-40
 RADIO_BANDS                  src/25e-receiver.js:13-18
@@ -7434,7 +7439,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/25c-instr-hud.js · 9 КБ
   · приборная колодка: те же приборы, но всегда под рукой:1
 
-## src/25d-instr-rack.js · 31 КБ
+## src/25d-instr-rack.js · 36 КБ
   · приборная стойка: настоящие стрелочные приборы и самописец:1
 
 ## src/25e-receiver.js · 7 КБ
@@ -7791,7 +7796,7 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## tests/91zk-tape.js · 8 КБ
 
-## tests/91zl-rack.js · 7 КБ
+## tests/91zl-rack.js · 8 КБ
 
 ## tests/91zm-role.js · 4 КБ
 

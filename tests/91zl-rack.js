@@ -48,7 +48,7 @@ TEST_SUITES.push(()=>suite("Стойка: восемь стрелок и пят�
 }));
 /* на видеокарте: мастер и спрайты пекутся один раз на размер, дальше кадр — только очередь #ovl:
    ни одной новой текстуры, ни одного вызова 2D */
-TEST_SUITES.push(()=>suite("Стойка: мастер печётся один раз, кадр — очередь слоя #ovl",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("Стойка: мастер печётся порциями один раз, кадр — очередь слоя #ovl",{tier:"browser"},()=>{
   if(!ok(GPU.ok&&!!GPU.dev,"видеокарта есть"))return;
   resetWorld();G.mode="system";
   /* выпечки стойки — по её художникам: мир рядом печёт своё, это не её счёт */
@@ -58,26 +58,31 @@ TEST_SUITES.push(()=>suite("Стойка: мастер печётся один �
   window.rackSprites=function(){bakes++;return s0.apply(null,arguments);};
   try{
     for(let i=0;i<40;i++)tapeSample();
-    rackDrop();frameBody(t+=16.7);
-    const B=RACK.B,S=RACK.S;
-    ok(!!(B&&S&&B.dev===GPU.dev)&&bakes===2,"мастер и спрайты стойки на видеокарте ("+bakes+" выпечки при открытии)");
+    /* части мастера — шаги печи 17a0: крупная одна на кадр (PB_PX), стойка встаёт, когда готово всё */
+    rackDrop();let fr=0,most=0;
+    while(!RACK.P&&fr<30){const b=bakes;frameBody(t+=16.7);fr++;most=Math.max(most,bakes-b);}
+    const B=RACK.P,S=RACK.S,np=rackParts(RACK.geo,RACK.nd).length;
+    ok(!!(B&&S&&B.every(p=>p.B.dev===GPU.dev))&&bakes===np+1,"части мастера и спрайты на видеокарте ("+bakes+" выпечек, частей "+np+")");
+    ok(fr>=3&&most<np+1,"выпечка разложена по кадрам: "+fr+" кадров, за кадр не больше "+most);
     const b0=bakes;let lit=0;
     for(let i=0;i<30;i++){frameBody(t+=16.7);if(OVL.on)lit++;}
     eq(bakes-b0,0,"30 кадров открытой стойки — ни одной новой выпечки");
-    ok(RACK.B===B&&RACK.S===S,"мастер тот же");
+    ok(RACK.P===B&&RACK.S===S,"мастер тот же");
     eq(lit,30,"слой #ovl горит каждый кадр");
     G.rack.on=false;frameBody(t+=16.7);
   }finally{window.rackPaint=p0;window.rackSprites=s0;G.running=run0;LOOP_OFF=loop0;G.rack=null;resetWorld();}
 }));
 /* легенда каналов: подпись не заходит под ролик подачи ни на телефоне, ни на 760, ни на 1180;
-   на 760 и 1180 подпись есть, бумаге остаётся 60 % короба. Ширины — настоящие глифы */
+   на 760 и 1180 подпись словом, бумаге остаётся 60 % короба; на телефоне хотя бы номер канала.
+   Ширины — настоящие глифы */
 TEST_SUITES.push(()=>suite("Стойка: подписи каналов не заходят под ролик подачи (390, 760, 1180)",{tier:"browser"},()=>{
   const W0=W,H0=H;
   try{
     for(const [w,h] of [[390,844],[760,760],[1180,800]]){
       W=w;H=h;const g0=rackGeo(),P=rackPaperBox(g0),R=g0.rec,edge=P.x-10-R.rollW*1.18;
-      const over=R.lab.map((s,i)=>s&&R.x+26+gcMeasure(RACK_LEG_FONT,s).width>edge-2?i:-1).filter(i=>i>=0);
+      const over=R.lab.map((s,i)=>s&&R.x+R.lx+gcMeasure(RACK_LEG_FONT,s).width>edge-2?i:-1).filter(i=>i>=0);
       eq(over.length,0,w+": подписи кончаются до ролика ("+R.lab.join(" | ")+")");
+      ok(R.lab.every(s=>s.length>=1),w+": у каждого канала подпись, не одна точка: "+R.lab.join(" | "));
       if(w>=760){ok(R.lab.every(s=>s.length>=3),w+": подписи на месте: "+R.lab.join(" | "));
         ok(P.w>=(R.w-R.rollW*2-16)*.6-1e-6,w+": бумаге 60 % короба ("+Math.round(P.w)+" px)");}
     }
@@ -93,8 +98,8 @@ TEST_SUITES.push(()=>suite("Стойка: открытие не вытесняе
   G.running=true;LOOP_OFF=false;
   try{
     rackDrop();G.rack={on:true};for(let i=0;i<40;i++)tapeSample();
-    for(let i=0;i<3;i++)frameBody(t+=16.7);
-    ok(!!RACK.B,"стойка испечена");
+    for(let i=0;i<30&&!RACK.P;i++)frameBody(t+=16.7);
+    ok(!!RACK.P,"стойка испечена");
     eq(warm.filter(x=>!Q.t.includes(x)).length,0,"прогретые записи живы ("+warm.length+")");
     eq((Q.by-by0)/1048576,0,"байты пула те же ("+(by0/1048576).toFixed(1)+" МБ)");
     eq(Q.t.length,n0,"новых записей в пуле нет");
