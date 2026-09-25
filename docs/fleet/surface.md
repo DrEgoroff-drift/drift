@@ -89,6 +89,40 @@ Without a device (`GPU.on` false — the Node tier) the old 2D tiles still draw,
     mean), all profiles fit the 16-bit height texture, `SRG_RGB` parses `hazeFar`. Browser suites run
     on SwiftShader after the port: `-Only "гряд"` 41/41, `-Only "поверхност"` 77/77.
 
+## What is left in the zone
+
+- Nothing half-done is committed. Not done: the Path2D painters of the zone as individual GPU bakes
+  (see «Open problems» — they reach the GPU as the lit snapshot instead); `21-mode-surface.js` (logic,
+  no drawing to port); `20b-poi-find.js` (logic).
+- `drawSurfaceHud` (`21e-surface-draw`, chips and the hint band) stays 2D on the UI layer — interface,
+  not world.
+- Browser tier on SwiftShader, run after the port: `-Only "гряд"` 41/41, `"поверхност"` 77/77,
+  `"свет: у звезды"` 2/2, `"озер"` 24/24, `"вода"` 44/44, `"растр: материал грунта"` 8/8,
+  `"растр: без материала"` 3/3, `"печь: живой кадр"` 3/3 (437 s of live GPU frames). Not settled:
+  `"растр: грунт и свод"` (its first run printed only passing checks in the tail; the rerun was still
+  going when the fleet was called home) and `"память: вечер прыжков"` (over the 900 s shard cap on
+  SwiftShader, as the tools ship saw for the heavy suites on the base). Run both on the laptop.
+
+## What the design pass (real GPU) should look at
+
+- **All surface scenes** (`surface`, `noon`, `fgrass`, `homeout`, `night`, `noonice`, `noontox`,
+  `lowsuit`): the third ridge — is the ghost range welcome or heavy (amplitude `rel*1.35`, colour
+  `hazeFar(p,.85)`, offset `camy*.34+215` in `21e1`/`21e2`); the ridge mist speed; the valley fog
+  amount `(.26+.16k)`.
+- **Ground** (every scene): the micro-relief strength (`.30` in `fld.sground`) at 2560 px — mottling
+  may read as noise at full resolution; the warm skin width (26 px) and the cold depth tint (`.34`).
+- **`fgrass`, `homeout`** (low star): cast shadows — length (`F[8]`), band squash `B=.45`, penumbra;
+  do houses and plants lay believable shadows; do glow halos stay out of them.
+- **Relight** (`homeout`, POI scenes, `hold`-like settlements): the sun-side band (`key .30/.26`) and
+  the cold band (`.45/.30`) on large flat facades; small bright shapes (flowers, lamps) should keep
+  their hue, not whiten.
+- **The twins** (plants, beasts, walker): the life ship's core request (shafts and bloom over scene
+  figures) decides whether they wash out on a real GPU.
+- **Water**: no `mkview` scene — use `lake.js` from these notes' pairs (force `tr.wet`, swim in); the
+  mirror's ridge colours carry no fog, check the reflection against the ridges above it.
+- **Foreground** (`fgrass`): the blur radius (2.4 virtual px) at 2560 px and on the phone.
+- **`night`**: the ridges and ground under the 2D night gradient; the relight's cold band at night.
+
 ## Pairs (scratchpad, not in git)
 
 - `pair1-noon.png`, `pair1-surface.png` (top before, bottom after) — the far ridges get form: lit and
@@ -138,14 +172,22 @@ Without a device (`GPU.on` false — the Node tier) the old 2D tiles still draw,
   mask) matters here too: the ground, the relit snapshot and the twins all live in the scene now.
   Everything standing is drawn with the `hull` blend, so the proposed fix covers it as is.
 
-- The cast shadow reads `#c` at the moment after the astronaut: anything a later ship moves into that
-  span (a label, a halo above the alpha threshold) will cast a shadow — keep labels in `LBL`.
-- A `gpuScene()`/`gpuOver()` call by someone else between the ground and the astronaut ends pass #2;
-  `surfCastGpu` then does nothing (checked by `SURF_P2`), rather than drawing over the objects.
+- The shadow/relight snapshot reads `#c` just before the plants: anything a later change moves into
+  that span (a label, a halo above the alpha threshold) will cast a shadow and get a rim — keep world
+  labels in `LBL`.
+- A `gpuScene()`/`gpuOver()` call by someone else between the ground and the snapshot ends pass #2;
+  `surfCastGpu`, `surfWaterGpu`, `surfNearGpu` and the twins then fall back to 2D (checked by
+  `SURF_P2`), rather than drawing over the objects.
+- Each surface frame now uploads `#c` up to three times (snapshot, foreground, the final one) instead
+  of once; each is a plain `copyExternalImageToTexture`, no composite. Not measured (SwiftShader).
 
 - `surfGroundGpu` bakes chunks on a 2D canvas and uploads them (one upload per chunk); the kit's
   `gpuDrawChunks` could bake them on the GPU instead — not switched: the bake runs `drawGround`,
   `drawRocks`, `glazeGround` (landing's and 18a1's code), whose GcCtx compatibility is not proven here.
 
-- Wave 2: `Path2D` in `GcCtx` is not merged in the base yet (checked at start) — deco, POI skin,
-  geology and built wait for it.
+- `Path2D` in `GcCtx` landed in the base (merged in commit 3). The Path2D painters of the zone — deco
+  (`21b`, `21ba`, `21bb`), POIs (`20a`, `20aa`), built (`21c`), geology (`18b`, strata inside the ground
+  chunk bake) — were **not** moved to `gpuBake` one by one: they draw live on `#c` and reach the GPU
+  as the lit snapshot (shadows + world light), which gives every one of them the G6 gain at once and
+  keeps their animation (POI lights, smoke, rotors) per frame. Baking them into sprites would only pay
+  for draw cost, which cannot be measured here; order did not require it.
