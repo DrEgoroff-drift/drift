@@ -323,8 +323,9 @@ function drawLanding(){
     zg.addColorStop(1,"rgba("+s1.join(",")+",0)");
     ctx.fillStyle=zg;ctx.fillRect(0,0,W,H*.62);
   }
-  drawGround({h:tr.h,N:tr.N,step:tr.step*3.6},camx*.26,fA,hazeFar(p,.58),null);
-  drawGround({h:tr.h,N:tr.N,step:tr.step*2.4},camx*.4,fB,hazeFar(p,.32),null);
+  /* гряды — поле видеокарты (19g): форма, зерно, подошва в воздухе; слой поверх
+     небесных тел и облаков, дымка горизонта ляжет уже на него */
+  lgRidges(p,tr,camx,fA,fB);
   /* ── дымка ложится на ГОРИЗОНТ, а не на 46% кадра (M233) ──
      Полоса стояла на постоянной высоте экрана и на подходе с высоты висела
      ровной горизонтальной чертой посреди пустого неба — та самая линейка, от

@@ -38,85 +38,168 @@ function spaGeom(){
 function spaBoardRows(){return SPA_PLAN;}
 function spaTookToday(S,k){return !!(S&&S.took&&S.took[S.day+":"+k]);}
 
+/* ── кадр на видеокарте (G11) ──
+   Небо и море — живое поле: волны в перспективе, солнечная дорожка — блеск на
+   гребнях, а не нарисованная трапеция; валы наката идут к веранде и гаснут у
+   борта. Пол и всё, что на нём стоит, — две выпечки (перепекаются, только когда
+   меняется щит или кадр). Между ними — мягкие тени под тем, что стоит, и косые
+   тени от низкого солнца. Сверху — свет: тёплый от солнца, прохладный от моря
+   снизу, тень навеса, и пыль, что висит в солнце. Без устройства не рисуется
+   ничего: 2D-пути у веранды больше нет. */
 function drawSpa(){
   const S=spaAll();if(!S)return;
-  const g=spaGeom();
-  const t=G.t*0.01;
-
-  /* ── 1. небо: выгоревшее у горизонта ── */
-  {
-    const gr=ctx.createLinearGradient(0,0,0,g.hor);
-    gr.addColorStop(0,spcol(SPA_C.sky,0.92));
-    gr.addColorStop(1,spcol(SPA_C.sky2,1));
-    ctx.fillStyle=gr;ctx.fillRect(0,0,W,g.hor+1);
-    /* солнце слева сверху — источник всего света в кадре */
-    const sx=W*0.18, sy=H*0.10;
-    const sg=ctx.createRadialGradient(sx,sy,0,sx,sy,H*0.55);
-    sg.addColorStop(0,sprgba(SPA_C.sun,0.34));
-    sg.addColorStop(1,sprgba(SPA_C.sun,0));
-    ctx.fillStyle=sg;ctx.fillRect(0,0,W,g.hor+H*0.2);
+  const pass=gpuScene();if(!pass)return;
+  const g=spaGeom(),ft=(G.t/60)%3600,fh=H-g.deck,sz=roomSz();
+  spaSea(pass,g,ft);
+  const fl=roomBake("spa.floor",sz,W,fh,()=>{ctx.translate(0,-g.deck);spaFloor(g);});
+  if(fl)gpuImage(pass,fl,[{x:W/2,y:g.deck+fh/2,w:W,h:fh}]);
+  spaFeet(pass,g);
+  const took=SPA_PLAN.map(P=>spaTookToday(S,P.k)?1:0).join("");
+  const pr=roomBake("spa.props",sz+"|"+S.day+"/"+S.days+"|"+took+"|"+S.seed,W,H,()=>spaProps(g,S));
+  if(pr)gpuImage(pass,pr,[{x:W/2,y:H/2,w:W,h:H}]);
+  spaAir(pass,g,ft);
+}
+/* небо, мыс, море, накат, прибой, дымка — одно поле. Мир моря — в долях высоты
+   кадра: z=1 у борта веранды, к горизонту z растёт как 1/d. Солнце то же, что
+   греет веранду (слева сверху, низкое): отражённое в волнах, оно само кладёт
+   дорожку от горизонта до перил. Мелкая рябь гаснет там, где она мельче пикселя,
+   иначе у горизонта море рябило бы муаром */
+const SPA_SEA_WGSL=ROOM_WGSL_NOISE+`
+fn capeH(x:f32)->f32{let c=fu.v[2];let q=(x-c.x)/c.y;
+  if(q<0.){return -1.;}return sin(min(q,1.)*2.2+.6)*c.z*(1.-q*.3)+c.w;}
+fn field(p:vec2f,uv:vec2f)->vec4f{
+  let hor=fu.v[0].x;let dk=fu.v[0].y;let t=fu.v[0].z;let Wd=fu.res.z;let Ht=fu.res.w;let sun=fu.v[1].xy;
+  let SKY=vec3f(.502,.698,.839);let SKY2=vec3f(.769,.871,.925);let SUN=vec3f(1.,.933,.769);
+  let SEA=vec3f(.180,.408,.533);let SEA2=vec3f(.29,.54,.64);let HAZE=vec3f(.91,.95,.965);let FOAM=vec3f(.93,.96,.975);
+  let cam=.35;
+  let L=normalize(vec3f((sun.x-Wd*.5)/(1.2*Ht),(hor-sun.y)*cam/(1.2*(dk-hor)),1.));
+  var c:vec3f;
+  let ch=capeH(p.x);
+  if(p.y<hor){
+    let k=p.y/hor;
+    c=mix(SKY*.84,SKY2,pow(k,2.4));
+    let q=vec2f(p.x/Ht*1.3+t*.004,p.y/Ht*8.);
+    let cl=rn(q)*.6+rn(q*2.3+vec2f(3.1,1.7))*.4;
+    c=mix(c,vec3f(.975,.975,.97),smoothstep(.55,.82,cl)*.30*smoothstep(.2,.9,k));
+    let d=length(p-sun)/Ht;
+    c=c+SUN*(.15*exp(-d*3.4)+.20*exp(-d*14.));
+    c=mix(c,vec3f(1.6,1.5,1.34),smoothstep(.031,.025,d));
+    if(ch>0.){
+      let e=p.y-(hor-ch);
+      let a=clamp(e+.5,0.,1.);
+      var cc=mix(vec3f(.278,.372,.425),SKY2,.10+.12*(1.-clamp(e/max(ch,1.),0.,1.)));
+      cc=cc+SUN*.16*exp(-max(e,0.)/1.6)*smoothstep(.55,0.,(p.x-fu.v[2].x)/fu.v[2].y);
+      c=mix(c,cc,a);
+    }
+  }else{
+    let d=max((p.y-hor)/(dk-hor),1e-3);
+    let z=1./d;
+    let P=vec2f((p.x-Wd*.5)/Ht*z,1.2*z);
+    let px=z/Ht;let pz=1.2*z*z/(dk-hor);
+    var gr=vec2f(0.);
+    for(var i=0;i<7;i++){
+      let fi=f32(i);
+      let lam=.36*pow(.64,fi);
+      let th=4.712+(rh(vec2f(fi,3.))-.5)*1.5;
+      let dir=vec2f(cos(th),sin(th));
+      let k=6.2832/lam;
+      let ph=k*dot(dir,P)+sqrt(9.8*k)*.20*t+fi*1.7;
+      let fp=max(px*abs(dir.x),pz*abs(dir.y))/lam;
+      gr=gr+dir*(lam*.075*k*cos(ph))*(1.-smoothstep(.12,.45,fp));
+    }
+    let rq=P*vec2f(11.,6.);let rf=1.-smoothstep(.12,.45,max(px*11.,pz*6.));
+    gr=gr+(vec2f(rn(rq+vec2f(t*.35,0.)),rn(rq+vec2f(5.2,1.3)-vec2f(0.,t*.3)))-.5)*.5*rf;
+    let n=normalize(vec3f(-gr.x,1.,-gr.y));
+    let v=normalize(vec3f(P.x,-cam,P.y));
+    var r=reflect(v,n);r.y=abs(r.y);
+    let fres=clamp(.02+.98*pow(1.-max(dot(-v,n),0.),5.),0.,1.);
+    let skyR=mix(SKY2*.94,SKY*.88,clamp(r.y*2.4,0.,1.));
+    let body=mix(SEA2,SEA*.9,pow(d,.7));
+    c=mix(body,skyR,fres*.38);
+    let far=clamp(z/28.,0.,1.);
+    let rl=max(dot(r,L),0.);
+    c=c+SUN*(pow(rl,mix(900.,70.,far))*mix(4.5,1.4,far)+pow(rl,14.)*.22);
+    /* мыс отражается тёмной полосой, разбитой волнами */
+    if(ch>0.){let m=smoothstep(ch*.75,0.,(p.y-hor)+gr.y*Ht*.02);c=mix(c,vec3f(.24,.33,.39),.30*m);}
+    /* валы наката: идут к борту, гаснут и рождаются вдали */
+    for(var j=0;j<3;j++){
+      let fj=f32(j);
+      let ph=fract(t*.022+fj/3.);
+      let zc=mix(10.,1.12,ph);
+      let wz=z-zc-.10*sin(P.x*2.7+fj*2.)*zc;
+      let w=abs(wz)/(zc*.035+pz*1.2);
+      let br=smoothstep(.35,.75,rn(P*vec2f(5.,1.5)+vec2f(fj*7.,t*.1)));
+      c=mix(c,FOAM,clamp((1.-smoothstep(0.,1.,w))*sin(ph*3.1416)*br*.55,0.,1.));
+    }
+    /* прибой у самого борта: пена лижет сваи */
+    let sy=dk-Ht*.012+sin(p.x*.031+t*.9)*Ht*.004;
+    let fo=(1.-smoothstep(.2,1.,abs(p.y-sy)/(Ht*.006)))*(.35+.65*rn(vec2f(p.x*.07-t*.4,t*.25)));
+    c=mix(c,FOAM,clamp(fo*.6,0.,1.));
   }
-
-  /* ── 2. море: полосы к горизонту, блик от солнца ── */
-  {
-    const gr=ctx.createLinearGradient(0,g.hor,0,g.deck);
-    gr.addColorStop(0,spcol(SPA_C.sea2,1));
-    gr.addColorStop(1,spcol(SPA_C.sea,0.9));
-    ctx.fillStyle=gr;ctx.fillRect(0,g.hor,W,g.deck-g.hor);
-    /* волны: чем ближе, тем реже и длиннее — вся перспектива держится на этом */
-    const rs=rng(hashi(S.seed,3,0x5EA));
-    for(let i=0;i<64;i++){
-      const q=rs();
-      const y=g.hor+Math.pow(q,1.8)*(g.deck-g.hor);
-      const w=W*(0.02+q*0.09);
-      const x=(rs()*W*1.3+Math.sin(t*0.6+i)*W*0.012)%W;
-      ctx.fillStyle="rgba(226,240,246,"+(0.06+q*0.20).toFixed(3)+")";
-      ctx.fillRect(x,y,w,Math.max(1,(0.6+q*2.2)));
-    }
-    /* две полосы наката (аудит M232): поверх россыпи бликов — два когерентных
-       гребня пены, каждый на своей глубине; дышат и тянутся вдоль, как накат */
-    for(const bw2 of [[.42,0],[.72,2.1]]){
-      const q=bw2[0],ph=bw2[1];
-      const y=g.hor+Math.pow(q,1.8)*(g.deck-g.hor);
-      ctx.fillStyle="rgba(232,244,250,"+(0.15+q*0.14).toFixed(3)+")";
-      for(let x=-40;x<W+40;x+=26){
-        const wob=Math.sin(x*0.016+t*0.5+ph)*H*0.004;
-        const ln=14+Math.sin(x*0.07+ph)*6;
-        ctx.fillRect(x+((t*6+ph*40)%26),y+wob,ln,Math.max(1,1+q*1.6));
-      }
-    }
-    /* солнечная дорожка */
-    const pg=ctx.createLinearGradient(0,g.hor,0,g.deck);
-    pg.addColorStop(0,sprgba(SPA_C.sun,0.24));
-    pg.addColorStop(1,sprgba(SPA_C.sun,0.04));
-    ctx.fillStyle=pg;
-    ctx.beginPath();
-    ctx.moveTo(W*0.16,g.hor);ctx.lineTo(W*0.21,g.hor);
-    ctx.lineTo(W*0.40,g.deck);ctx.lineTo(W*0.02,g.deck);
-    ctx.closePath();ctx.fill();
-    /* дальний мыс: тёмный силуэт НА горизонте. Полупрозрачной тенью поверх неба
-       он читался облаком — у мыса должен быть край, и край этот тёмный */
-    ctx.fillStyle=spcol([76,102,116],0.92);
-    ctx.beginPath();ctx.moveTo(W*0.60,g.hor+1);
-    for(let x=0;x<=W*0.42;x+=6){
-      const q=x/(W*0.42);
-      ctx.lineTo(W*0.60+x,g.hor+1-Math.sin(q*2.2+0.6)*H*0.026*(1-q*0.3)-H*0.004);
-    }
-    ctx.lineTo(W,g.hor+1);ctx.closePath();ctx.fill();
-    ctx.fillStyle=sprgba([232,242,246],0.28);
-    ctx.fillRect(W*0.60,g.hor-H*0.001,W*0.40,Math.max(1,H*0.0022));
+  /* дымка у горизонта — по обе стороны; под мысом — тонкая светлая кромка воды */
+  let hz=exp(-pow((p.y-hor)/(Ht*.024),2.));
+  c=mix(c,HAZE,hz*.26);
+  if(ch>0.&&p.y>=hor){c=mix(c,vec3f(.92,.955,.965),.30*exp(-pow((p.y-hor)/1.2,2.)));}
+  return vec4f(c,1.);}`;
+const SPA_SEA_U=new Float32Array(12);
+function spaSea(pass,g,ft){
+  const u=SPA_SEA_U;
+  u[0]=g.hor;u[1]=g.deck;u[2]=ft;u[3]=0;
+  u[4]=W*0.18;u[5]=H*0.10;u[6]=0;u[7]=0;
+  u[8]=W*0.60;u[9]=W*0.42;u[10]=H*0.026;u[11]=-H*0.003;
+  gpuField(pass,"spa.sea",SPA_SEA_WGSL,u);
+}
+/* тени под тем, что стоит: мягкое пятно у ног и косая тень от низкого солнца,
+   туда же, куда ложится решётка перил (вправо и к нам). Холодные — от моря */
+const SPA_FEET=[];
+function spaFeet(pass,g){
+  const F=SPA_FEET;F.length=0;
+  const fh=H-g.deck,sx=W*0.11/(g.man*0.62),sy=fh/(g.man*0.62);   /* сдвиг тени на единицу высоты */
+  const cs=(x0,y0,x1,y1,hw,so,a)=>F.push([2,x0,y0,x1,y1,hw,so,18,28,40,a]);
+  const tb=g.table,tx=tb.x+tb.w*0.5,th=g.deck-tb.y;
+  cs(tx-tb.w*0.30,g.deck+H*0.012,tx+tb.w*0.30,g.deck+H*0.012,H*0.004,H*0.016,.26);
+  cs(tx,g.deck,tx+th*sx*.8,g.deck+th*sy*.8,tb.w*0.03,H*0.006,.16);
+  cs(tx+th*sx*.8-tb.w*0.22,g.deck+th*sy*.84,tx+th*sx*.8+tb.w*0.28,g.deck+th*sy*.84,tb.h*0.10,H*0.012,.14);
+  const c=g.chair,cx=c.x+c.w*0.52;
+  cs(cx-c.w*0.40,g.deck+H*0.009,cx+c.w*0.40,g.deck+H*0.009,H*0.004,H*0.014,.26);
+  cs(c.x+c.w*0.2,g.deck+H*0.02,c.x+c.w*0.2+c.h*sx*.6,g.deck+c.h*sy*.6,c.w*0.10,H*0.02,.14);
+  const m=g.man*0.86,x=g.manx;
+  cs(x-m*0.10,g.deck+m*0.010,x+m*0.10,g.deck+m*0.010,m*0.012,m*0.04,.30);
+  cs(x,g.deck,x+m*0.9*sx,g.deck+m*0.9*sy,m*0.055,m*0.03,.15);
+  gpuShapes(pass,F);
+}
+/* свет и воздух: множитель поверх всего — тёплый от солнца, тень навеса,
+   прохладный отсвет моря снизу справа; потом пыль в солнце */
+const SPA_AIR_WGSL=`
+fn field(p:vec2f,uv:vec2f)->vec4f{
+  let Ht=fu.res.w;let hy=fu.v[0].x;let sun=fu.v[0].yz;let dk=fu.v[0].w;
+  var f=vec3f(1.);
+  let d=length((p-sun)/Ht);
+  f=f*(vec3f(1.)+vec3f(.20,.12,.02)*exp(-d*1.7));
+  if(p.y>hy){let s=1.-smoothstep(0.,Ht*.10,p.y-hy);f=f*mix(vec3f(1.),vec3f(.70,.76,.84),.32*s);}
+  let b=smoothstep(dk-Ht*.1,Ht,p.y)*smoothstep(.15,1.,uv.x);
+  f=f*mix(vec3f(1.),vec3f(.88,.94,1.03),b*.5);
+  return vec4f(f,1.);}`;
+const SPA_AIR_U=new Float32Array(4),SPA_DUST=[];
+function spaAir(pass,g,ft){
+  const u=SPA_AIR_U;u[0]=H*0.050;u[1]=W*0.18;u[2]=H*0.10;u[3]=g.deck;
+  gpuField(pass,"spa.air",SPA_AIR_WGSL,u,null,{blend:"mul"});
+  /* пыль и соль в солнце: медленно, без мигания; ярче там, где солнце ближе */
+  const D=SPA_DUST;D.length=0;
+  const y0=H*0.075,yh=g.deck-y0;
+  for(let i=0;i<44;i++){
+    const h1=hashi(i,1,0x5ED)/4294967296,h2=hashi(i,2,0x5ED)/4294967296,h3=hashi(i,3,0x5ED)/4294967296;
+    const x=((h1+ft*0.0035*(0.4+h3))%1)*W*0.85+Math.sin(ft*0.21+i)*W*0.006;
+    const y=y0+((h2-ft*0.0012*(0.3+h3)+2)%1)*yh+Math.sin(ft*0.37+i*1.7)*H*0.004;
+    const dd=Math.hypot(x-W*0.18,y-H*0.10)/H;
+    const a=(0.16+0.30*h3)*Math.exp(-dd*1.6)*(0.7+0.3*Math.sin(ft*0.5+i*2.3));
+    if(a<0.01)continue;
+    D.push([1,x,y,0.5+h3*1.3,0,0,1.2+h3*1.8,255,240,212,a]);
   }
-
-  /* ── 3. прибой у самой веранды ── */
-  {
-    ctx.fillStyle="rgba(232,244,248,.35)";
-    for(let x=0;x<W;x+=7){
-      const y=g.deck-H*0.012+Math.sin(x*0.03+t*1.6)*H*0.004;
-      ctx.fillRect(x,y,5,Math.max(1,H*0.004));
-    }
-  }
-
-  /* ── 4. пол веранды: доски в перспективе ── */
+  gpuShapes(pass,D,{blend:"add"});
+}
+/* ── пол веранды: доски в перспективе (выпечка «floor») ── */
+function spaFloor(g){
   {
     ctx.fillStyle=spcol(SPA_C.wood,0.92);
     ctx.fillRect(0,g.deck,W,H-g.deck);
@@ -158,7 +241,10 @@ function drawSpa(){
     }
     ctx.restore();
   }
-
+}
+/* ── всё, что стоит на веранде (выпечка «props»): перила, щит, стол, шезлонг,
+   стакан, люди, навес. Тени под ними кладёт spaFeet, свет — spaAir ── */
+function spaProps(g,S){
   /* ── 5. перила: стойки и два поручня ── */
   {
     const r=g.rail;
@@ -229,8 +315,6 @@ function drawSpa(){
   /* ── 7. шахматный стол ── */
   {
     const tb=g.table;
-    ctx.fillStyle="rgba(0,0,0,.22)";
-    ctx.beginPath();ctx.ellipse(tb.x+tb.w*0.5,g.deck+H*0.014,tb.w*0.52,H*0.016,0,0,TAU);ctx.fill();
     ctx.fillStyle=spcol(SPA_C.rail,0.92);
     ctx.fillRect(tb.x+tb.w*0.46,tb.y+tb.h*0.16,Math.max(4,tb.w*0.06),g.deck-tb.y-tb.h*0.16);
     /* столешница круглая и НЕ плоская: первый счёт давал эллипс вчетверо шире
@@ -269,9 +353,6 @@ function drawSpa(){
     const kneeX=bx+c.w*0.46, kneeY=c.y+c.h*0.58; /* колено ткани */
     const headX=bx+c.w*0.10, headY=c.y+c.h*0.04; /* верх спинки */
     const footX=bx+c.w*0.98, footY=c.y+c.h*0.70; /* край сиденья */
-    ctx.fillStyle="rgba(0,0,0,.22)";
-    ctx.beginPath();
-    ctx.ellipse(bx+c.w*0.52,by+H*0.010,c.w*0.60,H*0.014,0,0,TAU);ctx.fill();
     /* рама: две пары ножек крест-накрест */
     ctx.strokeStyle=spcol(SPA_C.wood2,1.05);
     ctx.lineWidth=Math.max(3,H*0.0062);
@@ -347,8 +428,6 @@ function drawSpa(){
   {
     const m=g.man*0.86, x=g.manx, y=g.deck;
     const rl=g.rail.y+g.rail.h*0.42;
-    ctx.fillStyle="rgba(0,0,0,.24)";
-    ctx.beginPath();ctx.ellipse(x,y+m*0.012,m*0.16,m*0.026,0,0,TAU);ctx.fill();
     const skin=[206,172,142], shirt=[228,232,236], trous=[86,96,110];
     /* ноги в лёгких брюках: узкие в колене, шире внизу — в санатории ходят не
        в скафандре, и это должно быть видно силуэтом */
@@ -464,24 +543,6 @@ function drawSpa(){
     tg.addColorStop(1,"rgba(40,50,60,.22)");
     ctx.fillStyle=tg;ctx.fillRect(0,0,W,hy+sag+2);
     ctx.restore();
-    /* и тень, которую она кладёт на всё под собой */
-    const sh=ctx.createLinearGradient(0,hy,0,hy+H*0.09);
-    sh.addColorStop(0,"rgba(30,40,50,.22)");
-    sh.addColorStop(1,"rgba(30,40,50,0)");
-    ctx.fillStyle=sh;ctx.fillRect(0,hy,W,H*0.09);
-  }
-
-  /* ── 12. воздух: лёгкая дымка над морем и мягкая виньетка ── */
-  {
-    const hg=ctx.createLinearGradient(0,g.hor-H*0.06,0,g.hor+H*0.05);
-    hg.addColorStop(0,"rgba(232,242,246,0)");
-    hg.addColorStop(0.5,"rgba(232,242,246,.30)");
-    hg.addColorStop(1,"rgba(232,242,246,0)");
-    ctx.fillStyle=hg;ctx.fillRect(0,g.hor-H*0.06,W,H*0.11);
-    const vg=ctx.createRadialGradient(W*.5,H*.5,Math.min(W,H)*.40,W*.5,H*.5,Math.max(W,H)*.78);
-    vg.addColorStop(0,"rgba(0,0,0,0)");
-    vg.addColorStop(1,"rgba(20,30,40,.26)");
-    ctx.fillStyle=vg;ctx.fillRect(0,0,W,H);
   }
 }
 /* ── руки ── */
