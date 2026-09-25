@@ -376,7 +376,7 @@ function landOnTestPlanet(){
   return G.surf.p;
 }
 /* ── кадры до тех пор, пока сцена не ОСЕЛА ──
-   Развёртка планеты (`planetStripTick`) и материал грунта (`matTick`) пекутся
+   Материал грунта (`matTick`; развёртка планеты — до 25.09, теперь шейдер 17gb) печётся
    ПО КАДРАМ с бюджетом на кадр: первый кадр новой сцены — плоский диск, а не
    то, что видит игрок. Наборы обходили это на глаз — «сорок кадров и хватит», —
    и платили сорок полных отрисовок там, где печь заканчивала на третьей. Хуже
@@ -385,8 +385,6 @@ function landOnTestPlanet(){
    Спрашиваем саму печь: пока в очереди что-то есть — крутим, но не дольше
    потолка. Возвращает, сколько кадров прошло, — чтобы набор мог это сказать. */
 function bakeIdle(){
-  if(typeof STRIP_JOB!=="undefined"&&STRIP_JOB)return false;
-  if(typeof STRIP_PEND!=="undefined"&&STRIP_PEND&&STRIP_PEND.length)return false;
   if(typeof MAT_JOB!=="undefined"&&MAT_JOB)return false;
   return true;
 }

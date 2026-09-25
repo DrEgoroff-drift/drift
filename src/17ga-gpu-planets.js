@@ -285,7 +285,7 @@ fn ring(rho:f32,v4:vec4f,v5:vec4f,px:f32)->vec4f{
   }else{acc=over(acc,sph);}
   return acc;
 }`;
-/* одно тело в кадре: x,y,r — экранные; tex — развёртка или null; o — свет, кольцо, слои G3b */
+/* одно тело в кадре: x,y,r — экранные; tex — развёртка {view,w} (17gb) или null; o — свет, кольцо, слои G3b */
 function gplBody(pass,key,x,y,r,tex,o){
   const a=GPL.A;a.fill(0);
   a[0]=x;a[1]=y;a[2]=r;a[3]=tex?0:1;
@@ -299,7 +299,7 @@ function gplBody(pass,key,x,y,r,tex,o){
   a[28]=lo[0]/255;a[29]=lo[1]/255;a[30]=lo[2]/255;a[31]=o.cloud||0;
   a[32]=ct[0]/255;a[33]=ct[1]/255;a[34]=ct[2]/255;
   a[35]=o.lights?gplCities(o,a):0;
-  a[36]=0;a[37]=tex?tex.width:256;
+  a[36]=0;a[37]=tex?tex.w:256;
   const pal=o.pal;if(pal){const np=Math.min(5,pal.length-1);
     for(let i=0;i<=np;i++){a[40+i*4]=pal[i][0]/255;a[41+i*4]=pal[i][1]/255;a[42+i*4]=pal[i][2]/255;}a[43]=np;}
   const U=GPUBufferUsage,d=GPU.dev;
@@ -307,7 +307,7 @@ function gplBody(pass,key,x,y,r,tex,o){
   const u=GPL.U;u[0]=GPU.bw;u[1]=GPU.bh;u[2]=W;u[3]=H;u[4]=DPR;u[5]=G.t||0;d.queue.writeBuffer(ub,0,u);
   const sb=gpuBuf("gpl.b."+key,1024,U.STORAGE|U.COPY_DST);d.queue.writeBuffer(sb,0,a);
   const P=gpuPipe("gpl",GPL_WGSL,"over");
-  const tv=tex?gpuCanvasTex(tex).view:(GPU.nView||(GPU.nView=GPU.N.createView()));
+  const tv=tex?tex.view:(GPU.nView||(GPU.nView=GPU.N.createView()));
   pass.setPipeline(P);pass.setBindGroup(0,gpuBind("gpl."+key,P,[ub,sb,GPU.S.lin,tv]));pass.draw(6);
 }
 /* свет звезды — нормированный по светлоте, как в planetLight */
@@ -315,13 +315,12 @@ function gplSun(){
   const c=(typeof starRGB==="function")?starRGB():[255,244,214],m=Math.max(1,c[0],c[1],c[2]);
   return [c[0]/m,c[1]/m,c[2]/m];
 }
-/* планета системы: развёртка печётся тем же порядком (07), свет, воздух, облака и огни — здесь.
+/* планета системы: развёртка — шейдером (07/17gb), свет, воздух, облака и огни — здесь.
    lights — сколько огней построек на ней (planetLightsOn, 17e) */
 function gpuPlanet(p,x,y,r,lights){
   const pass=gpuScene();if(!pass)return;
   const lvl=r>150?2:(r>60?1:0);
   const S=planetStrip(p,lvl);
-  planetStripTick();
   if(typeof matTick==="function")matTick();
   const gas=p.type==="gas",airless=!gas&&!!(p.T&&p.T.atm==="отсутствует");
   const sk=(p.T&&((gas&&p.T.pal&&p.T.pal[p.T.pal.length-1])||(p.T.sky&&p.T.sky[0])))||[130,180,210];
@@ -348,23 +347,30 @@ const GPL_LAND=new WeakMap();
 const gss=(a,b,x)=>{const t=clamp((x-a)/(b-a),0,1);return t*t*(3-2*t);};
 const ghf=(a,b,c)=>hashi(a,b,c)/4294967296;
 /* суша по развёртке: высота — ближайшая точка ломаной палитры (как palV шейдера), выше
-   отметки воды — суша. Один раз на развёртку, грубо: городу хватает 256×128 */
+   отметки воды — суша. Сетка 256×128, как прежде: клетка — развёртка, сведённая к этой
+   сетке билинейно (drawImage 2D делал то же), в байтах. Прежде сетку целиком читали из
+   2D-холста getImageData; теперь клетка считается по формуле точки (planetStripPx) в тот
+   миг, когда город о ней спросил, и помнится: 2D нет, а спрашивают десятки клеток, не 32 тысячи */
 function gplLandMask(S,pal,wet){
   let m=GPL_LAND.get(S);if(m)return m;
-  const w=256,h=128,cn=document.createElement("canvas");cn.width=w;cn.height=h;
-  const g=cn.getContext("2d",{willReadFrequently:true});g.drawImage(S,0,0,w,h);
-  const D=g.getImageData(0,0,w,h).data,M=new Uint8Array(w*h),np=Math.min(5,pal.length-1);
-  for(let i=0;i<w*h;i++){
-    const r=D[i*4],gg=D[i*4+1],b=D[i*4+2];let bd=1e9,bv=0;
-    for(let k=0;k<np;k++){
-      const A=pal[k],E=pal[k+1],ax=E[0]-A[0],ay=E[1]-A[1],az=E[2]-A[2];
-      const t=clamp(((r-A[0])*ax+(gg-A[1])*ay+(b-A[2])*az)/Math.max(ax*ax+ay*ay+az*az,1e-6),0,1);
-      const dx=r-A[0]-ax*t,dy=gg-A[1]-ay*t,dz=b-A[2]-az*t,dd=dx*dx+dy*dy+dz*dz;
-      if(dd<bd){bd=dd;bv=(k+t)/np;}
-    }
-    M[i]=bv>wet+.01?1:0;
+  const w=256,h=128,M=new Uint8Array(w*h).fill(2);
+  m={w,h,M,J:planetStripParams(S.p,S.lvl),pal,wet,np:Math.min(5,pal.length-1),px:[0,0,0]};GPL_LAND.set(S,m);return m;
+}
+function gplLandAt(m,ix,iy){
+  const i=iy*m.w+ix;if(m.M[i]<2)return m.M[i];
+  const J=m.J,sx=(ix+.5)*J.SW/m.w-.5,sy=(iy+.5)*J.SH/m.h-.5,x0=Math.floor(sx),y0=Math.floor(sy),fx=sx-x0,fy=sy-y0;
+  const C=[0,0,0];
+  for(let dy=0;dy<2;dy++)for(let dx=0;dx<2;dx++){const wgt=(dx?fx:1-fx)*(dy?fy:1-fy);if(wgt<=0)continue;
+    const c=planetStripPx(J,Math.max(0,Math.min(J.SW-1,x0+dx)),Math.max(0,Math.min(J.SH-1,y0+dy)),m.px);
+    for(let k=0;k<3;k++)C[k]+=Math.round(clamp(c[k],0,255))*wgt;}
+  const r=Math.round(C[0]),gg=Math.round(C[1]),b=Math.round(C[2]),pal=m.pal,np=m.np;let bd=1e9,bv=0;
+  for(let k=0;k<np;k++){
+    const A=pal[k],E=pal[k+1],ax=E[0]-A[0],ay=E[1]-A[1],az=E[2]-A[2];
+    const t=clamp(((r-A[0])*ax+(gg-A[1])*ay+(b-A[2])*az)/Math.max(ax*ax+ay*ay+az*az,1e-6),0,1);
+    const dx=r-A[0]-ax*t,dy=gg-A[1]-ay*t,dz=b-A[2]-az*t,dd=dx*dx+dy*dy+dz*dz;
+    if(dd<bd){bd=dd;bv=(k+t)/np;}
   }
-  m={w,h,M};GPL_LAND.set(S,m);return m;
+  return m.M[i]=bv>m.wet+.01?1:0;
 }
 function gplCities(o,a){
   const n=Math.min(48,o.lights|0),wet=o.wet||0;
@@ -388,7 +394,7 @@ function gplCities(o,a){
       if(Math.abs(lam)>1.5)continue;
       /* точка тела под городом: та же долгота, что читает шейдер (u0 = atan2/2π + оборот) */
       if(land){const u=((lam/TAU+T)%1+1)%1,v=(y0+1)/2;
-        if(!land.M[Math.min(land.h-1,v*land.h|0)*land.w+Math.min(land.w-1,u*land.w|0)])continue;}
+        if(!gplLandAt(land,Math.min(land.w-1,u*land.w|0),Math.min(land.h-1,v*land.h|0)))continue;}
       const x=c*Math.sin(lam),w=gss(0,.08,ph)*(1-gss(.92,1,ph))*reg(x,y0)*(.8+.2*ghf(sd,j,5));
       if(w>.02){a[64+k*4]=x;a[65+k*4]=y0;a[66+k*4]=w;k++;}
       break;

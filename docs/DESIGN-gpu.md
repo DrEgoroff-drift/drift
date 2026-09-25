@@ -261,17 +261,75 @@ and the rate limiter on hidden 2D canvases. The cure is not a faster 2D path but
 Antialiasing is MSAA 4× on a stencil8 + colour target, and with `ss` 2 that is 16 samples a pixel, the count of
 Skia's raster. Mips: one GPU pass per level, a 2×2 box, the level count of `gpuMipTex`.
 
-**What it cannot do — loud.** `getImageData`, `putImageData`, `createImageData`, `createPattern`,
-`createConicGradient`, `isPointInPath/Stroke`, `Path2D` arguments, `filter` ≠ none, a shadow (`shadowBlur` or an
-offset with a visible `shadowColor`), composite ops overlay / saturation / the rest, text (`fillText`,
-`strokeText`, `measureText`) until v2. Each throws `Error("GPU-холст: нет «…»")` and lands in `GC_MISS`: in play
-the frame guard names it («СБОЙ · …»), in a suite the suite goes red. No silent skip anywhere.
+**Quality checks before v2 (Контроль, 25.09).**
 
-**v2 (next): text and shadow.** A glyph atlas behind one function (the glyph source — a) a 2D canvas once at
-load or b) an in-game font — is the author's pick, the atlas does not care); `measureText` with the same metrics
-as 2D, because signs, neon and the cockpit lay out through it; fonts ui-monospace, sans-serif, bold.
-`shadowBlur/shadowColor` as a real blur pass over the bake's shadow layer (neon's tube glow, hotel windows,
-Чебурек). **v3:** pixels (`getImageData/putImageData` of the planets) go to a generator shader — GPU-3's.
+- *Gradients.* Chrome's 2D does dither a gradient. The probe is a dark radial gradient, rgb(10,12,18)→rgb(26,30,40)
+  over 512², with a 128×64 blue-channel crop. At the centre row, 2D has 23 levels, 40 reversals and a mean run of
+  4.1 px; 37 % of neighbour pairs differ. The v1 canvas had 0 reversals: bands 11 px wide.
+- *Dither.* The ramp is now `rgba16float`, because an 8-bit ramp had already rounded away the fraction the dither
+  needs. `fpaint` adds an 8×8 Bayer ±⅜ step. The result is 38 % mixed neighbours, 72 reversals and a longest run
+  of 10, the same as 2D. A flat level is left untouched.
+- *Mips.* Box mips are not worse than 2D `drawImage` with «high». At level 3 of the find sprite (36²), the alpha
+  gradient energy is 13.99 for box, 14.01 for 2D «high» and 14.05 for the exact area mean. Error against the area
+  mean is 0.08 for box and 0.03 for 2D, both under 1/255. The far-zoom ×4 pair differs by at most 2.
+- *Blending.* It stays premultiplied `rgba8unorm`. Finds against 2D after the dither: unchanged
+  (mean |Δ| 0.025–0.043).
+
+**What it cannot do — loud.** `getImageData`, `putImageData`, `createImageData`, `createPattern`,
+`createConicGradient`, `isPointInPath/Stroke`, `Path2D` arguments, `filter` ≠ none, composite ops overlay /
+saturation / the rest, a shadow under copy / source-in / destination-in, a font without `px`, text without a
+device. Each throws `Error("GPU-холст: нет «…»")` and lands in `GC_MISS`: in play the frame guard names it
+(«СБОЙ · …»), in a suite the suite goes red. No silent skip anywhere.
+
+**v2: text and shadow (this commit).**
+
+| call | what |
+|---|---|
+| `fillText/strokeText(t, x, y, maxWidth)`, `measureText` (08cb) | `font`, `textAlign`, `textBaseline`, `direction`, `letterSpacing`, `wordSpacing`, `fontKerning` as 2D. `measureText` returns 2D's own metrics (a frozen copy, cached). `gcMeasure(font, t)` measures without a bake, for sizing one |
+| `shadowBlur/shadowColor/shadowOffsetX/Y` (08cc) | on fill, stroke, drawImage and text, like 2D: blur and offset ignore the transform; `clearRect` casts none |
+
+- *The glyph source is swappable.* `GC_GLYPHS` implements `measure` and `raster`, and the atlas does not know what
+  is behind it. Today it is the author's option a): one 2D canvas for the whole game, used only to raster whole
+  strings and to measure. Option b), an in-game font, replaces that object and nothing else.
+- *A whole string is rastered at once,* so kerning and ligatures come out as in 2D. It is rastered in final pixels:
+  the transform's linear part (rotation, scale, flips) goes to Skia, as 2D does, and so does the anchor's
+  fraction. The mask lands pixel for pixel. In an `ss`×`ss` bake it lands in `ss`×`ss` blocks, so after the box
+  down it is exactly that raster: the atlas is never stretched and small letters never blur.
+- *The atlas.* Masks go to `r8unorm` pages of 1024², packed on shelves, one per string and paint. A mask is needed
+  only while the bake renders, so an overflow past 6 pages simply resets the atlas. A lost device resets it too.
+- *Three Skia details, found by measuring:*
+  - rastering at ×`ss` made letters 8–22 % lighter, because Skia's small-size contrast exists only at the native
+    size;
+  - Skia sets the mask's contrast by the paint's luminance (for a gradient, the mean of its stops). A white mask
+    made blue text 7–11 % heavier, so strings are rastered in their paint's colour;
+  - a text's shadow comes from a mask with no such contrast. By mass it equals text rastered in `#505050`
+    (±0.5 % at 8, 11 and 18 px).
+- *Shadow.* The shape is drawn alone (no clip, source-over, its own paint; the alpha is the layer) within its
+  bounds + 3σ. The layer is blurred separably and composited in the main pass under the command's clip and op,
+  then the shape follows. All layers are prepared before the main pass, since a shadow does not depend on the
+  canvas. σ = `shadowBlur`/2. Each tap is the Gaussian *integrated over the pixel*: a measured 1-px dot has
+  variance σ² + 1/12 in 2D. The fit, blurs 1–16: the taps are within 1/255, the variance within 0.05 up to blur
+  6. Chrome's own sigma formula (0.2887·blur + 0.5) fitted worse on every sample. A shape's part beyond the
+  canvas edge casts no shadow.
+
+*v2 against 2D* (read back, premultiplied, per channel):
+
+| sample | mean \|Δ\| | max \|Δ\| | pixels off by > 24 | notes |
+|---|---|---|---|---|
+| text: bold mono 11, sans 10 and 9, a 22 px gradient, a stroke, rotated, `maxWidth`, alpha .5; ss 1 and 2 | 0.007–0.010 | 4 | 0 of 51 200 | weight 0.999–1.000 |
+| shadow: a neon tube, a ring, glowing text, a hard offset, a window light, a scaled dot | 0.30–0.38 | 65 | — | the maximum sits on the ring's own stroke edge; hard shadow and window within 3 |
+| the neon bake (17k0, three signs): glass | 0.06–0.08 | 3 | — | |
+| the neon bake (17k0, three signs): light | 0.57–1.37 | 17–30 | 0–2 | light energy +2…+3.5 % |
+
+The remainder is the glyph shadow's shape: under the letters, 2D's shadow is denser. Both canvases composite
+text over its shadow by exact source-over (checked, Δ ≤ 1).
+
+**The second port: neon (17k0).** Glass, light and the pale core are three bakes. The core cannot be erased
+out of the light with destination-out, because that would take the halo too. The code of 779b322 run inline in
+the same page gives the numbers above; the pair is `pair_neon_bake_x4.png`. `neonDraw` without a device draws
+nothing. The kit changed in two places: `gpuImage` re-bakes a bake that outlived its device, and `bakeKeep`
+calls `drop()` on what it evicts. **v3:** pixels (`getImageData/putImageData` of the planets) go to a generator
+shader; that is GPU-3's.
 
 **The first port: finds (17b).** `findSprite(k)` is `gpuBaked` over the unchanged `findShape`. Against a 2D bake
 of the same shape (288², read back): mean |Δ| 0.03 of 255 per channel, 8–27 pixels of 82 944 differ by more
@@ -284,8 +342,16 @@ figure is for the phone run with the hotel, where the hitch lives. Suite «GPU-�
 ## Where I stopped (update on every commit)
 
 - **GPU canvas v1 (25.09, `gpu`).** `08ca-gpu-canvas.js`, brief in §G; the first port is the finds (17b), the pair
-  `pair_finds_760.png` in the session's scratchpad (identical, 0 uploads). Next: v2 (text atlas, shadow blur), then
-  Контроль's HUD fixes 1–5 + DECISIONS «no 2D», then merge gpu3 to e1eef97.
+  `pair_finds_760.png` in the session's scratchpad (identical, 0 uploads). The quality checks are done: gradient
+  dither on a half-float ramp, box mips kept (numbers in §G, pair `pair_grad_x4.png`).
+- **GPU canvas v2 (25.09, `gpu`).** Text (08cb) and shadow (08cc) are in, and neon (17k0) is ported. Pairs are
+  `pair_text_x3.png`, `pair_shadow_x3.png` and `pair_neon_bake_x4.png`; numbers in §G.
+- **Next, in Контроль's order:**
+  1. merge gpu3 up to 10f8681;
+  2. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);
+  3. HUD fixes 1–5, find labels in table case and pushed apart, and DECISIONS «no 2D»;
+  4. chipDom and domLabel through the atlas;
+  5. the mask in `gpuLitSprite`, for GPU-2's pirates.
 
 - **Stage 1 caches (25.09, Контроль's order: station → zoom-following bakes → 25c → item 3).** Station master
   done (17c3, steady uploads 0, layers as in 2D); zoom-following bakes done (each size uploaded once, the way
@@ -1281,3 +1347,81 @@ and `lookFrame` (28y:49/326) — none in gameplay.
   Mutants `belt-gpu-off`, `belt-poi-2d` red. Pairs (2D | GPU, same build via `beltGpuDraw=()=>false`): belt 760
   max|Δ| 37, mean +0.1/+0.6/+1.3 (band smooth, rock seams gone); phone 411×742 ×1.5 the same; landmarks 760
   max|Δ| 25 in the maw crop. gpu errs 0.
+- **Belt cockpit and glass on `#hud` (Контроль 25.09, stage 2 item 2).** The border as agreed: the cockpit and
+  the glass symbols are interface, so they go on the `#hud` layer (08bh `gpuHud`) at native DPR, rastered only
+  on change; 25c is not touched. The key was first not a hand list (replaced by the hand key, next line): every frame the painter runs into a recording
+  context (24bc, a Proxy that logs calls and properties, coordinates at 1/16 px, angles at 1/4096 rad, text
+  measured by a real context) and the layer redraws only when the log differs — no state can be missed, and
+  needles creeping under a sixteenth of a pixel do not ask for a raster. The painter is pure (no `rnd`, no
+  writes to `G`), so the second run on the real layer draws the same. The strut lamps blink on their own:
+  the dark lamp stays on the layer, a lit one is a small native-DPR canvas above it, registered in `LABDOM`
+  so the flush hides it when unlit and the snapshot carries it. Gate `91zzzzzzy1`: `#c` calls 0 (cockpit
+  259/frame before), `#c` copies 0 (was 1/frame), submits 1/frame, uploads 0; at rest (ship stopped, no
+  controls held) 0 redraws in 60 frames. Pairs 760 and 411×742 ×1.5: the same picture (max|Δ| 68 / 201 on
+  glyph edges, mean +0.7 — the cockpit no longer goes through the post). 390×844 ×2.625: the panel's
+  needles and text sharp, top strip mean +2–3. Left: the node holder's swing and crown pulse (only with a
+  node fitted) still redraw the layer while they move.
+- **Belt cockpit key by inputs; the recorder moved to the gate (Контроль 25.09).** Measured at 4× CPU
+  throttling, 411×742 ×1.5: the recording key cost 26–30 ms and ~430 KB of garbage per frame, about three times
+  the draw it guarded. Now `bhudKey` (24bc) is a hand list of the painter's inputs, like the 25c pod signature:
+  basis and angles at 1/16384, speed and velocity direction, lock and progress, hit, fuel/hull/cargo, the radar
+  points at 1/16 px, the board lamps, the node holder, the grips. The pod signature (`instrRead`, the dearest
+  input) is read every 4th frame: a needle may lag up to three frames, any other change redraws with fresh ones.
+  The recorder is now the oracle in gate `91zzzzzzy1`: no frames, each of 22 steps changes one input by hand
+  (camera by the 24ba formula), and a changed call log with the same key fails — «протокол сменился ⇒ ключ
+  сменился». Mutant `belt-hud-key-fuel` (key without fuel) dies on step «топливо»; `belt-hud-2d` re-aimed at
+  the new call. Cost against the direct 2D draw, same throttling (loaded machine, absolute ms inflated): at rest
+  push 10–12 → 3.1–3.3 ms, frame 83–89 → 57–61 ms, cockpit garbage 38–39 → 29 KB/frame; while moving the layer
+  redraws every frame, frame 123–413 → 102–360 ms, garbage 41–66 → 64–109 KB (key plus raster).
+- **Belt cockpit: no garbage from the key, less from the painter (Контроль 25.09).** In flight the layer redraws
+  and garbage there is a GC hitch on the phone. `bhudKey` now allocates nothing: numbers go into a preallocated
+  `Float64Array`, strings and refs into a preallocated array, compared in place; the key string for 08bh is built
+  only on change, and the draw is one module function (no per-frame closures). Radar: rocks do not move (the wrap
+  follows the ship), so the key holds the ship position at a quarter pixel of the scope instead of 105 rocks.
+  Display step instead of float noise: camera angles and basis at 1/(4·max(W,H)) rad (the roll relaxing 5 %/frame
+  after a turn redrew the layer every frame in straight flight), the target as what is seen — frame place and size
+  at ¼ px, metres. Painter, picture unchanged (pairs 760 max|Δ| 3, 411×742 ×1.5 max 16 mean 0.04): index loop and
+  squared range on the radar, cached font strings and lamp-label width, `cockpitTex` without a key string per call,
+  lamp canvases compared by numbers. Oracle: lock cleared after warm-up, pod pinned whole, steps «время» (G.t
+  only) — mutants `belt-hud-key-fuel`, `belt-hud-key-radar`, `belt-led-hud` die. Cost at 4×, 411×742 ×1.5,
+  medians of 4 runs, the direct path of 5b44b5c → now: turning flight 38.6 → 31.6 KB/frame, frame 52.7 → 43.1 ms;
+  straight 39.8 → 19.4 KB, 53.6 → 46.3 ms; rest 33.2 → 3.8 KB, 51.3 → 40.0 ms; push 5.5 → 0.47 ms. In flight with
+  a target the layer still redraws every frame (the metres change) — a separate cached dashboard layer would cut
+  that, at the price of another native-DPR full-screen canvas (~10 MB on the phone); not done.
+- **The 25c pod is not drawn while CSS hides it (Контроль 25.09, the 2D purge, item 3).** On the phone the pod
+  canvas was redrawn ~10 times a second under `display:none` (`@media (max-width:720px)`), and a canvas outside
+  the compositor makes every draw wait for the GPU process tail. `instrPodTick` now draws only when the pod can be
+  seen: one `matchMedia("(max-width:720px)")` with its change event (no style reads in the frame) and the
+  `inflight` mode list of 27z. `IPOD_SIG` is left alone, so the pod redraws when it wakes if anything changed.
+  411×742 in the system view: 3077 → 0 pod canvas calls per 120 frames; 900 px wide unchanged (visible, drawn).
+- **Lane buoys off 2D (the GPU canvas, port 1 of GPU-3, 25.09).** The buoy (`laneBuoySprite`) and the lamp halo
+  (`laneGlowSprite`, the old `glowSprite` gradient) bake through `gpuBaked`; the queue ships stop borrowing the 2D
+  matrix stack: `laneShip` hands its place to `fleetShipAt(f,art,a,b,c,d,e,f,al)` in 12ai1 (`fleetShipGpu` is now
+  `getTransform` → the same call). The 2D fallback of `drawSysLane` is gone (no device, no lane). Census, the lane
+  scene, 120 frames with a zoom sweep: 17g's own 2D calls 22 → 0 a frame; what is left under it (12 a frame, all at the first sight of a queue
+  ship) is the fleet art itself — `fleetArtOf` paints a 2D canvas with the hull name (`fillText`) and
+  `fleetShipAt` uploads its mips by 2D downscale: v2 (text) moves it. Pairs l0|l3 (760, 411×1.5, far zoom .45):
+  whole frame max |Δ| 22 / 21 / 8, 0 pixels over 24, luminance equal; the ships bit-identical. The one soft spot is
+  the lamp cage ring (a 0.5-unit stroke): −2…−4 of 255 at 3–4 px from the lamp, +1…2 inside it, the lamp region
+  −0.5 % luminance, edge energy equal. It is the mip kernel: `gpuMipTex` built levels by 2D `drawImage` at
+  `imageSmoothingQuality="high"`, the GPU canvas by a 2×2 box. A bake at the screen size (√2 buckets, level 0) was
+  tried and is worse (edges −3 %: bilinear sampling of a rotated sprite near 1:1), so the master stays ×4 and
+  the kernel goes to the worker. New suite `91zzzzzzy3-gate2d` («0 вызовов 2D»): counts every 2D method and
+  setter whose stack holds a scene's painter, from the first frame (bakes included), named holes only
+  (`fleetArtOf`, `fleetShipAt`); mutants `lane-ship-2d`, `lane-glow-2d` die on it.
+- **Planet strip → a generation shader (`17gb-gpu-planet-strip`).** The strip (07: longitude across, sine
+  of latitude down; `fbm2` height, palette ramp, polar caps, life tint from `planetWetAt`, gas bands, the
+  right-edge crossfade) was baked on the CPU row by row under a frame budget (`planetStripTick`, `STRIP_*`),
+  put into a 2D canvas and uploaded; cities read it back through a 256×128 `getImageData` mask. Now
+  `gpsBake` draws the requested level in one pass (same formula, `hashi` on u32 in WGSL, its own submit),
+  `planetStrip` returns `{tex,view,w,h,lvl}`; the level only rises, a lost device re-bakes. The CPU formula
+  stays once, `planetStripPx`: cities get land lazily per cell (`gplLandAt`: bilinear to the grid, byte
+  rounding, the palette projection as before) — tens of cells instead of 32 768, no 2D, no readback.
+  Probe on 9 planets × 3 levels: shader = formula within 1 LSB (0 bytes off by more than 2); land cells
+  equal to the old canvas path at level 1, 0.1–0.7 % differ at levels 0/2 along coasts (Skia's 8-bit
+  bilinear). Pairs vs 10f8681: planet disk max|Δ| 1–2 at 760, ×1.5 phone, far zoom (Z .42) and gas; ×4
+  crops of limb, terminator side and coasts equal in luminance and edge energy; the only >24 pixels are the
+  DOM button pulse. 2D census «планеты» 0 calls (was the strip's putImageData + the mask's getImageData).
+  Gate `91zzzzzzy3-gate2d` gains the planet scene (strip dropped first, so the bake runs under the hook;
+  buildings give city lights); mutants `planet-land-2d`, `planet-strip-2d` die. The memory suite now
+  counts strip textures (on planets, not in `GPU.cvTex`); `bakeIdle` and the bake suite lose `STRIP_*`.

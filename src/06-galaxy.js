@@ -13,7 +13,7 @@ const SYS_CACHE=new Map();
 
    Правило проекта здесь уже есть — эфемерное не хранится, а пересчитывается.
    Растр эфемерен по определению: все три пекарни ленивые и умеют печь заново
-   (`planetStrip` возвращает null и становится в очередь, `planetLight` и
+   (`planetStrip` печёт заново шейдером (17gb), `planetLight` и
    `cloudsOf` пекут на месте). Поэтому системы остаются в кэше навсегда, а их
    растр — только у последних шести, где игрок был. Возвращение в недавнюю
    систему бесплатно, дальнее — стоит одной ленивой перепечки. */
@@ -23,14 +23,10 @@ let SYS_HOME_KEY="";
 function sysRasterDrop(sys){
   let n=0;
   for(const p of (sys&&sys.planets)||[]){
-    if(p.strip){p.strip=null;p.stripLvl=-1;p.stripWant=0;n++;}
+    if(p.strip){planetStripDrop(p);n++;}
     if(p.lite){p.lite=null;p.liteLvl=-1;n++;}
     if(p.clouds){p.clouds=null;n++;}
   }
-  /* очередь пекарни не должна держать выброшенное: иначе она допечёт то,
-     что только что выкинули, и следующий обход найдёт растр снова */
-  if(typeof STRIP_PEND!=="undefined"&&STRIP_PEND.length)
-    STRIP_PEND=STRIP_PEND.filter(p=>!((sys.planets||[]).indexOf(p)>=0));
   return n;
 }
 /* зовётся кадром (28-loop): дорого только в тот кадр, когда игрок сменил систему */

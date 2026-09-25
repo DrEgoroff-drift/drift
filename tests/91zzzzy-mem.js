@@ -21,6 +21,8 @@ function memPixels(root, maxDepth) {
     if (seen.has(v)) return;
     seen.add(v);
     if (v instanceof HTMLCanvasElement) { px += v.width * v.height; n++; return; }
+    /* развёртка планеты с 25.09 — текстура видеокарты на самой планете (17gb): тот же растр */
+    if (globalThis.GPUTexture && v instanceof GPUTexture) { px += v.width * v.height; n++; return; }
     if (v instanceof Node) return;
     if (v instanceof Map) { for (const x of v.values()) walk(x, d + 1); return; }
     if (v instanceof Set) return;
@@ -32,7 +34,7 @@ function memPixels(root, maxDepth) {
   return { px, n, mb: px * 4 / 1048576 };
 }
 /* сколько держит видеокарта: мир рисуется там (08b), и печёное уходит в
-   текстуры — холсты печек (GPU.cvTex), цели кадра (GPU.T), небо туманности
+   текстуры — холсты печек (GPU.cvTex), развёртки планет (17gb), цели кадра (GPU.T), небо туманности
    (GNB), буферы и кадровые арены, плюс корзина, что гибнет в начале кадра.
    Все места, где зовётся createTexture/createBuffer, — здесь */
 function memGpu() {
@@ -51,10 +53,12 @@ function memGpu() {
   for (const k in GPU.bufs) tx(GPU.bufs[k]);
   for (const k in GPU.ar) tx(GPU.ar[k].buf);
   for (const t of GPU.trash) tx(t);
+  /* развёртки планет (17gb) живут на планетах в кэше систем, а не в GPU.cvTex */
+  for (const S of SYS_CACHE.values()) for (const p of S.planets || []) if (p.strip) tx(p.strip.tex);
   return { mb: by / 1048576, n, tex: GPU.cvTex.size };
 }
 /* вечер прыжков: N систем, в каждой несколько кадров — чтобы пекарня развёрток
-   успела поработать (`planetStripTick` зовётся из отрисовки планеты) */
+   успела поработать (`planetStrip` печёт из отрисовки планеты) */
 function memTour(n, frames) {
   const seen = [];
   for (let r = 1; r < 14 && seen.length < n; r++)

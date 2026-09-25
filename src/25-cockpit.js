@@ -185,8 +185,10 @@ function rivetLine(c,x0,y0,x1,y1,step){
   }
 }
 function cockpitTex(id){
+  /* кабину спрашивают по нескольку раз за кадр: тот же корабль и тот же холст — без новой строки */
+  if(CKPT.id===id&&CKPT.w===W&&CKPT.h===H&&CKPT.dpr===DPR&&CKPT.plan)return CKPT;
   const key=id+"|"+Math.round(W)+"x"+Math.round(H)+"|"+DPR.toFixed(2);
-  if(CKPT.key===key)return CKPT;
+  if(CKPT.key===key){CKPT.id=id;CKPT.w=W;CKPT.h=H;CKPT.dpr=DPR;return CKPT;}
   const P=cockpitPlan(id), K=P.K;
   const cn=document.createElement("canvas");
   cn.width=Math.max(1,Math.round(W*DPR));cn.height=Math.max(1,Math.round(H*DPR));
@@ -394,7 +396,7 @@ function cockpitTex(id){
   vg.addColorStop(0,"rgba(0,0,0,0)");vg.addColorStop(1,"rgba(0,0,0,.34)");
   c.fillStyle=vg;c.fillRect(0,0,W,H);
 
-  CKPT.key=key;CKPT.plan=P;CKPT.tex=cn;
+  CKPT.key=key;CKPT.plan=P;CKPT.tex=cn;CKPT.id=id;CKPT.w=W;CKPT.h=H;CKPT.dpr=DPR;
   return CKPT;
 }
 function drawCockpit(b,st){
@@ -408,7 +410,7 @@ function drawCockpit(b,st){
      168), и в окне 1920 её кегль стоял на единице, пока борт и панели рядом
      выросли в полтора раза — надписи доски выглядели чужими (M443) */
   const FS=Math.max(clamp(UH/70,1,1.75),uiK());
-  const fnt=s=>Math.round(s*FS)+"px ui-monospace,monospace";
+  const fnt=s=>ckptFont(Math.round(s*FS));
 
   /* ── стекло: тонировка, блик и отражение приборов ──
      всё это прозрачное и живёт внутри проёма, мир под ним остаётся виден */
@@ -440,10 +442,14 @@ function drawCockpit(b,st){
      наблюдения. Подписей на ней нет — толкует игрок */
   if(typeof tapeStrip==="function")tapeStrip(P,FS);
 
-  /* ── лампы на боковых стойках: моргают вразнобой ── */
-  for(const s of [-1,1])for(const L of P.leds){
-    const x=s<0?P.pw*.42:W-P.pw*.42;
+  /* ── лампы на боковых стойках: моргают вразнобой ──
+     на слое приборов здесь только погашенная лампа, горящую кладёт свой холстик над ним
+     (24bc, bhudLeds): мигание не перерисовывает кабину */
+  const ledDom=bhudLedDom();
+  for(let s=-1;s<=1;s+=2)for(let li=0;li<P.leds.length;li++){
+    const L=P.leds[li],x=s<0?P.pw*.42:W-P.pw*.42;
     const on=L.on&&Math.sin(G.t*L.sp+L.ph)>-.35;
+    if(ledDom){ctx.fillStyle="rgba(255,255,255,.05)";ctx.beginPath();ctx.arc(x,L.y,L.r,0,TAU);ctx.fill();continue;}
     ctx.fillStyle=on?K.led:"rgba(255,255,255,.05)";
     ctx.beginPath();ctx.arc(x,L.y,L.r,0,TAU);ctx.fill();
     if(on){
@@ -478,10 +484,11 @@ function drawCockpit(b,st){
   ctx.arc(rcx,rcy,rr,-Math.PI/2-.42,-Math.PI/2+.42);ctx.closePath();ctx.fill();
   const RANGE=2000;
   const fx=Math.sin(b.yaw), fz=Math.cos(b.yaw), rx=Math.cos(b.yaw), rz=-Math.sin(b.yaw);
-  for(const a of b.ast){
-    const dx=a.x-b.x,dz=a.z-b.z,dy=a.y-b.y;
-    const dd=Math.hypot(dx,dy,dz);
-    if(dd>RANGE)continue;
+  /* индексом и квадратом дальности: радар перерисовывается на ходу каждый кадр, а сотня
+     камней через итератор и hypot сорила сильнее всей остальной доски */
+  for(let ai=0,ast=b.ast;ai<ast.length;ai++){
+    const a=ast[ai],dx=a.x-b.x,dz=a.z-b.z,dy=a.y-b.y;
+    if(dx*dx+dy*dy+dz*dz>RANGE*RANGE)continue;
     const px=(dx*rx+dz*rz)/RANGE*rr, py=(dx*fx+dz*fz)/RANGE*rr;
     const s=a===b.lock?3.2:clamp(a.r/38,1,2.2);
     ctx.fillStyle=a===b.lock?"#f2b25c":RES[a.res].col;
@@ -536,7 +543,7 @@ function drawCockpit(b,st){
      375 px три подписи ложились одна поверх другой и читались кашей. Если шаг
      не держит самое длинное слово, подпись остаётся только у ГОРЯЩЕЙ лампы —
      погашенная и так ничего не значит, а над миром висит только нужное сейчас. */
-  const need=Math.max(...lamps.map(L=>ctx.measureText(L[0]).width))+14;
+  const need=ckptLampNeed(lamps);
   const tight=lstep<need;
   const step=tight?16:lstep;
   /* горящих может быть две: подпись медленно чередуется между ними — движение,
@@ -631,7 +638,7 @@ function drawCockpit(b,st){
     const gC=(gL+gR)/2, k=clamp(gW/230,.55,1);
     const yy=H-8, gh=clamp(DH*.26,26,52)*k;
     const tilt=clamp(b.avYaw*8,-.5,.5), lean=clamp(-b.avPitch*7,-.45,.45);
-    for(const s of [-1,1]){
+    for(let s=-1;s<=1;s+=2){
       ctx.save();
       ctx.translate(gC+s*gW*.19,yy);
       ctx.fillStyle="rgba(16,22,30,.95)";
@@ -668,7 +675,7 @@ function drawCockpit(b,st){
     }
     const F=fs||1;
     ctx.fillStyle="rgba(93,115,130,.9)";
-    ctx.font=Math.round(8*F)+"px ui-monospace,monospace";ctx.textAlign="left";
+    ctx.font=ckptFont(Math.round(8*F));ctx.textAlign="left";
     ctx.fillText(label,x-1,y+h+11*F);
   }
 }

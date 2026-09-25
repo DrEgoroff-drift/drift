@@ -172,7 +172,6 @@ TEST_SUITES.push(()=>suite("выпечка: порция ограничена и
   /* бюджеты — числа в исходнике, а не привычка */
   ok(typeof MAT_MS==="number"&&MAT_MS>0&&MAT_MS<=6,"бюджет материала: "+MAT_MS+" мс");
   ok(typeof MAT_CAP==="number"&&MAT_CAP>0&&MAT_CAP<=32,"и потолок работы: "+MAT_CAP+" строк");
-  ok(typeof STRIP_MS==="number"&&STRIP_MS>0&&STRIP_MS<=6,"у развёртки бюджет: "+STRIP_MS+" мс");
   /* порция в одну строку двигает ровно на строку */
   delete p.mat;delete p.matCn;MAT_JOB=null;
   planetMat(p);

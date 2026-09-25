@@ -61,14 +61,17 @@ function sysLane(sys){
   return sys.lane={st:{x:st.x,y:st.y},E,ux,uy,L,pairs,buoys,life,by,
     hx,hy,side,queue,dock:qn?ship():null,out:qn?ship():null,ph:r()};
 }
-/* ── бакен: печётся один раз на всю игру ──
+/* ── бакен: печётся один раз на всю игру, на GPU-холсте (08ca) ──
    Тёмный цилиндр с холодной кромкой и короткой фермой к огню; сам огонь — живой */
-const LANE_BUOY={cv:null,R:14,SS:4};
+/* мастер крупнее экрана (×4): печь по экранному размеру пробовали (25.09) — билинейная выборка
+   повёрнутого спрайта почти 1:1 мягче, чем спуск по мипам с крупного мастера (края −3 %) */
+const LANE_BUOY={R:14,SS:4,M:new Map()};
 function laneBuoySprite(){
-  if(LANE_BUOY.cv)return LANE_BUOY.cv;
-  const R=LANE_BUOY.R,SS=LANE_BUOY.SS,cv=document.createElement("canvas");
-  cv.width=cv.height=R*2*SS;
-  const c=cv.getContext("2d");c.scale(SS,SS);c.translate(R,R);
+  const n=LANE_BUOY.R*2*LANE_BUOY.SS;
+  return gpuBaked(LANE_BUOY.M,"buoy",n,n,laneBuoyPaint);
+}
+function laneBuoyPaint(c){
+  const R=LANE_BUOY.R,SS=LANE_BUOY.SS;c.scale(SS,SS);c.translate(R,R);
   /* D7 (телефон 18.09): тёмный цилиндр с огнём сбоку читался мусорным баком.
      Бакен — прибор, и у него знаки прибора: светлый корпус с тенью на одной
      стороне, ЧЁРНО-ЖЁЛТЫЙ пояс (знак «бакен» у всех флотов), катафот и крест
@@ -85,7 +88,16 @@ function laneBuoySprite(){
   c.beginPath();c.moveTo(-2.2,-7.6);c.lineTo(2.2,-7.6);c.stroke();          /* крест отражателя */
   c.strokeStyle="rgba(200,214,228,.7)";c.lineWidth=.5;                      /* клетка огня */
   c.beginPath();c.arc(0,-11.5,2,0,TAU);c.stroke();
-  return LANE_BUOY.cv=cv;
+}
+/* ореол огня: радиальный градиент в единичном круге, как glowSprite (16a0), только на GPU-холсте */
+const LANE_GLOW_SP=new Map();
+function laneGlowSprite(col){
+  return gpuBaked(LANE_GLOW_SP,col.join(","),GLOW_SP,GLOW_SP,c=>{
+    c.translate(GLOW_SP/2,GLOW_SP/2);c.scale(GLOW_SP/2,GLOW_SP/2);
+    const g=c.createRadialGradient(0,0,0,0,0,1);
+    g.addColorStop(0,rgba(mixc(col,[255,255,255],.6),1));g.addColorStop(.25,rgba(col,.55));g.addColorStop(1,rgba(col,0));
+    c.fillStyle=g;c.beginPath();c.arc(0,0,1,0,TAU);c.fill();
+  },{ss:1});
 }
 function laneLampCol(by){
   const MF=(typeof makerFlame==="function")?makerFlame(by):null;
@@ -96,20 +108,16 @@ const LANE_GLOW=1,LANE_HALO=.45;
 function drawSysLane(zx,zy,Z){
   const sys=G.sys;if(!sys)return;
   const P=sysLane(sys);if(!P||!P.buoys.length)return;
-  const s=clamp(Z,.6,1.5)*1.1,sp=laneBuoySprite(),R=LANE_BUOY.R*s;
-  const col=laneLampCol(P.by);
-  const glow=glowSprite("lane|"+col.join(","),()=>{
-    const g=ctx.createRadialGradient(0,0,0,0,0,1);
-    g.addColorStop(0,rgba(mixc(col,[255,255,255],.6),1));g.addColorStop(.25,rgba(col,.55));g.addColorStop(1,rgba(col,0));
-    ctx.fillStyle=g;ctx.beginPath();ctx.arc(0,0,1,0,TAU);ctx.fill();
-  });
+  const pass=gpuScene();if(!pass)return;          /* 2D-пути нет: без видеокарты полосы не видно */
+  const s=clamp(Z,.6,1.5)*1.1,R=LANE_BUOY.R*s,sp=laneBuoySprite();
+  const col=laneLampCol(P.by),glow=laneGlowSprite(col);
+  if(!sp||!glow)return;
   /* бегущий огонь: гребень идёт от дальней пары к ближней и уходит в док;
      пауза в полторы пары между проходами — чтобы читалось направление */
   const lead=P.pairs-1-((G.t/60*LANE_CHASE)%(P.pairs+1.5));
   const na=Math.atan2(P.uy,P.ux)+Math.PI/2;       /* бакен стоит поперёк полосы */
   /* на видеокарте: бакены одной пачкой, ореол огня краской, лампа — точкой */
-  const pass=gpuScene();
-  if(pass){const B=[],Gl=[],Lp=[],Lh=[],lc=mixc(col,[255,255,255],.5);
+  {const B=[],Gl=[],Lp=[],Lh=[],lc=mixc(col,[255,255,255],.5);
     for(const b of P.buoys){
       const x=zx(b.x),y=zy(b.y);
       if(x<-40||x>W+40||y<-40||y>H+40)continue;
@@ -119,23 +127,9 @@ function drawSysLane(zx,zy,Z){
       Gl.push({x:lx,y:ly,w:r*2,h:r*2,a:(.35+.65*k)*LANE_GLOW});
       Lp.push([1,lx,ly,Math.max(1,1.3*s),0,0,0,lc[0],lc[1],lc[2],.5+.5*k]);
       Lh.push([1,lx,ly,.7*s,0,0,2.6*s,lc[0],lc[1],lc[2],(.5+.5*k)*LANE_HALO]);}
-    gpuImage(pass,gpuMipTex(sp),B,{sharp:true});   /* бакен — вещь: маска, как у флота; ореолу — нет */
-    gpuImage(pass,gpuMipTex(glow),Gl);
+    gpuImage(pass,sp,B,{sharp:true});   /* бакен — вещь: маска, как у флота; ореолу — нет */
+    gpuImage(pass,glow,Gl);             /* D7: гребень крупнее — огни посадочной полосы, а не искры */
     gpuShapes(pass,Lp);gpuShapes(pass,Lh,{blend:"add"});   /* лампа — явная эмиссия, узкий ореол */
-    return;}
-  for(const b of P.buoys){
-    const x=zx(b.x),y=zy(b.y);
-    if(x<-40||x>W+40||y<-40||y>H+40)continue;
-    ctx.save();ctx.translate(x,y);ctx.rotate(na);
-    ctx.drawImage(sp,-R,-R,R*2,R*2);
-    ctx.restore();
-    const k=Math.max(0,1-Math.abs(b.i-lead)*1.4);
-    const lx=x+Math.cos(na-Math.PI/2)*11.5*s,ly=y+Math.sin(na-Math.PI/2)*11.5*s;
-    ctx.globalAlpha=.35+.65*k;
-    glowBlit(glow,lx,ly,(7+22*k)*s);   /* D7: гребень крупнее — огни посадочной полосы, а не искры */
-    ctx.globalAlpha=1;
-    ctx.fillStyle=rgba(mixc(col,[255,255,255],.5),.5+.5*k);     /* сама лампа — точка, видна и в паузе */
-    ctx.beginPath();ctx.arc(lx,ly,Math.max(1,1.3*s),0,TAU);ctx.fill();
   }
 }
 /* ── очередь у дока и два движения мимо неё ── */
@@ -143,10 +137,9 @@ function laneShip(f,x,y,a,al,Z){
   if(al<=.02||x<-200||x>W+200||y<-200||y>H+200)return;
   /* издали очередь сжимается с миром: эллипс ожидания 150×70 на ×0.16 — полсотни пикселей,
      корабли с полом масштаба ложились в нём друг на друга кашей (снимок автора 19.09) */
-  const s=Math.min(fleetScale(Z),Z*1.4)*.62;
-  ctx.save();ctx.globalAlpha=al;ctx.translate(x,y);ctx.rotate(a);ctx.scale(s,s);
-  drawFleetShip(f);
-  ctx.restore();
+  const s=Math.min(fleetScale(Z),Z*1.4)*.62,c=Math.cos(a)*s,q=Math.sin(a)*s;
+  /* место и курс известны — матрица сразу в fleetShipAt, без 2D-стека (было 7 вызовов на борт) */
+  fleetShipAt(f,fleetArtOf(f),c,q,-q,c,x,y,al);
 }
 /* ── ажиотаж на подъезде (M504, дизайн-проход 23.09) ──
    После ЖИЛЫ сюда летят все: от входа по оси полосы тянется вереница
@@ -169,7 +162,7 @@ function drawRushTraffic(P,zx,zy,Z,ts){
 }
 function drawSysLaneShips(zx,zy,Z){
   const sys=G.sys;if(!sys)return;
-  const P=sysLane(sys);if(!P||typeof drawFleetShip!=="function")return;
+  const P=sysLane(sys);if(!P||!gpuScene())return;
   const ts=G.t/60,n=P.queue.length;
   if(typeof rushAt==="function"&&rushAt(G.sx,G.sy))drawRushTraffic(P,zx,zy,Z,ts);   /* ажиотаж: подъезд полон (M504) */
   if(!n)return;
