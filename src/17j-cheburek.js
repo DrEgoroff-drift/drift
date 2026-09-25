@@ -77,7 +77,8 @@ function chebSignMake(F,k,d){
 }
 function drawCheburek(zx,zy,Z){
   const C=chebHere();if(!C)return;
-  const x=zx(C.x),y=zy(C.y);if(x<-80||x>W+80||y<-80||y>H+80)return;
+  const x=zx(C.x),y=zy(C.y);
+  if(x<-80||x>W+80||y<-80||y>H+80){if(GPU.dev&&pbOnScreen(x-80,y-80,160,160,.6))chebAhead(Z);return;}
   const pass=gpuScene();if(!pass)return;
   const s=clamp(Z,.6,1.5),br=.86+.1*Math.sin(G.t*.045),A=chebBake(),ca=Math.cos(C.a),sa=Math.sin(C.a);
   if(!A)return;
@@ -105,6 +106,14 @@ function drawCheburek(zx,zy,Z){
     gpuShapes(pass,[[2,x-S.tw*.3,by+7.5*k,x-4*s,y-6*s,.4,0,200,190,170,.45],[2,x+S.tw*.3,by+7.5*k,x+4*s,y-6*s,.4,0,200,190,170,.45]]);
     if(S.B)gpuImage(pass,S.B,[{x:sl+sw/2,y:st+sh/2,w:sw,h:sh}]);
   }
+}
+/* лодка на подлёте (за краем, в экране от края): лодку, её свет и доску печём заранее, в
+   бюджете prebake (17a0) — на глаза выходит готовой, в кадре ни одной новой цели */
+function chebAhead(Z){
+  const s=clamp(Z,.6,1.5),F=Math.round(8*Math.max(1,s)*(typeof UIK==="number"?UIK:1)),d=DPR;
+  const ok=B=>B&&B.dev===GPU.dev,Sg=CHEB_SIGN.get(F+"|"+F/8+"|"+d);
+  if(ok(CHEB_ART.get("cv"))&&ok(CHEB_ART.get("em"))&&Sg&&ok(Sg.B))return;
+  prebake("cheb|"+F+"|"+d,function*(){chebBake();yield;chebSignBake(F,F/8);},false);
 }
 function chebInteract(sh){
   const C=chebHere();if(!C)return false;
