@@ -12,7 +12,9 @@ sound is generated at runtime from seeds.
 </div>
 
 Play it at [drift-game.ru](https://drift-game.ru) — or download [`drift.html`](drift.html) and
-open it. That is the whole game: one file, offline, no server. The interface is in Russian.
+open it. That is the whole game: one file, offline, no server. The interface is in Russian. The
+world is drawn with WebGPU, so it needs a browser that has it: a recent Chrome, Edge, Yandex
+Browser or Opera, or Safari 26 and newer.
 
 You fly a survey ship through a generated galaxy — prospect planets, dig mines, mine asteroid
 belts, skim gas giants, trade, build bases, hire crew that keeps working while you are away,
@@ -571,6 +573,13 @@ Kilometres earn capped in-game credits, with a combo for riding without stopping
 
 ## Graphics and sound
 
+- **The world is drawn on the video card** (WebGPU, since 0.457.0). The nebula and its dust live
+  and drift, light is HDR with a soft bloom, hulls, stations and planets are lit from the star's
+  side, exhaust and bursts are particles, and the star itself is alive. Canvas 2D stays as the
+  brush for text and complex vector shapes — in flight they are baked once into textures — and the
+  instruments sit on a sharp layer of their own. In flight and in the asteroid belt the whole
+  world is on the GPU; the other modes move over one at a time. There is no 2D fallback: without
+  WebGPU the game names the browsers it needs instead of drawing a world.
 - **The light knows the hour.** One day key feeds the sky gradient, the ambient fill, the
   strength of direct light, the air on the far ridges and the final grade: at noon the zenith is
   a luminous colour of the world's own palette and shadows are sharp and coloured, toward night
@@ -620,10 +629,10 @@ carried home persist.
 | File | Purpose |
 |---|---|
 | [`drift.html`](drift.html) | The entire game in one self-contained file — open it directly to play. **Built from `src/`; do not edit by hand.** |
-| [`src/`](src) | Sources: `index.html` shell, `style.css`, and ~220 JavaScript modules (core maths and RNG, galaxy, planets, ships, parts, audio, music, economy, crew, save, one per game mode, UI). Concatenated in filename order, since it all shares one scope. |
-| [`tests/`](tests) | Five hundred-odd suites by topic (`90-harness`, then `91a-flight` onward), plus the cross-cutting nets (`91zzzz*`): a fuzzer, game QA, physics at every frame step, names against the source, the frame meter. They drive the real game state through `resetWorld()` and mock nothing. |
+| [`src/`](src) | Sources: `index.html` shell, `style.css`, and ~400 JavaScript modules (core maths and RNG, galaxy, planets, ships, parts, the WebGPU renderer, audio, music, economy, crew, save, one per game mode, UI). Concatenated in filename order, since it all shares one scope. |
+| [`tests/`](tests) | Some nine hundred suites by topic (`90-harness`, then `91a-flight` onward), plus the cross-cutting nets (`91zzzz*`): a fuzzer, game QA, physics at every frame step, names against the source, the frame meter. They drive the real game state through `resetWorld()` and mock nothing. |
 | [`build.ps1`](build.ps1) | Rebuilds `drift.html` from `src/`. No dependencies — PowerShell, because Node is not assumed. `-Watch` rebuilds on save. |
-| [`site/`](site) | The [drift-game.ru](https://drift-game.ru) pages: front page, accounts and cloud saves (one small PHP endpoint, `api.php`), and the standalone 3D bird. Published automatically on push. |
+| [`site/`](site) | The [drift-game.ru](https://drift-game.ru) pages: front page, how to play, the war map (`war.php`), the test lab, accounts and cloud saves (`api.php`), and the flat and 3D birds. Published automatically on a push to `main`. |
 | [`bird/`](bird) | Sources of the 3D bird (WebGL2, `bird.ps1` builds them into one self-contained file). Not part of the game. |
 | [`CLAUDE.md`](CLAUDE.md) | House rules for working on the code: what lives where, what must not change, how to verify. |
 | [`PLAN.md`](PLAN.md) | The plan: only the work still ahead, by milestone. |
@@ -634,7 +643,9 @@ carried home persist.
 
 ## Running it
 
-**To play:** open `drift.html` in any modern browser. No server, no build, no dependencies.
+**To play:** open `drift.html` in a browser with WebGPU — a recent Chrome, Edge, Yandex Browser
+or Opera, or Safari 26 and newer. No server, no build, no dependencies. Without WebGPU the game
+shows a notice naming these browsers instead of the world.
 
 **To work on it:** edit files under `src/`, then rebuild:
 
@@ -643,7 +654,7 @@ powershell -ExecutionPolicy Bypass -File build.ps1
 ```
 
 The same build produces `tests.html` — open it in a browser and it runs the suites against the
-real game state (currently ~13 000 assertions across 441 suites, nothing mocked) and prints the
+real game state (currently some nine hundred suites, nothing mocked) and prints the
 report on the page; `test.ps1` runs the same thing headless.
 
 Module order matters: the whole game shares one scope, so constants and tables must be declared
@@ -657,7 +668,7 @@ portable save codes.
 
 ## Status
 
-Version 0.350.2. Everything described above is built and playable, online at
+Version 0.458.0. Everything described above is built and playable, online at
 [drift-game.ru](https://drift-game.ru) with accounts and cloud saves, or offline from this file.
 
 Four development passes are behind it. The first finished the planned queue: celestial
@@ -685,7 +696,7 @@ Since then the game grew its through-line — an arc about access instead of cre
 faces and windows that close quietly, and an ending that is never explained — and went through
 a full cosmetic audit under eight laws (every light has a source, everything standing casts a
 shadow, work is visible, motion never blinks). Noon finally looks like noon: the sky, the
-shadows and the light all know the hour. The frame holds 60 fps in all nine modes.
+shadows and the light all know the hour. The frame held 60 fps in all nine modes.
 
 A fifth push (M289–M316) gave the galaxy its own economy and its own traffic: **the holding**
 (landing a build of your own on someone else's station, bought as a route rather than priced,
@@ -709,5 +720,13 @@ economy — **matches** under every cowl and the wandering **«Сорока»** 
 **cooperative** as the only way to buy for yourself, the author's novel **«Смена»** on the desk,
 and a **big thing on every biome** so a world reads by its silhouette from three steps back.
 
-The planned queue is empty again. The game lives as a sandbox; new work starts from the author's
-eye. Balance is tuned against measurements, so the numbers move between versions.
+The hundred-odd versions after that are in [`PATCHNOTES.md`](PATCHNOTES.md); the latest turn is
+the picture itself. Since 0.457.0 the world is drawn on the video card: WebGPU took the sky first
+— a living nebula and its dust, HDR light with a soft bloom, hulls catching the star, particle
+exhaust and bursts, a live star — then everything in flight: ships, stations, planets close up,
+fights, with the instruments on a sharp layer of their own. Nothing under the picture changed:
+seeds, generation, physics and the save format are the same.
+
+What comes next is in [`PLAN.md`](PLAN.md): the other modes move to the GPU one at a time, flight
+has to run smooth on a phone, and the stages after that open on the author's word. Balance is
+tuned against measurements, so the numbers move between versions.
