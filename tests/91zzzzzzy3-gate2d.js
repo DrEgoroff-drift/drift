@@ -67,6 +67,23 @@ const GATE2D=[
        G.ship.x=S.x;G.ship.y=S.y+80;G.ship.vx=G.ship.vy=0;G.zoom=1.5;G.zoomT=null;return {S};}
      return null;},
    probe:["drawStation","stationMaster"]},
+  /* жест хозяина и пост у входа (17h): держава меняется каждые 15 кадров, возраст — внутри
+     её жеста (прожектор «gt», линия «or»); доску поста сбрасываем, чтобы выпечка шла под записью */
+  {name:"жест и пост (17h): корабли флота, дрон, прожектор, линия досмотра, доска",
+   painters:["drawGesture","drawGestureTop","drawGestPost","gestPostSprite","gestShip","gestRect","gestAt"],
+   place(first){
+     const BY=[["gt",5],["co",3],["or",2.3],["ra",4],["hf",1.5],["km",1]];
+     if(first){this.i=0;for(const B of GEST_POST_CV.values())gpuBakeDrop(B);GEST_POST_CV.clear();}
+     for(let r=0;r<=30;r++)for(let x=-r;x<=r;x++)for(let y=-r;y<=r;y++){
+       if(Math.max(Math.abs(x),Math.abs(y))!==r)continue;const s=getSystem(x,y);if(!s.station)continue;
+       G.sx=x;G.sy=y;G.sys=s;G.ap=null;G.orbit=null;if(!gestOwner(x,y))continue;
+       const E=sysEntry(x,y),px=E.x-Math.sin(E.a)*140,py=E.y+Math.cos(E.a)*140;
+       G.ship.x=px+60;G.ship.y=py+110;G.ship.vx=G.ship.vy=0;G.ship.a=-.6;G.zoom=1.3;G.zoomT=null;
+       const [by,age]=BY[Math.floor(this.i++/15)%BY.length];
+       GEST={sx:x,sy:y,by,t0:G.t-age*60,said:true,fired:{say:1},seed:hashi(x,y,0x6E57)>>>0};
+       return {by};}
+     return null;},
+   probe:["drawGesture","drawGestureTop","drawGestPost"]},
 ];
 TEST_SUITES.push(()=>suite("ворота «0 вызовов 2D»: перенесённые печи не зовут 2D ни в кадре, ни в выпечке",{tier:"browser"},()=>{
   if(!ok(GPU.ok,"видеокарта есть — без неё ворота не меряются"))return;

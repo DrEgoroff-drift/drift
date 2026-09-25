@@ -1650,3 +1650,19 @@ and `lookFrame` (28y:49/326) — none in gameplay.
   the stone). Gates: gpugate windows suite (masks ≥8 a day, 0 uploads) and the approach suite above;
   gate2d scene «Космос» (painters incl. `hkPaint`, `hotelDock`); mutants `hotel-bake-2d`
   (glow record → 2D), `hotel-frame-2d` die. 760/phone/far/z3 GPU errs 0.
+- **Gesture and post (17h) off 2D.** The whole frame goes through the scene pass: fleet ships through
+  `fleetShipAt` with their own matrix (`gestShip`), the drone screens and the camera drone as kit shapes in a
+  local frame (`gestAt`, `gestRect` via `gpuQuad`, the ticker stripes clipped to the screen), the post sign a
+  GPU-canvas bake (`gestPostSprite`, `gpuBaked` at 3×), the lamp two added discs. The 2D fallbacks are gone.
+  The spotlight («gt») and the inspection line («or») move to `drawGestureTop`, called from 17-mode-system
+  right after the player's hull (one line, a call-order change only): the old 2D layer lay over the hull.
+  They blend «over», not «add», as `#c` did; the line's core is .87 instead of .75 because the 2D halo and
+  core summed inside the layer (C 213, A .89) and sequential «over» needs .87 for the same bg·.11+213. What
+  stays different: `#c` was composited after the tone curve, the scene pass is before it, so the hull's
+  highlights under the spotlight (above .75, where the tone curve bends) come out a little brighter: mean
+  +4/255 over the hull crop, the rest of the cone equal. Pairs vs HEAD, same tick (px >24 / max): 760 —
+  gt 188/71 (hull highlights), co 3/34, or 450/43 (AA of a 2D stroke vs an SDF segment along the line, 286
+  brighter and 158 darker, same energy; was 805/118 with the line under the hull), ra 0/11, hf 16/53, km
+  0/10; phone without the pulsing buttons — gt 219/40, co 7/54, or 66/44, ra 0/10, hf 30/65, km 0/12. GPU
+  errs 0. Gate2d gains the gesture scene (power changes every 15 frames, age inside its gesture; probes
+  `drawGesture`, `drawGestureTop`, `drawGestPost`); mutants `gesture-post-2d`, `gesture-frame-2d` die.

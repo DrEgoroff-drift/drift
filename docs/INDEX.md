@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 622 · символов верхнего уровня: 6207
+Файлов: 622 · символов верхнего уровня: 6211
 
 ## СИМВОЛЫ
 
@@ -1476,8 +1476,9 @@ drawForeground               src/21b-surface-deco.js:278-383
 drawGalaxy                   src/17z1-galaxy.js:97-137
 drawGalaxyNames              src/17z2-galaxy-names.js:38-63
 drawGalaxyStars              src/17z1-galaxy.js:156-195
-drawGestPost                 src/17h-sys-gesture.js:192-218
-drawGesture                  src/17h-sys-gesture.js:87-172
+drawGestPost                 src/17h-sys-gesture.js:196-216
+drawGesture                  src/17h-sys-gesture.js:92-144
+drawGestureTop               src/17h-sys-gesture.js:148-177
 drawGiant                    src/17o-giants.js:162-189
 drawGiantsMap                src/17o-giants.js:49-61
 drawGlassHUD                 src/24-mode-belt.js:702-789
@@ -1553,11 +1554,11 @@ drawSurface                  src/21e-surface-draw.js:277-291
 drawSurfaceHud               src/21e-surface-draw.js:21-115
 drawSurfaceWorld             src/21e1-surface-world.js:10-615
 drawSurvey                   src/12w-survey.js:63-89
-drawSysHud                   src/17-mode-system.js:706-984
+drawSysHud                   src/17-mode-system.js:707-985
 drawSysLane                  src/17g-sys-lane.js:108-134
 drawSysLaneShips             src/17g-sys-lane.js:163-191
 drawSysRail                  src/18f-rail-station.js:58-92
-drawSystem                   src/17-mode-system.js:498-705
+drawSystem                   src/17-mode-system.js:498-706
 drawSysTraffic               src/17f-sys-traffic.js:39-43
 drawTapes                    src/12s1-tape.js:37-52
 drawTemple                   src/20aa-poi-shapes.js:50-89
@@ -2018,7 +2019,7 @@ GATE_WARM                    tests/91zzzzzzy-gpugate.js:8
 GATE_WHY                     tests/91zzzzzl-gates.js:19
 GATE_ZB                      tests/91zzzzzzy-gpugate.js:13
 GATE_ZCAP                    tests/91zzzzzzy-gpugate.js:16
-GATE2D                       tests/91zzzzzzy3-gate2d.js:12-70
+GATE2D                       tests/91zzzzzzy3-gate2d.js:12-87
 GATE2D_DYRY                  tests/91zzzzzzy3-gate2d.js:11
 gateFind                     tests/91zzzzzzy-gpugate.js:270-318
 gateFlyScenes                tests/91zzzzzzy-gpugate.js:273-318
@@ -2101,17 +2102,20 @@ geologyOf                    src/18b-geology.js:45-71
 geoWob                       src/18b-geology.js:80-82
 GEST                         src/17h-sys-gesture.js:23
 GEST_POST                    src/17h-sys-gesture.js:21
-GEST_POST_CV                 src/17h-sys-gesture.js:174
+GEST_POST_CV                 src/17h-sys-gesture.js:179
 GEST_SAID                    src/17h-sys-gesture.js:24
 GEST_T                       src/17h-sys-gesture.js:20
 gestAge                      src/17h-sys-gesture.js:44
 gestArrive                   src/17h-sys-gesture.js:32-40
+gestAt                       src/17h-sys-gesture.js:89
 gestEase                     src/17h-sys-gesture.js:86
 gestLive                     src/17h-sys-gesture.js:41-43
 gestOnce                     src/17h-sys-gesture.js:46-50
 gestOwner                    src/17h-sys-gesture.js:25-30
 gestPostNo                   src/17h-sys-gesture.js:51
-gestPostSprite               src/17h-sys-gesture.js:175-191
+gestPostSprite               src/17h-sys-gesture.js:180-195
+gestRect                     src/17h-sys-gesture.js:90
+gestShip                     src/17h-sys-gesture.js:91
 gestShipFrame                src/17h-sys-gesture.js:81-85
 gestTick                     src/17h-sys-gesture.js:52-79
 getSystem                    src/06-galaxy.js:95-189
@@ -8190,7 +8194,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzzzzzy2-gpu-canvas.js · 9 КБ
   · GPU-холст: запись команд и громкие дыры (08ca, docs/DESIGN-gpu.md «GPU canvas»):1
 
-## tests/91zzzzzzy3-gate2d.js · 9 КБ
+## tests/91zzzzzzy3-gate2d.js · 10 КБ
   · ворота «0 вызовов 2D» у перенесённых печей (GPU-3, DESIGN-gpu §G):1
 
 ## tests/91zzzzzzz-hands.js · 14 КБ

@@ -672,6 +672,7 @@ function drawSystem(){
   }
   ctx.restore();
   if(!hullG)gpuHullLight(zx(sh.x),zy(sh.y),zx(0),zy(0),Z,sys);   /* свет звезды на 2D-корпусе (16ga) */
+  if(typeof drawGestureTop==="function")drawGestureTop(zx,zy,Z);   /* жест поверх корпуса (17h) */
   /* при наблюдении в центре не свой корабль — подписываем, за кем смотрим,
      и куда нажать, чтобы вернуться */
   if(wA)gpuHud("watch"+wA.c.name+wA.c.order.kind,()=>{   /* приборы — на свой слой, по изменению (08bh) */
