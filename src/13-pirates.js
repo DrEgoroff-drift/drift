@@ -351,14 +351,13 @@ function killPirate(p){
    LOOT_IC_K радиусов шириной; на экране ложится мипами (кромка 1.4 px при s≈8, как кистью) */
 const LOOT_IC=new Map(),LOOT_IC_R=20,LOOT_IC_K=2.4;
 function lootIcon(col){
-  let c=LOOT_IC.get(col);if(c)return c;
-  c=document.createElement("canvas");c.width=c.height=Math.round(LOOT_IC_R*LOOT_IC_K);
-  const g=c.getContext("2d"),s=LOOT_IC_R;g.translate(c.width/2,c.height/2);
-  g.fillStyle="rgba(20,24,30,.9)";g.strokeStyle=col;g.lineWidth=1.4*s/8;g.lineJoin="miter";
-  g.beginPath();
-  for(let i=0;i<6;i++){const a=i/6*TAU,rr=s*(i%2?.72:1);i?g.lineTo(Math.cos(a)*rr,Math.sin(a)*rr):g.moveTo(Math.cos(a)*rr,Math.sin(a)*rr);}
-  g.closePath();g.fill();g.stroke();
-  LOOT_IC.set(col,c);return c;
+  /* выпечка на GPU-холсте (25.09): ни 2D-растра, ни выгрузки мипов */
+  const n=Math.round(LOOT_IC_R*LOOT_IC_K);
+  return gpuBaked(LOOT_IC,col,n,n,g=>{const s=LOOT_IC_R;g.translate(n/2,n/2);
+    g.fillStyle="rgba(20,24,30,.9)";g.strokeStyle=col;g.lineWidth=1.4*s/8;g.lineJoin="miter";
+    g.beginPath();
+    for(let i=0;i<6;i++){const a=i/6*TAU,rr=s*(i%2?.72:1);i?g.lineTo(Math.cos(a)*rr,Math.sin(a)*rr):g.moveTo(Math.cos(a)*rr,Math.sin(a)*rr);}
+    g.closePath();g.fill();g.stroke();});
 }
 function drawCombat(zx,zy,Z){
   /* лучи (M364) и болты — светящейся энергией на видеокарте (13z) */
@@ -387,7 +386,7 @@ function drawCombat(zx,zy,Z){
     }
     if(pass){
       /* коробка печётся раз на цвет (lootIcon) и ложится мипами с поворотом */
-      gpuImage(pass,gpuMipTex(lootIcon(col)),[{x,y,w:s*LOOT_IC_K,h:s*LOOT_IC_K,rot:L.spin}],{sharp:true});
+      gpuImage(pass,lootIcon(col),[{x,y,w:s*LOOT_IC_K,h:s*LOOT_IC_K,rot:L.spin}],{sharp:true});
       const c=hex2rgb(col);SH.push([1,x,y,2.2,0,0,0,c[0],c[1],c[2],pulse]);
       continue;
     }
@@ -402,22 +401,14 @@ function drawCombat(zx,zy,Z){
     ctx.beginPath();ctx.arc(x,y,2.2,0,TAU);ctx.fill();ctx.globalAlpha=1;
   }
   /* корпуса: с видеокарты — факелы и чад под корпусами, корпуса, пробоины и дым поверх
-     (gpuPirateLive, 12i); без неё — прежней кистью, живой слой поверх выпечки */
+     (gpuPirateLive, 12i) */
   const PV=[];
   for(const p of G.pirates){const x=zx(p.x),y=zy(p.y);
     if(x>-60&&x<W+60&&y>-60&&y<H+60)PV.push({p,x,y,s:shipScaleAt(Z)*.82});}   /* один потолок с кораблём (16c, п. 2) */
   if(pass)gpuPirateLive(pass,PV,false);
-  for(const q of PV){
-    const lit=gpuPirateBody(q.p,q.x,q.y,q.s);   /* корпус светом звезды на видеокарте (G4) */
-    if(lit)continue;
-    ctx.save();ctx.translate(q.x,q.y);ctx.rotate(q.p.a);
-    ctx.scale(q.s,q.s);
-    /* пират рисуется своим сварным корпусом (12i), а не вашим кораблём в
-       чужой раскраске: у него шесть-восемь десятков полигонов, выпеченных
-       один раз по seed, и живой слой повреждений поверх */
-    drawPirate(q.p,false);
-    ctx.restore();
-  }
+  /* пират рисуется своим сварным корпусом (12i), а не вашим кораблём в чужой раскраске:
+     выпечка по seed, свет звезды на видеокарте (G4), живой слой — gpuPirateLive. 2D-пути нет (25.09) */
+  for(const q of PV)gpuPirateBody(q.p,q.x,q.y,q.s);
   if(pass)gpuPirateLive(pass,PV,true);
   for(const p of G.pirates){
     const x=zx(p.x),y=zy(p.y);
@@ -452,11 +443,10 @@ function drawCombat(zx,zy,Z){
       }
       const hot=p.stunT>0;
       const font=(p.rogue?"9px":"8px")+" ui-monospace,monospace",fill=hot?"rgba(255,178,92,.95)":(p.rogue?"rgba(197,138,224,.95)":"rgba(255,107,87,.75)");
-      ctx.font=font;
       /* имя не ложится на подпись планеты и на фишку у кромки (R6, 12.09):
          пересеклось — уходит над корабль. Фишки в настоящих пикселях (15-input) */
       const lbl=hot?"ПЕРЕГРЕВ":p.name.toUpperCase();let ly=y+26;
-      {const lw=ctx.measureText(lbl).width,bx0=x-lw/2,bx1=x+lw/2,by0=ly-8,by1=ly+2,U2=uiK();
+      {const lw=labelW(font,lbl),bx0=x-lw/2,bx1=x+lw/2,by0=ly-8,by1=ly+2,U2=uiK();
        const hit=BODY_LABELS.some(b=>!(bx1<b.x0||b.x1<bx0||by1<b.y0||b.y1<by0))||
          SYS_CHIPS.some(c=>!(bx1*U2<c.x||c.x+c.w<bx0*U2||by1*U2<c.y||c.y+c.h<by0*U2));
        if(hit)ly=y-22;}

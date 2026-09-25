@@ -129,26 +129,28 @@ function fleetLabelY(x,y,hh,tw,rows){
   const below=y+hh+12,above=y-hh-4-bh+8;
   return (hit(below)&&!hit(above))?above:below;
 }
+/* ширина подписи (25.09): мера GPU-холста (08cb) — метрики 2D из своего кэша, кадр не трогает
+   ни ctx, ни #c (перепись: ~22 вызова #c за кадр на два борта). Общая: 12ai, 13 */
+function labelW(font,s){return gcMeasure(font,s).width;}
 function drawFleet(zx,zy,Z){
   const F=fleetHere(G.sys);if(!F.length)return;
   for(const f of F){
     const p=fleetPos(f),x=zx(p.x),y=zy(p.y);
     if(x<-260||x>W+260||y<-260||y>H+260)continue;
     const s=fleetScale(Z),art=fleetArtOf(f);
-    ctx.save();ctx.translate(x,y);ctx.rotate(p.a);ctx.scale(s,s);
-    drawFleetShip(f);
-    ctx.restore();
+    /* место, курс и масштаб известны — матрица сразу в fleetShipAt, без 2D-стека на #c (25.09) */
+    const c=Math.cos(p.a)*s,q=Math.sin(p.a)*s;
+    fleetShipAt(f,art,c,q,-q,c,x,y,ctx.globalAlpha);
     if(f.k==="derelict")continue;
     const C=FLEET_CLASSES[f.k];
     const hh=(Math.abs(art.bx*Math.sin(p.a))+Math.abs(art.by*Math.cos(p.a)))*s;
-    ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+    const FF="8px ui-monospace,monospace";
     const l1=f.k==="node"?"«"+f.name+"» · УЗЕЛ ТРАСС · ГЛАВТРАССА":"«"+f.name+"» · ГЛАВТРАССА · "+f.num+" · ТРАССА "+f.line;
-    const rows=f.k==="node"?1:2,ly=fleetLabelY(x,y,hh,ctx.measureText(l1).width,rows);
+    const rows=f.k==="node"?1:2,ly=fleetLabelY(x,y,hh,labelW(FF,l1),rows);
     /* подписи — слой подписей (domLabel): на #c текст перекрашивался каждый кадр */
     const fk="fl"+f.k+f.seed;
-    domLabel(fk,x,ly,l1,ctx.font,"rgba(226,214,200,.8)","center");
-    if(rows>1)domLabel(fk+"c",x,ly+10,C.ru.toUpperCase(),ctx.font,"rgba(226,214,200,.5)","center");
-    ctx.textAlign="left";
+    domLabel(fk,x,ly,l1,FF,"rgba(226,214,200,.8)","center");
+    if(rows>1)domLabel(fk+"c",x,ly+10,C.ru.toUpperCase(),FF,"rgba(226,214,200,.5)","center");
   }
 }
 /* ── позывной и заправка по норме (§18.7 п.1, п.3) ── */
