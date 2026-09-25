@@ -532,6 +532,18 @@ tangent. The points lie on the curve, so fills do not change.
 - The pair `pair_miter_hook_x3.png`: `obod` and `strizh` sterns, 2D | GPU HEAD | GPU new. The spike is gone,
   and the hook is blunt as in 2D.
 
+**The planet's 2D calls in shards were a queued material job, not the planet.** Gate2d saw 2×
+`putImageData` and 2× `createPattern` under `gpuPlanet` only in some shards. `planetMat(p)` (18a) queues
+a surface material job; the harness has no frames, so a landing or cold-demand suite leaves it queued. The
+next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the job and pays its 2D.
+- `resetWorld` drops `MAT_JOB`: a queued job belongs to the world it was made in.
+- Gate2d names `matTick` a hole. The surface material is 2D until the surface is ported; in the game the
+  planet frame does step it on the approach to a landing.
+- Proof: «cold demand» then the gate is green with the fix and red with it reverted
+  (`gpuPlanet.putImageData`).
+- The shard 4/6 stall in «сейв: поле мира…» (-Full, killed at 900 s) does not repeat: the shard alone is
+  green, 150 suites and 2123 checks. The runner still printed «ВСЁ ЗЕЛЁНОЕ» over the killed shard.
+
 ## Where I stopped (update on every commit)
 
 - **GPU canvas v1 (25.09, `gpu`).** `08ca-gpu-canvas.js`, brief in §G; the first port is the finds (17b), the pair
@@ -550,8 +562,11 @@ tangent. The points lie on the curve, so fills do not change.
 - **The profile of a bake is in (§G).** One GPU-canvas call costs 1–3.5 µs at ×1, bit-identical.
 - **`multiply` on a transparent destination is in (§G):** two draws, Δ ≤ 1 on flat destinations (HEAD: 248).
 - **Chips and world labels are on `#ovl` (§G):** 0 2D calls, rasters only on new text, GPU pass 1.7/10.5 µs.
-- **Joins take the curve's tangent (§G):** the hook spike on `obod` is gone. `gpuHullLight` (16ga) goes once
-  GPU-2's 2deb253 (its last callers removed) is merged into `gpu`.
+- **Joins take the curve's tangent (§G):** the hook spike on `obod` is gone.
+- **Integration for the phone (25.09):** gpu2-fleetlit up to e699c3c and gpu3 up to 1dc9176 are merged. The
+  fleet tests accept a bake (`fleetArtBaked`). M306, M317 and M318 are red in Chrome on gpu2's own code
+  (2D pixel reads of a GPU bake, 2D fills of the works now on the scene pass); they are GPU-2's to fix.
+- **The planet's 2D in shards was a leftover material job (§G).** `gpuHullLight` goes next.
 - **Next, in Контроль's order (25.09):**
   1. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);
   2. `drawImage` from bake to bake at ss2: nearest when axis-aligned and 1:1, with a pair test;

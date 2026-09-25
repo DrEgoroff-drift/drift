@@ -261,6 +261,10 @@ function resetWorld(){
   /* перезарядка «долгого» (16c) — как на свежей странице: G.t сбрасывается, а ABIL_ST.cd оставался от прошлого
      набора, и готовность (кольцо, подпись «ДОЛГОЕ · …» над кнопкой) зависела от того, кто бежал раньше */
   if(RESET_ABIL0){ABIL_ST=structuredClone(RESET_ABIL0);ABIL_KEY=false;}
+  /* недопечённый материал грунта (18a) — заказ планеты прошлого мира: набор посадки ставит его
+     и уходит, а допекал его первый же кадр с планетой в чужом наборе — ворота «0 вызовов 2D»
+     ловили 2× putImageData и 2× createPattern у планеты только в тех шардах, где он висел */
+  if(typeof MAT_JOB!=="undefined")MAT_JOB=null;
   G.mode="system";G.sx=0;G.sy=0;G.sys=getSystem(0,0);G.zoom=1;
   G.shipId="strizh";G.owned={strizh:true};
   G.ship={x:0,y:-760,vx:0,vy:0,a:0,av:0,bank:0};
