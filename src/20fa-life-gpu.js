@@ -21,10 +21,11 @@
    2D-кисть. Случайность — только rndFx. */
 
 /* ── общий конвейер ──
-   Экземпляр — восемь vec4: 0 спрайт (центр, размер; ширина <0 — зеркало), 1 растр-рамка,
+   Экземпляр — девять vec4: 0 спрайт (центр, размер; ширина <0 — зеркало), 1 растр-рамка,
    2 поворот/альфа/уровень нормали/режим, 3 свет (к звезде xy, сила, кромка), 4 изгиб
    (сдвиг верха, строка основания, вдох, строка пояса), 5 цвет ключа + дымка,
-   6 цвет заполняющего + доля прямого света, 7 тень (скос, сплющивание, сила, радиус пятна).
+   6 цвет заполняющего + доля прямого света, 7 тень (скос, сплющивание, сила, радиус пятна),
+   8 множитель цвета (dim: куст в падающей тени гребня темнеет, как у 2D).
    Режим 0 — освещённый спрайт, 1 — тень на грунт. */
 const LG_WGSL=GPU_KIT_WGSL+`
 @group(0) @binding(1) var<storage,read> lq:array<vec4f>;
@@ -32,11 +33,11 @@ const LG_WGSL=GPU_KIT_WGSL+`
 @group(0) @binding(3) var lsm:sampler;
 struct LO{@builtin(position) p:vec4f,@location(0) q:vec2f,@location(1) @interpolate(flat) ii:u32};
 @vertex fn vs(@builtin(vertex_index) vi:u32,@builtin(instance_index) ii:u32)->LO{
-  let r=lq[ii*8u+1u];let q=mix(r.xy,r.zw,kCorn(vi));
+  let r=lq[ii*9u+1u];let q=mix(r.xy,r.zw,kCorn(vi));
   var o:LO;o.p=kClip(q);o.q=q;o.ii=ii;return o;}
 fn la(uv:vec2f,l:f32)->f32{return textureSampleLevel(ltx,lsm,uv,l).a;}
 @fragment fn fs(i:LO)->@location(0) vec4f{
-  let b=i.ii*8u;let S=lq[b];let M=lq[b+2u];let Lt=lq[b+3u];let Wp=lq[b+4u];
+  let b=i.ii*9u;let D=lq[b+8u];let S=lq[b];let M=lq[b+2u];let Lt=lq[b+3u];let Wp=lq[b+4u];
   let K=lq[b+5u];let A=lq[b+6u];let Sh=lq[b+7u];
   let cs=cos(M.x);let sn=sin(M.x);let d=i.q-S.xy;
   let l=vec2f(d.x*cs+d.y*sn,-d.x*sn+d.y*cs);
@@ -82,21 +83,30 @@ fn la(uv:vec2f,l:f32)->f32{return textureSampleLevel(ltx,lsm,uv,l).a;}
   /* кромка — только у тела: тонкий стебель весь «край», и кромка выбеливала его целиком */
   let rim=fw*fw*clamp(gl*2.4,0.,1.)*smoothstep(.25,.7,la(uv,M.z))*Lt.w*A.w;
   rgb=rgb+min(kc,vec3f(1.3))*rim*c.a*.5;
+  rgb=rgb*D.x;
   rgb=mix(rgb,A.rgb*c.a,K.w);
   return vec4f(rgb,c.a)*M.y;}`;
 const LG_N=8,LG_CAP=160,LG_BK=new Map();
-let LG_ID=0,LG_F=new Float32Array(LG_N*4*8);
+let LG_ID=0,LG_F=new Float32Array(LG_N*4*9);
 /* выпечка по ключу (LRU): устройство потеряно — печём заново тем же draw */
 function lifeBaked(key,w,h,draw,o){
   let B=LG_BK.get(key);
   if(B&&B.dev===GPU.dev){LG_BK.delete(key);LG_BK.set(key,B);return B;}
   if(B){LG_BK.delete(key);lifeBakeDrop(B);}
-  B=gpuBake(w,h,draw,o);if(!B)return null;
+  B=LG_2D?lifeBake2D(w,h,draw):gpuBake(w,h,draw,o);if(!B)return null;
   B.lid=++LG_ID;LG_BK.set(key,B);
   while(LG_BK.size>LG_CAP){const k=LG_BK.keys().next().value;lifeBakeDrop(LG_BK.get(k));LG_BK.delete(k);}
   return B;
 }
-function lifeBakeDrop(B){gpuBakeDrop(B);if(GPU.bgs)delete GPU.bgs["life:"+B.lid];}
+function lifeBakeDrop(B){if(B.cv)gpuMipDrop(B.cv);else gpuBakeDrop(B);if(GPU.bgs){delete GPU.bgs["life:"+B.lid+"h"];delete GPU.bgs["life:"+B.lid+"o"];}}
+/* выпечка 2D-кистью в свой холст → мастер с мипами (gpuMipTex): та же картинка, что у 2D */
+let LG_2D=false;
+function lifeBake2D(w,h,draw){
+  if(!GPU.dev)return null;
+  const cv=document.createElement("canvas");cv.width=Math.max(1,Math.round(w));cv.height=Math.max(1,Math.round(h));
+  const g=cv.getContext("2d"),prev=ctx;ctx=g;try{draw(g);}finally{ctx=prev;}
+  const M=gpuMipTex(cv);return {view:M.view,w:M.w,h:M.h,n:M.n,dev:M.dev,cv};
+}
 /* ── свет мира ──
    {lx,ly} — к источнику в экранных осях (y вниз), key/amb — цвета 0..1, k — сила света
    по выпечке, rim — кромка, lit — доля прямого света (падающая тень гребня, затмение),
@@ -122,6 +132,12 @@ function lifeLight(o){
   for(const k in o)if(k!=="mode")L[k]=o[k];
   return L;
 }
+/* падающая тень гребня в точке мира wx (19c1-cast): 1 — на свету, меньше — в тени.
+   Только на поверхности: под землёй и в комнатах звезды нет */
+function lifeDim(wx){
+  const c=(G.mode==="surface"&&wx!=null&&typeof castLive==="function"&&G.surf&&G.surf.tr)?castLive(G.surf.tr,wx):0;
+  return 1-((typeof CAST_LIVE==="number")?CAST_LIVE:.5)*c;
+}
 /* ── рисование: S — спрайт, L — свет ──
    S: {x,y,w,h} центр и размер в пикселях CSS (w<0 — зеркало), rot, a, lod (размытие
    нормали, уровень мипа), base (строка основания 0..1 — где стоит), bend (сдвиг верха в
@@ -133,7 +149,7 @@ function lifeSprite(pass,B,S,L){
   L=L||lifeLight();
   const f=LG_F,base=S.base==null?1:S.base,aw=Math.abs(S.w),ah=Math.abs(S.h);
   const lit=S.lit==null?(L.lit==null?1:L.lit):S.lit;
-  const put=(i,mode,q)=>{const k=i*32;
+  const put=(i,mode,q)=>{const k=i*36;f[k+32]=S.dim==null?1:S.dim;f[k+33]=f[k+34]=f[k+35]=0;
     f[k]=S.x;f[k+1]=S.y;f[k+2]=S.w;f[k+3]=S.h;
     f[k+4]=q[0];f[k+5]=q[1];f[k+6]=q[2];f[k+7]=q[3];
     f[k+8]=mode?0:(S.rot||0);f[k+9]=S.a==null?1:S.a;f[k+10]=S.lod==null?2:S.lod;f[k+11]=mode;
@@ -155,12 +171,14 @@ function lifeSprite(pass,B,S,L){
   const hx=r||aw*.5,hy=r||ah*.5;
   put(n++,0,[S.x-hx-ex-1,S.y-hy-ah*(S.breath||0)-1,S.x+hx+ex+1,S.y+hy+1]);}
   if(!n)return false;
-  const A=gpuArena("life",n*32,32);
-  GPU.dev.queue.writeBuffer(A.buf,A.off*4,f,0,n*32);
-  const P=gpuPipe("life.spr",LG_WGSL,"over");
-  pass.setPipeline(P);
-  pass.setBindGroup(0,gpuBind("life:"+B.lid,P,[gpuKitU(),A.buf,B.view,gpuMipSmp()]));
-  pass.draw(6,n,0,A.off/32);
+  const A=gpuArena("life",n*36,36);
+  GPU.dev.queue.writeBuffer(A.buf,A.off*4,f,0,n*36);
+  /* тень — обычным наложением, фигура — смешением корпуса (hull): она гасит альфу сцены
+     на своём покрытии, и последний проход знает, что здесь тело, а не фон (марево не
+     гнёт, а когда ядро научится — лучи и свечение не льются поверх, docs/fleet/life.md) */
+  const res=[gpuKitU(),A.buf,B.view,gpuMipSmp()],o0=A.off/36;
+  for(let i=0;i<n;i++){const hull=!(sh&&i===0),P=gpuPipe("life.spr",LG_WGSL,hull?"hull":"over");
+    pass.setPipeline(P);pass.setBindGroup(0,gpuBind("life:"+B.lid+(hull?"h":"o"),P,res));pass.draw(6,1,0,o0+i);}
   return true;
 }
 
@@ -209,6 +227,7 @@ function lifeAstroGpu(pass,x,y,o){
   const br=.024*still*(.5+.5*Math.sin(G.t*.045));
   const S={x:x+(X.x0+X.w/2)*s*fc,y:y+(X.y0+X.h/2)*s,w:X.w*s*fc,h:X.h*s,
     base:(11.9-X.y0)/X.h,waist:(2.2-X.y0)/X.h,breath:br,lod:1.6,ao:7*s,
+    dim:lifeDim(o.wx!=null?o.wx:(G.mode==="surface"&&G.surf?G.surf.x:null)),
     shadow:o.shadow===false||o.air&&o.ground==null?false:1};
   lifeSprite(pass,B,S,L);
   const sp=[];
@@ -298,7 +317,7 @@ function lifeBeastGpu(pass,b,x,y,hostile,stun,o){
   /* купол медузы сжимается и тянется — масштаб спрайта вокруг центра тела */
   const pu=al==="jelly"?.82+.18*Math.sin(t*1.6):1,kx=pu,ky=1/pu;
   const S={x:x+fc*(X.x0+X.x1)/2*kx*s,y:oy+(X.y0+X.y1)/2*ky*s,w:fc*bw*kx*s,h:bh*ky*s,
-    base:(R*.9+hov+bob-X.y0)/bh,lod:1.3,ao:R*1.15*s,shadow:hov?clamp(1-hov/70,.25,1):1};
+    base:(R*.9+hov+bob-X.y0)/bh,lod:1.3,ao:R*1.15*s,dim:lifeDim(b.x),shadow:hov?clamp(1-hov/70,.25,1):1};
   const P=(lx,ly)=>[x+fc*lx*s,oy+ly*s];
   const col=(k,d)=>lifeTint([c[0]*k,c[1]*k,c[2]*k],L,d);
   const seg=(A,a,b2,hw,C,al2)=>{const p=P(a[0],a[1]),q=P(b2[0],b2[1]);A.push([2,p[0],p[1],q[0],q[1],hw*s,.35*s,C[0],C[1],C[2],al2]);};
@@ -397,11 +416,10 @@ function lifePlantGpu(pass,pl,x,y,haze,o){
   /* затмение: то, что живёт светом, приседает (06a-celest) — масштаб, как у 2D */
   const DK=pl.kind>=7&&pl.kind<=11&&typeof celDark==="function"?celDark():0;
   const kx=DK>.05?1-.10*DK:1,ky=DK>.05?1-.32*DK:1;
-  const cast=(G.mode==="surface"&&typeof castLive==="function"&&G.surf&&G.surf.tr)?castLive(G.surf.tr,pl.x):0;
-  const lit=(L.lit==null?1:L.lit)*(1-((typeof CAST_LIVE==="number")?CAST_LIVE:.5)*cast);
+  const dim=lifeDim(pl.x),lit=(L.lit==null?1:L.lit)*dim;
   const hz=haze>0?clamp(haze,0,.8):0;
   const S={x:x+(X.x0+X.x1)/2*kx*s,y:y+(X.y0+X.y1)/2*ky*s,w:bw*kx*s,h:bh*ky*s,
-    base:-X.y0/bh,bend:top*h/bw,lod:1.5,a:o.a,haze:hz,lit,ao:Math.min(22,h*.32)*s,
+    base:-X.y0/bh,bend:top*h/bw,lod:1.5,a:o.a,haze:hz,lit,dim,ao:Math.min(22,h*.32)*s,
     shadow:o.shadow===false?false:(1-hz)*.85};
   return lifeSprite(pass,B,S,Object.assign({},L,{k:(L.k==null?.8:L.k)*.75,rim:(L.rim==null?1:L.rim)*.5}));
 }
