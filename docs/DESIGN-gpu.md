@@ -532,6 +532,18 @@ tangent. The points lie on the curve, so fills do not change.
 - The pair `pair_miter_hook_x3.png`: `obod` and `strizh` sterns, 2D | GPU HEAD | GPU new. The spike is gone,
   and the hook is blunt as in 2D.
 
+**The planet's 2D calls in shards were a queued material job, not the planet.** Gate2d saw 2×
+`putImageData` and 2× `createPattern` under `gpuPlanet` only in some shards. `planetMat(p)` (18a) queues
+a surface material job; the harness has no frames, so a landing or cold-demand suite leaves it queued. The
+next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the job and pays its 2D.
+- `resetWorld` drops `MAT_JOB`: a queued job belongs to the world it was made in.
+- Gate2d names `matTick` a hole. The surface material is 2D until the surface is ported; in the game the
+  planet frame does step it on the approach to a landing.
+- Proof: «cold demand» then the gate is green with the fix and red with it reverted
+  (`gpuPlanet.putImageData`).
+- The shard 4/6 stall in «сейв: поле мира…» (-Full, killed at 900 s) does not repeat: the shard alone is
+  green, 150 suites and 2123 checks. The runner still printed «ВСЁ ЗЕЛЁНОЕ» over the killed shard.
+
 ## Where I stopped (update on every commit)
 
 - **GPU canvas v1 (25.09, `gpu`).** `08ca-gpu-canvas.js`, brief in §G; the first port is the finds (17b), the pair
@@ -550,8 +562,11 @@ tangent. The points lie on the curve, so fills do not change.
 - **The profile of a bake is in (§G).** One GPU-canvas call costs 1–3.5 µs at ×1, bit-identical.
 - **`multiply` on a transparent destination is in (§G):** two draws, Δ ≤ 1 on flat destinations (HEAD: 248).
 - **Chips and world labels are on `#ovl` (§G):** 0 2D calls, rasters only on new text, GPU pass 1.7/10.5 µs.
-- **Joins take the curve's tangent (§G):** the hook spike on `obod` is gone. `gpuHullLight` (16ga) goes once
-  GPU-2's 2deb253 (its last callers removed) is merged into `gpu`.
+- **Joins take the curve's tangent (§G):** the hook spike on `obod` is gone.
+- **Integration for the phone (25.09):** gpu2-fleetlit up to e699c3c and gpu3 up to 1dc9176 are merged. The
+  fleet tests accept a bake (`fleetArtBaked`). M306, M317 and M318 are red in Chrome on gpu2's own code
+  (2D pixel reads of a GPU bake, 2D fills of the works now on the scene pass); they are GPU-2's to fix.
+- **The planet's 2D in shards was a leftover material job (§G).** `gpuHullLight` goes next.
 - **Next, in Контроль's order (25.09):**
   1. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);
   2. `drawImage` from bake to bake at ss2: nearest when axis-aligned and 1:1, with a pair test;
@@ -1640,6 +1655,85 @@ and `lookFrame` (28y:49/326) — none in gameplay.
   Gate `91zzzzzzy3-gate2d` gains the planet scene (strip dropped first, so the bake runs under the hook;
   buildings give city lights); mutants `planet-land-2d`, `planet-strip-2d` die. The memory suite now
   counts strip textures (on planets, not in `GPU.cvTex`); `bakeIdle` and the bake suite lose `STRIP_*`.
+
+- **Hotel (17l) → three GPU-canvas bakes, cut across frames.** The atlas (house with all windows dark above
+  the gap, all lit below) was six 2D half-canvases, three uploads and 2D mips. Now `hotelPaint` is a generator
+  (one step = a floor or a part of the house) that records paint and window light at once into two `GcCtx`
+  of the bake's size and ss; `hotelBake` runs its steps until `HOTEL_MS`=3 ms (cap `HOTEL_STEPS`=8 for the
+  clockless harness) and returns null until done; then one bake per call: paint (ss 2, the recorded ops
+  pushed as is), light (ss 2 without shadow, then ONE `shadowBlur` drawImage of the whole layer at ss 1
+  instead of 84 per-window shadows — 08cc's shadow is a full-target pass each), sheen (ss 1, white
+  underlay + multiply + destination-in, as 2D's s·(d+1−α)). Records survive a colour change. Off-screen
+  within a screen of the edge, `drawHotel` bakes ahead one step per frame and the sign's neon one frame
+  after the house, so the frame the hotel enters does ~1 ms of hotel work. Phone twin (411×742 ×1.5, CPU
+  ×4, frames stepped by hand), same machine run: 2D cold worst frame 123 ms (JS 77 + GPU 47), 16
+  textures in that frame; now cold worst 97 ms — the paint bake step (op replay 53 ms, 5 textures); other
+  steps 3–12 ms; 36 textures over 24 frames. Earlier single-frame GPU port measured 1193 ms (per-window
+  shadows), 638 (one shadow), 477 (one paint pass). Open: the paint bake step (op replay) and texture
+  creation — the worker's texture pool and a gradient ramp cache by stops (`GcGrad.ramp` was ~27 % of the
+  recording JS) will cut both. Pictures vs the accepted h3: max|Δ| 5 at 760, 15 on the phone, edge energy
+  7.36→7.38; far zoom equal but for a DOM pulse. Gate2d gains the hotel scene; GC_GLYPHS `raster`/`measure`
+  are named holes (the text source of v2); mutants `hotel-bake-2d`, `hotel-frame-2d` die.
+- **Station (17c3) off 2D.** The body master is recorded into a `GcCtx` (160·sb square, ss 2 while
+  ≤512², else 1) with `ST_REC.split` cutting the op list at layer boundaries (trade: under and over the
+  ring); each slice is replayed into its own bake, and a >1-layer master gets a union bake `U` (drawImage
+  of the layers at ss 1) for the lit sprite's normal pass. The spinning parts (`stSpinCv`) are bakes
+  keyed by part and scale (16 kept), fed straight to `gpuLitSprite` (bake → mip path, no upload). The
+  `!GPU.on` glow, the `stationArt` 2D master and the 2D flare branch are gone. Pairs vs the HEAD build
+  (8 scenes: trade 760/phone, indust, far, yard, sci, bazaar, outpost): crop edge / luminance / top-2 %
+  equal within noise (trade edge 4.89→4.90, yard 5.83→5.82, a yard ×4 crop −0.8 %, indust +1.6 % from the
+  flare phase); >24 differences ≤33 px per crop; GPU errs 0. Gate2d gains the station scene (masters and
+  spins dropped first so the bake is under the probe); mutants `station-master-2d`, `station-spin-2d`
+  die. The e2e flame check now reads the GPU record: no cold op or lamp above the stack mouth, warm
+  flare shapes present. The light suite's torch check reads the same shapes (Σ luminance·α·width·length
+  over the stack column per frame) instead of 2D pixels.
+- **Prebake scheduler (17a0).** `prebake(key,make,sync)` steps a generator job ≤4 ms (at least one step)
+  per frame across all keys; jobs untouched for 120 frames are closed with `it.return()` (the job's
+  `finally` drops partial bakes); ≤6 live jobs; a device change restarts the job. `sync` finishes the job
+  now and counts `PB_SYNC` — the draw calls it only when the thing is on screen and not ready (a load, a
+  jump), never on an approach: the gate suite flies 1.6 screens to a hotel over 90 frames and demands
+  PB_SYNC +0 and the house drawn from the finished bake. `PB_MAX[key]` keeps the longest step per key
+  (the ≤16 ms at ×4 threshold is the stand's, the suite has no clock). `pbOnScreen(x,y,w,h,m)` is the
+  margin test. The station masters are on it (`stMasterJob`: record the body, then one layer bake per
+  step, the union last; a partial job drops its bakes). The key lost `sb`'s role as a hard gate: when
+  the zoom crosses a quarter octave the old master of the same station keeps drawing (its own `sb`, `E`)
+  while the new density bakes step by step; a sync finish happens only when the station has no master
+  at all and is on screen (a load). Off screen the job only steps. Frames vs HEAD at 760 and on the phone:
+  identical (max |Δ| 0), PB_SYNC 0.
+- **Six hotels (17l core, one file per type).** The panel hotel is deleted; `HOTEL_T[by]` registers a
+  type {W,H,PX,ax,ay,sign,sheen,wins,paint}, where `paint(c,e,sd,lit)` is a generator (yields between
+  parts) that paints into two `GcCtx` records: `c` the house, `e` the glow. `hotelJob` records dark and
+  lit, bakes the house `cv`, the lit windows `cl`, the two glows `em`/`el` (ss 2 record → shadowBlur 1.2
+  bake), and the sign's sheen `sh` (house × a radial ramp of the sign colour, destination-in the house);
+  five bakes, one texture each, all prebaked while the house is within one screen of the edge. The frame
+  draws cv, sh (add), the lit rects of cl, em, the lit rects of el, then the 17k0 neon (a space is a dead
+  letter). Which windows burn: `hotelWinLit(N,sd,lit,flick)` over the type's window list — no re-bake.
+  Shared painters: `hotelRim` (one dark outline pass for the whole body), `hotelWindows` (grouped by
+  colour, curtains, a resident silhouette), `hotelDock` (the tube with its window strip and the shuttle,
+  common to all types), `hotelLamp`, `hotelStar`. Gameplay untouched: `hotelHere` place, radius 150,
+  «МЕСТ НЕТ». Names: КОСМОС (gt), АЭЛИТА™ (co), ДОМ ПРИЕЗЖИХ № 4 (or), ЮПИТЕР (km), ТУРБАЗА «ДРУЖБА» (ra,
+  painted sign and bulbs, no neon), БУРАН (hf). Type gt «Космос» (17l1): a crescent slab of 36×14 windows
+  in ribbons (floors read as bands, not a checkerboard), two towers with red bands, a banner with a star,
+  a portico, a cosmonaut on the plaza at 1.5 storeys, a keel with pods; the sheen is 0.4 (0.8 bleached
+  the stone). Gates: gpugate windows suite (masks ≥8 a day, 0 uploads) and the approach suite above;
+  gate2d scene «Космос» (painters incl. `hkPaint`, `hotelDock`); mutants `hotel-bake-2d`
+  (glow record → 2D), `hotel-frame-2d` die. 760/phone/far/z3 GPU errs 0.
+- **Gesture and post (17h) off 2D.** The whole frame goes through the scene pass: fleet ships through
+  `fleetShipAt` with their own matrix (`gestShip`), the drone screens and the camera drone as kit shapes in a
+  local frame (`gestAt`, `gestRect` via `gpuQuad`, the ticker stripes clipped to the screen), the post sign a
+  GPU-canvas bake (`gestPostSprite`, `gpuBaked` at 3×), the lamp two added discs. The 2D fallbacks are gone.
+  The spotlight («gt») and the inspection line («or») move to `drawGestureTop`, called from 17-mode-system
+  right after the player's hull (one line, a call-order change only): the old 2D layer lay over the hull.
+  They blend «over», not «add», as `#c` did; the line's core is .87 instead of .75 because the 2D halo and
+  core summed inside the layer (C 213, A .89) and sequential «over» needs .87 for the same bg·.11+213. What
+  stays different: `#c` was composited after the tone curve, the scene pass is before it, so the hull's
+  highlights under the spotlight (above .75, where the tone curve bends) come out a little brighter: mean
+  +4/255 over the hull crop, the rest of the cone equal. Pairs vs HEAD, same tick (px >24 / max): 760 —
+  gt 188/71 (hull highlights), co 3/34, or 450/43 (AA of a 2D stroke vs an SDF segment along the line, 286
+  brighter and 158 darker, same energy; was 805/118 with the line under the hull), ra 0/11, hf 16/53, km
+  0/10; phone without the pulsing buttons — gt 219/40, co 7/54, or 66/44, ra 0/10, hf 30/65, km 0/12. GPU
+  errs 0. Gate2d gains the gesture scene (power changes every 15 frames, age inside its gesture; probes
+  `drawGesture`, `drawGestureTop`, `drawGestPost`); mutants `gesture-post-2d`, `gesture-frame-2d` die.
 
 - **Moored barge and planet works on the GPU canvas** (17e `drawMooredBarge`, `drawPlanetWorks`, `glowCone`; «чистый полёт» row 17e): the moored barge is `gpuBargeBody` + `bargeLiveGpu` like the factor barges (12l), the mooring line is a butt-ended rotated rect, the name a `domLabel`. Planet works: dump and spoil ellipses are triangle fans with hard inner edges (segment count by on-screen size), the strip a rotated rect; no disc clip (nothing lies beyond .85r, the clip was r−1). A radial-gradient glow (linear cone 0→R) becomes `glowCone`: three soft additive discs at thirds of R — profile within 3 % of the cone, energy .99, same peak (one soft disc gave a flat, brighter core that read as a blob); under 1.5 device px one disc with alpha ×(1.1−.35/R). The bazaar bulb halos use it too. Gate vs 2D: planet works light +0.1…+0.2 %, sharpness 0…+1.7 %; barge light −0.1…+4 %, sharpness −1.0…+1.2 % (within noise); bazaar after the switch light +1.8…+12.9 %, sharpness +0.4…+17 %; 2D calls 0, GPU errors 0.
 - **Abilities on the GPU canvas** (16c `drawAbil`, `abilCone`; «чистый полёт» row 16c): the siren rings are kind-3 rings (hw 1) added, the courier crate is kind-4 rects in the crate's axes (fill, a 1 px outline as four non-overlapping bars, the cross with its vertical split so the centre does not double), the cutter beam a butt-ended kind-4 rect added. The survey wedge (radial gradient in a ±.35 sector) is one GPU-canvas bake per screen size (`bakeKeep`, cap 2) at twice device resolution, drawn at mip level 0 (`lod` .5): at 1:1 the rotated bilinear sample softened its edge by 4.5 %. Its first stop is .102 for the 2D .10, since the scene pass settles 2 % darker. Gate vs 2D (760 and phone 1.5): rings, crate and beam light +1…+5 %, sharpness +0.4…+13 %; the wedge edge −0.2 %, light equal; its mean Laplacian is −4.4 %, all of it the Skia dither grain inside the gradient (−9.4 % inside, edge +3.5 %, background −0.7 %). 2D calls 0, GPU errors 0.

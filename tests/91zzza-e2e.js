@@ -49,30 +49,34 @@ TEST_SUITES.push(()=>suite("станция: знак дома не стоит в
   const st=G.sys&&G.sys.station;
   ok(!!st,"у стартовой системы есть станция");
   if(!ok(st,"нашлось: st"))return;
-  const keepType=st.stype,keepHouse=houseOf,keepCtx=ctx,keepT=G.t;
-  const off=document.createElement("canvas");off.width=160;off.height=200;
+  const keepType=st.stype,keepHouse=houseOf,keepCtx=ctx,keepT=G.t,keepShapes=gpuShapes;
+  /* станция рисуется только видеокартой: тело — запись GPU-холста мастера (вершины в px мастера),
+     огни и факел — фигуры в единицах станции. Столб факела — x −5…5, y −58…−28: над устьем трубы (−27), сама труба не в счёт */
+  const inCol=(x,y)=>x>=-5&&x<=5&&y>=-58&&y<-28,coldC=(r,g,b)=>b>r+30,sb=2,sd=Math.ceil(160*sb);
   const cold=[];
   try{
     st.stype="indust";
     for(let hi=0;hi<HOUSES.length;hi++){
       const H=HOUSES[hi];
       houseOf=function(){return H;};
-      G.t=keepT+hi*40;                                  /* ключ кэша спрайта — по времени */
-      ctx=off.getContext("2d");ctx.clearRect(0,0,160,200);
-      drawStation(80,120,1);
-      const s=1.7,x0=Math.round(80-5*s),x1=Math.round(80+5*s),y0=Math.round(120-58*s),y1=Math.round(120-27*s);
-      const d=ctx.getImageData(x0,y0,x1-x0,y1-y0).data;
-      let n=0,warm=0;
-      for(let i=0;i<d.length;i+=4){
-        if(d[i+3]<40)continue;
-        if(d[i+2]>d[i]+30)n++;                            /* синее сильнее красного — холодный */
-        if(d[i]>d[i+2]+40)warm++;
-      }
+      G.t=keepT+hi*40;
+      const g=new GcCtx(sd,sd,1),rec={L:[],z:0,split(){},inv:null};
+      ctx=g;g.setTransform(sb,0,0,sb,sd/2,sd/2);rec.inv=DOMMatrix.fromMatrix(g.getTransform()).inverse();ST_REC=rec;
+      try{drawStationBody(stationViz(st),st,"indust");}finally{ST_REC=null;ctx=keepCtx;}
+      let n=0;
+      for(const o of g._ops){const c=o.p&&o.p.k===0?o.p.c:null;if(!c||c[3]<.16||!coldC(c[0]/c[3]*255,c[1]/c[3]*255,c[2]/c[3]*255))continue;
+        if(o.t!=="f"&&o.t!=="s")continue;
+        for(let i=0;i<o.v.length;i+=2)if(inCol((o.v[i]-sd/2)/sb,(o.v[i+1]-sd/2)/sb)){n++;break;}}
+      for(const r of rec.L){ST_EM={L:[],A:[],S:[],x:0,y:0,s:1,m:r.m};try{r.fn();}finally{}
+        for(const e of ST_EM.L)if(e[10]>=.16&&coldC(e[7],e[8],e[9])&&inCol(e[1],e[2]))n++;ST_EM=null;}
       if(n>0)cold.push(H.id+": "+n+" холодных");
-      if(hi===0)ok(warm>20,"пламя в столбе есть: "+warm+" тёплых пикселей");
+      if(hi===0){let warm=0;
+        gpuShapes=function(pass,L){for(const e of L)if(e[7]>e[9]+40&&inCol(e[1],e[2]))warm++;};
+        try{gpuStationFlare({},0,0,1,0,6.2,0,stationViz(st));}finally{gpuShapes=keepShapes;}
+        ok(warm>2,"пламя в столбе есть: "+warm+" тёплых фигур");}
     }
   }finally{
-    ctx=keepCtx;houseOf=keepHouse;st.stype=keepType;G.t=keepT;
+    ctx=keepCtx;houseOf=keepHouse;st.stype=keepType;G.t=keepT;gpuShapes=keepShapes;ST_EM=null;ST_REC=null;
   }
   eq(cold.join(", "),"","в столбе факела нет пикселей цвета дома");
   /* дым: поднимается, сносится в одну сторону, растёт, редеет */

@@ -84,98 +84,102 @@ function gestShipFrame(sh){
   return (f,r)=>({x:sh.x+ca*f-sa*r,y:sh.y+sa*f+ca*r});
 }
 function gestEase(u){u=clamp(u,0,1);return u*u*(3-2*u);}
+/* кадр жеста — проход сцены (GPU, без 2D): корабли флота — fleetShipAt по своей матрице,
+   прочее — фигуры набора (08c). Локальная рамка (x,y,поворот r,масштаб k) — как у 2D-кисти */
+function gestAt(x,y,r,k){const c=Math.cos(r)*k,s=Math.sin(r)*k;return (u,v)=>[x+c*u-s*v,y+s*u+c*v];}
+function gestRect(SH,P,x0,y0,w,h,C){gpuQuad(SH,P(x0,y0),P(x0+w,y0),P(x0+w,y0+h),P(x0,y0+h),C);}
+function gestShip(f,x,y,r,s,al){const c=Math.cos(r)*s,q=Math.sin(r)*s;fleetShipAt(f,fleetArtOf(f),c,q,-q,c,x,y,al);}
 function drawGesture(zx,zy,Z){
-  const g=gestLive();if(!g||typeof drawFleetShip!=="function")return;
+  const g=gestLive();if(!g||typeof fleetShipAt!=="function")return;
   const t=gestAge(g),T=GEST_T[g.by];
   if(g.by!=="km"&&t>T)return;
+  const pass=gpuScene();if(!pass)return;
   const sh=G.ship,at=gestShipFrame(sh),s=fleetScale(Z)*.62;
   if(g.by==="gt"){
     /* пикет подходит с кормы слева, три секунды держится борт о борт и уходит */
     const inn=gestEase(t/3),out=gestEase((t-10)/4);
     const p=at(-260+260*inn+300*out,-(90+60*(1-inn)+120*out));
     const x=zx(p.x),y=zy(p.y);
-    ctx.save();ctx.globalAlpha=1-out;ctx.translate(x,y);ctx.rotate(sh.a-.08*out);ctx.scale(s,s);
-    drawFleetShip({k:"patrol",seed:g.seed,by:"gt"});
-    ctx.restore();
-    /* прожектор: холодный конус низкой альфы, тёплый край на вашем корпусе */
-    if(t>3&&t<7.5){
-      const k=Math.sin(Math.PI*(t-3)/4.5),sw=Math.sin((t-3)*1.6)*22;
-      const q=at(sw,0),hx=zx(q.x),hy=zy(q.y),R=16*shipScaleAt(Z);
-      const a=Math.atan2(hy-y,hx-x),L=Math.hypot(hx-x,hy-y),hw=.16;
-      ctx.save();ctx.globalCompositeOperation="lighter";
-      const gr=ctx.createLinearGradient(x,y,hx,hy);
-      gr.addColorStop(0,"rgba(200,225,255,"+(.30*k).toFixed(3)+")");gr.addColorStop(1,"rgba(200,225,255,"+(.09*k).toFixed(3)+")");   /* D8: на телефоне конус в .20 едва читался */
-      ctx.fillStyle=gr;ctx.beginPath();ctx.moveTo(x,y);
-      ctx.lineTo(x+Math.cos(a-hw)*L*1.08,y+Math.sin(a-hw)*L*1.08);
-      ctx.lineTo(x+Math.cos(a+hw)*L*1.08,y+Math.sin(a+hw)*L*1.08);ctx.closePath();ctx.fill();
-      ctx.fillStyle="rgba(255,226,180,"+(.16*k).toFixed(3)+")";
-      ctx.beginPath();ctx.arc(hx,hy,R,0,TAU);ctx.fill();
-      ctx.restore();
-    }
+    gestShip({k:"patrol",seed:g.seed,by:"gt"},x,y,sh.a-.08*out,s,1-out);
+    /* прожектор — в drawGestureTop, поверх корпуса */
   }else if(g.by==="co"){
     /* дрон с экраном перед носом: бегущая строка — единственное насыщенное в кадре */
     const inn=gestEase(t/1.2),out=gestEase((t-6.5)/1.5);
     /* D8 (телефон 18.09): на ×1 экран дрона был 30×12 px — цветная крошка;
        ×1.35 — читается экраном с бегущей строкой */
-    const p=at(70+80*(1-inn),60*out),x=zx(p.x),y=zy(p.y),k=clamp(Z,.6,1.5)*1.35;
-    ctx.save();ctx.globalAlpha=1-out;ctx.translate(x,y);ctx.rotate(sh.a+Math.PI/2);ctx.scale(k,k);
-    ctx.fillStyle="#20262e";ctx.fillRect(-15,-7,30,12);
-    ctx.fillStyle="#0b1016";ctx.fillRect(-13,-5.5,26,9);
-    const off=(G.t*.6)%40;
-    ctx.save();ctx.beginPath();ctx.rect(-13,-5.5,26,9);ctx.clip();
+    const p=at(70+80*(1-inn),60*out),x=zx(p.x),y=zy(p.y),k=clamp(Z,.6,1.5)*1.35,al=1-out;
+    const P=gestAt(x,y,sh.a+Math.PI/2,k),SH=[];
+    gestRect(SH,P,-15,-7,30,12,[32,38,46,al]);
+    gestRect(SH,P,-13,-5.5,26,9,[11,16,22,al]);
+    /* полосы строки — обрезаны рамкой экрана [-13,13] */
+    const off=(G.t*.6)%40,cl=(x0,y0,w,h,C)=>{const a=Math.max(x0,-13),b=Math.min(x0+w,13);if(b>a)gestRect(SH,P,a,y0,b-a,h,C);};
     for(let i=-1;i<3;i++){
       const bx=-13+i*20-off*.5+20;
-      ctx.fillStyle="rgba(255,90,170,.95)";ctx.fillRect(bx,-3.5,9,2);
-      ctx.fillStyle="rgba(90,230,255,.9)";ctx.fillRect(bx+11,-3.5,6,2);
-      ctx.fillStyle="rgba(255,230,120,.9)";ctx.fillRect(bx+2,.5,12,1.6);
+      cl(bx,-3.5,9,2,[255,90,170,.95*al]);cl(bx+11,-3.5,6,2,[90,230,255,.9*al]);cl(bx+2,.5,12,1.6,[255,230,120,.9*al]);
     }
-    ctx.restore();
-    ctx.fillStyle="rgba(120,200,255,.6)";ctx.fillRect(-2,5,4,2.5);   /* подвес */
-    ctx.restore();
+    gestRect(SH,P,-2,5,4,2.5,[120,200,255,.6*al]);   /* подвес */
+    gpuShapes(pass,SH);
+  }else if(g.by==="or"){
+    /* линия досмотра — в drawGestureTop, поверх корпуса */
+  }else if(g.by==="ra"){
+    /* буксир подходит от станции справа по носу, висит и отваливает */
+    const inn=gestEase(t/2.5),out=gestEase((t-6.5)/2.5);
+    const p=at(80+160*(1-inn)-60*out,70+120*(1-inn)+200*out);
+    gestShip({k:"tug",seed:g.seed,by:"ra"},zx(p.x),zy(p.y),sh.a+Math.PI*.85,s,1-out);
+  }else if(g.by==="hf"){
+    /* дрон-камера: неизменный отступ, глаз всегда на вас; красная линия проходит один раз */
+    const inn=gestEase(t/2),out=gestEase((t-T+2)/2);
+    const p=at(-34-90*(1-inn),46+90*(1-inn)),x=zx(p.x),y=zy(p.y),k=clamp(Z,.6,1.5),al=1-out;
+    const sx=zx(sh.x),sy=zy(sh.y),look=Math.atan2(sy-y,sx-x),P=gestAt(x,y,0,k),SH=[];
+    SH.push([1,x,y,4.2*k,0,0,0,216,224,232,al]);
+    for(const [u0,v0,u1,v1] of [[-7,-5,7,5],[-7,5,7,-5]]){const A=P(u0,v0),B=P(u1,v1);SH.push([2,A[0],A[1],B[0],B[1],.4*k,0,130,255,236,.5*al]);}
+    const e=P(Math.cos(look)*1.8,Math.sin(look)*1.8),d=P(Math.cos(look)*2.2,Math.sin(look)*2.2);
+    SH.push([1,e[0],e[1],2*k,0,0,0,16,22,28,al],[1,d[0],d[1],.8*k,0,0,0,255,70,70,.95*al]);
+    if(t>1&&t<2){
+      const u=t-1,R=30*shipScaleAt(Z),ex=sx+Math.cos(sh.a)*R*(1-2*u),ey=sy+Math.sin(sh.a)*R*(1-2*u);
+      SH.push([2,x,y,ex,ey,.5,0,255,60,60,.7]);
+    }
+    gpuShapes(pass,SH);
+  }
+}
+/* верх жеста — поверх корпуса игрока, как было у 2D-слоя: прожектор пикета и линия досмотра.
+   Зовётся из 17-mode-system сразу после корпуса. 2D-слой ложился на сцену «поверх», не
+   сложением, — поэтому здесь обычная смесь */
+function drawGestureTop(zx,zy,Z){
+  const g=gestLive();if(!g)return;
+  const pass=gpuScene();if(!pass)return;
+  const t=gestAge(g),sh=G.ship,at=gestShipFrame(sh);
+  if(g.by==="gt"){
+    /* прожектор: холодный конус низкой альфы, тёплый край на вашем корпусе */
+    if(t>3&&t<7.5){
+      const inn=gestEase(t/3),out=gestEase((t-10)/4);
+      const p=at(-260+260*inn+300*out,-(90+60*(1-inn)+120*out)),x=zx(p.x),y=zy(p.y);
+      const k=Math.sin(Math.PI*(t-3)/4.5),sw=Math.sin((t-3)*1.6)*22;
+      const q=at(sw,0),hx=zx(q.x),hy=zy(q.y),R=16*shipScaleAt(Z);
+      const a=Math.atan2(hy-y,hx-x),L=Math.hypot(hx-x,hy-y),hw=.16;
+      /* градиент 2D вдоль оси (.30 → .09 у корпуса, дальше ровно) — полосами поперёк оси */
+      const SH=[],N=14,ch=Math.cos(hw),E=(t,d)=>[x+Math.cos(a+d)*L*1.08*t,y+Math.sin(a+d)*L*1.08*t];
+      for(let i=0;i<N;i++){const t0=i/N,t1=(i+1)/N,u=Math.min(1,(t0+t1)/2*1.08*ch);
+        gpuQuad(SH,E(t0,-hw),E(t0,hw),E(t1,hw),E(t1,-hw),[200,225,255,(.30+(.09-.30)*u)*k],i<N-1?5:1);}
+      SH.push([1,hx,hy,R,0,0,0,255,226,180,.16*k]);
+      gpuShapes(pass,SH);
+    }
   }else if(g.by==="or"){
     /* плоскость досмотра: одна линия во всю ширину кадра, от кормы к носу, один раз */
     if(t>1.5&&t<3.2){
       const u=(t-1.5)/1.7,L=40*shipScaleAt(Z)/Math.max(Z,.01);
       const p=at(-L*.6+L*1.2*u,0),x=zx(p.x),y=zy(p.y);
-      const nx=-Math.sin(sh.a),ny=Math.cos(sh.a),D=Math.hypot(W,H);
-      ctx.save();ctx.globalCompositeOperation="lighter";
-      ctx.strokeStyle="rgba(235,245,255,.14)";ctx.lineWidth=7;
-      ctx.beginPath();ctx.moveTo(x-nx*D,y-ny*D);ctx.lineTo(x+nx*D,y+ny*D);ctx.stroke();
-      ctx.strokeStyle="rgba(240,250,255,.75)";ctx.lineWidth=1;ctx.stroke();
-      ctx.restore();
-    }
-  }else if(g.by==="ra"){
-    /* буксир подходит от станции справа по носу, висит и отваливает */
-    const inn=gestEase(t/2.5),out=gestEase((t-6.5)/2.5);
-    const p=at(80+160*(1-inn)-60*out,70+120*(1-inn)+200*out);
-    ctx.save();ctx.globalAlpha=1-out;ctx.translate(zx(p.x),zy(p.y));ctx.rotate(sh.a+Math.PI*.85);ctx.scale(s,s);
-    drawFleetShip({k:"tug",seed:g.seed,by:"ra"});
-    ctx.restore();
-  }else if(g.by==="hf"){
-    /* дрон-камера: неизменный отступ, глаз всегда на вас; красная линия проходит один раз */
-    const inn=gestEase(t/2),out=gestEase((t-T+2)/2);
-    const p=at(-34-90*(1-inn),46+90*(1-inn)),x=zx(p.x),y=zy(p.y),k=clamp(Z,.6,1.5);
-    const sx=zx(sh.x),sy=zy(sh.y),look=Math.atan2(sy-y,sx-x);
-    ctx.save();ctx.globalAlpha=1-out;ctx.translate(x,y);ctx.scale(k,k);
-    ctx.fillStyle="#d8e0e8";ctx.beginPath();ctx.arc(0,0,4.2,0,TAU);ctx.fill();
-    ctx.strokeStyle="rgba(130,255,236,.5)";ctx.lineWidth=.8;
-    ctx.beginPath();ctx.moveTo(-7,-5);ctx.lineTo(7,5);ctx.moveTo(-7,5);ctx.lineTo(7,-5);ctx.stroke();
-    ctx.fillStyle="#10161c";ctx.beginPath();ctx.arc(Math.cos(look)*1.8,Math.sin(look)*1.8,2,0,TAU);ctx.fill();
-    ctx.fillStyle="rgba(255,70,70,.95)";ctx.beginPath();ctx.arc(Math.cos(look)*2.2,Math.sin(look)*2.2,.8,0,TAU);ctx.fill();
-    ctx.restore();
-    if(t>1&&t<2){
-      const u=t-1,R=30*shipScaleAt(Z),ex=sx+Math.cos(sh.a)*R*(1-2*u),ey=sy+Math.sin(sh.a)*R*(1-2*u);
-      ctx.strokeStyle="rgba(255,60,60,.7)";ctx.lineWidth=1;
-      ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(ex,ey);ctx.stroke();
+      const nx=-Math.sin(sh.a),ny=Math.cos(sh.a),D=Math.hypot(W,H),a=[x-nx*D,y-ny*D],b=[x+nx*D,y+ny*D];
+      /* в 2D ореол и жила складывались внутри слоя (C=213, A=.89); подряд «поверх» жила .87 даёт тот же итог */
+      gpuShapes(pass,[[2,a[0],a[1],b[0],b[1],3.5,0,235,245,255,.14],[2,a[0],a[1],b[0],b[1],.5,0,240,250,255,.87]]);
     }
   }
 }
-/* ── пост у входа: ферма, доска, лампа — печётся один раз на систему ── */
-const GEST_POST_CV={};
+/* ── пост у входа: ферма, доска, лампа — печётся один раз на систему (GPU-холст) ── */
+const GEST_POST_CV=new Map();
 function gestPostSprite(by,text){
-  const key=by+"|"+text;if(GEST_POST_CV[key])return GEST_POST_CV[key];
-  const SS=3,w=120,h=70,cv=document.createElement("canvas");cv.width=w*SS;cv.height=h*SS;
-  const c=cv.getContext("2d");c.scale(SS,SS);
+  return gpuBaked(GEST_POST_CV,by+"|"+text,360,210,c=>{
+  c.scale(3,3);
   c.strokeStyle="rgba(150,164,180,.7)";c.lineWidth=1;              /* ферма */
   c.beginPath();c.moveTo(56,68);c.lineTo(56,30);c.moveTo(64,68);c.lineTo(64,30);
   for(let y=34;y<66;y+=8){c.moveTo(56,y);c.lineTo(64,y+8);c.moveTo(64,y);c.lineTo(56,y+8);}c.stroke();
@@ -187,7 +191,7 @@ function gestPostSprite(by,text){
   c.font=(by==="km"?"italic ":"")+"bold "+(text.length>14?9:11)+"px ui-monospace,monospace";
   c.textAlign="center";c.textBaseline="middle";c.fillText(text,60,18.5);
   if(P&&by==="gt"){c.fillStyle="rgba(210,50,40,.95)";c.font="11px sans-serif";c.fillText("★",18,18.5);}
-  return GEST_POST_CV[key]=cv;
+  });
 }
 function drawGestPost(zx,zy,Z){
   const sys=G.sys;if(!sys)return;
@@ -197,22 +201,16 @@ function drawGestPost(zx,zy,Z){
   const px=E.x-Math.sin(E.a)*140,py=E.y+Math.cos(E.a)*140;
   const x=zx(px),y=zy(py),k=clamp(Z,.6,1.5)*.9;
   if(x<-90||x>W+90||y<-90||y>H+90)return;
+  const pass=gpuScene();if(!pass)return;
   const g=GEST&&GEST.sx===G.sx&&GEST.sy===G.sy?GEST:{seed:hashi(G.sx,G.sy,0x6E57)>>>0};
   const text=by==="gt"?GEST_POST.gt+gestPostNo(g):GEST_POST[by];
-  const cv=gestPostSprite(by,text);
-  const pass=gpuScene();
-  if(pass)gpuImage(pass,gpuMipTex(cv),[{x,y:y-33*k,w:120*k,h:70*k}]);
-  else ctx.drawImage(cv,x-60*k,y-68*k,120*k,70*k);
+  const B=gestPostSprite(by,text);
+  if(B)gpuImage(pass,B,[{x,y:y-33*k,w:120*k,h:70*k}]);
   /* одна лампа — у каждого своё движение: ровно, вращаясь, дыша */
   const col=(typeof laneLampCol==="function")?laneLampCol(by):[255,190,110];
   const ts=G.t/60;
   const lit=by==="gt"?.5+.5*Math.max(0,Math.cos(ts*3.2)):by==="km"?.55+.35*Math.sin(ts*1.1)
     :by==="or"?1:by==="co"?.7+.3*Math.sin(ts*5):by==="ra"?.6+.4*Math.abs(Math.sin(ts*.7+Math.sin(ts*2.3))):.8;
-  if(pass){const c=mixc(col,[255,255,255],.5);
-    gpuShapes(pass,[[1,x,y-40*k,9*k,0,0,0,col[0],col[1],col[2],.22*lit],[1,x,y-40*k,1.8*k,0,0,0,c[0],c[1],c[2],.9*lit]],{blend:"add"});
-    return;}
-  ctx.save();ctx.globalCompositeOperation="lighter";
-  ctx.fillStyle=rgba(col,.22*lit);ctx.beginPath();ctx.arc(x,y-40*k,9*k,0,TAU);ctx.fill();
-  ctx.fillStyle=rgba(mixc(col,[255,255,255],.5),.9*lit);ctx.beginPath();ctx.arc(x,y-40*k,1.8*k,0,TAU);ctx.fill();
-  ctx.restore();
+  const c=mixc(col,[255,255,255],.5);
+  gpuShapes(pass,[[1,x,y-40*k,9*k,0,0,0,col[0],col[1],col[2],.22*lit],[1,x,y-40*k,1.8*k,0,0,0,c[0],c[1],c[2],.9*lit]],{blend:"add"});
 }

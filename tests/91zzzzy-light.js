@@ -299,24 +299,26 @@ TEST_SUITES.push(() => suite("свет: пламя факела живёт, но
   const st = G.sys && G.sys.station;
   ok(!!st, "у стартовой системы есть станция");
   if (!st) return;
-  const keepType = st.stype, keepCtx = ctx, keepT = G.t;
-  const off = document.createElement("canvas"); off.width = 160; off.height = 200;
+  /* станция на GPU (17c3): пламя — фигуры прохода сцены. Снимаем их кадр за кадром и
+     считаем свет столба над устьем трубы: Σ яркость·α·толщина·длина куска, делённое на
+     площадь столба — та же доля, что давали пиксели 2D-холста */
+  const keepType = st.stype, keepT = G.t, F = {gpuScene, gpuShapes, gpuStationDraw, gpuLight};
   const seq = [];
   try {
     st.stype = "indust";
     const s = 1.7;
-    const x0 = Math.round(80 - 5 * s), x1 = Math.round(80 + 5 * s);
-    const y0 = Math.round(120 - 58 * s), y1 = Math.round(120 - 27 * s);
+    let acc = 0;
+    gpuScene = () => ({}); gpuStationDraw = () => {}; gpuLight = () => {};
+    gpuShapes = (pass, L) => { for (const q of L) if (q[0] === 2) {
+      const [, ax, ay, bx, by, w, , r, g, b, a] = q, len = Math.hypot(bx - ax, by - ay);
+      if (Math.abs((ax + bx) / 2 - 80) <= 5 * s && (ay + by) / 2 >= 120 - 58 * s && (ay + by) / 2 < 120 - 27 * s)
+        acc += (.299 * r + .587 * g + .114 * b) / 255 * a * w * len; } };
     for (let i = 0; i < 24; i++) {
-      G.t = keepT + i;
-      ctx = off.getContext("2d"); ctx.clearRect(0, 0, 160, 200);
+      G.t = keepT + i; acc = 0;
       drawStation(80, 120, 1);
-      const d = ctx.getImageData(x0, y0, x1 - x0, y1 - y0).data;
-      let lum = 0, n = 0;
-      for (let k = 0; k < d.length; k += 4) { lum += (.299 * d[k] + .587 * d[k + 1] + .114 * d[k + 2]) * (d[k + 3] / 255); n++; }
-      seq.push(lum / n / 255);
+      seq.push(acc / (10 * s * 31 * s));
     }
-  } finally { ctx = keepCtx; st.stype = keepType; G.t = keepT; }
+  } finally { gpuScene = F.gpuScene; gpuShapes = F.gpuShapes; gpuStationDraw = F.gpuStationDraw; gpuLight = F.gpuLight; st.stype = keepType; G.t = keepT; }
   const mean = seq.reduce((a, b) => a + b, 0) / seq.length;
   let jump = 0, span = Math.max(...seq) - Math.min(...seq);
   for (let i = 1; i < seq.length; i++) jump = Math.max(jump, Math.abs(seq[i] - seq[i - 1]));
