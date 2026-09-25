@@ -615,7 +615,16 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   `gpuPipeDesc`, single keys → their module's `*Desc`); one descriptor function serves the lazy path and the
   warm-up. `gpuInit` starts `gpuPipesWarm(GPU_PIPE_KEYS)` (async, the frame does not wait); the start buttons
   wait for it up to 2.5 s (`gpuAfterWarm`), the test boot polls `GPU_PIPES.done`. A `pipe:` key warmed from
-  a different shader text is a miss, not a swap. Next: the detector that writes the table (08b1), the pool giant.
+  a different shader text is a miss, not a swap.
+  Step 3 done: the detector «конвейеры: после прогрева полёт не компилирует» (`tests/91zzzzzzy4-pipes.js`),
+  pinned third after the boot suites, flies orbits, the six gate2d scenes (dock lane, planet, hotel, chips,
+  station, fleet gesture), the billboard and a pirate fight, 60 frames each, and wants zero lazy keys and zero
+  raw `createRenderPipeline`/`createComputePipeline`/`createShaderModule` (named by caller), no dead table keys.
+  The funnel remembers every asked key (`GPU_PIPES.used`); the suite prints them in `<pre id="pipekeys"
+  data-pipe>` and `test.ps1 -Accept` (default `-Only "золотые кадры|конвейеры"`) writes `08b1`: 36 keys, warmed
+  in ~1.7 s on the desktop card. Test boot: compilation runs on real time, so the pipe wait polls 1 ms of
+  virtual time per ~20 ms of busy work, ceiling 600 polls. Before the table: 33 lazy keys in flight; after: 0.
+  Next: the pool giant (1024² bake kept), then the review's 5a–5c.
 - **`gpuHullLight` (16ga) is removed:** the hull light is 17c `gpuLitSprite`; the probe row `hullLight` is gone.
 - **Next, in Контроль's order (25.09):**
   1. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);

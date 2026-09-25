@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 627 · символов верхнего уровня: 6275
+Файлов: 628 · символов верхнего уровня: 6278
 
 ## СИМВОЛЫ
 
@@ -2262,7 +2262,7 @@ gpsPipe                      src/17gb-gpu-planet-strip.js:100-104
 GPU                          src/08b-gpu.js:8
 GPU_BLEND                    src/08c-gpu-kit.js:12-24
 GPU_CVTEX_CAP                src/08c-gpu-kit.js:66
-GPU_FLD                      src/08b0-gpu-pipe.js:29
+GPU_FLD                      src/08b0-gpu-pipe.js:30
 GPU_FLD_HEAD                 src/08c-gpu-kit.js:304
 GPU_IMG_WGSL                 src/08c-gpu-kit.js:186
 GPU_KEEP_A                   src/08c-gpu-kit.js:11
@@ -2271,15 +2271,15 @@ GPU_LIT_DK                   src/17c-system-draw.js:400
 GPU_LIT_SH                   src/17c-system-draw.js:398
 GPU_MIP                      src/08c-gpu-kit.js:96
 GPU_MIP_LOD                  src/08c-gpu-kit.js:185
-GPU_PIPE_KEYS                src/08b1-gpu-pipe-keys.js:3
-GPU_PIPE_ONE                 src/08b0-gpu-pipe.js:39
-GPU_PIPE_SRC                 src/08b0-gpu-pipe.js:31-49
-GPU_PIPES                    src/08b0-gpu-pipe.js:8
+GPU_PIPE_KEYS                src/08b1-gpu-pipe-keys.js:3-40
+GPU_PIPE_ONE                 src/08b0-gpu-pipe.js:40
+GPU_PIPE_SRC                 src/08b0-gpu-pipe.js:32-50
+GPU_PIPES                    src/08b0-gpu-pipe.js:9
 GPU_PL_WGSL                  src/08b-gpu.js:481
 GPU_POST_WGSL                src/08b-gpu.js:95
 GPU_SHP_WGSL                 src/08c-gpu-kit.js:235
 GPU_WGSL_COMMON              src/08c-gpu-kit.js:134
-gpuAfterWarm                 src/08b0-gpu-pipe.js:64-68
+gpuAfterWarm                 src/08b0-gpu-pipe.js:65-69
 gpuArena                     src/08c-gpu-kit.js:154-164
 gpuBake                      src/08ca-gpu-canvas.js:424-429
 gpuBaked                     src/08ca-gpu-canvas.js:431-434
@@ -2326,11 +2326,11 @@ gpuOver                      src/08b-gpu.js:579-599
 gpuPass                      src/08b-gpu.js:451-454
 gpuPipe                      src/08c-gpu-kit.js:20-24
 gpuPipeDesc                  src/08c-gpu-kit.js:25-30
-gpuPipeline                  src/08b0-gpu-pipe.js:21-26
-gpuPipeRecipe                src/08b0-gpu-pipe.js:42-49
+gpuPipeline                  src/08b0-gpu-pipe.js:22-27
+gpuPipeRecipe                src/08b0-gpu-pipe.js:43-50
 gpuPipes                     src/08b-gpu.js:366-387
-gpuPipesDev                  src/08b0-gpu-pipe.js:9-13
-gpuPipesWarm                 src/08b0-gpu-pipe.js:52-62
+gpuPipesDev                  src/08b0-gpu-pipe.js:10-14
+gpuPipesWarm                 src/08b0-gpu-pipe.js:53-63
 gpuPirateBody                src/12i-pirate-hull.js:417-426
 gpuPirateLive                src/12i-pirate-hull.js:433-477
 gpuPlanet                    src/17ga-gpu-planets.js:320-337
@@ -2340,7 +2340,7 @@ gpuResize                    src/08b-gpu.js:396-438
 gpuScene                     src/08b-gpu.js:546-556
 gpuScene3D                   src/08b-gpu.js:560-568
 gpuSeg                       src/28z-fps-probe.js:139-142
-gpuShader                    src/08b0-gpu-pipe.js:14-18
+gpuShader                    src/08b0-gpu-pipe.js:15-19
 gpuShapes                    src/08c-gpu-kit.js:288-299
 gpuShock                     src/08b-gpu.js:464
 gpuSky                       src/19ca-gpu-sky.js:66-82
@@ -4137,6 +4137,9 @@ pickShare                    src/20e-species.js:125-130
 pickStType                   src/06-galaxy.js:72-78
 PICKUPS                      src/24a-mode-raid.js:24-28
 pinch0                       src/15-input.js:396
+PIPE_SCENES                  tests/91zzzzzzy4-pipes.js:10-36
+PIPE_SUITE                   tests/91zzzzzzy4-pipes.js:44-73
+pipeWho                      tests/91zzzzzzy4-pipes.js:38-43
 PIR_ART                      src/12i-pirate-hull.js:18
 PIR_CLASS                    src/12i-pirate-hull.js:20-25
 PIR_GUNART                   src/12i-pirate-hull.js:33-46
@@ -6419,7 +6422,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/08b0-gpu-pipe.js · 5 КБ
   · конвейеры: одна воронка и прогрев (DESIGN-gpu §G):1
 
-## src/08b1-gpu-pipe-keys.js · 0 КБ
+## src/08b1-gpu-pipe-keys.js · 1 КБ
   · таблица ключей прогрева (08b0) — пишет детектор, руками не править:1
 
 ## src/08bh-gpu-hud.js · 5 КБ
@@ -8274,6 +8277,9 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## tests/91zzzzzzy4-gpu-ovl.js · 6 КБ
   · слой #ovl: фишки у кромки и подписи мира на видеокарте (08bi, docs/DESIGN-gpu.md §G):1
+
+## tests/91zzzzzzy4-pipes.js · 6 КБ
+  · детектор конвейеров: после прогрева полёт не компилирует (DESIGN-gpu §G):1
 
 ## tests/91zzzzzzz-hands.js · 14 КБ
   · руки игрока: судья — кадр:1

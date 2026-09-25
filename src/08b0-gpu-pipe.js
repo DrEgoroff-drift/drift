@@ -5,7 +5,8 @@
    Каждый ленивый создатель идёт сюда: gpuPipeline(ключ, рецепт). Прогретый
    ключ отдаётся готовым, иначе конвейер строится здесь же и ключ пишется
    в GPU_PIPES.lazy — это и видит детектор. Модули шейдеров — по тексту, один раз. */
-const GPU_PIPES={dev:null,warm:new Map(),mods:new Map(),lazy:[],done:true,n:0,ms:0};
+/* used — каждый ключ, спрошенный у воронки с загрузки: из него детектор пишет таблицу (08b1) */
+const GPU_PIPES={dev:null,warm:new Map(),mods:new Map(),lazy:[],used:new Set(),done:true,n:0,ms:0};
 function gpuPipesDev(){
   const d=GPU.dev;
   if(GPU_PIPES.dev!==d){GPU_PIPES.dev=d;GPU_PIPES.warm=new Map();GPU_PIPES.mods=new Map();}
@@ -19,7 +20,7 @@ function gpuShader(code){
 /* code — текст шейдера у gpuPipe: прогретый по имени конвейер отдаётся, только если
    собран из того же текста (источник по имени разошёлся с местом вызова — это промах, не подмена) */
 function gpuPipeline(key,mk,code){
-  const d=gpuPipesDev(),w=GPU_PIPES.warm.get(key);
+  const d=gpuPipesDev(),w=GPU_PIPES.warm.get(key);GPU_PIPES.used.add(key);
   if(w&&w.p&&(code===undefined||w.code===code))return w.p;
   if(GPU_PIPES.lazy.length<256)GPU_PIPES.lazy.push(w&&w.p?key+" (текст шейдера не тот)":key);
   return d.createRenderPipeline(mk());

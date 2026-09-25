@@ -11019,7 +11019,8 @@ if(typeof document!=="undefined"&&document.body)setTimeout(gpuInit,0);
    Каждый ленивый создатель идёт сюда: gpuPipeline(ключ, рецепт). Прогретый
    ключ отдаётся готовым, иначе конвейер строится здесь же и ключ пишется
    в GPU_PIPES.lazy — это и видит детектор. Модули шейдеров — по тексту, один раз. */
-const GPU_PIPES={dev:null,warm:new Map(),mods:new Map(),lazy:[],done:true,n:0,ms:0};
+/* used — каждый ключ, спрошенный у воронки с загрузки: из него детектор пишет таблицу (08b1) */
+const GPU_PIPES={dev:null,warm:new Map(),mods:new Map(),lazy:[],used:new Set(),done:true,n:0,ms:0};
 function gpuPipesDev(){
   const d=GPU.dev;
   if(GPU_PIPES.dev!==d){GPU_PIPES.dev=d;GPU_PIPES.warm=new Map();GPU_PIPES.mods=new Map();}
@@ -11033,7 +11034,7 @@ function gpuShader(code){
 /* code — текст шейдера у gpuPipe: прогретый по имени конвейер отдаётся, только если
    собран из того же текста (источник по имени разошёлся с местом вызова — это промах, не подмена) */
 function gpuPipeline(key,mk,code){
-  const d=gpuPipesDev(),w=GPU_PIPES.warm.get(key);
+  const d=gpuPipesDev(),w=GPU_PIPES.warm.get(key);GPU_PIPES.used.add(key);
   if(w&&w.p&&(code===undefined||w.code===code))return w.p;
   if(GPU_PIPES.lazy.length<256)GPU_PIPES.lazy.push(w&&w.p?key+" (текст шейдера не тот)":key);
   return d.createRenderPipeline(mk());
@@ -11083,7 +11084,44 @@ function gpuAfterWarm(fn,ms){
 
 /* ══════════════ таблица ключей прогрева (08b0) — пишет детектор, руками не править ══════════════
    test.ps1 -Accept берёт её из набора «конвейеры: после прогрева полёт не компилирует». */
-const GPU_PIPE_KEYS=[];
+const GPU_PIPE_KEYS=[
+  "gc.blur",
+  "gc.mip",
+  "gc:clp",
+  "gc:cov|multiply",
+  "gc:cov|source-atop",
+  "gc:cov|source-over",
+  "gc:crs",
+  "gc:cvk|mul1",
+  "gc:imc|destination-in",
+  "gc:img|source-over",
+  "gc:msk|source-over",
+  "gc:out",
+  "gc:shw|source-over",
+  "gc:wnz",
+  "gc:wst",
+  "gnb.gen|16f",
+  "gnb.noise",
+  "gps",
+  "ovl",
+  "pipe:fld.gbm|add",
+  "pipe:fld.gnb.emi|add",
+  "pipe:fld.gst|hull",
+  "pipe:fld.gsy.star|over",
+  "pipe:gen|over",
+  "pipe:gex|over",
+  "pipe:gnb.stars|over",
+  "pipe:gpl|over",
+  "pipe:gsp.dust|over",
+  "pipe:gsp.quad|over",
+  "pipe:gsp.stars|over",
+  "pipe:gsy.orb|over",
+  "pipe:gtr|add",
+  "pipe:kit.img|add",
+  "pipe:kit.img|over",
+  "pipe:kit.shp|add",
+  "pipe:kit.shp|over"
+];
 
 /* ══════════════ слой приборов: #hud и фишки у кромки (ступень 1, docs/DESIGN-gpu.md §L.S) ══════════════
    Приборы не ходят через видеокарту: браузер сам кладёт их поверх канвы WebGPU. Два правила
