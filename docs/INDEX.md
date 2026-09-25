@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 610 · символов верхнего уровня: 6094
+Файлов: 610 · символов верхнего уровня: 6095
 
 ## СИМВОЛЫ
 
@@ -750,9 +750,9 @@ CHIP_TOUCH                   src/17-mode-system.js:18
 CHIPDOM                      src/08bh-gpu-hud.js:35
 chipDom                      src/08bh-gpu-hud.js:44-80
 chipDomBox                   src/08bh-gpu-hud.js:36-41
-chipDomEnd                   src/08bh-gpu-hud.js:149-151
-chipDomSnap                  src/08bh-gpu-hud.js:83-94
-chipDomSweep                 src/08bh-gpu-hud.js:153-159
+chipDomEnd                   src/08bh-gpu-hud.js:159-161
+chipDomSnap                  src/08bh-gpu-hud.js:83-95
+chipDomSweep                 src/08bh-gpu-hud.js:163-169
 chKing                       src/25n-chess.js:112-116
 chLegal                      src/25n-chess.js:191-195
 chMine                       src/25n-chess.js:38
@@ -1357,9 +1357,9 @@ dominoMove                   src/11af-domino.js:25-39
 dominoSettle                 src/11af-domino.js:40-56
 dominoStart                  src/11af-domino.js:14-21
 dominoTile                   src/11af-domino.js:13
-domLabel                     src/08bh-gpu-hud.js:104-136
-domLabelEnd                  src/08bh-gpu-hud.js:138-147
-domLabelId                   src/08bh-gpu-hud.js:103
+domLabel                     src/08bh-gpu-hud.js:114-146
+domLabelEnd                  src/08bh-gpu-hud.js:148-157
+domLabelId                   src/08bh-gpu-hud.js:113
 DOMR                         src/15d-domread.js:17
 DOMR_ON                      src/15d-domread.js:16
 DOMR_SAVE                    src/15d-domread.js:18
@@ -1992,8 +1992,8 @@ GATE_WARM                    tests/91zzzzzzy-gpugate.js:8
 GATE_WHY                     tests/91zzzzzl-gates.js:19
 GATE_ZB                      tests/91zzzzzzy-gpugate.js:13
 GATE_ZCAP                    tests/91zzzzzzy-gpugate.js:16
-gateFind                     tests/91zzzzzzy-gpugate.js:242-283
-gateFlyScenes                tests/91zzzzzzy-gpugate.js:245-283
+gateFind                     tests/91zzzzzzy-gpugate.js:242-290
+gateFlyScenes                tests/91zzzzzzy-gpugate.js:245-290
 gatePlace                    tests/91zzzzzzy-gpugate.js:31-35
 gateStand                    tests/91zzzzzzy-gpugate.js:22-30
 gateWho                      tests/91zzzzzzy-gpugate.js:19-21
@@ -3011,7 +3011,8 @@ kpTake                       src/26e2-post.js:32-42
 kpTicket                     src/26e2-post.js:30
 kpWindow                     src/26e2-post.js:47-92
 labCount                     src/12h-relic.js:16-24
-LABDOM                       src/08bh-gpu-hud.js:100
+LABDOM                       src/08bh-gpu-hud.js:101
+labDomBox                    src/08bh-gpu-hud.js:106-112
 labStaffed                   src/12h-relic.js:27-31
 labWorking                   src/12h-relic.js:32-42
 LAND_ARC                     src/07a-terrain.js:49
@@ -6235,7 +6236,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/08b-gpu.js · 46 КБ
   · видеокарта: кадр рисует WebGPU (docs/DESIGN-gpu.md):1
 
-## src/08bh-gpu-hud.js · 11 КБ
+## src/08bh-gpu-hud.js · 12 КБ
   · слой приборов: #hud и фишки у кромки (ступень 1, docs/DESIGN-gpu.md §L.S):1
 
 ## src/08c-gpu-kit.js · 25 КБ
@@ -8041,7 +8042,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzzzzz-crashlog.js · 3 КБ
   · автотесты: что уезжает в crash.log (0.419):1
 
-## tests/91zzzzzzy-gpugate.js · 25 КБ
+## tests/91zzzzzzy-gpugate.js · 26 КБ
   · ворота ступени 1: ровный полёт без #c (docs/DESIGN-gpu.md, Stage 1):1
 
 ## tests/91zzzzzzz-hands.js · 14 КБ
