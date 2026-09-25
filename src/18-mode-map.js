@@ -264,7 +264,15 @@ function drawMap(){
       ctx.fillStyle="#7fe6d8";
       ctx.beginPath();ctx.moveTo(x,y-rr-24);ctx.lineTo(x-4,y-rr-17);ctx.lineTo(x+4,y-rr-17);ctx.closePath();ctx.fill();
       mapFont(8);ctx.textAlign="center";
-      ctx.fillText("ВЫ · "+((typeof nameOf==="function")?nameOf(s):s.name).toUpperCase(),x,y-rr-28);
+      /* своя подложка, как у подписи курса: дом стоит в светлом ядре галактики (поле
+         карты, G10), и голый бирюзовый на нём читался с контрастом 2.6–2.8 (детектор
+         текста, флот 26.09). Плашка кончается у носика стрелки — метка и указатель одно */
+      const youS="ВЫ · "+((typeof nameOf==="function")?nameOf(s):s.name).toUpperCase(),
+            youU=mapU(),youW=ctx.measureText(youS).width;
+      ctx.fillStyle="rgba(6,10,16,.66)";
+      ctx.fillRect(x-youW/2-4*youU,y-rr-28-9*youU,youW+8*youU,13*youU);
+      ctx.fillStyle="#7fe6d8";
+      ctx.fillText(youS,x,y-rr-28);
     }
     /* ушедший управляющий и разошедшееся ядро — единственные метки на карте,
        которые поставил не мир, а сам игрок. Без них до них не долететь. */
