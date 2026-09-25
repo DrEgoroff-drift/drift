@@ -48,3 +48,17 @@ TEST_SUITES.push(()=>suite("комнаты на видеокарте: зимов
   eq(e,"","вне кадра drawWinter не падает");
   G.win=null;
 }));
+TEST_SUITES.push(()=>suite("комнаты на видеокарте: кинопередвижка рисуется GPU-холстом без дыр",()=>{
+  resetWorld();
+  const K={title:KINO_TITLES[0],id:"0,0@0",seed:12345};
+  /* весь журнал: шесть кадров по 4,2 с — каждый кадр через запись */
+  const seen={};
+  for(let i=0;i<KINO_REEL.length;i++){
+    seen[kinoFrame(K).k]=1;
+    const R=roomsRec(640,400,c=>kinoOverlay(c,640,400,300,220,K,K.seed));
+    eq(R.err,"","зал на вечер, кадр «"+kinoFrame(K).k+"» — без громких дыр");
+    ok(R.g._ops.length>60,"кадр записан ("+R.g._ops.length+" команд)");
+    clockAdvance(4200);
+  }
+  eq(Object.keys(seen).length,KINO_REEL.length,"журнал прокручен весь");
+}));
