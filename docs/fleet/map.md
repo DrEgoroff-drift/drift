@@ -6,7 +6,7 @@ new module `17z3-map-gpu`.
 
 ## Commits
 
-1. **galaxy as a field, stars as lit points** — `17z3-map-gpu` (new), `17z1-galaxy`, `18-mode-map`.
+1. `0166b8d` **galaxy as a field, stars as lit points** — `17z3-map-gpu` (new), `17z1-galaxy`, `18-mode-map`.
    - `galTile`/`galBake` (CPU pixel loop, 128² tiles at 4 texels a sector, a row budget, fade-in over 12 frames)
      are gone. `drawGalaxy(V,cell)` keeps its signature and draws `GAL_WGSL` through `gpuField` per pixel.
      The WGSL hash/noise is bit-exact with `hashi`/`noise2`/`fbm2` (u32 wrap-around multiply), so the sky
@@ -22,19 +22,19 @@ new module `17z3-map-gpu`.
      three scales and tapered spikes; every marker (occupation, station ring, «ВЫ», labels) stays 2D above.
    - Pass rule (`mapGpuPass`): an open over-pass if any, else the scene pass; the sky itself goes over (`gpuOver`)
      when `#c` already has 2D on it — so the rail ride (18g, which fills `#c` black first) still gets its sky.
-2. **rails as ribbons** — `18e-rail-net`: `drawRailMap` on `gpuShapes`: quad ribbons with hard joins (no beads at
+2. `5b822d9` **rails as ribbons** — `18e-rail-net`: `drawRailMap` on `gpuShapes`: quad ribbons with hard joins (no beads at
    the bends of translucent lines), the dark casing when close, an additive glow under ring/arm lines, station
    discs and rings from the kit; each polyline clipped to the frame. `railNetPartial()` still runs every frame
    without a GPU (logic, not paint).
-3. **the jump circle lights the sky** — `18-mode-map`, `17z3`: the 2D radial-gradient fill of the jump circle goes;
+3. `65c5c6a` **the jump circle lights the sky** — `18-mode-map`, `17z3`: the 2D radial-gradient fill of the jump circle goes;
    `drawMap` hands the circle to the field (`MAPGPU.lamp`), which brightens the galaxy inside reach, dims it
    outside (only when zoomed in: `.3*clamp((cell-18)/30)`, so the spiral still reads zoomed out) and adds a
    thin teal rim toward the edge. The hairline stroke stays 2D.
-4. **named nebulae glow** — `17z3`: the ten `GAL_NEBULAE` of `17z2` were a dot and a word; now each is an emission
+4. `3cb695a` **named nebulae glow** — `17z3`: the ten `GAL_NEBULAE` of `17z2` were a dot and a word; now each is an emission
    cloud in the galaxy field (a gaussian mask per nebula, one shared fbm for the gas, a pink or amber core, a teal
    or blue edge, dark globules; `GNEB` is baked into the WGSL from the JS table). Cost: one 4-octave and one
    3-octave fbm per pixel, only where a nebula is within 4 sectors.
-5. **test** — `tests/91zzzzk-mapaddr.js`, suite «галактика: шейдер неба держит модель» (Node tier): the WGSL
+5. `3a268b6` **test** — `tests/91zzzzk-mapaddr.js`, suite «галактика: шейдер неба держит модель» (Node tier): the WGSL
    carries the model constants and every named nebula, the CPU tile bake is gone, `drawMap` runs 40 frames
    without a GPU and the rail net still grows a line a frame (dies if `railNetPartial` moves behind the pass check).
 
@@ -74,6 +74,10 @@ not a gain. `17z-map-backdrop` stays 2D for the site (`war.js`).
 - `kit.shp|add` and `kit.shp|over` (already common)
 
 ## Open problems
+
+- `docs/TESTMAP.json` is rewritten by the build for the new suite; left for the integrator's rebuild.
+- The WGSL galaxy is checked against the model only by its constants; the bit-exact hash was verified by eye (the
+  arms, lanes and galaxy stars line up in the pairs), not by a pixel test — the browser tier does not run here.
 
 - The galaxy field costs ~70 hashes a pixel every frame while the map is open. If the phone minds, cache it in a
   texture keyed by (V, cell, W, H) — the kit has no GPU-to-texture bake for fields yet.
