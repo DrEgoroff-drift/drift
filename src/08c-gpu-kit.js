@@ -20,10 +20,13 @@ const GPU_BLEND={
 function gpuPipe(name,code,blend,layout){
   const key=name+"|"+(blend||"over");
   const c=GPU.lay[key];if(c)return c;
-  return GPU.lay[key]=gpuPipeline("pipe:"+key,()=>{const mod=gpuShader(code);
-    return {layout:layout||"auto",vertex:{module:mod,entryPoint:"vs"},
+  return GPU.lay[key]=gpuPipeline("pipe:"+key,()=>gpuPipeDesc(code,blend,layout),code);
+}
+function gpuPipeDesc(code,blend,layout){
+  const mod=gpuShader(code);
+  return {layout:layout||"auto",vertex:{module:mod,entryPoint:"vs"},
     fragment:{module:mod,entryPoint:"fs",targets:[{format:"rgba16float",blend:GPU_BLEND[blend||"over"]}]},
-    primitive:{topology:"triangle-list"}};});
+    primitive:{topology:"triangle-list"}};
 }
 function gpuBuf(name,bytes,usage){
   const b=GPU.bufs[name];
@@ -312,15 +315,18 @@ struct FO{@builtin(position) p:vec4f,@location(0) uv:vec2f};
   var o:FO;o.p=vec4f(P[i],0.,1.);o.uv=vec2f(P[i].x*.5+.5,.5-P[i].y*.5);return o;}
 @fragment fn fs(i:FO)->@location(0) vec4f{return field(i.uv*fu.res.zw,i.uv);}
 `;
+/* раскладка полей — одна на устройство: её берут и кадр, и прогрев конвейеров (08b0) */
+function gpuFieldLayout(){
+  if(GPU.fL)return GPU.fPL;
+  const d=GPU.dev,F=GPUShaderStage.FRAGMENT|GPUShaderStage.VERTEX,e=[{binding:0,visibility:F,buffer:{type:"uniform"}},{binding:1,visibility:F,sampler:{type:"filtering"}}];
+  for(const b of [2,3,4,5])e.push({binding:b,visibility:F,texture:{sampleType:"float"}});
+  GPU.fL=d.createBindGroupLayout({entries:e});GPU.fPL=d.createPipelineLayout({bindGroupLayouts:[GPU.fL]});
+  return GPU.fPL;
+}
 function gpuField(pass,name,code,uni,texs,o){
   if(!pass)return;
   const d=GPU.dev,blend=(o&&o.blend)||"over";
-  if(!GPU.fL){
-    const F=GPUShaderStage.FRAGMENT|GPUShaderStage.VERTEX,e=[{binding:0,visibility:F,buffer:{type:"uniform"}},{binding:1,visibility:F,sampler:{type:"filtering"}}];
-    for(const b of [2,3,4,5])e.push({binding:b,visibility:F,texture:{sampleType:"float"}});
-    GPU.fL=d.createBindGroupLayout({entries:e});GPU.fPL=d.createPipelineLayout({bindGroupLayouts:[GPU.fL]});
-  }
-  const P=gpuPipe("fld."+name,GPU_WGSL_COMMON+GPU_FLD_HEAD+code,blend,GPU.fPL);
+  const P=gpuPipe("fld."+name,GPU_WGSL_COMMON+GPU_FLD_HEAD+code,blend,gpuFieldLayout());
   let A=GPU.ar.fld;
   if(!A||A.frame!==GPU.frameNo){if(!A)A=GPU.ar.fld={buf:null,n:0,frame:0,cap:0};A.frame=GPU.frameNo;A.n=0;}
   if(!A.buf||(A.n+1)*256>A.cap){

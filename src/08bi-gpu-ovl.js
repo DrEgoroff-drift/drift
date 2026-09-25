@@ -128,6 +128,9 @@ function chipDom(k,rx,ry,cw,ch,A,col,label,onRight,ang,U){
   Object.assign(e,{fr:OVL.fno,x:X/nd,y:Y/nd,w:cw*U,h:ch*U,A,s:label});
 }
 /* конец мира (gpuHudFlush): всё, что кадр положил, — одним проходом; пусто — слой спрятать */
+function ovlDesc(){const m=gpuShader(OVL_WGSL);return {layout:"auto",vertex:{module:m,entryPoint:"vs"},primitive:{topology:"triangle-list"},
+  fragment:{module:m,entryPoint:"fs",targets:[{format:GPU.fmt,blend:{color:{srcFactor:"one",dstFactor:"one-minus-src-alpha"},
+    alpha:{srcFactor:"one",dstFactor:"one-minus-src-alpha"}}}]}};}
 function ovFlush(){
   OVL.fl=true;
   const n=(OVL.lq.length+OVL.cq.length)/OVL_N;
@@ -139,9 +142,7 @@ function ovFlush(){
   if(!OVL.f||OVL.f.length<need)OVL.f=new Float32Array(Math.max(need,OVL_N*64)*2);
   OVL.f.set(OVL.lq,0);OVL.f.set(OVL.cq,OVL.lq.length);OVL.nl=OVL.lq.length/OVL_N;OVL.lq.length=OVL.cq.length=0;   /* подписи — под фишками */
   if(!OVL.P){
-    OVL.P=gpuPipeline("ovl",()=>{const m=gpuShader(OVL_WGSL);return {layout:"auto",vertex:{module:m,entryPoint:"vs"},primitive:{topology:"triangle-list"},
-      fragment:{module:m,entryPoint:"fs",targets:[{format:GPU.fmt,blend:{color:{srcFactor:"one",dstFactor:"one-minus-src-alpha"},
-        alpha:{srcFactor:"one",dstFactor:"one-minus-src-alpha"}}}]}};});
+    OVL.P=gpuPipeline("ovl",ovlDesc);
     OVL.U=d.createBuffer({size:16,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});OVL.bg=null;}
   if(!OVL.buf||OVL.buf.size<OVL.f.byteLength){if(OVL.buf)GPU.trash.push(OVL.buf);
     OVL.buf=d.createBuffer({size:OVL.f.byteLength,usage:GPUBufferUsage.STORAGE|GPUBufferUsage.COPY_DST});OVL.bg=null;}

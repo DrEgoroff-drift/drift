@@ -573,8 +573,11 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
 - **Pipeline warm-up (P1 from S23, in progress).** Step 1 done: every lazy pipeline goes through one funnel,
   `gpuPipeline(key, recipe)` in 08b0, and shader modules are cached by text (`gpuShader`). Keys: `pipe:name|blend`,
   `gc:md|op`, `gc.mip`, `gc.blur`, `gnb.gen|16f`, `gnb.noise`, `gps`, `ovl`; lazy creations go to `GPU_PIPES.lazy`.
-  Next: recipes by key, `createRenderPipelineAsync` of the key table behind #intro (start waits, with a
-  ceiling), the Chrome detector that writes the table (-Accept), then the pool «giant» (1024² bake kept).
+  Step 2 done: every key has a recipe (`gpuPipeRecipe`: `gc:` → `gcPipeDesc`, `pipe:` → `GPU_PIPE_SRC[name]` +
+  `gpuPipeDesc`, single keys → their module's `*Desc`); one descriptor function serves the lazy path and the
+  warm-up. `gpuInit` starts `gpuPipesWarm(GPU_PIPE_KEYS)` (async, the frame does not wait); the start buttons
+  wait for it up to 2.5 s (`gpuAfterWarm`), the test boot polls `GPU_PIPES.done`. A `pipe:` key warmed from
+  a different shader text is a miss, not a swap. Next: the detector that writes the table (08b1), the pool giant.
 - **`gpuHullLight` (16ga) is removed:** the hull light is 17c `gpuLitSprite`; the probe row `hullLight` is gone.
 - **Next, in Контроль's order (25.09):**
   1. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);

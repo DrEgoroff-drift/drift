@@ -72,7 +72,7 @@ async function gpuInit(){
     gpuPipes();
     GPU.lay={};GPU.bufs={};GPU.bgs={};GPU.cvTex=new Map();GPU.trash=[];GPU.ar={};GPU.fL=null;GPU.nView=null;
     GPU.T={};GPU.bw=0;GPU.ok=true;
-    gpuResize();gcPool();
+    gpuResize();gcPool();gpuPipesWarm(GPU_PIPE_KEYS);   /* конвейеры полёта — за заставкой (08b0) */
   }catch(e){
     GPU.ok=false;gpuNone("init: "+((e&&e.message)||e));
   }finally{GPU.busy=false;}

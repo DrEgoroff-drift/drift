@@ -21,12 +21,13 @@ const GNB_TILE_BAKE=`
   var P=array(vec2f(-1.,-1.),vec2f(3.,-1.),vec2f(-1.,3.));return vec4f(P[i],0.,1.);}
 @fragment fn fs(@builtin(position) q:vec4f)->@location(0) vec4f{
   let x=floor(q.xy);return vec4f(gh(x-2048.*floor(x/2048.)-1024.),0.,0.,1.);}`;
+function gnbNoiseDesc(){const mod=gpuShader(GNB_NOISE+GNB_TILE_BAKE);return {layout:"auto",vertex:{module:mod,entryPoint:"vs"},
+    fragment:{module:mod,entryPoint:"fs",targets:[{format:"r16float"}]},primitive:{topology:"triangle-list"}};}
 function gnbNoiseTile(){
   if(GNB.nzv&&GNB.nzDev===GPU.dev)return GNB.nzv;
   const d=GPU.dev,S=2049,U=GPUTextureUsage;
   const t=d.createTexture({size:[S,S],format:"r16float",usage:U.TEXTURE_BINDING|U.RENDER_ATTACHMENT});
-  const P=gpuPipeline("gnb.noise",()=>{const mod=gpuShader(GNB_NOISE+GNB_TILE_BAKE);return {layout:"auto",vertex:{module:mod,entryPoint:"vs"},
-    fragment:{module:mod,entryPoint:"fs",targets:[{format:"r16float"}]},primitive:{topology:"triangle-list"}};});
+  const P=gpuPipeline("gnb.noise",gnbNoiseDesc);
   const v=t.createView(),e=d.createCommandEncoder();
   const p=e.beginRenderPass({colorAttachments:[{view:v,loadOp:"clear",storeOp:"store",clearValue:{r:0,g:0,b:0,a:0}}]});
   p.setPipeline(P);p.draw(3);p.end();d.queue.submit([e.finish()]);

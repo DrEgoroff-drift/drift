@@ -362,19 +362,22 @@ function gcLay(){
 }
 function gcPipe(key){
   const c=GPU.lay["gc."+key];if(c)return c;
+  return GPU.lay["gc."+key]=gpuPipeline("gc:"+key,()=>gcPipeDesc(key));
+}
+function gcPipeDesc(key){
   const [md,op]=key.split("|"),S=GC_ST[md],L=gcLay(),G=GC_OPS[op]||GC_OPX[op];
   const blend=G?{color:{srcFactor:G.c[0],dstFactor:G.c[1]},alpha:{srcFactor:G.a[0],dstFactor:G.a[1]}}:undefined;
-  return GPU.lay["gc."+key]=gpuPipeline("gc:"+key,()=>({layout:L.pl,
+  return {layout:L.pl,
     vertex:{module:L.mod,entryPoint:"vs",buffers:[{arrayStride:20,attributes:[{shaderLocation:0,offset:0,format:"float32x2"},
       {shaderLocation:1,offset:8,format:"float32"},{shaderLocation:2,offset:12,format:"float32x2"}]}]},
     fragment:{module:L.mod,entryPoint:S.c==="img"?"fimg":S.c==="mask"?"fmask":S.c==="shadow"?"fshadow":S.c==="paint"?"fpaint":"fnone",targets:[{format:"rgba8unorm",blend,writeMask:S.c?15:0}]},
     primitive:{topology:"triangle-list"},
     depthStencil:{format:"stencil8",depthWriteEnabled:false,depthCompare:"always",stencilFront:S.f,stencilBack:S.b||S.f,stencilReadMask:S.rm,stencilWriteMask:S.wm},
-    multisample:{count:4}}));
+    multisample:{count:4}};
 }
-function gcMipPipe(){return GPU.lay["gc.mip"]||(GPU.lay["gc.mip"]=gpuPipeline("gc.mip",()=>({layout:"auto",
-  vertex:{module:gpuShader(GC_MIP_WGSL),entryPoint:"vs"},
-  fragment:{module:gpuShader(GC_MIP_WGSL),entryPoint:"fs",targets:[{format:"rgba8unorm"}]},primitive:{topology:"triangle-list"}})));}
+function gcMipPipe(){return GPU.lay["gc.mip"]||(GPU.lay["gc.mip"]=gpuPipeline("gc.mip",gcMipDesc));}
+function gcMipDesc(){const m=gpuShader(GC_MIP_WGSL);return {layout:"auto",vertex:{module:m,entryPoint:"vs"},
+  fragment:{module:m,entryPoint:"fs",targets:[{format:"rgba8unorm"}]},primitive:{topology:"triangle-list"}};}
 
 /* ── пул целей выпечки. Создать текстуру в процессе GPU стоит ~1.5 мс (замер 25.09: 36 слоёв r8 —
    45–70 мс ожидания очереди, те же проходы в одну текстуру — 1 мс), а выпечка просила их ~40.

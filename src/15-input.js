@@ -596,8 +596,9 @@ function tap(sxp,syp){
 /* версия проставляется из кода, а не руками в разметке — иначе заставка и
    патчноуты рано или поздно разойдутся */
 document.getElementById("ver").textContent="ВЕРСИЯ "+VER;
-document.getElementById("startEasy").addEventListener("click",()=>start(true));
-document.getElementById("startHard").addEventListener("click",()=>start(false));
+/* старт ждёт прогрева конвейеров (08b0) не дольше 2.5 с: иначе первые кадры полёта компилируют шейдеры */
+document.getElementById("startEasy").addEventListener("click",()=>gpuAfterWarm(()=>start(true)));
+document.getElementById("startHard").addEventListener("click",()=>gpuAfterWarm(()=>start(false)));
 (function(){
   const b=document.getElementById("startCont");
   /* Кнопка «продолжить» может появиться дважды: сразу — если запись лежит в этом
@@ -610,13 +611,13 @@ document.getElementById("startHard").addEventListener("click",()=>start(false));
     if(fresh)say("Полёт с другого устройства\nзабран из облака");
   });
   {
-    b.addEventListener("click",()=>{
+    b.addEventListener("click",()=>gpuAfterWarm(()=>{
       if(loadGame()){
         document.getElementById("intro").style.display="none";
         G.running=true;spawnPirates();spawnAllies();
         say("Полёт восстановлен\n"+G.sys.name+" · сектор "+G.sx+":"+G.sy);
       }else say("Запись повреждена");
-    });
+    }));
   }
 })();
 function start(easy){

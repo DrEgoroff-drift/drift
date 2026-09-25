@@ -53,7 +53,8 @@ if(!TEST_TIMES&&!(typeof globalThis.TEST_NODE!=="undefined"&&globalThis.TEST_NOD
      проматывает бюджет за миллисекунды, и прогон шёл без мира вовсе (0.456:
      «пусто 99%», выхлоп молчит, растр 0). Каждый опрос отдаёт ~10 мс
      настоящего времени счётом, между опросами промис адаптера успевает */
-  if(!GPU.ok&&!GPU.none&&performance.now()-t0<14000){let s=0;for(let k=0;k<2e6;k++)s+=k&1;BOOT_SINK=s;setTimeout(()=>boot(t0),50);return;}
+  /* и прогрева конвейеров (08b0): наборы видят кадры без компиляции, детектор — честные промахи */
+  if((!GPU.ok||!GPU_PIPES.done)&&!GPU.none&&performance.now()-t0<14000){let s=0;for(let k=0;k<2e6;k++)s+=k&1;BOOT_SINK=s;setTimeout(()=>boot(t0),50);return;}
   const ready=frameN>=1||crashN>0;
   if(!ready&&performance.now()-t0<17000){setTimeout(()=>boot(t0),50);return;}
   G.running=false;

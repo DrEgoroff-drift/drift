@@ -396,7 +396,7 @@ struct FU{res:vec4f,v:array<vec4f,15>};
   let le=1.-exp(-max(g.r,max(g.g,g.b))*6.)+fu.v[1].w*.6;
   return vec4f(i.col.rgb*al*(pow(vec3f(T),vec3f(.72,1.,1.42))*(1.+2.6*le)),al);}`;
 function gnbStars(pass,ub,sb){
-  const P=gpuPipe("gnb.stars",GPU_WGSL_COMMON+GSP_WGSL_U.replace(/@fragment fn fs\(i:VO\)[\s\S]*$/,"")+GSP_STARS+GNB_STAR_ABS);
+  const P=gpuPipe("gnb.stars",GPU_PIPE_SRC["gnb.stars"]()[0]);
   const f=GNB.SU||(GNB.SU=new Float32Array(64));
   f[0]=GPU.bw;f[1]=GPU.bh;f[2]=W;f[3]=H;f.set(GNB.C.subarray(0,60),4);
   const nb=gpuBuf("gnb.su",256,GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST);GPU.dev.queue.writeBuffer(nb,0,f);
@@ -490,10 +490,9 @@ function gnbTarget(){
   GNB.tex=GPU.dev.createTexture({size:[w,h],format:"rgba16float",usage:U.TEXTURE_BINDING|U.RENDER_ATTACHMENT});
   GNB.view=GNB.tex.createView();GNB.dev=GPU.dev;GNB.w=w;GNB.h=h;GNB.last=-99;
 }
-function gnbPipe(){
-  const k="gnb.gen|16f";if(GPU.lay[k])return GPU.lay[k];
-  return GPU.lay[k]=gpuPipeline(k,()=>{const mod=gpuShader(GNB_GEN);return {layout:"auto",vertex:{module:mod,entryPoint:"vs"},
-    fragment:{module:mod,entryPoint:"fs",targets:[{format:"rgba16float"}]},primitive:{topology:"triangle-list"}};});
+function gnbPipe(){const k="gnb.gen|16f";return GPU.lay[k]||(GPU.lay[k]=gpuPipeline(k,gnbGenDesc));}
+function gnbGenDesc(){const mod=gpuShader(GNB_GEN);return {layout:"auto",vertex:{module:mod,entryPoint:"vs"},
+    fragment:{module:mod,entryPoint:"fs",targets:[{format:"rgba16float"}]},primitive:{topology:"triangle-list"}};
 }
 /* палитра туманности системы — своим потоком случайности (0x4E42), сид мира не
    трогает. Два тона по кругу — по областям массы, тень — третьим; у гиганта —
