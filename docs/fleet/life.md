@@ -129,3 +129,26 @@ Scratchpad: `/tmp/claude-0/-home-user-drift/e923652c-add4-55c1-b712-4a53dd7ccf16
 
 - Bakes happen in the frame that first needs a pose (24 walk frames per stride, 16 wing frames
   per manta). Cheap on a real GPU; on SwiftShader the first seconds of a mode are slow.
+
+## What is left in the zone
+
+Nothing is half-done. The twins exist for every shared painter in the zone (walker, beast, plant,
+peep); `20d-jetpack` is logic only and `20e-species` draws only the plant litter, which is baked
+with the plant. What remains is outside the zone: the mode ships switching their calls to the twins
+(requests above) and the core fix to the last pass.
+
+## What the design pass (real GPU, Контроль) should look at
+
+- **Walker** — the rim and the lit side against a low orange star and at night; whether the
+  breath (2.4 % above the waist) reads or twitches; the 24-frame stride at full speed; the contact
+  shadow's length at dawn and dusk.
+- **Plants** — the bend from the root in a strong gust (plantBend), especially the tall stems and
+  ribbons; the air haze on the balloons (they now fade like the rest of the plant); the balloon
+  gloss (GcCtx radial highlight, wider than Skia's); the cast-shadow darkening under ridges.
+- **Beasts** — lit capsule limbs against the baked body (colour match at the joint); the jelly's
+  pulse by sprite scale; the manta's 16 wing frames at speed; the breath on earthly beasts; hover
+  shadows (faint by design).
+- **Peep** — never seen in a pair: the soft halo, the facet torso on additive blend, the trail
+  links; needs an eclipse on a peep meadow.
+- **Everything** — only after the core fix: without it the whole twin layer washes toward white
+  under the sun shafts and bloom.
