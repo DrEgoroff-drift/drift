@@ -18,6 +18,30 @@
    конструкции и предупреждения, холодный циан — питание, экраны и приборы,
    свет всегда откуда-то (лампа, топка, ядро), а не разлит равномерно. */
 const BM_WARM="242,178,92", BM_COOL="127,230,216", BM_CORE="140,240,255";
+/* ── проход кисти отсека (G11) ──
+   Станок отсека — это тело, которое стоит, и то, что в нём движется: бак
+   реактора и пар над клапаном, стеллаж и тележка у прохода. Тело печётся
+   вместе с оболочкой (21ad), живое рисуется кадром поверх. Кисть одна на оба
+   прохода и спрашивает, что рисовать: bS() — тело, bL() — живое. 0 — всё
+   сразу (так рисует всякий, кто зовёт кисть вне базы) */
+let BASE_PASS=0,BASE_LIGHT=null;
+function bS(){return BASE_PASS!==2;}
+function bL(){return BASE_PASS===0||BASE_PASS===2;}
+/* ── проход света (3) ──
+   Свои лампы у станков (над пультом реактора, над столом жилого) и тёплые
+   пятна от неподвижных источников — это СВЕТ, а не краска: трапеция поверх
+   картинки ложилась плёнкой и ничего не освещала. В проходе света кисть
+   рисует тело в пустой приёмник, а bLamp/bGlow кладут свою силу в карту света
+   поля (синий канал маски, 21ad) — там она умножает то, что под ней стоит */
+const BASE_SINK=new Proxy({},{get:(t,p)=>p in t?t[p]:
+  (p==="createLinearGradient"||p==="createRadialGradient")?()=>({addColorStop(){}}):
+  p==="measureText"?s=>({width:String(s).length*5}):()=>{},set:(t,p,v)=>{t[p]=v;return true;}});
+function baseLightPass(fn){
+  const o=BASE_PASS,c=ctx;BASE_LIGHT=c;BASE_PASS=3;ctx=BASE_SINK;
+  try{fn();}finally{ctx=c;BASE_PASS=o;BASE_LIGHT=null;}
+}
+/* кисть в проходе: pass — 1 тело, 2 живое; проход снимается и при исключении */
+function basePass(pass,fn){const o=BASE_PASS;BASE_PASS=pass;try{fn();}finally{BASE_PASS=o;}}
 /* стойка/панель обшивки: заливка + светлая кромка сверху и тень снизу.
    Из этих трёх линий собирается почти вся мебель отсеков */
 function bBox(x,y,w,h,fill,lit,edge){
@@ -254,6 +278,7 @@ function bPipe(pts,wd,col,lit){
 }
 /* экран: тёмное стекло, строки данных, бегущая полоса развёртки */
 function bScreen(x,y,w,h,col,lit,seed){
+  if(bS()){
   bBox(x-2,y-2,w+4,h+4,"rgba(12,16,22,.95)",lit,"rgba(120,140,160,.35)");
   ctx.fillStyle="rgba("+col+","+(.05+lit*.07).toFixed(3)+")";ctx.fillRect(x,y,w,h);
   const R=rng(seed);
@@ -262,6 +287,8 @@ function bScreen(x,y,w,h,col,lit,seed){
     ctx.fillStyle="rgba("+col+","+(.20+lit*.45).toFixed(2)+")";
     ctx.fillRect(x+2,y+2+i*4,lw,1.4);
   }
+  }
+  if(!bL())return;
   const sy=y+((G.t*.8+seed*7)%(h+8))-4;
   ctx.fillStyle="rgba("+col+","+(.10+lit*.14).toFixed(3)+")";
   if(sy>y&&sy<y+h)ctx.fillRect(x,sy,w,2);
@@ -277,7 +304,16 @@ function bCrate(x,y,w,h,c,lit,tag){
 }
 /* лампа под потолком: сама полоса и конус света, падающий на пол */
 function bLamp(cx,y,w,fy,col,a){
+  if(BASE_PASS===3){                                        // свет — в карту поля
+    const L=BASE_LIGHT,g=L.createLinearGradient(0,y,0,fy);
+    g.addColorStop(0,"rgba(0,0,255,"+Math.min(1,a*1.1).toFixed(3)+")");
+    g.addColorStop(1,"rgba(0,0,255,"+Math.min(1,a*.35).toFixed(3)+")");
+    L.save();L.globalCompositeOperation="lighter";L.fillStyle=g;L.beginPath();
+    L.moveTo(cx-w/2,y);L.lineTo(cx+w/2,y);L.lineTo(cx+w*1.5,fy);L.lineTo(cx-w*1.5,fy);
+    L.closePath();L.fill();L.restore();return;
+  }
   ctx.fillStyle="rgba("+col+","+(.55*a).toFixed(3)+")";ctx.fillRect(cx-w/2,y,w,2.5);
+  if(BASE_PASS===1)return;                                  // в выпечке — только сама лампа
   const g=ctx.createLinearGradient(0,y,0,fy);
   g.addColorStop(0,"rgba("+col+","+(.14*a).toFixed(3)+")");
   g.addColorStop(1,"rgba("+col+",0)");
@@ -296,6 +332,13 @@ function bHazard(x,y,w,h,a){
 /* тёплое пятно от источника: свет должен ложиться на пол и стены, иначе
    светящаяся деталь выглядит наклейкой поверх тёмной комнаты */
 function bGlow(cx,cy,r,col,a){
+  if(BASE_PASS===1)return;                                  // неподвижное пятно — свет поля
+  if(BASE_PASS===3){
+    const L=BASE_LIGHT,g=L.createRadialGradient(cx,cy,1,cx,cy,r*1.3);
+    g.addColorStop(0,"rgba(0,0,255,"+Math.min(1,a*3).toFixed(3)+")");g.addColorStop(1,"rgba(0,0,255,0)");
+    L.save();L.globalCompositeOperation="lighter";L.fillStyle=g;L.beginPath();L.arc(cx,cy,r*1.3,0,TAU);L.fill();L.restore();
+    return;
+  }
   const g=ctx.createRadialGradient(cx,cy,1,cx,cy,r);
   g.addColorStop(0,"rgba("+col+","+a.toFixed(3)+")");
   g.addColorStop(1,"rgba("+col+",0)");
@@ -320,6 +363,7 @@ function bGlow(cx,cy,r,col,a){
    станка, ни стены. Читается он тремя тонами: тёмный комбинезон, светлый
    шлем, один цветной блик на стекле. */
 function bWorker(x,fy,lit,sit,phase,face,bare){
+  if(!bL())return;                                      // человек всегда живой
   const d=face===-1?-1:1;
   const L=.55+lit*.45;                                  // общая освещённость фигуры
   const mix=(a,b,t)=>Math.round(a+(b-a)*t);
@@ -443,14 +487,24 @@ function baseLamps(k,x0,y0,w,lit){
   for(let i=0;i<ln;i++)out.push({x:x0+w*(i+.5)/ln,y:y0+6,col:fin.lamp,dim:fin.dim||1});
   return out;
 }
+/* тело станка — в выпечку отсеков, вслед за оболочкой */
+function drawModuleBody(k,x,y,lit,c,r,B){
+  const F=BASE_ROOM[k];if(!F)return;
+  const w=BCELL_W-12,h=BCELL_H-12,x0=x+6,y0=y+6;
+  const cx=x0+w/2,fy=y0+h-6,seed=hashi(c+1,r+1,(B&&B.idx|0)+7);
+  ctx.save();
+  ctx.beginPath();ctx.rect(x0-2,y0-2,w+4,h+4);ctx.clip();
+  basePass(1,()=>F(x0,y0,w,h,cx,fy,lit,seed,B,basePower(B),c,r));
+  ctx.restore();
+}
 function drawModuleLive(k,x,y,lit,c,r,B){
   const w=BCELL_W-12,h=BCELL_H-12,x0=x+6,y0=y+6;
   const cx=x0+w/2,fy=y0+h-6,seed=hashi(c+1,r+1,(B&&B.idx|0)+7);
   const P=basePower(B),fin=ROOM_FIN[k]||FIN_DEF;
   ctx.save();
   ctx.beginPath();ctx.rect(x0-2,y0-2,w+4,h+4);ctx.clip();   // ничего не вылезает в породу
-  const F=BASE_ROOM[k];                                    // само оборудование отсека
-  if(F)F(x0,y0,w,h,cx,fy,lit,seed,B,P,c,r);
+  const F=BASE_ROOM[k];                                    // живое станка: тело уже в выпечке
+  if(F)basePass(2,()=>F(x0,y0,w,h,cx,fy,lit,seed,B,P,c,r));
   /* ── смена в отсеке ──
      В комнате стоял ровно один работник, и база выглядела законсервированной:
      у образца, по которому это переделывается, в каждом помещении по три-пять

@@ -59,6 +59,15 @@ function baseSig(B){
   return s;
 }
 function baseBakeK(){return Math.min(2,DPR||1);}
+/* что ещё читают тела станков, кроме отсеков и света: полки склада по запасу,
+   жар бани в банный вечер, зверь фермы, машина базы. Сменилось — перепекаем */
+function baseRoomsKey(B){
+  const P=basePower(B),fill=clamp(P.store?basePoolHeld(B)/P.store:0,0,1);
+  const n=(typeof baseShift==="function")?baseShift():0;
+  const F=(typeof farmOf==="function")?farmOf(B):null, v=(typeof vanOf==="function")?vanOf(B):null;
+  return [Math.floor((fill+.15)*4),(typeof banyaWarm==="function"&&banyaWarm(B,n))?1:0,
+    F?F.name+"#"+F.no:"",v?v.n+"."+v.q:"",Math.round(P.eff*20)].join("|");
+}
 /* ── под 2D: небо, гряды, задник, живое железо, отсеки ── */
 function baseGpuUnder(S,B,pl,lit,camx,camy){
   const pass=gpuScene();if(!pass)return;
@@ -75,7 +84,7 @@ function baseGpuUnder(S,B,pl,lit,camx,camy){
   baseLiveShapes(SH,S,B,lit,camx,camy);
   gpuShapes(pass,SH);
   const Rr={x0:BASE_OX-10,y0:BASE_OY-4,x1:BASE_OX+BASE_COLS*BCELL_W+10,y1:BASE_OY+baseRows(B)*BCELL_H+6};
-  baseBakeShow(pass,baseBake("rooms",sig+"|"+lq+"|"+k,Rr,k,()=>baseRoomsPaint(B,lq)),camx,camy,up);
+  baseBakeShow(pass,baseBake("rooms",sig+"|"+lq+"|"+k+"|"+baseRoomsKey(B),Rr,k,()=>baseRoomsPaint(B,lq)),camx,camy,up);
 }
 /* ── над 2D: передний план, иней, свет, воздух ── */
 const BASE_FU=new Float32Array(60);
@@ -98,7 +107,7 @@ function baseGpuOver(S,B,pl,lit,camx,camy){
     gpuShapes(pass,SH);
   }
   /* поле: маска слоёв и материал планеты */
-  const M=baseBake("mask",sig+"|"+R.x0+","+R.y0+","+R.x1+","+R.y1,R,.5,()=>baseMaskPaint(B,R));
+  const M=baseBake("mask",sig+"|"+R.x0+","+R.y0+","+R.x1+","+R.y1+"|"+lq+"|"+baseRoomsKey(B),R,.5,()=>baseMaskPaint(B,R));
   if(!M||!M.B)return;
   if(pl&&!pl.matCn&&typeof planetMat==="function"){planetMat(pl);if(typeof matTick==="function")matTick();}
   const U=BASE_FU;U.fill(0);
@@ -154,14 +163,16 @@ fn lampI(w:vec2f,lp:vec2f,fy:f32,spread:f32)->vec2f{
   let halo=exp(-sqrt(r2)/9.);
   return vec2f(cone*fall*1.05+pool*.7+halo*.5+fall*.18,cone*fall);}
 /* свет отсека в точке: x — множитель, w — воздух (для пыли) */
-fn roomLight(w:vec2f,c:i32,r:i32,code:f32,lit:f32)->vec4f{
+fn roomLight(w:vec2f,c:i32,r:i32,code:f32,lit:f32,ex:f32)->vec4f{
   if(code<16.){return vec4f(.50,.50,.56,0.);}            /* разбитый: ламп нет */
   let L=LC[u32(code)%16u-1u];let ln=i32(L.w);
   let x0=OX+f32(c)*CW+6.;let y0=OY+f32(r)*CH+6.;let ww=CW-12.;let fy=y0+CH-18.;
   var il=0.;var air=0.;
   for(var i=0;i<ln;i++){let lx=x0+ww*(f32(i)+.5)/f32(ln);let q=lampI(w,vec2f(lx,y0+6.),fy,18.);il+=q.x;air+=q.y;}
+  /* свои лампы станка — из карты света (синий канал маски): тот же свет */
+  il+=ex*1.5;air+=ex*.35;
   let g=.55+.6*lit;
-  return vec4f(vec3f(.40,.40,.43)+L.rgb*min(il,2.8)*g,air*g);}
+  return vec4f(vec3f(.40,.40,.43)+L.rgb*min(il,3.)*g,air*g);}
 /* тёплый свет, что сочится из выработки в породу: от кромки ближних отсеков */
 fn spill(w:vec2f,lit:f32)->vec3f{
   let ci=i32(floor((w.x-OX)/CW));let ri=i32(floor((w.y-OY)/CH));var s=vec3f(0.);
@@ -225,7 +236,7 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
     let ci=i32(floor((w.x-OX)/CW));let ri=i32(floor((w.y-OY)/CH));
     let code=cellCode(ci,ri);
     var fc:vec3f;
-    if(code>0.){fc=roomLight(w,ci,ri,code,lit).rgb;}else{fc=shaftLight(w,lit).rgb;}
+    if(code>0.){fc=roomLight(w,ci,ri,code,lit,m.b).rgb;}else{fc=shaftLight(w,lit).rgb;}
     f=mix(mix(vec3f(1.),fr,rock),fc,cav);
   }
   f+=vec3f(1.,.84,.59)*gateI(w).x;
@@ -258,7 +269,7 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
     let ci=i32(floor((w.x-OX)/CW));let ri=i32(floor((w.y-OY)/CH));
     let code=cellCode(ci,ri);
     var air=0.;var col=vec3f(1.,.84,.6);
-    if(code>=16.){air=roomLight(w,ci,ri,code,lit).w;col=LC[u32(code)%16u-1u].rgb;}
+    if(code>=16.){air=roomLight(w,ci,ri,code,lit,m.b).w;col=LC[u32(code)%16u-1u].rgb;}
     else if(code<=0.){air=shaftLight(w,lit).w;}
     o+=col*air*m.g*(.075+.6*mote(w,t));
   }

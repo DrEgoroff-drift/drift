@@ -198,7 +198,9 @@ function baseRoomsPaint(B,lit){
   }
   for(let r=0;r<baseRows(B);r++)for(let c=0;c<BASE_COLS;c++){
     const cell=baseCell(B,c,r);if(!cell)continue;   // пустая клетка — просто порода
-    drawModuleShell(cell.k,BASE_OX+c*BCELL_W,BASE_OY+r*BCELL_H,cell.hp>0?lit:.12,c,r,B);
+    const x=BASE_OX+c*BCELL_W,y=BASE_OY+r*BCELL_H,l=cell.hp>0?lit:.12;
+    drawModuleShell(cell.k,x,y,l,c,r,B);
+    drawModuleBody(cell.k,x,y,l,c,r,B);
   }
 }
 /* ══ ПЕРЕДНИЙ план: настилы, переборки, кабель-каналы — в мире ══ */

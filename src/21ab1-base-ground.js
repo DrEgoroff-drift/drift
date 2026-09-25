@@ -88,6 +88,12 @@ function baseMaskPaint(B,R){
   }
   ctx.fill();
   ctx.globalCompositeOperation="source-over";
+  /* синий — карта света: свои лампы станков и неподвижные тёплые пятна */
+  for(let r=0;r<baseRows(B);r++)for(let c=0;c<BASE_COLS;c++){
+    const cell=baseCell(B,c,r),F=cell&&cell.hp>0&&BASE_ROOM[cell.k];if(!F)continue;
+    const x0=BASE_OX+c*BCELL_W+6,y0=BASE_OY+r*BCELL_H+6,w=BCELL_W-12,h=BCELL_H-12;
+    baseLightPass(()=>F(x0,y0,w,h,x0+w/2,y0+h-6,.55+basePower(B).eff*.45,hashi(c+1,r+1,(B.idx|0)+7),B,basePower(B),c,r));
+  }
 }
 function baseGroundPaint(B,pl,R){
   const sky=baseSkyOf(pl);
