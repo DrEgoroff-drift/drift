@@ -57,6 +57,12 @@ Branch `claude/gpu-cave`, from the fleet base `claude/optimistic-gates-u46osn`. 
    column through drifting ripple noise, fading with depth and softly at the zone's ends. The mine
    has no water (`waterAt` returns 0). Test: pool found in view, not found off view.
 
+5. **cave props bake into the rock tiles** — bones, crates, the camp, tally marks and ropes (22b)
+   are seeded and static, so `drawCaveRock` draws them at its end (`drawCaveProps(C,wx0,wy0)`, the
+   bake's `W`,`H` cull them per tile; a prop across a seam is drawn in both, each clipped). The frame
+   no longer calls `drawCaveProps`: zero per-frame 2D for them, and they sit under the light pass
+   as before. Covered by the tile-painter suite.
+
 ## Pairs (scratchpad, never in git)
 
 Scratchpad: `/tmp/claude-0/-home-user-drift/2c699494-ba63-5130-aae0-c5cca68da174/scratchpad/`
@@ -78,6 +84,8 @@ Scratchpad: `/tmp/claude-0/-home-user-drift/2c699494-ba63-5130-aae0-c5cca68da174
   water-filled shaft of the «подземное озеро» zone): the water was a flat blue column; now the
   surface line catches the lamp and the lamp's reflection glitters in it — water reads as water.
   Also visible: the warm beam with dust down the shaft, cold ambient, the other lamp on the ledge.
+
+- `pair-cavepool-2.png` (commit 4 frame | commit 5 frame): the same picture — props from the tiles.
 
 ## For the design pass (what to look at, per scene)
 
