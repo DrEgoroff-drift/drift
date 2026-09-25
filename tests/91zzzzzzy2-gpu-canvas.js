@@ -52,3 +52,23 @@ suite("GPU-холст: запись, цвет, дыры громко",()=>{
   if(!GPU.dev)eq(gpuBake(8,8,()=>{}),null,"без видеокарты выпечки нет — null, не 2D");
   else{const B=gpuBake(8,8,q=>{q.fillStyle="#fff";q.fillRect(0,0,8,8);});ok(B&&B.view&&B.w===8,"выпечка с видеокартой — текстура");gpuBakeDrop(B);}
 });
+
+/* серии тени и пул целей (08ca/08cc): подряд идущие тени без пересечений — один слой, пересечение
+   режет серию; повторная выпечка не создаёт ни одной текстуры; пул живёт в GPU.lay и уходит с ним
+   (gpuInit после потери устройства заводит GPU.lay заново — и пул, и атлас берутся новые) */
+TEST_SUITES.push(()=>suite("GPU-холст: серии тени, пул целей, сброс с устройством",{tier:"browser"},()=>{
+  if(!GPU.dev){eq(gpuBake(8,8,()=>{}),null,"без видеокарты выпечки нет");return;}
+  const sq=(g,x,y,b)=>{g.shadowBlur=b;g.shadowColor="rgba(0,0,0,.8)";g.fillStyle="#fff";g.fillRect(x,y,8,8);};
+  const bake=f=>{const B=gpuBake(64,32,f);const n=B.shl;gpuBakeDrop(B);return n;};
+  eq(bake(g=>{sq(g,4,4,2);sq(g,40,4,2);}),1,"две далёкие тени — одна серия");
+  eq(bake(g=>{sq(g,4,4,2);sq(g,8,8,2);}),2,"тень поверх прошлой фигуры — серия режется");
+  eq(bake(g=>{sq(g,4,4,2);g.shadowBlur=0;g.fillStyle="#f00";g.fillRect(36,0,20,20);sq(g,40,4,2);}),2,"нарисованное без тени под следом следующей — режет");
+  eq(bake(g=>{sq(g,4,4,2);sq(g,40,4,3);}),2,"другое размытие — другая серия");
+  const Q=gcPool(),m0=Q.made;bake(g=>{sq(g,4,4,2);sq(g,40,4,2);});
+  eq(Q.made,m0,"повторная выпечка — ни одной новой текстуры и буфера");
+  const lay=GPU.lay;GPU.lay={};let Q2=null;
+  try{bake(g=>{sq(g,4,4,2);});Q2=GPU.lay["gc.pool"];}
+  finally{if(Q2){for(const e of Q2.t)GPU.trash.push(...e.T);for(const b of Object.values(Q2.b))GPU.trash.push(b);}GPU.lay=lay;}
+  ok(Q2&&Q2!==Q&&Q2.made>0,"новый GPU.lay (как после потери устройства) — новый пул, прогретый заново");
+  eq(GPU.lay["gc.pool"],Q,"старый пул на месте, пока жив GPU.lay");
+}));

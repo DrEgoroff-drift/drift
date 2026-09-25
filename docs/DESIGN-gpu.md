@@ -390,6 +390,39 @@ series: a window whose glass or balcony also casts a shadow overlaps its own foo
 count in `B.shl`. Контроль: this is an intermediate step. 2D does the same bake in 74 ms, so the time is to be
 broken down next.
 
+**Bake target pool and the shadow atlas (Контроль's breakdown order).** The 146 ms broke down as follows (desktop,
+GPU timestamps on the bake's own passes, 6 runs):
+
+| | ms |
+|---|---|
+| JS record (`hotelPaint` into `GcCtx`) | 6–15 |
+| the rest of the CPU (emit, ramps, encode, submit) | 4–8 |
+| GPU, all bake passes: shadow MSAA .19, blur .54, main .45, mips .05 | span 3.2–3.8 |
+| the wait to `onSubmittedWorkDone` | ~100 (20–45 with no shadow) |
+
+The wait was texture creation in the GPU process. A side probe: 36 new 40² r8 targets, each cleared, took 45–70 ms;
+the same 36 passes into one pooled texture took 0.4–1 ms. Each creation costs ~1.5 ms, and a bake asked for ~40:
+two r8 per shadow layer, then ms, st and rs for the layers and for the main pass, the ramp, and three buffers.
+
+Now:
+- All shadow layers of a bake are regions of one atlas, packed by shelves (`gcShadowPack`). The layers' shapes are
+  one MSAA pass, and each blur is one pass over the atlas. The blur reads only inside its layer's region (`BU.r`);
+  `fshadow` gets the layer's size and atlas place from the paint record (`gp[b+2].zw`, `gp[b+3].xy`).
+- Targets come from a pool (`gcPoolSet`): a set of same-size textures per role (bake, shadow, ramp). A set fits
+  if it is at least the size needed and at most 2.25× its area (anything up to 256² for small bakes). A new set is
+  rounded up to 64 px. Buffers are pooled by role and grow in powers of two. The main pass draws into a pooled
+  target larger than the bake (`gu.sz` = the target), and the resolve goes to level 0 through the mip pass with a
+  source fraction (`sc`). Only `B.tex` is new per bake.
+- The pool lives in `GPU.lay`, so a device loss drops it with everything else. It warms up on first use with
+  `GC_POOL_WARM`: bake 256², 512², 768²; shadow 256², 512²; ramp 256×128. That is 20 textures, ~31 MB. The cap is
+  96 MB, LRU; a set over 24 MB is used once and never pooled.
+
+The hotel light layer is bit-identical to 0f6e4e3 (0 pixels differ). Bake time after the first run: ~25 ms (record 7–11,
+CPU rest 3–7, the wait ~15, GPU span 1.9). 2D does the whole `hotelPaint` (three canvases) in 14–27 ms on the same
+machine. The GPU canvas suite checks series (disjoint → one; overlap, a shadowless draw under the next footprint,
+or a different blur → cut), zero creations on a repeat bake, and a new pool after `GPU.lay` is replaced (what
+`gpuInit` does after a loss). The phone twin is still to be measured, with GPU-3's hotcost stand.
+
 ## Where I stopped (update on every commit)
 
 - **GPU canvas v1 (25.09, `gpu`).** `08ca-gpu-canvas.js`, brief in §G; the first port is the finds (17b), the pair
@@ -400,10 +433,12 @@ broken down next.
 - **gpu3 merged up to 149d5b3 (cc220f3).**
 - **The mask in `gpuLitSprite` is in (§G).** Its last argument is `sharp`, and it is best at the screen's level − .8.
 - **Shadow series in a bake are in (§G).** Hotel light layer: 92 layers → 18, 431 → 146 ms, picture as HEAD.
+- **Bake target pool and the shadow atlas are in (§G).** Hotel light layer 146 → ~25 ms, bit-identical; the phone
+  twin (hotcost) is still to be measured.
 - **Next, in Контроль's order (25.09):**
-  0. the hotel shadow is not closed yet (2D 74 ms). First break the 146 ms into JS, GPU, blur and MSAA passes.
-     Then two edits that keep the picture: Gauss weights once per layer on the CPU; and for σ > 4, halve the
-     layer until σ ≤ 4, blur, stretch back (as Skia does). Needs a pair: ×4 of neon and shadow;
+  0. the phone twin for the hotel's appearance (hotcost, 411×742 ×1.5, CPU ×4), before and after the pool; then the
+     ramp cache by stops (GPU-3's request), then multiply on a transparent destination (two draws), then #ovl.
+     Gauss weights on the CPU and σ > 4 downsampling only if blur passes on the phone take > 2 ms per bake;
   1. chipDom and domLabel through the atlas. Numbers are built from cached glyphs; a steady flight rasters 0 strings
      a frame; the atlas evicts (LRU); a 600-frame test; the text raster is a column of its own in gate2d;
   2. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);

@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 620 · символов верхнего уровня: 6167
+Файлов: 620 · символов верхнего уровня: 6174
 
 ## СИМВОЛЫ
 
@@ -2031,7 +2031,7 @@ GBM                          src/13z-gpu-combat.js:126
 GBM_WGSL                     src/13z-gpu-combat.js:127
 GBX_WGSL                     src/13z-gpu-combat.js:181
 GC_ATL                       src/08cb-gpu-text.js:55
-GC_BLUR_WGSL                 src/08cc-gpu-shadow.js:20
+GC_BLUR_WGSL                 src/08cc-gpu-shadow.js:21
 GC_COL                       src/08ca-gpu-canvas.js:29
 GC_DEF                       src/08ca-gpu-canvas.js:76
 GC_GLYPHS                    src/08cb-gpu-text.js:17-50
@@ -2039,28 +2039,35 @@ GC_KEYS                      src/08ca-gpu-canvas.js:81
 GC_MIP_WGSL                  src/08ca-gpu-canvas.js:316
 GC_MISS                      src/08ca-gpu-canvas.js:25
 GC_OPS                       src/08ca-gpu-canvas.js:13-56
+GC_POOL_CAP                  src/08ca-gpu-canvas.js:372
+GC_POOL_WARM                 src/08ca-gpu-canvas.js:373
 GC_SHADOW_INK                src/08cb-gpu-text.js:11
-GC_ST                        src/08ca-gpu-canvas.js:324-346
+GC_ST                        src/08ca-gpu-canvas.js:325-347
 GC_TM                        src/08cb-gpu-text.js:13
 GC_TOL                       src/08ca-gpu-canvas.js:11
 GC_TXT_KEYS                  src/08cb-gpu-text.js:12
 GC_WGSL                      src/08ca-gpu-canvas.js:277
 gcAtlas                      src/08cb-gpu-text.js:56-70
-gcBlurPipe                   src/08cc-gpu-shadow.js:34-59
+gcBlurPipe                   src/08cc-gpu-shadow.js:35-47
 gcColor                      src/08ca-gpu-canvas.js:37-56
 GcCtx                        src/08ca-gpu-canvas.js:85-221
 gcDash                       src/08ca-gpu-canvas.js:231-268
 gcFan                        src/08ca-gpu-canvas.js:227
 GcGrad                       src/08ca-gpu-canvas.js:61-75
-gcImg                        src/08ca-gpu-canvas.js:270-346
+gcImg                        src/08ca-gpu-canvas.js:270-347
 gcInv                        src/08ca-gpu-canvas.js:57
-gcLay                        src/08ca-gpu-canvas.js:337-346
+gcLay                        src/08ca-gpu-canvas.js:338-347
 gcMeasure                    src/08cb-gpu-text.js:73
-gcMipPipe                    src/08ca-gpu-canvas.js:359
+gcMipPipe                    src/08ca-gpu-canvas.js:360
 gcNo                         src/08ca-gpu-canvas.js:26
-gcPipe                       src/08ca-gpu-canvas.js:347-358
+gcPipe                       src/08ca-gpu-canvas.js:348-359
+gcPool                       src/08ca-gpu-canvas.js:380-411
+gcPoolBuf                    src/08ca-gpu-canvas.js:396-411
+gcPoolSet                    src/08ca-gpu-canvas.js:386-411
+gcPoolSpec                   src/08ca-gpu-canvas.js:375-411
 gcRectSp                     src/08ca-gpu-canvas.js:225
-gcShadowPasses               src/08cc-gpu-shadow.js:40-59
+gcShadowPack                 src/08cc-gpu-shadow.js:41-47
+gcShadowPasses               src/08cc-gpu-shadow.js:51-64
 gcStrokeLine                 src/08ca-gpu-canvas.js:244-268
 GEN                          src/13z-gpu-combat.js:16
 GEN_MINE                     src/13z-gpu-combat.js:63
@@ -2243,10 +2250,10 @@ GPU_POST_WGSL                src/08b-gpu.js:88
 GPU_SHP_WGSL                 src/08c-gpu-kit.js:232
 GPU_WGSL_COMMON              src/08c-gpu-kit.js:131
 gpuArena                     src/08c-gpu-kit.js:151-161
-gpuBake                      src/08ca-gpu-canvas.js:368-373
-gpuBaked                     src/08ca-gpu-canvas.js:375-378
-gpuBakeDrop                  src/08ca-gpu-canvas.js:379
-gpuBakeRedo                  src/08ca-gpu-canvas.js:380-484
+gpuBake                      src/08ca-gpu-canvas.js:406-411
+gpuBaked                     src/08ca-gpu-canvas.js:413-416
+gpuBakeDrop                  src/08ca-gpu-canvas.js:417
+gpuBakeRedo                  src/08ca-gpu-canvas.js:418-522
 gpuBargeBody                 src/12l-barge.js:559-563
 gpuBind                      src/08c-gpu-kit.js:35-41
 gpuBloom                     src/08b-gpu.js:605-612
@@ -6314,7 +6321,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/08c-gpu-kit.js · 26 КБ
   · набор для слоёв видеокарты (docs/DESIGN-gpu.md §4):1
 
-## src/08ca-gpu-canvas.js · 39 КБ
+## src/08ca-gpu-canvas.js · 42 КБ
   · GPU-холст: 2D-контекст, что рисует видеокартой (docs/DESIGN-gpu.md, «GPU canvas»):1
 
 ## src/08cb-gpu-text.js · 9 КБ
@@ -8141,7 +8148,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzzzzzy1-gpugate-belt.js · 13 КБ
   · ворота ступени 2: пояс без #c (docs/DESIGN-gpu.md, Stage 2):1
 
-## tests/91zzzzzzy2-gpu-canvas.js · 6 КБ
+## tests/91zzzzzzy2-gpu-canvas.js · 8 КБ
   · GPU-холст: запись команд и громкие дыры (08ca, docs/DESIGN-gpu.md «GPU canvas»):1
 
 ## tests/91zzzzzzy3-gate2d.js · 6 КБ

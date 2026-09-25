@@ -309,17 +309,18 @@ fn paintOf(k:u32,d:vec2f)->vec4f{
   let a=clamp(c.a+dd,0.,1.);return vec4f(clamp(c.rgb+vec3f(dd),vec3f(0.),vec3f(a)),a);}
 @fragment fn fpaint(i:VO)->@location(0) vec4f{return paintOf(i.k,i.p.xy+gu.o.xy);}
 /* текст: маска из атласа × краска (цвет или градиент) */
-/* тень: размытый слой (r8, свой угол в gp[b+2].xy) × цвет тени */
-@fragment fn fshadow(i:VO)->@location(0) vec4f{let b=i.k*5u;let q=vec2i(floor(i.p.xy-gp[b+2u].xy));let n=vec2i(textureDimensions(img));
-  if(any(q<vec2i(0))||any(q>=n)){return vec4f(0.);}return gp[b]*textureLoad(img,q,0).r;}
+/* тень: размытый слой — рамка атласа (r8): угол на холсте gp[b+2].xy, размер .zw, место в атласе gp[b+3].xy */
+@fragment fn fshadow(i:VO)->@location(0) vec4f{let b=i.k*5u;let o=gp[b+2u];let q=vec2i(floor(i.p.xy-o.xy));
+  if(any(q<vec2i(0))||any(q>=vec2i(o.zw))){return vec4f(0.);}return gp[b]*textureLoad(img,q+vec2i(gp[b+3u].xy),0).r;}
 @fragment fn fmask(i:VO)->@location(0) vec4f{let m=textureSample(img,ism,i.uv).r;return paintOf(i.k,i.p.xy+gu.o.xy)*m;}`;
 const GC_MIP_WGSL=`
 @group(0) @binding(0) var s:texture_2d<f32>;
 @group(0) @binding(1) var sm:sampler;
+@group(0) @binding(2) var<uniform> sc:vec4f;   /* доля источника: цель из пула бывает больше выпечки */
 struct O{@builtin(position) p:vec4f,@location(0) uv:vec2f};
 @vertex fn vs(@builtin(vertex_index) i:u32)->O{var P=array(vec2f(-1.,-1.),vec2f(3.,-1.),vec2f(-1.,3.));
   var o:O;o.p=vec4f(P[i],0.,1.);o.uv=vec2f(P[i].x*.5+.5,.5-P[i].y*.5);return o;}
-@fragment fn fs(i:O)->@location(0) vec4f{return textureSampleLevel(s,sm,i.uv,0.);}`;
+@fragment fn fs(i:O)->@location(0) vec4f{return textureSampleLevel(s,sm,i.uv*sc.xy,0.);}`;
 /* трафарет: f — лицевая грань, b — изнаночная (обмотка nonzero), rm/wm — маски, c — пишет ли цвет */
 const GC_ST={
   wnz:{f:{compare:"equal",passOp:"increment-wrap"},b:{compare:"equal",passOp:"decrement-wrap"},rm:0x80,wm:0x7F},
@@ -360,6 +361,43 @@ function gcMipPipe(){return GPU.lay["gc.mip"]||(GPU.lay["gc.mip"]=GPU.dev.create
   vertex:{module:GPU.dev.createShaderModule({code:GC_MIP_WGSL}),entryPoint:"vs"},
   fragment:{module:GPU.dev.createShaderModule({code:GC_MIP_WGSL}),entryPoint:"fs",targets:[{format:"rgba8unorm"}]},primitive:{topology:"triangle-list"}}));}
 
+/* ── пул целей выпечки. Создать текстуру в процессе GPU стоит ~1.5 мс (замер 25.09: 36 слоёв r8 —
+   45–70 мс ожидания очереди, те же проходы в одну текстуру — 1 мс), а выпечка просила их ~40.
+   Набор целей одного размера (MSAA, трафарет, resolve; атласы тени; лента) берётся из пула: годится
+   любой не меньше нужного и не больше 2.25 его площади (мелочи до 256² — любой до 256²), новый — с запасом
+   до 64 px. Буферы — по роли, растут степенью двойки. Пул живёт в GPU.lay и сбрасывается с устройством;
+   при создании он прогревается ходовыми размерами (GC_POOL_WARM, ~31 МБ), так что первая встреча с
+   крупной выпечкой создаёт одну текстуру — её саму. Повтор безопасен порядком очереди: запись
+   следующей выпечки встаёт после чтения прошлой ── */
+const GC_POOL_CAP=96<<20;
+const GC_POOL_WARM=[["bake",256,256],["bake",512,512],["bake",768,768],["shadow",256,256],["shadow",512,512],["ramp",256,128]];
+/* наборы: [формат, выборок, usage] — все одного размера */
+function gcPoolSpec(role){
+  const U=GPUTextureUsage,RA=U.RENDER_ATTACHMENT,TB=U.TEXTURE_BINDING;
+  return role==="bake"?[["rgba8unorm",4,RA],["stencil8",4,RA],["rgba8unorm",1,TB|RA]]
+    :role==="shadow"?[["rgba8unorm",4,RA],["stencil8",4,RA],["rgba8unorm",1,TB|RA],["r8unorm",1,TB|RA],["r8unorm",1,TB|RA]]
+    :[["rgba16float",1,TB|U.COPY_DST]];}
+function gcPool(){
+  let Q=GPU.lay["gc.pool"];if(Q)return Q;
+  Q=GPU.lay["gc.pool"]={t:[],b:{},by:0,made:0};
+  for(const [r,w,h] of GC_POOL_WARM)gcPoolSet(r,w,h);
+  return Q;}
+/* → текстуры набора role размером w×h или больше */
+function gcPoolSet(role,w,h){
+  const Q=gcPool(),need=Math.max((w*h+4096)*2.25,65536);let e=null;
+  for(const x of Q.t)if(x.role===role&&x.w>=w&&x.h>=h&&x.w*x.h<=need&&(!e||x.w*x.h<e.w*e.h))e=x;
+  if(e){Q.t.splice(Q.t.indexOf(e),1);Q.t.push(e);return e.T;}
+  const W=Math.ceil(w/64)*64,H=Math.ceil(h/64)*64,px={rgba16float:8,r8unorm:1,stencil8:1};let by=0;
+  const T=gcPoolSpec(role).map(([f,n,us])=>{by+=W*H*n*(px[f]||4);Q.made++;return GPU.dev.createTexture({size:[W,H],sampleCount:n,format:f,usage:us});});
+  if(by>GC_POOL_CAP/4){GPU.trash.push(...T);return T;}   /* великан — разовый, в пул не идёт */
+  Q.t.push({role,w:W,h:H,T,by});Q.by+=by;
+  while(Q.by>GC_POOL_CAP&&Q.t.length>1){const o=Q.t.shift();Q.by-=o.by;GPU.trash.push(...o.T);}
+  return T;}
+function gcPoolBuf(role,us,a){
+  const Q=gcPool(),n=Math.max(256,a.byteLength);let b=Q.b[role];
+  if(!b||b.size<n){if(b)GPU.trash.push(b);let s=256;while(s<n)s*=2;b=Q.b[role]=GPU.dev.createBuffer({size:s,usage:us|GPUBufferUsage.COPY_DST});Q.made++;}
+  GPU.dev.queue.writeBuffer(b,0,a);return b;}
+
 /* ── выпечка: gpuBake(w,h,draw,o) → B {tex,view,w,h,n,dev}. B годится везде, где мастер
    gpuMipTex (gpuImage, gpuLitSprite). На время draw глобальный ctx — этот холст, так что
    кисти, что рисуют в ctx, переносятся без переписи. o.ss — во сколько крупнее рисовать
@@ -380,13 +418,10 @@ function gpuBakeDrop(B){if(B&&B.tex){if(B.dev===GPU.dev)GPU.trash.push(B.tex);B.
 function gpuBakeRedo(B){
   const t0=wallMs(),{w,h}=B,k=B.o.ss||(w*h<=262144?2:1),g=new GcCtx(w,h,k),prev=ctx;
   ctx=g;try{B.draw(g);}finally{ctx=prev;}
-  const d=GPU.dev,U=GPUTextureUsage,W=w*k,H=h*k,trash=GPU.trash;
+  const d=GPU.dev,U=GPUTextureUsage,W=w*k,H=h*k;
   B.tex=d.createTexture({size:[w,h],mipLevelCount:B.n,format:"rgba8unorm",usage:U.TEXTURE_BINDING|U.RENDER_ATTACHMENT|U.COPY_SRC});
   B.view=B.tex.createView();B.dev=d;
-  const ms=d.createTexture({size:[W,H],sampleCount:4,format:"rgba8unorm",usage:U.RENDER_ATTACHMENT});
-  const st=d.createTexture({size:[W,H],sampleCount:4,format:"stencil8",usage:U.RENDER_ATTACHMENT});
-  const rs=k>1?d.createTexture({size:[W,H],format:"rgba8unorm",usage:U.TEXTURE_BINDING|U.RENDER_ATTACHMENT}):null;
-  trash.push(ms,st);if(rs)trash.push(rs);
+  const [ms,st,rs]=gcPoolSet("bake",W,H),TW=ms.width,TH=ms.height;
   /* вершины (x,y,краска,u,v), краски по 5 vec4, ленты градиентов, список вызовов */
   const V=[],P=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],R=[],D=[],Q=[0,0,W,0,W,H,0,0,W,H,0,H];
   let DL=D;const SH=[];   /* DL — куда идут вызовы: основной проход или слой тени */
@@ -432,11 +467,9 @@ function gpuBakeRedo(B){
   const hit=(a,b)=>a[0]<b[2]&&b[0]<a[2]&&a[1]<b[3]&&b[1]<a[3];
   const close=()=>{const s=ser;if(!s)return;ser=null;
     const X0=Math.max(0,s.x0+s.dx),Y0=Math.max(0,s.y0+s.dy),X1=Math.min(W,s.x1+s.dx),Y1=Math.min(H,s.y1+s.dy),w=s.x1-s.x0,h=s.y1-s.y0;
-    const mkT=()=>{const t=d.createTexture({size:[w,h],format:"r8unorm",usage:U.TEXTURE_BINDING|U.RENDER_ATTACHMENT});trash.push(t);return t;};
-    const L={sd:s.sd,x0:s.x0,y0:s.y0,w,h,sg:s.sg,R:s.R,k,n:s.F.length,t1:mkT(),t2:mkT()};SH.push(L);
-    P[s.pi*20+8]=s.x0+s.dx;P[s.pi*20+9]=s.y0+s.dy;
-    const r=[X0,Y0,X1,Y0,X1,Y1,X0,Y0,X1,Y1,X0,Y1];for(let j=0;j<6;j++){V[(s.vf+j)*5]=r[j*2];V[(s.vf+j)*5+1]=r[j*2+1];}
-    s.img.view=L.t2.createView();};
+    SH.push({sd:s.sd,x0:s.x0,y0:s.y0,w,h,sg:s.sg,R:s.R,k,n:s.F.length,pi:s.pi,img:s.img});
+    P[s.pi*20+8]=s.x0+s.dx;P[s.pi*20+9]=s.y0+s.dy;P[s.pi*20+10]=w;P[s.pi*20+11]=h;
+    const r=[X0,Y0,X1,Y0,X1,Y1,X0,Y0,X1,Y1,X0,Y1];for(let j=0;j<6;j++){V[(s.vf+j)*5]=r[j*2];V[(s.vf+j)*5+1]=r[j*2+1];}};
   /* команда без тени (или с тенью вне холста) посреди серии: рамку — в «нарисованное» */
   const drew=q=>{if(!ser)return;if(GC_OPS[q.op].u)close();else ser.S.push(bx(q));};
   const shade=q0=>{const q=q0.sv?Object.assign({},q0,{v:q0.sv,view:q0.sview}):q0,sh=q.sh,sg=sh.b/2*k,Rr=Math.ceil(3*sg),dx=sh.x*k,dy=sh.y*k,b=bx(q);
@@ -453,32 +486,37 @@ function gpuBakeRedo(B){
     ser.vf=V.length/5;put("shw|"+q0.op,0x80,new Array(24).fill(0),ser.pi,ser.img);};
   for(const q of g._ops){clip(q.clip);if(q.sh)shade(q);else drew(q);emit(q,q.op);}
   close();
-  for(let i=20;i<P.length;i+=20)if(P[i+4])P[i+5]=(P[i+5]+.5)/R.length;
-  /* буферы и лента */
-  const bu=GPUBufferUsage,mk=(a,us)=>{const b=d.createBuffer({size:Math.max(16,a.byteLength),usage:us|bu.COPY_DST});d.queue.writeBuffer(b,0,a);trash.push(b);return b;};
-  const vb=mk(new Float32Array(V.length?V:[0,0,0,0]),bu.VERTEX),pb=mk(new Float32Array(P),bu.STORAGE),ub=mk(new Float32Array([W,H,k,0,0,0,0,0]),bu.UNIFORM);
+  /* слои тени — рамки одного атласа (08cc) */
+  const SA=SH.length?gcShadowPack(SH):null;
+  if(SA)for(const s of SH){P[s.pi*20+12]=s.ax;P[s.pi*20+13]=s.ay;s.img.view=SA.v2;}
+  /* лента — строки текстуры из пула (строк бывает больше, чем лент) */
+  const rt=R.length?gcPoolSet("ramp",256,R.length)[0]:null;
+  for(let i=20;i<P.length;i+=20)if(P[i+4])P[i+5]=(P[i+5]+.5)/rt.height;
+  /* буферы: vb, pb, ub (0 — GU; 256 — доля resolve для нулевого мипа; 512 — единица для остальных) */
+  const bu=GPUBufferUsage,u0=new Float32Array(132);u0.set([TW,TH,k,0]);u0.set([W/TW,H/TH,0,0],64);u0.set([1,1,0,0],128);
+  const vb=gcPoolBuf("vb",bu.VERTEX,new Float32Array(V.length?V:[0,0,0,0])),pb=gcPoolBuf("pb",bu.STORAGE,new Float32Array(P)),ub=gcPoolBuf("ub",bu.UNIFORM,u0);
   const L=gcLay();let rv=L.dm;
-  if(R.length){const rt=d.createTexture({size:[256,R.length],format:"rgba16float",usage:U.TEXTURE_BINDING|U.COPY_DST}),h=new Uint16Array(R.length*1024);
-    R.forEach((r,i)=>{for(let j=0;j<1024;j++)h[i*1024+j]=f16(r[j]);});d.queue.writeTexture({texture:rt},h,{bytesPerRow:2048},[256,R.length]);trash.push(rt);rv=rt.createView();}
+  if(rt){const h=new Uint16Array(R.length*1024);
+    R.forEach((r,i)=>{for(let j=0;j<1024;j++)h[i*1024+j]=f16(r[j]);});d.queue.writeTexture({texture:rt},h,{bytesPerRow:2048},[256,R.length]);rv=rt.createView();}
   const bgs=new Map(),bg=(q,u)=>{u=u||ub;const key=q?q.view:null,nr=q&&q.near;let M=bgs.get(u);if(!M)bgs.set(u,M=new Map());
     let b=M.get(key)&&M.get(key)[nr?1:0];if(b)return b;
-    b=d.createBindGroup({layout:L.bgl,entries:[{binding:0,resource:u.buffer?u:{buffer:u}},{binding:1,resource:{buffer:pb}},{binding:2,resource:rv},
+    b=d.createBindGroup({layout:L.bgl,entries:[{binding:0,resource:u.buffer?u:{buffer:u,size:32}},{binding:1,resource:{buffer:pb}},{binding:2,resource:rv},
       {binding:3,resource:GPU.S.lin},{binding:4,resource:q?q.view:L.dm},{binding:5,resource:nr?L.near:gpuMipSmp()}]});
     const e=M.get(key)||[];e[nr?1:0]=b;M.set(key,e);return b;};
   const enc=d.createCommandEncoder();
   const run=(p,list,u)=>{p.setVertexBuffer(0,vb);for(const c of list){p.setPipeline(gcPipe(c.md));p.setBindGroup(0,bg(c.img,u));p.setStencilReference(c.ref);p.draw(c.n,1,c.f,0);}};
-  B.shl=SH.length;if(SH.length)gcShadowPasses(enc,SH,run);
-  const ps=enc.beginRenderPass({colorAttachments:[{view:ms.createView(),resolveTarget:rs?rs.createView():B.tex.createView({baseMipLevel:0,mipLevelCount:1}),
+  B.shl=SH.length;if(SA)gcShadowPasses(enc,SH,SA,run);
+  const ps=enc.beginRenderPass({colorAttachments:[{view:ms.createView(),resolveTarget:rs.createView(),
     loadOp:"clear",clearValue:{r:0,g:0,b:0,a:0},storeOp:"discard"}],
     depthStencilAttachment:{view:st.createView(),stencilLoadOp:"clear",stencilClearValue:0x80,stencilStoreOp:"discard"}});
   run(ps,D);ps.end();
-  /* мипы на видеокарте: проход на уровень, среднее 2×2 (и сброс двойного размера в нулевой) */
-  const MP=gcMipPipe(),down=(src,lv)=>{
+  /* мипы на видеокарте: проход на уровень, среднее 2×2 (и сброс resolve в нулевой: копия 1:1 или среднее 2×2) */
+  const MP=gcMipPipe(),down=(src,lv,uo)=>{
     const p=enc.beginRenderPass({colorAttachments:[{view:B.tex.createView({baseMipLevel:lv,mipLevelCount:1}),loadOp:"clear",clearValue:{r:0,g:0,b:0,a:0},storeOp:"store"}]});
-    p.setPipeline(MP);p.setBindGroup(0,d.createBindGroup({layout:MP.getBindGroupLayout(0),entries:[{binding:0,resource:src},{binding:1,resource:GPU.S.lin}]}));
+    p.setPipeline(MP);p.setBindGroup(0,d.createBindGroup({layout:MP.getBindGroupLayout(0),entries:[{binding:0,resource:src},{binding:1,resource:GPU.S.lin},{binding:2,resource:{buffer:ub,offset:uo,size:16}}]}));
     p.draw(3);p.end();};
-  if(rs)down(rs.createView(),0);
-  for(let i=1;i<B.n;i++)down(B.tex.createView({baseMipLevel:i-1,mipLevelCount:1}),i);
+  down(rs.createView(),0,256);
+  for(let i=1;i<B.n;i++)down(B.tex.createView({baseMipLevel:i-1,mipLevelCount:1}),i,512);
   d.queue.submit([enc.finish()]);
   GPU.bakeN=(GPU.bakeN||0)+1;GPU.bakeMs=(GPU.bakeMs||0)+(wallMs()-t0);
 }
