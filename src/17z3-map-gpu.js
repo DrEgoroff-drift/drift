@@ -40,6 +40,15 @@ fn gArmD(r:f32,th:f32,ph:f32,pitch:f32)->f32{
   let s=th-log(max(r,${GAL_R0.toFixed(4)})/${GAL_R0.toFixed(4)})/pitch-ph;
   return (pmod(s+GPI*.5,GPI)-GPI*.5)*r;}
 fn sq(x:f32)->f32{return x*x;}
+/* неразрешённые звёзды: по точке на клетку шага sp (в секторах), если прошёл хэш
+   против плотности; px — пикселей на сектор. Точка мягкая, блеск — степенной */
+fn gMs(w:vec2f,sp:f32,dens:f32,px:f32,sd:i32)->f32{
+  let id=floor(w/sp);let ix=i32(id.x);let iy=i32(id.y);
+  if(gH(ix,iy,sd)>=dens){return 0.;}
+  let q=(id+.2+.6*vec2f(gH(ix,iy,sd+1),gH(ix,iy,sd+2)))*sp;
+  let d=length(w-q)*px;let b=gH(ix,iy,sd+3);
+  return (.35+2.2*b*b*b*b*b*b)*exp(-d*d*1.6);}
+var<private> GNEB:array<vec4f,${GAL_NEBULAE.length}>=array<vec4f,${GAL_NEBULAE.length}>(${GAL_NEBULAE.map((n,i)=>"vec4f("+n.x.toFixed(4)+","+n.y.toFixed(4)+","+(1.3+.5*h01(i,7,0x6C3)).toFixed(3)+","+(i%3)+".)").join(",")});
 fn field(p:vec2f,uv:vec2f)->vec4f{
   let V=fu.v[0];let C=fu.v[1];
   let w0=V.xy+(p-C.xy)/V.z;let x=w0.x;let y=w0.y;let fine=V.w;
@@ -62,7 +71,12 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   let lane0=ramp*exp(-sq((d1+.38*w)/(.3*w)))*(.5+.8*gF(x*.3,y*.3,${0x6A4},3));
   let rip=gF(x*1.4+5.,y*1.4-3.,${0x6B2},3);
   let lane=lane0*mix(1.,.35+1.3*rip,fine*.8);
-  let dust=clamp(lane*.85,0.,.85);
+  /* пылевые полосы перемычки: две прямые ленты по передним кромкам бара, сдвинутые в
+     разные стороны от оси (как у настоящих галактик с баром), — структура видна прямо
+     у дома, где рукавов ещё нет */
+  let bls=select(-1.,1.,u>0.);
+  let blane=exp(-sq((v-bls*(.62+.14*abs(u)))/(.30+.04*abs(u))))*exp(-sq(u/(BL*1.15)))*smoothstep(.5,2.4,abs(u));
+  let dust=clamp(lane*.85+blane*.75*(.65+.7*rip),0.,.85);
   let kn=gF(x*.45+3.,y*.45,${0x6A5},3);
   let knot=clamp((onArm*clump-.55)*2.2,0.,1.)*clamp((kn-.58)*6.,0.,1.);
   /* волокна газа вдоль рукава: видны только вблизи, пока клетка крупна */
@@ -78,6 +92,32 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   var c=col*glow*${GAL_GLOW_CAP.toFixed(3)};
   /* узлы HII светят сами — розовая эмиссия поверх, чуть сверх потолка */
   c+=vec3f(1.,.5,.7)*knot*disk*.10;
+  /* ядро светится, а не упирается в потолок: широкий тёплый ореол балджа за пределом модели */
+  c+=vec3f(1.,.78,.52)*(.045*exp(-r/5.)+.05*exp(-sq(r/2.2)))*(1.-dust*.8);
+  /* гребень перемычки: вытянутое тёплое тело через ядро — у ядра есть ось */
+  c+=vec3f(1.,.82,.58)*.085*exp(-(sq(u/(BL*.95))+sq(v/.75)))*(1.-dust);
+  /* галактика из звёзд, а не из тумана: неразрешённая звёздная крошка по плотности света,
+     в мире (едет с листом), шаг — степень двойки под ~7 px на экране, два уровня вперемешку */
+  {let lv=log2(7./V.z);let s0=exp2(floor(lv));let t=fract(lv);
+    let dn=clamp(pow(glow,1.25)*3.+.02,0.,.92)*(1.-dust*.9);
+    let ms=mix(gMs(w0,s0,dn,V.z,${0x6D1}),gMs(w0,s0*2.,dn,V.z,${0x6D5}),t);
+    c+=mix(col,vec3f(1.),.35)*ms*.30;}
+  /* туманности по имени (17z2): облака свечения там, где их зовут водители. Одно
+     общее поле шума на пиксель, маска — сумма гауссиан; розовое ядро, бирюзовая
+     кромка, тёмные глобулы. Место с именем теперь видно, а не только подписано */
+  var nm=0.;var ni=0.;
+  for(var i=0;i<${GAL_NEBULAE.length};i++){let q=GNEB[i];let d2=dot(w0-q.xy,w0-q.xy);
+    if(d2<16.){let g=exp(-d2/(q.z*q.z));nm+=g;ni+=g*q.w;}}
+  if(nm>.004){
+    let hue=ni/nm;
+    let n1=gF(x*.7+y*.2,y*.7-x*.2,${0x6C1},4);let n2=gF(x*1.6,y*1.6,${0x6C2},3);
+    let gas=min(nm,1.)*smoothstep(.3,.7,n1+(n2-.5)*.35*fine);
+    let glob=smoothstep(.62,.8,n2)*nm*.8;
+    let core=mix(vec3f(1.,.42,.66),vec3f(1.,.62,.36),step(1.5,hue));
+    let edge=mix(vec3f(.30,.86,.82),vec3f(.52,.62,1.),step(.5,hue)*step(hue,1.5));
+    let nc=mix(core,edge,smoothstep(.25,.9,1.-nm+n2*.4));
+    c=c*(1.-clamp(glob,0.,.7))+nc*gas*.4*(1.-glob);
+  }
   /* круг прыжка: внутри — чуть светлее и бирюзовая подсветка к кромке, снаружи небо гаснет */
   let L=fu.v[2];
   if(L.w>0.){
@@ -88,7 +128,11 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   }
   /* пустое небо — холодное, не чёрное (#03040a); там, где светит, тень не синит тёплое ядро */
   c+=vec3f(3.,4.,10.)/255.*(1.-clamp(glow*4.,0.,1.));
-  return vec4f(c,1.);}`;
+  /* свет листа собран к середине: мягкая виньетка, края кадра уходят в холодную тень */
+  let e=uv-.5;c*=1.-.42*dot(e,e)*2.;
+  /* зерно по пикселю вместо ровной заливки */
+  c+=(gH(i32(p.x*2.),i32(p.y*2.),${0x6D9})-.5)*.014;
+  return vec4f(max(c,vec3f(0.)),1.);}`;
 /* небо галактики: V — центр окна в секторах, cell — пикселей на сектор */
 function galaxyGpu(pass,V,cell){
   const U=MAPGPU.U;
@@ -139,19 +183,28 @@ function mapGpuOver(){
    к белому, ближний ореол и широкий рассеянный — у ярких классов ещё шире.
    Лучи сужаются к концам: две капсулы, длинная тусклая и короткая яркая.
    vis — записи drawMap с x,y,s,fade,rr; gk — ужатие знака на отъезде */
+/* лучи — только у пяти ярчайших в кадре (L1.7): десятки крестов — шум, пять — ориентиры */
+const MAP_SPIKE_N=5;
 function mapStarsGpu(pass,vis,gk){
-  const SH=[];
+  const SH=[],on=[];
+  for(const v of vis)if(v.s.cls.t>=1.1&&v.x>0&&v.x<W&&v.y>0&&v.y<H)on.push(v);
+  on.sort((a,b)=>b.s.cls.t*b.fade-a.s.cls.t*a.fade);
+  const spk=new Set(on.slice(0,MAP_SPIKE_N));
   for(const v of vis){
     const t=v.s.cls.t,col=hex2rgb(v.s.cls.col),f=v.fade*(.4+.6*gk),rr=v.rr,x=v.x,y=v.y;
     if(x<-rr*14||x>W+rr*14||y<-rr*14||y>H+rr*14)continue;
-    SH.push([1,x,y,0,0,0,rr*7,col[0],col[1],col[2],.16*f],
-      [1,x,y,0,0,0,rr*2.6,col[0],col[1],col[2],.5*f]);
-    if(t>=1.3){
-      SH.push([1,x,y,0,0,0,rr*15,col[0],col[1],col[2],.05*f]);
-      const L=rr*(4.4+t);
+    /* лестница блеска: класс звезды решает и ореол, и лучи; свечение — сложением в три масштаба */
+    const br=clamp(t/2,0,1);
+    SH.push([1,x,y,0,0,0,rr*(6+5*br),col[0],col[1],col[2],(.10+.10*br)*f],
+      [1,x,y,0,0,0,rr*2.6,col[0],col[1],col[2],(.42+.2*br)*f]);
+    if(spk.has(v)){
+      SH.push([1,x,y,0,0,0,rr*18,col[0],col[1],col[2],.06*f]);
+      /* лучи сужаются к концам: длинная тусклая капсула, короткая яркая, белая середина */
+      const L=rr*(5+2.2*t);
       for(const [dx,dy] of [[1,0],[0,1]]){
-        SH.push([2,x-dx*L,y-dy*L,x+dx*L,y+dy*L,.45,.6,col[0],col[1],col[2],.10*f],
-          [2,x-dx*L*.45,y-dy*L*.45,x+dx*L*.45,y+dy*L*.45,.5,.6,col[0],col[1],col[2],.14*f]);
+        SH.push([2,x-dx*L,y-dy*L,x+dx*L,y+dy*L,.4,.8,col[0],col[1],col[2],.22*f],
+          [2,x-dx*L*.5,y-dy*L*.5,x+dx*L*.5,y+dy*L*.5,.5,.8,col[0],col[1],col[2],.30*f],
+          [2,x-dx*L*.2,y-dy*L*.2,x+dx*L*.2,y+dy*L*.2,.6,.6,255,255,255,.35*f]);
       }
     }
     const w=mixc(col,[255,255,255],.4);

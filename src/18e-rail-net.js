@@ -199,12 +199,23 @@ function drawRailMap(V,cell,pale){
   const SH=[],GL=[],R=L.map(runs);
   if(k>0)for(let i=0;i<L.length;i++){const hw=((L[i].kind==="radial"?1:1.4)+k*3.4)/2;
     for(const r of R[i])mapRibbon(SH,r,hw,[4,6,10,.5*k]);}
+  /* свои линии — те, где есть остановка в досягаемости прыжка: они горят; чужие —
+     бледный каркас. На карте сразу видно, куда отсюда можно уехать */
+  const jr=pale?-1:((typeof stat==="function"?stat().jump:1)+.02);
+  const mine=l=>jr>0&&l.stops&&l.stops.some(s=>Math.hypot(s.sx-G.sx,s.sy-G.sy)<=jr);
   for(let i=0;i<L.length;i++){
-    const l=L[i],c=RAIL_COL[l.kind],r=l.kind==="radial",hw=((r?1:1.4)+k*(r?.6:1))/2;
+    const l=L[i],c=RAIL_COL[l.kind],r=l.kind==="radial",hw=((r?1:1.4)+k*(r?.6:1))/2,my=mine(l);
     for(const q of R[i]){
-      mapRibbon(SH,q,hw,[c[0],c[1],c[2],(r?.13:.18)+k*(r?.32:.42)]);
-      /* отсвет пути сложением: линия светится в небе, а не лежит на нём */
-      if(!r)mapRibbon(GL,q,hw+2+k*3,[c[0],c[1],c[2],.035+.05*k]);
+      if(my){
+        /* горящий путь: широкий отсвет сложением, лента цвета линии, белёсая сердцевина */
+        mapRibbon(GL,q,hw+3+k*4,[c[0],c[1],c[2],.07+.06*k]);
+        mapRibbon(GL,q,hw+1,[c[0],c[1],c[2],.16]);
+        mapRibbon(SH,q,hw*1.2,[c[0],c[1],c[2],.55+.35*k]);
+        mapRibbon(GL,q,Math.max(.35,hw*.35),[255,250,240,.35]);
+      }else{
+        mapRibbon(SH,q,hw,[c[0],c[1],c[2],(r?.10:.13)+k*(r?.2:.26)]);
+        if(!r)mapRibbon(GL,q,hw+2+k*2,[c[0],c[1],c[2],.02+.025*k]);
+      }
     }
   }
   /* станции — только вблизи: белый кружок в чёрной кайме, пересадка — двойной */
@@ -217,6 +228,6 @@ function drawRailMap(V,cell,pale){
       if(j)SH.push([3,x,y,1.4,0,.5,0,240,236,226,.7]);
     }
   }
-  gpuShapes(pass,GL,{blend:"add"});
   gpuShapes(pass,SH);
+  gpuShapes(pass,GL,{blend:"add"});   /* свет — поверх ленты: сердцевина горит, а не прячется под краской */
 }
