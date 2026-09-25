@@ -83,6 +83,11 @@ Without a device (`GPU.on` false — the Node tier) the old 2D tiles still draw,
    alone on the empty `#c`, which is uploaded (`surfSnap`, shared with the shadow snapshot) and laid in
    the ground pass through a 13-tap disc blur (`fld.snear`, hull blend): the boulders and grass at the
    lens are soft, the walker keeps the focus. Above the walker, below dust, labels and weather.
+10. **tests** — `tests/91x-surface-gpu.js` (Node tier, 2 suites): without a device every surface GPU
+    layer returns false and the 2D frame still draws (ridge tiles baked, foreground drawn); the third
+    ridge is a ridge of its own (no correlation with A or the ground, larger span, mean at the ground's
+    mean), all profiles fit the 16-bit height texture, `SRG_RGB` parses `hazeFar`. Browser suites run
+    on SwiftShader after the port: `-Only "гряд"` 41/41, `-Only "поверхност"` 77/77.
 
 ## Pairs (scratchpad, not in git)
 
