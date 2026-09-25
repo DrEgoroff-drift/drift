@@ -624,7 +624,16 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   data-pipe>` and `test.ps1 -Accept` (default `-Only "золотые кадры|конвейеры"`) writes `08b1`: 36 keys, warmed
   in ~1.7 s on the desktop card. Test boot: compilation runs on real time, so the pipe wait polls 1 ms of
   virtual time per ~20 ms of busy work, ceiling 600 polls. Before the table: 33 lazy keys in flight; after: 0.
-  Next: the pool giant (1024² bake kept), then the review's 5a–5c.
+  Step 4 (а4) done — the cold S23 on 49f75cf (26.09) still had one 67 ms frame, at the hotel approach: six
+  one-shot 1024² MSAA bake sets (~120 MB with zeroing) in three frames, GPU latency 34→106 ms at JS 3–5 ms.
+  The pool now keeps a `bake` 1024² set warm from `gpuInit` (behind #intro; warm total ~54 MB, cap 80 MB,
+  one-shot only above half the cap) and clears every warmed set once there, so the first touch is not in
+  flight. `prebake` has a second, GPU budget: `PB_PX` (2^19 MSAA points, `GC_PX` counted in `gpuBakeRedo`) —
+  a frame starts a new step only below it, so one hotel-sized bake per frame. The detector gained the edge
+  wall scene, the billboard at ×1.5 (neon core → `gc:msk|destination-out`) and «the real first flight»
+  (spawn + 1800 frames of Контроль's gate.py route: thrust 1 s on/off, left 0.5 s every 4 s — caught
+  `fld.hgflame|add` too); table 39 keys.
+  Next: the review's 5a–5c.
 - **`gpuHullLight` (16ga) is removed:** the hull light is 17c `gpuLitSprite`; the probe row `hullLight` is gone.
 - **Next, in Контроль's order (25.09):**
   1. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);

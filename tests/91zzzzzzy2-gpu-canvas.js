@@ -106,4 +106,13 @@ TEST_SUITES.push(()=>suite("GPU-холст: серии тени, пул целе
   finally{if(Q2){for(const e of Q2.t)GPU.trash.push(...e.T);for(const b of Object.values(Q2.b))GPU.trash.push(b);}GPU.lay=lay;}
   ok(Q2&&Q2!==Q&&Q2.made>0,"новый GPU.lay (как после потери устройства) — новый пул, прогретый заново");
   eq(GPU.lay["gc.pool"],Q,"старый пул на месте, пока жив GPU.lay");
+  /* а4: выпечка гостиницы 500×340 при ss 2 (1000×680) — набор 1024² из прогрева пула, не разовый великан */
+  const m1=Q.made;gpuBakeDrop(gpuBake(500,340,g=>{g.fillStyle="#fff";g.fillRect(0,0,9,9);},{ss:2,mips:false}));
+  eq(Q.made-m1,0,"выпечка 1000×680 — из прогретого набора 1024², новых целей нет");
+  /* бюджет видеокарты prebake: крупные шаги — по одному на кадр, мелкие идут пачкой */
+  const steps=(w,h)=>{let n=0;const key="t|px"+w;prebakeDrop(key);PB_F=-2;
+    prebake(key,function*(){for(let i=0;i<4;i++){gpuBakeDrop(gpuBake(w,h,g=>{g.fillRect(0,0,4,4);},{ss:2,mips:false}));n++;yield;}},false);
+    prebakeDrop(key);return n;};
+  eq(steps(500,340),1,"четыре выпечки 1000×680 — одна за кадр (PB_PX)");
+  ok(steps(64,64)>1,"мелкие выпечки 128² — несколько за кадр");
 }));

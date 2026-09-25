@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 628 · символов верхнего уровня: 6278
+Файлов: 628 · символов верхнего уровня: 6279
 
 ## СИМВОЛЫ
 
@@ -2053,15 +2053,16 @@ GC_MIP_WGSL                  src/08ca-gpu-canvas.js:330
 GC_MISS                      src/08ca-gpu-canvas.js:27
 GC_OPS                       src/08ca-gpu-canvas.js:13-58
 GC_OPX                       src/08ca-gpu-canvas.js:26
-GC_POOL_CAP                  src/08ca-gpu-canvas.js:390
-GC_POOL_WARM                 src/08ca-gpu-canvas.js:391
+GC_POOL_CAP                  src/08ca-gpu-canvas.js:393
+GC_POOL_WARM                 src/08ca-gpu-canvas.js:394
+GC_PX                        src/08ca-gpu-canvas.js:445
 GC_RAMPS                     src/08ca-gpu-canvas.js:65
 GC_SHADOW_INK                src/08cb-gpu-text.js:11
 GC_ST                        src/08ca-gpu-canvas.js:339-362
 GC_TM                        src/08cb-gpu-text.js:13
 GC_TOL                       src/08ca-gpu-canvas.js:11
 GC_TXT_KEYS                  src/08cb-gpu-text.js:12
-GC_VA                        src/08ca-gpu-canvas.js:436
+GC_VA                        src/08ca-gpu-canvas.js:446
 GC_WGSL                      src/08ca-gpu-canvas.js:291
 gcAtlas                      src/08cb-gpu-text.js:56-70
 gcBlurDesc                   src/08cc-gpu-shadow.js:38
@@ -2080,10 +2081,10 @@ gcMipPipe                    src/08ca-gpu-canvas.js:378
 gcNo                         src/08ca-gpu-canvas.js:28
 gcPipe                       src/08ca-gpu-canvas.js:363-366
 gcPipeDesc                   src/08ca-gpu-canvas.js:367-377
-gcPool                       src/08ca-gpu-canvas.js:398-429
-gcPoolBuf                    src/08ca-gpu-canvas.js:414-429
-gcPoolSet                    src/08ca-gpu-canvas.js:404-429
-gcPoolSpec                   src/08ca-gpu-canvas.js:393-429
+gcPool                       src/08ca-gpu-canvas.js:401-437
+gcPoolBuf                    src/08ca-gpu-canvas.js:422-437
+gcPoolSet                    src/08ca-gpu-canvas.js:412-437
+gcPoolSpec                   src/08ca-gpu-canvas.js:396-437
 gcRectSp                     src/08ca-gpu-canvas.js:239
 gcShadowPack                 src/08cc-gpu-shadow.js:42-48
 gcShadowPasses               src/08cc-gpu-shadow.js:52-65
@@ -2271,7 +2272,7 @@ GPU_LIT_DK                   src/17c-system-draw.js:400
 GPU_LIT_SH                   src/17c-system-draw.js:398
 GPU_MIP                      src/08c-gpu-kit.js:96
 GPU_MIP_LOD                  src/08c-gpu-kit.js:185
-GPU_PIPE_KEYS                src/08b1-gpu-pipe-keys.js:3-40
+GPU_PIPE_KEYS                src/08b1-gpu-pipe-keys.js:3-43
 GPU_PIPE_ONE                 src/08b0-gpu-pipe.js:40
 GPU_PIPE_SRC                 src/08b0-gpu-pipe.js:32-50
 GPU_PIPES                    src/08b0-gpu-pipe.js:9
@@ -2281,10 +2282,10 @@ GPU_SHP_WGSL                 src/08c-gpu-kit.js:235
 GPU_WGSL_COMMON              src/08c-gpu-kit.js:134
 gpuAfterWarm                 src/08b0-gpu-pipe.js:65-69
 gpuArena                     src/08c-gpu-kit.js:154-164
-gpuBake                      src/08ca-gpu-canvas.js:424-429
-gpuBaked                     src/08ca-gpu-canvas.js:431-434
-gpuBakeDrop                  src/08ca-gpu-canvas.js:435
-gpuBakeRedo                  src/08ca-gpu-canvas.js:437-547
+gpuBake                      src/08ca-gpu-canvas.js:432-437
+gpuBaked                     src/08ca-gpu-canvas.js:439-442
+gpuBakeDrop                  src/08ca-gpu-canvas.js:443
+gpuBakeRedo                  src/08ca-gpu-canvas.js:447-557
 gpuBargeBody                 src/12l-barge.js:543-550
 gpuBind                      src/08c-gpu-kit.js:38-44
 gpuBloom                     src/08b-gpu.js:630-635
@@ -4068,9 +4069,9 @@ passShipX                    src/11p-pass.js:34-37
 passTell                     src/11p-pass.js:55-60
 PAX_KEYS                     src/02-world.js:117
 payCost                      src/21a-mode-base.js:100
-PB_F                         src/17a0-prebake.js:14
-PB_MS                        src/17a0-prebake.js:13
-pbOnScreen                   src/17a0-prebake.js:36
+PB_F                         src/17a0-prebake.js:17
+PB_MS                        src/17a0-prebake.js:16
+pbOnScreen                   src/17a0-prebake.js:39
 PC_GRAIN                     src/25g-post-craft.js:7
 pcA                          src/25g-postcard.js:149
 pcBelt                       src/25g-post-void.js:58-221
@@ -4137,9 +4138,9 @@ pickShare                    src/20e-species.js:125-130
 pickStType                   src/06-galaxy.js:72-78
 PICKUPS                      src/24a-mode-raid.js:24-28
 pinch0                       src/15-input.js:396
-PIPE_SCENES                  tests/91zzzzzzy4-pipes.js:10-36
-PIPE_SUITE                   tests/91zzzzzzy4-pipes.js:44-73
-pipeWho                      tests/91zzzzzzy4-pipes.js:38-43
+PIPE_SCENES                  tests/91zzzzzzy4-pipes.js:10-45
+PIPE_SUITE                   tests/91zzzzzzy4-pipes.js:53-83
+pipeWho                      tests/91zzzzzzy4-pipes.js:47-52
 PIR_ART                      src/12i-pirate-hull.js:18
 PIR_CLASS                    src/12i-pirate-hull.js:20-25
 PIR_GUNART                   src/12i-pirate-hull.js:33-46
@@ -4333,8 +4334,8 @@ prbLeg                       tests/91zzw-eco-probe.js:5-23
 prbStations                  tests/91zzw-eco-probe.js:4
 prButtons                    tests/91zzzzzi-promise.js:53
 prDelta                      tests/91zzzzzi-promise.js:26-30
-prebake                      src/17a0-prebake.js:16-34
-prebakeDrop                  src/17a0-prebake.js:15
+prebake                      src/17a0-prebake.js:19-37
+prebakeDrop                  src/17a0-prebake.js:18
 prevAct                      src/08-state.js:197
 priceBestOf                  src/12aa-need.js:242-251
 pricesClose                  src/12aa-need.js:294
@@ -6434,7 +6435,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/08c-gpu-kit.js · 26 КБ
   · набор для слоёв видеокарты (docs/DESIGN-gpu.md §4):1
 
-## src/08ca-gpu-canvas.js · 45 КБ
+## src/08ca-gpu-canvas.js · 46 КБ
   · GPU-холст: 2D-контекст, что рисует видеокартой (docs/DESIGN-gpu.md, «GPU canvas»):1
 
 ## src/08cb-gpu-text.js · 9 КБ
@@ -7005,7 +7006,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/17a-station-mod.js · 13 КБ
   · модули станции:1
 
-## src/17a0-prebake.js · 3 КБ
+## src/17a0-prebake.js · 4 КБ
   · печь заранее: общий планировщик (GPU-3, 25.09, DESIGN-gpu):1
 
 ## src/17b-finds.js · 18 КБ
@@ -8269,7 +8270,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzzzzzy1-gpugate-belt.js · 13 КБ
   · ворота ступени 2: пояс без #c (docs/DESIGN-gpu.md, Stage 2):1
 
-## tests/91zzzzzzy2-gpu-canvas.js · 11 КБ
+## tests/91zzzzzzy2-gpu-canvas.js · 12 КБ
   · GPU-холст: запись команд и громкие дыры (08ca, docs/DESIGN-gpu.md «GPU canvas»):1
 
 ## tests/91zzzzzzy3-gate2d.js · 12 КБ
@@ -8278,7 +8279,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzzzzzy4-gpu-ovl.js · 6 КБ
   · слой #ovl: фишки у кромки и подписи мира на видеокарте (08bi, docs/DESIGN-gpu.md §G):1
 
-## tests/91zzzzzzy4-pipes.js · 6 КБ
+## tests/91zzzzzzy4-pipes.js · 7 КБ
   · детектор конвейеров: после прогрева полёт не компилирует (DESIGN-gpu §G):1
 
 ## tests/91zzzzzzz-hands.js · 14 КБ

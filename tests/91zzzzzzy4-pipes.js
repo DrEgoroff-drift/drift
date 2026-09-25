@@ -16,8 +16,17 @@ const PIPE_SCENES=[
     for(let r=0;r<=30;r++)for(let x=-r;x<=r;x++)for(let y=-r;y<=r;y++){
       if(Math.max(Math.abs(x),Math.abs(y))!==r)continue;const s=getSystem(x,y);if(!s.station)continue;
       G.sx=x;G.sy=y;G.sys=s;G.ap=null;G.orbit=null;const B=bbHere();if(!B)continue;
-      G.ship.x=B.x;G.ship.y=B.y+60;G.ship.vx=G.ship.vy=0;G.zoom=1;G.zoomT=null;return {B};}
+      /* ×1.5: кегль вывески от 15 точек — неон печёт бледное ядро (destination-out), S23 ловил его ленивым 26.09 */
+      G.ship.x=B.x;G.ship.y=B.y+60;G.ship.vx=G.ship.vy=0;G.zoom=1.5;G.zoomT=null;return {B};}
     return null;}},
+  {name:"стена у края системы (gew)",place(){
+    G.sx=0;G.sy=0;G.sys=getSystem(0,0);G.ap=null;G.orbit=null;
+    G.ship.x=0;G.ship.y=-(sysEdge(G.sys)-300);G.ship.vx=G.ship.vy=0;G.zoom=1;G.zoomT=null;return true;}},
+  /* как gate.py Контроля на холодном S23: «Начать» и 30 с — тяга 1 с через 1 с, влево 0.5 с из каждых 4.
+     Там первым ленивым вышло поле стены (gew) на 8-й секунде */
+  {name:"настоящий первый полёт: старт и 30 с маршрута",frames:1800,place(first,i){
+    if(first){spawnPirates();spawnAllies();return G.mode==="system";}
+    const n=(i/15)|0;keys.thrust=G.mode==="system"&&n%8<4;keys.left=G.mode==="system"&&n%16<2;return true;}},
   {name:"пираты у корабля: корпуса, выхлоп, ракеты",place(first){
     const sh=G.ship;
     if(first){
@@ -53,8 +62,9 @@ const PIPE_SUITE=()=>suite("конвейеры: после прогрева по
     for(const S of PIPE_SCENES){
       resetWorld();G.mode="system";
       if(!ok(!!S.place(true),S.name+": сцена нашлась"))continue;
-      try{for(let i=0;i<60;i++){S.place();frameBody(t+=16.7);}}
+      try{for(let i=0;i<(S.frames||60);i++){S.place(false,i);frameBody(t+=16.7);}}
       catch(e){ok(false,S.name+": кадр упал: "+e.message);}
+      finally{keys.thrust=keys.left=false;}
     }
   }finally{
     for(const k of kinds)delete d[k];

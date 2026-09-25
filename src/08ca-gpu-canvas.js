@@ -387,8 +387,11 @@ function gcMipDesc(){const m=gpuShader(GC_MIP_WGSL);return {layout:"auto",vertex
    gpuInit (за экраном загрузки и после потери устройства) прогревает его ходовыми размерами (GC_POOL_WARM, ~30 МБ): первая встреча с
    крупной выпечкой создаёт одну текстуру — её саму. Повтор безопасен порядком очереди: запись
    следующей выпечки встаёт после чтения прошлой ── */
-const GC_POOL_CAP=64<<20;   /* пик на двойнике телефона (system с развёрткой зума, dock, relay) — 30.4 МБ */
-const GC_POOL_WARM=[["bake",256,256],["bake",512,512],["bake",768,768],["shadow",256,256],["shadow",512,512],["ramp",256,128]];
+/* великан 1024² (выпечки гостиницы 500×340 и её свечения при ss 2 — 1024×704) живёт в пуле с загрузки: холодный S23
+   на 49f75cf (26.09) — подлёт к гостинице создал 6 разовых наборов 1024² разом (~120 МБ с обнулением), кадр 67 мс.
+   Прогрев с ним ~54 МБ; разовым остаётся только набор больше половины потолка */
+const GC_POOL_CAP=80<<20;
+const GC_POOL_WARM=[["bake",256,256],["bake",512,512],["bake",768,768],["bake",1024,1024],["shadow",256,256],["shadow",512,512],["ramp",256,128]];
 /* наборы: [формат, выборок, usage] — все одного размера */
 function gcPoolSpec(role){
   const U=GPUTextureUsage,RA=U.RENDER_ATTACHMENT,TB=U.TEXTURE_BINDING;
@@ -399,6 +402,11 @@ function gcPool(){
   let Q=GPU.lay["gc.pool"];if(Q)return Q;
   Q=GPU.lay["gc.pool"]={t:[],b:{},by:0,peak:0,made:0};
   for(const [r,w,h] of GC_POOL_WARM)gcPoolSet(r,w,h);
+  /* обнулить прогретое здесь же: WebGPU чистит память текстуры при первом касании — пусть оно будет за заставкой */
+  const e=GPU.dev.createCommandEncoder();
+  for(const x of Q.t)if(x.role!=="ramp"){const [ms,st,rs]=x.T;e.beginRenderPass({colorAttachments:[{view:ms.createView(),resolveTarget:rs.createView(),
+    loadOp:"clear",storeOp:"discard",clearValue:[0,0,0,0]}],depthStencilAttachment:{view:st.createView(),stencilLoadOp:"clear",stencilStoreOp:"discard"}}).end();}
+  GPU.dev.queue.submit([e.finish()]);
   return Q;}
 /* → текстуры набора role размером w×h или больше */
 function gcPoolSet(role,w,h){
@@ -407,7 +415,7 @@ function gcPoolSet(role,w,h){
   if(e){Q.t.splice(Q.t.indexOf(e),1);Q.t.push(e);return e.T;}
   const W=Math.ceil(w/64)*64,H=Math.ceil(h/64)*64,px={rgba16float:8,r8unorm:1,stencil8:1};let by=0;
   const T=gcPoolSpec(role).map(([f,n,us])=>{by+=W*H*n*(px[f]||4);Q.made++;return GPU.dev.createTexture({size:[W,H],sampleCount:n,format:f,usage:us});});
-  if(by>GC_POOL_CAP/4){GPU.trash.push(...T);return T;}   /* великан — разовый, в пул не идёт */
+  if(by>GC_POOL_CAP/2){GPU.trash.push(...T);return T;}   /* больше полупотолка — разовый, в пул не идёт */
   Q.t.push({role,w:W,h:H,T,by});Q.by+=by;Q.peak=Math.max(Q.peak,Q.by);
   while(Q.by>GC_POOL_CAP&&Q.t.length>1){const o=Q.t.shift();Q.by-=o.by;GPU.trash.push(...o.T);}
   return T;}
@@ -433,6 +441,8 @@ function gpuBaked(M,key,w,h,draw,o){
   if(B)gpuBakeDrop(B);B=gpuBake(w,h,draw,o);if(B)M.set(key,B);return B;
 }
 function gpuBakeDrop(B){if(B&&B.tex){if(B.dev===GPU.dev)GPU.trash.push(B.tex);B.tex=B.view=null;}}
+/* GC_PX — точек MSAA, выпеченных с загрузки: prebake (17a0) не начинает шаг, если кадр уже испёк PB_PX */
+let GC_PX=0;
 let GC_VA=new Float32Array(1<<16);   /* вершины выпечки (x,y,краска,u,v) — общий растущий буфер */
 function gpuBakeRedo(B){
   const t0=wallMs(),{w,h}=B,k=B.o.ss||(w*h<=262144?2:1),g=new GcCtx(w,h,k),prev=ctx;
@@ -440,7 +450,7 @@ function gpuBakeRedo(B){
   const d=GPU.dev,U=GPUTextureUsage,W=w*k,H=h*k;
   B.tex=d.createTexture({size:[w,h],mipLevelCount:B.n,format:"rgba8unorm",usage:U.TEXTURE_BINDING|U.RENDER_ATTACHMENT|U.COPY_SRC});
   B.view=B.tex.createView();B.dev=d;
-  const [ms,st,rs]=gcPoolSet("bake",W,H),TW=ms.width,TH=ms.height;
+  const [ms,st,rs]=gcPoolSet("bake",W,H),TW=ms.width,TH=ms.height;GC_PX+=W*H;
   /* вершины (x,y,краска,u,v), краски по 5 vec4, ленты градиентов, список вызовов */
   let V=GC_VA,vn=0;const P=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],R=[],RI=new Map(),D=[],Q=[0,0,W,0,W,H,0,0,W,H,0,H];
   let DL=D;const SH=[];   /* DL — куда идут вызовы: основной проход или слой тени */
