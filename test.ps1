@@ -21,7 +21,8 @@
 #   powershell -ExecutionPolicy Bypass -File test.ps1 -Mutants         # зоопарк (M445): каждый мутант из tests/mutants.json обязан покраснеть
 #   powershell -ExecutionPolicy Bypass -File test.ps1 -Changed         # только наборы, которые называют изменённые модули (docs/TESTMAP.json)
 #   powershell -ExecutionPolicy Bypass -File test.ps1 -Files "91a-flight|91c-mgr"  # наборы этих файлов
-param([switch]$NoBuild, [string]$Only = "", [switch]$Mobile, [int]$Fuzz = 0, [int]$Seed = 0, [string]$Size = "", [switch]$Full, [switch]$Browser, [int]$Jobs = 0, [switch]$Times, [switch]$Probe, [string]$Shuffle = "", [switch]$Accept, [switch]$Mutants, [switch]$Changed, [string]$Files = "")
+#   powershell -ExecutionPolicy Bypass -File test.ps1 -Full -ShardSec 15   # потолок части (900 с); убитая часть — красный итог
+param([switch]$NoBuild, [string]$Only = "", [switch]$Mobile, [int]$Fuzz = 0, [int]$Seed = 0, [string]$Size = "", [switch]$Full, [switch]$Browser, [int]$Jobs = 0, [switch]$Times, [switch]$Probe, [string]$Shuffle = "", [switch]$Accept, [switch]$Mutants, [switch]$Changed, [string]$Files = "", [int]$ShardSec = 900)
 # ── зоопарк мутантов (M445, DESIGN-tests §5) ──
 # Мера тестов одна: долю авторских багов прогон нашёл бы первым. Каждый из
 # пятнадцати багов истории воспроизводится мутантом — правкой в одну строку
@@ -278,7 +279,9 @@ $sw = [Diagnostics.Stopwatch]::StartNew()
 # 10.09 один шард крутил GPU-процесс 33 минуты, пока его не убили руками. Часть,
 # не кончившая за $SHARD_SEC, убивается вместе со своими Chrome (только своего
 # профиля) и считается упавшей — отчёт назовёт её, а не промолчит.
-$SHARD_SEC = 900
+# -ShardSec: потолок можно сузить, чтобы проверить сам этот путь (нарочный таймаут → красный итог)
+$SHARD_SEC = $ShardSec
+$killed = @{}
 foreach ($r in $runs) {
   $left = [math]::Max(1000, $SHARD_SEC * 1000 - [int]$sw.ElapsedMilliseconds)
   if (-not $r.proc.WaitForExit($left)) {
@@ -288,6 +291,7 @@ foreach ($r in $runs) {
     Get-CimInstance Win32_Process -Filter "Name='chrome.exe'" | Where-Object { $_.CommandLine -match "drift-tests-profile-$tag-$($r.k)\b" } |
       ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
     try { $r.proc.Kill() } catch {}
+    $killed[$r.k] = $(if ($hung) { $hung } else { "?" })
   }
 }
 $sw.Stop()
@@ -319,6 +323,12 @@ $pass = 0; $fail = 0; $ran = 0; $all = 0; $tail = ""; $fails = @(); $slowest = @
 # карантин (опция stage у набора, M442): провалы печатаются своей строкой и не решают вердикт
 $stRan = 0; $stFail = 0; $staged = @(); $offWin = 0
 foreach ($r in $runs) {
+  # убитая часть — провал, что бы ни лежало в её DOM: 25.09 шард 4/6 убили на 900 с
+  # в «сейв: поле мира…», а итог вышел «ВСЁ ЗЕЛЁНОЕ» — отчёт той части не считали провалом
+  if ($killed.ContainsKey($r.k)) {
+    $fail++; $fails += ("  ✗ часть {0}/{1} не кончилась за {2} с и убита · последний набор «{3}»" -f $r.k, $Jobs, $SHARD_SEC, $killed[$r.k])
+    continue
+  }
   $text = Read-Dump $r.dom
   if ($null -eq $text) {
     Write-Host ("chrome wrote no DOM at all: the headless run did not start (stale profile?) — retry" + $(if (Last-Suite $r.err) { " (last suite seen: " + (Last-Suite $r.err) + ")" } else { "" }))
@@ -330,6 +340,11 @@ foreach ($r in $runs) {
   }
   $lines = $text -split "`n"
   $h = $lines[0].TrimEnd()
+  # зелёный — только дописанный отчёт: заголовок «ВСЁ ЗЕЛЁНОЕ · …» или «ПРОВАЛЕНО N · …»
+  if ($h -notmatch '^(ВСЁ ЗЕЛЁНОЕ|ПРОВАЛЕНО \d+) · ') {
+    $fail++; $fails += ("  ✗ часть {0}/{1}: отчёт не дописан («{2}»)" -f $r.k, $Jobs, $h.Substring(0, [math]::Min(80, $h.Length)))
+    continue
+  }
   if ($h -match 'пройдено (\d+)')         { $pass += [int]$Matches[1] }
   if ($h -match '^ПРОВАЛЕНО (\d+)')       { $fail += [int]$Matches[1] }
   if ($h -match 'наборов (\d+) из (\d+)') { $ran += [int]$Matches[1]; $all = [int]$Matches[2] }
