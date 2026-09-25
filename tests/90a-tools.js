@@ -502,15 +502,16 @@ const T=(()=>{
      Node — главный ctx игры. */
   const LEDGER_OPS=["fillRect","strokeRect","clearRect","fillText","strokeText","drawImage","fill","stroke","putImageData"];
   /* что видит игрок: главная канва; с видеокартой (ступень 1, 08bh) мир на #g, а текст —
-     на слое приборов #hud и в маленьких холстах подписей (#labels) и фишек (#chips) */
-  const ledgerSeen=c=>c===cvs||(!!GPU.ui&&c===GPU.ui)||!!(c&&c.closest&&c.closest("#chips,#labels"));
+     на слое приборов #hud и в маленьких холстах ламп (#labels); подписи мира и фишки — на #ovl
+     (08bi) без 2D, их строки сдаёт сам слой (OVL.led) */
+  const ledgerSeen=c=>c===cvs||(!!GPU.ui&&c===GPU.ui)||!!(c&&c.closest&&c.closest("#labels"));
   /* плотность холста: пикселей на пиксель CSS */
-  const ledgerDens=c=>(GPU.ui&&c===GPU.ui)?GPU.ui.width/Math.max(1,W):(c&&c.closest&&c.closest("#chips,#labels"))?gpuHudDpr():(DPR||1);
+  const ledgerDens=c=>(GPU.ui&&c===GPU.ui)?GPU.ui.width/Math.max(1,W):(c&&c.closest&&c.closest("#labels"))?gpuHudDpr():(DPR||1);
   function ledger(fn){
     const L={calls:0,by:{},texts:[]};
     /* слой приборов и подписи перерисовываются только по изменению — для счёта кадр
        рисует их заново, как в первый раз */
-    if(GPU.ok){GPU.hkey=null;for(const e of LABDOM.m.values())e.sig="";for(const e of CHIPDOM.m.values())e.sig="";}
+    if(GPU.ok)GPU.hkey=null;
     const wrap=(P,keep,ops)=>{
       for(const op of (ops||LEDGER_OPS)){
         const f=P[op];if(keep)keep[op]=f;
@@ -536,8 +537,10 @@ const T=(()=>{
       const own={};
       for(const op of LEDGER_OPS)if(Object.prototype.hasOwnProperty.call(ctx,op))own[op]=ctx[op];
       wrap(ctx,null,Object.keys(own));
+      const led0=OVL.led;OVL.led=t=>L.texts.push(t);
       try{(fn||drawWorld)();}
       finally{
+        OVL.led=led0;
         for(const op of LEDGER_OPS)P[op]=orig[op];
         for(const op of LEDGER_OPS){if(op in own)ctx[op]=own[op];else if(Object.prototype.hasOwnProperty.call(ctx,op))delete ctx[op];}
       }
@@ -660,9 +663,9 @@ TEST_SUITES.push(()=>suite("инструменты: руки и глаза от�
   ok(s1.length>1000&&s1.some(v=>v>10),"подпись кадра снята и не чёрная: "+s1.length+" проб");
   eq(T.diff(s1,s1),0,"кадр с самим собой не расходится");
   const L=T.ledger();
-  /* мир рисует видеокарта (08b), на 2D-слое кадра системы — подписи и
-     векторные мелочи: два-три десятка вызовов, а не сотни, как до 0.456 */
-  ok(L.calls>10&&L.by.fillText>0,"кадр системы: вызовов канвы "+L.calls+", текстов "+(L.by.fillText|0));
+  /* мир рисует видеокарта (08b), подписи мира и фишки — слой #ovl (08bi) без 2D; на 2D остались
+     векторные мелочи. Строки слоя счёт получает от самого слоя (OVL.led) */
+  ok(L.calls>0&&L.texts.length>(L.by.fillText|0),"кадр системы: вызовов канвы "+L.calls+", текстов 2D "+(L.by.fillText|0)+", всего строк "+L.texts.length);
   ok(L.texts.some(t=>t.main&&t.css>=6),"кегль текста на главной канве читается: до "+Math.max(...L.texts.map(t=>t.css)).toFixed(1)+" px");
   ok(T.look().tones>=0,"прибор кадра меряет");
   const X=T.text();

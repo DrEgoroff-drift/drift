@@ -28,7 +28,7 @@ function ckptLampNeed(lamps){
    печётся внутрь холста, чтобы круг лёг туда же, куда 2D */
 function bhudLedDom(){return BHUD.rec;}
 function bhudLed(key,x,y,r,col){
-  const box=chipDomBox();if(!box)return;
+  const box=labDomBox();if(!box)return;
   const nd=gpuHudDpr(),R=r*3.4,s=Math.ceil((2*R+2)*nd)/nd;
   const x0=Math.floor((x-s/2)*nd)/nd,y0=Math.floor((y-s/2)*nd)/nd,fx=x-x0,fy=y-y0;
   const f64x=Math.round(fx*64),f64y=Math.round(fy*64);
