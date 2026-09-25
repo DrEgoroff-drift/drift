@@ -47,6 +47,9 @@ numbers; the picture only no worse. Physics, seeds, the save and QUANT stay unto
 - [ ] **Stage 2 — the other modes, by share of play time:** map, landing, surface, cave, mine, belt, raid,
   cockpit, scoop, base; one step per mode, each with a pair and the upload count. G4c, G4d and G6–G12 below
   are how each mode's body is drawn.
+  - A mode's frame goes onto direct paths (`gpuLitSprite`, atlases, instances), not onto a `GcCtx` in place of
+    `ctx` (DECISIONS, «The renderer»). A reserve for the GPU canvas, not now: convex fills without the stencil,
+    one draw instead of two.
   - Belt mode whole (the tour census of 25.09 — the only #c painter left in the tour): `drawBelt` (375 calls
     per frame), `drawCockpit` (41), `instrPanel` (19), `drawGlassHUD` (12), `tapePaper` (8), `vbar` (5) and the
     cockpit's `file` rows (2). The flight around the belt is already clean.
