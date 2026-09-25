@@ -1,21 +1,9 @@
 /* ══════════════ ориентиры пояса на видеокарте (GPU, ступень 2) ══════════════
-   Тот же силуэт, что drawBeltPOISprite (24b), фигурами набора: многоугольники —
+   Силуэт ориентира (2D-художника больше нет, 24b — только расстановка) фигурами набора: многоугольники —
    веером от центра с жёсткими внутренними рёбрами, линии — повёрнутыми
    прямоугольниками (концы срезаны, как у 2D), дуга кольца — лентой четырёхугольников,
-   огни — дисками. Печь одна на всю игру — пятно зева устья (радиальный градиент).
-   Ничего не грузится при подлёте и не мылится вблизи: фигуры считаются в пикселях. */
-let BPG_MOUTH=null;
-function beltPoiMouthTex(){
-  if(BPG_MOUTH)return BPG_MOUTH;
-  /* как у 2D: градиент круглый (радиус .42), а залит эллипс .42×.3 — по малой оси край
-     резкий, по большой уходит в ноль. Холст — рамка эллипса, в долях S */
-  const c=document.createElement("canvas"),k=256/.42;c.width=512;c.height=Math.ceil(.6*k);
-  const g=c.getContext("2d");g.setTransform(k,0,0,k,256,c.height/2);
-  const gr=g.createRadialGradient(0,0,0,0,0,.42);
-  gr.addColorStop(0,"rgba(0,0,0,.98)");gr.addColorStop(.7,"rgba(0,0,0,.86)");gr.addColorStop(1,"rgba(0,0,0,0)");
-  g.fillStyle=gr;g.beginPath();g.ellipse(0,0,.42,.3,0,0,TAU);g.fill();
-  return BPG_MOUTH=c;
-}
+   огни — дисками. Устья здесь нет: оно камень и рисуется сеткой с глубиной (24be, beltMaw).
+   Ничего не печётся и не грузится, не мылится вблизи: фигуры считаются в пикселях. */
 function beltPoiGpu(pass,q,px,py,sc,fog){
   const S=q.size*sc;
   if(S<3)return;
@@ -87,14 +75,6 @@ function beltPoiGpu(pass,q,px,py,sc,fog){
         if(k<K-1)gpuQuad(SH,pt(s1,-hw(s1)),pt(s2,-hw(s2)),pt(s2,hw(s2)),pt(s1,hw(s1)),C,2|(k>0?8:0));
         else{const A=pt(s1,-hw(s1)),B=pt(len,0),Cc=pt(s1,hw(s1));SH.push([5,A[0],A[1],B[0],B[1],Cc[0],Cc[1],C[0],C[1],C[2],C[3],4]);}}
     }
-  }else{
-    const nv=11,E=[];
-    for(let i=0;i<nv;i++){const a=i/nv*TAU,rr=S*(.72+((q.seed>>>(i%9))&7)/7*.34);E.push([Math.cos(a)*rr,Math.sin(a)*rr]);}
-    poly(E,dim(.26));ring(E,1,dim(.10));
-    gpuShapes(pass,SH);SH.length=0;
-    const c=P(0,0);gpuImage(pass,gpuMipTex(beltPoiMouthTex()),[{x:c[0],y:c[1],w:S*.84,h:S*.6,rot:ang+.3}]);
-    for(let i=0;i<5;i++){const a=i/5*TAU+.4,bl=.4+.6*Math.pow(Math.max(0,Math.sin(G.t*.03+i)),4);
-      disc(Math.cos(a)*S*.44,Math.sin(a)*S*.31,Math.max(1,S*.022),[255,170,110,+(.7*bl*fog).toFixed(2)]);}
   }
   gpuShapes(pass,SH);
 }

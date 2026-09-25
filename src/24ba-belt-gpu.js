@@ -157,6 +157,7 @@ function beltGpuDraw(){
     vis.push({o:c,d,c:1});
   }
   for(const q of b.poi||[]){
+    if(q.k==="maw"){const d=see(q.x,q.y,q.z,q.size);if(d!==null)vis.push({o:beltMaw(q),d,c:2});continue;}
     const p=proj(q.x,q.y,q.z);
     if(!p)continue;
     const sc=F/p.z;
@@ -167,7 +168,8 @@ function beltGpuDraw(){
   let g0=0;
   const flush=(g1,last)=>{
     B.ni=0;let nf=0;
-    for(let i=g0;i<g1;i++){const v=vis[i];if(v.spr||v.c)continue;const a=v.o;
+    for(let i=g0;i<g1;i++){const v=vis[i];if(v.spr||v.c===1)continue;const a=v.o;
+      if(v.c===2){const R=a.size*.8;brockPut(b,a.mesh,a.x,a.y,a.z,R,R,a.ph,a.ph*1.7+G.t*a.spin,1,a.mesh.rock,a.mesh.rock,false,a.mouth);continue;}
       brockPut(b,a.mesh,a.x,a.y,a.z,a.r,a.r,a.rx,a.ry,1,a.mesh.rock,a.oreCol,a===b.lock);}
     for(let i=g0;i<g1;i++){const v=vis[i];if(!v.c)continue;const c=v.o,al=clamp(c.life*1.7,0,1);
       if(al>=1)brockPut(b,c.mesh,c.x,c.y,c.z,c.r,c.pr,c.rx,c.ry,1,c.mesh.rock,c.ore,false);}

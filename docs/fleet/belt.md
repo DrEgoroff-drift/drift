@@ -65,6 +65,23 @@ the backdrop in one pass), then the cockpit part of G12.
    - Test (Node, in `91zzzzzzy1a`): plan without a 2D canvas, no bake without a device, the
      symbology drawn after the evenodd clip, no `drawImage` of the frame on the HUD layer.
 
+3. **The maw is a rock; the 2D landmark painter goes; veins calmer** — `24be`, `24ba`, `24bb`, `24b`,
+   the gate `91zzzzzzy1`, `mutants.json`.
+   - The «УСТЬЕ» landmark (a giant asteroid with a black mouth) was a flat grey 11-gon with a baked
+     ellipse hole among real 3D rocks. Now it is a rock of the same pipeline: a `makeRock` mesh of the
+     landmark's size (its own seed; `beltMaw` keeps mesh and mouth axis on the landmark object — the belt
+     is not saved), the crater pressed into the mesh in the vertex shader around the mouth axis
+     (instance +1 vec4: axis and edge cosine; plain rocks carry 2 = none), the mouth black per pixel,
+     five warm work lights on its rim blinking slowly as in 2D. It tumbles with the landmark's spin, so
+     the mouth comes round; it is lit and depth-sorted like any rock. `beltPoiMouthTex` (the one 2D bake
+     and upload of the belt) is gone.
+   - `drawBeltPOISprite` (24b, 136 lines of 2D) deleted — it was only the fallback and a mutant's tool;
+     `24b` is placement only. Mutant `belt-poi-2d` re-aimed: the landmarks drawn in a `gpuOver` layer
+     (they float over the rocks behind them, and the frame pays an extra submit) — the gate kills it.
+   - Gate `91zzzzzzy1`: landmarks through `beltPoiGpu` ≥ 4 per frame (was 5), and the maw stands as a
+     rock (mesh and mouth axis made).
+   - Veins: albedo mix .75, glint ×.7 — under a blue star they read as neon lines before.
+
 ## Pairs (760×475 ×1, scratchpad of session 75d5c549, never in git)
 
 - `scratchpad/pair-belt.png` (`before-belt.png` | `after-belt.png`), the scene: `system` + `--js
@@ -82,6 +99,11 @@ the backdrop in one pass), then the cockpit part of G12.
   camera 30° off the star, the star disc at the top, the target rock between). **Better:** the rock between
   us and the star shows its shade side (2D lit it flat blue from the front — its light ignored where the
   star was); the dash lip, the nose and the struts are lit from the window above; far rocks keep form.
+- Commit 3: `scratchpad/pair-poi.png` (`before-poi.png` | `after-poi.png`, `--js scratchpad/beltpoi2.js`: all five
+  landmarks 1400 m ahead as the gate stages them, the maw's mouth turned towards the camera at an angle).
+  **Better:** the maw is a lit, tumbling rock with a pressed-in black mouth and warm lights on its rim,
+  depth-sorted with the rocks around it, instead of a flat grey polygon with a sticker hole; veins calmer.
+  `scratchpad/c5.png` — the maw ×3.
 
 ## Requests for files outside the zone
 
@@ -107,7 +129,8 @@ the GcCtx pipelines already in the table (`gc:*`).
 
 ## Open problems
 
-- The 2D landmark painter `drawBeltPOISprite` (24b) is now dead code except as the `belt-poi-2d`
-  mutant's replacement; delete it with that mutant re-aimed.
+- The four other landmarks (wreck, rig, station ring, druse) are still flat kit silhouettes; they are
+  not lit by the star. The druse could become crystal prisms in the rock pipeline, the wreck a
+  `gpuBake` hull lit by `gpuLitSprite` like the fleet.
 - `BG` (16-flight) is no longer used by the belt; flight still uses it.
 - No shadows between rocks (one rock does not shade another).

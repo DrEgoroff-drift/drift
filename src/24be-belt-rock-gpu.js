@@ -24,20 +24,22 @@ struct RU{r:vec4f,u:vec4f,f:vec4f,s:vec4f,sc:vec4f,n0:vec4f,n1:vec4f};
 @group(0) @binding(3) var<storage,read> ins:array<vec4f>;
 struct RO{@builtin(position) p:vec4f,@location(0) wp:vec3f,@location(1) n:vec3f,@location(2) q:vec3f,
   @location(3) @interpolate(flat) rk:vec4f,@location(4) @interpolate(flat) or:vec4f,@location(5) oa:vec2f,
-  @location(6) @interpolate(flat) ft:vec4f};
+  @location(6) @interpolate(flat) ft:vec4f,@location(7) @interpolate(flat) mo:vec4f};
 fn hsh(i:u32,s:u32)->f32{var h=(i*374761393u)^(s*668265263u);h=(h^(h>>13u))*1274126177u;return f32(h^(h>>16u))/4294967296.;}
 fn bclip(w:vec3f)->vec4f{
   let xc=dot(w,ru.r.xyz);let yc=dot(w,ru.u.xyz);let zc=dot(w,ru.f.xyz);
   return vec4f(xc*2.*ru.r.w/ru.u.w,yc*2.*ru.r.w/ru.f.w,(zc-${BROCK_NEAR}.)*${BROCK_FAR}./(${BROCK_FAR-BROCK_NEAR}.),zc);}
 @vertex fn vs(@builtin(vertex_index) vi:u32,@builtin(instance_index) ii:u32)->RO{
-  let I0=ins[ii*6u];let I1=ins[ii*6u+1u];let I2=ins[ii*6u+2u];let I3=ins[ii*6u+3u];let I4=ins[ii*6u+4u];let I5=ins[ii*6u+5u];
-  let sl=u32(I1.w+.5);let b=(sl*${BROCK_NV}u+idx[vi])*2u;let A=msh[b];let B=msh[b+1u];
+  let j=ii*7u;let I0=ins[j];let I1=ins[j+1u];let I2=ins[j+2u];let I3=ins[j+3u];let I4=ins[j+4u];let I5=ins[j+5u];let I6=ins[j+6u];
+  let sl=u32(I1.w+.5);let b=(sl*${BROCK_NV}u+idx[vi])*2u;var A=msh[b];let B=msh[b+1u];
+  /* устье (ориентир «УСТЬЕ»): воронка вдавлена в саму сетку вокруг оси I6 */
+  if(I6.w<1.5){A=vec4f(A.xyz*(1.-.34*smoothstep(I6.w-.14,1.,dot(normalize(A.xyz),I6.xyz))),A.w);}
   let l=vec3f(dot(I1.xyz,A.xyz),dot(I2.xyz,A.xyz),dot(I3.xyz,A.xyz));
   let w=I0.xyz+l*I0.w;
   var o:RO;o.p=bclip(w);o.wp=w;
   o.n=vec3f(dot(I1.xyz,B.xyz),dot(I2.xyz,B.xyz),dot(I3.xyz,B.xyz));
   o.q=A.xyz*I0.w;o.rk=vec4f(I4.xyz,I2.w);o.or=vec4f(I5.xyz,I3.w);o.oa=vec2f(B.w,A.w);
-  o.ft=vec4f(.92+.16*hsh(vi/3u,sl*977u+13u),I5.w,I4.w,0.);
+  o.ft=vec4f(.92+.16*hsh(vi/3u,sl*977u+13u),I5.w,I4.w,0.);o.mo=I6;
   return o;}
 fn h3(p:vec3f)->f32{let i=vec3i(p);
   var h=(u32(i.x)*374761393u)^(u32(i.y)*668265263u)^(u32(i.z)*1274126177u);h=(h^(h>>13u))*1274126177u;
@@ -72,7 +74,7 @@ fn fbmF(p:vec3f,fw:f32)->f32{var v=0.;var a=.5;var f=1.;
   let lw=max(fwidth(rv),.004);
   let vein=zone*(1.-smoothstep(lw*.6,lw*.6+.05,abs(rv)));
   alb=mix(alb,alb*.66+i.or.rgb*.34,zone*.5);
-  alb=mix(alb,i.or.rgb*1.1,vein);
+  alb=mix(alb,i.or.rgb*1.05,vein*.75);
   let ao=i.oa.y;
   let L=normalize(ru.s.xyz-i.wp);let ndl=dot(Nb,L);let ndv=max(dot(Nb,V),0.);
   let lam=max(ndl,0.);
@@ -81,12 +83,24 @@ fn fbmF(p:vec3f,fw:f32)->f32{var v=0.;var a=.5;var f=1.;
   var col=alb*(sc*1.55*dif*mix(1.,ao,.45)+ru.n0.rgb*.2*ao+ru.n1.rgb*.12*max(-ndl,0.)*ao);
   col+=sc*lam*lam*(.07+vein*.06);
   let Hv=normalize(L+V);
-  col+=sc*lam*(pow(max(dot(Nb,Hv),0.),44.)*1.3*vein+pow(max(dot(Nb,Hv),0.),9.)*.035);
+  col+=sc*lam*(pow(max(dot(Nb,Hv),0.),44.)*.7*vein+pow(max(dot(Nb,Hv),0.),9.)*.035);
   col+=vec3f(.17,.185,.215)*pow(1.-ndv,3.)*(.3+.7*lam)*ao;
   /* светило за камнем: пыль на кромке горит в его свете (рассеяние вперёд) — силуэт на пелене */
   col+=sc*pow(1.-ndv,4.)*pow(max(dot(-V,L),0.),6.)*.9;
+  var lamp=vec3f(0.);
+  if(i.mo.w<1.5){
+    /* чёрный зев и пять рабочих огней по кромке: мигают медленно, каждый своим ходом */
+    let dq=normalize(i.q);let md=i.mo.xyz;let cm=dot(dq,md);
+    col*=1.-.94*smoothstep(i.mo.w+.03,i.mo.w+.13,cm);
+    let t1=normalize(cross(md,select(vec3f(1.,0.,0.),vec3f(0.,1.,0.),abs(md.y)<.9)));let t2=cross(md,t1);
+    let cl=i.mo.w-.04;let sl2=sqrt(max(1.-cl*cl,0.));
+    for(var k=0;k<5;k++){let a=f32(k)/5.*6.2831853+.4;
+      let ld=md*cl+(t1*cos(a)+t2*sin(a))*sl2;
+      let bl=.4+.6*pow(max(0.,sin(ru.n0.w*.03+f32(k))),4.);
+      lamp+=vec3f(1.,.67,.43)*exp(-(1.-dot(dq,ld))*2400.)*bl*2.2;}
+  }
   let zc=dot(i.wp,ru.f.xyz);let fog=clamp(1.-zc/ru.s.w,.1,1.);
-  col=col*fog+ru.n0.rgb*.05*(1.-fog);
+  col=col*fog+ru.n0.rgb*.05*(1.-fog)+lamp*sqrt(fog);
   col=mix(col,col*.82+vec3f(26.,52.,50.)/255.,i.or.w);
   let a=i.rk.w;
   return vec4f(col*a,a);}`;
@@ -166,7 +180,7 @@ function brockEnd(ms){
 }
 /* ── пул сеток: слот на сетку, на устройство и на пояс ── */
 const BROCK={dev:null,belt:null,slot:new WeakMap(),n:0,cap:0,cpu:null,buf:null,idx:null,U:new Float32Array(28),
-  I:new Float32Array(24*64),D:new Float32Array(12*256)};
+  I:new Float32Array(28*64),D:new Float32Array(12*256)};
 /* нормаль вершины — сумма нормалей её граней; затенение — насколько вершина ниже соседей */
 function brockMeshData(m,out,o){
   const V=m.verts,F=SPHERE2.faces,n=new Float32Array(BROCK_NV*3),nb=new Float32Array(BROCK_NV*2);
@@ -226,11 +240,12 @@ function brockCam(b,bas,F,scol,neb0,neb1){
   GPU.dev.queue.writeBuffer(buf,0,u);return buf;
 }
 /* экземпляр: сдвиг от камеры и масштаб, три строки поворота (Ry·Rx, как у 2D) со слотом,
-   прозрачностью и захватом, цвет породы и зерно, цвет руды и радиус */
-function brockPut(b,o,x,y,z,rad,r0,rx,ry,alpha,rock,ore,locked){
+   прозрачностью и захватом, цвет породы и зерно, цвет руды и радиус; устье — ось и
+   косинус края (у простого камня 2 — устья нет) */
+function brockPut(b,o,x,y,z,rad,r0,rx,ry,alpha,rock,ore,locked,maw){
   const B=BROCK,s=brockSlot(o);
-  let I=B.I;const k=B.ni*24;
-  if(k+24>I.length){const J=new Float32Array(I.length*2);J.set(I);B.I=I=J;}
+  let I=B.I;const k=B.ni*28;
+  if(k+28>I.length){const J=new Float32Array(I.length*2);J.set(I);B.I=I=J;}
   const c1=Math.cos(rx),s1=Math.sin(rx),c2=Math.cos(ry),s2=Math.sin(ry);
   I[k]=x-b.x;I[k+1]=y-b.y;I[k+2]=z-b.z;I[k+3]=rad/r0;
   I[k+4]=c2;I[k+5]=s2*s1;I[k+6]=s2*c1;I[k+7]=s;
@@ -238,15 +253,24 @@ function brockPut(b,o,x,y,z,rad,r0,rx,ry,alpha,rock,ore,locked){
   I[k+12]=-s2;I[k+13]=c2*s1;I[k+14]=c2*c1;I[k+15]=locked?1:0;
   I[k+16]=rock[0]/255;I[k+17]=rock[1]/255;I[k+18]=rock[2]/255;I[k+19]=(s*131)%997;
   I[k+20]=ore[0]/255;I[k+21]=ore[1]/255;I[k+22]=ore[2]/255;I[k+23]=rad;
+  if(maw){I[k+24]=maw[0];I[k+25]=maw[1];I[k+26]=maw[2];I[k+27]=maw[3];}else{I[k+24]=I[k+25]=0;I[k+26]=1;I[k+27]=2;}
   B.ni++;
 }
 function brockDraw(pass,ub,from,n,fade,ms){
   if(!pass||n<=0)return;
-  const B=BROCK,P=brockPipe(fade?"rockf":"rock",ms),A=gpuArena("brock",n*24,24);
-  GPU.dev.queue.writeBuffer(A.buf,A.off*4,B.I,from*24,n*24);
+  const B=BROCK,P=brockPipe(fade?"rockf":"rock",ms),A=gpuArena("brock",n*28,28);
+  GPU.dev.queue.writeBuffer(A.buf,A.off*4,B.I,from*28,n*28);
   pass.setPipeline(P);
   pass.setBindGroup(0,gpuBind("belt.rock|"+(fade?1:0)+ms,P,[ub,B.idx,B.buf,A.buf]));
-  pass.draw(SPHERE2.faces.length*3,n,0,A.off/24);
+  pass.draw(SPHERE2.faces.length*3,n,0,A.off/28);
+}
+/* устье — камень, а не силуэт: сетка makeRock размером с ориентир (своим зерном), ось зева
+   от зерна; сетка живёт на самом ориентире (пояс не сохраняется) */
+function beltMaw(q){
+  if(!q.mesh){q.mesh=makeRock(q.seed>>>0,q.size*.8);
+    const h=hashi(q.seed>>>0,0x3A11,7),th=(h&1023)/1023*TAU,ph=((h>>>10)&1023)/1023*2-1,c=Math.sqrt(1-ph*ph);
+    q.mouth=[Math.cos(th)*c,ph,Math.sin(th)*c,.8];}
+  return q;
 }
 function bdustDraw(pass,ub,n,ms){
   if(!pass||n<=0)return;
