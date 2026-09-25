@@ -122,7 +122,7 @@ try{new PerformanceObserver(l=>{for(const e of l.getEntries()){LONGTASKS.push([e
 function stallWho(a,b){
   let lt=0;
   for(const [s,d] of LONGTASKS)lt+=Math.max(0,Math.min(b,s+d)-Math.max(a,s));
-  const bake=[typeof STRIP_JOB!=="undefined"&&STRIP_JOB?"strip":"",typeof MAT_JOB!=="undefined"&&MAT_JOB?"mat":"",
+  const bake=[typeof MAT_JOB!=="undefined"&&MAT_JOB?"mat":"",
     typeof NEB_JOB!=="undefined"&&NEB_JOB?"neb":""].filter(Boolean).join(",");
   const gap=b-a;
   return {gap:gap|0,js:FRAME_JS|0,lt:lt|0,gpu:Math.max(0,gap-Math.max(lt,FRAME_JS))|0,bake,
