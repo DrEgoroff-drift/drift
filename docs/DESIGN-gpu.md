@@ -1200,3 +1200,12 @@ and `lookFrame` (28y:49/326) — none in gameplay.
   gpu errs 0. The census gate gains the scene «борт ГЛАВТРАССЫ с подписью» (a fleet window put in the system's
   cache, the label checked on the label layer) and `drawFleet` in its upload net; mutant `fleet-caption-on-c`
   (the caption back on `#c`) dies on it.
+
+- **Ships a) for the fleet** (side branch `gpu2-fleetlit`, not in 0.458.0): a ГЛАВТРАССА ship in the system is
+  lit by the star through `gpuLitSprite` in hull mode (−1): paint as baked, the far side in shade, the rim in
+  the star's colour; the station multiplier (0) whitened the nose and the emblem. Its bake keeps a softer copy of
+  the 2D top light (.34 on top, .3 dark below instead of .62 — the star lays the shade, a double shade killed the
+  panels); the mip level is `FLEET_LOD` −1.2 (GST has no unsharp mask). A fading lane ship keeps the old picture
+  (GST has no alpha). Three positions at 760 (star lower right, left, upper right) and ×1.5: total light
+  +0.6/+2.0/+1.2 % and +1.3 %, V>.6 area +1…+15 %, S of the bright .28 vs .21, sharpness +4/+8/+6 % and +1.4 %,
+  p95 −2…−5 % (the centre gives up to 7 % to the far-side slope). Gates «ворота ступени» green.
