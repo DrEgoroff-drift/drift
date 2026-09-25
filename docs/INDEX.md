@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 620 · символов верхнего уровня: 6172
+Файлов: 620 · символов верхнего уровня: 6171
 
 ## СИМВОЛЫ
 
@@ -1468,9 +1468,9 @@ drawFactory                  src/20aa-poi-shapes.js:378-462
 drawFactRoute                src/13b-occupy.js:285-338
 drawFindsSystem              src/17b-finds.js:238-286
 drawFlame                    src/03b-hull-paint.js:10-56
-drawFleet                    src/12ai-fleet.js:140-160
-drawFleetMap                 src/12ai-fleet.js:330-365
-drawFleetShip                src/12ai1-fleet-art.js:424-450
+drawFleet                    src/12ai-fleet.js:135-155
+drawFleetMap                 src/12ai-fleet.js:325-360
+drawFleetShip                src/12ai1-fleet-art.js:426
 drawFoeBody                  src/24ab-raid-foe.js:10-130
 drawForeground               src/21b-surface-deco.js:278-383
 drawGalaxy                   src/17z1-galaxy.js:97-137
@@ -1880,11 +1880,11 @@ FLEET                        src/04b-fleet.js:107
 FLEET_ART                    src/12ai1-fleet-art.js:12
 FLEET_CLASSES                src/12ai-fleet.js:20-40
 FLEET_COOL                   src/13-combat.js:212
-FLEET_ENG                    src/12ai1-fleet-art.js:388
+FLEET_ENG                    src/12ai1-fleet-art.js:389
 FLEET_EPITH                  src/04b-fleet.js:57
 FLEET_KEYS                   src/04b-fleet.js:148
 FLEET_LUXE                   src/04b-fleet.js:59
-FLEET_MAP_LEGS               src/12ai-fleet.js:329
+FLEET_MAP_LEGS               src/12ai-fleet.js:324
 FLEET_MARK                   src/04b-fleet.js:56
 FLEET_N                      src/04b-fleet.js:106
 FLEET_NAMES                  src/12ai-fleet.js:41
@@ -1898,25 +1898,25 @@ FLEET_SEEN                   src/04b-fleet.js:99
 FLEET_TIER_CLS               src/04b-fleet.js:46-53
 FLEET_TIER_KEYS              src/04b-fleet.js:30
 FLEET_TIERS                  src/04b-fleet.js:16-29
-fleetArtOf                   src/12ai1-fleet-art.js:13-348
-fleetCaravanActive           src/12ai-fleet.js:316-322
+fleetArtOf                   src/12ai1-fleet-art.js:13-349
+fleetCaravanActive           src/12ai-fleet.js:311-317
 fleetColor                   src/04b-fleet.js:95
-fleetEscortActive            src/12ai-fleet.js:314
+fleetEscortActive            src/12ai-fleet.js:309
 fleetFire                    src/13-combat.js:213-234
-fleetGlyph                   src/12ai1-fleet-art.js:351-383
-fleetHailFirst               src/12ai-fleet.js:170-190
+fleetGlyph                   src/12ai1-fleet-art.js:352-384
+fleetHailFirst               src/12ai-fleet.js:165-185
 fleetHere                    src/12ai-fleet.js:50-87
-fleetInteract                src/12ai-fleet.js:191-311
+fleetInteract                src/12ai-fleet.js:186-306
 fleetLabelY                  src/12ai-fleet.js:121-131
-fleetLogKey                  src/12ai-fleet.js:162
-fleetNormKey                 src/12ai-fleet.js:165
-fleetNormTwice               src/12ai-fleet.js:164
+fleetLogKey                  src/12ai-fleet.js:157
+fleetNormKey                 src/12ai-fleet.js:160
+fleetNormTwice               src/12ai-fleet.js:159
 fleetPos                     src/12ai-fleet.js:89-98
 fleetPromptRect              src/12ai-fleet.js:112-115
 fleetRung                    src/12ai-fleet.js:48
 fleetScale                   src/12ai-fleet.js:105
-fleetShipAt                  src/12ai1-fleet-art.js:395-423
-fleetShipGpu                 src/12ai1-fleet-art.js:389-393
+fleetShipAt                  src/12ai1-fleet-art.js:396-424
+fleetShipGpu                 src/12ai1-fleet-art.js:390-394
 fleetUniqueName              src/04b-fleet.js:100-105
 flightCam                    src/16a-space.js:281-314
 floraOf                      src/20e-species.js:91-105
@@ -3086,7 +3086,7 @@ kpWindow                     src/26e2-post.js:47-92
 labCount                     src/12h-relic.js:16-24
 LABDOM                       src/08bh-gpu-hud.js:101
 labDomBox                    src/08bh-gpu-hud.js:106-112
-labelW                       src/12ai-fleet.js:135-139
+labelW                       src/12ai-fleet.js:134
 labStaffed                   src/12h-relic.js:27-31
 labWorking                   src/12h-relic.js:32-42
 LAND_ARC                     src/07a-terrain.js:49
@@ -3139,7 +3139,6 @@ lawOwner                     src/12al2-laws.js:16
 lawRingGpu                   src/12al2-laws.js:63-83
 lawRingTick                  src/12al2-laws.js:43-55
 layerLevel                   src/10-music.js:362-377
-LBL_W                        src/12ai-fleet.js:134
 ldFoe                        tests/91zzzw-combat.js:472-476
 LEADBREAK                    src/13a-guns.js:42
 ledgerAll                    src/11ai-ledger.js:36-39
@@ -6527,7 +6526,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/12ai-fleet.js · 28 КБ
   · ГЛАВТРАССА: флот, который нельзя купить (M310, DESIGN-holding §18):1
 
-## src/12ai1-fleet-art.js · 37 КБ
+## src/12ai1-fleet-art.js · 36 КБ
   · ГЛАВТРАССА: как флот выглядит (выделено из 12ai, M415):1
 
 ## src/12aj-coop.js · 19 КБ
