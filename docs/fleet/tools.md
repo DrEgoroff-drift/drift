@@ -18,3 +18,13 @@ under `docs/`/`tools/`. Machine: 4 CPUs, Chromium 141 (`/opt/pw-browsers/chromiu
    branch is a no-op — same Chrome paths, same URL, same profile string, same argv, same kill.
    Verified here: the default tier (Node 16 888 green + the Chrome smoke, 28 s), and the kill path
    (`-Browser -ShardSec 20` → both shards named, killed, red verdict, no stray Chrome).
+2. **mkshots and mksiteshots shoot through docs/shot.py.** New `docs/shotstand.py`: loads
+   `shot.py` as a module (like `vetshot.py`) and builds each page with its `page_for()`, but with
+   the tail of any stand `.ps1` (`$add = @'…'@`) instead of mkview's — so Chrome, the GPU flags,
+   the stepped clock, the device wait and the blocked URLs stay in `shot.py`. `--grab JS` saves a
+   `data:` URL the page returns instead of a screenshot. `mkshots.ps1 -Shoot [-Only a,b]` calls it
+   (no stand server, no `--disable-gpu`); scene errors now also go to the console, since the stand
+   overwrites the `ERR` title. `mksiteshots.ps1` rewritten: `siteSettle()` (240 update steps, HUD
+   off) as `--js`, `siteShot()` draws one frame with `drawWorld()` and reads `GPU.cv` in the same
+   task (the invisible `#c` holds only the 2D layer now), crops 16:9, returns 1600×900 webp.
+   Parse-checked at this commit; scene-by-scene results below once shot.
