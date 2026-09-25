@@ -9,7 +9,8 @@
    '-' < '1' < 'a'). Здесь объявлен `FLEET_ART` — кэш спрайтов; его читает
    только `fleetArtOf`, то есть во время кадра, а не на верхнем уровне. */
 /* ── окраска: один конвейер на все классы (§18.5, §1) ── */
-const FLEET_ART={},FLEET_SS=3,FLEET_PB={f:-1,k:""};
+/* FLEET_KEEP — кораблей в кэше (по две выпечки, ~0.6 МБ каждая у «поста»): новый посев каждые 10 минут */
+const FLEET_ART={},FLEET_SS=3,FLEET_PB={f:-1,k:""},FLEET_KEEP=24;
 /* рецепт облика (кисть cn): облик → (g)=>… в осях выпечки. Кадр его не зовёт — это для проверок
    тестов (91zzza M317/M318): синхронно читать выпечку с видеокарты нечем, а свойства рецепта
    (эмблема, медиана тела, тень под баком) — те же на любом растре */
@@ -21,11 +22,11 @@ const FLEET_PAINT=new WeakMap();
    давали хвост в 100 мс (Контроль, 25.09) */
 function fleetArtOf(f,ahead){
   const key="fl"+f.k+f.seed+"!"+(f.by||"gt");
-  if(FLEET_ART[key])return FLEET_ART[key];
+  const had=artGet(FLEET_ART,key);if(had)return had;
   if(!GPU.dev){const it=fleetArtJob(f);let r;do r=it.next();while(!r.done);return r.value;}   /* без устройства: геометрия, cn null; не в кэш */
   if(ahead){if(FLEET_PB.f===GPU.frameNo&&FLEET_PB.k!==key)return null;FLEET_PB.f=GPU.frameNo;FLEET_PB.k=key;}
   const art=prebake("fl|"+key,()=>fleetArtJob(f),!ahead);
-  if(art)FLEET_ART[key]=art;
+  if(art)artPut(FLEET_ART,key,art,FLEET_KEEP);
   return art;
 }
 function* fleetArtJob(f){

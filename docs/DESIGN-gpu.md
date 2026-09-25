@@ -644,7 +644,12 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   dropped device's warm-up opens nothing. Suite «видеокарта: сбой кадра не роняет устройство»; the real loss
   on the stand (shot.py: 30 frames, `gpuDrop(…,true)`, wall clock): new device, 39 keys warm, 0 crashes,
   0 GPU errors, the world draws.
-  Next: 5b (LRU for art caches), 5c (scout searchlight), 5e (reversed smoothstep edges).
+- **5b (art cache LRU) — WIP, stopped by the author's STOP (26.09), sources only: not built, not tested.**
+  `gpuBaked` is an LRU (`o.keep`, default 32); `artGet`/`artPut` (08ca) give FLEET_ART (24), PIR_ART (24),
+  BARGE_ART (12) an LRU that drops the evicted item's bakes; hull bakes share `HG_LRU` (16, 17c2).
+  `gpuBakeLive(B)` rebakes a bake from a dead device or one dropped while still held (gpuImage, gpuField,
+  gcImg). To do: build, a suite (cap holds, evicted bakes dropped, a held dropped bake heals), caps by
+  numbers, Node + gates, then 5c, 5e. Also cheap: warm a shadow 512×128 set (448×64 born mid-flight, cold3).
 - **`gpuHullLight` (16ga) is removed:** the hull light is 17c `gpuLitSprite`; the probe row `hullLight` is gone.
 - **Next, in Контроль's order (25.09):**
   1. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);

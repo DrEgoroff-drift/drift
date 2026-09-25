@@ -9,6 +9,9 @@
    с мипами на холсте видеокарты (08ca gpuBake, 25.09): кисти 03e рисуют в него, как в
    2D, зум берёт уровень, а не перепекает и не грузит. */
 const HG_BAKE=new WeakMap();   // h → Map(ключ → {B,E,sb}) выпечка тела при крене 0
+/* корпуса живут в HULL_CACHE вечно — потолок общий на все: HG_KEEP недавних выпечек, старейшая долой
+   (ревью 25.09 п. 4: призраки «оставленного» копили мастера до 1024²) */
+const HG_LRU=new Map(),HG_KEEP=16;
 const HG_BELLY=new WeakMap();  // h → {B,E,sb} тёмный силуэт брюха
 const HG_THR=new Map();        // id → сглаженная тяга 0..1 (эфемерное, не в сейве)
 const HG_SIDE=1024;
@@ -26,13 +29,17 @@ function hullGpuSb(h,dk){
 }
 function hullGpuBake(h,id,sb){
   let M=HG_BAKE.get(h);if(!M){M=new Map();HG_BAKE.set(h,M);}
-  const key=hullBakeKey(id,sb);let b=M.get(key);if(b)return b;
+  const key=hullBakeKey(id,sb);let b=M.get(key);
+  if(b){const q=b.q;HG_LRU.delete(q);HG_LRU.set(q,[M,key]);return b;}
   const E=hullGpuE(h),side=Math.ceil(E*2*sb);
   /* кисти читают только корпус и ключ — выпечка после потери устройства та же */
   const B=gpuBake(side,side,g=>{g.setTransform(sb,0,0,sb,side/2,side/2);hullPart1(h,id,0,false);hullPart2(h);hullPart3(h,id);},{ss:1});
   if(!B)return null;
-  if(M.size>=4){const k=M.keys().next().value;gpuBakeDrop(M.get(k).B);M.delete(k);}
-  b={B,E:side/(2*sb),sb};M.set(key,b);return b;
+  if(M.size>=4){const k=M.keys().next().value;HG_LRU.delete(M.get(k).q);gpuBakeDrop(M.get(k).B);M.delete(k);}
+  b={B,E:side/(2*sb),sb,q:{}};M.set(key,b);HG_LRU.set(b.q,[M,key]);
+  while(HG_LRU.size>HG_KEEP){const [q,[M0,k0]]=HG_LRU.entries().next().value;HG_LRU.delete(q);
+    const o=M0.get(k0);if(o){gpuBakeDrop(o.B);M0.delete(k0);}}
+  return b;
 }
 function hullGpuBelly(h,sb){
   let b=HG_BELLY.get(h);if(b&&b.sb===sb)return b;if(b)gpuBakeDrop(b.B);

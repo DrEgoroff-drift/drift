@@ -15,7 +15,7 @@
    дальше рисуется картинкой с поворотом — тот же приём, что кэш неба у гиганта
    и тайл материала. */
 const PIR_SS=3;                        // выпекаем крупнее и рисуем мельче
-const PIR_ART={};
+const PIR_ART={},PIR_KEEP=24;   /* вариантов пирата в кэше: посевы системы меняются каждые 15 минут */
 /* четыре класса опознаются с одного взгляда — это и есть смысл затеи */
 const PIR_CLASS={
   fast:{ru:"перехватчик",len:46,bw:.15,eng:2,engL:1.5,cage:0,plate:0,spike:3,ram:0},
@@ -240,7 +240,7 @@ function pirateArtOf(id,rogue,hurt,rank,des){
      оставался прежним, разбитый пират выглядел просто испачканным */
   /* ранг входит в ключ: у него своё снаряжение, а значит и свои стволы (M368) */
   const key=id+(rogue?"!r":"")+(hurt?"!h":"")+"!"+(rank|0)+(des?"!d":"");
-  if(PIR_ART[key])return PIR_ART[key];
+  const had=artGet(PIR_ART,key);if(had)return had;
   /* `shipData` знает все три источника корпусов: у ренегата это ВАШ корабль */
   const S=shipData(id)||{seed:hashi(1,2,3),col:"#d95a3c"};
   const cls=pirateClass(S.seed,rogue);
@@ -402,7 +402,7 @@ function pirateArtOf(id,rogue,hurt,rank,des){
      нерезкая маска — в шейдере (sharp, между уровнями мипов) */
   });
   const art={cn,rad,B,cls,cols:C,ru:PIR_CLASS[cls].ru};
-  PIR_ART[key]=art;return art;
+  return artPut(PIR_ART,key,art,PIR_KEEP);
 }
 /* ── рисование: картинка плюс живой слой, который печь нельзя ──
    Повреждения копятся вместе с hp, выхлоп грязный и несинхронный — и то и
