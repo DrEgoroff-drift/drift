@@ -114,11 +114,10 @@ function drawStModule(q,S,skipRod){
       ctx.beginPath();ctx.moveTo(-5*s,-7*s+i*3.5*s);ctx.lineTo(5*s,-7*s+i*3.5*s);ctx.stroke();
     }
     /* окна жилого сектора горят вразнобой — единственный тёплый свет станции */
-    for(let i=0;i<4;i++){
+    stLive(()=>{for(let i=0;i<4;i++){
       const on=Math.sin(G.t*.03+q.ph+i*1.7)>-.2;
-      ctx.fillStyle=on?"rgba(255,226,170,.85)":"rgba(255,226,170,.18)";
-      ctx.fillRect(-3.4*s,-5.6*s+i*3.4*s,1.8*s,1.4*s);
-    }
+      stLampRect(-3.4*s,-5.6*s+i*3.4*s,1.8*s,1.4*s,[255,226,170],on?.85:.18);
+    }});
   }else if(q.sh==="rack"){
     /* стойка контейнеров */
     ctx.beginPath();ctx.moveTo(-6*s,-8*s);ctx.lineTo(-6*s,8*s);ctx.stroke();
@@ -132,8 +131,7 @@ function drawStModule(q,S,skipRod){
     for(let i=0;i<3;i++){
       const px=-3*s+i*4.4*s, py=(i%2?1:-1)*3.4*s;
       ctx.beginPath();ctx.ellipse(px,py,3*s,2.4*s,0,0,TAU);ctx.fill();ctx.stroke();
-      ctx.fillStyle=(Math.sin(G.t*.045+i*2+q.ph)>0)?"rgba(255,150,90,.8)":"rgba(255,150,90,.2)";
-      ctx.beginPath();ctx.arc(px,py,.9*s,0,TAU);ctx.fill();
+      stLive(()=>stLamp(px,py,.9*s,[255,150,90],(Math.sin(G.t*.045+i*2+q.ph)>0)?.8:.2));
       ctx.fillStyle=F;
     }
   }else if(q.sh==="hangar"){
@@ -144,10 +142,7 @@ function drawStModule(q,S,skipRod){
     ctx.strokeStyle="rgba(150,180,205,.32)";   /* створ без своего цвета: свет у станции один (M306) */
     ctx.beginPath();ctx.moveTo(7*s,-5*s);ctx.lineTo(7*s,5*s);ctx.stroke();
     /* сварка внутри дока вспыхивает */
-    if(Math.sin(G.t*.4+q.ph)>.72){
-      ctx.fillStyle="rgba(255,236,200,.9)";
-      ctx.beginPath();ctx.arc(3*s,(Math.sin(q.ph*7)*2)*s,1.6*s,0,TAU);ctx.fill();
-    }
+    stLive(()=>{if(Math.sin(G.t*.4+q.ph)>.72)stLamp(3*s,(Math.sin(q.ph*7)*2)*s,1.6*s,[255,236,200],.9);});
   }else if(q.sh==="tank"){
     /* сферические баки в обойме */
     for(let i=0;i<2;i++){
@@ -161,12 +156,12 @@ function drawStModule(q,S,skipRod){
     ctx.beginPath();ctx.moveTo(-8*s,0);ctx.lineTo(8*s,0);ctx.stroke();
   }else if(q.sh==="dish"){
     /* тарелка, медленно ведущая цель */
-    ctx.save();ctx.rotate(Math.sin(G.t*.004+q.ph)*.6);
-    ctx.beginPath();ctx.ellipse(0,0,7*s,3*s,0,0,TAU);
-    ctx.fillStyle="rgba(52,84,104,.95)";ctx.fill();ctx.stroke();
-    ctx.strokeStyle="rgba(150,200,220,.5)";
-    ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(0,-5*s);ctx.stroke();
-    ctx.restore();
+    stLive(()=>stSpin("mdish|"+s.toFixed(3),7*s+1.5,Math.sin(G.t*.004+q.ph)*.6,()=>{
+      ctx.strokeStyle="rgba(0,0,0,.45)";ctx.lineWidth=.7;
+      ctx.beginPath();ctx.ellipse(0,0,7*s,3*s,0,0,TAU);
+      ctx.fillStyle="rgba(52,84,104,.95)";ctx.fill();ctx.stroke();
+      ctx.strokeStyle="rgba(150,200,220,.5)";
+      ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(0,-5*s);ctx.stroke();}));
   }else if(q.sh==="cross"){
     /* медотсек: белый крест — единственный знак, читаемый мгновенно */
     ctx.beginPath();ctx.rect(-6*s,-6*s,12*s,12*s);ctx.fill();ctx.stroke();
@@ -180,8 +175,7 @@ function drawStModule(q,S,skipRod){
     for(let i=1;i<5;i++){
       ctx.beginPath();ctx.moveTo(-6*s+i*2.4*s,-5*s);ctx.lineTo(-6*s+i*2.4*s,5*s);ctx.stroke();
     }
-    ctx.fillStyle=(Math.sin(G.t*.02+q.ph)>.5)?"rgba(255,90,70,.8)":"rgba(255,90,70,.2)";
-    ctx.beginPath();ctx.arc(0,-6.6*s,1.2*s,0,TAU);ctx.fill();
+    stLive(()=>stLamp(0,-6.6*s,1.2*s,[255,90,70],(Math.sin(G.t*.02+q.ph)>.5)?.8:.2));
   }else if(q.sh==="farm"){
     /* оранжерея: прозрачный купол с зеленью внутри */
     ctx.beginPath();ctx.ellipse(0,2*s,8*s,7*s,0,Math.PI,TAU);
@@ -202,9 +196,8 @@ function drawStModule(q,S,skipRod){
       const yy=-i*2.4*s, w=2*s-i*.2*s;
       ctx.beginPath();ctx.moveTo(-w,yy);ctx.lineTo(w,yy-1.4*s);ctx.stroke();
     }
-    const bl=Math.pow(Math.max(0,Math.sin(G.t*.06+q.ph)),8);
-    ctx.fillStyle="rgba(120,230,255,"+(.25+.7*bl).toFixed(2)+")";
-    ctx.beginPath();ctx.arc(0,-13*s,1.4*s,0,TAU);ctx.fill();
+    stLive(()=>{const bl=Math.pow(Math.max(0,Math.sin(G.t*.06+q.ph)),8);
+      stLamp(0,-13*s,1.4*s,[120,230,255],+(.25+.7*bl).toFixed(2));});
   }
   ctx.restore();
 }

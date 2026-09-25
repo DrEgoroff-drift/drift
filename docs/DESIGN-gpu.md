@@ -169,11 +169,22 @@ Then hulls (item 2) by the same «explicit emission» path.
 - Brief of **`#c` zero** (Контроль on 85a858c: «бери сам всё, что держит ворота»): whatever still draws on `#c`
   in flight moves to the scene pass (the lane, fleet ships, finds, the gesture post), and an empty `#c` is not
   uploaded. Gate: steady flight uploads `#c` 0 times and submits once a frame; pairs not softer, not dimmer.
+- Brief of **station master** (Контроль after c86a9e0: «холст 408² пересоздаётся каждые ~15 кадров. Мастер + мипы,
+  как у корпусов. Что в ней живое — поверх, gpuShapes»): the station body is baked once per screen density
+  (`sb` = the zoom's ceiling 2.55 × DPR, a quarter octave up) into a mipped master with no time in the key;
+  what moves — lamps, the trade ring, science dishes, the yard crane, outpost barrels, module windows and
+  blinkers, the house vest lamp — is recorded by `stLive` with its matrix and replayed each frame as shapes and
+  small spinning masters over the body; the industrial flare and its smoke leave `#c`. Gate: steady uploads 0
+  (the `#c`-zero test without the station exemption), pairs of six types at 760 ×1 and ×1.5 not softer, not
+  dimmer, gpu errs 0.
 
 The phone frame budget does not grow: GPU ≤ 12 ms.
 
 ## Where I stopped (update on every commit)
 
+- **Stage 1 caches (25.09, Контроль's order: station → zoom-following bakes → 25c → item 3).** Station master
+  done (17c3, steady uploads 0). Next: the hotel, billboard, neon and Cheburek bakes as masters (no mask), a
+  zoom sweep uploading ≤ their levels; pairs of the sign and the billboard at 760 and ×1.5.
 - **Released 0.457.0 (`2a288f7`, from `rel`; merged back into gpu as `b0c8cac`).** The next candidate goes from
   gpu the same way: the release list plus `cismoke`, its sha to Контроль. Rollback: a commit with the tree of
   `d543aff` on top, no force-push. `C:/Claude/drift-rel` stays — it is Контроль's working directory; nothing is
@@ -448,6 +459,19 @@ The phone frame budget does not grow: GPU ≤ 12 ms.
   light letter with a dark rim): on for fleet ships, finds and lane buoys (things); off for glows, the post's
   sign, the belly and every bake to come (hotel, billboard, neon), which take plain trilinear at `GPU_MIP_LOD`
   .785. The buoys are windows 1 and 3 of the fleet crop: without the mask −16 %, with it the numbers above.
+  **Station master (17c3).** `stationMaster` bakes `drawStationBody` at `sb` px per station unit into a
+  160-unit square (cap 4 masters, `gpuMipDrop` on evict) and `gpuStationDraw` lays it through `gpuLitSprite`
+  at the hull LOD rule. Live pieces call `stLive(fn)`: while baking it records `fn` with the matrix in station
+  units and skips it; in the frame `fn` runs with `ST_EM` set and pushes shapes — `stLamp`/`stLampRect` are
+  explicit emission (the dot painted, an added core ×`ST_EMIT` .7, a halo 1.8 of the radius ×`ST_HALO` .35),
+  `stBar` a painted capsule, `stSpin` a small spinning master of its own (ring, dishes), lit like the body. In
+  2D `stLive` draws in place, so `stationArt` bakes exactly what it baked. The trade ring lies between two
+  layers: `stSplit` after the ring cuts the master into «under» and «over» (core and containers cover the
+  ring). The flare is a six-capsule chain along the tongue's centreline with the outline's half-width, the
+  glow one soft added capsule, the smoke painted discs. Pairs `st_pairs.png` (six types, 760 ×1 | ×1.5, HEAD |
+  now): luma +.2…+1.0, edge 97th pct +3…+8 % everywhere; the lamps are live now (the old bake froze them for
+  18 ticks). Steady flight by the station: uploads 0, masters 1–2, spinners 1; the gate test runs with
+  `GATE_OK=[]`.
 - Brief of **L4 k/n — the shock ring and the exhaust haze bend the backdrop, never a hull** (Контроль 24.09): no
   hull, own or pirate, sprite or 2D, is cut into bands; an RGB fringe on the backdrop only. Done (08b/08c): the
   scene's alpha became the hull mask — every blend keeps it (`GPU_KEEP_A`), the lit sprite (`gst`: pirates,

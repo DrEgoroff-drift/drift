@@ -114,14 +114,19 @@ function stCore(w,h,seams){        /* центральный ствол с пр�
     ctx.strokeStyle="rgba(0,0,0,.45)";ctx.lineWidth=.8;
   }
   ctx.beginPath();ctx.moveTo(-w+2,-h);ctx.lineTo(-w-1,-h-6);ctx.lineTo(w+1,-h-6);ctx.lineTo(w-2,-h);ctx.stroke();
-  ctx.fillStyle=(Math.sin(G.t*.09)>0)?"#7fe6d8":"rgba(127,230,216,.2)";
-  ctx.beginPath();ctx.arc(0,-h-8,2.4,0,TAU);ctx.fill();
-  ctx.fillStyle=(Math.sin(G.t*.09)>0)?"rgba(255,107,87,.9)":"rgba(255,107,87,.2)";
-  ctx.beginPath();ctx.arc(0,h+2,1.8,0,TAU);ctx.fill();
+  stLive(()=>{const on=Math.sin(G.t*.09)>0;
+    stLamp(0,-h-8,2.4,[127,230,216],on?1:.2);stLamp(0,h+2,1.8,[255,107,87],on?.9:.2);});
 }
 function stRing(V,rx,ry){          /* вращающийся тор с жилыми модулями на ободе */
+  stLive(()=>{const a=G.t*.006+V.ph;
+    stSpin("ring|"+rx.toFixed(2)+"|"+ry.toFixed(2),rx+3,a,()=>stRingBody(rx,ry));
+    for(let i=0;i<6;i++){const t=i*Math.PI/3+.4,bx=Math.cos(t)*rx,by=Math.sin(t)*ry;
+      stLampRect(bx-1,by-.7,2,1.4,[255,230,170],(Math.sin(G.t*.05+i)>.2)?.9:.25,a);}
+  });
+  stSplit();   /* кольцо — под слоем «над»: ядро и контейнеры его закрывают */
+}
+function stRingBody(rx,ry){
   ctx.strokeStyle="rgba(0,0,0,.45)";ctx.lineWidth=.7;ctx.fillStyle="#20293a";
-  ctx.save();ctx.rotate(G.t*.006+V.ph);
   ctx.beginPath();ctx.ellipse(0,0,rx,ry,0,0,TAU);ctx.stroke();
   ctx.beginPath();ctx.ellipse(0,0,rx*.66,ry*.7,0,0,TAU);ctx.stroke();
   for(let i=0;i<8;i++){
@@ -133,11 +138,7 @@ function stRing(V,rx,ry){          /* вращающийся тор с жилы�
   for(let i=0;i<6;i++){
     const t=i*Math.PI/3+.4,bx=Math.cos(t)*rx,by=Math.sin(t)*ry;
     ctx.beginPath();ctx.rect(bx-2.4,by-1.8,4.8,3.6);ctx.fill();ctx.stroke();
-    ctx.fillStyle=(Math.sin(G.t*.05+i)>.2)?"rgba(255,230,170,.9)":"rgba(255,230,170,.25)";
-    ctx.fillRect(bx-1,by-.7,2,1.4);
-    ctx.fillStyle="#212b3a";
   }
-  ctx.restore();
 }
 /* тело станции в своих координатах: плита, модули, постройки, куски типа.
    Ни один кусок не знает ни экрана, ни зума — потому всю сборку можно испечь
@@ -200,8 +201,7 @@ function drawStationBody(V,S,ty){
       ctx.beginPath();
       ctx.moveTo(sx*9,-8);ctx.lineTo(sx*24*V.a,-13);ctx.lineTo(sx*24*V.a,9);ctx.lineTo(sx*9,6);
       ctx.closePath();ctx.fill();ctx.stroke();
-      ctx.fillStyle=(Math.sin(G.t*.04+(sx>0?0:1.7))>0)?"rgba(255,150,60,.75)":"rgba(255,150,60,.3)";
-      ctx.fillRect(sx*14-3,-4,6,7);
+      stLive(()=>stLampRect(sx*14-3,-4,6,7,[255,150,60],(Math.sin(G.t*.04+(sx>0?0:1.7))>0)?.75:.3));
       ctx.fillStyle="#242c36";
     }
     ctx.strokeStyle="rgba(242,178,92,.32)";ctx.lineWidth=1;
@@ -232,11 +232,8 @@ function drawStationBody(V,S,ty){
     ctx.strokeStyle="rgba(150,190,220,.45)";
     ctx.beginPath();ctx.moveTo(0,-17);ctx.lineTo(0,15);ctx.stroke();
     /* кран ползает вдоль эллинга — видно, что верфь работает */
-    const cy=Math.sin(G.t*.02+V.ph)*15;
-    ctx.strokeStyle="rgba(255,210,130,.8)";ctx.lineWidth=2;
-    ctx.beginPath();ctx.moveTo(-22,cy);ctx.lineTo(22,cy);ctx.stroke();
-    ctx.fillStyle=(Math.sin(G.t*.3)>0)?"rgba(180,255,255,.9)":"rgba(180,255,255,.15)";
-    ctx.beginPath();ctx.arc(6,cy,1.6,0,TAU);ctx.fill();
+    stLive(()=>{const cy=Math.sin(G.t*.02+V.ph)*15;
+      stBar(-22,cy,22,cy,2,[255,210,130],.8);stLamp(6,cy,1.6,[180,255,255],(Math.sin(G.t*.3)>0)?.9:.15);});
     stCore(5,10,false);
   }else if(ty==="sci"){
     /* тонкий силуэт: мачта, тарелки антенн и решётки радиаторов */
@@ -250,16 +247,17 @@ function drawStationBody(V,S,ty){
     }
     ctx.strokeStyle="rgba(0,0,0,.45)";ctx.lineWidth=.8;ctx.fillStyle="#212b3a";
     for(const sy of [-1,1]){
-      const dy=sy*22,ang=G.t*.004*sy+V.ph;
+      const dy=sy*22;
       ctx.beginPath();ctx.moveTo(0,sy*12);ctx.lineTo(0,dy);ctx.stroke();
-      ctx.save();ctx.translate(0,dy);ctx.rotate(ang);
-      ctx.beginPath();ctx.ellipse(0,0,9*V.a,3.2,0,0,Math.PI,true);ctx.fill();ctx.stroke();
-      ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(0,-4.5);ctx.stroke();
+      ctx.save();ctx.translate(0,dy);
+      stLive(()=>stSpin("scidish|"+V.a.toFixed(3),9*V.a+1.5,G.t*.004*sy+V.ph,()=>{
+        ctx.strokeStyle="rgba(0,0,0,.45)";ctx.lineWidth=.8;ctx.fillStyle="#212b3a";
+        ctx.beginPath();ctx.ellipse(0,0,9*V.a,3.2,0,0,Math.PI,true);ctx.fill();ctx.stroke();
+        ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(0,-4.5);ctx.stroke();}));
       ctx.restore();
     }
     stCore(4.5,13,true);
-    ctx.fillStyle=(Math.sin(G.t*.06+V.ph)>.4)?"rgba(140,240,255,.9)":"rgba(140,240,255,.2)";
-    ctx.beginPath();ctx.arc(0,0,2,0,TAU);ctx.fill();
+    stLive(()=>stLamp(0,0,2,[140,240,255],(Math.sin(G.t*.06+V.ph)>.4)?.9:.2));
   }else if(ty==="outpost"){
     /* угловатый броневой блок с турелями: панелей нет, только красные огни */
     ctx.strokeStyle="rgba(0,0,0,.45)";ctx.lineWidth=.8;ctx.fillStyle="#242d38";
@@ -276,13 +274,11 @@ function drawStationBody(V,S,ty){
     ctx.strokeStyle="rgba(0,0,0,.45)";ctx.lineWidth=1.2;ctx.fillStyle="#2a333e";
     for(let i=0;i<3;i++){
       const t=i*TAU/3+V.ph,bx=Math.cos(t)*17*V.a,by=Math.sin(t)*15*V.b;
-      const ga=t+Math.sin(G.t*.012+i)*.5;
       ctx.beginPath();ctx.arc(bx,by,3.4,0,TAU);ctx.fill();ctx.stroke();
-      ctx.beginPath();ctx.moveTo(bx,by);ctx.lineTo(bx+Math.cos(ga)*8,by+Math.sin(ga)*8);ctx.stroke();
+      stLive(()=>{const ga=t+Math.sin(G.t*.012+i)*.5;stBar(bx,by,bx+Math.cos(ga)*8,by+Math.sin(ga)*8,1.2,[0,0,0],.45);});
     }
     stCore(5,12,false);
-    ctx.fillStyle=(Math.sin(G.t*.14)>.3)?"rgba(255,80,60,.95)":"rgba(255,80,60,.15)";
-    for(const sx of [-1,1]){ctx.beginPath();ctx.arc(sx*20*V.a,0,2,0,TAU);ctx.fill();}
+    stLive(()=>{const a=(Math.sin(G.t*.14)>.3)?.95:.15;for(const sx of [-1,1])stLamp(sx*20*V.a,0,2,[255,80,60],a);});
   }else if(ty==="bazaar"){
     /* блошинец: одно тело из чужих кусков. Корпус собран из разномастных секций,
        по бортам растянуты навесы, под ними на леерах висит товар, и всё это
@@ -330,11 +326,10 @@ function drawStationBody(V,S,ty){
     }
     stCore(5,13,false);
     /* лампы: тёплые, разной яркости — гирлянда, а не сигнальные огни */
-    for(let i=0;i<5;i++){
-      const t=i*TAU/5+.4,a=.35+.55*Math.abs(Math.sin(G.t*.03+i*1.7));
-      ctx.fillStyle="rgba(255,206,132,"+a.toFixed(2)+")";
-      ctx.beginPath();ctx.arc(Math.cos(t)*19*V.a,Math.sin(t)*16*V.b,1.7,0,TAU);ctx.fill();
-    }
+    stLive(()=>{for(let i=0;i<5;i++){
+      const t=i*TAU/5+.4,a=+(.35+.55*Math.abs(Math.sin(G.t*.03+i*1.7))).toFixed(2);
+      stLamp(Math.cos(t)*19*V.a,Math.sin(t)*16*V.b,1.7,[255,206,132],a);
+    }});
   }else{
     /* заправочная: бак с причалом, ничего лишнего */
     ctx.strokeStyle="rgba(0,0,0,.45)";ctx.lineWidth=.8;
@@ -486,7 +481,6 @@ function gpuLitSprite(cv,x,y,R,s,rot,lx,ly,glow,sy,lod){
   gpuField(pass,"gst",GST_WGSL,U,[mip?cv:gpuCanvasTex(cv),{view:GPU.V.lt}],{blend:"hull",smp:mip?gpuMipSmp():null});
   return true;
 }
-function gpuStation(art,x,y,s,lx,ly){return gpuLitSprite(art.cn,x,y,art.R,s,0,lx,ly,1);}
 function drawStation(x,y,Z){
   /* ── станция крупнее корабля, потому что корабль в неё заходит (M242) ──
      На увеличении торговый узел с шестью модулями был 170 px, а корабль рядом
@@ -510,15 +504,26 @@ function drawStation(x,y,Z){
   let lx=-(S.x||0),ly=-(S.y||0);const ln=Math.hypot(lx,ly);
   if(ln<1e-6){lx=-.86;ly=-.51;}else{lx/=ln;ly/=ln;}   /* пока станция не встала на орбиту — свет слева сверху */
   const nb=(typeof bldBuiltHere==="function")?bldBuiltHere(G.sys).length:0;
-  const key=(G.sys.key||"?")+"|"+ty+"|"+nb+"|"+(Math.round(s*4)/4)+"|"+Math.floor(G.t/18)+"|"+SCK+"|"+(GPU.on?"g":"c");
-  const art=stationArt(key,s,V,S,ty,lx,ly);
-  if(!gpuStation(art,x,y,s,lx,ly))ctx.drawImage(art.cn,x-art.R,y-art.R,art.R*2,art.R*2);
-  else{GPU.oc.push([x,y,art.R*.5]);   /* L3: заслон звезды для барж у причала */
+  const pass=gpuScene();
+  if(pass){
+    /* мастер: плотность — предел зума на экране, по четверть-октавы (как у корпусов) */
+    const dk=GPU.bw/W,sb=Math.pow(2,Math.ceil(Math.log2(1.5*1.7*dk)*4)/4);
+    const M=stationMaster((G.sys.key||"?")+"|"+ty+"|"+nb+"|"+SCK+"|"+sb,sb,V,S,ty),R=Math.max(24,80*s);
+    gpuStationDraw(M,x,y,s,lx,ly);
+    GPU.oc.push([x,y,R*.5]);   /* L3: заслон звезды для барж у причала */
     /* огни станции — тёплый свет на пришвартованных: борт к станции теплеет */
-    gpuLight(x,y,x,y,1,.84,.59,art.R*.9,.7);}
+    gpuLight(x,y,x,y,1,.84,.59,R*.9,.7);
+  }else{
+    const key=(G.sys.key||"?")+"|"+ty+"|"+nb+"|"+(Math.round(s*4)/4)+"|"+Math.floor(G.t/18)+"|"+SCK+"|c";
+    const art=stationArt(key,s,V,S,ty,lx,ly);
+    ctx.drawImage(art.cn,x-art.R,y-art.R,art.R*2,art.R*2);
+  }
   /* факельная труба живёт поверх выпечки (M325): в спрайте пламя стоит по
      18 тактов, а факел — единственное на станции, что обязано плясать */
-  if(ty==="indust"){
+  if(ty==="indust"&&pass){
+    const t=G.t*.045+V.ph,fl=6.2+Math.sin(t*1.7)*1.6+Math.sin(t*2.9+1.3)*.9,lean=Math.sin(t*1.1+.7)*1.4+Math.sin(t*2.3)*.6;
+    gpuStationFlare(pass,x,y,s,t,fl,lean,V);
+  }else if(ty==="indust"){
     ctx.save();ctx.translate(x,y);ctx.scale(s,s);
     /* язык пламени как тело (M326): было два эллипса и кружок, длина прыгала по
        |sin| — «кусками дёргается». Теперь одна замкнутая форма — язык с устья

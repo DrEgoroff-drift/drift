@@ -49,7 +49,7 @@ function houseMark(H,V,off){
     ctx.fillStyle=body;
     ctx.beginPath();ctx.arc(bx,by-8.4,3.4,Math.PI*.08,Math.PI*.92);ctx.closePath();ctx.fill();
     ctx.strokeStyle=c;ctx.beginPath();ctx.arc(bx,by-8.4,3.4,Math.PI*.08,Math.PI*.92);ctx.stroke();
-    ctx.fillStyle=(Math.sin(G.t*.07)>0)?c:rgba(houseRGB(H),.25);ctx.beginPath();ctx.arc(bx,by-8.6,.8,0,TAU);ctx.fill();
+    stLive(()=>stLamp(bx,by-8.6,.8,houseRGB(H),(Math.sin(G.t*.07)>0)?1:.25));
   }else if(H.id==="kryl"){
     /* два скошенных лонжерона: размах */
     ctx.fillStyle=body;

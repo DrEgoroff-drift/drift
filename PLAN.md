@@ -40,9 +40,8 @@ numbers; the picture only no worse. Physics, seeds, the save and QUANT stay unto
     lights of fleet ships and lane buoys are explicit emission (rule 16/n): the dot painted, a narrow added halo
     at the thing (2–3 of its radii; `FLEET_HALO`, `LANE_HALO`) — judged with the flame in the same pair;
   - pirates, missiles and combat effects;
-  - the caches: the station art rebaked on the move (a new 408² canvas about every 15 frames — a mipped master,
-    what lives on top as shapes); the zoom-following bakes (hotel, billboard, neon, Cheburek) as masters, a zoom
-    sweep uploading at most their levels;
+  - the caches: the zoom-following bakes (hotel, billboard, neon, Cheburek) as masters, a zoom sweep uploading
+    at most their levels;
   - the instrument pod (416×140, 66 calls a frame): redraw only when a reading changes.
   - Gate: uploads 0 and submits 1 per flight frame; then Контроль's phone run, ≥ 95 % of frames on time over
     30 s and over 5 minutes. A pass makes it a release candidate (Контроль pushes).
