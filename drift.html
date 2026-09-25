@@ -11263,29 +11263,59 @@ function chipDomSweep(){
    устройства; ширина для выравнивания — сумма мерок кусков, все из кэша. Атлас — 4 слоя 1024²,
    вытесняется слой, которого дольше всех не касались. Нет фишек и подписей — слой спрятан
    (display:none): композитор его не сводит */
-const OVL={cv:null,cx:null,dev:null,P:null,lq:[],cq:[],on:false,fl:false,fno:0,ras:0,led:null,
-  lab:new Map(),chip:new Map(),f:null,buf:null,bg:null,
+/* Слой интерфейса (uq, под подписями и фишками; стойка 25d): те же прямоугольники, маски и
+   треугольники и ещё четыре вида — картинка (мастер gpuBake: своя привязка текстуры, повёрнутый
+   прямоугольник, трилинейно), график (ломаная по ровному шагу x — перо самописца: покрытие —
+   расстояние до ближайших звеньев, объединение без двойного края на стыках; точки лежат в том же
+   буфере после примитивов), капсула (отрезок с круглыми концами) и эллипс (заливка или обвод).
+   Картинки режут проход на прогоны по мастеру: привязка — на мастер, кэш по текстуре */
+const OVL={cv:null,cx:null,dev:null,P:null,lq:[],cq:[],uq:[],ur:[],gd:[],on:false,fl:false,fno:0,ras:0,led:null,
+  lab:new Map(),chip:new Map(),f:null,buf:null,bg:null,bgs:new Map(),
   A:{dev:null,tex:null,view:null,L:4,S:1024,pg:[],map:new Map(),cur:0,ev:0,thr:0}};
 const OVL_N=20;   /* чисел на примитив: рамка, цвет, (вид, слой, тексель), треугольник */
 const OVL_WGSL=`
 struct IO{@builtin(position) p:vec4f,@location(0) @interpolate(flat) b:vec4f,@location(1) @interpolate(flat) c:vec4f,
-  @location(2) @interpolate(flat) m:vec4f,@location(3) @interpolate(flat) t0:vec4f,@location(4) @interpolate(flat) t1:vec4f};
+  @location(2) @interpolate(flat) m:vec4f,@location(3) @interpolate(flat) t0:vec4f,@location(4) @interpolate(flat) t1:vec4f,
+  @location(5) uv:vec2f};
 @group(0) @binding(0) var<storage,read> Q:array<vec4f>;
 @group(0) @binding(1) var<uniform> S:vec4f;
 @group(0) @binding(2) var A:texture_2d_array<f32>;
+@group(0) @binding(3) var T:texture_2d<f32>;
+@group(0) @binding(4) var sm:sampler;
 @vertex fn vs(@builtin(vertex_index) vi:u32,@builtin(instance_index) ii:u32)->IO{
   let k=ii*5u;var o:IO;o.b=Q[k];o.c=Q[k+1u];o.m=Q[k+2u];o.t0=Q[k+3u];o.t1=Q[k+4u];
-  /* маска — ровно своя рамка (пиксель в пиксель); прямоугольник и треугольник — с пикселем запаса на край */
-  var r=o.b;if(o.m.x!=1.){r=vec4f(floor(o.b.xy)-1.,ceil(o.b.zw)+1.);}
-  let C=array<vec2f,6>(vec2f(0.,0.),vec2f(1.,0.),vec2f(0.,1.),vec2f(0.,1.),vec2f(1.,0.),vec2f(1.,1.));
-  let q=mix(r.xy,r.zw,C[vi]);o.p=vec4f(q.x/S.x*2.-1.,1.-q.y/S.y*2.,0.,1.);return o;}
+  let C=array<vec2f,6>(vec2f(0.,0.),vec2f(1.,0.),vec2f(0.,1.),vec2f(0.,1.),vec2f(1.,0.),vec2f(1.,1.));let cn=C[vi];
+  var q:vec2f;o.uv=cn;
+  if(o.m.x==3.){   /* картинка: центр t0.xy, полуразмер t0.zw, поворот m.y, кусок текстуры t1 */
+    let cs=cos(o.m.y);let sn=sin(o.m.y);let l=(cn*2.-1.)*o.t0.zw;
+    q=o.t0.xy+vec2f(l.x*cs-l.y*sn,l.x*sn+l.y*cs);o.uv=mix(o.t1.xy,o.t1.zw,cn);}
+  else{
+    /* маска — ровно своя рамка (пиксель в пиксель), график — ровно своя полоса (она же обрез);
+       прочее — с пикселем запаса на край */
+    var r=o.b;if(o.m.x!=1.&&o.m.x!=4.){r=vec4f(floor(o.b.xy)-1.,ceil(o.b.zw)+1.);}
+    q=mix(r.xy,r.zw,cn);}
+  o.p=vec4f(q.x/S.x*2.-1.,1.-q.y/S.y*2.,0.,1.);return o;}
 fn ed(a:vec2f,b:vec2f,p:vec2f)->f32{let d=b-a;return (d.x*(p.y-a.y)-d.y*(p.x-a.x))/max(length(d),1e-4);}
+fn sd(p:vec2f,a:vec2f,b:vec2f)->f32{let d=b-a;let h=clamp(dot(p-a,d)/max(dot(d,d),1e-6),0.,1.);return length(p-a-d*h);}
+fn gy(i:i32)->f32{let v=Q[u32(S.z)+u32(i)/4u];return v[u32(i)%4u];}
 @fragment fn fs(i:IO)->@location(0) vec4f{
   let p=i.p.xy;var a=0.;
+  let dx=dpdx(i.uv);let dy=dpdy(i.uv);   /* производные — до ветвлений (однородный поток) */
   if(i.m.x<.5){a=clamp(min(p.x+.5,i.b.z)-max(p.x-.5,i.b.x),0.,1.)*clamp(min(p.y+.5,i.b.w)-max(p.y-.5,i.b.y),0.,1.);}
   else if(i.m.x<1.5){a=textureLoad(A,vec2i(floor(p-i.b.xy)+i.m.zw),i32(i.m.y),0).r;}
-  else{let s=sign(ed(i.t0.xy,i.t0.zw,i.t1.xy));
+  else if(i.m.x<2.5){let s=sign(ed(i.t0.xy,i.t0.zw,i.t1.xy));
     a=clamp(min(ed(i.t0.xy,i.t0.zw,p),min(ed(i.t0.zw,i.t1.xy,p),ed(i.t1.xy,i.t0.xy,p)))*s+.5,0.,1.);}
+  else if(i.m.x<3.5){return textureSampleGrad(T,sm,i.uv,dx,dy)*i.c;}
+  else if(i.m.x<4.5){   /* график: x0=t0.x, шаг t0.y, полутолщина m.y, точки с m.z (от S.z), их m.w */
+    let x0=i.t0.x;let st=i.t0.y;let hw=i.m.y;let o=i32(i.m.z);let n=i32(i.m.w);
+    let j0=max(0,i32(floor((p.x-x0-hw-1.)/st)));let j1=min(n-2,i32(floor((p.x-x0+hw+1.)/st)));
+    var d=1e9;
+    for(var j=j0;j<=j1;j++){d=min(d,sd(p,vec2f(x0+f32(j)*st,gy(o+j)),vec2f(x0+f32(j+1)*st,gy(o+j+1))));}
+    a=clamp(hw-d+.5,0.,1.);}
+  else if(i.m.x<5.5){a=clamp(i.t1.x-sd(p,i.t0.xy,i.t0.zw)+.5,0.,1.);}
+  else{   /* эллипс t0 (центр, полуоси): расстояние ≈ f/|∇f|; t1.y — заливка, иначе обвод полутолщиной t1.x */
+    let q=(p-i.t0.xy)/i.t0.zw;let L=max(length(q),1e-5);let g=max(length(q/i.t0.zw),1e-6);let d=(L-1.)*L/g;
+    if(i.t1.y>.5){a=clamp(.5-d,0.,1.);}else{a=clamp(i.t1.x-abs(d)+.5,0.,1.);}}
   return i.c*a;}`;
 function ovNd(){return OVL.cv&&W>0?OVL.cv.width/W:gpuHudDpr();}
 /* слой: создаётся при первой фишке, сразу после #hud (подписи кабины пояса, #labels, — между ними) */
@@ -11388,27 +11418,73 @@ function ovlDesc(){const m=gpuShader(OVL_WGSL);return {layout:"auto",vertex:{mod
     alpha:{srcFactor:"one",dstFactor:"one-minus-src-alpha"}}}]}};}
 function ovFlush(){
   OVL.fl=true;
-  const n=(OVL.lq.length+OVL.cq.length)/OVL_N;
+  const nu=OVL.uq.length/OVL_N,n=nu+(OVL.lq.length+OVL.cq.length)/OVL_N;
   for(const M of [OVL.lab,OVL.chip])for(const [k,e] of M){e.on=e.fr===OVL.fno;if(OVL.fno-e.fr>600)M.delete(k);}
   OVL.fno++;
   const cv=n&&GPU.enc?ovCanvas():null;
-  if(!cv){OVL.lq.length=OVL.cq.length=0;if(OVL.on){OVL.on=false;OVL.cv.style.display="none";}return;}
-  const d=GPU.dev,need=n*OVL_N;
+  if(!cv){OVL.uq.length=OVL.lq.length=OVL.cq.length=OVL.ur.length=OVL.gd.length=0;if(OVL.on){OVL.on=false;OVL.cv.style.display="none";}return;}
+  const d=GPU.dev,np=n*OVL_N,g0=np,need=np+Math.ceil(OVL.gd.length/4)*4;   /* точки графиков — после примитивов, с границы vec4 */
   if(!OVL.f||OVL.f.length<need)OVL.f=new Float32Array(Math.max(need,OVL_N*64)*2);
-  OVL.f.set(OVL.lq,0);OVL.f.set(OVL.cq,OVL.lq.length);OVL.nl=OVL.lq.length/OVL_N;OVL.lq.length=OVL.cq.length=0;   /* подписи — под фишками */
+  /* интерфейс — под подписями, подписи — под фишками */
+  OVL.f.set(OVL.uq,0);OVL.f.set(OVL.lq,OVL.uq.length);OVL.f.set(OVL.cq,OVL.uq.length+OVL.lq.length);OVL.f.set(OVL.gd,g0);
+  OVL.nl=OVL.lq.length/OVL_N;OVL.uq.length=OVL.lq.length=OVL.cq.length=OVL.gd.length=0;
   if(!OVL.P){
     OVL.P=gpuPipeline("ovl",ovlDesc);
     OVL.U=d.createBuffer({size:16,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});OVL.bg=null;}
   if(!OVL.buf||OVL.buf.size<OVL.f.byteLength){if(OVL.buf)GPU.trash.push(OVL.buf);
     OVL.buf=d.createBuffer({size:OVL.f.byteLength,usage:GPUBufferUsage.STORAGE|GPUBufferUsage.COPY_DST});OVL.bg=null;}
   if(!OVL.A.tex)ovAtlas("",()=>({w:1,h:1,ox:0,oy:0,a:new Uint8Array(1)}));   /* атлас нужен привязке и без текста */
-  if(!OVL.bg)OVL.bg=d.createBindGroup({layout:OVL.P.getBindGroupLayout(0),entries:[{binding:0,resource:{buffer:OVL.buf}},
-    {binding:1,resource:{buffer:OVL.U}},{binding:2,resource:OVL.A.view}]});
-  d.queue.writeBuffer(OVL.buf,0,OVL.f,0,need);d.queue.writeBuffer(OVL.U,0,new Float32Array([cv.width,cv.height,0,0]));
+  if(!OVL.bg){OVL.bg=true;OVL.bgs.clear();}
+  d.queue.writeBuffer(OVL.buf,0,OVL.f,0,need);d.queue.writeBuffer(OVL.U,0,new Float32Array([cv.width,cv.height,g0/4,0]));
   const p=GPU.enc.beginRenderPass({colorAttachments:[{view:OVL.cx.getCurrentTexture().createView(),loadOp:"clear",storeOp:"store",
     clearValue:{r:0,g:0,b:0,a:0}}],timestampWrites:gpuTs("ovl")});
-  p.setPipeline(OVL.P);p.setBindGroup(0,OVL.bg);p.draw(6,n);p.end();
+  p.setPipeline(OVL.P);
+  /* прогоны по мастеру: [с какого примитива, мастер]; до первой картинки и без картинок — пустышка
+     (передний слой кадра: текстура есть всегда, новой не заводим) */
+  const R=OVL.ur;let i0=0,B=null;
+  for(let r=0;r<=R.length;r++){
+    const i1=r<R.length?R[r][0]:n;
+    if(i1>i0){p.setBindGroup(0,ovBind(B));p.draw(6,i1-i0,0,i0);i0=i1;}
+    if(r<R.length)B=R[r][1];
+  }
+  R.length=0;p.end();
   if(!OVL.on){OVL.on=true;cv.style.display="";}
+}
+/* привязка прохода с текстурой мастера B (нет — передний слой кадра); кэш по текстуре, сброс — со сменой буфера */
+function ovBind(B){
+  const t=B&&B.tex&&B.dev===GPU.dev?B.tex:GPU.T.front;
+  let g=OVL.bgs.get(t);if(g)return g;
+  if(OVL.bgs.size>=16)OVL.bgs.clear();
+  g=GPU.dev.createBindGroup({layout:OVL.P.getBindGroupLayout(0),entries:[{binding:0,resource:{buffer:OVL.buf}},
+    {binding:1,resource:{buffer:OVL.U}},{binding:2,resource:OVL.A.view},
+    {binding:3,resource:t===GPU.T.front?gpuOvFrontView():B.view},{binding:4,resource:gpuMipSmp()}]});
+  OVL.bgs.set(t,g);return g;
+}
+function gpuOvFrontView(){const t=GPU.T.front;if(OVL.fv0!==t){OVL.fv0=t;OVL.fv=t.createView();}return OVL.fv;}
+/* ── вид интерфейса (uq): координаты — пиксели CSS, как у 2D; al — прозрачность; col — цвет строкой ── */
+function ovPm(col,al){const c=gcColor(col),a=c[3]*(al==null?1:al);return [c[0]*a,c[1]*a,c[2]*a,a];}
+function ovRect(x0,y0,x1,y1,col,al){const s=ovNd();ovPush(OVL.uq,x0*s,y0*s,x1*s,y1*s,ovPm(col,al),0,0,0,0,null);}
+/* картинка: мастер B, центр (x,y), размер (w,h), поворот rot, кусок u0..v1, множитель mul (число — прозрачность) */
+function ovImage(B,x,y,w,h,rot,u0,v0,u1,v1,mul){
+  if(!B)return;const s=ovNd(),Q=OVL.uq,i=Q.length/OVL_N,m=typeof mul==="number"?[mul,mul,mul,mul]:(mul||[1,1,1,1]);
+  const R=OVL.ur;if(!R.length||R[R.length-1][1]!==B)R.push([i,B]);
+  Q.push(0,0,0,0,m[0],m[1],m[2],m[3],3,rot||0,0,0,x*s,y*s,w*s/2,h*s/2,u0,v0,u1,v1);
+}
+/* капсула: отрезок (x0,y0)–(x1,y1) толщиной w с круглыми концами; диск — отрезок нулевой длины */
+function ovCap(x0,y0,x1,y1,w,col,al){
+  const s=ovNd(),r=w*s/2,X0=x0*s,Y0=y0*s,X1=x1*s,Y1=y1*s;
+  ovPush(OVL.uq,Math.min(X0,X1)-r,Math.min(Y0,Y1)-r,Math.max(X0,X1)+r,Math.max(Y0,Y1)+r,ovPm(col,al),5,0,0,0,[X0,Y0,X1,Y1,r,0]);
+}
+/* эллипс: центр, полуоси; w>0 — обвод толщиной w, иначе заливка */
+function ovEll(cx,cy,rx,ry,w,col,al){
+  const s=ovNd(),X=cx*s,Y=cy*s,Rx=Math.max(.5,rx*s),Ry=Math.max(.5,ry*s),h=w>0?w*s/2:0;
+  ovPush(OVL.uq,X-Rx-h,Y-Ry-h,X+Rx+h,Y+Ry+h,ovPm(col,al),6,0,0,0,[X,Y,Rx,Ry,h,w>0?0:1]);
+}
+/* график: полоса-обрез (x0,y0)–(x1,y1), точки ys по x от gx с шагом st, толщина w */
+function ovGraph(x0,y0,x1,y1,gx,st,ys,w,col,al){
+  const s=ovNd(),n=ys.length;if(n<2)return;
+  const D=OVL.gd,o=D.length;for(let i=0;i<n;i++)D.push(ys[i]*s);
+  OVL.uq.push(x0*s,y0*s,x1*s,y1*s,...ovPm(col,al),4,w*s/2,o,n,gx*s,st*s,0,0,0,0,0,0);
 }
 
 /* ══════════════ набор для слоёв видеокарты (docs/DESIGN-gpu.md §4) ══════════════

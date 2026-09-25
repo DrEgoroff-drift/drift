@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 630 · символов верхнего уровня: 6296
+Файлов: 630 · символов верхнего уровня: 6304
 
 ## СИМВОЛЫ
 
@@ -789,7 +789,7 @@ CHIP_SPEED                   src/17-mode-system.js:21
 CHIP_T                       src/17-mode-system.js:15
 CHIP_TOUCH                   src/17-mode-system.js:18
 chipDist                     src/17-mode-system.js:695-701
-chipDom                      src/08bi-gpu-ovl.js:114-129
+chipDom                      src/08bi-gpu-ovl.js:144-159
 chipDomSnap                  src/08bh-gpu-hud.js:36-41
 chipDomSweep                 src/08bh-gpu-hud.js:68-74
 chKing                       src/25n-chess.js:112-116
@@ -1399,7 +1399,7 @@ dominoMove                   src/11af-domino.js:25-39
 dominoSettle                 src/11af-domino.js:40-56
 dominoStart                  src/11af-domino.js:14-21
 dominoTile                   src/11af-domino.js:13
-domLabel                     src/08bi-gpu-ovl.js:104-110
+domLabel                     src/08bi-gpu-ovl.js:134-140
 domLabelEnd                  src/08bh-gpu-hud.js:56-65
 domLabelId                   src/08bh-gpu-hud.js:54
 DOMR                         src/15d-domread.js:17
@@ -2336,6 +2336,7 @@ gpuNebulaGen                 src/16gb-gpu-nebula.js:560-612
 gpuNoise                     src/08b-gpu.js:374-379
 gpuNone                      src/08b2-gpu-loss.js:6-14
 gpuOver                      src/08b-gpu.js:563-583
+gpuOvFrontView               src/08bi-gpu-ovl.js:208
 gpuPass                      src/08b-gpu.js:435-438
 gpuPipe                      src/08c-gpu-kit.js:20-24
 gpuPipeDesc                  src/08c-gpu-kit.js:25-30
@@ -3965,18 +3966,25 @@ orderWin                     src/12aa-need.js:77
 ORE_KEYS                     src/02-world.js:128
 ORE_NODE_W                   src/23-mode-dig.js:12
 oreNode                      src/23-mode-dig.js:13-29
-ovAtlas                      src/08bi-gpu-ovl.js:52-71
-ovCanvas                     src/08bi-gpu-ovl.js:37-49
-ovFlush                      src/08bi-gpu-ovl.js:134-157
-OVL                          src/08bi-gpu-ovl.js:11
-OVL_N                        src/08bi-gpu-ovl.js:14
-OVL_PLATE                    src/08bi-gpu-ovl.js:113
-OVL_RUN                      src/08bi-gpu-ovl.js:76
-OVL_WGSL                     src/08bi-gpu-ovl.js:15
-ovlDesc                      src/08bi-gpu-ovl.js:131
-ovNd                         src/08bi-gpu-ovl.js:35
-ovPush                       src/08bi-gpu-ovl.js:72-75
-ovText                       src/08bi-gpu-ovl.js:79-101
+ovAtlas                      src/08bi-gpu-ovl.js:82-101
+ovBind                       src/08bi-gpu-ovl.js:199-207
+ovCanvas                     src/08bi-gpu-ovl.js:67-79
+ovCap                        src/08bi-gpu-ovl.js:219-222
+ovEll                        src/08bi-gpu-ovl.js:224-227
+ovFlush                      src/08bi-gpu-ovl.js:164-197
+ovGraph                      src/08bi-gpu-ovl.js:229-233
+ovImage                      src/08bi-gpu-ovl.js:213-217
+OVL                          src/08bi-gpu-ovl.js:17
+OVL_N                        src/08bi-gpu-ovl.js:20
+OVL_PLATE                    src/08bi-gpu-ovl.js:143
+OVL_RUN                      src/08bi-gpu-ovl.js:106
+OVL_WGSL                     src/08bi-gpu-ovl.js:21
+ovlDesc                      src/08bi-gpu-ovl.js:161
+ovNd                         src/08bi-gpu-ovl.js:65
+ovPm                         src/08bi-gpu-ovl.js:210
+ovPush                       src/08bi-gpu-ovl.js:102-105
+ovRect                       src/08bi-gpu-ovl.js:211
+ovText                       src/08bi-gpu-ovl.js:109-131
 ownerName                    src/12al1-toponym.js:14-18
 ownerOf                      src/13-combat.js:13
 packPart                     src/05-parts.js:465-472
@@ -6449,7 +6457,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/08bh-gpu-hud.js · 5 КБ
   · слой приборов: #hud и фишки у кромки (ступень 1, docs/DESIGN-gpu.md §L.S):1
 
-## src/08bi-gpu-ovl.js · 13 КБ
+## src/08bi-gpu-ovl.js · 19 КБ
   · фишки у кромки и подписи мира — на видеокарте (docs/DESIGN-gpu.md §G, «Chips and labels»):1
 
 ## src/08c-gpu-kit.js · 26 КБ
@@ -8296,7 +8304,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzzzzzy3-gate2d.js · 14 КБ
   · ворота «0 вызовов 2D» у перенесённых печей (GPU-3, DESIGN-gpu §G):1
 
-## tests/91zzzzzzy4-gpu-ovl.js · 6 КБ
+## tests/91zzzzzzy4-gpu-ovl.js · 9 КБ
   · слой #ovl: фишки у кромки и подписи мира на видеокарте (08bi, docs/DESIGN-gpu.md §G):1
 
 ## tests/91zzzzzzy4-pipes.js · 7 КБ
