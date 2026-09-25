@@ -54260,16 +54260,14 @@ function drawMooredBarge(zx,zy,Z){
   b.hullMax=140;b.hp=140;b.capName=bargeName(c);b.distress=0;b.underFire=0;b.escort=0;b.done=0;
   const x=zx(b.x),y=zy(b.y);
   const s=clamp(Z,.5,1.5)*.8;
-  const lit=(typeof gpuBargeBody==="function")&&gpuBargeBody(b,x,y,s);
-  ctx.save();ctx.translate(x,y);ctx.rotate(b.a);ctx.scale(s,s);
-  drawBarge(b,lit);
-  ctx.restore();
-  /* швартов: одна линия к станции, чтобы стоянка читалась стоянкой */
-  ctx.strokeStyle="rgba(242,178,92,.35)";ctx.lineWidth=1;
-  ctx.beginPath();ctx.moveTo(x-10*s,y-6*s);ctx.lineTo(zx(st.x)+34*clamp(Z,.4,1.5)*1.7,zy(st.y)+22*clamp(Z,.4,1.5)*1.7);ctx.stroke();
-  ctx.fillStyle="rgba(242,178,92,.8)";ctx.font="9px ui-monospace,monospace";ctx.textAlign="center";
-  ctx.fillText("«"+bargeName(c).toUpperCase()+"» · У ПРИЧАЛА",x,y+30);
-  ctx.textAlign="left";
+  /* на видеокарте, как баржи фактора (12l): корпус светом звезды, огни и зевы фигурами,
+     имя — подписью. 2D-пути нет (25.09) */
+  const pass=gpuScene();if(!pass)return;
+  if(gpuBargeBody(b,x,y,s))bargeLiveGpu(pass,b,x,y,s,b.a);
+  /* швартов: одна линия к станции, чтобы стоянка читалась стоянкой (срез прямой, как у штриха) */
+  const x0=x-10*s,y0=y-6*s,x1=zx(st.x)+34*clamp(Z,.4,1.5)*1.7,y1=zy(st.y)+22*clamp(Z,.4,1.5)*1.7;
+  gpuShapes(pass,[[4,(x0+x1)/2,(y0+y1)/2,Math.hypot(x1-x0,y1-y0)/2,.5,Math.atan2(y1-y0,x1-x0),0,242,178,92,.35]]);
+  domLabel("mb"+sys.key,x,y+30,"«"+bargeName(c).toUpperCase()+"» · У ПРИЧАЛА","9px ui-monospace,monospace","rgba(242,178,92,.8)","center");
 }
 /* сколько огней у планеты этой системы: по постройкам и по Поясу огней */
 function planetLightsN(sys){
@@ -54286,6 +54284,14 @@ function planetLightsOn(sys,p,r){
   return first===p?planetLightsN(sys):0;
 }
 
+/* ореол-конус (был радиальный градиент 0→R, альфа линейно до нуля) фигурами прохода сцены, сложением:
+   три мягких круга по трети радиуса — профиль конуса в 3 %, свет 0.99, пик тот же. Одна гладкая
+   ступень давала плоскую вершину — пятно вместо ореола. Мельче 1.5 px устройства — один круг */
+function glowCone(SH,x,y,R,c,a){
+  const dk=GPU.bw/W;
+  if(R*dk<=1.5){SH.push([1,x,y,0,0,0,R+.5/dk,c[0],c[1],c[2],a*(1.1-.35/Math.max(R*dk,.5))]);return;}
+  for(let i=0;i<3;i++)SH.push([1,x,y,i*R/3+.5/dk,0,0,R/3-.5/dk,c[0],c[1],c[2],a/3]);
+}
 /* ── планета меняется тоже (M306, DESIGN-holding §13) ──
    Огни на ночной стороне были, а дневная сторона молчала. Три знака, каждый
    от своей причины и ни один — цифра: ОТВАЛ у шахты — бледное пятно на
@@ -54293,7 +54299,10 @@ function planetLightsOn(sys,p,r){
    промысел); КУПОЛ оранжереи ловит солнце — одна яркая точка у терминатора с
    холодным ореолом (оранжерея, биостанция); ПОЛОСА — прямая линия там, где
    прямых не бывает, с рунга 6 «Полоса» (вы стояли на грунте). Всё в экранных
-   координатах поверх кэшированного диска, как и огни; ничего не хранится. */
+   координатах поверх кэшированного диска, как и огни; ничего не хранится.
+   На видеокарте (25.09): фигуры прохода сцены. Эллипс — веер треугольников с жёсткими
+   внутренними рёбрами; клипа по диску нет — дальше .85r от центра ни один знак не лежит,
+   а клип был по r−1. Ореол купола — glowCone (выше) */
 function drawPlanetWorks(sys,p,x,y,r){
   if(!p||p.type==="gas"||r<12)return;
   const first=(sys.planets||[]).find(q=>q.type!=="gas");
@@ -54308,41 +54317,37 @@ function drawPlanetWorks(sys,p,x,y,r){
   let ux=-(p.x||0),uy=-(p.y||0);const ln=Math.hypot(ux,uy)||1;ux/=ln;uy/=ln;
   const vx=-uy,vy=ux;                       /* вдоль лимба */
   const rr=rng(hashi(p.seed,0x0D0E,7));
-  ctx.save();
-  ctx.beginPath();ctx.arc(x,y,r-1,0,TAU);ctx.clip();
+  const pass=gpuScene();if(!pass)return;
+  const dk=GPU.bw/W,SH=[];
+  /* эллипс (центр, полуоси, поворот) — веер: рёбра к центру жёсткие, пиксель у одного треугольника */
+  const ell=(cx,cy,ea,eb,an,C)=>{const N=clamp(Math.ceil(Math.sqrt(Math.max(ea,eb)*dk)*7),12,64),c=Math.cos(an),n=Math.sin(an);
+    let px=cx+ea*c,py=cy+ea*n;
+    for(let i=1;i<=N;i++){const t=i/N*TAU,ex=ea*Math.cos(t),ey=eb*Math.sin(t),qx=cx+ex*c-ey*n,qy=cy+ex*n+ey*c;
+      SH.push([5,cx,cy,px,py,qx,qy,C[0],C[1],C[2],C[3],5]);px=qx;py=qy;}};
   if(dump){
     const d=r*.52, ox=x+ux*d+vx*r*(rr()-.5)*.5, oy=y+uy*d+vy*r*(rr()-.5)*.5;
     const ang=Math.atan2(vy,vx);
-    ctx.fillStyle="rgba(232,222,200,.30)";
-    ctx.beginPath();ctx.ellipse(ox,oy,r*.13,r*.06,ang,0,TAU);ctx.fill();
-    ctx.fillStyle="rgba(216,204,182,.34)";
-    ctx.beginPath();ctx.ellipse(ox+vx*r*.04,oy+vy*r*.04,r*.07,r*.035,ang+.3,0,TAU);ctx.fill();
+    ell(ox,oy,r*.13,r*.06,ang,[232,222,200,.30]);
+    ell(ox+vx*r*.04,oy+vy*r*.04,r*.07,r*.035,ang+.3,[216,204,182,.34]);
     /* тень отвала со стороны от солнца — пятно стало горкой */
-    ctx.fillStyle="rgba(0,0,0,.22)";
-    ctx.beginPath();ctx.ellipse(ox-ux*r*.035,oy-uy*r*.035,r*.11,r*.03,ang,0,TAU);ctx.fill();
+    ell(ox-ux*r*.035,oy-uy*r*.035,r*.11,r*.03,ang,[0,0,0,.22]);
   }
   if(strip){
     const d=r*.34, sx=x+ux*d+vx*r*(rr()-.5)*.6, sy=y+uy*d+vy*r*(rr()-.5)*.6;
     const a=Math.atan2(uy,ux)+(rr()-.5)*1.2, L=r*.16;
-    ctx.strokeStyle="rgba(236,232,220,.55)";ctx.lineWidth=Math.max(1,r*.012);ctx.lineCap="butt";
-    ctx.beginPath();ctx.moveTo(sx-Math.cos(a)*L,sy-Math.sin(a)*L);ctx.lineTo(sx+Math.cos(a)*L,sy+Math.sin(a)*L);ctx.stroke();
+    SH.push([4,sx,sy,L,Math.max(1,r*.012)/2,a,0,236,232,220,.55]);   /* срез прямой (butt) */
   }
+  gpuShapes(pass,SH);
   if(dome){
     /* у терминатора: там купол ловит низкое солнце */
     const a=Math.atan2(uy,ux)+(rr()<.5?1:-1)*(1.05+rr()*.25), d=r*.78;
     const dx=x+Math.cos(a)*d, dy=y+Math.sin(a)*d;
-    ctx.save();ctx.globalCompositeOperation="lighter";
     /* купол светится грунтом того, кто его ставил (M369a, §19.4 «купола») */
     const dby=(G.sys&&G.sys.station&&G.sys.station.by)||"gt";
     const dc=(typeof makerGround==="function")?mixc(makerGround(dby),[200,255,230],.5):[200,255,230];
-    const g=ctx.createRadialGradient(dx,dy,0,dx,dy,r*.07);
-    g.addColorStop(0,rgba(dc,.55));g.addColorStop(1,rgba(dc,0));
-    ctx.fillStyle=g;ctx.beginPath();ctx.arc(dx,dy,r*.07,0,TAU);ctx.fill();
-    ctx.restore();
-    ctx.fillStyle="rgba(255,255,244,.95)";
-    ctx.beginPath();ctx.arc(dx,dy,Math.max(1.2,r*.014),0,TAU);ctx.fill();
+    const GL=[];glowCone(GL,dx,dy,r*.07,dc,.55);gpuShapes(pass,GL,{blend:"add"});
+    gpuShapes(pass,[[1,dx,dy,Math.max(1.2,r*.014),0,0,0,255,255,244,.95]]);
   }
-  ctx.restore();
 }
 
 /* ══════════════ трафик системы: чужие машины, которым тут есть дело (M309) ══════════════ */
@@ -57035,9 +57040,23 @@ function bazHulk(id,dk){
         g.fillStyle="rgba(170,215,255,.21)";g.beginPath();g.arc(e.x+e.r*.1,e.y,e.r*.3,0,TAU);g.fill();}
       else{g.fillStyle="rgba(255,140,70,.26)";g.beginPath();g.arc(e.x+e.r*.1,e.y,e.r*.42,0,TAU);g.fill();}}
     hullPart1(h,id,0,false);hullPart2(h);hullPart3(h,id);
-    /* мёртвый: тёмная плёнка по силуэту, чтобы не читался живым бортом */
-    tracePoly(h.poly);g.fillStyle="rgba(20,18,16,.6)";g.fill();});
+    /* мёртвый: тёмная плёнка по силуэту, чтобы не читался живым бортом. Утоплена на 5 %:
+       полоска корпуса из-под неё — обвод (тело, обвод, один свет). В 2D его давала
+       случайно сглаженная кромка плёнки, на дальнем плане это был весь свет силуэта */
+    g.scale(.95,.95);tracePoly(h.poly);g.fillStyle="rgba(20,18,16,.6)";g.fill();});
   return B&&{B,E:side/(2*sb)};
+}
+/* вывеска — часть сцены, не подпись: выпечка букв (ss 2, пиксели устройства), блум сцены
+   даёт ей ореол, как 2D-тексту на #c. Ключ — кегль и DPR */
+const BAZ_SIGN=new Map(),BAZ_SIGN_T="БАРАХОЛКА";
+function bazSign(F){
+  const d=DPR;
+  return bakeKeep(BAZ_SIGN,F+"|"+d,4,()=>{
+    const fb="bold "+F*d+"px ui-monospace,monospace",tw=Math.ceil(gcMeasure(fb,BAZ_SIGN_T).width),pad=Math.ceil(2*d);
+    const base=pad+Math.ceil(F*d*.82),Hd=base+Math.ceil(F*d*.28)+pad,Wd=tw+pad*2;
+    const B=gpuBake(Wd,Hd,g=>{g.font=fb;g.textAlign="left";g.textBaseline="alphabetic";g.fillStyle="rgba(240,210,160,.85)";g.fillText(BAZ_SIGN_T,pad,base);},{mips:false});
+    return B&&{B,ax:pad+tw/2,ay:base,w:Wd/d,h:Hd/d,drop(){gpuBakeDrop(B);}};
+  });
 }
 function drawBazaar(zx,zy,Z){
   const B=bazHere();if(!B)return;
@@ -57074,7 +57093,7 @@ function drawBazaar(zx,zy,Z){
     gpuShapes(pass,SH);
   }
   /* гирлянды: провод дугой, лампочки на коротких подвесах, качаются не в лад */
-  const WR=[],LT=[],gR=5*s,gK=1.1-.35/(gR*dk);
+  const WR=[],LT=[];
   for(let i=0;i<hulks.length-1;i++){
     const [ax,ay]=hulks[i],[bx,by]=hulks[i+1],mx=(ax+bx)/2,my=(ay+by)/2+12*s;
     let p=[ax,ay-16*s];
@@ -57086,12 +57105,13 @@ function drawBazaar(zx,zy,Z){
          квадрат той же площади покрытие считает точно, как растр */
       const br=.9*s,bh=br*.886;
       LT.push(br*dk<.7?[0,lx+sw-bh,ly+4.6*s-bh,lx+sw+bh,ly+4.6*s+bh,0,0,255,170+k*12,110,.8*on]:[1,lx+sw,ly+4.6*s,br,0,0,0,255,170+k*12,110,.8*on]);
-      /* ореол: был радиальный градиент 0→5s (конус). Мягкий край — гладкая ступень от −.5 px
-         до R+.5: пик тот же, а свет сходится с конусом в 3 % при поправке 1.1−.35/R (R в px) */
-      LT.push([1,lx+sw,ly+4.6*s,0,0,0,gR+.5/dk,255,190,120,.14*on*gK]);}
+      glowCone(LT,lx+sw,ly+4.6*s,5*s,[255,190,120],.14*on);}   /* ореол — конус градиента (17e) */
   }
   gpuShapes(pass,WR);gpuShapes(pass,LT,{blend:"add"});
-  domLabel("bz"+B.seed,x,y-48*s,"БАРАХОЛКА","bold "+Math.round(8*s)+"px ui-monospace,monospace","rgba(240,210,160,.9)","center");   /* .9: в 2D её поднимал проход сцены */
+  /* середина строки — x, базовая линия — y−48s; место на целый пиксель устройства */
+  const N=bazSign(Math.round(8*s));
+  if(N){const d=DPR,l=Math.round((x-N.ax/d)*d)/d,t=Math.round((y-48*s-N.ay/d)*d)/d;
+    gpuImage(pass,N.B,[{x:l+N.w/2,y:t+N.h/2,w:N.w,h:N.h}]);}
 }
 function bazInteract(sh){
   const B=bazHere();if(!B)return false;
