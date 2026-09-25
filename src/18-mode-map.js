@@ -127,20 +127,17 @@ function drawMap(){
      Было небо M438: полоса, туманность и крошка, ехавшие ДОЛЕЙ пути листа, —
      доля экрана остаётся экраном, и автор прочёл это ровно так: «приклеены».
      Закон карты: слой либо в мире (1:1 с листом, растёт с зумом), либо бумага.
-     Галактика — в мире: спираль вокруг 0:0, тайлы в координатах секторов. */
+     Галактика — в мире: спираль вокруг 0:0, поле на видеокарте (17z3). */
+  const jr=(st.jump+.02)*cell;
+  MAPGPU.lamp={x:px,y:py,r:jr};   /* круг прыжка светит в самом небе (17z3) */
   drawGalaxy(V,cell);
   mapRhumbPaint(ctx,W,H,px,py);
   drawGalaxyStars(V,cell);   /* звёзды галактики — предметы мира, не мерцают (M448) */
   if(typeof drawGalaxyNames==="function")drawGalaxyNames(V,cell);   /* рукава и туманности по имени (M449) */
   if(typeof drawRailMap==="function")drawRailMap(V,cell);   /* железная дорога бледно, 1:1 с листом (M470) */
   if(typeof drawGiantsMap==="function")drawGiantsMap(V,cell);   /* великаны — ориентиры (M464) */
-  const jr=(st.jump+.02)*cell;
   /* круг прыжка: не окружность-волосок, а освещённая область — сразу видно,
-     докуда рука дотягивается */
-  const jg=ctx.createRadialGradient(px,py,jr*.55,px,py,jr);
-  jg.addColorStop(0,"rgba(127,230,216,0)");
-  jg.addColorStop(1,"rgba(127,230,216,.055)");
-  ctx.fillStyle=jg;ctx.beginPath();ctx.arc(px,py,jr,0,TAU);ctx.fill();
+     докуда рука дотягивается. Свет — в поле неба (MAPGPU.lamp), здесь — кромка */
   ctx.strokeStyle="rgba(127,230,216,.22)";ctx.lineWidth=1;
   ctx.beginPath();ctx.arc(px,py,jr,0,TAU);ctx.stroke();
   /* круг поиска по слуху: где смотреть, а не что нашли */

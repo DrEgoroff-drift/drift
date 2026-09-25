@@ -27,12 +27,20 @@ new module `17z3-map-gpu`.
    discs and rings from the kit; each polyline clipped to the frame. `railNetPartial()` still runs every frame
    without a GPU (logic, not paint).
 
+3. **the jump circle lights the sky** — `18-mode-map`, `17z3`: the 2D radial-gradient fill of the jump circle goes;
+   `drawMap` hands the circle to the field (`MAPGPU.lamp`), which brightens the galaxy inside reach, dims it
+   outside (only when zoomed in: `.3*clamp((cell-18)/30)`, so the spiral still reads zoomed out) and adds a
+   thin teal rim toward the edge. The hairline stroke stays 2D.
+
 ## Pairs (scratchpad of session a777c21e…, 760×475, before = fleet base e4c3a56)
 
 - `scratchpad/pair1-map.png` (`map`) — the rails glow and sit on a dark casing instead of a hairline; galaxy stars are
   crisp AA points with a few bright ones, not 1-px squares; system stars' light falls off softly.
 - `scratchpad/pair1-map-z4.png` (`map`, `--js "G.mapZoom=4"`) — the spiral reads: arms are lit bands with a dust lane
   on the inner edge, per pixel instead of 13-px texels; the core stays warm, the sky between arms cold.
+
+- `scratchpad/pair2-map.png` (`map`) — the reach reads as light in the sky itself: the galaxy is brighter and warm
+  inside the jump circle and sinks into the dark beyond it, instead of a flat teal wash over the address layer.
 
 ## Requests outside the zone
 
