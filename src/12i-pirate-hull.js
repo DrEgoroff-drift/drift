@@ -14,7 +14,7 @@
    мира, поэтому каждый пират ОДИН РАЗ выпекается в свою офскрин-канву по seed и
    дальше рисуется картинкой с поворотом — тот же приём, что кэш неба у гиганта
    и тайл материала. */
-const PIR_SS=3,PIR_USM=.6;                        // выпекаем крупнее и рисуем мельче
+const PIR_SS=3;                        // выпекаем крупнее и рисуем мельче
 const PIR_ART={};
 /* четыре класса опознаются с одного взгляда — это и есть смысл затеи */
 const PIR_CLASS={
@@ -235,58 +235,11 @@ function pirateBuild(seed,cls,rank){
    ЗАВОДЕ, а не о нём, — но говорит через ограбление: метки закрашены, износ
    вдвое, грунт проступает из-под чужой краски. Дезертир (§7) — тот же корпус,
    только номер закрашен свежо и ровно, как это делают свои. */
-/* нерезкая маска по выпечке — мастер для видеокарты: станционный свет сварку мылил; деталь в
-   экранный пиксель (r = ss выпечки) поднимается на k. Среднее — по покрытию (альфа): край корпуса
-   не тянет в чёрное. Маске нужна одна яркость: размываются два канала (яркость по покрытию и
-   покрытие), а не четыре.
-   Мастер делается по частям, одна часть за кадр на всех пиратов: чтение выпечки с яркостью
-   (полосами строк), размытие строк, столбцов, маска, мипы — PIR_MPART частей на ступень.
-   Три мастера в одном кадре стоили на ×4 180 мс JS, одна часть — единицы мс, мастер — 12
-   кадров. Пока мастер не готов, корпус рисуется сырой выпечкой, как до маски. Выпечку не
-   трогаем: мастер — новый холст (правило gpuMipTex) */
-const PIR_MJ=new WeakMap(),PIR_MPART=[5,2,2,2];let PIR_MFR=-1;
-function pirBox(S,T,len,o0,o1,step,stride,r){const m=1/(2*r+1);
-  for(let o=o0;o<o1;o++){const b=o*stride;
-    let acc=S[b]*(r+1);for(let j=1;j<=r;j++)acc+=S[b+Math.min(len-1,j)*step];
-    for(let j=0;j<len;j++){T[b+j*step]=acc*m;acc+=S[b+Math.min(len-1,j+r+1)*step]-S[b+Math.max(0,j-r)*step];}}}
-function pirMaster(art,r,k){
-  let j=PIR_MJ.get(art);
-  if(j&&j.s>4)return gpuMipTex(j.cm);
-  if(PIR_MFR===GPU.frameNo)return null;          // часть этого кадра уже потрачена
-  PIR_MFR=GPU.frameNo;
-  const cv=art.cn,w=cv.width,h=cv.height,n=w*h;
-  if(!j)PIR_MJ.set(art,j={s:0,i:0,im:new ImageData(w,h),L:new Float32Array(n),A:new Float32Array(n),
-    tL:new Float32Array(n),tA:new Float32Array(n),cm:null});
-  if(j.s===4){
-    /* мипы; сырая выпечка своё отслужила — её текстура уходит, а не держит место в очереди холстов */
-    const e=gpuMipTex(j.cm);j.s=5;
-    const o=GPU.cvTex.get(cv);if(o){GPU.trash.push(o.tex);GPU.cvTex.delete(cv);}
-    return e;}
-  const np=PIR_MPART[j.s],cnt=j.s===2?w:h,a=Math.round(cnt*j.i/np),b=Math.round(cnt*(j.i+1)/np),d=j.im.data,L=j.L,A=j.A;
-  if(j.s===0){
-    d.set(cv.getContext("2d").getImageData(0,a,w,b-a).data,a*w*4);
-    for(let i=a*w,p=i*4;i<b*w;i++,p+=4){const q=d[p+3]/255;A[i]=q;L[i]=(.299*d[p]+.587*d[p+1]+.114*d[p+2])*q;}}
-  else if(j.s===1){pirBox(L,j.tL,w,a,b,1,w,r);pirBox(A,j.tA,w,a,b,1,w,r);}
-  else if(j.s===2){pirBox(j.tL,L,h,a,b,w,1,r);pirBox(j.tA,A,h,a,b,w,1,r);}
-  else{
-    for(let i=a*w,p=i*4;i<b*w;i++,p+=4){if(!d[p+3])continue;const ca=A[i];if(ca<=1e-4)continue;
-      /* по яркости, одним множителем на три канала: насыщенность и тон пикселя те же (по
-         каналам упёршийся в 255 канал бледнил яркое); у белого потолка множитель режется целиком */
-      const r0=d[p],g0=d[p+1],b0=d[p+2],Y=.299*r0+.587*g0+.114*b0;if(Y<=.5)continue;
-      const Ym=L[i]/ca,mx=Math.max(r0,g0,b0);
-      /* вверх — только тёмному: светлое станционный свет и так множит до белого, поднятое выгорало */
-      const e=k*(Y-Ym),q=1-Y/255,f=Math.max(0,Math.min(255/mx,(Y+(e>0?e*q*q:e))/Y));
-      d[p]=r0*f;d[p+1]=g0*f;d[p+2]=b0*f;}
-    if(!j.cm){j.cm=document.createElement("canvas");j.cm.width=w;j.cm.height=h;}
-    j.cm.getContext("2d").putImageData(j.im,0,0,0,a,w,b-a);}
-  if(++j.i>=np){j.i=0;j.s++;if(j.s===4)j.im=j.L=j.A=j.tL=j.tA=null;}
-  return null;
-}
 function pirateArtOf(id,rogue,hurt,rank,des){
   /* побитый корабль — вторая выпечка, а не пятна поверх целой: пока силуэт
      оставался прежним, разбитый пират выглядел просто испачканным */
   /* ранг входит в ключ: у него своё снаряжение, а значит и свои стволы (M368) */
-  const key=id+(rogue?"!r":"")+(hurt?"!h":"")+"!"+(rank|0)+(des?"!d":"")+(GPU.on?"!g":"");
+  const key=id+(rogue?"!r":"")+(hurt?"!h":"")+"!"+(rank|0)+(des?"!d":"");
   if(PIR_ART[key])return PIR_ART[key];
   /* `shipData` знает все три источника корпусов: у ренегата это ВАШ корабль */
   const S=shipData(id)||{seed:hashi(1,2,3),col:"#d95a3c"};
@@ -304,13 +257,11 @@ function pirateArtOf(id,rogue,hurt,rank,des){
      светлоты, и силуэт исчезал вместе с ними */
   const C=[mixc(col,[8,10,14],.80),mixc(col,[12,14,20],.50),
     mixc(col,[255,240,220],.28),mixc(col,[30,34,42],.62)];
-  const rad=B.L*.9;
-  const cn=document.createElement("canvas");
-  cn.width=cn.height=Math.ceil(rad*2*PIR_SS);
-  /* мастер читает выпечку (pirMaster): холст сразу в памяти — иначе Chrome переводит его туда
-     сам на втором чтении, 40–55 мс на ×4 */
-  const g=cn.getContext("2d",GPU.on?{willReadFrequently:true}:undefined);
-  const prev=ctx;ctx=g;
+  const rad=B.L*.9,side=Math.ceil(rad*2*PIR_SS);
+  /* выпечка на GPU-холсте (25.09): кисть та же, ctx на время выпечки — GPU-холст; ГСЧ пробоин
+     заводится внутри — перепечка после потери устройства даёт тот же рваный силуэт.
+     Без видеокарты — null: 2D-пути нет */
+  const cn=gpuBake(side,side,g=>{
   g.setTransform(PIR_SS,0,0,PIR_SS,rad*PIR_SS,rad*PIR_SS);
   /* флагман ренегата — это ВАШ корпус, обвешанный чужим: настоящий полётный
      силуэт ложится под сварку, и корабль узнаётся раньше, чем подпись */
@@ -447,31 +398,9 @@ function pirateArtOf(id,rogue,hurt,rank,des){
     ctx.fillRect(-rad,-rad,rad*2,rad*2);
     ctx.globalCompositeOperation="source-over";
   }
-  /* ── один свет на весь корабль ──
-     Пока каждая деталь заливалась своим ровным цветом, корабль оставался кучей
-     равноправных пятен: у сварки не было ни верха, ни низа. Свет кладётся
-     последним по всей выпечке разом (`source-atop` — только по нарисованному),
-     и куски сразу становятся одним телом, освещённым сверху.
-     На видеокарте свет кладёт gpuLitSprite по рельефу, от звезды (G4), свет не печётся;
-     нерезкую маску мастеру делает pirMaster по кадрам */
-  if(!GPU.on){
-  ctx.globalCompositeOperation="source-atop";
-  const lg=ctx.createLinearGradient(0,-B.hw*1.5,0,B.hw*1.6);
-  lg.addColorStop(0,"rgba(255,238,214,.34)");
-  lg.addColorStop(.42,"rgba(255,220,190,0)");
-  lg.addColorStop(1,"rgba(0,0,0,.5)");
-  ctx.fillStyle=lg;ctx.fillRect(-rad,-rad,rad*2,rad*2);
-  ctx.globalCompositeOperation="source-over";
-  const bodyTop=B.top;
-  /* верхняя кромка ловит свет — по ней и читается силуэт на тёмном космосе */
-  ctx.strokeStyle="rgba(255,236,214,.5)";ctx.lineWidth=.7;
-  ctx.beginPath();
-  for(let i=0;i<=bodyTop.length-1;i++){
-    const p=bodyTop[i];i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]);
-  }
-  ctx.stroke();
-  }
-  ctx=prev;
+  /* один свет на весь корабль кладёт gpuLitSprite по рельефу, от звезды (G4): в выпечке его нет;
+     нерезкая маска — в шейдере (sharp, между уровнями мипов) */
+  });
   const art={cn,rad,B,cls,cols:C,ru:PIR_CLASS[cls].ru};
   PIR_ART[key]=art;return art;
 }
@@ -481,19 +410,21 @@ function pirateArtOf(id,rogue,hurt,rank,des){
 /* корпус пирата светом звезды на видеокарте; x,y — экран, s — масштаб, как у ctx.scale.
    Свет станционный (glow 0): корпусный (−1) без подъёма по стороне звезды выжигал бледный
    металл на телефоне — подъём в GST в очереди после телефонного гейта (Контроль, 25.09) */
+/* мельче экрана на −1.6 ступени и маска «dark» (вниз в полную силу, полоса не уже 5.5 текселя —
+   17c): ворота 25.09 против прежнего pirMaster — резкость −0.6…+3.3 %, свет −0.4…+1.2 %, рябь на
+   полупикселе 11.7–11.8 против 12.2; −1.4 терял 2–3 % резкости, полоса 7 гасила дезертира на 1.8 % */
 const PIR_LOD=-1.6;
 function gpuPirateBody(p,x,y,s){
   const hp=clamp((p.hull||0)/(p.hullMax||1),0,1);
   const art=pirateArtOf(p.shipId,p.rogue||p.hunter,hp<.5,p.rank|0,p.deserter?1:0);
   let lx=-p.x,ly=-p.y;const ln=Math.hypot(lx,ly)||1;lx/=ln;ly/=ln;
-  /* мастер с мипами: на крупном плане уровень 0, как было, при отдалении — мипы, а не рябь;
-     пока мастер в работе — сырая выпечка, как до маски */
-  const m=pirMaster(art,PIR_SS,PIR_USM),R=art.rad*s;
-  if(!m)return gpuLitSprite(art.cn,x,y,R,s,p.a,lx,ly,0);
-  const lod=Math.max(0,Math.log2(art.cn.width/(2*R*GPU.bw/W))+PIR_LOD);
-  return gpuLitSprite(m,x,y,R,s,p.a,lx,ly,0,0,lod);
+  /* выпечка с мипами: на крупном плане уровень 0, при отдалении — мипы, а не рябь; деталь
+     поднимает маска шейдера (sharp) с первого кадра — мастера по кадрам больше нет */
+  if(!art.cn)return false;
+  const R=art.rad*s,lod=Math.max(0,Math.log2(art.cn.w/(2*R*GPU.bw/W))+PIR_LOD);
+  return gpuLitSprite(art.cn,x,y,R,s,p.a,lx,ly,0,0,lod,null,"dark");
 }
-/* живой слой пирата на видеокарте (бой, ступень 1): то, что drawPirate кладёт поверх
+/* живой слой пирата на видеокарте (бой, ступень 1): то, что меняется каждый кадр поверх
    выпечки, — в проход сцены. over=false — под корпусом: факел шейдером своего корабля
    (GEX, 16ga) штатной лестницей температур и ореол сопла, чад мягкими кругами;
    over=true — над ним: пятна копоти с окалиной, огонь из пробоины (свет — сложением),
@@ -543,55 +474,4 @@ function gpuPirateLive(pass,list,over){
   if(PGX.n)gexDraw(pass,PGX,"pgx",x=>x,y=>y);
   if(D.length)gpuShapes(pass,D);
   if(E.length)gpuShapes(pass,E,{blend:"add"});
-}
-function drawPirate(p,lit){
-  const hp=clamp((p.hull||0)/(p.hullMax||1),0,1);
-  /* ниже половины берём вторую выпечку — рваный корпус, а не тот же силуэт
-     в пятнах. Обе картинки живут в кэше и считаются по одному разу */
-  /* охотник (12o) печётся флагманской выпечкой, как ренегат: его силуэт должен
-     опознаваться в бою с одного взгляда */
-  const art=pirateArtOf(p.shipId,p.rogue||p.hunter,hp<.5,p.rank|0,p.deserter?1:0);
-  const B=art.B;
-  /* выхлоп: чад из закопчённых сопел, у каждого своя фаза — один обязательно
-     чадит сильнее прочих */
-  for(const e of B.eng){
-    if(p.thrust)drawFlame(e.x,e.y,e.r*.9,.8+Math.sin(G.t*.2+e.ph)*.2);
-    if(e.dirty||hp<.6){
-      const puffs=(e.dirty===2?5:3);
-      for(let i=0;i<puffs;i++){
-        const t=((G.t*.03+i*.7+e.ph)%3);
-        ctx.fillStyle="rgba(60,54,50,"+((e.dirty===2?.38:.28)-t*.09).toFixed(2)+")";
-        ctx.beginPath();ctx.arc(e.x-t*7,e.y+Math.sin(t*2+e.ph)*2,1.6+t*2.4,0,TAU);ctx.fill();
-      }
-    }
-  }
-  if(!lit)ctx.drawImage(art.cn,-art.rad,-art.rad,art.rad*2,art.rad*2);
-  /* ── повреждения: раньше урон читался только полоской над кораблём ── */
-  if(hp<.85){
-    const r=rng(hashi(p.seed||1,0x0D06,5));
-    /* пятен поверх меньше, когда силуэт уже рваный: иначе копоть удваивается */
-    const n=Math.round((1-hp)*(hp<.5?3:7));
-    for(let i=0;i<n;i++){
-      const x=lerp(B.tail,B.nose*.8,r()), y=(r()*2-1)*B.hw*.7, s=B.hw*(.1+r()*.18);
-      ctx.fillStyle="rgba(18,14,12,.85)";
-      ctx.beginPath();ctx.arc(x,y,s,0,TAU);ctx.fill();
-      ctx.strokeStyle="rgba(255,120,60,.35)";ctx.lineWidth=.7;ctx.stroke();
-    }
-    /* из пробоины бьёт факел: сама пробоина уже вырезана в выпечке */
-    if(hp<.5){
-      const bx=B.tail+B.L*.35, by=B.hw*.55;
-      const f=B.hw*(.32+Math.sin(G.t*.31)*.1);
-      const fg=ctx.createRadialGradient(bx,by,0,bx,by,f*2.2);
-      fg.addColorStop(0,"rgba(255,220,150,.6)");fg.addColorStop(.4,"rgba(255,130,60,.3)");
-      fg.addColorStop(1,"rgba(255,80,40,0)");
-      ctx.fillStyle=fg;ctx.beginPath();ctx.arc(bx,by,f*1.5,0,TAU);ctx.fill();
-    }
-    if(hp<.3){          // дым тянется за подбитым и виден издалека
-      for(let i=0;i<4;i++){
-        const t=((G.t*.02+i*.8)%4);
-        ctx.fillStyle="rgba(40,36,34,"+(.34-t*.08).toFixed(2)+")";
-        ctx.beginPath();ctx.arc(B.tail-t*9,B.hw*.3+Math.sin(t*1.7+i)*4,2+t*3.4,0,TAU);ctx.fill();
-      }
-    }
-  }
 }

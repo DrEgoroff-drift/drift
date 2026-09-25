@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 620 · символов верхнего уровня: 6171
+Файлов: 620 · символов верхнего уровня: 6168
 
 ## СИМВОЛЫ
 
@@ -1448,7 +1448,7 @@ drawCheburek                 src/17j-cheburek.js:72-113
 drawChunks                   src/18c-chunks.js:90-96
 drawClouds                   src/19e-clouds.js:386-528
 drawCockpit                  src/25-cockpit.js:402-681
-drawCombat                   src/13-pirates.js:362-472
+drawCombat                   src/13-pirates.js:362-464
 drawCosmMark                 src/12va-wander-cosm.js:112-132
 drawCrowns                   src/05a-nodes.js:379-414
 drawCrystalForest            src/20aa-poi-shapes.js:115-141
@@ -1511,7 +1511,6 @@ drawNodeIcon                 src/05a-nodes.js:264-361
 drawObelisk                  src/20aa-poi-shapes.js:276-376
 drawObserv                   src/20aa-poi-shapes.js:491-513
 drawPeaceFleet               src/17m-peace-fleet.js:73-144
-drawPirate                   src/12i-pirate-hull.js:547-597
 drawPirateBase               src/24a-mode-raid.js:103-133
 drawPirateSkin               src/03d-hull-marks.js:99-126
 drawPlan                     src/05e-plan.js:137-172
@@ -1541,7 +1540,7 @@ drawSkyBodies                src/19b-sky.js:96-128
 drawSkyLayer                 src/19-mode-landing.js:171-269
 drawSpa                      src/29i-spa-draw.js:41-486
 drawStars                    src/16-flight.js:40-79
-drawStation                  src/17c-system-draw.js:524-601
+drawStation                  src/17c-system-draw.js:531-608
 drawStationBody              src/17c-system-draw.js:167-370
 drawStationMods              src/17a-station-mod.js:207-210
 drawStencils                 src/03d-hull-marks.js:1-90
@@ -2235,6 +2234,7 @@ GPU_FLD_HEAD                 src/08c-gpu-kit.js:301
 GPU_IMG_WGSL                 src/08c-gpu-kit.js:183
 GPU_KEEP_A                   src/08c-gpu-kit.js:11
 GPU_KIT_WGSL                 src/08c-gpu-kit.js:162
+GPU_LIT_DK                   src/17c-system-draw.js:438
 GPU_LIT_SH                   src/17c-system-draw.js:436
 GPU_MIP                      src/08c-gpu-kit.js:93
 GPU_MIP_LOD                  src/08c-gpu-kit.js:182
@@ -2273,7 +2273,7 @@ gpuHullLight                 src/16ga-gpu-trail.js:367-386
 gpuImage                     src/08c-gpu-kit.js:209-222
 gpuKitU                      src/08c-gpu-kit.js:167-171
 gpuLight                     src/08b-gpu.js:442
-gpuLitSprite                 src/17c-system-draw.js:515-523
+gpuLitSprite                 src/17c-system-draw.js:522-530
 gpuLtWrite                   src/08b-gpu.js:446-453
 gpuManual                    src/08b-gpu.js:578-583
 gpuMipDrop                   src/08c-gpu-kit.js:107
@@ -2288,8 +2288,8 @@ gpuOver                      src/08b-gpu.js:556-576
 gpuPass                      src/08b-gpu.js:428-431
 gpuPipe                      src/08c-gpu-kit.js:20-27
 gpuPipes                     src/08b-gpu.js:345-371
-gpuPirateBody                src/12i-pirate-hull.js:485-495
-gpuPirateLive                src/12i-pirate-hull.js:502-546
+gpuPirateBody                src/12i-pirate-hull.js:417-426
+gpuPirateLive                src/12i-pirate-hull.js:433-477
 gpuPlanet                    src/17ga-gpu-planets.js:320-337
 gpuPresent                   src/08b-gpu.js:616-630
 gpuQuad                      src/08c-gpu-kit.js:280-284
@@ -2399,7 +2399,7 @@ gspStarBuf                   src/16g-gpu-space.js:142-152
 gspStarsDust                 src/16g-gpu-space.js:188-196
 gspUni                       src/16g-gpu-space.js:168-176
 gss                          src/17ga-gpu-planets.js:347
-GST_WGSL                     src/17c-system-draw.js:437
+GST_WGSL                     src/17c-system-draw.js:439
 GSY                          src/17g-gpu-system.js:18
 GSY_ORB_WGSL                 src/17g-gpu-system.js:19
 GSY_STAR_WGSL                src/17g-gpu-system.js:45
@@ -4027,7 +4027,7 @@ peopleLine                   src/11-log.js:55-60
 peopleOffline                src/12a-crew.js:385-389
 PERCH_AT                     src/27j-console.js:24
 PERCH_EVERY                  src/27j-console.js:25
-PGX                          src/12i-pirate-hull.js:501
+PGX                          src/12i-pirate-hull.js:432
 PHONE_DPR                    src/08-state.js:12
 PHYS_DT                      tests/91zzzzy-phys.js:14
 physRun                      tests/91zzzzy-phys.js:29-37
@@ -4041,15 +4041,14 @@ pinch0                       src/15-input.js:396
 PIR_ART                      src/12i-pirate-hull.js:18
 PIR_CLASS                    src/12i-pirate-hull.js:20-25
 PIR_GUNART                   src/12i-pirate-hull.js:33-46
-PIR_LOD                      src/12i-pirate-hull.js:484
-PIR_MJ                       src/12i-pirate-hull.js:247
+PIR_LOD                      src/12i-pirate-hull.js:416
 PIR_SS                       src/12i-pirate-hull.js:17
 PIRATE_COLS                  src/13-pirates.js:4
 PIRATE_LOADOUT               src/13d-loadout.js:23-28
 PIRATE_NAMES                 src/13-pirates.js:3
 PIRATE_RANKS                 src/13-pirates.js:13-18
 pirateArmTick                src/13d-loadout.js:163-181
-pirateArtOf                  src/12i-pirate-hull.js:285-477
+pirateArtOf                  src/12i-pirate-hull.js:238-406
 pirateBaseOf                 src/24a-mode-raid.js:87-96
 pirateBuild                  src/12i-pirate-hull.js:54-231
 pirateClass                  src/12i-pirate-hull.js:47-52
@@ -4058,8 +4057,6 @@ pirateHas                    src/13d-loadout.js:34-37
 pirateLoadout                src/13d-loadout.js:33
 pirateRoleTick               src/13c-roles.js:51-127
 pirateShipId                 src/13-pirates.js:20-27
-pirBox                       src/12i-pirate-hull.js:248
-pirMaster                    src/12i-pirate-hull.js:252-284
 PL_SKIP                      tests/91zzzzzo-plural.js:31
 pl3                          src/01-core.js:109-115
 PLACE_KINDS                  src/11d-place.js:22
@@ -6643,7 +6640,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/12h-relic.js · 8 КБ
   · артефакты и лаборатория:1
 
-## src/12i-pirate-hull.js · 37 КБ
+## src/12i-pirate-hull.js · 29 КБ
   · пиратский корпус:1
 
 ## src/12j-home.js · 16 КБ
@@ -6892,7 +6889,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/17b-finds.js · 18 КБ
   · находки в полёте:1
 
-## src/17c-system-draw.js · 39 КБ
+## src/17c-system-draw.js · 40 КБ
   · система: кольца, пояс и станция в кадре:1
 
 ## src/17c1-station-dress.js · 4 КБ
@@ -7527,7 +7524,7 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## tests/91j-art.js · 18 КБ
   · автотесты: картинка: сцены, двенадцать миров, крупная форма, корпуса:1
-  · порода читается силуэтом (M369, §19.4):258
+  · порода читается силуэтом (M369, §19.4):250
 
 ## tests/91k-home.js · 11 КБ
   · автотесты: дом и деньги: ступени, одна воронка дохода, маршрут фактора, дрон:1

@@ -401,22 +401,14 @@ function drawCombat(zx,zy,Z){
     ctx.beginPath();ctx.arc(x,y,2.2,0,TAU);ctx.fill();ctx.globalAlpha=1;
   }
   /* корпуса: с видеокарты — факелы и чад под корпусами, корпуса, пробоины и дым поверх
-     (gpuPirateLive, 12i); без неё — прежней кистью, живой слой поверх выпечки */
+     (gpuPirateLive, 12i) */
   const PV=[];
   for(const p of G.pirates){const x=zx(p.x),y=zy(p.y);
     if(x>-60&&x<W+60&&y>-60&&y<H+60)PV.push({p,x,y,s:shipScaleAt(Z)*.82});}   /* один потолок с кораблём (16c, п. 2) */
   if(pass)gpuPirateLive(pass,PV,false);
-  for(const q of PV){
-    const lit=gpuPirateBody(q.p,q.x,q.y,q.s);   /* корпус светом звезды на видеокарте (G4) */
-    if(lit)continue;
-    ctx.save();ctx.translate(q.x,q.y);ctx.rotate(q.p.a);
-    ctx.scale(q.s,q.s);
-    /* пират рисуется своим сварным корпусом (12i), а не вашим кораблём в
-       чужой раскраске: у него шесть-восемь десятков полигонов, выпеченных
-       один раз по seed, и живой слой повреждений поверх */
-    drawPirate(q.p,false);
-    ctx.restore();
-  }
+  /* пират рисуется своим сварным корпусом (12i), а не вашим кораблём в чужой раскраске:
+     выпечка по seed, свет звезды на видеокарте (G4), живой слой — gpuPirateLive. 2D-пути нет (25.09) */
+  for(const q of PV)gpuPirateBody(q.p,q.x,q.y,q.s);
   if(pass)gpuPirateLive(pass,PV,true);
   for(const p of G.pirates){
     const x=zx(p.x),y=zy(p.y);

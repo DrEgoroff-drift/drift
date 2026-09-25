@@ -235,24 +235,16 @@ TEST_SUITES.push(()=>suite("пиратский корпус: сварен, а н
   /* выпечка: второй запрос отдаёт ту же канву, а не считает заново */
   const a=pirateArtOf(pirateShipId(hashi(3,7,3)));
   const b=pirateArtOf(pirateShipId(hashi(3,7,3)));
-  ok(a===b&&a.cn.width>0,"корпус выпекается один раз на seed");
+  /* выпечка — GPU-холст (25.09): без устройства её нет, а сам кэш на seed — есть */
+  ok(a===b&&(GPU.dev?a.cn.w>0:a.cn===null),"корпус выпекается один раз на seed");
   /* флагман ренегата — ваш корпус, обвешанный чужим */
   const rg=pirateArtOf(G.shipId,true);
   eq(rg.cls,"flag","у ренегата класс флагмана");
   ok(rg!==pirateArtOf(G.shipId),"тот же id без пометки — не тот же корабль");
-  /* и всё это рисуется живьём, с повреждениями и без */
-  const c=document.createElement("canvas");c.width=c.height=260;
-  const old=ctx;ctx=c.getContext("2d");
-  try{
-    ctx.translate(130,130);
-    for(const hp of [1,.7,.4,.2]){
-      drawPirate({shipId:pirateShipId(hashi(5,7,3)),seed:5,hull:hp*100,hullMax:100,
-        thrust:hp<.5});
-    }
-  }finally{ctx=old;}
-  const d=c.getContext("2d").getImageData(0,0,260,260).data;
-  let ink=0;for(let i=3;i<d.length;i+=4)if(d[i]>20)ink++;
-  ok(ink>1200,"подбитый пират рисуется и виден ("+ink+" px)");
+  /* подбитый — своя выпечка с рваным силуэтом, а не та же в пятнах; рисует их проход сцены
+     (gpuPirateBody, gpuPirateLive) — 2D-пути нет с 25.09 */
+  const id5=pirateShipId(hashi(5,7,3)),w5=pirateArtOf(id5),h5=pirateArtOf(id5,false,true);
+  ok(h5!==w5&&h5.B.eng.length>=2,"подбитый пират — своя выпечка, движки при нём");
 }));
 
 /* ══════════════ порода читается силуэтом (M369, §19.4) ══════════════
