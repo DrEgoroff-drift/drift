@@ -175,3 +175,20 @@ Scratchpad: `/tmp/claude-0/-home-user-drift/e6da632b-601e-50c8-990d-925008133db0
 - `getImageData` stays loud on GcCtx: `tileSpan` (18c) and any painter that reads pixels back cannot run
   inside a bake; `gpuDrawTiles` simply skips the span.
 - Text with a pattern paint and overlay on images/text are loud, not implemented (no caller found).
+
+## Left in the zone (fleet called home 25.09)
+
+- Nothing half-done; every item above is pushed and green.
+- Not started: `saturation` and the other unused blend modes; `getImageData` on GcCtx; text with a pattern
+  paint; overlay on `drawImage`/text; an «occupied rows» span for `gpuDrawTiles` from the op bounding
+  boxes (no readback); moving `screenLayer`'s callers onto `gpuScreenLayer` (their files are frozen or
+  belong to mode ships).
+
+## For the design pass (real GPU)
+
+- Check the bakes that now run whole on the GPU — material fills (`fillMaterial` incl. overlay), Path2D
+  silhouettes, pattern grain — against their 2D look at 2560×1600: edge softness (MSAA 4× plus the 2×
+  supersample on bakes ≤512²), pattern tiles under strong magnification (linear, no mips), gradient
+  dithering in large dark fills.
+- `gpuFieldBaked` fields are `rgba16float` without mips: a field baked at DPR and drawn much smaller will
+  alias; bake at the drawn size.
