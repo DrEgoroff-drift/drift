@@ -136,8 +136,8 @@ function drawFleet(zx,zy,Z){
   const F=fleetHere(G.sys);if(!F.length)return;
   for(const f of F){
     const p=fleetPos(f),x=zx(p.x),y=zy(p.y);
-    if(x<-260||x>W+260||y<-260||y>H+260)continue;
-    const s=fleetScale(Z),art=fleetArtOf(f);
+    if(x<-260||x>W+260||y<-260||y>H+260){if(pbOnScreen(x,y,0,0,1.6))fleetArtOf(f,true);continue;}   /* мастер заранее (17a0) */
+    const s=fleetScale(Z),art=fleetArtOf(f,false);if(!art)continue;
     /* место, курс и масштаб известны — матрица сразу в fleetShipAt, без 2D-стека на #c (25.09) */
     const c=Math.cos(p.a)*s,q=Math.sin(p.a)*s;
     fleetShipAt(f,art,c,q,-q,c,x,y,ctx.globalAlpha);

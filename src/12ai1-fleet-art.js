@@ -9,8 +9,26 @@
    '-' < '1' < 'a'). Здесь объявлен `FLEET_ART` — кэш спрайтов; его читает
    только `fleetArtOf`, то есть во время кадра, а не на верхнем уровне. */
 /* ── окраска: один конвейер на все классы (§18.5, §1) ── */
-const FLEET_ART={},FLEET_SS=3;
-function fleetArtOf(f){
+const FLEET_ART={},FLEET_SS=3,FLEET_PB={f:-1,k:""};
+/* рецепт облика (кисть cn): облик → (g)=>… в осях выпечки. Кадр его не зовёт — это для проверок
+   тестов (91zzza M317/M318): синхронно читать выпечку с видеокарты нечем, а свойства рецепта
+   (эмблема, медиана тела, тень под баком) — те же на любом растре */
+const FLEET_PAINT=new WeakMap();
+/* мастер борта — задача планировщика 17a0 (25.09): запись тела, потом по выпечке за шаг.
+   ahead — борт ещё за краем (до 1.6 экрана): шаг в кадр и не больше одного мастера флота
+   за кадр, до готовности null. Без ahead — борт уже на экране, а мастера нет (загрузка,
+   прыжок): допекаем целиком, планировщик считает PB_SYNC. На S23 пять мастеров за кадр
+   давали хвост в 100 мс (Контроль, 25.09) */
+function fleetArtOf(f,ahead){
+  const key="fl"+f.k+f.seed+"!"+(f.by||"gt");
+  if(FLEET_ART[key])return FLEET_ART[key];
+  if(!GPU.dev){const it=fleetArtJob(f);let r;do r=it.next();while(!r.done);return r.value;}   /* без устройства: геометрия, cn null; не в кэш */
+  if(ahead){if(FLEET_PB.f===GPU.frameNo&&FLEET_PB.k!==key)return null;FLEET_PB.f=GPU.frameNo;FLEET_PB.k=key;}
+  const art=prebake("fl|"+key,()=>fleetArtJob(f),!ahead);
+  if(art)FLEET_ART[key]=art;
+  return art;
+}
+function* fleetArtJob(f){
   /* ── флот тоже чей-то (M369a, §19.4) ──
      Тринадцать классов остаются классами: они про РАБОТУ — почтовик, танкер,
      буксир. Завод берёт у них измерения 5–7: грунт, огни и подпись тяги, — и
@@ -18,8 +36,6 @@ function fleetArtOf(f){
      Пока весь флот её и есть; чужие крылья прилетят с M371, и генератор их
      уже ждёт: достаточно положить `by` в запись. */
   const fby=f.by||"gt";
-  const key="fl"+f.k+f.seed+"!"+fby;
-  if(FLEET_ART[key])return FLEET_ART[key];
   const r=rng(hashi(f.seed,0xF1A7,5));
   const polys=[],lines=[],lights=[];
   const add=(pts,c,e)=>polys.push({p:pts,c,e:e||0});
@@ -335,17 +351,20 @@ function fleetArtOf(f){
   /* на видеокарте сторону света решает звезда (fleetShipGpu): её выпечка берёт этот
      слой мягче — верх светлее (.34), низ темнеет на .3, а не в III–IV: тень кладёт звезда,
      и двойная тень снизу гасила панели */
-  const bake=(top,dark)=>gpuBake(side,side,g=>{
+  const paint=(top,dark)=>g=>{
     g.setTransform(FLEET_SS,0,0,FLEET_SS,rad*FLEET_SS,rad*FLEET_SS);body();
     ctx.globalCompositeOperation="source-atop";
     const lg=ctx.createLinearGradient(0,-hw*1.8,0,hw*1.6);
     lg.addColorStop(0,top);lg.addColorStop(.5,"rgba(255,224,196,0)");lg.addColorStop(1,"rgba(0,0,0,"+dark+")");
-    ctx.fillStyle=lg;ctx.fillRect(-rad,-rad,rad*2,rad*2);ctx.globalCompositeOperation="source-over";});
-  const dr=f.k==="derelict";
-  const cn=bake(dr?"rgba(120,130,150,.18)":"rgba(255,240,216,.28)",.62);
-  const cnA=cn&&bake(dr?"rgba(120,130,150,.22)":"rgba(255,240,216,.34)",.3);
-  const art={cn,cnA,rad,L,hw,lights,bx,by,emb};
-  FLEET_ART[key]=art;return art;
+    ctx.fillStyle=lg;ctx.fillRect(-rad,-rad,rad*2,rad*2);ctx.globalCompositeOperation="source-over";};
+  const bake=(top,dark)=>gpuBake(side,side,paint(top,dark));
+  const dr=f.k==="derelict",topN=dr?"rgba(120,130,150,.18)":"rgba(255,240,216,.28)";
+  let cn=null,cnA=null,ok=false;
+  try{
+    yield;cn=bake(topN,.62);
+    if(cn){yield;cnA=bake(dr?"rgba(120,130,150,.22)":"rgba(255,240,216,.34)",.3);}
+    ok=true;const art={cn,cnA,rad,L,hw,lights,bx,by,emb,side};FLEET_PAINT.set(art,paint(topN,.62));return art;
+  }finally{if(!ok){gpuBakeDrop(cn);gpuBakeDrop(cnA);}}   /* брошена недопечённой — отдать выпечки */
 }
 /* ── алфавит знаков (§18.2): десять фигур, у каждой одна заливка; повороты
    0/45/90 и отражение — единственные операции; h — полуразмер фигуры ── */
@@ -394,7 +413,7 @@ function fleetShipGpu(f,art){
 }
 /* то же без 2D: матрица (a…f) — в пикселях CSS; её дают те, кто знает место сам (полоса 17g) */
 function fleetShipAt(f,art,ma,mb,mc,md,me,mf,al){
-  const pass=gpuScene();if(!pass||!art.cn)return false;
+  const pass=gpuScene();if(!pass||!art||!art.cn)return false;
   const s=Math.hypot(ma,mb);
   const T=(lx,ly)=>[ma*lx+mc*ly+me,mb*lx+md*ly+mf],[x,y]=T(0,0),w=art.rad*2*s;
   const rot=Math.atan2(mb,ma);
