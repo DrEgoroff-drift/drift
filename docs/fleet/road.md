@@ -56,6 +56,15 @@ Census gap 4 (`roadHullHalf` swaps the global `ctx`): kept, but the measurement 
    runs (lanes along the heading, flowing back, strength from the ease-in-out velocity) → 2D
    header. The old 2D headlight wedge and the ride's `railFlash` call are gone; `railFlash`
    itself stays 2D for `drawRailArrive`, which is drawn in `G.mode==="system"` (flight zone).
+5. **The line scheme is baked by the GPU canvas.** `railSchemeOpen` (18k) bakes the sheet with
+   `gpuBake` (the 08ca canvas, same 2D calls, `mips:false`) and copies the texture into the
+   scheme's DOM canvas, now a `webgpu` context (`rgba8unorm`, premultiplied,
+   `copyTextureToTexture`); the bake is dropped at once. No GPU → no sheet (WebGPU only).
+   Better paper: fibres (four batched strokes of short seeded hairs, `rng(0x5C4E)`), ink bleed
+   (a pale wider stroke under each line), a light edge beside each fold's shadow, hand-darkened
+   edges.
+- `18h-rail-powers`, `18i-rail-life`, `18j-rail-rush` draw nothing (no `ctx`, no canvas):
+  nothing to port.
 
 ## Pairs (scratchpad, not in git)
 
@@ -82,12 +91,16 @@ with a beat, 90 extra stepped frames — `shots.sh` there.
   old frame showed motion only in the flash); the flash has a core and a cyan halo over the car.
   `a3-*` and `a3b-*` are the tries before (streaks as rain over the whole frame, then a white
   flash that swallowed the car). Two `gpuOver` a frame in rail mode.
+- commit 5: `before-scheme.png | a4-scheme.png` — the sheet reads as a folded paper handout:
+  edges darkened, each fold has a lit edge beside its shadow, lines sit in a faint ink bleed.
+  The gain is small at 760 px; the fibres show only up close.
 
 ## New render pipelines (for the warm-up table `08b1`)
 
 - `fld.road.bloom|over` — `gpuField` with `ROAD_FLD_WGSL` (27lb).
 - `fld.road.sky|over` — `gpuField` with `ROAD_SKY_WGSL` (27la).
 - `fld.rail.fx|add` — `gpuField` with `RAIL_FX_WGSL` (18ga).
+- the scheme uses only the 08ca bake pipelines (no new ones).
 - (`kit.shp|add`, `kit.shp|over` — already in the kit.)
 
 ## Requests outside the zone
