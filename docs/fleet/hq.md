@@ -44,7 +44,7 @@ Zone: `27c-ui-hq`, `27f-hq-room`, `27d-ui-cantina`, `27d-ui-cantina-props`, `12v
    overhang and at its foot, sparse motes in the cones, a highlight shoulder, grain and dither;
    the kino evening dims the lamps. Without a device the body runs against a null brush
    (`RPG_NULL`, `27f1`) only to get the hits. `cantinaScene` hands the real canvas over.
-3. **«Сорока» on the GPU** (`24c-mode-wanderer-draw`). A world mode, so it uses the frame's kit
+3. `90a7ac8` **«Сорока» on the GPU** (`24c-mode-wanderer-draw`). A world mode, so it uses the frame's kit
    directly and draws nothing on `#c`. The corridor is three GPU-canvas bakes at device
    resolution: the shell (walls, deck, back wall), the middle (ribs, the curtain with the magpie
    and shelves, bar, keeper, the green shade, bales) and the cases (re-made only when the cursor
@@ -59,6 +59,27 @@ Zone: `27c-ui-hq`, `27f-hq-room`, `27d-ui-cantina`, `27d-ui-cantina-props`, `12v
    sparkles in the beams, halos of the bulbs and the lamp. The match flash is a kit rect. The
    2D order bug where the curtain covered hanging things in front of it is gone (hanging things
    draw after the middle).
+4. **The raid on the GPU** (`24aa-raid-draw`, new `24aa1-raid-gpu`, `24ab-raid-foe`). The
+   compartments were thousands of projected quads, painter-sorted and filled with 2D. Now
+   `quad()` keeps them in world space and one instanced draw puts them into `gpuScene3D` with a
+   depth buffer (`raid3d`): the same projection as before, written in clip space, so a quad with a
+   corner behind the camera is clipped by the near plane instead of vanishing, and neighbours no
+   longer fight over who covers whom; overlays that lie in a wall's plane carry a small depth
+   bias (the painter's `dBias`, now meaningful). Light moved from a number per cell to a value
+   per pixel: the face normal from derivatives; the ambient fading away from the player and the
+   pool at his feet; the helmet torch as a spotlight with cone and falloff, lit by the normal;
+   every ceiling lamp (24 nearest) and the hangar gate as point lights (reactor lamps pulse);
+   fog by distance and the face outline where it is lit, as before; and the torch beam in the
+   air integrated along each view ray from the eye to the surface (walls cut it off), with slow
+   3D haze, plus halos of the four nearest lamps. Lamp strips and the amber cable runs are
+   emissive and bright enough to bloom. Pirates are sprites: `drawFoeBody` depends only on kind,
+   baron, alert and seed, so it bakes once per combination through the GPU canvas
+   (`raidFoeSprite`, `still` = no breath) and stands in the depth pass as a camera-facing
+   billboard (`raid3d.spr`), occluded by walls and lit by the torch and lamps. Everyone standing
+   (the player, visible pirates) gets a contact shadow in the floor's lighting. The dust around
+   the player is kit discs that flare inside the torch cone; the 2D torch glow and vignette went
+   into the pass. Still 2D on `#c`: the player (`drawAstronaut`, the life ship's zone — called as
+   it is), his floor ellipse, the loot beacons, stencils, health bars, shots, the hurt flash.
 
 ## Pairs (scratchpad, never in git)
 
@@ -82,6 +103,11 @@ this branch's build. All 760×475 at DPR 1 on SwiftShader, 0 GPU errors, no page
   shafts of cold light down the corridor onto the deck, the tops of the walls glow gold from the
   sails, each case is lit by its own bulb, the bar sits in the green lamp's warm pool.
 
+- Raid (`raid`, `raidhangar`, `raidfoe`): `pair-raid.png`, `pair-raidhangar.png`,
+  `pair-raidfoe.png`. Better: the helmet torch is a real light — it pools on the far wall, and
+  its beam hangs in the air with dust; the cable runs and panels glow amber; the hangar is lit
+  cold from its gate and warm from its lamps; pirates are lit and hidden by walls properly.
+
 ## Requests for files outside the zone
 
 - `docs/mkview.ps1` (stand `hq`/`hqfull`): `document.getElementById("hqbtn").click()` throws on
@@ -100,6 +126,14 @@ All created lazily today (they land in `GPU_PIPES.lazy`). Recipes to add in `08b
 | `pipe:fld.wansky\|over` | `GPU_FLD["fld.wansky"]=()=>WAN_SKY_WGSL` |
 | `pipe:fld.wanlit\|mul` | `GPU_FLD["fld.wanlit"]=()=>WAN_LIT_WGSL` |
 | `pipe:fld.wanair\|add` | `GPU_FLD["fld.wanair"]=()=>WAN_AIR_WGSL` |
+| `raid3d` | `GPU_PIPE_ONE.raid3d=()=>raidGpuDesc()` (depth24plus, rgba16float) |
+| `raid3d.spr` | `GPU_PIPE_ONE["raid3d.spr"]=()=>raidSprDesc()` (depth24plus, rgba16float) |
+
+Note: `gpuPipeline()` does not cache a lazily built pipeline (it returns a new one each call);
+`24aa1` caches its two in `GPU.lay` itself (`GPU.lay.raid3d`, `GPU.lay.raidspr`), as `gcMipPipe`
+does. The first cut did not, and every frame's bind group mismatched its new pipeline — 322
+validation errors and a lost command buffer per frame. Anyone calling `gpuPipeline` directly
+should know.
 
 The panel reuses `pipe:kit.img|over`, `pipe:kit.img|add`, `pipe:kit.shp|over`, `pipe:kit.shp|add`
 as they are (same code, same `rgba16float` target).

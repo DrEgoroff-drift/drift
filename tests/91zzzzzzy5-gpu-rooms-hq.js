@@ -108,3 +108,47 @@ TEST_SUITES.push(()=>suite("«Сорока»: оболочка, середина
   eq(err,"","без устройства комната молчит, а не падает");
   exitWanderer();
 }));
+TEST_SUITES.push(()=>suite("абордаж: грани — в мире, свет — на видеокарте",()=>{
+  resetWorld();
+  let PB=null;
+  for(let hx=-12;hx<12&&!PB;hx++)for(let hy=-12;hy<12&&!PB;hy++){
+    if(!starAt(hx,hy))continue;
+    const hs=getSystem(hx,hy),hb=pirateBaseOf(hs);
+    if(hb){G.sys=hs;G.sx=hx;G.sy=hy;PB=hb;}
+  }
+  if(!ok(!!PB,"пиратская база нашлась"))return;
+  enterRaid(PB);
+  const keep=raidGpuDraw;let got=null;
+  raidGpuDraw=(Q,V,LP,FS,OC)=>{got={Q,V,LP,FS,OC};};
+  let err="";try{updateRaid(1);drawRaid();}catch(e){err=e.message;}finally{raidGpuDraw=keep;}
+  eq(err,"","абордаж рисуется");
+  if(!ok(!!got,"грани ушли в проход видеокарты"))return;
+  ok(got.Q.length>200,"граней много: "+got.Q.length);
+  ok(got.Q.every(q=>[q.a,q.b,q.c,q.d].every(p=>p.length===3&&p.every(Number.isFinite))),"у каждой — четыре точки мира");
+  ok(got.Q.every(q=>q.col.length===3&&q.col.every(v=>v>=0&&v<=255)&&Number.isFinite(q.li)),"цвет в 0..255, тон конечен");
+  ok(got.Q.some(q=>q.bias<0),"накладкам в плоскости стены дан сдвиг по глубине");
+  ok(got.Q.some(q=>q.minL>=.4),"у тары нижний порог света");
+  ok(got.LP.length>0,"светильники собраны: "+got.LP.length);
+  const S=G.raid,dist=p=>Math.hypot(p.x-S.x,p.z-S.z);
+  ok(got.LP.every((p,i)=>i===0||dist(got.LP[i-1])<=dist(p)+1e-6),"ближние светильники — первыми");
+  ok(["cam","fwd","right","up"].every(k=>got.V[k].length===3)&&got.V.F>0,"камера передана целиком");
+  /* та же проекция, что у меток: точка перед камерой ложится в кадр */
+  const V=got.V,c=V.cam,f=V.fwd,p=[c[0]+f[0]*300,c[1]+f[1]*300,c[2]+f[2]*300];
+  const v=[p[0]-c[0],p[1]-c[1],p[2]-c[2]],zc=v[0]*f[0]+v[1]*f[1]+v[2]*f[2];
+  ok(Math.abs(zc-300)<1e-6,"глубина по взгляду — как у 2D");
+  ok(/lp:array<vec4f,24>/.test(RAID_GPU_WGSL)&&RAID_LAMPS===24,"шейдер знает, сколько ламп");
+  ok(Array.isArray(got.FS)&&Array.isArray(got.OC),"тела-спрайты и тени на полу переданы");
+  ok(got.OC.length>=1&&got.OC[0][0]===S.x&&got.OC[0][1]===S.z,"первая тень — под ходоком");
+  ok(got.OC.length<=1+S.foes.filter(f=>f.hp>0).length,"теней не больше, чем стоящих");
+  /* тело пирата печётся в GPU-холст без дыр: кисть та же, без вдоха */
+  const f0=S.foes.find(f=>f.hp>0)||S.foes[0];
+  if(f0){
+    const K0=FOE_KINDS[f0.kind]||FOE_KINDS.grunt;
+    const r=hqRec(128,128,g=>{g.translate(64,64);drawFoeBody(f0,K0,true);});
+    eq(r.err,"","тело пирата: GPU-холст умеет всё, что просит кисть");
+    const sig=()=>hqRec(128,128,g=>{g.translate(64,64);drawFoeBody(f0,K0,true);}).g._ops.map(o=>o.v?Array.from(o.v).map(v=>v.toFixed(2)).join(","):o.t).join("|");
+    const s0=sig(),G0=G.t;G.t+=37;const s1=sig();G.t=G0;
+    ok(s0.length>100&&s0===s1,"без вдоха тело не зависит от часов — спрайт печётся раз");
+  }
+  raidLeave("");
+}));
