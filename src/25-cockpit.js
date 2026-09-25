@@ -88,7 +88,7 @@ function glassOutline(shape,pw,brow,dashY,dip,r,grow){
   pts.push([W/2-dip*2.3,B]);
   return pts;
 }
-const CKPT={key:"",plan:null,tex:null};
+const CKPT={key:"",plan:null,bake:null};
 function cockpitPlan(id){
   const S=shipData(id),hl=hullOf(id),r=rng((S.seed^0xC0C4)>>>0);
   const K=CKPT_STYLE[cockpitStyleKey(id)];
@@ -184,17 +184,30 @@ function rivetLine(c,x0,y0,x1,y1,step){
     c.fillStyle="rgba(210,225,240,.16)";c.beginPath();c.arc(x,y,1.3,0,TAU);c.fill();
   }
 }
+/* кабина по кораблю и кадру: план (раскладка) и выпечка рамы. Рама печётся на
+   видеокарте (gpuBake, 08ca) — ни 2D-холста, ни выгрузки; кладёт её в сцену 25-cockpit-gpu
+   одним полем вместе со стеклом и светом звезды. Без видеокарты (тесты Node) — только план */
 function cockpitTex(id){
-  /* кабину спрашивают по нескольку раз за кадр: тот же корабль и тот же холст — без новой строки */
+  /* кабину спрашивают по нескольку раз за кадр: тот же корабль и тот же кадр — без новой строки */
   if(CKPT.id===id&&CKPT.w===W&&CKPT.h===H&&CKPT.dpr===DPR&&CKPT.plan)return CKPT;
   const key=id+"|"+Math.round(W)+"x"+Math.round(H)+"|"+DPR.toFixed(2);
   if(CKPT.key===key){CKPT.id=id;CKPT.w=W;CKPT.h=H;CKPT.dpr=DPR;return CKPT;}
-  const P=cockpitPlan(id), K=P.K;
-  const cn=document.createElement("canvas");
-  cn.width=Math.max(1,Math.round(W*DPR));cn.height=Math.max(1,Math.round(H*DPR));
-  const c=cn.getContext("2d");
-  c.setTransform(DPR,0,0,DPR,0,0);
-  const A=hex2rgb(P.acc);
+  if(CKPT.bake)gpuBakeDrop(CKPT.bake);
+  CKPT.key=key;CKPT.plan=cockpitPlan(id);CKPT.bake=null;CKPT.id=id;CKPT.w=W;CKPT.h=H;CKPT.dpr=DPR;
+  return CKPT;
+}
+/* выпечка рамы для кадра: заводится при первой нужде, после потери устройства — заново */
+function cockpitBake(){
+  const C=CKPT;if(!GPU.dev||!C.plan)return null;
+  if(C.bake&&C.bake.dev!==GPU.dev)gpuBakeRedo(C.bake);
+  if(!C.bake){const P=C.plan,d=DPR;
+    C.bake=gpuBake(W*d,H*d,g=>{g.setTransform(d,0,0,d,0,0);cockpitPaint(g,P);},{mips:false});}
+  return C.bake;
+}
+/* рама кабины: всё неподвижное — корпус, потолок, консоли, фаска, переплёт, доска.
+   Виньетка и стекло (тонировка, блик) — в поле 25-cockpit-gpu, под и над рамой */
+function cockpitPaint(c,P){
+  const K=P.K,A=hex2rgb(P.acc);
 
   /* ── корпус кабины: всё, кроме остекления ── */
   c.save();
@@ -390,14 +403,6 @@ function cockpitTex(id){
   c.closePath();
   c.fillStyle="#0a1017";c.fill();
   c.strokeStyle=rgba(A,.4);c.lineWidth=1.2;c.stroke();
-
-  /* ── виньетка: углы кадра уходят в тень кабины ── */
-  const vg=c.createRadialGradient(W/2,H*.42,Math.min(W,H)*.34,W/2,H*.42,Math.max(W,H)*.72);
-  vg.addColorStop(0,"rgba(0,0,0,0)");vg.addColorStop(1,"rgba(0,0,0,.34)");
-  c.fillStyle=vg;c.fillRect(0,0,W,H);
-
-  CKPT.key=key;CKPT.plan=P;CKPT.tex=cn;CKPT.id=id;CKPT.w=W;CKPT.h=H;CKPT.dpr=DPR;
-  return CKPT;
 }
 function drawCockpit(b,st){
   const C=cockpitTex(G.shipId), P=C.plan, K=P.K, A=hex2rgb(P.acc);
@@ -412,27 +417,8 @@ function drawCockpit(b,st){
   const FS=Math.max(clamp(UH/70,1,1.75),uiK());
   const fnt=s=>ckptFont(Math.round(s*FS));
 
-  /* ── стекло: тонировка, блик и отражение приборов ──
-     всё это прозрачное и живёт внутри проёма, мир под ним остаётся виден */
-  ctx.save();
-  tracePath(ctx,P.glass);ctx.clip();
-  const T=K.tint;
-  ctx.fillStyle="rgba("+T[0]+","+T[1]+","+T[2]+",.035)";ctx.fillRect(0,0,W,H);
-  /* блик ползёт вместе с креном и тангажом — стекло становится телом */
-  const gx=W/2+Math.sin(b.roll)*W*.4, gy=H*.3-Math.sin(b.pitch)*H*.2;
-  const gl=ctx.createLinearGradient(gx-W*.3,gy-H*.2,gx+W*.25,gy+H*.25);
-  gl.addColorStop(0,"rgba(255,255,255,0)");
-  gl.addColorStop(.5,"rgba(190,225,255,"+(.045*K.glow).toFixed(3)+")");
-  gl.addColorStop(1,"rgba(255,255,255,0)");
-  ctx.fillStyle=gl;ctx.fillRect(0,0,W,H);
-  /* отражение доски в нижней кромке остекления */
-  const rf=ctx.createLinearGradient(0,P.dashY-H*.12,0,P.dashY);
-  rf.addColorStop(0,"rgba(0,0,0,0)");
-  rf.addColorStop(1,rgba(A,(.05*K.glow).toFixed(3)));
-  ctx.fillStyle=rf;ctx.fillRect(0,P.dashY-H*.12,W,H*.12);
-  ctx.restore();
-
-  ctx.drawImage(C.tex,0,0,W,H);
+  /* стекло (тонировка, блик, отражение доски, свет звезды) и сама рама — в сцене видеокарты
+     (25-cockpit-gpu): здесь, на слое приборов, только приборы */
 
   /* приборная панель на потолочном блоке (M122, 25a-instr): пять шкал и
      невязка. Ничего не объявляет — на неё просто смотрят */

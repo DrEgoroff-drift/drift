@@ -50,3 +50,27 @@ TEST_SUITES.push(()=>suite("пояс в 3D: пыль против светила
   ok(to.c<away.c,"и берёт цвет светила, по свету — свой холодный: "+to.c.toFixed(3)+" < "+away.c.toFixed(3));
   resetWorld();
 }));
+TEST_SUITES.push(()=>suite("кабина пояса: план без 2D-холста, рама — выпечка видеокарты, символика стекла — в проёме",()=>{
+  resetWorld();
+  const C=cockpitTex(G.shipId);
+  ok(C.plan&&C.plan.glass.length>8,"план кабины есть: контур остекления");
+  ok(!("tex" in C)||C.tex==null,"2D-холста рамы больше нет");
+  if(!GPU.dev)eq(cockpitBake(),null,"без видеокарты выпечки нет — и кадр её не просит");
+  /* символика стекла клипуется проёмом без стоек: рама теперь под слоем приборов */
+  let s=null;
+  for(let r=0;r<=10&&!s;r++)for(let x=-r;x<=r&&!s;x++)for(let y=-r;y<=r&&!s;y++){const q=getSystem(x,y);if(q.belt){s=q;G.sx=x;G.sy=y;}}
+  if(!ok(s,"нашлась система с поясом"))return;
+  G.sys=s;G.mode="system";enterBelt();
+  const b=G.belt,L=[],c0=ctx;
+  const rec=new Proxy({},{get(_,k){if(k==="measureText")return()=>({width:10});
+    if(k==="createLinearGradient"||k==="createRadialGradient")return()=>({addColorStop(){}});
+    return /^(save|restore|beginPath|moveTo|lineTo|closePath|rect|clip|fill|stroke|fillRect|strokeRect|arc|fillText|translate|rotate|ellipse|setTransform|drawImage)$/.test(k)?(...a)=>{L.push(k+(k==="clip"?":"+a[0]:""));}:undefined;},
+    set(){return true;}});
+  BHUD.b=b;BHUD.proj=()=>null;BHUD.fwd=beltFwd(b);BHUD.st=stat();
+  try{ctx=rec;bhudDraw();}finally{ctx=c0;}
+  const ci=L.indexOf("clip:evenodd"),fi=L.findIndex((k,i)=>i>ci&&/stroke|fill/.test(k));
+  ok(ci>=0,"символика клипуется проёмом (evenodd: стекло минус стойки)");
+  ok(fi>ci,"и рисуется после клипа");
+  ok(L.indexOf("drawImage")<0,"рамы на слое приборов нет — она в сцене");
+  resetWorld();
+}));
