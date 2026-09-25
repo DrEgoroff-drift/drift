@@ -114,6 +114,10 @@ gpuImage(gpuScene(),B,[{x:W/2,y:H/2,w:W,h:H}]);
 
 ## Proofs (scratchpad, never in git)
 
+Tests at the head: `node test-node.js` all green (17 012); `DRIFT_GPU=swiftshader pwsh ./test.ps1 -Browser
+-Only "GPU-"` (the tools ship's Linux runner, after merging the base) — 11 suites, 106 passed, including the
+browser-tier bake suites of this zone.
+
 Scratchpad: `/tmp/claude-0/-home-user-drift/e6da632b-601e-50c8-990d-925008133db0/scratchpad/`
 
 - `proof-path2d.js` — a scratch page (run through `docs/shot.py title --js … --until "__pp.done"`)
