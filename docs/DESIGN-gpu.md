@@ -1659,3 +1659,63 @@ and `lookFrame` (28y:49/326) — none in gameplay.
   recording JS) will cut both. Pictures vs the accepted h3: max|Δ| 5 at 760, 15 on the phone, edge energy
   7.36→7.38; far zoom equal but for a DOM pulse. Gate2d gains the hotel scene; GC_GLYPHS `raster`/`measure`
   are named holes (the text source of v2); mutants `hotel-bake-2d`, `hotel-frame-2d` die.
+- **Station (17c3) off 2D.** The body master is recorded into a `GcCtx` (160·sb square, ss 2 while
+  ≤512², else 1) with `ST_REC.split` cutting the op list at layer boundaries (trade: under and over the
+  ring); each slice is replayed into its own bake, and a >1-layer master gets a union bake `U` (drawImage
+  of the layers at ss 1) for the lit sprite's normal pass. The spinning parts (`stSpinCv`) are bakes
+  keyed by part and scale (16 kept), fed straight to `gpuLitSprite` (bake → mip path, no upload). The
+  `!GPU.on` glow, the `stationArt` 2D master and the 2D flare branch are gone. Pairs vs the HEAD build
+  (8 scenes: trade 760/phone, indust, far, yard, sci, bazaar, outpost): crop edge / luminance / top-2 %
+  equal within noise (trade edge 4.89→4.90, yard 5.83→5.82, a yard ×4 crop −0.8 %, indust +1.6 % from the
+  flare phase); >24 differences ≤33 px per crop; GPU errs 0. Gate2d gains the station scene (masters and
+  spins dropped first so the bake is under the probe); mutants `station-master-2d`, `station-spin-2d`
+  die. The e2e flame check now reads the GPU record: no cold op or lamp above the stack mouth, warm
+  flare shapes present. The light suite's torch check reads the same shapes (Σ luminance·α·width·length
+  over the stack column per frame) instead of 2D pixels.
+- **Prebake scheduler (17a0).** `prebake(key,make,sync)` steps a generator job ≤4 ms (at least one step)
+  per frame across all keys; jobs untouched for 120 frames are closed with `it.return()` (the job's
+  `finally` drops partial bakes); ≤6 live jobs; a device change restarts the job. `sync` finishes the job
+  now and counts `PB_SYNC` — the draw calls it only when the thing is on screen and not ready (a load, a
+  jump), never on an approach: the gate suite flies 1.6 screens to a hotel over 90 frames and demands
+  PB_SYNC +0 and the house drawn from the finished bake. `PB_MAX[key]` keeps the longest step per key
+  (the ≤16 ms at ×4 threshold is the stand's, the suite has no clock). `pbOnScreen(x,y,w,h,m)` is the
+  margin test. The station masters are on it (`stMasterJob`: record the body, then one layer bake per
+  step, the union last; a partial job drops its bakes). The key lost `sb`'s role as a hard gate: when
+  the zoom crosses a quarter octave the old master of the same station keeps drawing (its own `sb`, `E`)
+  while the new density bakes step by step; a sync finish happens only when the station has no master
+  at all and is on screen (a load). Off screen the job only steps. Frames vs HEAD at 760 and on the phone:
+  identical (max |Δ| 0), PB_SYNC 0.
+- **Six hotels (17l core, one file per type).** The panel hotel is deleted; `HOTEL_T[by]` registers a
+  type {W,H,PX,ax,ay,sign,sheen,wins,paint}, where `paint(c,e,sd,lit)` is a generator (yields between
+  parts) that paints into two `GcCtx` records: `c` the house, `e` the glow. `hotelJob` records dark and
+  lit, bakes the house `cv`, the lit windows `cl`, the two glows `em`/`el` (ss 2 record → shadowBlur 1.2
+  bake), and the sign's sheen `sh` (house × a radial ramp of the sign colour, destination-in the house);
+  five bakes, one texture each, all prebaked while the house is within one screen of the edge. The frame
+  draws cv, sh (add), the lit rects of cl, em, the lit rects of el, then the 17k0 neon (a space is a dead
+  letter). Which windows burn: `hotelWinLit(N,sd,lit,flick)` over the type's window list — no re-bake.
+  Shared painters: `hotelRim` (one dark outline pass for the whole body), `hotelWindows` (grouped by
+  colour, curtains, a resident silhouette), `hotelDock` (the tube with its window strip and the shuttle,
+  common to all types), `hotelLamp`, `hotelStar`. Gameplay untouched: `hotelHere` place, radius 150,
+  «МЕСТ НЕТ». Names: КОСМОС (gt), АЭЛИТА™ (co), ДОМ ПРИЕЗЖИХ № 4 (or), ЮПИТЕР (km), ТУРБАЗА «ДРУЖБА» (ra,
+  painted sign and bulbs, no neon), БУРАН (hf). Type gt «Космос» (17l1): a crescent slab of 36×14 windows
+  in ribbons (floors read as bands, not a checkerboard), two towers with red bands, a banner with a star,
+  a portico, a cosmonaut on the plaza at 1.5 storeys, a keel with pods; the sheen is 0.4 (0.8 bleached
+  the stone). Gates: gpugate windows suite (masks ≥8 a day, 0 uploads) and the approach suite above;
+  gate2d scene «Космос» (painters incl. `hkPaint`, `hotelDock`); mutants `hotel-bake-2d`
+  (glow record → 2D), `hotel-frame-2d` die. 760/phone/far/z3 GPU errs 0.
+- **Gesture and post (17h) off 2D.** The whole frame goes through the scene pass: fleet ships through
+  `fleetShipAt` with their own matrix (`gestShip`), the drone screens and the camera drone as kit shapes in a
+  local frame (`gestAt`, `gestRect` via `gpuQuad`, the ticker stripes clipped to the screen), the post sign a
+  GPU-canvas bake (`gestPostSprite`, `gpuBaked` at 3×), the lamp two added discs. The 2D fallbacks are gone.
+  The spotlight («gt») and the inspection line («or») move to `drawGestureTop`, called from 17-mode-system
+  right after the player's hull (one line, a call-order change only): the old 2D layer lay over the hull.
+  They blend «over», not «add», as `#c` did; the line's core is .87 instead of .75 because the 2D halo and
+  core summed inside the layer (C 213, A .89) and sequential «over» needs .87 for the same bg·.11+213. What
+  stays different: `#c` was composited after the tone curve, the scene pass is before it, so the hull's
+  highlights under the spotlight (above .75, where the tone curve bends) come out a little brighter: mean
+  +4/255 over the hull crop, the rest of the cone equal. Pairs vs HEAD, same tick (px >24 / max): 760 —
+  gt 188/71 (hull highlights), co 3/34, or 450/43 (AA of a 2D stroke vs an SDF segment along the line, 286
+  brighter and 158 darker, same energy; was 805/118 with the line under the hull), ra 0/11, hf 16/53, km
+  0/10; phone without the pulsing buttons — gt 219/40, co 7/54, or 66/44, ra 0/10, hf 30/65, km 0/12. GPU
+  errs 0. Gate2d gains the gesture scene (power changes every 15 frames, age inside its gesture; probes
+  `drawGesture`, `drawGestureTop`, `drawGestPost`); mutants `gesture-post-2d`, `gesture-frame-2d` die.

@@ -51,15 +51,16 @@ const GATE2D=[
        G.zoom=Z;G.zoomT=null;return {p};}
      return null;},
    probe:["gpuPlanet","gplCities"]},
-  /* гостиница: три выпечки атласа (краска, свет стёкол, отсвет) на GPU-холсте; дом сбрасываем,
-     чтобы выпечка шла под записью; вечер — окна горят */
-  {name:"гостиница (17l): атлас дома, окна, отсвет",
-   painters:["drawHotel","hotelBake","hotelPaint"],
+  /* гостиница «Космос»: пять выпечек GPU-холста (дом, горящие окна, их свет, отсвет вывески) —
+     шаги планировщика 17a0; дом сбрасываем, чтобы выпечка шла под записью (на экране — целиком
+     в кадре); вечер — окна горят */
+  {name:"гостиница «Космос» (17l, 17l1): дом, окна, отсвет, труба с челноком",
+   painters:["drawHotel","hotelGet","hotelJob","prebake","hkPaint","hotelWindows","hotelDock","hotelNeon"],
    place(first){
      for(let r=0;r<=14;r++)for(let x=-r;x<=r;x++)for(let y=-r;y<=r;y++){
        if(Math.max(Math.abs(x),Math.abs(y))!==r)continue;const s=getSystem(x,y);if(!s.station)continue;
-       G.sx=x;G.sy=y;G.sys=s;G.ap=null;G.orbit=null;const Ht=hotelHere();if(!Ht)continue;
-       if(first){if(HOTEL_BAKE)for(const q of [HOTEL_BAKE.cv,HOTEL_BAKE.em,HOTEL_BAKE.sh])gpuBakeDrop(q);HOTEL_BAKE=null;HOTEL_REC=null;
+       G.sx=x;G.sy=y;G.sys=s;G.ap=null;G.orbit=null;const Ht=hotelHere();if(!Ht||Ht.by!=="gt")continue;
+       if(first){hotelDrop(HOTEL_BAKE);HOTEL_BAKE=null;for(const k of [...PB.keys()])prebakeDrop(k);
          G.t=Math.floor(G.t/CEL_DAY)*CEL_DAY+CEL_DAY*21/24;}
        G.ship.x=Ht.x;G.ship.y=Ht.y+150/2.2;G.ship.vx=G.ship.vy=0;G.zoom=2.2;G.zoomT=null;return {Ht};}
      return null;},
@@ -69,6 +70,37 @@ const GATE2D=[
    painters:["chipDom","domLabel","ovText","ovAtlas","ovFlush"],warm:30,
    place(){return gate2dChips();},
    probe:["chipDom","domLabel"]},
+  /* станция (17c3): мастер тела двумя слоями (торговая: под кольцом и над ним) и вращающееся
+     кольцо — выпечки GPU-холста; мастера и кольца сбрасываем, чтобы выпечка шла под записью */
+  {name:"станция (17c3): мастер слоями, кольцо, огни",
+   painters:["drawStation","stationMaster","stMasterJob","prebake","drawStationBody","stSpinCv","gpuStationDraw","stEmFlush","gpuLitSprite"],
+   place(first){
+     for(let r=0;r<=14;r++)for(let x=-r;x<=r;x++)for(let y=-r;y<=r;y++){
+       if(Math.max(Math.abs(x),Math.abs(y))!==r)continue;const s=getSystem(x,y);
+       if(!s.station||(s.station.stype||"trade")!=="trade")continue;
+       G.sx=x;G.sy=y;G.sys=s;G.ap=null;G.orbit=null;const S=s.station;
+       if(S.orbit!=null){S.x=Math.cos(S.ang)*S.orbit;S.y=Math.sin(S.ang)*S.orbit;}
+       if(first){for(const k of [...PB.keys()])prebakeDrop(k);for(const M of ST_MASTER.values())stMasterDrop(M);ST_MASTER.clear();for(const q of ST_SPIN.values())gpuBakeDrop(q);ST_SPIN.clear();}
+       G.ship.x=S.x;G.ship.y=S.y+80;G.ship.vx=G.ship.vy=0;G.zoom=1.5;G.zoomT=null;return {S};}
+     return null;},
+   probe:["drawStation","stationMaster"]},
+  /* жест хозяина и пост у входа (17h): держава меняется каждые 15 кадров, возраст — внутри
+     её жеста (прожектор «gt», линия «or»); доску поста сбрасываем, чтобы выпечка шла под записью */
+  {name:"жест и пост (17h): корабли флота, дрон, прожектор, линия досмотра, доска",
+   painters:["drawGesture","drawGestureTop","drawGestPost","gestPostSprite","gestShip","gestRect","gestAt"],
+   place(first){
+     const BY=[["gt",5],["co",3],["or",2.3],["ra",4],["hf",1.5],["km",1]];
+     if(first){this.i=0;for(const B of GEST_POST_CV.values())gpuBakeDrop(B);GEST_POST_CV.clear();}
+     for(let r=0;r<=30;r++)for(let x=-r;x<=r;x++)for(let y=-r;y<=r;y++){
+       if(Math.max(Math.abs(x),Math.abs(y))!==r)continue;const s=getSystem(x,y);if(!s.station)continue;
+       G.sx=x;G.sy=y;G.sys=s;G.ap=null;G.orbit=null;if(!gestOwner(x,y))continue;
+       const E=sysEntry(x,y),px=E.x-Math.sin(E.a)*140,py=E.y+Math.cos(E.a)*140;
+       G.ship.x=px+60;G.ship.y=py+110;G.ship.vx=G.ship.vy=0;G.ship.a=-.6;G.zoom=1.3;G.zoomT=null;
+       const [by,age]=BY[Math.floor(this.i++/15)%BY.length];
+       GEST={sx:x,sy:y,by,t0:G.t-age*60,said:true,fired:{say:1},seed:hashi(x,y,0x6E57)>>>0};
+       return {by};}
+     return null;},
+   probe:["drawGesture","drawGestureTop","drawGestPost"]},
 ];
 TEST_SUITES.push(()=>suite("ворота «0 вызовов 2D»: перенесённые печи не зовут 2D ни в кадре, ни в выпечке",{tier:"browser"},()=>{
   if(!ok(GPU.ok,"видеокарта есть — без неё ворота не меряются"))return;

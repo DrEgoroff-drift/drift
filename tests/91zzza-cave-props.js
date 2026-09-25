@@ -125,6 +125,9 @@ TEST_SUITES.push(()=>suite("M309: челноки по ступени, ни од�
   }
 }));
 
+/* облик флота печётся на GPU-холсте (12ai1, gpuBake): выпечка — это {w,h,tex}, а не 2D-канва;
+   без видеокарты (ярус Node) выпечки нет вовсе, и это не провал — облик ждёт устройство */
+function fleetArtBaked(a){return a.cn?a.cn.w>0&&!!a.cn.tex:!GPU.dev;}
 /* ══════════════ M310: флот ГЛАВТРАССЫ ══════════════ */
 TEST_SUITES.push(()=>suite("M310: флот идёт по лестнице, три класса нарисованы, позывной и норма",{tier:"browser"},()=>{
   resetWorld();
@@ -144,7 +147,7 @@ TEST_SUITES.push(()=>suite("M310: флот идёт по лестнице, тр�
   /* положение — функция времени в пределах линии */
   const f={k:"post",seed:3,name:"ЗАРНИЦА",num:"Л-1425",line:4,x0:-3000,y0:0,x1:3000,y1:0,bow:400,ph:.3};
   const p=fleetPos(f);ok(isFinite(p.x)&&isFinite(p.y)&&isFinite(p.a)&&p.u>=0&&p.u<1,"позиция конечна, доля в [0,1)");
-  for(const k of ["post","tanker","tug"]){const a=fleetArtOf(Object.assign({},f,{k,seed:k.length}));ok(a.cn.width>0&&a.lights.length>=3,k+": спрайт запечён, огни есть");}
+  for(const k of ["post","tanker","tug"]){const a=fleetArtOf(Object.assign({},f,{k,seed:k.length}));ok(fleetArtBaked(a)&&a.lights.length>=3,k+": спрайт запечён, огни есть");}
   /* позывной и норма: танкер рядом, баки пусты */
   G.mode="system";
   const b=Math.floor(now()/FLEET_PERIOD);
@@ -165,7 +168,7 @@ TEST_SUITES.push(()=>suite("M310: флот идёт по лестнице, тр�
 TEST_SUITES.push(()=>suite("M311: шесть классов нарисованы, буксир латает, плавбаза чинит, конвой прячет от пиратов",{tier:"node"},()=>{
   resetWorld();
   ok(Object.values(FLEET_CLASSES).filter(c=>c.art).length>=6,"нарисованы не меньше шести классов");
-  for(const k of ["patrol","ferry","base"]){const a=fleetArtOf({k,seed:k.length+7,name:"X",num:"Л-1",line:1});ok(a.cn.width>0,k+": спрайт запечён");}
+  for(const k of ["patrol","ferry","base"]){const a=fleetArtOf({k,seed:k.length+7,name:"X",num:"Л-1",line:1});ok(fleetArtBaked(a),k+": спрайт запечён");}
   const sys=G.sys;G.mode="system";
   const b=Math.floor(now()/FLEET_PERIOD),X=G.ship.x,Y=G.ship.y;
   const st=stat();
@@ -200,7 +203,7 @@ TEST_SUITES.push(()=>suite("M311: шесть классов нарисованы
 TEST_SUITES.push(()=>suite("M312: тринадцать классов запечены, выкуп через госпиталь вдвое, учёба раз в смену, почта только в сети",()=>{
   resetWorld();
   eq(Object.values(FLEET_CLASSES).filter(c=>c.art).length,13,"нарисованы все тринадцать");
-  for(const k in FLEET_CLASSES){const a=fleetArtOf({k,seed:k.length*3+1,name:"X",num:"Л-1",line:1});ok(a.cn.width>0&&a.lights.some(l=>l.c==="eng"),k+": спрайт и сопло");}
+  for(const k in FLEET_CLASSES){const a=fleetArtOf({k,seed:k.length*3+1,name:"X",num:"Л-1",line:1});ok(fleetArtBaked(a)&&a.lights.some(l=>l.c==="eng"),k+": спрайт и сопло");}
   const sys=G.sys;G.mode="system";
   const b=Math.floor(now()/FLEET_PERIOD),X=G.ship.x,Y=G.ship.y;
   const put=k=>{sys.fleetCache={b,list:[{k,seed:3,name:"ТЕСТ",num:"Л-1",line:1,x0:X+50,y0:Y,x1:X+50,y1:Y,bow:0,ph:0}]};};
@@ -245,7 +248,7 @@ TEST_SUITES.push(()=>suite("M313: узловая с рунга 25, дерели�
   for(let i=0;i<40;i++){const sx=200+i,sy=200+i*3;if(sysDanger(sx,sy)<.6)continue;tot++;const sd={seed:600+i,sx,sy,station:null,planets:[]};if(fleetHere(sd).some(f=>f.k==="derelict"))n++;}
   ok(tot===0||(n>0&&n<tot),"дерелик есть в части опасных систем ("+n+" из "+tot+")");
   ok(!fleetHere({seed:9,sx:0,sy:0,station:null,planets:[]}).length,"у дома дерелика нет");
-  for(const k of ["node","derelict"]){const a=fleetArtOf({k,seed:2,name:"УЗ-1",num:"",line:0});ok(a.cn.width>0,k+": спрайт запечён");}
+  for(const k of ["node","derelict"]){const a=fleetArtOf({k,seed:2,name:"УЗ-1",num:"",line:0});ok(fleetArtBaked(a),k+": спрайт запечён");}
   /* караван */
   G.mode="system";const sys=G.sys;
   const b=Math.floor(now()/FLEET_PERIOD),X=G.ship.x,Y=G.ship.y;
@@ -279,7 +282,7 @@ TEST_SUITES.push(()=>suite("M314: трассы рисуются между си�
   actEdge=true;fleetInteract(G.ship);actEdge=false;
   ok((G.msg||"").indexOf("СПАСАТЕЛЬ")>=0,"на экране курс и расстояние");
   G.barges=[];delete sys.fleetCache;
-  for(const k of ["ferry","hosp"]){const a=fleetArtOf({k,seed:99,name:"X",num:"Л-1",line:1});ok(a.cn.width>0,k+": перерисован без ошибок");}
+  for(const k of ["ferry","hosp"]){const a=fleetArtOf({k,seed:99,name:"X",num:"Л-1",line:1});ok(fleetArtBaked(a),k+": перерисован без ошибок");}
 }));
 
 /* ══════════════ M315: пропорции системы, призрачный клик, оклик на рунге 30 ══════════════ */
