@@ -115,7 +115,7 @@ TEST_SUITES.push(()=>suite("ворота ступени 2: ключ кабины
   resetWorld();
   if(!ok(bgateStand(),"нашлась система с поясом"))return;
   const run0=G.running,loop0=LOOP_OFF,ip=instrPanel,ts=tapeStrip,ps=instrPodSig;
-  const bad=[];let changed=0,steps=0;
+  const bad=[],seen=[];let changed=0,steps=0;
   const kz={};for(const k in keys)if(typeof keys[k]==="boolean")kz[k]=keys[k];
   try{
     instrPanel=function(){BORC.mute++;try{return ip.apply(this,arguments);}finally{BORC.mute--;}};
@@ -126,6 +126,9 @@ TEST_SUITES.push(()=>suite("ворота ступени 2: ключ кабины
     G.running=true;LOOP_OFF=false;
     for(const k in kz)keys[k]=false;
     for(let i=0;i<20;i++){const b=G.belt;b.vx=b.vy=b.vz=0;b.avYaw=b.avPitch=0;frameBody(wallMs());}
+    /* захват пояс ставит сам; до шага «цель» его нет — иначе место цели в ключе меняется от
+       любого сдвига и прячет забытый радар */
+    G.belt.lock=null;G.belt.prog=0;
     /* дальше кадров нет: шаг меняет состояние руками, камера — та же формула, что в 24ba.
        Ни физики, ни часов — между шагами меняется только то, что поменял шаг */
     const snap=()=>{
@@ -134,7 +137,9 @@ TEST_SUITES.push(()=>suite("ворота ступени 2: ключ кабины
         return {x:W/2+(vx*right[0]+vy*right[1]+vz*right[2])*F/zc,y:H/2-(vx*up[0]+vy*up[1]+vz*up[2])*F/zc,z:zc};};
       const c0=ctx;BORC.log.length=0;
       try{ctx=borcRecorder();BHUD.rec=true;drawGlassHUD(b,proj,fwd,st);drawCockpit(b,st);}finally{BHUD.rec=false;ctx=c0;}
-      BHUD.pod="";
+      /* подпись панели прибита целиком: без колодки это невязка, а она зависит от места
+         корабля — шаг «сдвиг» менял бы ключ «за компанию» и прятал забытый радар */
+      BHUD.pod="pod";BHUD.podF=GPU.frameNo;
       return {log:BORC.log.join(";"),key:bhudKey(b,fwd,st,bas)};
     };
     const front=()=>{const b=G.belt,B=beltBasis(b);let best=null,bd=1e9;
@@ -149,11 +154,13 @@ TEST_SUITES.push(()=>suite("ворота ступени 2: ключ кабины
       ["удар",()=>{B().hit=10;}],["удар гаснет",()=>{B().hit=4;}],["сближение",()=>{B().near=60;}],
       ["тяга",()=>{keys.thrust=true;}],["тормоз",()=>{keys.thrust=false;keys.brake=true;}],
       ["резак",()=>{keys.brake=false;keys.act=true;}],["огонь",()=>{keys.act=false;keys.fire=true;}],
-      ["рукоять",()=>{keys.fire=false;B().avYaw=.03;B().avPitch=-.02;}],["покой",()=>{}]];
+      ["рукоять",()=>{keys.fire=false;B().avYaw=.03;B().avPitch=-.02;}],
+      /* время само по себе: мигание ламп стоек живёт мимо ключа, на своих холстиках */
+      ["время",()=>{G.t+=13;}],["время +",()=>{G.t+=29;}],["время ++",()=>{G.t+=51;}],["покой",()=>{}]];
     let prev=snap();
     for(const [name,fn] of STEPS){
       fn();const cur=snap();steps++;
-      if(cur.log!==prev.log){changed++;if(cur.key===prev.key)bad.push(name);}
+      if(cur.log!==prev.log){changed++;seen.push(name);if(cur.key===prev.key)bad.push(name);}
       else if(cur.key!==prev.key&&name==="покой")bad.push("ключ сменился без смены рисунка");
       prev=cur;
     }
@@ -164,7 +171,7 @@ TEST_SUITES.push(()=>suite("ворота ступени 2: ключ кабины
     G.running=run0;LOOP_OFF=loop0;
   }
   eq(G.mode,"belt","все шаги прошли в поясе");
-  ok(changed>=15,"оракул живой: протокол рисунка менялся на "+changed+" шагах из "+steps);
+  ok(changed>=15,"оракул живой: протокол рисунка менялся на "+changed+" шагах из "+steps+" ("+seen.join(", ")+")");
   eq(bad.length,0,"смена рисунка без смены ключа"+(bad.length?": "+bad.join(", "):""));
   resetWorld();
 }));

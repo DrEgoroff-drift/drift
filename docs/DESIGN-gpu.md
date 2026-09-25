@@ -1235,3 +1235,18 @@ and `lookFrame` (28y:49/326) — none in gameplay.
   the new call. Cost against the direct 2D draw, same throttling (loaded machine, absolute ms inflated): at rest
   push 10–12 → 3.1–3.3 ms, frame 83–89 → 57–61 ms, cockpit garbage 38–39 → 29 KB/frame; while moving the layer
   redraws every frame, frame 123–413 → 102–360 ms, garbage 41–66 → 64–109 KB (key plus raster).
+- **Belt cockpit: no garbage from the key, less from the painter (Контроль 25.09).** In flight the layer redraws
+  and garbage there is a GC hitch on the phone. `bhudKey` now allocates nothing: numbers go into a preallocated
+  `Float64Array`, strings and refs into a preallocated array, compared in place; the key string for 08bh is built
+  only on change, and the draw is one module function (no per-frame closures). Radar: rocks do not move (the wrap
+  follows the ship), so the key holds the ship position at a quarter pixel of the scope instead of 105 rocks.
+  Display step instead of float noise: camera angles and basis at 1/(4·max(W,H)) rad (the roll relaxing 5 %/frame
+  after a turn redrew the layer every frame in straight flight), the target as what is seen — frame place and size
+  at ¼ px, metres. Painter, picture unchanged (pairs 760 max|Δ| 3, 411×742 ×1.5 max 16 mean 0.04): index loop and
+  squared range on the radar, cached font strings and lamp-label width, `cockpitTex` without a key string per call,
+  lamp canvases compared by numbers. Oracle: lock cleared after warm-up, pod pinned whole, steps «время» (G.t
+  only) — mutants `belt-hud-key-fuel`, `belt-hud-key-radar`, `belt-led-hud` die. Cost at 4×, 411×742 ×1.5,
+  medians of 4 runs, the direct path of 5b44b5c → now: turning flight 38.6 → 31.6 KB/frame, frame 52.7 → 43.1 ms;
+  straight 39.8 → 19.4 KB, 53.6 → 46.3 ms; rest 33.2 → 3.8 KB, 51.3 → 40.0 ms; push 5.5 → 0.47 ms. In flight with
+  a target the layer still redraws every frame (the metres change) — a separate cached dashboard layer would cut
+  that, at the price of another native-DPR full-screen canvas (~10 MB on the phone); not done.
