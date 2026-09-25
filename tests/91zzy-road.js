@@ -1,4 +1,8 @@
 /* ══════════════ автотесты: дорожный спутник (M168, M168b) ══════════════ */
+/* кадр дороги рисует видеокарта (G12): пиксели — из снимка собранного кадра, меры —
+   в пикселях CSS (W,H), снимок — в пикселях устройства (f) */
+function roadShot(ts){GPU.wantSnap=true;drawRoad(ts);const s=gpuSnapshot();
+  return {g:s.getContext("2d",{willReadFrequently:true}),f:s.width/Math.max(1,W)};}
 TEST_SUITES.push(()=>suite("дорога: километры — в кредиты живым счётчиком, комбо растёт и сгорает",{tier:"node"},()=>{
   resetWorld();
   G.road=null;G.credits=600;
@@ -64,15 +68,15 @@ TEST_SUITES.push(()=>suite("дорога: экран, разгон и тормо
   RD.kmh=90;RD.accT=.8;
   drawRoad(1000);drawRoad(1032);drawRoad(1064);
   ok(RD.acc>0,"разгон дошёл до корпуса: "+RD.acc.toFixed(2));
-  RD.accT=-.8;for(let i=0;i<24;i++)drawRoad(1100+i*33);
+  RD.accT=-.8;for(let i=0;i<23;i++)drawRoad(1100+i*33);
+  const S=roadShot(1100+23*33);
   ok(RD.acc<0,"тормоз дошёл до корпуса: "+RD.acc.toFixed(2));
-  const cv=document.getElementById("roadcv");
   /* корпус ездит по вертикали: разгон тянет его вверх, тормоз вниз (M168e).
      Поэтому проба берётся ВОКРУГ его нынешнего места, а не вокруг середины
      экрана — иначе тест проверяет пустое небо над затормозившим кораблём */
-  const cy=Math.floor(cv.height*.5+(RD.yOff||0));
-  const y0=clamp(cy-60,0,cv.height-1), hh=Math.min(120,cv.height-y0);
-  const px=cv.getContext("2d").getImageData(Math.floor(cv.width*.5)-4,y0,8,hh).data;
+  const cy=Math.floor((H*.5+(RD.yOff||0))*S.f),hS=Math.floor(H*S.f);
+  const y0=clamp(cy-60,0,hS-1), hh=Math.min(120,hS-y0);
+  const px=S.g.getImageData(Math.floor(W*.5*S.f)-4,y0,8,hh).data;
   let lit=0;for(let i=0;i<px.length;i+=4)if(px[i]+px[i+1]+px[i+2]>60)lit++;
   ok(lit>0,"корпус нарисован");
   RD.moveT=100;roadEarnKm(3,RD.moveT);
@@ -197,19 +201,18 @@ TEST_SUITES.push(()=>suite("дорога: тихий сырой микрофон
   roadOpen();
   if(RD.raf)cancelAnimationFrame(RD.raf);RD.raf=0;
   RD.kmh=0;RD.shake=0;
-  const cv=document.getElementById("roadcv"),cc=cv.getContext("2d");
-  const hh=hullOf(G.shipId),scK=Math.min(cv.width/(hh.bw*5.2),cv.height/(hh.len*2.4))*.46;
-  const probe=()=>{
-    const y0=Math.max(0,Math.floor(cv.height*.5-hh.nose*scK-cv.height*.12)),
-          y1=Math.floor(cv.height*.5-hh.nose*scK*.45);
-    const d=cc.getImageData(Math.floor(cv.width*.5)-70,y0,140,Math.max(4,y1-y0)).data;
+  const hh=hullOf(G.shipId),scK=Math.min(W/(hh.bw*5.2),H/(hh.len*2.4))*.46;
+  const probe=S=>{
+    const y0=Math.max(0,Math.floor((H*.5-hh.nose*scK-H*.12)*S.f)),
+          y1=Math.floor((H*.5-hh.nose*scK*.45)*S.f);
+    const d=S.g.getImageData(Math.floor(W*.5*S.f)-70,y0,140,Math.max(4,y1-y0)).data;
     let lit=0;for(let i=0;i<d.length;i+=4)if(d[i]+d[i+1]+d[i+2]>150)lit++;
     return lit;
   };
-  RD.acc=0;RD.accT=0;drawRoad(5000);drawRoad(5000.02);
-  const base=probe();
-  RD.acc=-1;RD.accT=-1;drawRoad(5000.04);
-  const braked=probe();
+  RD.acc=0;RD.accT=0;drawRoad(5000);
+  const base=probe(roadShot(5000.02));
+  RD.acc=-1;RD.accT=-1;
+  const braked=probe(roadShot(5000.04));
   ok(braked>base+30,"тормозные факелы у носа зажглись: "+base+" → "+braked);
   /* рекорд поездки пишется из GPS */
   roadOnPos({coords:{latitude:55.7,longitude:37.6,speed:16.7,accuracy:5},timestamp:1000});
@@ -230,11 +233,11 @@ TEST_SUITES.push(()=>suite("дорога: сияние «моей волны» �
   let n=0;RD.eq=new Uint8Array(128);
   RD.an={getByteFrequencyData:a=>{n++;const v=(n%24<5)?46:18;
     for(let i=0;i<a.length;i++)a[i]=Math.max(0,v-i*.15+8*Math.sin(n*.05+i*.4));}};
-  let ts=1000;for(let i=0;i<420;i++){ts+=16.7;drawRoad(ts);}
+  let ts=1000;for(let i=0;i<419;i++){ts+=16.7;drawRoad(ts);}
+  const S=roadShot(ts+16.7);
   ok(RD.energy>.4,"энергия набрана: "+RD.energy.toFixed(2));
-  const cv=document.getElementById("roadcv"),cc=cv.getContext("2d");
-  const y0=Math.floor(cv.height*.86),hh=Math.floor(cv.height*.08);
-  const d=cc.getImageData(0,y0,cv.width,hh).data;
+  const y0=Math.floor(H*.86*S.f),hh=Math.floor(H*.08*S.f);
+  const d=S.g.getImageData(0,y0,Math.floor(W*S.f),hh).data;
   let lit=0,fam={r:0,g:0,b:0};
   for(let i=0;i<d.length;i+=32){
     const r=d[i],g=d[i+1],b=d[i+2],mx=Math.max(r,g,b),mn=Math.min(r,g,b);
