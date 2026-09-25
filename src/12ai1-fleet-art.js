@@ -328,13 +328,22 @@ function fleetArtOf(f){
      шла от −3hw до 2hw с нулём на −hw — до самого тела свет не доходил, его
      получали одни панели, а борт оставался плоским тоном (§16, 0.313.0).
      Теперь ноль на −.2hw: верхняя кромка тела в VII, нижняя в III–IV. */
+  /* на видеокарте сторону света решает звезда (fleetShipGpu): её выпечка берёт этот
+     слой мягче — верх светлее (.34), низ темнеет на .3, а не в III–IV: тень кладёт звезда,
+     и двойная тень снизу гасила панели */
+  let cnA=null;
+  if(GPU.ok){cnA=document.createElement("canvas");cnA.width=cn.width;cnA.height=cn.height;const ga=cnA.getContext("2d");ga.drawImage(cn,0,0);
+    ga.setTransform(FLEET_SS,0,0,FLEET_SS,rad*FLEET_SS,rad*FLEET_SS);ga.globalCompositeOperation="source-atop";
+    const q=ga.createLinearGradient(0,-hw*1.8,0,hw*1.6);
+    q.addColorStop(0,f.k==="derelict"?"rgba(120,130,150,.22)":"rgba(255,240,216,.34)");q.addColorStop(.5,"rgba(255,224,196,0)");q.addColorStop(1,"rgba(0,0,0,.3)");
+    ga.fillStyle=q;ga.fillRect(-rad,-rad,rad*2,rad*2);}
   ctx.globalCompositeOperation="source-atop";
   const lg=ctx.createLinearGradient(0,-hw*1.8,0,hw*1.6);
   lg.addColorStop(0,f.k==="derelict"?"rgba(120,130,150,.18)":"rgba(255,240,216,.28)");lg.addColorStop(.5,"rgba(255,224,196,0)");lg.addColorStop(1,"rgba(0,0,0,.62)");
   ctx.fillStyle=lg;ctx.fillRect(-rad,-rad,rad*2,rad*2);
   ctx.globalCompositeOperation="source-over";
   ctx=prev;
-  const art={cn,rad,L,hw,lights,bx,by,emb};
+  const art={cn,cnA,rad,L,hw,lights,bx,by,emb};
   FLEET_ART[key]=art;return art;
 }
 /* ── алфавит знаков (§18.2): десять фигур, у каждой одна заливка; повороты
@@ -376,12 +385,23 @@ function fleetGlyph(k,h){
    globalAlpha; так все места вызова (полоса, флот, жесты, мирный флот) уходят с #c разом.
    Зев сопла — свет (сложение): над #c его раздувал emit(). Огни — тоже явная эмиссия
    (правило 16/n): точка краской и узкий ореол сложением, в два-три её радиуса */
-const FLEET_ENG=1.3,FLEET_HALO=.45;
+const FLEET_ENG=1.3,FLEET_HALO=.45,FLEET_LOD=-1.2;
 function fleetShipGpu(f,art){
   const pass=gpuScene();if(!pass)return false;
   const m=ctx.getTransform(),k=1/DPR,al=ctx.globalAlpha,s=Math.hypot(m.a,m.b)*k;
   const T=(lx,ly)=>[(m.a*lx+m.c*ly+m.e)*k,(m.b*lx+m.d*ly+m.f)*k],[x,y]=T(0,0),w=art.rad*2*s;
-  gpuImage(pass,gpuMipTex(art.cn),[{x,y,w,h:w,rot:Math.atan2(m.b,m.a),a:al}],{sharp:true});
+  const rot=Math.atan2(m.b,m.a);
+  /* светом звезды (Ships a): свет корпуса (GST, −1) по своей выпечке — краска как есть,
+     дальний борт в тень, кромка цветом звезды; множитель станции (0) белил нос и знак.
+     Уровень мипа на ступень мельче экрана: маски у GST нет, а резкость — не ниже 2D.
+     Гаснущий борт (полоса у дока) — прежней картинкой: у GST нет прозрачности */
+  if(art.cnA&&G.mode==="system"&&al>.99&&G.viewCX!==undefined){
+    /* к звезде: звезда в начале координат системы, точка борта — из экрана через камеру */
+    const wx=G.viewCX+(x-W/2)/G.zoom,wy=G.viewCY+(y-H/2)/G.zoom,ln=Math.hypot(wx,wy)||1;
+    const cv=art.cnA,lod=Math.max(0,Math.log2(cv.width/(w*GPU.bw/W))+FLEET_LOD);
+    gpuLitSprite(gpuMipTex(cv),x,y,w/2,s,rot,-wx/ln,-wy/ln,-1,0,lod);
+  }else
+  gpuImage(pass,gpuMipTex(art.cn),[{x,y,w,h:w,rot,a:al}],{sharp:true});
   const L=[],A=[],by=f.by||"gt",MF=(typeof makerFlame==="function")?makerFlame(by):null;
   const ec=(MF&&by!=="gt")?mixc(MF.col,[255,255,255],.2):[255,178,110];
   for(const li of art.lights){const [px,py]=T(li.x,li.y);

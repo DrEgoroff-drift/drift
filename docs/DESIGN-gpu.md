@@ -1201,7 +1201,17 @@ and `lookFrame` (28y:49/326) — none in gameplay.
   cache, the label checked on the label layer) and `drawFleet` in its upload net; mutant `fleet-caption-on-c`
   (the caption back on `#c`) dies on it.
 
+- **Ships a) for the fleet** (side branch `gpu2-fleetlit`, not in 0.458.0): a ГЛАВТРАССА ship in the system is
+  lit by the star through `gpuLitSprite` in hull mode (−1): paint as baked, the far side in shade, the rim in
+  the star's colour; the station multiplier (0) whitened the nose and the emblem. Its bake keeps a softer copy of
+  the 2D top light (.34 on top, .3 dark below instead of .62 — the star lays the shade, a double shade killed the
+  panels); the mip level is `FLEET_LOD` −1.2 (GST has no unsharp mask). A fading lane ship keeps the old picture
+  (GST has no alpha). Three positions at 760 (star lower right, left, upper right) and ×1.5: total light
+  +0.6/+2.0/+1.2 % and +1.3 %, V>.6 area +1…+15 %, S of the bright .28 vs .21, sharpness +4/+8/+6 % and +1.4 %,
+  p95 −2…−5 % (the centre gives up to 7 % to the far-side slope). Gates «ворота ступени» green.
 - **Allies on the GPU** (`12a`): `drawAllies` drew each hired hand's hull in 2D and called `gpuHullLight` inside the open scene pass - one #c copy and two extra submits per ally, and the frame's command buffer broke (a black frame, 12 GPU errors per six frames). Now `allyHullGpu` draws them through `hullGpuDraw` like the player's ship, lit towards the star; the thrust smoothing is kept per ally (a WeakMap) so an ally on the player's hull does not share his flame. 2D + `gpuHullLight` stay for no-GPU. Six frames: #c copies 18 → 0, submits 30 → 6, dirt 0, errs 0. Hull (2D fallback → GPU): light sum −0.1 % / −2.2 % at 760, 0 % at ×1.5; body mean V +12 % / +4 %; sharpness ×2.1 / ×1.7 at 760, ×1.8 at ×1.5; the V>.6 area grows ×2–2.5, all of it the star-coloured rim (S of the bright .21 → .33). Gate scene «союзник и наёмник в кадре», mutant `ally-hull-2d`.
+
+- **World labels under the interface** (`08bh`, with the worker's leave): the label layer shared `#chips` with the edge chips, and a label made later sat on top - at ×1.5 an ally's caption glued itself onto the compass chip's digits. Labels now live in their own `#labels`, placed right before `#chips` with the same style, so chips, tiles, pads and the rack stay above every world label; the frame snapshot draws labels first too. The ally gate scene checks the order (same parent, labels first, same z-index, every label inside), mutant `labels-over-chips`.
 
 ## 9. Session 3 (worktree drift-gpu3, branch gpu3): stage 2, the belt
 
