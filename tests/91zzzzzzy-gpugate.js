@@ -213,7 +213,7 @@ TEST_SUITES.push(()=>suite("ворота ступени 1: после боя —
           const o=Cx[k];cm[k]=o;
           Cx[k]=function(){if(K.on&&GPU.cState===0){const w=k+":"+gateWho();K.dirt[w]=(K.dirt[w]||0)+1;}return o.apply(this,arguments);};}
       }
-      LEFT_CACHE={k:leftKey(),N:(typeof chronNow==="function")?chronNow():0,rows:[r0,r1]};
+      LEFT_CACHE={k:leftKey(),N:chronNow(),rows:[r0,r1]};
       sh.x=X;sh.y=Y;sh.vx=0;sh.vy=0;G.zoom=2;G.zoomT=null;
       frameBody(wallMs());
     }
