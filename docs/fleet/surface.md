@@ -11,9 +11,17 @@ gpuScene   sky (19ca, unchanged)
 2D         stars, sky bodies, clouds (19-mode-landing, frozen air)
 gpuOver #1 far ridges — one field, both layers (21e2 surfRidgesGpu)
 2D         hazeBand, far weather (frozen)
-gpuOver #2 near ground — chunk textures + one multiply field (21e2 surfGroundGpu); live grass stays 2D
-2D         everything that stands on the ground
+gpuOver #2 near ground — chunk textures + one multiply field (21e2 surfGroundGpu); live grass stays 2D;
+           the lower-third sky shade (surfShadeGpu) in the same pass
+2D         everything that stands on the ground (water, POI, deco, built, home, settlement, rocks,
+           lander, plants, beasts, walkers, deposits, astronaut)
+upload     #c → own texture (no composite); cast shadows drawn into pass #2, i.e. UNDER that 2D
+2D         labels (deferred list LBL), foreground, near weather, night, placesLit (11va), shafts, grade
 ```
+
+Why not a third `gpuOver` for the shadows: every `gpuOver` composite runs its front layer through the
+«2D lights» emission (`fsComp` → `emit`, 08b), so everything standing before it — saturated plants
+first — started to bloom at noon. An upload without a composite keeps them as they were.
 
 Without a device (`GPU.on` false — the Node tier) the old 2D tiles still draw, so the tests that read
 `G.surf.farA`/`tr.chunks` keep their meaning.
@@ -36,6 +44,14 @@ Without a device (`GPU.on` false — the Node tier) the old 2D tiles still draw,
    parallax, almost the air colour) drawn only by the GPU field (texture row 3); gullies down the fall
    line on the ridges; on the ground a warm skin of star colour on sun-facing slopes and a cold sky tint
    deepening with the cut (key warm, fill cold). The 2D path ignores the third ridge.
+5. **what stands casts a shadow** — `surfCastGpu`: after the astronaut, `#c` (everything standing) is
+   uploaded to an own texture and a multiply field (`fld.scast`) in the still-open ground pass projects
+   it onto the ground band: the occluder of a ground point at depth d is looked up at height d/B above
+   the edge, shifted by the star's side (long at dusk, short at noon), seven taps with a penumbra that
+   grows with height, cold sky colour instead of black, weak halos under an alpha threshold. World
+   labels (cave, mine, deposits, «ИЗУЧЕН») moved to a deferred list drawn after it, so plaques cast no
+   shadow. The lower-third shade moved into the ground pass (`fld.sshade`). The places ship's request
+   applied: `placesLit(p,tr,camx,camy)` after the night block. Third ridge toned down (lower, paler).
 
 ## Pairs (scratchpad, not in git)
 
@@ -47,11 +63,14 @@ Without a device (`GPU.on` false — the Node tier) the old 2D tiles still draw,
 - `pair-a4-noon.png`, `pair-a4-surface.png`, `pair-a3-night.png` — three planes of air behind the walker
   instead of two, the lit top of the ground glows warm while its body goes cold: the frame gets depth and
   a second temperature.
+- `pair-a9-fgrass.png`, `pair-a8-homeout.png` (+ `z-home.png` crop), `pair-a9-surface.png`,
+  `pair-a9-noon.png` — «before» here is the original base e4c3a56: a ghost range behind two ridges,
+  the house and the plants cast shadows on the ground band, warm lit ground skin.
 
 ## Requests outside the zone
 
 - `08b0-gpu-pipe.js` `GPU_FLD`: add `"fld.sridge":()=>GSR_WGSL` and `"fld.sground":()=>GSG_WGSL` so the
-  warm-up table can compile them.
+  warm-up table can compile them; likewise `"fld.sshade":()=>GSS_WGSL`, `"fld.scast":()=>GSC_WGSL`.
 - `19-mode-landing-ground.js` (landing ship): the chunk bake recipe inside `drawGround` is copied in
   `surfGroundGpu`; a shared `groundChunkPaint(tr,fill,line,pal)` there would keep the two from drifting.
 
@@ -59,9 +78,16 @@ Without a device (`GPU.on` false — the Node tier) the old 2D tiles still draw,
 
 - `pipe:fld.sridge|over`
 - `pipe:fld.sground|mul`
+- `pipe:fld.sshade|over`
+- `pipe:fld.scast|mul`
 - `pipe:kit.img|over` (already known)
 
 ## Open problems
+
+- The cast shadow reads `#c` at the moment after the astronaut: anything a later ship moves into that
+  span (a label, a halo above the alpha threshold) will cast a shadow — keep labels in `LBL`.
+- A `gpuScene()`/`gpuOver()` call by someone else between the ground and the astronaut ends pass #2;
+  `surfCastGpu` then does nothing (checked by `SURF_P2`), rather than drawing over the objects.
 
 - `surfGroundGpu` bakes chunks on a 2D canvas and uploads them (one upload per chunk); the kit's
   `gpuDrawChunks` could bake them on the GPU instead — not switched: the bake runs `drawGround`,

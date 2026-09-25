@@ -26,6 +26,8 @@ function drawSurfaceWorld(){
   /* единственный источник правды о камере на кадр: по нему же ввод пересчитывает
      тычок в мировую координату (15-input) */
   G.viewX=camx;G.viewY=camy;
+  /* подписи мира (плашки устья, шахты, залежей) — после падающих теней */
+  const LBL=[];
   /* дальний хребет не гасится прозрачностью, а выцветает в цвет неба: именно
      этим глаз мерит расстояние (19c-light). Двух слоёв достаточно, третий уже
      не читается, а стоит столько же. */
@@ -101,7 +103,7 @@ function drawSurfaceWorld(){
              ridge(rel*0.80*FARK,.052,seed^0x33C7,4),
              /* третья, самая дальняя — только для видеокарты (21e2): в 2D она стоила
                 бы столько же, сколько две, а там она почти даром */
-             ridge(rel*1.9*FARK,.034,seed^0x5E1D,5)];
+             ridge(rel*1.35*FARK,.038,seed^0x5E1D,5)];
     tr.farK=FARK;
   }
   const stpK=.55+.45*FARK;
@@ -120,14 +122,13 @@ function drawSurfaceWorld(){
   hazeBand(p,H*(SURF_HOR-.03),H*.09);
   /* дальние капли — ДО мира: они падают за грядой и за кораблём (M242) */
   drawWeather(p,camx,camy,"far");
-  {
-    const gf="rgb("+p.T.pal[3].map(v=>Math.round(v*.5)).join(",")+")",gl="rgba(200,240,246,.4)";
-    /* ломти — текстурами вторым gpuOver, порода под светом звезды (21e2) */
-    if(!surfGroundGpu(tr,camx,camy,gf,gl,p.T.pal))drawGround(tr,camx,camy,gf,gl,p.T.pal);
-  }
+  const gf="rgb("+p.T.pal[3].map(v=>Math.round(v*.5)).join(",")+")",gl="rgba(200,240,246,.4)";
+  /* ломти — текстурами вторым gpuOver, порода под светом звезды (21e2) */
+  const gpuGround=surfGroundGpu(tr,camx,camy,gf,gl,p.T.pal);
+  if(!gpuGround)drawGround(tr,camx,camy,gf,gl,p.T.pal);
   /* нижняя треть уходит в тень неба: ближний грунт темнее дальнего, и по
      этому глаз мерит глубину (хвост G2) */
-  {
+  if(!(gpuGround&&surfShadeGpu(p))){
     const sh=p.T.sky[1];
     const dg=ctx.createLinearGradient(0,H*(SURF_HOR+.04),0,H);
     dg.addColorStop(0,"rgba("+sh.join(",")+",0)");dg.addColorStop(1,"rgba("+sh.join(",")+",.30)");
@@ -262,13 +263,13 @@ function drawSurfaceWorld(){
         ctx.fillStyle=rock(.5,.95);ctx.beginPath();ctx.ellipse(sx,sy,r0*1.3,r0,rr()-.5,0,TAU);ctx.fill();
         ctx.fillStyle="rgba(255,255,255,.12)";ctx.beginPath();ctx.ellipse(sx-r0*.3,sy-r0*.5,r0*.7,r0*.35,0,0,TAU);ctx.fill();
       }
-      ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
       /* подпись входа на плашке, как у устья и залежей: стальная строка по
          дневному небу читалась с контрастом 2.2 (M444, прогон «посадка и
          залежь» под детектором текста) */
-      {const tw=ctx.measureText("ПЕЩЕРА").width;
+      LBL.push(()=>{ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+       const tw=ctx.measureText("ПЕЩЕРА").width;
        ctx.fillStyle="rgba(5,7,12,.72)";ctx.fillRect(cx-tw/2-5,cy-hh-24,tw+10,14);
-       ctx.fillStyle="rgba(176,196,208,.95)";ctx.fillText("ПЕЩЕРА",cx,cy-hh-14);}
+       ctx.fillStyle="rgba(176,196,208,.95)";ctx.fillText("ПЕЩЕРА",cx,cy-hh-14);});
     }
   }
   /* ── устье своей шахты (M234) ──
@@ -349,13 +350,13 @@ function drawSurfaceWorld(){
       }
       vStep(S.vMine,1);
       vDrawRope(S.vMine,sx,sy-22,iron(.8,.85),1.4);
-      ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
       /* подпись устья на плашке, как у залежей: стальная строка по дневному
          небу читалась с контрастом 1.9 (M444, прогон «шахта» под детектором
          текста) */
-      {const tw=ctx.measureText("ШАХТА").width;
+      LBL.push(()=>{ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+       const tw=ctx.measureText("ШАХТА").width;
        ctx.fillStyle="rgba(5,7,12,.72)";ctx.fillRect(sx-tw/2-5,sy-42,tw+10,14);
-       ctx.fillStyle="rgba(176,196,208,.95)";ctx.fillText("ШАХТА",sx,sy-32);}
+       ctx.fillStyle="rgba(176,196,208,.95)";ctx.fillText("ШАХТА",sx,sy-32);});
     }
   }
   const WT=(typeof waterOf==="function")?waterOf(tr,p):null;   /* в зеркале озера ничего не растёт (M325) */
@@ -381,10 +382,10 @@ function drawSurfaceWorld(){
     const x=b.x-camx;if(x<-50||x>W+50)continue;
     groundShadow(x,b.y-camy+1,b.r*.9,2.6);
     drawBeast(b,x,b.y-camy,false,0);
-    if(b.scanned){
+    if(b.scanned)LBL.push(()=>{
       ctx.fillStyle="rgba(127,230,216,.75)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
       ctx.fillText("ИЗУЧЕН",x,b.y-camy-b.r*2.6);
-    }
+    });
   }
   /* идущие — позади астронавта и поверх кустов: они на лугу, а не за ним (20c) */
   peepGhosts(camx,camy);
@@ -396,7 +397,7 @@ function drawSurfaceWorld(){
        и пульсирующий круг были значком интерфейса, приклеенным к миру */
     const near=clamp(1-Math.abs(d.x-S.x)/120,0,1);
     drawDeposit(x,y,d.res,d.left,near,d.x,p.T.pal[3]);
-    if(Math.abs(d.x-S.x)<70){
+    if(Math.abs(d.x-S.x)<70)LBL.push(()=>{
       ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
       /* соседние залежи разводим по высоте: рядом стоящие подписи наезжали друг
          на друга и читались как каша из двух названий */
@@ -407,11 +408,11 @@ function drawSurfaceWorld(){
       ctx.fillStyle="rgba(5,7,12,.62)";ctx.fillRect(x-tw/2-5,ly-10,tw+10,14);
       ctx.fillStyle=col;
       ctx.fillText(lbl,x,ly);
-    }
-    if(S.mining===d){
+    });
+    if(S.mining===d)LBL.push(()=>{
       ctx.fillStyle="rgba(0,0,0,.5)";ctx.fillRect(x-18,y-20,36,4);
       ctx.fillStyle=col;ctx.fillRect(x-18,y-20,36*clamp(d.prog,0,1),4);
-    }
+    });
   }
   /* астронавт рисуется по своей координате, а не в центре экрана: с инерцией
      и взглядом вперёд центр экрана — уже не он */
@@ -488,6 +489,10 @@ function drawSurfaceWorld(){
      должны остаться читаемыми, их виньетка касаться не должна */
   /* погода поверх мира, но под лучами и свёрткой: осадки идут перед игроком,
      а свет и цветокоррекция ложатся уже на всё вместе */
+  /* падающие тени всего, что уже стоит на #c: находки, формы, постройки, корабль,
+     кусты, звери, идущие, сам астронавт (21e2). Подписи — после: плашка тени не кладёт */
+  if(gpuGround)surfCastGpu(tr,p,camx,camy);
+  for(const f of LBL)f();
   drawForeground(tr,camx,camy,p);
   drawWeather(p,camx,camy,"near");
   /* ── ночь (хвост G12) ──
@@ -620,6 +625,7 @@ function drawSurfaceWorld(){
       ctx.restore();
     }
   }
+  placesLit(p,tr,camx,camy);   /* фонари мест светят ПОСЛЕ ночи (11va) */
   lightShafts(p);
   gradePass(p);
 }

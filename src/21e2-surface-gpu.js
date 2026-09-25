@@ -110,8 +110,8 @@ function surfRidgesGpu(tr,p,camx,camy,stpK){
   U[28]=(G.t||0)*.0012;
   /* самая дальняя гряда: выше и крупнее, почти в цвет воздуха, параллакс слабее */
   if(tr.farH[2]){
-    U[32]=camx*.12;U[33]=camy*.34+250;U[34]=tr.step*5.4*stpK;
-    const cC=SRG_RGB(hazeFar(p,.78));U[36]=cC[0];U[37]=cC[1];U[38]=cC[2];U[39]=.78;
+    U[32]=camx*.12;U[33]=camy*.34+215;U[34]=tr.step*5.4*stpK;
+    const cC=SRG_RGB(hazeFar(p,.85));U[36]=cC[0];U[37]=cC[1];U[38]=cC[2];U[39]=.85;
   }
   gpuField(pass,"sridge",GSR_WGSL,U,[HT]);
   return true;
@@ -203,7 +203,97 @@ function surfGroundGpu(tr,camx,camy,fill,line,pal){
   U[12]=sc[0]/ls;U[13]=sc[1]/ls;U[14]=sc[2]/ls;
   U[16]=am[0]/la;U[17]=am[1]/la;U[18]=am[2]/la;
   gpuField(pass,"sground",GSG_WGSL,U,[HT],{blend:"mul"});
+  SURF_P2=pass;
   /* трава живая — кланяется ветру, остаётся 2D поверх */
   drawGroundGrass(tr,camx,camy);
+  return true;
+}
+
+/* нижняя треть уходит в тень неба (хвост G2) — тем же градиентом, что 2D в 21e1,
+   но в проходе грунта: иначе полупрозрачная заливка на #c отбрасывала бы тень */
+const GSS_WGSL=`
+fn field(p:vec2f,uv:vec2f)->vec4f{
+  let y0=fu.v[0].x;let a=.30*clamp((p.y-y0)/max(fu.res.w-y0,1.),0.,1.);
+  return vec4f(fu.v[1].rgb*a,a);
+}`;
+const GSS=new Float32Array(8);
+function surfShadeGpu(p){
+  const pass=GPU.overPass;if(!pass)return false;
+  const sh=p.T.sky[1];
+  GSS[0]=H*(SURF_HOR+.04);GSS[4]=sh[0]/255;GSS[5]=sh[1]/255;GSS[6]=sh[2]/255;
+  gpuField(pass,"sshade",GSS_WGSL,GSS,[]);
+  return true;
+}
+
+/* ══════════════ падающие тени того, что стоит ══════════════
+   Всё, что стоит на земле (находки, формы, постройки, посёлок, корабль, кусты,
+   звери, астронавт), уже лежит на #c. Его копия (выгрузка без склейки — третий
+   gpuOver пустил бы весь мир через «огни 2D» и зажёг бы кусты) становится
+   картой заслонов, а тень кладётся в ещё открытый проход грунта — ПОД 2D: для точки грунта на глубине d под кромкой заслон
+   ищется на высоте t = d/B над кромкой, со сдвигом t·A от звезды — силуэт
+   ложится на полосу земли сплющенным и скошенным, длиннее к закату. Полутень
+   растёт с высотой заслона (семь выборок), тень холодная — цвет неба, а не
+   чёрный, и на сами предметы не ложится: они нарисованы поверх. Слабые полупрозрачные пятна (ореолы,
+   контактные тени) не заслоняют: порог по альфе. */
+const GSC_WGSL=`
+fn scH(i:i32)->f32{
+  let n=i32(fu.v[1].y);let t=textureLoad(t0,vec2i(clamp(i,0,n-1),2),0);
+  return fu.v[1].z+((t.r*255.*256.+t.g*255.)/8.-4096.);}
+fn scEdge(x:f32)->vec2f{
+  let st=fu.v[1].x;let fi=clamp((x+fu.v[0].x)/st,0.,fu.v[1].y-1.001);
+  let i=i32(floor(fi));let f=fi-floor(fi);let h0=scH(i);let h1=scH(i+1);
+  return vec2f(mix(h0,h1,f)-fu.v[0].y,(h1-h0)/st);}
+fn scOcc(q:vec2f)->f32{
+  let a=textureSampleLevel(t1,smp,q/fu.res.zw,0.).a;
+  return smoothstep(.35,.8,a)*step(0.,q.x)*step(q.x,fu.res.z)*step(0.,q.y);}
+fn field(p:vec2f,uv:vec2f)->vec4f{
+  let V=fu.v;let e=scEdge(p.x);
+  let px=fu.res.z/fu.res.x;let dd=p.y-e.x;
+  let cov=clamp(dd/(px*sqrt(1.+e.y*e.y))+.5,0.,1.);
+  if(cov<=0.){return vec4f(0.);}
+  let A=V[2].x;let B=V[2].y;
+  let t=max(dd,0.)/B;
+  if(t<2.5||t>V[2].w){return vec4f(0.);}
+  let x1=p.x-t*A;let e1=scEdge(x1).x;
+  let r=.8+t*.03;
+  var s=scOcc(vec2f(x1,e1-t))*2.;
+  s=s+scOcc(vec2f(x1-r,e1-t))+scOcc(vec2f(x1+r,e1-t));
+  s=s+scOcc(vec2f(x1-r*2.,e1-t+r))+scOcc(vec2f(x1+r*2.,e1-t-r));
+  s=s+scOcc(vec2f(x1,e1-t-r*1.5))+scOcc(vec2f(x1,e1-t+r*1.5));
+  s=s/8.;
+  /* у основания тень гуще, к концу бледнеет: свет обходит края */
+  s=s*V[2].z*(1.-smoothstep(V[2].w*.35,V[2].w,t));
+  let m=mix(vec3f(1.),V[3].rgb,clamp(s,0.,1.));
+  return vec4f(m*cov,cov);
+}`;
+const GSC=new Float32Array(16);
+let SURF_SHADOW=null,SURF_P2=null;
+function surfCastGpu(tr,p,camx,camy){
+  /* только в проходе грунта этого кадра: если между ним и нами кто-то открыл
+     свой слой, тень легла бы поверх предметов */
+  const pass=GPU.overPass;
+  if(!GPU.on||!pass||pass!==SURF_P2||!tr.farH)return false;
+  const day=dayK(p);if(day<.05)return false;
+  if(GPU.cState===0)return false;           /* на #c ничего не стоит — заслонять нечему */
+  /* снимок #c — очередью, сейчас: тень рисуется позже, при отправке кадра, а к тому
+     времени #c дорисован подписями и погодой */
+  const d=GPU.dev,U=GPUTextureUsage;
+  if(!SURF_SHADOW||SURF_SHADOW.dev!==d||SURF_SHADOW.w!==GPU.bw||SURF_SHADOW.h!==GPU.bh){
+    if(SURF_SHADOW&&SURF_SHADOW.dev===d)GPU.trash.push(SURF_SHADOW.tex);
+    const tex=d.createTexture({size:[GPU.bw,GPU.bh],format:"rgba8unorm",usage:U.TEXTURE_BINDING|U.COPY_DST|U.RENDER_ATTACHMENT});
+    SURF_SHADOW={dev:d,w:GPU.bw,h:GPU.bh,tex,view:tex.createView()};
+  }
+  d.queue.copyExternalImageToTexture({source:cvs},{texture:SURF_SHADOW.tex,premultipliedAlpha:true},[GPU.bw,GPU.bh]);
+  const HT=surfHeightTex(tr),F=GSC;F.fill(0);
+  F[0]=camx;F[1]=camy;F[4]=tr.step;F[5]=tr.N;F[6]=HT.mid;
+  /* звезда низко — тень длинная; сдвиг от звезды, сплющенная полоса земли */
+  const sx=SUN_DIR.x,sy=Math.min(-.12,SUN_DIR.y);
+  F[8]=clamp(-sx/-sy,-4.5,4.5)*.9;F[9]=.45;
+  const lu=c=>Math.max(1,.3*c[0]+.59*c[1]+.11*c[2]),sc=starRGB();
+  const vac=p.T.atm==="отсутствует";
+  F[10]=clamp(day*1.4,0,1)*(vac?.78:.62)*clamp(lu(sc)/150,0,1);F[11]=260;
+  const am=ambRGB(p),la=lu(am);
+  F[12]=am[0]/la*.42;F[13]=am[1]/la*.42;F[14]=am[2]/la*.42;
+  gpuField(pass,"scast",GSC_WGSL,F,[HT,SURF_SHADOW],{blend:"mul"});
   return true;
 }
