@@ -488,6 +488,33 @@ on interiors:
 The opaque column is as before, and the hotel's `sh` bake (a multiply on white) hashes the same. The suite checks
 the tables against the 2D formula on 48 combinations and that `cvk` writes no stencil. The old tables fail it.
 
+**Chips and world labels on `#ovl` (08bi).** Edge chips and world labels were small 2D canvases in the DOM
+(`#chips`, `#labels`): one canvas per chip or label, redrawn when its key changed, and each one paid style and
+composite cost. They are now one WebGPU canvas `#ovl` at the native DPR, placed after `#hud`. `#labels` stays
+between the two for the belt lamps only. The layer draws one pass inside `gpuHudFlush`, so it adds no queue
+submit of its own.
+- A primitive is 20 floats: a rect with exact coverage, a mask glyph from an atlas, or an analytic triangle (the
+  chip's arrow). Labels are queued before chips, so every chip lies above every label: the ×1.5 bug (an ally's
+  caption over the compass chip's digits) cannot come back. The gate checks the first primitive of the pass is a
+  label glyph, and mutant `labels-over-chips` swaps the order.
+- Text goes into an `r8` atlas of 4 layers of 1024², keyed by font, size, ¼-px phase and string; colour is not in
+  the key (masks are white, the colour is per primitive). A string splits into digit runs and other runs. Digits
+  are drawn glyph by glyph with the advance of «0», so a changing distance reuses ten masks. The first digit a
+  font meets warms all ten, and the string start snaps to a device pixel, so a moving label does not walk
+  through new phases.
+- The atlas evicts the layer that was touched longest ago (LRU by frame). A label or chip not seen for 600 frames
+  is forgotten. An empty layer is `display:none`, so the compositor does not blend it.
+- The cost: GPU pass 1.7 µs at 760 ×1 and 10.5 µs on the phone (390×844 ×2.625) by timestamps; JS 0.21–0.22 ms
+  a frame at 760 and 0.25 ms on the phone. The old DOM path cost 0.15 and 0.21 ms of JS only; its style and
+  composite work per canvas was not counted and is gone. Rasters happen only when new text appears: 11 at the
+  start at 760, 22 when a moon label enters the phone's view, then 0.
+- The pairs `pair_ovl_760.png`, `pair_ovl_phone.png` and `pair_ovl_phone_x3.png` (chips and a label ×3 against
+  HEAD) look the same.
+- Tests: `91zzzzzzy4` checks LRU on its own atlas (one eviction, no thrash) and flies 600 frames. It asserts no
+  string is rastered twice, rasters come only in frames with new text, the layer hides when empty and labels are
+  forgotten. The gate2d scene «фишки и подписи мира» asserts 0 2D calls, and its text raster is a column of its
+  own that must be 0 after 30 warm frames.
+
 ## Where I stopped (update on every commit)
 
 - **GPU canvas v1 (25.09, `gpu`).** `08ca-gpu-canvas.js`, brief in §G; the first port is the finds (17b), the pair
@@ -505,17 +532,16 @@ the tables against the 2D formula on 48 combinations and that `cvk` writes no st
   warm JS 17.3 → 12.0 ms.
 - **The profile of a bake is in (§G).** One GPU-canvas call costs 1–3.5 µs at ×1, bit-identical.
 - **`multiply` on a transparent destination is in (§G):** two draws, Δ ≤ 1 on flat destinations (HEAD: 248).
+- **Chips and world labels are on `#ovl` (§G):** 0 2D calls, rasters only on new text, GPU pass 1.7/10.5 µs.
 - **Next, in Контроль's order (25.09):**
-  0. #ovl (below, item 1).
-     Gauss weights on the CPU and σ > 4 downsampling only if blur passes on the phone take > 2 ms per bake;
-  1. chipDom and domLabel through the atlas. Numbers are built from cached glyphs; a steady flight rasters 0 strings
-     a frame; the atlas evicts (LRU); a 600-frame test; the text raster is a column of its own in gate2d;
-  2. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);
+  1. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);
+  2. `drawImage` from bake to bake at ss2: nearest when axis-aligned and 1:1, with a pair test;
   3. HUD fixes 1–5, plus:
      - find labels in table case and pushed apart;
      - a chip must not go under КАРТА/МЕНЮ/Фото, with an intersection check;
      - button plates must read over bright neon;
      - DECISIONS «no 2D».
+  Later: Gauss weights on the CPU and σ > 4 downsampling only if blur passes on the phone take > 2 ms per bake.
 
 - **Stage 1 caches (25.09, Контроль's order: station → zoom-following bakes → 25c → item 3).** Station master
   done (17c3, steady uploads 0, layers as in 2D); zoom-following bakes done (each size uploaded once, the way

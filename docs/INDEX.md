@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 620 · символов верхнего уровня: 6180
+Файлов: 622 · символов верхнего уровня: 6190
 
 ## СИМВОЛЫ
 
@@ -770,12 +770,9 @@ CHIP_POS                     src/17-mode-system.js:14
 CHIP_SPEED                   src/17-mode-system.js:21
 CHIP_T                       src/17-mode-system.js:15
 CHIP_TOUCH                   src/17-mode-system.js:18
-CHIPDOM                      src/08bh-gpu-hud.js:35
-chipDom                      src/08bh-gpu-hud.js:44-80
-chipDomBox                   src/08bh-gpu-hud.js:36-41
-chipDomEnd                   src/08bh-gpu-hud.js:159-161
-chipDomSnap                  src/08bh-gpu-hud.js:83-95
-chipDomSweep                 src/08bh-gpu-hud.js:163-169
+chipDom                      src/08bi-gpu-ovl.js:114-129
+chipDomSnap                  src/08bh-gpu-hud.js:35-40
+chipDomSweep                 src/08bh-gpu-hud.js:67-73
 chKing                       src/25n-chess.js:112-116
 chLegal                      src/25n-chess.js:191-195
 chMine                       src/25n-chess.js:38
@@ -1382,9 +1379,9 @@ dominoMove                   src/11af-domino.js:25-39
 dominoSettle                 src/11af-domino.js:40-56
 dominoStart                  src/11af-domino.js:14-21
 dominoTile                   src/11af-domino.js:13
-domLabel                     src/08bh-gpu-hud.js:114-146
-domLabelEnd                  src/08bh-gpu-hud.js:148-157
-domLabelId                   src/08bh-gpu-hud.js:113
+domLabel                     src/08bi-gpu-ovl.js:104-110
+domLabelEnd                  src/08bh-gpu-hud.js:55-64
+domLabelId                   src/08bh-gpu-hud.js:53
 DOMR                         src/15d-domread.js:17
 DOMR_ON                      src/15d-domread.js:16
 DOMR_SAVE                    src/15d-domread.js:18
@@ -1553,7 +1550,7 @@ drawSurface                  src/21e-surface-draw.js:277-291
 drawSurfaceHud               src/21e-surface-draw.js:21-115
 drawSurfaceWorld             src/21e1-surface-world.js:10-615
 drawSurvey                   src/12w-survey.js:63-89
-drawSysHud                   src/17-mode-system.js:706-984
+drawSysHud                   src/17-mode-system.js:706-983
 drawSysLane                  src/17g-sys-lane.js:108-134
 drawSysLaneShips             src/17g-sys-lane.js:163-191
 drawSysRail                  src/18f-rail-station.js:58-92
@@ -2018,10 +2015,12 @@ GATE_WARM                    tests/91zzzzzzy-gpugate.js:8
 GATE_WHY                     tests/91zzzzzl-gates.js:19
 GATE_ZB                      tests/91zzzzzzy-gpugate.js:13
 GATE_ZCAP                    tests/91zzzzzzy-gpugate.js:16
-GATE2D                       tests/91zzzzzzy3-gate2d.js:12-55
+GATE2D                       tests/91zzzzzzy3-gate2d.js:24-72
 GATE2D_DYRY                  tests/91zzzzzzy3-gate2d.js:11
-gateFind                     tests/91zzzzzzy-gpugate.js:242-290
-gateFlyScenes                tests/91zzzzzzy-gpugate.js:245-290
+GATE2D_TXT                   tests/91zzzzzzy3-gate2d.js:13
+gate2dChips                  tests/91zzzzzzy3-gate2d.js:15-23
+gateFind                     tests/91zzzzzzy-gpugate.js:242-287
+gateFlyScenes                tests/91zzzzzzy-gpugate.js:245-287
 gatePlace                    tests/91zzzzzzy-gpugate.js:31-35
 gateStand                    tests/91zzzzzzy-gpugate.js:22-30
 gateWho                      tests/91zzzzzzy-gpugate.js:19-21
@@ -2276,9 +2275,9 @@ gpuFrontClean                src/08c-gpu-kit.js:123-128
 gpuFrontCopy                 src/08b-gpu.js:551-553
 gpuFrontHook                 src/08c-gpu-kit.js:112-121
 gpuHaze                      src/08b-gpu.js:440
-gpuHud                       src/08bh-gpu-hud.js:14-17
-gpuHudDpr                    src/08bh-gpu-hud.js:12
-gpuHudFlush                  src/08bh-gpu-hud.js:20-33
+gpuHud                       src/08bh-gpu-hud.js:13-16
+gpuHudDpr                    src/08bh-gpu-hud.js:11
+gpuHudFlush                  src/08bh-gpu-hud.js:19-32
 gpuHullLight                 src/16ga-gpu-trail.js:367-386
 gpuImage                     src/08c-gpu-kit.js:209-222
 gpuKitU                      src/08c-gpu-kit.js:167-171
@@ -3098,8 +3097,8 @@ kpTake                       src/26e2-post.js:32-42
 kpTicket                     src/26e2-post.js:30
 kpWindow                     src/26e2-post.js:47-92
 labCount                     src/12h-relic.js:16-24
-LABDOM                       src/08bh-gpu-hud.js:101
-labDomBox                    src/08bh-gpu-hud.js:106-112
+LABDOM                       src/08bh-gpu-hud.js:43
+labDomBox                    src/08bh-gpu-hud.js:45-50
 labStaffed                   src/12h-relic.js:27-31
 labWorking                   src/12h-relic.js:32-42
 LAND_ARC                     src/07a-terrain.js:49
@@ -3881,6 +3880,17 @@ orderWin                     src/12aa-need.js:77
 ORE_KEYS                     src/02-world.js:128
 ORE_NODE_W                   src/23-mode-dig.js:12
 oreNode                      src/23-mode-dig.js:13-29
+ovAtlas                      src/08bi-gpu-ovl.js:52-71
+ovCanvas                     src/08bi-gpu-ovl.js:37-49
+ovFlush                      src/08bi-gpu-ovl.js:131-156
+OVL                          src/08bi-gpu-ovl.js:11
+OVL_N                        src/08bi-gpu-ovl.js:14
+OVL_PLATE                    src/08bi-gpu-ovl.js:113
+OVL_RUN                      src/08bi-gpu-ovl.js:76
+OVL_WGSL                     src/08bi-gpu-ovl.js:15
+ovNd                         src/08bi-gpu-ovl.js:35
+ovPush                       src/08bi-gpu-ovl.js:72-75
+ovText                       src/08bi-gpu-ovl.js:79-101
 ownerName                    src/12al1-toponym.js:14-18
 ownerOf                      src/13-combat.js:13
 packPart                     src/05-parts.js:465-472
@@ -5587,7 +5597,7 @@ sysRasterDrop                src/06-galaxy.js:23-31
 sysRasterTick                src/06-galaxy.js:33-45
 sysStyle                     src/16a-space.js:21-41
 sysTraffic                   src/17f-sys-traffic.js:11-38
-T                            tests/90a-tools.js:54-612
+T                            tests/90a-tools.js:54-615
 tab                          src/26-ui-station.js:3
 TAB_CH                       src/14a-cloud.js:21
 TAB_ID                       src/14a-cloud.js:20
@@ -6321,8 +6331,11 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/08b-gpu.js · 46 КБ
   · видеокарта: кадр рисует WebGPU (docs/DESIGN-gpu.md):1
 
-## src/08bh-gpu-hud.js · 12 КБ
+## src/08bh-gpu-hud.js · 5 КБ
   · слой приборов: #hud и фишки у кромки (ступень 1, docs/DESIGN-gpu.md §L.S):1
+
+## src/08bi-gpu-ovl.js · 13 КБ
+  · фишки у кромки и подписи мира — на видеокарте (docs/DESIGN-gpu.md §G, «Chips and labels»):1
 
 ## src/08c-gpu-kit.js · 26 КБ
   · набор для слоёв видеокарты (docs/DESIGN-gpu.md §4):1
@@ -8157,8 +8170,11 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzzzzzy2-gpu-canvas.js · 9 КБ
   · GPU-холст: запись команд и громкие дыры (08ca, docs/DESIGN-gpu.md «GPU canvas»):1
 
-## tests/91zzzzzzy3-gate2d.js · 7 КБ
+## tests/91zzzzzzy3-gate2d.js · 9 КБ
   · ворота «0 вызовов 2D» у перенесённых печей (GPU-3, DESIGN-gpu §G):1
+
+## tests/91zzzzzzy4-gpu-ovl.js · 4 КБ
+  · слой #ovl: фишки у кромки и подписи мира на видеокарте (08bi, docs/DESIGN-gpu.md §G):1
 
 ## tests/91zzzzzzz-hands.js · 14 КБ
   · руки игрока: судья — кадр:1

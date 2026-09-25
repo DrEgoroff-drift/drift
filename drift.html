@@ -10904,9 +10904,8 @@ if(typeof document!=="undefined"&&document.body)setTimeout(gpuInit,0);
    · #hud (GPU.ui) — то, что меняется редко или только под пальцем: стики, строка наблюдения,
      стойка. Кто рисует, сдаёт gpuHud(ключ, рисунок); в конце мира (gpuHudFlush) слой
      перерисовывается, только если строка ключей кадра не та, что в прошлый раз.
-   · фишки у кромки ездят за миром каждый кадр — это DOM: место и поворот стрелки двигает
-     композитор (transform), а свой маленький холст фишка перерисовывает, только когда сменилась
-     подпись или цвет. */
+   · фишки у кромки и подписи мира ездят за миром каждый кадр — их рисует видеокарта на свой
+     слой #ovl (08bi), без 2D. */
 function gpuHudDpr(){return Math.min(3,(typeof window!=="undefined"&&window.devicePixelRatio)||1);}
 /* рисунок слоя приборов: без видеокарты — на #c сразу, как раньше */
 function gpuHud(key,fn){
@@ -10927,121 +10926,29 @@ function gpuHudFlush(rack){
     GPU.uiWas=key!=="";GPU.hkey=key;
   }
   q.length=0;
-  domLabelEnd();
-}
-/* ── фишки у кромки ── */
-const CHIPDOM={box:null,m:new Map(),touched:false};
-function chipDomBox(){
-  if(CHIPDOM.box||typeof document==="undefined"||!document.body)return CHIPDOM.box;
-  const b=document.createElement("div");b.id="chips";
-  b.style.cssText="position:fixed;inset:0;pointer-events:none;overflow:hidden";
-  (GPU.ui||GPU.cv||cvs).after(b);return CHIPDOM.box=b;
-}
-/* фишка k в кадре: место (rx,ry) и размер (cw,ch) в мерке U, прозрачность, цвет, подпись,
-   сторона подписи, угол стрелки. Рисунок — как у 2D: плашка, волосяной обвод, стрелка, текст */
-function chipDom(k,rx,ry,cw,ch,A,col,label,onRight,ang,U){
-  /* без видеокарты мира нет, и фишкам не над чем висеть (Node-ярус, Chrome без WebGPU) */
-  if(!GPU.ok)return;
-  const box=chipDomBox();if(!box)return;
-  CHIPDOM.touched=true;
-  let e=CHIPDOM.m.get(k);
-  if(!e){
-    const d=document.createElement("div");d.style.cssText="position:absolute;left:0;top:0;transform-origin:0 0";
-    const cv=document.createElement("canvas");cv.style.cssText="position:absolute;left:0;top:0";
-    const ar=document.createElement("div");ar.style.cssText="position:absolute;clip-path:polygon(100% 50%,0 100%,0 0)";
-    d.appendChild(cv);d.appendChild(ar);box.appendChild(d);
-    e={d,cv,ar,sig:"",pos:"",op:"",rot:"",on:false};CHIPDOM.m.set(k,e);
-  }
-  e.used=true;
-  const nd=gpuHudDpr(),sig=label+"|"+col+"|"+(onRight?1:0)+"|"+Math.round(cw*U*nd)+"|"+Math.round(ch*U*nd)+"|"+U+"|"+nd;
-  if(sig!==e.sig){
-    e.sig=sig;const cv=e.cv,w=cw*U,h=ch*U;
-    cv.width=Math.max(1,Math.round(w*nd));cv.height=Math.max(1,Math.round(h*nd));
-    cv.style.width=cv.width/nd+"px";cv.style.height=cv.height/nd+"px";   /* ровно в пиксели устройства, как у подписей */
-    const g=cv.getContext("2d");g.setTransform(U*nd,0,0,U*nd,0,0);
-    g.fillStyle="rgba(5,7,12,.72)";g.fillRect(0,0,cw,ch);
-    g.strokeStyle=col;g.globalAlpha=.5;g.lineWidth=1;g.strokeRect(.5,.5,cw-1,ch-1);g.globalAlpha=1;
-    g.font="8px ui-monospace,monospace";g.fillStyle=col;g.textAlign=onRight?"right":"left";
-    g.fillText(label,onRight?cw-18:18,12);
-    /* стрелка: треугольник (6,0),(-4,4),(-4,-4) вокруг своей точки — 10×8 в мерке */
-    const a=e.ar.style;a.width=10*U+"px";a.height=8*U+"px";a.background=col;
-    a.left=((onRight?cw-8:8)-4)*U+"px";a.top=(ch/2-4)*U+"px";a.transformOrigin=4*U+"px "+4*U+"px";
-  }
-  const px=Math.round(rx*U*nd)/nd,py=Math.round(ry*U*nd)/nd;
-  const pos="translate("+px.toFixed(3)+"px,"+py.toFixed(3)+"px)";
-  if(pos!==e.pos){e.pos=pos;e.d.style.transform=pos;}
-  const op=A.toFixed(3);if(op!==e.op){e.op=op;e.d.style.opacity=op;}
-  const rot="rotate("+ang.toFixed(3)+"rad)";if(rot!==e.rot){e.rot=rot;e.ar.style.transform=rot;}
-  if(!e.on){e.on=true;e.d.style.display="";}
-  /* то же числами — для снимка кадра (chipDomSnap) */
-  e.x=px;e.y=py;e.w=e.cv.width/nd;e.h=e.cv.height/nd;e.A=A;e.ang=ang;e.col=col;e.U=U;e.ax=(onRight?cw-8:8)*U;e.ay=ch/2*U;
+  ovFlush();domLabelEnd();
 }
 /* снимок кадра (gpuTakeSnap): фишки поверх, как их кладёт композитор, — чтобы look(),
    детекторы и эталоны видели то же, что игрок. Платится только в момент снимка */
 function chipDomSnap(g,sc){
-  /* подписи мира — первыми: на экране они под фишками */
+  /* лампы кабины пояса (#labels, 24bc) — первыми: на экране они под слоем фишек */
   for(const e of LABDOM.m.values())if(e.on){g.globalAlpha=Math.min(1,e.A);g.drawImage(e.cv,e.x*sc,e.y*sc,e.w*sc,e.h*sc);}
-  for(const e of CHIPDOM.m.values()){
-    if(!e.on||!(e.A>0))continue;
-    g.save();g.globalAlpha=Math.min(1,e.A);
-    g.drawImage(e.cv,e.x*sc,e.y*sc,e.w*sc,e.h*sc);
-    g.translate((e.x+e.ax)*sc,(e.y+e.ay)*sc);g.rotate(e.ang);g.scale(e.U*sc,e.U*sc);
-    g.fillStyle=e.col;g.beginPath();g.moveTo(6,0);g.lineTo(-4,4);g.lineTo(-4,-4);g.closePath();g.fill();
-    g.restore();
-  }
   g.globalAlpha=1;
+  if(OVL.on&&OVL.cv)g.drawImage(OVL.cv,0,0,OVL.cv.width/ovNd()*sc,OVL.cv.height/ovNd()*sc);
 }
-/* ── подписи мира (имя станции, планет): ездят за миром, как фишки ──
-   Маленький холст на родном DPR с тем же fillText, что был на #c, — глифы те же;
-   перерисовка — только когда сменились текст, шрифт или цвет, место двигает transform.
-   Базовая линия берётся у ctx на момент вызова: y значит то же, что значил у fillText.
-   Без видеокарты — прямо на ctx, как раньше */
+/* ── слой #labels: свои холсты ламп кабины пояса (24bc) — до её переноса на видеокарту ──
+   Подписи мира (domLabel) — на #ovl (08bi) */
 const LABDOM={m:new Map(),id:new WeakMap(),n:0};
-/* ключ подписи для вещи без своего сида (контейнер): номер живёт рядом, не в самой вещи —
-   поле в объекте мира уехало бы в сейв */
-/* свой слой — сразу ПЕРЕД #chips: подпись мира лежит под интерфейсом, фишки и плитки выше неё
-   (в одном слое с фишками подпись, заведённая позже, ложилась поверх и склеивалась с ними) */
+/* свой слой — сразу за #hud, под #ovl: подпись лежит под фишками */
 function labDomBox(){
-  if(LABDOM.box||typeof document==="undefined"||!document.body)return LABDOM.box;
-  const c=chipDomBox();if(!c)return null;
+  if(LABDOM.box||typeof document==="undefined"||!document.body||!GPU.ok)return LABDOM.box;
   const b=document.createElement("div");b.id="labels";
   b.style.cssText="position:fixed;inset:0;pointer-events:none;overflow:hidden";
-  c.before(b);return LABDOM.box=b;
+  (GPU.ui||GPU.cv||cvs).after(b);return LABDOM.box=b;
 }
+/* ключ подписи для вещи без своего сида (контейнер): номер живёт рядом, не в самой вещи —
+   поле в объекте мира уехало бы в сейв */
 function domLabelId(o){let i=LABDOM.id.get(o);if(!i){i=++LABDOM.n;LABDOM.id.set(o,i);}return i;}
-function domLabel(k,x,y,text,font,col,align,al){
-  if(al==null)al=1;
-  if(!GPU.ok||!GPU.on){ctx.fillStyle=col;ctx.font=font;ctx.textAlign=align;ctx.globalAlpha=al;ctx.fillText(text,x,y);ctx.globalAlpha=1;return;}
-  const box=labDomBox();if(!box)return;
-  let e=LABDOM.m.get(k);
-  if(!e){
-    const cv=document.createElement("canvas");cv.style.cssText="position:absolute;left:0;top:0;transform-origin:0 0";
-    box.appendChild(cv);e={cv,sig:"",pos:"",on:false};LABDOM.m.set(k,e);
-  }
-  e.used=true;
-  const nd=gpuHudDpr(),bl=ctx.textBaseline,sig=text+"|"+font+"|"+col+"|"+align+"|"+bl+"|"+nd;
-  if(sig!==e.sig){
-    e.sig=sig;const g=e.cv.getContext("2d");
-    g.setTransform(1,0,0,1,0,0);g.font=font;g.textBaseline=bl;g.textAlign="left";
-    const m=g.measureText(text),tw=m.width;
-    const up=Math.ceil(m.actualBoundingBoxAscent||0)+2,dn=Math.ceil(m.actualBoundingBoxDescent||0)+2;
-    /* холст — целое число пикселей устройства, и CSS-размер ровно тот же: иначе
-       композитор тянет его на долю пикселя, и штрих глифа мылится и тускнеет вдвое */
-    const w=Math.ceil((Math.ceil(tw)+4)*nd)/nd,h=Math.ceil((up+dn)*nd)/nd;
-    e.cv.width=Math.max(1,Math.round(w*nd));e.cv.height=Math.max(1,Math.round(h*nd));
-    e.cv.style.width=e.cv.width/nd+"px";e.cv.style.height=e.cv.height/nd+"px";
-    g.setTransform(nd,0,0,nd,0,0);g.font=font;g.textBaseline=bl;g.textAlign="left";g.fillStyle=col;
-    g.fillText(text,2,up);
-    e.w=w;e.h=h;e.dx=(align==="center"?-tw/2:align==="right"||align==="end"?-tw:0)-2;e.dy=-up;
-  }
-  /* место — на целый пиксель устройства: шаг в пиксель на ходу тексту нормален, дробь — мыло */
-  e.x=Math.round((x+e.dx)*nd)/nd;e.y=Math.round((y+e.dy)*nd)/nd;
-  const pos="translate("+e.x.toFixed(3)+"px,"+e.y.toFixed(3)+"px)";
-  if(pos!==e.pos){e.pos=pos;e.cv.style.transform=pos;}
-  const op=al.toFixed(3);if(op!==e.op){e.op=op;e.cv.style.opacity=op;}
-  e.A=al;
-  if(!e.on){e.on=true;e.cv.style.display="";}
-}
 /* конец мира (gpuHudFlush): подписи, которых в кадре не было, — спрятать */
 function domLabelEnd(){
   for(const [k,e] of LABDOM.m){
@@ -11053,17 +10960,171 @@ function domLabelEnd(){
   }
   LABDOM.fl=true;
 }
-/* после фишек кадра: кого не было — спрятать */
-function chipDomEnd(){
-  for(const e of CHIPDOM.m.values()){if(!e.used&&e.on){e.on=false;e.d.style.display="none";}e.used=false;}
-}
-/* начало кадра: фишек в прошлом кадре не рисовали (другой режим, чистый кадр) — спрятать все */
+/* начало кадра: мир прошлого кадра не доходил до конца (другой режим, чистый кадр) — слой
+   фишек спрятать; очередь, брошенная посреди кадра, — долой */
 function chipDomSweep(){
-  if(!CHIPDOM.touched)for(const e of CHIPDOM.m.values()){if(e.on){e.on=false;e.d.style.display="none";}}
-  CHIPDOM.touched=false;
+  if(!OVL.fl&&OVL.on){OVL.on=false;OVL.cv.style.display="none";}
+  OVL.fl=false;OVL.lq.length=OVL.cq.length=0;
   /* мир прошлого кадра не доходил до конца (другой режим) — подписи тоже спрятать */
   if(!LABDOM.fl)for(const e of LABDOM.m.values()){if(e.on){e.on=false;e.cv.style.display="none";}}
   LABDOM.fl=false;
+}
+
+/* ══════════════ фишки у кромки и подписи мира — на видеокарте (docs/DESIGN-gpu.md §G, «Chips and labels») ══════════════
+   Один WebGPU-холст #ovl на родном DPR (как #hud: текст приборов резкий, правило 15/n), поверх #hud.
+   Кадр с фишками или подписями — один проход в кадровый энкодер: плашка и обвод — прямоугольники с
+   точным покрытием пикселя (то же сглаживание, что у 2D), стрелка — треугольник с аналитическим краем,
+   текст — маски r8 из своего атласа. Подписи ложатся первыми, фишки — поверх (как слои #labels/#chips).
+   Текст без растра в ровном полёте: строка режется на цифры и прочее; прочее («ЦИЦИИН · ») — одна
+   строка атласа, цифры — по глифу с шагом мерки «0» (у моноширинного он точный) и фазой ¼ пикселя
+   устройства; ширина для выравнивания — сумма мерок кусков, все из кэша. Атлас — 4 слоя 1024²,
+   вытесняется слой, которого дольше всех не касались. Нет фишек и подписей — слой спрятан
+   (display:none): композитор его не сводит */
+const OVL={cv:null,cx:null,dev:null,P:null,lq:[],cq:[],on:false,fl:false,fno:0,ras:0,led:null,
+  lab:new Map(),chip:new Map(),f:null,buf:null,bg:null,
+  A:{dev:null,tex:null,view:null,L:4,S:1024,pg:[],map:new Map(),cur:0,ev:0,thr:0}};
+const OVL_N=20;   /* чисел на примитив: рамка, цвет, (вид, слой, тексель), треугольник */
+const OVL_WGSL=`
+struct IO{@builtin(position) p:vec4f,@location(0) @interpolate(flat) b:vec4f,@location(1) @interpolate(flat) c:vec4f,
+  @location(2) @interpolate(flat) m:vec4f,@location(3) @interpolate(flat) t0:vec4f,@location(4) @interpolate(flat) t1:vec4f};
+@group(0) @binding(0) var<storage,read> Q:array<vec4f>;
+@group(0) @binding(1) var<uniform> S:vec4f;
+@group(0) @binding(2) var A:texture_2d_array<f32>;
+@vertex fn vs(@builtin(vertex_index) vi:u32,@builtin(instance_index) ii:u32)->IO{
+  let k=ii*5u;var o:IO;o.b=Q[k];o.c=Q[k+1u];o.m=Q[k+2u];o.t0=Q[k+3u];o.t1=Q[k+4u];
+  /* маска — ровно своя рамка (пиксель в пиксель); прямоугольник и треугольник — с пикселем запаса на край */
+  var r=o.b;if(o.m.x!=1.){r=vec4f(floor(o.b.xy)-1.,ceil(o.b.zw)+1.);}
+  let C=array<vec2f,6>(vec2f(0.,0.),vec2f(1.,0.),vec2f(0.,1.),vec2f(0.,1.),vec2f(1.,0.),vec2f(1.,1.));
+  let q=mix(r.xy,r.zw,C[vi]);o.p=vec4f(q.x/S.x*2.-1.,1.-q.y/S.y*2.,0.,1.);return o;}
+fn ed(a:vec2f,b:vec2f,p:vec2f)->f32{let d=b-a;return (d.x*(p.y-a.y)-d.y*(p.x-a.x))/max(length(d),1e-4);}
+@fragment fn fs(i:IO)->@location(0) vec4f{
+  let p=i.p.xy;var a=0.;
+  if(i.m.x<.5){a=clamp(min(p.x+.5,i.b.z)-max(p.x-.5,i.b.x),0.,1.)*clamp(min(p.y+.5,i.b.w)-max(p.y-.5,i.b.y),0.,1.);}
+  else if(i.m.x<1.5){a=textureLoad(A,vec2i(floor(p-i.b.xy)+i.m.zw),i32(i.m.y),0).r;}
+  else{let s=sign(ed(i.t0.xy,i.t0.zw,i.t1.xy));
+    a=clamp(min(ed(i.t0.xy,i.t0.zw,p),min(ed(i.t0.zw,i.t1.xy,p),ed(i.t1.xy,i.t0.xy,p)))*s+.5,0.,1.);}
+  return i.c*a;}`;
+function ovNd(){return OVL.cv&&W>0?OVL.cv.width/W:gpuHudDpr();}
+/* слой: создаётся при первой фишке, сразу после #hud (подписи кабины пояса, #labels, — между ними) */
+function ovCanvas(){
+  if(!GPU.ok||!GPU.dev||typeof document==="undefined"||!document.body)return null;
+  let c=OVL.cv;
+  if(!c){c=OVL.cv=document.createElement("canvas");c.id="ovl";
+    c.style.cssText="position:fixed;left:0;top:0;pointer-events:none;display:none";
+    ((typeof LABDOM!=="undefined"&&LABDOM.box)||GPU.ui||GPU.cv).after(c);}
+  if(OVL.dev!==GPU.dev){OVL.cx=c.getContext("webgpu");OVL.cx.configure({device:GPU.dev,format:GPU.fmt,alphaMode:"premultiplied"});
+    OVL.dev=GPU.dev;OVL.P=null;OVL.buf=null;OVL.bg=null;}
+  const nd=gpuHudDpr(),w=Math.max(2,Math.round(W*nd)),h=Math.max(2,Math.round(H*nd));
+  /* CSS-размер — ровно пиксели устройства: иначе композитор тянет слой на долю пикселя, и глиф мылится */
+  if(c.width!==w||c.height!==h){c.width=w;c.height=h;c.style.width=w/nd+"px";c.style.height=h/nd+"px";}
+  return c;
+}
+/* атлас масок: texture_2d_array r8, полки через пиксель; слой-жертва — самый давний по касанию,
+   и не тронутый в этом кадре (его маски уже в очереди прохода), пока такой есть */
+function ovAtlas(key,mk){
+  const A=OVL.A,d=GPU.dev;
+  if(A.dev!==d){A.dev=d;A.tex=d.createTexture({size:[A.S,A.S,A.L],format:"r8unorm",usage:GPUTextureUsage.TEXTURE_BINDING|GPUTextureUsage.COPY_DST});
+    A.view=A.tex.createView({dimension:"2d-array"});A.pg=[];for(let i=0;i<A.L;i++)A.pg.push({x:0,y:0,rh:0,last:-1,keys:[]});
+    A.map.clear();A.cur=0;OVL.bg=null;}
+  let e=A.map.get(key);if(e){A.pg[e.l].last=OVL.fno;return e;}
+  const r=mk();OVL.ras++;
+  if(r.w>A.S||r.h>A.S)throw gcNo("подпись крупнее "+A.S+" px");
+  const fit=p=>{if(p.x+r.w>A.S){p.x=0;p.y+=p.rh+1;p.rh=0;}return p.y+r.h<=A.S;};
+  let l=A.cur;
+  if(!fit(A.pg[l])){
+    l=A.pg.findIndex(p=>!p.keys.length);
+    if(l<0){let best=-1;for(let i=0;i<A.L;i++){const p=A.pg[i];if(i!==A.cur&&(best<0||p.last<A.pg[best].last))best=i;}
+      l=best;const p=A.pg[l];if(p.last===OVL.fno)A.thr++;
+      for(const k of p.keys)A.map.delete(k);Object.assign(p,{x:0,y:0,rh:0,keys:[]});A.ev++;}
+    A.cur=l;fit(A.pg[l]);}
+  const p=A.pg[l],x=p.x,y=p.y;p.x+=r.w+1;p.rh=Math.max(p.rh,r.h);p.last=OVL.fno;p.keys.push(key);
+  d.queue.writeTexture({texture:A.tex,origin:[x,y,l]},r.a,{bytesPerRow:r.w},[r.w,r.h]);
+  e={l,x,y,w:r.w,h:r.h,ox:r.ox,oy:r.oy};A.map.set(key,e);return e;
+}
+function ovPush(Q,x0,y0,x1,y1,c,m,l,tx,ty,t){
+  Q.push(x0,y0,x1,y1,c[0],c[1],c[2],c[3],m,l,tx,ty);
+  if(t)Q.push(t[0],t[1],t[2],t[3],t[4],t[5],0,0);else Q.push(0,0,0,0,0,0,0,0);
+}
+const OVL_RUN=/[0-9]+|[^0-9]+/g;
+/* строка в очередь Q: (x,y) — якорь в пикселях CSS по align и base, sc — масштаб шрифта (фишка — U).
+   Возвращает рамку в CSS: для проверок наложения */
+function ovText(Q,x,y,text,font,col,align,base,al,sc){
+  const nd=ovNd(),st=Object.assign({},GC_DEF,{font,textBaseline:base,textAlign:"left"}),c=gcColor(col),a=c[3]*al;
+  if(OVL.led){const m=/(\d+(?:\.\d+)?)px/.exec(font)||[0,0];OVL.led({s:text,px:+m[1],css:+m[1]*sc,main:true});}
+  const pm=[c[0]*a,c[1]*a,c[2]*a,a];
+  const d0=GC_GLYPHS.measure(st,"0"),adv=d0.width*sc,runs=text.match(OVL_RUN)||[];
+  let tw=0,up=0,dn=0;
+  for(const s of runs){const dg=s.charCodeAt(0)<58&&s.charCodeAt(0)>47,m=dg?d0:GC_GLYPHS.measure(st,s);
+    tw+=dg?adv*s.length:m.width*sc;up=Math.max(up,m.actualBoundingBoxAscent*sc);dn=Math.max(dn,m.actualBoundingBoxDescent*sc);}
+  /* начало строки — на целый пиксель устройства, как у прежних DOM-подписей: на ходу строка шагает
+     пикселем, а фазы цифр внутри неё постоянны — новой маски движение не просит */
+  const x0=Math.round((align==="center"?x-tw/2:(align==="right"||align==="end")?x-tw:x)*nd)/nd,iy=Math.round(y*nd),M=[nd*sc,0,0,nd*sc];
+  const put=(s,cx)=>{const X=cx*nd;let ix=Math.floor(X),ph=Math.round((X-ix)*4)/4;if(ph>=1){ix++;ph=0;}
+    const kb=font+"|"+base+"|"+M[0]+"|"+ph+"|",mk=g=>()=>GC_GLYPHS.raster(st,g,M,ph,0,null,undefined,"#fff");   /* маска — одна альфа, цвет не нужен */
+    /* цифра, которой нет, — все десять сразу: число меняется в полёте, а растр — только в первый раз */
+    if(s.length===1&&s>="0"&&s<="9"&&!OVL.A.map.has(kb+s))for(let g=0;g<10;g++)ovAtlas(kb+g,mk(String(g)));
+    const e=ovAtlas(kb+s,mk(s));
+    ovPush(Q,ix-e.ox,iy-e.oy,ix-e.ox+e.w,iy-e.oy+e.h,pm,1,e.l,e.x,e.y,null);};
+  let cx=x0;
+  for(const s of runs){
+    if(s.charCodeAt(0)<58&&s.charCodeAt(0)>47){for(let i=0;i<s.length;i++)put(s[i],cx+i*adv);cx+=adv*s.length;}
+    else{put(s,cx);cx+=GC_GLYPHS.measure(st,s).width*sc;}}
+  return {x0,x1:x0+tw,y0:y-up,y1:y+dn};
+}
+/* подпись мира k (имя станции, планеты, борта): y — как у fillText при нынешнем ctx.textBaseline.
+   Без видеокарты — прямо на ctx, как раньше */
+function domLabel(k,x,y,text,font,col,align,al){
+  if(al==null)al=1;
+  if(!GPU.ok||!GPU.on){ctx.fillStyle=col;ctx.font=font;ctx.textAlign=align;ctx.globalAlpha=al;ctx.fillText(text,x,y);ctx.globalAlpha=1;return;}
+  const r=ovText(OVL.lq,x,y,text,font,col,align,ctx.textBaseline,al,1);
+  let e=OVL.lab.get(k);if(!e)OVL.lab.set(k,e={on:false});
+  Object.assign(e,r,{fr:OVL.fno,A:al,s:text});
+}
+/* фишка k: место (rx,ry) и размер (cw,ch) в мерке U, прозрачность, цвет, подпись, сторона подписи,
+   угол стрелки. Рисунок — как у 2D: плашка, волосяной обвод, подпись, стрелка */
+const OVL_PLATE=[5/255*.72,7/255*.72,12/255*.72,.72];
+function chipDom(k,rx,ry,cw,ch,A,col,label,onRight,ang,U){
+  /* без видеокарты мира нет, и фишкам не над чем висеть (Node-ярус, Chrome без WebGPU) */
+  if(!GPU.ok||!GPU.on)return;
+  const nd=ovNd(),s=U*nd,X=Math.round(rx*s),Y=Math.round(ry*s),X1=X+cw*s,Y1=Y+ch*s,Q=OVL.cq;
+  const c=gcColor(col),ca=c[3]*A,pm=[c[0]*ca,c[1]*ca,c[2]*ca,ca],hb=pm.map(v=>v*.5);
+  ovPush(Q,X,Y,X1,Y1,OVL_PLATE.map(v=>v*A),0,0,0,0,null);
+  ovPush(Q,X,Y,X1,Y+s,hb,0,0,0,0,null);ovPush(Q,X,Y1-s,X1,Y1,hb,0,0,0,0,null);
+  ovPush(Q,X,Y+s,X+s,Y1-s,hb,0,0,0,0,null);ovPush(Q,X1-s,Y+s,X1,Y1-s,hb,0,0,0,0,null);
+  ovText(Q,X/nd+(onRight?cw-18:18)*U,Y/nd+12*U,label,"8px ui-monospace,monospace",col,onRight?"right":"left","alphabetic",A,U);
+  /* стрелка: треугольник (6,0),(−4,4),(−4,−4) вокруг своей точки, повёрнут на ang */
+  const ax=X+(onRight?cw-8:8)*s,ay=Y+ch/2*s,co=Math.cos(ang)*s,si=Math.sin(ang)*s,P=(u,v)=>[ax+u*co-v*si,ay+u*si+v*co];
+  const t=[...P(6,0),...P(-4,4),...P(-4,-4)];
+  ovPush(Q,Math.min(t[0],t[2],t[4]),Math.min(t[1],t[3],t[5]),Math.max(t[0],t[2],t[4]),Math.max(t[1],t[3],t[5]),pm,2,0,0,0,t);
+  let e=OVL.chip.get(k);if(!e)OVL.chip.set(k,e={on:false});
+  Object.assign(e,{fr:OVL.fno,x:X/nd,y:Y/nd,w:cw*U,h:ch*U,A,s:label});
+}
+/* конец мира (gpuHudFlush): всё, что кадр положил, — одним проходом; пусто — слой спрятать */
+function ovFlush(){
+  OVL.fl=true;
+  const n=(OVL.lq.length+OVL.cq.length)/OVL_N;
+  for(const M of [OVL.lab,OVL.chip])for(const [k,e] of M){e.on=e.fr===OVL.fno;if(OVL.fno-e.fr>600)M.delete(k);}
+  OVL.fno++;
+  const cv=n&&GPU.enc?ovCanvas():null;
+  if(!cv){OVL.lq.length=OVL.cq.length=0;if(OVL.on){OVL.on=false;OVL.cv.style.display="none";}return;}
+  const d=GPU.dev,need=n*OVL_N;
+  if(!OVL.f||OVL.f.length<need)OVL.f=new Float32Array(Math.max(need,OVL_N*64)*2);
+  OVL.f.set(OVL.lq,0);OVL.f.set(OVL.cq,OVL.lq.length);OVL.nl=OVL.lq.length/OVL_N;OVL.lq.length=OVL.cq.length=0;   /* подписи — под фишками */
+  if(!OVL.P){const m=d.createShaderModule({code:OVL_WGSL});
+    OVL.P=d.createRenderPipeline({layout:"auto",vertex:{module:m,entryPoint:"vs"},primitive:{topology:"triangle-list"},
+      fragment:{module:m,entryPoint:"fs",targets:[{format:GPU.fmt,blend:{color:{srcFactor:"one",dstFactor:"one-minus-src-alpha"},
+        alpha:{srcFactor:"one",dstFactor:"one-minus-src-alpha"}}}]}});
+    OVL.U=d.createBuffer({size:16,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});OVL.bg=null;}
+  if(!OVL.buf||OVL.buf.size<OVL.f.byteLength){if(OVL.buf)GPU.trash.push(OVL.buf);
+    OVL.buf=d.createBuffer({size:OVL.f.byteLength,usage:GPUBufferUsage.STORAGE|GPUBufferUsage.COPY_DST});OVL.bg=null;}
+  if(!OVL.A.tex)ovAtlas("",()=>({w:1,h:1,ox:0,oy:0,a:new Uint8Array(1)}));   /* атлас нужен привязке и без текста */
+  if(!OVL.bg)OVL.bg=d.createBindGroup({layout:OVL.P.getBindGroupLayout(0),entries:[{binding:0,resource:{buffer:OVL.buf}},
+    {binding:1,resource:{buffer:OVL.U}},{binding:2,resource:OVL.A.view}]});
+  d.queue.writeBuffer(OVL.buf,0,OVL.f,0,need);d.queue.writeBuffer(OVL.U,0,new Float32Array([cv.width,cv.height,0,0]));
+  const p=GPU.enc.beginRenderPass({colorAttachments:[{view:OVL.cx.getCurrentTexture().createView(),loadOp:"clear",storeOp:"store",
+    clearValue:{r:0,g:0,b:0,a:0}}],timestampWrites:gpuTs("ovl")});
+  p.setPipeline(OVL.P);p.setBindGroup(0,OVL.bg);p.draw(6,n);p.end();
+  if(!OVL.on){OVL.on=true;cv.style.display="";}
 }
 
 /* ══════════════ набор для слоёв видеокарты (docs/DESIGN-gpu.md §4) ══════════════
@@ -11430,11 +11491,13 @@ const GC_OPS={
   "source-atop":{c:["dst-alpha","one-minus-src-alpha"],a:["zero","one"]},
   "destination-over":{c:["one-minus-dst-alpha","one"],a:["one-minus-dst-alpha","one"]},
   "screen":{c:["one","one-minus-src"],a:["one","one-minus-src-alpha"]},
-  /* как mul набора: точно на непрозрачном приёмнике, на прозрачном темнее 2D */
-  "multiply":{c:["dst","one-minus-src-alpha"],a:["one","one-minus-src-alpha"]},
+  /* multiply — два вызова (Cs·Cb + Cs(1−ab) + Cb(1−as) одним смешением не собрать): первый (mul1) даёт
+     Cs·Cb + Cb(1−as) и оставляет альфу ab, второй (вот этот) добавляет Cs(1−ab) и as(1−ab) */
+  "multiply":{c:["one-minus-dst-alpha","one"],a:["one-minus-dst-alpha","one"]},
   "destination-in":{c:["zero","src-alpha"],a:["zero","src-alpha"],u:1},
   "source-in":{c:["dst-alpha","zero"],a:["dst-alpha","zero"],u:1},
   "copy":{c:["one","zero"],a:["one","zero"],u:1}};
+const GC_OPX={mul1:{c:["dst","one-minus-src-alpha"],a:["dst-alpha","one-minus-src-alpha"]}};   /* служебные смешения */
 const GC_MISS=[];   /* что просили и чего нет — тесты и стенд читают, кадр падает */
 function gcNo(what){GC_MISS.push(what);return new Error("GPU-холст: нет «"+what+"»");}
 
@@ -11750,6 +11813,7 @@ const GC_ST={
   crs:{f:{compare:"always",passOp:"replace"},rm:0xFF,wm:0xFF},
   out:{f:{compare:"equal"},rm:0xFF,wm:0,c:"none"},
   cov:{f:{compare:"not-equal",passOp:"zero"},rm:0x7F,wm:0x7F,c:"paint"},
+  cvk:{f:{compare:"not-equal"},rm:0x7F,wm:0,c:"paint"},
   img:{f:{compare:"equal"},rm:0x80,wm:0,c:"img"},
   imc:{f:{compare:"not-equal",passOp:"zero"},rm:0x7F,wm:0x7F,c:"img"},
   msk:{f:{compare:"equal"},rm:0x80,wm:0,c:"mask"},
@@ -11767,7 +11831,7 @@ function gcLay(){
 }
 function gcPipe(key){
   const c=GPU.lay["gc."+key];if(c)return c;
-  const [md,op]=key.split("|"),S=GC_ST[md],L=gcLay(),G=GC_OPS[op];
+  const [md,op]=key.split("|"),S=GC_ST[md],L=gcLay(),G=GC_OPS[op]||GC_OPX[op];
   const blend=G?{color:{srcFactor:G.c[0],dstFactor:G.c[1]},alpha:{srcFactor:G.a[0],dstFactor:G.a[1]}}:undefined;
   return GPU.lay["gc."+key]=GPU.dev.createRenderPipeline({layout:L.pl,
     vertex:{module:L.mod,entryPoint:"vs",buffers:[{arrayStride:20,attributes:[{shaderLocation:0,offset:0,format:"float32x2"},
@@ -11835,6 +11899,7 @@ function gpuBaked(M,key,w,h,draw,o){
   if(B)gpuBakeDrop(B);B=gpuBake(w,h,draw,o);if(B)M.set(key,B);return B;
 }
 function gpuBakeDrop(B){if(B&&B.tex){if(B.dev===GPU.dev)GPU.trash.push(B.tex);B.tex=B.view=null;}}
+let GC_VA=new Float32Array(1<<16);   /* вершины выпечки (x,y,краска,u,v) — общий растущий буфер */
 function gpuBakeRedo(B){
   const t0=wallMs(),{w,h}=B,k=B.o.ss||(w*h<=262144?2:1),g=new GcCtx(w,h,k),prev=ctx;
   ctx=g;try{B.draw(g);}finally{ctx=prev;}
@@ -11843,12 +11908,15 @@ function gpuBakeRedo(B){
   B.view=B.tex.createView();B.dev=d;
   const [ms,st,rs]=gcPoolSet("bake",W,H),TW=ms.width,TH=ms.height;
   /* вершины (x,y,краска,u,v), краски по 5 vec4, ленты градиентов, список вызовов */
-  const V=[],P=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],R=[],RI=new Map(),D=[],Q=[0,0,W,0,W,H,0,0,W,H,0,H];
+  let V=GC_VA,vn=0;const P=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],R=[],RI=new Map(),D=[],Q=[0,0,W,0,W,H,0,0,W,H,0,H];
   let DL=D;const SH=[];   /* DL — куда идут вызовы: основной проход или слой тени */
-  const put=(md,ref,v,pi,img)=>{const f=V.length/5;
-    if(img)for(let i=0;i<v.length;i+=4)V.push(v[i],v[i+1],pi,v[i+2],v[i+3]);
-    else for(let i=0;i<v.length;i+=2)V.push(v[i],v[i+1],pi,0,0);
-    if(v.length)DL.push({md,ref,f,n:V.length/5-f,img});};
+  const put=(md,ref,v,pi,img)=>{const f=vn/5,e=vn+(img?v.length/4:v.length/2)*5;
+    if(e>V.length){const A=new Float32Array(Math.max(e,V.length*2));A.set(V.subarray(0,vn));V=GC_VA=A;}
+    if(img)for(let i=0;i<v.length;i+=4){V[vn]=v[i];V[vn+1]=v[i+1];V[vn+2]=pi;V[vn+3]=v[i+2];V[vn+4]=v[i+3];vn+=5;}
+    else for(let i=0;i<v.length;i+=2){V[vn]=v[i];V[vn+1]=v[i+1];V[vn+2]=pi;V[vn+3]=0;V[vn+4]=0;vn+=5;}
+    if(!v.length)return;const n=vn/5-f;
+    if(md.endsWith("|multiply")){const m=md.slice(0,-9);DL.push({md:(m==="cov"?"cvk":m)+"|mul1",ref,f,n,img});}   /* первый не чистит трафарет */
+    DL.push({md,ref,f,n,img});};
   const box=v=>{let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
     for(let i=0;i<v.length;i+=2){x0=Math.min(x0,v[i]);x1=Math.max(x1,v[i]);y0=Math.min(y0,v[i+1]);y1=Math.max(y1,v[i+1]);}
     x0=Math.max(0,x0-1);y0=Math.max(0,y0-1);x1=Math.min(W,x1+1);y1=Math.min(H,y1+1);return [x0,y0,x1,y0,x1,y1,x0,y0,x1,y1,x0,y1];};
@@ -11903,7 +11971,7 @@ function gpuBakeRedo(B){
     ser={op:q0.op,clip:q0.clip,b:sh.b,x:sh.x,y:sh.y,c:sh.c,dx,dy,sg,R:Rr,F:[F],S:[bx(q0)],sd:[],x0,y0,x1,y1,img:{view:L0.dm,near:true}};
     DL=ser.sd;emit(q,"source-over");DL=D;
     ser.pi=P.length/20;P.push(...sh.c,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
-    ser.vf=V.length/5;put("shw|"+q0.op,0x80,new Array(24).fill(0),ser.pi,ser.img);};
+    ser.vf=vn/5;put("shw|"+q0.op,0x80,new Array(24).fill(0),ser.pi,ser.img);};
   for(const q of g._ops){clip(q.clip);if(q.sh)shade(q);else drew(q);emit(q,q.op);}
   close();
   /* слои тени — рамки одного атласа (08cc) */
@@ -11914,7 +11982,7 @@ function gpuBakeRedo(B){
   for(let i=20;i<P.length;i+=20)if(P[i+4])P[i+5]=(P[i+5]+.5)/rt.height;
   /* буферы: vb, pb, ub (0 — GU; 256 — доля resolve для нулевого мипа; 512 — единица для остальных) */
   const bu=GPUBufferUsage,u0=new Float32Array(132);u0.set([TW,TH,k,0]);u0.set([W/TW,H/TH,0,0],64);u0.set([1,1,0,0],128);
-  const vb=gcPoolBuf("vb",bu.VERTEX,new Float32Array(V.length?V:[0,0,0,0])),pb=gcPoolBuf("pb",bu.STORAGE,new Float32Array(P)),ub=gcPoolBuf("ub",bu.UNIFORM,u0);
+  const vb=gcPoolBuf("vb",bu.VERTEX,V.subarray(0,Math.max(vn,4))),pb=gcPoolBuf("pb",bu.STORAGE,new Float32Array(P)),ub=gcPoolBuf("ub",bu.UNIFORM,u0);
   const L=gcLay();let rv=L.dm;
   if(rt){const h=new Uint16Array(R.length*1024);
     R.forEach((r,i)=>{if(!r.h16){r.h16=new Uint16Array(1024);for(let j=0;j<1024;j++)r.h16[j]=f16(r[j]);}h.set(r.h16,i*1024);});d.queue.writeTexture({texture:rt},h,{bytesPerRow:2048},[256,R.length]);rv=rt.createView();}
@@ -11924,7 +11992,9 @@ function gpuBakeRedo(B){
       {binding:3,resource:GPU.S.lin},{binding:4,resource:q?q.view:L.dm},{binding:5,resource:nr?L.near:gpuMipSmp()}]});
     const e=M.get(key)||[];e[nr?1:0]=b;M.set(key,e);return b;};
   const enc=d.createCommandEncoder();
-  const run=(p,list,u)=>{p.setVertexBuffer(0,vb);for(const c of list){p.setPipeline(gcPipe(c.md));p.setBindGroup(0,bg(c.img,u));p.setStencilReference(c.ref);p.draw(c.n,1,c.f,0);}};
+  const run=(p,list,u)=>{p.setVertexBuffer(0,vb);let m=null,im=run,r=-1;   /* состояние — только когда меняется */
+    for(const c of list){if(c.md!==m)p.setPipeline(gcPipe(m=c.md));if(c.img!==im)p.setBindGroup(0,bg(im=c.img,u));
+      if(c.ref!==r)p.setStencilReference(r=c.ref);p.draw(c.n,1,c.f,0);}};
   B.shl=SH.length;if(SA)gcShadowPasses(enc,SH,SA,run);
   const ps=enc.beginRenderPass({colorAttachments:[{view:ms.createView(),resolveTarget:rs.createView(),
     loadOp:"clear",clearValue:{r:0,g:0,b:0,a:0},storeOp:"discard"}],
@@ -11938,6 +12008,7 @@ function gpuBakeRedo(B){
   down(rs.createView(),0,256);
   for(let i=1;i<B.n;i++)down(B.tex.createView({baseMipLevel:i-1,mipLevelCount:1}),i,512);
   d.queue.submit([enc.finish()]);
+  if(V.length>1<<22)GC_VA=new Float32Array(1<<16);   /* после огромной выпечки 16 МБ не держим */
   GPU.bakeN=(GPU.bakeN||0)+1;GPU.bakeMs=(GPU.bakeMs||0)+(wallMs()-t0);
 }
 
@@ -52586,7 +52657,7 @@ function drawSystem(){
      пиксели — её читает 15-input, который ни про какой zoom не знает. */
   if(!SHOT_CLEAN){                       /* на кадре заглавной приборов нет (M233) */
     const U=(typeof UIK==="number"&&UIK>0)?UIK:1;
-    /* фишки у кромки — DOM (08bh chipDom), каждый кадр: едут за миром */
+    /* фишки у кромки — слой #ovl (08bi chipDom), каждый кадр: едут за миром */
     withScale(U,()=>drawSysHud(v=>zx(v)/U,v=>zy(v)/U,sh,sys,U));
     /* стики под пальцами — в пикселях касания, не в мерке (M360); слой перерисовывается каждый
        кадр, пока палец на экране или след гаснет, иначе — только когда сменилась точка покоя */
@@ -52868,7 +52939,6 @@ function drawSysHud(zx,zy,sh,sys,U){
     /* плашка, обвод, стрелка и подпись — DOM-фишка (08bh): место двигает композитор */
     chipDom(m.k,rx,ry,cw,ch,AA,m.c,label,onRight,ang,U);
   }
-  chipDomEnd();
   /* цель пропала из кадра (тело за спиной, автопилот снят) — забыть её место,
      иначе через минуту чья-то новая фишка того же типа въедет с чужого края */
   for(const k of CHIP_POS.keys())if(!usedKeys[k])CHIP_POS.delete(k);
@@ -83766,7 +83836,7 @@ function ckptLampNeed(lamps){
    печётся внутрь холста, чтобы круг лёг туда же, куда 2D */
 function bhudLedDom(){return BHUD.rec;}
 function bhudLed(key,x,y,r,col){
-  const box=chipDomBox();if(!box)return;
+  const box=labDomBox();if(!box)return;
   const nd=gpuHudDpr(),R=r*3.4,s=Math.ceil((2*R+2)*nd)/nd;
   const x0=Math.floor((x-s/2)*nd)/nd,y0=Math.floor((y-s/2)*nd)/nd,fx=x-x0,fy=y-y0;
   const f64x=Math.round(fx*64),f64y=Math.round(fy*64);
