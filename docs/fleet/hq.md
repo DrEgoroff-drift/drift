@@ -81,7 +81,7 @@ Zone: `27c-ui-hq`, `27f-hq-room`, `27d-ui-cantina`, `27d-ui-cantina-props`, `12v
    into the pass. Still 2D on `#c`: the player (`drawAstronaut`, the life ship's zone — called as
    it is), his floor ellipse, the loot beacons, stencils, health bars, shots, the hurt flash.
 
-5. **Raid light, tuned close up** (`24aa1-raid-gpu`; test for kino and the New Year tree in the
+5. `06dade8` **Raid light, tuned close up** (`24aa1-raid-gpu`; test for kino and the New Year tree in the
    cantina bake). With the camera close (`raidfoe`) the torch burned the far wall and the
    pirate white and the beam in the air became a white block: the torch is weaker (1.35 → 1.05),
    the pool at the feet smaller, the in-air beam saturates softly, sprites take .82 of the light,
@@ -113,6 +113,33 @@ this branch's build. All 760×475 at DPR 1 on SwiftShader, 0 GPU errors, no page
   `pair-raidfoe.png`. Better: the helmet torch is a real light — it pools on the far wall, and
   its beam hangs in the air with dust; the cable runs and panels glow amber; the hangar is lit
   cold from its gate and warm from its lamps; pirates are lit and hidden by walls properly.
+
+## Left in the zone
+
+- Nothing of the four scenes is still painted with 2D except, by the brief: the raid's player
+  (`drawAstronaut`, switch to the life ship's GPU twin once merged), his floor ellipse, loot
+  beacons, stencils, health bars, shots and the hurt flash (2D on `#c`).
+- The cantina could be split like HQ (static shell once, people as sprites) if its re-bake every
+  third frame shows in a real profile.
+
+## For the design pass on a real GPU (per scene)
+
+SwiftShader pairs only prove the scenes draw and nothing got worse; judge these on the laptop/S23.
+
+- **HQ** (`hqfull`): cone strength and edge softness; whether faces under lamp + screen still
+  clip (shoulder at .72); the holo star's air glow in each star colour; dust density in the
+  cones; the warm duty pool under the table as the one warm accent; vignette at 1440 px.
+- **Cantina** (`late`, `tree`, `kino`): all five station types (`CANT_LIGHT` ambient per type —
+  outpost .42 may be too dark); neon glow reach on the wall; motes visible but not speckle; the
+  kino evening's dimmed lamps; whether the 3-frame re-bake cadence reads as stepping on the
+  fan / swaying yard lamps at 60 Hz.
+- **«Сорока»** (`wanderer`, with the panel hidden and shown): shaft haze density (1.7) — beams
+  should read as separate slats, not one fog; the planet in the slot (terminator, bands, air
+  rim) at DPR 2; the keeper under the green lamp not burning white; gold on the wall tops.
+- **Raid** (`raid`, `raidhangar`, `raidfoe`): torch strength close up and far; in-air beam
+  saturation; the hangar gate's cold flood (f 1.3) against the lamps; emissive lamp strips and
+  cable runs under bloom; the lit pirate sprites (billboard edge at alpha .3 cutout — check for
+  fringes); contact shadows under standing figures; fog colour at depth.
 
 ## Requests for files outside the zone
 
