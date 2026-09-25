@@ -2022,8 +2022,8 @@ GATE_WARM                    tests/91zzzzzzy-gpugate.js:8
 GATE_WHY                     tests/91zzzzzl-gates.js:19
 GATE_ZB                      tests/91zzzzzzy-gpugate.js:13
 GATE_ZCAP                    tests/91zzzzzzy-gpugate.js:16
-GATE2D                       tests/91zzzzzzy3-gate2d.js:12-98
-GATE2D_DYRY                  tests/91zzzzzzy3-gate2d.js:11
+GATE2D                       tests/91zzzzzzy3-gate2d.js:14-100
+GATE2D_DYRY                  tests/91zzzzzzy3-gate2d.js:13
 gateFind                     tests/91zzzzzzy-gpugate.js:270-318
 gateFlyScenes                tests/91zzzzzzy-gpugate.js:273-318
 gatePlace                    tests/91zzzzzzy-gpugate.js:31-35

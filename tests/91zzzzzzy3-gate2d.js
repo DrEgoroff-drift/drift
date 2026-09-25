@@ -8,7 +8,9 @@
    fleetShipAt грузит его мипы 2D-спуском (gpuMipTex). Уйдёт с переносом облика флота */
 /* текст v2 (08cb): маску строки растрит одна 2D-канва на всю игру (GC_GLYPHS.raster/.measure),
    раз на строку — так устроен текст GPU-холста, это его источник глифов, а не 2D печи */
-const GATE2D_DYRY=["fleetArtOf","fleetShipAt","raster","measure","_c","_set"];
+/* подписи мира (08bh domLabel) — DOM-холст с текстом 2D, перерисовка при смене строки; уйдут
+   шагом «стойка/#hud через #ovl». До того подпись имени станции — не печь станции */
+const GATE2D_DYRY=["fleetArtOf","fleetShipAt","raster","measure","_c","_set","domLabel"];
 const GATE2D=[
   {name:"полоса у дока (17g): бакены, ореолы, очередь",
    painters:["drawSysLane","drawSysLaneShips","laneShip","laneBuoySprite","laneBuoyPaint","laneGlowSprite","drawRushTraffic"],
