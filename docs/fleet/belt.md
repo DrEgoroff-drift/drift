@@ -82,6 +82,15 @@ the backdrop in one pass), then the cockpit part of G12.
      rock (mesh and mouth axis made).
    - Veins: albedo mix .75, glint ×.7 — under a blue star they read as neon lines before.
 
+4. **The flat landmarks are lit by the star** — `24bb` (`bpoiLit`, `BPOI_L`), `24ba` (sets the light).
+   Wreck, rig, station ring and druse stay kit silhouettes, but each shape is toned by where it sits in
+   the silhouette as a point of a sphere under the star: normal (u, √(1−u²)) against the direction to
+   the star in camera axes (z towards the viewer). Star behind you — the landmark is lit in the face;
+   ahead — only its edge towards the star is lit. Factor .6 + lam (the unlit side keeps the old tone,
+   so a landmark still reads as a landmark), plus a tenth of the star's colour on the lit side. Lights,
+   windows and the druse crystals glow on their own (flag `e`), untouched. Also checked: the direct
+   no-MSAA path at 411×742 ×1.5 (`scratchpad/pair-phone.png`, halved) — rocks lit, struts lit, 0 errors.
+
 ## Pairs (760×475 ×1, scratchpad of session 75d5c549, never in git)
 
 - `scratchpad/pair-belt.png` (`before-belt.png` | `after-belt.png`), the scene: `system` + `--js
@@ -104,6 +113,9 @@ the backdrop in one pass), then the cockpit part of G12.
   **Better:** the maw is a lit, tumbling rock with a pressed-in black mouth and warm lights on its rim,
   depth-sorted with the rocks around it, instead of a flat grey polygon with a sticker hole; veins calmer.
   `scratchpad/c5.png` — the maw ×3.
+- Commit 4: `scratchpad/pair4-poi.png` (`before-poi.png` | `after4-poi.png`, same staging). **Better:** the wreck and
+  the rig have a lit end and a shaded end from the star's side instead of one flat grey; `scratchpad/c6.png` ×2.
+- `scratchpad/pair-phone.png`: 411×742 ×1.5, `belt.js`, before | after (the direct gpuScene3D path).
 
 ## Requests for files outside the zone
 

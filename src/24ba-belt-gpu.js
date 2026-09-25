@@ -165,6 +165,8 @@ function beltGpuDraw(){
     vis.push({spr:q,px:p.x,py:p.y,sc,d:p.z});
   }
   vis.sort((p,q)=>q.d-p.d);
+  /* свет на ориентирах (24bb): направление на звезду в осях камеры, z — к зрителю */
+  {const L=BPOI_L;L.x=sdx;L.y=sdy;L.z=-(SUN[0]*fwd[0]+SUN[1]*fwd[1]+SUN[2]*fwd[2]);L.r=scol[0];L.g=scol[1];L.b=scol[2];}
   let g0=0;
   const flush=(g1,last)=>{
     B.ni=0;let nf=0;
