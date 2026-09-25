@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 613 · символов верхнего уровня: 6106
+Файлов: 615 · символов верхнего уровня: 6132
 
 ## СИМВОЛЫ
 
@@ -1452,7 +1452,7 @@ drawElevator                 src/20aa-poi-shapes.js:91-113
 drawExhaust                  src/16a-space.js:323
 drawFactory                  src/20aa-poi-shapes.js:378-462
 drawFactRoute                src/13b-occupy.js:285-338
-drawFindsSystem              src/17b-finds.js:240-288
+drawFindsSystem              src/17b-finds.js:238-286
 drawFlame                    src/03b-hull-paint.js:10-56
 drawFleet                    src/12ai-fleet.js:132-153
 drawFleetMap                 src/12ai-fleet.js:323-358
@@ -1809,7 +1809,7 @@ FIN_DEF                      src/21aa-base-rooms.js:184
 FIND_BUCKET                  src/17b-finds.js:17
 FIND_CACHE                   src/17b-finds.js:26
 FIND_KINDS                   src/17b-finds.js:19-25
-FIND_R                       src/17b-finds.js:232
+FIND_R                       src/17b-finds.js:234
 findBucket                   src/17b-finds.js:18
 findInteract                 src/17b-finds.js:139-175
 findLandingNear              src/17b-finds.js:131-138
@@ -1818,7 +1818,7 @@ findSeen                     src/17b-finds.js:54
 findShape                    src/17b-finds.js:183-231
 findsHere                    src/17b-finds.js:53
 findsIn                      src/17b-finds.js:27-52
-findSprite                   src/17b-finds.js:233-239
+findSprite                   src/17b-finds.js:235-237
 findTake                     src/17b-finds.js:58-128
 findTestSys                  tests/91x-finds.js:3-10
 FIRE_ALONE                   src/21a5-base-dir.js:121
@@ -2013,6 +2013,28 @@ gateZOwner                   tests/91zzzzzzy-gpugate.js:17
 GBM                          src/13z-gpu-combat.js:126
 GBM_WGSL                     src/13z-gpu-combat.js:127
 GBX_WGSL                     src/13z-gpu-combat.js:181
+GC_COL                       src/08ca-gpu-canvas.js:29
+GC_DEF                       src/08ca-gpu-canvas.js:75
+GC_KEYS                      src/08ca-gpu-canvas.js:79
+GC_MIP_WGSL                  src/08ca-gpu-canvas.js:306
+GC_MISS                      src/08ca-gpu-canvas.js:25
+GC_OPS                       src/08ca-gpu-canvas.js:13-56
+GC_ST                        src/08ca-gpu-canvas.js:314-333
+GC_TOL                       src/08ca-gpu-canvas.js:11
+GC_WGSL                      src/08ca-gpu-canvas.js:278
+gcColor                      src/08ca-gpu-canvas.js:37-56
+GcCtx                        src/08ca-gpu-canvas.js:83-222
+gcDash                       src/08ca-gpu-canvas.js:232-269
+gcFan                        src/08ca-gpu-canvas.js:228
+GcGrad                       src/08ca-gpu-canvas.js:61-74
+gcImg                        src/08ca-gpu-canvas.js:271-333
+gcInv                        src/08ca-gpu-canvas.js:57
+gcLay                        src/08ca-gpu-canvas.js:324-333
+gcMipPipe                    src/08ca-gpu-canvas.js:346
+gcNo                         src/08ca-gpu-canvas.js:26
+gcPipe                       src/08ca-gpu-canvas.js:334-345
+gcRectSp                     src/08ca-gpu-canvas.js:226
+gcStrokeLine                 src/08ca-gpu-canvas.js:245-269
 GEN                          src/13z-gpu-combat.js:16
 GEN_MINE                     src/13z-gpu-combat.js:63
 GEN_WGSL                     src/13z-gpu-combat.js:17
@@ -2187,6 +2209,10 @@ GPU_POST_WGSL                src/08b-gpu.js:88
 GPU_SHP_WGSL                 src/08c-gpu-kit.js:229
 GPU_WGSL_COMMON              src/08c-gpu-kit.js:129
 gpuArena                     src/08c-gpu-kit.js:149-159
+gpuBake                      src/08ca-gpu-canvas.js:355-360
+gpuBaked                     src/08ca-gpu-canvas.js:362-365
+gpuBakeDrop                  src/08ca-gpu-canvas.js:366
+gpuBakeRedo                  src/08ca-gpu-canvas.js:367-434
 gpuBargeBody                 src/12l-barge.js:559-563
 gpuBind                      src/08c-gpu-kit.js:35-41
 gpuBloom                     src/08b-gpu.js:605-612
@@ -6253,6 +6279,9 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/08c-gpu-kit.js · 25 КБ
   · набор для слоёв видеокарты (docs/DESIGN-gpu.md §4):1
 
+## src/08ca-gpu-canvas.js · 33 КБ
+  · GPU-холст: 2D-контекст, что рисует видеокартой (docs/DESIGN-gpu.md, «GPU canvas»):1
+
 ## src/09-audio.js · 18 КБ
   · звук: чистый синтез, ни одного файла:1
 
@@ -8064,6 +8093,9 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## tests/91zzzzzzy1-gpugate-belt.js · 5 КБ
   · ворота ступени 2: пояс без #c (docs/DESIGN-gpu.md, Stage 2):1
+
+## tests/91zzzzzzy2-gpu-canvas.js · 4 КБ
+  · GPU-холст: запись команд и громкие дыры (08ca, docs/DESIGN-gpu.md «GPU canvas»):1
 
 ## tests/91zzzzzzz-hands.js · 14 КБ
   · руки игрока: судья — кадр:1

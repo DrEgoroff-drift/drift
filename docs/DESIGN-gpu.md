@@ -237,7 +237,55 @@ Then hulls (item 2) by the same «explicit emission» path.
 
 The phone frame budget does not grow: GPU ≤ 12 ms.
 
+## G. The GPU canvas — every 2D canvas goes (the author, 25.09)
+
+«2D-канвы — их надо все вырезать и заменять на наш новый движок». The 83–183 ms hitch at the hotel and the
+fleet was Skia rastering first-time bakes in the GPU process, `copyExternalImageToTexture` for every mip level,
+and the rate limiter on hidden 2D canvases. The cure is not a faster 2D path but none: a bake draws through
+`src/08ca-gpu-canvas.js`, a CanvasRenderingContext2D subset that records commands and renders them on the GPU.
+
+**API v1 (this commit).**
+
+| call | what |
+|---|---|
+| `gpuBake(w, h, draw, {ss, mips})` → `B` | runs `draw(g)` with the global `ctx` swapped to `g` (brushes that paint into `ctx` port untouched), renders one pass into an `rgba8unorm` texture with mips made on the GPU. `B = {tex, view, w, h, n, dev}` drops into `gpuImage` / `gpuLitSprite` wherever a `gpuMipTex` master went. `ss` = draw that many times larger and box it down (default 2 up to 512², else 1); `mips:false` = one level. No device (Node, `gpuNone`) → `null`: there is no 2D path for bakes any more |
+| `gpuBaked(Map, key, w, h, draw, o)` | the cache: returns the bake, re-bakes with the same `draw` after a device loss |
+| `gpuBakeDrop(B)` | frees the texture (trash, next frame) |
+| `g.canvas.width/height`, `save/restore/reset`, `setTransform(6 or obj)/getTransform/resetTransform/transform/translate/rotate/scale` | as 2D; `getTransform` returns `{a..f}` |
+| `beginPath/moveTo/lineTo/closePath/rect/roundRect/arc/arcTo/ellipse/quadraticCurveTo/bezierCurveTo` | points are transformed at construction (as 2D); curves flattened to 0.2 px |
+| `fill(rule)/stroke()/clip(rule)/fillRect/strokeRect/clearRect` | fill = stencil winding (nonzero/evenodd) + cover; stroke = extruded in user space with the CTM of `stroke()` (non-uniform scale right), joins miter/round/bevel + `miterLimit`, caps butt/round/square, `setLineDash/lineDashOffset`, a stroke under 1 px is drawn 1 px wide at alpha × width (Skia's hairline); `clip` = the stencil's top bit, nested, undone by `restore` |
+| `fillStyle/strokeStyle` | a CSS colour (hex, rgb[a], hsl[a], the common names), `createLinearGradient`, `createRadialGradient` (two-point conical, stops mixed unpremultiplied like Chrome) |
+| `globalAlpha`, `globalCompositeOperation` | source-over, lighter, destination-out, source-atop, destination-over, screen, multiply (exact on an opaque backdrop, like the kit's `mul`), destination-in / source-in / copy (unbounded: cleared outside the shape) |
+| `drawImage(B, 3 / 5 / 9 args)` | from a bake (copy or a cut of the texture), trilinear; `imageSmoothingEnabled=false` = nearest. A 2D canvas is still accepted as a source while the ports run (it uploads, and the gate sees it) |
+
+Antialiasing is MSAA 4× on a stencil8 + colour target, and with `ss` 2 that is 16 samples a pixel, the count of
+Skia's raster. Mips: one GPU pass per level, a 2×2 box, the level count of `gpuMipTex`.
+
+**What it cannot do — loud.** `getImageData`, `putImageData`, `createImageData`, `createPattern`,
+`createConicGradient`, `isPointInPath/Stroke`, `Path2D` arguments, `filter` ≠ none, a shadow (`shadowBlur` or an
+offset with a visible `shadowColor`), composite ops overlay / saturation / the rest, text (`fillText`,
+`strokeText`, `measureText`) until v2. Each throws `Error("GPU-холст: нет «…»")` and lands in `GC_MISS`: in play
+the frame guard names it («СБОЙ · …»), in a suite the suite goes red. No silent skip anywhere.
+
+**v2 (next): text and shadow.** A glyph atlas behind one function (the glyph source — a) a 2D canvas once at
+load or b) an in-game font — is the author's pick, the atlas does not care); `measureText` with the same metrics
+as 2D, because signs, neon and the cockpit lay out through it; fonts ui-monospace, sans-serif, bold.
+`shadowBlur/shadowColor` as a real blur pass over the bake's shadow layer (neon's tube glow, hotel windows,
+Чебурек). **v3:** pixels (`getImageData/putImageData` of the planets) go to a generator shader — GPU-3's.
+
+**The first port: finds (17b).** `findSprite(k)` is `gpuBaked` over the unchanged `findShape`. Against a 2D bake
+of the same shape (288², read back): mean |Δ| 0.03 of 255 per channel, 8–27 pixels of 82 944 differ by more
+than 24 (edge samples), coverage 0.997–1.000. Twenty bakes (4 kinds × 5), each to `onSubmittedWorkDone`, desktop
+headless: 2D + `gpuMipTex` 243–284 ms, 16 ms main-thread JS, **140 uploads**; the GPU canvas 170–188 ms, 7–12 ms
+JS, **0 uploads**. The whole-frame pair at 760 is identical to the eye (max Δ 5, mean 0.01). The ×4 throttled
+figure is for the phone run with the hotel, where the hitch lives. Suite «GPU-холст: запись, цвет, дыры громко»
+(Node and Chrome) guards the recording and the loud holes.
+
 ## Where I stopped (update on every commit)
+
+- **GPU canvas v1 (25.09, `gpu`).** `08ca-gpu-canvas.js`, brief in §G; the first port is the finds (17b), the pair
+  `pair_finds_760.png` in the session's scratchpad (identical, 0 uploads). Next: v2 (text atlas, shadow blur), then
+  Контроль's HUD fixes 1–5 + DECISIONS «no 2D», then merge gpu3 to e1eef97.
 
 - **Stage 1 caches (25.09, Контроль's order: station → zoom-following bakes → 25c → item 3).** Station master
   done (17c3, steady uploads 0, layers as in 2D); zoom-following bakes done (each size uploaded once, the way
