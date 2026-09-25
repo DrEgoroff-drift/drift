@@ -55,3 +55,33 @@ TEST_SUITES.push(()=>suite("рубка: кисти пишутся в GPU-хол�
   ok(hits.every(h=>h.x>=0&&h.x+h.w<=760&&h.y>=0&&h.y+h.h<=300),"и все — в пределах канвы");
   ok(hits.some(h=>h.id===sel),"выбранный — среди них");
 }));
+TEST_SUITES.push(()=>suite("кантина: зал пишется в GPU-холст; без устройства пустая кисть даёт попадания",()=>{
+  resetWorld();
+  const st=G.sys.station;if(st){G.ship.x=st.x+40;G.ship.y=st.y;}
+  G.st=G.st||{stype:"trade"};
+  const list=[genMgr(4,["cmd"]),genMgr(5,["sci"])];
+  const k=240/200,W2=760/k;
+  for(const ty of ["trade","indust","yard","sci","outpost"]){
+    G.st.stype=ty;
+    let hits=[];
+    const r=hqRec(760,240,g=>{g.scale(k,k);hits=cantRoomBody(g,W2,200,list,list[0].id,null,[],null);});
+    eq(r.err,"","зал «"+ty+"»: GPU-холст умеет всё, что просит кисть");
+    ok(hits.some(h=>h.id==="counter")&&list.every(m=>hits.some(h=>h.id===m.id)),"зал «"+ty+"»: стойка и оба кандидата — точки нажатия");
+    const {LT,xs}=cantLamps(W2);
+    eq(xs.length,LT.n,"зал «"+ty+"»: ламп столько, сколько велит планировка света");
+    const u=cantLitUni(W2,200,k);
+    ok(Array.from(u).every(Number.isFinite),"зал «"+ty+"»: числа света конечны");
+  }
+  G.st.stype="trade";
+  const cn={width:760,height:240,__dpr:1,getContext(){return null;}};
+  let hits=null,err="";
+  try{hits=drawCantinaRoom(cn,list,null,null,[],null);}catch(e){err=e.message;}
+  eq(err,"","кантина без устройства не падает");
+  ok(hits.some(h=>h.id==="counter"),"стойка — точка нажатия");
+  ok(list.every(m=>hits.some(h=>h.id===m.id&&h.w>0&&h.h>0)),"у каждого кандидата — попадание в пикселях канвы");
+  /* пустая кисть отвечает на всё: вызов, свойство, градиент, мерка */
+  const g=RPG_NULL.createLinearGradient(0,0,1,1);g.addColorStop(0,"#fff");
+  eq(RPG_NULL.measureText("слово").width,0,"мерка пустой кисти — ноль");
+  RPG_NULL.fillStyle="#fff";
+  eq(RPG_NULL.fillRect(0,0,1,1),RPG_NOP_R,"вызов пустой кисти отвечает пустым ответом");
+}));

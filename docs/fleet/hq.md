@@ -8,7 +8,7 @@ Zone: `27c-ui-hq`, `27f-hq-room`, `27d-ui-cantina`, `27d-ui-cantina-props`, `12v
 
 ## Commits
 
-1. **HQ room on the GPU** (`27f1-room-gpu`, `27f-hq-room`). HQ's room canvas lives in a DOM panel
+1. `5cf43e3` **HQ room on the GPU** (`27f1-room-gpu`, `27f-hq-room`). HQ's room canvas lives in a DOM panel
    with its own rAF, outside the world frame, so it gets a small panel renderer of its own
    (`27f1`): the panel `<canvas>` is configured as a WebGPU canvas on the shared device
    (`rgba16float`, so the kit's own `kit.img` / `kit.shp` / field pipelines draw into it as they are),
@@ -31,6 +31,20 @@ Zone: `27c-ui-hq`, `27f-hq-room`, `27d-ui-cantina`, `27d-ui-cantina-props`, `12v
    and gains an optional `part` ("legs"/"top") for the sprites; its other callers (11w, 27e) are
    untouched.
 
+2. **Cantina on the GPU** (`27d-ui-cantina`, `27c-ui-hq`). Same panel renderer. The cantina's
+   animations are spread through every layer (patrons and the barkeep breathe, the fan turns, the
+   view blinks, the neon winks, the yard's lamps sway, the barkeep's bubble fades), so the room is
+   one GPU-canvas bake re-made every `CANT_EVERY`=3 panel frames (slow motion reads smooth) and at
+   once when the selection, the candidates, the deals or the bubble change. Lamp cones, floor
+   pools, the gaps between lamps, dust and the vignette left the brush for the light pass
+   (`CANT_LIT_WGSL`): the per-station light plan (`CANT_LIGHT`, was a table inside the body) gives
+   lamps with falloff and crisp top-bright cones, warm pools on the bar top and on the floor, a
+   cold ambient so the warm lamps are the accent, the sign's neon glowing on the wall in the
+   accent colour (winking with the sign), the window's cold spill, the shadow under the bar's
+   overhang and at its foot, sparse motes in the cones, a highlight shoulder, grain and dither;
+   the kino evening dims the lamps. Without a device the body runs against a null brush
+   (`RPG_NULL`, `27f1`) only to get the hits. `cantinaScene` hands the real canvas over.
+
 ## Pairs (scratchpad, never in git)
 
 Scratchpad: `/tmp/claude-0/-home-user-drift/b8476022-0b61-5bc5-baac-2bed83b71aa9/scratchpad/`.
@@ -43,6 +57,9 @@ this branch's build. All 760×475 at DPR 1 on SwiftShader, 0 GPU errors, no page
   lamps glare and throw crisp cones with dust in them, corners and the spaces between stations
   fall into dark, the holo star glows in the air, the screens colour their niches, a warm pool
   sits under the table.
+
+- Cantina (`late`): `pair-late.png`. Better: the lamps have cones with edges and warm pools on the
+  bar and the floor, the sign's neon lights its wall, the window is a cold counterpoint.
 
 ## Requests for files outside the zone
 
@@ -58,6 +75,7 @@ All created lazily today (they land in `GPU_PIPES.lazy`). Recipes to add in `08b
 | key | recipe |
 |---|---|
 | `pipe:fld.hqlit\|over` | `GPU_FLD["fld.hqlit"]=()=>RPG_WGSL+HQ_LIT_WGSL` |
+| `pipe:fld.cantlit\|over` | `GPU_FLD["fld.cantlit"]=()=>RPG_WGSL+CANT_LIT_WGSL` |
 
 The panel reuses `pipe:kit.img|over`, `pipe:kit.img|add`, `pipe:kit.shp|over`, `pipe:kit.shp|add`
 as they are (same code, same `rgba16float` target).
