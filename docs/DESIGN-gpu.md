@@ -432,6 +432,18 @@ The phone frame budget does not grow: GPU ≤ 12 ms.
   finds nobody. Pair `cutfl_was/now.png` (760, Z 1.2, the lane with its fleet), sheet `mipsheet.png` (crop
   290,630–440,740 ×3): Laplacian sd 24.9 → 23.5, luma 22.4 → 22.6; per ship −7…−10 %, the rest of the gap is the
   2D lamps' `emit()` glow.
+  `#c` zero fixes (Контроль on abc79be). The gate is a test: `tests/91zzzzzzy-gpugate.js` (browser tier, needs
+  the GPU) runs 40 warm + 60 real `frameBody` frames on pass 1b's stand and asserts `#c` uploads 0, submits
+  exactly 60, baked-canvas uploads 0 (the station is the named exception until its step), and names by stack
+  whoever draws on an empty `#c` (dirt.js moved inside). Without the exception it goes red on «3×
+  gpuCanvasTex<gpuLitSprite<gpuStation». Fleet sharpness: the 2D «was» is sharp because it draws the ×3 sprite
+  with plain bilinear — aliased; level 0 on the GPU matches it (24.8 vs 24.9), an honest 4-tap area average is
+  softer (22.1). So a master is sampled one step finer than the screen (`GPU_MIP_GS` .6) with an unsharp mask
+  between two mip levels, c = s(l) + .9·(s(l) − s(l+1)) clamped (`GPU_MIP_SH`): both taps are filtered, so no
+  ripple. Laplacian sd per ship was → now: 47.8 → 49.1, 57.8 → 58.2, 48.7 → 49.8, whole crop 24.9 → 25.3. Zoom
+  series Z 1.00…1.28 (8 shots) against plain trilinear: the ratio stays 1.09–1.16 per ship, ±3 % frame to
+  frame — the bumps are geometry, the mask adds no ripple. Lamps: fleet nav/window lights and lane buoy lamps
+  are explicit emission, the dot painted plus a narrow added halo (2.2–2.6 of the dot's radius, gain .45).
 - Brief of **L4 k/n — the shock ring and the exhaust haze bend the backdrop, never a hull** (Контроль 24.09): no
   hull, own or pirate, sprite or 2D, is cut into bands; an RGB fringe on the backdrop only. Done (08b/08c): the
   scene's alpha became the hull mask — every blend keeps it (`GPU_KEEP_A`), the lit sprite (`gst`: pirates,

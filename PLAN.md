@@ -37,6 +37,8 @@ numbers; the picture only no worse. Physics, seeds, the save and QUANT stay unto
     gate (Контроль on 85a858c, phone ×1.5 Z 2.2, 2D → GPU: body V>.6 px 2583 → 7887, S .33 → .22, hue 18° → 30°,
     red rim px 285 → 33; flame orange px 2718 → 450, halo S .38 → .29): at ×1.5 and 760, body S ≥ was, V>.6
     count within ±25 %, red rim ≥ 80 %; flame orange ≥ 80 %, colour from `makerFlame`; keep 85a858c's sharpness;
+    lights of fleet ships and lane buoys are explicit emission (rule 16/n): the dot painted, a narrow added halo
+    at the thing (2–3 of its radii; `FLEET_HALO`, `LANE_HALO`) — judged with the flame in the same pair;
   - pirates, missiles and combat effects;
   - the caches: the station art rebaked on the move (a new 408² canvas about every 15 frames — a mipped master,
     what lives on top as shapes); the zoom-following bakes (hotel, billboard, neon, Cheburek) as masters, a zoom

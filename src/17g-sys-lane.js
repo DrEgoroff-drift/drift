@@ -92,7 +92,7 @@ function laneLampCol(by){
   return (MF&&MF.col)?MF.col:[255,190,110];
 }
 /* огонь бакена: ореол кладётся краской, как в 2D — сложение выжигало клетку огня в белое */
-const LANE_GLOW=1;
+const LANE_GLOW=1,LANE_HALO=.45;
 function drawSysLane(zx,zy,Z){
   const sys=G.sys;if(!sys)return;
   const P=sysLane(sys);if(!P||!P.buoys.length)return;
@@ -109,7 +109,7 @@ function drawSysLane(zx,zy,Z){
   const na=Math.atan2(P.uy,P.ux)+Math.PI/2;       /* бакен стоит поперёк полосы */
   /* на видеокарте: бакены одной пачкой, ореол огня краской, лампа — точкой */
   const pass=gpuScene();
-  if(pass){const B=[],Gl=[],Lp=[],lc=mixc(col,[255,255,255],.5);
+  if(pass){const B=[],Gl=[],Lp=[],Lh=[],lc=mixc(col,[255,255,255],.5);
     for(const b of P.buoys){
       const x=zx(b.x),y=zy(b.y);
       if(x<-40||x>W+40||y<-40||y>H+40)continue;
@@ -117,10 +117,11 @@ function drawSysLane(zx,zy,Z){
       const lx=x+Math.cos(na-Math.PI/2)*11.5*s,ly=y+Math.sin(na-Math.PI/2)*11.5*s;
       B.push({x,y,w:R*2,h:R*2,rot:na});
       Gl.push({x:lx,y:ly,w:r*2,h:r*2,a:(.35+.65*k)*LANE_GLOW});
-      Lp.push([1,lx,ly,Math.max(1,1.3*s),0,0,0,lc[0],lc[1],lc[2],.5+.5*k]);}
+      Lp.push([1,lx,ly,Math.max(1,1.3*s),0,0,0,lc[0],lc[1],lc[2],.5+.5*k]);
+      Lh.push([1,lx,ly,.7*s,0,0,2.6*s,lc[0],lc[1],lc[2],(.5+.5*k)*LANE_HALO]);}
     gpuImage(pass,gpuMipTex(sp),B);
     gpuImage(pass,gpuMipTex(glow),Gl);
-    gpuShapes(pass,Lp);
+    gpuShapes(pass,Lp);gpuShapes(pass,Lh,{blend:"add"});   /* лампа — явная эмиссия, узкий ореол */
     return;}
   for(const b of P.buoys){
     const x=zx(b.x),y=zy(b.y);
