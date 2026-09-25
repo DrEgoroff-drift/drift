@@ -418,7 +418,7 @@ beltDots                     src/17c-system-draw.js:89-94
 beltFwd                      src/24-mode-belt.js:144-147
 beltGpuAdj                   src/24ba-belt-gpu.js:65-73
 beltGpuDraw                  src/24ba-belt-gpu.js:74-270
-beltHudPush                  src/24bc-belt-hud.js:85-91
+beltHudPush                  src/24bc-belt-hud.js:92-98
 beltIcy                      src/24-mode-belt.js:70
 beltPoiGpu                   src/24bb-belt-poi-gpu.js:19-100
 beltPoiMouthTex              src/24bb-belt-poi-gpu.js:8-18
@@ -435,7 +435,7 @@ BGPU_SKY                     src/24ba-belt-gpu.js:37
 BGPU_U                       src/24ba-belt-gpu.js:61
 bHazard                      src/21aa-base-rooms.js:289-295
 BHUD                         src/24bc-belt-hud.js:10
-bhudKey                      src/24bc-belt-hud.js:50-83
+bhudKey                      src/24bc-belt-hud.js:50-90
 bhudLed                      src/24bc-belt-hud.js:16-40
 bhudLedDom                   src/24bc-belt-hud.js:15
 bhudLeds                     src/24bc-belt-hud.js:42-47
@@ -8071,7 +8071,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzzzzzy-gpugate.js · 23 КБ
   · ворота ступени 1: ровный полёт без #c (docs/DESIGN-gpu.md, Stage 1):1
 
-## tests/91zzzzzzy1-gpugate-belt.js · 11 КБ
+## tests/91zzzzzzy1-gpugate-belt.js · 12 КБ
   · ворота ступени 2: пояс без #c (docs/DESIGN-gpu.md, Stage 2):1
 
 ## tests/91zzzzzzz-hands.js · 14 КБ

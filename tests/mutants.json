@@ -52,11 +52,15 @@
    "kill":"ворота ступени 2",
    "why":"ориентиры пояса вернулись на #c поверх сцены — и всплывают над камнями, за которыми стоят"},
   {"name":"belt-hud-2d","file":"src/24ba-belt-gpu.js",
-   "find":"beltHudPush\\(b,proj,fwd,st\\);","replace":"drawGlassHUD(b,proj,fwd,st);drawCockpit(b,st);",
+   "find":"beltHudPush\\(b,proj,fwd,st,bas\\);","replace":"drawGlassHUD(b,proj,fwd,st);drawCockpit(b,st);",
    "kill":"ворота ступени 2",
    "why":"кабина и стекло пояса вернулись на #c — и #c снова копируется в видеокарту каждый кадр"},
   {"name":"belt-led-hud","file":"src/25-cockpit.js",
    "find":"if\\(ledDom\\){","replace":"if(false){",
    "kill":"ворота ступени 2",
-   "why":"лампы стоек моргают на слое приборов — кабина перерисовывается и в покое"}
+   "why":"лампы стоек моргают на слое приборов — кабина перерисовывается и в покое"},
+  {"name":"belt-hud-key-fuel","file":"src/24bc-belt-hud.js",
+   "find":"k\\.push\\(q\\(G\\.fuel/st\\.fuelMax,1024\\),","replace":"k.push(",
+   "kill":"ключ кабины пояса",
+   "why":"ключ кабины забыл топливо — полоска ТОПЛ стоит, пока не сменится что-то другое"}
 ]

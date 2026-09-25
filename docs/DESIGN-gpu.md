@@ -1211,7 +1211,7 @@ and `lookFrame` (28y:49/326) — none in gameplay.
   max|Δ| 25 in the maw crop. gpu errs 0.
 - **Belt cockpit and glass on `#hud` (Контроль 25.09, stage 2 item 2).** The border as agreed: the cockpit and
   the glass symbols are interface, so they go on the `#hud` layer (08bh `gpuHud`) at native DPR, rastered only
-  on change; 25c is not touched. The key is not a hand list: every frame the painter runs into a recording
+  on change; 25c is not touched. The key was first not a hand list (replaced by the hand key, next line): every frame the painter runs into a recording
   context (24bc, a Proxy that logs calls and properties, coordinates at 1/16 px, angles at 1/4096 rad, text
   measured by a real context) and the layer redraws only when the log differs — no state can be missed, and
   needles creeping under a sixteenth of a pixel do not ask for a raster. The painter is pure (no `rnd`, no
@@ -1223,3 +1223,15 @@ and `lookFrame` (28y:49/326) — none in gameplay.
   glyph edges, mean +0.7 — the cockpit no longer goes through the post). 390×844 ×2.625: the panel's
   needles and text sharp, top strip mean +2–3. Left: the node holder's swing and crown pulse (only with a
   node fitted) still redraw the layer while they move.
+- **Belt cockpit key by inputs; the recorder moved to the gate (Контроль 25.09).** Measured at 4× CPU
+  throttling, 411×742 ×1.5: the recording key cost 26–30 ms and ~430 KB of garbage per frame, about three times
+  the draw it guarded. Now `bhudKey` (24bc) is a hand list of the painter's inputs, like the 25c pod signature:
+  basis and angles at 1/16384, speed and velocity direction, lock and progress, hit, fuel/hull/cargo, the radar
+  points at 1/16 px, the board lamps, the node holder, the grips. The pod signature (`instrRead`, the dearest
+  input) is read every 4th frame: a needle may lag up to three frames, any other change redraws with fresh ones.
+  The recorder is now the oracle in gate `91zzzzzzy1`: no frames, each of 22 steps changes one input by hand
+  (camera by the 24ba formula), and a changed call log with the same key fails — «протокол сменился ⇒ ключ
+  сменился». Mutant `belt-hud-key-fuel` (key without fuel) dies on step «топливо»; `belt-hud-2d` re-aimed at
+  the new call. Cost against the direct 2D draw, same throttling (loaded machine, absolute ms inflated): at rest
+  push 10–12 → 3.1–3.3 ms, frame 83–89 → 57–61 ms, cockpit garbage 38–39 → 29 KB/frame; while moving the layer
+  redraws every frame, frame 123–413 → 102–360 ms, garbage 41–66 → 64–109 KB (key plus raster).

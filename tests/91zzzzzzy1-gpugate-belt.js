@@ -114,53 +114,57 @@ TEST_SUITES.push(()=>suite("ворота ступени 2: ключ кабины
   if(!ok(GPU.ok,"видеокарта есть — без неё ключ не нужен"))return;
   resetWorld();
   if(!ok(bgateStand(),"нашлась система с поясом"))return;
-  const run0=G.running,loop0=LOOP_OFF,hp=beltHudPush,ip=instrPanel,ts=tapeStrip;
-  let cap=null;const bad=[];let changed=0,steps=0;
+  const run0=G.running,loop0=LOOP_OFF,ip=instrPanel,ts=tapeStrip,ps=instrPodSig;
+  const bad=[];let changed=0,steps=0;
   const kz={};for(const k in keys)if(typeof keys[k]==="boolean")kz[k]=keys[k];
   try{
-    beltHudPush=function(b,p,f,s,bas){cap=[b,p,f,s,bas];return hp.apply(this,arguments);};
     instrPanel=function(){BORC.mute++;try{return ip.apply(this,arguments);}finally{BORC.mute--;}};
     tapeStrip=function(){BORC.mute++;try{return ts.apply(this,arguments);}finally{BORC.mute--;}};
+    /* панель и лента молчат в протоколе — пусть молчат и в ключе: их подпись ползёт с лентой
+       и прятала бы забытый вход (смена ключа «за компанию») */
+    instrPodSig=()=>"pod";BHUD.pod="";
     G.running=true;LOOP_OFF=false;
-    const rest=()=>{const b=G.belt;b.vx=b.vy=b.vz=0;b.avYaw=b.avPitch=0;};
+    for(const k in kz)keys[k]=false;
+    for(let i=0;i<20;i++){const b=G.belt;b.vx=b.vy=b.vz=0;b.avYaw=b.avPitch=0;frameBody(wallMs());}
+    /* дальше кадров нет: шаг меняет состояние руками, камера — та же формула, что в 24ba.
+       Ни физики, ни часов — между шагами меняется только то, что поменял шаг */
     const snap=()=>{
-      const [b,p,f,s,bas]=cap,c0=ctx;BORC.log.length=0;
-      try{ctx=borcRecorder();BHUD.rec=true;drawGlassHUD(b,p,f,s);drawCockpit(b,s);}finally{BHUD.rec=false;ctx=c0;}
-      return {log:BORC.log.join(";"),key:bhudKey(b,f,s,bas)};
+      const b=G.belt,st=stat(),bas=beltBasis(b),fwd=bas.fwd,right=bas.right,up=bas.up,F=Math.min(W,H)*.95;
+      const proj=(px,py,pz)=>{const vx=px-b.x,vy=py-b.y,vz=pz-b.z,zc=vx*fwd[0]+vy*fwd[1]+vz*fwd[2];if(zc<2)return null;
+        return {x:W/2+(vx*right[0]+vy*right[1]+vz*right[2])*F/zc,y:H/2-(vx*up[0]+vy*up[1]+vz*up[2])*F/zc,z:zc};};
+      const c0=ctx;BORC.log.length=0;
+      try{ctx=borcRecorder();BHUD.rec=true;drawGlassHUD(b,proj,fwd,st);drawCockpit(b,st);}finally{BHUD.rec=false;ctx=c0;}
+      BHUD.pod="";
+      return {log:BORC.log.join(";"),key:bhudKey(b,fwd,st,bas)};
     };
     const front=()=>{const b=G.belt,B=beltBasis(b);let best=null,bd=1e9;
       for(const a of b.ast){const dx=a.x-b.x,dy=a.y-b.y,dz=a.z-b.z,z=dx*B.fwd[0]+dy*B.fwd[1]+dz*B.fwd[2],d=Math.hypot(dx,dy,dz);
         if(z>d*.8&&d<bd){bd=d;best=a;}}return best;};
-    const STEPS=[["покой",()=>{}],["рыскание",()=>{G.belt.yaw+=.05;}],["тангаж",()=>{G.belt.pitch+=.05;}],
-      ["крен",()=>{G.belt.roll=(G.belt.roll||0)+.05;}],["ход",()=>{G.belt.vx=.6;}],
-      ["цель",()=>{G.belt.lock=front();}],["добыча",()=>{G.belt.prog=.5;}],
-      ["остаток",()=>{const L=G.belt.lock;if(L)L.left=Math.max(1,L.left-1);}],["без цели",()=>{G.belt.lock=null;G.belt.prog=0;}],
+    const B=()=>G.belt;
+    const STEPS=[["покой",()=>{}],["рыскание",()=>{B().yaw+=.05;}],["тангаж",()=>{B().pitch+=.05;}],
+      ["крен",()=>{B().roll=(B().roll||0)+.05;}],["ход",()=>{B().vx=.6;}],["сдвиг",()=>{B().x+=40;}],
+      ["цель",()=>{B().lock=front();}],["добыча",()=>{B().prog=.5;}],
+      ["остаток",()=>{const L=B().lock;if(L)L.left=Math.max(1,L.left-1);}],["без цели",()=>{B().lock=null;B().prog=0;}],
       ["топливо",()=>{G.fuel*=.8;}],["корпус",()=>{G.hull*=.8;}],["трюм",()=>{G.cargo[RES_KEYS[0]]=(G.cargo[RES_KEYS[0]]||0)+3;}],
-      ["удар",()=>{G.belt.hit=10;}],["тяга",()=>{keys.thrust=true;}],["тормоз",()=>{keys.thrust=false;keys.brake=true;}],
+      ["удар",()=>{B().hit=10;}],["удар гаснет",()=>{B().hit=4;}],["сближение",()=>{B().near=60;}],
+      ["тяга",()=>{keys.thrust=true;}],["тормоз",()=>{keys.thrust=false;keys.brake=true;}],
       ["резак",()=>{keys.brake=false;keys.act=true;}],["огонь",()=>{keys.act=false;keys.fire=true;}],
-      ["рукоять",()=>{keys.fire=false;G.belt.avYaw=.03;G.belt.avPitch=-.02;}]];
-    for(const k in kz)keys[k]=false;
-    for(let i=0;i<20;i++){rest();frameBody(wallMs());}
+      ["рукоять",()=>{keys.fire=false;B().avYaw=.03;B().avPitch=-.02;}],["покой",()=>{}]];
     let prev=snap();
     for(const [name,fn] of STEPS){
-      /* шаг и три кадра покоя после него: и сам шаг, и то, что за ним тянется (удар гаснет) */
-      for(let j=0;j<4;j++){
-        rest();if(j===0)fn();
-        frameBody(wallMs());if(G.mode!=="belt")break;
-        const cur=snap();steps++;
-        if(cur.log!==prev.log){changed++;if(cur.key===prev.key)bad.push(name+(j?" +"+j:""));}
-        prev=cur;
-      }
-      if(G.mode!=="belt")break;
+      fn();const cur=snap();steps++;
+      if(cur.log!==prev.log){changed++;if(cur.key===prev.key)bad.push(name);}
+      else if(cur.key!==prev.key&&name==="покой")bad.push("ключ сменился без смены рисунка");
+      prev=cur;
     }
   }catch(e){ok(false,"упал: "+e.message);}
   finally{
-    beltHudPush=hp;instrPanel=ip;tapeStrip=ts;
+    instrPanel=ip;tapeStrip=ts;instrPodSig=ps;BHUD.pod="";
     for(const k in kz)keys[k]=kz[k];
     G.running=run0;LOOP_OFF=loop0;
   }
   eq(G.mode,"belt","все шаги прошли в поясе");
-  ok(changed>=15,"оракул живой: протокол рисунка менялся "+changed+" раз из "+steps+" кадров");
+  ok(changed>=15,"оракул живой: протокол рисунка менялся на "+changed+" шагах из "+steps);
   eq(bad.length,0,"смена рисунка без смены ключа"+(bad.length?": "+bad.join(", "):""));
   resetWorld();
 }));
