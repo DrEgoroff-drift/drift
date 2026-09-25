@@ -92,6 +92,8 @@ fn rclip(w:vec3f,bias:f32)->vec4f{
   let F=ru.prj.x;let CY=ru.prj.y;let Wd=ru.prj.z;let Hd=ru.prj.w;
   let n=4.;let a=8000./(8000.-n);
   return vec4f(2.*F/Wd*dot(v,ru.rgt.xyz),zc*(1.-2.*CY/Hd)+2.*F/Hd*dot(v,ru.up.xyz),a*(zc+bias)-a*n,zc);}
+/* плечо светлых: у фонаря вплотную стена и тело не выгорают в белое */
+fn rshoul(c:vec3f)->vec3f{let k=.70;return select(c,k+(1.-k)*(1.-exp(-(c-k)/(1.-k))),c>vec3f(k));}
 fn rhs(p:vec3f)->f32{return fract(sin(dot(p,vec3f(127.1,311.7,74.7)))*43758.5453);}
 /* прожектор шлема в точке s: конус, спад, 0..1 */
 fn torch(s:vec3f)->f32{
@@ -101,9 +103,9 @@ fn torch(s:vec3f)->f32{
 /* свет в точке w с нормалью N: рассеянный от человека, пятно у ног, фонарь, лампы */
 fn rlight(w:vec3f,N:vec3f)->vec3f{
   let rc=ru.misc.y;let pp=ru.ply.xyz;let dp=length((w-pp).xz);
-  var L=vec3f(clamp(.74-dp/(rc*9.),.05,1.)+clamp(1.-dp/(rc*2.6),0.,1.)*.30);
+  var L=vec3f(clamp(.74-dp/(rc*9.),.05,1.)+clamp(1.-dp/(rc*2.6),0.,1.)*.20);
   let hp=pp+vec3f(0.,44.,0.);let ln=normalize(w-hp);
-  L+=vec3f(1.,.93,.80)*torch(w)*(clamp(dot(N,-ln),0.,1.)*.8+.2)*1.35;
+  L+=vec3f(1.,.93,.80)*torch(w)*(clamp(dot(N,-ln),0.,1.)*.8+.2)*1.05;
   let nl=i32(ru.misc.w);
   for(var k=0;k<${RAID_LAMPS};k++){
     if(k>=nl){break;}
@@ -169,7 +171,8 @@ fn rvn3(p:vec3f)->f32{let i=floor(p);let f=fract(p);let u=f*f*(3.-2.*f);
     let tv=torch(s);
     if(tv>.002){sc+=tv*(.45+.55*rvn3(s/38.+vec3f(t*.004,t*.002,-t*.003)));}
   }
-  col+=vec3f(1.,.92,.78)*sc*dl*.0020;
+  /* насыщение: вплотную к фонарю луч не заливает кадр белой стеной */
+  let bm=sc*dl*.0018;col+=vec3f(1.,.92,.78)*bm/(1.+bm*2.2);
   /* светильники в воздухе: ореол у каждой из четырёх ближних */
   for(var k=0;k<4;k++){
     if(k>=i32(ru.misc.w)){break;}
@@ -181,6 +184,7 @@ fn rvn3(p:vec3f)->f32{let i=floor(p);let f=fract(p);let u=f*f*(3.-2.*f);
   /* края кадра темнее: база, в которую влезли с фонарём */
   let sp=(i.p.xy/ru.tor.w-vec2f(ru.prj.z*.5,ru.prj.w*.5))/(max(ru.prj.z,ru.prj.w)*.62);
   col*=1.-.42*smoothstep(.35,1.,length(sp));
+  if(i.e.x<.5){col=rshoul(col);}
   return vec4f(col,1.);}`;
 /* тело-спрайт: щит лицом к камере (её «право» и «верх»), глубина — ближе на 16:
    иначе пол у самых ног спорит с подошвами. Прозрачное отбрасывается, кромка
@@ -199,7 +203,7 @@ struct SO{@builtin(position) p:vec4f,@location(0) w:vec3f,@location(1) uv:vec2f}
   let s=textureSample(stx,ssm,i.uv);
   if(s.a<.3){discard;}
   let camd=length(i.w-ru.cam.xyz);let rc=ru.misc.y;
-  let L=rlight(i.w,-ru.fwd.xyz);
-  var col=s.rgb*L;
+  let L=rlight(i.w,-ru.fwd.xyz)*.82;
+  var col=rshoul(s.rgb*L);
   col=mix(col,vec3f(9.,11.,17.)/255.*s.a,clamp((camd-rc*1.5)/(rc*10.),0.,.85));
   return vec4f(col,s.a);}`;

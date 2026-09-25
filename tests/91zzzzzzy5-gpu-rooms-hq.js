@@ -73,6 +73,10 @@ TEST_SUITES.push(()=>suite("кантина: зал пишется в GPU-хол�
     ok(Array.from(u).every(Number.isFinite),"зал «"+ty+"»: числа света конечны");
   }
   G.st.stype="trade";
+  /* кинопередвижка и ёлка тоже рисуют в выпечку зала */
+  {const r=hqRec(760,240,g=>{g.scale(k,k);kinoOverlay(g,W2,200,180,128,{id:"t",title:"Весна на Заречной улице"},123);
+     holTree(g,W2*.93,200,130,"rgba(242,178,92,.5)");});
+   eq(r.err,"","кино и ёлка: GPU-холст умеет всё, что просит кисть");}
   const cn={width:760,height:240,__dpr:1,getContext(){return null;}};
   let hits=null,err="";
   try{hits=drawCantinaRoom(cn,list,null,null,[],null);}catch(e){err=e.message;}

@@ -59,7 +59,7 @@ Zone: `27c-ui-hq`, `27f-hq-room`, `27d-ui-cantina`, `27d-ui-cantina-props`, `12v
    sparkles in the beams, halos of the bulbs and the lamp. The match flash is a kit rect. The
    2D order bug where the curtain covered hanging things in front of it is gone (hanging things
    draw after the middle).
-4. **The raid on the GPU** (`24aa-raid-draw`, new `24aa1-raid-gpu`, `24ab-raid-foe`). The
+4. `0de4a77` **The raid on the GPU** (`24aa-raid-draw`, new `24aa1-raid-gpu`, `24ab-raid-foe`). The
    compartments were thousands of projected quads, painter-sorted and filled with 2D. Now
    `quad()` keeps them in world space and one instanced draw puts them into `gpuScene3D` with a
    depth buffer (`raid3d`): the same projection as before, written in clip space, so a quad with a
@@ -80,6 +80,12 @@ Zone: `27c-ui-hq`, `27f-hq-room`, `27d-ui-cantina`, `27d-ui-cantina-props`, `12v
    the player is kit discs that flare inside the torch cone; the 2D torch glow and vignette went
    into the pass. Still 2D on `#c`: the player (`drawAstronaut`, the life ship's zone — called as
    it is), his floor ellipse, the loot beacons, stencils, health bars, shots, the hurt flash.
+
+5. **Raid light, tuned close up** (`24aa1-raid-gpu`; test for kino and the New Year tree in the
+   cantina bake). With the camera close (`raidfoe`) the torch burned the far wall and the
+   pirate white and the beam in the air became a white block: the torch is weaker (1.35 → 1.05),
+   the pool at the feet smaller, the in-air beam saturates softly, sprites take .82 of the light,
+   and a highlight shoulder (as in the panels) keeps lit surfaces from clipping.
 
 ## Pairs (scratchpad, never in git)
 
@@ -138,11 +144,29 @@ should know.
 The panel reuses `pipe:kit.img|over`, `pipe:kit.img|add`, `pipe:kit.shp|over`, `pipe:kit.shp|add`
 as they are (same code, same `rgba16float` target).
 
+## Not ported, on purpose
+
+- `12v-wander.js`: `drawWanderer` (the ship in flight) is already on the GPU (`wand.sail`,
+  `gpuShapes`) and belongs to flight; its dead 2D fallback branch is flight's to delete.
+  `drawWanderMap` (the chart glyph) draws inside the map frame, and the map ship keeps text and
+  marks 2D there — left working as asked.
+- `12va-wander-cosm.js`: `drawCosmMark` is a brush called inside the hull bake (`03e`), which
+  already runs on the GPU canvas; it uses only immediate paths. Nothing to port.
+- `24a-mode-raid.js`: `drawPirateBase` draws in `G.mode==="system"` (flight) — the author's
+  frame. Untouched.
+- The player in the raid is `drawAstronaut` (the life ship's zone), 2D on `#c` as asked.
+
 ## Open problems
 
 - The panel renderer is a second copy of the kit's thin wrappers (`gpuImage`/`gpuShapes`/
   `gpuField` bind `gpuKitU()`, the frame's resolution, so a DOM panel cannot use them as they
   are). If the kit grows a «target» argument (resolution + buffers), `27f1` shrinks to that.
   Kino and chess (the rooms ship) are DOM panel canvases too and could use `27f1` as it is.
+- The browser tier was not run (in the cloud `test.ps1` is the tools ship's work); every change
+  is proven by the Node suites and the SwiftShader frames only. No browser suite was added:
+  a `gate2d`-style «0 2D calls» scene for «Сорока» and the raid compartments belongs in
+  `tests/91zzzzzzy3-gate2d.js` (shared) — a request, not done.
+- The cantina re-bakes the whole room every third panel frame; if that shows in the laptop's
+  profile, split it like HQ (static shell once, people as sprites, the rest live).
 - `docs/TESTMAP.json` is rewritten by the build (one line for the new suite); like `INDEX.md` it
   is left to the integrator.
