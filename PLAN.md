@@ -42,7 +42,6 @@ numbers; the picture only no worse. Physics, seeds, the save and QUANT stay unto
   - pirates, missiles and combat effects;
   - the hotel's windows: a flip of the lit set with the hour re-uploads its three masters (18 levels) — lit
     windows as live shapes over one fixed master would make it 0;
-  - the instrument pod (416×140, 66 calls a frame): redraw only when a reading changes.
   - Gate: uploads 0 and submits 1 per flight frame; then Контроль's phone run, ≥ 95 % of frames on time over
     30 s and over 5 minutes. A pass makes it a release candidate (Контроль pushes).
 - [ ] **Redraw passes after the candidate** (§L.S): ships in real light (a–h, pairs toward / away from the star, in

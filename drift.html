@@ -83603,13 +83603,28 @@ function tapeStrip(P,FS){
 const $ipod=document.getElementById("ipod");
 const ipctx=$ipod?$ipod.getContext("2d"):null;
 const IPOD_S=2;                        // полотно вдвое крупнее: стрелки тонкие
+/* Перерисовка — только когда кадр колодки другой (GPU-этап 1): прежде 66 вызовов
+   полотна каждый кадр ради стрелок, которые стоят. Подпись собирает всё, что
+   видно: стрелки с шагом 1/256 шкалы (конец стрелки на полотне ×2 сдвигается
+   меньше чем на четверть пикселя — глазу это не шаг, а хронометр, ползущий
+   каждый кадр, перестаёт звать перерисовку), невязку как она напечатана,
+   голову и откат ленты, дрожь пера, размер полотна и саму ленту (загрузка
+   сейва приносит новую). */
+let IPOD_SIG="",IPOD_T=null;
+function instrPodSig(R,T){
+  let s=$ipod.width+"x"+$ipod.height+"|"+instrMisclose().toFixed(3)+"|"+T.head+","+T.n+","+T.back+","+Math.round((T.back?0:T.tick)*32);
+  for(const r of R)s+="|"+r.ab+Math.round(instrTrack(r)*256);
+  return s;
+}
 function instrPodDraw(){
   if(!ipctx)return;
+  const R=instrRead(),T=tapeInit(),sig=instrPodSig(R,T);
+  if(sig===IPOD_SIG&&T===IPOD_T)return;
+  IPOD_SIG=sig;IPOD_T=T;
   const w=$ipod.width/IPOD_S, h=$ipod.height/IPOD_S;
   const c=ipctx;
   c.setTransform(IPOD_S,0,0,IPOD_S,0,0);
   c.clearRect(0,0,w,h);
-  const R=instrRead();
   /* ── колодку должно быть ВИДНО (M233) ──
      Тон был один на всё (150,176,190) при альфе .28 на дуге: над дневным небом
      посадки и над чёрным космосом колодка одинаково пропадала, а пять

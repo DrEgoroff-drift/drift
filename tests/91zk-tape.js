@@ -107,5 +107,21 @@ TEST_SUITES.push(()=>suite("Колодка: приборы под рукой в 
   const c=pod.getContext("2d"),d=c.getImageData(0,0,pod.width,pod.height).data;
   let ink=0;for(let i=3;i<d.length;i+=4)if(d[i]>8)ink++;
   ok(ink>pod.width*pod.height*.1,"на колодке действительно что-то нарисовано: "+ink+" пикселей");
+
+  /* ── перерисовка только на перемене: стоящие стрелки полотно не трогают ── */
+  let cl=0;const cr0=c.clearRect;c.clearRect=function(){cl++;return cr0.apply(c,arguments);};
+  for(let i=0;i<10;i++)instrPodDraw();
+  eq(cl,0,"кадры без перемен колодку не перерисовывают");
+  /* полотно, которое читают, Chrome переводит на программный растр, и сглаживание
+     дуг у двух растров разное: сравниваем кадры уже после перевода */
+  for(let i=0;i<4;i++)c.getImageData(0,0,1,1);
+  tapeSample();instrPodDraw();
+  eq(cl,1,"новый столбец ленты — одна перерисовка");
+  const d1=c.getImageData(0,0,pod.width,pod.height).data;
+  IPOD_SIG="";instrPodDraw();
+  const d2=c.getImageData(0,0,pod.width,pod.height).data;
+  let df=0;for(let i=0;i<d1.length;i++)if(d1[i]!==d2[i])df++;
+  eq(df,0,"сбережённый кадр тот же, что нарисованный заново");
+  c.clearRect=cr0;
   G.mode=m0;G.running=run0;
 }));

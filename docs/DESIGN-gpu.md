@@ -182,6 +182,10 @@ Then hulls (item 2) by the same «explicit emission» path.
   trilinear, no mask); text bakes stay pixel-exact per font size but each size keeps its own canvas in a small
   LRU, so zooming back and forth re-uses them. Gate: pairs of the hotel sign and the billboard at 760 and ×1.5,
   a zoom series, no dark rings, no ripple, letter sharpness ≥ was; the gate test sweeps the zoom there and back.
+- Brief of **the instrument pod 25c** (416×140 DOM canvas, ~210 canvas calls a frame): draw it only when the
+  picture would differ. A signature of everything visible — needles, misclose text, tape head/length/scroll,
+  pen jitter, canvas size, the tape object — decides; gate: the kept frame equals a fresh draw, redraws in
+  steady flight well under one per frame, the pod unchanged on the pair.
 
 The phone frame budget does not grow: GPU ≤ 12 ms.
 
@@ -189,7 +193,8 @@ The phone frame budget does not grow: GPU ≤ 12 ms.
 
 - **Stage 1 caches (25.09, Контроль's order: station → zoom-following bakes → 25c → item 3).** Station master
   done (17c3, steady uploads 0, layers as in 2D); zoom-following bakes done (each size uploaded once, the way
-  back 0). Next: the instrument pod 25c (redraw only on change), then item 3 (flame and body colour).
+  back 0); the instrument pod 25c redraws only on change. Next: item 3 (flame and body colour), then the
+  hotel's windows as live shapes, then the phone candidate.
 - **Released 0.457.0 (`2a288f7`, from `rel`; merged back into gpu as `b0c8cac`).** The next candidate goes from
   gpu the same way: the release list plus `cismoke`, its sha to Контроль. Rollback: a commit with the tree of
   `d543aff` on top, no force-push. `C:/Claude/drift-rel` stays — it is Контроль's working directory; nothing is
@@ -503,6 +508,15 @@ The phone frame budget does not grow: GPU ≤ 12 ms.
   around letters; zoom series 1.00–1.28 now/was: hotel 1.004–1.080, billboard 1.000, board 0.999–1.058.
   The gate test sweeps the zoom there and back: no bake canvas uploaded twice, text bakes within their
   font-size counts (a board keyed on `k` again fails it: 8 > 6).
+  **Instrument pod (25c).** `instrPodDraw` builds a signature first and returns when it matches the last
+  one: needles at 1/256 of the scale (the tip on the ×2 canvas moves under a quarter pixel per step, so the
+  chronometer creeping every frame no longer asks for a redraw), the misclose as printed, the tape's head,
+  length and scroll, the pen jitter at 1/32, the canvas size, and the tape object itself (a loaded save
+  brings a new one). Probe (system, 760, 120 frames each): idle 16 redraws / 3 453 canvas calls, was 120 /
+  25 695; thrusting and turning 33, was 120. A kept frame and a fresh draw at the end of both phases differ
+  in 0 pixels. The tape suite asserts no redraw on 10 unchanged frames, one on a new column, and a kept frame
+  equal to a fresh one — compared only after the readbacks have moved the canvas to the software raster,
+  whose arc antialiasing differs from the accelerated one (the first attempt read that as 31 729 bytes).
 - Brief of **L4 k/n — the shock ring and the exhaust haze bend the backdrop, never a hull** (Контроль 24.09): no
   hull, own or pirate, sprite or 2D, is cut into bands; an RGB fringe on the backdrop only. Done (08b/08c): the
   scene's alpha became the hull mask — every blend keeps it (`GPU_KEEP_A`), the lit sprite (`gst`: pirates,

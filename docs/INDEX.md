@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 610 · символов верхнего уровня: 6066
+Файлов: 610 · символов верхнего уровня: 6068
 
 ## СИМВОЛЫ
 
@@ -2833,8 +2833,9 @@ instrMisclose                src/25a-instr.js:92-94
 instrOffers                  src/05b-instr-kit.js:127-143
 instrPanel                   src/25a-instr.js:100-190
 instrPenWidth                src/05b-instr-kit.js:78-80
-instrPodDraw                 src/25c-instr-hud.js:19-81
-instrPodTick                 src/25c-instr-hud.js:84-89
+instrPodDraw                 src/25c-instr-hud.js:32-96
+instrPodSig                  src/25c-instr-hud.js:27-31
+instrPodTick                 src/25c-instr-hud.js:99-104
 instrPrice                   src/05b-instr-kit.js:115-118
 instrQuality                 src/05b-instr-kit.js:65-71
 instrRead                    src/25a-instr.js:59-82
@@ -2853,6 +2854,7 @@ invalidateKeyMap             src/15-input.js:125
 invalidateParts              src/05-parts.js:310
 ipctx                        src/25c-instr-hud.js:17
 IPOD_S                       src/25c-instr-hud.js:18
+IPOD_SIG                     src/25c-instr-hud.js:26
 isFitted                     src/05-parts.js:381-384
 ISLAND_LETTERS               src/11y-island.js:15-22
 islandAll                    src/11y-island.js:23
@@ -7142,7 +7144,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/25b-tape.js · 12 КБ
   · самописец: бумага, пять перьев, память наблюдения:1
 
-## src/25c-instr-hud.js · 6 КБ
+## src/25c-instr-hud.js · 7 КБ
   · приборная колодка: те же приборы, но всегда под рукой:1
 
 ## src/25d-instr-rack.js · 27 КБ
@@ -7498,7 +7500,7 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## tests/91zj-instr.js · 6 КБ
 
-## tests/91zk-tape.js · 7 КБ
+## tests/91zk-tape.js · 8 КБ
 
 ## tests/91zl-rack.js · 3 КБ
 
