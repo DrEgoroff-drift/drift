@@ -12,6 +12,8 @@ const GPU_KEEP_A={srcFactor:"zero",dstFactor:"one"};
 const GPU_BLEND={
   over:{color:{srcFactor:"one",dstFactor:"one-minus-src-alpha"},alpha:GPU_KEEP_A},
   add:{color:{srcFactor:"one",dstFactor:"one"},alpha:GPU_KEEP_A},
+  /* вычесть ранее прибавленное (кусок, заменённый другим: окна гостиницы) */
+  sub:{color:{operation:"reverse-subtract",srcFactor:"one",dstFactor:"one"},alpha:GPU_KEEP_A},
   hull:{color:{srcFactor:"one",dstFactor:"one-minus-src-alpha"},alpha:{srcFactor:"zero",dstFactor:"one-minus-src-alpha"}},
   /* умножение, как multiply у 2D на непрозрачном фоне: тьма пещеры, тени, дымка */
   mul:{color:{srcFactor:"dst",dstFactor:"one-minus-src-alpha"},alpha:{srcFactor:"zero",dstFactor:"one"}}};

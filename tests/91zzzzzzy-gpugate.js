@@ -44,15 +44,14 @@ TEST_SUITES.push(()=>suite("ворота ступени 1: ровный полё
   G.crowns={};NODE_FAMS.slice(0,5).forEach(f=>G.crowns[f.id]=1);
   const Q=GPUQueue.prototype,q0={c:Q.copyExternalImageToTexture,s:Q.submit};
   const hg=hullGpuDraw,run0=G.running,loop0=LOOP_OFF,C=MAIN_CTX;
-  const K={on:false,front:0,sub:0,up:{},bad:0,known:0,dirt:{},zb:false,zup:{},zn:0,zt:0,zc:{},zs:new Set(),hb:null,hre:false};
+  const K={on:false,front:0,sub:0,up:{},bad:0,known:0,dirt:{},zb:false,zup:{},zn:0,zt:0,zc:{},zs:new Set()};
   const cm={};
   let i=0;
   try{
     hullGpuDraw=function(id,x,y,a,sc,t,b,l,bk,lx,ly){return hg(id,x,y,a,sc,t||id===G.shipId,b,l,id===G.shipId?.35:bk,lx,ly);};
     Q.copyExternalImageToTexture=function(src,dst){
-      if(K.zb&&HOTEL_BAKE!==K.hb)K.hre=true;
       if(K.zb&&dst.texture!==GPU.T.front){const w=gateWho();
-        if(GATE_ZB.test(w)&&!(K.hre&&/drawHotel/.test(w))){K.zt++;const zo=gateZOwner(w);if(zo)K.zc[zo]=(K.zc[zo]||0)+1;if(K.zs.has(src.source)){K.zn++;K.zup[w]=(K.zup[w]||0)+1;}K.zs.add(src.source);}}
+        if(GATE_ZB.test(w)){K.zt++;const zo=gateZOwner(w);if(zo)K.zc[zo]=(K.zc[zo]||0)+1;if(K.zs.has(src.source)){K.zn++;K.zup[w]=(K.zup[w]||0)+1;}K.zs.add(src.source);}}
       if(K.on){if(dst.texture===GPU.T.front)K.front++;
         else{const w=gateWho();if(GATE_OK.some(n=>w.includes(n)))K.known++;else{K.bad++;K.up[w]=(K.up[w]||0)+1;}}}
       return q0.c.apply(this,arguments);};
@@ -69,10 +68,9 @@ TEST_SUITES.push(()=>suite("ворота ступени 1: ровный полё
       }
       const j=i-GATE_WARM-GATE_N;
       if(j===0){K.on=false;for(const k in cm)C[k]=cm[k];}
-      if(j===0){K.zb=true;K.hb=HOTEL_BAKE;}
+      if(j===0)K.zb=true;
       gatePlace(j<0?0:gateZoom(j));
       frameBody(wallMs());
-      if(K.zb&&HOTEL_BAKE!==K.hb)K.hre=true;
     }
   }catch(e){ok(false,"кадр "+i+" упал: "+e.message);}
   finally{
@@ -88,6 +86,34 @@ TEST_SUITES.push(()=>suite("ворота ступени 1: ровный полё
   eq(K.sub,GATE_N,"отправок в очередь ровно по одной на кадр");
   eq(K.bad,0,"печёные холсты не грузятся"+(K.bad?": "+top(K.up):"")+" (станция — известное исключение, её выгрузок "+K.known+")");
   for(const k in GATE_ZCAP)ok((K.zc[k]||0)<=GATE_ZCAP[k],"проезд зума: печей "+k+" "+(K.zc[k]||0)+" ≤ "+GATE_ZCAP[k]+" — кегль, а не каждый кадр");
-  eq(K.zn,0,"проезд зума туда и обратно: ни один холст печки не грузится дважды (выгрузок "+K.zt+")"+(K.zn?": "+top(K.zup):"")+(K.hre?" (дом перепечён сменой окон — его не судим)":""));
+  eq(K.zn,0,"проезд зума туда и обратно: ни один холст печки не грузится дважды (выгрузок "+K.zt+")"+(K.zn?": "+top(K.zup):""));
+  resetWorld();
+}));
+/* окна гостиницы (ступень 1): дом печётся раз на систему и цвет вывески двумя мастерами
+   (всё погашено, всё горит); какие окна горят — решает кадр кусками атласа. Сутки по три
+   часа и окна, что передумали: набор горящих окон меняется, выгрузок дома — ноль */
+TEST_SUITES.push(()=>suite("ворота ступени 1: окна гостиницы гаснут и загораются без выгрузок",{tier:"browser"},()=>{
+  if(!ok(GPU.ok,"видеокарта есть — без неё ворота не меряются"))return;
+  resetWorld();
+  G.mode="system";
+  if(!ok(gateStand(),"нашлась система с гостиницей"))return;
+  gatePlace();
+  const Q=GPUQueue.prototype,c0=Q.copyExternalImageToTexture,run0=G.running,loop0=LOOP_OFF,Ht=hotelHere(),sd=G.sx*31+G.sy;
+  let up=0,B=null;const masks=new Set();
+  try{
+    G.running=true;LOOP_OFF=false;
+    for(let i=0;i<4;i++)frameBody(wallMs());   /* дом испечён и загружен */
+    B=HOTEL_BAKE;
+    Q.copyExternalImageToTexture=function(){if(/drawHotel/.test(gateWho()))up++;return c0.apply(this,arguments);};
+    const d0=Math.floor(G.t/CEL_DAY)*CEL_DAY;
+    for(let h=0;h<24;h+=3)for(let f=0;f<3;f++){
+      G.t=d0+CEL_DAY*h/24+f*360;gatePlace();
+      masks.add(hotelWinLit(sd,hotelLitFrac(Ht.by,((G.t%CEL_DAY)/CEL_DAY)*24),Math.floor(G.t/60/6)));
+      frameBody(wallMs());
+    }
+  }finally{Q.copyExternalImageToTexture=c0;G.running=run0;LOOP_OFF=loop0;}
+  ok(masks.size>=8,"наборов горящих окон за сутки: "+masks.size+" ≥ 8");
+  eq(up,0,"выгрузок дома при смене окон");
+  ok(B&&HOTEL_BAKE===B,"дом не перепечён");
   resetWorld();
 }));

@@ -197,6 +197,12 @@ Then hulls (item 2) by the same «explicit emission» path.
   the colour cold as in 2D, the core at the stern not reaching white, its peak no higher than 2D's; further
   along the length as now. Gate: pods' strip S ≥ .8× of 2D and L ≤ +15 % of 2D (760 and ×1.5), tone 190–230°,
   on the phone the lanes no shorter and no dimmer than now away from the stern.
+- Brief of **the hotel's windows as live shapes** (Контроль's order: wake → windows → candidate): a flip of the
+  lit set (the hour, a window changing its mind every 6 s) must not re-bake or re-upload the house. Bake it
+  once per system and sign colour as two masters — every window dark, every window lit — in one atlas per
+  layer; the frame lays the dark house whole and the lit windows as pieces of the lit half. Gate: uploads 0
+  over a day of flips (a test, and the rebake exclusion in the zoom gate removed), the house on screen the
+  same as HEAD at 20 h and 3 h on 760 and ×1.5, the 2D branch the same as the old paint.
 
 The phone frame budget does not grow: GPU ≤ 12 ms.
 
@@ -206,8 +212,8 @@ The phone frame budget does not grow: GPU ≤ 12 ms.
   done (17c3, steady uploads 0, layers as in 2D); zoom-following bakes done (each size uploaded once, the way
   back 0); the instrument pod 25c redraws only on change; item 3 done (body V>.6 +12/+13 % over 2D — the
   excess was the final glow on the hull's own paint, not the exhaust); the wake at the stern cooled to 2D's
-  peak within 20 hull units of the nozzle, further as before. Next: the hotel's windows as live shapes, then
-  the phone candidate.
+  peak within 20 hull units of the nozzle, further as before; the hotel's windows are pieces of a two-master
+  atlas (uploads 0 on any flip). Next: the phone candidate.
 - **Released 0.457.0 (`2a288f7`, from `rel`; merged back into gpu as `b0c8cac`).** The next candidate goes from
   gpu the same way: the release list plus `cismoke`, its sha to Контроль. Rollback: a commit with the tree of
   `d543aff` on top, no force-push. `C:/Claude/drift-rel` stays — it is Контроль's working directory; nothing is
@@ -570,6 +576,25 @@ The phone frame budget does not grow: GPU ≤ 12 ms.
   stern (5–22 units) V>.6 10 → 24 → 16 % | 10 → 22 → 14 %, L 51 → 83 → 74 | 53 → 83 → 75, bright rgb
   (174,178,194) → (173,178,194) | (182,186,198) → (185,190,200), hue ≈ 225°/220°; lanes 25–60 and 60–120
   units behind: L 69.6/76.6 → 69.3/76.6 | 67.1/99.8 → 66.8/99.8 — as before. Gate suite green (16).
+  **The hotel's windows as live shapes.** `hotelPaint(sd,mask,col)` is the old painter; `hotelBake(sd,col)` runs
+  it twice (all dark, all lit) and stacks the two in one atlas per layer (cv, em, sh; 16 px apart so the mips
+  do not mix), plus each window's box (`hotelWinBox`: glass, the balcony before it, the glow's margin, whole
+  pixels; neighbours never overlap — two balconies overlap in the drawing, the right one on top, so the
+  border between their boxes is where its glass begins). The frame draws, per layer, one `gpuImage` call: the
+  dark house whole plus the lit boxes from the lower half. Paint is opaque in a box, so over replaces it; the
+  dark house has no window light, so em just adds; the sign's sheen is in both, so its lit boxes (the top
+  rows only) go as sub of the dark piece and add of the lit one — a `sub` blend (reverse-subtract) joined the
+  kit (08c). The 2D branch builds the house by the mask from the atlas into its own canvases, only when the
+  mask changes. Found on the way: the light under a balcony and behind «ПРОДАЮ» was erased with whatever
+  fill came before (.22 after a lit balcony, full in a dark house), so a window's look depended on its
+  neighbours; now a fixed veil `HOTEL_VEIL` .22 — the evening look as it was. Numbers: the atlas against the
+  old paint by the same mask — all dark and all lit exact, half lit: paint ≤ 11/255 on 35 px, light ≤ 54/255 on
+  143 px of 70 k, all on the seam of two overlapping balconies with only one lit (below one screen pixel); the
+  house on screen, HEAD → now, 760 | ×1.5, 20 h: mean luma 105.18 → 105.17 | 94.69 → 94.68, top 1 % the same,
+  max |Δ| 9 | 7; 3 h: 91.64 → 91.63 | 77.23 → 77.22, max |Δ| 5 | 4. The 2D branch against the old paint at
+  20/3/8 h: max 2/255. Uploads on a day of flips (8 hours × 3 flicks, ≥ 8 lit sets): 0, the house not
+  re-baked (new suite in 91zzzzzzy-gpugate; the zoom gate no longer excuses the hotel). Three atlases of
+  320×452 instead of three 320×218 masters re-uploaded on every flip.
 - Brief of **L4 k/n — the shock ring and the exhaust haze bend the backdrop, never a hull** (Контроль 24.09): no
   hull, own or pirate, sprite or 2D, is cut into bands; an RGB fringe on the backdrop only. Done (08b/08c): the
   scene's alpha became the hull mask — every blend keeps it (`GPU_KEEP_A`), the lit sprite (`gst`: pirates,

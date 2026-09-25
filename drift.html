@@ -11188,6 +11188,8 @@ const GPU_KEEP_A={srcFactor:"zero",dstFactor:"one"};
 const GPU_BLEND={
   over:{color:{srcFactor:"one",dstFactor:"one-minus-src-alpha"},alpha:GPU_KEEP_A},
   add:{color:{srcFactor:"one",dstFactor:"one"},alpha:GPU_KEEP_A},
+  /* вычесть ранее прибавленное (кусок, заменённый другим: окна гостиницы) */
+  sub:{color:{operation:"reverse-subtract",srcFactor:"one",dstFactor:"one"},alpha:GPU_KEEP_A},
   hull:{color:{srcFactor:"one",dstFactor:"one-minus-src-alpha"},alpha:{srcFactor:"zero",dstFactor:"one-minus-src-alpha"}},
   /* умножение, как multiply у 2D на непрозрачном фоне: тьма пещеры, тени, дымка */
   mul:{color:{srcFactor:"dst",dstFactor:"one-minus-src-alpha"},alpha:{srcFactor:"zero",dstFactor:"one"}}};
@@ -55347,23 +55349,61 @@ function hotelWinLit(sd,lit,flick){
   return m;
 }
 let HOTEL_BAKE=null;
-/* Хрущёвка печётся целиком в свой холст (правило «что не движется — рисуется раз»):
-   перепекается, только когда меняется набор горящих окон, — раз в несколько секунд.
+/* Хрущёвка печётся целиком (правило «что не движется — рисуется раз») дважды: все окна
+   погашены и все горят, в один атлас на слой (сверху — погашенный дом, ниже — горящий).
+   Какие окна горят — решает кадр: погашенный дом целиком, поверх — рамки горящих окон из
+   нижней половины. Смена часа и окно, что передумало, не печёт и не грузит ничего.
    Вид три четверти, как у макета на столе: фасад, торец в тени, вальмовая крыша
    шифером, трубы, антенны на проволоке.
    Три слоя (16/n): cv — краска без света; em — свет стёкол, узкий ореол в долю окна
    (свечение принадлежит окну, шире — дело блума, и его мало); sh — тот же дом под
    тёплым светом вывески сверху, сходит на нет ко второму этажу */
 const HOTEL_EM=1,HOTEL_NEON=1.2,HOTEL_SHEEN=.8;
+/* стекло балкона и бумага «ПРОДАЮ» глушат свет окна за ними на .22 — так было вечером, когда
+   стирание брало альфу чужой заливки (горящего соседа) и зависело от соседних окон */
+const HOTEL_VEIL="rgba(0,0,0,.22)";
 /* мастер дома берётся на уровень крупнее (как прежний gpuCvLevel: не мельче экрана) —
    окна и рамы резкие; .785 общего правила смешивал его со следующим, −10 % резкости */
 const HOTEL_LOD=.5;
 const HOTEL_LAMP=[[255,169,87],[255,178,104],[255,163,80],[255,186,118],[255,172,94],[255,180,110],[180,200,235]];
-function hotelBake(sd,mask,col){
+/* рамка окна n в единицах дома: всё, чем горящее окно отличается от погашенного (стекло,
+   балкон перед ним, тень света), с полем под ореол; соседние рамки не перекрываются */
+function hotelWinBox(sd,n){
+  const cw=HR_W/HR_COLS,rh=HR_FH/HR_ROWS,X0=4,T0=HR_TOP,m=1.2;
+  if(n>=HR_COLS*HR_ROWS){
+    const q=n-HR_COLS*HR_ROWS,j=(q/HR_SIDE)|0,i=q%HR_SIDE,u=(i+.3)/HR_SIDE,ww=HR_SW/HR_SIDE*.4;
+    const px=X0+HR_W+u*HR_SW,py=T0+(j+.24)/HR_ROWS*HR_FH-u*HR_SK;
+    return [px-m,py-ww*HR_SK/HR_SW-m,px+ww+m,py+rh*.52+m];
+  }
+  const j=(n/HR_COLS)|0,i=n%HR_COLS,x=X0+i*cw,y=T0+j*rh;
+  if([3,8].includes(i))return j<HR_ROWS-1?[x+cw*.24-m,y+rh*.66-m,x+cw*.76+m,y+rh*.88+m]:null;
+  const b=[x+cw*.2-m,y+rh*.2-m,x+cw*.8+m,y+rh*.76+m];
+  const bal=q=>q>=0&&q<HR_COLS&&j<HR_ROWS-1&&![3,8].includes(q)&&!((hashi(q*7+j,sd,0xBA1C)>>>0)%4);
+  if(bal(i)){   /* балкон: стекло шире окна, поле уже — до соседа */
+    const bx=x-cw*.06,by=y+rh*.14,bw=cw*1.12;b[0]=Math.min(b[0],bx-.4);b[1]=Math.min(b[1],by-.8);b[2]=Math.max(b[2],bx+bw+.4);
+    /* соседние балконы заходят друг на друга, правый поверх: граница — начало его стекла */
+    if(bal(i-1))b[0]=bx+.4;
+    if(bal(i+1))b[2]=bx+cw+.4;
+  }
+  return b;
+}
+const HR_GAP=16;   /* поле между половинами атласа, в пикселях: мипы не смешивают дома */
+function hotelBake(sd,col){
   const ck=col.join();
-  if(HOTEL_BAKE&&HOTEL_BAKE.sd===sd&&HOTEL_BAKE.mask===mask&&HOTEL_BAKE.ck===ck)return HOTEL_BAKE;
+  if(HOTEL_BAKE&&HOTEL_BAKE.sd===sd&&HOTEL_BAKE.ck===ck)return HOTEL_BAKE;
   /* новая выпечка — новые холсты: слой — мастер с мипами (gpuMipTex), на месте его не перерисовать */
   if(HOTEL_BAKE)for(const q of [HOTEL_BAKE.cv,HOTEL_BAKE.em,HOTEL_BAKE.sh])gpuMipDrop(q);
+  const N=(HR_COLS+HR_SIDE)*HR_ROWS,A=hotelPaint(sd,"0".repeat(N),col),Z=hotelPaint(sd,"1".repeat(N),col);
+  const ph=A.cv.height,L={};
+  for(const k of ["cv","em","sh"]){const c=document.createElement("canvas");c.width=A.cv.width;c.height=ph*2+HR_GAP;
+    const g=c.getContext("2d");g.drawImage(A[k],0,0);g.drawImage(Z[k],0,ph+HR_GAP);L[k]=c;}
+  /* рамки — в целых пикселях холста (округление монотонно: соседние не наезжают) */
+  const win=[];for(let n=0;n<N;n++){const b=hotelWinBox(sd,n);win.push(b&&b.map(v=>Math.round(v*HR_PX)));}
+  const shY=Math.ceil((HR_TOP+HR_FH/HR_ROWS*1.4)*HR_PX)+2;   /* ниже отсвета вывески нет (градиент sh) */
+  HOTEL_BAKE={sd,ck,cv:L.cv,em:L.em,sh:L.sh,ph,win,shY,ver:((HOTEL_BAKE&&HOTEL_BAKE.ver)|0)+1};return HOTEL_BAKE;
+}
+/* дом по маске окон — в три холста HR_BW×HR_BH (·HR_PX) */
+function hotelPaint(sd,mask,col){
   const mk=()=>document.createElement("canvas");
   const cv=mk("cv"),em=mk("em"),shc=mk("sh");
   for(const q of [cv,em,shc]){q.width=Math.ceil(HR_BW*HR_PX);q.height=Math.ceil(HR_BH*HR_PX);}
@@ -55452,7 +55492,7 @@ function hotelBake(sd,mask,col){
     c.fillStyle=cb;c.fillRect(x,y+h*.55,w,h*.45);
     c.fillStyle=ca;c.fillRect(x,y+h*.55,w,h*.08);
     c.fillStyle=on?"#6e5436":"#33404a";c.fillRect(x+.4,y,w-.8,h*.55);
-    e.save();e.globalCompositeOperation="destination-out";e.shadowBlur=0;e.fillRect(x,y,w,h);e.restore();   /* балкон закрывает окно: свет окна под ним не светит второй раз */
+    e.save();e.globalCompositeOperation="destination-out";e.shadowBlur=0;e.fillStyle=HOTEL_VEIL;e.fillRect(x,y,w,h);e.restore();   /* балкон застеклён: свет окна за ним глушится на пятую часть */
     if(on){e.fillStyle="rgba(255,176,100,.22)";e.fillRect(x+.4,y,w-.8,h*.55);}
     c.fillStyle="#c9c1ae";for(let k=0;k<=4;k++)c.fillRect(x+.4+k*(w-1.2)/4,y,.4,h*.55);
     c.fillRect(x,y,w,.5);
@@ -55466,7 +55506,7 @@ function hotelBake(sd,mask,col){
   }
   {const i=1+(hashi(1,sd,0x5E11)>>>0)%(HR_COLS-2),j=1+(hashi(2,sd,0x5E11)>>>0)%3;   /* «ПРОДАЮ» */
    if(!ENTR.includes(i)){const x=X0+i*cw+cw*.18,y=T0+j*rh+rh*.3;c.fillStyle="#aca695";c.fillRect(x,y,cw*.64,rh*.22);
-    e.save();e.globalCompositeOperation="destination-out";e.shadowBlur=0;e.globalAlpha=1;e.fillRect(x,y,cw*.64,rh*.22);e.restore();   /* бумага глушит лампу за ней */
+    e.save();e.globalCompositeOperation="destination-out";e.shadowBlur=0;e.globalAlpha=1;e.fillStyle=HOTEL_VEIL;e.fillRect(x,y,cw*.64,rh*.22);e.restore();   /* бумага глушит лампу за ней */
     c.fillStyle="#c0203a";c.font="bold 2.3px ui-monospace,monospace";c.textAlign="center";c.textBaseline="middle";c.fillText("ПРОДАЮ",x+cw*.32,y+rh*.11);}}
   for(const i of [1,6]){   /* решётки «солнышком» на первом этаже */
     const x=X0+i*cw+cw*.2,y=T0+4*rh+rh*.2,w=cw*.6,h=rh*.56;
@@ -55519,7 +55559,7 @@ function hotelBake(sd,mask,col){
   const gs=s.createLinearGradient(0,6*HR_PX,0,(T0+rh*1.4)*HR_PX);gs.addColorStop(0,rgba(col,1));gs.addColorStop(.45,rgba(col.map(v=>v*.35),1));gs.addColorStop(1,"#000");
   s.globalCompositeOperation="multiply";s.fillStyle=gs;s.fillRect(0,0,shc.width,shc.height);
   s.globalCompositeOperation="destination-in";s.drawImage(cv,0,0);s.globalCompositeOperation="source-over";
-  HOTEL_BAKE={sd,mask,ck,cv,em,sh:shc,ver:((HOTEL_BAKE&&HOTEL_BAKE.ver)|0)+1};return HOTEL_BAKE;
+  return {cv,em,sh:shc};
 }
 /* неон вывески — общая печь 17k0: буква — трубка, всё имя тёмным стеклом (мёртвая Т видна) */
 const HOTEL_SIGN_FULL={gt:"ГОСТИНИЦА «КОСМОС»"};
@@ -55530,20 +55570,43 @@ function drawHotel(zx,zy,Z){
   if(x<-w||x>W+w||y<-h*1.5||y>H+h)return;
   const sd=G.sx*31+G.sy,hr=((G.t%CEL_DAY)/CEL_DAY)*24;
   const col=(typeof laneLampCol==="function")?laneLampCol(Ht.by):[255,190,110],fa=clamp((Z-.3)/.2,0,1);
-  const B=hotelBake(sd,hotelWinLit(sd,hotelLitFrac(Ht.by,hr),Math.floor(G.t/60/6)),col);
+  const B=hotelBake(sd,col),mask=hotelWinLit(sd,hotelLitFrac(Ht.by,hr),Math.floor(G.t/60/6));
   const ox=x-(4+HR_W/2)*k,oy=y-(HR_TOP+HR_FH/2)*k;   /* якорь — центр фасада */
   /* вывеска — там же, где был fillText по центру на базовой линии oy+6k */
   const S=fa>0?neonBake("hotel",Ht.name,Ht.name===HOTEL_SIGN.gt?HOTEL_SIGN_FULL.gt:Ht.name,Math.round(8*Math.max(1,k)*UIK),col,"alphabetic"):null;
   const pass=gpuScene();
+  const cw=B.cv.width,ph=B.ph,lit=[];
+  for(let n=0;n<mask.length;n++)if(B.win[n]&&mask[n]==="1")lit.push(B.win[n]);
   if(pass){
-    const L=gpuMipTex,R=a=>[{x:ox+w/2,y:oy+h/2,w,h,a}];
-    gpuImage(pass,L(B.cv),R(1),{lod:HOTEL_LOD});
-    gpuImage(pass,L(B.em),R(HOTEL_EM),{blend:"add",lod:HOTEL_LOD});
-    if(S)gpuImage(pass,L(B.sh),R(HOTEL_SHEEN*fa),{blend:"add",lod:HOTEL_LOD});
+    /* кусок атласа [x0,y0,x1,y1] (пиксели половины; dy — какая половина) → прямоугольник
+       на экране той же долей дома */
+    const th=B.cv.height,sx=w/cw,sy=h/ph,L=gpuMipTex;
+    const R=(Q,a,dy)=>Q.map(q=>({x:ox+(q[0]+q[2])/2*sx,y:oy+(q[1]+q[3])/2*sy,w:(q[2]-q[0])*sx,h:(q[3]-q[1])*sy,a,
+      u0:q[0]/cw,v0:(q[1]+dy)/th,u1:q[2]/cw,v1:(q[3]+dy)/th}));
+    const on=ph+HR_GAP,all=[[0,0,cw,ph]];
+    /* краска: погашенный дом, поверх — горящие окна (стекло непрозрачно, замена точная) */
+    gpuImage(pass,L(B.cv),R(all,1,0).concat(R(lit,1,on)),{lod:HOTEL_LOD});
+    /* свет стёкол: у погашенного дома в рамках его нет — горящие просто прибавляются */
+    gpuImage(pass,L(B.em),R(all,HOTEL_EM,0).concat(R(lit,HOTEL_EM,on)),{blend:"add",lod:HOTEL_LOD});
+    if(S){   /* отсвет вывески в рамке есть у обоих: погашенный вычесть, горящий прибавить */
+      const a=HOTEL_SHEEN*fa,top=lit.filter(q=>q[1]<B.shY);
+      gpuImage(pass,L(B.sh),R(all,a,0),{blend:"add",lod:HOTEL_LOD});
+      if(top.length){gpuImage(pass,L(B.sh),R(top,a,0),{blend:"sub",lod:HOTEL_LOD});gpuImage(pass,L(B.sh),R(top,a,on),{blend:"add",lod:HOTEL_LOD});}
+    }
   }else{
-    ctx.drawImage(B.cv,ox,oy,w,h);
-    ctx.save();ctx.globalCompositeOperation="lighter";ctx.drawImage(B.em,ox,oy,w,h);
-    if(S){ctx.globalAlpha=HOTEL_SHEEN*fa;ctx.drawImage(B.sh,ox,oy,w,h);}
+    /* 2D (без видеокарты): дом по маске собирается из атласа в свой холст, когда маска сменилась */
+    let C=B.c2d;
+    if(!C||C.mask!==mask){
+      C=B.c2d=B.c2d||{};C.mask=mask;
+      for(const k of ["cv","em","sh"]){
+        const c=C[k]||(C[k]=document.createElement("canvas"));c.width=cw;c.height=ph;const g=c.getContext("2d");
+        g.drawImage(B[k],0,0,cw,ph,0,0,cw,ph);
+        for(const q of lit){g.clearRect(q[0],q[1],q[2]-q[0],q[3]-q[1]);g.drawImage(B[k],q[0],q[1]+ph+HR_GAP,q[2]-q[0],q[3]-q[1],q[0],q[1],q[2]-q[0],q[3]-q[1]);}
+      }
+    }
+    ctx.drawImage(C.cv,ox,oy,w,h);
+    ctx.save();ctx.globalCompositeOperation="lighter";ctx.drawImage(C.em,ox,oy,w,h);
+    if(S){ctx.globalAlpha=HOTEL_SHEEN*fa;ctx.drawImage(C.sh,ox,oy,w,h);}
     ctx.restore();
   }
   if(S)neonDraw(pass,S,x,oy+6*k,fa,HOTEL_NEON*fa);
