@@ -659,7 +659,10 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   `(1.-smoothstep(e1,e0,x))`; the 35 non-literal calls all rise for positive inputs. Pairs system, landing,
   far system at 760: max|d| 1/0/0. Node suite «шейдеры: у smoothstep нет перевёрнутых рёбер» scans the game
   script. Desktop golden frames were already red before this segment (49f75cf): черпак 5.4 %, дом 3.8 %.
-  Next: shadow 512×128 warm set, the dock pad halo, the golden scoop pair for Контроль.
+- **Shadow 512×128 warm set done.** cold3 on S23 saw a 448×64 shadow atlas set born mid-flight (neon,
+  billboard); `GC_POOL_WARM` gains `["shadow",512,128]` (~1.7 MB), the canvas suite asks the pool for 448×64
+  and wants no new texture.
+  Next: the dock pad halo back to d35eed1, the golden scoop pair for Контроль.
 - **`gpuHullLight` (16ga) is removed:** the hull light is 17c `gpuLitSprite`; the probe row `hullLight` is gone.
 - **Next, in Контроль's order (25.09):**
   1. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);

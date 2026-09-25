@@ -109,6 +109,8 @@ TEST_SUITES.push(()=>suite("GPU-холст: серии тени, пул целе
   /* а4: выпечка гостиницы 500×340 при ss 2 (1000×680) — набор 1024² из прогрева пула, не разовый великан */
   const m1=Q.made;gpuBakeDrop(gpuBake(500,340,g=>{g.fillStyle="#fff";g.fillRect(0,0,9,9);},{ss:2,mips:false}));
   eq(Q.made-m1,0,"выпечка 1000×680 — из прогретого набора 1024², новых целей нет");
+  const m2=Q.made;gcPoolSet("shadow",448,64);
+  eq(Q.made-m2,0,"атлас тени 448×64 (родился посреди полёта на S23 cold3) — из прогретого набора 512×128");
   /* бюджет видеокарты prebake: крупные шаги — по одному на кадр, мелкие идут пачкой */
   const steps=(w,h)=>{let n=0;const key="t|px"+w;prebakeDrop(key);PB_F=-2;
     prebake(key,function*(){for(let i=0;i<4;i++){gpuBakeDrop(gpuBake(w,h,g=>{g.fillRect(0,0,4,4);},{ss:2,mips:false}));n++;yield;}},false);
