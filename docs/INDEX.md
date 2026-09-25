@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 608 · символов верхнего уровня: 6023
+Файлов: 608 · символов верхнего уровня: 6030
 
 ## СИМВОЛЫ
 
@@ -1511,7 +1511,7 @@ drawSkyBodies                src/19b-sky.js:96-128
 drawSkyLayer                 src/19-mode-landing.js:171-269
 drawSpa                      src/29i-spa-draw.js:41-486
 drawStars                    src/16-flight.js:40-79
-drawStation                  src/17c-system-draw.js:488-554
+drawStation                  src/17c-system-draw.js:490-556
 drawStationBody              src/17c-system-draw.js:153-359
 drawStationMods              src/17a-station-mod.js:214-217
 drawStencils                 src/03d-hull-marks.js:1-90
@@ -2143,15 +2143,16 @@ gplSun                       src/17ga-gpu-planets.js:314-317
 GPU                          src/08b-gpu.js:8
 GPU_BLEND                    src/08c-gpu-kit.js:12-25
 GPU_CVTEX_CAP                src/08c-gpu-kit.js:60
-GPU_FLD_HEAD                 src/08c-gpu-kit.js:202
-GPU_IMG_WGSL                 src/08c-gpu-kit.js:124
+GPU_FLD_HEAD                 src/08c-gpu-kit.js:222
+GPU_IMG_WGSL                 src/08c-gpu-kit.js:144
 GPU_KEEP_A                   src/08c-gpu-kit.js:11
-GPU_KIT_WGSL                 src/08c-gpu-kit.js:110
+GPU_KIT_WGSL                 src/08c-gpu-kit.js:130
+GPU_MIP                      src/08c-gpu-kit.js:81
 GPU_PL_WGSL                  src/08b-gpu.js:460
 GPU_POST_WGSL                src/08b-gpu.js:88
-GPU_SHP_WGSL                 src/08c-gpu-kit.js:161
-GPU_WGSL_COMMON              src/08c-gpu-kit.js:79
-gpuArena                     src/08c-gpu-kit.js:99-109
+GPU_SHP_WGSL                 src/08c-gpu-kit.js:181
+GPU_WGSL_COMMON              src/08c-gpu-kit.js:99
+gpuArena                     src/08c-gpu-kit.js:119-129
 gpuBargeBody                 src/12l-barge.js:559-563
 gpuBind                      src/08c-gpu-kit.js:33-39
 gpuBloom                     src/08b-gpu.js:607-614
@@ -2165,7 +2166,7 @@ gpuCvLevel                   src/08c-gpu-kit.js:65-76
 gpuDrones                    src/16ga-gpu-trail.js:132-176
 gpuDrop                      src/08b-gpu.js:81-86
 gpuExhaust                   src/16ga-gpu-trail.js:259-292
-gpuField                     src/08c-gpu-kit.js:216-244
+gpuField                     src/08c-gpu-kit.js:236-265
 gpuFrame                     src/08b-gpu.js:509-519
 gpuFrontCopy                 src/08b-gpu.js:553-555
 gpuHaze                      src/08b-gpu.js:442
@@ -2173,12 +2174,15 @@ gpuHud                       src/08bh-gpu-hud.js:14-17
 gpuHudDpr                    src/08bh-gpu-hud.js:12
 gpuHudFlush                  src/08bh-gpu-hud.js:20-33
 gpuHullLight                 src/16ga-gpu-trail.js:345-364
-gpuImage                     src/08c-gpu-kit.js:144-156
-gpuKitU                      src/08c-gpu-kit.js:115-119
+gpuImage                     src/08c-gpu-kit.js:164-176
+gpuKitU                      src/08c-gpu-kit.js:135-139
 gpuLight                     src/08b-gpu.js:444
-gpuLitSprite                 src/17c-system-draw.js:479-486
+gpuLitSprite                 src/17c-system-draw.js:480-488
 gpuLtWrite                   src/08b-gpu.js:448-455
 gpuManual                    src/08b-gpu.js:578-583
+gpuMipDrop                   src/08c-gpu-kit.js:95
+gpuMipSmp                    src/08c-gpu-kit.js:96
+gpuMipTex                    src/08c-gpu-kit.js:82-94
 gpuMoon                      src/17ga-gpu-planets.js:400-405
 gpuNebulaComp                src/16gb-gpu-nebula.js:617-627
 gpuNebulaGen                 src/16gb-gpu-nebula.js:562-614
@@ -2195,13 +2199,13 @@ gpuResize                    src/08b-gpu.js:382-417
 gpuScene                     src/08b-gpu.js:523-533
 gpuScene3D                   src/08b-gpu.js:537-545
 gpuSeg                       src/28z-fps-probe.js:139-142
-gpuShapes                    src/08c-gpu-kit.js:186-197
+gpuShapes                    src/08c-gpu-kit.js:206-217
 gpuShock                     src/08b-gpu.js:443
 gpuSky                       src/19ca-gpu-sky.js:66-82
 gpuSnapshot                  src/08b-gpu.js:22-26
 gpuSpaceSys                  src/16g-gpu-space.js:201-219
 gpuSpaceTitle                src/16g-gpu-space.js:221-232
-gpuStation                   src/17c-system-draw.js:487
+gpuStation                   src/17c-system-draw.js:489
 gpuSysUnder                  src/17g-gpu-system.js:386-391
 gpuTakeSnap                  src/08b-gpu.js:27-34
 gpuTrail                     src/16ga-gpu-trail.js:53-90
@@ -2511,11 +2515,12 @@ hexa                         src/12w-survey.js:91-94
 hexRGB                       src/24-mode-belt.js:81-83
 HG_BAKE                      src/17c2-hull-gpu.js:10
 HG_BELLY                     src/17c2-hull-gpu.js:11
-HG_FLAME_WGSL                src/17c2-hull-gpu.js:35
-HG_GAIN                      src/17c2-hull-gpu.js:78
+HG_FLAME_WGSL                src/17c2-hull-gpu.js:42
+HG_GAIN                      src/17c2-hull-gpu.js:85
+HG_LOD                       src/17c2-hull-gpu.js:16
 HG_SIDE                      src/17c2-hull-gpu.js:13
 HG_THR                       src/17c2-hull-gpu.js:12
-HG_U                         src/17c2-hull-gpu.js:75
+HG_U                         src/17c2-hull-gpu.js:82
 HIN_DOORW                    src/29c-home-in.js:24
 HIN_MAN                      src/29c-home-in.js:20
 HIN_ROOM_H                   src/29c-home-in.js:21
@@ -2739,11 +2744,13 @@ hullBakeKey                  src/03e1-hull-bake.js:32-36
 hullBakeRender               src/03e1-hull-bake.js:107-117
 hullBakeScale                src/03e1-hull-bake.js:27-30
 hullClassOf                  src/03-ships.js:253-268
-hullGpuBake                  src/17c2-hull-gpu.js:15-22
-hullGpuBelly                 src/17c2-hull-gpu.js:23-32
-hullGpuDraw                  src/17c2-hull-gpu.js:100-140
-hullGpuE                     src/17c2-hull-gpu.js:14
-hullGpuFlames                src/17c2-hull-gpu.js:79-97
+hullGpuBake                  src/17c2-hull-gpu.js:24-31
+hullGpuBelly                 src/17c2-hull-gpu.js:32-39
+hullGpuDraw                  src/17c2-hull-gpu.js:125-166
+hullGpuE                     src/17c2-hull-gpu.js:17
+hullGpuFlames                src/17c2-hull-gpu.js:86-104
+hullGpuInserts               src/17c2-hull-gpu.js:107-122
+hullGpuSb                    src/17c2-hull-gpu.js:20-23
 hullHeld                     src/28-loop.js:9
 hullHeldTick                 src/28-loop.js:10-15
 hullInkBox                   src/03e1-hull-bake.js:120-131
@@ -6167,7 +6174,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/08bh-gpu-hud.js · 11 КБ
   · слой приборов: #hud и фишки у кромки (ступень 1, docs/DESIGN-gpu.md §L.S):1
 
-## src/08c-gpu-kit.js · 17 КБ
+## src/08c-gpu-kit.js · 19 КБ
   · набор для слоёв видеокарты (docs/DESIGN-gpu.md §4):1
 
 ## src/09-audio.js · 18 КБ
@@ -6741,7 +6748,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/17c1-station-dress.js · 4 КБ
   · станция по строителю: одевка плиты (M454, DESIGN-borders §2.3):1
 
-## src/17c2-hull-gpu.js · 9 КБ
+## src/17c2-hull-gpu.js · 12 КБ
   · корпус корабля на видеокарте (15/n п.2, DESIGN-gpu §L.S):1
 
 ## src/17d-house-shapes.js · 7 КБ

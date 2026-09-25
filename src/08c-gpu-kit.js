@@ -74,6 +74,26 @@ function gpuCvLevel(cv,ver,devW){
   }
   return L.lv[i];
 }
+/* печёный мастер с мипами: уровни — половинки 2D, как у gpuCvLevel, но грузятся все
+   сразу и один раз; трилинейный сэмплер (gpuMipSmp) берёт уровень между ними, и зум
+   не перепекает и не грузит ничего. Холст мастера не перерисовывать: новая выпечка —
+   новый холст, старый отдать gpuMipDrop */
+const GPU_MIP=new WeakMap();
+function gpuMipTex(cv){
+  let e=GPU_MIP.get(cv);if(e&&e.dev===GPU.dev)return e;   /* устройство потеряно и поднято — грузим заново */
+  let n=1;while(n<9&&(cv.width>>n)>=4&&(cv.height>>n)>=4)n++;
+  const U=GPUTextureUsage,tex=GPU.dev.createTexture({size:[cv.width,cv.height],mipLevelCount:n,format:"rgba8unorm",usage:U.TEXTURE_BINDING|U.COPY_DST|U.RENDER_ATTACHMENT});
+  let s=cv;
+  for(let i=0;i<n;i++){
+    if(i){const c=document.createElement("canvas");c.width=Math.max(1,cv.width>>i);c.height=Math.max(1,cv.height>>i);
+      const g=c.getContext("2d");g.imageSmoothingQuality="high";g.drawImage(s,0,0,c.width,c.height);s=c;}
+    GPU.dev.queue.copyExternalImageToTexture({source:s},{texture:tex,mipLevel:i,premultipliedAlpha:true},[s.width,s.height]);
+  }
+  e={tex,view:tex.createView(),w:cv.width,h:cv.height,n,dev:GPU.dev};GPU_MIP.set(cv,e);GPU.mipUp=(GPU.mipUp||0)+n;
+  return e;
+}
+function gpuMipDrop(cv){const e=GPU_MIP.get(cv);if(e){GPU.trash.push(e.tex);GPU_MIP.delete(cv);}}
+function gpuMipSmp(){return GPU.S.mip||(GPU.S.mip=GPU.dev.createSampler({magFilter:"linear",minFilter:"linear",mipmapFilter:"linear"}));}
 /* общие куски шейдеров слоёв: мерка кадра и покрытие фигур со сглаживанием.
    Покрытие честное, по площади пикселя — так же, как Skia гладит края в 2D */
 const GPU_WGSL_COMMON=`
@@ -235,9 +255,10 @@ function gpuField(pass,name,code,uni,texs,o){
   const tv=[0,1,2,3].map(k=>(texs&&texs[k])?(texs[k].view||gpuCanvasTex(texs[k]).view):GPU.nView||(GPU.nView=GPU.N.createView()));
   /* привязка на слот: пересобирается, только если сменился буфер или текстуры */
   const key="fld."+slot;let c=GPU.bgs[key];
-  if(!c||c.buf!==A.buf||c.t[0]!==tv[0]||c.t[1]!==tv[1]||c.t[2]!==tv[2]||c.t[3]!==tv[3]){
-    c=GPU.bgs[key]={buf:A.buf,t:tv,bg:d.createBindGroup({layout:GPU.fL,entries:[
-      {binding:0,resource:{buffer:A.buf,offset:slot*256,size:256}},{binding:1,resource:GPU.S.lin},
+  const sm=(o&&o.smp)||GPU.S.lin;   /* o.smp — свой сэмплер (трилинейный у мастеров с мипами) */
+  if(!c||c.buf!==A.buf||c.sm!==sm||c.t[0]!==tv[0]||c.t[1]!==tv[1]||c.t[2]!==tv[2]||c.t[3]!==tv[3]){
+    c=GPU.bgs[key]={buf:A.buf,sm,t:tv,bg:d.createBindGroup({layout:GPU.fL,entries:[
+      {binding:0,resource:{buffer:A.buf,offset:slot*256,size:256}},{binding:1,resource:sm},
       {binding:2,resource:tv[0]},{binding:3,resource:tv[1]},{binding:4,resource:tv[2]},{binding:5,resource:tv[3]}]})};
   }
   pass.setPipeline(P);pass.setBindGroup(0,c.bg);pass.draw(3);

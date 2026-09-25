@@ -164,7 +164,8 @@ Then hulls (item 2) by the same «explicit emission» path.
 - Brief of **hulls, 15/n p.2**: the own ship leaves `#c` in flight — the body is the same 03e1 bake at bank 0, one
   per hull and scale step, lit by the star through `gpuLitSprite` with the bank as a span squash; flames, idle
   nozzles, belly, brake tongues, nav lights and the engine line are scene-pass shapes. Gate: the pair at 760 and
-  ×1.5 (thrusting, bank .35) not dimmer, gpu errs 0; hulls with a runline or crowns stay on the 2D path.
+  ×1.5 (thrusting, bank .35) not dimmer, gpu errs 0. Pass 1b: one mipped master per hull (0 uploads in flight
+  and on a zoom sweep), runline and crowns as shapes over the body — no hull left on `#c`.
 
 The phone frame budget does not grow: GPU ≤ 12 ms.
 
@@ -389,6 +390,28 @@ The phone frame budget does not grow: GPU ≤ 12 ms.
   (760), `cuthp_was` | `cuthq_now` (×1.5), stand `hcjs.js` + `thr.js` (forces thrust and bank), `gainrun.sh` (gain
   override without a rebuild). Open: the body reads a touch lighter than the 2D one (relief light vs
   `gpuHullLight`'s rim) — not dimmer, within the rule; the left wing's shadow is softer.
+  Hulls pass 1b (Контроль on 22f85fb: the scale was still in the key — every 1/16-octave zoom step a new bake,
+  texture and upload; runline and crown hulls stayed on `#c`). One master per hull: `hullGpuSb` = 2 × the largest
+  ship in flight (`shipScaleCap(ZOOM_MAX)` = 1.4) in scene pixels (`GPU.bw/W`), on a quarter-octave grid, capped by
+  the 1024 side — zoom never changes it; the key is still `hullBakeKey(id,sb)` (wear, seams, scars…), four per
+  hull, an evicted one frees its texture (`gpuMipDrop`). Kit (08c): `gpuMipTex(cv)` uploads every level once (2D
+  halvings, `imageSmoothingQuality` high, `copyExternalImageToTexture` per `mipLevel`, rebuilt after a device
+  loss), `gpuMipSmp()` the trilinear sampler, `gpuField` takes `o.smp` (in the bind-group key). GST: the texture
+  level comes in `V[3].z` for the albedo and all relief taps (`sa`), so the relief reads the same level;
+  `gpuLitSprite(...,sy,lod)` takes a canvas or a ready master. Level = log2(master / screen) − .35 (`HG_LOD`,
+  towards sharp: trilinear mixes two levels). The belly is baked once at the master scale and drawn through
+  `gpuCvLevel`. Runline ticks and crowns are drawn over the whole body (`hullGpuInserts`): ticks and the plank as
+  capsules in hull axes, crowns as discs, the plank's rim a wider white capsule under it, the crown halo a disc
+  with a falloff over the old gradient's radius; so every hull leaves `#c`. Numbers (stand `hcjs.js` + `thr.js` +
+  `ins.js` + `gs2.js`, 760, thrust, bank .35, runline and five crowns; 60 steady frames, then 120 frames of zoom
+  ZOOM_MIN → ZOOM_MAX): the hull uploads 0 in steady flight and 0 on the sweep, its master 6 levels once; the frame
+  submits 1 per frame and uploads `#c` once per frame. Not hull: 4 uploads per 60 steady frames are the station
+  (`drawStation → gpuStation` gets a new 408² canvas about every 15 frames), 89 on the sweep are `gpuImage` bakes
+  that follow the zoom (hotel, billboard, neon) and the station again, plus one `writeTexture` per frame
+  (`gpuLtWrite`, the light table). Sharpness (Laplacian sd over the ship, 22f85fb → now): 760 35.1 → 38.6, ×1.5
+  31.3 → 34.1, far plan 39.9 → 44.5; mean luma equal. Pairs `cutm1..m4_*.png`, sheet `mipsheet.py`, `sharp.py`.
+  Still open (pass 2): the bake keeps hullPart1's painted ridge highlight under the GST light, so the body reads
+  lighter than the 2D one — against the 2D path with crowns (cutm4) clearly lighter and pinker.
 - Brief of **L4 k/n — the shock ring and the exhaust haze bend the backdrop, never a hull** (Контроль 24.09): no
   hull, own or pirate, sprite or 2D, is cut into bands; an RGB fringe on the backdrop only. Done (08b/08c): the
   scene's alpha became the hull mask — every blend keeps it (`GPU_KEEP_A`), the lit sprite (`gst`: pirates,

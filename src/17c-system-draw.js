@@ -427,9 +427,9 @@ fn plOcc(q:vec2f)->f32{let V=fu.v;let dq=q-V[0].xy;let ro=V[1].zw;
   let uv=(vec2f(dot(dq,ro),dot(dq,vec2f(-ro.y,ro.x)))/V[0].z+1.)*.5;
   if(any(uv<vec2f(0.))||any(uv>vec2f(1.))){return 0.;}
   return textureSampleLevel(t0,smp,uv,0.).a;}
-fn sa(uv:vec2f,d:vec2f)->vec2f{
-  return vec2f(textureSampleLevel(t0,smp,uv+vec2f(d.x,0.),0.).a-textureSampleLevel(t0,smp,uv-vec2f(d.x,0.),0.).a,
-               textureSampleLevel(t0,smp,uv+vec2f(0.,d.y),0.).a-textureSampleLevel(t0,smp,uv-vec2f(0.,d.y),0.).a);}
+fn sa(uv:vec2f,d:vec2f)->vec2f{let l=fu.v[3].z;
+  return vec2f(textureSampleLevel(t0,smp,uv+vec2f(d.x,0.),l).a-textureSampleLevel(t0,smp,uv-vec2f(d.x,0.),l).a,
+               textureSampleLevel(t0,smp,uv+vec2f(0.,d.y),l).a-textureSampleLevel(t0,smp,uv-vec2f(0.,d.y),l).a);}
 fn field(p:vec2f,uv0:vec2f)->vec4f{
   let V=fu.v;let c=V[0].xy;let R=V[0].z;let s=V[0].w;let sd=normalize(V[1].xy);let col=V[2].rgb;let ro=V[1].zw;
   let dp=p-c;let rr=length(dp);
@@ -440,7 +440,7 @@ fn field(p:vec2f,uv0:vec2f)->vec4f{
   /* V[3].y — сжатие крена по поперечной оси (корпус корабля, 17c2); 0 — без крена */
   let lp=vec2f(dot(dp,ro),dot(dp,vec2f(-ro.y,ro.x)))/vec2f(1.,select(1.,V[3].y,V[3].y>0.));let uv=(lp/R+1.)*.5;
   if(any(uv<vec2f(0.))||any(uv>vec2f(1.))){return vec4f(gl,0.);}
-  let c4=textureSampleLevel(t0,smp,uv,0.);let a=c4.a;
+  let c4=textureSampleLevel(t0,smp,uv,V[3].z);let a=c4.a;   /* V[3].z — уровень мипа у мастера (17c2), иначе 0 */
   if(a<.01){return vec4f(gl,0.);}
   let u1=vec2f(.5/R);
   let L=normalize(vec3f(sd,.3));
@@ -476,12 +476,14 @@ fn field(p:vec2f,uv0:vec2f)->vec4f{
 }`;
 /* выпечка cv (полуразмер R в пикселях экрана, поворот rot) со светом звезды по рельефу;
    (lx,ly) — к звезде; glow — доля своего тёплого света (станция 1, баржа 0) */
-function gpuLitSprite(cv,x,y,R,s,rot,lx,ly,glow,sy){
+/* cv — холст или готовый мастер с мипами (gpuMipTex, 17c2): тогда lod — его уровень */
+function gpuLitSprite(cv,x,y,R,s,rot,lx,ly,glow,sy,lod){
   const pass=gpuScene();if(!pass)return false;
   const c=(typeof starRGB==="function")?starRGB():[255,244,214],m=Math.max(1,c[0],c[1],c[2]);
   const U=new Float32Array(16);U[0]=x;U[1]=y;U[2]=R;U[3]=s;U[4]=lx;U[5]=ly;U[6]=Math.cos(rot);U[7]=Math.sin(rot);
-  U[8]=c[0]/m;U[9]=c[1]/m;U[10]=c[2]/m;U[11]=1;U[12]=glow;U[13]=sy||0;
-  gpuField(pass,"gst",GST_WGSL,U,[gpuCanvasTex(cv),{view:GPU.V.lt}],{blend:"hull"});
+  U[8]=c[0]/m;U[9]=c[1]/m;U[10]=c[2]/m;U[11]=1;U[12]=glow;U[13]=sy||0;U[14]=lod||0;
+  const mip=!!cv.view;
+  gpuField(pass,"gst",GST_WGSL,U,[mip?cv:gpuCanvasTex(cv),{view:GPU.V.lt}],{blend:"hull",smp:mip?gpuMipSmp():null});
   return true;
 }
 function gpuStation(art,x,y,s,lx,ly){return gpuLitSprite(art.cn,x,y,art.R,s,0,lx,ly,1);}

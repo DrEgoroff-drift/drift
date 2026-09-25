@@ -5,30 +5,37 @@
    по размаху в самом спрайте, свет звезды кладёт gpuLitSprite по рельефу (как
    пиратам и станциям). Живое — в проходе сцены с явным светом: брюхо крена, факелы
    (поле, длина сглажена, поток шума вместо rndFx), ходовые огни, тормозные языки,
-   полоса уровня двигателя. С бегущей строкой или венцами корпус идёт старым путём:
-   они живут между кусками тела. */
-const HG_BAKE=new WeakMap();   // h → Map(ключ → {cv,E}) выпечка тела при крене 0
-const HG_BELLY=new WeakMap();  // h → Map(sb → {cv,E}) тёмный силуэт брюха
+   полоса уровня двигателя, огни бегущей строки и венцы. Тело — один мастер на корпус
+   с мипами (08c gpuMipTex): зум берёт уровень, а не перепекает и не грузит. */
+const HG_BAKE=new WeakMap();   // h → Map(ключ → {cv,E,sb}) мастер тела при крене 0
+const HG_BELLY=new WeakMap();  // h → {cv,E,sb} тёмный силуэт брюха
 const HG_THR=new Map();        // id → сглаженная тяга 0..1 (эфемерное, не в сейве)
 const HG_SIDE=1024;
+/* уровень мипа сдвинут к резкому: трилинейка смешивает два уровня, а примета
+   изготовителя (makerRead) держится резкостью мелкого плана */
+const HG_LOD=-.35;
 function hullGpuE(h){return Math.max(h.nose,-h.tail,h.bw*3)*1.6+8;}
+/* масштаб мастера: вдвое больше самого крупного корабля в полёте (shipScaleCap у
+   ZOOM_MAX) в пикселях сцены, шагом в четверть октавы — зум его не меняет вовсе */
+function hullGpuSb(h,dk){
+  const x=2*shipScaleCap(ZOOM_MAX)*dk,sb=Math.pow(2,Math.ceil(Math.log2(x)*4)/4);
+  return Math.min(sb,HG_SIDE/(2*hullGpuE(h)));
+}
 function hullGpuBake(h,id,sb){
   let M=HG_BAKE.get(h);if(!M){M=new Map();HG_BAKE.set(h,M);}
   const key=hullBakeKey(id,sb);let b=M.get(key);if(b)return b;
-  const E=hullGpuE(h),side=Math.ceil(E*2*sb);if(side>HG_SIDE)return null;
+  const E=hullGpuE(h),side=Math.ceil(E*2*sb);
   const cv=hullBakeRender(h,id,0,[1,2,3],sb,-side/(2*sb),-side/(2*sb),side,side);
-  if(M.size>=8)M.delete(M.keys().next().value);
-  b={cv,E:side/(2*sb)};M.set(key,b);return b;
+  if(M.size>=4){const k=M.keys().next().value;gpuMipDrop(M.get(k).cv);M.delete(k);}
+  b={cv,E:side/(2*sb),sb};M.set(key,b);return b;
 }
 function hullGpuBelly(h,sb){
-  let M=HG_BELLY.get(h);if(!M){M=new Map();HG_BELLY.set(h,M);}
-  let b=M.get(sb);if(b)return b;
-  const E=hullGpuE(h),side=Math.ceil(E*2*sb);if(side>HG_SIDE)return null;
+  let b=HG_BELLY.get(h);if(b&&b.sb===sb)return b;
+  const E=hullGpuE(h),side=Math.ceil(E*2*sb);
   const cv=document.createElement("canvas");cv.width=cv.height=side;
   const prev=ctx;ctx=cv.getContext("2d");
   try{ctx.setTransform(sb,0,0,sb,side/2,side/2);tracePoly(h.poly);ctx.fillStyle=rgba(h.dark,.85);ctx.fill();}finally{ctx=prev;}
-  if(M.size>=4)M.delete(M.keys().next().value);
-  b={cv,E:side/(2*sb)};M.set(sb,b);return b;
+  b={cv,E:side/(2*sb),sb};HG_BELLY.set(h,b);return b;
 }
 /* факелы: перо, зарево и ядро одной формулой на все сопла. Цвет — подпись
    изготовителя (makerFlame) или люкс (холодная игла); ядро светит выше единицы */
@@ -95,12 +102,31 @@ function hullGpuFlames(pass,h,id,x,y,a,sc,cb,thr,lvl){
   U[7]=n;
   gpuField(pass,"hgflame",HG_FLAME_WGSL,U,null,{blend:"add"});
 }
+/* живые вставки поверх тела: огни строки Компании (makerTicks) и венцы (drawCrowns) —
+   те же места и цвета в осях корпуса; повёрнутые прямоугольники — капсулами */
+function hullGpuInserts(pass,h,id,S,sc,live){
+  const O=[],A=[];
+  if(live.ticks)for(const o of h.outs)if(o.k==="runline")for(const s of [1,-1]){const y=o.y*s;
+    for(let k=0;k<5;k++){const x=o.x-o.l+k*o.l*.2+((G.t*.6)%(o.l*.2))+o.l*.025,hw=o.l*.025;
+      const [x0,y0]=S(x,y-o.w*.4+hw),[x1,y1]=S(x,y+o.w*.4-hw);O.push([2,x0,y0,x1,y1,hw*sc,0,200,235,255,.9]);}}
+  if(live.crowns){const list=NODE_FAMS.filter(f=>G.crowns[f.id]),x0=h.tail+5,step=4.6,rows=[[],[]];
+    list.forEach((F,i)=>rows[i%2].push(F));
+    rows.forEach((row,s0)=>{if(!row.length)return;
+      const y=(s0?1:-1)*(h.tailW*.5+2.6),w=row.length*step,[a0,b0]=S(x0-1.6+1.9,y),[a1,b1]=S(x0+w-1.9,y);
+      O.push([2,a0,b0,a1,b1,2.15*sc,0,255,255,255,.14],[2,a0,b0,a1,b1,1.9*sc,0,0,0,0,.45]);
+      row.forEach((F,k)=>{const c=mixc(hex2rgb(F.col),[255,255,255],.4),pu=.65+.35*Math.sin(G.t*.06+k*1.3+s0),[px,py]=S(x0+k*step+step*.5-.6,y);
+        O.push([1,px,py,1.05*sc,0,0,0,c[0],c[1],c[2],.95*pu]);});});
+    const c=hex2rgb(list[0].col),r=(7+list.length*2.2)*sc,[gx,gy]=S(x0,0);
+    A.push([1,gx,gy,sc,0,0,r,c[0],c[1],c[2],.14]);}   /* как радиальный градиент 2D: от .14 в центре к нулю на r */
+  if(O.length)gpuShapes(pass,O);if(A.length)gpuShapes(pass,A,{blend:"add"});
+}
 /* корабль целиком; x,y — экран, a — курс, sc — масштаб корабля, (lx,ly) — к звезде.
-   false — видеокарта не взяла (нет прохода, живые вставки, велик), рисуй по-старому */
+   false — прохода сцены нет, рисуй по-старому */
 function hullGpuDraw(id,x,y,a,sc,thrusting,braking,lvl,bank,lx,ly){
   const pass=gpuScene();if(!pass||!(sc>0))return false;
-  const h=hullOf(id),live=hullLiveInserts(h,id);if(live.ticks||live.crowns)return false;
-  const sb=Math.pow(2,Math.ceil(Math.log2(sc*DPR)*16)/16),B=hullGpuBake(h,id,sb);if(!B)return false;
+  const h=hullOf(id),live=hullLiveInserts(h,id);
+  const dk=GPU.bw/W,sb=hullGpuSb(h,dk),B=hullGpuBake(h,id,sb),T=gpuMipTex(B.cv);
+  const lod=Math.max(0,Math.log2(B.sb/(sc*dk))+HG_LOD);
   bank=bank||0;lvl=lvl||0;
   const cb=Math.cos(bank),ca=Math.cos(a),sa=Math.sin(a);
   const S=(px,py)=>{py*=cb;return [x+(px*ca-py*sa)*sc,y+(px*sa+py*ca)*sc];};   /* точка корпуса → экран */
@@ -117,10 +143,10 @@ function hullGpuDraw(id,x,y,a,sc,thrusting,braking,lvl,bank,lx,ly){
     gpuShapes(pass,gl,{blend:"add"});
   }
   /* брюхо: тёмный силуэт со стороны крена, под телом */
-  if(bank){const Bl=hullGpuBelly(h,sb);
-    if(Bl){const [bx,by]=S(0,Math.sin(bank)*h.bw*.62);
-      gpuImage(pass,Bl.cv,[{x:bx,y:by,w:Bl.E*2*sc,h:Bl.E*2*sc*cb,rot:a}],{ver:"hgb"+sb});}}
-  gpuLitSprite(B.cv,x,y,B.E*sc,sc,a,lx,ly,0,cb);
+  if(bank){const Bl=hullGpuBelly(h,sb),[bx,by]=S(0,Math.sin(bank)*h.bw*.62);
+    gpuImage(pass,gpuCvLevel(Bl.cv,0,Bl.E*2*sc*dk),[{x:bx,y:by,w:Bl.E*2*sc,h:Bl.E*2*sc*cb,rot:a}]);}
+  gpuLitSprite(T,x,y,B.E*sc,sc,a,lx,ly,0,cb,lod);
+  if(live.ticks||live.crowns)hullGpuInserts(pass,h,id,S,sc,live);
   /* тормозные языки у носа — живые, над телом */
   if(braking){const f=4+(.5+.5*Math.sin(G.t*.9))*6,T=[];
     for(const s of [-1,1]){const yy=h.bw*.5*s,[x0,y0]=S(h.nose*.5,yy),[x1,y1]=S(h.nose*.5+f,yy);
