@@ -157,6 +157,10 @@ first level is ¼ frame, so its narrowest halo is ≥ 4 px and fills the ~1.5 px
 Gate: a 760 pair on the author's scene («Космос», Cheburek, the ship, orange gas) plus phone scale; peak glow at the
 sign and at the Cheburek in numbers, was | now; the Cheburek halo leaves the hull outline by ≤ ~⅓ of its length.
 Then hulls (item 2) by the same «explicit emission» path.
+- Brief of **16/n fixes** (Контроль on bfa9e26): the letter is carried by the tube colour, the pale core only as
+  the middle third of a stroke ≥ ~2.4 px, one shared neon bake (17k0) for the hotel and the billboard; the
+  billboard leaves `#c` whole (panel bake, neon title, ticker strip); hotel windows are 2700–3000 K lamps with a
+  few cold ones, never flat white. Gate: S of the sign's bright pixels (V > .55) ≥ .5 and V ≥ .85 at 760 and ×1.5.
 
 The phone frame budget does not grow: GPU ≤ 12 ms.
 
@@ -344,6 +348,26 @@ The phone frame budget does not grow: GPU ≤ 12 ms.
   Kit: `gpuImage` passes `o.ver` to `gpuCanvasTex` (bakes redrawn in place); `gpuCvLevel(cv,ver,devW)` picks a
   halved level so a far hotel does not shimmer; the texture LRU holds 32 (`GPU_CVTEX_CAP`) — eight thrashed once
   the hotel, sign, boat and shuttles each kept two layers.
+  16/n fixes (Контроль on bfa9e26: «Космос» lost its colour, S .58 → .23; the billboard burnt white; the windows
+  flat white squares). One neon bake, 17k0 `neonBake`/`neonDraw`, serves the hotel and the billboard: glass
+  albedo of the whole name, emission of the live letters in the tube colour (the lamp colour pushed away from white
+  ×1.6, since the tone shoulder whitens what is bright) with a halo of .14 font px, and a pale core only as the
+  middle third of a stroke of ≥ 2.4 device px (`destination-out` of a ⅔-stroke outline), otherwise the tube
+  colour whole; gain 1.2. Billboard (17k `bbDrawGpu`): panel, truss and the ГОСПЛАН block baked once in device
+  pixels, the title through the neon bake (dead letter as glass, the hum as gain), the ticker a baked text strip
+  that the window pages by `u0/u1` in ≤ 8 segments (added, gain 1), the far plaque two `gpuShapes` rects; the old
+  2D path stays as the fallback. Gate (bright px V > .55, S / V): sign 760 .22/.95 → .82/.93, ×1.5 .27/.95 →
+  .79/.93; billboard 760 .30/.91 → .81/.94 (bright px 1424 → 515), ×1.5 .32/.89 → .75/.90. Hotel windows: lamps
+  from a 7-colour table (six 2700–3000 K, one cold), the room darker than the lamp (.46 → .36 of it), light as a
+  radial pool (.3 → .05) — why they were white at 760: a window is ~3 px there, and the white frames (#f3efe4)
+  averaged into the lamp; frames are now the wall's tone at night (#c9c1ae). A lit balcony carried its own light
+  over the window's (cut now), its glass darker (#6e5436, light .22); the «ПРОДАЮ» paper grey (#aca695) and
+  opaque to the lamp behind it; air conditioners #c4c2ba. Open: the whole façade renders ~+.16 above its paint
+  even with the hotel's emission off (the scene's gas over objects), so the wall's luma (~219) sits above the
+  sign's (~207 at 760) — the brightest window (luma ~228, the paper balcony) is still not below the sign; the
+  sign stays the accent by saturation and dark sky. Fix belongs to the object lighting pass (light the façade by
+  the star like `gpuLitSprite`, night walls darker), not to the windows. Pairs `pair16n_760.png`, `pair16n_p.png`
+  (was bfa9e26 | now), script `sv.py` (S/V of bright pixels), `hot.py`, `dumpbake.py` (the three bake layers).
 - Brief of **L4 k/n — the shock ring and the exhaust haze bend the backdrop, never a hull** (Контроль 24.09): no
   hull, own or pirate, sprite or 2D, is cut into bands; an RGB fringe on the backdrop only. Done (08b/08c): the
   scene's alpha became the hull mask — every blend keeps it (`GPU_KEEP_A`), the lit sprite (`gst`: pirates,

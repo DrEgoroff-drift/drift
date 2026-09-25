@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 606 · символов верхнего уровня: 6001
+Файлов: 607 · символов верхнего уровня: 6009
 
 ## СИМВОЛЫ
 
@@ -377,12 +377,18 @@ bazLots                      src/17n-bazaar.js:33-46
 bazOpen                      src/17n-bazaar.js:117-137
 bazPartBase                  src/17n-bazaar.js:31
 bazThrow                     src/17n-bazaar.js:25-30
+BB_BAKE                      src/17k-billboard.js:62
 BB_CACHE                     src/17k-billboard.js:12
+BB_NEON                      src/17k-billboard.js:61
 BB_TITLE                     src/17k-billboard.js:11
 bbDeal                       src/17k-billboard.js:20-30
+bbDrawGpu                    src/17k-billboard.js:100-120
 bbHere                       src/17k-billboard.js:13-18
 bbLine                       src/17k-billboard.js:31-50
 bBox                         src/21aa-base-rooms.js:23-28
+bbPanelBake                  src/17k-billboard.js:63-89
+bbStripBake                  src/17k-billboard.js:90-99
+bbTitle                      src/17k-billboard.js:52-56
 bCalm                        tests/91zzzw-base.js:71-81
 bCrate                       src/21aa-base-rooms.js:270-277
 bCrew                        tests/91zzzw-base.js:199-205
@@ -1393,7 +1399,7 @@ drawBeastAlien               src/20f-fauna.js:65-229
 drawBelt                     src/24-mode-belt.js:378-718
 drawBeltPOISprite            src/24b-belt-poi.js:50-185
 drawBeltRocks                src/17c-system-draw.js:29-70
-drawBillboard                src/17k-billboard.js:51-113
+drawBillboard                src/17k-billboard.js:121-184
 drawBuildMenu                src/21aa-base-rooms.js:504-520
 drawBuilt                    src/21c-built.js:64-101
 drawCantinaRoom              src/27d-ui-cantina.js:32-44
@@ -1454,7 +1460,7 @@ drawHitFx                    src/18d-postfx.js:81-87
 drawHomeIn                   src/29d-home-draw.js:9-332
 drawHomeOut                  src/21f-home-out.js:73-312
 drawHomeRoom                 src/27e-ui-home.js:42-62
-drawHotel                    src/17l-hotel.js:224-254
+drawHotel                    src/17l-hotel.js:214-238
 drawHqRoom                   src/27f-hq-room.js:22-31
 drawHull                     src/03e-hull-draw.js:115-194
 drawHullMarks                src/03b-hull-paint.js:184-491
@@ -2646,16 +2652,15 @@ homeUpWorld                  tests/91zzzc-home-up.js:5-9
 homingStep                   src/13a-guns.js:470-477
 HOTEL_BAKE                   src/17l-hotel.js:42
 HOTEL_EM                     src/17l-hotel.js:50
+HOTEL_LAMP                   src/17l-hotel.js:51
 HOTEL_NIGHT                  src/17l-hotel.js:11
 HOTEL_SIGN                   src/17l-hotel.js:10
-HOTEL_SIGN_FULL              src/17l-hotel.js:206
-HOTEL_SIGNB                  src/17l-hotel.js:207
-hotelBake                    src/17l-hotel.js:51-201
-hotelDesk                    src/17l-hotel.js:263-275
+HOTEL_SIGN_FULL              src/17l-hotel.js:213
+hotelBake                    src/17l-hotel.js:52-211
+hotelDesk                    src/17l-hotel.js:247-259
 hotelHere                    src/17l-hotel.js:12-17
-hotelInteract                src/17l-hotel.js:255-262
+hotelInteract                src/17l-hotel.js:239-246
 hotelLitFrac                 src/17l-hotel.js:25-30
-hotelSignBake                src/17l-hotel.js:208-223
 hotelWinLit                  src/17l-hotel.js:33-41
 HOURS_COIN                   src/11h-hours.js:87
 HOURS_ETHER                  src/11h-hours.js:23-30
@@ -3489,6 +3494,9 @@ needleShot                   src/13a-guns.js:252-262
 needOf                       src/12aa-need.js:26-37
 needsNear                    src/12aa-need.js:52-61
 needWin                      src/12aa-need.js:24
+NEON                         src/17k0-neon.js:8
+neonBake                     src/17k0-neon.js:9-31
+neonDraw                     src/17k0-neon.js:34-39
 NET_FROM                     tests/90-harness.js:428
 NET_TEST                     src/01-core.js:10
 netBody                      src/01-core.js:12
@@ -6749,13 +6757,16 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/17j-cheburek.js · 10 КБ
   · «Чебуречная» — лодка на подъезде (M462, DESIGN-life §3.4):1
 
-## src/17k-billboard.js · 8 КБ
+## src/17k-billboard.js · 12 КБ
   · рекламные щиты на подъезде (M460, DESIGN-life §3.2, review §4.2):1
+
+## src/17k0-neon.js · 3 КБ
+  · неон: буква — трубка (16/n, DESIGN-gpu §L.S «Glow»):1
 
 ## src/17k1-gosplan.js · 4 КБ
   · госзаказ на билборде (M503, PLAN «new mechanics», st. 5):1
 
-## src/17l-hotel.js · 21 КБ
+## src/17l-hotel.js · 20 КБ
   · гостиницы (M461, DESIGN-life §3.3):1
 
 ## src/17m-peace-fleet.js · 9 КБ
