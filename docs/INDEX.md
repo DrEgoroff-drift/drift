@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 626 · символов верхнего уровня: 6262
+Файлов: 627 · символов верхнего уровня: 6275
 
 ## СИМВОЛЫ
 
@@ -55,6 +55,7 @@ ABIL_KEY                     src/16c-abil.js:99
 ABIL_ST                      src/16c-abil.js:25
 abilCone                     src/16c-abil.js:127-136
 abilFire                     src/16c-abil.js:40-83
+abilHintRect                 tests/91zzx-mobile.js:423-431
 abilKind                     src/16c-abil.js:26
 abilMul                      src/16c-abil.js:35-39
 abilOf                       src/16c-abil.js:27
@@ -174,7 +175,7 @@ avrWin                       src/21a6-base-avral.js:103-111
 b64dec                       src/14-save.js:29
 b64enc                       src/14-save.js:27
 bakeCount                    tests/91zzzzy-bake.js:32-41
-bakeIdle                     tests/90-harness.js:397-400
+bakeIdle                     tests/90-harness.js:401-404
 bakeKeep                     src/08c-gpu-kit.js:74-79
 bankTransform                src/03b-hull-paint.js:59-66
 BANYA_EVERY                  src/21ac1-base-banya.js:19
@@ -777,6 +778,7 @@ CHIP_POS                     src/17-mode-system.js:14
 CHIP_SPEED                   src/17-mode-system.js:21
 CHIP_T                       src/17-mode-system.js:15
 CHIP_TOUCH                   src/17-mode-system.js:18
+chipDist                     src/17-mode-system.js:709-715
 chipDom                      src/08bi-gpu-ovl.js:114-129
 chipDomSnap                  src/08bh-gpu-hud.js:35-40
 chipDomSweep                 src/08bh-gpu-hud.js:67-73
@@ -990,7 +992,7 @@ coopSpirit                   src/12aj-coop.js:117
 coopSpiritAdd                src/12aj-coop.js:120-124
 coopSpiritRu                 src/12aj-coop.js:118
 coopSpread                   src/12aj-coop.js:70
-coopStamp                    tests/90-harness.js:543-546
+coopStamp                    tests/90-harness.js:547-550
 coopVisitReset               src/12aj-coop.js:62
 CORONA_IN                    src/17-mode-system.js:26
 COSM_CHIME                   src/12va-wander-cosm.js:59-62
@@ -1106,14 +1108,14 @@ CSW                          src/19e-clouds.js:68
 ctlHint                      src/15-input.js:171-175
 ctlReset                     src/15a-helm.js:127-132
 ctx                          src/08-state.js:5
-cue                          src/08-state.js:391-396
+cue                          src/08-state.js:399-404
 CUE_EPS                      src/27m-scroll-cue.js:25
-CUE_INFO                     src/08-state.js:371
-CUE_LVL                      src/08-state.js:372
-cueFold                      src/08-state.js:399-404
-cueLvl                       src/08-state.js:378-381
-cueReset                     src/08-state.js:382
-cueSameOffer                 src/08-state.js:390
+CUE_INFO                     src/08-state.js:379
+CUE_LVL                      src/08-state.js:380
+cueFold                      src/08-state.js:407-412
+cueLvl                       src/08-state.js:386-389
+cueReset                     src/08-state.js:390
+cueSameOffer                 src/08-state.js:398
 CULT_EXP_GOAL                src/12b3-fx-cult.js:22
 CULT_PLAY                    src/12b3-fx-cult.js:51-94
 CULT_PLAY_EVERY              src/12b3-fx-cult.js:19
@@ -1202,6 +1204,7 @@ decoStela                    src/21bb-deco-biomes.js:267-282
 decoTruss                    src/21ba-deco-shapes.js:101-143
 decoTwinCanopy               src/21bb-deco-biomes.js:328
 decoWall                     src/21ba-deco-shapes.js:147-189
+decRu                        src/27y-hud-words.js:43
 deedAdd                      src/11ai-ledger.js:53-64
 DEEDS                        src/11ai-ledger.js:25-35
 depKind                      src/21b-surface-deco.js:396-405
@@ -1557,7 +1560,7 @@ drawSurface                  src/21e-surface-draw.js:277-291
 drawSurfaceHud               src/21e-surface-draw.js:21-115
 drawSurfaceWorld             src/21e1-surface-world.js:10-615
 drawSurvey                   src/12w-survey.js:63-89
-drawSysHud                   src/17-mode-system.js:705-982
+drawSysHud                   src/17-mode-system.js:716-1000
 drawSysLane                  src/17g-sys-lane.js:108-134
 drawSysLaneShips             src/17g-sys-lane.js:164-192
 drawSysRail                  src/18f-rail-station.js:58-92
@@ -1951,7 +1954,7 @@ folkVisit                    src/12u-folk.js:104-113
 FOOD_SUPPLY                  src/21a1b-base-food.js:16
 foundBase                    src/21a-mode-base.js:101-115
 frame                        src/28-loop.js:628-674
-FRAME_IN                     src/08-state.js:361
+FRAME_IN                     src/08-state.js:369
 FRAME_JS                     src/28-loop.js:119
 FRAME_MS                     src/28-loop.js:141
 frameBody                    src/28-loop.js:429-560
@@ -1989,7 +1992,7 @@ fwdMissing                   src/21b6-base-forward.js:42-52
 fwdStep                      src/21b6-base-forward.js:99-116
 fxInc                        tests/91zzzw-fx.js:18-22
 fxWorld                      tests/91zzzw-fx.js:6-16
-G                            src/08-state.js:191-277
+G                            src/08-state.js:199-285
 G_BOOT_KEYS                  tests/90-harness.js:186
 G11_CPU                      src/28z-fps-probe.js:185
 G11_GPU_KILL                 src/28z-fps-probe.js:210-241
@@ -2593,7 +2596,7 @@ heatAdd                      src/13a-guns.js:47-52
 heatHaze                     src/18d-postfx.js:70-74
 heatHazeFrom                 src/18d-postfx.js:52-67
 heatTick                     src/13a-guns.js:54-62
-held                         src/08-state.js:350
+held                         src/08-state.js:358
 HELM                         src/15a-helm.js:117
 HELM_ACC                     src/15a-helm.js:75
 HELM_ARC0                    src/15a-helm.js:99
@@ -2902,13 +2905,13 @@ hqWallProps                  src/27f-hq-room.js:170-216
 hqWindowView                 src/27f-hq-room.js:616-640
 hsAlive                      tests/91zzzzza-save-hostile.js:29-37
 hsMut                        tests/91zzzzza-save-hostile.js:20-27
-hud                          src/27z-telemetry.js:155-500
+hud                          src/27z-telemetry.js:174-520
 HUD_BAND                     src/27z-telemetry.js:21
 HUD_FLOOR                    src/27z-telemetry.js:31
 HUD_NUM                      src/08-state.js:100
 HUD_PREV                     src/27z-telemetry.js:58
 HUD_STEP                     src/27z-telemetry.js:57
-hudFloorMeasure              src/27z-telemetry.js:123-154
+hudFloorMeasure              src/27z-telemetry.js:142-173
 hudNumDirty                  src/08-state.js:101
 hudRect                      src/08-state.js:127-133
 hudWake                      src/27z-telemetry.js:60-69
@@ -3090,7 +3093,7 @@ KEY_MODES                    tests/91zzzzze-keys.js:20
 keyLabel                     src/15-input.js:147-158
 keyMap                       src/15-input.js:136-143
 keyRow                       src/27-ui-ship.js:46-57
-keys                         src/08-state.js:187
+keys                         src/08-state.js:195
 keyStateOK                   tests/91zzzzze-keys.js:23-29
 killPirate                   src/13-pirates.js:308-349
 killRock                     src/24-mode-belt.js:136-143
@@ -3171,7 +3174,7 @@ landerGearTick               src/19f-lander.js:15-23
 landerInk                    tests/91j-art.js:155-169
 landerLen                    src/19f-lander.js:11
 landingDust                  src/19f-lander.js:344-370
-landOnTestPlanet             tests/90-harness.js:381-387
+landOnTestPlanet             tests/90-harness.js:385-391
 landStartY                   src/19-mode-landing.js:38-43
 LANE_BUOY                    src/17g-sys-lane.js:68
 LANE_CHASE                   src/17g-sys-lane.js:16
@@ -3632,7 +3635,7 @@ mountsOf                     src/05d-mounts.js:29-45
 mountTakes                   src/05d-mounts.js:71-76
 mountWhyNot                  src/05d-mounts.js:78-84
 mouseWalkAt                  src/15-input.js:439-468
-msgHeld                      src/08-state.js:405
+msgHeld                      src/08-state.js:413
 MSL_ARM                      src/16b-missile.js:20
 MSL_COOL                     src/16b-missile.js:16
 MSL_DMG                      src/16b-missile.js:14
@@ -3667,6 +3670,7 @@ musNote                      src/10-music.js:229-269
 musPerc                      src/10-music.js:301-325
 NAME_MAX                     src/11u-names.js:14
 nameAskSystem                src/11u-names.js:79-87
+nameLike                     src/27y-hud-words.js:25-30
 nameOf                       src/11u-names.js:19-22
 namesAll                     src/11u-names.js:15
 nameSet                      src/11u-names.js:23-30
@@ -3716,7 +3720,7 @@ needWin                      src/12aa-need.js:24
 NEON                         src/17k0-neon.js:8
 neonBake                     src/17k0-neon.js:11-30
 neonDraw                     src/17k0-neon.js:33-37
-NET_FROM                     tests/90-harness.js:436
+NET_FROM                     tests/90-harness.js:440
 NET_TEST                     src/01-core.js:10
 netBody                      src/01-core.js:12
 NEWS_ALL_INC                 tests/91zzzw-news.js:17
@@ -3904,7 +3908,7 @@ opisHullRedraw               src/27j-ui-opis.js:404-420
 opisHullSlotAt               src/27j-ui-opis.js:421-432
 opisKitCard                  src/27j-ui-opis.js:627-635
 opisKitFuture                src/27j-ui-opis.js:128-135
-opisLeave                    src/27j-ui-opis.js:989-994
+opisLeave                    src/27j-ui-opis.js:992-997
 opisLift                     src/27j-ui-opis.js:278-320
 opisMarkCan                  src/27j-ui-opis.js:326-341
 opisMarkOver                 src/27j-ui-opis.js:342-346
@@ -3917,7 +3921,7 @@ opisPileCard                 src/27j-ui-opis.js:605-626
 opisPlanBlock                src/05e-plan.js:174-188
 opisPlanOnly                 src/05e-plan.js:189-207
 opisPriceCue                 src/27j-ui-opis.js:586-595
-opisRender                   src/27j-ui-opis.js:715-987
+opisRender                   src/27j-ui-opis.js:715-990
 opisRerender                 src/27j-ui-opis.js:74-84
 opisSame                     src/27j-ui-opis.js:85
 opisScarRows                 src/27j-ui-opis.js:167-174
@@ -3961,11 +3965,15 @@ ownerOf                      src/13-combat.js:13
 packPart                     src/05-parts.js:465-472
 PAD_KEY                      src/15-input.js:19
 PAD_SAFE                     src/18-mode-map.js:2
+padCase                      src/27y-hud-words.js:31-40
+PADNAME_K                    src/27y-hud-words.js:9
+padNames                     src/27y-hud-words.js:10-23
 padsAuto                     src/15-input.js:69
 padsFadeIn                   src/15-input.js:77
 padsFadeOut                  src/15-input.js:76
 padsFit                      src/15-input.js:20-61
 padsRect                     src/08-state.js:134-140
+padWord                      src/27z-telemetry.js:122-126
 PAL_CLOSE                    src/21b5-base-palata.js:26
 PAL_FEE                      src/21b5-base-palata.js:21
 PAL_FEES_RU                  src/21b5-base-palata.js:50-55
@@ -4324,7 +4332,7 @@ prButtons                    tests/91zzzzzi-promise.js:53
 prDelta                      tests/91zzzzzi-promise.js:26-30
 prebake                      src/17a0-prebake.js:16-34
 prebakeDrop                  src/17a0-prebake.js:15
-prevAct                      src/08-state.js:189
+prevAct                      src/08-state.js:197
 priceBestOf                  src/12aa-need.js:242-251
 pricesClose                  src/12aa-need.js:294
 pricesCount                  src/12aa-need.js:252
@@ -4418,8 +4426,8 @@ quietMute                    src/11n-quiet.js:33
 quietNoPirates               src/11n-quiet.js:30
 quietNoWear                  src/11n-quiet.js:31
 quietStay                    src/11n-quiet.js:39-44
-r3Sys                        tests/91zzxa-playable.js:173-179
-r4Haul                       tests/91zzxa-playable.js:327-333
+r3Sys                        tests/91zzxa-playable.js:177-183
+r4Haul                       tests/91zzxa-playable.js:331-337
 RACK                         src/25d-instr-rack.js:54
 RACK_CH                      src/25d-instr-rack.js:27-33
 RACK_G                       src/25d-instr-rack.js:36-53
@@ -4578,6 +4586,7 @@ railPassPrice                src/18i-rail-life.js:19-23
 railPaxOffer                 src/18i-rail-life.js:50-54
 railPolar                    src/18e-rail-net.js:45-48
 railReady                    src/18f-rail-station.js:23
+railRect                     src/08-state.js:142-148
 railRideStart                src/18g-rail-ride.js:35-45
 railSchemeClose              src/18k-rail-scheme.js:56
 railSchemeDraw               src/18k-rail-scheme.js:57-118
@@ -4790,7 +4799,7 @@ repRepairMul                 src/12k-rep.js:53
 repShipMul                   src/12k-rep.js:74
 repWord                      src/12k-rep.js:31-35
 RES                          src/02-world.js:2-88
-RES_AUTO                     src/08-state.js:177
+RES_AUTO                     src/08-state.js:185
 RES_DOWN_K                   src/28-loop.js:226
 RES_DOWN_WIN                 src/28-loop.js:227
 RES_HOLD_MS                  src/28-loop.js:228
@@ -4820,7 +4829,7 @@ rescueTake                   src/16c-rescue.js:105-146
 resEma                       src/28-loop.js:234
 RESET_ABIL0                  tests/90-harness.js:237
 resetArm                     src/26-ui-station.js:694
-resetWorld                   tests/90-harness.js:238-379
+resetWorld                   tests/90-harness.js:238-383
 resize                       src/08-state.js:29-66
 resModeCap                   src/28-loop.js:257-262
 resSay                       src/28-loop.js:243-246
@@ -4839,6 +4848,7 @@ retEtherLine                 src/11s-returners.js:40-43
 retGroundLine                src/11s-returners.js:44-46
 reticle                      src/17c-system-draw.js:4-12
 rgba                         src/01-core.js:225
+rgbaOf                       tests/91zzx-mobile.js:435
 ridged                       src/18a-material.js:30
 RING_FIRST                   src/11x-ring.js:20
 RING_LEN                     src/11x-ring.js:21
@@ -5057,7 +5067,7 @@ rungPoints                   src/12ad-site.js:45-68
 rungRingSegs                 src/12ae-ladder.js:56
 rungRoman                    src/12ae-ladder.js:47
 RUNGS                        src/12ae-ladder.js:13
-runTests                     tests/90-harness.js:453-537
+runTests                     tests/90-harness.js:457-541
 RUSH_SHIFTS                  src/18j-rail-rush.js:6
 rushAt                       src/18j-rail-rush.js:7
 rushFuelMul                  src/18j-rail-rush.js:12
@@ -5076,7 +5086,7 @@ saveGame                     src/14a-cloud.js:38-51
 saveText                     src/14-save.js:148-186
 saveTop                      src/14-save.js:142-145
 saveWeigh                    src/14-save.js:129-141
-say                          src/08-state.js:362
+say                          src/08-state.js:370
 SCALE_KEYS                   src/10-music.js:25
 SCALES                       src/10-music.js:5-24
 SCAR_KEYS                    src/05b2-scars.js:14
@@ -5126,7 +5136,7 @@ scripVisit                   src/12u-scrip.js:95
 scripVisitReset              src/12u-scrip.js:96
 scrollCue                    src/27m-scroll-cue.js:26-30
 scrollCueAll                 src/27m-scroll-cue.js:31-33
-scrOpen                      src/08-state.js:145
+scrOpen                      src/08-state.js:153
 SD_KIND                      src/12tb-settle-draw.js:33-37
 SD_MAN                       src/12tb-settle-draw.js:31
 sdBody                       src/12tb-settle-draw.js:224-234
@@ -5195,10 +5205,11 @@ secTidy                      src/26-ui-station.js:360-379
 sellCargo                    src/12-economy.js:106-131
 sellDroneYield               src/12-economy.js:132-137
 sellQuote                    src/12ab-hold.js:101-110
-setPair                      src/27z-telemetry.js:108-113
-setPct                       src/27z-telemetry.js:102-107
+setBig                       src/27z-telemetry.js:112-118
+setPair                      src/27z-telemetry.js:127-132
+setPct                       src/27z-telemetry.js:102-108
 setSt                        src/27z-telemetry.js:94
-settle                       tests/90-harness.js:401-412
+settle                       tests/90-harness.js:405-416
 SETTLE_BUILD                 src/12t-settle.js:31-38
 SETTLE_BY_K                  src/12t-settle.js:39
 SETTLE_CAP                   src/12t-settle.js:20
@@ -5499,7 +5510,7 @@ starRGB                      src/19c-light.js:49-59
 start                        src/15-input.js:623-631
 startLanding                 src/19-mode-landing.js:2-33
 startScoop                   src/19a-mode-scoop.js:51-61
-stat                         src/08-state.js:281-349
+stat                         src/08-state.js:289-357
 STAT_SHOW                    src/05-parts.js:426-438
 STATE_HASH_SKIP              src/08a-statehash.js:24-29
 stateHash                    src/08a-statehash.js:30-81
@@ -5522,7 +5533,7 @@ stDel                        src/14-save.js:26
 stEmFlush                    src/17c3-station-live.js:102-107
 stEmK                        src/17c3-station-live.js:22
 stEmP                        src/17c3-station-live.js:21
-steps                        tests/90-harness.js:414
+steps                        tests/90-harness.js:418
 stepWorld                    src/28-loop.js:378-398
 stGet                        src/14-save.js:8
 stGround                     src/17c-system-draw.js:108
@@ -5622,7 +5633,7 @@ SUITE_SEQ                    tests/90-harness.js:77
 SUITE_TIERS                  tests/90-harness.js:88
 SUITE_WINS                   tests/90-harness.js:89
 suiteGroup                   tests/90-harness.js:79-83
-suiteOrder                   tests/90-harness.js:421-428
+suiteOrder                   tests/90-harness.js:425-432
 suiteWin                     tests/90-harness.js:94-99
 suitFailure                  src/23-mode-dig.js:135-143
 suitHit                      src/23-mode-dig.js:128-134
@@ -5744,11 +5755,11 @@ TEST_SEED                    tests/90-harness.js:212
 TEST_SHARD                   tests/90-harness.js:30
 TEST_SHUFFLE                 tests/90-harness.js:70
 TEST_SKIP                    tests/90-harness.js:64
-TEST_SUITES                  tests/90-harness.js:538
+TEST_SUITES                  tests/90-harness.js:542
 TEST_T0                      tests/90-harness.js:214
 TEST_TIMES                   tests/99-run.js:18
-testNetHits                  tests/90-harness.js:442-452
-testSource                   tests/90-harness.js:437-441
+testNetHits                  tests/90-harness.js:446-456
+testSource                   tests/90-harness.js:441-445
 TETHER_LIFE                  src/13a-guns.js:40
 TETHER_PULL                  src/13a-guns.js:41
 tetherTick                   src/13a-guns.js:358-375
@@ -6154,6 +6165,8 @@ waterAlgae                   src/21e-surface-draw.js:176-182
 waterDeepAt                  src/21e-surface-draw.js:189-193
 waterOf                      src/21e-surface-draw.js:151-171
 waveBlock                    src/12pa-beacon.js:146-175
+wcagK                        tests/91zzx-mobile.js:434
+wcagL                        tests/91zzx-mobile.js:433
 wcBlots                      src/16a-space.js:141-207
 wcDeform                     src/16a-space.js:128-140
 wcGauss                      src/16a-space.js:127
@@ -6227,10 +6240,10 @@ wldNear                      tests/91zzzzzzzzz-worlds.js:29-36
 wldPct                       tests/91zzzzzzzzz-worlds.js:38
 WORLD_MOOD                   src/10-music.js:39-52
 WORLD_SPREAD                 src/10-music.js:99
-WORLD_SUB                    src/08-state.js:186
+WORLD_SUB                    src/08-state.js:194
 WORLD_VIB                    src/10-music.js:98
 WORLD_VOICE                  src/10-music.js:57-73
-worldCovered                 src/08-state.js:409
+worldCovered                 src/08-state.js:417
 worldQuiet                   src/11ar-doors.js:32
 worldRes                     src/02a-worldmix.js:119-126
 worldTables                  src/02a-worldmix.js:86-117
@@ -6983,7 +6996,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/16gb-gpu-nebula.js · 50 КБ
   · туманность системы объёмом (L1, docs/DESIGN-gpu.md):1
 
-## src/17-mode-system.js · 75 КБ
+## src/17-mode-system.js · 76 КБ
   · режим: система:1
 
 ## src/17a-station-mod.js · 13 КБ
@@ -7533,7 +7546,9 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/27n-ui-deal.js · 14 КБ
   · ДЕЛО — одно место для всего, что на вас работает:1
 
-## src/27z-telemetry.js · 40 КБ
+## src/27y-hud-words.js · 3 КБ
+
+## src/27z-telemetry.js · 41 КБ
   · телеметрия: приборы пишут в DOM:1
 
 ## src/28-loop.js · 65 КБ
@@ -7618,9 +7633,9 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## tests/91f-ui.js · 30 КБ
   · автотесты: интерфейс: 44 px, непересечение, кнопка называет действие, разделы:1
-  · ключи из кода не показываются игроку:207
-  · на чистом старте в кадре нет лишнего:252
-  · M236: колесо крутит мир только над миром:285
+  · ключи из кода не показываются игроку:209
+  · на чистом старте в кадре нет лишнего:254
+  · M236: колесо крутит мир только над миром:287
 
 ## tests/91g-relic.js · 9 КБ
   · автотесты: лаборатория и артефакты: слот, эффекты, дерево перков без пустот:1
@@ -7857,13 +7872,13 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzw-holding.js · 6 КБ
   · замер: холдинг против целей §16 (M293, шаг 5):1
 
-## tests/91zzx-mobile.js · 29 КБ
+## tests/91zzx-mobile.js · 40 КБ
   · автотесты: телефонный вид (M167):1
   · телефон: КАЖДЫЙ режим, а не только поверхность (M239):196
   · M360a: след стика и то, что под ним:239
   · M422: палец где угодно — настоящими событиями:332
 
-## tests/91zzxa-playable.js · 49 КБ
+## tests/91zzxa-playable.js · 50 КБ
   · плейтест автора 11.09: «игрок делает X → видит Y»:1
 
 ## tests/91zzy-fx.js · 5 КБ

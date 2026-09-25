@@ -27,7 +27,7 @@ function consoleHeard(text,who){
   const line=document.getElementById("rxLine"),band=document.getElementById("rxBand"),rx=document.getElementById("rx");
   if(!line)return;
   line.textContent=(who?who+": ":"")+text;
-  if(band)band.textContent="ЭФИР · ПРИНЯТО";
+  if(band)band.textContent="Эфир · принято";
   conFresh=8;conLast=text;
   if(rx)rx.classList.add("fresh");
   sfx("ui",{f:1400,to:900,d:.05,v:.18});
@@ -62,14 +62,14 @@ function consoleTick(dt){
       if(nb.textContent!==want)nb.textContent=want;
     }
   }
-  if(RN&&line){band.textContent=RN.ru;line.textContent=RN.text;con.classList.remove("quiet");}
+  if(RN&&line){band.textContent=padCase(RN.ru);line.textContent=RN.text;con.classList.remove("quiet");}
   else if(conFresh<=0&&line&&typeof radioTune==="function"){
     const f=(G.radioF==null?.05:G.radioF);
     if(knob&&document.activeElement!==knob)knob.value=f;
     const R=radioTune(f);
     /* у стойки ловит лучше: слова не выпадают */
     if(G.mode==="dock"&&R.q>0&&R.q<.55)R.text=radioTune(Math.min(1,f+.001)).text;
-    band.textContent=R.ru||"ШУМ";
+    band.textContent=padCase(R.ru||"ШУМ");
     line.textContent=R.text;
     /* задержался на волне — тетрадь запомнит строку, один раз на строку */
     if(R.q>.55&&R.text!==conHeld){conDwell+=1;if(conDwell>=3){conHeld=R.text;conDwell=0;logAdd("ether",R.ru+" · "+R.text);}}
@@ -139,7 +139,7 @@ function consoleTick(dt){
       const R=radioTune(+knob.value);
       conFresh=0;conDwell=0;
       const rx=document.getElementById("rx");if(rx)rx.classList.remove("fresh");
-      document.getElementById("rxBand").textContent=R.ru||"ШУМ";
+      document.getElementById("rxBand").textContent=padCase(R.ru||"ШУМ");
       document.getElementById("rxLine").textContent=R.text;
       const con=document.getElementById("console");if(con)con.classList.remove("quiet");
     };

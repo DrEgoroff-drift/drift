@@ -98,6 +98,44 @@ Heat haze behind the nozzle (G4b).
 5. Gate: uploads 0, submits 1 → Контроль's phone, 30 s + 5 min → candidate. Further redrawing does not hold the
    candidate.
 
+**The flight HUD pair (15/n, branch `gpu-hud` on top of a178e76, not for release — one strong variant for the
+author's verdict).** Sentence case wherever the player reads (vitals, the place name, the zoom line, the ticker
+label, map/menu, the rail's buttons, the pad words, the ability hint, the chips); hierarchy by size and colour.
+One warm accent — the next action (the ДЕЙСТВИЕ pad and its hint); ЦЕЛЬ, the system name, Фото, the rail and
+the star chip go cold. Fuel and hull lead: a 20 px number (18 on the phone) with a small «/100», and a short
+bar that warms as it empties (cold above 60 %, amber at 20 %, the alarm below); energy and hold are a quieter
+row. The right edge is two 48×48 tiles, icon over word. Plates are one dark glass without a gradient and a
+hairline edge (`--plate`, `--hair`). The ability hint is a caption under the pad — lifting the console by its
+line was tried first and squeezed the band between the console and the rail below one chip's height. Chip
+distance keeps two significant digits in motion («1,4к», «390»), exact within 400 or at rest, so a chip
+re-rasters once per hundred units instead of every frame. Fixed on the way: the right-edge chip stack aligned
+to the first chip's left edge and ran off the screen; chips now dodge the rail too. The code is one CSS block
+at the end of `style.css` plus span-wrapped words (textContent unchanged, so the detector laws and the tests
+still read «98/100», «ЦЕЛЬ»); `#msg` and `#prompt` stay in caps (their strings carry names). New guard:
+«пульт: подсказка системы, ФОТО, лента и ЦЕЛЬ не налезают» in any window, its mutant red.
+
+*Контроль's three fixes (25.09).* (1) No HUD text line closer than 12 px to the window edge plus
+`env(safe-area-inset-*)`: the header moves from 8–10 px to 12 px (+ insets on all three sides), chip plates keep
+a 12 px inset, and the ability hint becomes a second line inside the ДЕЙСТВИЕ pad — under the pad it sat 4.5 px
+from the bottom at 2:1, because an idle pad (`.off`, opacity .38) dimmed it too. An idle pad with a ready system
+is no longer dimmed or deaf: `.off` also set `pointer-events:none`, so on a phone the long press never reached
+the pad and the boost in open space was keyboard-only (V); now only the word «Действие» dims. (2) Names keep
+their table case: the pad, the ticker band and ЦЕЛЬ are cased in JS (`padCase`, `27y-hud-words.js`) — sentence
+case, except words recognised as names of what is near (the system, its station, planets and moons, the six
+powers); declension by stem, so «К ГЛАВТРАССЕ» stays caps and «ДО КОММУНЫ» reads «До Коммуны». The CSS
+lowercase trick is gone. (3) One decimal comma (`decRu`): the zoom line, the misclose on the instrument pod and
+in the table, the map's jump radius, the speed in the docking and landing prompts. Guard «приборы: строки не
+ближе 12 px к кромке, имена как в таблицах, одна запятая» (any window; 390×844 under -Mobile): text-node line
+rects of the HUD roots, the hint and chip plates against the edge, the hint's contrast ≥ 4.5:1 on the pad plate
+over a light sky, the idle pad takes a touch, pad names for four systems and all powers, chip and place names,
+no «1.40». Six mutants red: hint under the pad, hint dimmed, pad deaf, header at 6 px, lowercase names, zoom
+with a dot. The two old -Mobile -Full reds are closed too: «телефон: стик…» was an isolation leak — `CHIP_POS`
+(where each compass chip is drawn, eased towards its slot) outlived `resetWorld`, so a chip started from the
+previous suite's edge (x=4) and one `drawSystem` could not move it off the stick; the harness clears it now.
+«обещание: молчаливых тычков нет» caught the open ОПИСЬ tab on the phone, a tap that re-rendered the same page;
+the open tab takes no pointer now (`.op-tabs button.on`) — `disabled` was tried first and the «порог» net
+rightly called it a grey button without a reason.
+
 **After the candidate — redraw passes.** Each: a 760 pair and one line of what got better.
 
 *Ships.* On the phone at 58 px a ship reads as a body in real light; up close (card, hangar) as a machine made of
@@ -589,6 +627,18 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
      - DECISIONS «no 2D».
   Later: Gauss weights on the CPU and σ > 4 downsampling only if blur passes on the phone take > 2 ms per bake.
 
+- **HUD pair, Контроль's three fixes (25.09, `gpu-hud` on eb0e4f3).** 12 px from every edge, the hint inside
+  the pad (≥ 4.5:1, the idle pad takes the long press), names in table case on pads (`27y-hud-words.js`), one
+  decimal comma; six mutants red. The two old -Mobile reds fixed (CHIP_POS leak in `resetWorld`, the open ОПИСЬ
+  tab). Five pairs (km/ney at 390 and 760, the station at 390 with ДЕЙСТВИЕ lit) in the session's scratchpad,
+  `pair_hud_*.png`. `gpu` holds the gpu2 allies merge (044a0f7). Next (Контроль): merge gpu2-fleetlit f9adaae
+  into `gpu`, then gpu3 when GPU-3 hands its tail over. Open question: world labels of planets stay in caps
+  («ЦИЦИИН») while the chip says «Нейэль IV».
+- **The flight HUD pair (25.09, branch `gpu-hud` on a178e76, not for release).** One variant, brief under §L.S;
+  pairs «было | стало» at 390×844 DPR 2 and 760 DPR 1, flight by the Commune and calm NEYEL, in the session's
+  scratchpad (`pair_hud_*.png`). -Full green; -Mobile keeps only the two failures a178e76 has too (the stick
+  vs compass chips, «обещание» on the desk). Waiting for the author's verdict; next: merge gpu2 and gpu3
+  into `gpu` (Контроль, 25.09).
 - **Stage 1 caches (25.09, Контроль's order: station → zoom-following bakes → 25c → item 3).** Station master
   done (17c3, steady uploads 0, layers as in 2D); zoom-following bakes done (each size uploaded once, the way
   back 0); the instrument pod 25c redraws only on change; item 3 done (body V>.6 +12/+13 % over 2D — the

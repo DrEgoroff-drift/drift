@@ -71,7 +71,7 @@ TEST_SUITES.push(()=>suite("пульт: приёмник на каждом эк�
   /* ручка крутится: частота сохраняется, диапазон меняется */
   rx.value=.49;rx.dispatchEvent(new Event("input"));
   ok(Math.abs(G.radioF-.49)<1e-6,"частота запомнена (G.radioF)");
-  eq(document.getElementById("rxBand").textContent,"ЦЕНЫ","на 0.49 — диапазон цен");
+  eq(document.getElementById("rxBand").textContent,"Цены","на 0.49 — диапазон цен");
   /* кресло пусто — не показывается; заняли — видно */
   consoleTick(1000);
   eq(document.getElementById("seat").style.display,"none","пустое кресло не рисуется");

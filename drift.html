@@ -2072,6 +2072,91 @@ body.table u.addr{color:#7a4a20}
 /* корпус помнит (D18): строки шрамов под приборами — ржавым */
 .op-panel .ln.scar em{color:#c8763c}.op-panel .ln.scar b{color:#c8763c;font-weight:400;font-size:10px}
 
+/* ══════════════ приборы полёта: пара 15/n (ветка gpu-hud, автору на вердикт) ══════════════
+   Один сильный вариант, а не три. Что он утверждает:
+   · регистр как в предложении везде, где игрок читает; иерархия — размером и
+     цветом (правило 1 шапки файла наконец сдержано и в самих приборах);
+   · тёплый у кадра один — следующее действие (пад ДЕЙСТВИЕ и его подсказка).
+     ЦЕЛЬ, имя системы, фото, кнопки борта и фишка звезды — холодные и тихие;
+   · топливо и корпус — крупное число и короткая шкала, которая теплеет,
+     пустея; энергия и трюм — строкой потише;
+   · правый край компактный: карта и меню — плитки 48×48, значок над словом;
+   · плашки — тёмное стекло без градиента, волосяная кромка;
+   · «Долгое · форсаж», фото и лента не налезают друг на друга: подсказка —
+     подпись ПОД пэдом, в поле у нижней кромки (тест в 91zzx-mobile). Поднять
+     пульт на её строку пробовал первым — полоса между пультом и бортом стала
+     уже плашки фишки, и нижний ряд фишек лёг на борт.
+   Блок стоит последним и перекрывает прежние правила той же силы — откат пары
+   равен удалению блока и разметки. */
+:root{--plate:rgba(7,11,17,.74);--hair:rgba(190,228,236,.13);
+  --plate-lift:0 8px 22px rgba(0,0,0,.38),inset 0 1px 0 rgba(200,240,250,.07)}
+
+.vitals{flex-direction:row;flex-wrap:wrap;align-items:flex-end;gap:8px 18px;max-width:min(232px,58vw)}
+.v{grid-template-columns:auto auto;grid-template-rows:auto auto;column-gap:6px;row-gap:2px;
+  height:auto;align-items:center;justify-content:start}
+.v b{grid-column:1/-1;grid-row:1;font-size:10px;letter-spacing:0;filter:none;color:#8197a4}
+.v u{grid-column:1;grid-row:2;text-align:left;font-size:12px;line-height:1;color:rgba(207,227,234,.8)}
+.v .bar{grid-column:2;grid-row:2;width:22px;height:2px}
+.v .bar::after{background:none}
+.v.big b{color:#9db1bc}
+.v.big u{font-size:20px;font-weight:600;color:#eef6f8;letter-spacing:-.02em}
+.v.big u small{font-size:10px;font-weight:400;color:var(--dim);margin-left:1px;letter-spacing:0}
+.v.big .bar{width:34px;height:4px}
+/* шкала теплеет, пустея: холодная выше 60 %, к 20 % — янтарь, ниже — тревога */
+.v.big .bar i{background:color-mix(in oklab,#bfe6ec clamp(0%,calc((var(--p,100) - 20) * 2.5%),100%),var(--amber))}
+.v.big .bar.low i,.v.big.low .bar i{background:var(--alarm)}
+
+.locus u{color:#e3edf1;font-size:14px;font-weight:600;letter-spacing:0}
+.locus em{letter-spacing:0}
+#zoomlbl{letter-spacing:0}
+
+.rail button{background:var(--plate);border-color:var(--hair);box-shadow:var(--plate-lift);letter-spacing:0;font-size:11px}
+.rail button.key{flex-direction:column;justify-content:center;gap:3px;width:48px;height:48px;min-width:48px;
+  padding:0;font-size:9px;border-color:rgba(127,230,216,.22)}
+.rail button.key svg{width:16px;height:16px}
+.rail .ctx button{color:var(--phos);border-color:rgba(127,230,216,.22)}
+.rail .ctx button:active{border-color:var(--phos);box-shadow:var(--plate-lift),0 0 18px rgba(127,230,216,.2)}
+.rail .zoom{background:var(--plate);border-color:var(--hair);box-shadow:var(--plate-lift)}
+.rail .zoom button{background:none;box-shadow:none}
+
+.pads button{background:var(--plate);box-shadow:var(--plate-lift)}
+.pads button::before{border-color:var(--hair)}
+/* регистр подписи ставит JS (padCase, 27y): CSS-строчные ломали имена — «К главтрассе» */
+.pads button>span{display:block;letter-spacing:0}
+.pads button[data-k=lock]{color:#d3e3e9;font-size:10px;letter-spacing:0}
+.pads button[data-k=lock]::before{border-color:rgba(190,228,236,.24)}
+.pads button[data-k=act]{font-size:9px}
+.pads button[data-k=act]::before{border-color:rgba(242,178,92,.32)}
+.pads button.abil-ok{align-content:center;row-gap:2px}
+/* подсказка системы — вторая строка ВНУТРИ пэда (правка Контроля): подписью под
+   пэдом она стояла в 4,5 px от нижней кромки, а погашенный пэд гасил и её — 2:1
+   к фону. Внутри она дальше от кромки, чем сам пэд, и лежит на его плашке. */
+.pads button.abil-ok::after{position:static;transform:none;display:block;width:9ch;white-space:normal;text-align:center;
+  font:500 8px/9px ui-monospace,monospace;letter-spacing:0;color:#f2b25c}
+/* пэд без действия, но с готовой системой — не погашен: .off снимал с него
+   касания (pointer-events:none), и долгое нажатие не доходило — форсаж в
+   открытом космосе был только на клавише V. Гаснет лишь слово «Действие». */
+.pads button.off.abil-ok{opacity:1;pointer-events:auto}
+.pads button.off.abil-ok>span{opacity:.38}
+
+/* открытая вкладка описи не жмётся: тычок в неё молчал (27j-ui-opis) */
+.op-tabs button.on{pointer-events:none}
+
+#rx,#seat,#perch{background:var(--plate);border-color:var(--hair);box-shadow:var(--plate-lift)}
+#rxOut b{font-size:9px;letter-spacing:0}
+#camBtn{background:var(--plate);border-color:var(--hair);box-shadow:var(--plate-lift);
+  color:#cfe3ea;font-size:10px;letter-spacing:0}
+
+.hud{top:calc(env(safe-area-inset-top) + 12px);
+  padding:0 calc(env(safe-area-inset-right) + 14px) 0 calc(env(safe-area-inset-left) + 14px)}
+@media (max-width:760px){
+  .hud{top:calc(env(safe-area-inset-top) + 12px);
+    padding:0 calc(env(safe-area-inset-right) + 12px) 0 calc(env(safe-area-inset-left) + 12px)}
+  .v.big u{font-size:18px}
+  .locus u{font-size:12px}
+  #camBtn{min-height:44px}
+}
+
 </style>
 </head>
 <body>
@@ -2092,15 +2177,15 @@ body.table u.addr{color:#7a4a20}
      ногах топливо и корпус решают не здесь, здесь решают скафандр и трюм. -->
 <div class="hud">
   <div class="vitals">
-    <div class="v" id="vFuel"><b>ТОПЛИВО</b><div class="bar" id="fbar"><i></i></div><u id="fnum">—</u></div>
-    <div class="v" id="vHull"><b>КОРПУС</b><div class="bar hull" id="hbar"><i></i></div><u id="hnum">—</u></div>
-    <div class="v" id="sgauge" style="display:none"><b>ЩИТ</b><div class="bar shld" id="sbar"><i></i></div><u id="snum">—</u></div>
+    <div class="v big" id="vFuel"><b>Топливо</b><div class="bar" id="fbar"><i></i></div><u id="fnum">—</u></div>
+    <div class="v big" id="vHull"><b>Корпус</b><div class="bar hull" id="hbar"><i></i></div><u id="hnum">—</u></div>
+    <div class="v" id="sgauge" style="display:none"><b>Щит</b><div class="bar shld" id="sbar"><i></i></div><u id="snum">—</u></div>
     <!-- энергия (M362): одна шкала на выстрелы, поле и маневровые; стоит под щитом,
          потому что отвечает на «чем я ещё могу», а не на «жив ли я» -->
-    <div class="v" id="egauge" style="display:none"><b>ЭНЕРГИЯ</b><div class="bar enr" id="ebar"><i></i></div><u id="enum">—</u></div>
-    <div class="v" id="vSuit" style="display:none"><b>СКАФАНДР</b><div class="bar suit" id="ubar"><i></i></div><u id="unum">—</u></div>
-    <div class="v" id="vJet" style="display:none"><b>РАНЕЦ</b><div class="bar jet" id="jbar"><i></i></div><u id="jnum">—</u></div>
-    <div class="v" id="vHold"><b>ТРЮМ</b><div class="bar hold" id="cbar"><i></i></div><u id="cnum">—</u></div>
+    <div class="v" id="egauge" style="display:none"><b>Энергия</b><div class="bar enr" id="ebar"><i></i></div><u id="enum">—</u></div>
+    <div class="v big" id="vSuit" style="display:none"><b>Скафандр</b><div class="bar suit" id="ubar"><i></i></div><u id="unum">—</u></div>
+    <div class="v" id="vJet" style="display:none"><b>Ранец</b><div class="bar jet" id="jbar"><i></i></div><u id="jnum">—</u></div>
+    <div class="v" id="vHold"><b>Трюм</b><div class="bar hold" id="cbar"><i></i></div><u id="cnum">—</u></div>
   </div>
   <!-- приборы области (M122-M124): пять стрелок, невязка и полоска ленты.
        В поясе прячется — там есть настоящий потолочный блок. -->
@@ -2125,7 +2210,7 @@ body.table u.addr{color:#7a4a20}
   <!-- ФОТО: появляется только там, где есть что снять — на грунте, на заходе,
        в пещере, в шахте, в поясе, в атмосфере и в системе (M188, M208).
        Кнопка, которая висит всегда, перестаёт быть поводом. -->
-  <button id="camBtn" style="display:none" aria-label="снимок">ФОТО</button>
+  <button id="camBtn" style="display:none" aria-label="снимок">Фото</button>
   <button id="perch" style="display:none" aria-label="трепло"><canvas id="perchcv" width="44" height="44"></canvas></button>
 </div>
 
@@ -2134,25 +2219,25 @@ body.table u.addr{color:#7a4a20}
      или появляется само, когда для него есть повод. -->
 <div class="rail">
   <div class="ctx">
-    <button id="starbtn" style="display:none">К ЗВЕЗДЕ</button>
+    <button id="starbtn" style="display:none">К звезде</button>
     <!-- курс (M321): пока адрес не достигнут, полёт его помнит; тап — карта с этим сектором -->
-    <button id="goalbtn" style="display:none">К ЦЕЛИ</button>
-    <button id="dronebtn" style="display:none">ДРОН</button>
-    <button id="beaconbtn" style="display:none">МАЯК</button>
+    <button id="goalbtn" style="display:none">К цели</button>
+    <button id="dronebtn" style="display:none">Дрон</button>
+    <button id="beaconbtn" style="display:none">Маяк</button>
     <!-- посёлок под руку (M198): необратимо, и кнопка говорит только действие -->
-    <button id="handbtn" style="display:none">ВЗЯТЬ ПОД РУКУ</button>
-    <button id="routebtn" style="display:none">В МАРШРУТ</button>
+    <button id="handbtn" style="display:none">Взять под руку</button>
+    <button id="routebtn" style="display:none">В маршрут</button>
     <!-- карта (M299): «к себе», когда окно уехало; «назвать» — на раскрытой карточке -->
-    <button id="mebtn" style="display:none">К СЕБЕ</button>
-    <button id="namebtn" style="display:none">НАЗВАТЬ</button>
+    <button id="mebtn" style="display:none">К себе</button>
+    <button id="namebtn" style="display:none">Назвать</button>
     <!-- все виденные цены (M341): на карте, когда есть что сравнивать -->
-    <button id="pricesbtn" style="display:none">ЦЕНЫ</button>
+    <button id="pricesbtn" style="display:none">Цены</button>
   </div>
   <!-- Иконки тонкой линией и все из одного набора: круг-орбита, три полосы
        систем, плюс и минус одной толщины. Значок опознают быстрее слова,
        но слово оставлено — оно снимает сомнение. -->
-  <button id="navbtn" class="key"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/><ellipse cx="8" cy="8" rx="6" ry="2.4"/><path d="M8 2v12"/></svg>КАРТА</button>
-  <button id="menubtn" class="key"><svg viewBox="0 0 16 16"><path d="M2.5 4h11M2.5 8h11M2.5 12h7"/></svg>МЕНЮ</button>
+  <button id="navbtn" class="key"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/><ellipse cx="8" cy="8" rx="6" ry="2.4"/><path d="M8 2v12"/></svg><span>Карта</span></button>
+  <button id="menubtn" class="key"><svg viewBox="0 0 16 16"><path d="M2.5 4h11M2.5 8h11M2.5 12h7"/></svg>Меню</button>
   <div class="zoom">
     <button id="zin" aria-label="приблизить"><svg viewBox="0 0 16 16"><path d="M8 3.5v9M3.5 8h9"/></svg></button>
     <button id="zout" aria-label="отдалить"><svg viewBox="0 0 16 16"><path d="M3.5 8h9"/></svg></button>
@@ -2229,7 +2314,7 @@ body.table u.addr{color:#7a4a20}
 <!-- ══ управление ══ большим пальцем, поэтому по нижним углам ══ -->
 <div class="pads">
   <div><button data-k="pup" class="beltonly">▲</button><button data-k="left">◀</button><button data-k="right">▶</button><button data-k="pdown" class="beltonly">▼</button></div>
-  <div><button data-k="fire" id="firebtn" style="display:none">ОГОНЬ</button><button data-k="msl" id="mslbtn" style="display:none">РАКЕТА</button><button data-k="brake">ТОРМОЗ</button><button data-k="lock" id="lockbtn" style="display:none">ЦЕЛЬ</button><button data-k="act">ДЕЙСТВИЕ</button><button data-k="thrust">▲</button></div>
+  <div><button data-k="fire" id="firebtn" style="display:none">ОГОНЬ</button><button data-k="msl" id="mslbtn" style="display:none">РАКЕТА</button><button data-k="brake">ТОРМОЗ</button><button data-k="lock" id="lockbtn" style="display:none"><span>ЦЕЛЬ</span></button><button data-k="act"><span>ДЕЙСТВИЕ</span></button><button data-k="thrust">▲</button></div>
 </div>
 
 <div class="scr" id="station">
@@ -9855,7 +9940,7 @@ function resize(){
    наблюдатель успевал его сбросить, и штурвал переставал слушать курсор.
    Кэш, который сбрасывается асинхронным наблюдателем, врёт не только в
    тестах — они просто поймали это первыми, потому что там часы заморожены. */
-let CVS_RECT=null,PADS_RECT=null,HUD_RECT=null,LAYOUT_DIRTY=true;
+let CVS_RECT=null,PADS_RECT=null,RAIL_RECT=null,HUD_RECT=null,LAYOUT_DIRTY=true;
 /* Показанные приборами числа (0.6, значения кладёт 27z): строка не склеивается,
    пока число не поменялось. Стоит здесь, а не в 27z, и это не вкус: `resize()`
    зовётся ниже в этом же файле и через rectsDirty() трогает эту таблицу — а
@@ -9866,7 +9951,7 @@ let CVS_RECT=null,PADS_RECT=null,HUD_RECT=null,LAYOUT_DIRTY=true;
 const HUD_NUM={};
 function hudNumDirty(){for(const k in HUD_NUM)delete HUD_NUM[k];}
 function rectsDirty(){
-  CVS_RECT=null;PADS_RECT=null;HUD_RECT=null;PROMPT_RECT=null;LAYOUT_DIRTY=true;
+  CVS_RECT=null;PADS_RECT=null;RAIL_RECT=null;HUD_RECT=null;PROMPT_RECT=null;LAYOUT_DIRTY=true;
   /* узлы приборов могли смениться вместе с вёрсткой — числа переписать заново (0.6) */
   hudNumDirty();   /* узлы приборов могли смениться вместе с вёрсткой (0.6) */
 }
@@ -9903,6 +9988,14 @@ function padsRect(){
     PADS_RECT=el&&el.getBoundingClientRect?el.getBoundingClientRect():false;
   }
   return PADS_RECT||null;
+}
+/* правый борт (карта, меню, кнопки по поводу): фишки у правой кромки обходят и его */
+function railRect(){
+  if(RAIL_RECT===null){
+    const el=document.querySelector(".rail");
+    RAIL_RECT=el&&el.getBoundingClientRect?el.getBoundingClientRect():false;
+  }
+  return RAIL_RECT||null;
 }
 /* Не кэшируется: querySelector по классу не пересчитывает раскладку и не
    стоит кадра (см. разбор выше). Настоящих чтений вёрстки в src/ нет, кроме
@@ -49882,7 +49975,7 @@ function abilPadRim(){
   const v=f>=1?"":"conic-gradient(rgba(242,178,92,.75) "+Math.max(0,deg-8)+"deg, #ffd9a0 "+deg+"deg, transparent 0)";
   const ok=f>=1&&G.mode==="system",vk=v+(ok?"|ok":"");
   if(b.dataset.rim!==vk){b.dataset.rim=vk;b.style.setProperty("--abil",v||"none");b.classList.toggle("abil-cd",f<1);
-    b.classList.toggle("abil-ok",ok);if(ok)b.dataset.abil="ДОЛГОЕ · "+abilOf().ru;}   /* режим входит в ключ: в вагоне подписи нет */
+    b.classList.toggle("abil-ok",ok);if(ok)b.dataset.abil="Долгое · "+abilOf().ru.toLowerCase();}   /* режим входит в ключ: в вагоне подписи нет */
 }
 /* клин прожектора: радиальный градиент в секторе ±.35 — выпечка GPU-холста на размер экрана
    (L — большая сторона, меняется только с окном); вершина у левого края, ось — вправо */
@@ -52119,7 +52212,7 @@ function updateSystem(dt){
     const keyOn=(typeof wanderHas==="function")&&wanderHas("key")&&ds<2600;
     if(ds<300||keyOn){
       if(ds<95||keyOn){
-        if(sp>2.6)cue("СБРОСЬТЕ СКОРОСТЬ · "+sp.toFixed(1)+"\nТОРМОЗ — ГАШЕНИЕ",CUE_ACT);
+        if(sp>2.6)cue("СБРОСЬТЕ СКОРОСТЬ · "+decRu(sp,1)+"\nТОРМОЗ — ГАШЕНИЕ",CUE_ACT);
         else if(cue("ДЕЙСТВИЕ — СТЫКОВКА · "+S.kind.toUpperCase(),CUE_ACT)&&actEdge)openStation();
         return;
       }
@@ -52131,7 +52224,7 @@ function updateSystem(dt){
     const wn=wanderNear(sh);
     if(wn){
       if(wn.close){
-        if(sp>2.6)cue("СБРОСЬТЕ СКОРОСТЬ · "+sp.toFixed(1)+"\nТОРМОЗ — ГАШЕНИЕ",CUE_ACT);
+        if(sp>2.6)cue("СБРОСЬТЕ СКОРОСТЬ · "+decRu(sp,1)+"\nТОРМОЗ — ГАШЕНИЕ",CUE_ACT);
         else if(cue("ДЕЙСТВИЕ — К ТРАПУ «СОРОКИ»",CUE_ACT)&&actEdge)wanderDock();
         return;
       }
@@ -52214,7 +52307,7 @@ function updateSystem(dt){
         /* сесть по-прежнему некуда, но в верхние слои можно зайти за газами */
         if(cue("ГАЗОВЫЙ ГИГАНТ · ПОСАДКИ НЕТ\nДЕЙСТВИЕ — ЗАХОД ЗА ЛЕТУЧИМИ ГАЗАМИ",CUE_ACT)&&actEdge){startScoop(near);return;}
       }
-      else if(!G.opts.easyLand&&sp>3.2)cue("СЛИШКОМ БЫСТРО · "+sp.toFixed(1)+"\nТОРМОЗ — ГАШЕНИЕ",CUE_ACT);
+      else if(!G.opts.easyLand&&sp>3.2)cue("СЛИШКОМ БЫСТРО · "+decRu(sp,1)+"\nТОРМОЗ — ГАШЕНИЕ",CUE_ACT);
       else{
         let ln="ДЕЙСТВИЕ — "+(G.opts.easyLand?"АВТО-ПОСАДКА":"ПОСАДКА")+" · "+near.name;
         if(G.tech.has("deep")&&near.res.length)
@@ -52472,7 +52565,7 @@ function drawSystem(){
     /* ниже приборов: сверху слева датчики, справа сводка — там текст не читался */
     ctx.fillText("НАБЛЮДЕНИЕ · "+wA.c.name.toUpperCase()+" · "+
                  ORDERS[wA.c.order.kind].ru.toUpperCase(),W/2,H-52);
-    ctx.fillStyle="rgba(93,115,130,.85)";ctx.font="9px ui-monospace,monospace";
+    ctx.fillStyle="rgba(93,115,130,.85)";ctx.font="8px ui-monospace,monospace";
     ctx.fillText("ЭКИПАЖ — ВЕРНУТЬ КАМЕРУ",W/2,H-38);
   });
   /* кольца-метки вокруг корабля больше нет. Она появилась, когда при отдалении
@@ -52496,6 +52589,17 @@ function drawSystem(){
     gpuHud(hh,helmDrawSticks);
   }
 }
+/* дистанция на фишке (пара HUD 15/n): на ходу — две значащие цифры, «3,2к»,
+   «390»: точность, которую глаз успевает прочесть, и плашка перерастеривается
+   раз в сотню единиц, а не каждый кадр; на подходе (ближе 400) и на месте —
+   точное число, там оно решает */
+function chipDist(d){
+  const sh=G.ship;
+  if(d<400||Math.hypot(sh.vx||0,sh.vy||0)<.05)return String(Math.round(d));
+  if(d<995)return String(Math.round(d/10)*10);
+  const k=d/1000;
+  return (k<9.95?k.toFixed(1).replace(".",","):String(Math.round(k)))+"к";
+}
 function drawSysHud(zx,zy,sh,sys,U){
   /* масштаб — над пэдом, а не под ним: внизу слева его закрывал руль.
      А с M360a — ещё и выше следа левого стика: палец рождается где угодно
@@ -52514,22 +52618,22 @@ function drawSysHud(zx,zy,sh,sys,U){
      Заодно в список добавлена БЛИЖАЙШАЯ планета: раньше в компасе были
      только звезда, станция и текущая цель, и вылетевший на отшиб игрок видел
      у кромки одну звезду. Теперь из пустоты всегда видно, куда лететь. */
-  const marks=[{x:0,y:0,c:"#f2b25c",l:"ЗВЕЗДА",t:{kind:"star"},k:"star"}];
-  /* имя в верхнем регистре кладётся рядом с телом ОДИН раз (0.6): только
-     toUpperCase в кадре рождал до трёх строк на каждый кадр на пустом месте */
+  /* звезда и цель — тихие холодные фишки (пара HUD 15/n): тёплый у кадра один,
+     следующее действие; имена — как написаны, регистр как в предложении */
+  const marks=[{x:0,y:0,c:"#c3d0d8",l:"Звезда",t:{kind:"star"},k:"star"}];
   if(sys.station)marks.push({x:sys.station.x,y:sys.station.y,c:"#7fe6d8",
-    l:sys.station._up||(sys.station._up=sys.station.name.toUpperCase()),t:{kind:"station"},k:"station"});
+    l:sys.station.name,t:{kind:"station"},k:"station"});
   {
     let np=null,nd=1e18;
     for(const p of sys.planets){
       const d=Math.hypot(p.x-sh.x,p.y-sh.y);
       if(d<nd){nd=d;np=p;}
     }
-    if(np)marks.push({x:np.x,y:np.y,c:"#9fd8ff",l:np._up||(np._up=np.name.toUpperCase()),t:{kind:"planet",p:np},k:"planet:"+np.name});
+    if(np)marks.push({x:np.x,y:np.y,c:"#9fd8ff",l:np.name,t:{kind:"planet",p:np},k:"planet:"+np.name});
   }
-  if(G.ap){const T=targetPos();if(T)marks.push({x:T.x,y:T.y,c:"#ff6b57",l:"ЦЕЛЬ",t:null,k:"target"});}
+  if(G.ap){const T=targetPos();if(T)marks.push({x:T.x,y:T.y,c:"#e6eef2",l:"Цель",t:null,k:"target"});}
   /* окликнувший: одна негашёная стрелка под окном оклика (R6, 12.09) */
-  if(G.hail){const hp=G.pirates.find(q=>q._hail);if(hp)marks.push({x:hp.x,y:hp.y,c:"#ffd27a",l:hp._up||(hp._up=(hp.name||"ОКЛИК").toUpperCase()),t:null,hail:1,k:"hail"});}
+  if(G.hail){const hp=G.pirates.find(q=>q._hail);if(hp)marks.push({x:hp.x,y:hp.y,c:"#ffd27a",l:hp.name||"Оклик",t:null,hail:1,k:"hail"});}
   SYS_CHIPS.length=0;
   /* фишки у кромки (M167): раньше метки стояли на круге и на телефоне висели
      посреди сцены, наезжая друг на друга и на солнце. Теперь метка — плашка,
@@ -52561,7 +52665,7 @@ function drawSysHud(zx,zy,sh,sys,U){
   inY1=Math.max(inY1,y1base-CHIP_IN);   /* внутрь — не дальше CHIP_IN пикселей */
   /* верхняя кромка — ниже всего блока шкал: фишка в строке ТРЮМ читалась её частью */
   const hr=hudRect(),hudY1=(hr&&hr.height>0)?hr.bottom/U+8:76;
-  const inset={x0:10,x1:W-10,y0:Math.max(76,hudY1),y1:Math.max(140,inY1)};
+  const inset={x0:12,x1:W-12,y0:Math.max(76,hudY1),y1:Math.max(140,inY1)};
   /* занятые места — одной сборкой, а не разрозненными блоками: это одна мысль
      («мимо чего скользит фишка»), а не четыре (Контроль, ревью кода 18.09).
      Следы стиков, живая строка подсказки, нос корабля (щедрый запас вокруг
@@ -52585,6 +52689,10 @@ function drawSysHud(zx,zy,sh,sys,U){
   {
     const padsr=padsRect();
     if(padsr&&padsr.height>0)placed.push(grow({x:padsr.left/U,y:padsr.top/U,w:padsr.width/U,h:padsr.height/U}));
+    /* борт тоже: фишка у нижней кромки проходила мимо него только удачей
+       геометрии (пара HUD 15/n) */
+    const railr=railRect();
+    if(railr&&railr.height>0)placed.push(grow({x:railr.left/U,y:railr.top/U,w:railr.width/U,h:railr.height/U}));
   }
   /* и сам блок шкал — занятое место, если кромка до него всё же дотянется */
   if(hr&&hr.height>0)placed.push({x:hr.left/U-4,y:hr.top/U-4,w:hr.width/U+8,h:hr.height/U+8});
@@ -52622,7 +52730,7 @@ function drawSysHud(zx,zy,sh,sys,U){
     if(dx>1e-6)t=Math.min(t,(inset.x1-W/2)/dx);if(dx<-1e-6)t=Math.min(t,(inset.x0-W/2)/dx);
     if(dy>1e-6)t=Math.min(t,(inset.y1-H/2)/dy);if(dy<-1e-6)t=Math.min(t,(inset.y0-H/2)/dy);
     const cx=W/2+dx*t,cy=H/2+dy*t;
-    const label=m.l+" · "+Math.round(Math.hypot(m.x-sh.x,m.y-sh.y));
+    const label=m.l+" · "+chipDist(Math.hypot(m.x-sh.x,m.y-sh.y));
     const tw=ctx.measureText(label).width,cw=tw+26,ch=16;
     const onSide=Math.abs(cx-inset.x0)<1||Math.abs(cx-inset.x1)<1;   // боковая кромка → двигаем по y
     cands.push({m,ang,dx,dy,cx,cy,label,cw,ch,onSide,dist:Math.hypot(m.x-sh.x,m.y-sh.y)});
@@ -52661,15 +52769,18 @@ function drawSysHud(zx,zy,sh,sys,U){
     let rx=clamp(cx-(cx>W/2?cw-6:6),inset.x0,inset.x1-cw),ry=clamp(cy-ch/2,inset.y0,inset.y1-ch);
     let spot=null,usedVert=onSide,usedDir=0;
     const gap=4;
+    /* стопка у правой кромки ровняется по правому краю: по левому краю первой
+       фишки длинная соседка вылезала за экран (пара HUD 15/n, «Воркораде I · 1,4к») */
+    const alX=a=>Math.abs(a.x+a.cw-inset.x1)<1?inset.x1-cw:a.x;
     if(stack&&stack.onSide===onSide){
-      const x0=onSide?stack.x:stack.x+stack.dir*(stack.cw/2+gap+cw/2);
+      const x0=onSide?alX(stack):stack.x+stack.dir*(stack.cw/2+gap+cw/2);
       const y0=onSide?stack.y+stack.dir*(stack.ch/2+gap+ch/2):stack.y;
       const r=slide(onSide,x0,y0,cw,ch,stack.dir);
       if(r){spot=r;usedDir=stack.dir;}
     }
     if(!spot&&firstAnchor&&firstAnchor.onSide===onSide){
       const dir=-((stack&&stack.onSide===onSide&&stack.dir)||1);
-      const x0=onSide?firstAnchor.x:firstAnchor.x+dir*(firstAnchor.cw/2+gap+cw/2);
+      const x0=onSide?alX(firstAnchor):firstAnchor.x+dir*(firstAnchor.cw/2+gap+cw/2);
       const y0=onSide?firstAnchor.y+dir*(firstAnchor.ch/2+gap+ch/2):firstAnchor.y;
       const r=slide(onSide,x0,y0,cw,ch,dir);
       if(r){spot=r;usedDir=dir;}
@@ -52762,7 +52873,7 @@ function drawSysHud(zx,zy,sh,sys,U){
        иначе палец бил бы мимо плашки во время подъезда или затухания. */
     if(m.t&&A===1&&dcA>.5){
       const PAD=Math.max(0,(CHIP_TOUCH-ch)/2);
-      SYS_CHIPS.push({x:(rx-6)*U,y:(ry-PAD)*U,w:(cw+12)*U,h:(ch+PAD*2)*U,t:m.t});
+      SYS_CHIPS.push({x:(rx-6)*U,y:(ry-PAD)*U,w:(cw+12)*U,h:(ch+PAD*2)*U,t:m.t,l:label,pl:[rx*U,ry*U,cw*U,ch*U]});
     }
     /* после перескока на соседнюю кромку точка луча и сама фишка расходятся:
        сторона надписи берётся по МЕСТУ фишки (P4) */
@@ -85723,7 +85834,7 @@ function instrPodDraw(){
   c.textAlign="right";
   c.fillStyle=col+".70)";
   c.font="8px ui-monospace,monospace";
-  c.fillText(instrMisclose().toFixed(3),w-3,nh*.72);
+  c.fillText(decRu(instrMisclose(),3),w-3,nh*.72);
   /* лента: та же бумага, что и в кабине, только узкая полоска */
   /* бумага здесь тише, чем в кабине: в строке приборов она иначе перетягивает
      на себя весь верх экрана, а поверх мира висит только нужное сейчас */
@@ -97060,7 +97171,7 @@ function renderStrips(box){
     for(let x=0;x<=128;x+=4){const y=40+Math.sin(x/18+r()*.4)*10*(s.mis*6+.4)+(r()-.5)*4;x?c.lineTo(x,y):c.moveTo(x,y);}
     c.stroke();
     const nm=document.createElement("div");nm.className="nm";
-    nm.innerHTML="<b>Лента · сектор "+s.sx+":"+s.sy+"</b><s>невязка "+(+s.mis).toFixed(3)+" · "+s.span+" делений · "+
+    nm.innerHTML="<b>Лента · сектор "+s.sx+":"+s.sy+"</b><s>невязка "+decRu(s.mis,3)+" · "+s.span+" делений · "+
       (typeof stripValue==="function"?stripValue(s)+" кр на стойке":"")+"</s>";
     row.appendChild(cv);row.appendChild(nm);box.appendChild(row);
   });
@@ -97586,7 +97697,7 @@ function consoleHeard(text,who){
   const line=document.getElementById("rxLine"),band=document.getElementById("rxBand"),rx=document.getElementById("rx");
   if(!line)return;
   line.textContent=(who?who+": ":"")+text;
-  if(band)band.textContent="ЭФИР · ПРИНЯТО";
+  if(band)band.textContent="Эфир · принято";
   conFresh=8;conLast=text;
   if(rx)rx.classList.add("fresh");
   sfx("ui",{f:1400,to:900,d:.05,v:.18});
@@ -97621,14 +97732,14 @@ function consoleTick(dt){
       if(nb.textContent!==want)nb.textContent=want;
     }
   }
-  if(RN&&line){band.textContent=RN.ru;line.textContent=RN.text;con.classList.remove("quiet");}
+  if(RN&&line){band.textContent=padCase(RN.ru);line.textContent=RN.text;con.classList.remove("quiet");}
   else if(conFresh<=0&&line&&typeof radioTune==="function"){
     const f=(G.radioF==null?.05:G.radioF);
     if(knob&&document.activeElement!==knob)knob.value=f;
     const R=radioTune(f);
     /* у стойки ловит лучше: слова не выпадают */
     if(G.mode==="dock"&&R.q>0&&R.q<.55)R.text=radioTune(Math.min(1,f+.001)).text;
-    band.textContent=R.ru||"ШУМ";
+    band.textContent=padCase(R.ru||"ШУМ");
     line.textContent=R.text;
     /* задержался на волне — тетрадь запомнит строку, один раз на строку */
     if(R.q>.55&&R.text!==conHeld){conDwell+=1;if(conDwell>=3){conHeld=R.text;conDwell=0;logAdd("ether",R.ru+" · "+R.text);}}
@@ -97698,7 +97809,7 @@ function consoleTick(dt){
       const R=radioTune(+knob.value);
       conFresh=0;conDwell=0;
       const rx=document.getElementById("rx");if(rx)rx.classList.remove("fresh");
-      document.getElementById("rxBand").textContent=R.ru||"ШУМ";
+      document.getElementById("rxBand").textContent=padCase(R.ru||"ШУМ");
       document.getElementById("rxLine").textContent=R.text;
       const con=document.getElementById("console");if(con)con.classList.remove("quiet");
     };
@@ -99090,6 +99201,9 @@ function opisRender(box){
     const nav=document.createElement("nav");nav.className="tabs op-tabs";
     for(const [k,ru] of OPIS_TABS){
       const b=document.createElement("button");b.dataset.tab=k;b.textContent=ru;
+      /* открытая вкладка не жмётся: тычок в неё перерисовывал то же самое и
+         молчал («обещание: молчаливых тычков нет», стол/hold · «КОРАБЛЬ»); она не
+         серая (disabled — это «чего-то не хватает»), а просто не кнопка: style.css */
       if(OPIS.tab===k)b.classList.add("on");
       b.onclick=()=>{OPIS.tab=k;OPIS.sel=null;sfx("ui");opisRerender();};
       nav.appendChild(b);
@@ -101226,6 +101340,50 @@ function closeDeal(){$dl.classList.remove("open");}
   if(c)c.addEventListener("click",()=>{closeDeal();saveGame(true);});
 }
 
+/* ── СЛОВА ПРИБОРОВ: регистр имён и десятичная запятая (пара HUD 15/n) ──
+   Подписи пэдов, эфирной полосы и ЦЕЛИ пишутся как предложение: первое слово с
+   большой буквы, дальше строчные. Но строки подсказок идут капсом, и в «К
+   ГЛАВТРАССЕ» имя от глагола уже не отличить — CSS-строчные делали из неё «К
+   главтрассе» (правка Контроля: имя — всегда как в игре). Имена узнаём по
+   словарю того, что рядом: система, станция, планеты и луны, державы. Склонение
+   — по основе: «ГЛАВТРАССЕ» узнаётся по «ГЛАВТРАСС», и слово берёт регистр
+   имени, а окончание остаётся своим. */
+let PADNAME_K=null,PADNAME=null;
+function padNames(){
+  const s=G.sys,k=s?(s.sx+","+s.sy+"|"+(s.name||"")+"|"+((s.station&&s.station.name)||"")):"";
+  if(PADNAME&&PADNAME_K===k)return PADNAME;
+  const m=new Map();
+  const add=n=>{for(const t of String(n||"").split(/[\s«»"·,:()]+/)){
+    /* слово имени — то, что в таблице с заглавной: «посёлок Воркораде» даёт одно */
+    if(t.length<2||!/^[А-ЯЁA-Z]/.test(t))continue;
+    const u=t.toUpperCase(),s0=u.length>4?u.replace(/[АЕЁИОУЫЭЮЯЙЬ]+$/,""):u,st=s0.length>=3?s0:u;
+    if(!m.has(st))m.set(st,t);}};
+  if(typeof POWERS==="object")for(const p in POWERS)add(POWERS[p].ru);
+  if(s){add(s.name);if(s.station)add(s.station.name);
+    for(const p of s.planets||[]){add(p.name);for(const q of p.moons||[])add(q.name);}}
+  PADNAME_K=k;return PADNAME=m;
+}
+/* слово w (капсом) в регистре имени t: заглавные там, где они у имени */
+function nameLike(w,t,at){
+  if(t===t.toUpperCase())return w.toUpperCase();
+  const a=w.toLowerCase().split("");
+  for(let i=0;i<t.length&&at+i<a.length;i++)if(t[i]!==t[i].toLowerCase())a[at+i]=a[at+i].toUpperCase();
+  return a.join("");
+}
+function padCase(s){
+  const m=padNames();
+  return String(s).split(" ").map((w,i)=>{
+    const lead=(/^[«"(]+/.exec(w)||[""])[0].length,core=w.slice(lead).replace(/[»")·,.:!?]+$/,"").toUpperCase();
+    if(/^[IVXLC]+$/.test(core)||/^\d/.test(core))return w;   // номер луны, число
+    /* основа короче трёх букв — только целым словом: «Ио» не ловит «ИОН» */
+    for(let n=core.length;n>=2&&core.length-n<=3;n--){const t=m.get(core.slice(0,n));if(t!==undefined&&(n>=3||n===core.length))return nameLike(w,t,lead);}
+    const l=w.toLowerCase();return i?l:l.charAt(0).toUpperCase()+l.slice(1);
+  }).join(" ");
+}
+/* число, которое читает игрок: одна десятичная запятая на весь экран («1,4к» у
+   фишек, «×1,40» у масштаба, невязка «0,012») */
+function decRu(v,n){return (+v).toFixed(n).replace(".",",");}
+
 /* ══════════════ телеметрия: приборы пишут в DOM ══════════════
    Отрезано от 28-loop 27.08.2026: файл дорос до 47 КБ, и внутри лежали два
    разных дела — кадр (цикл, звук, авторазрешение) и приборы (hud() со всеми
@@ -101332,6 +101490,25 @@ function setPct(el,key,v){
   if(HUD_NUM[key]===q)return;
   HUD_NUM[key]=q;
   setSt(el,"width",(q/10).toFixed(1)+"%");
+  if(el)el.style.setProperty("--p",q/10);
+}
+/* крупный прибор (пара HUD 15/n): число крупно, «/100» мелко рядом — узлы
+   заводятся один раз, дальше меняются только их тексты. textContent тот же,
+   «98/100», его читают законы детектора и «почему». */
+function setBig(el,key,a,b){
+  const ka=key+"|a",kb=key+"|b";
+  if(HUD_NUM[ka]===a&&HUD_NUM[kb]===b)return;
+  HUD_NUM[ka]=a;HUD_NUM[kb]=b;
+  if(!el.__big){el.textContent="";el.__big=[document.createTextNode(""),document.createElement("small")];el.append(el.__big[0],el.__big[1]);}
+  el.__big[0].data=String(a);el.__big[1].textContent="/"+b;
+}
+/* слово кнопки живёт в своём <span>: у пэда регистр как в предложении ставит
+   CSS (у кнопки-решётки нет ::first-letter), у карты рядом живёт значок;
+   textContent кнопки прежний */
+function padWord(b){
+  if(!b)return null;
+  if(!b.__w){b.__w=b.querySelector("span");if(!b.__w){b.__w=document.createElement("span");b.textContent="";b.appendChild(b.__w);}}
+  return b.__w;
 }
 function setPair(el,key,a,b){
   const ka=key+"|a",kb=key+"|b";
@@ -101386,8 +101563,8 @@ function hud(){
   setPct($f,"f",fr*100);
   setPct($h,"h",hr*100);
   setPct($cg,"cg",cr*100);
-  setPair($fn,"fn",Math.round(G.fuel),Math.round(st.fuelMax));
-  setPair($hn,"hn",Math.round(G.hull),Math.round(st.hullMax));
+  setBig($fn,"fn",Math.round(G.fuel),Math.round(st.fuelMax));
+  setBig($hn,"hn",Math.round(G.hull),Math.round(st.hullMax));
   setPair($cn,"cn",held(),st.cargoMax);
   setSt($sg,"display",st.shieldMax>0?"":"none");
   /* энергия (M362): шкала есть у всех — она кормит и маневровые, — но в
@@ -101452,7 +101629,7 @@ function hud(){
     const bc=document.body.classList;
     const zs=G.mode==="system"&&!G.haul&&!bc.contains("hailopen")&&!bc.contains("sosopen");
     $zl.style.display=zs?"":"none";
-    if(zs)setTx($zl,"МАСШТАБ ×"+G.zoom.toFixed(2));
+    if(zs)setTx($zl,"Масштаб ×"+decRu(G.zoom,2));
   }
   /* Приборы проявляются, когда есть о чём сказать, и гаснут, когда всё ровно.
      Повод — изменившееся показание, тревога или открытый режим, где приборы
@@ -101474,48 +101651,48 @@ function hud(){
   rescueSync();   /* открытое окно выходов сверяет себя с миром (16c) */
   let a="—",b="—";
   /* кошелёк вынесен отдельной строкой ниже — здесь он был бы вторым разом */
-  if(G.mode==="system"){a=((typeof nameOf==="function")?nameOf(G.sys):G.sys.name).toUpperCase();b="«"+st.S.ru+"» · сектор "+G.sx+":"+G.sy;
+  if(G.mode==="system"){a=(typeof nameOf==="function")?nameOf(G.sys):G.sys.name;b="«"+st.S.ru+"» · сектор "+G.sx+":"+G.sy;
     /* тетрадь ветра («Сорока»): в строке места — когда парусник уйдёт */
     if(typeof wanderHas==="function"&&wanderHas("notebook"))b+=" · «Сорока» "+wanderLeftRu();}
-  else if(G.mode==="wanderer"){a="НА БОРТУ «СОРОКИ»";b=(typeof wanderLeftRu==="function")?wanderLeftRu():"";}
-  else if(G.mode==="map"){a="НАВИГАЦИЯ";b="радиус "+st.jump.toFixed(1)+" пк";}
-  else if(G.mode==="landing"){a=G.land.p.name.toUpperCase();
+  else if(G.mode==="wanderer"){a="На борту «Сороки»";b=(typeof wanderLeftRu==="function")?wanderLeftRu():"";}
+  else if(G.mode==="map"){a="Навигация";b="радиус "+decRu(st.jump,1)+" пк";}
+  else if(G.mode==="landing"){a=G.land.p.name;
     b=(G.land.auto?"авто-посадка":"ручная посадка")+" · "+G.land.p.T.ru;}
   /* ── строка места не повторяет шкалы (A2) ──
      Пока приборы висели наверху, а «где мы» — рядом с ними, сводка дублировала
      трюм и скафандр текстом: два раза одно и то же в одном углу кадра. Теперь
      шкалы стоят слева от пульта, и строка говорит только то, чего в них нет. */
-  else if(G.mode==="surface"){a=G.surf.p.name.toUpperCase();
+  else if(G.mode==="surface"){a=G.surf.p.name;
     b=G.surf.p.T.ru;
     /* погода в сводке: игрок должен понимать, почему вокруг потемнело, и
        что это пройдёт — она ходит циклом (19d-weather) */
     const wn=weatherName(G.surf.p);
     if(wn)b+=" · "+wn;}
-  else if(G.mode==="dig"){a="ШАХТА · "+(G.dig?G.dig.p.name.toUpperCase():"");
+  else if(G.mode==="dig"){a="Шахта · "+(G.dig?G.dig.p.name:"");
     b=(G.dig?(G.dig.row*3)+" м · "+geoAt(G.dig.p,G.dig.row*DIG_CELL*DIG_GEO_K).ru:"");}
-  else if(G.mode==="cave"){a="ПЕЩЕРА · "+G.surf.p.name.toUpperCase();
+  else if(G.mode==="cave"){a="Пещера · "+G.surf.p.name;
     b=(G.cave?caveZoneAt(G.cave,G.cave.x).Z.ru+" · глубина "+Math.max(0,Math.round(G.cave.y)):G.surf.p.T.ru);}
-  else if(G.mode==="belt"){a=(G.belt?G.belt.B.name:"ПОЯС").toUpperCase();
+  else if(G.mode==="belt"){a=G.belt?G.belt.B.name:"Пояс";
     b=(G.belt&&G.belt.B&&G.belt.B.res&&G.belt.B.res.length)
       ?("руда: "+G.belt.B.res.map(k=>(RES[k]&&RES[k].ru)||k).join(", "))
       :"пояс астероидов";}
-  else if(G.mode==="scoop"){a=(G.scoop?G.scoop.p.name:"АТМОСФЕРА").toUpperCase();
+  else if(G.mode==="scoop"){a=G.scoop?G.scoop.p.name:"Атмосфера";
     b="сбор летучих газов";}
-  else if(G.mode==="base"){a="БАЗА · "+(G.base?G.base.p.name.toUpperCase():"");
+  else if(G.mode==="base"){a="База · "+(G.base?G.base.p.name:"");
     b="разрез грунта";}
-  else if(G.mode==="spa"&&G.spa){a="САНАТОРИЙ";
+  else if(G.mode==="spa"&&G.spa){a="Санаторий";
     b=(G.spa.pname||"")+" · день "+G.spa.day+" из "+G.spa.days;}
-  else if(G.mode==="winter"&&G.win){a=G.win.pname.toUpperCase();
+  else if(G.mode==="winter"&&G.win){a=G.win.pname;
     b="зимовка · сутки "+G.win.day+" из "+G.win.days;}
-  else if(G.mode==="homein"){a="ДОМ";
+  else if(G.mode==="homein"){a="Дом";
     b=(G.home&&HOME_TIERS[G.home.tier-1]?HOME_TIERS[G.home.tier-1].ru:"угол")+" · "+
       ((G.hin&&G.hin.folk.length)?"дома "+G.hin.folk.length:"никого нет");}
   /* Заряды, броня и счёт живых ушли отсюда к рукам, в подсказку: они там
      крупнее, и главное — это расход текущего действия, а не «где я». Сводка
      места говорит место. */
-  else if(G.mode==="raid"){a=(G.raid?G.raid.PB.name:"АБОРДАЖ").toUpperCase();
+  else if(G.mode==="raid"){a=G.raid?G.raid.PB.name:"Абордаж";
     b="пиратская база";}
-  else if(G.mode==="dock"){a=G.st.name.toUpperCase();b=G.st.kind;}
+  else if(G.mode==="dock"){a=G.st.name;b=G.st.kind;}
   if(G.drones.length>0)b+=" · дронов работает: "+G.drones.length;
   /* небо говорит само за себя, но событие обязано быть НАЗВАНО: без имени
      затмение читается как «что-то с картинкой» (06a-celest) */
@@ -101550,7 +101727,7 @@ function hud(){
     setSt(rbtn,"display",(ss&&ss.station)||inR?"":"none");
     /* плечо ставится по виденным ценам (R1): кнопка говорит это до нажатия */
     const seen=typeof routeNoteFor==="function"&&!!routeNoteFor(G.sel.x,G.sel.y);
-    setTx(rbtn,inR?"ИЗ МАРШРУТА":(seen?"В МАРШРУТ":"ЦЕН НЕ ВИДЕЛИ"));
+    setTx(rbtn,inR?"Из маршрута":(seen?"В маршрут":"Цен не видели"));
   }else setSt(rbtn,"display","none");
   /* «К СЕБЕ» — когда лист уехал от вас; «НАЗВАТЬ» — на раскрытой карточке (M299) */
   const mb=document.getElementById("mebtn"),nb=document.getElementById("namebtn");
@@ -101617,7 +101794,7 @@ function hud(){
       actLbl=(words||"ДЕЙСТВИЕ")+(nm?" "+nm[1]:"");
     }
   }
-  setTx($act,actLbl);
+  setTx(padWord($act),padCase(actLbl));
   /* кнопка без действия гаснет, а не исчезает (M181): палец помнит место */
   $act.classList.toggle("off",!hasAct);
   /* Подсвечиваем, когда действие вообще есть. Раньше признаком служила сама
@@ -101646,7 +101823,8 @@ function hud(){
     setTx($bBrk,"ТОРМОЗ");
     setSt($bBrk,"opacity","");
   }
-  setTx($nav,(G.mode==="belt"||G.mode==="scoop"||G.mode==="homein")?"ВЫХОД":(G.mode==="map"?"НАЗАД":"КАРТА"));
+  /* слово — в своём span: setTx по кнопке целиком стирал и значок */
+  setTx(padWord($nav),(G.mode==="belt"||G.mode==="scoop"||G.mode==="homein")?"Выход":(G.mode==="map"?"Назад":"Карта"));
   /* коробка «+ −» — только там, где масштаб есть (M437). На грунте, в пещере
      и в шахте она стояла на борту всю игру и не делала ничего: кнопка, на
      которую нельзя ответить кадром, — это обещание, которого нет. */
@@ -101691,7 +101869,7 @@ function hud(){
          надзора 12.09): на оклике — «ПО ДЕЛУ», у обломка — «СНЯТЬ ЭКИПАЖ» */
       const mt=G.mode==="system"?/ЦЕЛЬ\s*—\s*([^·\n]+)/.exec(G.prompt||""):null;
       const lv=mt?mt[1].trim():"";
-      setTx($lock,(lv&&lv.length<=14)?lv:"ЦЕЛЬ");
+      setTx(padWord($lock),padCase((lv&&lv.length<=14)?lv:"ЦЕЛЬ"));
     }
   }
   document.body.classList.toggle("inbelt",G.mode==="belt");
